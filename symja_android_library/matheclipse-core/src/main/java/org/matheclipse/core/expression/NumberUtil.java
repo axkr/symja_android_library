@@ -485,8 +485,8 @@ public class NumberUtil {
 	 */
 	public final static boolean isPerfectSquare(IRational bf) {
 		try {
-			long num = toLong(bf.getBigNumerator());
-			long den = toLong(bf.getBigDenominator());
+			long num = toLong(bf.toBigNumerator());
+			long den = toLong(bf.toBigDenominator());
 			return isPerfectSquare(den) && isPerfectSquare(num);
 		} catch (ArithmeticException ae) {
 

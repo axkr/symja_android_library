@@ -79,15 +79,15 @@ public class ExtendedGCD extends AbstractFunctionEvaluator {
 
 	public static BigInteger extendedGCD(final IAST ast, BigInteger[] subBezouts) {
 		BigInteger factor;
-		BigInteger gcd = ((IInteger) ast.arg1()).getBigNumerator();
-		Object[] stepResult = extendedGCD(((IInteger) ast.arg2()).getBigNumerator(), gcd);
+		BigInteger gcd = ((IInteger) ast.arg1()).toBigNumerator();
+		Object[] stepResult = extendedGCD(((IInteger) ast.arg2()).toBigNumerator(), gcd);
 
 		gcd = (BigInteger) stepResult[0];
 		subBezouts[0] = ((BigInteger[]) stepResult[1])[0];
 		subBezouts[1] = ((BigInteger[]) stepResult[1])[1];
 
 		for (int i = 3; i < ast.size(); i++) {
-			stepResult = extendedGCD(((IInteger) ast.get(i)).getBigNumerator(), gcd);
+			stepResult = extendedGCD(((IInteger) ast.get(i)).toBigNumerator(), gcd);
 			gcd = (BigInteger) stepResult[0];
 			factor = ((BigInteger[]) stepResult[1])[0];
 			for (int j = 0; j < i - 1; j++) {

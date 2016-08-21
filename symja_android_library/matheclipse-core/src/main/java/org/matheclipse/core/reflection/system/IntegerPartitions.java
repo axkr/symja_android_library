@@ -157,7 +157,7 @@ public class IntegerPartitions extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		if (ast.arg1().isInteger()) {
-			final int n = ((IInteger) ast.arg1()).getBigNumerator().intValue();
+			final int n = ((IInteger) ast.arg1()).toBigNumerator().intValue();
 			final IAST result = F.List();
 			IAST temp;
 			final NumberPartitionsIterable comb = new NumberPartitionsIterable(n);

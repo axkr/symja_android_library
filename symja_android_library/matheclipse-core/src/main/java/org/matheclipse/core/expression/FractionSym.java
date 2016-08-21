@@ -120,8 +120,8 @@ public class FractionSym extends AbstractFractionSym {
 			long newnum = fNumerator + (long) fDenominator * (long) is.fIntValue;
 			return valueOf(newnum, fDenominator);
 		}
-		BigInteger newnum = getBigNumerator().add(getBigDenominator().multiply(parm1.getBigNumerator()));
-		return valueOf(newnum, getBigDenominator());
+		BigInteger newnum = toBigNumerator().add(toBigDenominator().multiply(parm1.toBigNumerator()));
+		return valueOf(newnum, toBigDenominator());
 	}
 
 	@Override
@@ -192,7 +192,7 @@ public class FractionSym extends AbstractFractionSym {
 			return valt < valo ? -1 : valt == valo ? 0 : 1;
 		}
 		if (expr instanceof AbstractIntegerSym) {
-			return compareTo(new BigFractionSym(((AbstractIntegerSym) expr).getBigNumerator(), BigInteger.ONE));
+			return compareTo(new BigFractionSym(((AbstractIntegerSym) expr).toBigNumerator(), BigInteger.ONE));
 		}
 		if (expr instanceof Num) {
 			double d = doubleValue() - ((Num) expr).getRealPart();
@@ -397,12 +397,12 @@ public class FractionSym extends AbstractFractionSym {
 	}
 
 	@Override
-	public BigInteger getBigDenominator() {
+	public BigInteger toBigDenominator() {
 		return BigInteger.valueOf(fDenominator);
 	}
 
 	@Override
-	public BigInteger getBigNumerator() {
+	public BigInteger toBigNumerator() {
 		return BigInteger.valueOf(fNumerator);
 	}
 
@@ -413,7 +413,7 @@ public class FractionSym extends AbstractFractionSym {
 	}
 
 	@Override
-	public BigFraction getRational() {
+	public BigFraction toBigFraction() {
 		return new BigFraction(fNumerator, fDenominator);
 	}
 
@@ -544,7 +544,7 @@ public class FractionSym extends AbstractFractionSym {
 			return valueOf(other.negate(), BigInteger.ONE);
 		}
 
-		return valueOf(getBigNumerator().multiply(other), getBigDenominator());
+		return valueOf(toBigNumerator().multiply(other), toBigDenominator());
 	}
 
 	/**
@@ -598,8 +598,8 @@ public class FractionSym extends AbstractFractionSym {
 			return valueOf(newnum, fDenominator);
 		}
 		BigIntegerSym p1 = (BigIntegerSym) parm1;
-		BigInteger newnum = getBigNumerator().multiply(p1.getBigNumerator());
-		return valueOf(newnum, getBigDenominator());
+		BigInteger newnum = toBigNumerator().multiply(p1.toBigNumerator());
+		return valueOf(newnum, toBigDenominator());
 	}
 
 	/**
@@ -666,12 +666,12 @@ public class FractionSym extends AbstractFractionSym {
 	public String toString() {
 		try {
 			StringBuilder sb = new StringBuilder();
-			OutputFormFactory.get().convertFraction(sb, getBigNumerator(), getBigDenominator(), Integer.MIN_VALUE,
+			OutputFormFactory.get().convertFraction(sb, toBigNumerator(), toBigDenominator(), Integer.MIN_VALUE,
 					OutputFormFactory.NO_PLUS_CALL);
 			return sb.toString();
 		} catch (Exception e1) {
 			// fall back to simple output format
-			return getBigNumerator().toString() + "/" + getBigDenominator().toString();
+			return toBigNumerator().toString() + "/" + toBigDenominator().toString();
 		}
 	}
 

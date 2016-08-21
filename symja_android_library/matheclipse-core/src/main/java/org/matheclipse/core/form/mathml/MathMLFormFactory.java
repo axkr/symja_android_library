@@ -108,7 +108,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tag(buf, "mo", "(");
 		}
 		tagStart(buf, "mn");
-		buf.append(i.getBigNumerator().toString());
+		buf.append(i.toBigNumerator().toString());
 		tagEnd(buf, "mn");
 		if (i.isNegative() && (precedence > plusPrec)) {
 			tag(buf, "mo", ")");
@@ -124,15 +124,15 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		}
 		if (isInteger) {
 			tagStart(buf, "mn");
-			buf.append(f.getBigNumerator().toString());
+			buf.append(f.toBigNumerator().toString());
 			tagEnd(buf, "mn");
 		} else {
 			tagStart(buf, "mfrac");
 			tagStart(buf, "mn");
-			buf.append(f.getBigNumerator().toString());
+			buf.append(f.toBigNumerator().toString());
 			tagEnd(buf, "mn");
 			tagStart(buf, "mn");
-			buf.append(f.getBigDenominator().toString());
+			buf.append(f.toBigDenominator().toString());
 			tagEnd(buf, "mn");
 			tagEnd(buf, "mfrac");
 		}

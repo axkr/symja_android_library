@@ -27,24 +27,6 @@ public interface IFraction extends IRational {
 	public IInteger[] divideAndRemainder();
 
 	/**
-	 * Returns the denominator of this fraction.
-	 * 
-	 * @return denominator
-	 */
-	@Override
-	public BigInteger getBigDenominator();
-
-	/**
-	 * Returns the numerator of this fraction.
-	 * 
-	 * @return denominator
-	 */
-	@Override
-	public BigInteger getBigNumerator();
-
-	public BigFraction getRational();
-
-	/**
 	 * Returns a new rational representing the inverse of <code>this</code>.
 	 * 
 	 * @return Inverse of <code>this</code>.
@@ -53,8 +35,6 @@ public interface IFraction extends IRational {
 	public IFraction inverse();
 
 	public IFraction mul(IFraction other);
-
-	public IFraction multiply(IFraction parm1);
 
 	/**
 	 * Returns a new rational equal to <code>-this</code>.
@@ -65,7 +45,7 @@ public interface IFraction extends IRational {
 	public IFraction negate();
 
 	@Override
-	public INumber normalize(); 
+	public INumber normalize();
 
 	/**
 	 * Returns this number raised at the specified exponent.
@@ -76,7 +56,32 @@ public interface IFraction extends IRational {
 	 * @throws ArithmeticException
 	 *             if {@code 0^0} is given.
 	 */
+	@Override
 	public IFraction pow(final long exp) throws ArithmeticException;
-	
+
 	public IFraction sub(IFraction parm1);
+
+	/**
+	 * Returns the denominator of this fraction.
+	 * 
+	 * @return denominator
+	 */
+	@Override
+	public BigInteger toBigDenominator();
+
+	/**
+	 * Return the <code>org.apache.commons.math4.fraction.BigFraction</code>
+	 * representation.
+	 * 
+	 * @return
+	 */
+	public BigFraction toBigFraction();
+
+	/**
+	 * Returns the numerator of this fraction.
+	 * 
+	 * @return numerator
+	 */
+	@Override
+	public BigInteger toBigNumerator();
 }

@@ -599,7 +599,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 			return F.C1;
 		}
 
-		return c0.pow(i1.getBigNumerator().intValue());
+		return c0.pow(i1.toBigNumerator().intValue());
 	}
 
 	@Override

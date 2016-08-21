@@ -90,9 +90,9 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 	public void convertFraction(final StringBuffer buf, final IRational f, final int precedence) {
 		// <cn type="rational">3<sep/>4</cn>
 		tagStart(buf, "cn", "type=\"rational\"");
-		buf.append(String.valueOf(f.getBigNumerator().toString()));
+		buf.append(String.valueOf(f.toBigNumerator().toString()));
 		tagStartEnd(buf, "sep");
-		buf.append(String.valueOf(f.getBigDenominator().toString()));
+		buf.append(String.valueOf(f.toBigDenominator().toString()));
 		tagEnd(buf, "cn");
 	}
 

@@ -2477,8 +2477,8 @@ public class F {
 		final IRational imagFraction = value.getImaginaryPart();
 		final EvalEngine engine = EvalEngine.get();
 		if (engine.isApfloat()) {
-			return ApcomplexNum.valueOf(realFraction.getBigNumerator(), realFraction.getBigDenominator(),
-					imagFraction.getBigNumerator(), imagFraction.getBigDenominator(), engine.getNumericPrecision());
+			return ApcomplexNum.valueOf(realFraction.toBigNumerator(), realFraction.toBigDenominator(),
+					imagFraction.toBigNumerator(), imagFraction.toBigDenominator(), engine.getNumericPrecision());
 		}
 		// double precision complex number
 		double nr = realFraction.getNumerator().doubleValue();
@@ -2492,7 +2492,7 @@ public class F {
 	public static IComplexNum complexNum(final IFraction value) {
 		final EvalEngine engine = EvalEngine.get();
 		if (engine.isApfloat()) {
-			return ApcomplexNum.valueOf(value.getBigNumerator(), value.getBigDenominator(), BigInteger.ZERO,
+			return ApcomplexNum.valueOf(value.toBigNumerator(), value.toBigDenominator(), BigInteger.ZERO,
 					BigInteger.ONE, engine.getNumericPrecision());
 		}
 		return complexNum(value.doubleValue(), 0.0d);
@@ -2501,7 +2501,7 @@ public class F {
 	public static IComplexNum complexNum(final IInteger value) {
 		final EvalEngine engine = EvalEngine.get();
 		if (engine.isApfloat()) {
-			return ApcomplexNum.valueOf(value.getBigNumerator(), BigInteger.ONE, BigInteger.ZERO, BigInteger.ONE,
+			return ApcomplexNum.valueOf(value.toBigNumerator(), BigInteger.ONE, BigInteger.ZERO, BigInteger.ONE,
 					engine.getNumericPrecision());
 		}
 		return complexNum(value.doubleValue(), 0.0d);
@@ -3982,17 +3982,17 @@ public class F {
 	public static INum num(final IFraction value) {
 		EvalEngine engine = EvalEngine.get();
 		if (engine.isApfloat()) {
-			return ApfloatNum.valueOf(value.getBigNumerator(), value.getBigDenominator(), engine.getNumericPrecision());
+			return ApfloatNum.valueOf(value.toBigNumerator(), value.toBigDenominator(), engine.getNumericPrecision());
 		}
-		final double n = value.getBigNumerator().doubleValue();
-		final double d = value.getBigDenominator().doubleValue();
+		final double n = value.toBigNumerator().doubleValue();
+		final double d = value.toBigDenominator().doubleValue();
 		return num(n / d);
 	}
 
 	public static INum num(final IInteger value) {
 		EvalEngine engine = EvalEngine.get();
 		if (engine.isApfloat()) {
-			return ApfloatNum.valueOf(value.getBigNumerator(), engine.getNumericPrecision());
+			return ApfloatNum.valueOf(value.toBigNumerator(), engine.getNumericPrecision());
 		}
 		return num(value.doubleValue());
 	}

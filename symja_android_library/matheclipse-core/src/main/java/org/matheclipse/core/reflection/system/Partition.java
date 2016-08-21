@@ -28,13 +28,13 @@ public class Partition extends AbstractFunctionEvaluator {
 		if (ast.arg1().isAST()) {
 			if (ast.arg2().isInteger()) {
 				final IAST f = (IAST) ast.arg1();
-				final int n = ((IInteger) ast.arg2()).getBigNumerator().intValue();
+				final int n = ((IInteger) ast.arg2()).toBigNumerator().intValue();
 				final IAST result = F.ast(f.head());
 				IAST temp;
 				int i = n;
 				int v = n;
 				if ((ast.isAST3()) && ast.arg3().isInteger()) {
-					v = ((IInteger) ast.arg3()).getBigNumerator().intValue();
+					v = ((IInteger) ast.arg3()).toBigNumerator().intValue();
 				}
 				while (i <= f.size() - 1) {
 					temp = F.ast(f.head());

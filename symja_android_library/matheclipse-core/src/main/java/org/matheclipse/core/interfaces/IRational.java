@@ -53,14 +53,14 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 * 
 	 * @return denominator
 	 */
-	public BigInteger getBigDenominator();
+	public BigInteger toBigDenominator();
 
 	/**
 	 * Returns the numerator of this fraction.
 	 * 
 	 * @return denominator
 	 */
-	public BigInteger getBigNumerator();
+	public BigInteger toBigNumerator();
 
 	/**
 	 * Returns the denominator of this fraction.

@@ -65,7 +65,7 @@ public interface IInteger extends IRational {
 	 * @return numerator
 	 */
 	@Override
-	public BigInteger getBigNumerator();
+	public BigInteger toBigNumerator();
 
 	/**
 	 * Converts this large integer to <code>int</code>; unlike {@link #toInt}

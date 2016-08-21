@@ -90,7 +90,7 @@ public class IntegerSym extends AbstractIntegerSym {
 			return valueOf(newnum);
 		}
 		BigIntegerSym p1 = (BigIntegerSym) parm1;
-		BigInteger newnum = getBigNumerator().add(p1.getBigNumerator());
+		BigInteger newnum = toBigNumerator().add(p1.toBigNumerator());
 		return valueOf(newnum);
 	}
 
@@ -157,14 +157,14 @@ public class IntegerSym extends AbstractIntegerSym {
 		if (that instanceof IntegerSym) {
 			return new IntegerSym(fIntValue / ((IntegerSym) that).fIntValue);
 		}
-		return valueOf(getBigNumerator().divide(that.getBigNumerator()));
+		return valueOf(toBigNumerator().divide(that.toBigNumerator()));
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public IInteger[] divideAndRemainder(final IInteger that) {
 		final IInteger[] res = new IntegerSym[2];
-		BigInteger[] largeRes = getBigNumerator().divideAndRemainder(that.getBigNumerator());
+		BigInteger[] largeRes = toBigNumerator().divideAndRemainder(that.toBigNumerator());
 		res[0] = valueOf(largeRes[0]);
 		res[1] = valueOf(largeRes[1]);
 
@@ -250,7 +250,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	@Override
 	public IExpr[] egcd(IExpr that) {
 		if (that instanceof IntegerSym) {
-			BigInteger S = ((IntegerSym) that).getBigNumerator();
+			BigInteger S = ((IntegerSym) that).toBigNumerator();
 			IInteger[] result = new IInteger[3];
 			result[0] = null;
 			result[1] = F.C1;
@@ -264,7 +264,7 @@ public class IntegerSym extends AbstractIntegerSym {
 				return result;
 			}
 			BigInteger[] qr;
-			BigInteger q = getBigNumerator();
+			BigInteger q = toBigNumerator();
 			BigInteger r = S;
 			BigInteger c1 = BigInteger.ONE;
 			BigInteger d1 = BigInteger.ZERO;
@@ -340,7 +340,7 @@ public class IntegerSym extends AbstractIntegerSym {
 		if (b.equals(base)) {
 			return F.C1;
 		}
-		BigInteger rest = Primality.countExponent(b.getBigNumerator(), base.getBigNumerator());
+		BigInteger rest = Primality.countExponent(b.toBigNumerator(), base.toBigNumerator());
 		return valueOf(rest);
 	}
 
@@ -358,18 +358,18 @@ public class IntegerSym extends AbstractIntegerSym {
 				//
 			}
 		}
-		return valueOf(getBigNumerator().gcd(that.getBigNumerator()));
+		return valueOf(toBigNumerator().gcd(that.toBigNumerator()));
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public BigInteger getBigDenominator() {
+	public BigInteger toBigDenominator() {
 		return BigInteger.ONE;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public BigInteger getBigNumerator() {
+	public BigInteger toBigNumerator() {
 		return BigInteger.valueOf(fIntValue);
 	}
 
@@ -495,7 +495,7 @@ public class IntegerSym extends AbstractIntegerSym {
 			return fIntValue > ((IntegerSym) obj).fIntValue;
 		}
 		if (obj instanceof BigIntegerSym) {
-			return getBigNumerator().compareTo(((BigIntegerSym) obj).getBigNumerator()) > 0;
+			return toBigNumerator().compareTo(((BigIntegerSym) obj).toBigNumerator()) > 0;
 		}
 		if (obj instanceof AbstractFractionSym) {
 			return -((AbstractFractionSym) obj).compareTo(AbstractFractionSym.valueOf(fIntValue, 1)) > 0;
@@ -508,7 +508,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	 * @return
 	 */
 	public boolean isLargerThan(final BigInteger that) {
-		return getBigNumerator().compareTo(that) > 0;
+		return toBigNumerator().compareTo(that) > 0;
 	}
 
 	@Override
@@ -517,7 +517,7 @@ public class IntegerSym extends AbstractIntegerSym {
 			return fIntValue < ((IntegerSym) obj).fIntValue;
 		}
 		if (obj instanceof BigIntegerSym) {
-			return getBigNumerator().compareTo(((BigIntegerSym) obj).getBigNumerator()) < 0;
+			return toBigNumerator().compareTo(((BigIntegerSym) obj).toBigNumerator()) < 0;
 		}
 		if (obj instanceof AbstractFractionSym) {
 			return -((AbstractFractionSym) obj).compareTo(AbstractFractionSym.valueOf(fIntValue, 1)) < 0;
@@ -561,7 +561,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isProbablePrime(int certainty) {
-		return getBigNumerator().isProbablePrime(certainty);
+		return toBigNumerator().isProbablePrime(certainty);
 	}
 
 	/** {@inheritDoc} */
@@ -589,7 +589,7 @@ public class IntegerSym extends AbstractIntegerSym {
 		if (that instanceof IntegerSym) {
 			return new IntegerSym(IntMath.mod(fIntValue, ((IntegerSym) that).fIntValue));
 		}
-		return valueOf(getBigNumerator().mod(that.getBigNumerator()));
+		return valueOf(toBigNumerator().mod(that.toBigNumerator()));
 	}
 
 	@Override
@@ -630,12 +630,12 @@ public class IntegerSym extends AbstractIntegerSym {
 			}
 			return AbstractIntegerSym.valueOf(x1 + b0);
 		}
-		return valueOf(getBigNumerator().modInverse(that.getBigNumerator()));
+		return valueOf(toBigNumerator().modInverse(that.toBigNumerator()));
 	}
 
 	@Override
 	public IInteger modPow(final IInteger exp, final IInteger that) {
-		return valueOf(getBigNumerator().modPow(exp.getBigNumerator(), that.getBigNumerator()));
+		return valueOf(toBigNumerator().modPow(exp.toBigNumerator(), that.toBigNumerator()));
 	}
 
 	@Override
@@ -707,7 +707,7 @@ public class IntegerSym extends AbstractIntegerSym {
 			return valueOf(newnum);
 		}
 		BigIntegerSym p1 = (BigIntegerSym) parm1;
-		BigInteger newnum = getBigNumerator().multiply(p1.getBigNumerator());
+		BigInteger newnum = toBigNumerator().multiply(p1.toBigNumerator());
 		return valueOf(newnum);
 	}
 
@@ -820,7 +820,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	}
 
 	public IInteger remainder(final IInteger that) {
-		return valueOf(getBigNumerator().remainder(that.getBigNumerator()));
+		return valueOf(toBigNumerator().remainder(that.toBigNumerator()));
 	}
 
 	@Override
@@ -836,7 +836,7 @@ public class IntegerSym extends AbstractIntegerSym {
 		if (n <= 31) {
 			return valueOf(fIntValue << n);
 		}
-		return valueOf(getBigNumerator().shiftLeft(n));
+		return valueOf(toBigNumerator().shiftLeft(n));
 	}
 
 	@Override
@@ -882,7 +882,7 @@ public class IntegerSym extends AbstractIntegerSym {
 			return valueOf(newnum);
 		}
 		BigIntegerSym p1 = (BigIntegerSym) parm1;
-		BigInteger newnum = getBigNumerator().subtract(p1.getBigNumerator());
+		BigInteger newnum = toBigNumerator().subtract(p1.toBigNumerator());
 		return valueOf(newnum);
 	}
 

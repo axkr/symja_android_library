@@ -27,7 +27,7 @@ public class RandomInteger extends AbstractFunctionEvaluator {
 
 		if (ast.arg1().isInteger()) {
 			// RandomInteger[100] gives an integer between 0 and 100
-			BigInteger n = ((IInteger) ast.arg1()).getBigNumerator();
+			BigInteger n = ((IInteger) ast.arg1()).toBigNumerator();
 			BigInteger r;
 			do {
 				r = new BigInteger(n.bitLength(), RANDOM);

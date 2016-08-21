@@ -249,7 +249,7 @@ public class OutputFormFactory {
 		if (isNegative && (ASTNodeFactory.PLUS_PRECEDENCE < precedence)) {
 			append(buf, "(");
 		}
-		final String str = i.getBigNumerator().toString();
+		final String str = i.toBigNumerator().toString();
 		if ((str.length() + getColumnCounter() > 80)) {
 			if (getColumnCounter() > 40) {
 				newLine(buf);
@@ -274,7 +274,7 @@ public class OutputFormFactory {
 
 	public void convertFraction(final Appendable buf, final IRational f, final int precedence, boolean caller)
 			throws IOException {
-		convertFraction(buf, f.getBigNumerator(), f.getBigDenominator(), precedence, caller);
+		convertFraction(buf, f.toBigNumerator(), f.toBigDenominator(), precedence, caller);
 	}
 
 	public void convertFraction(final Appendable buf, final BigInteger numerator, BigInteger denominator,

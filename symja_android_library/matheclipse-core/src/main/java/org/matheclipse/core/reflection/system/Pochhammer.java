@@ -27,7 +27,7 @@ public class Pochhammer extends AbstractArg2 {
 	public IExpr e2ObjArg(final IExpr a, final IExpr n) {
 		if (a.isRational() && n.isInteger()) {
 			BigFraction bf = ((IRational) a).getFraction();
-			BigFraction ph = pochhammer(bf, ((IInteger) n).getBigNumerator());
+			BigFraction ph = pochhammer(bf, ((IInteger) n).toBigNumerator());
 			if (ph != null) {
 				return F.fraction(ph);
 			}

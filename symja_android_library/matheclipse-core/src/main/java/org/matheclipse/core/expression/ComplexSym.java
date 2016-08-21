@@ -133,10 +133,10 @@ public class ComplexSym extends ExprImpl implements IComplex {
 	}
 
 	public Apcomplex apcomplexValue(long precision) {
-		Apfloat real = new Apfloat(fReal.getBigNumerator(), precision)
-				.divide(new Apfloat(fReal.getBigDenominator(), precision));
-		Apfloat imag = new Apfloat(fImaginary.getBigNumerator(), precision)
-				.divide(new Apfloat(fImaginary.getBigDenominator(), precision));
+		Apfloat real = new Apfloat(fReal.toBigNumerator(), precision)
+				.divide(new Apfloat(fReal.toBigDenominator(), precision));
+		Apfloat imag = new Apfloat(fImaginary.toBigNumerator(), precision)
+				.divide(new Apfloat(fImaginary.toBigDenominator(), precision));
 		return new Apcomplex(real, imag);
 	}
 
@@ -360,10 +360,10 @@ public class ComplexSym extends ExprImpl implements IComplex {
 			}
 		}
 
-		int realNumerator = NumberUtil.toInt(fReal.getBigNumerator());
-		int realDenominator = NumberUtil.toInt(fReal.getBigDenominator());
-		int imagNumerator = NumberUtil.toInt(fImaginary.getBigNumerator());
-		int imagDenominator = NumberUtil.toInt(fImaginary.getBigDenominator());
+		int realNumerator = NumberUtil.toInt(fReal.toBigNumerator());
+		int realDenominator = NumberUtil.toInt(fReal.toBigDenominator());
+		int imagNumerator = NumberUtil.toInt(fImaginary.toBigNumerator());
+		int imagDenominator = NumberUtil.toInt(fImaginary.toBigDenominator());
 		return "CC(" + realNumerator + "L," + realDenominator + "L," + imagNumerator + "L," + imagDenominator + "L)";
 	}
 

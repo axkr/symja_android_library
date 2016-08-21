@@ -67,15 +67,15 @@ public class BigFractionSym extends AbstractFractionSym {
 		if (other.isZero())
 			return this;
 
-		BigInteger tdenom = getBigDenominator();
-		BigInteger odenom = other.getBigDenominator();
+		BigInteger tdenom = toBigDenominator();
+		BigInteger odenom = other.toBigDenominator();
 		if (tdenom.equals(odenom)) {
-			return valueOf(getBigNumerator().add(other.getBigNumerator()), tdenom);
+			return valueOf(toBigNumerator().add(other.toBigNumerator()), tdenom);
 		}
 		BigInteger gcd = tdenom.gcd(odenom);
 		BigInteger tdenomgcd = tdenom.divide(gcd);
 		BigInteger odenomgcd = odenom.divide(gcd);
-		BigInteger newnum = getBigNumerator().multiply(odenomgcd).add(other.getBigNumerator().multiply(tdenomgcd));
+		BigInteger newnum = toBigNumerator().multiply(odenomgcd).add(other.toBigNumerator().multiply(tdenomgcd));
 		BigInteger newdenom = tdenom.multiply(odenomgcd);
 		return valueOf(newnum, newdenom);
 	}
@@ -89,17 +89,17 @@ public class BigFractionSym extends AbstractFractionSym {
 			return add((IFraction) parm1);
 		}
 		IInteger p1 = (IInteger) parm1;
-		BigInteger newnum = getBigNumerator().add(getBigDenominator().multiply(p1.getBigNumerator()));
-		return valueOf(newnum, getBigDenominator());
+		BigInteger newnum = toBigNumerator().add(toBigDenominator().multiply(p1.toBigNumerator()));
+		return valueOf(newnum, toBigDenominator());
 	}
 
 	@Override
 	public IInteger ceil() {
 		if (isIntegral()) {
-			return AbstractIntegerSym.valueOf(getBigNumerator());
+			return AbstractIntegerSym.valueOf(toBigNumerator());
 		}
-		BigInteger div = getBigNumerator().divide(getBigDenominator());
-		if (getBigNumerator().signum() > 0)
+		BigInteger div = toBigNumerator().divide(toBigDenominator());
+		if (toBigNumerator().signum() > 0)
 			div = div.add(BigInteger.ONE);
 		return AbstractIntegerSym.valueOf(div);
 	}
@@ -115,8 +115,8 @@ public class BigFractionSym extends AbstractFractionSym {
 		if (isIntegral()) {
 			return this;
 		}
-		BigInteger div = getBigNumerator().divide(getBigDenominator());
-		if (getBigNumerator().signum() > 0)
+		BigInteger div = toBigNumerator().divide(toBigDenominator());
+		if (toBigNumerator().signum() > 0)
 			div = div.add(BigInteger.ONE);
 		return AbstractFractionSym.valueOf(div, BigInteger.ONE);
 	}
@@ -132,19 +132,19 @@ public class BigFractionSym extends AbstractFractionSym {
 
 	@Override
 	public int compareInt(final int value) {
-		BigInteger dOn = getBigDenominator().multiply(BigInteger.valueOf(value));
-		return getBigNumerator().compareTo(dOn);
+		BigInteger dOn = toBigDenominator().multiply(BigInteger.valueOf(value));
+		return toBigNumerator().compareTo(dOn);
 	}
 
 	@Override
 	public int compareTo(IExpr expr) {
 		if (expr instanceof IFraction) {
-			BigInteger valthis = getBigNumerator().multiply(((IFraction) expr).getBigDenominator());
-			BigInteger valo = ((IFraction) expr).getBigNumerator().multiply(getBigDenominator());
+			BigInteger valthis = toBigNumerator().multiply(((IFraction) expr).toBigDenominator());
+			BigInteger valo = ((IFraction) expr).toBigNumerator().multiply(toBigDenominator());
 			return valthis.compareTo(valo);
 		}
 		if (expr instanceof IInteger) {
-			return fFraction.compareTo(new BigFraction(((IInteger) expr).getBigNumerator(), BigInteger.ONE));
+			return fFraction.compareTo(new BigFraction(((IInteger) expr).toBigNumerator(), BigInteger.ONE));
 		}
 		if (expr instanceof Num) {
 			double d = fFraction.doubleValue() - ((Num) expr).getRealPart();
@@ -161,8 +161,8 @@ public class BigFractionSym extends AbstractFractionSym {
 	@Override
 	public ComplexNum complexNumValue() {
 		// double precision complex number
-		double nr = getBigNumerator().doubleValue();
-		double dr = getBigDenominator().doubleValue();
+		double nr = toBigNumerator().doubleValue();
+		double dr = toBigDenominator().doubleValue();
 		return ComplexNum.valueOf(nr / dr);
 	}
 
@@ -181,10 +181,10 @@ public class BigFractionSym extends AbstractFractionSym {
 		if (other.isMinusOne()) {
 			return this.negate();
 		}
-		BigInteger denom = getBigDenominator().multiply(other.getBigNumerator());
-		BigInteger nom = getBigNumerator().multiply(other.getBigDenominator());
+		BigInteger denom = toBigDenominator().multiply(other.toBigNumerator());
+		BigInteger nom = toBigNumerator().multiply(other.toBigDenominator());
 		// +-inf : -c = -+inf
-		if (denom.equals(BigInteger.ZERO) && other.getBigNumerator().signum() == -1)
+		if (denom.equals(BigInteger.ZERO) && other.toBigNumerator().signum() == -1)
 			nom = nom.negate();
 		return valueOf(nom, denom);
 	}
@@ -192,7 +192,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	@Override
 	public IInteger[] divideAndRemainder() {
 		IInteger[] result = new IInteger[2];
-		BigInteger[] intResult = getBigNumerator().divideAndRemainder(getBigDenominator());
+		BigInteger[] intResult = toBigNumerator().divideAndRemainder(toBigDenominator());
 		result[0] = AbstractIntegerSym.valueOf(intResult[0]);
 		result[1] = AbstractIntegerSym.valueOf(intResult[1]);
 		return result;
@@ -234,10 +234,10 @@ public class BigFractionSym extends AbstractFractionSym {
 	@Override
 	public IInteger floor() {
 		if (isIntegral()) {
-			return AbstractIntegerSym.valueOf(getBigNumerator());
+			return AbstractIntegerSym.valueOf(toBigNumerator());
 		}
-		BigInteger div = getBigNumerator().divide(getBigDenominator());
-		if (getBigNumerator().signum() < 0) {
+		BigInteger div = toBigNumerator().divide(toBigDenominator());
+		if (toBigNumerator().signum() < 0) {
 			div = div.subtract(BigInteger.ONE);
 		}
 		return AbstractIntegerSym.valueOf(div);
@@ -254,8 +254,8 @@ public class BigFractionSym extends AbstractFractionSym {
 		if (isIntegral()) {
 			return this;
 		}
-		BigInteger div = getBigNumerator().divide(getBigDenominator());
-		if (getBigNumerator().signum() < 0) {
+		BigInteger div = toBigNumerator().divide(toBigDenominator());
+		if (toBigNumerator().signum() < 0) {
 			div = div.subtract(BigInteger.ONE);
 		}
 		return AbstractFractionSym.valueOf(div, BigInteger.ONE);
@@ -301,7 +301,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	@Override
 	public IExpr gcd(IExpr that) {
 		if (that instanceof IFraction) {
-			BigFraction arg2 = ((IFraction) that).getRational();
+			BigFraction arg2 = ((IFraction) that).toBigFraction();
 			return valueOf(fFraction.getNumerator().gcd(arg2.getNumerator()),
 					AbstractIntegerSym.lcm(fFraction.getDenominator(), arg2.getDenominator()));
 		}
@@ -321,21 +321,21 @@ public class BigFractionSym extends AbstractFractionSym {
 		if (other.isZero()) {
 			return this;
 		}
-		BigInteger tdenom = this.getBigDenominator();
-		BigInteger odenom = other.getBigDenominator();
+		BigInteger tdenom = this.toBigDenominator();
+		BigInteger odenom = other.toBigDenominator();
 		BigInteger gcddenom = tdenom.gcd(odenom);
 		BigInteger denom = tdenom.divide(gcddenom).multiply(odenom);
-		BigInteger num = getBigNumerator().gcd(other.getBigNumerator());
+		BigInteger num = toBigNumerator().gcd(other.toBigNumerator());
 		return AbstractFractionSym.valueOf(num, denom);
 	}
 
 	@Override
-	public BigInteger getBigDenominator() {
+	public BigInteger toBigDenominator() {
 		return fFraction.getDenominator();
 	}
 
 	@Override
-	public BigInteger getBigNumerator() {
+	public BigInteger toBigNumerator() {
 		return fFraction.getNumerator();
 	}
 
@@ -347,7 +347,7 @@ public class BigFractionSym extends AbstractFractionSym {
 
 	/** {@inheritDoc} */
 	@Override
-	public BigFraction getRational() {
+	public BigFraction toBigFraction() {
 		return fFraction;
 	}
 
@@ -367,10 +367,10 @@ public class BigFractionSym extends AbstractFractionSym {
 	 * @return Quotient of <code>this</code> and <code>other</code>.
 	 */
 	public IFraction idiv(IFraction other) {
-		BigInteger num = getBigDenominator().multiply(other.getBigNumerator());
-		BigInteger denom = getBigNumerator().multiply(other.getBigDenominator());
+		BigInteger num = toBigDenominator().multiply(other.toBigNumerator());
+		BigInteger denom = toBigNumerator().multiply(other.toBigDenominator());
 
-		if (denom.equals(BigInteger.ZERO) && getBigNumerator().signum() == -1) {
+		if (denom.equals(BigInteger.ZERO) && toBigNumerator().signum() == -1) {
 			num = num.negate();
 		}
 		return valueOf(num, denom);
@@ -477,7 +477,7 @@ public class BigFractionSym extends AbstractFractionSym {
 			if (oint == 0)
 				return AbstractFractionSym.ZERO;
 		}
-		return valueOf(getBigNumerator().multiply(other), getBigDenominator());
+		return valueOf(toBigNumerator().multiply(other), toBigDenominator());
 	}
 
 	@Override
@@ -495,8 +495,8 @@ public class BigFractionSym extends AbstractFractionSym {
 			return mul((IFraction) parm1);
 		}
 		IInteger p1 = (IInteger) parm1;
-		BigInteger newnum = getBigNumerator().multiply(p1.getBigNumerator());
-		return valueOf(newnum, getBigDenominator());
+		BigInteger newnum = toBigNumerator().multiply(p1.toBigNumerator());
+		return valueOf(newnum, toBigDenominator());
 	}
 
 	/**
@@ -511,10 +511,10 @@ public class BigFractionSym extends AbstractFractionSym {
 
 	@Override
 	public INumber normalize() {
-		if (getBigDenominator().equals(BigInteger.ONE)) {
-			return F.integer(getBigNumerator());
+		if (toBigDenominator().equals(BigInteger.ONE)) {
+			return F.integer(toBigNumerator());
 		}
-		if (getBigNumerator().equals(BigInteger.ZERO)) {
+		if (toBigNumerator().equals(BigInteger.ZERO)) {
 			return F.C0;
 		}
 		return this;
@@ -535,10 +535,10 @@ public class BigFractionSym extends AbstractFractionSym {
 	/** {@inheritDoc} */
 	@Override
 	public int toInt() throws ArithmeticException {
-		if (getBigDenominator().equals(BigInteger.ONE)) {
-			return NumberUtil.toInt(getBigNumerator());
+		if (toBigDenominator().equals(BigInteger.ONE)) {
+			return NumberUtil.toInt(toBigNumerator());
 		}
-		if (getBigNumerator().equals(BigInteger.ZERO)) {
+		if (toBigNumerator().equals(BigInteger.ZERO)) {
 			return 0;
 		}
 		throw new ArithmeticException("toInt: denominator != 1");
@@ -547,10 +547,10 @@ public class BigFractionSym extends AbstractFractionSym {
 	/** {@inheritDoc} */
 	@Override
 	public long toLong() throws ArithmeticException {
-		if (getBigDenominator().equals(BigInteger.ONE)) {
-			return NumberUtil.toLong(getBigNumerator());
+		if (toBigDenominator().equals(BigInteger.ONE)) {
+			return NumberUtil.toLong(toBigNumerator());
 		}
-		if (getBigNumerator().equals(BigInteger.ZERO)) {
+		if (toBigNumerator().equals(BigInteger.ZERO)) {
 			return 0L;
 		}
 		throw new ArithmeticException("toLong: denominator != 1");

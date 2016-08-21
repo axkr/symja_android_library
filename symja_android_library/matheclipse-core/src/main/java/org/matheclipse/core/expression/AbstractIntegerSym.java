@@ -179,12 +179,12 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	}
 
 	public Apcomplex apcomplexValue(long precision) {
-		return new Apcomplex(new Apfloat(getBigNumerator(), precision));
+		return new Apcomplex(new Apfloat(toBigNumerator(), precision));
 	}
 
 	@Override
 	public ApfloatNum apfloatNumValue(long precision) {
-		return ApfloatNum.valueOf(getBigNumerator(), precision);
+		return ApfloatNum.valueOf(toBigNumerator(), precision);
 	}
 
 	@Override
@@ -301,7 +301,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 			return result;
 		}
 		Map<Integer, Integer> map = new TreeMap<Integer, Integer>();
-		BigInteger rest = Primality.countPrimes32749(b.getBigNumerator(), map);
+		BigInteger rest = Primality.countPrimes32749(b.toBigNumerator(), map);
 
 		for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
 			int key = entry.getKey();
@@ -316,7 +316,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		b = valueOf(rest);
 
 		Map<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
-		Primality.pollardRhoFactors(b.getBigNumerator(), bigMap);
+		Primality.pollardRhoFactors(b.toBigNumerator(), bigMap);
 
 		for (Map.Entry<BigInteger, Integer> entry : bigMap.entrySet()) {
 			BigInteger key = entry.getKey();
@@ -478,7 +478,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	 * @return
 	 */
 	public BigInteger multiply(final long val) {
-		return getBigNumerator().multiply(BigInteger.valueOf(val));
+		return toBigNumerator().multiply(BigInteger.valueOf(val));
 	}
 
 	@Override
@@ -590,8 +590,8 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 
 	@Override
 	public IInteger quotient(final IInteger that) {
-		BigInteger quotient = getBigNumerator().divide(that.getBigNumerator());
-		BigInteger mod = getBigNumerator().remainder(that.getBigNumerator());
+		BigInteger quotient = toBigNumerator().divide(that.toBigNumerator());
+		BigInteger mod = toBigNumerator().remainder(that.toBigNumerator());
 		if (mod.equals(BigInteger.ZERO)) {
 			return valueOf(quotient);
 		}
@@ -629,7 +629,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 			return this.multiply((IInteger) that);
 		}
 		if (that instanceof IFraction) {
-			return AbstractFractionSym.valueOf(this).multiply((IFraction) that).normalize();
+			return AbstractFractionSym.valueOf(this).mul((IFraction) that).normalize();
 		}
 		if (that instanceof ComplexSym) {
 			return ((ComplexSym) that).multiply(ComplexSym.valueOf(this));
@@ -639,7 +639,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 
 	@Override
 	public byte[] toByteArray() {
-		return getBigNumerator().toByteArray();
+		return toBigNumerator().toByteArray();
 	}
 
 	/**
@@ -669,7 +669,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		}
 
 		AbstractIntegerSym b = this;
-		BigInteger[] nthRoot = Primality.countRoot1021(b.getBigNumerator(), n);
+		BigInteger[] nthRoot = Primality.countRoot1021(b.toBigNumerator(), n);
 		result[0] = AbstractIntegerSym.valueOf(nthRoot[0]);
 		result[1] = AbstractIntegerSym.valueOf(nthRoot[1]);
 		return result;

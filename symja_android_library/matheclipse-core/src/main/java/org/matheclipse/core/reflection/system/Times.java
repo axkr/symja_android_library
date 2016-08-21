@@ -59,7 +59,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 
 	@Override
 	public IExpr e2FraArg(final IFraction f0, final IFraction f1) {
-		return f0.multiply(f1);
+		return f0.mul(f1);
 	}
 
 	@Override

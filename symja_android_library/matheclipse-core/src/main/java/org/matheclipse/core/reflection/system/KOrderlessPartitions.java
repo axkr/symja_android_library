@@ -24,7 +24,7 @@ public class KOrderlessPartitions extends AbstractFunctionEvaluator {
 			final IAST listArg0 = (IAST) ast.arg1();
 			final ISymbol sym = listArg0.topHead();
 			final int n = listArg0.size() - 1;
-			final int k = ((IInteger) ast.arg2()).getBigNumerator().intValue();
+			final int k = ((IInteger) ast.arg2()).toBigNumerator().intValue();
 			final IAST result = F.ast(F.List);
 			final Permutations.KPermutationsIterable permutationIterator = new Permutations.KPermutationsIterable(
 					listArg0, n, 1);

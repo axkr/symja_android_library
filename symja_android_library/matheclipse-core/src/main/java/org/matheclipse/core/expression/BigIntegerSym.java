@@ -61,7 +61,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	 */
 	@Override
 	public IInteger add(final IInteger that) {
-		return valueOf(fBigIntValue.add(that.getBigNumerator()));
+		return valueOf(fBigIntValue.add(that.toBigNumerator()));
 	}
 
 	@Override
@@ -73,7 +73,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 			return ((IFraction) parm1).add(this);
 		}
 		IInteger p1 = (IInteger) parm1;
-		BigInteger newnum = getBigNumerator().add(p1.getBigNumerator());
+		BigInteger newnum = toBigNumerator().add(p1.toBigNumerator());
 		return valueOf(newnum);
 	}
 
@@ -148,14 +148,14 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	 */
 	@Override
 	public IInteger div(final IInteger that) {
-		return valueOf(fBigIntValue.divide(that.getBigNumerator()));
+		return valueOf(fBigIntValue.divide(that.toBigNumerator()));
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public IInteger[] divideAndRemainder(final IInteger that) {
 		final IInteger[] res = new BigIntegerSym[2];
-		BigInteger[] largeRes = fBigIntValue.divideAndRemainder(that.getBigNumerator());
+		BigInteger[] largeRes = fBigIntValue.divideAndRemainder(that.toBigNumerator());
 		res[0] = valueOf(largeRes[0]);
 		res[1] = valueOf(largeRes[1]);
 
@@ -334,7 +334,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		if (b.equals(base)) {
 			return F.C1;
 		}
-		BigInteger rest = Primality.countExponent(b.getBigNumerator(), base.getBigNumerator());
+		BigInteger rest = Primality.countExponent(b.toBigNumerator(), base.toBigNumerator());
 		return valueOf(rest);
 	}
 
@@ -349,18 +349,18 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	 */
 	@Override
 	public IInteger gcd(final IInteger that) {
-		return valueOf(fBigIntValue.gcd(that.getBigNumerator()));
+		return valueOf(fBigIntValue.gcd(that.toBigNumerator()));
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public BigInteger getBigDenominator() {
+	public BigInteger toBigDenominator() {
 		return BigInteger.ONE;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public BigInteger getBigNumerator() {
+	public BigInteger toBigNumerator() {
 		return fBigIntValue;
 	}
 
@@ -579,17 +579,17 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	 */
 	@Override
 	public IInteger mod(final IInteger that) {
-		return valueOf(fBigIntValue.mod(that.getBigNumerator()));
+		return valueOf(fBigIntValue.mod(that.toBigNumerator()));
 	}
 
 	@Override
 	public IInteger modInverse(final IInteger m) {
-		return valueOf(fBigIntValue.modInverse(m.getBigNumerator()));
+		return valueOf(fBigIntValue.modInverse(m.toBigNumerator()));
 	}
 
 	@Override
 	public IInteger modPow(final IInteger exp, final IInteger m) {
-		return valueOf(fBigIntValue.modPow(exp.getBigNumerator(), m.getBigNumerator()));
+		return valueOf(fBigIntValue.modPow(exp.toBigNumerator(), m.toBigNumerator()));
 	}
 
 	@Override
@@ -633,7 +633,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 			default:
 			}
 		}
-		return valueOf(fBigIntValue.multiply(that.getBigNumerator()));
+		return valueOf(fBigIntValue.multiply(that.toBigNumerator()));
 	}
 
 	@Override
@@ -651,7 +651,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 			return ((IFraction) parm1).multiply(this);
 		}
 		IInteger p1 = (IInteger) parm1;
-		BigInteger newnum = getBigNumerator().multiply(p1.getBigNumerator());
+		BigInteger newnum = toBigNumerator().multiply(p1.toBigNumerator());
 		return valueOf(newnum);
 	}
 
@@ -746,7 +746,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	}
 
 	public IInteger remainder(final IInteger that) {
-		return valueOf(fBigIntValue.remainder(that.getBigNumerator()));
+		return valueOf(fBigIntValue.remainder(that.toBigNumerator()));
 	}
 
 	@Override
@@ -760,7 +760,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	 */
 	@Override
 	public IInteger shiftLeft(final int n) {
-		return valueOf(getBigNumerator().shiftLeft(n));
+		return valueOf(toBigNumerator().shiftLeft(n));
 	}
 
 	/**
@@ -769,7 +769,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	 */
 	@Override
 	public IInteger shiftRight(final int n) {
-		return valueOf(getBigNumerator().shiftRight(n));
+		return valueOf(toBigNumerator().shiftRight(n));
 	}
 
 	@Override
@@ -790,7 +790,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
 	@Override
 	public IInteger subtract(final IInteger that) {
-		return valueOf(fBigIntValue.subtract(that.getBigNumerator()));
+		return valueOf(fBigIntValue.subtract(that.toBigNumerator()));
 	}
 
 	/**

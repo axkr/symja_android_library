@@ -47,8 +47,8 @@ public class FractionalPart extends AbstractFunctionEvaluator {
 			return F.C0;
 		} else if (arg1.isFraction()) {
 			IFraction fr = (IFraction) arg1;
-			BigInteger num = fr.getBigNumerator();
-			BigInteger den = fr.getBigDenominator();
+			BigInteger num = fr.toBigNumerator();
+			BigInteger den = fr.toBigDenominator();
 			BigInteger div = num.divide(den);
 			if (div.equals(BigInteger.ZERO)) {
 				return F.C0;

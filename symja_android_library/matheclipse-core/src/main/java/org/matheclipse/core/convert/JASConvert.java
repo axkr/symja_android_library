@@ -212,8 +212,8 @@ public class JASConvert<C extends RingElem<C>> {
 	}
 
 	private GenPolynomial<C> fraction2Poly(final IFraction exprPoly) {
-		BigInteger n = exprPoly.getBigNumerator();// .toJavaBigInteger();
-		BigInteger d = exprPoly.getBigDenominator();// .toJavaBigInteger();
+		BigInteger n = exprPoly.toBigNumerator();// .toJavaBigInteger();
+		BigInteger d = exprPoly.toBigDenominator();// .toJavaBigInteger();
 		BigRational nr = new BigRational(n);
 		BigRational dr = new BigRational(d);
 		BigRational r = nr.divide(dr);

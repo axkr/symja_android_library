@@ -104,7 +104,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		if (i.isNegative() && (precedence > plusPrec)) {
 			buf.append("\\left( ");
 		}
-		buf.append(i.getBigNumerator().toString());
+		buf.append(i.toBigNumerator().toString());
 		if (i.isNegative() && (precedence > plusPrec)) {
 			buf.append("\\right) ");
 		}
@@ -115,9 +115,9 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 			buf.append("\\left( ");
 		}
 		buf.append("\\frac{");
-		buf.append(f.getBigNumerator().toString());
+		buf.append(f.toBigNumerator().toString());
 		buf.append("}{");
-		buf.append(f.getBigDenominator().toString());
+		buf.append(f.toBigDenominator().toString());
 		buf.append('}');
 		if (f.isNegative() && (precedence > plusPrec)) {
 			buf.append("\\right) ");
