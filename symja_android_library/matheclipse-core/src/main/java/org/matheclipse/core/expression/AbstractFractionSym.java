@@ -101,23 +101,28 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 	}
 
 	/**
-	 * Rationalize the given double value.
+	 * Rationalize the given double value with
+	 * <code>Config.DOUBLE_EPSILON</code> maximum error allowed.
 	 * 
 	 * @param value
 	 * @return
 	 */
-	public static IFraction valueOf(final double value) {
-		return valueOf(value, Config.DOUBLE_EPSILON);
+	public static IFraction valueOfEpsilon(final double value) {
+		return valueOfEpsilon(value, Config.DOUBLE_EPSILON);
 	}
 
 	/**
-	 * Rationalize the given double value.
+	 * Rationalize the given double value with <code>epsilon</code> maximum
+	 * error allowed.
 	 * 
 	 * @param value
+	 *            the double value to convert to a fraction.
 	 * @param epsilon
+	 *            maximum error allowed. The resulting fraction is within
+	 *            epsilon of value, in absolute terms.
 	 * @return
 	 */
-	public static IFraction valueOf(final double value, final double epsilon) {
+	public static IFraction valueOfEpsilon(final double value, final double epsilon) {
 		BigFraction fraction;
 		try {
 			fraction = new BigFraction(value, epsilon, 200);
@@ -130,7 +135,7 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 
 	public static IFraction valueOf(IInteger numerator) {
 		if (numerator instanceof IntegerSym) {
-			return valueOf(((IntegerSym) numerator).fIntValue, 1);
+			return valueOf(((IntegerSym) numerator).fIntValue);
 		}
 		return valueOf(numerator.toBigNumerator());
 	}
@@ -140,6 +145,35 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 			return valueOf(((IntegerSym) numerator).fIntValue, ((IntegerSym) denominator).fIntValue);
 		}
 		return valueOf(numerator.toBigNumerator(), denominator.toBigNumerator());
+	}
+
+	/**
+	 * Construct a rational from two longs. Use this method to create a rational
+	 * number. This method normalizes the rational number and may return a
+	 * previously created one. This method does not work if called with value
+	 * Long.MIN_VALUE.
+	 * 
+	 * @param newnum
+	 *            Numerator.
+	 * @param newdenom
+	 *            Denominator.
+	 * @return
+	 */
+	public static IFraction valueOf(long newnum) {
+		if (newnum == 0) {
+			return ZERO;
+		}
+		if (newnum == 1) {
+			return ONE;
+		}
+		if (newnum == -1) {
+			return MONE;
+		}
+
+		if (Integer.MIN_VALUE <= newnum && newnum <= Integer.MAX_VALUE) {
+			return new FractionSym((int) newnum, 1);
+		}
+		return new BigFractionSym(BigInteger.valueOf(newnum), BigInteger.ONE);
 	}
 
 	/**
@@ -531,7 +565,8 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 	 * Returns <code>(this-s)/d</code>.
 	 * 
 	 * @param s
-	 * @param d the denominator
+	 * @param d
+	 *            the denominator
 	 * @return <code>(this-s)/d</code>
 	 */
 	public IFraction subdiv(IFraction s, FractionSym d) {

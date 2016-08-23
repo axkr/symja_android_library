@@ -2381,8 +2381,8 @@ public class F {
 	 * @return IFraction
 	 */
 	public static IComplex complex(final double realPart, final double imagPart, final double epsilon) {
-		return ComplexSym.valueOf(AbstractFractionSym.valueOf(realPart, epsilon),
-				AbstractFractionSym.valueOf(imagPart, epsilon));
+		return ComplexSym.valueOf(AbstractFractionSym.valueOfEpsilon(realPart, epsilon),
+				AbstractFractionSym.valueOfEpsilon(imagPart, epsilon));
 	}
 
 	/**
@@ -3074,11 +3074,11 @@ public class F {
 	 * @return IFraction
 	 */
 	public static IFraction fraction(final double value) {
-		return AbstractFractionSym.valueOf(value);
+		return AbstractFractionSym.valueOfEpsilon(value);
 	}
 
 	public static IFraction fraction(final double value, final double epsilon) {
-		return AbstractFractionSym.valueOf(value, epsilon);
+		return AbstractFractionSym.valueOfEpsilon(value, epsilon);
 	}
 
 	/**
