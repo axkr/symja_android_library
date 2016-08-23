@@ -1549,10 +1549,7 @@ public class F {
 			// other rules are "lazy loaded" on first use og Integrate
 			// function
 			final EvalEngine engine = EvalEngine.get();
-			IAST ruleList = org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
-			if (ruleList != null) {
-				engine.addRules(ruleList);
-			}
+			org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
 			// long end = System.currentTimeMillis();
 			// System.out.println("Init time: " + (end - start));
 
@@ -3083,6 +3080,7 @@ public class F {
 	public static IFraction fraction(final double value, final double epsilon) {
 		return AbstractFractionSym.valueOf(value, epsilon);
 	}
+
 	/**
 	 * Create a "fractional" number
 	 * 
