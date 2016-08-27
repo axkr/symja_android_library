@@ -273,7 +273,7 @@ public class ASTNodeFactory implements IParserFactory {
 		return new Pattern3Node(patternName, check);
 	}
 
-	public StringNode createString(final StringBuffer buffer) {
+	public StringNode createString(final StringBuilder buffer) {
 		return new StringNode(buffer.toString());
 	}
 

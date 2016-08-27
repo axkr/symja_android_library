@@ -161,7 +161,7 @@ public class Parser extends Scanner {
 	 * @return <code>null</code> if no binary operator could be determined
 	 */
 	private InfixOperator determineBinaryOperator() {
-		Operator oper = null;
+		Operator oper;
 		for (int i = 0; i < fOperList.size(); i++) {
 			oper = fOperList.get(i);
 			if (oper instanceof InfixOperator) {
@@ -177,7 +177,7 @@ public class Parser extends Scanner {
 	 * @return <code>null</code> if no postfix operator could be determined
 	 */
 	private PostfixOperator determinePostfixOperator() {
-		Operator oper = null;
+		Operator oper;
 		for (int i = 0; i < fOperList.size(); i++) {
 			oper = fOperList.get(i);
 			if (oper instanceof PostfixOperator) {
@@ -193,7 +193,7 @@ public class Parser extends Scanner {
 	 * @return <code>null</code> if no prefix operator could be determined
 	 */
 	private PrefixOperator determinePrefixOperator() {
-		Operator oper = null;
+		Operator oper;
 		for (int i = 0; i < fOperList.size(); i++) {
 			oper = fOperList.get(i);
 			if (oper instanceof PrefixOperator) {
@@ -609,13 +609,10 @@ public class Parser extends Scanner {
 			} else {
 				temp = fFactory.createInteger(number, numFormat);
 			}
-		} catch (final Throwable e) {
+		} catch (final RuntimeException e) {
 			throwSyntaxError("Number format error: " + number, number.length());
 		}
 		getNextToken();
-		// if (fToken == TT_PRECEDENCE_OPEN) {
-		// return getTimes(temp);
-		// }
 		return temp;
 	}
 
@@ -666,7 +663,6 @@ public class Parser extends Scanner {
 				if (fToken != TT_PARTCLOSE) {
 					throwSyntaxError("']]' expected.");
 				}
-				// }
 			} finally {
 				fRecursionDepth--;
 			}
@@ -678,7 +674,7 @@ public class Parser extends Scanner {
 	}
 
 	private ASTNode getString() throws SyntaxError {
-		final StringBuffer ident = getStringBuffer();
+		final StringBuilder ident = getStringBuffer();
 
 		getNextToken();
 
@@ -762,7 +758,7 @@ public class Parser extends Scanner {
 	}
 
 	private ASTNode parseCompoundExpressionNull(InfixOperator infixOperator, ASTNode rhs) {
-		if (infixOperator.getOperatorString().equals(";")) {
+		if (";".equals(infixOperator.getOperatorString())) {
 			if (fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE || fToken == TT_PRECEDENCE_CLOSE) {
 				return infixOperator.createFunction(fFactory, rhs, fFactory.createSymbol("Null"));
 			}
@@ -788,7 +784,7 @@ public class Parser extends Scanner {
 	 * @return
 	 */
 	private ASTNode parseExpression(ASTNode lhs, final int min_precedence) {
-		ASTNode rhs = null;
+		ASTNode rhs;
 		Operator oper;
 		InfixOperator infixOperator;
 		PostfixOperator postfixOperator;
@@ -799,19 +795,11 @@ public class Parser extends Scanner {
 			if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN) || (fToken == TT_IDENTIFIER)
 					|| (fToken == TT_STRING) || (fToken == TT_DIGIT) || (fToken == TT_SLOT)
 					|| (fToken == TT_SLOTSEQUENCE)) {
-				// if (fPackageMode && fRecursionDepth < 1) {
-				// return lhs;
-				// }
-				// if (fPackageMode && fToken == TT_IDENTIFIER && fLastChar ==
-				// '\n') {
-				// return lhs;
-				// }
 				// lazy evaluation of multiplication
 				oper = fFactory.get("Times");
 				if (oper.getPrecedence() >= min_precedence) {
 					rhs = parseLookaheadOperator(oper.getPrecedence());
 					lhs = fFactory.createFunction(fFactory.createSymbol(oper.getFunctionName()), lhs, rhs);
-					// lhs = parseArguments(lhs);
 					continue;
 				}
 			} else {
@@ -826,7 +814,6 @@ public class Parser extends Scanner {
 						FunctionNode head = fFactory.createFunction(DERIVATIVE, new IntegerNode(derivativeCounter));
 						FunctionNode deriv = fFactory.createAST(head);
 						deriv.add(lhs);
-						// lhs = postfixOperator.createFunction(fFactory, lhs);
 						lhs = parseArguments(deriv);
 						continue;
 					}
@@ -880,9 +867,6 @@ public class Parser extends Scanner {
 			}
 			if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN) || (fToken == TT_IDENTIFIER)
 					|| (fToken == TT_STRING) || (fToken == TT_DIGIT)) {
-				// if (fPackageMode && fRecursionDepth < 1) {
-				// return rhs;
-				// }
 				// lazy evaluation of multiplication
 				InfixOperator timesOperator = (InfixOperator) fFactory.get("Times");
 				if (timesOperator.getPrecedence() > min_precedence) {
@@ -902,7 +886,7 @@ public class Parser extends Scanner {
 					if (infixOperator.getPrecedence() > min_precedence
 							|| ((infixOperator.getPrecedence() == min_precedence)
 									&& (infixOperator.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE))) {
-						if (infixOperator.getOperatorString().equals(";")) {
+						if (";".equals(infixOperator.getOperatorString())) {
 							if (fPackageMode && fRecursionDepth < 1) {
 								return infixOperator.createFunction(fFactory, rhs, fFactory.createSymbol("Null"));
 							}
@@ -911,21 +895,6 @@ public class Parser extends Scanner {
 						continue;
 					}
 
-					// if (infixOperator.getPrecedence() > min_precedence) {
-					// ASTNode compoundExpressionNull =
-					// parseCompoundExpressionNull(infixOperator, rhs);
-					// if (compoundExpressionNull != null) {
-					// return compoundExpressionNull;
-					// }
-					// rhs = parseOperators(rhs, infixOperator.getPrecedence());
-					// continue;
-					// } else if ((infixOperator.getPrecedence() ==
-					// min_precedence)
-					// && (infixOperator.getGrouping() ==
-					// InfixOperator.RIGHT_ASSOCIATIVE)) {
-					// rhs = parseOperators(rhs, infixOperator.getPrecedence());
-					// continue;
-					// }
 				} else {
 					PostfixOperator postfixOperator = determinePostfixOperator();
 					if (postfixOperator != null) {
@@ -975,7 +944,6 @@ public class Parser extends Scanner {
 			}
 			temp = parseExpression();
 			fNodeList.add(temp);
-			// throwSyntaxError("End-of-file not reached.");
 		}
 
 		return fNodeList;
@@ -983,22 +951,18 @@ public class Parser extends Scanner {
 
 	private ASTNode parsePrimary() {
 		if (fToken == TT_OPERATOR) {
-			if (fOperatorString.equals(".")) {
+			if (".".equals(fOperatorString)) {
 				fCurrentChar = '.';
-				// fToken = TT_DIGIT;
-				// return getPart();
 				return getNumber(false);
 			}
 			final PrefixOperator prefixOperator = determinePrefixOperator();
 			if (prefixOperator != null) {
 				getNextToken();
 				final ASTNode temp = parseLookaheadOperator(prefixOperator.getPrecedence());
-				if (prefixOperator.getFunctionName().equals("PreMinus")) {
+				if ("PreMinus".equals(prefixOperator.getFunctionName()) && temp instanceof NumberNode) {
 					// special cases for negative numbers
-					if (temp instanceof NumberNode) {
-						((NumberNode) temp).toggleSign();
-						return temp;
-					}
+					((NumberNode) temp).toggleSign();
+					return temp;
 				}
 				return prefixOperator.createFunction(fFactory, temp);
 			}

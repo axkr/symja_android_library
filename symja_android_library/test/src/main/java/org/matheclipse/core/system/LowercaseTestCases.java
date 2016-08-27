@@ -2332,6 +2332,14 @@ public class LowercaseTestCases extends AbstractTestCase {
 				"{{0,-1,1,0,0},\n" + " {0,-1,0,1,0}}");
 	}
 
+	public void testAlgebraicNumber() {
+		check("AlgebraicNumber(1+2*x)", "");
+	}
+	
+	public void testNumberFieldRootsOfUnity() {
+		check("NumberFieldRootsOfUnity(I)", "");
+	}
+
 	public void testNumerator() {
 		check("Numerator(Csc(x))", "Csc(x)");
 		check("Numerator(Csc(x), Trig->True)", "1");
@@ -3150,6 +3158,7 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testSin() {
+		check("Sin(1.1*Pi)", "-0.30901699437494773");
 		check("Sin({-0.5,9.1})", "{-0.479425538604203,0.3190983623493521}");
 		check("Sin({{0.5,1.1},{6.4,7.5}})",
 				"{{0.479425538604203,0.8912073600614354},\n" + " {0.11654920485049364,0.9379999767747389}}");

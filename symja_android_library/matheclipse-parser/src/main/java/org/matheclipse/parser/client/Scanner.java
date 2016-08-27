@@ -197,7 +197,7 @@ public class Scanner {
 
 	protected final boolean fPackageMode;
 
-	private static HashMap<String, String> CHAR_MAP = new HashMap<String, String>(1024);
+	private static HashMap<String, String> CHAR_MAP = new HashMap<>(1024);
 
 	static {
 		CHAR_MAP.put("CenterEllipsis", "\u22EF");
@@ -312,7 +312,6 @@ public class Scanner {
 	protected void getNextToken() throws SyntaxError {
 
 		while (fInputString.length() > fCurrentPosition) {
-			// fCurrentChar = fInputString.charAt(fCurrentPosition++);
 			getNextChar();
 			fToken = TT_EOF;
 
@@ -336,7 +335,6 @@ public class Scanner {
 						|| (fCurrentChar == '$')) {
 					// the Character.isUnicodeIdentifierStart method doesn't
 					// work in Google Web Toolkit:
-					// || (Character.isUnicodeIdentifierStart(fCurrentChar))) {
 					fToken = TT_IDENTIFIER;
 					return;
 				}
@@ -345,13 +343,10 @@ public class Scanner {
 
 					return;
 				}
-				if (fCurrentChar == '(') {
-					if (fInputString.length() > fCurrentPosition) {
-						if (fInputString.charAt(fCurrentPosition) == '*') {
-							getComment();
-							continue;
-						}
-					}
+				if (fCurrentChar == '(' && fInputString.length() > fCurrentPosition
+						&& fInputString.charAt(fCurrentPosition) == '*') {
+					getComment();
+					continue;
 				}
 
 				switch (fCurrentChar) {
@@ -374,12 +369,9 @@ public class Scanner {
 					break;
 				case '[':
 					fToken = TT_ARGUMENTS_OPEN;
-					if (fInputString.length() > fCurrentPosition) {
-						if (fInputString.charAt(fCurrentPosition) == '[') {
-							fCurrentPosition++;
-							fToken = TT_PARTOPEN;
-							break;
-						}
+					if (fInputString.length() > fCurrentPosition && fInputString.charAt(fCurrentPosition) == '[') {
+						fCurrentPosition++;
+						fToken = TT_PARTOPEN;
 					}
 					break;
 				case ']':
@@ -394,12 +386,11 @@ public class Scanner {
 					if (fInputString.length() > fCurrentPosition) {
 						if (fInputString.charAt(fCurrentPosition) == '_') {
 							fCurrentPosition++;
-							if (fInputString.length() > fCurrentPosition) {
-								if (fInputString.charAt(fCurrentPosition) == '_') {
-									fCurrentPosition++;
-									fToken = TT_BLANK_BLANK_BLANK;
-									break;
-								}
+							if (fInputString.length() > fCurrentPosition
+									&& fInputString.charAt(fCurrentPosition) == '_') {
+								fCurrentPosition++;
+								fToken = TT_BLANK_BLANK_BLANK;
+								break;
 							}
 							fToken = TT_BLANK_BLANK;
 							break;
@@ -416,16 +407,11 @@ public class Scanner {
 
 					break;
 				case '.':
-					// token = TT_DOT;
-					if (fInputString.length() > fCurrentPosition) {
-						if ((fInputString.charAt(fCurrentPosition) >= '0')
-								&& (fInputString.charAt(fCurrentPosition) <= '9')) {
-							// don't increment fCurrentPosition (see
-							// getNumberString())
-							// fCurrentPosition++;
-							fToken = TT_DIGIT; // floating-point number
-							break;
-						}
+					if (fInputString.length() > fCurrentPosition && (fInputString.charAt(fCurrentPosition) >= '0')
+							&& (fInputString.charAt(fCurrentPosition) <= '9')) {
+						// don't increment fCurrentPosition (see
+						// getNumberString())
+						fToken = TT_DIGIT; // floating-point number
 					}
 
 					break;
@@ -442,13 +428,9 @@ public class Scanner {
 					break;
 				case '#':
 					fToken = TT_SLOT;
-					if (fInputString.length() > fCurrentPosition) {
-						if (fInputString.charAt(fCurrentPosition) == '#') {
-							fCurrentPosition++;
-							fToken = TT_SLOTSEQUENCE;
-
-							break;
-						}
+					if (fInputString.length() > fCurrentPosition && fInputString.charAt(fCurrentPosition) == '#') {
+						fCurrentPosition++;
+						fToken = TT_SLOTSEQUENCE;
 					}
 
 					break;
@@ -719,6 +701,7 @@ public class Scanner {
 				startPosition = fCurrentPosition;
 				getChar();
 				break;
+			default:
 			}
 		}
 
@@ -737,19 +720,12 @@ public class Scanner {
 			}
 		} else {
 			while (((fCurrentChar >= '0') && (fCurrentChar <= '9')) || (fCurrentChar == '.')) {
-				// if ((ch == '.') || (ch == 'E') || (ch == 'e')) {
 				if (fCurrentChar == '.') {
 					if ((fCurrentChar == '.') && (dFlag != ' ')) {
 						break;
 					}
-					// if ((dFlag == 'E') || (dFlag == 'e')) {
-					// break;
-					// }
 					dFlag = fCurrentChar;
 					getChar();
-					// if ((ch == '-') || (ch == '+')) {
-					// getChar();
-					// }
 				} else {
 					getChar();
 				}
@@ -764,7 +740,7 @@ public class Scanner {
 				if ((fCurrentChar == '+') || (fCurrentChar == '-')) {
 					getChar();
 				}
-				while (((fCurrentChar >= '0') && (fCurrentChar <= '9'))) {
+				while ((fCurrentChar >= '0') && (fCurrentChar <= '9')) {
 					getChar();
 				}
 			} else {
@@ -776,8 +752,8 @@ public class Scanner {
 						if ((fCurrentChar == '+') || (fCurrentChar == '-')) {
 							getChar();
 						}
-						if (((fCurrentChar >= '0') && (fCurrentChar <= '9'))) {
-							while (((fCurrentChar >= '0') && (fCurrentChar <= '9'))) {
+						if ((fCurrentChar >= '0') && (fCurrentChar <= '9')) {
+							while ((fCurrentChar >= '0') && (fCurrentChar <= '9')) {
 								getChar();
 							}
 						} else {
@@ -789,15 +765,14 @@ public class Scanner {
 				}
 			}
 		}
-		// }
 		int endPosition = fCurrentPosition--;
 		result[0] = fInputString.substring(startPosition, --endPosition);
 		result[1] = Integer.valueOf(numFormat);
 		return result;
 	}
 
-	protected StringBuffer getStringBuffer() throws SyntaxError {
-		final StringBuffer ident = new StringBuffer();
+	protected StringBuilder getStringBuffer() throws SyntaxError {
+		final StringBuilder ident = new StringBuilder();
 
 		getChar();
 
@@ -806,7 +781,7 @@ public class Scanner {
 		}
 
 		while (fCurrentChar != '"') {
-			if ((fCurrentChar == '\\')) {
+			if (fCurrentChar == '\\') {
 				getChar();
 
 				switch (fCurrentChar) {
@@ -829,9 +804,6 @@ public class Scanner {
 
 				getChar();
 			} else {
-				// if ((fCurrentChar != '"') && ((fCurrentChar == '\n') ||
-				// (fToken ==
-				// TT_EOF))) {
 				if ((fCurrentChar != '"') && (fToken == TT_EOF)) {
 					throwSyntaxError("string -" + ident.toString() + "- not closed.");
 				}

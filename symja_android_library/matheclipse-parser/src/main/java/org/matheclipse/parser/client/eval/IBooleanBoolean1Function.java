@@ -15,7 +15,7 @@
  */
 package org.matheclipse.parser.client.eval;
 
-
+@FunctionalInterface
 public interface IBooleanBoolean1Function {
   public boolean evaluate(boolean arg1);
 }

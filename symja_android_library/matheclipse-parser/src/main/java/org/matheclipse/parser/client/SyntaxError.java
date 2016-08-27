@@ -31,36 +31,40 @@ public class SyntaxError extends MathException {
 	/**
 	 * offset where the error occurred
 	 */
-	int fStartOffset;
+	final int fStartOffset;
 
 	/**
 	 * row index where the error occurred2
 	 */
-	int fRowIndex;
+	final int fRowIndex;
 
 	/**
 	 * column index where the error occurred (offset relative to rowIndex)
 	 */
-	int fColumnIndex;
+	final int fColumnIndex;
 
 	/**
 	 * length of the error
 	 */
-	int fLength;
+	final int fLength;
 
-	String fCurrentLine;
+	final String fCurrentLine;
 
-	String fError;
+	final String fError;
 
 	/**
 	 * SyntaxError exception
 	 *
-	 * @param startOffset
+	 * @param startOffset the start offset inside the row
+	 * @param rowIndx the row index
+	 * @param columnIndx 
+	 * @param currentLine
+	 * @param error
 	 * @param length
 	 *
-	 * @see
 	 */
-	public SyntaxError(final int startOffset, final int rowIndx, final int columnIndx, final String currentLine, final String error, final int length) {
+	public SyntaxError(final int startOffset, final int rowIndx, final int columnIndx, final String currentLine,
+			final String error, final int length) {
 		fStartOffset = startOffset;
 		fRowIndex = rowIndx;
 		fColumnIndex = columnIndx;
@@ -69,35 +73,19 @@ public class SyntaxError extends MathException {
 		fLength = length;
 	}
 
-	public String getMessage() {
-		final StringBuffer buf = new StringBuffer(256);
-		buf.append("Syntax error in line: ");
-		buf.append(fRowIndex + 1);
-		buf.append(" - " + fError + "\n");
-		buf.append(fCurrentLine + "\n");
-		for (int i = 0; i < (fColumnIndex - 1); i++) {
-			buf.append(' ');
-		}
-		buf.append('^');
-		return buf.toString();
-	}
-
 	/**
-	 * offset where the error occurred
-	 */
-	public int getStartOffset() {
-		return fStartOffset;
-	}
-
-	/**
-	 * column index where the error occurred (offset relative to rowIndex)
+	 * Column index where the error occurred (offset relative to rowIndex)
+	 * 
+	 * @return the index where the error occurred.
 	 */
 	public int getColumnIndex() {
 		return fColumnIndex;
 	}
 
 	/**
-	 * source code line, where the error occurred
+	 * Source code line, where the error occurred
+	 * 
+	 * @return line, where the error occurred
 	 */
 	public String getCurrentLine() {
 		return fCurrentLine;
@@ -117,10 +105,31 @@ public class SyntaxError extends MathException {
 		return fLength;
 	}
 
+	@Override
+	public String getMessage() {
+		final StringBuilder buf = new StringBuilder(256);
+		buf.append("Syntax error in line: ");
+		buf.append(fRowIndex + 1);
+		buf.append(" - " + fError + "\n");
+		buf.append(fCurrentLine + "\n");
+		for (int i = 0; i < (fColumnIndex - 1); i++) {
+			buf.append(' ');
+		}
+		buf.append('^');
+		return buf.toString();
+	}
+
 	/**
 	 * row index where the error occurred
 	 */
 	public int getRowIndex() {
 		return fRowIndex;
+	}
+
+	/**
+	 * offset where the error occurred
+	 */
+	public int getStartOffset() {
+		return fStartOffset;
 	}
 }

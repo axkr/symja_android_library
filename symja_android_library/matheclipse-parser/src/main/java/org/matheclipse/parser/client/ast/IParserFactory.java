@@ -177,7 +177,7 @@ public interface IParserFactory {
 	 * @param symbolName
 	 * @return
 	 */
-	public StringNode createString(StringBuffer buffer);
+	public StringNode createString(StringBuilder buffer);
 
 	/**
 	 * Create a symbol from the scanned identifier string

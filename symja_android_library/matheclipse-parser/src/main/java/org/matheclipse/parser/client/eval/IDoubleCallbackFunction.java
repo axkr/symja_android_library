@@ -22,6 +22,7 @@ import org.matheclipse.parser.client.ast.FunctionNode;
  * evaluating user-defined functions.
  * 
  */
+@FunctionalInterface
 public interface IDoubleCallbackFunction {
 	public double evaluate(DoubleEvaluator engine, FunctionNode function, double[] args);
 }

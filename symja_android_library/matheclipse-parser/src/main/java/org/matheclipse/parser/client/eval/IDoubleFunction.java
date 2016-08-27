@@ -17,6 +17,7 @@ package org.matheclipse.parser.client.eval;
 
 import org.matheclipse.parser.client.ast.FunctionNode;
 
+@FunctionalInterface
 public interface IDoubleFunction {
   public double evaluate(DoubleEvaluator engine, FunctionNode function);
 }

@@ -19,6 +19,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.DoubleBinaryOperator;
+import java.util.function.DoubleSupplier;
+import java.util.function.DoubleUnaryOperator;
 
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
@@ -68,22 +71,22 @@ public class DoubleEvaluator {
 		fCallbackFunction = callbackFunction;
 	}
 
-	static class ArcTanFunction implements IDouble1Function, IDouble2Function {
-		public double evaluate(double arg1) {
+	static class ArcTanFunction implements DoubleUnaryOperator, DoubleBinaryOperator {
+		public double applyAsDouble(double arg1) {
 			return Math.atan(arg1);
 		}
 
-		public double evaluate(double arg1, double arg2) {
+		public double applyAsDouble(double arg1, double arg2) {
 			return Math.atan2(arg1, arg2);
 		}
 	}
 
-	static class LogFunction implements IDouble1Function, IDouble2Function {
-		public double evaluate(double arg1) {
+	static class LogFunction implements DoubleUnaryOperator, DoubleBinaryOperator {
+		public double applyAsDouble(double arg1) {
 			return Math.log(arg1);
 		}
 
-		public double evaluate(double base, double z) {
+		public double applyAsDouble(double base, double z) {
 			return Math.log(z) / Math.log(base);
 		}
 	}
@@ -126,8 +129,8 @@ public class DoubleEvaluator {
 		}
 	}
 
-	static class MaxFunction implements IDoubleFunction, IDouble2Function {
-		public double evaluate(double arg1, double arg2) {
+	static class MaxFunction implements IDoubleFunction, DoubleBinaryOperator {
+		public double applyAsDouble(double arg1, double arg2) {
 			return Math.max(arg1, arg2);
 		}
 
@@ -148,8 +151,8 @@ public class DoubleEvaluator {
 		}
 	}
 
-	static class MinFunction implements IDoubleFunction, IDouble2Function {
-		public double evaluate(double arg1, double arg2) {
+	static class MinFunction implements IDoubleFunction, DoubleBinaryOperator {
+		public double applyAsDouble(double arg1, double arg2) {
 			return Math.min(arg1, arg2);
 		}
 
@@ -170,8 +173,8 @@ public class DoubleEvaluator {
 		}
 	}
 
-	static class PlusFunction implements IDoubleFunction, IDouble2Function {
-		public double evaluate(double arg1, double arg2) {
+	static class PlusFunction implements IDoubleFunction, DoubleBinaryOperator {
+		public double applyAsDouble(double arg1, double arg2) {
 			return arg1 + arg2;
 		}
 
@@ -184,8 +187,8 @@ public class DoubleEvaluator {
 		}
 	}
 
-	static class TimesFunction implements IDoubleFunction, IDouble2Function {
-		public double evaluate(double arg1, double arg2) {
+	static class TimesFunction implements IDoubleFunction, DoubleBinaryOperator {
+		public double applyAsDouble(double arg1, double arg2) {
 			return arg1 * arg2;
 		}
 
@@ -274,86 +277,86 @@ public class DoubleEvaluator {
 		//
 		// Functions with 0 argument
 		//
-		FUNCTION_DOUBLE_MAP.put("Random", new IDouble0Function() {
-			public double evaluate() {
+		FUNCTION_DOUBLE_MAP.put("Random", new DoubleSupplier() {
+			public double getAsDouble() {
 				return Math.random();
 			}
 		});
 		//
 		// Functions with 1 argument
 		//
-		FUNCTION_DOUBLE_MAP.put("Abs", new IDouble1Function() {
-			public double evaluate(double arg1) {
+		FUNCTION_DOUBLE_MAP.put("Abs", new DoubleUnaryOperator() {
+			public double applyAsDouble(double arg1) {
 				return Math.abs(arg1);
 			}
 		});
-		FUNCTION_DOUBLE_MAP.put("ArcCos", new IDouble1Function() {
-			public double evaluate(double arg1) {
+		FUNCTION_DOUBLE_MAP.put("ArcCos", new DoubleUnaryOperator() {
+			public double applyAsDouble(double arg1) {
 				return Math.acos(arg1);
 			}
 		});
-		FUNCTION_DOUBLE_MAP.put("ArcSin", new IDouble1Function() {
-			public double evaluate(double arg1) {
+		FUNCTION_DOUBLE_MAP.put("ArcSin", new DoubleUnaryOperator() {
+			public double applyAsDouble(double arg1) {
 				return Math.asin(arg1);
 			}
 		});
-		FUNCTION_DOUBLE_MAP.put("Ceiling", new IDouble1Function() {
-			public double evaluate(double arg1) {
+		FUNCTION_DOUBLE_MAP.put("Ceiling", new DoubleUnaryOperator() {
+			public double applyAsDouble(double arg1) {
 				return Math.ceil(arg1);
 			}
 		});
-		FUNCTION_DOUBLE_MAP.put("Cos", new IDouble1Function() {
-			public double evaluate(double arg1) {
+		FUNCTION_DOUBLE_MAP.put("Cos", new DoubleUnaryOperator() {
+			public double applyAsDouble(double arg1) {
 				return Math.cos(arg1);
 			}
 		});
-		FUNCTION_DOUBLE_MAP.put("Cosh", new IDouble1Function() {
-			public double evaluate(double arg1) {
+		FUNCTION_DOUBLE_MAP.put("Cosh", new DoubleUnaryOperator() {
+			public double applyAsDouble(double arg1) {
 				return Math.cosh(arg1);
 			}
 		});
-		FUNCTION_DOUBLE_MAP.put("Exp", new IDouble1Function() {
-			public double evaluate(double arg1) {
+		FUNCTION_DOUBLE_MAP.put("Exp", new DoubleUnaryOperator() {
+			public double applyAsDouble(double arg1) {
 				return Math.exp(arg1);
 			}
 		});
-		FUNCTION_DOUBLE_MAP.put("Floor", new IDouble1Function() {
-			public double evaluate(double arg1) {
+		FUNCTION_DOUBLE_MAP.put("Floor", new DoubleUnaryOperator() {
+			public double applyAsDouble(double arg1) {
 				return Math.floor(arg1);
 			}
 		});
-		FUNCTION_DOUBLE_MAP.put("Round", new IDouble1Function() {
-			public double evaluate(double arg1) {
+		FUNCTION_DOUBLE_MAP.put("Round", new DoubleUnaryOperator() {
+			public double applyAsDouble(double arg1) {
 				return Math.round(arg1);
 			}
 		});
-		FUNCTION_DOUBLE_MAP.put("Sign", new IDouble1Function() {
-			public double evaluate(double arg1) {
+		FUNCTION_DOUBLE_MAP.put("Sign", new DoubleUnaryOperator() {
+			public double applyAsDouble(double arg1) {
 				return Math.signum(arg1);
 			}
 		});
-		FUNCTION_DOUBLE_MAP.put("Sin", new IDouble1Function() {
-			public double evaluate(double arg1) {
+		FUNCTION_DOUBLE_MAP.put("Sin", new DoubleUnaryOperator() {
+			public double applyAsDouble(double arg1) {
 				return Math.sin(arg1);
 			}
 		});
-		FUNCTION_DOUBLE_MAP.put("Sinh", new IDouble1Function() {
-			public double evaluate(double arg1) {
+		FUNCTION_DOUBLE_MAP.put("Sinh", new DoubleUnaryOperator() {
+			public double applyAsDouble(double arg1) {
 				return Math.sinh(arg1);
 			}
 		});
-		FUNCTION_DOUBLE_MAP.put("Sqrt", new IDouble1Function() {
-			public double evaluate(double arg1) {
+		FUNCTION_DOUBLE_MAP.put("Sqrt", new DoubleUnaryOperator() {
+			public double applyAsDouble(double arg1) {
 				return Math.sqrt(arg1);
 			}
 		});
-		FUNCTION_DOUBLE_MAP.put("Tan", new IDouble1Function() {
-			public double evaluate(double arg1) {
+		FUNCTION_DOUBLE_MAP.put("Tan", new DoubleUnaryOperator() {
+			public double applyAsDouble(double arg1) {
 				return Math.tan(arg1);
 			}
 		});
-		FUNCTION_DOUBLE_MAP.put("Tanh", new IDouble1Function() {
-			public double evaluate(double arg1) {
+		FUNCTION_DOUBLE_MAP.put("Tanh", new DoubleUnaryOperator() {
+			public double applyAsDouble(double arg1) {
 				return Math.tanh(arg1);
 			}
 		});
@@ -361,8 +364,8 @@ public class DoubleEvaluator {
 		//
 		// Functions with 2 arguments
 		//
-		FUNCTION_DOUBLE_MAP.put("Power", new IDouble2Function() {
-			public double evaluate(double arg1, double arg2) {
+		FUNCTION_DOUBLE_MAP.put("Power", new DoubleBinaryOperator() {
+			public double applyAsDouble(double arg1, double arg2) {
 				return Math.pow(arg1, arg2);
 			}
 		});
@@ -543,16 +546,16 @@ public class DoubleEvaluator {
 					return ((IDoubleFunction) obj).evaluate(this, functionNode);
 				}
 				if (functionNode.size() == 1) {
-					if (obj instanceof IDouble0Function) {
-						return ((IDouble0Function) obj).evaluate();
+					if (obj instanceof DoubleSupplier) {
+						return ((DoubleSupplier) obj).getAsDouble();
 					}
 				} else if (functionNode.size() == 2) {
-					if (obj instanceof IDouble1Function) {
-						return ((IDouble1Function) obj).evaluate(evaluateNode(functionNode.getNode(1)));
+					if (obj instanceof DoubleUnaryOperator) {
+						return ((DoubleUnaryOperator) obj).applyAsDouble(evaluateNode(functionNode.getNode(1)));
 					}
 				} else if (functionNode.size() == 3) {
-					if (obj instanceof IDouble2Function) {
-						return ((IDouble2Function) obj).evaluate(evaluateNode(functionNode.getNode(1)),
+					if (obj instanceof DoubleBinaryOperator) {
+						return ((DoubleBinaryOperator) obj).applyAsDouble(evaluateNode(functionNode.getNode(1)),
 								evaluateNode(functionNode.getNode(2)));
 					}
 				}
