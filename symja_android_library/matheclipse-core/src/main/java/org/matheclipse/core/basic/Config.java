@@ -70,7 +70,9 @@ public class Config {
 
 	/**
 	 * If <code>true</code> the parser doesn't distinguish between lower- or
-	 * uppercase symbols (i.e. constants, function names,...)
+	 * uppercase symbols (i.e. constants, function names,...), with the
+	 * exception of symbols with only one character (i.e. the variable
+	 * &quot;i&quot; is different from the imaginary unit &quot;I&quot;)
 	 */
 	public static boolean PARSER_USE_LOWERCASE_SYMBOLS = true;
 
