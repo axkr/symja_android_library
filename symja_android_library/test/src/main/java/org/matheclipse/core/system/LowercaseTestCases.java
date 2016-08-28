@@ -2332,14 +2332,6 @@ public class LowercaseTestCases extends AbstractTestCase {
 				"{{0,-1,1,0,0},\n" + " {0,-1,0,1,0}}");
 	}
 
-	public void testAlgebraicNumber() {
-		check("AlgebraicNumber(1+2*x)", "");
-	}
-	
-	public void testNumberFieldRootsOfUnity() {
-		check("NumberFieldRootsOfUnity(I)", "");
-	}
-
 	public void testNumerator() {
 		check("Numerator(Csc(x))", "Csc(x)");
 		check("Numerator(Csc(x), Trig->True)", "1");
