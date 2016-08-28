@@ -608,8 +608,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				return result;
 			}
 		}
-
-		return evalASTBuiltinFunction(symbol, ast);
+		return F.NIL;
 	}
 
 	/**
