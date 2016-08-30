@@ -12,7 +12,6 @@ public class AllEvalTests extends TestCase {
 	public static Test suite() {
 		TestSuite s = new TestSuite();
 
-		s.addTestSuite(EvalComplexTestCase.class);
 		s.addTestSuite(EvalDoubleTestCase.class);
 		return s;
 	}

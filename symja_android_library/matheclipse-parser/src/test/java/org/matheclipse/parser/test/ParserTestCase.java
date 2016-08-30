@@ -18,7 +18,7 @@ public class ParserTestCase extends TestCase {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("-a-b*c!!+d");
-			assertEquals(obj.toString(), "Plus[Plus[Times[-1, a], Times[-1, Times[b, Factorial2[c]]]], d]");
+			assertEquals(obj.toString(), "Plus(Plus(Times(-1, a), Times(-1, Times(b, Factorial2(c)))), d)");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
@@ -29,7 +29,7 @@ public class ParserTestCase extends TestCase {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("(#^3)&[x][y,z].{a,b,c}");
-			assertEquals(obj.toString(), "Dot[Function[Power[Slot[1], 3]][x][y, z], List[a, b, c]]");
+			assertEquals(obj.toString(), "Dot(Function(Power(Slot(1), 3))[x][y, z], List(a, b, c))");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
@@ -40,7 +40,7 @@ public class ParserTestCase extends TestCase {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("Integrate[Sin[x]^2+3*x^4, x]");
-			assertEquals(obj.toString(), "Integrate[Plus[Power[Sin[x], 2], Times[3, Power[x, 4]]], x]");
+			assertEquals(obj.toString(), "Integrate(Plus(Power(Sin(x), 2), Times(3, Power(x, 4))), x)");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
@@ -51,7 +51,7 @@ public class ParserTestCase extends TestCase {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("a[][0][1]f[[x]]");
-			assertEquals(obj.toString(), "Times[a[][0][1], Part[f, x]]");
+			assertEquals(obj.toString(), "Times(a()[0][1], Part(f, x))");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
@@ -62,7 +62,7 @@ public class ParserTestCase extends TestCase {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("f[y,z](a+b+c)");
-			assertEquals(obj.toString(), "Times[f[y, z], Plus[Plus[a, b], c]]");
+			assertEquals(obj.toString(), "Times(f(y, z), Plus(Plus(a, b), c))");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
@@ -73,7 +73,7 @@ public class ParserTestCase extends TestCase {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("$a=2");
-			assertEquals(obj.toString(), "Set[$a, 2]");
+			assertEquals(obj.toString(), "Set($a, 2)");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
@@ -95,7 +95,7 @@ public class ParserTestCase extends TestCase {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("a+%%%+%3*4!");
-			assertEquals(obj.toString(), "Plus[Plus[a, Out[-3]], Times[Out[3], Factorial[4]]]");
+			assertEquals(obj.toString(), "Plus(Plus(a, Out(-3)), Times(Out(3), Factorial(4)))");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
@@ -161,7 +161,7 @@ public class ParserTestCase extends TestCase {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("-(Pi/4)");
-			assertEquals(obj.toString(), "Times[-1, Times[Pi, 1/4]]");
+			assertEquals(obj.toString(), "Times(-1, Times(1/4, Pi))");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
@@ -172,7 +172,7 @@ public class ParserTestCase extends TestCase {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("a*b*c*d");
-			assertEquals(obj.toString(), "Times[Times[Times[a, b], c], d]");
+			assertEquals(obj.toString(), "Times(Times(Times(a, b), c), d)");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
@@ -198,7 +198,7 @@ public class ParserTestCase extends TestCase {
 					.parse("Integrate[Sin[a_.*x_]^n_IntegerQ, x_Symbol]:= -Sin[a*x]^(n-1)*Cos[a*x]/(n*a)+(n-1)/n*Integrate[Sin[a*x]^(n-2),x]/;Positive[n]&&FreeQ[a,x]");
 			assertEquals(
 					obj.toString(),
-					"SetDelayed[Integrate[Power[Sin[Times[a_., x_]], n_IntegerQ], x_Symbol], Condition[Plus[Times[Times[-1, Power[Sin[Times[a, x]], Plus[n, Times[-1, 1]]]], Times[Cos[Times[a, x]], Power[Times[n, a], -1]]], Times[Times[Plus[n, Times[-1, 1]], Power[n, -1]], Integrate[Power[Sin[Times[a, x]], Plus[n, Times[-1, 2]]], x]]], And[Positive[n], FreeQ[a, x]]]]");
+					"SetDelayed(Integrate(Power(Sin(Times(a_., x_)), n_IntegerQ), x_Symbol), Condition(Plus(Times(Times(-1, Power(Sin(Times(a, x)), Plus(n, Times(-1, 1)))), Times(Cos(Times(a, x)), Power(Times(n, a), -1))), Times(Times(Plus(n, Times(-1, 1)), Power(n, -1)), Integrate(Power(Sin(Times(a, x)), Plus(n, Times(-1, 2))), x))), And(Positive(n), FreeQ(a, x))))");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
@@ -209,13 +209,13 @@ public class ParserTestCase extends TestCase {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("f[[1,2]]");
-			assertEquals(obj.toString(), "Part[f, 1, 2]");
+			assertEquals(obj.toString(), "Part(f, 1, 2)");
 			obj = p.parse("f[[1]][[2]]");
-			assertEquals(obj.toString(), "Part[Part[f, 1], 2]");
+			assertEquals(obj.toString(), "Part(Part(f, 1), 2)");
 			obj = p.parse("f[[1,2,f[x]]]");
-			assertEquals(obj.toString(), "Part[f, 1, 2, f[x]]");
+			assertEquals(obj.toString(), "Part(f, 1, 2, f(x))");
 			obj = p.parse("f[[1]][[2]][[f[x]]]");
-			assertEquals(obj.toString(), "Part[Part[Part[f, 1], 2], f[x]]");
+			assertEquals(obj.toString(), "Part(Part(Part(f, 1), 2), f(x))");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());

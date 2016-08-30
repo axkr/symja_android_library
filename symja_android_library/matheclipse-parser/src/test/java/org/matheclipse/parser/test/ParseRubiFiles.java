@@ -24,7 +24,7 @@ public class ParseRubiFiles {
 			f.close();
 			String inputString = buff.toString();
 			Parser p = new Parser(false, true);
-			return p.parseList(inputString);
+			return p.parsePackage(inputString);
 			// assertEquals(obj.toString(),
 			// "Plus[Plus[Times[-1, a], Times[-1, Times[b, Factorial2[c]]]], d]");
 		} catch (Exception e) {

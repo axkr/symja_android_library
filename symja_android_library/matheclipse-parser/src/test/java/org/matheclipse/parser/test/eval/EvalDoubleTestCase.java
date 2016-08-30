@@ -3,13 +3,14 @@ package org.matheclipse.parser.test.eval;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import junit.framework.TestCase;
-
 import org.junit.Assert;
 import org.matheclipse.parser.client.eval.BooleanVariable;
 import org.matheclipse.parser.client.eval.DoubleEvaluator;
 import org.matheclipse.parser.client.eval.DoubleVariable;
 import org.matheclipse.parser.client.eval.IDoubleValue;
+import org.matheclipse.parser.client.math.MathException;
+
+import junit.framework.TestCase;
 
 /**
  * Tests evaluation in <code>double</code> expression mode
@@ -166,7 +167,7 @@ public class EvalDoubleTestCase extends TestCase {
       for (String string : result) {
         list.add(string);
       }
-      Assert.assertEquals(list.toString(), "[b, a, $c]");
+      Assert.assertEquals(list.toString(), "[a, b, $c]");
     } catch (Exception e) {
       e.printStackTrace();
       Assert.assertEquals("", e.getMessage());
@@ -195,9 +196,9 @@ public class EvalDoubleTestCase extends TestCase {
       DoubleEvaluator engine = new DoubleEvaluator();
       double d = engine.evaluate("aTest[1.0]");
       assertEquals(Double.toString(d), "");
-    } catch (ArithmeticException e) {
+    } catch (MathException e) {
       assertEquals(
-          "EvalDouble#evaluateFunction(FunctionNode) not possible for: aTest[1.0]",
+          "EvalDouble#evaluateFunction(FunctionNode) not possible for: aTest(1.0)",
           e.getMessage());
     }
   }
