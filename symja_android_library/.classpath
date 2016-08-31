@@ -4,8 +4,8 @@
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry kind="src" path="jas/src/main/java"/>
 	<classpathentry kind="src" path="matheclipse-core/src/test/java"/>
-	<classpathentry kind="src" path="commons-math/src/main/java"/>
-	<classpathentry kind="src" path="commons-math/src/main/resources"/>
+	<classpathentry kind="src" path="commons-math4/src/main/java"/>
+	<classpathentry kind="src" path="commons-math4/src/main/resources"/>
 	<classpathentry kind="src" path="tools/src/main/java"/>
 	<classpathentry kind="src" path="apfloat/src"/>
 	<classpathentry kind="src" path="guava/src/main/java"/>
