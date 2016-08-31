@@ -28,8 +28,7 @@ public class Apcomplex
     extends Number
     implements Formattable, Serializable
 {
-	public static final Apint MINUS_ONE = new Apint(-1);
-    /**
+	/**
      * Constant for zero. It is safe to use <code>ZERO</code>
      * in all addition, subtraction, multiplication, division and
      * comparison operations regardless of the radix used.
@@ -368,13 +367,7 @@ public class Apcomplex
         throws ApfloatRuntimeException
     {
         return new Apcomplex(real().negate(), imag().negate());
-    }
-
-    public Apcomplex inverse()
-        throws ApfloatRuntimeException
-    {
-    	return ApcomplexMath.inverseRoot(this, 1);
-    }
+    } 
     
     /**
      * Adds two apcomplex numbers.

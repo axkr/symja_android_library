@@ -38,12 +38,12 @@ public class Csch extends AbstractTrigArg1 implements INumeric, CschRules, Doubl
 
 	@Override
 	public IExpr e1ApcomplexArg(Apcomplex arg1) {
-		return F.complexNum(ApcomplexMath.sinh(arg1).inverse());
+		return F.complexNum(ApcomplexMath.inverseRoot(ApcomplexMath.sinh(arg1), 1));
 	}
 
 	@Override
 	public IExpr e1ApfloatArg(Apfloat arg1) {
-		return F.num(ApfloatMath.sinh(arg1).inverse());
+		return F.num(ApfloatMath.inverseRoot(ApfloatMath.sinh(arg1), 1));
 	}
 
 	@Override

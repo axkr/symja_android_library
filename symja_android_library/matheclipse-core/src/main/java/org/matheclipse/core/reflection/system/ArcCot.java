@@ -60,7 +60,7 @@ public class ArcCot extends AbstractTrigArg1 implements ArcCotRules, DoubleUnary
 			// Pi / 2
 			return F.num(ApfloatMath.pi(arg1.precision()).divide(new Apfloat(2)));
 		}
-		return F.num(ApfloatMath.atan(arg1.inverse()));
+		return F.num(ApfloatMath.atan(ApfloatMath.inverseRoot(arg1,1)));
 	}
 
 	@Override

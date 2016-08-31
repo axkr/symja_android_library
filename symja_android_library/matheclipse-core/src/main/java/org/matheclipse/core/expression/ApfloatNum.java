@@ -33,6 +33,8 @@ public class ApfloatNum extends ExprImpl implements INum {
 
 	Apfloat fApfloat;
 
+	public static final Apint MINUS_ONE = new Apint(-1);
+
 	/**
 	 * Create a new instance.
 	 * 
@@ -345,7 +347,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isMinusOne() {
-		return fApfloat.equals(Apcomplex.MINUS_ONE);
+		return fApfloat.equals(ApfloatNum.MINUS_ONE);
 	}
 
 	/** {@inheritDoc} */

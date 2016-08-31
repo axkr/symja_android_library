@@ -49,19 +49,19 @@ public class Sec extends AbstractTrigArg1 implements INumeric, SecRules, DoubleU
 
 	@Override
 	public IExpr e1ApcomplexArg(Apcomplex arg1) {
-		return F.complexNum(ApcomplexMath.cos(arg1).inverse());
+		return F.complexNum(ApcomplexMath.inverseRoot(ApcomplexMath.cos(arg1), 1));
 	}
 
 	@Override
 	public IExpr e1ApfloatArg(Apfloat arg1) {
-		return F.num(ApfloatMath.cos(arg1).inverse());
+		return F.num(ApfloatMath.inverseRoot(ApfloatMath.cos(arg1), 1));
 	}
 
 	@Override
 	public IExpr e1ComplexArg(final Complex arg1) {
 		return F.complexNum(arg1.cos().reciprocal());
 	}
-	
+
 	@Override
 	public IExpr e1DblArg(final double arg1) {
 		return F.num(1.0D / Math.cos(arg1));

@@ -53,12 +53,12 @@ public class Csc extends AbstractTrigArg1 implements INumeric, CscRules, DoubleU
 
 	@Override
 	public IExpr e1ApcomplexArg(Apcomplex arg1) {
-		return F.complexNum(ApcomplexMath.sin(arg1).inverse());
+		return F.complexNum(ApcomplexMath.inverseRoot(ApcomplexMath.sin(arg1), 1));
 	}
 
 	@Override
 	public IExpr e1ApfloatArg(Apfloat arg1) {
-		return F.num(ApfloatMath.sin(arg1).inverse());
+		return F.num(ApfloatMath.inverseRoot(ApfloatMath.sin(arg1), 1));
 	}
 
 	@Override

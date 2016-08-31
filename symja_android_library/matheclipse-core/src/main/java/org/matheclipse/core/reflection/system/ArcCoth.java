@@ -45,7 +45,7 @@ public class ArcCoth extends AbstractTrigArg1 implements ArcCothRules, DoubleUna
 	@Override
 	public IExpr e1ApcomplexArg(Apcomplex arg1) {
 		// 1/arg1
-		Apcomplex c = arg1.inverse();
+		Apcomplex c = ApcomplexMath.inverseRoot(arg1, 1);
 
 		// (1/2) (Log(1 + 1/arg1) - Log(1 - 1/arg1))
 		Apcomplex result = ApcomplexMath.log(Apcomplex.ONE.add(c))
@@ -59,7 +59,7 @@ public class ArcCoth extends AbstractTrigArg1 implements ArcCothRules, DoubleUna
 			// I*Pi / 2
 			return F.complexNum(new Apcomplex(Apcomplex.ZERO, ApfloatMath.pi(arg1.precision())).divide(new Apfloat(2)));
 		}
-		return F.num(ApfloatMath.atanh(arg1.inverse()));
+		return F.num(ApfloatMath.atanh(ApfloatMath.inverseRoot(arg1, 1)));
 	}
 
 	@Override
