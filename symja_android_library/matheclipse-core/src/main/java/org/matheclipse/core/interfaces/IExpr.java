@@ -1823,7 +1823,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	/**
 	 * Test if this expression is the function
-	 * <code>Slot[&lt;integer-value&gt;]</code>
+	 * <code>Slot[&lt;integer-value&gt;]</code> (i.e. #1, #2, #3,....)
 	 * 
 	 * @return
 	 */
