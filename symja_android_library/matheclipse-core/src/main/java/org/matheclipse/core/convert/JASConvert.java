@@ -151,40 +151,65 @@ public class JASConvert<C extends RingElem<C>> {
 			throws ArithmeticException, ClassCastException {
 		if (exprPoly instanceof IAST) {
 			final IAST ast = (IAST) exprPoly;
-			GenPolynomial<C> result = fPolyFactory.getZERO();
-			GenPolynomial<C> p = fPolyFactory.getZERO();
-			if (ast.isPlus()) {
-				IExpr expr = ast.arg1();
-				result = expr2Poly(expr, numeric2Rational);
-				for (int i = 2; i < ast.size(); i++) {
-					expr = ast.get(i);
-					p = expr2Poly(expr, numeric2Rational);
-					result = result.sum(p);
-				}
-				return result;
-			} else if (ast.isTimes()) {
-				IExpr expr = ast.arg1();
-				result = expr2Poly(expr, numeric2Rational);
-				for (int i = 2; i < ast.size(); i++) {
-					expr = ast.get(i);
-					p = expr2Poly(expr, numeric2Rational);
-					result = result.multiply(p);
-				}
-				return result;
-			} else if (ast.isPower() && ast.arg1().isSymbol()) {
-				final ISymbol expr = (ISymbol) ast.arg1();
-				int exponent = -1;
+			if (ast.isSlot()) {
 				try {
-					exponent = Validate.checkPowerExponent(ast);
-				} catch (WrongArgumentType e) {
-				}
-				if (exponent < 0) {
-					throw new ArithmeticException("JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
-				}
-				try {
-					return fPolyFactory.univariate(expr.getSymbolName(), exponent);
+					return fPolyFactory.univariate(ast.toString(), 1L);
 				} catch (IllegalArgumentException iae) {
 					// fall through
+				}
+			} else {
+				GenPolynomial<C> result = fPolyFactory.getZERO();
+				GenPolynomial<C> p = fPolyFactory.getZERO();
+				if (ast.isPlus()) {
+					IExpr expr = ast.arg1();
+					result = expr2Poly(expr, numeric2Rational);
+					for (int i = 2; i < ast.size(); i++) {
+						expr = ast.get(i);
+						p = expr2Poly(expr, numeric2Rational);
+						result = result.sum(p);
+					}
+					return result;
+				} else if (ast.isTimes()) {
+					IExpr expr = ast.arg1();
+					result = expr2Poly(expr, numeric2Rational);
+					for (int i = 2; i < ast.size(); i++) {
+						expr = ast.get(i);
+						p = expr2Poly(expr, numeric2Rational);
+						result = result.multiply(p);
+					}
+					return result;
+				} else if (ast.isPower() && ast.arg1().isSymbol()) {
+					final ISymbol expr = (ISymbol) ast.arg1();
+					int exponent = -1;
+					try {
+						exponent = Validate.checkPowerExponent(ast);
+					} catch (WrongArgumentType e) {
+					}
+					if (exponent < 0) {
+						throw new ArithmeticException(
+								"JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
+					}
+					try {
+						return fPolyFactory.univariate(expr.getSymbolName(), exponent);
+					} catch (IllegalArgumentException iae) {
+						// fall through
+					}
+				} else if (ast.isPower() && ast.arg1().isSlot()) {
+					final IAST expr = (IAST) ast.arg1();
+					int exponent = -1;
+					try {
+						exponent = Validate.checkPowerExponent(ast);
+					} catch (WrongArgumentType e) {
+					}
+					if (exponent < 0) {
+						throw new ArithmeticException(
+								"JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
+					}
+					try {
+						return fPolyFactory.univariate(expr.toString(), exponent);
+					} catch (IllegalArgumentException iae) {
+						// fall through
+					}
 				}
 			}
 		} else if (exprPoly instanceof ISymbol) {
@@ -485,7 +510,7 @@ public class JASConvert<C extends RingElem<C>> {
 				IAST monomTimes = F.Times();
 				ExpVector exp = m.getKey();
 				monomialToExpr(coeff, exp, monomTimes);
-				result.add(monomTimes.getOneIdentity(F.C1)); 
+				result.add(monomTimes.getOneIdentity(F.C1));
 			}
 			return result;
 		}
@@ -496,10 +521,10 @@ public class JASConvert<C extends RingElem<C>> {
 		if (!coeff.isONE()) {
 			monomTimes.add(algebraicNumber2Expr(coeff));
 		}
-		return expVectorToExpr(exp, monomTimes); 
+		return expVectorToExpr(exp, monomTimes);
 	}
 
-	public IAST algebraicNumber2Expr(final AlgebraicNumber<BigRational> coeff) 
+	public IAST algebraicNumber2Expr(final AlgebraicNumber<BigRational> coeff)
 			throws ArithmeticException, ClassCastException {
 		GenPolynomial<BigRational> val = coeff.val;
 		return rationalPoly2Expr(val); // , variable);
@@ -566,8 +591,7 @@ public class JASConvert<C extends RingElem<C>> {
 	}
 
 	/**
-	 *  
-	 * Conversion of BigRational to BigInteger. result =
+	 *   Conversion of BigRational to BigInteger. result =
 	 * (num/gcd)*(lcm/denom).
 	 */
 	static class RatToRatFactor implements UnaryFunctor<BigRational, BigRational> {
@@ -578,7 +602,7 @@ public class JASConvert<C extends RingElem<C>> {
 
 		public RatToRatFactor(java.math.BigInteger gcd, java.math.BigInteger lcm) {
 			this.gcd = gcd;
-			this.lcm = lcm;  
+			this.lcm = lcm;
 		}
 
 		public BigRational eval(BigRational c) {
