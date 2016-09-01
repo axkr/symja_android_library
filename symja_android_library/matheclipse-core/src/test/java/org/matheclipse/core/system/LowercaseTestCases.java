@@ -646,6 +646,12 @@ public class LowercaseTestCases extends AbstractTestCase {
 	public void testCoefficient() {
 		// check("Apply(Plus,((Coefficient(x*(b+a),x,#1)*x^#1)&))", "");
 
+		check("Coefficient(Sin(a)^3*#1 + b*y + c, #1)", "Sin(a)^3");
+		check("Coefficient((#1 + 2)^2 + (#1 + 3)^3, #1, 0)", "31");
+		check("Coefficient(42*#1^2+y^3*#1^2+(#1 + 2)^2*(#1 + 2)^2,#1,2)", "66+y^3");
+		check("Coefficient(#1,#1,1)", "1");
+		check("Coefficient(#1^2,#1,2)", "1");
+		
 		check("Coefficient(Null,x,0)", "");
 		check("Coefficient(Null,x)", "0");
 
