@@ -1106,7 +1106,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	/**
 	 * Test if this expression is an interval expression with one
-	 * <code>List[min, max]</code> argument <code>Interval[{min, max};]</code>
+	 * <code>List[min, max]</code> argument <code>Interval[{min, max}]</code>
 	 * 
 	 * @return
 	 */

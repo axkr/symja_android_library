@@ -222,6 +222,14 @@ public class PlusOp {
 				return F.NIL;
 			}
 			return F.NIL;
+		} else if (arg.isInterval1()) {
+			if (numberValue == null) {
+				numberValue = arg;
+				return F.NIL;
+			}
+			numberValue = plusInterval(numberValue, arg);
+			evaled = true;
+			return F.NIL;
 		} else if (arg.isTimes()) {
 			IAST timesAST = (IAST) arg;
 			if (timesAST.arg1().isNumber()) {
@@ -249,8 +257,8 @@ public class PlusOp {
 	 * @param position
 	 * @return
 	 */
-	public IExpr plusUntilPosition(final IAST ast, final int pos) {
-		for (int i = 1; i < pos; i++) {
+	public IExpr plusUntilPosition(final IAST ast, final int position) {
+		for (int i = 1; i < position; i++) {
 			// recursive call to plus()
 			final IExpr temp = plus(ast.get(i));
 			if (temp.isPresent()) {
@@ -263,8 +271,8 @@ public class PlusOp {
 	/**
 	 * Evaluate <code>Plus(a1, a2,...)</code>.
 	 * 
-	 * @param a0
-	 * @param a1
+	 * @param plusAST
+	 *            the <code>a1+a2+...</code> Plus() expression
 	 * @return
 	 */
 	public static IExpr plus(IAST plusAST) {
@@ -293,5 +301,16 @@ public class PlusOp {
 			return plus;
 		}
 		return expr;
+	}
+
+	/**
+	 * Use interval arithmetic to add to interval objects
+	 * 
+	 * @param o0
+	 * @param o1
+	 * @return
+	 */
+	private IExpr plusInterval(final IExpr o0, final IExpr o1) {
+		return F.Interval(F.List(o0.lower().plus(o1.lower()), o0.upper().plus(o1.upper())));
 	}
 }
