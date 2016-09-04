@@ -60,14 +60,6 @@ public interface IInteger extends IRational {
 	public IInteger gcd(IInteger val);
 
 	/**
-	 * Returns the numerator of this Rational.
-	 * 
-	 * @return numerator
-	 */
-	@Override
-	public BigInteger toBigNumerator();
-
-	/**
 	 * Converts this large integer to <code>int</code>; unlike {@link #toInt}
 	 * this method raises no exception, if this integer cannot be represented by
 	 * an <code>int</code> type.
@@ -116,6 +108,14 @@ public interface IInteger extends IRational {
 	public IInteger multiply(IInteger value);
 
 	/**
+	 * Multiply this integer with value
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public IInteger multiply(int value);
+
+	/**
 	 * Returns an <code>IInteger</code> whose value is <code>(-1) * this</code>.
 	 * 
 	 * @return
@@ -151,6 +151,14 @@ public interface IInteger extends IRational {
 	public IInteger shiftRight(final int n);
 
 	public IInteger subtract(IInteger value);
+
+	/**
+	 * Returns the numerator of this Rational.
+	 * 
+	 * @return numerator
+	 */
+	@Override
+	public BigInteger toBigNumerator();
 
 	public byte[] toByteArray();
 }

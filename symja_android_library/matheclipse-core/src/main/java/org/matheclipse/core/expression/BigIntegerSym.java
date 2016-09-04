@@ -338,10 +338,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		return valueOf(rest);
 	}
 
-	
-
-	
-
 	/**
 	 * Returns the greatest common divisor of this large integer and the one
 	 * specified.
@@ -634,6 +630,24 @@ public class BigIntegerSym extends AbstractIntegerSym {
 			}
 		}
 		return valueOf(fBigIntValue.multiply(that.toBigNumerator()));
+	}
+
+	/**
+	 * @param value
+	 * @return
+	 */
+	@Override
+	public IInteger multiply(int value) {
+		switch (value) {
+		case 0:
+			return F.C0;
+		case 1:
+			return this;
+		case -1:
+			return negate();
+		default:
+		}
+		return valueOf(fBigIntValue.multiply(BigInteger.valueOf(value)));
 	}
 
 	@Override

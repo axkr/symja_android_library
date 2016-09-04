@@ -686,6 +686,30 @@ public class IntegerSym extends AbstractIntegerSym {
 			return valueOf((long) fIntValue * is.fIntValue);
 		}
 	}
+	
+	/**
+	 * @param value
+	 * @return
+	 */
+	@Override
+	public IInteger multiply(int value) {
+		switch (fIntValue) {
+		case 0:
+			return F.C0;
+		case 1:
+			return valueOf(value);
+		case -1:
+			return valueOf(value).negate();
+		default:
+			if (value == 0) {
+				return F.C0;
+			}
+			if (value == 1) {
+				return this;
+			}
+			return valueOf((long) fIntValue * value);
+		}
+	}
 
 	@Override
 	public IRational multiply(IRational parm1) {
