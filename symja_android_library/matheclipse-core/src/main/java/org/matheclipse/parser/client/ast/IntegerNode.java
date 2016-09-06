@@ -19,12 +19,21 @@ package org.matheclipse.parser.client.ast;
  * A node for a parsed integer string
  * 
  */
-public class IntegerNode extends NumberNode {
+final public class IntegerNode extends NumberNode {
+	/**
+	 * IntegerNode representing one.
+	 */
 	public final static IntegerNode C1 = new IntegerNode("1", 10);
 
 	private final int fNumberFormat; 
 
 	private final int fIntValue;
+
+	public IntegerNode(final int intValue) {
+		super(null);
+		fNumberFormat = 10;
+		fIntValue = intValue;
+	}
 
 	public IntegerNode(final String value) {
 		this(value, 10);
@@ -36,33 +45,7 @@ public class IntegerNode extends NumberNode {
 		fIntValue = 0;
 	}
 
-	public IntegerNode(final int intValue) {
-		super(null);
-		fNumberFormat = 10;
-		fIntValue = intValue;
-	}
-
-	public String toString() {
-		if (fStringValue == null) {
-			if (sign) {
-				return Integer.toString(fIntValue * (-1));
-			}
-			return Integer.toString(fIntValue);
-		}
-		if (sign) {
-			return "-" + fStringValue;
-		}
-		return fStringValue;
-	}
-
-	public int getNumberFormat() {
-		return fNumberFormat;
-	}
-
-	public int getIntValue() {
-		return fIntValue;
-	}
-
+	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
@@ -76,10 +59,33 @@ public class IntegerNode extends NumberNode {
 		return false;
 	}
 
+	public int getIntValue() {
+		return fIntValue;
+	}
+
+	public int getNumberFormat() {
+		return fNumberFormat;
+	}
+
+	@Override
 	public int hashCode() {
 		if (fStringValue == null) {
 			return toString().hashCode();
 		}
 		return super.hashCode();
+	}
+
+	@Override
+	public String toString() {
+		if (fStringValue == null) {
+			if (sign) {
+				return Integer.toString(fIntValue * (-1));
+			}
+			return Integer.toString(fIntValue);
+		}
+		if (sign) {
+			return "-" + fStringValue;
+		}
+		return fStringValue;
 	}
 }

@@ -21,7 +21,7 @@ import org.matheclipse.parser.client.math.MathUtils;
 /**
  * 
  */
-public class DoubleNode extends ASTNode {
+final public class DoubleNode extends ASTNode {
 
 	private final double value;
 
@@ -32,10 +32,6 @@ public class DoubleNode extends ASTNode {
 
 	public double doubleValue() {
 		return value;
-	}
-
-	public String toString() {
-		return Double.toString(value);
 	}
 
 	public boolean equals(Object obj) {
@@ -51,6 +47,10 @@ public class DoubleNode extends ASTNode {
 	public int hashCode() {
 		return MathUtils.hash(value);// Double.doubleToLongBits(value);
 		// return (int)(bits ^ (bits >>> 32));
+	}
+
+	public String toString() {
+		return Double.toString(value);
 	}
 
 }

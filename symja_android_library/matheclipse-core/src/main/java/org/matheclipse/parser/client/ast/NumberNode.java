@@ -19,7 +19,7 @@ package org.matheclipse.parser.client.ast;
  * The basic node for storing a parsed number expression string
  * 
  */
-public abstract class NumberNode extends ASTNode { 
+public abstract class NumberNode extends ASTNode {
 
 	protected boolean sign;
 
@@ -28,10 +28,14 @@ public abstract class NumberNode extends ASTNode {
 		sign = false;
 	}
 
-	public void toggleSign() {
-		sign = !sign;
+	public double doubleValue() {
+		return Double.parseDouble(toString());
 	}
 
+	@Override
+	public abstract boolean equals(Object obj);
+
+	@Override
 	public String getString() {
 		if (sign) {
 			return "-" + fStringValue;
@@ -39,27 +43,30 @@ public abstract class NumberNode extends ASTNode {
 		return fStringValue;
 	}
 
-	public String toString() {
+	@Override
+	public int hashCode() {
 		if (sign) {
-			return "-" + fStringValue;
+			return fStringValue.hashCode() * 17;
 		}
-		return fStringValue;
+		return fStringValue.hashCode();
 	}
 
 	public boolean isSign() {
 		return sign;
 	}
 
-	public double doubleValue() {
-		return Double.parseDouble(toString());
+	/**
+	 * Toggle the sign of the number.
+	 */
+	public void toggleSign() {
+		sign = !sign;
 	}
 
-	public abstract boolean equals(Object obj);
-	
-	public int hashCode() {
+	@Override
+	public String toString() {
 		if (sign) {
-			return fStringValue.hashCode() * 17;
+			return "-" + fStringValue;
 		}
-		return fStringValue.hashCode();
+		return fStringValue;
 	}
 }

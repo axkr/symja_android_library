@@ -19,7 +19,8 @@ package org.matheclipse.parser.client.ast;
  * A node for a parsed fraction string
  * 
  */
-public class FractionNode extends NumberNode {
+final public class FractionNode extends NumberNode {
+	
 	protected final IntegerNode fNumerator;
 
 	protected final IntegerNode fDenominator;
@@ -30,6 +31,28 @@ public class FractionNode extends NumberNode {
 		fDenominator = denominator;
 	}
 
+	@Override
+	public double doubleValue() {
+		double numer = Double.parseDouble(fNumerator.toString());
+		double denom = Double.parseDouble(fDenominator.toString());
+		if (sign) {
+			return -1.0 * numer / denom;
+		}
+		return numer / denom;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof FractionNode) {
+			return fNumerator.equals(((FractionNode) obj).fNumerator) && fDenominator.equals(((FractionNode) obj).fDenominator)
+					&& sign == ((FractionNode) obj).sign;
+		}
+		return false;
+	}
+
 	public IntegerNode getDenominator() {
 		return fDenominator;
 	}
@@ -38,6 +61,15 @@ public class FractionNode extends NumberNode {
 		return fNumerator;
 	}
 
+	@Override
+	public int hashCode() {
+		if (sign) {
+			return fNumerator.hashCode() + fDenominator.hashCode() * 17;
+		}
+		return fNumerator.hashCode() + fDenominator.hashCode();
+	}
+
+	@Override
 	public String toString() {
 		final StringBuffer buff = new StringBuffer();
 		if (sign) {
@@ -51,32 +83,5 @@ public class FractionNode extends NumberNode {
 			buff.append(fDenominator.toString());
 		}
 		return buff.toString();
-	}
-
-	public double doubleValue() {
-		double numer = Double.parseDouble(fNumerator.toString());
-		double denom = Double.parseDouble(fDenominator.toString());
-		if (sign) {
-			return -1.0 * numer / denom;
-		}
-		return numer / denom;
-	}
-
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj instanceof FractionNode) {
-			return fNumerator.equals(((FractionNode) obj).fNumerator) && fDenominator.equals(((FractionNode) obj).fDenominator)
-					&& sign == ((FractionNode) obj).sign;
-		}
-		return false;
-	}
-
-	public int hashCode() {
-		if (sign) {
-			return fNumerator.hashCode() + fDenominator.hashCode() * 17;
-		}
-		return fNumerator.hashCode() + fDenominator.hashCode();
 	}
 }

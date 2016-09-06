@@ -16,11 +16,11 @@
 package org.matheclipse.parser.client.ast;
 
 /**
- * A node for a parsed pattern expression (i.e. <code>__</code> or
- * <code>x__</code>)
+ * A sequence-pattern node for n expressions (i.e. <code>__</code> or
+ * <code>x__</code>).
  * 
  */
-public class Pattern2Node extends PatternNode {
+final public class Pattern2Node extends PatternNode {
 
 	public Pattern2Node(final SymbolNode symbol, final ASTNode constraint) {
 		this(symbol, constraint, false);
@@ -30,21 +30,7 @@ public class Pattern2Node extends PatternNode {
 		super(symbol, constraint, optional);
 	}
 
-	public String toString() {
-		final StringBuffer buff = new StringBuffer();
-		if (fSymbol != null) {
-			buff.append(fSymbol.toString());
-		}
-		buff.append("__");
-		if (fDefault) {
-			buff.append('.');
-		}
-		if (fConstraint != null) {
-			buff.append(fConstraint.toString());
-		}
-		return buff.toString();
-	}
-
+	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
@@ -74,10 +60,27 @@ public class Pattern2Node extends PatternNode {
 		return false;
 	}
 
+	@Override
 	public int hashCode() {
 		if (fSymbol != null) {
 			return fSymbol.hashCode() * 41;
 		}
 		return 19;
+	}
+
+	@Override
+	public String toString() {
+		final StringBuffer buff = new StringBuffer();
+		if (fSymbol != null) {
+			buff.append(fSymbol.toString());
+		}
+		buff.append("__");
+		if (fDefault) {
+			buff.append('.');
+		}
+		if (fConstraint != null) {
+			buff.append(fConstraint.toString());
+		}
+		return buff.toString();
 	}
 }

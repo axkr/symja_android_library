@@ -230,8 +230,8 @@ public class ASTNodeFactory implements IParserFactory {
 		return new FunctionNode(head, arg0);
 	}
 
-	public FunctionNode createFunction(final SymbolNode head, final ASTNode arg0, final ASTNode arg1) {
-		return new FunctionNode(head, arg0, arg1);
+	public FunctionNode createFunction(final SymbolNode head, final ASTNode arg1, final ASTNode arg2) {
+		return new FunctionNode(head, arg1, arg2);
 	}
 
 	/**

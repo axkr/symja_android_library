@@ -27,39 +27,11 @@ public abstract class ASTNode {
 		fStringValue = value;
 	}
 
-	/**
-	 * Returns the parsed string of this node.
-	 * 
-	 * @return <code>null</code> if there's another representation in the derived class
-	 */
-	public String getString() {
-		return fStringValue;
-	}
-
-	public String toString() {
-		return fStringValue;
-	}
-
 	public boolean dependsOn(String variableName) {
 		return false;
 	}
 
-	/**
-	 * Returns <code>true</code>, if <b>none of the elements</b> in the subexpressions or the expression itself equals
-	 * <code>node</code> .
-	 * 
-	 * @param node
-	 *            a node to compare with
-	 * 
-	 */
-	public boolean isFree(final ASTNode node) {
-		return !this.equals(node);
-	}
-
-	// public ASTNode derivative(String variableName) {
-	// return new IntegerNode("0");
-	// }
-
+	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
@@ -70,7 +42,37 @@ public abstract class ASTNode {
 		return false;
 	}
 
+	/**
+	 * Returns the parsed string of this node.
+	 * 
+	 * @return <code>null</code> if there's another representation in the
+	 *         derived class
+	 */
+	public String getString() {
+		return fStringValue;
+	}
+
+	@Override
 	public int hashCode() {
 		return fStringValue.hashCode();
+	}
+
+	/**
+	 * Returns <code>true</code>, if <b>none of the elements</b> in the
+	 * subexpressions or the expression itself equals <code>node</code> .
+	 * 
+	 * @param node
+	 *            a node to compare with
+	 * @return <code>true</code>, if <b>none of the elements</b> in the
+	 *         subexpressions or the expression itself equals <code>node</code>
+	 *         .
+	 */
+	public boolean isFree(final ASTNode node) {
+		return !this.equals(node);
+	}
+
+	@Override
+	public String toString() {
+		return fStringValue;
 	}
 }

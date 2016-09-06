@@ -21,9 +21,13 @@ package org.matheclipse.parser.client.ast;
  * 
  */
 public class PatternNode extends ASTNode {
+	
 	protected final SymbolNode fSymbol;
+	
 	protected final boolean fDefault;
+	
 	protected final ASTNode fDefaultValue;
+	
 	protected final ASTNode fConstraint;
 
 	public PatternNode(final SymbolNode symbol, final ASTNode constraint) {
@@ -46,6 +50,7 @@ public class PatternNode extends ASTNode {
 		fDefaultValue = null;
 	}
 
+	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
@@ -90,6 +95,7 @@ public class PatternNode extends ASTNode {
 		return fSymbol;
 	}
 
+	@Override
 	public int hashCode() {
 		if (fSymbol != null) {
 			return fSymbol.hashCode();
@@ -104,6 +110,7 @@ public class PatternNode extends ASTNode {
 		return fDefault;
 	}
 
+	@Override
 	public String toString() {
 		final StringBuffer buff = new StringBuffer();
 		if (fSymbol != null) {

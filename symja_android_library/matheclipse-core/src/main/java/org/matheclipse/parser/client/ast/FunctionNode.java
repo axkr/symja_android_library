@@ -26,8 +26,9 @@ import java.util.ListIterator;
  * The head of the function (i.e. Sin, Cos, Times,...) is stored in the 0-th index of the list.<br/>
  * The arguments of the function are stored in the 1...n-th index of the list.
  */
-public class FunctionNode extends ASTNode implements java.util.List<ASTNode> {
-	private ArrayList<ASTNode> fNodesList;
+final public class FunctionNode extends ASTNode implements java.util.List<ASTNode> {
+	
+	private final ArrayList<ASTNode> fNodesList;
 
 	public FunctionNode(final ASTNode head) {
 		super(null);
@@ -50,38 +51,56 @@ public class FunctionNode extends ASTNode implements java.util.List<ASTNode> {
 		fNodesList.add(arg1);
 	}
 
-	public void add(final int index, final ASTNode element) {
-		fNodesList.add(index, element);
-	}
-
+	@Override
 	public boolean add(final ASTNode e) {
 		return fNodesList.add(e);
 	}
 
+	@Override
+	public void add(final int index, final ASTNode element) {
+		fNodesList.add(index, element);
+	}
+
+	@Override
 	public boolean addAll(final Collection<? extends ASTNode> c) {
 		return fNodesList.addAll(c);
 	}
 
+	@Override
 	public boolean addAll(final int index, final Collection<? extends ASTNode> c) {
 		return fNodesList.addAll(index, c);
 	}
 
+	@Override
 	public void clear() {
 		fNodesList.clear();
 	}
 
+	@Override
 	public boolean contains(final Object o) {
 		return fNodesList.contains(o);
 	}
 
+	@Override
 	public boolean containsAll(final Collection<?> c) {
 		return fNodesList.containsAll(c);
+	}
+
+	@Override
+	public boolean dependsOn(String variableName) {
+		for (int i = 1; i < size(); i++) {
+			if (get(i).dependsOn(variableName)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public void ensureCapacity(final int minCapacity) {
 		fNodesList.ensureCapacity(minCapacity);
 	}
 
+	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
@@ -92,6 +111,7 @@ public class FunctionNode extends ASTNode implements java.util.List<ASTNode> {
 		return false;
 	}
 
+	@Override
 	public ASTNode get(final int index) {
 		return fNodesList.get(index);
 	}
@@ -100,14 +120,17 @@ public class FunctionNode extends ASTNode implements java.util.List<ASTNode> {
 		return fNodesList.get(index);
 	}
 
+	@Override
 	public int hashCode() {
 		return fNodesList.hashCode();
 	}
 
+	@Override
 	public int indexOf(final Object o) {
 		return fNodesList.indexOf(o);
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return fNodesList.isEmpty();
 	}
@@ -126,42 +149,52 @@ public class FunctionNode extends ASTNode implements java.util.List<ASTNode> {
 		return true;
 	}
 
+	@Override
 	public Iterator<ASTNode> iterator() {
 		return fNodesList.iterator();
 	}
 
+	@Override
 	public int lastIndexOf(final Object o) {
 		return fNodesList.lastIndexOf(o);
 	}
 
+	@Override
 	public ListIterator<ASTNode> listIterator() {
 		return fNodesList.listIterator();
 	}
 
+	@Override
 	public ListIterator<ASTNode> listIterator(final int index) {
 		return fNodesList.listIterator(index);
 	}
 
+	@Override
 	public ASTNode remove(final int index) {
 		return fNodesList.remove(index);
 	}
 
+	@Override
 	public boolean remove(final Object o) {
 		return fNodesList.remove(o);
 	}
 
+	@Override
 	public boolean removeAll(final Collection<?> c) {
 		return fNodesList.removeAll(c);
 	}
 
+	@Override
 	public boolean retainAll(final Collection<?> c) {
 		return fNodesList.retainAll(c);
 	}
 
+	@Override
 	public ASTNode set(final int index, final ASTNode element) {
 		return fNodesList.set(index, element);
 	}
 
+	@Override
 	public int size() {
 		return fNodesList.size();
 	}
@@ -169,18 +202,22 @@ public class FunctionNode extends ASTNode implements java.util.List<ASTNode> {
 	/**
 	 * Because GWT doesn't support the subList() method, we also throw an UnsupportedOperationException
 	 */
+	@Override
 	public List<ASTNode> subList(final int fromIndex, final int toIndex) throws UnsupportedOperationException {
 		throw new UnsupportedOperationException("Arraylist#subList() not supported");
 	}
 
+	@Override
 	public Object[] toArray() {
 		return fNodesList.toArray();
 	}
 
+	@Override
 	public Object[] toArray(final Object[] a) {
 		return fNodesList.toArray(a);
 	}
 
+	@Override
 	public String toString() {
 		ASTNode head = fNodesList.get(0);
 		final StringBuffer buf = new StringBuffer();
@@ -212,15 +249,6 @@ public class FunctionNode extends ASTNode implements java.util.List<ASTNode> {
 
 	public void trimToSize() {
 		fNodesList.trimToSize();
-	}
-
-	public boolean dependsOn(String variableName) {
-		for (int i = 1; i < size(); i++) {
-			if (get(i).dependsOn(variableName)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 }

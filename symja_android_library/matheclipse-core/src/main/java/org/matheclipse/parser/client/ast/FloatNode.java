@@ -21,11 +21,13 @@ package org.matheclipse.parser.client.ast;
  * stored.
  * 
  */
-public class FloatNode extends NumberNode {
+final public class FloatNode extends NumberNode {
+	
 	public FloatNode(final String value) {
 		super(value);
 	}
 
+	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
@@ -36,6 +38,7 @@ public class FloatNode extends NumberNode {
 		return false;
 	}
 	
+	@Override
 	public int hashCode() {
 		return super.hashCode()*43;
 	}
