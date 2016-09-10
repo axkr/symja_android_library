@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * Create a range for a given <code>IAST</code> instance.
  * 
  */
-public class ASTRange extends Range {
+final public class ASTRange extends Range {
 	/**
 	 * Construct a range <code>[start..end[</code> for a given <code>IAST</code>
 	 * instance.
@@ -20,7 +20,7 @@ public class ASTRange extends Range {
 	 * @param start
 	 * @param end
 	 * @throws IndexOutOfBoundsException
-	 *           if <code>start</code> or <code>end</code> aren't valid.
+	 *             if <code>start</code> or <code>end</code> aren't valid.
 	 */
 	public ASTRange(final IAST list, final int start, final int end) {
 		super(list, start, end);
@@ -33,7 +33,7 @@ public class ASTRange extends Range {
 	 * @param list
 	 * @param start
 	 * @throws IndexOutOfBoundsException
-	 *           if <code>start</code> isn't valid.
+	 *             if <code>start</code> isn't valid.
 	 */
 	public ASTRange(final IAST list, final int start) {
 		super(list, start);
@@ -52,6 +52,7 @@ public class ASTRange extends Range {
 	/**
 	 * Append this ranges elements to a new created List
 	 * 
+	 * @return a new created List
 	 */
 	public List<IExpr> toList() {
 		ArrayList<IExpr> list = new ArrayList<IExpr>();

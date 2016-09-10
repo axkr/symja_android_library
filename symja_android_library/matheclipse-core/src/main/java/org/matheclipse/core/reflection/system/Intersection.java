@@ -4,9 +4,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.interfaces.IAST;
@@ -35,7 +37,8 @@ public class Intersection extends AbstractFunctionEvaluator {
 			for (IExpr IExpr : set) {
 				result.add(IExpr);
 			}
-			return result.args().sort(Comparators.ExprComparator.CONS);
+			EvalAttributes.sort(result, Comparators.ExprComparator.CONS); 
+			return result;
 		}
 
 		if (ast.arg1().isAST() && ast.arg2().isAST()) {

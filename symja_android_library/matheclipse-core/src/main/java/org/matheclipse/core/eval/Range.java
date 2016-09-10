@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -16,15 +17,17 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * Create a range for a given <code>List</code> instance
+ * Create an immutable range for a given <code>List</code> instance, with the
+ * exception of the <code>sort()</code> method which may sort the internal
+ * elements range.
  * 
  */
-public class Range implements Iterable<IExpr> {
+public class Range extends AbstractList<IExpr> implements Iterable<IExpr> {
 
 	static class RangeIterator implements Iterator<IExpr> {
 		private int fCurrrent;
 
-		private Range fRange;
+		final private Range fRange;
 
 		public RangeIterator(Range range) {
 			fRange = range;
@@ -72,7 +75,6 @@ public class Range implements Iterable<IExpr> {
 	 * 
 	 * @param list
 	 * @param start
-	 * @param end
 	 */
 	public Range(IAST list, int start) {
 		this(list, start, list.size());
@@ -106,6 +108,7 @@ public class Range implements Iterable<IExpr> {
 	/**
 	 * Returns true if the predicate returns true for all elements in the range.
 	 * 
+	 * @param predicate
 	 * @return true if the predicate returns true, false otherwise
 	 */
 	public boolean all(Predicate<IExpr> predicate) {
@@ -122,6 +125,7 @@ public class Range implements Iterable<IExpr> {
 	 * Returns true if all branch predicates return true for all elements in the
 	 * range. Also returns true when there are no branch predicates.
 	 * 
+	 * @param predicates
 	 * @return true if all branch predicates return true, false otherwise
 	 */
 	public boolean all(Predicate<IExpr>[] predicates) {
@@ -141,6 +145,7 @@ public class Range implements Iterable<IExpr> {
 	 * Returns true if the predicate returns true for at least one element in
 	 * the range.
 	 * 
+	 * @param predicate
 	 * @return true if the predicate returns true for at least one element,
 	 *         false otherwise
 	 */
@@ -158,6 +163,7 @@ public class Range implements Iterable<IExpr> {
 	 * Returns true if at least one branch predicate returns true for all
 	 * elements in the range.
 	 * 
+	 * @param predicates
 	 * @return true if at least one branch predicate returns true, false
 	 *         otherwise
 	 */
@@ -175,10 +181,13 @@ public class Range implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Compare all adjacent elemants from lowest to highest index and return
+	 * Compare all adjacent elements from lowest to highest index and return
 	 * true, if the binary predicate gives true in each step. If start &gt;=
 	 * (end-1) the method return false;
 	 * 
+	 * @param predicate
+	 *            the binary predicate
+	 * @return
 	 */
 	public boolean compareAdjacent(BiPredicate<IExpr, IExpr> predicate) {
 		if (fStart >= fEnd - 1) {
@@ -199,8 +208,9 @@ public class Range implements Iterable<IExpr> {
 		return indexOf(o) >= 0;
 	}
 
-	public boolean containsAll(Collection<? extends IExpr> c) {
-		Iterator<? extends IExpr> iter = c.iterator();
+	@Override
+	public boolean containsAll(Collection<?> c) {
+		Iterator<?> iter = c.iterator();
 		while (iter.hasNext())
 			if (!contains(iter.next()))
 				return false;
@@ -209,6 +219,9 @@ public class Range implements Iterable<IExpr> {
 
 	/**
 	 * Returns the number of elements in the range that equals the given value.
+	 * 
+	 * @param value
+	 * @return the number of elements in the range that equals the given value.
 	 */
 	public int count(Object value) {
 		int counter = 0;
@@ -224,6 +237,10 @@ public class Range implements Iterable<IExpr> {
 	/**
 	 * Returns the number of elements in the range that match the given
 	 * predicate.
+	 * 
+	 * @param predicate
+	 * @return the number of elements in the range that match the given
+	 *         predicate.
 	 */
 	public int countIf(Predicate<IExpr> predicate) {
 		int counter = 0;
@@ -234,30 +251,6 @@ public class Range implements Iterable<IExpr> {
 			}
 		}
 		return counter;
-	}
-
-	/**
-	 * Apply the predicate to each element in the range and append the elements
-	 * which match the predicate to the filterList, or otherwise append it to
-	 * the restList.
-	 * 
-	 * @param filterList
-	 *            the elements which match the predicate
-	 * @param restList
-	 *            the elements which don't match the predicate
-	 * @param predicate
-	 *            the predicate which filters each element in the range
-	 * @return the <code>filterList</code>
-	 */
-	public IAST filter(IAST filterList, Collection<IExpr> restList, Predicate<IExpr> predicate) {
-		for (int i = fStart; i < fEnd; i++) {
-			if (predicate.test(fList.get(i))) {
-				filterList.add(fList.get(i));
-			} else {
-				restList.add(fList.get(i));
-			}
-		}
-		return filterList;
 	}
 
 	/**
@@ -289,43 +282,70 @@ public class Range implements Iterable<IExpr> {
 
 	/**
 	 * Apply the predicate to each element in the range and append the elements
-	 * to the list, which match the predicate.
+	 * which match the predicate to the filterList, or otherwise append it to
+	 * the restList.
 	 * 
-	 * @see Range#removeAll(List, Predicate)
-	 * @see Range#replaceAll(List, Function)
+	 * @param filterList
+	 *            the elements which match the predicate
+	 * @param restList
+	 *            the elements which don't match the predicate
+	 * @param predicate
+	 *            the predicate which filters each element in the range
+	 * @return the <code>filterList</code>
 	 */
-	public IAST filter(IAST list, Predicate<IExpr> predicate) {
+	public IAST filter(IAST filterList, Collection<IExpr> restList, Predicate<IExpr> predicate) {
 		for (int i = fStart; i < fEnd; i++) {
 			if (predicate.test(fList.get(i))) {
-				list.add(fList.get(i));
+				filterList.add(fList.get(i));
+			} else {
+				restList.add(fList.get(i));
 			}
 		}
-		return list;
+		return filterList;
+	}
+
+	/**
+	 * Apply the predicate to each element in the range and append the elements
+	 * which match the predicate to the <code>astResult</code>.
+	 * 
+	 * @param astResult
+	 * @param predicate
+	 * @return
+	 */
+	public IAST filter(IAST astResult, Predicate<IExpr> predicate) {
+		for (int i = fStart; i < fEnd; i++) {
+			if (predicate.test(fList.get(i))) {
+				astResult.add(fList.get(i));
+			}
+		}
+		return astResult;
 	}
 
 	/**
 	 * Apply the predicate to each element in the range and append the elements
 	 * to the list, which match the predicate.
 	 * 
-	 * @see Range#removeAll(List, Predicate)
-	 * @see Range#replaceAll(List, Function)
+	 * @param astResult
+	 * @param predicate
+	 * @param maxMatches
+	 * @return
 	 */
-	public IAST filter(IAST list, Predicate<IExpr> predicate, int maxMatches) {
+	public IAST filter(IAST astResult, Predicate<IExpr> predicate, int maxMatches) {
 		int count = 0;
 		if (count == maxMatches) {
-			return list;
+			return astResult;
 		}
 		for (int i = fStart; i < fEnd; i++) {
 
 			if (predicate.test(fList.get(i))) {
 				if (++count == maxMatches) {
-					list.add(fList.get(i));
+					astResult.add(fList.get(i));
 					break;
 				}
-				list.add(fList.get(i));
+				astResult.add(fList.get(i));
 			}
 		}
-		return list;
+		return astResult;
 	}
 
 	/**
@@ -367,6 +387,7 @@ public class Range implements Iterable<IExpr> {
 	 * 
 	 * @param function
 	 *            a binary function that accumulate the elements
+	 * @param startValue
 	 * @return the accumulated elements
 	 */
 	public IExpr foldLeft(final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue) {
@@ -385,6 +406,7 @@ public class Range implements Iterable<IExpr> {
 	 * 
 	 * @param function
 	 *            a binary function that accumulate the elements
+	 * @param startValue
 	 * @return the accumulated elements
 	 */
 	public IExpr foldRight(final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue) {
@@ -399,6 +421,7 @@ public class Range implements Iterable<IExpr> {
 	 * Apply the functor to each element in the range and return the final
 	 * result.
 	 * 
+	 * @param function
 	 * @return the result of the last execution of the functor, or null if the
 	 *         functor is not executed.
 	 */
@@ -412,15 +435,14 @@ public class Range implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Delegates to the lists get() method.
-	 * 
-	 * With this method you can access elements outside the given range
+	 * Delegates to the lists <code>get(fStart+index)</code> method.
 	 * 
 	 * @param index
 	 * @return
 	 */
+	@Override
 	final public IExpr get(int index) {
-		return fList.get(index);
+		return fList.get(fStart + index);
 	}
 
 	final public int getEnd() {
@@ -454,7 +476,8 @@ public class Range implements Iterable<IExpr> {
 	 * Returns the index of the first found object from the given start index
 	 * 
 	 * @param match
-	 * @return
+	 * @param start
+	 * @return the index of the first found object from the given start index
 	 */
 	public int indexOf(IExpr match, int start) {
 		if (match == null) {
@@ -480,12 +503,14 @@ public class Range implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Returns the index of the first found object that match the predicate
+	 * Returns the index of the first found expression that match the predicate
 	 * 
+	 * @param predicate
+	 * @param start
+	 * @return the index of the first found expression that match the predicate
 	 */
 	public int indexOf(Predicate<IExpr> predicate, int start) {
 		for (int i = start; i < fEnd; i++) {
-
 			if (predicate.test(fList.get(i))) {
 				return i;
 			}
@@ -504,6 +529,7 @@ public class Range implements Iterable<IExpr> {
 	 * @param match
 	 * @return
 	 */
+	@Override
 	public int lastIndexOf(Object match) {
 		if (match == null) {
 			for (int i = fEnd - 1; i >= fStart; i--) {
@@ -540,8 +566,9 @@ public class Range implements Iterable<IExpr> {
 	 * elements
 	 * 
 	 * @param list
-	 * @param fromIndex
-	 * @param toIndex
+	 * @param function
+	 *            a binary function
+	 * @return
 	 */
 	public boolean map(Collection<IExpr> list, BiFunction<IExpr, IExpr, IExpr> function) {
 		if (fStart >= fEnd) {
@@ -568,29 +595,15 @@ public class Range implements Iterable<IExpr> {
 	/**
 	 * Append the mapped ranges elements directly to the given <code>list</code>
 	 * 
-	 * @param list
+	 * @param astResult
 	 * @param function
-	 * @deprecated use {@link IAST#mapAt(IAST, IAST, int)} instead
+	 * @return
 	 */
-	@Deprecated
-	public IAST map(IAST list, Function<IExpr, IExpr> function) {
+	public IAST map(IAST astResult, IUnaryIndexFunction<IExpr, IExpr> function) {
 		for (int i = fStart; i < fEnd; i++) {
-			list.add(function.apply(fList.get(i)));
+			astResult.add(function.apply(i, fList.get(i)));
 		}
-		return list;
-	}
-
-	/**
-	 * Append the mapped ranges elements directly to the given <code>list</code>
-	 * 
-	 * @param list
-	 * @param function
-	 */
-	public IAST map(IAST list, IUnaryIndexFunction<IExpr, IExpr> function) {
-		for (int i = fStart; i < fEnd; i++) {
-			list.add(function.apply(i, fList.get(i)));
-		}
-		return list;
+		return astResult;
 	}
 
 	/**
@@ -602,6 +615,7 @@ public class Range implements Iterable<IExpr> {
 	 * @param leftArg
 	 *            left argument of the binary functions <code>apply()</code>
 	 *            method.
+	 * @return
 	 */
 	public IAST mapLeft(IAST list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr leftArg) {
 		for (int i = fStart; i < fEnd; i++) {
@@ -617,14 +631,14 @@ public class Range implements Iterable<IExpr> {
 	 * @param list
 	 * @param binaryFunction
 	 *            a binary function
-	 * @param leftArg
+	 * @param rightArg
 	 *            right argument of the binary functions <code>apply()</code>
 	 *            method.
+	 * @return the given list
 	 */
 	public Collection<IExpr> mapRight(Collection<IExpr> list, BiFunction<IExpr, IExpr, IExpr> binaryFunction,
 			IExpr rightArg) {
 		for (int i = fStart; i < fEnd; i++) {
-
 			list.add(binaryFunction.apply(fList.get(i), rightArg));
 		}
 		return list;
@@ -633,6 +647,8 @@ public class Range implements Iterable<IExpr> {
 	/**
 	 * Returns the largest value in the range
 	 * 
+	 * @param comp
+	 * @return
 	 */
 	public IExpr max(Comparator<? super IExpr> comp) {
 		IExpr value = fList.get(fStart);
@@ -648,6 +664,8 @@ public class Range implements Iterable<IExpr> {
 	/**
 	 * Return the smallest value in the range
 	 * 
+	 * @param comp
+	 * @return
 	 */
 	public IExpr min(Comparator<? super IExpr> comp) {
 		IExpr value = fList.get(fStart);
@@ -664,8 +682,9 @@ public class Range implements Iterable<IExpr> {
 	 * Apply the predicate to each element in the range and append the elements
 	 * to the list, which don't match the predicate.
 	 * 
-	 * @see Range#filter(List, Predicate)
-	 * @see Range#replaceAll(List, Function)
+	 * @param list
+	 * @param predicate
+	 * @return the given list
 	 */
 	public Collection<IExpr> removeAll(Collection<IExpr> list, Predicate<IExpr> predicate) {
 		for (int i = fStart; i < fEnd; i++) {
@@ -681,8 +700,9 @@ public class Range implements Iterable<IExpr> {
 	 * Apply the function to each element in the range and append the results to
 	 * the list.
 	 * 
-	 * @see Range#filter(List, Predicate)
-	 * @see Range#removeAll(List, Predicate)
+	 * @param list
+	 * @param function
+	 * @return the given list
 	 */
 	public Collection<IExpr> replaceAll(Collection<IExpr> list, final Function<IExpr, ? extends IExpr> function) {
 		for (int i = fStart; i < fEnd; i++) {
@@ -696,8 +716,7 @@ public class Range implements Iterable<IExpr> {
 	 * <code>list</code>
 	 * 
 	 * @param list
-	 * @param fromIndex
-	 * @param toIndex
+	 * @return
 	 */
 	public Collection<IExpr> reverse(Collection<IExpr> list) {
 		for (int i = fEnd - 1; i >= fStart; i--) {
@@ -712,6 +731,7 @@ public class Range implements Iterable<IExpr> {
 	 * 
 	 * @param list
 	 * @param n
+	 * @return the given list
 	 */
 	public Collection<IExpr> rotateLeft(Collection<IExpr> list, final int n) {
 		for (int i = fStart + n; i < fEnd; i++) {
@@ -731,6 +751,7 @@ public class Range implements Iterable<IExpr> {
 	 * 
 	 * @param list
 	 * @param n
+	 * @return the given list
 	 */
 	public Collection<IExpr> rotateRight(Collection<IExpr> list, final int n) {
 		if (n <= size()) {
@@ -750,6 +771,7 @@ public class Range implements Iterable<IExpr> {
 	 * 
 	 * @return
 	 */
+	@Override
 	public int size() {
 		return fEnd - fStart;
 	}
@@ -759,13 +781,13 @@ public class Range implements Iterable<IExpr> {
 	 * internal referenced list), according to the order induced by the
 	 * specified comparator.
 	 */
-	public IAST sort(Comparator<IExpr> comparator) {
+	@Override
+	public void sort(Comparator<? super IExpr> comparator) {
 		final IExpr[] a = fList.toArray(new IExpr[fList.size()]);
 		Arrays.sort(a, fStart, fEnd, comparator);
 		for (int j = fStart; j < fEnd; j++) {
 			fList.set(j, a[j]);
 		}
-		return fList;
 	}
 
 	public IExpr[] toArray(IExpr[] array) {
@@ -783,6 +805,7 @@ public class Range implements Iterable<IExpr> {
 	 * Append the ranges elements to the given <code>list</code>
 	 * 
 	 * @param list
+	 * @return the given <code>list</code>
 	 */
 	public List<IExpr> toList(List<IExpr> list) {
 		for (int i = fStart; i < fEnd; i++) {
