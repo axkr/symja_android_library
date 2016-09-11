@@ -449,6 +449,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.PrimeQ());
 	public final static ISymbol Print = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "print" : "Print",
 			new org.matheclipse.core.builtin.function.Print());
+	public final static ISymbol Put = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "put" : "Put",
+			new org.matheclipse.core.builtin.function.Put());
 	public final static ISymbol Quiet = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "quiet" : "Quiet",
 			new org.matheclipse.core.builtin.function.Quiet());
 	public final static ISymbol Rational = initFinalSymbol(

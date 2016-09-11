@@ -71,7 +71,7 @@ public class Get extends AbstractFunctionEvaluator {
 	 * @param engine
 	 * @param is
 	 */
-	public static void loadPackage(final EvalEngine engine, final Reader is) {
+	public static IExpr loadPackage(final EvalEngine engine, final Reader is) {
 		final BufferedReader r = new BufferedReader(is);
 		Context packageContext = null;
 		try {
@@ -83,6 +83,7 @@ public class Get extends AbstractFunctionEvaluator {
 			if (engine.isRelaxedSyntax()) {
 				ast2Expr = AST2Expr.CONST_LC;
 			}
+			IExpr result = F.Null;
 			while (i < node.size()) {
 				temp = ast2Expr.convert(node.get(i++), engine);
 				if (temp.isAST()) {
@@ -106,8 +107,9 @@ public class Get extends AbstractFunctionEvaluator {
 						continue;
 					}
 				}
-				engine.evaluate(temp);
+				result = engine.evaluate(temp);
 			}
+			return result;
 		} catch (final Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -121,6 +123,7 @@ public class Get extends AbstractFunctionEvaluator {
 				e.printStackTrace();
 			}
 		}
+		return F.Null;
 	}
 
 	/**
@@ -179,16 +182,11 @@ public class Get extends AbstractFunctionEvaluator {
 		FileReader reader;
 		try {
 			reader = new FileReader(arg1.toString());
-			loadPackage(engine, reader);
+			return loadPackage(engine, reader);
 		} catch (FileNotFoundException e) {
 			engine.printMessage("Get: file " + arg1.toString() + " not found!");
 		}
 		return F.Null;
-	}
-
-	@Override
-	public IExpr numericEval(IAST functionList, EvalEngine engine) {
-		return null;
 	}
 
 	@Override
