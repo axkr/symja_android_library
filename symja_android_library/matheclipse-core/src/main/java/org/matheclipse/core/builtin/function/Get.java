@@ -7,10 +7,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -70,6 +68,7 @@ public class Get extends AbstractFunctionEvaluator {
 	 * 
 	 * @param engine
 	 * @param is
+	 * @return the last evaluated expression result
 	 */
 	public static IExpr loadPackage(final EvalEngine engine, final Reader is) {
 		final BufferedReader r = new BufferedReader(is);
@@ -174,9 +173,6 @@ public class Get extends AbstractFunctionEvaluator {
 
 		if (!(ast.arg1() instanceof IStringX)) {
 			throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);
-		}
-		if (Config.SERVER_MODE) {
-			throw new RuleCreationError(null);
 		}
 		IStringX arg1 = (IStringX) ast.arg1();
 		FileReader reader;

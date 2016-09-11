@@ -2791,6 +2791,14 @@ public class LowercaseTestCases extends AbstractTestCase {
 
 	}
 
+	public void testPutGet() {
+		check("Put(x + y, \"c:/temp/example_file1.m\"); Get(\"c:/temp/example_file1.m\")", "x+y");
+		check("Put(x + y, 2x^2 + 4z!, Cos(x) + I Sin(x), \"c:/temp/example_file2.m\");"
+				+ "Get(\"c:/temp/example_file2.m\")", "I*Sin(x)+Cos(x)");
+		check("Put(47!, \"c:/temp/test.m\"); Get(\"c:/temp/test.m\")",
+				"258623241511168180642964355153611979969197632389120000000000");
+	}
+
 	public void testQuiet() {
 		check("Quiet(1/0)", "ComplexInfinity");
 		check("1/0", "ComplexInfinity");
@@ -3006,9 +3014,10 @@ public class LowercaseTestCases extends AbstractTestCase {
 	}
 
 	public void testReturn() {
+		check("$a(x_):=Return(1); $b(x_):=Module({},$c=$a(y);2); $b(1)", "2");
 		check("($f(x_) := (If(x > 5, Return(a)); x + 3));$f(6)", "a");
-		check("($g[x_] := (Do(If(x > 5, Return(a)), {3}); x));$g(6)", "6");
-		check("($h[x_] := (Catch(Do(If(x > 5, Throw(a)), {3}); x)));$h(6)", "a");
+		check("($g(x_) := (Do(If(x > 5, Return(a)), {3}); x));$g(6)", "6");
+		check("($h(x_) := (Catch(Do(If(x > 5, Throw(a)), {3}); x)));$h(6)", "a");
 	}
 
 	public void testRiffle() {
