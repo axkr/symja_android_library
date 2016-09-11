@@ -68,6 +68,7 @@ public class Get extends AbstractFunctionEvaluator {
 	/**
 	 * Load a package from the given reader
 	 * 
+	 * @param engine
 	 * @param is
 	 */
 	public static void loadPackage(final EvalEngine engine, final Reader is) {
@@ -127,6 +128,10 @@ public class Get extends AbstractFunctionEvaluator {
 	 * Parse the <code>reader</code> input.
 	 * </p>
 	 * <p>
+	 * This method ignores the first line of the script if it starts with the
+	 * <code>#!</code> characters (i.e. Unix Script Executables)
+	 * </p>
+	 * <p>
 	 * <b>Note</b>: uses the <code>ASTNode</code> parser and not the
 	 * <code>ExprParser</code>, because otherwise the symbols couldn't be
 	 * assigned to the contexts.
@@ -140,6 +145,14 @@ public class Get extends AbstractFunctionEvaluator {
 	private static List<ASTNode> parseReader(final BufferedReader reader, final EvalEngine engine) throws IOException {
 		String record;
 		StringBuilder builder = new StringBuilder(2048);
+		if ((record = reader.readLine()) != null) {
+			// ignore the first line of the script if it starts with the #!
+			// characters (i.e. Unix Script Executables)
+			if (!record.startsWith("!#")) {
+				builder.append(record);
+				builder.append('\n');
+			}
+		}
 		while ((record = reader.readLine()) != null) {
 			builder.append(record);
 			builder.append('\n');
