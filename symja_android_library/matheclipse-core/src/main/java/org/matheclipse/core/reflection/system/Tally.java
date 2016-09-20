@@ -44,7 +44,7 @@ public class Tally extends AbstractEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
+	public void setUp(final ISymbol newSymbol) {
 	}
 
 	public static IAST tally1Arg(IAST list) {

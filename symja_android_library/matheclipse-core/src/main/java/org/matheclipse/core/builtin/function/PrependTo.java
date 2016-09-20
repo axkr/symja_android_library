@@ -48,7 +48,7 @@ public class PrependTo extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.HOLDFIRST);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.HOLDFIRST);
 	}
 }

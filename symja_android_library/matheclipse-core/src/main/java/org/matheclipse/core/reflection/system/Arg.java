@@ -16,7 +16,6 @@ import org.apache.commons.math4.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
-import org.matheclipse.core.eval.exception.ComplexResultException;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
@@ -29,7 +28,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * 
@@ -171,8 +169,8 @@ public class Arg extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperat
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) throws SyntaxError {
-		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-		super.setUp(symbol);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		super.setUp(newSymbol);
 	}
 }

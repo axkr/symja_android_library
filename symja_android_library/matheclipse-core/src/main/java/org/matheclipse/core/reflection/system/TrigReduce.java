@@ -1,9 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.CN1D2;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.CN1D2;
 import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.Cosh;
 import static org.matheclipse.core.expression.F.Cot;
@@ -13,8 +13,8 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sec;
 import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Sinh;
-import static org.matheclipse.core.expression.F.Tan;
 import static org.matheclipse.core.expression.F.Subtract;
+import static org.matheclipse.core.expression.F.Tan;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.x;
 import static org.matheclipse.core.expression.F.x_;
@@ -102,7 +102,7 @@ public class TrigReduce extends AbstractEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
+	public void setUp(final ISymbol newSymbol) {
 		// ORDERLESS_MATCHER.setUpHashRule("Sin[x_]", "Cos[y_]",
 		// "Sin[x+y]/2+Sin[x-y]/2");
 		ORDERLESS_MATCHER.defineHashRule(Sin(x_), Cos(y_),
@@ -136,7 +136,7 @@ public class TrigReduce extends AbstractEvaluator {
 		// Cos[x + y])/(Cos[x - y] + Cos[x + y])");
 		// ORDERLESS_MATCHER.defineHashRule(Tan(x_), Tan(y_),
 		// Divide(Subtract(Cos(Subtract(x,y)),Cos(Plus(x,y))),Plus(Cos(Subtract(x,y)),Cos(Plus(x,y)))));
-		symbol.setAttributes(ISymbol.LISTABLE);
+		newSymbol.setAttributes(ISymbol.LISTABLE);
 	}
 
 }

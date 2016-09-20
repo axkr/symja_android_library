@@ -4,7 +4,6 @@ import static org.matheclipse.core.expression.F.List;
 
 import org.apache.commons.math4.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;

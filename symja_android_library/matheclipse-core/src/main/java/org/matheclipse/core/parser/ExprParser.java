@@ -81,8 +81,35 @@ public class ExprParser extends ExprScanner {
 
 	public final static ISymbol DERIVATIVE = F.Derivative;
 
+	public static int syntaxLength(final String str) throws SyntaxError {
+		try {
+			ExprParser parser = new ExprParser(EvalEngine.get());
+			parser.parse(str);
+		} catch (final SyntaxError e) {
+			return e.getStartOffset();
+		}
+		return str.length();
+	}
+
+	public static boolean test(final String str) {
+		try {
+			ExprParser fParser = new ExprParser(EvalEngine.get());
+			final IExpr parsedExpression = fParser.parse(str);
+			// final Parser fParser = new Parser();
+			// final ASTNode parsedAST = fParser.parse(str);
+			// final IExpr parsedExpression = AST2Expr.CONST.convert(parsedAST);
+			if (parsedExpression != null) {
+				return true;
+			}
+		} catch (final SyntaxError e) {
+
+		}
+		return false;
+	}
 	private final boolean fRelaxedSyntax;
+
 	private List<IExpr> fNodeList = null;
+
 	private final EvalEngine fEngine;
 
 	public ExprParser(final EvalEngine engine) {
@@ -91,6 +118,7 @@ public class ExprParser extends ExprScanner {
 
 	/**
 	 * 
+	 * @param engine
 	 * @param relaxedSyntax
 	 *            if <code>true</code>, use '('...')' as brackets for arguments
 	 * @throws SyntaxError
@@ -105,6 +133,7 @@ public class ExprParser extends ExprScanner {
 
 	/**
 	 * 
+	 * @param engine
 	 * @param factory
 	 * @param relaxedSyntax
 	 *            if <code>true</code>, use '('...')' as brackets for arguments
@@ -477,7 +506,7 @@ public class ExprParser extends ExprScanner {
 			// read '_:'
 			getNextToken();
 			IExpr defaultValue = parseExpression();
-			temp = F.$b( null, defaultValue); 
+			temp = F.$b(null, defaultValue);
 			return parseArguments(temp);
 		} else if (fToken == TT_DIGIT) {
 			return getNumber(false);

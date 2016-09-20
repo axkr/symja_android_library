@@ -15,7 +15,6 @@ import org.apache.commons.math4.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.SystemNamespace;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
@@ -50,7 +49,7 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 
 	static class DummyEvaluator implements IEvaluator {
 		@Override
-		public void setUp(ISymbol symbol) {
+		public void setUp(ISymbol newSymbol) {
 			// do nothing because of dummy evaluator
 		}
 	}
@@ -416,13 +415,13 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 			synchronized (this) {
 				if (fEvaluator == null) {
 					fEvaluator = DUMMY_EVALUATOR;
-					if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-						SystemNamespace.DEFAULT.setEvaluator(this);
-					} else {
-						if (Character.isUpperCase(fSymbolName.charAt(0))) {
-							SystemNamespace.DEFAULT.setEvaluator(this);
-						}
-					}
+					// if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+					// SystemNamespace.DEFAULT.setEvaluator(this);
+					// } else {
+					// if (Character.isUpperCase(fSymbolName.charAt(0))) {
+					// SystemNamespace.DEFAULT.setEvaluator(this);
+					// }
+					// }
 				}
 			}
 		}
@@ -807,8 +806,6 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		return fRulesData.putUpRule(setSymbol, equalRule, leftHandSide, rightHandSide);
 	}
 
-	/** {@inheritDoc} */
-	// @Override
 	private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		fSymbolName = stream.readUTF();
 		fAttributes = stream.read();
@@ -947,7 +944,6 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		return uv2s.apply(this);
 	}
 
-	/** {@inheritDoc} */
 	private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
 		stream.writeUTF(fSymbolName);
 		stream.write(fAttributes);

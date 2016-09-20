@@ -78,7 +78,7 @@ public class Equivalent extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.ORDERLESS);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.ORDERLESS);
 	}
 }

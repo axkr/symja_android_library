@@ -17,7 +17,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.CoshRules;
-import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * Hyperbolic cosine
@@ -44,7 +43,7 @@ public class Cosh extends AbstractTrigArg1 implements INumeric, CoshRules, Doubl
 	public IExpr e1ApfloatArg(Apfloat arg1) {
 		return F.num(ApfloatMath.cosh(arg1));
 	}
-	
+
 	@Override
 	public IExpr e1ComplexArg(final Complex arg1) {
 		return F.complexNum(arg1.cosh());
@@ -85,8 +84,8 @@ public class Cosh extends AbstractTrigArg1 implements INumeric, CoshRules, Doubl
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) throws SyntaxError {
-		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-		super.setUp(symbol);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		super.setUp(newSymbol);
 	}
 }

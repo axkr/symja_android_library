@@ -22,7 +22,7 @@ public abstract class AbstractSymbolEvaluator implements ISymbolEvaluator {
 		return numericEval(symbol);
 	}
 
-	public void setUp(final ISymbol symbol) {
+	public void setUp(final ISymbol newSymbol) {
 		// do nothing
 	}
 }

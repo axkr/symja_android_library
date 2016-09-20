@@ -48,6 +48,13 @@ public class AST3 extends AST2 {
 	protected IExpr arg3;
 
 	/**
+	 * ctor for deserialization
+	 */
+	public AST3() {
+		super();
+	}
+	
+	/**
 	 * Create a function with three arguments (i.e.
 	 * <code>head[arg1, arg2, arg3]</code>).
 	 * 

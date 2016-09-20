@@ -197,7 +197,7 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.FLAT);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.FLAT);
 	}
 }

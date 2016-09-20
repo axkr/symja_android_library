@@ -29,8 +29,8 @@ public class Positive extends AbstractEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.LISTABLE);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE);
 	}
 
 }

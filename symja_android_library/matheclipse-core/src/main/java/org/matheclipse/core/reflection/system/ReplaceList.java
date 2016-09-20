@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.function.Function;
+
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -11,8 +13,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import java.util.function.Function;
 
 public class ReplaceList extends AbstractEvaluator {
 
@@ -85,10 +85,10 @@ public class ReplaceList extends AbstractEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
+	public void setUp(final ISymbol newSymbol) {
 		if (!ToggleFeature.REPLACE_LIST) {
 			return;
 		}
-		symbol.setAttributes(ISymbol.HOLDREST);
+		newSymbol.setAttributes(ISymbol.HOLDREST);
 	}
 }

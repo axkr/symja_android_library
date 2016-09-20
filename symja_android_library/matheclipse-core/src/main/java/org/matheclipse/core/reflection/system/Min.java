@@ -8,7 +8,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
-import org.matheclipse.core.interfaces.IExpr.COMPARE_TERNARY;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class Min extends AbstractFunctionEvaluator {
@@ -82,8 +81,8 @@ public class Min extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.NUMERICFUNCTION);
-		super.setUp(symbol);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.NUMERICFUNCTION);
+		super.setUp(newSymbol);
 	}
 }

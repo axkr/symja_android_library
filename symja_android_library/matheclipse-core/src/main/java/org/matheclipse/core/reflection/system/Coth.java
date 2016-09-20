@@ -18,7 +18,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.CothRules;
-import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * Hyperbolic cotangent
@@ -55,7 +54,7 @@ public class Coth extends AbstractTrigArg1 implements INumeric, CothRules, Doubl
 	public IExpr e1DblArg(final double arg1) {
 		return F.num(Math.cosh(arg1) / Math.sinh(arg1));
 	}
-	
+
 	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
@@ -86,8 +85,8 @@ public class Coth extends AbstractTrigArg1 implements INumeric, CothRules, Doubl
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) throws SyntaxError {
-		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-		super.setUp(symbol);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		super.setUp(newSymbol);
 	}
 }

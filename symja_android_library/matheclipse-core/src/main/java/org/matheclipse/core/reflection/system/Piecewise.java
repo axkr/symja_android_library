@@ -8,7 +8,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * A piecewise-defined function (also called a piecewise function or a hybrid function) is a function which is defined by multiple
@@ -90,8 +89,8 @@ public class Piecewise extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) throws SyntaxError {
-		symbol.setAttributes(ISymbol.HOLDALL | ISymbol.NUMERICFUNCTION);
-		super.setUp(symbol);
+	public void setUp(final ISymbol newSymbol)  {
+		newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.NUMERICFUNCTION);
+		super.setUp(newSymbol);
 	}
 }

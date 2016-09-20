@@ -104,7 +104,7 @@ public class Rationalize extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE);
 	}
 }

@@ -9,6 +9,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class Sqrt extends AbstractArg1 implements INumeric {
+	public static final Sqrt CONST = new Sqrt();
+
 	public Sqrt() {
 	}
 
@@ -29,8 +31,7 @@ public class Sqrt extends AbstractArg1 implements INumeric {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-		super.setUp(symbol);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 	}
 }

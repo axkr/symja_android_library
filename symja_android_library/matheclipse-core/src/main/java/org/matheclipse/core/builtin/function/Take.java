@@ -76,7 +76,7 @@ public class Take extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.NHOLDREST);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.NHOLDREST);
 	}
 }

@@ -147,8 +147,8 @@ public class Product extends Table implements ProductRules {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.HOLDALL | ISymbol.DELAYED_RULE_EVALUATION);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.DELAYED_RULE_EVALUATION);
 		IAST ruleList;
 		if ((ruleList = getRuleAST()) != null) {
 			EvalEngine.get().addRules(ruleList);

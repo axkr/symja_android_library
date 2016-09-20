@@ -10,7 +10,7 @@ public interface IEvaluator {
 	 * This method will be called every time a new ISymbol will be created.
 	 * In this method you can set ISymbol attributes or constants for the symbol
 	 *
-	 * @param symbol the symbol which should be set up
+	 * @param newSymbol the symbol which should be set up
 	 */
-	public void setUp(ISymbol symbol);
+	public void setUp(ISymbol newSymbol);
 }

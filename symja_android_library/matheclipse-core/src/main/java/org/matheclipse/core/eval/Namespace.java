@@ -102,6 +102,9 @@ public class Namespace {
 					IEvaluator module = (IEvaluator) clazz.newInstance();
 					// a predefined function
 					// use reflection to setUp this symbol
+					// System.out.println(functionName + ".setEvaluator(new
+					// org.matheclipse.core.reflection.system."
+					// + functionName + "());");
 					symbol.setEvaluator(module);
 					// module.setUp(symbol);
 					return;

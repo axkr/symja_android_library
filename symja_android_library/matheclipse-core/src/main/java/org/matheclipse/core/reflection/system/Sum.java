@@ -15,6 +15,8 @@ import static org.matheclipse.core.expression.F.Sum;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.k;
 
+import java.util.function.Predicate;
+
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -25,9 +27,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.SumRules;
-import org.matheclipse.parser.client.SyntaxError;
-
-import java.util.function.Predicate;
 
 /**
  * Summation of expressions.
@@ -322,7 +321,7 @@ public class Sum extends Table implements SumRules {
 		// (var+1)^(p+1)/(p+1) +
 		// Sum[(var+1)^(p-k+1)*Binomial[p,k]*BernoulliB[k]*(p-k+1)^(-1),
 		// {k,1,p}]
-		IExpr term1=F.NIL;
+		IExpr term1 = F.NIL;
 		if (!from.isOne()) {
 			IExpr fromMinusOne = F.Plus(F.CN1, from);
 			if (p.isOne()) {
@@ -332,7 +331,8 @@ public class Sum extends Table implements SumRules {
 						.eval(ExpandAll(
 								Plus(Times(
 										Power(Plus(fromMinusOne,
-												C1), Plus(p,
+												C1),
+												Plus(p,
 														C1)),
 										Power(Plus(p, C1), CN1)), Sum(
 												Times(Times(
@@ -351,7 +351,8 @@ public class Sum extends Table implements SumRules {
 							Plus(Times(
 									Power(Plus(to, C1),
 											Plus(p, C1)),
-									Power(Plus(p, C1), CN1)), Sum(Times(
+									Power(Plus(p, C1), CN1)),
+									Sum(Times(
 											Times(Times(Power(Plus(to, C1), Plus(Plus(p, Times(CN1, k)), C1)),
 													Binomial(p, k)), BernoulliB(k)),
 											Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)), List(k, C1, p)))));
@@ -367,8 +368,8 @@ public class Sum extends Table implements SumRules {
 	 * 
 	 */
 	@Override
-	public void setUp(final ISymbol symbol) throws SyntaxError {
-		symbol.setAttributes(ISymbol.HOLDALL | ISymbol.DELAYED_RULE_EVALUATION);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.DELAYED_RULE_EVALUATION);
 		IAST ruleList;
 		if ((ruleList = getRuleAST()) != null) {
 			EvalEngine.get().addRules(ruleList);

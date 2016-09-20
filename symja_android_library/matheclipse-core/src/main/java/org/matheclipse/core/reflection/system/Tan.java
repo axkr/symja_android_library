@@ -29,7 +29,6 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.TanRules;
-import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * Tan
@@ -122,8 +121,8 @@ public class Tan extends AbstractTrigArg1 implements INumeric, TanRules, DoubleU
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) throws SyntaxError {
-		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-		super.setUp(symbol);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		super.setUp(newSymbol);
 	}
 }

@@ -21,7 +21,6 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.LogRules;
-import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * See <a href="http://en.wikipedia.org/wiki/Logarithm">Wikipedia -
@@ -125,9 +124,9 @@ public class Log extends AbstractArg12 implements INumeric, LogRules {
 	}
 
 	@Override
-	public void setUp(ISymbol symbol) throws SyntaxError {
-		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-		super.setUp(symbol);
+	public void setUp(ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		super.setUp(newSymbol);
 	}
 
 	@Override

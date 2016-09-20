@@ -32,6 +32,42 @@ public abstract class IPatternMatcher
 		fLhsPatternExpr = lhsPatternExpr;
 	}
 
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+		IPatternMatcher v = (IPatternMatcher) super.clone();
+		v.fLhsPatternExpr = fLhsPatternExpr;
+		return v;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		IPatternMatcher other = (IPatternMatcher) obj;
+		if (fLhsPatternExpr == null) {
+			if (other.fLhsPatternExpr != null)
+				return false;
+		} else if (!fLhsPatternExpr.equals(other.fLhsPatternExpr))
+			return false;
+		return true;
+	}
+
+	public abstract int equivalent(final IPatternMatcher obj);
+
+	/**
+	 * Match the given left-hand-side and return an evaluated expression
+	 * 
+	 * @param leftHandSide
+	 *            left-hand-side expression
+	 * @return <code>F.NIL</code> if the match wasn't successful, the evaluated
+	 *         expression otherwise.
+	 */
+	public abstract IExpr eval(final IExpr leftHandSide);
+
 	/**
 	 * Get the "left-hand-side" of a pattern-matching rule.
 	 * 
@@ -39,16 +75,6 @@ public abstract class IPatternMatcher
 	 */
 	public IExpr getLHS() {
 		return fLhsPatternExpr;
-	}
-
-	/**
-	 * Get the "right-hand-side" of a pattern-matching rule.
-	 * 
-	 * @return <code>F.NIL</code> if no right-hand-side is defined for the
-	 *         pattern matcher
-	 */
-	public IExpr getRHS() {
-		return F.NIL;
 	}
 
 	/**
@@ -72,6 +98,21 @@ public abstract class IPatternMatcher
 	public abstract int getPriority();
 
 	/**
+	 * Get the "right-hand-side" of a pattern-matching rule.
+	 * 
+	 * @return <code>F.NIL</code> if no right-hand-side is defined for the
+	 *         pattern matcher
+	 */
+	public IExpr getRHS() {
+		return F.NIL;
+	}
+
+	@Override
+	public int hashCode() {
+		return fLhsPatternExpr.hashCode();
+	}
+
+	/**
 	 * Check if the pattern-matchings left-hand-side expression contains no
 	 * patterns.
 	 * 
@@ -87,21 +128,4 @@ public abstract class IPatternMatcher
 	 *         pattern-matchings left-hand-side expression.
 	 */
 	public abstract boolean test(IExpr expr);
-
-	/**
-	 * Match the given left-hand-side and return an evaluated expression
-	 * 
-	 * @param leftHandSide
-	 *            left-hand-side expression
-	 * @return <code>F.NIL</code> if the match wasn't successful, the evaluated
-	 *         expression otherwise.
-	 */
-	public abstract IExpr eval(final IExpr leftHandSide);
-
-	@Override
-	public Object clone() throws CloneNotSupportedException {
-		IPatternMatcher v = (IPatternMatcher) super.clone();
-		v.fLhsPatternExpr = fLhsPatternExpr;
-		return v;
-	}
 }

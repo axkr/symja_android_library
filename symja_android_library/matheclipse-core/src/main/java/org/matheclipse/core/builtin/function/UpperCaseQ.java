@@ -28,8 +28,8 @@ public class UpperCaseQ extends AbstractCorePredicateEvaluator implements Predic
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.LISTABLE);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE);
 	}
 
 	@Override

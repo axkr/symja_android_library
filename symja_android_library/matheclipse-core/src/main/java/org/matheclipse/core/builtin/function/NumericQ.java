@@ -11,10 +11,10 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.SyntaxError;
 
 /**
- * Returns <code>True</code>, if the given expression is a numeric function or value.
+ * Returns <code>True</code>, if the given expression is a numeric function or
+ * value.
  * 
  */
 public class NumericQ extends AbstractCoreFunctionEvaluator implements Predicate<IExpr> {
@@ -33,7 +33,8 @@ public class NumericQ extends AbstractCoreFunctionEvaluator implements Predicate
 	}
 
 	/**
-	 * Returns <code>True</code> if the first argument is a numeric object; <code>False</code> otherwise
+	 * Returns <code>True</code> if the first argument is a numeric object;
+	 * <code>False</code> otherwise
 	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -43,12 +44,14 @@ public class NumericQ extends AbstractCoreFunctionEvaluator implements Predicate
 	}
 
 	@Override
-	public void setUp(ISymbol symbol) throws SyntaxError {
+	public void setUp(ISymbol newSymbol) {
 	}
 
 	/**
-	 * Do a numerical evaluation of the given expression, if <code>arg1.isNumericFunction()</code> is <code>true</code>. Return a
-	 * <code>ISignedNumber</code> if the evaluation result is a <code>ISignedNumber</code> and <code>null</code> in all other cases
+	 * Do a numerical evaluation of the given expression, if
+	 * <code>arg1.isNumericFunction()</code> is <code>true</code>. Return a
+	 * <code>ISignedNumber</code> if the evaluation result is a
+	 * <code>ISignedNumber</code> and <code>null</code> in all other cases
 	 * 
 	 * @param arg1
 	 *            an expression
@@ -74,8 +77,10 @@ public class NumericQ extends AbstractCoreFunctionEvaluator implements Predicate
 	}
 
 	/**
-	 * Do a numerical evaluation of the given expression, if <code>arg1.isNumericFunction()</code> is <code>true</code>. Return a
-	 * <code>INumber</code> if the evaluation result is a <code>INumber</code> and <code>null</code> in all other cases
+	 * Do a numerical evaluation of the given expression, if
+	 * <code>arg1.isNumericFunction()</code> is <code>true</code>. Return a
+	 * <code>INumber</code> if the evaluation result is a <code>INumber</code>
+	 * and <code>null</code> in all other cases
 	 * 
 	 * @param arg1
 	 *            an expression

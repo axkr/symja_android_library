@@ -17,8 +17,8 @@ public class Pi extends AbstractSymbolEvaluator implements ISignedNumberConstant
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.CONSTANT);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.CONSTANT);
 	}
 
 	@Override

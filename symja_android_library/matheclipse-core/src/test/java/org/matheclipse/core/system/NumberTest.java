@@ -13,7 +13,7 @@ import org.matheclipse.core.interfaces.IFraction;
 
 import junit.framework.TestCase;
 
-public class NumberTestCases extends TestCase {
+public class NumberTest extends TestCase {
 	public void testPower() {
 		IFraction f = FractionSym.valueOf(2, 3);
 

@@ -31,10 +31,10 @@ public class Unevaluated extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(ISymbol symbol) {
+	public void setUp(ISymbol newSymbol) {
 		if (!ToggleFeature.UNEVALUATED) {
 			return;
 		}
-		symbol.setAttributes(ISymbol.HOLDALL);
+		newSymbol.setAttributes(ISymbol.HOLDALL);
 	}
 }

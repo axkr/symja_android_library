@@ -13,9 +13,9 @@ import org.matheclipse.core.interfaces.IAST;
 /**
  * Tests system.reflection classes
  */
-public class MainTestCases extends AbstractTestCase {
+public class MainTestCase extends AbstractTestCase {
 
-	public MainTestCases(String name) {
+	public MainTestCase(String name) {
 		super(name);
 		Config.SERVER_MODE = true;
 	}

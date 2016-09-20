@@ -200,7 +200,7 @@ public class Collect extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
+	public void setUp(final ISymbol newSymbol) {
 	}
 
 }

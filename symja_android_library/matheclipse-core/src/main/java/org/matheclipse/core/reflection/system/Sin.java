@@ -32,12 +32,13 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.SinRules;
-import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * Sine function.
  * 
- * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
+ * See
+ * <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
+ * functions</a>
  */
 public class Sin extends AbstractTrigArg1 implements INumeric, SinRules, DoubleUnaryOperator {
 
@@ -63,7 +64,7 @@ public class Sin extends AbstractTrigArg1 implements INumeric, SinRules, DoubleU
 	public IExpr e1ComplexArg(final Complex arg1) {
 		return F.complexNum(arg1.sin());
 	}
-	
+
 	@Override
 	public IExpr e1DblArg(final double arg1) {
 		return num(Math.sin(arg1));
@@ -123,7 +124,7 @@ public class Sin extends AbstractTrigArg1 implements INumeric, SinRules, DoubleU
 				// period n*Pi
 				return Times(Power(CN1, parts.arg2()), Sin(parts.arg1()));
 			}
-			
+
 		}
 		return F.NIL;
 	}
@@ -134,9 +135,9 @@ public class Sin extends AbstractTrigArg1 implements INumeric, SinRules, DoubleU
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) throws SyntaxError {
-		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-		super.setUp(symbol);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		super.setUp(newSymbol);
 	}
 
 }

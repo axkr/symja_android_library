@@ -3,7 +3,6 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.List;
 
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -30,8 +29,8 @@ public class ToCharacterCode extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.LISTABLE);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE);
 	}
 
 	public static IAST toCharacterCode(final String unicodeInput, final String inputEncoding, final IAST list) {

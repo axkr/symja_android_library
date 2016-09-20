@@ -77,14 +77,6 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 		return v;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof PatternMatcherEquals) {
-			return fLhsPatternExpr.equals(((PatternMatcherEquals) obj).fLhsPatternExpr);
-		}
-		return super.equals(obj);
-	}
-
 	/** {@inheritDoc} */
 	@Override
 	public IExpr eval(IExpr leftHandSide) {
@@ -123,11 +115,6 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 			return F.UpSet;
 		}
 		return null;
-	}
-
-	@Override
-	public int hashCode() {
-		return fLhsPatternExpr.hashCode();
 	}
 
 	@Override
@@ -184,5 +171,10 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 		fSetSymbol = RuleType.values()[objectInput.readShort()];
 		fLhsPatternExpr = (IExpr) objectInput.readObject();
 		fRightHandSide = (IExpr) objectInput.readObject();
+	}
+
+	@Override
+	public int equivalent(IPatternMatcher obj) {
+		return compareTo(obj);
 	}
 }

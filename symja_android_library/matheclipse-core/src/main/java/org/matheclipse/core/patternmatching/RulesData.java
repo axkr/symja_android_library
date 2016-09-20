@@ -29,13 +29,95 @@ public class RulesData implements Serializable {
 
 	private static final long serialVersionUID = -7747268035549814899L;
 
+	public static boolean containsOrderlessASTOrDefaultPattern(final IAST lhsAST) {
+		for (int i = 1; i < lhsAST.size(); i++) {
+			if (lhsAST.get(i).isPatternDefault()) {
+				return true;
+			}
+			if (lhsAST.get(i).isOrderlessAST()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean isComplicatedPatternRule(final IExpr lhsExpr, Set<ISymbol> neededSymbols) {
+		if (lhsExpr.isAST()) {
+			final IAST lhsAST = ((IAST) lhsExpr);
+			if (lhsAST.size() > 1) {
+				int attr = lhsAST.topHead().getAttributes();
+				if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
+					return true;
+				}
+				if (lhsAST.arg1().isPattern()) {
+					return true;
+				} else if (lhsAST.arg1().isPatternSequence()) {
+					return true;
+				} else if (lhsAST.arg1().isAST()) {
+					IAST arg1 = (IAST) lhsAST.arg1();
+					if (arg1.isAST(F.PatternTest, 3)) {
+						return true;
+					}
+					if (arg1.isAST(F.Except, 2, 3)) {
+						return true;
+					}
+					if (arg1.isCondition()) {
+						return true;
+					}
+					if (arg1.head().isPatternExpr()) {
+						// the head contains a pattern F_(a1, a2,...)
+						return true;
+					}
+					if (arg1.head().isSymbol()) {
+						attr = ((ISymbol) arg1.head()).getAttributes();
+						if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
+							if (neededSymbols != null) {
+								boolean isComplicated = false;
+								for (int i = 1; i < arg1.size(); i++) {
+									if (arg1.get(i).isPatternDefault()) {
+										isComplicated = true;
+										continue;
+									}
+									if (arg1.get(i).isAST()
+											&& !containsOrderlessASTOrDefaultPattern((IAST) arg1.get(i))) {
+										neededSymbols.add(arg1.get(i).topHead());
+									}
+								}
+								return isComplicated;
+							}
+						}
+					}
+					// the left hand side is associated with the first argument
+					// see if one of the arguments contain a pattern with defaut
+					// value
+					for (int i = 1; i < arg1.size(); i++) {
+						if (arg1.get(i).isPatternDefault()) {
+							return true;
+						}
+					}
+					return false;
+				}
+				for (int i = 2; i < lhsAST.size(); i++) {
+					if (lhsAST.get(i).isPatternDefault()) {
+						return true;
+					}
+				}
+			}
+		} else if (lhsExpr.isPattern()) {
+			return true;
+		} else if (lhsExpr.isPatternSequence()) {
+			return true;
+		}
+		return false;
+	}
+
 	private Map<IExpr, PatternMatcherEquals> fEqualDownRules;
 	private OpenIntToSet<IPatternMatcher> fSimplePatternDownRules;
 	private OpenIntToSet<IPatternMatcher> fSimpleOrderlesPatternDownRules;
 	private Set<IPatternMatcher> fPatternDownRules;
 	private Map<IExpr, PatternMatcherEquals> fEqualUpRules;
 	private OpenIntToSet<IPatternMatcher> fSimplePatternUpRules;
-	final private Context context;
+	final transient private Context context;
 
 	public RulesData(Context context) {
 		this.context = context;
@@ -118,18 +200,6 @@ public class RulesData implements Serializable {
 		fPatternDownRules = null;
 		fEqualUpRules = null;
 		fSimplePatternUpRules = null;
-	}
-
-	public static boolean containsOrderlessASTOrDefaultPattern(final IAST lhsAST) {
-		for (int i = 1; i < lhsAST.size(); i++) {
-			if (lhsAST.get(i).isPatternDefault()) {
-				return true;
-			}
-			if (lhsAST.get(i).isOrderlessAST()) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	public List<IAST> definition() {
@@ -256,6 +326,48 @@ public class RulesData implements Serializable {
 		}
 
 		return definitionList;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RulesData other = (RulesData) obj;
+		if (fEqualDownRules == null) {
+			if (other.fEqualDownRules != null)
+				return false;
+		} else if (!fEqualDownRules.equals(other.fEqualDownRules))
+			return false;
+		if (fEqualUpRules == null) {
+			if (other.fEqualUpRules != null)
+				return false;
+		} else if (!fEqualUpRules.equals(other.fEqualUpRules))
+			return false;
+		if (fPatternDownRules == null) {
+			if (other.fPatternDownRules != null)
+				return false;
+		} else if (!fPatternDownRules.equals(other.fPatternDownRules))
+			return false;
+		if (fSimpleOrderlesPatternDownRules == null) {
+			if (other.fSimpleOrderlesPatternDownRules != null)
+				return false;
+		} else if (!fSimpleOrderlesPatternDownRules.equals(other.fSimpleOrderlesPatternDownRules))
+			return false;
+		if (fSimplePatternDownRules == null) {
+			if (other.fSimplePatternDownRules != null)
+				return false;
+		} else if (!fSimplePatternDownRules.equals(other.fSimplePatternDownRules))
+			return false;
+		if (fSimplePatternUpRules == null) {
+			if (other.fSimplePatternUpRules != null)
+				return false;
+		} else if (!fSimplePatternUpRules.equals(other.fSimplePatternUpRules))
+			return false;
+		return true;
 	}
 
 	/**
@@ -447,7 +559,8 @@ public class RulesData implements Serializable {
 
 	private Set<IPatternMatcher> getPatternDownRules() {
 		if (fPatternDownRules == null) {
-			fPatternDownRules = new TreeSet<IPatternMatcher>();
+			// fPatternDownRules = new TreeSet<IPatternMatcher>();
+			fPatternDownRules = new TreeSet<IPatternMatcher>(PatternMatcherComparator.CONS);
 		}
 		return fPatternDownRules;
 	}
@@ -473,74 +586,41 @@ public class RulesData implements Serializable {
 		return fSimplePatternUpRules;
 	}
 
-	public static boolean isComplicatedPatternRule(final IExpr lhsExpr, Set<ISymbol> neededSymbols) {
-		if (lhsExpr.isAST()) {
-			final IAST lhsAST = ((IAST) lhsExpr);
-			if (lhsAST.size() > 1) {
-				int attr = lhsAST.topHead().getAttributes();
-				if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
-					return true;
-				}
-				if (lhsAST.arg1().isPattern()) {
-					return true;
-				} else if (lhsAST.arg1().isPatternSequence()) {
-					return true;
-				} else if (lhsAST.arg1().isAST()) {
-					IAST arg1 = (IAST) lhsAST.arg1();
-					if (arg1.isAST(F.PatternTest, 3)) {
-						return true;
-					}
-					if (arg1.isAST(F.Except, 2, 3)) {
-						return true;
-					}
-					if (arg1.isCondition()) {
-						return true;
-					}
-					if (arg1.head().isPatternExpr()) {
-						// the head contains a pattern F_(a1, a2,...)
-						return true;
-					}
-					if (arg1.head().isSymbol()) {
-						attr = ((ISymbol) arg1.head()).getAttributes();
-						if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
-							if (neededSymbols != null) {
-								boolean isComplicated = false;
-								for (int i = 1; i < arg1.size(); i++) {
-									if (arg1.get(i).isPatternDefault()) {
-										isComplicated = true;
-										continue;
-									}
-									if (arg1.get(i).isAST()
-											&& !containsOrderlessASTOrDefaultPattern((IAST) arg1.get(i))) {
-										neededSymbols.add(arg1.get(i).topHead());
-									}
-								}
-								return isComplicated;
-							}
-						}
-					}
-					// the left hand side is associated with the first argument
-					// see if one of the arguments contain a pattern with defaut
-					// value
-					for (int i = 1; i < arg1.size(); i++) {
-						if (arg1.get(i).isPatternDefault()) {
-							return true;
-						}
-					}
-					return false;
-				}
-				for (int i = 2; i < lhsAST.size(); i++) {
-					if (lhsAST.get(i).isPatternDefault()) {
-						return true;
-					}
-				}
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((fEqualDownRules == null) ? 0 : fEqualDownRules.hashCode());
+		result = prime * result + ((fEqualUpRules == null) ? 0 : fEqualUpRules.hashCode());
+		result = prime * result + ((fPatternDownRules == null) ? 0 : fPatternDownRules.hashCode());
+		result = prime * result
+				+ ((fSimpleOrderlesPatternDownRules == null) ? 0 : fSimpleOrderlesPatternDownRules.hashCode());
+		result = prime * result + ((fSimplePatternDownRules == null) ? 0 : fSimplePatternDownRules.hashCode());
+		result = prime * result + ((fSimplePatternUpRules == null) ? 0 : fSimplePatternUpRules.hashCode());
+		return result;
+	}
+
+	public IPatternMatcher putDownRule(final IExpr leftHandSide, final AbstractPatternMatcherMethod pmEvaluator) {
+		Set<ISymbol> headerSymbols = new HashSet<ISymbol>();
+		if (!isComplicatedPatternRule(leftHandSide, headerSymbols)) {
+			fSimplePatternDownRules = getSimplePatternDownRules();
+			return addSimplePatternDownRule(leftHandSide, pmEvaluator);
+
+		} else {
+			if (headerSymbols.size() > 0) {
+				fSimpleOrderlesPatternDownRules = getSimpleOrderlessPatternDownRules();
+				return addSimpleOrderlessPatternDownRule(headerSymbols, leftHandSide, pmEvaluator);
 			}
-		} else if (lhsExpr.isPattern()) {
-			return true;
-		} else if (lhsExpr.isPatternSequence()) {
-			return true;
+
+			fPatternDownRules = getPatternDownRules();
+			if (F.isSystemInitialized) {
+				fPatternDownRules.remove(pmEvaluator);
+			}
+			fPatternDownRules.add(pmEvaluator);
+			return pmEvaluator;
+
 		}
-		return false;
+
 	}
 
 	public final IPatternMatcher putDownRule(final IExpr leftHandSide, final IExpr rightHandSide) {
@@ -592,29 +672,6 @@ public class RulesData implements Serializable {
 				// return pmEvaluator;
 				// }
 				// }
-			}
-			fPatternDownRules.add(pmEvaluator);
-			return pmEvaluator;
-
-		}
-
-	}
-
-	public IPatternMatcher putDownRule(final IExpr leftHandSide, final AbstractPatternMatcherMethod pmEvaluator) {
-		Set<ISymbol> headerSymbols = new HashSet<ISymbol>();
-		if (!isComplicatedPatternRule(leftHandSide, headerSymbols)) {
-			fSimplePatternDownRules = getSimplePatternDownRules();
-			return addSimplePatternDownRule(leftHandSide, pmEvaluator);
-
-		} else {
-			if (headerSymbols.size() > 0) {
-				fSimpleOrderlesPatternDownRules = getSimpleOrderlessPatternDownRules();
-				return addSimpleOrderlessPatternDownRule(headerSymbols, leftHandSide, pmEvaluator);
-			}
-
-			fPatternDownRules = getPatternDownRules();
-			if (F.isSystemInitialized) {
-				fPatternDownRules.remove(pmEvaluator);
 			}
 			fPatternDownRules.add(pmEvaluator);
 			return pmEvaluator;

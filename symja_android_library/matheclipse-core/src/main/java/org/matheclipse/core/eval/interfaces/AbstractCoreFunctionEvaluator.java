@@ -4,7 +4,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * Abstract interface for built-in Symja functions. The
@@ -24,7 +23,7 @@ public abstract class AbstractCoreFunctionEvaluator implements ICoreFunctionEval
 	 * 
 	 */
 	@Override
-	public void setUp(final ISymbol symbol) throws SyntaxError {
+	public void setUp(final ISymbol newSymbol) {
 		//
 	}
 

@@ -125,7 +125,7 @@ public class Position extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.NHOLDALL);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.NHOLDALL);
 	}
 }

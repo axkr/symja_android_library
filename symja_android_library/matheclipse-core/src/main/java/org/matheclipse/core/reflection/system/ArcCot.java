@@ -8,12 +8,10 @@ import static org.matheclipse.core.expression.F.Plus;
 import java.util.function.DoubleUnaryOperator;
 
 import org.apache.commons.math4.complex.Complex;
-import org.apache.commons.math4.util.FastMath;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
-import org.matheclipse.core.eval.exception.ComplexResultException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.expression.F;
@@ -21,7 +19,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.ArcCotRules;
-import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * Arccotangent
@@ -60,7 +57,7 @@ public class ArcCot extends AbstractTrigArg1 implements ArcCotRules, DoubleUnary
 			// Pi / 2
 			return F.num(ApfloatMath.pi(arg1.precision()).divide(new Apfloat(2)));
 		}
-		return F.num(ApfloatMath.atan(ApfloatMath.inverseRoot(arg1,1)));
+		return F.num(ApfloatMath.atan(ApfloatMath.inverseRoot(arg1, 1)));
 	}
 
 	@Override
@@ -102,8 +99,8 @@ public class ArcCot extends AbstractTrigArg1 implements ArcCotRules, DoubleUnary
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) throws SyntaxError {
-		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-		super.setUp(symbol);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		super.setUp(newSymbol);
 	}
 }

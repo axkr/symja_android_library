@@ -17,7 +17,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
-import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * Abstract interface for built-in Symja functions. The
@@ -38,7 +37,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 
 	/** {@inheritDoc} */
 	@Override
-	public void setUp(final ISymbol symbol) throws SyntaxError {
+	public void setUp(final ISymbol newSymbol) {
 
 		if (getRuleAST() != null) {
 			// don't call EvalEngine#addRules() here!
@@ -46,13 +45,13 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 			// EvalEngine.get().addRules(ruleList);
 		}
 
-		F.SYMBOL_OBSERVER.createPredefinedSymbol(symbol.toString());
-		if (Config.SERIALIZE_SYMBOLS && symbol.containsRules()) {
+		F.SYMBOL_OBSERVER.createPredefinedSymbol(newSymbol.toString());
+		if (Config.SERIALIZE_SYMBOLS && newSymbol.containsRules()) {
 			FileOutputStream out;
 			try {
-				out = new FileOutputStream("c:\\temp\\ser\\" + symbol.getSymbolName() + ".ser");
+				out = new FileOutputStream("c:\\temp\\ser\\" + newSymbol.getSymbolName() + ".ser");
 				ObjectOutputStream oos = new ObjectOutputStream(out);
-				symbol.writeRules(oos);
+				newSymbol.writeRules(oos);
 				oos.close();
 				out.close();
 			} catch (IOException e) {
@@ -77,37 +76,37 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 		symbol.putDownRule(pm);
 	}
 
-	
-
 	/**
 	 * Check if the expression is canonical negative.
 	 * 
+	 * @param expression
 	 * @return the negated negative expression or <code>null</code> if a
 	 *         negative expression couldn't be extracted.
 	 */
-	public static IExpr getNormalizedNegativeExpression(final IExpr expr) {
-		return getNormalizedNegativeExpression(expr, true);
+	public static IExpr getNormalizedNegativeExpression(final IExpr expression) {
+		return getNormalizedNegativeExpression(expression, true);
 	}
 
 	/**
 	 * Check if the expression is canonical negative.
 	 * 
+	 * @param expression
 	 * @param checkTimesPlus
 	 *            check <code>Times(...)</code> and <code>Plus(...)</code>
 	 *            expressions
 	 * @return the negated negative expression or <code>F.NIL</code> if a
 	 *         negative expression couldn't be extracted.
 	 */
-	public static IExpr getNormalizedNegativeExpression(final IExpr expr, boolean checkTimesPlus) {
+	public static IExpr getNormalizedNegativeExpression(final IExpr expression, boolean checkTimesPlus) {
 		IAST result = F.NIL;
-		if (expr.isNumber()) {
-			if (((INumber) expr).complexSign() < 0) {
-				return ((INumber) expr).negate();
+		if (expression.isNumber()) {
+			if (((INumber) expression).complexSign() < 0) {
+				return ((INumber) expression).negate();
 			}
 		}
-		if (expr.isAST()) {
-			if (checkTimesPlus && expr.isTimes()) {
-				IAST timesAST = ((IAST) expr);
+		if (expression.isAST()) {
+			if (checkTimesPlus && expression.isTimes()) {
+				IAST timesAST = ((IAST) expression);
 				IExpr arg1 = timesAST.arg1();
 				if (arg1.isNumber()) {
 					if (((INumber) arg1).complexSign() < 0) {
@@ -119,23 +118,9 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 					}
 				} else if (arg1.isNegativeInfinity()) {
 					return timesAST.setAtClone(1, F.CInfinity);
-					// } else {
-					// IExpr arg1Negated =
-					// getNormalizedNegativeExpression(arg1);
-					// if (arg1Negated != null) {
-					// for (int i = 2; i < timesAST.size(); i++) {
-					// IExpr temp = timesAST.get(i);
-					// if (temp.isPlus()||temp.isTimes()) {
-					// return null;
-					// }
-					// }
-					// result = timesAST.clone();
-					// result.set(1, arg1Negated);
-					// return result;
-					// }
 				}
-			} else if (checkTimesPlus && expr.isPlus()) {
-				IAST plusAST = ((IAST) expr);
+			} else if (checkTimesPlus && expression.isPlus()) {
+				IAST plusAST = ((IAST) expression);
 				IExpr arg1 = plusAST.arg1();
 				if (arg1.isNumber()) {
 					if (((INumber) arg1).complexSign() < 0) {
@@ -180,12 +165,12 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 						return result;
 					}
 				}
-			} else if (expr.isNegativeInfinity()) {
+			} else if (expression.isNegativeInfinity()) {
 				return F.CInfinity;
 			}
 		}
-		if (expr.isNegativeResult()) {
-			return F.eval(F.Negate(expr));
+		if (expression.isNegativeResult()) {
+			return F.eval(F.Negate(expression));
 		}
 		return F.NIL;
 	}

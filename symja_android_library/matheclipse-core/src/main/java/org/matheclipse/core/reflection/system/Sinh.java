@@ -18,7 +18,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.SinhRules;
-import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * Hyperbolic sine
@@ -50,7 +49,7 @@ public class Sinh extends AbstractTrigArg1 implements INumeric, SinhRules, Doubl
 	public IExpr e1ComplexArg(final Complex arg1) {
 		return F.complexNum(arg1.sinh());
 	}
-	
+
 	@Override
 	public IExpr e1DblArg(final double arg1) {
 		return F.num(Math.sinh(arg1));
@@ -86,8 +85,8 @@ public class Sinh extends AbstractTrigArg1 implements INumeric, SinhRules, Doubl
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) throws SyntaxError {
-		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-		super.setUp(symbol);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		super.setUp(newSymbol);
 	}
 }

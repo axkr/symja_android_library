@@ -11,8 +11,8 @@ import org.matheclipse.core.patternmatching.PatternMatcher;
 /**
  * 
  */
-public class JavaFormTestCases extends AbstractTestCase {
-	public JavaFormTestCases(String name) {
+public class JavaFormTestCase extends AbstractTestCase {
+	public JavaFormTestCase(String name) {
 		super(name);
 	}
 

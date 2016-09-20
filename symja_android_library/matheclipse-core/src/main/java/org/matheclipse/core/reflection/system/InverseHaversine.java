@@ -22,8 +22,8 @@ public class InverseHaversine extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(ISymbol symbol) {
-		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+	public void setUp(ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 	}
 
 }

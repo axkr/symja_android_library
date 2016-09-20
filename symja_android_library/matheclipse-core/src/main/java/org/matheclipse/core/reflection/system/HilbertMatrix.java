@@ -24,7 +24,7 @@ public class HilbertMatrix extends AbstractFunctionEvaluator {
 
 		@Override
 		public IRational evaluate(final int[] index) {
-			return F.fraction(1, 1l + index[0] + index[1]);
+			return F.fraction(1L, 1L + index[0] + index[1]);
 		}
 	}
 

@@ -30,8 +30,8 @@ public class EvenQ extends AbstractCorePredicateEvaluator implements Predicate<I
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.LISTABLE);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE);
 	}
 
 	@Override

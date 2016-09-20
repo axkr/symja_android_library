@@ -7,9 +7,9 @@ import org.matheclipse.parser.client.ast.ASTNode;
 /**
  * Tests system.reflection classes
  */
-public class LowercaseTestCases extends AbstractTestCase {
+public class LowercaseTestCase extends AbstractTestCase {
 
-	public LowercaseTestCases(String name) {
+	public LowercaseTestCase(String name) {
 		super(name);
 	}
 

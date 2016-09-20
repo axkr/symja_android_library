@@ -10,8 +10,8 @@ import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.*;
  * <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based integrator</a>.
  * 
  */
-public class RubiIntegrationTestCases extends AbstractTestCase {
-	public RubiIntegrationTestCases(String name) {
+public class RubiIntegrationTest extends AbstractTestCase {
+	public RubiIntegrationTest(String name) {
 		super(name);
 	}
 
@@ -138,7 +138,7 @@ public class RubiIntegrationTestCases extends AbstractTestCase {
 
 	public void testRubi009() {
 		IAST ast;
-		ast = FixSimplify(fraction(5, 3));
+		ast = FixSimplify(fraction(5L, 3L));
 		check(ast, "5/3");
 	}
 

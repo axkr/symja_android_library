@@ -12,8 +12,8 @@ import org.matheclipse.core.interfaces.IExpr;
  * <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based integrator</a>.
  * 
  */
-public class Java8TestCases extends AbstractTestCase {
-	public Java8TestCases(String name) {
+public class Java8TestCase extends AbstractTestCase {
+	public Java8TestCase(String name) {
 		super(name);
 	}
 

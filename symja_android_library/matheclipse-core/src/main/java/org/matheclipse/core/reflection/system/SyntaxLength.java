@@ -9,8 +9,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
-import org.matheclipse.parser.client.Parser;
-import org.matheclipse.parser.client.SyntaxError;
 
 /**
  *
@@ -28,18 +26,12 @@ public class SyntaxLength extends AbstractFunctionEvaluator {
 		}
 
 		final String str = ast.arg1().toString();
-		try {
-			ExprParser parser = new ExprParser(EvalEngine.get());
-			parser.parse(str);
-		} catch (final SyntaxError e) {
-			return F.integer(e.getStartOffset());
-		}
-		return F.integer(str.length());
+		return F.integer(ExprParser.syntaxLength(str));
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.LISTABLE);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE);
 	}
 
 }

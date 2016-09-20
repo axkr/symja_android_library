@@ -346,8 +346,8 @@ public class Times extends AbstractArgMultiple implements INumeric {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(
 				ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		// ORDERLESS_MATCHER.setUpHashRule("Log[x_]", "Log[y_]^(-1)",
 		// Log.getFunction());
@@ -363,7 +363,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		ORDERLESS_MATCHER.defineHashRule(F.Cos(x_), F.Tan(x_), F.Sin(x));
 		ORDERLESS_MATCHER.defineHashRule(F.Csc(x_), F.Tan(x_), F.Sec(x));
 		ORDERLESS_MATCHER.defineHashRule(F.Cos(x_), F.Csc(x_), F.Cot(x));
-		super.setUp(symbol);
+		super.setUp(newSymbol);
 	}
 
 	private void addTrigRules(ISymbol head1, ISymbol head2, ISymbol resultHead) {

@@ -46,7 +46,7 @@ public class ManhattanDistance extends AbstractEvaluator {
 	}
 
 	@Override
-	public void setUp(ISymbol symbol) {
+	public void setUp(ISymbol newSymbol) {
 
 	}
 

@@ -1,5 +1,9 @@
 package org.matheclipse.core.expression;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.ObjectStreamException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -246,5 +250,9 @@ public class NILPointer extends AbstractAST {
 	@Override
 	public String toString() {
 		return "ExprNull";
+	}
+
+	private Object readResolve() throws ObjectStreamException {
+		return F.NIL;
 	}
 }

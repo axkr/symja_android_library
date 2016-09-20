@@ -87,9 +87,9 @@ public class DirectedInfinity extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
+	public void setUp(final ISymbol newSymbol) {
 		// don't set ISymbol.NUMERICFUNCTION);
-		symbol.setAttributes(ISymbol.HOLDALL);
+		newSymbol.setAttributes(ISymbol.HOLDALL);
 	}
 
 }

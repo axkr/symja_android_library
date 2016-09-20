@@ -20,7 +20,6 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.IPartialFractionGenerator;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
-import org.matheclipse.parser.client.SyntaxError;
 
 import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
@@ -38,6 +37,7 @@ import edu.jas.ufd.SquarefreeFactory;
  * Partial fraction decomposition</a>
  */
 public class Apart extends AbstractFunctionEvaluator {
+	public static final Apart CONST = new Apart();
 
 	/**
 	 * Split the expression into numerator and denominator parts, by calling the
@@ -177,6 +177,8 @@ public class Apart extends AbstractFunctionEvaluator {
 	 * @param trig
 	 *            try to find a trigonometric numerator/denominator form
 	 *            (Example: Csc[x] gives 1 / Sin[x])
+	 * @param evalParts
+	 *            evaluate the determined parts
 	 * @return the numerator and denominator expression and an optional
 	 *         fractional number (maybe <code>null</code>), if splitNumeratorOne
 	 *         is <code>true</code>.
@@ -359,14 +361,18 @@ public class Apart extends AbstractFunctionEvaluator {
 	 * Returns an AST with head <code>Plus</code>, which contains the partial
 	 * fraction decomposition of the numerator and denominator parts.
 	 * 
+	 * @param pf
+	 *            partial fraction generator
 	 * @param parts
-	 * @param variableList
+	 * @param variable
+	 *            a variable
 	 * @return <code>F.NIL</code> if the partial fraction decomposition wasn't
 	 *         constructed
 	 */
-	public static IExpr partialFractionDecompositionRational(IPartialFractionGenerator pf, IExpr[] parts, ISymbol x) {
+	public static IExpr partialFractionDecompositionRational(IPartialFractionGenerator pf, IExpr[] parts,
+			ISymbol variable) {
 		try {
-			IAST variableList = F.List(x);
+			IAST variableList = F.List(variable);
 			IExpr exprNumerator = F.evalExpandAll(parts[0]);
 			IExpr exprDenominator = F.evalExpandAll(parts[1]);
 			ASTRange r = new ASTRange(variableList, 1);
@@ -459,8 +465,8 @@ public class Apart extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) throws SyntaxError {
-		symbol.setAttributes(ISymbol.LISTABLE);
-		super.setUp(symbol);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE);
+		super.setUp(newSymbol);
 	}
 }

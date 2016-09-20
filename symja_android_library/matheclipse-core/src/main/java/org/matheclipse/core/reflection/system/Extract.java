@@ -55,8 +55,8 @@ public class Extract extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.NHOLDREST);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.NHOLDREST);
 	}
 
 	/**

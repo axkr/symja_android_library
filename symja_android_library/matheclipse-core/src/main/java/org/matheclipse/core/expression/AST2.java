@@ -48,6 +48,13 @@ public class AST2 extends AST1 {
 	protected IExpr arg2;
 
 	/**
+	 * ctor for deserialization
+	 */
+	public AST2() {
+		super();
+	}
+
+	/**
 	 * Create a function with two arguments (i.e. <code>head[arg1, arg2]</code>
 	 * ).
 	 * 
@@ -156,14 +163,14 @@ public class AST2 extends AST1 {
 		}
 		return filterAST;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public void forEach(Consumer<? super IExpr> action) {
 		action.accept(arg1);
 		action.accept(arg2);
 	}
-	
+
 	@Override
 	public IExpr get(int location) {
 		switch (location) {
@@ -193,25 +200,25 @@ public class AST2 extends AST1 {
 	public boolean isAST0() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isAST1() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isAST2() {
 		return true;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isAST3() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isSameHead(IExpr head, int length) {

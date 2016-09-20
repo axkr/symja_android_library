@@ -138,8 +138,8 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(
 				ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 
 		// ORDERLESS_MATCHER.setUpHashRule("Sin[x_]^2", "Cos[x_]^2", "a");
@@ -160,7 +160,7 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 				And(Positive(x), Equal(y, Power(x, CN1))));
 		// ORDERLESS_MATCHER.setUpHashRule("Cosh[x_]^2", "-Sinh[x_]^2", "1");
 		ORDERLESS_MATCHER.definePatternHashRule(Power(Cosh(x_), C2), Times(CN1, Power(Sinh(x_), C2)), C1);
-		super.setUp(symbol);
+		super.setUp(newSymbol);
 	}
 
 }

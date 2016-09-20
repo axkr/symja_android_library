@@ -46,7 +46,7 @@ public class FromCharacterCode extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
+	public void setUp(final ISymbol newSymbol) {
 	}
 
 	public static List<IExpr> fromCharcterCode(final String unicodeInput, final String inputEncoding, final List<IExpr> list) {

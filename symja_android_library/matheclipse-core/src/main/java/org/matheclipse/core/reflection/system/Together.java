@@ -9,12 +9,12 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * Determine a common denominator for the expressions of a sum.
  */
 public class Together extends AbstractFunctionEvaluator {
+	public static final Together CONST = new Together();
 
 	public static IExpr together(IAST ast) {
 		IExpr temp = ExpandAll.expandAll(ast, null, true, false);
@@ -206,6 +206,7 @@ public class Together extends AbstractFunctionEvaluator {
 	}
 
 	public Together() {
+		// default ctor
 	}
 
 	@Override
@@ -224,8 +225,7 @@ public class Together extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) throws SyntaxError {
-		symbol.setAttributes(ISymbol.LISTABLE);
-		super.setUp(symbol);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE);
 	}
 }

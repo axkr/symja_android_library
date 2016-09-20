@@ -32,8 +32,8 @@ public class LetterQ extends AbstractFunctionEvaluator implements Predicate<IExp
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.LISTABLE);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE);
 	}
 
 	@Override

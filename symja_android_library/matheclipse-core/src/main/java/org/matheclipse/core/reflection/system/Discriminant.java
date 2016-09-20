@@ -20,8 +20,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.ExprPolynomial;
-import org.matheclipse.core.polynomials.ExprPolynomialRing;
-import org.matheclipse.parser.client.SyntaxError;
+import org.matheclipse.core.polynomials.ExprPolynomialRing; 
 
 /**
  * 
@@ -769,7 +768,7 @@ public class Discriminant extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) throws SyntaxError {
+	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.LISTABLE);
 		super.setUp(symbol);
 	}

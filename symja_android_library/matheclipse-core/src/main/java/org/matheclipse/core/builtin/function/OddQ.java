@@ -29,8 +29,8 @@ public class OddQ extends AbstractCorePredicateEvaluator implements Predicate<IE
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.LISTABLE);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE);
 	}
 
 	@Override

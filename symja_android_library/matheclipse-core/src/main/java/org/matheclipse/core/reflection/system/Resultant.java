@@ -9,7 +9,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
-import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * 
@@ -17,6 +16,7 @@ import org.matheclipse.parser.client.SyntaxError;
 public class Resultant extends AbstractFunctionEvaluator {
 
 	public Resultant() {
+		// default ctor
 	}
 
 	@Override
@@ -135,8 +135,8 @@ public class Resultant extends AbstractFunctionEvaluator {
 	// }
 
 	@Override
-	public void setUp(final ISymbol symbol) throws SyntaxError {
-		symbol.setAttributes(ISymbol.LISTABLE);
-		super.setUp(symbol);
+	public void setUp(final ISymbol newSymbol)  {
+		newSymbol.setAttributes(ISymbol.LISTABLE);
+		super.setUp(newSymbol);
 	}
 }

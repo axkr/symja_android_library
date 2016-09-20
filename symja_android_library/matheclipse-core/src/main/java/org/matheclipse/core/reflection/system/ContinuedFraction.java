@@ -76,8 +76,8 @@ public class ContinuedFraction extends AbstractEvaluator {
 	}
 
 	@Override
-	public void setUp(ISymbol symbol) {
-		symbol.setAttributes(ISymbol.NHOLDREST);
+	public void setUp(ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.NHOLDREST);
 	}
 
 }

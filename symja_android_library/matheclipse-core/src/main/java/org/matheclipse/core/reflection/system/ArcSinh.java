@@ -18,7 +18,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.ArcSinhRules;
-import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * Arcsin hyperbolic
@@ -28,7 +27,7 @@ import org.matheclipse.parser.client.SyntaxError;
  * hyperbolic functions</a>
  */
 public class ArcSinh extends AbstractTrigArg1 implements INumeric, ArcSinhRules, DoubleUnaryOperator {
-	
+
 	public ArcSinh() {
 	}
 
@@ -52,7 +51,7 @@ public class ArcSinh extends AbstractTrigArg1 implements INumeric, ArcSinhRules,
 		double val = FastMath.asinh(arg1);
 		return F.num(val);
 	}
-	
+
 	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		if (size != 1) {
@@ -80,8 +79,8 @@ public class ArcSinh extends AbstractTrigArg1 implements INumeric, ArcSinhRules,
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) throws SyntaxError {
-		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-		super.setUp(symbol);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		super.setUp(newSymbol);
 	}
 }

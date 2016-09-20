@@ -10,7 +10,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.visit.HashValueVisitor;
-import org.matheclipse.parser.client.SyntaxError;
 
 /**
  * Match two arguments of an <code>Orderless</code> AST into a new resulting
@@ -34,14 +33,12 @@ public class HashedOrderlessMatcher {
 	 * @param lhs1Str
 	 * @param lhs2Str
 	 * @param rhsStr
-	 * @throws SyntaxError
 	 */
-	public void defineHashRule(final String lhs1Str, final String lhs2Str, final String rhsStr) throws SyntaxError {
+	public void defineHashRule(final String lhs1Str, final String lhs2Str, final String rhsStr) {
 		defineHashRule(lhs1Str, lhs2Str, rhsStr, null);
 	}
 
-	public void defineHashRule(final String lhs1Str, final String lhs2Str, final BinaryFunctorImpl<IExpr> function)
-			throws SyntaxError {
+	public void defineHashRule(final String lhs1Str, final String lhs2Str, final BinaryFunctorImpl<IExpr> function) {
 		ExprParser parser = new ExprParser(EvalEngine.get());
 		IExpr lhs1 = parser.parse(lhs1Str);
 		// final Parser parser = new Parser();
@@ -54,7 +51,7 @@ public class HashedOrderlessMatcher {
 	}
 
 	public void defineHashRule(final String lhs1Str, final String lhs2Str, final String rhsStr,
-			final String conditionStr) throws SyntaxError {
+			final String conditionStr) {
 		ExprParser parser = new ExprParser(EvalEngine.get());
 		IExpr lhs1 = parser.parse(lhs1Str);
 		// final Parser parser = new Parser();

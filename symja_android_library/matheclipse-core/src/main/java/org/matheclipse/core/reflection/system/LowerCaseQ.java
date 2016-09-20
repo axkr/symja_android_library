@@ -32,8 +32,8 @@ public class LowerCaseQ extends AbstractFunctionEvaluator implements Predicate<I
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.LISTABLE);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE);
 	}
 
 	@Override

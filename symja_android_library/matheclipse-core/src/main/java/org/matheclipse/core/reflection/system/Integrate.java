@@ -1153,9 +1153,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.HOLDALL);
-		super.setUp(symbol);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.HOLDALL);
+		super.setUp(newSymbol);
 
 		// if (Config.LOAD_SERIALIZED_RULES) {
 		// initSerializedRules(symbol);

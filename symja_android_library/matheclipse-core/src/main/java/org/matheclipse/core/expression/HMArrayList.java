@@ -41,7 +41,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * Copied and modified from the Apache Harmony project.
  * 
  */
-public abstract class HMArrayList extends AbstractAST implements List<IExpr>, Cloneable, Serializable, RandomAccess {
+public abstract class HMArrayList extends AbstractAST implements Cloneable, Serializable, RandomAccess {
 
 	// private static final ObjectStreamField[] serialPersistentFields = { new
 	// ObjectStreamField("size", Integer.TYPE) }; //$NON-NLS-1$

@@ -38,7 +38,7 @@ public class ToPolarCoordinates extends AbstractEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
+	public void setUp(final ISymbol newSymbol) {
 	}
 
 }

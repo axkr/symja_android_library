@@ -37,7 +37,7 @@ public class UnsameQ extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.FLAT | ISymbol.NHOLDALL);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.FLAT | ISymbol.NHOLDALL);
 	}
 }

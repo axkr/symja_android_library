@@ -1055,7 +1055,7 @@ public class OutputFormFactory {
 				IExpr pow = x.subtract(x0).power(exp);
 				call = convertSeriesDataArg(tempBuffer, list.arg1(), pow, call);
 				for (int i = 2; i < size; i++) {
-					exp = F.fraction(nmin + i - 1, den).normalize();
+					exp = F.fraction(nmin + i - 1L, den).normalize();
 					pow = x.subtract(x0).power(exp);
 					call = convertSeriesDataArg(tempBuffer, list.get(i), pow, call);
 				}

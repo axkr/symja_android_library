@@ -28,8 +28,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based integrator</a>.
  * 
  */
-public class CompareToTestCases extends AbstractTestCase {
-	public CompareToTestCases(String name) {
+public class CompareToTestCase extends AbstractTestCase {
+	public CompareToTestCase(String name) {
 		super(name);
 	}
 

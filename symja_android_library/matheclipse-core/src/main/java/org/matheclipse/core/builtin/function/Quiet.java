@@ -30,7 +30,7 @@ public class Quiet extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(ISymbol symbol) {
-		symbol.setAttributes(ISymbol.HOLDALL);
+	public void setUp(ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.HOLDALL);
 	}
 }

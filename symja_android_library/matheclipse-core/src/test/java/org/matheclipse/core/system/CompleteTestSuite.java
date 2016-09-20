@@ -23,26 +23,26 @@ public class CompleteTestSuite extends TestCase {
 	 */
 	public static Test suite() {
 		TestSuite suite = new TestSuite();
-		suite.addTestSuite(MainTestCases.class);
+		suite.addTestSuite(MainTestCase.class);
 		suite.addTestSuite(BasicPatternPropertiesTestCase.class);
-		suite.addTestSuite(CompareToTestCases.class);
-		suite.addTestSuite(Java8TestCases.class);
+		suite.addTestSuite(CompareToTestCase.class);
+		suite.addTestSuite(Java8TestCase.class);
 		suite.addTestSuite(PatternMatchingTestCase.class);
-		suite.addTestSuite(RubiIntegrationTestCases.class);
+		suite.addTestSuite(RubiIntegrationTest.class);
 		suite.addTestSuite(CombinatoricTestCase.class);
 
 		suite.addTestSuite(MathMLPresentationTestCase.class);
 		suite.addTestSuite(BasicTeXTestCase.class);
 
 		suite.addTestSuite(LastCalculationsHistoryTest.class);
-		suite.addTestSuite(ExpandTestCases.class);
+		suite.addTestSuite(ExpandTestCase.class);
 
 		suite.addTestSuite(OpenFixedSizeMapTest.class);
-		suite.addTestSuite(NumberTestCases.class);
-		suite.addTestSuite(JavaFormTestCases.class);
-		
-		suite.addTestSuite(LowercaseTestCases.class);
-		
+		suite.addTestSuite(NumberTest.class);
+		suite.addTestSuite(JavaFormTestCase.class);
+
+		suite.addTestSuite(LowercaseTestCase.class);
+		suite.addTestSuite(SerializableTest.class);
 		return suite;
 
 	}

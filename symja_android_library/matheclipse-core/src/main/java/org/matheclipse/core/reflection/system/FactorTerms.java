@@ -77,7 +77,7 @@ public class FactorTerms extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.FLAT);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.FLAT);
 	}
 }

@@ -150,7 +150,7 @@ public class Blank extends ExprImpl implements IPattern {
 					return -1;
 				}
 			} else {
-				if (blank.fDefaultValue == null) {  
+				if (blank.fDefaultValue == null) {
 					return 1;
 				}
 				int result = fDefaultValue.compareTo(blank.fDefaultValue);
@@ -295,6 +295,9 @@ public class Blank extends ExprImpl implements IPattern {
 
 	/**
 	 * Groovy operator overloading
+	 * 
+	 * @param that
+	 * @return
 	 */
 	public boolean isCase(IExpr that) {
 		final IPatternMatcher matcher = new PatternMatcher(this);

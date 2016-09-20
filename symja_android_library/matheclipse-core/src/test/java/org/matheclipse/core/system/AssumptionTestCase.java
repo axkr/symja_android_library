@@ -16,7 +16,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * Tests for the Java port of the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based integrator</a>.
  * 
  */
-public class AssumptionTestCases extends TestCase {
+public class AssumptionTestCase extends TestCase {
 	/**
 	 * Assumption which implements <code>x > 0</code> or <code>y is integer number</code>
 	 *
@@ -54,7 +54,7 @@ public class AssumptionTestCases extends TestCase {
 
 	}
 
-	public AssumptionTestCases(String name) {
+	public AssumptionTestCase(String name) {
 		super(name);
 	}
 

@@ -1,7 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.util.List;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -81,7 +79,7 @@ public class Multinomial extends AbstractFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(ISymbol symbol) {
-		symbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+	public void setUp(ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 	}
 }

@@ -18,7 +18,7 @@ public class ComplexInfinity extends AbstractSymbolEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
+	public void setUp(final ISymbol newSymbol) {
 		// don't set CONSTANT attribute !
 	}
 }

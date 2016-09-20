@@ -150,8 +150,8 @@ public class Dot extends AbstractNonOrderlessArgMultiple {
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
 	}
 
 }

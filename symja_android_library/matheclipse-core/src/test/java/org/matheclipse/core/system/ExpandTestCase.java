@@ -23,8 +23,8 @@ import org.matheclipse.core.reflection.system.ExpandAll;
 /**
  * 
  */
-public class ExpandTestCases extends AbstractTestCase {
-	public ExpandTestCases(String name) {
+public class ExpandTestCase extends AbstractTestCase {
+	public ExpandTestCase(String name) {
 		super(name);
 	}
 

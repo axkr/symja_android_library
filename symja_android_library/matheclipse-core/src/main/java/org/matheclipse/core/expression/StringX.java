@@ -54,7 +54,7 @@ public class StringX extends ExprImpl implements IStringX {
 	/**
 	 * Be cautious with this method, no new internal String object is created
 	 * 
-	 * @param numerator
+	 * @param value
 	 * @return
 	 */
 	protected static StringX newInstance(final String value) {
@@ -242,11 +242,6 @@ public class StringX extends ExprImpl implements IStringX {
 		return fString.endsWith(suffix);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj) {

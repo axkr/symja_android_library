@@ -49,6 +49,13 @@ public class AST1 extends AST0 {
 	protected IExpr arg1;
 
 	/**
+	 * ctor for deserialization
+	 */
+	public AST1() {
+		super(null);
+	}
+
+	/**
 	 * Create a function with one arguments (i.e. <code>head[arg1]</code>).
 	 * 
 	 * @param head
@@ -175,19 +182,19 @@ public class AST1 extends AST0 {
 	public boolean isAST0() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isAST1() {
 		return true;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isAST2() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isAST3() {

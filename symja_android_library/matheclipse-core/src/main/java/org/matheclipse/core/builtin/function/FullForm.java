@@ -21,6 +21,6 @@ public class FullForm extends AbstractCoreFunctionEvaluator {
 	} 
 
 	@Override
-	public void setUp(ISymbol symbol) {
+	public void setUp(ISymbol newSymbol) {
 	}
 }

@@ -1,13 +1,13 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.function.Predicate;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-
-import java.util.function.Predicate;
 
 public class OrderedQ extends AbstractFunctionEvaluator implements Predicate<IAST> {
 	/**

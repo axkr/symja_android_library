@@ -54,7 +54,7 @@ public class AST extends HMArrayList implements Externalizable {
 	 * Returns the value to which the specified property is mapped, or
 	 * <code>null</code> if this map contains no mapping for the property.
 	 * 
-	 * @param property
+	 * @param key
 	 * @return
 	 * @see #putProperty(PROPERTY, Object)
 	 */
@@ -142,6 +142,9 @@ public class AST extends HMArrayList implements Externalizable {
 	 * contains no syntax errors.
 	 * 
 	 * Example &quot;List[x,List[y]]&quot;
+	 * 
+	 * @param inputString
+	 * @return
 	 */
 	public static IAST parse(final String inputString) {
 		final StringTokenizer tokenizer = new StringTokenizer(inputString, "[],", true);
@@ -271,7 +274,9 @@ public class AST extends HMArrayList implements Externalizable {
 	 * Constructs a list with header <i>symbol</i> and the arguments containing
 	 * the given DoubleImpl values.
 	 * 
-	 * @see Num
+	 * @param symbol
+	 * @param arr
+	 * @return
 	 */
 	public static AST newInstance(final ISymbol symbol, final double... arr) {
 		IExpr[] eArr = new IExpr[arr.length + 1];
@@ -295,6 +300,9 @@ public class AST extends HMArrayList implements Externalizable {
 	 * Constructs a list with header <i>symbol</i> and the arguments containing
 	 * the given DoubleImpl matrix values as <i>List</i> rows
 	 * 
+	 * @param symbol
+	 * @param matrix
+	 * @return
 	 * @see Num
 	 */
 	public static AST newInstance(final ISymbol symbol, final double[][] matrix) {

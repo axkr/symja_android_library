@@ -20,8 +20,8 @@ public class Glaisher extends AbstractSymbolEvaluator implements
 	}
 
 	@Override
-	public void setUp(final ISymbol symbol) {
-		symbol.setAttributes(ISymbol.CONSTANT);
+	public void setUp(final ISymbol newSymbol) {
+		newSymbol.setAttributes(ISymbol.CONSTANT);
 	}
 
 	@Override
