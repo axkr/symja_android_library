@@ -43,6 +43,8 @@ public class CompleteTestSuite extends TestCase {
 
 		suite.addTestSuite(LowercaseTestCase.class);
 		suite.addTestSuite(SerializableTest.class);
+		suite.addTestSuite(PatternsTest.class);
+		
 		return suite;
 
 	}
