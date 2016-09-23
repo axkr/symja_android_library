@@ -20,8 +20,6 @@ import edu.jas.arith.BigInteger;
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
 import edu.jas.poly.GenPolynomial;
-import edu.jas.poly.GenPolynomialRing;
-import edu.jas.poly.TermOrderByName;
 import edu.jas.ufd.GCDFactory;
 import edu.jas.ufd.GreatestCommonDivisorAbstract;
 
@@ -35,23 +33,13 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 	public PolynomialGCD() {
 	}
 
-	public static void main(String[] args) {
-		GenPolynomialRing<BigInteger> fPolyFactory = new GenPolynomialRing<BigInteger>(BigInteger.ZERO, 2,
-				TermOrderByName.Lexicographic, new String[] { "x", "a" });
-		GenPolynomial<BigInteger> poly = fPolyFactory.univariate("x", 1L);
-		poly = poly.subtract(fPolyFactory.univariate("a", 1L));
-		System.out.println(poly.toString());
-		poly = poly.monic();
-		System.out.println(poly.toString());
-	}
-
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3);
 
 		VariablesSet eVar = new VariablesSet();
 		eVar.addVarList(ast, 1);
-		
+
 		IExpr expr = F.evalExpandAll(ast.arg1());
 		if (ast.size() > 3 && ast.last().isRuleAST()) {
 			return gcdWithOption(ast, expr, eVar, engine);

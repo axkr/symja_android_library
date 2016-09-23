@@ -160,13 +160,13 @@ public class Cancel extends AbstractFunctionEvaluator {
 	private static IExpr[] cancelPlusIntegerGCD(IAST numeratorPlus, IInteger denominatorInt) {
 		IAST plus = ((IAST) numeratorPlus).clone();
 		IAST gcd = F.ast(F.GCD, plus.size() + 1, false);
-		gcd.add(denominatorInt);
+		gcd.append(denominatorInt);
 		boolean evaled = true;
 		for (int i = 1; i < plus.size(); i++) {
 			if (plus.get(i).isInteger()) {
-				gcd.add(plus.get(i));
+				gcd.append(plus.get(i));
 			} else if (plus.get(i).isTimes() && plus.get(i).getAt(1).isInteger()) {
-				gcd.add(plus.get(i).getAt(1));
+				gcd.append(plus.get(i).getAt(1));
 			} else {
 				evaled = false;
 				break;

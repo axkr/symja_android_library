@@ -128,7 +128,7 @@ public class Subsets extends AbstractFunctionEvaluator {
 
 			IAST temp = fResultList.clone();
 			for (int i = 0; i < fK; i++) {
-				temp.add(fList.get(j[i] + fOffset));
+				temp.append(fList.get(j[i] + fOffset));
 			}
 
 			return temp;
@@ -181,7 +181,7 @@ public class Subsets extends AbstractFunctionEvaluator {
 					if (part == null) {
 						break;
 					}
-					result.add(part);
+					result.append(part);
 				}
 				level.incCurrentLevel();
 			}

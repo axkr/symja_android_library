@@ -2,7 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.List;
 
-import org.apache.commons.math4.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -33,7 +33,7 @@ public class SingularValueDecomposition extends AbstractFunctionEvaluator {
 
 			matrix = ast.arg1().toRealMatrix();
 			if (matrix != null) {
-				final org.apache.commons.math4.linear.SingularValueDecomposition svd = new org.apache.commons.math4.linear.SingularValueDecomposition(
+				final org.apache.commons.math3.linear.SingularValueDecomposition svd = new org.apache.commons.math3.linear.SingularValueDecomposition(
 						matrix);
 				final RealMatrix uMatrix = svd.getU();
 				final RealMatrix sMatrix = svd.getS();
@@ -43,9 +43,9 @@ public class SingularValueDecomposition extends AbstractFunctionEvaluator {
 				final IAST uMatrixAST = new ASTRealMatrix(uMatrix, false);
 				final IAST sMatrixAST = new ASTRealMatrix(sMatrix, false);
 				final IAST vMatrixAST = new ASTRealMatrix(vMatrix, false);
-				result.add(uMatrixAST);
-				result.add(sMatrixAST);
-				result.add(vMatrixAST);
+				result.append(uMatrixAST);
+				result.append(sMatrixAST);
+				result.append(vMatrixAST);
 				return result;
 			}
 

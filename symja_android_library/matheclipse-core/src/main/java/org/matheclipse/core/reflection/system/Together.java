@@ -99,15 +99,15 @@ public class Together extends AbstractFunctionEvaluator {
 		for (int i = 1; i < plusAST.size(); i++) {
 			fractionalParts = Apart.getFractionalPartsRational(plusAST.get(i));
 			if (fractionalParts != null) {
-				numerator.add(i, fractionalParts[0]);
+				numerator.append(i, fractionalParts[0]);
 				temp = fractionalParts[1];
 				if (!temp.isOne()) {
 					evaled = true;
 				}
-				denominator.add(i, temp);
+				denominator.append(i, temp);
 			} else {
-				numerator.add(i, plusAST.get(i));
-				denominator.add(i, F.C1);
+				numerator.append(i, plusAST.get(i));
+				denominator.append(i, F.C1);
 			}
 		}
 		if (!evaled) {
@@ -122,7 +122,7 @@ public class Together extends AbstractFunctionEvaluator {
 				}
 				temp = denominator.get(j);
 				if (!temp.isOne()) {
-					ni.add(temp);
+					ni.append(temp);
 				}
 			}
 			numerator.set(i, ni.getOneIdentity(F.C1));

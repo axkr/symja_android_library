@@ -25,7 +25,7 @@ public class Divergence extends AbstractFunctionEvaluator {
 			IAST variables = (IAST) ast.arg2();
 			IAST divergenceValue = F.Plus();
 			for (int i = 1; i < vector.size(); i++) {
-				divergenceValue.add(F.D(vector.get(i), variables.get(i)));
+				divergenceValue.append(F.D(vector.get(i), variables.get(i)));
 			}
 			return divergenceValue;
 		}

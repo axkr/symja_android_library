@@ -485,6 +485,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBinomial() {
+		check("Binomial(n0, 2)", "1/2*n0*(-1+n0)");
+		
 		check("Binomial(k/3, k)", "Binomial(k/3,k)");
 		check("Binomial(0, 0)", "1");
 		check("Binomial(1000, 500)",

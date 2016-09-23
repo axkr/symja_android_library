@@ -1,8 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math4.exception.DimensionMismatchException;
-import org.apache.commons.math4.exception.NonMonotonicSequenceException;
-import org.apache.commons.math4.exception.NumberIsTooSmallException;
+import org.apache.commons.math3.exception.DimensionMismatchException;
+import org.apache.commons.math3.exception.NonMonotonicSequenceException;
+import org.apache.commons.math3.exception.NumberIsTooSmallException;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -101,15 +101,15 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 				IAST polynomial = F.Plus();
 				IAST times, plus;
 				IAST tempPlus = polynomial;
-				polynomial.add(c[0]);// c[0]
+				polynomial.append(c[0]);// c[0]
 				for (int i = 2; i < list.size(); i++) {
 					times = F.Times();
 					plus = F.Plus();
-					times.add(plus);
-					times.add(F.Subtract(x, xv[i - 2]));
-					tempPlus.add(times);
+					times.append(plus);
+					times.append(F.Subtract(x, xv[i - 2]));
+					tempPlus.append(times);
 					tempPlus = plus;
-					tempPlus.add(c[i - 1]);
+					tempPlus.append(c[i - 1]);
 				}
 				return polynomial;
 			}

@@ -5,7 +5,7 @@ import static org.matheclipse.core.expression.F.Negate;
 
 import java.util.function.DoubleUnaryOperator;
 
-import org.apache.commons.math4.complex.Complex;
+import org.apache.commons.math3.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -66,7 +66,7 @@ public class ArcCoth extends AbstractTrigArg1 implements ArcCothRules, DoubleUna
 		Complex c = arg1.reciprocal();
 
 		// (1/2) (Log(1 + 1/arg1) - Log(1 - 1/arg1))
-		Complex result = new Complex(0.5).multiply(Complex.ONE.sum(c).log().subtract(Complex.ONE.subtract(c).log()));
+		Complex result = new Complex(0.5).multiply(Complex.ONE.add(c).log().subtract(Complex.ONE.subtract(c).log()));
 		return F.complexNum(result);
 	}
 

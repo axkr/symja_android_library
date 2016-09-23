@@ -6,10 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.apache.commons.math4.complex.Complex;
+import org.apache.commons.math3.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.harmony.util.HMList;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -67,7 +68,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	public IExpr apply(IExpr... leaves) {
 		final IAST ast = F.ast(head());
 		for (int i = 0; i < leaves.length; i++) {
-			ast.add(leaves[i]);
+			ast.append(leaves[i]);
 		}
 		return ast;
 	}
@@ -79,7 +80,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	public IExpr apply(List<? extends IExpr> leaves) {
 		final IAST ast = F.ast(head());
 		for (int i = 0; i < leaves.size(); i++) {
-			ast.add(leaves.get(i));
+			ast.append(leaves.get(i));
 		}
 		return ast;
 	}
@@ -250,13 +251,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	public final long leafCount() {
 		return isAtom() ? 1L : 0L;
 	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final List<IExpr> leaves() {
-		return null;
-	}
-
+ 
 	/** {@inheritDoc} */
 	@Override
 	public final IExpr minus(final IExpr that) {
@@ -473,7 +468,7 @@ public abstract class ExprImpl implements IExpr, Serializable {
 	}
 
 	@Override
-	public final IExpr sum(IExpr that) {
+	public final IExpr add(IExpr that) {
 		return this.plus(that);
 	}
 

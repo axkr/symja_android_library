@@ -268,7 +268,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 							});
 							if (filterCollector.size() > 1) {
 								if (restCollector.size() > 1) {
-									filterCollector.add(F.Integrate(restCollector.getOneIdentity(F.C0), x));
+									filterCollector.append(F.Integrate(restCollector.getOneIdentity(F.C0), x));
 								}
 								return filterCollector;
 							}
@@ -886,16 +886,16 @@ public class Integrate extends AbstractFunctionEvaluator {
 		for (int i = 1; i < timesAST.size(); i++) {
 			temp = timesAST.get(i);
 			if (temp.isFree(symbol, true)) {
-				polyTimes.add(temp);
+				polyTimes.append(temp);
 				continue;
 			} else if (temp.equals(symbol)) {
-				polyTimes.add(temp);
+				polyTimes.append(temp);
 				continue;
 			} else if (temp.isPolynomial(List(symbol))) {
-				polyTimes.add(temp);
+				polyTimes.append(temp);
 				continue;
 			}
-			restTimes.add(temp);
+			restTimes.append(temp);
 		}
 	}
 
@@ -916,10 +916,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 		for (int i = 1; i < timesAST.size(); i++) {
 			temp = timesAST.get(i);
 			if (temp.isFree(x, true)) {
-				freeTimes.add(temp);
+				freeTimes.append(temp);
 				continue;
 			}
-			restTimes.add(temp);
+			restTimes.append(temp);
 		}
 	}
 

@@ -11,10 +11,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.apache.commons.math4.complex.Complex;
+import org.apache.commons.math3.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.SystemNamespace;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
@@ -415,13 +416,13 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 			synchronized (this) {
 				if (fEvaluator == null) {
 					fEvaluator = DUMMY_EVALUATOR;
-					// if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-					// SystemNamespace.DEFAULT.setEvaluator(this);
-					// } else {
-					// if (Character.isUpperCase(fSymbolName.charAt(0))) {
-					// SystemNamespace.DEFAULT.setEvaluator(this);
-					// }
-					// }
+					if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+						SystemNamespace.DEFAULT.setEvaluator(this);
+					} else {
+						if (Character.isUpperCase(fSymbolName.charAt(0))) {
+							SystemNamespace.DEFAULT.setEvaluator(this);
+						}
+					}
 				}
 			}
 		}

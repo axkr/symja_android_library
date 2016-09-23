@@ -25,7 +25,7 @@ public class CoreCallbackFunction implements IDoubleCallbackFunction {
 		if (node instanceof SymbolNode) {
 			IAST fun = F.ast(F.$s(node.toString()));
 			for (int i = 0; i < args.length; i++) {
-				fun.add(F.num(args[i]));
+				fun.append(F.num(args[i]));
 			}
 			final IExpr result = F.evaln(fun);
 			if (result instanceof INum) {

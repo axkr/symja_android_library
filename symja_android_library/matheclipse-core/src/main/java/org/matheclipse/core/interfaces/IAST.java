@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.ASTRange;
+import org.matheclipse.core.harmony.util.HMList;
 import org.matheclipse.core.reflection.system.Apart;
 
 /**
@@ -43,7 +44,7 @@ import org.matheclipse.core.reflection.system.Apart;
  * <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed
  * acyclic graph</a>
  */
-public interface IAST extends IExpr, List<IExpr>, Cloneable {
+public interface IAST extends IExpr, HMList<IExpr>, Cloneable {
 
 	/**
 	 * The enumeration for the properties (keys) of the map possibly associated

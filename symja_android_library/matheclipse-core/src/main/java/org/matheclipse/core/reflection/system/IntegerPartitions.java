@@ -165,10 +165,10 @@ public class IntegerPartitions extends AbstractFunctionEvaluator {
 				temp = F.List();
 				for (int i = 0; i < j.length; i++) {
 					if (j[i] != 0) {
-						temp.add(F.integer(j[i]));
+						temp.append(F.integer(j[i]));
 					}
 				}
-				result.add(temp);
+				result.append(temp);
 			}
 			return result;
 		}

@@ -26,36 +26,36 @@ public class Complex extends AbstractCoreFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 
 		try {
-			IExpr arg1 = ast.arg1();
-			arg1 = engine.evaluate(arg1);
-			IExpr arg2 = ast.arg2();
-			arg2 = engine.evaluate(arg2);
-			if (arg2.isComplex()) {
-				if (((IComplex) arg2).getRealPart().isZero()) {
-					arg2 = ((IComplex) arg2).getImaginaryPart();
+			IExpr realExpr = ast.arg1();
+			realExpr = engine.evaluate(realExpr);
+			IExpr imaginaryExpr = ast.arg2();
+			imaginaryExpr = engine.evaluate(imaginaryExpr);
+			if (imaginaryExpr.isComplex()) {
+				if (((IComplex) imaginaryExpr).getRealPart().isZero()) {
+					imaginaryExpr = ((IComplex) imaginaryExpr).getImaginaryPart();
 				}
-			} else if (arg2.isComplexNumeric()) {
-				if (F.isZero(((IComplexNum) arg2).getRealPart())) {
-					arg2 = F.num(((IComplexNum) arg2).getImaginaryPart());
+			} else if (imaginaryExpr.isComplexNumeric()) {
+				if (F.isZero(((IComplexNum) imaginaryExpr).getRealPart())) {
+					imaginaryExpr = F.num(((IComplexNum) imaginaryExpr).getImaginaryPart());
 				}
 			}
-			if (arg1.isRational() && arg2.isRational()) {
+			if (realExpr.isRational() && imaginaryExpr.isRational()) {
 				IRational re;
-				if (arg1.isInteger()) {
-					re = (IInteger) arg1; // F.fraction((IInteger) arg1, F.C1);
+				if (realExpr.isInteger()) {
+					re = (IInteger) realExpr; // F.fraction((IInteger) arg1, F.C1);
 				} else {
-					re = (IFraction) arg1;
+					re = (IFraction) realExpr;
 				}
 				IRational im;
-				if (arg2.isInteger()) {
-					im = (IInteger) arg2; // F.fraction((IInteger) arg2, F.C1);
+				if (imaginaryExpr.isInteger()) {
+					im = (IInteger) imaginaryExpr; // F.fraction((IInteger) arg2, F.C1);
 				} else {
-					im = (IFraction) arg2;
+					im = (IFraction) imaginaryExpr;
 				}
 				return F.complex(re, im);
 			}
-			if (arg1 instanceof INum && arg2 instanceof INum) {
-				return F.complexNum(((INum) arg1).doubleValue(), ((INum) arg2).doubleValue());
+			if (realExpr instanceof INum && imaginaryExpr instanceof INum) {
+				return F.complexNum(((INum) realExpr).doubleValue(), ((INum) imaginaryExpr).doubleValue());
 			}
 		} catch (Exception e) {
 			if (Config.SHOW_STACKTRACE) {

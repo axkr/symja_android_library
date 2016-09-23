@@ -11,7 +11,7 @@ import java.math.RoundingMode;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.commons.math4.fraction.BigFraction;
+import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -206,9 +206,9 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		// build the final divisors list from the tree set
 		final IAST resultList = List(F.C1);
 		for (IInteger entry : set) {
-			resultList.add(entry);
+			resultList.append(entry);
 		}
-		resultList.add(this);
+		resultList.append(this);
 		return resultList;
 	}
 

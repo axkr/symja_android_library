@@ -47,16 +47,14 @@ public class FrobeniusSolve extends AbstractEvaluator {
 				IAST result = F.List();
 				if (numberOfSolutions < 0) {
 					while ((solution = solver.take()) != null) {
-						// System.out.println(Arrays.toString(solution));
-						result.add(Lists.asList(solution));
+						result.append(Lists.asList(solution));
 					}
 				} else {
 					while ((solution = solver.take()) != null) {
 						if (--numberOfSolutions < 0) {
 							break;
 						}
-						// System.out.println(Arrays.toString(solution));
-						result.add(Lists.asList(solution));
+						result.append(Lists.asList(solution));
 					}
 				}
 

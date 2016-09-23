@@ -1,10 +1,7 @@
 package org.matheclipse.core.expression;
 
 import java.io.IOException;
-import java.util.AbstractList;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -16,11 +13,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.apache.commons.math4.complex.Complex;
-import org.apache.commons.math4.linear.Array2DRowRealMatrix;
-import org.apache.commons.math4.linear.ArrayRealVector;
-import org.apache.commons.math4.linear.RealMatrix;
-import org.apache.commons.math4.linear.RealVector;
+import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.function.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;
@@ -31,6 +28,8 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
+import org.matheclipse.core.harmony.util.HMAbstractList;
+import org.matheclipse.core.harmony.util.HMList;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -58,7 +57,7 @@ import org.matheclipse.core.visit.VisitorReplaceSlots;
 
 import edu.jas.structure.ElemFactory;
 
-public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
+public abstract class AbstractAST extends HMAbstractList<IExpr> implements IAST {
 
 	protected static final class ASTIterator implements ListIterator<IExpr> {
 
@@ -74,7 +73,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 		@Override
 		public void add(IExpr o) {
-			_table.add(_nextIndex++, o);
+			_table.append(_nextIndex++, o);
 			_end++;
 			_currentIndex = -1;
 		}
@@ -398,7 +397,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	@Override
 	public IAST addAtClone(int position, IExpr expr) {
 		IAST ast = clone();
-		ast.add(position, expr);
+		ast.append(position, expr);
 		return ast;
 	}
 
@@ -417,7 +416,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	@Override
 	public IAST appendClone(IExpr expr) {
 		IAST ast = clone();
-		ast.add(expr);
+		ast.append(expr);
 		return ast;
 	}
 
@@ -429,7 +428,9 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	@Override
 	public IExpr apply(IExpr... leaves) {
 		final IAST ast = F.ast(head());
-		Collections.addAll(ast, leaves);
+		for (int i = 0; i < leaves.length; i++) {
+			ast.append(leaves[i]);
+		}
 		return ast;
 	}
 
@@ -442,7 +443,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	public IAST apply(final IExpr head, final int start, final int end) {
 		final IAST ast = F.ast(head);
 		for (int i = start; i < end; i++) {
-			ast.add(get(i));
+			ast.append(get(i));
 		}
 		return ast;
 	}
@@ -450,7 +451,9 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	@Override
 	public IExpr apply(List<? extends IExpr> leaves) {
 		final IAST ast = F.ast(head());
-		addAll(leaves);
+		for (int i = 0; i < leaves.size(); i++) {
+			ast.append(leaves.get(i));
+		}
 		return ast;
 	}
 
@@ -569,8 +572,8 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	@Override
 	public IAST copyFrom(int index) {
 		AST result = new AST(size() - index + 1, false);
-		result.add(head());
-		result.addAll(this, index, size());
+		result.append(head());
+		result.addAll(this.range(), index, size());
 		return result;
 	}
 
@@ -747,9 +750,9 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		for (int i = 1; i < size; i++) {
 			IExpr expr = function.apply(get(i));
 			if (expr.isPresent()) {
-				filterAST.add(expr);
+				filterAST.append(expr);
 			} else {
-				restAST.add(get(i));
+				restAST.append(get(i));
 			}
 		}
 		return filterAST;
@@ -761,9 +764,9 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		final int size = size();
 		for (int i = 1; i < size; i++) {
 			if (predicate.test(get(i))) {
-				filterAST.add(get(i));
+				filterAST.append(get(i));
 			} else {
-				restAST.add(get(i));
+				restAST.append(get(i));
 			}
 		}
 		return filterAST;
@@ -781,7 +784,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		final int size = size();
 		for (int i = 1; i < size; i++) {
 			if (predicate.test(get(i))) {
-				filterAST.add(get(i));
+				filterAST.append(get(i));
 			}
 		}
 		return filterAST;
@@ -798,10 +801,10 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		for (int i = 1; i < size; i++) {
 			if (predicate.test(get(i))) {
 				if (++count == maxMatches) {
-					filterAST.add(get(i));
+					filterAST.append(get(i));
 					break;
 				}
-				filterAST.add(get(i));
+				filterAST.append(get(i));
 			}
 		}
 		return filterAST;
@@ -2380,16 +2383,6 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final List<IExpr> leaves() {
-		int sz = size();
-		if (sz < 2) {
-			return new ArrayList<IExpr>();
-		}
-		return subList(1, sz);
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public IExpr lower() {
 		if (isInterval1()) {
 			return ((IAST) arg1()).arg1();
@@ -2424,7 +2417,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	@Override
 	public final IAST map(IAST resultAST, IAST secondAST, BiFunction<IExpr, IExpr, IExpr> function) {
 		for (int i = 1; i < size(); i++) {
-			resultAST.add(function.apply(get(i), secondAST.get(i)));
+			resultAST.append(function.apply(get(i), secondAST.get(i)));
 		}
 		return resultAST;
 	}
@@ -2445,7 +2438,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 		for (int i = 1; i < size(); i++) {
 			temp = function.apply(get(i));
 			if (temp != null) {
-				appendAST.add(temp);
+				appendAST.append(temp);
 			}
 		}
 		return appendAST;
@@ -2488,7 +2481,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 				return setAtCopy(1, ((INumber) arg1).negate());
 			}
 			IAST timesAST = clone();
-			timesAST.add(1, F.CN1);
+			timesAST.append(1, F.CN1);
 			return timesAST;
 		}
 		if (isNegativeInfinity()) {
@@ -2740,7 +2733,7 @@ public abstract class AbstractAST extends AbstractList<IExpr> implements IAST {
 	}
 
 	@Override
-	public final IExpr sum(IExpr that) {
+	public final IExpr add(IExpr that) {
 		return plus(that);
 	}
 

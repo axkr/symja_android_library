@@ -86,9 +86,9 @@ class QuineMcCluskyTerm {
 			if (varVals[i] == NIL) {
 				// nothing to do
 			} else if (varVals[i] == (byte) 0) {
-				result.add(F.Not(variables.get(i + 1)));
+				result.append(F.Not(variables.get(i + 1)));
 			} else if (varVals[i] == (byte) 1) {
-				result.add(variables.get(i + 1));
+				result.append(variables.get(i + 1));
 			} else {
 				throw new BooleanFunctionConversionException();
 			}

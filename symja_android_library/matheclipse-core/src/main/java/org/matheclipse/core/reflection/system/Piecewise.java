@@ -36,7 +36,7 @@ public class Piecewise extends AbstractFunctionEvaluator {
 		IAST row;
 		IAST result = F.List();
 		IAST pw = F.ast(F.Piecewise);
-		pw.add(result);
+		pw.append(result);
 		boolean evaluated = false;
 		boolean noBoolean = false;
 		for (int i = 1; i < matrix.size(); i++) {
@@ -47,7 +47,7 @@ public class Piecewise extends AbstractFunctionEvaluator {
 					return F.NIL;
 				}
 				if (noBoolean) {
-					result.add(F.List(row.arg1(), F.True));
+					result.append(F.List(row.arg1(), F.True));
 					return pw;
 				}
 				return row.arg1();
@@ -58,12 +58,12 @@ public class Piecewise extends AbstractFunctionEvaluator {
 			cond = engine.evaluateNull(cond);
 			if (!cond.isPresent()) {
 				noBoolean = true;
-				result.add(F.List(row.arg1(), row.arg2()));
+				result.append(F.List(row.arg1(), row.arg2()));
 				continue;
 			} else if (cond.isTrue()) {
 				evaluated = true;
 				if (noBoolean) {
-					result.add(F.List(row.arg1(), F.True));
+					result.append(F.List(row.arg1(), F.True));
 					return pw;
 				}
 				return row.arg1();
@@ -71,7 +71,7 @@ public class Piecewise extends AbstractFunctionEvaluator {
 				evaluated = true;
 				continue;
 			} else {
-				result.add(F.List(row.arg1(), cond));
+				result.append(F.List(row.arg1(), cond));
 				noBoolean = true;
 				continue;
 			}
@@ -80,7 +80,7 @@ public class Piecewise extends AbstractFunctionEvaluator {
 			return defaultValue;
 		} else {
 			if (evaluated) {
-				pw.add(defaultValue);
+				pw.append(defaultValue);
 				return pw;
 			}
 		}

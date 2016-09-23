@@ -1,12 +1,12 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.Iterator;
-import java.util.List;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.harmony.util.HMList;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -72,7 +72,7 @@ public class Permutations extends AbstractFunctionEvaluator {
 			fResultIndex = nextBeforehand();
 		}
 
-		public <T> KPermutationsIterable(final List<T> fun, final int parts, final int headOffset) {
+		public <T> KPermutationsIterable(final HMList<T> fun, final int parts, final int headOffset) {
 			super();
 			n = fun.size() - headOffset;
 			k = parts;
@@ -191,7 +191,7 @@ public class Permutations extends AbstractFunctionEvaluator {
 			}
 			IAST temp = fResultList.clone();
 			for (int i = 0; i < permutationsIndex.length; i++) {
-				temp.add(fList.get(permutationsIndex[i] + fOffset));
+				temp.append(fList.get(permutationsIndex[i] + fOffset));
 			}
 			return temp;
 		}
@@ -228,7 +228,7 @@ public class Permutations extends AbstractFunctionEvaluator {
 			final IAST result = F.ast(f.head());
 			if (f.size() <= 2) {
 				if (f.isAST1()) {
-					result.add(f);
+					result.append(f);
 				}
 				return result;
 			}
@@ -245,7 +245,7 @@ public class Permutations extends AbstractFunctionEvaluator {
 			}
 			final KPermutationsList perm = new KPermutationsList(f, k, F.ast(f.head()), 1);
 			for (IAST temp : perm) {
-				result.add(temp);
+				result.append(temp);
 			}
 			return result;
 

@@ -64,12 +64,12 @@ public class Take extends AbstractCoreFunctionEvaluator {
 				.getEnd(); i += sequenceSpecifications[level].getStep()) {
 			if (sequenceSpecifications.length > newLevel) {
 				if (list.get(i).isAST()) {
-					resultList.add(take((IAST) list.get(i), newLevel, sequenceSpecifications));
+					resultList.append(take((IAST) list.get(i), newLevel, sequenceSpecifications));
 				} else {
 					throw new IllegalArgument("Cannot execute take for argument: " + list.get(i).toString());
 				}
 			} else {
-				resultList.add(list.get(i));
+				resultList.append(list.get(i));
 			}
 		}
 		return resultList;

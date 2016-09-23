@@ -49,8 +49,8 @@ public class PolynomialQuotientRemainder extends AbstractFunctionEvaluator {
 					return F.NIL;
 				}
 				IAST list = F.List();
-				list.add(result[0]);
-				list.add(result[1]);
+				list.append(result[0]);
+				list.append(result[1]);
 				return list;
 			}
 			return F.NIL;
@@ -60,8 +60,8 @@ public class PolynomialQuotientRemainder extends AbstractFunctionEvaluator {
 			return F.NIL;
 		}
 		IAST list = F.List();
-		list.add(result[0]);
-		list.add(result[1]);
+		list.append(result[0]);
+		list.append(result[1]);
 		return list;
 	}
 

@@ -3,14 +3,13 @@ package org.matheclipse.core.convert;
 import static org.matheclipse.core.expression.F.List;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import java.math.BigInteger;
 
 /**
  * Converts objects into an IExpr expression
@@ -88,7 +87,7 @@ public class Object2Expr {
 				list = F.ast(head, size, false);
 
 				for (int i = 1; i < size; i++) {
-					list.add(convert(lst.get(i)));
+					list.append(convert(lst.get(i)));
 				}
 			}
 			return list;
@@ -97,7 +96,7 @@ public class Object2Expr {
 			final Object[] array = (Object[]) obj;
 			final IAST list = F.ListC(array.length);
 			for (int i = 0; i < array.length; i++) {
-				list.add(convert(array[i]));
+				list.append(convert(array[i]));
 			}
 			return list;
 		}
@@ -113,23 +112,23 @@ public class Object2Expr {
 			for (int i = 0; i < dd.length; i++) {
 				final IAST row = F.ListC(dd[i].length);
 				for (int j = 0; j < dd[i].length; j++) {
-					row.add(F.num(dd[i][j]));
+					row.append(F.num(dd[i][j]));
 				}
-				list.add(row);
+				list.append(row);
 			}
 			return list;
 		}
-		if (obj instanceof org.apache.commons.math4.complex.Complex[]) {
-			return AST.newInstance(F.List, (org.apache.commons.math4.complex.Complex[]) obj);
+		if (obj instanceof org.apache.commons.math3.complex.Complex[]) {
+			return AST.newInstance(F.List, (org.apache.commons.math3.complex.Complex[]) obj);
 		}
 		if (obj instanceof boolean[]) {
 			final boolean[] array = (boolean[]) obj;
 			final IAST list = F.ListC(array.length);
 			for (int i = 0; i < array.length; i++) {
 				if (array[i]) {
-					list.add(F.True);
+					list.append(F.True);
 				} else {
-					list.add(F.False);
+					list.append(F.False);
 				}
 			}
 			return list;
@@ -137,7 +136,7 @@ public class Object2Expr {
 		return F.stringx(obj.toString());
 	}
 
-	public static IAST convertComplex(org.apache.commons.math4.complex.Complex[] array) throws ConversionException {
+	public static IAST convertComplex(org.apache.commons.math3.complex.Complex[] array) throws ConversionException {
 		return AST.newInstance(F.List, array);
 	}
 }

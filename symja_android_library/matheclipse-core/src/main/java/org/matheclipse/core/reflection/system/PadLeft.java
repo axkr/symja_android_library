@@ -39,9 +39,9 @@ public class PadLeft extends AbstractFunctionEvaluator {
 		if (length > 0) {
 			IAST result = ast.copyHead();
 			for (int i = 0; i < length; i++) {
-				result.add(atom);
+				result.append(atom);
 			}
-			result.addAll(ast);
+			result.addAll(ast.args());
 			return result;
 		}
 		return ast;
@@ -62,13 +62,13 @@ public class PadLeft extends AbstractFunctionEvaluator {
 			}
 			for (int i = 0; i < length; i++) {
 				if (j < arg2.size()) {
-					result.add(arg2.get(j++));
+					result.append(arg2.get(j++));
 				} else {
 					j = 1;
-					result.add(arg2.get(j++));
+					result.append(arg2.get(j++));
 				}
 			}
-			result.addAll(ast);
+			result.addAll(ast.args());
 			return result;
 		}
 		return ast;

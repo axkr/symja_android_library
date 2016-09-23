@@ -27,7 +27,7 @@ public class UnitVector extends AbstractFunctionEvaluator {
 			if (k <= n) {
 				IAST vector = F.ListC(n);
 				for (int i = 0; i < n; i++) {
-					vector.add(F.C0);
+					vector.append(F.C0);
 				}
 				vector.set(k, F.C1);
 				return vector;

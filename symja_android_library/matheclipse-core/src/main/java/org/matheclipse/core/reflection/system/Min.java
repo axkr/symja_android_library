@@ -61,16 +61,16 @@ public class Min extends AbstractFunctionEvaluator {
 				if (comp == IExpr.COMPARE_TERNARY.UNDEFINED) {
 					// undetermined
 					if (min1.isNumber()) {
-						f.add(min2);
+						f.append(min2);
 					} else {
-						f.add(min1);
+						f.append(min1);
 						min1 = min2;
 					}
 				}
 			}
 		}
 		if (f.size() > 1) {
-			f.add(1, min1);
+			f.append(1, min1);
 			if (!evaled) {
 				return F.NIL;
 			}

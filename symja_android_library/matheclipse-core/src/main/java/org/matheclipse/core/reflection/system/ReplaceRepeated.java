@@ -21,7 +21,7 @@ public class ReplaceRepeated extends AbstractEvaluator {
 			if (ast.arg2().isListOfLists()) {
 				IAST result = F.List();
 				for (IExpr subList : (IAST) ast.arg2()) {
-					result.add(ast.arg1().replaceRepeated((IAST) subList));
+					result.append(ast.arg1().replaceRepeated((IAST) subList));
 				}
 				return result;
 			}

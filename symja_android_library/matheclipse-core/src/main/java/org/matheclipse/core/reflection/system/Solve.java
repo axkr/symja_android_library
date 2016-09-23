@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.apache.commons.math4.linear.FieldMatrix;
+import org.apache.commons.math3.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.function.PossibleZeroQ;
 import org.matheclipse.core.convert.Convert;
@@ -102,7 +102,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		private void analyze(IExpr eqExpr) {
 			if (eqExpr.isFree(Predicates.in(fListOfVariables), true)) {
 				fLeafCount++;
-				fPlusAST.add(eqExpr);
+				fPlusAST.append(eqExpr);
 			} else if (eqExpr.isPlus()) {
 				fLeafCount++;
 				IAST plusAST = (IAST) eqExpr;
@@ -111,7 +111,7 @@ public class Solve extends AbstractFunctionEvaluator {
 					expr = plusAST.get(i);
 					if (expr.isFree(Predicates.in(fListOfVariables), true)) {
 						fLeafCount++;
-						fPlusAST.add(expr);
+						fPlusAST.append(expr);
 					} else {
 						getPlusArgumentEquationType(expr);
 					}
@@ -287,7 +287,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			}
 			if (expr.isFree(Predicates.in(fListOfVariables), true)) {
 				fLeafCount++;
-				fPlusAST.add(expr);
+				fPlusAST.append(expr);
 				return;
 			}
 			if (expr.isPower()) {
@@ -352,7 +352,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		public void reset() {
 			this.fMatrixRow = F.List();
 			for (int i = 1; i < fListOfVariables.size(); i++) {
-				fMatrixRow.add(F.C0);
+				fMatrixRow.append(F.C0);
 			}
 			this.fPlusAST = F.Plus();
 			this.fEquationType = LINEAR;
@@ -375,7 +375,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				if (inverseFunction.isPresent()) {
 					fEngine.printMessage("Solve: using of inverse functions may omit some solutions.");
 					// rewrite fNumer
-					inverseFunction.add(arg1);
+					inverseFunction.append(arg1);
 					return fEngine.evaluate(F.Subtract(ast.arg1(), inverseFunction));
 				}
 
@@ -609,7 +609,7 @@ public class Solve extends AbstractFunctionEvaluator {
 					++currEquation;
 					for (int k = 1; k < listOfRules.size(); k++) {
 						if (currEquation >= analyzerList.size()) {
-							resultList.add(F.List(listOfRules.getAST(k)));
+							resultList.append(F.List(listOfRules.getAST(k)));
 							if (maximumNumberOfResults > 0 && maximumNumberOfResults <= resultList.size()) {
 								return resultList;
 							}
@@ -644,8 +644,8 @@ public class Solve extends AbstractFunctionEvaluator {
 				}
 				throw new NoSolution(NoSolution.NO_SOLUTION_FOUND);
 			} else if (exprAnalyzer.isLinear()) {
-				matrix.add(engine.evaluate(exprAnalyzer.getRow()));
-				vector.add(engine.evaluate(F.Negate(exprAnalyzer.getValue())));
+				matrix.append(engine.evaluate(exprAnalyzer.getRow()));
+				vector.append(engine.evaluate(F.Negate(exprAnalyzer.getValue())));
 			} else {
 				throw new NoSolution(NoSolution.NO_SOLUTION_FOUND);
 			}
@@ -671,13 +671,13 @@ public class Solve extends AbstractFunctionEvaluator {
 		for (IExpr expr : subResultList) {
 			if (expr.isList()) {
 				IAST list = (IAST) expr;
-				list.add(1, kListOfSolveRules);
-				resultList.add(list);
+				list.append(1, kListOfSolveRules);
+				resultList.append(list);
 				if (maximumNumberOfResults > 0 && maximumNumberOfResults <= resultList.size()) {
 					return resultList;
 				}
 			} else {
-				resultList.add(expr);
+				resultList.append(expr);
 				if (maximumNumberOfResults > 0 && maximumNumberOfResults <= resultList.size()) {
 					return resultList;
 				}
@@ -738,9 +738,9 @@ public class Solve extends AbstractFunctionEvaluator {
 				IAST list = F.List();
 				for (int i = 1; i < variables.size(); i++) {
 					ISymbol sym = (ISymbol) variables.get(i);
-					list.add(F.Rule(sym, sym.get()));
+					list.append(F.Rule(sym, sym.get()));
 				}
-				resultList.add(list);
+				resultList.append(list);
 
 			}
 			return;
@@ -781,7 +781,7 @@ public class Solve extends AbstractFunctionEvaluator {
 					IAST rootsList = (IAST) temp;
 					for (IExpr root : rootsList) {
 						IAST rule = F.Rule(sym, root);
-						resultList.add(rule);
+						resultList.append(rule);
 					}
 					return resultList;
 				}
@@ -952,7 +952,7 @@ public class Solve extends AbstractFunctionEvaluator {
 							clonedEqualZeroList.set(i, times.get(j));
 							IAST temp = solveEquations(clonedEqualZeroList, variables, 0, engine);
 							if (temp.size() > 1) {
-								subSolutionSet.addAll(temp);
+								subSolutionSet.addAll(temp.args());
 							}
 						}
 					}

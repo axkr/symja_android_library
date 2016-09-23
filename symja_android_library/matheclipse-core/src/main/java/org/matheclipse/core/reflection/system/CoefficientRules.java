@@ -53,7 +53,7 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 		if (ast.isAST1()) {
 			// extract all variables from the polynomial expression
 			eVar = new VariablesSet(ast.arg1());
-			eVar.appendToList(symbolList);
+			eVar.appendToList(symbolList.args());
 			varList = eVar.getArrayList();
 		} else {
 			symbolList = Validate.checkSymbolOrSymbolList(ast, 2);
@@ -113,9 +113,9 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 			ExpVector exp = monomial.exponent();
 			int len = exp.length();
 			for (int i = 0; i < len; i++) {
-				ruleList.add(F.integer(exp.getVal(len - i - 1)));
+				ruleList.append(F.integer(exp.getVal(len - i - 1)));
 			}
-			resultList.add(F.Rule(ruleList, coeff));
+			resultList.append(F.Rule(ruleList, coeff));
 		}
 		return resultList;
 	}
@@ -146,9 +146,9 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 				IAST ruleList = F.List();
 				int len = exp.length();
 				for (int i = 0; i < len; i++) {
-					ruleList.add(F.integer(exp.getVal(len - i - 1)));
+					ruleList.append(F.integer(exp.getVal(len - i - 1)));
 				}
-				resultList.add(F.Rule(ruleList, F.integer(coeff.getVal())));
+				resultList.append(F.Rule(ruleList, F.integer(coeff.getVal())));
 			}
 			return resultList;
 		} catch (ArithmeticException ae) {

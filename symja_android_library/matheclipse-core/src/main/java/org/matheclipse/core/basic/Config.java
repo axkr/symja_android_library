@@ -3,7 +3,7 @@ package org.matheclipse.core.basic;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.math4.util.Precision;
+import org.apache.commons.math3.util.Precision;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -51,7 +51,7 @@ public class Config {
 	 * Show the stack trace, if an exception is thrown in evaluation
 	 * 
 	 */
-	public final static boolean SHOW_STACKTRACE = false;
+	public final static boolean SHOW_STACKTRACE = true;
 
 	/**
 	 * Show the console output, if an expression has a head symbol with

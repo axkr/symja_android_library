@@ -31,7 +31,7 @@ public class PartialFractionGenerator implements IPartialFractionGenerator {
 		if (temp.isAST()) {
 			((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
 		}
-		result.add(temp);
+		result.append(temp);
 	}
 
 	@Override
@@ -52,7 +52,7 @@ public class PartialFractionGenerator implements IPartialFractionGenerator {
 			if (temp.isAST()) {
 				((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
 			}
-			result.add(temp);
+			result.append(temp);
 		}
 	}
 }

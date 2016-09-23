@@ -215,7 +215,7 @@ public class AST2Expr {
 		EvalEngine engine = EvalEngine.get();
 		ast.set(0, convertNode(functionNode.get(0), engine));
 		for (int i = 1; i < functionNode.size(); i++) {
-			ast.add(convertNode(functionNode.get(i), engine));
+			ast.append(convertNode(functionNode.get(i), engine));
 		}
 		return ast;
 	}
@@ -270,7 +270,7 @@ public class AST2Expr {
 			default:
 				ast = F.ast(convertNode(functionNode.get(0), engine), functionNode.size(), false);
 				for (int i = 1; i < functionNode.size(); i++) {
-					ast.add(convertNode(functionNode.get(i), engine));
+					ast.append(convertNode(functionNode.get(i), engine));
 				}
 			}
 
@@ -485,13 +485,13 @@ public class AST2Expr {
 			temp = ast.get(i);
 			if (temp.isASTSizeGE(compareHead, 3)) {
 				IAST lt = (IAST) temp;
-				andAST.add(lt);
+				andAST.append(lt);
 				ast.set(i, lt.get(lt.size() - 1));
 				evaled = true;
 			}
 		}
 		if (evaled) {
-			andAST.add(ast);
+			andAST.append(ast);
 			return andAST;
 		} else {
 			return ast;

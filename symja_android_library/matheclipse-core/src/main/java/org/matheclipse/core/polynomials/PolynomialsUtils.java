@@ -19,8 +19,8 @@ package org.matheclipse.core.polynomials;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math4.fraction.BigFraction;
-import org.apache.commons.math4.util.FastMath;
+import org.apache.commons.math3.fraction.BigFraction;
+import org.apache.commons.math3.util.FastMath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -228,7 +228,7 @@ public class PolynomialsUtils {
 
 		IAST result = F.Plus();
 		for (int i = 0; i <= degree; ++i) {
-			result.add(F.Times(F.fraction(coefficients.get(start + i)), F.Power(x, F.integer(i))));
+			result.append(F.Times(F.fraction(coefficients.get(start + i)), F.Power(x, F.integer(i))));
 		}
 
 		// build the polynomial
@@ -272,13 +272,13 @@ public class PolynomialsUtils {
 				final BigFraction ckPrev = ck;
 				ck = coefficients.get(startK + i);
 				ckm1 = coefficients.get(startKm1 + i);
-				coefficients.add(ck.multiply(ai[0]).sum(ckPrev.multiply(ai[1])).subtract(ckm1.multiply(ai[2])));
+				coefficients.add(ck.multiply(ai[0]).add(ckPrev.multiply(ai[1])).subtract(ckm1.multiply(ai[2])));
 			}
 
 			// degree k coefficient
 			final BigFraction ckPrev = ck;
 			ck = coefficients.get(startK + k);
-			coefficients.add(ck.multiply(ai[0]).sum(ckPrev.multiply(ai[1])));
+			coefficients.add(ck.multiply(ai[0]).add(ckPrev.multiply(ai[1])));
 
 			// degree k+1 coefficient
 			coefficients.add(ck.multiply(ai[1]));

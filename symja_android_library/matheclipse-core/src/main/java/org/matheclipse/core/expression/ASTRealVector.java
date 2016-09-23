@@ -13,9 +13,10 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.apache.commons.math4.linear.ArrayRealVector;
-import org.apache.commons.math4.linear.RealVector;
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.RealVector;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.harmony.util.HMList;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -52,7 +53,7 @@ import jdk.nashorn.internal.runtime.regexp.joni.Config;
  * 
  * @see AST
  */
-public class ASTRealVector extends AbstractAST implements List<IExpr>, Cloneable, Externalizable, RandomAccess {
+public class ASTRealVector extends AbstractAST implements HMList<IExpr>, Cloneable, Externalizable, RandomAccess {
 
 	/**
 	 * 
@@ -111,7 +112,7 @@ public class ASTRealVector extends AbstractAST implements List<IExpr>, Cloneable
 	 * @return always true
 	 */
 	@Override
-	public boolean add(IExpr object) {
+	public boolean append(IExpr object) {
 		hashValue = 0;
 		throw new UnsupportedOperationException();
 	}
@@ -130,7 +131,7 @@ public class ASTRealVector extends AbstractAST implements List<IExpr>, Cloneable
 	 *             when {@code location < 0 || > size()}
 	 */
 	@Override
-	public void add(int location, IExpr object) {
+	public void append(int location, IExpr object) {
 		hashValue = 0;
 		throw new UnsupportedOperationException();
 	}
@@ -336,9 +337,9 @@ public class ASTRealVector extends AbstractAST implements List<IExpr>, Cloneable
 		for (int i = 1; i < size; i++) {
 			IExpr expr = function.apply(get(i));
 			if (expr.isPresent()) {
-				filterAST.add(expr);
+				filterAST.append(expr);
 			} else {
-				restAST.add(get(i));
+				restAST.append(get(i));
 			}
 		}
 		return filterAST;

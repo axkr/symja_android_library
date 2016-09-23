@@ -2,7 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.function.DoubleUnaryOperator;
 
-import org.apache.commons.math4.util.FastMath;
+import org.apache.commons.math3.util.FastMath;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;

@@ -44,7 +44,7 @@ public class Inner extends AbstractFunctionEvaluator {
 				for (int i = 1; i < list1RestDimensions.get(0) + 1; i++) {
 					ArrayList<Integer> list1CurClone = (ArrayList<Integer>) list1Cur.clone();
 					list1CurClone.add(i);
-					newResult.add(recursion(list1CurClone, list2Cur, list1RestDimensions.subList(1, list1RestDimensions.size()),
+					newResult.append(recursion(list1CurClone, list2Cur, list1RestDimensions.subList(1, list1RestDimensions.size()),
 							list2RestDimensions));
 				}
 				return newResult;
@@ -53,14 +53,14 @@ public class Inner extends AbstractFunctionEvaluator {
 				for (int i = 1; i < list2RestDimensions.get(0) + 1; i++) {
 					ArrayList<Integer> list2CurClone = (ArrayList<Integer>) list2Cur.clone();
 					list2CurClone.add(i);
-					newResult.add(recursion(list1Cur, list2CurClone, list1RestDimensions,
+					newResult.append(recursion(list1Cur, list2CurClone, list1RestDimensions,
 							list2RestDimensions.subList(1, list2RestDimensions.size())));
 				}
 				return newResult;
 			} else {
 				IAST part = F.ast(g);
 				for (int i = 1; i < list2Dim0 + 1; i++) {
-					part.add(summand(list1Cur, list2Cur, i));
+					part.append(summand(list1Cur, list2Cur, i));
 				}
 				return part;
 			}
@@ -71,10 +71,10 @@ public class Inner extends AbstractFunctionEvaluator {
 			IAST result = F.ast(f);
 			ArrayList<Integer> list1CurClone = (ArrayList<Integer>) list1Cur.clone();
 			list1CurClone.add(i);
-			result.add(list1.getPart(list1CurClone));
+			result.append(list1.getPart(list1CurClone));
 			ArrayList<Integer> list2CurClone = (ArrayList<Integer>) list2Cur.clone();
 			list2CurClone.add(0, i);
-			result.add(list2.getPart(list2CurClone));
+			result.append(list2.getPart(list2CurClone));
 			return result;
 		}
 	}

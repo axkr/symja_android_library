@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.StringX;
+import org.matheclipse.core.harmony.util.HMList;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -49,13 +50,13 @@ public class FromCharacterCode extends AbstractFunctionEvaluator {
 	public void setUp(final ISymbol newSymbol) {
 	}
 
-	public static List<IExpr> fromCharcterCode(final String unicodeInput, final String inputEncoding, final List<IExpr> list) {
+	public static HMList<IExpr> fromCharcterCode(final String unicodeInput, final String inputEncoding, final HMList<IExpr> list) {
 		try {
 			final String utf8String = new String(unicodeInput.getBytes(inputEncoding), "UTF-8");
 			int characterCode;
 			for (int i = 0; i < utf8String.length(); i++) {
 				characterCode = utf8String.charAt(i);
-				list.add(F.integer(characterCode));
+				list.append(F.integer(characterCode));
 			}
 			return list;
 		} catch (final UnsupportedEncodingException e) {

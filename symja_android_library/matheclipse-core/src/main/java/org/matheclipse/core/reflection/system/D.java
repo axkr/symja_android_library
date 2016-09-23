@@ -73,12 +73,12 @@ public class D extends AbstractFunctionEvaluator {
 				IExpr derivative = F.eval(F.binaryAST2(der, a1, a2));
 				IAST times = F.Times();
 				if (n == 1) {
-					times.add(F.D(a1, x));
+					times.append(F.D(a1, x));
 				}
 				if (m == 1) {
-					times.add(F.D(a2, x));
+					times.append(F.D(a2, x));
 				}
-				times.add(derivative);
+				times.append(derivative);
 				return times;
 			}
 			IAST fDerivParam = createDerivative(n, m, header, a1, a2);
@@ -101,9 +101,9 @@ public class D extends AbstractFunctionEvaluator {
 	private IAST createDerivative(final int n, final IExpr header, final IExpr arg1) {
 		IAST deriv = F.Derivative(F.integer(n));
 		IAST fDeriv = F.ast(deriv);
-		fDeriv.add(header);
+		fDeriv.append(header);
 		IAST fDerivParam = F.ast(fDeriv);
-		fDerivParam.add(arg1);
+		fDerivParam.append(arg1);
 		return fDerivParam;
 	}
 
@@ -120,10 +120,10 @@ public class D extends AbstractFunctionEvaluator {
 	private IAST createDerivative(final int n, final int m, final IExpr header, final IExpr arg1, final IExpr arg2) {
 		IAST deriv = F.Derivative(F.integer(n), F.integer(m));
 		IAST fDeriv = F.ast(deriv);
-		fDeriv.add(header);
+		fDeriv.append(header);
 		IAST fDerivParam = F.ast(fDeriv);
-		fDerivParam.add(arg1);
-		fDerivParam.add(arg2);
+		fDerivParam.append(arg1);
+		fDerivParam.append(arg2);
 		return fDerivParam;
 	}
 
@@ -218,8 +218,8 @@ public class D extends AbstractFunctionEvaluator {
 
 				// D[f_^g_,y_]:= f^g*(((g*D[f,y])/f)+Log[f]*D[g,y])
 				final IAST resultList = F.Times();
-				resultList.add(F.Power(f, g));
-				resultList.add(F.Plus(F.Times(g, F.D(f, y), F.Power(f, F.CN1)), F.Times(F.Log(f), F.D(g, y))));
+				resultList.append(F.Power(f, g));
+				resultList.append(F.Plus(F.Times(g, F.D(f, y), F.Power(f, F.CN1)), F.Times(F.Log(f), F.D(g, y))));
 				return resultList;
 				// }
 			} else if ((header == F.Log) && (listArg1.isAST2())) {

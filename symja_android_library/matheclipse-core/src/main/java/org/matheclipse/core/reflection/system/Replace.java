@@ -91,9 +91,9 @@ public class Replace extends AbstractEvaluator {
 					}
 				}
 				if (temp.isPresent()) {
-					result.add(temp);
+					result.append(temp);
 				} else {
-					result.add(arg1);
+					result.append(arg1);
 				}
 			}
 			return result;
@@ -149,7 +149,7 @@ public class Replace extends AbstractEvaluator {
 						throw wat;
 					}
 				}
-				result.add(temp.orElse(arg1));
+				result.append(temp.orElse(arg1));
 			}
 			return result;
 		}

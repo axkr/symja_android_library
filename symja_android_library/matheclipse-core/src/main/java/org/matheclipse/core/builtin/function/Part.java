@@ -81,7 +81,7 @@ public class Part extends AbstractCoreFunctionEvaluator {
 					last = arg1.size() + indx2;
 				}
 				for (int i = indx1; i <= last; i++) {
-					result.add(arg1.get(i));
+					result.append(arg1.get(i));
 				}
 				return result;
 			}
@@ -103,13 +103,13 @@ public class Part extends AbstractCoreFunctionEvaluator {
 					if (p1 < ast.size()) {
 						if (ires.isAST()) {
 							temp = getPart((IAST) ires, ast, p1, engine);
-							result.add(temp);
+							result.append(temp);
 						} else {
 							throw new WrongArgumentType(ast, arg1, pos,
 									"Wrong argument for Part[] function. Function or list expected.");
 						}
 					} else {
-						result.add(ires);
+						result.append(ires);
 					}
 				}
 			}

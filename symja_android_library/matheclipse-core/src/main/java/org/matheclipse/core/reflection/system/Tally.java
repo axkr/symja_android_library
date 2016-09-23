@@ -21,7 +21,7 @@ public class Tally extends AbstractEvaluator {
 	private static IAST createResultList(java.util.Map<IExpr, Integer> map) {
 		IAST result = F.List();
 		for (java.util.Map.Entry<IExpr, Integer> entry : map.entrySet()) {
-			result.add(F.List(entry.getKey(), F.integer(entry.getValue())));
+			result.append(F.List(entry.getKey(), F.integer(entry.getValue())));
 		}
 		return result;
 	}

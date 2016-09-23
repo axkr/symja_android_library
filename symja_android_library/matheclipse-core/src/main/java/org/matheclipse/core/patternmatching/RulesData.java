@@ -560,7 +560,7 @@ public class RulesData implements Serializable {
 	private Set<IPatternMatcher> getPatternDownRules() {
 		if (fPatternDownRules == null) {
 			// fPatternDownRules = new TreeSet<IPatternMatcher>();
-			fPatternDownRules = new TreeSet<IPatternMatcher>(PatternMatcherComparator.CONS);
+			fPatternDownRules = new TreeSet<IPatternMatcher>();
 		}
 		return fPatternDownRules;
 	}

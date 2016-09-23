@@ -34,7 +34,7 @@ public class Nand extends AbstractCoreFunctionEvaluator {
 			} else if (temp.isTrue()) {
 				evaled = true;
 			} else {
-				result.add(temp);
+				result.append(temp);
 			}
 		}
 		if (evaled) {

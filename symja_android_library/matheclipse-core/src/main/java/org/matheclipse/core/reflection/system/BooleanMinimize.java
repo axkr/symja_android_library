@@ -27,13 +27,9 @@ public class BooleanMinimize extends AbstractFunctionEvaluator {
 
 		if (ast.arg1().isASTSizeGE(F.Or, 3)) {
 			try {
-				// System.out.println(ast.arg1());
 				QuineMcCluskyFormula f = QuineMcCluskyFormula.read((IAST) ast.arg1());
-				// System.out.println(f);
 				f.reduceToPrimeImplicants();
-				// System.out.println(f);
 				f.reducePrimeImplicantsToSubset();
-				// System.out.println(f);
 				return f.toExpr();
 			} catch (BooleanFunctionConversionException bfc) {
 				if (Config.DEBUG) {

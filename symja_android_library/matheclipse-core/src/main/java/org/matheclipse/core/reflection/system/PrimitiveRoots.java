@@ -25,7 +25,7 @@ public class PrimitiveRoots extends AbstractTrigArg1 {
 				if (roots != null) {
 					IAST list = F.List();
 					for (int i = 0; i < roots.length; i++) {
-						list.add(roots[i]);
+						list.append(roots[i]);
 					}
 					return list;
 				}

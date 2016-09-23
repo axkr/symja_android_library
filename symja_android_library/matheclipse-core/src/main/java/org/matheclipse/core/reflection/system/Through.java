@@ -30,9 +30,9 @@ public class Through extends AbstractFunctionEvaluator {
 				for (int i = 1; i < l2.size(); i++) {
 					if (l1.get(i).isSymbol() || l2.get(i).isAST()) {
 						clonedList = l1.apply(l2.get(i));
-						result.add(clonedList);
+						result.append(clonedList);
 					} else {
-						result.add(l2.get(i));
+						result.append(l2.get(i));
 					}
 				}
 				return result;

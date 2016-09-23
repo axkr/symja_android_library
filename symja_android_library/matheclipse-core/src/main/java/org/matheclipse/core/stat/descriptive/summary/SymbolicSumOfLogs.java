@@ -137,7 +137,7 @@ public class SymbolicSumOfLogs extends AbstractSymbolicStorelessUnivariateStatis
 		if (test(values, begin, length, true)) {
 			IAST sumLog = F.Plus();
 			for (int i = begin; i < begin + length; i++) {
-				sumLog.add(F.Log(values.get(i)));
+				sumLog.append(F.Log(values.get(i)));
 			}
 			if (sumLog.size() > 1) {
 				return F.eval(sumLog);

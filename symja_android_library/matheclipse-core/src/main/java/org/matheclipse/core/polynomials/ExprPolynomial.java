@@ -890,7 +890,7 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 		IExpr n = ring.getZEROCoefficient();
 		for (IExpr c : val.values()) {
 			IExpr x = c.abs();
-			n = n.sum(x);
+			n = n.add(x);
 		}
 		return n;
 	}
@@ -922,7 +922,7 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 			IExpr y = me.getValue(); // sv.get(e); // assert y != null
 			IExpr x = nv.get(e);
 			if (x != null) {
-				x = x.sum(y);
+				x = x.add(y);
 				if (!x.isZero()) {
 					nv.put(e, x);
 				} else {
@@ -957,7 +957,7 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 		// if ( nv.size() == 0 ) { nv.put(e,a); return n; }
 		IExpr x = nv.get(e);
 		if (x != null) {
-			x = x.sum(a);
+			x = x.add(a);
 			if (!x.isZero()) {
 				nv.put(e, x);
 			} else {
@@ -1003,7 +1003,7 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 			IExpr y = me.getValue(); // sv.get(e); // assert y != null
 			IExpr x = nv.get(e);
 			if (x != null) {
-				x = x.sum(y);
+				x = x.add(y);
 				if (!x.isZero()) {
 					nv.put(e, x);
 				} else {
@@ -1031,7 +1031,7 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 		SortedMap<ExpVectorLong, IExpr> nv = this.val;
 		IExpr x = nv.get(e);
 		if (x != null) {
-			x = x.sum(a);
+			x = x.add(a);
 			if (!x.isZero()) {
 				nv.put(e, x);
 			} else {
@@ -1471,7 +1471,7 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 					if (c0 == null) {
 						pv.put(e, c);
 					} else {
-						c0 = c0.sum(c);
+						c0 = c0.add(c);
 						if (!c0.isZero()) {
 							pv.put(e, c0);
 						} else {
@@ -2290,9 +2290,9 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 			int len = exp.length();
 			IAST ruleList = F.ListC(len);
 			for (int i = 0; i < len; i++) {
-				ruleList.add(F.integer(exp.getVal(len - i - 1)));
+				ruleList.append(F.integer(exp.getVal(len - i - 1)));
 			}
-			result.add(F.Rule(ruleList, coeff));
+			result.append(F.Rule(ruleList, coeff));
 		}
 		return result;
 	}
@@ -2308,9 +2308,9 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 			// IExpr coeff = monomial.getValue();
 			ExpVectorLong exp = monomial.getKey();
 			IAST monomTimes = F.Times();
-			monomTimes.add(val.get(exp));
+			monomTimes.append(val.get(exp));
 			appendToExpr(monomTimes, exp, ring.vars);
-			result.add(monomTimes);
+			result.append(monomTimes);
 		}
 		return result;
 	}
@@ -2323,9 +2323,9 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 				int ix = leer.varIndex(i);
 				if (ix >= 0) {
 					if (arr[i] == 1L) {
-						times.add(variables.get(ix + 1));
+						times.append(variables.get(ix + 1));
 					} else {
-						times.add(F.Power(variables.get(ix + 1), arr[i]));
+						times.append(F.Power(variables.get(ix + 1), arr[i]));
 					}
 				}
 			}
@@ -2359,11 +2359,11 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 			for (ExpVectorLong expArray : val.keySet()) {
 				exp = expArray.getVal(0);
 				while (lastDegree < exp) {
-					result.add(F.C0);
+					result.append(F.C0);
 					lastDegree++;
 				}
 				if (lastDegree == exp) {
-					result.add(val.get(expArray));
+					result.append(val.get(expArray));
 					lastDegree++;
 				}
 			}
@@ -2416,7 +2416,7 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 			ExpVectorLong exp = monomial.exponent();
 			IAST monomTimes = F.Times();
 			if (!coeff.isOne()) {
-				monomTimes.add(coeff);
+				monomTimes.append(coeff);
 			}
 			long lExp;
 			int ix;
@@ -2429,13 +2429,13 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 					variable = vars.get(ix + 1);
 					// }
 					if (lExp == 1L) {
-						monomTimes.add(variable);
+						monomTimes.append(variable);
 					} else {
-						monomTimes.add(F.Power(variable, F.integer(lExp)));
+						monomTimes.append(F.Power(variable, F.integer(lExp)));
 					}
 				}
 			}
-			result.add(monomTimes.getOneIdentity(F.C1));
+			result.append(monomTimes.getOneIdentity(F.C1));
 		}
 		return result.getOneIdentity(F.C0);
 	}

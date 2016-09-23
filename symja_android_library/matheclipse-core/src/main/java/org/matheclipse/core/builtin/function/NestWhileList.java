@@ -33,10 +33,10 @@ public class NestWhileList extends AbstractCoreFunctionEvaluator {
 		Predicate<IExpr> predicate = Predicates.isTrue(test);
 
 		while (predicate.test(temp)) {
-			resultList.add(temp);
+			resultList.append(temp);
 			temp = engine.evaluate(fn.apply(temp));
 		}
-		resultList.add(temp);
+		resultList.append(temp);
 		return resultList;
 	}
 

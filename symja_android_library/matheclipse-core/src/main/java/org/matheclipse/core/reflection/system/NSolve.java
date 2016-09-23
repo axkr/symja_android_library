@@ -71,7 +71,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 		private void analyze(IExpr eqExpr) {
 			if (eqExpr.isFree(Predicates.in(vars), true)) {
 				leafCount++;
-				value.add(eqExpr);
+				value.append(eqExpr);
 			} else if (eqExpr.isPlus()) {
 				leafCount++;
 				IAST arg = (IAST) eqExpr;
@@ -80,7 +80,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 					expr = arg.get(i);
 					if (expr.isFree(Predicates.in(vars), true)) {
 						leafCount++;
-						value.add(expr);
+						value.append(expr);
 					} else {
 						getPlusEquationType(expr);
 					}
@@ -228,7 +228,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 				if (equationType == LINEAR) {
 					if (sym == null) {
 						// should never happen??
-						System.out.println("sym == null???");
+						// System.out.println("sym == null???");
 					}
 				}
 			} else {
@@ -265,7 +265,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 			}
 			if (expr.isFree(Predicates.in(vars), true)) {
 				leafCount++;
-				value.add(expr);
+				value.append(expr);
 				return;
 			}
 			if (expr.isPower()) {
@@ -330,7 +330,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 		public void reset() {
 			this.row = F.List();
 			for (int i = 1; i < vars.size(); i++) {
-				row.add(F.C0);
+				row.append(F.C0);
 			}
 			this.value = F.Plus();
 			this.equationType = LINEAR;
@@ -396,7 +396,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 					++currEquation;
 					for (int k = 1; k < listOfRules.size(); k++) {
 						if (currEquation >= analyzerList.size()) {
-							resultList.add(F.List(listOfRules.getAST(k)));
+							resultList.append(F.List(listOfRules.getAST(k)));
 							evaled = true;
 						} else {
 
@@ -425,10 +425,10 @@ public class NSolve extends AbstractFunctionEvaluator {
 									for (IExpr expr : subResultList) {
 										if (expr.isList()) {
 											IAST list = (IAST) expr;
-											list.add(1, listOfRules.getAST(k));
-											resultList.add(list);
+											list.append(1, listOfRules.getAST(k));
+											resultList.append(list);
 										} else {
-											resultList.add(expr);
+											resultList.append(expr);
 										}
 									}
 								}
@@ -445,8 +445,8 @@ public class NSolve extends AbstractFunctionEvaluator {
 				}
 				throw new NoSolution(NoSolution.NO_SOLUTION_FOUND);
 			} else if (exprAnalyzer.isLinear()) {
-				matrix.add(engine.evaluate(exprAnalyzer.getRow()));
-				vector.add(engine.evaluate(F.Negate(exprAnalyzer.getValue())));
+				matrix.append(engine.evaluate(exprAnalyzer.getRow()));
+				vector.append(engine.evaluate(F.Negate(exprAnalyzer.getValue())));
 			} else {
 				throw new NoSolution(NoSolution.NO_SOLUTION_FOUND);
 			}
@@ -474,7 +474,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 					IAST rootsList = (IAST) temp;
 					for (IExpr root : rootsList) {
 						IAST rule = F.Rule(sym, root);
-						resultList.add(rule);
+						resultList.append(rule);
 					}
 					return resultList;
 				}
@@ -515,9 +515,9 @@ public class NSolve extends AbstractFunctionEvaluator {
 					IAST list = F.List();
 					for (int j = 1; j < vars.size(); j++) {
 						IAST rule = F.Rule(vars.get(j), rootsList.get(j));
-						list.add(rule);
+						list.append(rule);
 					}
-					resultList.add(list);
+					resultList.append(list);
 				} else {
 					return F.NIL;
 				}

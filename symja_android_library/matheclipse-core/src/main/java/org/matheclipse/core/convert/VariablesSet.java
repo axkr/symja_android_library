@@ -262,7 +262,7 @@ public class VariablesSet {
 		final Iterator<IExpr> iter = fVariablesSet.iterator();
 		final IAST list = F.ListC(fVariablesSet.size());
 		while (iter.hasNext()) {
-			list.add(iter.next());
+			list.append(iter.next());
 		}
 		return list;
 	}

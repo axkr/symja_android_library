@@ -41,7 +41,6 @@ public class Package extends AbstractCoreFunctionEvaluator {
 		IAST symbols = (IAST) ast.arg2();
 		IAST list = (IAST) ast.arg3();
 		evalPackage(symbols, list, engine);
-		// System.out.println(resultList);
 		return F.Null;
 	}
 
@@ -77,7 +76,7 @@ public class Package extends AbstractCoreFunctionEvaluator {
 		// convert the rules into a new list:
 		IAST resultList = F.List();
 		for (int i = 1; i < list.size(); i++) {
-			resultList.add(convertSymbolsInExpr(list.get(i), convertedSymbolMap));
+			resultList.append(convertSymbolsInExpr(list.get(i), convertedSymbolMap));
 		}
 		try {
 			engine.setPackageMode(true);

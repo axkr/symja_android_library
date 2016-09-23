@@ -67,7 +67,7 @@ public class QuineMcCluskyFormula {
 	public IExpr toExpr() throws BooleanFunctionConversionException {
 		IAST result = F.ast(F.Or);
 		for (int i = 0; i < termList.size(); i++) {
-			result.add(termList.get(i).toExpr(variables));
+			result.append(termList.get(i).toExpr(variables));
 		}
 		if (result.isAST0()) {
 			return F.True;

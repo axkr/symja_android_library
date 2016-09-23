@@ -61,12 +61,12 @@ public class ExtendedGCD extends AbstractFunctionEvaluator {
 			// convert the Bezout numbers to sublists
 			IAST subList = F.List();
 			for (int i = 0; i < subBezouts.length; i++) {
-				subList.add(F.integer(subBezouts[i]));
+				subList.append(F.integer(subBezouts[i]));
 			}
 			// create the output list
 			IAST list = F.List();
-			list.add(F.integer(gcd));
-			list.add(subList);
+			list.append(F.integer(gcd));
+			list.append(subList);
 			return list;
 		} catch (ArithmeticException ae) {
 			if (Config.SHOW_STACKTRACE) {

@@ -71,25 +71,25 @@ public class Plot extends AbstractEvaluator {
 						temp = plotLine(ad, bd, y0d, y1d, list.get(2), (ISymbol) lst.get(1), engine);
 
 						if (temp.isPresent()) {
-							line.add(temp);
-							primitives.add(line);
+							line.append(temp);
+							primitives.append(line);
 						}
 						if (i < list.size() - 1) {
 							line = Line();
 						}
 					}
-					graphics.add(primitives);
+					graphics.append(primitives);
 
 				} else {
 					temp = plotLine(ad, bd, y0d, y1d, ast.get(1), (ISymbol) lst.get(1), engine);
 					if (temp.isPresent()) {
-						line.add(temp);
-						graphics.add(line);
+						line.append(temp);
+						graphics.append(line);
 					}
 				}
 				final IExpr options[] = { Rule(F.PlotRange, F.Automatic), Rule(F.AxesStyle, F.Automatic),
 						Rule(F.AxesOrigin, List(F.C0, F.C0)), Rule(F.Axes, F.True), Rule(F.Background, F.White) };
-				graphics.add(F.ast(options, F.List));
+				graphics.append(F.ast(options, F.List));
 				return Show(graphics);
 			}
 		}

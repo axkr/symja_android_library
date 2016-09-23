@@ -32,7 +32,7 @@ public class Extract extends AbstractFunctionEvaluator {
 					if (!temp.isPresent()) {
 						return F.NIL;
 					}
-					result.add(temp);
+					result.append(temp);
 				}
 				return result;
 			}
@@ -44,7 +44,7 @@ public class Extract extends AbstractFunctionEvaluator {
 	public static IExpr extract(final IAST list, final IAST position) {
 		final PositionConverter converter = new PositionConverter();
 		if ((position.size() > 1) && (position.arg1().isSignedNumber())) {
-			return extract(list, position, converter, 1);
+			return extract(list, position.range(), converter, 1);
 		} else {
 			// construct an array
 			// final IAST resultList = List();

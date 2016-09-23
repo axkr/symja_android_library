@@ -36,10 +36,10 @@ public class Riffle extends AbstractCoreFunctionEvaluator {
 		}
 		IAST result = arg1.copyHead();
 		for (int i = 1; i < arg1.size() - 1; i++) {
-			result.add(arg1.get(i));
-			result.add(arg2);
+			result.append(arg1.get(i));
+			result.append(arg2);
 		}
-		result.add(arg1.get(arg1.size() - 1));
+		result.append(arg1.get(arg1.size() - 1));
 		return result;
 	}
 
@@ -53,17 +53,17 @@ public class Riffle extends AbstractCoreFunctionEvaluator {
 		}
 		int j = 1;
 		for (int i = 1; i < arg1.size() - 1; i++) {
-			result.add(arg1.get(i));
+			result.append(arg1.get(i));
 			if (j < arg2.size()) {
-				result.add(arg2.get(j++));
+				result.append(arg2.get(j++));
 			} else {
 				j = 1;
-				result.add(arg2.get(j++));
+				result.append(arg2.get(j++));
 			}
 		}
-		result.add(arg1.get(arg1.size() - 1));
+		result.append(arg1.get(arg1.size() - 1));
 		if (j < arg2.size()) {
-			result.add(arg2.get(j++));
+			result.append(arg2.get(j++));
 		}
 		return result;
 	}

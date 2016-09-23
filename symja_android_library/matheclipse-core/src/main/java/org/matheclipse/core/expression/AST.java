@@ -178,9 +178,9 @@ public class AST extends HMArrayList implements Externalizable {
 				if ("[".equals(token)) {
 					IAST argList = newInstance(StringX.valueOf(arg));
 					parseList(tokenizer, argList);
-					list.add(argList);
+					list.append(argList);
 				} else {
-					list.add(StringX.valueOf(arg));
+					list.append(StringX.valueOf(arg));
 					continue;
 				}
 			}
@@ -205,9 +205,9 @@ public class AST extends HMArrayList implements Externalizable {
 	@Override
 	public IAST addOneIdentity(IAST value) {
 		if (value.isAST1()) {
-			add(value.arg1());
+			append(value.arg1());
 		} else {
-			add(value);
+			append(value);
 		}
 		return this;
 	}
@@ -216,8 +216,8 @@ public class AST extends HMArrayList implements Externalizable {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final boolean addAll(List<? extends IExpr> ast) {
-		return addAll(ast, 1, ast.size());
+	public final boolean addAll(List<? extends IExpr> list) {
+		return addAll(list, 0, list.size());
 	}
 
 	/**
@@ -228,7 +228,7 @@ public class AST extends HMArrayList implements Externalizable {
 		if (ast.size() > 0 && startPosition < endPosition) {
 			ensureCapacity(size() + (endPosition - startPosition));
 			for (int i = startPosition; i < endPosition; i++) {
-				add(ast.get(i));
+				append(ast.get(i));
 			}
 			return true;
 		}
@@ -245,19 +245,19 @@ public class AST extends HMArrayList implements Externalizable {
 	 */
 	public static AST newInstance(final int intialCapacity, final IExpr head) {
 		AST ast = new AST(intialCapacity + 1, false);
-		ast.add(head);
+		ast.append(head);
 		return ast;
 	}
 
 	public static AST newInstance(final IExpr head) {
 		AST ast = new AST(5, false);
-		ast.add(head);
+		ast.append(head);
 		return ast;
 	}
 
 	protected static AST newInstance(final int intialCapacity, final IAST ast, int endPosition) {
 		AST result = new AST(intialCapacity, false);
-		result.addAll(ast, 0, endPosition);
+		result.addAll(ast.range(), 0, endPosition);
 		return result;
 	}
 
@@ -287,7 +287,7 @@ public class AST extends HMArrayList implements Externalizable {
 		return new AST(eArr);
 	}
 
-	public static AST newInstance(final ISymbol symbol, final org.apache.commons.math4.complex.Complex... arr) {
+	public static AST newInstance(final ISymbol symbol, final org.apache.commons.math3.complex.Complex... arr) {
 		IExpr[] eArr = new IExpr[arr.length + 1];
 		eArr[0] = symbol;
 		for (int i = 1; i <= arr.length; i++) {

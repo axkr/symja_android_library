@@ -1,7 +1,7 @@
 package org.matheclipse.commons.math.linear;
 
-import org.apache.commons.math4.linear.FieldMatrix;
-import org.apache.commons.math4.linear.FieldVector;
+import org.apache.commons.math3.linear.FieldMatrix;
+import org.apache.commons.math3.linear.FieldVector;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;

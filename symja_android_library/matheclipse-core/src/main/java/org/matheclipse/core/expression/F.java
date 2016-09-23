@@ -13,8 +13,8 @@ import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 
-import org.apache.commons.math4.complex.Complex;
-import org.apache.commons.math4.fraction.BigFraction;
+import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.fraction.BigFraction;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatContext;
@@ -1563,8 +1563,7 @@ public class F {
 			// UnitVector,
 			UnsameQ, UpperCaseQ, UpSet, UpSetDelayed, ValueQ, VandermondeMatrix, Variables, VectorQ, Which, While, Xor,
 			// Zeta
-			NIL
-	};
+			NIL };
 
 	static {
 		try {
@@ -1629,11 +1628,6 @@ public class F {
 			Power.setDefaultValue(2, C1);
 			Power.setEvaluator(org.matheclipse.core.reflection.system.Power.CONST);
 			Sqrt.setEvaluator(org.matheclipse.core.reflection.system.Sqrt.CONST);
-			Equal.setEvaluator(org.matheclipse.core.reflection.system.Equal.CONST);
-			Less.setEvaluator(org.matheclipse.core.reflection.system.Less.CONST);
-			Greater.setEvaluator(org.matheclipse.core.reflection.system.Greater.CONST);
-			Expand.setEvaluator(org.matheclipse.core.reflection.system.Expand.CONST);
-			ExpandAll.setEvaluator(org.matheclipse.core.reflection.system.ExpandAll.CONST);
 
 			Abs.setEvaluator(new org.matheclipse.core.reflection.system.Abs());
 			AddTo.setEvaluator(new org.matheclipse.core.reflection.system.AddTo());
@@ -1766,7 +1760,7 @@ public class F {
 			IntegerExponent.setEvaluator(new org.matheclipse.core.reflection.system.IntegerExponent());
 			IntegerPart.setEvaluator(new org.matheclipse.core.reflection.system.IntegerPart());
 			IntegerPartitions.setEvaluator(new org.matheclipse.core.reflection.system.IntegerPartitions());
-			Integrate.setEvaluator(new org.matheclipse.core.reflection.system.Integrate());
+
 			InterpolatingFunction.setEvaluator(new org.matheclipse.core.reflection.system.InterpolatingFunction());
 			InterpolatingPolynomial.setEvaluator(new org.matheclipse.core.reflection.system.InterpolatingPolynomial());
 			Intersection.setEvaluator(new org.matheclipse.core.reflection.system.Intersection());
@@ -1839,7 +1833,6 @@ public class F {
 			Piecewise.setEvaluator(new org.matheclipse.core.reflection.system.Piecewise());
 			Plot.setEvaluator(new org.matheclipse.core.reflection.system.Plot());
 			Plot3D.setEvaluator(new org.matheclipse.core.reflection.system.Plot3D());
-			Plus.setEvaluator(new org.matheclipse.core.reflection.system.Plus());
 			Pochhammer.setEvaluator(new org.matheclipse.core.reflection.system.Pochhammer());
 			PolynomialExtendedGCD.setEvaluator(new org.matheclipse.core.reflection.system.PolynomialExtendedGCD());
 			PolynomialGCD.setEvaluator(new org.matheclipse.core.reflection.system.PolynomialGCD());
@@ -1850,7 +1843,6 @@ public class F {
 					.setEvaluator(new org.matheclipse.core.reflection.system.PolynomialQuotientRemainder());
 			PolynomialRemainder.setEvaluator(new org.matheclipse.core.reflection.system.PolynomialRemainder());
 			Positive.setEvaluator(new org.matheclipse.core.reflection.system.Positive());
-			Power.setEvaluator(new org.matheclipse.core.reflection.system.Power());
 			PowerExpand.setEvaluator(new org.matheclipse.core.reflection.system.PowerExpand());
 			PowerMod.setEvaluator(new org.matheclipse.core.reflection.system.PowerMod());
 			PreDecrement.setEvaluator(new org.matheclipse.core.reflection.system.PreDecrement());
@@ -1895,7 +1887,6 @@ public class F {
 			SinIntegral.setEvaluator(new org.matheclipse.core.reflection.system.SinIntegral());
 			Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
 			Sort.setEvaluator(new org.matheclipse.core.reflection.system.Sort());
-			Sqrt.setEvaluator(new org.matheclipse.core.reflection.system.Sqrt());
 			SquaredEuclidianDistance
 					.setEvaluator(new org.matheclipse.core.reflection.system.SquaredEuclidianDistance());
 			SquareFreeQ.setEvaluator(new org.matheclipse.core.reflection.system.SquareFreeQ());
@@ -1918,7 +1909,6 @@ public class F {
 			Taylor.setEvaluator(new org.matheclipse.core.reflection.system.Taylor());
 			Thread.setEvaluator(new org.matheclipse.core.reflection.system.Thread());
 			Through.setEvaluator(new org.matheclipse.core.reflection.system.Through());
-			Times.setEvaluator(new org.matheclipse.core.reflection.system.Times());
 			TimesBy.setEvaluator(new org.matheclipse.core.reflection.system.TimesBy());
 			ToCharacterCode.setEvaluator(new org.matheclipse.core.reflection.system.ToCharacterCode());
 			Together.setEvaluator(new org.matheclipse.core.reflection.system.Together());
@@ -1946,10 +1936,12 @@ public class F {
 			Zeta.setEvaluator(new org.matheclipse.core.reflection.system.Zeta());
 
 			// initialize only the utility function rules for Integrate
-			// other rules are "lazy loaded" on first use og Integrate
+			// other rules are "lazy loaded" on first use of Integrate
 			// function
 			final EvalEngine engine = EvalEngine.get();
 			org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
+			// Integrate.setEvaluator(new
+			// org.matheclipse.core.reflection.system.Integrate());
 			// long end = System.currentTimeMillis();
 			// System.out.println("Init time: " + (end - start));
 		} catch (Throwable th) {
@@ -2422,16 +2414,16 @@ public class F {
 			ast = AST.newInstance(last - first, head);
 			// range include
 			for (int i = first; i < last; i++) {
-				ast.add(f.get(i));
+				ast.append(f.get(i));
 			}
 		} else {
 			ast = AST.newInstance(f.size() - last + first - 1, head);
 			// range exclude
 			for (int i = 1; i < first; i++) {
-				ast.add(f.get(i));
+				ast.append(f.get(i));
 			}
 			for (int j = last; j < f.size(); j++) {
-				ast.add(f.get(j));
+				ast.append(f.get(j));
 			}
 		}
 		return ast;
@@ -2468,7 +2460,7 @@ public class F {
 		final AST ast = AST.newInstance(initialCapacity, head);
 		if (initNull) {
 			for (int i = 0; i < initialCapacity; i++) {
-				ast.add(null);
+				ast.append(null);
 			}
 		}
 		return ast;
@@ -3137,7 +3129,7 @@ public class F {
 	 */
 	public static IExpr eval(final ISymbol head, final IExpr a0) {
 		final IAST ast = ast(head);
-		ast.add(a0);
+		ast.append(a0);
 		return EvalEngine.get().evaluate(ast);
 	}
 
@@ -3151,8 +3143,8 @@ public class F {
 	 */
 	public static IExpr eval(final ISymbol head, final IExpr a0, final IExpr a1) {
 		final IAST ast = ast(head);
-		ast.add(a0);
-		ast.add(a1);
+		ast.append(a0);
+		ast.append(a1);
 		return EvalEngine.get().evaluate(ast);
 	}
 
@@ -3167,9 +3159,9 @@ public class F {
 	 */
 	public static IExpr eval(final ISymbol head, final IExpr a0, final IExpr a1, final IExpr a2) {
 		final IAST ast = ast(head);
-		ast.add(a0);
-		ast.add(a1);
-		ast.add(a2);
+		ast.append(a0);
+		ast.append(a1);
+		ast.append(a2);
 		return EvalEngine.get().evaluate(ast);
 	}
 
@@ -4512,14 +4504,14 @@ public class F {
 			if (a0.isPlus() || a1.isPlus()) {
 				IAST result = Plus();
 				if (a0.isPlus()) {
-					result.addAll((IAST) a0);
+					result.addAll(((IAST) a0).args());
 				} else {
-					result.add(a0);
+					result.append(a0);
 				}
 				if (a1.isPlus()) {
-					result.addAll((IAST) a1);
+					result.addAll(((IAST) a1).args());
 				} else {
-					result.add(a1);
+					result.append(a1);
 				}
 				EvalAttributes.sort(result);
 				return result;
@@ -5029,7 +5021,7 @@ public class F {
 	public static IAST Subtract(final IExpr a0, final IExpr a1) {
 		if (a0.isPlus()) {
 			IAST clone = ((IAST) a0).clone();
-			clone.add(binary(Times, CN1, a1));
+			clone.append(binary(Times, CN1, a1));
 			return clone;
 		}
 		return binary(Plus, a0, binary(Times, CN1, a1));
@@ -5113,14 +5105,14 @@ public class F {
 			if (a0.isTimes() || a1.isTimes()) {
 				IAST result = Times();
 				if (a0.isTimes()) {
-					result.addAll((IAST) a0);
+					result.addAll(((IAST) a0).args());
 				} else {
-					result.add(a0);
+					result.append(a0);
 				}
 				if (a1.isTimes()) {
-					result.addAll((IAST) a1);
+					result.addAll(((IAST) a1).args());
 				} else {
-					result.add(a1);
+					result.append(a1);
 				}
 				EvalAttributes.sort(result);
 				return result;

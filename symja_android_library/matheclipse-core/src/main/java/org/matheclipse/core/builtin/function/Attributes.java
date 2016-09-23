@@ -33,47 +33,47 @@ public class Attributes extends AbstractCoreFunctionEvaluator {
 			int attributea = sym.getAttributes();
 
 			if ((attributea & ISymbol.FLAT) != ISymbol.NOATTRIBUTE) {
-				result.add(F.Flat);
+				result.append(F.Flat);
 			}
 
 			if ((attributea & ISymbol.LISTABLE) != ISymbol.NOATTRIBUTE) {
-				result.add(F.Listable);
+				result.append(F.Listable);
 			}
 
 			if ((attributea & ISymbol.ONEIDENTITY) != ISymbol.NOATTRIBUTE) {
-				result.add(F.OneIdentity);
+				result.append(F.OneIdentity);
 			}
 
 			if ((attributea & ISymbol.ORDERLESS) != ISymbol.NOATTRIBUTE) {
-				result.add(F.Orderless);
+				result.append(F.Orderless);
 			}
 
 			if ((attributea & ISymbol.HOLDALL) != ISymbol.NOATTRIBUTE) {
-				result.add(F.HoldAll);
+				result.append(F.HoldAll);
 			}
 
 			if ((attributea & ISymbol.HOLDFIRST) != ISymbol.NOATTRIBUTE) {
-				result.add(F.HoldFirst);
+				result.append(F.HoldFirst);
 			}
 
 			if ((attributea & ISymbol.HOLDREST) != ISymbol.NOATTRIBUTE) {
-				result.add(F.HoldRest);
+				result.append(F.HoldRest);
 			}
 
 			if ((attributea & ISymbol.NHOLDALL) != ISymbol.NOATTRIBUTE) {
-				result.add(F.NHoldAll);
+				result.append(F.NHoldAll);
 			}
 
 			if ((attributea & ISymbol.NHOLDFIRST) != ISymbol.NOATTRIBUTE) {
-				result.add(F.NHoldFirst);
+				result.append(F.NHoldFirst);
 			}
 
 			if ((attributea & ISymbol.NHOLDREST) != ISymbol.NOATTRIBUTE) {
-				result.add(F.NHoldRest);
+				result.append(F.NHoldRest);
 			}
 
 			if ((attributea & ISymbol.NUMERICFUNCTION) != ISymbol.NOATTRIBUTE) {
-				result.add(F.NumericFunction);
+				result.append(F.NumericFunction);
 			}
 			return result;
 		}

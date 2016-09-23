@@ -34,16 +34,16 @@ public class Gather extends AbstractEvaluator {
 				IAST list = map.get(arg1.get(i));
 				if (list == null) {
 					list = F.List();
-					list.add(arg1.get(i));
+					list.append(arg1.get(i));
 					map.put(arg1.get(i), list);
 				} else {
-					list.add(arg1.get(i));
+					list.append(arg1.get(i));
 				}
 			}
 
 			IAST result = F.List();
 			for (Map.Entry<IExpr, IAST> entry : map.entrySet()) {
-				result.add(entry.getValue());
+				result.append(entry.getValue());
 			}
 			return result;
 		}

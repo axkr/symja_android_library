@@ -265,8 +265,8 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 			factor = (IInteger) iFactors.get(i);
 			if (!last.equals(factor)) {
 				if (subList != null) {
-					subList.add(AbstractIntegerSym.valueOf(count));
-					list.add(subList);
+					subList.append(AbstractIntegerSym.valueOf(count));
+					list.append(subList);
 				}
 				count = 0;
 				subList = List(factor);
@@ -275,8 +275,8 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 			last = factor;
 		}
 		if (subList != null) {
-			subList.add(AbstractIntegerSym.valueOf(count));
-			list.add(subList);
+			subList.append(AbstractIntegerSym.valueOf(count));
+			list.append(subList);
 		}
 		return list;
 	}
@@ -292,12 +292,12 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		IInteger b = this;
 		if (sign() < 0) {
 			b = b.multiply(F.CN1);
-			result.add(F.CN1);
+			result.append(F.CN1);
 		} else if (b.isZero()) {
-			result.add(F.C0);
+			result.append(F.C0);
 			return result;
 		} else if (b.isOne()) {
-			result.add(F.C1);
+			result.append(F.C1);
 			return result;
 		}
 		Map<Integer, Integer> map = new TreeMap<Integer, Integer>();
@@ -307,7 +307,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 			int key = entry.getKey();
 			AbstractIntegerSym is = valueOf(key);
 			for (int i = 0; i < entry.getValue(); i++) {
-				result.add(is);
+				result.append(is);
 			}
 		}
 		if (rest.equals(BigInteger.ONE)) {
@@ -322,7 +322,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 			BigInteger key = entry.getKey();
 			IInteger is = valueOf(key);
 			for (int i = 0; i < entry.getValue(); i++) {
-				result.add(is);
+				result.append(is);
 			}
 		}
 

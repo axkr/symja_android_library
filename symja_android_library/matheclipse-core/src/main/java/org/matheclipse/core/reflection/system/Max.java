@@ -61,16 +61,16 @@ public class Max extends AbstractFunctionEvaluator {
 				if (comp == IExpr.COMPARE_TERNARY.UNDEFINED) {
 					// undetermined
 					if (max1.isNumber()) {
-						f.add(max2);
+						f.append(max2);
 					} else {
-						f.add(max1);
+						f.append(max1);
 						max1 = max2;
 					}
 				}
 			}
 		}
 		if (f.size() > 1) {
-			f.add(1, max1);
+			f.append(1, max1);
 			if (!evaled) {
 				return F.NIL;
 			}

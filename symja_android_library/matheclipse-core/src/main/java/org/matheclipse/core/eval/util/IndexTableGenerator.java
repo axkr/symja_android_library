@@ -44,7 +44,7 @@ public class IndexTableGenerator {
 				final IAST result = fPrototypeList.clone();
 				for (int i = 0; i < iter; i++) {
 					fCurrentIndex[index] = i;
-					result.add(table());
+					result.append(table());
 				}
 				return result;
 			} finally {

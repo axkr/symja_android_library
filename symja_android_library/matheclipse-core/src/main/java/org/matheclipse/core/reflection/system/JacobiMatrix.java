@@ -35,9 +35,9 @@ public class JacobiMatrix extends AbstractFunctionEvaluator {
 				for (int i = 1; i < vector.size(); i++) {
 					jacobiRow = F.List();
 					for (int j = 1; j < variables.size(); j++) {
-						jacobiRow.add(F.D(vector.get(i), variables.get(j)));
+						jacobiRow.append(F.D(vector.get(i), variables.get(j)));
 					}
-					jacobiMatrix.add(jacobiRow);
+					jacobiMatrix.append(jacobiRow);
 				}
 				return jacobiMatrix;
 			}

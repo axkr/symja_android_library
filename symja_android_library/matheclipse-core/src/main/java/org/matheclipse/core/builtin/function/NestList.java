@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin.function;
 
 import static org.matheclipse.core.expression.F.List;
 
-import java.util.Collection;
 import java.util.function.Function;
 
 import org.matheclipse.core.eval.EvalEngine;
@@ -10,6 +9,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
+import org.matheclipse.core.harmony.util.HMCollection;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -37,12 +37,12 @@ public class NestList extends AbstractCoreFunctionEvaluator {
 	}
 
 	public static void nestList(final IExpr expr, final int n, final Function<IExpr, IExpr> fn,
-			final Collection<IExpr> resultList, EvalEngine engine) {
+			final HMCollection<IExpr> resultList, EvalEngine engine) {
 		IExpr temp = expr;
-		resultList.add(temp);
+		resultList.append(temp);
 		for (int i = 0; i < n; i++) {
 			temp = engine.evaluate(fn.apply(temp));
-			resultList.add(temp);
+			resultList.append(temp);
 		}
 	}
 

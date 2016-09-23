@@ -632,6 +632,7 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem044() {
+		
 		check("$test(F_(a_)):={a,b,F,m,x};$test(g(h))", "{h,b,g,m,x}");
 		check("$test(F_(a_.*x_^m_.)):={a,b,F,m,x};$test(g(h*y^2))", "{h,b,g,2,y}");
 		check("$test(F_(a_.*x_^l_.),x_Symbol,b_.*x_^m_):={a,b,F,l,m,x};$test(g(h*y^2),y,k*y^3)", "{h,k,g,2,3,y}");

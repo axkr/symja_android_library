@@ -57,7 +57,7 @@ public class CartesianProduct extends AbstractFunctionEvaluator {
 					current.clear();
 					break;
 				}
-				current.add(it.next());
+				current.append(it.next());
 				compit.add(it);
 			}
 		}
@@ -183,7 +183,7 @@ public class CartesianProduct extends AbstractFunctionEvaluator {
 		CartesianProductList cpi = new CartesianProductList(la, F.List());
 		IAST result = F.List();
 		for (IAST iast : cpi) {
-			result.add(iast);
+			result.append(iast);
 		}
 		return result;
 	}

@@ -28,7 +28,7 @@ public class Catenate extends AbstractEvaluator {
 			}
 			IAST resultList = F.ast(F.List, size, false);
 			for (int i = 1; i < list.size(); i++) {
-				resultList.addAll((IAST) list.get(i));
+				resultList.addAll(((IAST) list.get(i)).args());
 			}
 			return resultList;
 		}

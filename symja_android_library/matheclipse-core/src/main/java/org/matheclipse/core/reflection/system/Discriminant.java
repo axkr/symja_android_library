@@ -742,7 +742,7 @@ public class Discriminant extends AbstractFunctionEvaluator {
 				IAST result = poly.coefficientList();
 				IAST rules = F.List();
 				for (int i = 1; i < result.size(); i++) {
-					rules.add(F.Rule(vars[i - 1], result.get(i)));
+					rules.append(F.Rule(vars[i - 1], result.get(i)));
 				}
 				switch ((int) n) {
 				case 2:

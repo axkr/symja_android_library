@@ -33,7 +33,7 @@ public class EuclidianDistance extends AbstractEvaluator {
 				IAST a2 = ((IAST) arg2);
 				IAST plusAST = F.Plus();
 				for (int i = 1; i < a1.size(); i++) {
-					plusAST.add(F.Sqr(F.Abs(F.Subtract(a1.get(i), a2.get(i)))));
+					plusAST.append(F.Sqr(F.Abs(F.Subtract(a1.get(i), a2.get(i)))));
 				}
 				return F.Sqrt(plusAST);
 			}

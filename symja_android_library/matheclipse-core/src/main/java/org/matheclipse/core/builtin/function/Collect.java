@@ -73,12 +73,12 @@ public class Collect extends AbstractCoreFunctionEvaluator {
 				// collect next pattern in sub-expressions
 				IAST result = F.Plus();
 				if (rest.size() > 1) {
-					result.add(collectSingleVariable(rest, list.get(pos), list, pos + 1, head, engine));
+					result.append(collectSingleVariable(rest, list.get(pos), list, pos + 1, head, engine));
 				}
 				for (Entry<IExpr, IAST> entry : map.entrySet()) {
 					IExpr temp = collectSingleVariable(entry.getValue().getOneIdentity(F.C0), list.get(pos), list,
 							pos + 1, head, engine);
-					result.add(F.Times(entry.getKey(), temp));
+					result.append(F.Times(entry.getKey(), temp));
 				}
 				return result;
 			}
@@ -95,16 +95,16 @@ public class Collect extends AbstractCoreFunctionEvaluator {
 					simplifyAST.set(1, entry.getValue());
 					coefficient = engine.evaluate(simplifyAST);
 					if (coefficient.isPlus()) {
-						rest.add(F.Times(entry.getKey()).addOneIdentity((IAST) coefficient));
+						rest.append(F.Times(entry.getKey()).addOneIdentity((IAST) coefficient));
 					} else {
-						rest.add(entry.getKey().times(coefficient));
+						rest.append(entry.getKey().times(coefficient));
 					}
 				}
 			} else {
 				IAST coefficient;
 				for (IExpr key : map.keySet()) {
 					coefficient = map.get(key);
-					rest.add(F.Times(key).addOneIdentity(coefficient));
+					rest.append(F.Times(key).addOneIdentity(coefficient));
 				}
 			}
 			return rest.getOneIdentity(F.C0);
@@ -114,7 +114,7 @@ public class Collect extends AbstractCoreFunctionEvaluator {
 
 	public void collectToMap(IExpr expr, IPatternMatcher matcher, Map<IExpr, IAST> map, IAST rest) {
 		if (expr.isFree(matcher, false)) {
-			rest.add(expr);
+			rest.append(expr);
 			return;
 		} else if (matcher.test(expr)) {
 			addPowerFactor(expr, F.C1, map);
@@ -147,10 +147,10 @@ public class Collect extends AbstractCoreFunctionEvaluator {
 					return;
 				}
 			}
-			rest.add(expr);
+			rest.append(expr);
 			return;
 		}
-		rest.add(expr);
+		rest.append(expr);
 		return;
 	}
 
@@ -192,7 +192,7 @@ public class Collect extends AbstractCoreFunctionEvaluator {
 			resultList = F.Plus();
 			map.put(key, resultList);
 		}
-		resultList.add(value);
+		resultList.append(value);
 	}
 
 	public boolean isPowerMatched(IExpr poly, IPatternMatcher matcher) {

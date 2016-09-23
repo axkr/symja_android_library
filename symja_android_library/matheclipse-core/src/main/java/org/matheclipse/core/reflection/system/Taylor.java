@@ -29,14 +29,14 @@ public class Taylor extends AbstractFunctionEvaluator {
 				return F.NIL;
 			}
 			IAST fadd = F.Plus();
-			fadd.add(F.ReplaceAll(ast.arg1(), F.Rule(list.arg1(), list.arg2())));
+			fadd.append(F.ReplaceAll(ast.arg1(), F.Rule(list.arg1(), list.arg2())));
 			IExpr temp = ast.arg1();
 			IExpr factor = null;
 			for (int i = 1; i <= upperLimit; i++) {
 				temp = F.D(temp, list.arg1());
 				factor = F.Times(F.Power(F.Factorial(F.integer(i)), F.CN1), F.Power(F.Plus(list.arg1(), F.Times(F.CN1, list.arg2())), F
 						.integer(i)));
-				fadd.add(F.Times(F.ReplaceAll(temp, F.Rule(list.arg1(), list.arg2())), factor));
+				fadd.append(F.Times(F.ReplaceAll(temp, F.Rule(list.arg1(), list.arg2())), factor));
 			}
 			return fadd;
 

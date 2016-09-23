@@ -22,7 +22,7 @@ public class Join extends AbstractFunctionEvaluator {
 		}
 		final IAST result = F.List();
 		for (int i = 1; i < ast.size(); i++) {
-			result.addAll((IAST) ast.get(i));
+			result.addAll(((IAST) ast.get(i)).args());
 		}
 		return result;
 	}

@@ -1,9 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math4.linear.EigenDecomposition;
-import org.apache.commons.math4.linear.FieldMatrix;
-import org.apache.commons.math4.linear.RealMatrix;
-import org.apache.commons.math4.linear.RealVector;
+import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.FieldMatrix;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrappedException;
@@ -38,7 +38,7 @@ public class Eigenvectors extends AbstractMatrix1Expr {
 			EigenDecomposition ed = new EigenDecomposition(matrix);
 			for (int i = 0; i < matrix.getColumnDimension(); i++) {
 				RealVector rv = ed.getEigenvector(i);
-				list.add(Convert.realVector2List(rv));
+				list.append(Convert.realVector2List(rv));
 			}
 			return list;
 		} catch (Exception ime) {

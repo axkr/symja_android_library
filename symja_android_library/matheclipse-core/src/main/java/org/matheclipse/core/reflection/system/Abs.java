@@ -3,7 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 
-import org.apache.commons.math4.complex.Complex;
+import org.apache.commons.math3.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -118,7 +118,7 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules, DoubleU
 			IAST[] result = ((IAST) arg1).filter(new AbsTimesFunction());
 			if (result[0].size() > 1) {
 				if (result[1].size() > 1) {
-					result[0].add(F.Abs(result[1]));
+					result[0].append(F.Abs(result[1]));
 				}
 				return result[0];
 			}

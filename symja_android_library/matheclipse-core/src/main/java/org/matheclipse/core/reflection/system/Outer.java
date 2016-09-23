@@ -26,22 +26,22 @@ public class Outer extends AbstractFunctionEvaluator {
 				IAST result = F.ast(head);
 				for (int i = 1; i < list.size(); i++) {
 					IExpr temp = list.get(i);
-					result.add(outer(astPosition, temp, current));
+					result.append(outer(astPosition, temp, current));
 				}
 				return result;
 			}
 
 			if (ast.size() > astPosition) {
 				try {
-					current.add(expr);
+					current.append(expr);
 					return outer(astPosition + 1, ast.get(astPosition), current);
 				} finally {
 					current.remove(current.size() - 1);
 				}
 			} else {
 				IAST result = F.ast(f);
-				result.addAll(current);
-				result.add(expr);
+				result.addAll(current.args());
+				result.append(expr);
 				return result;
 			}
 		}

@@ -72,16 +72,16 @@ public class Plot3D extends AbstractEvaluator {
 				// double params[] = {ad, bd, cd, dd, -10.0, 10.0};
 
 				temp = plotArray(ad, bd, cd, dd, ast.get(1), (ISymbol) lst1.get(1), (ISymbol) lst2.get(1), engine);
-				graphics.add(temp);
+				graphics.append(temp);
 
 				final IAST options = List();
 				// for (int i = 0; i < optionsArray.length; i++) {
 				// options.add(Rule(optionsArray[i], allOptions.get(i)));
 				// }
-				options.add(Rule(F.PlotRange, F.Automatic));
-				options.add(Rule(F.MeshRange, List(List(a, b), List(c, d))));
+				options.append(Rule(F.PlotRange, F.Automatic));
+				options.append(Rule(F.MeshRange, List(List(a, b), List(c, d))));
 
-				graphics.add(options);
+				graphics.append(options);
 				return Show(graphics);
 			}
 		}

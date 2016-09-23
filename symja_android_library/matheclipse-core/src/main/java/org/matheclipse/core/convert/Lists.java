@@ -39,9 +39,9 @@ public class Lists {
 		if (p_booleans != null) {
 			for (int i = 0, t = p_booleans.length; i < t; i++) {
 				if (p_booleans[i]) {
-					ast.add(F.True);
+					ast.append(F.True);
 				} else {
-					ast.add(F.False);
+					ast.append(F.False);
 				}
 			}
 		}
@@ -64,7 +64,7 @@ public class Lists {
 		IAST ast = F.ast(F.List);
 		if (p_doubles != null) {
 			for (int i = 0, t = p_doubles.length; i < t; i++) {
-				ast.add(F.num(p_doubles[i]));
+				ast.append(F.num(p_doubles[i]));
 			}
 		}
 		return ast;
@@ -86,7 +86,7 @@ public class Lists {
 		IAST ast = F.ast(F.List);
 		if (p_doubles != null) {
 			for (int i = 0, t = p_doubles.length; i < t; i++) {
-				ast.add(F.num(p_doubles[i]));
+				ast.append(F.num(p_doubles[i]));
 			}
 		}
 		return ast;
@@ -108,7 +108,7 @@ public class Lists {
 		IAST ast = F.ast(F.List);
 		if (p_strings != null) {
 			for (int i = 0, t = p_strings.length; i < t; i++) {
-				ast.add(F.stringx(p_strings[i]));
+				ast.append(F.stringx(p_strings[i]));
 			}
 		}
 		return ast;
@@ -131,7 +131,7 @@ public class Lists {
 		if (p_symbols != null) {
 			for (int i = 0, t = p_symbols.length; i < t; i++) {
 
-				ast.add(F.$s(p_symbols[i]));
+				ast.append(F.$s(p_symbols[i]));
 			}
 		}
 		return ast;
@@ -153,7 +153,7 @@ public class Lists {
 		IAST ast = F.ast(F.List);
 		if (p_shorts != null) {
 			for (int i = 0, t = p_shorts.length; i < t; i++) {
-				ast.add(F.integer(p_shorts[i]));
+				ast.append(F.integer(p_shorts[i]));
 			}
 		}
 		return ast;
@@ -175,7 +175,7 @@ public class Lists {
 		IAST ast = F.ast(F.List);
 		if (p_ints != null) {
 			for (int i = 0, t = p_ints.length; i < t; i++) {
-				ast.add(F.integer(p_ints[i]));
+				ast.append(F.integer(p_ints[i]));
 			}
 		}
 		return ast;
@@ -197,7 +197,7 @@ public class Lists {
 		IAST ast = F.ast(F.List);
 		if (p_longs != null) {
 			for (int i = 0, t = p_longs.length; i < t; i++) {
-				ast.add(F.integer(p_longs[i]));
+				ast.append(F.integer(p_longs[i]));
 			}
 		}
 		return ast;
@@ -219,7 +219,7 @@ public class Lists {
 		IAST ast = F.ast(F.List);
 		if (p_objects != null) {
 			for (int i = 0, t = p_objects.length; i < t; i++) {
-				ast.add(Object2Expr.convert(p_objects[i]));
+				ast.append(Object2Expr.convert(p_objects[i]));
 			}
 		}
 		return ast;

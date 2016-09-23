@@ -346,7 +346,7 @@ public class ExprParser extends ExprScanner {
 	 */
 	private void getArguments(final IAST function) throws SyntaxError {
 		do {
-			function.add(parseExpression());
+			function.append(parseExpression());
 
 			if (fToken != TT_COMMA) {
 				break;
@@ -541,7 +541,7 @@ public class ExprParser extends ExprScanner {
 			getNextToken();
 			if (fToken == TT_DIGIT) {
 				countPercent = getIntegerNumber();
-				out.add(F.integer(countPercent));
+				out.append(F.integer(countPercent));
 				return out;
 			}
 
@@ -550,14 +550,14 @@ public class ExprParser extends ExprScanner {
 				getNextToken();
 			}
 
-			out.add(F.integer(-countPercent));
+			out.append(F.integer(-countPercent));
 			return parseArguments(out);
 		} else if (fToken == TT_SLOT) {
 
 			getNextToken();
 			if (fToken == TT_DIGIT) {
 				final IAST slot = F.ast(F.Slot);
-				slot.add(getNumber(false));
+				slot.append(getNumber(false));
 				return parseArguments(slot);
 			} else {
 				return parseArguments(F.Slot1);
@@ -568,9 +568,9 @@ public class ExprParser extends ExprScanner {
 			getNextToken();
 			final IAST slotSequencce = F.ast(F.SlotSequence);
 			if (fToken == TT_DIGIT) {
-				slotSequencce.add(getNumber(false));
+				slotSequencce.append(getNumber(false));
 			} else {
-				slotSequencce.add(F.C1);
+				slotSequencce.append(F.C1);
 			}
 			return parseArguments(slotSequencce);
 			// final FunctionNode slotSequencce =
@@ -815,7 +815,7 @@ public class ExprParser extends ExprScanner {
 						}
 					}
 
-					function.add(parseExpression());
+					function.append(parseExpression());
 				} while (fToken == TT_COMMA);
 
 				if (fToken == TT_ARGUMENTS_CLOSE) {
@@ -877,11 +877,11 @@ public class ExprParser extends ExprScanner {
 	private IExpr getTimes(IExpr temp) throws SyntaxError {
 		// FunctionNode func = fFactory.createAST(new SymbolNode("Times"));
 		IAST func = F.Times();
-		func.add(temp);
+		func.append(temp);
 		do {
 			getNextToken();
 			temp = parseExpression();
-			func.add(temp);
+			func.append(temp);
 			if (fToken != TT_PRECEDENCE_CLOSE) {
 				throwSyntaxError("\')\' expected.");
 			}
@@ -1202,13 +1202,13 @@ public class ExprParser extends ExprScanner {
 			temp = ast.get(i);
 			if (temp.isASTSizeGE(compareHead, 3)) {
 				IAST lt = (IAST) temp;
-				andAST.add(lt);
+				andAST.append(lt);
 				ast.set(i, lt.get(lt.size() - 1));
 				evaled = true;
 			}
 		}
 		if (evaled) {
-			andAST.add(ast);
+			andAST.append(ast);
 			return andAST;
 		} else {
 			return ast;

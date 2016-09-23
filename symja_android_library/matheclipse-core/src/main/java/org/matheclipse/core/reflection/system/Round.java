@@ -63,7 +63,7 @@ public class Round extends AbstractFunctionEvaluator implements INumeric {
 				IAST[] result = ((IAST) arg1).filter(new RoundPlusFunction());
 				if (result[0].size() > 1) {
 					if (result[1].size() > 1) {
-						result[0].add(F.Round(result[1]));
+						result[0].append(F.Round(result[1]));
 					}
 					return result[0];
 				}

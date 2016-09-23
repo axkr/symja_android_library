@@ -3,7 +3,7 @@ package org.matheclipse.core.expression;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.apache.commons.math4.fraction.BigFraction;
+import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.IRational;
 
 /**
  * IFraction implementation which uses methods of the Apache
- * <code>org.apache.commons.math4.fraction.BigFraction</code> methods.
+ * <code>org.apache.commons.math3.fraction.BigFraction</code> methods.
  * 
  * @see IFraction
  * @see FractionSym

@@ -25,11 +25,11 @@ public class Curl extends AbstractFunctionEvaluator {
 				IAST variables = (IAST) ast.arg2();
 				IAST vector = (IAST) ast.arg1();
 				IAST curlVector = F.List();
-				curlVector.add(F.Subtract(F.D(vector.arg3(), variables.arg2()), F.D(vector.arg2(), variables.arg3())));
-				curlVector.add(F.Subtract(F.D(vector.arg1(), variables.arg3()), F.D(vector.arg3(), variables.arg1())));
-				curlVector.add(F.Subtract(F.D(vector.arg2(), variables.arg1()), F.D(vector.arg1(), variables.arg2())));
+				curlVector.append(F.Subtract(F.D(vector.arg3(), variables.arg2()), F.D(vector.arg2(), variables.arg3())));
+				curlVector.append(F.Subtract(F.D(vector.arg1(), variables.arg3()), F.D(vector.arg3(), variables.arg1())));
+				curlVector.append(F.Subtract(F.D(vector.arg2(), variables.arg1()), F.D(vector.arg1(), variables.arg2())));
 				for (int i = 4; i < vector.size(); i++) {
-					curlVector.add(vector.get(i));
+					curlVector.append(vector.get(i));
 				}
 				return curlVector;
 			}

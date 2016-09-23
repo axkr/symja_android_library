@@ -94,10 +94,10 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 					if (assumptions) {
 						IAST plusResult = Plus(C1D2);
 						for (int i = 1; i < timesAST.size(); i++) {
-							plusResult.add(Negate(Divide(Arg(timesAST.get(i)), Times(C2, Pi))));
+							plusResult.append(Negate(Divide(Arg(timesAST.get(i)), Times(C2, Pi))));
 						}
 						IAST expResult = Power(E, Times(C2, I, Pi, x2, Floor(plusResult)));
-						timesResult.add(expResult);
+						timesResult.append(expResult);
 						return timesResult;
 					}
 					return timesResult;

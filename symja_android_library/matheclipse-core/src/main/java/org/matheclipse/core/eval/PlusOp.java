@@ -62,7 +62,7 @@ public class PlusOp {
 				return true;
 			}
 		} else if (temp.head().equals(F.Plus)) {
-			((IAST) temp).add(value);
+			((IAST) temp).append(value);
 		} else {
 			temp = F.Plus(temp, value);
 		}
@@ -84,19 +84,19 @@ public class PlusOp {
 			if (numberValue.isComplexInfinity()) {
 				return numberValue;
 			}
-			result.add(numberValue);
+			result.append(numberValue);
 		}
 		for (Map.Entry<IExpr, IExpr> element : plusMap.entrySet()) {
 			if (element.getValue().isOne()) {
 				final IExpr temp = element.getKey();
 				if (temp.isPlus()) {
-					result.addAll((IAST) temp);
+					result.addAll(((IAST) temp).args());
 				} else {
-					result.add(temp);
+					result.append(temp);
 				}
 				continue;
 			}
-			result.add(F.Times(element.getValue(), element.getKey()));
+			result.append(F.Times(element.getValue(), element.getKey()));
 		}
 		// result.addEvalFlags(IAST.IS_EVALED);
 		return result.getOneIdentity(F.C0);

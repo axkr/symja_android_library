@@ -240,7 +240,7 @@ public final class ExpVectorLong {
 			prefix = "x";
 		}
 		for (int i = 0; i < n; i++) {
-			vars.add(F.$s(prefix + i)); // (n-1-i);
+			vars.append(F.$s(prefix + i)); // (n-1-i);
 		}
 		return vars;
 	}
@@ -582,8 +582,6 @@ public final class ExpVectorLong {
 		}
 		ExpVectorLong b = (ExpVectorLong) B;
 		int t = this.invLexCompareTo(b);
-		// System.out.println("equals: this = " + this + " B = " + B + " t = " +
-		// t);
 		return (0 == t);
 	}
 

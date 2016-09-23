@@ -89,7 +89,7 @@ public class Conjugate extends AbstractTrigArg1 implements INumeric {
 					if (!result.isPresent()) {
 						result = ((IAST) arg1).copyHead();
 					}
-					result.add(temp);
+					result.append(temp);
 					continue;
 				}
 				i++;
@@ -99,10 +99,10 @@ public class Conjugate extends AbstractTrigArg1 implements INumeric {
 					return result;
 				}
 				if (clone.isAST0()) {
-					result.add(F.Conjugate(clone.arg1()));
+					result.append(F.Conjugate(clone.arg1()));
 					return result;
 				}
-				result.add(F.Conjugate(clone));
+				result.append(F.Conjugate(clone));
 				return result;
 			}
 		}

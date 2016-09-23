@@ -203,10 +203,10 @@ public class Apart extends AbstractFunctionEvaluator {
 						IExpr denomForm = Denominator.getTrigForm(argAST, trig);
 						if (denomForm.isPresent()) {
 							if (!numerForm.isOne()) {
-								numerator.add(numerForm);// numerator.addMerge(numerForm);
+								numerator.append(numerForm);// numerator.addMerge(numerForm);
 							}
 							if (!denomForm.isOne()) {
-								denominator.add(denomForm);// denominator.addMerge(denomForm);
+								denominator.append(denomForm);// denominator.addMerge(denomForm);
 							}
 							evaled = true;
 							continue;
@@ -216,10 +216,10 @@ public class Apart extends AbstractFunctionEvaluator {
 					IExpr[] parts = getFractionalPartsPower((IAST) arg, trig);
 					if (parts != null) {
 						if (!parts[0].isOne()) {
-							numerator.add(parts[0]); // numerator.addMerge(parts[0]);
+							numerator.append(parts[0]); // numerator.addMerge(parts[0]);
 						}
 						if (!parts[1].isOne()) {
-							denominator.add(parts[1]);// denominator.addMerge(parts[1]);
+							denominator.append(parts[1]);// denominator.addMerge(parts[1]);
 						}
 						evaled = true;
 						continue;
@@ -229,13 +229,13 @@ public class Apart extends AbstractFunctionEvaluator {
 				if (splitNumeratorOne) {
 					IFraction fr = (IFraction) arg;
 					if (fr.getNumerator().isOne()) {
-						denominator.add(fr.getDenominator()); // denominator.addMerge(fr.getDenominator());
+						denominator.append(fr.getDenominator()); // denominator.addMerge(fr.getDenominator());
 						splitFractionEvaled = true;
 						continue;
 					}
 					if (fr.getNumerator().isMinusOne()) {
-						numerator.add(fr.getNumerator()); // numerator.addMerge(fr.getNumerator());
-						denominator.add(fr.getDenominator());// denominator.addMerge(fr.getDenominator());
+						numerator.append(fr.getNumerator()); // numerator.addMerge(fr.getNumerator());
+						denominator.append(fr.getDenominator());// denominator.addMerge(fr.getDenominator());
 						splitFractionEvaled = true;
 						continue;
 					}
@@ -244,14 +244,14 @@ public class Apart extends AbstractFunctionEvaluator {
 				} else if (splitFractionalNumbers) {
 					IFraction fr = (IFraction) arg;
 					if (!fr.getNumerator().isOne()) {
-						numerator.add(fr.getNumerator()); // numerator.addMerge(fr.getNumerator());
+						numerator.append(fr.getNumerator()); // numerator.addMerge(fr.getNumerator());
 					}
-					denominator.add(fr.getDenominator()); // denominator.addMerge(fr.getDenominator());
+					denominator.append(fr.getDenominator()); // denominator.addMerge(fr.getDenominator());
 					evaled = true;
 					continue;
 				}
 			}
-			numerator.add(arg); // numerator.addMerge(arg);
+			numerator.append(arg); // numerator.addMerge(arg);
 		}
 		if (evaled) {
 			// result[0] = numerator.getProduct();
@@ -327,7 +327,7 @@ public class Apart extends AbstractFunctionEvaluator {
 					if (temp.isAST()) {
 						((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
 					}
-					result.add(temp);
+					result.append(temp);
 				}
 				for (int i = 1; i < Ai.size(); i++) {
 					List<GenPolynomial<BigInteger>> list = Ai.get(i);
@@ -340,7 +340,7 @@ public class Apart extends AbstractFunctionEvaluator {
 								if (temp.isAST()) {
 									((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
 								}
-								result.add(temp);
+								result.append(temp);
 							}
 						}
 						j++;

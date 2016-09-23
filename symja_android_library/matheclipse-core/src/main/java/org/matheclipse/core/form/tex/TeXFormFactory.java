@@ -3,7 +3,7 @@ package org.matheclipse.core.form.tex;
 import java.math.BigInteger;
 import java.util.Hashtable;
 
-import org.apache.commons.math4.fraction.BigFraction;
+import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;

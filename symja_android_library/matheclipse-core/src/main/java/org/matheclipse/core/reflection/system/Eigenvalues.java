@@ -1,8 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math4.linear.EigenDecomposition;
-import org.apache.commons.math4.linear.FieldMatrix;
-import org.apache.commons.math4.linear.RealMatrix;
+import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.FieldMatrix;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
@@ -37,9 +37,9 @@ public class Eigenvalues extends AbstractMatrix1Expr {
 			double[] imagValues = ed.getImagEigenvalues();
 			for (int i = 0; i < realValues.length; i++) {
 				if (F.isZero(imagValues[i])) {
-					list.add(F.num(realValues[i]));
+					list.append(F.num(realValues[i]));
 				} else {
-					list.add(F.complexNum(realValues[i], imagValues[i]));
+					list.append(F.complexNum(realValues[i], imagValues[i]));
 				}
 			}
 			return list;

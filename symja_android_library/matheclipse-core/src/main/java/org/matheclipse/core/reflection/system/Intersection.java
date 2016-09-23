@@ -34,7 +34,7 @@ public class Intersection extends AbstractFunctionEvaluator {
 			IAST arg1 = (IAST) ast.arg1();
 			Set<IExpr> set = arg1.asSet();
 			for (IExpr IExpr : set) {
-				result.add(IExpr);
+				result.append(IExpr);
 			}
 			EvalAttributes.sort(result, Comparators.ExprComparator.CONS); 
 			return result;
@@ -79,7 +79,7 @@ public class Intersection extends AbstractFunctionEvaluator {
 			}
 		}
 		for (IExpr expr : resultSet) {
-			result.add(expr);
+			result.append(expr);
 		}
 		return result;
 	}

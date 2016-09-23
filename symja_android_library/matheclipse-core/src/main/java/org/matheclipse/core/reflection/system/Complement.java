@@ -40,7 +40,7 @@ public class Complement extends AbstractFunctionEvaluator {
 			}
 		}
 		for (IExpr expr : set3) {
-			result.add(expr);
+			result.append(expr);
 		}
 		EvalAttributes.sort(result);
 		return result;

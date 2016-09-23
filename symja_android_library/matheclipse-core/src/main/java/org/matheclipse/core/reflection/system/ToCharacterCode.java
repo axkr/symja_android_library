@@ -39,7 +39,7 @@ public class ToCharacterCode extends AbstractFunctionEvaluator {
 			int characterCode;
 			for (int i = 0; i < utf8String.length(); i++) {
 				characterCode = utf8String.charAt(i);
-				list.add(F.integer(characterCode));
+				list.append(F.integer(characterCode));
 			}
 			return list;
 		} catch (final UnsupportedEncodingException e) {

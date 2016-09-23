@@ -44,7 +44,7 @@ public class DeleteDuplicates extends AbstractFunctionEvaluator {
 				if (evaledTrue) {
 					continue;
 				}
-				result.add(temp);
+				result.append(temp);
 			}
 			return result;
 		}

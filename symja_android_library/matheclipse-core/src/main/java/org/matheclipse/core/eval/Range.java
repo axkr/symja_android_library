@@ -13,13 +13,14 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.generic.interfaces.IUnaryIndexFunction;
+import org.matheclipse.core.harmony.util.HMCollection;
+import org.matheclipse.core.harmony.util.HMList;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * Create an immutable range for a given <code>List</code> instance, with the
- * exception of the <code>sort()</code> method which may sort the internal
- * elements range.
+ * Create a range for a given <code>List</code> instance, with the exception of
+ * the <code>sort()</code> method which may sort the internal elements range.
  * 
  */
 public class Range extends AbstractList<IExpr> implements Iterable<IExpr> {
@@ -44,7 +45,7 @@ public class Range extends AbstractList<IExpr> implements Iterable<IExpr> {
 			if (fCurrrent == fRange.fEnd) {
 				throw new NoSuchElementException();
 			}
-			return fRange.get(fCurrrent++);
+			return fRange.get(fCurrrent++ - fRange.fStart);
 		}
 
 		@Override
@@ -57,7 +58,7 @@ public class Range extends AbstractList<IExpr> implements Iterable<IExpr> {
 
 	final/* package private */int fStart;
 
-	final/* package private */int fEnd;
+	/* package private */int fEnd;
 
 	/**
 	 * Construct a range for a List
@@ -103,6 +104,20 @@ public class Range extends AbstractList<IExpr> implements Iterable<IExpr> {
 		if (fStart > fEnd) {
 			throw new IndexOutOfBoundsException("Start index greater than end index");
 		}
+	}
+
+	public boolean add(IExpr element) {
+		fList.append(fEnd++, element);
+		return true;
+	}
+
+	public void add(int location, IExpr element) {
+		if (location < fStart && location > fEnd) {
+			throw new IndexOutOfBoundsException(
+					"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(fEnd));
+		}
+		fList.append(location, element);
+		fEnd++;
 	}
 
 	/**
@@ -296,7 +311,7 @@ public class Range extends AbstractList<IExpr> implements Iterable<IExpr> {
 	public IAST filter(IAST filterList, Collection<IExpr> restList, Predicate<IExpr> predicate) {
 		for (int i = fStart; i < fEnd; i++) {
 			if (predicate.test(fList.get(i))) {
-				filterList.add(fList.get(i));
+				filterList.append(fList.get(i));
 			} else {
 				restList.add(fList.get(i));
 			}
@@ -315,7 +330,7 @@ public class Range extends AbstractList<IExpr> implements Iterable<IExpr> {
 	public IAST filter(IAST astResult, Predicate<IExpr> predicate) {
 		for (int i = fStart; i < fEnd; i++) {
 			if (predicate.test(fList.get(i))) {
-				astResult.add(fList.get(i));
+				astResult.append(fList.get(i));
 			}
 		}
 		return astResult;
@@ -339,10 +354,10 @@ public class Range extends AbstractList<IExpr> implements Iterable<IExpr> {
 
 			if (predicate.test(fList.get(i))) {
 				if (++count == maxMatches) {
-					astResult.add(fList.get(i));
+					astResult.append(fList.get(i));
 					break;
 				}
-				astResult.add(fList.get(i));
+				astResult.append(fList.get(i));
 			}
 		}
 		return astResult;
@@ -601,7 +616,7 @@ public class Range extends AbstractList<IExpr> implements Iterable<IExpr> {
 	 */
 	public IAST map(IAST astResult, IUnaryIndexFunction<IExpr, IExpr> function) {
 		for (int i = fStart; i < fEnd; i++) {
-			astResult.add(function.apply(i, fList.get(i)));
+			astResult.append(function.apply(i, fList.get(i)));
 		}
 		return astResult;
 	}
@@ -620,7 +635,7 @@ public class Range extends AbstractList<IExpr> implements Iterable<IExpr> {
 	public IAST mapLeft(IAST list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr leftArg) {
 		for (int i = fStart; i < fEnd; i++) {
 
-			list.add(binaryFunction.apply(leftArg, fList.get(i)));
+			list.append(binaryFunction.apply(leftArg, fList.get(i)));
 		}
 		return list;
 	}
@@ -733,13 +748,13 @@ public class Range extends AbstractList<IExpr> implements Iterable<IExpr> {
 	 * @param n
 	 * @return the given list
 	 */
-	public Collection<IExpr> rotateLeft(Collection<IExpr> list, final int n) {
+	public HMCollection<IExpr> rotateLeft(HMCollection<IExpr> list, final int n) {
 		for (int i = fStart + n; i < fEnd; i++) {
-			list.add(fList.get(i));
+			list.append(fList.get(i));
 		}
 		if (n <= size()) {
 			for (int i = fStart; i < fStart + n; i++) {
-				list.add(fList.get(i));
+				list.append(fList.get(i));
 			}
 		}
 		return list;
@@ -753,13 +768,13 @@ public class Range extends AbstractList<IExpr> implements Iterable<IExpr> {
 	 * @param n
 	 * @return the given list
 	 */
-	public Collection<IExpr> rotateRight(Collection<IExpr> list, final int n) {
+	public HMCollection<IExpr> rotateRight(HMCollection<IExpr> list, final int n) {
 		if (n <= size()) {
 			for (int i = fEnd - n; i < fEnd; i++) {
-				list.add(fList.get(i));
+				list.append(fList.get(i));
 			}
 			for (int i = fStart; i < fEnd - n; i++) {
-				list.add(fList.get(i));
+				list.append(fList.get(i));
 			}
 		}
 		return list;

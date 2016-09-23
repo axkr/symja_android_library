@@ -1,9 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math4.linear.FieldLUDecomposition;
-import org.apache.commons.math4.linear.FieldMatrix;
-import org.apache.commons.math4.linear.LUDecomposition;
-import org.apache.commons.math4.linear.RealMatrix;
+import org.apache.commons.math3.linear.FieldLUDecomposition;
+import org.apache.commons.math3.linear.FieldMatrix;
+import org.apache.commons.math3.linear.LUDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.expression.F;
@@ -52,11 +52,11 @@ public class Det extends AbstractMatrix1Expr {
 		// c1 * b2 - b1 * c2
 		IExpr xNumerator = F.Subtract(F.Times(matrix.getEntry(0, 2), matrix.getEntry(1, 1)),
 				F.Times(matrix.getEntry(0, 1), matrix.getEntry(1, 2)));
-		list.add(F.Divide(xNumerator, denominator));
+		list.append(F.Divide(xNumerator, denominator));
 		// a1 * c2 - c1*a2
 		IExpr yNumerator = F.Subtract(F.Times(matrix.getEntry(0, 0), matrix.getEntry(1, 2)),
 				F.Times(matrix.getEntry(0, 2), matrix.getEntry(1, 0)));
-		list.add(F.Divide(yNumerator, denominator));
+		list.append(F.Divide(yNumerator, denominator));
 		return list;
 	}
 
@@ -96,19 +96,19 @@ public class Det extends AbstractMatrix1Expr {
 		xMatrix.setColumn(0, new IExpr[] { matrix.getEntry(0, 3), matrix.getEntry(1, 3), matrix.getEntry(2, 3) });
 		IExpr xNumerator = determinant3x3(xMatrix);
 		
-		list.add(F.Divide(xNumerator, denominator));
+		list.append(F.Divide(xNumerator, denominator));
 
 		FieldMatrix<IExpr> yMatrix = denominatorMatrix.copy();
 		yMatrix.setColumn(1, new IExpr[] { matrix.getEntry(0, 3), matrix.getEntry(1, 3), matrix.getEntry(2, 3) });
 		IExpr yNumerator = determinant3x3(yMatrix);
 		
-		list.add(F.Divide(yNumerator, denominator));
+		list.append(F.Divide(yNumerator, denominator));
 
 		FieldMatrix<IExpr> zMatrix = denominatorMatrix.copy();
 		zMatrix.setColumn(2, new IExpr[] { matrix.getEntry(0, 3), matrix.getEntry(1, 3), matrix.getEntry(2, 3) });
 		IExpr zNumerator = determinant3x3(zMatrix);
 		
-		list.add(F.Divide(zNumerator, denominator));
+		list.append(F.Divide(zNumerator, denominator));
 
 		return list;
 	}

@@ -1,14 +1,14 @@
 package org.matheclipse.core.convert;
 
-import org.apache.commons.math4.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math4.linear.Array2DRowFieldMatrix;
-import org.apache.commons.math4.linear.Array2DRowRealMatrix;
-import org.apache.commons.math4.linear.ArrayFieldVector;
-import org.apache.commons.math4.linear.ArrayRealVector;
-import org.apache.commons.math4.linear.FieldMatrix;
-import org.apache.commons.math4.linear.FieldVector;
-import org.apache.commons.math4.linear.RealMatrix;
-import org.apache.commons.math4.linear.RealVector;
+import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
+import org.apache.commons.math3.linear.Array2DRowFieldMatrix;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.ArrayFieldVector;
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.FieldMatrix;
+import org.apache.commons.math3.linear.FieldVector;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
@@ -225,17 +225,17 @@ public class Convert {
 		IAST currOutRow;
 		for (int i = 0; i < rowSize; i++) {
 			currOutRow = F.ListC(colSize);
-			out.add(currOutRow);
+			out.append(currOutRow);
 			for (int j = 0; j < colSize; j++) {
 				IExpr expr = matrix.getEntry(i, j);
 				if (expr.isNumber()) {
-					currOutRow.add(expr);
+					currOutRow.append(expr);
 				} else {
 					if (expr.isPlusTimesPower()) {
 						// TODO Performance hotspot
-						currOutRow.add(F.eval(F.Together(expr)));
+						currOutRow.append(F.eval(F.Together(expr)));
 					} else {
-						currOutRow.add(expr);
+						currOutRow.append(expr);
 					}
 				}
 			}
@@ -261,10 +261,10 @@ public class Convert {
 			}
 		}
 		IAST sum = F.Plus();
-		sum.add(F.num(coefficients[0]));
+		sum.append(F.num(coefficients[0]));
 		for (int i = 1; i < coefficients.length; ++i) {
 			if (coefficients[i] != 0) {
-				sum.add(F.Times(F.num(coefficients[i]), F.Power(sym, F.integer(i))));
+				sum.append(F.Times(F.num(coefficients[i]), F.Power(sym, F.integer(i))));
 			}
 		}
 
@@ -314,7 +314,7 @@ public class Convert {
 
 		final IAST out = F.ast(F.List);
 		for (int i = 0; i < rowSize; i++) {
-			out.add(F.num(vector.getEntry(i)));
+			out.append(F.num(vector.getEntry(i)));
 		}
 		out.addEvalFlags(IAST.IS_VECTOR);
 		return out;
@@ -355,9 +355,9 @@ public class Convert {
 			for (int i = 0; i < columnLength; i++) {
 				final IAST row = F.ListC(rowLength);
 				for (int j = 0; j < rowLength; j++) {
-					row.add(F.num(dd[j][i]));
+					row.append(F.num(dd[j][i]));
 				}
-				list.add(row);
+				list.append(row);
 			}
 			list.addEvalFlags(IAST.IS_MATRIX);
 			return list;
@@ -380,7 +380,7 @@ public class Convert {
 
 		final IAST out = F.ListC(rowSize);
 		for (int i = 0; i < rowSize; i++) {
-			out.add(vector.getEntry(i));
+			out.append(vector.getEntry(i));
 		}
 		out.addEvalFlags(IAST.IS_VECTOR);
 		return out;

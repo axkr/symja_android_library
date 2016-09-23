@@ -38,7 +38,7 @@ public class Sum extends Table implements SumRules {
 	@Override
 	public IAST getRuleAST() {
 		IAST rules = RULES1;
-		rules.addAll(RULES2);
+		rules.addAll(RULES2.args());
 		return rules;
 	}
 
@@ -195,7 +195,7 @@ public class Sum extends Table implements SumRules {
 				if (filterCollector.size() > 1) {
 					IExpr temp = F.evalQuiet(F.Sum(restCollector.getOneIdentity(F.C1), list));
 					if (temp.isFreeAST(F.Sum)) {
-						filterCollector.add(temp);
+						filterCollector.append(temp);
 						return filterCollector;
 					}
 
@@ -266,9 +266,9 @@ public class Sum extends Table implements SumRules {
 			});
 			if (filterCollector.size() > 1) {
 				if (restCollector.isAST1()) {
-					filterCollector.add(F.Sum(restCollector.arg1(), var));
+					filterCollector.append(F.Sum(restCollector.arg1(), var));
 				} else {
-					filterCollector.add(F.Sum(restCollector, var));
+					filterCollector.append(F.Sum(restCollector, var));
 				}
 				return filterCollector;
 			}

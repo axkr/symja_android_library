@@ -246,7 +246,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 					eq = (IAST) eqns.get(i);
 					// equalList.add(F.Equal(F.evalExpandAll(eq.arg1()),
 					// F.evalExpandAll(eq.arg2())));
-					equalList.add(Equal.equals(eq));
+					equalList.append(Equal.equals(eq));
 				} else {
 					// not an equation
 					throw new WrongArgumentType(eqns, eqns.get(i), i, "Equal[] expression (a==b) expected");
@@ -255,7 +255,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 		} else {
 			if (ast.get(position).isAST(F.Equal, 3)) {
 				eq = (IAST) ast.get(position);
-				equalList.add(F.Equal(F.evalExpandAll(eq.arg1()), F.evalExpandAll(eq.arg2())));
+				equalList.append(F.Equal(F.evalExpandAll(eq.arg1()), F.evalExpandAll(eq.arg2())));
 			} else {
 				// not an equation
 				throw new WrongArgumentType(ast, ast.arg1(), 1, "Equal[] expression (a==b) expected");
@@ -310,7 +310,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 				IAST inverseFunction = InverseFunction.getUnaryInverseFunction(ast);
 				if (inverseFunction.isPresent()) {
 					// example: Sin(f(x)) == y -> f(x) == ArcSin(y)
-					inverseFunction.add(exprWithoutVariable);
+					inverseFunction.append(exprWithoutVariable);
 					return extractVariable(ast.arg1(), inverseFunction, predicate, variable);
 				}
 			} else {
@@ -323,7 +323,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 						if (ast.get(i).isFree(predicate, true)) {
 							j++;
 						} else {
-							rest.add(ast.get(i));
+							rest.append(ast.get(i));
 							plusClone.remove(j);
 						}
 					}
@@ -342,7 +342,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 						if (ast.get(i).isFree(predicate, true)) {
 							j++;
 						} else {
-							rest.add(ast.get(i));
+							rest.append(ast.get(i));
 							timesClone.remove(j);
 						}
 					}
@@ -403,9 +403,9 @@ public class Eliminate extends AbstractFunctionEvaluator {
 					temp = expr.replaceAll(rule);
 					if (temp.isPresent()) {
 						temp = F.expandAll(temp, true, true);
-						termsEqualZeroList.add(temp);
+						termsEqualZeroList.append(temp);
 					} else {
-						termsEqualZeroList.add(expr);
+						termsEqualZeroList.append(expr);
 					}
 				}
 				return termsEqualZeroList;

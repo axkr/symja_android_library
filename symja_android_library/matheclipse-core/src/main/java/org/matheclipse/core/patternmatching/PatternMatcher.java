@@ -508,13 +508,13 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 					IExpr result = fPatternMap.substituteSymbols(rhsExpr);
 					try {
 						result = F.eval(result);
-						lhsResultAST.add(result);
+						lhsResultAST.append(result);
 						return lhsResultAST;
 					} catch (final ConditionException e) {
 						logConditionFalse(lhsEvalAST, lhsPatternAST, rhsExpr);
 						// fall through
 					} catch (final ReturnException e) {
-						lhsResultAST.add(e.getValue());
+						lhsResultAST.append(e.getValue());
 						return lhsResultAST;
 					}
 				}
@@ -534,12 +534,12 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 						try {
 							IExpr result = fPatternMap.substituteSymbols(rhsExpr);
 							result = F.eval(result);
-							lhsResultAST.add(i + 1, result);
+							lhsResultAST.append(i + 1, result);
 							return lhsResultAST;
 						} catch (final ConditionException e) {
 							logConditionFalse(lhsEvalAST, lhsPatternAST, rhsExpr);
 						} catch (final ReturnException e) {
-							lhsResultAST.add(i + 1, e.getValue());
+							lhsResultAST.append(i + 1, e.getValue());
 							return lhsResultAST;
 						}
 						return F.NIL;
@@ -667,7 +667,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 								// element is
 								// a pattern sequence, is handled here
 								IAST seq = F.Sequence();
-								seq.addAll(lhsEvalAST, lastPosition, lhsEvalAST.size());
+								seq.addAll(lhsEvalAST.range(), lastPosition, lhsEvalAST.size());
 								if (((IPatternSequence) patternTest.arg1()).matchPatternSequence(seq, fPatternMap)) {
 									if (matchAST(lhsPatternAST.copyUntil(lastPosition),
 											lhsEvalAST.copyUntil(lastPosition), stackMatcher)) {
@@ -683,7 +683,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 							// element is
 							// a pattern sequence, is handled here
 							IAST seq = F.Sequence();
-							seq.addAll(lhsEvalAST, lastPosition, lhsEvalAST.size());
+							seq.addAll(lhsEvalAST.range(), lastPosition, lhsEvalAST.size());
 							if (((IPatternSequence) lhsPatternAST.get(lastPosition)).matchPatternSequence(seq,
 									fPatternMap)) {
 								return matchAST(lhsPatternAST.copyUntil(lastPosition),
@@ -825,7 +825,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				}
 
 			}
-			cloned.add(lhsPatternAST.get(i));
+			cloned.append(lhsPatternAST.get(i));
 		}
 		if (defaultValueMatched) {
 			if (cloned.isOneIdentityAST1()) {
@@ -943,7 +943,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 					// TODO only the special case, where the last element is
 					// a pattern sequence, is handled here
 					IAST seq = F.Sequence();
-					seq.addAll(lhsEvalAST, 1, lhsEvalAST.size());
+					seq.addAll(lhsEvalAST.range(), 1, lhsEvalAST.size());
 					if (((IPatternSequence) lhsPatternAST.arg1()).matchPatternSequence(seq, fPatternMap)) {
 						// if (matchAST(lhsPatternAST.copyUntil(1),
 						// lhsEvalAST.copyUntil(1),
@@ -983,7 +983,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			if (lhsPatternAST.get(i).isPatternDefault()) {
 				IPattern pattern = (IPattern) lhsPatternAST.get(i);
 				if (i < lhsSize) {
-					cloned.add(pattern);
+					cloned.append(pattern);
 					continue;
 				}
 				IExpr positionDefaultValue = pattern.getDefaultValue();
@@ -1008,7 +1008,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				}
 
 			}
-			cloned.add(lhsPatternAST.get(i));
+			cloned.append(lhsPatternAST.get(i));
 		}
 		if (defaultValueMatched) {
 			if (cloned.isOneIdentityAST1()) {

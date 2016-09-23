@@ -34,7 +34,7 @@ public class Nor extends AbstractCoreFunctionEvaluator {
 			} else if (temp.isFalse()) {
 				evaled = true;
 			} else {
-				result.add(temp);
+				result.append(temp);
 			}
 		}
 		if (evaled) {

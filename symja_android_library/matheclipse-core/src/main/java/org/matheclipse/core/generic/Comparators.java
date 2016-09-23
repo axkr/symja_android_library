@@ -16,9 +16,6 @@ public class Comparators {
 		public final static ExprComparator CONS = new ExprComparator();
 
 		public int compare(final IExpr o1, final IExpr o2) {
-			// int result = o1.compareTo(o2);
-			// System.out.println(o1.toString() + " <||> " + o2.toString() + "
-			// => " + result);
 			return o1.compareTo(o2);
 		}
 	}

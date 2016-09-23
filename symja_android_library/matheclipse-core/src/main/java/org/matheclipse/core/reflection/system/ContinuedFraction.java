@@ -50,10 +50,10 @@ public class ContinuedFraction extends AbstractEvaluator {
 
 			IAST continuedFractionList = F.List();
 			if (rat.getDenominator().isOne()) {
-				continuedFractionList.add(rat.getNumerator());
+				continuedFractionList.append(rat.getNumerator());
 			} else if (rat.getNumerator().isOne()) {
-				continuedFractionList.add(F.C0);
-				continuedFractionList.add(rat.getDenominator());
+				continuedFractionList.append(F.C0);
+				continuedFractionList.append(rat.getDenominator());
 			} else {
 				IFraction temp = F.fraction(rat.getNumerator(), rat.getDenominator());
 				IInteger quotient;
@@ -61,10 +61,10 @@ public class ContinuedFraction extends AbstractEvaluator {
 				while (temp.getDenominator().compareInt(1) > 0 && (0 < maxIterations--)) {
 					quotient = temp.getNumerator().div(temp.getDenominator());
 					remainder = temp.getNumerator().mod(temp.getDenominator());
-					continuedFractionList.add(quotient);
+					continuedFractionList.append(quotient);
 					temp = F.fraction(temp.getDenominator(), remainder);
 					if (temp.getDenominator().isOne()) {
-						continuedFractionList.add(temp.getNumerator());
+						continuedFractionList.append(temp.getNumerator());
 					}
 				}
 			}

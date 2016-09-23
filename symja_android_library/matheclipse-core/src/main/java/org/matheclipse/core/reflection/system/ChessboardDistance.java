@@ -34,7 +34,7 @@ public class ChessboardDistance extends AbstractEvaluator  {
 				IAST a2 = ((IAST) arg2);
 				IAST maxAST = F.Max();
 				for (int i = 1; i < a1.size(); i++) {
-					maxAST.add(F.Abs(F.Subtract(a1.get(i), a2.get(i))));
+					maxAST.append(F.Abs(F.Subtract(a1.get(i), a2.get(i))));
 				}
 				return maxAST;
 			}

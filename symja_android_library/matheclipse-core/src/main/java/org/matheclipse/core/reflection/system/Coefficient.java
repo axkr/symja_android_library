@@ -74,7 +74,7 @@ public class Coefficient extends AbstractFunctionEvaluator {
 			}
 		} else {
 			listOfVariables = F.List();
-			listOfVariables.add(arg2);
+			listOfVariables.append(arg2);
 			exponents = new long[1];
 			exponents[0] = 1;
 		}

@@ -56,7 +56,7 @@ public class Options {
 		if (currentOptionsList != null && startIndex < currentOptionsList.size()) {
 			this.fCurrentOptionsList = List();
 			for (int i = startIndex; i < currentOptionsList.size(); i++) {
-				this.fCurrentOptionsList.add(1, currentOptionsList.get(i));
+				this.fCurrentOptionsList.append(1, currentOptionsList.get(i));
 			}
 		}
 	}
@@ -83,7 +83,7 @@ public class Options {
 			fDefaultOptionsList = null;
 		}
 		this.fCurrentOptionsList = List();
-		this.fCurrentOptionsList.add(optionExpr);
+		this.fCurrentOptionsList.append(optionExpr);
 	}
 
 	/**

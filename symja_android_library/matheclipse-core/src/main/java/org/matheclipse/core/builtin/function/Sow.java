@@ -21,7 +21,7 @@ public class Sow extends AbstractCoreFunctionEvaluator {
 		IAST reapList = engine.getReapList();
 		IExpr expr = engine.evaluate(ast.arg1());
 		if (reapList != null) {
-			reapList.add(expr);
+			reapList.append(expr);
 		}
 		return expr;
 	} 

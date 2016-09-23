@@ -1,7 +1,7 @@
 package org.matheclipse.core.eval.interfaces;
 
-import org.apache.commons.math4.linear.FieldMatrix;
-import org.apache.commons.math4.linear.RealMatrix;
+import org.apache.commons.math3.linear.FieldMatrix;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;

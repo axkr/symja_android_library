@@ -3,8 +3,8 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.evalExpandAll;
 
-import org.apache.commons.math4.analysis.solvers.LaguerreSolver;
-import org.apache.commons.math4.complex.Complex;
+import org.apache.commons.math3.analysis.solvers.LaguerreSolver;
+import org.apache.commons.math3.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.convert.Object2Expr;
@@ -44,7 +44,7 @@ public class NRoots extends AbstractFunctionEvaluator {
 		IAST list = (IAST) temp;
 		IAST result = F.List();
 		for (int i = 1; i < list.size(); i++) {
-			result.add(engine.evalN(list.get(i)));
+			result.append(engine.evalN(list.get(i)));
 		}
 		return result;
 	}
@@ -62,7 +62,6 @@ public class NRoots extends AbstractFunctionEvaluator {
 
 		if (coefficients != null) {
 			LaguerreSolver solver = new LaguerreSolver(Config.DEFAULT_ROOTS_CHOP_DELTA);
-			// System.out.println(expr);
 			Complex[] roots = solver.solveAllComplex(coefficients, 0);
 			return Object2Expr.convertComplex(roots);
 		}
@@ -110,7 +109,7 @@ public class NRoots extends AbstractFunctionEvaluator {
 		IAST resultList = RootIntervals.croots(expr, true);
 		if (resultList.isPresent()) {
 			if (resultList.size() > 0) {
-				result.addAll(resultList);
+				result.addAll(resultList.args());
 			}
 			return result;
 		}
@@ -122,20 +121,20 @@ public class NRoots extends AbstractFunctionEvaluator {
 		double discriminant = (b * b - (4 * a * c));
 		if (F.isZero(discriminant)) {
 			double bothEqual = ((-b / (2.0 * a)));
-			result.add(F.num(bothEqual));
-			result.add(F.num(bothEqual));
+			result.append(F.num(bothEqual));
+			result.append(F.num(bothEqual));
 		} else if (discriminant < 0.0) {
 			// two complex roots
 			double imaginaryPart = Math.sqrt(-discriminant) / (2 * a);
 			double realPart = (-b / (2.0 * a));
-			result.add(F.complex(realPart, imaginaryPart));
-			result.add(F.complex(realPart, -imaginaryPart));
+			result.append(F.complex(realPart, imaginaryPart));
+			result.append(F.complex(realPart, -imaginaryPart));
 		} else {
 			// two real roots
 			double real1 = ((-b + Math.sqrt(discriminant)) / (2.0 * a));
 			double real2 = ((-b - Math.sqrt(discriminant)) / (2.0 * a));
-			result.add(F.num(real1));
-			result.add(F.num(real2));
+			result.append(F.num(real1));
+			result.append(F.num(real2));
 		}
 		return result;
 	}
@@ -175,12 +174,12 @@ public class NRoots extends AbstractFunctionEvaluator {
 			s = ((s < 0) ? -Math.pow(-s, (1.0 / 3.0)) : Math.pow(s, (1.0 / 3.0)));
 			double t = r - Math.sqrt(discriminant);
 			t = ((t < 0) ? -Math.pow(-t, (1.0 / 3.0)) : Math.pow(t, (1.0 / 3.0)));
-			result.add(F.num(-term1 + s + t));
+			result.append(F.num(-term1 + s + t));
 			term1 += (s + t) / 2.0;
 			double realPart = -term1;
 			term1 = Math.sqrt(3.0) * (-t + s) / 2;
-			result.add(F.complex(realPart, term1));
-			result.add(F.complex(realPart, -term1));
+			result.append(F.complex(realPart, term1));
+			result.append(F.complex(realPart, -term1));
 			return result;
 		}
 
@@ -189,9 +188,9 @@ public class NRoots extends AbstractFunctionEvaluator {
 		if (F.isZero(discriminant)) {
 			// All roots real, at least two are equal.
 			r13 = ((r < 0) ? -Math.pow(-r, (1.0 / 3.0)) : Math.pow(r, (1.0 / 3.0)));
-			result.add(F.num(-term1 + 2.0 * r13));
-			result.add(F.num(-(r13 + term1)));
-			result.add(F.num(-(r13 + term1)));
+			result.append(F.num(-term1 + 2.0 * r13));
+			result.append(F.num(-(r13 + term1)));
+			result.append(F.num(-(r13 + term1)));
 			return result;
 		}
 
@@ -201,9 +200,9 @@ public class NRoots extends AbstractFunctionEvaluator {
 		double dum1 = q * q * q;
 		dum1 = Math.acos(r / Math.sqrt(dum1));
 		r13 = 2.0 * Math.sqrt(q);
-		result.add(F.num(-term1 + r13 * Math.cos(dum1 / 3.0)));
-		result.add(F.num(-term1 + r13 * Math.cos((dum1 + 2.0 * Math.PI) / 3.0)));
-		result.add(F.num(-term1 + r13 * Math.cos((dum1 + 4.0 * Math.PI) / 3.0)));
+		result.append(F.num(-term1 + r13 * Math.cos(dum1 / 3.0)));
+		result.append(F.num(-term1 + r13 * Math.cos((dum1 + 2.0 * Math.PI) / 3.0)));
+		result.append(F.num(-term1 + r13 * Math.cos((dum1 + 4.0 * Math.PI) / 3.0)));
 		return result;
 	}
 }

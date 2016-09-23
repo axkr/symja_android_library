@@ -12,12 +12,12 @@ import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.apache.commons.math4.Field;
-import org.apache.commons.math4.FieldElement;
-import org.apache.commons.math4.complex.Complex;
-import org.apache.commons.math4.exception.MathArithmeticException;
-import org.apache.commons.math4.linear.RealMatrix;
-import org.apache.commons.math4.linear.RealVector;
+import org.apache.commons.math3.Field;
+import org.apache.commons.math3.FieldElement;
+import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.exception.MathArithmeticException;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
@@ -26,6 +26,7 @@ import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NILPointer;
+import org.matheclipse.core.harmony.util.HMList;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.reflection.system.Equal;
@@ -1977,14 +1978,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public long leafCount();
 
 	/**
-	 * Get a list of the leaf expressions.
-	 * 
-	 * @return Instances of ExprImpl should return null, while any other
-	 *         expression may not return null (but can return an empty list).
-	 */
-	public List<IExpr> leaves();
-
-	/**
 	 * Compare if <code>this <= that</code:
 	 * <ul>
 	 * <li>return F.True if the comparison is <code>true</code></li>
@@ -2275,7 +2268,11 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public IExpr subtract(final IExpr that);
 
 	@Override
-	public IExpr sum(final IExpr that);
+	public IExpr add(final IExpr that);
+
+	default IExpr sum(final IExpr that) {
+		return add(that);
+	}
 
 	/**
 	 * Returns an <code>IExpr</code> whose value is <code>(this * that)</code>.

@@ -1,10 +1,10 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math4.exception.DimensionMismatchException;
-import org.apache.commons.math4.linear.FieldMatrix;
-import org.apache.commons.math4.linear.FieldVector;
-import org.apache.commons.math4.linear.RealMatrix;
-import org.apache.commons.math4.linear.RealVector;
+import org.apache.commons.math3.exception.DimensionMismatchException;
+import org.apache.commons.math3.linear.FieldMatrix;
+import org.apache.commons.math3.linear.FieldVector;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;

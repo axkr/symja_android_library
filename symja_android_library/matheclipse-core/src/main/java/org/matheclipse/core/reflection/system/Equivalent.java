@@ -48,7 +48,7 @@ public class Equivalent extends AbstractFunctionEvaluator {
 				}
 			} else {
 				if (!last.equals(temp)) {
-					result.add(temp);
+					result.append(temp);
 				} else {
 					evaled = true;
 				}

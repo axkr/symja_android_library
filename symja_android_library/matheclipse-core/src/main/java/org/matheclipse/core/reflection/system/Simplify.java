@@ -177,9 +177,9 @@ public class Simplify extends AbstractFunctionEvaluator {
 				for (int i = 1; i < ast.size(); i++) {
 					temp = ast.get(i);
 					if (temp.accept(isBasicAST)) {
-						basicPlus.add(temp);
+						basicPlus.append(temp);
 					} else {
-						restPlus.add(temp);
+						restPlus.append(temp);
 					}
 				}
 				if (basicPlus.size() > 1) {
@@ -218,9 +218,9 @@ public class Simplify extends AbstractFunctionEvaluator {
 								}
 							}
 						}
-						basicTimes.add(temp);
+						basicTimes.append(temp);
 					} else {
-						restTimes.add(temp);
+						restTimes.append(temp);
 					}
 				}
 
@@ -248,7 +248,7 @@ public class Simplify extends AbstractFunctionEvaluator {
 			IExpr expandedAst = tryExpandAllTransformation((IAST) temp, F.Times(arg1, temp));
 			if (expandedAst.isPresent()) {
 				IAST result = F.Times();
-				ast.range(2, ast.size()).toList(result);
+				ast.range(2, ast.size()).toList(result.args());
 				result.set(i - 1, expandedAst);
 				return result;
 			}

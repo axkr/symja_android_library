@@ -312,9 +312,9 @@ public class Times extends AbstractArgMultiple implements INumeric {
 					}
 
 					if (!tres.isPresent()) {
-						result.add(temp);
+						result.append(temp);
 						if (i == ast.size() - 1) {
-							result.add(ast.get(i));
+							result.append(ast.get(i));
 						} else {
 							temp = ast.get(i);
 						}
@@ -326,7 +326,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 					temp = tres;
 
 					if (i == (ast.size() - 1)) {
-						result.add(temp);
+						result.append(temp);
 					}
 
 					i++;

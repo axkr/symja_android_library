@@ -140,14 +140,14 @@ public class AST2 extends AST1 {
 	@Override
 	public IAST filter(IAST filterAST, IAST restAST, Predicate<? super IExpr> predicate) {
 		if (predicate.test(arg1)) {
-			filterAST.add(arg1);
+			filterAST.append(arg1);
 		} else {
-			restAST.add(arg1);
+			restAST.append(arg1);
 		}
 		if (predicate.test(arg2)) {
-			filterAST.add(arg2);
+			filterAST.append(arg2);
 		} else {
-			restAST.add(arg2);
+			restAST.append(arg2);
 		}
 		return filterAST;
 	}
@@ -156,10 +156,10 @@ public class AST2 extends AST1 {
 	@Override
 	public IAST filter(IAST filterAST, Predicate<? super IExpr> predicate) {
 		if (predicate.test(arg1)) {
-			filterAST.add(arg1);
+			filterAST.append(arg1);
 		}
 		if (predicate.test(arg2)) {
-			filterAST.add(arg2);
+			filterAST.append(arg2);
 		}
 		return filterAST;
 	}

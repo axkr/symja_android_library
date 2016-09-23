@@ -8,9 +8,9 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import org.apache.commons.math4.linear.Array2DRowRealMatrix;
-import org.apache.commons.math4.linear.EigenDecomposition;
-import org.apache.commons.math4.linear.RealMatrix;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.VariablesSet;
@@ -81,7 +81,7 @@ public class Roots extends AbstractFunctionEvaluator {
 		if (list.isPresent()) {
 			IAST or = F.Or();
 			for (int i = 1; i < list.size(); i++) {
-				or.add(F.Equal(variable, list.get(i)));
+				or.append(F.Equal(variable, list.get(i)));
 			}
 			return or;
 		}
@@ -141,7 +141,7 @@ public class Roots extends AbstractFunctionEvaluator {
 			double[] imagValues = ed.getImagEigenvalues();
 
 			for (int i = 0; i < N; i++) {
-				roots.add(F.chopExpr(F.complexNum(realValues[i], imagValues[i]), Config.DEFAULT_ROOTS_CHOP_DELTA));
+				roots.append(F.chopExpr(F.complexNum(realValues[i], imagValues[i]), Config.DEFAULT_ROOTS_CHOP_DELTA));
 			}
 			return roots;
 		} catch (Exception ime) {
@@ -183,10 +183,10 @@ public class Roots extends AbstractFunctionEvaluator {
 				if (quarticResultList.isPresent()) {
 					for (int j = 1; j < quarticResultList.size(); j++) {
 						if (numericSolutions) {
-							result.add(F.chopExpr(engine.evalN(quarticResultList.get(j)),
+							result.append(F.chopExpr(engine.evalN(quarticResultList.get(j)),
 									Config.DEFAULT_ROOTS_CHOP_DELTA));
 						} else {
-							result.add(quarticResultList.get(j));
+							result.append(quarticResultList.get(j));
 						}
 					}
 				} else {
@@ -198,7 +198,7 @@ public class Roots extends AbstractFunctionEvaluator {
 					IAST resultList = findRoots(coefficients);
 					// IAST resultList = RootIntervals.croots(temp, true);
 					if (resultList.size() > 0) {
-						result.addAll(resultList);
+						result.addAll(resultList.args());
 					}
 					// }
 				}

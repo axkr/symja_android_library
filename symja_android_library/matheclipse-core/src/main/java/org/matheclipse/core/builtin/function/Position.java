@@ -52,13 +52,13 @@ public class Position extends AbstractCoreFunctionEvaluator {
 				if (level.isInRange()) {
 					clone = prototypeList.clone();
 					IExpr IExpr = positionConverter.toObject(i);
-					clone.add(IExpr);
-					resultCollection.add(clone);
+					clone.append(IExpr);
+					resultCollection.append(clone);
 				}
 			} else if (list.get(i).isAST()) {
 				// clone = (INestedList<IExpr>) prototypeList.clone();
 				clone = prototypeList.clone();
-				clone.add(positionConverter.toObject(i));
+				clone.append(positionConverter.toObject(i));
 				position((IAST) list.get(i), clone, resultCollection, level, matcher, positionConverter, headOffset);
 				if (level.getCurrentDepth() < minDepth) {
 					minDepth = level.getCurrentDepth();

@@ -46,7 +46,7 @@ public class InfixExprOperator extends AbstractExprOperator {
 		if (fOperatorString.equals("//")) {
 			// lhs // rhs ==> rhs[lhs]
 			IAST function = F.ast(rhs);
-			function.add(lhs);
+			function.append(lhs);
 			return function;
 		}
 		return F.$(F.$s(getFunctionName()), lhs, rhs);

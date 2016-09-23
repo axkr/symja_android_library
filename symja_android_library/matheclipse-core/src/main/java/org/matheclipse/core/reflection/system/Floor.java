@@ -72,7 +72,7 @@ public class Floor extends AbstractFunctionEvaluator implements INumeric {
 			IAST[] splittedPlus = ((IAST) arg1).filter(new FloorPlusFunction());
 			if (splittedPlus[0].size() > 1) {
 				if (splittedPlus[1].size() > 1) {
-					splittedPlus[0].add(F.Floor(splittedPlus[1].getOneIdentity(F.C0)));
+					splittedPlus[0].append(F.Floor(splittedPlus[1].getOneIdentity(F.C0)));
 				}
 				return splittedPlus[0];
 			}

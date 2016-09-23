@@ -58,7 +58,7 @@ public class Cases extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr apply(final IExpr arg) throws StopException {
 			if (matcher.test(arg)) {
-				resultCollection.add(arg);
+				resultCollection.append(arg);
 				if (maximumResults >= 0) {
 					resultsCounter++;
 					if (resultsCounter >= maximumResults) {
@@ -95,7 +95,7 @@ public class Cases extends AbstractCoreFunctionEvaluator {
 		public IExpr apply(final IExpr arg) throws StopException {
 			IExpr temp = function.apply(arg);
 			if (temp.isPresent()) {
-				resultCollection.add(temp);
+				resultCollection.append(temp);
 				if (maximumResults >= 0) {
 					resultsCounter++;
 					if (resultsCounter >= maximumResults) {

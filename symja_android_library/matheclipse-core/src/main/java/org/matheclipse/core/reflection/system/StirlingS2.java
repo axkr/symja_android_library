@@ -79,9 +79,9 @@ public class StirlingS2 extends AbstractFunctionEvaluator {
 		IAST temp = F.Plus();
 		for (int j = 0; j < k; j++) {
 			if ((j & 1) == 1) {
-				temp.add(Times(Negate(Binomial(kArg2, integer(j))), Power(Plus(kArg2, integer(-j)), nArg1)));
+				temp.append(Times(Negate(Binomial(kArg2, integer(j))), Power(Plus(kArg2, integer(-j)), nArg1)));
 			} else {
-				temp.add(Times(Times(Binomial(kArg2, integer(j))), Power(Plus(kArg2, integer(-j)), nArg1)));
+				temp.append(Times(Times(Binomial(kArg2, integer(j))), Power(Plus(kArg2, integer(-j)), nArg1)));
 			}
 		}
 		return Times(Power(Factorial(kArg2), CN1), temp);

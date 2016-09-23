@@ -39,7 +39,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
 			if (i > 0 && i < astSlots.size()) {
 				ast.remove(pos);
 				for (int j = i; j < astSlots.size(); j++) {
-					ast.add(pos++, astSlots.get(j));
+					ast.append(pos++, astSlots.get(j));
 				}
 				return pos;
 			}

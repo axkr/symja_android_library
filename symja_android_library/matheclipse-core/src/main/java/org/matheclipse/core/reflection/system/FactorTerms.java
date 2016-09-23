@@ -65,8 +65,8 @@ public class FactorTerms extends AbstractFunctionEvaluator {
 			}
 			GenPolynomial<edu.jas.arith.BigInteger> iPoly = (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
 			IAST result = F.Times();
-			result.add(F.fraction(gcd, lcm));
-			result.add(jas.integerPoly2Expr(iPoly));
+			result.append(F.fraction(gcd, lcm));
+			result.append(jas.integerPoly2Expr(iPoly));
 			return result;
 		} catch (JASConversionException e) {
 			// if (Config.DEBUG) {

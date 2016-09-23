@@ -31,7 +31,7 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 
 	public FlatStepVisitor(final ISymbol sym, IAST lhsPatternAST, IAST lhsEvalAST, StackMatcher stackMatcher,
 			PatternMap patternMap, boolean oneIdentity) {
-		super(lhsEvalAST, 1, lhsEvalAST.size());
+		super(lhsEvalAST.range(), 1, lhsEvalAST.size());
 		this.fSymbol = sym;
 		this.stackMatcher = stackMatcher;
 		this.fPatternMap = patternMap;
@@ -81,7 +81,7 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 				} else {
 					partitionElement = F.ast(fSymbol, n, false);
 					for (int i = 0; i < n; i++) {
-						partitionElement.add((IExpr) array[result[j][i]]);
+						partitionElement.append((IExpr) array[result[j][i]]);
 					}
 					if (!stackMatcher.push(fLhsPatternAST.get(j + 1), partitionElement)) {
 						matched = false;

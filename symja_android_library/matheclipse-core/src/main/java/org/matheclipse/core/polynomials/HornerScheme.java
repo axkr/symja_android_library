@@ -48,22 +48,22 @@ public class HornerScheme {
 				IExpr coefficient = getCoefficient(exponent);
 				if (exponent.isLessThan(F.CD1)) {
 					if (exponent.compareTo(F.CD0) == 0) {
-						result.add(coefficient);
+						result.append(coefficient);
 					} else {
-						result.add(F.Times(coefficient, F.Power(sym, exponent)));
+						result.append(F.Times(coefficient, F.Power(sym, exponent)));
 					}
 				} else {
 					temp = F.Times();
 					ISignedNumber currentExponent = exponent.subtractFrom(start);
 					if (currentExponent.equals(F.CD1)) {
-						temp.add(sym);
+						temp.append(sym);
 					} else {
-						temp.add(F.Power(sym, currentExponent));
+						temp.append(F.Power(sym, currentExponent));
 					}
-					result.add(temp);
+					result.append(temp);
 					result = F.Plus();
-					temp.add(result);
-					result.add(coefficient);
+					temp.append(result);
+					result.append(coefficient);
 					start = exponent;
 				}
 			}
@@ -81,22 +81,22 @@ public class HornerScheme {
 				IExpr coefficient = getCoefficient(exponent);
 				if (exponent.isLessThan(F.C1)) {
 					if (exponent.compareTo(F.C0) == 0) {
-						result.add(coefficient);
+						result.append(coefficient);
 					} else {
-						result.add(F.Times(coefficient, F.Power(sym, exponent)));
+						result.append(F.Times(coefficient, F.Power(sym, exponent)));
 					}
 				} else {
 					temp = F.Times();
 					ISignedNumber currentExponent = exponent.subtractFrom(start);
 					if (currentExponent.equals(F.C1)) {
-						temp.add(sym);
+						temp.append(sym);
 					} else {
-						temp.add(F.Power(sym, currentExponent));
+						temp.append(F.Power(sym, currentExponent));
 					}
-					result.add(temp);
+					result.append(temp);
 					result = F.Plus();
-					temp.add(result);
-					result.add(coefficient);
+					temp.append(result);
+					result.append(coefficient);
 					start = exponent;
 				}
 			}
@@ -184,10 +184,10 @@ public class HornerScheme {
 		IAST temp = map.get(key);
 		if (temp == null) {
 			temp = F.Plus();
-			temp.add(value);
+			temp.append(value);
 			map.put(key, temp);
 		} else {
-			temp.add(value);
+			temp.append(value);
 		}
 		return temp;
 	}

@@ -87,11 +87,11 @@ public class TrigExpand extends AbstractEvaluator {
 		}
 		IAST result = Plus();
 		if (startPosition == plusAST.size() - 2) {
-			result.add(Times(Sin(plusAST.get(startPosition)), Cos(plusAST.get(startPosition + 1))));
-			result.add(Times(Cos(plusAST.get(startPosition)), Sin(plusAST.get(startPosition + 1))));
+			result.append(Times(Sin(plusAST.get(startPosition)), Cos(plusAST.get(startPosition + 1))));
+			result.append(Times(Cos(plusAST.get(startPosition)), Sin(plusAST.get(startPosition + 1))));
 		} else {
-			result.add(Times(Sin(plusAST.get(startPosition)), expandCosPlus(plusAST, startPosition + 1)));
-			result.add(Times(Cos(plusAST.get(startPosition)), expandSinPlus(plusAST, startPosition + 1)));
+			result.append(Times(Sin(plusAST.get(startPosition)), expandCosPlus(plusAST, startPosition + 1)));
+			result.append(Times(Cos(plusAST.get(startPosition)), expandSinPlus(plusAST, startPosition + 1)));
 		}
 		return result;
 	}
@@ -102,11 +102,11 @@ public class TrigExpand extends AbstractEvaluator {
 		}
 		IAST result = Plus();
 		if (startPosition == plusAST.size() - 2) {
-			result.add(Times(Cos(plusAST.get(startPosition)), Cos(plusAST.get(startPosition + 1))));
-			result.add(Times(CN1, Sin(plusAST.get(startPosition)), Sin(plusAST.get(startPosition + 1))));
+			result.append(Times(Cos(plusAST.get(startPosition)), Cos(plusAST.get(startPosition + 1))));
+			result.append(Times(CN1, Sin(plusAST.get(startPosition)), Sin(plusAST.get(startPosition + 1))));
 		} else {
-			result.add(Times(Cos(plusAST.get(startPosition)), expandCosPlus(plusAST, startPosition + 1)));
-			result.add(Times(CN1, Sin(plusAST.get(startPosition)), expandSinPlus(plusAST, startPosition + 1)));
+			result.append(Times(Cos(plusAST.get(startPosition)), expandCosPlus(plusAST, startPosition + 1)));
+			result.append(Times(CN1, Sin(plusAST.get(startPosition)), expandSinPlus(plusAST, startPosition + 1)));
 		}
 		return result;
 	}

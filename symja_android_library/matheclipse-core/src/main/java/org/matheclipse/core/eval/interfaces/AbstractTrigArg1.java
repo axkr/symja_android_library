@@ -2,7 +2,7 @@ package org.matheclipse.core.eval.interfaces;
 
 import java.util.function.DoubleUnaryOperator;
 
-import org.apache.commons.math4.complex.Complex;
+import org.apache.commons.math3.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.ApcomplexNum;

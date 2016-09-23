@@ -202,7 +202,7 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	 * @return always true
 	 */
 	@Override
-	public boolean add(IExpr object) {
+	public boolean append(IExpr object) {
 		hashValue = 0;
 		if (lastIndex == array.length) {
 			growAtEnd(1);
@@ -226,7 +226,7 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	 *             when {@code location < 0 || > size()}
 	 */
 	@Override
-	public void add(int location, IExpr object) {
+	public void append(int location, IExpr object) {
 		hashValue = 0;
 		int size = lastIndex - firstIndex;
 		if (0 < location && location < size) {
@@ -267,9 +267,9 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	 *         otherwise.
 	 */
 	@Override
-	public boolean addAll(Collection<? extends IExpr> collection) {
+	public boolean addAll(List<? extends IExpr> list) {
 		hashValue = 0;
-		Object[] dumpArray = collection.toArray();
+		Object[] dumpArray = list.toArray();
 		if (dumpArray.length == 0) {
 			return false;
 		}
@@ -305,7 +305,7 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 					"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
 		}
 		if (this == collection) {
-			collection = clone();
+			collection = clone().args();
 		}
 		Object[] dumparray = collection.toArray();
 		int growSize = dumparray.length;

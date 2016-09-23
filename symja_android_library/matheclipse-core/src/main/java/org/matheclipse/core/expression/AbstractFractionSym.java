@@ -2,11 +2,11 @@ package org.matheclipse.core.expression;
 
 import java.math.BigInteger;
 
-import org.apache.commons.math4.exception.ZeroException;
-import org.apache.commons.math4.exception.util.LocalizedFormats;
-import org.apache.commons.math4.fraction.BigFraction;
-import org.apache.commons.math4.fraction.FractionConversionException;
-import org.apache.commons.math4.util.ArithmeticUtils;
+import org.apache.commons.math3.exception.ZeroException;
+import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.apache.commons.math3.fraction.BigFraction;
+import org.apache.commons.math3.fraction.FractionConversionException;
+import org.apache.commons.math3.util.ArithmeticUtils;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
@@ -346,7 +346,7 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 		}
 
 		// add the factors from the numerator part
-		result.addAll(num.factorInteger());
+		result.addAll(num.factorInteger().args());
 		EvalAttributes.sort(result);
 		return result;
 	}

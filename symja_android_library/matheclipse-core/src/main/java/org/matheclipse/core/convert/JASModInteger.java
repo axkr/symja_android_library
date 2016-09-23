@@ -297,7 +297,7 @@ public class JASModInteger {
 			IInteger coeffValue = F.integer(coeff.getVal());
 			IAST monomTimes = F.Times();
 			monomialToExpr(coeffValue, exp, monomTimes); 
-			result.add(monomTimes.getOneIdentity(F.C1));
+			result.append(monomTimes.getOneIdentity(F.C1));
 		}
 		return result.getOneIdentity(F.C0);
 	}
@@ -306,7 +306,7 @@ public class JASModInteger {
 		long lExp;
 		ExpVector leer = fPolyFactory.evzero;
 		if (!coeff.isOne()) {
-			monomTimes.add(coeff);
+			monomTimes.append(coeff);
 		}
 		for (int i = 0; i < exp.length(); i++) {
 			lExp = exp.getVal(i);
@@ -314,9 +314,9 @@ public class JASModInteger {
 				int ix = leer.varIndex(i);
 				if (ix >= 0) {
 					if (lExp == 1L) {
-						monomTimes.add(fVariables.get(ix));
+						monomTimes.append(fVariables.get(ix));
 					} else {
-						monomTimes.add(F.Power(fVariables.get(ix), F.integer(lExp)));
+						monomTimes.append(F.Power(fVariables.get(ix), F.integer(lExp)));
 					}
 				} else {
 					return false;

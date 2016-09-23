@@ -24,7 +24,7 @@ public class ReplaceAll extends AbstractEvaluator {
 			if (ast.arg2().isListOfLists()) {
 				IAST result = F.List();
 				for (IExpr subList : (IAST) ast.arg2()) {
-					result.add(F.subst(ast.arg1(), (IAST) subList));
+					result.append(F.subst(ast.arg1(), (IAST) subList));
 				}
 				return result;
 			}

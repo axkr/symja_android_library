@@ -4,8 +4,8 @@ import java.io.ObjectStreamException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.apache.commons.math4.fraction.BigFraction;
-import org.apache.commons.math4.util.ArithmeticUtils;
+import org.apache.commons.math3.fraction.BigFraction;
+import org.apache.commons.math3.util.ArithmeticUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
@@ -16,7 +16,7 @@ import org.matheclipse.core.interfaces.IRational;
 
 /**
  * IFraction implementation which reimplements methods of the Apache
- * <code>org.apache.commons.math4.fraction.Fraction</code> methods.
+ * <code>org.apache.commons.math3.fraction.Fraction</code> methods.
  * 
  * @see AbstractFractionSym
  * @see BigFractionSym

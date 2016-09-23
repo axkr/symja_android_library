@@ -149,12 +149,12 @@ public class Expand extends AbstractFunctionEvaluator {
 						if (!result.isPresent()) {
 							result = ast.copyUntil(ast.size(), i);
 						}
-						result.add(temp);
+						result.append(temp);
 						continue;
 					}
 				}
 				if (result.isPresent()) {
-					result.add(arg);
+					result.append(arg);
 				}
 			}
 			if (result.isPresent()) {
@@ -326,10 +326,10 @@ public class Expand extends AbstractFunctionEvaluator {
 		public void evalAndExpandAST(IExpr expr1, IExpr expr2, final IAST result) {
 			IExpr arg = TimesOp.times(expr1, expr2);
 			if (arg.isAST()) {
-				result.add(expandAST((IAST) arg).orElse(arg));
+				result.append(expandAST((IAST) arg).orElse(arg));
 				return;
 			}
-			result.add(arg);
+			result.append(arg);
 		}
 
 	}
@@ -346,12 +346,11 @@ public class Expand extends AbstractFunctionEvaluator {
 			this.expandedResult = expandedResult;
 			this.n = n;
 			this.m = plusAST.size() - 1;
-			// System.out.println(m+"/"+n);
 			this.parts = new int[m];
 			// precalculate all Power[] ASTs:
 			this.precalculatedPowerASTs = F.List();
 			for (IExpr expr : plusAST) {
-				precalculatedPowerASTs.add(expr);
+				precalculatedPowerASTs.append(expr);
 			}
 		}
 
@@ -363,27 +362,27 @@ public class Expand extends AbstractFunctionEvaluator {
 			for (int[] indices : perm) {
 				final IAST timesAST = times.clone();
 				if (!multinomial.isOne()) {
-					timesAST.add(multinomial);
+					timesAST.append(multinomial);
 				}
 				for (int k = 0; k < m; k++) {
 					if (indices[k] != 0) {
 						temp = precalculatedPowerASTs.get(k + 1);
 						if (indices[k] == 1) {
-							timesAST.add(temp);
+							timesAST.append(temp);
 						} else {
 							if (temp.isTimes()) {
 								IAST ast = (IAST) temp;
 								for (int i = 1; i < ast.size(); i++) {
-									timesAST.add(PowerOp.power(ast.get(i), F.integer(indices[k])));
+									timesAST.append(PowerOp.power(ast.get(i), F.integer(indices[k])));
 								}
 							} else {
-								timesAST.add(PowerOp.power(temp, F.integer(indices[k])));
+								timesAST.append(PowerOp.power(temp, F.integer(indices[k])));
 							}
 						}
 
 					}
 				}
-				expandedResult.add(TimesOp.times(timesAST));
+				expandedResult.append(TimesOp.times(timesAST));
 			}
 		}
 

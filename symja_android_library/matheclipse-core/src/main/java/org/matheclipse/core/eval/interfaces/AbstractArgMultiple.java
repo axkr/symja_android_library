@@ -58,9 +58,9 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 					}
 
 					if (!tres.isPresent()) {
-						result.add(temp);
+						result.append(temp);
 						if (i == tempAST.size() - 1) {
-							result.add(tempAST.get(i));
+							result.append(tempAST.get(i));
 						} else {
 							temp = tempAST.get(i);
 						}
@@ -72,7 +72,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 					temp = tres;
 
 					if (i == (tempAST.size() - 1)) {
-						result.add(temp);
+						result.append(temp);
 					}
 
 					i++;

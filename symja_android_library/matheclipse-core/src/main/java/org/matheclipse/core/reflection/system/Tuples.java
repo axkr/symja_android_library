@@ -65,13 +65,13 @@ public class Tuples extends AbstractFunctionEvaluator {
 	 */
 	private void tuples(final IAST originalList, final int n, IAST result, IAST subResult) {
 		if (n == 0) {
-			result.add(subResult);
+			result.append(subResult);
 			return;
 		}
 		IAST temp;
 		for (int j = 1; j < originalList.size(); j++) {
 			temp = subResult.clone();
-			temp.add(originalList.get(j));
+			temp.append(originalList.get(j));
 			tuples(originalList, n - 1, result, temp);
 		}
 
@@ -90,14 +90,14 @@ public class Tuples extends AbstractFunctionEvaluator {
 	 */
 	private void tuplesOfLists(final IAST originalList, final int k, IAST result, IAST subResult) {
 		if (k == originalList.size()) {
-			result.add(subResult);
+			result.append(subResult);
 			return;
 		}
 		IAST temp;
 		IAST subAST = (IAST) originalList.get(k);
 		for (int j = 1; j < subAST.size(); j++) {
 			temp = subResult.clone();
-			temp.add(subAST.get(j));
+			temp.append(subAST.get(j));
 			tuplesOfLists(originalList, k + 1, result, temp);
 		}
 

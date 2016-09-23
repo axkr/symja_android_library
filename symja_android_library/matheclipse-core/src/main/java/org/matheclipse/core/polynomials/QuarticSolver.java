@@ -239,7 +239,7 @@ public class QuarticSolver {
 			// 2^(1/3) a) - (-(b^3/a^3) + (4 b c)/a^2 - (8 d)/a)/(4
 			// Sqrt[b^2/(4 a^2) - (2 c)/(3 a) + (2^(1/3) (delta0))/(3 a delta3)
 			// + delta3/(3 2^(1/3) a)])]/2
-			result.add(
+			result.append(
 					Plus(Times(CN1, b,
 							Power(Times(C4, a),
 									CN1)),
@@ -278,7 +278,7 @@ public class QuarticSolver {
 			// 2^(1/3) a) - (-(b^3/a^3) + (4 b c)/a^2 - (8 d)/a)/(4
 			// Sqrt[b^2/(4 a^2) - (2 c)/(3 a) + (2^(1/3) (delta0))/(3 a delta3)
 			// + delta3/(3 2^(1/3) a)])]/2
-			result.add(
+			result.append(
 					Plus(Times(CN1, b,
 							Power(Times(C4, a),
 									CN1)),
@@ -317,7 +317,7 @@ public class QuarticSolver {
 			// 2^(1/3) a) + (-(b^3/a^3) + (4 b c)/a^2 - (8 d)/a)/(4
 			// Sqrt[b^2/(4 a^2) - (2 c)/(3 a) + (2^(1/3) (delta0))/(3 a delta3)
 			// + delta3/(3 2^(1/3) a)])]/2
-			result.add(
+			result.append(
 					Plus(Times(CN1, b,
 							Power(Times(C4, a),
 									CN1)),
@@ -357,7 +357,7 @@ public class QuarticSolver {
 			// 2^(1/3) a) + (-(b^3/a^3) + (4 b c)/a^2 - (8 d)/a)/(4
 			// Sqrt[b^2/(4 a^2) - (2 c)/(3 a) + (2^(1/3) (delta0))/(3 a delta3)
 			// + delta3/(3 2^(1/3) a)])]/2
-			result.add(
+			result.append(
 					Plus(Times(CN1, b,
 							Power(Times(C4, a),
 									CN1)),
@@ -432,16 +432,16 @@ public class QuarticSolver {
 		// IExpr z = Times(b, Power(Times(C2, w), CN1));
 
 		// -B/(4*A) + 1/2 * (w + Sqrt[-(a+2*y)-2*(a+b/w)])
-		result.add(Plus(Times(CN1, B, Power(Times(C4, A), CN1)), Times(C1D2, Plus(w,
+		result.append(Plus(Times(CN1, B, Power(Times(C4, A), CN1)), Times(C1D2, Plus(w,
 				Sqrt(Plus(Times(CN1, Plus(a, Times(C2, y))), Times(CN1, C2, Plus(a, Times(b, Power(w, CN1))))))))));
 		// -B/(4*A) + 1/2 * (w - Sqrt[-(a+2*y)-2*(a+b/w)])
-		result.add(Plus(Times(CN1, B, Power(Times(C4, A), CN1)), Times(C1D2, Plus(w, Times(CN1,
+		result.append(Plus(Times(CN1, B, Power(Times(C4, A), CN1)), Times(C1D2, Plus(w, Times(CN1,
 				Sqrt(Plus(Times(CN1, Plus(a, Times(C2, y))), Times(CN1, C2, Plus(a, Times(b, Power(w, CN1)))))))))));
 		// -B/(4*A) + 1/2 * (-w + Sqrt[-(a+2*y)-2*(a-b/w)])
-		result.add(Plus(Times(CN1, B, Power(Times(C4, A), CN1)), Times(C1D2, Plus(Times(CN1, w), Sqrt(
+		result.append(Plus(Times(CN1, B, Power(Times(C4, A), CN1)), Times(C1D2, Plus(Times(CN1, w), Sqrt(
 				Plus(Times(CN1, Plus(a, Times(C2, y))), Times(CN1, C2, Plus(a, Times(CN1, b, Power(w, CN1))))))))));
 		// -B/(4*A) + 1/2 * (-w - Sqrt[-(a+2*y)-2*(a-b/w)])
-		result.add(Plus(Times(CN1, B, Power(Times(C4, A), CN1)), Times(C1D2, Plus(Times(CN1, w), Times(CN1, Sqrt(
+		result.append(Plus(Times(CN1, B, Power(Times(C4, A), CN1)), Times(C1D2, Plus(Times(CN1, w), Times(CN1, Sqrt(
 				Plus(Times(CN1, Plus(a, Times(C2, y))), Times(CN1, C2, Plus(a, Times(CN1, b, Power(w, CN1)))))))))));
 		//
 		return createSet(result);
@@ -469,7 +469,7 @@ public class QuarticSolver {
 			}
 			IAST result = F.List();
 			if (additionalSulution != null) {
-				result.add(additionalSulution);
+				result.append(additionalSulution);
 			}
 			// 18*a*b*c*d-4*b^3*d+b^2*c^2-4*a*c^3-27*a^2*d^2
 			IExpr discriminant = F.eval(Plus(Times(integer(18L), a, b, c, d), Times(CN1, C4, Power(b, C3), d),
@@ -485,31 +485,30 @@ public class QuarticSolver {
 			IExpr delta3 = F.eval(Power(argDelta3, C1D3));
 
 			IExpr C = F.eval(Times(integer(-27L), a.power(C2), discriminant));
-			System.out.println(C.toString());
 			if (discriminant.isZero()) {
 				if (delta0.isZero()) {
 					// the three roots are equal
 					// (-b)/(3*a)
-					result.add(Times(CN1, b, Power(Times(C3, a), CN1)));
+					result.append(Times(CN1, b, Power(Times(C3, a), CN1)));
 				} else {
 					// the double root
 					// (9*a*d-b*c)/(2*delta0)
-					result.add(Times(Plus(Times(integer(9L), a, d), Times(CN1, b, c)), Power(Times(C2, delta0), CN1)));
+					result.append(Times(Plus(Times(integer(9L), a, d), Times(CN1, b, c)), Power(Times(C2, delta0), CN1)));
 					// and a simple root
 					// (4*a*b*c-9*a^2*d-b^3)/(a*delta0)
-					result.add(Times(Plus(Times(C4, a, b, c), Times(CN1, integer(9L), Power(a, C2), d),
+					result.append(Times(Plus(Times(C4, a, b, c), Times(CN1, integer(9L), Power(a, C2), d),
 							Times(CN1, Power(b, C3))), Power(Times(a, delta0), CN1)));
 				}
 			} else {
 				// -(b/(3*a)) - (2^(1/3) (-delta0))/(3*a*delta3) +
 				// delta3/(3*2^(1/3)*a)
-				result.add(Plus(b.negate().times(C3.times(a).power(CN1)),
+				result.append(Plus(b.negate().times(C3.times(a).power(CN1)),
 						Times(Power(C2, C1D3), delta0, Power(Times(C3, a, delta3), CN1)),
 						Times(Power(argDelta3.timesDistributed(C1D2), C1D3), C3.times(a).power(CN1))));
 
 				// -(b/(3*a)) + ((1 + I Sqrt[3]) (-delta0))/(3*2^(2/3)*a*delta3)
 				// - ((1 - I Sqrt[3]) delta3)/(6*2^(1/3)*a)
-				result.add(Plus(Times(CN1, b, Power(Times(C3, a), CN1)),
+				result.append(Plus(Times(CN1, b, Power(Times(C3, a), CN1)),
 						Times(Plus(C1, Times(CI, Sqrt(C3))), CN1, delta0,
 								Power(Times(C3, Power(C2, fraction(2L, 3L)), a, delta3), CN1)),
 						Times(CN1, Plus(C1, Times(CN1, CI, Sqrt(C3))), delta3,
@@ -517,7 +516,7 @@ public class QuarticSolver {
 
 				// -(b/(3*a)) + ((1 - I Sqrt[3]) (-delta0))/(3*2^(2/3)*a*delta3)
 				// - ((1 + I Sqrt[3]) delta3)/(6*2^(1/3)*a)
-				result.add(Plus(Times(CN1, b, Power(Times(C3, a), CN1)),
+				result.append(Plus(Times(CN1, b, Power(Times(C3, a), CN1)),
 						Times(Plus(C1, Times(CN1, CI, Sqrt(C3))), CN1, delta0,
 								Power(Times(C3, Power(C2, fraction(2L, 3L)), a, delta3), CN1)),
 						Times(CN1, Plus(C1, Times(CI, Sqrt(C3))), delta3,
@@ -550,7 +549,7 @@ public class QuarticSolver {
 		}
 		result = F.List();
 		for (IExpr e : set1) {
-			result.add(e);
+			result.append(e);
 		}
 		return result;
 	}
@@ -572,28 +571,28 @@ public class QuarticSolver {
 	public static IAST quadraticSolve(IExpr a, IExpr b, IExpr c, IExpr solution1, IExpr solution2) {
 		IAST result = F.List();
 		if (solution1 != null) {
-			result.add(solution1);
+			result.append(solution1);
 		}
 		if (solution2 != null) {
-			result.add(solution2);
+			result.append(solution2);
 		}
 		if (!a.isZero()) {
 			if (c.isZero()) {
-				result.add(F.C0);
+				result.append(F.C0);
 				if (!b.isZero()) {
-					result.add(F.Times(F.CN1, b, Power(a, -1L)));
+					result.append(F.Times(F.CN1, b, Power(a, -1L)));
 				}
 			} else {
-				result.add(Times(Plus(CN1.times(b), Sqrt(Plus(Power(b, 2), Times(CN4, a, c)))),
+				result.append(Times(Plus(CN1.times(b), Sqrt(Plus(Power(b, 2), Times(CN4, a, c)))),
 						Power(Times(C2, a), -1L)));
 
-				result.add(Times(Plus(CN1.times(b), Times(CN1, Sqrt(Plus(Power(b, 2L), Times(CN4, a, c))))),
+				result.append(Times(Plus(CN1.times(b), Times(CN1, Sqrt(Plus(Power(b, 2L), Times(CN4, a, c))))),
 						Power(Times(C2, a), -1L)));
 				return createSet(result);
 			}
 		} else {
 			if (!b.isZero()) {
-				result.add(Times(CN1, c, Power(b, -1L)));
+				result.append(Times(CN1, c, Power(b, -1L)));
 			}
 		}
 		return createSet(result);
@@ -623,15 +622,15 @@ public class QuarticSolver {
 		// -(c+sqrt)/(2*a)
 		IExpr y2 = Times(CN1, Plus(c, sqrt), Power(Times(C2, a), CN1));
 		if (sum == null) {
-			result.add(Sqrt(y1));
-			result.add(Times(CN1, Sqrt(y1)));
-			result.add(Sqrt(y2));
-			result.add(Times(CN1, Sqrt(y2)));
+			result.append(Sqrt(y1));
+			result.append(Times(CN1, Sqrt(y1)));
+			result.append(Sqrt(y2));
+			result.append(Times(CN1, Sqrt(y2)));
 		} else {
-			result.add(Plus(sum, Sqrt(y1)));
-			result.add(Plus(sum, Times(CN1, Sqrt(y1))));
-			result.add(Plus(sum, Sqrt(y2)));
-			result.add(Plus(sum, Times(CN1, Sqrt(y2))));
+			result.append(Plus(sum, Sqrt(y1)));
+			result.append(Plus(sum, Times(CN1, Sqrt(y1))));
+			result.append(Plus(sum, Sqrt(y2)));
+			result.append(Plus(sum, Times(CN1, Sqrt(y2))));
 		}
 		return createSet(result);
 	}
@@ -658,13 +657,13 @@ public class QuarticSolver {
 		IExpr y2 = Times(CN1, Plus(b, sqrt), Power(Times(C2, a), CN1));
 
 		// (y1+Sqrt[y1^2-4])/2
-		result.add(Times(C1D2, Plus(y1, Sqrt(Plus(Power(y1, C2), Times(CN1, C4))))));
+		result.append(Times(C1D2, Plus(y1, Sqrt(Plus(Power(y1, C2), Times(CN1, C4))))));
 		// (y1-Sqrt[y1^2-4])/2
-		result.add(Times(C1D2, Plus(y1, Times(CN1, Sqrt(Plus(Power(y1, C2), Times(CN1, C4)))))));
+		result.append(Times(C1D2, Plus(y1, Times(CN1, Sqrt(Plus(Power(y1, C2), Times(CN1, C4)))))));
 		// (y2+Sqrt[y2^2-4])/2
-		result.add(Times(C1D2, Plus(y2, Sqrt(Plus(Power(y2, C2), Times(CN1, C4))))));
+		result.append(Times(C1D2, Plus(y2, Sqrt(Plus(Power(y2, C2), Times(CN1, C4))))));
 		// (y2-Sqrt[y2^2-4])/2
-		result.add(Times(C1D2, Plus(y2, Times(CN1, Sqrt(Plus(Power(y2, C2), Times(CN1, C4)))))));
+		result.append(Times(C1D2, Plus(y2, Times(CN1, Sqrt(Plus(Power(y2, C2), Times(CN1, C4)))))));
 
 		return createSet(result);
 	}

@@ -33,7 +33,7 @@ final public class TraceStack extends AbstractEvalStepListener {
 		fStack.pop();
 		fTraceList = fStack.peek();
 		if (traceList.size() > 1) {
-			fTraceList.add(traceList);
+			fTraceList.append(traceList);
 		}
 	}
 
@@ -50,10 +50,10 @@ final public class TraceStack extends AbstractEvalStepListener {
 	public void add(IExpr expr) {
 		if (fMatcher != null) {
 			if (fMatcher.test(expr)) {
-				fTraceList.add(F.HoldForm(expr));
+				fTraceList.append(F.HoldForm(expr));
 			}
 		} else {
-			fTraceList.add(F.HoldForm(expr));
+			fTraceList.append(F.HoldForm(expr));
 		}
 	}
 
@@ -67,10 +67,10 @@ final public class TraceStack extends AbstractEvalStepListener {
 		if (fTraceList.isAST0()) {
 			if (fMatcher != null) {
 				if (fMatcher.test(expr)) {
-					fTraceList.add(F.HoldForm(expr));
+					fTraceList.append(F.HoldForm(expr));
 				}
 			} else {
-				fTraceList.add(F.HoldForm(expr));
+				fTraceList.append(F.HoldForm(expr));
 			}
 		}
 	}

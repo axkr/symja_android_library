@@ -45,7 +45,7 @@ public class BooleanTable extends AbstractFunctionEvaluator {
 
 	private static void booleanTable(IExpr expr, IAST variables, int position, IAST resultList) {
 		if (variables.size() <= position) {
-			resultList.add(EvalEngine.get().evalTrue(expr) ? F.True : F.False);
+			resultList.append(EvalEngine.get().evalTrue(expr) ? F.True : F.False);
 			return;
 		}
 		IExpr sym = variables.get(position);

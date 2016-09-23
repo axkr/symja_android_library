@@ -40,10 +40,10 @@ public class Commonest extends AbstractEvaluator {
 		if (tallyResult.size() > 1) {
 			if (n == -1) {
 				IInteger max = (IInteger) ((IAST) tallyResult.arg1()).arg2();
-				result.add(((IAST) tallyResult.arg1()).arg1());
+				result.append(((IAST) tallyResult.arg1()).arg1());
 				for (int i = 2; i < tallyResult.size(); i++) {
 					if (max.equals(((IAST) tallyResult.get(i)).arg2())) {
-						result.add(((IAST) tallyResult.get(i)).arg1());
+						result.append(((IAST) tallyResult.get(i)).arg1());
 					} else {
 						break;
 					}
@@ -52,7 +52,7 @@ public class Commonest extends AbstractEvaluator {
 				int counter = 0;
 				for (int i = 1; i < tallyResult.size(); i++) {
 					if (counter < n) {
-						result.add(((IAST) tallyResult.get(i)).arg1());
+						result.append(((IAST) tallyResult.get(i)).arg1());
 						counter++;
 					} else {
 						break;

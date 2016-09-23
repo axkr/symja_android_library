@@ -121,7 +121,6 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 							IExpr temp = F
 									.evalQuiet(F.N(F.Greater(F.Subtract(expression, data.getLimitValue()), F.C0)));
 							if (temp != null) {
-								// System.out.println(temp.toString());
 								IAssumptions assumptions = Assumptions.getInstance(temp);
 								if (assumptions != null) {
 									int direction = data.getDirection();

@@ -51,7 +51,7 @@ public class Distribute extends AbstractFunctionEvaluator {
 
 	private void distributePosition(IAST resultCollector, IAST stepResult, IExpr head, IAST arg1, int position) {
 		if (arg1.size() == position) {
-			resultCollector.add(stepResult);
+			resultCollector.append(stepResult);
 			return;
 		}
 		if (arg1.size() < position) {
@@ -61,12 +61,12 @@ public class Distribute extends AbstractFunctionEvaluator {
 			IAST temp = (IAST) arg1.get(position);
 			for (int i = 1; i < temp.size(); i++) {
 				IAST res2 = stepResult.clone();
-				res2.add(temp.get(i));
+				res2.append(temp.get(i));
 				distributePosition(resultCollector, res2, head, arg1, position + 1);
 			}
 		} else {
 			IAST res2 = stepResult.clone();
-			res2.add(arg1.get(position));
+			res2.append(arg1.get(position));
 			distributePosition(resultCollector, res2, head, arg1, position + 1);
 		}
 

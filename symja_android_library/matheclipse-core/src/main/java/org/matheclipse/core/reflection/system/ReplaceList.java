@@ -28,7 +28,7 @@ public class ReplaceList extends AbstractEvaluator {
 						if (maxNumberOfResults <= result.size()) {
 							return result;
 						}
-						result.add(temp);
+						result.append(temp);
 					}
 				} else {
 					WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
@@ -45,7 +45,7 @@ public class ReplaceList extends AbstractEvaluator {
 				if (maxNumberOfResults <= result.size()) {
 					return result;
 				}
-				result.add(temp);
+				result.append(temp);
 			}
 		} else {
 			WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");

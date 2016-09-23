@@ -75,7 +75,7 @@ public class Ceiling extends AbstractFunctionEvaluator implements INumeric {
 			IAST[] splittedPlus = ((IAST) arg1).filter(new CeilingPlusFunction());
 			if (splittedPlus[0].size() > 1) {
 				if (splittedPlus[1].size() > 1) {
-					splittedPlus[0].add(F.Ceiling(splittedPlus[1].getOneIdentity(F.C0)));
+					splittedPlus[0].append(F.Ceiling(splittedPlus[1].getOneIdentity(F.C0)));
 				}
 				return splittedPlus[0];
 			}

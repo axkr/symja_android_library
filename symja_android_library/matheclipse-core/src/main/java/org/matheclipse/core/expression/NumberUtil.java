@@ -6,7 +6,7 @@ import java.math.RoundingMode;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.math4.fraction.BigFraction;
+import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;

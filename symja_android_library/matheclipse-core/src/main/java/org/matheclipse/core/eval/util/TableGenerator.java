@@ -50,9 +50,9 @@ public class TableGenerator {
 						fCurrentIndex[index] = iter.next();
 						IExpr temp = table();
 						if (temp == null) {
-							result.add(fDefaultValue);
+							result.append(fDefaultValue);
 						} else {
-							result.add(temp);
+							result.append(temp);
 						}
 					}
 					return result;

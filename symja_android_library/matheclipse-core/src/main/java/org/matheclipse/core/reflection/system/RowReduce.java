@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math4.linear.FieldMatrix;
+import org.apache.commons.math3.linear.FieldMatrix;
 import org.matheclipse.commons.math.linear.FieldReducedRowEchelonForm;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
@@ -88,11 +88,11 @@ public class RowReduce extends AbstractFunctionEvaluator {
 		}
 		IAST list = F.List();
 		for (int j = 0; j < rows; j++) {
-			list.add(F.eval(F.Together(rowReduced.getEntry(j, cols - 1))));
+			list.append(F.eval(F.Together(rowReduced.getEntry(j, cols - 1))));
 		}
 		if (rows < cols - 1) {
 			for (int i = rows; i < cols - 1; i++) {
-				list.add(F.C0);
+				list.append(F.C0);
 			}
 		}
 		return list;
@@ -130,10 +130,10 @@ public class RowReduce extends AbstractFunctionEvaluator {
 			IAST rule;
 			for (int j = 1; j < smallList.size(); j++) {
 				rule = F.Rule(listOfVariables.get(j), F.eval(smallList.get(j)));
-				list.add(rule);
+				list.append(rule);
 			}
 			
-			resultList.add(list);
+			resultList.append(list);
 			return resultList;
 		}
 		FieldReducedRowEchelonForm ref = new FieldReducedRowEchelonForm(matrix);
@@ -154,18 +154,18 @@ public class RowReduce extends AbstractFunctionEvaluator {
 				IExpr diagonal = rowReduced.getEntry(j - 1, j - 1);
 				if (!diagonal.isZero()) {
 					IAST plus = F.Plus();
-					plus.add(rowReduced.getEntry(j - 1, cols - 1));
+					plus.append(rowReduced.getEntry(j - 1, cols - 1));
 					for (int i = j; i < cols - 1; i++) {
 						if (!rowReduced.getEntry(j - 1, i).isZero()) {
-							plus.add(F.Times(rowReduced.getEntry(j - 1, i).negate(), listOfVariables.get(i + 1)));
+							plus.append(F.Times(rowReduced.getEntry(j - 1, i).negate(), listOfVariables.get(i + 1)));
 						}
 					}
 					rule = F.Rule(listOfVariables.get(j), F.eval(F.Together(plus.getOneIdentity(F.C0))));
-					list.add(rule);
+					list.append(rule);
 				}
 			}
 		}
-		resultList.add(list);
+		resultList.append(list);
 		return resultList;
 	}
 }

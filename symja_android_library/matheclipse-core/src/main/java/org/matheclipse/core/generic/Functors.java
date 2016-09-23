@@ -14,6 +14,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.harmony.util.HMCollection;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -37,7 +38,7 @@ public class Functors {
 		@Nonnull
 		public IExpr apply(final IExpr arg) {
 			final IAST ast = fAST.clone();
-			ast.add(arg);
+			ast.append(arg);
 			return ast;
 		}
 
@@ -248,14 +249,14 @@ public class Functors {
 
 	private static class ScanFunctor implements Function<IExpr, IExpr> {
 		protected final IAST fAST;
-		protected Collection<? super IExpr> resultCollection;
+		protected HMCollection<? super IExpr> resultCollection;
 
 		/**
 		 * 
 		 * @param ast
 		 *            the AST which should be cloned in the {@code apply} method
 		 */
-		public ScanFunctor(final IAST ast, Collection<? super IExpr> resultCollection) {
+		public ScanFunctor(final IAST ast, HMCollection<? super IExpr> resultCollection) {
 			fAST = ast;
 			this.resultCollection = resultCollection;
 		}
@@ -264,8 +265,8 @@ public class Functors {
 		@Nonnull
 		public IExpr apply(final IExpr arg) {
 			final IAST ast = fAST.clone();
-			ast.add(arg);
-			resultCollection.add(ast);
+			ast.append(arg);
+			resultCollection.append(ast);
 			return F.NIL;
 		}
 
@@ -284,7 +285,7 @@ public class Functors {
 	 * @return
 	 */
 	public static Function<IExpr, IExpr> scan(@Nonnull final IAST ast,
-			@Nonnull Collection<? super IExpr> resultCollection) {
+			@Nonnull HMCollection<? super IExpr> resultCollection) {
 		return new ScanFunctor(ast, resultCollection);
 	}
 
@@ -438,7 +439,7 @@ public class Functors {
 			// final ASTNode parsedAST = parser.parse(str);
 			// IExpr expr = AST2Expr.CONST.convert(parsedAST, engine);
 			expr = engine.evaluate(expr);
-			astRules.add(expr);
+			astRules.append(expr);
 		}
 		return rules(astRules);
 	}

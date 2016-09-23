@@ -136,9 +136,9 @@ public class AST1 extends AST0 {
 	@Override
 	public IAST filter(IAST filterAST, IAST restAST, Predicate<? super IExpr> predicate) {
 		if (predicate.test(arg1)) {
-			filterAST.add(arg1);
+			filterAST.append(arg1);
 		} else {
-			restAST.add(arg1);
+			restAST.append(arg1);
 		}
 		return filterAST;
 	}
@@ -147,7 +147,7 @@ public class AST1 extends AST0 {
 	@Override
 	public IAST filter(IAST filterAST, Predicate<? super IExpr> predicate) {
 		if (predicate.test(arg1)) {
-			filterAST.add(arg1);
+			filterAST.append(arg1);
 		}
 		return filterAST;
 	}

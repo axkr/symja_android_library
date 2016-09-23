@@ -52,10 +52,10 @@ public class Names extends AbstractFunctionEvaluator {
 			for (int i = 0; i < n.listLength(); i++) {
 				if (exact) {
 					if (name.equals(n.getSuggestion(i).getTerm())) {
-						list.add(F.$s(n.getSuggestion(i).getTerm()));
+						list.append(F.$s(n.getSuggestion(i).getTerm()));
 					}
 				} else {
-					list.add(F.$s(n.getSuggestion(i).getTerm()));
+					list.append(F.$s(n.getSuggestion(i).getTerm()));
 				}
 			}
 		}
@@ -81,7 +81,7 @@ public class Names extends AbstractFunctionEvaluator {
 		int size = AST2Expr.FUNCTION_STRINGS.length;
 		IAST list = F.List();
 		for (int i = 0; i < size; i++) {
-			list.add(F.$s(AST2Expr.FUNCTION_STRINGS[i]));
+			list.append(F.$s(AST2Expr.FUNCTION_STRINGS[i]));
 		}
 		return list;
 	}

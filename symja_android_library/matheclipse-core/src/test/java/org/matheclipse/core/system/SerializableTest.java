@@ -99,9 +99,9 @@ public class SerializableTest extends TestCase {
 		equalsCopy(F.$ps(F.x, F.IntegerQ, true, false));
 	}
 
-	public void testIntegrateDefinition() {
-		equalsCopy(F.Integrate.getRulesData());
-	}
+	// public void testIntegrateDefinition() {
+	// equalsCopy(F.Integrate.getRulesData());
+	// }
 
 	public void testSinDefinition() {
 		equalsCopy(F.Sin.getRulesData());
@@ -124,7 +124,7 @@ public class SerializableTest extends TestCase {
 			Object copy = ois.readObject();
 			bais.close();
 			ois.close();
-			System.out.println(copy.toString());
+			// System.out.println(copy.toString());
 			assertEquals(original, copy);
 
 		} catch (ClassNotFoundException cnfe) {

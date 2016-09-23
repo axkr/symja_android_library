@@ -553,7 +553,7 @@ public final class Validate {
 			for (int i = 1; i < eqns.size(); i++) {
 				if (eqns.get(i).isAST(F.Equal, 3)) {
 					eq = (IAST) eqns.get(i);
-					termsEqualZeroList.add(F.expandAll(F.Subtract(eq.arg1(), eq.arg2()), true, true));
+					termsEqualZeroList.append(F.expandAll(F.Subtract(eq.arg1(), eq.arg2()), true, true));
 				} else {
 					// not an equation
 					throw new WrongArgumentType(eqns, eqns.get(i), i, "Equal[] expression (a==b) expected");
@@ -561,7 +561,7 @@ public final class Validate {
 			}
 
 		} else {
-			termsEqualZeroList.add(checkEquation(expr));
+			termsEqualZeroList.append(checkEquation(expr));
 		}
 		return termsEqualZeroList;
 	}

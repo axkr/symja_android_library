@@ -39,10 +39,10 @@ public class Partition extends AbstractFunctionEvaluator {
 				while (i <= f.size() - 1) {
 					temp = F.ast(f.head());
 					for (int j = i - n; j < i; j++) {
-						temp.add(f.get(j + 1));
+						temp.append(f.get(j + 1));
 					}
 					i += v;
-					result.add(temp);
+					result.append(temp);
 
 				}
 				return result;

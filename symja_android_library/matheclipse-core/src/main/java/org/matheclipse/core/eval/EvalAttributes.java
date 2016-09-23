@@ -89,13 +89,13 @@ public class EvalAttributes {
 				}
 				IAST temp = flatten(head, (IAST) expr);
 				if (temp.isPresent()) {
-					result.addAll(temp);
+					result.addAll(temp.args());
 				} else {
-					result.addAll((IAST) expr);
+					result.addAll(((IAST) expr).args());
 				}
 			} else {
 				if (result.isPresent()) {
-					result.add(expr);
+					result.append(expr);
 				}
 			}
 		}
@@ -132,7 +132,7 @@ public class EvalAttributes {
 				isEvaled = true;
 				flatten(head, (IAST) expr, result, recursionCounter + 1, level);
 			} else {
-				result.add(expr);
+				result.append(expr);
 			}
 		}
 		return isEvaled;

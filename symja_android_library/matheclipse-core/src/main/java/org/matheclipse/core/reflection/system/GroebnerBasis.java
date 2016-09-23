@@ -114,7 +114,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 		for (GenPolynomial<BigRational> p : list) {
 			// convert rational to integer coefficients and add
 			// polynomial to result list
-			resultList.add(jas.integerPoly2Expr((GenPolynomial<BigInteger>) jas.factorTerms(p)[2]));
+			resultList.append(jas.integerPoly2Expr((GenPolynomial<BigInteger>) jas.factorTerms(p)[2]));
 		}
 
 		return resultList;
@@ -153,7 +153,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 				GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
 				polyList.add(poly);
 			} catch (JASConversionException e) {
-				rest.add(expr);
+				rest.append(expr);
 			}
 
 		}
@@ -168,10 +168,10 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 		// convert rational to integer coefficients and add
 		// polynomial to result list
 		for (GenPolynomial<BigRational> p : opl) {
-			resultList.add(jas.integerPoly2Expr((GenPolynomial<BigInteger>) jas.factorTerms(p)[2]));
+			resultList.append(jas.integerPoly2Expr((GenPolynomial<BigInteger>) jas.factorTerms(p)[2]));
 		}
 		for (int i = 1; i < rest.size(); i++) {
-			resultList.add(rest.get(i));
+			resultList.append(rest.get(i));
 		}
 		return resultList;
 	}

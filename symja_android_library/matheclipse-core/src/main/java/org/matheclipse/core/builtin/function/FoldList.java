@@ -63,11 +63,11 @@ public class FoldList extends AbstractCoreFunctionEvaluator {
 			final BiFunction<IExpr, IExpr, ? extends IExpr> binaryFunction, final IAST resultCollection) {
 		if (start < end) {
 			IExpr elem = expr;
-			resultCollection.add(elem);
+			resultCollection.append(elem);
 			for (int i = start; i < end; i++) {
 
 				elem = binaryFunction.apply(elem, list.get(i));
-				resultCollection.add(elem);
+				resultCollection.append(elem);
 			}
 
 		}

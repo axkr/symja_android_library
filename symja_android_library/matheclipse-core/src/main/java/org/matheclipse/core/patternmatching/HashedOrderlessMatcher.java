@@ -229,7 +229,7 @@ public class HashedOrderlessMatcher {
 			// append the rest of the unevaluated arguments
 			for (int i = 0; i < hashValues.length; i++) {
 				if (hashValues[i] != 0) {
-					result.add(orderlessAST.get(i + 1));
+					result.append(orderlessAST.get(i + 1));
 				}
 			}
 			return result;
@@ -243,7 +243,7 @@ public class HashedOrderlessMatcher {
 		if ((temp = hashRule.evalDownRule(orderlessAST.get(i + 1), orderlessAST.get(j + 1))).isPresent()) {
 			hashValues[i] = 0;
 			hashValues[j] = 0;
-			result.add(temp);
+			result.append(temp);
 			return true;
 		}
 		return false;

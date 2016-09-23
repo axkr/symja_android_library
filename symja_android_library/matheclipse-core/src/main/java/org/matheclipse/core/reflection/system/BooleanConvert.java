@@ -74,7 +74,7 @@ public class BooleanConvert extends AbstractFunctionEvaluator {
 		public IAST convertNand(IAST ast) {
 			IAST result = F.Or();
 			for (int i = 1; i < ast.size(); i++) {
-				result.add(Not(ast.get(i)));
+				result.append(Not(ast.get(i)));
 			}
 			return result;
 		}
@@ -82,7 +82,7 @@ public class BooleanConvert extends AbstractFunctionEvaluator {
 		public IAST convertNor(IAST ast) {
 			IAST result = F.And();
 			for (int i = 1; i < ast.size(); i++) {
-				result.add(Not(ast.get(i)));
+				result.append(Not(ast.get(i)));
 			}
 			return result;
 		}

@@ -33,7 +33,7 @@ public class Dimensions extends AbstractFunctionEvaluator {
 				IExpr header = list.head();
 				ArrayList<Integer> dims = getDimensions(list, header, n - 1);
 				for (int i = 0; i < dims.size(); i++) {
-					res.add(F.integer(dims.get(i).intValue()));
+					res.append(F.integer(dims.get(i).intValue()));
 				}
 			}
 			return res;

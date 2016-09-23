@@ -2,8 +2,8 @@ package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.List;
 
-import org.apache.commons.math4.linear.FieldLUDecomposition;
-import org.apache.commons.math4.linear.FieldMatrix;
+import org.apache.commons.math3.linear.FieldLUDecomposition;
+import org.apache.commons.math3.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
@@ -35,14 +35,14 @@ public class LUDecomposition extends AbstractFunctionEvaluator {
 			final IAST iList = List();
 			for (int i = 0; i < iArr.length; i++) {
 				// +1 because in MathEclipse the offset is +1 compared to java arrays
-				iList.add(F.integer(iArr[i] + 1));
+				iList.append(F.integer(iArr[i] + 1));
 			}
 			final IAST result = List();
 			final IAST lMatrixAST = Convert.matrix2List(lMatrix);
 			final IAST uMatrixAST = Convert.matrix2List(uMatrix);
-			result.add(lMatrixAST);
-			result.add(uMatrixAST);
-			result.add(iList);
+			result.append(lMatrixAST);
+			result.append(uMatrixAST);
+			result.append(iList);
 			return result;
 
 		} catch (final ClassCastException e) {

@@ -7,7 +7,7 @@ import static org.matheclipse.core.expression.F.Negate;
 
 import java.util.function.DoubleUnaryOperator;
 
-import org.apache.commons.math4.exception.MaxCountExceededException;
+import org.apache.commons.math3.exception.MaxCountExceededException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -27,13 +27,13 @@ public class Erf extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperat
 
 	@Override
 	public double applyAsDouble(double operand) {
-		return org.apache.commons.math4.special.Erf.erf(operand);
+		return org.apache.commons.math3.special.Erf.erf(operand);
 	}
 
 	@Override
 	public IExpr e1DblArg(final double arg1) {
 		try {
-			return Num.valueOf(org.apache.commons.math4.special.Erf.erf(arg1));
+			return Num.valueOf(org.apache.commons.math3.special.Erf.erf(arg1));
 		} catch (final MaxCountExceededException e) {
 		}
 		return F.NIL;
@@ -45,7 +45,7 @@ public class Erf extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperat
 			throw new UnsupportedOperationException();
 		}
 		try {
-			return org.apache.commons.math4.special.Erf.erf(stack[top]);
+			return org.apache.commons.math3.special.Erf.erf(stack[top]);
 		} catch (final MaxCountExceededException e) {
 		}
 		throw new UnsupportedOperationException();

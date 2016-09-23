@@ -133,13 +133,13 @@ public class JASIExpr {
 			for (int i = 0; i < exp.length(); i++) {
 				lExp = exp.getVal(i);
 				if (lExp != 0) {
-					monomTimes.add(F.Power(fVariables.get(i), F.integer(lExp)));
+					monomTimes.append(F.Power(fVariables.get(i), F.integer(lExp)));
 				}
 			}
 			if (monomTimes.isAST1()) {
-				result.add(monomTimes.arg1());
+				result.append(monomTimes.arg1());
 			} else {
-				result.add(monomTimes);
+				result.append(monomTimes);
 			}
 		}
 		if (result.isAST1()) {
@@ -301,7 +301,7 @@ public class JASIExpr {
 			ExpVector exp = monomial.exponent();
 			IAST monomTimes = F.Times();
 			monomialToExpr(coeff, exp, monomTimes); 
-			result.add(monomTimes.getOneIdentity(F.C1));
+			result.append(monomTimes.getOneIdentity(F.C1));
 		}
 		return result.getOneIdentity(F.C0);
 	}
@@ -309,7 +309,7 @@ public class JASIExpr {
 	public boolean monomialToExpr(IExpr coeff, ExpVector exp, IAST monomTimes) {
 		long lExp;
 		if (!coeff.isOne()) {
-			monomTimes.add(coeff);
+			monomTimes.append(coeff);
 		}
 		ExpVector leer = fPolyFactory.evzero;
 		for (int i = 0; i < exp.length(); i++) {
@@ -318,9 +318,9 @@ public class JASIExpr {
 				int ix = leer.varIndex(i);
 				if (ix >= 0) {
 					if (lExp == 1L) {
-						monomTimes.add(fVariables.get(ix));
+						monomTimes.append(fVariables.get(ix));
 					} else {
-						monomTimes.add(F.Power(fVariables.get(ix), F.integer(lExp)));
+						monomTimes.append(F.Power(fVariables.get(ix), F.integer(lExp)));
 					}
 				} else {
 					return false;
@@ -387,13 +387,13 @@ public class JASIExpr {
 			for (int i = 0; i < exp.length(); i++) {
 				lExp = exp.getVal(i);
 				if (lExp != 0) {
-					monomTimes.add(F.Power(fVariables.get(i), F.integer(lExp)));
+					monomTimes.append(F.Power(fVariables.get(i), F.integer(lExp)));
 				}
 			}
 			if (monomTimes.isAST1()) {
-				result.add(monomTimes.arg1());
+				result.append(monomTimes.arg1());
 			} else {
-				result.add(monomTimes);
+				result.append(monomTimes);
 			}
 		}
 		if (result.isAST1()) {

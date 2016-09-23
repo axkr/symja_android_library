@@ -91,20 +91,18 @@ public class Factor extends AbstractFunctionEvaluator {
 		java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
 		java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
 		if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
-			result.add(F.fraction(gcd, lcm));
+			result.append(F.fraction(gcd, lcm));
 		}
 		for (SortedMap.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map.entrySet()) {
 			if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
 				continue;
 			}
 			if (entry.getValue() == 1L) {
-				result.add(jas.integerPoly2Expr(entry.getKey()));
+				result.append(jas.integerPoly2Expr(entry.getKey()));
 			} else {
-				result.add(F.Power(jas.integerPoly2Expr(entry.getKey()), F.integer(entry.getValue())));
+				result.append(F.Power(jas.integerPoly2Expr(entry.getKey()), F.integer(entry.getValue())));
 			}
 		}
-		// IExpr temp = result.getOneIdentity(F.C0);
-		// System.out.println(expr.toString() + " ==> " + temp.toString());
 		return result.getOneIdentity(F.C0);
 	}
 
@@ -126,13 +124,13 @@ public class Factor extends AbstractFunctionEvaluator {
 		}
 		IAST result = F.List();
 		if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
-			result.add(F.List(F.fraction(gcd, lcm), F.C1));
+			result.append(F.List(F.fraction(gcd, lcm), F.C1));
 		}
 		for (SortedMap.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map.entrySet()) {
 			if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
 				continue;
 			}
-			result.add(F.List(jas.integerPoly2Expr(entry.getKey()), F.integer(entry.getValue())));
+			result.append(F.List(jas.integerPoly2Expr(entry.getKey()), F.integer(entry.getValue())));
 		}
 		return result;
 	}
@@ -208,7 +206,7 @@ public class Factor extends AbstractFunctionEvaluator {
 		IAST result = F.ast(head);
 		if (!noGCDLCM) {
 			if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
-				result.add(F.fraction(gcd, lcm));
+				result.append(F.fraction(gcd, lcm));
 			}
 		}
 		GenPolynomial<Complex<BigRational>> temp;
@@ -217,7 +215,7 @@ public class Factor extends AbstractFunctionEvaluator {
 				continue;
 			}
 			temp = entry.getKey();
-			result.add(F.Power(jas.complexPoly2Expr(entry.getKey()), F.integer(entry.getValue())));
+			result.append(F.Power(jas.complexPoly2Expr(entry.getKey()), F.integer(entry.getValue())));
 		}
 		return result;
 	}
@@ -253,7 +251,7 @@ public class Factor extends AbstractFunctionEvaluator {
 		for (SortedMap.Entry<GenPolynomial<ModLong>, Long> entry : map.entrySet()) {
 			GenPolynomial<ModLong> singleFactor = entry.getKey();
 			Long val = entry.getValue();
-			result.add(F.Power(jas.modLongPoly2Expr(singleFactor), F.integer(val)));
+			result.append(F.Power(jas.modLongPoly2Expr(singleFactor), F.integer(val)));
 		}
 		return result;
 	}

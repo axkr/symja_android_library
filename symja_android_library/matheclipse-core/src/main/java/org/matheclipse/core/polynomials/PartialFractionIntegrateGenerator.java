@@ -56,7 +56,7 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 		if (temp.isAST()) {
 			((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
 		}
-		result.add(F.Integrate(temp, x));
+		result.append(F.Integrate(temp, x));
 	}
 
 	@Override
@@ -81,7 +81,7 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 					IFraction c = F.fraction(denom[0].numerator(), denom[0].denominator());
 					if (a.isZero()) {
 						// JavaForm[Log[b*x+c]/b]
-						result.add(Times(Log(Plus(c, Times(b, x))), Power(b, CN1)));
+						result.append(Times(Log(Plus(c, Times(b, x))), Power(b, CN1)));
 					} else {
 						// compute b^2-4*a*c from
 						// (a*x^2+b*x+c)
@@ -92,16 +92,16 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 						IExpr ax2Plusb = F.Plus(F.Times(F.C2, a, x), b);
 						if (cmpTo == 0) {
 							// (-2) / (2*a*x+b)
-							result.add(F.Times(F.integer(-2L), F.Power(ax2Plusb, F.CN1)));
+							result.append(F.Times(F.integer(-2L), F.Power(ax2Plusb, F.CN1)));
 						} else if (cmpTo > 0) {
 							// (b^2-4ac)^(1/2)
 							temp = F.eval(F.Power(F.Subtract(F.Sqr(b), F.Times(F.C4, a, c)), F.C1D2));
-							result.add(F.Times(F.Power(temp, F.CN1),
+							result.append(F.Times(F.Power(temp, F.CN1),
 									F.Log(F.Times(F.Subtract(ax2Plusb, temp), Power(F.Plus(ax2Plusb, temp), F.CN1)))));
 						} else {
 							// (4ac-b^2)^(1/2)
 							temp = F.eval(F.Power(F.Subtract(F.Times(F.C4, a, c), F.Sqr(b)), F.CN1D2));
-							result.add(F.Times(F.C2, temp, F.ArcTan(Times(ax2Plusb, temp))));
+							result.append(F.Times(F.C2, temp, F.ArcTan(Times(ax2Plusb, temp))));
 						}
 					}
 				} else {
@@ -127,7 +127,7 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 								Plus(Times(C2, B), Times(CN1, A, p)),
 								Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2)));
 					}
-					result.add(F.eval(temp));
+					result.append(F.eval(temp));
 				}
 			} else if (isDegreeLE2 && j > 1L) {
 				isQuadratic(genPolynomial, numer);
@@ -165,20 +165,19 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 							Times(CN1D2, A, Power(a, CN1), Power(Plus(CN1, k), CN1),
 									Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, Plus(CN1, k)))));
 				}
-				result.add(F.eval(temp));
+				result.append(F.eval(temp));
 			} else {
 				// ElementaryIntegration<BigRational> ei = new
 				// ElementaryIntegration<BigRational>(BigRational.ZERO);
 				// Integral<BigRational> integral= ei.integrate(genPolynomial,
 				// Di_1);
-				// System.out.println(integral);
 				temp = F.eval(F.Times(jas.rationalPoly2Expr(genPolynomial),
 						F.Power(jas.rationalPoly2Expr(Di_1), F.integer(j * (-1L)))));
 				if (!temp.isZero()) {
 					if (temp.isAST()) {
 						((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
 					}
-					result.add(F.Integrate(temp, x));
+					result.append(F.Integrate(temp, x));
 				}
 			}
 		}

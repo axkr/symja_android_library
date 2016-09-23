@@ -127,7 +127,7 @@ public class SymbolicProduct extends AbstractSymbolicStorelessUnivariateStatisti
 			IAST product = F.Times();
 			// product= 1.0;
 			for (int i = begin; i < begin + length; i++) {
-				product.add(values.get(i));
+				product.append(values.get(i));
 			}
 			return product;
 		}
@@ -184,7 +184,7 @@ public class SymbolicProduct extends AbstractSymbolicStorelessUnivariateStatisti
 		if (test(values, weights, begin, length, true)) {
 			IAST product = F.Times();
 			for (int i = begin; i < begin + length; i++) {
-				product.add(F.Power(values.get(i), weights.get(i)));
+				product.append(F.Power(values.get(i), weights.get(i)));
 			}
 			if (product.size() > 1) {
 				return F.eval(product);

@@ -2,7 +2,7 @@ package org.matheclipse.core.generic;
 
 import java.util.function.Function;
 
-import org.apache.commons.math4.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.matheclipse.commons.math.analysis.solvers.DifferentiableUnivariateFunction;
 import org.matheclipse.core.eval.DoubleStackEvaluator;
 import org.matheclipse.core.eval.EvalEngine;

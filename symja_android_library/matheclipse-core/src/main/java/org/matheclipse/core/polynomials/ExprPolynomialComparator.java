@@ -42,7 +42,6 @@ public class ExprPolynomialComparator implements Serializable, Comparator<ExprPo
 	public int compare(ExprPolynomial p1, ExprPolynomial p2) {
 		// check if p1.tord = p2.tord = tord ?
 		int s = p1.compareTo(p2);
-		// System.out.println("p1.compareTo(p2) = " + s);
 		if (reverse) {
 			return -s;
 		}

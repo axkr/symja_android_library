@@ -32,13 +32,13 @@ public class DiagonalMatrix extends AbstractFunctionEvaluator {
 				IAST row = F.List();
 				for (int j = 1; j < m; j++) {
 					if (i + offset == j) {
-						row.add(list.get(i));
+						row.append(list.get(i));
 					} else {
-						row.add(F.C0);
+						row.append(F.C0);
 					}
 				}
 
-				res.add(row);
+				res.append(row);
 			}
 
 			return res;

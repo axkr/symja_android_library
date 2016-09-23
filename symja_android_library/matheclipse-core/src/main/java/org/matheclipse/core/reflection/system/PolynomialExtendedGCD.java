@@ -59,11 +59,11 @@ public class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
 					GenPolynomial<ModLong> poly2 = jas.expr2JAS(expr2);
 					GenPolynomial<ModLong>[] result = poly1.egcd(poly2);
 					IAST list = F.List();
-					list.add(jas.modLongPoly2Expr(result[0]));
+					list.append(jas.modLongPoly2Expr(result[0]));
 					IAST subList = F.List();
-					subList.add(jas.modLongPoly2Expr(result[1]));
-					subList.add(jas.modLongPoly2Expr(result[2]));
-					list.add(subList);
+					subList.append(jas.modLongPoly2Expr(result[1]));
+					subList.append(jas.modLongPoly2Expr(result[2]));
+					list.append(subList);
 					return list;
 				} catch (JASConversionException e) {
 					if (Config.DEBUG) {
@@ -80,11 +80,11 @@ public class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
 			GenPolynomial<BigRational> poly2 = jas.expr2JAS(expr2, false);
 			GenPolynomial<BigRational>[] result = poly1.egcd(poly2);
 			IAST list = F.List();
-			list.add(jas.rationalPoly2Expr(result[0]));
+			list.append(jas.rationalPoly2Expr(result[0]));
 			IAST subList = F.List();
-			subList.add(jas.rationalPoly2Expr(result[1]));
-			subList.add(jas.rationalPoly2Expr(result[2]));
-			list.add(subList);
+			subList.append(jas.rationalPoly2Expr(result[1]));
+			subList.append(jas.rationalPoly2Expr(result[2]));
+			list.append(subList);
 			return list;
 		} catch (JASConversionException e0) {
 			try {
@@ -93,11 +93,11 @@ public class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
 				GenPolynomial<IExpr> poly2 = jas.expr2IExprJAS(expr2);
 				GenPolynomial<IExpr>[] result = poly1.egcd(poly2);
 				IAST list = F.List();
-				list.add(jas.exprPoly2Expr(result[0], x));
+				list.append(jas.exprPoly2Expr(result[0], x));
 				IAST subList = F.List();
-				subList.add(F.eval(F.Together(jas.exprPoly2Expr(result[1], x))));
-				subList.add(F.eval(F.Together(jas.exprPoly2Expr(result[2], x))));
-				list.add(subList);
+				subList.append(F.eval(F.Together(jas.exprPoly2Expr(result[1], x))));
+				subList.append(F.eval(F.Together(jas.exprPoly2Expr(result[2], x))));
+				list.append(subList);
 				return list;
 			} catch (JASConversionException e) {
 				// if (Config.DEBUG) {

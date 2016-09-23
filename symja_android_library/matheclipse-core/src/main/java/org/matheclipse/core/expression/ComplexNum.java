@@ -1,6 +1,6 @@
 package org.matheclipse.core.expression;
 
-import org.apache.commons.math4.complex.Complex;
+import org.apache.commons.math3.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.EvalEngine;
@@ -18,7 +18,7 @@ import org.matheclipse.core.visit.IVisitorLong;
 
 /**
  * <code>IComplexNum</code> implementation which wraps a
- * <code>org.apache.commons.math4.complex.Complex</code> value to represent a
+ * <code>org.apache.commons.math3.complex.Complex</code> value to represent a
  * numeric complex floating-point number.
  */
 public class ComplexNum extends ExprImpl implements IComplexNum {
@@ -110,11 +110,11 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 
 	@Override
 	public IComplexNum add(final IComplexNum val) {
-		return newInstance(fComplex.sum(((ComplexNum) val).fComplex));
+		return newInstance(fComplex.add(((ComplexNum) val).fComplex));
 	}
 
 	public ComplexNum add(final ComplexNum that) {
-		return newInstance(fComplex.sum(that.fComplex));
+		return newInstance(fComplex.add(that.fComplex));
 	}
 
 	public Apcomplex apcomplexValue(long precision) {
@@ -148,7 +148,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	 * @return
 	 */
 	public Complex add(final Complex that) {
-		return fComplex.sum(that);
+		return fComplex.add(that);
 	}
 
 	/** {@inheritDoc} */
@@ -308,7 +308,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	@Override
 	public IExpr plus(final IExpr that) {
 		if (that instanceof ComplexNum) {
-			return newInstance(fComplex.sum(((ComplexNum) that).fComplex));
+			return newInstance(fComplex.add(((ComplexNum) that).fComplex));
 		}
 		if (that instanceof ApcomplexNum) {
 			ApcomplexNum acn = (ApcomplexNum) that;

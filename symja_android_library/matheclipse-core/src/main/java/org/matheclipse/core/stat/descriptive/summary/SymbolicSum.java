@@ -126,7 +126,7 @@ public class SymbolicSum extends AbstractSymbolicStorelessUnivariateStatistic im
 		if (test(values, begin, length, true)) {
 			IAST sum = F.Plus();
 			for (int i = begin; i < begin + length; i++) {
-				sum.add(values.get(i));
+				sum.append(values.get(i));
 			}
 			if (sum.size() > 1) {
 				return F.eval(sum);
@@ -177,7 +177,7 @@ public class SymbolicSum extends AbstractSymbolicStorelessUnivariateStatistic im
 		if (test(values, weights, begin, length, true)) {
 			IAST sum = F.Plus();
 			for (int i = begin; i < begin + length; i++) {
-				sum.add(F.Times(values.get(i),weights.get(i)));
+				sum.append(F.Times(values.get(i),weights.get(i)));
 			}
 			return sum;
 		}

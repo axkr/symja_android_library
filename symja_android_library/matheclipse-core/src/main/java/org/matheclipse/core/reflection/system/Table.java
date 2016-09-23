@@ -105,13 +105,13 @@ public class Table extends AbstractFunctionEvaluator {
 		IAST variableList = F.List();
 		for (int i = 2; i < ast.size(); i++) {
 			if (ast.get(i).isVariable()) {
-				variableList.add(ast.get(i));
+				variableList.append(ast.get(i));
 			} else {
 				if (ast.get(i).isList()) {
 					IAST list = (IAST) ast.get(i);
 					if (list.size() >= 2) {
 						if (list.arg1().isVariable()) {
-							variableList.add(list.arg1());
+							variableList.append(list.arg1());
 						}
 					}
 				}

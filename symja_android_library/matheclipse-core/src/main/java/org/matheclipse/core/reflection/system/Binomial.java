@@ -77,7 +77,7 @@ public class Binomial extends AbstractArg2 {
 				IExpr nTemp = n;
 				for (int i = 1; i <= kInt; i++) {
 					temp = F.Divide(nTemp, F.integer(i));
-					ast.add(temp);
+					ast.append(temp);
 					nTemp = F.eval(F.Subtract(nTemp, F.C1));
 				}
 				return ast;

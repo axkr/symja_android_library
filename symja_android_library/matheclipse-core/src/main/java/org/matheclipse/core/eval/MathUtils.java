@@ -106,9 +106,9 @@ public class MathUtils {
 		IExpr function = parse(fun, null);
 		IExpr var = parse(v, null);
 		IAST list = F.List();
-		list.add(var);
-		list.add(F.num(a));
-		list.add(F.num(b));
+		list.append(var);
+		list.append(F.num(a));
+		list.append(F.num(b));
 		return NIntegrate.integrate("LegendreGauss", list, a, b, function, NIntegrate.DEFAULT_MAX_POINTS,
 				NIntegrate.DEFAULT_MAX_ITERATIONS);
 	}

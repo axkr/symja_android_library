@@ -161,24 +161,22 @@ public class KPartitions extends AbstractFunctionEvaluator {
 			}
 			IAST part = fResultList.clone();
 			IAST temp;
-			// System.out.println("Part:");
 			int j = 0;
 			for (int i = 1; i < partitionsIndex.length; i++) {
-				// System.out.println(partitionsIndex[i] + ",");
 				temp = fResultList.clone();
 				for (int m = j; m < partitionsIndex[i]; m++) {
-					temp.add(fList.get(m + fOffset));
+					temp.append(fList.get(m + fOffset));
 				}
 				j = partitionsIndex[i];
-				part.add(temp);
+				part.append(temp);
 			}
 
 			temp = fResultList.clone();
 			int n = fList.size() - fOffset;
 			for (int m = j; m < n; m++) {
-				temp.add(fList.get(m + fOffset));
+				temp.append(fList.get(m + fOffset));
 			}
-			part.add(temp);
+			part.append(temp);
 			return part;
 		}
 
@@ -214,7 +212,7 @@ public class KPartitions extends AbstractFunctionEvaluator {
 			final IAST result = F.List();
 			final KPartitionsList iter = new KPartitionsList(listArg0, k, F.ast(F.List), 1);
 			for (IAST part : iter) {
-				result.add(part);
+				result.append(part);
 			}
 			return result;
 		}

@@ -1,8 +1,5 @@
 package org.matheclipse.core.expression;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.util.Collection;
 import java.util.List;
@@ -39,12 +36,12 @@ public class NILPointer extends AbstractAST {
 	}
 
 	@Override
-	public boolean add(IExpr object) {
+	public boolean append(IExpr object) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void add(int location, IExpr object) {
+	public void append(int location, IExpr object) {
 		throw new UnsupportedOperationException();
 	}
 

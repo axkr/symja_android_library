@@ -95,7 +95,7 @@ public class Exponent extends AbstractCoreFunctionEvaluator {
 			collector.add(F.C0);
 		}
 		for (IExpr exponent : collector) {
-			result.add(exponent);
+			result.append(exponent);
 		}
 		return result;
 	}

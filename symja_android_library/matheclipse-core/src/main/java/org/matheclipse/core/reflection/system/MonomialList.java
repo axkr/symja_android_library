@@ -56,7 +56,7 @@ public class MonomialList extends AbstractFunctionEvaluator {
 		if (ast.isAST1()) {
 			// extract all variables from the polynomial expression
 			eVar = new VariablesSet(ast.arg1());
-			eVar.appendToList(symbolList);
+			eVar.appendToList(symbolList.args());
 			varList = eVar.getArrayList();
 		} else {
 			symbolList = Validate.checkSymbolOrSymbolList(ast, 2);
@@ -114,7 +114,7 @@ public class MonomialList extends AbstractFunctionEvaluator {
 			ExpVector exp = monomial.getKey();
 			IAST monomTimes = F.Times();
 			jas.monomialToExpr(coeff, exp, monomTimes);
-			list.add(monomTimes);
+			list.append(monomTimes);
 		}
 
 		return list;
@@ -145,7 +145,7 @@ public class MonomialList extends AbstractFunctionEvaluator {
 				ExpVector exp = monomial.exponent();
 				IAST monomTimes = F.Times();
 				jas.monomialToExpr(F.integer(coeff.getVal()), exp, monomTimes);
-				list.add(monomTimes);
+				list.append(monomTimes);
 			}
 			return list;
 		} catch (ArithmeticException ae) {

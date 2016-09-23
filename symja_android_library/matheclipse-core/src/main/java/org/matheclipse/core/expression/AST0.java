@@ -14,6 +14,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.matheclipse.core.harmony.util.HMCollection;
+import org.matheclipse.core.harmony.util.HMList;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -48,7 +50,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * 
  * @see AST
  */
-public class AST0 extends AbstractAST implements List<IExpr>, Cloneable, Externalizable, RandomAccess {
+public class AST0 extends AbstractAST implements HMList<IExpr>, Cloneable, Externalizable, RandomAccess {
 
 	private final static int SIZE = 1;
 
@@ -170,7 +172,7 @@ public class AST0 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 	 * @return always true
 	 */
 	@Override
-	public boolean add(IExpr object) {
+	public boolean append(IExpr object) { 
 		hashValue = 0;
 		throw new UnsupportedOperationException();
 	}
@@ -189,7 +191,7 @@ public class AST0 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 	 *             when {@code location < 0 || > size()}
 	 */
 	@Override
-	public void add(int location, IExpr object) {
+	public void append(int location, IExpr object) {
 		hashValue = 0;
 		throw new UnsupportedOperationException();
 	}
@@ -301,9 +303,9 @@ public class AST0 extends AbstractAST implements List<IExpr>, Cloneable, Externa
 		for (int i = 1; i < size; i++) {
 			IExpr expr = function.apply(get(i));
 			if (expr.isPresent()) {
-				filterAST.add(expr);
+				filterAST.append(expr);
 			} else {
-				restAST.add(get(i));
+				restAST.append(get(i));
 			}
 		}
 		return filterAST;

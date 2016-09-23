@@ -15,7 +15,7 @@ import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.fraction;
 import static org.matheclipse.core.expression.F.integer;
 
-import org.apache.commons.math4.fraction.BigFraction;
+import org.apache.commons.math3.fraction.BigFraction;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -67,7 +67,7 @@ public class HarmonicNumber extends AbstractEvaluator {
 					}
 					IAST result = Plus();
 					for (int i = 1; i <= n; i++) {
-						result.add(Power(integer(i), Negate(arg2)));
+						result.append(Power(integer(i), Negate(arg2)));
 					}
 					return result;
 				}
@@ -113,7 +113,7 @@ public class HarmonicNumber extends AbstractEvaluator {
 			 * add 1/i for i=2..n
 			 */
 			for (int i = 2; i <= n; i++) {
-				a = a.sum(new BigFraction(1, i));
+				a = a.add(new BigFraction(1, i));
 			}
 			return a;
 		}

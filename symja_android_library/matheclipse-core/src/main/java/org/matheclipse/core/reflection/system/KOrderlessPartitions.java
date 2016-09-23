@@ -37,7 +37,7 @@ public class KOrderlessPartitions extends AbstractFunctionEvaluator {
 				for (int partitionsIndex[] : partitionIterator) {
 					partition = createSinglePartition(listArg0, sym, permutationsIndex, partitionsIndex);
 					if (partition.isPresent()) {
-						result.add(partition);
+						result.append(partition);
 					}
 				}
 				partitionIterator.reset();
@@ -58,15 +58,14 @@ public class KOrderlessPartitions extends AbstractFunctionEvaluator {
 		// 0 is always the first index of a partition
 		partitionStartIndex = 0;
 		for (int i = 1; i < partitionsIndex.length; i++) {
-			// System.out.println(partitionsIndex[i] + ",");
 			partitionElement = F.ast(sym);
 			if (partitionStartIndex + 1 == partitionsIndex[i]) {
 				// OneIdentity check here
 				if (sym.hasOneIdentityAttribute()) {
-					partition.add(listArg0.get(permutationsIndex[partitionStartIndex] + 1));
+					partition.append(listArg0.get(permutationsIndex[partitionStartIndex] + 1));
 				} else {
-					partitionElement.add(listArg0.get(permutationsIndex[partitionStartIndex] + 1));
-					partition.add(partitionElement);
+					partitionElement.append(listArg0.get(permutationsIndex[partitionStartIndex] + 1));
+					partition.append(partitionElement);
 				}
 			} else {
 				for (int m = partitionStartIndex; m < partitionsIndex[i]; m++) {
@@ -76,9 +75,9 @@ public class KOrderlessPartitions extends AbstractFunctionEvaluator {
 							return F.NIL;
 						}
 					}
-					partitionElement.add(listArg0.get(permutationsIndex[m] + 1));
+					partitionElement.append(listArg0.get(permutationsIndex[m] + 1));
 				}
-				partition.add(partitionElement);
+				partition.append(partitionElement);
 			}
 			partitionStartIndex = partitionsIndex[i];
 
@@ -88,10 +87,10 @@ public class KOrderlessPartitions extends AbstractFunctionEvaluator {
 		if (partitionStartIndex + 1 == n) {
 			// OneIdentity check here
 			if ((sym.getAttributes() & ISymbol.ONEIDENTITY) == ISymbol.ONEIDENTITY) {
-				partition.add(listArg0.get(permutationsIndex[partitionStartIndex] + 1));
+				partition.append(listArg0.get(permutationsIndex[partitionStartIndex] + 1));
 			} else {
-				partitionElement.add(listArg0.get(permutationsIndex[partitionStartIndex] + 1));
-				partition.add(partitionElement);
+				partitionElement.append(listArg0.get(permutationsIndex[partitionStartIndex] + 1));
+				partition.append(partitionElement);
 			}
 		} else {
 			for (int m = partitionStartIndex; m < n; m++) {
@@ -101,9 +100,9 @@ public class KOrderlessPartitions extends AbstractFunctionEvaluator {
 						return F.NIL;
 					}
 				}
-				partitionElement.add(listArg0.get(permutationsIndex[m] + 1));
+				partitionElement.append(listArg0.get(permutationsIndex[m] + 1));
 			}
-			partition.add(partitionElement);
+			partition.append(partitionElement);
 		}
 
 		return partition;
