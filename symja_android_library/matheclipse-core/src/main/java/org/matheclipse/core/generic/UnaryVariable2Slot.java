@@ -31,12 +31,12 @@ public class UnaryVariable2Slot implements Function<IExpr, IExpr> {
 	 * @return <code>F.NIL</code>
 	 */
 	public IExpr apply(final IExpr firstArg) {
-		if (firstArg instanceof ISymbol) {
+		if (firstArg.isVariable()) {
 			if ((firstArg.toString().charAt(0) >= 'A') && (firstArg.toString().charAt(0) <= 'Z')) {
 				if ((((ISymbol) firstArg).getAttributes() & ISymbol.ORDERLESS) == ISymbol.ORDERLESS) {
 					return F.NIL;
 				}
-				if (firstArg.toString().equals("Print")) {
+				if (firstArg.equals(F.Print)) {
 					// Print function has "side-effects"
 					return F.NIL;
 				}
