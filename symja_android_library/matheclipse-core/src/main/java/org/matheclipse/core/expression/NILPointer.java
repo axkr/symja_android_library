@@ -36,17 +36,12 @@ public class NILPointer extends AbstractAST {
 	}
 
 	@Override
-	public boolean append(IExpr object) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void append(int location, IExpr object) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
 	public boolean addAll(Collection<? extends IExpr> collection) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean addAll(IAST ast, int startPosition, int endPosition) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -61,12 +56,27 @@ public class NILPointer extends AbstractAST {
 	}
 
 	@Override
-	public boolean addAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
+	public boolean addAll(List<? extends IExpr> list, int startPosition, int endPosition) {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public boolean addArgs(IAST ast) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public IAST addOneIdentity(IAST subAST) {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public boolean append(IExpr object) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void append(int location, IExpr object) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -180,6 +190,10 @@ public class NILPointer extends AbstractAST {
 		throw exceptionSupplier.get();
 	}
 
+	private Object readResolve() throws ObjectStreamException {
+		return F.NIL;
+	}
+
 	@Override
 	public IExpr remove(int location) {
 		throw new UnsupportedOperationException();
@@ -247,9 +261,5 @@ public class NILPointer extends AbstractAST {
 	@Override
 	public String toString() {
 		return "ExprNull";
-	}
-
-	private Object readResolve() throws ObjectStreamException {
-		return F.NIL;
 	}
 }

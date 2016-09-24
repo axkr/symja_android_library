@@ -224,7 +224,38 @@ public class AST extends HMArrayList implements Externalizable {
 	 * {@inheritDoc}
 	 */
 	@Override
+	public final boolean addArgs(IAST ast) {
+		final int size = ast.size();
+		if (size > 1) {
+			ensureCapacity(size() + size - 1);
+			for (int i = 1; i < size; i++) {
+				append(ast.get(i));
+			}
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public boolean addAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
+		if (ast.size() > 0 && startPosition < endPosition) {
+			ensureCapacity(size() + (endPosition - startPosition));
+			for (int i = startPosition; i < endPosition; i++) {
+				append(ast.get(i));
+			}
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean addAll(IAST ast, int startPosition, int endPosition) {
 		if (ast.size() > 0 && startPosition < endPosition) {
 			ensureCapacity(size() + (endPosition - startPosition));
 			for (int i = startPosition; i < endPosition; i++) {
@@ -257,7 +288,7 @@ public class AST extends HMArrayList implements Externalizable {
 
 	protected static AST newInstance(final int intialCapacity, final IAST ast, int endPosition) {
 		AST result = new AST(intialCapacity, false);
-		result.addAll(ast.range(), 0, endPosition);
+		result.addAll(ast, 0, endPosition);
 		return result;
 	}
 

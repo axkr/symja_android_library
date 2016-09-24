@@ -198,7 +198,7 @@ public class Roots extends AbstractFunctionEvaluator {
 					IAST resultList = findRoots(coefficients);
 					// IAST resultList = RootIntervals.croots(temp, true);
 					if (resultList.size() > 0) {
-						result.addAll(resultList.args());
+						result.addArgs(resultList);
 					}
 					// }
 				}

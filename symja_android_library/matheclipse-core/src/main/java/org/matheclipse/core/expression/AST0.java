@@ -82,6 +82,97 @@ public class AST0 extends AbstractAST implements HMList<IExpr>, Cloneable, Exter
 	}
 
 	/**
+	 * Adds the objects in the specified collection to this {@code ArrayList}.
+	 * 
+	 * @param collection
+	 *            the collection of objects.
+	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
+	 *         otherwise.
+	 */
+	@Override
+	public boolean addAll(Collection<? extends IExpr> collection) {
+		hashValue = 0;
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean addAll(IAST ast, int startPosition, int endPosition) {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Inserts the objects in the specified collection at the specified location
+	 * in this List. The objects are added in the order they are returned from
+	 * the collection's iterator.
+	 * 
+	 * @param location
+	 *            the index at which to insert.
+	 * @param collection
+	 *            the collection of objects.
+	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
+	 *         otherwise.
+	 * @throws IndexOutOfBoundsException
+	 *             when {@code location < 0 || > size()}
+	 */
+	@Override
+	public boolean addAll(int location, Collection<? extends IExpr> collection) {
+		hashValue = 0;
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean addAll(List<? extends IExpr> ast) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean addAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean addArgs(IAST ast) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public IAST addOneIdentity(IAST subAST) {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Adds the specified object at the end of this {@code ArrayList}.
+	 * 
+	 * @param object
+	 *            the object to add.
+	 * @return always true
+	 */
+	@Override
+	public boolean append(IExpr object) { 
+		hashValue = 0;
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Inserts the specified object into this {@code ArrayList} at the specified
+	 * location. The object is inserted before any previous element at the
+	 * specified location. If the location is equal to the size of this
+	 * {@code ArrayList}, the object is added at the end.
+	 * 
+	 * @param location
+	 *            the index at which to insert the object.
+	 * @param object
+	 *            the object to add.
+	 * @throws IndexOutOfBoundsException
+	 *             when {@code location < 0 || > size()}
+	 */
+	@Override
+	public void append(int location, IExpr object) {
+		hashValue = 0;
+		throw new UnsupportedOperationException();
+	}
+
+	/**
 	 * Get the first argument (i.e. the second element of the underlying list
 	 * structure) of the <code>AST</code> function (i.e. get(1) ). <br />
 	 * <b>Example:</b> for the AST representing the expression
@@ -111,7 +202,7 @@ public class AST0 extends AbstractAST implements HMList<IExpr>, Cloneable, Exter
 	public IExpr arg2() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
 	 * Get the third argument (i.e. the fourth element of the underlying list
 	 * structure) of the <code>AST</code> function (i.e. get(3) ).<br />
@@ -157,92 +248,11 @@ public class AST0 extends AbstractAST implements HMList<IExpr>, Cloneable, Exter
 	public IExpr arg5() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	@Override
 	public Set<IExpr> asSet() {
 		// empty set:
 		return new HashSet<IExpr>();
-	}
-
-	/**
-	 * Adds the specified object at the end of this {@code ArrayList}.
-	 * 
-	 * @param object
-	 *            the object to add.
-	 * @return always true
-	 */
-	@Override
-	public boolean append(IExpr object) { 
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * Inserts the specified object into this {@code ArrayList} at the specified
-	 * location. The object is inserted before any previous element at the
-	 * specified location. If the location is equal to the size of this
-	 * {@code ArrayList}, the object is added at the end.
-	 * 
-	 * @param location
-	 *            the index at which to insert the object.
-	 * @param object
-	 *            the object to add.
-	 * @throws IndexOutOfBoundsException
-	 *             when {@code location < 0 || > size()}
-	 */
-	@Override
-	public void append(int location, IExpr object) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * Adds the objects in the specified collection to this {@code ArrayList}.
-	 * 
-	 * @param collection
-	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
-	 *         otherwise.
-	 */
-	@Override
-	public boolean addAll(Collection<? extends IExpr> collection) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * Inserts the objects in the specified collection at the specified location
-	 * in this List. The objects are added in the order they are returned from
-	 * the collection's iterator.
-	 * 
-	 * @param location
-	 *            the index at which to insert.
-	 * @param collection
-	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
-	 *         otherwise.
-	 * @throws IndexOutOfBoundsException
-	 *             when {@code location < 0 || > size()}
-	 */
-	@Override
-	public boolean addAll(int location, Collection<? extends IExpr> collection) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean addAll(List<? extends IExpr> ast) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean addAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public IAST addOneIdentity(IAST subAST) {
-		throw new UnsupportedOperationException();
 	}
 
 	/**
@@ -271,14 +281,14 @@ public class AST0 extends AbstractAST implements HMList<IExpr>, Cloneable, Exter
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST copy() {
-		return new AST0(arg0);
+	public boolean contains(Object object) {
+		return arg0.equals(object);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean contains(Object object) {
-		return arg0.equals(object);
+	public IAST copy() {
+		return new AST0(arg0);
 	}
 
 	@Override

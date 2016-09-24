@@ -44,7 +44,7 @@ public class Extract extends AbstractFunctionEvaluator {
 	public static IExpr extract(final IAST list, final IAST position) {
 		final PositionConverter converter = new PositionConverter();
 		if ((position.size() > 1) && (position.arg1().isSignedNumber())) {
-			return extract(list, position.range(), converter, 1);
+			return extract(list, position, converter, 1);
 		} else {
 			// construct an array
 			// final IAST resultList = List();
@@ -71,7 +71,7 @@ public class Extract extends AbstractFunctionEvaluator {
 	 *            <code>positions</code>.
 	 * @param headOffsez
 	 */
-	public static IExpr extract(final IAST list, final List<? extends IExpr> positions,
+	public static IExpr extract(final IAST list, final IAST positions,
 			final IPositionConverter<? super IExpr> positionConverter, int headOffset) {
 		int p = 0;
 		IAST temp = list;

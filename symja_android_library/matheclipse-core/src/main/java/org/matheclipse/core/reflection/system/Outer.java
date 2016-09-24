@@ -40,7 +40,7 @@ public class Outer extends AbstractFunctionEvaluator {
 				}
 			} else {
 				IAST result = F.ast(f);
-				result.addAll(current.args());
+				result.addArgs(current);
 				result.append(expr);
 				return result;
 			}

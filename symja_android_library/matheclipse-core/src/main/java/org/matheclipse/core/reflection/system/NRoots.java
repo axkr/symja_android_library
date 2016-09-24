@@ -109,7 +109,7 @@ public class NRoots extends AbstractFunctionEvaluator {
 		IAST resultList = RootIntervals.croots(expr, true);
 		if (resultList.isPresent()) {
 			if (resultList.size() > 0) {
-				result.addAll(resultList.args());
+				result.addArgs(resultList);
 			}
 			return result;
 		}

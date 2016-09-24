@@ -573,7 +573,7 @@ public abstract class AbstractAST extends HMAbstractList<IExpr> implements IAST 
 	public IAST copyFrom(int index) {
 		AST result = new AST(size() - index + 1, false);
 		result.append(head());
-		result.addAll(this.range(), index, size());
+		result.addAll(this, index, size());
 		return result;
 	}
 

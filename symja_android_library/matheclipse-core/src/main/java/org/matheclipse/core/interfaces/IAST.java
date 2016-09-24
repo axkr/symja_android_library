@@ -155,6 +155,17 @@ public interface IAST extends IExpr, HMList<IExpr>, Cloneable {
 	public final int IS_ALL_EXPANDED = 0x2000;
 
 	/**
+	 * Appends all of the arguments (starting from offset <code>0</code>) in the
+	 * specified list to the end of this AST.
+	 * 
+	 * @param list
+	 *            list containing elements to be added to this AST
+	 * @return <tt>true</tt> if this AST changed as a result of the call
+	 * 
+	 */
+	public boolean addAll(List<? extends IExpr> list);
+
+	/**
 	 * Appends all of the arguments (starting from offset <code>1</code>) in the
 	 * specified AST to the end of this AST.
 	 * 
@@ -163,7 +174,22 @@ public interface IAST extends IExpr, HMList<IExpr>, Cloneable {
 	 * @return <tt>true</tt> if this AST changed as a result of the call
 	 * 
 	 */
-	public boolean addAll(List<? extends IExpr> ast);
+	public boolean addArgs(IAST ast);
+
+	/**
+	 * Appends all elements from offset <code>startPosition</code> to
+	 * <code>endPosition</code> in the specified list to the end of this AST.
+	 * 
+	 * @param list
+	 *            list containing elements to be added to this AST
+	 * @param startPosition
+	 *            the start position, inclusive.
+	 * @param endPosition
+	 *            the ending position, exclusive.
+	 * @return <tt>true</tt> if this AST changed as a result of the call
+	 * 
+	 */
+	public boolean addAll(List<? extends IExpr> list, int startPosition, int endPosition);
 
 	/**
 	 * Appends all elements from offset <code>startPosition</code> to
@@ -178,7 +204,7 @@ public interface IAST extends IExpr, HMList<IExpr>, Cloneable {
 	 * @return <tt>true</tt> if this AST changed as a result of the call
 	 * 
 	 */
-	public boolean addAll(List<? extends IExpr> ast, int startPosition, int endPosition);
+	public boolean addAll(IAST ast, int startPosition, int endPosition);
 
 	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements

@@ -105,38 +105,6 @@ public class ASTRealMatrix extends AbstractAST implements HMList<IExpr>, Cloneab
 	}
 
 	/**
-	 * Adds the specified object at the end of this {@code ArrayList}.
-	 * 
-	 * @param object
-	 *            the object to add.
-	 * @return always true
-	 */
-	@Override
-	public boolean append(IExpr object) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * Inserts the specified object into this {@code ArrayList} at the specified
-	 * location. The object is inserted before any previous element at the
-	 * specified location. If the location is equal to the size of this
-	 * {@code ArrayList}, the object is added at the end.
-	 * 
-	 * @param location
-	 *            the index at which to insert the object.
-	 * @param object
-	 *            the object to add.
-	 * @throws IndexOutOfBoundsException
-	 *             when {@code location < 0 || > size()}
-	 */
-	@Override
-	public void append(int location, IExpr object) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
-
-	/**
 	 * Adds the objects in the specified collection to this {@code ArrayList}.
 	 * 
 	 * @param collection
@@ -147,6 +115,11 @@ public class ASTRealMatrix extends AbstractAST implements HMList<IExpr>, Cloneab
 	@Override
 	public boolean addAll(Collection<? extends IExpr> collection) {
 		hashValue = 0;
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean addAll(IAST ast, int startPosition, int endPosition) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -176,12 +149,49 @@ public class ASTRealMatrix extends AbstractAST implements HMList<IExpr>, Cloneab
 	}
 
 	@Override
-	public boolean addAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
+	public boolean addAll(List<? extends IExpr> list, int startPosition, int endPosition) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean addArgs(IAST ast) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public IAST addOneIdentity(IAST subAST) {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Adds the specified object at the end of this {@code ArrayList}.
+	 * 
+	 * @param object
+	 *            the object to add.
+	 * @return always true
+	 */
+	@Override
+	public boolean append(IExpr object) {
+		hashValue = 0;
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Inserts the specified object into this {@code ArrayList} at the specified
+	 * location. The object is inserted before any previous element at the
+	 * specified location. If the location is equal to the size of this
+	 * {@code ArrayList}, the object is added at the end.
+	 * 
+	 * @param location
+	 *            the index at which to insert the object.
+	 * @param object
+	 *            the object to add.
+	 * @throws IndexOutOfBoundsException
+	 *             when {@code location < 0 || > size()}
+	 */
+	@Override
+	public void append(int location, IExpr object) {
+		hashValue = 0;
 		throw new UnsupportedOperationException();
 	}
 

@@ -38,7 +38,7 @@ public class PadRight extends AbstractFunctionEvaluator {
 		int length = n - ast.size() + 1;
 		if (length > 0) {
 			IAST result = ast.copyHead();
-			result.addAll(ast.args());
+			result.addArgs(ast);
 			for (int i = 0; i < length; i++) {
 				result.append(atom);
 			}
@@ -51,7 +51,7 @@ public class PadRight extends AbstractFunctionEvaluator {
 		int length = n - ast.size() + 1;
 		if (length > 0) {
 			IAST result = ast.copyHead();
-			result.addAll(ast.args());
+			result.addArgs(ast);
 			if (arg2.size() < 2) {
 				return ast;
 			}

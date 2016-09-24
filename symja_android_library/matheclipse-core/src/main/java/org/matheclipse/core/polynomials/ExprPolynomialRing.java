@@ -1055,7 +1055,7 @@ public class ExprPolynomialRing {
 		}
 		int i = vn.size() - 1;
 		IAST v = vars.clone();
-		v.addAll(vn.args());
+		v.addArgs(vn);
 		// for (int k = 0; k < vars.length; k++) {
 		// v[k] = vars[k];
 		// }
@@ -1092,7 +1092,7 @@ public class ExprPolynomialRing {
 		}
 		int i = vn.size() - 1;
 		IAST v = vn.clone();
-		vn.addAll(vars.args());
+		vn.addArgs(vars);
 		// String[] v = new String[vars.length + i];
 		// for (int k = 0; k < vn.length; k++) {
 		// v[k] = vn[k];

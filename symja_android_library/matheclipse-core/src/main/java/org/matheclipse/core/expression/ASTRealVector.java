@@ -105,6 +105,65 @@ public class ASTRealVector extends AbstractAST implements HMList<IExpr>, Cloneab
 	}
 
 	/**
+	 * Adds the objects in the specified collection to this {@code ArrayList}.
+	 * 
+	 * @param collection
+	 *            the collection of objects.
+	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
+	 *         otherwise.
+	 */
+	@Override
+	public boolean addAll(Collection<? extends IExpr> collection) {
+		hashValue = 0;
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean addAll(IAST ast, int startPosition, int endPosition) {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * Inserts the objects in the specified collection at the specified location
+	 * in this List. The objects are added in the order they are returned from
+	 * the collection's iterator.
+	 * 
+	 * @param location
+	 *            the index at which to insert.
+	 * @param collection
+	 *            the collection of objects.
+	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
+	 *         otherwise.
+	 * @throws IndexOutOfBoundsException
+	 *             when {@code location < 0 || > size()}
+	 */
+	@Override
+	public boolean addAll(int location, Collection<? extends IExpr> collection) {
+		hashValue = 0;
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean addAll(List<? extends IExpr> list) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean addAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean addArgs(IAST ast) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public IAST addOneIdentity(IAST subAST) {
+		throw new UnsupportedOperationException();
+	}
+
+	/**
 	 * Adds the specified object at the end of this {@code ArrayList}.
 	 * 
 	 * @param object
@@ -133,55 +192,6 @@ public class ASTRealVector extends AbstractAST implements HMList<IExpr>, Cloneab
 	@Override
 	public void append(int location, IExpr object) {
 		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * Adds the objects in the specified collection to this {@code ArrayList}.
-	 * 
-	 * @param collection
-	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
-	 *         otherwise.
-	 */
-	@Override
-	public boolean addAll(Collection<? extends IExpr> collection) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * Inserts the objects in the specified collection at the specified location
-	 * in this List. The objects are added in the order they are returned from
-	 * the collection's iterator.
-	 * 
-	 * @param location
-	 *            the index at which to insert.
-	 * @param collection
-	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
-	 *         otherwise.
-	 * @throws IndexOutOfBoundsException
-	 *             when {@code location < 0 || > size()}
-	 */
-	@Override
-	public boolean addAll(int location, Collection<? extends IExpr> collection) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean addAll(List<? extends IExpr> ast) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean addAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public IAST addOneIdentity(IAST subAST) {
 		throw new UnsupportedOperationException();
 	}
 

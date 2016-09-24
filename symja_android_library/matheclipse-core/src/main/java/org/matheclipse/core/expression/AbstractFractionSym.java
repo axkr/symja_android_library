@@ -346,7 +346,7 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 		}
 
 		// add the factors from the numerator part
-		result.addAll(num.factorInteger().args());
+		result.addArgs(num.factorInteger());
 		EvalAttributes.sort(result);
 		return result;
 	}
