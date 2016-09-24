@@ -300,7 +300,7 @@ public class Apart extends AbstractFunctionEvaluator {
 			IExpr exprNumerator = F.evalExpandAll(parts[0]);
 			IExpr exprDenominator = F.evalExpandAll(parts[1]);
 			ASTRange r = new ASTRange(variableList, 1);
-			List<IExpr> varList = r.toList();
+			List<IExpr> varList = r;
 
 			String[] varListStr = new String[1];
 			varListStr[0] = variableList.arg1().toString();
@@ -376,7 +376,7 @@ public class Apart extends AbstractFunctionEvaluator {
 			IExpr exprNumerator = F.evalExpandAll(parts[0]);
 			IExpr exprDenominator = F.evalExpandAll(parts[1]);
 			ASTRange r = new ASTRange(variableList, 1);
-			List<IExpr> varList = r.toList();
+			List<IExpr> varList = r;
 
 			String[] varListStr = new String[1];
 			varListStr[0] = variableList.arg1().toString();

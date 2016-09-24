@@ -47,7 +47,7 @@ public class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
 
 		ASTRange r = new ASTRange(eVar.getVarList(), 1);
 		if (ast.size() == 5) {
-			List<IExpr> varList = r.toList();
+			List<IExpr> varList = r;
 			final Options options = new Options(ast.topHead(), ast, 4, engine);
 			IExpr option = options.getOption("Modulus");
 			if (option.isSignedNumber()) {
@@ -75,7 +75,7 @@ public class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
 		}
 
 		try {
-			JASConvert<BigRational> jas = new JASConvert<BigRational>(r.toList(), BigRational.ZERO);
+			JASConvert<BigRational> jas = new JASConvert<BigRational>(r, BigRational.ZERO);
 			GenPolynomial<BigRational> poly1 = jas.expr2JAS(expr1, false);
 			GenPolynomial<BigRational> poly2 = jas.expr2JAS(expr2, false);
 			GenPolynomial<BigRational>[] result = poly1.egcd(poly2);
@@ -88,7 +88,7 @@ public class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
 			return list;
 		} catch (JASConversionException e0) {
 			try {
-				JASIExpr jas = new JASIExpr(r.toList(), new ExprRingFactory());
+				JASIExpr jas = new JASIExpr(r, new ExprRingFactory());
 				GenPolynomial<IExpr> poly1 = jas.expr2IExprJAS(expr1);
 				GenPolynomial<IExpr> poly2 = jas.expr2IExprJAS(expr2);
 				GenPolynomial<IExpr>[] result = poly1.egcd(poly2);

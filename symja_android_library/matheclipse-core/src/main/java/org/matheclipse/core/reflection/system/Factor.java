@@ -54,7 +54,7 @@ public class Factor extends AbstractFunctionEvaluator {
 		try {
 			IExpr expr = F.evalExpandAll(ast.arg1());
 			ASTRange r = new ASTRange(eVar.getVarList(), 1);
-			List<IExpr> varList = r.toList();
+			List<IExpr> varList = r;
 
 			if (ast.isAST2()) {
 				return factorWithOption(ast, expr, varList, false, engine);

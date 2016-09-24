@@ -54,7 +54,7 @@ public class SquareFreeQ extends AbstractFunctionEvaluator {
 		try {
 			IExpr expr = F.evalExpandAll(ast.arg1());
 			ASTRange r = new ASTRange(eVar.getVarList(), 1);
-			List<IExpr> varList = r.toList();
+			List<IExpr> varList = r;
 
 			if (ast.isAST2()) {
 				return F.bool(isSquarefreeWithOption(ast, expr, varList, engine));

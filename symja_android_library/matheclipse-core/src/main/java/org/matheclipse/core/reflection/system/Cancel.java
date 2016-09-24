@@ -119,7 +119,7 @@ public class Cancel extends AbstractFunctionEvaluator {
 			ExprPolynomial pol1 = ring.create(numeratorPolynomial);
 			ExprPolynomial pol2 = ring.create(denominatorPolynomial);
 			ASTRange r = new ASTRange(eVar.getVarList(), 1);
-			JASIExpr jas = new JASIExpr(r.toList(), true);
+			JASIExpr jas = new JASIExpr(r, true);
 			GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
 			GenPolynomial<IExpr> p2 = jas.expr2IExprJAS(pol2);
 

@@ -49,14 +49,4 @@ final public class ASTRange extends Range {
 		super(list, 0);
 	}
 
-	/**
-	 * Append this ranges elements to a new created List
-	 * 
-	 * @return a new created List
-	 */
-	public List<IExpr> toList() {
-		ArrayList<IExpr> list = new ArrayList<IExpr>();
-		return super.toList(list);
-	}
-
 }

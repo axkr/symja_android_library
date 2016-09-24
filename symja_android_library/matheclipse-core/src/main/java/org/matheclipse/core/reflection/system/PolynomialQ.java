@@ -66,7 +66,7 @@ public class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicat
 		try {
 			ExprPolynomial poly = ring.create(expr);
 			ASTRange r = new ASTRange(variables, 1);
-			JASIExpr jas = new JASIExpr(r.toList(), numericFunction);
+			JASIExpr jas = new JASIExpr(r, numericFunction);
 			return jas.expr2IExprJAS(poly);
 		} catch (RuntimeException ex) {
 

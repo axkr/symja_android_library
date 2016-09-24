@@ -49,7 +49,7 @@ public class PolynomialLCM extends AbstractFunctionEvaluator {
 				try {
 					// found "Modulus" option => use ModIntegerRing
 					ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
-					JASModInteger jas = new JASModInteger(r.toList(), modIntegerRing);
+					JASModInteger jas = new JASModInteger(r, modIntegerRing);
 					GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
 					GenPolynomial<ModLong> temp;
 					GreatestCommonDivisorAbstract<ModLong> factory = GCDFactory.getImplementation(modIntegerRing);
@@ -70,7 +70,7 @@ public class PolynomialLCM extends AbstractFunctionEvaluator {
 			}
 		}
 		try {
-			JASConvert<BigInteger> jas = new JASConvert<BigInteger>(r.toList(), BigInteger.ZERO);
+			JASConvert<BigInteger> jas = new JASConvert<BigInteger>(r, BigInteger.ZERO);
 			GenPolynomial<BigInteger> poly = jas.expr2JAS(expr, false);
 			GenPolynomial<BigInteger> temp;
 			GreatestCommonDivisorAbstract<BigInteger> factory = GCDFactory.getImplementation(BigInteger.ZERO);

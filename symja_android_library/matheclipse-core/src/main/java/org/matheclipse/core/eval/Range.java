@@ -816,17 +816,4 @@ public class Range extends AbstractList<IExpr> implements Iterable<IExpr> {
 		return array;
 	}
 
-	/**
-	 * Append the ranges elements to the given <code>list</code>
-	 * 
-	 * @param list
-	 * @return the given <code>list</code>
-	 */
-	public List<IExpr> toList(List<IExpr> list) {
-		for (int i = fStart; i < fEnd; i++) {
-			list.add(fList.get(i));
-		}
-		return list;
-	}
-
 }

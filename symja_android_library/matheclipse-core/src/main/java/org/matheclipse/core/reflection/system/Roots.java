@@ -163,7 +163,7 @@ public class Roots extends AbstractFunctionEvaluator {
 			boolean numericSolutions, EvalEngine engine) {
 		IAST result = F.NIL;
 		ASTRange r = new ASTRange(variables, 1);
-		List<IExpr> varList = r.toList();
+		List<IExpr> varList = r;
 		try {
 			result = F.List();
 			IExpr temp;

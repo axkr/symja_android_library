@@ -46,7 +46,7 @@ public class PolynomialGCD extends AbstractFunctionEvaluator {
 		}
 		try {
 			ASTRange r = new ASTRange(eVar.getVarList(), 1);
-			JASConvert<BigInteger> jas = new JASConvert<BigInteger>(r.toList(), BigInteger.ZERO);
+			JASConvert<BigInteger> jas = new JASConvert<BigInteger>(r, BigInteger.ZERO);
 			GenPolynomial<BigInteger> poly = jas.expr2JAS(expr, false);
 			GenPolynomial<BigInteger> temp;
 			GreatestCommonDivisorAbstract<BigInteger> factory = GCDFactory.getImplementation(BigInteger.ZERO);
