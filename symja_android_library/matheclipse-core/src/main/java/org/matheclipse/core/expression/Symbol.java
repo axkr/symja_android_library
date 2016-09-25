@@ -635,6 +635,9 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 				return true;
 			}
 		}
+		if (isConstant()) {
+			return true;
+		}
 		return false;
 	}
 
