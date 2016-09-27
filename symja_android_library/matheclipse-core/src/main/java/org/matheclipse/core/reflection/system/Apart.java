@@ -37,7 +37,6 @@ import edu.jas.ufd.SquarefreeFactory;
  * Partial fraction decomposition</a>
  */
 public class Apart extends AbstractFunctionEvaluator {
-	public static final Apart CONST = new Apart();
 
 	/**
 	 * Split the expression into numerator and denominator parts, by calling the
@@ -467,6 +466,5 @@ public class Apart extends AbstractFunctionEvaluator {
 	@Override
 	public void setUp(final ISymbol newSymbol) {
 		newSymbol.setAttributes(ISymbol.LISTABLE);
-		super.setUp(newSymbol);
 	}
 }

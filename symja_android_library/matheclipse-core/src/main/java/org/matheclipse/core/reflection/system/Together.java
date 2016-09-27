@@ -14,7 +14,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Determine a common denominator for the expressions of a sum.
  */
 public class Together extends AbstractFunctionEvaluator {
-	public static final Together CONST = new Together();
 
 	public static IExpr together(IAST ast) {
 		IExpr temp = ExpandAll.expandAll(ast, null, true, false);
@@ -196,9 +195,9 @@ public class Together extends AbstractFunctionEvaluator {
 				}
 				return Cancel.cancelPowerTimes(ast);
 			} catch (JASConversionException jce) {
-				// if (Config.DEBUG) {
-				jce.printStackTrace();
-				// }
+				if (Config.DEBUG) {
+					jce.printStackTrace();
+				}
 			}
 		}
 

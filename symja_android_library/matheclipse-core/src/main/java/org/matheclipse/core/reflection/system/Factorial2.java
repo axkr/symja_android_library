@@ -73,6 +73,5 @@ public class Factorial2 extends AbstractTrigArg1 {
 	@Override
 	public void setUp(final ISymbol newSymbol) {
 		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-		super.setUp(newSymbol);
 	}
 }

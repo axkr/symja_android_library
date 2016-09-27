@@ -17,6 +17,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+//import org.matheclipse.core.polynomials.ExprPolynomial;
+//import org.matheclipse.core.polynomials.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
 
@@ -253,6 +255,5 @@ public class Cancel extends AbstractFunctionEvaluator {
 	@Override
 	public void setUp(final ISymbol newSymbol) {
 		newSymbol.setAttributes(ISymbol.LISTABLE);
-		super.setUp(newSymbol);
 	}
 }

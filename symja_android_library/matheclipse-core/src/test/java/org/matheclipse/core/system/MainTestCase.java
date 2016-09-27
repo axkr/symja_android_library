@@ -2732,6 +2732,8 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem398() {
+		check("Together((-x+3)*(x^2+2)^(-1)+6*x*(x^2+2)^(-2)+x^(-1))", "(4+6*x+8*x^2+3*x^3)/(4*x+4*x^3+x^5)");
+
 		check("Together(x+3/4*x^(-3))", "(3+4*x^4)/(4*x^3)");
 
 		check("Numerator(3/4)", "3");

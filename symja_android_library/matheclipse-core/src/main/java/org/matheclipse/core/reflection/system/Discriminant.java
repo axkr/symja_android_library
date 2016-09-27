@@ -770,6 +770,5 @@ public class Discriminant extends AbstractFunctionEvaluator {
 	@Override
 	public void setUp(final ISymbol symbol) {
 		symbol.setAttributes(ISymbol.LISTABLE);
-		super.setUp(symbol);
 	}
 }

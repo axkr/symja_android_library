@@ -45,7 +45,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 			// EvalEngine.get().addRules(ruleList);
 		}
 
-		F.SYMBOL_OBSERVER.createPredefinedSymbol(newSymbol.toString());
+//		F.SYMBOL_OBSERVER.createPredefinedSymbol(newSymbol.toString());
 		if (Config.SERIALIZE_SYMBOLS && newSymbol.containsRules()) {
 			FileOutputStream out;
 			try {

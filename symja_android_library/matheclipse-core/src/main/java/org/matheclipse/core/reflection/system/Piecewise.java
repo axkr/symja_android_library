@@ -91,6 +91,5 @@ public class Piecewise extends AbstractFunctionEvaluator {
 	@Override
 	public void setUp(final ISymbol newSymbol)  {
 		newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.NUMERICFUNCTION);
-		super.setUp(newSymbol);
 	}
 }

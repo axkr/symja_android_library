@@ -26,6 +26,9 @@ public class Fibonacci extends AbstractTrigArg1 {
 	 * See: <a href=
 	 * "https://www.rosettacode.org/wiki/Fibonacci_sequence#Iterative_28">
 	 * Roseatta code: Fibonacci sequence.</a>
+	 * 
+	 * @param iArg
+	 * @return
 	 */
 	public static IInteger fibonacci(final IInteger iArg) {
 		IInteger a = F.C1;
@@ -50,7 +53,7 @@ public class Fibonacci extends AbstractTrigArg1 {
 			b = b.multiply(b).add(d);
 			temp = temp.shiftRight(1);
 		}
-		if (iArg.isNegative()&&iArg.isEven()) {
+		if (iArg.isNegative() && iArg.isEven()) {
 			return result.negate();
 		}
 		return result;
@@ -67,6 +70,5 @@ public class Fibonacci extends AbstractTrigArg1 {
 	@Override
 	public void setUp(final ISymbol newSymbol) {
 		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-		super.setUp(newSymbol);
 	}
 }

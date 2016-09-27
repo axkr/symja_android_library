@@ -12,9 +12,13 @@ import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.math.BigIntegerMath;
 
 /**
+ * <p>
  * Euler number
+ * </p>
  * 
- * @see <a href="http://oeis.org/A000364">A000364</a> in the OEIS.
+ * <p>
+ * See <a href="http://oeis.org/A000364">A000364</a> in the OEIS.
+ * </p>
  */
 public class EulerE extends AbstractTrigArg1 {
 
@@ -59,6 +63,8 @@ public class EulerE extends AbstractTrigArg1 {
 	/**
 	 * Compute a coefficient in the internal table.
 	 * 
+	 * @param a
+	 *            list of integers
 	 * @param n
 	 *            the zero-based index of the coefficient. n=0 for the E_0 term.
 	 */
@@ -87,6 +93,8 @@ public class EulerE extends AbstractTrigArg1 {
 	/**
 	 * The Euler number at the index provided.
 	 * 
+	 * @param a
+	 *            list of integers
 	 * @param n
 	 *            the index, non-negative.
 	 * @return the E_0=E_1=1 , E_2=5, E_3=61 etc
@@ -99,7 +107,6 @@ public class EulerE extends AbstractTrigArg1 {
 	@Override
 	public void setUp(final ISymbol newSymbol) {
 		newSymbol.setAttributes(ISymbol.LISTABLE);
-		super.setUp(newSymbol);
 	}
 
 }

@@ -137,6 +137,5 @@ public class Resultant extends AbstractFunctionEvaluator {
 	@Override
 	public void setUp(final ISymbol newSymbol)  {
 		newSymbol.setAttributes(ISymbol.LISTABLE);
-		super.setUp(newSymbol);
 	}
 }

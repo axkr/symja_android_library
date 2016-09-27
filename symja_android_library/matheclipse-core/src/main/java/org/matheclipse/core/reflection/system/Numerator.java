@@ -21,10 +21,27 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class Numerator extends AbstractEvaluator {
 
-	static ISymbol[] NUMERATOR_SYMBOLS = { F.Sin, F.Cos, F.Tan, F.Csc, F.Sec, F.Cot };
-	static IExpr[] TRIG_TRUE_EXPRS = { F.Sin, F.Cos, F.Sin, F.C1, F.C1, F.Cos };
+	static ISymbol[] NUMERATOR_SYMBOLS = null;// { F.Sin, F.Cos, F.Tan, F.Csc,
+												// F.Sec, F.Cot };
+	static IExpr[] TRIG_TRUE_EXPRS = null; // { F.Sin, F.Cos, F.Sin, F.C1, F.C1,
+											// F.Cos };
 
 	public Numerator() {
+		// default ctor
+		NUMERATOR_SYMBOLS = new ISymbol[6];
+		NUMERATOR_SYMBOLS[0] = F.Sin;
+		NUMERATOR_SYMBOLS[1] = F.Cos;
+		NUMERATOR_SYMBOLS[2] = F.Tan;
+		NUMERATOR_SYMBOLS[3] = F.Csc;
+		NUMERATOR_SYMBOLS[4] = F.Sec;
+		NUMERATOR_SYMBOLS[5] = F.Cot;
+		TRIG_TRUE_EXPRS = new IExpr[6];
+		TRIG_TRUE_EXPRS[0] = F.Sin;
+		TRIG_TRUE_EXPRS[1] = F.Cos;
+		TRIG_TRUE_EXPRS[2] = F.Sin;
+		TRIG_TRUE_EXPRS[3] = F.C1;
+		TRIG_TRUE_EXPRS[4] = F.C1;
+		TRIG_TRUE_EXPRS[5] = F.Cos;
 	}
 
 	@Override
@@ -67,6 +84,7 @@ public class Numerator extends AbstractEvaluator {
 	 *            the function which should be transformed to &quot;denominator
 	 *            form&quot; determine the denominator by splitting up functions
 	 *            like <code>Tan[9,Cot[], Csc[],...</code>
+	 * @param trig
 	 * @return
 	 */
 	public static IExpr getTrigForm(IAST function, boolean trig) {

@@ -52,7 +52,6 @@ public class IntegerPart extends AbstractFunctionEvaluator {
 	@Override
 	public void setUp(final ISymbol newSymbol) {
 		newSymbol.setAttributes(ISymbol.NHOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-		super.setUp(newSymbol);
 	}
 
 }

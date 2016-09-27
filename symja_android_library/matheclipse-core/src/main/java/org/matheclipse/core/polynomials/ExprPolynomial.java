@@ -22,6 +22,7 @@ import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.Monomial;
 import edu.jas.structure.NotInvertibleException;
+import edu.jas.structure.RingElem;
 
 /**
  * GenPolynomial generic polynomials implementing RingElem. n-variate ordered
@@ -38,7 +39,7 @@ import edu.jas.structure.NotInvertibleException;
  *            coefficient type
  * @author Heinz Kredel
  */
-public class ExprPolynomial implements Iterable<ExprMonomial> {
+public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMonomial> {
 
 	/**
 	 * The factory for the polynomial ring.
@@ -138,7 +139,7 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	protected ExprPolynomial(ExprPolynomialRing r, SortedMap<ExpVectorLong, IExpr> v) {
 		this(r);
 		if (v.size() > 0) {
-			ExprPolynomialRing.creations++;
+			// ExprPolynomialRing.creations++;
 			val.putAll(v); // assume no zero coefficients and val is empty
 		}
 	}
@@ -440,6 +441,10 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 		return (val.size() == 0);
 	}
 
+	public boolean isZERO() {
+		return isZero();
+	}
+
 	/**
 	 * Is GenPolynomial&lt;C&gt; one.
 	 * 
@@ -455,6 +460,10 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 			return false;
 		}
 		return c.isOne();
+	}
+
+	public boolean isONE() {
+		return isOne();
 	}
 
 	/**
@@ -598,7 +607,7 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	 * @deprecated for comparability with JAS only
 	 */
 	@Deprecated
-	private int signum() {
+	public int signum() {
 		if (this.isZero()) {
 			return 0;
 		}
@@ -1392,7 +1401,7 @@ public class ExprPolynomial implements Iterable<ExprMonomial> {
 	 * If this polynomial contains negative exponents, multiply this polynomial
 	 * by the negated minimal exponents for that variable.
 	 * 
-	 * @return 
+	 * @return
 	 */
 	public ExprPolynomial multiplyByMinimumNegativeExponents() {
 		long[] result = new long[numberOfVariables()];

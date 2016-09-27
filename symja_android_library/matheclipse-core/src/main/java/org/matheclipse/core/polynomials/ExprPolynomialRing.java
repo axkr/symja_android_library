@@ -1,5 +1,6 @@
 package org.matheclipse.core.polynomials;
 
+import java.io.Reader;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -21,6 +22,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import edu.jas.kern.PreemptStatus;
 import edu.jas.kern.PrettyPrint;
 import edu.jas.kern.Scripting;
+import edu.jas.poly.GenPolynomial;
+import edu.jas.structure.RingFactory;
 import edu.jas.util.CartesianProduct;
 import edu.jas.util.CartesianProductInfinite;
 import edu.jas.util.LongIterable;
@@ -35,7 +38,7 @@ import edu.jas.util.LongIterable;
  * @author Heinz Kredel
  */
 
-public class ExprPolynomialRing {
+public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 
 	/**
 	 * The factory for the coefficients.
@@ -101,7 +104,7 @@ public class ExprPolynomialRing {
 	/**
 	 * Count for number of polynomial creations.
 	 */
-	public static int creations = 0;
+	// public static int creations = 0;
 
 	/**
 	 * Flag to enable if preemptive interrrupt is checked.
@@ -686,9 +689,9 @@ public class ExprPolynomialRing {
 	 * 
 	 * @return creations.
 	 */
-	public int getCreations() {
-		return creations;
-	}
+	// public int getCreations() {
+	// return creations;
+	// }
 
 	/**
 	 * Get the variable names.
@@ -1354,6 +1357,40 @@ public class ExprPolynomialRing {
 		return new GenPolynomialMonomialIterator(this);
 		// throw new IllegalArgumentException("only for finite iterable
 		// coefficients implemented");
+	}
+
+	@Override
+	public ExprPolynomial getZERO() {
+		return getZero();
+	}
+
+	@Override
+	public ExprPolynomial random(int n) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ExprPolynomial random(int n, Random random) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ExprPolynomial parse(String s) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ExprPolynomial parse(Reader r) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ExprPolynomial getONE() {
+		return getOne();
 	}
 
 }
