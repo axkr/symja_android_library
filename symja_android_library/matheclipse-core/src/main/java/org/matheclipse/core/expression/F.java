@@ -1576,7 +1576,7 @@ public class F {
 			// System.out.println("F#static()");
 
 			ComputerThreads.NO_THREADS = Config.JAS_NO_THREADS;
-			
+
 			ApfloatContext ctx = ApfloatContext.getContext();
 			ctx.setNumberOfProcessors(1);
 			// long start = System.currentTimeMillis();
@@ -1680,8 +1680,7 @@ public class F {
 		CatalanNumber.setEvaluator(new org.matheclipse.core.reflection.system.CatalanNumber());
 		Catenate.setEvaluator(new org.matheclipse.core.reflection.system.Catenate());
 		Ceiling.setEvaluator(new org.matheclipse.core.reflection.system.Ceiling());
-		CharacteristicPolynomial
-				.setEvaluator(new org.matheclipse.core.reflection.system.CharacteristicPolynomial());
+		CharacteristicPolynomial.setEvaluator(new org.matheclipse.core.reflection.system.CharacteristicPolynomial());
 		ChebyshevT.setEvaluator(new org.matheclipse.core.reflection.system.ChebyshevT());
 		ChebyshevU.setEvaluator(new org.matheclipse.core.reflection.system.ChebyshevU());
 		ChessboardDistance.setEvaluator(new org.matheclipse.core.reflection.system.ChessboardDistance());
@@ -1907,8 +1906,7 @@ public class F {
 		SinIntegral.setEvaluator(new org.matheclipse.core.reflection.system.SinIntegral());
 		Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
 		Sort.setEvaluator(new org.matheclipse.core.reflection.system.Sort());
-		SquaredEuclidianDistance
-				.setEvaluator(new org.matheclipse.core.reflection.system.SquaredEuclidianDistance());
+		SquaredEuclidianDistance.setEvaluator(new org.matheclipse.core.reflection.system.SquaredEuclidianDistance());
 		SquareFreeQ.setEvaluator(new org.matheclipse.core.reflection.system.SquareFreeQ());
 		StirlingS2.setEvaluator(new org.matheclipse.core.reflection.system.StirlingS2());
 		StringDrop.setEvaluator(new org.matheclipse.core.reflection.system.StringDrop());
@@ -3690,14 +3688,12 @@ public class F {
 	}
 
 	/**
-	 * Convert the symbolName to lowercase (if
-	 * <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> is set) and insert a new
-	 * Symbol in the <code>PREDEFINED_SYMBOLS_MAP</code>. The symbol is created
-	 * using the given upper case string to use it as associated class name in
-	 * package org.matheclipse.core.reflection.system.
+	 * Insert a new Symbol in the <code>SYSTEM</code> context.
 	 * 
 	 * @param symbolName
 	 *            the predefined symbol name in upper-case form
+	 * @param evaluator
+	 *            defines the evaluation behaviour of the symbol
 	 * @return
 	 */
 	public static ISymbol initFinalSymbol(final String symbolName, IEvaluator evaluator) {
