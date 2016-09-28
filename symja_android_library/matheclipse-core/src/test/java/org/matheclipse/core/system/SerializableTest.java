@@ -13,6 +13,12 @@ import junit.framework.TestCase;
 
 public class SerializableTest extends TestCase {
 
+	@Override
+	protected void setUp() throws Exception {
+		super.setUp();
+		F.Integrate.setEvaluator(new org.matheclipse.core.reflection.system.Integrate());
+	}
+
 	public void testNum() {
 		equalsCopy(F.num(0.5));
 		equalsCopy(F.num(Integer.MAX_VALUE));

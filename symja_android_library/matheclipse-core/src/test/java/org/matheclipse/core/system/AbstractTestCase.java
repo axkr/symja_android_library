@@ -8,7 +8,6 @@ import javax.script.ScriptEngineManager;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TimeConstrainedEvaluator;
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.script.engine.MathScriptEngine;
@@ -92,7 +91,7 @@ public abstract class AbstractTestCase extends TestCase {
 	protected void setUp() {
 		try {
 			synchronized (fScriptManager) {
-				fScriptEngine = new MathScriptEngine();//fScriptManager.getEngineByExtension("m");
+				fScriptEngine = new MathScriptEngine();// fScriptManager.getEngineByExtension("m");
 				fScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
 			}
 		} catch (Exception e) {
