@@ -2175,7 +2175,7 @@ public abstract class AbstractAST extends HMAbstractList<IExpr> implements IAST 
 	 * @return
 	 */
 	public boolean isSameHead(IExpr head, int length) {
-		return head().equals(head) && length == size();
+		return length == size() && head().equals(head);
 	}
 
 	/**
@@ -2709,16 +2709,6 @@ public abstract class AbstractAST extends HMAbstractList<IExpr> implements IAST 
 			}
 		}
 		return 1;
-	}
-
-	/**
-	 * Returns the number of elements in this {@code ArrayList}.
-	 * 
-	 * @return the number of elements in this {@code ArrayList}.
-	 */
-	@Override
-	public int size() {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

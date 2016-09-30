@@ -70,7 +70,7 @@ public class AST0 extends AbstractAST implements HMList<IExpr>, Cloneable, Exter
 	public AST0() {
 		super();
 	}
-	
+
 	/**
 	 * Create a function with no arguments (i.e. <code>head[ ]</code>).
 	 * 
@@ -148,7 +148,7 @@ public class AST0 extends AbstractAST implements HMList<IExpr>, Cloneable, Exter
 	 * @return always true
 	 */
 	@Override
-	public boolean append(IExpr object) { 
+	public boolean append(IExpr object) {
 		hashValue = 0;
 		throw new UnsupportedOperationException();
 	}
@@ -202,7 +202,7 @@ public class AST0 extends AbstractAST implements HMList<IExpr>, Cloneable, Exter
 	public IExpr arg2() {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	/**
 	 * Get the third argument (i.e. the fourth element of the underlying list
 	 * structure) of the <code>AST</code> function (i.e. get(3) ).<br />
@@ -248,7 +248,7 @@ public class AST0 extends AbstractAST implements HMList<IExpr>, Cloneable, Exter
 	public IExpr arg5() {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
 	public Set<IExpr> asSet() {
 		// empty set:
@@ -364,25 +364,25 @@ public class AST0 extends AbstractAST implements HMList<IExpr>, Cloneable, Exter
 	public boolean isAST0() {
 		return true;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isAST1() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isAST2() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isAST3() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isSameHead(IExpr head) {
@@ -392,7 +392,7 @@ public class AST0 extends AbstractAST implements HMList<IExpr>, Cloneable, Exter
 	/** {@inheritDoc} */
 	@Override
 	public boolean isSameHead(IExpr head, int length) {
-		return arg0.equals(head) && length == SIZE;
+		return length == SIZE && arg0.equals(head);
 	}
 
 	/** {@inheritDoc} */
