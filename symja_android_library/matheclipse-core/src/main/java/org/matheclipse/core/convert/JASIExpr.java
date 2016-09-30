@@ -57,7 +57,7 @@ public class JASIExpr {
 	private boolean fNumericFunction = false;
 
 	public JASIExpr(IExpr variable, boolean numericFunction) {
-		this(variable, new ExprRingFactory(), numericFunction);
+		this(variable, ExprRingFactory.CONST, numericFunction);
 	}
 
 	public JASIExpr(IExpr variable, RingFactory<IExpr> ringFactory) {
@@ -81,11 +81,11 @@ public class JASIExpr {
 	}
 
 	public JASIExpr(final List<? extends IExpr> variablesList) {
-		this(variablesList, new ExprRingFactory(), TermOrderByName.Lexicographic, false);
+		this(variablesList, ExprRingFactory.CONST, TermOrderByName.Lexicographic, false);
 	}
 
 	public JASIExpr(final List<? extends IExpr> variablesList, boolean numericFunction) {
-		this(variablesList, new ExprRingFactory(), TermOrderByName.Lexicographic, numericFunction);
+		this(variablesList, ExprRingFactory.CONST, TermOrderByName.Lexicographic, numericFunction);
 	}
 
 	public JASIExpr(final List<? extends IExpr> variablesList, RingFactory<IExpr> ringFactory) {

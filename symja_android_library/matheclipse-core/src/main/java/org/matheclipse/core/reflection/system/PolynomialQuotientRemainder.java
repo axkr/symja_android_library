@@ -78,7 +78,7 @@ public class PolynomialQuotientRemainder extends AbstractFunctionEvaluator {
 			return result;
 		} catch (JASConversionException e1) {
 			try {
-				JASIExpr jas = new JASIExpr(variable, new ExprRingFactory());
+				JASIExpr jas = new JASIExpr(variable, ExprRingFactory.CONST);
 				GenPolynomial<IExpr> poly1 = jas.expr2IExprJAS(arg1);
 				GenPolynomial<IExpr> poly2 = jas.expr2IExprJAS(arg2);
 				GenPolynomial<IExpr>[] divRem = poly1.quotientRemainder(poly2);

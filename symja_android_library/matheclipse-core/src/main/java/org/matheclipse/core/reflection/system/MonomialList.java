@@ -105,7 +105,7 @@ public class MonomialList extends AbstractFunctionEvaluator {
 	 */
 	private static IAST monomialList(IExpr polynomial, final List<IExpr> variablesList, final TermOrder termOrder)
 			throws JASConversionException {
-		JASIExpr jas = new JASIExpr(variablesList, new ExprRingFactory(), termOrder, false);
+		JASIExpr jas = new JASIExpr(variablesList, ExprRingFactory.CONST, termOrder, false);
 		GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
 		IAST list = F.List();
 

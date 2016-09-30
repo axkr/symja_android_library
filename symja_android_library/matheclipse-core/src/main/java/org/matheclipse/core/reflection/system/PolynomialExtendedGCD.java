@@ -88,7 +88,7 @@ public class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
 			return list;
 		} catch (JASConversionException e0) {
 			try {
-				JASIExpr jas = new JASIExpr(r, new ExprRingFactory());
+				JASIExpr jas = new JASIExpr(r, ExprRingFactory.CONST);
 				GenPolynomial<IExpr> poly1 = jas.expr2IExprJAS(expr1);
 				GenPolynomial<IExpr> poly2 = jas.expr2IExprJAS(expr2);
 				GenPolynomial<IExpr>[] result = poly1.egcd(poly2);

@@ -126,7 +126,7 @@ public class Cancel extends AbstractFunctionEvaluator {
 			GenPolynomial<IExpr> p2 = jas.expr2IExprJAS(pol2);
 
 			GreatestCommonDivisor<IExpr> engine;
-			engine = GCDFactory.getImplementation(new ExprRingFactory());
+			engine = GCDFactory.getImplementation(ExprRingFactory.CONST);
 			GenPolynomial<IExpr> gcd = engine.gcd(p1, p2);
 			IExpr[] result = new IExpr[3];
 			if (gcd.isONE()) {

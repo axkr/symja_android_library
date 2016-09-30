@@ -104,7 +104,7 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 	 */
 	public static IAST coefficientRules(IExpr polynomial, final List<IExpr> variablesList, final TermOrder termOrder)
 			throws JASConversionException {
-		JASIExpr jas = new JASIExpr(variablesList, new ExprRingFactory(), termOrder, false);
+		JASIExpr jas = new JASIExpr(variablesList, ExprRingFactory.CONST, termOrder, false);
 		GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
 		IAST resultList = F.List();
 		for (Monomial<IExpr> monomial : polyExpr) {

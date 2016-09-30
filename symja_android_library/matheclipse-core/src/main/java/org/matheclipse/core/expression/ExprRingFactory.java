@@ -10,7 +10,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import edu.jas.structure.RingFactory;
 
 /**
- * Ring factory class. Defines tests for field and query of characteristic.
+ * Singleton ring factory class. Defines tests for field and query of
+ * characteristic.
  * 
  */
 public class ExprRingFactory implements RingFactory<IExpr> {
@@ -20,8 +21,8 @@ public class ExprRingFactory implements RingFactory<IExpr> {
 	private static final long serialVersionUID = -6146597389011632638L;
 
 	public final static ExprRingFactory CONST = new ExprRingFactory();
-	
-	public ExprRingFactory() {
+
+	private ExprRingFactory() {
 		super();
 	}
 
