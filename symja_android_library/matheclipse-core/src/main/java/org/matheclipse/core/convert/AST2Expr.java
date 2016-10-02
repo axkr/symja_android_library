@@ -64,7 +64,7 @@ public class AST2Expr {
 			"Csch", "Curl", "Decrement", "Default", "Defer", "Definition", "Delete", "DeleteCases", "DeleteDuplicates",
 			"Denominator", "Depth", "Derivative", "DesignMatrix", "Det", "DiagonalMatrix", "DigitQ", "Dimensions",
 			"DirectedInfinity", "Direction", "Discriminant", "Distribute", "Divergence", "DivideBy", "Divisible",
-			"Divisors", "Do", "Dot", "Drop", "DSolve", "Eigenvalues", "Eigenvectors", "Element", "Eliminate",
+			"Divisors", "Do", "Dot", "Drop", "DSolve", "EasterSunday", "Eigenvalues", "Eigenvectors", "Element", "Eliminate",
 			"EllipticE", "EllipticF", "EllipticPi", "End", "EndPackage", "Equal", "Equivalent", "Erf", "Erfc", "Erfi",
 			"EuclidianDistance", "EulerE", "EulerPhi", "EvenQ", "Except", "Exp", "Expand", "ExpandAll", "ExpIntegralE",
 			"ExpIntegralEi", "Exponent", "ExtendedGCD", "Extract", "Factor", "Factorial", "Factorial2", "FactorInteger",
