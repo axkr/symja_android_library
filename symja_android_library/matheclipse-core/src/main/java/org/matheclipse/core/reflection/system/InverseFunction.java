@@ -1,8 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.util.IdentityHashMap;
-import java.util.Map;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -15,43 +12,9 @@ import org.matheclipse.core.interfaces.ISymbol;
  *  
  */
 public class InverseFunction extends AbstractFunctionEvaluator {
-	private static Map<ISymbol, IExpr> UNARY_INVERSE_FUNCTIONS = new IdentityHashMap<ISymbol, IExpr>();
-
-	static {
-		UNARY_INVERSE_FUNCTIONS.put(F.Abs, F.Function(F.Times(F.CN1,F.Slot1)));
-		UNARY_INVERSE_FUNCTIONS.put(F.Cos, F.ArcCos);
-		UNARY_INVERSE_FUNCTIONS.put(F.Cot, F.ArcCot);
-		UNARY_INVERSE_FUNCTIONS.put(F.Csc, F.ArcCsc);
-		UNARY_INVERSE_FUNCTIONS.put(F.Sec, F.ArcSec);
-		UNARY_INVERSE_FUNCTIONS.put(F.Sin, F.ArcSin);
-		UNARY_INVERSE_FUNCTIONS.put(F.Tan, F.ArcTan);
-
-		UNARY_INVERSE_FUNCTIONS.put(F.ArcCos, F.Cos);
-		UNARY_INVERSE_FUNCTIONS.put(F.ArcCot, F.Cot);
-		UNARY_INVERSE_FUNCTIONS.put(F.ArcCsc, F.Csc);
-		UNARY_INVERSE_FUNCTIONS.put(F.ArcSec, F.Sec);
-		UNARY_INVERSE_FUNCTIONS.put(F.ArcSin, F.Sin);
-		UNARY_INVERSE_FUNCTIONS.put(F.ArcTan, F.Tan);
-
-		UNARY_INVERSE_FUNCTIONS.put(F.Cosh, F.ArcCosh);
-		UNARY_INVERSE_FUNCTIONS.put(F.Coth, F.ArcCoth);
-		UNARY_INVERSE_FUNCTIONS.put(F.Csch, F.ArcCsch);
-		UNARY_INVERSE_FUNCTIONS.put(F.Sech, F.ArcSech);
-		UNARY_INVERSE_FUNCTIONS.put(F.Sinh, F.ArcSinh);
-		UNARY_INVERSE_FUNCTIONS.put(F.Tanh, F.ArcTanh);
-
-		UNARY_INVERSE_FUNCTIONS.put(F.ArcCosh, F.Cosh);
-		UNARY_INVERSE_FUNCTIONS.put(F.ArcCoth, F.Coth);
-		UNARY_INVERSE_FUNCTIONS.put(F.ArcCsch, F.Csch);
-		UNARY_INVERSE_FUNCTIONS.put(F.ArcSech, F.Sech);
-		UNARY_INVERSE_FUNCTIONS.put(F.ArcSinh, F.Sinh);
-		UNARY_INVERSE_FUNCTIONS.put(F.ArcTanh, F.Tanh);
-		
-		UNARY_INVERSE_FUNCTIONS.put(F.Log, F.Exp);
-	}
 
 	public InverseFunction() {
-
+		// default ctor
 	}
 
 	@Override
@@ -70,7 +33,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
 	 * @return <code>null</code> if there is no inverse function defined.
 	 */
 	public static IExpr getUnaryInverseFunction(ISymbol headSymbol) {
-		return UNARY_INVERSE_FUNCTIONS.get(headSymbol);
+		return F.UNARY_INVERSE_FUNCTIONS.get(headSymbol);
 	}
 
 	/**
@@ -86,7 +49,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
 	public static IAST getUnaryInverseFunction(IAST ast) {
 		IExpr expr = ast.head();
 		if (expr.isSymbol()) {
-			IExpr inverseSymbol = UNARY_INVERSE_FUNCTIONS.get(expr);
+			IExpr inverseSymbol = F.UNARY_INVERSE_FUNCTIONS.get(expr);
 			if (inverseSymbol != null) {
 				return F.ast(inverseSymbol);
 			}

@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
@@ -1476,6 +1477,16 @@ public class F {
 	 */
 	public final static HashMap<IExpr, ExprID> GLOBAL_IDS_MAP = new HashMap<IExpr, ExprID>(9997);
 
+	public static Map<ISymbol, IExpr> UNARY_INVERSE_FUNCTIONS = new IdentityHashMap<ISymbol, IExpr>();
+
+	public static ISymbol[] DENOMINATOR_NUMERATOR_SYMBOLS = null;
+
+	public static IExpr[] DENOMINATOR_TRIG_TRUE_EXPRS = null;
+
+	public static ISymbol[] NUMERAATOR_NUMERATOR_SYMBOLS = null;
+
+	public static IExpr[] NUMERATOR_TRIG_TRUE_EXPRS = null;
+
 	/**
 	 * Global array of predefined constant expressions.
 	 */
@@ -1656,6 +1667,10 @@ public class F {
 			Power.setEvaluator(org.matheclipse.core.reflection.system.Power.CONST);
 			Sqrt.setEvaluator(org.matheclipse.core.reflection.system.Sqrt.CONST);
 
+			createInverseFunctionMap();
+			createDenominatorFunctionMap();
+			createNumeratorFunctionMap();
+
 			setEvaluators();
 
 			// initialize only the utility function rules for Integrate
@@ -1670,6 +1685,70 @@ public class F {
 		} catch (Throwable th) {
 			th.printStackTrace();
 		}
+	}
+
+	private static void createNumeratorFunctionMap() {
+		NUMERAATOR_NUMERATOR_SYMBOLS = new ISymbol[6];
+		NUMERAATOR_NUMERATOR_SYMBOLS[0] = Sin;
+		NUMERAATOR_NUMERATOR_SYMBOLS[1] = Cos;
+		NUMERAATOR_NUMERATOR_SYMBOLS[2] = Tan;
+		NUMERAATOR_NUMERATOR_SYMBOLS[3] = Csc;
+		NUMERAATOR_NUMERATOR_SYMBOLS[4] = Sec;
+		NUMERAATOR_NUMERATOR_SYMBOLS[5] = Cot;
+		NUMERATOR_TRIG_TRUE_EXPRS = new IExpr[6];
+		NUMERATOR_TRIG_TRUE_EXPRS[0] = Sin;
+		NUMERATOR_TRIG_TRUE_EXPRS[1] = Cos;
+		NUMERATOR_TRIG_TRUE_EXPRS[2] = Sin;
+		NUMERATOR_TRIG_TRUE_EXPRS[3] = C1;
+		NUMERATOR_TRIG_TRUE_EXPRS[4] = C1;
+		NUMERATOR_TRIG_TRUE_EXPRS[5] = Cos;
+	}
+
+	private static void createDenominatorFunctionMap() {
+		DENOMINATOR_NUMERATOR_SYMBOLS = new ISymbol[6];
+		DENOMINATOR_NUMERATOR_SYMBOLS[0] = F.Sin;
+		DENOMINATOR_NUMERATOR_SYMBOLS[1] = F.Cos;
+		DENOMINATOR_NUMERATOR_SYMBOLS[2] = F.Tan;
+		DENOMINATOR_NUMERATOR_SYMBOLS[3] = F.Csc;
+		DENOMINATOR_NUMERATOR_SYMBOLS[4] = F.Sec;
+		DENOMINATOR_NUMERATOR_SYMBOLS[5] = F.Cot;
+		DENOMINATOR_TRIG_TRUE_EXPRS = new IExpr[6];
+		DENOMINATOR_TRIG_TRUE_EXPRS[0] = F.C1;
+		DENOMINATOR_TRIG_TRUE_EXPRS[1] = F.C1;
+		DENOMINATOR_TRIG_TRUE_EXPRS[2] = F.Cos;
+		DENOMINATOR_TRIG_TRUE_EXPRS[3] = F.Sin;
+		DENOMINATOR_TRIG_TRUE_EXPRS[4] = F.Cos;
+		DENOMINATOR_TRIG_TRUE_EXPRS[5] = F.Sin;
+	}
+
+	private static void createInverseFunctionMap() {
+		UNARY_INVERSE_FUNCTIONS.put(Abs, Function(Times(CN1, Slot1)));
+		UNARY_INVERSE_FUNCTIONS.put(Cos, ArcCos);
+		UNARY_INVERSE_FUNCTIONS.put(Cot, ArcCot);
+		UNARY_INVERSE_FUNCTIONS.put(Csc, ArcCsc);
+		UNARY_INVERSE_FUNCTIONS.put(Sec, ArcSec);
+		UNARY_INVERSE_FUNCTIONS.put(Sin, ArcSin);
+		UNARY_INVERSE_FUNCTIONS.put(Tan, ArcTan);
+
+		UNARY_INVERSE_FUNCTIONS.put(ArcCos, Cos);
+		UNARY_INVERSE_FUNCTIONS.put(ArcCot, Cot);
+		UNARY_INVERSE_FUNCTIONS.put(ArcCsc, Csc);
+		UNARY_INVERSE_FUNCTIONS.put(ArcSec, Sec);
+		UNARY_INVERSE_FUNCTIONS.put(ArcSin, Sin);
+		UNARY_INVERSE_FUNCTIONS.put(ArcTan, Tan);
+		UNARY_INVERSE_FUNCTIONS.put(Cosh, ArcCosh);
+		UNARY_INVERSE_FUNCTIONS.put(Coth, ArcCoth);
+		UNARY_INVERSE_FUNCTIONS.put(Csch, ArcCsch);
+		UNARY_INVERSE_FUNCTIONS.put(Sech, ArcSech);
+		UNARY_INVERSE_FUNCTIONS.put(Sinh, ArcSinh);
+		UNARY_INVERSE_FUNCTIONS.put(Tanh, ArcTanh);
+		UNARY_INVERSE_FUNCTIONS.put(ArcCosh, Cosh);
+		UNARY_INVERSE_FUNCTIONS.put(ArcCoth, Coth);
+		UNARY_INVERSE_FUNCTIONS.put(ArcCsch, Csch);
+		UNARY_INVERSE_FUNCTIONS.put(ArcSech, Sech);
+		UNARY_INVERSE_FUNCTIONS.put(ArcSinh, Sinh);
+		UNARY_INVERSE_FUNCTIONS.put(ArcTanh, Tanh);
+		UNARY_INVERSE_FUNCTIONS.put(Log, Exp);
 	}
 
 	private static void setEvaluators() {

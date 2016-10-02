@@ -21,27 +21,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class Denominator extends AbstractEvaluator {
 
-	static ISymbol[] NUMERATOR_SYMBOLS = null;// { F.Sin, F.Cos, F.Tan, F.Csc,
-												// F.Sec, F.Cot };
-	static IExpr[] TRIG_TRUE_EXPRS = null;// { F.C1, F.C1, F.Cos, F.Sin, F.Cos,
-											// F.Sin };
-
 	public Denominator() {
 		// default ctor
-		NUMERATOR_SYMBOLS = new ISymbol[6];
-		NUMERATOR_SYMBOLS[0] = F.Sin;
-		NUMERATOR_SYMBOLS[1] = F.Cos;
-		NUMERATOR_SYMBOLS[2] = F.Tan;
-		NUMERATOR_SYMBOLS[3] = F.Csc;
-		NUMERATOR_SYMBOLS[4] = F.Sec;
-		NUMERATOR_SYMBOLS[5] = F.Cot;
-		TRIG_TRUE_EXPRS = new IExpr[6];
-		TRIG_TRUE_EXPRS[0] = F.C1;
-		TRIG_TRUE_EXPRS[1] = F.C1;
-		TRIG_TRUE_EXPRS[2] = F.Cos;
-		TRIG_TRUE_EXPRS[3] = F.Sin;
-		TRIG_TRUE_EXPRS[4] = F.Cos;
-		TRIG_TRUE_EXPRS[5] = F.Sin;
 	}
 
 	@Override
@@ -91,10 +72,10 @@ public class Denominator extends AbstractEvaluator {
 		if (trig) {
 			if (function.isAST1()) {
 
-				for (int i = 0; i < Denominator.NUMERATOR_SYMBOLS.length; i++) {
-					ISymbol sym = Denominator.NUMERATOR_SYMBOLS[i];
+				for (int i = 0; i < F.DENOMINATOR_NUMERATOR_SYMBOLS.length; i++) {
+					ISymbol sym = F.DENOMINATOR_NUMERATOR_SYMBOLS[i];
 					if (function.head().equals(sym)) {
-						IExpr result = TRIG_TRUE_EXPRS[i];
+						IExpr result = F.DENOMINATOR_TRIG_TRUE_EXPRS[i];
 						if (result.isSymbol()) {
 							return F.unaryAST1(result, function.arg1());
 						}
