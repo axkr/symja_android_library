@@ -2309,6 +2309,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNorm() {
+		check("Norm(0)", "0");
+		check("Norm({x, y}, 0)", "The function: Norm({x,y},0) has wrong argument 0 at position:2:\n" + 
+				"0 not allowed as second argument!");
+		check("Norm({x, y}, 0.5)", "The function: Norm({x,y},0.5) has wrong argument 0.5 at position:2:\n" + 
+				"Second argument is < 1!");
+		check("Norm({})", "Norm({})");
+		check("Norm({1, 2, 3, 4}, 2)", "Sqrt(30)");
+		check("Norm({10, 100, 200}, 1)", "310");
+		check("Norm({a,b,c})", "Sqrt(Abs(a)^2+Abs(b)^2+Abs(c)^2)");
+		
 		check("Norm({x, y, z}, Infinity)", "Max(Abs(x),Abs(y),Abs(z))");
 		check("Norm({x, y, z})", "Sqrt(Abs(x)^2+Abs(y)^2+Abs(z)^2)");
 		check("Norm({x, y, z}, p)", "(Abs(x)^p+Abs(y)^p+Abs(z)^p)^(1/p)");
