@@ -42,6 +42,8 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.parser.client.SyntaxError;
+import org.matheclipse.parser.client.ast.FunctionNode;
+import org.matheclipse.parser.client.ast.IConstantOperators;
 
 /**
  * Create an expression of the <code>ASTNode</code> class-hierarchy from a math
@@ -1162,6 +1164,9 @@ public class ExprParser extends ExprScanner {
 
 	private IExpr parsePrimary() {
 		if (fToken == TT_OPERATOR) {
+			if (";;".equals(fOperatorString)) {
+				return F.Span(F.C1, F.All);
+			}
 			if (fOperatorString.equals(".")) {
 				fCurrentChar = '.';
 				// fToken = TT_DIGIT;
