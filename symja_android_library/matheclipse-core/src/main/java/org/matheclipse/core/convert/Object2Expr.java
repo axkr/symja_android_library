@@ -133,7 +133,7 @@ public class Object2Expr {
 			}
 			return list;
 		}
-		return F.stringx(obj.toString());
+		return F.$str(obj.toString());
 	}
 
 	public static IAST convertComplex(org.apache.commons.math3.complex.Complex[] array) throws ConversionException {

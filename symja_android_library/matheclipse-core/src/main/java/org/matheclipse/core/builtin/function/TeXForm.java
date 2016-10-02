@@ -27,7 +27,7 @@ public class TeXForm extends AbstractCoreFunctionEvaluator {
 		IExpr arg1 = engine.evaluate(ast.arg1());
 		StringWriter stw = new StringWriter();
 		texUtil.toTeX(arg1, stw);
-		return F.stringx(stw.toString());
+		return F.$str(stw.toString());
 	}
 
 	@Override

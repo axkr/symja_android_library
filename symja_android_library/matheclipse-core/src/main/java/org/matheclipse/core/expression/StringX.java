@@ -348,7 +348,7 @@ public class StringX extends ExprImpl implements IStringX {
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		if (symbolsAsFactoryMethod) {
 			final StringBuffer buffer = new StringBuffer();
-			buffer.append("stringx(\"");
+			buffer.append("$str(\"");
 			buffer.append(fString);
 			buffer.append("\")");
 			return buffer.toString();
@@ -356,6 +356,16 @@ public class StringX extends ExprImpl implements IStringX {
 		return "\"" + fString + "\"";
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
+		final StringBuffer buffer = new StringBuffer();
+		buffer.append("$str(\"");
+		buffer.append(fString);
+		buffer.append("\")");
+		return buffer.toString();
+	}
+	
 	/**
 	 * @param ch
 	 * @return

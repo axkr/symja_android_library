@@ -21,9 +21,9 @@ public class StringDrop extends AbstractFunctionEvaluator {
 			String s = ast.arg1().toString();
 			final int n = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
 			if (n >= 0) {
-				return F.stringx(s.substring(n, s.length()));
+				return F.$str(s.substring(n, s.length()));
 			} else {
-				return F.stringx(s.substring(0, s.length() + n));
+				return F.$str(s.substring(0, s.length() + n));
 			}
 		}
 

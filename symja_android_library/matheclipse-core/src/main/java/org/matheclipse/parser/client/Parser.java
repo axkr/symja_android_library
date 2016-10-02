@@ -951,6 +951,13 @@ public class Parser extends Scanner {
 
 	private ASTNode parsePrimary() {
 		if (fToken == TT_OPERATOR) {
+			if (";;".equals(fOperatorString)) {
+				FunctionNode function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Span));
+				function.add(fFactory.createInteger(1));
+				function.add(fFactory.createSymbol(IConstantOperators.All));
+				getNextToken();
+				return function;
+			}
 			if (".".equals(fOperatorString)) {
 				fCurrentChar = '.';
 				return getNumber(false);

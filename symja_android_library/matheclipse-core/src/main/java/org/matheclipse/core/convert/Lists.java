@@ -108,7 +108,7 @@ public class Lists {
 		IAST ast = F.ast(F.List);
 		if (p_strings != null) {
 			for (int i = 0, t = p_strings.length; i < t; i++) {
-				ast.append(F.stringx(p_strings[i]));
+				ast.append(F.$str(p_strings[i]));
 			}
 		}
 		return ast;

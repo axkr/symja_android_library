@@ -25,7 +25,7 @@ public class StringJoin extends AbstractFunctionEvaluator {
 				return F.NIL;
 			}
 		}
-		return F.stringx(buf.toString());
+		return F.$str(buf.toString());
  
 	}
 }

@@ -20,7 +20,8 @@ package org.matheclipse.parser.client.ast;
  * 
  */
 public interface IConstantOperators {
-
+	public final static String All = "All";
+	
 	/**
 	 * Head for lists (i.e. {a,b,c,...} )
 	 */
@@ -31,19 +32,12 @@ public interface IConstantOperators {
 	 */
 	public final static String Out = "Out";
 
-	/**
-	 * Head for the Out history (needed for the <array>[ ] operator)
-	 */
 	public final static String Part = "Part";
 
-	/**
-	 * Head for the Out history (needed for the #1,#2,... operator)
-	 */
 	public final static String Slot = "Slot";
+	
+	public final static String Span = "Span";
 
-	/**
-	 * Head for the Out history (needed for the ##1,##2,... operator)
-	 */
 	public final static String SlotSequence = "SlotSequence";
 
 }

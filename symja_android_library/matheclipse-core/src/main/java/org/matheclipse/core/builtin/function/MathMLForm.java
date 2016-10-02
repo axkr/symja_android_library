@@ -27,7 +27,7 @@ public class MathMLForm extends AbstractCoreFunctionEvaluator {
 		IExpr arg1 = ast.arg1();
 		StringWriter stw = new StringWriter();
 		mathMLUtil.toMathML(arg1, stw);
-		return F.stringx(stw.toString());
+		return F.$str(stw.toString());
 	}
 
 	@Override

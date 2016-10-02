@@ -75,7 +75,7 @@ public class SerializableTest extends TestCase {
 	}
 
 	public void testStringX() {
-		equalsCopy(F.stringx("test"));
+		equalsCopy(F.$str("test"));
 	}
 
 	public void testFunction() {

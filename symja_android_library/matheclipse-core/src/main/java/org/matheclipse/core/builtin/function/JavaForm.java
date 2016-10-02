@@ -34,7 +34,7 @@ public class JavaForm extends AbstractCoreFunctionEvaluator {
 			strictJava = options.isOption("Strict");
 		}
 		String resultStr = javaForm(arg1, strictJava);
-		return F.stringx(resultStr);
+		return F.$str(resultStr);
 	}
 
 	public static String javaForm(IExpr arg1, boolean strictJava) {

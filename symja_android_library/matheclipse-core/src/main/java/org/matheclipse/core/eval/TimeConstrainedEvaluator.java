@@ -56,13 +56,13 @@ public class TimeConstrainedEvaluator extends EvalUtilities implements Runnable 
 			if (Config.DEBUG) {
 				e.printStackTrace();
 			}
-			fEvaluationResult = F.stringx("OutOfMemoryError");
+			fEvaluationResult = F.$str("OutOfMemoryError");
 			// fException = e;
 		} catch (final StackOverflowError e) {
 			if (Config.DEBUG) {
 				e.printStackTrace();
 			}
-			fEvaluationResult = F.stringx("StackOverflowError");
+			fEvaluationResult = F.$str("StackOverflowError");
 			// fException = e;
 		}
 	}

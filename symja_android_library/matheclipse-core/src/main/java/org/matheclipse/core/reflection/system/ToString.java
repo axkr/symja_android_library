@@ -20,7 +20,7 @@ public class ToString extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
-		return F.stringx(outputForm(ast.arg1()));
+		return F.$str(outputForm(ast.arg1()));
 	}
 
 	public static String outputForm(final IExpr expression) {

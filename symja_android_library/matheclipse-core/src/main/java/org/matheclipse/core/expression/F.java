@@ -774,6 +774,8 @@ public class F {
 	public final static ISymbol LetterQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "letterq" : "LetterQ");
 	public final static ISymbol Level = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "level" : "Level");
 	public final static ISymbol Limit = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "limit" : "Limit");
+	public final static ISymbol LinearModelFit = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "linearmodelfit" : "LinearModelFit");
 	public final static ISymbol LinearProgramming = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "linearprogramming" : "LinearProgramming");
 	public final static ISymbol LinearSolve = initFinalSymbol(
@@ -2312,7 +2314,17 @@ public class F {
 
 		return symbol;
 	}
-
+	
+	/**
+	 * Create a string expression
+	 * 
+	 * @param str
+	 * @return
+	 */
+	final static public IStringX $str(final String str) {
+		return StringX.valueOf(str);
+	}
+	
 	// --- generated source codes:
 	public static IAST Abs(final IExpr a0) {
 		return unaryAST1(Abs, a0);
@@ -4112,7 +4124,23 @@ public class F {
 	public static IAST Line() {
 		return ast(Line);
 	}
-
+	
+	public static IAST LinearModelFit(final IExpr a0) {
+		return unaryAST1(LinearModelFit, a0);
+	}
+	
+	public static IAST LinearModelFit(final IExpr a0, final IExpr a1) {
+		return binaryAST2(LinearModelFit, a0, a1);
+	}
+	
+	public static IAST LinearModelFit(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(LinearModelFit, a0, a1, a2);
+	}
+	
+	public static IAST LinearModelFit(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+		return quaternary(LinearModelFit, a0, a1, a2, a3);
+	}
+	
 	public static IAST LinearSolve(final IExpr a0, final IExpr a1) {
 		return binaryAST2(LinearSolve, a0, a1);
 	}
@@ -5001,6 +5029,7 @@ public class F {
 	 * 
 	 * @param str
 	 * @return
+	 * @deprecated
 	 */
 	final static public IStringX stringx(final String str) {
 		return StringX.valueOf(str);
@@ -5085,6 +5114,10 @@ public class F {
 		return ast(SurfaceGraphics);
 	}
 
+	public static IAST Table(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Table, a0, a1);
+	}
+	
 	public static IAST Take(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Take, a0, a1);
 	}

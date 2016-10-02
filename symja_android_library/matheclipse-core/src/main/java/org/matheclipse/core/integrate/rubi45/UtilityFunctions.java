@@ -29,7 +29,7 @@ import static org.matheclipse.core.expression.F.UnsameQ;
 import static org.matheclipse.core.expression.F.ast;
 import static org.matheclipse.core.expression.F.binary;
 import static org.matheclipse.core.expression.F.quaternary;
-import static org.matheclipse.core.expression.F.stringx;
+import static org.matheclipse.core.expression.F.$str;
 import static org.matheclipse.core.expression.F.ternary;
 import static org.matheclipse.core.expression.F.u;
 import static org.matheclipse.core.expression.F.u_;
@@ -167,7 +167,7 @@ public class UtilityFunctions {
 							v,
 							If(SameQ(u, C0),
 									CompoundExpression(
-											Print(stringx("*** Warning ***:  Dist[0,"), v, stringx(" "), x, stringx("]")), C0),
+											Print($str("*** Warning ***:  Dist[0,"), v, $str(" "), x, $str("]")), C0),
 									If(And(Less(NumericFactor(u), C0), Greater(NumericFactor(Times(CN1, u)), C0)),
 											Times(CN1, Dist(Times(CN1, u), v, x)),
 											If(SumQ(v),

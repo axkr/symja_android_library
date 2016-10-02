@@ -388,7 +388,7 @@ public class AST2Expr {
 			return F.fraction(numerator, fr.isSign() ? (IInteger) denominator.negate() : denominator);
 		}
 		if (node instanceof StringNode) {
-			return F.stringx(node.getString());
+			return F.$str(node.getString());
 		}
 		if (node instanceof FloatNode) {
 			String nStr = node.getString();

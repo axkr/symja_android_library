@@ -21,9 +21,9 @@ public class StringTake extends AbstractFunctionEvaluator {
 			String s = ast.arg1().toString();
 			final int n = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
 			if (n >= 0) {
-				return F.stringx(s.substring(0, n));
+				return F.$str(s.substring(0, n));
 			} else {
-				return F.stringx(s.substring(s.length() + n, s.length()));
+				return F.$str(s.substring(s.length() + n, s.length()));
 			}
 		}
 
