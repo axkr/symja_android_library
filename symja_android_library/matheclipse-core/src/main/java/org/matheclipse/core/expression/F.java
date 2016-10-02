@@ -562,6 +562,8 @@ public class F {
 	public final static ISymbol Catenate = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "catenate" : "Catenate");
 	public final static ISymbol Ceiling = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ceiling" : "Ceiling");
+	public final static ISymbol CentralMoment = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "centralmoment" : "CentralMoment");
 	public final static ISymbol CharacteristicPolynomial = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "characteristicpolynomial" : "CharacteristicPolynomial");
 	public final static ISymbol ChebyshevT = initFinalSymbol(
@@ -1223,12 +1225,22 @@ public class F {
 	 * Constant fraction &quot;1/2&quot;
 	 */
 	public final static IFraction C1D2 = AbstractFractionSym.valueOf(1, 2);
+	
+	/**
+	 * Constant fraction &quot;3/2&quot;
+	 */
+	public final static IFraction C3D2 = AbstractFractionSym.valueOf(3, 2);
 
 	/**
 	 * Constant fraction &quot;-1/2&quot;
 	 */
 	public final static IFraction CN1D2 = AbstractFractionSym.valueOf(-1, 2);
 
+	/**
+	 * Constant fraction &quot;-3/2&quot;
+	 */
+	public final static IFraction CN3D2 = AbstractFractionSym.valueOf(-3, 2);
+	
 	/**
 	 * Constant fraction &quot;1/3&quot;
 	 */
@@ -2674,6 +2686,10 @@ public class F {
 
 		}
 		return arg;
+	}
+
+	public static IAST CentralMoment(final IExpr a0, final IExpr a1) {
+		return binaryAST2(CentralMoment, a0, a1);
 	}
 
 	public static IAST Clear(final IExpr... a) {
@@ -5141,6 +5157,10 @@ public class F {
 
 	public static IAST Together(final IExpr a0) {
 		return unaryAST1(Together, a0);
+	}
+
+	public static IAST Total(final IExpr a0) {
+		return unaryAST1(Total, a0);
 	}
 
 	public static IAST Tr(final IExpr a0) {

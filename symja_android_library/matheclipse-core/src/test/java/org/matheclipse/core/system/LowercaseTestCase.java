@@ -486,7 +486,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testBinomial() {
 		check("Binomial(n0, 2)", "1/2*n0*(-1+n0)");
-		
+
 		check("Binomial(k/3, k)", "Binomial(k/3,k)");
 		check("Binomial(0, 0)", "1");
 		check("Binomial(1000, 500)",
@@ -609,6 +609,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testCeiling() {
 		check("Ceiling(1.5)", "2");
 		check("Ceiling(1.5 + 2.7 I)", "2+I*3");
+	}
+
+	public void testCentralMoment() {
+		check("CentralMoment({1.1, 1.2, 1.4, 2.1, 2.4}, 4)", "0.10084512");
 	}
 
 	public void testCharacteristicPolynomial() {
@@ -1885,6 +1889,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Join({{a, b}, {x, y}}, {{1, 2}, {3, 4}})", "{{a,b},{x,y},{1,2},{3,4}}");
 	}
 
+	public void testKurtosis() {
+		check("Kurtosis({1.1, 1.2, 1.4, 2.1, 2.4})", "1.4209750290831376");
+	}
+
 	public void testLaguerreL() {
 		check("LaguerreL(5, x)", "1-5*x+5*x^2-5/3*x^3+5/24*x^4-x^5/120");
 	}
@@ -2055,7 +2063,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LogisticSigmoid(0.5 + 2.3 I)", "1.0647505893884985+I*0.8081774171575826");
 		check("LogisticSigmoid({-0.2, 0.1, 0.3})", "{0.45016600268752216,0.52497918747894,0.574442516811659}");
 	}
-	
+
 	public void testMap() {
 		check("Map(List,Join({1,2,3},4-{1,2,3}))", "{{1},{2},{3},{3},{2},{1}}");
 		check("Map(f, {{{{{a}}}}}, 2)", "{f({f({{{a}}})})}");
@@ -3233,6 +3241,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testSinIntegral() {
 		check("SinIntegral(2.8)", "1.8320965890813214");
+	}
+
+	public void testSkewness() {
+		check("Skewness({1.1, 1.2, 1.4, 2.1, 2.4})", "0.4070412816074879");
 	}
 
 	public void testSlot() {
