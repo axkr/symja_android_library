@@ -23,7 +23,7 @@ public abstract class AbstractTestCase extends TestCase {
 
 	public AbstractTestCase(String name) {
 		super(name);
-		Config.SERVER_MODE = true;
+		Config.SERVER_MODE = false;
 	}
 
 	public void check(String evalString, String expectedResult) {

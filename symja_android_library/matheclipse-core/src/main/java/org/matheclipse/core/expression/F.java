@@ -2314,7 +2314,7 @@ public class F {
 
 		return symbol;
 	}
-	
+
 	/**
 	 * Create a string expression
 	 * 
@@ -2324,7 +2324,7 @@ public class F {
 	final static public IStringX $str(final String str) {
 		return StringX.valueOf(str);
 	}
-	
+
 	// --- generated source codes:
 	public static IAST Abs(final IExpr a0) {
 		return unaryAST1(Abs, a0);
@@ -2949,11 +2949,11 @@ public class F {
 	public static IAST Conjugate(final IExpr a0) {
 		return unaryAST1(Conjugate, a0);
 	}
-	
+
 	public static IAST ConstantArray(final IExpr a0, final IExpr a1) {
 		return binaryAST2(ConstantArray, a0, a1);
 	}
-	
+
 	public static IAST Continue() {
 		return headAST0(Continue);
 	}
@@ -3577,7 +3577,7 @@ public class F {
 	public static IAST Function(final IExpr a0) {
 		return unary(Function, a0);
 	}
-	
+
 	public static IAST Function(final IExpr a0, final IExpr a1) {
 		return binary(Function, a0, a1);
 	}
@@ -4057,6 +4057,7 @@ public class F {
 	 * Test if the absolute value is less than the given epsilon.
 	 * 
 	 * @param value
+	 * @param epsilon
 	 * @return
 	 */
 	public static boolean isZero(double value, double epsilon) {
@@ -4124,23 +4125,23 @@ public class F {
 	public static IAST Line() {
 		return ast(Line);
 	}
-	
+
 	public static IAST LinearModelFit(final IExpr a0) {
 		return unaryAST1(LinearModelFit, a0);
 	}
-	
+
 	public static IAST LinearModelFit(final IExpr a0, final IExpr a1) {
 		return binaryAST2(LinearModelFit, a0, a1);
 	}
-	
+
 	public static IAST LinearModelFit(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(LinearModelFit, a0, a1, a2);
 	}
-	
+
 	public static IAST LinearModelFit(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
 		return quaternary(LinearModelFit, a0, a1, a2, a3);
 	}
-	
+
 	public static IAST LinearSolve(final IExpr a0, final IExpr a1) {
 		return binaryAST2(LinearSolve, a0, a1);
 	}
@@ -4250,7 +4251,7 @@ public class F {
 	public static IAST MapThread(final IExpr a0, final IExpr a1) {
 		return binaryAST2(MapThread, a0, a1);
 	}
-	
+
 	public static IAST MapAll(final IExpr a0) {
 
 		return unaryAST1(MapAll, a0);
@@ -4348,7 +4349,7 @@ public class F {
 	public static IAST Module(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Module, a0, a1);
 	}
-	
+
 	public static IAST Most(final IExpr a0) {
 		return unaryAST1(Most, a0);
 	}
@@ -5117,7 +5118,7 @@ public class F {
 	public static IAST Table(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Table, a0, a1);
 	}
-	
+
 	public static IAST Take(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Take, a0, a1);
 	}

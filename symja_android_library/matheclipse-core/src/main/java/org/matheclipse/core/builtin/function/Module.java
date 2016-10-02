@@ -11,6 +11,7 @@ import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.parser.client.math.MathException;
 
 public class Module extends AbstractCoreFunctionEvaluator {
@@ -75,11 +76,15 @@ public class Module extends AbstractCoreFunctionEvaluator {
 	private static IExpr evalModule(IAST intializerList, IExpr arg2, final EvalEngine engine) {
 		final int moduleCounter = engine.incModuleCounter();
 		final String varAppend = "$" + moduleCounter;
-		final java.util.Map<ISymbol, ISymbol> moduleVariables = new IdentityHashMap<ISymbol, ISymbol>();
+		final java.util.IdentityHashMap<ISymbol, ISymbol> moduleVariables = new IdentityHashMap<ISymbol, ISymbol>();
 
 		try {
 			rememberVariables(intializerList, varAppend, moduleVariables, engine);
-			return engine.evaluate(F.subst(arg2, Functors.rules(moduleVariables)));
+			IExpr subst = arg2.accept(new ModuleReplaceAll(moduleVariables));
+			if (subst.isPresent()) {
+				return engine.evaluate(subst);
+			}
+			return arg2;
 		} finally {
 			engine.removeUserVariables(moduleVariables);
 		}
@@ -100,8 +105,8 @@ public class Module extends AbstractCoreFunctionEvaluator {
 	 * @param engine
 	 *            the evaluation engine
 	 */
-	private static void rememberVariables(IAST variablesList, final String varAppend, final java.util.Map<ISymbol, ISymbol> variablesMap,
-			final EvalEngine engine) {
+	private static void rememberVariables(IAST variablesList, final String varAppend,
+			final java.util.Map<ISymbol, ISymbol> variablesMap, final EvalEngine engine) {
 		ISymbol oldSymbol;
 		ISymbol newSymbol;
 		for (int i = 1; i < variablesList.size(); i++) {

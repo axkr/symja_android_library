@@ -1904,6 +1904,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLaguerreL() {
+		check("LaguerreL(3, x)", "1-3*x+3/2*x^2-x^3/6");
+		check("LaguerreL(4, x)", "1-4*x+3*x^2-2/3*x^3+x^4/24");
 		check("LaguerreL(5, x)", "1-5*x+5*x^2-5/3*x^3+5/24*x^4-x^5/120");
 	}
 
@@ -1944,7 +1946,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLegendreP() {
-		check("LegendreP(10, x)", "-63/256+3465/256*x^2-15015/128*x^4+45045/128*x^6-109395/256*x^8+46189/256*x^10");
+		check("LegendreP(1,x)", "x");
+		check("LegendreP(4,x)", "3/8-15/4*x^2+35/8*x^4");
+		check("LegendreP(7,x)", "-35/16*x+315/16*x^3-693/16*x^5+429/16*x^7");
+		check("LegendreP(10,x)", "-63/256+3465/256*x^2-15015/128*x^4+45045/128*x^6-109395/256*x^8+46189/256*x^10");
 	}
 
 	// public void testJacobianMatrix() {
@@ -2165,6 +2170,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testModule() {
+		check("xm=10;Module({xm=xm}, xm=xm+1;xm)", "11");
+		check("xm=10;Module({xm=xm}, xm=xm+1;xm);xm", "10");
+		check("xm=10;Module({t=xm}, xm=xm+1;t)", "10");
+		check("xm=10;Module({t=xm}, xm=xm+1;t);xm", "11");
+		check("Module({a}, Block({a}, a))", "a");
+		check("Module({a}, Block({}, a))", "a$6");
+		check("t === Module({t}, t)", "False");
 		check("$g(x_) := Module({v=x},int(v,x)/;v=!=x);$g(f(x))", "$g(f(x))");
 		check("$g(x_) := Module({v=x},int1(v,x)/;v===x);$g(f(x))", "int1(f(x),f(x))");
 		check("$h(x_) := Module({$u}, $u^2 /; (($u = x - 1) > 0));$h(6)", "25");
