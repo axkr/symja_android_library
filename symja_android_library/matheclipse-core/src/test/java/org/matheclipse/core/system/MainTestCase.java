@@ -3049,32 +3049,6 @@ public class MainTestCase extends AbstractTestCase {
 	// check("Plot(Sin(x),{x,0,10})", "");
 	// };
 
-	public void testSystem802() {
-		if (!Config.SERVER_MODE) {
-			EvalEngine.get().setPackageMode(true);
-			check("Package( \n" + "  \"Polynomials\", \n" + "  (* define the public available symbols *)\n"
-					+ "  {LaguerreP, LegendreP}, \n" + "{ \n" + "  (* Laguerre polynomials \n"
-					+ "     http://en.wikipedia.org/wiki/Laguerre_polynomials *)\n" + "  LaguerreP(0,x_):=1,\n"
-					+ "  LaguerreP(1,x_):=1-x,\n" + "  LaguerreP(n_IntegerQ,x_):=\n"
-					+ "      ExpandAll((2*n-1-x)*LaguerreP(n-1,x) - (n-1)^2*LaguerreP(n-2,x)) /; NonNegative(n),\n"
-					+ "  (* Legendre polynomials \n" + "     http://en.wikipedia.org/wiki/Legendre_polynomials *)\n"
-					+ "  LegendreP(n_IntegerQ,x_):=\n"
-					+ "      1/(2^n)*Sum(ExpandAll(Binomial(n,k)^2*(x-1)^(n-k)*(x+1)^k), {k,0,n}) /; NonNegative(n)\n"
-					+ "    \n" + "} )", "");
-			EvalEngine.get().setPackageMode(false);
-
-			check("LaguerreP(0,x)", "1");
-			check("LaguerreP(1,x)", "-x+1");
-			check("LaguerreP(2,x)", "x^2-4*x+2");
-			check("LaguerreP(3,x)", "-x^3+9*x^2-18*x+6");
-			check("LaguerreP(4,x)", "x^4-16*x^3+72*x^2-96*x+24");
-			check("LegendreP(1,x)", "x");
-			check("LegendreP(4,x)", "1/16*(70*x^4-60*x^2+6)");
-			check("LegendreP(7,x)", "1/128*(3432*x^7-5544*x^5+2520*x^3-280*x)");
-			check("LegendreP(10,x)", "1/1024*(184756*x^10-437580*x^8+360360*x^6-120120*x^4+13860*x^2-252)");
-		}
-	}
-
 	public void testSystem803() {
 		// see
 		// http://google-opensource.blogspot.com/2009/06/introducing-apache-commons-math.html
