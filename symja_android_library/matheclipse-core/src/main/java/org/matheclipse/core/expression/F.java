@@ -622,6 +622,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "denominator" : "Denominator");
 	public final static ISymbol Derivative = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "derivative" : "Derivative");
+	public final static ISymbol DesignMatrix = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "designmatrix" : "DesignMatrix");
 	public final static ISymbol Det = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "det" : "Det");
 	public final static ISymbol DiagonalMatrix = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "diagonalmatrix" : "DiagonalMatrix");
@@ -1225,7 +1227,7 @@ public class F {
 	 * Constant fraction &quot;1/2&quot;
 	 */
 	public final static IFraction C1D2 = AbstractFractionSym.valueOf(1, 2);
-	
+
 	/**
 	 * Constant fraction &quot;3/2&quot;
 	 */
@@ -1240,7 +1242,7 @@ public class F {
 	 * Constant fraction &quot;-3/2&quot;
 	 */
 	public final static IFraction CN3D2 = AbstractFractionSym.valueOf(-3, 2);
-	
+
 	/**
 	 * Constant fraction &quot;1/3&quot;
 	 */
@@ -2935,7 +2937,11 @@ public class F {
 	public static IAST Conjugate(final IExpr a0) {
 		return unaryAST1(Conjugate, a0);
 	}
-
+	
+	public static IAST ConstantArray(final IExpr a0, final IExpr a1) {
+		return binaryAST2(ConstantArray, a0, a1);
+	}
+	
 	public static IAST Continue() {
 		return headAST0(Continue);
 	}
@@ -3020,6 +3026,10 @@ public class F {
 
 	public static IAST Derivative(final IExpr... a) {
 		return ast(a, Derivative);
+	}
+
+	public static IAST DesignMatrix(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(DesignMatrix, a0, a1, a2);
 	}
 
 	public static IAST Det(final IExpr a0) {
@@ -3554,6 +3564,10 @@ public class F {
 
 	public static IAST Function(final IExpr a0) {
 		return unary(Function, a0);
+	}
+	
+	public static IAST Function(final IExpr a0, final IExpr a1) {
+		return binary(Function, a0, a1);
 	}
 
 	public static IAST Gamma(final IExpr a0) {
@@ -4205,6 +4219,10 @@ public class F {
 		return binaryAST2(Map, a0, a1);
 	}
 
+	public static IAST MapThread(final IExpr a0, final IExpr a1) {
+		return binaryAST2(MapThread, a0, a1);
+	}
+	
 	public static IAST MapAll(final IExpr a0) {
 
 		return unaryAST1(MapAll, a0);
@@ -4301,6 +4319,10 @@ public class F {
 
 	public static IAST Module(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Module, a0, a1);
+	}
+	
+	public static IAST Most(final IExpr a0) {
+		return unaryAST1(Most, a0);
 	}
 
 	public static IExpr multiply(IExpr a, Integer i) {
