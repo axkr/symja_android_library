@@ -21,7 +21,7 @@ public interface LaplaceTransformRules {
       Condition(Times(a,LaplaceTransform(f,t,s)),FreeQ(a,t))),
     ISetDelayed(LaplaceTransform(Times(a_,Power(t_,n_DEFAULT)),t_,s_),
       Condition(Times(Power(CN1,n),D(LaplaceTransform(a,t,s),List(s,n))),And(IntegerQ(n),Greater(n,C0)))),
-    ISetDelayed(LaplaceTransform(Times(a_DEFAULT,Power(E,Plus(b_DEFAULT,Times(c_DEFAULT,t_)))),t_,s_),
+    ISetDelayed(LaplaceTransform(Times(Power(E,Plus(b_DEFAULT,Times(c_DEFAULT,t_))),a_DEFAULT),t_,s_),
       Condition(LaplaceTransform(Times(a,Power(E,b)),t,Plus(s,Negate(c))),FreeQ(List(b,c),t))),
     ISetDelayed(LaplaceTransform(Sqrt(t_),t_,s_),
       Times(Sqrt(Pi),Power(Times(C2,Power(s,QQ(3L,2L))),-1))),

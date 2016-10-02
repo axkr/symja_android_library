@@ -1015,6 +1015,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("y''''(x)", "Derivative(4)[y][x]");
 	}
 
+	public void testDesignMatrix() {
+		check("DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, x, x)", "{{1,2},{1,3},{1,5},{1,7}}");
+		check("DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, f(x), x)", "{{1,f(2)},{1,f(3)},{1,f(5)},{1,f(7)}}");
+	}
+
 	public void testDet() {
 		check("Det({{a11, a12},{a21,a22}})", "-a12*a21+a11*a22");
 		check("Det({{a,b,c},{d,e,f},{h,i,j}})", "-c*e*h+b*f*h+c*d*i-a*f*i-b*d*j+a*e*j");
