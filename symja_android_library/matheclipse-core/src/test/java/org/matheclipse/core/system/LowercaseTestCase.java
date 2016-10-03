@@ -1544,11 +1544,30 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFresnelC() {
+		check("FresnelC(0)", "0");
+		check("FresnelC(Infinity)", "1/2");
+		check("FresnelC(-Infinity)", "-1/2");
+		check("FresnelC(I*Infinity)", "I*1/2");
+		check("FresnelC(-I*Infinity)", "-I*1/2");
+		
+		check("FresnelC(-z)", "-FresnelC(z)");
+		check("FresnelC(I*z)", "I*FresnelC(z)");
 		check("FresnelC(1.8)", "0.33363292722155624");
+		 
+		check("D(FresnelC(x),x)", "Cos(1/2*Pi*x^2)");
 	}
 
 	public void testFresnelS() {
+		check("FresnelS(0)", "0");
+		check("FresnelS(Infinity)", "1/2");
+		check("FresnelS(-Infinity)", "-1/2");
+		check("FresnelS(I*Infinity)", "-I*1/2");
+		check("FresnelS(-I*Infinity)", "I*1/2");
+		
+		check("FresnelS(-z)", "-FresnelS(z)");
+		check("FresnelS(I*z)", "-I*FresnelS(z)");
 		check("FresnelS(1.8)", "0.4509387692675837");
+		check("D(Fresnels(x),x)", "Sin(1/2*Pi*x^2)");
 	}
 
 	public void testFrobeniusSolve() {

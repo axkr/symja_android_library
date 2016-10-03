@@ -45,7 +45,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 			// EvalEngine.get().addRules(ruleList);
 		}
 
-//		F.SYMBOL_OBSERVER.createPredefinedSymbol(newSymbol.toString());
+		// F.SYMBOL_OBSERVER.createPredefinedSymbol(newSymbol.toString());
 		if (Config.SERIALIZE_SYMBOLS && newSymbol.containsRules()) {
 			FileOutputStream out;
 			try {
@@ -103,6 +103,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 			if (((INumber) expression).complexSign() < 0) {
 				return ((INumber) expression).negate();
 			}
+			return F.NIL;
 		}
 		if (expression.isAST()) {
 			if (checkTimesPlus && expression.isTimes()) {
@@ -171,6 +172,49 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 		}
 		if (expression.isNegativeResult()) {
 			return F.eval(F.Negate(expression));
+		}
+		return F.NIL;
+	}
+
+	/**
+	 * Check if the expression has a complex number factor I.
+	 * 
+	 * @param expression
+	 * @param factor
+	 * @return the negated negative expression or <code>null</code> if a
+	 *         negative expression couldn't be extracted.
+	 */
+	public static IExpr extractFactorFromExpression(final IExpr expression, INumber factor) {
+		return extractFactorFromExpression(expression, factor, true);
+	}
+
+	/**
+	 * Check if the expression has a complex number factor I.
+	 * 
+	 * @param expression
+	 * @param factor
+	 * @param checkTimes
+	 *            check <code>Times(...)</code> expressions
+	 * @return the negated negative expression or <code>F.NIL</code> if a
+	 *         negative expression couldn't be extracted.
+	 */
+	public static IExpr extractFactorFromExpression(final IExpr expression, INumber factor, boolean checkTimes) {
+		if (expression.isNumber()) {
+			if (((INumber) expression).equals(factor)) {
+				return F.C1;
+			}
+		} else {
+			if (expression.isAST()) {
+				if (checkTimes && expression.isTimes()) {
+					IAST timesAST = ((IAST) expression);
+					IExpr arg1 = timesAST.arg1();
+					if (arg1.isNumber()) {
+						if (((INumber) arg1).equals(F.CI)) {
+							return timesAST.removeAtClone(1).getOneIdentity(factor);
+						}
+					}
+				}
+			}
 		}
 		return F.NIL;
 	}

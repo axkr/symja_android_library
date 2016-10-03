@@ -18,6 +18,8 @@
   Erfi->((2*E^(#^(2))/Sqrt(Pi))&),
   Floor->(0&),
   FractionalPart->(1&),
+  FresnelC->(Cos((Pi*#^2)/2)&),
+  FresnelS->(Sin((Pi*#^2)/2)&),
   Gamma->(Gamma(#)*PolyGamma(#)&),
   IntegerPart->(0&),
   InverseErf->((1/2*Sqrt(Pi)*E^(InverseErf(x)^2))&),

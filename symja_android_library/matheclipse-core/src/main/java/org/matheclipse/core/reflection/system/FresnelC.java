@@ -1,7 +1,10 @@
 package org.matheclipse.core.reflection.system;
 
+import static org.matheclipse.core.expression.F.Negate;
+
 import java.util.function.DoubleUnaryOperator;
 
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
@@ -33,12 +36,32 @@ public class FresnelC extends AbstractTrigArg1 implements INumeric, DoubleUnaryO
 
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
-		if (arg1.isZero()){
-			return F.C0;
+		if (arg1.isNumber()) {
+			if (arg1.isZero()) {
+				return F.C0;
+			}
 		}
-		if (arg1.isInfinity()){
+		if (arg1.isInfinity()) {
 			return F.C1D2;
 		}
+		if (arg1.isNegativeInfinity()) {
+			return F.CN1D2;
+		}
+		if (arg1.equals(F.CIInfinity)) {
+			return F.Divide(F.CI, F.C2);
+		}
+		if (arg1.equals(F.CNIInfinity)) {
+			return F.Divide(F.CNI, F.C2);
+		}
+		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+		if (negExpr.isPresent()) {
+			return F.Negate(F.FresnelC(negExpr));
+		}
+		IExpr restExpr = AbstractFunctionEvaluator.extractFactorFromExpression(arg1, F.CI);
+		if (restExpr.isPresent()) {
+			return F.Times(F.CI, F.FresnelC(restExpr));
+		}
+
 		return F.NIL;
 	}
 
