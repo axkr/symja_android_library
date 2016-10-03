@@ -1,12 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.InverseErf;
-import static org.matheclipse.core.expression.F.Negate;
-
 import java.util.function.DoubleUnaryOperator;
 
 import org.apache.commons.math3.exception.MaxCountExceededException;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
@@ -19,17 +15,21 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  * @see org.matheclipse.core.reflection.system.Erf
  */
-public class InverseErf extends AbstractTrigArg1 implements INumeric {
-	public InverseErf() {
+public class InverseErfc extends AbstractTrigArg1 implements INumeric {
+	public InverseErfc() {
 	}
- 
+
+//	public double applyAsDouble(double operand) {
+//		return org.apache.commons.math3.special.Erf.erfcInv(operand);
+//	}
+
 	@Override
 	public IExpr e1DblArg(final double arg1) {
-		try {
-			if (arg1 >= -1.0 && arg1 <= 1.0) {
-				return Num.valueOf(org.apache.commons.math3.special.Erf.erfInv(arg1));
+		if (arg1 >= 0. && arg1 <= 2.0) {
+			try {
+				return Num.valueOf(org.apache.commons.math3.special.Erf.erfcInv(arg1));
+			} catch (final MaxCountExceededException e) {
 			}
-		} catch (final MaxCountExceededException e) {
 		}
 		return F.NIL;
 	}
@@ -41,8 +41,8 @@ public class InverseErf extends AbstractTrigArg1 implements INumeric {
 		}
 		try {
 			double arg1 = stack[top];
-			if (arg1 >= -1.0 && arg1 <= 1.0) {
-				return org.apache.commons.math3.special.Erf.erfInv(arg1);
+			if (arg1 >= 0. && arg1 <= 2.0) {
+				return org.apache.commons.math3.special.Erf.erfcInv(arg1);
 			}
 		} catch (final MaxCountExceededException e) {
 		}
@@ -53,12 +53,12 @@ public class InverseErf extends AbstractTrigArg1 implements INumeric {
 	public IExpr evaluateArg1(final IExpr arg1) {
 		if (arg1.isSignedNumber()) {
 			if (arg1.isZero()) {
-				return F.C0;
-			}
-			if (arg1.isOne()) {
 				return F.CInfinity;
 			}
-			if (arg1.isMinusOne()) {
+			if (arg1.isOne()) {
+				return F.C0;
+			}
+			if (arg1.equals(F.C2)) {
 				return F.CNInfinity;
 			}
 		}

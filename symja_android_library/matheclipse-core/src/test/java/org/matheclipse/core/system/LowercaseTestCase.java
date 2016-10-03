@@ -1161,6 +1161,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDSolve() {
+		check("DSolve(D(f(x, y), x) == D(f(x, y), y), f, {x, y})", "DSolve(Derivative(1,0)[f][x,y]==0,f,{x,y})");
 		check("DSolve({y'(x)==y(x),y(0)==1},y(x), x)", "{{y(x)->E^x}}");
 		check("DSolve({y'(x)==y(x)+2,y(0)==1},y(x), x)", "{{y(x)->-2+3*E^x}}");
 
@@ -1852,13 +1853,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("InverseErf(0)", "0");
 		check("InverseErf(1)", "Infinity");
 		check("InverseErf(-1)", "-Infinity");
-		check("InverseErf(-x)", "-InverseErf(x)");
 		check("InverseErf(0.6)", "0.5951160814499948");
 		check("Sqrt(2)*InverseErf(0.99)", "2.5758293035489004");
 		check("InverseErf(1/{2., 3., 4., 5.})",
 				"{0.47693627620446977,0.3045701941739856,0.22531205501217808,0.17914345462129166}");
 		check("InverseErf(-1/{2., 3., 4., 5.})",
 				"{-0.47693627620446977,-0.3045701941739856,-0.22531205501217808,-0.17914345462129166}");
+		check("InverseErf({-2.,-3.,3.})",
+				"{InverseErf(-2.0),InverseErf(-3.0),InverseErf(3.0)}");
+	}
+	
+	public void testInverseErfc() {
+		check("InverseErfc(0)", "Infinity");
+		check("InverseErfc(1)", "0");
+		check("InverseErfc(2)", "-Infinity");
+		check("InverseErfc(0.6)", "0.37080715859355795");
+		check("Sqrt(2)*InverseErfc(0.99)", "0.012533469508069274");
+		check("InverseErfc(1/{2., 3., 4., 5.})",
+				"{0.47693627620446977,0.6840703496566226,0.8134198475976184,0.9061938024368233}");
+		check("InverseErfc(-1/{2., 3., 4., 5.})",
+				"{InverseErfc(-0.5),InverseErfc(-0.3333333333333333),InverseErfc(-0.25),InverseErfc(-0.2)}");
 	}
 
 	public void testInverseFunction() {

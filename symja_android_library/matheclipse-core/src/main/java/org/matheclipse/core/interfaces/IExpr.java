@@ -26,7 +26,6 @@ import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NILPointer;
-import org.matheclipse.core.harmony.util.HMList;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.reflection.system.Equal;
