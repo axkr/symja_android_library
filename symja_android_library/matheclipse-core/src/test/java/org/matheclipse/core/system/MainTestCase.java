@@ -9,6 +9,8 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TimeConstrainedEvaluator;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.reflection.system.Cancel;
 
 /**
  * Tests system.reflection classes
@@ -2732,10 +2734,6 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem398() {
-		check("Together((-x+3)*(x^2+2)^(-1)+6*x*(x^2+2)^(-2)+x^(-1))", "(4+6*x+8*x^2+3*x^3)/(4*x+4*x^3+x^5)");
-
-		check("Together(x+3/4*x^(-3))", "(3+4*x^4)/(4*x^3)");
-
 		check("Numerator(3/4)", "3");
 		check("Denominator(3/4)", "4");
 		check("Numerator(42)", "42");
@@ -2766,6 +2764,15 @@ public class MainTestCase extends AbstractTestCase {
 		check("Erf(3.0)", "0.9999779095030014");
 	}
 
+	public void testSystem400() {
+		EvalEngine engine = EvalEngine.get();
+		IExpr exprNumerator = engine.parse("8+12*x+20*x^2+12*x^3+8*x^4+3*x^5");
+		IExpr exprDenominator = engine.parse("8*x+12*x^3+6*x^5+x^7");
+		IExpr[] result = Cancel.cancelGCD(exprNumerator, exprDenominator);
+		assertEquals(result[0].toString(), "1");
+		assertEquals(result[1].toString(), "4+6*x+8*x^2+3*x^3");	
+	}
+	
 	public void testSystem401() {
 		check("Expand((b^2*c^2-12)^(1/2))", "Sqrt(-12+b^2*c^2)");
 		check("ExpandAll(1/2*((b^2*c^2-12)^(1/2)-b*c))", "-1/2*b*c+Sqrt(-12+b^2*c^2)/2");
