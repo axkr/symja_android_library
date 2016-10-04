@@ -1,7 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math3.linear.FieldMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.hipparchus.linear.FieldMatrix;
+import org.hipparchus.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -60,7 +60,7 @@ public class Covariance extends AbstractMatrix1Expr {
 					try {
 						double[] arg1DoubleArray = arg1.toDoubleVector();
 						double[] arg2DoubleArray = arg2.toDoubleVector();
-						org.apache.commons.math3.stat.correlation.Covariance cov = new org.apache.commons.math3.stat.correlation.Covariance();
+						org.hipparchus.stat.correlation.Covariance cov = new org.hipparchus.stat.correlation.Covariance();
 						return F.num(cov.covariance(arg1DoubleArray, arg2DoubleArray, true));
 					} catch (Exception ex) {
 						//
@@ -114,7 +114,7 @@ public class Covariance extends AbstractMatrix1Expr {
 
 	@Override
 	public IExpr realMatrixEval(RealMatrix matrix) {
-		org.apache.commons.math3.stat.correlation.Covariance cov = new org.apache.commons.math3.stat.correlation.Covariance(
+		org.hipparchus.stat.correlation.Covariance cov = new org.hipparchus.stat.correlation.Covariance(
 				matrix);
 		return new ASTRealMatrix(cov.getCovarianceMatrix(), false);
 	}

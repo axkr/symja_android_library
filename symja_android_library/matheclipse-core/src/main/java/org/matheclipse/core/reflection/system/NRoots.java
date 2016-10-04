@@ -3,8 +3,8 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.evalExpandAll;
 
-import org.apache.commons.math3.analysis.solvers.LaguerreSolver;
-import org.apache.commons.math3.complex.Complex;
+import org.hipparchus.analysis.solvers.LaguerreSolver;
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.convert.Object2Expr;

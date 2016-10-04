@@ -1,5 +1,11 @@
 package org.matheclipse.core.interfaces;
 
+import org.hipparchus.Field;
+import org.hipparchus.FieldElement;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
@@ -12,12 +18,6 @@ import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.apache.commons.math3.Field;
-import org.apache.commons.math3.FieldElement;
-import org.apache.commons.math3.complex.Complex;
-import org.apache.commons.math3.exception.MathArithmeticException;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
@@ -2166,7 +2166,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public IExpr power(final long n);
 
 	@Override
-	default public IExpr reciprocal() throws MathArithmeticException {
+	default public IExpr reciprocal() throws MathRuntimeException {
 		return inverse();
 	}
 

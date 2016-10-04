@@ -1,8 +1,8 @@
 package org.matheclipse.core.convert;
 
+import org.hipparchus.util.OpenIntToDoubleHashMap;
 import java.math.RoundingMode;
 
-import org.apache.commons.math3.util.OpenIntToDoubleHashMap;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;

@@ -1,8 +1,8 @@
 package org.matheclipse.core.interfaces;
 
+import org.hipparchus.fraction.BigFraction;
 import java.math.BigInteger;
 
-import org.apache.commons.math3.fraction.BigFraction;
 
 /**
  * interface for "fractional" numbers

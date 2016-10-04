@@ -1,8 +1,8 @@
 package org.matheclipse.core.expression;
 
+import org.hipparchus.complex.Complex;
 import java.math.BigInteger;
 
-import org.apache.commons.math3.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;

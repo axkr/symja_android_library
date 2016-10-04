@@ -16,11 +16,11 @@
  */
 package org.matheclipse.core.polynomials;
 
+import org.hipparchus.fraction.BigFraction;
+import org.hipparchus.util.FastMath;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.fraction.BigFraction;
-import org.apache.commons.math3.util.FastMath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;

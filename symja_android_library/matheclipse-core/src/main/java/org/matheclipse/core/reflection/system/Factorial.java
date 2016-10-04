@@ -1,16 +1,14 @@
 package org.matheclipse.core.reflection.system;
 
+import com.google.common.math.BigIntegerMath;
+import com.google.common.math.LongMath;
 import java.math.BigInteger;
-
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import com.google.common.math.BigIntegerMath;
-import com.google.common.math.LongMath;
 
 /**
  * Returns the factorial of an integer n
@@ -25,7 +23,7 @@ public class Factorial extends AbstractTrigArg1 {
 
 	@Override
 	public IExpr e1DblArg(final double arg1) {
-		double d = org.apache.commons.math3.special.Gamma.gamma(arg1 + 1.0);
+		double d = org.hipparchus.special.Gamma.gamma(arg1 + 1.0);
 		return F.num(d);
 	}
 

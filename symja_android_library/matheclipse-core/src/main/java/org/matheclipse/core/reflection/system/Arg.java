@@ -10,9 +10,9 @@ import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.num;
 
+import org.hipparchus.complex.Complex;
 import java.util.function.DoubleUnaryOperator;
 
-import org.apache.commons.math3.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;

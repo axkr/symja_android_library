@@ -1,9 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math3.linear.FieldLUDecomposition;
-import org.apache.commons.math3.linear.FieldMatrix;
-import org.apache.commons.math3.linear.LUDecomposition;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.hipparchus.linear.FieldLUDecomposition;
+import org.hipparchus.linear.FieldMatrix;
+import org.hipparchus.linear.LUDecomposition;
+import org.hipparchus.linear.RealMatrix;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.expression.F;

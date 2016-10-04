@@ -1,8 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math3.linear.DecompositionSolver;
-import org.apache.commons.math3.linear.FieldMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.hipparchus.linear.DecompositionSolver;
+import org.hipparchus.linear.FieldMatrix;
+import org.hipparchus.linear.RealMatrix;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Matrix;
 import org.matheclipse.core.interfaces.IAST;
@@ -33,8 +33,7 @@ public class PseudoInverse extends AbstractMatrix1Matrix {
 
 	@Override
 	public RealMatrix realMatrixEval(RealMatrix matrix) {
-		final org.apache.commons.math3.linear.SingularValueDecomposition lu = new org.apache.commons.math3.linear.SingularValueDecomposition(
-				matrix);
+		final org.hipparchus.linear.SingularValueDecomposition lu = new org.hipparchus.linear.SingularValueDecomposition(matrix);
 		DecompositionSolver solver = lu.getSolver();
 		return solver.getInverse();
 	}

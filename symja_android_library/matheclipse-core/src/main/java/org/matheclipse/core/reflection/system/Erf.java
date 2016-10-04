@@ -1,17 +1,15 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.CInfinity;
-import static org.matheclipse.core.expression.F.CNInfinity;
-import static org.matheclipse.core.expression.F.Erf;
-import static org.matheclipse.core.expression.F.Negate;
-
 import java.util.function.DoubleUnaryOperator;
-
-import org.apache.commons.math3.exception.MaxCountExceededException;
+import org.hipparchus.exception.MathIllegalStateException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
+import static org.matheclipse.core.expression.F.CInfinity;
+import static org.matheclipse.core.expression.F.CNInfinity;
+import static org.matheclipse.core.expression.F.Erf;
+import static org.matheclipse.core.expression.F.Negate;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -27,14 +25,14 @@ public class Erf extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperat
 
 	@Override
 	public double applyAsDouble(double operand) {
-		return org.apache.commons.math3.special.Erf.erf(operand);
+		return org.hipparchus.special.Erf.erf(operand);
 	}
 
 	@Override
 	public IExpr e1DblArg(final double arg1) {
 		try {
-			return Num.valueOf(org.apache.commons.math3.special.Erf.erf(arg1));
-		} catch (final MaxCountExceededException e) {
+			return Num.valueOf(org.hipparchus.special.Erf.erf(arg1));
+		} catch (final MathIllegalStateException e) {
 		}
 		return F.NIL;
 	}
@@ -45,8 +43,8 @@ public class Erf extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperat
 			throw new UnsupportedOperationException();
 		}
 		try {
-			return org.apache.commons.math3.special.Erf.erf(stack[top]);
-		} catch (final MaxCountExceededException e) {
+			return org.hipparchus.special.Erf.erf(stack[top]);
+		} catch (final MathIllegalStateException e) {
 		}
 		throw new UnsupportedOperationException();
 	}

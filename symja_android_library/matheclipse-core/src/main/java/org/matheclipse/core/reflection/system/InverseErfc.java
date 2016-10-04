@@ -1,8 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import java.util.function.DoubleUnaryOperator;
-
-import org.apache.commons.math3.exception.MaxCountExceededException;
+import org.hipparchus.exception.MathIllegalStateException;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
@@ -27,8 +25,8 @@ public class InverseErfc extends AbstractTrigArg1 implements INumeric {
 	public IExpr e1DblArg(final double arg1) {
 		if (arg1 >= 0. && arg1 <= 2.0) {
 			try {
-				return Num.valueOf(org.apache.commons.math3.special.Erf.erfcInv(arg1));
-			} catch (final MaxCountExceededException e) {
+				return Num.valueOf(org.hipparchus.special.Erf.erfcInv(arg1));
+			} catch (final MathIllegalStateException e) {
 			}
 		}
 		return F.NIL;
@@ -42,9 +40,9 @@ public class InverseErfc extends AbstractTrigArg1 implements INumeric {
 		try {
 			double arg1 = stack[top];
 			if (arg1 >= 0. && arg1 <= 2.0) {
-				return org.apache.commons.math3.special.Erf.erfcInv(arg1);
+				return org.hipparchus.special.Erf.erfcInv(arg1);
 			}
-		} catch (final MaxCountExceededException e) {
+		} catch (final MathIllegalStateException e) {
 		}
 		throw new UnsupportedOperationException();
 	}

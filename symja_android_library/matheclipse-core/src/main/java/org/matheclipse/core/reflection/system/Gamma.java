@@ -1,7 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.function.DoubleUnaryOperator;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
@@ -40,12 +39,12 @@ public class Gamma extends AbstractTrigArg1 implements DoubleUnaryOperator {
 
 	@Override
 	public double applyAsDouble(double operand) {
-		return org.apache.commons.math3.special.Gamma.gamma(operand);
+		return org.hipparchus.special.Gamma.gamma(operand);
 	}
 
 	@Override
 	public IExpr e1DblArg(final double arg1) {
-		double gamma = org.apache.commons.math3.special.Gamma.gamma(arg1);
+		double gamma = org.hipparchus.special.Gamma.gamma(arg1);
 		return F.num(gamma);
 	}
 	

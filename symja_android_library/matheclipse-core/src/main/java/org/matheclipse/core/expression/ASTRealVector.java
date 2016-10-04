@@ -1,5 +1,7 @@
 package org.matheclipse.core.expression;
 
+import org.hipparchus.linear.ArrayRealVector;
+import org.hipparchus.linear.RealVector;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -13,8 +15,6 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.RealVector;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.harmony.util.HMList;
 import org.matheclipse.core.interfaces.IAST;

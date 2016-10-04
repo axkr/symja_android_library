@@ -1,12 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.InverseErf;
-import static org.matheclipse.core.expression.F.Negate;
 
-import java.util.function.DoubleUnaryOperator;
-
-import org.apache.commons.math3.exception.MaxCountExceededException;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.hipparchus.exception.MathIllegalStateException;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
@@ -27,9 +22,9 @@ public class InverseErf extends AbstractTrigArg1 implements INumeric {
 	public IExpr e1DblArg(final double arg1) {
 		try {
 			if (arg1 >= -1.0 && arg1 <= 1.0) {
-				return Num.valueOf(org.apache.commons.math3.special.Erf.erfInv(arg1));
+				return Num.valueOf(org.hipparchus.special.Erf.erfInv(arg1));
 			}
-		} catch (final MaxCountExceededException e) {
+		} catch (final MathIllegalStateException e) {
 		}
 		return F.NIL;
 	}
@@ -42,9 +37,9 @@ public class InverseErf extends AbstractTrigArg1 implements INumeric {
 		try {
 			double arg1 = stack[top];
 			if (arg1 >= -1.0 && arg1 <= 1.0) {
-				return org.apache.commons.math3.special.Erf.erfInv(arg1);
+				return org.hipparchus.special.Erf.erfInv(arg1);
 			}
-		} catch (final MaxCountExceededException e) {
+		} catch (final MathIllegalStateException e) {
 		}
 		throw new UnsupportedOperationException();
 	}

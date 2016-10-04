@@ -1,12 +1,12 @@
 package org.matheclipse.core.expression;
 
+import org.hipparchus.complex.Complex;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.apache.commons.math3.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.WrongArgumentType;

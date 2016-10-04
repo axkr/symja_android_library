@@ -1,14 +1,14 @@
 package org.matheclipse.core.convert;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.linear.Array2DRowFieldMatrix;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.ArrayFieldVector;
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.FieldMatrix;
-import org.apache.commons.math3.linear.FieldVector;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.linear.Array2DRowFieldMatrix;
+import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.ArrayFieldVector;
+import org.hipparchus.linear.ArrayRealVector;
+import org.hipparchus.linear.FieldMatrix;
+import org.hipparchus.linear.FieldVector;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;

@@ -1,15 +1,14 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.List;
-
-import org.apache.commons.math3.linear.FieldLUDecomposition;
-import org.apache.commons.math3.linear.FieldMatrix;
+import org.hipparchus.linear.FieldLUDecomposition;
+import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import static org.matheclipse.core.expression.F.List;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 

@@ -1,15 +1,15 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.solvers.BaseAbstractUnivariateSolver;
-import org.apache.commons.math3.analysis.solvers.BisectionSolver;
-import org.apache.commons.math3.analysis.solvers.BrentSolver;
-import org.apache.commons.math3.analysis.solvers.IllinoisSolver;
-import org.apache.commons.math3.analysis.solvers.MullerSolver;
-import org.apache.commons.math3.analysis.solvers.PegasusSolver;
-import org.apache.commons.math3.analysis.solvers.RegulaFalsiSolver;
-import org.apache.commons.math3.analysis.solvers.RiddersSolver;
-import org.apache.commons.math3.analysis.solvers.SecantSolver;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.solvers.BaseAbstractUnivariateSolver;
+import org.hipparchus.analysis.solvers.BisectionSolver;
+import org.hipparchus.analysis.solvers.BrentSolver;
+import org.hipparchus.analysis.solvers.IllinoisSolver;
+import org.hipparchus.analysis.solvers.MullerSolver;
+import org.hipparchus.analysis.solvers.PegasusSolver;
+import org.hipparchus.analysis.solvers.RegulaFalsiSolver;
+import org.hipparchus.analysis.solvers.RiddersSolver;
+import org.hipparchus.analysis.solvers.SecantSolver;
 import org.matheclipse.commons.math.analysis.solvers.DifferentiableUnivariateFunction;
 import org.matheclipse.commons.math.analysis.solvers.NewtonSolver;
 import org.matheclipse.core.basic.Config;

@@ -1,6 +1,6 @@
 package org.matheclipse.core.expression;
 
-import org.apache.commons.math3.complex.Complex;
+import org.hipparchus.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.EvalEngine;

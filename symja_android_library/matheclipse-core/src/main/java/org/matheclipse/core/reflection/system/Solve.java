@@ -1,12 +1,12 @@
 package org.matheclipse.core.reflection.system;
 
+import org.hipparchus.linear.FieldMatrix;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.apache.commons.math3.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.function.PossibleZeroQ;
 import org.matheclipse.core.convert.Convert;

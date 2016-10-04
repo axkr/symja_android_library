@@ -4,13 +4,13 @@ import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.evalExpandAll;
 
+import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.EigenDecomposition;
+import org.hipparchus.linear.RealMatrix;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.EigenDecomposition;
-import org.apache.commons.math3.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.VariablesSet;

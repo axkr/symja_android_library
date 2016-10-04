@@ -32,7 +32,7 @@ public class BesselJ extends AbstractFunctionEvaluator {
 		if (arg1 instanceof INum && arg2 instanceof INum) {
 			try {
 				// numeric mode evaluation
-				org.apache.commons.math3.special.BesselJ besselJ = new org.apache.commons.math3.special.BesselJ(
+				org.hipparchus.special.BesselJ besselJ = new org.hipparchus.special.BesselJ(
 						((INum) arg2).doubleValue());
 				return F.num(besselJ.value(((INum) arg1).doubleValue()));
 			} catch (NegativeArraySizeException nae) {

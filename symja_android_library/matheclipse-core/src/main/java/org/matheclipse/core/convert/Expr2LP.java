@@ -1,10 +1,10 @@
 package org.matheclipse.core.convert;
 
+import org.hipparchus.optim.linear.LinearConstraint;
+import org.hipparchus.optim.linear.LinearObjectiveFunction;
+import org.hipparchus.optim.linear.Relationship;
 import java.util.List;
 
-import org.apache.commons.math3.optim.linear.LinearConstraint;
-import org.apache.commons.math3.optim.linear.LinearObjectiveFunction;
-import org.apache.commons.math3.optim.linear.Relationship;
 import org.matheclipse.core.builtin.function.NumericQ;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;

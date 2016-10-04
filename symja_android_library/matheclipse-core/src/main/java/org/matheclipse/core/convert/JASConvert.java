@@ -1,27 +1,5 @@
 package org.matheclipse.core.convert;
 
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-
-import org.matheclipse.core.eval.exception.JASConversionException;
-import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IComplex;
-import org.matheclipse.core.interfaces.IComplexNum;
-import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IFraction;
-import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.INum;
-import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.ISignedNumber;
-import org.matheclipse.core.interfaces.ISymbol;
-
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModIntegerRing;
 import edu.jas.integrate.Integral;
@@ -42,6 +20,26 @@ import edu.jas.structure.RingElem;
 import edu.jas.structure.RingFactory;
 import edu.jas.structure.UnaryFunctor;
 import edu.jas.ufd.Quotient;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import org.matheclipse.core.eval.exception.JASConversionException;
+import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IComplex;
+import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from
@@ -584,7 +582,7 @@ public class JASConvert<C extends RingElem<C>> {
 		return F.chopNumber(F.complexNum(red, imd), epsilon);
 	}
 
-	public static INumber jas2Numeric(org.apache.commons.math3.complex.Complex c, double epsilon) {
+	public static INumber jas2Numeric(org.hipparchus.complex.Complex c, double epsilon) {
 		double red = c.getReal();
 		double imd = c.getImaginary();
 		return F.chopNumber(F.complexNum(red, imd), epsilon);

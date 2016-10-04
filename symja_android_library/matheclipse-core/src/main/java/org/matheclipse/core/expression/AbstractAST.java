@@ -1,5 +1,10 @@
 package org.matheclipse.core.expression;
 
+import org.hipparchus.complex.Complex;
+import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.ArrayRealVector;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
@@ -13,11 +18,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.apache.commons.math3.complex.Complex;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.function.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;

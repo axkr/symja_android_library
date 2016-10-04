@@ -1,12 +1,10 @@
 package org.matheclipse.core.convert;
 
-import static org.matheclipse.core.expression.F.List;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
-
 import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
+import static org.matheclipse.core.expression.F.List;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -118,8 +116,8 @@ public class Object2Expr {
 			}
 			return list;
 		}
-		if (obj instanceof org.apache.commons.math3.complex.Complex[]) {
-			return AST.newInstance(F.List, (org.apache.commons.math3.complex.Complex[]) obj);
+		if (obj instanceof org.hipparchus.complex.Complex[]) {
+			return AST.newInstance(F.List, (org.hipparchus.complex.Complex[]) obj);
 		}
 		if (obj instanceof boolean[]) {
 			final boolean[] array = (boolean[]) obj;
@@ -136,7 +134,7 @@ public class Object2Expr {
 		return F.$str(obj.toString());
 	}
 
-	public static IAST convertComplex(org.apache.commons.math3.complex.Complex[] array) throws ConversionException {
+	public static IAST convertComplex(org.hipparchus.complex.Complex[] array) throws ConversionException {
 		return AST.newInstance(F.List, array);
 	}
 }

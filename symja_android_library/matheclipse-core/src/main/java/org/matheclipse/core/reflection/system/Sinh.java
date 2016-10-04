@@ -3,9 +3,9 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Sinh;
 
+import org.hipparchus.complex.Complex;
 import java.util.function.DoubleUnaryOperator;
 
-import org.apache.commons.math3.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;

@@ -1,9 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.transform.DftNormalization;
-import org.apache.commons.math3.transform.FastFourierTransformer;
-import org.apache.commons.math3.transform.TransformType;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.transform.DftNormalization;
+import org.hipparchus.transform.FastFourierTransformer;
+import org.hipparchus.transform.TransformType;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -36,7 +36,7 @@ public class NFourierTransform extends AbstractFunctionEvaluator {
 
 		UnivariateFunction f = new UnaryNumerical(expr, t, engine);
 		FastFourierTransformer fft = new FastFourierTransformer(DftNormalization.STANDARD);
-		org.apache.commons.math3.complex.Complex[] result = fft.transform(f, -1.0, 1.0, 8, TransformType.FORWARD);
+		org.hipparchus.complex.Complex[] result = fft.transform(f, -1.0, 1.0, 8, TransformType.FORWARD);
 		return Object2Expr.convertComplex(result);
 	}
 

@@ -1,12 +1,9 @@
 package org.matheclipse.core.stat.descriptive;
 
-import org.apache.commons.math3.exception.DimensionMismatchException;
-import org.apache.commons.math3.exception.MathIllegalArgumentException;
-import org.apache.commons.math3.exception.NotPositiveException;
-import org.apache.commons.math3.exception.NullArgumentException;
-import org.apache.commons.math3.exception.NumberIsTooLargeException;
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.stat.descriptive.StorelessUnivariateStatistic;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.exception.NullArgumentException;
+import org.hipparchus.stat.descriptive.StorelessUnivariateStatistic;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -46,7 +43,7 @@ public abstract class AbstractSymbolicStorelessUnivariateStatistic implements St
 	 */
 	public IExpr evaluate(final IAST values) {
 		if (values == null) {
-			throw new NullArgumentException(LocalizedFormats.INPUT_ARRAY);
+			throw new NullArgumentException(LocalizedCoreFormats.INPUT_ARRAY);
 		}
 		return evaluate(values, 1, values.size() - 1);
 	}
@@ -119,7 +116,7 @@ public abstract class AbstractSymbolicStorelessUnivariateStatistic implements St
 	 */
 	public void incrementAll(IAST values) {
 		if (values == null) {
-			throw new NullArgumentException(LocalizedFormats.INPUT_ARRAY);
+			throw new NullArgumentException(LocalizedCoreFormats.INPUT_ARRAY);
 		}
 		incrementAll(values, 1, values.size() - 1);
 	}
@@ -211,19 +208,19 @@ public abstract class AbstractSymbolicStorelessUnivariateStatistic implements St
 	protected boolean test(final IAST values, final int begin, final int length, final boolean allowEmpty) {
 
 		if (values == null) {
-			throw new NullArgumentException(LocalizedFormats.INPUT_ARRAY);
+			throw new NullArgumentException(LocalizedCoreFormats.INPUT_ARRAY);
 		}
 
 		if (begin < 0) {
-			throw new NotPositiveException(LocalizedFormats.START_POSITION, begin);
+			throw new MathIllegalArgumentException(LocalizedCoreFormats.START_POSITION, begin);
 		}
 
 		if (length < 0) {
-			throw new NotPositiveException(LocalizedFormats.LENGTH, length);
+			throw new MathIllegalArgumentException(LocalizedCoreFormats.LENGTH, length);
 		}
 
 		if (begin + length > values.size()) {
-			throw new NumberIsTooLargeException(LocalizedFormats.SUBARRAY_ENDS_AFTER_ARRAY_END, begin + length, values.size(), true);
+			throw new MathIllegalArgumentException(LocalizedCoreFormats.SUBARRAY_ENDS_AFTER_ARRAY_END, begin + length, values.size(), true);
 		}
 
 		if (length == 0 && !allowEmpty) {
@@ -323,11 +320,11 @@ public abstract class AbstractSymbolicStorelessUnivariateStatistic implements St
 	protected boolean test(final IAST values, final IAST weights, final int begin, final int length, final boolean allowEmpty) {
 
 		if (weights == null) {
-			throw new NullArgumentException(LocalizedFormats.INPUT_ARRAY);
+			throw new NullArgumentException(LocalizedCoreFormats.INPUT_ARRAY);
 		}
 
 		if (weights.size() != values.size()) {
-			throw new DimensionMismatchException(weights.size(), values.size());
+			throw new MathIllegalArgumentException(LocalizedCoreFormats.DIMENSIONS_MISMATCH, weights.size(), values.size());
 		}
 
 		boolean containsPositiveWeight = false;
@@ -335,16 +332,16 @@ public abstract class AbstractSymbolicStorelessUnivariateStatistic implements St
 			// TODO implement exceptions
 			// if (Double.isNaN(weights[i])) {
 			// throw new
-			// MathIllegalArgumentException(LocalizedFormats.NAN_ELEMENT_AT_INDEX, i);
+			// MathIllegalArgumentException(LocalizedCoreFormats.NAN_ELEMENT_AT_INDEX, i);
 			// }
 			// if (Double.isInfinite(weights[i])) {
 			// throw new
-			// MathIllegalArgumentException(LocalizedFormats.INFINITE_ARRAY_ELEMENT,
+			// MathIllegalArgumentException(LocalizedCoreFormats.INFINITE_ARRAY_ELEMENT,
 			// weights[i], i);
 			// }
 			// if ( weights.get(i) < 0) {
 			// throw new
-			// MathIllegalArgumentException(LocalizedFormats.NEGATIVE_ELEMENT_AT_INDEX,
+			// MathIllegalArgumentException(LocalizedCoreFormats.NEGATIVE_ELEMENT_AT_INDEX,
 			// i, weights[i]);
 			// }
 			// if (!containsPositiveWeight && weights[i] > 0.0) {
@@ -353,7 +350,7 @@ public abstract class AbstractSymbolicStorelessUnivariateStatistic implements St
 		}
 
 		if (!containsPositiveWeight) {
-			throw new MathIllegalArgumentException(LocalizedFormats.WEIGHT_AT_LEAST_ONE_NON_ZERO);
+			throw new MathIllegalArgumentException(LocalizedCoreFormats.WEIGHT_AT_LEAST_ONE_NON_ZERO);
 		}
 
 		return test(values, begin, length, allowEmpty);

@@ -8,7 +8,6 @@ import java.io.ObjectStreamException;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.StringTokenizer;
-
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -318,7 +317,7 @@ public class AST extends HMArrayList implements Externalizable {
 		return new AST(eArr);
 	}
 
-	public static AST newInstance(final ISymbol symbol, final org.apache.commons.math3.complex.Complex... arr) {
+	public static AST newInstance(final ISymbol symbol, final org.hipparchus.complex.Complex... arr) {
 		IExpr[] eArr = new IExpr[arr.length + 1];
 		eArr[0] = symbol;
 		for (int i = 1; i <= arr.length; i++) {

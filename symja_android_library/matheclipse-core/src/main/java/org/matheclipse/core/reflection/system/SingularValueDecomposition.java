@@ -1,8 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.List;
-
-import org.apache.commons.math3.linear.RealMatrix;
+import org.hipparchus.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -10,6 +8,7 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.F;
+import static org.matheclipse.core.expression.F.List;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -33,8 +32,7 @@ public class SingularValueDecomposition extends AbstractFunctionEvaluator {
 
 			matrix = ast.arg1().toRealMatrix();
 			if (matrix != null) {
-				final org.apache.commons.math3.linear.SingularValueDecomposition svd = new org.apache.commons.math3.linear.SingularValueDecomposition(
-						matrix);
+				final org.hipparchus.linear.SingularValueDecomposition svd = new org.hipparchus.linear.SingularValueDecomposition(matrix);
 				final RealMatrix uMatrix = svd.getU();
 				final RealMatrix sMatrix = svd.getS();
 				final RealMatrix vMatrix = svd.getV();

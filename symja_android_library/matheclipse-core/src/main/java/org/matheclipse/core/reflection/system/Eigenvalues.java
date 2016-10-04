@@ -1,8 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math3.linear.EigenDecomposition;
-import org.apache.commons.math3.linear.FieldMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.hipparchus.linear.EigenDecomposition;
+import org.hipparchus.linear.FieldMatrix;
+import org.hipparchus.linear.RealMatrix;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;

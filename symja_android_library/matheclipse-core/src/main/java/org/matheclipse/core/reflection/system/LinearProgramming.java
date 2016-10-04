@@ -1,18 +1,18 @@
 package org.matheclipse.core.reflection.system;
 
+import org.hipparchus.exception.MathIllegalStateException;
+import org.hipparchus.optim.PointValuePair;
+import org.hipparchus.optim.linear.LinearConstraint;
+import org.hipparchus.optim.linear.LinearConstraintSet;
+import org.hipparchus.optim.linear.LinearObjectiveFunction;
+import org.hipparchus.optim.linear.NonNegativeConstraint;
+import org.hipparchus.optim.linear.PivotSelectionRule;
+import org.hipparchus.optim.linear.Relationship;
+import org.hipparchus.optim.linear.SimplexSolver;
+import org.hipparchus.optim.nonlinear.scalar.GoalType;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.apache.commons.math3.exception.MathIllegalStateException;
-import org.apache.commons.math3.optim.PointValuePair;
-import org.apache.commons.math3.optim.linear.LinearConstraint;
-import org.apache.commons.math3.optim.linear.LinearConstraintSet;
-import org.apache.commons.math3.optim.linear.LinearObjectiveFunction;
-import org.apache.commons.math3.optim.linear.NonNegativeConstraint;
-import org.apache.commons.math3.optim.linear.PivotSelectionRule;
-import org.apache.commons.math3.optim.linear.Relationship;
-import org.apache.commons.math3.optim.linear.SimplexSolver;
-import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;

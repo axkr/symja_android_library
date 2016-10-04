@@ -17,9 +17,9 @@
 
 package org.matheclipse.commons.math.analysis.solvers;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.solvers.BaseAbstractUnivariateSolver;
-import org.apache.commons.math3.exception.TooManyEvaluationsException;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.solvers.BaseAbstractUnivariateSolver;
+import org.hipparchus.exception.MathIllegalArgumentException;
 
 /**
  * Provide a default implementation for several functions useful to generic
@@ -60,10 +60,10 @@ public abstract class AbstractDifferentiableUnivariateSolver
      *
      * @param point Point at which the objective function must be evaluated.
      * @return the objective function value at specified point.
-     * @throws TooManyEvaluationsException if the maximal number of evaluations is exceeded.
+     * @throws MathIllegalArgumentException if the maximal number of evaluations is exceeded.
      */
     protected double computeDerivativeObjectiveValue(double point)
-        throws TooManyEvaluationsException {
+        throws MathIllegalArgumentException {
         incrementEvaluationCount();
         return functionDerivative.value(point);
     }

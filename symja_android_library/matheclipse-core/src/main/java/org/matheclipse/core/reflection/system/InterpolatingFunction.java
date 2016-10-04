@@ -1,9 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
-import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.interpolation.SplineInterpolator;
+import org.hipparchus.analysis.interpolation.UnivariateInterpolator;
+import org.hipparchus.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;

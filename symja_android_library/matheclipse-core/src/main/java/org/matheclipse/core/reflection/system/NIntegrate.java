@@ -1,14 +1,14 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.integration.RombergIntegrator;
-import org.apache.commons.math3.analysis.integration.SimpsonIntegrator;
-import org.apache.commons.math3.analysis.integration.TrapezoidIntegrator;
-import org.apache.commons.math3.analysis.integration.UnivariateIntegrator;
-import org.apache.commons.math3.analysis.integration.gauss.GaussIntegrator;
-import org.apache.commons.math3.analysis.integration.gauss.GaussIntegratorFactory;
-import org.apache.commons.math3.exception.ConvergenceException;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.integration.RombergIntegrator;
+import org.hipparchus.analysis.integration.SimpsonIntegrator;
+import org.hipparchus.analysis.integration.TrapezoidIntegrator;
+import org.hipparchus.analysis.integration.UnivariateIntegrator;
+import org.hipparchus.analysis.integration.gauss.GaussIntegrator;
+import org.hipparchus.analysis.integration.gauss.GaussIntegratorFactory;
+import org.hipparchus.exception.MathIllegalStateException;
+import org.hipparchus.util.Precision;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -62,10 +62,10 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 	 * @param maxIterations
 	 *            maximum number of iterations
 	 * @return
-	 * @throws ConvergenceException
+	 * @throws MathIllegalStateException
 	 */
 	public static double integrate(String method, IAST list, double min, double max, IExpr function, int maxPoints,
-			int maxIterations) throws ConvergenceException {
+			int maxIterations) throws MathIllegalStateException {
 		GaussIntegratorFactory factory = new GaussIntegratorFactory();
 
 		ISymbol xVar = (ISymbol) list.arg1();

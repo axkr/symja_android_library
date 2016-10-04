@@ -1,8 +1,8 @@
 package org.matheclipse.core.eval.interfaces;
 
+import org.hipparchus.complex.Complex;
 import java.util.function.DoubleUnaryOperator;
 
-import org.apache.commons.math3.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.ApcomplexNum;

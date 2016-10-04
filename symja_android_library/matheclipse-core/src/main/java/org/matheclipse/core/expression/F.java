@@ -1,5 +1,7 @@
 package org.matheclipse.core.expression;
 
+import org.hipparchus.complex.Complex;
+import org.hipparchus.fraction.BigFraction;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -14,8 +16,6 @@ import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 
-import org.apache.commons.math3.complex.Complex;
-import org.apache.commons.math3.fraction.BigFraction;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatContext;

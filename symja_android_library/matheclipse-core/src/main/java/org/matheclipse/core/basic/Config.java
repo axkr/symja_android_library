@@ -1,9 +1,9 @@
 package org.matheclipse.core.basic;
 
+import org.hipparchus.util.Precision;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.math3.util.Precision;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**

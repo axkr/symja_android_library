@@ -1,9 +1,7 @@
 package org.matheclipse.core.system;
 
 import java.io.StringWriter;
-
 import javax.script.ScriptEngine;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TimeConstrainedEvaluator;
@@ -37,7 +35,7 @@ public class MainTestCase extends AbstractTestCase {
 
 			String evaledResult = (String) scriptEngine.eval(evalString);
 
-			assertEquals(evaledResult, expectedResult);
+			assertEquals(expectedResult, evaledResult);
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals(e.getMessage(), "");
@@ -1522,7 +1520,7 @@ public class MainTestCase extends AbstractTestCase {
 
 		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Trapezoid)", "-0.0208333271245165");
 		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Simpson, MaxIterations->10)",
-				"illegal state: maximal count (10) exceeded: evaluations");
+				"maximal count (10) exceeded");
 		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Simpson)", "-0.0208333320915699");
 
 		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Romberg, MaxIterations->10)",
@@ -2580,9 +2578,9 @@ public class MainTestCase extends AbstractTestCase {
 		check("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Ridders)", "{x->3.4341896575482007}");
 		check("FindRoot(Exp(x)==Pi^3,{x,1,10}, Secant)", "{x->3.4341896575036097}");
 		check("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->100)",
-				"illegal state: maximal count (100) exceeded: evaluations");
+				"maximal count (100) exceeded");
 		check("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->32000)",
-				"illegal state: convergence failed");
+				"convergence failed");
 		check("FindRoot(Exp(x)==Pi^3,{x,1,10}, Illinois)", "{x->3.4341896915055257}");
 		check("FindRoot(Exp(x)==Pi^3,{x,1,10}, Pegasus)", "{x->3.4341896575481976}");
 

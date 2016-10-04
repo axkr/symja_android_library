@@ -1,8 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math3.fitting.AbstractCurveFitter;
-import org.apache.commons.math3.fitting.PolynomialCurveFitter;
-import org.apache.commons.math3.fitting.WeightedObservedPoints;
+import org.hipparchus.fitting.AbstractCurveFitter;
+import org.hipparchus.fitting.PolynomialCurveFitter;
+import org.hipparchus.fitting.WeightedObservedPoints;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.eval.EvalEngine;

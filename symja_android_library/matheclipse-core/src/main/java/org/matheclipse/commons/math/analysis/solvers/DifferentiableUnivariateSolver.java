@@ -16,7 +16,7 @@
  */
 package org.matheclipse.commons.math.analysis.solvers;
 
-import org.apache.commons.math3.analysis.solvers.BaseUnivariateSolver;
+import org.hipparchus.analysis.solvers.BaseUnivariateSolver;
 
 
 /**

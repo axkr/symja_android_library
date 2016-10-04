@@ -1,13 +1,13 @@
 package org.matheclipse.core.reflection.system;
 
+import org.hipparchus.optim.linear.LinearConstraint;
+import org.hipparchus.optim.linear.LinearConstraintSet;
+import org.hipparchus.optim.linear.LinearObjectiveFunction;
+import org.hipparchus.optim.linear.NonNegativeConstraint;
+import org.hipparchus.optim.linear.PivotSelectionRule;
+import org.hipparchus.optim.nonlinear.scalar.GoalType;
 import java.util.List;
 
-import org.apache.commons.math3.optim.linear.LinearConstraint;
-import org.apache.commons.math3.optim.linear.LinearConstraintSet;
-import org.apache.commons.math3.optim.linear.LinearObjectiveFunction;
-import org.apache.commons.math3.optim.linear.NonNegativeConstraint;
-import org.apache.commons.math3.optim.linear.PivotSelectionRule;
-import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;

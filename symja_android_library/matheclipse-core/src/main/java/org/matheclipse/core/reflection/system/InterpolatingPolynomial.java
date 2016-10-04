@@ -1,8 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
-import org.apache.commons.math3.exception.DimensionMismatchException;
-import org.apache.commons.math3.exception.NonMonotonicSequenceException;
-import org.apache.commons.math3.exception.NumberIsTooSmallException;
+import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.exception.MathIllegalArgumentException;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -45,11 +45,11 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 	 * @param y
 	 *            Interpolating values array.
 	 * @return a fresh copy of the divided difference array.
-	 * @throws DimensionMismatchException
+	 * @throws MathIllegalArgumentException
 	 *             if the array lengths are different.
-	 * @throws NumberIsTooSmallException
+	 * @throws MathIllegalArgumentException
 	 *             if the number of points is less than 2.
-	 * @throws NonMonotonicSequenceException
+	 * @throws MathIllegalArgumentException
 	 *             if {@code x} is not sorted in strictly increasing order.
 	 */
 	protected static IExpr[] computeDividedDifference(final IExpr x[], final IExpr y[]) {

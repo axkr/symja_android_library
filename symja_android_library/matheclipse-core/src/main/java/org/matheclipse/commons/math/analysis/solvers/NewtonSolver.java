@@ -17,9 +17,9 @@
 
 package org.matheclipse.commons.math.analysis.solvers;
 
-import org.apache.commons.math3.analysis.solvers.UnivariateSolverUtils;
-import org.apache.commons.math3.exception.TooManyEvaluationsException;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.solvers.UnivariateSolverUtils;
+import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.util.FastMath;
 
 /**
  * Implements <a href="http://mathworld.wolfram.com/NewtonsMethod.html">
@@ -55,15 +55,15 @@ public class NewtonSolver extends AbstractDifferentiableUnivariateSolver {
      * @param max Upper bound for the interval.
      * @param maxEval Maximum number of evaluations.
      * @return the value where the function is zero.
-     * @throws org.apache.commons.math3.exception.TooManyEvaluationsException
+     * @throws org.apache.commons.math3.exception.MathIllegalArgumentException
      * if the maximum evaluation count is exceeded.
-     * @throws org.apache.commons.math3.exception.NumberIsTooLargeException
+     * @throws org.apache.commons.math3.exception.MathIllegalArgumentException
      * if {@code min >= max}.
      */
     @Override
     public double solve(int maxEval, final DifferentiableUnivariateFunction f,
                         final double min, final double max)
-        throws TooManyEvaluationsException {
+        throws MathIllegalArgumentException {
         return super.solve(maxEval, f, UnivariateSolverUtils.midpoint(min, max));
     }
 
@@ -72,7 +72,7 @@ public class NewtonSolver extends AbstractDifferentiableUnivariateSolver {
      */
     @Override
     protected double doSolve()
-        throws TooManyEvaluationsException {
+        throws MathIllegalArgumentException {
         final double startValue = getStartValue();
         final double absoluteAccuracy = getAbsoluteAccuracy();
 

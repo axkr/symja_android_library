@@ -1,14 +1,13 @@
 package org.matheclipse.core.expression;
 
 import java.math.BigInteger;
-
-import org.apache.commons.math3.exception.ZeroException;
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.fraction.BigFraction;
-import org.apache.commons.math3.fraction.FractionConversionException;
-import org.apache.commons.math3.util.ArithmeticUtils;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.exception.MathIllegalStateException;
+import org.hipparchus.fraction.BigFraction;
+import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -79,7 +78,7 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 	 */
 	public static IFraction valueOf(BigInteger num, BigInteger den) {
 		if (BigInteger.ZERO.equals(den)) {
-			throw new ZeroException(LocalizedFormats.ZERO_DENOMINATOR);
+			throw new MathIllegalArgumentException(LocalizedCoreFormats.ZERO_DENOMINATOR);
 		}
 		int cp = den.signum();
 		if (cp < 0) {
@@ -127,7 +126,7 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 		try {
 			fraction = new BigFraction(value, epsilon, 200);
 			return new BigFractionSym(fraction);
-		} catch (FractionConversionException e) {
+		} catch (MathIllegalStateException e) {
 			fraction = new BigFraction(value);
 		}
 		return new BigFractionSym(fraction);
@@ -191,7 +190,7 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 	public static IFraction valueOf(long newnum, long newdenom) {
 		if (newdenom != 1) {
 			if (newdenom == 0) {
-				throw new ZeroException(LocalizedFormats.ZERO_DENOMINATOR);
+				throw new MathIllegalArgumentException(LocalizedCoreFormats.ZERO_DENOMINATOR);
 			}
 			long gcd2 = Math.abs(ArithmeticUtils.gcd(newnum, newdenom));
 			if (newdenom < 0) {
