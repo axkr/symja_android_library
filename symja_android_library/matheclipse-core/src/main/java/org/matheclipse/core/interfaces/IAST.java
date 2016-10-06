@@ -11,7 +11,6 @@ import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.ASTRange;
-import org.matheclipse.core.harmony.util.HMList;
 import org.matheclipse.core.reflection.system.Apart;
 
 /**
@@ -45,7 +44,7 @@ import org.matheclipse.core.reflection.system.Apart;
  * <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">Directed
  * acyclic graph</a>
  */
-public interface IAST extends IExpr, HMList<IExpr>, Cloneable {
+public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * The enumeration for the properties (keys) of the map possibly associated
@@ -251,7 +250,7 @@ public interface IAST extends IExpr, HMList<IExpr>, Cloneable {
 	 *             if an object cannot be added to this {@code List}.
 	 */
 	public boolean addAll(Collection<? extends IExpr> collection);
-	
+
 	/**
 	 * Appends all elements from offset <code>startPosition</code> to
 	 * <code>endPosition</code> in the specified AST to the end of this AST.
@@ -1074,7 +1073,7 @@ public interface IAST extends IExpr, HMList<IExpr>, Cloneable {
 	 *             if {@code location < 0 || >= size()}
 	 */
 	public IExpr set(int location, IExpr object);
-	
+
 	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements
 	 * themselves are not copied) and set the <code>expr</code> at the given
@@ -1118,7 +1117,7 @@ public interface IAST extends IExpr, HMList<IExpr>, Cloneable {
 	 * @return the number of elements in this {@code IAST}.
 	 */
 	public int size();
-	
+
 	/**
 	 * Returns an array containing all elements contained in this {@code List}.
 	 * 

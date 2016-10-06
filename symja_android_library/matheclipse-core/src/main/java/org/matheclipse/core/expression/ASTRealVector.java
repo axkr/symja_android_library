@@ -16,7 +16,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.harmony.util.HMList;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -53,7 +52,7 @@ import jdk.nashorn.internal.runtime.regexp.joni.Config;
  * 
  * @see AST
  */
-public class ASTRealVector extends AbstractAST implements HMList<IExpr>, Cloneable, Externalizable, RandomAccess {
+public class ASTRealVector extends AbstractAST implements Cloneable, Externalizable, RandomAccess {
 
 	/**
 	 * 

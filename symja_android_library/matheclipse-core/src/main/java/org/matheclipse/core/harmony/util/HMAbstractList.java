@@ -34,7 +34,7 @@ import org.matheclipse.core.interfaces.IAST;
  *
  * @since 1.2
  */
-public abstract class HMAbstractList<E> extends HMAbstractCollection<E> implements HMList<E> {
+public abstract class HMAbstractList<E> extends HMAbstractCollection<E> implements Iterable<E> {
 
 	/**
 	 * A counter for changes to the list.
@@ -721,16 +721,16 @@ public abstract class HMAbstractList<E> extends HMAbstractCollection<E> implemen
 	 * @throws IllegalArgumentException
 	 *             if (start > end)
 	 */
-	public HMList<E> subList(int start, int end) {
-		if (0 <= start && end <= size()) {
-			if (start <= end) {
-				if (this instanceof RandomAccess) {
-					return new SubAbstractListRandomAccess<E>(this, start, end);
-				}
-				return new SubAbstractList<E>(this, start, end);
-			}
-			throw new IllegalArgumentException();
-		}
-		throw new IndexOutOfBoundsException();
-	}
+//	public HMList<E> subList(int start, int end) {
+//		if (0 <= start && end <= size()) {
+//			if (start <= end) {
+//				if (this instanceof RandomAccess) {
+//					return new SubAbstractListRandomAccess<E>(this, start, end);
+//				}
+//				return new SubAbstractList<E>(this, start, end);
+//			}
+//			throw new IllegalArgumentException();
+//		}
+//		throw new IndexOutOfBoundsException();
+//	}
 }

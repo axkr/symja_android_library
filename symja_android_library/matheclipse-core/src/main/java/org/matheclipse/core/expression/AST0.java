@@ -14,7 +14,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.matheclipse.core.harmony.util.HMList;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -49,7 +48,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * 
  * @see AST
  */
-public class AST0 extends AbstractAST implements HMList<IExpr>, Cloneable, Externalizable, RandomAccess {
+public class AST0 extends AbstractAST implements Cloneable, Externalizable, RandomAccess {
 
 	private final static int SIZE = 1;
 

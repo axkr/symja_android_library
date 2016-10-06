@@ -14,7 +14,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.harmony.util.HMCollection;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;

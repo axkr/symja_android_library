@@ -30,7 +30,7 @@ import java.util.Iterator;
  *
  * @since 1.2
  */
-public abstract class HMAbstractCollection<E> implements HMCollection<E> {
+public abstract class HMAbstractCollection<E> {
 
     /**
      * Constructs a new instance of this AbstractCollection.
