@@ -50,7 +50,7 @@ public class FromCharacterCode extends AbstractFunctionEvaluator {
 	public void setUp(final ISymbol newSymbol) {
 	}
 
-	public static HMList<IExpr> fromCharcterCode(final String unicodeInput, final String inputEncoding, final HMList<IExpr> list) {
+	public static IAST fromCharcterCode(final String unicodeInput, final String inputEncoding, final IAST list) {
 		try {
 			final String utf8String = new String(unicodeInput.getBytes(inputEncoding), "UTF-8");
 			int characterCode;

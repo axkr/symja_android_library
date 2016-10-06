@@ -671,9 +671,9 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	 * @return an array of the elements from this {@code ArrayList}
 	 */
 	@Override
-	public Object[] toArray() {
+	public IExpr[] toArray() {
 		int size = lastIndex - firstIndex;
-		Object[] result = new Object[size];
+		IExpr[] result = new IExpr[size];
 		System.arraycopy(array, firstIndex, result, 0, size);
 		return result;
 	}
@@ -693,20 +693,20 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	 *             when the type of an element in this {@code ArrayList} cannot
 	 *             be stored in the type of the specified array.
 	 */
-	@Override
-	@SuppressWarnings("unchecked")
-	public <T> T[] toArray(T[] contents) {
-		int size = lastIndex - firstIndex;
-		if (size > contents.length) {
-			Class<?> ct = contents.getClass().getComponentType();
-			contents = (T[]) Array.newInstance(ct, size);
-		}
-		System.arraycopy(array, firstIndex, contents, 0, size);
-		if (size < contents.length) {
-			contents[size] = null;
-		}
-		return contents;
-	}
+//	@Override
+//	@SuppressWarnings("unchecked")
+//	public <T> T[] toArray(T[] contents) {
+//		int size = lastIndex - firstIndex;
+//		if (size > contents.length) {
+//			Class<?> ct = contents.getClass().getComponentType();
+//			contents = (T[]) Array.newInstance(ct, size);
+//		}
+//		System.arraycopy(array, firstIndex, contents, 0, size);
+//		if (size < contents.length) {
+//			contents[size] = null;
+//		}
+//		return contents;
+//	}
 
 	/**
 	 * Sets the capacity of this {@code ArrayList} to be the same as the current

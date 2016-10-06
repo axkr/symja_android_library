@@ -14,7 +14,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.matheclipse.core.harmony.util.HMCollection;
 import org.matheclipse.core.harmony.util.HMList;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -510,8 +509,8 @@ public class AST0 extends AbstractAST implements HMList<IExpr>, Cloneable, Exter
 	 * @return an array of the elements from this {@code ArrayList}
 	 */
 	@Override
-	public Object[] toArray() {
-		Object[] result = new Object[SIZE];
+	public IExpr[] toArray() {
+		IExpr[] result = new IExpr[SIZE];
 		result[0] = arg0;
 		return result;
 	}

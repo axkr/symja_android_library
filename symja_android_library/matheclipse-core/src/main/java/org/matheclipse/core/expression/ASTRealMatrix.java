@@ -561,8 +561,8 @@ public class ASTRealMatrix extends AbstractAST implements HMList<IExpr>, Cloneab
 	 * @return an array of the elements from this {@code ArrayList}
 	 */
 	@Override
-	public Object[] toArray() {
-		Object[] result = new Object[matrix.getRowDimension()];
+	public IExpr[] toArray() {
+		IExpr[] result = new IExpr[matrix.getRowDimension()];
 		for (int i = 0; i < result.length; i++) {
 			result[i] = new ASTRealVector(matrix.getRowVector(i), false);
 		}

@@ -560,8 +560,8 @@ public class ASTRealVector extends AbstractAST implements HMList<IExpr>, Cloneab
 	 * @return an array of the elements from this {@code ArrayList}
 	 */
 	@Override
-	public Object[] toArray() {
-		Object[] result = new Object[vector.getDimension()];
+	public IExpr[] toArray() {
+		IExpr[] result = new IExpr[vector.getDimension()];
 		for (int i = 0; i < result.length; i++) {
 			result[i] = F.num(vector.getEntry(i));
 

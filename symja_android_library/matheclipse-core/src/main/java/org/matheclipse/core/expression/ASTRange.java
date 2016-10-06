@@ -12,7 +12,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.generic.interfaces.IUnaryIndexFunction;
-import org.matheclipse.core.harmony.util.HMCollection;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -746,7 +745,7 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	 * @param n
 	 * @return the given list
 	 */
-	public HMCollection<IExpr> rotateLeft(HMCollection<IExpr> list, final int n) {
+	public IAST rotateLeft(IAST list, final int n) {
 		for (int i = fStart + n; i < fEnd; i++) {
 			list.append(fList.get(i));
 		}
@@ -766,7 +765,7 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	 * @param n
 	 * @return the given list
 	 */
-	public HMCollection<IExpr> rotateRight(HMCollection<IExpr> list, final int n) {
+	public IAST rotateRight(IAST list, final int n) {
 		if (n <= size()) {
 			for (int i = fEnd - n; i < fEnd; i++) {
 				list.append(fList.get(i));
@@ -796,7 +795,7 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	 */
 	@Override
 	public void sort(Comparator<? super IExpr> comparator) {
-		final IExpr[] a = fList.toArray(new IExpr[fList.size()]);
+		final IExpr[] a = fList.toArray();//new IExpr[fList.size()]);
 		Arrays.sort(a, fStart, fEnd, comparator);
 		for (int j = fStart; j < fEnd; j++) {
 			fList.set(j, a[j]);

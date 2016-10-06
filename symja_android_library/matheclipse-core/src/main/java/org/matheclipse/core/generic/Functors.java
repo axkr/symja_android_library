@@ -249,16 +249,19 @@ public class Functors {
 
 	private static class ScanFunctor implements Function<IExpr, IExpr> {
 		protected final IAST fAST;
-		protected HMCollection<? super IExpr> resultCollection;
+		protected IAST resultCollection;
 
 		/**
 		 * 
 		 * @param ast
-		 *            the AST which should be cloned in the {@code apply} method
+		 *            the AST which should be cloned and appended to in the
+		 *            {@code apply} method
+		 * @param resultAST
+		 *            the collection to which the cloned AST will be appended
 		 */
-		public ScanFunctor(final IAST ast, HMCollection<? super IExpr> resultCollection) {
+		public ScanFunctor(final IAST ast, IAST resultAST) {
 			fAST = ast;
-			this.resultCollection = resultCollection;
+			this.resultCollection = resultAST;
 		}
 
 		@Override
@@ -280,13 +283,12 @@ public class Functors {
 	 * @param ast
 	 *            the AST which should be cloned and appended to in the
 	 *            {@code apply} method
-	 * @param resultCollection
+	 * @param resultAST
 	 *            the collection to which the cloned AST will be appended
 	 * @return
 	 */
-	public static Function<IExpr, IExpr> scan(@Nonnull final IAST ast,
-			@Nonnull HMCollection<? super IExpr> resultCollection) {
-		return new ScanFunctor(ast, resultCollection);
+	public static Function<IExpr, IExpr> scan(@Nonnull final IAST ast, @Nonnull IAST resultAST) {
+		return new ScanFunctor(ast, resultAST);
 	}
 
 	/**

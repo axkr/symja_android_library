@@ -45,13 +45,13 @@ public interface HMList<E> extends HMCollection<E> {
 	 *             if adding to this {@code List} is not supported.
 	 * @throws ClassCastException
 	 *             if the class of the object is inappropriate for this
-	 *             {@code List}. 
+	 *             {@code List}.
 	 * @throws IllegalArgumentException
 	 *             if the object cannot be added to this {@code List}.
 	 * @throws IndexOutOfBoundsException
 	 *             if {@code location < 0 || location > size()}
 	 */
-	public void append(int location, E object);
+	// public void append(int location, E object);
 
 	/**
 	 * Adds the specified object at the end of this {@code List}.
@@ -67,7 +67,7 @@ public interface HMList<E> extends HMCollection<E> {
 	 * @throws IllegalArgumentException
 	 *             if the object cannot be added to this {@code List}.
 	 */
-	public boolean append(E object); 
+	// public boolean append(E object);
 
 	/**
 	 * Inserts the objects in the specified collection at the specified location
@@ -130,7 +130,7 @@ public interface HMList<E> extends HMCollection<E> {
 	 * @return {@code true} if object is an element of this {@code List},
 	 *         {@code false} otherwise
 	 */
-	public boolean contains(Object object);
+	// public boolean contains(Object object);
 
 	/**
 	 * Tests whether this {@code List} contains all objects contained in the
@@ -141,7 +141,7 @@ public interface HMList<E> extends HMCollection<E> {
 	 * @return {@code true} if all objects in the specified collection are
 	 *         elements of this {@code List}, {@code false} otherwise.
 	 */
-	public boolean containsAll(Collection<?> collection);
+	// public boolean containsAll(Collection<?> collection);
 
 	/**
 	 * Compares the given object with the {@code List}, and returns true if they
@@ -344,7 +344,7 @@ public interface HMList<E> extends HMCollection<E> {
 	 * 
 	 * @return an array of the elements from this {@code List}.
 	 */
-	public Object[] toArray();
+	// public Object[] toArray();
 
 	/**
 	 * Returns an array containing all elements contained in this {@code List}.
@@ -360,5 +360,5 @@ public interface HMList<E> extends HMCollection<E> {
 	 *             if the type of an element in this {@code List} cannot be
 	 *             stored in the type of the specified array.
 	 */
-	public <T> T[] toArray(T[] array);
+	// public <T> T[] toArray(T[] array);
 }

@@ -264,8 +264,8 @@ public class AST1 extends AST0 {
 	 * @return an array of the elements from this {@code ArrayList}
 	 */
 	@Override
-	public Object[] toArray() {
-		Object[] result = new Object[SIZE];
+	public IExpr[] toArray() {
+		IExpr[] result = new IExpr[SIZE];
 		result[0] = arg0;
 		result[1] = arg1;
 		return result;

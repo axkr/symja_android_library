@@ -254,7 +254,7 @@ public class NILPointer extends AbstractAST {
 	 * @return an array of the elements from this {@code ArrayList}
 	 */
 	@Override
-	public Object[] toArray() {
+	public IExpr[] toArray() {
 		throw new UnsupportedOperationException();
 	}
 

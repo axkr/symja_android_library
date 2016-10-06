@@ -307,8 +307,8 @@ public class AST3 extends AST2 {
 	 * @return an array of the elements from this {@code ArrayList}
 	 */
 	@Override
-	public Object[] toArray() {
-		Object[] result = new Object[SIZE];
+	public IExpr[] toArray() {
+		IExpr[] result = new IExpr[SIZE];
 		result[0] = arg0;
 		result[1] = arg1;
 		result[2] = arg2;

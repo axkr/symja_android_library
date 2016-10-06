@@ -1,5 +1,6 @@
 package org.matheclipse.core.interfaces;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -153,6 +154,47 @@ public interface IAST extends IExpr, HMList<IExpr>, Cloneable {
 	 * This expression is already evaluated by ExpandAll() function
 	 */
 	public final int IS_ALL_EXPANDED = 0x2000;
+
+	/**
+	 * Adds the specified object at the end of this {@code List}.
+	 * 
+	 * @param object
+	 *            the object to add.
+	 * @return always true.
+	 * @throws UnsupportedOperationException
+	 *             if adding to this {@code List} is not supported.
+	 * @throws ClassCastException
+	 *             if the class of the object is inappropriate for this
+	 *             {@code List}.
+	 * @throws IllegalArgumentException
+	 *             if the object cannot be added to this {@code List}.
+	 */
+	public boolean append(IExpr object);
+
+	/**
+	 * Inserts the specified object into this {@code List} at the specified
+	 * location. The object is inserted before the current element at the
+	 * specified location. If the location is equal to the size of this
+	 * {@code List}, the object is added at the end. If the location is smaller
+	 * than the size of this {@code List}, then all elements beyond the
+	 * specified location are moved by one position towards the end of the
+	 * {@code List}.
+	 * 
+	 * @param location
+	 *            the index at which to insert.
+	 * @param object
+	 *            the object to add.
+	 * @throws UnsupportedOperationException
+	 *             if adding to this {@code List} is not supported.
+	 * @throws ClassCastException
+	 *             if the class of the object is inappropriate for this
+	 *             {@code List}.
+	 * @throws IllegalArgumentException
+	 *             if the object cannot be added to this {@code List}.
+	 * @throws IndexOutOfBoundsException
+	 *             if {@code location < 0 || location > size()}
+	 */
+	public void append(int location, IExpr object);
 
 	/**
 	 * Appends all of the arguments (starting from offset <code>0</code>) in the
@@ -368,6 +410,27 @@ public interface IAST extends IExpr, HMList<IExpr>, Cloneable {
 	 */
 	public IAST clone();
 
+	/**
+	 * Tests whether this {@code List} contains the specified object.
+	 * 
+	 * @param object
+	 *            the object to search for.
+	 * @return {@code true} if object is an element of this {@code List},
+	 *         {@code false} otherwise
+	 */
+	public boolean contains(Object object);
+	
+	/**
+	 * Tests whether this {@code List} contains all objects contained in the
+	 * specified collection.
+	 * 
+	 * @param collection
+	 *            the collection of objects
+	 * @return {@code true} if all objects in the specified collection are
+	 *         elements of this {@code List}, {@code false} otherwise.
+	 */
+	public boolean containsAll(Collection<?> collection);
+	
 	/**
 	 * Returns a shallow copy of this <code>IAST</code> instance (the elements
 	 * themselves are not copied). In contrast to the <code>clone()</code>
@@ -973,6 +1036,29 @@ public interface IAST extends IExpr, HMList<IExpr>, Cloneable {
 	 */
 	public void setEvalFlags(int i);
 
+	/**
+	 * Returns an array containing all elements contained in this {@code List}.
+	 * 
+	 * @return an array of the elements from this {@code List}.
+	 */
+	public IExpr[] toArray();
+
+	/**
+	 * Returns an array containing all elements contained in this {@code List}.
+	 * If the specified array is large enough to hold the elements, the
+	 * specified array is used, otherwise an array of the same type is created.
+	 * If the specified array is used and is larger than this {@code List}, the
+	 * array element following the collection elements is set to null.
+	 * 
+	 * @param array
+	 *            the array.
+	 * @return an array of the elements from this {@code List}.
+	 * @throws ArrayStoreException
+	 *             if the type of an element in this {@code List} cannot be
+	 *             stored in the type of the specified array.
+	 */
+//	public IExpr[] toArray(IExpr[] array);
+	
 	/**
 	 * Returns the header. If the header itself is an ISymbol it will return the
 	 * symbol object. If the header itself is an IAST it will recursively call
