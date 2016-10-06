@@ -22,6 +22,8 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.RandomAccess;
 
+import org.matheclipse.core.interfaces.IAST;
+
 /**
  * {@code AbstractList} is an abstract implementation of the {@code List}
  * interface, optimized for a backing store which supports random access. This
@@ -476,8 +478,8 @@ public abstract class HMAbstractList<E> extends HMAbstractCollection<E> implemen
 		if (this == object) {
 			return true;
 		}
-		if (object instanceof HMList) {
-			HMList<?> list = (HMList<?>) object;
+		if (object instanceof IAST) {
+			IAST list = (IAST) object;
 			if (list.size() != size()) {
 				return false;
 			}

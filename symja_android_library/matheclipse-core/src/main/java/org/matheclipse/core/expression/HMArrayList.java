@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -677,36 +676,6 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 		System.arraycopy(array, firstIndex, result, 0, size);
 		return result;
 	}
-
-	/**
-	 * Returns an array containing all elements contained in this
-	 * {@code ArrayList}. If the specified array is large enough to hold the
-	 * elements, the specified array is used, otherwise an array of the same
-	 * type is created. If the specified array is used and is larger than this
-	 * {@code ArrayList}, the array element following the collection elements is
-	 * set to null.
-	 * 
-	 * @param contents
-	 *            the array.
-	 * @return an array of the elements from this {@code ArrayList}.
-	 * @throws ArrayStoreException
-	 *             when the type of an element in this {@code ArrayList} cannot
-	 *             be stored in the type of the specified array.
-	 */
-//	@Override
-//	@SuppressWarnings("unchecked")
-//	public <T> T[] toArray(T[] contents) {
-//		int size = lastIndex - firstIndex;
-//		if (size > contents.length) {
-//			Class<?> ct = contents.getClass().getComponentType();
-//			contents = (T[]) Array.newInstance(ct, size);
-//		}
-//		System.arraycopy(array, firstIndex, contents, 0, size);
-//		if (size < contents.length) {
-//			contents[size] = null;
-//		}
-//		return contents;
-//	}
 
 	/**
 	 * Sets the capacity of this {@code ArrayList} to be the same as the current

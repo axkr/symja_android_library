@@ -106,19 +106,7 @@ public interface HMCollection<E> extends Iterable<E> {
 	 *             {@code null} elements and this {@code Collection} does not
 	 *             support such elements.
 	 */
-	public boolean addAll(Collection<? extends E> collection);
-
-	/**
-	 * Removes all elements from this {@code Collection}, leaving it empty
-	 * (optional).
-	 * 
-	 * @throws UnsupportedOperationException
-	 *             if removing from this {@code Collection} is not supported.
-	 * 
-	 * @see #isEmpty
-	 * @see #size
-	 */
-	public void clear();
+//	public boolean addAll(Collection<? extends E> collection);
 
 	/**
 	 * Tests whether this {@code Collection} contains the specified object.
@@ -184,16 +172,6 @@ public interface HMCollection<E> extends Iterable<E> {
 	public int hashCode();
 
 	/**
-	 * Returns if this {@code Collection} contains no elements.
-	 * 
-	 * @return {@code true} if this {@code Collection} has no elements,
-	 *         {@code false} otherwise.
-	 * 
-	 * @see #size
-	 */
-	public boolean isEmpty();
-
-	/**
 	 * Returns an instance of {@link Iterator} that may be used to access the
 	 * objects contained by this {@code Collection}. The order in which the
 	 * elements are returned by the iterator is not defined. Only if the
@@ -202,51 +180,7 @@ public interface HMCollection<E> extends Iterable<E> {
 	 * 
 	 * @return an iterator for accessing the {@code Collection} contents.
 	 */
-	public Iterator<E> iterator();
-
-	/**
-	 * Removes one instance of the specified object from this {@code Collection}
-	 * if one is contained (optional). The element {@code elem} that is removed
-	 * complies with {@code (object==null ? elem==null : object.equals(elem)}.
-	 * 
-	 * @param object
-	 *            the object to remove.
-	 * @return {@code true} if this {@code Collection} is modified,
-	 *         {@code false} otherwise.
-	 * @throws UnsupportedOperationException
-	 *             if removing from this {@code Collection} is not supported.
-	 * @throws ClassCastException
-	 *             if the object passed is not of the correct type.
-	 * @throws NullPointerException
-	 *             if {@code object} is {@code null} and this {@code Collection}
-	 *             doesn't support {@code null} elements.
-	 */
-	public boolean remove(Object object);
-
-	/**
-	 * Removes all occurrences in this {@code Collection} of each object in the
-	 * specified {@code Collection} (optional). After this method returns none
-	 * of the elements in the passed {@code Collection} can be found in this
-	 * {@code Collection} anymore.
-	 * 
-	 * @param collection
-	 *            the collection of objects to remove.
-	 * @return {@code true} if this {@code Collection} is modified,
-	 *         {@code false} otherwise.
-	 * 
-	 * @throws UnsupportedOperationException
-	 *             if removing from this {@code Collection} is not supported.
-	 * @throws ClassCastException
-	 *             if one or more elements of {@code collection} isn't of the
-	 *             correct type.
-	 * @throws NullPointerException
-	 *             if {@code collection} contains at least one {@code null}
-	 *             element and this {@code Collection} doesn't support
-	 *             {@code null} elements.
-	 * @throws NullPointerException
-	 *             if {@code collection} is {@code null}.
-	 */
-	public boolean removeAll(Collection<?> collection);
+//	public Iterator<E> iterator();
 
 	/**
 	 * Removes all objects from this {@code Collection} that are not also found
@@ -270,7 +204,7 @@ public interface HMCollection<E> extends Iterable<E> {
 	 * @throws NullPointerException
 	 *             if {@code collection} is {@code null}.
 	 */
-	public boolean retainAll(Collection<?> collection);
+//	public boolean retainAll(Collection<?> collection);
 
 	/**
 	 * Returns a count of how many objects this {@code Collection} contains.
@@ -279,7 +213,7 @@ public interface HMCollection<E> extends Iterable<E> {
 	 *         Integer.MAX_VALUE if there are more than Integer.MAX_VALUE
 	 *         elements in this {@code Collection}.
 	 */
-	public int size();
+//	public int size();
 
 	/**
 	 * Returns a new array containing all elements contained in this

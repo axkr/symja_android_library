@@ -72,7 +72,7 @@ public class Permutations extends AbstractFunctionEvaluator {
 			fResultIndex = nextBeforehand();
 		}
 
-		public <T> KPermutationsIterable(final HMList<T> fun, final int parts, final int headOffset) {
+		public KPermutationsIterable(final IAST fun, final int parts, final int headOffset) {
 			super();
 			n = fun.size() - headOffset;
 			k = parts;

@@ -234,6 +234,25 @@ public interface IAST extends IExpr, HMList<IExpr>, Cloneable {
 	public boolean addAll(List<? extends IExpr> list, int startPosition, int endPosition);
 
 	/**
+	 * Adds the objects in the specified collection to the end of this
+	 * {@code List}. The objects are added in the order in which they are
+	 * returned from the collection's iterator.
+	 * 
+	 * @param collection
+	 *            the collection of objects.
+	 * @return {@code true} if this {@code List} is modified, {@code false}
+	 *         otherwise (i.e. if the passed collection was empty).
+	 * @throws UnsupportedOperationException
+	 *             if adding to this {@code List} is not supported.
+	 * @throws ClassCastException
+	 *             if the class of an object is inappropriate for this
+	 *             {@code List}.
+	 * @throws IllegalArgumentException
+	 *             if an object cannot be added to this {@code List}.
+	 */
+	public boolean addAll(Collection<? extends IExpr> collection);
+	
+	/**
 	 * Appends all elements from offset <code>startPosition</code> to
 	 * <code>endPosition</code> in the specified AST to the end of this AST.
 	 * 
@@ -398,6 +417,17 @@ public interface IAST extends IExpr, HMList<IExpr>, Cloneable {
 	public Set<IExpr> asSet();
 
 	/**
+	 * Removes all elements from this {@code IAST}, leaving it empty (optional).
+	 * 
+	 * @throws UnsupportedOperationException
+	 *             if removing from this {@code Collection} is not supported.
+	 * 
+	 * @see #isEmpty
+	 * @see #size
+	 */
+	public void clear();
+
+	/**
 	 * Set the cached hash value to zero.
 	 */
 	public void clearHashCache();
@@ -419,7 +449,7 @@ public interface IAST extends IExpr, HMList<IExpr>, Cloneable {
 	 *         {@code false} otherwise
 	 */
 	public boolean contains(Object object);
-	
+
 	/**
 	 * Tests whether this {@code List} contains all objects contained in the
 	 * specified collection.
@@ -430,7 +460,7 @@ public interface IAST extends IExpr, HMList<IExpr>, Cloneable {
 	 *         elements of this {@code List}, {@code false} otherwise.
 	 */
 	public boolean containsAll(Collection<?> collection);
-	
+
 	/**
 	 * Returns a shallow copy of this <code>IAST</code> instance (the elements
 	 * themselves are not copied). In contrast to the <code>clone()</code>
@@ -624,6 +654,17 @@ public interface IAST extends IExpr, HMList<IExpr>, Cloneable {
 	 * selected.
 	 */
 	public void forEach(Consumer<? super IExpr> action);
+
+	/**
+	 * Returns the element at the specified location in this {@code IAST}.
+	 * 
+	 * @param location
+	 *            the index of the element to return.
+	 * @return the element at the specified location.
+	 * @throws IndexOutOfBoundsException
+	 *             if {@code location < 0 || >= size()}
+	 */
+	public IExpr get(int location);
 
 	/**
 	 * Casts an <code>IExpr</code> at position <code>index</code> to an
@@ -990,6 +1031,19 @@ public interface IAST extends IExpr, HMList<IExpr>, Cloneable {
 	public ASTRange range(int start, int end);
 
 	/**
+	 * Removes the object at the specified location from this {@code IAST}.
+	 * 
+	 * @param location
+	 *            the index of the object to remove.
+	 * @return the removed object.
+	 * @throws UnsupportedOperationException
+	 *             if removing from this {@code IAST} is not supported.
+	 * @throws IndexOutOfBoundsException
+	 *             if {@code location < 0 || >= size()}
+	 */
+	public IExpr remove(int location);
+
+	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements
 	 * themselves are not copied) and remove the element at the given
 	 * <code>position</code>.
@@ -999,6 +1053,28 @@ public interface IAST extends IExpr, HMList<IExpr>, Cloneable {
 	 */
 	public IAST removeAtClone(int position);
 
+	/**
+	 * Replaces the element at the specified location in this {@code IAST} with
+	 * the specified object. This operation does not change the size of the
+	 * {@code IAST}.
+	 * 
+	 * @param location
+	 *            the index at which to put the specified object.
+	 * @param object
+	 *            the object to insert.
+	 * @return the previous element at the index.
+	 * @throws UnsupportedOperationException
+	 *             if replacing elements in this {@code IAST} is not supported.
+	 * @throws ClassCastException
+	 *             if the class of an object is inappropriate for this
+	 *             {@code IAST}.
+	 * @throws IllegalArgumentException
+	 *             if an object cannot be added to this {@code IAST}.
+	 * @throws IndexOutOfBoundsException
+	 *             if {@code location < 0 || >= size()}
+	 */
+	public IExpr set(int location, IExpr object);
+	
 	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements
 	 * themselves are not copied) and set the <code>expr</code> at the given
@@ -1037,6 +1113,13 @@ public interface IAST extends IExpr, HMList<IExpr>, Cloneable {
 	public void setEvalFlags(int i);
 
 	/**
+	 * Returns the number of elements in this {@code IAST}.
+	 * 
+	 * @return the number of elements in this {@code IAST}.
+	 */
+	public int size();
+	
+	/**
 	 * Returns an array containing all elements contained in this {@code List}.
 	 * 
 	 * @return an array of the elements from this {@code List}.
@@ -1057,8 +1140,8 @@ public interface IAST extends IExpr, HMList<IExpr>, Cloneable {
 	 *             if the type of an element in this {@code List} cannot be
 	 *             stored in the type of the specified array.
 	 */
-//	public IExpr[] toArray(IExpr[] array);
-	
+	// public IExpr[] toArray(IExpr[] array);
+
 	/**
 	 * Returns the header. If the header itself is an ISymbol it will return the
 	 * symbol object. If the header itself is an IAST it will recursively call
