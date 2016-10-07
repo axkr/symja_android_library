@@ -59,7 +59,7 @@ public class NILPointer extends AbstractAST {
 	public boolean addAll(List<? extends IExpr> list, int startPosition, int endPosition) {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
 	public boolean addArgs(IAST ast) {
 		throw new UnsupportedOperationException();
@@ -69,7 +69,7 @@ public class NILPointer extends AbstractAST {
 	public IAST addOneIdentity(IAST subAST) {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
 	public boolean append(IExpr object) {
 		throw new UnsupportedOperationException();
@@ -199,10 +199,10 @@ public class NILPointer extends AbstractAST {
 		throw new UnsupportedOperationException();
 	}
 
-	@Override
-	public boolean remove(Object object) {
-		throw new UnsupportedOperationException();
-	}
+	// @Override
+	// public boolean remove(Object object) {
+	// throw new UnsupportedOperationException();
+	// }
 
 	/**
 	 * Removes the objects in the specified range from the start to the end, but
@@ -215,7 +215,6 @@ public class NILPointer extends AbstractAST {
 	 * @throws IndexOutOfBoundsException
 	 *             when {@code start < 0, start > end} or {@code end > size()}
 	 */
-	@Override
 	protected void removeRange(int start, int end) {
 		throw new UnsupportedOperationException();
 	}

@@ -28,7 +28,6 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
-import org.matheclipse.core.harmony.util.HMAbstractList;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -56,7 +55,7 @@ import org.matheclipse.core.visit.VisitorReplaceSlots;
 
 import edu.jas.structure.ElemFactory;
 
-public abstract class AbstractAST extends HMAbstractList<IExpr> implements IAST {
+public abstract class AbstractAST implements IAST {
 
 	protected static final class ASTIterator implements ListIterator<IExpr> {
 
@@ -1040,18 +1039,6 @@ public abstract class AbstractAST extends HMAbstractList<IExpr> implements IAST 
 	@Override
 	public final IExpr inc() {
 		return plus(F.C1);
-	}
-
-	@Override
-	public final int indexOf(Object object) {
-		int size = size();
-		for (int i = 0; i < size; i++) {
-			if (object.equals(get(i))) {
-				return i;
-			}
-		}
-
-		return -1;
 	}
 
 	/** {@inheritDoc} */
@@ -2346,16 +2333,16 @@ public abstract class AbstractAST extends HMAbstractList<IExpr> implements IAST 
 		return i;
 	}
 
-	@Override
+//	@Override
 	/**
 	 * Returns an iterator over the elements in this list starting with offset
 	 * <b>0</b>.
 	 * 
 	 * @return an iterator over this list values.
 	 */
-	public final Iterator<IExpr> iterator0() {
-		return super.iterator();
-	}
+//	public final Iterator<IExpr> iterator0() {
+//		return super.iterator();
+//	}
 
 	/** {@inheritDoc} */
 	@Override
@@ -2364,9 +2351,9 @@ public abstract class AbstractAST extends HMAbstractList<IExpr> implements IAST 
 	}
 
 	@Override
-	public final int lastIndexOf(Object object) {
+	public final int lastIndexOf(IExpr object) {
 		int size = size();
-		for (int i = size - 1; i >= 0; i--) {
+		for (int i = size - 1; i >= 0; i--) { 
 			if (object.equals(get(i))) {
 				return i;
 			}

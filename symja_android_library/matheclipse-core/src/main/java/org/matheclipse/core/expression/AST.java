@@ -110,7 +110,6 @@ public class AST extends HMArrayList implements Externalizable {
 	protected AST(final int initialCapacity, final boolean setLength) {
 		super(initialCapacity + 1);
 		lastIndex += (setLength ? initialCapacity + 1 : 0);
-		modCount++;
 	}
 
 	/**
@@ -120,7 +119,6 @@ public class AST extends HMArrayList implements Externalizable {
 	public AST() {
 		super(0);
 		lastIndex++;
-		modCount++;
 	}
 
 	/**

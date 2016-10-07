@@ -495,11 +495,11 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 		throw new UnsupportedOperationException();
 	}
 
-	@Override
-	public boolean remove(Object object) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
+//	@Override
+//	public boolean remove(Object object) {
+//		hashValue = 0;
+//		throw new UnsupportedOperationException();
+//	}
 
 	/**
 	 * Removes the objects in the specified range from the start to the end, but
@@ -512,7 +512,6 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	 * @throws IndexOutOfBoundsException
 	 *             when {@code start < 0, start > end} or {@code end > size()}
 	 */
-	@Override
 	protected void removeRange(int start, int end) {
 		hashValue = 0;
 		throw new UnsupportedOperationException();

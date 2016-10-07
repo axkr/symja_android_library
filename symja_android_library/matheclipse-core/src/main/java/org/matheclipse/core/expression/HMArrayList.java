@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.RandomAccess;
 import java.util.Set;
@@ -75,7 +76,6 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 		array = newElementArray(size + (size / 10));
 		System.arraycopy(objects, 0, array, 0, size);
 		lastIndex = size;
-		modCount = 1;
 	}
 
 	public HMArrayList(IExpr ex, IExpr... es) {
@@ -84,7 +84,7 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 		array = newElementArray(len);
 		array[0] = ex;
 		System.arraycopy(es, 0, array, 1, es.length);
-		lastIndex = modCount = len;
+		lastIndex = len;
 	}
 
 	protected HMArrayList(IExpr[] array) {
@@ -207,7 +207,6 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 			growAtEnd(1);
 		}
 		array[lastIndex++] = object;
-		modCount++;
 		return true;
 	}
 
@@ -254,7 +253,6 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 					"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
 		}
 
-		modCount++;
 	}
 
 	/**
@@ -266,9 +264,9 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	 *         otherwise.
 	 */
 	@Override
-	public boolean addAll(List<? extends IExpr> list) {
+	public boolean addAll(Collection<? extends IExpr> collection) {
 		hashValue = 0;
-		Object[] dumpArray = list.toArray();
+		Object[] dumpArray = collection.toArray();
 		if (dumpArray.length == 0) {
 			return false;
 		}
@@ -277,7 +275,6 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 		}
 		System.arraycopy(dumpArray, 0, this.array, lastIndex, dumpArray.length);
 		lastIndex += dumpArray.length;
-		modCount++;
 		return true;
 	}
 
@@ -341,7 +338,6 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 		}
 
 		System.arraycopy(dumparray, 0, this.array, location + firstIndex, growSize);
-		modCount++;
 		return true;
 	}
 
@@ -356,7 +352,6 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 		if (firstIndex != lastIndex) {
 			Arrays.fill(array, firstIndex, lastIndex, null);
 			firstIndex = lastIndex = 0;
-			modCount++;
 		}
 		hashValue = 0;
 	}
@@ -516,10 +511,40 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 		return array[firstIndex];
 	}
 
+	/**
+	 * Searches this list for the specified object and returns the index of the
+	 * first occurrence.
+	 * 
+	 * @param object
+	 *            the object to search for.
+	 * @return the index of the first occurrence of the object, or -1 if it was
+	 *         not found.
+	 */
+	public int indexOf(IExpr object) {
+		Iterator<IExpr> it = iterator();
+		int indx=0;
+		if (object != null) {
+			while (it.hasNext()) {
+				if (object.equals(it.next())) {
+					return indx;
+				}
+				indx++;
+			}
+		} else {
+			while (it.hasNext()) {
+				if (it.next() == null) {
+					return indx;
+				}
+				indx++;
+			}
+		}
+		return -1;
+	}
+	
 	protected final void init(IExpr[] array) {
 		this.array = array;
 		firstIndex = hashValue = 0;
-		lastIndex = modCount = array.length;
+		lastIndex = array.length;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -577,21 +602,9 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 					"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
 		}
 
-		modCount++;
 		return result;
 	}
-
-	@Override
-	public boolean remove(Object object) {
-		hashValue = 0;
-		int location = indexOf(object);
-		if (location >= 0) {
-			remove(location);
-			return true;
-		}
-		return false;
-	}
-
+	
 	/**
 	 * Removes the objects in the specified range from the start to the end, but
 	 * not including the end index.
@@ -603,7 +616,6 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	 * @throws IndexOutOfBoundsException
 	 *             when {@code start < 0, start > end} or {@code end > size()}
 	 */
-	@Override
 	protected void removeRange(int start, int end) {
 		hashValue = 0;
 		if (start >= 0 && start <= end && end <= (lastIndex - firstIndex)) {
@@ -623,7 +635,6 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 				Arrays.fill(array, newLast, lastIndex, null);
 				lastIndex = newLast;
 			}
-			modCount++;
 		} else {
 			throw new IndexOutOfBoundsException("Index: " + (lastIndex - firstIndex - end));
 		}
@@ -690,7 +701,6 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 		array = newArray;
 		firstIndex = 0;
 		lastIndex = array.length;
-		modCount = 0;
 	}
 
 	private void writeObject(ObjectOutputStream stream) throws IOException {
