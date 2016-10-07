@@ -107,6 +107,154 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	}
 
 	/**
+	 * Adds the objects in the specified collection to this {@code ArrayList}.
+	 * 
+	 * @param collection
+	 *            the collection of objects.
+	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
+	 *         otherwise.
+	 */
+	@Override
+	public boolean addAll(Collection<? extends IExpr> collection) {
+		hashValue = 0;
+		Object[] dumpArray = collection.toArray();
+		if (dumpArray.length == 0) {
+			return false;
+		}
+		if (dumpArray.length > array.length - lastIndex) {
+			growAtEnd(dumpArray.length);
+		}
+		System.arraycopy(dumpArray, 0, this.array, lastIndex, dumpArray.length);
+		lastIndex += dumpArray.length;
+		return true;
+	}
+
+	/**
+	 * Inserts the objects in the specified collection at the specified location
+	 * in this List. The objects are added in the order they are returned from
+	 * the collection's iterator.
+	 * 
+	 * @param location
+	 *            the index at which to insert.
+	 * @param collection
+	 *            the collection of objects.
+	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
+	 *         otherwise.
+	 * @throws IndexOutOfBoundsException
+	 *             when {@code location < 0 || > size()}
+	 */
+	@Override
+	public boolean addAll(int location, Collection<? extends IExpr> collection) {
+		hashValue = 0;
+		int size = lastIndex - firstIndex;
+		if (location < 0 || location > size) {
+			throw new IndexOutOfBoundsException(
+					"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
+		}
+		if (this == collection) {
+			collection = clone().args();
+		}
+		Object[] dumparray = collection.toArray();
+		int growSize = dumparray.length;
+		if (growSize == 0) {
+			return false;
+		}
+
+		if (0 < location && location < size) {
+			if (array.length - size < growSize) {
+				growForInsert(location, growSize);
+			} else if ((location < size / 2 && firstIndex > 0) || lastIndex > array.length - growSize) {
+				int newFirst = firstIndex - growSize;
+				if (newFirst < 0) {
+					int index = location + firstIndex;
+					System.arraycopy(array, index, array, index - newFirst, size - location);
+					lastIndex -= newFirst;
+					newFirst = 0;
+				}
+				System.arraycopy(array, firstIndex, array, newFirst, location);
+				firstIndex = newFirst;
+			} else {
+				int index = location + firstIndex;
+				System.arraycopy(array, index, array, index + growSize, size - location);
+				lastIndex += growSize;
+			}
+		} else if (location == 0) {
+			growAtFront(growSize);
+			firstIndex -= growSize;
+		} else if (location == size) {
+			if (lastIndex > array.length - growSize) {
+				growAtEnd(growSize);
+			}
+			lastIndex += growSize;
+		}
+
+		System.arraycopy(dumparray, 0, this.array, location + firstIndex, growSize);
+		return true;
+	}
+
+	/**
+	 * Adds the specified object at the end of this {@code ArrayList}.
+	 * 
+	 * @param object
+	 *            the object to add.
+	 * @return always true
+	 */
+	@Override
+	public boolean append(IExpr object) {
+		hashValue = 0;
+		if (lastIndex == array.length) {
+			growAtEnd(1);
+		}
+		array[lastIndex++] = object;
+		return true;
+	}
+
+	/**
+	 * Inserts the specified object into this {@code ArrayList} at the specified
+	 * location. The object is inserted before any previous element at the
+	 * specified location. If the location is equal to the size of this
+	 * {@code ArrayList}, the object is added at the end.
+	 * 
+	 * @param location
+	 *            the index at which to insert the object.
+	 * @param object
+	 *            the object to add.
+	 * @throws IndexOutOfBoundsException
+	 *             when {@code location < 0 || > size()}
+	 */
+	@Override
+	public void append(int location, IExpr object) {
+		hashValue = 0;
+		int size = lastIndex - firstIndex;
+		if (0 < location && location < size) {
+			if (firstIndex == 0 && lastIndex == array.length) {
+				growForInsert(location, 1);
+			} else if ((location < size / 2 && firstIndex > 0) || lastIndex == array.length) {
+				System.arraycopy(array, firstIndex, array, --firstIndex, location);
+			} else {
+				int index = location + firstIndex;
+				System.arraycopy(array, index, array, index + 1, size - location);
+				lastIndex++;
+			}
+			array[location + firstIndex] = object;
+		} else if (location == 0) {
+			if (firstIndex == 0) {
+				growAtFront(1);
+			}
+			array[--firstIndex] = object;
+		} else if (location == size) {
+			if (lastIndex == array.length) {
+				growAtEnd(1);
+			}
+			array[lastIndex++] = object;
+		} else {
+			throw new IndexOutOfBoundsException(
+					"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
+		}
+
+	}
+
+	/**
 	 * Get the first argument (i.e. the second element of the underlying list
 	 * structure) of the <code>AST</code> function (i.e. get(1) ). <br />
 	 * <b>Example:</b> for the AST representing the expression
@@ -194,154 +342,6 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	}
 
 	/**
-	 * Adds the specified object at the end of this {@code ArrayList}.
-	 * 
-	 * @param object
-	 *            the object to add.
-	 * @return always true
-	 */
-	@Override
-	public boolean append(IExpr object) {
-		hashValue = 0;
-		if (lastIndex == array.length) {
-			growAtEnd(1);
-		}
-		array[lastIndex++] = object;
-		return true;
-	}
-
-	/**
-	 * Inserts the specified object into this {@code ArrayList} at the specified
-	 * location. The object is inserted before any previous element at the
-	 * specified location. If the location is equal to the size of this
-	 * {@code ArrayList}, the object is added at the end.
-	 * 
-	 * @param location
-	 *            the index at which to insert the object.
-	 * @param object
-	 *            the object to add.
-	 * @throws IndexOutOfBoundsException
-	 *             when {@code location < 0 || > size()}
-	 */
-	@Override
-	public void append(int location, IExpr object) {
-		hashValue = 0;
-		int size = lastIndex - firstIndex;
-		if (0 < location && location < size) {
-			if (firstIndex == 0 && lastIndex == array.length) {
-				growForInsert(location, 1);
-			} else if ((location < size / 2 && firstIndex > 0) || lastIndex == array.length) {
-				System.arraycopy(array, firstIndex, array, --firstIndex, location);
-			} else {
-				int index = location + firstIndex;
-				System.arraycopy(array, index, array, index + 1, size - location);
-				lastIndex++;
-			}
-			array[location + firstIndex] = object;
-		} else if (location == 0) {
-			if (firstIndex == 0) {
-				growAtFront(1);
-			}
-			array[--firstIndex] = object;
-		} else if (location == size) {
-			if (lastIndex == array.length) {
-				growAtEnd(1);
-			}
-			array[lastIndex++] = object;
-		} else {
-			throw new IndexOutOfBoundsException(
-					"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
-		}
-
-	}
-
-	/**
-	 * Adds the objects in the specified collection to this {@code ArrayList}.
-	 * 
-	 * @param collection
-	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
-	 *         otherwise.
-	 */
-	@Override
-	public boolean addAll(Collection<? extends IExpr> collection) {
-		hashValue = 0;
-		Object[] dumpArray = collection.toArray();
-		if (dumpArray.length == 0) {
-			return false;
-		}
-		if (dumpArray.length > array.length - lastIndex) {
-			growAtEnd(dumpArray.length);
-		}
-		System.arraycopy(dumpArray, 0, this.array, lastIndex, dumpArray.length);
-		lastIndex += dumpArray.length;
-		return true;
-	}
-
-	/**
-	 * Inserts the objects in the specified collection at the specified location
-	 * in this List. The objects are added in the order they are returned from
-	 * the collection's iterator.
-	 * 
-	 * @param location
-	 *            the index at which to insert.
-	 * @param collection
-	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
-	 *         otherwise.
-	 * @throws IndexOutOfBoundsException
-	 *             when {@code location < 0 || > size()}
-	 */
-	@Override
-	public boolean addAll(int location, Collection<? extends IExpr> collection) {
-		hashValue = 0;
-		int size = lastIndex - firstIndex;
-		if (location < 0 || location > size) {
-			throw new IndexOutOfBoundsException(
-					"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
-		}
-		if (this == collection) {
-			collection = clone().args();
-		}
-		Object[] dumparray = collection.toArray();
-		int growSize = dumparray.length;
-		if (growSize == 0) {
-			return false;
-		}
-
-		if (0 < location && location < size) {
-			if (array.length - size < growSize) {
-				growForInsert(location, growSize);
-			} else if ((location < size / 2 && firstIndex > 0) || lastIndex > array.length - growSize) {
-				int newFirst = firstIndex - growSize;
-				if (newFirst < 0) {
-					int index = location + firstIndex;
-					System.arraycopy(array, index, array, index - newFirst, size - location);
-					lastIndex -= newFirst;
-					newFirst = 0;
-				}
-				System.arraycopy(array, firstIndex, array, newFirst, location);
-				firstIndex = newFirst;
-			} else {
-				int index = location + firstIndex;
-				System.arraycopy(array, index, array, index + growSize, size - location);
-				lastIndex += growSize;
-			}
-		} else if (location == 0) {
-			growAtFront(growSize);
-			firstIndex -= growSize;
-		} else if (location == size) {
-			if (lastIndex > array.length - growSize) {
-				growAtEnd(growSize);
-			}
-			lastIndex += growSize;
-		}
-
-		System.arraycopy(dumparray, 0, this.array, location + firstIndex, growSize);
-		return true;
-	}
-
-	/**
 	 * Removes all elements from this {@code ArrayList}, leaving it empty.
 	 * 
 	 * @see #isEmpty
@@ -372,6 +372,23 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 		return newList;
 	}
 
+	/**
+	 * Ensures that after this operation the {@code ArrayList} can hold the
+	 * specified number of elements without further growing.
+	 * 
+	 * @param minimumCapacity
+	 *            the minimum capacity asked for.
+	 */
+	public void ensureCapacity(int minimumCapacity) {
+		if (array.length < minimumCapacity) {
+			if (firstIndex > 0) {
+				growAtFront(minimumCapacity - array.length);
+			} else {
+				growAtEnd(minimumCapacity - array.length);
+			}
+		}
+	}
+
 	@Override
 	public boolean equals(final Object obj) {
 		if (obj instanceof HMArrayList) {
@@ -397,23 +414,6 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 			return true;
 		}
 		return super.equals(obj);
-	}
-
-	/**
-	 * Ensures that after this operation the {@code ArrayList} can hold the
-	 * specified number of elements without further growing.
-	 * 
-	 * @param minimumCapacity
-	 *            the minimum capacity asked for.
-	 */
-	public void ensureCapacity(int minimumCapacity) {
-		if (array.length < minimumCapacity) {
-			if (firstIndex > 0) {
-				growAtFront(minimumCapacity - array.length);
-			} else {
-				growAtEnd(minimumCapacity - array.length);
-			}
-		}
 	}
 
 	@Override

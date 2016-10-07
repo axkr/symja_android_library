@@ -444,12 +444,6 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 		throw new UnsupportedOperationException();
 	}
 
-//	@Override
-//	public boolean remove(Object object) {
-//		hashValue = 0;
-//		throw new UnsupportedOperationException();
-//	}
-
 	/**
 	 * Removes the objects in the specified range from the start to the end, but
 	 * not including the end index.

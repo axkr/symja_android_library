@@ -155,6 +155,107 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public final int IS_ALL_EXPANDED = 0x2000;
 
 	/**
+	 * Adds the objects in the specified collection to the end of this
+	 * {@code List}. The objects are added in the order in which they are
+	 * returned from the collection's iterator.
+	 * 
+	 * @param collection
+	 *            the collection of objects.
+	 * @return {@code true} if this {@code List} is modified, {@code false}
+	 *         otherwise (i.e. if the passed collection was empty).
+	 * @throws UnsupportedOperationException
+	 *             if adding to this {@code List} is not supported.
+	 * @throws ClassCastException
+	 *             if the class of an object is inappropriate for this
+	 *             {@code List}.
+	 * @throws IllegalArgumentException
+	 *             if an object cannot be added to this {@code List}.
+	 */
+	public boolean addAll(Collection<? extends IExpr> collection);
+
+	/**
+	 * Appends all elements from offset <code>startPosition</code> to
+	 * <code>endPosition</code> in the specified AST to the end of this AST.
+	 * 
+	 * @param ast
+	 *            AST containing elements to be added to this AST
+	 * @param startPosition
+	 *            the start position, inclusive.
+	 * @param endPosition
+	 *            the ending position, exclusive.
+	 * @return <tt>true</tt> if this AST changed as a result of the call
+	 * 
+	 */
+	public boolean addAll(IAST ast, int startPosition, int endPosition);
+
+	public boolean addAll(int location, Collection<? extends IExpr> collection);
+
+	/**
+	 * Appends all of the arguments (starting from offset <code>0</code>) in the
+	 * specified list to the end of this AST.
+	 * 
+	 * @param list
+	 *            list containing elements to be added to this AST
+	 * @return <tt>true</tt> if this AST changed as a result of the call
+	 * 
+	 */
+	public boolean addAll(List<? extends IExpr> list);
+
+	/**
+	 * Appends all elements from offset <code>startPosition</code> to
+	 * <code>endPosition</code> in the specified list to the end of this AST.
+	 * 
+	 * @param list
+	 *            list containing elements to be added to this AST
+	 * @param startPosition
+	 *            the start position, inclusive.
+	 * @param endPosition
+	 *            the ending position, exclusive.
+	 * @return <tt>true</tt> if this AST changed as a result of the call
+	 * 
+	 */
+	public boolean addAll(List<? extends IExpr> list, int startPosition, int endPosition);
+
+	/**
+	 * Appends all of the arguments (starting from offset <code>1</code>) in the
+	 * specified AST to the end of this AST.
+	 * 
+	 * @param ast
+	 *            AST containing elements to be added to this AST
+	 * @return <tt>true</tt> if this AST changed as a result of the call
+	 * 
+	 */
+	public boolean addArgs(IAST ast);
+
+	/**
+	 * Create a shallow copy of this <code>IAST</code> instance (the elements
+	 * themselves are not copied) and add the <code>expr</code> at the given
+	 * <code>position</code>.
+	 * 
+	 * @param position
+	 * @param expr
+	 * @return a clone with added <code>expr</code> element at the given
+	 *         <code>position</code>.
+	 */
+	public IAST addAtClone(int position, IExpr expr);
+	/**
+	 * Add an evaluation flag to the existing ones.
+	 * 
+	 * @param i
+	 */
+	public void addEvalFlags(int i);
+
+	/**
+	 * Add an <code>subAST</code> with attribute <code>OneIdentity</code> for
+	 * example Plus[] or Times[].
+	 * 
+	 * @param subAST
+	 *            an ast with attribute <code>OneIdentity</code>.
+	 * @return <code>this</code> ast after adding the subAST
+	 */
+	public IAST addOneIdentity(IAST subAST);
+
+	/**
 	 * Adds the specified object at the end of this {@code List}.
 	 * 
 	 * @param object
@@ -194,107 +295,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *             if {@code location < 0 || location > size()}
 	 */
 	public void append(int location, IExpr object);
-
-	/**
-	 * Appends all of the arguments (starting from offset <code>0</code>) in the
-	 * specified list to the end of this AST.
-	 * 
-	 * @param list
-	 *            list containing elements to be added to this AST
-	 * @return <tt>true</tt> if this AST changed as a result of the call
-	 * 
-	 */
-	public boolean addAll(List<? extends IExpr> list);
-
-	/**
-	 * Appends all of the arguments (starting from offset <code>1</code>) in the
-	 * specified AST to the end of this AST.
-	 * 
-	 * @param ast
-	 *            AST containing elements to be added to this AST
-	 * @return <tt>true</tt> if this AST changed as a result of the call
-	 * 
-	 */
-	public boolean addArgs(IAST ast);
-
-	/**
-	 * Appends all elements from offset <code>startPosition</code> to
-	 * <code>endPosition</code> in the specified list to the end of this AST.
-	 * 
-	 * @param list
-	 *            list containing elements to be added to this AST
-	 * @param startPosition
-	 *            the start position, inclusive.
-	 * @param endPosition
-	 *            the ending position, exclusive.
-	 * @return <tt>true</tt> if this AST changed as a result of the call
-	 * 
-	 */
-	public boolean addAll(List<? extends IExpr> list, int startPosition, int endPosition);
-
-	/**
-	 * Adds the objects in the specified collection to the end of this
-	 * {@code List}. The objects are added in the order in which they are
-	 * returned from the collection's iterator.
-	 * 
-	 * @param collection
-	 *            the collection of objects.
-	 * @return {@code true} if this {@code List} is modified, {@code false}
-	 *         otherwise (i.e. if the passed collection was empty).
-	 * @throws UnsupportedOperationException
-	 *             if adding to this {@code List} is not supported.
-	 * @throws ClassCastException
-	 *             if the class of an object is inappropriate for this
-	 *             {@code List}.
-	 * @throws IllegalArgumentException
-	 *             if an object cannot be added to this {@code List}.
-	 */
-	public boolean addAll(Collection<? extends IExpr> collection);
-
-	public boolean addAll(int location, Collection<? extends IExpr> collection);
-	/**
-	 * Appends all elements from offset <code>startPosition</code> to
-	 * <code>endPosition</code> in the specified AST to the end of this AST.
-	 * 
-	 * @param ast
-	 *            AST containing elements to be added to this AST
-	 * @param startPosition
-	 *            the start position, inclusive.
-	 * @param endPosition
-	 *            the ending position, exclusive.
-	 * @return <tt>true</tt> if this AST changed as a result of the call
-	 * 
-	 */
-	public boolean addAll(IAST ast, int startPosition, int endPosition);
-
-	/**
-	 * Create a shallow copy of this <code>IAST</code> instance (the elements
-	 * themselves are not copied) and add the <code>expr</code> at the given
-	 * <code>position</code>.
-	 * 
-	 * @param position
-	 * @param expr
-	 * @return a clone with added <code>expr</code> element at the given
-	 *         <code>position</code>.
-	 */
-	public IAST addAtClone(int position, IExpr expr);
-
-	/**
-	 * Add an evaluation flag to the existing ones.
-	 * 
-	 * @param i
-	 */
-	public void addEvalFlags(int i);
-
-	/**
-	 * Add an <code>subAST</code> with attribute <code>OneIdentity</code> for
-	 * example Plus[] or Times[].
-	 * 
-	 * @param subAST
-	 *            an ast with attribute <code>OneIdentity</code>.
-	 * @return <code>this</code> ast after adding the subAST
-	 */
-	public IAST addOneIdentity(IAST subAST);
 
 	/**
 	 * Append an expression to this list.
@@ -485,6 +485,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @return a copy of this <code>IAST</code> instance.
 	 */
+	@Override
 	default public IAST copy() {
 		return clone();
 	}
@@ -669,6 +670,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * <b>Note:</b> the 0-th element (i.e. the head of the AST) will not be
 	 * selected.
 	 */
+	@Override
 	public void forEach(Consumer<? super IExpr> action);
 
 	/**
@@ -854,21 +856,25 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @return
 	 */
+	@Override
 	public boolean isList();
 
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public boolean isPlus();
 
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public boolean isPower();
 
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public boolean isTimes();
 
 	/**
@@ -877,6 +883,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @return an iterator over this list values.
 	 */
+	@Override
 	public Iterator<IExpr> iterator();
 
 	/**
@@ -1169,5 +1176,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * of these headers: "DoubleComplex", "Double", "Integer", "Fraction",
 	 * "Complex". All other objects return <code>null</code>.
 	 */
+	@Override
 	public ISymbol topHead();
 }

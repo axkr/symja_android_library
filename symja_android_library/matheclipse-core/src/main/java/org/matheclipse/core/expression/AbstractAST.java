@@ -171,7 +171,7 @@ public abstract class AbstractAST implements IAST {
 	}
 
 	private static int compareToPowerExpr(final IAST lhsPowerAST, final IExpr rhsSymbolOrPattern) {
-		IExpr arg1 = ((IAST) lhsPowerAST).arg1();
+		IExpr arg1 = lhsPowerAST.arg1();
 		if (arg1.isSymbolOrPatternObject()) {
 			// if (rhsSymbolOrPattern.isPlus() || rhsSymbolOrPattern.isTimes())
 			// {
@@ -183,9 +183,9 @@ public abstract class AbstractAST implements IAST {
 				return cp;
 			}
 			// "x^1" compared to "x^arg2()"
-			IExpr arg2 = ((IAST) lhsPowerAST).arg2();
+			IExpr arg2 = lhsPowerAST.arg2();
 			if (arg2.isNumeric()) {
-				return ((IAST) lhsPowerAST).arg2().compareTo(F.CD1);
+				return lhsPowerAST.arg2().compareTo(F.CD1);
 			}
 			return arg2.compareTo(F.C1);
 		}
@@ -389,6 +389,11 @@ public abstract class AbstractAST implements IAST {
 	@Override
 	public long accept(IVisitorLong visitor) {
 		return visitor.visit(this);
+	}
+
+	@Override
+	public final IExpr add(IExpr that) {
+		return plus(that);
 	}
 
 	/** {@inheritDoc} */
@@ -2315,6 +2320,17 @@ public abstract class AbstractAST implements IAST {
 		return -1;
 	}
 
+//	@Override
+	/**
+	 * Returns an iterator over the elements in this list starting with offset
+	 * <b>0</b>.
+	 * 
+	 * @return an iterator over this list values.
+	 */
+//	public final Iterator<IExpr> iterator0() {
+//		return super.iterator();
+//	}
+
 	/**
 	 * Returns an iterator over the elements in this <code>IAST</code> starting
 	 * with offset <b>1</b>.
@@ -2332,17 +2348,6 @@ public abstract class AbstractAST implements IAST {
 		i._currentIndex = 0;
 		return i;
 	}
-
-//	@Override
-	/**
-	 * Returns an iterator over the elements in this list starting with offset
-	 * <b>0</b>.
-	 * 
-	 * @return an iterator over this list values.
-	 */
-//	public final Iterator<IExpr> iterator0() {
-//		return super.iterator();
-//	}
 
 	/** {@inheritDoc} */
 	@Override
@@ -2706,11 +2711,6 @@ public abstract class AbstractAST implements IAST {
 			return F.eval(F.Plus(this, that.negate()));
 		}
 		return F.eval(F.Plus(this, F.Times(F.CN1, that)));
-	}
-
-	@Override
-	public final IExpr add(IExpr that) {
-		return plus(that);
 	}
 
 	@Override
