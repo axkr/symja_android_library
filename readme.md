@@ -137,7 +137,7 @@ If you would like to use parts of the system here are the associated licenses:
 
 * the [JAS Java Algebra System](http://krum.rz.uni-mannheim.de/jas/) is published under the (LESSER) GNU GENERAL PUBLIC LICENSE licence. The Java bytecode is dual licenced also under the Apache 2.0 licence to allow usage in Android projects. 
 * the [Apache Commons Mathematics Library](http://commons.apache.org/math/) is published under Apache software licence
-* the [https://www.hipparchus.org/](Hipparchus Mathematics Library) is published under Apache software licence
+* the [Hipparchus Mathematics Library](https://www.hipparchus.org/) is published under Apache software licence
 * the Symja parser libraries (org.matheclipse.parser* packages) are published under the APACHE LICENSE Version 2.0.
 
 [1]: mailto:axelclk@gmail.com
