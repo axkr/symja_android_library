@@ -1031,7 +1031,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("DiceDissimilarity({1, 1, 1, 1}, {1, 1, 1, 1})", "0");
 		check("DiceDissimilarity({0, 0, 0, 0}, {1, 1, 1, 1})", "1");
 	}
-	
+
 	public void testDigitQ() {
 		check("DigitQ(\"1234\")", "True");
 		check("DigitQ(\".\")", "False");
@@ -1912,7 +1912,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ArcSin(1.3038404810405297)", "1.5707963267948966+I*(-0.7610396837318266)");
 		check("InverseHaversine(1.7)", "3.141592653589793+I*(-1.5220793674636532)");
 	}
-	
+
 	public void testJaccardDissimilarity() {
 		check("JaccardDissimilarity({1, 0, 1, 1, 0}, {1, 1, 0, 1, 1})", "3/5");
 		check("JaccardDissimilarity({True, False, True}, {True, True, False})", "2/3");
@@ -2782,9 +2782,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPowerMod() {
+		// check("PowerMod(6, 1/2, 10)", "1");
+
 		check("PowerMod(2, 10, 3)", "1");
 		// similar to Java modInverse()
-		check("PowerMod[3, -1, 7]", "5");
+		check("PowerMod(3, -1, 7)", "5");
+		// prints warning
+		check("PowerMod(0, -1, 2)", "PowerMod(0,-1,2)");
+		// prints warning
+		check("PowerMod(5, 2, 0)", "PowerMod(5,2,0)");
+		
 		check("PowerMod(2, 10^9, 18)", "16");
 		check("PowerMod(2, {10, 11, 12, 13, 14}, 5)", "{4,3,1,2,4}");
 		check("PowerMod(147198853397, -1, 73599183960)", "43827926933");
@@ -3134,7 +3141,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("RogersTanimotoDissimilarity({1, 1, 1, 1}, {1, 1, 1, 1})", "0");
 		check("RogersTanimotoDissimilarity({0, 0, 0, 0}, {1, 1, 1, 1})", "1");
 	}
-	
+
 	public void testRoots() {
 		// check("Roots(a*x^3+b*x^2+c^2+d, x)",
 		// "{(-b/2-Sqrt(b^2-4*a*c)/2)/a,(-b/2+Sqrt(b^2-4*a*c)/2)/a}");
@@ -3169,7 +3176,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("RowReduce({{1,2,3,1,0,0}, {4,5,6,0,1,0}, {7,8,9,0,0,1}})",
 				"{{1,0,-1,0,-8/3,5/3},\n" + " {0,1,2,0,7/3,-4/3},\n" + " {0,0,0,1,-2,1}}");
 	}
-	
+
 	public void testRussellRaoDissimilarity() {
 		check("RussellRaoDissimilarity({1, 0, 1, 1, 0}, {1, 1, 0, 1, 1})", "3/5");
 		check("RussellRaoDissimilarity({True, False, True}, {True, True, False})", "2/3");
@@ -3365,7 +3372,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("SokalSneathDissimilarity({1, 1, 1, 1}, {1, 1, 1, 1})", "0");
 		check("SokalSneathDissimilarity({0, 0, 0, 0}, {1, 1, 1, 1})", "1");
 	}
-	
+
 	public void testSolve() {
 		// issue #120
 		check("Solve(Sin(x)*x==0, x)", "{{x->0}}");
@@ -3894,7 +3901,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("YuleDissimilarity({0, 0, 0, 0}, {0, 0, 0, 0})", "0");
 		check("YuleDissimilarity({0, 1, 0, 1}, {1, 0, 1, 0})", "2");
 	}
-	
+
 	public void testZeta() {
 		check("Zeta(2)", "Pi^2/6");
 	}

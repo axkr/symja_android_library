@@ -36,9 +36,7 @@ public class PowerMod extends AbstractFunctionEvaluator {
 			}
 			return arg1.modPow(arg2, arg3);
 		} catch (ArithmeticException ae) {
-			if (Config.SHOW_STACKTRACE) {
-				ae.printStackTrace();
-			}
+			engine.printMessage("PowerMod[] function: " + ae.getMessage());
 		}
 		return F.NIL;
 	}

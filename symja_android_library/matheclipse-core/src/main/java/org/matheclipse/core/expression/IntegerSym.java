@@ -634,8 +634,11 @@ public class IntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
-	public IInteger modPow(final IInteger exp, final IInteger that) {
-		return valueOf(toBigNumerator().modPow(exp.toBigNumerator(), that.toBigNumerator()));
+	public IInteger modPow(final IInteger exp, final IInteger m) {
+		if (m.isZero()) {
+			throw new ArithmeticException("the argument " + m.toString() + " should be nonzero.");
+		}
+		return valueOf(toBigNumerator().modPow(exp.toBigNumerator(), m.toBigNumerator()));
 	}
 
 	@Override

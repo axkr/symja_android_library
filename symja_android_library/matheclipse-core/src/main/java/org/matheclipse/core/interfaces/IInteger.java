@@ -56,6 +56,9 @@ public interface IInteger extends IRational {
 	 * Returns the greatest common divisor of this large integer and the one
 	 * specified.
 	 * 
+	 * @param val
+	 *            an integer value
+	 * @return
 	 */
 	public IInteger gcd(IInteger val);
 
@@ -86,6 +89,8 @@ public interface IInteger extends IRational {
 	/**
 	 * Returns the least common multiple of this integer and the one specified.
 	 * 
+	 * @param val
+	 * @return
 	 */
 	public IInteger lcm(IInteger val);
 
@@ -136,6 +141,8 @@ public interface IInteger extends IRational {
 	 * Split this integer into the nth-root (with prime factors less equal 1021)
 	 * and the &quot;rest factor&quot;
 	 * 
+	 * @param n
+	 *            nth-root
 	 * @return <code>{nth-root, rest factor}</code>
 	 */
 	public IInteger[] nthRootSplit(int n);

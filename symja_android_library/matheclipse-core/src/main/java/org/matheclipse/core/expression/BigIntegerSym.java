@@ -585,6 +585,9 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
 	@Override
 	public IInteger modPow(final IInteger exp, final IInteger m) {
+		if (m.isZero()) {
+			throw new ArithmeticException("the argument " + m.toString() + " should be nonzero.");
+		}
 		return valueOf(fBigIntValue.modPow(exp.toBigNumerator(), m.toBigNumerator()));
 	}
 
