@@ -131,7 +131,13 @@ an [email][1]!
 
 ###License
 
-* the Symja source code is published under the LESSER GNU GENERAL PUBLIC LICENSE Version 3 
+* the complete Symja system is published under the LESSER GNU GENERAL PUBLIC LICENSE Version 3. The Java bytecode is dual licenced also under the Apache 2.0 licence to allow usage in Android projects. 
+
+If you would like to use parts of the system here are the associated licenses:
+* the [[http://krum.rz.uni-mannheim.de/jas/|JAS Java Algebra System]] is published under the (LESSER) GNU GENERAL PUBLIC LICENSE licence. The Java bytecode is dual licenced also under the Apache 2.0 licence to allow usage in Android projects. 
+* the [[http://commons.apache.org/math/|Apache Commons Mathematics Library]] is published under Apache software licence
+* the [[https://www.hipparchus.org/|Hipparchus Mathematics Library]] is published under Apache software licence
+* the Symja parser libraries (org.matheclipse.parser* packages) are published under the APACHE LICENSE Version 2.0.
 
 [1]: mailto:axelclk@gmail.com
 [2]: http://www.vogella.com/tutorials/EclipseGit/article.html
