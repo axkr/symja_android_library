@@ -9,6 +9,7 @@ import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Compute the variance for a list of elements
@@ -44,6 +45,28 @@ public class Variance extends AbstractFunctionEvaluator {
 					return new ASTRealVector(result, false);
 				}
 				return F.NIL;
+			}
+
+			if (arg1.isAST()) {
+				IAST dist = (IAST) arg1;
+				if (dist.head().isSymbol()) {
+					ISymbol head = (ISymbol) dist.head();
+					if (arg1.isAST1()) {
+						if (head.equals(F.BernoulliDistribution)) {
+						} else if (head.equals(F.PoissonDistribution)) {
+						}
+					} else if (arg1.isAST2()) {
+						if (head.equals(F.BinomialDistribution)) {
+						} else if (head.equals(F.NormalDistribution)) {
+						}
+					} else if (arg1.isAST3()) {
+						IExpr n = dist.arg1();
+						IExpr nSucc = dist.arg2();
+						IExpr nTot = dist.arg3();
+						if (head.equals(F.HypergeometricDistribution)) {
+						}
+					}
+				}
 			}
 		}
 		return F.NIL;
