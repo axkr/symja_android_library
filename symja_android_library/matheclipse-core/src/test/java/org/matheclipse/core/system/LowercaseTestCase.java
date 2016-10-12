@@ -2193,6 +2193,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Mean({{a, u}, {b, v}, {c, w}})", "{1/3*(a+b+c),1/3*(u+v+w)}");
 		check("Mean({1.21, 3.4, 2.15, 4, 1.55})", "2.4619999999999997");
 		check("Mean({a,b,c,d})", "1/4*(a+b+c+d)");
+
+		check("Mean(BernoulliDistribution(p))", "p"); 
+		check("Mean(PoissonDistribution(p))", "p");
+		check("Mean(BinomialDistribution(n, p))", "n*p");
+		check("Mean(NormalDistribution(n, p))", "n");
+		check("Mean(HypergeometricDistribution(n, ns, nt))", "(n*ns)/nt");
 	}
 
 	public void testMedian() {
@@ -2781,6 +2787,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"E^(I*2/3*Pi*Floor(1/2-Arg(a)/(2*Pi)-Arg(b)/(2*Pi)-Arg(c)/(2*Pi)))*a^(1/3)*b^(1/3)*c^(\n" + "1/3)");
 	}
 
+	public void testMultiplicativeOrder() {
+		check("MultiplicativeOrder(7, 108)", "18");
+		check("MultiplicativeOrder(10^100 + 1, Prime(1000))", "3959");
+		check("MultiplicativeOrder(-5, 7)", "3");
+
+		check("Select(Range(43), MultiplicativeOrder(#, 43) == EulerPhi(43) &)", "{3,5,12,18,19,20,26,28,29,30,33,34}");
+	}
+
 	public void testPowerMod() {
 		// check("PowerMod(6, 1/2, 10)", "1");
 
@@ -2791,7 +2805,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PowerMod(0, -1, 2)", "PowerMod(0,-1,2)");
 		// prints warning
 		check("PowerMod(5, 2, 0)", "PowerMod(5,2,0)");
-		
+
 		check("PowerMod(2, 10^9, 18)", "16");
 		check("PowerMod(2, {10, 11, 12, 13, 14}, 5)", "{4,3,1,2,4}");
 		check("PowerMod(147198853397, -1, 73599183960)", "43827926933");
@@ -3859,6 +3873,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Variance({1., 2., 3., 4.})", "1.6666666666666667");
 		check("Variance({{5.2, 7}, {5.3, 8}, {5.4, 9}})", "{0.010000000000000018,1.0}");
 		check("Variance({1.21, 3.4, 2, 4.66, 1.5, 5.61, 7.22})", "5.16122380952381");
+
+		// check("Variance(BernoulliDistribution(p))", "p*(1-p)");
+		// check("Variance(BinomialDistribution(n, p))", "n*p*(1-p)");
 	}
 
 	public void testVectorAngle() {

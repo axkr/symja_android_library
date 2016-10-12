@@ -1031,6 +1031,17 @@ public class F {
 	public final static ISymbol Superscript = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subscript" : "Superscript");
 
+	public final static ISymbol BinomialDistribution = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "binomialdistribution" : "BinomialDistribution");
+	public final static ISymbol BernoulliDistribution = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "bernoullidistribution" : "BernoulliDistribution");
+	public final static ISymbol HypergeometricDistribution = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hypergeometricdistribution" : "HypergeometricDistribution");
+	public final static ISymbol NormalDistribution  = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "normaldistribution" : "NormalDistribution");
+	public final static ISymbol PoissonDistribution = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "poissondistribution" : "PoissonDistribution");
+	
 	public final static ISymbol a = initFinalHiddenSymbol("a");
 	public final static ISymbol b = initFinalHiddenSymbol("b");
 	public final static ISymbol c = initFinalHiddenSymbol("c");
