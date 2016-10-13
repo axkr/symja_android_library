@@ -39,20 +39,20 @@ import edu.jas.ufdroot.FactorRealAlgebraic;
  *        the <code>Factorization</code> interface.
  * 
  *        <pre>
- * Factorization&lt;CT&gt; engine;
- * engine = FactorFactory.&lt;CT&gt; getImplementation(cofac);
- * c = engine.factors(a);
- * </pre>
+ *        Factorization&lt;CT&gt; engine;
+ *        engine = FactorFactory.&lt;CT&gt; getImplementation(cofac);
+ *        c = engine.factors(a);
+ *        </pre>
  * 
  *        For example, if the coefficient type is BigInteger, the usage looks
  *        like
  * 
  *        <pre>
- * BigInteger cofac = new BigInteger();
- * Factorization&lt;BigInteger&gt; engine;
- * engine = FactorFactory.getImplementation(cofac);
- * Sm = engine.factors(poly);
- * </pre>
+ *        BigInteger cofac = new BigInteger();
+ *        Factorization&lt;BigInteger&gt; engine;
+ *        engine = FactorFactory.getImplementation(cofac);
+ *        Sm = engine.factors(poly);
+ *        </pre>
  * 
  * @see edu.jas.ufd.Factorization#factors(edu.jas.poly.GenPolynomial P)
  * @see edu.jas.ufd.FactorFactory#getImplementation(edu.jas.structure.RingFactory
@@ -92,7 +92,8 @@ public class FactorFactory extends edu.jas.ufd.FactorFactory {
      * @param <C> coefficient type, e.g. BigRational, ModInteger.
      * @return factorization algorithm implementation.
      */
-    public static <C extends GcdRingElem<C>> FactorAbstract<Complex<C>> getImplementation(ComplexRing<C> fac) {
+    public static <C extends GcdRingElem<C>> FactorAbstract<Complex<C>> getImplementation(
+                    ComplexRing<C> fac) {
         return new FactorComplex<C>(fac);
     }
 
@@ -104,7 +105,8 @@ public class FactorFactory extends edu.jas.ufd.FactorFactory {
      * @param <C> coefficient type, e.g. BigRational, ModInteger.
      * @return factorization algorithm implementation.
      */
-    public static <C extends GcdRingElem<C>> FactorAbstract<Quotient<C>> getImplementation(QuotientRing<C> fac) {
+    public static <C extends GcdRingElem<C>> FactorAbstract<Quotient<C>> getImplementation(
+                    QuotientRing<C> fac) {
         return new FactorQuotient<C>(fac, FactorFactory.<C> getImplementation(fac.ring.coFac));
     }
 
@@ -142,7 +144,7 @@ public class FactorFactory extends edu.jas.ufd.FactorFactory {
      * @param <C> coefficient type, e.g. BigRational.
      * @return factorization algorithm implementation.
      */
-    @SuppressWarnings("cast")
+    @SuppressWarnings("unchecked")
     public static <C extends GcdRingElem<C> & Rational> FactorAbstract<edu.jas.application.RealAlgebraicNumber<C>> getImplementation(
                     edu.jas.application.RealAlgebraicRing<C> fac) {
         edu.jas.root.RealAlgebraicRing<C> rar = (edu.jas.root.RealAlgebraicRing<C>) (Object) fac.realRing;
@@ -162,7 +164,7 @@ public class FactorFactory extends edu.jas.ufd.FactorFactory {
     public static <C extends GcdRingElem<C>> FactorAbstract<C> getImplementation(RingFactory<C> fac) {
         logger.info("app factor factory = " + fac.getClass().getName());
         //System.out.println("fac_o = " + fac.getClass().getName());
-        FactorAbstract/*raw type<C>*/ufd = null;
+        FactorAbstract/*raw type<C>*/ ufd = null;
         edu.jas.application.RealAlgebraicRing rrfac = null;
         RealAlgebraicRing rfac = null;
         AlgebraicNumberRing afac = null;
@@ -174,9 +176,9 @@ public class FactorFactory extends edu.jas.ufd.FactorFactory {
             //System.out.println("rrfac_o = " + ofac);
             rrfac = (edu.jas.application.RealAlgebraicRing) ofac;
             //ofac = rrfac.realRing;
-            ufd = new FactorRealReal/*raw <C>*/(
-                            rrfac,
-                            FactorFactory.<edu.jas.root.RealAlgebraicNumber> getImplementation(rrfac.realRing));
+            ufd = new FactorRealReal/*raw <C>*/(rrfac,
+                            FactorFactory.<edu.jas.root.RealAlgebraicNumber> getImplementation(
+                                            rrfac.realRing));
         } else if (ofac instanceof edu.jas.root.RealAlgebraicRing) {
             //System.out.println("rfac_o = " + ofac);
             rfac = (edu.jas.root.RealAlgebraicRing) ofac;

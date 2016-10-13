@@ -140,8 +140,7 @@ public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<Solva
      * @param F list of solvable polynomials
      * @param s side variant of ideal or Groebner Base
      */
-    public SolvableIdeal(GenSolvablePolynomialRing<C> ring, List<GenSolvablePolynomial<C>> F, 
-                         Side s) {
+    public SolvableIdeal(GenSolvablePolynomialRing<C> ring, List<GenSolvablePolynomial<C>> F, Side s) {
         this(new PolynomialList<C>(ring, F), false, false, s);
     }
 
@@ -174,7 +173,8 @@ public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<Solva
      * @param bb Groebner Base engine
      * @param red Reduction engine
      */
-    public SolvableIdeal(PolynomialList<C> list, SolvableGroebnerBaseAbstract<C> bb, SolvableReduction<C> red) {
+    public SolvableIdeal(PolynomialList<C> list, SolvableGroebnerBaseAbstract<C> bb,
+                    SolvableReduction<C> red) {
         this(list, false, bb, red);
     }
 
@@ -210,7 +210,8 @@ public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<Solva
      */
     public SolvableIdeal(PolynomialList<C> list, boolean gb, Side s) {
         //this(list, gb, false, new SolvableGroebnerBaseSeq<C>(), new SolvableReductionSeq<C>());
-        this(list, gb, false, SGBFactory.getImplementation(list.ring.coFac), new SolvableReductionSeq<C>(), s);
+        this(list, gb, false, SGBFactory.getImplementation(list.ring.coFac), new SolvableReductionSeq<C>(),
+                        s);
     }
 
 
@@ -258,7 +259,8 @@ public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<Solva
      * @param topt true if term order is optimized, else false
      * @param bb Groebner Base engine
      */
-    public SolvableIdeal(PolynomialList<C> list, boolean gb, boolean topt, SolvableGroebnerBaseAbstract<C> bb) {
+    public SolvableIdeal(PolynomialList<C> list, boolean gb, boolean topt,
+                    SolvableGroebnerBaseAbstract<C> bb) {
         this(list, gb, topt, bb, bb.sred);
     }
 
@@ -271,8 +273,8 @@ public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<Solva
      * @param bb Groebner Base engine
      * @param red Reduction engine
      */
-    public SolvableIdeal(PolynomialList<C> list, boolean gb, boolean topt,
-                    SolvableGroebnerBaseAbstract<C> bb, SolvableReduction<C> red) {
+    public SolvableIdeal(PolynomialList<C> list, boolean gb, boolean topt, SolvableGroebnerBaseAbstract<C> bb,
+                    SolvableReduction<C> red) {
         this(list, gb, topt, bb, red, Side.left);
     }
 
@@ -286,8 +288,8 @@ public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<Solva
      * @param red Reduction engine
      * @param s side variant of ideal or Groebner Base
      */
-    public SolvableIdeal(PolynomialList<C> list, boolean gb, boolean topt,
-                    SolvableGroebnerBaseAbstract<C> bb, SolvableReduction<C> red, Side s) {
+    public SolvableIdeal(PolynomialList<C> list, boolean gb, boolean topt, SolvableGroebnerBaseAbstract<C> bb,
+                    SolvableReduction<C> red, Side s) {
         if (list == null || list.list == null) {
             throw new IllegalArgumentException("list and list.list may not be null");
         }
@@ -876,6 +878,7 @@ public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<Solva
      * @param h solvable polynomial
      * @return ideal(this : h), a Groebner base
      */
+    //@SuppressWarnings("unchecked")
     public SolvableIdeal<C> quotient(GenSolvablePolynomial<C> h) {
         if (h == null) { // == (0)
             return this;
@@ -897,13 +900,13 @@ public class SolvableIdeal<C extends GcdRingElem<C>> implements Comparable<Solva
         Q = new ArrayList<GenSolvablePolynomial<C>>(I.getList().size());
         GenSolvablePolynomial<C> p;
         for (GenSolvablePolynomial<C> q : I.getList()) {
-            p = (GenSolvablePolynomial<C>) q.divide(h); // remainder == 0
+            p = q.divide(h); // remainder == 0, (GenSolvablePolynomial<C>)
             if (!p.isZERO()) {
                 p = p.monic();
                 Q.add(p);
             }
             if (debug) {
-                GenSolvablePolynomial<C> r = (GenSolvablePolynomial<C>) q.remainder(h);
+                GenSolvablePolynomial<C> r = q.remainder(h); // (GenSolvablePolynomial<C>)
                 if (!r.isZERO()) {
                     System.out.println("error remainder !=0: " + r + ", q = " + q + ", h = " + h);
                     throw new RuntimeException("remainder !=0");

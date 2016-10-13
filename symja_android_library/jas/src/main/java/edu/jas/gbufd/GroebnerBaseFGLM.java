@@ -145,7 +145,7 @@ public class GroebnerBaseFGLM<C extends GcdRingElem<C>> extends GroebnerBaseAbst
         }
         // compute graded term order Groebner base
         if (sgb == null) {
-            sgb = GBFactory.<C> getImplementation(pfac.coFac);
+            sgb = GBFactory.<C> getImplementation(pfac.coFac, strategy);
         }
         List<GenPolynomial<C>> Gp = sgb.GB(modv, Fp);
         logger.info("graded GB = " + Gp);

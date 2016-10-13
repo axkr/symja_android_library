@@ -697,6 +697,14 @@ public abstract class ExpVector implements AbelianGroupElem<ExpVector> {
 
 
     /**
+     * ExpVector multiply by scalar.
+     * @param s scalar
+     * @return s*this.
+     */
+    public abstract ExpVector scalarMultiply(long s);
+
+
+    /**
      * ExpVector substitution. Clone and set exponent to d at position i.
      * @param U
      * @param i position.
@@ -866,6 +874,14 @@ public abstract class ExpVector implements AbelianGroupElem<ExpVector> {
      * @return weighted sum of all exponents.
      */
     public abstract long weightDeg(long[][] w);
+
+
+    /**
+     * ExpVector weighted degree.
+     * @param w weights.
+     * @return weighted sum of all exponents.
+     */
+    public abstract long weightDeg(long[] w);
 
 
     /**

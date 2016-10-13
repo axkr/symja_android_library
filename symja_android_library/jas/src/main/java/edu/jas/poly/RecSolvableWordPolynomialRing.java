@@ -221,13 +221,7 @@ public class RecSolvableWordPolynomialRing<C extends RingElem<C>> extends
             s.append(coFac.toScript().trim());
         }
         s.append(",\"" + varsToString() + "\",");
-        String to = tord.toString();
-        if (tord.getEvord() == TermOrder.INVLEX) {
-            to = "PolyRing.lex";
-        }
-        if (tord.getEvord() == TermOrder.IGRLEX) {
-            to = "PolyRing.grad";
-        }
+        String to = tord.toScript();
         s.append(to);
         if (table.size() > 0) {
             String rel = table.toScript();

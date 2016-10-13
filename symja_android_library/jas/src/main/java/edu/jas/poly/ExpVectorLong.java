@@ -449,6 +449,22 @@ public final class ExpVectorLong extends ExpVector
 
 
     /**
+     * ExpVector multiply by scalar.
+     * @param s scalar
+     * @return s*this.
+     */
+    @Override
+    public ExpVectorLong scalarMultiply(long s) {
+        long[] u = val;
+        long[] w = new long[u.length];
+        for (int i = 0; i < u.length; i++) {
+            w[i] = s * u[i];
+        }
+        return new ExpVectorLong(w, true);
+    }
+
+
+    /**
      * ExpVector substitution. Clone and set exponent to d at position i.
      * @param i position.
      * @param d new exponent.
@@ -533,6 +549,25 @@ public final class ExpVectorLong extends ExpVector
             for (int i = 0; i < u.length; i++) {
                 t += wj[i] * u[i];
             }
+        }
+        return t;
+    }
+
+
+    /**
+     * ExpVector weighted degree.
+     * @param w weights.
+     * @return weighted sum of all exponents.
+     */
+    @Override
+    public long weightDeg(long[] w) {
+        if (w == null || w.length == 0) {
+            return totalDeg(); // assume weight 1 
+        }
+        long t = 0;
+        long[] u = val;
+        for (int i = 0; i < w.length; i++) {
+             t += w[i] * u[i];
         }
         return t;
     }

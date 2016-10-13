@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.Monomial;
 import edu.jas.structure.RingElem;
 
 
@@ -112,6 +113,102 @@ public class ReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
                 S = S.subtractMultiple(a, e, p[i]);
             }
         }
+        return R;
+    }
+
+
+    /**
+     * Normalform with respect to marked head terms.
+     * @param Mp leading monomial list.
+     * @param Pp polynomial list.
+     * @param Ap polynomial.
+     * @return nf(Ap) with respect to Mp+Pp.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public GenPolynomial<C> normalformMarked(List<Monomial<C>> Mp, List<GenPolynomial<C>> Pp,
+                    GenPolynomial<C> Ap) {
+        if ((Mp == null && Pp == null) || (Mp.isEmpty() && Pp.isEmpty())) {
+            return Ap;
+        }
+        if (Ap == null || Ap.isZERO()) {
+            return Ap;
+        }
+        if (!Ap.ring.coFac.isField()) {
+            throw new IllegalArgumentException("coefficients not from a field");
+        }
+        Map.Entry<ExpVector, C> m;
+        int l;
+        GenPolynomial<C>[] P;
+        Monomial<C>[] M;
+        synchronized (Pp) {
+            l = Pp.size();
+            if (Mp.size() != l) {
+                throw new IllegalArgumentException("#Mp != #Pp: " + l + ", " + Mp.size());
+            }
+            P = new GenPolynomial[l];
+            M = new Monomial[l];
+            //P = Pp.toArray();
+            for (int i = 0; i < Pp.size(); i++) {
+                P[i] = Pp.get(i);
+                M[i] = Mp.get(i);
+            }
+        }
+        ExpVector[] htl = new ExpVector[l];
+        RingElem[] lbc = new RingElem[l];
+        GenPolynomial<C>[] p = new GenPolynomial[l];
+        int i;
+        int j = 0;
+        for (i = 0; i < l; i++) {
+            p[i] = P[i];
+            if (M[i] != null) {
+                p[j] = p[i];
+                htl[j] = M[i].exponent();
+                lbc[j] = M[i].coefficient();
+                j++;
+            }
+        }
+        l = j;
+        ExpVector e, f;
+        C a, b;
+        boolean mt = false;
+        GenPolynomial<C> R = Ap.ring.getZERO().copy();
+        GenPolynomial<C> S = Ap.copy();
+        while (S.length() > 0) {
+            m = S.leadingMonomial();
+            e = m.getKey();
+            a = m.getValue();
+            //System.out.println("NF a = " + a + ", e = " + e);
+            for (i = 0; i < l; i++) {
+                mt = e.multipleOf(htl[i]);
+                if (mt)
+                    break;
+            }
+            if (!mt) {
+                logger.debug("irred");
+                R.doAddTo(a, e); // needed, or sum
+                //R.doPutToMap(e, a); // not here
+                //S = S.subtract( a, e ); 
+                S.doRemoveFromMap(e, a);
+                // System.out.println(" S = " + S);
+            } else {
+                //System.out.println("i = "+i+", htl[i] = " + htl[i] + ", lbc[i] = " + lbc[i]  + ", p[i] = " + p[i]);
+                f = e.subtract(htl[i]);
+                b = a.divide((C) lbc[i]);
+                //logger.info("red div: e = " + e + ", a = " + a + ", f = " + f + ", b = " + b);
+                //Q = p[i].multiply( a, e );
+                //S = S.subtract( Q );
+                S.doRemoveFromMap(e, a);
+                //S.doAddTo(a.negate(), e);
+                S = S.subtractMultiple(b, f, p[i]);
+                if (e.equals(S.leadingExpVector())) {
+                    throw new RuntimeException(
+                                    "something is wrong: ht not descending e = " + e + ", S = " + S);
+                }
+            }
+            //System.out.println("NF R = " + R + ", S = " + S);
+        }
+        //System.out.println("NF Ap = " + Ap + " ==> " + R);
         return R;
     }
 

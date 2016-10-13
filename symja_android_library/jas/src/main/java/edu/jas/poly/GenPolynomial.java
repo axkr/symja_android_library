@@ -220,7 +220,7 @@ public class GenPolynomial<C extends RingElem<C>>
      */
     public void doRemoveFromMap(ExpVector e, C c) {
         C b = val.remove(e);
-        if (debug) {
+        if (true) { //||debug
             hash = -1;
             blen = -1;
             if (c == null) { // ignore b
@@ -228,6 +228,7 @@ public class GenPolynomial<C extends RingElem<C>>
             }
             if (!c.equals(b)) {
                 logger.error("map entry wrong " + e + " to " + c + " old " + b);
+                throw new RuntimeException("c != b");
             }
         }
     }
@@ -814,13 +815,8 @@ public class GenPolynomial<C extends RingElem<C>>
             return ring.getZERO();
         }
         long[][] w = ring.tord.getWeight();
-        long maxw;
-        if (w == null || w.length == 0) {
-            maxw = totalDegree(); // assume weights = 1
-        } else {
-            maxw = weightDegree();
-        }
-        GenPolynomial<C> wp = new GenPolynomial<C>(ring);
+        long maxw = weightDegree();
+        GenPolynomial<C> wp = ring.getZERO().copy(); //new GenPolynomial<C>(ring);
         for (Map.Entry<ExpVector, C> m : val.entrySet()) {
             ExpVector e = m.getKey();
             long d = e.weightDeg(w);
@@ -829,6 +825,42 @@ public class GenPolynomial<C extends RingElem<C>>
             }
         }
         return wp;
+    }
+
+
+    /**
+     * Leading facet normal polynomial.
+     * @param u leading exponent vector.
+     * @param uv exponent vector of facet normal.
+     * @return polynomial with terms of facet normal.
+     */
+    public GenPolynomial<C> leadingFacetPolynomial(ExpVector u, ExpVector uv) {
+        if (val.isEmpty()) {
+            return ring.getZERO();
+        }
+        long[] normal = uv.getVal();
+        GenPolynomial<C> fp = ring.getZERO().copy();
+        for (Map.Entry<ExpVector, C> m : val.entrySet()) {
+            ExpVector e = m.getKey();
+            if (u.equals(e)) {
+                fp.val.put(e, m.getValue());
+            } else {
+                ExpVector v = u.subtract(e);
+                if (v.compareTo(uv) == 0) { // || v.negate().compareTo(uv) == 0
+                    fp.val.put(e, m.getValue());
+                } else { // check for v parallel to uv
+                    long ab = v.weightDeg(normal); //scalarProduct(v, uv);
+                    long a = v.weightDeg(v.getVal()); //scalarProduct(v, v);
+                    long b = uv.weightDeg(normal); //scalarProduct(uv, uv);
+                    if (ab * ab == a * b) { // cos == 1
+                        fp.val.put(e, m.getValue());
+                        logger.info("ab = " + ab + ", a = " + a + ", b = " + b + ", u = " + u + ", e = " + e
+                                        + ", v = " + v);
+                    }
+                }
+            }
+        }
+        return fp;
     }
 
 
@@ -889,6 +921,27 @@ public class GenPolynomial<C extends RingElem<C>>
                 ExpVector v = u.subtract(e);
                 de.add(v);
             }
+        }
+        return de;
+    }
+
+
+    /**
+     * Delta of exponent vectors.
+     * @param u marked ExpVector in this.expVectors
+     * @return list of u-v, where v != u in this.expVectors.
+     */
+    public List<ExpVector> deltaExpVectors(ExpVector u) {
+        List<ExpVector> de = new ArrayList<ExpVector>(val.size());
+        if (val.isEmpty()) {
+            return de;
+        }
+        for (ExpVector e : val.keySet()) {
+            ExpVector v = u.subtract(e);
+            if (v.isZERO()) {
+                continue;
+            }
+            de.add(v);
         }
         return de;
     }
@@ -992,6 +1045,17 @@ public class GenPolynomial<C extends RingElem<C>>
             nv.put(e, a);
         }
         return n;
+    }
+
+
+    /**
+     * GenPolynomial addition. This method is not very efficient, since this is
+     * copied.
+     * @param m monomial.
+     * @return this + m.
+     */
+    public GenPolynomial<C> sum(Monomial<C> m) {
+        return sum(m.coefficient(), m.exponent());
     }
 
 
@@ -1137,6 +1201,17 @@ public class GenPolynomial<C extends RingElem<C>>
             nv.put(e, a.negate());
         }
         return n;
+    }
+
+
+    /**
+     * GenPolynomial subtraction. This method is not very efficient, since this
+     * is copied.
+     * @param m monomial.
+     * @return this - m.
+     */
+    public GenPolynomial<C> subtract(Monomial<C> m) {
+        return subtract(m.coefficient(), m.exponent());
     }
 
 

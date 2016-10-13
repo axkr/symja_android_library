@@ -7,13 +7,10 @@ package edu.jas.ufd;
 
 import org.apache.log4j.Logger;
 
-import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
 import edu.jas.poly.PolyUtil;
 import edu.jas.structure.GcdRingElem;
-import edu.jas.structure.Power;
-import edu.jas.structure.RingElem;
 import edu.jas.structure.RingFactory;
 
 
@@ -38,8 +35,8 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
      * @param S nonzero GenPolynomial.
      * @return remainder with ldcf(S)<sup>m</sup> P = quotient * S + remainder.
      * @see edu.jas.poly.GenPolynomial#remainder(edu.jas.poly.GenPolynomial).
-     * @deprecated Use {@link
-     *             edu.jas.poly.PolyUtil#baseDensePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)}
+     * @deprecated Use
+     *             {@link edu.jas.poly.PolyUtil#baseDensePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)}
      *             instead
      */
     @Deprecated
@@ -54,8 +51,9 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
      * @param S nonzero recursive GenPolynomial.
      * @return remainder with ldcf(S)<sup>m</sup> P = quotient * S + remainder.
      * @see edu.jas.poly.GenPolynomial#remainder(edu.jas.poly.GenPolynomial).
-     * @deprecated Use {@link
-     *             edu.jas.poly.PolyUtil#recursiveDensePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)} instead
+     * @deprecated Use
+     *             {@link edu.jas.poly.PolyUtil#recursiveDensePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)}
+     *             instead
      */
     @Deprecated
     public GenPolynomial<GenPolynomial<C>> recursivePseudoRemainder(GenPolynomial<GenPolynomial<C>> P,
@@ -122,12 +120,12 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
             x = PolyUtil.<C> baseDensePseudoRemainder(q, r);
             q = r;
             if (!x.isZERO()) {
-                z = g.multiply(power(P.ring.coFac, h, delta));
+                z = g.multiply(h.power(delta)); //power(P.ring.coFac, h, delta));
                 //System.out.println("z  = " + z);
                 r = x.divide(z);
                 g = q.leadingBaseCoefficient();
-                z = power(P.ring.coFac, g, delta);
-                h = z.divide(power(P.ring.coFac, h, delta - 1));
+                z = g.power(delta); //power(P.ring.coFac, g, delta);
+                h = z.divide(h.power(delta - 1)); //power(P.ring.coFac, h, delta - 1));
                 //System.out.println("g  = " + g);
                 //System.out.println("h  = " + h);
             } else {
@@ -200,11 +198,11 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
             x = PolyUtil.<C> recursiveDensePseudoRemainder(q, r);
             q = r;
             if (!x.isZERO()) {
-                z = g.multiply(power(P.ring.coFac, h, delta));
+                z = g.multiply(h.power(delta)); //power(P.ring.coFac, h, delta));
                 r = PolyUtil.<C> recursiveDivide(x, z);
                 g = q.leadingBaseCoefficient();
-                z = power(P.ring.coFac, g, delta);
-                h = PolyUtil.<C> basePseudoDivide(z, power(P.ring.coFac, h, delta - 1));
+                z = g.power(delta); //power(P.ring.coFac, g, delta);
+                h = PolyUtil.<C> basePseudoDivide(z, h.power(delta - 1)); // power(P.ring.coFac, h, delta - 1)
             } else {
                 r = x;
             }
@@ -254,8 +252,8 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
         RingFactory<C> cofac = P.ring.coFac;
         C g = cofac.getONE();
         C h = cofac.getONE();
-        C t = power(cofac, a, e);
-        t = t.multiply(power(cofac, b, f));
+        C t = a.power(e); //power(cofac, a, e);
+        t = t.multiply(b.power(f)); //power(cofac, b, f));
         long s = 1;
         GenPolynomial<C> x;
         C z;
@@ -269,20 +267,20 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
             //System.out.println("x  = " + x);
             q = r;
             if (x.degree(0) > 0) {
-                z = g.multiply(power(cofac, h, delta));
+                z = g.multiply(h.power(delta)); //power(cofac, h, delta));
                 //System.out.println("z  = " + z);
                 r = x.divide(z);
                 g = q.leadingBaseCoefficient();
-                z = power(cofac, g, delta);
-                h = z.divide(power(cofac, h, delta - 1));
+                z = g.power(delta); //power(cofac, g, delta);
+                h = z.divide(h.power(delta - 1));
             } else {
                 r = x;
             }
         }
-        z = power(cofac, r.leadingBaseCoefficient(), q.degree(0));
-        h = z.divide(power(cofac, h, q.degree(0) - 1));
+        z = r.leadingBaseCoefficient().power(q.degree(0)); //power(cofac, r.leadingBaseCoefficient(), q.degree(0));
+        h = z.divide(h.power(q.degree() - 1)); //power(cofac, h, q.degree(0) - 1));
         z = h.multiply(t);
-        if ( s < 0 ) {
+        if (s < 0) {
             z = z.negate();
         }
         x = P.ring.getONE().multiply(z);
@@ -341,8 +339,8 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
             x = P.ring.getONE().multiply(t);
             return x;
         }
-        t = power(cofac, a, e);
-        t = t.multiply(power(cofac, b, f));
+        t = a.power(e); //power(cofac, a, e);
+        t = t.multiply(b.power(f)); //power(cofac, b, f));
         long s = 1;
         GenPolynomial<C> z;
         while (r.degree(0) > 0) {
@@ -355,19 +353,19 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
             //System.out.println("x  = " + x);
             q = r;
             if (x.degree(0) > 0) {
-                z = g.multiply(power(P.ring.coFac, h, delta));
+                z = g.multiply(h.power(delta)); //power(P.ring.coFac, h, delta));
                 r = PolyUtil.<C> recursiveDivide(x, z);
                 g = q.leadingBaseCoefficient();
-                z = power(cofac, g, delta);
-                h = PolyUtil.<C> basePseudoDivide(z, power(cofac, h, delta - 1));
+                z = g.power(delta); //power(cofac, g, delta);
+                h = PolyUtil.<C> basePseudoDivide(z, h.power(delta - 1)); //power(cofac, h, delta - 1));
             } else {
                 r = x;
             }
         }
-        z = power(cofac, r.leadingBaseCoefficient(), q.degree(0));
-        h = PolyUtil.<C> basePseudoDivide(z, power(cofac, h, q.degree(0) - 1));
+        z = r.leadingBaseCoefficient().power(q.degree(0)); //power(cofac, r.leadingBaseCoefficient(), q.degree(0));
+        h = PolyUtil.<C> basePseudoDivide(z, h.power(q.degree() - 1)); //power(cofac, h, q.degree(0) - 1));
         z = h.multiply(t);
-        if ( s < 0 ) {
+        if (s < 0) {
             z = z.negate();
         }
         x = P.ring.getONE().multiply(z);
@@ -406,26 +404,26 @@ public class GreatestCommonDivisorSubres<C extends GcdRingElem<C>> extends Great
     }
 
 
-    /**
+    /*
      * Coefficient power.
      * @param A coefficient
      * @param i exponent.
      * @return A^i.
-     */
+     
     C power(RingFactory<C> fac, C A, long i) {
         return A.power(i); //Power.<C> power(fac, A, i);
     }
+    */
 
-
-    /**
+    /*
      * Polynomial power.
      * @param A polynomial.
      * @param i exponent.
      * @return A^i.
-     */
+     
     GenPolynomial<C> power(RingFactory<GenPolynomial<C>> fac, GenPolynomial<C> A, long i) {
         return A.power(i); //Power.<GenPolynomial<C>> power(fac, A, i);
     }
-
+    */
 
 }

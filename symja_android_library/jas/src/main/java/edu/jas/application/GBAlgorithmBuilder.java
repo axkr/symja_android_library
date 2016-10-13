@@ -26,6 +26,7 @@ import edu.jas.gb.OrderedSyzPairlist;
 import edu.jas.gb.PairList;
 import edu.jas.gbufd.GBFactory;
 import edu.jas.gbufd.GroebnerBaseFGLM;
+import edu.jas.gbufd.GroebnerBaseWalk;
 import edu.jas.gbufd.GroebnerBasePseudoParallel;
 import edu.jas.gbufd.GroebnerBaseQuotient;
 import edu.jas.gbufd.GroebnerBaseRational;
@@ -59,6 +60,10 @@ import edu.jas.ufd.QuotientRing;
  *        <li><code>fractionFree()</code> for clearing denominators and
  *        computing with pseudo reduction,</li>
  *        <li><code>graded()</code> for using the FGLM algorithm to first
+ *        compute a Gr&ouml;bner base with respect to a graded term order and
+ *        then constructing a Gr&ouml;bner base wrt. a lexicographical term
+ *        order,</li>
+ *        <li><code>walk()</code> for using the Gr&ouml;bner walk algorithm to first
  *        compute a Gr&ouml;bner base with respect to a graded term order and
  *        then constructing a Gr&ouml;bner base wrt. a lexicographical term
  *        order,</li>
@@ -411,6 +416,26 @@ public class GBAlgorithmBuilder<C extends GcdRingElem<C>> implements Serializabl
             return new GBAlgorithmBuilder<C>(ring, bb);
         }
         logger.warn("no FGLM algorithm implemented for " + ring);
+        return this;
+    }
+
+
+    /**
+     * Request Groebner walk algorithm.
+     * @return GBAlgorithmBuilder object.
+     */
+    @SuppressWarnings("unchecked")
+    public GBAlgorithmBuilder<C> walk() {
+        if (ring.coFac.isField()) {
+            GroebnerBaseAbstract<C> bb;
+            if (algo == null) {
+                bb = new GroebnerBaseWalk<C>();
+            } else {
+                bb = new GroebnerBaseWalk<C>(algo);
+            }
+            return new GBAlgorithmBuilder<C>(ring, bb);
+        }
+        logger.warn("no Groebner walk algorithm implemented for " + ring);
         return this;
     }
 

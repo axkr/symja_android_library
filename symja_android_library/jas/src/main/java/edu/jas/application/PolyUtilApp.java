@@ -1707,7 +1707,7 @@ class ReAlgFromRealCoeff<C extends GcdRingElem<C> & Rational> implements
     }
 
 
-    @SuppressWarnings("cast")
+    @SuppressWarnings("unchecked")
     public edu.jas.root.RealAlgebraicNumber<C> eval(edu.jas.application.RealAlgebraicNumber<C> c) {
         if (c == null) {
             return afac.getZERO();
@@ -1735,7 +1735,7 @@ class RealFromReAlgCoeff<C extends GcdRingElem<C> & Rational> implements
     }
 
 
-    @SuppressWarnings("cast")
+    @SuppressWarnings("unchecked")
     public edu.jas.application.RealAlgebraicNumber<C> eval(edu.jas.root.RealAlgebraicNumber<C> c) {
         if (c == null) {
             return rfac.getZERO();

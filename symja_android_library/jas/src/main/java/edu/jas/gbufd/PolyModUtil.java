@@ -108,8 +108,8 @@ public class PolyModUtil {
      * @param d second solvable polynomial.
      * @return gcd(n,d)
      */
-    public static <C extends GcdRingElem<C>> GenSolvablePolynomial<C> syzLeftGcd(GenSolvablePolynomialRing<C> r,
-                    GenSolvablePolynomial<C> n, GenSolvablePolynomial<C> d) {
+    public static <C extends GcdRingElem<C>> GenSolvablePolynomial<C> syzLeftGcd(
+                    GenSolvablePolynomialRing<C> r, GenSolvablePolynomial<C> n, GenSolvablePolynomial<C> d) {
 
         if (n.isZERO()) {
             return d;
@@ -126,8 +126,7 @@ public class PolyModUtil {
         if (n.totalDegree() > 3 || d.totalDegree() > 3) { // how avoid too long running GBs ?
             //if (n.totalDegree() + d.totalDegree() > 6) { // how avoid too long running GBs ?
             // && n.length() < 10 && d.length() < 10
-            logger.warn("skipping GB computation: degs = " + n.totalDegree() + ", "
-                        + d.totalDegree());
+            logger.warn("skipping GB computation: degs = " + n.totalDegree() + ", " + d.totalDegree());
             return r.getONE();
         }
         List<GenSolvablePolynomial<C>> A = new ArrayList<GenSolvablePolynomial<C>>(2);
@@ -154,8 +153,8 @@ public class PolyModUtil {
      * @param d second solvable polynomial.
      * @return gcd(n,d)
      */
-    public static <C extends GcdRingElem<C>> GenSolvablePolynomial<C> syzRightGcd(GenSolvablePolynomialRing<C> r,
-                    GenSolvablePolynomial<C> n, GenSolvablePolynomial<C> d) {
+    public static <C extends GcdRingElem<C>> GenSolvablePolynomial<C> syzRightGcd(
+                    GenSolvablePolynomialRing<C> r, GenSolvablePolynomial<C> n, GenSolvablePolynomial<C> d) {
 
         if (n.isZERO()) {
             return d;
@@ -172,8 +171,7 @@ public class PolyModUtil {
         if (n.totalDegree() > 3 || d.totalDegree() > 3) { // how avoid too long running GBs ?
             //if (n.totalDegree() + d.totalDegree() > 6) { // how avoid too long running GBs ?
             // && n.length() < 10 && d.length() < 10
-            logger.warn("skipping GB computation: degs = " + n.totalDegree() + ", "
-                        + d.totalDegree());
+            logger.warn("skipping GB computation: degs = " + n.totalDegree() + ", " + d.totalDegree());
             return r.getONE();
         }
         List<GenSolvablePolynomial<C>> A = new ArrayList<GenSolvablePolynomial<C>>(2);
@@ -201,7 +199,7 @@ public class PolyModUtil {
      * @param d second solvable polynomial.
      * @return [ g=gcd(n,d), n/g, d/g ]
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "cast" })
     public static <C extends GcdRingElem<C>> GenSolvablePolynomial<C>[] syzGcdCofactors(
                     GenSolvablePolynomialRing<C> r, GenSolvablePolynomial<C> n, GenSolvablePolynomial<C> d) {
         GenSolvablePolynomial<C>[] res = (GenSolvablePolynomial<C>[]) new GenSolvablePolynomial[3];

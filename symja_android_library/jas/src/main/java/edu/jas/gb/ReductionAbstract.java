@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
+import edu.jas.poly.Monomial;
 import edu.jas.structure.RingElem;
 
 
@@ -222,6 +223,19 @@ public abstract class ReductionAbstract<C extends RingElem<C>> implements Reduct
         ExpVector ej = B.leadingExpVector();
         ExpVector e = ei.lcm(ej);
         return criterion4(ei, ej, e);
+    }
+
+
+    /**
+     * Normalform with respect to marked head terms.
+     * @param Mp leading monomial list.
+     * @param Pp polynomial list.
+     * @param Ap polynomial.
+     * @return nf(Ap) with respect to Mp+Pp.
+     */
+    public GenPolynomial<C> normalformMarked(List<Monomial<C>> Mp, List<GenPolynomial<C>> Pp,
+                    GenPolynomial<C> Ap) {
+        throw new UnsupportedOperationException("not implemented: " + Mp + " " + Pp + " " + Ap);
     }
 
 

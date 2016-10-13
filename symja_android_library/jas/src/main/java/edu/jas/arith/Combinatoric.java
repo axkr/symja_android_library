@@ -13,7 +13,7 @@ public class Combinatoric {
 
 
     /**
-     * Integer binomial coefficient induction. n and k are beta-integers with 0
+     * Integer binomial coefficient induction. n and k are integers with 0
      * less than or equal to k less than or equal to n. A is the binomial
      * coefficient n over k. B is the binomial coefficient n over k+1.
      * @param A previous induction result.
@@ -31,7 +31,7 @@ public class Combinatoric {
 
 
     /**
-     * Integer binomial coefficient. n and k are beta-integers with 0 less than
+     * Integer binomial coefficient. n and k are integers with 0 less than
      * or equal to k less than or equal to n. A is the binomial coefficient n
      * over k.
      * @param n long.

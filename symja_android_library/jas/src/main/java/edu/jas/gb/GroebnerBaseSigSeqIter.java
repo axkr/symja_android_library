@@ -343,6 +343,9 @@ public class GroebnerBaseSigSeqIter<C extends RingElem<C>> extends GroebnerBaseA
      * @return updated pair list.
      */
     List<SigPair<C>> pruneP(List<SigPair<C>> P, List<ExpVector> syz) {
+        if (debug) {
+            logger.debug("unused " + syz);
+        }
         return P;
     }
 
@@ -355,7 +358,11 @@ public class GroebnerBaseSigSeqIter<C extends RingElem<C>> extends GroebnerBaseA
      * @param G polynomial with signature list.
      * @return updated pair list.
      */
-    List<SigPair<C>> pruneS(List<SigPair<C>> S, List<ExpVector> syz, List<SigPoly<C>> done, List<SigPoly<C>> G) {
+    List<SigPair<C>> pruneS(List<SigPair<C>> S, List<ExpVector> syz, List<SigPoly<C>> done,
+                    List<SigPoly<C>> G) {
+        if (debug) {
+            logger.debug("unused " + syz + " " + done + " " + G);
+        }
         return S;
     }
 
@@ -367,6 +374,9 @@ public class GroebnerBaseSigSeqIter<C extends RingElem<C>> extends GroebnerBaseA
      * @return list of exponent vectors representing syzygies.
      */
     List<ExpVector> initializeSyz(List<GenPolynomial<C>> F, List<SigPoly<C>> G) {
+        if (debug) {
+            logger.debug("unused " + G + " " + F);
+        }
         List<ExpVector> P = new ArrayList<ExpVector>();
         return P;
     }
@@ -379,6 +389,9 @@ public class GroebnerBaseSigSeqIter<C extends RingElem<C>> extends GroebnerBaseA
      *            list of exponent vectors.
      */
     void updateSyz(List<ExpVector> syz, SigPoly<C> r) {
+        if (debug) {
+            logger.debug("unused " + syz + " " + r);
+        }
         return;
     }
 

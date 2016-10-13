@@ -466,6 +466,26 @@ public final class ExpVectorShort extends ExpVector
 
 
     /**
+     * ExpVector multiply by scalar.
+     * @param s scalar
+     * @return s*this.
+     */
+    @Override
+    public ExpVectorShort scalarMultiply(long s) {
+        if (s >= maxShort || s <= minShort) {
+            throw new IllegalArgumentException("scalar to large: " + s);
+        }
+        short[] u = val;
+        short[] w = new short[u.length];
+        short ss = (short) s;
+        for (int i = 0; i < u.length; i++) {
+            w[i] = (short) (ss * u[i]);
+        }
+        return new ExpVectorShort(w);
+    }
+
+
+    /**
      * ExpVector substitution. Clone and set exponent to d at position i.
      * @param i position.
      * @param d new exponent.
@@ -572,6 +592,25 @@ public final class ExpVectorShort extends ExpVector
         }
         return t;
         //return EVWDEG( w, this );
+    }
+
+
+    /**
+     * ExpVector weighted degree.
+     * @param w weights.
+     * @return weighted sum of all exponents.
+     */
+    @Override
+    public long weightDeg(long[] w) {
+        if (w == null || w.length == 0) {
+            return totalDeg(); // assume weight 1 
+        }
+        long t = 0;
+        short[] u = val;
+        for (int i = 0; i < w.length; i++) {
+             t += w[i] * u[i];
+        }
+        return t;
     }
 
 

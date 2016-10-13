@@ -12,20 +12,15 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 
-import edu.jas.kern.Scripting;
 import edu.jas.arith.BigRational;
 import edu.jas.arith.Rational;
-import edu.jas.poly.AlgebraicNumber;
-import edu.jas.poly.AlgebraicNumberRing;
-import edu.jas.poly.PolyUtil;
-import edu.jas.poly.TermOrder;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
-import edu.jas.root.RealRootTuple;
-import edu.jas.root.PolyUtilRoot;
+import edu.jas.poly.PolyUtil;
 import edu.jas.root.Interval;
+import edu.jas.root.PolyUtilRoot;
+import edu.jas.root.RealRootTuple;
 import edu.jas.structure.GcdRingElem;
-import edu.jas.structure.Power;
 import edu.jas.structure.RingFactory;
 
 
@@ -37,8 +32,8 @@ import edu.jas.structure.RingFactory;
  * @author Heinz Kredel
  */
 
-public class RealAlgebraicRing<C extends GcdRingElem<C> & Rational> implements
-                RingFactory<RealAlgebraicNumber<C>> {
+public class RealAlgebraicRing<C extends GcdRingElem<C> & Rational>
+                implements RingFactory<RealAlgebraicNumber<C>> {
 
 
     /**
@@ -109,17 +104,18 @@ public class RealAlgebraicRing<C extends GcdRingElem<C> & Rational> implements
         GenPolynomialRing<C> pfac = p0.ring;
         GenPolynomialRing<GenPolynomial<C>> prfac = pfac.recursive(1);
         //System.out.println("prfac = " + prfac);
-        GenPolynomial<GenPolynomial<C>> p0r = PolyUtil.<C> recursive(prfac,p0);
-        GenPolynomialRing<edu.jas.root.RealAlgebraicNumber<C>> parfac 
-            = new GenPolynomialRing<edu.jas.root.RealAlgebraicNumber<C>>(rfac1,prfac);
-        GenPolynomial<edu.jas.root.RealAlgebraicNumber<C>> p0ar 
-           = PolyUtilRoot.<C> convertRecursiveToAlgebraicCoefficients(parfac,p0r);
+        GenPolynomial<GenPolynomial<C>> p0r = PolyUtil.<C> recursive(prfac, p0);
+        GenPolynomialRing<edu.jas.root.RealAlgebraicNumber<C>> parfac = new GenPolynomialRing<edu.jas.root.RealAlgebraicNumber<C>>(
+                        rfac1, prfac);
+        GenPolynomial<edu.jas.root.RealAlgebraicNumber<C>> p0ar = PolyUtilRoot
+                        .<C> convertRecursiveToAlgebraicCoefficients(parfac, p0r);
         Interval<C> r2 = rfac2.getRoot();
         edu.jas.root.RealAlgebraicNumber<C> rleft = rfac1.getZERO().sum(r2.left);
         edu.jas.root.RealAlgebraicNumber<C> rright = rfac1.getZERO().sum(r2.right);
-        Interval<edu.jas.root.RealAlgebraicNumber<C>> r2r = new Interval<edu.jas.root.RealAlgebraicNumber<C>>(rleft,rright);
-        edu.jas.root.RealAlgebraicRing<edu.jas.root.RealAlgebraicNumber<C>> rr 
-            = new edu.jas.root.RealAlgebraicRing<edu.jas.root.RealAlgebraicNumber<C>>(p0ar,r2r); 
+        Interval<edu.jas.root.RealAlgebraicNumber<C>> r2r = new Interval<edu.jas.root.RealAlgebraicNumber<C>>(
+                        rleft, rright);
+        edu.jas.root.RealAlgebraicRing<edu.jas.root.RealAlgebraicNumber<C>> rr = new edu.jas.root.RealAlgebraicRing<edu.jas.root.RealAlgebraicNumber<C>>(
+                        p0ar, r2r);
         logger.info("realRing = " + rr);
         realRing = rr;
     }
@@ -200,7 +196,8 @@ public class RealAlgebraicRing<C extends GcdRingElem<C> & Rational> implements
      * @param e epsilon.
      */
     public synchronized void refineRoot(BigRational e) {
-        root.refineRoot(eps);
+        setEps(e);
+        root.refineRoot(this.eps);
     }
 
 
