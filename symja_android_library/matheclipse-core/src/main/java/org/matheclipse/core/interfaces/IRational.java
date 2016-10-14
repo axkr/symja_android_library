@@ -3,7 +3,6 @@ package org.matheclipse.core.interfaces;
 import org.hipparchus.fraction.BigFraction;
 import java.math.BigInteger;
 
-
 /**
  * Interface for "rational" numbers (i.e. numbers implementing IInteger or
  * IFraction)
@@ -36,13 +35,15 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	public boolean equalsFraction(final int numerator, final int denominator);
 
 	/**
-	 * Return the factors paired with their exponents for integer and fractional
-	 * numbers. For factors of the denominator part of fractional numbers the
-	 * exponents are negative.
+	 * Return the prime factors paired with their exponents for integer and
+	 * fractional numbers. For factors of the denominator part of fractional
+	 * numbers the exponents are negative.
 	 * 
 	 * <pre>
 	 * factorInteger(-4) ==> {{-1,1},{2,2}}
 	 * </pre>
+	 * 
+	 * @return the list of prime factors paired with their exponents
 	 */
 	public IAST factorInteger();
 
@@ -105,7 +106,7 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 *             if {@code 0^0} is given.
 	 */
 	public IRational pow(final long exp) throws ArithmeticException;
-	
+
 	public IRational subtract(IRational parm1);
 
 }
