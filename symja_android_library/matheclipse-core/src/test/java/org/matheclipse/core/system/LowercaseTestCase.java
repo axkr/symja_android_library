@@ -2194,7 +2194,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Mean({1.21, 3.4, 2.15, 4, 1.55})", "2.4619999999999997");
 		check("Mean({a,b,c,d})", "1/4*(a+b+c+d)");
 
-		check("Mean(BernoulliDistribution(p))", "p"); 
+		check("Mean(BernoulliDistribution(p))", "p");
 		check("Mean(PoissonDistribution(p))", "p");
 		check("Mean(BinomialDistribution(n, p))", "n*p");
 		check("Mean(NormalDistribution(n, p))", "n");
@@ -2555,6 +2555,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("{{a, b, c}, {d, e, f}}[[1, 2]]", "b");
 	}
 
+	public void testPDF() {
+		check("N(PDF(NormalDistribution(0, 1), 0))", "0.3989422804014327");
+		check("N(PDF(BinomialDistribution(40, 0.5), 1))", "3.6379788070917175E-11");
+		check("N(PDF(HypergeometricDistribution(20,50,100), 10))", "0.19687121770654953");
+		check("N(PDF(PoissonDistribution(10), 15))", "0.03471806963068409");
+	}
+	
 	public void testPatternTest() {
 		check("$j(x_, y_:1, z_:2) := jp[x, y, z]; $j(a,b)", "jp(a,b,2)");
 		check("$j(x_, y_:1, z_:2) := jp[x, y, z]; $j(a)", "jp(a,1,2)");
