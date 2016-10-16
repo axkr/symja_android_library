@@ -774,42 +774,57 @@ public class Scanner {
 	protected StringBuilder getStringBuffer() throws SyntaxError {
 		final StringBuilder ident = new StringBuilder();
 
-		getChar();
-
+		if (fInputString.length() > fCurrentPosition) {
+			fCurrentChar = fInputString.charAt(fCurrentPosition++);
+		} else {
+			throwSyntaxError("string - end of string not reached.");
+		}
 		if ((fCurrentChar == '\n') || (fToken == TT_EOF)) {
 			throwSyntaxError("string -" + ident.toString() + "- contains no character.");
 		}
 
 		while (fCurrentChar != '"') {
 			if (fCurrentChar == '\\') {
-				getChar();
+				if (fInputString.length() > fCurrentPosition) {
+					fCurrentChar = fInputString.charAt(fCurrentPosition++);
 
-				switch (fCurrentChar) {
+					switch (fCurrentChar) {
 
-				case '\\':
-					ident.append(fCurrentChar);
+					case '\\':
+						ident.append(fCurrentChar);
 
-					break;
-				case 'n':
-					ident.append('\n');
+						break;
+					case 'n':
+						ident.append('\n');
 
-					break;
-				case 't':
-					ident.append('\t');
+						break;
+					case 't':
+						ident.append('\t');
 
-					break;
-				default:
+						break;
+					default:
+						throwSyntaxError("string - unknown character after back-slash.");
+					}
+				} else {
 					throwSyntaxError("string - unknown character after back-slash.");
 				}
 
-				getChar();
+				if (fInputString.length() > fCurrentPosition) {
+					fCurrentChar = fInputString.charAt(fCurrentPosition++);
+				} else {
+					throwSyntaxError("string - end of string not reached.");
+				}
 			} else {
 				if ((fCurrentChar != '"') && (fToken == TT_EOF)) {
 					throwSyntaxError("string -" + ident.toString() + "- not closed.");
 				}
 
 				ident.append(fCurrentChar);
-				getChar();
+				if (fInputString.length() > fCurrentPosition) {
+					fCurrentChar = fInputString.charAt(fCurrentPosition++);
+				} else {
+					throwSyntaxError("string - end of string not reached.");
+				}
 			}
 		}
 
