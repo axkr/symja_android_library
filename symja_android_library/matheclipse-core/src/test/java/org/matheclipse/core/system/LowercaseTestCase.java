@@ -1,5 +1,7 @@
 package org.matheclipse.core.system;
 
+import java.io.File;
+
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -1645,6 +1647,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("GeometricMean(N({2, 6, 5, 15, 10, 1}))", "4.56079359657056");
 	}
 
+	public void testGet() {
+		String pathToVectorAnalysis = new File("matheclipse-core/src/test/resources/VectorAnalysis.m").toURI()
+				.getRawPath();
+		check("Get(\"" + pathToVectorAnalysis + "\")", "");
+		check("DotProduct({a,b,c},{d,e,f}, Spherical)",
+				"a*d*Cos(b)*Cos(e)+a*d*Cos(c)*Cos(f)*Sin(b)*Sin(e)+a*d*Sin(b)*Sin(c)*Sin(e)*Sin(f)");
+	}
+
 	public void testGreater() {
 		check("Pi>0", "True");
 		check("Pi+E<8", "True");
@@ -2561,7 +2571,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("N(PDF(HypergeometricDistribution(20,50,100), 10))", "0.19687121770654953");
 		check("N(PDF(PoissonDistribution(10), 15))", "0.03471806963068409");
 	}
-	
+
 	public void testPatternTest() {
 		check("$j(x_, y_:1, z_:2) := jp[x, y, z]; $j(a,b)", "jp(a,b,2)");
 		check("$j(x_, y_:1, z_:2) := jp[x, y, z]; $j(a)", "jp(a,1,2)");
@@ -3913,7 +3923,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testXor() {
-		
+
 		check("Xor()", "False");
 		check("Xor(False)", "False");
 		check("Xor(True)", "True");
