@@ -3913,13 +3913,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testXor() {
+		
 		check("Xor()", "False");
 		check("Xor(False)", "False");
 		check("Xor(True)", "True");
 		check("Xor(f(x))", "f(x)");
+		check("Xor(a,a)", "False");
+		check("Xor(a,a,a,b)", "Xor(a,b)");
+		check("Xor(a,c,a,b)", "Xor(b,c)");
 		check("Xor(True, False, False)", "True");
 		check("Xor(True, True, True)", "True");
 		check("Xor(True, True, True, True)", "False");
+		check("Xor(False, False, False, False)", "False");
 		check("Xor(True, False, True)", "False");
 	}
 

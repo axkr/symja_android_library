@@ -9,7 +9,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * 
- * 
+ * See <a href="https://en.wikipedia.org/wiki/Exclusive_or">Wikipedia: Exclusive
+ * or</a>
  * 
  */
 public class Xor extends AbstractFunctionEvaluator {
@@ -25,18 +26,56 @@ public class Xor extends AbstractFunctionEvaluator {
 		if (ast.size() == 2) {
 			return ast.arg1();
 		}
-		boolean result = false;
 
-		for (int i = 1; i < ast.size(); i++) {
-			if (ast.get(i).isTrue()) {
-				result = !result;
-			} else if (ast.get(i).isFalse()) {
+		IExpr temp;
+		IExpr result = ast.arg1();
+		boolean evaled = false;
+		for (int i = 2; i < ast.size(); i++) {
+			temp = ast.get(i);
+			if (temp.isTrue()) {
+				if (result.isTrue()) {
+					result = F.False;
+				} else if (result.isFalse()) {
+					result = F.True;
+				} else {
+					result = F.eval(F.Not(result));
+				}
+				evaled = true;
+			} else if (temp.isFalse()) {
+				if (result.isTrue()) {
+					result = F.True;
+				} else if (result.isFalse()) {
+					result = F.False;
+				}
+				evaled = true;
 			} else {
-				return F.NIL;
+				if (temp.equals(result)) {
+					result = F.False;
+					evaled = true;
+				} else {
+					if (result.isTrue()) {
+						result = F.eval(F.Not(result));
+						evaled = true;
+					} else if (result.isFalse()) {
+						result = temp;
+						evaled = true;
+					} else {
+						if (evaled) {
+							IAST xor = F.ast(F.Xor, ast.size() - i + 1, false);
+							xor.append(result);
+							xor.append(temp);
+							for (int j = i + 1; j < ast.size(); j++) {
+								xor.append(ast.get(j));
+							}
+							return xor;
+						}
+						return F.NIL;
+					}
+				}
 			}
 		}
 
-		return F.bool(result);
+		return result;
 	}
 
 	@Override
