@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import java.io.File;
+import java.io.InputStream;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.parser.client.Parser;
@@ -1648,8 +1649,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGet() {
-		String pathToVectorAnalysis = new File("matheclipse-core/src/test/resources/VectorAnalysis.m").toURI()
-				.getRawPath();
+		String pathToVectorAnalysis;
+		pathToVectorAnalysis = getClass().getResource("/VectorAnalysis.m").toString();
+		// remove 'file:/'
+		pathToVectorAnalysis = pathToVectorAnalysis.substring(6);
+		System.out.println(pathToVectorAnalysis);
 		check("Get(\"" + pathToVectorAnalysis + "\")", "");
 		check("DotProduct({a,b,c},{d,e,f}, Spherical)",
 				"a*d*Cos(b)*Cos(e)+a*d*Cos(c)*Cos(f)*Sin(b)*Sin(e)+a*d*Sin(b)*Sin(c)*Sin(e)*Sin(f)");
