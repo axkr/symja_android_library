@@ -64,9 +64,10 @@ public class Xor extends AbstractFunctionEvaluator {
 							IAST xor = F.ast(F.Xor, ast.size() - i + 1, false);
 							xor.append(result);
 							xor.append(temp);
-							for (int j = i + 1; j < ast.size(); j++) {
-								xor.append(ast.get(j));
-							}
+							xor.appendAll(ast, i+1, ast.size());
+							// for (int j = i + 1; j < ast.size(); j++) {
+							// xor.append(ast.get(j));
+							// }
 							return xor;
 						}
 						return F.NIL;

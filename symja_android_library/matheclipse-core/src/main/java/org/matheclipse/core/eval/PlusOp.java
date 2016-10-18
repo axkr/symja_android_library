@@ -90,7 +90,7 @@ public class PlusOp {
 			if (element.getValue().isOne()) {
 				final IExpr temp = element.getKey();
 				if (temp.isPlus()) {
-					result.addArgs((IAST) temp);
+					result.appendArgs((IAST) temp);
 				} else {
 					result.append(temp);
 				}

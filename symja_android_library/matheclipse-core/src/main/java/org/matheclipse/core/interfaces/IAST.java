@@ -171,7 +171,17 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @throws IllegalArgumentException
 	 *             if an object cannot be added to this {@code List}.
 	 */
-	public boolean addAll(Collection<? extends IExpr> collection);
+	public boolean appendAll(Collection<? extends IExpr> collection);
+
+	/**
+	 * 
+	 * @param collection
+	 * @return
+	 * @deprecated use #appendAll()
+	 */
+	default boolean addAll(Collection<? extends IExpr> collection) {
+		return appendAll(collection);
+	}
 
 	/**
 	 * Appends all elements from offset <code>startPosition</code> to
@@ -186,9 +196,32 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <tt>true</tt> if this AST changed as a result of the call
 	 * 
 	 */
-	public boolean addAll(IAST ast, int startPosition, int endPosition);
+	public boolean appendAll(IAST ast, int startPosition, int endPosition);
 
-	public boolean addAll(int location, Collection<? extends IExpr> collection);
+	/**
+	 * 
+	 * @param ast
+	 * @param startPosition
+	 * @param endPosition
+	 * @return
+	 * @deprecated use appendAll()
+	 */
+	default boolean addAll(IAST ast, int startPosition, int endPosition) {
+		return appendAll(ast, startPosition, endPosition);
+	}
+
+	public boolean appendAll(int location, Collection<? extends IExpr> collection);
+
+	/**
+	 * 
+	 * @param location
+	 * @param collection
+	 * @return
+	 * @deprecated use appendAll()
+	 */
+	default boolean addAll(int location, Collection<? extends IExpr> collection) {
+		return appendAll(location, collection);
+	}
 
 	/**
 	 * Appends all of the arguments (starting from offset <code>0</code>) in the
@@ -199,7 +232,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <tt>true</tt> if this AST changed as a result of the call
 	 * 
 	 */
-	public boolean addAll(List<? extends IExpr> list);
+	// public boolean addAll(List<? extends IExpr> list);
 
 	/**
 	 * Appends all elements from offset <code>startPosition</code> to
@@ -214,7 +247,19 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <tt>true</tt> if this AST changed as a result of the call
 	 * 
 	 */
-	public boolean addAll(List<? extends IExpr> list, int startPosition, int endPosition);
+	public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition);
+
+	/**
+	 * 
+	 * @param list
+	 * @param startPosition
+	 * @param endPosition
+	 * @return
+	 * @deprecated use appendAll()
+	 */
+	default boolean addAll(List<? extends IExpr> list, int startPosition, int endPosition) {
+		return appendAll(list, startPosition, endPosition);
+	}
 
 	/**
 	 * Appends all of the arguments (starting from offset <code>1</code>) in the
@@ -225,7 +270,17 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <tt>true</tt> if this AST changed as a result of the call
 	 * 
 	 */
-	public boolean addArgs(IAST ast);
+	public boolean appendArgs(IAST ast);
+
+	/**
+	 * 
+	 * @param ast
+	 * @return
+	 * @deprecated use appendArgs();
+	 */
+	default boolean addArgs(IAST ast) {
+		return appendArgs(ast);
+	}
 
 	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements
@@ -237,7 +292,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return a clone with added <code>expr</code> element at the given
 	 *         <code>position</code>.
 	 */
-	public IAST addAtClone(int position, IExpr expr);
+	public IAST appendAtClone(int position, IExpr expr);
+
 	/**
 	 * Add an evaluation flag to the existing ones.
 	 * 
@@ -253,7 +309,17 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *            an ast with attribute <code>OneIdentity</code>.
 	 * @return <code>this</code> ast after adding the subAST
 	 */
-	public IAST addOneIdentity(IAST subAST);
+	public IAST appendOneIdentity(IAST subAST);
+
+	/**
+	 * 
+	 * @param subAST
+	 * @return
+	 * @deprecated - use appendOneIdentity()
+	 */
+	default IAST addOneIdentity(IAST subAST) {
+		return appendOneIdentity(subAST);
+	}
 
 	/**
 	 * Adds the specified object at the end of this {@code List}.
@@ -304,6 +370,16 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <code>this</code> after appending the given expression.
 	 */
 	public IAST appendClone(IExpr expr);
+
+	/**
+	 * 
+	 * @param expr
+	 * @return
+	 * @deprecated use appendClone();
+	 */
+	default IAST addClone(IExpr expr) {
+		return appendClone(expr);
+	}
 
 	/**
 	 * Apply the given head to this expression (i.e. create a list clone and
@@ -447,36 +523,37 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	public boolean contains(Object object);
 
-    /**
-     * Tests whether this {@code Collection} contains all objects contained in the
-     * specified {@code Collection}. This implementation iterates over the specified
-     * {@code Collection}. If one element returned by the iterator is not contained in
-     * this {@code Collection}, then {@code false} is returned; {@code true} otherwise.
-     * 
-     * @param collection
-     *            the collection of objects.
-     * @return {@code true} if all objects in the specified {@code Collection} are
-     *         elements of this {@code Collection}, {@code false} otherwise.
-     * @throws ClassCastException
-     *                if one or more elements of {@code collection} isn't of the
-     *                correct type.
-     * @throws NullPointerException
-     *                if {@code collection} contains at least one {@code null}
-     *                element and this {@code Collection} doesn't support {@code null}
-     *                elements.
-     * @throws NullPointerException
-     *                if {@code collection} is {@code null}.
-     */
-    default public boolean containsAll(Collection<?> collection) {
-        Iterator<?> it = collection.iterator();
-        while (it.hasNext()) {
-            if (!contains(it.next())) {
-                return false;
-            }
-        }  
-        return true;
-    }
-	
+	/**
+	 * Tests whether this {@code Collection} contains all objects contained in
+	 * the specified {@code Collection}. This implementation iterates over the
+	 * specified {@code Collection}. If one element returned by the iterator is
+	 * not contained in this {@code Collection}, then {@code false} is returned;
+	 * {@code true} otherwise.
+	 * 
+	 * @param collection
+	 *            the collection of objects.
+	 * @return {@code true} if all objects in the specified {@code Collection}
+	 *         are elements of this {@code Collection}, {@code false} otherwise.
+	 * @throws ClassCastException
+	 *             if one or more elements of {@code collection} isn't of the
+	 *             correct type.
+	 * @throws NullPointerException
+	 *             if {@code collection} contains at least one {@code null}
+	 *             element and this {@code Collection} doesn't support
+	 *             {@code null} elements.
+	 * @throws NullPointerException
+	 *             if {@code collection} is {@code null}.
+	 */
+	default public boolean containsAll(Collection<?> collection) {
+		Iterator<?> it = collection.iterator();
+		while (it.hasNext()) {
+			if (!contains(it.next())) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	/**
 	 * Returns a shallow copy of this <code>IAST</code> instance (the elements
 	 * themselves are not copied). In contrast to the <code>clone()</code>
@@ -819,7 +896,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	}
 
 	public boolean isEmpty();
-	
+
 	/**
 	 * Are the given evaluation flags disabled for this list ?
 	 * 
@@ -898,7 +975,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @return an iterator over this list values.
 	 */
-//	public Iterator<IExpr> iterator0();
+	// public Iterator<IExpr> iterator0();
 
 	/**
 	 * Get the last element of the <code>AST</code> list (i.e. get(size()-1).
@@ -910,7 +987,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IExpr last();
 
 	public int lastIndexOf(IExpr object);
-	
+
 	/**
 	 * Maps the elements of this IAST with the unary functor. If the function
 	 * returns <code>null</code> the original element is used (i.e. the functor
@@ -1056,7 +1133,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 */
 	public ASTRange range(int start, int end);
-	
+
 	/**
 	 * Removes the object at the specified location from this {@code IAST}.
 	 * 

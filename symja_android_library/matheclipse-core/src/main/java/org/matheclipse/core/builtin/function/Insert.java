@@ -31,7 +31,7 @@ public class Insert extends AbstractCoreFunctionEvaluator {
 					i = 1 + arg1AST.size() + i;
 				}
 				if (i > 0 && i < arg1AST.size()) {
-					return arg1AST.addAtClone(i, arg2);
+					return arg1AST.appendAtClone(i, arg2);
 				}
 			} catch (final IndexOutOfBoundsException e) {
 				if (Config.DEBUG) {

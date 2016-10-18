@@ -249,7 +249,7 @@ public class Simplify extends AbstractFunctionEvaluator {
 			if (expandedAst.isPresent()) {
 				IAST result = F.Times();
 				// ast.range(2, ast.size()).toList(result.args());
-				result.addAll(ast, 2, ast.size());
+				result.appendAll(ast, 2, ast.size());
 				result.set(i - 1, expandedAst);
 				return result;
 			}

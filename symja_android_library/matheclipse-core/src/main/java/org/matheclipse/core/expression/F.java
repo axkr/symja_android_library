@@ -4671,12 +4671,12 @@ public class F {
 			if (a0.isPlus() || a1.isPlus()) {
 				IAST result = Plus();
 				if (a0.isPlus()) {
-					result.addArgs((IAST) a0);
+					result.appendArgs((IAST) a0);
 				} else {
 					result.append(a0);
 				}
 				if (a1.isPlus()) {
-					result.addArgs((IAST) a1);
+					result.appendArgs((IAST) a1);
 				} else {
 					result.append(a1);
 				}
@@ -5277,12 +5277,12 @@ public class F {
 			if (a0.isTimes() || a1.isTimes()) {
 				IAST result = Times();
 				if (a0.isTimes()) {
-					result.addArgs((IAST) a0);
+					result.appendArgs((IAST) a0);
 				} else {
 					result.append(a0);
 				}
 				if (a1.isTimes()) {
-					result.addArgs((IAST) a1);
+					result.appendArgs((IAST) a1);
 				} else {
 					result.append(a1);
 				}

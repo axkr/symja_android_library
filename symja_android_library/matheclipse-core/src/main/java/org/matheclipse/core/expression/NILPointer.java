@@ -36,37 +36,37 @@ public class NILPointer extends AbstractAST {
 	}
 
 	@Override
-	public boolean addAll(Collection<? extends IExpr> collection) {
+	public boolean appendAll(Collection<? extends IExpr> collection) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public boolean addAll(IAST ast, int startPosition, int endPosition) {
+	public boolean appendAll(IAST ast, int startPosition, int endPosition) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public boolean addAll(int location, Collection<? extends IExpr> collection) {
+	public boolean appendAll(int location, Collection<? extends IExpr> collection) {
+		throw new UnsupportedOperationException();
+	}
+
+	// @Override
+	// public boolean addAll(List<? extends IExpr> ast) {
+	// throw new UnsupportedOperationException();
+	// }
+
+	@Override
+	public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public boolean addAll(List<? extends IExpr> ast) {
+	public boolean appendArgs(IAST ast) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public boolean addAll(List<? extends IExpr> list, int startPosition, int endPosition) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean addArgs(IAST ast) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public IAST addOneIdentity(IAST subAST) {
+	public IAST appendOneIdentity(IAST subAST) {
 		throw new UnsupportedOperationException();
 	}
 

@@ -398,7 +398,7 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST addAtClone(int position, IExpr expr) {
+	public IAST appendAtClone(int position, IExpr expr) {
 		IAST ast = clone();
 		ast.append(position, expr);
 		return ast;
@@ -576,7 +576,7 @@ public abstract class AbstractAST implements IAST {
 	public IAST copyFrom(int index) {
 		AST result = new AST(size() - index + 1, false);
 		result.append(head());
-		result.addAll(this, index, size());
+		result.appendAll(this, index, size());
 		return result;
 	}
 
@@ -2580,7 +2580,7 @@ public abstract class AbstractAST implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public final IAST prependClone(IExpr expr) {
-		return addAtClone(1, expr);
+		return appendAtClone(1, expr);
 	}
 
 	/**

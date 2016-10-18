@@ -95,7 +95,7 @@ public class Collect extends AbstractCoreFunctionEvaluator {
 					simplifyAST.set(1, entry.getValue());
 					coefficient = engine.evaluate(simplifyAST);
 					if (coefficient.isPlus()) {
-						rest.append(F.Times(entry.getKey()).addOneIdentity((IAST) coefficient));
+						rest.append(F.Times(entry.getKey()).appendOneIdentity((IAST) coefficient));
 					} else {
 						rest.append(entry.getKey().times(coefficient));
 					}
@@ -104,7 +104,7 @@ public class Collect extends AbstractCoreFunctionEvaluator {
 				IAST coefficient;
 				for (IExpr key : map.keySet()) {
 					coefficient = map.get(key);
-					rest.append(F.Times(key).addOneIdentity(coefficient));
+					rest.append(F.Times(key).appendOneIdentity(coefficient));
 				}
 			}
 			return rest.getOneIdentity(F.C0);
@@ -134,7 +134,7 @@ public class Collect extends AbstractCoreFunctionEvaluator {
 				}
 			}
 			if (clone.size() > 1) {
-				rest.addOneIdentity(clone);
+				rest.appendOneIdentity(clone);
 			}
 			return;
 		} else if (expr.isTimes()) {
@@ -183,7 +183,7 @@ public class Collect extends AbstractCoreFunctionEvaluator {
 			resultList = F.Plus();
 			map.put(key, resultList);
 		}
-		resultList.addOneIdentity(subAST);
+		resultList.appendOneIdentity(subAST);
 	}
 
 	public void addPowerFactor(IExpr key, IExpr value, Map<IExpr, IAST> map) {

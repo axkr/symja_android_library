@@ -667,7 +667,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 								// element is
 								// a pattern sequence, is handled here
 								IAST seq = F.Sequence();
-								seq.addAll(lhsEvalAST, lastPosition, lhsEvalAST.size());
+								seq.appendAll(lhsEvalAST, lastPosition, lhsEvalAST.size());
 								if (((IPatternSequence) patternTest.arg1()).matchPatternSequence(seq, fPatternMap)) {
 									if (matchAST(lhsPatternAST.copyUntil(lastPosition),
 											lhsEvalAST.copyUntil(lastPosition), stackMatcher)) {
@@ -683,7 +683,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 							// element is
 							// a pattern sequence, is handled here
 							IAST seq = F.Sequence();
-							seq.addAll(lhsEvalAST.range(), lastPosition, lhsEvalAST.size());
+							seq.appendAll(lhsEvalAST.range(), lastPosition, lhsEvalAST.size());
 							if (((IPatternSequence) lhsPatternAST.get(lastPosition)).matchPatternSequence(seq,
 									fPatternMap)) {
 								return matchAST(lhsPatternAST.copyUntil(lastPosition),
@@ -943,7 +943,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 					// TODO only the special case, where the last element is
 					// a pattern sequence, is handled here
 					IAST seq = F.Sequence();
-					seq.addAll(lhsEvalAST, 1, lhsEvalAST.size());
+					seq.appendAll(lhsEvalAST, 1, lhsEvalAST.size());
 					if (((IPatternSequence) lhsPatternAST.arg1()).matchPatternSequence(seq, fPatternMap)) {
 						// if (matchAST(lhsPatternAST.copyUntil(1),
 						// lhsEvalAST.copyUntil(1),

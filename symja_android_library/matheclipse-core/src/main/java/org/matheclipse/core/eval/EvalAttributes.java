@@ -89,9 +89,9 @@ public class EvalAttributes {
 				}
 				IAST temp = flatten(head, (IAST) expr);
 				if (temp.isPresent()) {
-					result.addArgs(temp);
+					result.appendArgs(temp);
 				} else {
-					result.addArgs((IAST) expr);
+					result.appendArgs((IAST) expr);
 				}
 			} else {
 				if (result.isPresent()) {

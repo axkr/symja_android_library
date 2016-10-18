@@ -55,7 +55,7 @@ public class AST extends HMArrayList implements Externalizable {
 
 	protected static AST newInstance(final int intialCapacity, final IAST ast, int endPosition) {
 		AST result = new AST(intialCapacity, false);
-		result.addAll(ast, 0, endPosition);
+		result.appendAll(ast, 0, endPosition);
 		return result;
 	}
 
@@ -225,7 +225,30 @@ public class AST extends HMArrayList implements Externalizable {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public boolean addAll(IAST ast, int startPosition, int endPosition) {
+	public boolean appendAll(IAST ast, int startPosition, int endPosition) {
+		if (ast.size() > 0 && startPosition < endPosition) {
+			ensureCapacity(size() + (endPosition - startPosition));
+			for (int i = startPosition; i < endPosition; i++) {
+				append(ast.get(i));
+			}
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+//	@Override
+//	public final boolean addAll(List<? extends IExpr> list) {
+//		return addAll(list, 0, list.size());
+//	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean appendAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
 		if (ast.size() > 0 && startPosition < endPosition) {
 			ensureCapacity(size() + (endPosition - startPosition));
 			for (int i = startPosition; i < endPosition; i++) {
@@ -240,30 +263,7 @@ public class AST extends HMArrayList implements Externalizable {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final boolean addAll(List<? extends IExpr> list) {
-		return addAll(list, 0, list.size());
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean addAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
-		if (ast.size() > 0 && startPosition < endPosition) {
-			ensureCapacity(size() + (endPosition - startPosition));
-			for (int i = startPosition; i < endPosition; i++) {
-				append(ast.get(i));
-			}
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public final boolean addArgs(IAST ast) {
+	public final boolean appendArgs(IAST ast) {
 		final int size = ast.size();
 		if (size > 1) {
 			ensureCapacity(size() + size - 1);
@@ -277,7 +277,7 @@ public class AST extends HMArrayList implements Externalizable {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST addOneIdentity(IAST value) {
+	public IAST appendOneIdentity(IAST value) {
 		if (value.isAST1()) {
 			append(value.arg1());
 		} else {

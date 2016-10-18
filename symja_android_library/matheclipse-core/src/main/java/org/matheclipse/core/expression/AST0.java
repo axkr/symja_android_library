@@ -88,13 +88,13 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 *         otherwise.
 	 */
 	@Override
-	public boolean addAll(Collection<? extends IExpr> collection) {
+	public boolean appendAll(Collection<? extends IExpr> collection) {
 		hashValue = 0;
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public boolean addAll(IAST ast, int startPosition, int endPosition) {
+	public boolean appendAll(IAST ast, int startPosition, int endPosition) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -113,28 +113,28 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 *             when {@code location < 0 || > size()}
 	 */
 	@Override
-	public boolean addAll(int location, Collection<? extends IExpr> collection) {
+	public boolean appendAll(int location, Collection<? extends IExpr> collection) {
 		hashValue = 0;
 		throw new UnsupportedOperationException();
 	}
 
+//	@Override
+//	public boolean addAll(List<? extends IExpr> ast) {
+//		throw new UnsupportedOperationException();
+//	}
+
 	@Override
-	public boolean addAll(List<? extends IExpr> ast) {
+	public boolean appendAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public boolean addAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
+	public boolean appendArgs(IAST ast) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public boolean addArgs(IAST ast) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public IAST addOneIdentity(IAST subAST) {
+	public IAST appendOneIdentity(IAST subAST) {
 		throw new UnsupportedOperationException();
 	}
 

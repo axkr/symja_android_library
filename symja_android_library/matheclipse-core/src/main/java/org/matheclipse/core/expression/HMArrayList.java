@@ -115,7 +115,7 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	 *         otherwise.
 	 */
 	@Override
-	public boolean addAll(Collection<? extends IExpr> collection) {
+	public boolean appendAll(Collection<? extends IExpr> collection) {
 		hashValue = 0;
 		Object[] dumpArray = collection.toArray();
 		if (dumpArray.length == 0) {
@@ -144,7 +144,7 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	 *             when {@code location < 0 || > size()}
 	 */
 	@Override
-	public boolean addAll(int location, Collection<? extends IExpr> collection) {
+	public boolean appendAll(int location, Collection<? extends IExpr> collection) {
 		hashValue = 0;
 		int size = lastIndex - firstIndex;
 		if (location < 0 || location > size) {

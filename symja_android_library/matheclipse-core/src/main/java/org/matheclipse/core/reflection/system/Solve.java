@@ -959,7 +959,7 @@ public class Solve extends AbstractFunctionEvaluator {
 
 					if (subSolutionSet.size() > 0) {
 						IAST list = F.List();
-						list.addAll(subSolutionSet);
+						list.appendAll(subSolutionSet);
 						return list;
 					}
 				}

@@ -1386,7 +1386,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				if (!seqResult.isPresent()) {
 					seqResult = ast.copyUntil(i);
 				}
-				seqResult.addAll(seq, 1, seq.size());
+				seqResult.appendAll(seq, 1, seq.size());
 			} else if (seqResult.isPresent()) {
 				seqResult.append(ast.get(i));
 			}

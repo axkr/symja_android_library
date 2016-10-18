@@ -17,7 +17,7 @@ public class Prepend extends AbstractCoreFunctionEvaluator {
 		IExpr arg1 = engine.evaluate(ast.arg1());
 		IAST arg1AST = Validate.checkASTType(arg1);
 		IExpr arg2 = engine.evaluate(ast.arg2());
-		return arg1AST.addAtClone(1, arg2);
+		return arg1AST.appendAtClone(1, arg2);
 	}
 
 }

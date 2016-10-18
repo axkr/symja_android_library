@@ -24,7 +24,7 @@ public class PrependTo extends AbstractCoreFunctionEvaluator {
 			if (!symbolValue.isAST()) {
 				return F.NIL;
 			}
-			return ((IAST) symbolValue).addAtClone(1, value);
+			return ((IAST) symbolValue).appendAtClone(1, value);
 		}
 
 	}

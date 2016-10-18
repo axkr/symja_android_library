@@ -41,7 +41,7 @@ public class PadLeft extends AbstractFunctionEvaluator {
 			for (int i = 0; i < length; i++) {
 				result.append(atom);
 			}
-			result.addArgs(ast);
+			result.appendArgs(ast);
 			return result;
 		}
 		return ast;
@@ -68,7 +68,7 @@ public class PadLeft extends AbstractFunctionEvaluator {
 					result.append(arg2.get(j++));
 				}
 			}
-			result.addArgs(ast);
+			result.appendArgs(ast);
 			return result;
 		}
 		return ast;
