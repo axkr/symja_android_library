@@ -206,6 +206,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	public long accept(IVisitorLong visitor);
 
+	@Override
+	public IExpr add(final IExpr that);
+
 	public IExpr and(final IExpr that);
 
 	/**
@@ -1851,6 +1854,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is a string (instanceof IStringX)
+	 * 
+	 * @return
+	 */
+	default boolean isString() {
+		return this instanceof IStringX;
+	}
+
+	/**
 	 * Test if this expression is a symbol (instanceof ISymbol)
 	 * 
 	 * @return
@@ -2163,6 +2175,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            the exponent
 	 * @return <code>(this ^ n)</code>
 	 */
+	@Override
 	public IExpr power(final long n);
 
 	@Override
@@ -2267,8 +2280,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public IExpr subtract(final IExpr that);
 
 	@Override
-	public IExpr add(final IExpr that);
-
 	default IExpr sum(final IExpr that) {
 		return add(that);
 	}
