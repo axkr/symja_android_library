@@ -2,10 +2,7 @@ package org.matheclipse.core.form.output;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
-import java.util.Locale;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
