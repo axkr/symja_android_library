@@ -189,6 +189,18 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem000b() {
+		check("(1 - ((1 - (i/10)) / (1.0 - (i/10))))", "1-(1-i/10)/(1.0-0.1*i)");
+		check("(1 - ((1 - (i/10)) / (1 - (i/10))))", "0");
+		check("((1 - (i/10)) / (1 - (i/10)))", "1");
+		check("Simplify(1+(1-x)^2/(-1+x))", "x");
+		check("(1-x)^2/(-1+x)^3", "(1-x)^2/(-1+x)^3");
+		check("(1-x)^4/(-1+x)^8", "1/(1-x)^4");
+		check("1+(-1+x)/(1-x)", "1+(-1+x)/(1-x)");
+		check("i * ((1 - ((i * 1) / 10)) / (1 - ((i * 1) / 10)))", "i");
+		check("((1 - ((i * 1.0) / 10)) / (1.0 - ((i * 1.0) / 10)))", "1");
+		
+		
+		check("Simplify((i * (1.0 - 0.1 * i)) / (1.0 - 0.1 * i))", "(i*(1.0-0.1*i))/(1.0-0.1*i)");
 		check("a-2*I", "-I*2+a");
 		check("Complex(2,1/3)", "2+I*1/3");
 		check("Complex(3/4,3)", "3/4+I*3");
@@ -582,7 +594,7 @@ public class MainTestCase extends AbstractTestCase {
 
 		check("D(Cosh(x),x)", "Sinh(x)"); // issue#39
 		check("D(x^4, x)", "4*x^3");
-		check("D((-x+2)/(2x-6), x)", "1/(6-2*x)+(-4+2*x)/(6-2*x)^2");
+		check("D((-x+2)/(2x-6), x)", "1/(6-2*x)+(-2*(2-x))/(6-2*x)^2");
 		check("D((2*x-6)^(-1), x)", "-2/(6-2*x)^2");
 
 		// (-x+2)*(2*x-6)^(-2)*2
@@ -875,13 +887,13 @@ public class MainTestCase extends AbstractTestCase {
 
 	public void testSystem081() {
 		check("Inverse(s*{{1,0,0},{0,1,0},{0,0,1}}-{{-1,1,1},{-4,-4,1},{1,1,1}})",
-				"{{(5+2*s-4*s^2-s^3)/((1+s)*(10-s-4*s^2-s^3)),(-s-s^2)/((1+s)*(10-s-4*s^2-s^3)),(\n" + 
+				"{{(-5-2*s+4*s^2+s^3)/((-10+s+4*s^2+s^3)*(1+s)),(-s-s^2)/((1+s)*(10-s-4*s^2-s^3)),(\n" + 
 				"5+6*s+s^2)/((-10+s+4*s^2+s^3)*(1+s))},\n" + 
 				" {((-40+7*s+15*s^2+4*s^3)*(1+s))/((8+5*s+s^2)*(10+9*s-5*s^2-5*s^3-s^4)),((-16-10*s+\n" + 
 				"6*s^2+5*s^3+s^4)*(1+s))/((-10-9*s+5*s^2+5*s^3+s^4)*(8+5*s+s^2)),(3-s)/(10-s-4*s^\n" + 
 				"2-s^3)},\n" + 
-				" {(s*(8+5*s+s^2))/((-8-5*s-s^2)*(10-s-4*s^2-s^3)),((-1-s)*(2+s))/((1+s)*(10-s-4*s^\n" + 
-				"2-s^3)),(-8-5*s-s^2)/(10-s-4*s^2-s^3)}}");
+				" {-s/(10-s-4*s^2-s^3),((-1-s)*(2+s))/((1+s)*(10-s-4*s^2-s^3)),(-8-5*s-s^2)/(10-s\n" + 
+				"-4*s^2-s^3)}}");
 		check("Inverse(s*({{1,0,0},{0,1,0},{0,0,1}}-{{-1,1,1},{-4,-4,1},{1,1,1}}))", "{{1/(4*s),-1/(4*s),-3/2*1/s},\n"
 				+ " {-1/(4*s),1/(4*s),1/(2*s)},\n" + " {-1/(4*s),-3/4*1/s,-7/2*1/s}}");
 		check("N(Inverse({{1,2.0},{3,4}}),50)", "{{-2,1},\n" + " {1.5,-5e-1}}");
@@ -1452,7 +1464,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("D(-1/(2*(2-x)^2),x)", "-1/(2-x)^3");
 		check("Integrate(Log(x)*x^2,x)", "-x^3/9+1/3*x^3*Log(x)");
 		check("Integrate((x^2+1)Log(x),x)", "-x-x^3/9+x*Log(x)+1/3*x^3*Log(x)");
-		check("Simplify(D(ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1),x))", "1/(x+x^4)");
+		check("Simplify(D(ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1),x))", "x/(1+x^3)");
 
 		check("Integrate(x/(x^3+1),x)", "ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)-Log(1+x)/3+Log(1-x+x^2)/6");// "ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1)");
 		// check("Simplify(D(ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1),x))",
@@ -1472,7 +1484,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("Simplify(1/2*(2*x+2)*(1/2)^(1/2))", "(1+x)*Sqrt(1/2)");
 		check("Simplify(Integrate((8*x+1)/(x^2+x+1)^2,x))", "(-5-2*x)/(1+x+x^2)+(-4*ArcTan((1+2*x)/Sqrt(3)))/Sqrt(3)");
 
-		check("Apart(1/(x^3+1))", "(2-x)/(3-3*x+3*x^2)+1/(3+3*x)");
+		check("Apart(1/(x^3+1))", "-(-2+x)/(3-3*x+3*x^2)+1/(3+3*x)");
 		check("Integrate(1/(x^5+x-7),x)", "Integrate(1/(-7+x+x^5),x)");
 		check("Integrate(1/(x-2),x)", "Log(-2+x)");
 		check("Integrate((x-2)^(-2),x)", "1/(2-x)");
@@ -1493,7 +1505,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("Integrate((x^2+1)Log(x),x)", "-x-x^3/9+x*Log(x)+1/3*x^3*Log(x)");
 		check("D(1/3*Log(x)*x^3-1/9*x^3+x*Log(x)-x,x)", "x^2*Log(x)+Log(x)");
 
-		check("Apart(2*x^2/(x^3+1))", "(-2+4*x)/(3-3*x+3*x^2)+2/(3+3*x)");
+		check("Apart(2*x^2/(x^3+1))", "(2*(-1+2*x))/(3-3*x+3*x^2)+2/(3+3*x)");
 
 		check("Integrate(2*x^2/(x^3+1),x)", "2*(Log(1-x+x^2)/3+Log(3+3*x)/3)");
 		check("Integrate(Sin(x)^3,x)", "Cos(x)^3/3-Cos(x)");
@@ -3228,7 +3240,7 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem996() {
-		check("FactorTerms(3+3*x^3)", "3+3*x^3");
+		check("FactorTerms(3+3*x^3)", "3*(1+x^3)");
 		check("FactorTerms(3+3/4*x^3+12/17*x^2,x)", "3/68*(68+16*x^2+17*x^3)");
 	}
 
@@ -3277,7 +3289,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("Roots((x^2-1)/(x-1)==0, x)", "x==-1");
 		check("Roots(3/4*x^2+9/16==0, x)", "x==-I*1/2*Sqrt(3)||x==I*1/2*Sqrt(3)");
 
-		check("Factor(3*x^2+6)", "6+3*x^2");
+		check("Factor(3*x^2+6)", "3*(2+x^2)");
 		check("Factor(3/4*x^2+9/16)", "3/16*(3+4*x^2)");
 		check("Factor(3/4*x^2+9/16+7)", "1/16*(121+12*x^2)");
 		check("Factor(3/4*x^2+9/16*x+7)", "1/16*(112+9*x+12*x^2)");

@@ -112,55 +112,96 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		if (o0.isPower()) {
 			// (x^a) * b
 			final IAST power0 = (IAST) o0;
+			IExpr power0Arg1 = power0.arg1();
+			IExpr power0Arg2 = power0.arg2();
 			if (power0.equalsAt(1, o1)) {
 				// (x^a) * x
-				if (power0.arg2().isInteger()) {
-					return o1.power(power0.arg2().inc());
-				} else if (!power0.arg2().isNumber()) {
-					return o1.power(power0.arg2().inc());
+				if (power0Arg2.isInteger()) {
+					return o1.power(power0Arg2.inc());
+				} else if (!power0Arg2.isNumber()) {
+					return o1.power(power0Arg2.inc());
 				}
 			}
 
 			if (o1.isPower()) {
-				final IAST f1 = (IAST) o1;
-				if (power0.arg2().isNumber()) {
-
-					if (f1.arg2().isNumber()) {
-						if (power0.equalsAt(1, f1.arg1())) {
-							// x^(a)*x^(b) => x ^(a+b)
-							return power0.arg1().power(power0.arg2().plus(f1.arg2()));
-						}
-						if (power0.equalsAt(2, f1.arg2()) && power0.arg1().isPositive() && f1.arg1().isPositive()
-								&& power0.arg1().isSignedNumber() && f1.arg1().isSignedNumber()) {
-							// a^(c)*b^(c) => (a*b) ^c
-							return power0.arg1().times(f1.arg1()).power(power0.arg2());
-						}
-					}
-				}
-				if (power0.arg1().equals(f1.arg1())) {
-					// x^(a)*x^(b) => x ^(a+b)
-					return power0.arg1().power(power0.arg2().plus(f1.arg2()));
+				final IAST power1 = (IAST) o1;
+				IExpr power1Arg1 = power1.arg1();
+				IExpr power1Arg2 = power1.arg2();
+				temp = timesPowerPower(power0Arg1, power0Arg2, power1Arg1, power1Arg2);
+				if (temp.isPresent()) {
+					return temp;
 				}
 			}
 		}
 
 		if (o1.isPower()) {
 			final IAST power1 = (IAST) o1;
-			if (power1.equalsAt(1, o0)) {
-				if (power1.arg2().isInteger()) {
-					return o0.power(power1.arg2().inc());
-				} else if (!power1.arg2().isNumber()) {
-					return o0.power(power1.arg2().inc());
-				}
-			} else if (power1.arg1().isInteger() && power1.arg2().isFraction()) {
-				if (o0.isFraction()) {
+			IExpr power1Arg1 = power1.arg1();
+			IExpr power1Arg2 = power1.arg2();
+			temp = timesArgPower(o0, power1Arg1, power1Arg2);
+			if (temp.isPresent()) {
+				return temp;
+			}
+		}
+
+		if (o1.isPlus()) {
+			final IAST f1 = (IAST) o1;
+			// issue#128
+			// if (o0.isMinusOne()) {
+			// return f1.mapAt(F.Times(o0, null), 2);
+			// }
+			// if (o0.isInteger() && o1.isPlus() && o1.isAST2() && (((IAST)
+			// o1).arg1().isNumericFunction())) {
+			// // Note: this doesn't work for Together() function, if we allow
+			// // o0 to be a fractional number
+			// return f1.mapAt(F.Times(o0, null), 2);
+			// }
+		}
+		if (o0.isInterval1()) {
+			if (o1.isInterval1() || o1.isSignedNumber()) {
+				return timesInterval(o0, o1);
+			}
+		}
+		if (o1.isInterval1()) {
+			if (o0.isInterval1() || o0.isSignedNumber()) {
+				return timesInterval(o0, o1);
+			}
+		}
+		return F.NIL;
+	}
+
+	/**
+	 * Try simplifying <code>arg0 * ( power1Arg1 ^ power1Arg2 )</code>
+	 * 
+	 * @param arg0
+	 * @param power1Arg1
+	 * @param power1Arg2
+	 * @return
+	 */
+	private IExpr timesArgPower(final IExpr arg0, IExpr power1Arg1, IExpr power1Arg2) {
+		if (power1Arg1.equals(arg0)) {
+			if (power1Arg2.isInteger()) {
+				return arg0.power(power1Arg2.inc());
+			} else if (!power1Arg2.isNumber()) {
+				return arg0.power(power1Arg2.inc());
+			}
+			// } else if (arg0.isPlus() && power1Arg1.equals(arg0.negate())) {
+			// // Issue#128
+			// if (power1Arg2.isInteger()) {
+			// return arg0.power(power1Arg2.inc()).negate();
+			// } else if (!power1Arg2.isNumber()) {
+			// return arg0.power(power1Arg2.inc()).negate();
+			// }
+		} else {
+			if (power1Arg1.isInteger() && power1Arg2.isFraction()) {
+				if (arg0.isFraction()) {
 					// example: 1/9 * 3^(1/2) -> 1/3 * 3^(-1/2)
 
 					// TODO implementation for complex numbers instead of
 					// fractions
-					IFraction f0 = (IFraction) o0;
-					IInteger pArg1 = (IInteger) power1.arg1();
-					IFraction pArg2 = (IFraction) power1.arg2();
+					IFraction f0 = (IFraction) arg0;
+					IInteger pArg1 = (IInteger) power1Arg1;
+					IFraction pArg2 = (IFraction) power1Arg2;
 					if (pArg1.isPositive()) {
 						if (pArg2.isPositive()) {
 							IInteger denominatorF0 = (IInteger) f0.getDenominator();
@@ -179,27 +220,41 @@ public class Times extends AbstractArgMultiple implements INumeric {
 				}
 			}
 		}
+		return F.NIL;
+	}
 
-		if (o1.isPlus()) {
-			final IAST f1 = (IAST) o1;
-			if (o0.isMinusOne()) {
-				return f1.mapAt(F.Times(o0, null), 2);
-			}
-			if (o0.isInteger() && o1.isPlus() && o1.isAST2() && (((IAST) o1).arg1().isNumericFunction())) {
-				// Note: this doesn't work for Together() function, if we allow
-				// o0 to be a fractional number
-				return f1.mapAt(F.Times(o0, null), 2);
+	/**
+	 * Try simpplifying
+	 * <code>(power0Arg1 ^ power0Arg2) * (power1Arg1 ^ power1Arg2)</code>
+	 * 
+	 * @param power0Arg1
+	 * @param power0Arg2
+	 * @param power1Arg1
+	 * @param power1Arg2
+	 * @return
+	 */
+	private IExpr timesPowerPower(IExpr power0Arg1, IExpr power0Arg2, IExpr power1Arg1, IExpr power1Arg2) {
+		if (power0Arg2.isNumber()) {
+			if (power1Arg2.isNumber()) {
+				if (power0Arg1.equals(power1Arg1)) {
+					// x^(a)*x^(b) => x ^(a+b)
+					return power0Arg1.power(power0Arg2.plus(power1Arg2));
+				}
+				if (power0Arg2.equals(power1Arg2) && power0Arg1.isPositive() && power1Arg1.isPositive()
+						&& power0Arg1.isSignedNumber() && power1Arg1.isSignedNumber()) {
+					// a^(c)*b^(c) => (a*b) ^c
+					return power0Arg1.times(power1Arg1).power(power0Arg2);
+				}
+				// if (power0Arg1.isPlus() && power1Arg1.isPlus() &&
+				// power0Arg1.equals(power1Arg1.negate())) {// Issue#128
+				// return
+				// power0Arg1.power(power0Arg2.plus(power1Arg2)).times(CN1.power(power1Arg2));
+				// }
 			}
 		}
-		if (o0.isInterval1()) {
-			if (o1.isInterval1() || o1.isSignedNumber()) {
-				return timesInterval(o0, o1);
-			}
-		}
-		if (o1.isInterval1()) {
-			if (o0.isInterval1() || o0.isSignedNumber()) {
-				return timesInterval(o0, o1);
-			}
+		if (power0Arg1.equals(power1Arg1)) {
+			// x^(a)*x^(b) => x ^(a+b)
+			return power0Arg1.power(power0Arg2.plus(power1Arg2));
 		}
 		return F.NIL;
 	}
