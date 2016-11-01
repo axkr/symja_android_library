@@ -449,6 +449,16 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 		}
 
 		if (arg2.isSignedNumber()) {
+			if (arg2.isFraction()) {
+				if (arg1.equals(F.CI)) {
+					return F.Power(F.CN1, F.C1D2.times(arg2));
+				} else if (arg1.equals(F.CNI)) {
+					if (arg2.equals(F.C1D2)) {
+						return F.Times(F.CN1, F.Power(F.CN1, F.C3D4));
+					}
+					// TODO add general formula for -I
+				}
+			}
 			ISignedNumber is1 = (ISignedNumber) arg2;
 			if (arg1.isInfinity()) {
 				if (is1.isNegative()) {

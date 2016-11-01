@@ -246,31 +246,34 @@ public class QuarticSolver {
 							Times(CN1,
 									C1D2, Sqrt(
 											Plus(Times(Power(b, C2), Power(Times(C4, Power(a, C2)), CN1)),
-													Times(CN1, C2, c, Power(Times(C3, a), CN1)),
+													Times(CN1, C2, c,
+															Power(Times(C3, a), CN1)),
 													Times(Power(C2, C1D3), delta0, Power(Times(C3, a, delta3), CN1)),
 													Times(delta3,
 															Power(Times(C3, Power(C2, C1D3), a),
 																	CN1))))),
 							Times(CN1, C1D2,
-									Sqrt(Plus(Times(Power(b, C2), Power(Times(C2, Power(a, C2)), CN1)), Times(CN1, C4,
-											c, Power(Times(C3, a), CN1)),
-							Times(CN1, Power(C2, C1D3), delta0, Power(Times(C3, a, delta3), CN1)),
-							Times(CN1, delta3, Power(Times(C3, Power(C2, C1D3), a), CN1)),
-							Times(CN1, Plus(
-									Times(CN1, Power(b, C3),
-											Power(Power(a, C3),
-													CN1)),
-									Times(C4, b, c,
-											Power(Power(a, C2), CN1)),
-									Times(CN1, integer(8L),
-											d, Power(a,
-													CN1))),
-									Power(Times(C4,
-											Sqrt(Plus(Times(Power(b, C2), Power(Times(C4, Power(a, C2)), CN1)),
-													Times(CN1, C2, c, Power(Times(C3, a), CN1)),
-													Times(Power(C2, C1D3), delta0, Power(Times(C3, a, delta3), CN1)),
-													Times(delta3, Power(Times(C3, Power(C2, C1D3), a), CN1))))),
-											CN1)))))));
+									Sqrt(Plus(Times(Power(b, C2), Power(Times(C2, Power(a, C2)), CN1)),
+											Times(CN1, C4, c, Power(Times(C3, a), CN1)),
+											Times(CN1, Power(C2, C1D3), delta0, Power(Times(C3, a, delta3), CN1)),
+											Times(CN1, delta3, Power(Times(C3, Power(C2, C1D3), a), CN1)),
+											Times(CN1, Plus(Times(CN1, Power(b, C3), Power(Power(a, C3), CN1)),
+													Times(C4, b, c,
+															Power(Power(a, C2), CN1)),
+													Times(CN1, integer(8L),
+															d, Power(a,
+																	CN1))),
+													Power(Times(C4,
+															Sqrt(Plus(
+																	Times(Power(b, C2),
+																			Power(Times(C4, Power(a, C2)), CN1)),
+																	Times(CN1, C2, c, Power(Times(C3, a), CN1)),
+																	Times(Power(C2, C1D3), delta0,
+																			Power(Times(C3, a, delta3),
+																					CN1)),
+																	Times(delta3, Power(Times(C3, Power(C2, C1D3), a),
+																			CN1))))),
+															CN1)))))));
 
 			// -b/(4 a) - Sqrt[b^2/(4 a^2) - (2 c)/(3 a) + (2^(1/3) (delta0))/(3
 			// a delta3) + delta3/(3 2^(1/3) a)]/2 + Sqrt[b^2/(2
@@ -286,60 +289,25 @@ public class QuarticSolver {
 									C1D2, Sqrt(
 											Plus(Times(Power(b, C2), Power(Times(C4, Power(a, C2)), CN1)),
 													Times(CN1, C2, c, Power(Times(C3, a), CN1)),
-													Times(Power(C2, C1D3), delta0, Power(Times(C3, a, delta3), CN1)),
-													Times(delta3,
-															Power(Times(C3, Power(C2, C1D3), a),
-																	CN1))))),
-							Times(C1D2,
-									Sqrt(Plus(Times(Power(b, C2), Power(Times(C2, Power(a, C2)), CN1)), Times(CN1, C4,
-											c, Power(Times(C3, a), CN1)),
-							Times(CN1, Power(C2, C1D3), delta0, Power(Times(C3, a, delta3), CN1)),
-							Times(CN1, delta3, Power(Times(C3, Power(C2, C1D3), a), CN1)),
-							Times(CN1, Plus(
-									Times(CN1, Power(b, C3),
-											Power(Power(a, C3),
-													CN1)),
-									Times(C4, b, c,
-											Power(Power(a, C2), CN1)),
-									Times(CN1, integer(8L),
-											d, Power(a,
-													CN1))),
-									Power(Times(C4,
-											Sqrt(Plus(Times(Power(b, C2), Power(Times(C4, Power(a, C2)), CN1)),
-													Times(CN1, C2, c, Power(Times(C3, a), CN1)),
-													Times(Power(C2, C1D3), delta0, Power(Times(C3, a, delta3), CN1)),
+													Times(Power(C2, C1D3), delta0,
+															Power(Times(C3, a, delta3),
+																	CN1)),
 													Times(delta3, Power(Times(C3, Power(C2, C1D3), a), CN1))))),
-											CN1)))))));
-
-			// -b/(4 a) + Sqrt[b^2/(4 a^2) - (2 c)/(3 a) + (2^(1/3) (delta0))/(3
-			// a delta3) + delta3/(3 2^(1/3) a)]/2 - Sqrt[b^2/(2
-			// a^2) - (4 c)/(3 a) - (2^(1/3) (delta0))/(3 a delta3) - delta3/(3
-			// 2^(1/3) a) + (-(b^3/a^3) + (4 b c)/a^2 - (8 d)/a)/(4
-			// Sqrt[b^2/(4 a^2) - (2 c)/(3 a) + (2^(1/3) (delta0))/(3 a delta3)
-			// + delta3/(3 2^(1/3) a)])]/2
-			result.append(
-					Plus(Times(CN1, b,
-							Power(Times(C4, a),
-									CN1)),
 							Times(C1D2,
-									Sqrt(Plus(Times(Power(b, C2), Power(Times(C4, Power(a, C2)), CN1)),
-											Times(CN1, C2, c, Power(Times(C3, a), CN1)),
-											Times(Power(C2, C1D3), delta0,
-													Power(Times(C3, a, delta3), CN1)),
-											Times(delta3, Power(Times(C3, Power(C2, C1D3), a), CN1))))),
-					Times(CN1, C1D2,
-							Sqrt(Plus(
-									Times(Power(b, C2),
-											Power(Times(C2, Power(a, C2)), CN1)),
-									Times(CN1, C4, c, Power(Times(C3, a), CN1)),
-									Times(CN1, Power(C2, C1D3), delta0, Power(Times(C3, a, delta3), CN1)),
-									Times(CN1, delta3,
-											Power(Times(C3, Power(C2, C1D3), a), CN1)),
-									Times(Plus(Times(CN1, Power(b, C3), Power(Power(a, C3), CN1)),
-											Times(C4, b, c,
-													Power(Power(a, C2), CN1)),
-											Times(CN1, integer(8L), d, Power(a, CN1))), Power(
-													Times(C4,
+									Sqrt(Plus(Times(Power(b, C2), Power(Times(C2, Power(a, C2)), CN1)),
+											Times(CN1, C4, c, Power(Times(C3, a), CN1)),
+											Times(CN1, Power(C2, C1D3), delta0, Power(Times(C3, a, delta3), CN1)),
+											Times(CN1, delta3, Power(Times(C3, Power(C2, C1D3), a), CN1)),
+											Times(CN1, Plus(
+													Times(CN1, Power(b, C3),
+															Power(Power(a, C3),
+																	CN1)),
+													Times(C4, b, c,
+															Power(Power(a, C2), CN1)),
+													Times(CN1, integer(8L),
+															d, Power(a,
+																	CN1))),
+													Power(Times(C4,
 															Sqrt(Plus(
 																	Times(Power(b, C2),
 																			Power(Times(C4, Power(a, C2)), CN1)),
@@ -349,7 +317,7 @@ public class QuarticSolver {
 																					CN1)),
 																	Times(delta3, Power(Times(C3, Power(C2, C1D3), a),
 																			CN1))))),
-													CN1)))))));
+															CN1)))))));
 
 			// -b/(4 a) + Sqrt[b^2/(4 a^2) - (2 c)/(3 a) + (2^(1/3) (delta0))/(3
 			// a delta3) + delta3/(3 2^(1/3) a)]/2 - Sqrt[b^2/(2
@@ -358,28 +326,67 @@ public class QuarticSolver {
 			// Sqrt[b^2/(4 a^2) - (2 c)/(3 a) + (2^(1/3) (delta0))/(3 a delta3)
 			// + delta3/(3 2^(1/3) a)])]/2
 			result.append(
-					Plus(Times(CN1, b,
-							Power(Times(C4, a),
+					Plus(Times(CN1,
+							b, Power(
+									Times(C4,
+											a),
 									CN1)),
 							Times(C1D2,
 									Sqrt(Plus(Times(Power(b, C2), Power(Times(C4, Power(a, C2)), CN1)),
 											Times(CN1, C2, c, Power(Times(C3, a), CN1)),
-											Times(Power(C2, C1D3), delta0,
-													Power(Times(C3, a, delta3), CN1)),
+											Times(Power(C2, C1D3), delta0, Power(Times(C3, a, delta3), CN1)),
 											Times(delta3, Power(Times(C3, Power(C2, C1D3), a), CN1))))),
-					Times(C1D2,
-							Sqrt(Plus(
-									Times(Power(b, C2),
-											Power(Times(C2, Power(a, C2)), CN1)),
-									Times(CN1, C4, c, Power(Times(C3, a), CN1)),
-									Times(CN1, Power(C2, C1D3), delta0, Power(Times(C3, a, delta3), CN1)),
-									Times(CN1, delta3,
-											Power(Times(C3, Power(C2, C1D3), a), CN1)),
-									Times(Plus(Times(CN1, Power(b, C3), Power(Power(a, C3), CN1)),
-											Times(C4, b, c,
-													Power(Power(a, C2), CN1)),
-											Times(CN1, integer(8L), d, Power(a, CN1))), Power(
-													Times(C4,
+							Times(CN1, C1D2,
+									Sqrt(Plus(Times(Power(b, C2), Power(Times(C2, Power(a, C2)), CN1)),
+											Times(CN1, C4, c,
+													Power(Times(C3, a), CN1)),
+											Times(CN1, Power(C2, C1D3), delta0, Power(Times(C3, a, delta3), CN1)),
+											Times(CN1, delta3, Power(Times(C3, Power(C2, C1D3), a), CN1)),
+											Times(Plus(Times(CN1, Power(b, C3), Power(Power(a, C3), CN1)),
+													Times(C4, b, c, Power(Power(a, C2), CN1)),
+													Times(CN1, integer(8L), d, Power(a, CN1))),
+													Power(
+															Times(C4,
+																	Sqrt(Plus(
+																			Times(Power(b, C2),
+																					Power(Times(C4, Power(a, C2)),
+																							CN1)),
+																			Times(CN1, C2, c, Power(Times(C3, a), CN1)),
+																			Times(Power(C2, C1D3), delta0,
+																					Power(Times(C3, a, delta3),
+																							CN1)),
+																			Times(delta3,
+																					Power(Times(C3, Power(C2, C1D3), a),
+																							CN1))))),
+															CN1)))))));
+
+			// -b/(4 a) + Sqrt[b^2/(4 a^2) - (2 c)/(3 a) + (2^(1/3) (delta0))/(3
+			// a delta3) + delta3/(3 2^(1/3) a)]/2 - Sqrt[b^2/(2
+			// a^2) - (4 c)/(3 a) - (2^(1/3) (delta0))/(3 a delta3) - delta3/(3
+			// 2^(1/3) a) + (-(b^3/a^3) + (4 b c)/a^2 - (8 d)/a)/(4
+			// Sqrt[b^2/(4 a^2) - (2 c)/(3 a) + (2^(1/3) (delta0))/(3 a delta3)
+			// + delta3/(3 2^(1/3) a)])]/2
+			result.append(
+					Plus(Times(CN1,
+							b, Power(
+									Times(C4,
+											a),
+									CN1)),
+							Times(C1D2, Sqrt(Plus(Times(Power(b, C2), Power(Times(C4, Power(a, C2)), CN1)),
+									Times(CN1, C2, c, Power(Times(C3, a), CN1)),
+									Times(Power(C2, C1D3), delta0, Power(Times(C3, a, delta3), CN1)),
+									Times(delta3, Power(Times(C3, Power(C2, C1D3), a), CN1))))),
+							Times(C1D2,
+									Sqrt(Plus(Times(Power(b, C2), Power(Times(C2, Power(a, C2)), CN1)),
+											Times(CN1, C4, c, Power(Times(C3, a), CN1)),
+											Times(CN1, Power(C2, C1D3), delta0, Power(Times(C3, a, delta3), CN1)),
+											Times(CN1, delta3, Power(Times(C3, Power(C2, C1D3), a), CN1)), Times(
+													Plus(Times(CN1, Power(b, C3), Power(Power(a, C3), CN1)),
+															Times(C4, b, c, Power(Power(a, C2), CN1)), Times(CN1,
+																	integer(8L),
+																	d, Power(a,
+																			CN1))),
+													Power(Times(C4,
 															Sqrt(Plus(
 																	Times(Power(b, C2),
 																			Power(Times(C4, Power(a, C2)), CN1)),
@@ -389,7 +396,7 @@ public class QuarticSolver {
 																					CN1)),
 																	Times(delta3, Power(Times(C3, Power(C2, C1D3), a),
 																			CN1))))),
-													CN1)))))));
+															CN1)))))));
 			return createSet(result);
 		}
 
@@ -493,7 +500,8 @@ public class QuarticSolver {
 				} else {
 					// the double root
 					// (9*a*d-b*c)/(2*delta0)
-					result.append(Times(Plus(Times(integer(9L), a, d), Times(CN1, b, c)), Power(Times(C2, delta0), CN1)));
+					result.append(
+							Times(Plus(Times(integer(9L), a, d), Times(CN1, b, c)), Power(Times(C2, delta0), CN1)));
 					// and a simple root
 					// (4*a*b*c-9*a^2*d-b^3)/(a*delta0)
 					result.append(Times(Plus(Times(C4, a, b, c), Times(CN1, integer(9L), Power(a, C2), d),
@@ -531,7 +539,8 @@ public class QuarticSolver {
 		for (int i = 1; i < result.size(); i++) {
 			IExpr temp = result.get(i);
 			if (temp.isPlus() || temp.isTimes() || temp.isPower()) {
-				temp = org.matheclipse.core.reflection.system.PowerExpand.powerExpand((IAST) temp, false);
+				temp = F.evalExpandAll(temp);// org.matheclipse.core.reflection.system.PowerExpand.powerExpand((IAST)
+												// temp, false);
 			}
 			if (temp.isAtom() && !temp.isIndeterminate()) {
 				set1.add(temp);
@@ -583,11 +592,31 @@ public class QuarticSolver {
 					result.append(F.Times(F.CN1, b, Power(a, -1L)));
 				}
 			} else {
-				result.append(Times(Plus(CN1.times(b), Sqrt(Plus(Power(b, 2), Times(CN4, a, c)))),
-						Power(Times(C2, a), -1L)));
+				IExpr discriminantSqrt;
+				if (b.isZero()) {
+					IExpr temp = CN4.times(a).times(c);
+					if (temp.isPower()) {
+						discriminantSqrt = F.Power(temp.getAt(1), F.Times(C1D2, temp.getAt(2)));
+					} else if (temp.isTimes()) {
+						IAST tmpResult = Times();
+						IAST times = (IAST) temp;
+						for (int i = 1; i < times.size(); i++) {
+							if (times.get(i).isPower()) {
+								tmpResult.append(F.Power(times.get(i).getAt(1), F.Times(C1D2, times.get(i).getAt(2))));
+							} else {
+								tmpResult.append(Sqrt(times.get(i)));
+							}
+						}
+						discriminantSqrt = tmpResult;
+					} else {
+						discriminantSqrt = Sqrt(Times(CN4, a, c));
+					}
+				} else {
+					discriminantSqrt = Sqrt(Plus(Power(b, 2L), Times(CN4, a, c)));
+				}
+				result.append(Times(Plus(CN1.times(b), discriminantSqrt), Power(Times(C2, a), -1L)));
 
-				result.append(Times(Plus(CN1.times(b), Times(CN1, Sqrt(Plus(Power(b, 2L), Times(CN4, a, c))))),
-						Power(Times(C2, a), -1L)));
+				result.append(Times(Plus(CN1.times(b), Times(CN1, discriminantSqrt)), Power(Times(C2, a), -1L)));
 				return createSet(result);
 			}
 		} else {

@@ -176,9 +176,9 @@ public class Roots extends AbstractFunctionEvaluator {
 			if (polyRat.degree(0) <= 2) {
 				return rootsOfExprPolynomial(expr, variables);
 			}
-			IAST factors = Factor.factorComplex(polyRat, jas, varList, F.List, true);
-			for (int i = 1; i < factors.size(); i++) {
-				temp = F.evalExpand(factors.get(i));
+			IAST factorRational = Factor.factorRational(polyRat, jas, varList, F.List);
+			for (int i = 1; i < factorRational.size(); i++) {
+				temp = F.evalExpand(factorRational.get(i));
 				IAST quarticResultList = QuarticSolver.solve(temp, variables.arg1());
 				if (quarticResultList.isPresent()) {
 					for (int j = 1; j < quarticResultList.size(); j++) {
@@ -190,17 +190,33 @@ public class Roots extends AbstractFunctionEvaluator {
 						}
 					}
 				} else {
-					// if (numericSolutions) {
-					double[] coefficients = CoefficientList.coefficientList(temp, (ISymbol) variables.arg1());
-					if (coefficients == null) {
-						return F.NIL;
+					polyRat = jas.expr2JAS(temp, numericSolutions);
+					IAST factorComplex = Factor.factorComplex(polyRat, jas, varList, F.List, true);
+					for (int k = 1; k < factorComplex.size(); k++) {
+						temp = F.evalExpand(factorComplex.get(k));
+						quarticResultList = QuarticSolver.solve(temp, variables.arg1());
+						if (quarticResultList.isPresent()) {
+							for (int j = 1; j < quarticResultList.size(); j++) {
+								if (numericSolutions) {
+									result.append(F.chopExpr(engine.evalN(quarticResultList.get(j)),
+											Config.DEFAULT_ROOTS_CHOP_DELTA));
+								} else {
+									result.append(quarticResultList.get(j));
+								}
+							}
+						} else {
+							double[] coefficients = CoefficientList.coefficientList(temp, (ISymbol) variables.arg1());
+							if (coefficients == null) {
+								return F.NIL;
+							}
+							IAST resultList = findRoots(coefficients);
+							// IAST resultList = RootIntervals.croots(temp,
+							// true);
+							if (resultList.size() > 0) {
+								result.appendArgs(resultList);
+							}
+						}
 					}
-					IAST resultList = findRoots(coefficients);
-					// IAST resultList = RootIntervals.croots(temp, true);
-					if (resultList.size() > 0) {
-						result.appendArgs(resultList);
-					}
-					// }
 				}
 			}
 			result = QuarticSolver.createSet(result);

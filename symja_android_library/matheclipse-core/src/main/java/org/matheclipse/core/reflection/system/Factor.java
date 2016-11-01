@@ -76,7 +76,7 @@ public class Factor extends AbstractFunctionEvaluator {
 		if (polyRat.length() <= 1) {
 			return expr;
 		}
-		
+
 		Object[] objects = jas.factorTerms(polyRat);
 		GenPolynomial<edu.jas.arith.BigInteger> poly = (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
 		FactorAbstract<edu.jas.arith.BigInteger> factorAbstract = FactorFactory
@@ -216,6 +216,33 @@ public class Factor extends AbstractFunctionEvaluator {
 			}
 			temp = entry.getKey();
 			result.append(F.Power(jas.complexPoly2Expr(entry.getKey()), F.integer(entry.getValue())));
+		}
+		return result;
+	}
+
+	public static IAST factorRational(GenPolynomial<BigRational> polyRat, JASConvert<BigRational> jas,
+			List<IExpr> varList, ISymbol head) {
+		Object[] objects = jas.factorTerms(polyRat);
+		GenPolynomial<edu.jas.arith.BigInteger> poly = (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
+		FactorAbstract<edu.jas.arith.BigInteger> factorAbstract = FactorFactory
+				.getImplementation(edu.jas.arith.BigInteger.ONE);
+		SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
+		map = factorAbstract.factors(poly);
+		IAST result = F.ast(head);
+		java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
+		java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
+		if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
+			result.append(F.fraction(gcd, lcm));
+		}
+		for (SortedMap.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map.entrySet()) {
+			if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
+				continue;
+			}
+			if (entry.getValue() == 1L) {
+				result.append(jas.integerPoly2Expr(entry.getKey()));
+			} else {
+				result.append(F.Power(jas.integerPoly2Expr(entry.getKey()), F.integer(entry.getValue())));
+			}
 		}
 		return result;
 	}

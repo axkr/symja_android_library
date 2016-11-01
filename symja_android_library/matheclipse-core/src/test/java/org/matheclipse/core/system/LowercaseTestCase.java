@@ -2767,6 +2767,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		check("I^(1/3)", "(-1)^(1/6)");
+		check("I^(1/4)", "(-1)^(1/8)");
+		check("I^(1/8)", "(-1)^(1/16)");
+		check("I^(3/8)", "(-1)^(3/16)");
+		check("I^(3/5)", "(-1)^(3/10)");
+//		check("(-I)^(1/3)", "-(-1)^(5/6)");
+//		check("(-I)^(3/5)", "-(-1)^(7/10)");
+//		check("(-I)^(1/4)", "-(-1)^(7/8)");
 		check("27^(1/3)", "3");
 		check("5103^(1/3)", "9*7^(1/3)");
 		check("5103^(1/2)", "27*Sqrt(7)");
@@ -3430,13 +3438,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolveIssue130() {
+		check("Solve(y==x+((1)/(x)),y)", "{{y->-(-1-x^2)/x}}");
+		check("Solve(y==((1-x)^(1/(2)))+((x+3)^(1/(2))),y)", "{{y->Sqrt(1-x)+Sqrt(3+x)}}");
+		
 		check("Solve(x^24==1,x)", "{{x->-1},{x->1},{x->-I},{x->I},{x->-1/2-I*1/2*Sqrt(3)},{x->-1/2+I*1/2*Sqrt(3)},{x->\n" + 
-				"1/2-I*1/2*Sqrt(3)},{x->1/2+I*1/2*Sqrt(3)},{x->-I*1/2-Sqrt(3)/2},{x->-I*1/2+Sqrt(\n" + 
-				"3)/2},{x->I*1/2-Sqrt(3)/2},{x->I*1/2+Sqrt(3)/2},{x->-Sqrt(-I*4)/2},{x->Sqrt(-I*4)/\n" + 
-				"2},{x->-Sqrt(I*4)/2},{x->Sqrt(I*4)/2},{x->Sqrt(1/2)*Sqrt(-I+Sqrt(3))},{x->-Sqrt(\n" + 
-				"1/2)*Sqrt(-I+Sqrt(3))},{x->-I*Sqrt(1/2)*Sqrt(-I+Sqrt(3))},{x->I*Sqrt(1/2)*Sqrt(-I+Sqrt(\n" + 
-				"3))},{x->Sqrt(1/2)*Sqrt(I+Sqrt(3))},{x->-Sqrt(1/2)*Sqrt(I+Sqrt(3))},{x->-I*Sqrt(\n" + 
-				"1/2)*Sqrt(I+Sqrt(3))},{x->I*Sqrt(1/2)*Sqrt(I+Sqrt(3))}}");
+				"1/2-I*1/2*Sqrt(3)},{x->1/2+I*1/2*Sqrt(3)},{x->(-1)^(1/4)},{x->-(-1)^(1/4)},{x->(\n" + 
+				"-1)^(3/4)},{x->-(-1)^(3/4)},{x->-I*Sqrt(1/2)*Sqrt(-1+I*Sqrt(3))},{x->I*Sqrt(1/2)*Sqrt(\n" + 
+				"-1+I*Sqrt(3))},{x->Sqrt(1/2)*Sqrt(1+I*Sqrt(3))},{x->-Sqrt(1/2)*Sqrt(1+I*Sqrt(3))},{x->Sqrt(\n" + 
+				"1/2)*Sqrt(-I+Sqrt(3))},{x->-Sqrt(1/2)*Sqrt(-I+Sqrt(3))},{x->-I*Sqrt(1/2)*Sqrt(-I+Sqrt(\n" + 
+				"3))},{x->I*Sqrt(1/2)*Sqrt(-I+Sqrt(3))},{x->Sqrt(1/2)*Sqrt(I+Sqrt(3))},{x->-Sqrt(\n" + 
+				"1/2)*Sqrt(I+Sqrt(3))},{x->-I*Sqrt(1/2)*Sqrt(I+Sqrt(3))},{x->I*Sqrt(1/2)*Sqrt(I+Sqrt(\n" + 
+				"3))}}");
+		
+//		check("Solve(x^258==1,x)", "");
 	}
 	
 	public void testSolve() {
@@ -3449,9 +3463,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Solve((k*Q*q)/r^2==E,r)",
 				"{{r->(Sqrt(Q)*Sqrt(k)*Sqrt(q))/Sqrt(E)},{r->(-Sqrt(Q)*Sqrt(k)*Sqrt(q))/Sqrt(E)}}");
 		check("Solve((k*Q*q)/r^2+1/r^4==E,r)",
-				"{{r->(Sqrt(1/2)*Sqrt(Q*k*q+Sqrt(4*E+Q^2*k^2*q^2)))/Sqrt(E)},{r->(-Sqrt(1/2)*Sqrt(Q*k*q+Sqrt(\n"
-						+ "4*E+Q^2*k^2*q^2)))/Sqrt(E)},{r->(-I*Sqrt(1/2)*Sqrt(-Q*k*q+Sqrt(4*E+Q^2*k^2*q^2)))/Sqrt(E)},{r->(I*Sqrt(\n"
-						+ "1/2)*Sqrt(-Q*k*q+Sqrt(4*E+Q^2*k^2*q^2)))/Sqrt(E)}}");
+				"{{r->Sqrt(1/2)*Sqrt((Q*k*q+Sqrt(4*E+Q^2*k^2*q^2))/E)},{r->-Sqrt(1/2)*Sqrt((Q*k*q+Sqrt(\n" + 
+				"4*E+Q^2*k^2*q^2))/E)},{r->-I*Sqrt(1/2)*Sqrt((-Q*k*q+Sqrt(4*E+Q^2*k^2*q^2))/E)},{r->I*Sqrt(\n" + 
+				"1/2)*Sqrt((-Q*k*q+Sqrt(4*E+Q^2*k^2*q^2))/E)}}");
 		check("Solve((k*Q*q)/r^2+1/r^4==0,r)", "{{r->-I/(Sqrt(Q)*Sqrt(k)*Sqrt(q))},{r->I/(Sqrt(Q)*Sqrt(k)*Sqrt(q))}}");
 		check("Solve(Abs(x-1) ==1,{x})", "{{x->0},{x->2}}");
 		check("Solve(Abs(x^2-1) ==0,{x})", "{{x->-1},{x->1}}");

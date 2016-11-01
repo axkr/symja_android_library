@@ -3093,6 +3093,7 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem805() {
+		check("Solve(x^2==a^2,x)", "{{x->a},{x->-a}}");
 		check("Solve((x^2-1)/(x-1)==0,x)", "{{x->-1}}");
 		
 		// LinearSolve[{{1,1,1},{1,1,-1},{1,-1,-1}},{100,50,10}]
@@ -3280,6 +3281,10 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem999() {
+//		check("Roots(x^6 - 4*x^3 + 8==0, x)",
+//				"x==-1-I||x==-1+I||x==1/2-I*1/2-Sqrt(I*6)/2||x==1/2-I*1/2+Sqrt(I*6)/2||x==1/2+I*1/\n"
+//						+ "2-Sqrt(-I*6)/2||x==1/2+I*1/2+Sqrt(-I*6)/2");
+		
 		// check("Factor(1+x^2,GaussianIntegers->True)", "");
 		check("-5/2+I*1/2*Sqrt(15)", "-5/2+I*1/2*Sqrt(15)");
 		check("Roots(Expand((x-1)^3)==0, x)", "x==1");
@@ -3297,9 +3302,9 @@ public class MainTestCase extends AbstractTestCase {
 		check("Roots(x^2 - 4*x + 8==0, x)", "x==2-I*2||x==2+I*2");
 		// not reduccible with current factor method
 		check("Factor(x^4-2*x^3+2*x^2-4*x+4)", "4-4*x+2*x^2-2*x^3+x^4");
-		check("Roots(x^6 - 4*x^3 + 8==0, x)",
-				"x==-1-I||x==-1+I||x==1/2-I*1/2-Sqrt(I*6)/2||x==1/2-I*1/2+Sqrt(I*6)/2||x==1/2+I*1/\n"
-						+ "2-Sqrt(-I*6)/2||x==1/2+I*1/2+Sqrt(-I*6)/2");
+//		check("Roots(x^6 - 4*x^3 + 8==0, x)",
+//				"x==-1-I||x==-1+I||x==1/2-I*1/2-Sqrt(I*6)/2||x==1/2-I*1/2+Sqrt(I*6)/2||x==1/2+I*1/\n"
+//						+ "2-Sqrt(-I*6)/2||x==1/2+I*1/2+Sqrt(-I*6)/2");
 
 		check("Roots(x^2 + 5*x + 10==0, x)", "x==-5/2-I*1/2*Sqrt(15)||x==-5/2+I*1/2*Sqrt(15)");
 		check("Roots(4+x^2+2*x+3*x^3==0, x)", "x==-1||x==1/3-I*1/3*Sqrt(11)||x==1/3+I*1/3*Sqrt(11)");

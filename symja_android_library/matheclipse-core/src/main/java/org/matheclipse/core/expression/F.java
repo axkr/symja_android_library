@@ -1246,7 +1246,17 @@ public class F {
 	 * Constant fraction &quot;3/2&quot;
 	 */
 	public final static IFraction C3D2 = AbstractFractionSym.valueOf(3, 2);
-
+	
+	/**
+	 * Constant fraction &quot;3/4&quot;
+	 */
+	public final static IFraction C3D4 = AbstractFractionSym.valueOf(3, 4);
+	
+	/**
+	 * Constant fraction &quot;5/2&quot;
+	 */
+	public final static IFraction C5D2 = AbstractFractionSym.valueOf(5, 2);
+	
 	/**
 	 * Constant fraction &quot;-1/2&quot;
 	 */
