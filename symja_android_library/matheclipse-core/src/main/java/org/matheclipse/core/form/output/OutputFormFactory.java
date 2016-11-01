@@ -178,7 +178,7 @@ public class OutputFormFactory {
 		double imaginaryPart = dc.getImaginaryPart();
 		boolean realZero = F.isZero(realPart);
 		boolean imaginaryZero = F.isZero(imaginaryPart);
-		if (realZero && imaginaryZero) { 
+		if (realZero && imaginaryZero) {
 			convertDoubleString(buf, convertDoubleToFormattedString(0.0), ASTNodeFactory.PLUS_PRECEDENCE, false);
 		} else {
 			if (!realZero) {
@@ -186,8 +186,8 @@ public class OutputFormFactory {
 				if (!imaginaryZero) {
 					append(buf, "+I*");
 					final boolean isNegative = imaginaryPart < 0;
-					convertDoubleString(buf, convertDoubleToFormattedString(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE,
-							isNegative);
+					convertDoubleString(buf, convertDoubleToFormattedString(imaginaryPart),
+							ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
 				}
 			} else {
 				if (caller == PLUS_CALL) {
@@ -195,7 +195,8 @@ public class OutputFormFactory {
 				}
 				append(buf, "I*");
 				final boolean isNegative = imaginaryPart < 0;
-				convertDoubleString(buf, convertDoubleToFormattedString(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
+				convertDoubleString(buf, convertDoubleToFormattedString(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE,
+						isNegative);
 			}
 		}
 		if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
@@ -889,10 +890,10 @@ public class OutputFormFactory {
 							append(buf, ")");
 						}
 						return;
-					} else if (list.arg1().equals(F.CI)) {
+					} else if (list.arg1().isImaginaryUnit()) {
 						append(buf, "I*Infinity");
 						return;
-					} else if (list.arg1().equals(F.CNI)) {
+					} else if (list.arg1().isNegativeImaginaryUnit()) {
 						append(buf, "-I*Infinity");
 						return;
 					}

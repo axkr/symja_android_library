@@ -315,7 +315,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 				return F.Indeterminate;
 			}
 
-			if (arg1.isOne() || arg1.isMinusOne() || arg1.equals(F.CI) || arg1.equals(F.CNI)) {
+			if (arg1.isOne() || arg1.isMinusOne() || arg1.isImaginaryUnit() || arg1.isNegativeImaginaryUnit()) {
 				return F.Indeterminate;
 			}
 			IAST directedInfinity = (IAST) arg2;
@@ -449,14 +449,10 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 		}
 
 		if (arg2.isSignedNumber()) {
-			if (arg2.isFraction()) {
-				if (arg1.equals(F.CI)) {
-					return F.Power(F.CN1, F.C1D2.times(arg2));
-				} else if (arg1.equals(F.CNI)) {
-					if (arg2.equals(F.C1D2)) {
-						return F.Times(F.CN1, F.Power(F.CN1, F.C3D4));
-					}
-					// TODO add general formula for -I
+			if (arg1.isComplex() && arg2.isFraction() && arg2.isPositive()) {
+				IExpr temp = powerComplexFraction((IComplex) arg1, (IFraction) arg2);
+				if (temp.isPresent()) {
+					return temp;
 				}
 			}
 			ISignedNumber is1 = (ISignedNumber) arg2;
@@ -571,6 +567,32 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 					return F.Power(astArg1.arg1(), F.Times(arg2, astArg1.arg2()));
 				}
 			}
+		}
+		return F.NIL;
+	}
+
+	/**
+	 * <code> complexNumber ^ fractionNumber</code>
+	 * 
+	 * @param complexNumber
+	 * @param fractionNumber
+	 * @return
+	 */
+	private IExpr powerComplexFraction(final IComplex complexNumber, final IFraction fractionNumber) {
+		if (complexNumber.isImaginaryUnit()) {
+			return F.Power(F.CN1, F.C1D2.times(fractionNumber));
+		} else if (complexNumber.isNegativeImaginaryUnit()) {
+			IInteger numerator = ((IFraction) fractionNumber).getNumerator();
+			IInteger denominator = ((IFraction) fractionNumber).getDenominator();
+			IInteger div = numerator.div(denominator);
+			if (div.isOdd()) {
+				div = div.subtract(F.C1);
+			}
+			IRational rat = ((IFraction) fractionNumber).subtract(div);
+			numerator = rat.getNumerator();
+			denominator = rat.getDenominator().multiply(F.C2);
+			return F.Times(F.CN1, F.Power(F.CNI, div),
+					F.Power(F.CN1, F.fraction(denominator.subtract(numerator), denominator)));
 		}
 		return F.NIL;
 	}

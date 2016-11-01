@@ -852,8 +852,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testCosineDistance() {
 		check("CosineDistance({a, b}, {x, y})", "1-(a*x+b*y)/(Sqrt(Abs(a)^2+Abs(b)^2)*Sqrt(Abs(x)^2+Abs(y)^2))");
 		check("CosineDistance({a, b, c}, {x, y, z})",
-				"1-(a*x+b*y+c*z)/(Sqrt(Abs(a)^2+Abs(b)^2+Abs(c)^2)*Sqrt(Abs(x)^2+Abs(y)^2+Abs(z)^\n" + 
-				"2))");
+				"1-(a*x+b*y+c*z)/(Sqrt(Abs(a)^2+Abs(b)^2+Abs(c)^2)*Sqrt(Abs(x)^2+Abs(y)^2+Abs(z)^\n" + "2))");
 	}
 
 	public void testCosIntegral() {
@@ -883,8 +882,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testCovariance() {
 		check("Covariance({a, b, c,d,e}, {x, y, z,v,w})",
-				"1/20*(-(a+b+c-4*d+e)*Conjugate(v)-(a+b+c+d-4*e)*Conjugate(w)-(-4*a+b+c+d+e)*Conjugate(x)-(a\n" + 
-				"-4*b+c+d+e)*Conjugate(y)-(a+b-4*c+d+e)*Conjugate(z))");
+				"1/20*(-(a+b+c-4*d+e)*Conjugate(v)-(a+b+c+d-4*e)*Conjugate(w)-(-4*a+b+c+d+e)*Conjugate(x)-(a\n"
+						+ "-4*b+c+d+e)*Conjugate(y)-(a+b-4*c+d+e)*Conjugate(z))");
 		check("Covariance({a, b, c}, {x, y, z})",
 				"1/6*(-(-2*a+b+c)*Conjugate(x)-(a-2*b+c)*Conjugate(y)-(a+b-2*c)*Conjugate(z))");
 		check("Covariance({a, b}, {x, y})", "1/2*(a-b)*(-Conjugate(y)+Conjugate(x))");
@@ -2772,9 +2771,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("I^(1/8)", "(-1)^(1/16)");
 		check("I^(3/8)", "(-1)^(3/16)");
 		check("I^(3/5)", "(-1)^(3/10)");
-//		check("(-I)^(1/3)", "-(-1)^(5/6)");
-//		check("(-I)^(3/5)", "-(-1)^(7/10)");
-//		check("(-I)^(1/4)", "-(-1)^(7/8)");
+		check("(-I)^(1/2)", "-(-1)^(3/4)");
+		check("(-I)^(1/3)", "-(-1)^(5/6)");
+		check("(-I)^(3/5)", "-(-1)^(7/10)");
+		check("(-I)^(21/32)", "-(-1)^(43/64)");
+		check("(-I)^(32/21)", "-(-1)^(5/21)");
+		check("(-I)^(1/4)", "-(-1)^(7/8)");
+		check("(-I)^(1/5)", "-(-1)^(9/10)");
+		check("(-I)^(1/6)", "-(-1)^(11/12)");
+		check("(-I)^(1/24)", "-(-1)^(47/48)");
+		check("(-I)^(64/7)", "-(-1)^(3/7)");
+		check("(-I)^(71/7)", "(-1)^(13/14)");
 		check("27^(1/3)", "3");
 		check("5103^(1/3)", "9*7^(1/3)");
 		check("5103^(1/2)", "27*Sqrt(7)");
@@ -3309,30 +3316,36 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("{a, Sequence(b), c, Identity(d)}", "{a,b,c,d}");
 	}
 
-//	public void testNormal() {
-//		check("Normal(Series(Exp(x),{x,0,5}))", "1+x+x^2/2+x^3/6+x^4/24+x^5/120");
-//		check("Normal(SeriesData(x, 0,{1,0,-1/6,0,1/120,0,-1/5040,0,1/362880}, 1, 11, 2))",
-//				"Sqrt(x)-x^(3/2)/6+x^(5/2)/120-x^(7/2)/5040+x^(9/2)/362880");
-//
-//	}
-//	
-//	public void testSeries() {
-//		// check("FullForm(Series(Exp(x),{x,0,10}))", "");
-//		// check("Series(Sin(Sqrt(x)), {x, 0, 5})", "");
-//		check("Series(f(x),{x,0,3})", "f(0)+f'(0)*x+f''(0)/2*x^2+Derivative(3)[f][0]/6*x^3+O(x)^4");
-//		check("Series(Exp(x),{x,0,2})", "1+x+x^2/2+O(x)^3");
-//		check("Series(Exp(f(x)),{x,0,2})", "E^f(0)+E^f(0)*f'(0)*x+1/2*(E^f(0)*f'(0)^2+E^f(0)*f''(0))*x^2+O(x)^3");
-//		check("Series(Exp(x),{x,0,5})", "1+x+x^2/2+x^3/6+x^4/24+x^5/120+O(x)^6");
-//		check("Series(100,{x,a,5})", "100");
-//	}
-//
-//	public void testSeriesData() {
-//		check("SeriesData(100, 0, Table(i^2, {i, 10}), 0, 10, 1)", "Indeterminate");
-//		check("SeriesData(x, 0, Table(i^2, {i, 10}), 0, 10, 1)",
-//				"1+4*x+9*x^2+16*x^3+25*x^4+36*x^5+49*x^6+64*x^7+81*x^8+100*x^9+O(x)^10");
-//		check("SeriesData(x, 0,{1,0,-1/6,0,1/120,0,-1/5040,0,1/362880}, 1, 11, 2)",
-//				"Sqrt(x)-x^(3/2)/6+x^(5/2)/120-x^(7/2)/5040+x^(9/2)/362880+O(x)^(11/2)");
-//	}
+	// public void testNormal() {
+	// check("Normal(Series(Exp(x),{x,0,5}))",
+	// "1+x+x^2/2+x^3/6+x^4/24+x^5/120");
+	// check("Normal(SeriesData(x, 0,{1,0,-1/6,0,1/120,0,-1/5040,0,1/362880}, 1,
+	// 11, 2))",
+	// "Sqrt(x)-x^(3/2)/6+x^(5/2)/120-x^(7/2)/5040+x^(9/2)/362880");
+	//
+	// }
+	//
+	// public void testSeries() {
+	// // check("FullForm(Series(Exp(x),{x,0,10}))", "");
+	// // check("Series(Sin(Sqrt(x)), {x, 0, 5})", "");
+	// check("Series(f(x),{x,0,3})",
+	// "f(0)+f'(0)*x+f''(0)/2*x^2+Derivative(3)[f][0]/6*x^3+O(x)^4");
+	// check("Series(Exp(x),{x,0,2})", "1+x+x^2/2+O(x)^3");
+	// check("Series(Exp(f(x)),{x,0,2})",
+	// "E^f(0)+E^f(0)*f'(0)*x+1/2*(E^f(0)*f'(0)^2+E^f(0)*f''(0))*x^2+O(x)^3");
+	// check("Series(Exp(x),{x,0,5})", "1+x+x^2/2+x^3/6+x^4/24+x^5/120+O(x)^6");
+	// check("Series(100,{x,a,5})", "100");
+	// }
+	//
+	// public void testSeriesData() {
+	// check("SeriesData(100, 0, Table(i^2, {i, 10}), 0, 10, 1)",
+	// "Indeterminate");
+	// check("SeriesData(x, 0, Table(i^2, {i, 10}), 0, 10, 1)",
+	// "1+4*x+9*x^2+16*x^3+25*x^4+36*x^5+49*x^6+64*x^7+81*x^8+100*x^9+O(x)^10");
+	// check("SeriesData(x, 0,{1,0,-1/6,0,1/120,0,-1/5040,0,1/362880}, 1, 11,
+	// 2)",
+	// "Sqrt(x)-x^(3/2)/6+x^(5/2)/120-x^(7/2)/5040+x^(9/2)/362880+O(x)^(11/2)");
+	// }
 
 	public void testSign() {
 		check("Pi>E", "True");
@@ -3440,19 +3453,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSolveIssue130() {
 		check("Solve(y==x+((1)/(x)),y)", "{{y->-(-1-x^2)/x}}");
 		check("Solve(y==((1-x)^(1/(2)))+((x+3)^(1/(2))),y)", "{{y->Sqrt(1-x)+Sqrt(3+x)}}");
-		
-		check("Solve(x^24==1,x)", "{{x->-1},{x->1},{x->-I},{x->I},{x->-1/2-I*1/2*Sqrt(3)},{x->-1/2+I*1/2*Sqrt(3)},{x->\n" + 
-				"1/2-I*1/2*Sqrt(3)},{x->1/2+I*1/2*Sqrt(3)},{x->(-1)^(1/4)},{x->-(-1)^(1/4)},{x->(\n" + 
-				"-1)^(3/4)},{x->-(-1)^(3/4)},{x->-I*Sqrt(1/2)*Sqrt(-1+I*Sqrt(3))},{x->I*Sqrt(1/2)*Sqrt(\n" + 
-				"-1+I*Sqrt(3))},{x->Sqrt(1/2)*Sqrt(1+I*Sqrt(3))},{x->-Sqrt(1/2)*Sqrt(1+I*Sqrt(3))},{x->Sqrt(\n" + 
-				"1/2)*Sqrt(-I+Sqrt(3))},{x->-Sqrt(1/2)*Sqrt(-I+Sqrt(3))},{x->-I*Sqrt(1/2)*Sqrt(-I+Sqrt(\n" + 
-				"3))},{x->I*Sqrt(1/2)*Sqrt(-I+Sqrt(3))},{x->Sqrt(1/2)*Sqrt(I+Sqrt(3))},{x->-Sqrt(\n" + 
-				"1/2)*Sqrt(I+Sqrt(3))},{x->-I*Sqrt(1/2)*Sqrt(I+Sqrt(3))},{x->I*Sqrt(1/2)*Sqrt(I+Sqrt(\n" + 
-				"3))}}");
-		
-//		check("Solve(x^258==1,x)", "");
+
+		check("Solve(x^24==1,x)",
+				"{{x->-1},{x->1},{x->-I},{x->I},{x->-1/2-I*1/2*Sqrt(3)},{x->-1/2+I*1/2*Sqrt(3)},{x->\n"
+						+ "1/2-I*1/2*Sqrt(3)},{x->1/2+I*1/2*Sqrt(3)},{x->(-1)^(1/4)},{x->-(-1)^(1/4)},{x->(\n"
+						+ "-1)^(3/4)},{x->-(-1)^(3/4)},{x->-I*Sqrt(1/2)*Sqrt(-1+I*Sqrt(3))},{x->I*Sqrt(1/2)*Sqrt(\n"
+						+ "-1+I*Sqrt(3))},{x->Sqrt(1/2)*Sqrt(1+I*Sqrt(3))},{x->-Sqrt(1/2)*Sqrt(1+I*Sqrt(3))},{x->Sqrt(\n"
+						+ "1/2)*Sqrt(-I+Sqrt(3))},{x->-Sqrt(1/2)*Sqrt(-I+Sqrt(3))},{x->-I*Sqrt(1/2)*Sqrt(-I+Sqrt(\n"
+						+ "3))},{x->I*Sqrt(1/2)*Sqrt(-I+Sqrt(3))},{x->Sqrt(1/2)*Sqrt(I+Sqrt(3))},{x->-Sqrt(\n"
+						+ "1/2)*Sqrt(I+Sqrt(3))},{x->-I*Sqrt(1/2)*Sqrt(I+Sqrt(3))},{x->I*Sqrt(1/2)*Sqrt(I+Sqrt(\n"
+						+ "3))}}");
+
+		// check("Solve(x^258==1,x)", "");
 	}
-	
+
 	public void testSolve() {
 		// issue #120
 		check("Solve(Sin(x)*x==0, x)", "{{x->0}}");
@@ -3463,9 +3477,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Solve((k*Q*q)/r^2==E,r)",
 				"{{r->(Sqrt(Q)*Sqrt(k)*Sqrt(q))/Sqrt(E)},{r->(-Sqrt(Q)*Sqrt(k)*Sqrt(q))/Sqrt(E)}}");
 		check("Solve((k*Q*q)/r^2+1/r^4==E,r)",
-				"{{r->Sqrt(1/2)*Sqrt((Q*k*q+Sqrt(4*E+Q^2*k^2*q^2))/E)},{r->-Sqrt(1/2)*Sqrt((Q*k*q+Sqrt(\n" + 
-				"4*E+Q^2*k^2*q^2))/E)},{r->-I*Sqrt(1/2)*Sqrt((-Q*k*q+Sqrt(4*E+Q^2*k^2*q^2))/E)},{r->I*Sqrt(\n" + 
-				"1/2)*Sqrt((-Q*k*q+Sqrt(4*E+Q^2*k^2*q^2))/E)}}");
+				"{{r->Sqrt(1/2)*Sqrt((Q*k*q+Sqrt(4*E+Q^2*k^2*q^2))/E)},{r->-Sqrt(1/2)*Sqrt((Q*k*q+Sqrt(\n"
+						+ "4*E+Q^2*k^2*q^2))/E)},{r->-I*Sqrt(1/2)*Sqrt((-Q*k*q+Sqrt(4*E+Q^2*k^2*q^2))/E)},{r->I*Sqrt(\n"
+						+ "1/2)*Sqrt((-Q*k*q+Sqrt(4*E+Q^2*k^2*q^2))/E)}}");
 		check("Solve((k*Q*q)/r^2+1/r^4==0,r)", "{{r->-I/(Sqrt(Q)*Sqrt(k)*Sqrt(q))},{r->I/(Sqrt(Q)*Sqrt(k)*Sqrt(q))}}");
 		check("Solve(Abs(x-1) ==1,{x})", "{{x->0},{x->2}}");
 		check("Solve(Abs(x^2-1) ==0,{x})", "{{x->-1},{x->1}}");
@@ -3583,8 +3597,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sum(Ceiling(Log(i)),{i,1,n})",
 				"(1-(1+Floor(Log(n)))*E^Floor(Log(n))+E^(1+Floor(Log(n)))*Floor(Log(n)))/(-1+E)+(-E^Floor(Log(n))+n)*Ceiling(Log(n))");
 		check("Sum(Ceiling(Log(a,i)),{i,1,n})",
-				"(1-(1+Floor(Log(a,n)))*a^Floor(Log(a,n))+a^(1+Floor(Log(a,n)))*Floor(Log(a,n)))/(\n" + 
-				"-1+a)+(-a^Floor(Log(a,n))+n)*Ceiling(Log(a,n))");
+				"(1-(1+Floor(Log(a,n)))*a^Floor(Log(a,n))+a^(1+Floor(Log(a,n)))*Floor(Log(a,n)))/(\n"
+						+ "-1+a)+(-a^Floor(Log(a,n))+n)*Ceiling(Log(a,n))");
 		check("Sum(i*1/2*i,{i,1,n})", "1/2*(n/6+n^2/2+n^3/3)");
 		check("Sum(k * k,{k,1,n+1})", "1+13/6*n+3/2*n^2+n^3/3");
 		check("Sum(k,{k,4,2})", "0");
@@ -3934,8 +3948,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testVariance() {
 		check("Variance({Pi,E,3})//Together", "1/3*(9-3*E+E^2-3*Pi-E*Pi+Pi^2)");
 		check("Variance({a,b,c,d})",
-				"1/12*(-(-3*a+b+c+d)*Conjugate(a)-(a-3*b+c+d)*Conjugate(b)-(a+b-3*c+d)*Conjugate(c)-(a+b+c\n" + 
-				"-3*d)*Conjugate(d))");
+				"1/12*(-(-3*a+b+c+d)*Conjugate(a)-(a-3*b+c+d)*Conjugate(b)-(a+b-3*c+d)*Conjugate(c)-(a+b+c\n"
+						+ "-3*d)*Conjugate(d))");
 		check("Variance({1., 2., 3., 4.})", "1.6666666666666667");
 		check("Variance({{5.2, 7}, {5.3, 8}, {5.4, 9}})", "{0.010000000000000018,1.0}");
 		check("Variance({1.21, 3.4, 2, 4.66, 1.5, 5.61, 7.22})", "5.16122380952381");

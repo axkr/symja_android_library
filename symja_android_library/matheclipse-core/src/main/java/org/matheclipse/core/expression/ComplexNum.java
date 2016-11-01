@@ -59,6 +59,9 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	/** The square root of -1. A number representing "0.0 + 1.0i" */
 	public static final ComplexNum I = valueOf(0.0, 1.0);
 
+	/** The square root of -1. A number representing "0.0 - 1.0i" */
+	public static final ComplexNum NI = valueOf(0.0, -1.0);
+
 	/** A complex number representing "NaN + NaNi" */
 	public static final ComplexNum NaN = valueOf(Double.NaN, Double.NaN);
 
@@ -86,7 +89,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		return temp;
 	}
 
-	/** 
+	/**
 	 * @return
 	 */
 	@Override
@@ -100,7 +103,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 
 	@Override
 	public boolean isZero() {
-		return F.isZero(fComplex.getReal())  && F.isZero(fComplex.getImaginary());
+		return F.isZero(fComplex.getReal()) && F.isZero(fComplex.getImaginary());
 	}
 
 	@Override
@@ -261,6 +264,16 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 	@Override
 	public final int hashCode() {
 		return fComplex.hashCode();
+	}
+
+	@Override
+	public boolean isImaginaryUnit() {
+		return equals(I);
+	}
+
+	@Override
+	public boolean isNegativeImaginaryUnit() {
+		return equals(NI);
 	}
 
 	/**

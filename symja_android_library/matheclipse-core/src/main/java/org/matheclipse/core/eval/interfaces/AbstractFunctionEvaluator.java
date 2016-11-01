@@ -209,7 +209,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 					IAST timesAST = ((IAST) expression);
 					IExpr arg1 = timesAST.arg1();
 					if (arg1.isNumber()) {
-						if (((INumber) arg1).equals(F.CI)) {
+						if (((INumber) arg1).isImaginaryUnit()) {
 							return timesAST.removeAtClone(1).getOneIdentity(factor);
 						}
 					}

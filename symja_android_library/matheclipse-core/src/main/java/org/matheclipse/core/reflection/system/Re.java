@@ -68,7 +68,7 @@ public class Re extends AbstractEvaluator {
 				IAST temp = ((IAST) arg1).removeAtClone(1);
 				return F.Times(arg1.getAt(1), F.Re(temp));
 			}
-			if (arg1.getAt(1).equals(F.CI)) {
+			if (arg1.getAt(1).isImaginaryUnit()) {
 				// Re(I*temp) -> -Im(temp)
 				IAST temp = ((IAST) arg1).removeAtClone(1);
 				return F.Times(F.CN1, F.Im(temp));

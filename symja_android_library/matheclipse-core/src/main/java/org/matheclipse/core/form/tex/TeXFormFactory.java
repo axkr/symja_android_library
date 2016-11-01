@@ -144,7 +144,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 	}
 
 	public void convertComplex(final StringBuffer buf, final IComplex c, final int precedence) {
-		if (c.equals(F.CI)) {
+		if (c.isImaginaryUnit()) {
 			buf.append("i ");
 			return;
 		}

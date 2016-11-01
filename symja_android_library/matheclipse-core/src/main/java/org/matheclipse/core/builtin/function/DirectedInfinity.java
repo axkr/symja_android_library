@@ -39,7 +39,7 @@ public class DirectedInfinity extends AbstractCoreFunctionEvaluator {
 			}
 		}
 		return F.NIL;
-	} 
+	}
 
 	public static IExpr timesInf(IAST inf, IExpr a2) {
 		if (inf.isAST1()) {
@@ -54,9 +54,9 @@ public class DirectedInfinity extends AbstractCoreFunctionEvaluator {
 						} else {
 							return F.CInfinity;
 						}
-					} else if (result.equals(F.CI)) {
+					} else if (result.isImaginaryUnit()) {
 						return F.DirectedInfinity(F.CI);
-					} else if (result.equals(F.CNI)) {
+					} else if (result.isNegativeImaginaryUnit()) {
 						return F.DirectedInfinity(F.CNI);
 					}
 				} else if (a2.isSymbol()) {

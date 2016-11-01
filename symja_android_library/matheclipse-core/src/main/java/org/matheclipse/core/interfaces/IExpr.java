@@ -1064,6 +1064,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is representing <code>I</code>.
+	 * 
+	 * @return
+	 */
+	default boolean isImaginaryUnit() {
+		return false;
+	}
+
+	/**
 	 * Test if this expression is representing <code>Indeterminate</code>
 	 * 
 	 * @return
@@ -1251,6 +1260,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *         in all other case.
 	 */
 	default boolean isNegative() {
+		return false;
+	}
+
+	/**
+	 * Test if this expression is representing <code>-I</code>.
+	 * 
+	 * @return
+	 */
+	default boolean isNegativeImaginaryUnit() {
 		return false;
 	}
 

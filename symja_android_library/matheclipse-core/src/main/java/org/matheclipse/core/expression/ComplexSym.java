@@ -298,6 +298,11 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		return fImaginary;
 	}
 
+	@Override
+	public double getImaginary() {
+		return fImaginary.doubleValue();
+	}
+
 	/**
 	 * Returns the imaginary part of a complex number
 	 * 
@@ -314,6 +319,11 @@ public class ComplexSym extends ExprImpl implements IComplex {
 			return fReal.getNumerator();
 		}
 		return fReal;
+	}
+
+	@Override
+	public double getReal() {
+		return fReal.doubleValue();
 	}
 
 	/**
@@ -376,6 +386,16 @@ public class ComplexSym extends ExprImpl implements IComplex {
 	public IExpr inverse() {
 		final IRational tmp = (fReal.multiply(fReal)).add(fImaginary.multiply(fImaginary));
 		return ComplexSym.valueOf(fReal.divideBy(tmp), fImaginary.negate().divideBy(tmp));
+	}
+
+	@Override
+	public boolean isImaginaryUnit() {
+		return equals(F.CI);
+	}
+
+	@Override
+	public boolean isNegativeImaginaryUnit() {
+		return equals(F.CNI);
 	}
 
 	@Override
@@ -513,15 +533,5 @@ public class ComplexSym extends ExprImpl implements IComplex {
 			tb.append(')');
 			return tb.toString();
 		}
-	}
-
-	@Override
-	public double getImaginary() {
-		return fImaginary.doubleValue();
-	}
-
-	@Override
-	public double getReal() {
-		return fReal.doubleValue();
 	}
 }

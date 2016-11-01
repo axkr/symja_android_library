@@ -157,7 +157,7 @@ public class Factor extends AbstractFunctionEvaluator {
 			return factorComplex(expr, varList, F.Times, false, false);
 		}
 		option = options.getOption("Extension");
-		if (option.equals(F.CI)) {
+		if (option.isImaginaryUnit()) {
 			return factorComplex(expr, varList, F.Times, false, false);
 		}
 		return F.NIL; // no evaluation
