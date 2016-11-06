@@ -4,6 +4,9 @@
 Sum(c_^i_, {i_Symbol,1,n_Symbol}) := c*(c^n-1)*(c-1)^(-1)
   /; FreeQ(c,i)&&FreeQ(n,i),
   
+Sum(c_^i_, {i_Symbol,1,Infinity}) := -c*(c-1)^(-1)
+  /; FreeQ(c,i) && (!NumberQ(c) || (c>(-1) && c<1)),
+  
 Sum(i_^k_Symbol, {i_Symbol,1,n_Symbol}) := HarmonicNumber(n, -k)
   /; FreeQ(k,i)&&FreeQ(n,i),
   

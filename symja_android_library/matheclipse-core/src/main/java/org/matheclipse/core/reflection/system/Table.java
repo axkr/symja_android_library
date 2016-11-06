@@ -121,7 +121,7 @@ public class Table extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Determine all local variables of the iterators starting with index <code>2</code> in the given <code>ats</code>.
+	 * Determine all local variables of the iterators starting with index <code>2</code> in the given <code>ast</code>.
 	 * 
 	 * @param ast
 	 * @return

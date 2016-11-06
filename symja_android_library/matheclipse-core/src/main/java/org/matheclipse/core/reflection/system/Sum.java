@@ -110,9 +110,12 @@ public class Sum extends Table implements SumRules {
 			}
 
 			if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
-				if (!iterator.getMaxCount().isDirectedInfinity() && iterator.getStep().isOne()) {
-
-					temp = definiteSum(arg1, iterator, (IAST) argN, engine);
+				if (iterator.getStep().isOne()) {
+					if (iterator.getMaxCount().isDirectedInfinity()) {
+						temp = definiteSumInfinity(arg1, iterator, (IAST) argN, engine);
+					} else {
+						temp = definiteSum(arg1, iterator, (IAST) argN, engine);
+					}
 					if (temp.isPresent()) {
 						if (ast.isAST2()) {
 							return temp;
@@ -165,7 +168,7 @@ public class Sum extends Table implements SumRules {
 	 *            <code>{Symbol: var, Integer: from, Symbol: to}</code>
 	 * @return
 	 */
-	public IExpr definiteSum(final IExpr expr, final Iterator iterator, IAST list, EvalEngine engine) {
+	private IExpr definiteSum(final IExpr expr, final Iterator iterator, IAST list, EvalEngine engine) {
 		final ISymbol var = iterator.getVariable();
 		IExpr arg1 = expr;
 		final IExpr from = iterator.getStart();
@@ -247,13 +250,45 @@ public class Sum extends Table implements SumRules {
 	}
 
 	/**
+	 * Evaluate the definite sum: <code>Sum[arg1, {var, from, Infinity}]</code>
+	 * 
+	 * @param arg1
+	 *            the first argument of the <code>Sum[]</code> function.
+	 * @param list
+	 *            constructed as
+	 *            <code>{Symbol: var, Integer: from, Infinity}</code>
+	 * @return
+	 */
+	private IExpr definiteSumInfinity(final IExpr expr, final Iterator iterator, IAST list, EvalEngine engine) {
+		final ISymbol var = iterator.getVariable();
+		final IExpr from = iterator.getStart();
+		final IExpr to = iterator.getMaxCount();
+
+		if (expr.isZero()) {
+			return F.C0;
+		}
+		if (from.isInteger() && !from.isOne()) {
+			IExpr subSum = engine.evaluateNull(F.Sum(expr, F.List(var, C1, to)));
+			if (subSum.isPresent()) {
+				if (engine.evalTrue(F.Less(from, C1))) {
+					return F.Plus(F.Sum(expr, F.List(var, from, C0)), subSum);
+				}
+				if (engine.evalTrue(F.Greater(from, C1))) {
+					return F.Subtract(subSum, F.Sum(expr, F.List(var, C1, from.minus(F.C1))));
+				}
+			}
+		}
+		return F.NIL;
+	}
+
+	/**
 	 * Evaluate the indefinite sum: <code>Sum[arg1, var]</code>
 	 * 
 	 * @param arg1
 	 * @param var
 	 * @return
 	 */
-	public IExpr indefiniteSum(IExpr arg1, final ISymbol var) {
+	private IExpr indefiniteSum(IExpr arg1, final ISymbol var) {
 		if (arg1.isTimes()) {
 			// Sum[ Times[a,b,c,...], var ]
 			IAST filterCollector = F.Times();
