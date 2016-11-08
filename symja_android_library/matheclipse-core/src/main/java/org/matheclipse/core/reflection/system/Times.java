@@ -192,34 +192,43 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			// } else if (!power1Arg2.isNumber()) {
 			// return arg0.power(power1Arg2.inc()).negate();
 			// }
-		} else {
-			if (power1Arg1.isInteger() && power1Arg2.isFraction()) {
-				if (arg0.isFraction()) {
-					// example: 1/9 * 3^(1/2) -> 1/3 * 3^(-1/2)
+		} else if (power1Arg1.isInteger() && power1Arg2.isFraction()) {
+			if (power1Arg1.isMinusOne()) {
+				if (arg0.isImaginaryUnit()) {
+					// I * power1Arg1 ^ power1Arg2 -> (-1) ^ (power1Arg2 + (1/2))
+					return F.Power(F.CN1, power1Arg2.plus(F.C1D2));
+				}
+				if (arg0.isNegativeImaginaryUnit()) {
+					// (-I) * power1Arg1 ^ power1Arg2 -> (-1) * (-1) ^ (power1Arg2 + (1/2))
+					return F.Times(F.CN1,F.Power(F.CN1, power1Arg2.plus(F.C1D2)));
+				}
+			}
+			if (arg0.isFraction()) {
+				// example: 1/9 * 3^(1/2) -> 1/3 * 3^(-1/2)
 
-					// TODO implementation for complex numbers instead of
-					// fractions
-					IFraction f0 = (IFraction) arg0;
-					IInteger pArg1 = (IInteger) power1Arg1;
-					IFraction pArg2 = (IFraction) power1Arg2;
-					if (pArg1.isPositive()) {
-						if (pArg2.isPositive()) {
-							IInteger denominatorF0 = (IInteger) f0.getDenominator();
-							IInteger[] res = denominatorF0.divideAndRemainder(pArg1);
-							if (res[1].isZero()) {
-								return F.Times(F.fraction(f0.getNumerator(), res[0]), F.Power(pArg1, pArg2.negate()));
-							}
-						} else {
-							IInteger numeratorF0 = (IInteger) f0.getNumerator();
-							IInteger[] res = numeratorF0.divideAndRemainder(pArg1);
-							if (res[1].isZero()) {
-								return F.Times(F.fraction(res[0], f0.getDenominator()), F.Power(pArg1, pArg2.negate()));
-							}
+				// TODO implementation for complex numbers instead of
+				// fractions
+				IFraction f0 = (IFraction) arg0;
+				IInteger pArg1 = (IInteger) power1Arg1;
+				IFraction pArg2 = (IFraction) power1Arg2;
+				if (pArg1.isPositive()) {
+					if (pArg2.isPositive()) {
+						IInteger denominatorF0 = (IInteger) f0.getDenominator();
+						IInteger[] res = denominatorF0.divideAndRemainder(pArg1);
+						if (res[1].isZero()) {
+							return F.Times(F.fraction(f0.getNumerator(), res[0]), F.Power(pArg1, pArg2.negate()));
+						}
+					} else {
+						IInteger numeratorF0 = (IInteger) f0.getNumerator();
+						IInteger[] res = numeratorF0.divideAndRemainder(pArg1);
+						if (res[1].isZero()) {
+							return F.Times(F.fraction(res[0], f0.getDenominator()), F.Power(pArg1, pArg2.negate()));
 						}
 					}
 				}
 			}
 		}
+
 		return F.NIL;
 	}
 

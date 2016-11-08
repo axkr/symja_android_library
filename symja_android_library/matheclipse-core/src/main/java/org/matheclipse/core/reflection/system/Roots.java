@@ -165,7 +165,6 @@ public class Roots extends AbstractFunctionEvaluator {
 		ASTRange r = new ASTRange(variables, 1);
 		List<IExpr> varList = r;
 		try {
-			result = F.List();
 			IExpr temp;
 			IAST list = rootsOfQuadraticExprPolynomial(expr, variables);
 			if (list.isPresent()) {
@@ -173,9 +172,13 @@ public class Roots extends AbstractFunctionEvaluator {
 			}
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 			GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numericSolutions);
-			if (polyRat.degree(0) <= 2) {
-				return rootsOfExprPolynomial(expr, variables);
+			// if (polyRat.degree(0) <= 2) {
+			result = rootsOfExprPolynomial(expr, variables, false);
+			if (result.isPresent()) {
+				return result;
 			}
+			// }
+			result = F.List();
 			IAST factorRational = Factor.factorRational(polyRat, jas, varList, F.List);
 			for (int i = 1; i < factorRational.size(); i++) {
 				temp = F.evalExpand(factorRational.get(i));
@@ -222,7 +225,7 @@ public class Roots extends AbstractFunctionEvaluator {
 			result = QuarticSolver.createSet(result);
 			return result;
 		} catch (JASConversionException e) {
-			result = rootsOfExprPolynomial(expr, variables);
+			result = rootsOfExprPolynomial(expr, variables, true);
 		}
 		if (result.isPresent()) {
 			if (!denominator.isNumber()) {
@@ -243,25 +246,38 @@ public class Roots extends AbstractFunctionEvaluator {
 		return F.NIL;
 	}
 
-	private static IAST rootsOfExprPolynomial(final IExpr expr, IAST varList) {
+	private static IAST rootsOfExprPolynomial(final IExpr expr, IAST varList, boolean rootsOfQuartic) {
 		IAST result = F.NIL;
 		try {
 			// try to generate a common expression polynomial
 			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, varList);
 			ExprPolynomial ePoly = ring.create(expr, false, false);
 			ePoly = ePoly.multiplyByMinimumNegativeExponents();
-			result = rootsOfQuarticPolynomial(ePoly);
-			if (result.isPresent() && expr.isNumericMode()) {
-				for (int i = 1; i < result.size(); i++) {
-					result.set(i, F.chopExpr(result.get(i), Config.DEFAULT_ROOTS_CHOP_DELTA));
+			if (ePoly.degree(0) >= 3) {
+				result = unitPolynomial(ePoly.degree(0), ePoly);
+				if (result.isPresent()) {
+					result = QuarticSolver.createSet(result);
+					return result;
 				}
+			}
+			if (!rootsOfQuartic && ePoly.degree(0) > 2) {
+				return F.NIL;
+			}
+			result = rootsOfQuarticPolynomial(ePoly);
+			if (result.isPresent()) {
+				if (expr.isNumericMode()) {
+					for (int i = 1; i < result.size(); i++) {
+						result.set(i, F.chopExpr(result.get(i), Config.DEFAULT_ROOTS_CHOP_DELTA));
+					}
+				}
+				return result;
 			}
 		} catch (JASConversionException e2) {
 			if (Config.SHOW_STACKTRACE) {
 				e2.printStackTrace();
 			}
 		}
-		return result;
+		return F.NIL;
 	}
 
 	/**
@@ -301,10 +317,11 @@ public class Roots extends AbstractFunctionEvaluator {
 	 */
 	private static IAST rootsOfQuarticPolynomial(ExprPolynomial polynomial) {
 		long varDegree = polynomial.degree(0);
-		IAST result = List();
+
 		if (polynomial.isConstant()) {
-			return result;
+			return List();
 		}
+
 		IExpr a;
 		IExpr b;
 		IExpr c;
@@ -331,18 +348,66 @@ public class Roots extends AbstractFunctionEvaluator {
 				} else if (lExp == 0) {
 					e = coeff;
 				} else {
-					throw new ArithmeticException("Roots::Unexpected exponent value: " + lExp);
+					return F.NIL;
 				}
 			}
-			result = QuarticSolver.quarticSolve(a, b, c, d, e);
+			IAST result = QuarticSolver.quarticSolve(a, b, c, d, e);
 			if (result.isPresent()) {
 				result = QuarticSolver.createSet(result);
 				return result;
 			}
-
 		}
 
 		return F.NIL;
+	}
+
+	/**
+	 * Solve polynomials of the form <code>a * x^varDegree + b == 0</code>
+	 * 
+	 * @param varDegree
+	 * @param polynomial
+	 * @return
+	 */
+	private static IAST unitPolynomial(long varDegree, ExprPolynomial polynomial) {
+		IExpr a;
+		IExpr b;
+		a = C0;
+		b = C0;
+		for (ExprMonomial monomial : polynomial) {
+			IExpr coeff = monomial.coefficient();
+			long lExp = monomial.exponent().getVal(0);
+			if (lExp == varDegree) {
+				a = coeff;
+			} else if (lExp == 0) {
+				b = coeff;
+			} else {
+				return F.NIL;
+			}
+		}
+		IAST result = F.List();
+		// a * x^varDegree + b
+		if (!a.isOne()) {
+			a = F.Power(a, F.fraction(-1, varDegree));
+		}
+		if (!b.isOne()) {
+			b = F.Power(b, F.fraction(1, varDegree));
+		}
+		if ((varDegree & 0x0001) == 0x0001) {
+			// odd
+			for (int i = 1; i <= varDegree; i++) {
+				result.append(F.Times(F.Power(F.CN1, i - 1), F.Power(F.CN1, F.fraction(i, varDegree)), b, a));
+			}
+		} else {
+			// even
+			long size = varDegree / 2;
+			int k = 1;
+			for (int i = 1; i <= size; i++) {
+				result.append(F.Times(F.CN1, F.Power(F.CN1, F.fraction(k, varDegree)), b, a));
+				result.append(F.Times(F.Power(F.CN1, F.fraction(k, varDegree)), b, a));
+				k += 2;
+			}
+		}
+		return result;
 	}
 
 	/**

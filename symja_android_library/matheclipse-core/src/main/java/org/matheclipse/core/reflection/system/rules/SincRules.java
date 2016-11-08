@@ -34,7 +34,7 @@ public interface SincRules {
     ISet(Sinc(Times(QQ(1L,5L),Pi)),
       Times(C5,Power(Pi,-1),Sqrt(Plus(QQ(5L,8L),Times(QQ(-1L,8L),CSqrt5))))),
     ISet(Sinc(Times(QQ(1L,12L),Pi)),
-      Times(Plus(CN3,Times(C3,CSqrt3)),CSqrt2,Power(Pi,-1))),
+      Times(C3,Plus(CN1,CSqrt3),CSqrt2,Power(Pi,-1))),
     ISet(Sinc(Times(QQ(1L,10L),Pi)),
       Times(QQ(5L,2L),Plus(CN1,CSqrt5),Power(Pi,-1))),
     ISet(Sinc(Times(QQ(2L,5L),Pi)),
