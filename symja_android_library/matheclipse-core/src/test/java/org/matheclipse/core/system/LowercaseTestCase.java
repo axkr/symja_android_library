@@ -1251,6 +1251,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Eliminate({a^x==y, b^(2*x) == z}, x)", "{b^((2*Log(y))/Log(a))==z}");
 	}
 
+	public void testEllipticE() {
+		check("EllipticE(0.4)", "1.3993921388974326");
+		check("EllipticE(2,0.999999)", "1.0");
+	}
+	
+	public void testEllipticPi() {
+		check("EllipticPi(0.4,0.6)", "2.59092115655522");
+		check("EllipticPi(1/3, Pi/5, 0.3)", "0.6593968569137456");
+	}
+	
 	public void testEqual() {
 		check("Pi==3", "False");
 		check("(E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi==0", "True");
@@ -1746,16 +1756,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("HornerForm(a+b*x+c*x^2,x)", "a+x*(b+c*x)");
 	}
 
-	public void testEllipticE() {
-		check("EllipticE(0.4)", "1.3993921388974326");
-		check("EllipticE(2,0.999999)", "1.0");
-	}
-	
-	public void testEllipticPi() {
-		check("EllipticPi(0.4,0.6)", "2.59092115655522");
-		check("EllipticPi(1/3, Pi/5, 0.3)", "0.6593968569137456");
-	}
-	
 	public void testHypergeometric1F1() {
 		check("Hypergeometric1F1(1,2,3.0)", "6.361845641062556");
 		check("Hypergeometric1F1(1,{2,3,4},5.0)", "{29.4826318205153,11.393052728206118,6.235831636923671}");
@@ -2380,6 +2380,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BooleanConvert(!Nand(p, q, r))", "p&&q&&r");
 	}
 
+	public void testNearest() {
+		check("Nearest[{1, 2, 4, 8, 16, 32}, 20]", "{16}");
+		check("Nearest[{1, 2, 4, 8, 16, 24, 32}, 20]", "{16,24}");
+	}
+	
 	public void testNest() {
 		check("Nest(f, x, 3)", "f(f(f(x)))");
 		check("Nest((1 + #)^2 &, 1, 3)", "676");
