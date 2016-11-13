@@ -1,7 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.Negate;
-
 import java.util.function.DoubleUnaryOperator;
 
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;

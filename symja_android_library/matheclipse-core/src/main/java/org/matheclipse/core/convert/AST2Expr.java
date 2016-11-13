@@ -75,7 +75,7 @@ public class AST2Expr {
 			"FromPolarCoordinates", "FullForm", "FullSimplify", "Function", "Gamma", "Gather", "GCD", "GeometricMean",
 			"Get", "Graphics", "Graphics3D", "Graphics3D", "Greater", "GreaterEqual", "GroebnerBasis", "Haversine",
 			"HarmonicNumber", "Head", "HermiteH", "HilbertMatrix", "Hold", "HoldForm", "Horner", "HornerForm",
-			"HurwitzZeta", "HypergeometricDistribution", "HypergeometricPFQ", "Hypergeometric2F1", "Identity",
+			"HurwitzZeta", "HypergeometricDistribution", "HypergeometricPFQ", "Hypergeometric1F1", "Hypergeometric2F1", "Identity",
 			"IdentityMatrix", "If", "Im", "Implies", "Increment", "Inner", "Insert", "Interval", "IntegerExponent",
 			"IntegerPart", "IntegerPartitions", "IntegerQ", "Integrate", "InterpolatingFunction",
 			"InterpolatingPolynomial", "Intersection", "Inverse", "InverseErf", "InverseErfc", "InverseFunction",
