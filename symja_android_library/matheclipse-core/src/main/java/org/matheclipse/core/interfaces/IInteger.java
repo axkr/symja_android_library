@@ -12,6 +12,12 @@ public interface IInteger extends IRational {
 	 */
 	public final static int PRIME_CERTAINTY = 32;
 
+	/**
+	 * <code>this + val</code>
+	 * 
+	 * @param val
+	 * @return
+	 */
 	public IInteger add(IInteger val);
 
 	/**
@@ -23,6 +29,15 @@ public interface IInteger extends IRational {
 	 */
 	public IInteger charmichaelLambda();
 
+	/**
+	 * Returns an IInteger whose value is <code>(this / that)</code>.
+	 *
+	 * @param that
+	 *            value by which this IInteger is to be divided.
+	 * @return <code>(this / that)</code>
+	 * @throws ArithmeticException
+	 *             if <code>(that)</code> is zero.
+	 */
 	public IInteger div(final IInteger that);
 
 	/**
@@ -34,11 +49,33 @@ public interface IInteger extends IRational {
 	 */
 	public IInteger[] divideAndRemainder(final IInteger that);
 
+	/**
+	 * Return the divisors of this integer number.
+	 * 
+	 * divisors for <code>24</code> gives:
+	 * 
+	 * <pre>
+	 * { 1, 2, 3, 4, 6, 8, 12, 24 }
+	 * </pre>
+	 * 
+	 * @return a list of the divisors
+	 */
 	public IAST divisors();
 
+	/** {@inheritDoc} */
 	@Override
 	public IInteger eabs();
 
+	/**
+	 * Euler phi function.
+	 * 
+	 * See:
+	 * <a href="http://en.wikipedia.org/wiki/Euler%27s_totient_function">Euler's
+	 * totient function</a>
+	 * 
+	 * @return Euler's totient function
+	 * @throws ArithmeticException
+	 */
 	public IInteger eulerPhi() throws ArithmeticException;
 
 	/**
@@ -72,14 +109,53 @@ public interface IInteger extends IRational {
 	 */
 	public int intValue();
 
+	/**
+	 * Check if this IInteger is an even number.
+	 * 
+	 * @return <code>true</code> if this IInteger is an even number.
+	 */
 	public boolean isEven();
 
+	/**
+	 * Check if this IInteger is an odd number.
+	 * 
+	 * @return <code>true</code> if this IInteger is an odd number.
+	 */
 	public boolean isOdd();
 
+	/**
+	 * Returns {@code true} if this IInteger is probably prime, {@code false} if
+	 * it's definitely composite.
+	 *
+	 * @return {@code true} if this IInteger is probably prime, {@code false} if
+	 *         it's definitely composite.
+	 */
 	public boolean isProbablePrime();
 
+	/**
+	 * Returns {@code true} if this IInteger is probably prime, {@code false} if
+	 * it's definitely composite. If {@code certainty} is &le; 0, {@code true}
+	 * is returned.
+	 *
+	 * @param certainty
+	 *            a measure of the uncertainty that the caller is willing to
+	 *            tolerate: if the call returns {@code true} the probability
+	 *            that this IInteger is prime exceeds (1 - 1/2<sup>
+	 *            {@code certainty}</sup>). The execution time of this method is
+	 *            proportional to the value of this parameter.
+	 * @return {@code true} if this IInteger is probably prime, {@code false} if
+	 *         it's definitely composite.
+	 */
 	public boolean isProbablePrime(int certainty);
 
+	/**
+	 * See: <a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia -
+	 * Jacobi symbol</a><br/>
+	 * Book: Algorithmen Arbeitsbuch - D.Herrmann page 160
+	 * 
+	 * @param b
+	 * @return
+	 */
 	public IInteger jacobiSymbol(IInteger b);
 
 	public IInteger jacobiSymbolF();
@@ -94,6 +170,17 @@ public interface IInteger extends IRational {
 	 */
 	public IInteger lcm(IInteger val);
 
+	/**
+	 * Converts this IInteger to a {@code long}. This conversion is analogous to
+	 * a <i>narrowing primitive conversion</i> from {@code long} to {@code int}
+	 * as defined in section 5.1.3 of <cite>The Java&trade; Language
+	 * Specification</cite>: if this IInteger is too big to fit in a
+	 * {@code long}, only the low-order 64 bits are returned. Note that this
+	 * conversion can lose information about the overall magnitude of the
+	 * IInteger value as well as return a result with the opposite sign.
+	 *
+	 * @return this IInteger converted to a {@code long}.
+	 */
 	public long longValue();
 
 	public IInteger mod(final IInteger that);
