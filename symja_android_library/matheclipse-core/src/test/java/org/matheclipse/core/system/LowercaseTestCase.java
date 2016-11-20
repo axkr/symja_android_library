@@ -1255,12 +1255,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("EllipticE(0.4)", "1.3993921388974326");
 		check("EllipticE(2,0.999999)", "1.0");
 	}
-	
+
 	public void testEllipticPi() {
 		check("EllipticPi(0.4,0.6)", "2.59092115655522");
 		check("EllipticPi(1/3, Pi/5, 0.3)", "0.6593968569137456");
 	}
-	
+
 	public void testEqual() {
 		check("Pi==3", "False");
 		check("(E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi==0", "True");
@@ -1766,8 +1766,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Hypergeometric2F1(0.5,0.333,0.666,-0.5)", "0.9026782488379839");
 		check("Hypergeometric2F1(0.5,0.333,0.666,0.75)", "1.397573218428824");
 		check("Hypergeometric2F1(0.5,0.333,0.666,-0.75)", "0.8677508558430699");
-		
-		// print message: Hypergeometric2F1: No convergence after 50000 iterations! Limiting value: 9.789346
+
+		// print message: Hypergeometric2F1: No convergence after 50000
+		// iterations! Limiting value: 9.789346
 		check("Hypergeometric2F1(0.5,0.333,0.666,1)", "Hypergeometric2F1(0.5,0.333,0.666,1.0)");
 	}
 
@@ -2384,7 +2385,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Nearest[{1, 2, 4, 8, 16, 32}, 20]", "{16}");
 		check("Nearest[{1, 2, 4, 8, 16, 24, 32}, 20]", "{16,24}");
 	}
-	
+
 	public void testNest() {
 		check("Nest(f, x, 3)", "f(f(f(x)))");
 		check("Nest((1 + #)^2 &, 1, 3)", "676");
@@ -3612,6 +3613,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		check("Solve({x^2 + 2 y^3 == 3681, x > 0, y > 0}, {x, y}, Integers)",
+				"{{x->15,y->12},{x->41,y->10},{x->57,y->6}}");
+		check("Solve({x>=0,y>=0,x+y==7,2*x+4*y==20},{x,y}, Integers)", "{{x->4,y->3}}");
+		check("Solve(x>=0 && y>=0 && x+y==7 && 2*x+4*y==20,{x,y}, Integers)", "{{x->4,y->3}}");
+		check("Solve({2 x + 3 y == 4, 3 x - 4 y <= 5,x - 2 y > -21}, {x,  y}, Integers)",
+				"{{x->-7,y->6},{x->-4,y->4},{x->-1,y->2}}");
+
+		// timeouts in Cream engine
+		// check("Solve({x^2 + x y + y^2 == 109}, {x, y}, Integers)", "");
+		// check("Solve({x^12345 - 2 x^777 + 1 == 0}, {x}, Integers)", "");
+		// check("Solve({2 x + 3 y - 5 z == 1 , 3 x - 4 y + 7 z == 3}, {x,
+		// y, z}, Integers)", "");
+
 		check("Solve((k*Q*q)/r^2+1/r^4==E,r)",
 				"{{r->Sqrt(1/2)*Sqrt((Q*k*q+Sqrt(4*E+Q^2*k^2*q^2))/E)},{r->-Sqrt(1/2)*Sqrt((Q*k*q+Sqrt(\n"
 						+ "4*E+Q^2*k^2*q^2))/E)},{r->-I*Sqrt(1/2)*Sqrt((-Q*k*q+Sqrt(4*E+Q^2*k^2*q^2))/E)},{r->I*Sqrt(\n"

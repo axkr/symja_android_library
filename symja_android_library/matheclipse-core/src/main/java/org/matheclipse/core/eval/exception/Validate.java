@@ -567,6 +567,58 @@ public final class Validate {
 	}
 
 	/**
+	 * Check if the argument at the given <code>ast</code> position is an
+	 * equation or inequation (i.e. <code>Equal(a,b)</code>) or a list of
+	 * equations or inequations or a boolean <code>And()</code> expression of
+	 * equations and return a list of expanded expressions, which should be
+	 * equal to <code>0</code>.
+	 * 
+	 * @param ast
+	 * @param position
+	 *            the position of the equations argument in the <code>ast</code>
+	 *            expression.
+	 * @return
+	 */
+	public static IAST checkEquationsAndInequations(final IAST ast, int position) {
+		IExpr expr = ast.get(position);
+		IAST eqns = null;
+		IAST termsEqualZeroList = F.List();
+		if (expr.isList() || expr.isAnd()) {
+
+			// a list of equations or inequations or a boolean AND expression of
+			// equations
+			eqns = (IAST) expr;
+			for (int i = 1; i < eqns.size(); i++) {
+				if (eqns.get(i).isAST2()) {
+					IAST eq = (IAST) eqns.get(i);
+					termsEqualZeroList.append(checkEquationAndInequation(eq));
+				} else {
+					// not an equation or inequation
+					throw new WrongArgumentType(eqns, eqns.get(i), i, "Equation or inequation expression expected");
+				}
+			}
+
+		} else {
+			if (expr.isAST()) {
+				termsEqualZeroList.append(checkEquationAndInequation((IAST) expr));
+			}
+		}
+		return termsEqualZeroList;
+	}
+
+	private static IAST checkEquationAndInequation(IAST eq) {
+		IExpr head = eq.head();
+		if (head.equals(F.Equal) || head.equals(F.Unequal) || head.equals(F.Greater) || head.equals(F.GreaterEqual)
+				|| head.equals(F.Less) || head.equals(F.LessEqual)) {
+			final IExpr[] arr = new IExpr[] { F.expandAll(eq.arg1(), true, true), F.expandAll(eq.arg2(), true, true) };
+			return F.ast(arr, head);
+		} else {
+			// not an equation or inequation
+			throw new WrongArgumentType(eq, "Equation or inequation expression expected");
+		}
+	}
+
+	/**
 	 * Check if the given expression is an equation (i.e.
 	 * <code>Equal(a,b)</code>)
 	 * 

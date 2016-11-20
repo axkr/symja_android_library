@@ -4,7 +4,9 @@ import org.hipparchus.linear.FieldMatrix;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
@@ -21,7 +23,15 @@ import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+
+import jp.ac.kobe_u.cs.cream.DefaultSolver;
+import jp.ac.kobe_u.cs.cream.IntVariable;
+import jp.ac.kobe_u.cs.cream.Network;
+import jp.ac.kobe_u.cs.cream.Solution;
+import jp.ac.kobe_u.cs.cream.SolutionHandler;
+import jp.ac.kobe_u.cs.cream.Solver;
 
 /**
  * Try to solve a set of equations (i.e. <code>Equal[...]</code> expressions).
@@ -851,7 +861,21 @@ public class Solve extends AbstractFunctionEvaluator {
 				booleansSolve(ast.arg1(), variables, 0, 1, resultList);
 				return resultList;
 			}
-			throw new WrongArgumentType(ast, ast.arg3(), 3, "Booleans expected!");
+			if (domain.equals(F.Integers)) {
+				IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
+				try {
+					IAST resultList = Solve.integerSolve(equationsAndInequations, variables);
+					EvalAttributes.sort(resultList);
+					return resultList;
+				} catch (RuntimeException rex) {
+					if (Config.SHOW_STACKTRACE) {
+						rex.printStackTrace();
+					}
+					engine.printMessage("Integer solution not found: " + rex.getMessage());
+				}
+				return F.NIL;
+			}
+			throw new WrongArgumentType(ast, ast.arg3(), 3, "Booleans or Integers expected!");
 		}
 		IAST termsEqualZeroList = Validate.checkEquations(ast, 1);
 
@@ -966,5 +990,125 @@ public class Solve extends AbstractFunctionEvaluator {
 			}
 		}
 		return F.NIL;
+	}
+
+	public static IAST integerSolve(final IAST list, final IAST variables) {
+		IAST result = F.List();
+		TreeMap<ISymbol, IntVariable> map = new TreeMap<ISymbol, IntVariable>();
+		// Create a constraint network
+		Network net = new Network();
+		for (int i = 1; i < variables.size(); i++) {
+			if (variables.get(i) instanceof ISymbol) {
+				map.put((ISymbol) variables.get(i), new IntVariable(net));
+			}
+		}
+		IAST temp;
+		IntVariable lhs;
+		IntVariable rhs;
+		for (int i = 1; i < list.size(); i++) {
+			if (list.get(i) instanceof IAST) {
+				temp = (IAST) list.get(i);
+				if (temp.isAST2()) {
+					lhs = integerVariable(net, map, temp.arg1());
+					rhs = integerVariable(net, map, temp.arg2());
+					if (temp.isAST(F.Equal, 3)) {
+						lhs.equals(rhs);
+					} else if (temp.isAST(F.Unequal, 3)) {
+						lhs.notEquals(rhs);
+					} else if (temp.isAST(F.Greater, 3)) {
+						lhs.gt(rhs);
+					} else if (temp.isAST(F.GreaterEqual, 3)) {
+						lhs.ge(rhs);
+					} else if (temp.isAST(F.LessEqual, 3)) {
+						lhs.le(rhs);
+					} else if (temp.isAST(F.Less, 3)) {
+						lhs.lt(rhs);
+					} else {
+						return null;
+					}
+				}
+			}
+		}
+		Solver solver = new DefaultSolver(net);
+
+		solver.findAll(new SolutionHandler() {
+			@Override
+			public void solved(Solver solver, Solution solution) {
+				if (solution != null) {
+					IAST temp = F.List();
+					for (Entry<ISymbol, IntVariable> entry : map.entrySet()) {
+						temp.append(F.Rule(entry.getKey(), F.integer(solution.getIntValue(entry.getValue()))));
+					}
+					result.append(temp);
+				}
+			}
+		}, 10000);
+
+		// szenario for FindInstance ?
+		// Solution solution = solver.findFirst();
+		// for (Entry<ISymbol, IntVariable> entry : map.entrySet()) {
+		// result.append(F.Rule(entry.getKey(),
+		// F.integer(solution.getIntValue(entry.getValue()))));
+		// }
+		return result;
+	}
+
+	public static IntVariable integerVariable(Network net, TreeMap<ISymbol, IntVariable> map, IExpr expr)
+			throws ArithmeticException {
+		if (expr instanceof ISymbol) {
+			return map.get(expr);
+		}
+		if (expr instanceof IInteger) {
+			int value = ((IInteger) expr).toInt(); // throws ArithmeticException
+			return new IntVariable(net, value);
+		}
+		if (expr.isPlus()) {
+			IAST ast = (IAST) expr;
+			IntVariable result = integerVariable(net, map, ast.arg1());
+			for (int i = 2; i < ast.size(); i++) {
+				result = result.add(integerVariable(net, map, ast.get(i)));
+			}
+			return result;
+		} else if (expr.isTimes()) {
+			IAST ast = (IAST) expr;
+			IntVariable result = integerVariable(net, map, ast.arg1());
+			for (int i = 2; i < ast.size(); i++) {
+				result = result.multiply(integerVariable(net, map, ast.get(i)));
+			}
+			return result;
+		} else if (expr.isPower()) {
+			IAST ast = (IAST) expr;
+			if (ast.arg2().isInteger()) {
+				int value = ((IInteger) ast.arg2()).toInt();
+				if (value > 0) {
+					IntVariable result = integerVariable(net, map, ast.arg1());
+					for (int i = 1; i < value; i++) {
+						result = result.multiply(integerVariable(net, map, ast.arg1()));
+					}
+					return result;
+				}
+			}
+		} else if (expr.isASTSizeGE(F.Max, 3)) {
+			IAST ast = (IAST) expr;
+			IntVariable result = integerVariable(net, map, ast.arg1());
+			for (int i = 2; i < ast.size(); i++) {
+				result = result.max(integerVariable(net, map, ast.get(i)));
+			}
+			return result;
+		} else if (expr.isASTSizeGE(F.Min, 3)) {
+			IAST ast = (IAST) expr;
+			IntVariable result = integerVariable(net, map, ast.arg1());
+			for (int i = 2; i < ast.size(); i++) {
+				result = result.min(integerVariable(net, map, ast.get(i)));
+			}
+			return result;
+		} else if (expr.isAbs()) {
+			IAST ast = (IAST) expr;
+			return integerVariable(net, map, ast.arg1()).abs();
+		} else if (expr.isAST(F.Sign, 2)) {
+			IAST ast = (IAST) expr;
+			return integerVariable(net, map, ast.arg1()).sign();
+		}
+		throw new WrongArgumentType(expr, "for Solve(..., Integers)");
 	}
 }

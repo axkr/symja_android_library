@@ -155,7 +155,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("1+1", "2");
 		check("Out()", "2");
 	}
-	
+
 	public void testPower() {
 		check("(Infinity)^(-Infinity)", "0");
 		check("(ComplexInfinity)^(-Infinity)", "0");
@@ -198,8 +198,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("1+(-1+x)/(1-x)", "1+(-1+x)/(1-x)");
 		check("i * ((1 - ((i * 1) / 10)) / (1 - ((i * 1) / 10)))", "i");
 		check("((1 - ((i * 1.0) / 10)) / (1.0 - ((i * 1.0) / 10)))", "1");
-		
-		
+
 		check("Simplify((i * (1.0 - 0.1 * i)) / (1.0 - 0.1 * i))", "(i*(1.0-0.1*i))/(1.0-0.1*i)");
 		check("a-2*I", "-I*2+a");
 		check("Complex(2,1/3)", "2+I*1/3");
@@ -644,7 +643,7 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem044() {
-		
+
 		check("$test(F_(a_)):={a,b,F,m,x};$test(g(h))", "{h,b,g,m,x}");
 		check("$test(F_(a_.*x_^m_.)):={a,b,F,m,x};$test(g(h*y^2))", "{h,b,g,2,y}");
 		check("$test(F_(a_.*x_^l_.),x_Symbol,b_.*x_^m_):={a,b,F,l,m,x};$test(g(h*y^2),y,k*y^3)", "{h,k,g,2,3,y}");
@@ -837,7 +836,7 @@ public class MainTestCase extends AbstractTestCase {
 
 	public void testSystem072() {
 		check("$isatom(_?AtomQ) := True;$isatom(10)", "True");
-		
+
 	}
 
 	public void testSystem073() {
@@ -887,13 +886,13 @@ public class MainTestCase extends AbstractTestCase {
 
 	public void testSystem081() {
 		check("Inverse(s*{{1,0,0},{0,1,0},{0,0,1}}-{{-1,1,1},{-4,-4,1},{1,1,1}})",
-				"{{(-5-2*s+4*s^2+s^3)/((-10+s+4*s^2+s^3)*(1+s)),(-s-s^2)/((1+s)*(10-s-4*s^2-s^3)),(\n" + 
-				"5+6*s+s^2)/((-10+s+4*s^2+s^3)*(1+s))},\n" + 
-				" {((-40+7*s+15*s^2+4*s^3)*(1+s))/((8+5*s+s^2)*(10+9*s-5*s^2-5*s^3-s^4)),((-16-10*s+\n" + 
-				"6*s^2+5*s^3+s^4)*(1+s))/((-10-9*s+5*s^2+5*s^3+s^4)*(8+5*s+s^2)),(3-s)/(10-s-4*s^\n" + 
-				"2-s^3)},\n" + 
-				" {-s/(10-s-4*s^2-s^3),((-1-s)*(2+s))/((1+s)*(10-s-4*s^2-s^3)),(-8-5*s-s^2)/(10-s\n" + 
-				"-4*s^2-s^3)}}");
+				"{{(-5-2*s+4*s^2+s^3)/((-10+s+4*s^2+s^3)*(1+s)),(-s-s^2)/((1+s)*(10-s-4*s^2-s^3)),(\n"
+						+ "5+6*s+s^2)/((-10+s+4*s^2+s^3)*(1+s))},\n"
+						+ " {((-40+7*s+15*s^2+4*s^3)*(1+s))/((8+5*s+s^2)*(10+9*s-5*s^2-5*s^3-s^4)),((-16-10*s+\n"
+						+ "6*s^2+5*s^3+s^4)*(1+s))/((-10-9*s+5*s^2+5*s^3+s^4)*(8+5*s+s^2)),(3-s)/(10-s-4*s^\n"
+						+ "2-s^3)},\n"
+						+ " {-s/(10-s-4*s^2-s^3),((-1-s)*(2+s))/((1+s)*(10-s-4*s^2-s^3)),(-8-5*s-s^2)/(10-s\n"
+						+ "-4*s^2-s^3)}}");
 		check("Inverse(s*({{1,0,0},{0,1,0},{0,0,1}}-{{-1,1,1},{-4,-4,1},{1,1,1}}))", "{{1/(4*s),-1/(4*s),-3/2*1/s},\n"
 				+ " {-1/(4*s),1/(4*s),1/(2*s)},\n" + " {-1/(4*s),-3/4*1/s,-7/2*1/s}}");
 		check("N(Inverse({{1,2.0},{3,4}}),50)", "{{-2,1},\n" + " {1.5,-5e-1}}");
@@ -1551,8 +1550,8 @@ public class MainTestCase extends AbstractTestCase {
 		check("Integrate(Cos(a*x)^2*Sin(b*x),x)",
 				"-Cos(b*x)/(2*b)-Cos((-2*a+b)*x)/(4*(-2*a+b))-Cos((2*a+b)*x)/(4*(2*a+b))");
 		check("Integrate(Cos(b*x)^2*Sin(a*x)^2,x)",
-				"x/4-Sin(2*a*x)/(8*a)+Sin(2*b*x)/(8*b)-Sin(x*(2*a-2*b))/(8*(2*a-2*b))-Sin(x*(2*a+\n" + 
-				"2*b))/(8*(2*a+2*b))");
+				"x/4-Sin(2*a*x)/(8*a)+Sin(2*b*x)/(8*b)-Sin(x*(2*a-2*b))/(8*(2*a-2*b))-Sin(x*(2*a+\n"
+						+ "2*b))/(8*(2*a+2*b))");
 	}
 
 	public void testSystem173() {
@@ -2591,8 +2590,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("FindRoot(Exp(x)==Pi^3,{x,1,10}, Secant)", "{x->3.4341896575036097}");
 		check("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->100)",
 				"maximal count (100) exceeded");
-		check("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->32000)",
-				"convergence failed");
+		check("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->32000)", "convergence failed");
 		check("FindRoot(Exp(x)==Pi^3,{x,1,10}, Illinois)", "{x->3.4341896915055257}");
 		check("FindRoot(Exp(x)==Pi^3,{x,1,10}, Pegasus)", "{x->3.4341896575481976}");
 
@@ -2780,9 +2778,9 @@ public class MainTestCase extends AbstractTestCase {
 		IExpr exprDenominator = engine.parse("8*x+12*x^3+6*x^5+x^7");
 		IExpr[] result = Cancel.cancelGCD(exprNumerator, exprDenominator);
 		assertEquals(result[0].toString(), "1");
-		assertEquals(result[1].toString(), "4+6*x+8*x^2+3*x^3");	
+		assertEquals(result[1].toString(), "4+6*x+8*x^2+3*x^3");
 	}
-	
+
 	public void testSystem401() {
 		check("Expand((b^2*c^2-12)^(1/2))", "Sqrt(-12+b^2*c^2)");
 		check("ExpandAll(1/2*((b^2*c^2-12)^(1/2)-b*c))", "-1/2*b*c+Sqrt(-12+b^2*c^2)/2");
@@ -3095,7 +3093,7 @@ public class MainTestCase extends AbstractTestCase {
 	public void testSystem805() {
 		check("Solve(x^2==a^2,x)", "{{x->a},{x->-a}}");
 		check("Solve((x^2-1)/(x-1)==0,x)", "{{x->-1}}");
-		
+
 		// LinearSolve[{{1,1,1},{1,1,-1},{1,-1,-1}},{100,50,10}]
 		// Fraction[][] testData = { { new Fraction(1), new Fraction(1), new
 		// Fraction(1) },
@@ -3172,9 +3170,9 @@ public class MainTestCase extends AbstractTestCase {
 		check("Solve({x^2==4,x+y^2==6},{x,y})",
 				"{{x->-2,y->-2*Sqrt(2)},{x->-2,y->2*Sqrt(2)},{x->2,y->-2},{x->2,y->2}}");
 		check("Solve({x^2==4,x+y^2==6,x+y^2+z^2==24},{x,y,z})",
-				"{{x->-2,y->-2*Sqrt(2),z->-3*Sqrt(2)},{x->-2,y->2*Sqrt(2),z->-3*Sqrt(2)},{x->-2,y->\n" + 
-				"-2*Sqrt(2),z->3*Sqrt(2)},{x->-2,y->2*Sqrt(2),z->3*Sqrt(2)},{x->2,y->-2,z->-3*Sqrt(\n" + 
-				"2)},{x->2,y->2,z->-3*Sqrt(2)},{x->2,y->-2,z->3*Sqrt(2)},{x->2,y->2,z->3*Sqrt(2)}}");
+				"{{x->-2,y->-2*Sqrt(2),z->-3*Sqrt(2)},{x->-2,y->2*Sqrt(2),z->-3*Sqrt(2)},{x->-2,y->\n"
+						+ "-2*Sqrt(2),z->3*Sqrt(2)},{x->-2,y->2*Sqrt(2),z->3*Sqrt(2)},{x->2,y->-2,z->-3*Sqrt(\n"
+						+ "2)},{x->2,y->2,z->-3*Sqrt(2)},{x->2,y->-2,z->3*Sqrt(2)},{x->2,y->2,z->3*Sqrt(2)}}");
 	}
 
 	public void testSystem806() {
@@ -3247,11 +3245,11 @@ public class MainTestCase extends AbstractTestCase {
 
 	public void testSystem997() {
 		check("GroebnerBasis({a+b+c+d, a*b+a*d+b*c+c*d, a*b*c+a*b*d+a*c*d+b*c*d,1-a*b*c*d}, {d,c,b,a})",
-				"{1-a^4-a^2*b^2+a^6*b^2,-a-b+a^3*b^2+a^2*b^3,-a+a^5-c+a^4*c,-2*a^2+a*b+a^4*b^2-a*c+b*c,a^\n" + 
-				"2+2*a*c+c^2,a+b+c+d}");
+				"{1-a^4-a^2*b^2+a^6*b^2,-a-b+a^3*b^2+a^2*b^3,-a+a^5-c+a^4*c,-2*a^2+a*b+a^4*b^2-a*c+b*c,a^\n"
+						+ "2+2*a*c+c^2,a+b+c+d}");
 		check("GroebnerBasis({a+b+c+d, a*b+a*d+b*c+c*d, a*b*c+a*b*d+a*c*d+b*c*d,1-a*b*c*d}, {d,c,b,a},MonomialOrder ->DegreeReverseLexicographic)",
-				"{a+b+c+d,a^2+2*a*c+c^2,-a^3+a*b^2-a^2*c+b^2*c,-1-a^4+a^3*b+a^2*b^2-a^3*c+a^2*b*c,-a+a^\n" + 
-				"5-c+a^4*c,-a-b+a^3*b^2+a^2*b^3,-2*a^2+a*b+a^4*b^2-a*c+b*c}");
+				"{a+b+c+d,a^2+2*a*c+c^2,-a^3+a*b^2-a^2*c+b^2*c,-1-a^4+a^3*b+a^2*b^2-a^3*c+a^2*b*c,-a+a^\n"
+						+ "5-c+a^4*c,-a-b+a^3*b^2+a^2*b^3,-2*a^2+a*b+a^4*b^2-a*c+b*c}");
 		check("GroebnerBasis({x-1},{x})", "{-1+x}");
 		// check(
 		// "GroebnerBasis({a+b+c+d, a*b+a*d+b*c+c*d, a*b*c+a*b*d+a*c*d+b*c*d,
@@ -3281,10 +3279,10 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem999() {
-//		check("Roots(x^6 - 4*x^3 + 8==0, x)",
-//				"x==-1-I||x==-1+I||x==1/2-I*1/2-Sqrt(I*6)/2||x==1/2-I*1/2+Sqrt(I*6)/2||x==1/2+I*1/\n"
-//						+ "2-Sqrt(-I*6)/2||x==1/2+I*1/2+Sqrt(-I*6)/2");
-		
+		// check("Roots(x^6 - 4*x^3 + 8==0, x)",
+		// "x==-1-I||x==-1+I||x==1/2-I*1/2-Sqrt(I*6)/2||x==1/2-I*1/2+Sqrt(I*6)/2||x==1/2+I*1/\n"
+		// + "2-Sqrt(-I*6)/2||x==1/2+I*1/2+Sqrt(-I*6)/2");
+
 		// check("Factor(1+x^2,GaussianIntegers->True)", "");
 		check("-5/2+I*1/2*Sqrt(15)", "-5/2+I*1/2*Sqrt(15)");
 		check("Roots(Expand((x-1)^3)==0, x)", "x==1");
@@ -3302,9 +3300,9 @@ public class MainTestCase extends AbstractTestCase {
 		check("Roots(x^2 - 4*x + 8==0, x)", "x==2-I*2||x==2+I*2");
 		// not reduccible with current factor method
 		check("Factor(x^4-2*x^3+2*x^2-4*x+4)", "4-4*x+2*x^2-2*x^3+x^4");
-//		check("Roots(x^6 - 4*x^3 + 8==0, x)",
-//				"x==-1-I||x==-1+I||x==1/2-I*1/2-Sqrt(I*6)/2||x==1/2-I*1/2+Sqrt(I*6)/2||x==1/2+I*1/\n"
-//						+ "2-Sqrt(-I*6)/2||x==1/2+I*1/2+Sqrt(-I*6)/2");
+		// check("Roots(x^6 - 4*x^3 + 8==0, x)",
+		// "x==-1-I||x==-1+I||x==1/2-I*1/2-Sqrt(I*6)/2||x==1/2-I*1/2+Sqrt(I*6)/2||x==1/2+I*1/\n"
+		// + "2-Sqrt(-I*6)/2||x==1/2+I*1/2+Sqrt(-I*6)/2");
 
 		check("Roots(x^2 + 5*x + 10==0, x)", "x==-5/2-I*1/2*Sqrt(15)||x==-5/2+I*1/2*Sqrt(15)");
 		check("Roots(4+x^2+2*x+3*x^3==0, x)", "x==-1||x==1/3-I*1/3*Sqrt(11)||x==1/3+I*1/3*Sqrt(11)");
@@ -3321,8 +3319,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("N({1/2*(I*15^(1/2)-5),1/2*(-I*15^(1/2)-5)})",
 				"{-2.5+I*1.9364916731037085,-2.5+I*(-1.9364916731037085)}");
 
-		check("Roots(x^6-1==0, x)",
-				"x==-1||x==1||x==(-1)^(1/3)||x==-(-1)^(1/3)||x==(-1)^(2/3)||x==-(-1)^(2/3)");
+		check("Roots(x^6-1==0, x)", "x==-1||x==1||x==(-1)^(1/3)||x==-(-1)^(1/3)||x==(-1)^(2/3)||x==-(-1)^(2/3)");
 
 		check("Factor(x^5 - x^3 - x^2 + 1)", "(1+x)*(1+x+x^2)*(1-x)^2");
 		check("FactorSquareFree(x^5 - x^3 - x^2 + 1)", "(1+2*x+2*x^2+x^3)*(1-x)^2");
@@ -3495,7 +3492,7 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem1105() {
-		check("$p(Sin(x_)^m_IntegerQ):=f(x)^(-m)/;m<0;$p(Sin(x)^2)", "$p(Sin(x)^2)"); 
+		check("$p(Sin(x_)^m_IntegerQ):=f(x)^(-m)/;m<0;$p(Sin(x)^2)", "$p(Sin(x)^2)");
 	}
 
 	public void testSystem1106() {
