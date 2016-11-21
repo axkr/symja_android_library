@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.List;
 import java.io.Externalizable;
 import java.math.BigInteger;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apfloat.Apcomplex;
@@ -21,6 +22,8 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
+
+import edu.jas.arith.PrimeInteger;
 
 /**
  * Abstract base class for IntegerSym and BigIntegerSym
@@ -300,6 +303,19 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 			result.append(F.C1);
 			return result;
 		}
+		
+		if (b instanceof IntegerSym){
+			Map<Long, Integer> map = PrimeInteger.factors(b.longValue());
+			for (Map.Entry<Long, Integer> entry : map.entrySet()) {
+				long key = entry.getKey();
+				IInteger is = valueOf(key);
+				for (int i = 0; i < entry.getValue(); i++) {
+					result.append(is);
+				}
+			}
+			return result;
+		}
+		
 		Map<Integer, Integer> map = new TreeMap<Integer, Integer>();
 		BigInteger rest = Primality.countPrimes32749(b.toBigNumerator(), map);
 
@@ -315,7 +331,8 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		}
 		b = valueOf(rest);
 
-		Map<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
+		SortedMap<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
+//		PrimeInteger.factorsPollardRho(b.toBigNumerator(), bigMap);
 		Primality.pollardRhoFactors(b.toBigNumerator(), bigMap);
 
 		for (Map.Entry<BigInteger, Integer> entry : bigMap.entrySet()) {
