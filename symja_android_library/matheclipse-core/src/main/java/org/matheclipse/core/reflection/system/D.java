@@ -82,10 +82,10 @@ public class D extends AbstractFunctionEvaluator {
 				return times;
 			}
 			IAST fDerivParam = createDerivative(n, m, header, a1, a2);
-			if (x.equals(a1)) {
+			if (x.equals(a1) || x.equals(a2)) {
 				return fDerivParam;
 			}
-			return F.Times(F.D(a1, x), fDerivParam);
+			return F.Times(F.D(a1, x), F.D(a2, x), fDerivParam);
 		}
 		return F.NIL;
 	}
@@ -134,7 +134,7 @@ public class D extends AbstractFunctionEvaluator {
 		}
 
 		IExpr fx = ast.arg1();
-		if (fx.isIndeterminate()){
+		if (fx.isIndeterminate()) {
 			return F.Indeterminate;
 		}
 		if (ast.size() > 3) {

@@ -1009,6 +1009,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDerivative() {
+		check("D(f(a,b),b)", "Derivative(0,1)[f][a,b]");
+		check("D(f(a,b),x)", "0");
+		check("g(u0_,u1_):=D(f(u0,u1),u1);g(a,b)", "Derivative(0,1)[f][a,b]");
 		check("Derivative(1)[ArcCoth]", "1/(1-#1^2)&");
 		check("y''", "Derivative(2)[y]");
 		check("y''(x)", "y''(x)");
