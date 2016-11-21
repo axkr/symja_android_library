@@ -1191,7 +1191,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDSolve() {
-		check("DSolve(D(f(x, y), x) == D(f(x, y), y), f, {x, y})", "DSolve(Derivative(1,0)[f][x,y]==0,f,{x,y})");
+		check("DSolve(D(f(x, y), x) == D(f(x, y), y), f, {x, y})", "DSolve(Derivative(1,0)[f][x,y]==Derivative(0,1)[f][x,y],f,{x,y})");
 		check("DSolve({y'(x)==y(x),y(0)==1},y(x), x)", "{{y(x)->E^x}}");
 		check("DSolve({y'(x)==y(x)+2,y(0)==1},y(x), x)", "{{y(x)->-2+3*E^x}}");
 
