@@ -192,7 +192,7 @@ public class ReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
                 S.doRemoveFromMap(e, a);
                 // System.out.println(" S = " + S);
             } else {
-                //System.out.println("i = "+i+", htl[i] = " + htl[i] + ", lbc[i] = " + lbc[i]  + ", p[i] = " + p[i]);
+                //System.out.println("i = "+i+", htl[i] = " + Ap.ring.toScript(htl[i]) + ", lbc[i] = " + lbc[i]  + ", p[i] = " + p[i].ring.toScript(p[i].leadingExpVector()));
                 f = e.subtract(htl[i]);
                 b = a.divide((C) lbc[i]);
                 //logger.info("red div: e = " + e + ", a = " + a + ", f = " + f + ", b = " + b);
@@ -205,6 +205,7 @@ public class ReductionSeq<C extends RingElem<C>> // should be FieldElem<C>>
                     throw new RuntimeException(
                                     "something is wrong: ht not descending e = " + e + ", S = " + S);
                 }
+                //System.out.println("NF R = " + R.leadingExpVector() + ", S = " + S.leadingExpVector() + ", e = " + e + ", f = " + f + ", #S = " + S.length());
             }
             //System.out.println("NF R = " + R + ", S = " + S);
         }

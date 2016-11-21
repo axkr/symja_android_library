@@ -5,7 +5,6 @@
 package edu.jas.arith;
 
 
-// import java.util.Random;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -14,9 +13,10 @@ import java.util.List;
 /**
  * List of big primes. Provides an Iterator for generating prime numbers.
  * Similar to ALDES/SAC2 SACPOL.PRIME list.
+ * See Knuth vol 2, page 390, for list of known primes. See also ALDES/SAC2
+ *      SACPOL.PRIME
  * 
- * @author Heinz Kredel See Knuth vol 2,page 390, for list of known primes. See
- *         also ALDES/SAC2 SACPOL.PRIME
+ * @author Heinz Kredel
  */
 
 public final class PrimeList implements Iterable<java.math.BigInteger> {
@@ -313,6 +313,7 @@ public final class PrimeList implements Iterable<java.math.BigInteger> {
 
     /**
      * Check if the list contains really prime numbers.
+     * @return true if all checked numbers are prime
      */
     protected boolean checkPrimes() {
         return checkPrimes(size());
@@ -321,6 +322,8 @@ public final class PrimeList implements Iterable<java.math.BigInteger> {
 
     /**
      * Check if the list contains really prime numbers.
+     * @param n number of primes to check.
+     * @return true if all checked numbers are prime
      */
     protected boolean checkPrimes(int n) {
         boolean isPrime;
@@ -340,7 +343,7 @@ public final class PrimeList implements Iterable<java.math.BigInteger> {
 
 
     /**
-     * toString.
+     * {@inheritDoc}
      */
     @Override
     public String toString() {
@@ -349,7 +352,8 @@ public final class PrimeList implements Iterable<java.math.BigInteger> {
 
 
     /**
-     * size of current list.
+     * Size of current list.
+     * @return current size of list.
      */
     public int size() {
         return val.size();
@@ -357,7 +361,9 @@ public final class PrimeList implements Iterable<java.math.BigInteger> {
 
 
     /**
-     * get prime at index i.
+     * Get prime at index i.
+     * @param i index to get element.
+     * @return prime at index i.
      */
     public java.math.BigInteger get(int i) {
         java.math.BigInteger p;
@@ -368,7 +374,7 @@ public final class PrimeList implements Iterable<java.math.BigInteger> {
             val.add(p);
             last = p;
         } else {
-            p = get(i-1);
+            p = get(i - 1);
             p = last.nextProbablePrime();
             val.add(p);
             last = p;
@@ -378,7 +384,9 @@ public final class PrimeList implements Iterable<java.math.BigInteger> {
 
 
     /**
-     * Iterator.
+     * Iterator. 
+     * Always has next, will generate new primes if required.
+     * @return iterator over the prime list.
      */
     public Iterator<java.math.BigInteger> iterator() {
         return new Iterator<java.math.BigInteger>() {

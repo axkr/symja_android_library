@@ -303,6 +303,41 @@ public class Power<C extends RingElem<C>> {
 
 
     /**
+     * power of a to the n-th.
+     * @param a long.
+     * @param n integer exponent.
+     * @return a^n, with a^0 = 1.
+     */
+    public static long power(long a, long n) {
+        if (n == 0) {
+            return 1L;
+        }
+        if (a == 1L) {
+            return a;
+        }
+        long b = a;
+        if (n == 1L) {
+            return b;
+        }
+        long p = 1L;
+        long i = n;
+        do {
+            if (i % 2 == 1) {
+                p = p * b;
+            }
+            i = i / 2;
+            if (i > 0) {
+                b = b * b;
+            }
+        } while (i > 0);
+        if (n > 11 && debug) {
+            logger.info("n  = " + n + ", p  = " + p);
+        }
+        return p;
+    }
+
+
+    /**
      * power of a to the n-th mod m.
      * @param a element.
      * @param n integer exponent.

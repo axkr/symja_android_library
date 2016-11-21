@@ -2237,6 +2237,37 @@ public class GenPolynomial<C extends RingElem<C>>
 
 
     /**
+     * GenPolynomial inflate. Only for univariate
+     * polynomials over fields.
+     * @param e exponent.
+     * @return this(x**e)
+     */
+    public GenPolynomial<C> inflate(long e) {
+        if (e == 1) {
+            return this;
+        }
+        if (this.isZERO()) {
+            return this;
+        }
+        if (ring.nvar != 1) {
+            throw new IllegalArgumentException(
+                            this.getClass().getName() + " not univariate polynomial" + ring);
+        }
+        GenPolynomial<C> Cp = ring.getZERO().copy();
+        Map<ExpVector, C> C = Cp.val; //getMap();
+        Map<ExpVector, C> A = val;
+        ExpVector f;
+        for (Map.Entry<ExpVector, C> y : A.entrySet()) {
+            ExpVector g = y.getKey();
+            f = g.scalarMultiply(e);
+            C a = y.getValue();
+            C.put(f, a);
+        }
+        return Cp;
+    }
+
+
+    /**
      * Iterator over coefficients.
      * @return val.values().iterator().
      */

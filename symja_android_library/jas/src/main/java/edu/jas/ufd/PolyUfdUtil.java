@@ -28,8 +28,8 @@ import edu.jas.util.ListUtil;
 
 
 /**
- * Polynomial ufd utilities, like conversion between different representations
- * and Hensel lifting.
+ * Polynomial ufd utilities. For example conversion between different representations
+ * and Kronecker substitution.
  * @author Heinz Kredel
  */
 
@@ -489,7 +489,7 @@ public class PolyUfdUtil {
 
 
     /**
-     * Kronecker substitution. Substitute x_i by x**d**(i-1) to construct a
+     * Kronecker substitution. Substitute x_i by x**d**(i-1) to construct 
      * univariate polynomials.
      * @param A list of polynomials to be converted.
      * @return a list of univariate polynomials.
@@ -540,7 +540,7 @@ public class PolyUfdUtil {
 
 
     /**
-     * Kronecker back substitution. Substitute x**d**(i-1) to x_i to construct a
+     * Kronecker back substitution. Substitute x**d**(i-1) to x_i to construct 
      * multivariate polynomials.
      * @param A list of polynomials to be converted.
      * @param fac result polynomial factory.

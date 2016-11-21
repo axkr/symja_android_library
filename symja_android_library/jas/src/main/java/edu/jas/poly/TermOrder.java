@@ -355,6 +355,19 @@ public final class TermOrder implements Serializable {
 
 
     /**
+     * Test if this term order is a split order.
+     * @return true if this is a split term order, else false.
+     */
+    public boolean isSplit() {
+        //System.out.println("isSplit: " + evend2 + " == " + evbeg2);
+        if (evend2 == evbeg2 || evend1 == Integer.MAX_VALUE) {
+            return false;
+        }
+        return true; 
+    }
+
+
+    /**
      * Constructor for given split order.
      * @param ev1 requested term order indicator for first block.
      * @param ev2 requested term order indicator for second block.
@@ -1397,6 +1410,16 @@ public final class TermOrder implements Serializable {
 
 
     /**
+     * Get the exponent vector size.
+     * <b>Note:</b> can be INTEGER.MAX_VALUE.
+     * @return size.
+     */
+    public int getSize() {
+        return evend2; // can be INTEGER.MAX_VALUE
+    }
+
+
+    /**
      * Get the weight array.
      * @return weight.
      */
@@ -2011,6 +2034,7 @@ public final class TermOrder implements Serializable {
         long[][] wr = new long[w.length][];
         for (int j = 0; j < w.length; j++) {
             long[] wj = w[j];
+            //System.out.println("reverseWeight: " + wj);
             long[] wrj = new long[wj.length];
             for (int i = 0; i < wj.length; i++) {
                 wrj[i] = wj[wj.length - 1 - i];

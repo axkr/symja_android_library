@@ -422,11 +422,11 @@ public final class ModLongRing implements ModularRingFactory<ModLong>, Iterable<
      * @return S, with S mod c.modul == c and S mod a.modul == a.
      */
     public ModLong chineseRemainder(ModLong c, ModLong ci, ModLong a) {
-        if (true) { // debug
-            if (c.ring.modul < a.ring.modul) {
-                System.out.println("ModLong error " + c.ring + ", " + a.ring);
-            }
-        }
+        //if (true) { 
+        //    if (c.ring.modul < a.ring.modul) {
+        //        System.out.println("ModLong error " + c.ring + ", " + a.ring);
+        //    }
+        //}
         ModLong b = a.ring.fromInteger(c.val); // c mod a.modul
         ModLong d = a.subtract(b); // a-c mod a.modul
         if (d.isZERO()) {
@@ -438,6 +438,35 @@ public final class ModLongRing implements ModularRingFactory<ModLong>, Iterable<
         long s = c.ring.modul * b.val;
         s = s + c.val;
         return new ModLong(this, s);
+    }
+
+
+    /**
+     * Modular digit list chinese remainder algorithm.  m1 and m2 are
+     * positive beta-integers, with GCD(m1,m2)=1 and m=m1*m2 less than
+     * beta.  L1 and L2 are lists of elements of Z(m1) and Z(m2)
+     * respectively.  L is a list of all a in Z(m) such that a is
+     * congruent to a1 modulo m1 and a is congruent to a2 modulo m2
+     * with a1 in L1 and a2 in L2.  This is a factory method. Assert
+     * c.modul >= a.modul and c.modul * a.modul = this.modul.
+     * @param m1 ModLong.
+     * @param m2 other ModLong.
+     * @return L list of congruences.
+     */
+    public static List<ModLong> chineseRemainder(ModLong m1, ModLong m2, List<ModLong> L1, List<ModLong> L2) {
+        long mm = m1.ring.modul * m2.ring.modul;
+        ModLongRing m = new ModLongRing(mm);
+        ModLong m21 = m2.ring.fromInteger(m1.ring.modul);
+        ModLong mi1 = m21.inverse(); 
+
+        List<ModLong> L = new ArrayList<ModLong>();
+        for (ModLong a : L1) {
+	    for (ModLong b : L2) {
+                ModLong c = m.chineseRemainder(a, mi1, b);
+                L.add(c);
+            }
+        }
+        return L;
     }
 
 

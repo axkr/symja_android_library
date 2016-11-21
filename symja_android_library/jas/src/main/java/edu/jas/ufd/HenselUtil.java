@@ -1100,7 +1100,7 @@ public class HenselUtil {
         T = PolyUtil.<MOD> fromIntegerCoefficients(mfac, Ti);
         //System.out.println("S = " + S + ": " + S.ring.coFac);
         //System.out.println("T = " + T + ": " + T.ring.coFac);
-        if (true || debug) {
+        if (debug) {
             List<GenPolynomial<MOD>> AP = new ArrayList<GenPolynomial<MOD>>();
             AP.add(B);
             AP.add(A);
@@ -1235,7 +1235,7 @@ public class HenselUtil {
             }
             //System.out.println("sol = " + sol + ", for " + m);
         }
-        if (true || debug) {
+        if (debug) {
             //GenPolynomialRing<BigInteger> ifac = new GenPolynomialRing<BigInteger>(new BigInteger(), fac);
             A = PolyUtil.<MOD> fromIntegerCoefficients(fac, PolyUtil.integerFromModularCoefficients(ifac, A));
             B = PolyUtil.<MOD> fromIntegerCoefficients(fac, PolyUtil.integerFromModularCoefficients(ifac, B));
@@ -1367,7 +1367,7 @@ public class HenselUtil {
         sol.add(r1);
         sol.add(r2);
         //System.out.println("sol@"+ e + " = " + sol); 
-        if (true || debug) {
+        if (debug) {
             GenPolynomial<MOD> y = B.multiply(r1).sum(A.multiply(r2));
             if (!y.equals(xe)) {
                 System.out.println("A = " + A + ", B = " + B);
@@ -1593,7 +1593,7 @@ public class HenselUtil {
 
         List<GenPolynomial<MOD>> S = liftExtendedEuclidean(F, k + 1); // lift works for any k, TODO: use this
         //System.out.println("Sext = " + S);
-        if (true || debug) {
+        if (debug) {
             logger.info("EE lift = " + S);
             // adjust coefficients
             List<GenPolynomial<MOD>> Sx = PolyUtil.fromIntegerCoefficients(pfac,
@@ -1759,7 +1759,7 @@ public class HenselUtil {
 
         List<GenPolynomial<MOD>> S = liftExtendedEuclidean(F, k + 1); // lift works for any k, TODO: use this
         //System.out.println("Sext = " + S);
-        if (true || debug) {
+        if (debug) {
             logger.info("EE lift = " + S);
             // adjust coefficients
             List<GenPolynomial<MOD>> Sx = PolyUtil.fromIntegerCoefficients(pfac,

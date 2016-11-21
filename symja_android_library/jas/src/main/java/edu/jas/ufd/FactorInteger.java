@@ -19,6 +19,7 @@ import edu.jas.arith.ModLongRing;
 import edu.jas.arith.Modular;
 import edu.jas.arith.ModularRingFactory;
 import edu.jas.arith.PrimeList;
+import edu.jas.arith.PrimeInteger;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
@@ -87,6 +88,56 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
 
 
     /**
+     * GenPolynomial test if is irreducible.
+     * @param P GenPolynomial.
+     * @return true if P is irreducible, else false.
+     */
+    public boolean isIrreducible(GenPolynomial<BigInteger> P) {
+        if (P.ring.nvar == 1) {
+            if (isIrreducibleEisenstein(P)) {
+                return true;
+            } // else unknown
+        }
+        return super.isIrreducible(P);
+    }
+
+
+    /**
+     * GenPolynomial test if is irreducible with Eisenstein criterion.
+     * @param P univariate polynomial.
+     * @return true if P is irreducible, else false if it is unknown.
+     */
+    public boolean isIrreducibleEisenstein(GenPolynomial<BigInteger> P) {
+        if (P.ring.nvar != 1) {
+            throw new IllegalArgumentException("only for univariate polynomials");
+        }        
+        if (P.degree(0) <= 1L) { // linear or constant is irreducible
+            return true;
+        }
+        BigInteger rcont = engine.baseContent(P.reductum());
+        if (rcont.isZERO()||rcont.isONE()) { // case x**n
+            return false;  
+        }
+        // todo test
+        if (rcont.compareTo(BigInteger.valueOf(PrimeInteger.BETA)) >= 0) { // integer too big
+            return false;
+        }
+        long lcont = rcont.getVal().longValue();
+        BigInteger lc = P.leadingBaseCoefficient().abs();
+        BigInteger tc = P.trailingBaseCoefficient().abs();
+        SortedMap<Long, Integer> fac = PrimeInteger.factors(lcont);
+        for (Long p : fac.keySet()) {
+            BigInteger pi = BigInteger.valueOf(p);
+            if (!lc.remainder(pi).isZERO() && !tc.remainder(pi.power(2)).isZERO() ) {
+                logger.info("isIrreducibleEisenstein: fac = " + fac + ", lc = " + lc + ", tc = " + tc);
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
      * GenPolynomial base factorization of a squarefree polynomial.
      * @param P squarefree and primitive! GenPolynomial.
      * @return [p_1,...,p_k] with P = prod_{i=1, ..., k} p_i.
@@ -114,8 +165,21 @@ public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends Facto
         }
         if (P.degree(0) <= 1L) { // linear is irreducible
             factors.add(P);
-            return factors;
+            return normalizeFactorization(factors);
         }
+        if (isIrreducibleEisenstein(P)) {
+            factors.add(P);
+            return normalizeFactorization(factors);
+        }
+        // check cyclotomic factorization
+        //if (CycloUtil.isCyclotomicPolynomial(P)) {
+        //System.out.println("isCyclotomicPolynomial = " + P);
+        factors = CycloUtil.cyclotomicFactors(P);
+        if (factors.size() > 0) {
+            logger.info("cyclotomicFactors: #factors = " + factors.size());
+            return normalizeFactorization(factors);
+        }
+        //}
         // compute norm
         BigInteger an = P.maxNorm();
         BigInteger ac = P.leadingBaseCoefficient();

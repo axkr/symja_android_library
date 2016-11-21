@@ -38,6 +38,9 @@ public class Roots {
         if (A == null || A.isZERO() || A.isONE()) {
             return A;
         }
+        if (A.signum() < 0) {
+            throw new ArithmeticException("root of negative not defined: " + A);
+        }
         // ensure enough precision
         int s = A.val.bitLength() + 2;
         MathContext mc = new MathContext(s);
@@ -69,6 +72,9 @@ public class Roots {
     public static BigInteger sqrt(BigInteger A) {
         if (A == null || A.isZERO() || A.isONE()) {
             return A;
+        }
+        if (A.signum() < 0) {
+            throw new ArithmeticException("root of negative not defined: " + A);
         }
         // ensure enough precision
         int s = A.val.bitLength() + 2;
@@ -104,10 +110,7 @@ public class Roots {
         }
         int s = A.signum();
         if (s < 0) {
-            throw new ArithmeticException("root of negative not defined");
-        }
-        if (s == 0) {
-            return A;
+            throw new ArithmeticException("root of negative not defined: " + A);
         }
         BigInteger R, R1, d;
         int log2 = A.val.bitLength();
@@ -157,7 +160,7 @@ public class Roots {
             return A;
         }
         if ( A.signum() < 0 ) {
-            throw new ArithmeticException("root of negative not defined");
+            throw new ArithmeticException("root of negative not defined: " + A);
         }
         // for small A use root of inverse
         if (A.abs().val.compareTo(BigDecimal.ONE.val) < 0) {
@@ -217,7 +220,7 @@ public class Roots {
             return A;
         }
         if ( A.signum() < 0 ) {
-            throw new ArithmeticException("root of negative not defined");
+            throw new ArithmeticException("root of negative not defined: " + A);
         }
         // for small A use root of inverse
         if (A.abs().val.compareTo(BigDecimal.ONE.val) < 0) {

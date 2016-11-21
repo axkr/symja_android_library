@@ -4,8 +4,9 @@
 
 package edu.jas.poly;
 
+import java.util.Arrays;
 
-// import org.apache.log4j.Logger;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -31,7 +32,7 @@ package edu.jas.poly;
 public class TermOrderByName {
 
 
-    //private static final Logger logger = Logger.getLogger(TermOrderByName.class);
+    private static final Logger logger = Logger.getLogger(TermOrderByName.class);
 
 
     /**
@@ -326,20 +327,65 @@ public class TermOrderByName {
 
 
     /**
-     * 
-     * Construct weight for INVLEX.
+     * Construct weight for term order.
+     * @param to term order
+     * @param n exponent vector size 
      * @return weight matrix
      */
-    public final static long[][] weightForOrder(int to, int n) {
-        long[][] w = new long[n][];
+    public final static long[][] weightForOrder(TermOrder to, int n) {
+        if (to.isSplit()) {
+            return weightForSplitOrder(to.getEvord(), to.getEvord2(), n, to.getSplit());
+        }
+        return weightForOrder(to.getEvord(), n);
+    }
+
+
+    /**
+     * Construct weight for term order.
+     * @param to term order indicator
+     * @param n exponent vector size 
+     * @return weight matrix
+     */
+    /*public*/ final static long[][] weightForOrder(int to, int n) {
+        int k = 0;
+        switch (to) {
+        case TermOrder.IGRLEX:
+            k = n+1;
+            break;
+        case TermOrder.REVILEX:
+            // no break
+        case TermOrder.INVLEX:
+            k = n;
+            break;
+        default:
+        }
+        long[][] w = new long[k][];
+        long[] wi;
         switch (to) {
         case TermOrder.INVLEX:
-        default:
             for (int i = 0; i < n; i++) {
                 w[i] = new long[n];
-                long[] wi = w[i];
+                wi = w[i];
                 for (int j = 0; j < n; j++) {
-                    if ((n - 1 - i) == j) {
+                    if (i == j) { //n - 1 -
+                        wi[j] = 1L;
+                    } else {
+                        wi[j] = 0L;
+                    }
+                }
+            }
+            break;
+        case TermOrder.IGRLEX:
+            w[0] = new long[n];
+            wi = w[0];
+            for (int j = 0; j < n; j++) {
+                 wi[j] = 1L;
+            }
+            for (int i = 0; i < n; i++) {
+                w[i+1] = new long[n];
+                wi = w[i+1];
+                for (int j = 0; j < n; j++) {
+                    if (i == j) { //n - 1 -
                         wi[j] = 1L;
                     } else {
                         wi[j] = 0L;
@@ -350,9 +396,9 @@ public class TermOrderByName {
         case TermOrder.REVILEX:
             for (int i = 0; i < n; i++) {
                 w[i] = new long[n];
-                long[] wi = w[i];
+                wi = w[i];
                 for (int j = 0; j < n; j++) {
-                    if (i == j) {
+                    if ((n - 1 - i) == j) {
                         wi[j] = 1L;
                     } else {
                         wi[j] = 0L;
@@ -360,6 +406,121 @@ public class TermOrderByName {
                 }
             }
             break;
+        default:
+            throw new UnsupportedOperationException("case " + to + " not implemented for weightForOrder");
+        }
+        return w;
+    }
+
+
+    /**
+     * Construct weight for split term order.
+     * @param to1 first term order indicator
+     * @param to2 second term order indicator
+     * @param n exponent vector size 
+     * @param s slpit index 
+     * @return weight matrix
+     */
+    /*public*/ final static long[][] weightForSplitOrder(int to, int to2, int n, int s) {
+        int k = 0;
+        switch (to) {
+        case TermOrder.IGRLEX:
+            k += 1;
+            break;
+        case TermOrder.INVLEX:
+            k += s;
+            break;
+        default:
+        }
+        //System.out.println("to = " + to + ", k = " + k);
+        switch (to2) {
+        case TermOrder.IGRLEX:
+            k += 1;
+            break;
+        case TermOrder.INVLEX:
+            k += n-s;
+            break;
+        default:
+        }
+        //System.out.println("to = " + to + ", k = " + k);
+        long[][] w = new long[k+n][];
+        boolean done = true;
+        switch (to) {
+        case TermOrder.IGRLEX:
+            w[0] = new long[n];
+            long[] wi = w[0];
+            int j;
+            for (j = 0; j < s; j++) {
+                 wi[j] = 1L;
+            }
+            for (; j < n; j++) {
+                 wi[j] = 0L;
+            }
+            break;
+        case TermOrder.INVLEX:
+            for (int i = 0; i < s; i++) {
+                w[i] = new long[n];
+                wi = w[i]; // long[]
+                for (j = 0; j < n; j++) {
+                    if ((n - 1 - i) == j) {
+                        wi[j] = 1L;
+                    } else {
+                        wi[j] = 0L;
+                    }
+                }
+            }
+            break;
+        default:
+            done = false;
+            // compiler/run time error:
+            //throw new UnsupportedOperationException("case " + to + "/" + to2 + " not implemented for weightForOrder");
+            break;
+        }
+        switch (to2) {
+        case TermOrder.IGRLEX:
+            w[k-1] = new long[n];
+            long[] wi = w[k-1];
+            int j;
+            for (j = 0; j < s; j++) {
+                 wi[j] = 0L;
+            }
+            for (; j < n; j++) {
+                 wi[j] = 1L;
+            }
+            break;
+        case TermOrder.INVLEX:
+            for (int i = 0; i < s; i++) {
+                w[s+i] = new long[n];
+                wi = w[s+i]; // long[]
+                for (j = 0; j < n; j++) {
+                    if ((n - 1 - i) == (s + j)) {
+                        wi[j] = 1L;
+                    } else {
+                        wi[j] = 0L;
+                    }
+                }
+            }
+            break;
+        default:
+            done = false;
+            break;
+        }
+        if (! done) {
+            //System.out.println("weightForSplitOrder case " + to + "/" + to2);
+            throw new UnsupportedOperationException("case " + to + "/" + to2 + " not implemented for weightForOrder");
+        }
+        //System.out.println("weight: " + Arrays.toString(w));
+        // break ties by inv lex term order
+        for (int i = 0; i < n; i++) {
+             w[k+i] = new long[n];
+             long[] wi = w[k+i];
+             for (int j = 0; j < n; j++) {
+		 if ((i) == j) { //n - 1 - 
+                      wi[j] = 1L;
+                  } else {
+                      wi[j] = 0L;
+                  }
+             }
         }
         return w;
     }
