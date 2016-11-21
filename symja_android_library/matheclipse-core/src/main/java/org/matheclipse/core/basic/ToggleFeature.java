@@ -39,4 +39,10 @@ public class ToggleFeature {
 	 */
 	public static boolean DSOLVE = true;
 
+	/**
+	 * If <code>true</code>, enable
+	 * <code>org.matheclipse.core.reflection.system.Series</code> and
+	 * <code>org.matheclipse.core.reflection.system.SeriesData</code> functions.
+	 */
+	public static boolean SERIES = true;
 }

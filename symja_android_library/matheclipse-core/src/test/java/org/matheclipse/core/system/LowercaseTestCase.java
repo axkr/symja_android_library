@@ -3373,36 +3373,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("{a, Sequence(b), c, Identity(d)}", "{a,b,c,d}");
 	}
 
-	// public void testNormal() {
-	// check("Normal(Series(Exp(x),{x,0,5}))",
-	// "1+x+x^2/2+x^3/6+x^4/24+x^5/120");
-	// check("Normal(SeriesData(x, 0,{1,0,-1/6,0,1/120,0,-1/5040,0,1/362880}, 1,
-	// 11, 2))",
-	// "Sqrt(x)-x^(3/2)/6+x^(5/2)/120-x^(7/2)/5040+x^(9/2)/362880");
-	//
-	// }
-	//
-	// public void testSeries() {
-	// // check("FullForm(Series(Exp(x),{x,0,10}))", "");
-	// // check("Series(Sin(Sqrt(x)), {x, 0, 5})", "");
-	// check("Series(f(x),{x,0,3})",
-	// "f(0)+f'(0)*x+f''(0)/2*x^2+Derivative(3)[f][0]/6*x^3+O(x)^4");
-	// check("Series(Exp(x),{x,0,2})", "1+x+x^2/2+O(x)^3");
-	// check("Series(Exp(f(x)),{x,0,2})",
-	// "E^f(0)+E^f(0)*f'(0)*x+1/2*(E^f(0)*f'(0)^2+E^f(0)*f''(0))*x^2+O(x)^3");
-	// check("Series(Exp(x),{x,0,5})", "1+x+x^2/2+x^3/6+x^4/24+x^5/120+O(x)^6");
-	// check("Series(100,{x,a,5})", "100");
-	// }
-	//
-	// public void testSeriesData() {
-	// check("SeriesData(100, 0, Table(i^2, {i, 10}), 0, 10, 1)",
-	// "Indeterminate");
-	// check("SeriesData(x, 0, Table(i^2, {i, 10}), 0, 10, 1)",
-	// "1+4*x+9*x^2+16*x^3+25*x^4+36*x^5+49*x^6+64*x^7+81*x^8+100*x^9+O(x)^10");
-	// check("SeriesData(x, 0,{1,0,-1/6,0,1/120,0,-1/5040,0,1/362880}, 1, 11,
-	// 2)",
-	// "Sqrt(x)-x^(3/2)/6+x^(5/2)/120-x^(7/2)/5040+x^(9/2)/362880+O(x)^(11/2)");
-	// }
+	public void testNormal() {
+		check("Normal(Series(Exp(x),{x,0,5}))", "1+x+x^2/2+x^3/6+x^4/24+x^5/120");
+		check("Normal(SeriesData(x, 0,{1,0,-1/6,0,1/120,0,-1/5040,0,1/362880}, 1, 11, 2))",
+				"Sqrt(x)-x^(3/2)/6+x^(5/2)/120-x^(7/2)/5040+x^(9/2)/362880");
+	}
+
+	public void testSeries() {
+		// check("FullForm(Series(Exp(x),{x,0,10}))", "");
+		// check("Series(Sin(Sqrt(x)), {x, 0, 5})", "");
+		check("Series(f(x),{x,0,3})", "f(0)+f'(0)*x+f''(0)/2*x^2+Derivative(3)[f][0]/6*x^3+O(x)^4");
+		check("Series(Exp(x),{x,0,2})", "1+x+x^2/2+O(x)^3");
+		check("Series(Exp(f(x)),{x,0,2})", "E^f(0)+E^f(0)*f'(0)*x+1/2*(E^f(0)*f'(0)^2+E^f(0)*f''(0))*x^2+O(x)^3");
+		check("Series(Exp(x),{x,0,5})", "1+x+x^2/2+x^3/6+x^4/24+x^5/120+O(x)^6");
+		check("Series(100,{x,a,5})", "100");
+	}
+
+	public void testSeriesData() {
+		check("SeriesData(100, 0, Table(i^2, {i, 10}), 0, 10, 1)", "Indeterminate");
+		check("SeriesData(x, 0, Table(i^2, {i, 10}), 0, 10, 1)",
+				"1+4*x+9*x^2+16*x^3+25*x^4+36*x^5+49*x^6+64*x^7+81*x^8+100*x^9+O(x)^10");
+		check("SeriesData(x, 0,{1,0,-1/6,0,1/120,0,-1/5040,0,1/362880}, 1, 11, 2)",
+				"Sqrt(x)-x^(3/2)/6+x^(5/2)/120-x^(7/2)/5040+x^(9/2)/362880+O(x)^(11/2)");
+	}
 
 	public void testSign() {
 		check("Pi>E", "True");

@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import java.awt.Desktop;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -8,6 +9,8 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
@@ -41,6 +44,7 @@ public class Console {
 			e1.printStackTrace();
 			return;
 		}
+		openURL("http://www.google.com");
 		String inputExpression = null;
 		String trimmedInput = null;
 		String outputExpression = null;
@@ -306,5 +310,27 @@ public class Console {
 	 */
 	public String getDefaultSystemRulesFilename() {
 		return fDefaultSystemRulesFilename;
+	}
+
+	private static void openURL(String url) {
+
+		if (Desktop.isDesktopSupported()) {
+			Desktop desktop = Desktop.getDesktop();
+			try {
+				desktop.browse(new URI(url));
+			} catch (IOException | URISyntaxException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else {
+			Runtime runtime = Runtime.getRuntime();
+			try {
+				runtime.exec("xdg-open " + url);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
 	}
 }
