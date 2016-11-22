@@ -18,14 +18,14 @@ public interface SumRules {
     ISetDelayed(Sum(Ceiling(Log(i_)),List(i_Symbol,C1,n_Symbol)),
       Condition(Plus(Times(Plus(Times(Floor(Log(n)),Power(E,Plus(Floor(Log(n)),C1))),Times(CN1,Plus(Floor(Log(n)),C1),Power(E,Floor(Log(n)))),C1),Power(Plus(E,Negate(C1)),-1)),Times(Plus(n,Negate(Power(E,Floor(Log(n))))),Ceiling(Log(n)))),FreeQ(n,i))),
     ISetDelayed(Sum(Ceiling(Log(a_,i_)),List(i_Symbol,C1,n_Symbol)),
-      Condition(Plus(Times(Plus(Times(Floor(Log(a,n)),Power(a,Plus(Floor(Log(a,n)),C1))),Times(CN1,Plus(Floor(Log(a,n)),C1),Power(a,Floor(Log(a,n)))),C1),Power(Plus(a,Negate(C1)),-1)),Times(Plus(n,Negate(Power(a,Floor(Log(a,n))))),Ceiling(Log(a,n)))),And(FreeQ(a,i),FreeQ(n,i)))),
-    ISetDelayed(Sum(Factorial(i_),List(i_Symbol,C1,n_Symbol)),
-      Condition(Plus(Times(Gamma(Plus(n,C2)),Power(CN1,Plus(n,C1)),Subfactorial(Plus(Negate(n),Negate(C2)))),Negate(Subfactorial(CN1)),Negate(C1)),FreeQ(n,i)))
+      Condition(Plus(Times(Plus(Times(Floor(Log(a,n)),Power(a,Plus(Floor(Log(a,n)),C1))),Times(CN1,Plus(Floor(Log(a,n)),C1),Power(a,Floor(Log(a,n)))),C1),Power(Plus(a,Negate(C1)),-1)),Times(Plus(n,Negate(Power(a,Floor(Log(a,n))))),Ceiling(Log(a,n)))),And(FreeQ(a,i),FreeQ(n,i))))
   );
   final public static IAST RULES2 = List(
     ISetDelayed(Sum(Binomial(n_,i_),List(i_Symbol,C0,n_Symbol)),
       Condition(Power(C2,n),FreeQ(n,i))),
     ISetDelayed(Sum(Times(i_,Binomial(n_,i_)),List(i_Symbol,C0,n_Symbol)),
-      Condition(Times(n,Power(C2,Plus(n,Negate(C1)))),FreeQ(n,i)))
+      Condition(Times(n,Power(C2,Plus(n,Negate(C1)))),FreeQ(n,i))),
+    ISetDelayed(Sum(Factorial(i_),List(i_Symbol,C0,n_Symbol)),
+      Condition(Plus(Times(Gamma(Plus(n,C2)),Power(CN1,Plus(n,C1)),Subfactorial(Plus(Negate(n),Negate(C2)))),Negate(Subfactorial(CN1))),FreeQ(n,i)))
   );
 }

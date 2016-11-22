@@ -1191,7 +1191,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDSolve() {
-		check("DSolve(D(f(x, y), x) == D(f(x, y), y), f, {x, y})", "DSolve(Derivative(1,0)[f][x,y]==Derivative(0,1)[f][x,y],f,{x,y})");
+		check("DSolve(D(f(x, y), x) == D(f(x, y), y), f, {x, y})",
+				"DSolve(Derivative(1,0)[f][x,y]==Derivative(0,1)[f][x,y],f,{x,y})");
 		check("DSolve({y'(x)==y(x),y(0)==1},y(x), x)", "{{y(x)->E^x}}");
 		check("DSolve({y'(x)==y(x)+2,y(0)==1},y(x), x)", "{{y(x)->-2+3*E^x}}");
 
@@ -3760,6 +3761,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSum() {
+		check("Sum(i!,{i,3,n})", "-4-Subfactorial(-1)+(-1)^(1+n)*Gamma(2+n)*Subfactorial(-2-n)");
+		check("Sum(i!,{i,1,n})", "-1-Subfactorial(-1)+(-1)^(1+n)*Gamma(2+n)*Subfactorial(-2-n)");
+		
 		check("Sum(g(i),{i,10,2})", "0");
 		check("Sum(0.5^i,{i,1,Infinity})", "1.0");
 
