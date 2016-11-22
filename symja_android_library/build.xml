@@ -28,8 +28,7 @@
 
 	<target name="compile" description="Compile the Symja Java sources to subdirectory &quot;/build/classes&quot;" depends="clean">
 		<mkdir dir="${classes.dir}" />
-		<copy file="apfloat/src/apfloat.properties" todir="${classes.dir}" />
-		<copy file="jas/src/main/java/log4j.properties" todir="${classes.dir}" />
+		<copy file="jas/src/main/resources/log4j.properties" todir="${classes.dir}" />
 		<copydir src="matheclipse-core/src/main/java/ser" dest="${classes.dir}/ser" />
 		<copy file="matheclipse-core/src/main/java/System.mep" todir="${classes.dir}" />
 		<copy file="matheclipse-core/src/main/java/META-INF/MANIFEST.MF" todir="${classes.dir}/META-INF" />
@@ -44,17 +43,40 @@
 	</target>
 
 	<target name="jar" description="Create full &quot;/build/jar/symja-YYYY-MM-DD.jar&quot; file for download" depends="doc">
-		<mkdir dir="${jar.dir}" />
-		<unjar src="lib/commons-io-1.3.1.jar" dest="${classes.dir}">
+		<mkdir dir="${jar.dir}" /> 
+	<!--	<unjar src="lib/apfloat-1.8.2.jar" dest="${classes.dir}">
 			<patternset>
 				<exclude name="**/*.java" />
-				<exclude name="**/pom*.*" />
 			</patternset>
 		</unjar>
-		<unjar src="lib/commons-logging-1.1.1.jar" dest="${classes.dir}">
+		<unjar src="lib/guava-18.0.jar" dest="${classes.dir}">
 			<patternset>
 				<exclude name="**/*.java" />
-				<exclude name="**/pom*.*" />
+			</patternset>
+		</unjar>
+		<unjar src="lib/hipparchus-core-1.0.jar" dest="${classes.dir}">
+			<patternset>
+				<exclude name="**/*.java" />
+			</patternset>
+		</unjar>
+		<unjar src="lib/hipparchus-fft-1.0.jar" dest="${classes.dir}">
+			<patternset>
+				<exclude name="**/*.java" />
+			</patternset>
+		</unjar>
+		<unjar src="lib/hipparchus-fitting-1.0.jar" dest="${classes.dir}">
+			<patternset>
+				<exclude name="**/*.java" />
+			</patternset>
+		</unjar>
+		<unjar src="lib/hipparchus-optim-1.0.jar" dest="${classes.dir}">
+			<patternset>
+				<exclude name="**/*.java" />
+			</patternset>
+		</unjar>
+		<unjar src="lib/hipparchus-stat-1.0.jar" dest="${classes.dir}">
+			<patternset>
+				<exclude name="**/*.java" />
 			</patternset>
 		</unjar>
 		<unjar src="lib/jsr305.jar" dest="${classes.dir}">
@@ -62,12 +84,18 @@
 				<exclude name="**/*.java" />
 			</patternset>
 		</unjar>
-		<unjar src="lib/log4j-1.2.11.jar " dest="${classes.dir}">
+		<unjar src="lib/log4j-1.2.17.jar " dest="${classes.dir}">
 			<patternset>
 				<exclude name="**/*.java" />
 				<exclude name="**/*.gif" />
 			</patternset>
 		</unjar>
+		<unjar src="lib/log4j-over-slf4j-1.7.2.jar" dest="${classes.dir}">
+			<patternset>
+				<exclude name="**/*.java" />
+			</patternset>
+		</unjar>
+		-->
 		<!--		<unjar src="lib/junit-4.6.jar " dest="${classes.dir}"> 
 		  <patternset>
             <exclude name="**/*.java"/>
@@ -80,141 +108,7 @@
 		</jar>
 	</target>
 
-
-	<target name="proguard-library" description="Create shrinked and obfuscated &quot;/build/jar/symja-lib-YYYY-MM-DD.jar&quot; file for download with &quot;/toolslib/proguard.jar&quot;" depends="jar">
-		<taskdef resource="proguard/ant/task.properties" classpath="toolslib/proguard.jar" />
-		<proguard printmapping="proguard.map" overloadaggressively="on" defaultpackage="" allowaccessmodification="on">
--libraryjars "${java.home}/lib/rt.jar"
--injars      ${jar.dir}/symja_java8-${date}.jar
--outjars     ${jar.dir}/symja-lib-${date}.jar
--keepattributes Signature
-
--keep public class com.google.common.base.FinalizableReference {
-    public protected *;
-}
-
--keep public class * extends com.google.common.base.FinalizableReference {
-    public protected *;
-}
-
--keep public class * extends org.apache.log4j.Appender {
-    public protected *;
-}
-
--keep public class * extends org.apache.log4j.spi.OptionHandler {
-    public protected *;
-}
-
--keep public class * implements org.apfloat.spi.BuilderFactory {
-    public protected *;
-}
-
--keep public class * implements java.lang.Number {
-    public protected *;
-}
-
--keep public class com.google.common.base.Predicate {
-    public protected *;
-}
-
--keep public class * implements com.google.common.base.Predicate {
-    public protected *;
-}
-
--keep public class com.google.common.base.Function {
-    public protected *;
-}
-
--keep public class * implements com.google.common.base.Function {
-    public protected *;
-}
-
--keep public class org.apache.commons.math4.Field {
-    public protected *;
-}
-
--keep public class * implements org.apache.commons.math4.Field {
-    public protected *;
-}
-
--keep public class org.apache.commons.math4.FieldElement {
-    public protected *;
-}
-
--keep public class * implements org.apache.commons.math4.FieldElement {
-    public protected *;
-}
-
--keepnames class * implements java.io.Serializable
-
--keepclassmembers class * implements java.io.Serializable {
-    static final long serialVersionUID;
-    private static final java.io.ObjectStreamField[] serialPersistentFields;
-    !static !transient &lt;fields&gt;;
-    !private &lt;fields&gt;;
-    !private &lt;methods&gt;;
-    private void writeObject(java.io.ObjectOutputStream);
-    private void readObject(java.io.ObjectInputStream);
-    java.lang.Object writeReplace();
-    java.lang.Object readResolve();
-}
-
--keep public class org.matheclipse.parser.** { 
-    public protected *;
-}
-
--keepclassmembernames class org.matheclipse.parser.** {
-  java.lang.Class class$(java.lang.String);
-  java.lang.Class class$(java.lang.String, boolean);
-}
-
--keepclasseswithmembernames class org.matheclipse.parser.** {
-  native &lt;methods&gt;;
-}
-
--keepclassmembers enum org.matheclipse.parser.** {
-  public static **[] values();
-  public static ** valueOf(java.lang.String);
-}
-
--keepclassmembers class org.matheclipse.parser.** implements java.io.Serializable {
-    static final long serialVersionUID;
-    private static final java.io.ObjectStreamField[] serialPersistentFields;
-    private void writeObject(java.io.ObjectOutputStream);
-    private void readObject(java.io.ObjectInputStream);
-    java.lang.Object writeReplace();
-    java.lang.Object readResolve();
-}
-
--keep public class org.matheclipse.core.** { 
-    public protected *;
-}
-
--keepclassmembernames class org.matheclipse.core.** {
-  java.lang.Class class$(java.lang.String);
-  java.lang.Class class$(java.lang.String, boolean);
-}
-
--keepclasseswithmembernames class org.matheclipse.core.** {
-  native &lt;methods&gt;;
-}
-
--keepclassmembers enum org.matheclipse.core.** {
-  public static **[] values();
-  public static ** valueOf(java.lang.String);
-}
-
--keepclassmembers class org.matheclipse.core.** implements java.io.Serializable {
-    static final long serialVersionUID;
-    private static final java.io.ObjectStreamField[] serialPersistentFields;
-    private void writeObject(java.io.ObjectOutputStream);
-    private void readObject(java.io.ObjectInputStream);
-    java.lang.Object writeReplace();
-    java.lang.Object readResolve();
-}
-</proguard>
-</target>
-
-<target name="main" description="Run ANT targets clean and jar"  depends="clean,jar"/>
+	<target name="main" description="Run ANT targets clean and jar" depends="clean,jar" />
 
 </project>
+
