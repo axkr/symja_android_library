@@ -29,7 +29,6 @@
 	<target name="compile" description="Compile the Symja Java sources to subdirectory &quot;/build/classes&quot;" depends="clean">
 		<mkdir dir="${classes.dir}" />
 		<copy file="jas/src/main/resources/log4j.properties" todir="${classes.dir}" />
-		<copydir src="matheclipse-core/src/main/java/ser" dest="${classes.dir}/ser" />
 		<copy file="matheclipse-core/src/main/java/System.mep" todir="${classes.dir}" />
 		<copy file="matheclipse-core/src/main/java/META-INF/MANIFEST.MF" todir="${classes.dir}/META-INF" />
 		<copy file="matheclipse-core/src/main/java/META-INF/services/javax.script.ScriptEngineFactory" todir="${classes.dir}/META-INF/services" />
