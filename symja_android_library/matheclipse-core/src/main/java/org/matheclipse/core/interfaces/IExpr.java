@@ -1117,6 +1117,18 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is an interval expression with one or more
+	 * <code>List[min, max]</code> arguments
+	 * <code>Interval[{min1, max1}, {min2, max2}, ...]</code> which represent
+	 * the union of the interval ranges.
+	 * 
+	 * @return
+	 */
+	default boolean isInterval() {
+		return false;
+	}
+
+	/**
 	 * Test if this expression is an interval expression with one
 	 * <code>List[min, max]</code> argument <code>Interval[{min, max}]</code>
 	 * 
@@ -2042,7 +2054,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	/**
 	 * If this is a <code>Interval[{lower, upper}]</code> expression return the
-	 * <code>lower</code> value. If this is a <code>ISignedNUmber</code>
+	 * <code>lower</code> value. If this is a <code>ISignedNumber</code>
 	 * expression return <code>this</code>.
 	 * 
 	 * @return <code>F.NIL</code> if this expression is no interval and no
@@ -2394,7 +2406,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	/**
 	 * If this is a <code>Interval[{lower, upper}]</code> expression return the
-	 * <code>upper</code> value. If this is a <code>ISignedNUmber</code>
+	 * <code>upper</code> value. If this is a <code>ISignedNumber</code>
 	 * expression return <code>this</code>.
 	 * 
 	 * @return <code>F.NIL</code> if this expression is no interval and no

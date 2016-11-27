@@ -19,11 +19,15 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class SubtractExprOperator extends InfixExprOperator {
-	public SubtractExprOperator(final String oper, final String functionName, final int precedence, final int grouping) {
+	public SubtractExprOperator(final String oper, final String functionName, final int precedence,
+			final int grouping) {
 		super(oper, functionName, precedence, grouping);
 	}
 
 	public IExpr createFunction(final IExprParserFactory factory, final IExpr lhs, final IExpr rhs) {
+		if (rhs.isNumber()) {
+			return F.Plus(lhs, rhs.negate());
+		}
 		return F.Plus(lhs, F.Times(F.CN1, rhs));
 	}
 }

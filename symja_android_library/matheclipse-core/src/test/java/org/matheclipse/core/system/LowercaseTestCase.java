@@ -4037,10 +4037,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Total({{1,2,3},{4,5,6},{7,8,9}},{2})", "{6,15,24}");
 		check("Total({{1,2,3},{4,5,6},{7,8,9}},2)", "45");
 	}
-
+	
 	public void testTr() {
 		check("Tr({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, f)", "f(1,5,9)");
 		// check("Tr[{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, Plus, 1]", "");
+	}
+	
+	public void testTrace() {
+		check("x=5;Trace(Mod((3 + x)^2, x - 1))", "{{{{x,5},3+5,8},8^2,64},{{x,5},-1+5,4},Mod(64,4),0}"); 
 	}
 
 	public void testTrigExpand() {

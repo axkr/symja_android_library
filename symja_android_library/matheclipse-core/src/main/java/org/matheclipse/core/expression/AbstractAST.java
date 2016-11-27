@@ -1646,6 +1646,20 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public final boolean isInterval() {
+		if (isSameHeadSizeGE(F.Interval, 2)) {
+			for (int i = 1; i < size(); i++) {
+				if (!(get(i).isVector() == 2)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isInterval1() {
 		return isSameHead(F.Interval, 2) && arg1().isAST(F.List, 3);
 	}
@@ -2320,16 +2334,16 @@ public abstract class AbstractAST implements IAST {
 		return -1;
 	}
 
-//	@Override
+	// @Override
 	/**
 	 * Returns an iterator over the elements in this list starting with offset
 	 * <b>0</b>.
 	 * 
 	 * @return an iterator over this list values.
 	 */
-//	public final Iterator<IExpr> iterator0() {
-//		return super.iterator();
-//	}
+	// public final Iterator<IExpr> iterator0() {
+	// return super.iterator();
+	// }
 
 	/**
 	 * Returns an iterator over the elements in this <code>IAST</code> starting
@@ -2358,7 +2372,7 @@ public abstract class AbstractAST implements IAST {
 	@Override
 	public final int lastIndexOf(IExpr object) {
 		int size = size();
-		for (int i = size - 1; i >= 0; i--) { 
+		for (int i = size - 1; i >= 0; i--) {
 			if (object.equals(get(i))) {
 				return i;
 			}
