@@ -49,7 +49,7 @@ final public class TraceStack extends AbstractEvalStepListener {
 	 */
 	public void add(IExpr expr) {
 		if (fMatcher != null) {
-			if (fMatcher.test(expr)) {
+			if (fMatcher.test(expr.head())) {
 				fTraceList.append(F.HoldForm(expr));
 			}
 		} else {

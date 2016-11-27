@@ -282,10 +282,10 @@ public class Iterator implements IIterator<IExpr> {
 			}
 			count = ((IAST) maxCounterOrList).get(maxCounterOrListIndex++);
 		} else {
-			count = evalEngine.evaluate(Plus(count, step));
+			count = evalEngine.evaluate(count.add(step));
 		}
 		return temp;
-	}
+	} 
 
 	/**
 	 * Not implemented; throws UnsupportedOperationException

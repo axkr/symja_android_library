@@ -4044,7 +4044,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 	
 	public void testTrace() {
+		
 		check("x=5;Trace(Mod((3 + x)^2, x - 1))", "{{{{x,5},3+5,8},8^2,64},{{x,5},-1+5,4},Mod(64,4),0}"); 
+		check("Trace(u = 2; Do(u = u*u, {3}); u)",
+				"{{{u=2,2},{{{{u,2},{u,2},2*2,4},4},{{{u,4},{u,4},4*4,16},16},{{{u,16},{u,16},16*\n" + 
+				"16,256},256},Null},Null},{u,256},256}");
+		check("Trace(u = 2; Do(u = u*u, {3}); u, Times)", "{{{{{2*2}},{{4*4}},{{16*16}}}}}");
 	}
 
 	public void testTrigExpand() {
