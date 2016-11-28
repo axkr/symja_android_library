@@ -569,7 +569,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * Create a copy of this <code>AST</code>, which contains the same head and
-	 * all elements from to the given <code>position</code> (inclusive).
+	 * all elements from the given <code>position</code> (inclusive).
 	 * 
 	 * @param position
 	 * @return

@@ -42,7 +42,8 @@ final public class TraceStack extends AbstractEvalStepListener {
 	}
 
 	/**
-	 * Add the expression to the internal trace list, if the trace matcher returns <code>true</code>.
+	 * Add the expression to the internal trace list, if the trace matcher
+	 * returns <code>true</code>.
 	 * 
 	 * @param expr
 	 *            an expression
@@ -58,20 +59,15 @@ final public class TraceStack extends AbstractEvalStepListener {
 	}
 
 	/**
-	 * Add the expression to the internal trace list, if the trace matcher returns <code>true</code> and the trace lit is empty.
+	 * Add the expression to the internal trace list, if the trace matcher
+	 * returns <code>true</code> and the trace lit is empty.
 	 * 
 	 * @param expr
 	 *            an expression
 	 */
 	public void addIfEmpty(IExpr expr) {
 		if (fTraceList.isAST0()) {
-			if (fMatcher != null) {
-				if (fMatcher.test(expr)) {
-					fTraceList.append(F.HoldForm(expr));
-				}
-			} else {
-				fTraceList.append(F.HoldForm(expr));
-			}
+			add(expr);
 		}
 	}
 
