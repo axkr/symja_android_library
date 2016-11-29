@@ -155,25 +155,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public final int IS_ALL_EXPANDED = 0x2000;
 
 	/**
-	 * Adds the objects in the specified collection to the end of this
-	 * {@code List}. The objects are added in the order in which they are
-	 * returned from the collection's iterator.
-	 * 
-	 * @param collection
-	 *            the collection of objects.
-	 * @return {@code true} if this {@code List} is modified, {@code false}
-	 *         otherwise (i.e. if the passed collection was empty).
-	 * @throws UnsupportedOperationException
-	 *             if adding to this {@code List} is not supported.
-	 * @throws ClassCastException
-	 *             if the class of an object is inappropriate for this
-	 *             {@code List}.
-	 * @throws IllegalArgumentException
-	 *             if an object cannot be added to this {@code List}.
-	 */
-	public boolean appendAll(Collection<? extends IExpr> collection);
-
-	/**
 	 * 
 	 * @param collection
 	 * @return
@@ -182,21 +163,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	default boolean addAll(Collection<? extends IExpr> collection) {
 		return appendAll(collection);
 	}
-
-	/**
-	 * Appends all elements from offset <code>startPosition</code> to
-	 * <code>endPosition</code> in the specified AST to the end of this AST.
-	 * 
-	 * @param ast
-	 *            AST containing elements to be added to this AST
-	 * @param startPosition
-	 *            the start position, inclusive.
-	 * @param endPosition
-	 *            the ending position, exclusive.
-	 * @return <tt>true</tt> if this AST changed as a result of the call
-	 * 
-	 */
-	public boolean appendAll(IAST ast, int startPosition, int endPosition);
 
 	/**
 	 * 
@@ -210,8 +176,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 		return appendAll(ast, startPosition, endPosition);
 	}
 
-	public boolean appendAll(int location, Collection<? extends IExpr> collection);
-
 	/**
 	 * 
 	 * @param location
@@ -222,32 +186,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	default boolean addAll(int location, Collection<? extends IExpr> collection) {
 		return appendAll(location, collection);
 	}
-
-	/**
-	 * Appends all of the arguments (starting from offset <code>0</code>) in the
-	 * specified list to the end of this AST.
-	 * 
-	 * @param list
-	 *            list containing elements to be added to this AST
-	 * @return <tt>true</tt> if this AST changed as a result of the call
-	 * 
-	 */
-	// public boolean addAll(List<? extends IExpr> list);
-
-	/**
-	 * Appends all elements from offset <code>startPosition</code> to
-	 * <code>endPosition</code> in the specified list to the end of this AST.
-	 * 
-	 * @param list
-	 *            list containing elements to be added to this AST
-	 * @param startPosition
-	 *            the start position, inclusive.
-	 * @param endPosition
-	 *            the ending position, exclusive.
-	 * @return <tt>true</tt> if this AST changed as a result of the call
-	 * 
-	 */
-	public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition);
 
 	/**
 	 * 
@@ -262,17 +200,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	}
 
 	/**
-	 * Appends all of the arguments (starting from offset <code>1</code>) in the
-	 * specified AST to the end of this AST.
-	 * 
-	 * @param ast
-	 *            AST containing elements to be added to this AST
-	 * @return <tt>true</tt> if this AST changed as a result of the call
-	 * 
-	 */
-	public boolean appendArgs(IAST ast);
-
-	/**
 	 * 
 	 * @param ast
 	 * @return
@@ -283,16 +210,25 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	}
 
 	/**
-	 * Create a shallow copy of this <code>IAST</code> instance (the elements
-	 * themselves are not copied) and add the <code>expr</code> at the given
-	 * <code>position</code>.
 	 * 
-	 * @param position
 	 * @param expr
-	 * @return a clone with added <code>expr</code> element at the given
-	 *         <code>position</code>.
+	 * @return
+	 * @deprecated use appendClone();
 	 */
-	public IAST appendAtClone(int position, IExpr expr);
+	default IAST addClone(IExpr expr) {
+		return appendClone(expr);
+	}
+
+	/**
+	 * Appends all of the arguments (starting from offset <code>0</code>) in the
+	 * specified list to the end of this AST.
+	 * 
+	 * @param list
+	 *            list containing elements to be added to this AST
+	 * @return <tt>true</tt> if this AST changed as a result of the call
+	 * 
+	 */
+	// public boolean addAll(List<? extends IExpr> list);
 
 	/**
 	 * Add an evaluation flag to the existing ones.
@@ -300,16 +236,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @param i
 	 */
 	public void addEvalFlags(int i);
-
-	/**
-	 * Add an <code>subAST</code> with attribute <code>OneIdentity</code> for
-	 * example Plus[] or Times[].
-	 * 
-	 * @param subAST
-	 *            an ast with attribute <code>OneIdentity</code>.
-	 * @return <code>this</code> ast after adding the subAST
-	 */
-	public IAST appendOneIdentity(IAST subAST);
 
 	/**
 	 * 
@@ -363,6 +289,80 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public void append(int location, IExpr object);
 
 	/**
+	 * Adds the objects in the specified collection to the end of this
+	 * {@code List}. The objects are added in the order in which they are
+	 * returned from the collection's iterator.
+	 * 
+	 * @param collection
+	 *            the collection of objects.
+	 * @return {@code true} if this {@code List} is modified, {@code false}
+	 *         otherwise (i.e. if the passed collection was empty).
+	 * @throws UnsupportedOperationException
+	 *             if adding to this {@code List} is not supported.
+	 * @throws ClassCastException
+	 *             if the class of an object is inappropriate for this
+	 *             {@code List}.
+	 * @throws IllegalArgumentException
+	 *             if an object cannot be added to this {@code List}.
+	 */
+	public boolean appendAll(Collection<? extends IExpr> collection);
+
+	/**
+	 * Appends all elements from offset <code>startPosition</code> to
+	 * <code>endPosition</code> in the specified AST to the end of this AST.
+	 * 
+	 * @param ast
+	 *            AST containing elements to be added to this AST
+	 * @param startPosition
+	 *            the start position, inclusive.
+	 * @param endPosition
+	 *            the ending position, exclusive.
+	 * @return <tt>true</tt> if this AST changed as a result of the call
+	 * 
+	 */
+	public boolean appendAll(IAST ast, int startPosition, int endPosition);
+
+	public boolean appendAll(int location, Collection<? extends IExpr> collection);
+
+	/**
+	 * Appends all elements from offset <code>startPosition</code> to
+	 * <code>endPosition</code> in the specified list to the end of this AST.
+	 * 
+	 * @param list
+	 *            list containing elements to be added to this AST
+	 * @param startPosition
+	 *            the start position, inclusive.
+	 * @param endPosition
+	 *            the ending position, exclusive.
+	 * @return <tt>true</tt> if this AST changed as a result of the call
+	 * 
+	 */
+	public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition);
+
+	/**
+	 * Appends all of the arguments (starting from offset <code>1</code>) in the
+	 * specified AST to the end of this AST.
+	 * 
+	 * @param ast
+	 *            AST containing elements to be added to this AST
+	 * @return <tt>true</tt> if this AST changed as a result of the call
+	 * 
+	 */
+	public boolean appendArgs(IAST ast);
+
+	/**
+	 * Create a shallow copy of this <code>IAST</code> instance (the elements
+	 * themselves are not copied) and add the <code>expr</code> at the given
+	 * <code>position</code>.
+	 * 
+	 * @param position
+	 * @param expr
+	 * @return a clone with added <code>expr</code> element at the given
+	 *         <code>position</code>.
+	 */
+	public IAST appendAtClone(int position, IExpr expr);
+
+	/**
 	 * Append an expression to this list.
 	 * 
 	 * @param expr
@@ -372,14 +372,14 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IAST appendClone(IExpr expr);
 
 	/**
+	 * Add an <code>subAST</code> with attribute <code>OneIdentity</code> for
+	 * example Plus[] or Times[].
 	 * 
-	 * @param expr
-	 * @return
-	 * @deprecated use appendClone();
+	 * @param subAST
+	 *            an ast with attribute <code>OneIdentity</code>.
+	 * @return <code>this</code> ast after adding the subAST
 	 */
-	default IAST addClone(IExpr expr) {
-		return appendClone(expr);
-	}
+	public IAST appendOneIdentity(IAST subAST);
 
 	/**
 	 * Apply the given head to this expression (i.e. create a list clone and
@@ -1056,15 +1056,18 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * position will be replaced by the currently mapped element and appends the
 	 * element to <code>appendAST</code>.
 	 * 
+	 * @deprecated use IAST#mapThread() instead
+	 * 
 	 * @param appendAST
 	 * @param replacement
 	 *            an IAST there the argument at the given position is replaced
 	 *            by the currently mapped argument of this IAST.
 	 * @param position
 	 * @return <code>appendAST</code>
-	 * @see IAST#map(Function)
 	 */
-	public IAST mapAt(IAST appendAST, final IAST replacement, int position);
+	default IAST mapAt(IAST appendAST, final IAST replacement, int position) {
+		return mapThread(appendAST, replacement, position);
+	}
 
 	/**
 	 * Maps the elements of this IAST with the unary functor
@@ -1089,7 +1092,27 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 * @see IAST#map(Function)
 	 */
-	public IAST mapAt(final IAST replacement, int position);
+	public IAST mapThread(final IAST replacement, int position);
+
+	default IAST mapAt(final IAST replacement, int position){
+		return mapThread(replacement,position);
+	}
+	/**
+	 * Maps the elements of this IAST with the unary functor
+	 * <code>Functors.replaceArg(replacement, position)</code>, there
+	 * <code>replacement</code> is an IAST at which the argument at the given
+	 * position will be replaced by the currently mapped element and appends the
+	 * element to <code>appendAST</code>.
+	 * 
+	 * @param appendAST
+	 * @param replacement
+	 *            an IAST there the argument at the given position is replaced
+	 *            by the currently mapped argument of this IAST.
+	 * @param position
+	 * @return <code>appendAST</code>
+	 * @see IAST#map(Function)
+	 */
+	public IAST mapThread(IAST appendAST, final IAST replacement, int position);
 
 	/**
 	 * Calculate a special hash value for pattern matching

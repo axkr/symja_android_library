@@ -39,7 +39,7 @@ public class LaplaceTransform extends AbstractFunctionEvaluator implements Lapla
 				if (arg1.isPlus()) {
 					// LaplaceTransform[a_+b_+c_,t_,s_] ->
 					// LaplaceTransform[a,t,s]+LaplaceTransform[b,t,s]+LaplaceTransform[c,t,s]
-					return arg1.mapAt(F.LaplaceTransform(F.Null, t, s), 1);
+					return arg1.mapThread(F.LaplaceTransform(F.Null, t, s), 1);
 				}
 			}
 		}

@@ -63,7 +63,7 @@ public class BooleanConvert extends AbstractFunctionEvaluator {
 
 		public IAST convertEquivalent(IAST ast) {
 			IAST term1 = ast.apply(F.And);
-			IAST term2 = term1.mapAt(F.Not(null), 1);
+			IAST term2 = term1.mapThread(F.Not(null), 1);
 			return F.Or(term1, term2);
 		}
 

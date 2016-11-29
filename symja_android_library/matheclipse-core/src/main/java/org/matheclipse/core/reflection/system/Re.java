@@ -75,7 +75,7 @@ public class Re extends AbstractEvaluator {
 			}
 		}
 		if (arg1.isPlus()) {
-			return ((IAST) arg1).mapAt((IAST) F.Re(null), 1);
+			return ((IAST) arg1).mapThread((IAST) F.Re(null), 1);
 		}
 		if (arg1.isPower()) {
 			IAST astPower = (IAST) arg1;

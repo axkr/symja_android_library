@@ -64,7 +64,7 @@ public class Thread extends AbstractFunctionEvaluator {
 						F.Equivalent, F.Equal, F.Unequal, F.Less, F.Greater, F.LessEqual, F.GreaterEqual };
 				for (int i = 0; i < plusLogicEquationHeads.length; i++) {
 					if (ast.isAST(plusLogicEquationHeads[i])) {
-						return ((IAST) ast).mapAt(cloned, position);
+						return ((IAST) ast).mapThread(cloned, position);
 					}
 				}
 
@@ -97,7 +97,7 @@ public class Thread extends AbstractFunctionEvaluator {
 						F.Equivalent, F.Equal, F.Unequal, F.Less, F.Greater, F.LessEqual, F.GreaterEqual };
 				for (int i = 0; i < logicEquationHeads.length; i++) {
 					if (ast.isAST(logicEquationHeads[i])) {
-						return ((IAST) ast).mapAt(cloned, position);
+						return ((IAST) ast).mapThread(cloned, position);
 					}
 				}
 
@@ -114,8 +114,8 @@ public class Thread extends AbstractFunctionEvaluator {
 	 * @param list
 	 * @param head
 	 *            the head over which
-	 * @param listLength
-	 *            the length of the list
+	 * @param mapHead
+	 *            the arguments head (typically <code>ast.head()</code>)
 	 * @return
 	 */
 	public static IAST threadList(final IAST list, IExpr head, IExpr mapHead) {

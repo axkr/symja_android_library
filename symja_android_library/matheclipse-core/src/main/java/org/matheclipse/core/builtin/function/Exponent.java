@@ -27,7 +27,7 @@ public class Exponent extends AbstractCoreFunctionEvaluator {
 
 		final IExpr form = engine.evalPattern(ast.arg2());
 		if (form.isList()) {
-			return ((IAST) form).mapAt(ast, 2);
+			return ((IAST) form).mapThread(ast, 2);
 		}
 		ISymbol sym = F.Max;
 		if (ast.isAST3()) {

@@ -296,7 +296,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	}
 
 	private static IExpr mapLimit(final IAST expr, IAST rule) {
-		return expr.mapAt(F.Limit(null, rule), 1);
+		return expr.mapThread(F.Limit(null, rule), 1);
 	}
 
 	/**

@@ -237,7 +237,7 @@ public class Cancel extends AbstractFunctionEvaluator {
 			IExpr expandedArg1 = F.evalExpandAll(arg1);
 
 			if (expandedArg1.isPlus()) {
-				return ((IAST) expandedArg1).mapAt(F.Cancel(null), 1);
+				return ((IAST) expandedArg1).mapThread(F.Cancel(null), 1);
 			} else if (expandedArg1.isTimes() || expandedArg1.isPower()) {
 				IExpr result = cancelPowerTimes(expandedArg1);
 				if (result.isPresent()) {

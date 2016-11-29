@@ -2437,7 +2437,7 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST mapAt(IAST appendAST, final IAST replacement, int position) {
+	public final IAST mapThread(IAST appendAST, final IAST replacement, int position) {
 		final Function<IExpr, IExpr> function = Functors.replaceArg(replacement, position);
 		IExpr temp;
 		for (int i = 1; i < size(); i++) {
@@ -2451,7 +2451,7 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST mapAt(final IAST replacement, int position) {
+	public final IAST mapThread(final IAST replacement, int position) {
 		return map(Functors.replaceArg(replacement, position));
 	}
 

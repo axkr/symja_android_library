@@ -47,7 +47,7 @@ public class Product extends Table implements ProductRules {
 		}
 		if (arg1.isTimes()) {
 			IAST prod = ast.setAtCopy(1, null);
-			return ((IAST) arg1).mapAt(prod, 1);
+			return ((IAST) arg1).mapThread(prod, 1);
 		}
 
 		// arg1 = evalBlockExpandWithoutReap(arg1,

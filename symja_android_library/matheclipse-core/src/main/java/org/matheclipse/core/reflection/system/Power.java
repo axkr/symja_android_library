@@ -537,7 +537,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 						}
 					}
 					if (doMap) {
-						return astArg1.mapAt(Power(null, arg2), 1);
+						return astArg1.mapThread(Power(null, arg2), 1);
 					}
 				}
 				if (arg2.isNumber()) {

@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import javax.annotation.Nonnull;
 
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.PowerOp;
@@ -18,7 +19,7 @@ import com.google.common.math.LongMath;
 
 public class Expand extends AbstractFunctionEvaluator {
 	public final static Expand CONST = new Expand();
-	
+
 	private static class Expander {
 
 		boolean expandNegativePowers;
@@ -113,7 +114,7 @@ public class Expand extends AbstractFunctionEvaluator {
 				}
 				IExpr powerAST = PowerOp.power(temp[1], F.CN1);
 				if (distributePlus && temp[0].isPlus()) {
-					return addExpanded(PlusOp.plus(((IAST) temp[0]).mapAt(F.Times(null, powerAST), 1)));
+					return addExpanded(PlusOp.plus(((IAST) temp[0]).mapThread(F.Times(null, powerAST), 1)));
 				}
 				if (evaled) {
 					return addExpanded(TimesOp.times(temp[0], powerAST));
@@ -434,6 +435,9 @@ public class Expand extends AbstractFunctionEvaluator {
 
 		if (ast.arg1().isAST()) {
 			IAST arg1 = (IAST) ast.arg1();
+			if (arg1.isList()) {
+				return arg1.mapThread(F.List(), ast, 1);
+			}
 			IExpr patt = null;
 			if (ast.size() > 2) {
 				patt = ast.arg2();

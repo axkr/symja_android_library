@@ -220,7 +220,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 
 							// Integrate[a_+b_+...,x_] ->
 							// Integrate[a,x]+Integrate[b,x]+...
-							return ((IAST) fxExpanded).mapAt(F.Integrate(null, x), 1);
+							return ((IAST) fxExpanded).mapThread(F.Integrate(null, x), 1);
 						}
 
 						final IAST arg1AST = (IAST) fxExpanded;
@@ -338,7 +338,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 				if (fx.isPlus()) {
 					// Integrate[a_+b_+...,x_] ->
 					// Integrate[a,x]+Integrate[b,x]+...
-					return ((IAST) fx).mapAt(F.Integrate(null, ast.arg2()), 1);
+					return ((IAST) fx).mapThread(F.Integrate(null, ast.arg2()), 1);
 				}
 			}
 
@@ -491,7 +491,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 				fx = F.eval(F.ReplaceAll(fx, F.List(F.Rule(F.Sin(F.$p(pSymbol)), F.Sin(F.Collect(pSymbol, arg2))),
 						F.Rule(F.Cos(F.$p(pSymbol)), F.Cos(F.Collect(pSymbol, arg2))))));
 				// Integrate[a_+b_+...,x_] -> Integrate[a,x]+Integrate[b,x]+...
-				return ((IAST) fx).mapAt(F.Integrate(null, arg2), 1);
+				return ((IAST) fx).mapThread(F.Integrate(null, arg2), 1);
 			}
 		}
 		return F.NIL;

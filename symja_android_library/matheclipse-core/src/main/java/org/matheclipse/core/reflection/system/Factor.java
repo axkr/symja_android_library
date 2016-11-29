@@ -52,6 +52,9 @@ public class Factor extends AbstractFunctionEvaluator {
 		// "Factorization only implemented for univariate polynomials");
 		// }
 		try {
+			if (ast.arg1().isList()) {
+				return ((IAST)ast.arg1()).mapThread(F.List(), ast, 1);
+			}
 			IExpr expr = F.evalExpandAll(ast.arg1());
 			ASTRange r = new ASTRange(eVar.getVarList(), 1);
 			List<IExpr> varList = r;

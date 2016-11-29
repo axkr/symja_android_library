@@ -1311,6 +1311,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExpand() {
+		check("Expand({x*(1+x)})", "{x+x^2}");
 		check("Expand((-g^2+4*f*h)*h)", "-g^2*h+4*f*h^2");
 		check("expand((1 + x)^10)", "1+10*x+45*x^2+120*x^3+210*x^4+252*x^5+210*x^6+120*x^7+45*x^8+10*x^9+x^10");
 		check("expand((1 + x + y)*(2 - x)^3)", "8-4*x-6*x^2+5*x^3-x^4+8*y-12*x*y+6*x^2*y-x^3*y");
@@ -1418,6 +1419,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testFactor() {
+		check("Factor({x+x^2})", "{x*(1+x)}");
 		check("Factor(x^259+1)",
 				"(1+x)*(1+x-x^7-x^8+x^14+x^15-x^21-x^22+x^28+x^29-x^35-x^36-x^37-x^38+x^42+x^43+x^\n"
 						+ "44+x^45-x^49-x^50-x^51-x^52+x^56+x^57+x^58+x^59-x^63-x^64-x^65-x^66+x^70+x^71+x^\n"
@@ -3764,7 +3766,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSum() {
 		check("Sum(i!,{i,3,n})", "-4-Subfactorial(-1)+(-1)^(1+n)*Gamma(2+n)*Subfactorial(-2-n)");
 		check("Sum(i!,{i,1,n})", "-1-Subfactorial(-1)+(-1)^(1+n)*Gamma(2+n)*Subfactorial(-2-n)");
-		
+
 		check("Sum(g(i),{i,10,2})", "0");
 		check("Sum(0.5^i,{i,1,Infinity})", "1.0");
 
@@ -4037,19 +4039,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Total({{1,2,3},{4,5,6},{7,8,9}},{2})", "{6,15,24}");
 		check("Total({{1,2,3},{4,5,6},{7,8,9}},2)", "45");
 	}
-	
+
 	public void testTr() {
 		check("Tr({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, f)", "f(1,5,9)");
 		// check("Tr[{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, Plus, 1]", "");
 	}
-	
+
 	public void testTrace() {
 		check("Trace(u = 2; Do(u = u*u, {3}); u, Times)", "{{{{{u*u,2*2}},{{u*u,4*4}},{{u*u,16*16}}}}}");
-		check("x=5;Trace(Mod((3 + x)^2, x - 1))", "{{{{x,5},3+5,8},8^2,64},{{x,5},-1+5,4},Mod(64,4),0}"); 
+		check("x=5;Trace(Mod((3 + x)^2, x - 1))", "{{{{x,5},3+5,8},8^2,64},{{x,5},-1+5,4},Mod(64,4),0}");
 		check("Trace(u = 2; Do(u = u*u, {3}); u)",
-				"{{{u=2,2},{{{{u,2},{u,2},2*2,4},4},{{{u,4},{u,4},4*4,16},16},{{{u,16},{u,16},16*\n" + 
-				"16,256},256},Null},Null},{u,256},256}");
-		
+				"{{{u=2,2},{{{{u,2},{u,2},2*2,4},4},{{{u,4},{u,4},4*4,16},16},{{{u,16},{u,16},16*\n"
+						+ "16,256},256},Null},Null},{u,256},256}");
+
 	}
 
 	public void testTrigExpand() {

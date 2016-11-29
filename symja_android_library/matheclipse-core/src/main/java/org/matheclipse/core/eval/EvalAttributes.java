@@ -244,12 +244,11 @@ public class EvalAttributes {
 	/**
 	 * Thread through all (sub-)lists in the arguments of the IAST (i.e.
 	 * typically the ASTs head has the attribute ISymbol.LISTABLE) example:
-	 * <code>Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}<code>
+	 * <code>Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}</code>
 	 * 
-	 * &#64;param ast
-	 * &#64;param listHead
+	 * @param ast
+	 * @param listHead
 	 *            the lists head (typically <code>F.List</code>)
-	 * 
 	 * @param argHead
 	 *            the arguments head (typically <code>ast.head()</code>)
 	 * @param listLength

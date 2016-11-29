@@ -90,7 +90,7 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 				if (x1.isTimes()) {
 					// Power[x_ * y_, z_] :> x^z * y^z
 					IAST timesAST = (IAST) x1;
-					IAST timesResult = timesAST.mapAt(Power(Null, x2), 1);
+					IAST timesResult = timesAST.mapThread(Power(Null, x2), 1);
 					if (assumptions) {
 						IAST plusResult = Plus(C1D2);
 						for (int i = 1; i < timesAST.size(); i++) {

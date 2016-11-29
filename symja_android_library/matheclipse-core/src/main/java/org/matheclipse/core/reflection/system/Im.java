@@ -83,7 +83,7 @@ public class Im extends AbstractEvaluator {
 			}
 		}
 		if (arg1.isPlus()) {
-			return ((IAST) arg1).mapAt((IAST) F.Im(null), 1);
+			return ((IAST) arg1).mapThread((IAST) F.Im(null), 1);
 		}
 		if (arg1.isPower()) {
 			IAST astPower = (IAST) arg1;

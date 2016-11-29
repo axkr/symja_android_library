@@ -55,7 +55,7 @@ public class Sum extends Table implements SumRules {
 		}
 		if (arg1.isPlus()) {
 			IAST sum = ast.setAtCopy(1, null);
-			return ((IAST) arg1).mapAt(sum, 1);
+			return ((IAST) arg1).mapThread(sum, 1);
 		}
 
 		VariablesSet variablesSet = determineIteratorExprVariables(ast);

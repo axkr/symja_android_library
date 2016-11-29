@@ -69,7 +69,7 @@ public class Equivalent extends AbstractFunctionEvaluator {
 				if (boole.isTrue()) {
 					return result;
 				} else {
-					return result.mapAt(F.Not(null), 1);
+					return result.mapThread(F.Not(null), 1);
 				}
 			}
 			return result;
