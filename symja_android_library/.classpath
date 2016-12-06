@@ -18,5 +18,6 @@
 	<classpathentry kind="lib" path="lib/hipparchus-fitting-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-fft-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-stat-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/hipparchus-ode-1.0.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
