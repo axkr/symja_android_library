@@ -317,9 +317,9 @@ public class AST extends HMArrayList implements Externalizable {
 	@Override
 	public int hashCode() {
 		if (hashValue == 0) {
-			hashValue = 17;
+			hashValue = 0x811c9dc5;// decimal 2166136261;
 			for (int i = firstIndex; i < lastIndex; i++) {
-				hashValue = 23 * hashValue + array[i].hashCode();
+				hashValue = (hashValue * 16777619) ^ (array[i].hashCode() & 0xff);
 			}
 		}
 		return hashValue;

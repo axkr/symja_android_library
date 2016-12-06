@@ -87,7 +87,7 @@ public class AST2Expr {
 			"Map", "MapAt", "MapAll", "MapThread", "MatchingDissimilarity", "MatchQ", "MathMLForm", "MatrixForm",
 			"MatrixPower", "MatrixQ", "MatrixRank", "Max", "Mean", "Median", "MemberQ", "MeshRange", "MessageName",
 			"Min", "Mod", "Module", "MoebiusMu", "MonomialList", "Most", "Multinomial", "MultiplicativeOrder", "Names",
-			"Nand", "Nearest", "Negative", "Nest", "NestList", "NestWhile", "NestWhileList", "NextPrime",
+			"Nand", "NDSolve", "Nearest", "Negative", "Nest", "NestList", "NestWhile", "NestWhileList", "NextPrime",
 			"NFourierTransform", "NIntegrate", "NMaximize", "NMinimize", "NonCommutativeMultiply", "NonNegative", "Nor",
 			"Normal", "Normalize", "Norm", "NormalDistribution", "Not", "NRoots", "NSolve", "NullSpace",
 			"NumberFieldRootsOfUnity", "NumberQ", "Numerator", "NumericQ", "OddQ", "Options", "Or", "Order", "OrderedQ",

@@ -118,10 +118,10 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 		throw new UnsupportedOperationException();
 	}
 
-//	@Override
-//	public boolean addAll(List<? extends IExpr> ast) {
-//		throw new UnsupportedOperationException();
-//	}
+	// @Override
+	// public boolean addAll(List<? extends IExpr> ast) {
+	// throw new UnsupportedOperationException();
+	// }
 
 	@Override
 	public boolean appendAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
@@ -347,7 +347,8 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	@Override
 	public int hashCode() {
 		if (hashValue == 0) {
-			hashValue = 391 + arg0.hashCode();
+			hashValue = 0x811c9dc5;// decimal 2166136261;
+			hashValue = (hashValue * 16777619) ^ (arg0.hashCode() & 0xff);
 		}
 		return hashValue;
 	}

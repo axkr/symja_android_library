@@ -760,7 +760,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Collect(3 b x + x, x)", "x*(1+3*b)");
 		check("Collect(a x^4 + b x^4 + 2 a^2 x - 3 b x + x - 7, x)", "-7+x*(1+2*a^2-3*b)+(a+b)*x^4");
 		check("Collect((1 + a + x)^4, x)",
-				"1+4*a+x*(4+12*a+12*a^2+4*a^3)+6*a^2+4*a^3+a^4+(6+12*a+6*a^2)*x^2+(4+4*a)*x^3+x^4");
+				"1+4*a+6*a^2+4*a^3+a^4+x*(4+12*a+12*a^2+4*a^3)+(6+12*a+6*a^2)*x^2+(4+4*a)*x^3+x^4");
 		check("Collect((1 + a + x)^4, x, Simplify)", "4*x*(1+a)^3+(1+a)^4+6*(1+a)^2*x^2+(4+4*a)*x^3+x^4");
 
 		check("Collect(a x + b y + c x, x)", "(a+c)*x+b*y");
@@ -1190,6 +1190,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Drop({{11,12,13},{21,22,23},a,{31,32,33}},1,2)");
 	}
 
+	// public void testNDSolve() {
+	// check("NDSolve({y'(x) == y(x) Cos(x + y(x)), y(0) == 1}, y(x), {x, 0,
+	// 30})", "");
+	// }
+
 	public void testDSolve() {
 		check("DSolve(D(f(x, y), x) == D(f(x, y), y), f, {x, y})",
 				"DSolve(Derivative(1,0)[f][x,y]==Derivative(0,1)[f][x,y],f,{x,y})");
@@ -1222,10 +1227,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEigenvalues() {
+		check("Eigenvalues({{a}})", "{a}");
+		check("Eigenvalues({{a, b}, {0, a}})", "{a,a}");
+		check("Eigenvalues({{a, b}, {0, d}})", "{1/2*(a+d-Sqrt(a^2-2*a*d+d^2)),1/2*(a+d+Sqrt(a^2-2*a*d+d^2))}");
+		check("Eigenvalues({{a,b}, {c,d}})",
+				"{1/2*(a+d-Sqrt(a^2+4*b*c-2*a*d+d^2)),1/2*(a+d+Sqrt(a^2+4*b*c-2*a*d+d^2))}");
 		check("Eigenvalues({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}})", "{1.0,1.0,1.0}");
 	}
 
 	public void testEigenvectors() {
+		check("Eigenvectors({{a}})", "1");
+		check("Eigenvectors({{a, b}, {0, a}})", "{{1,0},{0,0}}");
+		check("Eigenvectors({{a, b}, {0, d}})", "{{1,0},{-b/(a-d),1}}");
+		check("Eigenvectors({{a, b}, {c, d}})", 
+				"{{-(-a+d+Sqrt(a^2+4*b*c-2*a*d+d^2))/(2*c),1},{-(-a+d-Sqrt(a^2+4*b*c-2*a*d+d^2))/(\n" + 
+				"2*c),1}}");
 		check("Eigenvectors({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}})", "{{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}}");
 		check("Eigenvectors({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})",
 				"{{0.23197068724628567,0.5253220933012341,0.8186734993561818},{0.8169642040610363,0.09018835790853769,-0.6365874882439638},{0.4082482904638629,-0.8164965809277261,0.40824829046386285}}");

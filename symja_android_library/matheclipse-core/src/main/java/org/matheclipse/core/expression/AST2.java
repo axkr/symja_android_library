@@ -188,9 +188,10 @@ public class AST2 extends AST1 {
 	@Override
 	public int hashCode() {
 		if (hashValue == 0) {
-			hashValue = 391 + arg0.hashCode();
-			hashValue = 23 * hashValue + arg1.hashCode();
-			hashValue = 23 * hashValue + arg2.hashCode();
+			hashValue = 0x811c9dc5;// decimal 2166136261;
+			hashValue = (hashValue * 16777619) ^ (arg0.hashCode() & 0xff);
+			hashValue = (hashValue * 16777619) ^ (arg1.hashCode() & 0xff);
+			hashValue = (hashValue * 16777619) ^ (arg2.hashCode() & 0xff);
 		}
 		return hashValue;
 	}

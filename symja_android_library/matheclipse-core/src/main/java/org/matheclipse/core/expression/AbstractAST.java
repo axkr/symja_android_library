@@ -1022,13 +1022,25 @@ public abstract class AbstractAST implements IAST {
 		return null;
 	}
 
+	/**
+	 * <p>
+	 * FNV-1 hash code of this <code>IAST</code>.
+	 * </p>
+	 * 
+	 * <p>
+	 * See: <a href=
+	 * "https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function#FNV-1_hash">
+	 * Wikipedia: Fowler–Noll–Vo hash function</a>
+	 * </p>
+	 * 
+	 */
 	@Override
 	public int hashCode() {
 		if (hashValue == 0) {
-			hashValue = 17;
+			hashValue = 0x811c9dc5;// decimal 2166136261;
 			int size = size();
 			for (int i = 0; i < size; i++) {
-				hashValue = 23 * hashValue + get(i).hashCode();
+				hashValue = (hashValue * 16777619) ^ (get(i).hashCode() & 0xff);
 			}
 		}
 		return hashValue;
