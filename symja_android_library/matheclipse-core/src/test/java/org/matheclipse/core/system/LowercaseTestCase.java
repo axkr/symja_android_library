@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
@@ -1239,9 +1240,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Eigenvectors({{a}})", "1");
 		check("Eigenvectors({{a, b}, {0, a}})", "{{1,0},{0,0}}");
 		check("Eigenvectors({{a, b}, {0, d}})", "{{1,0},{-b/(a-d),1}}");
-		check("Eigenvectors({{a, b}, {c, d}})", 
-				"{{-(-a+d+Sqrt(a^2+4*b*c-2*a*d+d^2))/(2*c),1},{-(-a+d-Sqrt(a^2+4*b*c-2*a*d+d^2))/(\n" + 
-				"2*c),1}}");
+		check("Eigenvectors({{a, b}, {c, d}})",
+				"{{-(-a+d+Sqrt(a^2+4*b*c-2*a*d+d^2))/(2*c),1},{-(-a+d-Sqrt(a^2+4*b*c-2*a*d+d^2))/(\n" + "2*c),1}}");
 		check("Eigenvectors({{1, 0, 0}, {0, 1, 0}, {0, 0, 1}})", "{{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}}");
 		check("Eigenvectors({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})",
 				"{{0.23197068724628567,0.5253220933012341,0.8186734993561818},{0.8169642040610363,0.09018835790853769,-0.6365874882439638},{0.4082482904638629,-0.8164965809277261,0.40824829046386285}}");
@@ -3413,10 +3413,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testSeriesData() {
 		check("SeriesData(100, 0, Table(i^2, {i, 10}), 0, 10, 1)", "Indeterminate");
-		check("SeriesData(x, 0, Table(i^2, {i, 10}), 0, 10, 1)",
-				"1+4*x+9*x^2+16*x^3+25*x^4+36*x^5+49*x^6+64*x^7+81*x^8+100*x^9+O(x)^10");
+		// check("SeriesData(x, 0, Table(i^2, {i, 10}), 0, 10, 1)",
+		// "1+4*x+9*x^2+16*x^3+25*x^4+36*x^5+49*x^6+64*x^7+81*x^8+100*x^9+O(x)^10");
 		check("SeriesData(x, 0,{1,0,-1/6,0,1/120,0,-1/5040,0,1/362880}, 1, 11, 2)",
 				"Sqrt(x)-x^(3/2)/6+x^(5/2)/120-x^(7/2)/5040+x^(9/2)/362880+O(x)^(11/2)");
+	}
+
+	public void testShare() {
+		check("Share(Table(j*(x + i), {i, 5}, {j, i}))", "24");
+		check("Share(Table(xi = x + i; Table(j*xi, {j, i}), {i, 5}))", "0");
 	}
 
 	public void testSign() {

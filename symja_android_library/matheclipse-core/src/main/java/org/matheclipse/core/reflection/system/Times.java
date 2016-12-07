@@ -195,12 +195,14 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		} else if (power1Arg1.isInteger() && power1Arg2.isFraction()) {
 			if (power1Arg1.isMinusOne()) {
 				if (arg0.isImaginaryUnit()) {
-					// I * power1Arg1 ^ power1Arg2 -> (-1) ^ (power1Arg2 + (1/2))
+					// I * power1Arg1 ^ power1Arg2 -> (-1) ^ (power1Arg2 +
+					// (1/2))
 					return F.Power(F.CN1, power1Arg2.plus(F.C1D2));
 				}
 				if (arg0.isNegativeImaginaryUnit()) {
-					// (-I) * power1Arg1 ^ power1Arg2 -> (-1) * (-1) ^ (power1Arg2 + (1/2))
-					return F.Times(F.CN1,F.Power(F.CN1, power1Arg2.plus(F.C1D2)));
+					// (-I) * power1Arg1 ^ power1Arg2 -> (-1) * (-1) ^
+					// (power1Arg2 + (1/2))
+					return F.Times(F.CN1, F.Power(F.CN1, power1Arg2.plus(F.C1D2)));
 				}
 			}
 			if (arg0.isFraction()) {
@@ -341,6 +343,9 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		}
 		if (size == 3) {
 			if ((ast.arg1().isNumeric() || ast.arg1().isOne() || ast.arg1().isMinusOne()) && ast.arg2().isPlus()) {
+				if (ast.arg1().isOne()) {
+					return ast.arg2();
+				}
 				// distribute the number over the sum:
 				final IAST arg2 = (IAST) ast.arg2();
 				return arg2.mapThread(F.Times(ast.arg1(), null), 2);

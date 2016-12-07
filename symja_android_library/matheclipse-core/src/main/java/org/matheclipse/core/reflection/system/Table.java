@@ -38,9 +38,12 @@ public class Table extends AbstractFunctionEvaluator {
 	 * 
 	 * @param ast
 	 * @param resultList
-	 *            the result list to which the generated expressions should be appended.
+	 *            the result list to which the generated expressions should be
+	 *            appended.
 	 * @param defaultValue
 	 *            the default value used in the iterator
+	 * @param engine
+	 *            the current evaluation engine
 	 * @return <code>F.NIL</code> if no evaluation is possible
 	 */
 	protected static IExpr evaluateTable(final IAST ast, final IAST resultList, IExpr defaultValue, EvalEngine engine) {
@@ -63,25 +66,30 @@ public class Table extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Evaluate only the last iterator in <code>ast</code> (i.e. <code>ast.get(ast.size() - 1)</code>) for <code>Sum()</code> or
+	 * Evaluate only the last iterator in <code>ast</code> (i.e.
+	 * <code>ast.get(ast.size() - 1)</code>) for <code>Sum()</code> or
 	 * <code>Product()</code> function calls.
 	 * 
-	 * @param ast
+	 * @param expr
+	 * @param iter
+	 *            the iterator function
 	 * @param resultList
-	 *            the result list to which the generated expressions should be appended.
+	 *            the result list to which the generated expressions should be
+	 *            appended.
 	 * @param defaultValue
 	 *            the default value used if the iterator is invalid
 	 * @return <code>F.NIL</code> if no evaluation is possible
 	 * @see Product
 	 * @see Sum
 	 */
-	protected static IExpr evaluateLast(final IExpr arg1, final Iterator iter, final IAST resultList, IExpr defaultValue) {
+	protected static IExpr evaluateLast(final IExpr expr, final Iterator iter, final IAST resultList,
+			IExpr defaultValue) {
 		try {
 			final List<Iterator> iterList = new ArrayList<Iterator>();
 			iterList.add(iter);
 
 			final TableGenerator generator = new TableGenerator(iterList, resultList,
-					new UnaryArrayFunction(EvalEngine.get(), arg1), defaultValue);
+					new UnaryArrayFunction(EvalEngine.get(), expr), defaultValue);
 			return generator.table();
 		} catch (final ClassCastException e) {
 			// the iterators are generated only from IASTs
@@ -96,7 +104,8 @@ public class Table extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Determine all local variables of the iterators starting with index <code>2</code>.
+	 * Determine all local variables of the iterators starting with index
+	 * <code>2</code>.
 	 * 
 	 * @param ast
 	 * @return
@@ -121,7 +130,8 @@ public class Table extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Determine all local variables of the iterators starting with index <code>2</code> in the given <code>ast</code>.
+	 * Determine all local variables of the iterators starting with index
+	 * <code>2</code> in the given <code>ast</code>.
 	 * 
 	 * @param ast
 	 * @return
@@ -146,13 +156,15 @@ public class Table extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Disable the <code>Reap() and Sow()</code> mode temporary and evaluate an expression for the given &quot;local variables
-	 * list&quot;. If evaluation is not possible return the input object.
+	 * Disable the <code>Reap() and Sow()</code> mode temporary and evaluate an
+	 * expression for the given &quot;local variables list&quot;. If evaluation
+	 * is not possible return the input object.
 	 * 
 	 * @param expr
 	 *            the expression which should be evaluated
 	 * @param localVariablesList
-	 *            a list of symbols which should be used as local variables inside the block
+	 *            a list of symbols which should be used as local variables
+	 *            inside the block
 	 * @return the evaluated object
 	 */
 	public static IExpr evalBlockWithoutReap(IExpr expr, IAST localVariablesList) {
