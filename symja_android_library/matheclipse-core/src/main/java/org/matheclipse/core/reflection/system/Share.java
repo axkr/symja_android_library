@@ -18,6 +18,7 @@ import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.visit.AbstractVisitor;
 import org.matheclipse.core.visit.VisitorExpr;
 
 /**
@@ -191,9 +192,13 @@ public class Share extends AbstractFunctionEvaluator {
 	 * @return the number of shared sub-expressions
 	 */
 	public static int shareAST(final IAST ast) {
-		ShareReplaceAll sra = new ShareReplaceAll(new ShareFunction(), 1);
+		ShareReplaceAll sra = (ShareReplaceAll) createVisitor();
 		ast.accept(sra);
 		return sra.fCounter;
+	}
+
+	public static AbstractVisitor createVisitor() {
+		return new ShareReplaceAll(new ShareFunction(), 1);
 	}
 
 }

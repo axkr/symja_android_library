@@ -8,6 +8,9 @@ import java.io.ObjectOutputStream;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.patternmatching.RulesData;
+import org.matheclipse.core.reflection.system.Share;
+import org.matheclipse.core.visit.AbstractVisitor;
 
 import junit.framework.TestCase;
 
@@ -106,11 +109,18 @@ public class SerializableTest extends TestCase {
 	}
 
 	// public void testIntegrateDefinition() {
-	// equalsCopy(F.Integrate.getRulesData());
+	// RulesData rulesData = F.Integrate.getRulesData();
+	// AbstractVisitor visitor = Share.createVisitor();
+	// rulesData.accept(visitor);
+	// equalsCopy(rulesData);
 	// }
 
 	public void testSinDefinition() {
-		equalsCopy(F.Sin.getRulesData());
+		// try to share common sub-IASTs first:
+		RulesData rulesData = F.Sin.getRulesData();
+		AbstractVisitor visitor = Share.createVisitor();
+		rulesData.accept(visitor);
+		equalsCopy(rulesData);
 	}
 
 	public void testNIL() {
@@ -119,6 +129,7 @@ public class SerializableTest extends TestCase {
 
 	private void equalsCopy(Object original) {
 		try {
+
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			ObjectOutputStream oos = new ObjectOutputStream(baos);
 			oos.writeObject(original);
@@ -131,6 +142,7 @@ public class SerializableTest extends TestCase {
 			bais.close();
 			ois.close();
 			// System.out.println(copy.toString());
+			System.out.println(original.equals(copy));
 			assertEquals(original, copy);
 
 		} catch (ClassNotFoundException cnfe) {
