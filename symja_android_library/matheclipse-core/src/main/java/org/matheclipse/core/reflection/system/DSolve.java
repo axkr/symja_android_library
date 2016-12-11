@@ -34,7 +34,8 @@ public class DSolve extends AbstractFunctionEvaluator {
 			IExpr xVar = ast.arg3();
 			IAST listOfEquations = Validate.checkEquations(ast, 1).clone();
 			IExpr[] boundaryCondition = null;
-			for (int i = 1; i < listOfEquations.size(); i++) {
+			int i=1;
+			while  ( i < listOfEquations.size() ) {
 				IExpr equation = listOfEquations.get(i);
 				if (equation.isFree(xVar)) {
 					boundaryCondition = solveSingleBoundary(equation, uFunction1Arg, xVar, engine);
@@ -43,6 +44,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 						break;
 					}
 				}
+				i++;
 			}
 
 			if (uFunction1Arg.isAST1() && uFunction1Arg.arg1().equals(xVar)) {
