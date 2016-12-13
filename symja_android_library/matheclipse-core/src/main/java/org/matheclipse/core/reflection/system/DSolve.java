@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -34,8 +35,8 @@ public class DSolve extends AbstractFunctionEvaluator {
 			IExpr xVar = ast.arg3();
 			IAST listOfEquations = Validate.checkEquations(ast, 1).clone();
 			IExpr[] boundaryCondition = null;
-			int i=1;
-			while  ( i < listOfEquations.size() ) {
+			int i = 1;
+			while (i < listOfEquations.size()) {
 				IExpr equation = listOfEquations.get(i);
 				if (equation.isFree(xVar)) {
 					boundaryCondition = solveSingleBoundary(equation, uFunction1Arg, xVar, engine);
@@ -101,16 +102,12 @@ public class DSolve extends AbstractFunctionEvaluator {
 				j++;
 			}
 			if (deriveExpr != null) {
-				try {
-					int order = -1;
-					if (deriveExpr.length == 3) {
-						if (deriveExpr[0].isAST1() && deriveExpr[0].arg1().isInteger()) {
-							order = ((IInteger) deriveExpr[0].arg1()).toInt();
-							// TODO check how and that the uFunction and
-							// xVar is used in the deriv expression...
-						}
-					}
 
+				int order = derivativeOrder(deriveExpr);
+				if (order < 0) {
+					return F.NIL;
+				}
+				try {
 					ExprPolynomial poly = ring.create(eq.getOneIdentity(F.C0), false, true);
 					if (order == 1 && poly.degree() <= 1) {
 						IAST coeffs = poly.coefficientList();
@@ -121,21 +118,44 @@ public class DSolve extends AbstractFunctionEvaluator {
 						}
 						return linearODE(p, q, uFunction1Arg, xVar, C_1, engine);
 					}
-				} catch (RuntimeException re) {
-
+				} catch (RuntimeException rex) {
+					if (Config.SHOW_STACKTRACE) {
+						rex.printStackTrace();
+					}
 				}
 			}
 		}
 		return F.NIL;
 	}
 
+	public static int derivativeOrder(IAST[] deriveExpr) {
+		int order = -1;
+		try {
+			if (deriveExpr.length == 3) {
+				if (deriveExpr[0].isAST1() && deriveExpr[0].arg1().isInteger()) {
+					order = ((IInteger) deriveExpr[0].arg1()).toInt();
+					// TODO check how and that the uFunction and
+					// xVar is used in the deriv expression...
+				}
+			}
+		} catch (RuntimeException rex) {
+			if (Config.SHOW_STACKTRACE) {
+				rex.printStackTrace();
+			}
+		}
+		return order;
+	}
+
 	/**
 	 * Equation <code>-1+y(0)</code> gives <code>[0, 1]</code> (representing the
 	 * boundary equation y(0)==1)
 	 * 
-	 * @param equation the equation
-	 * @param uFunction1Arg function name <code>y(x)</code> 
-	 * @param xVar variable <code>x</code> 
+	 * @param equation
+	 *            the equation
+	 * @param uFunction1Arg
+	 *            function name <code>y(x)</code>
+	 * @param xVar
+	 *            variable <code>x</code>
 	 * @param engine
 	 * @return
 	 */
@@ -151,6 +171,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 			IExpr uArg1 = null;
 			IExpr head = uFunction1Arg.head();
 			while (j < eq.size()) {
+				// TODO check for negative expression (i.e. Times[-1, eq.get(j)]
 				if (eq.get(j).isAST(head, uFunction1Arg.size())) {
 					uArg1 = ((IAST) eq.get(j)).arg1();
 					eq.remove(j);

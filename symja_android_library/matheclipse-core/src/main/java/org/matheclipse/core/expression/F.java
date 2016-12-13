@@ -738,6 +738,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerpartitions" : "IntegerPartitions");
 	public final static ISymbol Integrate = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integrate" : "Integrate");
+	public final static ISymbol Interpolation = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "interpolation" : "Interpolation");
 	public final static ISymbol InterpolatingFunction = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "interpolatingfunction" : "InterpolatingFunction");
 	public final static ISymbol InterpolatingPolynomial = initFinalSymbol(
@@ -1037,11 +1039,11 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "bernoullidistribution" : "BernoulliDistribution");
 	public final static ISymbol HypergeometricDistribution = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hypergeometricdistribution" : "HypergeometricDistribution");
-	public final static ISymbol NormalDistribution  = initFinalSymbol(
+	public final static ISymbol NormalDistribution = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "normaldistribution" : "NormalDistribution");
 	public final static ISymbol PoissonDistribution = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "poissondistribution" : "PoissonDistribution");
-	
+
 	public final static ISymbol a = initFinalHiddenSymbol("a");
 	public final static ISymbol b = initFinalHiddenSymbol("b");
 	public final static ISymbol c = initFinalHiddenSymbol("c");
@@ -1246,17 +1248,17 @@ public class F {
 	 * Constant fraction &quot;3/2&quot;
 	 */
 	public final static IFraction C3D2 = AbstractFractionSym.valueOf(3, 2);
-	
+
 	/**
 	 * Constant fraction &quot;3/4&quot;
 	 */
 	public final static IFraction C3D4 = AbstractFractionSym.valueOf(3, 4);
-	
+
 	/**
 	 * Constant fraction &quot;5/2&quot;
 	 */
 	public final static IFraction C5D2 = AbstractFractionSym.valueOf(5, 2);
-	
+
 	/**
 	 * Constant fraction &quot;-1/2&quot;
 	 */
@@ -3999,6 +4001,14 @@ public class F {
 	public static IAST Integrate(final IExpr a0, final IExpr a1) {
 
 		return binaryAST2(Integrate, a0, a1);
+	}
+
+	public static IAST Interpolation(final IExpr list) {
+		return unaryAST1(Interpolation, list);
+	}
+
+	public static IAST InterpolatingFunction(final IExpr list) {
+		return unaryAST1(InterpolatingFunction, list);
 	}
 
 	/**

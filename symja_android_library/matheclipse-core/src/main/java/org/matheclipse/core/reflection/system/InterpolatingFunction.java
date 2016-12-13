@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.analysis.interpolation.SplineInterpolator;
 import org.hipparchus.analysis.interpolation.UnivariateInterpolator;
 import org.hipparchus.linear.RealMatrix;
@@ -30,8 +31,12 @@ public class InterpolatingFunction extends AbstractEvaluator {
 						if (dims != null && dims[1] == 2) {
 							RealMatrix matrix = function.arg1().toRealMatrix();
 							if (matrix != null) {
-								double interpolatedY = interpolate(matrix, ((INum) ast.arg1()).doubleValue());
-								return F.num(interpolatedY);
+								double[] interpolatedY = interpolate(matrix, ((INum) ast.arg1()).doubleValue());
+								return F.num(interpolatedY[0]);
+								// double interpolatedY =
+								// interpolateSpline(matrix, ((INum)
+								// ast.arg1()).doubleValue());
+								// return F.num(interpolatedY);
 							}
 						}
 					} catch (final WrongArgumentType e) {
@@ -48,7 +53,21 @@ public class InterpolatingFunction extends AbstractEvaluator {
 		return F.NIL;
 	}
 
-	private double interpolate(RealMatrix matrix, double interpolationX) {
+	private double[] interpolate(RealMatrix matrix, double interpolationX) {
+		int rowDim = matrix.getRowDimension();
+		int colDim = matrix.getColumnDimension();
+		double x[] = new double[colDim - 1];
+		double[][] data = matrix.getData();
+		// TODO this is very slow, we have to cache the interpolator somewhere
+		HermiteInterpolator interpolator = new HermiteInterpolator();
+		for (int i = 0; i < rowDim; i++) {
+			System.arraycopy(data[i], 1, x, 0, colDim - 1);
+			interpolator.addSamplePoint(data[i][0], x);
+		}
+		return interpolator.value(interpolationX);
+	}
+
+	private double interpolateSpline(RealMatrix matrix, double interpolationX) {
 		int rowDim = matrix.getRowDimension();
 		double x[] = new double[rowDim];
 		double y[] = new double[rowDim];
