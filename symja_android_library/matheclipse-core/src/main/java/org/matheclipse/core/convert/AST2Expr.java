@@ -33,6 +33,7 @@ import org.matheclipse.parser.client.ast.Pattern3Node;
 import org.matheclipse.parser.client.ast.PatternNode;
 import org.matheclipse.parser.client.ast.StringNode;
 import org.matheclipse.parser.client.ast.SymbolNode;
+import org.matheclipse.parser.client.eval.DoubleNode;
 
 /**
  * Converts a parsed <code>org.matheclipse.parser.client.ast.ASTNode</code>
@@ -49,7 +50,7 @@ public class AST2Expr {
 			"NumericFunction", "OneIdentity", "Orderless", "Pi", "PrecisionGoal", "Primes", "Rationals", "Real",
 			"Reals", "Second", "Slot", "SlotSequence", "String", "Symbol", "Trig", "True" };
 
-	public final static String[] FUNCTION_STRINGS = { "Abs", "AddTo", "And", "AlgebraicNumber", "Alternatives", "Apart",
+	public final static String[] FUNCTION_STRINGS = { "Abs", "AbsArg", "AddTo", "And", "AlgebraicNumber", "Alternatives", "Apart",
 			"AppellF1", "Append", "AppendTo", "Apply", "ArcCos", "ArcCosh", "ArcCot", "ArcCoth", "ArcCsc", "ArcCsch",
 			"ArcSec", "ArcSech", "ArcSin", "ArcSinh", "ArcTan", "ArcTanh", "Arg", "Array", "ArrayDepth", "ArrayQ",
 			"Assumptions", "AtomQ", "Attributes", "Begin", "BeginPackage", "BernoulliB", "BernoulliDistribution",
@@ -68,28 +69,29 @@ public class AST2Expr {
 			"Drop", "DSolve", "EasterSunday", "Eigenvalues", "Eigenvectors", "Element", "Eliminate", "EllipticE",
 			"EllipticF", "EllipticPi", "End", "EndPackage", "Equal", "Equivalent", "Erf", "Erfc", "Erfi",
 			"EuclidianDistance", "EulerE", "EulerPhi", "EvenQ", "Except", "Exp", "Expand", "ExpandAll", "ExpIntegralE",
-			"ExpIntegralEi", "Exponent", "ExtendedGCD", "Extract", "Factor", "Factorial", "Factorial2", "FactorInteger",
-			"FactorSquareFree", "FactorSquareFreeList", "FactorTerms", "Flatten", "Fibonacci", "FindInstance",
-			"FindRoot", "First", "Fit", "FixedPoint", "Floor", "Fold", "FoldList", "For", "FractionalPart", "FreeQ",
-			"FresnelC", "FresnelS", "FrobeniusSolve", "FromCharacterCode", "FromContinuedFraction",
-			"FromPolarCoordinates", "FullForm", "FullSimplify", "Function", "Gamma", "Gather", "GCD", "GeometricMean",
-			"Get", "Graphics", "Graphics3D", "Graphics3D", "Greater", "GreaterEqual", "GroebnerBasis", "Haversine",
-			"HarmonicNumber", "Head", "HermiteH", "HilbertMatrix", "Hold", "HoldForm", "Horner", "HornerForm",
-			"HurwitzZeta", "HypergeometricDistribution", "HypergeometricPFQ", "Hypergeometric1F1", "Hypergeometric2F1",
-			"Identity", "IdentityMatrix", "If", "Im", "Implies", "Increment", "Inner", "Insert", "Interval",
-			"IntegerExponent", "IntegerPart", "IntegerPartitions", "IntegerQ", "Integrate", "Interpolation",
-			"InterpolatingFunction", "InterpolatingPolynomial", "Intersection", "Inverse", "InverseErf", "InverseErfc",
-			"InverseFunction", "InverseHaversine", "JaccardDissimilarity", "JacobiMatrix", "JacobiSymbol", "JavaForm",
-			"Join", "KOrderlessPartitions", "KPartitions", "Kurtosis", "Last", "LCM", "LeafCount", "LaguerreL",
-			"LaplaceTransform", "LegendreP", "Length", "Less", "LessEqual", "LetterQ", "Level", "Limit", "Line",
-			"LinearModelFit", "LinearProgramming", "LinearSolve", "List", "ListQ", "Log", "Log2", "Log10", "LogGamma",
-			"LogicalExpand", "LogisticSigmoid", "LogIntegral", "LowerCaseQ", "LUDecomposition", "ManhattanDistance",
-			"Map", "MapAt", "MapAll", "MapThread", "MatchingDissimilarity", "MatchQ", "MathMLForm", "MatrixForm",
-			"MatrixPower", "MatrixQ", "MatrixRank", "Max", "Mean", "Median", "MemberQ", "MeshRange", "MessageName",
-			"Min", "Mod", "Module", "MoebiusMu", "MonomialList", "Most", "Multinomial", "MultiplicativeOrder", "Names",
-			"Nand", "NDSolve", "Nearest", "Negative", "Nest", "NestList", "NestWhile", "NestWhileList", "NextPrime",
-			"NFourierTransform", "NIntegrate", "NMaximize", "NMinimize", "NonCommutativeMultiply", "NonNegative", "Nor",
-			"Normal", "Normalize", "Norm", "NormalDistribution", "Not", "NRoots", "NSolve", "NullSpace",
+			"ExpIntegralEi", "Exponent", "Export", "ExtendedGCD", "Extract", "Factor", "Factorial", "Factorial2",
+			"FactorInteger", "FactorSquareFree", "FactorSquareFreeList", "FactorTerms", "Flatten", "Fibonacci",
+			"FindInstance", "FindRoot", "First", "Fit", "FixedPoint", "Floor", "Fold", "FoldList", "For",
+			"FractionalPart", "FreeQ", "FresnelC", "FresnelS", "FrobeniusSolve", "FromCharacterCode",
+			"FromContinuedFraction", "FromPolarCoordinates", "FullForm", "FullSimplify", "Function", "Gamma", "Gather",
+			"GCD", "GeometricMean", "Get", "Graphics", "Graphics3D", "Graphics3D", "Greater", "GreaterEqual",
+			"GroebnerBasis", "Haversine", "HarmonicNumber", "Head", "HermiteH", "HilbertMatrix", "Hold", "HoldForm",
+			"Horner", "HornerForm", "HurwitzZeta", "HypergeometricDistribution", "HypergeometricPFQ",
+			"Hypergeometric1F1", "Hypergeometric2F1", "Identity", "IdentityMatrix", "If", "Im", "Implies", "Import",
+			"Increment", "Inner", "Insert", "Interval", "IntegerExponent", "IntegerPart", "IntegerPartitions",
+			"IntegerQ", "Integrate", "Interpolation", "InterpolatingFunction", "InterpolatingPolynomial",
+			"Intersection", "Inverse", "InverseErf", "InverseErfc", "InverseFunction", "InverseHaversine",
+			"JaccardDissimilarity", "JacobiMatrix", "JacobiSymbol", "JavaForm", "Join", "KOrderlessPartitions",
+			"KPartitions", "Kurtosis", "Last", "LCM", "LeafCount", "LaguerreL", "LaplaceTransform", "LegendreP",
+			"Length", "Less", "LessEqual", "LetterQ", "Level", "Limit", "Line", "LinearModelFit", "LinearProgramming",
+			"LinearSolve", "List", "ListQ", "Log", "Log2", "Log10", "LogGamma", "LogicalExpand", "LogisticSigmoid",
+			"LogIntegral", "LowerCaseQ", "LUDecomposition", "ManhattanDistance", "Map", "MapAt", "MapAll", "MapThread",
+			"MatchingDissimilarity", "MatchQ", "MathMLForm", "MatrixForm", "MatrixPower", "MatrixQ", "MatrixRank",
+			"Max", "Mean", "Median", "MemberQ", "MeshRange", "MessageName", "Min", "Mod", "Module", "MoebiusMu",
+			"MonomialList", "Most", "Multinomial", "MultiplicativeOrder", "Names", "Nand", "NDSolve", "Nearest",
+			"Negative", "Nest", "NestList", "NestWhile", "NestWhileList", "NextPrime", "NFourierTransform",
+			"NIntegrate", "NMaximize", "NMinimize", "NonCommutativeMultiply", "NonNegative", "Nor", "Normal",
+			"Normalize", "Norm", "NormalDistribution", "Not", "NRoots", "NSolve", "NullSpace",
 			"NumberFieldRootsOfUnity", "NumberQ", "Numerator", "NumericQ", "OddQ", "Options", "Or", "Order", "OrderedQ",
 			"Out", "Outer", "Package", "PadLeft", "PadRight", "ParametricPlot", "Part", "Partition", "Pattern",
 			"PatternTest", "PDF", "Permutations", "Piecewise", "Plot", "PlotRange", "Plot3D", "Plus", "Pochhammer",
@@ -137,9 +139,12 @@ public class AST2Expr {
 	public static SuggestTree getSuggestTree() {
 		synchronized (AST2Expr.class) {
 			if (SUGGEST_TREE == null) {
-				SUGGEST_TREE = new SuggestTree(FUNCTION_STRINGS.length);
+				SUGGEST_TREE = new SuggestTree(100);
 				synchronized (SUGGEST_TREE) {
 					for (String str : FUNCTION_STRINGS) {
+						SUGGEST_TREE.put(str, 2);
+					}
+					for (String str : SYMBOL_STRINGS) {
 						SUGGEST_TREE.put(str, 1);
 					}
 				}
@@ -417,6 +422,10 @@ public class AST2Expr {
 				return F.num(doubleValue * Math.pow(10, exponent));
 			}
 			return F.num(doubleValue);
+		}
+		if (node instanceof DoubleNode) {
+
+			return F.num(((DoubleNode) node).doubleValue());
 		}
 
 		return F.retrieveSymbol(node.toString());
