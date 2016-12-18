@@ -289,7 +289,7 @@ public class Greater extends AbstractFunctionEvaluator implements ITernaryCompar
 						useOppositeHeader = !useOppositeHeader;
 					}
 					rhs = rhs.divide(temp);
-					return createComparatorResult(result[1].getOneIdentity(F.C0), rhs, useOppositeHeader, originalHead,
+					return createComparatorResult(result[1].getOneIdentity(F.C1), rhs, useOppositeHeader, originalHead,
 							oppositeHead);
 				}
 			} else if (lhsAST.isPlus()) {
