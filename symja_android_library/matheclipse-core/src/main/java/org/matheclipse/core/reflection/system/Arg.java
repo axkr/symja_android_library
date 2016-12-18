@@ -152,7 +152,16 @@ public class Arg extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperat
 					return Plus(Times(C1D2, Pi), ArcTan(Divide(x, y)));
 				}
 			}
+		} else if (arg1.isNumericFunction()) {
+			IExpr temp = F.evaln(arg1);
+			if (temp.isSignedNumber()) {
+				if (temp.isNegative()) {
+					return F.Pi;
+				}
+				return F.C0;
+			}
 		}
+
 		if (arg1.isConstant()) {
 			ISymbol sym = (ISymbol) arg1;
 			IEvaluator eval = sym.getEvaluator();

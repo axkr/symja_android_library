@@ -103,6 +103,16 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules, DoubleU
 		if (arg1.isNumber()) {
 			return ((INumber) arg1).eabs();
 		}
+		if (arg1.isNumericFunction()) {
+			IExpr temp = F.evaln(arg1);
+			if (temp.isSignedNumber()) {
+				if (temp.isNegative()) {
+					return arg1.negate();
+				} else {
+					return arg1;
+				}
+			}
+		}
 		if (arg1.isNegativeResult()) {
 			return F.Negate(arg1);
 		}
