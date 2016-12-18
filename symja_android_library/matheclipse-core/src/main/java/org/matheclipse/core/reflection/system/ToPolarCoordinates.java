@@ -30,9 +30,11 @@ public class ToPolarCoordinates extends AbstractEvaluator {
 				IExpr x = list.arg1();
 				IExpr y = list.arg2();
 				IExpr z = list.arg3();
-				return F.List(F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y), F.Sqr(z))),
-						F.ArcCos(F.Divide(x, F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y), F.Sqr(z))))), F.ArcTan(y, z));
+				IAST sqrtExpr = F.Sqrt(F.Plus(F.Sqr(x), F.Sqr(y), F.Sqr(z)));
+				return F.List(sqrtExpr, F.ArcCos(F.Divide(x, sqrtExpr)), F.ArcTan(y, z));
 			}
+		} else if (ast.arg1().isList()) {
+			return ((IAST) ast.arg1()).mapThread(F.List(), ast, 1);
 		}
 		return F.NIL;
 	}

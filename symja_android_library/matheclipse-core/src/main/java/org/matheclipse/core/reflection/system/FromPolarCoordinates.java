@@ -33,6 +33,8 @@ public class FromPolarCoordinates extends AbstractEvaluator {
 				return F.List(F.Times(r, F.Cos(theta)), F.Times(r, F.Cos(phi), F.Sin(theta)),
 						F.Times(r, F.Sin(theta), F.Sin(phi)));
 			}
+		} else if (ast.arg1().isList()) {
+			return ((IAST) ast.arg1()).mapThread(F.List(), ast, 1);
 		}
 		return F.NIL;
 	}
