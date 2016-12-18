@@ -1,10 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.function.DoubleUnaryOperator;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
-import org.matheclipse.core.expression.F;
+import static org.matheclipse.core.expression.F.*;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -31,7 +32,7 @@ public class Gamma extends AbstractTrigArg1 implements DoubleUnaryOperator {
 	 * @return
 	 */
 	public static IInteger gamma(final IInteger x) {
-		return Factorial.factorial(x.subtract(F.C1));
+		return org.matheclipse.core.reflection.system.Factorial.factorial(x.subtract(C1));
 	}
 
 	public Gamma() {
@@ -45,9 +46,9 @@ public class Gamma extends AbstractTrigArg1 implements DoubleUnaryOperator {
 	@Override
 	public IExpr e1DblArg(final double arg1) {
 		double gamma = org.hipparchus.special.Gamma.gamma(arg1);
-		return F.num(gamma);
+		return num(gamma);
 	}
-	
+
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 4);
@@ -55,7 +56,7 @@ public class Gamma extends AbstractTrigArg1 implements DoubleUnaryOperator {
 		if (ast.isAST1()) {
 			return evaluateArg1(ast.arg1());
 		}
-		return F.NIL;
+		return NIL;
 	}
 
 	@Override
@@ -63,17 +64,29 @@ public class Gamma extends AbstractTrigArg1 implements DoubleUnaryOperator {
 		if (arg1.isInteger()) {
 			return gamma((IInteger) arg1);
 		}
-		if (arg1.isFraction() && arg1.isPositive()) {
+		if (arg1.isFraction()) {
 			IFraction frac = (IFraction) arg1;
-			if (frac.getDenominator().equals(F.C2)) {
+			if (frac.getDenominator().equals(C2)) {
 				IInteger n = frac.getNumerator();
-				// Sqrt(Pi) * (n-2)!! / 2^((n-1)/2)
-				return F.Times(F.Sqrt(F.Pi), F.Factorial2(n.subtract(F.C2)),
-						F.Power(F.C2, F.Times(F.C1D2, F.Subtract(F.C1, n))));
-
+				if (arg1.isNegative()) {
+					n = n.negate();
+					return Times(Power(CN1, Times(C1D2, Plus(C1, n))), Power(C2, n), Sqrt(Pi), Power(Factorial(n), -1),
+							Factorial(Times(C1D2, Plus(CN1, n))));
+				} else {
+					// Sqrt(Pi) * (n-2)!! / 2^((n-1)/2)
+					return Times(Sqrt(Pi), Factorial2(n.subtract(C2)), Power(C2, Times(C1D2, Subtract(C1, n))));
+				}
 			}
 		}
-		return F.NIL;
+		if (arg1.isAST()) {
+			IAST z = (IAST) arg1;
+			if (z.isAST(Conjugate, 2)) {
+				// mirror symmetry for Conjugate()
+				return Conjugate(Gamma(z.arg1()));
+			}
+
+		}
+		return NIL;
 	}
 
 	@Override
