@@ -17,17 +17,18 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.ArcTanRules;
 
 /**
  * Arctangent
  * 
- * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions"
- * > Inverse_trigonometric functions</a>
+ * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
+ * Inverse_trigonometric functions</a>
  */
 public class ArcTan extends AbstractArg12 implements INumeric, ArcTanRules {
-	 
+
 	@Override
 	public IAST getRuleAST() {
 		return RULES;
@@ -45,6 +46,41 @@ public class ArcTan extends AbstractArg12 implements INumeric, ArcTanRules {
 		IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
 		if (imPart.isPresent()) {
 			return F.Times(F.CI, F.ArcTanh(imPart));
+		}
+		return F.NIL;
+	}
+
+	public IExpr e2ObjArg(final IExpr x, final IExpr y) {
+		if (x.isZero() && y.isSignedNumber()) {
+			if (y.isZero()) {
+				return F.Indeterminate;
+			}
+			if (y.isPositive()) {
+				return F.Times(F.C1D2, F.Pi);
+			}
+			return F.Times(F.CN1D2, F.Pi);
+		}
+		if (x.isNumber() && y.isSignedNumber()) {
+			if (((INumber) x).getRe().isNegative()) {
+				return F.Plus(F.ArcTan(F.Divide(y, x)), F.Times(F.Subtract(F.Times(F.C2, F.UnitStep(y)), F.C1), F.Pi));
+			}
+			IExpr argX = F.Arg(x);
+			// -Pi/2 < Arg(x) <= Pi/2
+			if (F.evalTrue(F.And(F.Less(F.Times(F.CN1D2, F.Pi), argX), F.LessEqual(argX, F.Times(F.C1D2, F.Pi))))) {
+				return F.ArcTan(F.Divide(y, x));
+			}
+		}
+
+		if (y.isZero()) {
+			if (x.isSignedNumber() && !x.isZero()) {
+				return F.Subtract(F.C1, F.UnitStep(x));
+			}
+		}
+		if (x.isInfinity()) {
+			return F.C0;
+		}
+		if (x.isNegativeInfinity()) {
+			return F.Times(F.Subtract(F.Times(F.C2, F.UnitStep(F.Re(y))), F.C1), F.Pi);
 		}
 		return F.NIL;
 	}
@@ -87,7 +123,7 @@ public class ArcTan extends AbstractArg12 implements INumeric, ArcTanRules {
 	}
 
 	@Override
-	public void setUp(final ISymbol newSymbol)  {
+	public void setUp(final ISymbol newSymbol) {
 		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		super.setUp(newSymbol);
 	}
