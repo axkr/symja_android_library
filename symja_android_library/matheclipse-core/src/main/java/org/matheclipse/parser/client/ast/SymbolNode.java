@@ -15,7 +15,6 @@
  */
 package org.matheclipse.parser.client.ast;
 
-
 /**
  * A node for a parsed symbol string (i.e. Sin, Cos, Pi, $x,...)
  * 

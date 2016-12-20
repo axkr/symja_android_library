@@ -147,8 +147,8 @@ final public class FunctionNode extends ASTNode implements java.util.List<ASTNod
 			}
 		}
 		return true;
-	}
-
+	} 
+	
 	@Override
 	public Iterator<ASTNode> iterator() {
 		return fNodesList.iterator();
