@@ -126,7 +126,7 @@ public class Pattern extends Blank {
 			if (fDefault != pattern.fDefault) {
 				return false;
 			}
-			if (fSymbol == pattern.fSymbol || fSymbol.equals(pattern.fSymbol)) {
+			if (fSymbol.equals(pattern.fSymbol)) {
 				return super.equals(obj);
 			}
 		}

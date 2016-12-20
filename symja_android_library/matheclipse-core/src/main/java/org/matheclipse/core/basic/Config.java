@@ -1,16 +1,32 @@
 package org.matheclipse.core.basic;
 
-import org.hipparchus.util.Precision;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.hipparchus.util.Precision;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 /**
  * General configuration settings.
  */
 public class Config {
 
+	/**
+	 * A global expression cache which compares keys with <code>==</code> object
+	 * identity instead of <code>equals()</code>. The keys and values are weak
+	 * references.
+	 */
+	public static Cache<IExpr, Object> EXPR_CACHE;
+
+	private static final int MAX_EXPR_CACHE_SIZE = 10000;
+
+	static {
+		EXPR_CACHE = CacheBuilder.newBuilder().maximumSize(MAX_EXPR_CACHE_SIZE).weakKeys().weakValues().build();
+	}
 	/**
 	 * COMPILER switch - set this boolean variable to <code>true</code>, if you
 	 * would force a direct plot frame creation from the Plot[], Plot3D[] and

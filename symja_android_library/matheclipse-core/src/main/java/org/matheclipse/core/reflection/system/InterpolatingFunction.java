@@ -23,15 +23,15 @@ public class InterpolatingFunction extends AbstractEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.head().isAST()) {
-			final IAST function = (IAST) ast.head();
 			if (ast.isAST1() && ast.arg1() instanceof INum) {
+				final IAST function = (IAST) ast.head();
 				if (function.isAST1()) {
 					try {
 						int[] dims = function.arg1().isMatrix();
 						if (dims != null && dims[1] == 2) {
-							RealMatrix matrix = function.arg1().toRealMatrix();
-							if (matrix != null) {
-								double[] interpolatedY = interpolate(matrix, ((INum) ast.arg1()).doubleValue());
+							HermiteInterpolator interpolator = interpolate((IAST) function.arg1());
+							if (interpolator != null) {
+								double[] interpolatedY = interpolator.value(((INum) ast.arg1()).doubleValue());
 								return F.num(interpolatedY[0]);
 								// double interpolatedY =
 								// interpolateSpline(matrix, ((INum)
@@ -53,18 +53,26 @@ public class InterpolatingFunction extends AbstractEvaluator {
 		return F.NIL;
 	}
 
-	private double[] interpolate(RealMatrix matrix, double interpolationX) {
-		int rowDim = matrix.getRowDimension();
-		int colDim = matrix.getColumnDimension();
-		double x[] = new double[colDim - 1];
-		double[][] data = matrix.getData();
-		// TODO this is very slow, we have to cache the interpolator somewhere
-		HermiteInterpolator interpolator = new HermiteInterpolator();
-		for (int i = 0; i < rowDim; i++) {
-			System.arraycopy(data[i], 1, x, 0, colDim - 1);
-			interpolator.addSamplePoint(data[i][0], x);
+	private HermiteInterpolator interpolate(IAST matrixAST) {
+		HermiteInterpolator interpolator = (HermiteInterpolator) Config.EXPR_CACHE.getIfPresent(matrixAST);
+		if (interpolator != null) {
+			return interpolator;
 		}
-		return interpolator.value(interpolationX);
+		RealMatrix matrix = matrixAST.toRealMatrix();
+		if (matrix != null) {
+			int rowDim = matrix.getRowDimension();
+			int colDim = matrix.getColumnDimension();
+			double x[] = new double[colDim - 1];
+			double[][] data = matrix.getData();
+			interpolator = new HermiteInterpolator();
+			for (int i = 0; i < rowDim; i++) {
+				System.arraycopy(data[i], 1, x, 0, colDim - 1);
+				interpolator.addSamplePoint(data[i][0], x);
+			}
+			Config.EXPR_CACHE.put(matrixAST, interpolator);
+			return interpolator;
+		}
+		return null;
 	}
 
 	private double interpolateSpline(RealMatrix matrix, double interpolationX) {

@@ -108,12 +108,12 @@ public class SerializableTest extends TestCase {
 		equalsCopy(F.$ps(F.x, F.IntegerQ, true, false));
 	}
 
-	// public void testIntegrateDefinition() {
-	// RulesData rulesData = F.Integrate.getRulesData();
-	// AbstractVisitor visitor = Share.createVisitor();
-	// rulesData.accept(visitor);
-	// equalsCopy(rulesData);
-	// }
+	public void testIntegrateDefinition() {
+		RulesData rulesData = F.Integrate.getRulesData();
+		AbstractVisitor visitor = Share.createVisitor();
+		rulesData.accept(visitor);
+		equalsStringCopy(rulesData);
+	}
 
 	public void testSinDefinition() {
 		// try to share common sub-IASTs first:
@@ -141,9 +141,32 @@ public class SerializableTest extends TestCase {
 			Object copy = ois.readObject();
 			bais.close();
 			ois.close();
-			// System.out.println(copy.toString());
-			System.out.println(original.equals(copy));
 			assertEquals(original, copy);
+
+		} catch (ClassNotFoundException cnfe) {
+			cnfe.printStackTrace();
+			assertEquals("", cnfe.toString());
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+			assertEquals("", ioe.toString());
+		}
+	}
+
+	private void equalsStringCopy(Object original) {
+		try {
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			oos.writeObject(original);
+			byte[] bArray = baos.toByteArray();
+			baos.close();
+			oos.close();
+			ByteArrayInputStream bais = new ByteArrayInputStream(bArray);
+			ObjectInputStream ois = new ObjectInputStream(bais);
+			Object copy = ois.readObject();
+			bais.close();
+			ois.close();
+			assertEquals(original.toString(), copy.toString());
 
 		} catch (ClassNotFoundException cnfe) {
 			cnfe.printStackTrace();

@@ -45,7 +45,8 @@ public class StringX extends ExprImpl implements IStringX {
 	// protected StringX create() {
 	// if (Config.SERVER_MODE && currentQueue().getSize() >=
 	// Config.STRING_MAX_POOL_SIZE) {
-	// throw new PoolMemoryExceededException("StringX", currentQueue().getSize());
+	// throw new PoolMemoryExceededException("StringX",
+	// currentQueue().getSize());
 	// }
 	// return new StringX(null);
 	// }
@@ -191,8 +192,9 @@ public class StringX extends ExprImpl implements IStringX {
 	// }
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive integer as
-	 * this expression is canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns
+	 * a negative integer, zero, or a positive integer as this expression is
+	 * canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -227,11 +229,11 @@ public class StringX extends ExprImpl implements IStringX {
 	}
 
 	/**
-	 * @param sb
+	 * @param cs
 	 * @return
 	 */
-	public boolean contentEquals(final StringBuffer sb) {
-		return fString.contentEquals(sb);
+	public boolean contentEquals(final CharSequence cs) {
+		return fString.contentEquals(cs);
 	}
 
 	/**
@@ -365,7 +367,7 @@ public class StringX extends ExprImpl implements IStringX {
 		buffer.append("\")");
 		return buffer.toString();
 	}
-	
+
 	/**
 	 * @param ch
 	 * @return
@@ -408,7 +410,8 @@ public class StringX extends ExprImpl implements IStringX {
 		return fString.matches(regex);
 	}
 
-	public boolean regionMatches(final boolean ignoreCase, final int toffset, final String other, final int ooffset, final int len) {
+	public boolean regionMatches(final boolean ignoreCase, final int toffset, final String other, final int ooffset,
+			final int len) {
 		return fString.regionMatches(ignoreCase, toffset, other, ooffset, len);
 	}
 

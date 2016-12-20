@@ -278,7 +278,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Abs(-1*Infinity)", "Infinity");
 		check("Abs(ComplexInfinity)", "Infinity");
 		check("Abs(I*Infinity)", "Infinity");
+		check("Abs(Sqrt(Pi))", "Sqrt(Pi)");
+		check("Abs(-3*Sqrt(Pi))", "3*Sqrt(Pi)");
+	}
 
+	public void testAbsArg() {
+		check("AbsArg(z)", "{Abs(z),Arg(z)}");
+		check("AbsArg(2*z)", "{2*Abs(z),Arg(2*z)}");
+		check("AbsArg({a, {b, c}})", "{{Abs(a),Arg(a)},{{Abs(b),Arg(b)},{Abs(c),Arg(c)}}}");
+		check("AbsArg({{1, -1, 0}, {0, 1}})", "{{{1,0},{1,Pi},{0,0}},{{0,0},{1,0}}}");
+
+		check("AbsArg(Gamma(-1/2))", "{2*Sqrt(Pi),Pi}");
+
+		check("AbsArg({1, I, 0})", "{{1,0},{1,Pi/2},{0,0}}");
+		check("AbsArg(z) /. z -> {1, I, 0}", "{{1,1,0},{0,Pi/2,0}}");
 	}
 
 	public void testAnd() {
@@ -428,6 +441,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArg() {
+		check("Arg(I)", "Pi/2");
+		check("Arg(-2*Sqrt(Pi))", "Pi");
 		check("Arg(Indeterminate)", "Indeterminate");
 		check("Arg(0)", "0");
 		check("Arg(10/3)", "0");
@@ -2025,6 +2040,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "0}}");
 	}
 
+	public void testFromPolarCoordinates() {
+		check("FromPolarCoordinates({r, t})", "{r*Cos(t),r*Sin(t)}");
+		check("FromPolarCoordinates({r, t, p})", "{r*Cos(t),r*Cos(p)*Sin(t),r*Sin(p)*Sin(t)}");
+		check("FromPolarCoordinates({{{r, t}, {1,0}}, {{2, Pi}, {1, Pi/2}}})",
+				"{{{r*Cos(t),r*Sin(t)},{1,0}},{{-2,0},{0,1}}}");
+	}
+
 	public void testFunction() {
 		check("Function({x, y}, x^2 + y^3)[a, b]", "a^2+b^3");
 		check("f(x, ##, y, ##) &(a, b, c, d)", "f(x,a,b,c,d,y,a,b,c,d)");
@@ -2130,7 +2152,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Haversine(1.5+I)", "0.44542339697277344+I*0.5861286494553963");
 		check("Haversine(Pi/3)", "1/4");
 		check("Haversine(90 Degree)", "1/2");
-		check("Haversine({0, Pi/4, Pi/3, Pi/2})", "{0,Abs(2-Sqrt(2))/4,1/4,1/2}");
+		check("Haversine({0, Pi/4, Pi/3, Pi/2})", "{0,1/4*(2-Sqrt(2)),1/4,1/2}");
 	}
 
 	public void testHead() {
@@ -2198,6 +2220,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BooleanConvert(Implies(x, y))", "!x||y");
 	}
 
+	public void testImportExport() {
+		check("Export(\"c:\\\\temp\\\\out.dat\", {{5.7, 4.3}, {-1.2, 7.8}, {a, f(x)}})", "\"c:\\temp\\out.dat\"");
+		check("Import(\"c:\\\\temp\\\\out.dat\", \"Table\")", "{{5.7,4.3},{-1.2,7.8},{a,f(x)}}");
+	}
+
 	public void testInner() {
 		check("Inner(Times, {a, b}, {x, y}, Plus)", "a*x+b*y");
 		check("Inner(Times, {a, b}, {x, y})", "a*x+b*y");
@@ -2258,7 +2285,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testInterpolatingFunction() {
 		check("InterpolatingFunction({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}})",
 				"InterpolatingFunction({{0,0},{1,1},{2,3},{3,4},{4,3},{5,0}})");
-		check("InterpolatingFunction({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}})[2.5]", "3.7109375");
+		check("ipf=InterpolatingFunction({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}});{ipf[2.5],ipf[3.0],ipf[3.5]}",
+				"{3.7109375,4.0,3.7734375}");
 		check("InterpolatingFunction({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}})",
 				"InterpolatingFunction({{0,0},{1,1},{2,3},{3,4},{4,3},{5,0}})");
 	}
@@ -2764,8 +2792,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testNames() {
 		check("Names(\"Int*\" )",
-				"{Interval,IntegerExponent,IntegerPart,IntegerPartitions,IntegerQ,Integrate,Interpolation,InterpolatingFunction,InterpolatingPolynomial,Intersection}");
-		check("Names(\"Integer*\" )", "{IntegerExponent,IntegerPart,IntegerPartitions,IntegerQ}");
+				"{Interval,IntegerExponent,IntegerPart,IntegerPartitions,IntegerQ,Integrate,Interpolation,InterpolatingFunction,InterpolatingPolynomial,Intersection,Integer,Integers}");
+		check("Names(\"Integer*\" )", "{IntegerExponent,IntegerPart,IntegerPartitions,IntegerQ,Integer,Integers}");
 		check("Names(\"IntegerPart\" )", "{IntegerPart}");
 		// check("Names(\"*\" )", "{}");
 	}
@@ -4403,6 +4431,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("((-b-a)*a^(-1))^(-1)", "a/(-a-b)");
 		check("Together(1/x + 1/(x + 1) + 1/(x + 2) + 1/(x + 3))", "(6+22*x+18*x^2+4*x^3)/(6*x+11*x^2+6*x^3+x^4)");
 
+	}
+
+	public void testToPolarCoordinates() {
+		check("-Pi/2 < 0", "True");
+		check("Arg(1) ", "0");
+		check("-Pi/2 < Arg(1) ", "True");
+		check(" Arg(1) <= Pi/2", "True");
+
+		check("ToPolarCoordinates({x, y})", "{Sqrt(x^2+y^2),ArcTan(x,y)}");
+		check("ToPolarCoordinates({1, 1})", "{Sqrt(2),Pi/4}");
+		check("ToPolarCoordinates({x, y, z})", "{Sqrt(x^2+y^2+z^2),ArcCos(x/Sqrt(x^2+y^2+z^2)),ArcTan(y,z)}");
+		check("ToPolarCoordinates({{{x, y}, {1, 0}}, {{-2, 0}, {0, 1}}})",
+				"{{{Sqrt(x^2+y^2),ArcTan(x,y)},{1,0}},{{2,Pi},{1,Pi/2}}}");
+		check("ToPolarCoordinates({{{1, -1}}})", "{{{Sqrt(2),-Pi/4}}}");
+		check("ToPolarCoordinates({{} , {}})", "{{},{}}");
 	}
 
 	public void testTotal() {

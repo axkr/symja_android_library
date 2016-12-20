@@ -62,13 +62,13 @@ public class Names extends AbstractFunctionEvaluator {
 		return list;
 	}
 
-	public static List<String> getAutoCompletionList(String name) {
+	public static List<String> getAutoCompletionList(String namePrefix) {
 		List<String> list = new ArrayList<String>();
-		if (name.length() == 0) {
+		if (namePrefix.length() == 0) {
 			return list;
 		}
 		SuggestTree suggestTree = AST2Expr.getSuggestTree();
-		Node n = suggestTree.getAutocompleteSuggestions(name);
+		Node n = suggestTree.getAutocompleteSuggestions(namePrefix);
 		if (n != null) {
 			for (int i = 0; i < n.listLength(); i++) {
 				list.add(n.getSuggestion(i).getTerm());

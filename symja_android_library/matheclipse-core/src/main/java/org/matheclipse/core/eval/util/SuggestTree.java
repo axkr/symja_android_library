@@ -50,7 +50,7 @@ public class SuggestTree {
      * Creates a Suggest Tree with the specified k-value.
      *
      * @param k
-     *            the maximum number of autocomplete suggestions to return for a
+     *            the maximum number of auto-complete suggestions to return for a
      *            given prefix
      * @throws IllegalArgumentException
      *             if the specified k-value is less than 1

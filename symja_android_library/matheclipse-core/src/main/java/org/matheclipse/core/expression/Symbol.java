@@ -962,9 +962,9 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 	public boolean writeRules(java.io.ObjectOutputStream stream) throws java.io.IOException {
 		stream.writeUTF(fSymbolName);
 		stream.write(fAttributes);
-		if (!containsRules()) {
-			return false;
-		}
+		// if (!containsRules()) {
+		// return false;
+		// }
 		if (fRulesData == null) {
 			stream.writeBoolean(false);
 		} else {

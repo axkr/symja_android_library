@@ -144,7 +144,7 @@ public class Get extends AbstractFunctionEvaluator {
 	 * @return
 	 * @throws IOException
 	 */
-	private static List<ASTNode> parseReader(final BufferedReader reader, final EvalEngine engine) throws IOException {
+	public static List<ASTNode> parseReader(final BufferedReader reader, final EvalEngine engine) throws IOException {
 		String record;
 		StringBuilder builder = new StringBuilder(2048);
 		if ((record = reader.readLine()) != null) {
