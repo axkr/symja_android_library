@@ -5387,6 +5387,10 @@ public class F {
 	public static IAST Unique(final IExpr a0) {
 		return unaryAST1(Unique, a0);
 	}
+	
+	public static IAST UnitStep(final IExpr a0) {
+		return unaryAST1(UnitStep, a0);
+	}
 
 	public static IAST UnsameQ(final IExpr a0, final IExpr a1) {
 		return binaryAST2(UnsameQ, a0, a1);
