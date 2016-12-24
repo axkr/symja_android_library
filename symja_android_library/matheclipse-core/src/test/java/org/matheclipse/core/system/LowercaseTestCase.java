@@ -3227,6 +3227,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		// check("Exp(y + Log(x))", "x+E^y");
+		
+		// don't change see issue #137
+		check("2^(3+x)", "2^(3+x)");
+
 		check("I^(1/3)", "(-1)^(1/6)");
 		check("I^(1/4)", "(-1)^(1/8)");
 		check("I^(1/8)", "(-1)^(1/16)");
@@ -4375,6 +4380,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTimes() {
+		// issue #137
+		check("12*2^x*3^y", "2^(2+x)*3^(1+y)");
+		check("8*2^x", "2^(3+x)");
+		check("12*2^x", "3*2^(2+x)");
+
 		check("-Infinity", "-Infinity");
 		check("Times(I*Sqrt(2), I*Sqrt(3))", "-Sqrt(6)");
 		check("Sin(x)^(-2)/Tan(x)", "Csc(x)^2*Cot(x)");
