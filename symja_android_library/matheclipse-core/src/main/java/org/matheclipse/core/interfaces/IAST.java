@@ -1175,17 +1175,17 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * themselves are not copied) and remove the element at the given
 	 * <code>position</code>.
 	 * 
-	 * @param position
+	 * @param i
 	 * @return a clone with removed element at the given position.
 	 */
-	public IAST removeAtClone(int position);
+	public IAST removeAtClone(int i);
 
 	/**
 	 * Replaces the element at the specified location in this {@code IAST} with
 	 * the specified object. This operation does not change the size of the
 	 * {@code IAST}.
 	 * 
-	 * @param location
+	 * @param i
 	 *            the index at which to put the specified object.
 	 * @param object
 	 *            the object to insert.
@@ -1200,19 +1200,19 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @throws IndexOutOfBoundsException
 	 *             if {@code location < 0 || >= size()}
 	 */
-	public IExpr set(int location, IExpr object);
+	public IExpr set(int i, IExpr object);
 
 	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements
 	 * themselves are not copied) and set the <code>expr</code> at the given
 	 * <code>position</code>.
 	 * 
-	 * @param position
+	 * @param i
 	 * @param expr
 	 * @return a clone with element set to <code>expr</code> at the given
 	 *         <code>position</code>.
 	 */
-	public IAST setAtClone(int position, IExpr expr);
+	public IAST setAtClone(int i, IExpr expr);
 
 	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements
@@ -1221,14 +1221,14 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * method, this method returns exactly the same type for
 	 * <code>AST0, AST1, AST2, AST3</code>.
 	 * 
-	 * @param position
+	 * @param i
 	 * @param expr
 	 * @return a copy with element set to <code>expr</code> at the given
 	 *         <code>position</code>.
 	 */
-	default public IAST setAtCopy(int position, IExpr expr) {
+	default public IAST setAtCopy(int i, IExpr expr) {
 		IAST ast = copy();
-		ast.set(position, expr);
+		ast.set(i, expr);
 		return ast;
 	}
 

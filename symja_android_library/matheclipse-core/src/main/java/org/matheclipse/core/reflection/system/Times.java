@@ -1,12 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.$p;
 import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.IntegerQ;
 import static org.matheclipse.core.expression.F.Log;
 import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.m;
-import static org.matheclipse.core.expression.F.n;
 import static org.matheclipse.core.expression.F.x;
 import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.y_;
@@ -34,12 +30,131 @@ public class Times extends AbstractArgMultiple implements INumeric {
 
 	private static HashedOrderlessMatcher ORDERLESS_MATCHER = new HashedOrderlessMatcher();
 
-	@Override
-	public HashedOrderlessMatcher getHashRuleMap() {
-		return ORDERLESS_MATCHER;
+	private static IExpr eInfinity(IAST inf, IExpr o1) {
+		if (inf.isComplexInfinity()) {
+			if (o1.isZero()) {
+				return F.Indeterminate;
+			}
+			return F.CComplexInfinity;
+		}
+		if (inf.isInfinity()) {
+			if (o1.isInfinity()) {
+				return F.CInfinity;
+			}
+			if (o1.isNegativeInfinity()) {
+				return F.CNInfinity;
+			}
+			if (o1.isComplexInfinity()) {
+				return F.CComplexInfinity;
+			}
+		}
+		if (inf.isNegativeInfinity()) {
+			if (o1.isInfinity()) {
+				return F.CNInfinity;
+			}
+			if (o1.isNegativeInfinity()) {
+				return F.CInfinity;
+			}
+			if (o1.isComplexInfinity()) {
+				return F.CComplexInfinity;
+			}
+		}
+		if (inf.isAST1()) {
+			if (o1.isNumber() || o1.isSymbol()) {
+				if (inf.isAST1()) {
+					return DirectedInfinity.timesInf(inf, o1);
+				}
+
+			}
+			if (o1.isDirectedInfinity() && o1.isAST1()) {
+				return F.eval(F.DirectedInfinity(F.Times(inf.arg1(), ((IAST) o1).arg1())));
+			}
+		}
+		return F.NIL;
 	}
 
 	public Times() {
+	}
+
+	// private void addTrigRules(ISymbol head1, ISymbol head2, ISymbol
+	// resultHead) {
+	// IAST sinX_ = F.unaryAST1(head1, x_);
+	// IAST cotX_ = F.unaryAST1(head2, x_);
+	// IAST sinX = F.unaryAST1(head1, x);
+	// IAST cotX = F.unaryAST1(head2, x);
+	// IAST resultX = F.unaryAST1(resultHead, x);
+	// ORDERLESS_MATCHER.defineHashRule(sinX_, cotX_, resultX);
+	// ORDERLESS_MATCHER.defineHashRule(sinX_, F.Power(cotX_, $p(n, IntegerQ)),
+	// F.Times(F.Power(cotX, F.Subtract(n, F.C1)), resultX), F.Positive(n));
+	// ORDERLESS_MATCHER.defineHashRule(F.Power(sinX_, $p(m, IntegerQ)), cotX_,
+	// F.Times(F.Power(sinX, F.Subtract(m, F.C1)), resultX), F.Positive(m));
+	// ORDERLESS_MATCHER.defineHashRule(F.Power(sinX_, $p(m, IntegerQ)),
+	// F.Power(cotX_, $p(n, IntegerQ)),
+	// F.If(F.Greater(m, n), F.Times(F.Power(sinX, F.Subtract(m, n)),
+	// F.Power(resultX, n)),
+	// F.Times(F.Power(cotX, F.Subtract(n, m)), F.Power(resultX, m))),
+	// F.And(F.Positive(m), F.Positive(n)));
+	// }
+
+	/**
+	 * Distribute a leading integer factor over the integer powers if available.
+	 * <code>12*2^x*3^y   ==>   2^(2+x)*3^(1+y)</code>.
+	 * 
+	 * @param ast
+	 *            the already evaluated expression
+	 * @param originalExpr
+	 *            the original expression which is used, if
+	 *            <code>!ast.isPresent()</code>
+	 * @return the evaluated object or <code>ast</code>, if the distribution of
+	 *         an integer factor isn't possible
+	 */
+	private IExpr distributeLeadingFactor(IExpr ast, IAST originalExpr) {
+		IExpr expr = ast;
+		if (!expr.isPresent()) {
+			expr = originalExpr;
+		}
+		if (expr.isTimes() && expr.getAt(1).isInteger()) {
+			IAST times = (IAST) expr;
+			IInteger leadingFactor = (IInteger) times.arg1();
+
+			if (!leadingFactor.isMinusOne()) {
+				IAST result = F.NIL;
+				for (int i = 2; i < times.size(); i++) {
+					IExpr temp = times.get(i);
+					if (temp.isPower() && temp.getAt(1).isInteger() && !temp.getAt(2).isNumber()) {
+						IAST power = (IAST) temp;
+						IInteger powArg1 = (IInteger) power.arg1();
+						if (powArg1.isPositive()) {
+							IInteger mod = F.C0;
+							int count = 0;
+							while (!leadingFactor.isZero()) {
+								mod = leadingFactor.mod(powArg1);
+								if (mod.isZero()) {
+									count++;
+									leadingFactor = leadingFactor.div(powArg1);
+								} else {
+									break;
+								}
+							}
+							if (count > 0) {
+								if (!result.isPresent()) {
+									result = times.clone();
+								}
+								power = power.clone();
+								power.set(2, F.Plus(F.integer(count), power.arg2()));
+								result.set(i, power);
+							}
+						}
+					}
+				}
+				if (result.isPresent()) {
+					result.set(1, leadingFactor);
+					return result;
+				}
+			}
+
+		}
+		return ast;
 	}
 
 	@Override
@@ -145,7 +260,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		}
 
 		if (o1.isPlus()) {
-			final IAST f1 = (IAST) o1;
+			// final IAST f1 = (IAST) o1;
 			// issue#128
 			// if (o0.isMinusOne()) {
 			// return f1.mapAt(F.Times(o0, null), 2);
@@ -170,160 +285,18 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		return F.NIL;
 	}
 
-	/**
-	 * Try simplifying <code>arg0 * ( power1Arg1 ^ power1Arg2 )</code>
-	 * 
-	 * @param arg0
-	 * @param power1Arg1
-	 * @param power1Arg2
-	 * @return
-	 */
-	private IExpr timesArgPower(final IExpr arg0, IExpr power1Arg1, IExpr power1Arg2) {
-		if (power1Arg1.equals(arg0)) {
-			if (power1Arg2.isInteger()) {
-				return arg0.power(power1Arg2.inc());
-			} else if (!power1Arg2.isNumber()) {
-				return arg0.power(power1Arg2.inc());
-			}
-			// } else if (arg0.isPlus() && power1Arg1.equals(arg0.negate())) {
-			// // Issue#128
-			// if (power1Arg2.isInteger()) {
-			// return arg0.power(power1Arg2.inc()).negate();
-			// } else if (!power1Arg2.isNumber()) {
-			// return arg0.power(power1Arg2.inc()).negate();
-			// }
-		} else if (power1Arg1.isInteger() && power1Arg2.isFraction()) {
-			if (power1Arg1.isMinusOne()) {
-				if (arg0.isImaginaryUnit()) {
-					// I * power1Arg1 ^ power1Arg2 -> (-1) ^ (power1Arg2 +
-					// (1/2))
-					return F.Power(F.CN1, power1Arg2.plus(F.C1D2));
-				}
-				if (arg0.isNegativeImaginaryUnit()) {
-					// (-I) * power1Arg1 ^ power1Arg2 -> (-1) * (-1) ^
-					// (power1Arg2 + (1/2))
-					return F.Times(F.CN1, F.Power(F.CN1, power1Arg2.plus(F.C1D2)));
-				}
-			}
-			if (arg0.isFraction()) {
-				// example: 1/9 * 3^(1/2) -> 1/3 * 3^(-1/2)
-
-				// TODO implementation for complex numbers instead of
-				// fractions
-				IFraction f0 = (IFraction) arg0;
-				IInteger pArg1 = (IInteger) power1Arg1;
-				IFraction pArg2 = (IFraction) power1Arg2;
-				if (pArg1.isPositive()) {
-					if (pArg2.isPositive()) {
-						IInteger denominatorF0 = (IInteger) f0.getDenominator();
-						IInteger[] res = denominatorF0.divideAndRemainder(pArg1);
-						if (res[1].isZero()) {
-							return F.Times(F.fraction(f0.getNumerator(), res[0]), F.Power(pArg1, pArg2.negate()));
-						}
-					} else {
-						IInteger numeratorF0 = (IInteger) f0.getNumerator();
-						IInteger[] res = numeratorF0.divideAndRemainder(pArg1);
-						if (res[1].isZero()) {
-							return F.Times(F.fraction(res[0], f0.getDenominator()), F.Power(pArg1, pArg2.negate()));
-						}
-					}
-				}
-			}
-		}
-
-		return F.NIL;
-	}
-
-	/**
-	 * Try simpplifying
-	 * <code>(power0Arg1 ^ power0Arg2) * (power1Arg1 ^ power1Arg2)</code>
-	 * 
-	 * @param power0Arg1
-	 * @param power0Arg2
-	 * @param power1Arg1
-	 * @param power1Arg2
-	 * @return
-	 */
-	private IExpr timesPowerPower(IExpr power0Arg1, IExpr power0Arg2, IExpr power1Arg1, IExpr power1Arg2) {
-		if (power0Arg2.isNumber()) {
-			if (power1Arg2.isNumber()) {
-				if (power0Arg1.equals(power1Arg1)) {
-					// x^(a)*x^(b) => x ^(a+b)
-					return power0Arg1.power(power0Arg2.plus(power1Arg2));
-				}
-				if (power0Arg2.equals(power1Arg2) && power0Arg1.isPositive() && power1Arg1.isPositive()
-						&& power0Arg1.isSignedNumber() && power1Arg1.isSignedNumber()) {
-					// a^(c)*b^(c) => (a*b) ^c
-					return power0Arg1.times(power1Arg1).power(power0Arg2);
-				}
-				// if (power0Arg1.isPlus() && power1Arg1.isPlus() &&
-				// power0Arg1.equals(power1Arg1.negate())) {// Issue#128
-				// return
-				// power0Arg1.power(power0Arg2.plus(power1Arg2)).times(CN1.power(power1Arg2));
-				// }
-			}
-		}
-		if (power0Arg1.equals(power1Arg1)) {
-			// x^(a)*x^(b) => x ^(a+b)
-			return power0Arg1.power(power0Arg2.plus(power1Arg2));
-		}
-		return F.NIL;
-	}
-
-	private IExpr timesInterval(final IExpr o0, final IExpr o1) {
-		return F.Interval(F.List(
-				F.Min(o0.lower().times(o1.lower()), o0.lower().times(o1.upper()), o0.upper().times(o1.lower()),
-						o0.upper().times(o1.upper())),
-				F.Max(o0.lower().times(o1.lower()), o0.lower().times(o1.upper()), o0.upper().times(o1.lower()),
-						o0.upper().times(o1.upper()))));
-	}
-
-	private static IExpr eInfinity(IAST inf, IExpr o1) {
-		if (inf.isComplexInfinity()) {
-			if (o1.isZero()) {
-				return F.Indeterminate;
-			}
-			return F.CComplexInfinity;
-		}
-		if (inf.isInfinity()) {
-			if (o1.isInfinity()) {
-				return F.CInfinity;
-			}
-			if (o1.isNegativeInfinity()) {
-				return F.CNInfinity;
-			}
-			if (o1.isComplexInfinity()) {
-				return F.CComplexInfinity;
-			}
-		}
-		if (inf.isNegativeInfinity()) {
-			if (o1.isInfinity()) {
-				return F.CNInfinity;
-			}
-			if (o1.isNegativeInfinity()) {
-				return F.CInfinity;
-			}
-			if (o1.isComplexInfinity()) {
-				return F.CComplexInfinity;
-			}
-		}
-		if (inf.isAST1()) {
-			if (o1.isNumber() || o1.isSymbol()) {
-				if (inf.isAST1()) {
-					return DirectedInfinity.timesInf(inf, o1);
-				}
-
-			}
-			if (o1.isDirectedInfinity() && o1.isAST1()) {
-				return F.eval(F.DirectedInfinity(F.Times(inf.arg1(), ((IAST) o1).arg1())));
-			}
-		}
-		return F.NIL;
-	}
-
 	@Override
 	public IExpr eComIntArg(final IComplex c0, final IInteger i1) {
 		return c0.multiply(F.complex(i1, F.C0));
+	}
+
+	@Override
+	public double evalReal(final double[] stack, final int top, final int size) {
+		double result = 1;
+		for (int i = top - size + 1; i < top + 1; i++) {
+			result *= stack[i];
+		}
+		return result;
 	}
 
 	@Override
@@ -335,10 +308,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		if (size > 2) {
 			IAST temp = evaluateHashs(ast);
 			if (temp.isPresent()) {
-				if (temp.isAST(F.Times, 2)) {
-					return ((IAST) temp).arg1();
-				}
-				return temp;
+				return temp.getOneIdentity(F.C1);
 			}
 		}
 		if (size == 3) {
@@ -350,7 +320,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 				final IAST arg2 = (IAST) ast.arg2();
 				return arg2.mapThread(F.Times(ast.arg1(), null), 2);
 			}
-			return binaryOperator(ast.arg1(), ast.arg2());
+			return distributeLeadingFactor(binaryOperator(ast.arg1(), ast.arg2()), ast);
 		}
 
 		if (size > 3) {
@@ -407,11 +377,17 @@ public class Times extends AbstractArgMultiple implements INumeric {
 					return result.getOneIdentity(F.C0);
 				}
 
-				return result;
+				return distributeLeadingFactor(result, F.NIL);
 			}
+			return distributeLeadingFactor(F.NIL, ast);
 		}
 
 		return F.NIL;
+	}
+
+	@Override
+	public HashedOrderlessMatcher getHashRuleMap() {
+		return ORDERLESS_MATCHER;
 	}
 
 	@Override
@@ -435,29 +411,111 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		super.setUp(newSymbol);
 	}
 
-	private void addTrigRules(ISymbol head1, ISymbol head2, ISymbol resultHead) {
-		IAST sinX_ = F.unaryAST1(head1, x_);
-		IAST cotX_ = F.unaryAST1(head2, x_);
-		IAST sinX = F.unaryAST1(head1, x);
-		IAST cotX = F.unaryAST1(head2, x);
-		IAST resultX = F.unaryAST1(resultHead, x);
-		ORDERLESS_MATCHER.defineHashRule(sinX_, cotX_, resultX);
-		ORDERLESS_MATCHER.defineHashRule(sinX_, F.Power(cotX_, $p(n, IntegerQ)),
-				F.Times(F.Power(cotX, F.Subtract(n, F.C1)), resultX), F.Positive(n));
-		ORDERLESS_MATCHER.defineHashRule(F.Power(sinX_, $p(m, IntegerQ)), cotX_,
-				F.Times(F.Power(sinX, F.Subtract(m, F.C1)), resultX), F.Positive(m));
-		ORDERLESS_MATCHER.defineHashRule(F.Power(sinX_, $p(m, IntegerQ)), F.Power(cotX_, $p(n, IntegerQ)),
-				F.If(F.Greater(m, n), F.Times(F.Power(sinX, F.Subtract(m, n)), F.Power(resultX, n)),
-						F.Times(F.Power(cotX, F.Subtract(n, m)), F.Power(resultX, m))),
-				F.And(F.Positive(m), F.Positive(n)));
+	/**
+	 * Try simplifying <code>arg0 * ( power1Arg1 ^ power1Arg2 )</code>
+	 * 
+	 * @param arg0
+	 * @param power1Arg1
+	 * @param power1Arg2
+	 * @return
+	 */
+	private IExpr timesArgPower(final IExpr arg0, IExpr power1Arg1, IExpr power1Arg2) {
+		if (power1Arg1.equals(arg0)) {
+			if (power1Arg2.isInteger()) {
+				return arg0.power(power1Arg2.inc());
+			} else if (!power1Arg2.isNumber()) {
+				return arg0.power(power1Arg2.inc());
+			}
+			// } else if (arg0.isPlus() && power1Arg1.equals(arg0.negate())) {
+			// // Issue#128
+			// if (power1Arg2.isInteger()) {
+			// return arg0.power(power1Arg2.inc()).negate();
+			// } else if (!power1Arg2.isNumber()) {
+			// return arg0.power(power1Arg2.inc()).negate();
+			// }
+		} else if (power1Arg1.isInteger() && power1Arg2.isFraction()) {
+			if (power1Arg1.isMinusOne()) {
+				if (arg0.isImaginaryUnit()) {
+					// I * power1Arg1 ^ power1Arg2 -> (-1) ^ (power1Arg2 +
+					// (1/2))
+					return F.Power(F.CN1, power1Arg2.plus(F.C1D2));
+				}
+				if (arg0.isNegativeImaginaryUnit()) {
+					// (-I) * power1Arg1 ^ power1Arg2 -> (-1) * (-1) ^
+					// (power1Arg2 + (1/2))
+					return F.Times(F.CN1, F.Power(F.CN1, power1Arg2.plus(F.C1D2)));
+				}
+			}
+			if (arg0.isFraction()) {
+				// example: 1/9 * 3^(1/2) -> 1/3 * 3^(-1/2)
+
+				// TODO implementation for complex numbers instead of
+				// fractions
+				IFraction f0 = (IFraction) arg0;
+				IInteger pArg1 = (IInteger) power1Arg1;
+				IFraction pArg2 = (IFraction) power1Arg2;
+				if (pArg1.isPositive()) {
+					if (pArg2.isPositive()) {
+						IInteger denominatorF0 = f0.getDenominator();
+						IInteger[] res = denominatorF0.divideAndRemainder(pArg1);
+						if (res[1].isZero()) {
+							return F.Times(F.fraction(f0.getNumerator(), res[0]), F.Power(pArg1, pArg2.negate()));
+						}
+					} else {
+						IInteger numeratorF0 = f0.getNumerator();
+						IInteger[] res = numeratorF0.divideAndRemainder(pArg1);
+						if (res[1].isZero()) {
+							return F.Times(F.fraction(res[0], f0.getDenominator()), F.Power(pArg1, pArg2.negate()));
+						}
+					}
+				}
+			}
+		}
+
+		return F.NIL;
 	}
 
-	@Override
-	public double evalReal(final double[] stack, final int top, final int size) {
-		double result = 1;
-		for (int i = top - size + 1; i < top + 1; i++) {
-			result *= stack[i];
+	private IExpr timesInterval(final IExpr o0, final IExpr o1) {
+		return F.Interval(F.List(
+				F.Min(o0.lower().times(o1.lower()), o0.lower().times(o1.upper()), o0.upper().times(o1.lower()),
+						o0.upper().times(o1.upper())),
+				F.Max(o0.lower().times(o1.lower()), o0.lower().times(o1.upper()), o0.upper().times(o1.lower()),
+						o0.upper().times(o1.upper()))));
+	}
+
+	/**
+	 * Try simpplifying
+	 * <code>(power0Arg1 ^ power0Arg2) * (power1Arg1 ^ power1Arg2)</code>
+	 * 
+	 * @param power0Arg1
+	 * @param power0Arg2
+	 * @param power1Arg1
+	 * @param power1Arg2
+	 * @return
+	 */
+	private IExpr timesPowerPower(IExpr power0Arg1, IExpr power0Arg2, IExpr power1Arg1, IExpr power1Arg2) {
+		if (power0Arg2.isNumber()) {
+			if (power1Arg2.isNumber()) {
+				if (power0Arg1.equals(power1Arg1)) {
+					// x^(a)*x^(b) => x ^(a+b)
+					return power0Arg1.power(power0Arg2.plus(power1Arg2));
+				}
+				if (power0Arg2.equals(power1Arg2) && power0Arg1.isPositive() && power1Arg1.isPositive()
+						&& power0Arg1.isSignedNumber() && power1Arg1.isSignedNumber()) {
+					// a^(c)*b^(c) => (a*b) ^c
+					return power0Arg1.times(power1Arg1).power(power0Arg2);
+				}
+				// if (power0Arg1.isPlus() && power1Arg1.isPlus() &&
+				// power0Arg1.equals(power1Arg1.negate())) {// Issue#128
+				// return
+				// power0Arg1.power(power0Arg2.plus(power1Arg2)).times(CN1.power(power1Arg2));
+				// }
+			}
 		}
-		return result;
+		if (power0Arg1.equals(power1Arg1)) {
+			// x^(a)*x^(b) => x ^(a+b)
+			return power0Arg1.power(power0Arg2.plus(power1Arg2));
+		}
+		return F.NIL;
 	}
 }
