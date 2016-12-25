@@ -3293,6 +3293,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("(z^(1/3))^3", "z");
 		check("(z^3)^(1/3)", "(z^3)^(1/3)");
 		check("Sqrt(x^2)", "Sqrt(x^2)");
+
+		check("E^(Log(x))", "x");
+		check("E^(y+Log(x))", "E^y*x");
+		check("E^(y+Log(x)-z)", "E^(y-z)*x");
+		check("E^(y-Log(x)-z)", "E^(y-z)/x");
+		check("E^(y+Log(x)-a*Log(v)*b*Log(u)-z)", "(E^(y-z)*x)/v^(a*b*Log(u))");
 	}
 
 	public void testPowerExpand() {
