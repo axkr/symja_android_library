@@ -2537,6 +2537,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLimit() {
+		check("Limit(Log(x), x -> 0)", "-Infinity");
 		check("Limit(x^x, x -> 0)", "1");
 		check("Limit(1/x, x -> Infinity, Direction->1)", "0");
 		check("Limit(1/x, x -> Infinity, Direction->-1)", "0");
@@ -2589,6 +2590,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Log(Pi^E)", "E*Log(Pi)");
 		check("Log(E)", "1");
+		check("Log(-E)", "1+I*Pi");
 		check("D(Log(a, x),x)", "1/(x*Log(a))");
 		check("Log(1000.)", "6.907755278982137");
 		check("Log(2.5 + I)", "0.9905007344332918+I*0.3805063771123649");
@@ -2596,6 +2598,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Log(2, 16)", "4");
 		check("Log(10, 1000)", "3");
 		check("Log(10, 10)", "1");
+		check("Log(0)", "-Infinity");
+		check("Log(1)", "0");
+		check("Log(-1)", "I*Pi");
+		check("Log(I)", "I*1/2*Pi");
+		check("Log(-I)", "-I*1/2*Pi");
+		check("Log(GoldenRatio)", "ArcCsch(2)");
+		check("Log(Infinity)", "Infinity");
+		check("Log(-Infinity)", "Infinity");
+		
+		check("Log(I*Infinity)", "Infinity");
+		check("Log(-I*Infinity)", "Infinity");
+		check("Log(ComplexInfinity)", "Infinity");
 	}
 
 	public void testLog10() {

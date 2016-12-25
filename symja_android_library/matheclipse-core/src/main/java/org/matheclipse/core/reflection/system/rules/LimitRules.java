@@ -13,7 +13,7 @@ public interface LimitRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 3, 7 };
+  final public static int[] SIZES = { 4, 7 };
 
   final public static IAST RULES = List(
     IInit(Limit, SIZES),
@@ -29,6 +29,8 @@ public interface LimitRules {
       CInfinity),
     ISetDelayed(Limit(Power(E,x_),Rule(x_Symbol,Negate(CInfinity))),
       C0),
+    ISet(Limit(Log(x_),Rule(x_Symbol,C0)),
+      CNInfinity),
     ISet(Limit(Log(x_),Rule(x_Symbol,CInfinity)),
       CInfinity),
     ISet(Limit(Power(Plus(C1,Power(x_,-1)),x_),Rule(x_Symbol,CInfinity)),

@@ -5,6 +5,7 @@
  Limit(m_NumberQ^(-x_), x_Symbol->Infinity):= 0 /; m>1,
  Limit(E^x_, x_Symbol->Infinity):= Infinity,
  Limit(E^x_, x_Symbol->-Infinity):= 0,
+ Limit(Log(x_), x_Symbol->0)=-Infinity, 
  Limit(Log(x_), x_Symbol->Infinity)=Infinity,  
  Limit((1+x_^(-1))^x_, x_Symbol->Infinity)=E,
  Limit((1+a_*(x_^(-1)))^x_, x_Symbol->Infinity)=E^(a) /; FreeQ(a,x),
