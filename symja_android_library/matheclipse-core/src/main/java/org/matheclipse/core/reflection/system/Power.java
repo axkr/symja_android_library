@@ -518,10 +518,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 		}
 
 		if (arg1.isE() && arg2.isPlus()) {
-			IAST temp = powerEPlus((IAST) arg2);
-			if (temp.isPresent()) {
-				return temp;
-			}
+			return powerEPlus((IAST) arg2); 
 		}
 
 		if (arg1.isAST()) {
