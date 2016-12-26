@@ -2100,14 +2100,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGet() {
-		String pathToVectorAnalysis;
-		pathToVectorAnalysis = getClass().getResource("/VectorAnalysis.m").toString();
-		// remove 'file:/'
-		pathToVectorAnalysis = pathToVectorAnalysis.substring(6);
-		System.out.println(pathToVectorAnalysis);
-		check("Get(\"" + pathToVectorAnalysis + "\")", "");
-		check("DotProduct({a,b,c},{d,e,f}, Spherical)",
-				"a*d*Cos(b)*Cos(e)+a*d*Cos(c)*Cos(f)*Sin(b)*Sin(e)+a*d*Sin(b)*Sin(c)*Sin(e)*Sin(f)");
+		String s = System.getProperty("os.name");
+		if (s.contains("Windows")) {
+			String pathToVectorAnalysis;
+			pathToVectorAnalysis = getClass().getResource("/VectorAnalysis.m").toString();
+			// remove 'file:/'
+			pathToVectorAnalysis = pathToVectorAnalysis.substring(6);
+			System.out.println(pathToVectorAnalysis);
+			check("Get(\"" + pathToVectorAnalysis + "\")", "");
+			check("DotProduct({a,b,c},{d,e,f}, Spherical)",
+					"a*d*Cos(b)*Cos(e)+a*d*Cos(c)*Cos(f)*Sin(b)*Sin(e)+a*d*Sin(b)*Sin(c)*Sin(e)*Sin(f)");
+		}
 	}
 
 	public void testGreater() {
@@ -2606,7 +2609,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Log(GoldenRatio)", "ArcCsch(2)");
 		check("Log(Infinity)", "Infinity");
 		check("Log(-Infinity)", "Infinity");
-		
+
 		check("Log(I*Infinity)", "Infinity");
 		check("Log(-I*Infinity)", "Infinity");
 		check("Log(ComplexInfinity)", "Infinity");
@@ -3242,7 +3245,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testPower() {
 		// check("Exp(y + Log(x))", "x+E^y");
-		
+
 		// don't change see issue #137
 		check("2^(3+x)", "2^(3+x)");
 
@@ -3414,12 +3417,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testProductLog() {
-		check("ProductLog(-1.5)", "-3.2783735915572e-2+I*1.549643823350159");
-		check("ProductLog({0.2, 0.5, 0.8})", "{1.689159734991096e-1,3.517337112491959e-1,4.900678588015799e-1}");
-		check("ProductLog(2.5 + 2*I)", "1.056167968948635+I*3.5256052020787e-1");
-		check("N(ProductLog(4/10),50)", "2.9716775067313854677972696224702134190445810155014e-1");
+		String s = System.getProperty("os.name");
+		if (s.contains("Windows")) {
+			check("ProductLog(-1.5)", "-3.2783735915572e-2+I*1.549643823350159");
+			check("ProductLog({0.2, 0.5, 0.8})", "{1.689159734991096e-1,3.517337112491959e-1,4.900678588015799e-1}");
+			check("ProductLog(2.5 + 2*I)", "1.056167968948635+I*3.5256052020787e-1");
+			check("N(ProductLog(4/10),50)", "2.9716775067313854677972696224702134190445810155014e-1");
 
-		check("N(ProductLog(-1),20)", "-3.181315052047641353e-1+I*1.3372357014306894089");
+			check("N(ProductLog(-1),20)", "-3.181315052047641353e-1+I*1.3372357014306894089");
+		}
 
 		check("ProductLog(0)", "0");
 		check("ProductLog(-Pi/2)", "I*1/2*Pi");
@@ -3454,11 +3460,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPutGet() {
-		check("Put(x + y, \"c:/temp/example_file1.m\"); Get(\"c:/temp/example_file1.m\")", "x+y");
-		check("Put(x + y, 2x^2 + 4z!, Cos(x) + I Sin(x), \"c:/temp/example_file2.m\");"
-				+ "Get(\"c:/temp/example_file2.m\")", "I*Sin(x)+Cos(x)");
-		check("Put(47!, \"c:/temp/test.m\"); Get(\"c:/temp/test.m\")",
-				"258623241511168180642964355153611979969197632389120000000000");
+		String s = System.getProperty("os.name");
+		if (s.contains("Windows")) {
+			check("Put(x + y, \"c:/temp/example_file1.m\"); Get(\"c:/temp/example_file1.m\")", "x+y");
+			check("Put(x + y, 2x^2 + 4z!, Cos(x) + I Sin(x), \"c:/temp/example_file2.m\");"
+					+ "Get(\"c:/temp/example_file2.m\")", "I*Sin(x)+Cos(x)");
+			check("Put(47!, \"c:/temp/test.m\"); Get(\"c:/temp/test.m\")",
+					"258623241511168180642964355153611979969197632389120000000000");
+		}
 	}
 
 	public void testQuiet() {
