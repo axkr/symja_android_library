@@ -521,29 +521,35 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 		}
 
 		if (arg1.isE() && arg2.isPlus()) {
-			IAST plus = (IAST)arg2; 
+			IAST plus = (IAST) arg2;
 			// simplify E^(y+Log(x)) here
-			List<IExpr> multiplicationFactors = new LinkedList<>();
+			IAST multiplicationFactors = F.NIL;
 			for (int i = plus.size() - 1; i > 0; i--) {
 				if (plus.get(i).isLog()) {
-					multiplicationFactors.add(plus.get(i).getAt(1));
+					if (!multiplicationFactors.isPresent()) {
+						multiplicationFactors = F.Times();
+					}
+					multiplicationFactors.append(plus.get(i).getAt(1));
 					plus = plus.removeAtClone(i);
 				} else if (plus.get(i).isTimes()) {
 					IAST times = (IAST) plus.get(i);
 					for (int j = times.size() - 1; j > 0; j--) {
 						if (times.get(j).isLog()) {
 							IExpr innerFunc = times.get(j).getAt(1);
-							multiplicationFactors.add(F.Power(innerFunc, F.ast(times, F.Times, false, j, j+1)));
+							if (!multiplicationFactors.isPresent()) {
+								multiplicationFactors = F.Times();
+							}
+							multiplicationFactors.append(F.Power(innerFunc, F.ast(times, F.Times, false, j, j + 1)));
 							plus = plus.removeAtClone(i);
 							break;
 						}
 					}
 				}
 			}
-			if (multiplicationFactors.isEmpty())
-				return F.NIL;
-			multiplicationFactors.add(F.Exp(plus));
-			return F.Times(multiplicationFactors.toArray(new IExpr[multiplicationFactors.size()]));
+			if (multiplicationFactors.isPresent()) {
+				multiplicationFactors.append(F.Exp(plus));
+				return multiplicationFactors;
+			}
 		}
 
 		if (arg1.isAST()) {
