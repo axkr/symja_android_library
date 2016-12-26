@@ -1,0 +1,7 @@
+image: maven:3.3.3
+
+pipelines:
+  default:
+    - step:
+        script:
+          - cd symja_android_library && mvn clean install
