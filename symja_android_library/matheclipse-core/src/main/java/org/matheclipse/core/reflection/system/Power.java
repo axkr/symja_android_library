@@ -27,6 +27,9 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.PowerRules;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public class Power extends AbstractArg2 implements INumeric, PowerRules {
 	/**
 	 * Constructor for the singleton
@@ -520,6 +523,27 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 		if (arg1.isE() && arg2.isPlus()) {
 			IAST plus = (IAST)arg2; 
 			// simplify E^(y+Log(x)) here
+			List<IExpr> multiplicationFactors = new LinkedList<>();
+			for (int i = plus.size() - 1; i > 0; i--) {
+				if (plus.get(i).isLog()) {
+					multiplicationFactors.add(plus.get(i).getAt(1));
+					plus = plus.removeAtClone(i);
+				} else if (plus.get(i).isTimes()) {
+					IAST times = (IAST) plus.get(i);
+					for (int j = times.size() - 1; j > 0; j--) {
+						if (times.get(j).isLog()) {
+							IExpr innerFunc = times.get(j).getAt(1);
+							multiplicationFactors.add(F.Power(innerFunc, F.ast(times, F.Times, false, j, j+1)));
+							plus = plus.removeAtClone(i);
+							break;
+						}
+					}
+				}
+			}
+			if (multiplicationFactors.isEmpty())
+				return F.NIL;
+			multiplicationFactors.add(F.Exp(plus));
+			return F.Times(multiplicationFactors.toArray(new IExpr[multiplicationFactors.size()]));
 		}
 
 		if (arg1.isAST()) {

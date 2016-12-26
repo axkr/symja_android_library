@@ -44,13 +44,13 @@ public abstract class AbstractTestCase extends TestCase {
 
 			if (resultLength > 0 && evaledResult.length() > resultLength) {
 				evaledResult = evaledResult.substring(0, resultLength) + "<<SHORT>>";
-				assertEquals(evaledResult, expectedResult);
+				assertEquals(expectedResult, evaledResult);
 			} else {
-				assertEquals(evaledResult, expectedResult);
+				assertEquals(expectedResult, evaledResult);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			assertEquals(e, "");
+			assertEquals("", e);
 		}
 	}
 
@@ -76,10 +76,10 @@ public abstract class AbstractTestCase extends TestCase {
 				}
 			}
 
-			assertEquals(buf.toString(), strResult);
+			assertEquals(strResult, buf.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
-			assertEquals(e, "");
+			assertEquals("", e);
 		} finally {
 			Config.SERVER_MODE = mode;
 		}
