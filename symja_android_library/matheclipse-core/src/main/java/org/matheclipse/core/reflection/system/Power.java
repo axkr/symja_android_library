@@ -27,9 +27,6 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.PowerRules;
 
-import java.util.LinkedList;
-import java.util.List;
-
 public class Power extends AbstractArg2 implements INumeric, PowerRules {
 	/**
 	 * Constructor for the singleton
@@ -521,34 +518,9 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 		}
 
 		if (arg1.isE() && arg2.isPlus()) {
-			IAST plus = (IAST) arg2;
-			// simplify E^(y+Log(x)) here
-			IAST multiplicationFactors = F.NIL;
-			for (int i = plus.size() - 1; i > 0; i--) {
-				if (plus.get(i).isLog()) {
-					if (!multiplicationFactors.isPresent()) {
-						multiplicationFactors = F.Times();
-					}
-					multiplicationFactors.append(plus.get(i).getAt(1));
-					plus = plus.removeAtClone(i);
-				} else if (plus.get(i).isTimes()) {
-					IAST times = (IAST) plus.get(i);
-					for (int j = times.size() - 1; j > 0; j--) {
-						if (times.get(j).isLog()) {
-							IExpr innerFunc = times.get(j).getAt(1);
-							if (!multiplicationFactors.isPresent()) {
-								multiplicationFactors = F.Times();
-							}
-							multiplicationFactors.append(F.Power(innerFunc, F.ast(times, F.Times, false, j, j + 1)));
-							plus = plus.removeAtClone(i);
-							break;
-						}
-					}
-				}
-			}
-			if (multiplicationFactors.isPresent()) {
-				multiplicationFactors.append(F.Exp(plus));
-				return multiplicationFactors;
+			IAST temp = powerEPlus((IAST) arg2);
+			if (temp.isPresent()) {
+				return temp;
 			}
 		}
 
@@ -602,6 +574,43 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 					return F.Power(astArg1.arg1(), F.Times(arg2, astArg1.arg2()));
 				}
 			}
+		}
+		return F.NIL;
+	}
+
+	/**
+	 * Simplify <code>E^(y+Log(x))</code> to <code>x*E^(y)</code>
+	 * 
+	 * @param arg2
+	 * @return
+	 */
+	private IAST powerEPlus(IAST plus) {
+		IAST multiplicationFactors = F.NIL;
+		for (int i = plus.size() - 1; i > 0; i--) {
+			if (plus.get(i).isLog()) {
+				if (!multiplicationFactors.isPresent()) {
+					multiplicationFactors = F.Times();
+				}
+				multiplicationFactors.append(plus.get(i).getAt(1));
+				plus = plus.removeAtClone(i);
+			} else if (plus.get(i).isTimes()) {
+				IAST times = (IAST) plus.get(i);
+				for (int j = times.size() - 1; j > 0; j--) {
+					if (times.get(j).isLog()) {
+						IExpr innerFunc = times.get(j).getAt(1);
+						if (!multiplicationFactors.isPresent()) {
+							multiplicationFactors = F.Times();
+						}
+						multiplicationFactors.append(F.Power(innerFunc, F.ast(times, F.Times, false, j, j + 1)));
+						plus = plus.removeAtClone(i);
+						break;
+					}
+				}
+			}
+		}
+		if (multiplicationFactors.isPresent()) {
+			multiplicationFactors.append(F.Exp(plus));
+			return multiplicationFactors;
 		}
 		return F.NIL;
 	}
