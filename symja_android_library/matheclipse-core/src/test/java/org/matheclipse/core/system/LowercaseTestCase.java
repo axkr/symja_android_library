@@ -270,6 +270,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAbs() {
+		check("Abs((1+I)/Sqrt(2))", "1");
 		check("Abs(0)", "0");
 		check("Abs(10/3)", "10/3");
 		check("Abs(-10/3)", "10/3");
@@ -1693,6 +1694,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("E^(5*I*Pi)", "-1");
 		check("E^Infinity", "Infinity");
 		check("E^(-Infinity)", "0");
+		check("E^(I*Infinity)", "Indeterminate");
+		check("E^(-I*Infinity)", "Indeterminate");
+		check("E^ComplexInfinity", "Indeterminate");
+		check("Conjugate(E^z)", "E^Conjugate(z)");
 	}
 
 	public void testExpand() {
@@ -3841,6 +3846,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSign() {
+		check("Sign(Indeterminate)", "Indeterminate");
+		check("Sign(2.5)", "1");
+		check("Sign(-2.5)", "-1");
+		check("Sign(0.0)", "0");
+		check("Sign({-2, -1, 0, 1, 2})", "{-1,-1,0,1,1}");
 		check("Pi>E", "True");
 		check("Pi<E", "False");
 		check("Sign(1+I)", "(1+I)/Sqrt(2)");
@@ -3848,11 +3858,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sign(E - Pi)", "-1");
 		check("Sign(0)", "0");
 		check("Sign(I)", "I");
+		check("Sign(-2*I)", "-I");
 		check("Sign(Indeterminate)", "Indeterminate");
 		check("Sign(Infinity)", "1");
 		check("Sign(-Infinity)", "-1");
 		check("Sign(DirectedInfinity(1+I*3))", "(1+I*3)/Sqrt(10)");
 		check("Sign(ComplexInfinity)", "Indeterminate");
+		check("Sign(I*Infinity)", "I");
+		
+		check("Sign(-x)", "-Sign(x)");
+		check("Sign(a*x)", "Sign(a)*Sign(x)");
+		check("Sign(1/z)", "1/Sign(z)");
 	}
 
 	public void testSimplify() {
