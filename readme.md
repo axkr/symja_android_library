@@ -97,7 +97,48 @@ Pay careful attention to anything about setting up your `PATH` or `CLASSPATH`.
 Install and open the latest version of the Eclipse development IDE:
 
 * http://www.eclipse.org/downloads/packages/eclipse-ide-java-developers/mars1
-  
+
+### Maven
+
+
+```
+#!xml
+		<dependency>
+			<groupId>org.matheclipse</groupId>
+			<artifactId>matheclipse-core</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.matheclipse</groupId>
+			<artifactId>jas</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+		</dependency>
+```
+
+
+
+```
+#!xml
+
+	<repositories>
+		<repository>
+			<id>snapshots-repo</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>Lab4Inf</id>
+			<url>http://www.lab4inf.fh-muenster.de/lab4inf/maven-repository</url>
+		</repository>
+
+	</repositories>
+```
+
 ### BitBucket GIT
 
 a) Fork the Symja repository to use as a starting point.
