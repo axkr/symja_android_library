@@ -1,8 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
+import static org.matheclipse.core.expression.F.Cos;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -14,7 +17,9 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Gets the sign value of a number. See <a href="http://en.wikipedia.org/wiki/Sign_function">Wikipedia - Sign function</a>
+ * Gets the sign value of a number. See
+ * <a href="http://en.wikipedia.org/wiki/Sign_function">Wikipedia - Sign
+ * function</a>
  * 
  */
 public class Sign extends AbstractEvaluator {
@@ -27,6 +32,12 @@ public class Sign extends AbstractEvaluator {
 		Validate.checkSize(ast, 2);
 
 		IExpr arg1 = ast.arg1();
+		if (arg1.isNumber()) {
+			return numberSign((INumber) arg1);
+		}
+		if (arg1.isIndeterminate()) {
+			return F.Indeterminate;
+		}
 		if (arg1.isDirectedInfinity()) {
 			IAST directedInfininty = (IAST) arg1;
 			if (directedInfininty.isComplexInfinity()) {
@@ -36,7 +47,12 @@ public class Sign extends AbstractEvaluator {
 				return F.Sign(directedInfininty.arg1());
 			}
 		}
-
+		if (arg1.isTimes()) {
+			return ((IAST) arg1).mapAt(F.Sign(F.NIL), 1);
+		}
+		if (arg1.isPower() && arg1.getAt(2).isSignedNumber()) {
+			return F.Power(F.Sign(arg1.getAt(1)), arg1.getAt(2));
+		}
 		if (AbstractAssumptions.assumeNegative(arg1)) {
 			return F.CN1;
 		}
@@ -44,6 +60,10 @@ public class Sign extends AbstractEvaluator {
 			return F.C1;
 		}
 
+		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+		if (negExpr.isPresent()) {
+			return F.Times(F.CN1, F.Sign(negExpr));
+		}
 		INumber number = arg1.evalNumber();
 		if (number != null) {
 			return numberSign(number);
@@ -67,7 +87,7 @@ public class Sign extends AbstractEvaluator {
 
 	@Override
 	public void setUp(final ISymbol newSymbol) {
-		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		newSymbol.setAttributes(ISymbol.LISTABLE);// | ISymbol.NUMERICFUNCTION);
 	}
 
 }
