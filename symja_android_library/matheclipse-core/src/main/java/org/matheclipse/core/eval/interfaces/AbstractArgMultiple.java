@@ -20,7 +20,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		
+
 		if (ast.isAST2()) {
 			IExpr temp = binaryOperator(ast.arg1(), ast.arg2());
 			if (temp.isPresent()) {
@@ -88,7 +88,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 				return result;
 			}
 			if (tempAST.size() > 2) {
-				return evaluateHashs(tempAST); 
+				return evaluateHashs(tempAST);
 			}
 		}
 
@@ -116,7 +116,9 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 	 * @param rhs
 	 * @param condition
 	 * @see org.matheclipse.core.patternmatching.HashedOrderlessMatcher#defineHashRule(org.matheclipse.core.interfaces.IExpr,
-	 *      org.matheclipse.core.interfaces.IExpr, org.matheclipse.core.interfaces.IExpr, org.matheclipse.core.interfaces.IExpr)
+	 *      org.matheclipse.core.interfaces.IExpr,
+	 *      org.matheclipse.core.interfaces.IExpr,
+	 *      org.matheclipse.core.interfaces.IExpr)
 	 */
 	public void defineHashRule(IExpr lhs1, IExpr lhs2, IExpr rhs, IExpr condition) {
 		getHashRuleMap().defineHashRule(lhs1, lhs2, rhs, condition);
@@ -128,7 +130,9 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 	 * @param rhs
 	 * @param condition
 	 * @see org.matheclipse.core.patternmatching.HashedOrderlessMatcher#defineHashRule(org.matheclipse.core.interfaces.IExpr,
-	 *      org.matheclipse.core.interfaces.IExpr, org.matheclipse.core.interfaces.IExpr, org.matheclipse.core.interfaces.IExpr)
+	 *      org.matheclipse.core.interfaces.IExpr,
+	 *      org.matheclipse.core.interfaces.IExpr,
+	 *      org.matheclipse.core.interfaces.IExpr)
 	 */
 	public void setUpHashRule2(IExpr lhs1, IExpr lhs2, IExpr rhs, IExpr condition) {
 		getHashRuleMap().definePatternHashRule(lhs1, lhs2, rhs, condition);
@@ -139,8 +143,8 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 	 * @param lhs2Str
 	 * @param rhsStr
 	 * @param conditionStr
-	 * @see org.matheclipse.core.patternmatching.HashedOrderlessMatcher#defineHashRule(java.lang.String, java.lang.String,
-	 *      java.lang.String, java.lang.String)
+	 * @see org.matheclipse.core.patternmatching.HashedOrderlessMatcher#defineHashRule(java.lang.String,
+	 *      java.lang.String, java.lang.String, java.lang.String)
 	 */
 	public void setUpHashRule(String lhs1Str, String lhs2Str, String rhsStr, String conditionStr) {
 		getHashRuleMap().defineHashRule(lhs1Str, lhs2Str, rhsStr, conditionStr);
@@ -150,8 +154,8 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 	 * @param lhs1Str
 	 * @param lhs2Str
 	 * @param rhsStr
-	 * @see org.matheclipse.core.patternmatching.HashedOrderlessMatcher#defineHashRule(java.lang.String, java.lang.String,
-	 *      java.lang.String)
+	 * @see org.matheclipse.core.patternmatching.HashedOrderlessMatcher#defineHashRule(java.lang.String,
+	 *      java.lang.String, java.lang.String)
 	 */
 	public void setUpHashRule(String lhs1Str, String lhs2Str, String rhsStr) {
 		getHashRuleMap().defineHashRule(lhs1Str, lhs2Str, rhsStr);

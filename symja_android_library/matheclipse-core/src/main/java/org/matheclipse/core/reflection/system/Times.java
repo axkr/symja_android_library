@@ -11,7 +11,9 @@ import org.matheclipse.core.builtin.function.DirectedInfinity;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
 import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -290,6 +292,49 @@ public class Times extends AbstractArgMultiple implements INumeric {
 		return c0.multiply(F.complex(i1, F.C0));
 	}
 
+	private IExpr evalNumericMode(final IAST ast) {
+		INum number = F.CD1;
+		int start = -1;
+		for (int i = 1; i < ast.size(); i++) {
+			if (ast.get(i) instanceof INum) {
+				if (ast.get(i) instanceof ApfloatNum) {
+					number = number.multiply((INum) ast.get(i));
+				} else {
+					number = number.multiply((INum) ast.get(i));
+				}
+			} else if (ast.get(i) instanceof IComplexNum) {
+				start = i;
+				break;
+			} else {
+				return F.NIL;
+			}
+		}
+		if (start < 0) {
+			return number;
+		}
+		IComplexNum complexNumber;
+		if (number instanceof Num) {
+			complexNumber = F.complexNum(((Num) number).doubleValue());
+		} else {
+			complexNumber = F.complexNum(((ApfloatNum) number).apfloatValue());
+		}
+		for (int i = start; i < ast.size(); i++) {
+			if (ast.get(i) instanceof INum) {
+				number = (INum) ast.get(i);
+				if (number instanceof Num) {
+					complexNumber = complexNumber.multiply(F.complexNum(((Num) number).doubleValue()));
+				} else {
+					complexNumber = complexNumber.multiply(F.complexNum(((ApfloatNum) number).apfloatValue()));
+				}
+			} else if (ast.get(i) instanceof IComplexNum) {
+				complexNumber = complexNumber.multiply((IComplexNum) ast.get(i));
+			} else {
+				return F.NIL;
+			}
+		}
+		return complexNumber;
+	}
+
 	@Override
 	public double evalReal(final double[] stack, final int top, final int size) {
 		double result = 1;
@@ -388,6 +433,16 @@ public class Times extends AbstractArgMultiple implements INumeric {
 	@Override
 	public HashedOrderlessMatcher getHashRuleMap() {
 		return ORDERLESS_MATCHER;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr numericEval(final IAST ast, EvalEngine engine) {
+		IExpr temp = evalNumericMode(ast);
+		if (temp.isPresent()) {
+			return temp;
+		}
+		return evaluate(ast, engine);
 	}
 
 	@Override
