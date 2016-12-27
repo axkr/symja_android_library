@@ -114,6 +114,14 @@ For using the Maven Symja snapshot include these dependencies in your project:
 			<artifactId>jas</artifactId>
 			<version>1.0.0-SNAPSHOT</version>
 		</dependency>
+		 
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<hipparchus.version>1.0</hipparchus.version>
+	</properties>
 ```
 
 
