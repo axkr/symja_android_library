@@ -104,7 +104,6 @@ For using the Maven Symja snapshot include these dependencies in your project:
 
 
 ```
-#!xml
 		<dependency>
 			<groupId>org.matheclipse</groupId>
 			<artifactId>matheclipse-core</artifactId>
@@ -120,7 +119,6 @@ For using the Maven Symja snapshot include these dependencies in your project:
 
 
 ```
-#!xml
 	<repositories>
 		<repository>
 			<id>snapshots-repo</id>
