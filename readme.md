@@ -100,6 +100,8 @@ Install and open the latest version of the Eclipse development IDE:
 
 ### Maven
 
+For using the Maven Symja snapshot include these dependencies in your project:
+
 
 ```
 #!xml
@@ -119,7 +121,6 @@ Install and open the latest version of the Eclipse development IDE:
 
 ```
 #!xml
-
 	<repositories>
 		<repository>
 			<id>snapshots-repo</id>
