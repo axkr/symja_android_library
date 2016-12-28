@@ -586,13 +586,15 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 	 */
 	private IAST powerEPlus(IAST plus) {
 		IAST multiplicationFactors = F.NIL;
+		IAST plusClone = F.NIL;
 		for (int i = plus.size() - 1; i > 0; i--) {
 			if (plus.get(i).isLog()) {
 				if (!multiplicationFactors.isPresent()) {
 					multiplicationFactors = F.Times();
+					plusClone = plus.clone();
 				}
 				multiplicationFactors.append(plus.get(i).getAt(1));
-				plus = plus.removeAtClone(i);
+				plusClone.remove(i);
 			} else if (plus.get(i).isTimes()) {
 				IAST times = (IAST) plus.get(i);
 				for (int j = times.size() - 1; j > 0; j--) {
@@ -600,16 +602,17 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 						IExpr innerFunc = times.get(j).getAt(1);
 						if (!multiplicationFactors.isPresent()) {
 							multiplicationFactors = F.Times();
+							plusClone = plus.clone();
 						}
 						multiplicationFactors.append(F.Power(innerFunc, F.ast(times, F.Times, false, j, j + 1)));
-						plus = plus.removeAtClone(i);
+						plusClone.remove(i);
 						break;
 					}
 				}
 			}
 		}
 		if (multiplicationFactors.isPresent()) {
-			multiplicationFactors.append(F.Exp(plus));
+			multiplicationFactors.append(F.Exp(plusClone));
 			return multiplicationFactors;
 		}
 		return F.NIL;
