@@ -13,11 +13,17 @@ public interface AbsRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 1, 0 };
+  final public static int[] SIZES = { 3, 1 };
 
   final public static IAST RULES = List(
     IInit(Abs, SIZES),
     ISet(Abs(ArcTan(CComplexInfinity)),
-      Times(C1D2,Pi))
+      Times(C1D2,Pi)),
+    ISet(Abs(E),
+      E),
+    ISet(Abs(Pi),
+      Pi),
+    ISetDelayed(Abs(Conjugate(x_)),
+      Abs(x))
   );
 }

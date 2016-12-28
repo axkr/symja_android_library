@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.Cos;
+import java.util.function.Function;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -27,6 +27,20 @@ public class Sign extends AbstractEvaluator {
 	public Sign() {
 	}
 
+	private static final class SignTimesFunction implements Function<IExpr, IExpr> {
+		@Override
+		public IExpr apply(IExpr expr) {
+			if (expr.isNumber()) {
+				return numberSign((INumber) expr);
+			}
+			IExpr temp = F.eval(F.Sign(expr));
+			if (!temp.topHead().equals(F.Sign)) {
+				return temp;
+			}
+			return F.NIL;
+		}
+	}
+
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
@@ -48,7 +62,13 @@ public class Sign extends AbstractEvaluator {
 			}
 		}
 		if (arg1.isTimes()) {
-			return ((IAST) arg1).mapAt(F.Sign(F.NIL), 1);
+			IAST[] result = ((IAST) arg1).filter(new SignTimesFunction());
+			if (result[0].size() > 1) {
+				if (result[1].size() > 1) {
+					result[0].append(F.Sign(result[1]));
+				}
+				return result[0];
+			}
 		}
 		if (arg1.isPower() && arg1.getAt(2).isSignedNumber()) {
 			return F.Power(F.Sign(arg1.getAt(1)), arg1.getAt(2));
@@ -71,7 +91,7 @@ public class Sign extends AbstractEvaluator {
 		return F.NIL;
 	}
 
-	public IExpr numberSign(INumber arg1) {
+	public static IExpr numberSign(INumber arg1) {
 		if (arg1.isSignedNumber()) {
 			final int signum = ((ISignedNumber) arg1).sign();
 			return F.integer(signum);

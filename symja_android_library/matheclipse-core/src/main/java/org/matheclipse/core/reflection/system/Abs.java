@@ -133,6 +133,9 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules, DoubleU
 				return result[0];
 			}
 		}
+		if (arg1.isPower() && arg1.getAt(2).isSignedNumber()) {
+			return F.Power(F.Abs(arg1.getAt(1)), arg1.getAt(2));
+		}
 		return F.NIL;
 	}
 

@@ -19,6 +19,7 @@ import org.apfloat.Apfloat;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
+import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -173,6 +174,13 @@ public class Arg extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperat
 					return F.C0;
 				}
 			}
+		}
+		
+		if (AbstractAssumptions.assumeNegative(arg1)) {
+			return F.Pi;
+		}
+		if (AbstractAssumptions.assumePositive(arg1)) {
+			return F.C0;
 		}
 		return F.NIL;
 	}
