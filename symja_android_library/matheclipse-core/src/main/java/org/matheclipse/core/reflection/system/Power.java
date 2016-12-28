@@ -517,8 +517,11 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 			return F.Times(F.CI, F.Power(F.Negate(arg1), arg2));
 		}
 
-		if (arg1.isE() && arg2.isPlus()) {
-			return powerEPlus((IAST) arg2); 
+		if (arg1.isE() && (arg2.isPlusTimesPower())) {
+			IExpr expandedFunction = F.evalExpand(arg2);
+			if (expandedFunction.isPlus()) {
+				return powerEPlus((IAST) expandedFunction);
+			}
 		}
 
 		if (arg1.isAST()) {
@@ -578,7 +581,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 	/**
 	 * Simplify <code>E^(y+Log(x))</code> to <code>x*E^(y)</code>
 	 * 
-	 * @param arg2
+	 * @param plus
 	 * @return
 	 */
 	private IAST powerEPlus(IAST plus) {
