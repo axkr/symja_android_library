@@ -1449,6 +1449,12 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public final boolean isConjugate() {
+		return isSameHead(F.Conjugate, 2);
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isCos() {
 		return isSameHead(F.Cos, 2);
 	}

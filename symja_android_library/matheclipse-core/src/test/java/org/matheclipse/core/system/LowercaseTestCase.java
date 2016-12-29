@@ -819,6 +819,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testConjugate() {
+		check("Conjugate(1-I)", "1+I");
+		check("Conjugate(1+I)", "1-I");
+		check("Conjugate(Conjugate(x))", "x");
+		check("Conjugate(3*a*z)", "3*Conjugate(a*z)");
 		check("Conjugate(E^z)", "E^Conjugate(z)");
 		check("Conjugate(Pi)", "Pi");
 		check("Conjugate(0)", "0");
@@ -4097,6 +4101,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+//		check("Solve(Abs((-3+x^2)/x) ==2,{x})", "{{x->-3},{x->-1},{x->1},{x->3}}");
+	
 		check("Solve(1 - (i*1)/10 == 0, i, Integers)", "{{i->10}}");
 		check("Solve({x^2 + 2 y^3 == 3681, x > 0, y > 0}, {x, y}, Integers)",
 				"{{x->15,y->12},{x->41,y->10},{x->57,y->6}}");
@@ -4134,7 +4140,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{a->False,b->True,c->False,d->False},{a->True,b->False,c->False,d->False}}");
 		check("Solve(Sin((-3+x^2)/x) ==2,{x})",
 				"{{x->-Sqrt(12+ArcSin(2)^2)/2+ArcSin(2)/2},{x->Sqrt(12+ArcSin(2)^2)/2+ArcSin(2)/2}}");
-//		check("Solve(Abs((-3+x^2)/x) ==2,{x})", "{{x->-3},{x->-1},{x->1},{x->3}}");
 		check("Solve({x^2-11==y, x+y==-9}, {x,y})", "{{x->-2,y->-7},{x->1,y->-10}}");
 
 		// issue 42

@@ -813,6 +813,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is the function
+	 * <code>Conjugate[&lt;arg&gt;]</code>
+	 * 
+	 * @return
+	 */
+	default boolean isConjugate() {
+		return false;
+	}
+
+	/**
 	 * Test if this expression is a symbol with attribute <code>Constant</code>.
 	 * Therefore numbers return <code>false</code> for this method!
 	 * 
