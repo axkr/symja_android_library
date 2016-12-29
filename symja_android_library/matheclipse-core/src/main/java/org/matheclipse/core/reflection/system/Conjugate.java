@@ -105,13 +105,15 @@ public class Conjugate extends AbstractTrigArg1 implements INumeric {
 				result.append(F.Conjugate(clone));
 				return result;
 			}
+		} else if (arg1.isConjugate()) {
+			return arg1.getAt(1);
 		}
 		return F.NIL;
 	}
 
 	@Override
 	public void setUp(final ISymbol newSymbol) {
-		newSymbol.setAttributes(ISymbol.LISTABLE|ISymbol.NUMERICFUNCTION);
+		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		super.setUp(newSymbol);
 	}
 
