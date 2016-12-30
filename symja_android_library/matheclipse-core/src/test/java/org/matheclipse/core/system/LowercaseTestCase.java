@@ -1637,10 +1637,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testElementData() {
+		check("ElementData(6)", "\"Carbon\"");
+		check("ElementData(\"Carbon\", \"Name\")", "\"carbon\"");
+		check("ElementData(79, \"Abbreviation\")", "\"Au\"");
+		check("ElementData(\"Au\", \"StandardName\")", "\"Gold\"");
+		check("ElementData(\"Gold\", \"AtomicNumber\")", "79");
 		check("ElementData(\"Carbon\", \"AtomicNumber\")", "6");
 		check("ElementData(\"He\", \"AtomicNumber\")", "2");
-		
-		check("ElementData(74)", "\"Tungsten\"");
+
+		check("ElementData(\"Chlorine\", \"BoilingPoint\")", "-34.04");
+		check("ElementData(\"C\", \"AtomicWeight\")", "12.01");
+		check("ElementData(117, \"AtomicWeight\")", "294");
+
+//		check("ElementData(\"Helium\", \"MeltingPoint\")", "Missing(NotApplicable)");
+//		check("ElementData(\"Tungsten\", \"ThermalConductivity\")", "173");
+
 	}
 
 	public void testEliminate() {

@@ -39,12 +39,10 @@ public class ElementData extends AbstractFunctionEvaluator {
 				}
 			}
 		} else {
-			if (ast.arg1() instanceof IStringX) {
+			if (ast.arg1() instanceof IStringX || ast.arg1().isInteger()) {
 				IAST temp = MAP_NAME_DATA.get(ast.arg1());
 				if (temp != null) {
-					if (ast.arg2().toString().equals("AtomicNumber")){
-						return temp.arg1();
-					}
+					return dataPoint(ast, temp);
 				}
 			}
 		}
@@ -52,13 +50,82 @@ public class ElementData extends AbstractFunctionEvaluator {
 
 	}
 
+	private IExpr dataPoint(final IAST ast, IAST propertyList) {
+		String propertyStr = ast.arg2().toString();
+		if (propertyStr.equals("AtomicNumber")) {
+			return propertyList.get(1);
+		}
+		if (propertyStr.equals("Abbreviation")) {
+			return propertyList.get(2);
+		}
+		if (propertyStr.equals("StandardName")) {
+			return propertyList.get(3);
+		}
+		if (propertyStr.equals("Name")) {
+			return propertyList.get(4);
+		}
+		if (propertyStr.equals("AtomicWeight")) {
+			return propertyList.get(9);
+		}
+		// if (propertyStr.equals("MeltingPoint")) {
+		// return propertyList.get(14);
+		// }
+		if (propertyStr.equals("BoilingPoint")) {
+			return propertyList.get(16);
+		}
+		// if (propertyStr.equals("ThermalConductivity")) {
+		// return propertyList.get(30);
+		// }
+		return NIL;
+	}
+
 	@Override
 	public void setUp(final ISymbol newSymbol) {
+		// 1: "AtomicNumber"
+		// 2: "Abbreviation"
+		// 3: "StandardName"
+		// 4: "Name"
+		// 5: "Block"
+		// 6: "Group"
+		// 7: "Period"
+		// 8: "Series"
+		// 9: "AtomicWeight"
+		// 10: "DiscoveryYear"
+		// 11: "LiquidDensity"
+		// 12: "Density"
+		// 13: "AbsoluteMeltingPoint"
+		// 14: "MeltingPoint"
+		// 15: "AbsoluteBoilingPoint"
+		// 16: "BoilingPoint"
+		// 17: "SpecificHeat"
+		// 18: "FusionHeat"
+		// 19: "VaporizationHeat"
+		// 20: "ElectroNegativity"
+		// 21: "CrustAbundance"
+		// 22: "MohsHardness"
+		// 23: "VickersHardness"
+		// 24: "BrinellHardness"
+		// 25: "AtomicRadius"
+		// 26: "VanDerWaalsRadius"
+		// 27: "CovalentRadius"
+		// 28: "IonizationEnergies"
+		// 29: "ElectronAffinity"
+		// 30: "ThermalConductivity"
+		// 31: "YoungModulus"
+		// 32: "PoissonRatio"
+		// 33: "BulkModulus"
+		// 34: "ShearModulus"
+		// 35: "ElectronConfiguration"
+		// 36: "ElectronConfigurationString"
+		// 37: "ElectronShellConfiguration"
 		IAST[] list = ElementData1.ELEMENTS;
 		for (int i = 0; i < list.length; i++) {
 			MAP_NUMBER_NAME.put(list[i].arg1(), list[i].arg3());
 			IAST subList = F.List();
-			subList.append(list[i].arg1()); // atomic number
+			for (int j = 1; j < list[i].size(); j++) {
+				subList.append(list[i].get(j));
+			}
+			MAP_NAME_DATA.put(list[i].arg1(), subList);
 			MAP_NAME_DATA.put(list[i].arg2(), subList);
 			MAP_NAME_DATA.put(list[i].arg3(), subList);
 		}
@@ -66,7 +133,10 @@ public class ElementData extends AbstractFunctionEvaluator {
 		for (int i = 0; i < list.length; i++) {
 			MAP_NUMBER_NAME.put(list[i].arg1(), list[i].arg3());
 			IAST subList = F.List();
-			subList.append(list[i].arg1()); // atomic number
+			for (int j = 1; j < list[i].size(); j++) {
+				subList.append(list[i].get(j));
+			}
+			MAP_NAME_DATA.put(list[i].arg1(), subList);
 			MAP_NAME_DATA.put(list[i].arg2(), subList);
 			MAP_NAME_DATA.put(list[i].arg3(), subList);
 		}
