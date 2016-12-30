@@ -243,6 +243,13 @@ public class F {
 	public final static ISymbol RootOf = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rootof" : "RootOf");
 	public final static ISymbol Sequence = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sequence" : "Sequence");
+	public final static ISymbol Missing = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "missing" : "Missing");
+	public final static ISymbol NotApplicable = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "notapplicable" : "NotApplicable");
+	public final static ISymbol NotAvailable = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "notavailable" : "NotAvailable");
+	public final static ISymbol Unknown = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unknown" : "Unknown");
 
 	public final static ISymbol And = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "and" : "And",
 			new org.matheclipse.core.builtin.function.And());
@@ -391,6 +398,9 @@ public class F {
 	public final static ISymbol MessageName = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "messagename" : "MessageName",
 			new org.matheclipse.core.builtin.function.MessageName());
+	public final static ISymbol MissingQ = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "missingq" : "MissingQ",
+			new org.matheclipse.core.builtin.function.MissingQ());
 	public final static ISymbol Module = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "module" : "Module",
 			new org.matheclipse.core.builtin.function.Module());
 	public final static ISymbol N = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "N" : "N",
@@ -4436,6 +4446,10 @@ public class F {
 		return Plus(integer(i), Times(b, CN1));
 	}
 
+	public static IAST Missing(final IExpr a0) {
+		return unaryAST1(Missing, a0);
+	}
+
 	public static IExpr mod(IExpr a, Integer i) {
 		return Mod(a, integer(i.longValue()));
 	}
@@ -5140,7 +5154,6 @@ public class F {
 	 * 
 	 * @param str
 	 * @return
-	 * @deprecated
 	 */
 	final static public IStringX stringx(final String str) {
 		return StringX.valueOf(str);
@@ -5387,7 +5400,7 @@ public class F {
 	public static IAST Unique(final IExpr a0) {
 		return unaryAST1(Unique, a0);
 	}
-	
+
 	public static IAST UnitStep(final IExpr a0) {
 		return unaryAST1(UnitStep, a0);
 	}

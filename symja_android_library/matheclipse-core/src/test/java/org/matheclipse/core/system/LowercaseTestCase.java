@@ -272,8 +272,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Abs(-x)", "Abs(x)");
 		check("Abs(Conjugate(z))", "Abs(z)");
 		check("Abs(3*a*b*c)", "3*Abs(a*b*c)");
-//		check("Abs(x^(-3))", "1/Abs(x)^3");
-		 
+		// check("Abs(x^(-3))", "1/Abs(x)^3");
+
 		check("Abs((1+I)/Sqrt(2))", "1");
 		check("Abs(0)", "0");
 		check("Abs(10/3)", "10/3");
@@ -1636,6 +1636,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Element(I, Algebraics)", "True");
 	}
 
+	public void testElementData() {
+		check("ElementData(\"Carbon\", \"AtomicNumber\")", "6");
+		check("ElementData(\"He\", \"AtomicNumber\")", "2");
+		
+		check("ElementData(74)", "\"Tungsten\"");
+	}
+
 	public void testEliminate() {
 		check("Eliminate({x == 2 + y, y == z}, y)", "{x==2+z}");
 		check("Eliminate({x == 2 + y, y == z}, {y,v})", "{x==2+z}");
@@ -1920,7 +1927,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{a->False,b->True,c->False,d->False}}");
 
 		check("FindInstance(Sin((-3+x^2)/x) ==2,{x})", "{{x->-Sqrt(12+ArcSin(2)^2)/2+ArcSin(2)/2}}");
-//		check("FindInstance(Abs((-3+x^2)/x) ==2,{x})", "{{x->-3}}");
+		// check("FindInstance(Abs((-3+x^2)/x) ==2,{x})", "{{x->-3}}");
 		check("FindInstance({x^2-11==y, x+y==-9}, {x,y})", "{{x->-2,y->-7}}");
 
 		check("FindInstance(2*Sin(x)==1/2,x)", "{{x->ArcSin(1/4)}}");
@@ -3875,7 +3882,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sign(DirectedInfinity(1+I*3))", "(1+I*3)/Sqrt(10)");
 		check("Sign(ComplexInfinity)", "Indeterminate");
 		check("Sign(I*Infinity)", "I");
-		
+
 		check("Sign(-x)", "-Sign(x)");
 		check("Sign(-3*a*b*c)", "-Sign(a*b*c)");
 		check("Sign(1/z)", "1/Sign(z)");
@@ -4101,8 +4108,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
-//		check("Solve(Abs((-3+x^2)/x) ==2,{x})", "{{x->-3},{x->-1},{x->1},{x->3}}");
-	
+		// check("Solve(Abs((-3+x^2)/x) ==2,{x})",
+		// "{{x->-3},{x->-1},{x->1},{x->3}}");
+
 		check("Solve(1 - (i*1)/10 == 0, i, Integers)", "{{i->10}}");
 		check("Solve({x^2 + 2 y^3 == 3681, x > 0, y > 0}, {x, y}, Integers)",
 				"{{x->15,y->12},{x->41,y->10},{x->57,y->6}}");
