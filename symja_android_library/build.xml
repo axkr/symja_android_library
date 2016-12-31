@@ -48,7 +48,7 @@
 				<exclude name="**/*.java" />
 			</patternset>
 		</unjar>
-		<unjar src="lib/guava-18.0.jar" dest="${classes.dir}">
+		<unjar src="lib/guava-20.0.jar" dest="${classes.dir}">
 			<patternset>
 				<exclude name="**/*.java" />
 			</patternset>
