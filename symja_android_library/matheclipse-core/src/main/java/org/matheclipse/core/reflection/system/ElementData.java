@@ -73,9 +73,48 @@ public class ElementData extends AbstractFunctionEvaluator {
 		if (propertyStr.equals("BoilingPoint")) {
 			return propertyList.get(16);
 		}
-		// if (propertyStr.equals("ThermalConductivity")) {
-		// return propertyList.get(30);
-		// }
+
+//		if (propertyStr.equals("AtomicRadius")) {
+//			return propertyList.get(25);
+//		}
+		if (propertyStr.equals("VanDerWaalsRadius")) {
+			return propertyList.get(26);
+		}
+//		if (propertyStr.equals("CovalentRadius")) {
+//			return propertyList.get(27);
+//		}
+		if (propertyStr.equals("IonizationEnergies")) {
+			return propertyList.get(28);
+		}
+		
+		
+		if (propertyStr.equals("ElectronAffinity")) {
+			return propertyList.get(29);
+		}
+		if (propertyStr.equals("ThermalConductivity")) {
+			return propertyList.get(30);
+		}
+		if (propertyStr.equals("YoungModulus")) {
+			return propertyList.get(31);
+		}
+		if (propertyStr.equals("PoissonRatio")) {
+			return propertyList.get(32);
+		}
+		if (propertyStr.equals("BulkModulus")) {
+			return propertyList.get(33);
+		}
+		if (propertyStr.equals("ShearModulus")) {
+			return propertyList.get(34);
+		}
+		if (propertyStr.equals("ElectronConfiguration")) {
+			return propertyList.get(35);
+		}
+		if (propertyStr.equals("ElectronConfigurationString")) {
+			return propertyList.get(36);
+		}
+		if (propertyStr.equals("ElectronShellConfiguration")) {
+			return propertyList.get(37);
+		}
 		return NIL;
 	}
 

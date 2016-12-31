@@ -1649,8 +1649,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ElementData(\"C\", \"AtomicWeight\")", "12.01");
 		check("ElementData(117, \"AtomicWeight\")", "294");
 
-//		check("ElementData(\"Helium\", \"MeltingPoint\")", "Missing(NotApplicable)");
-//		check("ElementData(\"Tungsten\", \"ThermalConductivity\")", "173");
+		// check("ElementData(\"Pd\", \"AtomicRadius\")", "140");
+		check("ElementData(\"Pd\", \"VanDerWaalsRadius\")", "163");
+		// check("ElementData(\"Pd\", \"CovalentRadius\")", "131");
+		check("ElementData(\"Pd\", \"IonizationEnergies\")", "{804.4,1870,3177}");
+
+		check("ElementData(\"Pd\", \"ElectronAffinity\")", "54.24");
+		check("ElementData(\"Pd\", \"ThermalConductivity\")", "71.8");
+		check("ElementData(\"Pd\", \"YoungModulus\")", "121");
+		check("ElementData(\"Pd\", \"PoissonRatio\")", "0.39");
+		check("ElementData(\"Pd\", \"BulkModulus\")", "180");
+		check("ElementData(\"Pd\", \"ShearModulus\")", "44");
+		check("ElementData(\"Pd\", \"ElectronConfiguration\")", "{{2},{2,6},{2,6,10},{2,6,10}}");
+		check("ElementData(\"Pd\", \"ElectronConfigurationString\")", "\"[Kr] 4d10\"");
+		check("ElementData(\"Pd\", \"ElectronShellConfiguration\")", "{2,8,18,18}");
+
+		// check("ElementData(\"Helium\", \"MeltingPoint\")",
+		// "Missing(NotApplicable)");
+		// check("ElementData(\"Tungsten\", \"ThermalConductivity\")", "173");
 
 	}
 
