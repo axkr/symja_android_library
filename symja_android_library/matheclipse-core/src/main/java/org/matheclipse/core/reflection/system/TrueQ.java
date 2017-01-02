@@ -9,7 +9,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Returns <code>True</code> if the 1st argument evaluates to <code>True</code>; <code>False</code> otherwise
+ * Returns <code>True</code> if the 1st argument evaluates to <code>True</code>;
+ * <code>False</code> otherwise
  */
 public class TrueQ extends AbstractFunctionEvaluator {
 
@@ -25,7 +26,6 @@ public class TrueQ extends AbstractFunctionEvaluator {
 
 	@Override
 	public void setUp(final ISymbol newSymbol) {
-		newSymbol.setAttributes(ISymbol.LISTABLE);
 	}
 
 }

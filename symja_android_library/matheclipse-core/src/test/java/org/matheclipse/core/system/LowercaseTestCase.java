@@ -299,6 +299,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("AbsArg(z) /. z -> {1, I, 0}", "{{1,1,0},{0,Pi/2,0}}");
 	}
 
+	public void testAllTrue() {
+		check("AllTrue({1, 2, 3, 4, 5, 6}, EvenQ)", "False");
+		check("AllTrue({2, 4, 6, 8}, EvenQ)", "True");
+		check("AllTrue({2, 6, x, 4, y}, # < 10 &)", "x<10&&y<10");
+		check("AllTrue({12, 16, x, 14, y}, TrueQ(# < 10) &)", "False");
+		check("AllTrue(f(1, 7, 3), OddQ)", "True");
+	}
+	
 	public void testAnd() {
 		check("And()", "True");
 		check("And(4)", "4");
@@ -312,6 +320,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BooleanConvert(! (a || b || c))", "!a&&!b&&!c");
 	}
 
+	public void testAnyTrue() {
+		check("AnyTrue({1, 2, 3, 4, 5, 6}, EvenQ)", "True");
+		check("AnyTrue({1, 3, 5}, EvenQ)", "False");
+		check("AnyTrue({12, 16, x, 14, y}, # < 10 &)", "x<10||y<10");
+		check("AnyTrue({12, 16, x, 14, y}, TrueQ(# < 10) &)", "False");
+		check("AnyTrue(f(2, 7, 6), OddQ)", "True");
+	}
+	
 	public void testApart() {
 		check("Apart(1/((1 + x)*(5 + x)))", "1/(4+4*x)+1/(-20-4*x)");
 		check("Apart(1 < (x + 1)/(x - 1) < 2)", "1<1+2/(-1+x)<2");
@@ -2929,6 +2945,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("NonCommutativeMultiply(a)", "NonCommutativeMultiply(a)");
 	}
 
+	public void testNoneTrue() {
+		check("NoneTrue({1, 2, 3, 4, 5, 6}, EvenQ)", "False");
+		check("NoneTrue({1, 3, 5, 7}, EvenQ)", "True");
+		check("NoneTrue({12, 16, x, 14, y}, # < 10 &)", "Nor(x<10,y<10)");
+		check("NoneTrue({12, 16, x, 14, y}, TrueQ(# < 10) &)", "True");
+		check("NoneTrue(f(1, 7, 3), OddQ)", "False");
+	}
+	
 	public void testNor() {
 		check("Nor( )", "True");
 		check("Nor(2+2)", "!4");
