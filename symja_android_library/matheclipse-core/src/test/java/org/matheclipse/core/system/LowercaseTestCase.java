@@ -4161,7 +4161,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSolve() {
 		// check("Solve(Abs((-3+x^2)/x) ==2,{x})",
 		// "{{x->-3},{x->-1},{x->1},{x->3}}");
-
+		check("Solve(x^3==-2,x)", "{{x->-2^(1/3)},{x->(-1)^(1/3)*2^(1/3)},{x->-(-1)^(2/3)*2^(1/3)}}");
+		
 		check("Solve(1 - (i*1)/10 == 0, i, Integers)", "{{i->10}}");
 		check("Solve({x^2 + 2 y^3 == 3681, x > 0, y > 0}, {x, y}, Integers)",
 				"{{x->15,y->12},{x->41,y->10},{x->57,y->6}}");
