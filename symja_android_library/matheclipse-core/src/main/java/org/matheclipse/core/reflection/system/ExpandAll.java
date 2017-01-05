@@ -9,7 +9,7 @@ import org.matheclipse.core.interfaces.IExpr;
 
 public class ExpandAll extends AbstractFunctionEvaluator {
 	public final static ExpandAll CONST = new ExpandAll();
-	
+
 	public ExpandAll() {
 		super();
 	}
@@ -66,12 +66,19 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 			if (ast.get(i).isAST()) {
 				temp = expandAll((IAST) ast.get(i), patt, expandNegativePowers, distributePlus);
 				if (temp.isPresent()) {
-					if (result.isPresent()) {
-						result.set(i, temp);
-					} else {
-						result = ast.setAtCopy(i, temp);
+					if (!result.isPresent()) {
+						result = ast.copyUntil(i);
 					}
+					if (temp.isPlus() && result.isPlus()) {
+						result.appendArgs((IAST) temp);
+					} else {
+						result.append(temp);
+					}
+					continue;
 				}
+			}
+			if (result.isPresent()) {
+				result.append(ast.get(i));
 			}
 		}
 		if (!result.isPresent()) {

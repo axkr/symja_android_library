@@ -248,8 +248,7 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "notapplicable" : "NotApplicable");
 	public final static ISymbol NotAvailable = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "notavailable" : "NotAvailable");
-	public final static ISymbol Unknown = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unknown" : "Unknown");
+	public final static ISymbol Unknown = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unknown" : "Unknown");
 
 	public final static ISymbol And = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "and" : "And",
 			new org.matheclipse.core.builtin.function.And());
@@ -5221,6 +5220,9 @@ public class F {
 
 	public static IAST Subtract(final IExpr a0, final IExpr a1) {
 		if (a0.isPlus()) {
+			if (a1.isZero()) {
+				return (IAST) a0;
+			}
 			IAST clone = ((IAST) a0).clone();
 			clone.append(binary(Times, CN1, a1));
 			return clone;
