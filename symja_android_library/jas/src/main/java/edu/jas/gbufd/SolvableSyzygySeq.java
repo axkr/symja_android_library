@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: SolvableSyzygySeq.java 5486 2016-04-22 19:30:56Z kredel $
  */
 
 package edu.jas.gbufd;

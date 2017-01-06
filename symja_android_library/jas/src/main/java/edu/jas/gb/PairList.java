@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: PairList.java 5322 2015-11-23 21:38:46Z kredel $
  */
 
 package edu.jas.gb;

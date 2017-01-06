@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: ValueFactory.java 5204 2015-04-05 10:30:15Z kredel $
  */
 
 package edu.jas.structure;

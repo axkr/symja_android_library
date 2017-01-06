@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: RingFactory.java 4866 2014-07-18 10:32:14Z kredel $
  */
 
 package edu.jas.structure;

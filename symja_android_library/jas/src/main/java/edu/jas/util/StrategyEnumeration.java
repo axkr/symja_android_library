@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: StrategyEnumeration.java 5686 2017-01-03 08:42:06Z kredel $
  */
 
 package edu.jas.util;
@@ -8,7 +8,7 @@ package edu.jas.util;
 /**
  * StrategyEnumeration. This class names possible / implemented strategies for
  * thread pools.
- * @author Heinz Kredel.
+ * @author Heinz Kredel
  */
 
 public final class StrategyEnumeration {

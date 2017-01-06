@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: ModGroebnerBaseSeq.java 5265 2015-07-27 17:17:49Z kredel $
  */
 
 package edu.jas.gbmod;

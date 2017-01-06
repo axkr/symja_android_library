@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: DReductionSeq.java 5415 2016-01-27 23:06:11Z kredel $
  */
 
 package edu.jas.gb;

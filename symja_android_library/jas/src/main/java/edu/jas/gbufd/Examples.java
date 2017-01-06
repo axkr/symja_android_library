@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Examples.java 5685 2017-01-01 22:53:21Z kredel $
  */
 
 package edu.jas.gbufd;
@@ -26,8 +26,8 @@ import edu.jas.poly.TermOrder;
 
 /**
  * Examples for Groebner base usage.
- * @author Christoph Zengler.
- * @author Heinz Kredel.
+ * @author Christoph Zengler
+ * @author Heinz Kredel
  */
 public class Examples {
 

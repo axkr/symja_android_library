@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GenMatrix.java 4987 2014-11-22 18:26:30Z kredel $
  */
 
 package edu.jas.vector;

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GenPolynomialRing.java 5666 2016-12-26 14:24:30Z kredel $
  */
 
 package edu.jas.poly;
@@ -31,9 +31,13 @@ import edu.jas.util.LongIterable;
 
 
 /**
- * GenPolynomialRing generic polynomial factory implementing RingFactory;
- * Factory for n-variate ordered polynomials over C. Almost immutable object,
- * except variable names.
+ * GenPolynomialRing generic polynomial factory. It implements
+ * RingFactory for n-variate ordered polynomials over coefficients
+ * C. The variables commute with each other and with the
+ * coefficients. For non-commutative coefficients some care is taken
+ * to respect the multiplication order.
+ *
+ * Almost immutable object, except variable names.
  * @param <C> coefficient type
  * @author Heinz Kredel
  */
@@ -370,6 +374,9 @@ public class GenPolynomialRing<C extends RingElem<C>> implements RingFactory<Gen
      * @return script compatible representation for the ExpVector.
      */
     public String toScript(ExpVector e) {
+        if (e == null) {
+	    return "null";
+        }
         if (vars != null) {
             return e.toScript(vars);
         }

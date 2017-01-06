@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: MiReducerServer.java 4502 2013-07-24 15:06:46Z kredel $
  */
 
 package edu.jas.gb;

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: BigOctonion.java 5680 2017-01-01 16:45:36Z kredel $
  */
 
 package edu.jas.arith;
@@ -26,8 +26,8 @@ import edu.jas.structure.StarRingElem;
  * @author Heinz Kredel
  */
 
-public final class BigOctonion implements StarRingElem<BigOctonion>, GcdRingElem<BigOctonion>,
-                RingFactory<BigOctonion> {
+public final class BigOctonion
+                implements StarRingElem<BigOctonion>, GcdRingElem<BigOctonion>, RingFactory<BigOctonion> {
 
 
     /**
@@ -153,8 +153,6 @@ public final class BigOctonion implements StarRingElem<BigOctonion>, GcdRingElem
         List<BigOctonion> g = new ArrayList<BigOctonion>(qg.size() * 2);
         for (BigQuaternion q : qg) {
             g.add(new BigOctonion(q));
-        }
-        for (BigQuaternion q : qg) {
             g.add(new BigOctonion(BigQuaternion.ZERO, q));
         }
         return g;
@@ -424,7 +422,7 @@ public final class BigOctonion implements StarRingElem<BigOctonion>, GcdRingElem
      * @see edu.jas.structure.RingElem#isUnit()
      */
     public boolean isUnit() {
-        return (!isZERO());
+        return !isZERO();
     }
 
 
@@ -703,10 +701,30 @@ public final class BigOctonion implements StarRingElem<BigOctonion>, GcdRingElem
     /**
      * BigOctonion divide.
      * @param b BigOctonion.
-     * @return this/b.
+     * @return this * b**(-1).
      */
     public BigOctonion divide(BigOctonion b) {
+        return rightDivide(b);
+    }
+
+
+    /**
+     * BigOctonion right divide.
+     * @param b BigOctonion.
+     * @return this * b**(-1).
+     */
+    public BigOctonion rightDivide(BigOctonion b) {
         return this.multiply(b.inverse());
+    }
+
+
+    /**
+     * BigOctonion left divide.
+     * @param b BigOctonion.
+     * @return b**(-1) * this.
+     */
+    public BigOctonion leftDivide(BigOctonion b) {
+        return b.inverse().multiply(this);
     }
 
 
@@ -716,8 +734,8 @@ public final class BigOctonion implements StarRingElem<BigOctonion>, GcdRingElem
      * @return this/b.
      */
     public BigOctonion divide(BigRational b) {
-        // BigRational bi = b.inverse();
-        return new BigOctonion(or.divide(b), oi.divide(b));
+        BigRational bi = b.inverse();
+        return new BigOctonion(or.multiply(bi), oi.multiply(bi));
     }
 
 

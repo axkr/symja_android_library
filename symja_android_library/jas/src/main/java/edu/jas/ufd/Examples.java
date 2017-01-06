@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Examples.java 5687 2017-01-03 08:44:03Z kredel $
  */
 
 package edu.jas.ufd;
@@ -26,7 +26,7 @@ import edu.jas.vector.GenMatrixRing;
 
 /**
  * Examples for ufd and elementaty integration usage.
- * @author Heinz Kredel.
+ * @author Heinz Kredel
  */
 
 public class Examples {

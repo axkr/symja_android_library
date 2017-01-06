@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: DecimalRoots.java 5575 2016-08-08 19:03:21Z kredel $
  */
 
 package edu.jas.root;

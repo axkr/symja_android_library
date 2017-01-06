@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: PrimitiveElement.java 5577 2016-08-12 20:13:45Z kredel $
  */
 
 package edu.jas.application;

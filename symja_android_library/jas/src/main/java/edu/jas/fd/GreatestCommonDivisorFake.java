@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GreatestCommonDivisorFake.java 5682 2017-01-01 16:48:55Z kredel $
  */
 
 package edu.jas.fd;
@@ -9,15 +9,14 @@ import org.apache.log4j.Logger;
 
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenSolvablePolynomial;
-import edu.jas.poly.PolyUtil;
 import edu.jas.structure.GcdRingElem;
 import edu.jas.structure.RingFactory;
 
 
 /**
- * (Non-unique) factorization domain greatest common divisor common
- * algorithms with monic polynomial remainder sequence. Fake
- * implementation always returns 1 for any gcds.
+ * (Non-unique) factorization domain greatest common divisor common algorithms
+ * with monic polynomial remainder sequence. Fake implementation always returns
+ * 1 for any gcds.
  * @param <C> coefficient type
  * @author Heinz Kredel
  */
@@ -28,7 +27,7 @@ public class GreatestCommonDivisorFake<C extends GcdRingElem<C>> extends Greates
     private static final Logger logger = Logger.getLogger(GreatestCommonDivisorFake.class);
 
 
-    private static final boolean debug = true; //logger.isDebugEnabled();
+    //private static final boolean debug = true; //logger.isDebugEnabled();
 
 
     /**
@@ -58,6 +57,7 @@ public class GreatestCommonDivisorFake<C extends GcdRingElem<C>> extends Greates
         if (P.ring.nvar > 1) {
             throw new IllegalArgumentException(this.getClass().getName() + " no univariate polynomial");
         }
+        logger.warn("fake gcd always returns 1");
         return P.ring.getONE();
     }
 
@@ -80,6 +80,7 @@ public class GreatestCommonDivisorFake<C extends GcdRingElem<C>> extends Greates
         if (P.ring.nvar > 1) {
             throw new IllegalArgumentException(this.getClass().getName() + " no univariate polynomial");
         }
+        logger.warn("fake gcd always returns 1");
         return P.ring.getONE();
     }
 

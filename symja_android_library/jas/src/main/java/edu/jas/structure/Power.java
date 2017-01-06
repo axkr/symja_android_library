@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Power.java 5636 2016-11-16 20:45:57Z kredel $
  */
 
 package edu.jas.structure;

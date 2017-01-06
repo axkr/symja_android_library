@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: BigRational.java 5680 2017-01-01 16:45:36Z kredel $
  */
 
 package edu.jas.arith;
@@ -19,7 +19,6 @@ import java.util.Set;
 import edu.jas.kern.Scripting;
 import edu.jas.kern.StringUtil;
 import edu.jas.structure.GcdRingElem;
-import edu.jas.structure.Power;
 import edu.jas.structure.RingFactory;
 
 
@@ -56,6 +55,12 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
      * The Constant 1.
      */
     public final static BigRational ONE = new BigRational(BigInteger.ONE);
+
+
+    /**
+     * The Constant 1/2.
+     */
+    public final static BigRational HALF = new BigRational(1, 2);
 
 
     private final static Random random = new Random();
@@ -519,7 +524,16 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
      * @see edu.jas.structure.RingElem#isUnit()
      */
     public boolean isUnit() {
-        return (!isZERO());
+        return !isZERO();
+    }
+
+
+    /**
+     * Is BigRational entier.
+     * @return If this is an integer then true is returned, else false.
+     */
+    public boolean isEntier() {
+        return isZERO() || den.equals(BigInteger.ONE);
     }
 
 
@@ -1163,6 +1177,42 @@ public final class BigRational implements GcdRingElem<BigRational>, RingFactory<
         ret[1] = this.inverse().multiply(half);
         ret[2] = S.inverse().multiply(half);
         return ret;
+    }
+
+
+    /**
+     * BigRational ceiling.
+     * @return ceiling of this.
+     */
+    public BigInteger ceil() {
+        if (isEntier()) {
+            return num;
+        }
+        BigInteger[] qr = num.divideAndRemainder(den);
+        //System.out.println("ceil: " + this + ", q = " + qr[0] + ", r = " +qr[1]);
+        BigInteger q = qr[0];
+        if (qr[1].signum() > 0) {
+            q = q.add(BigInteger.ONE);
+        }
+        return q;
+    }
+
+
+    /**
+     * BigRational floor.
+     * @return floor of this.
+     */
+    public BigInteger floor() {
+        if (isEntier()) {
+            return num;
+        }
+        BigInteger[] qr = num.divideAndRemainder(den);
+        //System.out.println("floor: " + this + ", q = " + qr[0] + ", r = " +qr[1]);
+        BigInteger q = qr[0];
+        if (qr[1].signum() < 0) {
+            q = q.subtract(BigInteger.ONE);
+        }
+        return q;
     }
 
 

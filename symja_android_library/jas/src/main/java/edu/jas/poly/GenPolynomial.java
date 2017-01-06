@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GenPolynomial.java 5666 2016-12-26 14:24:30Z kredel $
  */
 
 package edu.jas.poly;
@@ -25,15 +25,20 @@ import edu.jas.structure.UnaryFunctor;
 
 
 /**
- * GenPolynomial generic polynomials implementing RingElem. n-variate ordered
- * polynomials over C. Objects of this class are intended to be immutable. The
- * implementation is based on TreeMap respectively SortedMap from exponents to
- * coefficients. Only the coefficients are modeled with generic types, the
- * exponents are fixed to ExpVector with long entries (this will eventually be
- * changed in the future). C can also be a non integral domain, e.g. a
- * ModInteger, i.e. it may contain zero divisors, since multiply() does now
- * check for zeros. <b>Note:</b> multiply() now checks for wrong method dispatch
- * for GenSolvablePolynomial.
+ * GenPolynomial generic polynomials implementing RingElem. n-variate
+ * ordered polynomials over coefficients C. The variables commute with each other
+ * and with the coefficients. For non-commutative coefficients some
+ * care is taken to respect the multiplication order.
+ *
+ * Objects of this class are intended to be immutable.  The
+ * implementation is based on TreeMap respectively SortedMap from
+ * exponents to coefficients. Only the coefficients are modeled with
+ * generic types, the exponents are fixed to ExpVector with long
+ * entries (this will eventually be changed in the future). C can also
+ * be a non integral domain, e.g. a ModInteger, i.e. it may contain
+ * zero divisors, since multiply() does check for zeros. <b>Note:</b>
+ * multiply() now checks for wrong method dispatch for
+ * GenSolvablePolynomial.
  * @param <C> coefficient type
  * @author Heinz Kredel
  */
@@ -1533,10 +1538,7 @@ public class GenPolynomial<C extends RingElem<C>>
      * @return this*s.
      */
     public GenPolynomial<C> multiply(C s) {
-        if (s == null) {
-            return ring.getZERO();
-        }
-        if (s.isZERO()) {
+        if (s == null||s.isZERO()) {
             return ring.getZERO();
         }
         if (this.isZERO()) {
@@ -1550,12 +1552,45 @@ public class GenPolynomial<C extends RingElem<C>>
         }
         GenPolynomial<C> p = ring.getZERO().copy();
         SortedMap<ExpVector, C> pv = p.val;
-        for (Map.Entry<ExpVector, C> m1 : val.entrySet()) {
-            C c1 = m1.getValue();
-            ExpVector e1 = m1.getKey();
-            C c = c1.multiply(s); // check non zero if not domain
+        for (Map.Entry<ExpVector, C> m : val.entrySet()) {
+            C a = m.getValue();
+            ExpVector e = m.getKey();
+            C c = a.multiply(s); // check non zero if not domain
             if (!c.isZERO()) {
-                pv.put(e1, c); // or m1.setValue( c )
+                pv.put(e, c); // or m1.setValue( c )
+            }
+        }
+        return p;
+    }
+
+
+    /**
+     * GenPolynomial left multiplication. Left product with coefficient
+     * ring element.
+     * @param s coefficient.
+     * @return s*this.
+     */
+    public GenPolynomial<C> multiplyLeft(C s) {
+        if (s == null||s.isZERO()) {
+            return ring.getZERO();
+        }
+        if (this.isZERO()) {
+            return this;
+        }
+        if (this instanceof GenSolvablePolynomial) {
+            //throw new RuntimeException("wrong method dispatch in JRE ");
+            logger.debug("warn: wrong method dispatch in JRE multiply(s) - trying to fix");
+            GenSolvablePolynomial<C> T = (GenSolvablePolynomial<C>) this;
+            return T.multiplyLeft(s);
+        }
+        GenPolynomial<C> p = ring.getZERO().copy();
+        SortedMap<ExpVector, C> pv = p.val;
+        for (Map.Entry<ExpVector, C> m : val.entrySet()) {
+            C a = m.getValue();
+            ExpVector e = m.getKey();
+            C c = s.multiply(a);
+            if (!c.isZERO()) {
+                pv.put(e, c); 
             }
         }
         return p;
@@ -1577,7 +1612,7 @@ public class GenPolynomial<C extends RingElem<C>>
             return this;
         }
         C lm = lc.inverse();
-        return multiply(lm);
+        return multiplyLeft(lm);
     }
 
 

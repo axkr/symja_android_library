@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Pair.java 5687 2017-01-03 08:44:03Z kredel $
  */
 
 package edu.jas.gb;
@@ -15,7 +15,7 @@ import edu.jas.poly.GenPolynomial;
 /**
  * Serializable subclass to hold pairs of polynomials.
  * @param <C> coefficient type
- * @author Heinz Kredel.
+ * @author Heinz Kredel
  */
 public class Pair<C extends RingElem<C> > extends AbstractPair<C>
              implements Comparable<Pair> {

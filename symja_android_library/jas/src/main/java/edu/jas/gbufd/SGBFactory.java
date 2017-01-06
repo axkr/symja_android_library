@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: SGBFactory.java 5512 2016-05-16 11:59:34Z kredel $
  */
 
 package edu.jas.gbufd;

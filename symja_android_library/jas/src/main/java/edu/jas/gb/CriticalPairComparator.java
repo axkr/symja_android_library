@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: CriticalPairComparator.java 5687 2017-01-03 08:44:03Z kredel $
  */
 
 package edu.jas.gb;
@@ -17,7 +17,7 @@ import edu.jas.poly.TermOrder;
  * Comparator for critical pairs of polynomials.
  * Immutable objects.
  * @param <C> coefficient type
- * @author Heinz Kredel.
+ * @author Heinz Kredel
  */
 public class CriticalPairComparator<C extends RingElem<C> > 
              implements Serializable, Comparator<AbstractPair<C>> {

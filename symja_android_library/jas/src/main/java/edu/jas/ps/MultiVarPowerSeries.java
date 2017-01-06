@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: MultiVarPowerSeries.java 5681 2017-01-01 16:47:36Z kredel $
  */
 
 package edu.jas.ps;
@@ -86,7 +86,7 @@ public class MultiVarPowerSeries<C extends RingElem<C>> implements RingElem<Mult
      * Package constructor. Use in fixPoint only, must be accessible in factory.
      * @param ring power series ring.
      */
-    /*package*/MultiVarPowerSeries(MultiVarPowerSeriesRing<C> ring) {
+    /*package*/ MultiVarPowerSeries(MultiVarPowerSeriesRing<C> ring) {
         this.ring = ring;
         this.lazyCoeffs = null;
         this.truncate = ring.truncate;
@@ -109,10 +109,11 @@ public class MultiVarPowerSeries<C extends RingElem<C>> implements RingElem<Mult
      * @param lazyCoeffs generating function for coefficients.
      * @param trunc truncate parameter for this power series.
      */
-    public MultiVarPowerSeries(MultiVarPowerSeriesRing<C> ring, MultiVarCoefficients<C> lazyCoeffs, int trunc) {
+    public MultiVarPowerSeries(MultiVarPowerSeriesRing<C> ring, MultiVarCoefficients<C> lazyCoeffs,
+                    int trunc) {
         if (lazyCoeffs == null || ring == null) {
-            throw new IllegalArgumentException("null not allowed: ring = " + ring + ", lazyCoeffs = "
-                            + lazyCoeffs);
+            throw new IllegalArgumentException(
+                            "null not allowed: ring = " + ring + ", lazyCoeffs = " + lazyCoeffs);
         }
         this.ring = ring;
         this.lazyCoeffs = lazyCoeffs;
@@ -197,7 +198,8 @@ public class MultiVarPowerSeries<C extends RingElem<C>> implements RingElem<Mult
         if (sb.length() == 0) {
             sb.append("0");
         }
-        sb.append(" + BigO( (" + ring.varsToString() + ")^" + (trunc + 1) + "(" + (ring.truncate + 1) + ") )");
+        sb.append(" + BigO( (" + ring.varsToString() + ")^" + (trunc + 1) + "(" + (ring.truncate + 1)
+                        + ") )");
         //sb.append("...");
         //System.out.println("cache2 = " + s.lazyCoeffs.coeffCache);
         return sb.toString();
@@ -628,15 +630,15 @@ public class MultiVarPowerSeries<C extends RingElem<C>> implements RingElem<Mult
         }
         //System.out.println("cc = " + cc);
 
-        return new MultiVarPowerSeries<C>(ring, new MultiVarCoefficients<C>(mc.pfac,
-                        new HashMap<Long, GenPolynomial<C>>(cc), z, hc) {
+        return new MultiVarPowerSeries<C>(ring,
+                        new MultiVarCoefficients<C>(mc.pfac, new HashMap<Long, GenPolynomial<C>>(cc), z, hc) {
 
 
-            @Override
-            public C generate(ExpVector i) {
-                return coefficient(i);
-            }
-        });
+                            @Override
+                            public C generate(ExpVector i) {
+                                return coefficient(i);
+                            }
+                        });
     }
 
 
@@ -884,7 +886,7 @@ public class MultiVarPowerSeries<C extends RingElem<C>> implements RingElem<Mult
         GenPolynomial<C> p = null;
         int t = 0;
         while (lazyCoeffs.homCheck.get(t)) {
-            p = lazyCoeffs.coeffCache.get((long)t);
+            p = lazyCoeffs.coeffCache.get((long) t);
             if (p == null || p.isZERO()) { // ??
                 t++;
                 continue;

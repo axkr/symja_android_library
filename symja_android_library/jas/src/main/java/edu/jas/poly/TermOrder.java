@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: TermOrder.java 5687 2017-01-03 08:44:03Z kredel $
  */
 
 package edu.jas.poly;
@@ -19,7 +19,7 @@ import edu.jas.kern.Scripting;
  * Term order class for ordered polynomials. Implements the most used term
  * orders: graded, lexicographical, weight aray and block orders. For the
  * definitions see for example the articles <a
- * href="http://doi.acm.org/10.1145/43882.43887">Kredel,
+ * href="http://doi.acm.org/10.1145/43882.43887">Kredel
  * "Admissible term orderings used in computer algebra systems"</a> and <a
  * href="http://doi.acm.org/10.1145/70936.70941">Sit,
  * "Some comments on term-ordering in Gr&ouml;bner basis computations"</a>.

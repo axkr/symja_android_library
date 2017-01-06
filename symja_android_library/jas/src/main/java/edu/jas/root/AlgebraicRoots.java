@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: AlgebraicRoots.java 5579 2016-08-14 17:48:18Z kredel $
  */
 
 package edu.jas.root;

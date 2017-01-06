@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GroebnerBaseWalk.java 5657 2016-12-24 12:52:46Z kredel $
  */
 
 package edu.jas.gbufd;
@@ -63,6 +63,12 @@ public class GroebnerBaseWalk<C extends GcdRingElem<C>> extends GroebnerBaseAbst
      */
     //protected TermOrder startTO = TermOrderByName.IGRLEX.blockOrder(2); 
     protected TermOrder startTO = TermOrderByName.IGRLEX;
+
+
+    /**
+     * Print intermediate GB after this number of iterations.
+     */
+    int iterPrint = 100;
 
 
     /**
@@ -167,7 +173,7 @@ public class GroebnerBaseWalk<C extends GcdRingElem<C>> extends GroebnerBaseAbst
         if (grord.equals(pfac.tord)) {
             return Gp;
         }
-        if (Gp.size() == 1) {
+        if (Gp.size() == 1) { // also dimension -1
             GenPolynomial<C> p = pfac.copy(Gp.get(0)); // change term order
             G.clear();
             G.add(p);
@@ -224,8 +230,10 @@ public class GroebnerBaseWalk<C extends GcdRingElem<C>> extends GroebnerBaseAbst
 
         // loop throught term orders
         ExpVector w = null;
+        int iter = 0; // count #loops
         boolean done = false;
         while (!done) {
+            iter++;
             // determine V and w
             PolynomialList<C> Pl = new PolynomialList<C>(ring, Giter);
             SortedSet<ExpVector> delta = Pl.deltaExpVectors(marks);
@@ -244,16 +252,22 @@ public class GroebnerBaseWalk<C extends GcdRingElem<C>> extends GroebnerBaseAbst
             for (GenPolynomial<C> f : Giter) {
                 ExpVector h = marks.get(i++);
                 GenPolynomial<C> ing = f.leadingFacetPolynomial(h, w);
-                logger.info("ing_g = [" + ing + "], lt(ing) = " + ing.ring.toScript(ing.leadingExpVector()) + ", f = " + f.ring.toScript(f.leadingExpVector()));
+                if (debug) {
+                    logger.info("ing_g = [" + ing + "], lt(ing) = " + ing.ring.toScript(ing.leadingExpVector()) + ", f = " + f.ring.toScript(f.leadingExpVector()));
+                }
                 iG.add(ing);
             }
             List<GenPolynomial<C>> inOmega = ufac.copy(iG);
-            logger.info("inOmega = " + inOmega);
-            logger.info("inOmega.ring: " + inOmega.get(0).ring.toScript());
+            if (debug) {
+                logger.info("inOmega = " + inOmega);
+                logger.info("inOmega.ring: " + inOmega.get(0).ring.toScript());
+            }
 
             // INVLEX / target term order GB of inOmega
             List<GenPolynomial<C>> inOG = sgb.GB(modv, inOmega);
-            logger.info("GB(inOmega) = " + inOG);
+            if (debug) {
+                logger.info("GB(inOmega) = " + inOG);
+            }
             // remark polynomials 
             marks.clear();
             M.clear();
@@ -264,10 +278,10 @@ public class GroebnerBaseWalk<C extends GcdRingElem<C>> extends GroebnerBaseAbst
             logger.info("new marks/M = " + marks);
             // lift and reduce
             List<GenPolynomial<C>> G = liftReductas(M, Mp, Giter, inOG);
-            if (debug) {
-                logger.info("minimal lift inOG  = " + G);
+            if (debug || (iter % iterPrint == 0)) {
+                logger.info("lift(" + iter + ") inOG, new GB: " + G);
             }
-            if (G.size() == 1) {
+            if (G.size() == 1) { // will not happen
                 GenPolynomial<C> p = ufac.copy(G.get(0)); // change term order
                 G.clear();
                 G.add(p);

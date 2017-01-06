@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GenSolvablePolynomial.java 5664 2016-12-26 13:32:55Z kredel $
  */
 
 package edu.jas.poly;
@@ -506,7 +506,7 @@ public class GenSolvablePolynomial<C extends RingElem<C>> extends GenPolynomial<
      * @param b coefficient.
      * @return b*this, where * is coefficient multiplication.
      */
-    // new method, @NoOverride
+    @Override
     public GenSolvablePolynomial<C> multiplyLeft(C b) {
         GenSolvablePolynomial<C> Cp = ring.getZERO();
         if (b == null || b.isZERO()) {

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: BigInteger.java 5680 2017-01-01 16:45:36Z kredel $
  */
 
 package edu.jas.arith;
@@ -25,8 +25,8 @@ import edu.jas.structure.RingFactory;
  * @see java.math.BigInteger
  */
 
-public final class BigInteger implements GcdRingElem<BigInteger>, RingFactory<BigInteger>,
-                Iterable<BigInteger>, Rational {
+public final class BigInteger
+                implements GcdRingElem<BigInteger>, RingFactory<BigInteger>, Iterable<BigInteger>, Rational {
 
 
     /**
@@ -48,6 +48,12 @@ public final class BigInteger implements GcdRingElem<BigInteger>, RingFactory<Bi
      * The constant 1.
      */
     public final static BigInteger ONE = new BigInteger(java.math.BigInteger.ONE);
+
+
+    /**
+     * The constant 2.
+     */
+    public final static BigInteger TWO = new BigInteger(2);
 
 
     /**

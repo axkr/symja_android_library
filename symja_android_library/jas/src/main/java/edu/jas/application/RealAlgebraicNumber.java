@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: RealAlgebraicNumber.java 5569 2016-08-04 09:07:45Z kredel $
  */
 
 package edu.jas.application;

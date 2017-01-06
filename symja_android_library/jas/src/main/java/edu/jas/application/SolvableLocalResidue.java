@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: SolvableLocalResidue.java 5487 2016-04-22 19:31:25Z kredel $
  */
 
 package edu.jas.application;

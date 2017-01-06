@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: WeylRelationsIterated.java 5687 2017-01-03 08:44:03Z kredel $
  */
 
 package edu.jas.poly;
@@ -15,7 +15,7 @@ import edu.jas.structure.RingElem;
  * the relation table of the given solvable ring factory. Relations are of the
  * form x<sub>j</sub> * x<sub>i</sub> = x<sub>i</sub> x<sub>j</sub> + 1.
  * Iterated form: R{x1,y1,...,xn,yn; yi*xi = xi yi + 1}.
- * @author Heinz Kredel.
+ * @author Heinz Kredel
  */
 
 public class WeylRelationsIterated<C extends RingElem<C>> implements RelationGenerator<C> {

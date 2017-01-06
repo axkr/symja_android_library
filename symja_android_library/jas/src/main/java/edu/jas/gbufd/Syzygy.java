@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Syzygy.java 5267 2015-07-27 17:57:50Z kredel $
  */
 
 package edu.jas.gbufd;

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Examples.java 5687 2017-01-03 08:44:03Z kredel $
  */
 
 package edu.jas.poly;
@@ -19,7 +19,7 @@ import edu.jas.kern.Scripting;
 
 /**
  * Examples for polynomials usage.
- * @author Heinz Kredel.
+ * @author Heinz Kredel
  */
 
 public class Examples {

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: PolyUtil.java 5665 2016-12-26 13:50:49Z kredel $
  */
 
 package edu.jas.poly;
@@ -589,7 +589,7 @@ public class PolyUtil {
         C lm = lc.inverse();
         GenPolynomial<C> L = p.ring.coFac.getONE();
         L = L.multiply(lm);
-        return p.multiply(L);
+        return p.multiplyLeft(L);
     }
 
 

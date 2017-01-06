@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: ExamplesGeoTheorems.java 5685 2017-01-01 22:53:21Z kredel $
  */
 
 package edu.jas.application;
@@ -25,9 +25,9 @@ import edu.jas.poly.PolynomialList;
 
 /**
  * ExamplesGeoTheorems for Groebner base usage.
- * @author GeoGebra developers.
+ * @author GeoGebra developers
  * @author Kovács Zoltán
- * @author Heinz Kredel.
+ * @author Heinz Kredel
  */
 public class ExamplesGeoTheorems {
 

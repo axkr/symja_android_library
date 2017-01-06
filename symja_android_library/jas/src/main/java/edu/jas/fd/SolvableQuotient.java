@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: SolvableQuotient.java 5503 2016-05-12 22:25:14Z kredel $
  */
 
 package edu.jas.fd;

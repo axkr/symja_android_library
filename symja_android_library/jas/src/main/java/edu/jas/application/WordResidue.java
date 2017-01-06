@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: WordResidue.java 5303 2015-08-16 17:11:07Z kredel $
  */
 
 package edu.jas.application;

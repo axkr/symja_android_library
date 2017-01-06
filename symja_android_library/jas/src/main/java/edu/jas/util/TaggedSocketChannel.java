@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: TaggedSocketChannel.java 5686 2017-01-03 08:42:06Z kredel $
  */
 
 package edu.jas.util;
@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 /**
  * TaggedSocketChannel provides a communication channel with message tags for
  * Java objects using TCP/IP sockets.
- * @author Heinz Kredel.
+ * @author Heinz Kredel
  */
 public class TaggedSocketChannel extends Thread {
 
@@ -401,8 +401,6 @@ public class TaggedSocketChannel extends Thread {
 
 /**
  * TaggedMessage container.
- * @author kredel
- * 
  */
 class TaggedMessage implements Serializable {
 

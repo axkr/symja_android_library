@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: DHTTransport.java 4599 2013-08-25 10:35:24Z kredel $
  */
 
 package edu.jas.util;

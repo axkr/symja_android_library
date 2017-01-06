@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: BigDecimalComplex.java 5435 2016-02-13 20:24:05Z kredel $
  */
 
 package edu.jas.arith;

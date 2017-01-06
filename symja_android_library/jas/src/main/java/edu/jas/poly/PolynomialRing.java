@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: PolynomialRing.java 1801 2008-05-19 20:50:39Z kredel $
  */
 
 package edu.jas.poly;

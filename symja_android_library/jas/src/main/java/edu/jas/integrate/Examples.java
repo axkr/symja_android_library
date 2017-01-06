@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Examples.java 3356 2010-10-23 16:41:01Z kredel $
  */
 
 package edu.jas.integrate;

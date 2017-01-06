@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Reduction.java 4783 2014-04-06 21:58:40Z kredel $
  */
 
 package edu.jas.gb;

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GenMatrixRing.java 5682 2017-01-01 16:48:55Z kredel $
  */
 
 package edu.jas.vector;
@@ -11,6 +11,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.function.BiFunction;
 
 import org.apache.log4j.Logger;
 
@@ -101,7 +102,7 @@ public class GenMatrixRing<C extends RingElem<C>> implements AlgebraFactory<GenM
         }
         ArrayList<ArrayList<C>> m = new ArrayList<ArrayList<C>>(rows);
         for (int i = 0; i < rows; i++) {
-            m.add( new ArrayList<C>(z) ); // z.clone();
+            m.add(new ArrayList<C>(z)); // z.clone();
         }
         ZERO = new GenMatrix<C>(this, m);
         m = new ArrayList<ArrayList<C>>(rows);
@@ -115,8 +116,8 @@ public class GenMatrixRing<C extends RingElem<C>> implements AlgebraFactory<GenM
             }
         }
         ONE = new GenMatrix<C>(this, m);
-        logger.info(rows + " x " + cols + " with blocksize " + blocksize + " matrix ring over " + coFac
-                        + "constructed");
+        logger.info(rows + " x " + cols + " with blocksize " + blocksize + " matrix ring over "
+                        + coFac.toScript() + " constructed");
     }
 
 
@@ -405,7 +406,7 @@ public class GenMatrixRing<C extends RingElem<C>> implements AlgebraFactory<GenM
             for (int j = 0; j < cols; j++) {
                 C e;
                 if (random.nextFloat() < q) {
-                    e = coFac.random(k);
+                    e = coFac.random(k, random);
                 } else {
                     e = coFac.getZERO();
                 }
@@ -442,7 +443,7 @@ public class GenMatrixRing<C extends RingElem<C>> implements AlgebraFactory<GenM
                 C e = coFac.getZERO();
                 if (j >= i) {
                     if (random.nextFloat() < q) {
-                        e = coFac.random(k);
+                        e = coFac.random(k, random);
                     }
                 }
                 v.add(e);
@@ -478,7 +479,7 @@ public class GenMatrixRing<C extends RingElem<C>> implements AlgebraFactory<GenM
                 C e = coFac.getZERO();
                 if (j <= i) {
                     if (random.nextFloat() < q) {
-                        e = coFac.random(k);
+                        e = coFac.random(k, random);
                     }
                 }
                 v.add(e);
@@ -493,12 +494,31 @@ public class GenMatrixRing<C extends RingElem<C>> implements AlgebraFactory<GenM
      * Copy matrix.
      * @param c matrix to copy.
      * @return copy of the matrix
-     * */
+     */
     public GenMatrix<C> copy(GenMatrix<C> c) {
         if (c == null) {
             return c;
         }
         return c.copy();
+    }
+
+
+    /**
+     * Generate matrix via lambda expression.
+     * @param gener lambda expression.
+     * @return the generated matrix.
+     */
+    public GenMatrix<C> generate(BiFunction<Integer, Integer, C> gener) {
+        ArrayList<ArrayList<C>> m = new ArrayList<ArrayList<C>>(rows);
+        for (int i = 0; i < rows; i++) {
+            ArrayList<C> v = new ArrayList<C>(cols);
+            for (int j = 0; j < cols; j++) {
+                C e = gener.apply(i, j);
+                v.add(e);
+            }
+            m.add(v);
+        }
+        return new GenMatrix<C>(this, m);
     }
 
 

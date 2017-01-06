@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Condition.java 5687 2017-01-03 08:44:03Z kredel $
  */
 
 package edu.jas.application;
@@ -25,7 +25,7 @@ import edu.jas.structure.GcdRingElem;
  * Condition. Container for an ideal of polynomials considered to be zero and a
  * multiplicative set of polynomials considered to be non-zero.
  * @param <C> coefficient type
- * @author Heinz Kredel.
+ * @author Heinz Kredel
  */
 public class Condition<C extends GcdRingElem<C>> implements Serializable {
 

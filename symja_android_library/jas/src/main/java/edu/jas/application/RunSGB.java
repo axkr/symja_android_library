@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: RunSGB.java 5534 2016-07-04 21:03:53Z kredel $
  */
 
 package edu.jas.application;

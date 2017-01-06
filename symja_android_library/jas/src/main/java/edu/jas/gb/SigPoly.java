@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: SigPoly.java 5456 2016-03-21 21:59:51Z kredel $
  */
 
 package edu.jas.gb;

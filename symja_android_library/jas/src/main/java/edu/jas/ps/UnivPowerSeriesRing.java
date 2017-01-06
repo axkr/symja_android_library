@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: UnivPowerSeriesRing.java 5681 2017-01-01 16:47:36Z kredel $
  */
 
 package edu.jas.ps;
@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.function.IntFunction;
 
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.GenPolynomialRing;
@@ -525,6 +526,25 @@ public class UnivPowerSeriesRing<C extends RingElem<C>> implements RingFactory<U
                 } else {
                     c = coFac.getZERO();
                 }
+                return c;
+            }
+        });
+    }
+
+
+    /**
+     * Generate a power series via lambda expression.
+     * @param gener lambda expression.
+     * @return a generated power series.
+     */
+    public UnivPowerSeries<C> generate(final IntFunction<C> gener) {
+        return new UnivPowerSeries<C>(this, new Coefficients<C>() {
+
+
+            @Override
+            public C generate(int i) {
+                // cached coefficients returned by get
+                C c = gener.apply(i);
                 return c;
             }
         });

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Roots.java 5632 2016-11-13 17:03:43Z kredel $
  */
 
 package edu.jas.arith;

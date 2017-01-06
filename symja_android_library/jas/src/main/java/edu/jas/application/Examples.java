@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Examples.java 5685 2017-01-01 22:53:21Z kredel $
  */
 
 package edu.jas.application;
@@ -40,8 +40,8 @@ import edu.jas.ufd.QuotientRing;
 
 /**
  * Examples for application usage.
- * @author Christoph Zengler.
- * @author Heinz Kredel.
+ * @author Christoph Zengler
+ * @author Heinz Kredel
  */
 
 public class Examples {

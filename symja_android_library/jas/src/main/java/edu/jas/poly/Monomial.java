@@ -1,6 +1,6 @@
 
 /*
- * $Id$
+ * $Id: Monomial.java 5419 2016-01-30 11:18:15Z kredel $
  */
 
 package edu.jas.poly;

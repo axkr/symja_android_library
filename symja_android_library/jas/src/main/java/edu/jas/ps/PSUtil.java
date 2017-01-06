@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: PSUtil.java 4975 2014-10-23 21:03:46Z kredel $
  */
 
 package edu.jas.ps;

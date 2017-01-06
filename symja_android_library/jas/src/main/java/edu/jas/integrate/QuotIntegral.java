@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: QuotIntegral.java 4046 2012-07-25 16:48:54Z kredel $
  */
 
 package edu.jas.integrate;

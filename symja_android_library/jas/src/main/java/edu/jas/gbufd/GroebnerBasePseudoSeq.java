@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GroebnerBasePseudoSeq.java 5463 2016-03-23 11:21:21Z kredel $
  */
 
 package edu.jas.gbufd;

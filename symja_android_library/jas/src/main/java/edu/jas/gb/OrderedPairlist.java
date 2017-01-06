@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: OrderedPairlist.java 5687 2017-01-03 08:44:03Z kredel $
  */
 
 package edu.jas.gb;
@@ -24,7 +24,7 @@ import edu.jas.structure.RingElem;
 
 /**
  * Pair list management. The original Buchberger algorithm with criterions
- * following Winkler in SAC-1, Kredel in ALDES/SAC-2, Kredel in MAS. Implemented
+ * following Winkler in SAC-1, Kredelin ALDES/SAC-2, Kredel in MAS. Implemented
  * using GenPolynomial, TreeMap and BitSet.
  * @author Heinz Kredel
  */

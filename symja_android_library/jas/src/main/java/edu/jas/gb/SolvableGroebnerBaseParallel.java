@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: SolvableGroebnerBaseParallel.java 5539 2016-07-24 14:51:48Z kredel $
  */
 
 package edu.jas.gb;

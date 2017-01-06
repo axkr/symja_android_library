@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: IntegerProgram.java 5427 2016-02-01 21:29:49Z mnohr $
  */
 
 package edu.jas.application;

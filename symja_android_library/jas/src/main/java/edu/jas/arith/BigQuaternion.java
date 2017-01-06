@@ -1,12 +1,12 @@
 /*
- * $Id$
+ * $Id: BigQuaternion.java 5680 2017-01-01 16:45:36Z kredel $
  */
 
 package edu.jas.arith;
 
 
 import java.io.Reader;
-import java.math.BigInteger;
+// import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -22,7 +22,9 @@ import edu.jas.structure.StarRingElem;
 /**
  * BigQuaternion class based on BigRational implementing the RingElem interface
  * and with the familiar MAS static method names. Objects of this class are
- * immutable.
+ * immutable. The integer quaternion methods are implemented after
+ * https://de.wikipedia.org/wiki/Hurwitzquaternion see also
+ * https://en.wikipedia.org/wiki/Hurwitz_quaternion
  * @author Heinz Kredel
  */
 
@@ -52,6 +54,12 @@ public final class BigQuaternion implements StarRingElem<BigQuaternion>, GcdRing
      * Imaginary part k of the data structure.
      */
     public final BigRational km; // k imaginary part
+
+
+    /**
+     * List of all 24 integral units.
+     */
+    public static List<BigQuaternion> entierUnits = null; //later: unitsOfHurwitzian();
 
 
     private final static Random random = new Random();
@@ -313,7 +321,7 @@ public final class BigQuaternion implements StarRingElem<BigQuaternion>, GcdRing
      * @param a BigInteger.
      * @return a BigQuaternion.
      */
-    public BigQuaternion fromInteger(BigInteger a) {
+    public BigQuaternion fromInteger(java.math.BigInteger a) {
         return new BigQuaternion(new BigRational(a));
     }
 
@@ -325,6 +333,17 @@ public final class BigQuaternion implements StarRingElem<BigQuaternion>, GcdRing
      */
     public BigQuaternion fromInteger(long a) {
         return new BigQuaternion(new BigRational(a));
+    }
+
+
+    /**
+     * Get a BigQuaternion element from a long vector.
+     * @param a long vector.
+     * @return a BigQuaternion.
+     */
+    public BigQuaternion fromInteger(long[] a) {
+        return new BigQuaternion(new BigRational(a[0]), new BigRational(a[1]), new BigRational(a[2]),
+                        new BigRational(a[3]));
     }
 
 
@@ -550,7 +569,21 @@ public final class BigQuaternion implements StarRingElem<BigQuaternion>, GcdRing
      * @see edu.jas.structure.RingElem#isUnit()
      */
     public boolean isUnit() {
-        return (!isZERO());
+        return !isZERO();
+    }
+
+
+    /**
+     * Is BigQuaternion entier element.
+     * @return If this is an integer Hurwitz element then true is returned, else
+     *         false.
+     */
+    public boolean isEntier() {
+        if (re.isEntier() && im.isEntier() && jm.isEntier() && km.isEntier()) {
+            return true;
+        }
+        java.math.BigInteger TWO = BigInteger.TWO.val;
+        return re.den.equals(TWO) && im.den.equals(TWO) && jm.den.equals(TWO) && km.den.equals(TWO);
     }
 
 
@@ -782,6 +815,20 @@ public final class BigQuaternion implements StarRingElem<BigQuaternion>, GcdRing
      */
 
     /**
+     * BigQuaternion multiply with BigRational.
+     * @param b BigRational.
+     * @return this*b.
+     */
+    public BigQuaternion multiply(BigRational b) {
+        BigRational r = re.multiply(b);
+        BigRational i = im.multiply(b);
+        BigRational j = jm.multiply(b);
+        BigRational k = km.multiply(b);
+        return new BigQuaternion(r, i, j, k);
+    }
+
+
+    /**
      * BigQuaternion multiply.
      * @param B BigQuaternion.
      * @return this*B.
@@ -813,7 +860,7 @@ public final class BigQuaternion implements StarRingElem<BigQuaternion>, GcdRing
     /**
      * Quaternion number inverse.
      * @param A is a non-zero quaternion number.
-     * @return S with S * A = 1.
+     * @return S with S * A = A * S = 1.
      */
     public static BigQuaternion QINV(BigQuaternion A) {
         if (A == null)
@@ -824,13 +871,13 @@ public final class BigQuaternion implements StarRingElem<BigQuaternion>, GcdRing
 
     /**
      * BigQuaternion inverse.
-     * @return S with S * this = 1.
+     * @return S with S * this = this * S = 1.
      * @see edu.jas.structure.RingElem#inverse()
      */
     public BigQuaternion inverse() {
         BigRational a = norm().re.inverse();
-        return new BigQuaternion(re.multiply(a), im.multiply(a.negate()), jm.multiply(a.negate()),
-                        km.multiply(a.negate()));
+        return new BigQuaternion(re.multiply(a), im.negate().multiply(a), jm.negate().multiply(a),
+                        km.negate().multiply(a));
     }
 
 
@@ -861,12 +908,32 @@ public final class BigQuaternion implements StarRingElem<BigQuaternion>, GcdRing
 
 
     /**
-     * BigQuaternion divide.
+     * BigQuaternion right divide.
      * @param b BigQuaternion.
-     * @return this/b.
+     * @return this * b**(-1).
      */
     public BigQuaternion divide(BigQuaternion b) {
+        return rightDivide(b);
+    }
+
+
+    /**
+     * BigQuaternion right divide.
+     * @param b BigQuaternion.
+     * @return this * b**(-1).
+     */
+    public BigQuaternion rightDivide(BigQuaternion b) {
         return this.multiply(b.inverse());
+    }
+
+
+    /**
+     * BigQuaternion left divide.
+     * @param b BigQuaternion.
+     * @return b**(-1) * this.
+     */
+    public BigQuaternion leftDivide(BigQuaternion b) {
+        return b.inverse().multiply(this);
     }
 
 
@@ -884,7 +951,7 @@ public final class BigQuaternion implements StarRingElem<BigQuaternion>, GcdRing
     /**
      * Quotient and remainder by division of this by S.
      * @param S a quaternion number
-     * @return [this/S, this - (this/S)*S].
+     * @return [this*S**(-1), this - (this*S**(-1))*S].
      */
     public BigQuaternion[] quotientRemainder(BigQuaternion S) {
         return new BigQuaternion[] { divide(S), ZERO };
@@ -1003,6 +1070,207 @@ public final class BigQuaternion implements StarRingElem<BigQuaternion>, GcdRing
      */
     public long bitLength() {
         return re.bitLength() + im.bitLength() + jm.bitLength() + km.bitLength();
+    }
+
+
+    /**
+     * BigQuaternion ceiling, component wise.
+     * @return ceiling of this.
+     */
+    public BigQuaternion ceil() {
+        BigRational r = new BigRational(re.ceil());
+        BigRational i = new BigRational(im.ceil());
+        BigRational j = new BigRational(jm.ceil());
+        BigRational k = new BigRational(km.ceil());
+        return new BigQuaternion(r, i, j, k);
+    }
+
+
+    /**
+     * BigQuaternion floor, component wise.
+     * @return floor of this.
+     */
+    public BigQuaternion floor() {
+        BigRational r = new BigRational(re.floor());
+        BigRational i = new BigRational(im.floor());
+        BigRational j = new BigRational(jm.floor());
+        BigRational k = new BigRational(km.floor());
+        return new BigQuaternion(r, i, j, k);
+    }
+
+
+    /**
+     * BigQuaternion round to next Lipschitz integer. BigQuaternion with all
+     * integer components.
+     * @return Lipschitz integer of this.
+     */
+    public BigQuaternion roundToLipschitzian() {
+        BigRational half = BigRational.HALF;
+        BigRational r = new BigRational(re.sum(half).floor());
+        BigRational i = new BigRational(im.sum(half).floor());
+        BigRational j = new BigRational(jm.sum(half).floor());
+        BigRational k = new BigRational(km.sum(half).floor());
+        return new BigQuaternion(r, i, j, k);
+    }
+
+
+    /**
+     * BigQuaternion round to next Hurwitz integer. BigQuaternion with all
+     * integer or all 1/2 times integer components.
+     * @return Hurwitz integer of this.
+     */
+    public BigQuaternion roundToHurwitzian() {
+        BigQuaternion g = this.roundToLipschitzian();
+        BigQuaternion d = BigQuaternion.ZERO;
+        BigRational half = BigRational.HALF;
+        BigQuaternion s = this.subtract(g).norm();
+        //System.out.println("s = " + s.toScript());
+        if (s.re.compareTo(half) <= 0) {
+            //System.out.println("s <= 1/2");
+            return g;
+        }
+        List<BigQuaternion> units = unitsOfHurwitzian();
+        for (BigQuaternion ue : units) {
+            BigQuaternion t = this.subtract(g).sum(ue).norm();
+            if (t.re.compareTo(s.re) < 0) {
+                s = t;
+                d = ue;
+            }
+        }
+        //System.out.println("s = " + s.toScript());
+        g = g.sum(d);
+        return g;
+    }
+
+
+    /**
+     * BigQuaternion units of the Hurwitzian integers. BigQuaternion units with
+     * all integer or all 1/2 times integer components.
+     * @return list of all 24 units.
+     */
+    public static List<BigQuaternion> unitsOfHurwitzian() {
+        if (entierUnits != null) {
+            return entierUnits;
+        }
+        BigRational half = BigRational.HALF;
+        // Lipschitz integer units
+        List<BigQuaternion> units = BigQuaternion.ONE.generators();
+        List<BigQuaternion> u = new ArrayList<BigQuaternion>(units);
+        for (BigQuaternion ue : u) {
+            units.add(ue.negate());
+        }
+        // Hurwitz integer units
+        long[][] comb = new long[][] { { 1, 1, 1, 1 }, { -1, 1, 1, 1 }, { 1, -1, 1, 1 }, { -1, -1, 1, 1 },
+                { 1, 1, -1, 1 }, { -1, 1, -1, 1 }, { 1, -1, -1, 1 }, { -1, -1, -1, 1 }, { 1, 1, 1, -1 },
+                { -1, 1, 1, -1 }, { 1, -1, 1, -1 }, { -1, -1, 1, -1 }, { 1, 1, -1, -1 }, { -1, 1, -1, -1 },
+                { 1, -1, -1, -1 }, { -1, -1, -1, -1 } };
+        for (long[] row : comb) {
+            BigQuaternion ue = BigQuaternion.ONE.fromInteger(row);
+            ue = ue.multiply(half);
+            units.add(ue);
+        }
+        //System.out.println("units = " + units);
+        //for (BigQuaternion ue : units) {
+        //System.out.println("unit = " + ue + ", norm = " + ue.norm());
+        //}
+        entierUnits = units;
+        return units;
+    }
+
+
+    /**
+     * Integral quotient and remainder by left division of this by S. This must
+     * be also an integral (Hurwitz) quaternion number.
+     * @param b an integral (Hurwitz) quaternion number
+     * @return [round(b**(-1)) this, this - b * (round(b**(-1)) this)].
+     */
+    public BigQuaternion[] leftQuotientAndRemainder(BigQuaternion b) {
+        if (!this.isEntier() || !b.isEntier()) {
+            throw new IllegalArgumentException("entier elements required");
+        }
+        BigQuaternion bi = b.inverse();
+        BigQuaternion m = bi.multiply(this); // left divide
+        //System.out.println("m = " + m.toScript());
+        BigQuaternion mh = m.roundToHurwitzian();
+        //System.out.println("mh = " + mh.toScript());
+        BigQuaternion n = this.subtract(b.multiply(mh));
+        BigQuaternion[] ret = new BigQuaternion[2];
+        ret[0] = mh;
+        ret[1] = n;
+        return ret;
+    }
+
+
+    /**
+     * Integral quotient and remainder by right division of this by S. This must
+     * be also an integral (Hurwitz) quaternion number.
+     * @param b an integral (Hurwitz) quaternion number
+     * @return [round(b**(-1)) this, this - b * (round(b**(-1)) this)].
+     */
+    public BigQuaternion[] rightQuotientAndRemainder(BigQuaternion b) {
+        if (!this.isEntier() || !b.isEntier()) {
+            throw new IllegalArgumentException("entier elements required");
+        }
+        BigQuaternion bi = b.inverse();
+        BigQuaternion m = this.multiply(bi); // right divide
+        //System.out.println("m = " + m.toScript());
+        BigQuaternion mh = m.roundToHurwitzian();
+        //System.out.println("mh = " + mh.toScript());
+        BigQuaternion n = this.subtract(mh.multiply(b));
+        BigQuaternion[] ret = new BigQuaternion[2];
+        ret[0] = mh;
+        ret[1] = n;
+        return ret;
+    }
+
+
+    /**
+     * Integer quaternion number left greatest common divisor.
+     * @param S integer BigQuaternion.
+     * @return leftGcd(this,S).
+     */
+    public BigQuaternion leftGcd(BigQuaternion S) {
+        if (S == null || S.isZERO()) {
+            return this;
+        }
+        if (this.isZERO()) {
+            return S;
+        }
+        BigQuaternion q, r;
+        q = this;
+        r = S;
+        while (!r.isZERO()) {
+            BigQuaternion u = q.leftQuotientAndRemainder(r)[1];
+            //System.out.println("u = " + u.toScript());
+            q = r;
+            r = u;
+        }
+        return q;
+    }
+
+
+    /**
+     * Integer quaternion number right greatest common divisor.
+     * @param S integer BigQuaternion.
+     * @return rightGcd(this,S).
+     */
+    public BigQuaternion rightGcd(BigQuaternion S) {
+        if (S == null || S.isZERO()) {
+            return this;
+        }
+        if (this.isZERO()) {
+            return S;
+        }
+        BigQuaternion q, r;
+        q = this;
+        r = S;
+        while (!r.isZERO()) {
+            BigQuaternion u = q.rightQuotientAndRemainder(r)[1];
+            //System.out.println("u = " + u.toScript());
+            q = r;
+            r = u;
+        }
+        return q;
     }
 
 }

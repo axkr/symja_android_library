@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: OrderedWordPairlist.java 5052 2014-12-31 19:37:07Z kredel $
  */
 
 package edu.jas.gb;

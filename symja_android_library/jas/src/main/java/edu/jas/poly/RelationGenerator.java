@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: RelationGenerator.java 5687 2017-01-03 08:44:03Z kredel $
  */
 
 package edu.jas.poly;
@@ -13,7 +13,7 @@ import edu.jas.structure.RingElem;
  * relations to the relation table of the given solvable ring factory. Relations
  * are of the form x<sub>j</sub> * x<sub>i</sub> = x<sub>i</sub> x<sub>j</sub> +
  * p<sub>ij</sub> for 1 &le; i &lt; j &le; n = number of variables.
- * @author Heinz Kredel.
+ * @author Heinz Kredel
  */
 public interface RelationGenerator<C extends RingElem<C>> {
 

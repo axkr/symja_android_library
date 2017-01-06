@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: MultiVarPowerSeriesRing.java 5681 2017-01-01 16:47:36Z kredel $
  */
 
 package edu.jas.ps;
@@ -12,6 +12,7 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Function;
 
 import edu.jas.kern.PrettyPrint;
 import edu.jas.poly.ExpVector;
@@ -159,7 +160,7 @@ public class MultiVarPowerSeriesRing<C extends RingElem<C>> implements RingFacto
         if (names == null) {
             vars = null;
         } else {
-            vars = Arrays.copyOf(names,names.length); // > Java-5
+            vars = Arrays.copyOf(names, names.length); // > Java-5
         }
         if (vars == null) {
             if (PrettyPrint.isTrue()) {
@@ -239,7 +240,7 @@ public class MultiVarPowerSeriesRing<C extends RingElem<C>> implements RingFacto
      * @return names.
      */
     public String[] getVars() {
-        return Arrays.copyOf(vars,vars.length); // > Java-5
+        return Arrays.copyOf(vars, vars.length); // > Java-5
     }
 
 
@@ -714,6 +715,25 @@ public class MultiVarPowerSeriesRing<C extends RingElem<C>> implements RingFacto
                 } else {
                     c = coFac.getZERO();
                 }
+                return c;
+            }
+        });
+    }
+
+
+    /**
+     * Generate a power series via lambda expression.
+     * @param gener lambda expression.
+     * @return a generated power series.
+     */
+    public MultiVarPowerSeries<C> generate(final Function<ExpVector, C> gener) {
+        return new MultiVarPowerSeries<C>(this, new MultiVarCoefficients<C>(this) {
+
+
+            @Override
+            public C generate(ExpVector i) {
+                // cached coefficients returned by get
+                C c = gener.apply(i);
                 return c;
             }
         });

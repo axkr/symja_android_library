@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: UnivPowerSeries.java 5681 2017-01-01 16:47:36Z kredel $
  */
 
 package edu.jas.ps;
@@ -67,7 +67,7 @@ public class UnivPowerSeries<C extends RingElem<C>> implements RingElem<UnivPowe
      * Package constructor. Use in fixPoint only, must be accessible in factory.
      * @param ring power series ring.
      */
-    /*package*/UnivPowerSeries(UnivPowerSeriesRing<C> ring) {
+    /*package*/ UnivPowerSeries(UnivPowerSeriesRing<C> ring) {
         this.ring = ring;
         this.lazyCoeffs = null;
     }
@@ -80,8 +80,8 @@ public class UnivPowerSeries<C extends RingElem<C>> implements RingElem<UnivPowe
      */
     public UnivPowerSeries(UnivPowerSeriesRing<C> ring, Coefficients<C> lazyCoeffs) {
         if (lazyCoeffs == null || ring == null) {
-            throw new IllegalArgumentException("null not allowed: ring = " + ring + ", lazyCoeffs = "
-                            + lazyCoeffs);
+            throw new IllegalArgumentException(
+                            "null not allowed: ring = " + ring + ", lazyCoeffs = " + lazyCoeffs);
         }
         this.ring = ring;
         this.lazyCoeffs = lazyCoeffs;
@@ -714,8 +714,8 @@ public class UnivPowerSeries<C extends RingElem<C>> implements RingElem<UnivPowe
             return ring.getZERO();
         }
         if (!ps.coefficient(n).isUnit()) {
-            throw new ArithmeticException("division by non unit coefficient " + ps.coefficient(n) + ", n = "
-                            + n);
+            throw new ArithmeticException(
+                            "division by non unit coefficient " + ps.coefficient(n) + ", n = " + n);
         }
         // now m >= n
         UnivPowerSeries<C> st, sps, q, sq;

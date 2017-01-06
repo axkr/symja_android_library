@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Residue.java 4655 2013-10-05 10:12:32Z kredel $
  */
 
 package edu.jas.application;

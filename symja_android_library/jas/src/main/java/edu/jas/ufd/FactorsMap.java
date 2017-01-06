@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: FactorsMap.java 5311 2015-10-25 22:28:29Z kredel $
  */
 
 package edu.jas.ufd;

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: MultiVarCoefficients.java 5330 2015-11-29 16:45:00Z kredel $
  */
 
 package edu.jas.ps;

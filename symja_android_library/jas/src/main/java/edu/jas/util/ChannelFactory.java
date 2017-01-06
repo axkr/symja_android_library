@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: ChannelFactory.java 5686 2017-01-03 08:42:06Z kredel $
  */
 
 //package edu.unima.ky.parallel;
@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
  * Sockets can the be retrieved from the store without blocking. Refactored for
  * java.util.concurrent.
  * @author Akitoshi Yoshida
- * @author Heinz Kredel.
+ * @author Heinz Kredel
  * @see SocketChannel
  */
 public class ChannelFactory extends Thread {

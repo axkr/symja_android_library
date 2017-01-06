@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: FactorInteger.java 5685 2017-01-01 22:53:21Z kredel $
  */
 
 package edu.jas.ufd;
@@ -36,13 +36,8 @@ import edu.jas.util.KsubSet;
 /**
  * Integer coefficients factorization algorithms. This class implements
  * factorization methods for polynomials over integers.
- * @author Heinz Kredel
- */
-
-/**
- * @author kredel
- * 
  * @param <MOD>
+ * @author Heinz Kredel
  */
 public class FactorInteger<MOD extends GcdRingElem<MOD> & Modular> extends FactorAbstract<BigInteger> {
 

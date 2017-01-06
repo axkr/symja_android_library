@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Rational.java 2939 2009-12-30 08:56:43Z kredel $
  */
 
 package edu.jas.arith;

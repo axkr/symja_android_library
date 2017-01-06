@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: DistHashTableServer.java 5686 2017-01-03 08:42:06Z kredel $
  */
 
 package edu.jas.util;
@@ -18,8 +18,9 @@ import org.apache.log4j.Logger;
 
 /**
  * Server for the distributed version of a list.
- * @author Heinz Kredel TODO: redistribute list for late coming clients, removal
- *         of elements.
+ * TODO: redistribute list for late coming clients, removal
+ *       of elements.
+ * @author Heinz Kredel
  */
 
 public class DistHashTableServer<K> extends Thread {
@@ -245,9 +246,9 @@ public class DistHashTableServer<K> extends Thread {
                 mythread.interrupt();
                 mythread.join(100);
             }
-            if (logger.isInfoEnabled()) {
-                logger.warn("server terminated " + mythread);
-            }
+//            if (logger.isWarnEnabled()) {
+//                logger.warn("server terminated " + mythread);
+//            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -460,9 +461,9 @@ class DHTBroadcaster<K> extends Thread /*implements Runnable*/ {
                 e.printStackTrace();
             }
         }
-        if (logger.isInfoEnabled()) {
-            logger.warn("ending " + this);
-        }
+//        if (logger.isWarnEnabled()) {
+//            logger.warn("ending " + this);
+//        }
         synchronized (bcaster) {
             bcaster.remove(this);
         }

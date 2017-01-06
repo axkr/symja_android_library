@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: PolyUfdUtil.java 5640 2016-11-17 22:44:59Z kredel $
  */
 
 package edu.jas.ufd;

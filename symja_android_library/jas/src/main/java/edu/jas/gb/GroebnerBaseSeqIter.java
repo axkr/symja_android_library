@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GroebnerBaseSeqIter.java 5657 2016-12-24 12:52:46Z kredel $
  */
 
 package edu.jas.gb;
@@ -94,7 +94,11 @@ public class GroebnerBaseSeqIter<C extends RingElem<C>> extends GroebnerBaseAbst
             if (debug) {
                 logger.info("p = " + p);
             }
-            Gp = GB(modv, Gp, p);
+            GenPolynomial<C> pp = red.normalform(Gp, p);
+            if (pp.isZERO()) {
+                continue;
+            }
+            Gp = GB(modv, Gp, pp);
             //System.out.println("GB(Gp+p) = " + Gp);
             if (Gp.size() > 0) {
                 if (Gp.get(0).isONE()) {

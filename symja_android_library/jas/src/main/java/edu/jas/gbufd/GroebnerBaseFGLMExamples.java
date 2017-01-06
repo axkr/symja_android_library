@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GroebnerBaseFGLMExamples.java 5685 2017-01-01 22:53:21Z kredel $
  */
 
 package edu.jas.gbufd;
@@ -28,7 +28,7 @@ import edu.jas.poly.PolynomialList;
 
 /**
  * Groebner base FGLM examples.
- * @author Jan Suess.
+ * @author Jan Suess
  */
 
 public class GroebnerBaseFGLMExamples {

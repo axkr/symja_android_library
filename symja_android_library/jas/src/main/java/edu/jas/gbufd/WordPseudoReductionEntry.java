@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: WordPseudoReductionEntry.java 5054 2015-01-01 11:03:35Z kredel $
  */
 
 package edu.jas.gbufd;

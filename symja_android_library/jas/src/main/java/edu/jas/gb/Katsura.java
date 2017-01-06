@@ -1,6 +1,6 @@
 /*
  * Created on 03.10.2004
- * $Id$
+ * $Id: Katsura.java 4687 2013-11-02 20:24:56Z kredel $
   */
 
 package edu.jas.gb;

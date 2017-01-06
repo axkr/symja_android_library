@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GreatestCommonDivisorSyzygy.java 5502 2016-05-12 21:58:10Z kredel $
  */
 
 package edu.jas.fd;

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: HenselUtil.java 5623 2016-11-06 12:09:06Z kredel $
  */
 
 package edu.jas.ufd;

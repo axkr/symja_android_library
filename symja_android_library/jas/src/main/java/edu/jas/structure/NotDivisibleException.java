@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: NotDivisibleException.java 5298 2015-08-15 17:54:47Z kredel $
  */
 
 package edu.jas.structure;

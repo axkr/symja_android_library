@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: WordPairList.java 4955 2014-10-13 21:34:09Z kredel $
  */
 
 package edu.jas.gb;

@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: AlgebraicNotInvertibleException.java 3472 2011-01-07 17:19:22Z kredel $
  */
 
 package edu.jas.poly;

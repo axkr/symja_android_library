@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: SolvableReductionSeq.java 5364 2015-12-26 12:36:37Z kredel $
  */
 
 package edu.jas.gb;

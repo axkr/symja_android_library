@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GBAlgorithmBuilder.java 5653 2016-11-27 14:15:33Z kredel $
  */
 
 package edu.jas.application;
@@ -169,10 +169,14 @@ public class GBAlgorithmBuilder<C extends GcdRingElem<C>> implements Serializabl
             throw new IllegalArgumentException("ring may not be null");
         }
         this.ring = ring;
-        this.algo = algo; // null accepted
         if (strategy == null) {
             strategy = new OrderedPairlist<C>();
+        } else {
+            if (algo == null) { // or overwrite?
+                algo = GBFactory.<C> getImplementation(ring.coFac, strategy);
+            }
         }
+        this.algo = algo; // null accepted
         this.strategy = strategy;
     }
 
@@ -253,7 +257,7 @@ public class GBAlgorithmBuilder<C extends GcdRingElem<C>> implements Serializabl
             algo = GBFactory.<C> getImplementation(ring.coFac, strategy);
         }
         GroebnerBaseAbstract<C> bb = new GBOptimized<C>(algo, rP);
-        return new GBAlgorithmBuilder<C>(ring, bb);
+        return new GBAlgorithmBuilder<C>(ring, bb, strategy);
     }
 
 
@@ -272,7 +276,7 @@ public class GBAlgorithmBuilder<C extends GcdRingElem<C>> implements Serializabl
             PairList<BigRational> sty = (PairList) strategy;
             GroebnerBaseAbstract<BigRational> bb = GBFactory.getImplementation(cf, GBFactory.Algo.ffgb, sty);
             GroebnerBaseAbstract<C> cbb = (GroebnerBaseAbstract<C>) (GroebnerBaseAbstract) bb;
-            return new GBAlgorithmBuilder<C>(ring, cbb);
+            return new GBAlgorithmBuilder<C>(ring, cbb, strategy);
         }
         if (((Object) ring.coFac) instanceof QuotientRing) {
             QuotientRing<C> cf = (QuotientRing<C>) (Object) ring.coFac;
@@ -280,7 +284,7 @@ public class GBAlgorithmBuilder<C extends GcdRingElem<C>> implements Serializabl
             GroebnerBaseAbstract<Quotient<C>> bb = GBFactory.<C> getImplementation(cf, GBFactory.Algo.ffgb,
                             sty);
             GroebnerBaseAbstract<C> cbb = (GroebnerBaseAbstract<C>) (GroebnerBaseAbstract) bb;
-            return new GBAlgorithmBuilder<C>(ring, cbb);
+            return new GBAlgorithmBuilder<C>(ring, cbb, strategy);
         }
         logger.warn("no fraction free algorithm implemented for " + ring);
         return this;
@@ -303,6 +307,9 @@ public class GBAlgorithmBuilder<C extends GcdRingElem<C>> implements Serializabl
      */
     @SuppressWarnings({"cast", "unchecked"})
     public GBAlgorithmBuilder<C> domainAlgorithm(GBFactory.Algo a) {
+        if (strategy != null) {
+            logger.warn("strategie " + strategy + " ignored");
+        }
         if (((Object) ring.coFac) instanceof BigInteger) {
             BigInteger cf = (BigInteger) (Object) ring.coFac;
             GroebnerBaseAbstract<BigInteger> bb = GBFactory.getImplementation(cf, a);
@@ -350,7 +357,7 @@ public class GBAlgorithmBuilder<C extends GcdRingElem<C>> implements Serializabl
             GroebnerBaseAbstract<C> bb;
             bb = (GroebnerBaseAbstract) new GroebnerBaseParIter<C>(threads, strategy);
             GroebnerBaseAbstract<C> pbb = new GBProxy<C>(algo, bb);
-            return new GBAlgorithmBuilder<C>(ring, pbb);
+            return new GBAlgorithmBuilder<C>(ring, pbb, strategy);
         } else if (((RingFactory) ring.coFac) instanceof BigRational) {
             GroebnerBaseAbstract<C> bb;
             if (algo instanceof GroebnerBaseRational) { // fraction free requested
@@ -367,7 +374,7 @@ public class GBAlgorithmBuilder<C extends GcdRingElem<C>> implements Serializabl
                 bb = (GroebnerBaseAbstract) new GroebnerBaseParallel<C>(threads, strategy);
             }
             GroebnerBaseAbstract<C> pbb = new GBProxy<C>(algo, bb);
-            return new GBAlgorithmBuilder<C>(ring, pbb);
+            return new GBAlgorithmBuilder<C>(ring, pbb, strategy);
         } else if (((RingFactory) ring.coFac) instanceof QuotientRing) {
             GroebnerBaseAbstract<C> bb;
             if (algo instanceof GroebnerBaseQuotient) { // fraction free requested
@@ -389,11 +396,11 @@ public class GBAlgorithmBuilder<C extends GcdRingElem<C>> implements Serializabl
         } else if (ring.coFac.isField()) {
             GroebnerBaseAbstract<C> bb = new GroebnerBaseParallel<C>(threads, strategy);
             GroebnerBaseAbstract<C> pbb = new GBProxy<C>(algo, bb);
-            return new GBAlgorithmBuilder<C>(ring, pbb);
+            return new GBAlgorithmBuilder<C>(ring, pbb, strategy);
         } else if (ring.coFac.getONE() instanceof GcdRingElem) {
             GroebnerBaseAbstract<C> bb = new GroebnerBasePseudoParallel<C>(threads, ring.coFac, strategy);
             GroebnerBaseAbstract<C> pbb = new GBProxy<C>(algo, bb);
-            return new GBAlgorithmBuilder<C>(ring, pbb);
+            return new GBAlgorithmBuilder<C>(ring, pbb, strategy);
         }
         logger.warn("no parallel algorithm implemented for " + ring);
         return this;
@@ -413,7 +420,7 @@ public class GBAlgorithmBuilder<C extends GcdRingElem<C>> implements Serializabl
             } else {
                 bb = new GroebnerBaseFGLM<C>(algo);
             }
-            return new GBAlgorithmBuilder<C>(ring, bb);
+            return new GBAlgorithmBuilder<C>(ring, bb, strategy);
         }
         logger.warn("no FGLM algorithm implemented for " + ring);
         return this;
@@ -433,7 +440,7 @@ public class GBAlgorithmBuilder<C extends GcdRingElem<C>> implements Serializabl
             } else {
                 bb = new GroebnerBaseWalk<C>(algo);
             }
-            return new GBAlgorithmBuilder<C>(ring, bb);
+            return new GBAlgorithmBuilder<C>(ring, bb, strategy);
         }
         logger.warn("no Groebner walk algorithm implemented for " + ring);
         return this;
@@ -453,7 +460,7 @@ public class GBAlgorithmBuilder<C extends GcdRingElem<C>> implements Serializabl
             if (algo != null) {
                 logger.warn("algo " + algo + " ignored for " + bb);
             }
-            return new GBAlgorithmBuilder<C>(ring, bb);
+            return new GBAlgorithmBuilder<C>(ring, bb, strategy);
         }
         logger.warn("no iterated GB algorithm implemented for " + ring);
         return this;
@@ -476,7 +483,7 @@ public class GBAlgorithmBuilder<C extends GcdRingElem<C>> implements Serializabl
             if (strategy != null) {
                 logger.warn("strategy " + strategy + " ignored for " + bb);
             }
-            return new GBAlgorithmBuilder<C>(ring, bb);
+            return new GBAlgorithmBuilder<C>(ring, bb, strategy);
         }
         logger.warn("no iterated F5 GB algorithm implemented for " + ring);
         return this;
@@ -499,7 +506,7 @@ public class GBAlgorithmBuilder<C extends GcdRingElem<C>> implements Serializabl
             if (strategy != null) {
                 logger.warn("strategy " + strategy + " ignored for " + bb);
             }
-            return new GBAlgorithmBuilder<C>(ring, bb);
+            return new GBAlgorithmBuilder<C>(ring, bb, strategy);
         }
         logger.warn("no iterated GGV GB algorithm implemented for " + ring);
         return this;
@@ -522,7 +529,7 @@ public class GBAlgorithmBuilder<C extends GcdRingElem<C>> implements Serializabl
             if (strategy != null) {
                 logger.warn("strategy " + strategy + " ignored for " + bb);
             }
-            return new GBAlgorithmBuilder<C>(ring, bb);
+            return new GBAlgorithmBuilder<C>(ring, bb, strategy);
         }
         logger.warn("no iterated Arri GB algorithm implemented for " + ring);
         return this;
@@ -541,6 +548,10 @@ public class GBAlgorithmBuilder<C extends GcdRingElem<C>> implements Serializabl
             s.append(" for ");
         }
         s.append(ring.toString());
+        if (strategy != null) {
+            s.append(" strategy=");
+            s.append(strategy.toString());
+        }
         return s.toString();
     }
 
@@ -558,6 +569,10 @@ public class GBAlgorithmBuilder<C extends GcdRingElem<C>> implements Serializabl
             s.append(" ");
         }
         s.append(ring.toScript());
+        if (strategy != null) {
+            s.append(",strategy=");
+            s.append(strategy.toString());
+        }
         return s.toString();
     }
 

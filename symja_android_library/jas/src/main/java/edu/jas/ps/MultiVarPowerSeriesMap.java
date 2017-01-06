@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: MultiVarPowerSeriesMap.java 3315 2010-09-05 18:26:34Z kredel $
  */
 
 package edu.jas.ps;

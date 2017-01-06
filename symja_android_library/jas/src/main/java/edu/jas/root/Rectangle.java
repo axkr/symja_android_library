@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Rectangle.java 5568 2016-08-03 19:14:39Z kredel $
  */
 
 package edu.jas.root;

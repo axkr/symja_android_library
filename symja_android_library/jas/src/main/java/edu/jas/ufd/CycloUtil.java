@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: CycloUtil.java 5643 2016-11-18 20:31:03Z kredel $
  */
 
 package edu.jas.ufd;

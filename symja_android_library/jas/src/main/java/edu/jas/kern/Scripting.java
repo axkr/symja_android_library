@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: Scripting.java 5355 2015-12-20 12:23:10Z kredel $
  */
 
 package edu.jas.kern;

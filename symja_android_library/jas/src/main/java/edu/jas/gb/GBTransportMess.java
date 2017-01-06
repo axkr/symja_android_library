@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GBTransportMess.java 5388 2016-01-01 18:25:03Z kredel $
  */
 
 package edu.jas.gb;

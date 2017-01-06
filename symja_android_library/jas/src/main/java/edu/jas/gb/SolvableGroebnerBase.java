@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: SolvableGroebnerBase.java 5687 2017-01-03 08:44:03Z kredel $
  */
 
 package edu.jas.gb;
@@ -17,7 +17,7 @@ import edu.jas.structure.RingElem;
  * Solvable Groebner Bases interface. Defines methods for left, right and
  * twosided Groebner bases and left, right and twosided GB tests.
  * @param <C> coefficient type
- * @author Heinz Kredel.
+ * @author Heinz Kredel
  */
 
 public interface SolvableGroebnerBase<C extends RingElem<C>> extends Serializable {

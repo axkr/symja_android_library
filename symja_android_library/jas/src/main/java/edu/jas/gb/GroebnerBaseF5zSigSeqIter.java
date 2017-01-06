@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * $Id: GroebnerBaseF5zSigSeqIter.java 5476 2016-03-25 17:57:05Z kredel $
  */
 
 package edu.jas.gb;
