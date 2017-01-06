@@ -11,6 +11,7 @@ import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.ASTRange;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.reflection.system.Apart;
 
 /**
@@ -248,9 +249,9 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	}
 
 	/**
-	 * Adds the specified object at the end of this {@code List}.
+	 * Adds the specified expression at the end of this {@code List}.
 	 * 
-	 * @param object
+	 * @param expr
 	 *            the object to add.
 	 * @return always true.
 	 * @throws UnsupportedOperationException
@@ -261,7 +262,14 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @throws IllegalArgumentException
 	 *             if the object cannot be added to this {@code List}.
 	 */
-	public boolean append(IExpr object);
+	public boolean append(IExpr expr);
+
+	default boolean appendPlus(IExpr expr) {
+		if (head().equals(F.Plus) && expr.head().equals(F.Plus)) {
+			return appendArgs((IAST) expr);
+		}
+		return append(expr);
+	}
 
 	/**
 	 * Inserts the specified object into this {@code List} at the specified
@@ -1094,9 +1102,10 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	public IAST mapThread(final IAST replacement, int position);
 
-	default IAST mapAt(final IAST replacement, int position){
-		return mapThread(replacement,position);
+	default IAST mapAt(final IAST replacement, int position) {
+		return mapThread(replacement, position);
 	}
+
 	/**
 	 * Maps the elements of this IAST with the unary functor
 	 * <code>Functors.replaceArg(replacement, position)</code>, there

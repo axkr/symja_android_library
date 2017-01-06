@@ -69,11 +69,12 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 					if (!result.isPresent()) {
 						result = ast.copyUntil(i);
 					}
-					if (temp.isPlus() && result.isPlus()) {
-						result.appendArgs((IAST) temp);
-					} else {
-						result.append(temp);
-					}
+					result.appendPlus(temp);
+					// if (temp.isPlus() && result.isPlus()) {
+					// result.appendArgs((IAST) temp);
+					// } else {
+					// result.append(temp);
+					// }
 					continue;
 				}
 			}

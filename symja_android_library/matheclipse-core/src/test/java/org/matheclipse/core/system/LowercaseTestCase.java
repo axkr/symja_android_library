@@ -4158,7 +4158,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "-1)^(11/12)},{x->-(-1)^(11/12)}}");
 	}
 
-	public void testSolve() {
+	public void testSolve() { 
 		// check("Solve(Abs((-3+x^2)/x) ==2,{x})",
 		// "{{x->-3},{x->-1},{x->1},{x->3}}");
 		check("Solve(x^3==-2,x)", "{{x->-2^(1/3)},{x->(-1)^(1/3)*2^(1/3)},{x->-(-1)^(2/3)*2^(1/3)}}");

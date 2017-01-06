@@ -879,11 +879,82 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 		IAST termsEqualZeroList = Validate.checkEquations(ast, 1);
 
-		IAST temp = solveTimesEquationsRecursively(termsEqualZeroList, variables, engine);
+		IExpr temp = solveTimesEquationsRecursively(termsEqualZeroList, variables, engine);
 		if (temp.isPresent()) {
 			return temp;
 		}
-		return solveEquations(termsEqualZeroList, variables, 0, engine);
+		temp = solveEquations(termsEqualZeroList, variables, 0, engine);
+		if (temp.isPresent()) {
+			return temp;
+		}
+		
+		return F.NIL;
+		
+		// return solvePlusEquationsSimplified(termsEqualZeroList, variables,engine);
+	}
+
+	/**
+	 * Expand rational terms in Plus() expressions of the equations list.
+	 * 
+	 * @param termsEqualZeroList
+	 * @param variables
+	 * @param engine
+	 * @return
+	 */
+	private IExpr solvePlusEquationsSimplified(IAST termsEqualZeroList, IAST variables, EvalEngine engine) {
+		IExpr temp;
+		boolean forEvaled = false;
+		for (int i = 1; i < termsEqualZeroList.size(); i++) {
+			temp = termsEqualZeroList.get(i);
+			if (temp.isPlus()) {
+				IAST plus = (IAST) temp;
+				IExpr[] fractionalParts;
+				boolean evaled = false;
+				IAST[] factors = new IAST[plus.size() - 1];
+				for (int j = 0; j < factors.length; j++) {
+					factors[j] = F.Times();
+				}
+				IAST newPlus = F.Plus();
+				for (int j = 1; j < plus.size(); j++) {
+					fractionalParts = Apart.getFractionalPartsRational(plus.get(j));
+					if (fractionalParts != null && !fractionalParts[1].isOne()) {
+						for (int k = 1; k < plus.size(); k++) {
+							if (k != j) {
+								// append the denominator
+								factors[k - 1].append(fractionalParts[1]);
+							}
+						}
+						newPlus.append(fractionalParts[0]);
+						evaled = true;
+						continue;
+					}
+					newPlus.append(plus.get(j));
+				}
+				if (evaled) {
+					forEvaled = true;
+					for (int j = 1; j < plus.size(); j++) {
+						IExpr factor = factors[j - 1].getOneIdentity(F.C1);
+						if (!factor.isOne()) {
+							newPlus.set(j, F.Times(factor, newPlus.get(j)));
+						} else {
+							newPlus.set(j, newPlus.get(j));
+						}
+					}
+					termsEqualZeroList.set(i, F.expandAll(newPlus, true, true));
+				}
+			}
+		}
+		if (forEvaled) {
+			engine.printMessage(
+					"Solve: using of simplified rational expressions may not give solutions for all variables.");
+
+			temp = solveTimesEquationsRecursively(termsEqualZeroList, variables, engine);
+			if (temp.isPresent()) {
+				return temp;
+			}
+			return solveEquations(termsEqualZeroList, variables, 0, engine);
+		}
+		return F.NIL;
 	}
 
 	/**
@@ -891,7 +962,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @param termsEqualZeroList
 	 *            the list of expressions extracted form the given equations,
 	 *            which should equal <code>0</code>
-	 * @param variablesgiven
+	 * @param variables
 	 *            the variables for which the equations should be solved
 	 * @param maximumNumberOfResults
 	 *            the maximum number of results which should be returned

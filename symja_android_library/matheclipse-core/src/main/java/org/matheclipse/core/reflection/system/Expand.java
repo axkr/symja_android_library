@@ -327,7 +327,7 @@ public class Expand extends AbstractFunctionEvaluator {
 		public void evalAndExpandAST(IExpr expr1, IExpr expr2, final IAST result) {
 			IExpr arg = TimesOp.times(expr1, expr2);
 			if (arg.isAST()) {
-				result.append(expandAST((IAST) arg).orElse(arg));
+				result.appendPlus(expandAST((IAST) arg).orElse(arg));
 				return;
 			}
 			result.append(arg);
