@@ -18,25 +18,42 @@ public class NoneTrue extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 
 		if (ast.arg1().isAST()) {
-			IAST arg1 = (IAST) ast.arg1();
+			IAST list = (IAST) ast.arg1();
 			IExpr head = ast.arg2();
-			IAST logicalNor = F.ast(F.Nor);
-			int size = arg1.size();
-			for (int i = 1; i < size; i++) {
-				IExpr temp = engine.evaluate(F.unary(head, arg1.get(i)));
-				if (temp.isTrue()) {
-					return F.False;
-				} else if (temp.isFalse()) {
-					continue;
-				}
-				logicalNor.append(temp);
-			}
-			if (logicalNor.size() > 1) {
-				return logicalNor;
-			}
-			return F.True;
+			return noneTrue(list, head, engine);
 		}
 		return F.NIL;
+	}
+
+	/**
+	 * If any expression evaluates to <code>true</code> for a given unary
+	 * predicate function return <code>False</code>, if all are
+	 * <code>false</code> return <code>True</code>, else return an
+	 * <code>Nor(...)</code> expression of the result expressions.
+	 * 
+	 * @param list
+	 *            list of expressions
+	 * @param head
+	 *            the head of a unary predicate function
+	 * @param engine
+	 * @return
+	 */
+	public IExpr noneTrue(IAST list, IExpr head, EvalEngine engine) {
+		IAST logicalNor = F.ast(F.Nor);
+		int size = list.size();
+		for (int i = 1; i < size; i++) {
+			IExpr temp = engine.evaluate(F.unary(head, list.get(i)));
+			if (temp.isTrue()) {
+				return F.False;
+			} else if (temp.isFalse()) {
+				continue;
+			}
+			logicalNor.append(temp);
+		}
+		if (logicalNor.size() > 1) {
+			return logicalNor;
+		}
+		return F.True;
 	}
 
 	@Override

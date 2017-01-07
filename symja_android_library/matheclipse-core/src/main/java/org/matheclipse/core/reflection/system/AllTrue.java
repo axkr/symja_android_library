@@ -18,25 +18,42 @@ public class AllTrue extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 
 		if (ast.arg1().isAST()) {
-			IAST arg1 = (IAST) ast.arg1();
+			IAST list = (IAST) ast.arg1();
 			IExpr head = ast.arg2();
-			IAST logicalAnd = F.And();
-			int size = arg1.size();
-			for (int i = 1; i < size; i++) {
-				IExpr temp = engine.evaluate(F.unary(head, arg1.get(i)));
-				if (temp.isTrue()) {
-					continue;
-				} else if (temp.isFalse()) {
-					return F.False;
-				}
-				logicalAnd.append(temp);
-			}
-			if (logicalAnd.size() > 1) {
-				return logicalAnd;
-			}
-			return F.True;
+			return allTrue(list, head, engine);
 		}
 		return F.NIL;
+	}
+
+	/**
+	 * If all expressions evaluates to <code>true</code> for a given unary
+	 * predicate function return <code>True</code>, if any expression evaluates
+	 * to <code>false</code> return <code>False</code>, else return an
+	 * <code>And(...)</code> expression of the result expressions.
+	 * 
+	 * @param list
+	 *            list of expressions
+	 * @param head
+	 *            the head of a unary predicate function
+	 * @param engine
+	 * @return
+	 */
+	public IExpr allTrue(IAST list, IExpr head, EvalEngine engine) {
+		IAST logicalAnd = F.And();
+		int size = list.size();
+		for (int i = 1; i < size; i++) {
+			IExpr temp = engine.evaluate(F.unary(head, list.get(i)));
+			if (temp.isTrue()) {
+				continue;
+			} else if (temp.isFalse()) {
+				return F.False;
+			}
+			logicalAnd.append(temp);
+		}
+		if (logicalAnd.size() > 1) {
+			return logicalAnd;
+		}
+		return F.True;
 	}
 
 	@Override
