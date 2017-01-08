@@ -27,7 +27,7 @@ public class JavaFormTestCase extends AbstractTestCase {
 		assertEquals(result.internalFormString(true, -1), "Sinc(DirectedInfinity(CI))");
 
 		result = util.evaluate(function);
-		assertEquals(result.internalFormString(true, -1), "CInfinity");
+		assertEquals(result.internalFormString(true, -1), "oo");
 	}
 
 }
