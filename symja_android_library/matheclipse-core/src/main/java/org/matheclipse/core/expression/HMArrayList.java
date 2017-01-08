@@ -43,9 +43,6 @@ import org.matheclipse.core.interfaces.IExpr;
  */
 public abstract class HMArrayList extends AbstractAST implements Cloneable, Serializable, RandomAccess {
 
-	// private static final ObjectStreamField[] serialPersistentFields = { new
-	// ObjectStreamField("size", Integer.TYPE) }; //$NON-NLS-1$
-
 	private static final long serialVersionUID = 8683452581122892189L;
 
 	protected transient IExpr[] array;
@@ -364,7 +361,6 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	 * @see java.lang.Cloneable
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	public IAST clone() {
 		HMArrayList newList = (HMArrayList) super.clone();
 		newList.array = array.clone();
@@ -547,12 +543,10 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 		lastIndex = array.length;
 	}
 
-	@SuppressWarnings("unchecked")
 	private IExpr[] newElementArray(int size) {
 		return new IExpr[size];
 	}
 
-	@SuppressWarnings("unchecked")
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		ObjectInputStream.GetField fields = stream.readFields();
 		lastIndex = fields.get("size", 0); //$NON-NLS-1$
