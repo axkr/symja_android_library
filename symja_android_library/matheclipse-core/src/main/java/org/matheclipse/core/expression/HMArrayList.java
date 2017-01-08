@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.RandomAccess;
 import java.util.Set;
 
@@ -34,7 +33,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * HMArrayList is an implementation of {@link List}, backed by an array. All
+ * HMArrayList is an implementation of a list, backed by an array. All
  * optional operations adding, removing, and replacing are supported. The
  * elements can be any objects.
  * 
@@ -52,14 +51,14 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	protected transient int lastIndex;
 
 	/**
-	 * Constructs a new instance of {@code ArrayList} with ten capacity.
+	 * Constructs a new instance of list with ten capacity.
 	 */
 	public HMArrayList() {
 		this(10);
 	}
 
 	/**
-	 * Constructs a new instance of {@code ArrayList} containing the elements of
+	 * Constructs a newlist containing the elements of
 	 * the specified collection. The initial size of the {@code ArrayList} will
 	 * be 10% higher than the size of the specified collection.
 	 * 

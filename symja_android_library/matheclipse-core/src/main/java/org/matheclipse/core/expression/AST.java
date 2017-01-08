@@ -29,8 +29,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <code>Sin</code> and one node for the argument <code>x</code>.
  * </p>
  * 
- * Internally an AST is represented as a <code>java.util.List</code> which
- * contains
+ * Internally an AST is represented as a list which contains
  * <ul>
  * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos,
  * Inverse, Plus, Times,...) at index <code>0</code> and</li>
@@ -38,8 +37,10 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <code>1 to n</code></li>
  * </ul>
  * 
- * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract
+ * <p>
+ * See: <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Wikipedia: Abstract
  * syntax tree</a>.
+ * </p>
  */
 public class AST extends HMArrayList implements Externalizable {
 
@@ -240,10 +241,10 @@ public class AST extends HMArrayList implements Externalizable {
 	/**
 	 * {@inheritDoc}
 	 */
-//	@Override
-//	public final boolean addAll(List<? extends IExpr> list) {
-//		return addAll(list, 0, list.size());
-//	}
+	// @Override
+	// public final boolean addAll(List<? extends IExpr> list) {
+	// return addAll(list, 0, list.size());
+	// }
 
 	/**
 	 * {@inheritDoc}
