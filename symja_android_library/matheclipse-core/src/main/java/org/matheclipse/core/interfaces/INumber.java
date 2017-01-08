@@ -63,13 +63,6 @@ public interface INumber extends IExpr {
 	public int complexSign();
 
 	/**
-	 * Conjugate this (complex-) number.
-	 * 
-	 * @return the conjugate complex number
-	 */
-	public INumber conjugate();
-
-	/**
 	 * Get the absolute value for a given number
 	 * 
 	 * @return

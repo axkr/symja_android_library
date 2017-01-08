@@ -364,11 +364,6 @@ public abstract class AbstractAST implements IAST {
 		fEvalFlags |= i;
 	}
 
-	@Override
-	public IExpr and(final IExpr that) {
-		return F.And(this, that);
-	}
-
 	/** {@inheritDoc} */
 	@Override
 	public IAST appendAtClone(int position, IExpr expr) {
@@ -388,16 +383,7 @@ public abstract class AbstractAST implements IAST {
 	@Override
 	public IAST apply(final IExpr head) {
 		return setAtCopy(0, head);
-	}
-
-	@Override
-	public IExpr apply(IExpr... leaves) {
-		final IAST ast = F.ast(head());
-		for (int i = 0; i < leaves.length; i++) {
-			ast.append(leaves[i]);
-		}
-		return ast;
-	}
+	} 
 
 	@Override
 	public final IAST apply(final IExpr head, final int start) {
@@ -409,15 +395,6 @@ public abstract class AbstractAST implements IAST {
 		final IAST ast = F.ast(head);
 		for (int i = start; i < end; i++) {
 			ast.append(get(i));
-		}
-		return ast;
-	}
-
-	@Override
-	public IExpr apply(List<? extends IExpr> leaves) {
-		final IAST ast = F.ast(head());
-		for (int i = 0; i < leaves.size(); i++) {
-			ast.append(leaves.get(i));
 		}
 		return ast;
 	}
@@ -665,11 +642,6 @@ public abstract class AbstractAST implements IAST {
 		}
 		return temp;
 
-	}
-
-	@Override
-	public final ElemFactory<IExpr> factory() {
-		throw new UnsupportedOperationException();
 	}
 
 	/** {@inheritDoc} */

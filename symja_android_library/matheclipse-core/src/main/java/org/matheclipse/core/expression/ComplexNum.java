@@ -21,7 +21,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * <code>org.apache.commons.math3.complex.Complex</code> value to represent a
  * numeric complex floating-point number.
  */
-public class ComplexNum extends ExprImpl implements IComplexNum {
+public class ComplexNum implements IExpr, IComplexNum  {
 
 	/**
 	 * 
@@ -213,7 +213,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		if (expr instanceof ComplexNum) {
 			return compareTo(((ComplexNum) expr).fComplex);
 		}
-		return super.compareTo(expr);
+		return IComplexNum.super.compareTo(expr);
 	}
 
 	@Override
@@ -240,6 +240,16 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		return newInstance(fComplex.conjugate());
 	}
 
+	@Override
+	public IExpr copy() {
+		try {
+			return (IExpr) clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public double dabs() {
@@ -481,7 +491,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		if (that instanceof Num) {
 			return add(ComplexNum.valueOf(((Num) that).getRealPart()));
 		}
-		return super.plus(that);
+		return IComplexNum.super.plus(that);
 	}
 
 	@Override
@@ -522,7 +532,7 @@ public class ComplexNum extends ExprImpl implements IComplexNum {
 		if (that instanceof Num) {
 			return multiply(ComplexNum.valueOf(((Num) that).getRealPart()));
 		}
-		return super.times(that);
+		return IComplexNum.super.times(that);
 	}
 
 	@Override

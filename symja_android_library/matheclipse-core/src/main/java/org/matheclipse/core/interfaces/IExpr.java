@@ -21,10 +21,12 @@ import javax.annotation.Nullable;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ExprField;
+import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NILPointer;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -38,6 +40,7 @@ import org.matheclipse.core.visit.VisitorReplaceAll;
 import org.matheclipse.core.visit.VisitorReplacePart;
 import org.matheclipse.core.visit.VisitorReplaceSlots;
 
+import edu.jas.structure.ElemFactory;
 import edu.jas.structure.GcdRingElem;
 
 /**
@@ -194,7 +197,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 			return ((INumber) this).eabs();
 		}
 		throw new UnsupportedOperationException(toString());
-	} 
+	}
+
 	/**
 	 * Accept a visitor with return type T
 	 * 
@@ -232,23 +236,60 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return plus(that);
 	}
 
-	public IExpr and(final IExpr that);
+	default IExpr and(final IExpr that) {
+		return F.And(this, that);
+	}
 
 	/**
 	 * @param leaves
 	 * @return an IExpr instance with the current expression as head(), and
 	 *         leaves as leaves().
 	 */
-	public IExpr apply(IExpr... leaves);
-
+	default IExpr apply(IExpr... leaves) {
+		final IAST ast = F.ast(head());
+		for (int i = 0; i < leaves.length; i++) {
+			ast.append(leaves[i]);
+		}
+		return ast;
+	}
+	
 	/**
 	 * @param leaves
 	 * @return an IExpr instance with the current expression as head(), and
 	 *         leaves as leaves().
 	 */
-	public IExpr apply(List<? extends IExpr> leaves);
-
-	public Object asType(Class<?> clazz);
+	default IExpr apply(List<? extends IExpr> leaves) {
+		final IAST ast = F.ast(head());
+		for (int i = 0; i < leaves.size(); i++) {
+			ast.append(leaves.get(i));
+		}
+		return ast;
+	}
+	
+	default Object asType(Class<?> clazz) {
+		if (clazz.equals(Boolean.class)) {
+			if (isTrue()) {
+				return Boolean.TRUE;
+			}
+			if (isFalse()) {
+				return Boolean.FALSE;
+			}
+		} else if (clazz.equals(Integer.class)) {
+			if (isSignedNumber()) {
+				try {
+					return Integer.valueOf(((ISignedNumber) this).toInt());
+				} catch (final ArithmeticException e) {
+				}
+			}
+		} else if (clazz.equals(java.math.BigInteger.class)) {
+			if (this instanceof IInteger) {
+				return new java.math.BigInteger(((IInteger) this).toByteArray());
+			}
+		} else if (clazz.equals(String.class)) {
+			return toString();
+		}
+		throw new UnsupportedOperationException("ExprImpl.asType() - cast not supported.");
+	}
 
 	/**
 	 * Compares this expression with the specified expression for order. Returns
@@ -256,8 +297,29 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
-	public int compareTo(IExpr obj);
-
+	default int compareTo(IExpr expr) {
+		if (expr.isAST()) {
+			if (!expr.isDirectedInfinity()) {
+				return -1 * expr.compareTo(this);
+			}
+		}
+		int x = hierarchy();
+		int y = expr.hierarchy();
+		return (x < y) ? -1 : ((x == y) ? 0 : 1);
+	}
+	
+	/**
+	 * Conjugate this (complex-) number.
+	 * 
+	 * @return the conjugate complex number
+	 */
+	default INumber conjugate() { 
+		if (isSignedNumber()) {
+			return ((INumber) this);
+		}
+		return null;
+	}
+	
 	/**
 	 * Returns an <code>IExpr</code> whose value is <code>(this - 1)</code>.
 	 * Calculates <code>F.eval(F.Subtract(this, C1))</code> in the common case
@@ -293,7 +355,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default IExpr[] egcd(IExpr b) {
 		throw new UnsupportedOperationException(toString());
 	}
-	
+
 	/**
 	 * Compare if <code>this == that</code:
 	 * <ul>
@@ -316,7 +378,12 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @return <code>null</code> if the conversion is not possible.
 	 */
-	public Complex evalComplex();
+	default Complex evalComplex() {
+		if (isNumber()) {
+			return ((INumber) this).complexNumValue().complexValue();
+		}
+		throw new WrongArgumentType(this, "Conversion into a complex numeric value is not possible!");
+	}
 
 	/**
 	 * Evaluate the expression to a Java <code>double</code> value. If the
@@ -325,21 +392,36 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @return this expression converted to a Java <code>double</code> value.
 	 */
-	public double evalDouble();
+	default double evalDouble() {
+		if (isSignedNumber()) {
+			return ((ISignedNumber) this).doubleValue();
+		}
+		throw new WrongArgumentType(this, "Conversion into a double numeric value is not possible!");
+	}
 
 	/**
 	 * Evaluate the expression to a <code>INumber</code> value.
 	 * 
 	 * @return <code>null</code> if the conversion is not possible.
 	 */
-	public INumber evalNumber();
+	default INumber evalNumber() {
+		if (isNumber()) {
+			return (INumber) this;
+		}
+		return null;
+	}
 
 	/**
 	 * Evaluate the expression to a <code>ISignedNumber</code> value.
 	 * 
 	 * @return <code>null</code> if the conversion is not possible.
 	 */
-	public ISignedNumber evalSignedNumber();
+	default ISignedNumber evalSignedNumber() {
+		if (isSignedNumber()) {
+			return (ISignedNumber) this;
+		}
+		return null;
+	}
 
 	/**
 	 * Evaluate an expression
@@ -362,13 +444,20 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return F.NIL;
 	}
 
+	@Override
+	default ElemFactory<IExpr> factory() {
+		return ExprRingFactory.CONST;
+	}
+
 	/**
 	 * Return the <code>FullForm()</code> of this expression
 	 * 
 	 * @return
 	 */
-	public String fullFormString();
-	
+	default String fullFormString() {
+		return toString();
+	}
+
 	@Override
 	default IExpr gcd(IExpr that) {
 		if (equals(that)) {
@@ -376,7 +465,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		}
 		return F.C1;
 	}
-	
+
 	/**
 	 * 
 	 * Get the element at the specified <code>index</code> if this object is of
@@ -385,7 +474,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param index
 	 * @return
 	 */
-	public IExpr getAt(final int index);
+	default IExpr getAt(final int index) {
+		return F.Part(this, F.integer(index));
+	}
 
 	@Override
 	default public Field<IExpr> getField() {
@@ -476,7 +567,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            &quot;recurse without a limit&quot;.
 	 * @return the internal Java form of this expression
 	 */
-	public String internalFormString(boolean symbolsAsFactoryMethod, int depth);
+	default String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
+		return toString();
+	}
 
 	/**
 	 * Return the internal Java form of this expression.
@@ -492,7 +585,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            Plus, Times, Power,...
 	 * @return the internal Java form of this expression
 	 */
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators);
+	default String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
+		return toString();
+	}
 
 	/**
 	 * Return the internal Scala form of this expression.
@@ -505,7 +600,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            &quot;recurse without a limit&quot;.
 	 * @return the internal Scala form of this expression
 	 */
-	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth);
+	default String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+		return toString();
+	}
 
 	/**
 	 * Returns the multiplicative inverse of this object. It is the object such
@@ -2076,7 +2173,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @return
 	 */
-	public long leafCount();
+	default long leafCount() {
+		return isAtom() ? 1L : 0L;
+	}
 
 	/**
 	 * Compare if <code>this <= that</code:
@@ -2206,7 +2305,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return this;
 	}
 
-	public IExpr or(final IExpr that);
+	default IExpr or(final IExpr that) {
+		return F.Or(this, that);
+	}
 
 	/**
 	 * Return <code>this</code> if <code>this</code> unequals <code>F.NIL</code>
@@ -2473,7 +2574,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default IExpr replaceSlots(final IAST slotsList) {
 		return accept(new VisitorReplaceSlots(slotsList));
 	}
- 
+
 	/**
 	 * Signum functionality is used in JAS toString() method, don't use it as
 	 * math signum function.
@@ -2491,7 +2592,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		}
 		return 1;
 	}
-	
+
 	@Override
 	default IExpr subtract(IExpr that) {
 		if (that.isZero()) {
