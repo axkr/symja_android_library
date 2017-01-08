@@ -1,6 +1,5 @@
 package org.matheclipse.core.expression;
 
-import org.hipparchus.complex.Complex;
 import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
@@ -12,6 +11,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;

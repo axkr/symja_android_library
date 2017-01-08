@@ -1,10 +1,10 @@
 package org.matheclipse.core.expression;
 
-import org.hipparchus.fraction.BigFraction;
 import java.math.BigInteger;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;

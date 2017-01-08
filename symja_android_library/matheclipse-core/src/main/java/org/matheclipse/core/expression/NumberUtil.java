@@ -1,12 +1,12 @@
 package org.matheclipse.core.expression;
 
-import org.hipparchus.fraction.BigFraction;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 
 import javax.annotation.Nullable;
 
+import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;

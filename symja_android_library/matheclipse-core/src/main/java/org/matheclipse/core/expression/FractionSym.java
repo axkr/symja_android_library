@@ -1,12 +1,11 @@
 package org.matheclipse.core.expression;
 
-import org.hipparchus.fraction.BigFraction;
-import org.hipparchus.fraction.Fraction;
-import org.hipparchus.util.ArithmeticUtils;
 import java.io.ObjectStreamException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import org.hipparchus.fraction.BigFraction;
+import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;

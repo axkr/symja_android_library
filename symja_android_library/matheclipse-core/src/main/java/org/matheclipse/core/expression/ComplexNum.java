@@ -1,8 +1,8 @@
 package org.matheclipse.core.expression;
 
-import org.hipparchus.complex.Complex;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IComplexNum;

@@ -1,6 +1,5 @@
 package org.matheclipse.core.expression;
 
-import org.hipparchus.complex.Complex;
 import java.math.BigInteger;
 
 import org.apfloat.Apcomplex;
@@ -8,6 +7,7 @@ import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IComplexNum;

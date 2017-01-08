@@ -2,8 +2,6 @@ package org.matheclipse.core.expression;
 
 import static org.matheclipse.core.expression.F.List;
 
-import org.hipparchus.fraction.BigFraction;
-import org.hipparchus.util.ArithmeticUtils;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -13,6 +11,8 @@ import java.math.RoundingMode;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.hipparchus.fraction.BigFraction;
+import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;

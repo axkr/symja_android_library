@@ -8,6 +8,7 @@ import java.io.ObjectStreamException;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.StringTokenizer;
+
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
