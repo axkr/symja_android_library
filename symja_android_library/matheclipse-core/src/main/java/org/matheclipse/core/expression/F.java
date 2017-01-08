@@ -550,7 +550,10 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arraydepth" : "ArrayDepth");
 	public final static ISymbol BernoulliB = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "bernoullib" : "BernoulliB");
+	public final static ISymbol BesselI = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "besseli" : "BesselI");
 	public final static ISymbol BesselJ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "besselj" : "BesselJ");
+	public final static ISymbol BesselK = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "besselk" : "BesselK");
+	public final static ISymbol BesselY = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "bessely" : "BesselY");
 	public final static ISymbol Binomial = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "binomial" : "Binomial");
 	public final static ISymbol Boole = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "boole" : "Boole");
@@ -2681,6 +2684,22 @@ public class F {
 	 */
 	public static ISymbol bool(final boolean value) {
 		return value ? True : False;
+	}
+
+	public static IAST BesselI(final IExpr a0, final IExpr a1) {
+		return binaryAST2(BesselI, a0, a1);
+	}
+
+	public static IAST BesselJ(final IExpr a0, final IExpr a1) {
+		return binaryAST2(BesselJ, a0, a1);
+	}
+
+	public static IAST BesselY(final IExpr a0, final IExpr a1) {
+		return binaryAST2(BesselY, a0, a1);
+	}
+
+	public static IAST BesselK(final IExpr a0, final IExpr a1) {
+		return binaryAST2(BesselK, a0, a1);
 	}
 
 	public static IAST Break() {

@@ -56,6 +56,11 @@ public class BesselJ extends AbstractFunctionEvaluator {
 			if (a.isPositive()) {
 				// Re(arg1) > 0
 				return F.C0;
+			} else if (a.isNegative()) {
+				// Re(arg1) < 0 && !a.isInteger()
+				return F.CComplexInfinity;
+			} else if (a.isZero() && !arg1.isZero()) {
+				return F.Indeterminate;
 			}
 
 		}
