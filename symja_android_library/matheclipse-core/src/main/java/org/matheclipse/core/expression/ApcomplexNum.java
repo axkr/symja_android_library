@@ -25,7 +25,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * <code>org.apache.commons.math3.complex.Apcomplex</code> value to represent a
  * numeric complex floating-point number.
  */
-public class ApcomplexNum extends ExprImpl implements IComplexNum {
+public class ApcomplexNum implements IComplexNum {
 
 	public static ApcomplexNum valueOf(final Apcomplex value) {
 		return new ApcomplexNum(value);
@@ -177,6 +177,16 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 		return valueOf(fApcomplex.conj());
 	}
 
+	@Override
+	public IExpr copy() {
+		try {
+			return (IExpr) clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
 	/**
 	 * @param that
 	 * @return
@@ -338,7 +348,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 			ComplexNum cn = (ComplexNum) that;
 			return add(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApcomplex.precision()));
 		}
-		return super.plus(that);
+		return IComplexNum.super.plus(that);
 	}
 
 	@Override
@@ -377,7 +387,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 			ComplexNum cn = (ComplexNum) that;
 			return multiply(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApcomplex.precision()));
 		}
-		return super.times(that);
+		return IComplexNum.super.times(that);
 	}
 
 	@Override
@@ -422,7 +432,7 @@ public class ApcomplexNum extends ExprImpl implements IComplexNum {
 		if (expr instanceof ApcomplexNum) {
 			return compareTo(((ApcomplexNum) expr).fApcomplex);
 		}
-		return super.compareTo(expr);
+		return IComplexNum.super.compareTo(expr);
 	}
 
 	@Override

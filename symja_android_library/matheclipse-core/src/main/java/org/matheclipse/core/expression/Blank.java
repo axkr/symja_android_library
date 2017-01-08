@@ -26,7 +26,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * &quot;<code>_</code>&quot;)
  * 
  */
-public class Blank extends ExprImpl implements IPattern {
+public class Blank implements IPattern {
 
 	/**
 	 * 
@@ -160,9 +160,19 @@ public class Blank extends ExprImpl implements IPattern {
 			}
 			return 0;
 		}
-		return super.compareTo(expr);
+		return IPattern.super.compareTo(expr);
 	}
 
+	@Override
+	public IExpr copy() {
+		try {
+			return (IExpr) clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj) {

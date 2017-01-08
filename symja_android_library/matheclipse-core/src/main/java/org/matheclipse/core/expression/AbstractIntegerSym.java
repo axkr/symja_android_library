@@ -32,7 +32,7 @@ import edu.jas.arith.PrimeInteger;
  * @see BigIntegerSym
  *
  */
-public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, Externalizable {
+public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	/**
 	 * The BigInteger constant minus one.
 	 * 
@@ -225,6 +225,16 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	}
 
 	@Override
+	public IExpr copy() {
+		try {
+			return (IExpr) clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	@Override
 	public IRational divideBy(IRational that) {
 		return AbstractFractionSym.valueOf(this).divideBy(that);
 	}
@@ -285,7 +295,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 			result[2] = valueOf(c2);
 			return result;
 		}
-		return super.egcd(that);
+		return IInteger.super.egcd(that);
 	}
 	
 	@Override
@@ -612,7 +622,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		if (that instanceof ComplexSym) {
 			return ((ComplexSym) that).add(ComplexSym.valueOf(this));
 		}
-		return super.plus(that);
+		return IInteger.super.plus(that);
 	}
 
 	/** {@inheritDoc} */
@@ -743,7 +753,7 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 		if (that instanceof ComplexSym) {
 			return ((ComplexSym) that).multiply(ComplexSym.valueOf(this));
 		}
-		return super.times(that);
+		return IInteger.super.times(that);
 	}
 
 	@Override

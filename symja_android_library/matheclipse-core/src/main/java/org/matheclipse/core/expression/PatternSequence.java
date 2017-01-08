@@ -23,7 +23,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * A concrete pattern sequence implementation (i.e. x__)
  * 
  */
-public class PatternSequence extends ExprImpl implements IPatternSequence {
+public class PatternSequence implements IPatternSequence {
 
 	/**
 	 * 
@@ -332,7 +332,17 @@ public class PatternSequence extends ExprImpl implements IPatternSequence {
 			}
 			return 0;
 		}
-		return super.compareTo(expr);
+		return IPatternSequence.super.compareTo(expr);
+	}
+
+	@Override
+	public IExpr copy() {
+		try {
+			return (IExpr) clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	@Override

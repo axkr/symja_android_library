@@ -18,7 +18,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * <code>INum</code> implementation which wraps a <code>double</code> value to
  * represent a numeric floating-point number.
  */
-public class Num extends ExprImpl implements INum {
+public class Num implements INum {
 	/**
 	 * 
 	 */
@@ -146,7 +146,7 @@ public class Num extends ExprImpl implements INum {
 		if (expr instanceof Num) {
 			return Double.compare(fDouble, ((Num) expr).fDouble);
 		}
-		return super.compareTo(expr);
+		return INum.super.compareTo(expr);
 	}
 
 	@Override
@@ -161,6 +161,16 @@ public class Num extends ExprImpl implements INum {
 		return sign();
 	}
 
+	@Override
+	public IExpr copy() {
+		try {
+			return (IExpr) clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
 	/**
 	 * @param that
 	 * @return
@@ -470,7 +480,7 @@ public class Num extends ExprImpl implements INum {
 		if (that instanceof ComplexNum) {
 			return ComplexNum.valueOf(fDouble).add((ComplexNum) that);
 		}
-		return super.plus(that);
+		return INum.super.plus(that);
 	}
 
 	/**
@@ -546,7 +556,7 @@ public class Num extends ExprImpl implements INum {
 		if (that instanceof ComplexNum) {
 			return ComplexNum.valueOf(fDouble).multiply((ComplexNum) that);
 		}
-		return super.times(that);
+		return INum.super.times(that);
 	}
 
 	/**

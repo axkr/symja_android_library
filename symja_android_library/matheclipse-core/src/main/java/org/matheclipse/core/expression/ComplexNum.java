@@ -21,7 +21,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * <code>org.apache.commons.math3.complex.Complex</code> value to represent a
  * numeric complex floating-point number.
  */
-public class ComplexNum implements IExpr, IComplexNum  {
+public class ComplexNum implements IComplexNum  {
 
 	/**
 	 * 

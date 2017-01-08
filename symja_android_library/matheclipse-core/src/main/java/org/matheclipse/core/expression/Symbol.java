@@ -46,7 +46,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * Implements Symbols for function, constant and variable names
  * 
  */
-public class Symbol extends ExprImpl implements ISymbol, Serializable {
+public class Symbol implements ISymbol, Serializable {
 
 	static class DummyEvaluator implements IEvaluator {
 		@Override
@@ -173,13 +173,23 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 			}
 			return fSymbolName.compareTo(((Symbol) expr).fSymbolName);
 		}
-		return super.compareTo(expr);
+		return ISymbol.super.compareTo(expr);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public boolean containsRules() {
 		return fRulesData != null;
+	}
+
+	@Override
+	public IExpr copy() {
+		try {
+			return (IExpr) clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	/** {@inheritDoc} */

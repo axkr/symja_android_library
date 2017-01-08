@@ -25,7 +25,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * A symbolic complex number implementation
  * 
  */
-public class ComplexSym extends ExprImpl implements IComplex {
+public class ComplexSym implements IComplex {
 
 	/**
 	 * 
@@ -166,7 +166,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 			}
 			return fImaginary.compareTo(((ComplexSym) expr).fImaginary);
 		}
-		return super.compareTo(expr);
+		return IComplex.super.compareTo(expr);
 	}
 
 	@Override
@@ -196,6 +196,16 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		return ComplexSym.valueOf(fReal, fImaginary.negate());
 	}
 
+	@Override
+	public IExpr copy() {
+		try {
+			return (IExpr) clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public IExpr eabs() {
@@ -469,7 +479,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		if (that instanceof IFraction) {
 			return this.add(valueOf((IFraction) that));
 		}
-		return super.plus(that);
+		return IComplex.super.plus(that);
 	}
 
 	@Override
@@ -514,7 +524,7 @@ public class ComplexSym extends ExprImpl implements IComplex {
 		if (that instanceof IFraction) {
 			return this.multiply(valueOf((IFraction) that));
 		}
-		return super.times(that);
+		return IComplex.super.times(that);
 	}
 
 	@Override

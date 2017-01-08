@@ -17,7 +17,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * 
  * @see org.matheclipse.core.interfaces.IStringX
  */
-public class StringX extends ExprImpl implements IStringX {
+public class StringX implements IStringX {
 	/**
 	 * 
 	 */
@@ -201,7 +201,7 @@ public class StringX extends ExprImpl implements IStringX {
 		if (expr instanceof StringX) {
 			return fString.compareTo(((StringX) expr).fString);
 		}
-		return super.compareTo(expr);
+		return IStringX.super.compareTo(expr);
 	}
 
 	/**
@@ -235,7 +235,17 @@ public class StringX extends ExprImpl implements IStringX {
 	public boolean contentEquals(final CharSequence cs) {
 		return fString.contentEquals(cs);
 	}
-
+	
+	@Override
+	public IExpr copy() {
+		try {
+			return (IExpr) clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
 	/**
 	 * @param suffix
 	 * @return

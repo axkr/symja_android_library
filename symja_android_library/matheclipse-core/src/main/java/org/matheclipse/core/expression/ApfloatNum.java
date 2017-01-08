@@ -24,7 +24,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * <code>INum</code> implementation which wraps a <code>Apfloat</code> value to
  * represent a numeric floating-point number.
  */
-public class ApfloatNum extends ExprImpl implements INum {
+public class ApfloatNum implements INum {
 
 	/**
 	 * 
@@ -178,7 +178,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 			return ApcomplexNum.valueOf(fApfloat, Apcomplex.ZERO)
 					.add(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApfloat.precision()));
 		}
-		return super.plus(that);
+		return INum.super.plus(that);
 	}
 
 	@Override
@@ -295,7 +295,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 			return ApcomplexNum.valueOf(fApfloat, Apcomplex.ZERO)
 					.multiply(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApfloat.precision()));
 		}
-		return super.times(that);
+		return INum.super.times(that);
 	}
 
 	/**
@@ -398,6 +398,16 @@ public class ApfloatNum extends ExprImpl implements INum {
 		return F.integer(ApfloatMath.ceil(fApfloat).toBigInteger());
 	}
 
+	@Override
+	public IExpr copy() {
+		try {
+			return (IExpr) clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public IInteger floorFraction() {
@@ -414,7 +424,7 @@ public class ApfloatNum extends ExprImpl implements INum {
 		if (expr instanceof ApfloatNum) {
 			return fApfloat.compareTo(((ApfloatNum) expr).fApfloat);
 		}
-		return super.compareTo(expr);
+		return INum.super.compareTo(expr);
 	}
 
 	@Override

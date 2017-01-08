@@ -31,7 +31,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * @see BigFractionSym
  *
  */
-public abstract class AbstractFractionSym extends ExprImpl implements IFraction {
+public abstract class AbstractFractionSym implements IFraction {
 
 	public final static FractionSym ZERO = new FractionSym(0, 1);
 
@@ -290,6 +290,16 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 		return sign();
 	}
 
+	@Override
+	public IExpr copy() {
+		try {
+			return (IExpr) clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public IRational divideBy(IRational that) {
@@ -508,7 +518,7 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 		if (that instanceof ComplexSym) {
 			return ((ComplexSym) that).add(ComplexSym.valueOf(this));
 		}
-		return super.plus(that);
+		return IFraction.super.plus(that);
 	}
 
 	/** {@inheritDoc} */
@@ -617,6 +627,6 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 		if (that instanceof ComplexSym) {
 			return ((ComplexSym) that).multiply(ComplexSym.valueOf(this));
 		}
-		return super.times(that);
+		return IFraction.super.times(that);
 	}
 }
