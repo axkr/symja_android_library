@@ -1323,10 +1323,22 @@ public class F {
 	public static IAST CInfinity;
 
 	/**
+	 * Alias for CInfinity. Represents <code>Infinity</code> (i.e.
+	 * <code>Infinity-&gt;DirectedInfinity(1)</code>)
+	 */
+	public static IAST oo;
+
+	/**
 	 * Represents <code>-Infinity</code> (i.e.
 	 * <code>-Infinity-&gt;DirectedInfinity(-1)</code>)
 	 */
 	public static IAST CNInfinity;
+
+	/**
+	 * Alias for CNInfinity. Represents <code>-Infinity</code> (i.e.
+	 * <code>-Infinity-&gt;DirectedInfinity(-1)</code>)
+	 */
+	public static IAST Noo;
 
 	/**
 	 * Represents <code>I*Infinity</code> (i.e.
@@ -1547,7 +1559,9 @@ public class F {
 			SlotSequence.setAttributes(ISymbol.NHOLDALL);
 
 			CInfinity = unaryAST1(DirectedInfinity, C1);
+			oo = CInfinity;
 			CNInfinity = unaryAST1(DirectedInfinity, CN1);
+			Noo = CNInfinity;
 			CIInfinity = unaryAST1(DirectedInfinity, CI);
 			CNIInfinity = unaryAST1(DirectedInfinity, CNI);
 			CComplexInfinity = headAST0(DirectedInfinity);

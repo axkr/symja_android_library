@@ -1073,10 +1073,10 @@ public abstract class AbstractAST implements IAST {
 			return arg1().internalFormString(symbolsAsFactoryMethod, depth);
 		}
 		if (isInfinity()) {
-			return "CInfinity";
+			return "oo";
 		}
 		if (isNegativeInfinity()) {
-			return "CNInfinity";
+			return "Noo";
 		}
 		if (isComplexInfinity()) {
 			return "CComplexInfinity";
