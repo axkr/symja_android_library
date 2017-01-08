@@ -560,6 +560,39 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	@Override
 	public abstract IInteger negate();
 
+	/**
+	 * Split this integer into the nth-root (with prime factors less equal 1021)
+	 * and the &quot;rest-factor&quot;, so that
+	 * <code>this== (nth-root ^ n) + rest</code>
+	 * 
+	 * @return <code>{nth-root, rest}</code>
+	 */
+	@Override
+	public IInteger[] nthRootSplit(int n) throws ArithmeticException {
+		IInteger[] result = new IInteger[2];
+		if (sign() == 0) {
+			result[0] = AbstractIntegerSym.valueOf(0);
+			result[1] = AbstractIntegerSym.valueOf(1);
+			return result;
+		} else if (sign() < 0) {
+			if (n % 2 == 0) {
+				// even exponent n
+				throw new ArithmeticException();
+			} else {
+				// odd exponent n
+				result = negate().nthRootSplit(n);
+				result[1] = result[1].negate();
+				return result;
+			}
+		}
+
+		AbstractIntegerSym b = this;
+		BigInteger[] nthRoot = Primality.countRoot1021(b.toBigNumerator(), n);
+		result[0] = AbstractIntegerSym.valueOf(nthRoot[0]);
+		result[1] = AbstractIntegerSym.valueOf(nthRoot[1]);
+		return result;
+	}
+
 	@Override
 	public IInteger opposite() {
 		return negate();
@@ -716,38 +749,5 @@ public abstract class AbstractIntegerSym extends ExprImpl implements IInteger, E
 	@Override
 	public byte[] toByteArray() {
 		return toBigNumerator().toByteArray();
-	}
-
-	/**
-	 * Split this integer into the nth-root (with prime factors less equal 1021)
-	 * and the &quot;rest-factor&quot;, so that
-	 * <code>this== (nth-root ^ n) + rest</code>
-	 * 
-	 * @return <code>{nth-root, rest}</code>
-	 */
-	@Override
-	public IInteger[] nthRootSplit(int n) throws ArithmeticException {
-		IInteger[] result = new IInteger[2];
-		if (sign() == 0) {
-			result[0] = AbstractIntegerSym.valueOf(0);
-			result[1] = AbstractIntegerSym.valueOf(1);
-			return result;
-		} else if (sign() < 0) {
-			if (n % 2 == 0) {
-				// even exponent n
-				throw new ArithmeticException();
-			} else {
-				// odd exponent n
-				result = negate().nthRootSplit(n);
-				result[1] = result[1].negate();
-				return result;
-			}
-		}
-
-		AbstractIntegerSym b = this;
-		BigInteger[] nthRoot = Primality.countRoot1021(b.toBigNumerator(), n);
-		result[0] = AbstractIntegerSym.valueOf(nthRoot[0]);
-		result[1] = AbstractIntegerSym.valueOf(nthRoot[1]);
-		return result;
 	}
 }

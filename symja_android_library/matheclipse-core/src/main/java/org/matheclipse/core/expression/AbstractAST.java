@@ -360,14 +360,6 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST appendAtClone(int position, IExpr expr) {
-		IAST ast = clone();
-		ast.append(position, expr);
-		return ast;
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public final void addEvalFlags(final int i) {
 		fEvalFlags |= i;
 	}
@@ -375,6 +367,14 @@ public abstract class AbstractAST implements IAST {
 	@Override
 	public IExpr and(final IExpr that) {
 		return F.And(this, that);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IAST appendAtClone(int position, IExpr expr) {
+		IAST ast = clone();
+		ast.append(position, expr);
+		return ast;
 	}
 
 	/** {@inheritDoc} */

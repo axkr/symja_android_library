@@ -2492,6 +2492,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return 1;
 	}
 	
+	@Override
 	default IExpr subtract(IExpr that) {
 		if (that.isZero()) {
 			return this;
@@ -2570,14 +2571,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return (ISymbol) head();
 	}
 
-	default String toScript() {
-		return toString();
-	}
-
-	default String toScriptFactory() {
-		throw new UnsupportedOperationException(toString());
-	}
-
 	/**
 	 * Convert this object into a RealMatrix.
 	 * 
@@ -2596,6 +2589,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default RealVector toRealVector() {
 		return null;
+	}
+
+	@Override
+	default String toScript() {
+		return toString();
+	}
+
+	@Override
+	default String toScriptFactory() {
+		throw new UnsupportedOperationException(toString());
 	}
 
 	/**

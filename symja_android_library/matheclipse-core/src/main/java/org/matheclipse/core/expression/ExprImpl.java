@@ -2,24 +2,13 @@ package org.matheclipse.core.expression;
 
 import org.hipparchus.complex.Complex;
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-
-import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
-import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.visit.VisitorReplaceAll;
-import org.matheclipse.core.visit.VisitorReplacePart;
-import org.matheclipse.core.visit.VisitorReplaceSlots;
-
 import edu.jas.structure.ElemFactory;
 
 /**
@@ -99,6 +88,13 @@ public abstract class ExprImpl implements IExpr, Serializable {
 		return (x < y) ? -1 : ((x == y) ? 0 : 1);
 	}
 
+	public INumber conjugate() {
+		if (isSignedNumber()) {
+			return ((INumber) this);
+		}
+		return null;
+	}
+
 	@Override
 	public IExpr copy() {
 		try {
@@ -109,11 +105,13 @@ public abstract class ExprImpl implements IExpr, Serializable {
 		}
 	}
 
-	public INumber conjugate() {
-		if (isSignedNumber()) {
-			return ((INumber) this);
+	/** {@inheritDoc} */
+	@Override
+	public Complex evalComplex() {
+		if (isNumber()) {
+			return ((INumber) this).complexNumValue().complexValue();
 		}
-		return null;
+		throw new WrongArgumentType(this, "Conversion into a complex numeric value is not possible!");
 	}
 
 	/** {@inheritDoc} */
@@ -123,15 +121,6 @@ public abstract class ExprImpl implements IExpr, Serializable {
 			return ((ISignedNumber) this).doubleValue();
 		}
 		throw new WrongArgumentType(this, "Conversion into a double numeric value is not possible!");
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public Complex evalComplex() {
-		if (isNumber()) {
-			return ((INumber) this).complexNumValue().complexValue();
-		}
-		throw new WrongArgumentType(this, "Conversion into a complex numeric value is not possible!");
 	}
 
 	/** {@inheritDoc} */
@@ -176,13 +165,13 @@ public abstract class ExprImpl implements IExpr, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		return toString();
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
+	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
 		return toString();
 	}
 

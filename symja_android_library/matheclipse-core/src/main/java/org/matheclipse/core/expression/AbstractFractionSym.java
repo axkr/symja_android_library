@@ -99,39 +99,6 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 		}
 	}
 
-	/**
-	 * Rationalize the given double value with
-	 * <code>Config.DOUBLE_EPSILON</code> maximum error allowed.
-	 * 
-	 * @param value
-	 * @return
-	 */
-	public static IFraction valueOfEpsilon(final double value) {
-		return valueOfEpsilon(value, Config.DOUBLE_EPSILON);
-	}
-
-	/**
-	 * Rationalize the given double value with <code>epsilon</code> maximum
-	 * error allowed.
-	 * 
-	 * @param value
-	 *            the double value to convert to a fraction.
-	 * @param epsilon
-	 *            maximum error allowed. The resulting fraction is within
-	 *            epsilon of value, in absolute terms.
-	 * @return
-	 */
-	public static IFraction valueOfEpsilon(final double value, final double epsilon) {
-		BigFraction fraction;
-		try {
-			fraction = new BigFraction(value, epsilon, 200);
-			return new BigFractionSym(fraction);
-		} catch (MathIllegalStateException e) {
-			fraction = new BigFraction(value);
-		}
-		return new BigFractionSym(fraction);
-	}
-
 	public static IFraction valueOf(IInteger numerator) {
 		if (numerator instanceof IntegerSym) {
 			return valueOf(((IntegerSym) numerator).fIntValue);
@@ -216,6 +183,39 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 			return new FractionSym((int) newnum, (int) newdenom);
 		}
 		return new BigFractionSym(BigInteger.valueOf(newnum), BigInteger.valueOf(newdenom));
+	}
+
+	/**
+	 * Rationalize the given double value with
+	 * <code>Config.DOUBLE_EPSILON</code> maximum error allowed.
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static IFraction valueOfEpsilon(final double value) {
+		return valueOfEpsilon(value, Config.DOUBLE_EPSILON);
+	}
+
+	/**
+	 * Rationalize the given double value with <code>epsilon</code> maximum
+	 * error allowed.
+	 * 
+	 * @param value
+	 *            the double value to convert to a fraction.
+	 * @param epsilon
+	 *            maximum error allowed. The resulting fraction is within
+	 *            epsilon of value, in absolute terms.
+	 * @return
+	 */
+	public static IFraction valueOfEpsilon(final double value, final double epsilon) {
+		BigFraction fraction;
+		try {
+			fraction = new BigFraction(value, epsilon, 200);
+			return new BigFractionSym(fraction);
+		} catch (MathIllegalStateException e) {
+			fraction = new BigFraction(value);
+		}
+		return new BigFractionSym(fraction);
 	}
 
 	/**
@@ -368,6 +368,11 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 		return F.C0;
 	}
 
+	@Override
+	public double getImaginary() {
+		return 0.0;
+	}
+
 	/**
 	 * Returns the numerator of this fraction.
 	 * 
@@ -381,6 +386,11 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 	@Override
 	public ISignedNumber getRe() {
 		return this;
+	}
+
+	@Override
+	public double getReal() {
+		return doubleValue();
 	}
 
 	@Override
@@ -608,15 +618,5 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 			return ((ComplexSym) that).multiply(ComplexSym.valueOf(this));
 		}
 		return super.times(that);
-	}
-
-	@Override
-	public double getImaginary() {
-		return 0.0;
-	}
-
-	@Override
-	public double getReal() {
-		return doubleValue();
 	}
 }
