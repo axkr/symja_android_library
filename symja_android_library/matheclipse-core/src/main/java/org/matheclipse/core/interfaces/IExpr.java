@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
@@ -33,6 +34,9 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
+import org.matheclipse.core.visit.VisitorReplaceAll;
+import org.matheclipse.core.visit.VisitorReplacePart;
+import org.matheclipse.core.visit.VisitorReplaceSlots;
 
 import edu.jas.structure.GcdRingElem;
 
@@ -136,7 +140,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param that
 	 * @return
 	 */
-	public IExpr $div(final IExpr that);
+	default IExpr $div(final IExpr that) {
+		return divide(that);
+	}
 
 	/**
 	 * Operator overloading for Scala operator <code>/</code>. Calls
@@ -145,7 +151,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param that
 	 * @return
 	 */
-	public IExpr $minus(final IExpr that);
+	default IExpr $minus(final IExpr that) {
+		return minus(that);
+	}
 
 	/**
 	 * Operator overloading for Scala operator <code>+</code>. Calls
@@ -154,7 +162,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param that
 	 * @return
 	 */
-	public IExpr $plus(final IExpr that);
+	default IExpr $plus(final IExpr that) {
+		return plus(that);
+	}
 
 	/**
 	 * Operator overloading for Scala operator <code>*</code>. Calls
@@ -163,7 +173,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param that
 	 * @return
 	 */
-	public IExpr $times(final IExpr that);
+	default IExpr $times(final IExpr that) {
+		return times(that);
+	}
 
 	/**
 	 * Operator overloading for Scala operator <code>^</code>. Calls
@@ -172,8 +184,17 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param that
 	 * @return
 	 */
-	public IExpr $up(final IExpr that);
+	default IExpr $up(final IExpr that) {
+		return power(that);
+	}
 
+	@Override
+	default IExpr abs() {
+		if (this instanceof INumber) {
+			return ((INumber) this).eabs();
+		}
+		throw new UnsupportedOperationException(toString());
+	} 
 	/**
 	 * Accept a visitor with return type T
 	 * 
@@ -207,7 +228,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public long accept(IVisitorLong visitor);
 
 	@Override
-	public IExpr add(final IExpr that);
+	default IExpr add(IExpr that) {
+		return plus(that);
+	}
 
 	public IExpr and(final IExpr that);
 
@@ -242,7 +265,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @return
 	 */
-	public IExpr dec();
+	default IExpr dec() {
+		return plus(F.CN1);
+	}
 
 	/**
 	 * Returns an <code>IExpr</code> whose value is <code>(this / that)</code>.
@@ -254,8 +279,21 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	@Override
-	public IExpr divide(final IExpr that);
+	default IExpr divide(IExpr that) {
+		if (that.isOne()) {
+			return this;
+		}
+		if (that.isMinusOne()) {
+			return negate();
+		}
+		return F.eval(F.Times(this, that.inverse()));
+	}
 
+	@Override
+	default IExpr[] egcd(IExpr b) {
+		throw new UnsupportedOperationException(toString());
+	}
+	
 	/**
 	 * Compare if <code>this == that</code:
 	 * <ul>
@@ -330,7 +368,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	public String fullFormString();
-
+	
+	@Override
+	default IExpr gcd(IExpr that) {
+		if (equals(that)) {
+			return that;
+		}
+		return F.C1;
+	}
+	
 	/**
 	 * 
 	 * Get the element at the specified <code>index</code> if this object is of
@@ -415,7 +461,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @return
 	 */
-	public IExpr inc();
+	default IExpr inc() {
+		return plus(F.C1);
+	}
 
 	/**
 	 * Return the internal Java form of this expression.
@@ -469,7 +517,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>ONE / this</code>.
 	 */
 	@Override
-	IExpr inverse();
+	default IExpr inverse() {
+		return power(F.CN1);
+	}
 
 	/**
 	 * Test if this expression is the function <code>Abs[&lt;arg&gt;]</code>
@@ -2083,9 +2133,13 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param that
 	 * @return
 	 */
-	public IExpr minus(final IExpr that);
+	default IExpr minus(final IExpr that) {
+		return subtract(that);
+	}
 
-	public IExpr mod(final IExpr that);
+	default IExpr mod(final IExpr that) {
+		return F.Mod(this, that);
+	}
 
 	/**
 	 * Additional multiply method which works like <code>times()</code> to
@@ -2096,11 +2150,19 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @see IExpr#times(IExpr)
 	 */
 	@Override
-	public IExpr multiply(final IExpr that);
+	default IExpr multiply(final IExpr that) {
+		return times(that);
+	}
 
 	@Override
 	default public IExpr multiply(int n) {
 		return times(F.integer(n));
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	default IExpr negate() {
+		return opposite();
 	}
 
 	/**
@@ -2110,7 +2172,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 * @see #opposite()
 	 */
-	public IExpr negative();
+	default IExpr negative() {
+		return opposite();
+	}
 
 	/**
 	 * Returns an <code>IExpr</code> whose value is <code>(-1) * this</code>.
@@ -2120,7 +2184,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 * @see #negative()
 	 */
-	public IExpr opposite();
+	default IExpr opposite() {
+		return times(F.CN1);
+	}
 
 	/**
 	 * The <code>ExprNull.NIL#optional()</code> method always returns
@@ -2133,7 +2199,12 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *         in all other cases.
 	 * @see NILPointer#optional(IExpr)
 	 */
-	public IExpr optional(final IExpr that);
+	default IExpr optional(final IExpr that) {
+		if (that != null) {
+			return that;
+		}
+		return this;
+	}
 
 	public IExpr or(final IExpr that);
 
@@ -2194,7 +2265,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param that
 	 * @return
 	 */
-	public IExpr plus(final IExpr that);
+	default IExpr plus(final IExpr that) {
+		return F.eval(F.Plus(this, that));
+	}
 
 	/**
 	 * Returns an <code>IExpr</code> whose value is <code>(this ^ that)</code>.
@@ -2204,7 +2277,19 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param that
 	 * @return <code>(this ^ that)</code>
 	 */
-	public IExpr power(final IExpr that);
+	default IExpr power(final IExpr that) {
+		if (that.isZero()) {
+			if (!this.isZero()) {
+				return F.C1;
+			}
+		} else if (that.isOne()) {
+			return this;
+		}
+		if (this.isNumber() && that.isNumber()) {
+			return F.eval(F.Power(this, that));
+		}
+		return F.Power(this, that);
+	}
 
 	/**
 	 * Returns an <code>IExpr</code> whose value is <code>(this ^ n)</code>.
@@ -2216,11 +2301,60 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>(this ^ n)</code>
 	 */
 	@Override
-	public IExpr power(final long n);
+	default IExpr power(final long n) {
+		if (n == 0L) {
+			if (!this.isZero()) {
+				return F.C1;
+			}
+			// don't return F.Indeterminate here! The evaluation of F.Power()
+			// returns Indeterminate
+			return F.Power(this, F.C0);
+		} else if (n == 1L) {
+			return this;
+		} else if (this.isNumber()) {
+			long exp = n;
+			if (n < 0) {
+				exp *= -1;
+			}
+			int b2pow = 0;
+
+			while ((exp & 1) == 0) {
+				b2pow++;
+				exp >>= 1;
+			}
+
+			INumber r = (INumber) this;
+			INumber x = r;
+
+			while ((exp >>= 1) > 0) {
+				x = (INumber) x.multiply(x);
+				if ((exp & 1) != 0) {
+					r = (INumber) r.multiply(x);
+				}
+			}
+
+			while (b2pow-- > 0) {
+				r = (INumber) r.multiply(r);
+			}
+			if (n < 0) {
+				return r.inverse();
+			}
+			return r;
+		}
+		return F.Power(this, F.integer(n));
+	}
 
 	@Override
 	default public IExpr reciprocal() throws MathRuntimeException {
 		return inverse();
+	}
+
+	@Override
+	default IExpr remainder(IExpr that) {
+		if (equals(that)) {
+			return F.C0;
+		}
+		return this;
 	}
 
 	/**
@@ -2234,7 +2368,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *         possible.
 	 */
 	@Nullable
-	public IExpr replaceAll(final Function<IExpr, IExpr> function);
+	default IExpr replaceAll(final Function<IExpr, IExpr> function) {
+		return accept(new VisitorReplaceAll(function));
+	}
 
 	/**
 	 * Replace all (sub-) expressions with the given rule set. If no
@@ -2248,7 +2384,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *         possible.
 	 */
 	@Nullable
-	public IExpr replaceAll(final IAST astRules);
+	default IExpr replaceAll(final IAST astRules) {
+		return accept(new VisitorReplaceAll(astRules));
+	}
 
 	/**
 	 * Replace all subexpressions with the given rule set. A rule must contain
@@ -2262,7 +2400,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>F.NIL</code> if no substitution of a subexpression was
 	 *         possible.
 	 */
-	public IExpr replacePart(final IAST astRules);
+	default IExpr replacePart(final IAST astRules) {
+		return this.accept(new VisitorReplacePart(astRules));
+	}
 
 	/**
 	 * Repeatedly replace all (sub-) expressions with the given unary function.
@@ -2274,7 +2414,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>this</code> if no substitution of a (sub-)expression was
 	 *         possible.
 	 */
-	public IExpr replaceRepeated(final Function<IExpr, IExpr> function);
+	default IExpr replaceRepeated(final Function<IExpr, IExpr> function) {
+		return replaceRepeated(new VisitorReplaceAll(function));
+	}
 
 	/**
 	 * Repeatedly replace all (sub-) expressions with the given rule set. If no
@@ -2287,7 +2429,31 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>this</code> if no substitution of a (sub-)expression was
 	 *         possible.
 	 */
-	public IExpr replaceRepeated(final IAST astRules);
+	default IExpr replaceRepeated(final IAST astRules) {
+		return replaceRepeated(new VisitorReplaceAll(astRules));
+	}
+
+	/**
+	 * Repeatedly replace all (sub-) expressions with the given visitor. If no
+	 * substitution matches, the method returns <code>this</code>.
+	 * 
+	 * @param visitor
+	 * @return
+	 */
+	default IExpr replaceRepeated(VisitorReplaceAll visitor) {
+		IExpr result = this;
+		IExpr temp = accept(visitor);
+		final int iterationLimit = EvalEngine.get().getIterationLimit();
+		int iterationCounter = 1;
+		while (temp.isPresent()) {
+			result = temp;
+			temp = result.accept(visitor);
+			if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+				IterationLimitExceeded.throwIt(iterationCounter, result);
+			}
+		}
+		return result;
+	}
 
 	/**
 	 * <p>
@@ -2304,8 +2470,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            the values for the slots.
 	 * @return <code>null</code> if no substitution occurred.
 	 */
-	public IExpr replaceSlots(final IAST slotsList);
-
+	default IExpr replaceSlots(final IAST slotsList) {
+		return accept(new VisitorReplaceSlots(slotsList));
+	}
+ 
 	/**
 	 * Signum functionality is used in JAS toString() method, don't use it as
 	 * math signum function.
@@ -2314,10 +2482,25 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	@Deprecated
 	@Override
-	public int signum();
-
-	@Override
-	public IExpr subtract(final IExpr that);
+	default int signum() {
+		if (isZero()) {
+			return 0;
+		}
+		if (isSignedNumber()) {
+			return ((ISignedNumber) this).sign();
+		}
+		return 1;
+	}
+	
+	default IExpr subtract(IExpr that) {
+		if (that.isZero()) {
+			return this;
+		}
+		if (that.isNumber()) {
+			return F.eval(F.Plus(this, that.negate()));
+		}
+		return F.eval(F.Plus(this, F.Times(F.CN1, that)));
+	}
 
 	@Override
 	default IExpr sum(final IExpr that) {
@@ -2333,7 +2516,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            the multiplier expression
 	 * @return <code>(this * that)</code>
 	 */
-	public IExpr times(final IExpr that);
+	default IExpr times(final IExpr that) {
+		if (that.isZero()) {
+			return F.C0;
+		}
+		if (that.isOne()) {
+			return this;
+		}
+		return F.eval(F.Times(this, that));
+	}
 
 	/**
 	 * Returns an <code>IExpr</code> whose value is <code>(this * that)</code>.
@@ -2375,7 +2566,17 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @return the 'highest level' head of the expression.
 	 */
-	public ISymbol topHead();
+	default ISymbol topHead() {
+		return (ISymbol) head();
+	}
+
+	default String toScript() {
+		return toString();
+	}
+
+	default String toScriptFactory() {
+		throw new UnsupportedOperationException(toString());
+	}
 
 	/**
 	 * Convert this object into a RealMatrix.
@@ -2438,6 +2639,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            process
 	 * @return <code>F.NIL</code> if no variable symbol was found.
 	 */
-	public IExpr variables2Slots(Map<IExpr, IExpr> map, Collection<IExpr> variableCollector);
-
+	default IExpr variables2Slots(final Map<IExpr, IExpr> map, final Collection<IExpr> variableCollector) {
+		return this;
+	}
 }

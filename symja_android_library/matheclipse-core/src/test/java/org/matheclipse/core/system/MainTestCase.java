@@ -176,6 +176,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("(z^a)^b", "(z^a)^b");
 		check("z^a^b", "z^a^b");
 		check("(2/3)^(-2)", "9/4");
+		check("(0.0+I*0.0)^10.0", "0.0");
 	}
 
 	public void testSystem000a() {

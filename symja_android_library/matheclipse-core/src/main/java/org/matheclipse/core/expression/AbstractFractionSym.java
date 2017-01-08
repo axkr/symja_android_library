@@ -511,6 +511,8 @@ public abstract class AbstractFractionSym extends ExprImpl implements IFraction 
 			throw new ArithmeticException("Indeterminate: 0^0");
 		} else if (n == 1L) {
 			return this;
+		} else if (n == -1L) {
+			return inverse();
 		}
 		long exp = n;
 		if (n < 0) {

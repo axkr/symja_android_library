@@ -726,11 +726,6 @@ public class Symbol extends ExprImpl implements ISymbol, Serializable {
 		return F.NIL;
 	}
 
-	@Override
-	public IExpr negate() {
-		return F.Times(F.CN1, this);
-	}
-
 	/** {@inheritDoc} */
 	@Override
 	public final void popLocalVariable() {

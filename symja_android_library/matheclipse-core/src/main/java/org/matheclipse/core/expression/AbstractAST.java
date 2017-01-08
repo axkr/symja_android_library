@@ -49,9 +49,6 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
-import org.matheclipse.core.visit.VisitorReplaceAll;
-import org.matheclipse.core.visit.VisitorReplacePart;
-import org.matheclipse.core.visit.VisitorReplaceSlots;
 
 import edu.jas.structure.ElemFactory;
 
@@ -337,36 +334,6 @@ public abstract class AbstractAST implements IAST {
 		hashValue = 0;
 	}
 
-	@Override
-	public final IExpr $div(final IExpr that) {
-		return divide(that);
-	}
-
-	@Override
-	public final IExpr $minus(final IExpr that) {
-		return minus(that);
-	}
-
-	@Override
-	public final IExpr $plus(final IExpr that) {
-		return plus(that);
-	}
-
-	@Override
-	public final IExpr $times(final IExpr that) {
-		return times(that);
-	}
-
-	@Override
-	public final IExpr $up(final IExpr that) {
-		return power(that);
-	}
-
-	@Override
-	public IExpr abs() {
-		throw new UnsupportedOperationException();
-	}
-
 	/** {@inheritDoc} */
 	@Override
 	public final <T> T accept(IVisitor<T> visitor) {
@@ -389,11 +356,6 @@ public abstract class AbstractAST implements IAST {
 	@Override
 	public long accept(IVisitorLong visitor) {
 		return visitor.visit(this);
-	}
-
-	@Override
-	public final IExpr add(IExpr that) {
-		return plus(that);
 	}
 
 	/** {@inheritDoc} */
@@ -596,33 +558,7 @@ public abstract class AbstractAST implements IAST {
 	@Override
 	public final IAST copyUntil(final int intialCapacity, int index) {
 		return AST.newInstance(index, this, index);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IExpr dec() {
-		return plus(F.CN1);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IExpr divide(IExpr that) {
-		if (that.isNumber()) {
-			return F.eval(F.Times(this, that.inverse()));
-		}
-		if (that.isOne()) {
-			return this;
-		}
-		if (that.isMinusOne()) {
-			return negate();
-		}
-		return F.eval(F.Times(this, F.Power(that, F.CN1)));
-	}
-
-	@Override
-	public final IExpr[] egcd(IExpr b) {
-		throw new UnsupportedOperationException();
-	}
+	} 
 
 	@Override
 	public boolean equals(final Object obj) {
@@ -1054,12 +990,6 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IExpr inc() {
-		return plus(F.C1);
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public final String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		return internalJavaString(symbolsAsFactoryMethod, depth, false);
 	}
@@ -1254,11 +1184,6 @@ public abstract class AbstractAST implements IAST {
 	@Override
 	public final String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
 		return internalJavaString(symbolsAsFactoryMethod, depth, true);
-	}
-
-	@Override
-	public IExpr inverse() {
-		return F.eval(F.Power(this, F.CN1));
 	}
 
 	/** {@inheritDoc} */
@@ -2473,25 +2398,20 @@ public abstract class AbstractAST implements IAST {
 		return map(Functors.replaceArg(replacement, position));
 	}
 
+	/**
+	 * Additional <code>negative</code> method, which works like opposite to
+	 * fulfill groovy's method signature
+	 * 
+	 * @return
+	 */
 	@Override
-	public final IExpr minus(final IExpr that) {
-		return subtract(that);
-	}
-
-	@Override
-	public final IExpr mod(final IExpr that) {
-		return F.Mod(this, that);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IExpr multiply(final IExpr that) {
-		return times(that);
+	public final IExpr negative() {
+		return opposite();
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr negate() {
+	public IExpr opposite() {
 		if (isTimes()) {
 			IExpr arg1 = arg1();
 			if (arg1.isNumber()) {
@@ -2514,31 +2434,6 @@ public abstract class AbstractAST implements IAST {
 			return F.CNInfinity;
 		}
 		return F.eval(F.Times(F.CN1, this));
-	}
-
-	/**
-	 * Additional <code>negative</code> method, which works like opposite to
-	 * fulfill groovy's method signature
-	 * 
-	 * @return
-	 */
-	@Override
-	public final IExpr negative() {
-		return opposite();
-	}
-
-	@Override
-	public final IExpr opposite() {
-		return negate();
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IExpr optional(final IExpr that) {
-		if (that != null) {
-			return that;
-		}
-		return this;
 	}
 
 	@Override
@@ -2587,30 +2482,6 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IExpr power(final IExpr that) {
-		if (that.isZero()) {
-			if (!this.isZero()) {
-				return F.C1;
-			}
-		} else if (that.isOne()) {
-			return this;
-		}
-		return F.Power(this, that);
-	}
-
-	@Override
-	public final IExpr power(final long n) {
-		if (n == 0L) {
-			return F.C1;
-		}
-		if (n == 1L) {
-			return this;
-		}
-		return F.Power(this, F.integer(n));
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public final IAST prependClone(IExpr expr) {
 		return appendAtClone(1, expr);
 	}
@@ -2645,61 +2516,12 @@ public abstract class AbstractAST implements IAST {
 		return new ASTRange(this, start, end);
 	}
 
-	@Override
-	public final IExpr remainder(IExpr that) {
-		if (equals(that)) {
-			return F.C0;
-		}
-		return this;
-	}
-
 	/** {@inheritDoc} */
 	@Override
 	public final IAST removeAtClone(int position) {
 		IAST ast = clone();
 		ast.remove(position);
 		return ast;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IExpr replaceAll(final Function<IExpr, IExpr> function) {
-		return this.accept(new VisitorReplaceAll(function));
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IExpr replaceAll(final IAST astRules) {
-		return this.accept(new VisitorReplaceAll(astRules));
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public final IExpr replacePart(final IAST astRules) {
-		return this.accept(new VisitorReplacePart(astRules));
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public final IExpr replaceRepeated(final Function<IExpr, IExpr> function) {
-		return ExprImpl.replaceRepeated(this, new VisitorReplaceAll(function));
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public final IExpr replaceRepeated(final IAST astRules) {
-		return ExprImpl.replaceRepeated(this, new VisitorReplaceAll(astRules));
-	}
-
-	@Override
-	public final IExpr replaceSlots(final IAST astSlots) {
-		return this.accept(new VisitorReplaceSlots(astSlots));
 	}
 
 	/** {@inheritDoc} */
@@ -2732,28 +2554,6 @@ public abstract class AbstractAST implements IAST {
 			}
 		}
 		return 1;
-	}
-
-	@Override
-	public final IExpr subtract(IExpr that) {
-		if (that.isZero()) {
-			return this;
-		}
-		if (that.isNumber()) {
-			return F.eval(F.Plus(this, that.negate()));
-		}
-		return F.eval(F.Plus(this, F.Times(F.CN1, that)));
-	}
-
-	@Override
-	public final IExpr times(final IExpr that) {
-		if (that.isZero()) {
-			return F.C0;
-		}
-		if (that.isOne()) {
-			return this;
-		}
-		return F.eval(F.Times(this, that));
 	}
 
 	@Override
@@ -2892,16 +2692,6 @@ public abstract class AbstractAST implements IAST {
 			return new ArrayRealVector(elements, false);
 		}
 		return null;
-	}
-
-	@Override
-	public final String toScript() {
-		return toString();
-	}
-
-	@Override
-	public final String toScriptFactory() {
-		throw new UnsupportedOperationException();
 	}
 
 	@Override
