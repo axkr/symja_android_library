@@ -592,7 +592,9 @@ public class Solve extends AbstractFunctionEvaluator {
 	 *            <code>0</code> gives all results.
 	 * @param matrix
 	 * @param vector
+	 * @param engine
 	 * @return
+	 * throws NoSolution
 	 */
 	protected static IAST analyzeSublist(ArrayList<ExprAnalyzer> analyzerList, IAST variables, IAST resultList,
 			int maximumNumberOfResults, IAST matrix, IAST vector, EvalEngine engine) throws NoSolution {
