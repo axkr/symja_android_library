@@ -434,10 +434,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 		}
 
 		if (arg2.isZero()) {
-			if (arg1.isInfinity() || arg1.isNegativeInfinity()) {
-				return F.Indeterminate;
-			}
-			return F.C1;
+			return (arg1.isInfinity() || arg1.isNegativeInfinity()) ? F.Indeterminate : F.C1;
 		}
 
 		if (arg2.isOne()) {
@@ -446,6 +443,10 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 
 		if (arg1.isOne()) {
 			return F.C1;
+		}
+
+		if (arg1.isMinusOne() && arg2.isInteger()) {
+			return (((IInteger) arg2).isEven()) ? F.C1 : F.CN1;
 		}
 
 		if (arg2.isSignedNumber()) {
