@@ -1060,6 +1060,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("x*x^a", "x^(1+a)");
 		check("x/x^(1-x)", "x^x");
+		check("Derivative(0,1)[BesselJ][a, x]", "1/2*(-BesselJ(1+a,x)+BesselJ(-1+a,x))");
 		check("Derivative(1,0)[Power][x, 4]", "4*x^3");
 		check("Derivative(1,0)[Power][x, y]", "y/x^(1-y)");
 		check("Derivative(1,1)[Power][x, 4]", "x^3+4*x^3*Log(x)");
