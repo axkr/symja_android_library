@@ -107,6 +107,10 @@ public class Conjugate extends AbstractTrigArg1 implements INumeric {
 			}
 		} else if (arg1.isConjugate()) {
 			return arg1.getAt(1);
+		} else if (arg1.isAST(F.Zeta, 2)) {
+			return F.Zeta(F.Conjugate(arg1.getAt(1)));
+		} else if (arg1.isAST(F.Zeta, 3) && arg1.getAt(1).isSignedNumber() && arg1.getAt(2).isSignedNumber()) {
+			return F.Zeta(F.Conjugate(arg1.getAt(1)), F.Conjugate(arg1.getAt(2)));
 		}
 		return F.NIL;
 	}

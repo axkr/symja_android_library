@@ -5460,6 +5460,10 @@ public class F {
 		return binaryAST2(While, a0, a1);
 	}
 
+	public static IAST Zeta(final IExpr a0) {
+		return unaryAST1(Zeta, a0);
+	}
+
 	public static IAST Zeta(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Zeta, a0, a1);
 	}

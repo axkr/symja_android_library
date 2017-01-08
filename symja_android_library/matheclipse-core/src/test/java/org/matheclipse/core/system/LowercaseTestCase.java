@@ -848,6 +848,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Conjugate(-Infinity)", "-Infinity");
 		check("Conjugate(ComplexInfinity)", "ComplexInfinity");
 		check("Conjugate(Transpose({{1,2+I,3},{4,5-I,6},{7,8,9}}))", "{{1,4,7},{2-I,5+I,8},{3,6,9}}");
+		check("Conjugate(Zeta(x))", "Zeta(Conjugate(x))");
+		check("Conjugate(Zeta(11,7))", "Zeta(11,7)");
 	}
 
 	public void testConjugateTranspose() {
@@ -4771,6 +4773,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testZeta() {
+		check("Zeta(s, 0)", "Zeta(s)");
+		check("Zeta(s, 1/2)", "(-1+s^2)*Zeta(s)");
+		check("Zeta(s, -1)", "1+Zeta(s)");
+		check("Zeta(s, 2)", "-1+Zeta(s)");
+		check("Zeta(4, -12)", "638942263173398977/590436101122560000+Pi^4/90");
+		check("Zeta(11, -12)", "Zeta(11,-12)");
+		check("Zeta(-5, -12)", "158938415/252");
+		check("Zeta(6)", "Pi^6/945");
+		check("Zeta(-11)", "691/32760");
+		check("Zeta(-42)", "0");
 		check("Zeta(2)", "Pi^2/6");
+		check("Zeta(Infinity)", "1");
 	}
 }
