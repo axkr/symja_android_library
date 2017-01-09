@@ -866,7 +866,7 @@ public class Parser extends Scanner {
 				return rhs;
 			}
 			if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN) || (fToken == TT_IDENTIFIER)
-					|| (fToken == TT_STRING) || (fToken == TT_DIGIT)) {
+					|| (fToken == TT_STRING) || (fToken == TT_DIGIT) || (fToken == TT_SLOT)) {
 				// lazy evaluation of multiplication
 				InfixOperator timesOperator = (InfixOperator) fFactory.get("Times");
 				if (timesOperator.getPrecedence() > min_precedence) {

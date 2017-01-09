@@ -106,6 +106,7 @@ public class ExprParser extends ExprScanner {
 		}
 		return false;
 	}
+
 	private final boolean fRelaxedSyntax;
 
 	private List<IExpr> fNodeList = null;
@@ -1060,7 +1061,7 @@ public class ExprParser extends ExprScanner {
 				return rhs;
 			}
 			if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN) || (fToken == TT_IDENTIFIER)
-					|| (fToken == TT_STRING) || (fToken == TT_DIGIT)) {
+					|| (fToken == TT_STRING) || (fToken == TT_DIGIT) || (fToken == TT_SLOT)) {
 				// if (fPackageMode && fRecursionDepth < 1) {
 				// return rhs;
 				// }

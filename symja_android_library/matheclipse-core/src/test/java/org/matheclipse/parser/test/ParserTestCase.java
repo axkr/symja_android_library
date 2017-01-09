@@ -221,4 +221,15 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
+	
+	public void testParserFunction() {
+		try {
+			Parser p = new Parser(true);
+			ASTNode obj = p.parse("#^2-3#-1&");
+			assertEquals(obj.toString(), "Function(Plus(Plus(Power(Slot(1), 2), Times(-1, Times(3, Slot(1)))), Times(-1, 1)))");
+		} catch (RuntimeException e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
 }
