@@ -104,11 +104,11 @@ public class AST2Expr {
 			"Quotient", "RandomInteger", "RandomReal", "RandomSample", "Range", "Rational", "Rationalize", "Re", "Reap",
 			"Reduce", "Refine", "Repeated", "RepeatedNull", "Replace", "ReplaceAll", "ReplaceList", "ReplacePart",
 			"ReplaceRepeated", "Rest", "Resultant", "Return", "Reverse", "Riffle", "RogersTanimotoDissimilarity",
-			"RootIntervals", "RootOf", "Roots", "RussellRaoDissimilarity", "Surd", "RotateLeft", "RotateRight", "Round",
-			"RowReduce", "Rule", "RuleDelayed", "SameQ", "SatisfiableQ", "Scan", "Sec", "Sech", "Select", "Sequence",
-			"Series", "SeriesData", "Set", "SetAttributes", "SetDelayed", "Share", "Show", "Sign", "SignCmp",
-			"Simplify", "Sin", "Sinc", "SingularValueDecomposition", "Sinh", "SinIntegral", "SinhIntegral", "Skewness",
-			"SokalSneathDissimilarity", "Solve", "Sort", "Sow", "Span", "Sqrt", "SquaredEuclidianDistance",
+			"RootIntervals", "Root", "RootOf", "Roots", "RussellRaoDissimilarity", "Surd", "RotateLeft", "RotateRight",
+			"Round", "RowReduce", "Rule", "RuleDelayed", "SameQ", "SatisfiableQ", "Scan", "Sec", "Sech", "Select",
+			"Sequence", "Series", "SeriesData", "Set", "SetAttributes", "SetDelayed", "Share", "Show", "Sign",
+			"SignCmp", "Simplify", "Sin", "Sinc", "SingularValueDecomposition", "Sinh", "SinIntegral", "SinhIntegral",
+			"Skewness", "SokalSneathDissimilarity", "Solve", "Sort", "Sow", "Span", "Sqrt", "SquaredEuclidianDistance",
 			"SquareFreeQ", "StirlingS2", "StringDrop", "StringJoin", "StringLength", "StringTake", "Subfactorial",
 			"Subscript", "Subsuperscript", "Subsets", "SubtractFrom", "Sum", "Superscript", "SurfaceGraphics", "Switch",
 			"SyntaxLength", "SyntaxQ", "Table", "Take", "Tally", "Tan", "Tanh", "TautologyQ", "Taylor", "TeXForm",
@@ -124,9 +124,9 @@ public class AST2Expr {
 	public static final Map<String, String> PREDEFINED_SYMBOLS_MAP = new HashMap<String, String>(997);
 
 	private final static String[] ALIASES_STRINGS = { "ACos", "ASin", "ATan", "ACosh", "ASinh", "ATanh", "Diff",
-			"EvalF", "Int", "Ln", "Trunc", "NthRoot", "Root" };
+			"EvalF", "Int", "Ln", "Trunc", "NthRoot" };
 	private final static String[] ALIASES_SUBSTITUTES = { "ArcCos", "ArcSin", "ArcTan", "ArcCosh", "ArcSinh", "ArcTanh",
-			"D", "N", "Integrate", "Log", "IntegerPart", "Surd", "Surd" };
+			"D", "N", "Integrate", "Log", "IntegerPart", "Surd" };
 
 	/**
 	 * Aliases which are mapped to the standard function symbols.
