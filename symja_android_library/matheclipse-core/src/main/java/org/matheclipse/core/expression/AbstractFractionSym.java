@@ -122,8 +122,6 @@ public abstract class AbstractFractionSym implements IFraction {
 	 * 
 	 * @param newnum
 	 *            Numerator.
-	 * @param newdenom
-	 *            Denominator.
 	 * @return
 	 */
 	public static IFraction valueOf(long newnum) {
