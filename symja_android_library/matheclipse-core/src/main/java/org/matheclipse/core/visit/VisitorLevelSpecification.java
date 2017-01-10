@@ -348,7 +348,8 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 					minDepth = fCurrentDepth;
 				}
 			}
-			for (int i = 1; i < ast.size(); i++) {
+			int size = ast.size();
+			for (int i = 1; i < size; i++) {
 				temp = ast.get(i).accept(this);
 				if (temp.isPresent()) {
 					if (!result.isPresent()) {

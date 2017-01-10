@@ -59,7 +59,7 @@ public class VisitorPredicate implements IVisitorBoolean {
 	public boolean visit(IPatternSequence element) {
 		return fMatcher.test(element);
 	}
-	
+
 	public boolean visit(IStringX element) {
 		return fMatcher.test(element);
 	}
@@ -67,13 +67,16 @@ public class VisitorPredicate implements IVisitorBoolean {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.matheclipse.core.expression.IVisitorBoolean#visit(org.matheclipse.core.expression.AST)
+	 * @see
+	 * org.matheclipse.core.expression.IVisitorBoolean#visit(org.matheclipse.
+	 * core.expression.AST)
 	 */
 	public boolean visit(IAST list) {
 		if (fMatcher.test(list)) {
 			return true;
 		}
-		for (int i = fHeadOffset; i < list.size(); i++) {
+		int size = list.size();
+		for (int i = fHeadOffset; i < size; i++) {
 			if (list.get(i).accept(this)) {
 				return true;
 			}

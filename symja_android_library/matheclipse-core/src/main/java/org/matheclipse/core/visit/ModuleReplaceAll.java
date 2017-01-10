@@ -45,18 +45,20 @@ public class ModuleReplaceAll extends VisitorExpr {
 		if (ast.isASTSizeGE(F.Block, 2) && ast.arg1().isList()) {
 
 			IAST localVariablesList = (IAST) ast.arg1();
-			for (int i = 1; i < localVariablesList.size(); i++) {
-				if (localVariablesList.get(i).isSymbol()) {
-					if (fModuleVariables.get((ISymbol) localVariablesList.get(i)) != null) {
+			int size = localVariablesList.size();
+			for (int i = 1; i < size; i++) {
+				IExpr temp=localVariablesList.get(i);
+				if (temp.isSymbol()) {
+					if (fModuleVariables.get((ISymbol) temp) != null) {
 						if (variables == null) {
 							variables = (IdentityHashMap<ISymbol, ISymbol>) fModuleVariables.clone();
 						}
-						variables.remove((ISymbol) localVariablesList.get(i));
+						variables.remove((ISymbol) temp);
 					}
 				} else {
-					if (localVariablesList.get(i).isAST(F.Set, 3)) {
+					if (temp.isAST(F.Set, 3)) {
 						// lhs = rhs
-						final IAST setFun = (IAST) localVariablesList.get(i);
+						final IAST setFun = (IAST) temp;
 						if (setFun.arg1().isSymbol()) {
 							if (fModuleVariables.get((ISymbol) setFun.arg1()) != null) {
 								if (variables == null) {

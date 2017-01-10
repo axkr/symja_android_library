@@ -23,7 +23,8 @@ public class VisitorCollectionBoolean<T extends IExpr> extends AbstractVisitorBo
 	}
 
 	public boolean visit(IAST list) {
-		for (int i = fHeadOffset; i < list.size(); i++) {
+		int size=list.size();
+		for (int i = fHeadOffset; i < size; i++) {
 			list.get(i).accept(this);
 		}
 		return false;

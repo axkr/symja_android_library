@@ -63,7 +63,8 @@ public class VisitorReplaceSlots extends VisitorExpr {
 		IAST result = F.NIL;
 		int i = 0;
 		int j = 0;
-		while (i < ast.size()) {
+		int size = ast.size();
+		while (i < size) {
 			if (ast.get(i).isSlotSequence()) {
 				IAST slotSequence = (IAST) ast.get(i);
 				// something may be evaluated - return a new IAST:
@@ -84,7 +85,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
 			i++;
 		}
 		if (result.isPresent()) {
-			while (i < ast.size()) {
+			while (i < size) {
 				if (ast.get(i).isSlotSequence()) {
 					IAST slotSequence = (IAST) ast.get(i);
 					j = getSlotSequence(result, j, (IInteger) slotSequence.arg1());

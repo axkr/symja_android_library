@@ -156,7 +156,8 @@ public class VisitorExpr extends AbstractVisitor {
 		IExpr temp;
 		IAST result = F.NIL;
 		int i = 1;
-		while (i < ast.size()) {
+		int size = ast.size();
+		while (i < size) {
 			temp = ast.get(i).accept(this);
 			if (temp.isPresent()) {
 				// something was evaluated - return a new IAST:
@@ -170,7 +171,7 @@ public class VisitorExpr extends AbstractVisitor {
 			i++;
 		}
 		if (result.isPresent()) {
-			while (i < ast.size()) {
+			while (i < size) {
 				temp = ast.get(i).accept(this);
 				if (temp.isPresent()) {
 					result.set(i, temp);

@@ -127,7 +127,8 @@ public class VisitorReplaceAll extends VisitorExpr {
 		IExpr temp;
 		IAST result = F.NIL;
 		int i = fOffset;
-		while (i < ast.size()) {
+		int size = ast.size();
+		while (i < size) {
 			temp = ast.get(i).accept(this);
 			if (temp.isPresent()) {
 				// something was evaluated - return a new IAST:
@@ -138,7 +139,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 			i++;
 		}
 		if (result.isPresent()) {
-			while (i < ast.size()) {
+			while (i < size) {
 				temp = ast.get(i).accept(this);
 				if (temp.isPresent()) {
 					result.set(i, temp);
