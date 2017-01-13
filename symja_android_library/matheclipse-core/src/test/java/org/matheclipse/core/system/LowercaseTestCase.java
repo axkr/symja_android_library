@@ -306,7 +306,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("AllTrue({12, 16, x, 14, y}, TrueQ(# < 10) &)", "False");
 		check("AllTrue(f(1, 7, 3), OddQ)", "True");
 	}
-	
+
 	public void testAnd() {
 		check("And()", "True");
 		check("And(4)", "4");
@@ -327,7 +327,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("AnyTrue({12, 16, x, 14, y}, TrueQ(# < 10) &)", "False");
 		check("AnyTrue(f(2, 7, 6), OddQ)", "True");
 	}
-	
+
 	public void testApart() {
 		check("Apart(1/((1 + x)*(5 + x)))", "1/(4+4*x)+1/(-20-4*x)");
 		check("Apart(1 < (x + 1)/(x - 1) < 2)", "1<1+2/(-1+x)<2");
@@ -2955,7 +2955,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("NoneTrue({12, 16, x, 14, y}, TrueQ(# < 10) &)", "True");
 		check("NoneTrue(f(1, 7, 3), OddQ)", "False");
 	}
-	
+
 	public void testNor() {
 		check("Nor( )", "True");
 		check("Nor(2+2)", "!4");
@@ -3412,6 +3412,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Select(Range(43), MultiplicativeOrder(#, 43) == EulerPhi(43) &)", "{3,5,12,18,19,20,26,28,29,30,33,34}");
 	}
 
+	public void testPolyLog() { 
+		check("PolyLog(2,0)", "0");
+		check("PolyLog(2,-1)", "-Pi^2/12");
+		check("PolyLog(2,1)", "Pi^2/6");
+		check("PolyLog(2,1/2)", "Pi^2/12-Log(2)^2/2");
+		check("PolyLog(2,2)", "Pi^2/4-I*Pi*Log(2)");
+		check("PolyLog(2,I)", "I*Catalan-Pi^2/48");
+		check("PolyLog(2,-I)", "-I*Catalan-Pi^2/48");
+		check("PolyLog(2,1-I)", "-I*Catalan+Pi^2/16-I*1/4*Pi*Log(2)");
+		check("PolyLog(2,1+I)", "I*Catalan+Pi^2/16+I*1/4*Pi*Log(2)");
+	}
+	
 	public void testPowerMod() {
 		// check("PowerMod(6, 1/2, 10)", "1");
 
@@ -3779,6 +3791,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("RogersTanimotoDissimilarity({True, False, True}, {True, True, False})", "4/5");
 		check("RogersTanimotoDissimilarity({1, 1, 1, 1}, {1, 1, 1, 1})", "0");
 		check("RogersTanimotoDissimilarity({0, 0, 0, 0}, {1, 1, 1, 1})", "1");
+	}
+
+	public void testRoot() {
+		// check("Root((#^2-3#-1)&, 1)", "");
 	}
 
 	public void testRoots() {
@@ -4161,11 +4177,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "-1)^(11/12)},{x->-(-1)^(11/12)}}");
 	}
 
-	public void testSolve() { 
+	public void testSolve() {
 		// check("Solve(Abs((-3+x^2)/x) ==2,{x})",
 		// "{{x->-3},{x->-1},{x->1},{x->3}}");
 		check("Solve(x^3==-2,x)", "{{x->-2^(1/3)},{x->(-1)^(1/3)*2^(1/3)},{x->-(-1)^(2/3)*2^(1/3)}}");
-		
+
 		check("Solve(1 - (i*1)/10 == 0, i, Integers)", "{{i->10}}");
 		check("Solve({x^2 + 2 y^3 == 3681, x > 0, y > 0}, {x, y}, Integers)",
 				"{{x->15,y->12},{x->41,y->10},{x->57,y->6}}");
