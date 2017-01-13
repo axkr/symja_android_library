@@ -80,8 +80,16 @@ public class ComplexSym implements IComplex {
 	public static ComplexSym valueOf(final long real_numerator, final long real_denominator, final long imag_numerator,
 			final long imag_denominator) {
 		final ComplexSym c = new ComplexSym();
-		c.fReal = AbstractFractionSym.valueOf(real_numerator, real_denominator);
-		c.fImaginary = AbstractFractionSym.valueOf(imag_numerator, imag_denominator);
+		if (real_denominator == 1L) {
+			c.fReal = AbstractIntegerSym.valueOf(real_numerator);
+		} else {
+			c.fReal = AbstractFractionSym.valueOf(real_numerator, real_denominator);
+		}
+		if (imag_denominator == 1L) {
+			c.fImaginary = AbstractIntegerSym.valueOf(imag_numerator);
+		} else {
+			c.fImaginary = AbstractFractionSym.valueOf(imag_numerator, imag_denominator);
+		}
 		return c;
 	}
 
@@ -205,7 +213,7 @@ public class ComplexSym implements IComplex {
 			return null;
 		}
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public IExpr eabs() {
