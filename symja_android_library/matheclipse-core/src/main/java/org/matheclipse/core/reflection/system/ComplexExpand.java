@@ -39,11 +39,15 @@ import org.matheclipse.core.visit.VisitorExpr;
 public class ComplexExpand extends AbstractEvaluator {
 
 	public ComplexExpand() {
+
 	}
 
 	static class ComplexExpandVisitor extends VisitorExpr {
-		public ComplexExpandVisitor() {
+		final EvalEngine fEngine;
+
+		public ComplexExpandVisitor(EvalEngine engine) {
 			super();
+			fEngine = engine;
 		}
 
 		@Override
@@ -65,13 +69,13 @@ public class ComplexExpand extends AbstractEvaluator {
 				reX = x;
 				imX = F.C0;
 			} else {
-				reX = F.eval(Re(x));
+				reX = fEngine.evaluate(Re(x));
 				imX = F.eval(Im(x));
-				IExpr temp = complexExpandNull(reX);
+				IExpr temp = complexExpandNull(reX, fEngine);
 				if (temp.isPresent()) {
 					reX = temp;
 				}
-				temp = complexExpandNull(imX);
+				temp = complexExpandNull(imX, fEngine);
 				if (temp.isPresent()) {
 					imX = temp;
 				}
@@ -79,7 +83,7 @@ public class ComplexExpand extends AbstractEvaluator {
 
 			if (head.equals(Abs)) {
 				// Sqrt[reX^2 + imX^2]
-				return complexExpand(Sqrt(Plus(Power(reX, C2), Power(imX, C2))));
+				return complexExpand(Sqrt(Plus(Power(reX, C2), Power(imX, C2))), fEngine);
 			}
 			if (head.equals(Cos)) {
 				// Cosh[Im[x]]*Cos[Re[x]]+I*Sinh[Im[x]]*Sin[Re[x]]
@@ -136,15 +140,15 @@ public class ComplexExpand extends AbstractEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 1, 2);
 
-		return complexExpand(ast.arg1());
+		return complexExpand(ast.arg1(), engine);
 	}
 
-	private static IExpr complexExpand(IExpr arg1) {
-		return complexExpandNull(arg1).orElse(arg1);
+	private static IExpr complexExpand(IExpr arg1, EvalEngine engine) {
+		return complexExpandNull(arg1, engine).orElse(arg1);
 	}
 
-	private static IExpr complexExpandNull(IExpr arg1) {
-		ComplexExpandVisitor tteVisitor = new ComplexExpandVisitor();
+	private static IExpr complexExpandNull(IExpr arg1, EvalEngine engine) {
+		ComplexExpandVisitor tteVisitor = new ComplexExpandVisitor(engine);
 		return arg1.accept(tteVisitor);
 	}
 
