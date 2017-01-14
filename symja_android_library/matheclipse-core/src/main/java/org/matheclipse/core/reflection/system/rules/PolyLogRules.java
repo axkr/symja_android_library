@@ -13,13 +13,10 @@ public interface PolyLogRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 9, 0 };
+  final public static int[] SIZES = { 8, 0 };
 
   final public static IAST RULES = List(
     IInit(PolyLog, SIZES),
-    // PolyLog[2,0]=0
-    ISet(PolyLog(C2,C0),
-      C0),
     // PolyLog[2,-1]=-Pi^2/12
     ISet(PolyLog(C2,CN1),
       Times(QQ(-1L,12L),Sqr(Pi))),

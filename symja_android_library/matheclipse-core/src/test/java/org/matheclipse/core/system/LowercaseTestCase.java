@@ -3422,6 +3422,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PolyLog(2,-I)", "-I*Catalan-Pi^2/48");
 		check("PolyLog(2,1-I)", "-I*Catalan+Pi^2/16-I*1/4*Pi*Log(2)");
 		check("PolyLog(2,1+I)", "I*Catalan+Pi^2/16+I*1/4*Pi*Log(2)");
+		check("PolyLog(3,1)", "Zeta(3)");
+		check("PolyLog(f(x),-1)", "(-1+2^(1-f(x)))*Zeta(f(x))");
+		check("PolyLog(0,f(x))", "f(x)/(1-f(x))");
+		check("PolyLog(1,f(x))", "-Log(1-f(x))");
+		check("PolyLog(-1,f(x))", "f(x)/(1-f(x))^2");
+		check("PolyLog(-2,f(x))", "(-(1+f(x))*f(x))/(-1+f(x))^3");
+		check("PolyLog(-3,f(x))", "((1+f(x)^2+4*f(x))*f(x))/(1-f(x))^4"); 
 	}
 	
 	public void testPowerMod() {

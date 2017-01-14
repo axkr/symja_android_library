@@ -29,16 +29,9 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class Re extends AbstractEvaluator {
 
-	public Re() {
-	}
-
-	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 2);
-
-		IExpr arg1 = ast.arg1();
-		if (arg1.isDirectedInfinity()) {
-			IAST directedInfininty = (IAST) arg1;
+	public static IExpr evalRe(IExpr expr, EvalEngine engine) {
+		if (expr.isDirectedInfinity()) {
+			IAST directedInfininty = (IAST) expr;
 			if (directedInfininty.isComplexInfinity()) {
 				return F.Indeterminate;
 			}
@@ -55,30 +48,30 @@ public class Re extends AbstractEvaluator {
 				}
 			}
 		}
-		if (arg1.isNumber()) {
-			return ((INumber) arg1).getRe();
+		if (expr.isNumber()) {
+			return ((INumber) expr).getRe();
 		}
 
-		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(expr);
 		if (negExpr.isPresent()) {
 			return Negate(Re(negExpr));
 		}
-		if (arg1.isTimes()) {
-			if (arg1.getAt(1).isSignedNumber()) {
-				IAST temp = ((IAST) arg1).removeAtClone(1);
-				return F.Times(arg1.getAt(1), F.Re(temp));
+		if (expr.isTimes()) {
+			if (expr.getAt(1).isSignedNumber()) {
+				IAST temp = ((IAST) expr).removeAtClone(1);
+				return F.Times(expr.getAt(1), F.Re(temp));
 			}
-			if (arg1.getAt(1).isImaginaryUnit()) {
+			if (expr.getAt(1).isImaginaryUnit()) {
 				// Re(I*temp) -> -Im(temp)
-				IAST temp = ((IAST) arg1).removeAtClone(1);
+				IAST temp = ((IAST) expr).removeAtClone(1);
 				return F.Times(F.CN1, F.Im(temp));
 			}
 		}
-		if (arg1.isPlus()) {
-			return ((IAST) arg1).mapThread((IAST) F.Re(null), 1);
+		if (expr.isPlus()) {
+			return ((IAST) expr).mapThread((IAST) F.Re(null), 1);
 		}
-		if (arg1.isPower()) {
-			IAST astPower = (IAST) arg1;
+		if (expr.isPower()) {
+			IAST astPower = (IAST) expr;
 			if (astPower.arg1().isRealResult()) {
 				// test for x^(a+I*b)
 				IExpr x = astPower.arg1();
@@ -97,6 +90,17 @@ public class Re extends AbstractEvaluator {
 		return F.NIL;
 	}
 
+	public Re() {
+	}
+
+	@Override
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		Validate.checkSize(ast, 2);
+
+		IExpr arg1 = ast.arg1();
+		return evalRe(arg1, engine);
+	}
+
 	/**
 	 * Evaluate <code>Re(x^(a+I*b))</code>
 	 * 
@@ -107,7 +111,7 @@ public class Re extends AbstractEvaluator {
 	 *            the imaginary part of the exponent
 	 * @return
 	 */
-	private IExpr rePowerComplex(IExpr x, IExpr a, IExpr b) {
+	private static IExpr rePowerComplex(IExpr x, IExpr a, IExpr b) {
 		if (x.isE()) {
 			// Re(E^(a+I*b)) -> E^a*Cos[b]
 			return Times(Power(F.E, a), Cos(b));
