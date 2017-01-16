@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 
 import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
@@ -153,7 +154,7 @@ public class ApfloatNum implements INum {
 
 	/** {@inheritDoc} */
 	@Override
-	public ApfloatNum eabs() {
+	public ApfloatNum abs() {
 		return valueOf(ApfloatMath.abs(fApfloat));
 	}
 
@@ -486,13 +487,13 @@ public class ApfloatNum implements INum {
 
 	/** {@inheritDoc} */
 	@Override
-	public ISignedNumber getIm() {
+	public ISignedNumber im() {
 		return F.CD0;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public ISignedNumber getRe() {
+	public ISignedNumber re() {
 		return this;
 	}
 

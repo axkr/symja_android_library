@@ -54,7 +54,7 @@ public class Norm extends AbstractEvaluator {
 				return F.NIL;
 			}
 			// absolute Value of a number
-			return ((INumber) arg1).eabs();
+			return ((INumber) arg1).abs();
 		}
 		if (arg1.isNumericFunction()) {
 			if (ast.isAST2()) {

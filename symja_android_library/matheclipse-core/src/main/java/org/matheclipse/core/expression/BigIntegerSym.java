@@ -222,7 +222,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
 	/** {@inheritDoc} */
 	@Override
-	public IInteger eabs() {
+	public IInteger abs() {
 		return valueOf(fBigIntValue.abs());
 	}
 
@@ -317,7 +317,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
 	/** {@inheritDoc} */
 	@Override
-	public ISignedNumber getIm() {
+	public ISignedNumber im() {
 		return F.C0;
 	}
 
@@ -329,7 +329,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
 	/** {@inheritDoc} */
 	@Override
-	public ISignedNumber getRe() {
+	public ISignedNumber re() {
 		return this;
 	}
 

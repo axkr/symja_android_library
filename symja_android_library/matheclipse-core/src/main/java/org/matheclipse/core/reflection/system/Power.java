@@ -415,7 +415,7 @@ public class Power extends AbstractArg2 implements INumeric, PowerRules {
 				return F.Indeterminate;
 			}
 
-			IExpr a = F.eval(F.Re(arg2));
+			IExpr a = arg2.re();
 			if (a.isSignedNumber()) {
 				if (((ISignedNumber) a).isNegative()) {
 					ee.printMessage("Infinite expression 0^(negative number)");

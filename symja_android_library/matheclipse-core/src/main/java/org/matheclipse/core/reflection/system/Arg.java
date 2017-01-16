@@ -1,33 +1,18 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.ArcTan;
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.CN1D2;
-import static org.matheclipse.core.expression.F.Divide;
-import static org.matheclipse.core.expression.F.Negate;
-import static org.matheclipse.core.expression.F.Pi;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.num;
-
-import org.hipparchus.complex.Complex;
 import java.util.function.DoubleUnaryOperator;
 
-import org.apfloat.Apcomplex;
-import org.apfloat.ApcomplexMath;
-import org.apfloat.Apfloat;
-import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IComplex;
-import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IRational;
-import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -36,7 +21,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Wikipedia - Argument (complex_analysis)</a>
  * 
  */
-public class Arg extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
+public class Arg extends AbstractFunctionEvaluator implements INumeric, DoubleUnaryOperator {
 
 	public Arg() {
 	}
@@ -47,38 +32,6 @@ public class Arg extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperat
 			return Math.PI;
 		}
 		return 0.0;
-	}
-
-	@Override
-	public IExpr e1ApcomplexArg(Apcomplex arg1) {
-		return F.num(ApcomplexMath.arg(arg1));
-	}
-
-	@Override
-	public IExpr e1ApfloatArg(Apfloat arg1) {
-		return F.num(ApcomplexMath.arg(arg1));
-	}
-
-	/**
-	 * Evaluate this function for one double complex argument
-	 * 
-	 * @param arg1
-	 *            a double complex number
-	 * @return
-	 */
-	@Override
-	public IExpr e1ComplexArg(final Complex arg1) {
-		return num(Math.atan2(arg1.getImaginary(), arg1.getReal()));
-	}
-
-	@Override
-	public IExpr e1DblArg(final double arg1) {
-		if (arg1 < 0) {
-			return F.num(Math.PI);
-		} else if (arg1 >= 0) {
-			return F.CD0;
-		}
-		return F.NIL;
 	}
 
 	@Override
@@ -95,7 +48,13 @@ public class Arg extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperat
 	}
 
 	@Override
-	public IExpr evaluateArg1(final IExpr arg1) {
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		Validate.checkSize(ast, 2);
+
+		final IExpr arg1 = ast.arg1();
+		if (arg1.isIndeterminate()) {
+			return F.Indeterminate;
+		}
 		if (arg1.isDirectedInfinity()) {
 			IAST directedInfininty = (IAST) arg1;
 			if (directedInfininty.isAST1()) {
@@ -103,58 +62,14 @@ public class Arg extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperat
 					return F.C0;
 				}
 				return F.Arg(directedInfininty.arg1());
+			} else if (arg1.isComplexInfinity()) {
+				return F.Interval(F.List( F.Pi.negate(), F.Pi));
 			}
+		} else if (arg1.isNumber()) {
+			return ((INumber) arg1).complexArg();
 		}
-		if (arg1.isSignedNumber()) {
-			final ISignedNumber in = (ISignedNumber) arg1;
-			if (in.isNegative()) {
-				return F.Pi;
-			}
-			return F.C0;
-		} else if (arg1.isComplexNumeric()) {
-			final IComplexNum ic = (IComplexNum) arg1;
-			// ic == ( x + I * y )
-			return num(Math.atan2(ic.getImaginaryPart(), ic.getRealPart()));
-		} else if (arg1.isComplex()) {
-			final IComplex ic = (IComplex) arg1;
-			// ic == ( x + I * y )
-			IRational x = ic.getRealPart();
-			IRational y = ic.getImaginaryPart();
-			int xi = x.compareTo(F.C0);
-			int yi = y.compareTo(F.C0);
-			if (xi < 0) {
-				// x < 0
-				if (yi < 0) {
-					// y < 0
-
-					// -Pi + ArcTan(y/x)
-					return Plus(Negate(Pi), ArcTan(Divide(y, x)));
-				} else {
-					// y >= 0
-
-					// Pi + ArcTan(y/x)
-					return Plus(Pi, ArcTan(Divide(y, x)));
-				}
-			}
-			if (xi > 0) {
-				// ArcTan(y/x)
-				return ArcTan(Divide(y, x));
-			}
-			if (yi < 0) {
-				// y < 0
-
-				// -Pi/2 + ArcTan(x/y)
-				return Plus(Times(CN1D2, Pi), ArcTan(Divide(x, y)));
-			} else {
-				if (yi > 0) {
-					// y > 0
-
-					// Pi/2 + ArcTan(x/y)
-					return Plus(Times(C1D2, Pi), ArcTan(Divide(x, y)));
-				}
-			}
-		} else if (arg1.isNumericFunction()) {
-			IExpr temp = F.evaln(arg1);
+		if (arg1.isNumericFunction()) {
+			IExpr temp = engine.evalN(arg1);
 			if (temp.isSignedNumber()) {
 				if (temp.isNegative()) {
 					return F.Pi;
@@ -175,7 +90,7 @@ public class Arg extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperat
 				}
 			}
 		}
-		
+
 		if (AbstractAssumptions.assumeNegative(arg1)) {
 			return F.Pi;
 		}
@@ -187,7 +102,7 @@ public class Arg extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperat
 
 	@Override
 	public void setUp(final ISymbol newSymbol) {
-		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION | ISymbol.NHOLDFIRST);
 		super.setUp(newSymbol);
 	}
 }

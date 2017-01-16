@@ -321,11 +321,6 @@ public abstract class AbstractFractionSym implements IFraction {
 	}
 
 	@Override
-	public IExpr eabs() {
-		return abs();
-	}
-
-	@Override
 	public boolean equalsInt(int i) {
 		return toBigNumerator().equals(BigInteger.valueOf(i)) && toBigDenominator().equals(BigInteger.ONE);
 	}
@@ -373,7 +368,7 @@ public abstract class AbstractFractionSym implements IFraction {
 	}
 
 	@Override
-	public ISignedNumber getIm() {
+	public ISignedNumber im() {
 		return F.C0;
 	}
 
@@ -393,7 +388,7 @@ public abstract class AbstractFractionSym implements IFraction {
 	}
 
 	@Override
-	public ISignedNumber getRe() {
+	public ISignedNumber re() {
 		return this;
 	}
 

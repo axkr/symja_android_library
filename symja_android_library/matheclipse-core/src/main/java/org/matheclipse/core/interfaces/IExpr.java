@@ -193,10 +193,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	@Override
 	default IExpr abs() {
-		if (this instanceof INumber) {
-			return ((INumber) this).eabs();
-		}
-		throw new UnsupportedOperationException(toString());
+		return F.eval(F.Abs(this));
+	}
+
+	/**
+	 * Return the argument of a complex number.
+	 * 
+	 * @return the argument of a complex number
+	 */
+	default IExpr complexArg() {
+		return F.eval(F.Arg(this));
 	}
 
 	/**
@@ -252,7 +258,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		}
 		return ast;
 	}
-	
+
 	/**
 	 * @param leaves
 	 * @return an IExpr instance with the current expression as head(), and
@@ -265,7 +271,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		}
 		return ast;
 	}
-	
+
 	default Object asType(Class<?> clazz) {
 		if (clazz.equals(Boolean.class)) {
 			if (isTrue()) {
@@ -307,19 +313,19 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		int y = expr.hierarchy();
 		return (x < y) ? -1 : ((x == y) ? 0 : 1);
 	}
-	
+
 	/**
 	 * Conjugate this (complex-) number.
 	 * 
 	 * @return the conjugate complex number
 	 */
-	default INumber conjugate() { 
+	default INumber conjugate() {
 		if (isSignedNumber()) {
 			return ((INumber) this);
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Returns an <code>IExpr</code> whose value is <code>(this - 1)</code>.
 	 * Calculates <code>F.eval(F.Subtract(this, C1))</code> in the common case
@@ -543,6 +549,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default void ifPresent(Consumer<? super IExpr> consumer) {
 		consumer.accept(this);
+	}
+
+	/**
+	 * Return the imaginary part of this expression if possible. Otherwise
+	 * return <code>Im(this)</code>.
+	 * 
+	 * @return real part
+	 */
+	default public IExpr im() {
+		return F.eval(F.Im(this));
 	}
 
 	/**
@@ -2443,6 +2459,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 			return r;
 		}
 		return F.Power(this, F.integer(n));
+	}
+
+	/**
+	 * Return the real part of this expression if possible. Otherwise return
+	 * <code>Re(this)</code>.
+	 * 
+	 * @return real part
+	 */
+	default public IExpr re() {
+		return F.eval(F.Re(this));
 	}
 
 	@Override

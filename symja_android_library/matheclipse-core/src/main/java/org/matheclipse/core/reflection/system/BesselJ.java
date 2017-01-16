@@ -52,7 +52,7 @@ public class BesselJ extends AbstractFunctionEvaluator {
 				return F.C0;
 			}
 
-			IExpr a = engine.evaluate(F.Re(arg1));
+			IExpr a = arg1.re();
 			if (a.isPositive()) {
 				// Re(arg1) > 0
 				return F.C0;

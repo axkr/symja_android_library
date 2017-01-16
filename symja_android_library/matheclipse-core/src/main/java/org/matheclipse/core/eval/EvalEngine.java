@@ -468,29 +468,31 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					}
 				}
 			}
-			if ((ISymbol.HOLDREST & attr) == ISymbol.NOATTRIBUTE) {
-				// the HoldRest attribute isn't set here
-				numericMode = fNumericMode;
-				try {
-					if ((ISymbol.NHOLDREST & attr) == ISymbol.NHOLDREST) {
-						fNumericMode = false;
-					} else {
-						fNumericMode = localNumericMode;
-					}
-					for (int i = 2; i < astSize; i++) {
-						if ((evaledExpr = evalLoop(ast.get(i))).isPresent()) {
-							if (resultList.isPresent()) {
-								resultList.set(i, evaledExpr);
-							} else {
-								resultList = ast.copy();
-								resultList.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
-								resultList.set(i, evaledExpr);
+			if (astSize > 2) {
+				if ((ISymbol.HOLDREST & attr) == ISymbol.NOATTRIBUTE) {
+					// the HoldRest attribute isn't set here
+					numericMode = fNumericMode;
+					try {
+						if ((ISymbol.NHOLDREST & attr) == ISymbol.NHOLDREST) {
+							fNumericMode = false;
+						} else {
+							fNumericMode = localNumericMode;
+						}
+						for (int i = 2; i < astSize; i++) {
+							if ((evaledExpr = evalLoop(ast.get(i))).isPresent()) {
+								if (resultList.isPresent()) {
+									resultList.set(i, evaledExpr);
+								} else {
+									resultList = ast.copy();
+									resultList.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+									resultList.set(i, evaledExpr);
+								}
 							}
 						}
-					}
-				} finally {
-					if ((ISymbol.NHOLDREST & attr) == ISymbol.NHOLDREST) {
-						fNumericMode = numericMode;
+					} finally {
+						if ((ISymbol.NHOLDREST & attr) == ISymbol.NHOLDREST) {
+							fNumericMode = numericMode;
+						}
 					}
 				}
 			}
@@ -833,17 +835,19 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					}
 				}
 			}
-			if ((ISymbol.HOLDREST & attr) == ISymbol.NOATTRIBUTE) {
-				// the HoldRest attribute isn't set here
-				for (int i = 2; i < astSize; i++) {
-					if (ast.get(i).isAST()) {
-						IAST temp = (IAST) ast.get(i);
-						IExpr expr = evalFlatOrderlessAttributesRecursive(temp);
-						if (expr.isPresent()) {
-							if (!resultList.isPresent()) {
-								resultList = ast.copy();
+			if (astSize > 2) {
+				if ((ISymbol.HOLDREST & attr) == ISymbol.NOATTRIBUTE) {
+					// the HoldRest attribute isn't set here
+					for (int i = 2; i < astSize; i++) {
+						if (ast.get(i).isAST()) {
+							IAST temp = (IAST) ast.get(i);
+							IExpr expr = evalFlatOrderlessAttributesRecursive(temp);
+							if (expr.isPresent()) {
+								if (!resultList.isPresent()) {
+									resultList = ast.copy();
+								}
+								resultList.set(i, expr);
 							}
-							resultList.set(i, expr);
 						}
 					}
 				}
@@ -1184,12 +1188,15 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					}
 				}
 			}
-			if ((ISymbol.HOLDREST & attr) == ISymbol.NOATTRIBUTE) {
-				// the HoldRest attribute isn't set here
-				for (int i = 2; i < astSize; i++) {
-					IExpr expr = ast.get(i);
-					if (expr.isAST()) {
-						resultList = evalSetAttributeArg(ast, i, (IAST) ast.get(i), resultList, noEvaluation, level);
+			if (astSize > 2) {
+				if ((ISymbol.HOLDREST & attr) == ISymbol.NOATTRIBUTE) {
+					// the HoldRest attribute isn't set here
+					for (int i = 2; i < astSize; i++) {
+						IExpr expr = ast.get(i);
+						if (expr.isAST()) {
+							resultList = evalSetAttributeArg(ast, i, (IAST) ast.get(i), resultList, noEvaluation,
+									level);
+						}
 					}
 				}
 			}

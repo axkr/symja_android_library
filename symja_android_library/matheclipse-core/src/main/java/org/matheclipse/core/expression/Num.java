@@ -170,7 +170,7 @@ public class Num implements INum {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * @param that
 	 * @return
@@ -194,7 +194,7 @@ public class Num implements INum {
 
 	/** {@inheritDoc} */
 	@Override
-	public Num eabs() {
+	public Num abs() {
 		return newInstance(Math.abs(fDouble));
 	}
 
@@ -234,7 +234,7 @@ public class Num implements INum {
 
 	/** {@inheritDoc} */
 	@Override
-	public ISignedNumber getIm() {
+	public ISignedNumber im() {
 		return F.CD0;
 	}
 
@@ -245,7 +245,7 @@ public class Num implements INum {
 
 	/** {@inheritDoc} */
 	@Override
-	public ISignedNumber getRe() {
+	public ISignedNumber re() {
 		return this;
 	}
 

@@ -145,11 +145,6 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		return z;
 	}
 
-	@Override
-	public IRational abs() {
-		return eabs();
-	}
-
 	/** {@inheritDoc} */
 	@Override
 	public <T> T accept(IVisitor<T> visitor) {
@@ -553,8 +548,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		if (this.isZero() || that.isZero()) {
 			return F.C0;
 		}
-		IInteger a = eabs();
-		IInteger b = that.eabs();
+		IInteger a = abs();
+		IInteger b = that.abs();
 		IInteger lcm = a.multiply(b).div(gcd(b));
 		return lcm;
 	}

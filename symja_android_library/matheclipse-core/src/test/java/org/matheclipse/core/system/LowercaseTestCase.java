@@ -462,13 +462,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArg() {
+		
+		check("Arg(1.3)", "0");
+		check("Arg(0)", "0");
+		check("Arg(1)", "0");
+		check("Arg(-1)", "Pi");
 		check("Arg(I)", "Pi/2");
+		check("Arg(1+I)", "Pi/4");
+		check("Arg(-I)", "-Pi/2");
 		check("Arg(-2*Sqrt(Pi))", "Pi");
 		check("Arg(Indeterminate)", "Indeterminate");
 		check("Arg(0)", "0");
 		check("Arg(10/3)", "0");
 		check("Arg(-10/3)", "Pi");
 		check("Arg(I*Infinity)", "Pi/2");
+		check("Arg(-I*Infinity)", "-Pi/2");
+		check("Arg(ComplexInfinity)", "Interval({-Pi,Pi})");
 	}
 
 	public void testArray() {

@@ -97,7 +97,7 @@ public class Sign extends AbstractEvaluator {
 			return F.integer(signum);
 		} else if (arg1.isComplex()) {
 			IComplex c = (IComplex) arg1;
-			return F.Times(c, F.Power(c.eabs(), F.CN1));
+			return F.Times(c, F.Power(c.abs(), F.CN1));
 		} else if (arg1.isComplexNumeric()) {
 			IComplexNum c = (IComplexNum) arg1;
 			return c.divide(F.num(c.dabs()));

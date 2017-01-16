@@ -69,8 +69,8 @@ public class ComplexExpand extends AbstractEvaluator {
 				reX = x;
 				imX = F.C0;
 			} else {
-				reX = fEngine.evaluate(Re(x));
-				imX = F.eval(Im(x));
+				reX = x.re();
+				imX = x.im();
 				IExpr temp = complexExpandNull(reX, fEngine);
 				if (temp.isPresent()) {
 					reX = temp;

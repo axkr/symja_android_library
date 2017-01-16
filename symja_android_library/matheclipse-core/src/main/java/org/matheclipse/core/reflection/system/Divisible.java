@@ -27,7 +27,7 @@ public class Divisible extends AbstractFunctionEvaluator {
 		if (result.isNumber()) {
 			if (result.isComplex()) {
 				IComplex comp = (IComplex) result;
-				if (isSignedNumberDivisible(comp.getRe()).isTrue() && isSignedNumberDivisible(comp.getIm()).isTrue()) {
+				if (isSignedNumberDivisible(comp.re()).isTrue() && isSignedNumberDivisible(comp.im()).isTrue()) {
 					return F.True;
 				}
 				return F.False;

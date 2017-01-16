@@ -231,7 +231,7 @@ public class IntegerSym extends AbstractIntegerSym {
 
 	/** {@inheritDoc} */
 	@Override
-	public IInteger eabs() {
+	public IInteger abs() {
 		if (fIntValue < 0) {
 			return valueOf(fIntValue * (-1L));
 		}
@@ -328,7 +328,7 @@ public class IntegerSym extends AbstractIntegerSym {
 
 	/** {@inheritDoc} */
 	@Override
-	public ISignedNumber getIm() {
+	public ISignedNumber im() {
 		return F.C0;
 	}
 
@@ -340,7 +340,7 @@ public class IntegerSym extends AbstractIntegerSym {
 
 	/** {@inheritDoc} */
 	@Override
-	public ISignedNumber getRe() {
+	public ISignedNumber re() {
 		return this;
 	}
 

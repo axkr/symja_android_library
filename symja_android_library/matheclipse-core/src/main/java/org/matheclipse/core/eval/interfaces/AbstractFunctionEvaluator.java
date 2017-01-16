@@ -270,15 +270,15 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	 *         number.
 	 */
 	public static IExpr getPureImaginaryPart(final IExpr expr) {
-		if (expr.isComplex() && ((IComplex) expr).getRe().isZero()) {
+		if (expr.isComplex() && ((IComplex) expr).re().isZero()) {
 			IComplex compl = (IComplex) expr;
-			return compl.getIm();
+			return compl.im();
 		}
 		if (expr.isTimes()) {
 			IAST times = ((IAST) expr);
 			IExpr arg1 = times.arg1();
-			if (arg1.isComplex() && ((IComplex) arg1).getRe().isZero()) {
-				return times.setAtClone(1, ((IComplex) arg1).getIm());
+			if (arg1.isComplex() && ((IComplex) arg1).re().isZero()) {
+				return times.setAtClone(1, ((IComplex) arg1).im());
 			}
 		}
 		return F.NIL;

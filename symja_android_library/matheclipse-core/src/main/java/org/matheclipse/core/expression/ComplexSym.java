@@ -1,5 +1,14 @@
 package org.matheclipse.core.expression;
 
+import static org.matheclipse.core.expression.F.ArcTan;
+import static org.matheclipse.core.expression.F.C1D2;
+import static org.matheclipse.core.expression.F.CN1D2;
+import static org.matheclipse.core.expression.F.Divide;
+import static org.matheclipse.core.expression.F.Negate;
+import static org.matheclipse.core.expression.F.Pi;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Times;
+
 import java.math.BigInteger;
 
 import org.apfloat.Apcomplex;
@@ -100,6 +109,52 @@ public class ComplexSym implements IComplex {
 	private transient int fHashValue;
 
 	private ComplexSym() {
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr abs() {
+		return F.Sqrt(fReal.multiply(fReal).add(fImaginary.multiply(fImaginary)));
+	}
+
+	public IExpr complexArg() {
+		// ic == ( x + I * y )
+		IRational x = getRealPart();
+		IRational y = getImaginaryPart();
+		int xi = x.compareTo(F.C0);
+		int yi = y.compareTo(F.C0);
+		if (xi < 0) {
+			// x < 0
+			if (yi < 0) {
+				// y < 0
+
+				// -Pi + ArcTan(y/x)
+				return Plus(Negate(Pi), ArcTan(Divide(y, x)));
+			} else {
+				// y >= 0
+
+				// Pi + ArcTan(y/x)
+				return Plus(Pi, ArcTan(Divide(y, x)));
+			}
+		}
+		if (xi > 0) {
+			// ArcTan(y/x)
+			return ArcTan(Divide(y, x));
+		}
+		if (yi < 0) {
+			// y < 0
+
+			// -Pi/2 + ArcTan(x/y)
+			return Plus(Times(CN1D2, Pi), ArcTan(Divide(x, y)));
+		} else {
+			if (yi > 0) {
+				// y > 0
+
+				// Pi/2 + ArcTan(x/y)
+				return Plus(Times(C1D2, Pi), ArcTan(Divide(x, y)));
+			}
+		}
+		return F.C0;
 	}
 
 	/** {@inheritDoc} */
@@ -214,12 +269,6 @@ public class ComplexSym implements IComplex {
 		}
 	}
 
-	/** {@inheritDoc} */
-	@Override
-	public IExpr eabs() {
-		return F.Sqrt(fReal.multiply(fReal).add(fImaginary.multiply(fImaginary)));
-	}
-
 	@Override
 	public boolean equals(final Object obj) {
 		if (obj instanceof ComplexSym) {
@@ -309,14 +358,6 @@ public class ComplexSym implements IComplex {
 	}
 
 	@Override
-	public ISignedNumber getIm() {
-		if (fImaginary.getDenominator().isOne()) {
-			return fImaginary.getNumerator();
-		}
-		return fImaginary;
-	}
-
-	@Override
 	public double getImaginary() {
 		return fImaginary.doubleValue();
 	}
@@ -329,14 +370,6 @@ public class ComplexSym implements IComplex {
 	@Override
 	public IRational getImaginaryPart() {
 		return fImaginary;
-	}
-
-	@Override
-	public ISignedNumber getRe() {
-		if (fReal.getDenominator().isOne()) {
-			return fReal.getNumerator();
-		}
-		return fReal;
 	}
 
 	@Override
@@ -370,6 +403,14 @@ public class ComplexSym implements IComplex {
 	@Override
 	public int hierarchy() {
 		return COMPLEXID;
+	}
+
+	@Override
+	public ISignedNumber im() {
+		if (fImaginary.getDenominator().isOne()) {
+			return fImaginary.getNumerator();
+		}
+		return fImaginary;
 	}
 
 	@Override
@@ -519,6 +560,14 @@ public class ComplexSym implements IComplex {
 		}
 
 		return res;
+	}
+
+	@Override
+	public ISignedNumber re() {
+		if (fReal.getDenominator().isOne()) {
+			return fReal.getNumerator();
+		}
+		return fReal;
 	}
 
 	@Override

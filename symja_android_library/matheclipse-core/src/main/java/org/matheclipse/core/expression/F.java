@@ -3838,7 +3838,7 @@ public class F {
 
 	public static IExpr Im(final IExpr a0) {
 		if (a0 != null && a0.isNumber()) {
-			return ((INumber) a0).getIm();
+			return ((INumber) a0).im();
 		}
 		return unaryAST1(Im, a0);
 	}
@@ -4949,7 +4949,7 @@ public class F {
 
 	public static IExpr Re(final IExpr a0) {
 		if (a0 != null && a0.isNumber()) {
-			return ((INumber) a0).getRe();
+			return ((INumber) a0).re();
 		}
 		return unaryAST1(Re, a0);
 	}

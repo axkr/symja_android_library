@@ -736,8 +736,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				return true;
 			}
 		} else if (lhsPatternAST.isAST(F.Complex, 3) && lhsEvalExpr.isNumber()) {
-			ISignedNumber re = ((INumber) lhsEvalExpr).getRe();
-			ISignedNumber im = ((INumber) lhsEvalExpr).getIm();
+			ISignedNumber re = ((INumber) lhsEvalExpr).re();
+			ISignedNumber im = ((INumber) lhsEvalExpr).im();
 			if (matchExpr(lhsPatternAST.arg1(), re) && matchExpr(lhsPatternAST.arg2(), im)) {
 				return true;
 			}

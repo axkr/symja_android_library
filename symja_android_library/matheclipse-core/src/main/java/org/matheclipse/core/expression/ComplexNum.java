@@ -1,5 +1,7 @@
 package org.matheclipse.core.expression;
 
+import static org.matheclipse.core.expression.F.num;
+
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.hipparchus.complex.Complex;
@@ -269,8 +271,13 @@ public class ComplexNum implements IComplexNum  {
 	}
 
 	@Override
-	public Num eabs() {
+	public Num abs() {
 		return Num.valueOf(dabs());
+	}
+	
+	@Override
+	public IExpr complexArg( ) {
+		return num(Math.atan2(getImaginary(), getReal()));
 	}
 
 	@Override
@@ -313,7 +320,7 @@ public class ComplexNum implements IComplexNum  {
 
 	/** {@inheritDoc} */
 	@Override
-	public ISignedNumber getIm() {
+	public ISignedNumber im() {
 		return F.num(getImaginaryPart());
 	}
 
@@ -336,7 +343,7 @@ public class ComplexNum implements IComplexNum  {
 
 	/** {@inheritDoc} */
 	@Override
-	public ISignedNumber getRe() {
+	public ISignedNumber re() {
 		return F.num(getRealPart());
 	}
 

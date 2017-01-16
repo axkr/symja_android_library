@@ -56,7 +56,7 @@ public class Im extends AbstractEvaluator {
 			}
 		}
 		if (arg1.isNumber()) {
-			return ((INumber) arg1).getIm();
+			return ((INumber) arg1).im();
 		}
 		// if (arg1.isSignedNumber()) {
 		// return F.C0;
@@ -78,8 +78,7 @@ public class Im extends AbstractEvaluator {
 			}
 			if (arg1.getAt(1).isImaginaryUnit()) {
 				// Im(I*temp) -> Re(temp)
-				IAST temp = ((IAST) arg1).removeAtClone(1);
-				return F.Re(temp);
+				return ((IAST) arg1).removeAtClone(1).re();
 			}
 		}
 		if (arg1.isPlus()) {
@@ -92,8 +91,8 @@ public class Im extends AbstractEvaluator {
 				IExpr x = astPower.arg1();
 				if (astPower.arg2().isNumber()) {
 					// (x^2)^(a/2)*E^(-b*Arg[x])*Sin[a*Arg[x]+1/2*b*Log[x^2]]
-					IExpr a = ((INumber) astPower.arg2()).getRe();
-					IExpr b = ((INumber) astPower.arg2()).getIm();
+					IExpr a = ((INumber) astPower.arg2()).re();
+					IExpr b = ((INumber) astPower.arg2()).im();
 					return imPowerComplex(x, a, b);
 				}
 				if (astPower.arg2().isNumericFunction()) {

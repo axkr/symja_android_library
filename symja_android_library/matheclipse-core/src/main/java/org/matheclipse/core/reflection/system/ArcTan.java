@@ -61,12 +61,13 @@ public class ArcTan extends AbstractArg12 implements INumeric, ArcTanRules {
 			return F.Times(F.CN1D2, F.Pi);
 		}
 		if (x.isNumber() && y.isSignedNumber()) {
-			if (((INumber) x).getRe().isNegative()) {
+			if (((INumber) x).re().isNegative()) {
 				return F.Plus(F.ArcTan(F.Divide(y, x)), F.Times(F.Subtract(F.Times(F.C2, F.UnitStep(y)), F.C1), F.Pi));
 			}
-			IExpr argX = F.Arg(x);
+			IExpr argX = x.complexArg();
 			// -Pi/2 < Arg(x) <= Pi/2
-			if (F.evalTrue(F.And(F.Less(F.Times(F.CN1D2, F.Pi), argX), F.LessEqual(argX, F.Times(F.C1D2, F.Pi))))) {
+			if (argX.isPresent() && F
+					.evalTrue(F.And(F.Less(F.Times(F.CN1D2, F.Pi), argX), F.LessEqual(argX, F.Times(F.C1D2, F.Pi))))) {
 				return F.ArcTan(F.Divide(y, x));
 			}
 		}

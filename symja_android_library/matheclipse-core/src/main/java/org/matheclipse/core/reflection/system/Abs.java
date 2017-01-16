@@ -49,7 +49,7 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules, DoubleU
 		@Override
 		public IExpr apply(IExpr expr) {
 			if (expr.isNumber()) {
-				return ((INumber) expr).eabs();
+				return ((INumber) expr).abs();
 			}
 			IExpr temp = F.eval(F.Abs(expr));
 			if (!temp.topHead().equals(F.Abs)) {
@@ -101,7 +101,7 @@ public class Abs extends AbstractTrigArg1 implements INumeric, AbsRules, DoubleU
 			return F.CInfinity;
 		}
 		if (arg1.isNumber()) {
-			return ((INumber) arg1).eabs();
+			return ((INumber) arg1).abs();
 		}
 		if (arg1.isNumericFunction()) {
 			IExpr temp = F.evaln(arg1);

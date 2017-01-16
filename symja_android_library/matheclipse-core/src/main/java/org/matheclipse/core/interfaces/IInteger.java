@@ -64,7 +64,7 @@ public interface IInteger extends IRational {
 
 	/** {@inheritDoc} */
 	@Override
-	public IInteger eabs();
+	public IInteger abs();
 
 	/**
 	 * Euler phi function.

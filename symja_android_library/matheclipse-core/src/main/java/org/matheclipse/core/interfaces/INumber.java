@@ -67,7 +67,24 @@ public interface INumber extends IExpr {
 	 * 
 	 * @return
 	 */
-	public IExpr eabs();
+	public IExpr abs();
+	
+	/**
+	 * Get the absolute value for a given number
+	 * 
+	 * @return
+	 */
+	public IExpr complexArg();
+
+	/**
+	 * Get the absolute value for a given number
+	 * 
+	 * @return
+	 * @deprecated use abs()
+	 */
+	default IExpr eabs() {
+		return abs();
+	}
 
 	/**
 	 * Check if this number equals the given <code>int</code> number?
@@ -96,15 +113,15 @@ public interface INumber extends IExpr {
 	 * 
 	 * @return real part
 	 */
-	public ISignedNumber getIm();
+	public ISignedNumber im();
 
 	/**
 	 * Returns the real part of a complex number
 	 * 
 	 * @return real part
 	 */
-	public ISignedNumber getRe();
-	
+	public ISignedNumber re();
+
 	/**
 	 * Returns the real part of a complex number
 	 * 
@@ -118,7 +135,7 @@ public interface INumber extends IExpr {
 	 * @return real part
 	 */
 	public double getImaginary();
-	
+
 	public INumber opposite();
 
 }

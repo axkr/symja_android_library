@@ -259,10 +259,14 @@ public class ApcomplexNum implements IComplexNum {
 	}
 
 	@Override
-	public Num eabs() {
+	public Num abs() {
 		return Num.valueOf(dabs());
 	}
 
+	public IExpr complexArg() {
+		return F.num(ApcomplexMath.arg(fApcomplex));
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public int compareAbsValueToOne() {
@@ -479,13 +483,13 @@ public class ApcomplexNum implements IComplexNum {
 
 	/** {@inheritDoc} */
 	@Override
-	public ISignedNumber getIm() {
+	public ISignedNumber im() {
 		return F.num(getImaginaryPart());
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public ISignedNumber getRe() {
+	public ISignedNumber re() {
 		return F.num(getRealPart());
 	}
 

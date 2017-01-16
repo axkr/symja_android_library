@@ -39,7 +39,7 @@ public class PolyLog extends AbstractFunctionEvaluator implements PolyLogRules {
 			return F.C0;
 		}
 		if (arg2.isOne()) {
-			IExpr temp = engine.evaluate(F.Re(arg1));
+			IExpr temp = arg1.re();
 			if (temp.isSignedNumber()) {
 				ISignedNumber num = (ISignedNumber) temp;
 				if (num.isOne()) {

@@ -2290,14 +2290,14 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem319() {
-		check("Arg(-2.1)", "3.141592653589793");
+		check("Arg(-2.1)", "Pi");
 		// } public void testSystem300() { check("Arg(-2.1*I)", "");
 		// } public void testSystem300() { check("Arg(2.1 I)",
 		// "1.5707963267948966");
 	}
 
 	public void testSystem320() {
-		check("Arg(42.2)", "0.0");
+		check("Arg(42.2)", "0");
 
 	}
 

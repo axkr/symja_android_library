@@ -39,7 +39,7 @@ public class Re extends AbstractEvaluator {
 				if (directedInfininty.isInfinity()) {
 					return F.CInfinity;
 				}
-				IExpr re = engine.evaluate(F.Re(directedInfininty.arg1()));
+				IExpr re = directedInfininty.arg1().re();
 				if (re.isNumber()) {
 					if (re.isZero()) {
 						return F.C0;
@@ -49,7 +49,7 @@ public class Re extends AbstractEvaluator {
 			}
 		}
 		if (expr.isNumber()) {
-			return ((INumber) expr).getRe();
+			return ((INumber) expr).re();
 		}
 
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(expr);
@@ -77,13 +77,13 @@ public class Re extends AbstractEvaluator {
 				IExpr x = astPower.arg1();
 				if (astPower.arg2().isNumber()) {
 					// (x^2)^(a/2)*E^(-b*Arg[x])*Cos[a*Arg[x]+1/2*b*Log[x^2]]
-					IExpr a = ((INumber) astPower.arg2()).getRe();
-					IExpr b = ((INumber) astPower.arg2()).getIm();
+					IExpr a = ((INumber) astPower.arg2()).re();
+					IExpr b = ((INumber) astPower.arg2()).im();
 					return rePowerComplex(x, a, b);
 				}
 				// (x^2)^(a/2)*E^(-b*Arg[x])*Cos[a*Arg[x]+1/2*b*Log[x^2]]
-				IExpr a = engine.evaluate(F.Re(astPower.arg2()));
-				IExpr b = engine.evaluate(F.Im(astPower.arg2()));
+				IExpr a = astPower.arg2().re();
+				IExpr b = astPower.arg2().im();
 				return rePowerComplex(x, a, b);
 			}
 		}
