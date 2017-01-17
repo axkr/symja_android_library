@@ -203,7 +203,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default IExpr complexArg() {
 		return F.eval(F.Arg(this));
-	}
+	} 
 
 	/**
 	 * Accept a visitor with return type T
@@ -319,11 +319,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @return the conjugate complex number
 	 */
-	default INumber conjugate() {
-		if (isSignedNumber()) {
-			return ((INumber) this);
-		}
-		return null;
+	default IExpr conjugate() {
+		return F.eval(F.Conjugate(this));
 	}
 
 	/**

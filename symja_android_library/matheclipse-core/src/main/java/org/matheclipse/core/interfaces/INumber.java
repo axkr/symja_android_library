@@ -11,6 +11,14 @@ import org.matheclipse.core.expression.ComplexNum;
 public interface INumber extends IExpr {
 
 	/**
+	 * Get the absolute value for a given number
+	 * 
+	 * @return
+	 */
+	@Override
+	public IExpr abs();
+
+	/**
 	 * Get a <code>Apcomplex</code> number wrapped into an
 	 * <code>ApcomplexNum</code> object.
 	 * 
@@ -45,6 +53,14 @@ public interface INumber extends IExpr {
 	public int compareAbsValueToOne();
 
 	/**
+	 * Get the absolute value for a given number
+	 * 
+	 * @return
+	 */
+	@Override
+	public IExpr complexArg();
+
+	/**
 	 * Get a <code>ComplexNum</code> number bject.
 	 * 
 	 * @return
@@ -62,19 +78,8 @@ public interface INumber extends IExpr {
 	 */
 	public int complexSign();
 
-	/**
-	 * Get the absolute value for a given number
-	 * 
-	 * @return
-	 */
-	public IExpr abs();
-	
-	/**
-	 * Get the absolute value for a given number
-	 * 
-	 * @return
-	 */
-	public IExpr complexArg();
+	@Override
+	public INumber conjugate();
 
 	/**
 	 * Get the absolute value for a given number
@@ -82,6 +87,7 @@ public interface INumber extends IExpr {
 	 * @return
 	 * @deprecated use abs()
 	 */
+	@Deprecated
 	default IExpr eabs() {
 		return abs();
 	}
@@ -113,14 +119,7 @@ public interface INumber extends IExpr {
 	 * 
 	 * @return real part
 	 */
-	public ISignedNumber im();
-
-	/**
-	 * Returns the real part of a complex number
-	 * 
-	 * @return real part
-	 */
-	public ISignedNumber re();
+	public double getImaginary();
 
 	/**
 	 * Returns the real part of a complex number
@@ -134,8 +133,18 @@ public interface INumber extends IExpr {
 	 * 
 	 * @return real part
 	 */
-	public double getImaginary();
+	@Override
+	public ISignedNumber im();
 
+	@Override
 	public INumber opposite();
+
+	/**
+	 * Returns the real part of a complex number
+	 * 
+	 * @return real part
+	 */
+	@Override
+	public ISignedNumber re();
 
 }

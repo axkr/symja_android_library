@@ -1,8 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IComplex;
-import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -21,16 +18,17 @@ public class ConjugateTranspose extends Transpose {
 
 	@Override
 	protected IExpr transform(final IExpr expr) {
-		if (expr.isSignedNumber()) {
-			return expr;
-		}
-		if (expr.isComplex()) {
-			return ((IComplex) expr).conjugate();
-		}
-		if (expr instanceof IComplexNum) {
-			return ((IComplexNum) expr).conjugate();
-		}
-		return F.Conjugate(expr);
+		return expr.conjugate();
+//		if (expr.isSignedNumber()) {
+//			return expr;
+//		}
+//		if (expr.isComplex()) {
+//			return ((IComplex) expr).conjugate();
+//		}
+//		if (expr instanceof IComplexNum) {
+//			return ((IComplexNum) expr).conjugate();
+//		}
+//		return F.Conjugate(expr);
 	}
 
 }
