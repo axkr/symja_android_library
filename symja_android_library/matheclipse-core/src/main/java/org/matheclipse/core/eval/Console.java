@@ -1,8 +1,10 @@
 package org.matheclipse.core.eval;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -306,6 +308,28 @@ public class Console {
 	 */
 	public String getDefaultSystemRulesFilename() {
 		return fDefaultSystemRulesFilename;
+	}
+
+	/**
+	 * 
+	 * @param fileContent
+	 * @param extension
+	 *            the file extension i.e. *.svg *.html
+	 */
+	private static void openInBrowser(String fileContent, String extension) {
+		File temp;
+		try {
+			temp = File.createTempFile("document", ".htm");
+			BufferedWriter out = new BufferedWriter(new FileWriter(temp));
+			out.write(fileContent);
+			out.close();
+
+			System.out.println(temp.toURI().toString());
+
+			java.awt.Desktop.getDesktop().browse(temp.toURI());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	// private static void openURL(String url) {
