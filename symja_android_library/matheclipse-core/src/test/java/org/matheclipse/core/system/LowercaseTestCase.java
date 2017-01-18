@@ -462,7 +462,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArg() {
-		
+
 		check("Arg(1.3)", "0");
 		check("Arg(0)", "0");
 		check("Arg(1)", "0");
@@ -3421,7 +3421,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Select(Range(43), MultiplicativeOrder(#, 43) == EulerPhi(43) &)", "{3,5,12,18,19,20,26,28,29,30,33,34}");
 	}
 
-	public void testPolyLog() { 
+	public void testPolyLog() {
 		check("PolyLog(2,0)", "0");
 		check("PolyLog(2,-1)", "-Pi^2/12");
 		check("PolyLog(2,1)", "Pi^2/6");
@@ -3437,9 +3437,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PolyLog(1,f(x))", "-Log(1-f(x))");
 		check("PolyLog(-1,f(x))", "f(x)/(1-f(x))^2");
 		check("PolyLog(-2,f(x))", "(-(1+f(x))*f(x))/(-1+f(x))^3");
-		check("PolyLog(-3,f(x))", "((1+f(x)^2+4*f(x))*f(x))/(1-f(x))^4"); 
+		check("PolyLog(-3,f(x))", "((1+f(x)^2+4*f(x))*f(x))/(1-f(x))^4");
 	}
-	
+
 	public void testPowerMod() {
 		// check("PowerMod(6, 1/2, 10)", "1");
 
@@ -4555,6 +4555,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Times()", "1");
 		// OutputForm: I*Infinity is DirectedInfinity[I]
 		check("I*Infinity", "I*Infinity");
+	}
+
+	public void testTimeConstrained() {
+		if (!Config.JAS_NO_THREADS) {
+			check("TimeConstrained(Do(i^2, {i, 10000000}), 1)", "$Aborted");
+		}
 	}
 
 	public void testTogether() {

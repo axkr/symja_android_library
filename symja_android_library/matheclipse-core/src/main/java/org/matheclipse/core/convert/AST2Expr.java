@@ -43,7 +43,7 @@ import org.matheclipse.parser.client.eval.DoubleNode;
 public class AST2Expr {
 	public final static String[] UPPERCASE_SYMBOL_STRINGS = { "D", "E", "I", "N" };
 
-	public final static String[] SYMBOL_STRINGS = { "All", "Algebraics", "Automatic", "Booleans", "CharacterEncoding",
+	public final static String[] SYMBOL_STRINGS = { "$Aborted", "All", "Algebraics", "Automatic", "Booleans", "CharacterEncoding",
 			"ComplexInfinity", "Catalan", "Complexes", "Degree", "Disputed", "EulerGamma", "False", "Flat", "Glaisher",
 			"GoldenRatio", "HoldAll", "HoldFirst", "HoldRest", "Indeterminate", "Infinity", "Integer", "Integers",
 			"Khinchin", "Listable", "MaxIterations", "MaxPoints", "Method", "Modulus", "None", "Nonexistent",
