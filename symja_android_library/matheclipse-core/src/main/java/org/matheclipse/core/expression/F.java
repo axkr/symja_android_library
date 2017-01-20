@@ -4478,7 +4478,7 @@ public class F {
 		// temp.pushLocalVariable(value);
 		// return temp;
 		// }
-		ISymbol temp = new BuiltInSymbol(symbolName);
+		ISymbol temp = new Symbol(symbolName);
 		// variableMap.put(symbolName, temp);
 		temp.pushLocalVariable(value);
 		return temp;
@@ -4976,7 +4976,7 @@ public class F {
 				lcSymbolName = symbolName.toLowerCase(Locale.ENGLISH);
 			}
 		}
-		temp = new BuiltInSymbol(lcSymbolName);
+		temp = new Symbol(lcSymbolName);
 		Context.SYSTEM.put(lcSymbolName, temp);
 		return temp;
 	}
