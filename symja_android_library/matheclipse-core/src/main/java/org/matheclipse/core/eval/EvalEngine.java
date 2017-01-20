@@ -33,6 +33,7 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
@@ -513,13 +514,15 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		ISymbol symbol = null;
 		if (head instanceof ISymbol) {
 			symbol = (ISymbol) head;
-			final IEvaluator module = symbol.getEvaluator();
-			if (module instanceof ICoreFunctionEvaluator) {
-				// evaluate a built-in function.
-				if (fNumericMode) {
-					return ((ICoreFunctionEvaluator) module).numericEval(ast, this);
+			if (symbol.isBuiltInSymbol()) {
+				final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
+				if (module instanceof ICoreFunctionEvaluator) {
+					// evaluate a built-in function.
+					if (fNumericMode) {
+						return ((ICoreFunctionEvaluator) module).numericEval(ast, this);
+					}
+					return ((ICoreFunctionEvaluator) module).evaluate(ast, this);
 				}
-				return ((ICoreFunctionEvaluator) module).evaluate(ast, this);
 			}
 		} else {
 			symbol = ast.topHead();
@@ -574,16 +577,20 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		if ((ISymbol.LISTABLE & attr) == ISymbol.LISTABLE) {
 			final IExpr arg1 = ast.arg1();
 			if (arg1.isRealVector() && ((IAST) arg1).size() > 1) {
-				final IEvaluator module = symbol.getEvaluator();
-				if (module instanceof DoubleUnaryOperator) {
-					DoubleUnaryOperator oper = (DoubleUnaryOperator) module;
-					return ASTRealVector.map((IAST) arg1, oper);
+				if (symbol.isBuiltInSymbol()) {
+					final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
+					if (module instanceof DoubleUnaryOperator) {
+						DoubleUnaryOperator oper = (DoubleUnaryOperator) module;
+						return ASTRealVector.map((IAST) arg1, oper);
+					}
 				}
 			} else if (arg1.isRealMatrix()) {
-				final IEvaluator module = symbol.getEvaluator();
-				if (module instanceof DoubleUnaryOperator) {
-					DoubleUnaryOperator oper = (DoubleUnaryOperator) module;
-					return ASTRealMatrix.map((IAST) arg1, oper);
+				if (symbol.isBuiltInSymbol()) {
+					final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
+					if (module instanceof DoubleUnaryOperator) {
+						DoubleUnaryOperator oper = (DoubleUnaryOperator) module;
+						return ASTRealMatrix.map((IAST) arg1, oper);
+					}
 				}
 			}
 			if (arg1.isList()) {
@@ -648,29 +655,30 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		// if (symbol instanceof MethodSymbol) {
 		// return ((MethodSymbol) symbol).invoke(ast);
 		// } else {
-		final IEvaluator module = symbol.getEvaluator();
-		if (module instanceof IFunctionEvaluator) {
-			// evaluate a built-in function.
-			IExpr result;
-			if (fNumericMode) {
-				result = ((IFunctionEvaluator) module).numericEval(ast, this);
-			} else {
-				result = ((IFunctionEvaluator) module).evaluate(ast, this);
-			}
-			// if (result == null) {
-			// System.out.println(ast);
-			// throw new NullPointerException();
-			// }
-			if (result != null && result.isPresent()) {
-				return result;
-			}
-			if (((ISymbol.DELAYED_RULE_EVALUATION & attr) == ISymbol.DELAYED_RULE_EVALUATION)) {
-				if ((result = symbol.evalDownRule(this, ast)).isPresent()) {
+		if (symbol.isBuiltInSymbol()) {
+			final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
+			if (module instanceof IFunctionEvaluator) {
+				// evaluate a built-in function.
+				IExpr result;
+				if (fNumericMode) {
+					result = ((IFunctionEvaluator) module).numericEval(ast, this);
+				} else {
+					result = ((IFunctionEvaluator) module).evaluate(ast, this);
+				}
+				// if (result == null) {
+				// System.out.println(ast);
+				// throw new NullPointerException();
+				// }
+				if (result != null && result.isPresent()) {
 					return result;
+				}
+				if (((ISymbol.DELAYED_RULE_EVALUATION & attr) == ISymbol.DELAYED_RULE_EVALUATION)) {
+					if ((result = symbol.evalDownRule(this, ast)).isPresent()) {
+						return result;
+					}
 				}
 			}
 		}
-		// }
 		return F.NIL;
 	}
 
@@ -1169,9 +1177,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			return ast.arg1();
 		}
 		final ISymbol symbol = ast.topHead();
-		// call so that attributes may be set in
-		// AbstractFunctionEvaluator#setUp() method
-		symbol.getEvaluator();
+		if (symbol.isBuiltInSymbol()) {
+			// call so that attributes may be set in
+			// AbstractFunctionEvaluator#setUp() method
+			((IBuiltInSymbol)symbol).getEvaluator();
+		}
 
 		final int attr = symbol.getAttributes();
 		IAST resultList = ast;

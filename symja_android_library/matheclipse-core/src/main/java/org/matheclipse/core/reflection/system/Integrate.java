@@ -26,7 +26,7 @@ import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.Symbol;
+import org.matheclipse.core.expression.BuiltInSymbol;
 import org.matheclipse.core.generic.BinaryEval;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors;
@@ -483,7 +483,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		Predicate<IExpr> isTrigFunction = Predicates.isAST(new ISymbol[] { F.Cos, F.Sin });
 		if (timesAST.isMember(isTrigFunction, false)) {
 			// use a symbol which is not in the symbols map
-			ISymbol pSymbol = new Symbol("$x$");
+			ISymbol pSymbol = new BuiltInSymbol("$x$");
 			IExpr fx = F.eval(F.TrigReduce(timesAST));
 			if (fx.isPlus()) {
 				// Collect arguments for x

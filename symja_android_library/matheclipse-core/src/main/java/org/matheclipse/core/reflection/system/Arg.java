@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
@@ -63,7 +64,7 @@ public class Arg extends AbstractFunctionEvaluator implements INumeric, DoubleUn
 				}
 				return F.Arg(directedInfininty.arg1());
 			} else if (arg1.isComplexInfinity()) {
-				return F.Interval(F.List( F.Pi.negate(), F.Pi));
+				return F.Interval(F.List(F.Pi.negate(), F.Pi));
 			}
 		} else if (arg1.isNumber()) {
 			return ((INumber) arg1).complexArg();
@@ -79,14 +80,16 @@ public class Arg extends AbstractFunctionEvaluator implements INumeric, DoubleUn
 		}
 
 		if (arg1.isConstant()) {
-			ISymbol sym = (ISymbol) arg1;
-			IEvaluator eval = sym.getEvaluator();
-			if (eval instanceof ISignedNumberConstant) {
-				double val = ((ISignedNumberConstant) eval).evalReal();
-				if (val < 0.0) {
-					return F.Pi;
-				} else if (val > 0.0) {
-					return F.C0;
+			if (arg1.isBuiltInSymbol()) {
+				IBuiltInSymbol sym = (IBuiltInSymbol) arg1;
+				IEvaluator eval = sym.getEvaluator();
+				if (eval instanceof ISignedNumberConstant) {
+					double val = ((ISignedNumberConstant) eval).evalReal();
+					if (val < 0.0) {
+						return F.Pi;
+					} else if (val > 0.0) {
+						return F.C0;
+					}
 				}
 			}
 		}

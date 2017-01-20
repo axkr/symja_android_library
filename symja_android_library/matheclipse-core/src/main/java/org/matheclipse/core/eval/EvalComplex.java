@@ -12,6 +12,7 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 
 public class EvalComplex {
 	public static double[] eval(final DoubleStack stack, final int top, final IExpr expr) {
@@ -39,16 +40,18 @@ public class EvalComplex {
 	public static double[] evalAST(final DoubleStack stack, final int top, final IAST ast) {
 		final int newTop = top;
 		final ISymbol symbol = (ISymbol) ast.get(0);
-		final IEvaluator module = symbol.getEvaluator();
-		if (module instanceof INumericComplex) {
-			// fast evaluation path
-			stack.ensureCapacity(top + ast.size() * 2);
-			for (int i = 1; i < ast.size(); i++) {
-				final double[] result = eval(stack, newTop, ast.get(i));
-				stack.push(result[0]);
-				stack.push(result[1]);
+		if (symbol.isBuiltInSymbol()) {
+			final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
+			if (module instanceof INumericComplex) {
+				// fast evaluation path
+				stack.ensureCapacity(top + ast.size() * 2);
+				for (int i = 1; i < ast.size(); i++) {
+					final double[] result = eval(stack, newTop, ast.get(i));
+					stack.push(result[0]);
+					stack.push(result[1]);
+				}
+				return ((INumericComplex) module).evalComplex(stack, ast.size() - 1);
 			}
-			return ((INumericComplex) module).evalComplex(stack, ast.size() - 1);
 		}
 		// slow evaluation path
 		final IExpr result = F.evaln(ast);
@@ -83,16 +86,18 @@ public class EvalComplex {
 				return result;
 			}
 		}
-		final IEvaluator module = symbol.getEvaluator();
-		if (module instanceof ISignedNumberConstant) {
-			// fast evaluation path
-			final double[] result = new double[2];
-			result[0] = ((ISignedNumberConstant) module).evalReal();
-			result[1] = 0.0;
-			return result;
-		} else if (module instanceof INumericComplexConstant) {
-			// fast evaluation path
-			return ((INumericComplexConstant) module).evalComplex();
+		if (symbol.isBuiltInSymbol()) {
+			final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
+			if (module instanceof ISignedNumberConstant) {
+				// fast evaluation path
+				final double[] result = new double[2];
+				result[0] = ((ISignedNumberConstant) module).evalReal();
+				result[1] = 0.0;
+				return result;
+			} else if (module instanceof INumericComplexConstant) {
+				// fast evaluation path
+				return ((INumericComplexConstant) module).evalComplex();
+			}
 		}
 
 		// slow evaluation path

@@ -15,18 +15,13 @@ import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.SystemNamespace;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
-import org.matheclipse.core.eval.interfaces.ISymbolEvaluator;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
-import org.matheclipse.core.generic.interfaces.INumericFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IEvaluationEngine;
-import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -42,64 +37,33 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
-/**
- * Implements Symbols for function, constant and variable names
- * 
- */
 public class Symbol implements ISymbol, Serializable {
 
-	static class DummyEvaluator implements IEvaluator {
-		@Override
-		public void setUp(ISymbol newSymbol) {
-			// do nothing because of dummy evaluator
-		}
-	}
-
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -4991038487281911261L;
-
-	/**
-	 * 
-	 */
-
 	private static final int DEFAULT_VALUE_INDEX = Integer.MIN_VALUE;
-
-	protected static final DummyEvaluator DUMMY_EVALUATOR = new DummyEvaluator();
-
 	/**
 	 * The attribute values of the symbol represented by single bits.
 	 */
-	private int fAttributes = NOATTRIBUTE;
-
-	private transient IEvaluator fEvaluator;
-
+	protected int fAttributes = NOATTRIBUTE;
 	/**
 	 * The pattern matching &quot;down value&quot; rules associated with this
 	 * symbol.
 	 */
 	private transient RulesData fRulesData;
-
 	private OpenIntToIExprHashMap fDefaultValues = null;
-
-	/* package private */String fSymbolName;
-
+	protected String fSymbolName;
 	/**
 	 * The hash value of this object computed in the constructor.
 	 * 
 	 */
-	final int fHashValue;
+	protected final int fHashValue;
 
 	public Symbol(final String symbolName) {
-		this(symbolName, null);
-	}
-
-	public Symbol(final String symbolName, final IEvaluator evaluator) {
 		super();
 		fHashValue = symbolName.hashCode();
 		fSymbolName = symbolName;
-		fEvaluator = evaluator;
 	}
 
 	/**
@@ -165,13 +129,13 @@ public class Symbol implements ISymbol, Serializable {
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
-		if (expr instanceof Symbol) {
+		if (expr instanceof BuiltInSymbol) {
 			if (this == expr) {
 				// Symbols are unique objects
 				// Makes no sense to compare the symbol names, if they are equal
 				return 0;
 			}
-			return fSymbolName.compareTo(((Symbol) expr).fSymbolName);
+			return fSymbolName.compareTo(((BuiltInSymbol) expr).fSymbolName);
 		}
 		return ISymbol.super.compareTo(expr);
 	}
@@ -215,9 +179,6 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public String definitionToString() throws IOException {
-		// dummy call to ensure, that the associated rules are loaded:
-		getEvaluator();
-
 		StringWriter buf = new StringWriter();
 
 		OutputFormFactory off = OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax());
@@ -241,11 +202,11 @@ public class Symbol implements ISymbol, Serializable {
 		if (this == obj) {
 			return true;
 		}
-		if (obj instanceof Symbol) {
-			if (fHashValue != ((Symbol) obj).fHashValue) {
+		if (obj instanceof BuiltInSymbol) {
+			if (fHashValue != ((BuiltInSymbol) obj).fHashValue) {
 				return false;
 			}
-			return fSymbolName.equals(((Symbol) obj).fSymbolName);
+			return fSymbolName.equals(((BuiltInSymbol) obj).fSymbolName);
 		}
 		return false;
 	}
@@ -312,20 +273,6 @@ public class Symbol implements ISymbol, Serializable {
 		IExpr result;
 		if ((result = evalDownRule(engine, this)).isPresent()) {
 			return result;
-		}
-		final IEvaluator module = getEvaluator();
-		if (module instanceof ISymbolEvaluator) {
-			IExpr temp;
-			if (engine.isNumericMode()) {
-				if (engine.isApfloat()) {
-					temp = ((ISymbolEvaluator) module).apfloatEval(this, engine);
-				} else {
-					temp = ((ISymbolEvaluator) module).numericEval(this);
-				}
-			} else {
-				temp = ((ISymbolEvaluator) module).evaluate(this);
-			}
-			return temp;
 		}
 		return F.NIL;
 	}
@@ -415,28 +362,6 @@ public class Symbol implements ISymbol, Serializable {
 			return null;
 		}
 		return fDefaultValues.get(pos);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public IEvaluator getEvaluator() {
-		// use "Double-Checked Locking" idiom
-		// https://en.wikipedia.org/wiki/Double-checked_locking
-		if (fEvaluator == null) {
-			synchronized (this) {
-				if (fEvaluator == null) {
-					fEvaluator = DUMMY_EVALUATOR;
-					if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-						SystemNamespace.DEFAULT.setEvaluator(this);
-					} else {
-						if (Character.isUpperCase(fSymbolName.charAt(0))) {
-							SystemNamespace.DEFAULT.setEvaluator(this);
-						}
-					}
-				}
-			}
-		}
-		return fEvaluator;
 	}
 
 	/**
@@ -718,24 +643,6 @@ public class Symbol implements ISymbol, Serializable {
 		return (fAttributes & CONSTANT) != CONSTANT;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public IExpr mapConstantDouble(INumericFunction<IExpr> function) {
-		if (isConstant()) {
-			IEvaluator evaluator = getEvaluator();
-			if (evaluator instanceof ISignedNumberConstant) {
-				ISignedNumberConstant numericConstant = (ISignedNumberConstant) evaluator;
-				double value = numericConstant.evalReal();
-				if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
-					return function.apply(value);
-				}
-			}
-		}
-		return F.NIL;
-	}
-
 	/** {@inheritDoc} */
 	@Override
 	public final void popLocalVariable() {
@@ -821,7 +728,7 @@ public class Symbol implements ISymbol, Serializable {
 	}
 
 	public Object readResolve() throws ObjectStreamException {
-		Symbol sym = (Symbol) F.$s(fSymbolName);
+		BuiltInSymbol sym = (BuiltInSymbol) F.$s(fSymbolName);
 		sym.fAttributes = fAttributes;
 		return sym;
 	}
@@ -928,13 +835,6 @@ public class Symbol implements ISymbol, Serializable {
 		fDefaultValues.put(pos, expr);
 	}
 
-	/** {@inheritDoc} */
-	@Override
-	public final void setEvaluator(final IEvaluator evaluator) {
-		fEvaluator = evaluator;
-		evaluator.setUp(this);
-	}
-
 	@Override
 	public String toString() {
 		try {
@@ -978,4 +878,5 @@ public class Symbol implements ISymbol, Serializable {
 		}
 		return true;
 	}
+
 }

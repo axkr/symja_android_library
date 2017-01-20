@@ -9,6 +9,7 @@ import static org.matheclipse.core.expression.F.Subtract;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.BuiltInSymbol;
 import org.matheclipse.core.expression.Symbol;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.interfaces.IIterator;
@@ -89,8 +90,8 @@ public class Iterator implements IIterator<IExpr> {
 				maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg2());
 				step = F.C1;
 
-				if (list.arg1() instanceof Symbol) {
-					variable = (Symbol) list.arg1();
+				if (list.arg1() instanceof BuiltInSymbol) {
+					variable = (BuiltInSymbol) list.arg1();
 				} else {
 					variable = null;
 				}
@@ -112,7 +113,7 @@ public class Iterator implements IIterator<IExpr> {
 				start = evalEngine.evalWithoutNumericReset(list.arg2());
 				maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg3());
 				step = evalEngine.evalWithoutNumericReset(list.arg4());
-				if (list.arg1() instanceof Symbol) {
+				if (list.arg1() instanceof BuiltInSymbol) {
 					variable = (Symbol) list.arg1();
 				} else {
 					variable = null;

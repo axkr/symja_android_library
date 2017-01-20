@@ -3,12 +3,12 @@ package org.matheclipse.core.eval.util;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 
 public class AbstractAssumptions implements IAssumptions {
 
@@ -69,8 +69,8 @@ public class AbstractAssumptions implements IAssumptions {
 		if (expr.isNumber()) {
 			return false;
 		}
-		if (expr.isSymbol()) {
-			final IEvaluator module = ((ISymbol) expr).getEvaluator();
+		if (expr.isBuiltInSymbol()) {
+			final IEvaluator module = ((IBuiltInSymbol) expr).getEvaluator();
 			if (module instanceof ISignedNumberConstant) {
 				return ((ISignedNumberConstant) module).evalReal() < 0.0;
 			}
@@ -91,8 +91,8 @@ public class AbstractAssumptions implements IAssumptions {
 		if (expr.isNumber()) {
 			return false;
 		}
-		if (expr.isSymbol()) {
-			final IEvaluator module = ((ISymbol) expr).getEvaluator();
+		if (expr.isBuiltInSymbol()) {
+			final IEvaluator module = ((IBuiltInSymbol) expr).getEvaluator();
 			if (module instanceof ISignedNumberConstant) {
 				return ((ISignedNumberConstant) module).evalReal() > 0.0;
 			}
@@ -113,8 +113,8 @@ public class AbstractAssumptions implements IAssumptions {
 		if (expr.isNumber()) {
 			return false;
 		}
-		if (expr.isSymbol()) {
-			final IEvaluator module = ((ISymbol) expr).getEvaluator();
+		if (expr.isBuiltInSymbol()) {
+			final IEvaluator module = ((IBuiltInSymbol) expr).getEvaluator();
 			if (module instanceof ISignedNumberConstant) {
 				return ((ISignedNumberConstant) module).evalReal() >= 0.0;
 			}
@@ -197,8 +197,8 @@ public class AbstractAssumptions implements IAssumptions {
 		if (expr.isNumber()) {
 			return F.True;
 		}
-		if (expr.isSymbol()) {
-			if (((ISymbol) expr).getEvaluator() instanceof ISignedNumberConstant) {
+		if (expr.isBuiltInSymbol()) {
+			if (((IBuiltInSymbol) expr).getEvaluator() instanceof ISignedNumberConstant) {
 				return F.True;
 			}
 		}
@@ -300,8 +300,8 @@ public class AbstractAssumptions implements IAssumptions {
 		if (expr.isNumber()) {
 			return F.False;
 		}
-		if (expr.isSymbol()) {
-			if (((ISymbol) expr).getEvaluator() instanceof ISignedNumberConstant) {
+		if (expr.isBuiltInSymbol()) {
+			if (((IBuiltInSymbol) expr).getEvaluator() instanceof ISignedNumberConstant) {
 				return F.True;
 			}
 		}

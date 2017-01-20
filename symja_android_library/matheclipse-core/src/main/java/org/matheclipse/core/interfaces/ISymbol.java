@@ -1,3 +1,4 @@
+
 package org.matheclipse.core.interfaces;
 
 import java.io.IOException;
@@ -8,6 +9,7 @@ import javax.annotation.Nonnull;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.interfaces.INumericFunction;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMap;
@@ -215,7 +217,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * Get the Attributes of this symbol (i.e. LISTABLE, FLAT, ORDERLESS,...)
 	 * 
 	 * @return
-	 * @see ISymbol#FLAT
+	 * @see IBuiltInSymbol#FLAT
 	 */
 	public int getAttributes();
 
@@ -240,14 +242,6 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @return the default value or <code>null</code> if undefined.
 	 */
 	public IExpr getDefaultValue(int position);
-
-	/**
-	 * Get the current evaluator for this symbol
-	 * 
-	 * @return the evaluator which is associated to this symbol or
-	 *         <code>null</code> if no evaluator is associated
-	 */
-	public IEvaluator getEvaluator();
 
 	/**
 	 * 
@@ -341,7 +335,9 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @see org.matheclipse.core.reflection.system.Ceiling
 	 * @see org.matheclipse.core.reflection.system.Floor
 	 */
-	public IExpr mapConstantDouble(INumericFunction<IExpr> function);
+	default IExpr mapConstantDouble(INumericFunction<IExpr> function) {
+		return F.NIL;
+	}
 
 	/**
 	 * Delete the topmost placeholder from the local variable stack
@@ -487,7 +483,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 */
 	public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol);
 
-	public void removeRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide,
+	public void removeRule(final IBuiltInSymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide,
 			boolean packageMode);
 
 	/**
@@ -512,7 +508,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * 
 	 * @param expr
 	 *            the general default value
-	 * @see ISymbol#getDefaultValue()
+	 * @see IBuiltInSymbol#getDefaultValue()
 	 */
 	public void setDefaultValue(IExpr expr);
 
@@ -526,14 +522,9 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 *            the position for the default value
 	 * @param expr
 	 *            the default value for the given position
-	 * @see ISymbol#getDefaultValue(int)
+	 * @see IBuiltInSymbol#getDefaultValue(int)
 	 */
 	public void setDefaultValue(int position, IExpr expr);
-
-	/**
-	 * Set the current evaluator which is associated to this symbol
-	 */
-	public void setEvaluator(IEvaluator module);
 
 	/**
 	 * Serialize the rule definitions associated to this symbol

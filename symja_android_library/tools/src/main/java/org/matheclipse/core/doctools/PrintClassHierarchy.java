@@ -25,7 +25,7 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.Pattern;
 import org.matheclipse.core.expression.PatternSequence;
 import org.matheclipse.core.expression.StringX;
-import org.matheclipse.core.expression.Symbol;
+import org.matheclipse.core.expression.BuiltInSymbol;
 import org.matheclipse.core.interfaces.IAST;
 
 public class PrintClassHierarchy {
@@ -39,7 +39,7 @@ public class PrintClassHierarchy {
 	public static void main(final String[] args) {
 		new PrintClassHierarchy(IAST.class, AST0.class, AST1.class, AST2.class, AST3.class, AST.class, ComplexSym.class,
 				IntegerSym.class, BigIntegerSym.class, FractionSym.class, BigFractionSym.class, ComplexNum.class,
-				Num.class, ApcomplexNum.class, ApfloatNum.class, Pattern.class, PatternSequence.class, Symbol.class,
+				Num.class, ApcomplexNum.class, ApfloatNum.class, Pattern.class, PatternSequence.class, BuiltInSymbol.class,
 				StringX.class).printHierarchy();
 	}
 

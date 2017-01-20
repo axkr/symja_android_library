@@ -75,7 +75,7 @@ public class ContextPath {
 		// }
 		// }
 		// }
-		symbol = new Symbol(name);
+		symbol = new BuiltInSymbol(name);
 		context.put(name, symbol);
 		// engine.putUserVariable(name, symbol);
 		// if (name.charAt(0) == '$') {

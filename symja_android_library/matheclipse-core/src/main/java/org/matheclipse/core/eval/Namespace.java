@@ -7,9 +7,9 @@ import java.util.Map;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
-import org.matheclipse.core.expression.Symbol;
+import org.matheclipse.core.expression.BuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
-import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 
 /**
  * 
@@ -59,7 +59,7 @@ public class Namespace {
 	 * @param symbol
 	 *            the symbol which should be set-up
 	 */
-	public void setEvaluator(final ISymbol symbol) {
+	public void setEvaluator(final IBuiltInSymbol symbol) {
 		String functionName;
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String symbolName = symbol.toString();
@@ -118,7 +118,7 @@ public class Namespace {
 		}
 	}
 
-	public void setEquals(final Symbol symbol) {
+	public void setEquals(final BuiltInSymbol symbol) {
 		String namespace;
 		for (int i = fNamespaces.size() - 1; i >= 0; i--) {
 			namespace = fNamespaces.get(i) + symbol.toString();

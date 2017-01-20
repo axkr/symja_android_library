@@ -2,9 +2,6 @@ package org.matheclipse.core.preprocessor;
 
 import java.io.File;
 
-import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.interfaces.ISymbol;
-
 /**
  * Generate java init sources for Symja symbol names.
  */

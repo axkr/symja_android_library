@@ -12,6 +12,7 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 
 public class Predicates {
 	private static class InASTPredicate implements Predicate<IExpr>, Serializable {
@@ -390,9 +391,11 @@ public class Predicates {
 	 */
 	public static Predicate<IExpr> isTrue(final EvalEngine engine, final IExpr head) {
 		if (head.isSymbol()) {
-			IEvaluator eval = ((ISymbol) head).getEvaluator();
-			if (eval != null && (eval instanceof Predicate<?>)) {
-				return (Predicate<IExpr>) eval;
+			if (((ISymbol) head).isBuiltInSymbol()) {
+				IEvaluator eval = ((IBuiltInSymbol) head).getEvaluator();
+				if (eval != null && (eval instanceof Predicate<?>)) {
+					return (Predicate<IExpr>) eval;
+				}
 			}
 		}
 		return new IsUnaryTrue<IExpr>(engine, head);

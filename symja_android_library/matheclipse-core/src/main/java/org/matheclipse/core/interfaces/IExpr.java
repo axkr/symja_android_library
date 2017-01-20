@@ -197,21 +197,12 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Return the argument of a complex number.
-	 * 
-	 * @return the argument of a complex number
-	 */
-	default IExpr complexArg() {
-		return F.eval(F.Arg(this));
-	} 
-
-	/**
 	 * Accept a visitor with return type T
 	 * 
 	 * @param visitor
 	 * @return
 	 */
-	public <T> T accept(IVisitor<T> visitor);
+	public <T> T accept(IVisitor<T> visitor); 
 
 	/**
 	 * Accept a visitor with return type <code>boolean</code>
@@ -312,6 +303,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		int x = hierarchy();
 		int y = expr.hierarchy();
 		return (x < y) ? -1 : ((x == y) ? 0 : 1);
+	}
+
+	/**
+	 * Return the argument of a complex number.
+	 * 
+	 * @return the argument of a complex number
+	 */
+	default IExpr complexArg() {
+		return F.eval(F.Arg(this));
 	}
 
 	/**
@@ -930,6 +930,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default boolean isBlank() {
 		return false;
+	}
+
+	/**
+	 * Test if this expression is a symbol (instanceof ISymbol)
+	 * 
+	 * @return
+	 */
+	default boolean isBuiltInSymbol() {
+		return this instanceof IBuiltInSymbol;
 	}
 
 	/**
@@ -2070,7 +2079,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isSymbol() {
 		return this instanceof ISymbol;
 	}
-
+	
 	/**
 	 * Test if this expression is a symbol (instanceof ISymbol) or a pattern
 	 * object (instanceof IPatternObject)
