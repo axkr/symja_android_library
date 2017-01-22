@@ -9,13 +9,13 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Khinchin constant
  * 
- * See: <a href="http://en.wikipedia.org/wiki/Khinchin%27s_constant">Wikipedia:Khinchin's constant</a>
+ * See: <a href="http://en.wikipedia.org/wiki/Khinchin%27s_constant">Wikipedia:
+ * Khinchin's constant</a>
  * 
  */
-public class Khinchin extends AbstractSymbolEvaluator implements
-		ISignedNumberConstant {
+public class Khinchin extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 	final static public double KHINCHIN = 2.6854520010653064453097148354817956938203822939945;
-	
+
 	public Khinchin() {
 	}
 

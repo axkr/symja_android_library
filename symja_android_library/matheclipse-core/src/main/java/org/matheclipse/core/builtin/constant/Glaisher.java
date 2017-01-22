@@ -9,13 +9,14 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Glaisher constant
  * 
- * See <a href="http://en.wikipedia.org/wiki/Glaisher-Kinkelin_constant">Wikipedia:Glaisher-Kinkelin constant</a>
+ * See
+ * <a href="http://en.wikipedia.org/wiki/Glaisher-Kinkelin_constant">Wikipedia:
+ * Glaisher-Kinkelin constant</a>
  * 
  */
-public class Glaisher extends AbstractSymbolEvaluator implements
-		ISignedNumberConstant {
+public class Glaisher extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 	final static public double GLAISHER = 1.2824271291006226368753425688697917277676889273250;
-	
+
 	public Glaisher() {
 	}
 

@@ -9,12 +9,12 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Euler gamma constant
  * 
- * See <a href="http://en.wikipedia.org/wiki/Euler–Mascheroni_constant">Euler–Mascheroni constant</a>
+ * See <a href="http://en.wikipedia.org/wiki/Euler–Mascheroni_constant">Euler–
+ * Mascheroni constant</a>
  */
-public class EulerGamma extends AbstractSymbolEvaluator implements
-		ISignedNumberConstant {
+public class EulerGamma extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 	final static public double EULER_GAMMA = 0.57721566490153286060651209008240243104215933593992;
-	
+
 	public EulerGamma() {
 	}
 
