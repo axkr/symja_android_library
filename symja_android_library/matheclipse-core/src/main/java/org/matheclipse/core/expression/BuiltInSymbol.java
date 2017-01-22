@@ -7,6 +7,7 @@ import java.util.List;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.SystemNamespace;
+import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.eval.interfaces.ISymbolEvaluator;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -37,6 +38,11 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
 	protected static final DummyEvaluator DUMMY_EVALUATOR = new DummyEvaluator();
 
+	/**
+	 * The evaluation class of this built-in-function. See packages: package
+	 * <code>org.matheclipse.core.builtin.function</code> and
+	 * <code>org.matheclipse.core.reflection.system</code>.
+	 */
 	private transient IEvaluator fEvaluator;
 
 	public BuiltInSymbol(final String symbolName) {
@@ -105,9 +111,19 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 		return fEvaluator;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
+	@Override
+	public boolean isBuiltInSymbol() {
+		return true;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isCoreFunctionSymbol() {
+		return fEvaluator instanceof ICoreFunctionEvaluator;
+	}
+
+	/** {@inheritDoc} */
 	@Override
 	public IExpr mapConstantDouble(INumericFunction<IExpr> function) {
 		if (isConstant()) {

@@ -129,13 +129,13 @@ public class Symbol implements ISymbol, Serializable {
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
-		if (expr instanceof BuiltInSymbol) {
+		if (expr instanceof Symbol) {
 			if (this == expr) {
 				// Symbols are unique objects
 				// Makes no sense to compare the symbol names, if they are equal
 				return 0;
 			}
-			return fSymbolName.compareTo(((BuiltInSymbol) expr).fSymbolName);
+			return fSymbolName.compareTo(((Symbol) expr).fSymbolName);
 		}
 		return ISymbol.super.compareTo(expr);
 	}
@@ -202,11 +202,11 @@ public class Symbol implements ISymbol, Serializable {
 		if (this == obj) {
 			return true;
 		}
-		if (obj instanceof BuiltInSymbol) {
-			if (fHashValue != ((BuiltInSymbol) obj).fHashValue) {
+		if (obj instanceof Symbol) {
+			if (fHashValue != ((Symbol) obj).fHashValue) {
 				return false;
 			}
-			return fSymbolName.equals(((BuiltInSymbol) obj).fSymbolName);
+			return fSymbolName.equals(((Symbol) obj).fSymbolName);
 		}
 		return false;
 	}

@@ -202,7 +202,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param visitor
 	 * @return
 	 */
-	public <T> T accept(IVisitor<T> visitor); 
+	public <T> T accept(IVisitor<T> visitor);
 
 	/**
 	 * Accept a visitor with return type <code>boolean</code>
@@ -933,12 +933,23 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is a symbol (instanceof ISymbol)
+	 * Test if this expression is a symbol (instanceof IBuiltInSymbol)
 	 * 
 	 * @return
 	 */
 	default boolean isBuiltInSymbol() {
-		return this instanceof IBuiltInSymbol;
+		return false;
+	}
+
+	/**
+	 * Test if this expression is a symbol (instanceof IBuiltInSymbol) and the
+	 * evaluator implements <code>ICoreFunctionEvaluator</code> (see package
+	 * <code>org.matheclipse.core.builtin.function</code>).
+	 * 
+	 * @return
+	 */
+	default boolean isCoreFunctionSymbol() {
+		return false;
 	}
 
 	/**
@@ -2079,7 +2090,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isSymbol() {
 		return this instanceof ISymbol;
 	}
-	
+
 	/**
 	 * Test if this expression is a symbol (instanceof ISymbol) or a pattern
 	 * object (instanceof IPatternObject)

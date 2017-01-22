@@ -510,24 +510,13 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @return <code>F.NIL</code> if no evaluation happened
 	 */
 	public IExpr evalAST(IAST ast) {
-		IExpr head = ast.head();
-		ISymbol symbol = null;
-		if (head instanceof ISymbol) {
-			symbol = (ISymbol) head;
-			if (symbol.isBuiltInSymbol()) {
-				final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
-				if (module instanceof ICoreFunctionEvaluator) {
-					// evaluate a built-in function.
-					if (fNumericMode) {
-						return ((ICoreFunctionEvaluator) module).numericEval(ast, this);
-					}
-					return ((ICoreFunctionEvaluator) module).evaluate(ast, this);
-				}
-			}
-		} else {
-			symbol = ast.topHead();
+		final IExpr head = ast.head();
+		if (ast.head().isCoreFunctionSymbol()) {
+			// evaluate a core function (without no rule definitions)
+			final ICoreFunctionEvaluator coreFunction = (ICoreFunctionEvaluator) ((IBuiltInSymbol) head).getEvaluator();
+			return fNumericMode ? coreFunction.numericEval(ast, this) : coreFunction.evaluate(ast, this);
 		}
-
+		ISymbol symbol = ast.topHead();
 		IExpr result = evalAttributes(symbol, ast);
 		if (result.isPresent()) {
 			return result;
@@ -1180,7 +1169,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		if (symbol.isBuiltInSymbol()) {
 			// call so that attributes may be set in
 			// AbstractFunctionEvaluator#setUp() method
-			((IBuiltInSymbol)symbol).getEvaluator();
+			((IBuiltInSymbol) symbol).getEvaluator();
 		}
 
 		final int attr = symbol.getAttributes();
