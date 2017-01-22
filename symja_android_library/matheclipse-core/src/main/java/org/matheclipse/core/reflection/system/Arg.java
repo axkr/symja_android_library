@@ -79,21 +79,6 @@ public class Arg extends AbstractFunctionEvaluator implements INumeric, DoubleUn
 			}
 		}
 
-		if (arg1.isConstant()) {
-			if (arg1.isBuiltInSymbol()) {
-				IBuiltInSymbol sym = (IBuiltInSymbol) arg1;
-				IEvaluator eval = sym.getEvaluator();
-				if (eval instanceof ISignedNumberConstant) {
-					double val = ((ISignedNumberConstant) eval).evalReal();
-					if (val < 0.0) {
-						return F.Pi;
-					} else if (val > 0.0) {
-						return F.C0;
-					}
-				}
-			}
-		}
-
 		if (AbstractAssumptions.assumeNegative(arg1)) {
 			return F.Pi;
 		}

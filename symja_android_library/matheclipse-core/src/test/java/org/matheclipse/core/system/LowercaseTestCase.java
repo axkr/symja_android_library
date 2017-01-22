@@ -462,7 +462,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArg() {
-
+		check("Arg(Pi)", "0");
+		check("Arg(-Pi*E)", "Pi");
 		check("Arg(1.3)", "0");
 		check("Arg(0)", "0");
 		check("Arg(1)", "0");
