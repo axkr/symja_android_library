@@ -17,12 +17,9 @@ public class DoubleStackEvaluator {
 		if (symbol.hasLocalVariableStack()) {
 			return ((ISignedNumber) symbol.get()).doubleValue();
 		}
-		if (symbol.isBuiltInSymbol()) {
-			final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
-			if (module instanceof ISignedNumberConstant) {
-				// fast evaluation path
-				return ((ISignedNumberConstant) module).evalReal();
-			}
+		if (symbol.isSignedNumberConstant()) {
+			// fast evaluation path
+			return ((ISignedNumberConstant) ((IBuiltInSymbol) symbol).getEvaluator()).evalReal();
 		}
 		// slow evaluation path
 		final IExpr result = F.evaln(symbol);
@@ -35,7 +32,7 @@ public class DoubleStackEvaluator {
 	public static double evalAST(double[] stack, final int top, final IAST ast) {
 		final ISymbol symbol = (ISymbol) ast.get(0);
 		if (symbol.isBuiltInSymbol()) {
-			final IEvaluator module = ((IBuiltInSymbol)symbol).getEvaluator();
+			final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
 			if (module instanceof INumeric) {
 				int newTop = top;
 				// fast evaluation path

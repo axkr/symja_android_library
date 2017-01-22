@@ -1,18 +1,13 @@
 package org.matheclipse.core.expression;
 
 import java.io.IOException;
-import java.io.StringWriter;
-import java.util.List;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.SystemNamespace;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.eval.interfaces.ISymbolEvaluator;
-import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.interfaces.INumericFunction;
-import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -111,7 +106,6 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 		return fEvaluator;
 	}
 
-	/** {@inheritDoc} */
 	@Override
 	public boolean isBuiltInSymbol() {
 		return true;
@@ -125,15 +119,17 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isSignedNumberConstant() {
+		return fEvaluator instanceof ISignedNumberConstant;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public IExpr mapConstantDouble(INumericFunction<IExpr> function) {
-		if (isConstant()) {
-			IEvaluator evaluator = getEvaluator();
-			if (evaluator instanceof ISignedNumberConstant) {
-				ISignedNumberConstant numericConstant = (ISignedNumberConstant) evaluator;
-				double value = numericConstant.evalReal();
-				if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
-					return function.apply(value);
-				}
+		if (fEvaluator instanceof ISignedNumberConstant) {
+			double value = ((ISignedNumberConstant) fEvaluator).evalReal();
+			if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
+				return function.apply(value);
 			}
 		}
 		return F.NIL;

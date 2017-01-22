@@ -86,15 +86,17 @@ public class EvalComplex {
 				return result;
 			}
 		}
+		if (symbol.isSignedNumberConstant()) {
+			// fast evaluation path
+			final double[] result = new double[2];
+			result[0] = ((ISignedNumberConstant) ((IBuiltInSymbol) symbol).getEvaluator()).evalReal();
+			result[1] = 0.0;
+			return result;
+		}
 		if (symbol.isBuiltInSymbol()) {
+
 			final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
-			if (module instanceof ISignedNumberConstant) {
-				// fast evaluation path
-				final double[] result = new double[2];
-				result[0] = ((ISignedNumberConstant) module).evalReal();
-				result[1] = 0.0;
-				return result;
-			} else if (module instanceof INumericComplexConstant) {
+			if (module instanceof INumericComplexConstant) {
 				// fast evaluation path
 				return ((INumericComplexConstant) module).evalComplex();
 			}

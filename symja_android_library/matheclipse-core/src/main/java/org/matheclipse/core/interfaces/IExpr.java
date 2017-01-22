@@ -942,17 +942,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is a symbol (instanceof IBuiltInSymbol) and the
-	 * evaluator implements <code>ICoreFunctionEvaluator</code> (see package
-	 * <code>org.matheclipse.core.builtin.function</code>).
-	 * 
-	 * @return
-	 */
-	default boolean isCoreFunctionSymbol() {
-		return false;
-	}
-
-	/**
 	 * Test if this expression is a symbolic complex number (i.e.
 	 * <code>instanceof IComplex</code>)
 	 * 
@@ -1011,6 +1000,28 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @see #isNumericFunction()
 	 */
 	default boolean isConstant() {
+		return false;
+	}
+
+	/**
+	 * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the
+	 * evaluator implements <code>ICoreFunctionEvaluator</code> (see package
+	 * <code>org.matheclipse.core.builtin.function</code>).
+	 * 
+	 * @return
+	 */
+	default boolean isCoreFunctionSymbol() {
+		return false;
+	}
+
+	/**
+	 * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the
+	 * evaluator implements the <code>ISignedNumberConstant</code> interface
+	 * (see package <code>org.matheclipse.core.builtin.constant</code>).
+	 * 
+	 * @return
+	 */
+	default boolean isSignedNumberConstant() {
 		return false;
 	}
 

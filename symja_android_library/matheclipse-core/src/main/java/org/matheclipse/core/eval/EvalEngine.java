@@ -516,7 +516,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			final ICoreFunctionEvaluator coreFunction = (ICoreFunctionEvaluator) ((IBuiltInSymbol) head).getEvaluator();
 			return fNumericMode ? coreFunction.numericEval(ast, this) : coreFunction.evaluate(ast, this);
 		}
-		ISymbol symbol = ast.topHead();
+		final ISymbol symbol = ast.topHead();
 		IExpr result = evalAttributes(symbol, ast);
 		if (result.isPresent()) {
 			return result;

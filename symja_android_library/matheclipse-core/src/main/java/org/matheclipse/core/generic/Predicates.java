@@ -217,6 +217,8 @@ public class Predicates {
 	 * 
 	 * @param ast
 	 *            the AST those arguments may contain the function input
+	 * @return a <code>java.util.function.Predicate</code> predicate of one
+	 *         argument.
 	 */
 	public static Predicate<IExpr> in(IAST ast) {
 		return new InASTPredicate(ast);
@@ -230,6 +232,8 @@ public class Predicates {
 	 * 
 	 * @param expr
 	 *            the expr which may match the function input
+	 * @return a <code>java.util.function.Predicate</code> predicate of one
+	 *         argument.
 	 */
 	public static Predicate<IExpr> in(IExpr expr) {
 		return new InASTPredicate(F.List(expr));
@@ -240,6 +244,9 @@ public class Predicates {
 	 * <code>input</code> is an AST list, which contains one of the given
 	 * <b>header elements</b> at index position <code>0</code>.
 	 * 
+	 * @param heads
+	 * @return a <code>java.util.function.Predicate</code> predicate of one
+	 *         argument.
 	 */
 	public static Predicate<IExpr> isAST(final ISymbol[] heads) {
 		return new Predicate<IExpr>() {
@@ -261,8 +268,8 @@ public class Predicates {
 	 * returned.
 	 * 
 	 * @param expr
-	 * @return
-	 * @see IsUnaryTrue
+	 * @return a <code>java.util.function.BiPredicate</code> predicate of two
+	 *         arguments.
 	 */
 	public static BiPredicate<IExpr, IExpr> isBinaryFalse(IExpr expr) {
 		return new IsBinaryFalse(expr, EvalEngine.get());
@@ -273,8 +280,8 @@ public class Predicates {
 	 * <code>True</code>. A <code>IsUnaryTrue</code> predicate will be returned.
 	 * 
 	 * @param expr
-	 * @return
-	 * @see IsUnaryTrue
+	 * @return a <code>java.util.function.BiPredicate</code> predicate of two
+	 *         arguments.
 	 */
 	public static BiPredicate<IExpr, IExpr> isBinaryTrue(IExpr expr) {
 		return new IsBinaryTrue(expr, EvalEngine.get());
@@ -287,6 +294,8 @@ public class Predicates {
 	 * 
 	 * @param expr
 	 *            the expr which may match the function input
+	 * @return a <code>java.util.function.Predicate</code> predicate of one
+	 *         argument.
 	 */
 	public static Predicate<IExpr> isFree(final IExpr expr) {
 		return new Predicate<IExpr>() {
@@ -387,15 +396,12 @@ public class Predicates {
 	 * @param engine
 	 * @param head
 	 * @return
-	 * @see IsUnaryTrue
 	 */
 	public static Predicate<IExpr> isTrue(final EvalEngine engine, final IExpr head) {
-		if (head.isSymbol()) {
-			if (((ISymbol) head).isBuiltInSymbol()) {
-				IEvaluator eval = ((IBuiltInSymbol) head).getEvaluator();
-				if (eval != null && (eval instanceof Predicate<?>)) {
-					return (Predicate<IExpr>) eval;
-				}
+		if (head.isBuiltInSymbol()) {
+			IEvaluator eval = ((IBuiltInSymbol) head).getEvaluator();
+			if (eval instanceof Predicate<?>) {
+				return (Predicate<IExpr>) eval;
 			}
 		}
 		return new IsUnaryTrue<IExpr>(engine, head);
@@ -409,8 +415,8 @@ public class Predicates {
 	 * returned.
 	 * 
 	 * @param expr
-	 * @return
-	 * @see IsUnaryTrue
+	 * @return a <code>java.util.function.Predicate</code> predicate of one
+	 *         argument.
 	 */
 	public static Predicate<IExpr> isTrue(IExpr expr) {
 		return new IsUnaryTrue<IExpr>(EvalEngine.get(), expr);
@@ -418,6 +424,8 @@ public class Predicates {
 
 	/**
 	 *
+	 * @return a <code>java.util.function.Predicate</code> predicate of one
+	 *         argument.
 	 */
 	public static Predicate<IExpr> isUnaryVariableOrPattern() {
 		return new Predicate<IExpr>() {

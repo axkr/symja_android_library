@@ -69,11 +69,8 @@ public class AbstractAssumptions implements IAssumptions {
 		if (expr.isNumber()) {
 			return false;
 		}
-		if (expr.isBuiltInSymbol()) {
-			final IEvaluator module = ((IBuiltInSymbol) expr).getEvaluator();
-			if (module instanceof ISignedNumberConstant) {
-				return ((ISignedNumberConstant) module).evalReal() < 0.0;
-			}
+		if (expr.isSignedNumberConstant()) {
+			return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() < 0.0;
 		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
@@ -91,11 +88,8 @@ public class AbstractAssumptions implements IAssumptions {
 		if (expr.isNumber()) {
 			return false;
 		}
-		if (expr.isBuiltInSymbol()) {
-			final IEvaluator module = ((IBuiltInSymbol) expr).getEvaluator();
-			if (module instanceof ISignedNumberConstant) {
-				return ((ISignedNumberConstant) module).evalReal() > 0.0;
-			}
+		if (expr.isSignedNumberConstant()) {
+			return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() > 0.0;
 		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
@@ -113,11 +107,8 @@ public class AbstractAssumptions implements IAssumptions {
 		if (expr.isNumber()) {
 			return false;
 		}
-		if (expr.isBuiltInSymbol()) {
-			final IEvaluator module = ((IBuiltInSymbol) expr).getEvaluator();
-			if (module instanceof ISignedNumberConstant) {
-				return ((ISignedNumberConstant) module).evalReal() >= 0.0;
-			}
+		if (expr.isSignedNumberConstant()) {
+			return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() >= 0.0;
 		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
@@ -155,7 +146,8 @@ public class AbstractAssumptions implements IAssumptions {
 				return F.False;
 			}
 
-			// if (((ISymbol) expr).getEvaluator() instanceof ISignedNumberConstant) {
+			// if (((ISymbol) expr).getEvaluator() instanceof
+			// ISignedNumberConstant) {
 			// return F.True;
 			// }
 		}
@@ -197,10 +189,8 @@ public class AbstractAssumptions implements IAssumptions {
 		if (expr.isNumber()) {
 			return F.True;
 		}
-		if (expr.isBuiltInSymbol()) {
-			if (((IBuiltInSymbol) expr).getEvaluator() instanceof ISignedNumberConstant) {
-				return F.True;
-			}
+		if (expr.isSignedNumberConstant()) {
+			return F.True;
 		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
@@ -254,7 +244,8 @@ public class AbstractAssumptions implements IAssumptions {
 		}
 		// if (expr.isAST()) {
 		// IAST ast = (IAST) expr;
-		// if (ast.isPower() && ast.arg1().isRational() && ast.arg2().isRational()) {
+		// if (ast.isPower() && ast.arg1().isRational() &&
+		// ast.arg2().isRational()) {
 		// IExpr arg2 = ast.arg2();
 		// if (arg2.equals(F.C1D2)) {
 		// return F.False;
@@ -300,10 +291,8 @@ public class AbstractAssumptions implements IAssumptions {
 		if (expr.isNumber()) {
 			return F.False;
 		}
-		if (expr.isBuiltInSymbol()) {
-			if (((IBuiltInSymbol) expr).getEvaluator() instanceof ISignedNumberConstant) {
-				return F.True;
-			}
+		if (expr.isSignedNumberConstant()) {
+			return F.True;
 		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
