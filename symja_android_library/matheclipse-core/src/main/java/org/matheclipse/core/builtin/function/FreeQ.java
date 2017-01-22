@@ -35,14 +35,18 @@ public class FreeQ extends AbstractCoreFunctionEvaluator {
 	}
 
 	/**
-	 * Checks if <code>orderless1.size()</code> is greaterequal <code>orderless2.size()</code> and returns <code>false</code>, if
-	 * every argument in <code>orderless2</code> equals an argument in <code>orderless1</code>. I.e. <code>orderless1</code>
-	 * doesn't contain every argument of <code>orderless2</code>.
+	 * Checks if <code>orderless1.size()</code> is greater or equal
+	 * <code>orderless2.size()</code> and returns <code>false</code>, if every
+	 * argument in <code>orderless2</code> equals an argument in
+	 * <code>orderless1</code>. I.e. <code>orderless1</code> doesn't contain
+	 * every argument of <code>orderless2</code>.
 	 * 
 	 * @param orderless1
 	 * @param orderless2
-	 * @return <code>false</code> if <code>orderless1.size()</code> is greaterequal <code>orderless2.size()</code> and if every
-	 *         argument in <code>orderless2</code> equals an argument in <code>orderless1</code>
+	 * @return <code>false</code> if <code>orderless1.size()</code> is greater
+	 *         or equal <code>orderless2.size()</code> and if every argument in
+	 *         <code>orderless2</code> equals an argument in
+	 *         <code>orderless1</code>
 	 */
 	public boolean isFreeOrderless(IAST orderless1, IAST orderless2) {
 		if (orderless1.size() >= orderless2.size()) {
