@@ -17,16 +17,16 @@ public interface AbsRules {
 
   final public static IAST RULES = List(
     IInit(Abs, SIZES),
-    // Abs[ArcTan[ComplexInfinity]]=Pi/2
+    // Abs(ArcTan(ComplexInfinity))=Pi/2
     ISet(Abs(ArcTan(CComplexInfinity)),
       Times(C1D2,Pi)),
-    // Abs[E]=E
+    // Abs(E)=E
     ISet(Abs(E),
       E),
-    // Abs[Pi]=Pi
+    // Abs(Pi)=Pi
     ISet(Abs(Pi),
       Pi),
-    // Abs[Conjugate[x_]]:=Abs[x]
+    // Abs(Conjugate(x_)):=Abs(x)
     ISetDelayed(Abs(Conjugate(x_)),
       Abs(x))
   );

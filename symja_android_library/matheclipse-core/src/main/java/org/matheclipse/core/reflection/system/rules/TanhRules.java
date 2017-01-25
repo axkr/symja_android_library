@@ -17,34 +17,34 @@ public interface TanhRules {
 
   final public static IAST RULES = List(
     IInit(Tanh, SIZES),
-    // Tanh[0]=0
+    // Tanh(0)=0
     ISet(Tanh(C0),
       C0),
-    // Tanh[Pi/4*I]=I
+    // Tanh(Pi/4*I)=I
     ISet(Tanh(Times(CC(0L,1L,1L,4L),Pi)),
       CI),
-    // Tanh[Pi/3*I]=Sqrt[3]*I
+    // Tanh(Pi/3*I)=Sqrt(3)*I
     ISet(Tanh(Times(CC(0L,1L,1L,3L),Pi)),
       Times(CI,CSqrt3)),
-    // Tanh[Pi/2*I]=ComplexInfinity
+    // Tanh(Pi/2*I)=ComplexInfinity
     ISet(Tanh(Times(CC(0L,1L,1L,2L),Pi)),
       CComplexInfinity),
-    // Tanh[2/3*Pi*I]=-Sqrt[3]*I
+    // Tanh(2/3*Pi*I)=-Sqrt(3)*I
     ISet(Tanh(Times(CC(0L,1L,2L,3L),Pi)),
       Times(CNI,CSqrt3)),
-    // Tanh[3/4*Pi*I]=(-1)*I
+    // Tanh(3/4*Pi*I)=(-1)*I
     ISet(Tanh(Times(CC(0L,1L,3L,4L),Pi)),
       CNI),
-    // Tanh[5/6*Pi*I]=-I/Sqrt[3]
+    // Tanh(5/6*Pi*I)=-I/Sqrt(3)
     ISet(Tanh(Times(CC(0L,1L,5L,6L),Pi)),
       Times(CNI,C1DSqrt3)),
-    // Tanh[Pi*I]=0
+    // Tanh(Pi*I)=0
     ISet(Tanh(Times(CI,Pi)),
       C0),
-    // Tanh[Infinity]=1
+    // Tanh(Infinity)=1
     ISet(Tanh(oo),
       C1),
-    // Tanh[ComplexInfinity]=Indeterminate
+    // Tanh(ComplexInfinity)=Indeterminate
     ISet(Tanh(CComplexInfinity),
       Indeterminate)
   );

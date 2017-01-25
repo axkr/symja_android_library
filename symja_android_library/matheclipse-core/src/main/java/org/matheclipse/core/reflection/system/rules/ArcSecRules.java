@@ -17,76 +17,76 @@ public interface ArcSecRules {
 
   final public static IAST RULES = List(
     IInit(ArcSec, SIZES),
-    // ArcSec[0]=ComplexInfinity
+    // ArcSec(0)=ComplexInfinity
     ISet(ArcSec(C0),
       CComplexInfinity),
-    // ArcSec[1]=0
+    // ArcSec(1)=0
     ISet(ArcSec(C1),
       C0),
-    // ArcSec[-1]=Pi
+    // ArcSec(-1)=Pi
     ISet(ArcSec(CN1),
       Pi),
-    // ArcSec[Sqrt[6]-Sqrt[2]]=Pi/12
+    // ArcSec(Sqrt(6)-Sqrt(2))=Pi/12
     ISet(ArcSec(Plus(Negate(CSqrt2),CSqrt6)),
       Times(QQ(1L,12L),Pi)),
-    // ArcSec[Sqrt[2]-Sqrt[6]]=11/12*Pi
+    // ArcSec(Sqrt(2)-Sqrt(6))=11/12*Pi
     ISet(ArcSec(Plus(CSqrt2,Negate(CSqrt6))),
       Times(QQ(11L,12L),Pi)),
-    // ArcSec[2/Sqrt[3]]=Pi/6
+    // ArcSec(2/Sqrt(3))=Pi/6
     ISet(ArcSec(Times(C2,C1DSqrt3)),
       Times(QQ(1L,6L),Pi)),
-    // ArcSec[-2/Sqrt[3]]=5/6*Pi
+    // ArcSec(-2/Sqrt(3))=5/6*Pi
     ISet(ArcSec(Times(CN2,C1DSqrt3)),
       Times(QQ(5L,6L),Pi)),
-    // ArcSec[Sqrt[5]+(-1)*1]=Pi/5
+    // ArcSec(Sqrt(5)+(-1)*1)=Pi/5
     ISet(ArcSec(Plus(CN1,CSqrt5)),
       Times(QQ(1L,5L),Pi)),
-    // ArcSec[1-Sqrt[5]]=4/5*Pi
+    // ArcSec(1-Sqrt(5))=4/5*Pi
     ISet(ArcSec(Plus(C1,Negate(CSqrt5))),
       Times(QQ(4L,5L),Pi)),
-    // ArcSec[Sqrt[2]]=Pi/4
+    // ArcSec(Sqrt(2))=Pi/4
     ISet(ArcSec(CSqrt2),
       Times(C1D4,Pi)),
-    // ArcSec[-Sqrt[2]]=3/4*Pi
+    // ArcSec(-Sqrt(2))=3/4*Pi
     ISet(ArcSec(Negate(CSqrt2)),
       Times(QQ(3L,4L),Pi)),
-    // ArcSec[2]=Pi/3
+    // ArcSec(2)=Pi/3
     ISet(ArcSec(C2),
       Times(C1D3,Pi)),
-    // ArcSec[-2]=2/3*Pi
+    // ArcSec(-2)=2/3*Pi
     ISet(ArcSec(CN2),
       Times(QQ(2L,3L),Pi)),
-    // ArcSec[1+Sqrt[5]]=Pi/5
+    // ArcSec(1+Sqrt(5))=Pi/5
     ISet(ArcSec(Plus(C1,CSqrt5)),
       Times(QQ(1L,5L),Pi)),
-    // ArcSec[-1-Sqrt[5]]=3/5*Pi
+    // ArcSec(-1-Sqrt(5))=3/5*Pi
     ISet(ArcSec(Plus(CN1,Negate(CSqrt5))),
       Times(QQ(3L,5L),Pi)),
-    // ArcSec[Sqrt[2]+Sqrt[6]]=5/12*Pi
+    // ArcSec(Sqrt(2)+Sqrt(6))=5/12*Pi
     ISet(ArcSec(Plus(CSqrt2,CSqrt6)),
       Times(QQ(5L,12L),Pi)),
-    // ArcSec[-Sqrt[2]-Sqrt[6]]=7/12*Pi
+    // ArcSec(-Sqrt(2)-Sqrt(6))=7/12*Pi
     ISet(ArcSec(Plus(Negate(CSqrt2),Negate(CSqrt6))),
       Times(QQ(7L,12L),Pi)),
-    // ArcSec[I]=Pi/2+I*Log[Sqrt[2]+1]
+    // ArcSec(I)=Pi/2+I*Log(Sqrt(2)+1)
     ISet(ArcSec(CI),
       Plus(Times(C1D2,Pi),Times(CI,Log(Plus(C1,CSqrt2))))),
-    // ArcSec[(-1)*I]=Pi/2+I*Log[Sqrt[2]+(-1)*1]
+    // ArcSec((-1)*I)=Pi/2+I*Log(Sqrt(2)+(-1)*1)
     ISet(ArcSec(CNI),
       Plus(Times(C1D2,Pi),Times(CI,Log(Plus(CN1,CSqrt2))))),
-    // ArcSec[Infinity]=Pi/2
+    // ArcSec(Infinity)=Pi/2
     ISet(ArcSec(oo),
       Times(C1D2,Pi)),
-    // ArcSec[-Infinity]=Pi/2
+    // ArcSec(-Infinity)=Pi/2
     ISet(ArcSec(Noo),
       Times(C1D2,Pi)),
-    // ArcSec[I*Infinity]=Pi/2
+    // ArcSec(I*Infinity)=Pi/2
     ISet(ArcSec(DirectedInfinity(CI)),
       Times(C1D2,Pi)),
-    // ArcSec[(-1)*I*Infinity]=Pi/2
+    // ArcSec((-1)*I*Infinity)=Pi/2
     ISet(ArcSec(DirectedInfinity(CNI)),
       Times(C1D2,Pi)),
-    // ArcSec[ComplexInfinity]=Pi/2
+    // ArcSec(ComplexInfinity)=Pi/2
     ISet(ArcSec(CComplexInfinity),
       Times(C1D2,Pi))
   );

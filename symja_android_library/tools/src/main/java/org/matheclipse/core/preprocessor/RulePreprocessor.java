@@ -197,7 +197,7 @@ public class RulePreprocessor {
 			final String[] files = sourceLocation.list();
 			if (files != null) {
 				StringBuffer buffer;
-				EvalEngine engine = EvalEngine.get();
+				EvalEngine engine = new EvalEngine(true);
 				for (int i = 0; i < files.length; i++) {
 					File sourceFile = new File(sourceLocation, files[i]);
 					// we are only interested in .m files

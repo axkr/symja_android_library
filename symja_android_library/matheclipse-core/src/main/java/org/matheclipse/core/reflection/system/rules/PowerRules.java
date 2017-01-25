@@ -20,10 +20,10 @@ public interface PowerRules {
     // E^(3/2*I*Pi)=(-1)*I
     ISet(Power(E,Times(CC(0L,1L,3L,2L),Pi)),
       CNI),
-    // E^(Pi*c_Complex):=Module[{r=Re[c],j=Im[c]},If[EvenQ[j],1,-1]/;r==0&&IntegerQ[j]]
+    // E^(Pi*c_Complex):=Module({r=Re(c),j=Im(c)},If(EvenQ(j),1,-1)/;r==0&&IntegerQ(j))
     ISetDelayed(Power(E,Times(Pi,$p(c,Complex))),
       Module(List(Set(r,Re(c)),Set(j,Im(c))),Condition(If(EvenQ(j),C1,CN1),And(Equal(r,C0),IntegerQ(j))))),
-    // E^(x_+Pi*c_Complex):=Module[{r=Re[c],j=Im[c]},If[EvenQ[j],E^x,-E^x]/;r==0&&IntegerQ[j]]
+    // E^(x_+Pi*c_Complex):=Module({r=Re(c),j=Im(c)},If(EvenQ(j),E^x,-E^x)/;r==0&&IntegerQ(j))
     ISetDelayed(Power(E,Plus(Times(Pi,$p(c,Complex)),x_)),
       Module(List(Set(r,Re(c)),Set(j,Im(c))),Condition(If(EvenQ(j),Power(E,x),Negate(Power(E,x))),And(Equal(r,C0),IntegerQ(j))))),
     // E^(I*Infinity)=Indeterminate
@@ -35,28 +35,28 @@ public interface PowerRules {
     // E^ComplexInfinity=Indeterminate
     ISet(Power(E,CComplexInfinity),
       Indeterminate),
-    // E^Log[x_]:=x
+    // E^Log(x_):=x
     ISetDelayed(Power(E,Log(x_)),
       x),
-    // E^(a_*Log[x_]):=x^a/;FreeQ[a,x]
+    // E^(a_*Log(x_)):=x^a/;FreeQ(a,x)
     ISetDelayed(Power(E,Times(a_,Log(x_))),
       Condition(Power(x,a),FreeQ(a,x))),
-    // Tan[x_]^m_IntegerQ:=Cot[x]^(-m)/;m<0
+    // Tan(x_)^m_IntegerQ:=Cot(x)^(-m)/;m<0
     ISetDelayed(Power(Tan(x_),$p(m,IntegerQ)),
       Condition(Power(Cot(x),Negate(m)),Less(m,C0))),
-    // Cot[x_]^m_IntegerQ:=Tan[x]^(-m)/;m<0
+    // Cot(x_)^m_IntegerQ:=Tan(x)^(-m)/;m<0
     ISetDelayed(Power(Cot(x_),$p(m,IntegerQ)),
       Condition(Power(Tan(x),Negate(m)),Less(m,C0))),
-    // Sec[x_]^m_IntegerQ:=Cos[x]^(-m)/;m<0
+    // Sec(x_)^m_IntegerQ:=Cos(x)^(-m)/;m<0
     ISetDelayed(Power(Sec(x_),$p(m,IntegerQ)),
       Condition(Power(Cos(x),Negate(m)),Less(m,C0))),
-    // Cos[x_]^m_IntegerQ:=Sec[x]^(-m)/;m<0
+    // Cos(x_)^m_IntegerQ:=Sec(x)^(-m)/;m<0
     ISetDelayed(Power(Cos(x_),$p(m,IntegerQ)),
       Condition(Power(Sec(x),Negate(m)),Less(m,C0))),
-    // Csc[x_]^m_IntegerQ:=Sin[x]^(-m)/;m<0
+    // Csc(x_)^m_IntegerQ:=Sin(x)^(-m)/;m<0
     ISetDelayed(Power(Csc(x_),$p(m,IntegerQ)),
       Condition(Power(Sin(x),Negate(m)),Less(m,C0))),
-    // Sin[x_]^m_IntegerQ:=Csc[x]^(-m)/;m<0
+    // Sin(x_)^m_IntegerQ:=Csc(x)^(-m)/;m<0
     ISetDelayed(Power(Sin(x_),$p(m,IntegerQ)),
       Condition(Power(Csc(x),Negate(m)),Less(m,C0)))
   );

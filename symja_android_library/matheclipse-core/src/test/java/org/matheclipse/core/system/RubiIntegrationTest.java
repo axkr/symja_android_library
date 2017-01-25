@@ -323,6 +323,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 	public void testTrigFunction001() {
 		// check("Integrate(1/(1+sec(a+b*x)), x)", "");
 
+		check("Integrate(Sin(x)*Cos(x),x)", "-Cos(x)^2/2");
 		check("Integrate(Sin(x)*Cos(x)*Pi,x)", "-1/2*Pi*Cos(x)^2");
 		check("D((-1/2)*Pi*Cos(x)^2,x)", "Pi*Cos(x)*Sin(x)");
 

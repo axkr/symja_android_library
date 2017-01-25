@@ -17,28 +17,28 @@ public interface ArcTanhRules {
 
   final public static IAST RULES = List(
     IInit(ArcTanh, SIZES),
-    // ArcTanh[0]=0
+    // ArcTanh(0)=0
     ISet(ArcTanh(C0),
       C0),
-    // ArcTanh[I/Sqrt[3]]=Pi*I/6
+    // ArcTanh(I/Sqrt(3))=Pi*I/6
     ISet(ArcTanh(Times(CI,C1DSqrt3)),
       Times(CC(0L,1L,1L,6L),Pi)),
-    // ArcTanh[I]=Pi*I/4
+    // ArcTanh(I)=Pi*I/4
     ISet(ArcTanh(CI),
       Times(CC(0L,1L,1L,4L),Pi)),
-    // ArcTanh[I*Sqrt[3]]=Pi*I/3
+    // ArcTanh(I*Sqrt(3))=Pi*I/3
     ISet(ArcTanh(Times(CI,CSqrt3)),
       Times(CC(0L,1L,1L,3L),Pi)),
-    // ArcTanh[1]=Infinity
+    // ArcTanh(1)=Infinity
     ISet(ArcTanh(C1),
       oo),
-    // ArcTanh[Infinity]=-Pi/2*I
+    // ArcTanh(Infinity)=-Pi/2*I
     ISet(ArcTanh(oo),
       Times(CC(0L,1L,-1L,2L),Pi)),
-    // ArcTanh[I*Infinity]=Pi/2*I
+    // ArcTanh(I*Infinity)=Pi/2*I
     ISet(ArcTanh(DirectedInfinity(CI)),
       Times(CC(0L,1L,1L,2L),Pi)),
-    // ArcTanh[ComplexInfinity]=Pi/2
+    // ArcTanh(ComplexInfinity)=Pi/2
     ISet(ArcTanh(CComplexInfinity),
       Times(C1D2,Pi))
   );

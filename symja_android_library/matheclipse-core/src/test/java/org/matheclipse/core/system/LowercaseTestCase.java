@@ -3422,6 +3422,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Select(Range(43), MultiplicativeOrder(#, 43) == EulerPhi(43) &)", "{3,5,12,18,19,20,26,28,29,30,33,34}");
 	}
 
+	public void testPolyGamma() {
+		check("PolyGamma(-2)", "ComplexInfinity");
+		check("PolyGamma(1)", "-EulerGamma");
+		check("PolyGamma(2)", "1-EulerGamma");
+		check("PolyGamma(3)", "3/2-EulerGamma");
+		check("PolyGamma(1,1/4)", "8*Catalan+Pi^2");
+		check("PolyGamma(1,3/4)", "-8*Catalan+Pi^2");
+		check("PolyGamma(2,5/6)", "4*Sqrt(3)*Pi^3-182*Zeta(3)");
+	}
+	
+	public void testStieltjesGamma() {
+		check("StieltjesGamma(0)", "EulerGamma");
+		check("StieltjesGamma(0,a)", "-PolyGamma(0,a)");
+	}
+	
 	public void testPolyLog() {
 		check("PolyLog(2,0)", "0");
 		check("PolyLog(2,-1)", "-Pi^2/12");

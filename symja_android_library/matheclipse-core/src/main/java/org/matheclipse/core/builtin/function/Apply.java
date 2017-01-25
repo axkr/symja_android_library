@@ -48,8 +48,14 @@ public class Apply extends AbstractCoreFunctionEvaluator {
 			Validate.checkRange(evaledAST, 3, 4);
 		}
 
+		IExpr arg1 = evaledAST.arg1();
+		IExpr arg2 = evaledAST.arg2();
+		return evalApply(arg1, arg2, evaledAST, lastIndex, heads);
+	}
+
+	public static IExpr evalApply(IExpr arg1, IExpr arg2, IAST evaledAST, int lastIndex, boolean heads) {
 		VisitorLevelSpecification level = null;
-		Function<IExpr, IExpr> af = Functors.apply(evaledAST.arg1());
+		Function<IExpr, IExpr> af = Functors.apply(arg1);
 		if (lastIndex == 3) {
 			level = new VisitorLevelSpecification(af, evaledAST.get(lastIndex), heads);
 		} else {
@@ -58,13 +64,13 @@ public class Apply extends AbstractCoreFunctionEvaluator {
 
 		try {
 
-			if (!evaledAST.arg2().isAtom()) {
-				return evaledAST.arg2().accept(level).orElse(evaledAST.arg2());
+			if (!arg2.isAtom()) {
+				return arg2.accept(level).orElse(arg2);
 			} else if (evaledAST.isAST2()) {
-				if (evaledAST.arg1().isFunction()) {
-					return F.unaryAST1(evaledAST.arg1(), evaledAST.arg2());
+				if (arg1.isFunction()) {
+					return F.unaryAST1(arg1, arg2);
 				}
-				return evaledAST.arg2();
+				return arg2;
 			}
 		} catch (final ArithmeticException e) {
 
@@ -73,7 +79,7 @@ public class Apply extends AbstractCoreFunctionEvaluator {
 	}
 
 	@Override
-	public void setUp(final ISymbol newSymbol)  {
+	public void setUp(final ISymbol newSymbol) {
 		newSymbol.setAttributes(ISymbol.HOLDALL);
 	}
 

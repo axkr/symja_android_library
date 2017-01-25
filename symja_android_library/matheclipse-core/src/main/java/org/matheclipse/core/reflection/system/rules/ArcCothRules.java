@@ -17,28 +17,28 @@ public interface ArcCothRules {
 
   final public static IAST RULES = List(
     IInit(ArcCoth, SIZES),
-    // ArcCoth[0]=I*Pi/2
+    // ArcCoth(0)=I*Pi/2
     ISet(ArcCoth(C0),
       Times(CC(0L,1L,1L,2L),Pi)),
-    // ArcCoth[I/Sqrt[3]]=-Pi/3*I
+    // ArcCoth(I/Sqrt(3))=-Pi/3*I
     ISet(ArcCoth(Times(CI,C1DSqrt3)),
       Times(CC(0L,1L,-1L,3L),Pi)),
-    // ArcCoth[I]=-Pi/4*I
+    // ArcCoth(I)=-Pi/4*I
     ISet(ArcCoth(CI),
       Times(CC(0L,1L,-1L,4L),Pi)),
-    // ArcCoth[I*Sqrt[3]]=-Pi/6*I
+    // ArcCoth(I*Sqrt(3))=-Pi/6*I
     ISet(ArcCoth(Times(CI,CSqrt3)),
       Times(CC(0L,1L,-1L,6L),Pi)),
-    // ArcCoth[1]=Infinity
+    // ArcCoth(1)=Infinity
     ISet(ArcCoth(C1),
       oo),
-    // ArcCoth[Infinity]=0
+    // ArcCoth(Infinity)=0
     ISet(ArcCoth(oo),
       C0),
-    // ArcCoth[I*Infinity]=0
+    // ArcCoth(I*Infinity)=0
     ISet(ArcCoth(DirectedInfinity(CI)),
       C0),
-    // ArcCoth[ComplexInfinity]=0
+    // ArcCoth(ComplexInfinity)=0
     ISet(ArcCoth(CComplexInfinity),
       C0)
   );

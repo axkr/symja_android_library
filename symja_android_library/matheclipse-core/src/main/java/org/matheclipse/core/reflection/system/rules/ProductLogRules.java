@@ -17,46 +17,46 @@ public interface ProductLogRules {
 
   final public static IAST RULES = List(
     IInit(ProductLog, SIZES),
-    // ProductLog[0]=0
+    // ProductLog(0)=0
     ISet(ProductLog(C0),
       C0),
-    // ProductLog[-Pi/2]=I*Pi/2
+    // ProductLog(-Pi/2)=I*Pi/2
     ISet(ProductLog(Times(CN1D2,Pi)),
       Times(CC(0L,1L,1L,2L),Pi)),
-    // ProductLog[-1/E]=-1
+    // ProductLog(-1/E)=-1
     ISet(ProductLog(Negate(Power(E,-1))),
       CN1),
-    // ProductLog[E]=1
+    // ProductLog(E)=1
     ISet(ProductLog(E),
       C1),
-    // ProductLog[-1,-Pi/2]=-Pi/2*I
+    // ProductLog(-1,-Pi/2)=-Pi/2*I
     ISet(ProductLog(CN1,Times(CN1D2,Pi)),
       Times(CC(0L,1L,-1L,2L),Pi)),
-    // ProductLog[-1,-1/E]=-1
+    // ProductLog(-1,-1/E)=-1
     ISet(ProductLog(CN1,Negate(Power(E,-1))),
       CN1),
-    // ProductLog[Infinity]=Infinity
+    // ProductLog(Infinity)=Infinity
     ISet(ProductLog(oo),
       oo),
-    // ProductLog[-Infinity]=-Infinity
+    // ProductLog(-Infinity)=-Infinity
     ISet(ProductLog(Noo),
       Noo),
-    // ProductLog[I*Infinity]=Infinity
+    // ProductLog(I*Infinity)=Infinity
     ISet(ProductLog(DirectedInfinity(CI)),
       oo),
-    // ProductLog[(-1)*I*Infinity]=Infinity
+    // ProductLog((-1)*I*Infinity)=Infinity
     ISet(ProductLog(DirectedInfinity(CNI)),
       oo),
-    // ProductLog[ComplexInfinity]=Infinity
+    // ProductLog(ComplexInfinity)=Infinity
     ISet(ProductLog(CComplexInfinity),
       oo),
-    // ProductLog[x_]*E^ProductLog[x_]:=x
+    // ProductLog(x_)*E^ProductLog(x_):=x
     ISetDelayed(Times(Power(E,ProductLog(x_)),ProductLog(x_)),
       x),
-    // ProductLog[0,x_]:=ProductLog[x]
+    // ProductLog(0,x_):=ProductLog(x)
     ISetDelayed(ProductLog(C0,x_),
       ProductLog(x)),
-    // ProductLog[n_NumberQ,0]:=-Infinity/;n!=0
+    // ProductLog(n_NumberQ,0):=-Infinity/;n!=0
     ISetDelayed(ProductLog($p(n,NumberQ),C0),
       Condition(Negate(oo),Unequal(n,C0)))
   );

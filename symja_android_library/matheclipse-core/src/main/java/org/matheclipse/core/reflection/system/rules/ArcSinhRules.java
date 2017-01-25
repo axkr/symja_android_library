@@ -17,31 +17,31 @@ public interface ArcSinhRules {
 
   final public static IAST RULES = List(
     IInit(ArcSinh, SIZES),
-    // ArcSinh[0]=0
+    // ArcSinh(0)=0
     ISet(ArcSinh(C0),
       C0),
-    // ArcSinh[I/2]=Pi*I/6
+    // ArcSinh(I/2)=Pi*I/6
     ISet(ArcSinh(CC(0L,1L,1L,2L)),
       Times(CC(0L,1L,1L,6L),Pi)),
-    // ArcSinh[I/2*Sqrt[2]]=Pi*I/4
+    // ArcSinh(I/2*Sqrt(2))=Pi*I/4
     ISet(ArcSinh(Times(CC(0L,1L,1L,2L),CSqrt2)),
       Times(CC(0L,1L,1L,4L),Pi)),
-    // ArcSinh[I/2*Sqrt[3]]=Pi*I/3
+    // ArcSinh(I/2*Sqrt(3))=Pi*I/3
     ISet(ArcSinh(Times(CC(0L,1L,1L,2L),CSqrt3)),
       Times(CC(0L,1L,1L,3L),Pi)),
-    // ArcSinh[I]=Pi*I/2
+    // ArcSinh(I)=Pi*I/2
     ISet(ArcSinh(CI),
       Times(CC(0L,1L,1L,2L),Pi)),
-    // ArcSinh[1]=Log[Sqrt[2]+1]
+    // ArcSinh(1)=Log(Sqrt(2)+1)
     ISet(ArcSinh(C1),
       Log(Plus(C1,CSqrt2))),
-    // ArcSinh[Infinity]=Infinity
+    // ArcSinh(Infinity)=Infinity
     ISet(ArcSinh(oo),
       oo),
-    // ArcSinh[I*Infinity]=Infinity
+    // ArcSinh(I*Infinity)=Infinity
     ISet(ArcSinh(DirectedInfinity(CI)),
       oo),
-    // ArcSinh[ComplexInfinity]=ComplexInfinity
+    // ArcSinh(ComplexInfinity)=ComplexInfinity
     ISet(ArcSinh(CComplexInfinity),
       CComplexInfinity)
   );

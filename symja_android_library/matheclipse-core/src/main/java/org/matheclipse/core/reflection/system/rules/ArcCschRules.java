@@ -17,31 +17,31 @@ public interface ArcCschRules {
 
   final public static IAST RULES = List(
     IInit(ArcCsch, SIZES),
-    // ArcCsch[0]=ComplexInfinity
+    // ArcCsch(0)=ComplexInfinity
     ISet(ArcCsch(C0),
       CComplexInfinity),
-    // ArcCsch[I]=-Pi/2*I
+    // ArcCsch(I)=-Pi/2*I
     ISet(ArcCsch(CI),
       Times(CC(0L,1L,-1L,2L),Pi)),
-    // ArcCsch[2*I/Sqrt[3]]=-Pi/3*I
+    // ArcCsch(2*I/Sqrt(3))=-Pi/3*I
     ISet(ArcCsch(Times(CC(0L,1L,2L,1L),C1DSqrt3)),
       Times(CC(0L,1L,-1L,3L),Pi)),
-    // ArcCsch[I*Sqrt[2]]=-Pi/4*I
+    // ArcCsch(I*Sqrt(2))=-Pi/4*I
     ISet(ArcCsch(Times(CI,CSqrt2)),
       Times(CC(0L,1L,-1L,4L),Pi)),
-    // ArcCsch[2*I]=-Pi/6*I
+    // ArcCsch(2*I)=-Pi/6*I
     ISet(ArcCsch(CC(0L,1L,2L,1L)),
       Times(CC(0L,1L,-1L,6L),Pi)),
-    // ArcCsch[1]=Log[Sqrt[2]+1]
+    // ArcCsch(1)=Log(Sqrt(2)+1)
     ISet(ArcCsch(C1),
       Log(Plus(C1,CSqrt2))),
-    // ArcCsch[Infinity]=0
+    // ArcCsch(Infinity)=0
     ISet(ArcCsch(oo),
       C0),
-    // ArcCsch[I*Infinity]=0
+    // ArcCsch(I*Infinity)=0
     ISet(ArcCsch(DirectedInfinity(CI)),
       C0),
-    // ArcCsch[ComplexInfinity]=0
+    // ArcCsch(ComplexInfinity)=0
     ISet(ArcCsch(CComplexInfinity),
       C0)
   );

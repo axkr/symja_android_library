@@ -17,25 +17,25 @@ public interface CothRules {
 
   final public static IAST RULES = List(
     IInit(Coth, SIZES),
-    // Coth[0]=ComplexInfinity
+    // Coth(0)=ComplexInfinity
     ISet(Coth(C0),
       CComplexInfinity),
-    // Coth[Pi/4*I]=(-1)*I
+    // Coth(Pi/4*I)=(-1)*I
     ISet(Coth(Times(CC(0L,1L,1L,4L),Pi)),
       CNI),
-    // Coth[Pi/2*I]=0
+    // Coth(Pi/2*I)=0
     ISet(Coth(Times(CC(0L,1L,1L,2L),Pi)),
       C0),
-    // Coth[3/4*Pi*I]=I
+    // Coth(3/4*Pi*I)=I
     ISet(Coth(Times(CC(0L,1L,3L,4L),Pi)),
       CI),
-    // Coth[Pi*I]=ComplexInfinity
+    // Coth(Pi*I)=ComplexInfinity
     ISet(Coth(Times(CI,Pi)),
       CComplexInfinity),
-    // Coth[Infinity]=1
+    // Coth(Infinity)=1
     ISet(Coth(oo),
       C1),
-    // Coth[ComplexInfinity]=Indeterminate
+    // Coth(ComplexInfinity)=Indeterminate
     ISet(Coth(CComplexInfinity),
       Indeterminate)
   );

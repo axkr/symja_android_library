@@ -17,61 +17,61 @@ public interface SinhRules {
 
   final public static IAST RULES = List(
     IInit(Sinh, SIZES),
-    // Sinh[0]=0
+    // Sinh(0)=0
     ISet(Sinh(C0),
       C0),
-    // Sinh[Pi/6*I]=I/2
+    // Sinh(Pi/6*I)=I/2
     ISet(Sinh(Times(CC(0L,1L,1L,6L),Pi)),
       CC(0L,1L,1L,2L)),
-    // Sinh[Pi/4*I]=Sqrt[2]/2*I
+    // Sinh(Pi/4*I)=Sqrt(2)/2*I
     ISet(Sinh(Times(CC(0L,1L,1L,4L),Pi)),
       Times(CC(0L,1L,1L,2L),CSqrt2)),
-    // Sinh[Pi/3*I]=Sqrt[3]/2*I
+    // Sinh(Pi/3*I)=Sqrt(3)/2*I
     ISet(Sinh(Times(CC(0L,1L,1L,3L),Pi)),
       Times(CC(0L,1L,1L,2L),CSqrt3)),
-    // Sinh[Pi/2*I]=I
+    // Sinh(Pi/2*I)=I
     ISet(Sinh(Times(CC(0L,1L,1L,2L),Pi)),
       CI),
-    // Sinh[2/3*Pi*I]=Sqrt[3]/2*I
+    // Sinh(2/3*Pi*I)=Sqrt(3)/2*I
     ISet(Sinh(Times(CC(0L,1L,2L,3L),Pi)),
       Times(CC(0L,1L,1L,2L),CSqrt3)),
-    // Sinh[3/4*Pi*I]=Sqrt[2]/2*I
+    // Sinh(3/4*Pi*I)=Sqrt(2)/2*I
     ISet(Sinh(Times(CC(0L,1L,3L,4L),Pi)),
       Times(CC(0L,1L,1L,2L),CSqrt2)),
-    // Sinh[5/6*Pi*I]=I/2
+    // Sinh(5/6*Pi*I)=I/2
     ISet(Sinh(Times(CC(0L,1L,5L,6L),Pi)),
       CC(0L,1L,1L,2L)),
-    // Sinh[Pi*I]=0
+    // Sinh(Pi*I)=0
     ISet(Sinh(Times(CI,Pi)),
       C0),
-    // Sinh[7/6*Pi*I]=-I/2
+    // Sinh(7/6*Pi*I)=-I/2
     ISet(Sinh(Times(CC(0L,1L,7L,6L),Pi)),
       CC(0L,1L,-1L,2L)),
-    // Sinh[5/4*Pi*I]=-Sqrt[2]/2*I
+    // Sinh(5/4*Pi*I)=-Sqrt(2)/2*I
     ISet(Sinh(Times(CC(0L,1L,5L,4L),Pi)),
       Times(CC(0L,1L,-1L,2L),CSqrt2)),
-    // Sinh[4/3*Pi*I]=-Sqrt[3]/2*I
+    // Sinh(4/3*Pi*I)=-Sqrt(3)/2*I
     ISet(Sinh(Times(CC(0L,1L,4L,3L),Pi)),
       Times(CC(0L,1L,-1L,2L),CSqrt3)),
-    // Sinh[3/2*Pi*I]=(-1)*I
+    // Sinh(3/2*Pi*I)=(-1)*I
     ISet(Sinh(Times(CC(0L,1L,3L,2L),Pi)),
       CNI),
-    // Sinh[5/3*Pi*I]=-Sqrt[3]/2*I
+    // Sinh(5/3*Pi*I)=-Sqrt(3)/2*I
     ISet(Sinh(Times(CC(0L,1L,5L,3L),Pi)),
       Times(CC(0L,1L,-1L,2L),CSqrt3)),
-    // Sinh[7/4*Pi*I]=-Sqrt[2]/2*I
+    // Sinh(7/4*Pi*I)=-Sqrt(2)/2*I
     ISet(Sinh(Times(CC(0L,1L,7L,4L),Pi)),
       Times(CC(0L,1L,-1L,2L),CSqrt2)),
-    // Sinh[11/6*Pi*I]=-I/2
+    // Sinh(11/6*Pi*I)=-I/2
     ISet(Sinh(Times(CC(0L,1L,11L,6L),Pi)),
       CC(0L,1L,-1L,2L)),
-    // Sinh[2*Pi*I]=0
+    // Sinh(2*Pi*I)=0
     ISet(Sinh(Times(CC(0L,1L,2L,1L),Pi)),
       C0),
-    // Sinh[Infinity]=Infinity
+    // Sinh(Infinity)=Infinity
     ISet(Sinh(oo),
       oo),
-    // Sinh[ComplexInfinity]=Indeterminate
+    // Sinh(ComplexInfinity)=Indeterminate
     ISet(Sinh(CComplexInfinity),
       Indeterminate)
   );
