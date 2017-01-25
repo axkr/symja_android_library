@@ -1555,7 +1555,10 @@ public class F {
 
 	public final static IBuiltInSymbol PolyGamma = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polygamma" : "PolyGamma");
-
+	
+	public final static IBuiltInSymbol StieltjesGamma = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "stieltjesgamma" : "StieltjesGamma");
+	
 	public final static IBuiltInSymbol ExpIntegralE = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "expintegrale" : "ExpIntegralE");
 
@@ -4890,7 +4893,7 @@ public class F {
 	public static IAST PolyGamma(final IExpr a0, final IExpr a1) {
 		return binaryAST2(PolyGamma, a0, a1);
 	}
-
+	
 	public static IAST PolyLog(final IExpr a0, final IExpr a1) {
 		return binaryAST2(PolyLog, a0, a1);
 	}
@@ -5297,6 +5300,14 @@ public class F {
 	 */
 	public static IAST Sqrt(final IExpr x) {
 		return binaryAST2(Power, x, C1D2);
+	}
+	
+	public static IAST StieltjesGamma(final IExpr a0) {
+		return unaryAST1(StieltjesGamma, a0);
+	}
+
+	public static IAST StieltjesGamma(final IExpr a0, final IExpr a1) {
+		return binaryAST2(StieltjesGamma, a0, a1);
 	}
 
 	public static IAST StringJoin(final IExpr a) {

@@ -381,7 +381,7 @@ public abstract class AbstractAST implements IAST {
 	@Override
 	public IAST apply(final IExpr head) {
 		return setAtCopy(0, head);
-	} 
+	}
 
 	@Override
 	public final IAST apply(final IExpr head, final int start) {
@@ -533,7 +533,7 @@ public abstract class AbstractAST implements IAST {
 	@Override
 	public final IAST copyUntil(final int intialCapacity, int index) {
 		return AST.newInstance(index, this, index);
-	} 
+	}
 
 	@Override
 	public boolean equals(final Object obj) {
@@ -2589,7 +2589,11 @@ public abstract class AbstractAST implements IAST {
 		} else {
 			text = new StringBuilder(temp.toString());
 		}
-		text.append('[');
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			text.append('(');
+		} else {
+			text.append('[');
+		}
 		for (int i = 1; i < size(); i++) {
 			final IExpr o = get(i);
 			text = text.append(o == this ? "(this AST)" : o.toString());
@@ -2597,7 +2601,11 @@ public abstract class AbstractAST implements IAST {
 				text.append(sep);
 			}
 		}
-		text.append(']');
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			text.append(')');
+		} else {
+			text.append(']');
+		}
 		return text.toString();
 	}
 

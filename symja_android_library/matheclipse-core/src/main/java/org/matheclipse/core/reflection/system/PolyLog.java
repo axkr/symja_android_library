@@ -22,12 +22,16 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.PolyLogRules;
 
+ 
 public class PolyLog extends AbstractFunctionEvaluator implements PolyLogRules {
 
 	public PolyLog() {
 		// default ctor
 	}
 
+	/**
+	 * See <a href="https://github.com/sympy/sympy/blob/master/sympy/functions/special/zeta_functions.py">Sympy - zeta_functions.py</a>
+	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
