@@ -78,28 +78,53 @@ public class EvalAttributes {
 	 *         otherwise return <code>F#NIL</code>..
 	 */
 	public static IAST flatten(final ISymbol head, final IAST ast) {
-		IAST result = F.NIL;
 		IExpr expr;
 		final int astSize = ast.size();
+		int newSize = 0;
+		boolean flattened = false;
 		for (int i = 1; i < astSize; i++) {
 			expr = ast.get(i);
 			if (expr.isAST(head)) {
-				if (!result.isPresent()) {
-					result = ast.copyUntil(i);
-				}
-				IAST temp = flatten(head, (IAST) expr);
-				if (temp.isPresent()) {
-					result.appendArgs(temp);
-				} else {
-					result.appendArgs((IAST) expr);
-				}
+				flattened = true;
+				int temp = flattenAlloc(head, (IAST) expr);
+				newSize += temp;
 			} else {
-				if (result.isPresent()) {
+				newSize++;
+			}
+		}
+		if (flattened) {
+			IAST result = F.ast(ast.head(), newSize, false);
+			for (int i = 1; i < astSize; i++) {
+				expr = ast.get(i);
+				if (expr.isAST(head)) {
+					IAST temp = flatten(head, (IAST) expr);
+					if (temp.isPresent()) {
+						result.appendArgs(temp);
+					} else {
+						result.appendArgs((IAST) expr);
+					}
+				} else {
 					result.append(expr);
 				}
 			}
+			return result;
 		}
-		return result;
+		return F.NIL;
+	}
+
+	private static int flattenAlloc(final ISymbol head, final IAST ast) {
+		IExpr expr;
+		final int astSize = ast.size();
+		int newSize = 0;
+		for (int i = 1; i < astSize; i++) {
+			expr = ast.get(i);
+			if (expr.isAST(head)) {
+				newSize += flattenAlloc(head, (IAST) expr);
+			} else {
+				newSize++;
+			}
+		}
+		return newSize;
 	}
 
 	/**
@@ -116,6 +141,7 @@ public class EvalAttributes {
 	 * @param result
 	 *            the <code>result</code> list, where all sublist elements with
 	 *            the same <code>head</code> should be appended.
+	 * @param recursionCounter
 	 * @param level
 	 *            the recursion level up to which the list should be flattened
 	 * @return <code>true</code> if a sublist was flattened out into the

@@ -33,9 +33,9 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * HMArrayList is an implementation of a list, backed by an array. All
- * optional operations adding, removing, and replacing are supported. The
- * elements can be any objects.
+ * HMArrayList is an implementation of a list, backed by an array. All optional
+ * operations adding, removing, and replacing are supported. The elements can be
+ * any objects.
  * 
  * Copied and modified from the Apache Harmony project.
  * 
@@ -58,9 +58,9 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	}
 
 	/**
-	 * Constructs a newlist containing the elements of
-	 * the specified collection. The initial size of the {@code ArrayList} will
-	 * be 10% higher than the size of the specified collection.
+	 * Constructs a newlist containing the elements of the specified collection.
+	 * The initial size of the {@code ArrayList} will be 10% higher than the
+	 * size of the specified collection.
 	 * 
 	 * @param collection
 	 *            the collection of elements to add.
@@ -517,7 +517,7 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	 */
 	public int indexOf(IExpr object) {
 		Iterator<IExpr> it = iterator();
-		int indx=0;
+		int indx = 0;
 		if (object != null) {
 			while (it.hasNext()) {
 				if (object.equals(it.next())) {
@@ -535,7 +535,7 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 		}
 		return -1;
 	}
-	
+
 	protected final void init(IExpr[] array) {
 		this.array = array;
 		firstIndex = hashValue = 0;
@@ -597,7 +597,7 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 
 		return result;
 	}
-	
+
 	/**
 	 * Removes the objects in the specified range from the start to the end, but
 	 * not including the end index.

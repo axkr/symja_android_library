@@ -38,8 +38,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </ul>
  * 
  * <p>
- * See: <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Wikipedia: Abstract
- * syntax tree</a>.
+ * See: <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Wikipedia:
+ * Abstract syntax tree</a>.
  * </p>
  */
 public class AST extends HMArrayList implements Externalizable {
@@ -261,15 +261,18 @@ public class AST extends HMArrayList implements Externalizable {
 		return false;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public final boolean appendArgs(IAST ast) {
-		final int size = ast.size();
-		if (size > 1) {
-			ensureCapacity(size() + size - 1);
-			for (int i = 1; i < size; i++) {
+		return appendArgs(ast, ast.size());
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final boolean appendArgs(IAST ast, int untilPosition) {
+		if (untilPosition > 1) {
+			ensureCapacity(size() + untilPosition - 1);
+			for (int i = 1; i < untilPosition; i++) {
 				append(ast.get(i));
 			}
 			return true;

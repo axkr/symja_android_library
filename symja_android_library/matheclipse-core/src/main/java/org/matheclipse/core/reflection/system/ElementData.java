@@ -160,7 +160,7 @@ public class ElementData extends AbstractFunctionEvaluator {
 		IAST[] list = ElementData1.ELEMENTS;
 		for (int i = 0; i < list.length; i++) {
 			MAP_NUMBER_NAME.put(list[i].arg1(), list[i].arg3());
-			IAST subList = F.List();
+			IAST subList = F.ListAlloc(list[i].size());
 			for (int j = 1; j < list[i].size(); j++) {
 				subList.append(list[i].get(j));
 			}
@@ -171,7 +171,7 @@ public class ElementData extends AbstractFunctionEvaluator {
 		list = ElementData2.ELEMENTS;
 		for (int i = 0; i < list.length; i++) {
 			MAP_NUMBER_NAME.put(list[i].arg1(), list[i].arg3());
-			IAST subList = F.List();
+			IAST subList = F.ListAlloc(list[i].size());
 			for (int j = 1; j < list[i].size(); j++) {
 				subList.append(list[i].get(j));
 			}

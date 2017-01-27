@@ -37,7 +37,8 @@ public class Sum extends Table implements SumRules {
 
 	@Override
 	public IAST getRuleAST() {
-		IAST rules = RULES1;
+		IAST rules = F.ListAlloc(RULES1.size() + RULES2.size());
+		rules.appendArgs(RULES1);
 		rules.appendArgs(RULES2);
 		return rules;
 	}

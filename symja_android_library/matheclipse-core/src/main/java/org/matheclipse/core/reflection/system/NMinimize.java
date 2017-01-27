@@ -50,8 +50,9 @@ public class NMinimize extends AbstractFunctionEvaluator {
 					// lc1 && lc2 && lc3...
 					LinearObjectiveFunction objectiveFunction = getObjectiveFunction(vars, function);
 					List<LinearConstraint> constraints = getConstraints(vars, listOfconstraints);
-					return simplexSolver(vars, objectiveFunction, objectiveFunction, new LinearConstraintSet(constraints),
-							GoalType.MINIMIZE, new NonNegativeConstraint(true), PivotSelectionRule.BLAND);
+					return simplexSolver(vars, objectiveFunction, objectiveFunction,
+							new LinearConstraintSet(constraints), GoalType.MINIMIZE, new NonNegativeConstraint(true),
+							PivotSelectionRule.BLAND);
 				}
 			}
 		}
@@ -79,8 +80,7 @@ public class NMinimize extends AbstractFunctionEvaluator {
 			SimplexSolver solver = new SimplexSolver();
 			PointValuePair solution = solver.optimize(optData);
 			double[] values = solution.getPointRef();
-			IAST result = F.List(f.value(values));
-			result.append(F.List(values));
+			IAST result = F.List(F.num(f.value(values)), F.List(values));
 			return result;
 		} catch (MathIllegalStateException oe) {
 			throw new WrappedException(oe);

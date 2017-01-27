@@ -359,6 +359,21 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public boolean appendArgs(IAST ast);
 
 	/**
+	 * Appends all of the arguments (starting from offset <code>1</code>) in the
+	 * specified AST up to position <code>untilPosition</code> exclusive.
+	 * 
+	 * @param ast
+	 *            AST containing elements to be added to this AST
+	 * @param untilPosition
+	 *            append all argumments of ast up to position
+	 *            <code>untilPosition</code> exclusive.
+	 * 
+	 * @return <tt>true</tt> if this AST changed as a result of the call
+	 * 
+	 */
+	public boolean appendArgs(IAST ast, int untilPosition);
+
+	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements
 	 * themselves are not copied) and add the <code>expr</code> at the given
 	 * <code>position</code>.

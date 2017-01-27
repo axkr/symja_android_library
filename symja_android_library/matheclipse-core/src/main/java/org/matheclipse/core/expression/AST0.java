@@ -132,7 +132,12 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	public boolean appendArgs(IAST ast) {
 		throw new UnsupportedOperationException();
 	}
-
+	
+	@Override
+	public final boolean appendArgs(IAST ast, int untilPosition) {
+		throw new UnsupportedOperationException();
+	}
+	
 	@Override
 	public IAST appendOneIdentity(IAST subAST) {
 		throw new UnsupportedOperationException();

@@ -32,68 +32,67 @@ public class ExpandAll extends AbstractFunctionEvaluator {
 	/**
 	 * Expand the given <code>ast</code> expression.
 	 * 
+	 * @param ast
 	 * @param patt
 	 * @param expandNegativePowers
-	 *            TODO
 	 * @param distributePlus
-	 *            TODO
-	 * @param ast
+	 * 
 	 * @return <code>F.NIL</code> if the expression couldn't be expanded.
 	 */
-	public static IExpr expandAll(final IAST expr, IExpr patt, boolean expandNegativePowers, boolean distributePlus) {
-		if (patt != null && expr.isFree(patt, true)) {
+	public static IExpr expandAll(final IAST ast, IExpr patt, boolean expandNegativePowers, boolean distributePlus) {
+		if (patt != null && ast.isFree(patt, true)) {
 			return F.NIL;
 		}
-		IAST ast = expr;
+		IAST localAST = ast;
 		IAST tempAST = F.NIL;
-		if (ast.isAST()) {
-			if ((ast.getEvalFlags() & IAST.IS_SORTED) != IAST.IS_SORTED) {
-				tempAST = EvalEngine.get().evalFlatOrderlessAttributesRecursive(ast);
+		if (localAST.isAST()) {
+			if ((localAST.getEvalFlags() & IAST.IS_SORTED) != IAST.IS_SORTED) {
+				tempAST = EvalEngine.get().evalFlatOrderlessAttributesRecursive(localAST);
 				if (tempAST.isPresent()) {
-					ast = tempAST;
+					localAST = tempAST;
 				}
 			}
 		}
-		if (ast.isAllExpanded()) {
-			if (ast != expr) {
-				return ast;
+		if (localAST.isAllExpanded()) {
+			if (localAST != ast) {
+				return localAST;
 			}
 			return F.NIL;
 		}
 		IAST result = F.NIL;
 		IExpr temp = F.NIL;
-		for (int i = 1; i < ast.size(); i++) {
-			if (ast.get(i).isAST()) {
-				temp = expandAll((IAST) ast.get(i), patt, expandNegativePowers, distributePlus);
+		for (int i = 1; i < localAST.size(); i++) {
+			if (localAST.get(i).isAST()) {
+				temp = expandAll((IAST) localAST.get(i), patt, expandNegativePowers, distributePlus);
 				if (temp.isPresent()) {
 					if (!result.isPresent()) {
-						result = ast.copyUntil(i);
+						int size = localAST.size();
+						if (temp.isAST()) {
+							size += ((IAST) temp).size();
+						}
+						result = F.ast(localAST.head(), size, false);
+						result.appendArgs(localAST, i);
 					}
 					result.appendPlus(temp);
-					// if (temp.isPlus() && result.isPlus()) {
-					// result.appendArgs((IAST) temp);
-					// } else {
-					// result.append(temp);
-					// }
 					continue;
 				}
 			}
 			if (result.isPresent()) {
-				result.append(ast.get(i));
+				result.append(localAST.get(i));
 			}
 		}
 		if (!result.isPresent()) {
-			temp = Expand.expand(ast, patt, expandNegativePowers, distributePlus);
+			temp = Expand.expand(localAST, patt, expandNegativePowers, distributePlus);
 			if (temp.isPresent()) {
 				setAllExpanded(temp, expandNegativePowers, distributePlus);
 				return temp;
 			} else {
-				if (ast != expr) {
-					setAllExpanded(ast, expandNegativePowers, distributePlus);
-					return ast;
+				if (localAST != ast) {
+					setAllExpanded(localAST, expandNegativePowers, distributePlus);
+					return localAST;
 				}
 			}
-			setAllExpanded(expr, expandNegativePowers, distributePlus);
+			setAllExpanded(ast, expandNegativePowers, distributePlus);
 			return F.NIL;
 		}
 		temp = Expand.expand(result, patt, expandNegativePowers, distributePlus);

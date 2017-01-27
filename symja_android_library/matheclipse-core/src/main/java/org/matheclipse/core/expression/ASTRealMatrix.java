@@ -158,6 +158,11 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	}
 
 	@Override
+	public final boolean appendArgs(IAST ast, int untilPosition) {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
 	public IAST appendOneIdentity(IAST subAST) {
 		throw new UnsupportedOperationException();
 	}

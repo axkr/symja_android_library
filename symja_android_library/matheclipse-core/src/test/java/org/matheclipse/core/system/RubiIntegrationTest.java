@@ -324,7 +324,13 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		// check("Integrate(1/(1+sec(a+b*x)), x)", "");
 
 		check("Integrate(Sin(x)*Cos(x),x)", "-Cos(x)^2/2");
-		check("Integrate(Sin(x)*Cos(x)*Pi,x)", "-1/2*Pi*Cos(x)^2");
+//		try {
+//			Thread.wait(1000000000);
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+ 		check("Integrate(Sin(x)*Cos(x)*Pi,x)", "-1/2*Pi*Cos(x)^2");
 		check("D((-1/2)*Pi*Cos(x)^2,x)", "Pi*Cos(x)*Sin(x)");
 
 		check("Integrate(1/(1+sin(a+b*x)), x)", "-Cos(a+b*x)/(b*(1+Sin(a+b*x)))");

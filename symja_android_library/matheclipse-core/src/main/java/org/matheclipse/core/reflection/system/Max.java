@@ -22,7 +22,7 @@ public class Max extends AbstractFunctionEvaluator {
 		if (ast.isAST0()) {
 			return F.CNInfinity;
 		}
-		
+
 		if (ast.arg1().isInterval1()) {
 			IAST list = (IAST) ast.arg1().getAt(1);
 			try {
@@ -31,7 +31,7 @@ public class Max extends AbstractFunctionEvaluator {
 				// do nothing
 			}
 		}
-		
+
 		IAST resultList = EvalAttributes.flatten(F.List, ast);
 		if (resultList.isPresent()) {
 			return maximum(resultList, true);
