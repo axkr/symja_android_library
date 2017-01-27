@@ -4656,7 +4656,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTrigExpand() {
-		check("Sum((-1)^(1/2*(-1+i))*Cos(x)^(2-i)*Sin(x)^i*Binomial(2,i),{i,1,2,2})", "2*Cos(x)*Sin(x)");
 		check("trigexpand(Sin(2 x))", "2*Cos(x)*Sin(x)");
 		check("trigexpand(Sin(x)*Tan(x))", "Sin(x)*Tan(x)");
 		check("trigexpand(Sin(x + y))", "Cos(y)*Sin(x)+Cos(x)*Sin(y)");

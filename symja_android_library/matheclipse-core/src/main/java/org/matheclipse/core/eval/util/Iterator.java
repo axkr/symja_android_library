@@ -3,15 +3,11 @@ package org.matheclipse.core.eval.util;
 import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.Less;
 import static org.matheclipse.core.expression.F.LessEqual;
-import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Subtract;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.BuiltInSymbol;
-import org.matheclipse.core.expression.Symbol;
-import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.interfaces.IIterator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -90,8 +86,8 @@ public class Iterator implements IIterator<IExpr> {
 				maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg2());
 				step = F.C1;
 
-				if (list.arg1() instanceof BuiltInSymbol) {
-					variable = (BuiltInSymbol) list.arg1();
+				if (list.arg1() instanceof ISymbol) {
+					variable = (ISymbol) list.arg1();
 				} else {
 					variable = null;
 				}
@@ -103,7 +99,7 @@ public class Iterator implements IIterator<IExpr> {
 				step = F.C1;
 
 				if (list.arg1().isSymbol()) {
-					variable = (Symbol) list.arg1();
+					variable = (ISymbol) list.arg1();
 				} else {
 					variable = null;
 				}
@@ -113,8 +109,8 @@ public class Iterator implements IIterator<IExpr> {
 				start = evalEngine.evalWithoutNumericReset(list.arg2());
 				maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg3());
 				step = evalEngine.evalWithoutNumericReset(list.arg4());
-				if (list.arg1() instanceof BuiltInSymbol) {
-					variable = (Symbol) list.arg1();
+				if (list.arg1() instanceof ISymbol) {
+					variable = (ISymbol) list.arg1();
 				} else {
 					variable = null;
 				}
@@ -148,7 +144,7 @@ public class Iterator implements IIterator<IExpr> {
 	 * @see org.matheclipse.core.reflection.system.Sum
 	 * @see org.matheclipse.core.reflection.system.Table
 	 */
-	public Iterator(final IAST list, final Symbol symbol, final EvalEngine engine) {
+	public Iterator(final IAST list, final ISymbol symbol, final EvalEngine engine) {
 		evalEngine = engine;
 		boolean localNumericMode = evalEngine.isNumericMode();
 		try {
@@ -286,7 +282,7 @@ public class Iterator implements IIterator<IExpr> {
 			count = evalEngine.evaluate(count.add(step));
 		}
 		return temp;
-	} 
+	}
 
 	/**
 	 * Not implemented; throws UnsupportedOperationException

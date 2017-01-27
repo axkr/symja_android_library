@@ -53,7 +53,7 @@ public class MagicProcessor {
 			String processEq = inputQuestionIsPossiblyASystemOfEquation(outPut);
 			if (processEq != null) {
 				// Args will be handled in wrtArgumentMising
-				outPut = ((Symbol) F.Solve).toString() + "(" + processEq + ")";
+				outPut = ((ISymbol) F.Solve).toString() + "(" + processEq + ")";
 			}
 
 			/*

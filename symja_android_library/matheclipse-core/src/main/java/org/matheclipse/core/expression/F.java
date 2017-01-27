@@ -4090,7 +4090,7 @@ public class F {
 	 * @return
 	 */
 	public static ISymbol initFinalHiddenSymbol(final String symbolName) {
-		ISymbol temp = new BuiltInSymbol(symbolName);
+		ISymbol temp = new Symbol(symbolName);
 		HIDDEN_SYMBOLS_MAP.put(symbolName, temp);
 		return temp;
 	}
