@@ -138,22 +138,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 * Manage a stack of pairs of expressions, which have to match each other
 	 * 
 	 */
-	protected class StackMatcher {
-
-		private ArrayList<Entry> fStack = new ArrayList<Entry>();
+	protected class StackMatcher extends ArrayList<Entry> {
 
 		public StackMatcher() {
 
-		}
-
-		/**
-		 * Check if this stack is empty.
-		 * 
-		 * @return
-		 * @see java.util.ArrayList#isEmpty()
-		 */
-		public boolean isEmpty() {
-			return fStack.isEmpty();
 		}
 
 		/**
@@ -173,7 +161,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				return matched;
 			} finally {
 				if (!matched) {
-					fStack.add(entry);
+					add(entry);
 				}
 			}
 		}
@@ -183,7 +171,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		 * @see java.util.Stack#peek()
 		 */
 		public Entry peek() {
-			return fStack.get(fStack.size() - 1);
+			return get(size() - 1);
 		}
 
 		/**
@@ -191,14 +179,14 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		 * @see java.util.Stack#pop()
 		 */
 		public Entry pop() {
-			return fStack.remove(fStack.size() - 1);
+			return remove(size() - 1);
 		}
 
 		public boolean push(IExpr patternExpr, IExpr evalExpr) {
 			if (patternExpr.isPatternExpr()) {
 				if (patternExpr.isAST()) {
 					// insert for delayed evaluation in matchRest() method
-					fStack.add(new Entry(patternExpr, evalExpr));
+					add(new Entry(patternExpr, evalExpr));
 					return true;
 				}
 				if (patternExpr instanceof IPatternObject) {
@@ -215,22 +203,13 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		 * @param fromPosition
 		 */
 		public void removeFrom(int fromPosition) {
-			int len = fStack.size();
+			int len = size();
 			while (len > fromPosition) {
-				fStack.remove(len - 1);
+				remove(len - 1);
 				len--;
 			}
 		}
 
-		/**
-		 * The size of the stack.
-		 * 
-		 * @return
-		 * @see java.util.ArrayList#size()
-		 */
-		public int size() {
-			return fStack.size();
-		}
 	}
 
 	/**
