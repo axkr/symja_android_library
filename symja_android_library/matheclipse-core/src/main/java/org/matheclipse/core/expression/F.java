@@ -4529,10 +4529,21 @@ public class F {
 		return binaryAST2(LinearSolve, a0, a1);
 	}
 
+	/**
+	 * Create a List() object.
+	 * 
+	 * @return
+	 */
 	public static IAST List() {
 		return ast(List);
 	}
 
+	/**
+	 * Create a List() object with allocated space for size elements.
+	 * 
+	 * @param size
+	 * @return
+	 */
 	public static IAST ListAlloc(int size) {
 		return ast(List, size, false);
 	}
@@ -4932,7 +4943,7 @@ public class F {
 	}
 
 	public static IAST Part(final IExpr... a) {
-		IAST part=F.ast(Part, 2, false);
+		IAST part = F.ast(Part, a.length + 1, false);
 		for (int i = 0; i < a.length; i++) {
 			part.append(a[i]);
 		}
@@ -4959,10 +4970,21 @@ public class F {
 		return Plus(integer(i), b);
 	}
 
+	/**
+	 * Create a Plus() function.
+	 * 
+	 * @return
+	 */
 	public static IAST Plus() {
 		return ast(Plus);
 	}
 
+	/**
+	 * Create a Plus() function with allocated space for size elements.
+	 * 
+	 * @param size
+	 * @return
+	 */
 	public static IAST PlusAlloc(int size) {
 		return ast(Plus, size, false);
 	}
@@ -5591,10 +5613,21 @@ public class F {
 		return ternaryAST3(TimeConstrained, a0, a1, a2);
 	}
 
+	/**
+	 * Create a Times() function.
+	 * 
+	 * @return
+	 */
 	public static IAST Times() {
 		return ast(Times);
 	}
 
+	/**
+	 * Create a Times() function with allocated space for size elements.
+	 * 
+	 * @param size
+	 * @return
+	 */
 	public static IAST TimesAlloc(int size) {
 		return ast(Times, size, false);
 	}

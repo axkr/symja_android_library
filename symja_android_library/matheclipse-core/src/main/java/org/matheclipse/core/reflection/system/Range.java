@@ -13,6 +13,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.UnaryRangeFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class Range extends AbstractEvaluator {
@@ -22,6 +23,22 @@ public class Range extends AbstractEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		if (ast.isAST1() && ast.arg1().isInteger()) {
+			try {
+				int size = ((IInteger) ast.arg1()).toInt();
+				if (size >= 0) {
+					IAST result = F.ListAlloc(size);
+					for (int i = 1; i <= size; i++) {
+						result.append(F.integer(i));
+					}
+					return result;
+				}
+				return F.List();
+			} catch (final ArithmeticException ae) {
+			}
+
+			return F.NIL;
+		}
 		return evaluateTable(ast, List(), engine);
 	}
 

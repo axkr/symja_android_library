@@ -3602,6 +3602,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Quotient(13, 0)", "/ by zero");
 	}
 
+	public void testRange() {
+//		check("Range(0,10,Pi)", "");
+		
+		check("Range(0)", "{}");
+		check("Range(1)", "{1}");
+		check("Range(-1)", "{}");
+		check("Range(10)", "{1,2,3,4,5,6,7,8,9,10}");
+		check("Range(1,10,2)", "{1,3,5,7,9}");
+		check("Range(10,20,3)", "{10,13,16,19}");
+		check("Range(10,1,-1)", "{10,9,8,7,6,5,4,3,2,1}");
+		
+	}
+	
 	public void testRational() {
 		check("f[22/7, 201/64, x/y] /. Rational[n_, d_] :> d/n", "f(7/22,64/201,x/y)");
 	}

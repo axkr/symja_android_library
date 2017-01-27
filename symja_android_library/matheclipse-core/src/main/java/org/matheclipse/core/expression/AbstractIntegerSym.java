@@ -336,7 +336,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 					list.append(subList);
 				}
 				count = 0;
-				subList = List(factor);
+				subList = F.ListAlloc(2);
+				subList.append(factor);
 			}
 			count++;
 			last = factor;

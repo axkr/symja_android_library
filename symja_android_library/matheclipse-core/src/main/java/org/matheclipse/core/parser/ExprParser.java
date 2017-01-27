@@ -724,7 +724,7 @@ public class ExprParser extends ExprScanner {
 	 * 
 	 */
 	private IExpr getList() throws SyntaxError {
-		final IAST function = F.List(); // fFactory.createFunction(fFactory.createSymbol(IConstantOperators.List));
+		final IAST function = F.ListAlloc(10); // fFactory.createFunction(fFactory.createSymbol(IConstantOperators.List));
 
 		getNextToken();
 

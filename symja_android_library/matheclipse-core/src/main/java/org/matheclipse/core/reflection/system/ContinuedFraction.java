@@ -48,16 +48,18 @@ public class ContinuedFraction extends AbstractEvaluator {
 		if (arg1.isRational()) {
 			IRational rat = (IRational) arg1;
 
-			IAST continuedFractionList = F.List();
+			IAST continuedFractionList;
 			if (rat.getDenominator().isOne()) {
-				continuedFractionList.append(rat.getNumerator());
+				continuedFractionList = F.List(rat.getNumerator());
 			} else if (rat.getNumerator().isOne()) {
+				continuedFractionList = F.ListAlloc(2);
 				continuedFractionList.append(F.C0);
 				continuedFractionList.append(rat.getDenominator());
 			} else {
 				IFraction temp = F.fraction(rat.getNumerator(), rat.getDenominator());
 				IInteger quotient;
 				IInteger remainder;
+				continuedFractionList = F.ListAlloc(10);
 				while (temp.getDenominator().compareInt(1) > 0 && (0 < maxIterations--)) {
 					quotient = temp.getNumerator().div(temp.getDenominator());
 					remainder = temp.getNumerator().mod(temp.getDenominator());

@@ -20,9 +20,15 @@ public class Join extends AbstractFunctionEvaluator {
 		if (ast.args().any(AtomQ.CONST)) {
 			return F.NIL;
 		}
-		final IAST result = F.List();
+
+		int astSize = ast.size();
+		int size = 0;
+		for (int i = 1; i < astSize; i++) {
+			size += ((IAST) ast.get(i)).size() - 1;
+		}
+		final IAST result = F.ListAlloc(size);
 		for (int i = 1; i < ast.size(); i++) {
-			result.addAll(((IAST) ast.get(i)).args());
+			result.appendArgs((IAST) ast.get(i));
 		}
 		return result;
 	}

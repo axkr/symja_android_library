@@ -114,7 +114,8 @@ public class Together extends AbstractFunctionEvaluator {
 		}
 		IAST ni;
 		for (int i = 1; i < plusAST.size(); i++) {
-			ni = F.Times(numerator.get(i));
+			ni = F.TimesAlloc(plusAST.size()-1);
+			ni.append(numerator.get(i));
 			for (int j = 1; j < plusAST.size(); j++) {
 				if (i == j) {
 					continue;
