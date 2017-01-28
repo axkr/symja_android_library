@@ -525,24 +525,6 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isE() {
-		return equals(F.E);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isFalse() {
-		return this == F.False;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isIndeterminate() {
-		return equals(F.Indeterminate);
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public boolean isNegative() {
 		if (isNumericFunction()) {
 			IExpr temp = F.evaln(this);
@@ -551,12 +533,6 @@ public class Symbol implements ISymbol, Serializable {
 			}
 		}
 		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isPi() {
-		return equals(F.Pi);
 	}
 
 	/** {@inheritDoc} */
@@ -623,12 +599,6 @@ public class Symbol implements ISymbol, Serializable {
 			return fSymbolName.equalsIgnoreCase(name);
 		}
 		return fSymbolName.equals(name);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public boolean isTrue() {
-		return this == F.True;
 	}
 
 	/** {@inheritDoc} */

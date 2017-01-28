@@ -316,6 +316,9 @@ public class F {
 			new org.matheclipse.core.builtin.function.Block());
 	public final static IBuiltInSymbol Break = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "break" : "Break",
 			new org.matheclipse.core.builtin.function.Break());
+	public final static IBuiltInSymbol BooleanQ = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "booleanq" : "BooleanQ",
+			new org.matheclipse.core.builtin.function.BooleanQ());
 	public final static IBuiltInSymbol Cases = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cases" : "Cases",
 			new org.matheclipse.core.builtin.function.Cases());
 	public final static IBuiltInSymbol Catch = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "catch" : "Catch",

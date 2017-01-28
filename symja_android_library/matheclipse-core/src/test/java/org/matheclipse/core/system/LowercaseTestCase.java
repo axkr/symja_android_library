@@ -569,6 +569,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BooleanMinimize(a && b || ! a && b)", "b");
 	}
 
+	public void testBooleanQ() {
+		check("BooleanQ(True)", "True");
+		check("BooleanQ(False)", "True");
+		check("BooleanQ(f(x))", "False");
+	}
+
 	public void testBooleanTable() {
 		check("BooleanTable(p || q, {p, q})", "{True,True,True,False}");
 	}
@@ -3431,12 +3437,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PolyGamma(1,3/4)", "-8*Catalan+Pi^2");
 		check("PolyGamma(2,5/6)", "4*Sqrt(3)*Pi^3-182*Zeta(3)");
 	}
-	
+
 	public void testStieltjesGamma() {
 		check("StieltjesGamma(0)", "EulerGamma");
 		check("StieltjesGamma(0,a)", "-PolyGamma(0,a)");
 	}
-	
+
 	public void testPolyLog() {
 		check("PolyLog(2,0)", "0");
 		check("PolyLog(2,-1)", "-Pi^2/12");
@@ -3603,8 +3609,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRange() {
-//		check("Range(0,10,Pi)", "");
-		
+		// check("Range(0,10,Pi)", "");
+
 		check("Range(0)", "{}");
 		check("Range(1)", "{1}");
 		check("Range(-1)", "{}");
@@ -3612,9 +3618,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Range(1,10,2)", "{1,3,5,7,9}");
 		check("Range(10,20,3)", "{10,13,16,19}");
 		check("Range(10,1,-1)", "{10,9,8,7,6,5,4,3,2,1}");
-		
+
 	}
-	
+
 	public void testRational() {
 		check("f[22/7, 201/64, x/y] /. Rational[n_, d_] :> d/n", "f(7/22,64/201,x/y)");
 	}
