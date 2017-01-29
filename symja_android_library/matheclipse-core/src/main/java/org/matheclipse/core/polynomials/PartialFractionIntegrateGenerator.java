@@ -37,8 +37,13 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 	ISymbol x;
 
 	public PartialFractionIntegrateGenerator(ISymbol x) {
-		this.result = F.Plus();
+		this.result = null;
 		this.x = x;
+	}
+
+	/** {@inheritDoc} */
+	public void allocPlus(int size) {
+		this.result = F.PlusAlloc(size);
 	}
 
 	public void setJAS(JASConvert<BigRational> jas) {
@@ -124,8 +129,8 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 						temp = Plus(Times(C1D2, A, Log(Plus(q, Times(p, x), Power(x, C2)))),
 								Times(ArcTan(Times(Plus(p, Times(C2, x)),
 										Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2))),
-								Plus(Times(C2, B), Times(CN1, A, p)),
-								Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2)));
+										Plus(Times(C2, B), Times(CN1, A, p)),
+										Power(Plus(Times(CN1, Power(p, C2)), Times(C4, q)), CN1D2)));
 					}
 					result.append(F.eval(temp));
 				}
@@ -148,16 +153,17 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 									Plus(Times(F.integer(-6L), a), Times(C4, a, k)),
 									Power(Plus(CN1, k),
 											CN1),
-									Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)),
-											CN1)),
-									Times(Plus(b, Times(C2, a, x)), Power(Plus(CN1, k),
-											CN1), Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1),
-									Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, Plus(CN1, k))))));
+									Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1)),
+									Times(Plus(b, Times(C2, a, x)), Power(Plus(CN1, k), CN1),
+											Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1),
+											Power(Plus(c, Times(b, x), Times(a, Power(x, C2))),
+													Times(CN1, Plus(CN1, k))))));
 				} else {
 					// JavaForm[(-A)/(2*a*(k-1)*(a*x^2+b*x+c)^(k-1))+(B-A*b/(2*a))*Integrate[(a*x^2+b*x+c)^(-k),x]]
 					temp = Plus(
 							Times(Integrate(Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, k)),
-									x), Plus(B,
+									x),
+									Plus(B,
 											Times(CN1D2,
 													A, Power(a,
 															CN1),

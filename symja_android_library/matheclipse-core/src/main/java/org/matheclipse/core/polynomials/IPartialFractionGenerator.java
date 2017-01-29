@@ -9,6 +9,11 @@ import edu.jas.poly.GenPolynomial;
 public interface IPartialFractionGenerator {
 
 	/**
+	 * Allocate memory for the <code>Plus()</code> operator
+	 */
+	public abstract void allocPlus(int size);
+
+	/**
 	 * Set the used JAS instance.
 	 * 
 	 * @param jas
@@ -36,6 +41,7 @@ public interface IPartialFractionGenerator {
 	 * @param Di_1
 	 * @param j
 	 */
-	public abstract void addSinglePartialFraction(GenPolynomial<BigRational> genPolynomial, GenPolynomial<BigRational> Di_1, int j);
+	public abstract void addSinglePartialFraction(GenPolynomial<BigRational> genPolynomial,
+			GenPolynomial<BigRational> Di_1, int j);
 
 }

@@ -161,6 +161,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 * @deprecated use #appendAll()
 	 */
+	@Deprecated
 	default boolean addAll(Collection<? extends IExpr> collection) {
 		return appendAll(collection);
 	}
@@ -173,6 +174,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 * @deprecated use appendAll()
 	 */
+	@Deprecated
 	default boolean addAll(IAST ast, int startPosition, int endPosition) {
 		return appendAll(ast, startPosition, endPosition);
 	}
@@ -184,6 +186,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 * @deprecated use appendAll()
 	 */
+	@Deprecated
 	default boolean addAll(int location, Collection<? extends IExpr> collection) {
 		return appendAll(location, collection);
 	}
@@ -196,6 +199,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 * @deprecated use appendAll()
 	 */
+	@Deprecated
 	default boolean addAll(List<? extends IExpr> list, int startPosition, int endPosition) {
 		return appendAll(list, startPosition, endPosition);
 	}
@@ -206,6 +210,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 * @deprecated use appendArgs();
 	 */
+	@Deprecated
 	default boolean addArgs(IAST ast) {
 		return appendArgs(ast);
 	}
@@ -216,6 +221,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 * @deprecated use appendClone();
 	 */
+	@Deprecated
 	default IAST addClone(IExpr expr) {
 		return appendClone(expr);
 	}
@@ -244,6 +250,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 * @deprecated - use appendOneIdentity()
 	 */
+	@Deprecated
 	default IAST addOneIdentity(IAST subAST) {
 		return appendOneIdentity(subAST);
 	}
@@ -263,13 +270,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *             if the object cannot be added to this {@code List}.
 	 */
 	public boolean append(IExpr expr);
-
-	default boolean appendPlus(IExpr expr) {
-		if (head().equals(F.Plus) && expr.head().equals(F.Plus)) {
-			return appendArgs((IAST) expr);
-		}
-		return append(expr);
-	}
 
 	/**
 	 * Inserts the specified object into this {@code List} at the specified
@@ -403,6 +403,13 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <code>this</code> ast after adding the subAST
 	 */
 	public IAST appendOneIdentity(IAST subAST);
+
+	default boolean appendPlus(IExpr expr) {
+		if (head().equals(F.Plus) && expr.head().equals(F.Plus)) {
+			return appendArgs((IAST) expr);
+		}
+		return append(expr);
+	}
 
 	/**
 	 * Apply the given head to this expression (i.e. create a list clone and
@@ -606,6 +613,17 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 */
 	public IAST copyHead();
+
+	/**
+	 * Create a copy of this <code>AST</code>, which only contains the head
+	 * element of the list (i.e. the element with index 0) and allocate the
+	 * <code>intialCapacity</code> size of entries for the arguments.
+	 * 
+	 * @param intialCapacity
+	 *            the initial number of arguments
+	 * @return
+	 */
+	public IAST copyHead(final int intialCapacity);
 
 	/**
 	 * Create a copy of this <code>AST</code>, which contains the same head and
@@ -1088,9 +1106,31 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @param position
 	 * @return <code>appendAST</code>
 	 */
+	@Deprecated
 	default IAST mapAt(IAST appendAST, final IAST replacement, int position) {
 		return mapThread(appendAST, replacement, position);
 	}
+
+	default IAST mapAt(final IAST replacement, int position) {
+		return mapThread(replacement, position);
+	}
+
+	/**
+	 * Maps the elements of this IAST with the unary functor
+	 * <code>Functors.replaceArg(replacement, position)</code>, there
+	 * <code>replacement</code> is an IAST at which the argument at the given
+	 * position will be replaced by the currently mapped element and appends the
+	 * element to <code>appendAST</code>.
+	 * 
+	 * @param appendAST
+	 * @param replacement
+	 *            an IAST there the argument at the given position is replaced
+	 *            by the currently mapped argument of this IAST.
+	 * @param position
+	 * @return <code>appendAST</code>
+	 * @see IAST#map(Function)
+	 */
+	public IAST mapThread(IAST appendAST, final IAST replacement, int position);
 
 	/**
 	 * Maps the elements of this IAST with the unary functor
@@ -1116,27 +1156,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @see IAST#map(Function)
 	 */
 	public IAST mapThread(final IAST replacement, int position);
-
-	default IAST mapAt(final IAST replacement, int position) {
-		return mapThread(replacement, position);
-	}
-
-	/**
-	 * Maps the elements of this IAST with the unary functor
-	 * <code>Functors.replaceArg(replacement, position)</code>, there
-	 * <code>replacement</code> is an IAST at which the argument at the given
-	 * position will be replaced by the currently mapped element and appends the
-	 * element to <code>appendAST</code>.
-	 * 
-	 * @param appendAST
-	 * @param replacement
-	 *            an IAST there the argument at the given position is replaced
-	 *            by the currently mapped argument of this IAST.
-	 * @param position
-	 * @return <code>appendAST</code>
-	 * @see IAST#map(Function)
-	 */
-	public IAST mapThread(IAST appendAST, final IAST replacement, int position);
 
 	/**
 	 * Calculate a special hash value for pattern matching

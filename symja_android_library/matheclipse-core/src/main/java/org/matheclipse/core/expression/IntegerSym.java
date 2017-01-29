@@ -1,7 +1,5 @@
 package org.matheclipse.core.expression;
 
-import static org.matheclipse.core.expression.F.List;
-
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -213,7 +211,8 @@ public class IntegerSym extends AbstractIntegerSym {
 		}
 
 		// build the final divisors list from the tree set
-		final IAST resultList = List(F.C1);
+		final IAST resultList = F.ListAlloc(set.size() + 1);
+		resultList.append(F.C1);
 		for (IInteger entry : set) {
 			resultList.append(entry);
 		}
@@ -630,7 +629,7 @@ public class IntegerSym extends AbstractIntegerSym {
 			return valueOf((long) fIntValue * is.fIntValue);
 		}
 	}
-	
+
 	/**
 	 * @param value
 	 * @return
@@ -729,8 +728,6 @@ public class IntegerSym extends AbstractIntegerSym {
 		}
 	}
 
-	
-
 	@Override
 	public final INumber numericNumber() {
 		return F.num(this);
@@ -782,14 +779,14 @@ public class IntegerSym extends AbstractIntegerSym {
 	@Override
 	public IExpr remainder(final IExpr that) {
 		if (that instanceof IntegerSym) {
-			return valueOf(toBigNumerator().remainder( ((IntegerSym)that).toBigNumerator()));
+			return valueOf(toBigNumerator().remainder(((IntegerSym) that).toBigNumerator()));
 		}
 		if (that instanceof BigIntegerSym) {
 			return valueOf(toBigNumerator().remainder(((BigIntegerSym) that).fBigIntValue));
 		}
 		return this;
 	}
-	
+
 	public IInteger remainder(final IInteger that) {
 		return valueOf(toBigNumerator().remainder(that.toBigNumerator()));
 	}

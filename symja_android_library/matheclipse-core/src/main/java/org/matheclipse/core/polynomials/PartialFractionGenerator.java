@@ -13,9 +13,13 @@ public class PartialFractionGenerator implements IPartialFractionGenerator {
 	JASConvert<BigRational> jas;
 
 	public PartialFractionGenerator() {
-		this.result = F.Plus();
+		this.result = null;
 	}
 
+	public void allocPlus(int size){
+		this.result = F.PlusAlloc(size);
+	}
+	
 	public void setJAS(JASConvert<BigRational> jas) {
 		this.jas = jas;
 	}

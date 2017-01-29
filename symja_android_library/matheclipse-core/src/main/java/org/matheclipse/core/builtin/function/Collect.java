@@ -46,7 +46,7 @@ public class Collect extends AbstractCoreFunctionEvaluator {
 			}
 			final IExpr arg2 = engine.evalPattern(ast.arg2());
 			if (!arg2.isList()) {
-				return collectSingleVariable(arg1, arg2, F.List(), 1, head, engine);
+				return collectSingleVariable(arg1, arg2, null, 1, head, engine);
 			}
 			IAST list = (IAST) arg2;
 			if (list.size() > 1) {
@@ -60,24 +60,46 @@ public class Collect extends AbstractCoreFunctionEvaluator {
 		return F.NIL;
 	}
 
-	public IExpr collectSingleVariable(IExpr arg1, IExpr arg2, final IAST list, final int pos, IExpr head,
-			EvalEngine engine) {
-		if (arg1.isAST()) {
+	/**
+	 * Collect terms in <code>expr</code> containing the same power expressions
+	 * of <code>x</code>.
+	 * 
+	 * @param expr
+	 * @param x
+	 *            the current variable from the list of variables which should
+	 *            be collected
+	 * @param listOfVariables
+	 *            list of variables which should be collected or
+	 *            <code>null</code> if no list is available
+	 * @param listPosition
+	 *            position of the next variable in the list after <code>x</code>
+	 *            which should be collected recursively
+	 * @param head
+	 *            the head which should be applied to each coefficient or
+	 *            <code>null</code> if no head should be applied
+	 * @param engine
+	 *            the evaluation engine
+	 * @return
+	 */
+	private IExpr collectSingleVariable(IExpr expr, IExpr x, final IAST listOfVariables, final int listPosition,
+			IExpr head, EvalEngine engine) {
+		if (expr.isAST()) {
 			Map<IExpr, IAST> map = new HashMap<IExpr, IAST>();
-			IAST poly = (IAST) arg1;
-			IAST rest = F.Plus();
+			IAST poly = (IAST) expr;
+			IAST rest = F.PlusAlloc(poly.size());
 
-			IPatternMatcher matcher = new PatternMatcher(arg2);
+			IPatternMatcher matcher = new PatternMatcher(x);
 			collectToMap(poly, matcher, map, rest);
-			if (pos < list.size()) {
+			if (listOfVariables != null && listPosition < listOfVariables.size()) {
 				// collect next pattern in sub-expressions
-				IAST result = F.Plus();
+				IAST result = F.PlusAlloc(map.size()+1);
 				if (rest.size() > 1) {
-					result.append(collectSingleVariable(rest, list.get(pos), list, pos + 1, head, engine));
+					result.append(collectSingleVariable(rest, listOfVariables.get(listPosition), listOfVariables,
+							listPosition + 1, head, engine));
 				}
 				for (Entry<IExpr, IAST> entry : map.entrySet()) {
-					IExpr temp = collectSingleVariable(entry.getValue().getOneIdentity(F.C0), list.get(pos), list,
-							pos + 1, head, engine);
+					IExpr temp = collectSingleVariable(entry.getValue().getOneIdentity(F.C0),
+							listOfVariables.get(listPosition), listOfVariables, listPosition + 1, head, engine);
 					result.append(F.Times(entry.getKey(), temp));
 				}
 				return result;
@@ -104,12 +126,15 @@ public class Collect extends AbstractCoreFunctionEvaluator {
 				IAST coefficient;
 				for (IExpr key : map.keySet()) {
 					coefficient = map.get(key);
-					rest.append(F.Times(key).appendOneIdentity(coefficient));
+					IAST times = F.TimesAlloc(2);
+					times.append(key);
+					times.appendOneIdentity(coefficient);
+					rest.append(times);
 				}
 			}
 			return rest.getOneIdentity(F.C0);
 		}
-		return arg1;
+		return expr;
 	}
 
 	public void collectToMap(IExpr expr, IPatternMatcher matcher, Map<IExpr, IAST> map, IAST rest) {

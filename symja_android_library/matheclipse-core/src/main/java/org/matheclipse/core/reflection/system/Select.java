@@ -20,13 +20,14 @@ public class Select extends AbstractEvaluator {
 
 		int size = ast.size();
 		if (ast.arg1().isAST()) {
-			IAST arg1 = (IAST) ast.arg1();
-			IExpr arg2 = ast.arg2();
+			IAST list = (IAST) ast.arg1();
+			IExpr predicateHead = ast.arg2();
+			int allocSize = list.size() > 4 ? list.size() / 4 : 4;
 			if (size == 3) {
-				return arg1.filter(arg1.copyHead(), Predicates.isTrue(arg2));
+				return list.filter(list.copyHead(allocSize), Predicates.isTrue(predicateHead));
 			} else if ((size == 4) && ast.arg3().isInteger()) {
 				final int resultLimit = Validate.checkIntType(ast, 3);
-				return arg1.filter(arg1.copyHead(), Predicates.isTrue(arg2), resultLimit);
+				return list.filter(list.copyHead(allocSize), Predicates.isTrue(predicateHead), resultLimit);
 			}
 		}
 		return F.NIL;

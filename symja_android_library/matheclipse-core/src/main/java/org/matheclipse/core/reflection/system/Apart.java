@@ -396,6 +396,7 @@ public class Apart extends AbstractFunctionEvaluator {
 
 			if (Ai.size() > 0) {
 				// IAST result = F.Plus();
+				pf.allocPlus(Ai.size()*2);
 				pf.setJAS(jas);
 				if (!Ai.get(0).get(0).isZERO()) {
 					pf.addNonFractionalPart(Ai.get(0).get(0));

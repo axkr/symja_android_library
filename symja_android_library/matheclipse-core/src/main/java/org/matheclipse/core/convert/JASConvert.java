@@ -296,7 +296,7 @@ public class JASConvert<C extends RingElem<C>> {
 		if (poly.length() == 0) {
 			return F.C0;
 		}
-		IAST result = F.Plus();
+		IAST result = F.PlusAlloc(poly.length());
 		for (Monomial<edu.jas.arith.BigInteger> monomial : poly) {
 			edu.jas.arith.BigInteger coeff = monomial.coefficient();
 			ExpVector exp = monomial.exponent();
