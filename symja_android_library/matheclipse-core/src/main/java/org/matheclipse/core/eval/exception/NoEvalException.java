@@ -1,6 +1,9 @@
 package org.matheclipse.core.eval.exception;
 
 public class NoEvalException extends FlowControlException {
+	
+	public final static NoEvalException CONST = new NoEvalException();
+	
 	/**
 	 * 
 	 */

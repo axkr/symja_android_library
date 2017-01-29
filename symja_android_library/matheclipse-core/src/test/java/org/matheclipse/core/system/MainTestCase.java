@@ -149,6 +149,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("x/(1+x)/(1+x)", "x/(1+x)^2");
 
 		check("10!", "3628800");
+		
 	}
 
 	public void testOut() {

@@ -1,6 +1,8 @@
 package org.matheclipse.core.eval.exception;
 
 public class BreakException extends FlowControlException {
+	public final static BreakException CONST = new BreakException();
+
 	/**
 	 * 
 	 */

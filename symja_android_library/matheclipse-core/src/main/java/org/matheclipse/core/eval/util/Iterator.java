@@ -210,10 +210,10 @@ public class Iterator implements IIterator<IExpr> {
 	 */
 	public boolean hasNext() {
 		if (maxCounterOrList == null) {// || (illegalIterator)) {
-			throw new NoEvalException();
+			throw NoEvalException.CONST;
 		}
 		if ((maxCounterOrList.isDirectedInfinity()) || (count.isDirectedInfinity())) {
-			throw new NoEvalException();
+			throw NoEvalException.CONST;
 		}
 		// if (count == null || count.isDirectedInfinity()) {
 		// throw new NoEvalException();
@@ -225,7 +225,7 @@ public class Iterator implements IIterator<IExpr> {
 			return false;
 		} else {
 			if (step.isZero()) {
-				throw new NoEvalException();
+				throw NoEvalException.CONST;
 			}
 			if (step.isSignedNumber()) {
 				if (((ISignedNumber) step).isNegative()) {

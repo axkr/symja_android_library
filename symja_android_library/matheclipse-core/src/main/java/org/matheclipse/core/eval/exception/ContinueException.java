@@ -1,6 +1,9 @@
 package org.matheclipse.core.eval.exception;
 
 public class ContinueException extends FlowControlException {
+
+	public final static ContinueException CONST = new ContinueException();
+	
 	/**
 	 * 
 	 */

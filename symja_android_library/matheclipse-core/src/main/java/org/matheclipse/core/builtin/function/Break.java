@@ -27,7 +27,7 @@ public class Break extends AbstractCoreFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.isAST0()) {
-			throw new BreakException();
+			throw BreakException.CONST;
 		}
 		Validate.checkSize(ast, 1);
 

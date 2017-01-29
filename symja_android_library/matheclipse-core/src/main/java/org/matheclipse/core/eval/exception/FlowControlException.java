@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval.exception;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.parser.client.math.MathException;
 
 /**
@@ -16,4 +17,14 @@ public class FlowControlException extends MathException {
 	public FlowControlException(final String message) {
 		super(message);
 	}
+
+	@Override
+	public synchronized Throwable fillInStackTrace() {
+		if (Config.DEBUG) {
+			return super.fillInStackTrace();
+		} else {
+			return this;
+		}
+	}
+
 }
