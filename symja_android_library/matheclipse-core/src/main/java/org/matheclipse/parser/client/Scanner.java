@@ -331,8 +331,7 @@ public class Scanner {
 					}
 					continue; // while loop
 				}
-				if (((fCurrentChar >= 'a') && (fCurrentChar <= 'z')) || ((fCurrentChar >= 'A') && (fCurrentChar <= 'Z'))
-						|| (fCurrentChar == '$')) {
+				if (Character.isLetter(fCurrentChar) || (fCurrentChar == '$')) {
 					// the Character.isUnicodeIdentifierStart method doesn't
 					// work in Google Web Toolkit:
 					fToken = TT_IDENTIFIER;
@@ -520,8 +519,7 @@ public class Scanner {
 		if (fCurrentChar == '$') {
 			getChar();
 		}
-		while (((fCurrentChar >= 'a') && (fCurrentChar <= 'z')) || ((fCurrentChar >= 'A') && (fCurrentChar <= 'Z'))
-				|| ((fCurrentChar >= '0') && (fCurrentChar <= '9')) || (fCurrentChar == '$')) {
+		while (Character.isLetterOrDigit(fCurrentChar) || (fCurrentChar == '$')) {
 			getChar();
 		}
 

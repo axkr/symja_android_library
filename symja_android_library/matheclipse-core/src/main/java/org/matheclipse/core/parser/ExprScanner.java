@@ -21,6 +21,7 @@ import java.util.List;
 import org.matheclipse.parser.client.SyntaxError;
 
 public class ExprScanner {
+
 	/**
 	 * Current parser input string
 	 */
@@ -331,8 +332,11 @@ public class ExprScanner {
 					}
 					continue; // while loop
 				}
-				if (((fCurrentChar >= 'a') && (fCurrentChar <= 'z')) || ((fCurrentChar >= 'A') && (fCurrentChar <= 'Z'))
-						|| (fCurrentChar == '$')) {
+				// if (((fCurrentChar >= 'a') && (fCurrentChar <= 'z')) ||
+				// ((fCurrentChar >= 'A') && (fCurrentChar <= 'Z'))
+				// || (fCurrentChar == '$')) {
+
+				if (Character.isLetter(fCurrentChar) || (fCurrentChar == '$')) {
 					// the Character.isUnicodeIdentifierStart method doesn't
 					// work in Google Web Toolkit:
 					// || (Character.isUnicodeIdentifierStart(fCurrentChar))) {
@@ -537,8 +541,7 @@ public class ExprScanner {
 		if (fCurrentChar == '$') {
 			getChar();
 		}
-		while (((fCurrentChar >= 'a') && (fCurrentChar <= 'z')) || ((fCurrentChar >= 'A') && (fCurrentChar <= 'Z'))
-				|| ((fCurrentChar >= '0') && (fCurrentChar <= '9')) || (fCurrentChar == '$')) {
+		while (Character.isLetterOrDigit(fCurrentChar) || (fCurrentChar == '$')) {
 			getChar();
 		}
 
