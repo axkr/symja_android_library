@@ -70,9 +70,9 @@ public class Binomial extends AbstractArg2 {
 			if (ki.isZero()) {
 				return F.C1;
 			}
-			if (ki.compareInt(10) < 0 && ki.compareInt(1) > 0) {
+			if (ki.compareInt(6) < 0 && ki.compareInt(1) > 0) {
 				int kInt = ki.intValue();
-				IAST ast = F.Times();
+				IAST ast = F.TimesAlloc(kInt);
 				IAST temp;
 				IExpr nTemp = n;
 				for (int i = 1; i <= kInt; i++) {

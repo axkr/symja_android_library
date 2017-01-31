@@ -11,6 +11,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.interfaces.IIterator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -23,32 +24,144 @@ import org.matheclipse.core.interfaces.ISymbol;
  * @see org.matheclipse.core.reflection.system.Table
  */
 public class Iterator implements IIterator<IExpr> {
-	IExpr count;
+	public static class IntIterator implements IIterator<IExpr> {
+		int count;
 
-	final boolean fNumericMode;
+		int lowerLimit;
 
-	EvalEngine evalEngine;
+		int upperLimit;
 
-	IExpr start;
+		int step;
 
-	IExpr maxCounterOrList;
+		final ISymbol variable;
 
-	/**
-	 * If <code>maxCounterOrList</code> is a list the
-	 * <code>maxCounterOrListIndex</code> attribute points to the current
-	 * element.
-	 */
-	int maxCounterOrListIndex;
+		final IExpr originalLowerLimit;
 
-	IExpr step;
+		final IExpr originalUpperLimit;
 
-	final IExpr originalStart;
+		final IExpr originalStep;
 
-	final IExpr originalMaxCount;
+		public IntIterator(final ISymbol symbol, final int lowerLimit, final int upperLimit, final int step) {
+			this.variable = symbol;
+			this.lowerLimit = lowerLimit;
+			this.upperLimit = upperLimit;
+			this.step = step;
+			this.originalLowerLimit = F.integer(lowerLimit);
+			this.originalUpperLimit = F.integer(upperLimit);
+			this.originalStep = F.integer(step);
+		}
 
-	final IExpr originalStep;
+		@Override
+		public int allocHint() {
+			if (step < 0) {
+				return (lowerLimit - upperLimit) / (-step) + 1;
+			}
+			return (upperLimit - lowerLimit) / step + 1;
+		}
 
-	final ISymbol variable;
+		@Override
+		public IExpr getLowerLimit() {
+			return originalLowerLimit;
+		}
+
+		@Override
+		public IExpr getStep() {
+			return originalStep;
+		}
+
+		@Override
+		public IExpr getUpperLimit() {
+			return originalUpperLimit;
+		}
+
+		@Override
+		public ISymbol getVariable() {
+			return variable;
+		}
+
+		/**
+		 * Tests if this enumeration contains more elements.
+		 * 
+		 * @return <code>true</code> if this enumeration contains more elements;
+		 *         <code>false</code> otherwise.
+		 */
+		@Override
+		public boolean hasNext() {
+			if (step < 0) {
+				return count >= upperLimit;
+			}
+			return count <= upperLimit;
+		}
+
+		@Override
+		public boolean isNumericFunction() {
+			return true;
+		}
+
+		@Override
+		public boolean isSetIterator() {
+			return variable != null;
+		}
+
+		@Override
+		public boolean isValidVariable() {
+			return variable != null;
+		}
+
+		/**
+		 * Returns the next element of this enumeration.
+		 * 
+		 * @return the next element of this enumeration.
+		 */
+		@Override
+		public IExpr next() {
+			final IExpr temp = F.integer(count);
+			if (variable != null) {
+				variable.set(temp);
+			}
+			count += step;
+			return temp;
+		}
+
+		/**
+		 * Not implemented; throws UnsupportedOperationException
+		 * 
+		 */
+		@Override
+		public void remove() throws UnsupportedOperationException {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean setUp() {
+			count = lowerLimit;
+			if (step < 0) {
+				if (lowerLimit < upperLimit) {
+					return false;
+				}
+			} else {
+				if (lowerLimit > upperLimit) {
+					return false;
+				}
+			}
+
+			if (variable != null) {
+				variable.pushLocalVariable(originalLowerLimit);
+			}
+			return true;
+		}
+
+		/**
+		 * Method Declaration.
+		 * 
+		 */
+		@Override
+		public void tearDown() {
+			if (variable != null) {
+				variable.popLocalVariable();
+			}
+		}
+	}
 
 	/**
 	 * Iterator specification for functions like <code>Table()</code> or
@@ -58,12 +171,16 @@ public class Iterator implements IIterator<IExpr> {
 	 *            a list representing an iterator specification
 	 * @param engine
 	 *            the evaluation engine
-	 * @see org.matheclipse.core.reflection.system.Product
-	 * @see org.matheclipse.core.reflection.system.Sum
-	 * @see org.matheclipse.core.reflection.system.Table
+	 * @return the iterator
 	 */
-	public Iterator(final IAST list, final EvalEngine engine) {
-		evalEngine = engine;
+	public static IIterator<IExpr> create(final IAST list, final EvalEngine engine) {
+
+		EvalEngine evalEngine = engine;
+		IExpr lowerLimit;
+		IExpr upperLimit;
+		IExpr step;
+		ISymbol variable;
+		boolean fNumericMode;
 		// fNumericMode = evalEngine.isNumericMode() ||
 		// list.isMember(Predicates.isNumeric(), false);
 		boolean localNumericMode = evalEngine.isNumericMode();
@@ -75,15 +192,23 @@ public class Iterator implements IIterator<IExpr> {
 			switch (list.size()) {
 
 			case 2:
-				start = F.C1;
-				maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg1());
+				lowerLimit = F.C1;
+				upperLimit = evalEngine.evalWithoutNumericReset(list.arg1());
 				step = F.C1;
 				variable = null;
-
+				if (upperLimit.isInteger()) {
+					try {
+						int iUpperLimit = ((IInteger) upperLimit).toInt();
+						return new IntIterator(variable, 1, iUpperLimit, 1);
+					} catch (ArithmeticException ae) {
+						//
+					}
+				}
 				break;
+
 			case 3:
-				start = F.C1;
-				maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg2());
+				lowerLimit = F.C1;
+				upperLimit = evalEngine.evalWithoutNumericReset(list.arg2());
 				step = F.C1;
 
 				if (list.arg1() instanceof ISymbol) {
@@ -91,11 +216,19 @@ public class Iterator implements IIterator<IExpr> {
 				} else {
 					variable = null;
 				}
+				if (upperLimit.isInteger()) {
+					try {
+						int iUpperLimit = ((IInteger) upperLimit).toInt();
+						return new IntIterator(variable, 1, iUpperLimit, 1);
+					} catch (ArithmeticException ae) {
+						//
+					}
+				}
 
 				break;
 			case 4:
-				start = evalEngine.evalWithoutNumericReset(list.arg2());
-				maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg3());
+				lowerLimit = evalEngine.evalWithoutNumericReset(list.arg2());
+				upperLimit = evalEngine.evalWithoutNumericReset(list.arg3());
 				step = F.C1;
 
 				if (list.arg1().isSymbol()) {
@@ -103,31 +236,49 @@ public class Iterator implements IIterator<IExpr> {
 				} else {
 					variable = null;
 				}
-
+				if (lowerLimit.isInteger() && upperLimit.isInteger()) {
+					try {
+						int iLowerLimit = ((IInteger) lowerLimit).toInt();
+						int iUpperLimit = ((IInteger) upperLimit).toInt();
+						return new IntIterator(variable, iLowerLimit, iUpperLimit, 1);
+					} catch (ArithmeticException ae) {
+						//
+					}
+				}
 				break;
+
 			case 5:
-				start = evalEngine.evalWithoutNumericReset(list.arg2());
-				maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg3());
+				lowerLimit = evalEngine.evalWithoutNumericReset(list.arg2());
+				upperLimit = evalEngine.evalWithoutNumericReset(list.arg3());
 				step = evalEngine.evalWithoutNumericReset(list.arg4());
 				if (list.arg1() instanceof ISymbol) {
 					variable = (ISymbol) list.arg1();
 				} else {
 					variable = null;
 				}
+				if (lowerLimit.isInteger() && upperLimit.isInteger() && step.isInteger()) {
+					try {
+						int iLowerLimit = ((IInteger) lowerLimit).toInt();
+						int iUpperLimit = ((IInteger) upperLimit).toInt();
+						int iStep = ((IInteger) step).toInt();
+						return new IntIterator(variable, iLowerLimit, iUpperLimit, iStep);
+					} catch (ArithmeticException ae) {
+						//
+					}
+				}
 
 				break;
 			default:
-				start = null;
-				maxCounterOrList = null;
+				lowerLimit = null;
+				upperLimit = null;
 				step = null;
 				variable = null;
 			}
+
+			return new Iterator(variable, evalEngine, lowerLimit, upperLimit, step, fNumericMode);
 		} finally {
 			evalEngine.setNumericMode(localNumericMode);
 		}
-		originalStart = start;
-		originalMaxCount = maxCounterOrList;
-		originalStep = step;
 	}
 
 	/**
@@ -140,12 +291,16 @@ public class Iterator implements IIterator<IExpr> {
 	 *            the variable symbol
 	 * @param engine
 	 *            the evaluation engine
-	 * @see org.matheclipse.core.reflection.system.Product
-	 * @see org.matheclipse.core.reflection.system.Sum
-	 * @see org.matheclipse.core.reflection.system.Table
+	 * @return the iterator
 	 */
-	public Iterator(final IAST list, final ISymbol symbol, final EvalEngine engine) {
-		evalEngine = engine;
+	public static IIterator<IExpr> create(final IAST list, final ISymbol symbol, final EvalEngine engine) {
+		EvalEngine evalEngine = engine;
+		IExpr lowerLimit;
+		IExpr upperLimit;
+		IExpr step;
+		ISymbol variable;
+		boolean fNumericMode;
+
 		boolean localNumericMode = evalEngine.isNumericMode();
 		try {
 			if (list.hasNumericArgument()) {
@@ -155,49 +310,124 @@ public class Iterator implements IIterator<IExpr> {
 			switch (list.size()) {
 
 			case 2:
-				start = F.C1;
-				maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg1());
+				lowerLimit = F.C1;
+				upperLimit = evalEngine.evalWithoutNumericReset(list.arg1());
 				step = F.C1;
 				variable = symbol;
+				if (upperLimit.isInteger()) {
+					try {
+						int iUpperLimit = ((IInteger) upperLimit).toInt();
+						return new IntIterator(symbol, 1, iUpperLimit, 1);
+					} catch (ArithmeticException ae) {
+						//
+					}
+				}
 				break;
 			case 3:
-				start = evalEngine.evalWithoutNumericReset(list.arg1());
-				maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg2());
+				lowerLimit = evalEngine.evalWithoutNumericReset(list.arg1());
+				upperLimit = evalEngine.evalWithoutNumericReset(list.arg2());
 				step = F.C1;
 				variable = symbol;
+				if (lowerLimit.isInteger() && upperLimit.isInteger()) {
+					try {
+						int iLowerLimit = ((IInteger) lowerLimit).toInt();
+						int iUpperLimit = ((IInteger) upperLimit).toInt();
+						return new IntIterator(symbol, iLowerLimit, iUpperLimit, 1);
+					} catch (ArithmeticException ae) {
+						//
+					}
+				}
 				break;
 			case 4:
-				start = evalEngine.evalWithoutNumericReset(list.arg1());
-				maxCounterOrList = evalEngine.evalWithoutNumericReset(list.arg2());
+				lowerLimit = evalEngine.evalWithoutNumericReset(list.arg1());
+				upperLimit = evalEngine.evalWithoutNumericReset(list.arg2());
 				step = evalEngine.evalWithoutNumericReset(list.arg3());
 				variable = symbol;
+				if (lowerLimit.isInteger() && upperLimit.isInteger() && step.isInteger()) {
+					try {
+						int iLowerLimit = ((IInteger) lowerLimit).toInt();
+						int iUpperLimit = ((IInteger) upperLimit).toInt();
+						int iStep = ((IInteger) step).toInt();
+						return new IntIterator(symbol, iLowerLimit, iUpperLimit, iStep);
+					} catch (ArithmeticException ae) {
+						//
+					}
+				}
 				break;
 			default:
-				start = null;
-				maxCounterOrList = null;
+				lowerLimit = null;
+				upperLimit = null;
 				step = null;
 				variable = null;
 			}
+			Iterator iter = new Iterator(variable, evalEngine, lowerLimit, upperLimit, step, fNumericMode);
+			// iter.originalStart = start;
+			// iter.originalMaxCount = maxCounterOrList;
+			// iter.originalStep = step;
+			return iter;
 		} finally {
 			evalEngine.setNumericMode(localNumericMode);
 		}
-		originalStart = start;
-		originalMaxCount = maxCounterOrList;
-		originalStep = step;
 	}
 
-	public IExpr getMaxCount() {
-		return originalMaxCount;
+	IExpr count;
+
+	final boolean fNumericMode;
+
+	EvalEngine evalEngine;
+
+	IExpr lowerLimit;
+
+	IExpr maxCounterOrList;
+
+	/**
+	 * If <code>maxCounterOrList</code> is a list the
+	 * <code>maxCounterOrListIndex</code> attribute points to the current
+	 * element.
+	 */
+	int maxCounterOrListIndex;
+
+	IExpr step;
+
+	final IExpr originalLowerLimit;
+
+	final IExpr originalUpperLimit;
+
+	final IExpr originalStep;
+
+	final ISymbol variable;
+
+	public Iterator(final ISymbol symbol, final EvalEngine engine, final IExpr originalStart,
+			final IExpr originalMaxCount, final IExpr originalStep, boolean numericMode) {
+		this.variable = symbol;
+		this.evalEngine = engine;
+		this.originalLowerLimit = originalStart;
+		this.originalUpperLimit = originalMaxCount;
+		this.originalStep = originalStep;
+		this.fNumericMode = numericMode;
 	}
 
-	public IExpr getStart() {
-		return originalStart;
+	@Override
+	public int allocHint() {
+		return 10;
 	}
 
+	@Override
+	public IExpr getLowerLimit() {
+		return originalLowerLimit;
+	}
+
+	@Override
 	public IExpr getStep() {
 		return originalStep;
 	}
 
+	@Override
+	public IExpr getUpperLimit() {
+		return originalUpperLimit;
+	}
+
+	@Override
 	public ISymbol getVariable() {
 		return variable;
 	}
@@ -208,6 +438,7 @@ public class Iterator implements IIterator<IExpr> {
 	 * @return <code>true</code> if this enumeration contains more elements;
 	 *         <code>false</code> otherwise.
 	 */
+	@Override
 	public boolean hasNext() {
 		if (maxCounterOrList == null) {// || (illegalIterator)) {
 			throw NoEvalException.CONST;
@@ -248,18 +479,21 @@ public class Iterator implements IIterator<IExpr> {
 		return false;
 	}
 
-	public boolean isValidVariable() {
-		return variable != null && originalStart != null && originalStep != null && originalMaxCount != null
-				&& !originalMaxCount.isList();
-	}
-
+	@Override
 	public boolean isNumericFunction() {
-		return originalStart.isNumericFunction() && originalStep.isNumericFunction()
-				&& originalMaxCount.isNumericFunction();
+		return originalLowerLimit.isNumericFunction() && originalStep.isNumericFunction()
+				&& originalUpperLimit.isNumericFunction();
 	}
 
+	@Override
 	public boolean isSetIterator() {
-		return variable != null && originalMaxCount != null && originalMaxCount.isList();
+		return variable != null && originalUpperLimit != null && originalUpperLimit.isList();
+	}
+
+	@Override
+	public boolean isValidVariable() {
+		return variable != null && originalLowerLimit != null && originalStep != null && originalUpperLimit != null
+				&& !originalUpperLimit.isList();
 	}
 
 	/**
@@ -267,6 +501,7 @@ public class Iterator implements IIterator<IExpr> {
 	 * 
 	 * @return the next element of this enumeration.
 	 */
+	@Override
 	public IExpr next() {
 		if (variable != null) {
 			variable.set(count);
@@ -288,18 +523,20 @@ public class Iterator implements IIterator<IExpr> {
 	 * Not implemented; throws UnsupportedOperationException
 	 * 
 	 */
+	@Override
 	public void remove() throws UnsupportedOperationException {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
 	public boolean setUp() {
-		start = originalStart;
-		if (!(originalStart.isSignedNumber())) {
-			start = evalEngine.evalWithoutNumericReset(originalStart);
+		lowerLimit = originalLowerLimit;
+		if (!(originalLowerLimit.isSignedNumber())) {
+			lowerLimit = evalEngine.evalWithoutNumericReset(originalLowerLimit);
 		}
-		maxCounterOrList = originalMaxCount;
-		if (!(originalMaxCount.isSignedNumber())) {
-			maxCounterOrList = evalEngine.evalWithoutNumericReset(originalMaxCount);
+		maxCounterOrList = originalUpperLimit;
+		if (!(originalUpperLimit.isSignedNumber())) {
+			maxCounterOrList = evalEngine.evalWithoutNumericReset(originalUpperLimit);
 		}
 		// points to first element in maxCounterOrList if it's a list
 		maxCounterOrListIndex = 1;
@@ -310,11 +547,11 @@ public class Iterator implements IIterator<IExpr> {
 		}
 		if (step.isSignedNumber()) {
 			if (step.isNegative()) {
-				if (evalEngine.evaluate(Less(start, maxCounterOrList)) == F.True) {
+				if (evalEngine.evaluate(Less(lowerLimit, maxCounterOrList)) == F.True) {
 					return false;
 				}
 			} else {
-				if (evalEngine.evaluate(Less(maxCounterOrList, start)) == F.True) {
+				if (evalEngine.evaluate(Less(maxCounterOrList, lowerLimit)) == F.True) {
 					return false;
 				}
 			}
@@ -322,7 +559,7 @@ public class Iterator implements IIterator<IExpr> {
 		if (maxCounterOrList.isList()) {
 			count = maxCounterOrList.getAt(maxCounterOrListIndex++);
 		} else {
-			count = start;
+			count = lowerLimit;
 		}
 		if (variable != null) {
 			variable.pushLocalVariable(count);
@@ -333,8 +570,8 @@ public class Iterator implements IIterator<IExpr> {
 	/**
 	 * Method Declaration.
 	 * 
-	 * @see
 	 */
+	@Override
 	public void tearDown() {
 		if (variable != null) {
 			variable.popLocalVariable();

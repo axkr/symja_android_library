@@ -552,7 +552,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Binomial(2+k, k)", "Binomial(2+k,k)");
 		check("Binomial(k, 2)", "1/2*k*(-1+k)");
-
+		check("Binomial(k, 5)", "1/120*k*(-4+k)*(-3+k)*(-2+k)*(-1+k)");
+		check("Binomial(k, 6)", "Binomial(k,6)");
 	}
 
 	public void testBoole() {
@@ -4467,6 +4468,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testTable() {
 		// check("Timing(Length(Table(i, {i, 1, 10000})))", "{0.159,10000}");
+		check("Table(x,10)", "{x,x,x,x,x,x,x,x,x,x}");
+		check("Table(x,-1)", "{}");
 		check("Table(0,{4-1})", "{0,0,0}");
 		check("$a=10;Table($a^2, {$a, 10})", "{1,4,9,16,25,36,49,64,81,100}");
 		check("Table(f[a], {a, 0, 20, 2})", "{f(0),f(2),f(4),f(6),f(8),f(10),f(12),f(14),f(16),f(18),f(20)}");

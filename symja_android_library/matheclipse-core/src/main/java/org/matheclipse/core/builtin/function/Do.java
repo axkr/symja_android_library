@@ -71,9 +71,9 @@ public class Do extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3);
 		try {
-			final List<Iterator> iterList = new ArrayList<Iterator>();
+			final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
 			for (int i = 2; i < ast.size(); i++) {
-				iterList.add(new Iterator((IAST) ast.get(i), engine));
+				iterList.add( Iterator.create((IAST) ast.get(i), engine));
 			}
 			final DoIterator generator = new DoIterator(iterList, engine);
 			return generator.doIt(ast.arg1());

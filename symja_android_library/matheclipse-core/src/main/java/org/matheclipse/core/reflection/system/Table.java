@@ -14,6 +14,7 @@ import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.eval.util.TableGenerator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.UnaryArrayFunction;
+import org.matheclipse.core.generic.interfaces.IIterator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -49,9 +50,13 @@ public class Table extends AbstractFunctionEvaluator {
 	protected static IExpr evaluateTable(final IAST ast, final IAST resultList, IExpr defaultValue, EvalEngine engine) {
 		try {
 			if (ast.size() > 2) {
-				final List<Iterator> iterList = new ArrayList<Iterator>();
+				final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
 				for (int i = 2; i < ast.size(); i++) {
-					iterList.add(new Iterator((IAST) ast.get(i), engine));
+					if (ast.get(i).isList()) {
+						iterList.add(Iterator.create((IAST) ast.get(i), engine));
+					} else {
+						iterList.add(Iterator.create(F.List(ast.get(i)), engine));
+					}
 				}
 
 				final TableGenerator generator = new TableGenerator(iterList, resultList,
@@ -82,10 +87,10 @@ public class Table extends AbstractFunctionEvaluator {
 	 * @see Product
 	 * @see Sum
 	 */
-	protected static IExpr evaluateLast(final IExpr expr, final Iterator iter, final IAST resultList,
+	protected static IExpr evaluateLast(final IExpr expr, final IIterator<IExpr> iter, final IAST resultList,
 			IExpr defaultValue) {
 		try {
-			final List<Iterator> iterList = new ArrayList<Iterator>();
+			final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
 			iterList.add(iter);
 
 			final TableGenerator generator = new TableGenerator(iterList, resultList,

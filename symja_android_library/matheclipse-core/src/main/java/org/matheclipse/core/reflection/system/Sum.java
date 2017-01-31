@@ -22,6 +22,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.interfaces.IIterator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -62,11 +63,11 @@ public class Sum extends Table implements SumRules {
 		VariablesSet variablesSet = determineIteratorExprVariables(ast);
 		IAST varList = variablesSet.getVarList();
 		IExpr argN = ast.get(ast.size() - 1);
-		Iterator iterator = null;
+		IIterator<IExpr> iterator = null;
 		IExpr temp;
 		if (argN.isList()) {
 			argN = evalBlockWithoutReap(argN, varList);
-			iterator = new Iterator((IAST) argN, engine);
+			iterator = Iterator.create((IAST) argN, engine);
 			if (iterator.isSetIterator() || iterator.isNumericFunction()) {
 				IAST resultList = Plus();
 				temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
@@ -112,7 +113,7 @@ public class Sum extends Table implements SumRules {
 
 			if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
 				if (iterator.getStep().isOne()) {
-					if (iterator.getMaxCount().isDirectedInfinity()) {
+					if (iterator.getUpperLimit().isDirectedInfinity()) {
 						temp = definiteSumInfinity(arg1, iterator, (IAST) argN, engine);
 					} else {
 						temp = definiteSum(arg1, iterator, (IAST) argN, engine);
@@ -169,11 +170,11 @@ public class Sum extends Table implements SumRules {
 	 *            <code>{Symbol: var, Integer: from, Symbol: to}</code>
 	 * @return
 	 */
-	private IExpr definiteSum(final IExpr expr, final Iterator iterator, IAST list, EvalEngine engine) {
+	private IExpr definiteSum(final IExpr expr, final IIterator iterator, IAST list, EvalEngine engine) {
 		final ISymbol var = iterator.getVariable();
 		IExpr arg1 = expr;
-		final IExpr from = iterator.getStart();
-		final IExpr to = iterator.getMaxCount();
+		final IExpr from = iterator.getLowerLimit();
+		final IExpr to = iterator.getUpperLimit();
 
 		if (arg1.isFree(var, true)) {
 			if (from.isOne()) {
@@ -260,10 +261,10 @@ public class Sum extends Table implements SumRules {
 	 *            <code>{Symbol: var, Integer: from, Infinity}</code>
 	 * @return
 	 */
-	private IExpr definiteSumInfinity(final IExpr expr, final Iterator iterator, IAST list, EvalEngine engine) {
+	private IExpr definiteSumInfinity(final IExpr expr, final IIterator iterator, IAST list, EvalEngine engine) {
 		final ISymbol var = iterator.getVariable();
-		final IExpr from = iterator.getStart();
-		final IExpr to = iterator.getMaxCount();
+		final IExpr from = iterator.getLowerLimit();
+		final IExpr to = iterator.getUpperLimit();
 
 		if (expr.isZero()) {
 			return F.C0;

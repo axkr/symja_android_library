@@ -186,8 +186,8 @@ public class Apart extends AbstractFunctionEvaluator {
 			boolean splitFractionalNumbers, boolean trig, boolean evalParts) {
 		IExpr[] result = new IExpr[3];
 		result[2] = null;
-		IAST numerator = F.Times(); // new TimesOp(timesAST.size());
-		IAST denominator = F.Times();// new TimesOp(timesAST.size());
+		IAST numerator = F.TimesAlloc(timesAST.size());  // new TimesOp(timesAST.size());
+		IAST denominator = F.TimesAlloc(timesAST.size()); // new TimesOp(timesAST.size());
 		IExpr arg;
 		IAST argAST;
 		boolean evaled = false;

@@ -370,7 +370,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 
 		if (size > 3) {
 			final ISymbol sym = ast.topHead();
-			final IAST result = F.ast(sym);
+			IAST result = null;
 			IExpr tres;
 			IExpr temp = ast.arg1();
 			boolean evaled = false;
@@ -396,6 +396,9 @@ public class Times extends AbstractArgMultiple implements INumeric {
 					}
 
 					if (!tres.isPresent()) {
+						if (result == null) {
+							result = F.ast(sym, ast.size() - i + 1, false);
+						}
 						result.append(temp);
 						if (i == ast.size() - 1) {
 							result.append(ast.get(i));
@@ -410,6 +413,9 @@ public class Times extends AbstractArgMultiple implements INumeric {
 					temp = tres;
 
 					if (i == (ast.size() - 1)) {
+						if (result == null) {
+							result = F.ast(sym, ast.size() - i + 1, false);
+						}
 						result.append(temp);
 					}
 

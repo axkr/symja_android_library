@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.eval.util.TableGenerator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.UnaryRangeFunction;
+import org.matheclipse.core.generic.interfaces.IIterator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -43,11 +44,11 @@ public class Range extends AbstractEvaluator {
 	}
 
 	public IExpr evaluateTable(final IAST ast, final IAST resultList, EvalEngine engine) {
-		List<Iterator> iterList = null;
+		List<IIterator<IExpr>> iterList = null;
 		try {
 			if ((ast.size() > 1) && (ast.size() <= 4)) {
-				iterList = new ArrayList<Iterator>();
-				iterList.add(new Iterator(ast, null, engine));
+				iterList = new ArrayList<IIterator<IExpr>>();
+				iterList.add(Iterator.create(ast, null, engine));
 
 				final TableGenerator generator = new TableGenerator(iterList, resultList, new UnaryRangeFunction());
 				return generator.table();

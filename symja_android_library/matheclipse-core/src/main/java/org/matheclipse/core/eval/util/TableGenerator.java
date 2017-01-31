@@ -2,7 +2,6 @@ package org.matheclipse.core.eval.util;
 
 import java.util.List;
 
-import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.interfaces.IArrayFunction;
 import org.matheclipse.core.generic.interfaces.IIterator;
 import org.matheclipse.core.interfaces.IAST;
@@ -47,7 +46,7 @@ public class TableGenerator {
 			if (iter.setUp()) {
 				try {
 					final int index = fIndex++;
-					final IAST result = fPrototypeList.copyHead(fPrototypeList.size() + 10);
+					final IAST result = fPrototypeList.copyHead(fPrototypeList.size() + iter.allocHint());
 					result.appendArgs(fPrototypeList);
 					while (iter.hasNext()) {
 						fCurrentIndex[index] = iter.next();

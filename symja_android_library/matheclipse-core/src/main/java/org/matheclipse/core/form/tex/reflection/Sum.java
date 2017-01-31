@@ -3,6 +3,7 @@ package org.matheclipse.core.form.tex.reflection;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.form.tex.AbstractConverter;
+import org.matheclipse.core.generic.interfaces.IIterator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -20,7 +21,8 @@ public class Sum extends AbstractConverter {
 	}
 
 	/**
-	 * See <a href="http://en.wikibooks.org/wiki/LaTeX/Mathematics">Wikibooks - LaTeX/Mathematics</a>
+	 * See <a href="http://en.wikibooks.org/wiki/LaTeX/Mathematics">Wikibooks -
+	 * LaTeX/Mathematics</a>
 	 * 
 	 * @param buf
 	 * @param mathSymbol
@@ -37,15 +39,15 @@ public class Sum extends AbstractConverter {
 			return true;
 		}
 		if (f.get(i).isList()) {
-			Iterator iterator = new Iterator((IAST) f.get(i), EvalEngine.get());
+			IIterator iterator = Iterator.create((IAST) f.get(i), EvalEngine.get());
 			if (iterator.isValidVariable() && iterator.getStep().isOne()) {
 				buf.append(mathSymbol);
 				buf.append("_{");
 				fFactory.convertSubExpr(buf, iterator.getVariable(), 0);
 				buf.append(" = ");
-				fFactory.convertSubExpr(buf, iterator.getStart(), 0);
+				fFactory.convertSubExpr(buf, iterator.getLowerLimit(), 0);
 				buf.append("}^{");
-				fFactory.convert(buf, iterator.getMaxCount(), 0);
+				fFactory.convert(buf, iterator.getUpperLimit(), 0);
 				buf.append('}');
 				if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
 					return false;

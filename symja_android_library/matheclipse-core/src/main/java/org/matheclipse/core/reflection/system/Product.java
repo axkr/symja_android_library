@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.interfaces.IIterator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -58,7 +59,7 @@ public class Product extends Table implements ProductRules {
 			boolean flag = true;
 			// Prod( i^a, {i,from,to},... )
 			for (int i = 2; i < ast.size(); i++) {
-				Iterator iterator = new Iterator((IAST) ast.get(i), engine);
+				IIterator iterator = Iterator.create((IAST) ast.get(i), engine);
 				if (iterator.isValidVariable() && powArg2.isFree(iterator.getVariable())) {
 					continue;
 				}
@@ -73,18 +74,18 @@ public class Product extends Table implements ProductRules {
 		}
 		IExpr argN = ast.get(ast.size() - 1);
 		if (ast.size() >= 3 && argN.isList()) {
-			Iterator iterator = new Iterator((IAST) argN, engine);
+			IIterator iterator =  Iterator.create((IAST) argN, engine);
 			if (iterator.isValidVariable()) {
-				if (iterator.getStart().isInteger() && iterator.getMaxCount().isSymbol()
+				if (iterator.getLowerLimit().isInteger() && iterator.getUpperLimit().isSymbol()
 						&& iterator.getStep().isOne()) {
 					final ISymbol var = iterator.getVariable();
-					final IInteger from = (IInteger) iterator.getStart();
-					final ISymbol to = (ISymbol) iterator.getMaxCount();
+					final IInteger from = (IInteger) iterator.getLowerLimit();
+					final ISymbol to = (ISymbol) iterator.getUpperLimit();
 					if (arg1.isPower()) {
 						IExpr powArg1 = arg1.getAt(1);
 						IExpr powArg2 = arg1.getAt(2);
 						if (powArg1.isFree(var)) {
-							if (iterator.getStart().isOne()) {
+							if (iterator.getLowerLimit().isOne()) {
 								if (powArg2.equals(var)) {
 									// Prod( a^i, ..., {i,from,to} )
 									if (ast.isAST2()) {
