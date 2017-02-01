@@ -616,7 +616,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 			return AbstractFractionSym.valueOf(this).add((IFraction) that);
 		}
 		if (that instanceof ComplexSym) {
-			return ((ComplexSym) that).add(ComplexSym.valueOf(this));
+			return ((ComplexSym) that).add(ComplexSym.valueOf(this)).normalize();
 		}
 		return IInteger.super.plus(that);
 	}
@@ -747,7 +747,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 			return AbstractFractionSym.valueOf(this).mul((IFraction) that).normalize();
 		}
 		if (that instanceof ComplexSym) {
-			return ((ComplexSym) that).multiply(ComplexSym.valueOf(this));
+			return ((ComplexSym) that).multiply(ComplexSym.valueOf(this)).normalize();
 		}
 		return IInteger.super.times(that);
 	}

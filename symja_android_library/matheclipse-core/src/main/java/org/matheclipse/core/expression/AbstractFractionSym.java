@@ -501,16 +501,16 @@ public abstract class AbstractFractionSym implements IFraction {
 	@Override
 	public IExpr plus(final IExpr that) {
 		if (that instanceof IFraction) {
-			return this.add((IFraction) that);
+			return this.add((IFraction) that).normalize();
 		}
 		if (that instanceof IntegerSym) {
-			return this.add(valueOf(((IntegerSym) that).fIntValue));
+			return this.add(valueOf(((IntegerSym) that).fIntValue)).normalize();
 		}
 		if (that instanceof BigIntegerSym) {
-			return this.add(valueOf(((BigIntegerSym) that).fBigIntValue));
+			return this.add(valueOf(((BigIntegerSym) that).fBigIntValue)).normalize();
 		}
 		if (that instanceof ComplexSym) {
-			return ((ComplexSym) that).add(ComplexSym.valueOf(this));
+			return ((ComplexSym) that).add(ComplexSym.valueOf(this)).normalize();
 		}
 		return IFraction.super.plus(that);
 	}
@@ -610,16 +610,16 @@ public abstract class AbstractFractionSym implements IFraction {
 	@Override
 	public IExpr times(final IExpr that) {
 		if (that instanceof IFraction) {
-			return this.mul((IFraction) that);
+			return this.mul((IFraction) that).normalize();
 		}
 		if (that instanceof IntegerSym) {
-			return this.mul(valueOf(((IntegerSym) that).fIntValue));
+			return this.mul(valueOf(((IntegerSym) that).fIntValue)).normalize();
 		}
 		if (that instanceof BigIntegerSym) {
-			return this.mul(valueOf(((BigIntegerSym) that).fBigIntValue));
+			return this.mul(valueOf(((BigIntegerSym) that).fBigIntValue)).normalize();
 		}
 		if (that instanceof ComplexSym) {
-			return ((ComplexSym) that).multiply(ComplexSym.valueOf(this));
+			return ((ComplexSym) that).multiply(ComplexSym.valueOf(this)).normalize();
 		}
 		return IFraction.super.times(that);
 	}
