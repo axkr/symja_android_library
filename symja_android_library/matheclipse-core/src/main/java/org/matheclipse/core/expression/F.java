@@ -742,6 +742,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "dicedissimilarity" : "DiceDissimilarity");
 	public final static IBuiltInSymbol Dimensions = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "dimensions" : "Dimensions");
+	public final static IBuiltInSymbol DiracDelta = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "diracdelta" : "DiracDelta");
 	public final static IBuiltInSymbol Discriminant = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "discriminant" : "Discriminant");
 	public final static IBuiltInSymbol Distribute = initFinalSymbol(
@@ -842,6 +844,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "harmonicnumber" : "HarmonicNumber");
 	public final static IBuiltInSymbol Haversine = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "haversine" : "Haversine");
+	public final static IBuiltInSymbol HeavisideTheta = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "heavisidetheta" : "HeavisideTheta");
 	public final static IBuiltInSymbol HermiteH = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hermiteh" : "HermiteH");
 	public final static IBuiltInSymbol HilbertMatrix = initFinalSymbol(

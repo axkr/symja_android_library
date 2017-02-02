@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
@@ -33,12 +34,48 @@ public class UnitStep extends AbstractEvaluator implements INumeric {
 		int size = ast.size();
 		if (size > 1) {
 			for (int i = 1; i < size; i++) {
-				ISignedNumber temp = ast.get(i).evalSignedNumber();
+				IExpr expr = ast.get(i);
+				ISignedNumber temp = expr.evalSignedNumber();
 				if (temp != null) {
-					if (temp.complexSign() < 0) {
+					if (temp.sign() < 0) {
 						return F.C0;
 					} else {
 						continue;
+					}
+				} else {
+					if (expr.isNegativeInfinity()) {
+						return F.C0;
+					}
+					if (expr.isInfinity()) {
+						continue;
+					}
+					if (expr.isInterval1()) {
+						IExpr l = expr.lower();
+						IExpr u = expr.upper();
+						if (l.isSignedNumber() && u.isSignedNumber()) {
+							ISignedNumber min = (ISignedNumber) l;
+							ISignedNumber max = (ISignedNumber) u;
+							if (min.sign() < 0) {
+								if (max.sign() < 0) {
+									return F.Interval(F.List(F.C0, F.C0));
+								} else {
+									if (size == 2) {
+										return F.Interval(F.List(F.C0, F.C1));
+									}
+								}
+							} else {
+								if (max.sign() < 0) {
+									if (size == 2) {
+										return F.Interval(F.List(F.C1, F.C0));
+									}
+								} else {
+									if (size == 2) {
+										return F.Interval(F.List(F.C1, F.C1));
+									}
+									continue;
+								}
+							}
+						}
 					}
 				}
 				return F.NIL;

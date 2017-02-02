@@ -1132,6 +1132,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Dimensions(Array(a, {2, 1, 4, 3}))", "{2,1,4,3}");
 	}
 
+
+	public void testDiracDelta() {
+		check("DiracDelta(0)", "DiracDelta(0)");
+		check("DiracDelta(42)", "0");
+		check("DiracDelta(-1)", "0");
+		check("DiracDelta(-42)", "0");
+		check("DiracDelta({1.6, 1.6000000000000000000000000})", "{0,0}");
+		check("DiracDelta({-1, 0, 1})", "{0,DiracDelta(0),0}");
+		check("DiracDelta(1, 2, 3)", "0");
+	}
+	
 	public void testDirectedInfinity() {
 		check("DirectedInfinity(Indeterminate)", "ComplexInfinity");
 		check("ComplexInfinity+b", "ComplexInfinity");
@@ -2251,6 +2262,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Head({3, 4, 5})", "List");
 		check("FixedPoint(Head, f(x)[y][z])", "Symbol");
 		check("FixedPoint(Head, {3, 4, 5})", "Symbol");
+	}
+	
+	public void testHeavisideTheta() {
+		check("HeavisideTheta(0)", "HeavisideTheta(0)");
+		check("HeavisideTheta(42)", "1");
+		check("HeavisideTheta(-1)", "0");
+		check("HeavisideTheta(-42)", "0");
+		check("HeavisideTheta({1.6, 1.6000000000000000000000000})", "{1,1}");
+		check("HeavisideTheta({-1, 0, 1})", "{0,HeavisideTheta(0),1}");
+		check("HeavisideTheta(1, 2, 3)", "1");
+		check("HeavisideTheta(-2, -1, 1, 2)", "0");
 	}
 
 	public void testHermiteH() {
@@ -4749,7 +4771,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testUnitStep() {
+		check("UnitStep(Interval({0,42}))", "Interval({1,1})");
+		check("UnitStep(Interval({-3,-1}))", "Interval({0,0})");
+		check("UnitStep(Interval({-1,2}))", "Interval({0,1})");
+		check("UnitStep(0)", "1");
 		check("UnitStep(42)", "1");
+		check("UnitStep(-1)", "0");
 		check("UnitStep(-42)", "0");
 		check("UnitStep({1.6, 1.6000000000000000000000000})", "{1,1}");
 		check("UnitStep({-1, 0, 1})", "{0,1,1}");
