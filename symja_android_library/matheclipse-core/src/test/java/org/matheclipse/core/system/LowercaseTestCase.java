@@ -517,12 +517,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BellB(10)", "115975");
 		check("BellB({1,2,3,4,5,6})", "{1,2,5,15,52,203}");
 	}
-	
+
 	public void testBernoulliB() {
 		check("BernoulliB(2)", "1/6");
 		check("Table(BernoulliB(k), {k, 0, 10})", "{1,-1/2,1/6,0,-1/30,0,1/42,0,-1/30,0,5/66}");
 	}
-	
+
 	public void testBesselJ() {
 		check("BesselJ(1.0, -3.0)", "BesselJ(1.0,-3.0)");
 		check("BesselJ(0.0, 0.0)", "1.0");
@@ -535,7 +535,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BesselJ(0, 0)", "1");
 		check("BesselJ(4, 0)", "0");
 	}
-	
+
 	public void testBinomial() {
 		check("Binomial(n0, 2)", "1/2*n0*(-1+n0)");
 
@@ -1183,7 +1183,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("DirectedInfinity(x) + DirectedInfinity(y) /. {x -> 1, y -> -1}", "Indeterminate");
 	}
 
-
 	public void testDiscriminant() {
 		check("Discriminant(x^10 - 5 x^7 - 3 x + 9, x)", "177945374758153510836");
 
@@ -1201,7 +1200,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "18*b^3*c*d*e-80*a*b*c^2*d*e-6*a*b^2*d^2*e+144*a^2*c*d^2*e-27*b^4*e^2+144*a*b^2*c*e^\n"
 						+ "2-128*a^2*c^2*e^2-192*a^2*b*d*e^2+256*a^3*e^3");
 	}
-	
+
 	public void testDistribute() {
 		check("Distribute((a + b).(x + y + z))", "a.x+a.y+a.z+b.x+b.y+b.z");
 		check("Distribute(f(a + b, c + d + e))", "f(a,c)+f(a,d)+f(a,e)+f(b,c)+f(b,d)+f(b,e)");
@@ -1229,7 +1228,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDivisors() {
- 		check("Divisors(1)", "{1}");
+		check("Divisors(1)", "{1}");
 		check("Divisors(6)", "{1,2,3,6}");
 		check("Divisors(-2)", "{1,2}");
 		check("Divisors(-6)", "{1,2,3,6}");
@@ -1246,7 +1245,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("DivisorSigma(2, {1, 2, 3, 4, 5})", "{1,5,10,21,26}");
 		check("DivisorSigma(k,10)", "1+2^k+5^k+10^k");
 	}
-	
+
 	public void testDo() {
 		check("reap(do(if(primeQ(2^n0 - 1), sow(n0)), {n0, 100}))[[2, 1]]", "{2,3,5,7,13,17,19,31,61,89}");
 		check("$t = x; Do($t = 1/(1 + $t), {5}); $t", "1/(1+1/(1+1/(1+1/(1+1/(1+x)))))");
@@ -1423,6 +1422,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Table(EulerE(k), {k, 0, 15})", "{1,0,-1,0,5,0,-61,0,1385,0,-50521,0,2702765,0,-199360981,0}");
 	}
 
+	public void testEulerPhi() {
+		check("Table(EulerPhi(k), {k, 0, 20})", "{0,1,1,2,2,4,2,6,4,6,4,10,4,12,6,8,8,16,6,18,8}");
+		check("EulerPhi(50!)", "4218559200885839042679312107816703841788854953574400000000000000");
+	}
+
 	public void testExcept() {
 		check("Cases({1, 0, 2, 0, 3}, Except(0))", "{1,2,3}");
 		check("Cases({a, b, 0, 1, 2, x, y}, Except(_Integer))", "{a,b,x,y}");
@@ -1592,6 +1596,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testFactorInteger() {
+		// check("FactorInteger(8438503049348381100385800049534923490020044110031)",
+		// "{{59,1},{41387,1},{40320271,1},{85708917607365601059185614891297817,1}}");
+		// check("FactorInteger(8392894255239922239)",
+		// "{{3,1},{7,1},{457,1},{11717,1},{84053,1},{887987,1}}");
 		check("FactorInteger(4)", "{{2,2}}");
 		check("FactorInteger(3/8)", "{{2,-3},{3,1}}");
 		// sort is important for rational numbers
@@ -1937,7 +1945,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testHilbertMatrix() {
 		check("Inverse(HilbertMatrix(3))", "{{9,-36,30},\n" + " {-36,192,-180},\n" + " {30,-180,180}}");
 	}
-	
+
 	public void testHornerForm() {
 		check("HornerForm(11*x^3 - 4*x^2 + 7*x + 2)", "2+x*(7+x*(-4+11*x))");
 		check("HornerForm(a+b*x+c*x^2,x)", "a+x*(b+c*x)");

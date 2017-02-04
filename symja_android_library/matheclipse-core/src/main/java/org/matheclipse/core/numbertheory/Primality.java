@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.matheclipse.core.expression;
+package org.matheclipse.core.numbertheory;
 
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -429,6 +429,13 @@ public class Primality {
 		return count;
 	}
 
+	/**
+	 * See <a href="https://en.wikipedia.org/wiki/Pollard%27s_rho_algorithm">
+	 * Wikipedia: Pollards rho algorithm</a>
+	 * 
+	 * @param val
+	 * @param map
+	 */
 	public static void pollardRhoFactors(final BigInteger val, Map<BigInteger, Integer> map) {
 		BigInteger factor;
 		BigInteger temp = val;
@@ -459,7 +466,53 @@ public class Primality {
 		}
 	}
 
-	private static BigInteger rho(final BigInteger val) {
+	/**
+	 * 
+	 * See <a href=
+	 * "https://en.wikipedia.org/wiki/Lenstra_elliptic_curve_factorization">
+	 * Wikipedia Lenstra elliptic curve factorization</a>
+	 * 
+	 * @param val
+	 * @param map
+	 * @return the rest factor or <code>null</code> if all factors could be
+	 *         determined
+	 */
+	public static BigInteger lenstraFactors(final BigInteger val, Map<BigInteger, Integer> map) {
+		BigInteger factor;
+		BigInteger temp = val;
+		int iterationCounter = 0;
+		Integer count;
+		int i = 0;
+		while (!temp.isProbablePrime(32)) {
+			if (i++ > 100) {
+				return temp;
+			}
+			factor = BigEllipticCurve.factorLenstra(temp);
+			if (factor.equals(temp)) {
+				if (iterationCounter++ > 4) {
+					break;
+				}
+			} else {
+				iterationCounter = 1;
+			}
+			count = map.get(factor);
+			if (count == null) {
+				map.put(factor, 1);
+			} else {
+				map.put(factor, count + 1);
+			}
+			temp = temp.divide(factor);
+		}
+		count = map.get(temp);
+		if (count == null) {
+			map.put(temp, 1);
+		} else {
+			map.put(temp, count + 1);
+		}
+		return null;
+	}
+
+	public static BigInteger rho(final BigInteger val) {
 		BigInteger divisor;
 		BigInteger c = new BigInteger(val.bitLength(), random);
 		BigInteger x = new BigInteger(val.bitLength(), random);

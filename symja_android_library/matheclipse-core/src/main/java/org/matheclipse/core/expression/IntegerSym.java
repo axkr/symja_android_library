@@ -18,6 +18,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.core.reflection.system.Subsets;
 import org.matheclipse.core.reflection.system.Subsets.KSubsetsList;
 
@@ -53,6 +54,15 @@ public class IntegerSym extends AbstractIntegerSym {
 	 */
 	public IntegerSym(int value) {
 		fIntValue = value;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IInteger abs() {
+		if (fIntValue < 0) {
+			return valueOf(fIntValue * (-1L));
+		}
+		return this;
 	}
 
 	/**
@@ -231,15 +241,6 @@ public class IntegerSym extends AbstractIntegerSym {
 		return fIntValue;
 	}
 
-	/** {@inheritDoc} */
-	@Override
-	public IInteger abs() {
-		if (fIntValue < 0) {
-			return valueOf(fIntValue * (-1L));
-		}
-		return this;
-	}
-
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj) {
@@ -264,6 +265,28 @@ public class IntegerSym extends AbstractIntegerSym {
 		return fIntValue == value;
 	}
 
+	@Override
+	public IInteger eulerPhi() throws ArithmeticException {
+		if (isZero()) {
+			return F.C0;
+		}
+		if (isOne()) {
+			return F.C1;
+		}
+		IAST ast = factorInteger();
+		int phi = 1;
+		for (int i = 1; i < ast.size(); i++) {
+			IAST element = (IAST) ast.get(i);
+			int q = ((IInteger) element.arg1()).intValue();
+			int c = ((IInteger) element.arg2()).intValue();
+			if (c == 1) {
+				phi = phi*(q-1);
+			} else {
+				phi = phi*((q-1)*IntMath.pow(q, c - 1));
+			}
+		}
+		return F.integer(phi);
+	}
 	/**
 	 * Get the highest exponent of <code>base</code> that divides
 	 * <code>this</code>
@@ -306,18 +329,6 @@ public class IntegerSym extends AbstractIntegerSym {
 
 	/** {@inheritDoc} */
 	@Override
-	public BigInteger toBigDenominator() {
-		return BigInteger.ONE;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public BigInteger toBigNumerator() {
-		return BigInteger.valueOf(fIntValue);
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public IInteger getDenominator() {
 		return F.C1;
 	}
@@ -330,19 +341,7 @@ public class IntegerSym extends AbstractIntegerSym {
 
 	/** {@inheritDoc} */
 	@Override
-	public ISignedNumber im() {
-		return F.C0;
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public IInteger getNumerator() {
-		return this;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public ISignedNumber re() {
 		return this;
 	}
 
@@ -350,6 +349,12 @@ public class IntegerSym extends AbstractIntegerSym {
 	@Override
 	public final int hashCode() {
 		return fIntValue;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public ISignedNumber im() {
+		return F.C0;
 	}
 
 	@Override
@@ -758,6 +763,12 @@ public class IntegerSym extends AbstractIntegerSym {
 		return valueOf(quotient);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public ISignedNumber re() {
+		return this;
+	}
+
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
 		byte attributeFlags = objectInput.readByte();
@@ -855,6 +866,18 @@ public class IntegerSym extends AbstractIntegerSym {
 		BigIntegerSym p1 = (BigIntegerSym) parm1;
 		BigInteger newnum = toBigNumerator().subtract(p1.toBigNumerator());
 		return valueOf(newnum);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public BigInteger toBigDenominator() {
+		return BigInteger.ONE;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public BigInteger toBigNumerator() {
+		return BigInteger.valueOf(fIntValue);
 	}
 
 	/**

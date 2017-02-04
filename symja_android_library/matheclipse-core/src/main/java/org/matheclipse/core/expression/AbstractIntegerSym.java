@@ -18,6 +18,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
@@ -38,6 +39,69 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	 * 
 	 */
 	public static final BigInteger BI_MINUS_ONE = BigInteger.valueOf(-1L);
+	public static final BigInteger BI_TWO = BigInteger.valueOf(2L);
+	public static final BigInteger BI_THREE = BigInteger.valueOf(3L);
+	public static final BigInteger BI_FOUR = BigInteger.valueOf(4L);
+	public static final BigInteger BI_SEVEN = BigInteger.valueOf(7L);
+	public static final BigInteger BI_EIGHT = BigInteger.valueOf(8L);
+
+	public static BigInteger jacobiSymbol(BigInteger a, BigInteger b) {
+		if (a.equals(BigInteger.ONE)) {
+			return BigInteger.ONE;
+		}
+		if (a.equals(BigInteger.ZERO)) {
+			return BigInteger.ZERO;
+		}
+		if (a.equals(BI_TWO)) {
+			return BigIntegerSym.jacobiSymbolF(b);
+		}
+		if (!NumberUtil.isOdd(a)) {
+			BigInteger aDIV2 = a.shiftRight(1);
+			return jacobiSymbol(aDIV2, b).multiply(jacobiSymbol(BI_TWO, b));
+		}
+		return jacobiSymbol(b.mod(a), a).multiply(BigIntegerSym.jacobiSymbolG(a, b));
+	}
+
+	public static long jacobiSymbol(long a, long b) {
+		if (a == 1L) {
+			return 1l;
+		}
+		if (a == 0L) {
+			return 0l;
+		}
+		if (a == 2L) {
+			return jacobiSymbolF(b);
+		}
+		if (!((a & 1L) == 1L)) { // ! a.isOdd()
+			long aDIV2 = a >> 1;
+			// BigInteger aDIV2 = a.shiftRight(1);
+			return jacobiSymbol(aDIV2, b) * jacobiSymbol(2L, b);
+		}
+		return jacobiSymbol(b % a, a) * jacobiSymbolG(a, b);
+	}
+
+	public static long jacobiSymbolF(long val) {
+		long a = val % 8;
+		if (a == 1L) {
+			return 1L;
+		}
+		if (a == 7L) {
+			return 1L;
+		}
+		return -1L;
+	}
+
+	public static long jacobiSymbolG(long a, long b) {
+		long i1 = a % 4L;
+		if (i1 == 1L) {
+			return 1L;
+		}
+		long i2 = b % 4L;
+		if (i2 == 1L) {
+			return 1L;
+		}
+		return -1L;
+	}
 
 	public static BigInteger lcm(final BigInteger i0, final BigInteger i1) {
 		if (i0.equals(BigInteger.ZERO) && i1.equals(BigInteger.ZERO)) {
@@ -228,11 +292,17 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 			return null;
 		}
 	}
-	
+
 	@Override
 	public IRational divideBy(IRational that) {
 		return AbstractFractionSym.valueOf(this).divideBy(that);
 	}
+
+	// /** {@inheritDoc} */
+	// @Override
+	// public IInteger gcd(final IInteger that) {
+	// return gcd( that);
+	// }
 
 	/**
 	 * IntegerSym extended greatest common divisor.
@@ -291,23 +361,6 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 			return result;
 		}
 		return IInteger.super.egcd(that);
-	}
-	
-	@Override
-	public IInteger eulerPhi() throws ArithmeticException {
-		IAST ast = factorInteger();
-		IInteger phi = AbstractIntegerSym.valueOf(1);
-		for (int i = 1; i < ast.size(); i++) {
-			IAST element = (IAST) ast.get(i);
-			IInteger q = (IInteger) element.arg1();
-			int c = ((IInteger) element.arg2()).toInt();
-			if (c == 1) {
-				phi = phi.multiply(q.subtract(AbstractIntegerSym.valueOf(1)));
-			} else {
-				phi = phi.multiply(q.subtract(AbstractIntegerSym.valueOf(1)).multiply(q.pow(c - 1)));
-			}
-		}
-		return phi;
 	}
 
 	/** {@inheritDoc} */
@@ -368,8 +421,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 			result.append(F.C1);
 			return result;
 		}
-		
-		if (b instanceof IntegerSym){
+
+		if (b instanceof IntegerSym) {
 			Map<Long, Integer> map = PrimeInteger.factors(b.longValue());
 			for (Map.Entry<Long, Integer> entry : map.entrySet()) {
 				long key = entry.getKey();
@@ -380,7 +433,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 			}
 			return result;
 		}
-		
+
 		Map<Integer, Integer> map = new TreeMap<Integer, Integer>();
 		BigInteger rest = Primality.countPrimes32749(b.toBigNumerator(), map);
 
@@ -397,8 +450,12 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		b = valueOf(rest);
 
 		SortedMap<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
-//		PrimeInteger.factorsPollardRho(b.toBigNumerator(), bigMap);
-		Primality.pollardRhoFactors(b.toBigNumerator(), bigMap);
+
+		// rest = Primality.lenstraFactors(b.toBigNumerator(), bigMap);
+		// if (rest != null) {
+		// Primality.pollardRhoFactors(rest, bigMap);
+		// }
+		Primality.pollardRhoFactors(rest, bigMap);
 
 		for (Map.Entry<BigInteger, Integer> entry : bigMap.entrySet()) {
 			BigInteger key = entry.getKey();
@@ -410,12 +467,6 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
 		return result;
 	}
-
-	// /** {@inheritDoc} */
-	// @Override
-	// public IInteger gcd(final IInteger that) {
-	// return gcd( that);
-	// }
 
 	@Override
 	public IInteger floor() {
@@ -463,6 +514,10 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
 	@Override
 	public abstract ISignedNumber inverse();
+
+	// public static BigInteger jacobiSymbol(long a, long b) {
+	// return jacobiSymbol(BigInteger.valueOf(a), BigInteger.valueOf(b));
+	// }
 
 	/** {@inheritDoc} */
 	@Override
@@ -519,12 +574,6 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		}
 		return F.CN1;
 	}
-
-	/** {@inheritDoc} */
-	// @Override
-	// public IInteger lcm(final IInteger that) {
-	// return lcm((IInteger) that);
-	// }
 
 	@Override
 	public IInteger jacobiSymbolG(IInteger b) {

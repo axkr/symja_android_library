@@ -20,6 +20,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.core.reflection.system.Subsets;
 import org.matheclipse.core.reflection.system.Subsets.KSubsetsList;
 
@@ -39,6 +40,51 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	 */
 	private static final long serialVersionUID = 6389228668633533063L;
 
+	public static BigInteger eulerPhi(BigInteger value) throws ArithmeticException {
+		if (value.equals(BigInteger.ZERO)) {
+			return BigInteger.ZERO;
+		}
+		if (value.equals(BigInteger.ONE)) {
+			return BigInteger.ONE;
+		}
+		IAST ast = AbstractIntegerSym.valueOf(value).factorInteger();
+		IInteger phi = AbstractIntegerSym.valueOf(1);
+		for (int i = 1; i < ast.size(); i++) {
+			IAST element = (IAST) ast.get(i);
+			IInteger q = (IInteger) element.arg1();
+			int c = ((IInteger) element.arg2()).toInt();
+			if (c == 1) {
+				phi = phi.multiply(q.subtract(AbstractIntegerSym.valueOf(1)));
+			} else {
+				phi = phi.multiply(q.subtract(AbstractIntegerSym.valueOf(1)).multiply(q.pow(c - 1)));
+			}
+		}
+		return phi.toBigNumerator();
+	}
+
+	public static BigInteger jacobiSymbolF(BigInteger val) {
+		BigInteger a = val.mod(AbstractIntegerSym.BI_EIGHT);
+		if (a.equals(BigInteger.ONE)) {
+			return BigInteger.ONE;
+		}
+		if (a.equals(AbstractIntegerSym.BI_SEVEN)) {
+			return BigInteger.ONE;
+		}
+		return AbstractIntegerSym.BI_MINUS_ONE;
+	}
+
+	public static BigInteger jacobiSymbolG(BigInteger a, BigInteger b) {
+		BigInteger i1 = a.mod(AbstractIntegerSym.BI_FOUR);
+		if (i1.equals(BigInteger.ONE)) {
+			return BigInteger.ONE;
+		}
+		BigInteger i2 = b.mod(AbstractIntegerSym.BI_FOUR);
+		if (i2.equals(BigInteger.ONE)) {
+			return BigInteger.ONE;
+		}
+		return AbstractIntegerSym.BI_MINUS_ONE;
+	}
+
 	/* package private */BigInteger fBigIntValue;
 
 	private transient int fHashValue = 0;
@@ -53,6 +99,12 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
 	public BigIntegerSym(BigInteger value) {
 		fBigIntValue = value;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IInteger abs() {
+		return valueOf(fBigIntValue.abs());
 	}
 
 	/**
@@ -162,6 +214,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		return res;
 	}
 
+	
+
 	@Override
 	public ISignedNumber divideBy(ISignedNumber that) {
 		if (that instanceof BigIntegerSym) {
@@ -222,15 +276,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	public double doubleValue() {
 		return fBigIntValue.doubleValue();
 	}
-
-	/** {@inheritDoc} */
-	@Override
-	public IInteger abs() {
-		return valueOf(fBigIntValue.abs());
-	}
-
 	
-
 	@Override
 	public boolean equals(final Object obj) {
 		if (obj instanceof IntegerSym) {
@@ -259,6 +305,29 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	@Override
 	public final boolean equalsInt(int value) {
 		return fBigIntValue.intValue() == value && fBigIntValue.bitLength() <= 31;
+	}
+
+	@Override
+	public IInteger eulerPhi() throws ArithmeticException {
+		if (isZero()) {
+			return F.C0;
+		}
+		if (isOne()) {
+			return F.C1;
+		}
+		IAST ast = factorInteger();
+		IInteger phi = AbstractIntegerSym.valueOf(1);
+		for (int i = 1; i < ast.size(); i++) {
+			IAST element = (IAST) ast.get(i);
+			IInteger q = (IInteger) element.arg1();
+			int c = ((IInteger) element.arg2()).toInt();
+			if (c == 1) {
+				phi = phi.multiply(q.subtract(AbstractIntegerSym.valueOf(1)));
+			} else {
+				phi = phi.multiply(q.subtract(AbstractIntegerSym.valueOf(1)).multiply(q.pow(c - 1)));
+			}
+		}
+		return phi;
 	}
 
 	/**
@@ -296,18 +365,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
 	/** {@inheritDoc} */
 	@Override
-	public BigInteger toBigDenominator() {
-		return BigInteger.ONE;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public BigInteger toBigNumerator() {
-		return fBigIntValue;
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public IInteger getDenominator() {
 		return F.C1;
 	}
@@ -320,19 +377,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
 	/** {@inheritDoc} */
 	@Override
-	public ISignedNumber im() {
-		return F.C0;
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public IInteger getNumerator() {
-		return this;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public ISignedNumber re() {
 		return this;
 	}
 
@@ -343,6 +388,12 @@ public class BigIntegerSym extends AbstractIntegerSym {
 			fHashValue = fBigIntValue.hashCode();
 		}
 		return fHashValue;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public ISignedNumber im() {
+		return F.C0;
 	}
 
 	@Override
@@ -678,6 +729,12 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		return Num.valueOf(doubleValue());
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public ISignedNumber re() {
+		return this;
+	}
+
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
 		byte attributeFlags = objectInput.readByte();
@@ -757,6 +814,18 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	@Override
 	public IInteger subtract(final IInteger that) {
 		return valueOf(fBigIntValue.subtract(that.toBigNumerator()));
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public BigInteger toBigDenominator() {
+		return BigInteger.ONE;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public BigInteger toBigNumerator() {
+		return fBigIntValue;
 	}
 
 	/**
