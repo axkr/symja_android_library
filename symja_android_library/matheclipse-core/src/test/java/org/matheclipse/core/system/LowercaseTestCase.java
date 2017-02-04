@@ -1229,7 +1229,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDivisors() {
+ 		check("Divisors(1)", "{1}");
 		check("Divisors(6)", "{1,2,3,6}");
+		check("Divisors(-2)", "{1,2}");
 		check("Divisors(-6)", "{1,2,3,6}");
 		check("Divisors(24)", "{1,2,3,4,6,8,12,24}");
 		check("Divisors(1729)", "{1,7,13,19,91,133,247,1729}");
@@ -1238,6 +1240,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Divisors({605,871,824})", "{{1,5,11,55,121,605},{1,13,67,871},{1,2,4,8,103,206,412,824}}");
 	}
 
+	public void testDivisorSigma() {
+		check("DivisorSigma(1,20)", "42");
+		check("DivisorSigma(2,20)", "546");
+		check("DivisorSigma(2, {1, 2, 3, 4, 5})", "{1,5,10,21,26}");
+		check("DivisorSigma(k,10)", "1+2^k+5^k+10^k");
+	}
+	
 	public void testDo() {
 		check("reap(do(if(primeQ(2^n0 - 1), sow(n0)), {n0, 100}))[[2, 1]]", "{2,3,5,7,13,17,19,31,61,89}");
 		check("$t = x; Do($t = 1/(1 + $t), {5}); $t", "1/(1+1/(1+1/(1+1/(1+1/(1+x)))))");

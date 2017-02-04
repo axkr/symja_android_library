@@ -182,6 +182,9 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	 */
 	@Override
 	public IAST divisors() {
+		if (isOne()||isMinusOne()) {
+			return F.List(F.C1);
+		}
 		Set<IInteger> set = new TreeSet<IInteger>();
 		final IAST primeFactorsList = factorize(F.List());
 		int len = primeFactorsList.size() - 1;
