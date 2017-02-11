@@ -83,12 +83,11 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 			if (ast.isAST2()) {
 				return equalNull(ast.arg1(), ast.arg2());
 			}
-
 			boolean evaled = false;
 			IAST result = ast.clone();
 			int i = 2;
+			IExpr arg1 = F.expandAll(result.get(1), true, true);
 			while (i < result.size()) {
-				IExpr arg1 = F.expandAll(result.get(i - 1), true, true);
 				IExpr arg2 = F.expandAll(result.get(i), true, true);
 				b = prepareCompare(arg1, arg2);
 				if (b == IExpr.COMPARE_TERNARY.FALSE) {
@@ -100,7 +99,9 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 				} else {
 					result.set(i - 1, arg1);
 					i++;
+					arg1 = arg2;
 				}
+
 			}
 			if (evaled) {
 				if (result.isAST1()) {
@@ -143,12 +144,37 @@ public class Equal extends AbstractFunctionEvaluator implements ITernaryComparat
 		return equalNull(ast.arg1(), ast.arg2()).orElse(ast);
 	}
 
-	public IExpr.COMPARE_TERNARY prepareCompare(final IExpr o0, final IExpr o1) {
-		if (o0.isIndeterminate() || o1.isIndeterminate()) {
+	/**
+	 * 
+	 * @param arg1
+	 * @param arg2
+	 * @return
+	 */
+	public IExpr.COMPARE_TERNARY prepareCompare(final IExpr arg1, final IExpr arg2) {
+		if (arg1.isIndeterminate() || arg2.isIndeterminate()) {
 			return IExpr.COMPARE_TERNARY.FALSE;
 		}
-		IExpr a0 = o0;
-		IExpr a1 = o1;
+		if (arg1.isList() && arg2.isList()) {
+			IAST list1 = (IAST) arg1;
+			IAST list2 = (IAST) arg2;
+			int size1 = list1.size();
+			if (size1 != list2.size()) {
+				return IExpr.COMPARE_TERNARY.FALSE;
+			}
+			IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.TRUE;
+			for (int i = 1; i < size1; i++) {
+				b = prepareCompare(list1.get(i), list2.get(i));
+				if (b == IExpr.COMPARE_TERNARY.FALSE) {
+					return IExpr.COMPARE_TERNARY.FALSE;
+				}
+				if (b == IExpr.COMPARE_TERNARY.TRUE) {
+				} else {
+					return IExpr.COMPARE_TERNARY.UNDEFINED;
+				}
+			}
+		}
+		IExpr a0 = arg1;
+		IExpr a1 = arg2;
 		if (!a0.isSignedNumber() && a0.isNumericFunction()) {
 			a0 = F.evaln(a0);
 		} else if (a1.isNumeric() && a0.isRational()) {
