@@ -1,6 +1,7 @@
 package org.matheclipse.core.eval.util;
 
 import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -22,21 +23,13 @@ public class Sequence extends ListSizeSequence {
 	}
 
 	/**
-	 * Factory method for creating a Sequence from a given expression
-	 *
-	 * @param expr
-	 *            an expression, which should represent a sequence specification
-	 * @return returns <code>null</code> if the given expression is no sequence
-	 *         specification
+	 * <code>true</code> => All <code>false</code> => None
+	 * 
+	 * @param allOrNone
+	 *            <code>true</code> => All <code>false</code> => None
 	 */
-	private static Sequence createSequence(final IExpr expr) {
-		Sequence sequ = null;
-		if (expr.isList()) {
-			sequ = new Sequence((IAST) expr);
-		} else if (expr instanceof IInteger) {
-			sequ = new Sequence((IInteger) expr);
-		}
-		return sequ;
+	public Sequence(boolean allOrNone) {
+		super(allOrNone ? Integer.MIN_VALUE : 1, allOrNone ? Integer.MIN_VALUE : 0, 1, 1);
 	}
 
 	/**
@@ -59,6 +52,10 @@ public class Sequence extends ListSizeSequence {
 				sequ = new Sequence((IAST) ast.get(i));
 			} else if (ast.get(i) instanceof IInteger) {
 				sequ = new Sequence((IInteger) ast.get(i));
+			} else if (ast.get(i).equals(F.All)) {
+				sequ = new Sequence(true);
+			} else if (ast.get(i).equals(F.None)) {
+				sequ = new Sequence(false);
 			}
 			sequArray[j++] = sequ;
 		}
