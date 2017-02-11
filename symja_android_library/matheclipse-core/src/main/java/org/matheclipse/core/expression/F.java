@@ -159,6 +159,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "repeatednull" : "RepeatedNull");
 
 	public final static IBuiltInSymbol All = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "all" : "All");
+	public final static IBuiltInSymbol None = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "none" : "None");
+	
 	public final static IBuiltInSymbol Algebraics = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "algebraics" : "Algebraics");
 	public final static IBuiltInSymbol Booleans = initFinalSymbol(
