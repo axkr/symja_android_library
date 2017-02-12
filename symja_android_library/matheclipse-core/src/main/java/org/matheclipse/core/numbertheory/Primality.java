@@ -20,6 +20,7 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.util.Map;
+import java.util.TreeMap;
 
 import com.google.common.math.BigIntegerMath;
 
@@ -466,6 +467,12 @@ public class Primality {
 		}
 	}
 
+//	public static BigInteger ellipticCurveFactors(final BigInteger val, Map<BigInteger, Integer> map) {
+//		EllipticCurveMethod ecm = new EllipticCurveMethod(val);
+//		ecm.factorize(map);
+//		return null;
+//	}
+
 	/**
 	 * 
 	 * See <a href=
@@ -482,11 +489,7 @@ public class Primality {
 		BigInteger temp = val;
 		int iterationCounter = 0;
 		Integer count;
-		int i = 0;
 		while (!temp.isProbablePrime(32)) {
-			if (i++ > 100) {
-				return temp;
-			}
 			factor = BigEllipticCurve.factorLenstra(temp);
 			if (factor.equals(temp)) {
 				if (iterationCounter++ > 4) {
