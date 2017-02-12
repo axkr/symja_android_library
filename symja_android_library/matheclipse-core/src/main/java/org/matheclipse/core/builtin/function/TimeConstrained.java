@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin.function;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -40,7 +39,7 @@ public class TimeConstrained extends AbstractCoreFunctionEvaluator {
 		}
 
 	}
-
+	
 	public TimeConstrained() {
 	}
 

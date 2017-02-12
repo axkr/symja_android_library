@@ -1395,6 +1395,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEqual() {
+		check("{\"a\",\"b\"}=={\"a\",\"b\"}", "True");
+		check("{\"a\",\"b\"}=={\"b\",\"a\"}", "False");
+		check("{\"a\",b}=={\"a\",c}", "{\"a\",b}=={\"a\",c}");
+		check("a==a==b==c", "a==b==c");
+		check("a==a==a==a", "True");
 		check("Pi==3", "False");
 		check("(E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi==0", "True");
 	}
@@ -1595,11 +1600,110 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// "-x^3*y+6*x^2*y-12*x*y+8*y-x^4+5*x^3-6*x^2-4*x+8");
 	// }
 
+//	public void testECM() {
+//		BigInteger big = new BigInteger("8438503049348381100385800049534923490020044110031");
+//		EllipticCurveMethod ecm1 = new EllipticCurveMethod(big);
+//		SortedMap<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
+//		ecm1.factorize(bigMap);
+//		System.out.println(bigMap.toString());
+//		assertEquals("{59=1, 41387=1, 40320271=1, 85708917607365601059185614891297817=1}", bigMap.toString());
+//
+//		System.out.println();
+//		big = new BigInteger("8392894255239922239");
+//		ecm1 = new EllipticCurveMethod(big);
+//		bigMap = new TreeMap<BigInteger, Integer>();
+//
+//		ecm1.factorize(bigMap);
+//		System.out.println(bigMap.toString());
+//		assertEquals("{3=1, 7=1, 457=1, 11717=1, 84053=1, 887987=1}", bigMap.toString());
+//
+//		System.out.println();
+//		big = new BigInteger("44343535354351600000003434353");
+//		ecm1 = new EllipticCurveMethod(big);
+//		bigMap = new TreeMap<BigInteger, Integer>();
+//
+//		ecm1.factorize(bigMap);
+//		System.out.println(bigMap.toString());
+//		assertEquals("{149=1, 329569479697=1, 903019357561501=1}", bigMap.toString());
+//
+//		System.out.println();
+//		// 50! * 8392894255239922239
+//		big = new BigInteger("255262268110991784076989150819008060991712040134738393813423038941626368000000000000");
+//		ecm1 = new EllipticCurveMethod(big);
+//		bigMap = new TreeMap<BigInteger, Integer>();
+//		ecm1.factorize(bigMap);
+//		System.out.println(bigMap.toString());
+//		assertEquals("{2=47, 3=23, 5=12, 7=9, 11=4, 13=3, 17=2, 19=2, 23=2, 29=1, 31=1, "
+//				+ "37=1, 41=1, 43=1, 47=1, 457=1, 11717=1, 84053=1, 887987=1}", bigMap.toString());
+//
+//		System.out.println();
+//		big = new BigInteger(
+//				"10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001");
+//		ecm1 = new EllipticCurveMethod(big);
+//		bigMap = new TreeMap<BigInteger, Integer>();
+//		ecm1.factorize(bigMap);
+//		System.out.println(bigMap.toString());
+//		assertEquals(
+//				"{73=1, 137=1, 401=1, 1201=1, 1601=1, 1676321=1, "
+//						+ "5964848081=1, 129694419029057750551385771184564274499075700947656757821537291527196801=1}",
+//				bigMap.toString());
+//
+//		System.out.println();
+//		big = new BigInteger("2010");
+//		ecm1 = new EllipticCurveMethod(big);
+//		bigMap = new TreeMap<BigInteger, Integer>();
+//		ecm1.factorize(bigMap);
+//		System.out.println(bigMap.toString());
+//		assertEquals("{2=1, 3=1, 5=1, 67=1}", bigMap.toString());
+//
+//		System.out.println();
+//		big = new BigInteger("65536");
+//		ecm1 = new EllipticCurveMethod(big);
+//		bigMap = new TreeMap<BigInteger, Integer>();
+//		ecm1.factorize(bigMap);
+//		System.out.println(bigMap.toString());
+//		assertEquals("{2=16}", bigMap.toString());
+//
+//		System.out.println();
+//		big = new BigInteger("140016480344628383");
+//		ecm1 = new EllipticCurveMethod(big);
+//		bigMap = new TreeMap<BigInteger, Integer>();
+//		ecm1.factorize(bigMap);
+//		System.out.println(bigMap.toString());
+//		assertEquals("{373607131=1, 374769293=1}", bigMap.toString());
+//
+//		// System.out.println();
+//		// big = new
+//		// BigInteger("798645312654798147285393218574111453126547981472185139328574111781");
+//		// ecm1 = new EllipticCurveMethod(big);
+//		// bigMap = new TreeMap<BigInteger, Integer>();
+//		// ecm1.factorize(bigMap);
+//		// System.out.println(bigMap.toString());
+//		// assertEquals("{61=1, 67=1, 74729=1, 97913387938680010938335707=1,
+//		// 26706566722753457593818813677521=1}", bigMap.toString());
+//
+//		// System.out.println();
+//		// // 3^466+1
+//		// big = new
+//		// BigInteger("2180241988764618251352447788447973624738608041889466363394078898330492574337852897156631260564320738986096297724889387659520644602302000115126321920264783732866421809908146970697382651239712295318944620117117486485038355530");
+//		// ecm1 = new EllipticCurveMethod(big);
+//		// bigMap = new TreeMap<BigInteger, Integer>();
+//		// ecm1.factorize(bigMap);
+//		// System.out.println(bigMap.toString());
+//		// assertEquals("{61=1, 67=1, 74729=1, 97913387938680010938335707=1,
+//		// 26706566722753457593818813677521=1}", bigMap.toString());
+//
+//	}
+
 	public void testFactorInteger() {
-		// check("FactorInteger(8438503049348381100385800049534923490020044110031)",
-		// "{{59,1},{41387,1},{40320271,1},{85708917607365601059185614891297817,1}}");
-		// check("FactorInteger(8392894255239922239)",
-		// "{{3,1},{7,1},{457,1},{11717,1},{84053,1},{887987,1}}");
+		check("FactorInteger(10^100+1)", "{{73,1},{137,1},{401,1},{1201,1},{1601,1},{1676321,1},{5964848081,1},{\n"
+				+ "129694419029057750551385771184564274499075700947656757821537291527196801,1}}");
+		check("FactorInteger(50!*8392894255239922239)",
+				"{{2,47},{3,23},{5,12},{7,9},{11,4},{13,3},{17,2},{19,2},{23,2},{29,1},{31,1},{37,\n"
+						+ "1},{41,1},{43,1},{47,1},{457,1},{11717,1},{84053,1},{887987,1}}");
+		check("FactorInteger(8438503049348381100385800049534923490020044110031)",
+				"{{59,1},{41387,1},{40320271,1},{85708917607365601059185614891297817,1}}");
+		check("FactorInteger(8392894255239922239)", "{{3,1},{7,1},{457,1},{11717,1},{84053,1},{887987,1}}");
 		check("FactorInteger(4)", "{{2,2}}");
 		check("FactorInteger(3/8)", "{{2,-3},{3,1}}");
 		// sort is important for rational numbers
@@ -4064,6 +4168,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSimplify() {
+		check("Simplify(5*x*(6*x+30))", "30*x*(5+x)");
 		check("Simplify(Sqrt(x^2), Assumptions -> x>0)", "x");
 		check("Together(2/(1/Tan(x) + Tan(x)))", "2/(Cot(x)+Tan(x))");
 		check("Together(2*Tan(x)/(1 + Tan(x)^2))", "(2*Tan(x))/(1+Tan(x)^2)");
@@ -4545,12 +4650,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTake() {
+		check("Take({a, b, c, d, e, f}, All)", "{a,b,c,d,e,f}");
 		check("Take({a, b, c, d, e, f}, 4)", "{a,b,c,d}");
 		check("Take({a, b, c, d, e, f}, -3)", "{d,e,f}");
 		check("Take({a, b, c, d, e, f}, {2,4})", "{b,c,d}");
 		check("Take({{11, 12, 13}, {21, 22, 23},{31, 32, 33}}, 2, 2)", "{{11,12},{21,22}}");
 		check("Take({{11, 12, 13}, {21, 22, 23},a,{31, 32, 33}}, 3, 2)",
 				"Take({{11,12,13},{21,22,23},a,{31,32,33}},3,2)");
+		check("Take({a, b, c, d, e, f}, None)", "{}");
+
 	}
 
 	public void testTally() {
@@ -4792,7 +4900,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testUnequal() {
+		check("{\"a\",\"b\"}!={\"a\",\"b\"}", "False");
+		check("{\"a\",\"b\"}!={\"b\",\"a\"}", "True");
+		check("{\"a\",b}!={\"a\",c}", "{\"a\",b}!={\"a\",c}");
 		check("(E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi!=0", "False");
+		check("a!=a!=a!=a", "False");
 	}
 
 	public void testUnion() {
@@ -4843,8 +4955,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Variables((x + y)^2 + 3 z^2 - y z + 7)", "{x,y,z}");
 		check("Variables((a - b)/(x + y) - 2/z)", "{a,b,x,y,z}");
 		check("Variables(Sqrt(x + y - z^2) + (-2 t)^(2/3))", "{t,x,y,z}");
-
-		// TODO: see http://reference.wolfram.com/language/ref/MonomialList.html
 		check("Variables(y + x z)", "{x,y,z}");
 	}
 

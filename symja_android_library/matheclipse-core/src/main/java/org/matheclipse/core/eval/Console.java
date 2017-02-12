@@ -12,6 +12,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -25,6 +26,12 @@ import org.matheclipse.parser.client.SyntaxError;
 public class Console {
 
 	private ExprEvaluator fEvaluator;
+
+	/**
+	 * 60 seconds timeout limit as the default value for Symja expression
+	 * evaluation.
+	 */
+	private long fSeconds = 60;
 
 	private File fFile;
 
@@ -82,6 +89,16 @@ public class Console {
 							&& inputExpression.toLowerCase(Locale.ENGLISH).substring(0, 4).equals("exit")) {
 						System.out.println("Closing Symja console... bye.");
 						System.exit(0);
+					} else if ((inputExpression.length() >= 10)
+							&& inputExpression.toLowerCase(Locale.ENGLISH).substring(0, 10).equals("timeoutoff")) {
+						System.out.println("Disabling timeout for evaluation");
+						console.fSeconds = -1;
+						continue;
+					} else if ((inputExpression.length() >= 9)
+							&& inputExpression.toLowerCase(Locale.ENGLISH).substring(0, 9).equals("timeouton")) {
+						System.out.println("Enabling timeout for evaluation to 60 seconds.");
+						console.fSeconds = 60;
+						continue;
 					} else if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
 						IAST list = Names.getNamesByPrefix(trimmedInput.substring(1));
 						for (int i = 1; i < list.size(); i++) {
@@ -122,9 +139,12 @@ public class Console {
 		// msg.append(" -debug print debugging information" + lSep);
 		msg.append("  -f or -file <filename>     use given file as input script" + lineSeparator);
 		msg.append("  -d or -default <filename>  use given textfile for system rules" + lineSeparator);
+
 		msg.append("To stop the program type: exit<RETURN>" + lineSeparator);
 		msg.append("To continue an input line type: \\<RETURN>" + lineSeparator);
 		msg.append("at the end of the line." + lineSeparator);
+		msg.append("To disable the evaluation timeout type: timeoutoff<RETURN>" + lineSeparator);
+		msg.append("To enable the evaluation timeout type: timeouton<RETURN>" + lineSeparator);
 		msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
 
 		System.out.println(msg.toString());
@@ -193,7 +213,11 @@ public class Console {
 		IExpr result;
 		final StringWriter buf = new StringWriter();
 		try {
-			result = fEvaluator.evaluate(inputExpression);
+			if (fSeconds <= 0) {
+				result = fEvaluator.evaluate(inputExpression);
+			} else {
+				result = fEvaluator.evaluateWithTimeout(inputExpression, fSeconds, TimeUnit.SECONDS, true);
+			}
 			if (result != null) {
 				if (result.equals(F.Null)) {
 					return "";

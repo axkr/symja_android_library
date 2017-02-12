@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -13,11 +16,31 @@ import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
+import com.google.common.util.concurrent.SimpleTimeLimiter;
+import com.google.common.util.concurrent.TimeLimiter;
+
 /**
  * Evaluate math expressions to <code>IExpr</code> results.
  * 
  */
 public class ExprEvaluator {
+	private static class EvalCallable implements Callable<IExpr> {
+		private final EvalEngine fEngine;
+		private final IExpr fExpr;
+
+		public EvalCallable(IExpr expr, EvalEngine engine) {
+			fExpr = expr;
+			fEngine = engine;
+		}
+
+		@Override
+		public IExpr call() throws Exception {
+			// TODO Auto-generated method stub
+			return fEngine.evaluate(fExpr);
+		}
+
+	}
+
 	static {
 		F.initSymbols(null, null, true);
 	}
@@ -223,7 +246,7 @@ public class ExprEvaluator {
 	 * Parse the given <code>expression String</code> and evaluate it to an
 	 * IExpr value
 	 * 
-	 * @param expression
+	 * @param inputExpression
 	 * @return
 	 * @throws SyntaxError
 	 */
@@ -233,6 +256,53 @@ public class ExprEvaluator {
 			fExpr = engine.parse(inputExpression);
 			if (fExpr != null) {
 				return evaluate(fExpr);
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * <p>
+	 * Parse the given <code>expression String</code> and evaluate it to an
+	 * IExpr value.
+	 * </p>
+	 * 
+	 * @param inputExpression
+	 *            the Symja input expression
+	 * @param timeoutDuration
+	 *            with timeoutUnit, the maximum length of time to wait
+	 * @param timeUnit
+	 *            with timeoutDuration, the maximum length of time to wait
+	 * @param interruptible
+	 *            whether to respond to thread interruption by aborting the
+	 *            operation and throwing InterruptedException; if false, the
+	 *            operation is allowed to complete or time out, and the current
+	 *            thread's interrupt status is re-asserted.
+	 * @return
+	 * @throws SyntaxError
+	 */
+	public IExpr evaluateWithTimeout(final String inputExpression, long timeoutDuration, TimeUnit timeUnit,
+			boolean interruptible) {
+		if (inputExpression != null) {
+			engine.reset();
+			fExpr = engine.parse(inputExpression);
+			if (fExpr != null) {
+
+				TimeLimiter timeLimiter = new SimpleTimeLimiter();
+				Callable<IExpr> work = new EvalCallable(fExpr, engine);
+
+				try {
+					return timeLimiter.callWithTimeout(work, timeoutDuration, timeUnit, interruptible);
+				} catch (java.util.concurrent.TimeoutException e) {
+					return F.Aborted;
+				} catch (com.google.common.util.concurrent.UncheckedTimeoutException e) {
+					return F.Aborted;
+				} catch (Exception e) {
+					if (Config.DEBUG) {
+						e.printStackTrace();
+					}
+					return F.Null;
+				}
 			}
 		}
 		return null;
