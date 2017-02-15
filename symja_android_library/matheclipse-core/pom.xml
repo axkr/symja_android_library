@@ -13,9 +13,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+			<groupId>java-algebra-system</groupId>
 			<artifactId>jas</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apfloat</groupId>

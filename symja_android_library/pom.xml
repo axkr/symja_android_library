@@ -46,11 +46,15 @@
 
 	<modules>
 		<module>matheclipse-core</module>
-		<module>jas</module>
 	</modules>
 
 	<dependencyManagement>
 		<dependencies>
+		    <dependency>
+				<groupId>java-algebra-system</groupId>
+				<artifactId>jas</artifactId>
+				<version>2.6.5733</version>
+			</dependency>
 			<dependency>
 				<groupId>de.lab4inf</groupId>
 				<artifactId>Lab4Math</artifactId>
@@ -267,6 +271,10 @@
 	</profiles>
 
 	<repositories>
+		<repository>
+			<id>jas-repository</id>
+			<url>http://krum.rz.uni-mannheim.de/maven-repository</url>
+		</repository>
 		<repository>
 			<id>Lab4Inf</id>
 			<url>http://www.lab4inf.fh-muenster.de/lab4inf/maven-repository</url>
