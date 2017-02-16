@@ -1139,6 +1139,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "stringlength" : "StringLength");
 	public final static IBuiltInSymbol StringTake = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "stringtake" : "StringTake");
+	public final static IBuiltInSymbol StruveH = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "struveh" : "StruveH");
 	public final static IBuiltInSymbol Subfactorial = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subfactorial" : "Subfactorial");
 	public final static IBuiltInSymbol Subsets = initFinalSymbol(
@@ -5494,6 +5496,10 @@ public class F {
 		return StringX.valueOf(str);
 	}
 
+	public static IAST StruveH(final IExpr a0, final IExpr a1) {
+		return binaryAST2(StruveH, a0, a1);
+	}
+	
 	public static IAST Subfactorial(final IExpr a0) {
 		return unaryAST1(Subfactorial, a0);
 	}

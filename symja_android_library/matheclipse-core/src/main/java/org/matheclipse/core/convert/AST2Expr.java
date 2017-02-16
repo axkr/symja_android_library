@@ -111,7 +111,7 @@ public class AST2Expr {
 			"Share", "Show", "Sign", "SignCmp", "Simplify", "Sin", "Sinc", "SingularValueDecomposition", "Sinh",
 			"SinIntegral", "SinhIntegral", "Skewness", "SokalSneathDissimilarity", "Solve", "Sort", "Sow", "Span",
 			"Sqrt", "SquaredEuclidianDistance", "SquareFreeQ", "StieltjesGamma", "StirlingS2", "StringDrop",
-			"StringJoin", "StringLength", "StringTake", "Subfactorial", "Subscript", "Subsuperscript", "Subsets",
+			"StringJoin", "StringLength", "StringTake", "StruveH", "Subfactorial", "Subscript", "Subsuperscript", "Subsets",
 			"SubtractFrom", "Sum", "Superscript", "SurfaceGraphics", "Switch", "SyntaxLength", "SyntaxQ", "Table",
 			"Take", "Tally", "Tan", "Tanh", "TautologyQ", "Taylor", "TeXForm", "Thread", "Through", "Throw",
 			"TimeConstrained", "Times", "TimesBy", "Timing", "ToCharacterCode", "Together", "ToPolarCoordinates",
