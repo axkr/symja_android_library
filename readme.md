@@ -38,6 +38,14 @@ Using Maven, add the following to your `pom.xml`
       <enabled>true</enabled>
     </snapshots>
   </repository>
+  <repository>
+    <id>jas-repository</id>
+    <url>http://krum.rz.uni-mannheim.de/maven-repository</url>
+  </repository>
+  <repository>
+    <id>Lab4Inf</id>
+    <url>http://www.lab4inf.fh-muenster.de/lab4inf/maven-repository</url>
+  </repository>
 </repositories>
 ```
 
@@ -46,8 +54,6 @@ and run
 ```
 mvn clean install
 ```
-
-
 
 With the following command you can run the Symja console from the command line
 ```
@@ -139,54 +145,6 @@ Pay careful attention to anything about setting up your `PATH` or `CLASSPATH`.
 Install and open the latest version of the Eclipse development IDE:
 
 * http://www.eclipse.org/downloads/packages/eclipse-ide-java-developers/mars1
-
-### Maven
-
-For using the Maven Symja snapshot include these dependencies in your project:
-
-
-```
-		<dependency>
-			<groupId>org.matheclipse</groupId>
-			<artifactId>matheclipse-core</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>org.matheclipse</groupId>
-			<artifactId>jas</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
-		</dependency>
-		 
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<hipparchus.version>1.0</hipparchus.version>
-	</properties>
-```
-
-
-
-```
-	<repositories>
-		<repository>
-			<id>snapshots-repo</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>Lab4Inf</id>
-			<url>http://www.lab4inf.fh-muenster.de/lab4inf/maven-repository</url>
-		</repository>
-
-	</repositories>
-```
 
 ### BitBucket GIT
 
