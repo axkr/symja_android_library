@@ -4523,6 +4523,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("StruveH(-2+I,0)", "ComplexInfinity");
 		check("StruveH(1/2,x)", "(1-Cos(x))*Sqrt(2)*Sqrt(1/(Pi*x))");
 		check("StruveH(-1/2,x)", "Sqrt(2)*Sqrt(1/(Pi*x))*Sin(x)");
+		check("StruveH(a,-x)", "(-(-x)^a*StruveH(a,x))/x^a");
 	}
 
 	public void testSubfactorial() {

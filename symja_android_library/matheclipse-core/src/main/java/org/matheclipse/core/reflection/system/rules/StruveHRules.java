@@ -17,15 +17,6 @@ public interface StruveHRules {
 
   final public static IAST RULES = List(
     IInit(StruveH, SIZES),
-    // StruveH(n_,0):=0/;Re(n)>-1
-    ISetDelayed(StruveH(n_,C0),
-      Condition(C0,Greater(Re(n),CN1))),
-    // StruveH(n_,0):=ComplexInfinity/;Re(n)<-1
-    ISetDelayed(StruveH(n_,C0),
-      Condition(CComplexInfinity,Less(Re(n),CN1))),
-    // StruveH(n_,0):=Indeterminate/;Re(n)==-1
-    ISetDelayed(StruveH(n_,C0),
-      Condition(Indeterminate,Equal(Re(n),CN1))),
     // StruveH(-1/2,z_):=Sqrt(2/(Pi*z))*Sin(z)
     ISetDelayed(StruveH(CN1D2,z_),
       Times(Sqrt(Times(C2,Power(Times(Pi,z),-1))),Sin(z))),
