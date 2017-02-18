@@ -60,6 +60,11 @@ With the following command you can run the Symja console from the command line
 mvn exec:java -pl matheclipse-core
 ``` 
 
+With the following command you can build a fat jar which contains all needed classes
+```
+mvn assembly:single -pl matheclipse-core
+```
+
 The *Excelsior JET Maven Plugin* provides Maven users with an easy way to compile their applications
 down to optimized native Windows, OS X, or Linux executables with [Excelsior JET](http://excelsiorjet.com).
 ```
