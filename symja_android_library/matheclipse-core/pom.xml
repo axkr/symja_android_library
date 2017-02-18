@@ -90,6 +90,15 @@
 						<mainClass>org.matheclipse.core.eval.Console</mainClass>
 					</configuration>
 				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>exec-maven-plugin</artifactId>
+					<version>1.4.0</version>
+					<configuration>
+						<executable>java</executable>
+						<mainClass>org.matheclipse.core.eval.Console</mainClass>
+					</configuration>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
