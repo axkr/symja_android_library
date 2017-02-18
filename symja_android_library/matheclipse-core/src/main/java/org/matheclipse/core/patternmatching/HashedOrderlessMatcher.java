@@ -131,6 +131,85 @@ public class HashedOrderlessMatcher {
 
 	/**
 	 * Evaluate an <code>Orderless</code> AST with the defined
+	 * <code>HashedPatternRules</code> as long as the header of the given
+	 * expression equals the evaluated expression.
+	 * 
+	 * @param orderlessAST
+	 * @return
+	 * @see HashedPatternRules
+	 */
+	public IAST evaluateRepeated(final IAST orderlessAST) {
+		if (orderlessAST.isEvalFlagOn(IAST.IS_HASH_EVALED)) {
+			return F.NIL;
+		}
+		IAST temp = orderlessAST;
+		if (checkMinimmumASTs(temp)) {
+			boolean evaled = false;
+			int[] hashValues;
+			if (!fPatternHashRuleMap.isEmpty()) {
+				IExpr head = orderlessAST.head();
+				IAST result = F.NIL;
+				while (temp.isPresent()) {
+
+					hashValues = new int[(temp.size() - 1)];
+					HashValueVisitor v = new HashValueVisitor();
+					for (int i = 0; i < hashValues.length; i++) {
+						hashValues[i] = temp.get(i + 1).accept(v);
+						v.setUp();
+					}
+
+					result = evaluateHashedValues(temp, fPatternHashRuleMap, hashValues);
+					if (result.isPresent()) {
+						temp = result;
+						evaled = true;
+						if (!temp.head().equals(head)) {
+							temp.setEvalFlags(IAST.IS_HASH_EVALED);
+							return temp;
+						}
+					} else {
+						break;
+					}
+				}
+			}
+			if (!fHashRuleMap.isEmpty()) {
+				hashValues = new int[(temp.size() - 1)];
+				for (int i = 0; i < hashValues.length; i++) {
+					hashValues[i] = temp.get(i + 1).head().hashCode();
+				}
+				IAST result = evaluateHashedValues(temp, fHashRuleMap, hashValues);
+				if (result.isPresent()) {
+					result.setEvalFlags(IAST.IS_HASH_EVALED);
+					return result;
+				}
+			}
+			if (evaled) {
+				temp.setEvalFlags(IAST.IS_HASH_EVALED);
+				return temp;
+			}
+		}
+		orderlessAST.setEvalFlags(IAST.IS_HASH_EVALED);
+		return F.NIL;
+	}
+
+	/**
+	 * Check if there are at least two IAST arguments available.
+	 * 
+	 * @param ast
+	 * @return
+	 */
+	private static boolean checkMinimmumASTs(IAST ast) {
+		int counter = 0;
+		int size = ast.size();
+		for (int i = 1; i < size; i++) {
+			if (ast.get(i).isAST() && ++counter == 2) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Evaluate an <code>Orderless</code> AST only once with the defined
 	 * <code>HashedPatternRules</code>.
 	 * 
 	 * @param orderlessAST

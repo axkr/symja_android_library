@@ -169,7 +169,7 @@ public class Plus extends AbstractArgMultiple implements INumeric {
 		}
 
 		if (size > 2) {
-			IExpr temp = evaluateHashs(ast);
+			IExpr temp = evaluateHashsRepeated(ast);
 			if (temp.isAST(F.Plus, 2)) {
 				return ((IAST) temp).arg1();
 			}

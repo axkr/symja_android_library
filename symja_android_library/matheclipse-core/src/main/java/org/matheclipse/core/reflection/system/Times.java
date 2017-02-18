@@ -351,7 +351,7 @@ public class Times extends AbstractArgMultiple implements INumeric {
 			return F.C1;
 		}
 		if (size > 2) {
-			IAST temp = evaluateHashs(ast);
+			IAST temp = evaluateHashsRepeated(ast);
 			if (temp.isPresent()) {
 				return temp.getOneIdentity(F.C1);
 			}

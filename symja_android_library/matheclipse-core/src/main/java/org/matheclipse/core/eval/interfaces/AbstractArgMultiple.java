@@ -12,6 +12,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.HashedOrderlessMatcher;
+import org.matheclipse.core.patternmatching.HashedPatternRules;
 
 /**
  *
@@ -26,7 +27,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 			if (temp.isPresent()) {
 				return temp;
 			}
-			return evaluateHashs(ast);
+			return evaluateHashsRepeated(ast);
 		}
 
 		if (ast.size() > 3) {
@@ -88,7 +89,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 				return result;
 			}
 			if (tempAST.size() > 2) {
-				return evaluateHashs(tempAST);
+				return evaluateHashsRepeated(tempAST);
 			}
 		}
 
@@ -99,12 +100,21 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 		return null;
 	}
 
-	public IAST evaluateHashs(final IAST ast) {
+	/**
+	 * Evaluate an <code>Orderless</code> AST if the
+	 * <code>getHashRuleMap()</code> method returns a
+	 * <code>HashedOrderlessMatcher</code>,
+	 * 
+	 * @param orderlessAST
+	 * @return
+	 * @see HashedPatternRules
+	 */
+	public IAST evaluateHashsRepeated(final IAST orderlessAST) {
 		HashedOrderlessMatcher hashRuleMap = getHashRuleMap();
 		if (hashRuleMap == null) {
 			return F.NIL;
 		}
-		return hashRuleMap.evaluate(ast);
+		return hashRuleMap.evaluateRepeated(orderlessAST);
 	}
 
 	/**

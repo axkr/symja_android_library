@@ -156,6 +156,11 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public final int IS_ALL_EXPANDED = 0x2000;
 
 	/**
+	 * This expression is already evaluated by a HashedOrderlessMatcher function
+	 */
+	public final int IS_HASH_EVALED = 0x4000;
+	
+	/**
 	 * 
 	 * @param collection
 	 * @return
