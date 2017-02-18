@@ -14,15 +14,57 @@
 * [Mobile web interface symjaweb.appspot.com](http://symjaweb.appspot.com/)  
 * [Notebook interface symjaweb.appspot.com/new.jsp](http://symjaweb.appspot.com/new.jsp)
 
-### Quick start
+### Maven Usage
 
-Include the latest **symja_java8-YYYY-MM-DD.jar** from the Downloads/Release section in your 
+Using Maven, add the following to your `pom.xml`
+
+```
+<dependencies>
+  <dependency>
+    <groupId>org.matheclipse</groupId>
+      <artifactId>matheclipse-core</artifactId>
+	  <version>1.0.0-SNAPSHOT</version>
+    </dependency>
+</dependencies>
+
+<repositories> 
+  <repository>
+    <id>snapshots-repo</id>
+    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    <releases>
+      <enabled>false</enabled>
+    </releases>
+    <snapshots>
+      <enabled>true</enabled>
+    </snapshots>
+  </repository>
+</repositories>
+```
+
+and run
+
+```
+mvn clean install
+```
+
+
+
+With the following command you can run the Symja console from the command line
+```
+mvn exec:java -pl matheclipse-core
+``` 
+
+The *Excelsior JET Maven Plugin* provides Maven users with an easy way to compile their applications
+down to optimized native Windows, OS X, or Linux executables with [Excelsior JET](http://excelsiorjet.com).
+```
+mvn jet:build -pl matheclipse-core
+```
+
+### Quick start
+Include the latest **matheclipse-core-1.0.0-SNAPSHOT.jar** from the Downloads/Release section in your 
 classpath and start coding using parsed input strings or the internal object hierarchy.
 
-With the following command you can run a Symja console from the command line
-```
-java -classpath symja_java8-YYYY-MM-DD.jar org.matheclipse.core.eval.Console
-``` 
+
 
 ###Examples
 
