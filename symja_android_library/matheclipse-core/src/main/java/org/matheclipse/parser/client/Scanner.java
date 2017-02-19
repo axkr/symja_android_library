@@ -206,6 +206,8 @@ public class Scanner {
 	/**
 	 * Initialize Scanner without a math-expression
 	 * 
+	 * @param packageMode
+	 *            <code>true</code> if currently a package is read.
 	 */
 	public Scanner(boolean packageMode) {
 		fPackageMode = packageMode;
@@ -297,7 +299,10 @@ public class Scanner {
 	}
 
 	/**
-	 * Get the next token from the input string
+	 * Determines if the current character is white space according to
+	 * <code>Character#isWhitespace()</code> method.
+	 * 
+	 * @return
 	 */
 	protected boolean isWhitespace() {
 		if (fInputString.length() > fCurrentPosition) {
@@ -308,10 +313,19 @@ public class Scanner {
 
 	/**
 	 * Get the next token from the input string
+	 * 
+	 * @throws SyntaxError
 	 */
 	protected void getNextToken() throws SyntaxError {
 
 		while (fInputString.length() > fCurrentPosition) {
+			if (fInputString.charAt(fCurrentPosition) == '\\') {
+				if (fInputString.length() > fCurrentPosition + 1 && fInputString.charAt(fCurrentPosition + 1) == '[') {
+					fToken = TT_IDENTIFIER;
+					fCurrentChar = fInputString.charAt(fCurrentPosition++);
+					return;
+				}
+			}
 			getNextChar();
 			fToken = TT_EOF;
 
@@ -513,6 +527,26 @@ public class Scanner {
 	}
 
 	protected String getIdentifier() {
+		if (fCurrentChar == '\\') {
+			if (fInputString.length() > fCurrentPosition) {
+				if (fInputString.charAt(fCurrentPosition) == '[') {
+
+					final int startPosition = fCurrentPosition++ - 1;
+					getChar();
+					while (Character.isLetterOrDigit(fCurrentChar)) {
+						getChar();
+					}
+					if (fCurrentChar == ']') {
+						int endPosition = fCurrentPosition--;
+						getChar();
+						return fInputString.substring(startPosition, endPosition);
+					}
+					throwSyntaxError("Special identifier definition '\\[...]' not closed with ']' ");
+
+				}
+			}
+		}
+
 		final int startPosition = fCurrentPosition - 1;
 
 		getChar();

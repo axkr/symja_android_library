@@ -128,9 +128,9 @@ public class ExprParser extends ExprScanner {
 		this(engine, ExprParserFactory.MMA_STYLE_FACTORY, relaxedSyntax);
 	}
 
-	public ExprParser(final EvalEngine engine, final boolean relaxedSyntax, boolean packageMode) throws SyntaxError {
-		this(engine, ExprParserFactory.MMA_STYLE_FACTORY, relaxedSyntax, packageMode);
-	}
+//	public ExprParser(final EvalEngine engine, final boolean relaxedSyntax, boolean packageMode) throws SyntaxError {
+//		this(engine, ExprParserFactory.MMA_STYLE_FACTORY, relaxedSyntax, packageMode);
+//	}
 
 	/**
 	 * 
@@ -944,11 +944,9 @@ public class ExprParser extends ExprScanner {
 				// return infixOperator.createFunction(fFactory, rhs,
 				// fFactory.createSymbol("Null"));
 			}
-			if (fPackageMode && fRecursionDepth < 1) {
-				return createInfixFunction(infixOperator, rhs, F.Null);
-				// return infixOperator.createFunction(fFactory, rhs,
-				// fFactory.createSymbol("Null"));
-			}
+//			if (fPackageMode && fRecursionDepth < 1) {
+//				return createInfixFunction(infixOperator, rhs, F.Null);
+//			}
 		}
 		return null;
 	}
@@ -1087,29 +1085,14 @@ public class ExprParser extends ExprScanner {
 						if (infixOperator.getOperatorString().equals(";")) {
 							IExpr lhs = rhs;
 							rhs = F.Null;
-							if (fPackageMode && fRecursionDepth < 1) {
-								return createInfixFunction(infixOperator, lhs, rhs);
-							}
+//							if (fPackageMode && fRecursionDepth < 1) {
+//								return createInfixFunction(infixOperator, lhs, rhs);
+//							}
 						}
 						rhs = parseExpression(rhs, infixOperator.getPrecedence());
 						continue;
 					}
 
-					// if (infixOperator.getPrecedence() > min_precedence) {
-					// IExpr compoundExpressionNull =
-					// parseCompoundExpressionNull(infixOperator, rhs);
-					// if (compoundExpressionNull != null) {
-					// return compoundExpressionNull;
-					// }
-					// rhs = parseOperators(rhs, infixOperator.getPrecedence());
-					// continue;
-					// } else if ((infixOperator.getPrecedence() ==
-					// min_precedence)
-					// && (infixOperator.getGrouping() ==
-					// InfixOperator.RIGHT_ASSOCIATIVE)) {
-					// rhs = parseOperators(rhs, infixOperator.getPrecedence());
-					// continue;
-					// }
 				} else {
 					PostfixExprOperator postfixOperator = determinePostfixOperator();
 					if (postfixOperator != null) {

@@ -195,7 +195,7 @@ public class ExprScanner {
 
 	protected IExprParserFactory fFactory;
 
-	protected final boolean fPackageMode;
+	// protected final boolean fPackageMode;
 
 	private static HashMap<String, String> CHAR_MAP = new HashMap<String, String>(1024);
 
@@ -208,7 +208,7 @@ public class ExprScanner {
 	 * 
 	 */
 	public ExprScanner(boolean packageMode) {
-		fPackageMode = packageMode;
+		// fPackageMode = packageMode;
 		initializeNullScanner();
 	}
 
@@ -297,7 +297,10 @@ public class ExprScanner {
 	}
 
 	/**
-	 * Get the next token from the input string
+	 * Determines if the current character is white space according to
+	 * <code>Character#isWhitespace()</code> method.
+	 * 
+	 * @return
 	 */
 	protected boolean isWhitespace() {
 		if (fInputString.length() > fCurrentPosition) {
@@ -308,11 +311,19 @@ public class ExprScanner {
 
 	/**
 	 * Get the next token from the input string
+	 * 
+	 * @throws SyntaxError
 	 */
 	protected void getNextToken() throws SyntaxError {
 
 		while (fInputString.length() > fCurrentPosition) {
-			// fCurrentChar = fInputString.charAt(fCurrentPosition++);
+			if (fInputString.charAt(fCurrentPosition) == '\\') {
+				if (fInputString.length() > fCurrentPosition + 1 && fInputString.charAt(fCurrentPosition + 1) == '[') {
+					fToken = TT_IDENTIFIER;
+					fCurrentChar = fInputString.charAt(fCurrentPosition++);
+					return;
+				}
+			}
 			getNextChar();
 			fToken = TT_EOF;
 
@@ -326,15 +337,12 @@ public class ExprScanner {
 				if (fCurrentChar == '\n') {
 					rowCount++;
 					fCurrentColumnStartPosition = fCurrentPosition;
-					if (fPackageMode && fRecursionDepth == 0) {
-						fToken = TT_NEWLINE;
-						return;
-					}
+					// if (fPackageMode && fRecursionDepth == 0) {
+					// fToken = TT_NEWLINE;
+					// return;
+					// }
 					continue; // while loop
 				}
-				// if (((fCurrentChar >= 'a') && (fCurrentChar <= 'z')) ||
-				// ((fCurrentChar >= 'A') && (fCurrentChar <= 'Z'))
-				// || (fCurrentChar == '$')) {
 
 				if (Character.isLetter(fCurrentChar) || (fCurrentChar == '$')) {
 					// the Character.isUnicodeIdentifierStart method doesn't
@@ -535,6 +543,26 @@ public class ExprScanner {
 	}
 
 	protected String getIdentifier() {
+
+		if (fCurrentChar == '\\') {
+			if (fInputString.length() > fCurrentPosition) {
+				if (fInputString.charAt(fCurrentPosition) == '[') {
+
+					final int startPosition = fCurrentPosition++ - 1;
+					getChar();
+					while (Character.isLetterOrDigit(fCurrentChar)) {
+						getChar();
+					}
+					if (fCurrentChar == ']') {
+						int endPosition = fCurrentPosition--;
+						getChar();
+						return fInputString.substring(startPosition, endPosition);
+					}
+					throwSyntaxError("Special identifier definition '\\[...]' not closed with ']' ");
+
+				}
+			}
+		}
 		final int startPosition = fCurrentPosition - 1;
 
 		getChar();
