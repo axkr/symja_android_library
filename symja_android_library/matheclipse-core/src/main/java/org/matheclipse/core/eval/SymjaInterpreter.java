@@ -1,9 +1,9 @@
 package org.matheclipse.core.eval;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
@@ -22,6 +22,11 @@ public class SymjaInterpreter extends EvalUtilities {
 
 	/**
 	 * Create a new command interpreter attached to the passed in streams.
+	 * 
+	 * @param codeString
+	 *            the Symja source code which should be interpreted
+	 * @param out
+	 *            the output stream
 	 */
 	public SymjaInterpreter(String codeString, OutputStream out) {
 		super(new EvalEngine(), false, true);
@@ -82,12 +87,16 @@ public class SymjaInterpreter extends EvalUtilities {
 		} catch (final RuntimeException re) {
 			Throwable me = re.getCause();
 			if (me instanceof MathException) {
-				printException(buf, me);
+				Validate.printException(buf, me);
 			} else {
-				printException(buf, re);
+				Validate.printException(buf, re);
 			}
-		} catch (final Exception e) {
-			printException(buf, e);
+		} catch (final Exception ex) {
+			Validate.printException(buf, ex);
+		} catch (final StackOverflowError soe) {
+			Validate.printException(buf, soe);
+		} catch (final OutOfMemoryError oome) {
+			Validate.printException(buf, oome);
 		}
 		return buf.toString();
 	}
@@ -95,8 +104,8 @@ public class SymjaInterpreter extends EvalUtilities {
 	/**
 	 * Parse the <code>codeString</code> into an <code>IExpr</code> and if
 	 * <code>function</code> unequals <code>null</code>, replace all occurences
-	 * of slot <code>#</code> in the function with the parsed expression.
-	 * After that evaluate the given expression.
+	 * of slot <code>#</code> in the function with the parsed expression. After
+	 * that evaluate the given expression.
 	 * 
 	 * @param function
 	 * @return
@@ -136,39 +145,18 @@ public class SymjaInterpreter extends EvalUtilities {
 				}
 				return buf.toString();
 			}
-		} catch (
-
-		final RuntimeException re)
-
-		{
+		} catch (final RuntimeException re) {
 			Throwable me = re.getCause();
 			if (me instanceof MathException) {
-				printException(buf, me);
+				Validate.printException(buf, me);
 			} else {
-				printException(buf, re);
+				Validate.printException(buf, re);
 			}
-		} catch (
-
-		final Exception e)
-
-		{
-			printException(buf, e);
+		} catch (final Exception e) {
+			Validate.printException(buf, e);
 		}
 		return buf.toString();
 
-	}
-
-	private void printException(final Appendable buf, final Throwable e) {
-		String msg = e.getMessage();
-		try {
-			if (msg != null) {
-				buf.append("\nError: " + msg);
-			} else {
-				buf.append("\nError: " + e.getClass().getSimpleName());
-			}
-		} catch (IOException e1) {
-			// ignore
-		}
 	}
 
 	/**
@@ -177,7 +165,6 @@ public class SymjaInterpreter extends EvalUtilities {
 	 * @param function
 	 *            <code>null</code> if you like to evaluate in symbolic mode;
 	 *            &quot;N&quot; if you like to evaluate in numeric mode
-	 * @return
 	 */
 	public void eval(String function) {
 		String result = interpreter(function);
@@ -191,7 +178,6 @@ public class SymjaInterpreter extends EvalUtilities {
 	 * After that evaluate the given expression.
 	 * 
 	 * @param function
-	 * @return
 	 */
 	public void evalReplaceAll(IAST function) {
 		String result = interpreter(function);

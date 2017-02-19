@@ -1,9 +1,10 @@
 package org.matheclipse.core.examples;
 
-import static org.matheclipse.core.expression.F.*; 
+import static org.matheclipse.core.expression.F.*;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.SyntaxError;
@@ -16,15 +17,17 @@ public class CalculusExample {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS = true;
 
 			ExprEvaluator util = new ExprEvaluator(false, 100);
-			
+
 			// Show an expression in the Java form:
 			// Note: single character identifiers are case sensistive
-			// (the "D()" function input must be written as upper case character)
+			// (the "D()" function input must be written as upper case
+			// character)
 			String javaForm = util.toJavaForm("D(sin(x)*cos(x),x)");
 			// prints: D(Times(Sin(x),Cos(x)),x)
 			System.out.println(javaForm.toString());
 
-			// Use the Java form to create an expression with F.* static methods:
+			// Use the Java form to create an expression with F.* static
+			// methods:
 			IAST function = D(Times(Sin(x), Cos(x)), x);
 			IExpr result = util.evaluate(function);
 			// print: Cos(x)^2-Sin(x)^2
@@ -46,7 +49,8 @@ public class CalculusExample {
 			System.out.println(result.toString());
 
 			// set the value of a variable "a" to 10
-			// Note: in server mode the variable name must have a preceding '$' character
+			// Note: in server mode the variable name must have a preceding '$'
+			// character
 			result = util.evaluate("a=10");
 			// print: 10
 			System.out.println(result.toString());
@@ -58,7 +62,8 @@ public class CalculusExample {
 
 			// Do a calculation in "numeric mode" with the N() function
 			// Note: single character identifiers are case sensistive
-			// (the "N()" function input must be written as upper case character)
+			// (the "N()" function input must be written as upper case
+			// character)
 			result = util.evaluate("N(sinh(5))");
 			// print: 74.20321057778875
 			System.out.println(result.toString());
@@ -77,8 +82,12 @@ public class CalculusExample {
 		} catch (MathException me) {
 			// catch Symja math errors here
 			System.out.println(me.getMessage());
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (final Exception ex) {
+			System.out.println(ex.getMessage());
+		} catch (final StackOverflowError soe) {
+			System.out.println(soe.getMessage());
+		} catch (final OutOfMemoryError oome) {
+			System.out.println(oome.getMessage());
 		}
 	}
 }

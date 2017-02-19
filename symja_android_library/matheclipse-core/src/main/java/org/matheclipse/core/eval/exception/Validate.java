@@ -1,5 +1,7 @@
 package org.matheclipse.core.eval.exception;
 
+import java.io.IOException;
+
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -634,6 +636,19 @@ public final class Validate {
 		} else {
 			// not an equation
 			throw new WrongArgumentType(expr, "Equal[] expression (a==b) expected");
+		}
+	}
+
+	public static void printException(final Appendable buf, final Throwable e) {
+		String msg = e.getMessage();
+		try {
+			if (msg != null) {
+				buf.append("\nError: " + msg);
+			} else {
+				buf.append("\nError: " + e.getClass().getSimpleName());
+			}
+		} catch (IOException e1) {
+			// ignore
 		}
 	}
 

@@ -7,11 +7,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -189,7 +189,7 @@ public class MMAConsole {
 	 * <code>OutputForm</code>
 	 * 
 	 * @param inputExpression
-	 * 
+	 * @return 
 	 */
 	public String interpreter(final String inputExpression) {
 		IExpr result;
@@ -203,25 +203,15 @@ public class MMAConsole {
 				return result.toString();
 			}
 		} catch (final RuntimeException re) {
-			printException(buf, re);
+			Validate.printException(buf, re);
 		} catch (final Exception e) {
-			printException(buf, e);
+			Validate.printException(buf, e);
+		} catch (final OutOfMemoryError e) {
+			Validate.printException(buf, e);
+		} catch (final StackOverflowError e) {
+			Validate.printException(buf, e);
 		}
 		return buf.toString();
-	}
-
-	private void printException(final Writer buf, final Throwable e) {
-		String msg = e.getMessage();
-		try {
-			if (msg != null) {
-				buf.write("\nError: " + msg);
-
-			} else {
-				buf.write("\nError: " + e.getClass().getSimpleName());
-			}
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
 	}
 
 	/**

@@ -37,7 +37,8 @@ public class MathScriptEngine extends AbstractScriptEngine {
 	public MathScriptEngine() {
 		// get the thread local evaluation engine
 		fEngine = new EvalEngine();
-		// engine.setIterationLimit(10);
+		// fEngine.setRecursionLimit(256);
+		// fEngine.setIterationLimit(256);
 		fUtility = new EvalUtilities(fEngine, false, false);
 	}
 
@@ -132,6 +133,16 @@ public class MathScriptEngine extends AbstractScriptEngine {
 				e.printStackTrace();
 			}
 			return e.getMessage();
+		} catch (final OutOfMemoryError e) {
+			if (Config.DEBUG) {
+				e.printStackTrace();
+			}
+			return "OutOfMemoryError";
+		} catch (final StackOverflowError e) {
+			if (Config.DEBUG) {
+				e.printStackTrace();
+			}
+			return "StackOverflowError";
 		} finally {
 			if (list.size() > 0) {
 				for (int i = 0; i < list.size(); i++) {

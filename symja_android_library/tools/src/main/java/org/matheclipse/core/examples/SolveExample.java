@@ -25,6 +25,10 @@ public class SolveExample {
 			System.out.println(me.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
+		} catch (final StackOverflowError soe) {
+			System.out.println(soe.getMessage());
+		} catch (final OutOfMemoryError oome) {
+			System.out.println(oome.getMessage());
 		}
 	}
 }
