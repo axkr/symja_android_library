@@ -7,11 +7,11 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.reflection.system.rules.StruveHRules;
+import org.matheclipse.core.reflection.system.rules.StruveLRules;
 
-public class StruveH extends AbstractFunctionEvaluator implements StruveHRules {
+public class StruveL extends AbstractFunctionEvaluator implements StruveLRules {
 
-	public StruveH() {
+	public StruveL() {
 		// default ctor
 	}
 
@@ -24,24 +24,24 @@ public class StruveH extends AbstractFunctionEvaluator implements StruveHRules {
 		if (arg2.isZero()) {
 			IExpr re = arg1.re();
 			if (re.isMinusOne()) {
-				// StruveH(n_,0):=Indeterminate/;Re(n)==(-1)
+				// StruveL(n_,0):=Indeterminate/;Re(n)==(-1)
 				return F.Indeterminate;
 			}
 			IExpr temp = re.greaterThan(F.CN1);
 			if (temp.isTrue()) {
-				// StruveH(n_,0):=0/;Re(n)>(-1)
+				// StruveL(n_,0):=0/;Re(n)>(-1)
 				return F.C0;
 			}
 			if (temp.isFalse()) {
-				// StruveH(n_,0):=ComplexInfinity/;Re(n)<(-1)
+				// StruveL(n_,0):=ComplexInfinity/;Re(n)<(-1)
 				return F.CComplexInfinity;
 			}
 		} else {
 			IExpr negArg2 = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg2);
 			if (negArg2.isPresent()) {
-				// StruveH(n_, arg2_)) := ((-(arg2)^n) StruveH(n,
+				// StruveL(n_, arg2_)) := ((-(arg2)^n) StruveL(n,
 				// negArg2))/negArg2^n
-				return F.Times(F.CN1, F.Power(arg2, arg1), F.Power(negArg2, F.Negate(arg1)), F.StruveH(arg1, negArg2));
+				return F.Times(F.CN1, F.Power(arg2, arg1), F.Power(negArg2, F.Negate(arg1)), F.StruveL(arg1, negArg2));
 			}
 		}
 		return F.NIL;

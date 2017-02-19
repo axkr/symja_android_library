@@ -4526,6 +4526,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("StruveH(a,-x)", "(-(-x)^a*StruveH(a,x))/x^a");
 	}
 
+	public void testStruveL() {
+		check("StruveL(I,0)", "0");
+		check("StruveL(-1+I,0)", "Indeterminate");
+		check("StruveL(-2+I,0)", "ComplexInfinity");
+		check("StruveL(1/2,x)", "(-1+Cosh(x))*Sqrt(2)*Sqrt(1/(Pi*x))");
+		check("StruveL(-1/2,x)", "Sqrt(2)*Sqrt(1/(Pi*x))*Sinh(x)");
+		check("StruveL(a,-x)", "(-(-x)^a*StruveL(a,x))/x^a");
+	}
+	
 	public void testSubfactorial() {
 		check("Subfactorial(n)", "Subfactorial(n)");
 		check("Table(Subfactorial(n), {n, 10})", "{0,1,2,9,44,265,1854,14833,133496,1334961}");

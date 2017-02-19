@@ -111,14 +111,15 @@ public class AST2Expr {
 			"Share", "Show", "Sign", "SignCmp", "Simplify", "Sin", "Sinc", "SingularValueDecomposition", "Sinh",
 			"SinIntegral", "SinhIntegral", "Skewness", "SokalSneathDissimilarity", "Solve", "Sort", "Sow", "Span",
 			"Sqrt", "SquaredEuclidianDistance", "SquareFreeQ", "StieltjesGamma", "StirlingS2", "StringDrop",
-			"StringJoin", "StringLength", "StringTake", "StruveH", "Subfactorial", "Subscript", "Subsuperscript", "Subsets",
-			"SubtractFrom", "Sum", "Superscript", "SurfaceGraphics", "Switch", "SyntaxLength", "SyntaxQ", "Table",
-			"Take", "Tally", "Tan", "Tanh", "TautologyQ", "Taylor", "TeXForm", "Thread", "Through", "Throw",
-			"TimeConstrained", "Times", "TimesBy", "Timing", "ToCharacterCode", "Together", "ToPolarCoordinates",
-			"ToString", "Total", "ToUnicode", "Tr", "Trace", "Transpose", "TrigExpand", "TrigReduce", "TrigToExp",
-			"TrueQ", "Tuples", "Unequal", "Unevaluated", "Union", "Unique", "UnitStep", "UnitVector", "UnsameQ",
-			"Unset", "UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables", "Variance",
-			"VectorAngle", "VectorQ", "Which", "While", "Xor", "YuleDissimilarity", "Zeta" };
+			"StringJoin", "StringLength", "StringTake", "StruveH", "StruveL", "Subfactorial", "Subscript",
+			"Subsuperscript", "Subsets", "SubtractFrom", "Sum", "Superscript", "SurfaceGraphics", "Switch",
+			"SyntaxLength", "SyntaxQ", "Table", "Take", "Tally", "Tan", "Tanh", "TautologyQ", "Taylor", "TeXForm",
+			"Thread", "Through", "Throw", "TimeConstrained", "Times", "TimesBy", "Timing", "ToCharacterCode",
+			"Together", "ToPolarCoordinates", "ToString", "Total", "ToUnicode", "Tr", "Trace", "Transpose",
+			"TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Tuples", "Unequal", "Unevaluated", "Union", "Unique",
+			"UnitStep", "UnitVector", "UnsameQ", "Unset", "UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ",
+			"VandermondeMatrix", "Variables", "Variance", "VectorAngle", "VectorQ", "Which", "While", "Xor",
+			"YuleDissimilarity", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 
