@@ -60,6 +60,11 @@ public class ArcTan extends AbstractArg12 implements INumeric, ArcTanRules {
 			}
 			return F.Times(F.CN1D2, F.Pi);
 		}
+		if (y.isZero()) {
+			if (x.isSignedNumber() && !x.isZero()) {
+				return F.Times(F.Subtract(F.C1, F.UnitStep(x)), F.Pi);
+			}
+		}
 		if (x.isNumber() && y.isSignedNumber()) {
 			if (((INumber) x).re().isNegative()) {
 				return F.Plus(F.ArcTan(F.Divide(y, x)), F.Times(F.Subtract(F.Times(F.C2, F.UnitStep(y)), F.C1), F.Pi));
@@ -69,12 +74,6 @@ public class ArcTan extends AbstractArg12 implements INumeric, ArcTanRules {
 			if (argX.isPresent() && F
 					.evalTrue(F.And(F.Less(F.Times(F.CN1D2, F.Pi), argX), F.LessEqual(argX, F.Times(F.C1D2, F.Pi))))) {
 				return F.ArcTan(F.Divide(y, x));
-			}
-		}
-
-		if (y.isZero()) {
-			if (x.isSignedNumber() && !x.isZero()) {
-				return F.Subtract(F.C1, F.UnitStep(x));
 			}
 		}
 		if (x.isInfinity()) {
