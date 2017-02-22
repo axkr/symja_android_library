@@ -62,6 +62,9 @@ public interface LogRules {
     // Log(ComplexInfinity)=Infinity
     ISet(Log(CComplexInfinity),
       oo),
+    // Log(a_,b_):=Log(b)/Log(a)
+    ISetDelayed(Log(a_,b_),
+      Times(Log(b),Power(Log(a),-1))),
     // Log(a_,E):=1/Log(a)
     ISetDelayed(Log(a_,E),
       Power(Log(a),-1)),

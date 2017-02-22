@@ -2476,11 +2476,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LiouvilleLambda({1,2,3,4,5,6,20})", "{1,-1,-1,1,-1,1,-1}");
 	}
 
-	public void testLog() {
+	public void testLog() { 
 		// test alias
 		check("Ln(E)", "1");
 		check("ln(E)", "1");
 
+		check("Log(a, b)", "Log(b)/Log(a)");
 		check("Log(Pi^E)", "E*Log(Pi)");
 		check("Log(E)", "1");
 		check("Log(-E)", "1+I*Pi");
@@ -2506,11 +2507,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLog10() {
-		check("Log10(x)", "Log(10,x)");
+		check("Log10(x)", "Log(x)/Log(10)");
 	}
 
 	public void testLog2() {
-		check("Log2(x)", "Log(2,x)");
+		check("Log2(x)", "Log(x)/Log(2)");
 	}
 
 	public void testLogisticSigmoid() {
@@ -3605,6 +3606,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPowerExpand() {
+		check("PowerExpand(Log(a*b*c, d))", "Log(d)/(Log(a)+Log(b)+Log(c))");
+		check("PowerExpand(Log(a*b*c))", "Log(a)+Log(b)+Log(c)");
+		check("PowerExpand(Log(a*b^c,d))", "Log(d)/(c*Log(b)+Log(a))");
+		check("PowerExpand(Log(a*b^c))", "c*Log(b)+Log(a)");
+		check("PowerExpand(Log(a/b))", "-Log(b)+Log(a)");
 		check("-2^(1/2)*3^(1/2)", "-Sqrt(6)");
 		check("Sqrt(x*y)", "Sqrt(x*y)");
 		check("{Sqrt(x y), Sqrt(x) Sqrt(y)} /. {x -> -2, y -> -3}", "{Sqrt(6),-Sqrt(6)}");
@@ -4592,8 +4598,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sum(Ceiling(Log(i)),{i,1,n})",
 				"(1-(1+Floor(Log(n)))*E^Floor(Log(n))+E^(1+Floor(Log(n)))*Floor(Log(n)))/(-1+E)+(-E^Floor(Log(n))+n)*Ceiling(Log(n))");
 		check("Sum(Ceiling(Log(a,i)),{i,1,n})",
-				"(1-(1+Floor(Log(a,n)))*a^Floor(Log(a,n))+a^(1+Floor(Log(a,n)))*Floor(Log(a,n)))/(\n"
-						+ "-1+a)+(-a^Floor(Log(a,n))+n)*Ceiling(Log(a,n))");
+				"(1-(1+Floor(Log(n)/Log(a)))*a^Floor(Log(n)/Log(a))+a^(1+Floor(Log(n)/Log(a)))*Floor(Log(n)/Log(a)))/(\n" + 
+				"-1+a)+(-a^Floor(Log(n)/Log(a))+n)*Ceiling(Log(n)/Log(a))");
 		check("Sum(i*1/2*i,{i,1,n})", "1/2*(n/6+n^2/2+n^3/3)");
 		check("Sum(k * k,{k,1,n+1})", "1+13/6*n+3/2*n^2+n^3/3");
 		check("Sum(k,{k,4,2})", "0");

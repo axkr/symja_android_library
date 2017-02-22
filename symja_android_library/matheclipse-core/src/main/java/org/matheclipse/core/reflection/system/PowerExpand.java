@@ -55,13 +55,22 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 				if (x1.isPower()) {
 					IAST powerAST = (IAST) x1;
 					// Log[x_ ^ y_] :> y * Log(x)
-					IAST logResult = Times(powerAST.arg2(), Log(powerAST.arg1()));
+					IAST logResult = Times(powerAST.arg2(), powerExpand(Log(powerAST.arg1()), assumptions));
 					if (assumptions) {
 						IAST floorResult = Floor(Divide(Subtract(Pi, Im(logResult)), Times(C2, Pi)));
 						IAST timesResult = Times(C2, I, Pi, floorResult);
 						return Plus(logResult, timesResult);
 					}
 					return logResult;
+				}
+				if (x1.isTimes()) {
+					IAST timesAST = (IAST) x1;
+					// Log[x_ * y_ * z_] :> Log(x)*Log(y)*Log(z)
+					IAST logResult = timesAST.setAtClone(0, F.Plus);
+					logResult = logResult.mapThread(F.Log(F.Null), 1);
+					// if (assumptions) {
+					// }
+					return powerExpand(logResult, assumptions);
 				}
 			}
 			if (evaled) {
@@ -107,8 +116,8 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 					IAST powerAST = (IAST) x1;
 					IAST powerResult = Power(powerAST.arg1(), Times(powerAST.arg2(), x2));
 					if (assumptions) {
-						IAST floorResult = Floor(Divide(Subtract(Pi, Im(Times(powerAST.arg2(), Log(powerAST.arg1())))),
-								Times(C2, Pi)));
+						IAST floorResult = Floor(
+								Divide(Subtract(Pi, Im(Times(powerAST.arg2(), Log(powerAST.arg1())))), Times(C2, Pi)));
 						IAST expResult = Power(E, Times(C2, I, Pi, x2, floorResult));
 						IAST timesResult = Times(powerResult, expResult);
 						return timesResult;
@@ -141,7 +150,7 @@ public class PowerExpand extends AbstractFunctionEvaluator {
 				}
 			}
 
-			return powerExpand((IAST)ast.arg1(), assumptions);
+			return powerExpand((IAST) ast.arg1(), assumptions);
 
 		}
 		return ast.arg1();
