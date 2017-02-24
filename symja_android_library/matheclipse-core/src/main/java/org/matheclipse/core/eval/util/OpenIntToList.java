@@ -22,8 +22,6 @@ import java.util.NoSuchElementException;
  * Copied and modified from <code>org.apache.commons.math4.util-OpenIntToFieldHashMap</code>
  * </p>
  *
- * @param <T>
- *            the type of the elements
  */
 public class OpenIntToList<T> implements Serializable {
 

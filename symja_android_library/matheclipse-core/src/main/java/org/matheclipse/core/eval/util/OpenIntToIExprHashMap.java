@@ -37,8 +37,6 @@ import org.matheclipse.core.interfaces.IExpr;
  * been modified during iteration.
  * </p>
  * 
- * @param <T>
- *            the type of the objects
  */
 public class OpenIntToIExprHashMap implements Serializable {
 

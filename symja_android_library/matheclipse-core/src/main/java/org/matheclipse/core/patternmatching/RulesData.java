@@ -15,6 +15,7 @@ import java.util.TreeSet;
 import javax.annotation.Nonnull;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.eval.util.OpenIntToSet;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
@@ -29,6 +30,10 @@ import org.matheclipse.core.visit.AbstractVisitor;
 public class RulesData implements Serializable {
 
 	private static final long serialVersionUID = -7747268035549814899L;
+	/**
+	 * 
+	 */
+	public static final int DEFAULT_VALUE_INDEX = Integer.MIN_VALUE;
 
 	public static boolean containsOrderlessASTOrDefaultPattern(final IAST lhsAST) {
 		for (int i = 1; i < lhsAST.size(); i++) {
@@ -112,21 +117,27 @@ public class RulesData implements Serializable {
 		return false;
 	}
 
+	private OpenIntToIExprHashMap fDefaultValues;
+
 	private Map<IExpr, PatternMatcherEquals> fEqualDownRules;
+
 	private OpenIntToSet<IPatternMatcher> fSimplePatternDownRules;
+
 	private OpenIntToSet<IPatternMatcher> fSimpleOrderlesPatternDownRules;
+
 	private Set<IPatternMatcher> fPatternDownRules;
 	private Map<IExpr, PatternMatcherEquals> fEqualUpRules;
 	private OpenIntToSet<IPatternMatcher> fSimplePatternUpRules;
-	final transient private Context context;
+
+	// final transient private Context context;
 
 	public RulesData(Context context) {
-		this.context = context;
+		// this.context = context;
 		clear();
 	}
 
 	public RulesData(Context context, @Nonnull int[] sizes) {
-		this.context = context;
+		// this.context = context;
 		clear();
 		if (sizes.length > 0) {
 			int capacity;
@@ -144,6 +155,136 @@ public class RulesData implements Serializable {
 				}
 			}
 		}
+	}
+
+	/**
+	 * <p>
+	 * Run the given visitor on every IAST stored in the rule database.
+	 * </p>
+	 * Example: optimize internal memory usage by sharing common objects.
+	 * 
+	 * @param visitor
+	 *            the visitor whch manipulates the IAST objects
+	 * @return
+	 */
+	public IAST accept(AbstractVisitor visitor) {
+		Iterator<IExpr> iter;
+		IExpr key;
+		PatternMatcherEquals pmEquals;
+		IAST ast;
+		IExpr condition;
+		PatternMatcherAndEvaluator pmEvaluator;
+		if (fEqualUpRules != null && fEqualUpRules.size() > 0) {
+			iter = fEqualUpRules.keySet().iterator();
+			while (iter.hasNext()) {
+				key = iter.next();
+				pmEquals = fEqualUpRules.get(key);
+				if (key.isAST()) {
+					key.accept(visitor);
+				}
+				if (pmEquals.getRHS().isAST()) {
+					pmEquals.getRHS().accept(visitor);
+				}
+			}
+		}
+		if (fSimplePatternUpRules != null && fSimplePatternUpRules.size() > 0) {
+			Iterator<IPatternMatcher> listIter;
+			Set<IPatternMatcher>[] setArr = fSimplePatternUpRules.getValues();
+			for (int i = 0; i < setArr.length; i++) {
+				if (setArr[i] != null) {
+					listIter = setArr[i].iterator();
+					IPatternMatcher elem;
+					while (listIter.hasNext()) {
+						elem = listIter.next();
+						if (elem instanceof PatternMatcherAndEvaluator) {
+							pmEvaluator = (PatternMatcherAndEvaluator) elem;
+							if (pmEvaluator.getLHS().isAST()) {
+								pmEvaluator.getLHS().accept(visitor);
+							}
+							if (pmEvaluator.getRHS().isAST()) {
+								pmEvaluator.getRHS().accept(visitor);
+							}
+							condition = pmEvaluator.getCondition();
+							if (condition != null) {
+								if (condition.isAST()) {
+									condition.accept(visitor);
+								}
+							}
+						}
+						// if (elem instanceof PatternMatcherAndInvoker) {
+						// don't show internal methods associated with a pattern
+						// }
+					}
+				}
+			}
+		}
+
+		if (fEqualDownRules != null && fEqualDownRules.size() > 0) {
+			iter = fEqualDownRules.keySet().iterator();
+			while (iter.hasNext()) {
+				key = iter.next();
+				pmEquals = fEqualDownRules.get(key);
+				ast = pmEquals.getAsAST();
+				if (key.isAST()) {
+					key.accept(visitor);
+				}
+				ast.accept(visitor);
+			}
+		}
+		if (fSimplePatternDownRules != null && fSimplePatternDownRules.size() > 0) {
+			Iterator<IPatternMatcher> listIter;
+			Set<IPatternMatcher>[] setArr = fSimplePatternDownRules.getValues();
+			for (int i = 0; i < setArr.length; i++) {
+				if (setArr[i] != null) {
+					listIter = setArr[i].iterator();
+					IPatternMatcher elem;
+					while (listIter.hasNext()) {
+						elem = listIter.next();
+						if (elem instanceof PatternMatcherAndEvaluator) {
+							pmEvaluator = (PatternMatcherAndEvaluator) elem;
+							ast = pmEvaluator.getAsAST();
+							ast.accept(visitor);
+						}
+					}
+				}
+			}
+		}
+
+		if (fSimpleOrderlesPatternDownRules != null && fSimpleOrderlesPatternDownRules.size() > 0) {
+			Iterator<IPatternMatcher> listIter;
+			Set<IPatternMatcher>[] setArr = fSimpleOrderlesPatternDownRules.getValues();
+			for (int i = 0; i < setArr.length; i++) {
+				if (setArr[i] != null) {
+					listIter = setArr[i].iterator();
+					IPatternMatcher elem;
+					Set<PatternMatcherAndEvaluator> set = new HashSet<PatternMatcherAndEvaluator>();
+					while (listIter.hasNext()) {
+						elem = listIter.next();
+						if (elem instanceof PatternMatcherAndEvaluator) {
+							pmEvaluator = (PatternMatcherAndEvaluator) elem;
+							if (!set.contains(pmEvaluator)) {
+								set.add(pmEvaluator);
+								ast = pmEvaluator.getAsAST();
+								ast.accept(visitor);
+							}
+						}
+					}
+				}
+			}
+		}
+		if (fPatternDownRules != null && fPatternDownRules.size() > 0) {
+			IPatternMatcher[] list = fPatternDownRules.toArray(new IPatternMatcher[0]);
+			for (int i = 0; i < list.length; i++) {
+				if (list[i] instanceof PatternMatcherAndEvaluator) {
+					pmEvaluator = (PatternMatcherAndEvaluator) list[i];
+					ast = pmEvaluator.getAsAST();
+					ast.accept(visitor);
+				}
+			}
+
+		}
+
+		return null;
 	}
 
 	private PatternMatcher addSimpleOrderlessPatternDownRule(final Set<ISymbol> headerSymbols, final IExpr leftHandSide,
@@ -380,25 +521,23 @@ public class RulesData implements Serializable {
 
 	/**
 	 * 
-	 * @param expression
-	 * @param ee
-	 *            evaluation engine
+	 * @param expr
 	 * @return <code>F.NIL</code> if no evaluation was possible
 	 */
-	public IExpr evalDownRule(final IExpr expression) {
+	public IExpr evalDownRule(final IExpr expr) {
 		PatternMatcherEquals res;
 		boolean showSteps = false;
 		if (Config.SHOW_PATTERN_EVAL_STEPS) {
-			showSteps = Config.SHOW_PATTERN_SYMBOL_STEPS.contains(expression.topHead());
+			showSteps = Config.SHOW_PATTERN_SYMBOL_STEPS.contains(expr.topHead());
 			if (showSteps) {
-				System.out.println("EVAL_EXPR: " + expression.toString());
+				System.out.println("EVAL_EXPR: " + expr.toString());
 			}
 		}
 		if (fEqualDownRules != null) {
 			// if (showSteps) {
 			// System.out.println(" EQUAL RULES");
 			// }
-			res = fEqualDownRules.get(expression);
+			res = fEqualDownRules.get(expr);
 			if (res != null) {
 				if (showSteps) {
 					System.out.println("\n  >>>> " + res.getRHS().toString());
@@ -409,10 +548,10 @@ public class RulesData implements Serializable {
 
 		try {
 			IPatternMatcher pmEvaluator;
-			if (expression.isAST()) {
-				IAST astExpr = (IAST) expression;
+			if (expr.isAST()) {
+				IAST astExpr = (IAST) expr;
 				if (fSimplePatternDownRules != null) {
-					final int hash = ((IAST) expression).patternHashCode();
+					final int hash = ((IAST) expr).patternHashCode();
 					if (fSimplePatternDownRules.containsKey(hash)) {
 						IExpr temp = evalSimpleRatternDownRule(fSimplePatternDownRules, hash, astExpr, showSteps);
 						if (temp.isPresent()) {
@@ -449,7 +588,7 @@ public class RulesData implements Serializable {
 						}
 						System.out.println("  COMPLEX: " + pmEvaluator.getLHS().toString() + "  :=  " + rhs.toString());
 					}
-					result = pmEvaluator.eval(expression);
+					result = pmEvaluator.eval(expr);
 					if (result.isPresent()) {
 						if (showSteps) {
 							IExpr rhs = pmEvaluator.getRHS();
@@ -459,7 +598,7 @@ public class RulesData implements Serializable {
 							// System.out.println("\nCOMPLEX: " +
 							// pmEvaluator.getLHS().toString() + " := " +
 							// rhs.toString());
-							System.out.println(" >>> " + expression.toString() + "  >>>>  " + result.toString());
+							System.out.println(" >>> " + expr.toString() + "  >>>>  " + result.toString());
 						}
 						return result;
 					}
@@ -543,6 +682,13 @@ public class RulesData implements Serializable {
 			cnse.printStackTrace();
 		}
 		return F.NIL;
+	}
+
+	public IExpr getDefaultValue(int pos) {
+		if (fDefaultValues == null) {
+			return null;
+		}
+		return fDefaultValues.get(pos);
 	}
 
 	/**
@@ -688,7 +834,6 @@ public class RulesData implements Serializable {
 
 	}
 
-	/** {@inheritDoc} */
 	public PatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
 		final IExpr leftHandSide = pmEvaluator.getLHS();
 		Set<ISymbol> headerSymbols = new HashSet<ISymbol>();
@@ -705,6 +850,17 @@ public class RulesData implements Serializable {
 			fPatternDownRules.add(pmEvaluator);
 			return pmEvaluator;
 		}
+	}
+
+	public void putfDefaultValues(IExpr expr) {
+		putfDefaultValues(DEFAULT_VALUE_INDEX, expr);
+	}
+
+	public void putfDefaultValues(int pos, IExpr expr) {
+		if (this.fDefaultValues == null) {
+			this.fDefaultValues = new OpenIntToIExprHashMap();
+		}
+		fDefaultValues.put(pos, expr);
 	}
 
 	public IPatternMatcher putUpRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IAST leftHandSide,
@@ -787,137 +943,5 @@ public class RulesData implements Serializable {
 			}
 		}
 		return buf.toString();
-	}
-
-	/**
-	 * <p>
-	 * Run the given visitor on every IAST stored in the rule database.
-	 * </p>
-	 * Example: optimize internal memory usage by sharing common objects.
-	 * 
-	 * @param visitor
-	 *            the visitor whch manipulates the IAST objects
-	 * @return
-	 */
-	public IAST accept(AbstractVisitor visitor) {
-		Iterator<IExpr> iter;
-		IExpr key;
-		PatternMatcherEquals pmEquals;
-		IAST ast;
-		ISymbol setSymbol;
-		IExpr condition;
-		PatternMatcherAndEvaluator pmEvaluator;
-		if (fEqualUpRules != null && fEqualUpRules.size() > 0) {
-			iter = fEqualUpRules.keySet().iterator();
-			while (iter.hasNext()) {
-				key = iter.next();
-				pmEquals = fEqualUpRules.get(key);
-				if (key.isAST()) {
-					key.accept(visitor);
-				}
-				if (pmEquals.getRHS().isAST()) {
-					pmEquals.getRHS().accept(visitor);
-				}
-			}
-		}
-		if (fSimplePatternUpRules != null && fSimplePatternUpRules.size() > 0) {
-			Iterator<IPatternMatcher> listIter;
-			Set<IPatternMatcher>[] setArr = fSimplePatternUpRules.getValues();
-			for (int i = 0; i < setArr.length; i++) {
-				if (setArr[i] != null) {
-					listIter = setArr[i].iterator();
-					IPatternMatcher elem;
-					while (listIter.hasNext()) {
-						elem = listIter.next();
-						if (elem instanceof PatternMatcherAndEvaluator) {
-							pmEvaluator = (PatternMatcherAndEvaluator) elem;
-							setSymbol = pmEvaluator.getSetSymbol();
-							if (pmEvaluator.getLHS().isAST()) {
-								pmEvaluator.getLHS().accept(visitor);
-							}
-							if (pmEvaluator.getRHS().isAST()) {
-								pmEvaluator.getRHS().accept(visitor);
-							}
-							condition = pmEvaluator.getCondition();
-							if (condition != null) {
-								if (condition.isAST()) {
-									condition.accept(visitor);
-								}
-							}
-						}
-						// if (elem instanceof PatternMatcherAndInvoker) {
-						// don't show internal methods associated with a pattern
-						// }
-					}
-				}
-			}
-		}
-
-		if (fEqualDownRules != null && fEqualDownRules.size() > 0) {
-			iter = fEqualDownRules.keySet().iterator();
-			while (iter.hasNext()) {
-				key = iter.next();
-				pmEquals = fEqualDownRules.get(key);
-				ast = pmEquals.getAsAST();
-				if (key.isAST()) {
-					key.accept(visitor);
-				}
-				ast.accept(visitor);
-			}
-		}
-		if (fSimplePatternDownRules != null && fSimplePatternDownRules.size() > 0) {
-			Iterator<IPatternMatcher> listIter;
-			Set<IPatternMatcher>[] setArr = fSimplePatternDownRules.getValues();
-			for (int i = 0; i < setArr.length; i++) {
-				if (setArr[i] != null) {
-					listIter = setArr[i].iterator();
-					IPatternMatcher elem;
-					while (listIter.hasNext()) {
-						elem = listIter.next();
-						if (elem instanceof PatternMatcherAndEvaluator) {
-							pmEvaluator = (PatternMatcherAndEvaluator) elem;
-							ast = pmEvaluator.getAsAST();
-							ast.accept(visitor);
-						}
-					}
-				}
-			}
-		}
-
-		if (fSimpleOrderlesPatternDownRules != null && fSimpleOrderlesPatternDownRules.size() > 0) {
-			Iterator<IPatternMatcher> listIter;
-			Set<IPatternMatcher>[] setArr = fSimpleOrderlesPatternDownRules.getValues();
-			for (int i = 0; i < setArr.length; i++) {
-				if (setArr[i] != null) {
-					listIter = setArr[i].iterator();
-					IPatternMatcher elem;
-					Set<PatternMatcherAndEvaluator> set = new HashSet<PatternMatcherAndEvaluator>();
-					while (listIter.hasNext()) {
-						elem = listIter.next();
-						if (elem instanceof PatternMatcherAndEvaluator) {
-							pmEvaluator = (PatternMatcherAndEvaluator) elem;
-							if (!set.contains(pmEvaluator)) {
-								set.add(pmEvaluator);
-								ast = pmEvaluator.getAsAST();
-								ast.accept(visitor);
-							}
-						}
-					}
-				}
-			}
-		}
-		if (fPatternDownRules != null && fPatternDownRules.size() > 0) {
-			IPatternMatcher[] list = fPatternDownRules.toArray(new IPatternMatcher[0]);
-			for (int i = 0; i < list.length; i++) {
-				if (list[i] instanceof PatternMatcherAndEvaluator) {
-					pmEvaluator = (PatternMatcherAndEvaluator) list[i];
-					ast = pmEvaluator.getAsAST();
-					ast.accept(visitor);
-				}
-			}
-
-		}
-
-		return null;
 	}
 }

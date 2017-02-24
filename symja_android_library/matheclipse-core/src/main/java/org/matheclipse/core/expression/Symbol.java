@@ -40,10 +40,6 @@ import org.matheclipse.core.visit.IVisitorLong;
 public class Symbol implements ISymbol, Serializable {
 
 	/**
-	 * 
-	 */
-	private static final int DEFAULT_VALUE_INDEX = Integer.MIN_VALUE;
-	/**
 	 * The attribute values of the symbol represented by single bits.
 	 */
 	protected int fAttributes = NOATTRIBUTE;
@@ -52,7 +48,11 @@ public class Symbol implements ISymbol, Serializable {
 	 * symbol.
 	 */
 	private transient RulesData fRulesData;
-	private OpenIntToIExprHashMap fDefaultValues = null;
+
+	/**
+	 * The name of this symbol. The characters may be all lower-cases if the
+	 * system doesn't distinguish between lower- and upper-case function names.
+	 */
 	protected String fSymbolName;
 	/**
 	 * The hash value of this object computed in the constructor.
@@ -348,20 +348,14 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public IExpr getDefaultValue() {
 		// special case for a general default value
-		if (fDefaultValues == null) {
-			return null;
-		}
-		return fDefaultValues.get(DEFAULT_VALUE_INDEX);
+		return fRulesData != null ? fRulesData.getDefaultValue(RulesData.DEFAULT_VALUE_INDEX) : null;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public IExpr getDefaultValue(int pos) {
 		// default value at this position
-		if (fDefaultValues == null) {
-			return null;
-		}
-		return fDefaultValues.get(pos);
+		return fRulesData != null ? fRulesData.getDefaultValue(pos) : null;
 	}
 
 	/**
@@ -789,20 +783,17 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public void setDefaultValue(IExpr expr) {
 		// special case for a general default value
-		if (fDefaultValues == null) {
-			fDefaultValues = new OpenIntToIExprHashMap();
-		}
-		fDefaultValues.put(DEFAULT_VALUE_INDEX, expr);
+		setDefaultValue(RulesData.DEFAULT_VALUE_INDEX, expr);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public void setDefaultValue(int pos, IExpr expr) {
 		// default value at this position
-		if (fDefaultValues == null) {
-			fDefaultValues = new OpenIntToIExprHashMap();
+		if (fRulesData == null) {
+			fRulesData = new RulesData(EvalEngine.get().getContext());
 		}
-		fDefaultValues.put(pos, expr);
+		fRulesData.putfDefaultValues(pos, expr);
 	}
 
 	@Override

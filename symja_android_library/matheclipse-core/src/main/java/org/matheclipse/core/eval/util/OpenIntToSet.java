@@ -27,7 +27,7 @@ import java.util.TreeSet;
  * </p>
  *
  * @param <T>
- *            the type of the elements
+ *            the type of the set elements
  */
 public class OpenIntToSet<T> implements Serializable {
 
