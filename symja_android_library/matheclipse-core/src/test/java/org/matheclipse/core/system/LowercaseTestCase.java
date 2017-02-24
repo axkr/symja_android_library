@@ -3368,6 +3368,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("N(PDF(PoissonDistribution(10), 15))", "0.03471806963068409");
 	}
 
+	public void testPermutations() {
+		check("Permutations({a},{0})", "{{}}");
+		check("Permutations({a,b,c,d},{3})", "{{a,b,c},{a,b,d},{a,c,b},{a,c,d},{a,d,b},{a,d,c},{b,a,c},{b,a,d},{b,c,a},{b,c,d},{b,d,a},{b,d,c},{c,a,b},{c,a,d},{c,b,a},{c,b,d},{c,d,a},{c,d,b},{d,a,b},{d,a,c},{d,b,a},{d,b,c},{d,c,a},{d,c,b}}");
+		check("Permutations({a,a,b})", "{{a,a,b},{a,b,a},{b,a,a}}");
+		check("Permutations({a,a,b,b})", "{{a,a,b,b},{a,b,a,b},{a,b,b,a},{b,a,a,b},{b,a,b,a},{b,b,a,a}}");
+		check("Permutations({a,a,b,b},{3})", "{{a,a,b},{a,b,a},{a,b,b},{b,a,a},{b,a,b},{b,b,a}}");
+	}
+	
 	public void testPiecewise() {
 		check("Piecewise({{1, False}})", "0");
 		check("$pw = Piecewise({{Sin(x)/x, x < 0}, {1, x == 0}}, -x^2/100 + 1); $pw /. {{x -> -5}, {x -> 0}, {x -> 5}}",

@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * Generate a list of permutations
+ * Generate a list of (multiset) permutations
  * 
  * See <a href=" http://en.wikipedia.org/wiki/Permutation">Permutation</a>
  * 
@@ -20,7 +20,7 @@ import org.matheclipse.core.interfaces.IExpr;
 public class Permutations extends AbstractFunctionEvaluator {
 
 	/**
-	 * Generate an Iterable for permutations
+	 * Generate an <code>java.lang.Iterable</code> for (multiset) permutations
 	 * 
 	 * See <a href="http://en.wikipedia.org/wiki/Permutation">Permutation</a>
 	 */
@@ -41,35 +41,6 @@ public class Permutations extends AbstractFunctionEvaluator {
 		final private int fCopiedResultIndex[];
 
 		private int fResultIndex[];
-
-		/**
-		 *
-		 */
-		public KPermutationsIterable(final int[] data, final int parts) {
-			this(data, data.length, parts);
-		}
-
-		public KPermutationsIterable(final int[] data, final int len, final int parts) {
-			super();
-			n = len;
-			k = parts;
-			// f = fun;
-			fPermutationsIndex = new int[n];
-			y = new int[n];
-			fCopiedResultIndex = new int[n];
-			for (int a = 0; a < n; a++) {
-				fPermutationsIndex[a] = data[a];
-				y[a] = a;
-			}
-			if (k == n) {
-				m = k - 1;
-			} else {
-				m = k;
-			}
-			first = true;
-			i = m - 1;
-			fResultIndex = nextBeforehand();
-		}
 
 		public KPermutationsIterable(final IAST fun, final int parts, final int headOffset) {
 			super();
@@ -97,6 +68,69 @@ public class Permutations extends AbstractFunctionEvaluator {
 			first = true;
 			i = m - 1;
 			fResultIndex = nextBeforehand();
+		}
+
+		/**
+		 * Create an iterator which gives all possible permutations of
+		 * <code>data</code> which contains at most <code>parts</code> number of
+		 * elements. Repeated elements are treated as same.
+		 * 
+		 * @param data
+		 *            a list of integers which should be permutated.
+		 * @param parts
+		 */
+		public KPermutationsIterable(final int[] data, final int parts) {
+			this(data, data.length, parts);
+		}
+
+		/**
+		 * Create an iterator which gives all possible permutations of
+		 * <code>data</code> which contains at most <code>parts</code> number of
+		 * elements. Repeated elements are treated as same.
+		 * 
+		 * @param data
+		 *            a list of integers which should be permutated.
+		 * @param len
+		 *            consider only the first <code>n</code> elements of
+		 *            <code>data</code> for permutation
+		 * @param parts
+		 */
+		public KPermutationsIterable(final int[] data, final int len, final int parts) {
+			super();
+			n = len;
+			k = parts;
+			fPermutationsIndex = new int[n];
+			y = new int[n];
+			fCopiedResultIndex = new int[n];
+			for (int a = 0; a < n; a++) {
+				fPermutationsIndex[a] = data[a];
+				y[a] = a;
+			}
+			if (k == n) {
+				m = k - 1;
+			} else {
+				m = k;
+			}
+			first = true;
+			i = m - 1;
+			fResultIndex = nextBeforehand();
+		}
+
+		@Override
+		public boolean hasNext() {
+			return fResultIndex != null;
+		}
+
+		@Override
+		public Iterator<int[]> iterator() {
+			return this;
+		}
+
+		@Override
+		public int[] next() {
+			System.arraycopy(fResultIndex, 0, fCopiedResultIndex, 0, fResultIndex.length);
+			fResultIndex = nextBeforehand();
+			return fCopiedResultIndex;
 		}
 
 		/**
@@ -132,30 +166,14 @@ public class Permutations extends AbstractFunctionEvaluator {
 		}
 
 		@Override
-		public int[] next() {
-			System.arraycopy(fResultIndex, 0, fCopiedResultIndex, 0, fResultIndex.length);
-			fResultIndex = nextBeforehand();
-			return fCopiedResultIndex;
-		}
-
-		@Override
-		public boolean hasNext() {
-			return fResultIndex != null;
-		}
-
-		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
-
-		@Override
-		public Iterator<int[]> iterator() {
-			return this;
-		}
 	}
-	
+
 	/**
-	 * Generate a list of permutations
+	 * Generate an <code>java.lang.Iterable<IAST></code> for (multiset)
+	 * permutations
 	 * 
 	 * See <a href="http://en.wikipedia.org/wiki/Permutation">Permutation</a>
 	 */
@@ -164,35 +182,34 @@ public class Permutations extends AbstractFunctionEvaluator {
 		final private IAST fList;
 		final private IAST fResultList;
 		final private int fOffset;
+		final private int fParts;
 		final private KPermutationsIterable fIterable;
 
 		public KPermutationsList(final IAST list, final int parts, IAST resultList) {
 			this(list, parts, resultList, 0);
 		}
 
+		/**
+		 * Create an iterator which gives all possible permutations of
+		 * <code>list</code> which contains at most <code>parts</code> number of
+		 * elements. Repeated elements are treated as same.
+		 * 
+		 * @param list
+		 *            a list of elements
+		 * @param parts
+		 *            contain at most parts elements in ech permutation
+		 * @param resultList
+		 *            a template AST where the elements could be appended.
+		 * @param offset
+		 *            the offset from which to start the list of elements in the
+		 *            list
+		 */
 		public KPermutationsList(final IAST list, final int parts, IAST resultList, final int offset) {
 			fIterable = new KPermutationsIterable(list, parts, offset);
 			fList = list;
 			fResultList = resultList;
 			fOffset = offset;
-		}
-
-		/**
-		 * Get the index array for the next permutation.
-		 * 
-		 * @return <code>null</code> if no further index array could be generated
-		 */
-		@Override
-		public IAST next() {
-			int[] permutationsIndex = fIterable.next();
-			if (permutationsIndex == null) {
-				return null;
-			}
-			IAST temp = fResultList.clone();
-			for (int i = 0; i < permutationsIndex.length; i++) {
-				temp.append(fList.get(permutationsIndex[i] + fOffset));
-			}
-			return temp;
+			fParts = parts;
 		}
 
 		@Override
@@ -201,13 +218,33 @@ public class Permutations extends AbstractFunctionEvaluator {
 		}
 
 		@Override
-		public void remove() {
-			throw new UnsupportedOperationException();
+		public Iterator<IAST> iterator() {
+			return this;
+		}
+
+		/**
+		 * Get the index array for the next permutation.
+		 * 
+		 * @return <code>null</code> if no further index array could be
+		 *         generated
+		 */
+		@Override
+		public IAST next() {
+			int[] permutationsIndex = fIterable.next();
+			if (permutationsIndex == null) {
+				return null;
+			}
+			IAST temp = fResultList.clone();
+			// parts <= permutationsIndex.length
+			for (int i = 0; i < fParts; i++) {
+				temp.append(fList.get(permutationsIndex[i] + fOffset));
+			}
+			return temp;
 		}
 
 		@Override
-		public Iterator<IAST> iterator() {
-			return this;
+		public void remove() {
+			throw new UnsupportedOperationException();
 		}
 
 	}
@@ -223,26 +260,33 @@ public class Permutations extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 2, 3);
 
 		if (ast.arg1().isAST()) {
-			final IAST f = (IAST) ast.arg1();
-			final IAST result = F.ast(f.head());
-			if (f.size() <= 2) {
-				if (f.isAST1()) {
-					result.append(f);
+			final IAST list = (IAST) ast.arg1();
+			int parts = list.size() - 1;
+			if (ast.isAST2() && ast.get(2).isList()) {
+				IAST sequence = (IAST) ast.get(2);
+				// TODO use ISequence here
+				if (!sequence.isAST1() || !sequence.arg1().isInteger()) {
+					return F.NIL;
+				}
+				parts = Validate.checkIntType(sequence.arg1());
+				if (parts < 0 && parts > list.size() - 1) {
+					return F.NIL;
+				}
+			}
+
+			final IAST result = F.ast(list.head());
+			if (list.size() <= 2) {
+				if (list.isAST1()) {
+					if (parts == 0) {
+						result.append(F.List());
+					} else {
+						result.append(list);
+					}
 				}
 				return result;
 			}
 
-			int k = f.size() - 1;
-			if (ast.isAST2()) {
-				if (!ast.arg2().isInteger()) {
-					return F.NIL;
-				}
-				k = Validate.checkIntType(ast, 2);
-				if (k > f.size() - 1) {
-					return F.NIL;
-				}
-			}
-			final KPermutationsList perm = new KPermutationsList(f, k, F.ast(f.head()), 1);
+			final KPermutationsList perm = new KPermutationsList(list, parts, F.ast(list.head()), 1);
 			for (IAST temp : perm) {
 				result.append(temp);
 			}
