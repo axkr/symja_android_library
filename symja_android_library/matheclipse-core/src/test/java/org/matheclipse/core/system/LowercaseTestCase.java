@@ -2322,6 +2322,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Kurtosis({1.1, 1.2, 1.4, 2.1, 2.4})", "1.4209750290831376");
 	}
 
+	public void testKroneckerDelta() {
+		check("KroneckerDelta(2 - I, 2. - I)", "1");
+
+		check("KroneckerDelta(0)", "1");
+		check("KroneckerDelta(42)", "0");
+		check("KroneckerDelta(0,1)", "0");
+		check("KroneckerDelta(2,2)", "1");
+		check("KroneckerDelta(2,2.0)", "1");
+
+		check("KroneckerDelta(1,1,1,2)", "0");
+
+		check("Table(KroneckerDelta(n), {n, -2, 2})", "{0,0,1,0,0}");
+		check("Array(KroneckerDelta, {3, 3})", "{{1,0,0},{0,1,0},{0,0,1}}");
+		check("Table((KroneckerDelta(i - j + 1) + KroneckerDelta(i - j + 2))*i*j^2, {i, 5}, {j, 5})", 
+				"{{0,4,9,0,0},{0,0,18,32,0},{0,0,0,48,75},{0,0,0,0,100},{0,0,0,0,0}}");
+	}
+
 	public void testLaguerreL() {
 		check("LaguerreL(3, x)", "1-3*x+3/2*x^2-x^3/6");
 		check("LaguerreL(4, x)", "1-4*x+3*x^2-2/3*x^3+x^4/24");

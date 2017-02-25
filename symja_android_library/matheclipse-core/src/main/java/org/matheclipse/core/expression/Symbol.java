@@ -17,7 +17,6 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.interfaces.IAST;
@@ -248,6 +247,22 @@ public class Symbol implements ISymbol, Serializable {
 			if (result.isNumber()) {
 				return (INumber) result;
 			}
+		} else if (hasLocalVariableStack()) {
+			IExpr temp = get();
+			if (temp != null && temp.isNumericFunction()) {
+				IExpr result = F.evaln(this);
+				if (result.isNumber()) {
+					return (INumber) result;
+				}
+			}
+		} else {
+			IExpr temp = evalDownRule(EvalEngine.get(), this);
+			if (temp.isPresent() && temp.isNumericFunction()) {
+				IExpr result = F.evaln(this);
+				if (result.isNumber()) {
+					return (INumber) result;
+				}
+			}
 		}
 		return null;
 	}
@@ -259,6 +274,22 @@ public class Symbol implements ISymbol, Serializable {
 			IExpr result = F.evaln(this);
 			if (result.isSignedNumber()) {
 				return (ISignedNumber) result;
+			}
+		} else if (hasLocalVariableStack()) {
+			IExpr temp = get();
+			if (temp != null && temp.isNumericFunction()) {
+				IExpr result = F.evaln(this);
+				if (result.isSignedNumber()) {
+					return (ISignedNumber) result;
+				}
+			}
+		} else {
+			IExpr temp = evalDownRule(EvalEngine.get(), this);
+			if (temp.isPresent() && temp.isNumericFunction()) {
+				IExpr result = F.evaln(this);
+				if (result.isSignedNumber()) {
+					return (ISignedNumber) result;
+				}
 			}
 		}
 		return null;
@@ -523,6 +554,24 @@ public class Symbol implements ISymbol, Serializable {
 		if (isNumericFunction()) {
 			IExpr temp = F.evaln(this);
 			if (temp.isSignedNumber() && temp.isNegative()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public boolean isNumericFunction() {
+		if (isConstant()) {
+			return true;
+		} else if (hasLocalVariableStack()) {
+			IExpr temp = get();
+			if (temp != null && temp.isNumericFunction()) {
+				return true;
+			}
+		} else {
+			IExpr temp = evalDownRule(EvalEngine.get(), this);
+			if (temp.isPresent() && temp.isNumericFunction()) {
 				return true;
 			}
 		}

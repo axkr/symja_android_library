@@ -225,6 +225,11 @@ public class ApcomplexNum implements IComplexNum {
 	}
 
 	@Override
+	public INumber evalNumber() {
+		return this;
+	}
+	
+	@Override
 	public boolean isSame(IExpr expression, double epsilon) {
 		if (expression instanceof ApcomplexNum) {
 			return fApcomplex.equals(((ApcomplexNum) expression).fApcomplex);

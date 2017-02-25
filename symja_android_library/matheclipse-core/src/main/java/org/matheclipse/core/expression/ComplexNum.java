@@ -309,6 +309,11 @@ public class ComplexNum implements IComplexNum  {
 	}
 
 	@Override
+	public INumber evalNumber() {
+		return this;
+	}
+	
+	@Override
 	public INumber floorFraction() throws ArithmeticException {
 		return F.complex(NumberUtil.toLong(Math.floor(fComplex.getReal())),
 				NumberUtil.toLong(Math.floor(fComplex.getImaginary())));

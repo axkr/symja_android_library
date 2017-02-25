@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -222,6 +223,16 @@ public class Num implements INum {
 		return F.NIL;
 	}
 
+	@Override
+	public ISignedNumber evalSignedNumber() {
+		return this;
+	}
+
+	@Override
+	public INumber evalNumber() {
+		return this;
+	}
+	
 	public double exp() {
 		return Math.exp(fDouble);
 	}

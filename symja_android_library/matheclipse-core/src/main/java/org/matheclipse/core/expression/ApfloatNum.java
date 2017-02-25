@@ -4,7 +4,6 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 
 import org.apfloat.Apcomplex;
-import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
@@ -13,6 +12,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -132,7 +132,17 @@ public class ApfloatNum implements INum {
 		// }
 		return F.NIL;
 	}
-
+	
+	@Override
+	public ISignedNumber evalSignedNumber() {
+		return this;
+	}
+	
+	@Override
+	public INumber evalNumber() {
+		return this;
+	}
+	
 	@Override
 	public INum add(final INum val) {
 		return valueOf(fApfloat.add(((ApfloatNum) val).fApfloat));

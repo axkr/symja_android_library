@@ -409,7 +409,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default INumber evalNumber() {
 		if (isNumber()) {
-			return (INumber) this;
+			return (INumber) EvalEngine.get().evalN(this);
 		}
 		return null;
 	}
@@ -421,7 +421,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default ISignedNumber evalSignedNumber() {
 		if (isSignedNumber()) {
-			return (ISignedNumber) this;
+			return (ISignedNumber) EvalEngine.get().evalN(this);
 		}
 		return null;
 	}
