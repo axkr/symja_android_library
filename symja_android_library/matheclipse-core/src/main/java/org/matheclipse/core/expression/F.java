@@ -1129,6 +1129,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "squaredeuclidiandistance" : "SquaredEuclidianDistance");
 	public final static IBuiltInSymbol SquareFreeQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "squarefreeq" : "SquareFreeQ");
+	public final static IBuiltInSymbol StirlingS1 = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "stirlings1" : "StirlingS1");
 	public final static IBuiltInSymbol StirlingS2 = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "stirlings2" : "StirlingS2");
 	public final static IBuiltInSymbol StringDrop = initFinalSymbol(
@@ -5473,7 +5475,15 @@ public class F {
 	public static IAST StieltjesGamma(final IExpr a0, final IExpr a1) {
 		return binaryAST2(StieltjesGamma, a0, a1);
 	}
-
+	
+	public static IAST StirlingS1(final IExpr a0, final IExpr a1) {
+		return binaryAST2(StirlingS1, a0, a1);
+	}
+	
+	public static IAST StirlingS2(final IExpr a0, final IExpr a1) {
+		return binaryAST2(StirlingS2, a0, a1);
+	}
+	
 	public static IAST StringJoin(final IExpr a) {
 		return unaryAST1(StringJoin, a);
 	}

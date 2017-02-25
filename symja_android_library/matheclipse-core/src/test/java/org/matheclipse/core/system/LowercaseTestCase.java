@@ -4510,6 +4510,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("StieltjesGamma(0,a)", "-PolyGamma(0,a)");
 	}
 
+	public void testStirlingS1() {
+		check("StirlingS1(50,1)", "-608281864034267560872252163321295376887552831379210240000000000");
+		check("StirlingS1({2,4,6},2)", "{1,11,274}");
+		check("Table(StirlingS1(12, m), {m, 5})", "{-39916800,120543840,-150917976,105258076,-45995730}");
+	}
+	
 	public void testStirlingS2() {
 		check("StirlingS2(10,11)", "0");
 		check("StirlingS2(0,0)", "1");

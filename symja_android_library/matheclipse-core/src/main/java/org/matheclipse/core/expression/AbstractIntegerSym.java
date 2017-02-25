@@ -681,6 +681,16 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		} else if (exponent == 1L) {
 			return this;
 		}
+		if (isOne()) {
+			return F.C1;
+		}
+		if (isMinusOne()) {
+			if ((exponent & 1L) == 1L) { // isOdd(exponent) ?
+				return F.CN1;
+			} else {
+				return F.C1;
+			}
+		}
 		long exp = exponent;
 		long b2pow = 0;
 

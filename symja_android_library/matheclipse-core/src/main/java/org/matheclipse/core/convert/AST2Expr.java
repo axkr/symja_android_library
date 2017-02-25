@@ -110,7 +110,7 @@ public class AST2Expr {
 			"Scan", "Sec", "Sech", "Select", "Sequence", "Series", "SeriesData", "Set", "SetAttributes", "SetDelayed",
 			"Share", "Show", "Sign", "SignCmp", "Simplify", "Sin", "Sinc", "SingularValueDecomposition", "Sinh",
 			"SinIntegral", "SinhIntegral", "Skewness", "SokalSneathDissimilarity", "Solve", "Sort", "Sow", "Span",
-			"Sqrt", "SquaredEuclidianDistance", "SquareFreeQ", "StieltjesGamma", "StirlingS2", "StringDrop",
+			"Sqrt", "SquaredEuclidianDistance", "SquareFreeQ", "StieltjesGamma", "StirlingS1","StirlingS2", "StringDrop",
 			"StringJoin", "StringLength", "StringTake", "StruveH", "StruveL", "Subfactorial", "Subscript",
 			"Subsuperscript", "Subsets", "SubtractFrom", "Sum", "Superscript", "SurfaceGraphics", "Switch",
 			"SyntaxLength", "SyntaxQ", "Table", "Take", "Tally", "Tan", "Tanh", "TautologyQ", "Taylor", "TeXForm",

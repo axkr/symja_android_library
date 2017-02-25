@@ -19,6 +19,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -52,21 +53,22 @@ public class StirlingS2 extends AbstractFunctionEvaluator {
 		if (kArg2.greaterThan(nArg1).isTrue()) {
 			return C0;
 		}
-		if (kArg2.isInteger()) {
+		if (kArg2.isZero()) {
+			return C0;
+		}
+		if (kArg2.isOne()) {
+			// {n,1}==1
+			return C1;
+		}
+		if (kArg2.equals(C2)) {
+			// {n,2}==2^(n-1)-1
+			return Subtract(Power(C2, Subtract(nArg1, C1)), C1);
+		}
+
+		if (nArg1.isInteger() && kArg2.isInteger()) {
 			try {
 				int k = ((ISignedNumber) kArg2).toInt();
-				switch (k) {
-				case 0:
-					return C0;
-				case 1:
-					// {n,1}==1
-					return C1;
-				case 2:
-					// {n,2}==2^(n-1)-1
-					return Subtract(Power(C2, Subtract(nArg1, C1)), C1);
-				default:
-					return stirlingS2(nArg1, kArg2, k);
-				}
+				return stirlingS2((IInteger) nArg1, (IInteger) kArg2, k);
 			} catch (ArithmeticException ae) {
 				// because of toInt() method
 			}
@@ -75,7 +77,7 @@ public class StirlingS2 extends AbstractFunctionEvaluator {
 		return F.NIL;
 	}
 
-	private static IExpr stirlingS2(IExpr nArg1, IExpr kArg2, int k) {
+	private static IExpr stirlingS2(IInteger nArg1, IInteger kArg2, int k) {
 		IAST temp = F.Plus();
 		for (int j = 0; j < k; j++) {
 			if ((j & 1) == 1) {
