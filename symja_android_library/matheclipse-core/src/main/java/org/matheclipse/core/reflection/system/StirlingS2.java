@@ -46,26 +46,25 @@ public class StirlingS2 extends AbstractFunctionEvaluator {
 		if (nArg1.isNegative() || kArg2.isNegative()) {
 			return F.NIL;
 		}
-		if (ast.equalsAt(1, kArg2)) {
-			// {n,k}==1
-			return C1;
+		if (nArg1.isZero() && kArg2.isZero()) {
+			return F.C1;
 		}
-		if (kArg2.greaterThan(nArg1).isTrue()) {
-			return C0;
-		}
-		if (kArg2.isZero()) {
-			return C0;
-		}
-		if (kArg2.isOne()) {
-			// {n,1}==1
-			return C1;
-		}
-		if (kArg2.equals(C2)) {
-			// {n,2}==2^(n-1)-1
-			return Subtract(Power(C2, Subtract(nArg1, C1)), C1);
-		}
-
 		if (nArg1.isInteger() && kArg2.isInteger()) {
+			if (kArg2.greaterThan(nArg1).isTrue()) {
+				return C0;
+			}
+			if (kArg2.isZero()) {
+				return C0;
+			}
+			if (kArg2.isOne()) {
+				// {n,1}==1
+				return C1;
+			}
+			if (kArg2.equals(C2)) {
+				// {n,2}==2^(n-1)-1
+				return Subtract(Power(C2, Subtract(nArg1, C1)), C1);
+			}
+
 			try {
 				int k = ((ISignedNumber) kArg2).toInt();
 				return stirlingS2((IInteger) nArg1, (IInteger) kArg2, k);
@@ -79,11 +78,11 @@ public class StirlingS2 extends AbstractFunctionEvaluator {
 
 	private static IExpr stirlingS2(IInteger nArg1, IInteger kArg2, int k) {
 		IAST temp = F.Plus();
-		for (int j = 0; j < k; j++) {
-			if ((j & 1) == 1) {
-				temp.append(Times(Negate(Binomial(kArg2, integer(j))), Power(Plus(kArg2, integer(-j)), nArg1)));
+		for (int i = 0; i < k; i++) {
+			if ((i & 1) == 1) { // isOdd(i) ?
+				temp.append(Times(Negate(Binomial(kArg2, integer(i))), Power(Plus(kArg2, integer(-i)), nArg1)));
 			} else {
-				temp.append(Times(Times(Binomial(kArg2, integer(j))), Power(Plus(kArg2, integer(-j)), nArg1)));
+				temp.append(Times(Times(Binomial(kArg2, integer(i))), Power(Plus(kArg2, integer(-i)), nArg1)));
 			}
 		}
 		return Times(Power(Factorial(kArg2), CN1), temp);

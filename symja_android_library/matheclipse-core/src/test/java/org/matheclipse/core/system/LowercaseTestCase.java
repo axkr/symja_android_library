@@ -2476,7 +2476,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LiouvilleLambda({1,2,3,4,5,6,20})", "{1,-1,-1,1,-1,1,-1}");
 	}
 
-	public void testLog() { 
+	public void testLog() {
 		// test alias
 		check("Ln(E)", "1");
 		check("ln(E)", "1");
@@ -3370,12 +3370,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testPermutations() {
 		check("Permutations({a},{0})", "{{}}");
-		check("Permutations({a,b,c,d},{3})", "{{a,b,c},{a,b,d},{a,c,b},{a,c,d},{a,d,b},{a,d,c},{b,a,c},{b,a,d},{b,c,a},{b,c,d},{b,d,a},{b,d,c},{c,a,b},{c,a,d},{c,b,a},{c,b,d},{c,d,a},{c,d,b},{d,a,b},{d,a,c},{d,b,a},{d,b,c},{d,c,a},{d,c,b}}");
+		check("Permutations({a,b,c,d},{3})",
+				"{{a,b,c},{a,b,d},{a,c,b},{a,c,d},{a,d,b},{a,d,c},{b,a,c},{b,a,d},{b,c,a},{b,c,d},{b,d,a},{b,d,c},{c,a,b},{c,a,d},{c,b,a},{c,b,d},{c,d,a},{c,d,b},{d,a,b},{d,a,c},{d,b,a},{d,b,c},{d,c,a},{d,c,b}}");
 		check("Permutations({a,a,b})", "{{a,a,b},{a,b,a},{b,a,a}}");
 		check("Permutations({a,a,b,b})", "{{a,a,b,b},{a,b,a,b},{a,b,b,a},{b,a,a,b},{b,a,b,a},{b,b,a,a}}");
 		check("Permutations({a,a,b,b},{3})", "{{a,a,b},{a,b,a},{a,b,b},{b,a,a},{b,a,b},{b,b,a}}");
 	}
-	
+
 	public void testPiecewise() {
 		check("Piecewise({{1, False}})", "0");
 		check("$pw = Piecewise({{Sin(x)/x, x < 0}, {1, x == 0}}, -x^2/100 + 1); $pw /. {{x -> -5}, {x -> 0}, {x -> 5}}",
@@ -4511,16 +4512,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStirlingS1() {
+		check("StirlingS1(0,0)", "1");
+		check("StirlingS1(1,1)", "1");
+		check("StirlingS1(0,1)", "0");
+		check("StirlingS1(1,0)", "0");
 		check("StirlingS1(50,1)", "-608281864034267560872252163321295376887552831379210240000000000");
 		check("StirlingS1({2,4,6},2)", "{1,11,274}");
 		check("Table(StirlingS1(12, m), {m, 5})", "{-39916800,120543840,-150917976,105258076,-45995730}");
+		check("Table(Sum( StirlingS1(m, l) StirlingS2(l, n), {l, 0, Max(n, m) + 1}), {n, 0,  5}, {m, 0, 5})",
+				"{{1,0,0,0,0,0},{0,1,0,0,0,0},{0,0,1,0,0,0},{0,0,0,1,0,0},{0,0,0,0,1,0},{0,0,0,0,\n" + "0,1}}");
 	}
-	
+
 	public void testStirlingS2() {
-		check("StirlingS2(10,11)", "0");
 		check("StirlingS2(0,0)", "1");
-		check("StirlingS2(a+b,0)", "0");
-		check("StirlingS2(b,b)", "1");
+		check("StirlingS2(1,1)", "1");
+		check("StirlingS2(0,1)", "0");
+		check("StirlingS2(1,0)", "0");
+		check("StirlingS2(10,11)", "0");
 		check("Table(StirlingS2(10, m), {m, 10})", "{1,511,9330,34105,42525,22827,5880,750,45,1}");
 		check("StirlingS2({2, 4, 6}, 2)", "{1,7,31}");
 		check("StirlingS2(10,4)", "34105");
@@ -4554,7 +4562,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("StruveL(-1/2,x)", "Sqrt(2)*Sqrt(1/(Pi*x))*Sinh(x)");
 		check("StruveL(a,-x)", "(-(-x)^a*StruveL(a,x))/x^a");
 	}
-	
+
 	public void testSubfactorial() {
 		check("Subfactorial(n)", "Subfactorial(n)");
 		check("Table(Subfactorial(n), {n, 10})", "{0,1,2,9,44,265,1854,14833,133496,1334961}");
@@ -4612,8 +4620,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sum(Ceiling(Log(i)),{i,1,n})",
 				"(1-(1+Floor(Log(n)))*E^Floor(Log(n))+E^(1+Floor(Log(n)))*Floor(Log(n)))/(-1+E)+(-E^Floor(Log(n))+n)*Ceiling(Log(n))");
 		check("Sum(Ceiling(Log(a,i)),{i,1,n})",
-				"(1-(1+Floor(Log(n)/Log(a)))*a^Floor(Log(n)/Log(a))+a^(1+Floor(Log(n)/Log(a)))*Floor(Log(n)/Log(a)))/(\n" + 
-				"-1+a)+(-a^Floor(Log(n)/Log(a))+n)*Ceiling(Log(n)/Log(a))");
+				"(1-(1+Floor(Log(n)/Log(a)))*a^Floor(Log(n)/Log(a))+a^(1+Floor(Log(n)/Log(a)))*Floor(Log(n)/Log(a)))/(\n"
+						+ "-1+a)+(-a^Floor(Log(n)/Log(a))+n)*Ceiling(Log(n)/Log(a))");
 		check("Sum(i*1/2*i,{i,1,n})", "1/2*(n/6+n^2/2+n^3/3)");
 		check("Sum(k * k,{k,1,n+1})", "1+13/6*n+3/2*n^2+n^3/3");
 		check("Sum(k,{k,4,2})", "0");
