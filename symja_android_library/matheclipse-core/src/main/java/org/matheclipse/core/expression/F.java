@@ -20,6 +20,7 @@ import org.apfloat.ApfloatContext;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -27,6 +28,7 @@ import org.matheclipse.core.eval.Namespace;
 import org.matheclipse.core.eval.SystemNamespace;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IEvaluator;
@@ -41,7 +43,6 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 
 import edu.jas.kern.ComputerThreads;
 
@@ -96,33 +97,24 @@ public class F {
 	public final static NILPointer NIL = new NILPointer();
 
 	public final static IBuiltInSymbol Catalan = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "catalan" : "Catalan",
-			new org.matheclipse.core.builtin.constant.Catalan());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "catalan" : "Catalan");
 	public final static IBuiltInSymbol ComplexInfinity = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complexinfinity" : "ComplexInfinity",
-			new org.matheclipse.core.builtin.constant.ComplexInfinity());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complexinfinity" : "ComplexInfinity");
 	public final static IBuiltInSymbol Degree = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "degree" : "Degree",
-			new org.matheclipse.core.builtin.constant.Degree());
-	public final static IBuiltInSymbol E = initFinalSymbol("E", new org.matheclipse.core.builtin.constant.E());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "degree" : "Degree");
+	public final static IBuiltInSymbol E = initFinalSymbol("E");
 	public final static IBuiltInSymbol EulerGamma = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "eulergamma" : "EulerGamma",
-			new org.matheclipse.core.builtin.constant.EulerGamma());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "eulergamma" : "EulerGamma");
 	public final static IBuiltInSymbol Glaisher = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "glaisher" : "Glaisher",
-			new org.matheclipse.core.builtin.constant.Glaisher());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "glaisher" : "Glaisher");
 	public final static IBuiltInSymbol GoldenRatio = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "goldenratio" : "GoldenRatio",
-			new org.matheclipse.core.builtin.constant.GoldenRatio());
-	public final static IBuiltInSymbol I = initFinalSymbol("I", new org.matheclipse.core.builtin.constant.I());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "goldenratio" : "GoldenRatio");
+	public final static IBuiltInSymbol I = initFinalSymbol("I");
 	public final static IBuiltInSymbol Infinity = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "infinity" : "Infinity",
-			new org.matheclipse.core.builtin.constant.Infinity());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "infinity" : "Infinity");
 	public final static IBuiltInSymbol Khinchin = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "khinchin" : "Khinchin",
-			new org.matheclipse.core.builtin.constant.Khinchin());
-	public final static IBuiltInSymbol Pi = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "pi" : "Pi",
-			new org.matheclipse.core.builtin.constant.Pi());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "khinchin" : "Khinchin");
+	public final static IBuiltInSymbol Pi = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "pi" : "Pi");
 
 	public final static IBuiltInSymbol Aborted = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$aborted" : "$Aborted");
@@ -160,7 +152,7 @@ public class F {
 
 	public final static IBuiltInSymbol All = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "all" : "All");
 	public final static IBuiltInSymbol None = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "none" : "None");
-	
+
 	public final static IBuiltInSymbol Algebraics = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "algebraics" : "Algebraics");
 	public final static IBuiltInSymbol Booleans = initFinalSymbol(
@@ -1719,6 +1711,8 @@ public class F {
 			ctx.setNumberOfProcessors(1);
 			// long start = System.currentTimeMillis();
 
+			ConstantDefinitions.initialize();
+			
 			Slot.setAttributes(ISymbol.NHOLDALL);
 			SlotSequence.setAttributes(ISymbol.NHOLDALL);
 
@@ -3864,10 +3858,10 @@ public class F {
 		return unaryAST1(First, a0);
 	}
 
-	public static IAST Flatten(final IExpr a0 ) {
-		return unaryAST1(Flatten, a0 );
+	public static IAST Flatten(final IExpr a0) {
+		return unaryAST1(Flatten, a0);
 	}
-	
+
 	public static IAST Flatten(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Flatten, a0, a1);
 	}
@@ -4855,7 +4849,7 @@ public class F {
 	public static IAST NullSpace(final IExpr a0) {
 		return unaryAST1(NullSpace, a0);
 	}
-	
+
 	public static INum num(final Apfloat af) {
 		return ApfloatNum.valueOf(af);
 	}
@@ -5483,15 +5477,15 @@ public class F {
 	public static IAST StieltjesGamma(final IExpr a0, final IExpr a1) {
 		return binaryAST2(StieltjesGamma, a0, a1);
 	}
-	
+
 	public static IAST StirlingS1(final IExpr a0, final IExpr a1) {
 		return binaryAST2(StirlingS1, a0, a1);
 	}
-	
+
 	public static IAST StirlingS2(final IExpr a0, final IExpr a1) {
 		return binaryAST2(StirlingS2, a0, a1);
 	}
-	
+
 	public static IAST StringJoin(final IExpr a) {
 		return unaryAST1(StringJoin, a);
 	}
@@ -5519,11 +5513,11 @@ public class F {
 	public static IAST StruveH(final IExpr a0, final IExpr a1) {
 		return binaryAST2(StruveH, a0, a1);
 	}
-	
+
 	public static IAST StruveL(final IExpr a0, final IExpr a1) {
 		return binaryAST2(StruveL, a0, a1);
 	}
-	
+
 	public static IAST Subfactorial(final IExpr a0) {
 		return unaryAST1(Subfactorial, a0);
 	}
