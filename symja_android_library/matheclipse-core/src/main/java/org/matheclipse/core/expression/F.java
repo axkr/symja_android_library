@@ -3864,6 +3864,10 @@ public class F {
 		return unaryAST1(First, a0);
 	}
 
+	public static IAST Flatten(final IExpr a0 ) {
+		return unaryAST1(Flatten, a0 );
+	}
+	
 	public static IAST Flatten(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Flatten, a0, a1);
 	}
@@ -4674,9 +4678,9 @@ public class F {
 		return binaryAST2(MatchQ, a0, a1);
 	}
 
-	public static IAST MatrixPower(final IExpr a0) {
+	public static IAST MatrixPower(final IExpr a0, final IExpr a1) {
 
-		return unaryAST1(MatrixPower, a0);
+		return binaryAST2(MatrixPower, a0, a1);
 	}
 
 	public static IAST Max() {
@@ -4848,6 +4852,10 @@ public class F {
 		return unaryAST1(Not, a);
 	}
 
+	public static IAST NullSpace(final IExpr a0) {
+		return unaryAST1(NullSpace, a0);
+	}
+	
 	public static INum num(final Apfloat af) {
 		return ApfloatNum.valueOf(af);
 	}

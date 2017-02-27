@@ -2585,6 +2585,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("IdentityMatrix(3)", "{{1,0,0},\n" + " {0,1,0},\n" + " {0,0,1}}");
 	}
 
+	public void testMatrixMinimalPolynomial() {
+		check("MatrixMinimalPolynomial({{2, 0}, {0, 2}}, x)", "-2+x");
+		check("MatrixMinimalPolynomial({{3, -1, 0}, {0, 2, 0}, {1, -1, 2}}, x)", "6-5*x+x^2");
+		check("CharacteristicPolynomial({{3, -1, 0}, {0, 2, 0}, {1, -1, 2}}, x)", "12-16*x+7*x^2-x^3");
+		check("Factor(6-5*x+x^2)", "(-3+x)*(-2+x)");
+		check("Factor(12-16*x+7*x^2-x^3)", "-(-3+x)*(2-x)^2");
+	}
+	
 	public void testMatrixRank() {
 		check("MatrixRank({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", "2");
 		check("MatrixRank({{1, 0}, {3, 2}, {7, 2}, {8, 1}})", "2");
