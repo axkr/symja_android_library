@@ -46,6 +46,7 @@
 
 	<modules>
 		<module>matheclipse-core</module>
+	<!--   <module>matheclipse-gwt</module>   --> 
 	</modules>
 
 	<dependencyManagement>
@@ -179,11 +180,10 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>
-					<version>3.0.0</version>
+					<version>3.0.1</version>
 					<executions>
 						<execution>
 							<id>attach-sources</id>
-							<phase>verify</phase>
 							<goals>
 								<goal>jar-no-fork</goal>
 							</goals>
