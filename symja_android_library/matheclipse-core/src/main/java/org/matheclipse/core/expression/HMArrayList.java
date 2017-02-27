@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.RandomAccess;
 import java.util.Set;
 
-import org.matheclipse.core.builtin.constant.E;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -65,7 +64,7 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	 * @param collection
 	 *            the collection of elements to add.
 	 */
-	public HMArrayList(Collection<? extends E> collection) {
+	public HMArrayList(Collection<? extends IExpr> collection) {
 		firstIndex = hashValue = 0;
 		Object[] objects = collection.toArray();
 		int size = objects.length;
