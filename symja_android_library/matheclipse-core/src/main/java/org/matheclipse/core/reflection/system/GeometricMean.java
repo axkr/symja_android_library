@@ -8,7 +8,6 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.stat.descriptive.SymbolicStatUtils;
 
 public class GeometricMean extends AbstractFunctionEvaluator {
 	public GeometricMean() {
@@ -22,7 +21,7 @@ public class GeometricMean extends AbstractFunctionEvaluator {
 			return F.num(StatUtils.geometricMean(arg1.toDoubleVector()));
 		}
 		if (arg1.size() > 1) {
-			return SymbolicStatUtils.geometricMean(arg1);
+			return F.Power(arg1.setAtClone(0, F.Times), F.fraction(1, arg1.size() - 1));
 		}
 		return F.NIL;
 	}
