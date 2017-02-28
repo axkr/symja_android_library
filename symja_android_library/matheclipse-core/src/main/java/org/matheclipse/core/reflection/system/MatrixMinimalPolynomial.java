@@ -40,7 +40,7 @@ public class MatrixMinimalPolynomial extends AbstractFunctionEvaluator {
 				qu = (IAST) engine.evaluate(F.NullSpace(F.Transpose(mnm)));
 				n++;
 			}
-			return engine.evaluate(F.Dot(F.First(qu), F.Table(F.Power(variable, i), F.List(i, F.C0, F.integer(--n)))));
+			return engine.evaluate(F.Dot(qu.arg1(), F.Table(F.Power(variable, i), F.List(i, F.C0, F.integer(--n)))));
 		}
 
 		return F.NIL;
