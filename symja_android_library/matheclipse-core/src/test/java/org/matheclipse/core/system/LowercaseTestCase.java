@@ -2318,10 +2318,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Join({{a, b}, {x, y}}, {{1, 2}, {3, 4}})", "{{a,b},{x,y},{1,2},{3,4}}");
 	}
 
-	public void testKurtosis() {
-		check("Kurtosis({1.1, 1.2, 1.4, 2.1, 2.4})", "1.4209750290831376");
-	}
-
 	public void testKroneckerDelta() {
 		check("KroneckerDelta(2 - I, 2. - I)", "1");
 
@@ -2335,8 +2331,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Table(KroneckerDelta(n), {n, -2, 2})", "{0,0,1,0,0}");
 		check("Array(KroneckerDelta, {3, 3})", "{{1,0,0},{0,1,0},{0,0,1}}");
-		check("Table((KroneckerDelta(i - j + 1) + KroneckerDelta(i - j + 2))*i*j^2, {i, 5}, {j, 5})", 
+		check("Table((KroneckerDelta(i - j + 1) + KroneckerDelta(i - j + 2))*i*j^2, {i, 5}, {j, 5})",
 				"{{0,4,9,0,0},{0,0,18,32,0},{0,0,0,48,75},{0,0,0,0,100},{0,0,0,0,0}}");
+	}
+
+	public void testKurtosis() {
+		check("Kurtosis({1.1, 1.2, 1.4, 2.1, 2.4})", "1.4209750290831376");
 	}
 
 	public void testLaguerreL() {
@@ -2407,10 +2407,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LetterQ(\"äü\")", "True");
 	}
 
-	// public void testJacobianMatrix() {
-	// check("JacobianMatrix({Rr, Ttheta, Zz}, Cylindrical)", "");
-	// }
-
 	public void testLevel() {
 		check("Level(a + f(x, y^n), {-1})", "{a,x,y,n}");
 		check("Level(a + f(x, y^n0), 2)", "{a,x,y^n0,f(x,y^n0)}");
@@ -2438,6 +2434,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Level(f(f(g(a), a), a, h(a), f), {-1})", "{a,a,a,a,f}");
 		check("Level(f(f(g(a), a), a, h(a), f), {-2})", "{g(a),h(a)}");
 	}
+
+	// public void testJacobianMatrix() {
+	// check("JacobianMatrix({Rr, Ttheta, Zz}, Cylindrical)", "");
+	// }
 
 	public void testLimit() {
 		check("Limit(Log(x), x -> 0)", "-Infinity");
@@ -2537,6 +2537,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LogisticSigmoid({-0.2, 0.1, 0.3})", "{0.45016600268752216,0.52497918747894,0.574442516811659}");
 	}
 
+	public void testLucasL() {
+		check("Table(LucasL(n), {n, 20})",
+				"{1,3,4,7,11,18,29,47,76,123,199,322,521,843,1364,2207,3571,5778,9349,15127}");
+		check("LucasL(1000)", "9719417773590817520798198207932647373779787915534568508272808108477251881844481\\\n" + 
+				"5269080619149045968297679578305403209347401163036907660573971740862463751801641\\\n" + 
+				"201490284097309096322681531675707666695323797578127");
+	}
+
 	public void testMap() {
 		check("Map(List,Join({1,2,3},4-{1,2,3}))", "{{1},{2},{3},{3},{2},{1}}");
 		check("Map(f, {{{{{a}}}}}, 2)", "{f({f({{{a}}})})}");
@@ -2592,7 +2600,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Factor(6-5*x+x^2)", "(-3+x)*(-2+x)");
 		check("Factor(12-16*x+7*x^2-x^3)", "-(-3+x)*(2-x)^2");
 	}
-	
+
 	public void testMatrixRank() {
 		check("MatrixRank({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", "2");
 		check("MatrixRank({{1, 0}, {3, 2}, {7, 2}, {8, 1}})", "2");

@@ -9,8 +9,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import com.google.common.math.IntMath;
-
 /**
  * <p>
  * Fibonacci sequence. Algorithm in <code>O(log(n))</code> time.F
@@ -35,7 +33,7 @@ public class Fibonacci extends AbstractTrigArg1 {
 	 * @param iArg
 	 * @return
 	 */
-	public static IInteger fibonacci(final IInteger iArg) {
+	public static IInteger generateFibonacci(final IInteger iArg) {
 		IInteger a = F.C1;
 		IInteger b = F.C0;
 		IInteger c = F.C1;
@@ -92,7 +90,7 @@ public class Fibonacci extends AbstractTrigArg1 {
 	@Override
 	public IExpr evaluateArg1(final IExpr arg1) {
 		if (arg1.isInteger()) {
-			return fibonacci((IInteger) arg1);
+			return generateFibonacci((IInteger) arg1);
 		}
 		return F.NIL;
 	}

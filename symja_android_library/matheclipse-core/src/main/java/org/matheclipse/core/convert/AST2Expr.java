@@ -87,7 +87,7 @@ public class AST2Expr {
 			"Join", "KOrderlessPartitions", "KPartitions", "KroneckerDelta", "Kurtosis", "Last", "LCM", "LeafCount",
 			"LaguerreL", "LaplaceTransform", "LegendreP", "Length", "Less", "LessEqual", "LetterQ", "Level", "Limit",
 			"Line", "LinearModelFit", "LinearProgramming", "LinearSolve", "LiouvilleLambda", "List", "ListQ", "Log",
-			"Log2", "Log10", "LogGamma", "LogicalExpand", "LogisticSigmoid", "LogIntegral", "LowerCaseQ",
+			"Log2", "Log10", "LogGamma", "LogicalExpand", "LogisticSigmoid", "LogIntegral", "LowerCaseQ", "LucasL",
 			"LUDecomposition", "ManhattanDistance", "Map", "MapAt", "MapAll", "MapThread", "MatchingDissimilarity",
 			"MatchQ", "MathMLForm", "MatrixForm", "MatrixMinimalPolynomial", "MatrixPower", "MatrixQ", "MatrixRank",
 			"Max", "Mean", "Median", "MemberQ", "MeshRange", "MessageName", "Min", "MinimalPolynomial", "Missing",
