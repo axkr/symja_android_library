@@ -67,7 +67,7 @@ public class Config {
 	 * Show the stack trace, if an exception is thrown in evaluation
 	 * 
 	 */
-	public final static boolean SHOW_STACKTRACE = true;
+	public final static boolean SHOW_STACKTRACE = false;
 
 	/**
 	 * Show the console output, if an expression has a head symbol with

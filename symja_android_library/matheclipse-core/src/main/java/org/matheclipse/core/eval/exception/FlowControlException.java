@@ -18,13 +18,4 @@ public class FlowControlException extends MathException {
 		super(message);
 	}
 
-	@Override
-	public synchronized Throwable fillInStackTrace() {
-		if (Config.DEBUG) {
-			return super.fillInStackTrace();
-		} else {
-			return this;
-		}
-	}
-
 }
