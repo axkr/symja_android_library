@@ -17,56 +17,12 @@ package org.matheclipse.parser.client;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Stack;
 
 import org.matheclipse.parser.client.ast.IParserFactory;
 import org.matheclipse.parser.client.operator.Operator;
 
 public class Scanner {
-	/**
-	 * Current parser input string
-	 */
-	protected String fInputString;
-
-	/**
-	 * Recursion depth for brackets.
-	 */
-	protected int fRecursionDepth;
-
-	/**
-	 * Current input character
-	 */
-	protected char fCurrentChar;
-
-	/**
-	 * The position of the current character in the input string
-	 */
-	protected int fCurrentPosition;
-
-	/**
-	 * Current input token
-	 */
-	protected int fToken;
-
-	/**
-	 * The last determined operator string
-	 */
-	protected String fOperatorString;
-
-	/**
-	 * protected List<Operator> fOperList;
-	 */
-	protected List<Operator> fOperList;
-
-	/**
-	 * Row counter for syntax errors.
-	 */
-	protected int rowCount;
-
-	/**
-	 * Column counter for syntax errors
-	 */
-	protected int fCurrentColumnStartPosition;
-
 	/**
 	 * Token type: End-of_File
 	 */
@@ -191,17 +147,140 @@ public class Scanner {
 			var_n = "$n", var_o = "$o", var_p = "$p", var_q = "$q", var_r = "$r", var_s = "$s", var_t = "$t",
 			var_u = "$u", var_v = "$v", var_w = "$w", var_x = "$x", var_y = "$y", var_z = "$z";
 
-	protected int numFormat = 0;
-
-	protected IParserFactory fFactory;
-
-	protected final boolean fPackageMode;
-
 	private static HashMap<String, String> CHAR_MAP = new HashMap<>(1024);
 
 	static {
 		CHAR_MAP.put("CenterEllipsis", "\u22EF");
 	}
+
+	/**
+	 * <p>
+	 * Simple bracket balancer for pairs of &quot;( )&quot;, &quot;[ ]&quot;,
+	 * &quot;{ }&quot; brackets.
+	 * </p>
+	 * <p>
+	 * Doesn't work for comments or strings at the moment.
+	 * </p>
+	 * 
+	 * @param sourceCode
+	 *            the source which should be checked for balanced brackets
+	 * @return the resulting String which can close the "open brackets" or
+	 *         <code>null</code> if the brackets are unbalanced.
+	 */
+	public static String balanceCode(CharSequence sourceCode) {
+		Stack<Character> openBracketStack = new Stack<Character>();
+
+		for (int j = 0; j < sourceCode.length(); j++) {
+			char ch = sourceCode.charAt(j);
+			switch (ch) {
+			case '{':
+			case '(':
+			case '[':
+				openBracketStack.push(ch);
+				break;
+			case '}':
+				if (openBracketStack.isEmpty()) {
+					return null;
+				}
+				ch = openBracketStack.pop();
+				if (!(ch == '{')) {
+					return null;
+				}
+				break;
+			case ')':
+				if (openBracketStack.isEmpty()) {
+					return null;
+				}
+				ch = openBracketStack.pop();
+				if (!(ch == '(')) {
+					return null;
+				}
+				break;
+			case ']':
+				if (openBracketStack.isEmpty()) {
+					return null;
+				}
+				ch = openBracketStack.pop();
+				if (!(ch == '[')) {
+					return null;
+				}
+				break;
+			default:
+				// do nothing
+			}
+		}
+		if (!openBracketStack.isEmpty()) {
+			StringBuilder builder = new StringBuilder();
+			char ch = 0;
+			while (!openBracketStack.isEmpty()) {
+				ch = openBracketStack.pop();
+				switch (ch) {
+				case '{':
+					builder.append('}');
+					break;
+				case '(':
+					builder.append(')');
+					break;
+				case '[':
+					builder.append(']');
+					break;
+				}
+			}
+			return builder.toString();
+		}
+		return "";
+	}
+
+	/**
+	 * Current parser input string
+	 */
+	protected String fInputString;
+
+	/**
+	 * Recursion depth for brackets.
+	 */
+	protected int fRecursionDepth;
+
+	/**
+	 * Current input character
+	 */
+	protected char fCurrentChar;
+
+	/**
+	 * The position of the current character in the input string
+	 */
+	protected int fCurrentPosition;
+
+	/**
+	 * Current input token
+	 */
+	protected int fToken;
+
+	/**
+	 * The last determined operator string
+	 */
+	protected String fOperatorString;
+
+	/**
+	 * protected List<Operator> fOperList;
+	 */
+	protected List<Operator> fOperList;
+
+	/**
+	 * Row counter for syntax errors.
+	 */
+	protected int rowCount;
+
+	/**
+	 * Column counter for syntax errors
+	 */
+	protected int fCurrentColumnStartPosition;
+
+	protected int numFormat = 0;
+
+	protected IParserFactory fFactory;
+
+	protected final boolean fPackageMode;
 
 	/**
 	 * Initialize Scanner without a math-expression
@@ -212,22 +291,6 @@ public class Scanner {
 	public Scanner(boolean packageMode) {
 		fPackageMode = packageMode;
 		initializeNullScanner();
-	}
-
-	protected void initialize(final String s) throws SyntaxError {
-		initializeNullScanner();
-		fInputString = s;
-		if (s != null) {
-			getNextToken();
-		}
-	}
-
-	private void initializeNullScanner() {
-		fInputString = null;
-		fToken = TT_EOF;
-		fCurrentPosition = 0;
-		rowCount = 0;
-		fCurrentColumnStartPosition = 0;
 	}
 
 	/**
@@ -246,6 +309,101 @@ public class Scanner {
 		fToken = TT_EOF;
 	}
 
+	private void getComment() {
+		int startPosition = fCurrentPosition;
+		int level = 0;
+		fCurrentPosition++;
+		// read multiline comment until end of file:
+		try {
+			while (true) {
+				if (fInputString.charAt(fCurrentPosition) == '*' && fInputString.charAt(fCurrentPosition + 1) == ')') {
+					fCurrentPosition++;
+					fCurrentPosition++;
+					if (level == 0) {
+						break;
+					}
+					level--;
+					continue;
+				} else if (fInputString.charAt(fCurrentPosition) == '('
+						&& fInputString.charAt(fCurrentPosition + 1) == '*') {
+					fCurrentPosition++;
+					fCurrentPosition++;
+					level++;
+					continue;
+				} else if (fInputString.charAt(fCurrentPosition) == '\n') {
+					fCurrentPosition++;
+					rowCount++;
+					fCurrentColumnStartPosition = fCurrentPosition;
+					continue;
+				}
+				fCurrentPosition++;
+			}
+		} catch (IndexOutOfBoundsException ioobe) {
+			fCurrentPosition = startPosition;
+			throwSyntaxError("Comment doesn't end with '*)' (open multiline comment)");
+		}
+	}
+
+	private String getErrorLine() {
+		if (fInputString.length() < fCurrentPosition) {
+			fCurrentPosition--;
+		}
+		// read until end-of-line after the current fError
+		int eol = fCurrentPosition;
+		while (fInputString.length() > eol) {
+			fCurrentChar = fInputString.charAt(eol++);
+			if (fCurrentChar == '\n') {
+				eol--;
+				break;
+			}
+		}
+		final String line = fInputString.substring(fCurrentColumnStartPosition, eol);
+		return line;
+	}
+
+	protected String getIdentifier() {
+		if (fCurrentChar == '\\') {
+			if (fInputString.length() > fCurrentPosition) {
+				if (fInputString.charAt(fCurrentPosition) == '[') {
+
+					final int startPosition = fCurrentPosition++ - 1;
+					getChar();
+					while (Character.isLetterOrDigit(fCurrentChar)) {
+						getChar();
+					}
+					if (fCurrentChar == ']') {
+						int endPosition = fCurrentPosition--;
+						getChar();
+						return fInputString.substring(startPosition, endPosition);
+					}
+					throwSyntaxError("Special identifier definition '\\[...]' not closed with ']' ");
+
+				}
+			}
+		}
+
+		final int startPosition = fCurrentPosition - 1;
+
+		getChar();
+		if (fCurrentChar == '$') {
+			getChar();
+		}
+		while (Character.isLetterOrDigit(fCurrentChar) || (fCurrentChar == '$')) {
+			getChar();
+		}
+
+		int endPosition = fCurrentPosition--;
+		final int length = (--endPosition) - startPosition;
+		if (length == 1) {
+			return optimizedCurrentTokenSource1(startPosition, endPosition);
+		}
+		if (length == 2 && fInputString.charAt(startPosition) == '$') {
+			return optimizedCurrentTokenSource2(startPosition, endPosition);
+		}
+
+		return fInputString.substring(startPosition, endPosition);
+	}
+
 	private void getNextChar() {
 		fCurrentChar = fInputString.charAt(fCurrentPosition++);
 		if (fCurrentChar == '\\') {
@@ -261,54 +419,6 @@ public class Scanner {
 				}
 			}
 		}
-	}
-
-	/**
-	 * protected List<Operator> getOperator()
-	 * 
-	 * @return
-	 */
-	protected List<Operator> getOperator() {
-		final int startPosition = fCurrentPosition - 1;
-		fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
-		List<Operator> list = fFactory.getOperatorList(fOperatorString);
-		List<Operator> lastList = null;
-		int lastOperatorPosition = -1;
-		if (list != null) {
-			lastList = list;
-			lastOperatorPosition = fCurrentPosition;
-		}
-		getChar();
-		while (fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0) {
-			fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
-			list = fFactory.getOperatorList(fOperatorString);
-			if (list != null) {
-				lastList = list;
-				lastOperatorPosition = fCurrentPosition;
-			}
-			getChar();
-		}
-		if (lastOperatorPosition > 0) {
-			fCurrentPosition = lastOperatorPosition;
-			return lastList;
-		}
-		final int endPosition = fCurrentPosition--;
-		fCurrentPosition = startPosition;
-		throwSyntaxError("Operator token not found: " + fInputString.substring(startPosition, endPosition - 1));
-		return null;
-	}
-
-	/**
-	 * Determines if the current character is white space according to
-	 * <code>Character#isWhitespace()</code> method.
-	 * 
-	 * @return
-	 */
-	protected boolean isWhitespace() {
-		if (fInputString.length() > fCurrentPosition) {
-			return Character.isWhitespace(fInputString.charAt(fCurrentPosition));
-		}
-		return false;
 	}
 
 	/**
@@ -464,109 +574,241 @@ public class Scanner {
 		fToken = TT_EOF;
 	}
 
-	private void getComment() {
-		int startPosition = fCurrentPosition;
-		int level = 0;
-		fCurrentPosition++;
-		// read multiline comment until end of file:
-		try {
-			while (true) {
-				if (fInputString.charAt(fCurrentPosition) == '*' && fInputString.charAt(fCurrentPosition + 1) == ')') {
-					fCurrentPosition++;
-					fCurrentPosition++;
-					if (level == 0) {
+	protected Object[] getNumberString() {
+		final Object[] result = new Object[2];
+		numFormat = 10;
+		int startPosition = fCurrentPosition - 1;
+		final char firstCh = fCurrentChar;
+		char dFlag = ' ';
+		// first digit
+		if (fCurrentChar == '.') {
+			dFlag = fCurrentChar;
+		}
+		getChar();
+		if (firstCh == '0') {
+			switch (fCurrentChar) {
+			case 'b': // binary format
+				numFormat = 2;
+				startPosition = fCurrentPosition;
+				getChar();
+				break;
+			case 'B': // binary format
+				numFormat = 2;
+				startPosition = fCurrentPosition;
+				getChar();
+				break;
+			case 'o': // octal format
+				numFormat = 8;
+				startPosition = fCurrentPosition;
+				getChar();
+				break;
+			case 'O': // octal format
+				numFormat = 8;
+				startPosition = fCurrentPosition;
+				getChar();
+				break;
+			case 'x': // hexadecimal format
+				numFormat = 16;
+				startPosition = fCurrentPosition;
+				getChar();
+				break;
+			case 'X': // hexadecimal format
+				numFormat = 16;
+				startPosition = fCurrentPosition;
+				getChar();
+				break;
+			default:
+			}
+		}
+
+		if (numFormat == 2) {
+			while ((fCurrentChar >= '0') && (fCurrentChar <= '1')) {
+				getChar();
+			}
+		} else if (numFormat == 8) {
+			while ((fCurrentChar >= '0') && (fCurrentChar <= '7')) {
+				getChar();
+			}
+		} else if (numFormat == 16) {
+			while (((fCurrentChar >= '0') && (fCurrentChar <= '9')) || ((fCurrentChar >= 'a') && (fCurrentChar <= 'f'))
+					|| ((fCurrentChar >= 'A') && (fCurrentChar <= 'F'))) {
+				getChar();
+			}
+		} else {
+			while (((fCurrentChar >= '0') && (fCurrentChar <= '9')) || (fCurrentChar == '.')) {
+				if (fCurrentChar == '.') {
+					if ((fCurrentChar == '.') && (dFlag != ' ')) {
 						break;
 					}
-					level--;
-					continue;
-				} else if (fInputString.charAt(fCurrentPosition) == '('
-						&& fInputString.charAt(fCurrentPosition + 1) == '*') {
-					fCurrentPosition++;
-					fCurrentPosition++;
-					level++;
-					continue;
-				} else if (fInputString.charAt(fCurrentPosition) == '\n') {
-					fCurrentPosition++;
-					rowCount++;
-					fCurrentColumnStartPosition = fCurrentPosition;
-					continue;
-				}
-				fCurrentPosition++;
-			}
-		} catch (IndexOutOfBoundsException ioobe) {
-			fCurrentPosition = startPosition;
-			throwSyntaxError("Comment doesn't end with '*)' (open multiline comment)");
-		}
-	}
-
-	protected void throwSyntaxError(final String error) throws SyntaxError {
-		throw new SyntaxError(fCurrentPosition - 1, rowCount, fCurrentPosition - fCurrentColumnStartPosition,
-				getErrorLine(), error, 1);
-	}
-
-	protected void throwSyntaxError(final String error, final int errorLength) throws SyntaxError {
-		throw new SyntaxError(fCurrentPosition - errorLength, rowCount, fCurrentPosition - fCurrentColumnStartPosition,
-				getErrorLine(), error, errorLength);
-	}
-
-	private String getErrorLine() {
-		if (fInputString.length() < fCurrentPosition) {
-			fCurrentPosition--;
-		}
-		// read until end-of-line after the current fError
-		int eol = fCurrentPosition;
-		while (fInputString.length() > eol) {
-			fCurrentChar = fInputString.charAt(eol++);
-			if (fCurrentChar == '\n') {
-				eol--;
-				break;
-			}
-		}
-		final String line = fInputString.substring(fCurrentColumnStartPosition, eol);
-		return line;
-	}
-
-	protected String getIdentifier() {
-		if (fCurrentChar == '\\') {
-			if (fInputString.length() > fCurrentPosition) {
-				if (fInputString.charAt(fCurrentPosition) == '[') {
-
-					final int startPosition = fCurrentPosition++ - 1;
+					dFlag = fCurrentChar;
 					getChar();
-					while (Character.isLetterOrDigit(fCurrentChar)) {
+				} else {
+					getChar();
+				}
+			}
+			if (dFlag != ' ') {
+				numFormat = -1;
+			}
+		}
+		if (numFormat < 0) {
+			if ((fCurrentChar == 'E') || (fCurrentChar == 'e')) {
+				getChar();
+				if ((fCurrentChar == '+') || (fCurrentChar == '-')) {
+					getChar();
+				}
+				while ((fCurrentChar >= '0') && (fCurrentChar <= '9')) {
+					getChar();
+				}
+			} else {
+				if (fCurrentChar == '*') {
+					int lastPosition = fCurrentPosition;
+					getChar();
+					if (fCurrentChar == '^') {
 						getChar();
+						if ((fCurrentChar == '+') || (fCurrentChar == '-')) {
+							getChar();
+						}
+						if ((fCurrentChar >= '0') && (fCurrentChar <= '9')) {
+							while ((fCurrentChar >= '0') && (fCurrentChar <= '9')) {
+								getChar();
+							}
+						} else {
+							fCurrentPosition = lastPosition;
+						}
+					} else {
+						fCurrentPosition = lastPosition;
 					}
-					if (fCurrentChar == ']') {
-						int endPosition = fCurrentPosition--;
-						getChar();
-						return fInputString.substring(startPosition, endPosition);
-					}
-					throwSyntaxError("Special identifier definition '\\[...]' not closed with ']' ");
+				}
+			}
+		}
+		int endPosition = fCurrentPosition--;
+		result[0] = fInputString.substring(startPosition, --endPosition);
+		result[1] = Integer.valueOf(numFormat);
+		return result;
+	}
 
+	/**
+	 * protected List<Operator> getOperator()
+	 * 
+	 * @return
+	 */
+	protected List<Operator> getOperator() {
+		final int startPosition = fCurrentPosition - 1;
+		fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
+		List<Operator> list = fFactory.getOperatorList(fOperatorString);
+		List<Operator> lastList = null;
+		int lastOperatorPosition = -1;
+		if (list != null) {
+			lastList = list;
+			lastOperatorPosition = fCurrentPosition;
+		}
+		getChar();
+		while (fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0) {
+			fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
+			list = fFactory.getOperatorList(fOperatorString);
+			if (list != null) {
+				lastList = list;
+				lastOperatorPosition = fCurrentPosition;
+			}
+			getChar();
+		}
+		if (lastOperatorPosition > 0) {
+			fCurrentPosition = lastOperatorPosition;
+			return lastList;
+		}
+		final int endPosition = fCurrentPosition--;
+		fCurrentPosition = startPosition;
+		throwSyntaxError("Operator token not found: " + fInputString.substring(startPosition, endPosition - 1));
+		return null;
+	}
+
+	protected StringBuilder getStringBuffer() throws SyntaxError {
+		final StringBuilder ident = new StringBuilder();
+
+		if (fInputString.length() > fCurrentPosition) {
+			fCurrentChar = fInputString.charAt(fCurrentPosition++);
+		} else {
+			throwSyntaxError("string - end of string not reached.");
+		}
+		if ((fCurrentChar == '\n') || (fToken == TT_EOF)) {
+			throwSyntaxError("string -" + ident.toString() + "- contains no character.");
+		}
+
+		while (fCurrentChar != '"') {
+			if (fCurrentChar == '\\') {
+				if (fInputString.length() > fCurrentPosition) {
+					fCurrentChar = fInputString.charAt(fCurrentPosition++);
+
+					switch (fCurrentChar) {
+
+					case '\\':
+						ident.append(fCurrentChar);
+
+						break;
+					case 'n':
+						ident.append('\n');
+
+						break;
+					case 't':
+						ident.append('\t');
+
+						break;
+					default:
+						throwSyntaxError("string - unknown character after back-slash.");
+					}
+				} else {
+					throwSyntaxError("string - unknown character after back-slash.");
+				}
+
+				if (fInputString.length() > fCurrentPosition) {
+					fCurrentChar = fInputString.charAt(fCurrentPosition++);
+				} else {
+					throwSyntaxError("string - end of string not reached.");
+				}
+			} else {
+				if ((fCurrentChar != '"') && (fToken == TT_EOF)) {
+					throwSyntaxError("string -" + ident.toString() + "- not closed.");
+				}
+
+				ident.append(fCurrentChar);
+				if (fInputString.length() > fCurrentPosition) {
+					fCurrentChar = fInputString.charAt(fCurrentPosition++);
+				} else {
+					throwSyntaxError("string - end of string not reached.");
 				}
 			}
 		}
 
-		final int startPosition = fCurrentPosition - 1;
+		return ident;
+	}
 
-		getChar();
-		if (fCurrentChar == '$') {
-			getChar();
+	protected void initialize(final String s) throws SyntaxError {
+		initializeNullScanner();
+		fInputString = s;
+		if (s != null) {
+			getNextToken();
 		}
-		while (Character.isLetterOrDigit(fCurrentChar) || (fCurrentChar == '$')) {
-			getChar();
-		}
+	}
 
-		int endPosition = fCurrentPosition--;
-		final int length = (--endPosition) - startPosition;
-		if (length == 1) {
-			return optimizedCurrentTokenSource1(startPosition, endPosition);
-		}
-		if (length == 2 && fInputString.charAt(startPosition) == '$') {
-			return optimizedCurrentTokenSource2(startPosition, endPosition);
-		}
+	private void initializeNullScanner() {
+		fInputString = null;
+		fToken = TT_EOF;
+		fCurrentPosition = 0;
+		rowCount = 0;
+		fCurrentColumnStartPosition = 0;
+	}
 
-		return fInputString.substring(startPosition, endPosition);
+	/**
+	 * Determines if the current character is white space according to
+	 * <code>Character#isWhitespace()</code> method.
+	 * 
+	 * @return
+	 */
+	protected boolean isWhitespace() {
+		if (fInputString.length() > fCurrentPosition) {
+			return Character.isWhitespace(fInputString.charAt(fCurrentPosition));
+		}
+		return false;
 	}
 
 	final private String optimizedCurrentTokenSource1(final int startPosition, final int endPosition) {
@@ -690,176 +932,13 @@ public class Scanner {
 		}
 	}
 
-	protected Object[] getNumberString() {
-		final Object[] result = new Object[2];
-		numFormat = 10;
-		int startPosition = fCurrentPosition - 1;
-		final char firstCh = fCurrentChar;
-		char dFlag = ' ';
-		// first digit
-		if (fCurrentChar == '.') {
-			dFlag = fCurrentChar;
-		}
-		getChar();
-		if (firstCh == '0') {
-			switch (fCurrentChar) {
-			case 'b': // binary format
-				numFormat = 2;
-				startPosition = fCurrentPosition;
-				getChar();
-				break;
-			case 'B': // binary format
-				numFormat = 2;
-				startPosition = fCurrentPosition;
-				getChar();
-				break;
-			case 'o': // octal format
-				numFormat = 8;
-				startPosition = fCurrentPosition;
-				getChar();
-				break;
-			case 'O': // octal format
-				numFormat = 8;
-				startPosition = fCurrentPosition;
-				getChar();
-				break;
-			case 'x': // hexadecimal format
-				numFormat = 16;
-				startPosition = fCurrentPosition;
-				getChar();
-				break;
-			case 'X': // hexadecimal format
-				numFormat = 16;
-				startPosition = fCurrentPosition;
-				getChar();
-				break;
-			default:
-			}
-		}
-
-		if (numFormat == 2) {
-			while ((fCurrentChar >= '0') && (fCurrentChar <= '1')) {
-				getChar();
-			}
-		} else if (numFormat == 8) {
-			while ((fCurrentChar >= '0') && (fCurrentChar <= '7')) {
-				getChar();
-			}
-		} else if (numFormat == 16) {
-			while (((fCurrentChar >= '0') && (fCurrentChar <= '9')) || ((fCurrentChar >= 'a') && (fCurrentChar <= 'f'))
-					|| ((fCurrentChar >= 'A') && (fCurrentChar <= 'F'))) {
-				getChar();
-			}
-		} else {
-			while (((fCurrentChar >= '0') && (fCurrentChar <= '9')) || (fCurrentChar == '.')) {
-				if (fCurrentChar == '.') {
-					if ((fCurrentChar == '.') && (dFlag != ' ')) {
-						break;
-					}
-					dFlag = fCurrentChar;
-					getChar();
-				} else {
-					getChar();
-				}
-			}
-			if (dFlag != ' ') {
-				numFormat = -1;
-			}
-		}
-		if (numFormat < 0) {
-			if ((fCurrentChar == 'E') || (fCurrentChar == 'e')) {
-				getChar();
-				if ((fCurrentChar == '+') || (fCurrentChar == '-')) {
-					getChar();
-				}
-				while ((fCurrentChar >= '0') && (fCurrentChar <= '9')) {
-					getChar();
-				}
-			} else {
-				if (fCurrentChar == '*') {
-					int lastPosition = fCurrentPosition;
-					getChar();
-					if (fCurrentChar == '^') {
-						getChar();
-						if ((fCurrentChar == '+') || (fCurrentChar == '-')) {
-							getChar();
-						}
-						if ((fCurrentChar >= '0') && (fCurrentChar <= '9')) {
-							while ((fCurrentChar >= '0') && (fCurrentChar <= '9')) {
-								getChar();
-							}
-						} else {
-							fCurrentPosition = lastPosition;
-						}
-					} else {
-						fCurrentPosition = lastPosition;
-					}
-				}
-			}
-		}
-		int endPosition = fCurrentPosition--;
-		result[0] = fInputString.substring(startPosition, --endPosition);
-		result[1] = Integer.valueOf(numFormat);
-		return result;
+	protected void throwSyntaxError(final String error) throws SyntaxError {
+		throw new SyntaxError(fCurrentPosition - 1, rowCount, fCurrentPosition - fCurrentColumnStartPosition,
+				getErrorLine(), error, 1);
 	}
 
-	protected StringBuilder getStringBuffer() throws SyntaxError {
-		final StringBuilder ident = new StringBuilder();
-
-		if (fInputString.length() > fCurrentPosition) {
-			fCurrentChar = fInputString.charAt(fCurrentPosition++);
-		} else {
-			throwSyntaxError("string - end of string not reached.");
-		}
-		if ((fCurrentChar == '\n') || (fToken == TT_EOF)) {
-			throwSyntaxError("string -" + ident.toString() + "- contains no character.");
-		}
-
-		while (fCurrentChar != '"') {
-			if (fCurrentChar == '\\') {
-				if (fInputString.length() > fCurrentPosition) {
-					fCurrentChar = fInputString.charAt(fCurrentPosition++);
-
-					switch (fCurrentChar) {
-
-					case '\\':
-						ident.append(fCurrentChar);
-
-						break;
-					case 'n':
-						ident.append('\n');
-
-						break;
-					case 't':
-						ident.append('\t');
-
-						break;
-					default:
-						throwSyntaxError("string - unknown character after back-slash.");
-					}
-				} else {
-					throwSyntaxError("string - unknown character after back-slash.");
-				}
-
-				if (fInputString.length() > fCurrentPosition) {
-					fCurrentChar = fInputString.charAt(fCurrentPosition++);
-				} else {
-					throwSyntaxError("string - end of string not reached.");
-				}
-			} else {
-				if ((fCurrentChar != '"') && (fToken == TT_EOF)) {
-					throwSyntaxError("string -" + ident.toString() + "- not closed.");
-				}
-
-				ident.append(fCurrentChar);
-				if (fInputString.length() > fCurrentPosition) {
-					fCurrentChar = fInputString.charAt(fCurrentPosition++);
-				} else {
-					throwSyntaxError("string - end of string not reached.");
-				}
-			}
-		}
-
-		return ident;
+	protected void throwSyntaxError(final String error, final int errorLength) throws SyntaxError {
+		throw new SyntaxError(fCurrentPosition - errorLength, rowCount, fCurrentPosition - fCurrentColumnStartPosition,
+				getErrorLine(), error, errorLength);
 	}
 }

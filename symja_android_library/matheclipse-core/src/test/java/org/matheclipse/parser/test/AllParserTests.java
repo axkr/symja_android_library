@@ -14,6 +14,7 @@ public class AllParserTests extends TestCase {
 
 		s.addTestSuite(ParserTestCase.class);
 		s.addTestSuite(RelaxedParserTestCase.class);
+		s.addTestSuite(BracketBalancerTestCase.class);
 		return s;
 	}
 
