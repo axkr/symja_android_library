@@ -9,17 +9,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.reflection.system.Names;
+import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
@@ -112,6 +111,11 @@ public class Console {
 						}
 						System.out.println();
 						continue;
+					}
+					String postfix = Scanner.balanceCode(inputExpression);
+					if (postfix != null && postfix.length() > 0) {
+						System.err.println("Automatically closing brackets: " + postfix);
+						inputExpression = inputExpression + postfix;
 					}
 					outputExpression = console.interpreter(inputExpression);
 					System.out.println("In [" + COUNTER + "]: " + inputExpression);
@@ -210,7 +214,7 @@ public class Console {
 	 * <code>OutputForm</code>
 	 * 
 	 * @param inputExpression
-	 * 
+	 * @return
 	 */
 	public String interpreter(final String inputExpression) {
 		IExpr result;
@@ -227,6 +231,9 @@ public class Console {
 				}
 				return result.toString();
 			}
+		} catch (final SyntaxError se) {
+			String msg = se.getMessage();
+			System.err.println(msg);
 		} catch (final RuntimeException re) {
 			Throwable me = re.getCause();
 			if (me instanceof MathException) {
