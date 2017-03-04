@@ -1895,9 +1895,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		if (fLocalVariableStackMap != null) {
 			buf.append(fLocalVariableStackMap.toString());
 		}
-		if (SystemNamespace.DEFAULT != null) {
-			buf.append(SystemNamespace.DEFAULT.toString());
-		}
+		// if (SystemNamespace.DEFAULT != null) {
+		// buf.append(SystemNamespace.DEFAULT.toString());
+		// }
 		return buf.toString();
 	}
 

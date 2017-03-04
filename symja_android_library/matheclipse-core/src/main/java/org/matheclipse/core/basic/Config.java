@@ -141,96 +141,16 @@ public class Config {
 	public final static double DEFAULT_ROOTS_CHOP_DELTA = 1.0e-5;
 
 	/**
-	 * Maximum size of the BigInteger words in <i>server mode</i>.
-	 * 
-	 * @see apache.harmony.math.BigInteger
-	 */
-	public static int BIGINTEGER_MAX_SIZE = 65536;
-
-	/**
-	 * Maximum size of the FastTable entries in <i>server mode</i>.
-	 * 
-	 * @see javolution.util.FastTable
-	 */
-	public static int FASTTABLE_MAX_SIZE = 65536;
-
-	/**
-	 * Maximum length of the StringImpl's <code>String</code> in <i>server
-	 * mode</i>.
-	 * 
-	 * @see org.matheclipse.core.expression.Expression
-	 */
-	public static int STRING_MAX_SIZE = 4096;
-
-	/**
-	 * Maximum size of the IntegerImpl pools in <i>server mode</i>.
-	 * 
-	 * @see org.matheclipse.core.expression.Expression
-	 */
-	public static int INTEGER_MAX_POOL_SIZE = 4096;
-
-	/**
-	 * Maximum size of the FractionImpl pools in <i>server mode</i>.
-	 * 
-	 * @see org.matheclipse.core.expression.Expression
-	 */
-	public static int FRACTION_MAX_POOL_SIZE = 4096;
-
-	/**
-	 * Maximum size of the ComplexImpl pools in <i>server mode</i>.
-	 * 
-	 * @see org.matheclipse.core.expression.Expression
-	 */
-	public static int COMPLEX_MAX_POOL_SIZE = 4096;
-
-	/**
-	 * Maximum size of the DoubleImpl pools in <i>server mode</i>.
-	 * 
-	 * @see org.matheclipse.core.expression.Expression
-	 */
-	public static int DOUBLE_MAX_POOL_SIZE = 65536;// 16384;
-
-	/**
-	 * Maximum size of the DoubleComplexImpl pools in <i>server mode</i>.
-	 * 
-	 * @see org.matheclipse.core.expression.Expression
-	 */
-	public static int DOUBLECOMPLEX_MAX_POOL_SIZE = 65536;// 16384;
-
-	/**
-	 * Maximum size of the PatternImpl pools in <i>server mode</i>.
-	 * 
-	 * @see org.matheclipse.core.expression.Expression
-	 */
-	public static int PATTERN_MAX_POOL_SIZE = 1024;
-
-	/**
-	 * Maximum size of the StringImpl pools in <i>server mode</i>.
-	 * 
-	 * @see org.matheclipse.core.expression.Expression
-	 */
-	public static int STRING_MAX_POOL_SIZE = 1024;
-
-	/**
-	 * Maximum size of the double vector's in <i>server mode</i>.
-	 * 
-	 * @see org.matheclipse.core.basic.Alloc
-	 */
-	public static int MAX_DOUBLE_VECTOR_SIZE = 65536;
-
-	/**
-	 * Maximum size of the double matrix's in <i>server mode</i>.
-	 * 
-	 * @see org.matheclipse.core.basic.Alloc
-	 */
-	public static int MAX_DOUBLE_MATRIX_SIZE = 65536;
-
-	/**
-	 * Flag for thread usage. <b>Note:</b> Only introduced because Google app
-	 * engine does not support threads.
+	 * <p>
+	 * Flag for thread usage.
+	 * </p>
+	 * <p>
+	 * <b>Note:</b> Only introduced because Google app engine does not support
+	 * threads.
+	 * </p>
 	 * 
 	 * @see edu.jas.ufd.GCDFactory#getProxy(edu.jas.structure.RingFactory)
 	 */
-	public static boolean JAS_NO_THREADS = true;
+	public static boolean JAS_NO_THREADS = false;
 
 }

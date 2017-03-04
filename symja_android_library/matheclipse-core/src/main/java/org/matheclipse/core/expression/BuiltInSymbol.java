@@ -1,17 +1,16 @@
 package org.matheclipse.core.expression;
 
 import java.io.IOException;
-import org.matheclipse.core.basic.Config;
+
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.SystemNamespace;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.eval.interfaces.ISymbolEvaluator;
 import org.matheclipse.core.generic.interfaces.INumericFunction;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 
 /**
  * Implements Symbols for function, constant and variable names
@@ -93,13 +92,13 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 			synchronized (this) {
 				if (fEvaluator == null) {
 					fEvaluator = DUMMY_EVALUATOR;
-					if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-						SystemNamespace.DEFAULT.setEvaluator(this);
-					} else {
-						if (Character.isUpperCase(fSymbolName.charAt(0))) {
-							SystemNamespace.DEFAULT.setEvaluator(this);
-						}
-					}
+//					if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+//						SystemNamespace.DEFAULT.setEvaluator(this);
+//					} else {
+//						if (Character.isUpperCase(fSymbolName.charAt(0))) {
+//							SystemNamespace.DEFAULT.setEvaluator(this);
+//						}
+//					}
 				}
 			}
 		}

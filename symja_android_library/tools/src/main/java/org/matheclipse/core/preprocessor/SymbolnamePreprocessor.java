@@ -95,7 +95,10 @@ public class SymbolnamePreprocessor {
 					// we are only interested in .m files
 					if (files[i].endsWith(".java")) {
 						String className = files[i].substring(0, files[i].length() - 5);
-
+						if (className.equals("Integrate") || className.equals("Plus") || className.equals("Power")
+								|| className.equals("Times")) {
+							continue;
+						}
 						// System.out.println(functionName + ".setEvaluator(new
 						// org.matheclipse.core.reflection.system."
 						// + functionName + "());");

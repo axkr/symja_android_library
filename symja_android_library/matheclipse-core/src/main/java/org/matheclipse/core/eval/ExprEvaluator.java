@@ -157,6 +157,7 @@ public class ExprEvaluator {
 	public ISymbol defineVariable(ISymbol variable, IExpr value) {
 		variable.pushLocalVariable();
 		if (value != null) {
+			F.join();
 			// this evaluation step may throw an exception
 			IExpr temp = engine.evaluate(value);
 			variable.set(temp);
@@ -234,6 +235,7 @@ public class ExprEvaluator {
 	 */
 	public IExpr evaluate(final IExpr expr) {
 		fExpr = expr;
+		F.join();
 		engine.reset();
 		IExpr temp = engine.evaluate(expr);
 		if (!engine.isOutListDisabled()) {
@@ -287,7 +289,7 @@ public class ExprEvaluator {
 			engine.reset();
 			fExpr = engine.parse(inputExpression);
 			if (fExpr != null) {
-
+				F.join();
 				TimeLimiter timeLimiter = new SimpleTimeLimiter();
 				Callable<IExpr> work = new EvalCallable(fExpr, engine);
 
