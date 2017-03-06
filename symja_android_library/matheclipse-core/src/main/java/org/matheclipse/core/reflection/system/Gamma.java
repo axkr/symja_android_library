@@ -1,11 +1,28 @@
 package org.matheclipse.core.reflection.system;
 
+import static org.matheclipse.core.expression.F.C1;
+import static org.matheclipse.core.expression.F.C1D2;
+import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.Conjugate;
+import static org.matheclipse.core.expression.F.Factorial;
+import static org.matheclipse.core.expression.F.Factorial2;
+import static org.matheclipse.core.expression.F.Gamma;
+import static org.matheclipse.core.expression.F.NIL;
+import static org.matheclipse.core.expression.F.Pi;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Sqrt;
+import static org.matheclipse.core.expression.F.Subtract;
+import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.num;
+
 import java.util.function.DoubleUnaryOperator;
 
+import org.matheclipse.core.builtin.NumberTheoryDefinitions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
-import static org.matheclipse.core.expression.F.*;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -32,7 +49,7 @@ public class Gamma extends AbstractTrigArg1 implements DoubleUnaryOperator {
 	 * @return
 	 */
 	public static IInteger gamma(final IInteger x) {
-		return org.matheclipse.core.reflection.system.Factorial.factorial(x.subtract(C1));
+		return NumberTheoryDefinitions.factorial(x.subtract(C1));
 	}
 
 	public Gamma() {
