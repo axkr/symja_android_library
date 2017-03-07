@@ -2,7 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import javax.annotation.Nonnull;
 
-import org.matheclipse.core.builtin.NumberTheoryDefinitions;
+import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
@@ -358,7 +358,7 @@ public class Expand extends AbstractFunctionEvaluator {
 
 		private void addFactor(int[] j) {
 			final Permutations.KPermutationsIterable perm = new Permutations.KPermutationsIterable(j, m, m);
-			IInteger multinomial = NumberTheoryDefinitions.multinomial(j, n);
+			IInteger multinomial = NumberTheory.multinomial(j, n);
 			final IAST times = F.Times();
 			IExpr temp;
 			for (int[] indices : perm) {

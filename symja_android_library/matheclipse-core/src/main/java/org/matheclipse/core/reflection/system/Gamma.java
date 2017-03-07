@@ -19,7 +19,7 @@ import static org.matheclipse.core.expression.F.num;
 
 import java.util.function.DoubleUnaryOperator;
 
-import org.matheclipse.core.builtin.NumberTheoryDefinitions;
+import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
@@ -49,7 +49,7 @@ public class Gamma extends AbstractTrigArg1 implements DoubleUnaryOperator {
 	 * @return
 	 */
 	public static IInteger gamma(final IInteger x) {
-		return NumberTheoryDefinitions.factorial(x.subtract(C1));
+		return NumberTheory.factorial(x.subtract(C1));
 	}
 
 	public Gamma() {

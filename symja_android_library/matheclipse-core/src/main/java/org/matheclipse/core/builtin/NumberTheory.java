@@ -39,7 +39,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
 
-public class NumberTheoryDefinitions {
+public class NumberTheory {
 	private static class BellB extends AbstractFunctionEvaluator {
 
 		/**
@@ -1712,7 +1712,7 @@ public class NumberTheoryDefinitions {
 		F.Subfactorial.setEvaluator(new Subfactorial());
 	}
 
-	final static NumberTheoryDefinitions CONST = new NumberTheoryDefinitions();
+	final static NumberTheory CONST = new NumberTheory();
 
 	public static IInteger factorial(final IInteger x) {
 		try {
@@ -1792,7 +1792,7 @@ public class NumberTheoryDefinitions {
 		return result;
 	}
 
-	public static NumberTheoryDefinitions initialize() {
+	public static NumberTheory initialize() {
 		return CONST;
 	}
 
@@ -1815,7 +1815,7 @@ public class NumberTheoryDefinitions {
 		return result;
 	}
 
-	private NumberTheoryDefinitions() {
+	private NumberTheory() {
 
 	}
 }

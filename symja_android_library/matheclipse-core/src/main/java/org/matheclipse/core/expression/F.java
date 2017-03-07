@@ -24,7 +24,7 @@ import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.builtin.FunctionDefinitions;
 import org.matheclipse.core.builtin.LinearAlgebra;
-import org.matheclipse.core.builtin.NumberTheoryDefinitions;
+import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -1915,7 +1915,7 @@ public class F {
 
 			ConstantDefinitions.initialize();
 			FunctionDefinitions.initialize();
-			NumberTheoryDefinitions.initialize();
+			NumberTheory.initialize();
 			BooleanFunctions.initialize();
 			LinearAlgebra.initialize();
 
