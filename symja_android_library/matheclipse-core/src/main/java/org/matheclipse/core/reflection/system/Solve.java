@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.hipparchus.linear.FieldMatrix;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -9,7 +8,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Predicate;
 
+import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.function.PossibleZeroQ;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -1010,7 +1011,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			if (vector.size() > 1) {
 				// solve a linear equation <code>matrix.x == vector</code>
 				FieldMatrix<IExpr> augmentedMatrix = Convert.list2Matrix(matrix, vector);
-				return RowReduce.rowReduced2RulesList(augmentedMatrix, variables, resultList, engine);
+				return LinearAlgebra.rowReduced2RulesList(augmentedMatrix, variables, resultList, engine);
 			}
 
 			return sortASTArguments(resultList);

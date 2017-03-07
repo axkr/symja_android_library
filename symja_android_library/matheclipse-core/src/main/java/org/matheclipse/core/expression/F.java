@@ -20,8 +20,10 @@ import org.apfloat.ApfloatContext;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.builtin.FunctionDefinitions;
+import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.NumberTheoryDefinitions;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -1914,6 +1916,8 @@ public class F {
 			ConstantDefinitions.initialize();
 			FunctionDefinitions.initialize();
 			NumberTheoryDefinitions.initialize();
+			BooleanFunctions.initialize();
+			LinearAlgebra.initialize();
 
 			// initialize only the utility function rules for Integrate
 			final EvalEngine engine = EvalEngine.get();

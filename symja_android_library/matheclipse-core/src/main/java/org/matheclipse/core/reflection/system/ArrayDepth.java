@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
 
+import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -25,7 +26,7 @@ public class ArrayDepth extends AbstractFunctionEvaluator {
 		if (ast.arg1().isAST()) {
 			IAST list = (IAST) ast.arg1();
 			IExpr header = list.head();
-			ArrayList<Integer> dims = Dimensions.getDimensions(list, header, Integer.MAX_VALUE);
+			ArrayList<Integer> dims = LinearAlgebra.getDimensions(list, header, Integer.MAX_VALUE);
 			return F.integer(dims.size());
 		}
 
