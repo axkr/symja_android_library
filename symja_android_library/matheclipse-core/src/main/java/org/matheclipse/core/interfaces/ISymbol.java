@@ -135,12 +135,16 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	/**
 	 * Clear the associated rules for this symbol
 	 * 
+	 * @param engine
+	 *            the evaluation engine
 	 */
 	public void clear(EvalEngine engine);
 
 	/**
 	 * Clear all associated rules and attributes for this symbol
 	 * 
+	 * @param engine
+	 *            the evaluation engine
 	 */
 	public void clearAll(EvalEngine engine);
 
@@ -175,6 +179,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * representation
 	 * 
 	 * @return the <code>String</code> representation of the symbol definition
+	 * @throws IOException
 	 */
 	public String definitionToString() throws IOException;
 
@@ -318,6 +323,9 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * comparison of the symbols name with the given name is done according to
 	 * the <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> setting.
 	 * 
+	 * @param name
+	 *            the symbol name
+	 * @return
 	 */
 	public boolean isSymbolName(String name);
 
@@ -355,12 +363,15 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * Create a new variable placeholder on the symbols variable stack and set
 	 * the local value
 	 * 
+	 * @param localValue
 	 */
 	public void pushLocalVariable(IExpr localValue);
 
 	/**
 	 * Associate a new rule, which invokes a method, to this symbol.
 	 * 
+	 * @param pmEvaluator
+	 * @return
 	 */
 	public IPatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator);
 
@@ -482,6 +493,26 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @see WrongArgumentType
 	 */
 	public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol);
+
+	/**
+	 * Apply the ast to the currently assigned value of the symbol and reassign
+	 * the result value to the symbol. Used for functions like AppendTo,
+	 * Decrement, Increment,...
+	 * 
+	 * @param ast
+	 * @param ast
+	 *            the ast which should be evaluated by replacing the first
+	 *            argument with the current value of the symbol
+	 * @param functionSymbol
+	 *            if this method throws a WrongArgumentType exception the symbol
+	 *            will be displayed in the exceptions message
+	 * @return an array with the currently assigned value of the symbol and the
+	 *         new calculated value of the symbol or <code>null</code> if the
+	 *         reassignment isn't possible.
+	 * 
+	 * @see WrongArgumentType
+	 */
+	public IExpr[] reassignSymbolValue(IAST ast, ISymbol functionSymbol, EvalEngine engine);
 
 	public void removeRule(final IBuiltInSymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide,
 			boolean packageMode);

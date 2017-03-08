@@ -8,6 +8,7 @@ import static org.matheclipse.core.expression.F.Nand;
 import static org.matheclipse.core.expression.F.Nor;
 import static org.matheclipse.core.expression.F.Not;
 import static org.matheclipse.core.expression.F.Or;
+import static org.matheclipse.core.expression.F.TautologyQ;
 import static org.matheclipse.core.expression.F.Xor;
 
 import org.matheclipse.core.basic.Config;
@@ -32,6 +33,8 @@ public class BooleanFunctions {
 		F.BooleanMinimize.setEvaluator(new BooleanMinimize());
 		F.BooleanTable.setEvaluator(new BooleanTable());
 		F.BooleanVariables.setEvaluator(new BooleanVariables());
+		F.TautologyQ.setEvaluator(new TautologyQ());
+		F.TrueQ.setEvaluator(new TrueQ());
 	}
 
 	private static class AllTrue extends AbstractFunctionEvaluator {
@@ -373,6 +376,86 @@ public class BooleanFunctions {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
+	}
+
+	/**
+	 * See
+	 * <a href="https://en.wikipedia.org/wiki/Tautology_%28logic%29">Wikipedia:
+	 * Tautology_</a>
+	 * 
+	 */
+	private static class TautologyQ extends AbstractFunctionEvaluator {
+
+		public TautologyQ() {
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			IAST variables;
+			if (ast.isAST2()) {
+				if (ast.arg2().isList()) {
+					variables = (IAST) ast.arg2();
+				} else {
+					variables = List(ast.arg2());
+				}
+			} else {
+				VariablesSet vSet = new VariablesSet(ast.arg1());
+				variables = vSet.getVarList();
+
+			}
+
+			return tautologyQ(ast.arg1(), variables, 1) ? F.True : F.False;
+		}
+
+		private static boolean tautologyQ(IExpr expr, IAST variables, int position) {
+			if (variables.size() <= position) {
+				return EvalEngine.get().evalTrue(expr);
+			}
+			IExpr sym = variables.get(position);
+			if (sym.isSymbol()) {
+				try {
+					((ISymbol) sym).pushLocalVariable(F.True);
+					if (!tautologyQ(expr, variables, position + 1)) {
+						return false;
+					}
+				} finally {
+					((ISymbol) sym).popLocalVariable();
+				}
+				try {
+					((ISymbol) sym).pushLocalVariable(F.False);
+					if (!tautologyQ(expr, variables, position + 1)) {
+						return false;
+					}
+				} finally {
+					((ISymbol) sym).popLocalVariable();
+				}
+			}
+			return true;
+		}
+	}
+
+	/**
+	 * Returns <code>True</code> if the 1st argument evaluates to
+	 * <code>True</code>; <code>False</code> otherwise
+	 */
+	private static class TrueQ extends AbstractFunctionEvaluator {
+
+		public TrueQ() {
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			return F.bool(ast.equalsAt(1, F.True));
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
 		}
 
 	}

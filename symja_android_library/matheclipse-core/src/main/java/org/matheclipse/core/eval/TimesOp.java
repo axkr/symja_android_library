@@ -3,10 +3,10 @@ package org.matheclipse.core.eval;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.reflection.system.Times;
 
 /**
  * 
@@ -108,7 +108,7 @@ public class TimesOp {
 		if (!temp.isPresent()) {
 			temp = timesAST;
 		}
-		IExpr expr = Times.CONST.evaluate(temp, null);
+		IExpr expr = Arithmetic.CONST_TIMES.evaluate(temp, null);
 		if (!expr.isPresent()) {
 			return timesAST.getOneIdentity(F.C0);
 		}
@@ -132,7 +132,7 @@ public class TimesOp {
 
 	public static IExpr timesNull(IExpr a1, IExpr a2) {
 		IAST times = F.Times(a1, a2);
-		IExpr temp = Times.CONST.evaluate(times, null);
+		IExpr temp = Arithmetic.CONST_TIMES.evaluate(times, null);
 		if (temp.isPresent()) {
 			return temp;
 		}

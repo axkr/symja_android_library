@@ -2,6 +2,7 @@ package org.matheclipse.core.integrate.rubi45;
 
 import static org.matheclipse.core.expression.F.$;
 import static org.matheclipse.core.expression.F.$s;
+import static org.matheclipse.core.expression.F.$str;
 import static org.matheclipse.core.expression.F.And;
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
@@ -26,14 +27,8 @@ import static org.matheclipse.core.expression.F.Slot1;
 import static org.matheclipse.core.expression.F.Sqr;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.UnsameQ;
-import static org.matheclipse.core.expression.F.ast;
-import static org.matheclipse.core.expression.F.binary;
-import static org.matheclipse.core.expression.F.quaternary;
-import static org.matheclipse.core.expression.F.$str;
-import static org.matheclipse.core.expression.F.ternary;
 import static org.matheclipse.core.expression.F.u;
 import static org.matheclipse.core.expression.F.u_;
-import static org.matheclipse.core.expression.F.unary;
 import static org.matheclipse.core.expression.F.v;
 import static org.matheclipse.core.expression.F.v_;
 import static org.matheclipse.core.expression.F.w;
@@ -46,21 +41,21 @@ import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.Simp;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.SumQ;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.ZeroQ;
 
+import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Pattern;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * UtilityFunctions from the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based integrator</a>.
+ * UtilityFunctions from the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi -
+ * rule-based integrator</a>.
  * 
  * TODO a lot of functions are only placeholders at the moment.
  * 
  */
 public class UtilityFunctions {
-
 
 	public final static String INTEGRATE_PREFIX = "Integrate::";
 
@@ -160,36 +155,43 @@ public class UtilityFunctions {
 	// }
 
 	public static IAST RULES = List(
-			ISetDelayed(Dist(u_, Dist(v_, w_, x_), x_), Dist(Times(u, v), w, x)),
+			ISetDelayed(Dist(u_, Dist(v_, w_, x_), x_),
+					Dist(Times(u, v), w, x)),
 			ISetDelayed(
-					Dist(u_, v_, x_),
-					If(SameQ(u, C1),
-							v,
+					Dist(u_, v_,
+							x_),
+					If(SameQ(u, C1), v,
 							If(SameQ(u, C0),
 									CompoundExpression(
 											Print($str("*** Warning ***:  Dist[0,"), v, $str(" "), x, $str("]")), C0),
 									If(And(Less(NumericFactor(u), C0), Greater(NumericFactor(Times(CN1, u)), C0)),
-											Times(CN1, Dist(Times(CN1, u), v, x)),
+											Times(CN1,
+													Dist(Times(CN1, u), v,
+															x)),
 											If(SumQ(v),
-													Map(Function(Dist(u, Slot1, x)), v),
-													If(FreeQ(v, $s("Int")),
-															Simp(Times(u, v), x),
-															Module(List(Set(w, Times(Simp(Times(u, Sqr(x)), x), Power(Sqr(x), CN1)))),
-																	If(And(And(UnsameQ(w, u), FreeQ(w, x)), SameQ(w, Simp(w, x))),
-																			Dist(w, v, x), $(Defer($s("Integrate::Dist")), u, v, x))))))))));
+													Map(Function(
+															Dist(u, Slot1,
+																	x)),
+															v),
+													If(FreeQ(v, $s("Int")), Simp(Times(u, v), x), Module(
+															List(Set(w,
+																	Times(Simp(Times(u, Sqr(x)), x),
+																			Power(Sqr(x), CN1)))),
+															If(And(And(UnsameQ(w, u), FreeQ(w, x)),
+																	SameQ(w, Simp(w, x))), Dist(w, v, x),
+																	$(Defer($s("Integrate::Dist")), u, v, x))))))))));
 
 	public static void init() {
 		// Dist[u_,v_,x_]+Dist[w_,v_,x_] := If[ZeroQ[u+w], 0, Dist[u+w,v,x]]
-		org.matheclipse.core.reflection.system.Plus.CONST.defineHashRule(Dist(u_, v_, x_), Dist(w_, v_, x_),
+		Arithmetic.CONST_PLUS.defineHashRule(Dist(u_, v_, x_), Dist(w_, v_, x_),
 				If(ZeroQ(Plus(u, w)), C0, Dist(Plus(u, w), v, x)), null);
 
 		// Dist[u_,v_,x_]-Dist[w_,v_,x_] := If[ZeroQ[u-w], 0, Dist[u-w,v,x]]
-		org.matheclipse.core.reflection.system.Plus.CONST.defineHashRule(Dist(u_, v_, x_), Times(CN1, Dist(w_, v_, x_)),
+		Arithmetic.CONST_PLUS.defineHashRule(Dist(u_, v_, x_), Times(CN1, Dist(w_, v_, x_)),
 				If(ZeroQ(Plus(u, Times(CN1, w))), C0, Dist(Plus(u, Times(CN1, w)), v, x)), null);
 
 		// w_*Dist[u_,v_,x_] := Dist[w*u,v,x] /; w=!=-1
-		org.matheclipse.core.reflection.system.Times.CONST.defineHashRule(Dist(u_, v_, x_), w_, Dist(Times(w, u), v, x),
-				UnsameQ(w, CN1));
+		Arithmetic.CONST_TIMES.defineHashRule(Dist(u_, v_, x_), w_, Dist(Times(w, u), v, x), UnsameQ(w, CN1));
 
 	}
 

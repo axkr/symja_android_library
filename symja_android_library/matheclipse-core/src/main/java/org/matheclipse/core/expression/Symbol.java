@@ -796,6 +796,48 @@ public class Symbol implements ISymbol, Serializable {
 				+ " has no value! Reassignment with a new value is not possible");
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public IExpr[] reassignSymbolValue( IAST ast, ISymbol functionSymbol, EvalEngine engine) {
+		IExpr[] result = new IExpr[2];
+		IExpr symbolValue;
+		if (hasLocalVariableStack()) {
+			symbolValue = get();
+			result[0] = symbolValue;
+			// IExpr calculatedResult = function.apply(symbolValue);
+			ast.set(1, symbolValue);
+			IExpr calculatedResult = engine.evaluate(ast);//F.binaryAST2(this, symbolValue, value));
+			if (calculatedResult != null) {
+				set(calculatedResult);
+				result[1] = calculatedResult;
+				return result;
+			}
+
+		} else {
+			if (fRulesData != null) {
+				PatternMatcherEquals pme = fRulesData.getEqualDownRules().get(this);
+				if (pme != null) {
+					symbolValue = pme.getRHS();
+					if (symbolValue != null) {
+						result[0] = symbolValue;
+						// IExpr calculatedResult = function.apply(symbolValue);
+						ast.set(1, symbolValue);
+						IExpr calculatedResult = engine.evaluate(ast);
+						if (calculatedResult != null) {
+							pme.setRHS(calculatedResult);
+							result[1] = calculatedResult;
+							return result;
+						}
+					}
+				}
+			}
+		}
+		throw new WrongArgumentType(this, functionSymbol.toString() + " - Symbol: " + toString()
+				+ " has no value! Reassignment with a new value is not possible");
+	}
+
 	@Override
 	public final void removeRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide,
 			boolean packageMode) {

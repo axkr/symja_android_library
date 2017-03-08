@@ -20,6 +20,7 @@ import org.apfloat.ApfloatContext;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.builtin.FunctionDefinitions;
@@ -1743,7 +1744,7 @@ public class F {
 					Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
 				}
 			};
-			
+
 			ApfloatContext ctx = ApfloatContext.getContext();
 			ctx.setNumberOfProcessors(1);
 			// long start = System.currentTimeMillis();
@@ -1901,13 +1902,8 @@ public class F {
 			PREDEFINED_INTERNAL_FORM_STRINGS.put("Power", "Power");
 			PREDEFINED_INTERNAL_FORM_STRINGS.put("Times", "Times");
 
-			Plus.setDefaultValue(C0);
-			((IBuiltInSymbol) Plus).setEvaluator(org.matheclipse.core.reflection.system.Plus.CONST);
-			Times.setDefaultValue(C1);
-			((IBuiltInSymbol) Times).setEvaluator(org.matheclipse.core.reflection.system.Times.CONST);
-			Power.setDefaultValue(2, C1);
-			((IBuiltInSymbol) Power).setEvaluator(org.matheclipse.core.reflection.system.Power.CONST);
-			((IBuiltInSymbol) Sqrt).setEvaluator(org.matheclipse.core.reflection.system.Sqrt.CONST);
+			Arithmetic.initialize();
+			
 
 			createInverseFunctionMap();
 			createDenominatorFunctionMap();
@@ -1921,10 +1917,11 @@ public class F {
 
 			// initialize only the utility function rules for Integrate
 			final EvalEngine engine = EvalEngine.get();
-//			IAST ruleList = org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
-//			if (ruleList != null) {
-//				engine.addRules(ruleList);
-//			}
+			// IAST ruleList =
+			// org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
+			// if (ruleList != null) {
+			// engine.addRules(ruleList);
+			// }
 			if (Config.JAS_NO_THREADS) {
 				INIT_THREAD.run();
 			} else {

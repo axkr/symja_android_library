@@ -14,6 +14,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
@@ -37,8 +38,6 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
-import org.matheclipse.core.reflection.system.Plus;
-import org.matheclipse.core.reflection.system.Times;
 import org.matheclipse.parser.client.math.MathException;
 
 /**
@@ -1249,10 +1248,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			EvalAttributes.sort(ast);
 			if (level > 0 && !noEvaluation && ast.isFreeOfPatterns()) {
 				if (ast.isPlus()) {
-					return Plus.CONST.evaluate(ast, this);
+					return Arithmetic.CONST_PLUS.evaluate(ast, this);
 				}
 				if (ast.isTimes()) {
-					return Times.CONST.evaluate(ast, this);
+					return Arithmetic.CONST_TIMES.evaluate(ast, this);
 				}
 			}
 		}
