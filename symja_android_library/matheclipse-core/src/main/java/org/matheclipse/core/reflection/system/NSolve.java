@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 
-import org.matheclipse.core.builtin.function.PossibleZeroQ;
+import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -385,7 +385,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 					if (expr.isNumber()) {
 						throw new NoSolution(NoSolution.WRONG_SOLUTION);
 					}
-					if (!PossibleZeroQ.possibleZeroQ(expr, engine)) {
+					if (!PredicateQ.possibleZeroQ(expr, engine)) {
 						throw new NoSolution(NoSolution.NO_SOLUTION_FOUND);
 					}
 				}

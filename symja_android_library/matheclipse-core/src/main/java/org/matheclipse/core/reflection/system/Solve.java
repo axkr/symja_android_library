@@ -11,7 +11,7 @@ import java.util.function.Predicate;
 import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.LinearAlgebra;
-import org.matheclipse.core.builtin.function.PossibleZeroQ;
+import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -611,7 +611,7 @@ public class Solve extends AbstractFunctionEvaluator {
 					if (expr.isNumber()) {
 						throw new NoSolution(NoSolution.WRONG_SOLUTION);
 					}
-					if (!PossibleZeroQ.possibleZeroQ(expr, engine)) {
+					if (!PredicateQ.possibleZeroQ(expr, engine)) {
 						throw new NoSolution(NoSolution.NO_SOLUTION_FOUND);
 					}
 				}

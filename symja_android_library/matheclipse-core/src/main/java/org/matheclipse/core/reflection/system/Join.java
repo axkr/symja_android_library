@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.builtin.function.AtomQ;
+import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -17,7 +17,7 @@ public class Join extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3);
-		if (ast.args().any(AtomQ.CONST)) {
+		if (ast.args().any(PredicateQ.ATOMQ)) {
 			return F.NIL;
 		}
 

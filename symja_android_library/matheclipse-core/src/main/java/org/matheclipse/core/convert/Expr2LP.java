@@ -5,7 +5,6 @@ import org.hipparchus.optim.linear.LinearObjectiveFunction;
 import org.hipparchus.optim.linear.Relationship;
 import java.util.List;
 
-import org.matheclipse.core.builtin.function.NumericQ;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;

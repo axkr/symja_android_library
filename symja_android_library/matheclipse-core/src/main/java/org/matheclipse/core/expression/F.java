@@ -26,6 +26,7 @@ import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.builtin.FunctionDefinitions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.NumberTheory;
+import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -308,10 +309,8 @@ public class F {
 	public final static IBuiltInSymbol Array = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "array" : "Array",
 			new org.matheclipse.core.builtin.function.Array());
 	public final static IBuiltInSymbol ArrayQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arrayq" : "ArrayQ",
-			new org.matheclipse.core.builtin.function.ArrayQ());
-	public final static IBuiltInSymbol AtomQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "atomq" : "AtomQ",
-			new org.matheclipse.core.builtin.function.AtomQ());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arrayq" : "ArrayQ");
+	public final static IBuiltInSymbol AtomQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "atomq" : "AtomQ");
 	public final static IBuiltInSymbol Attributes = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "attributes" : "Attributes",
 			new org.matheclipse.core.builtin.function.Attributes());
@@ -320,8 +319,7 @@ public class F {
 	public final static IBuiltInSymbol Block = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "block" : "Block");
 	public final static IBuiltInSymbol Break = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "break" : "Break");
 	public final static IBuiltInSymbol BooleanQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "booleanq" : "BooleanQ",
-			new org.matheclipse.core.builtin.function.BooleanQ());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "booleanq" : "BooleanQ");
 	public final static IBuiltInSymbol Cases = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cases" : "Cases",
 			new org.matheclipse.core.builtin.function.Cases());
 	public final static IBuiltInSymbol Catch = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "catch" : "Catch");
@@ -363,8 +361,7 @@ public class F {
 	public final static IBuiltInSymbol Depth = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "depth" : "Depth",
 			new org.matheclipse.core.builtin.function.Depth());
 	public final static IBuiltInSymbol DigitQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "digitq" : "DigitQ",
-			new org.matheclipse.core.builtin.function.DigitQ());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "digitq" : "DigitQ");
 	public final static IBuiltInSymbol DirectedInfinity = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "directedinfinity" : "DirectedInfinity",
 			new org.matheclipse.core.builtin.function.DirectedInfinity());
@@ -375,8 +372,7 @@ public class F {
 	public final static IBuiltInSymbol Element = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "element" : "Element",
 			new org.matheclipse.core.builtin.function.Element());
-	public final static IBuiltInSymbol EvenQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "evenq" : "EvenQ",
-			new org.matheclipse.core.builtin.function.EvenQ());
+	public final static IBuiltInSymbol EvenQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "evenq" : "EvenQ");
 	public final static IBuiltInSymbol Exponent = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "exponent" : "Exponent",
 			new org.matheclipse.core.builtin.function.Exponent());
@@ -394,8 +390,7 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "foldlist" : "FoldList",
 			new org.matheclipse.core.builtin.function.FoldList());
 	public final static IBuiltInSymbol For = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "for" : "For");
-	public final static IBuiltInSymbol FreeQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "freeq" : "FreeQ",
-			new org.matheclipse.core.builtin.function.FreeQ());
+	public final static IBuiltInSymbol FreeQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "freeq" : "FreeQ");
 	public final static IBuiltInSymbol FullForm = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fullform" : "FullForm",
 			new org.matheclipse.core.builtin.function.FullForm());
@@ -423,8 +418,7 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "insert" : "Insert",
 			new org.matheclipse.core.builtin.function.Insert());
 	public final static IBuiltInSymbol IntegerQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerq" : "IntegerQ",
-			new org.matheclipse.core.builtin.function.IntegerQ());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerq" : "IntegerQ");
 	public final static IBuiltInSymbol JavaForm = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "javaform" : "JavaForm",
 			new org.matheclipse.core.builtin.function.JavaForm());
@@ -436,26 +430,21 @@ public class F {
 	public final static IBuiltInSymbol Length = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "length" : "Length",
 			new org.matheclipse.core.builtin.function.Length());
-	public final static IBuiltInSymbol ListQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "listq" : "ListQ",
-			new org.matheclipse.core.builtin.function.ListQ());
+	public final static IBuiltInSymbol ListQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "listq" : "ListQ");
 	public final static IBuiltInSymbol MatchQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matchq" : "MatchQ",
-			new org.matheclipse.core.builtin.function.MatchQ());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matchq" : "MatchQ");
 	public final static IBuiltInSymbol MathMLForm = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mathmlform" : "MathMLForm",
 			new org.matheclipse.core.builtin.function.MathMLForm());
 	public final static IBuiltInSymbol MatrixQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matrixq" : "MatrixQ",
-			new org.matheclipse.core.builtin.function.MatrixQ());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matrixq" : "MatrixQ");
 	public final static IBuiltInSymbol MemberQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "memberq" : "MemberQ",
-			new org.matheclipse.core.builtin.function.MemberQ());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "memberq" : "MemberQ");
 	public final static IBuiltInSymbol MessageName = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "messagename" : "MessageName",
 			new org.matheclipse.core.builtin.function.MessageName());
 	public final static IBuiltInSymbol MissingQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "missingq" : "MissingQ",
-			new org.matheclipse.core.builtin.function.MissingQ());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "missingq" : "MissingQ");
 	public final static IBuiltInSymbol Module = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "module" : "Module");
 	public final static IBuiltInSymbol N = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "N" : "N",
@@ -476,13 +465,10 @@ public class F {
 	public final static IBuiltInSymbol Nor = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nor" : "Nor",
 			new org.matheclipse.core.builtin.function.Nor());
 	public final static IBuiltInSymbol NumberQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "numberq" : "NumberQ",
-			new org.matheclipse.core.builtin.function.NumberQ());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "numberq" : "NumberQ");
 	public final static IBuiltInSymbol NumericQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "numericq" : "NumericQ",
-			new org.matheclipse.core.builtin.function.NumericQ());
-	public final static IBuiltInSymbol OddQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "oddq" : "OddQ",
-			new org.matheclipse.core.builtin.function.OddQ());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "numericq" : "NumericQ");
+	public final static IBuiltInSymbol OddQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "oddq" : "OddQ");
 	public final static IBuiltInSymbol Or = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "or" : "Or",
 			new org.matheclipse.core.builtin.function.Or());
 	public final static IBuiltInSymbol Package = initFinalSymbol(
@@ -497,8 +483,7 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "position" : "Position",
 			new org.matheclipse.core.builtin.function.Position());
 	public final static IBuiltInSymbol PossibleZeroQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "possiblezeroq" : "PossibleZeroQ",
-			new org.matheclipse.core.builtin.function.PossibleZeroQ());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "possiblezeroq" : "PossibleZeroQ");
 	public final static IBuiltInSymbol Prepend = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "prepend" : "Prepend",
 			new org.matheclipse.core.builtin.function.Prepend());
@@ -506,8 +491,7 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "prependto" : "PrependTo",
 			new org.matheclipse.core.builtin.function.PrependTo());
 	public final static IBuiltInSymbol PrimeQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primeq" : "PrimeQ",
-			new org.matheclipse.core.builtin.function.PrimeQ());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primeq" : "PrimeQ");
 	public final static IBuiltInSymbol Print = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "print" : "Print",
 			new org.matheclipse.core.builtin.function.Print());
 	public final static IBuiltInSymbol Put = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "put" : "Put",
@@ -553,8 +537,7 @@ public class F {
 	public final static IBuiltInSymbol Switch = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "switch" : "Switch");
 	public final static IBuiltInSymbol SyntaxQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "syntaxq" : "SyntaxQ",
-			new org.matheclipse.core.builtin.function.SyntaxQ());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "syntaxq" : "SyntaxQ");
 	public final static IBuiltInSymbol Take = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "take" : "Take",
 			new org.matheclipse.core.builtin.function.Take());
 	public final static IBuiltInSymbol TeXForm = initFinalSymbol(
@@ -579,19 +562,16 @@ public class F {
 	public final static IBuiltInSymbol Unset = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unset" : "Unset",
 			new org.matheclipse.core.builtin.function.Unset());
 	public final static IBuiltInSymbol UpperCaseQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "uppercaseq" : "UpperCaseQ",
-			new org.matheclipse.core.builtin.function.UpperCaseQ());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "uppercaseq" : "UpperCaseQ");
 	public final static IBuiltInSymbol UpSet = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "upset" : "UpSet",
 			new org.matheclipse.core.builtin.function.UpSet());
 	public final static IBuiltInSymbol UpSetDelayed = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "upsetdelayed" : "UpSetDelayed",
 			new org.matheclipse.core.builtin.function.UpSetDelayed());
 	public final static IBuiltInSymbol ValueQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "valueq" : "ValueQ",
-			new org.matheclipse.core.builtin.function.ValueQ());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "valueq" : "ValueQ");
 	public final static IBuiltInSymbol VectorQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "vectorq" : "VectorQ",
-			new org.matheclipse.core.builtin.function.VectorQ());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "vectorq" : "VectorQ");
 	public final static IBuiltInSymbol Which = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "which" : "Which");
 	public final static IBuiltInSymbol While = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "while" : "While");
 
@@ -1892,7 +1872,8 @@ public class F {
 			PREDEFINED_INTERNAL_FORM_STRINGS.put("Times", "Times");
 
 			Arithmetic.initialize();
-
+			PredicateQ.initialize();
+			
 			createInverseFunctionMap();
 			createDenominatorFunctionMap();
 			createNumeratorFunctionMap();
