@@ -2,7 +2,7 @@ package org.matheclipse.core.builtin;
 
 import static org.matheclipse.core.expression.F.*;
 
-public class FunctionDefinitions {
+public final class FunctionDefinitions {
 	static {
 		Abs.setEvaluator(new org.matheclipse.core.reflection.system.Abs());
 		AbsArg.setEvaluator(new org.matheclipse.core.reflection.system.AbsArg());

@@ -56,7 +56,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class LinearAlgebra {
+public final class LinearAlgebra {
 	static {
 		F.CharacteristicPolynomial.setEvaluator(new CharacteristicPolynomial());
 		F.ConjugateTranspose.setEvaluator(new ConjugateTranspose());

@@ -24,7 +24,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorExpr;
 
-public class BooleanFunctions {
+public final class BooleanFunctions {
 	static {
 		F.AllTrue.setEvaluator(new AllTrue());
 		F.AnyTrue.setEvaluator(new AnyTrue());

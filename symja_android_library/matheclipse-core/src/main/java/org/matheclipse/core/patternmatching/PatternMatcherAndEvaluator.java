@@ -5,8 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.matheclipse.core.builtin.function.Condition;
-import org.matheclipse.core.builtin.function.Module;
+import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
@@ -159,9 +158,9 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		}
 		IExpr substConditon = fPatternMap.substituteSymbols(fRightHandSide);
 		if (substConditon.isCondition()) {
-			return Condition.checkCondition(substConditon.getAt(1), substConditon.getAt(2), engine);
+			return Programming.checkCondition(substConditon.getAt(1), substConditon.getAt(2), engine);
 		} else if (substConditon.isModule()) {
-			return Module.checkModuleCondition(substConditon.getAt(1), substConditon.getAt(2), engine);
+			return Programming.checkModuleCondition(substConditon.getAt(1), substConditon.getAt(2), engine);
 		}
 		return true;
 	}

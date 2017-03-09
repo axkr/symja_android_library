@@ -28,8 +28,6 @@ import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.y;
 import static org.matheclipse.core.expression.F.y_;
 
-import java.util.function.Function;
-
 import org.matheclipse.core.builtin.function.DirectedInfinity;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
@@ -58,7 +56,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.HashedOrderlessMatcher;
 import org.matheclipse.core.reflection.system.rules.PowerRules;
 
-public class Arithmetic {
+public final class Arithmetic {
 	public final static Plus CONST_PLUS = new Plus();
 	public final static Times CONST_TIMES = new Times();
 	public final static Power CONST_POWER = new Power();
@@ -1700,7 +1698,7 @@ public class Arithmetic {
 		return CONST;
 	}
 
-	public Arithmetic() {
+	private Arithmetic() {
 
 	}
 }

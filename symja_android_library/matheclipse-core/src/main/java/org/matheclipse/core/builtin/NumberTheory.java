@@ -39,7 +39,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
 
-public class NumberTheory {
+public final class NumberTheory {
 	private static class BellB extends AbstractFunctionEvaluator {
 
 		/**
