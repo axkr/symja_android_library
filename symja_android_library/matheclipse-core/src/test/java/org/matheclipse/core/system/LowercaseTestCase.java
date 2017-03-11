@@ -4824,6 +4824,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Thread(Log(x == y), Equal)", "Log(x)==Log(y)");
 	}
 
+	public void testThrough() {
+		check("Through(p(f,g)[x])", "p(f(x),g(x))");
+		check("Through(p(f,g)[])", "p(f(),g())");
+		check("Through(f()[x])", "f()");
+		check("Through(p(f,g))", "p(f,g)");
+		
+		check("Through(p(f,g)[x,y])", "p(f(x,y),g(x,y))");
+		check("Through(f(g)[x])", "f(g(x))");
+		check("NestList(Through, f(a)[b][c][d], 3)", "{f(a)[b][c][d],f(a)[b][c(d)],f(a)[b(c(d))],f(a(b(c(d))))}");
+		check("Through( ((D[#, x] &) + (D[#, x, x] &))[f[x]] )", "f'(x)+f''(x)");
+		check("Through((f*g)[x,y],Plus)", "(f*g)[x,y]");
+		check("Through((f+g+h)[x,y],Plus)", "f(x,y)+g(x,y)+h(x,y)");
+	}
+	
 	public void testTimeConstrained() {
 		if (!Config.JAS_NO_THREADS) {
 			check("TimeConstrained(Do(i^2, {i, 10000000}), 1)", "$Aborted");

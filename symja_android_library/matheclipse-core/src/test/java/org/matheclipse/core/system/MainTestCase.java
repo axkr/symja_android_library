@@ -77,7 +77,7 @@ public class MainTestCase extends AbstractTestCase {
 	 * Test system functions
 	 */
 	public void testSystem000() {
-		
+
 		// assertEquals(PrimeList.getMersennePrime(4).toString(), "15");
 		// assertEquals(PrimeList.getMersennePrime(128).toString(), "15");
 		check("1^(-1)", "1");
@@ -150,9 +150,11 @@ public class MainTestCase extends AbstractTestCase {
 		check("x/(1+x)/(1+x)", "x/(1+x)^2");
 
 		check("10!", "3628800");
-		
+
 		check("\\[alpha]", "\\[alpha]");
 		check("\\[alpha]+\\[alpha]", "2*\\[alpha]");
+
+		check("(a+b)[x]", "(a+b)[x]");
 	}
 
 	public void testOut() {
@@ -228,7 +230,7 @@ public class MainTestCase extends AbstractTestCase {
 	public void testSystem000c() {
 		String s = System.getProperty("os.name");
 		if (s.contains("Windows")) {
-			
+
 			check("N(0.5,50)", "5e-1");
 
 			check("N(Sqrt(2)+I*0.3,50)", "1.41421356237309504880168872420969807856967187537694+I*3e-1");

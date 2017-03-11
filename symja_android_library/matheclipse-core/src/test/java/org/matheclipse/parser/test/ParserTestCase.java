@@ -108,8 +108,8 @@ public class ParserTestCase extends TestCase {
 			ASTNode obj = p.parse("a+%%%+%3*:=4!");
 			fail("A SyntaxError exception should occur here");
 		} catch (Exception e) {
-			assertEquals("Syntax error in line: 1 - Operator: := is no prefix operator.\n" + "a+%%%+%3*:=4!\n" + "          ^", e
-					.getMessage());
+			assertEquals("Syntax error in line: 1 - Operator: := is no prefix operator.\n" + "a+%%%+%3*:=4!\n"
+					+ "          ^", e.getMessage());
 		}
 	}
 
@@ -194,10 +194,9 @@ public class ParserTestCase extends TestCase {
 	public void testParser15() {
 		try {
 			Parser p = new Parser();
-			ASTNode obj = p
-					.parse("Integrate[Sin[a_.*x_]^n_IntegerQ, x_Symbol]:= -Sin[a*x]^(n-1)*Cos[a*x]/(n*a)+(n-1)/n*Integrate[Sin[a*x]^(n-2),x]/;Positive[n]&&FreeQ[a,x]");
-			assertEquals(
-					obj.toString(),
+			ASTNode obj = p.parse(
+					"Integrate[Sin[a_.*x_]^n_IntegerQ, x_Symbol]:= -Sin[a*x]^(n-1)*Cos[a*x]/(n*a)+(n-1)/n*Integrate[Sin[a*x]^(n-2),x]/;Positive[n]&&FreeQ[a,x]");
+			assertEquals(obj.toString(),
 					"SetDelayed(Integrate(Power(Sin(Times(a_., x_)), n_IntegerQ), x_Symbol), Condition(Plus(Times(Times(-1, Power(Sin(Times(a, x)), Plus(n, Times(-1, 1)))), Times(Cos(Times(a, x)), Power(Times(n, a), -1))), Times(Times(Plus(n, Times(-1, 1)), Power(n, -1)), Integrate(Power(Sin(Times(a, x)), Plus(n, Times(-1, 2))), x))), And(Positive(n), FreeQ(a, x))))");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -221,7 +220,7 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser17() {
 		try {
 			Parser p = new Parser();
@@ -232,12 +231,24 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
+	public void testParser18() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("(a+b)[x]");
+			assertEquals(obj.toString(), "Plus(a, b)[x]");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+
 	public void testParserFunction() {
 		try {
 			Parser p = new Parser(true);
 			ASTNode obj = p.parse("#^2-3#-1&");
-			assertEquals(obj.toString(), "Function(Plus(Plus(Power(Slot(1), 2), Times(-1, Times(3, Slot(1)))), Times(-1, 1)))");
+			assertEquals(obj.toString(),
+					"Function(Plus(Plus(Power(Slot(1), 2), Times(-1, Times(3, Slot(1)))), Times(-1, 1)))");
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());

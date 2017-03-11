@@ -17,27 +17,23 @@ public class Through extends AbstractFunctionEvaluator {
 		Validate.checkRange(ast, 2, 3);
 
 		if (ast.arg1().isAST()) {
-			IAST l1 = (IAST) ast.arg1();
-			IExpr h = l1.head();
-			if (h.isAST()) {
+			IAST arg1AST = (IAST) ast.arg1();
+			IExpr arg1Head = arg1AST.head();
+			if (arg1Head.isAST()) {
 
 				IAST clonedList;
-				IAST l2 = (IAST) h;
-				if (ast.isAST2() && !l2.head().equals(ast.arg2())) {
-					return l1;
+				IAST arg1HeadAST = (IAST) arg1Head;
+				if (ast.isAST2() && !arg1HeadAST.head().equals(ast.arg2())) {
+					return arg1AST;
 				}
-				IAST result = F.ast(l2.head());
-				for (int i = 1; i < l2.size(); i++) {
-					if (l1.get(i).isSymbol() || l2.get(i).isAST()) {
-						clonedList = l1.apply(l2.get(i));
-						result.append(clonedList);
-					} else {
-						result.append(l2.get(i));
-					}
+				IAST result = F.ast(arg1HeadAST.head());
+				for (int i = 1; i < arg1HeadAST.size(); i++) {
+					clonedList = arg1AST.apply(arg1HeadAST.get(i));
+					result.append(clonedList);
 				}
 				return result;
 			}
-			return l1;
+			return arg1AST;
 		}
 		return ast.arg1();
 	}
