@@ -1,6 +1,5 @@
 package org.matheclipse.core.eval.exception;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.parser.client.math.MathException;
 
 /**
