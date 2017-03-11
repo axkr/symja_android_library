@@ -2540,9 +2540,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testLucasL() {
 		check("Table(LucasL(n), {n, 20})",
 				"{1,3,4,7,11,18,29,47,76,123,199,322,521,843,1364,2207,3571,5778,9349,15127}");
-		check("LucasL(1000)", "9719417773590817520798198207932647373779787915534568508272808108477251881844481\\\n" + 
-				"5269080619149045968297679578305403209347401163036907660573971740862463751801641\\\n" + 
-				"201490284097309096322681531675707666695323797578127");
+		check("LucasL(1000)",
+				"9719417773590817520798198207932647373779787915534568508272808108477251881844481\\\n"
+						+ "5269080619149045968297679578305403209347401163036907660573971740862463751801641\\\n"
+						+ "201490284097309096322681531675707666695323797578127");
 	}
 
 	public void testMap() {
@@ -3282,6 +3283,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testOddQ() {
 		check("OddQ({1,3}) && OddQ({5,7})", "{True,True}&&{True,True}");
+	}
+
+	public void testOperate() {
+		check("Operate(p, f)", "f");
+		check("Operate(p, f, 0)", "p(f)");
+		check("Operate(p, f(a)[b][c],0)", "p(f(a)[b][c])");
+		check("Operate(p, f(a)[b][c])", "p(f(a)[b])[c]");
+		check("Operate(p, f(a)[b][c],1)", "p(f(a)[b])[c]");
+		check("Operate(p, f(a)[b][c],2)", "p(f(a))[b][c]");
+		check("Operate(p, f(a)[b][c],3)", "p(f)[a][b][c]");
+		check("Operate(p, f(a)[b][c],4)", "f(a)[b][c]");
+		check("Operate(p, f(x, y))", "p(f)[x,y]");
 	}
 
 	public void testOr() {
@@ -4829,7 +4842,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Through(p(f,g)[])", "p(f(),g())");
 		check("Through(f()[x])", "f()");
 		check("Through(p(f,g))", "p(f,g)");
-		
+
 		check("Through(p(f,g)[x,y])", "p(f(x,y),g(x,y))");
 		check("Through(f(g)[x])", "f(g(x))");
 		check("NestList(Through, f(a)[b][c][d], 3)", "{f(a)[b][c][d],f(a)[b][c(d)],f(a)[b(c(d))],f(a(b(c(d))))}");
@@ -4837,7 +4850,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Through((f*g)[x,y],Plus)", "(f*g)[x,y]");
 		check("Through((f+g+h)[x,y],Plus)", "f(x,y)+g(x,y)+h(x,y)");
 	}
-	
+
 	public void testTimeConstrained() {
 		if (!Config.JAS_NO_THREADS) {
 			check("TimeConstrained(Do(i^2, {i, 10000000}), 1)", "$Aborted");

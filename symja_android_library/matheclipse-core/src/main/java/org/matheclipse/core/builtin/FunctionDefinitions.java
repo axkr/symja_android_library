@@ -250,7 +250,6 @@ public final class FunctionDefinitions {
 		Skewness.setEvaluator(new org.matheclipse.core.reflection.system.Skewness());
 		SokalSneathDissimilarity.setEvaluator(new org.matheclipse.core.reflection.system.SokalSneathDissimilarity());
 		Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
-		Sort.setEvaluator(new org.matheclipse.core.reflection.system.Sort());
 		SquaredEuclidianDistance.setEvaluator(new org.matheclipse.core.reflection.system.SquaredEuclidianDistance());
 		SquareFreeQ.setEvaluator(new org.matheclipse.core.reflection.system.SquareFreeQ());
 		StieltjesGamma.setEvaluator(new org.matheclipse.core.reflection.system.StieltjesGamma());
@@ -270,7 +269,6 @@ public final class FunctionDefinitions {
 		Tanh.setEvaluator(new org.matheclipse.core.reflection.system.Tanh());
 		Taylor.setEvaluator(new org.matheclipse.core.reflection.system.Taylor());
 		Thread.setEvaluator(new org.matheclipse.core.reflection.system.Thread());
-		Through.setEvaluator(new org.matheclipse.core.reflection.system.Through());
 		ToCharacterCode.setEvaluator(new org.matheclipse.core.reflection.system.ToCharacterCode());
 		Together.setEvaluator(new org.matheclipse.core.reflection.system.Together());
 		ToPolarCoordinates.setEvaluator(new org.matheclipse.core.reflection.system.ToPolarCoordinates());

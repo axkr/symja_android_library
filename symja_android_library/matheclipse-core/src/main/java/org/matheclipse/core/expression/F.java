@@ -28,6 +28,7 @@ import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.builtin.Programming;
+import org.matheclipse.core.builtin.Structure;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -982,6 +983,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nullspace" : "NullSpace");
 	public final static IBuiltInSymbol Numerator = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "numerator" : "Numerator");
+	public final static IBuiltInSymbol Operate = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "operate" : "Operate");
 	public final static IBuiltInSymbol Order = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "order" : "Order");
 	public final static IBuiltInSymbol OrderedQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "orderedq" : "OrderedQ");
@@ -1873,13 +1876,14 @@ public class F {
 
 			Arithmetic.initialize();
 			PredicateQ.initialize();
-			
+
 			createInverseFunctionMap();
 			createDenominatorFunctionMap();
 			createNumeratorFunctionMap();
 
 			ConstantDefinitions.initialize();
 			Programming.initialize();
+			Structure.initialize();
 			FunctionDefinitions.initialize();
 			NumberTheory.initialize();
 			BooleanFunctions.initialize();
