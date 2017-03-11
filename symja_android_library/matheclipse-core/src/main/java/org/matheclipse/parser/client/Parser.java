@@ -222,7 +222,31 @@ public class Parser extends Scanner {
 	private ASTNode getFactor() throws SyntaxError {
 		ASTNode temp;
 
-		if (fToken == TT_IDENTIFIER) {
+		if (fToken == TT_PRECEDENCE_OPEN) {
+			fRecursionDepth++;
+			try {
+				getNextToken();
+
+				temp = parseExpression();
+
+				if (fToken != TT_PRECEDENCE_CLOSE) {
+					throwSyntaxError("\')\' expected.");
+				}
+			} finally {
+				fRecursionDepth--;
+			}
+			getNextToken();
+			if (fToken == TT_PRECEDENCE_OPEN) {
+				return getTimes(temp);
+			}
+			if (fToken == TT_ARGUMENTS_OPEN) {
+				return getFunctionArguments(temp);
+			}
+			return temp;
+
+		} else if (fToken == TT_LIST_OPEN) {
+			return getList();
+		} else if (fToken == TT_IDENTIFIER) {
 			final SymbolNode symbol = getSymbol();
 
 			if (fToken == TT_BLANK) {
@@ -358,27 +382,7 @@ public class Parser extends Scanner {
 			return parseArguments(temp);
 		} else if (fToken == TT_DIGIT) {
 			return getNumber(false);
-		} else if (fToken == TT_PRECEDENCE_OPEN) {
-			fRecursionDepth++;
-			try {
-				getNextToken();
 
-				temp = parseExpression();
-
-				if (fToken != TT_PRECEDENCE_CLOSE) {
-					throwSyntaxError("\')\' expected.");
-				}
-			} finally {
-				fRecursionDepth--;
-			}
-			getNextToken();
-			if (fToken == TT_PRECEDENCE_OPEN) {
-				return getTimes(temp);
-			}
-			return temp;
-
-		} else if (fToken == TT_LIST_OPEN) {
-			return getList();
 		} else if (fToken == TT_STRING) {
 			return getString();
 		} else if (fToken == TT_PERCENT) {

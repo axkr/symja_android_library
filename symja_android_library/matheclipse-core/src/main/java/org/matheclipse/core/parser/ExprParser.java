@@ -128,9 +128,11 @@ public class ExprParser extends ExprScanner {
 		this(engine, ExprParserFactory.MMA_STYLE_FACTORY, relaxedSyntax);
 	}
 
-//	public ExprParser(final EvalEngine engine, final boolean relaxedSyntax, boolean packageMode) throws SyntaxError {
-//		this(engine, ExprParserFactory.MMA_STYLE_FACTORY, relaxedSyntax, packageMode);
-//	}
+	// public ExprParser(final EvalEngine engine, final boolean relaxedSyntax,
+	// boolean packageMode) throws SyntaxError {
+	// this(engine, ExprParserFactory.MMA_STYLE_FACTORY, relaxedSyntax,
+	// packageMode);
+	// }
 
 	/**
 	 * 
@@ -360,7 +362,31 @@ public class ExprParser extends ExprScanner {
 	private IExpr getFactor() throws SyntaxError {
 		IExpr temp;
 
-		if (fToken == TT_IDENTIFIER) {
+		if (fToken == TT_PRECEDENCE_OPEN) {
+			fRecursionDepth++;
+			try {
+				getNextToken();
+
+				temp = parseExpression();
+
+				if (fToken != TT_PRECEDENCE_CLOSE) {
+					throwSyntaxError("\')\' expected.");
+				}
+			} finally {
+				fRecursionDepth--;
+			}
+			getNextToken();
+			if (fToken == TT_PRECEDENCE_OPEN) {
+				return getTimes(temp);
+			}
+			if (fToken == TT_ARGUMENTS_OPEN) {
+				return getFunctionArguments(temp);
+			}
+			return temp;
+
+		} else if (fToken == TT_LIST_OPEN) {
+			return getList();
+		} else if (fToken == TT_IDENTIFIER) {
 			final IExpr head = getSymbol();
 			if (head.isSymbol()) {
 				final ISymbol symbol = (ISymbol) head;
@@ -511,27 +537,7 @@ public class ExprParser extends ExprScanner {
 			return parseArguments(temp);
 		} else if (fToken == TT_DIGIT) {
 			return getNumber(false);
-		} else if (fToken == TT_PRECEDENCE_OPEN) {
-			fRecursionDepth++;
-			try {
-				getNextToken();
 
-				temp = parseExpression();
-
-				if (fToken != TT_PRECEDENCE_CLOSE) {
-					throwSyntaxError("\')\' expected.");
-				}
-			} finally {
-				fRecursionDepth--;
-			}
-			getNextToken();
-			if (fToken == TT_PRECEDENCE_OPEN) {
-				return getTimes(temp);
-			}
-			return temp;
-
-		} else if (fToken == TT_LIST_OPEN) {
-			return getList();
 		} else if (fToken == TT_STRING) {
 			return getString();
 		} else if (fToken == TT_PERCENT) {
@@ -944,9 +950,9 @@ public class ExprParser extends ExprScanner {
 				// return infixOperator.createFunction(fFactory, rhs,
 				// fFactory.createSymbol("Null"));
 			}
-//			if (fPackageMode && fRecursionDepth < 1) {
-//				return createInfixFunction(infixOperator, rhs, F.Null);
-//			}
+			// if (fPackageMode && fRecursionDepth < 1) {
+			// return createInfixFunction(infixOperator, rhs, F.Null);
+			// }
 		}
 		return null;
 	}
@@ -1085,9 +1091,10 @@ public class ExprParser extends ExprScanner {
 						if (infixOperator.getOperatorString().equals(";")) {
 							IExpr lhs = rhs;
 							rhs = F.Null;
-//							if (fPackageMode && fRecursionDepth < 1) {
-//								return createInfixFunction(infixOperator, lhs, rhs);
-//							}
+							// if (fPackageMode && fRecursionDepth < 1) {
+							// return createInfixFunction(infixOperator, lhs,
+							// rhs);
+							// }
 						}
 						rhs = parseExpression(rhs, infixOperator.getPrecedence());
 						continue;

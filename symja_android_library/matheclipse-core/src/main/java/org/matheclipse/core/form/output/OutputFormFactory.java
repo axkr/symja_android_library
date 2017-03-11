@@ -446,7 +446,7 @@ public class OutputFormFactory {
 				if (caller == PLUS_CALL) {
 					append(buf, "+");
 				}
-				convert(buf, plusArg, ASTNodeFactory.PLUS_PRECEDENCE);
+				convert(buf, plusArg, ASTNodeFactory.PLUS_PRECEDENCE, false);
 			}
 
 		}
@@ -488,7 +488,7 @@ public class OutputFormFactory {
 					if (i < size) {
 						append(buf, operatorStr);
 					}
-					convert(buf, arg1, ASTNodeFactory.TIMES_PRECEDENCE);
+					convert(buf, arg1, ASTNodeFactory.TIMES_PRECEDENCE, false);
 				}
 
 				IExpr timesArg;
@@ -501,7 +501,7 @@ public class OutputFormFactory {
 						showOperator = true;
 					}
 
-					convert(buf, timesArg, ASTNodeFactory.TIMES_PRECEDENCE);
+					convert(buf, timesArg, ASTNodeFactory.TIMES_PRECEDENCE, false);
 
 				}
 			} else {
@@ -513,7 +513,7 @@ public class OutputFormFactory {
 						append(buf, operatorStr);
 					}
 
-					convert(buf, plusArg, ASTNodeFactory.PLUS_PRECEDENCE);
+					convert(buf, plusArg, ASTNodeFactory.PLUS_PRECEDENCE, false);
 
 				}
 			}
@@ -550,7 +550,7 @@ public class OutputFormFactory {
 			} else {
 				if (numerator.isTimes() && numerator.isAST2() && ((IAST) numerator).arg1().isMinusOne()) {
 					append(buf, "-");
-					convert(buf, ((IAST) numerator).arg2(), ASTNodeFactory.TIMES_PRECEDENCE);
+					convert(buf, ((IAST) numerator).arg2(), ASTNodeFactory.TIMES_PRECEDENCE, false);
 				} else {
 					if (caller == PLUS_CALL) {
 						append(buf, "+");
@@ -560,7 +560,7 @@ public class OutputFormFactory {
 						convertTimesOperator(buf, (IAST) numerator, oper, ASTNodeFactory.DIVIDE_PRECEDENCE,
 								NO_PLUS_CALL);
 					} else {
-						convert(buf, numerator, ASTNodeFactory.DIVIDE_PRECEDENCE);
+						convert(buf, numerator, ASTNodeFactory.DIVIDE_PRECEDENCE, false);
 					}
 				}
 			}
@@ -569,7 +569,7 @@ public class OutputFormFactory {
 			if (denominator.isTimes()) {
 				convertTimesOperator(buf, (IAST) denominator, oper, ASTNodeFactory.DIVIDE_PRECEDENCE, NO_PLUS_CALL);
 			} else {
-				convert(buf, denominator, ASTNodeFactory.DIVIDE_PRECEDENCE);
+				convert(buf, denominator, ASTNodeFactory.DIVIDE_PRECEDENCE, false);
 			}
 			if (currPrecedence < precedence) {
 				append(buf, ")");
@@ -602,7 +602,7 @@ public class OutputFormFactory {
 				if (caller == PLUS_CALL) {
 					append(buf, "+");
 				}
-				convert(buf, arg1, oper.getPrecedence());
+				convert(buf, arg1, oper.getPrecedence(), false);
 			}
 		}
 		for (int i = 2; i < timesAST.size(); i++) {
@@ -611,7 +611,7 @@ public class OutputFormFactory {
 			} else {
 				showOperator = true;
 			}
-			convert(buf, timesAST.get(i), oper.getPrecedence());
+			convert(buf, timesAST.get(i), oper.getPrecedence(), false);
 		}
 		if (currPrecedence < precedence) {
 			append(buf, ")");
@@ -630,7 +630,7 @@ public class OutputFormFactory {
 				} else {
 					append(buf, "[");
 				}
-				convert(buf, list.arg1(), 0);
+				convert(buf, list.arg1(), 0, false);
 				if (fRelaxedSyntax) {
 					append(buf, ")");
 				} else {
@@ -644,7 +644,7 @@ public class OutputFormFactory {
 				}
 				append(buf, "1/");
 				if (exp.isMinusOne()) {
-					convert(buf, list.arg1(), ASTNodeFactory.DIVIDE_PRECEDENCE);
+					convert(buf, list.arg1(), ASTNodeFactory.DIVIDE_PRECEDENCE, false);
 					if (ASTNodeFactory.DIVIDE_PRECEDENCE < precedence) {
 						append(buf, ")");
 					}
@@ -679,7 +679,7 @@ public class OutputFormFactory {
 					}
 				}
 			}
-			convert(buf, list.arg1(), oper.getPrecedence());
+			convert(buf, list.arg1(), oper.getPrecedence(), false);
 			if (oper.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE && list.arg1().head().equals(list.head())) {
 				append(buf, ")");
 			} else {
@@ -696,7 +696,7 @@ public class OutputFormFactory {
 			if (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE && list.arg2().head().equals(list.head())) {
 				append(buf, "(");
 			}
-			convert(buf, list.arg2(), oper.getPrecedence());
+			convert(buf, list.arg2(), oper.getPrecedence(), false);
 			if (oper.getGrouping() == InfixOperator.LEFT_ASSOCIATIVE && list.arg2().head().equals(list.head())) {
 				append(buf, ")");
 			}
@@ -711,12 +711,12 @@ public class OutputFormFactory {
 			append(buf, "(");
 		}
 		if (list.size() > 1) {
-			convert(buf, list.arg1(), oper.getPrecedence());
+			convert(buf, list.arg1(), oper.getPrecedence(), false);
 		}
 
 		for (int i = 2; i < list.size(); i++) {
 			append(buf, oper.getOperatorString());
-			convert(buf, list.get(i), oper.getPrecedence());
+			convert(buf, list.get(i), oper.getPrecedence(), false);
 		}
 		if (oper.getPrecedence() < precedence) {
 			append(buf, ")");
@@ -729,7 +729,7 @@ public class OutputFormFactory {
 			append(buf, "(");
 		}
 		append(buf, oper.getOperatorString());
-		convert(buf, list.arg1(), oper.getPrecedence());
+		convert(buf, list.arg1(), oper.getPrecedence(), false);
 		if (oper.getPrecedence() < precedence) {
 			append(buf, ")");
 		}
@@ -740,7 +740,7 @@ public class OutputFormFactory {
 		if (oper.getPrecedence() < precedence) {
 			append(buf, "(");
 		}
-		convert(buf, list.arg1(), oper.getPrecedence());
+		convert(buf, list.arg1(), oper.getPrecedence(), false);
 		append(buf, oper.getOperatorString());
 		if (oper.getPrecedence() < precedence) {
 			append(buf, ")");
@@ -748,7 +748,7 @@ public class OutputFormFactory {
 	}
 
 	public void convert(final Appendable buf, final IExpr o) throws IOException {
-		convert(buf, o, Integer.MIN_VALUE);
+		convert(buf, o, Integer.MIN_VALUE, false);
 	}
 
 	public void convertNumber(final Appendable buf, final INumber o, final int precedence, boolean caller)
@@ -775,7 +775,8 @@ public class OutputFormFactory {
 		}
 	}
 
-	public void convert(final Appendable buf, final IExpr o, final int precedence) throws IOException {
+	public void convert(final Appendable buf, final IExpr o, final int precedence, boolean isASTHead)
+			throws IOException {
 		if (o instanceof IAST) {
 			final IAST list = (IAST) o;
 			IExpr header = list.head();
@@ -808,38 +809,22 @@ public class OutputFormFactory {
 					}
 				}
 
-				convert(buf, header);
+				convert(buf, header, Integer.MIN_VALUE, true);
 				convertFunctionArgs(buf, list);
 				return;
 			}
 			ISymbol head = list.topHead();
 			final Operator operator = getOperator(head);
 			if (operator != null) {
-				if ((operator instanceof PrefixOperator) && (list.isAST1())) {
-					convertPrefixOperator(buf, list, (PrefixOperator) operator, precedence);
-					return;
-				}
-				if ((operator instanceof InfixOperator) && (list.size() > 2)) {
-					if (head.equals(F.Plus)) {
-						if (fPlusReversed) {
-							convertPlusOperatorReversed(buf, list, (InfixOperator) operator, precedence);
-						} else {
-							convertPlusOperator(buf, list, (InfixOperator) operator, precedence);
-						}
-						return;
-					} else if (head.equals(F.Times)) {
-						convertTimesFraction(buf, list, (InfixOperator) operator, precedence, NO_PLUS_CALL);
-						return;
-					} else if (list.isPower()) {
-						convertPowerOperator(buf, list, (InfixOperator) operator, precedence);
+				if (operator instanceof PostfixOperator) {
+					if (list.isAST1()) {
+						convertPostfixOperator(buf, list, (PostfixOperator) operator, precedence);
 						return;
 					}
-					convertInfixOperator(buf, list, (InfixOperator) operator, precedence);
-					return;
-				}
-				if ((operator instanceof PostfixOperator) && (list.isAST1())) {
-					convertPostfixOperator(buf, list, (PostfixOperator) operator, precedence);
-					return;
+				} else {
+					if (convertOperator(operator, list, buf, isASTHead ? Integer.MAX_VALUE : precedence, head)) {
+						return;
+					}
 				}
 			}
 			if (list.isList() || list instanceof ASTRealVector || list instanceof ASTRealMatrix) {
@@ -923,6 +908,37 @@ public class OutputFormFactory {
 			return;
 		}
 		convertString(buf, o.toString());
+	}
+
+	private boolean convertOperator(final Operator operator, final IAST list, final Appendable buf,
+			final int precedence, ISymbol head) throws IOException {
+		if ((operator instanceof PrefixOperator) && (list.isAST1())) {
+			convertPrefixOperator(buf, list, (PrefixOperator) operator, precedence);
+			return true;
+		}
+		if ((operator instanceof InfixOperator) && (list.size() > 2)) {
+			if (head.equals(F.Plus)) {
+				if (fPlusReversed) {
+					convertPlusOperatorReversed(buf, list, (InfixOperator) operator, precedence);
+				} else {
+					convertPlusOperator(buf, list, (InfixOperator) operator, precedence);
+				}
+				return true;
+			} else if (head.equals(F.Times)) {
+				convertTimesFraction(buf, list, (InfixOperator) operator, precedence, NO_PLUS_CALL);
+				return true;
+			} else if (list.isPower()) {
+				convertPowerOperator(buf, list, (InfixOperator) operator, precedence);
+				return true;
+			}
+			convertInfixOperator(buf, list, (InfixOperator) operator, precedence);
+			return true;
+		}
+		if ((operator instanceof PostfixOperator) && (list.isAST1())) {
+			convertPostfixOperator(buf, list, (PostfixOperator) operator, precedence);
+			return true;
+		}
+		return false;
 	}
 
 	private Operator getOperator(ISymbol head) {

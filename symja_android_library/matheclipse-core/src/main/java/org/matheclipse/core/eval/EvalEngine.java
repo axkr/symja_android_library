@@ -547,7 +547,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		}
 
 		if ((ISymbol.ONEIDENTITY & attr) == ISymbol.ONEIDENTITY) {
-			return ast.arg1();
+			if (ast.head().isSymbol()) {
+				return ast.arg1();
+			}
 		}
 
 		if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
