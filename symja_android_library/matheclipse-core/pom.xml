@@ -94,10 +94,31 @@
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>exec-maven-plugin</artifactId>
 					<version>1.4.0</version>
-					<configuration>
+	   			   <configuration>
 						<executable>java</executable>
 						<mainClass>org.matheclipse.core.eval.Console</mainClass>
-					</configuration>
+					</configuration>    	
+					<executions>
+						<execution>
+							<id>symja</id>
+							<goals>
+								<goal>java</goal>
+							</goals>
+							<configuration>
+								<mainClass>org.matheclipse.core.eval.Console</mainClass>
+							</configuration>
+						</execution>
+						<execution>
+							<id>mma</id>
+							<goals>
+								<goal>java</goal>
+							</goals>
+							<configuration>
+								<mainClass>org.matheclipse.core.eval.MMAConsole</mainClass>
+							</configuration>
+						</execution>
+					</executions>
+
 				</plugin>
 
 				<plugin>

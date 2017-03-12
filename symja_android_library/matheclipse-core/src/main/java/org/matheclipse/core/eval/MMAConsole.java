@@ -9,6 +9,7 @@ import java.io.PrintStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.Validate;
@@ -17,11 +18,17 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.reflection.system.Names;
 import org.matheclipse.parser.client.SyntaxError;
+import org.matheclipse.parser.client.math.MathException;
 
 /**
  * 
  */
 public class MMAConsole {
+	/**
+	 * 60 seconds timeout limit as the default value for Symja expression
+	 * evaluation.
+	 */
+	private long fSeconds = 60;
 
 	private ExprEvaluator fEvaluator;
 
@@ -83,6 +90,16 @@ public class MMAConsole {
 							&& inputExpression.toLowerCase(Locale.ENGLISH).substring(0, 4).equals("exit")) {
 						System.out.println("Closing Symja console... bye.");
 						System.exit(0);
+					} else if ((inputExpression.length() >= 10)
+							&& inputExpression.toLowerCase(Locale.ENGLISH).substring(0, 10).equals("timeoutoff")) {
+						System.out.println("Disabling timeout for evaluation");
+						console.fSeconds = -1;
+						continue;
+					} else if ((inputExpression.length() >= 9)
+							&& inputExpression.toLowerCase(Locale.ENGLISH).substring(0, 9).equals("timeouton")) {
+						System.out.println("Enabling timeout for evaluation to 60 seconds.");
+						console.fSeconds = 60;
+						continue;
 					} else if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
 						IAST list = Names.getNamesByPrefix(trimmedInput.substring(1));
 						for (int i = 1; i < list.size(); i++) {
@@ -116,7 +133,7 @@ public class MMAConsole {
 	private static void printUsage() {
 		final String lineSeparator = System.getProperty("line.separator");
 		final StringBuffer msg = new StringBuffer();
-		msg.append("org.matheclipse.Console [options]" + lineSeparator);
+		msg.append("org.matheclipse.core.eval.MMAConsole [options]" + lineSeparator);
 		msg.append(lineSeparator);
 		msg.append("Program arguments: " + lineSeparator);
 		msg.append("  -h or -help                print this message" + lineSeparator);
@@ -126,6 +143,8 @@ public class MMAConsole {
 		msg.append("To stop the program type: exit<RETURN>" + lineSeparator);
 		msg.append("To continue an input line type: \\<RETURN>" + lineSeparator);
 		msg.append("at the end of the line." + lineSeparator);
+		msg.append("To disable the evaluation timeout type: timeoutoff<RETURN>" + lineSeparator);
+		msg.append("To enable the evaluation timeout type: timeouton<RETURN>" + lineSeparator);
 		msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
 
 		System.out.println(msg.toString());
@@ -189,21 +208,33 @@ public class MMAConsole {
 	 * <code>OutputForm</code>
 	 * 
 	 * @param inputExpression
-	 * @return 
+	 * @return
 	 */
 	public String interpreter(final String inputExpression) {
 		IExpr result;
 		final StringWriter buf = new StringWriter();
 		try {
-			result = fEvaluator.evaluate(inputExpression);
+			if (fSeconds <= 0) {
+				result = fEvaluator.evaluate(inputExpression);
+			} else {
+				result = fEvaluator.evaluateWithTimeout(inputExpression, fSeconds, TimeUnit.SECONDS, true);
+			}
 			if (result != null) {
 				if (result.equals(F.Null)) {
 					return "";
 				}
 				return result.toString();
 			}
+		} catch (final SyntaxError se) {
+			String msg = se.getMessage();
+			System.err.println(msg);
 		} catch (final RuntimeException re) {
-			Validate.printException(buf, re);
+			Throwable me = re.getCause();
+			if (me instanceof MathException) {
+				Validate.printException(buf, me);
+			} else {
+				Validate.printException(buf, re);
+			}
 		} catch (final Exception e) {
 			Validate.printException(buf, e);
 		} catch (final OutOfMemoryError e) {

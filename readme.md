@@ -59,6 +59,11 @@ With the following command you can run the Symja console from the command line
 ```
 mvn exec:java -pl matheclipse-core
 ``` 
+ 
+With the following command you can run a symja console with a Mathematica-compatible syntax and functions
+```
+mvn exec:java@mma -pl matheclipse-core 
+```
 
 With the following command you can build a fat jar which contains all needed classes
 ```

@@ -139,7 +139,7 @@ public class Console {
 	private static void printUsage() {
 		final String lineSeparator = System.getProperty("line.separator");
 		final StringBuffer msg = new StringBuffer();
-		msg.append("org.matheclipse.Console [options]" + lineSeparator);
+		msg.append("org.matheclipse.core.eval.Console [options]" + lineSeparator);
 		msg.append(lineSeparator);
 		msg.append("Program arguments: " + lineSeparator);
 		msg.append("  -h or -help                print this message" + lineSeparator);
