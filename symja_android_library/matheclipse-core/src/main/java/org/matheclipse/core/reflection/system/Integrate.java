@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
@@ -288,7 +289,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 							if (header == F.Times || header == F.Power) {
 								if (!arg1AST.isEvalFlagOn(IAST.IS_DECOMPOSED_PARTIAL_FRACTION)
 										&& ast.arg2().isSymbol()) {
-									IExpr[] parts = Apart.getFractionalParts(arg1, true);
+									IExpr[] parts = Algebra.getFractionalParts(arg1, true);
 									if (parts != null) {
 										// try Rubi rules first
 										if (!parts[0].isPolynomial(x) || !parts[1].isPolynomial(x)) {
@@ -299,7 +300,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 											calledRubi = true;
 										}
 
-										IExpr apartPlus = Apart.partialFractionDecompositionRational(
+										IExpr apartPlus = Algebra.partialFractionDecompositionRational(
 												new PartialFractionIntegrateGenerator(x), parts, x);
 
 										if (apartPlus.isPresent() && !apartPlus.isAST(F.Integrate)) {

@@ -1,10 +1,10 @@
 package org.matheclipse.core.form.tex.reflection;
 
+import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.form.tex.AbstractOperator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
-import org.matheclipse.core.reflection.system.Apart;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
 public class Times extends AbstractOperator {
@@ -43,7 +43,7 @@ public class Times extends AbstractOperator {
 	 * @caller
 	 */
 	public boolean convertTimesFraction(final StringBuffer buf, final IAST f, final int precedence, final int caller) {
-		IExpr[] parts = Apart.getFractionalPartsTimes(f, false, true, false, false);
+		IExpr[] parts = Algebra.getFractionalPartsTimes(f, false, true, false, false);
 		if (parts == null) {
 			convertTimesOperator(buf, f, precedence, caller);
 			return true;

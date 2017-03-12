@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 
 import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.convert.Convert;
@@ -513,7 +514,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 
 		public void splitNumeratorDenominator(IAST ast) {
-			IExpr[] result = Apart.getNumeratorDenominator(ast);
+			IExpr[] result = Algebra.getNumeratorDenominator(ast);
 			this.fNumerator = result[0];
 			this.fDenominator = result[1];
 			this.fExpr = result[2];
@@ -834,7 +835,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	private static IAST splitNumeratorDenominator(IAST expr, EvalEngine engine, boolean evalTogether) {
 		IExpr a0, a1;
 		if (evalTogether) {
-			a0 = Together.together(expr);
+			a0 = Algebra.together(expr);
 		} else {
 			a0 = expr;
 		}
@@ -919,7 +920,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				}
 				IAST newPlus = F.Plus();
 				for (int j = 1; j < plus.size(); j++) {
-					fractionalParts = Apart.getFractionalPartsRational(plus.get(j));
+					fractionalParts = Algebra.getFractionalPartsRational(plus.get(j));
 					if (fractionalParts != null && !fractionalParts[1].isOne()) {
 						for (int k = 1; k < plus.size(); k++) {
 							if (k != j) {

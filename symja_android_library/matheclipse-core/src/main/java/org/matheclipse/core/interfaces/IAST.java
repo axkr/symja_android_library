@@ -12,7 +12,6 @@ import java.util.function.Predicate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.reflection.system.Apart;
 
 /**
  * 

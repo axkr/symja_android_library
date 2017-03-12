@@ -7,6 +7,7 @@ import java.text.NumberFormat;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
@@ -25,7 +26,6 @@ import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.reflection.system.Apart;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
@@ -526,7 +526,7 @@ public class OutputFormFactory {
 
 	private void convertTimesFraction(final Appendable buf, final IAST timesAST, final InfixOperator oper,
 			final int precedence, boolean caller) throws IOException {
-		IExpr[] parts = Apart.getFractionalPartsTimes(timesAST, true, false, false, false);
+		IExpr[] parts = Algebra.getFractionalPartsTimes(timesAST, true, false, false, false);
 		if (parts == null) {
 			convertTimesOperator(buf, timesAST, oper, precedence, caller);
 			return;

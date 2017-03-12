@@ -20,6 +20,7 @@ import org.apfloat.ApfloatContext;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.ConstantDefinitions;
@@ -1883,6 +1884,7 @@ public class F {
 
 			ConstantDefinitions.initialize();
 			Programming.initialize();
+			Algebra.initialize();
 			Structure.initialize();
 			FunctionDefinitions.initialize();
 			NumberTheory.initialize();
@@ -3376,7 +3378,7 @@ public class F {
 			if (!ast.isPresent()) {
 				ast = (IAST) a;
 			}
-			return org.matheclipse.core.reflection.system.Expand.expand(ast, null, expandNegativePowers, distributePlus)
+			return Algebra.expand(ast, null, expandNegativePowers, distributePlus)
 					.orElse(a);
 		}
 		return a;
@@ -3412,7 +3414,7 @@ public class F {
 			if (!ast.isPresent()) {
 				ast = (IAST) a;
 			}
-			IExpr temp = org.matheclipse.core.reflection.system.ExpandAll.expandAll(ast, null, expandNegativePowers,
+			IExpr temp = Algebra.expandAll(ast, null, expandNegativePowers,
 					distributePlus);
 			if (temp.isPresent()) {
 				return temp;

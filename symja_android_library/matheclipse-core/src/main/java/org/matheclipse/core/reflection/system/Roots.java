@@ -4,14 +4,15 @@ import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.evalExpandAll;
 
-import org.hipparchus.linear.Array2DRowRealMatrix;
-import org.hipparchus.linear.EigenDecomposition;
-import org.hipparchus.linear.RealMatrix;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.EigenDecomposition;
+import org.hipparchus.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
@@ -94,7 +95,7 @@ public class Roots extends AbstractFunctionEvaluator {
 
 		IExpr denom = F.C1;
 		if (expr.isAST()) {
-			expr = Together.together((IAST) expr);
+			expr = Algebra.together((IAST) expr);
 
 			// split expr into numerator and denominator
 			denom = engine.evaluate(F.Denominator(expr));
@@ -179,7 +180,7 @@ public class Roots extends AbstractFunctionEvaluator {
 			}
 			// }
 			result = F.List();
-			IAST factorRational = Factor.factorRational(polyRat, jas, varList, F.List);
+			IAST factorRational = Algebra.factorRational(polyRat, jas, varList, F.List);
 			for (int i = 1; i < factorRational.size(); i++) {
 				temp = F.evalExpand(factorRational.get(i));
 				IAST quarticResultList = QuarticSolver.solve(temp, variables.arg1());
@@ -194,7 +195,7 @@ public class Roots extends AbstractFunctionEvaluator {
 					}
 				} else {
 					polyRat = jas.expr2JAS(temp, numericSolutions);
-					IAST factorComplex = Factor.factorComplex(polyRat, jas, varList, F.List, true);
+					IAST factorComplex = Algebra.factorComplex(polyRat, jas, varList, F.List, true);
 					for (int k = 1; k < factorComplex.size(); k++) {
 						temp = F.evalExpand(factorComplex.get(k));
 						quarticResultList = QuarticSolver.solve(temp, variables.arg1());

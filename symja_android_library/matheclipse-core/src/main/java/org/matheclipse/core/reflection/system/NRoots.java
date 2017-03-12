@@ -6,6 +6,7 @@ import static org.matheclipse.core.expression.F.evalExpandAll;
 import org.hipparchus.analysis.solvers.LaguerreSolver;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.convert.VariablesSet;
@@ -67,7 +68,7 @@ public class NRoots extends AbstractFunctionEvaluator {
 		}
 		IExpr denom = F.C1;
 		if (expr.isAST()) {
-			expr = Together.together((IAST) expr);
+			expr = Algebra.together((IAST) expr);
 
 			// split expr into numerator and denominator
 			denom = engine.evaluate(F.Denominator(expr));

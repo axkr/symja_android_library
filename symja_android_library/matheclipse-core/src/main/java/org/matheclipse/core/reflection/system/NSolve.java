@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 
+import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -46,7 +47,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 			this.numer = expr;
 			this.denom = F.C1;
 			if (this.expr.isAST()) {
-				this.expr = Together.together((IAST) this.expr);
+				this.expr = Algebra.together((IAST) this.expr);
 				// split expr into numerator and denominator
 				this.denom = engine.evaluate(F.Denominator(this.expr));
 				if (!this.denom.isOne()) {

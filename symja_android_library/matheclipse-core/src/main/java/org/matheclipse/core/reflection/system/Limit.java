@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.Validate;
@@ -466,7 +467,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		IExpr y = F.Power(x, F.CN1); // substituting by 1/x
 		IExpr temp = F.evalQuiet(F.subst(arg1, x, y));
 		if (temp.isTimes()) {
-			IExpr[] parts = org.matheclipse.core.reflection.system.Apart.getFractionalPartsTimes((IAST) temp, false,
+			IExpr[] parts = Algebra.getFractionalPartsTimes((IAST) temp, false,
 					false, true, true);
 			if (parts != null) {
 				if (!parts[1].isOne()) { // denominator != 1
@@ -482,7 +483,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	}
 
 	private static IExpr timesLimit(final IAST arg1, LimitData data) {
-		IExpr[] parts = org.matheclipse.core.reflection.system.Apart.getFractionalPartsTimes(arg1, false, false, true,
+		IExpr[] parts = Algebra.getFractionalPartsTimes(arg1, false, false, true,
 				true);
 		if (parts != null) {
 
@@ -504,8 +505,8 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 				}
 			}
 
-			IExpr plusResult = org.matheclipse.core.reflection.system.Apart
-					.partialFractionDecompositionRational(new PartialFractionGenerator(), parts, symbol);
+			IExpr plusResult = Algebra.partialFractionDecompositionRational(new PartialFractionGenerator(), parts,
+					symbol);
 			if (plusResult.isPlus()) {
 				// OneIdentity if plusResult.isAST1()
 				// if (plusResult.size() > 2) {
