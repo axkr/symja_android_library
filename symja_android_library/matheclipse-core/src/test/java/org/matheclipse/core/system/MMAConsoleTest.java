@@ -9,6 +9,7 @@ public class MMAConsoleTest extends TestCase {
 
 	public void testInput() {
 		assertEquals("f[x]", console.interpreter("f[x]"));
+		assertEquals("x/2-1/2*Cos[x]*Sin[x]", console.interpreter("Integrate[Sin[x]^2,x]"));
 	}
 
 	/**
