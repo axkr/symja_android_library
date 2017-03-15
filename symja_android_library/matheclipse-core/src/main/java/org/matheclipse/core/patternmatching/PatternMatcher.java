@@ -4,7 +4,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.List;
 
 import org.matheclipse.combinatoric.MultisetPartitionsIterator;
@@ -97,7 +97,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		 */
 		public boolean matchOrderlessAST(int lhsPosition, StackMatcher stackMatcher) {
 			if (lhsPosition >= fLHSPatternAST.size()) {
-				return stackMatcher.matchRest();
+				return stackMatcher == null ? true : stackMatcher.matchRest();
 			}
 			boolean isNotInUse;
 			IExpr subPattern = fLHSPatternAST.get(lhsPosition);
@@ -112,6 +112,9 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				}
 				if (isNotInUse) {
 					boolean matched = false;
+					if (stackMatcher == null) {
+						stackMatcher = new StackMatcher();
+					}
 					int lastStackSize = stackMatcher.size();
 					try {
 						if (stackMatcher.push(subPattern, fLHSEvalAST.get(j))) {
@@ -138,11 +141,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 * Manage a stack of pairs of expressions, which have to match each other
 	 * 
 	 */
-	protected class StackMatcher extends ArrayList<Entry> {
-
-		public StackMatcher() {
-
-		}
+	@SuppressWarnings("serial")
+	protected class StackMatcher extends ArrayDeque<Entry> {
 
 		/**
 		 * Match the entries of the stack recursively starting from the top
@@ -161,32 +161,16 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				return matched;
 			} finally {
 				if (!matched) {
-					add(entry);
+					push(entry);
 				}
 			}
-		}
-
-		/**
-		 * @return
-		 * @see java.util.Stack#peek()
-		 */
-		public Entry peek() {
-			return get(size() - 1);
-		}
-
-		/**
-		 * @return
-		 * @see java.util.Stack#pop()
-		 */
-		public Entry pop() {
-			return remove(size() - 1);
 		}
 
 		public boolean push(IExpr patternExpr, IExpr evalExpr) {
 			if (patternExpr.isPatternExpr()) {
 				if (patternExpr.isAST()) {
 					// insert for delayed evaluation in matchRest() method
-					add(new Entry(patternExpr, evalExpr));
+					push(new Entry(patternExpr, evalExpr));
 					return true;
 				}
 				if (patternExpr instanceof IPatternObject) {
@@ -205,7 +189,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		public void removeFrom(int fromPosition) {
 			int len = size();
 			while (len > fromPosition) {
-				remove(len - 1);
+				pop();
 				len--;
 			}
 		}
@@ -472,15 +456,14 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 * @param stackMatcher
 	 * @return <code>F.NIL</code> if no match was found.
 	 */
-	protected IExpr evalAST(final IAST lhsPatternAST, final IAST lhsEvalAST, final IExpr rhsExpr,
-			StackMatcher stackMatcher) {
+	protected IExpr evalAST(final IAST lhsPatternAST, final IAST lhsEvalAST, final IExpr rhsExpr) {
 		if (lhsPatternAST.size() < lhsEvalAST.size()) {
 			if (lhsPatternAST.isOrderlessAST() && lhsPatternAST.isFlatAST()) {
-				if (!matchExpr(lhsPatternAST.head(), lhsEvalAST.head(), new StackMatcher())) {
+				if (!matchExpr(lhsPatternAST.head(), lhsEvalAST.head(), null)) {
 					return F.NIL;
 				}
 				final OrderlessMatcher foMatcher = new OrderlessMatcher(lhsPatternAST, lhsEvalAST);
-				boolean matched = foMatcher.matchOrderlessAST(1, stackMatcher);
+				boolean matched = foMatcher.matchOrderlessAST(1, null);
 				if (matched) {
 					IAST lhsResultAST = (lhsEvalAST).clone();
 					foMatcher.filterResult(lhsResultAST);
@@ -500,12 +483,12 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				return F.NIL;
 			}
 			if (lhsPatternAST.isFlatAST()) {
-				if (!matchExpr(lhsPatternAST.head(), lhsEvalAST.head(), new StackMatcher())) {
+				if (!matchExpr(lhsPatternAST.head(), lhsEvalAST.head(), null)) {
 					return F.NIL;
 				}
 				int len = lhsEvalAST.size() - lhsPatternAST.size();
 				for (int i = 0; i < len; i++) {
-					if (matchASTSequence(lhsPatternAST, lhsEvalAST, i, stackMatcher)) {
+					if (matchASTSequence(lhsPatternAST, lhsEvalAST, i, null)) {
 						IAST lhsResultAST = (lhsEvalAST).clone();
 						for (int j = 1; j < lhsPatternAST.size(); j++) {
 							lhsResultAST.remove(i + 1);
@@ -725,7 +708,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	}
 
 	/**
-	 * Match all sub-expresions which contain no pattern objects if possible
+	 * Match all sub-expressions which contain no pattern objects if possible
 	 * (i.e. no FLAT or Orderless expressions,...)
 	 * 
 	 * Distinguishes between "equally" matched list-expressions and list
@@ -742,6 +725,9 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		// distinguish between "equally" matched list-expressions and
 		// AST expressions with "CONTAINS_PATTERN" flag
 		IExpr[] patternValues = fPatternMap.copyPattern();
+		if (stackMatcher == null) {
+			stackMatcher = new StackMatcher();
+		}
 		int lastStackSize = stackMatcher.size();
 		boolean matched = true;
 		try {
@@ -881,7 +867,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			matched = lhsPatternExpr.equals(lhsEvalExpr);
 		}
 		if (matched) {
-			return stackMatcher.matchRest();
+			if (stackMatcher != null) {
+				return stackMatcher.matchRest();
+			}
+			return true;
 		}
 		return false;
 

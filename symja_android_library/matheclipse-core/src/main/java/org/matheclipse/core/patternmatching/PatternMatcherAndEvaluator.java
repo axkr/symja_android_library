@@ -210,7 +210,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
 		if (fLhsPatternExpr.isAST() && leftHandSide.isAST()) {
 			fPatternMap.initPattern();
-			return evalAST((IAST) fLhsPatternExpr, (IAST) leftHandSide, fRightHandSide, new StackMatcher());
+			return evalAST((IAST) fLhsPatternExpr, (IAST) leftHandSide, fRightHandSide);
 		}
 		return F.NIL;
 	}
