@@ -8,15 +8,17 @@ import static org.matheclipse.core.expression.F.Nand;
 import static org.matheclipse.core.expression.F.Nor;
 import static org.matheclipse.core.expression.F.Not;
 import static org.matheclipse.core.expression.F.Or;
-import static org.matheclipse.core.expression.F.TautologyQ;
 import static org.matheclipse.core.expression.F.Xor;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.boole.QuineMcCluskyFormula;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.BooleanFunctionConversionException;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.interfaces.AbstractArg1;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -27,14 +29,20 @@ import org.matheclipse.core.visit.VisitorExpr;
 public final class BooleanFunctions {
 	static {
 		F.AllTrue.setEvaluator(new AllTrue());
+		F.And.setEvaluator(new And());
 		F.AnyTrue.setEvaluator(new AnyTrue());
 		F.Boole.setEvaluator(new Boole());
 		F.BooleanConvert.setEvaluator(new BooleanConvert());
 		F.BooleanMinimize.setEvaluator(new BooleanMinimize());
 		F.BooleanTable.setEvaluator(new BooleanTable());
 		F.BooleanVariables.setEvaluator(new BooleanVariables());
+		F.NoneTrue.setEvaluator(new NoneTrue());
+		F.Nor.setEvaluator(new Nor());
+		F.Not.setEvaluator(new Not());
+		F.Or.setEvaluator(new Or());
 		F.TautologyQ.setEvaluator(new TautologyQ());
 		F.TrueQ.setEvaluator(new TrueQ());
+		F.Xor.setEvaluator(new Xor());
 	}
 
 	private static class AllTrue extends AbstractFunctionEvaluator {
@@ -89,6 +97,108 @@ public final class BooleanFunctions {
 		public void setUp(final ISymbol newSymbol) {
 		}
 
+	}
+
+	/**
+	 * 
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Logical_conjunction">Logical
+	 * conjunction</a>
+	 * 
+	 * <p>
+	 * See the online Symja function reference: <a href=
+	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/And">And
+	 * </a>
+	 * </p>
+	 */
+	private static class And extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST0()) {
+				return F.True;
+			}
+
+			boolean evaled = false;
+
+			int index = 1;
+			IExpr temp;
+			IExpr sym;
+
+			IAST flattenedAST = EvalAttributes.flatten(ast);
+			if (flattenedAST.isPresent()) {
+				evaled = true;
+			} else {
+				flattenedAST = ast;
+			}
+
+			IAST result = flattenedAST.clone();
+			int[] symbols = new int[flattenedAST.size()];
+			int[] notSymbols = new int[flattenedAST.size()];
+			for (int i = 1; i < flattenedAST.size(); i++) {
+				temp = flattenedAST.get(i);
+				if (temp.isFalse()) {
+					return F.False;
+				}
+				if (temp.isTrue()) {
+					result.remove(index);
+					evaled = true;
+					continue;
+				}
+
+				temp = engine.evaluateNull(temp);
+				if (temp.isPresent()) {
+					if (temp.isFalse()) {
+						return F.False;
+					}
+					if (temp.isTrue()) {
+						result.remove(index);
+						evaled = true;
+						continue;
+					}
+					result.set(index, temp);
+					evaled = true;
+				} else {
+					temp = flattenedAST.get(i);
+				}
+
+				if (temp.isSymbol()) {
+					symbols[i] = flattenedAST.get(i).hashCode();
+				} else if (temp.isNot()) {
+					sym = ((IAST) temp).getAt(1);
+					if (sym.isSymbol()) {
+						notSymbols[i] = sym.hashCode();
+					}
+				}
+				index++;
+			}
+			for (int i = 1; i < symbols.length; i++) {
+				if (symbols[i] != 0) {
+					for (int j = 1; j < notSymbols.length; j++) {
+						if (i != j && symbols[i] == notSymbols[j] && (result.equalsAt(i, result.get(j).getAt(1)))) {
+							// And[a, Not[a]] => True
+							return F.False;
+						}
+					}
+				}
+			}
+			if (result.isAST1()) {
+				return result.arg1();
+			}
+			if (evaled) {
+				if (result.isAST0()) {
+					return F.True;
+				}
+
+				return result;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.ONEIDENTITY | ISymbol.FLAT);
+		}
 	}
 
 	private static class AnyTrue extends AbstractFunctionEvaluator {
@@ -379,6 +489,231 @@ public final class BooleanFunctions {
 		}
 
 	}
+	
+	private static class NoneTrue extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			if (ast.arg1().isAST()) {
+				IAST list = (IAST) ast.arg1();
+				IExpr head = ast.arg2();
+				return noneTrue(list, head, engine);
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * If any expression evaluates to <code>true</code> for a given unary
+		 * predicate function return <code>False</code>, if all are
+		 * <code>false</code> return <code>True</code>, else return an
+		 * <code>Nor(...)</code> expression of the result expressions.
+		 * 
+		 * @param list
+		 *            list of expressions
+		 * @param head
+		 *            the head of a unary predicate function
+		 * @param engine
+		 * @return
+		 */
+		public IExpr noneTrue(IAST list, IExpr head, EvalEngine engine) {
+			IAST logicalNor = F.ast(F.Nor);
+			int size = list.size();
+			for (int i = 1; i < size; i++) {
+				IExpr temp = engine.evaluate(F.unary(head, list.get(i)));
+				if (temp.isTrue()) {
+					return F.False;
+				} else if (temp.isFalse()) {
+					continue;
+				}
+				logicalNor.append(temp);
+			}
+			if (logicalNor.size() > 1) {
+				return logicalNor;
+			}
+			return F.True;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private static class Nor extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST0()) {
+				return F.True;
+			}
+			if (ast.isAST1()) {
+				return F.Not(ast.arg1());
+			}
+			IAST result = ast.copyHead();
+			boolean evaled = false;
+
+			for (int i = 1; i < ast.size(); i++) {
+				IExpr temp = engine.evaluate(ast.get(i));
+				if (temp.isTrue()) {
+					return F.False;
+				} else if (temp.isFalse()) {
+					evaled = true;
+				} else {
+					result.append(temp);
+				}
+			}
+			if (evaled) {
+				if (result.isAST0()) {
+					return F.True;
+				}
+				if (result.isAST1()) {
+					return F.Not(result.arg1());
+				}
+				return result;
+			}
+			return F.NIL;
+		}
+
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	private static class Not extends AbstractArg1 {
+
+		public Not() {
+		}
+
+		@Override
+		public IExpr e1ObjArg(final IExpr o) {
+			if (o.isTrue()) {
+				return F.False;
+			}
+			if (o.isFalse()) {
+				return F.True;
+			}
+			if (o.isAST()) {
+				IAST temp = (IAST) o;
+				if (o.isNot()) {
+					return ((IAST) o).arg1();
+				}
+				if (temp.isAST2()) {
+					IExpr head = temp.head();
+					if (head.equals(F.Equal)) {
+						return temp.apply(F.Unequal);
+					} else if (head.equals(F.Unequal)) {
+						return temp.apply(F.Equal);
+					} else if (head.equals(F.Greater)) {
+						return temp.apply(F.LessEqual);
+					} else if (head.equals(F.GreaterEqual)) {
+						return temp.apply(F.Less);
+					} else if (head.equals(F.Less)) {
+						return temp.apply(F.GreaterEqual);
+					} else if (head.equals(F.LessEqual)) {
+						return temp.apply(F.Greater);
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+	}
+
+	/**
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Logical_disjunction">Logical
+	 * disjunction</a>
+	 * 
+	 */
+	private static class Or extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST0()) {
+				return F.False;
+			}
+
+			boolean evaled = false;
+			IAST flattenedAST = EvalAttributes.flatten(ast);
+			if (flattenedAST.isPresent()) {
+				evaled = true;
+			} else {
+				flattenedAST = ast;
+			}
+
+			IAST result = flattenedAST.clone();
+			IExpr temp;
+			IExpr sym;
+			int[] symbols = new int[flattenedAST.size()];
+			int[] notSymbols = new int[flattenedAST.size()];
+			int index = 1;
+
+			for (int i = 1; i < flattenedAST.size(); i++) {
+				temp = flattenedAST.get(i);
+				if (temp.isTrue()) {
+					return F.True;
+				}
+				if (temp.isFalse()) {
+					result.remove(index);
+					evaled = true;
+					continue;
+				}
+
+				temp = engine.evaluateNull(flattenedAST.get(i));
+				if (temp.isPresent()) {
+					if (temp.isTrue()) {
+						return F.True;
+					}
+					if (temp.isFalse()) {
+						result.remove(index);
+						evaled = true;
+						continue;
+					}
+					result.set(index, temp);
+					evaled = true;
+				} else {
+					temp = flattenedAST.get(i);
+				}
+
+				if (temp.isSymbol()) {
+					symbols[i] = flattenedAST.get(i).hashCode();
+				} else if (temp.isNot()) {
+					sym = ((IAST) temp).getAt(1);
+					if (sym.isSymbol()) {
+						notSymbols[i] = sym.hashCode();
+					}
+				}
+				index++;
+			}
+			for (int i = 1; i < symbols.length; i++) {
+				if (symbols[i] != 0) {
+					for (int j = 1; j < notSymbols.length; j++) {
+						if (i != j && symbols[i] == notSymbols[j] && (result.equalsAt(i, result.get(j).getAt(1)))) {
+							// Or[a, Not[a]] => True
+							return F.True;
+						}
+					}
+				}
+			}
+			if (result.isAST1()) {
+				return result.arg1();
+			}
+			if (evaled) {
+				if (result.isAST0()) {
+					return F.False;
+				}
+				return result;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.ONEIDENTITY | ISymbol.FLAT);
+		}
+	}
 
 	/**
 	 * See
@@ -458,6 +793,81 @@ public final class BooleanFunctions {
 		public void setUp(final ISymbol newSymbol) {
 		}
 
+	}
+
+	/**
+	 * 
+	 * See <a href="https://en.wikipedia.org/wiki/Exclusive_or">Wikipedia:
+	 * Exclusive or</a>
+	 * 
+	 */
+	private static class Xor extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.size() == 1) {
+				return F.False;
+			}
+			if (ast.size() == 2) {
+				return ast.arg1();
+			}
+
+			IExpr temp;
+			IExpr result = ast.arg1();
+			boolean evaled = false;
+			for (int i = 2; i < ast.size(); i++) {
+				temp = ast.get(i);
+				if (temp.isTrue()) {
+					if (result.isTrue()) {
+						result = F.False;
+					} else if (result.isFalse()) {
+						result = F.True;
+					} else {
+						result = F.eval(F.Not(result));
+					}
+					evaled = true;
+				} else if (temp.isFalse()) {
+					if (result.isTrue()) {
+						result = F.True;
+					} else if (result.isFalse()) {
+						result = F.False;
+					}
+					evaled = true;
+				} else {
+					if (temp.equals(result)) {
+						result = F.False;
+						evaled = true;
+					} else {
+						if (result.isTrue()) {
+							result = F.eval(F.Not(result));
+							evaled = true;
+						} else if (result.isFalse()) {
+							result = temp;
+							evaled = true;
+						} else {
+							if (evaled) {
+								IAST xor = F.ast(F.Xor, ast.size() - i + 1, false);
+								xor.append(result);
+								xor.append(temp);
+								xor.appendAll(ast, i + 1, ast.size());
+								// for (int j = i + 1; j < ast.size(); j++) {
+								// xor.append(ast.get(j));
+								// }
+								return xor;
+							}
+							return F.NIL;
+						}
+					}
+				}
+			}
+
+			return result;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.ONEIDENTITY | ISymbol.FLAT);
+		}
 	}
 
 	final static BooleanFunctions CONST = new BooleanFunctions();

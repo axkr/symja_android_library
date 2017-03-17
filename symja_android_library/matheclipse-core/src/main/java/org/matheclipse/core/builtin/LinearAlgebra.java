@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import static org.matheclipse.core.expression.F.ArcCos;
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
@@ -8,12 +9,15 @@ import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.CN1D2;
 import static org.matheclipse.core.expression.F.CN2;
 import static org.matheclipse.core.expression.F.Divide;
+import static org.matheclipse.core.expression.F.Dot;
 import static org.matheclipse.core.expression.F.Function;
+import static org.matheclipse.core.expression.F.LUDecomposition;
 import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Map;
 import static org.matheclipse.core.expression.F.MapThread;
 import static org.matheclipse.core.expression.F.Most;
 import static org.matheclipse.core.expression.F.Negate;
+import static org.matheclipse.core.expression.F.Norm;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Prepend;
@@ -24,6 +28,9 @@ import static org.matheclipse.core.expression.F.Sqr;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.VandermondeMatrix;
+import static org.matheclipse.core.expression.F.Variance;
+import static org.matheclipse.core.expression.F.VectorAngle;
 import static org.matheclipse.core.expression.F.g;
 import static org.matheclipse.core.expression.F.r;
 import static org.matheclipse.core.expression.F.y;
@@ -34,7 +41,6 @@ import java.util.List;
 import org.hipparchus.linear.EigenDecomposition;
 import org.hipparchus.linear.FieldLUDecomposition;
 import org.hipparchus.linear.FieldMatrix;
-import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.commons.math.linear.FieldReducedRowEchelonForm;
@@ -72,10 +78,14 @@ public final class LinearAlgebra {
 		F.Inner.setEvaluator(new Inner());
 		F.JacobiMatrix.setEvaluator(new JacobiMatrix());
 		F.LinearSolve.setEvaluator(new LinearSolve());
+		F.LUDecomposition.setEvaluator(new LUDecomposition());
+		F.NullSpace.setEvaluator(new NullSpace());
 		F.MatrixMinimalPolynomial.setEvaluator(new MatrixMinimalPolynomial());
 		F.RowReduce.setEvaluator(new RowReduce());
 		F.Tr.setEvaluator(new Tr());
 		F.Transpose.setEvaluator(new Transpose());
+		F.VandermondeMatrix.setEvaluator(new VandermondeMatrix());
+		F.VectorAngle.setEvaluator(new VectorAngle());
 	}
 
 	/**
@@ -248,7 +258,7 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr realMatrixEval(RealMatrix matrix) {
-			final LUDecomposition lu = new LUDecomposition(matrix);
+			final org.hipparchus.linear.LUDecomposition lu = new org.hipparchus.linear.LUDecomposition(matrix);
 			return F.num(lu.getDeterminant());
 		}
 	}
@@ -456,11 +466,8 @@ public final class LinearAlgebra {
 									return List(List(C1, C0), List(C0, C0));
 								} else {
 									// Eigenvectors({{a, b}, {0, d}})
-									return List(
-											List(C1, C0), List(
-													Divide(Negate(matrix.getEntry(0, 1)),
-															Subtract(matrix.getEntry(0, 0), matrix.getEntry(1, 1))),
-													C1));
+									return List(List(C1, C0), List(Divide(Negate(matrix.getEntry(0, 1)),
+											Subtract(matrix.getEntry(0, 0), matrix.getEntry(1, 1))), C1));
 								}
 							} else {
 								// Eigenvectors({{a, b}, {c, d}}) =>
@@ -626,8 +633,8 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Hilbert matrix, defined by A<sub>i,j</sub> = 1 / (i+j-1). See
-	 * <a> href="http://en.wikipedia.org/wiki/Hilbert_matrix">Wikipedia:Hilbert
+	 * Hilbert matrix, defined by A<sub>i,j</sub> = 1 / (i+j-1). See <a>
+	 * href="http://en.wikipedia.org/wiki/Hilbert_matrix">Wikipedia:Hilbert
 	 * matrix</a>
 	 */
 	private static class HilbertMatrix extends AbstractFunctionEvaluator {
@@ -747,10 +754,6 @@ public final class LinearAlgebra {
 	 */
 	private static class LinearSolve extends AbstractFunctionEvaluator {
 
-		public LinearSolve() {
-			super();
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
@@ -758,6 +761,95 @@ public final class LinearAlgebra {
 			try {
 				FieldMatrix<IExpr> augmentedMatrix = Convert.list2Matrix((IAST) ast.arg1(), (IAST) ast.arg2());
 				return LinearAlgebra.rowReduced2List(augmentedMatrix, engine);
+			} catch (final ClassCastException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			} catch (final IndexOutOfBoundsException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			}
+
+			return F.NIL;
+		}
+
+	}
+
+
+private static class LUDecomposition extends AbstractFunctionEvaluator {
+
+	@Override
+	public IExpr evaluate(final IAST ast, EvalEngine engine) {
+		Validate.checkSize(ast, 2);
+
+		FieldMatrix<IExpr> matrix;
+		try {
+			final IAST list = (IAST) ast.arg1();
+			matrix = Convert.list2Matrix(list);
+			final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix);
+			final FieldMatrix<IExpr> lMatrix = lu.getL();
+			final FieldMatrix<IExpr> uMatrix = lu.getU();
+			final int[] iArr = lu.getPivot();
+			// final int permutationCount = lu.getPermutationCount();
+			final IAST iList = List();
+			for (int i = 0; i < iArr.length; i++) {
+				// +1 because in MathEclipse the offset is +1 compared to java arrays
+				iList.append(F.integer(iArr[i] + 1));
+			}
+			final IAST result = List();
+			final IAST lMatrixAST = Convert.matrix2List(lMatrix);
+			final IAST uMatrixAST = Convert.matrix2List(uMatrix);
+			result.append(lMatrixAST);
+			result.append(uMatrixAST);
+			result.append(iList);
+			return result;
+
+		} catch (final ClassCastException e) {
+			if (Config.SHOW_STACKTRACE) {
+				e.printStackTrace();
+			}
+		} catch (final IndexOutOfBoundsException e) {
+			if (Config.SHOW_STACKTRACE) {
+				e.printStackTrace();
+			}
+		}
+
+		return F.NIL;
+	} 
+
+}
+
+	/**
+	 * Compute the null space of a matrix.
+	 * 
+	 * See: <a href=
+	 * "http://en.wikipedia.org/wiki/Kernel_%28linear_algebra%29">Wikipedia -
+	 * Kernel (linear algebra)</a>. <a href=
+	 * "http://en.wikibooks.org/wiki/Linear_Algebra/Null_Spaces">Wikibooks -
+	 * Null Spaces</a>
+	 */
+	private static class NullSpace extends AbstractFunctionEvaluator {
+
+		public NullSpace() {
+			super();
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			FieldMatrix<IExpr> matrix;
+			try {
+				Validate.checkSize(ast, 2);
+
+				final IAST list = (IAST) ast.arg1();
+				matrix = Convert.list2Matrix(list);
+				FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix);
+				FieldMatrix<IExpr> nullspace = fmw.getNullSpace(F.CN1);
+				if (nullspace == null) {
+					return F.List();
+				}
+				return Convert.matrix2List(nullspace);
+
 			} catch (final ClassCastException e) {
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
@@ -956,6 +1048,72 @@ public final class LinearAlgebra {
 
 		protected IExpr transform(final IExpr expr) {
 			return expr;
+		}
+
+	}
+
+	/**
+	 * Vandermonde matrix, defined by A<sub>i,j</sub> = vector[i]^(j-1). See
+	 * <a href="http://en.wikipedia.org/wiki/Vandermonde_matrix">Vandermonde
+	 * matrix</a>
+	 * 
+	 */
+	private static class VandermondeMatrix extends AbstractFunctionEvaluator {
+		public VandermondeMatrix() {
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+			if (ast.arg1().isList()) {
+				final IAST lst = (IAST) ast.arg1();
+				final int len0 = lst.size() - 1;
+
+				final IAST resultList = List();
+				final int[] indexArray = new int[2];
+				indexArray[0] = len0;
+				indexArray[1] = len0;
+
+				final IIndexFunction<IExpr> function = new IIndexFunction<IExpr>() {
+					@Override
+					public IExpr evaluate(int[] index) {
+						return Power(lst.get(index[0] + 1), F.integer(index[1]));
+					}
+				};
+				final IndexTableGenerator generator = new IndexTableGenerator(indexArray, resultList, function);
+				final IAST matrix = (IAST) generator.table();
+				matrix.addEvalFlags(IAST.IS_MATRIX);
+				return matrix;
+			}
+
+			return F.NIL;
+		}
+	}
+
+	/**
+	 * <p>
+	 * VectorAngle(arg1, arg2) calculates the angle between vectors arg1 and
+	 * arg2.
+	 * </p>
+	 * 
+	 * See: <a href=
+	 * "https://en.wikipedia.org/wiki/Angle#Dot_product_and_generalisation">Wikipedia
+	 * - Angle - Dot product and generalisation</a>
+	 */
+	private static class VectorAngle extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			IExpr arg1 = ast.arg1();
+			IExpr arg2 = ast.arg2();
+
+			int dim1 = arg1.isVector();
+			int dim2 = arg2.isVector();
+			if (dim1 > (-1) && dim2 > (-1)) {
+				return ArcCos(Divide(Dot(arg1, arg2), Times(Norm(arg1), Norm(arg2))));
+			}
+			return F.NIL;
 		}
 
 	}

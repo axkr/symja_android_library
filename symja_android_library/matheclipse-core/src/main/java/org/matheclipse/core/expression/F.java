@@ -298,8 +298,7 @@ public class F {
 	public final static IBuiltInSymbol PoissonDistribution = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "poissondistribution" : "PoissonDistribution");
 
-	public final static IBuiltInSymbol And = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "and" : "And",
-			new org.matheclipse.core.builtin.function.And());
+	public final static IBuiltInSymbol And = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "and" : "And");
 	public final static IBuiltInSymbol Append = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "append" : "Append",
 			new org.matheclipse.core.builtin.function.Append());
@@ -464,15 +463,13 @@ public class F {
 	public final static IBuiltInSymbol NestWhileList = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nestwhilelist" : "NestWhileList",
 			new org.matheclipse.core.builtin.function.NestWhileList());
-	public final static IBuiltInSymbol Nor = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nor" : "Nor",
-			new org.matheclipse.core.builtin.function.Nor());
+	public final static IBuiltInSymbol Nor = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nor" : "Nor");
 	public final static IBuiltInSymbol NumberQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "numberq" : "NumberQ");
 	public final static IBuiltInSymbol NumericQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "numericq" : "NumericQ");
 	public final static IBuiltInSymbol OddQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "oddq" : "OddQ");
-	public final static IBuiltInSymbol Or = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "or" : "Or",
-			new org.matheclipse.core.builtin.function.Or());
+	public final static IBuiltInSymbol Or = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "or" : "Or");
 	public final static IBuiltInSymbol Package = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "package" : "Package",
 			new org.matheclipse.core.builtin.function.Package());

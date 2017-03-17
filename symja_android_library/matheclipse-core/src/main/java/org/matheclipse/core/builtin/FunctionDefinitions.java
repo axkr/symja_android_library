@@ -133,7 +133,6 @@ public final class FunctionDefinitions {
 		Log2.setEvaluator(new org.matheclipse.core.reflection.system.Log2());
 		LogisticSigmoid.setEvaluator(new org.matheclipse.core.reflection.system.LogisticSigmoid());
 		LowerCaseQ.setEvaluator(new org.matheclipse.core.reflection.system.LowerCaseQ());
-		LUDecomposition.setEvaluator(new org.matheclipse.core.reflection.system.LUDecomposition());
 		ManhattanDistance.setEvaluator(new org.matheclipse.core.reflection.system.ManhattanDistance());
 		Map.setEvaluator(new org.matheclipse.core.reflection.system.Map());
 		MapAll.setEvaluator(new org.matheclipse.core.reflection.system.MapAll());
@@ -158,15 +157,12 @@ public final class FunctionDefinitions {
 		NMaximize.setEvaluator(new org.matheclipse.core.reflection.system.NMaximize());
 		NMinimize.setEvaluator(new org.matheclipse.core.reflection.system.NMinimize());
 		NonCommutativeMultiply.setEvaluator(new org.matheclipse.core.reflection.system.NonCommutativeMultiply());
-		NoneTrue.setEvaluator(new org.matheclipse.core.reflection.system.NoneTrue());
 		NonNegative.setEvaluator(new org.matheclipse.core.reflection.system.NonNegative());
 		Norm.setEvaluator(new org.matheclipse.core.reflection.system.Norm());
 		Normal.setEvaluator(new org.matheclipse.core.reflection.system.Normal());
 		Normalize.setEvaluator(new org.matheclipse.core.reflection.system.Normalize());
-		Not.setEvaluator(new org.matheclipse.core.reflection.system.Not());
 		NRoots.setEvaluator(new org.matheclipse.core.reflection.system.NRoots());
 		NSolve.setEvaluator(new org.matheclipse.core.reflection.system.NSolve());
-		NullSpace.setEvaluator(new org.matheclipse.core.reflection.system.NullSpace());
 		Order.setEvaluator(new org.matheclipse.core.reflection.system.Order());
 		OrderedQ.setEvaluator(new org.matheclipse.core.reflection.system.OrderedQ());
 		Out.setEvaluator(new org.matheclipse.core.reflection.system.Out());
@@ -262,10 +258,7 @@ public final class FunctionDefinitions {
 		UnitStep.setEvaluator(new org.matheclipse.core.reflection.system.UnitStep());
 		UnitVector.setEvaluator(new org.matheclipse.core.reflection.system.UnitVector());
 		UnsameQ.setEvaluator(new org.matheclipse.core.reflection.system.UnsameQ());
-		VandermondeMatrix.setEvaluator(new org.matheclipse.core.reflection.system.VandermondeMatrix());
 		Variance.setEvaluator(new org.matheclipse.core.reflection.system.Variance());
-		VectorAngle.setEvaluator(new org.matheclipse.core.reflection.system.VectorAngle());
-		Xor.setEvaluator(new org.matheclipse.core.reflection.system.Xor());
 		YuleDissimilarity.setEvaluator(new org.matheclipse.core.reflection.system.YuleDissimilarity());
 		Zeta.setEvaluator(new org.matheclipse.core.reflection.system.Zeta());
 	}
