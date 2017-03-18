@@ -32,7 +32,6 @@ public final class FunctionDefinitions {
 		CoefficientList.setEvaluator(new org.matheclipse.core.reflection.system.CoefficientList());
 		CoefficientRules.setEvaluator(new org.matheclipse.core.reflection.system.CoefficientRules());
 		Commonest.setEvaluator(new org.matheclipse.core.reflection.system.Commonest());
-		Complement.setEvaluator(new org.matheclipse.core.reflection.system.Complement());
 		ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
 		ComposeList.setEvaluator(new org.matheclipse.core.reflection.system.ComposeList());
 		Conjugate.setEvaluator(new org.matheclipse.core.reflection.system.Conjugate());
@@ -50,7 +49,6 @@ public final class FunctionDefinitions {
 		Curl.setEvaluator(new org.matheclipse.core.reflection.system.Curl());
 		D.setEvaluator(new org.matheclipse.core.reflection.system.D());
 		Default.setEvaluator(new org.matheclipse.core.reflection.system.Default());
-		DeleteDuplicates.setEvaluator(new org.matheclipse.core.reflection.system.DeleteDuplicates());
 		Derivative.setEvaluator(new org.matheclipse.core.reflection.system.Derivative());
 		DiceDissimilarity.setEvaluator(new org.matheclipse.core.reflection.system.DiceDissimilarity());
 		Discriminant.setEvaluator(new org.matheclipse.core.reflection.system.Discriminant());
@@ -63,8 +61,6 @@ public final class FunctionDefinitions {
 		Eliminate.setEvaluator(new org.matheclipse.core.reflection.system.Eliminate());
 		EllipticE.setEvaluator(new org.matheclipse.core.reflection.system.EllipticE());
 		EllipticPi.setEvaluator(new org.matheclipse.core.reflection.system.EllipticPi());
-		Equal.setEvaluator(new org.matheclipse.core.reflection.system.Equal());
-		Equivalent.setEvaluator(new org.matheclipse.core.reflection.system.Equivalent());
 		Erf.setEvaluator(new org.matheclipse.core.reflection.system.Erf());
 		EuclidianDistance.setEvaluator(new org.matheclipse.core.reflection.system.EuclidianDistance());
 		Exp.setEvaluator(new org.matheclipse.core.reflection.system.Exp());
@@ -86,8 +82,6 @@ public final class FunctionDefinitions {
 		Gather.setEvaluator(new org.matheclipse.core.reflection.system.Gather());
 		GCD.setEvaluator(new org.matheclipse.core.reflection.system.GCD());
 		GeometricMean.setEvaluator(new org.matheclipse.core.reflection.system.GeometricMean());
-		Greater.setEvaluator(new org.matheclipse.core.reflection.system.Greater());
-		GreaterEqual.setEvaluator(new org.matheclipse.core.reflection.system.GreaterEqual());
 		GroebnerBasis.setEvaluator(new org.matheclipse.core.reflection.system.GroebnerBasis());
 		HarmonicNumber.setEvaluator(new org.matheclipse.core.reflection.system.HarmonicNumber());
 		Haversine.setEvaluator(new org.matheclipse.core.reflection.system.Haversine());
@@ -101,11 +95,9 @@ public final class FunctionDefinitions {
 		Import.setEvaluator(new org.matheclipse.core.reflection.system.Import());
 		IntegerExponent.setEvaluator(new org.matheclipse.core.reflection.system.IntegerExponent());
 		IntegerPart.setEvaluator(new org.matheclipse.core.reflection.system.IntegerPart());
-		IntegerPartitions.setEvaluator(new org.matheclipse.core.reflection.system.IntegerPartitions());
 		InterpolatingFunction.setEvaluator(new org.matheclipse.core.reflection.system.InterpolatingFunction());
 		InterpolatingPolynomial.setEvaluator(new org.matheclipse.core.reflection.system.InterpolatingPolynomial());
 		Interpolation.setEvaluator(new org.matheclipse.core.reflection.system.Interpolation());
-		Intersection.setEvaluator(new org.matheclipse.core.reflection.system.Intersection());
 		Interval.setEvaluator(new org.matheclipse.core.reflection.system.Interval());
 		Inverse.setEvaluator(new org.matheclipse.core.reflection.system.Inverse());
 		InverseErf.setEvaluator(new org.matheclipse.core.reflection.system.InverseErf());
@@ -113,14 +105,11 @@ public final class FunctionDefinitions {
 		InverseFunction.setEvaluator(new org.matheclipse.core.reflection.system.InverseFunction());
 		InverseHaversine.setEvaluator(new org.matheclipse.core.reflection.system.InverseHaversine());
 		JaccardDissimilarity.setEvaluator(new org.matheclipse.core.reflection.system.JaccardDissimilarity());
-		Join.setEvaluator(new org.matheclipse.core.reflection.system.Join());
 		Kurtosis.setEvaluator(new org.matheclipse.core.reflection.system.Kurtosis());
 		LaguerreL.setEvaluator(new org.matheclipse.core.reflection.system.LaguerreL());
 		LaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.LaplaceTransform());
 		LCM.setEvaluator(new org.matheclipse.core.reflection.system.LCM());
 		LegendreP.setEvaluator(new org.matheclipse.core.reflection.system.LegendreP());
-		Less.setEvaluator(new org.matheclipse.core.reflection.system.Less());
-		LessEqual.setEvaluator(new org.matheclipse.core.reflection.system.LessEqual());
 		LetterQ.setEvaluator(new org.matheclipse.core.reflection.system.LetterQ());
 		Level.setEvaluator(new org.matheclipse.core.reflection.system.Level());
 		Limit.setEvaluator(new org.matheclipse.core.reflection.system.Limit());
@@ -198,8 +187,6 @@ public final class FunctionDefinitions {
 		Roots.setEvaluator(new org.matheclipse.core.reflection.system.Roots());
 		Round.setEvaluator(new org.matheclipse.core.reflection.system.Round());
 		RussellRaoDissimilarity.setEvaluator(new org.matheclipse.core.reflection.system.RussellRaoDissimilarity());
-		SameQ.setEvaluator(new org.matheclipse.core.reflection.system.SameQ());
-		SatisfiableQ.setEvaluator(new org.matheclipse.core.reflection.system.SatisfiableQ());
 		Scan.setEvaluator(new org.matheclipse.core.reflection.system.Scan());
 		Sec.setEvaluator(new org.matheclipse.core.reflection.system.Sec());
 		Sech.setEvaluator(new org.matheclipse.core.reflection.system.Sech());
@@ -245,10 +232,7 @@ public final class FunctionDefinitions {
 		TrigExpand.setEvaluator(new org.matheclipse.core.reflection.system.TrigExpand());
 		TrigReduce.setEvaluator(new org.matheclipse.core.reflection.system.TrigReduce());
 		TrigToExp.setEvaluator(new org.matheclipse.core.reflection.system.TrigToExp());
-		Unequal.setEvaluator(new org.matheclipse.core.reflection.system.Unequal());
-		Union.setEvaluator(new org.matheclipse.core.reflection.system.Union());
 		UnitStep.setEvaluator(new org.matheclipse.core.reflection.system.UnitStep());
-		UnsameQ.setEvaluator(new org.matheclipse.core.reflection.system.UnsameQ());
 		Variance.setEvaluator(new org.matheclipse.core.reflection.system.Variance());
 		YuleDissimilarity.setEvaluator(new org.matheclipse.core.reflection.system.YuleDissimilarity());
 		Zeta.setEvaluator(new org.matheclipse.core.reflection.system.Zeta());

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.function.Predicate;
 
+import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -246,7 +247,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 					eq = (IAST) eqns.get(i);
 					// equalList.add(F.Equal(F.evalExpandAll(eq.arg1()),
 					// F.evalExpandAll(eq.arg2())));
-					equalList.append(Equal.equals(eq));
+					equalList.append(BooleanFunctions.equals(eq));
 				} else {
 					// not an equation
 					throw new WrongArgumentType(eqns, eqns.get(i), i, "Equal[] expression (a==b) expected");

@@ -569,6 +569,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testBooleanConvert() {
 		check("BooleanConvert(Xor(x,y))", "x&&!y||!x&&y");
+		check("BooleanConvert(Equivalent(a, b, c))", "a&&b&&c||!a&&!b&&!c");
 	}
 
 	public void testBooleanMinimize() {
@@ -1413,6 +1414,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Equivalent(a,b,c,True)", "a&&b&&c");
 		check("Equivalent(a,b,c,False)", "!a&&!b&&!c");
 		check("BooleanConvert(Equivalent(x, y, z))", "x&&y&&z||!x&&!y&&!z");
+		check("Equivalent(a && (b || c), a && b || a && c) // TautologyQ", "True");
 	}
 
 	public void testErf() {

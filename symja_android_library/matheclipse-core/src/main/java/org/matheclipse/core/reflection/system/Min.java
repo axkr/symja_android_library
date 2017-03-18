@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -31,7 +32,7 @@ public class Min extends AbstractFunctionEvaluator {
 				// do nothing
 			}
 		}
-		
+
 		IAST resultList = EvalAttributes.flatten(F.List, ast);
 		if (resultList.isPresent()) {
 			return minimum(resultList, true);
@@ -52,7 +53,7 @@ public class Min extends AbstractFunctionEvaluator {
 			if (min1.equals(min2)) {
 				continue;
 			}
-			comp = Greater.CONST.prepareCompare(min1, min2);
+			comp = BooleanFunctions.CONST_GREATER.prepareCompare(min1, min2);
 
 			if (comp == IExpr.COMPARE_TERNARY.TRUE) {
 				min1 = min2;

@@ -1,11 +1,5 @@
 package org.matheclipse.core.interfaces;
 
-import org.hipparchus.Field;
-import org.hipparchus.FieldElement;
-import org.hipparchus.complex.Complex;
-import org.hipparchus.exception.MathRuntimeException;
-import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.linear.RealVector;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
@@ -18,7 +12,14 @@ import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.hipparchus.Field;
+import org.hipparchus.FieldElement;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -31,7 +32,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NILPointer;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
-import org.matheclipse.core.reflection.system.Equal;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
@@ -372,7 +372,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>F.True, F.False or F.NIL</code
 	 */
 	default public IExpr equalTo(IExpr that) {
-		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.Equal.CONST.compareTernary(this, that);
+		COMPARE_TERNARY temp = BooleanFunctions.CONST_EQUAL.compareTernary(this, that);
 		return ITernaryComparator.convertToExpr(temp);
 	}
 
@@ -499,7 +499,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>F.True, F.False or F.NIL</code
 	 */
 	default public IExpr greaterEqualThan(IExpr that) {
-		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.GreaterEqual.CONST.prepareCompare(this, that);
+		COMPARE_TERNARY temp = BooleanFunctions.CONST_GREATER_EQUAL.prepareCompare(this, that);
 		return ITernaryComparator.convertToExpr(temp);
 	}
 
@@ -516,7 +516,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>F.True, F.False or F.NIL</code
 	 */
 	default public IExpr greaterThan(IExpr that) {
-		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.Greater.CONST.prepareCompare(this, that);
+		COMPARE_TERNARY temp = BooleanFunctions.CONST_GREATER.prepareCompare(this, that);
 		return ITernaryComparator.convertToExpr(temp);
 	}
 
@@ -2234,7 +2234,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>F.True, F.False or F.NIL</code
 	 */
 	default public IExpr lessEqualThan(IExpr that) {
-		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.LessEqual.CONST.prepareCompare(this, that);
+		COMPARE_TERNARY temp = BooleanFunctions.CONST_LESS_EQUAL.prepareCompare(this, that);
 		return ITernaryComparator.convertToExpr(temp);
 	}
 
@@ -2251,7 +2251,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>F.True, F.False or F.NIL</code
 	 */
 	default public IExpr lessThan(IExpr that) {
-		COMPARE_TERNARY temp = org.matheclipse.core.reflection.system.Less.CONST.prepareCompare(this, that);
+		COMPARE_TERNARY temp = BooleanFunctions.CONST_LESS.prepareCompare(this, that);
 		return ITernaryComparator.convertToExpr(temp);
 	}
 
@@ -2769,7 +2769,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>F.True, F.False or F.NIL</code
 	 */
 	default public IExpr unequalTo(IExpr that) {
-		COMPARE_TERNARY temp = Equal.CONST.compareTernary(this, that);
+		COMPARE_TERNARY temp = BooleanFunctions.CONST_EQUAL.compareTernary(this, that);
 		return ITernaryComparator.convertToExpr(temp);
 	}
 

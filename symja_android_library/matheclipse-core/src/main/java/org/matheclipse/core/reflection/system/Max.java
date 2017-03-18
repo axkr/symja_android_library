@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -52,7 +53,7 @@ public class Max extends AbstractFunctionEvaluator {
 			if (max1.equals(max2)) {
 				continue;
 			}
-			comp = Less.CONST.prepareCompare(max1, max2);
+			comp = BooleanFunctions.CONST_LESS.prepareCompare(max1, max2);
 
 			if (comp == IExpr.COMPARE_TERNARY.TRUE) {
 				max1 = max2;
