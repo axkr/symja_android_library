@@ -11,7 +11,6 @@ import static org.matheclipse.core.expression.F.CN2;
 import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.Dot;
 import static org.matheclipse.core.expression.F.Function;
-import static org.matheclipse.core.expression.F.LUDecomposition;
 import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Map;
 import static org.matheclipse.core.expression.F.MapThread;
@@ -28,9 +27,6 @@ import static org.matheclipse.core.expression.F.Sqr;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.VandermondeMatrix;
-import static org.matheclipse.core.expression.F.Variance;
-import static org.matheclipse.core.expression.F.VectorAngle;
 import static org.matheclipse.core.expression.F.g;
 import static org.matheclipse.core.expression.F.r;
 import static org.matheclipse.core.expression.F.y;
@@ -38,6 +34,7 @@ import static org.matheclipse.core.expression.F.y;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.linear.BlockFieldMatrix;
 import org.hipparchus.linear.EigenDecomposition;
 import org.hipparchus.linear.FieldLUDecomposition;
 import org.hipparchus.linear.FieldMatrix;
@@ -47,6 +44,7 @@ import org.matheclipse.commons.math.linear.FieldReducedRowEchelonForm;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.NonNegativeIntegerExpected;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -55,6 +53,7 @@ import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.eval.util.IIndexFunction;
 import org.matheclipse.core.eval.util.IndexFunctionDiagonal;
 import org.matheclipse.core.eval.util.IndexTableGenerator;
+import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Symbol;
 import org.matheclipse.core.interfaces.IAST;
@@ -81,9 +80,12 @@ public final class LinearAlgebra {
 		F.LUDecomposition.setEvaluator(new LUDecomposition());
 		F.NullSpace.setEvaluator(new NullSpace());
 		F.MatrixMinimalPolynomial.setEvaluator(new MatrixMinimalPolynomial());
+		F.MatrixPower.setEvaluator(new MatrixPower());
+		F.MatrixRank.setEvaluator(new MatrixRank());
 		F.RowReduce.setEvaluator(new RowReduce());
 		F.Tr.setEvaluator(new Tr());
 		F.Transpose.setEvaluator(new Transpose());
+		F.UnitVector.setEvaluator(new UnitVector());
 		F.VandermondeMatrix.setEvaluator(new VandermondeMatrix());
 		F.VectorAngle.setEvaluator(new VectorAngle());
 	}
@@ -94,7 +96,7 @@ public final class LinearAlgebra {
 	 * See <a href="http://en.wikipedia.org/wiki/Characteristic_polynomial">
 	 * Wikipedia - Characteristic polynomial</a>
 	 */
-	private static class CharacteristicPolynomial extends AbstractFunctionEvaluator {
+	private final static class CharacteristicPolynomial extends AbstractFunctionEvaluator {
 
 		public CharacteristicPolynomial() {
 			super();
@@ -140,7 +142,7 @@ public final class LinearAlgebra {
 	 * Complex conjugation</a> and
 	 * <a href="http://en.wikipedia.org/wiki/Transpose">Transpose</a>
 	 */
-	private static class ConjugateTranspose extends Transpose {
+	private final static class ConjugateTranspose extends Transpose {
 
 		public ConjugateTranspose() {
 
@@ -159,7 +161,7 @@ public final class LinearAlgebra {
 	 * See: <a href="http://en.wikipedia.org/wiki/Cross_product">Wikipedia:Cross
 	 * product</a>
 	 */
-	private static class Cross extends AbstractFunctionEvaluator {
+	private final static class Cross extends AbstractFunctionEvaluator {
 
 		public Cross() {
 		}
@@ -776,49 +778,49 @@ public final class LinearAlgebra {
 
 	}
 
+	private static class LUDecomposition extends AbstractFunctionEvaluator {
 
-private static class LUDecomposition extends AbstractFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
 
-	@Override
-	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 2);
+			FieldMatrix<IExpr> matrix;
+			try {
+				final IAST list = (IAST) ast.arg1();
+				matrix = Convert.list2Matrix(list);
+				final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix);
+				final FieldMatrix<IExpr> lMatrix = lu.getL();
+				final FieldMatrix<IExpr> uMatrix = lu.getU();
+				final int[] iArr = lu.getPivot();
+				// final int permutationCount = lu.getPermutationCount();
+				final IAST iList = List();
+				for (int i = 0; i < iArr.length; i++) {
+					// +1 because in MathEclipse the offset is +1 compared to
+					// java arrays
+					iList.append(F.integer(iArr[i] + 1));
+				}
+				final IAST result = List();
+				final IAST lMatrixAST = Convert.matrix2List(lMatrix);
+				final IAST uMatrixAST = Convert.matrix2List(uMatrix);
+				result.append(lMatrixAST);
+				result.append(uMatrixAST);
+				result.append(iList);
+				return result;
 
-		FieldMatrix<IExpr> matrix;
-		try {
-			final IAST list = (IAST) ast.arg1();
-			matrix = Convert.list2Matrix(list);
-			final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix);
-			final FieldMatrix<IExpr> lMatrix = lu.getL();
-			final FieldMatrix<IExpr> uMatrix = lu.getU();
-			final int[] iArr = lu.getPivot();
-			// final int permutationCount = lu.getPermutationCount();
-			final IAST iList = List();
-			for (int i = 0; i < iArr.length; i++) {
-				// +1 because in MathEclipse the offset is +1 compared to java arrays
-				iList.append(F.integer(iArr[i] + 1));
+			} catch (final ClassCastException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			} catch (final IndexOutOfBoundsException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
 			}
-			final IAST result = List();
-			final IAST lMatrixAST = Convert.matrix2List(lMatrix);
-			final IAST uMatrixAST = Convert.matrix2List(uMatrix);
-			result.append(lMatrixAST);
-			result.append(uMatrixAST);
-			result.append(iList);
-			return result;
 
-		} catch (final ClassCastException e) {
-			if (Config.SHOW_STACKTRACE) {
-				e.printStackTrace();
-			}
-		} catch (final IndexOutOfBoundsException e) {
-			if (Config.SHOW_STACKTRACE) {
-				e.printStackTrace();
-			}
+			return F.NIL;
 		}
 
-		return F.NIL;
-	} 
-
-}
+	}
 
 	/**
 	 * Compute the null space of a matrix.
@@ -903,6 +905,103 @@ private static class LUDecomposition extends AbstractFunctionEvaluator {
 			return F.NIL;
 		}
 
+	}
+
+	private final static class MatrixPower extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			FieldMatrix<IExpr> matrix;
+			FieldMatrix<IExpr> resultMatrix;
+			try {
+				matrix = Convert.list2Matrix((IAST) ast.arg1());
+				final int p = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
+				if (p < 0) {
+					return F.NIL;
+				}
+				if (p == 1) {
+					((IAST) ast.arg1()).addEvalFlags(IAST.IS_MATRIX);
+					return ast.arg1();
+				}
+				if (p == 0) {
+					resultMatrix = new BlockFieldMatrix<IExpr>(ExprField.CONST, matrix.getRowDimension(),
+							matrix.getColumnDimension());
+					int min = matrix.getRowDimension();
+					if (min > matrix.getColumnDimension()) {
+						min = matrix.getColumnDimension();
+					}
+					for (int i = 0; i < min; i++) {
+						resultMatrix.setEntry(i, i, F.C1);
+					}
+
+					return Convert.matrix2List(resultMatrix);
+				}
+				resultMatrix = matrix;
+				for (int i = 1; i < p; i++) {
+					resultMatrix = resultMatrix.multiply(matrix);
+				}
+				return Convert.matrix2List(resultMatrix);
+
+			} catch (final ClassCastException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			} catch (final ArithmeticException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+				throw new NonNegativeIntegerExpected(ast, 2);
+			} catch (final IndexOutOfBoundsException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			}
+			return F.NIL;
+		}
+	}
+
+	/**
+	 * Compute the rank of a matrix.
+	 * 
+	 * See: <a href=
+	 * "http://en.wikipedia.org/wiki/Rank_%28linear_algebra%29">Wikipedia - Rank
+	 * (linear algebra)</a>.
+	 */
+	private final static class MatrixRank extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			FieldMatrix<IExpr> matrix;
+			try {
+				Validate.checkSize(ast, 2);
+
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				if (arg1.isMatrix() != null) {
+					final IAST astMatrix = (IAST) arg1;
+					matrix = Convert.list2Matrix(astMatrix);
+					FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix);
+					return F.integer(fmw.getMatrixRank());
+				}
+
+			} catch (final ClassCastException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			} catch (final IndexOutOfBoundsException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			}
+
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
 	}
 
 	/**
@@ -1048,6 +1147,46 @@ private static class LUDecomposition extends AbstractFunctionEvaluator {
 
 		protected IExpr transform(final IExpr expr) {
 			return expr;
+		}
+
+	}
+
+	/**
+	 * Create a unit vector
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Unit_vector">Wikipedia - Unit
+	 * vector</a>
+	 */
+	private final static class UnitVector extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			if (ast.isAST2()) {
+				int n = Validate.checkIntType(ast, 1);
+				int k = Validate.checkIntType(ast, 2);
+				if (k <= n) {
+					IAST vector = F.ListC(n);
+					for (int i = 0; i < n; i++) {
+						vector.append(F.C0);
+					}
+					vector.set(k, F.C1);
+					return vector;
+				}
+				return F.NIL;
+			}
+
+			if (ast.arg1().isInteger()) {
+				int k = Validate.checkIntType(ast, 1);
+				if (k == 1) {
+					return F.List(F.C1, F.C0);
+				}
+				if (k == 2) {
+					return F.List(F.C0, F.C1);
+				}
+			}
+			return F.NIL;
 		}
 
 	}

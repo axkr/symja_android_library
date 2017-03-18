@@ -28,6 +28,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.Combinatoric.Permutations;
 import org.matheclipse.core.builtin.function.Refine;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
@@ -63,7 +64,6 @@ import org.matheclipse.core.polynomials.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.ExprTermOrder;
 import org.matheclipse.core.polynomials.IPartialFractionGenerator;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
-import org.matheclipse.core.reflection.system.Permutations;
 import org.matheclipse.core.reflection.system.Thread;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
 import org.matheclipse.core.visit.VisitorExpr;
@@ -849,7 +849,7 @@ public class Algebra {
 
 		}
 
-		static class NumberPartititon {
+		private static class NumberPartititon {
 			IAST expandedResult;
 			int m;
 			int n;

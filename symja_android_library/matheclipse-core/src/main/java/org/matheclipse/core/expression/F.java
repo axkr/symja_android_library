@@ -23,6 +23,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.BooleanFunctions;
+import org.matheclipse.core.builtin.Combinatoric;
 import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.builtin.FunctionDefinitions;
 import org.matheclipse.core.builtin.LinearAlgebra;
@@ -1887,6 +1888,7 @@ public class F {
 			NumberTheory.initialize();
 			BooleanFunctions.initialize();
 			LinearAlgebra.initialize();
+			Combinatoric.initialize();
 
 			// initialize only the utility function rules for Integrate
 			final EvalEngine engine = EvalEngine.get();
@@ -3375,8 +3377,7 @@ public class F {
 			if (!ast.isPresent()) {
 				ast = (IAST) a;
 			}
-			return Algebra.expand(ast, null, expandNegativePowers, distributePlus)
-					.orElse(a);
+			return Algebra.expand(ast, null, expandNegativePowers, distributePlus).orElse(a);
 		}
 		return a;
 	}
@@ -3411,8 +3412,7 @@ public class F {
 			if (!ast.isPresent()) {
 				ast = (IAST) a;
 			}
-			IExpr temp = Algebra.expandAll(ast, null, expandNegativePowers,
-					distributePlus);
+			IExpr temp = Algebra.expandAll(ast, null, expandNegativePowers, distributePlus);
 			if (temp.isPresent()) {
 				return temp;
 			}
