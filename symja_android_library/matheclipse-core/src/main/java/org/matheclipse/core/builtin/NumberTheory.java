@@ -1482,11 +1482,11 @@ public final class NumberTheory {
 			IInteger nSubtractm = n.subtract(m);
 
 			IInteger nTimes2Subtractm = n.add(n.subtract(m));
-			IAST temp = F.Plus();
 
 			try {
 				int counter = nSubtractm.toInt() + 1;
 				IInteger k;
+				IAST temp = F.PlusAlloc(counter >= 0 ? counter : 0);
 				for (int i = 0; i < counter; i++) {
 					k = F.integer(i);
 					if ((i & 1) == 1) { // isOdd(i) ?
@@ -1543,7 +1543,7 @@ public final class NumberTheory {
 	private static class StirlingS2 extends AbstractFunctionEvaluator {
 
 		private static IExpr stirlingS2(IInteger nArg1, IInteger kArg2, int k) {
-			IAST temp = F.Plus();
+			IAST temp = F.PlusAlloc(k >= 0 ? k : 0);
 			for (int i = 0; i < k; i++) {
 				if ((i & 1) == 1) { // isOdd(i) ?
 					temp.append(Times(Negate(Binomial(kArg2, integer(i))), Power(Plus(kArg2, integer(-i)), nArg1)));
