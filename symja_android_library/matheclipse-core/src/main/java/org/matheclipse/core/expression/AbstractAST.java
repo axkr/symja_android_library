@@ -538,7 +538,7 @@ public abstract class AbstractAST implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public final IAST copyUntil(final int intialCapacity, int index) {
-		return AST.newInstance(index, this, index);
+		return AST.newInstance(intialCapacity, this, index);
 	}
 
 	@Override
