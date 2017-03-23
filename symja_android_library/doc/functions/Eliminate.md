@@ -16,4 +16,4 @@ x==2+z
 ```
 
 ### Related terms
-[DSolve], [GroebnerBasis], [FindRoot], [NRoots], [Roots], [Solve]
+[DSolve](DSolve.md), [GroebnerBasis](GroebnerBasis.md), [FindRoot](FindRoot.md), [NRoots](NRoots.md), [Roots](Roots.md),  [Solve](Solve.md)
