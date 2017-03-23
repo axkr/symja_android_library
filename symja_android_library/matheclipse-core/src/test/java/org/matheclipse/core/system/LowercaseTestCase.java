@@ -3750,6 +3750,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testProduct() {
+		check("Product(i^2 - i + 10 ,{i,1,10})", "1426481971200000");
 		check("Product(a^i, {i, n})", "a^(1/2*n*(1+n))");
 		check("Product(c, {i, 1, j}, {j, 2})", "c^(2*j)");
 		check("Product(c, {i, 1, j}, {j, 1, 2})", "c^(2*j)");
