@@ -1,7 +1,13 @@
-## Boole
+## Together
 
 ``` 
-Boole(expr)
+Together(expr)
 ``` 
 
-> returns `1` if `expr` evaluates to `True`; returns `0` if `expr` evaluates to `False`; and gives no result otherwise.
+> puts terms in a sum over a common denominator and cancels factors in the result. 
+
+### Examples 
+``` 
+>>> Together(a/b+x/y)
+(a*y+b*x)*b^(-1)*y^(-1)
+``` 
