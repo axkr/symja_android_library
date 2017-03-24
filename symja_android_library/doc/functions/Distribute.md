@@ -9,7 +9,7 @@ Distribute(f(x1, x2, x3,...))
 See:  
 * [Wikipedia - Distributive property](http://en.wikipedia.org/wiki/Distributive_property)
  
-=== Examples ===
+### Examples
 ```
 >>> Distribute((a+b)*(x+y+z))
 a*x+a*y+a*z+b*x+b*y+B*z
