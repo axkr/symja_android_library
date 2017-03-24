@@ -91,6 +91,37 @@ public class VariablesSet {
 	 * 
 	 * @see IExpr#isVariable()
 	 */
+	public static class AlgebraVariablesVisitor extends VisitorCollectionBoolean<IExpr> {
+		public AlgebraVariablesVisitor(Collection<IExpr> collection) {
+			super(collection);
+		}
+
+		public boolean visit(ISymbol symbol) {
+			if (symbol.isVariable()) {
+				fCollection.add(symbol);
+				return true;
+			}
+			return false;
+		}
+
+		@Override
+		public boolean visit(IAST list) {
+			if (list.isList() || list.isPlus() || list.isTimes() || (list.isPower() && list.arg2().isRational())) {
+				for (int i = 1; i < list.size(); i++) {
+					list.get(i).accept(this);
+				}
+				return false;
+			}
+			fCollection.add(list);
+			return true;
+		}
+	}
+
+	/**
+	 * Collect the variables with the <code>IExpr#isVariable()</code> method.
+	 * 
+	 * @see IExpr#isVariable()
+	 */
 	public static class VariablesVisitor extends VisitorCollectionBoolean<IExpr> {
 		public VariablesVisitor(Collection<IExpr> collection) {
 			super(collection);
@@ -103,6 +134,7 @@ public class VariablesSet {
 			}
 			return false;
 		}
+
 	}
 
 	/**
@@ -259,6 +291,24 @@ public class VariablesSet {
 	 * @return the ordered list of variables.
 	 */
 	public IAST getVarList() {
+		final Iterator<IExpr> iter = fVariablesSet.iterator();
+		final IAST list = F.ListC(fVariablesSet.size());
+		while (iter.hasNext()) {
+			list.append(iter.next());
+		}
+		return list;
+	}
+
+	/**
+	 * Transform the set of variables into an <code>IAST</code> list of ordered
+	 * variables. Looks only inside sums, products, and rational powers and
+	 * lists for variables.
+	 * 
+	 * @return the ordered list of variables.
+	 */
+	public static IAST getVariables(IExpr expr) {
+		Set<IExpr> fVariablesSet = new TreeSet<IExpr>();
+		expr.accept(new AlgebraVariablesVisitor(fVariablesSet));
 		final Iterator<IExpr> iter = fVariablesSet.iterator();
 		final IAST list = F.ListC(fVariablesSet.size());
 		while (iter.hasNext()) {

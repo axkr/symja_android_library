@@ -2456,10 +2456,6 @@ public class MainTestCase extends AbstractTestCase {
 		check("PolynomialQ((2 + a)^2*(a - b - c^2)^2, {a,b,c})", "True");
 	}
 
-	public void testSystem351() {
-		check("Variables(x + f(x)+Pi*E)", "{x}");
-	}
-
 	public void testSystem352() {
 		check("Variables((2 + a)^2 (a - b - c^2)^2)", "{a,b,c}");
 	}

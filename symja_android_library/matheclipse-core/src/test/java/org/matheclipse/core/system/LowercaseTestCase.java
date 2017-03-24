@@ -5073,6 +5073,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testVariables() {
+		check("Variables(x + f(x)+Pi*E)", "{x,f(x)}");
+		check("Variables(x^0.3 + f(x)+Pi*E)", "{x^0.3,f(x)}");
+		check("Variables(Sin(x) + Cos(x))", "{Cos(x),Sin(x)}");
+		check("Variables({a + b x, c y^2 + x/2})", "{a,b,c,x,y}");
 		check("Variables((x + y)^2 + 3 z^2 - y z + 7)", "{x,y,z}");
 		check("Variables((a - b)/(x + y) - 2/z)", "{a,b,x,y,z}");
 		check("Variables(Sqrt(x + y - z^2) + (-2 t)^(2/3))", "{t,x,y,z}");

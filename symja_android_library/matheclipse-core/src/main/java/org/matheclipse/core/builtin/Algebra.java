@@ -2486,8 +2486,8 @@ public class Algebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
 
-			VariablesSet eVar = new VariablesSet(ast.arg1());
-			return eVar.getVarList();
+			// VariablesSet eVar = new VariablesSet(ast.arg1());
+			return VariablesSet.getVariables(ast.arg1());
 		}
 
 		@Override
