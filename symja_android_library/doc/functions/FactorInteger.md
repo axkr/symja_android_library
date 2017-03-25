@@ -4,7 +4,7 @@
 FactorInteger(n)
 ```
 
-> gives a list of the prime factors of the integer `n` together with their exponents.
+> returns the factorization of `n` as a list of factors and exponents. 
  
 ### Examples  
 
@@ -16,4 +16,21 @@ FactorInteger(n)
 ```
 >>> FactorInteger(341550071728321)
 {{10670053,1},{32010157,1}}
-```  
+```   
+
+```
+>> factors = FactorInteger(2010)
+{{2, 1}, {3, 1}, {5, 1}, {67, 1}}
+```
+
+To get back the original number:
+```
+>> Times @@ Power @@@ factors
+2010
+```
+    
+FactorInteger' factors rationals using negative exponents:
+```
+>> FactorInteger(2010 / 2011)
+{{2, 1}, {3, 1}, {5, 1}, {67, 1}, {2011, -1}}
+```
