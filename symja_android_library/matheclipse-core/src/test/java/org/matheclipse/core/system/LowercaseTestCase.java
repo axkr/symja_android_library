@@ -507,6 +507,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ArrayQ[{{{E, 1}, {Pi, 2}}, {{Sin(1), Cos(2)}, {Sinh(1), Cosh(1)}}}, _, NumericQ]", "True");
 		check("ArrayQ({1, 2., E, Pi + I}, 1)", "True");
 		check("ArrayQ({{1,2},{3,4}},2,NumericQ)", "True");
+		check("ArrayQ({{a, b}, {c, d}},2,SymbolQ)", "True");
 	}
 
 	public void testAttributes() {
@@ -2602,6 +2603,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("CharacteristicPolynomial({{3, -1, 0}, {0, 2, 0}, {1, -1, 2}}, x)", "12-16*x+7*x^2-x^3");
 		check("Factor(6-5*x+x^2)", "(-3+x)*(-2+x)");
 		check("Factor(12-16*x+7*x^2-x^3)", "-(-3+x)*(2-x)^2");
+	}
+
+	public void testMatrixQ() {
+		check("MatrixQ({{a, b, f}, {c, d, e}})", "True");
+		check("MatrixQ({{1, 3}, {4.0, 3/2}}, NumberQ)", "True");
 	}
 
 	public void testMatrixRank() {
@@ -5107,6 +5113,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	}
 
+	public void testVectorQ() {
+		check("VectorQ({a, b, c})", "True");
+		check("VectorQ({1, 1/2, 3, I}, NumberQ)", "True");
+	}
+	
 	public void testWhich() {
 		check("$a = 2;which($a == 1, x, $a == 2, b)", "b");
 		check("Which(1 < 0, a,  x == 0, b,  0 < 1, c)", "Which(x==0,b,0<1,c)");

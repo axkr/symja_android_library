@@ -63,6 +63,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public final class LinearAlgebra {
 	static {
+		F.ArrayDepth.setEvaluator(new ArrayDepth());
 		F.CharacteristicPolynomial.setEvaluator(new CharacteristicPolynomial());
 		F.ConjugateTranspose.setEvaluator(new ConjugateTranspose());
 		F.Cross.setEvaluator(new Cross());
@@ -88,6 +89,29 @@ public final class LinearAlgebra {
 		F.UnitVector.setEvaluator(new UnitVector());
 		F.VandermondeMatrix.setEvaluator(new VandermondeMatrix());
 		F.VectorAngle.setEvaluator(new VectorAngle());
+	}
+
+	private final static class ArrayDepth extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			if (ast.arg1().isAST()) {
+				IAST list = (IAST) ast.arg1();
+				IExpr header = list.head();
+				ArrayList<Integer> dims = LinearAlgebra.getDimensions(list, header, Integer.MAX_VALUE);
+				return F.integer(dims.size());
+			}
+
+			return F.C0;
+
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
 	}
 
 	/**

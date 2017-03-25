@@ -43,6 +43,7 @@ public class PredicateQ {
 		F.OddQ.setEvaluator(new OddQ());
 		F.PossibleZeroQ.setEvaluator(new PossibleZeroQ());
 		F.PrimeQ.setEvaluator(new PrimeQ());
+		F.SymbolQ.setEvaluator(new SymbolQ());
 		F.SyntaxQ.setEvaluator(new SyntaxQ());
 		F.UpperCaseQ.setEvaluator(new UpperCaseQ());
 		F.ValueQ.setEvaluator(new ValueQ());
@@ -392,14 +393,33 @@ public class PredicateQ {
 	 * Returns <code>True</code> if the 1st argument is a matrix;
 	 * <code>False</code> otherwise
 	 */
-	private static class MatrixQ extends AbstractCorePredicateEvaluator {
-
-		public MatrixQ() {
-		}
+	private static class MatrixQ extends AbstractCoreFunctionEvaluator {
 
 		@Override
-		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
-			return arg1.isMatrix() != null;
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			final IExpr arg1 = engine.evaluate(ast.arg1());
+			int[] dims = arg1.isMatrix();
+			if (dims == null) {
+				return F.False;
+			}
+
+			if (ast.isAST2()) {
+				final IExpr arg2 = engine.evaluate(ast.arg2());
+				IAST temp = F.ast(arg2);
+				temp.append(F.Slot1);
+				for (int i = 1; i < dims[0]; i++) {
+					IAST row = (IAST) arg1.getAt(i);
+					for (int j = 1; j < dims[1]; j++) {
+						temp.set(1, row.getAt(j));
+						if (!engine.evalTrue(temp)) {
+							return F.False;
+						}
+					}
+				}
+			}
+			return F.True;
 		}
 
 		@Override
@@ -409,9 +429,6 @@ public class PredicateQ {
 	}
 
 	private static class MemberQ extends AbstractCoreFunctionEvaluator {
-
-		public MemberQ() {
-		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -595,6 +612,24 @@ public class PredicateQ {
 		}
 	}
 
+	private static class SymbolQ extends AbstractCoreFunctionEvaluator implements Predicate<IExpr> {
+		/**
+		 * Returns <code>True</code> if the 1st argument is a symbol;
+		 * <code>False</code> otherwise
+		 */
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+			IExpr arg1 = engine.evaluate(ast.arg1());
+			return F.bool(arg1.isSymbol());
+		}
+
+		@Override
+		public boolean test(final IExpr expr) {
+			return expr.isSymbol();
+		}
+	}
+	
 	/**
 	 * Returns <code>True</code>, if the given expression is a string which has
 	 * the correct syntax
@@ -689,15 +724,30 @@ public class PredicateQ {
 	 * Returns <code>True</code> if the 1st argument is a vector;
 	 * <code>False</code> otherwise
 	 */
-	private static class VectorQ extends AbstractCorePredicateEvaluator {
+	private static class VectorQ extends AbstractCoreFunctionEvaluator {
 
 		@Override
-		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
-			return arg1.isVector() != (-1);
-		}
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
 
-		@Override
-		public void setUp(final ISymbol newSymbol) {
+			final IExpr arg1 = engine.evaluate(ast.arg1());
+			int dim = arg1.isVector();
+			if (dim == (-1)) {
+				return F.False;
+			}
+
+			if (ast.isAST2()) {
+				final IExpr arg2 = engine.evaluate(ast.arg2());
+				IAST temp = F.ast(arg2);
+				temp.append(F.Slot1);
+				for (int i = 1; i < dim; i++) {
+					temp.set(1, arg1.getAt(i));
+					if (!engine.evalTrue(temp)) {
+						return F.False;
+					}
+				}
+			}
+			return F.True;
 		}
 
 	}

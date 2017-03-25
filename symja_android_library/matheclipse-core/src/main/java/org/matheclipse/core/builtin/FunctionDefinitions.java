@@ -19,7 +19,6 @@ public final class FunctionDefinitions {
 		ArcTan.setEvaluator(new org.matheclipse.core.reflection.system.ArcTan());
 		ArcTanh.setEvaluator(new org.matheclipse.core.reflection.system.ArcTanh());
 		Arg.setEvaluator(new org.matheclipse.core.reflection.system.Arg());
-		ArrayDepth.setEvaluator(new org.matheclipse.core.reflection.system.ArrayDepth());
 		BesselJ.setEvaluator(new org.matheclipse.core.reflection.system.BesselJ());
 		Catenate.setEvaluator(new org.matheclipse.core.reflection.system.Catenate());
 		CDF.setEvaluator(new org.matheclipse.core.reflection.system.CDF());

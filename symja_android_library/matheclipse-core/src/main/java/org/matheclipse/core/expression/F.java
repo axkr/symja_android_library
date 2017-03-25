@@ -524,6 +524,8 @@ public class F {
 	public final static IBuiltInSymbol Sow = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sow" : "Sow");
 	public final static IBuiltInSymbol Switch = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "switch" : "Switch");
+	public final static IBuiltInSymbol SymbolQ = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "symbolq" : "SymbolQ");
 	public final static IBuiltInSymbol SyntaxQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "syntaxq" : "SyntaxQ");
 	public final static IBuiltInSymbol Take = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "take" : "Take",
