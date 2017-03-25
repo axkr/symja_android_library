@@ -652,6 +652,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complexexpand" : "ComplexExpand");
 	public final static IBuiltInSymbol ComposeList = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "composelist" : "ComposeList");
+	public final static IBuiltInSymbol Composition = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "composition" : "Composition");
 	public final static IBuiltInSymbol Conjugate = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "conjugate" : "Conjugate");
 	public final static IBuiltInSymbol ConjugateTranspose = initFinalSymbol(

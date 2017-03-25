@@ -19,6 +19,7 @@ public final class ListFunctions {
 
 	static {
 		F.Complement.setEvaluator(new Complement());
+		F.Composition.setEvaluator(new Composition());
 		F.DeleteDuplicates.setEvaluator(new DeleteDuplicates());
 		F.Intersection.setEvaluator(new Intersection());
 		F.Join.setEvaluator(new Join());
@@ -59,6 +60,37 @@ public final class ListFunctions {
 			EvalAttributes.sort(result);
 			return result;
 		}
+	}
+
+	private final static class Composition extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.head().equals(F.Composition)) {
+				return F.NIL;
+			}
+			if (ast.head().isAST()) {
+
+				IAST headList = (IAST) ast.head();
+				if (headList.size() > 1) {
+					IAST inner = F.ast(headList.get(1));
+					IAST result = inner;
+					IAST temp;
+					for (int i = 2; i < headList.size(); i++) {
+						temp = F.ast(headList.get(i));
+						inner.append(temp);
+						inner = temp;
+					}
+					for (int i = 1; i < ast.size(); i++) {
+						inner.append(ast.get(i));
+					}
+					return result;
+				}
+				
+			}
+			return F.NIL;
+		}
+
 	}
 
 	/**

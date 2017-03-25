@@ -854,6 +854,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ComplexExpand(Tan(x))", "Sin(2*x)/(1+Cos(2*x))");
 	}
 
+	public void testComposition() {
+		check("Composition(f, g, h)[x, y]", "f(g(h(x,y)))");
+		check("Composition(1 + #^# &, a # &, #/(# + 1) &)[x]", "1+((a*x)/(1+x))^((a*x)/(1+x))");
+		check("Composition(f, g, h) @@ {x, y, z}", "f(g(h(x,y,z)))");
+	}
+
 	public void testCompoundExpression() {
 		check("Catch[$a = 2; Throw[$a]; $a = 5]", "2");
 	}
@@ -3350,6 +3356,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Dimensions(Outer(f, {{x, x}, {x, x}}, {x, x, x}, {{x}}))", "{2,2,3,1,1}");
 		check("Outer(f, {a, b}, {1,2,3})", "{{f(a,1),f(a,2),f(a,3)},{f(b,1),f(b,2),f(b,3)}}");
 		check("Outer(Times, {{1, 2}}, {{a, b}, {x, y, z}})", "{{{{a,b},{x,y,z}},{{2*a,2*b},{2*x,2*y,2*z}}}}");
+
+		check("trigs = Outer(Composition, {Sin, Cos, Tan}, {ArcSin, ArcCos, ArcTan})",
+				"{{Composition(Sin,ArcSin),Composition(Sin,ArcCos),Composition(Sin,ArcTan)},{Composition(Cos,ArcSin),Composition(Cos,ArcCos),Composition(Cos,ArcTan)},{Composition(Tan,ArcSin),Composition(Tan,ArcCos),Composition(Tan,ArcTan)}}");
+		check("Map(#(0) &, trigs, {2})", "{{0,1,0},{1,0,1},{0,ComplexInfinity,0}}");
+		check("Outer(StringJoin, {\"\", \"re\", \"un\"}, {\"cover\", \"draw\", \"wind\"}, {\"\", \"ing\", \"s\"})",
+				"{{{\"cover\",\"covering\",\"covers\"},{\"draw\",\"drawing\",\"draws\"},{\"wind\",\"winding\",\"winds\"}},{{\"recover\",\"recovering\",\"recovers\"},{\"redraw\",\"redrawing\",\"redraws\"},{\"rewind\",\"rewinding\",\"rewinds\"}},{{\"uncover\",\"uncovering\",\"uncovers\"},{\"undraw\",\"undrawing\",\"undraws\"},{\"unwind\",\"unwinding\",\"unwinds\"}}}");
 	}
 
 	public void testPadLeft() {
@@ -5117,7 +5129,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("VectorQ({a, b, c})", "True");
 		check("VectorQ({1, 1/2, 3, I}, NumberQ)", "True");
 	}
-	
+
 	public void testWhich() {
 		check("$a = 2;which($a == 1, x, $a == 2, b)", "b");
 		check("Which(1 < 0, a,  x == 0, b,  0 < 1, c)", "Which(x==0,b,0<1,c)");
