@@ -34,70 +34,69 @@ public class ExprParserFactory implements IExprParserFactory {
 	public final static int POWER_PRECEDENCE = 590;
 
 	static final String[] HEADER_STRINGS = { "MessageName", "Get", "PatternTest", "MapAll", "TimesBy", "Plus", "UpSet",
-			"CompoundExpression", "Map", "Unset", "Apply", "ReplaceRepeated", "Less", "And", "Divide", "Set", "Increment",
-			"Factorial2", "LessEqual", "NonCommutativeMultiply", "Factorial", "Times", "Power", "Dot", "Not", "PreMinus", "SameQ",
-			"RuleDelayed", "GreaterEqual", "Condition", "Colon", "//", "DivideBy", "Or", "Span", "Equal", "StringJoin", "Unequal",
-			"Decrement", "SubtractFrom", "PrePlus", "RepeatedNull", "UnsameQ", "Rule", "UpSetDelayed", "PreIncrement", "Function",
-			"Greater", "PreDecrement", "Subtract", "SetDelayed", "Alternatives", "AddTo", "Repeated", "ReplaceAll" };
+			"CompoundExpression", "Map", "Unset", "Apply", "Apply", "ReplaceRepeated", "Less", "And", "Divide", "Set",
+			"Increment", "Factorial2", "LessEqual", "NonCommutativeMultiply", "Factorial", "Times", "Power", "Dot",
+			"Not", "PreMinus", "SameQ", "RuleDelayed", "GreaterEqual", "Condition", "Colon", "//", "DivideBy", "Or",
+			"Span", "Equal", "StringJoin", "Unequal", "Decrement", "SubtractFrom", "PrePlus", "RepeatedNull", "UnsameQ",
+			"Rule", "UpSetDelayed", "PreIncrement", "Function", "Greater", "PreDecrement", "Subtract", "SetDelayed",
+			"Alternatives", "AddTo", "Repeated", "ReplaceAll" };
 
-	static final String[] OPERATOR_STRINGS = { "::", "<<", "?", "//@", "*=", "+", "^=", ";", "/@", "=.", "@@", "//.", "<", "&&",
-			"/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=", "/;", ":", "//", "/=", "||", ";;", "==",
-			"<>", "!=", "--", "-=", "+", "...", "=!=", "->", "^:=", "++", "&", ">", "--", "-", ":=", "|", "+=", "..", "/." };
+	static final String[] OPERATOR_STRINGS = { "::", "<<", "?", "//@", "*=", "+", "^=", ";", "/@", "=.", "@@", "@@@",
+			"//.", "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=", "/;",
+			":", "//", "/=", "||", ";;", "==", "<>", "!=", "--", "-=", "+", "...", "=!=", "->", "^:=", "++", "&", ">",
+			"--", "-", ":=", "|", "+=", "..", "/." };
 
-	static final AbstractExprOperator[] OPERATORS = { 
+	static final AbstractExprOperator[] OPERATORS = {
 			new InfixExprOperator("::", "MessageName", 750, InfixExprOperator.NONE),
-			new PrefixExprOperator("<<", "Get", 720), 
+			new PrefixExprOperator("<<", "Get", 720),
 			new InfixExprOperator("?", "PatternTest", 680, InfixExprOperator.NONE),
 			new InfixExprOperator("//@", "MapAll", 620, InfixExprOperator.RIGHT_ASSOCIATIVE),
 			new InfixExprOperator("*=", "TimesBy", 100, InfixExprOperator.NONE),
 			new InfixExprOperator("+", "Plus", PLUS_PRECEDENCE, InfixExprOperator.NONE),
 			new InfixExprOperator("^=", "UpSet", 40, InfixExprOperator.NONE),
 			new InfixExprOperator(";", "CompoundExpression", 10, InfixExprOperator.NONE),
-			new InfixExprOperator("/@", "Map", 620, InfixExprOperator.RIGHT_ASSOCIATIVE), 
+			new InfixExprOperator("/@", "Map", 620, InfixExprOperator.RIGHT_ASSOCIATIVE),
 			new PostfixExprOperator("=.", "Unset", 670),
-			new InfixExprOperator("@@", "Apply", 620, InfixExprOperator.RIGHT_ASSOCIATIVE),
+			new ApplyOperator("@@", "Apply", 620, InfixExprOperator.RIGHT_ASSOCIATIVE),
+			new ApplyOperator("@@@", "Apply", 620, InfixExprOperator.RIGHT_ASSOCIATIVE),
 			new InfixExprOperator("//.", "ReplaceRepeated", 110, InfixExprOperator.LEFT_ASSOCIATIVE),
-			new InfixExprOperator("<", "Less", 290, InfixExprOperator.NONE), 
+			new InfixExprOperator("<", "Less", 290, InfixExprOperator.NONE),
 			new InfixExprOperator("&&", "And", 215, InfixExprOperator.NONE),
 			new DivideExprOperator("/", "Divide", DIVIDE_PRECEDENCE, InfixExprOperator.LEFT_ASSOCIATIVE),
-			new InfixExprOperator("=", "Set", 40, InfixExprOperator.RIGHT_ASSOCIATIVE), 
-			new PostfixExprOperator("++", "Increment", 660),
-			new PostfixExprOperator("!!", "Factorial2", 610), 
+			new InfixExprOperator("=", "Set", 40, InfixExprOperator.RIGHT_ASSOCIATIVE),
+			new PostfixExprOperator("++", "Increment", 660), new PostfixExprOperator("!!", "Factorial2", 610),
 			new InfixExprOperator("<=", "LessEqual", 290, InfixExprOperator.NONE),
 			new InfixExprOperator("**", "NonCommutativeMultiply", 510, InfixExprOperator.NONE),
-			new PostfixExprOperator("!", "Factorial", 610), 
+			new PostfixExprOperator("!", "Factorial", 610),
 			new InfixExprOperator("*", "Times", TIMES_PRECEDENCE, InfixExprOperator.NONE),
 			new InfixExprOperator("^", "Power", POWER_PRECEDENCE, InfixExprOperator.RIGHT_ASSOCIATIVE),
-			new InfixExprOperator(".", "Dot", 490, InfixExprOperator.NONE), 
-			new PrefixExprOperator("!", "Not", 230),
-			new PreMinusExprOperator("-", "PreMinus", 485), 
+			new InfixExprOperator(".", "Dot", 490, InfixExprOperator.NONE), new PrefixExprOperator("!", "Not", 230),
+			new PreMinusExprOperator("-", "PreMinus", 485),
 			new InfixExprOperator("===", "SameQ", 290, InfixExprOperator.NONE),
 			new InfixExprOperator(":>", "RuleDelayed", 120, InfixExprOperator.RIGHT_ASSOCIATIVE),
 			new InfixExprOperator(">=", "GreaterEqual", 290, InfixExprOperator.NONE),
 			new InfixExprOperator("/;", "Condition", 130, InfixExprOperator.LEFT_ASSOCIATIVE),
-			new InfixExprOperator(":", "Colon", 80, InfixExprOperator.NONE), 
+			new InfixExprOperator(":", "Colon", 80, InfixExprOperator.NONE),
 			new InfixExprOperator("//", "//", 70, InfixExprOperator.NONE),
-			new InfixExprOperator("/=", "DivideBy", 100, InfixExprOperator.NONE), 
+			new InfixExprOperator("/=", "DivideBy", 100, InfixExprOperator.NONE),
 			new InfixExprOperator("||", "Or", 213, InfixExprOperator.NONE),
 			new InfixExprOperator(";;", "Span", 305, InfixExprOperator.NONE),
 			new InfixExprOperator("==", "Equal", 290, InfixExprOperator.NONE),
 			new InfixExprOperator("<>", "StringJoin", 600, InfixExprOperator.NONE),
-			new InfixExprOperator("!=", "Unequal", 290, InfixExprOperator.NONE), 
+			new InfixExprOperator("!=", "Unequal", 290, InfixExprOperator.NONE),
 			new PostfixExprOperator("--", "Decrement", 660),
-			new InfixExprOperator("-=", "SubtractFrom", 100, InfixExprOperator.NONE), 
-			new PrePlusExprOperator("+", "PrePlus", 670),
-			new PostfixExprOperator("...", "RepeatedNull", 170), 
+			new InfixExprOperator("-=", "SubtractFrom", 100, InfixExprOperator.NONE),
+			new PrePlusExprOperator("+", "PrePlus", 670), new PostfixExprOperator("...", "RepeatedNull", 170),
 			new InfixExprOperator("=!=", "UnsameQ", 290, InfixExprOperator.NONE),
 			new InfixExprOperator("->", "Rule", 120, InfixExprOperator.RIGHT_ASSOCIATIVE),
-			new InfixExprOperator("^:=", "UpSetDelayed", 40, InfixExprOperator.NONE), 
-			new PrefixExprOperator("++", "PreIncrement", 660),
-			new PostfixExprOperator("&", "Function", 90), 
+			new InfixExprOperator("^:=", "UpSetDelayed", 40, InfixExprOperator.NONE),
+			new PrefixExprOperator("++", "PreIncrement", 660), new PostfixExprOperator("&", "Function", 90),
 			new InfixExprOperator(">", "Greater", 290, InfixExprOperator.NONE),
 			new PrefixExprOperator("--", "PreDecrement", 660),
 			new SubtractExprOperator("-", "Subtract", 310, InfixExprOperator.LEFT_ASSOCIATIVE),
 			new InfixExprOperator(":=", "SetDelayed", 40, InfixExprOperator.NONE),
 			new InfixExprOperator("|", "Alternatives", 160, InfixExprOperator.NONE),
-			new InfixExprOperator("+=", "AddTo", 100, InfixExprOperator.NONE), 
+			new InfixExprOperator("+=", "AddTo", 100, InfixExprOperator.NONE),
 			new PostfixExprOperator("..", "Repeated", 170),
 			new InfixExprOperator("/.", "ReplaceAll", 110, InfixExprOperator.LEFT_ASSOCIATIVE) };
 
@@ -130,8 +129,8 @@ public class ExprParserFactory implements IExprParserFactory {
 	}
 
 	static public void addOperator(final Map<String, AbstractExprOperator> operatorMap,
-			final Map<String, ArrayList<AbstractExprOperator>> operatorTokenStartSet, final String operatorStr, final String headStr,
-			final AbstractExprOperator oper) {
+			final Map<String, ArrayList<AbstractExprOperator>> operatorTokenStartSet, final String operatorStr,
+			final String headStr, final AbstractExprOperator oper) {
 		ArrayList<AbstractExprOperator> list;
 		operatorMap.put(headStr, oper);
 		list = operatorTokenStartSet.get(operatorStr);
@@ -173,10 +172,13 @@ public class ExprParserFactory implements IExprParserFactory {
 		return fOperatorTokenStartSet.get(key);
 	}
 
-	static public InfixExprOperator createInfixOperator(final String operatorStr, final String headStr, final int precedence,
-			final int grouping) {
+	static public InfixExprOperator createInfixOperator(final String operatorStr, final String headStr,
+			final int precedence, final int grouping) {
 		InfixExprOperator oper;
-		if (headStr.equals("Divide")) {
+
+		if (headStr.equals("Apply")) {
+			oper = new ApplyOperator(operatorStr, headStr, precedence, grouping);
+		} else if (headStr.equals("Divide")) {
 			oper = new DivideExprOperator(operatorStr, headStr, precedence, grouping);
 		} else if (headStr.equals("Subtract")) {
 			oper = new SubtractExprOperator(operatorStr, headStr, precedence, grouping);
@@ -186,7 +188,8 @@ public class ExprParserFactory implements IExprParserFactory {
 		return oper;
 	}
 
-	static public PrefixExprOperator createPrefixOperator(final String operatorStr, final String headStr, final int precedence) {
+	static public PrefixExprOperator createPrefixOperator(final String operatorStr, final String headStr,
+			final int precedence) {
 		PrefixExprOperator oper;
 		if (headStr.equals("PreMinus")) {
 			oper = new PreMinusExprOperator(operatorStr, headStr, precedence);
@@ -198,7 +201,8 @@ public class ExprParserFactory implements IExprParserFactory {
 		return oper;
 	}
 
-	static public PostfixExprOperator createPostfixOperator(final String operatorStr, final String headStr, final int precedence) {
+	static public PostfixExprOperator createPostfixOperator(final String operatorStr, final String headStr,
+			final int precedence) {
 		return new PostfixExprOperator(operatorStr, headStr, precedence);
 	}
 
@@ -218,8 +222,9 @@ public class ExprParserFactory implements IExprParserFactory {
 					temp = F.PREDEFINED_INTERNAL_FORM_STRINGS.get(nodeStr);
 					if (temp == null) {
 						if (lowercaseName.length() > 1) {
-							if (!lowercaseName.equals("sin") && !lowercaseName.equals("cos") && !lowercaseName.equals("tan")
-									&& !lowercaseName.equals("cot") && !lowercaseName.equals("csc") && !lowercaseName.equals("sec")) {
+							if (!lowercaseName.equals("sin") && !lowercaseName.equals("cos")
+									&& !lowercaseName.equals("tan") && !lowercaseName.equals("cot")
+									&& !lowercaseName.equals("csc") && !lowercaseName.equals("sec")) {
 								System.out.println(nodeStr + " => §" + lowercaseName);
 							}
 						}

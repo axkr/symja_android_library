@@ -181,6 +181,10 @@ public class PredicateQ {
 	 */
 	private static class BooleanQ extends AbstractCorePredicateEvaluator {
 
+		public BooleanQ() {
+			super(F.BooleanQ);
+		}
+
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
 			return arg1.isTrue() || arg1.isFalse();
@@ -199,6 +203,10 @@ public class PredicateQ {
 	 * 
 	 */
 	private static class DigitQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
+
+		public DigitQ() {
+			super(F.DigitQ);
+		}
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -234,6 +242,9 @@ public class PredicateQ {
 	 * <code>False</code> otherwise
 	 */
 	private static class EvenQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
+		public EvenQ() {
+			super(F.EvenQ);
+		}
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -323,7 +334,7 @@ public class PredicateQ {
 	private static class IntegerQ extends AbstractCorePredicateEvaluator {
 
 		public IntegerQ() {
-			// default ctor
+			super(F.IntegerQ);
 		}
 
 		@Override
@@ -543,6 +554,9 @@ public class PredicateQ {
 	 * <code>False</code> otherwise
 	 */
 	private static class OddQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
+		public OddQ() {
+			super(F.OddQ);
+		}
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -570,6 +584,7 @@ public class PredicateQ {
 	private static class PossibleZeroQ extends AbstractCorePredicateEvaluator {
 
 		public PossibleZeroQ() {
+			super(F.PossibleZeroQ);
 		}
 
 		@Override
@@ -592,6 +607,10 @@ public class PredicateQ {
 	 * @see org.matheclipse.core.reflection.system.NextPrime
 	 */
 	private static class PrimeQ extends AbstractCorePredicateEvaluator implements Predicate<IInteger> {
+
+		public PrimeQ() {
+			super(F.PrimeQ);
+		}
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -629,7 +648,7 @@ public class PredicateQ {
 			return expr.isSymbol();
 		}
 	}
-	
+
 	/**
 	 * Returns <code>True</code>, if the given expression is a string which has
 	 * the correct syntax
@@ -638,6 +657,7 @@ public class PredicateQ {
 	private static class SyntaxQ extends AbstractCorePredicateEvaluator implements Predicate<String> {
 
 		public SyntaxQ() {
+			super(F.SyntaxQ);
 		}
 
 		@Override
@@ -666,6 +686,10 @@ public class PredicateQ {
 	 *
 	 */
 	private static class UpperCaseQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
+
+		public UpperCaseQ() {
+			super(F.UpperCaseQ);
+		}
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {

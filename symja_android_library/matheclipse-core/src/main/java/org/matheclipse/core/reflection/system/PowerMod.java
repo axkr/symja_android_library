@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -36,7 +35,7 @@ public class PowerMod extends AbstractFunctionEvaluator {
 			}
 			return arg1.modPow(arg2, arg3);
 		} catch (ArithmeticException ae) {
-			engine.printMessage("PowerMod[] function: " + ae.getMessage());
+			engine.printMessage("PowerMod: " + ae.getMessage());
 		}
 		return F.NIL;
 	}

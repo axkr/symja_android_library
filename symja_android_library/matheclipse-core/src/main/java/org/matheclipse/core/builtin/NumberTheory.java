@@ -1256,18 +1256,13 @@ public final class NumberTheory {
 	 */
 	private static class NextPrime extends AbstractFunctionEvaluator {
 
-		public NextPrime() {
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
 
 			if (ast.isAST1() && ast.arg1().isInteger()) {
-
 				BigInteger primeBase = ((IInteger) ast.arg1()).toBigNumerator();
 				return F.integer(primeBase.nextProbablePrime());
-
 			} else if (ast.isAST2() && ast.arg1().isInteger() && ast.arg2().isInteger()) {
 
 				BigInteger primeBase = ((IInteger) ast.arg1()).toBigNumerator();
@@ -1441,6 +1436,38 @@ public final class NumberTheory {
 				}
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+	}
+
+	/**
+	 */
+	private static class PrimePowerQ extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			IExpr arg1 = ast.arg1();
+			if (arg1.isInteger()) {
+				IInteger i = (IInteger) arg1;
+				if (i.isNegative()) {
+					i = i.negate();
+				}
+				IExpr expr = engine.evaluate(F.FactorInteger(i));
+				if (expr.isAST1()) {
+					IAST list = (IAST) expr;
+					IInteger temp = (IInteger) list.get(1).getAt(2);
+					if (!temp.isOne()) {
+						return F.True;
+					}
+				}
+			}
+			return F.False;
 		}
 
 		@Override
@@ -1707,6 +1734,7 @@ public final class NumberTheory {
 		F.NextPrime.setEvaluator(new NextPrime());
 		F.Prime.setEvaluator(new Prime());
 		F.PrimeOmega.setEvaluator(new PrimeOmega());
+		F.PrimePowerQ.setEvaluator(new PrimePowerQ());
 		F.StirlingS1.setEvaluator(new StirlingS1());
 		F.StirlingS2.setEvaluator(new StirlingS2());
 		F.Subfactorial.setEvaluator(new Subfactorial());

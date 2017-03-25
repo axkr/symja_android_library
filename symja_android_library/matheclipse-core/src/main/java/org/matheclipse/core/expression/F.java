@@ -1026,6 +1026,8 @@ public class F {
 	public final static IBuiltInSymbol Prime = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "prime" : "Prime");
 	public final static IBuiltInSymbol PrimeOmega = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primeomega" : "PrimeOmega");
+	public final static IBuiltInSymbol PrimePowerQ = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primepowerq" : "PrimePowerQ");
 	public final static IBuiltInSymbol PrimitiveRoots = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primitiveroots" : "PrimitiveRoots");
 	public final static IBuiltInSymbol Product = initFinalSymbol(

@@ -14,6 +14,16 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public abstract class AbstractCorePredicateEvaluator extends AbstractCoreFunctionEvaluator {
 
+	private final ISymbol fSymbol;
+
+	public AbstractCorePredicateEvaluator() {
+		fSymbol = null;
+	}
+	
+	public AbstractCorePredicateEvaluator(ISymbol symbol) {
+		fSymbol = symbol;
+	}
+
 	abstract public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine);
 
 	/** {@inheritDoc} */
@@ -24,7 +34,7 @@ public abstract class AbstractCorePredicateEvaluator extends AbstractCoreFunctio
 			if (arg1.isList()) {
 				// thread over list?
 				if ((ast.topHead().getAttributes() & ISymbol.LISTABLE) == ISymbol.LISTABLE) {
-					return ((IAST) arg1).mapThread(F.IntegerQ(null), 1);
+					return ((IAST) arg1).mapThread(F.unaryAST1(fSymbol, null), 1);
 				}
 			}
 			return F.bool(evalArg1Boole(arg1, engine));

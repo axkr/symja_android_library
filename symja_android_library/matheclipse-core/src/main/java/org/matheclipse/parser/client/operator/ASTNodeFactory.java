@@ -45,52 +45,42 @@ public class ASTNodeFactory implements IParserFactory {
 	public final static int POWER_PRECEDENCE = 590;
 
 	static final String[] HEADER_STRINGS = { "MessageName", "Get", "PatternTest", "MapAll", "TimesBy", "Plus", "UpSet",
-			"CompoundExpression", "Map", "Unset", "Apply", "ReplaceRepeated", "Less", "And", "Divide", "Set", "Increment",
-			"Factorial2", "LessEqual", "NonCommutativeMultiply", "Factorial", "Times", "Power", "Dot", "Not", "PreMinus", "SameQ",
-			"RuleDelayed", "GreaterEqual", "Condition", "Colon", "//", "DivideBy", "Or", "Span", "Equal", "StringJoin", "Unequal", "Decrement",
-			"SubtractFrom", "PrePlus",
-			 "RepeatedNull",
-			"UnsameQ", "Rule", "UpSetDelayed", "PreIncrement", "Function", "Greater", "PreDecrement", "Subtract", "SetDelayed",
-			"Alternatives", "AddTo",
-			 "Repeated",
-			"ReplaceAll" };
+			"CompoundExpression", "Map", "Unset", "Apply", "Apply", "ReplaceRepeated", "Less", "And", "Divide", "Set",
+			"Increment", "Factorial2", "LessEqual", "NonCommutativeMultiply", "Factorial", "Times", "Power", "Dot",
+			"Not", "PreMinus", "SameQ", "RuleDelayed", "GreaterEqual", "Condition", "Colon", "//", "DivideBy", "Or",
+			"Span", "Equal", "StringJoin", "Unequal", "Decrement", "SubtractFrom", "PrePlus", "RepeatedNull", "UnsameQ",
+			"Rule", "UpSetDelayed", "PreIncrement", "Function", "Greater", "PreDecrement", "Subtract", "SetDelayed",
+			"Alternatives", "AddTo", "Repeated", "ReplaceAll" };
 
-	static final String[] OPERATOR_STRINGS = { "::", "<<", "?", "//@", "*=", "+", "^=", ";", "/@", "=.", "@@", "//.", "<", "&&",
-			"/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=", "/;", ":", "//", "/=", "||", ";;", "==", "<>",
-			"!=", "--", "-=", "+",
-			 "...",
-			"=!=", "->", "^:=", "++", "&", ">", "--", "-", ":=", "|", "+=",
-			 "..",
-			"/." };
+	static final String[] OPERATOR_STRINGS = { "::", "<<", "?", "//@", "*=", "+", "^=", ";", "/@", "=.", "@@", "@@@",
+			"//.", "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=", "/;",
+			":", "//", "/=", "||", ";;", "==", "<>", "!=", "--", "-=", "+", "...", "=!=", "->", "^:=", "++", "&", ">",
+			"--", "-", ":=", "|", "+=", "..", "/." };
 
-	static final Operator[] OPERATORS = { 
-		    new InfixOperator("::", "MessageName", 750, InfixOperator.NONE),
-			new PrefixOperator("<<", "Get", 720), 
-			new InfixOperator("?", "PatternTest", 680, InfixOperator.NONE),
+	static final Operator[] OPERATORS = { new InfixOperator("::", "MessageName", 750, InfixOperator.NONE),
+			new PrefixOperator("<<", "Get", 720), new InfixOperator("?", "PatternTest", 680, InfixOperator.NONE),
 			new InfixOperator("//@", "MapAll", 620, InfixOperator.RIGHT_ASSOCIATIVE),
 			new InfixOperator("*=", "TimesBy", 100, InfixOperator.NONE),
 			new InfixOperator("+", "Plus", PLUS_PRECEDENCE, InfixOperator.NONE),
 			new InfixOperator("^=", "UpSet", 40, InfixOperator.NONE),
 			new InfixOperator(";", "CompoundExpression", 10, InfixOperator.NONE),
-			new InfixOperator("/@", "Map", 620, InfixOperator.RIGHT_ASSOCIATIVE), 
+			new InfixOperator("/@", "Map", 620, InfixOperator.RIGHT_ASSOCIATIVE),
 			new PostfixOperator("=.", "Unset", 670),
-			new InfixOperator("@@", "Apply", 620, InfixOperator.RIGHT_ASSOCIATIVE),
+			new ApplyOperator("@@", "Apply", 620, InfixOperator.RIGHT_ASSOCIATIVE),
+			new ApplyOperator("@@@", "Apply", 620, InfixOperator.RIGHT_ASSOCIATIVE),
 			new InfixOperator("//.", "ReplaceRepeated", 110, InfixOperator.LEFT_ASSOCIATIVE),
-			new InfixOperator("<", "Less", 290, InfixOperator.NONE), 
+			new InfixOperator("<", "Less", 290, InfixOperator.NONE),
 			new InfixOperator("&&", "And", 215, InfixOperator.NONE),
 			new DivideOperator("/", "Divide", DIVIDE_PRECEDENCE, InfixOperator.LEFT_ASSOCIATIVE),
-			new InfixOperator("=", "Set", 40, InfixOperator.RIGHT_ASSOCIATIVE), 
-			new PostfixOperator("++", "Increment", 660),
-			new PostfixOperator("!!", "Factorial2", 610), 
+			new InfixOperator("=", "Set", 40, InfixOperator.RIGHT_ASSOCIATIVE),
+			new PostfixOperator("++", "Increment", 660), new PostfixOperator("!!", "Factorial2", 610),
 			new InfixOperator("<=", "LessEqual", 290, InfixOperator.NONE),
 			new InfixOperator("**", "NonCommutativeMultiply", 510, InfixOperator.NONE),
 			new PostfixOperator("!", "Factorial", 610),
 			new InfixOperator("*", "Times", TIMES_PRECEDENCE, InfixOperator.NONE),
 			new InfixOperator("^", "Power", POWER_PRECEDENCE, InfixOperator.RIGHT_ASSOCIATIVE),
-			new InfixOperator(".", "Dot", 490, InfixOperator.NONE),
-			new PrefixOperator("!", "Not", 230),
-			new PreMinusOperator("-", "PreMinus", 485),
-			new InfixOperator("===", "SameQ", 290, InfixOperator.NONE),
+			new InfixOperator(".", "Dot", 490, InfixOperator.NONE), new PrefixOperator("!", "Not", 230),
+			new PreMinusOperator("-", "PreMinus", 485), new InfixOperator("===", "SameQ", 290, InfixOperator.NONE),
 			new InfixOperator(":>", "RuleDelayed", 120, InfixOperator.RIGHT_ASSOCIATIVE),
 			new InfixOperator(">=", "GreaterEqual", 290, InfixOperator.NONE),
 			new InfixOperator("/;", "Condition", 130, InfixOperator.LEFT_ASSOCIATIVE),
@@ -101,23 +91,18 @@ public class ASTNodeFactory implements IParserFactory {
 			new InfixOperator(";;", "Span", 305, InfixOperator.NONE),
 			new InfixOperator("==", "Equal", 290, InfixOperator.NONE),
 			new InfixOperator("<>", "StringJoin", 600, InfixOperator.NONE),
-			new InfixOperator("!=", "Unequal", 290, InfixOperator.NONE),
-			new PostfixOperator("--", "Decrement", 660),
-			new InfixOperator("-=", "SubtractFrom", 100, InfixOperator.NONE),
-			new PrePlusOperator("+", "PrePlus", 670),
+			new InfixOperator("!=", "Unequal", 290, InfixOperator.NONE), new PostfixOperator("--", "Decrement", 660),
+			new InfixOperator("-=", "SubtractFrom", 100, InfixOperator.NONE), new PrePlusOperator("+", "PrePlus", 670),
 			new PostfixOperator("...", "RepeatedNull", 170),
 			new InfixOperator("=!=", "UnsameQ", 290, InfixOperator.NONE),
 			new InfixOperator("->", "Rule", 120, InfixOperator.RIGHT_ASSOCIATIVE),
-			new InfixOperator("^:=", "UpSetDelayed", 40, InfixOperator.NONE), 
-			new PrefixOperator("++", "PreIncrement", 660),
-			new PostfixOperator("&", "Function", 90), 
-			new InfixOperator(">", "Greater", 290, InfixOperator.NONE),
-			new PrefixOperator("--", "PreDecrement", 660),
+			new InfixOperator("^:=", "UpSetDelayed", 40, InfixOperator.NONE),
+			new PrefixOperator("++", "PreIncrement", 660), new PostfixOperator("&", "Function", 90),
+			new InfixOperator(">", "Greater", 290, InfixOperator.NONE), new PrefixOperator("--", "PreDecrement", 660),
 			new SubtractOperator("-", "Subtract", 310, InfixOperator.LEFT_ASSOCIATIVE),
 			new InfixOperator(":=", "SetDelayed", 40, InfixOperator.NONE),
 			new InfixOperator("|", "Alternatives", 160, InfixOperator.NONE),
-			new InfixOperator("+=", "AddTo", 100, InfixOperator.NONE),
-			new PostfixOperator("..", "Repeated", 170),
+			new InfixOperator("+=", "AddTo", 100, InfixOperator.NONE), new PostfixOperator("..", "Repeated", 170),
 			new InfixOperator("/.", "ReplaceAll", 110, InfixOperator.LEFT_ASSOCIATIVE) };
 
 	public final static ASTNodeFactory MMA_STYLE_FACTORY = new ASTNodeFactory(false);
@@ -151,8 +136,8 @@ public class ASTNodeFactory implements IParserFactory {
 	}
 
 	static public void addOperator(final Map<String, Operator> operatorMap,
-			final Map<String, ArrayList<Operator>> operatorTokenStartSet, final String operatorStr, final String headStr,
-			final Operator oper) {
+			final Map<String, ArrayList<Operator>> operatorTokenStartSet, final String operatorStr,
+			final String headStr, final Operator oper) {
 		ArrayList<Operator> list;
 		operatorMap.put(headStr, oper);
 		list = operatorTokenStartSet.get(operatorStr);
@@ -194,10 +179,12 @@ public class ASTNodeFactory implements IParserFactory {
 		return fOperatorTokenStartSet.get(key);
 	}
 
-	static public InfixOperator createInfixOperator(final String operatorStr, final String headStr, final int precedence,
-			final int grouping) {
+	static public InfixOperator createInfixOperator(final String operatorStr, final String headStr,
+			final int precedence, final int grouping) {
 		InfixOperator oper;
-		if (headStr.equals("Divide")) {
+		if (headStr.equals("Apply")) {
+			oper = new ApplyOperator(operatorStr, headStr, precedence, grouping);
+		} else if (headStr.equals("Divide")) {
 			oper = new DivideOperator(operatorStr, headStr, precedence, grouping);
 		} else if (headStr.equals("Subtract")) {
 			oper = new SubtractOperator(operatorStr, headStr, precedence, grouping);
@@ -207,7 +194,8 @@ public class ASTNodeFactory implements IParserFactory {
 		return oper;
 	}
 
-	static public PrefixOperator createPrefixOperator(final String operatorStr, final String headStr, final int precedence) {
+	static public PrefixOperator createPrefixOperator(final String operatorStr, final String headStr,
+			final int precedence) {
 		PrefixOperator oper;
 		if (headStr.equals("PreMinus")) {
 			oper = new PreMinusOperator(operatorStr, headStr, precedence);
@@ -219,7 +207,8 @@ public class ASTNodeFactory implements IParserFactory {
 		return oper;
 	}
 
-	static public PostfixOperator createPostfixOperator(final String operatorStr, final String headStr, final int precedence) {
+	static public PostfixOperator createPostfixOperator(final String operatorStr, final String headStr,
+			final int precedence) {
 		return new PostfixOperator(operatorStr, headStr, precedence);
 	}
 
@@ -265,8 +254,8 @@ public class ASTNodeFactory implements IParserFactory {
 	public PatternNode createPattern(final SymbolNode patternName, final ASTNode check, boolean optional) {
 		return new PatternNode(patternName, check, optional);
 	}
-	
-	public PatternNode createPattern(final SymbolNode patternName, final ASTNode check,final ASTNode defaultValue) {
+
+	public PatternNode createPattern(final SymbolNode patternName, final ASTNode check, final ASTNode defaultValue) {
 		return new PatternNode(patternName, check, defaultValue);
 	}
 
@@ -312,8 +301,9 @@ public class ASTNodeFactory implements IParserFactory {
 					temp = F.PREDEFINED_INTERNAL_FORM_STRINGS.get(nodeStr);
 					if (temp == null) {
 						if (lowercaseName.length() > 1) {
-							if (!lowercaseName.equals("sin") && !lowercaseName.equals("cos") && !lowercaseName.equals("tan")
-									&& !lowercaseName.equals("cot") && !lowercaseName.equals("csc") && !lowercaseName.equals("sec")) {
+							if (!lowercaseName.equals("sin") && !lowercaseName.equals("cos")
+									&& !lowercaseName.equals("tan") && !lowercaseName.equals("cot")
+									&& !lowercaseName.equals("csc") && !lowercaseName.equals("sec")) {
 								System.out.println(nodeStr + " => §" + lowercaseName);
 							}
 						}

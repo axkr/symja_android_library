@@ -904,6 +904,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testCoprimeQ() {
 		check("CoprimeQ(8,9,11)", "True");
 		check("CoprimeQ[{1, 2, 3, 4, 5}, 6]", "{True,False,False,False,True}");
+		check("CoprimeQ(2, 3, 5)", "True");
 	}
 
 	public void testCos() {
@@ -1716,6 +1717,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testFactorInteger() {
+		check("factors = FactorInteger(2010)", "{{2,1},{3,1},{5,1},{67,1}}");
+		check("Times @@ Power @@@ factors", "2010");
+		
 		check("FactorInteger(10^100+1)", "{{73,1},{137,1},{401,1},{1201,1},{1601,1},{1676321,1},{5964848081,1},{\n"
 				+ "129694419029057750551385771184564274499075700947656757821537291527196801,1}}");
 		check("FactorInteger(50!*8392894255239922239)",
@@ -1742,6 +1746,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{{5,1}},{{17,1}},{{257,1}},{{65537,1}},{{641,1},{6700417,1}},{{274177,1},{\n"
 						+ "67280421310721,1}}}");
 		check("FactorInteger(44343535354351600000003434353)", "{{149,1},{329569479697,1},{903019357561501,1}}");
+		
+		check("FactorInteger(2010 / 2011)", "{{2,1},{3,1},{5,1},{67,1},{2011,-1}}");
 	}
 
 	// public void testExpandAll() {
@@ -1968,6 +1974,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("GCD(1/3, 2/5, 3/7)", "1/105");
 		check("GCD(-3, 9)", "3");
 		check("GCD(b, a)", "GCD(a,b)");
+		
+		check("GCD(20, 30)", "10");
+		check("GCD(10, y)", "GCD(10,y)");
+		check("GCD(4, {10, 11, 12, 13, 14})", "{2,1,4,1,2}");
 	}
 
 	public void testGeometricMean() {
@@ -2164,6 +2174,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "9,9,9,9,10,10,10,10,10,12}");
 		check("IntegerExponent(2524,2)", "2");
 		check("IntegerExponent(-510000)", "4");
+		
+		check("IntegerExponent(16, 2)", "4");
+		check("IntegerExponent(-510000)", "4");
+		check("IntegerExponent(10, b)", "IntegerExponent(10,b)");
 	}
 
 	public void testIntegerPart() {
@@ -2387,6 +2401,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LCM(0,10)", "0");
 		check("LCM(10,0)", "0");
 		check("LCM(a)", "LCM(a)");
+		
+		check("LCM(15, 20)", "60");
+		check("LCM(20, 30, 40, 50)", "600");
 		// check("LCM(1/3, 2/5, 3/7)", "");
 	}
 
@@ -2669,6 +2686,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Mod(23,7)", "2");
 		check("Mod(23,-7)", "-5");
 		check("Mod(-23,-7)", "-2");
+		
+		check("Mod(14, 6)", "2");
+		check("Mod(-3,4)", "1");
+		check("Mod(-3,-4)", "-3");
+		check("Mod(5,0)", "Mod(5,0)");
 	}
 
 	public void testModule() {
@@ -3164,6 +3186,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{100,Log(100),Log(Log(100)),Log(Log(Log(100))),Log(Log(Log(Log(100))))}");
 	}
 
+	public void testNextPrime() {
+		check("NextPrime(10000)", "10007");
+//		check("NextPrime(100, -5)", "73");
+//		check("NextPrime(10, -5)", "-2");
+//		check("NextPrime(5.5, 100)", "563");
+	}
+	
 	public void testNIntegrate() {
 		check("NIntegrate(Cos(x), {x, 0, Pi})", "0.0");
 		check("NIntegrate(1/Sin(Sqrt(x)), {x, 0, 1}, PrecisionGoal->10)", "2.1108620052");
@@ -3725,6 +3754,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PowerMod(2, 10^9, 18)", "16");
 		check("PowerMod(2, {10, 11, 12, 13, 14}, 5)", "{4,3,1,2,4}");
 		check("PowerMod(147198853397, -1, 73599183960)", "43827926933");
+		
+		check("PowerMod(2, 10000000, 3)", "1");
+		check("PowerMod(3, -2, 10)", "9");
+		check("PowerMod(0, -1, 2)", "PowerMod(0,-1,2)");
+		check("PowerMod(5, 2, 0)", "PowerMod(5,2,0)");
+		
 	}
 
 	public void testPrependTo() {
@@ -3742,6 +3777,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Prime(10^9)", "22801763489");
 		// check("Prime(10^10)", "252097800623");
 		// check("Prime(10^11)", "2760727302517");
+		check("Prime(1)", "2");
+		check("Prime(167)", "991");
 	}
 
 	public void testPrimeOmega() {
@@ -3750,9 +3787,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PrimeOmega(50!)", "108");
 		check("PrimeOmega({1,2,3,4,5,6,20})", "{0,1,1,2,1,2,3}");
 	}
+	
+	public void testPrimePowerQ() {
+		check("PrimePowerQ(-8)", "True");
+		check("PrimePowerQ(9)", "True");
+		check("PrimePowerQ(52142)", "False");
+		check("PrimePowerQ(371293)", "True");
+		check("PrimePowerQ(1)", "False");
+	}
 
 	public void testPrimeQ() {
 		check("PrimeQ(99999999999971)", "True");
+		check("Select(Range(100), PrimeQ)", "{2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97}");
+		check("PrimeQ(Range(20))", "{False,True,True,False,True,False,True,False,False,False,True,False,True,False,False,False,True,False,True,False}");
 	}
 
 	public void testPrimitiveRoots() {
@@ -3857,12 +3904,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testQuotient() {
+		check("Quotient(13, 0)", "Quotient(13,0)");
 		check("Quotient(-17, 7)", "-3");
 		check("Quotient(15, -5)", "-3");
 		check("Quotient(17, 5)", "3");
 		check("Quotient(-17, -4)", "4");
 		check("Quotient(-14, 7)", "-2");
-		check("Quotient(13, 0)", "/ by zero");
+		check("Quotient(19, -4)", "-5");
 	}
 
 	public void testRange() {
