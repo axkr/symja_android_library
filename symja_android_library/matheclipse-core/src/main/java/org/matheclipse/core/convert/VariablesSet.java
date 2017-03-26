@@ -106,13 +106,28 @@ public class VariablesSet {
 
 		@Override
 		public boolean visit(IAST list) {
-			if (list.isList() || list.isPlus() || list.isTimes() || (list.isPower() && list.arg2().isRational())) {
+			if (list.isList() || list.isPlus() || list.isTimes()) {
 				for (int i = 1; i < list.size(); i++) {
 					list.get(i).accept(this);
 				}
 				return false;
+			} else if (list.isPower()) {
+				IExpr arg1 = list.arg1();
+				IExpr arg2 = list.arg2();
+
+				if (arg2.isRational()) {
+					for (int i = 1; i < list.size(); i++) {
+						list.get(i).accept(this);
+					}
+					return false;
+				} else if (arg2.isNumber()) {
+					fCollection.add(list);
+				} else if (!arg1.isNumericFunction()) {
+					fCollection.add(list);
+				}
+			} else {
+				fCollection.add(list);
 			}
-			fCollection.add(list);
 			return true;
 		}
 	}

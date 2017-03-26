@@ -270,7 +270,7 @@ public class Algebra {
 				}
 				if (!eVar.isSize(1)) {
 					// partial fraction only possible for univariate polynomials
-					return F.NIL;
+					return arg1;
 				}
 				variableList = eVar.getVarList();
 			}
@@ -281,11 +281,10 @@ public class Algebra {
 					return partialFractionDecompositionRational(new PartialFractionGenerator(), parts,
 							(ISymbol) variableList.arg1());
 				}
-			} else {
-				return arg1;
 			}
+			return arg1;
 
-			return F.NIL;
+			// return F.NIL;
 		}
 
 		@Override
@@ -2600,12 +2599,10 @@ public class Algebra {
 		}
 		IAST localAST = ast;
 		IAST tempAST = F.NIL;
-		if (localAST.isAST()) {
-			if ((localAST.getEvalFlags() & IAST.IS_SORTED) != IAST.IS_SORTED) {
-				tempAST = EvalEngine.get().evalFlatOrderlessAttributesRecursive(localAST);
-				if (tempAST.isPresent()) {
-					localAST = tempAST;
-				}
+		if ((localAST.getEvalFlags() & IAST.IS_SORTED) != IAST.IS_SORTED) {
+			tempAST = EvalEngine.get().evalFlatOrderlessAttributesRecursive(localAST);
+			if (tempAST.isPresent()) {
+				localAST = tempAST;
 			}
 		}
 		if (localAST.isAllExpanded()) {
@@ -2616,12 +2613,19 @@ public class Algebra {
 		}
 		IAST result = F.NIL;
 		IExpr temp = F.NIL;
+		int size = localAST.size();
+		if (localAST.head().isAST()) {
+			temp = expandAll((IAST) localAST.head(), patt, expandNegativePowers, distributePlus);
+			if (temp.isPresent()) {
+				result = F.ast(temp, size, false);
+			}
+		}
 		for (int i = 1; i < localAST.size(); i++) {
 			if (localAST.get(i).isAST()) {
 				temp = expandAll((IAST) localAST.get(i), patt, expandNegativePowers, distributePlus);
 				if (temp.isPresent()) {
 					if (!result.isPresent()) {
-						int size = localAST.size();
+						
 						if (temp.isAST()) {
 							size += ((IAST) temp).size();
 						}

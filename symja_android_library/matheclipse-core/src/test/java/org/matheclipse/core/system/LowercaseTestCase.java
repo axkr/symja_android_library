@@ -329,6 +329,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testApart() {
+		check("Sin(1 / (x ^ 2 - y ^ 2)) // Apart", "Sin(1/(x^2-y^2))");
+
+		check("Apart(1 / (x^2 + 5x + 6))", "1/(2+x)+1/(-3-x)");
+		// TODO return -1 / (2 y (x + y)) + 1 / (2 y (x - y))
+		check("Apart(1 / (x^2 - y^2), x)", "Apart(1/(x^2-y^2),x)");
+		// TODO return 1 / (2 x (x + y)) + 1 / (2 x (x - y))
+		check("Apart(1 / (x^2 - y^2), y)", "Apart(1/(x^2-y^2),y)");
+
+		check("Apart({1 / (x^2 + 5x + 6)})", "{1/(2+x)+1/(-3-x)}");
+
 		check("Apart(1/((1 + x)*(5 + x)))", "1/(4+4*x)+1/(-20-4*x)");
 		check("Apart(1 < (x + 1)/(x - 1) < 2)", "1<1+2/(-1+x)<2");
 	}
@@ -596,6 +606,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCancel() {
+		check("Cancel(x / x ^ 2)", "1/x");
+		check("Cancel(x / x ^ 2 + y / y ^ 2)", "1/x+1/y");
+		check("Cancel(f(x) / x + x * f(x) / x ^ 2)", "(2*f(x))/x");
+
 		check("Cancel((x - a)/(x^2 - a^2) == 0 && (x^2 - 2*x + 1)/(x - 1) >= 0)", "1/(a+x)==0&&x>=1");
 		check("9+3*x+x^2", "9+3*x+x^2");
 		check("(9+3*x+x^2)*(3+x)^(-1)", "(9+3*x+x^2)/(3+x)");
@@ -1074,6 +1088,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Denominator(Sec(x))", "1");
 		check("Denominator(Tan(x))", "1");
 		check("Denominator(Tan(x), Trig->True)", "Cos(x)");
+		
+		check("Denominator(a / b)", "b");
+		check("Denominator(2 / 3)", "3");
+		check("Denominator(a + b)", "1");
 	}
 
 	public void testDepth() {
@@ -1464,6 +1482,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExpand() {
+		check("Expand((x + y) ^ 3) ", "x^3+3*x^2*y+3*x*y^2+y^3");
+		check("Expand((a + b) (a + c + d))", "a^2+a*b+a*c+b*c+a*d+b*d");
+		check("Expand((a + b) (a + c + d) (e + f) + e a a)",
+				"2*a^2*e+a*b*e+a*c*e+b*c*e+a*d*e+b*d*e+a^2*f+a*b*f+a*c*f+b*c*f+a*d*f+b*d*f");
+		check("Expand((a + b) ^ 2 * (c + d))", "a^2*c+2*a*b*c+b^2*c+a^2*d+2*a*b*d+b^2*d");
+		check("Expand((x + y) ^ 2 + x y)", "x^2+3*x*y+y^2");
+		check("Expand(((a + b) (c + d)) ^ 2 + b (1 + a))",
+				"a^2*c^2+2*a*b*c^2+b^2*c^2+2*a^2*c*d+4*a*b*c*d+2*b^2*c*d+a^2*d^2+2*a*b*d^2+b^2*d^\n" + "2+b(1+a)");
+		//TODO return {4 x + 4 y, 2 x + 2 y -> 4 x + 4 y}
+		check("Expand({4*(x + y), 2*(x + y) -> 4*(x + y)})", "{4*x+4*y,2*(x+y)->4*(x+y)}");
+		check("Expand(Sin(x*(1 + y)))", "Sin(x*(1+y))");
+		check("a*(b*(c+d)+e) // Expand ", "a*b*c+a*b*d+a*e");
+		check("(y^2)^(1/2)/(2x+2y)//Expand", "Sqrt(y^2)/(2*x+2*y)");
+
+		check("2(3+2x)^2/(5+x^2+3x)^3 // Expand ", "18/(5+3*x+x^2)^3+(24*x)/(5+3*x+x^2)^3+(8*x^2)/(5+3*x+x^2)^3");
+
 		check("Expand({x*(1+x)})", "{x+x^2}");
 		check("Expand((-g^2+4*f*h)*h)", "-g^2*h+4*f*h^2");
 		check("expand((1 + x)^10)", "1+10*x+45*x^2+120*x^3+210*x^4+252*x^5+210*x^6+120*x^7+45*x^8+10*x^9+x^10");
@@ -1504,6 +1538,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-2+x^2+(-10*x+8*x^2-4*x^4+(25-20*x+10*x^3)/(2+3*x^2)+(-20*x+16*x^2-8*x^4)/(2+3*x^\n"
 						+ "2)+(10*x^3-8*x^4+4*x^6)/(2+3*x^2))/(2+3*x^2)");
 		check("ExpandAll(Sqrt((1 + x)^2))", "Sqrt(1+2*x+x^2)");
+		
+		// TODO return a ^ 2 / (c ^ 2 + 2 c d + d ^ 2) + 2 a b / (c ^ 2 + 2 c d + d ^ 2) + b ^ 2 / (c ^ 2 + 2 c d + d ^ 2)
+		check("ExpandAll((a + b) ^ 2 / (c + d)^2)", "(a^2+2*a*b+b^2)/(c^2+2*c*d+d^2)");
+		check("ExpandAll((a + Sin(x*(1 + y)))^2)", "a^2+Sin(x+x*y)^2+2*a*Sin(x+x*y)");
+		check("ExpandAll(((1 + x)(1 + y))[x])", "(1+x+y+x*y)[x]");
 	}
 
 	public void testExponent() {
@@ -1540,6 +1579,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactor() {
+		// TODO return (2 + 2 x + 3 x ^ 2 + x ^ 4) / ((1 + x) ^ 2 (1 + x ^ 2) ^
+		// 2)
+		check("Factor(1 / (x^2+2x+1) + 1 / (x^4+2x^2+1))", "Factor(1/(1+2*x+x^2)+1/(1+2*x^2+x^4))");
+
 		check("Factor({x+x^2})", "{x*(1+x)}");
 		check("Factor(x^259+1)",
 				"(1+x)*(1+x-x^7-x^8+x^14+x^15-x^21-x^22+x^28+x^29-x^35-x^36-x^37-x^38+x^42+x^43+x^\n"
@@ -1719,7 +1762,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testFactorInteger() {
 		check("factors = FactorInteger(2010)", "{{2,1},{3,1},{5,1},{67,1}}");
 		check("Times @@ Power @@@ factors", "2010");
-		
+
 		check("FactorInteger(10^100+1)", "{{73,1},{137,1},{401,1},{1201,1},{1601,1},{1676321,1},{5964848081,1},{\n"
 				+ "129694419029057750551385771184564274499075700947656757821537291527196801,1}}");
 		check("FactorInteger(50!*8392894255239922239)",
@@ -1746,7 +1789,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{{5,1}},{{17,1}},{{257,1}},{{65537,1}},{{641,1},{6700417,1}},{{274177,1},{\n"
 						+ "67280421310721,1}}}");
 		check("FactorInteger(44343535354351600000003434353)", "{{149,1},{329569479697,1},{903019357561501,1}}");
-		
+
 		check("FactorInteger(2010 / 2011)", "{{2,1},{3,1},{5,1},{67,1},{2011,-1}}");
 	}
 
@@ -1974,7 +2017,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("GCD(1/3, 2/5, 3/7)", "1/105");
 		check("GCD(-3, 9)", "3");
 		check("GCD(b, a)", "GCD(a,b)");
-		
+
 		check("GCD(20, 30)", "10");
 		check("GCD(10, y)", "GCD(10,y)");
 		check("GCD(4, {10, 11, 12, 13, 14})", "{2,1,4,1,2}");
@@ -2174,7 +2217,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "9,9,9,9,10,10,10,10,10,12}");
 		check("IntegerExponent(2524,2)", "2");
 		check("IntegerExponent(-510000)", "4");
-		
+
 		check("IntegerExponent(16, 2)", "4");
 		check("IntegerExponent(-510000)", "4");
 		check("IntegerExponent(10, b)", "IntegerExponent(10,b)");
@@ -2401,7 +2444,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LCM(0,10)", "0");
 		check("LCM(10,0)", "0");
 		check("LCM(a)", "LCM(a)");
-		
+
 		check("LCM(15, 20)", "60");
 		check("LCM(20, 30, 40, 50)", "600");
 		// check("LCM(1/3, 2/5, 3/7)", "");
@@ -2686,7 +2729,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Mod(23,7)", "2");
 		check("Mod(23,-7)", "-5");
 		check("Mod(-23,-7)", "-2");
-		
+
 		check("Mod(14, 6)", "2");
 		check("Mod(-3,4)", "1");
 		check("Mod(-3,-4)", "-3");
@@ -3188,11 +3231,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testNextPrime() {
 		check("NextPrime(10000)", "10007");
-//		check("NextPrime(100, -5)", "73");
-//		check("NextPrime(10, -5)", "-2");
-//		check("NextPrime(5.5, 100)", "563");
+		// TODO
+		// check("NextPrime(100, -5)", "73");
+		// check("NextPrime(10, -5)", "-2");
+		// check("NextPrime(5.5, 100)", "563");
 	}
-	
+
 	public void testNIntegrate() {
 		check("NIntegrate(Cos(x), {x, 0, Pi})", "0.0");
 		check("NIntegrate(1/Sin(Sqrt(x)), {x, 0, 1}, PrecisionGoal->10)", "2.1108620052");
@@ -3322,6 +3366,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Numerator(Sec(x), Trig->True)", "1");
 		check("Numerator(Tan(x))", "Tan(x)");
 		check("Numerator(Tan(x), Trig->True)", "Sin(x)");
+		
+		check("Numerator(a / b)", "a");
+		check("Numerator(2 / 3)", "2");
+		check("Numerator(a + b)", "a+b");
 	}
 
 	public void testOddQ() {
@@ -3710,6 +3758,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPowerExpand() {
+		
+		check("PowerExpand((a ^ b) ^ c)", "a^(b*c)");
+		check("PowerExpand((a * b) ^ c)", "a^c*b^c");
+		check("PowerExpand((x ^ 2) ^ (1/2))", "x");
+		
 		check("PowerExpand(Log(a*b*c, d))", "Log(d)/(Log(a)+Log(b)+Log(c))");
 		check("PowerExpand(Log(a*b*c))", "Log(a)+Log(b)+Log(c)");
 		check("PowerExpand(Log(a*b^c,d))", "Log(d)/(c*Log(b)+Log(a))");
@@ -3754,12 +3807,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PowerMod(2, 10^9, 18)", "16");
 		check("PowerMod(2, {10, 11, 12, 13, 14}, 5)", "{4,3,1,2,4}");
 		check("PowerMod(147198853397, -1, 73599183960)", "43827926933");
-		
+
 		check("PowerMod(2, 10000000, 3)", "1");
 		check("PowerMod(3, -2, 10)", "9");
 		check("PowerMod(0, -1, 2)", "PowerMod(0,-1,2)");
 		check("PowerMod(5, 2, 0)", "PowerMod(5,2,0)");
-		
+
 	}
 
 	public void testPrependTo() {
@@ -3787,7 +3840,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PrimeOmega(50!)", "108");
 		check("PrimeOmega({1,2,3,4,5,6,20})", "{0,1,1,2,1,2,3}");
 	}
-	
+
 	public void testPrimePowerQ() {
 		check("PrimePowerQ(-8)", "True");
 		check("PrimePowerQ(9)", "True");
@@ -3799,7 +3852,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testPrimeQ() {
 		check("PrimeQ(99999999999971)", "True");
 		check("Select(Range(100), PrimeQ)", "{2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97}");
-		check("PrimeQ(Range(20))", "{False,True,True,False,True,False,True,False,False,False,True,False,True,False,False,False,True,False,True,False}");
+		check("PrimeQ(Range(20))",
+				"{False,True,True,False,True,False,True,False,False,False,True,False,True,False,False,False,True,False,True,False}");
 	}
 
 	public void testPrimitiveRoots() {
@@ -4309,6 +4363,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSimplify() {
+		check("Simplify(2*Sin(x)^2 + 2*Cos(x)^2)", "2");
+		check("Simplify(f(x))", "f(x)");
+		check("Simplify(a*x^2+b*x^2)", "(a+b)*x^2");
+
 		check("Simplify(5*x*(6*x+30))", "30*x*(5+x)");
 		check("Simplify(Sqrt(x^2), Assumptions -> x>0)", "x");
 		check("Together(2/(1/Tan(x) + Tan(x)))", "2/(Cot(x)+Tan(x))");
@@ -4955,6 +5013,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTogether() {
+		// TODO return {x (2 + y) / (1 + y) ^ 2}
+		check("Together({x / (y+1) + x / (y+1)^2})", "{(2*x+x*y)/(1+2*y+y^2)}");
+
+		check("Together(a / c + b / c)", "(a+b)/c");
+
+		check("Together(f(a / c + b / c))", "f(a/c+b/c)");
+		// TODO return f[x] (1 + x) / x ^ 2
+		check("f(x)/x+f(x)/x^2//Together", "f(x)/x^2+f(x)/x");
+
 		check("Together(1 < 1/x + 1/(1 + x) < 2)", "1<(1+2*x)/(x+x^2)<2");
 		check("Together(1/(1+1/(1+1/a)))", "(1+a)/(1+2*a)");
 		check("Together(1/(1+1/(1+1/(1+a))))", "(2+a)/(3+2*a)");
@@ -5147,6 +5214,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Variables((a - b)/(x + y) - 2/z)", "{a,b,x,y,z}");
 		check("Variables(Sqrt(x + y - z^2) + (-2 t)^(2/3))", "{t,x,y,z}");
 		check("Variables(y + x z)", "{x,y,z}");
+		
+		check("Variables(a x^2 + b x + c)", "{a,b,c,x}");
+		check("Variables({a + b x, c y^2 + x/2})", "{a,b,c,x,y}");
+		check("Variables(x + Sin(y))", "{x,Sin(y)}");
+		check("Variables(E^x)", "{}");
+		check("Variables(a^x)", "{a^x}");
 	}
 
 	public void testVariance() {
