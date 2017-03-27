@@ -15,5 +15,4 @@ Factor(expr)
 ``` 
 >>> Factor(x^4-1, GaussianIntegers->True)
 (x-1)*(x+1)*(x-I)*(x+I)
-``` 
- 
+```
