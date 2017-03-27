@@ -2,6 +2,7 @@ package org.matheclipse.core.eval;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -109,6 +110,9 @@ public class MMAConsole {
 							}
 						}
 						System.out.println();
+						if (list.size() == 2) {
+							printDocumentation(list.get(1).toString());
+						}
 						continue;
 					}
 					outputExpression = console.interpreter(inputExpression);
@@ -127,6 +131,43 @@ public class MMAConsole {
 		}
 	}
 
+	/**
+	 * Load the documentation fro ressources folder if available ad print to
+	 * output.
+	 * 
+	 * @param symbolName
+	 */
+	private static void printDocumentation(String symbolName) {
+		// read markdown file
+		String fileName = symbolName + ".md";
+
+		// Get file from resources folder
+		ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+		File file = new File(classloader.getResource(fileName).getFile());
+		try {
+			final BufferedReader f = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+			String line;
+			boolean emptyLine = false;
+			while ((line = f.readLine()) != null) {
+				if (line.startsWith("```")) {
+					continue;
+				}
+				if (line.trim().length() == 0) {
+					if (emptyLine) {
+						continue;
+					}
+					emptyLine = true;
+				} else {
+					emptyLine = false;
+				}
+				System.out.println(line);
+			}
+			f.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * Prints the usage of how to use this class to System.out
 	 */
