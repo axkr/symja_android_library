@@ -1,5 +1,6 @@
 package org.matheclipse.core.examples;
 
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -8,7 +9,8 @@ import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
 /**
- * See <a href="http://stackoverflow.com/questions/43024172">Stackoverflow 43024172</a>
+ * See <a href="http://stackoverflow.com/questions/43024172">Stackoverflow
+ * 43024172</a>
  */
 public class SolveSO43024172 {
 
@@ -17,7 +19,11 @@ public class SolveSO43024172 {
 			ExprEvaluator util = new ExprEvaluator();
 			IExpr expr = util.evaluate("(x1)^2+4*(x2)^2-2*x1-4*x2");
 			System.out.println(expr.toString());
-
+			
+			// determine the variables used in the expression
+			IAST variableList = VariablesSet.getVariables(expr);
+			System.out.println(variableList.toString());
+			
 			IExpr a = util.evaluate("a");
 			IExpr x1 = util.evaluate("x1");
 			IExpr x2 = util.evaluate("x2");
