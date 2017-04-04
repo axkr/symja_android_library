@@ -235,7 +235,7 @@ public final class ExpVectorLong {
 	 * @return vatiable names.
 	 */
 	public static IAST STDVARS(String prefix, int n) {
-		IAST vars = F.ListC(n);  
+		IAST vars = F.ListAlloc(n);  
 		if (prefix == null || prefix.length() == 0) {
 			prefix = "x";
 		}

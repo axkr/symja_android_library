@@ -25,7 +25,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Conversions between an IExpr object and misc other object class types
  */
 public class Convert {
-
 	/**
 	 * Returns a FieldMatrix if possible.
 	 * 
@@ -140,21 +139,8 @@ public class Convert {
 			double[][] array = new double[0][0];
 			return new Array2DRowRealMatrix(array, false);
 		}
-		// final int rowSize = listMatrix.size() - 1;
-		// final int colSize = currInRow.size() - 1;
 
 		final double[][] elements = Expr2Object.toDoubleMatrix(listMatrix);
-		// final double[][] elements = new double[rowSize][colSize];
-		// for (int i = 1; i < rowSize + 1; i++) {
-		// currInRow = (IAST) listMatrix.get(i);
-		// if (currInRow.head() != F.List) {
-		// return null;
-		// }
-		// for (int j = 1; j < colSize + 1; j++) {
-		// elements[i - 1][j - 1] = ((ISignedNumber)
-		// currInRow.get(j)).doubleValue();
-		// }
-		// }
 		return new Array2DRowRealMatrix(elements, false);
 	}
 
@@ -180,11 +166,6 @@ public class Convert {
 			return null;
 		}
 
-		// final int rowSize = listVector.size() - 1;
-		// final double[] elements = new double[rowSize];
-		// for (int i = 0; i < rowSize; i++) {
-		// elements[i] = ((ISignedNumber) listVector.get(i + 1)).doubleValue();
-		// }
 		final double[] elements = Expr2Object.toDoubleVector(listVector);
 		return new ArrayRealVector(elements, false);
 	}
@@ -221,10 +202,10 @@ public class Convert {
 		final int rowSize = matrix.getRowDimension();
 		final int colSize = matrix.getColumnDimension();
 
-		final IAST out = F.ListC(rowSize);
+		final IAST out = F.ListAlloc(rowSize);
 		IAST currOutRow;
 		for (int i = 0; i < rowSize; i++) {
-			currOutRow = F.ListC(colSize);
+			currOutRow = F.ListAlloc(colSize);
 			out.append(currOutRow);
 			for (int j = 0; j < colSize; j++) {
 				IExpr expr = matrix.getEntry(i, j);
@@ -351,9 +332,9 @@ public class Convert {
 		try {
 			int columnLength = dd[0].length;
 			int rowLength = dd.length;
-			final IAST list = F.ListC(columnLength);
+			final IAST list = F.ListAlloc(columnLength);
 			for (int i = 0; i < columnLength; i++) {
-				final IAST row = F.ListC(rowLength);
+				final IAST row = F.ListAlloc(rowLength);
 				for (int j = 0; j < rowLength; j++) {
 					row.append(F.num(dd[j][i]));
 				}
@@ -378,7 +359,7 @@ public class Convert {
 		}
 		final int rowSize = vector.getDimension();
 
-		final IAST out = F.ListC(rowSize);
+		final IAST out = F.ListAlloc(rowSize);
 		for (int i = 0; i < rowSize; i++) {
 			out.append(vector.getEntry(i));
 		}

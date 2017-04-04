@@ -133,8 +133,9 @@ public class Functors {
 	}
 
 	private static class ReplaceArgFunctor implements Function<IExpr, IExpr> {
-		private final IAST fConstant;
+		private final IAST fFunction;
 		private final int fPosition;
+		private EvalEngine fEngine;
 
 		/**
 		 * 
@@ -142,20 +143,21 @@ public class Functors {
 		 *            the complete AST which should be cloned in the
 		 *            {@code apply} method
 		 * @param position
-		 *            the position which should be replaced in the
+		 *            the position which should be replaced and evaluated in the
 		 *            <code>apply()</code> method.
 		 */
 		public ReplaceArgFunctor(final IAST ast, int position) {
-			fConstant = ast;
+			fFunction = ast;
 			fPosition = position;
+			fEngine = EvalEngine.get();
 		}
 
 		@Override
 		@Nonnull
 		public IExpr apply(final IExpr arg) {
-			final IAST ast = fConstant.copy();
+			final IAST ast = fFunction.copy();
 			ast.set(fPosition, arg);
-			return ast;
+			return fEngine.evaluate(ast);
 		}
 
 	}
@@ -431,7 +433,7 @@ public class Functors {
 	 * @throws WrongArgumentType
 	 */
 	public static Function<IExpr, IExpr> rules(@Nonnull String[] strRules) throws WrongArgumentType {
-		IAST astRules = F.ListC(strRules.length);
+		IAST astRules = F.ListAlloc(strRules.length);
 		ExprParser parser = new ExprParser(EvalEngine.get());
 		// final Parser parser = new Parser();
 		final EvalEngine engine = EvalEngine.get();
@@ -508,15 +510,45 @@ public class Functors {
 			IExpr temp = equalRules.get(rule.arg1());
 			if (temp == null) {
 				if (rule.arg1().isOrderlessAST() || rule.arg1().isFlatAST()) {
-					matchers.add(
-							new PatternMatcherAndEvaluator(ISymbol.RuleType.SET_DELAYED, rule.arg1(), rule.arg2()));
+					if (rule.isRuleDelayed()) {
+						matchers.add(
+								new PatternMatcherAndEvaluator(ISymbol.RuleType.SET_DELAYED, rule.arg1(), rule.arg2()));
+					} else {
+						matchers.add(new PatternMatcherAndEvaluator(ISymbol.RuleType.SET, rule.arg1(),
+								evalOneIdentity(rule.arg2())));
+					}
 					return;
 				}
 				equalRules.put(rule.arg1(), rule.arg2());
 			}
 		} else {
-			matchers.add(new PatternMatcherAndEvaluator(ISymbol.RuleType.SET_DELAYED, rule.arg1(), rule.arg2()));
+			if (rule.isRuleDelayed()) {
+				matchers.add(new PatternMatcherAndEvaluator(ISymbol.RuleType.SET_DELAYED, rule.arg1(), rule.arg2()));
+			} else {
+				matchers.add(new PatternMatcherAndEvaluator(ISymbol.RuleType.SET, rule.arg1(),
+						evalOneIdentity(rule.arg2())));
+			}
 		}
+	}
+
+	/**
+	 * Test if <code>expr</code> is an <code>IAST</code> with one argument and
+	 * the head symbol contains the <code>OneIdentity</code> attribute.
+	 * 
+	 * @param expr
+	 * @return
+	 */
+	private static IExpr evalOneIdentity(IExpr expr) {
+		if (expr.isAST()) {
+			IAST arg2AST = (IAST) expr;
+			if (arg2AST.isAST1() && arg2AST.head().isSymbol()) {
+				final int attr = ((ISymbol) arg2AST.head()).getAttributes();
+				if ((ISymbol.ONEIDENTITY & attr) == ISymbol.ONEIDENTITY) {
+					expr = arg2AST.arg1();
+				}
+			}
+		}
+		return expr;
 	}
 
 	private Functors() {

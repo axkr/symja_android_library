@@ -362,26 +362,6 @@ public class Scanner {
 	}
 
 	protected String getIdentifier() {
-		if (fCurrentChar == '\\') {
-			if (fInputString.length() > fCurrentPosition) {
-				if (fInputString.charAt(fCurrentPosition) == '[') {
-
-					final int startPosition = fCurrentPosition++ - 1;
-					getChar();
-					while (Character.isLetterOrDigit(fCurrentChar)) {
-						getChar();
-					}
-					if (fCurrentChar == ']') {
-						int endPosition = fCurrentPosition--;
-						getChar();
-						return fInputString.substring(startPosition, endPosition);
-					}
-					throwSyntaxError("Special identifier definition '\\[...]' not closed with ']' ");
-
-				}
-			}
-		}
-
 		final int startPosition = fCurrentPosition - 1;
 
 		getChar();
@@ -428,14 +408,8 @@ public class Scanner {
 	 */
 	protected void getNextToken() throws SyntaxError {
 
-		while (fInputString.length() > fCurrentPosition) {
-			if (fInputString.charAt(fCurrentPosition) == '\\') {
-				if (fInputString.length() > fCurrentPosition + 1 && fInputString.charAt(fCurrentPosition + 1) == '[') {
-					fToken = TT_IDENTIFIER;
-					fCurrentChar = fInputString.charAt(fCurrentPosition++);
-					return;
-				}
-			}
+		while (fInputString.length() > fCurrentPosition) { 
+			
 			getNextChar();
 			fToken = TT_EOF;
 
@@ -693,6 +667,7 @@ public class Scanner {
 	 * @return
 	 */
 	protected List<Operator> getOperator() {
+		char lastChar;
 		final int startPosition = fCurrentPosition - 1;
 		fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
 		List<Operator> list = fFactory.getOperatorList(fOperatorString);
@@ -704,6 +679,7 @@ public class Scanner {
 		}
 		getChar();
 		while (fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0) {
+			lastChar = fCurrentChar;
 			fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
 			list = fFactory.getOperatorList(fOperatorString);
 			if (list != null) {
@@ -711,6 +687,9 @@ public class Scanner {
 				lastOperatorPosition = fCurrentPosition;
 			}
 			getChar();
+			if (lastChar == ';' && fCurrentChar != ';') {
+				break;
+			}
 		}
 		if (lastOperatorPosition > 0) {
 			fCurrentPosition = lastOperatorPosition;
@@ -784,7 +763,8 @@ public class Scanner {
 
 	protected void initialize(final String s) throws SyntaxError {
 		initializeNullScanner();
-		fInputString = s;
+		StringBuilder buf = new StringBuilder(s.length());
+		fInputString = Characters.substituteCharacters(s, buf);
 		if (s != null) {
 			getNextToken();
 		}

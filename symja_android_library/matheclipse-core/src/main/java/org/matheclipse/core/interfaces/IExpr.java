@@ -651,6 +651,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is the <code>Alternatives</code> function
+	 * <code>Alternatives[&lt;pattern1&gt;, &lt;pattern2&gt;, ...]</code>
+	 * 
+	 * @return
+	 */
+	default boolean isAlternatives() {
+		return false;
+	}
+	
+	/**
 	 * Test if this expression is the function <code>And[&lt;arg&gt;,...]</code>
 	 * 
 	 * @return
@@ -1994,6 +2004,26 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is of the form
+	 * <code>Rule[&lt;arg1&gt;, &lt;arg2&gt;]</code>.
+	 * 
+	 * @return
+	 */
+	default boolean isRule() {
+		return false;
+	}
+
+	/**
+	 * Test if this expression is of the form
+	 * <code>RuleDelayed[&lt;arg1&gt;, &lt;arg2&gt;]</code>.
+	 * 
+	 * @return
+	 */
+	default boolean isRuleDelayed() {
+		return false;
+	}
+
+	/**
 	 * Test if this expression equals the given expression. If the compared
 	 * expressions are of the same numeric type, they are equal to a given
 	 * EPSILON
@@ -2076,12 +2106,17 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is the function <code>Span[...]</code>
+	 * Test if this expression is the function <code>Span[...]</code> with 2 or 3 arguments.
 	 * 
-	 * @return
+	 * @param size
+	 *            the size of an AST for which <code>Span[]</code> should be
+	 *            applied.
+	 * @return <code>null</code> if this is no <code>Span[...]</code>
+	 *         expression.
+	 * @throws WrongArgumentType
 	 */
-	default boolean isSpan() {
-		return false;
+	default int[] isSpan(int size) {
+		return null;
 	}
 
 	/**

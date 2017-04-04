@@ -2292,12 +2292,12 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * @return the monomials of a polynomial
 	 */
 	public IAST coefficientRules() {
-		IAST result = F.ListC(val.size());
+		IAST result = F.ListAlloc(val.size());
 		for (Map.Entry<ExpVectorLong, IExpr> monomial : val.entrySet()) {
 			IExpr coeff = monomial.getValue();
 			ExpVectorLong exp = monomial.getKey();
 			int len = exp.length();
-			IAST ruleList = F.ListC(len);
+			IAST ruleList = F.ListAlloc(len);
 			for (int i = 0; i < len; i++) {
 				ruleList.append(F.integer(exp.getVal(len - i - 1)));
 			}
@@ -2312,7 +2312,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * @return the monomials of a polynomial
 	 */
 	public IAST monomialList() {
-		IAST result = F.ListC(val.size());
+		IAST result = F.ListAlloc(val.size());
 		for (Map.Entry<ExpVectorLong, IExpr> monomial : val.entrySet()) {
 			// IExpr coeff = monomial.getValue();
 			ExpVectorLong exp = monomial.getKey();
@@ -2364,7 +2364,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 			return F.ast(exprs, F.List);
 		} else {
 			long lastDegree = 0L;
-			IAST result = F.ListC(val.size());
+			IAST result = F.ListAlloc(val.size());
 			for (ExpVectorLong expArray : val.keySet()) {
 				exp = expArray.getVal(0);
 				while (lastDegree < exp) {

@@ -18,7 +18,6 @@ import org.matheclipse.core.visit.VisitorCollectionBoolean;
 /**
  * Determine the variable symbols from a Symja expression and store them
  * internally in a <code>java.util.Set</code>.
- * 
  */
 public class VariablesSet {
 	/**
@@ -307,7 +306,7 @@ public class VariablesSet {
 	 */
 	public IAST getVarList() {
 		final Iterator<IExpr> iter = fVariablesSet.iterator();
-		final IAST list = F.ListC(fVariablesSet.size());
+		final IAST list = F.ListAlloc(fVariablesSet.size());
 		while (iter.hasNext()) {
 			list.append(iter.next());
 		}
@@ -325,7 +324,7 @@ public class VariablesSet {
 		Set<IExpr> fVariablesSet = new TreeSet<IExpr>();
 		expr.accept(new AlgebraVariablesVisitor(fVariablesSet));
 		final Iterator<IExpr> iter = fVariablesSet.iterator();
-		final IAST list = F.ListC(fVariablesSet.size());
+		final IAST list = F.ListAlloc(fVariablesSet.size());
 		while (iter.hasNext()) {
 			list.append(iter.next());
 		}

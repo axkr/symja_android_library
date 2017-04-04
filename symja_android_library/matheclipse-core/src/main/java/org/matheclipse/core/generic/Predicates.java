@@ -241,8 +241,9 @@ public class Predicates {
 
 	/**
 	 * Returns a predicate that evaluates to {@code true} if the
-	 * <code>input</code> is an AST list, which contains one of the given
-	 * <b>header elements</b> at index position <code>0</code>.
+	 * <code>input</code> is an AST list, which equals one of the given
+	 * <b>header elements</b> with it's header element at index position
+	 * <code>0</code>.
 	 * 
 	 * @param heads
 	 * @return a <code>java.util.function.Predicate</code> predicate of one
@@ -277,7 +278,8 @@ public class Predicates {
 
 	/**
 	 * Check if the evaluation of the <code>expr</code> object gives
-	 * <code>True</code>. A <code>IsUnaryTrue</code> predicate will be returned.
+	 * <code>True</code>. A <code>IsBinaryTrue</code> predicate will be
+	 * returned.
 	 * 
 	 * @param expr
 	 * @return a <code>java.util.function.BiPredicate</code> predicate of two
@@ -414,12 +416,12 @@ public class Predicates {
 	 * returned. Otherwise a <code>IsUnaryTrue</code> predicate will be
 	 * returned.
 	 * 
-	 * @param expr
+	 * @param head
 	 * @return a <code>java.util.function.Predicate</code> predicate of one
 	 *         argument.
 	 */
-	public static Predicate<IExpr> isTrue(IExpr expr) {
-		return new IsUnaryTrue<IExpr>(EvalEngine.get(), expr);
+	public static Predicate<IExpr> isTrue(IExpr head) {
+		return new IsUnaryTrue<IExpr>(EvalEngine.get(), head);
 	}
 
 	/**

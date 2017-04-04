@@ -1,12 +1,10 @@
 package org.matheclipse.core.eval.util;
 
-
 /**
  * A sequence specification.
  * 
  */
 public class ListSizeSequence extends AbstractSequence {
-
 	protected final int fHeadOffset;
 
 	protected int fListSize;
@@ -29,9 +27,9 @@ public class ListSizeSequence extends AbstractSequence {
 
 	public ListSizeSequence(final int startOffset, final int endOffset, final int step, final int headOffset) {
 		super(startOffset, endOffset, step);
-		if (step < 0) {
-			throw new WrongSequenceException("Negative step:" + step);
-		}
+		// if (step < 0) {
+		// throw new WrongSequenceException("Negative step:" + step);
+		// }
 		fHeadOffset = headOffset;
 		fListSize = Integer.MIN_VALUE;
 	}
@@ -48,21 +46,10 @@ public class ListSizeSequence extends AbstractSequence {
 	 * {@inheritDoc}
 	 */
 	public int getStart() {
-		if (fEndOffset < 0) {
-			if (fStartOffset < 0) {
-				// final int tailOffset = fList.size() + fFrom;
-				final int tailOffset = fListSize + fStartOffset;
-				if (tailOffset >= 0) {
-					return tailOffset;
-				}
-			}
-			return fHeadOffset;
-		} else {
-			if (fStartOffset >= 0) {
-				return fStartOffset;
-			}
+		if (fStartOffset >= 0) {
+			return fStartOffset;
 		}
-		throw new WrongSequenceException("Wrong start offset:" + fStartOffset);
+		return fListSize + fStartOffset;
 	}
 
 	/**
@@ -70,13 +57,10 @@ public class ListSizeSequence extends AbstractSequence {
 	 */
 	public int getEnd() {
 		if (fEndOffset < 0) {
-			if (fStartOffset < 0) {
-				return fListSize;
-			}
-			if ((fStartOffset + fHeadOffset) <= fListSize) {
-				return fStartOffset + fHeadOffset;
-			}
-			throw new WrongSequenceException("Wrong end offset:" + fEndOffset);
+			return fListSize + fEndOffset + 1;
+		}
+		if (fEndOffset > fListSize) {
+			return fListSize;
 		}
 		return fEndOffset + 1;
 	}

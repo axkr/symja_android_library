@@ -36,6 +36,7 @@ import org.matheclipse.parser.client.ast.StringNode;
 import org.matheclipse.parser.client.ast.SymbolNode;
 
 public class ASTNodeFactory implements IParserFactory {
+	
 	public final static int PLUS_PRECEDENCE = 310;
 
 	public final static int TIMES_PRECEDENCE = 400;
@@ -43,6 +44,8 @@ public class ASTNodeFactory implements IParserFactory {
 	public final static int DIVIDE_PRECEDENCE = 470;
 
 	public final static int POWER_PRECEDENCE = 590;
+
+	public final static int APPLY_PRECEDENCE = 620;
 
 	static final String[] HEADER_STRINGS = { "MessageName", "Get", "PatternTest", "MapAll", "TimesBy", "Plus", "UpSet",
 			"CompoundExpression", "Map", "Unset", "Apply", "Apply", "ReplaceRepeated", "Less", "And", "Divide", "Set",
@@ -57,6 +60,11 @@ public class ASTNodeFactory implements IParserFactory {
 			":", "//", "/=", "||", ";;", "==", "<>", "!=", "--", "-=", "+", "...", "=!=", "->", "^:=", "++", "&", ">",
 			"--", "-", ":=", "|", "+=", "..", "/." };
 
+	public static final ApplyOperator APPLY_OPERATOR = new ApplyOperator("@@", "Apply", APPLY_PRECEDENCE,
+			InfixOperator.RIGHT_ASSOCIATIVE);
+	public static final ApplyOperator APPLY_LEVEL_OPERATOR = new ApplyOperator("@@@", "Apply", APPLY_PRECEDENCE,
+			InfixOperator.RIGHT_ASSOCIATIVE);
+
 	static final Operator[] OPERATORS = { new InfixOperator("::", "MessageName", 750, InfixOperator.NONE),
 			new PrefixOperator("<<", "Get", 720), new InfixOperator("?", "PatternTest", 680, InfixOperator.NONE),
 			new InfixOperator("//@", "MapAll", 620, InfixOperator.RIGHT_ASSOCIATIVE),
@@ -66,8 +74,11 @@ public class ASTNodeFactory implements IParserFactory {
 			new InfixOperator(";", "CompoundExpression", 10, InfixOperator.NONE),
 			new InfixOperator("/@", "Map", 620, InfixOperator.RIGHT_ASSOCIATIVE),
 			new PostfixOperator("=.", "Unset", 670),
-			new ApplyOperator("@@", "Apply", 620, InfixOperator.RIGHT_ASSOCIATIVE),
-			new ApplyOperator("@@@", "Apply", 620, InfixOperator.RIGHT_ASSOCIATIVE),
+			APPLY_OPERATOR,
+			APPLY_LEVEL_OPERATOR,
+			// new ApplyOperator("@@", "Apply", APPLY_PRECEDENCE,
+			// InfixOperator.RIGHT_ASSOCIATIVE),
+			// new ApplyOperator("@@@", "Apply", APPLY_PRECEDENCE, InfixOperator.RIGHT_ASSOCIATIVE),
 			new InfixOperator("//.", "ReplaceRepeated", 110, InfixOperator.LEFT_ASSOCIATIVE),
 			new InfixOperator("<", "Less", 290, InfixOperator.NONE),
 			new InfixOperator("&&", "And", 215, InfixOperator.NONE),
@@ -85,7 +96,7 @@ public class ASTNodeFactory implements IParserFactory {
 			new InfixOperator(">=", "GreaterEqual", 290, InfixOperator.NONE),
 			new InfixOperator("/;", "Condition", 130, InfixOperator.LEFT_ASSOCIATIVE),
 			new InfixOperator(":", "Colon", 80, InfixOperator.NONE),
-			new InfixOperator("//", "//", 70, InfixOperator.NONE),
+			new InfixOperator("//", "//", 70, InfixOperator.LEFT_ASSOCIATIVE),
 			new InfixOperator("/=", "DivideBy", 100, InfixOperator.NONE),
 			new InfixOperator("||", "Or", 213, InfixOperator.NONE),
 			new InfixOperator(";;", "Span", 305, InfixOperator.NONE),

@@ -18,6 +18,7 @@ package org.matheclipse.parser.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.matheclipse.core.expression.F;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FunctionNode;
 import org.matheclipse.parser.client.ast.IConstantOperators;
@@ -827,6 +828,7 @@ public class Parser extends Scanner {
 
 				if (infixOperator != null) {
 					if (infixOperator.getPrecedence() >= min_precedence) {
+						
 						getNextToken();
 						ASTNode compoundExpressionNull = parseCompoundExpressionNull(infixOperator, lhs);
 						if (compoundExpressionNull != null) {
@@ -838,8 +840,14 @@ public class Parser extends Scanner {
 						}
 						rhs = parseLookaheadOperator(infixOperator.getPrecedence());
 						lhs = infixOperator.createFunction(fFactory, lhs, rhs);
-
+						while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
+								&& infixOperator.getOperatorString().equals(fOperatorString)) {
+							getNextToken();
+							rhs = parseLookaheadOperator(infixOperator.getPrecedence());
+							((FunctionNode) lhs).add(rhs);
+						}
 						continue;
+						
 					}
 				} else {
 					postfixOperator = determinePostfixOperator();
@@ -958,8 +966,16 @@ public class Parser extends Scanner {
 			if (";;".equals(fOperatorString)) {
 				FunctionNode function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Span));
 				function.add(fFactory.createInteger(1));
-				function.add(fFactory.createSymbol(IConstantOperators.All));
 				getNextToken();
+				if (fToken == TT_COMMA || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_PRECEDENCE_CLOSE) {
+					function.add(fFactory.createSymbol(IConstantOperators.All));
+					return function;
+				}
+				function.add(parsePrimary());
+				if (fToken == TT_OPERATOR && ";;".equals(fOperatorString)) {
+					function.add(fFactory.createSymbol(IConstantOperators.All));
+					getNextToken();
+				}
 				return function;
 			}
 			if (".".equals(fOperatorString)) {

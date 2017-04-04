@@ -17,6 +17,7 @@ import org.matheclipse.core.interfaces.IExpr;
  */
 public class MainTestCase extends AbstractTestCase {
 
+	
 	public MainTestCase(String name) {
 		super(name);
 		Config.SERVER_MODE = true;
@@ -153,8 +154,8 @@ public class MainTestCase extends AbstractTestCase {
 
 		check("10!", "3628800");
 
-		check("\\[alpha]", "\\[alpha]");
-		check("\\[alpha]+\\[alpha]", "2*\\[alpha]");
+		check("\\[Alpha]", "α");
+		check("\\[Alpha]+\\[Phi]\\[Pi]", "α+ϕπ");
 
 		check("(a+b)[x]", "(a+b)[x]");
 	}
@@ -2878,8 +2879,8 @@ public class MainTestCase extends AbstractTestCase {
 		check("Norm(2/15)", "2/15");
 		check("Norm({3,I,x,y})", "Sqrt(10+Abs(x)^2+Abs(y)^2)");
 		check("Norm({3.0,I,x,y})", "Sqrt(10.0+Abs(x)^2.0+Abs(y)^2.0)");
-		check("EuclidianDistance({1,2,3,4},{5,6,7,8})", "8");
-		check("SquaredEuclidianDistance({1,2,3,4},{5,6,7,8})", "64");
+		check("EuclideanDistance({1,2,3,4},{5,6,7,8})", "8");
+		check("SquaredEuclideanDistance({1,2,3,4},{5,6,7,8})", "64");
 		check("ChessboardDistance({1,2,3,4},{5,6,9,8})", "6");
 		check("ManhattanDistance({1,2,3,4},{5,6,7,8})", "16");
 	}
@@ -3578,7 +3579,10 @@ public class MainTestCase extends AbstractTestCase {
 		check("LinearSolve({{1,0,-3},{0,1,2},{0,0,0}},{-5,4,0})", "{-5,4,0}");
 
 		// prints additional message to console
-		check("LinearSolve({{1,0,0},{0,1,0},{0,0,0}},{3,2,1})", "LinearSolve({{1,0,0},{0,1,0},{0,0,0}},{3,2,1})");
+		check("LinearSolve({{1,0,0},{0,1,0},{0,0,0}},{3,2,1})", "LinearSolve(\n" + 
+				"{{1,0,0},\n" + 
+				" {0,1,0},\n" + 
+				" {0,0,0}},{3,2,1})");
 
 		check("LinearSolve({{1,2,3},{2,-1,1},{3,0,-1}},{9,8,3})", "{2,-1,3}");
 	}

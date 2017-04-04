@@ -830,6 +830,14 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 					matched = true;
 					fPatternMap.copyPatternValuesFromPatternMatcher(matcher.fPatternMap);
 				}
+			} else if (lhsPatternExpr.isAlternatives()) {
+				IAST alternatives = (IAST) lhsPatternExpr;
+				for (int i = 1; i < alternatives.size(); i++) {
+					if (matchExpr(alternatives.get(i), lhsEvalExpr)) {
+						return true;
+					}
+				}
+				return false;
 			} else {
 				IAST lhsPatternAST = (IAST) lhsPatternExpr;
 				IExpr[] patternValues = fPatternMap.copyPattern();

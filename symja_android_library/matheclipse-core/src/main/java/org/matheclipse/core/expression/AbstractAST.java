@@ -22,6 +22,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.function.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -131,9 +132,6 @@ public abstract class AbstractAST implements IAST {
 		}
 	}
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -8682706994448890660L;
 
 	private static int compareToAST(final IAST lhaAST, final IAST rhsAST) {
@@ -1179,6 +1177,12 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public final boolean isAlternatives() {
+		return isSameHeadSizeGE(F.Alternatives, 1);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isAnd() {
 		return isSameHeadSizeGE(F.And, 3);
 	}
@@ -2061,9 +2065,21 @@ public abstract class AbstractAST implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isRuleAST() {
-		return size() == 3 && (head().equals(F.Rule) || head().equals(F.RuleDelayed));
+		return (head().equals(F.Rule) || head().equals(F.RuleDelayed)) && size() == 3;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isRule() {
+		return head().equals(F.Rule) && size() == 3;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isRuleDelayed() {
+		return head().equals(F.RuleDelayed) && size() == 3;
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isSame(IExpr expression) {
@@ -2171,9 +2187,43 @@ public abstract class AbstractAST implements IAST {
 		return isSameHead(F.SlotSequence, 2) && arg1().isInteger();
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public final boolean isSpan() {
-		return isSameHeadSizeGE(F.Span, 3);
+	public final int[] isSpan(int size) {
+		int[] result = null;
+		if (isSameHead(F.Span, 3, 4)) {
+			int step = 1;
+			if (isAST3()) {
+				step = Validate.checkIntType(this, 3, Integer.MIN_VALUE);
+			}
+			int index1 = Validate.checkIntType(this, 1, Integer.MIN_VALUE);
+			int index2;
+			if (arg2().equals(F.All)) {
+				index2 = size - 1;
+				if (step < 0) {
+					int tempIndx = index1;
+					index1 = index2;
+					index2 = tempIndx;
+				}
+			} else {
+				index2 = Validate.checkIntType(this, 2, Integer.MIN_VALUE);
+			}
+
+			int start = index1;
+			if (index1 < 0) {
+				start = size + index1;
+			}
+			int last = index2;
+			if (index2 < 0) {
+				last = size + index2;
+			}
+			result = new int[3];
+			result[0] = start;
+			result[1] = last;
+			result[2] = step;
+			return result;
+		}
+		return null;
 	}
 
 	/** {@inheritDoc} */

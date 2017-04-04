@@ -308,10 +308,8 @@ public class F {
 	public final static IBuiltInSymbol AppendTo = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "appendto" : "AppendTo",
 			new org.matheclipse.core.builtin.function.AppendTo());
-	public final static IBuiltInSymbol Apply = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "apply" : "Apply",
-			new org.matheclipse.core.builtin.function.Apply());
-	public final static IBuiltInSymbol Array = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "array" : "Array",
-			new org.matheclipse.core.builtin.function.Array());
+	public final static IBuiltInSymbol Apply = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "apply" : "Apply");
+	public final static IBuiltInSymbol Array = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "array" : "Array");
 	public final static IBuiltInSymbol ArrayQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arrayq" : "ArrayQ");
 	public final static IBuiltInSymbol AtomQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "atomq" : "AtomQ");
@@ -324,8 +322,7 @@ public class F {
 	public final static IBuiltInSymbol Break = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "break" : "Break");
 	public final static IBuiltInSymbol BooleanQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "booleanq" : "BooleanQ");
-	public final static IBuiltInSymbol Cases = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cases" : "Cases",
-			new org.matheclipse.core.builtin.function.Cases());
+	public final static IBuiltInSymbol Cases = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cases" : "Cases");
 	public final static IBuiltInSymbol Catch = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "catch" : "Catch");
 	public final static IBuiltInSymbol Chop = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "chop" : "Chop",
 			new org.matheclipse.core.builtin.function.Chop());
@@ -347,8 +344,7 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "condition" : "Condition");
 	public final static IBuiltInSymbol Continue = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "continue" : "Continue");
-	public final static IBuiltInSymbol Count = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "count" : "Count",
-			new org.matheclipse.core.builtin.function.Count());
+	public final static IBuiltInSymbol Count = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "count" : "Count");
 	public final static IBuiltInSymbol Defer = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "defer" : "Defer",
 			new org.matheclipse.core.builtin.function.Defer());
 	public final static IBuiltInSymbol Definition = initFinalSymbol(
@@ -358,18 +354,15 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "delete" : "Delete",
 			new org.matheclipse.core.builtin.function.Delete());
 	public final static IBuiltInSymbol DeleteCases = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "deletecases" : "DeleteCases",
-			new org.matheclipse.core.builtin.function.DeleteCases());
-	public final static IBuiltInSymbol Depth = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "depth" : "Depth",
-			new org.matheclipse.core.builtin.function.Depth());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "deletecases" : "DeleteCases");
+	public final static IBuiltInSymbol Depth = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "depth" : "Depth");
 	public final static IBuiltInSymbol DigitQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "digitq" : "DigitQ");
 	public final static IBuiltInSymbol DirectedInfinity = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "directedinfinity" : "DirectedInfinity",
 			new org.matheclipse.core.builtin.function.DirectedInfinity());
 	public final static IBuiltInSymbol Do = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "do" : "Do");
-	public final static IBuiltInSymbol Drop = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "drop" : "Drop",
-			new org.matheclipse.core.builtin.function.Drop());
+	public final static IBuiltInSymbol Drop = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "drop" : "Drop");
 	public final static IBuiltInSymbol Element = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "element" : "Element",
 			new org.matheclipse.core.builtin.function.Element());
@@ -377,14 +370,12 @@ public class F {
 	public final static IBuiltInSymbol Exponent = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "exponent" : "Exponent",
 			new org.matheclipse.core.builtin.function.Exponent());
-	public final static IBuiltInSymbol First = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "first" : "First",
-			new org.matheclipse.core.builtin.function.First());
+	public final static IBuiltInSymbol First = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "first" : "First");
 	public final static IBuiltInSymbol FixedPoint = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fixedpoint" : "FixedPoint",
 			new org.matheclipse.core.builtin.function.FixedPoint());
 	public final static IBuiltInSymbol Flatten = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "flatten" : "Flatten",
-			new org.matheclipse.core.builtin.function.Flatten());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "flatten" : "Flatten");
 	public final static IBuiltInSymbol Fold = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fold" : "Fold",
 			new org.matheclipse.core.builtin.function.Fold());
 	public final static IBuiltInSymbol FoldList = initFinalSymbol(
@@ -421,14 +412,14 @@ public class F {
 	public final static IBuiltInSymbol JavaForm = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "javaform" : "JavaForm",
 			new org.matheclipse.core.builtin.function.JavaForm());
-	public final static IBuiltInSymbol Last = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "last" : "Last",
-			new org.matheclipse.core.builtin.function.Last());
+	public final static IBuiltInSymbol Last = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "last" : "Last");
 	public final static IBuiltInSymbol LeafCount = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "leafcount" : "LeafCount",
 			new org.matheclipse.core.builtin.function.LeafCount());
 	public final static IBuiltInSymbol Length = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "length" : "Length",
-			new org.matheclipse.core.builtin.function.Length());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "length" : "Length");
+	public final static IBuiltInSymbol LevelQ = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "levelq" : "LevelQ");
 	public final static IBuiltInSymbol ListQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "listq" : "ListQ");
 	public final static IBuiltInSymbol MatchQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matchq" : "MatchQ");
@@ -475,8 +466,7 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "pattern" : "Pattern",
 			new org.matheclipse.core.builtin.function.Pattern());
 	public final static IBuiltInSymbol Position = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "position" : "Position",
-			new org.matheclipse.core.builtin.function.Position());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "position" : "Position");
 	public final static IBuiltInSymbol PossibleZeroQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "possiblezeroq" : "PossibleZeroQ");
 	public final static IBuiltInSymbol Prepend = initFinalSymbol(
@@ -500,8 +490,7 @@ public class F {
 	public final static IBuiltInSymbol Refine = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "refine" : "Refine",
 			new org.matheclipse.core.builtin.function.Refine());
-	public final static IBuiltInSymbol Rest = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rest" : "Rest",
-			new org.matheclipse.core.builtin.function.Rest());
+	public final static IBuiltInSymbol Rest = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rest" : "Rest");
 	public final static IBuiltInSymbol Return = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "return" : "Return");
 	public final static IBuiltInSymbol Riffle = initFinalSymbol(
@@ -528,8 +517,7 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "symbolq" : "SymbolQ");
 	public final static IBuiltInSymbol SyntaxQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "syntaxq" : "SyntaxQ");
-	public final static IBuiltInSymbol Take = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "take" : "Take",
-			new org.matheclipse.core.builtin.function.Take());
+	public final static IBuiltInSymbol Take = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "take" : "Take");
 	public final static IBuiltInSymbol TeXForm = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "texform" : "TeXForm",
 			new org.matheclipse.core.builtin.function.TeXForm());
@@ -613,6 +601,10 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "booleantable" : "BooleanTable");
 	public final static IBuiltInSymbol BooleanVariables = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "booleanvariables" : "BooleanVariables");
+	public final static IBuiltInSymbol BrayCurtisDistance = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "braycurtisdistance" : "BrayCurtisDistance");
+	public final static IBuiltInSymbol CanberraDistance = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "canberradistance" : "CanberraDistance");
 	public final static IBuiltInSymbol Cancel = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cancel" : "Cancel");
 	public final static IBuiltInSymbol CarmichaelLambda = initFinalSymbol(
@@ -677,6 +669,8 @@ public class F {
 	public final static IBuiltInSymbol Cross = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cross" : "Cross");
 	public final static IBuiltInSymbol Csc = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "csc" : "Csc");
 	public final static IBuiltInSymbol Csch = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "csch" : "Csch");
+	public final static IBuiltInSymbol CubeRoot = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cuberoot" : "CubeRoot");
 	public final static IBuiltInSymbol Curl = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "curl" : "Curl");
 	public final static IBuiltInSymbol D = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "D" : "D");
 	public final static IBuiltInSymbol Decrement = initFinalSymbol(
@@ -735,8 +729,8 @@ public class F {
 	public final static IBuiltInSymbol Equivalent = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "equivalent" : "Equivalent");
 	public final static IBuiltInSymbol Erf = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "erf" : "Erf");
-	public final static IBuiltInSymbol EuclidianDistance = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "euclidiandistance" : "EuclidianDistance");
+	public final static IBuiltInSymbol EuclideanDistance = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "euclideandistance" : "EuclideanDistance");
 	public final static IBuiltInSymbol EulerE = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "eulere" : "EulerE");
 	public final static IBuiltInSymbol EulerPhi = initFinalSymbol(
@@ -1036,6 +1030,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "productlog" : "ProductLog");
 	public final static IBuiltInSymbol PseudoInverse = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "pseudoinverse" : "PseudoInverse");
+	public final static IBuiltInSymbol QRDecomposition = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "qrdecomposition" : "QRDecomposition");
 	public final static IBuiltInSymbol Quotient = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "quotient" : "Quotient");
 	public final static IBuiltInSymbol RandomInteger = initFinalSymbol(
@@ -1104,9 +1100,12 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sokalsneathdissimilarity" : "SokalSneathDissimilarity");
 	public final static IBuiltInSymbol Solve = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "solve" : "Solve");
 	public final static IBuiltInSymbol Sort = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sort" : "Sort");
+	public final static IBuiltInSymbol Split = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "split" : "Split");
+	public final static IBuiltInSymbol SplitBy = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "splitby" : "SplitBy");
 	public final static IBuiltInSymbol Sqrt = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sqrt" : "Sqrt");
-	public final static IBuiltInSymbol SquaredEuclidianDistance = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "squaredeuclidiandistance" : "SquaredEuclidianDistance");
+	public final static IBuiltInSymbol SquaredEuclideanDistance = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "squaredeuclideandistance" : "SquaredEuclideanDistance");
 	public final static IBuiltInSymbol SquareFreeQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "squarefreeq" : "SquareFreeQ");
 	public final static IBuiltInSymbol StieltjesGamma = initFinalSymbol(
@@ -1135,6 +1134,10 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subtractfrom" : "SubtractFrom");
 	public final static IBuiltInSymbol Sum = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sum" : "Sum");
 	public final static IBuiltInSymbol Surd = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "surd" : "Surd");
+	public final static IBuiltInSymbol Symbol = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "symbol" : "Symbol");
+	public final static IBuiltInSymbol SymbolName = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "symbolname" : "SymbolName");
 	public final static IBuiltInSymbol SyntaxLength = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "syntaxlength" : "SyntaxLength");
 	public final static IBuiltInSymbol Table = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "table" : "Table");
@@ -1782,7 +1785,7 @@ public class F {
 					// Divisors,
 					Do, Dot, Drop, Eigenvalues, Eigenvectors, Element,
 					// Eliminate,
-					EllipticE, EllipticF, EllipticPi, Equal, Equivalent, Erf, Erfc, Erfi, EuclidianDistance,
+					EllipticE, EllipticF, EllipticPi, Equal, Equivalent, Erf, Erfc, Erfi, EuclideanDistance,
 					// EulerE,
 					EulerPhi, EvenQ, Exp, Expand, ExpandAll, ExpIntegralE, ExpIntegralEi, Exponent, ExtendedGCD,
 					Extract, Factor, Factorial, Factorial2, FactorInteger, FactorSquareFree, FactorSquareFreeList,
@@ -1833,7 +1836,7 @@ public class F {
 					// RowReduce,
 					Rule, RuleDelayed, SameQ, Scan, Sec, Sech, Select, Sequence, Set, SetAttributes, SetDelayed, Show,
 					Sign, SignCmp, Simplify, Sin, Sinc, SingularValueDecomposition, Sinh, SinIntegral, SinhIntegral,
-					Solve, Sort, Sow, Sqrt, SquaredEuclidianDistance, SquareFreeQ, StirlingS2, StringDrop, StringJoin,
+					Solve, Sort, Sow, Sqrt, SquaredEuclideanDistance, SquareFreeQ, StirlingS2, StringDrop, StringJoin,
 					StringLength, StringTake, Subfactorial, Subscript, Subsuperscript, Subsets, SubtractFrom, Sum,
 					Superscript, Switch, SyntaxLength, SyntaxQ, Table, Take, Tan, Tanh, Taylor, TeXForm, Thread,
 					Through, Throw, TimeConstrained, Times, TimesBy, Timing, ToCharacterCode, Together, ToString, Total,
@@ -4169,13 +4172,15 @@ public class F {
 	}
 
 	/**
-	 * Create a List() object with allocated space for size elements.
+	 * Create a new <code>List</code> with the given <code>capacity</code>.
 	 * 
-	 * @param size
+	 * @param capacity
+	 *            the assumed number of arguments (+ 1 for the header expression
+	 *            is added internally).
 	 * @return
 	 */
-	public static IAST ListAlloc(int size) {
-		return ast(List, size, false);
+	public static IAST ListAlloc(int capacity) {
+		return ast(List, capacity, false);
 	}
 
 	public static IAST List(final double... numbers) {
@@ -4198,18 +4203,6 @@ public class F {
 			a[i] = integer(numbers[i]);
 		}
 		return ast(a, List);
-	}
-
-	/**
-	 * Create a new <code>List</code> with the given <code>capacity</code>.
-	 * 
-	 * @param capacity
-	 *            the assumed number of arguments (+ 1 for the header expression
-	 *            is added internally).
-	 * @return
-	 */
-	public static IAST ListC(int capacity) {
-		return ast(List, capacity, false);
 	}
 
 	public static IAST ListQ(final IExpr a) {

@@ -16,11 +16,13 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.ISymbol.RuleType;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 
 public final class PatternMatching {
 
 	static {
+		
 		F.Clear.setEvaluator(new Clear());
 		F.ClearAll.setEvaluator(new ClearAll());
 		F.Rule.setEvaluator(new Rule());
@@ -139,6 +141,23 @@ public final class PatternMatching {
 			Validate.checkSize(ast, 3);
 			final IExpr leftHandSide = ast.arg1();
 			IExpr rightHandSide = ast.arg2();
+			if (leftHandSide.isAST(F.Part) && ((IAST) leftHandSide).size() > 1) {
+				IAST part = ((IAST) leftHandSide);
+				if (part.arg1().isSymbol()) {
+					ISymbol symbol = (ISymbol) part.arg1();
+					IExpr temp = symbol.getRulesData().evalDownRule(symbol);
+					if (rightHandSide.isList()) {
+						IExpr res = Programming.assignPart(temp, part, 2, ((IAST) rightHandSide).iterator(), engine);
+						symbol.putDownRule(RuleType.SET, true, symbol, res, false);
+						return rightHandSide;
+					} else {
+						IExpr res = Programming.assignPart(temp, part, 2, rightHandSide, engine);
+						symbol.putDownRule(RuleType.SET, true, symbol, res, false);
+						return rightHandSide;
+					}
+				}
+
+			}
 			if (leftHandSide.isList()) {
 				// thread over lists
 				try {

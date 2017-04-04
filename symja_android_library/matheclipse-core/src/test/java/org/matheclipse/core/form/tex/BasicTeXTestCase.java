@@ -2,16 +2,16 @@ package org.matheclipse.core.form.tex;
 
 import java.io.StringWriter;
 
-import junit.framework.TestCase;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TeXUtilities;
-import org.matheclipse.core.expression.F;
+
+import junit.framework.TestCase;
 
 /**
  * Tests LaTeX export function
  */
 public class BasicTeXTestCase extends TestCase {
+	
 	TeXUtilities texUtil;
 
 	public BasicTeXTestCase(String name) {
@@ -155,7 +155,7 @@ public class BasicTeXTestCase extends TestCase {
 	
 	public void testTeX022() {
 		// issue #116
-		check("-I*1/2*Sqrt(2)", "\\left( \\frac{-1}{2}\\,i \\right) \\,\\sqrt{2}");
+		check("-I*1/2*Sqrt(2)", "\\frac{\\left( -1\\,i \\right) \\,\\sqrt{2}}{2}");
 	}
 	
 	public void testTeX023() {

@@ -33,7 +33,6 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NumStr;
-//import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
@@ -42,6 +41,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.parser.client.SyntaxError;
+import org.matheclipse.parser.client.operator.InfixOperator;
 
 /**
  * Create an expression of the <code>ASTNode</code> class-hierarchy from a math
@@ -1031,8 +1031,13 @@ public class ExprParser extends ExprScanner {
 						}
 						rhs = parseLookaheadOperator(infixOperator.getPrecedence());
 						lhs = createInfixFunction(infixOperator, lhs, rhs);
-						// lhs = infixOperator.createFunction(fFactory, lhs,
-						// rhs);
+
+						while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
+								&& infixOperator.getOperatorString().equals(fOperatorString)) {
+							getNextToken();
+							rhs = parseLookaheadOperator(infixOperator.getPrecedence());
+							((IAST) lhs).append(rhs);
+						}
 
 						continue;
 					}
@@ -1089,7 +1094,6 @@ public class ExprParser extends ExprScanner {
 							|| ((infixOperator.getPrecedence() == min_precedence)
 									&& (infixOperator.getGrouping() == InfixExprOperator.RIGHT_ASSOCIATIVE))) {
 						if (infixOperator.getOperatorString().equals(";")) {
-							IExpr lhs = rhs;
 							rhs = F.Null;
 							// if (fPackageMode && fRecursionDepth < 1) {
 							// return createInfixFunction(infixOperator, lhs,
@@ -1154,7 +1158,19 @@ public class ExprParser extends ExprScanner {
 	private IExpr parsePrimary() {
 		if (fToken == TT_OPERATOR) {
 			if (";;".equals(fOperatorString)) {
-				return F.Span(F.C1, F.All);
+				IAST span = F.ast(F.Span);
+				span.append(F.C1);
+				getNextToken();
+				if (fToken == TT_COMMA || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_PRECEDENCE_CLOSE) {
+					span.append(F.All);
+					return span;
+				}
+				if (fToken == TT_OPERATOR && ";;".equals(fOperatorString)) {
+					span.append(F.All);
+					getNextToken();
+				}
+				span.append(parsePrimary());
+				return span;
 			}
 			if (fOperatorString.equals(".")) {
 				fCurrentChar = '.';

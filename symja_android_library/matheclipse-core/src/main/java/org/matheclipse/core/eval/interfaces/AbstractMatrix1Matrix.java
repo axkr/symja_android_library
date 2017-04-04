@@ -58,6 +58,7 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 				matrix = realMatrixEval(matrix);
 				return Convert.realMatrix2List(matrix);
 			} 
+			return F.NIL;
 		} catch (final IndexOutOfBoundsException e) {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();

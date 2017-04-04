@@ -35,7 +35,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.linear.BlockFieldMatrix;
+import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.EigenDecomposition;
+import org.hipparchus.linear.FieldDecompositionSolver;
 import org.hipparchus.linear.FieldLUDecomposition;
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
@@ -47,25 +49,36 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.NonNegativeIntegerExpected;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
+import org.matheclipse.core.eval.interfaces.AbstractMatrix1Matrix;
 import org.matheclipse.core.eval.util.IIndexFunction;
 import org.matheclipse.core.eval.util.IndexFunctionDiagonal;
 import org.matheclipse.core.eval.util.IndexTableGenerator;
+import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Symbol;
+import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public final class LinearAlgebra {
+	
 	static {
 		F.ArrayDepth.setEvaluator(new ArrayDepth());
+		F.BrayCurtisDistance.setEvaluator(new BrayCurtisDistance());
+		F.CanberraDistance.setEvaluator(new CanberraDistance());
 		F.CharacteristicPolynomial.setEvaluator(new CharacteristicPolynomial());
+		F.ChessboardDistance.setEvaluator(new ChessboardDistance());
 		F.ConjugateTranspose.setEvaluator(new ConjugateTranspose());
+		F.CosineDistance.setEvaluator(new CosineDistance());
 		F.Cross.setEvaluator(new Cross());
 		F.DesignMatrix.setEvaluator(new DesignMatrix());
 		F.Det.setEvaluator(new Det());
@@ -73,17 +86,26 @@ public final class LinearAlgebra {
 		F.Dimensions.setEvaluator(new Dimensions());
 		F.Eigenvalues.setEvaluator(new Eigenvalues());
 		F.Eigenvectors.setEvaluator(new Eigenvectors());
+		F.EuclideanDistance.setEvaluator(new EuclideanDistance());
 		F.HilbertMatrix.setEvaluator(new HilbertMatrix());
 		F.IdentityMatrix.setEvaluator(new IdentityMatrix());
 		F.Inner.setEvaluator(new Inner());
+		F.Inverse.setEvaluator(new Inverse());
 		F.JacobiMatrix.setEvaluator(new JacobiMatrix());
 		F.LinearSolve.setEvaluator(new LinearSolve());
 		F.LUDecomposition.setEvaluator(new LUDecomposition());
-		F.NullSpace.setEvaluator(new NullSpace());
+		F.ManhattanDistance.setEvaluator(new ManhattanDistance());
 		F.MatrixMinimalPolynomial.setEvaluator(new MatrixMinimalPolynomial());
 		F.MatrixPower.setEvaluator(new MatrixPower());
 		F.MatrixRank.setEvaluator(new MatrixRank());
+		F.Norm.setEvaluator(new Norm());
+		F.Normalize.setEvaluator(new Normalize());
+		F.NullSpace.setEvaluator(new NullSpace());
+		F.PseudoInverse.setEvaluator(new PseudoInverse());
+		F.QRDecomposition.setEvaluator(new QRDecomposition());
 		F.RowReduce.setEvaluator(new RowReduce());
+		F.SingularValueDecomposition.setEvaluator(new SingularValueDecomposition());
+		F.SquaredEuclideanDistance.setEvaluator(new SquaredEuclideanDistance());
 		F.Tr.setEvaluator(new Tr());
 		F.Transpose.setEvaluator(new Transpose());
 		F.UnitVector.setEvaluator(new UnitVector());
@@ -110,6 +132,66 @@ public final class LinearAlgebra {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	/**
+	 * BrayCurtisDistance of two vectors
+	 */
+	private final static class BrayCurtisDistance extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.size() != 3) {
+				throw new WrongNumberOfArguments(ast, 2, ast.size() - 1);
+			}
+			IExpr u = ast.arg1();
+			IExpr v = ast.arg2();
+
+			int dim1 = u.isVector();
+			if (dim1 > (-1)) {
+				int dim2 = v.isVector();
+				if (dim1 == dim2) {
+					if (dim1 == 0) {
+						return F.C0;
+					}
+
+					return F.Total(F.Divide(F.Abs(F.Subtract(u, v)), F.Total(F.Abs(F.Plus(u, v)))));
+
+				}
+			}
+			return F.NIL;
+		}
+
+	}
+
+	/**
+	 * CanberraDistance of two vectors
+	 */
+	private final static class CanberraDistance extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
+			if (functionList.size() != 3) {
+				throw new WrongNumberOfArguments(functionList, 2, functionList.size() - 1);
+			}
+			IExpr arg1 = functionList.arg1();
+			IExpr arg2 = functionList.arg2();
+
+			int dim1 = arg1.isVector();
+			if (dim1 > (-1)) {
+				int dim2 = arg2.isVector();
+				if (dim1 == dim2) {
+					if (dim1 == 0) {
+						return F.C0;
+					}
+
+					return F.Total(F.Divide(F.Abs(F.Subtract(arg1, arg2)), F.Plus(F.Abs(arg1), F.Abs(arg2))));
+
+				}
+			}
+			return F.NIL;
 		}
 
 	}
@@ -160,6 +242,40 @@ public final class LinearAlgebra {
 	}
 
 	/**
+	 * ChessboardDistance of two vectors
+	 */
+	private final static class ChessboardDistance extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
+			if (functionList.size() != 3) {
+				throw new WrongNumberOfArguments(functionList, 2, functionList.size() - 1);
+			}
+			IExpr arg1 = functionList.arg1();
+			IExpr arg2 = functionList.arg2();
+
+			int dim1 = arg1.isVector();
+			if (dim1 > (-1)) {
+				int dim2 = arg2.isVector();
+				if (dim1 == dim2) {
+					if (dim1 == 0) {
+						return F.C0;
+					}
+					IAST a1 = ((IAST) arg1);
+					IAST a2 = ((IAST) arg2);
+					IAST maxAST = F.Max();
+					for (int i = 1; i < a1.size(); i++) {
+						maxAST.append(F.Abs(F.Subtract(a1.get(i), a2.get(i))));
+					}
+					return maxAST;
+				}
+			}
+			return F.NIL;
+		}
+
+	}
+
+	/**
 	 * Conjugate and transpose a matrix.
 	 * 
 	 * See <a href="http://en.wikipedia.org/wiki/Complex_conjugation">Wikipedia:
@@ -175,6 +291,36 @@ public final class LinearAlgebra {
 		@Override
 		protected IExpr transform(final IExpr expr) {
 			return expr.conjugate();
+		}
+
+	}
+
+	/**
+	 * CosineDistance of two vectors
+	 */
+	private final static class CosineDistance extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
+			if (functionList.size() != 3) {
+				throw new WrongNumberOfArguments(functionList, 2, functionList.size() - 1);
+			}
+			IExpr arg1 = functionList.arg1();
+			IExpr arg2 = functionList.arg2();
+
+			int dim1 = arg1.isVector();
+			if (dim1 > (-1)) {
+				int dim2 = arg2.isVector();
+				if (dim1 == dim2) {
+					if (dim1 == 0) {
+						return F.C0;
+					}
+
+					return F.Subtract(F.C1, F.Divide(F.Dot(arg1, arg2), F.Times(F.Norm(arg1), F.Norm(arg2))));
+
+				}
+			}
+			return F.NIL;
 		}
 
 	}
@@ -560,6 +706,117 @@ public final class LinearAlgebra {
 		}
 	}
 
+	/**
+	 * EuclidianDistance of two vectors
+	 */
+	private final static class EuclideanDistance extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			IExpr arg1 = ast.arg1();
+			IExpr arg2 = ast.arg2();
+
+			int dim1 = arg1.isVector();
+			if (dim1 > (-1)) {
+				int dim2 = arg2.isVector();
+				if (dim1 == dim2) {
+					if (dim1 == 0) {
+						return F.C0;
+					}
+					IAST a1 = ((IAST) arg1);
+					IAST a2 = ((IAST) arg2);
+					IAST plusAST = F.Plus();
+					for (int i = 1; i < a1.size(); i++) {
+						plusAST.append(F.Sqr(F.Abs(F.Subtract(a1.get(i), a2.get(i)))));
+					}
+					return F.Sqrt(plusAST);
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+
+		}
+
+	}
+
+	/**
+	 * Hilbert matrix, defined by A<sub>i,j</sub> = 1 / (i+j-1). See <a>
+	 * href="http://en.wikipedia.org/wiki/Hilbert_matrix">Wikipedia:Hilbert
+	 * matrix</a>
+	 */
+	private static class HilbertMatrix extends AbstractFunctionEvaluator {
+
+		private static class HilbertFunctionDiagonal implements IIndexFunction<IExpr> {
+
+			public HilbertFunctionDiagonal() {
+			}
+
+			@Override
+			public IRational evaluate(final int[] index) {
+				return F.fraction(1L, 1L + index[0] + index[1]);
+			}
+		}
+
+		public HilbertMatrix() {
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			int rowSize = 0;
+			int columnSize = 0;
+			if (ast.isAST1() && ast.arg1().isInteger()) {
+				rowSize = Validate.checkIntType(ast, 1);
+				columnSize = rowSize;
+			} else if (ast.isAST2() && ast.arg1().isInteger() && ast.arg2().isInteger()) {
+				rowSize = Validate.checkIntType(ast, 1);
+				columnSize = Validate.checkIntType(ast, 2);
+			} else {
+				return F.NIL;
+			}
+
+			final IAST resultList = F.List();
+			final int[] indexArray = new int[2];
+			indexArray[0] = rowSize;
+			indexArray[1] = columnSize;
+			final IndexTableGenerator generator = new IndexTableGenerator(indexArray, resultList,
+					new HilbertFunctionDiagonal());
+			final IAST matrix = (IAST) generator.table();
+			matrix.addEvalFlags(IAST.IS_MATRIX);
+			return matrix;
+		}
+	}
+
+	/**
+	 * Create an identity matrix
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Identity_matrix">Wikipedia -
+	 * Identity matrix</a>
+	 */
+	private static class IdentityMatrix extends AbstractFunctionEvaluator {
+
+		public IdentityMatrix() {
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			if (ast.arg1().isInteger()) {
+				int indx = Validate.checkIntType(ast, 1);
+				final IExpr[] valueArray = { F.C0, F.C1 };
+				return diagonalMatrix(valueArray, indx);
+			}
+			return F.NIL;
+		}
+
+	}
+
 	private static class Inner extends AbstractFunctionEvaluator {
 
 		private static class InnerAlgorithm {
@@ -659,77 +916,38 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Hilbert matrix, defined by A<sub>i,j</sub> = 1 / (i+j-1). See <a>
-	 * href="http://en.wikipedia.org/wiki/Hilbert_matrix">Wikipedia:Hilbert
+	 * Invert a matrix
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Invertible_matrix">Invertible
 	 * matrix</a>
 	 */
-	private static class HilbertMatrix extends AbstractFunctionEvaluator {
+	private final static class Inverse extends AbstractMatrix1Matrix {
 
-		private static class HilbertFunctionDiagonal implements IIndexFunction<IExpr> {
-
-			public HilbertFunctionDiagonal() {
-			}
-
-			@Override
-			public IRational evaluate(final int[] index) {
-				return F.fraction(1L, 1L + index[0] + index[1]);
-			}
+		@Override
+		public FieldMatrix<IExpr> matrixEval(FieldMatrix<IExpr> matrix) {
+			return inverseMatrix(matrix);
 		}
 
-		public HilbertMatrix() {
+		public static FieldMatrix<IExpr> inverseMatrix(FieldMatrix<IExpr> matrix) {
+			final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix);
+			FieldDecompositionSolver<IExpr> solver = lu.getSolver();
+			if (!solver.isNonSingular()) {
+				EvalEngine.get().printMessage("Inverse: the matrix is singular.");
+				return null;
+			}
+			return solver.getInverse();
 		}
 
 		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
-			int rowSize = 0;
-			int columnSize = 0;
-			if (ast.isAST1() && ast.arg1().isInteger()) {
-				rowSize = Validate.checkIntType(ast, 1);
-				columnSize = rowSize;
-			} else if (ast.isAST2() && ast.arg1().isInteger() && ast.arg2().isInteger()) {
-				rowSize = Validate.checkIntType(ast, 1);
-				columnSize = Validate.checkIntType(ast, 2);
-			} else {
-				return F.NIL;
+		public RealMatrix realMatrixEval(RealMatrix matrix) {
+			final org.hipparchus.linear.LUDecomposition lu = new org.hipparchus.linear.LUDecomposition(matrix);
+			DecompositionSolver solver = lu.getSolver();
+			if (!solver.isNonSingular()) {
+				EvalEngine.get().printMessage("Inverse: the matrix is singular.");
+				return null;
 			}
-
-			final IAST resultList = F.List();
-			final int[] indexArray = new int[2];
-			indexArray[0] = rowSize;
-			indexArray[1] = columnSize;
-			final IndexTableGenerator generator = new IndexTableGenerator(indexArray, resultList,
-					new HilbertFunctionDiagonal());
-			final IAST matrix = (IAST) generator.table();
-			matrix.addEvalFlags(IAST.IS_MATRIX);
-			return matrix;
+			return solver.getInverse();
 		}
-	}
-
-	/**
-	 * Create an identity matrix
-	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Identity_matrix">Wikipedia -
-	 * Identity matrix</a>
-	 */
-	private static class IdentityMatrix extends AbstractFunctionEvaluator {
-
-		public IdentityMatrix() {
-		}
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
-			if (ast.arg1().isInteger()) {
-				int indx = Validate.checkIntType(ast, 1);
-				final IExpr[] valueArray = { F.C0, F.C1 };
-				return diagonalMatrix(valueArray, indx);
-			}
-			return F.NIL;
-		}
-
 	}
 
 	/**
@@ -784,16 +1002,18 @@ public final class LinearAlgebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
 
-			try {
-				FieldMatrix<IExpr> augmentedMatrix = Convert.list2Matrix((IAST) ast.arg1(), (IAST) ast.arg2());
-				return LinearAlgebra.rowReduced2List(augmentedMatrix, engine);
-			} catch (final ClassCastException e) {
-				if (Config.SHOW_STACKTRACE) {
-					e.printStackTrace();
-				}
-			} catch (final IndexOutOfBoundsException e) {
-				if (Config.SHOW_STACKTRACE) {
-					e.printStackTrace();
+			if (ast.arg1().isMatrix() != null && ast.arg2().isVector() >= 0) {
+				try {
+					FieldMatrix<IExpr> augmentedMatrix = Convert.list2Matrix((IAST) ast.arg1(), (IAST) ast.arg2());
+					return LinearAlgebra.rowReduced2List(augmentedMatrix, engine);
+				} catch (final ClassCastException e) {
+					if (Config.SHOW_STACKTRACE) {
+						e.printStackTrace();
+					}
+				} catch (final IndexOutOfBoundsException e) {
+					if (Config.SHOW_STACKTRACE) {
+						e.printStackTrace();
+					}
 				}
 			}
 
@@ -847,46 +1067,43 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Compute the null space of a matrix.
+	 * The Manhattan distance of two vectors.
 	 * 
-	 * See: <a href=
-	 * "http://en.wikipedia.org/wiki/Kernel_%28linear_algebra%29">Wikipedia -
-	 * Kernel (linear algebra)</a>. <a href=
-	 * "http://en.wikibooks.org/wiki/Linear_Algebra/Null_Spaces">Wikibooks -
-	 * Null Spaces</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Taxicab_geometry">Taxicab
+	 * geometry</a>
 	 */
-	private static class NullSpace extends AbstractFunctionEvaluator {
-
-		public NullSpace() {
-			super();
-		}
+	private final static class ManhattanDistance extends AbstractEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			FieldMatrix<IExpr> matrix;
-			try {
-				Validate.checkSize(ast, 2);
+			if (ast.size() != 3) {
+				throw new WrongNumberOfArguments(ast, 2, ast.size() - 1);
+			}
+			IExpr arg1 = ast.arg1();
+			IExpr arg2 = ast.arg2();
 
-				final IAST list = (IAST) ast.arg1();
-				matrix = Convert.list2Matrix(list);
-				FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix);
-				FieldMatrix<IExpr> nullspace = fmw.getNullSpace(F.CN1);
-				if (nullspace == null) {
-					return F.List();
-				}
-				return Convert.matrix2List(nullspace);
-
-			} catch (final ClassCastException e) {
-				if (Config.SHOW_STACKTRACE) {
-					e.printStackTrace();
-				}
-			} catch (final IndexOutOfBoundsException e) {
-				if (Config.SHOW_STACKTRACE) {
-					e.printStackTrace();
+			int dim1 = arg1.isVector();
+			if (dim1 > (-1)) {
+				int dim2 = arg2.isVector();
+				if (dim1 == dim2) {
+					if (dim1 == 0) {
+						return F.C0;
+					}
+					IAST a1 = ((IAST) arg1);
+					IAST a2 = ((IAST) arg2);
+					IAST plusAST = F.Plus();
+					for (int i = 1; i < a1.size(); i++) {
+						plusAST.append(F.Abs(F.Subtract(a1.get(i), a2.get(i))));
+					}
+					return plusAST;
 				}
 			}
-
 			return F.NIL;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+
 		}
 
 	}
@@ -941,10 +1158,10 @@ public final class LinearAlgebra {
 			FieldMatrix<IExpr> resultMatrix;
 			try {
 				matrix = Convert.list2Matrix((IAST) ast.arg1());
-				final int p = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
-				if (p < 0) {
-					return F.NIL;
-				}
+				int p = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
+				// if (p < 0) {
+				// return F.NIL;
+				// }
 				if (p == 1) {
 					((IAST) ast.arg1()).addEvalFlags(IAST.IS_MATRIX);
 					return ast.arg1();
@@ -962,7 +1179,13 @@ public final class LinearAlgebra {
 
 					return Convert.matrix2List(resultMatrix);
 				}
-				resultMatrix = matrix;
+				if (p < 0) {
+					resultMatrix = Inverse.inverseMatrix(matrix);
+					matrix = resultMatrix;
+					p *= (-1);
+				} else {
+					resultMatrix = matrix;
+				}
 				for (int i = 1; i < p; i++) {
 					resultMatrix = resultMatrix.multiply(matrix);
 				}
@@ -1029,6 +1252,225 @@ public final class LinearAlgebra {
 	}
 
 	/**
+	 * Norm of a given argument
+	 */
+	private final static class Norm extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			IExpr arg1 = ast.arg1();
+			int dim = arg1.isVector();
+			if (dim > (-1)) {
+				if (dim == 0) {
+					return F.NIL;
+				}
+				if (ast.isAST2()) {
+					IExpr arg2 = ast.arg2();
+					if (arg2.isInfinity()) {
+						return ((IAST) arg1).map(F.Max, Functors.replaceAll(F.Abs(F.Null), F.Null));
+					} else {
+						if (arg2.isSymbol() || arg2.isSignedNumber()) {
+							if (arg2.isZero()) {
+								// throw new WrongArgumentType(ast, ast.get(2),
+								// 2, "0 not allowed as second argument!");
+								engine.printMessage("Norm: 0 not allowed as second argument!");
+								return F.NIL;
+							}
+							if (arg2.isSignedNumber() && arg2.lessThan(F.C1).isTrue()) {
+								// throw new WrongArgumentType(ast, ast.get(2),
+								// 2, "Second argument is < 1!");
+								engine.printMessage("Norm: Second argument is < 1!");
+								return F.NIL;
+							}
+							return F.Power(((IAST) arg1).map(F.Plus,
+									Functors.replaceAll(F.Power(F.Abs(F.Null), arg2), F.Null)), arg2.inverse());
+						}
+					}
+					return F.NIL;
+				}
+				return F.Sqrt(((IAST) arg1).map(F.Plus, Functors.replaceAll(F.Sqr(F.Abs(F.Null)), F.Null)));
+			}
+			if (arg1.isNumber()) {
+				if (ast.isAST2()) {
+					return F.NIL;
+				}
+				// absolute Value of a number
+				return ((INumber) arg1).abs();
+			}
+			if (arg1.isNumericFunction()) {
+				if (ast.isAST2()) {
+					return F.NIL;
+				}
+				// absolute Value
+				return F.Abs(arg1);
+			}
+			return F.NIL;
+		}
+
+	}
+
+	/**
+	 * <code>Normalize[vector]</code> calculates the normalized
+	 * <code>vector</code>.
+	 */
+	private final static class Normalize extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			IExpr normFunction = F.Norm;
+			if (ast.isAST2()) {
+				normFunction = ast.arg2();
+			}
+			IExpr arg1 = ast.arg1();
+			if (arg1.isAST(F.List, 1) && ast.isAST1()) {
+				return arg1;
+			}
+			IExpr norm = engine.evaluate(F.unaryAST1(normFunction, ast.arg1()));
+			if (norm.isZero()) {
+				return arg1;
+			}
+			return F.Divide(ast.arg1(), norm);
+		}
+
+	}
+
+	/**
+	 * Compute the null space of a matrix.
+	 * 
+	 * See: <a href=
+	 * "http://en.wikipedia.org/wiki/Kernel_%28linear_algebra%29">Wikipedia -
+	 * Kernel (linear algebra)</a>. <a href=
+	 * "http://en.wikibooks.org/wiki/Linear_Algebra/Null_Spaces">Wikibooks -
+	 * Null Spaces</a>
+	 */
+	private static class NullSpace extends AbstractFunctionEvaluator {
+
+		public NullSpace() {
+			super();
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			FieldMatrix<IExpr> matrix;
+			try {
+				Validate.checkSize(ast, 2);
+
+				final IAST list = (IAST) ast.arg1();
+				matrix = Convert.list2Matrix(list);
+				FieldReducedRowEchelonForm fmw = new FieldReducedRowEchelonForm(matrix);
+				FieldMatrix<IExpr> nullspace = fmw.getNullSpace(F.CN1);
+				if (nullspace == null) {
+					return F.List();
+				}
+				return Convert.matrix2List(nullspace);
+
+			} catch (final ClassCastException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			} catch (final IndexOutOfBoundsException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			}
+
+			return F.NIL;
+		}
+
+	}
+
+	/**
+	 * Pseudoinverse of a matrix
+	 * 
+	 * See <a href=
+	 * "https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_pseudoinverse">
+	 * Moore-Penrose pseudoinverse</a>
+	 */
+	private final static class PseudoInverse extends AbstractMatrix1Matrix {
+
+		public PseudoInverse() {
+			super();
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			return numericEval(ast, engine);
+		}
+
+		@Override
+		public FieldMatrix<IExpr> matrixEval(FieldMatrix<IExpr> matrix) {
+			return null;
+		}
+
+		@Override
+		public RealMatrix realMatrixEval(RealMatrix matrix) {
+			final org.hipparchus.linear.SingularValueDecomposition lu = new org.hipparchus.linear.SingularValueDecomposition(
+					matrix);
+			DecompositionSolver solver = lu.getSolver();
+			return solver.getInverse();
+		}
+	}
+
+	private static class QRDecomposition extends AbstractMatrix1Expr {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			// FieldMatrix<IExpr> matrix;
+			try {
+
+				int[] dim = ast.arg1().isMatrix();
+				if (dim != null) {
+					// if (dim[0] == 1 && dim[1] == 1) {
+					// }
+					
+					// if (dim[0] == 2 && dim[1] == 2) {
+					// matrix = Convert.list2Matrix((IAST) ast.arg1());
+					// if (matrix != null) {
+					// }
+					// }
+
+				}
+
+			} catch (final ClassCastException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			} catch (final IndexOutOfBoundsException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			}
+
+			// switch to numeric calculation
+			return numericEval(ast, engine);
+		}
+
+		@Override
+		public IAST realMatrixEval(RealMatrix matrix) {
+			try {
+				IAST list = F.List();
+				org.hipparchus.linear.QRDecomposition ed = new org.hipparchus.linear.QRDecomposition(matrix);
+				RealMatrix rMatrix = ed.getR();
+				RealMatrix qMatrix = ed.getQ();
+				list.append(Convert.realMatrix2List(qMatrix));
+				list.append(Convert.realMatrix2List(rMatrix));
+				return list;
+			} catch (Exception ime) {
+				throw new WrappedException(ime); 
+			}
+		}
+
+		@Override
+		public IExpr matrixEval(FieldMatrix<IExpr> matrix) {
+			return F.NIL;
+		}
+	}
+
+	/**
 	 * <p>
 	 * Reduce the matrix to row reduced echelon form.
 	 * </p>
@@ -1068,6 +1510,89 @@ public final class LinearAlgebra {
 				}
 			}
 
+			return F.NIL;
+		}
+
+	}
+
+	/**
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Singular_value_decomposition">
+	 * Wikipedia: Singular value decomposition</a>
+	 */
+	private final static class SingularValueDecomposition extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			RealMatrix matrix;
+			try {
+
+				matrix = ast.arg1().toRealMatrix();
+				if (matrix != null) {
+					final org.hipparchus.linear.SingularValueDecomposition svd = new org.hipparchus.linear.SingularValueDecomposition(
+							matrix);
+					final RealMatrix uMatrix = svd.getU();
+					final RealMatrix sMatrix = svd.getS();
+					final RealMatrix vMatrix = svd.getV();
+
+					final IAST result = List();
+					final IAST uMatrixAST = new ASTRealMatrix(uMatrix, false);
+					final IAST sMatrixAST = new ASTRealMatrix(sMatrix, false);
+					final IAST vMatrixAST = new ASTRealMatrix(vMatrix, false);
+					result.append(uMatrixAST);
+					result.append(sMatrixAST);
+					result.append(vMatrixAST);
+					return result;
+				}
+
+			} catch (final WrongArgumentType e) {
+				// WrongArgumentType occurs in list2RealMatrix(),
+				// if the matrix elements aren't pure numerical values
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			} catch (final IndexOutOfBoundsException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			}
+
+			return F.NIL;
+		}
+
+	}
+
+	/**
+	 * SquaredEuclidianDistance of two vectors
+	 */
+	private final static class SquaredEuclideanDistance extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
+			if (functionList.size() != 3) {
+				throw new WrongNumberOfArguments(functionList, 2, functionList.size() - 1);
+			}
+			IExpr arg1 = functionList.arg1();
+			IExpr arg2 = functionList.arg2();
+
+			int dim1 = arg1.isVector();
+			if (dim1 > (-1)) {
+				int dim2 = arg2.isVector();
+				if (dim1 == dim2) {
+					if (dim1 == 0) {
+						return F.C0;
+					}
+					IAST a1 = ((IAST) arg1);
+					IAST a2 = ((IAST) arg2);
+					IAST plusAST = F.Plus();
+					for (int i = 1; i < a1.size(); i++) {
+						plusAST.append(F.Sqr(F.Abs(F.Subtract(a1.get(i), a2.get(i)))));
+					}
+					return plusAST;
+				}
+			}
 			return F.NIL;
 		}
 
@@ -1191,7 +1716,7 @@ public final class LinearAlgebra {
 				int n = Validate.checkIntType(ast, 1);
 				int k = Validate.checkIntType(ast, 2);
 				if (k <= n) {
-					IAST vector = F.ListC(n);
+					IAST vector = F.ListAlloc(n);
 					for (int i = 0; i < n; i++) {
 						vector.append(F.C0);
 					}

@@ -25,6 +25,7 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
 
 public class ExprParserFactory implements IExprParserFactory {
+
 	public final static int PLUS_PRECEDENCE = 310;
 
 	public final static int TIMES_PRECEDENCE = 400;
@@ -32,6 +33,14 @@ public class ExprParserFactory implements IExprParserFactory {
 	public final static int DIVIDE_PRECEDENCE = 470;
 
 	public final static int POWER_PRECEDENCE = 590;
+
+	public final static int APPLY_PRECEDENCE = 620;
+
+	public final static ApplyOperator APPLY_OPERATOR = new ApplyOperator("@@", "Apply", 620,
+			InfixExprOperator.RIGHT_ASSOCIATIVE);
+
+	public final static ApplyOperator APPLY_LEVEL_OPERATOR = new ApplyOperator("@@@", "Apply", 620,
+			InfixExprOperator.RIGHT_ASSOCIATIVE);
 
 	static final String[] HEADER_STRINGS = { "MessageName", "Get", "PatternTest", "MapAll", "TimesBy", "Plus", "UpSet",
 			"CompoundExpression", "Map", "Unset", "Apply", "Apply", "ReplaceRepeated", "Less", "And", "Divide", "Set",
@@ -56,9 +65,9 @@ public class ExprParserFactory implements IExprParserFactory {
 			new InfixExprOperator("^=", "UpSet", 40, InfixExprOperator.NONE),
 			new InfixExprOperator(";", "CompoundExpression", 10, InfixExprOperator.NONE),
 			new InfixExprOperator("/@", "Map", 620, InfixExprOperator.RIGHT_ASSOCIATIVE),
-			new PostfixExprOperator("=.", "Unset", 670),
-			new ApplyOperator("@@", "Apply", 620, InfixExprOperator.RIGHT_ASSOCIATIVE),
-			new ApplyOperator("@@@", "Apply", 620, InfixExprOperator.RIGHT_ASSOCIATIVE),
+			new PostfixExprOperator("=.", "Unset", 670), 
+			APPLY_OPERATOR, 
+			APPLY_LEVEL_OPERATOR,
 			new InfixExprOperator("//.", "ReplaceRepeated", 110, InfixExprOperator.LEFT_ASSOCIATIVE),
 			new InfixExprOperator("<", "Less", 290, InfixExprOperator.NONE),
 			new InfixExprOperator("&&", "And", 215, InfixExprOperator.NONE),
@@ -77,7 +86,7 @@ public class ExprParserFactory implements IExprParserFactory {
 			new InfixExprOperator(">=", "GreaterEqual", 290, InfixExprOperator.NONE),
 			new InfixExprOperator("/;", "Condition", 130, InfixExprOperator.LEFT_ASSOCIATIVE),
 			new InfixExprOperator(":", "Colon", 80, InfixExprOperator.NONE),
-			new InfixExprOperator("//", "//", 70, InfixExprOperator.NONE),
+			new InfixExprOperator("//", "//", 70, InfixExprOperator.LEFT_ASSOCIATIVE),
 			new InfixExprOperator("/=", "DivideBy", 100, InfixExprOperator.NONE),
 			new InfixExprOperator("||", "Or", 213, InfixExprOperator.NONE),
 			new InfixExprOperator(";;", "Span", 305, InfixExprOperator.NONE),

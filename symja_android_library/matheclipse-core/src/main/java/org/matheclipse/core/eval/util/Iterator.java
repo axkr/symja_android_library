@@ -686,6 +686,18 @@ public class Iterator {
 			this.originalStep = F.integer(step);
 		}
 
+		public IntIterator(final int lowerLimit, final int upperLimit, final int step) {
+			this(null, lowerLimit, upperLimit, step);
+		}
+
+		public IntIterator(final int lowerLimit, final int upperLimit) {
+			this(null, lowerLimit, upperLimit, 1);
+		}
+
+		public IntIterator(final int upperLimit) {
+			this(null, 1, upperLimit, 1);
+		}
+
 		@Override
 		public int allocHint() {
 			if (step < 0) {

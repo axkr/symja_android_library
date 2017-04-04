@@ -441,11 +441,6 @@ public final class NumberTheory {
 	 * See <a href="http://en.wikipedia.org/wiki/Coprime">Wikipedia:Coprime</a>
 	 */
 	private static class CoprimeQ extends AbstractFunctionEvaluator {
-		/**
-		 * Constructor for the CoprimeQ object
-		 */
-		public CoprimeQ() {
-		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -467,6 +462,27 @@ public final class NumberTheory {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+	}
+
+	private static class CubeRoot extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+			IExpr n = ast.arg1();
+			if (n.isNumericFunction()) {
+				if (n.isPositiveResult()) {
+					return F.Power(n, F.C1D3);
+				}
+				return F.Times(F.CN1, F.Power(F.Negate(n), F.C1D3));
+			}
+			return F.Power(n, F.C1D3);
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		}
 	}
 
@@ -1707,6 +1723,7 @@ public final class NumberTheory {
 	}
 
 	static {
+		
 		F.BellB.setEvaluator(new BellB());
 		F.BernoulliB.setEvaluator(new BernoulliB());
 		F.Binomial.setEvaluator(new Binomial());
@@ -1714,6 +1731,7 @@ public final class NumberTheory {
 		F.CatalanNumber.setEvaluator(new CatalanNumber());
 		F.ChineseRemainder.setEvaluator(new ChineseRemainder());
 		F.CoprimeQ.setEvaluator(new CoprimeQ());
+		F.CubeRoot.setEvaluator(new CubeRoot());
 		F.DiracDelta.setEvaluator(new DiracDelta());
 		F.Divisible.setEvaluator(new Divisible());
 		F.Divisors.setEvaluator(new Divisors());

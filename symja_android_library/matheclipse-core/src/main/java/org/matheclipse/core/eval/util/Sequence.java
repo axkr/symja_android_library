@@ -3,7 +3,6 @@ package org.matheclipse.core.eval.util;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 
@@ -14,22 +13,13 @@ import org.matheclipse.core.interfaces.ISignedNumber;
  */
 public class Sequence extends ListSizeSequence {
 
-	public Sequence(final IInteger i) {
-		super(i.toInt(), Integer.MIN_VALUE, 1, 1);
+	
+	public Sequence(int start, int end) {
+		super(start, end, 1, 1);
 	}
 
 	public Sequence(final IAST lst) {
 		super(getASTFrom(lst), getASTTo(lst), getASTStep(lst), 1);
-	}
-
-	/**
-	 * <code>true</code> => All <code>false</code> => None
-	 * 
-	 * @param allOrNone
-	 *            <code>true</code> => All <code>false</code> => None
-	 */
-	public Sequence(boolean allOrNone) {
-		super(allOrNone ? Integer.MIN_VALUE : 1, allOrNone ? Integer.MIN_VALUE : 0, 1, 1);
 	}
 
 	/**
@@ -51,11 +41,16 @@ public class Sequence extends ListSizeSequence {
 			if (ast.get(i).isList()) {
 				sequ = new Sequence((IAST) ast.get(i));
 			} else if (ast.get(i) instanceof IInteger) {
-				sequ = new Sequence((IInteger) ast.get(i));
+				int num = ((IInteger) ast.get(i)).toInt();
+				if (num < 0) {
+					sequ = new Sequence(num, Integer.MAX_VALUE);
+				} else {
+					sequ = new Sequence(1, num);
+				}
 			} else if (ast.get(i).equals(F.All)) {
-				sequ = new Sequence(true);
+				sequ = new Sequence(1, Integer.MAX_VALUE);
 			} else if (ast.get(i).equals(F.None)) {
-				sequ = new Sequence(false);
+				sequ = new Sequence(1, 0);
 			}
 			sequArray[j++] = sequ;
 		}

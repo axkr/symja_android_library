@@ -64,7 +64,6 @@ import org.matheclipse.core.polynomials.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.ExprTermOrder;
 import org.matheclipse.core.polynomials.IPartialFractionGenerator;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
-import org.matheclipse.core.reflection.system.Thread;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
 import org.matheclipse.core.visit.VisitorExpr;
 
@@ -255,7 +254,7 @@ public class Algebra {
 			Validate.checkRange(ast, 2, 3);
 
 			final IExpr arg1 = ast.arg1();
-			IAST temp = Thread.threadLogicEquationOperators(arg1, ast, 1);
+			IAST temp = Structure.threadLogicEquationOperators(arg1, ast, 1);
 			if (temp.isPresent()) {
 				return temp;
 			}
@@ -413,7 +412,7 @@ public class Algebra {
 			if (ast.isAST1() && arg1.isAtom()) {
 				return arg1;
 			}
-			IAST temp = Thread.threadPlusLogicEquationOperators(arg1, ast, 1);
+			IAST temp = Structure.threadPlusLogicEquationOperators(arg1, ast, 1);
 			if (temp.isPresent()) {
 				return temp;
 			}
@@ -2455,7 +2454,7 @@ public class Algebra {
 			Validate.checkSize(ast, 2);
 
 			IExpr arg1 = ast.arg1();
-			IAST temp = Thread.threadLogicEquationOperators(arg1, ast, 1);
+			IAST temp = Structure.threadLogicEquationOperators(arg1, ast, 1);
 			if (temp.isPresent()) {
 				return temp;
 			}

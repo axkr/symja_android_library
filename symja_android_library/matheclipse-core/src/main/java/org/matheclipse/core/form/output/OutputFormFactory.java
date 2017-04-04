@@ -618,6 +618,35 @@ public class OutputFormFactory {
 		}
 	}
 
+	public void convertApplyOperator(final Appendable buf, final IAST list, final InfixOperator oper,
+			final int precedence) throws IOException {
+		IExpr arg2 = list.arg2();
+		if (arg2.isNumber()) {
+			INumber exp = (INumber) arg2;
+			if (exp.complexSign() < 0) {
+				if (ASTNodeFactory.APPLY_PRECEDENCE < precedence) {
+					append(buf, "(");
+				}
+				append(buf, "1/");
+				if (exp.isMinusOne()) {
+					convert(buf, list.arg1(), ASTNodeFactory.DIVIDE_PRECEDENCE, false);
+					if (ASTNodeFactory.DIVIDE_PRECEDENCE < precedence) {
+						append(buf, ")");
+					}
+					return;
+				}
+				// flip presign of the exponent
+				IAST pow = list.setAtCopy(2, exp.opposite());
+				convertPowerOperator(buf, pow, oper, ASTNodeFactory.DIVIDE_PRECEDENCE);
+				if (ASTNodeFactory.APPLY_PRECEDENCE < precedence) {
+					append(buf, ")");
+				}
+				return;
+			}
+		}
+		convertInfixOperator(buf, list, oper, precedence);
+	}
+
 	public void convertPowerOperator(final Appendable buf, final IAST list, final InfixOperator oper,
 			final int precedence) throws IOException {
 		IExpr arg2 = list.arg2();
@@ -917,19 +946,32 @@ public class OutputFormFactory {
 			return true;
 		}
 		if ((operator instanceof InfixOperator) && (list.size() > 2)) {
+			InfixOperator infixOperator = (InfixOperator) operator;
 			if (head.equals(F.Plus)) {
 				if (fPlusReversed) {
-					convertPlusOperatorReversed(buf, list, (InfixOperator) operator, precedence);
+					convertPlusOperatorReversed(buf, list, infixOperator, precedence);
 				} else {
-					convertPlusOperator(buf, list, (InfixOperator) operator, precedence);
+					convertPlusOperator(buf, list, infixOperator, precedence);
 				}
 				return true;
 			} else if (head.equals(F.Times)) {
-				convertTimesFraction(buf, list, (InfixOperator) operator, precedence, NO_PLUS_CALL);
+				convertTimesFraction(buf, list, infixOperator, precedence, NO_PLUS_CALL);
 				return true;
 			} else if (list.isPower()) {
-				convertPowerOperator(buf, list, (InfixOperator) operator, precedence);
+				convertPowerOperator(buf, list, infixOperator, precedence);
 				return true;
+			} else if (list.isAST(F.Apply)) {
+				if (list.size() == 3) {
+					convertInfixOperator(buf, list, ASTNodeFactory.APPLY_OPERATOR, precedence);
+					return true;
+				}
+				if (list.size() == 4 && list.get(2).equals(F.List(F.C1))) {
+					convertInfixOperator(buf, list, ASTNodeFactory.APPLY_LEVEL_OPERATOR, precedence);
+					return true;
+				}
+				return false;
+			} else if (list.size() != 3 && infixOperator.getGrouping() != InfixOperator.NONE) {
+				return false;
 			}
 			convertInfixOperator(buf, list, (InfixOperator) operator, precedence);
 			return true;

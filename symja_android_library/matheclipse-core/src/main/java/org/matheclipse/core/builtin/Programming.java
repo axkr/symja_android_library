@@ -32,6 +32,7 @@ public final class Programming {
 	final static Programming CONST = new Programming();
 
 	static {
+		
 		F.Break.setEvaluator(new Break());
 		F.Block.setEvaluator(new Block());
 		F.Catch.setEvaluator(new Catch());
@@ -443,127 +444,42 @@ public final class Programming {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() >= 3) {
-				IExpr arg1 = engine.evaluate(ast.arg1());
-				if (arg1.isAST()) {
-					IAST evaledAST = F.NIL;
+				try {
+					IExpr arg1 = engine.evaluate(ast.arg1());
+					if (arg1.isAST()) {
+						IAST evaledAST = F.NIL;
 
-					boolean numericMode = engine.isNumericMode();
-					IExpr temp;
-					try {
-						int astSize = ast.size();
-						for (int i = 2; i < astSize; i++) {
-							temp = engine.evalLoop(ast.get(i));
-							if (temp.isPresent()) {
-								if (evaledAST.isPresent()) {
-									evaledAST.set(i, temp);
-								} else {
-									evaledAST = ast.copy();
-									evaledAST.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
-									evaledAST.set(i, temp);
+						boolean numericMode = engine.isNumericMode();
+						IExpr temp;
+						try {
+							int astSize = ast.size();
+							for (int i = 2; i < astSize; i++) {
+								temp = engine.evalLoop(ast.get(i));
+								if (temp.isPresent()) {
+									if (evaledAST.isPresent()) {
+										evaledAST.set(i, temp);
+									} else {
+										evaledAST = ast.copy();
+										evaledAST.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+										evaledAST.set(i, temp);
+									}
 								}
 							}
+						} finally {
+							engine.setNumericMode(numericMode);
 						}
-					} finally {
-						engine.setNumericMode(numericMode);
+						if (evaledAST.isPresent()) {
+							return part((IAST) arg1, evaledAST, 2, engine);
+						}
+						return part((IAST) arg1, ast, 2, engine);
 					}
-					if (evaledAST.isPresent()) {
-						return getPart((IAST) arg1, evaledAST, 2, engine);
-					}
-					return getPart((IAST) arg1, ast, 2, engine);
+				} catch (WrongArgumentType wat) {
+					engine.printMessage(wat.getMessage());
 				}
 			}
 			return F.NIL;
 		}
 
-		private IExpr getPart(final IAST arg1, final IAST ast, int pos, EvalEngine engine) {
-			final IExpr arg2 = ast.get(pos);
-			int p1 = pos + 1;
-			if (arg2.isSignedNumber()) {
-				final int indx = Validate.checkIntType(ast, pos, Integer.MIN_VALUE);
-				IExpr ires = null;
-				ires = getIndex(arg1, indx);
-				if (p1 < ast.size()) {
-					if (ires.isAST()) {
-						return getPart((IAST) ires, ast, p1, engine);
-					} else {
-						throw new WrongArgumentType(ast, arg1, pos,
-								"Wrong argument for Part[] function. Function or list expected.");
-					}
-				}
-				return ires;
-			} else if (arg2.isSpan()) {
-				IAST span = (IAST) arg2;
-				if (span.isAST2()) {
-					final int indx1 = Validate.checkIntType(span, 1, Integer.MIN_VALUE);
-					final int indx2;
-					if (span.arg2().equals(F.All)) {
-						indx2 = arg1.size() - 1;
-					} else {
-						indx2 = Validate.checkIntType(span, 2, Integer.MIN_VALUE);
-					}
-
-					IAST result = arg1.copyHead();
-					int last = indx2;
-					if (indx2 < 0) {
-						last = arg1.size() + indx2;
-					}
-					for (int i = indx1; i <= last; i++) {
-						result.append(arg1.get(i));
-					}
-					return result;
-				}
-			} else if (arg2.isList()) {
-				IExpr temp = null;
-				final IAST lst = (IAST) arg2;
-				final IAST result = F.ListC(lst.size());
-
-				for (int i = 1; i < lst.size(); i++) {
-					final IExpr expr = lst.get(i);
-					if (expr.isInteger()) {
-						IExpr ires = null;
-
-						final int indx = Validate.checkIntType(lst, i, Integer.MIN_VALUE);
-						ires = getIndex(arg1, indx);
-						if (ires == null) {
-							return F.NIL;
-						}
-						if (p1 < ast.size()) {
-							if (ires.isAST()) {
-								temp = getPart((IAST) ires, ast, p1, engine);
-								result.append(temp);
-							} else {
-								throw new WrongArgumentType(ast, arg1, pos,
-										"Wrong argument for Part[] function. Function or list expected.");
-							}
-						} else {
-							result.append(ires);
-						}
-					}
-				}
-				return result;
-			}
-			engine.printMessage(
-					"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
-			return F.NIL;
-		}
-
-		/**
-		 * Get the element stored at the given <code>position</code>.
-		 * 
-		 * @param ast
-		 * @param position
-		 * @return
-		 */
-		IExpr getIndex(IAST ast, int position) {
-			if (position < 0) {
-				position = ast.size() + position;
-			}
-			if ((position < 0) || (position >= ast.size())) {
-				throw new WrappedException(new IndexOutOfBoundsException(
-						"Part[] index " + position + " of " + ast.toString() + " is out of bounds."));
-			}
-			return ast.get(position);
-		}
 	}
 
 	private final static class Reap extends AbstractCoreFunctionEvaluator {
@@ -855,6 +771,313 @@ public final class Programming {
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Get the element stored at the given <code>position</code>.
+	 * 
+	 * @param ast
+	 * @param position
+	 * @return
+	 */
+	private static IExpr getIndex(IAST ast, int position) {
+		if (position < 0) {
+			position = ast.size() + position;
+		}
+		if ((position < 0) || (position >= ast.size())) {
+			throw new WrappedException(new IndexOutOfBoundsException(
+					"Part[] index " + position + " of " + ast.toString() + " is out of bounds."));
+		}
+		return ast.get(position);
+	}
+
+	/**
+	 * Get the <code>Part[...]</code> of n expression. If the expression is no
+	 * <code>IAST</code> return the expression.
+	 * 
+	 * @param expr
+	 *            the expression from which parts should be extracted
+	 * @param ast
+	 *            the <code>Part[...]</code> expression
+	 * @param pos
+	 *            the index position from which the sub-expressions should be
+	 *            extracted
+	 * @param engine
+	 *            the evaluation engine
+	 * @return
+	 */
+	public static IExpr part(final IExpr expr, final IAST ast, int pos, EvalEngine engine) {
+		if (!expr.isAST() || pos >= ast.size()) {
+			return expr;
+		}
+		IAST arg1 = (IAST) expr;
+		final IExpr arg2 = ast.get(pos);
+		int p1 = pos + 1;
+		int[] span = arg2.isSpan(arg1.size());
+		if (span != null) {
+			int start = span[0];
+			int last = span[1];
+			int step = span[2];
+			IAST result = arg1.copyHead();
+
+			if (step < 0 && start >= last) {
+				for (int i = start; i >= last; i += step) {
+					result.append(part(arg1.get(i), ast, p1, engine));
+				}
+			} else if (step > 0 && (last != 1 || start <= last)) {
+				for (int i = start; i <= last; i += step) {
+					result.append(part(arg1.get(i), ast, p1, engine));
+				}
+			} else {
+				throw new WrongArgumentType(ast, arg2, pos,
+						"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
+			}
+			return result;
+		} else if (arg2.isSignedNumber()) {
+			final int indx = Validate.checkIntType(ast, pos, Integer.MIN_VALUE);
+			IExpr result = null;
+			result = getIndex(arg1, indx);
+			if (p1 < ast.size()) {
+				if (result.isAST()) {
+					return part((IAST) result, ast, p1, engine);
+				} else {
+					throw new WrongArgumentType(ast, arg1, pos,
+							"Wrong argument for Part[] function. Function or list expected.");
+				}
+			}
+			return result;
+		} else if (arg2.isList()) {
+			IExpr temp = null;
+			final IAST list = (IAST) arg2;
+			final IAST result = F.ListAlloc(list.size());
+
+			for (int i = 1; i < list.size(); i++) {
+				final IExpr listArg = list.get(i);
+				if (listArg.isInteger()) {
+					IExpr ires = null;
+
+					final int indx = Validate.checkIntType(list, i, Integer.MIN_VALUE);
+					ires = getIndex(arg1, indx);
+					if (ires == null) {
+						return F.NIL;
+					}
+					if (p1 < ast.size()) {
+						if (ires.isAST()) {
+							temp = part(ires, ast, p1, engine);
+							result.append(temp);
+						} else {
+							throw new WrongArgumentType(ast, arg1, pos,
+									"Wrong argument for Part[] function. Function or list expected.");
+						}
+					} else {
+						result.append(ires);
+					}
+				}
+			}
+			return result;
+		}
+		throw new WrongArgumentType(ast, arg1, pos,
+				"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
+	}
+
+	private static IExpr assignIndex(IAST ast, int position, IExpr value) {
+		if (position < 0) {
+			position = ast.size() + position;
+		}
+		if ((position < 0) || (position >= ast.size())) {
+			throw new WrappedException(new IndexOutOfBoundsException(
+					"Part[] index " + position + " of " + ast.toString() + " is out of bounds."));
+		}
+		return ast.setAtClone(position, value);
+	}
+
+	public static IExpr assignPart(final IExpr expr, final IAST ast, int pos, IExpr value, EvalEngine engine) {
+		if (!expr.isAST() || pos >= ast.size()) {
+			return value;
+		}
+		IAST arg1 = (IAST) expr;
+		final IExpr arg2 = engine.evaluate(ast.get(pos));
+		int p1 = pos + 1;
+		int[] span = arg2.isSpan(arg1.size());
+		if (span != null) {
+			int start = span[0];
+			int last = span[1];
+			int step = span[2];
+			IAST result = F.NIL;
+
+			if (step < 0 && start >= last) {
+				for (int i = start; i >= last; i += step) {
+					IExpr temp = assignPart(arg1.get(i), ast, p1, value, engine);
+					if (temp.isPresent()) {
+						if (!result.isPresent()) {
+							result = arg1.clone();
+						}
+						result.set(i, temp);
+					}
+				}
+			} else if (step > 0 && (last != 1 || start <= last)) {
+				for (int i = start; i <= last; i += step) {
+					IExpr temp = assignPart(arg1.get(i), ast, p1, value, engine);
+					if (temp.isPresent()) {
+						if (!result.isPresent()) {
+							result = arg1.clone();
+						}
+						result.set(i, temp);
+					}
+				}
+			} else {
+				throw new WrongArgumentType(ast, arg2, pos,
+						"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
+			}
+			return result;
+		} else if (arg2.isSignedNumber()) {
+			int indx = Validate.checkIntType(arg2, Integer.MIN_VALUE);
+			if (indx < 0) {
+				indx = ast.size() + indx;
+			}
+			if ((indx < 0) || (indx >= ast.size())) {
+				throw new WrappedException(new IndexOutOfBoundsException(
+						"Part[] index " + indx + " of " + ast.toString() + " is out of bounds."));
+			}
+			IAST result = F.NIL;
+			IExpr temp = assignPart(arg1, ast, p1, value, engine);
+			if (temp.isPresent()) {
+				if (!result.isPresent()) {
+					result = arg1.clone();
+				}
+				result.set(indx, temp);
+			}
+			return result;
+		} else if (arg2.isList()) {
+			IExpr temp = null;
+			final IAST list = (IAST) arg2;
+			final IAST result = F.ListAlloc(list.size());
+
+			for (int i = 1; i < list.size(); i++) {
+				final IExpr listArg = list.get(i);
+				if (listArg.isInteger()) {
+					IExpr ires = null;
+
+					final int indx = Validate.checkIntType(list, i, Integer.MIN_VALUE);
+					ires = assignIndex(arg1, indx, value);
+					if (ires == null) {
+						return F.NIL;
+					}
+					if (p1 < ast.size()) {
+						if (ires.isAST()) {
+							temp = assignPart(ires, ast, p1, value, engine);
+							result.append(temp);
+						} else {
+							throw new WrongArgumentType(ast, arg1, pos,
+									"Wrong argument for Part[] function. Function or list expected.");
+						}
+					} else {
+						result.append(ires);
+					}
+				}
+			}
+			return result;
+		}
+		throw new WrongArgumentType(ast, arg1, pos,
+				"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
+	}
+
+	private static IExpr assignIndex(IAST ast, int position, java.util.Iterator<IExpr> iter) {
+		if (position < 0) {
+			position = ast.size() + position;
+		}
+		if ((position < 0) || (position >= ast.size())) {
+			throw new WrappedException(new IndexOutOfBoundsException(
+					"Part[] index " + position + " of " + ast.toString() + " is out of bounds."));
+		}
+		return ast.setAtClone(position, iter.next());
+	}
+
+	public static IExpr assignPart(final IExpr expr, final IAST ast, int pos, java.util.Iterator<IExpr> iter,
+			EvalEngine engine) {
+		if (!expr.isAST() || pos >= ast.size()) {
+			return expr;
+		}
+		IAST arg1 = (IAST) expr;
+		final IExpr arg2 = ast.get(pos);
+		int p1 = pos + 1;
+		int[] span = arg2.isSpan(arg1.size());
+		if (span != null) {
+			int start = span[0];
+			int last = span[1];
+			int step = span[2];
+			IAST result = F.NIL;
+
+			if (step < 0 && start >= last) {
+				for (int i = start; i >= last; i += step) {
+					IExpr temp = assignPart(arg1.get(i), ast, p1, iter, engine);
+					if (temp.isPresent()) {
+						if (!result.isPresent()) {
+							result = arg1.clone();
+						}
+						result.set(i, temp);
+					}
+				}
+			} else if (step > 0 && (last != 1 || start <= last)) {
+				for (int i = start; i <= last; i += step) {
+					IExpr temp = assignPart(arg1.get(i), ast, p1, iter, engine);
+					if (temp.isPresent()) {
+						if (!result.isPresent()) {
+							result = arg1.clone();
+						}
+						result.set(i, temp);
+					}
+				}
+			} else {
+				throw new WrongArgumentType(ast, arg2, pos,
+						"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
+			}
+			return result;
+		} else if (arg2.isSignedNumber()) {
+			final int indx = Validate.checkIntType(ast, pos, Integer.MIN_VALUE);
+			IExpr ires = null;
+			ires = assignIndex(arg1, indx, iter);
+			if (p1 < ast.size()) {
+				if (ires.isAST()) {
+					return assignPart((IAST) ires, ast, p1, iter, engine);
+				} else {
+					throw new WrongArgumentType(ast, arg1, pos,
+							"Wrong argument for Part[] function. Function or list expected.");
+				}
+			}
+			return ires;
+		} else if (arg2.isList()) {
+			IExpr temp = null;
+			final IAST list = (IAST) arg2;
+			final IAST result = F.ListAlloc(list.size());
+
+			for (int i = 1; i < list.size(); i++) {
+				final IExpr listArg = list.get(i);
+				if (listArg.isInteger()) {
+					IExpr ires = null;
+
+					final int indx = Validate.checkIntType(list, i, Integer.MIN_VALUE);
+					ires = assignIndex(arg1, indx, list);
+					if (ires == null) {
+						return F.NIL;
+					}
+					if (p1 < ast.size()) {
+						if (ires.isAST()) {
+							temp = assignPart(ires, ast, p1, iter, engine);
+							result.append(temp);
+						} else {
+							throw new WrongArgumentType(ast, arg1, pos,
+									"Wrong argument for Part[] function. Function or list expected.");
+						}
+					} else {
+						result.append(ires);
+					}
+				}
+			}
+			return result;
+		}
+		throw new WrongArgumentType(ast, arg1, pos,
+				"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 	}
 
 	public static Programming initialize() {

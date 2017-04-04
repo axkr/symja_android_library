@@ -11,7 +11,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Converts objects into an IExpr expression
- * 
  */
 public class Object2Expr {
 
@@ -92,7 +91,7 @@ public class Object2Expr {
 		}
 		if (obj instanceof Object[]) {
 			final Object[] array = (Object[]) obj;
-			final IAST list = F.ListC(array.length);
+			final IAST list = F.ListAlloc(array.length);
 			for (int i = 0; i < array.length; i++) {
 				list.append(convert(array[i]));
 			}
@@ -106,9 +105,9 @@ public class Object2Expr {
 		}
 		if (obj instanceof double[][]) {
 			final double[][] dd = (double[][]) obj;
-			final IAST list = F.ListC(dd.length);
+			final IAST list = F.ListAlloc(dd.length);
 			for (int i = 0; i < dd.length; i++) {
-				final IAST row = F.ListC(dd[i].length);
+				final IAST row = F.ListAlloc(dd[i].length);
 				for (int j = 0; j < dd[i].length; j++) {
 					row.append(F.num(dd[i][j]));
 				}
@@ -121,7 +120,7 @@ public class Object2Expr {
 		}
 		if (obj instanceof boolean[]) {
 			final boolean[] array = (boolean[]) obj;
-			final IAST list = F.ListC(array.length);
+			final IAST list = F.ListAlloc(array.length);
 			for (int i = 0; i < array.length; i++) {
 				if (array[i]) {
 					list.append(F.True);

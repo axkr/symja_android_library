@@ -18,6 +18,7 @@ package org.matheclipse.core.parser;
 import java.util.HashMap;
 import java.util.List;
 
+import org.matheclipse.parser.client.Characters;
 import org.matheclipse.parser.client.SyntaxError;
 
 public class ExprScanner {
@@ -195,8 +196,6 @@ public class ExprScanner {
 
 	protected IExprParserFactory fFactory;
 
-	// protected final boolean fPackageMode;
-
 	private static HashMap<String, String> CHAR_MAP = new HashMap<String, String>(1024);
 
 	static {
@@ -205,7 +204,6 @@ public class ExprScanner {
 
 	/**
 	 * Initialize Scanner without a math-expression
-	 * 
 	 */
 	public ExprScanner(boolean packageMode) {
 		// fPackageMode = packageMode;
@@ -214,7 +212,8 @@ public class ExprScanner {
 
 	protected void initialize(final String s) throws SyntaxError {
 		initializeNullScanner();
-		fInputString = s;
+		StringBuilder buf = new StringBuilder(s.length());
+		fInputString = Characters.substituteCharacters(s, buf);
 		if (s != null) {
 			getNextToken();
 		}
@@ -267,6 +266,7 @@ public class ExprScanner {
 	 * @return
 	 */
 	protected List<AbstractExprOperator> getOperator() {
+		char lastChar;
 		final int startPosition = fCurrentPosition - 1;
 		fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
 		List<AbstractExprOperator> list = fFactory.getOperatorList(fOperatorString);
@@ -278,6 +278,7 @@ public class ExprScanner {
 		}
 		getChar();
 		while (fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0) {
+			lastChar = fCurrentChar;
 			fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
 			list = fFactory.getOperatorList(fOperatorString);
 			if (list != null) {
@@ -285,6 +286,9 @@ public class ExprScanner {
 				lastOperatorPosition = fCurrentPosition;
 			}
 			getChar();
+			if (lastChar == ';' && fCurrentChar != ';') {
+				break;
+			}
 		}
 		if (lastOperatorPosition > 0) {
 			fCurrentPosition = lastOperatorPosition;
@@ -317,13 +321,6 @@ public class ExprScanner {
 	protected void getNextToken() throws SyntaxError {
 
 		while (fInputString.length() > fCurrentPosition) {
-			if (fInputString.charAt(fCurrentPosition) == '\\') {
-				if (fInputString.length() > fCurrentPosition + 1 && fInputString.charAt(fCurrentPosition + 1) == '[') {
-					fToken = TT_IDENTIFIER;
-					fCurrentChar = fInputString.charAt(fCurrentPosition++);
-					return;
-				}
-			}
 			getNextChar();
 			fToken = TT_EOF;
 
@@ -544,25 +541,6 @@ public class ExprScanner {
 
 	protected String getIdentifier() {
 
-		if (fCurrentChar == '\\') {
-			if (fInputString.length() > fCurrentPosition) {
-				if (fInputString.charAt(fCurrentPosition) == '[') {
-
-					final int startPosition = fCurrentPosition++ - 1;
-					getChar();
-					while (Character.isLetterOrDigit(fCurrentChar)) {
-						getChar();
-					}
-					if (fCurrentChar == ']') {
-						int endPosition = fCurrentPosition--;
-						getChar();
-						return fInputString.substring(startPosition, endPosition);
-					}
-					throwSyntaxError("Special identifier definition '\\[...]' not closed with ']' ");
-
-				}
-			}
-		}
 		final int startPosition = fCurrentPosition - 1;
 
 		getChar();

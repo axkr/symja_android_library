@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.Structure;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -14,7 +15,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
-import org.matheclipse.core.reflection.system.Thread;
 
 /**
  * <code>Collect(expr, variable)</code> - collect subexpressions in expr which
@@ -40,7 +40,7 @@ public class Collect extends AbstractCoreFunctionEvaluator {
 				head = engine.evaluate(ast.arg3());
 			}
 			final IExpr arg1 = F.expandAll(ast.arg1(), true, true);
-			IAST temp = Thread.threadLogicEquationOperators(arg1, ast, 1);
+			IAST temp = Structure.threadLogicEquationOperators(arg1, ast, 1);
 			if (temp.isPresent()) {
 				return temp;
 			}
