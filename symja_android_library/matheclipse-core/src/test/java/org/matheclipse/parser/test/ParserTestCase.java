@@ -9,7 +9,8 @@ import org.matheclipse.parser.client.ast.ASTNode;
  * Tests parser function for SimpleParserFactory
  */
 public class ParserTestCase extends TestCase {
-
+	
+	
 	public ParserTestCase(String name) {
 		super(name);
 	}
@@ -62,7 +63,7 @@ public class ParserTestCase extends TestCase {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("f[y,z](a+b+c)");
-			assertEquals(obj.toString(), "Times(f(y, z), Plus(Plus(a, b), c))");
+			assertEquals(obj.toString(), "Times(f(y, z), Plus(a, b, c))");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
@@ -95,7 +96,7 @@ public class ParserTestCase extends TestCase {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("a+%%%+%3*4!");
-			assertEquals(obj.toString(), "Plus(Plus(a, Out(-3)), Times(Out(3), Factorial(4)))");
+			assertEquals(obj.toString(), "Plus(a, Out(-3), Times(Out(3), Factorial(4)))");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
@@ -172,7 +173,7 @@ public class ParserTestCase extends TestCase {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("a*b*c*d");
-			assertEquals(obj.toString(), "Times(Times(Times(a, b), c), d)");
+			assertEquals(obj.toString(), "Times(a, b, c, d)");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
@@ -224,8 +225,8 @@ public class ParserTestCase extends TestCase {
 	public void testParser17() {
 		try {
 			Parser p = new Parser();
-			ASTNode obj = p.parse("\\[alpha]+\\[alpha]");
-			assertEquals(obj.toString(), "Plus(\\[alpha], \\[alpha])");
+			ASTNode obj = p.parse("\\[Alpha]+\\[Alpha]");
+			assertEquals(obj.toString(), "Plus(α, α)");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
@@ -242,7 +243,41 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
+	
+	public void testParser19() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("B[[;; 2]]");
+			assertEquals(obj.toString(), "Part(B, Span(1, 2))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
+	public void testParser20() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("B[[;;, 2]]");
+			assertEquals(obj.toString(), "Part(B, Span(1, All), 2)");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
 
+	public void testParser21() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("B[[3;;1;;-1]]");
+			assertEquals(obj.toString(), "Part(B, Span(3, 1, -1))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
+	
 	public void testParserFunction() {
 		try {
 			Parser p = new Parser(true);

@@ -21,8 +21,9 @@ import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
 public class PatternMatchingTestCase extends TestCase {
+	
 	private Parser fParser;
-
+ 
 	protected EvalUtilities util;
 
 	protected static boolean DEBUG = true;
@@ -173,8 +174,8 @@ public class PatternMatchingTestCase extends TestCase {
 	public void testSimplePatternMatching() {
 		// the space between "x_" and "." operator is needed:
 		checkPattern("test[F_[a_.*x_^m_.]]", "test[g[h*y^2]]", "[g, h, y, 2]");
-		checkPattern("x_ . y_", "a.b.c", "[a.b, c]");
-		checkPattern("x_+y_", "a+b+c", "[a+b, c]");
+		checkPattern("x_ . y_", "a.b.c", "[a, b.c]");// "[a.b, c]");
+		checkPattern("x_+y_", "a+b+c", "[a, b+c]");
 		checkPattern("f[x_]", "f[a]", "[a]");
 		checkPattern("f[x_,y_]", "f[a,b]", "[a, b]");
 		checkPattern("g[x_,y_]", "f[a,b]", "");
