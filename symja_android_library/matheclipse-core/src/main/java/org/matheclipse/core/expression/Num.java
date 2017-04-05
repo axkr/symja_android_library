@@ -217,6 +217,15 @@ public class Num implements INum {
 
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
+		if (fDouble==Double.POSITIVE_INFINITY){
+			return F.CInfinity;
+		}
+		if (fDouble==Double.NEGATIVE_INFINITY){
+			return F.CNInfinity;
+		}
+		if (Double.isNaN(fDouble)){
+			return F.Indeterminate;
+		}
 		if (engine.isNumericMode() && engine.isApfloat()) {
 			return ApfloatNum.valueOf(fDouble, engine.getNumericPrecision());
 		}

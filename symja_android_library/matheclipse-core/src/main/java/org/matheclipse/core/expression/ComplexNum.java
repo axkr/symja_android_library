@@ -23,7 +23,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * <code>org.apache.commons.math3.complex.Complex</code> value to represent a
  * numeric complex floating-point number.
  */
-public class ComplexNum implements IComplexNum  {
+public class ComplexNum implements IComplexNum {
 
 	/**
 	 * 
@@ -251,7 +251,7 @@ public class ComplexNum implements IComplexNum  {
 			return null;
 		}
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public double dabs() {
@@ -274,9 +274,9 @@ public class ComplexNum implements IComplexNum  {
 	public Num abs() {
 		return Num.valueOf(dabs());
 	}
-	
+
 	@Override
-	public IExpr complexArg( ) {
+	public IExpr complexArg() {
 		return num(Math.atan2(getImaginary(), getReal()));
 	}
 
@@ -299,6 +299,12 @@ public class ComplexNum implements IComplexNum  {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
+		if (fComplex.isInfinite()) {
+			return F.CComplexInfinity;
+		}
+		if (fComplex.isNaN()) {
+			return F.Indeterminate;
+		}
 		if (engine.isNumericMode() && engine.isApfloat()) {
 			return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), engine.getNumericPrecision());
 		}
@@ -312,7 +318,7 @@ public class ComplexNum implements IComplexNum  {
 	public INumber evalNumber() {
 		return this;
 	}
-	
+
 	@Override
 	public INumber floorFraction() throws ArithmeticException {
 		return F.complex(NumberUtil.toLong(Math.floor(fComplex.getReal())),

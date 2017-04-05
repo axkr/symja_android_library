@@ -2732,6 +2732,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLog() {
+		
 		// test alias
 		check("Ln(E)", "1");
 		check("ln(E)", "1");
@@ -2759,6 +2760,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Log(I*Infinity)", "Infinity");
 		check("Log(-I*Infinity)", "Infinity");
 		check("Log(ComplexInfinity)", "Infinity");
+		
+		check("Log(0.0)", "-Infinity");
 	}
 
 	public void testLog10() {
