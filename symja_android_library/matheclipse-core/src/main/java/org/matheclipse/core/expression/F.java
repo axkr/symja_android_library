@@ -1886,7 +1886,7 @@ public class F {
 			Combinatoric.initialize();
 
 			// initialize only the utility function rules for Integrate
-			final EvalEngine engine = EvalEngine.get();
+			// final EvalEngine engine = EvalEngine.get();
 			// IAST ruleList =
 			// org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
 			// if (ruleList != null) {
@@ -2218,8 +2218,15 @@ public class F {
 	}
 
 	/**
-	 * Get or create a global symbol which is retrieved from the global symbols
-	 * map or created or retrieved from the thread local variables map.
+	 * <p>
+	 * Get or create a global predefined symbol which is retrieved from the
+	 * SYSTEM context map or created or retrieved from the SYSTEM context
+	 * variables map.
+	 * </p>
+	 * <p>
+	 * <b>Note:</b> user defined variables on the context path are defined with
+	 * method <code>userSymbol()</code>
+	 * </p>
 	 * 
 	 * @param symbolName
 	 *            the name of the symbol
@@ -2230,8 +2237,15 @@ public class F {
 	}
 
 	/**
-	 * Get or create a global symbol which is retrieved from the global symbols
-	 * map or created or retrieved from the thread local variables map.
+	 * <p>
+	 * Get or create a global predefined symbol which is retrieved from the
+	 * SYSTEM context map or created or retrieved from the SYSTEM context
+	 * variables map.
+	 * </p>
+	 * <p>
+	 * <b>Note:</b> user defined variables on the context path are defined with
+	 * method <code>userSymbol()</code>
+	 * </p>
 	 * 
 	 * @param symbolName
 	 *            the name of the symbol
@@ -2514,7 +2528,7 @@ public class F {
 	}
 
 	public static IAST BernoulliB(final IExpr a0) {
-		return unaryAST1($s("BernoulliB"), a0);
+		return unaryAST1(F.BernoulliB, a0);
 	}
 
 	/**
@@ -2544,7 +2558,7 @@ public class F {
 
 	public static IAST Binomial(final IExpr a0, final IExpr a1) {
 
-		return binaryAST2($s("Binomial"), a0, a1);
+		return binaryAST2(F.Binomial, a0, a1);
 	}
 
 	public static IAST Block(final IExpr a0, final IExpr a1) {
@@ -4893,17 +4907,29 @@ public class F {
 	}
 
 	/**
-	 * Get or create a symbol which is retrieved from the eval engines context
-	 * path.
+	 * Get or create a user defined symbol which is retrieved from the
+	 * evaluation engines context path.
 	 * 
 	 * @param symbolName
 	 *            the name of the symbol
 	 * @return the symbol object from the context path
 	 */
-	public static ISymbol retrieveSymbol(final String symbolName) {
-		EvalEngine engine = EvalEngine.get();
-		ContextPath contextPath = engine.getContextPath();
+	public static ISymbol userSymbol(final String symbolName) {
+		ContextPath contextPath = EvalEngine.get().getContextPath();
 		return contextPath.getSymbol(symbolName);
+	}
+
+	/**
+	 * Remove a user-defined symbol from the eval engines context path. Doesn't
+	 * remove predefined names from the System Context.
+	 * 
+	 * @param symbolName
+	 *            the name of the symbol
+	 * @return the removed symbol or <code>null</code> if no symbol was found
+	 */
+	public static ISymbol removeUserSymbol(final String symbolName) {
+		ContextPath contextPath = EvalEngine.get().getContextPath();
+		return contextPath.removeSymbol(symbolName);
 	}
 
 	public static IAST Return(final IExpr a) {
@@ -5012,7 +5038,7 @@ public class F {
 	}
 
 	public static IAST Simplify(final IExpr a0) {
-		return unaryAST1($s("Simplify"), a0);
+		return unaryAST1(F.Simplify, a0);
 	}
 
 	public static IAST Sin(final IExpr a0) {

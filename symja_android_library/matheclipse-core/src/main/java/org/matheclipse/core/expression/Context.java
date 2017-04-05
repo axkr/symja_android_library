@@ -61,7 +61,7 @@ public class Context implements Serializable {
 		return symbolTable.put(key, value);
 	}
 
-	public ISymbol remove(Object key) {
+	public ISymbol remove(String key) {
 		return symbolTable.remove(key);
 	}
 

@@ -240,7 +240,7 @@ public final class ExpVectorLong {
 			prefix = "x";
 		}
 		for (int i = 0; i < n; i++) {
-			vars.append(F.$s(prefix + i)); // (n-1-i);
+			vars.append(F.userSymbol(prefix + i)); // (n-1-i);
 		}
 		return vars;
 	}

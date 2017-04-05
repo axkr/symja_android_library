@@ -235,7 +235,7 @@ public class ExprParser extends ExprScanner {
 					// special - convert on input
 					return F.CI;
 				}
-				return F.retrieveSymbol(nodeStr);
+				return F.userSymbol(nodeStr);
 			}
 			String lowercaseStr = nodeStr.toLowerCase(Locale.ENGLISH);
 			if (lowercaseStr.equals("infinity")) {
@@ -247,9 +247,9 @@ public class ExprParser extends ExprScanner {
 			}
 			String temp = AST2Expr.PREDEFINED_ALIASES_MAP.get(lowercaseStr);
 			if (temp != null) {
-				return F.retrieveSymbol(temp);
+				return F.userSymbol(temp);
 			}
-			return F.retrieveSymbol(lowercaseStr);
+			return F.userSymbol(lowercaseStr);
 		} else {
 			String lowercaseStr = nodeStr;
 			if (fRelaxedSyntax) {
@@ -276,7 +276,7 @@ public class ExprParser extends ExprScanner {
 				// special - convert on input
 				return F.CInfinity;
 			}
-			return F.retrieveSymbol(lowercaseStr);
+			return F.userSymbol(lowercaseStr);
 		}
 	}
 

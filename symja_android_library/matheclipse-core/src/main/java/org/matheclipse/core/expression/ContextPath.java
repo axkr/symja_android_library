@@ -75,7 +75,7 @@ public class ContextPath {
 		// }
 		// }
 		// }
-		symbol = new BuiltInSymbol(name);
+		symbol = new Symbol(name);
 		context.put(name, symbol);
 		// engine.putUserVariable(name, symbol);
 		// if (name.charAt(0) == '$') {
@@ -83,6 +83,31 @@ public class ContextPath {
 		// }
 
 		return symbol;
+	}
+
+	public ISymbol removeSymbol(String symbolName) {
+		String name = symbolName;
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			if (symbolName.length() == 1) {
+				name = symbolName;
+			} else {
+				name = symbolName.toLowerCase(Locale.ENGLISH);
+			}
+		}
+		Context context;
+		ISymbol symbol;
+		for (int i = path.size() - 1; i >= 0; i--) { 
+			context = path.get(i);
+			if (context.equals(Context.SYSTEM)) {
+				// don't remove predefined symbols
+				continue;
+			}
+			symbol = context.remove(name);
+			if (symbol != null) {
+				return symbol;
+			}
+		} 
+		return null;
 	}
 
 	public Context remove(int index) {

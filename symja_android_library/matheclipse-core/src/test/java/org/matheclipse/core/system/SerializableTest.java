@@ -75,7 +75,7 @@ public class SerializableTest extends TestCase {
 
 	public void testSymbol() {
 		equalsCopy(F.Pi);
-		equalsCopy(F.$s("testme"));
+		equalsCopy(F.userSymbol("testme"));
 	}
 
 	public void testStringX() {
@@ -87,8 +87,8 @@ public class SerializableTest extends TestCase {
 		equalsCopy(F.Continue());
 		equalsCopy(F.If(F.True, F.Plus(F.Infinity, F.Pi), F.False));
 		equalsCopy(F.Log(F.x, F.y));
-		equalsCopy(F.ast(F.$s("fun1")));
-		equalsCopy(F.ast(new IExpr[] { F.x, F.y }, F.$s("fun2")));
+		equalsCopy(F.ast(F.userSymbol("fun1")));
+		equalsCopy(F.ast(new IExpr[] { F.x, F.y }, F.userSymbol("fun2")));
 	}
 
 	public void testBlank() {

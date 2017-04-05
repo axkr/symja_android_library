@@ -4,20 +4,21 @@ import static org.matheclipse.core.expression.F.$s;
 import static org.matheclipse.core.expression.F.Integrate;
 import static org.matheclipse.core.expression.F.ast;
 import static org.matheclipse.core.expression.F.binaryAST2;
-import static org.matheclipse.core.expression.F.initFinalSymbol;
+import static org.matheclipse.core.expression.F.initFinalHiddenSymbol;
 import static org.matheclipse.core.expression.F.quaternary;
 import static org.matheclipse.core.expression.F.quinary;
 import static org.matheclipse.core.expression.F.senary;
 import static org.matheclipse.core.expression.F.ternaryAST3;
 import static org.matheclipse.core.expression.F.unaryAST1;
 
-import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * UtilityFunction constructors from the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based integrator</a>.
+ * UtilityFunction constructors from the
+ * <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based integrator</a>.
  * 
  * TODO a lot of functions are only placeholders at the moment.
  * 
@@ -32,28 +33,23 @@ public class UtilityFunctionCtors {
 	public static ISymbol INTEGRATE_SIMP = null;
 	public static ISymbol INTEGRATE_REAPLIST = null;
 
-	public final static ISymbol A = initFinalSymbol("A");
-	public final static ISymbol B = initFinalSymbol("B");
-	public final static ISymbol C = initFinalSymbol("C");
-	public final static ISymbol F = initFinalSymbol("F");
-	public final static ISymbol G = initFinalSymbol("G");
-	public final static ISymbol H = initFinalSymbol("H");
-	public final static ISymbol J = initFinalSymbol("J");
-	public final static ISymbol K = initFinalSymbol("K");
-	public final static ISymbol L = initFinalSymbol("L");
-	public final static ISymbol M = initFinalSymbol("M");
-	public final static ISymbol O = initFinalSymbol("O");
-	public final static ISymbol P = initFinalSymbol("P");
-	public final static ISymbol Q = initFinalSymbol("Q");
-	public final static ISymbol R = initFinalSymbol("R");
-	public final static ISymbol S = initFinalSymbol("S");
-	public final static ISymbol T = initFinalSymbol("T");
-	public final static ISymbol U = initFinalSymbol("U");
-	public final static ISymbol V = initFinalSymbol("V");
-	public final static ISymbol W = initFinalSymbol("W");
-	public final static ISymbol X = initFinalSymbol("X");
-	public final static ISymbol Y = initFinalSymbol("Y");
-	public final static ISymbol Z = initFinalSymbol("Z");
+	public final static ISymbol H = initFinalHiddenSymbol("H");
+	public final static ISymbol J = initFinalHiddenSymbol("J");
+	public final static ISymbol K = initFinalHiddenSymbol("K");
+	public final static ISymbol L = initFinalHiddenSymbol("L");
+	public final static ISymbol M = initFinalHiddenSymbol("M");
+	public final static ISymbol O = initFinalHiddenSymbol("O");
+	public final static ISymbol P = initFinalHiddenSymbol("P");
+	public final static ISymbol Q = initFinalHiddenSymbol("Q");
+	public final static ISymbol R = initFinalHiddenSymbol("R");
+	public final static ISymbol S = initFinalHiddenSymbol("S");
+	public final static ISymbol T = initFinalHiddenSymbol("T");
+	public final static ISymbol U = initFinalHiddenSymbol("U");
+	public final static ISymbol V = initFinalHiddenSymbol("V");
+	public final static ISymbol W = initFinalHiddenSymbol("W");
+	public final static ISymbol X = initFinalHiddenSymbol("X");
+	public final static ISymbol Y = initFinalHiddenSymbol("Y");
+	public final static ISymbol Z = initFinalHiddenSymbol("Z");
 
 	public static ISymbol AbortRubi = org.matheclipse.core.expression.F.initFinalSymbol(INTEGRATE_PREFIX + "AbortRubi",
 			new AbortRubi());
@@ -63,23 +59,23 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST F(final IExpr a0) {
-		return unaryAST1(F, a0);
+		return unaryAST1(F.FSymbol, a0);
 	}
 
 	public static IAST F(final IExpr a0, final IExpr a1) {
-		return binaryAST2(F, a0, a1);
+		return binaryAST2(F.FSymbol, a0, a1);
 	}
 
 	public static IAST G(final IExpr a0) {
-		return unaryAST1(G, a0);
+		return unaryAST1(F.GSymbol, a0);
 	}
 
 	public static IAST G(final IExpr a0, final IExpr a1) {
-		return binaryAST2(G, a0, a1);
+		return binaryAST2(F.GSymbol, a0, a1);
 	}
 
 	public static IAST H(final IExpr a0) {
-		return unaryAST1(G, a0);
+		return unaryAST1(F.GSymbol, a0);
 	}
 
 	public static IAST H(final IExpr a0, final IExpr a1) {
@@ -110,12 +106,9 @@ public class UtilityFunctionCtors {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "Dist"), a0, a1, a2);
 	}
 
-	private static ISymbol $sDBG(final String symbolName) {
-		return $s(symbolName, false);
-		// ISymbol sym = $s(symbolName, false);
-		// sym.setAttributes(ISymbol.CONSOLE_OUTPUT);
-		// return sym;
-	}
+//	private static ISymbol $sDBG(final String symbolName) {
+//		return $s(symbolName, false);
+//	}
 
 	public static IAST AbsorbMinusSign(final IExpr a0) {
 		return unaryAST1($s(INTEGRATE_PREFIX + "AbsorbMinusSign"), a0);
@@ -305,7 +298,8 @@ public class UtilityFunctionCtors {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "ExpandIntegrand"), a0, a1, a2);
 	}
 
-	public static IAST ExpandLinearProduct(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {
+	public static IAST ExpandLinearProduct(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3,
+			final IExpr a4) {
 		return quinary($s(INTEGRATE_PREFIX + "ExpandLinearProduct"), a0, a1, a2, a3, a4);
 	}
 
@@ -414,7 +408,8 @@ public class UtilityFunctionCtors {
 		return quaternary($s(INTEGRATE_PREFIX + "FractionalPowerOfLinear"), a0, a1, a2, a3);
 	}
 
-	public static IAST FractionalPowerOfQuotientOfLinears(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+	public static IAST FractionalPowerOfQuotientOfLinears(final IExpr a0, final IExpr a1, final IExpr a2,
+			final IExpr a3) {
 		return quaternary($s(INTEGRATE_PREFIX + "FractionalPowerOfQuotientOfLinears"), a0, a1, a2, a3);
 	}
 
@@ -502,7 +497,8 @@ public class UtilityFunctionCtors {
 		return binaryAST2($s(INTEGRATE_PREFIX + "FunctionOfLinear"), a0, a1);
 	}
 
-	public static IAST FunctionOfLinear(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {
+	public static IAST FunctionOfLinear(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3,
+			final IExpr a4) {
 		return quinary($s(INTEGRATE_PREFIX + "FunctionOfLinear"), a0, a1, a2, a3, a4);
 	}
 
@@ -1206,7 +1202,8 @@ public class UtilityFunctionCtors {
 		return quaternary($s(INTEGRATE_PREFIX + "RectifyCotangent"), a0, a1, a2, a3);
 	}
 
-	public static IAST RectifyCotangent(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {
+	public static IAST RectifyCotangent(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3,
+			final IExpr a4) {
 		return quinary($s(INTEGRATE_PREFIX + "RectifyCotangent"), a0, a1, a2, a3, a4);
 	}
 
@@ -1382,7 +1379,8 @@ public class UtilityFunctionCtors {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "SubstForExpn"), a0, a1, a2);
 	}
 
-	public static IAST SubstForFractionalPower(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {
+	public static IAST SubstForFractionalPower(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3,
+			final IExpr a4) {
 		return quinary($s(INTEGRATE_PREFIX + "SubstForFractionalPower"), a0, a1, a2, a3, a4);
 	}
 
@@ -1402,7 +1400,8 @@ public class UtilityFunctionCtors {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "SubstForFractionalPowerQ"), a0, a1, a2);
 	}
 
-	public static IAST SubstForHyperbolic(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {
+	public static IAST SubstForHyperbolic(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3,
+			final IExpr a4) {
 		return quinary($s(INTEGRATE_PREFIX + "SubstForHyperbolic"), a0, a1, a2, a3, a4);
 	}
 

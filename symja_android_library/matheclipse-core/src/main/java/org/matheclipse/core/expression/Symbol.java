@@ -741,7 +741,7 @@ public class Symbol implements ISymbol, Serializable {
 	}
 
 	public Object readResolve() throws ObjectStreamException {
-		Symbol sym = (Symbol) F.$s(fSymbolName);
+		Symbol sym = (Symbol) F.userSymbol(fSymbolName);
 		sym.fAttributes = fAttributes;
 		return sym;
 	}

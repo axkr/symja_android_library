@@ -79,7 +79,7 @@ public class Object2Expr {
 			if (lst.size() == 0) {
 				list = List();
 			} else {
-				final ISymbol head = F.$s(lst.get(0).toString());
+				final ISymbol head = F.userSymbol(lst.get(0).toString());
 				int size = lst.size();
 				list = F.ast(head, size, false);
 

@@ -131,7 +131,7 @@ public class Lists {
 		if (p_symbols != null) {
 			for (int i = 0, t = p_symbols.length; i < t; i++) {
 
-				ast.append(F.$s(p_symbols[i]));
+				ast.append(F.userSymbol(p_symbols[i]));
 			}
 		}
 		return ast;

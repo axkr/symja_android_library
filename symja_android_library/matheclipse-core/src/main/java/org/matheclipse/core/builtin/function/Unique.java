@@ -26,15 +26,15 @@ public class Unique extends AbstractCoreFunctionEvaluator {
 		if (ast.isAST1()) {
 			if (ast.arg1().isSymbol()) {
 				final String varAppend = ast.arg1().toString() + "$" + moduleCounter;
-				return F.$s(varAppend);
+				return F.userSymbol(varAppend);
 			} else if (ast.arg1() instanceof IStringX) {
 				// TODO start counter by 1....
 				final String varAppend = ast.arg1().toString() + moduleCounter;
-				return F.$s(varAppend);
+				return F.userSymbol(varAppend);
 			}
 		}
 		final String varAppend = "$" + moduleCounter;
-		return F.$s(varAppend);
+		return F.userSymbol(varAppend);
 	}
 
 	@Override

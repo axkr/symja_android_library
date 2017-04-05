@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -32,7 +33,7 @@ public final class Programming {
 	final static Programming CONST = new Programming();
 
 	static {
-		
+
 		F.Break.setEvaluator(new Break());
 		F.Block.setEvaluator(new Block());
 		F.Catch.setEvaluator(new Catch());
@@ -428,7 +429,7 @@ public final class Programming {
 				}
 				return arg2;
 			} finally {
-				engine.removeUserVariables(moduleVariables);
+				removeUserVariables(moduleVariables);
 			}
 		}
 
@@ -696,7 +697,7 @@ public final class Programming {
 		for (int i = 1; i < variablesList.size(); i++) {
 			if (variablesList.get(i).isSymbol()) {
 				oldSymbol = (ISymbol) variablesList.get(i);
-				newSymbol = F.$s(oldSymbol.toString() + varAppend);
+				newSymbol = F.userSymbol(oldSymbol.toString() + varAppend);
 				variablesMap.put(oldSymbol, newSymbol);
 				newSymbol.pushLocalVariable();
 			} else {
@@ -704,7 +705,7 @@ public final class Programming {
 					final IAST setFun = (IAST) variablesList.get(i);
 					if (setFun.arg1().isSymbol()) {
 						oldSymbol = (ISymbol) setFun.arg1();
-						newSymbol = F.$s(oldSymbol.toString() + varAppend);
+						newSymbol = F.userSymbol(oldSymbol.toString() + varAppend);
 						variablesMap.put(oldSymbol, newSymbol);
 						IExpr rightHandSide = setFun.arg2();
 						try {
@@ -717,6 +718,22 @@ public final class Programming {
 						newSymbol.pushLocalVariable(rightHandSide);
 					}
 				}
+			}
+		}
+	}
+
+	/**
+	 * Remove all <code>moduleVariables</code> from this evaluation engine.
+	 * 
+	 * @param moduleVariables
+	 */
+	public static void removeUserVariables(final Map<ISymbol, ISymbol> moduleVariables) {
+		// remove all module variables from eval engine
+		ISymbol temp;
+		for (ISymbol symbol : moduleVariables.values()) {
+			temp = F.removeUserSymbol(symbol.toString());
+			if (Config.DEBUG && temp==null){
+				throw new NullPointerException("Remove user-defined variabe: "+symbol.toString());
 			}
 		}
 	}
@@ -746,7 +763,7 @@ public final class Programming {
 					return checkModuleCondition(result.getAt(1), result.getAt(2), engine);
 				}
 			} finally {
-				engine.removeUserVariables(moduleVariables);
+				removeUserVariables(moduleVariables);
 			}
 		}
 		return true;
