@@ -3,23 +3,36 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.F.List;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.hipparchus.linear.FieldMatrix;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.stat.StatUtils;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IllegalArgument;
+import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
+import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.util.ISequence;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.eval.util.LevelSpec;
@@ -27,55 +40,155 @@ import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.eval.util.Sequence;
 import org.matheclipse.core.eval.util.TableGenerator;
+import org.matheclipse.core.expression.ASTRange;
+import org.matheclipse.core.expression.ASTRealMatrix;
+import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.BinaryMap;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.MultipleArrayFunction;
 import org.matheclipse.core.generic.MultipleConstArrayFunction;
 import org.matheclipse.core.generic.PositionConverter;
 import org.matheclipse.core.generic.Predicates;
+import org.matheclipse.core.generic.UnaryArrayFunction;
 import org.matheclipse.core.generic.UnaryRangeFunction;
 import org.matheclipse.core.generic.interfaces.IIterator;
 import org.matheclipse.core.generic.interfaces.IPositionConverter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
+import org.matheclipse.core.reflection.system.Product;
+import org.matheclipse.core.reflection.system.Sum;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.core.visit.VisitorRemoveLevelSpecification;
 import org.matheclipse.parser.client.math.MathException;
 
 public final class ListFunctions {
 	static {
+		F.Append.setEvaluator(new Append());
+		F.AppendTo.setEvaluator(new AppendTo());
 		F.Array.setEvaluator(new Array());
 		F.Cases.setEvaluator(new Cases());
+		F.Catenate.setEvaluator(new Catenate());
+		F.Commonest.setEvaluator(new Commonest());
 		F.Complement.setEvaluator(new Complement());
 		F.Composition.setEvaluator(new Composition());
 		F.ConstantArray.setEvaluator(new ConstantArray());
 		F.Count.setEvaluator(new Count());
+		F.Covariance.setEvaluator(new Covariance());
 		F.DeleteDuplicates.setEvaluator(new DeleteDuplicates());
 		F.DeleteCases.setEvaluator(new DeleteCases());
 		F.Drop.setEvaluator(new Drop());
 		F.Extract.setEvaluator(new Extract());
 		F.First.setEvaluator(new First());
+		F.Fold.setEvaluator(new Fold());
+		F.FoldList.setEvaluator(new FoldList());
+		F.Gather.setEvaluator(new Gather());
 		F.Intersection.setEvaluator(new Intersection());
 		F.Join.setEvaluator(new Join());
+		F.Kurtosis.setEvaluator(new Kurtosis());
 		F.Last.setEvaluator(new Last());
 		F.Length.setEvaluator(new Length());
 		F.LevelQ.setEvaluator(new LevelQ());
 		F.Level.setEvaluator(new Level());
+		F.Mean.setEvaluator(new Mean());
+		F.Median.setEvaluator(new Median());
 		F.Most.setEvaluator(new Most());
+		F.Nearest.setEvaluator(new Nearest());
+		F.PadLeft.setEvaluator(new PadLeft());
+		F.PadRight.setEvaluator(new PadRight());
 		F.Position.setEvaluator(new Position());
+		F.Prepend.setEvaluator(new Prepend());
+		F.PrependTo.setEvaluator(new PrependTo());
 		F.Range.setEvaluator(new Range());
 		F.Rest.setEvaluator(new Rest());
+		F.Reverse.setEvaluator(new Reverse());
 		F.ReplacePart.setEvaluator(new ReplacePart());
+		F.Riffle.setEvaluator(new Riffle());
+		F.RotateLeft.setEvaluator(new RotateLeft());
+		F.RotateRight.setEvaluator(new RotateRight());
 		F.Select.setEvaluator(new Select());
+		F.Skewness.setEvaluator(new Skewness());
 		F.Split.setEvaluator(new Split());
 		F.SplitBy.setEvaluator(new SplitBy());
+		F.Table.setEvaluator(new Table());
 		F.Take.setEvaluator(new Take());
+		F.Tally.setEvaluator(new Tally());
+		F.Total.setEvaluator(new Total());
 		F.Union.setEvaluator(new Union());
+		F.Variance.setEvaluator(new Variance());
+	}
+
+	/**
+	 * 
+	 * <p>
+	 * See the online Symja function reference: <a href=
+	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Append">Append</a>
+	 * </p>
+	 *
+	 */
+	private final static class Append extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			IExpr arg1 = engine.evaluate(ast.arg1());
+			IAST arg1AST = Validate.checkASTType(arg1);
+			IExpr arg2 = engine.evaluate(ast.arg2());
+			return arg1AST.appendClone(arg2);
+		}
+
+	}
+
+	/**
+	 * 
+	 * <p>
+	 * See the online Symja function reference: <a href=
+	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/AppendTo">AppendTo</a>
+	 * </p>
+	 *
+	 */
+	private final static class AppendTo extends AbstractCoreFunctionEvaluator {
+
+		static class AppendToFunction implements Function<IExpr, IExpr> {
+			private final IExpr value;
+
+			public AppendToFunction(final IExpr value) {
+				this.value = value;
+			}
+
+			@Override
+			public IExpr apply(final IExpr symbolValue) {
+				if (!symbolValue.isAST()) {
+					return null;
+				}
+				return ((IAST) symbolValue).appendClone(value);
+			}
+
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			ISymbol sym = Validate.checkSymbolType(ast, 1);
+			IExpr arg2 = engine.evaluate(ast.arg2());
+			Function<IExpr, IExpr> function = new AppendToFunction(arg2);
+			IExpr[] results = sym.reassignSymbolValue(function, F.AppendTo);
+			if (results != null) {
+				return results[1];
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDFIRST);
+		}
 	}
 
 	/**
@@ -362,6 +475,85 @@ public final class ListFunctions {
 
 	}
 
+	private final static class Catenate extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			if (ast.arg1().isList()) {
+				IAST list = (IAST) ast.arg1();
+				int size = 1;
+				for (int i = 1; i < list.size(); i++) {
+					if (!list.get(i).isList()) {
+						return F.NIL;
+					}
+					size += list.size() - 1;
+				}
+				IAST resultList = F.ast(F.List, size, false);
+				for (int i = 1; i < list.size(); i++) {
+					resultList.appendArgs((IAST) list.get(i));
+				}
+				return resultList;
+			}
+			return F.NIL;
+		}
+
+	}
+
+	private final static class Commonest extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+			IAST list = Validate.checkListType(ast, 1);
+
+			int n = -1;
+			if (ast.isAST2()) {
+				n = Validate.checkIntType(ast.arg2());
+			}
+
+			IAST tallyResult = Tally.tally1Arg(list);
+			EvalAttributes.sort(tallyResult, new Comparator<IExpr>() {
+				@Override
+				public int compare(IExpr o1, IExpr o2) {
+					return ((IAST) o2).arg2().compareTo(((IAST) o1).arg2());
+				}
+			});
+
+			IAST result = F.List();
+			if (tallyResult.size() > 1) {
+				if (n == -1) {
+					IInteger max = (IInteger) ((IAST) tallyResult.arg1()).arg2();
+					result.append(((IAST) tallyResult.arg1()).arg1());
+					for (int i = 2; i < tallyResult.size(); i++) {
+						if (max.equals(((IAST) tallyResult.get(i)).arg2())) {
+							result.append(((IAST) tallyResult.get(i)).arg1());
+						} else {
+							break;
+						}
+					}
+				} else {
+					int counter = 0;
+					for (int i = 1; i < tallyResult.size(); i++) {
+						if (counter < n) {
+							result.append(((IAST) tallyResult.get(i)).arg1());
+							counter++;
+						} else {
+							break;
+						}
+					}
+				}
+			}
+			return result;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
 	private final static class Complement extends AbstractFunctionEvaluator {
 
 		public Complement() {
@@ -591,6 +783,109 @@ public final class ListFunctions {
 			return F.integer(mf.getCounter());
 		}
 
+	}
+
+	/**
+	 * Compute the covariance.
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Covariance">Covariance</a>
+	 * 
+	 */
+	private final static class Covariance extends AbstractMatrix1Expr {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+			if (ast.size() == 2) {
+				return super.evaluate(ast, engine);
+			}
+
+			if (ast.size() == 3) {
+				final IAST arg1 = (IAST) ast.arg1();
+				final IAST arg2 = (IAST) ast.arg2();
+				return evaluateArg2(arg1, arg2, engine);
+			}
+			return F.NIL;
+		}
+
+		private IExpr evaluateArg2(final IAST arg1, final IAST arg2, EvalEngine engine) {
+			try {
+				// if (engine.isApfloat()) {
+				// FieldMatrix<IExpr> arg1FieldMatrix =
+				// Convert.list2Matrix(arg1);
+				// if (arg1FieldMatrix != null) {
+				// FieldMatrix<IExpr> arg2FieldMatrix =
+				// Convert.list2Matrix(arg2);
+				// if (arg1FieldMatrix != null) {
+				// return matrixEval2(arg1FieldMatrix, arg2FieldMatrix);
+				// }
+				// }
+				// return F.NIL;
+				// }
+				int arg1Length = arg1.isVector();
+				if (arg1Length > 1) {
+					int arg2Length = arg2.isVector();
+					if (arg1Length == arg2Length) {
+						try {
+							double[] arg1DoubleArray = arg1.toDoubleVector();
+							double[] arg2DoubleArray = arg2.toDoubleVector();
+							org.hipparchus.stat.correlation.Covariance cov = new org.hipparchus.stat.correlation.Covariance();
+							return F.num(cov.covariance(arg1DoubleArray, arg2DoubleArray, true));
+						} catch (Exception ex) {
+							//
+						}
+						return vectorCovarianceSymbolic(arg1, arg2, arg1Length);
+					}
+				}
+			} catch (final WrongArgumentType e) {
+				// WrongArgumentType occurs in list2RealMatrix(),
+				// if the matrix elements aren't pure numerical values
+			} catch (final IndexOutOfBoundsException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			}
+			return F.NIL;
+		}
+
+		public static IExpr vectorCovarianceSymbolic(final IAST arg1, final IAST arg2, int arg1Length) {
+			if (arg1Length == 2) {
+				return F.Times(F.C1D2, F.Subtract(arg1.arg1(), arg1.arg2()),
+						F.Subtract(F.Conjugate(arg2.arg1()), F.Conjugate(arg2.arg2())));
+			}
+			IAST num1 = arg1.apply(F.Plus);
+			IExpr factor = F.integer(-1 * (arg1.size() - 2));
+			IAST v1 = F.Plus();
+			for (int i = 1; i < arg1.size(); i++) {
+				v1.append(F.Times(F.CN1, num1.setAtClone(i, F.Times(factor, arg1.get(i))), F.Conjugate(arg2.get(i))));
+			}
+			return F.Divide(v1, F.integer((arg1.size() - 1) * (arg1.size() - 2)));
+		}
+
+		@Override
+		public IExpr matrixEval(FieldMatrix<IExpr> matrix) {
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr numericEval(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+			if (ast.size() == 2) {
+				return super.numericEval(ast, engine);
+			}
+			if (ast.size() == 3) {
+				final IAST arg1 = (IAST) ast.arg1();
+				final IAST arg2 = (IAST) ast.arg2();
+				return evaluateArg2(arg1, arg2, engine);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr realMatrixEval(RealMatrix matrix) {
+			org.hipparchus.stat.correlation.Covariance cov = new org.hipparchus.stat.correlation.Covariance(matrix);
+			return new ASTRealMatrix(cov.getCovarianceMatrix(), false);
+		}
 	}
 
 	private final static class DeleteCases extends AbstractCoreFunctionEvaluator {
@@ -898,6 +1193,111 @@ public final class ListFunctions {
 		}
 	}
 
+	private final static class Fold extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 4);
+			return evaluateNestList(ast, engine);
+		}
+
+		public static IExpr evaluateNestList(final IAST ast, EvalEngine engine) {
+
+			try {
+				IExpr temp = engine.evaluate(ast.arg3());
+				if (temp.isAST()) {
+					final IAST list = (IAST) temp;
+					IExpr arg1 = engine.evaluate(ast.arg1());
+					IExpr arg2 = engine.evaluate(ast.arg2());
+					return list.args().foldLeft(new BinaryMap(arg1), arg2);
+				}
+			} catch (final ArithmeticException e) {
+
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	private final static class FoldList extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 4);
+
+			return evaluateNestList(ast, List(), engine);
+		}
+
+		public static IExpr evaluateNestList(final IAST ast, final IAST resultList, EvalEngine engine) {
+
+			try {
+				IExpr temp = engine.evaluate(ast.arg3());
+				if (temp.isAST()) {
+					final IAST list = (IAST) temp;
+					IExpr arg1 = engine.evaluate(ast.arg1());
+					IExpr arg2 = engine.evaluate(ast.arg2());
+					foldLeft(arg2, list, 1, list.size(), new BinaryMap(arg1), resultList);
+					return resultList;
+				}
+			} catch (final ArithmeticException e) {
+
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
+	}
+
+	private final static class Gather extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			int size = ast.size();
+			if (ast.arg1().isAST()) {
+				IAST arg1 = (IAST) ast.arg1();
+				java.util.Map<IExpr, IAST> map;
+				if (size > 2) {
+					IExpr arg2 = ast.arg2();
+					map = new TreeMap<IExpr, IAST>(new Comparators.BinaryHeadComparator(arg2));
+				} else {
+					map = new TreeMap<IExpr, IAST>();
+				}
+				for (int i = 1; i < arg1.size(); i++) {
+					IAST list = map.get(arg1.get(i));
+					if (list == null) {
+						list = F.List();
+						list.append(arg1.get(i));
+						map.put(arg1.get(i), list);
+					} else {
+						list.append(arg1.get(i));
+					}
+				}
+
+				IAST result = F.List();
+				for (Map.Entry<IExpr, IAST> entry : map.entrySet()) {
+					result.append(entry.getValue());
+				}
+				return result;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
 	/**
 	 * Intersection of 2 sets
 	 * 
@@ -982,10 +1382,23 @@ public final class ListFunctions {
 
 			int astSize = ast.size();
 			int size = 0;
+			IExpr head = null;
+			IAST temp;
 			for (int i = 1; i < astSize; i++) {
-				size += ((IAST) ast.get(i)).size() - 1;
+				temp = (IAST) ast.get(i);
+				size += temp.size() - 1;
+				if (head == null) {
+					head = temp.head();
+				} else {
+					if (!head.equals(temp.head())) {
+						engine.printMessage("Join: Heads " + head.toString() + " and " + temp.head().toString()
+								+ " are expected to be the same.");
+						return F.NIL;
+					}
+				}
+
 			}
-			final IAST result = F.ListAlloc(size);
+			final IAST result = F.ast(head, size, false);
 			for (int i = 1; i < ast.size(); i++) {
 				result.appendArgs((IAST) ast.get(i));
 			}
@@ -1077,14 +1490,103 @@ public final class ListFunctions {
 
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			try {
+				@SuppressWarnings("unused")
 				VisitorLevelSpecification vls = new VisitorLevelSpecification(null, arg1, false);
 				return F.True;
 			} catch (MathException me) {
-
+				// thrown in VisitorLevelSpecification ctor
 			}
 			return F.False;
 		}
 
+	}
+
+	/**
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Arithmetic_mean">Arithmetic
+	 * mean</a>
+	 */
+	private final static class Mean extends AbstractTrigArg1 {
+
+		@Override
+		public IExpr evaluateArg1(final IExpr arg1) {
+			if (arg1.isRealVector()) {
+				return F.num(StatUtils.mean(arg1.toDoubleVector()));
+			}
+			if (arg1.isList()) {
+				final IAST list = (IAST) arg1;
+				return F.Times(list.apply(F.Plus), F.Power(F.integer(list.size() - 1), F.CN1));
+			}
+
+			if (arg1.isAST()) {
+				IAST dist = (IAST) arg1;
+				if (dist.head().isSymbol()) {
+					ISymbol head = (ISymbol) dist.head();
+					if (arg1.isAST1()) {
+						if (head.equals(F.BernoulliDistribution)) {
+							return dist.arg1();
+						} else if (head.equals(F.PoissonDistribution)) {
+							return dist.arg1();
+						}
+					} else if (arg1.isAST2()) {
+						if (head.equals(F.BinomialDistribution)) {
+							return F.Times(dist.arg1(), dist.arg2());
+						} else if (head.equals(F.NormalDistribution)) {
+							return dist.arg1();
+						}
+					} else if (arg1.isAST3()) {
+						IExpr n = dist.arg1();
+						IExpr nSucc = dist.arg2();
+						IExpr nTot = dist.arg3();
+						if (head.equals(F.HypergeometricDistribution)) {
+							return F.Divide(F.Times(n, nSucc), nTot);
+						}
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.NOATTRIBUTE);
+		}
+
+	}
+
+	/**
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Median">Median</a>
+	 */
+	private final static class Median extends AbstractTrigArg1 {
+
+		@Override
+		public IExpr evaluateArg1(final IExpr arg1) {
+			if (arg1.isRealVector()) {
+				return F.num(StatUtils.percentile(arg1.toDoubleVector(), 50));
+			}
+			if (arg1.isList()) {
+				final IAST list = (IAST) arg1;
+				if (list.size() > 1) {
+					final IAST sortedList = list.copy();
+					EvalAttributes.sort(sortedList);
+					int size = sortedList.size();
+					if ((size & 0x00000001) == 0x00000001) {
+						// odd number of elements
+						size = size / 2;
+						return F.Times(F.Plus(sortedList.get(size), sortedList.get(size + 1)), F.C1D2);
+					} else {
+						return sortedList.get(size / 2);
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.NOATTRIBUTE);
+		}
 	}
 
 	private final static class Most extends AbstractCoreFunctionEvaluator {
@@ -1100,6 +1602,217 @@ public final class ListFunctions {
 			return F.NIL;
 		}
 
+	}
+
+	private final static class Nearest extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 4);
+
+			if (ast.arg1().isAST()) {
+				if (ast.size() == 3 && ast.arg2().isNumber()) {
+					IAST listArg1 = (IAST) ast.arg1();
+					if (listArg1.size() > 1) {
+						INumber arg2 = (INumber) ast.arg2();
+						// Norm() is the default distance function for numeric
+						// data
+						IExpr distanceFunction = F.Function(F.Norm(F.Subtract(F.Slot1, F.Slot2)));
+						return numericalNearest(listArg1, arg2, distanceFunction, engine);
+					}
+				}
+			}
+
+			return F.NIL;
+		}
+
+		/**
+		 * Gives the list of elements from <code>inputList</code> to which x is
+		 * nearest.
+		 * 
+		 * @param inputList
+		 * @param x
+		 * @param engine
+		 * @return the list of elements from <code>inputList</code> to which x
+		 *         is nearest
+		 */
+		private static IAST numericalNearest(IAST inputList, INumber x, IExpr distanceFunction, EvalEngine engine) {
+			try {
+				IAST nearest = null;
+				IExpr distance = F.NIL;
+				IAST temp;
+				for (int i = 1; i < inputList.size(); i++) {
+					temp = F.ast(distanceFunction);
+					temp.append(x);
+					temp.append(inputList.get(i));
+					if (nearest == null) {
+						nearest = F.List();
+						nearest.append(inputList.get(i));
+						distance = temp;
+					} else {
+						IExpr comparisonResult = engine.evaluate(F.Greater(distance, temp));
+						if (comparisonResult.isTrue()) {
+							nearest = F.List();
+							nearest.append(inputList.get(i));
+							distance = temp;
+						} else if (comparisonResult.isFalse()) {
+							if (engine.evalTrue(F.Equal(distance, temp))) {
+								nearest.append(inputList.get(i));
+							}
+							continue;
+						} else {
+							// undefined
+							return F.NIL;
+						}
+					}
+				}
+				return nearest;
+			} catch (ClassCastException cce) {
+			} catch (RuntimeException rex) {
+			}
+			return F.NIL;
+		}
+	}
+
+	private final static class Kurtosis extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+			if (ast.arg1().isList()) {
+				IAST list = (IAST) ast.arg1();
+				return F.Divide(F.CentralMoment(list, F.C4), F.Power(F.CentralMoment(list, F.C2), F.C2));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private final static class PadLeft extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 3, 4);
+			int n = Validate.checkIntType(ast, 2);
+
+			if (ast.arg1().isAST()) {
+				IAST arg1 = (IAST) ast.arg1();
+				if (ast.size() > 3) {
+					if (ast.arg3().isList()) {
+						IAST arg3 = (IAST) ast.arg3();
+						return padLeftAST(arg1, n, arg3);
+					} else {
+						return padLeftAtom(arg1, n, ast.arg3());
+					}
+				} else {
+					return padLeftAtom(arg1, n, F.C0);
+				}
+			}
+			return F.NIL;
+		}
+
+		public static IExpr padLeftAtom(IAST ast, int n, IExpr atom) {
+			int length = n - ast.size() + 1;
+			if (length > 0) {
+				IAST result = ast.copyHead();
+				for (int i = 0; i < length; i++) {
+					result.append(atom);
+				}
+				result.appendArgs(ast);
+				return result;
+			}
+			return ast;
+		}
+
+		public static IAST padLeftAST(IAST ast, int n, IAST arg2) {
+			int length = n - ast.size() + 1;
+			if (length > 0) {
+
+				IAST result = ast.copyHead();
+				if (arg2.size() < 2) {
+					return ast;
+				}
+				int j = 1;
+				if ((arg2.size() - 1) < n) {
+					int temp = n % (arg2.size() - 1);
+					j = arg2.size() - temp;
+				}
+				for (int i = 0; i < length; i++) {
+					if (j < arg2.size()) {
+						result.append(arg2.get(j++));
+					} else {
+						j = 1;
+						result.append(arg2.get(j++));
+					}
+				}
+				result.appendArgs(ast);
+				return result;
+			}
+			return ast;
+		}
+	}
+
+	private final static class PadRight extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 3, 4);
+			int n = Validate.checkIntType(ast, 2);
+
+			if (ast.arg1().isAST()) {
+				IAST arg1 = (IAST) ast.arg1();
+				if (ast.size() > 3) {
+					if (ast.arg3().isList()) {
+						IAST arg3 = (IAST) ast.arg3();
+						return padRightAST(arg1, n, arg3);
+					} else {
+						return padRightAtom(arg1, n, ast.arg3());
+					}
+				} else {
+					return padRightAtom(arg1, n, F.C0);
+				}
+			}
+			return F.NIL;
+		}
+
+		public static IExpr padRightAtom(IAST ast, int n, IExpr atom) {
+			int length = n - ast.size() + 1;
+			if (length > 0) {
+				IAST result = ast.copyHead();
+				result.appendArgs(ast);
+				for (int i = 0; i < length; i++) {
+					result.append(atom);
+				}
+				return result;
+			}
+			return ast;
+		}
+
+		public static IAST padRightAST(IAST ast, int n, IAST arg2) {
+			int length = n - ast.size() + 1;
+			if (length > 0) {
+				IAST result = ast.copyHead();
+				result.appendArgs(ast);
+				if (arg2.size() < 2) {
+					return ast;
+				}
+				int j = 1;
+				for (int i = 0; i < length; i++) {
+					if (j < arg2.size()) {
+						result.append(arg2.get(j++));
+					} else {
+						j = 1;
+						result.append(arg2.get(j++));
+					}
+				}
+				return result;
+			}
+			return ast;
+		}
 	}
 
 	/**
@@ -1208,6 +1921,58 @@ public final class ListFunctions {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.NHOLDALL);
+		}
+	}
+
+	private final static class Prepend extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			IExpr arg1 = engine.evaluate(ast.arg1());
+			IAST arg1AST = Validate.checkASTType(arg1);
+			IExpr arg2 = engine.evaluate(ast.arg2());
+			return arg1AST.appendAtClone(1, arg2);
+		}
+
+	}
+
+	private final static class PrependTo extends AbstractCoreFunctionEvaluator {
+
+		static class PrependToFunction implements Function<IExpr, IExpr> {
+			private final IExpr value;
+
+			public PrependToFunction(final IExpr value) {
+				this.value = value;
+			}
+
+			@Override
+			public IExpr apply(final IExpr symbolValue) {
+				if (!symbolValue.isAST()) {
+					return F.NIL;
+				}
+				return ((IAST) symbolValue).appendAtClone(1, value);
+			}
+
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			ISymbol sym = Validate.checkSymbolType(ast, 1);
+			IExpr arg2 = engine.evaluate(ast.arg2());
+			Function<IExpr, IExpr> function = new PrependToFunction(arg2);
+			IExpr[] results = sym.reassignSymbolValue(function, F.PrependTo);
+			if (results != null) {
+				return results[1];
+			}
+
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDFIRST);
 		}
 	}
 
@@ -1324,6 +2089,142 @@ public final class ListFunctions {
 
 	}
 
+	private final static class Reverse extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
+			if (functionList.size() != 2) {
+				return F.NIL;
+			}
+			if (!functionList.arg1().isAtom()) {
+				final IAST result = F.ast(functionList.arg1().head());
+				((IAST) functionList.arg1()).args().reverse(result.args());
+				return result;
+			}
+			return F.NIL;
+		}
+
+	}
+
+	private final static class Riffle extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			IExpr arg1 = engine.evaluate(ast.arg1());
+			IExpr arg2 = engine.evaluate(ast.arg2());
+			if (arg1.isAST()) {
+				IAST list = (IAST) arg1;
+				if (arg2.isAST()) {
+					return riffleAST(list, (IAST) arg2);
+				} else {
+					return riffleAtom(list, arg2);
+				}
+			}
+			return F.NIL;
+		}
+
+		public static IExpr riffleAtom(IAST arg1, IExpr arg2) {
+			if (arg1.size() < 2) {
+				return arg1;
+			}
+			IAST result = arg1.copyHead();
+			for (int i = 1; i < arg1.size() - 1; i++) {
+				result.append(arg1.get(i));
+				result.append(arg2);
+			}
+			result.append(arg1.get(arg1.size() - 1));
+			return result;
+		}
+
+		public static IAST riffleAST(IAST arg1, IAST arg2) {
+			if (arg1.size() < 2) {
+				return arg1;
+			}
+			IAST result = arg1.copyHead();
+			if (arg2.size() < 2) {
+				return arg1;
+			}
+			int j = 1;
+			for (int i = 1; i < arg1.size() - 1; i++) {
+				result.append(arg1.get(i));
+				if (j < arg2.size()) {
+					result.append(arg2.get(j++));
+				} else {
+					j = 1;
+					result.append(arg2.get(j++));
+				}
+			}
+			result.append(arg1.get(arg1.size() - 1));
+			if (j < arg2.size()) {
+				result.append(arg2.get(j++));
+			}
+			return result;
+		}
+	}
+
+	private final static class RotateLeft extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			IExpr arg1 = engine.evaluate(ast.arg1());
+			if (arg1.isAST()) {
+				final IAST result = F.ast(arg1.head());
+				if (ast.isAST1()) {
+					ASTRange range = ((IAST) arg1).args();
+					range.rotateLeft(result, 1);
+					// Rotating.rotateLeft((IAST) list.arg1(), result, 2, 1);
+					return result;
+				} else {
+					IExpr arg2 = engine.evaluate(ast.arg2());
+					if (arg2.isInteger()) {
+						int n = Validate.checkIntType(arg2);
+
+						ASTRange range = ((IAST) arg1).args();
+						range.rotateLeft(result, n);
+						return result;
+					}
+				}
+
+			}
+			return F.NIL;
+		}
+
+	}
+
+	private final static class RotateRight extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			IExpr arg1 = engine.evaluate(ast.arg1());
+			if (arg1.isAST()) {
+				final IAST result = F.ast(arg1.head());
+				if (ast.isAST1()) {
+					ASTRange range = ((IAST) arg1).args();
+					range.rotateRight(result, 1);
+					// Rotating.rotateRight((IAST) list.arg1(), result, 1, 1);
+					return result;
+				} else {
+					IExpr arg2 = engine.evaluate(ast.arg2());
+					if (arg2.isInteger()) {
+						int n = Validate.checkIntType(arg2);
+						ASTRange range = ((IAST) arg1).args();
+						range.rotateRight(result, n);
+						return result;
+					}
+				}
+
+			}
+			return F.NIL;
+		}
+
+	}
+
 	private final static class Select extends AbstractEvaluator {
 
 		@Override
@@ -1341,6 +2242,30 @@ public final class ListFunctions {
 					final int resultLimit = Validate.checkIntType(ast, 3);
 					return list.filter(list.copyHead(allocSize), Predicates.isTrue(predicateHead), resultLimit);
 				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	/**
+	 * <code>Skewness(list)</code> gives Pearson's moment coefficient of
+	 * skewness for <code>list</code> (a measure for estimating the symmetry of
+	 * a distribution).
+	 *
+	 */
+	private final static class Skewness extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+			if (ast.arg1().isList()) {
+				IAST list = (IAST) ast.arg1();
+				return F.Divide(F.CentralMoment(list, F.C3), F.Power(F.CentralMoment(list, F.C2), F.C3D2));
 			}
 			return F.NIL;
 		}
@@ -1455,6 +2380,240 @@ public final class ListFunctions {
 
 	}
 
+	/**
+	 * Table structure generator (i.e. lists, vectors, matrices, tensors)
+	 */
+	public static class Table extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 3);
+
+			return evaluateTable(ast, List(), List(), engine);
+		}
+
+		/**
+		 * Generate a table from standard iterator notation.
+		 * 
+		 * @param ast
+		 * @param resultList
+		 *            the result list to which the generated expressions should
+		 *            be appended.
+		 * @param defaultValue
+		 *            the default value used in the iterator
+		 * @param engine
+		 *            the current evaluation engine
+		 * @return <code>F.NIL</code> if no evaluation is possible
+		 */
+		protected static IExpr evaluateTable(final IAST ast, final IAST resultList, IExpr defaultValue,
+				EvalEngine engine) {
+			try {
+				if (ast.size() > 2) {
+					final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
+					for (int i = 2; i < ast.size(); i++) {
+						if (ast.get(i).isList()) {
+							iterList.add(Iterator.create((IAST) ast.get(i), engine));
+						} else {
+							iterList.add(Iterator.create(F.List(ast.get(i)), engine));
+						}
+					}
+
+					final TableGenerator generator = new TableGenerator(iterList, resultList,
+							new UnaryArrayFunction(engine, ast.arg1()), defaultValue);
+					return generator.table();
+				}
+			} catch (final ClassCastException e) {
+				// the iterators are generated only from IASTs
+			} catch (final NoEvalException e) {
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * Evaluate only the last iterator in <code>ast</code> (i.e.
+		 * <code>ast.get(ast.size() - 1)</code>) for <code>Sum()</code> or
+		 * <code>Product()</code> function calls.
+		 * 
+		 * @param expr
+		 * @param iter
+		 *            the iterator function
+		 * @param resultList
+		 *            the result list to which the generated expressions should
+		 *            be appended.
+		 * @param defaultValue
+		 *            the default value used if the iterator is invalid
+		 * @return <code>F.NIL</code> if no evaluation is possible
+		 * @see Product
+		 * @see Sum
+		 */
+		protected static IExpr evaluateLast(final IExpr expr, final IIterator<IExpr> iter, final IAST resultList,
+				IExpr defaultValue) {
+			try {
+				final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
+				iterList.add(iter);
+
+				final TableGenerator generator = new TableGenerator(iterList, resultList,
+						new UnaryArrayFunction(EvalEngine.get(), expr), defaultValue);
+				return generator.table();
+			} catch (final ClassCastException e) {
+				// the iterators are generated only from IASTs
+			} catch (final NoEvalException e) {
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
+		/**
+		 * Determine all local variables of the iterators starting with index
+		 * <code>2</code>.
+		 * 
+		 * @param ast
+		 * @return
+		 */
+		public IAST determineIteratorVariables(final IAST ast) {
+			IAST variableList = F.List();
+			for (int i = 2; i < ast.size(); i++) {
+				if (ast.get(i).isVariable()) {
+					variableList.append(ast.get(i));
+				} else {
+					if (ast.get(i).isList()) {
+						IAST list = (IAST) ast.get(i);
+						if (list.size() >= 2) {
+							if (list.arg1().isVariable()) {
+								variableList.append(list.arg1());
+							}
+						}
+					}
+				}
+			}
+			return variableList;
+		}
+
+		/**
+		 * Determine all local variables of the iterators starting with index
+		 * <code>2</code> in the given <code>ast</code>.
+		 * 
+		 * @param ast
+		 * @return
+		 */
+		public VariablesSet determineIteratorExprVariables(final IAST ast) {
+			VariablesSet variableList = new VariablesSet();
+			for (int i = 2; i < ast.size(); i++) {
+				if (ast.get(i).isVariable()) {
+					variableList.add((ISymbol) ast.get(i));
+				} else {
+					if (ast.get(i).isList()) {
+						IAST list = (IAST) ast.get(i);
+						if (list.size() >= 2) {
+							if (list.arg1().isVariable()) {
+								variableList.add((ISymbol) list.arg1());
+							}
+						}
+					}
+				}
+			}
+			return variableList;
+		}
+
+		/**
+		 * Disable the <code>Reap() and Sow()</code> mode temporary and evaluate
+		 * an expression for the given &quot;local variables list&quot;. If
+		 * evaluation is not possible return the input object.
+		 * 
+		 * @param expr
+		 *            the expression which should be evaluated
+		 * @param localVariablesList
+		 *            a list of symbols which should be used as local variables
+		 *            inside the block
+		 * @return the evaluated object
+		 */
+		public static IExpr evalBlockWithoutReap(IExpr expr, IAST localVariablesList) {
+			EvalEngine engine = EvalEngine.get();
+			IAST reapList = engine.getReapList();
+			boolean quietMode = engine.isQuietMode();
+			try {
+				engine.setQuietMode(true);
+				engine.setReapList(null);
+				return engine.evalBlock(expr, localVariablesList);
+			} catch (RuntimeException rex) {
+				// ignore
+			} finally {
+				engine.setReapList(reapList);
+				engine.setQuietMode(quietMode);
+			}
+			return expr;
+		}
+	}
+
+	private final static class Tally extends AbstractEvaluator {
+
+		private static IAST createResultList(java.util.Map<IExpr, Integer> map) {
+			IAST result = F.List();
+			for (java.util.Map.Entry<IExpr, Integer> entry : map.entrySet()) {
+				result.append(F.List(entry.getKey(), F.integer(entry.getValue())));
+			}
+			return result;
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+			IAST list = Validate.checkListType(ast, 1);
+
+			int size = ast.size();
+
+			if (size == 2) {
+				return tally1Arg(list);
+			} else if (size == 3) {
+				BiPredicate<IExpr, IExpr> biPredicate = Predicates.isBinaryTrue(ast.arg2());
+				return tally2Args(list, biPredicate);
+			}
+
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+		public static IAST tally1Arg(IAST list) {
+			java.util.Map<IExpr, Integer> map = new LinkedHashMap<IExpr, Integer>();
+			for (int i = 1; i < list.size(); i++) {
+				Integer value = map.get(list.get(i));
+				if (value == null) {
+					map.put(list.get(i), Integer.valueOf(1));
+				} else {
+					map.put(list.get(i), Integer.valueOf(value + 1));
+				}
+			}
+			return createResultList(map);
+		}
+
+		private static IAST tally2Args(IAST list, BiPredicate<IExpr, IExpr> biPredicate) {
+			java.util.Map<IExpr, Integer> map = new LinkedHashMap<IExpr, Integer>();
+			boolean evaledTrue;
+			for (int i = 1; i < list.size(); i++) {
+				evaledTrue = false;
+				for (java.util.Map.Entry<IExpr, Integer> entry : map.entrySet()) {
+					if (biPredicate.test(entry.getKey(), list.get(i))) {
+						evaledTrue = true;
+						map.put(entry.getKey(), Integer.valueOf(entry.getValue() + 1));
+						break;
+					}
+				}
+				if (!evaledTrue) {
+					map.put(list.get(i), Integer.valueOf(1));
+				}
+			}
+			return createResultList(map);
+		}
+
+	}
+
 	private final static class Take extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -1550,6 +2709,36 @@ public final class ListFunctions {
 	}
 
 	/**
+	 * Sums up all elements of a list.
+	 * 
+	 */
+	private final static class Total extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			VisitorLevelSpecification level = null;
+			Function<IExpr, IExpr> tf = Functors.apply(F.Plus);
+			if (ast.isAST2()) {
+				level = new VisitorLevelSpecification(tf, ast.arg2(), false);
+				// increment level because we select only subexpressions
+			} else {
+				level = new VisitorLevelSpecification(tf, 1, false);
+			}
+
+			if (ast.arg1().isAST()) {
+				// increment level because we select only subexpressions
+				level.incCurrentLevel();
+				return ast.arg1().accept(level);
+			}
+
+			return F.NIL;
+		}
+
+	}
+
+	/**
 	 * Union of two sets. See
 	 * <a href="http://en.wikipedia.org/wiki/Union_(set_theory)">Union (set
 	 * theory)</a>
@@ -1607,6 +2796,93 @@ public final class ListFunctions {
 			return result;
 		}
 
+	}
+
+	/**
+	 * Compute the variance for a list of elements
+	 */
+	private final static class Variance extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			if (ast.arg1().isAST()) {
+				IAST arg1 = (IAST) ast.arg1();
+				int dim = arg1.isVector();
+				if (dim >= 0) {
+					if (arg1.isRealVector()) {
+						return F.num(StatUtils.variance(arg1.toDoubleVector()));
+					}
+					return Covariance.vectorCovarianceSymbolic(arg1, arg1, dim);
+				}
+				int[] matrixDimensions = arg1.isMatrix();
+				if (matrixDimensions != null) {
+					if (arg1.isRealMatrix()) {
+						double[][] matrix = arg1.toDoubleMatrix();
+						matrix = Convert.toDoubleTransposed(matrix);
+						double[] result = new double[matrixDimensions[1]];
+						for (int i = 0; i < matrix.length; i++) {
+							result[i] = StatUtils.variance(matrix[i]);
+						}
+						return new ASTRealVector(result, false);
+					}
+					return F.NIL;
+				}
+
+				if (arg1.isAST()) {
+					IAST dist = (IAST) arg1;
+					if (dist.head().isSymbol()) {
+						ISymbol head = (ISymbol) dist.head();
+						if (arg1.isAST1()) {
+							if (head.equals(F.BernoulliDistribution)) {
+							} else if (head.equals(F.PoissonDistribution)) {
+							}
+						} else if (arg1.isAST2()) {
+							if (head.equals(F.BinomialDistribution)) {
+							} else if (head.equals(F.NormalDistribution)) {
+							}
+						} else if (arg1.isAST3()) {
+							IExpr n = dist.arg1();
+							IExpr nSucc = dist.arg2();
+							IExpr nTot = dist.arg3();
+							if (head.equals(F.HypergeometricDistribution)) {
+							}
+						}
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+	}
+
+	/**
+	 * Fold the list from <code>start</code> index including to <code>end</code>
+	 * index excluding into the <code>resultCollection</code>. If the
+	 * <i>binaryFunction</i> returns <code>null</code>, the left element will be
+	 * added to the result list, otherwise the result will be <i>folded</i>
+	 * again with the next element in the list.
+	 * 
+	 * @param list
+	 * @param start
+	 * @param end
+	 * @param binaryFunction
+	 * @param resultCollection
+	 */
+	public static IAST foldLeft(final IExpr expr, final IAST list, final int start, final int end,
+			final BiFunction<IExpr, IExpr, ? extends IExpr> binaryFunction, final IAST resultCollection) {
+		if (start < end) {
+			IExpr elem = expr;
+			resultCollection.append(elem);
+			for (int i = start; i < end; i++) {
+
+				elem = binaryFunction.apply(elem, list.get(i));
+				resultCollection.append(elem);
+			}
+
+		}
+		return resultCollection;
 	}
 
 	final static ListFunctions CONST = new ListFunctions();

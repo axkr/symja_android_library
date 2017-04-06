@@ -17,6 +17,7 @@ import static org.matheclipse.core.expression.F.k;
 
 import java.util.function.Predicate;
 
+import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -34,7 +35,7 @@ import org.matheclipse.core.reflection.system.rules.SumRules;
  * 
  * See <a href="http://en.wikipedia.org/wiki/Summation">Wikipedia Summation</a>
  */
-public class Sum extends Table implements SumRules {
+public class Sum extends ListFunctions.Table implements SumRules {
 
 	@Override
 	public IAST getRuleAST() {

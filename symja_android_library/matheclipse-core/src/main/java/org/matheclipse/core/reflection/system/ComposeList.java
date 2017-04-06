@@ -2,7 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.List;
 
-import org.matheclipse.core.builtin.function.FoldList;
+import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
@@ -26,7 +26,7 @@ public class ComposeList extends AbstractEvaluator {
 			if ((ast.isAST2()) && (ast.arg1().isAST())) {
 				// final EvalEngine engine = EvalEngine.get();
 				final IAST list = (IAST) ast.arg1();
-				FoldList.foldLeft(ast.arg2(), list, 1, list.size(), new BinaryApply(F.ast(ast.arg1())), resultList);
+				ListFunctions.foldLeft(ast.arg2(), list, 1, list.size(), new BinaryApply(F.ast(ast.arg1())), resultList);
 				return resultList;
 			}
 		} catch (final ArithmeticException e) {

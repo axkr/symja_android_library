@@ -303,11 +303,9 @@ public class F {
 
 	public final static IBuiltInSymbol And = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "and" : "And");
 	public final static IBuiltInSymbol Append = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "append" : "Append",
-			new org.matheclipse.core.builtin.function.Append());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "append" : "Append");
 	public final static IBuiltInSymbol AppendTo = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "appendto" : "AppendTo",
-			new org.matheclipse.core.builtin.function.AppendTo());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "appendto" : "AppendTo");
 	public final static IBuiltInSymbol Apply = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "apply" : "Apply");
 	public final static IBuiltInSymbol Array = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "array" : "Array");
 	public final static IBuiltInSymbol ArrayQ = initFinalSymbol(
@@ -376,11 +374,9 @@ public class F {
 			new org.matheclipse.core.builtin.function.FixedPoint());
 	public final static IBuiltInSymbol Flatten = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "flatten" : "Flatten");
-	public final static IBuiltInSymbol Fold = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fold" : "Fold",
-			new org.matheclipse.core.builtin.function.Fold());
+	public final static IBuiltInSymbol Fold = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fold" : "Fold");
 	public final static IBuiltInSymbol FoldList = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "foldlist" : "FoldList",
-			new org.matheclipse.core.builtin.function.FoldList());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "foldlist" : "FoldList");
 	public final static IBuiltInSymbol For = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "for" : "For");
 	public final static IBuiltInSymbol FreeQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "freeq" : "FreeQ");
 	public final static IBuiltInSymbol FullForm = initFinalSymbol(
@@ -470,11 +466,9 @@ public class F {
 	public final static IBuiltInSymbol PossibleZeroQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "possiblezeroq" : "PossibleZeroQ");
 	public final static IBuiltInSymbol Prepend = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "prepend" : "Prepend",
-			new org.matheclipse.core.builtin.function.Prepend());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "prepend" : "Prepend");
 	public final static IBuiltInSymbol PrependTo = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "prependto" : "PrependTo",
-			new org.matheclipse.core.builtin.function.PrependTo());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "prependto" : "PrependTo");
 	public final static IBuiltInSymbol PrimeQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primeq" : "PrimeQ");
 	public final static IBuiltInSymbol Print = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "print" : "Print",
@@ -494,14 +488,11 @@ public class F {
 	public final static IBuiltInSymbol Return = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "return" : "Return");
 	public final static IBuiltInSymbol Riffle = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "riffle" : "Riffle",
-			new org.matheclipse.core.builtin.function.Riffle());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "riffle" : "Riffle");
 	public final static IBuiltInSymbol RotateLeft = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rotateleft" : "RotateLeft",
-			new org.matheclipse.core.builtin.function.RotateLeft());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rotateleft" : "RotateLeft");
 	public final static IBuiltInSymbol RotateRight = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rotateright" : "RotateRight",
-			new org.matheclipse.core.builtin.function.RotateRight());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rotateright" : "RotateRight");
 	public final static IBuiltInSymbol Rule = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rule" : "Rule");
 	public final static IBuiltInSymbol RuleDelayed = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ruledelayed" : "RuleDelayed");

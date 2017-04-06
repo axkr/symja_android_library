@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Times;
 
+import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.util.Iterator;
@@ -23,7 +24,7 @@ import org.matheclipse.core.reflection.system.rules.ProductRules;
  * <a href="http://en.wikipedia.org/wiki/Multiplication#Capital_Pi_notation">
  * Wikipedia Multiplication</a>
  */
-public class Product extends Table implements ProductRules {
+public class Product extends ListFunctions.Table implements ProductRules {
 	// TODO solve initialization problem in using 'implements ProductRules {'
 	// RULES must be defined in this class at the moment!
 

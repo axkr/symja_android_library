@@ -713,6 +713,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCatenate() {
+		check("Catenate({{1, 2, 3}, {4, 5}})", "{1,2,3,4,5}");
 		check("Catenate({{1,2,3},{a,b,c},{4,5,6}})", "{1,2,3,a,b,c,4,5,6}");
 	}
 
@@ -2502,6 +2503,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testJoin() {
+		check("Join({a, b}, {c, d, e})", "{a,b,c,d,e}");
+		check("Join({{a, b}, {c, d}}, {{1, 2}, {3, 4}})", "{{a,b},{c,d},{1,2},{3,4}}");
+		check("Join(a + b, c + d, e + f)", "a+b+c+d+e+f");
+		check("Join(a + b, c * d)", "Join(a+b,c*d)");
+		check("Join(x + y, z)", "Join(x+y,z)");
+		check("Join(x + y, y * z, a)", "Join(x+y,y*z,a)");
+		check("Join(x, y + z, y * z)", "Join(x,y+z,y*z)");
+		
 		check("Join(x, y)", "Join(x,y)");
 		check("Join({a,b}, {x,y,z})", "{a,b,x,y,z}");
 		check("Join({{a, b}, {x, y}}, {{1, 2}, {3, 4}})", "{{a,b},{x,y},{1,2},{3,4}}");
@@ -5168,6 +5177,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSum() {
+		check("Sum(k, {k, Range(5)})", "15");
 		check("Sum(i^2 - i + 10 ,{i,1,10})", "430");
 		check("Sum(i!,{i,3,n})", "-4-Subfactorial(-1)+(-1)^(1+n)*Gamma(2+n)*Subfactorial(-2-n)");
 		check("Sum(i!,{i,1,n})", "-1-Subfactorial(-1)+(-1)^(1+n)*Gamma(2+n)*Subfactorial(-2-n)");
@@ -5300,6 +5310,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTable() {
+		check("Table(x, {4})", "{x,x,x,x}");
+		check("n=0", "0");
+		check("Table(n= n + 1, {5})", "{1,2,3,4,5}");
+		check("Table(i, {i, 4})", "{1,2,3,4}");
+		check("Table(i, {i, 2, 5})", "{2,3,4,5}");
+		check("Table(i, {i, 2, 6, 2})", "{2,4,6}");
+		check("Table(i, {i, Pi, 2*Pi, Pi / 2})", "{Pi,3/2*Pi,2*Pi}");
+		check("Table(x^2, {x, {a, b, c}})", "{a^2,b^2,c^2}");
+		check("Table({i, j}, {i, {a, b}}, {j, 1, 2})", "{{{a,1},{a,2}},{{b,1},{b,2}}}");
+		check("Table(x, {x,0,1/3})", "{0}");
+		check("Table(x, {x, -0.2, 3.9})", "{-0.2,0.8,1.8,2.8,3.8}");
+		
 		// check("Timing(Length(Table(i, {i, 1, 10000})))", "{0.159,10000}");
 		check("Table(x,10)", "{x,x,x,x,x,x,x,x,x,x}");
 		check("Table(x,-1)", "{}");
