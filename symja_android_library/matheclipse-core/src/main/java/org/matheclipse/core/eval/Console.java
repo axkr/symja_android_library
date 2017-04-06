@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.StringWriter;
@@ -148,9 +149,10 @@ public class Console {
 
 		// Get file from resources folder
 		ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-		File file = new File(classloader.getResource(fileName).getFile());
+		
 		try {
-			final BufferedReader f = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+			InputStream is = classloader.getResourceAsStream(fileName);
+			final BufferedReader f = new BufferedReader(new InputStreamReader(is, "UTF-8"));
 			String line;
 			boolean emptyLine = false;
 			while ((line = f.readLine()) != null) {
@@ -168,6 +170,7 @@ public class Console {
 				System.out.println(line);
 			}
 			f.close();
+			is.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
