@@ -206,7 +206,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	/** {@inheritDoc} */
 	@Override
 	public IInteger[] divideAndRemainder(final IInteger that) {
-		final IInteger[] res = new BigIntegerSym[2];
+		final IInteger[] res = new IInteger[2];
 		BigInteger[] largeRes = fBigIntValue.divideAndRemainder(that.toBigNumerator());
 		res[0] = valueOf(largeRes[0]);
 		res[1] = valueOf(largeRes[1]);
