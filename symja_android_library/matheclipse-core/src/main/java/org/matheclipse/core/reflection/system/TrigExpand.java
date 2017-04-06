@@ -1,6 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.$s;
 import static org.matheclipse.core.expression.F.Binomial;
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
@@ -60,15 +59,15 @@ public class TrigExpand extends AbstractEvaluator {
 							if (result.isSin()) {
 								// Sin(n*theta)
 								return Sum(Times(
-										Times(Times(Power(CN1, Times(Plus(F.$s("i"), CN1), C1D2)),
-												Binomial(n, $s("i"))), Power(Cos(theta), Plus(n, Times(CN1, $s("i"))))),
-										Power(Sin(theta), $s("i"))), List($s("i"), C1, n, C2));
+										Times(Times(Power(CN1, Times(Plus(F.i, CN1), C1D2)),
+												Binomial(n, F.i)), Power(Cos(theta), Plus(n, Times(CN1, F.i)))),
+										Power(Sin(theta), F.i)), List(F.i, C1, n, C2));
 							} else if (result.isCos()) {
 								// Cos(n*theta)
 								return Sum(Times(
-										Times(Times(Power(CN1, Times(F.$s("i"), C1D2)), Binomial(n, $s("i"))),
-												Power(Cos(theta), Plus(n, Times(CN1, $s("i"))))),
-										Power(Sin(theta), $s("i"))), List($s("i"), C0, n, C2));
+										Times(Times(Power(CN1, Times(F.i, C1D2)), Binomial(n, F.i)),
+												Power(Cos(theta), Plus(n, Times(CN1, F.i)))),
+										Power(Sin(theta), F.i)), List(F.i, C0, n, C2));
 							}
 						}
 					}

@@ -2254,7 +2254,7 @@ public class F {
 	 *            evaluator object to the symbol.
 	 * @return
 	 */
-	public static ISymbol $s(final String symbolName, boolean setEval) {
+	private static ISymbol $s(final String symbolName, boolean setEval) {
 		String name = symbolName;
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			if (symbolName.length() == 1) {
