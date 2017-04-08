@@ -109,12 +109,12 @@ public class SerializableTest extends TestCase {
 		equalsCopy(F.$ps(F.x, F.IntegerQ, true, false));
 	}
 
-	public void testIntegrateDefinition() {
-		RulesData rulesData = F.Integrate.getRulesData();
-		AbstractVisitor visitor = Share.createVisitor();
-		rulesData.accept(visitor);
-		equalsStringCopy(rulesData);
-	}
+//	public void testIntegrateDefinition() {
+//		RulesData rulesData = F.Integrate.getRulesData();
+//		AbstractVisitor visitor = Share.createVisitor();
+//		rulesData.accept(visitor);
+//		equalsStringCopy(rulesData);
+//	}
 
 	public void testSinDefinition() {
 		// try to share common sub-IASTs first:

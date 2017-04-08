@@ -13,12 +13,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		super(name);
 	}
 
-	// @Override
-	// public void check(String evalString, String expectedResult) {
-	// // fScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
-	// super.check(evalString, expectedResult);
-	// }
-
 	public void test001() {
 		// syntax error in relaxed mode
 		// check("Sin[x]", "");
