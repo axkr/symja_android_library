@@ -189,7 +189,7 @@ an [email][1]!
 
 ###License
 
-* the complete Symja system is published under the LESSER GNU GENERAL PUBLIC LICENSE Version 3. The Java bytecode is dual licenced also under the Apache 2.0 licence to allow usage in Android projects. 
+* the complete Symja system is published under the GNU GENERAL PUBLIC LICENSE Version 3.
 
 If you would like to use parts of the system here are the associated licenses:
 
