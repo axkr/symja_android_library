@@ -451,8 +451,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
 		SortedMap<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
 
-		Primality.pollardRhoFactors(rest, bigMap);
-		// Primality.ellipticCurveFactors(rest, bigMap);
+		// Primality.pollardRhoFactors(rest, bigMap);
+		Primality.ellipticCurveFactors(rest, bigMap);
 
 		for (Map.Entry<BigInteger, Integer> entry : bigMap.entrySet()) {
 			BigInteger key = entry.getKey();

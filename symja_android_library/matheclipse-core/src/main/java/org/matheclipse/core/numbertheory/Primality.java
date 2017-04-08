@@ -467,51 +467,9 @@ public class Primality {
 		}
 	}
 
-//	public static BigInteger ellipticCurveFactors(final BigInteger val, Map<BigInteger, Integer> map) {
-//		EllipticCurveMethod ecm = new EllipticCurveMethod(val);
-//		ecm.factorize(map);
-//		return null;
-//	}
-
-	/**
-	 * 
-	 * See <a href=
-	 * "https://en.wikipedia.org/wiki/Lenstra_elliptic_curve_factorization">
-	 * Wikipedia Lenstra elliptic curve factorization</a>
-	 * 
-	 * @param val
-	 * @param map
-	 * @return the rest factor or <code>null</code> if all factors could be
-	 *         determined
-	 */
-	public static BigInteger lenstraFactors(final BigInteger val, Map<BigInteger, Integer> map) {
-		BigInteger factor;
-		BigInteger temp = val;
-		int iterationCounter = 0;
-		Integer count;
-		while (!temp.isProbablePrime(32)) {
-			factor = BigEllipticCurve.factorLenstra(temp);
-			if (factor.equals(temp)) {
-				if (iterationCounter++ > 4) {
-					break;
-				}
-			} else {
-				iterationCounter = 1;
-			}
-			count = map.get(factor);
-			if (count == null) {
-				map.put(factor, 1);
-			} else {
-				map.put(factor, count + 1);
-			}
-			temp = temp.divide(factor);
-		}
-		count = map.get(temp);
-		if (count == null) {
-			map.put(temp, 1);
-		} else {
-			map.put(temp, count + 1);
-		}
+	public static BigInteger ellipticCurveFactors(final BigInteger val, Map<BigInteger, Integer> map) {
+		EllipticCurveMethod ecm = new EllipticCurveMethod(val);
+		ecm.factorize(map);
 		return null;
 	}
 
