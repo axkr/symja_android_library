@@ -20,7 +20,8 @@ public class SerializableTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		((IBuiltInSymbol)F.Integrate).setEvaluator(new org.matheclipse.core.reflection.system.Integrate());
+		// wait for initializing of Integrate() rules:
+		F.join();
 	}
 
 	public void testNum() {
@@ -109,12 +110,12 @@ public class SerializableTest extends TestCase {
 		equalsCopy(F.$ps(F.x, F.IntegerQ, true, false));
 	}
 
-//	public void testIntegrateDefinition() {
-//		RulesData rulesData = F.Integrate.getRulesData();
-//		AbstractVisitor visitor = Share.createVisitor();
-//		rulesData.accept(visitor);
-//		equalsStringCopy(rulesData);
-//	}
+	public void testIntegrateDefinition() {
+		RulesData rulesData = F.Integrate.getRulesData();
+		AbstractVisitor visitor = Share.createVisitor();
+		rulesData.accept(visitor);
+		equalsStringCopy(rulesData);
+	}
 
 	public void testSinDefinition() {
 		// try to share common sub-IASTs first:
