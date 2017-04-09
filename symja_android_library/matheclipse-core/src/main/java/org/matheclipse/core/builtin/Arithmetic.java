@@ -277,15 +277,12 @@ public final class Arithmetic {
 
 		/**
 		 * 
-		 * See:
-		 * <a href="http://www.cs.berkeley.edu/~fateman/papers/newsimp.pdf">
-		 * Experiments in Hash-coded Algebraic Simplification</a>
+		 * See: <a href="http://www.cs.berkeley.edu/~fateman/papers/newsimp.pdf"> Experiments in Hash-coded Algebraic
+		 * Simplification</a>
 		 * 
 		 * @param ast
-		 *            the abstract syntax tree (AST) of the form
-		 *            <code>Plus(...)</code> which should be evaluated
-		 * @return the evaluated object or <code>null</code>, if evaluation
-		 *         isn't possible
+		 *            the abstract syntax tree (AST) of the form <code>Plus(...)</code> which should be evaluated
+		 * @return the evaluated object or <code>null</code>, if evaluation isn't possible
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -371,9 +368,8 @@ public final class Arithmetic {
 		 * Calculate <code>interval({lower, upper}) ^ exponent</code>.
 		 * </p>
 		 * <p>
-		 * See: <a href=
-		 * "https://de.wikipedia.org/wiki/Intervallarithmetik#Elementare_Funktionen">
-		 * Intervallarithmetik - Elementare Funktionen</a>
+		 * See: <a href= "https://de.wikipedia.org/wiki/Intervallarithmetik#Elementare_Funktionen"> Intervallarithmetik
+		 * - Elementare Funktionen</a>
 		 * </p>
 		 * 
 		 * @param interval
@@ -410,11 +406,9 @@ public final class Arithmetic {
 		}
 
 		/**
-		 * Split this integer into the nth-root (with prime factors less equal
-		 * 1021) and the &quot;rest factor&quot;
+		 * Split this integer into the nth-root (with prime factors less equal 1021) and the &quot;rest factor&quot;
 		 * 
-		 * @return <code>{nth-root, rest factor}</code> or <code>null</code> if
-		 *         the root is not available
+		 * @return <code>{nth-root, rest factor}</code> or <code>null</code> if the root is not available
 		 */
 		private IInteger[] calculateRoot(IInteger a, IInteger root) {
 			try {
@@ -1191,16 +1185,14 @@ public final class Arithmetic {
 		// }
 
 		/**
-		 * Distribute a leading integer factor over the integer powers if
-		 * available. <code>12*2^x*3^y   ==>   2^(2+x)*3^(1+y)</code>.
+		 * Distribute a leading integer factor over the integer powers if available.
+		 * <code>12*2^x*3^y   ==>   2^(2+x)*3^(1+y)</code>.
 		 * 
 		 * @param ast
 		 *            the already evaluated expression
 		 * @param originalExpr
-		 *            the original expression which is used, if
-		 *            <code>!ast.isPresent()</code>
-		 * @return the evaluated object or <code>ast</code>, if the distribution
-		 *         of an integer factor isn't possible
+		 *            the original expression which is used, if <code>!ast.isPresent()</code>
+		 * @return the evaluated object or <code>ast</code>, if the distribution of an integer factor isn't possible
 		 */
 		private IExpr distributeLeadingFactor(IExpr ast, IAST originalExpr) {
 			IExpr expr = ast;
@@ -1325,10 +1317,8 @@ public final class Arithmetic {
 				IExpr power0Arg2 = power0.arg2();
 				if (power0.equalsAt(1, o1)) {
 					// (x^a) * x
-					// if (power0Arg2.isInteger()) {
-					if (power0Arg2.isInteger()) {
-						return o1.power(power0Arg2.inc());
-					} else if (power0Arg2.isNumber() && !o1.isRational()) {
+					if (power0Arg2.isNumber() && !o1.isRational()) {
+						// avoid reevaluation of a root of a rational number (example: 2*Sqrt(2) )
 						return o1.power(power0Arg2.inc());
 					} else if (!power0Arg2.isNumber()) {
 						return o1.power(power0Arg2.inc());
@@ -1578,9 +1568,8 @@ public final class Arithmetic {
 		 */
 		private IExpr timesArgPower(final IExpr arg0, IExpr power1Arg1, IExpr power1Arg2) {
 			if (power1Arg1.equals(arg0)) {
-				if (power1Arg2.isInteger()) {
-					return arg0.power(power1Arg2.inc());
-				} else if (power1Arg2.isNumber() && !arg0.isRational()) {
+				if (power1Arg2.isNumber() && !arg0.isRational()) {
+					// avoid reevaluation of a root of a rational number (example: 2*Sqrt(2) )
 					return arg0.power(power1Arg2.inc());
 				} else if (!power1Arg2.isNumber()) {
 					return arg0.power(power1Arg2.inc());
@@ -1644,8 +1633,7 @@ public final class Arithmetic {
 		}
 
 		/**
-		 * Try simpplifying
-		 * <code>(power0Arg1 ^ power0Arg2) * (power1Arg1 ^ power1Arg2)</code>
+		 * Try simpplifying <code>(power0Arg1 ^ power0Arg2) * (power1Arg1 ^ power1Arg2)</code>
 		 * 
 		 * @param power0Arg1
 		 * @param power0Arg2
