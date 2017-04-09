@@ -195,6 +195,18 @@ public class Num implements INum {
 
 	/** {@inheritDoc} */
 	@Override
+	public IExpr dec() {
+		return add(F.CND1);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr inc() {
+		return add(F.CD1);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public Num abs() {
 		return newInstance(Math.abs(fDouble));
 	}

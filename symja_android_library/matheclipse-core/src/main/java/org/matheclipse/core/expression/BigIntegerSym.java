@@ -194,6 +194,18 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		return sign();
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public IExpr dec() {
+		return add(F.CN1);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr inc() {
+		return add(F.C1);
+	}
+
 	/**
 	 * @param that
 	 * @return
@@ -213,8 +225,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
 		return res;
 	}
-
-	
 
 	@Override
 	public ISignedNumber divideBy(ISignedNumber that) {
@@ -236,7 +246,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	 */
 	@Override
 	public IAST divisors() {
-		if (isOne()||isMinusOne()) {
+		if (isOne() || isMinusOne()) {
 			return F.List(F.C1);
 		}
 		Set<IInteger> set = new TreeSet<IInteger>();
@@ -276,7 +286,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	public double doubleValue() {
 		return fBigIntValue.doubleValue();
 	}
-	
+
 	@Override
 	public boolean equals(final Object obj) {
 		if (obj instanceof IntegerSym) {
@@ -760,7 +770,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	@Override
 	public IExpr remainder(final IExpr that) {
 		if (that instanceof IntegerSym) {
-			return valueOf(fBigIntValue.remainder( ((IntegerSym)that).toBigNumerator()));
+			return valueOf(fBigIntValue.remainder(((IntegerSym) that).toBigNumerator()));
 		}
 		if (that instanceof BigIntegerSym) {
 			return valueOf(fBigIntValue.remainder(((BigIntegerSym) that).fBigIntValue));

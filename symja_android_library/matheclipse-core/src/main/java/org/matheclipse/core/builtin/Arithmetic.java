@@ -1325,7 +1325,10 @@ public final class Arithmetic {
 				IExpr power0Arg2 = power0.arg2();
 				if (power0.equalsAt(1, o1)) {
 					// (x^a) * x
+					// if (power0Arg2.isInteger()) {
 					if (power0Arg2.isInteger()) {
+						return o1.power(power0Arg2.inc());
+					} else if (power0Arg2.isNumber() && !o1.isRational()) {
 						return o1.power(power0Arg2.inc());
 					} else if (!power0Arg2.isNumber()) {
 						return o1.power(power0Arg2.inc());
@@ -1576,6 +1579,8 @@ public final class Arithmetic {
 		private IExpr timesArgPower(final IExpr arg0, IExpr power1Arg1, IExpr power1Arg2) {
 			if (power1Arg1.equals(arg0)) {
 				if (power1Arg2.isInteger()) {
+					return arg0.power(power1Arg2.inc());
+				} else if (power1Arg2.isNumber() && !arg0.isRational()) {
 					return arg0.power(power1Arg2.inc());
 				} else if (!power1Arg2.isNumber()) {
 					return arg0.power(power1Arg2.inc());

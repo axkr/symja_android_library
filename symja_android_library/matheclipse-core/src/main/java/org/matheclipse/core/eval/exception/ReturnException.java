@@ -10,6 +10,11 @@ public class ReturnException extends FlowControlException {
 	 * 
 	 */
 	private static final long serialVersionUID = 6165872840807864554L;
+
+	public final static ReturnException RETURN_FALSE = new ReturnException(F.False);
+	
+	public final static ReturnException RETURN_TRUE = new ReturnException(F.True);
+	
 	final private IExpr value;
 
 	public ReturnException() {

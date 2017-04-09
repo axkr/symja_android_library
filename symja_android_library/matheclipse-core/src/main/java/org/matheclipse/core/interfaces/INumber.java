@@ -9,7 +9,7 @@ import org.matheclipse.core.expression.ComplexNum;
  * 
  */
 public interface INumber extends IExpr {
-
+	
 	/**
 	 * Get the absolute value for a given number
 	 * 

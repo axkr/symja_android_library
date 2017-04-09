@@ -160,6 +160,18 @@ public class IntegerSym extends AbstractIntegerSym {
 		return sign();
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public IExpr dec() {
+		return add(F.CN1);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr inc() {
+		return add(F.C1);
+	}
+	
 	@Override
 	public IInteger div(final IInteger that) {
 		if (that instanceof IntegerSym) {

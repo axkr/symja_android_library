@@ -595,8 +595,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @param matrix
 	 * @param vector
 	 * @param engine
-	 * @return
-	 * throws NoSolution
+	 * @return throws NoSolution
 	 */
 	protected static IAST analyzeSublist(ArrayList<ExprAnalyzer> analyzerList, IAST variables, IAST resultList,
 			int maximumNumberOfResults, IAST matrix, IAST vector, EvalEngine engine) throws NoSolution {
@@ -788,7 +787,13 @@ public class Solve extends AbstractFunctionEvaluator {
 		IExpr denom = exprAnalyzer.getDenominator();
 		// try to solve the expr for a symbol in the symbol set
 		for (ISymbol sym : exprAnalyzer.getSymbolSet()) {
-			IExpr temp = Roots.rootsOfVariable(expr, denom, F.List(sym), expr.isNumericMode(), engine);
+			IExpr temp = F.NIL;
+			if (expr.isNumericMode() && denom.isOne()) {
+				temp = NRoots.roots(expr, F.List(sym), engine);
+			}
+			if (!temp.isPresent()) {
+				temp = Roots.rootsOfVariable(expr, denom, F.List(sym), expr.isNumericMode(), engine);
+			}
 			if (temp.isPresent()) {
 				IAST resultList = F.List();
 				if (temp.isASTSizeGE(F.List, 2)) {
@@ -803,6 +808,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			}
 		}
 		return F.NIL;
+
 	}
 
 	/**
@@ -891,10 +897,11 @@ public class Solve extends AbstractFunctionEvaluator {
 		if (temp.isPresent()) {
 			return temp;
 		}
-		
+
 		return F.NIL;
-		
-		// return solvePlusEquationsSimplified(termsEqualZeroList, variables,engine);
+
+		// return solvePlusEquationsSimplified(termsEqualZeroList,
+		// variables,engine);
 	}
 
 	/**

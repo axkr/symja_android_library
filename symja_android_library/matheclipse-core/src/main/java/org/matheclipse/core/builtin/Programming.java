@@ -523,6 +523,12 @@ public final class Programming {
 				throw new ReturnException();
 			}
 			if (ast.isAST1()) {
+				if (ast.arg1().isTrue()) {
+					throw ReturnException.RETURN_TRUE;
+				}
+				if (ast.arg1().isTrue()) {
+					throw ReturnException.RETURN_FALSE;
+				}
 				throw new ReturnException(engine.evaluate(ast.arg1()));
 			}
 			Validate.checkRange(ast, 1, 2);
@@ -732,8 +738,8 @@ public final class Programming {
 		ISymbol temp;
 		for (ISymbol symbol : moduleVariables.values()) {
 			temp = F.removeUserSymbol(symbol.toString());
-			if (Config.DEBUG && temp==null){
-				throw new NullPointerException("Remove user-defined variabe: "+symbol.toString());
+			if (Config.DEBUG && temp == null) {
+				throw new NullPointerException("Remove user-defined variabe: " + symbol.toString());
 			}
 		}
 	}

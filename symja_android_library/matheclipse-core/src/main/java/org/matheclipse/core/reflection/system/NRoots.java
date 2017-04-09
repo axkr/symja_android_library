@@ -11,6 +11,7 @@ import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -21,8 +22,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Determine the numerical roots of a univariate polynomial
  * 
  * See Wikipedia entries for:
- * <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic
- * equation </a>, <a href="http://en.wikipedia.org/wiki/Cubic_function">Cubic
+ * <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic equation
+ * </a>, <a href="http://en.wikipedia.org/wiki/Cubic_function">Cubic
  * function</a> and
  * <a href="http://en.wikipedia.org/wiki/Quartic_function">Quartic function</a>
  * 
@@ -35,10 +36,24 @@ public class NRoots extends AbstractFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (ast.size() != 2) {
-			return F.NIL;
+		Validate.checkRange(ast, 2, 3);
+		IAST variables;
+		if (ast.size() == 2) {
+			VariablesSet eVar = new VariablesSet(ast.arg1());
+			if (!eVar.isSize(1)) {
+				// factor only possible for univariate polynomials
+				engine.printMessage("NRoots: factorization only possible for univariate polynomials");
+				return F.NIL;
+			}
+			variables = eVar.getVarList();
+		} else {
+			if (ast.arg2().isList()) {
+				variables = (IAST) ast.arg2();
+			} else {
+				variables = F.List(ast.arg2());
+			}
 		}
-		IExpr temp = roots(ast, engine);
+		IExpr temp = roots(ast.arg1(), variables, engine);
 		if (!temp.isList()) {
 			return F.NIL;
 		}
@@ -50,14 +65,14 @@ public class NRoots extends AbstractFunctionEvaluator {
 		return result;
 	}
 
-	protected static IAST roots(final IAST ast, EvalEngine engine) {
-		VariablesSet eVar = new VariablesSet(ast.arg1());
-		if (!eVar.isSize(1)) {
+	public static IAST roots(final IExpr arg1, IAST variables, EvalEngine engine) {
+		if (variables.size() != 2) {
 			// factor only possible for univariate polynomials
+			engine.printMessage("NRoots: factorization only possible for univariate polynomials");
 			return F.NIL;
 		}
-		IExpr expr = evalExpandAll(ast.arg1());
-		IAST variables = eVar.getVarList();
+		IExpr expr = evalExpandAll(arg1);
+
 		ISymbol sym = (ISymbol) variables.arg1();
 		double[] coefficients = Expr2Object.toPolynomial(expr, sym);
 
@@ -87,7 +102,7 @@ public class NRoots extends AbstractFunctionEvaluator {
 	 */
 	public static IAST rootsUp2Degree3(double[] coefficients) {
 		if (coefficients.length == 0) {
-			return  F.NIL;
+			return F.NIL;
 		}
 		if (coefficients.length == 1) {
 			return quadratic(0.0, 0.0, coefficients[0]);

@@ -80,7 +80,10 @@ public class ApcomplexNum implements IComplexNum {
 
 	/** A complex number representing "1.0 + 0.0i" */
 	public static final ApcomplexNum ONE = new ApcomplexNum(Apcomplex.ONE);
-
+	
+	/** A complex number representing "-1.0 + 0.0i" */
+	public static final ApcomplexNum MINUS_ONE = ONE.negate();
+	
 	/** A complex number representing "0.0 + 0.0i" */
 	public static final ApcomplexNum ZERO = new ApcomplexNum(Apcomplex.ZERO);
 
@@ -120,6 +123,18 @@ public class ApcomplexNum implements IComplexNum {
 		return ComplexNum.valueOf(fApcomplex.real().doubleValue(), fApcomplex.imag().doubleValue());
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public IExpr dec() {
+		return add(MINUS_ONE);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr inc() {
+		return add(ONE);
+	}
+	
 	/**
 	 * @return
 	 */

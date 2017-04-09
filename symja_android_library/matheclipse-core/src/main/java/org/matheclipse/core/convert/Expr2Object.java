@@ -29,7 +29,8 @@ public class Expr2Object {
 			if (signedNumber != null) {
 				result[i - 1] = signedNumber.doubleValue();
 			} else {
-				throw new WrongArgumentType(ast, ast.get(i), i, "Conversion into a vector of double values not possible!");
+				throw new WrongArgumentType(ast, ast.get(i), i,
+						"Conversion into a vector of double values not possible!");
 			}
 		}
 		return result;
@@ -56,7 +57,8 @@ public class Expr2Object {
 				if (signedNumber != null) {
 					result[i - 1][j - 1] = signedNumber.doubleValue();
 				} else {
-					throw new WrongArgumentType(ast, ast.get(i), i, "Conversion into a matrix of double values not possible!");
+					throw new WrongArgumentType(ast, ast.get(i), i,
+							"Conversion into a matrix of double values not possible!");
 				}
 			}
 		}
@@ -82,11 +84,11 @@ public class Expr2Object {
 		for (OpenIntToDoubleHashMap.Iterator iterator = map.iterator(); iterator.hasNext();) {
 			iterator.advance();
 			k = iterator.key();
-			if (k <= 4) {
-				array[k] = iterator.value();
-			} else {
-				return null;
-			}
+			// if (k <= 4) {
+			array[k] = iterator.value();
+			// } else {
+			// return null;
+			// }
 		}
 
 		int n = array.length;
@@ -106,7 +108,8 @@ public class Expr2Object {
 	 * 
 	 * @param expr
 	 * @param sym
-	 * @return <code>null</code> if the expression couldn't be converted to a polynomial.
+	 * @return <code>null</code> if the expression couldn't be converted to a
+	 *         polynomial.
 	 */
 	public static OpenIntToDoubleHashMap toPolynomialMap(IExpr expr, ISymbol sym) {
 		try {

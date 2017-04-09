@@ -218,6 +218,18 @@ public class FractionSym extends AbstractFractionSym {
 		return ComplexNum.valueOf(nr / dr);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public IExpr dec() {
+		return add(F.CN1);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr inc() {
+		return add(F.C1);
+	}
+	
 	/**
 	 * Return a new rational representing <code>this / other</code>.
 	 * 

@@ -1925,6 +1925,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFindInstance() {
+		check("FindInstance(x+5.0==a,x)", "{{x->-5.0+a}}");
+		
 		check("FindInstance(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)",
 				"{{a->False,b->True,c->False,d->False}}");
 
@@ -1938,12 +1940,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("FindInstance(Sin(x)==0.0,x)", "{{x->0}}");
 		check("FindInstance(Sin(x)==1/2,x)", "{{x->Pi/6}}");
 		check("FindInstance(sin(x)==0.5,x)", "{{x->0.5235987755982989}}");
-		check("FindInstance(x^2-2500.00==0,x)", "{{x->-50.0}}");
+		check("FindInstance(x^2-2500.00==0,x)", "{{x->50.0}}");
 		check("FindInstance(x^2+a*x+1 == 0, x)", "{{x->-a/2-Sqrt(-4+a^2)/2}}");
 		check("FindInstance((-3)*x^3 +10*x^2-11*x == (-4), {x})", "{{x->1}}");
 
-		check("FindInstance(x^2+50*x-2500.00==0,x)", "{{x->-80.90169943749474}}");
-		check("FindInstance(x+5.0==a,x)", "{{x->-5.0+a}}");
+		check("FindInstance(x^2+50*x-2500.00==0,x)", "{{x->30.901699437494745}}");
 
 		check("FindInstance(a x + y == 7 && b x - y == 1, {x, y})", "{{x->8/(a+b),y->(a-7*b)/(-a-b)}}");
 		check("FindInstance({a x + y == 7, b x - y == 1}, {x, y})", "{{x->8/(a+b),y->(a-7*b)/(-a-b)}}");
@@ -2504,7 +2505,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Join(x + y, z)", "Join(x+y,z)");
 		check("Join(x + y, y * z, a)", "Join(x+y,y*z,a)");
 		check("Join(x, y + z, y * z)", "Join(x,y+z,y*z)");
-		
+
 		check("Join(x, y)", "Join(x,y)");
 		check("Join({a,b}, {x,y,z})", "{a,b,x,y,z}");
 		check("Join({{a, b}, {x, y}}, {{1, 2}, {3, 4}})", "{{a,b},{x,y},{1,2},{3,4}}");
@@ -2735,7 +2736,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLog() {
-		
+
 		// test alias
 		check("Ln(E)", "1");
 		check("ln(E)", "1");
@@ -2763,7 +2764,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Log(I*Infinity)", "Infinity");
 		check("Log(-I*Infinity)", "Infinity");
 		check("Log(ComplexInfinity)", "Infinity");
-		
+
 		check("Log(0.0)", "-Infinity");
 	}
 
@@ -4833,6 +4834,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		check("Solve(x+5.0==a,x)", "{{x->-5.0+a}}");
+		
+		check("Solve(-8828.206-582.222*b+55.999*b^2.0+4.8*b^3.0==0, b)", 
+				"{{b->-11.735882719537255+I*(-4.250200714726695)},{b->11.805307105741175},{b->-11.735882719537255+I*4.250200714726695}}");
 		// check("Solve(Abs((-3+x^2)/x) ==2,{x})",
 		// "{{x->-3},{x->-1},{x->1},{x->3}}");
 		check("Solve(x^3==-2,x)", "{{x->-2^(1/3)},{x->(-1)^(1/3)*2^(1/3)},{x->-(-1)^(2/3)*2^(1/3)}}");
@@ -4895,12 +4900,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Solve(Sin(x)==0.0,x)", "{{x->0}}");
 		check("Solve(Sin(x)==1/2,x)", "{{x->Pi/6}}");
 		check("Solve(sin(x)==0.5,x)", "{{x->0.5235987755982989}}");
-		check("Solve(x^2-2500.00==0,x)", "{{x->-50.0},{x->50.0}}");
+		check("Solve(x^2-2500.00==0,x)", "{{x->50.0},{x->-50.0}}");
 		check("Solve(x^2+a*x+1 == 0, x)", "{{x->-a/2-Sqrt(-4+a^2)/2},{x->-a/2+Sqrt(-4+a^2)/2}}");
 		check("Solve((-3)*x^3 +10*x^2-11*x == (-4), {x})", "{{x->1},{x->4/3}}");
 
-		check("Solve(x^2+50*x-2500.00==0,x)", "{{x->-80.90169943749474},{x->30.90169943749474}}");
-		check("Solve(x+5.0==a,x)", "{{x->-5.0+a}}");
+		check("Solve(x^2+50*x-2500.00==0,x)", "{{x->30.901699437494745},{x->-80.90169943749474}}");
 
 		check("Solve(a x + y == 7 && b x - y == 1, {x, y})", "{{x->8/(a+b),y->(a-7*b)/(-a-b)}}");
 		check("Solve({a x + y == 7, b x - y == 1}, {x, y})", "{{x->8/(a+b),y->(a-7*b)/(-a-b)}}");
@@ -5039,6 +5043,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSort() {
+		// TODO
+		// check("Sort({a,A,a,b,B})", "{a, a, A, b, B}");
 		check("Sort({d, b, c, a})", "{a,b,c,d}");
 		check("Sort({4, 1, 3, 2, 2}, Greater)", "{4,3,2,2,1}");
 		check("Sort({4, 1, 3, 2, 2}, #1 > #2 &)", "{4,3,2,2,1}");
@@ -5074,13 +5080,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("SquareFreeQ(5)", "True");
 		check("SquareFreeQ(20)", "True");
 		check("SquareFreeQ(x^4-1)", "True");
-		check("SquareFreeQ(x^4 - 2 x^2 + 1)","False");
+		check("SquareFreeQ(x^4 - 2 x^2 + 1)", "False");
 		check("SquareFreeQ(x^2+1)", "True");
 		check("SquareFreeQ(9 + 6*x + x^2)", "False");
 		check("SquareFreeQ(x^2 + 1, Modulus -> 2)", "False");
-		
+
 	}
-	
+
 	public void testSquaredEuclideanDistance() {
 		// check("SquaredEuclideanDistance(-7, 5)", "144");
 		check("SquaredEuclideanDistance({-1, -1}, {1, 1})", "8");
@@ -5315,7 +5321,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Table({i, j}, {i, {a, b}}, {j, 1, 2})", "{{{a,1},{a,2}},{{b,1},{b,2}}}");
 		check("Table(x, {x,0,1/3})", "{0}");
 		check("Table(x, {x, -0.2, 3.9})", "{-0.2,0.8,1.8,2.8,3.8}");
-		
+
 		// check("Timing(Length(Table(i, {i, 1, 10000})))", "{0.159,10000}");
 		check("Table(x,10)", "{x,x,x,x,x,x,x,x,x,x}");
 		check("Table(x,-1)", "{}");

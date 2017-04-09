@@ -174,6 +174,18 @@ public class ApfloatNum implements INum {
 		return ApfloatMath.abs(fApfloat).compareTo(Apcomplex.ONE);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public IExpr dec() {
+		return add(F.CND1);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr inc() {
+		return add(F.CD1);
+	}
+	
 	@Override
 	public IExpr plus(final IExpr that) {
 		if (that instanceof ApfloatNum) {

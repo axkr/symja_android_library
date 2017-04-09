@@ -423,6 +423,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		}
 
 		if (b instanceof IntegerSym) {
+			// SortedMap<Long, Integer> map = new TreeMap<Long, Integer>();
+			// PrimeInteger.smallPrimeDivisors(b.longValue(), map);
 			Map<Long, Integer> map = PrimeInteger.factors(b.longValue());
 			for (Map.Entry<Long, Integer> entry : map.entrySet()) {
 				long key = entry.getKey();
@@ -434,7 +436,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 			return result;
 		}
 
-		Map<Integer, Integer> map = new TreeMap<Integer, Integer>();
+		SortedMap<Integer, Integer> map = new TreeMap<Integer, Integer>();
 		BigInteger rest = Primality.countPrimes32749(b.toBigNumerator(), map);
 
 		for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
@@ -445,6 +447,10 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 			}
 		}
 		if (rest.equals(BigInteger.ONE)) {
+			return result;
+		}
+		if (rest.isProbablePrime(PRIME_CERTAINTY)) {
+			result.append(valueOf(rest));
 			return result;
 		}
 		b = valueOf(rest);

@@ -39,6 +39,9 @@ public class ComplexNum implements IComplexNum {
 	/** A complex number representing "NaN + NaNi" */
 	public static final ComplexNum NaN = valueOf(Double.NaN, Double.NaN);
 
+	/** A complex number representing "-1.0 + 0.0i" */
+	public static final ComplexNum MINUS_ONE = valueOf(-1.0, 0.0);
+	
 	/** A complex number representing "1.0 + 0.0i" */
 	public static final ComplexNum ONE = valueOf(1.0, 0.0);
 
@@ -252,6 +255,18 @@ public class ComplexNum implements IComplexNum {
 		}
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public IExpr dec() {
+		return add(MINUS_ONE);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr inc() {
+		return add(ONE);
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public double dabs() {

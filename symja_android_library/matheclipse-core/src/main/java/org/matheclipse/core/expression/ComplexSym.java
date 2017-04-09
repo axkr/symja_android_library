@@ -42,6 +42,7 @@ public class ComplexSym implements IComplex {
 	private static final long serialVersionUID = 1489050560741527824L;
 
 	private final static ComplexSym ZERO = ComplexSym.valueOf(F.C0);
+	private final static ComplexSym MINUS_ONE = ComplexSym.valueOf(F.CN1);
 	private final static ComplexSym ONE = ComplexSym.valueOf(F.C1);
 
 	public static ComplexSym valueOf(final BigFraction real, final BigFraction imaginary) {
@@ -267,6 +268,18 @@ public class ComplexSym implements IComplex {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr dec() {
+		return add(MINUS_ONE);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr inc() {
+		return add(ONE);
 	}
 
 	@Override
