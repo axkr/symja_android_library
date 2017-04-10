@@ -302,6 +302,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAnd() {
+		check("True && True && False", "False");
+		check("a && b && True && c", "a&&b&&c");
 		check("And()", "True");
 		check("And(4)", "4");
 		check("2 > 1 && Pi > 3", "True");
@@ -1512,6 +1514,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEquivalent() {
+		check("Equivalent(True, True, False)", "False");
+		check("Equivalent(a,b,c)", "Equivalent(a,b,c)");
+		check("Equivalent(a,b,True,c)", "a&&b&&c");
+		check("Equivalent(a)", "True");
+		
 		check("Equivalent()", "True");
 		check("Equivalent(4)", "True");
 		check("Equivalent(a,a)", "True");
@@ -2273,8 +2280,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testImplies() {
-		check("Implies(True,a)", "a");
-		check("Implies(False,a)", "True");
+		
+		check("Implies(False, a)", "True");
+		check("Implies(True, a)", "a");
+		check("Implies(a,Implies(b,Implies(True,c)))", "Implies(a,Implies(b,c))");
+		
 		check("Implies(p,q)", "Implies(p,q)");
 
 		check("Implies(a,True)", "True");
@@ -3555,6 +3565,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNot() {
+		check("!True", "False");
+		check("!False", "True");
+		check("!b", "!b");
 		check("Not(Not(x))", "x");
 		check("Not(a<b)", "a>=b");
 		check("Not(a<=b)", "a>b");
@@ -3639,6 +3652,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testOr() {
+		check("False || True", "True");
+		check("a || False || b", "a||b");
 		check("Or( )", "False");
 		check("Or(2+2)", "4");
 		check("FullForm( Or(x, Or(y, z)) )", "\"Or(x, y, z)\"");

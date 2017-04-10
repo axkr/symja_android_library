@@ -3653,6 +3653,10 @@ public class F {
 		}
 		return unaryAST1(Im, a0);
 	}
+	
+	public static IAST Implies(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Implies, a0, a1);
+	}
 
 	public static IAST Increment(final IExpr a) {
 		return unaryAST1(Increment, a);
