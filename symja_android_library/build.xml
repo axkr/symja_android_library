@@ -139,37 +139,37 @@
 				<exclude name="**/MANIFEST.MF" />
 			</patternset>
 		</unjar>
-		<unjar src="lib/hipparchus-core-1.0.jar" dest="${fatjar.dir}">
+		<unjar src="lib/hipparchus-core-1.1.jar" dest="${fatjar.dir}">
 			<patternset>
 				<exclude name="**/*.java" />
 				<exclude name="**/MANIFEST.MF" />
 			</patternset>
 		</unjar>
-		<unjar src="lib/hipparchus-fft-1.0.jar" dest="${fatjar.dir}">
+		<unjar src="lib/hipparchus-fft-1.1.jar" dest="${fatjar.dir}">
 			<patternset>
 				<exclude name="**/*.java" />
 				<exclude name="**/MANIFEST.MF" />
 			</patternset>
 		</unjar>
-		<unjar src="lib/hipparchus-fitting-1.0.jar" dest="${fatjar.dir}">
+		<unjar src="lib/hipparchus-fitting-1.1.jar" dest="${fatjar.dir}">
 			<patternset>
 				<exclude name="**/*.java" />
 				<exclude name="**/MANIFEST.MF" />
 			</patternset>
 		</unjar>
-		<unjar src="lib/hipparchus-ode-1.0.jar" dest="${fatjar.dir}">
+		<unjar src="lib/hipparchus-ode-1.1.jar" dest="${fatjar.dir}">
 			<patternset>
 				<exclude name="**/*.java" />
 				<exclude name="**/MANIFEST.MF" />
 			</patternset>
 		</unjar>
-		<unjar src="lib/hipparchus-optim-1.0.jar" dest="${fatjar.dir}">
+		<unjar src="lib/hipparchus-optim-1.1.jar" dest="${fatjar.dir}">
 			<patternset>
 				<exclude name="**/*.java" />
 				<exclude name="**/MANIFEST.MF" />
 			</patternset>
 		</unjar>
-		<unjar src="lib/hipparchus-stat-1.0.jar" dest="${fatjar.dir}">
+		<unjar src="lib/hipparchus-stat-1.1.jar" dest="${fatjar.dir}">
 			<patternset>
 				<exclude name="**/*.java" />
 				<exclude name="**/MANIFEST.MF" />
