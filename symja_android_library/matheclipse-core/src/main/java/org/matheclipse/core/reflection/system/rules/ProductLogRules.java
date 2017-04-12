@@ -29,7 +29,7 @@ public interface ProductLogRules {
     // ProductLog(E)=1
     ISet(ProductLog(E),
       C1),
-    // ProductLog(-1,-Pi/2)=-Pi/2*I
+    // ProductLog(-1,-Pi/2)=-1/2*Pi*I
     ISet(ProductLog(CN1,Times(CN1D2,Pi)),
       Times(CC(0L,1L,-1L,2L),Pi)),
     // ProductLog(-1,-1/E)=-1

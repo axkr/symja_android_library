@@ -1767,8 +1767,10 @@ public final class BooleanFunctions {
 
 			IExpr temp;
 			IExpr result = ast.arg1();
+			int size = ast.size();
+			IAST xor = F.ast(F.Xor, size - 1, false);
 			boolean evaled = false;
-			for (int i = 2; i < ast.size(); i++) {
+			for (int i = 2; i < size; i++) {
 				temp = ast.get(i);
 				if (temp.isTrue()) {
 					if (result.isTrue()) {
@@ -1792,29 +1794,22 @@ public final class BooleanFunctions {
 						evaled = true;
 					} else {
 						if (result.isTrue()) {
-							result = F.eval(F.Not(result));
+							result = F.eval(F.Not(temp));
 							evaled = true;
 						} else if (result.isFalse()) {
 							result = temp;
 							evaled = true;
 						} else {
-							if (evaled) {
-								IAST xor = F.ast(F.Xor, ast.size() - i + 1, false);
-								xor.append(result);
-								xor.append(temp);
-								xor.appendAll(ast, i + 1, ast.size());
-								// for (int j = i + 1; j < ast.size(); j++) {
-								// xor.append(ast.get(j));
-								// }
-								return xor;
-							}
-							return F.NIL;
+							xor.append(temp);
 						}
 					}
 				}
 			}
-
-			return result;
+			if (evaled) {
+				xor.append(result);
+				return xor;
+			}
+			return F.NIL;
 		}
 
 		@Override

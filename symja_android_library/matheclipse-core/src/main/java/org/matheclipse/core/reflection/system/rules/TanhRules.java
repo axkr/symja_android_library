@@ -20,13 +20,13 @@ public interface TanhRules {
     // Tanh(0)=0
     ISet(Tanh(C0),
       C0),
-    // Tanh(Pi/4*I)=I
+    // Tanh(1/4*Pi*I)=I
     ISet(Tanh(Times(CC(0L,1L,1L,4L),Pi)),
       CI),
-    // Tanh(Pi/3*I)=Sqrt(3)*I
+    // Tanh(1/3*Pi*I)=Sqrt(3)*I
     ISet(Tanh(Times(CC(0L,1L,1L,3L),Pi)),
       Times(CI,CSqrt3)),
-    // Tanh(Pi/2*I)=ComplexInfinity
+    // Tanh(1/2*Pi*I)=ComplexInfinity
     ISet(Tanh(Times(CC(0L,1L,1L,2L),Pi)),
       CComplexInfinity),
     // Tanh(2/3*Pi*I)=-Sqrt(3)*I

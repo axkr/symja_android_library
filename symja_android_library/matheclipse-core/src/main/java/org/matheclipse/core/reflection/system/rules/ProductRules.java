@@ -10,13 +10,13 @@ import org.matheclipse.core.interfaces.IAST;
 public interface ProductRules {
   final public static IAST RULES = List(
     // Product(x_Symbol,{x_,0,m_}):=0
-    ISetDelayed(Product(x_Symbol,List(x_,C0,m_)),
+    ISetDelayed(Product($p(x,Symbol),List(x_,C0,m_)),
       C0),
     // Product(x_Symbol,{x_,0,m_,s_}):=0
-    ISetDelayed(Product(x_Symbol,List(x_,C0,m_,s_)),
+    ISetDelayed(Product($p(x,Symbol),List(x_,C0,m_,s_)),
       C0),
     // Product(x_Symbol,{x_,1,m_}):=m!/;FreeQ(x,m)
-    ISetDelayed(Product(x_Symbol,List(x_,C1,m_)),
+    ISetDelayed(Product($p(x,Symbol),List(x_,C1,m_)),
       Condition(Factorial(m),FreeQ(x,m)))
   );
 }

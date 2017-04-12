@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -23,8 +24,7 @@ import org.matheclipse.core.reflection.system.rules.LimitRules;
 import edu.jas.poly.GenPolynomial;
 
 /**
- * Limit of a function. See
- * <a href="http://en.wikipedia.org/wiki/List_of_limits">List of Limits</a>
+ * Limit of a function. See <a href="http://en.wikipedia.org/wiki/List_of_limits">List of Limits</a>
  */
 public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 
@@ -71,6 +71,17 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 
 		public void setDirection(int direction) {
 			this.direction = direction;
+		}
+
+		public IAST create(IExpr arg1) {
+			if (direction == DIRECTION_FROM_LARGER_VALUES) {
+				return F.Limit(arg1, rule, F.Rule(F.Direction, F.CN1));
+			}
+
+			if (direction == DIRECTION_FROM_SMALLER_VALUES) {
+				return F.Limit(arg1, rule, F.Rule(F.Direction, F.C1));
+			}
+			return F.Limit(arg1, rule);
 		}
 	}
 
@@ -167,9 +178,8 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	}
 
 	/**
-	 * Try L'hospitales rule. See
-	 * <a href="http://en.wikipedia.org/wiki/L%27H%C3%B4pital%27s_rule">
-	 * Wikipedia L'Hôpital's rule</a>
+	 * Try L'hospitales rule. See <a href="http://en.wikipedia.org/wiki/L%27H%C3%B4pital%27s_rule"> Wikipedia
+	 * L'Hôpital's rule</a>
 	 * 
 	 * @param numerator
 	 * @param denominator
@@ -201,9 +211,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	}
 
 	/**
-	 * See:
-	 * <a href="http://en.wikibooks.org/wiki/Calculus/Infinite_Limits">Limits at
-	 * Infinity of Rational Functions</a>
+	 * See: <a href="http://en.wikibooks.org/wiki/Calculus/Infinite_Limits">Limits at Infinity of Rational Functions</a>
 	 * 
 	 * @param numeratorPoly
 	 * @param denominatorPoly
@@ -249,9 +257,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	}
 
 	/**
-	 * See:
-	 * <a href="http://en.wikibooks.org/wiki/Calculus/Infinite_Limits">Limits at
-	 * Infinity of Rational Functions</a>
+	 * See: <a href="http://en.wikibooks.org/wiki/Calculus/Infinite_Limits">Limits at Infinity of Rational Functions</a>
 	 * 
 	 * @param numeratorPoly
 	 * @param denominatorPoly
@@ -376,17 +382,24 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		return mapLimit(arg1, rule);
 	}
 
-	private static IExpr powerLimit(final IAST arg1, LimitData data) {
+	private static IExpr powerLimit(final IAST powerAST, LimitData data) {
 		// IAST rule = data.getRule();
-		if (arg1.arg2().equals(data.getSymbol()) && arg1.arg2().equals(data.getSymbol())
-				&& data.getLimitValue().isZero()) {
+		IExpr arg1 = powerAST.arg1();
+		IExpr arg2 = powerAST.arg1();
+		if (powerAST.arg2().equals(data.getSymbol()) && data.getLimitValue().isZero()) {
 			return F.C1;
 		}
-		if (arg1.arg2().isNumericFunction()) {
+		if (arg1.isTimes() && arg2.isFree(data.getSymbol())) {
+			IAST[] isFreeResult = ((IAST) arg1).filter(Predicates.isFree(data.getSymbol()));
+			if (isFreeResult[1].size() < ((IAST) arg1).size()) {
+				return F.Times(F.Power(isFreeResult[0], arg2), data.create(F.Power(isFreeResult[1], arg2)));
+			}
+		}
+		if (powerAST.arg2().isNumericFunction()) {
 			// Limit[a_^exp_,sym->lim] -> Limit[a,sym->lim]^exp
-			IExpr exp = arg1.arg2();
+			IExpr exp = powerAST.arg2();
 			// IExpr temp = F.evalQuiet(F.Limit(arg1.arg1(), rule));?
-			IExpr temp = evalLimitQuiet(arg1.arg1(), data);
+			IExpr temp = evalLimitQuiet(powerAST.arg1(), data);
 			if (temp.isNumericFunction()) {
 				if (temp.isZero()) {
 					if (exp.isPositive()) {
@@ -453,9 +466,8 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	}
 
 	/**
-	 * Try a substitution. <code>y = 1/x</code>. As <code>|x|</code> approaches
-	 * <code>Infinity</code> or <code>-Infinity</code>, <code>y</code>
-	 * approaches <code>0</code>.
+	 * Try a substitution. <code>y = 1/x</code>. As <code>|x|</code> approaches <code>Infinity</code> or
+	 * <code>-Infinity</code>, <code>y</code> approaches <code>0</code>.
 	 * 
 	 * @param arg1
 	 * @param data
@@ -467,8 +479,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		IExpr y = F.Power(x, F.CN1); // substituting by 1/x
 		IExpr temp = F.evalQuiet(F.subst(arg1, x, y));
 		if (temp.isTimes()) {
-			IExpr[] parts = Algebra.getFractionalPartsTimes((IAST) temp, false,
-					false, true, true);
+			IExpr[] parts = Algebra.getFractionalPartsTimes((IAST) temp, false, false, true, true);
 			if (parts != null) {
 				if (!parts[1].isOne()) { // denominator != 1
 					LimitData ndData = new LimitData(x, F.C0, F.Rule(x, F.C0), data.getDirection());
@@ -482,9 +493,13 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		return F.NIL;
 	}
 
-	private static IExpr timesLimit(final IAST arg1, LimitData data) {
-		IExpr[] parts = Algebra.getFractionalPartsTimes(arg1, false, false, true,
-				true);
+	private static IExpr timesLimit(final IAST timesAST, LimitData data) {
+		IAST[] isFreeResult = timesAST.filter(Predicates.isFree(data.getSymbol()));
+		if (isFreeResult[1].size() < timesAST.size()) {
+			return F.Times(isFreeResult[0], data.create(isFreeResult[1]));
+		}
+
+		IExpr[] parts = Algebra.getFractionalPartsTimes(timesAST, false, false, true, true);
 		if (parts != null) {
 
 			IExpr numerator = parts[0];
@@ -516,7 +531,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 
 			if (denominator.isOne()) {
 				if (limit.isInfinity() || limit.isNegativeInfinity()) {
-					IExpr temp = substituteInfinity(arg1, data);
+					IExpr temp = substituteInfinity(timesAST, data);
 					if (temp.isPresent()) {
 						return temp;
 					}
@@ -528,7 +543,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			}
 
 		}
-		return mapLimit(arg1, data.getRule());
+		return mapLimit(timesAST, data.getRule());
 	}
 
 	/**
@@ -537,8 +552,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	public final static int DIRECTION_FROM_LARGER_VALUES = -1;
 
 	/**
-	 * Compute the limit approaching from larger or smaller values
-	 * automatically.
+	 * Compute the limit approaching from larger or smaller values automatically.
 	 */
 	public final static int DIRECTION_AUTOMATIC = 0;
 
@@ -586,6 +600,13 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		} else {
 			throw new WrongArgumentType(ast, ast.arg2(), 2,
 					"Limit: limit value contains variable symbol for rule definition!");
+		}
+		if (ast.isAST2() && direction == DIRECTION_AUTOMATIC) {
+			// check if there's a direction specific rule available in the rule database
+			IExpr temp = engine.evalLoop(F.Limit(ast.arg1(), ast.arg2(), F.Rule(F.Direction, F.CN1)));
+			if (temp.isPresent()) {
+				return temp;
+			}
 		}
 		LimitData data = new LimitData(symbol, limit, rule, direction);
 		return evalLimit(ast.arg1(), data, true);

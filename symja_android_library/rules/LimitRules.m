@@ -9,5 +9,7 @@
  Limit(Log(x_), x_Symbol->Infinity)=Infinity,  
  Limit((1+x_^(-1))^x_, x_Symbol->Infinity)=E,
  Limit((1+a_*(x_^(-1)))^x_, x_Symbol->Infinity)=E^(a) /; FreeQ(a,x),
- Limit( HarmonicNumber(y_Symbol,s_IntegerQ), x_Symbol->Infinity):=Module({v=s/2},((2*Pi)^(2*v)*(-1)^(v+1)*BernoulliB(2*v))/(2*(2*v)!)) /; EvenQ(s)&&Positive(s)
+ Limit( HarmonicNumber(y_Symbol,s_IntegerQ), x_Symbol->Infinity):=Module({v=s/2},((2*Pi)^(2*v)*(-1)^(v+1)*BernoulliB(2*v))/(2*(2*v)!)) /; EvenQ(s)&&Positive(s),
+ Limit(x_/Abs(x_), x_Symbol->0, Direction->1):= -1,
+ Limit(x_/Abs(x_), x_Symbol->0, Direction->-1):= 1
 }

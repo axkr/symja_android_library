@@ -20,22 +20,22 @@ public interface CoshRules {
     // Cosh(0)=1
     ISet(Cosh(C0),
       C1),
-    // Cosh(Pi/6*I)=Sqrt(3)/2
+    // Cosh(1/6*Pi*I)=Sqrt(3)/2
     ISet(Cosh(Times(CC(0L,1L,1L,6L),Pi)),
       Times(C1D2,CSqrt3)),
-    // Cosh(Pi/5*I)=1/4*(Sqrt(5)+1)
+    // Cosh(1/5*Pi*I)=1/4*(Sqrt(5)+1)
     ISet(Cosh(Times(CC(0L,1L,1L,5L),Pi)),
       Times(C1D4,Plus(C1,CSqrt5))),
-    // Cosh(Pi/4*I)=1/Sqrt(2)
+    // Cosh(1/4*Pi*I)=1/Sqrt(2)
     ISet(Cosh(Times(CC(0L,1L,1L,4L),Pi)),
       C1DSqrt2),
-    // Cosh(Pi/3*I)=1/2
+    // Cosh(1/3*Pi*I)=1/2
     ISet(Cosh(Times(CC(0L,1L,1L,3L),Pi)),
       C1D2),
     // Cosh(2/5*Pi*I)=1/4*(Sqrt(5)+(-1)*1)
     ISet(Cosh(Times(CC(0L,1L,2L,5L),Pi)),
       Times(C1D4,Plus(CN1,CSqrt5))),
-    // Cosh(Pi/2*I)=0
+    // Cosh(1/2*Pi*I)=0
     ISet(Cosh(Times(CC(0L,1L,1L,2L),Pi)),
       C0),
     // Cosh(3/5*Pi*I)=-(Sqrt(5)+(-1)*1)/4

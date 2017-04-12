@@ -20,22 +20,22 @@ public interface SechRules {
     // Sech(0)=1
     ISet(Sech(C0),
       C1),
-    // Sech(Pi/6*I)=2/Sqrt(3)
+    // Sech(1/6*Pi*I)=2/Sqrt(3)
     ISet(Sech(Times(CC(0L,1L,1L,6L),Pi)),
       Times(C2,C1DSqrt3)),
-    // Sech(Pi/5*I)=Sqrt(5)+(-1)*1
+    // Sech(1/5*Pi*I)=Sqrt(5)+(-1)*1
     ISet(Sech(Times(CC(0L,1L,1L,5L),Pi)),
       Plus(CN1,CSqrt5)),
-    // Sech(Pi/4*I)=Sqrt(2)
+    // Sech(1/4*Pi*I)=Sqrt(2)
     ISet(Sech(Times(CC(0L,1L,1L,4L),Pi)),
       CSqrt2),
-    // Sech(Pi/3*I)=2
+    // Sech(1/3*Pi*I)=2
     ISet(Sech(Times(CC(0L,1L,1L,3L),Pi)),
       C2),
     // Sech(2/5*Pi*I)=1+Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,2L,5L),Pi)),
       Plus(C1,CSqrt5)),
-    // Sech(Pi/2*I)=ComplexInfinity
+    // Sech(1/2*Pi*I)=ComplexInfinity
     ISet(Sech(Times(CC(0L,1L,1L,2L),Pi)),
       CComplexInfinity),
     // Sech(2/3*Pi*I)=-2

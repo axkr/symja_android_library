@@ -32,10 +32,10 @@ public interface ArcTanhRules {
     // ArcTanh(1)=Infinity
     ISet(ArcTanh(C1),
       oo),
-    // ArcTanh(Infinity)=-Pi/2*I
+    // ArcTanh(Infinity)=-1/2*Pi*I
     ISet(ArcTanh(oo),
       Times(CC(0L,1L,-1L,2L),Pi)),
-    // ArcTanh(I*Infinity)=Pi/2*I
+    // ArcTanh(I*Infinity)=1/2*Pi*I
     ISet(ArcTanh(DirectedInfinity(CI)),
       Times(CC(0L,1L,1L,2L),Pi)),
     // ArcTanh(ComplexInfinity)=Pi/2

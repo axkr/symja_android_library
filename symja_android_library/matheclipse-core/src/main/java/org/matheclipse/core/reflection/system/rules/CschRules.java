@@ -20,13 +20,13 @@ public interface CschRules {
     // Csch(0)=ComplexInfinity
     ISet(Csch(C0),
       CComplexInfinity),
-    // Csch(Pi/6*I)=(-2)*I
+    // Csch(1/6*Pi*I)=(-2)*I
     ISet(Csch(Times(CC(0L,1L,1L,6L),Pi)),
       CC(0L,1L,-2L,1L)),
-    // Csch(Pi/4*I)=-Sqrt(2)*I
+    // Csch(1/4*Pi*I)=-Sqrt(2)*I
     ISet(Csch(Times(CC(0L,1L,1L,4L),Pi)),
       Times(CNI,CSqrt2)),
-    // Csch(Pi/2*I)=(-1)*I
+    // Csch(1/2*Pi*I)=(-1)*I
     ISet(Csch(Times(CC(0L,1L,1L,2L),Pi)),
       CNI),
     // Csch(3/4*Pi*I)=-Sqrt(2)*I

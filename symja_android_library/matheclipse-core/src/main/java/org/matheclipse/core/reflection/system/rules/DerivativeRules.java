@@ -21,10 +21,10 @@ public interface DerivativeRules {
     // ArcCoth->(1/(1-#1^2)&)
     Rule(ArcCoth,
       Function(Power(Plus(C1,Negate(Sqr(Slot1))),-1))),
-    // ArcCsc->(-1/#1^2/Sqrt(1-1/#1^2)&)
+    // ArcCsc->(-1/(#1^2*Sqrt(1-1/#1^2))&)
     Rule(ArcCsc,
       Function(Times(CN1,Power(Slot1,-2),Power(Plus(C1,Negate(Power(Slot1,-2))),CN1D2)))),
-    // ArcCsch->(-1/Abs(#1)/Sqrt(1+#1^2)&)
+    // ArcCsch->(-1/(Abs(#1)*Sqrt(1+#1^2))&)
     Rule(ArcCsch,
       Function(Times(CN1,Power(Abs(Slot1),-1),Power(Plus(C1,Sqr(Slot1)),CN1D2)))),
     // ArcSin->(1/Sqrt(1-#1^2)&)
@@ -42,7 +42,7 @@ public interface DerivativeRules {
     // ArcSec->(1/(#1^2*Sqrt(1-1/#1^2))&)
     Rule(ArcSec,
       Function(Times(Power(Slot1,-2),Power(Plus(C1,Negate(Power(Slot1,-2))),CN1D2)))),
-    // ArcSech->(-1/#1/Sqrt(1-#1^2)&)
+    // ArcSech->(-1/(#1*Sqrt(1-#1^2))&)
     Rule(ArcSech,
       Function(Times(CN1,Power(Slot1,-1),Power(Plus(C1,Negate(Sqr(Slot1))),CN1D2)))),
     // Ceiling->(0&)
@@ -75,7 +75,7 @@ public interface DerivativeRules {
     // IntegerPart->(0&)
     Rule(IntegerPart,
       Function(C0)),
-    // InverseErf->(Sqrt(Pi)/2*E^InverseErf(x)^2&)
+    // InverseErf->(1/2*Sqrt(Pi)*E^InverseErf(x)^2&)
     Rule(InverseErf,
       Function(Times(C1D2,Sqrt(Pi),Power(E,Sqr(InverseErf(x)))))),
     // Log->(1/#1&)
@@ -168,7 +168,7 @@ public interface DerivativeRules {
     // {Power,0,1}->(Log(#1)*#1^#2&)
     Rule(List(Power,C0,C1),
       Function(Times(Log(Slot1),Power(Slot1,Slot2)))),
-    // {Power,1,1}->(#1^(-1+#2)+Log(#1)/#1^(1-#2)*#2&)
+    // {Power,1,1}->(#1^(-1+#2)+(Log(#1)*#2)/#1^(1-#2)&)
     Rule(List(Power,C1,C1),
       Function(Plus(Power(Slot1,Plus(CN1,Slot2)),Times(Log(Slot1),Power(Slot1,Plus(CN1,Slot2)),Slot2)))),
     // {ProductLog,0,1}->(ProductLog(#1,#2)/#2*(1+ProductLog(#1,#2))&)

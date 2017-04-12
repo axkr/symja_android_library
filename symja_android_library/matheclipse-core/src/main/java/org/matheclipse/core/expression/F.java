@@ -4079,10 +4079,13 @@ public class F {
 	}
 
 	public static IAST Limit(final IExpr a0, final IExpr a1) {
-
 		return binaryAST2(Limit, a0, a1);
 	}
 
+	public static IAST Limit(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(Limit, a0, a1, a2);
+	}
+	
 	public static IAST Line() {
 		return ast(Line);
 	}

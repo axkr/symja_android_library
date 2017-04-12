@@ -294,6 +294,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAllTrue() {
+		check("AllTrue({}, EvenQ)", "True");
 		check("AllTrue({1, 2, 3, 4, 5, 6}, EvenQ)", "False");
 		check("AllTrue({2, 4, 6, 8}, EvenQ)", "True");
 		check("AllTrue({2, 6, x, 4, y}, # < 10 &)", "x<10&&y<10");
@@ -317,6 +318,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAnyTrue() {
+		check("AnyTrue({}, EvenQ)", "False");
 		check("AnyTrue({1, 2, 3, 4, 5, 6}, EvenQ)", "True");
 		check("AnyTrue({1, 3, 5}, EvenQ)", "False");
 		check("AnyTrue({12, 16, x, 14, y}, # < 10 &)", "x<10||y<10");
@@ -1518,7 +1520,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Equivalent(a,b,c)", "Equivalent(a,b,c)");
 		check("Equivalent(a,b,True,c)", "a&&b&&c");
 		check("Equivalent(a)", "True");
-		
+
 		check("Equivalent()", "True");
 		check("Equivalent(4)", "True");
 		check("Equivalent(a,a)", "True");
@@ -1933,7 +1935,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testFindInstance() {
 		check("FindInstance(x+5.0==a,x)", "{{x->-5.0+a}}");
-		
+
 		check("FindInstance(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)",
 				"{{a->False,b->True,c->False,d->False}}");
 
@@ -2280,11 +2282,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testImplies() {
-		
+
 		check("Implies(False, a)", "True");
 		check("Implies(True, a)", "a");
 		check("Implies(a,Implies(b,Implies(True,c)))", "Implies(a,Implies(b,c))");
-		
+
 		check("Implies(p,q)", "Implies(p,q)");
 
 		check("Implies(a,True)", "True");
@@ -2677,6 +2679,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testLimit() {
+		check("Limit((y*x)/Abs(x), x->0)", "y");
+		check("Limit((y*x)/Abs(x), x->0, Direction->1)", "-y");
+		check("Limit(x/Abs(x), x->0)", "1");		
+		check("Limit(x/Abs(x), x->0, Direction->-1)", "1");
+		check("Limit(x/Abs(x), x->0, Direction->1)", "-1");
 		check("Limit(Log(x), x -> 0)", "-Infinity");
 		check("Limit(x^x, x -> 0)", "1");
 		check("Limit(1/x, x -> Infinity, Direction->1)", "0");
@@ -3489,6 +3496,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNoneTrue() {
+		check("NoneTrue({1, 3, 5}, EvenQ)", "True");
+		check("NoneTrue({1, 4, 5}, EvenQ)", "False");
+		check("NoneTrue({}, EvenQ)", "True");
+
 		check("NoneTrue({1, 2, 3, 4, 5, 6}, EvenQ)", "False");
 		check("NoneTrue({1, 3, 5, 7}, EvenQ)", "True");
 		check("NoneTrue({12, 16, x, 14, y}, # < 10 &)", "Nor(x<10,y<10)");
@@ -4623,6 +4634,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("RussellRaoDissimilarity({0, 0, 0, 0}, {1, 1, 1, 1})", "1");
 	}
 
+	public void testRule() {
+		 check("a+b+c /. c->d", "a+b+d");
+		 check("{x,x^2,y} /. x->3", "{3,9,y}");
+		 // Rule called with 3 arguments; 2 arguments are expected.
+		 check("a /. Rule(1, 2, 3) -> t ", "a");
+	}
+	
 	public void testSameQUnsameQ() {
 		check("SameQ(0.0, 0)", "False");
 		check("UnsameQ(0.0, 0)", "True");
@@ -4850,8 +4868,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testSolve() {
 		check("Solve(x+5.0==a,x)", "{{x->-5.0+a}}");
-		
-		check("Solve(-8828.206-582.222*b+55.999*b^2.0+4.8*b^3.0==0, b)", 
+
+		check("Solve(-8828.206-582.222*b+55.999*b^2.0+4.8*b^3.0==0, b)",
 				"{{b->-11.735882719537255+I*(-4.250200714726695)},{b->11.805307105741175},{b->-11.735882719537255+I*4.250200714726695}}");
 		// check("Solve(Abs((-3+x^2)/x) ==2,{x})",
 		// "{{x->-3},{x->-1},{x->1},{x->3}}");
@@ -5777,6 +5795,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testXor() {
+		check("Xor(False, True)", "True");
+		check("Xor(True, True)", "False");
+		check("Xor(a, False, b)", "Xor(a,b)");
+		check("Xor(a, b)", "Xor(a,b)");
 
 		check("Xor()", "False");
 		check("Xor(False)", "False");

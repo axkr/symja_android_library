@@ -1774,7 +1774,7 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isNumericFunction() {
+	public boolean isNumericFunction() {
 		ISymbol symbol = topHead();
 		if ((symbol.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION) {
 			// check if all arguments are &quot;numeric&quot;
@@ -1790,7 +1790,7 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isNumericMode() {
+	public boolean isNumericMode() {
 		ISymbol symbol = topHead();
 		if ((symbol.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION) {
 			// check if one of the arguments is &quot;numeric&quot;
@@ -1805,7 +1805,7 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isOneIdentityAST1() {
+	public boolean isOneIdentityAST1() {
 		return isAST1() && topHead().hasOneIdentityAttribute();
 	}
 

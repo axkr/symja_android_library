@@ -160,6 +160,24 @@ public class NILPointer extends AbstractAST {
 		return false;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isNumericFunction() {
+		return false;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isNumericMode() {
+		return false;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isOneIdentityAST1() {
+		return false;
+	}
+	
 	@Override
 	public boolean isSameHead(IExpr head) {
 		return head().equals(head);

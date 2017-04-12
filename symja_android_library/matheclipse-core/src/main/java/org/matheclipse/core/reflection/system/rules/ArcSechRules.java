@@ -26,25 +26,25 @@ public interface ArcSechRules {
     // ArcSech(-1)=I*Pi
     ISet(ArcSech(CN1),
       Times(CI,Pi)),
-    // ArcSech(2/Sqrt(3))=Pi/6*I
+    // ArcSech(2/Sqrt(3))=1/6*Pi*I
     ISet(ArcSech(Times(C2,C1DSqrt3)),
       Times(CC(0L,1L,1L,6L),Pi)),
     // ArcSech(-2/Sqrt(3))=5/6*Pi*I
     ISet(ArcSech(Times(CN2,C1DSqrt3)),
       Times(CC(0L,1L,5L,6L),Pi)),
-    // ArcSech(Sqrt(5)+(-1)*1)=Pi/5*I
+    // ArcSech(Sqrt(5)+(-1)*1)=1/5*Pi*I
     ISet(ArcSech(Plus(CN1,CSqrt5)),
       Times(CC(0L,1L,1L,5L),Pi)),
     // ArcSech(1-Sqrt(5))=4/5*Pi*I
     ISet(ArcSech(Plus(C1,Negate(CSqrt5))),
       Times(CC(0L,1L,4L,5L),Pi)),
-    // ArcSech(Sqrt(2))=Pi/4*I
+    // ArcSech(Sqrt(2))=1/4*Pi*I
     ISet(ArcSech(CSqrt2),
       Times(CC(0L,1L,1L,4L),Pi)),
     // ArcSech(-Sqrt(2))=3/4*Pi*I
     ISet(ArcSech(Negate(CSqrt2)),
       Times(CC(0L,1L,3L,4L),Pi)),
-    // ArcSech(2)=Pi/3*I
+    // ArcSech(2)=1/3*Pi*I
     ISet(ArcSech(C2),
       Times(CC(0L,1L,1L,3L),Pi)),
     // ArcSech(-2)=2/3*Pi*I
@@ -56,22 +56,22 @@ public interface ArcSechRules {
     // ArcSech(-1-Sqrt(5))=3/5*Pi*I
     ISet(ArcSech(Plus(CN1,Negate(CSqrt5))),
       Times(CC(0L,1L,3L,5L),Pi)),
-    // ArcSech(I)=-Pi/2*I+Log(Sqrt(2)+1)
+    // ArcSech(I)=-1/2*Pi*I+Log(Sqrt(2)+1)
     ISet(ArcSech(CI),
       Plus(Times(CC(0L,1L,-1L,2L),Pi),Log(Plus(C1,CSqrt2)))),
-    // ArcSech((-1)*I)=Pi/2*I+Log(Sqrt(2)+1)
+    // ArcSech((-1)*I)=1/2*Pi*I+Log(Sqrt(2)+1)
     ISet(ArcSech(CNI),
       Plus(Times(CC(0L,1L,1L,2L),Pi),Log(Plus(C1,CSqrt2)))),
-    // ArcSech(Infinity)=Pi/2*I
+    // ArcSech(Infinity)=1/2*Pi*I
     ISet(ArcSech(oo),
       Times(CC(0L,1L,1L,2L),Pi)),
-    // ArcSech(-Infinity)=Pi/2*I
+    // ArcSech(-Infinity)=1/2*Pi*I
     ISet(ArcSech(Noo),
       Times(CC(0L,1L,1L,2L),Pi)),
-    // ArcSech(I*Infinity)=-Pi/2*I
+    // ArcSech(I*Infinity)=-1/2*Pi*I
     ISet(ArcSech(DirectedInfinity(CI)),
       Times(CC(0L,1L,-1L,2L),Pi)),
-    // ArcSech((-1)*I*Infinity)=Pi/2*I
+    // ArcSech((-1)*I*Infinity)=1/2*Pi*I
     ISet(ArcSech(DirectedInfinity(CNI)),
       Times(CC(0L,1L,1L,2L),Pi)),
     // ArcSech(ComplexInfinity)=Indeterminate
