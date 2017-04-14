@@ -11,9 +11,11 @@ ValueQ(expr)
 ```
 >> ValueQ(x)
 False
->> x1;
+
+>> x=1;
 >> ValueQ(x)
 True
+
 >> ValueQ(True)
 False
 ```
