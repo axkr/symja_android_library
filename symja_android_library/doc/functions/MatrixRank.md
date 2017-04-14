@@ -15,7 +15,7 @@ MatrixRank(matrix)
 1
 ```
 
-Argument {{1, 0}, {0}} at position 1 is not a non-empty rectangular matrix.
+Argument `{{1, 0}, {0}}` at position `1` is not a non-empty rectangular matrix.
 ```
 >> MatrixRank({{1, 0}, {0}})
 MatrixRank({{1, 0}, {0}})

@@ -4,7 +4,7 @@
 ContinuedFraction(number)
 ```
  
-> get the continued fraction representation of ##number##.
+> get the continued fraction representation of `number`.
 
 
 See:  

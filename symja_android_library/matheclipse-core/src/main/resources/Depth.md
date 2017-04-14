@@ -22,10 +22,10 @@ Complex numbers are atomic, and hence have depth 1:
 ```
 >> Depth(1 + 2*I)
 1
- ```
+```
  
-'Depth' ignores heads:
+`Depth` ignores heads:
 ```
 >> Depth(f(a, b)[c])
 2
- ```
+```

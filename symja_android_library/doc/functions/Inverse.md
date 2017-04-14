@@ -12,7 +12,7 @@ Inverse(matrix)
  {1,-2,1}}
 ``` 
 
-The matrix {{1, 0}, {0, 0}} is singular.
+The matrix `{{1, 0}, {0, 0}}` is singular.
 ``` 
 >> Inverse({{1, 0}, {0, 0}}) 
 Inverse({{1, 0}, {0, 0}})

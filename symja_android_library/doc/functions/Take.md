@@ -37,13 +37,13 @@ Take a single column:
 {8,6,4}
 ```
 
-Cannot take positions -5 through -2 in {1, 2, 3, 4, 5, 6}.
+Cannot take positions `-5` through `-2` in `{1, 2, 3, 4, 5, 6}`.
 ```
 >> Take(Range(6), {-5, -2, -2})
 Take({1, 2, 3, 4, 5, 6}, {-5, -2, -2})
 ```
 
-Nonatomic expression expected at position 1 in Take(l, {-1}).
+Nonatomic expression expected at position `1` in `Take(l, {-1})`.
 ```
 >> Take(l, {-1})
 Take(l,{-1})
@@ -67,7 +67,7 @@ Empty case
 {}
 ```
 
-Cannot take positions 1 through 0 in {1, 2, 3, 4, 5}.
+Cannot take positions `1` through `0` in `{1, 2, 3, 4, 5}`.
 ```
 >> Take({1, 2, 3, 4, 5}, {1, 0, -1})
 Take({1, 2, 3, 4, 5}, {1, 0, -1})
