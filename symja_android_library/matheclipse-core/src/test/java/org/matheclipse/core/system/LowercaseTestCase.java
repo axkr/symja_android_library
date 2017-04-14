@@ -762,6 +762,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ChineseRemainder({1, 2}, {6, 10})", "ChineseRemainder({1,2},{6,10})");
 	}
 
+
+	public void testChop() {
+		check("Chop(0.00000000001)", "0");
+	}
 	public void testCoefficient() {
 		// check("Apply(Plus,((Coefficient(x*(b+a),x,#1)*x^#1)&))", "");
 
