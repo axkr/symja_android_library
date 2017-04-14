@@ -1,11 +1,11 @@
 ## Rest
 
 ```
-Rest(expr)'
+Rest(expr)
 ```
 > returns `expr` with the first element removed.
 
-'Rest(expr)' is equivalent to 'expr[[2;;]]'.
+`Rest(expr)` is equivalent to `expr[[2;;]]`.
 
 ### Examples
 ```

@@ -13,6 +13,7 @@ Scan(f, expr, levelspec)
 > applies `f` to each level specified by `levelspec` of `expr`.
 
 ### Examples
+```
 >> Scan(Print, {1, 2, 3})
  1
  2
@@ -25,3 +26,4 @@ Scan(f, expr, levelspec)
  2
 >> Scan(Return, {1, 2})
 1
+```

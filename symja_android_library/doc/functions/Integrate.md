@@ -14,6 +14,6 @@ Integrate(f, {x,a,b})
 
 ### Examples
 ``` 
->>> Integrate(x^2, x)
+>> Integrate(x^2, x)
 x^3/3
 ``` 

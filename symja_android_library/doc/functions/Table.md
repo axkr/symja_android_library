@@ -3,7 +3,7 @@
 ```
 Table(expr, {i, n})
 ```
-> evaluates `expr` with `i` ranging from 1 to `n`, returning a list of the results.
+> evaluates `expr` with `i` ranging from `1` to `n`, returning a list of the results.
 
 ```
 Table(expr, {i, start, stop, step})
@@ -43,7 +43,7 @@ Table(expr, {i, {e1, e2, ..., ei}})
 {a^2,b^2,c^2} 
 ```
 
-'Table' supports multi-dimensional tables:
+`Table` supports multi-dimensional tables:
 ```
 >> Table({i, j}, {i, {a, b}}, {j, 1, 2})
 {{{a,1},{a,2}},{{b,1},{b,2}}} 
