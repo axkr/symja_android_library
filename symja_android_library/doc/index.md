@@ -38,14 +38,14 @@ To convert the result to a floating point number, apply the function `N`:
 N(6 / 4)
 ```
 
-As you can see, functions are applied using the identifier `N` and braces `(` and `)`. 
-In general an identifier is a user-choosen or built-in name for a variable, function or constant. 
+As you can see, functions are applied using the identifier `N` and parentheses `(` and `)`. 
+In general an identifier is a user-defined or built-in name for a variable, function or constant. 
 Only the identifiers which consists of only one character are case sensitive. 
 For all other identifiers the input parser doesn't distinguish between lower and upper case characters.
 
-For example: the upper-case identifiers [D](functions/D.md),[E](functions/E.md),[I](functions/I.md),[N](functions/N.md), 
-are different from the identifiers `d, e, i, n`, thereas the 
-functions like [Factorial](functions/Factorial.md),[Integrate](functions/Integrate.md) can be entered as 
+For example: the upper-case identifiers [D](functions/D.md), [E](functions/E.md), [I](functions/I.md), [N](functions/N.md), 
+are different from the identifiers `d, e, i, n`, whereas the 
+functions like [Factorial](functions/Factorial.md), [Integrate](functions/Integrate.md) can be entered as 
 `factorial(100)` or `integrate(sin(x),x)`. If you type `SIN(x)` or `sin(x)`, 
 Symja assumes you always mean the same built-in [Sin](functions/Sin.md) function.  
 
