@@ -7,7 +7,7 @@ RowReduce(matrix)
 > returns the reduced row-echelon form of `matrix`.
 
 See:   
-* (Wikipedia - Row echelon form)(http://en.wikipedia.org/wiki/Row_echelon_form)
+* [Wikipedia - Row echelon form](http://en.wikipedia.org/wiki/Row_echelon_form)
 
 ### Examples
 ```

@@ -13,4 +13,4 @@ Solve(equations, vars)
 ```
 
 ### Related terms 
-[DSolve](DSolve.md), [Eliminate](Eliminate.md), [GroebnerBasis](GroebnerBasis.md), [FindRoot](FindRoot.md), [NRoots](NRoots.md), [Roots](Roots.md)
+[DSolve](DSolve.md), [Eliminate](Eliminate.md), [GroebnerBasis](GroebnerBasis.md), [FindRoot](FindRoot.md), [NRoots](NRoots.md)
