@@ -8,7 +8,7 @@ Partition(list, n)
 ``` 
 Parition(list, n, d)
 ``` 
-> partitions $list$ into sublists of length `n` which overlap `d` indicies.
+> partitions `list` into sublists of length `n` which overlap `d` indicies.
 
 ### Examples
 ``` 

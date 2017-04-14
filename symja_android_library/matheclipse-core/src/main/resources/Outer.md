@@ -41,7 +41,7 @@ Compositions of trigonometric functions:
 {{Composition(Sin, ArcSin), Composition(Sin, ArcCos), Composition(Sin, ArcTan)}, {Composition(Cos, ArcSin), Composition(Cos, ArcCos), Composition(Cos, ArcTan)}, {Composition(Tan, ArcSin), Composition(Tan, ArcCos), Composition(Tan, ArcTan)}}
 ``` 
 
-Evaluate at 0:
+Evaluate at `0`:
 ``` 
 >> Map(#(0) &, trigs, {2})
 {{0, 1, 0}, {1, 0, 1}, {0, ComplexInfinity, 0}}

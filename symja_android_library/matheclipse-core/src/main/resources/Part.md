@@ -21,7 +21,7 @@ Negative indices count from the end:
 b
 ```   
 
-'Part' can be applied on any expression, not necessarily lists.
+`Part` can be applied on any expression, not necessarily lists.
 ```  
 >> (a + b + c)[[2]]
 b
@@ -136,13 +136,13 @@ Negative step
 {7,5}
 ```  
 
-Cannot take positions 1 through 3 in {1, 2, 3, 4}.
+Cannot take positions `1` through `3` in `{1, 2, 3, 4}`.
 ```
 >> {1, 2, 3, 4}[[1;;3;;-1]]
 {1,2,3,4}[[1;;3;;-1]]
 ```
 
-Cannot take positions 3 through 1 in {1, 2, 3, 4}.
+Cannot take positions `3` through `1` in `{1, 2, 3, 4}`.
 ```
 >> {1, 2, 3, 4}[[3;;1]]
 {1,2,3,4}[[3;;1]]

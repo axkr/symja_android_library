@@ -3,7 +3,7 @@
 ```
 Range(n)
 ```
-> returns a list of integers from 1 to `n`.
+> returns a list of integers from `1` to `n`.
 	
 ```
 Range(a, b)

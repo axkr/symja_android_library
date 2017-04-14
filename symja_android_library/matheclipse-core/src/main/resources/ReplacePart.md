@@ -1,4 +1,4 @@
-## Rest
+## ReplacePart
 
 ```
 ReplacePart(expr, i -> new)
@@ -40,7 +40,7 @@ Non-existing parts are simply ignored:
 {a,b,c}
 ```
 
-You can replace heads by replacing part 0:
+You can replace heads by replacing part `0`:
 ```
 >> ReplacePart({a, b, c}, 0 -> Times)
 a*b*c

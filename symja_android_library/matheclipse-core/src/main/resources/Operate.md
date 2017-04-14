@@ -9,7 +9,7 @@ Operate(p, expr)
 Operate(p, expr, n)
 ```
 
-> applies $p$ to the `n`th head of `expr`.
+> applies `p` to the `n`th head of `expr`.
 
 ### Examples
 ```
@@ -17,13 +17,13 @@ Operate(p, expr, n)
 p(f)[a,b]
 ```
 
-The default value of `n` is 1:
+The default value of `n` is `1`:
 ```
 >> Operate(p, f(a, b), 1)
 p(f)[a,b]
 ```
 
-With `n`=0, `Operate` acts like `Apply`:
+With `n = 0`, `Operate` acts like `Apply`:
 ```
 >> Operate(p, f(a)[b][c], 0)
 p(f(a)[b][c])
@@ -50,7 +50,7 @@ f
 p(f)
 ```
 
-Non-negative integer expected at position 3 in Operate(p, f, -1).
+Non-negative integer expected at position `3` in `Operate(p, f, -1)`.
 ```
 >> Operate(p, f, -1)
 Operate(p, f, -1)
