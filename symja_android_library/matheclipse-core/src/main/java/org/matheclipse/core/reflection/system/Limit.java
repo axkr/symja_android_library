@@ -21,8 +21,6 @@ import org.matheclipse.core.polynomials.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.reflection.system.rules.LimitRules;
 
-import edu.jas.poly.GenPolynomial;
-
 /**
  * Limit of a function. See <a href="http://en.wikipedia.org/wiki/List_of_limits">List of Limits</a>
  */
@@ -73,15 +71,32 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			this.direction = direction;
 		}
 
-		public IAST create(IExpr arg1) {
-			if (direction == DIRECTION_FROM_LARGER_VALUES) {
-				return F.Limit(arg1, rule, F.Rule(F.Direction, F.CN1));
-			}
+		/**
+		 * Create a new <code>F.Limit( arg1, ... )</code> expression from his <code>LimitData</code> object
+		 * 
+		 * @param arg1
+		 *            the first argument of the Limit expression
+		 * @return a new <code>F.Limit( arg1, ... )</code> expression
+		 */
+		public IAST limit(IExpr arg1) {
+			// if (direction == DIRECTION_FROM_LARGER_VALUES) {
+			// return F.Limit(arg1, rule, F.Rule(F.Direction, F.CN1));
+			// }
 
 			if (direction == DIRECTION_FROM_SMALLER_VALUES) {
 				return F.Limit(arg1, rule, F.Rule(F.Direction, F.C1));
 			}
 			return F.Limit(arg1, rule);
+		}
+
+		/**
+		 * Map a <code>F.Limit( arg1, ... )</code> expression at each argument of the given <code>ast</code>.
+		 * 
+		 * @param ast
+		 * @return
+		 */
+		public IExpr mapLimit(final IAST ast) {
+			return ast.mapThread(limit(null), 1);
 		}
 	}
 
@@ -163,11 +178,13 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		if (expression.isAST()) {
 			final IAST arg1 = (IAST) expression;
 			if (arg1.isSin() || arg1.isCos()) {
-				return F.unaryAST1(arg1.head(), F.Limit(arg1.arg1(), data.getRule()));
+				return F.unaryAST1(arg1.head(), data.limit(arg1.arg1()));
 			} else if (arg1.isPlus()) {
 				return plusLimit(arg1, data);
 			} else if (arg1.isTimes()) {
 				return timesLimit(arg1, data);
+			} else if (arg1.isLog()) {
+				return logLimit(arg1, data);
 			} else if (arg1.isPower()) {
 				return powerLimit(arg1, data);
 			}
@@ -222,39 +239,39 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	 * @param rule
 	 * @return
 	 */
-	private static IExpr limitsInfinityOfRationalFunctions(GenPolynomial<IExpr> numeratorPoly,
-			GenPolynomial<IExpr> denominatorPoly, ISymbol symbol, IExpr limit, IAST rule) {
-		long numDegree = numeratorPoly.degree();
-		long denomDegree = denominatorPoly.degree();
-		if (numDegree > denomDegree) {
-			// If the numerator has the highest term, then the fraction is
-			// called "top-heavy". If, when you divide the numerator
-			// by the denominator the resulting exponent on the variable is
-			// even, then the limit (at both \infty and -\infty) is
-			// \infty. If it is odd, then the limit at \infty is \infty, and the
-			// limit at -\infty is -\infty.
-			long oddDegree = (numDegree + denomDegree) % 2;
-			if (oddDegree == 1) {
-				return F.Limit(F.Times(
-						F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient()),
-						limit), rule);
-			} else {
-				return F.Limit(F.Times(
-						F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient()),
-						F.CInfinity), rule);
-			}
-		} else if (numDegree < denomDegree) {
-			// If the denominator has the highest term, then the fraction is
-			// called "bottom-heavy" and the limit (at both \infty
-			// and -\infty) is zero.
-			return F.C0;
-		}
-		// If the exponent of the highest term in the numerator matches the
-		// exponent of the highest term in the denominator,
-		// the limit (at both \infty and -\infty) is the ratio of the
-		// coefficients of the highest terms.
-		return F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient());
-	}
+	// private static IExpr limitsInfinityOfRationalFunctions(GenPolynomial<IExpr> numeratorPoly,
+	// GenPolynomial<IExpr> denominatorPoly, ISymbol symbol, IExpr limit, IAST rule) {
+	// long numDegree = numeratorPoly.degree();
+	// long denomDegree = denominatorPoly.degree();
+	// if (numDegree > denomDegree) {
+	// // If the numerator has the highest term, then the fraction is
+	// // called "top-heavy". If, when you divide the numerator
+	// // by the denominator the resulting exponent on the variable is
+	// // even, then the limit (at both \infty and -\infty) is
+	// // \infty. If it is odd, then the limit at \infty is \infty, and the
+	// // limit at -\infty is -\infty.
+	// long oddDegree = (numDegree + denomDegree) % 2;
+	// if (oddDegree == 1) {
+	// return F.Limit(F.Times(
+	// F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient()),
+	// limit), rule);
+	// } else {
+	// return F.Limit(F.Times(
+	// F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient()),
+	// F.CInfinity), rule);
+	// }
+	// } else if (numDegree < denomDegree) {
+	// // If the denominator has the highest term, then the fraction is
+	// // called "bottom-heavy" and the limit (at both \infty
+	// // and -\infty) is zero.
+	// return F.C0;
+	// }
+	// // If the exponent of the highest term in the numerator matches the
+	// // exponent of the highest term in the denominator,
+	// // the limit (at both \infty and -\infty) is the ratio of the
+	// // coefficients of the highest terms.
+	// return F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient());
+	// }
 
 	/**
 	 * See: <a href="http://en.wikibooks.org/wiki/Calculus/Infinite_Limits">Limits at Infinity of Rational Functions</a>
@@ -263,13 +280,13 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	 * @param denominatorPoly
 	 * @param symbol
 	 *            the variable for which to approach to the limit
-	 * @param limit
-	 *            the limit value which the variable should approach to
+	 * @param data
+	 *            the limit expression which the variable should approach to
 	 * @param rule
 	 * @return
 	 */
 	private static IExpr limitsInfinityOfRationalFunctions(ExprPolynomial numeratorPoly, ExprPolynomial denominatorPoly,
-			ISymbol symbol, IExpr limit, IAST rule) {
+			ISymbol symbol, IExpr limit, LimitData data) {
 		long numDegree = numeratorPoly.degree();
 		long denomDegree = denominatorPoly.degree();
 		if (numDegree > denomDegree) {
@@ -281,13 +298,13 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			// limit at -\infty is -\infty.
 			long oddDegree = (numDegree + denomDegree) % 2;
 			if (oddDegree == 1) {
-				return F.Limit(F.Times(
+				return data.limit(F.Times(
 						F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient()),
-						limit), rule);
+						limit));
 			} else {
-				return F.Limit(F.Times(
+				return data.limit(F.Times(
 						F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient()),
-						F.CInfinity), rule);
+						F.CInfinity));
 			}
 		} else if (numDegree < denomDegree) {
 			// If the denominator has the highest term, then the fraction is
@@ -302,9 +319,9 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		return F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient());
 	}
 
-	private static IExpr mapLimit(final IAST expr, IAST rule) {
-		return expr.mapThread(F.Limit(null, rule), 1);
-	}
+	// private static IExpr mapLimit(final IAST ast, LimitData data) {
+	// return ast.mapThread(data.limit(null), 1);
+	// }
 
 	/**
 	 * Try l'Hospitales rule for numerator and denominator expression.
@@ -323,7 +340,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		if (denominator.isOne() && numerator.isTimes()) {
 			// Limit[a_*b_*c_,sym->lim] ->
 			// Limit[a,sym->lim]*Limit[b,sym->lim]*Limit[c,sym->lim]
-			return mapLimit((IAST) numerator, rule);
+			return data.mapLimit((IAST) numerator);
 		}
 		if (!denominator.isNumber() || denominator.isZero()) {
 			ISymbol x = data.getSymbol();
@@ -351,13 +368,13 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			}
 		}
 
-		return F.Times(F.Limit(numerator, rule), F.Power(F.Limit(denominator, rule), F.CN1));
+		return F.Times(data.limit(numerator), F.Power(data.limit(denominator), F.CN1));
 	}
 
 	private static IExpr plusLimit(final IAST arg1, LimitData data) {
 		// Limit[a_+b_+c_,sym->lim] ->
 		// Limit[a,sym->lim]+Limit[b,sym->lim]+Limit[c,sym->lim]
-		IAST rule = data.getRule();
+		// IAST rule = data.getRule();
 		IExpr limit = data.getLimitValue();
 		if (limit.isInfinity() || limit.isNegativeInfinity()) {
 			ISymbol symbol = data.getSymbol();
@@ -368,10 +385,10 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 				long oddDegree = poly.degree() % 2;
 				if (oddDegree == 1) {
 					// odd degree
-					return F.Limit(F.Times(coeff, limit), rule);
+					return data.limit(F.Times(coeff, limit));
 				}
 				// even degree
-				return F.Limit(F.Times(coeff, F.CInfinity), rule);
+				return data.limit(F.Times(coeff, F.CInfinity));
 			} catch (RuntimeException e) {
 				if (Config.DEBUG) {
 					e.printStackTrace();
@@ -379,7 +396,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			}
 
 		}
-		return mapLimit(arg1, rule);
+		return data.mapLimit(arg1);
 	}
 
 	private static IExpr powerLimit(final IAST powerAST, LimitData data) {
@@ -392,7 +409,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		if (arg1.isTimes() && arg2.isFree(data.getSymbol())) {
 			IAST[] isFreeResult = ((IAST) arg1).filter(Predicates.isFree(data.getSymbol()));
 			if (isFreeResult[1].size() < ((IAST) arg1).size()) {
-				return F.Times(F.Power(isFreeResult[0], arg2), data.create(F.Power(isFreeResult[1], arg2)));
+				return F.Times(F.Power(isFreeResult[0], arg2), data.limit(F.Power(isFreeResult[1], arg2)));
 			}
 		}
 		if (powerAST.arg2().isNumericFunction()) {
@@ -496,7 +513,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	private static IExpr timesLimit(final IAST timesAST, LimitData data) {
 		IAST[] isFreeResult = timesAST.filter(Predicates.isFree(data.getSymbol()));
 		if (isFreeResult[1].size() < timesAST.size()) {
-			return F.Times(isFreeResult[0], data.create(isFreeResult[1]));
+			return F.Times(isFreeResult[0], data.limit(isFreeResult[1]));
 		}
 
 		IExpr[] parts = Algebra.getFractionalPartsTimes(timesAST, false, false, true, true);
@@ -511,8 +528,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 					ExprPolynomialRing ring = new ExprPolynomialRing(symbol);
 					ExprPolynomial denominatorPoly = ring.create(denominator);
 					ExprPolynomial numeratorPoly = ring.create(numerator);
-					return limitsInfinityOfRationalFunctions(numeratorPoly, denominatorPoly, symbol, limit,
-							data.getRule());
+					return limitsInfinityOfRationalFunctions(numeratorPoly, denominatorPoly, symbol, limit, data);
 				} catch (RuntimeException e) {
 					if (Config.DEBUG) {
 						e.printStackTrace();
@@ -525,7 +541,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			if (plusResult.isPlus()) {
 				// OneIdentity if plusResult.isAST1()
 				// if (plusResult.size() > 2) {
-				return mapLimit((IAST) plusResult, data.getRule());
+				return data.mapLimit((IAST) plusResult);
 				// }
 			}
 
@@ -543,7 +559,31 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			}
 
 		}
-		return mapLimit(timesAST, data.getRule());
+		return data.mapLimit(timesAST);
+	}
+
+	private static IExpr logLimit(final IAST logAST, LimitData data) {
+		if (logAST.isAST2() && !logAST.isFree(data.getSymbol())) {
+			return F.NIL;
+		}
+		if (logAST.arg1().isPower() && logAST.arg1().getAt(2).isFree(data.getSymbol())) {
+			IAST powerAST = (IAST) logAST.arg1();
+			IAST arg1 = logAST.clone();
+			arg1.set(1, powerAST.arg1());
+			return F.Times(powerAST.arg2(), data.limit(arg1));
+		} else if (logAST.arg1().isTimes()) {
+
+			IAST timesAST = (IAST) logAST.arg1();
+			IAST[] isFreeResult = timesAST.filter(Predicates.isFree(data.getSymbol()));
+			if (isFreeResult[1].size() < timesAST.size()) {
+				IAST arg1 = logAST.clone();
+				arg1.set(1, isFreeResult[0]);
+				IAST arg2 = logAST.clone();
+				arg2.set(1, isFreeResult[1]);
+				return F.Plus(arg1, data.limit(arg2));
+			}
+		}
+		return F.NIL;
 	}
 
 	/**

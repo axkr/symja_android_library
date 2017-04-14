@@ -2679,6 +2679,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testLimit() {
+		check("Limit(Log(x^y), x->0)", "DirectedInfinity(-y)");
+		check("Limit(Log(y*x, b), x->1)", "Limit(1/Log(x*y),x->1)*Log(b)");
+		check("Limit(Log(y*x), x->0)", "-Infinity+Log(y)");
 		check("Limit((y*x)/Abs(x), x->0)", "y");
 		check("Limit((y*x)/Abs(x), x->0, Direction->1)", "-y");
 		check("Limit(x/Abs(x), x->0)", "1");		
