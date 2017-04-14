@@ -571,7 +571,7 @@ public final class BooleanFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() > 1) {
+			if (ast.size() > 2) {
 				IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.UNDEFINED;
 				if (ast.isAST2()) {
 					return equalNull(ast.arg1(), ast.arg2());
@@ -602,9 +602,9 @@ public final class BooleanFunctions {
 					}
 					return result;
 				}
-
+				return F.NIL;
 			}
-			return F.NIL;
+			return F.True;
 		}
 
 		/**
@@ -659,6 +659,19 @@ public final class BooleanFunctions {
 				return IExpr.COMPARE_TERNARY.TRUE;
 			}
 
+			if (o0.isTrue()) {
+				if (o1.isTrue()) {
+					return IExpr.COMPARE_TERNARY.TRUE;
+				} else if (o1.isFalse()) {
+					return IExpr.COMPARE_TERNARY.FALSE;
+				}
+			} else if (o0.isFalse()) {
+				if (o1.isTrue()) {
+					return IExpr.COMPARE_TERNARY.FALSE;
+				} else if (o1.isFalse()) {
+					return IExpr.COMPARE_TERNARY.TRUE;
+				}
+			} 
 			if (o0.isConstant() && o1.isConstant()) {
 				return IExpr.COMPARE_TERNARY.FALSE;
 			}
@@ -687,7 +700,6 @@ public final class BooleanFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.FLAT);
 		}
 	}
 
@@ -866,7 +878,7 @@ public final class BooleanFunctions {
 				return compareGreaterIntervalTernary(a0.lower(), a0.upper(), a1.lower(), a1.upper());
 			}
 
-			if (a0.equals(a1)) {
+			if (a0.equals(a1) && !a0.isList()) {
 				return IExpr.COMPARE_TERNARY.FALSE;
 			}
 
@@ -1670,7 +1682,7 @@ public final class BooleanFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() > 1) {
+			if (ast.size() > 2) {
 				IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.UNDEFINED;
 				if (ast.isAST2()) {
 					IExpr arg1 = F.expandAll(ast.arg1(), true, true);
@@ -1709,10 +1721,8 @@ public final class BooleanFunctions {
 					}
 					i++;
 				}
-				return F.True;
-
 			}
-			return F.NIL;
+			return F.True;
 		}
 
 	}

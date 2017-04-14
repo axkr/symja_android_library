@@ -610,6 +610,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BooleanQ(True)", "True");
 		check("BooleanQ(False)", "True");
 		check("BooleanQ(f(x))", "False");
+		check("BooleanQ(Together(x/y + y/x))", "False");
 	}
 
 	public void testBooleanTable() {
@@ -762,10 +763,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ChineseRemainder({1, 2}, {6, 10})", "ChineseRemainder({1,2},{6,10})");
 	}
 
-
 	public void testChop() {
 		check("Chop(0.00000000001)", "0");
 	}
+
 	public void testCoefficient() {
 		// check("Apply(Plus,((Coefficient(x*(b+a),x,#1)*x^#1)&))", "");
 
@@ -1510,6 +1511,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEqual() {
+		check("a==a", "True");
+		check("a==b", "a==b");
+		check("1==1.", "True");
+		check("{{1}, {2}} == {{1}, {2}}", "True");
+		check("{1, 2} == {1, 2, 3}", "False");
+		// check("N(E, 100) == N(E, 150)", "True");
+
+		check("E > 1", "True");
+		check("Pi == 3.14", "False");
+		check("Pi ^ E == E ^ Pi", "False");
+		check("N(E, 3) == N(E)", "True");
+		check("{1, 2, 3} < {1, 2, 3}", "{1,2,3}<{1,2,3}");
+		check("E == N(E)", "True");
+		check("{Equal(Equal(0, 0), True), Equal(0, 0) == True}", "{True,True}");
+		check("{True,False,True==False,True!=False}", "{True,False,False,True}");
+		check("{Mod(6, 2) == 0, Mod(6, 4) == 0, (Mod(6, 2) == 0) == (Mod(6, 4) == 0), (Mod(6, 2) == 0) != (Mod(6, 4) == 0)}",
+				"{True,False,False,True}");
+		check("a == a == a", "True");
+		check("{Equal(), Equal(x), Equal(1)}", "{True,True,True}");
+		check("", "");
+		check("", "");
+		check("", "");
+
 		check("{\"a\",\"b\"}=={\"a\",\"b\"}", "True");
 		check("{\"a\",\"b\"}=={\"b\",\"a\"}", "False");
 		check("{\"a\",b}=={\"a\",c}", "{\"a\",b}=={\"a\",c}");
@@ -2688,7 +2712,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Limit(Log(y*x), x->0)", "-Infinity+Log(y)");
 		check("Limit((y*x)/Abs(x), x->0)", "y");
 		check("Limit((y*x)/Abs(x), x->0, Direction->1)", "-y");
-		check("Limit(x/Abs(x), x->0)", "1");		
+		check("Limit(x/Abs(x), x->0)", "1");
 		check("Limit(x/Abs(x), x->0, Direction->-1)", "1");
 		check("Limit(x/Abs(x), x->0, Direction->1)", "-1");
 		check("Limit(Log(x), x -> 0)", "-Infinity");
@@ -4642,13 +4666,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRule() {
-		 check("a+b+c /. c->d", "a+b+d");
-		 check("{x,x^2,y} /. x->3", "{3,9,y}");
-		 // Rule called with 3 arguments; 2 arguments are expected.
-		 check("a /. Rule(1, 2, 3) -> t ", "a");
+		check("a+b+c /. c->d", "a+b+d");
+		check("{x,x^2,y} /. x->3", "{3,9,y}");
+		// Rule called with 3 arguments; 2 arguments are expected.
+		check("a /. Rule(1, 2, 3) -> t ", "a");
 	}
-	
+
 	public void testSameQUnsameQ() {
+		check("a===a", "True");
 		check("SameQ(0.0, 0)", "False");
 		check("UnsameQ(0.0, 0)", "True");
 		check("$g(f(x))===v", "False");
@@ -5684,6 +5709,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testUnequal() {
+		check("a!=a", "False");
+		check("a!=b", "a!=b");
+		check("1!=1.", "False");
+		check("{1} != {2}", "True");
+		check("{1, 2} != {1, 2}", "False");
+		check("{a} != {a}", "False");
+		check("\"a\" != \"b\"", "True");
+		check("\"a\" != \"a\"", "False");
+		check("Pi != N(Pi)", "False");
+		check("a_ != b_", "a_!=b_");
+		check("a != a != a", "False");
+		check("a != b != a", "a!=b!=a");
+		check("{Unequal(), Unequal(x), Unequal(1)}", "{True,True,True}");
+		
 		check("{\"a\",\"b\"}!={\"a\",\"b\"}", "False");
 		check("{\"a\",\"b\"}!={\"b\",\"a\"}", "True");
 		check("{\"a\",b}!={\"a\",c}", "{\"a\",b}!={\"a\",c}");
@@ -5733,6 +5772,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testUpSetDelayed() {
 		check("$f($h(0)) ^= h0;$f($h(x_)) ^:= 2 $f($h(x - 1));$f($h(10))", "1024*h0");
+	}
+
+	public void testValueQ() {
+		check("ValueQ[x]", "False");
+		check("x=1; ValueQ[x]", "True");
+		check("ValueQ[True]", "False");
 	}
 
 	public void testVariables() {
