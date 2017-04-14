@@ -43,11 +43,11 @@ In general an identifier is a user-choosen or built-in name for a variable, func
 Only the identifiers which consists of only one character are case sensitive. 
 For all other identifiers the input parser doesn't distinguish between lower and upper case characters.
 
-For example: the upper-case identifiers `[D](functions/D.md),[E](functions/E.md),[I](functions/I.md),[N](functions/N.md)`, 
+For example: the upper-case identifiers [D](functions/D.md),[E](functions/E.md),[I](functions/I.md),[N](functions/N.md), 
 are different from the identifiers `d, e, i, n`, thereas the 
-functions like `[Factorial](functions/Factorial.md),[Integrate](functions/Integrate.md)` can be entered as 
+functions like [Factorial](functions/Factorial.md),[Integrate](functions/Integrate.md) can be entered as 
 `factorial(100)` or `integrate(sin(x),x)`. If you type `SIN(x)` or `sin(x)`, 
-Symja assumes you always mean the same built-in `[Sin](functions/Sin.md)function.  
+Symja assumes you always mean the same built-in [Sin](functions/Sin.md) function.  
 
 Symja provides many common mathematical functions and constants, e.g.:
 ```
