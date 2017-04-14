@@ -1,7 +1,7 @@
 ## Last
 
 ``` 
-Last(expr)'
+Last(expr)
 ``` 
 > returns the last element in `expr`.
 
