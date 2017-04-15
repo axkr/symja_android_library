@@ -224,6 +224,7 @@ The result of the previous query to Symja can be accessed by %:
 * [Greater](functions/Greater.md)
 * [GreaterEqual](functions/GreaterEqual.md)
 * [Head](functions/Head.md)
+* [Hold](functions/Hold.md)
 * [I](functions/I.md)
 * [IdentityMatrix](functions/IdentityMatrix.md)
 * [Implies](functions/Implies.md)
