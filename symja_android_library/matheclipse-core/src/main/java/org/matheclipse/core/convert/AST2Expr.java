@@ -399,7 +399,8 @@ public class AST2Expr {
 			if (denominator.isZero()) {
 				return F.Rational(fr.isSign() ? numerator.negate() : numerator, denominator);
 			}
-			return F.fraction(numerator, fr.isSign() ? (IInteger) denominator.negate() : denominator);
+			return F.Rational(fr.isSign() ? numerator.negate() : numerator, denominator);
+//			return F.fraction(numerator, fr.isSign() ? (IInteger) denominator.negate() : denominator);
 		}
 		if (node instanceof StringNode) {
 			return F.$str(node.getString());

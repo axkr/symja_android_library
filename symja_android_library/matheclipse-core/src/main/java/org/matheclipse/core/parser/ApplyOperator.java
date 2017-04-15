@@ -28,7 +28,7 @@ public class ApplyOperator extends InfixExprOperator {
 		super(oper, functionName, precedence, grouping);
 	}
 
-	public IExpr createFunction(final IExprParserFactory factory, final IExpr lhs, final IExpr rhs) {
+	public IExpr createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs, final IExpr rhs) {
 		IAST fn = F.ast(F.Apply);
 		fn.append(lhs);
 		fn.append(rhs);

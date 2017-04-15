@@ -25,13 +25,17 @@ public class DivideExprOperator extends InfixExprOperator {
 		super(oper, functionName, precedence, grouping);
 	}
 
-	public IExpr createFunction(final IExprParserFactory factory, final IExpr lhs, final IExpr rhs) {
+	public IExpr createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs, final IExpr rhs) {
+
 		if (rhs.isInteger() && !rhs.isZero()) {
 			if (lhs.isInteger()) {
-				return F.fraction((IInteger) lhs, (IInteger) rhs);
+				if (!parser.isHoldOrHoldFormOrDefer()) {
+					return F.fraction((IInteger) lhs, (IInteger) rhs);
+				}
 			}
 			return F.Times(F.fraction(F.C1, (IInteger) rhs), lhs);
 		}
+
 		if (lhs.equals(F.C1)) {
 			return F.Power(rhs, F.CN1);
 		}

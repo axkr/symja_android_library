@@ -34,8 +34,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
 	/**
 	 * The evaluation class of this built-in-function. See packages: package
-	 * <code>org.matheclipse.core.builtin.function</code> and
-	 * <code>org.matheclipse.core.reflection.system</code>.
+	 * <code>org.matheclipse.core.builtin.function</code> and <code>org.matheclipse.core.reflection.system</code>.
 	 */
 	private transient IEvaluator fEvaluator;
 
@@ -92,13 +91,13 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 			synchronized (this) {
 				if (fEvaluator == null) {
 					fEvaluator = DUMMY_EVALUATOR;
-//					if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-//						SystemNamespace.DEFAULT.setEvaluator(this);
-//					} else {
-//						if (Character.isUpperCase(fSymbolName.charAt(0))) {
-//							SystemNamespace.DEFAULT.setEvaluator(this);
-//						}
-//					}
+					// if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+					// SystemNamespace.DEFAULT.setEvaluator(this);
+					// } else {
+					// if (Character.isUpperCase(fSymbolName.charAt(0))) {
+					// SystemNamespace.DEFAULT.setEvaluator(this);
+					// }
+					// }
 				}
 			}
 		}
@@ -118,6 +117,12 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isHoldOrHoldFormOrDefer() {
+		return this.equals(F.Defer) || this.equals(F.Hold) || this.equals(F.HoldForm);
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isE() {
 		return this == F.E;
 	}
@@ -127,7 +132,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	public boolean isFalse() {
 		return this == F.False;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isIndeterminate() {
@@ -139,13 +144,13 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	public final boolean isPi() {
 		return this == F.Pi;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isSignedNumberConstant() {
 		return fEvaluator instanceof ISignedNumberConstant;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isTrue() {

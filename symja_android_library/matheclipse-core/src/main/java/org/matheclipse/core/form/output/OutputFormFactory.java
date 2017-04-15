@@ -38,14 +38,12 @@ import org.matheclipse.parser.client.operator.PrefixOperator;
  */
 public class OutputFormFactory {
 	/**
-	 * The conversion wasn't called with an operator preceding the
-	 * <code>IExpr</code> object.
+	 * The conversion wasn't called with an operator preceding the <code>IExpr</code> object.
 	 */
 	public final static boolean NO_PLUS_CALL = false;
 
 	/**
-	 * The conversion was called with a &quot;+&quot; operator preceding the
-	 * <code>IExpr</code> object.
+	 * The conversion was called with a &quot;+&quot; operator preceding the <code>IExpr</code> object.
 	 */
 	public final static boolean PLUS_CALL = true;
 
@@ -63,15 +61,12 @@ public class OutputFormFactory {
 	}
 
 	/**
-	 * Get an <code>OutputFormFactory</code> for converting an internal
-	 * expression to a user readable string.
+	 * Get an <code>OutputFormFactory</code> for converting an internal expression to a user readable string.
 	 * 
 	 * @param relaxedSyntax
-	 *            If <code>true</code> use paranthesis instead of square
-	 *            brackets and ignore case for functions, i.e. sin() instead of
-	 *            Sin[]. If <code>true</code> use single square brackets instead
-	 *            of double square brackets for extracting parts of an
-	 *            expression, i.e. {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
+	 *            If <code>true</code> use paranthesis instead of square brackets and ignore case for functions, i.e.
+	 *            sin() instead of Sin[]. If <code>true</code> use single square brackets instead of double square
+	 *            brackets for extracting parts of an expression, i.e. {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
 	 * @return
 	 */
 	public static OutputFormFactory get(final boolean relaxedSyntax) {
@@ -79,18 +74,15 @@ public class OutputFormFactory {
 	}
 
 	/**
-	 * Get an <code>OutputFormFactory</code> for converting an internal
-	 * expression to a user readable string.
+	 * Get an <code>OutputFormFactory</code> for converting an internal expression to a user readable string.
 	 * 
 	 * @param relaxedSyntax
-	 *            if <code>true</code> use paranthesis instead of square
-	 *            brackets and ignore case for functions, i.e. sin() instead of
-	 *            Sin[]. If <code>true</code> use single square brackets instead
-	 *            of double square brackets for extracting parts of an
-	 *            expression, i.e. {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
+	 *            if <code>true</code> use paranthesis instead of square brackets and ignore case for functions, i.e.
+	 *            sin() instead of Sin[]. If <code>true</code> use single square brackets instead of double square
+	 *            brackets for extracting parts of an expression, i.e. {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
 	 * @param plusReversed
-	 *            if <code>true</code> the arguments of the <code>Plus()</code>
-	 *            function will be printed in reversed order
+	 *            if <code>true</code> the arguments of the <code>Plus()</code> function will be printed in reversed
+	 *            order
 	 * @return
 	 */
 	public static OutputFormFactory get(final boolean relaxedSyntax, final boolean plusReversed) {
@@ -98,18 +90,15 @@ public class OutputFormFactory {
 	}
 
 	/**
-	 * Get an <code>OutputFormFactory</code> for converting an internal
-	 * expression to a user readable string.
+	 * Get an <code>OutputFormFactory</code> for converting an internal expression to a user readable string.
 	 * 
 	 * @param relaxedSyntax
-	 *            if <code>true</code> use paranthesis instead of square
-	 *            brackets and ignore case for functions, i.e. sin() instead of
-	 *            Sin[]. If <code>true</code> use single square brackets instead
-	 *            of double square brackets for extracting parts of an
-	 *            expression, i.e. {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
+	 *            if <code>true</code> use paranthesis instead of square brackets and ignore case for functions, i.e.
+	 *            sin() instead of Sin[]. If <code>true</code> use single square brackets instead of double square
+	 *            brackets for extracting parts of an expression, i.e. {a,b,c,d}[1] instead of {a,b,c,d}[[1]].
 	 * @param plusReversed
-	 *            if <code>true</code> the arguments of the <code>Plus()</code>
-	 *            function will be printed in reversed order
+	 *            if <code>true</code> the arguments of the <code>Plus()</code> function will be printed in reversed
+	 *            order
 	 * @param numberFormat
 	 *            define the decimal format output for double values
 	 * @return
@@ -120,9 +109,8 @@ public class OutputFormFactory {
 	}
 
 	/**
-	 * Get an <code>OutputFormFactory</code> for converting an internal
-	 * expression to a user readable string, with <code>relaxedSyntax</code> set
-	 * to false.
+	 * Get an <code>OutputFormFactory</code> for converting an internal expression to a user readable string, with
+	 * <code>relaxedSyntax</code> set to false.
 	 * 
 	 * @return
 	 * @see #get(boolean)
@@ -872,7 +860,7 @@ public class OutputFormFactory {
 				convertSlotSequence(buf, list);
 				return;
 			}
-			if (head.equals(F.HoldForm) && (list.isAST1())) {
+			if ((head.equals(F.HoldForm) || head.equals(F.Defer)) && (list.isAST1())) {
 				convert(buf, list.arg1());
 				return;
 			}
@@ -1043,8 +1031,7 @@ public class OutputFormFactory {
 	}
 
 	/**
-	 * This method will only be called if <code>list.isAST2()==true</code> and
-	 * the head equals "Part".
+	 * This method will only be called if <code>list.isAST2()==true</code> and the head equals "Part".
 	 * 
 	 * @param buf
 	 * @param list
@@ -1076,8 +1063,7 @@ public class OutputFormFactory {
 	 * 
 	 * @param buf
 	 * @param seriesData
-	 *            <code>SeriesData[x, x0, list, nmin, nmax, den]</code>
-	 *            expression
+	 *            <code>SeriesData[x, x0, list, nmin, nmax, den]</code> expression
 	 * @param precedence
 	 *            the precedence of the parent expression
 	 * @return <code>true</code> if the conversion was successful

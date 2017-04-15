@@ -1093,6 +1093,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "1+x^2)])/(1+x^2)^(3/2)");
 	}
 
+	public void testDefer() {
+		check("Defer(3*2)", "3*2");
+		check("Defer(6/8)==6/8", "6/8==3/4"); 
+	}
+	
 	public void testDegree() {
 		check("Round(Pi/Degree^2)", "10313");
 		check("Pi/4 < 60 Degree < Pi", "True");
@@ -2294,6 +2299,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("pos = Position[expr, _Plus]", "{{1,1},{1,2,1},{1,3,1,2,1},{1,3,1}}");
 		check("val = Extract(expr, pos)", "{3,7,5,1+g(5)}");
 		check("ReplacePart(expr, Thread(pos -> val))", "Hold({3,g(7,2*3),f(1+g(5))})");
+	} 
+			
+	public void testHoldForm() {
+		check("HoldForm(3*2)", "3*2");
+		check("HoldForm(6/8)==6/8", "6/8==3/4"); 
 	}
 	
 	public void testHornerForm() {

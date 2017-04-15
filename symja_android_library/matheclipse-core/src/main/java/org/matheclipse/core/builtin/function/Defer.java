@@ -23,10 +23,10 @@ public class Defer extends AbstractCoreFunctionEvaluator {
 		if (!ToggleFeature.DEFER) {
 			return F.NIL;
 		}
-		Validate.checkSize(ast, 2);
-		IExpr arg1 = engine.evaluate(ast.arg1());
+//		Validate.checkSize(ast, 2);
+//		IExpr arg1 = engine.evaluate(ast.arg1());
 
-		return arg1;
+		return F.NIL;
 	}
 
 	@Override

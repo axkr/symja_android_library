@@ -381,8 +381,7 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fullform" : "FullForm",
 			new org.matheclipse.core.builtin.function.FullForm());
 	public final static IBuiltInSymbol Function = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "function" : "Function",
-			new org.matheclipse.core.builtin.function.Function());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "function" : "Function");
 	public final static IBuiltInSymbol Get = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "get" : "Get",
 			new org.matheclipse.core.builtin.function.Get());
 	public final static IBuiltInSymbol Head = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "head" : "Head",

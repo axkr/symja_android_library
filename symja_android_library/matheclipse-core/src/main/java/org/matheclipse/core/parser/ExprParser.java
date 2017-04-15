@@ -44,13 +44,10 @@ import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.operator.InfixOperator;
 
 /**
- * Create an expression of the <code>ASTNode</code> class-hierarchy from a math
- * formulas string representation
+ * Create an expression of the <code>ASTNode</code> class-hierarchy from a math formulas string representation
  * 
- * See
- * <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">Operator
- * -precedence parser</a> for the idea, how to parse the operators depending on
- * their precedence.
+ * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">Operator -precedence parser</a> for the idea,
+ * how to parse the operators depending on their precedence.
  */
 public class ExprParser extends ExprScanner {
 	static class NVisitorExpr extends VisitorExpr {
@@ -107,6 +104,11 @@ public class ExprParser extends ExprScanner {
 		return false;
 	}
 
+	/**
+	 * Set to true if the expression shouldn't be evaluated on input
+	 */
+	private boolean fHoldExpression;
+
 	private final boolean fRelaxedSyntax;
 
 	private List<IExpr> fNodeList = null;
@@ -160,7 +162,9 @@ public class ExprParser extends ExprScanner {
 
 	private IExpr convert(IAST ast) {
 		IExpr head = ast.head();
-		if (ast.isAST(F.N, 3)) {
+		if (ast.isAST(F.Hold) || ast.isAST(F.HoldForm)) {
+			return ast;
+		} else if (ast.isAST(F.N, 3)) {
 			return convertN(ast);
 		} else if (ast.isAST(F.Sqrt, 2)) {
 			// rewrite from input: Sqrt(x) => Power(x, 1/2)
@@ -281,7 +285,7 @@ public class ExprParser extends ExprScanner {
 	}
 
 	private IExpr createInfixFunction(InfixExprOperator infixOperator, IExpr lhs, IExpr rhs) {
-		IExpr temp = infixOperator.createFunction(fFactory, lhs, rhs);
+		IExpr temp = infixOperator.createFunction(fFactory, this, lhs, rhs);
 		if (temp.isAST()) {
 			return convert((IAST) temp);
 		}
@@ -786,8 +790,7 @@ public class ExprParser extends ExprScanner {
 	}
 
 	/**
-	 * Get a <i>part [[..]]</i> of an expression <code>{a,b,c}[[2]]</code>
-	 * &rarr; <code>b</code>
+	 * Get a <i>part [[..]]</i> of an expression <code>{a,b,c}[[2]]</code> &rarr; <code>b</code>
 	 * 
 	 */
 	private IExpr getPart() throws SyntaxError {
@@ -898,6 +901,15 @@ public class ExprParser extends ExprScanner {
 	}
 
 	/**
+	 * Test if the current expression shouldn't be evaluated on input
+	 * 
+	 * @return <code>true</code> if the current expression shouldn't be evaluated on input
+	 */
+	public boolean isHoldOrHoldFormOrDefer() {
+		return fHoldExpression;
+	}
+
+	/**
 	 * Parse the given <code>expression</code> String into an IExpr.
 	 * 
 	 * @param expression
@@ -925,22 +937,30 @@ public class ExprParser extends ExprScanner {
 		return temp;
 	}
 
-	private IExpr parseArguments(IExpr lhs) {
-		if (fRelaxedSyntax) {
-			if (fToken == TT_ARGUMENTS_OPEN) {
-				IAST ast = getFunctionArguments(lhs);
-				return convert(ast);
-			} else if (fToken == TT_PRECEDENCE_OPEN) {
-				IAST ast = getFunction(lhs);
-				return convert(ast);
+	private IExpr parseArguments(IExpr head) {
+		boolean localHoldExpression = fHoldExpression;
+		try {
+			if (head.isHoldOrHoldFormOrDefer()) {
+				fHoldExpression = true;
 			}
-		} else {
-			if (fToken == TT_ARGUMENTS_OPEN) {
-				IAST ast = getFunctionArguments(lhs);
-				return convert(ast);
+			if (fRelaxedSyntax) {
+				if (fToken == TT_ARGUMENTS_OPEN) {
+					IAST ast = getFunctionArguments(head);
+					return convert(ast);
+				} else if (fToken == TT_PRECEDENCE_OPEN) {
+					IAST ast = getFunction(head);
+					return convert(ast);
+				}
+			} else {
+				if (fToken == TT_ARGUMENTS_OPEN) {
+					IAST ast = getFunctionArguments(head);
+					return convert(ast);
+				}
 			}
+			return head;
+		} finally {
+			fHoldExpression = localHoldExpression;
 		}
-		return lhs;
 	}
 
 	private IExpr parseCompoundExpressionNull(InfixExprOperator infixOperator, IExpr rhs) {
@@ -962,9 +982,8 @@ public class ExprParser extends ExprScanner {
 	}
 
 	/**
-	 * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">
-	 * Operator -precedence parser</a> for the idea, how to parse the operators
-	 * depending on their precedence.
+	 * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser"> Operator -precedence parser</a> for the
+	 * idea, how to parse the operators depending on their precedence.
 	 * 
 	 * @param lhs
 	 *            the already parsed left-hand-side of the operator
@@ -1197,8 +1216,8 @@ public class ExprParser extends ExprScanner {
 	}
 
 	/**
-	 * Convert less or greater relations on input. Example: convert expressions
-	 * like <code>a<b<=c</code> to <code>Less[a,b]&&LessEqual[b,c]</code>.
+	 * Convert less or greater relations on input. Example: convert expressions like <code>a<b<=c</code> to
+	 * <code>Less[a,b]&&LessEqual[b,c]</code>.
 	 * 
 	 * @param ast
 	 * @param compareHead

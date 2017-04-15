@@ -42,7 +42,7 @@ public class InfixExprOperator extends AbstractExprOperator {
 		return fGrouping;
 	}
 
-	public IExpr createFunction(final IExprParserFactory factory, final IExpr lhs, final IExpr rhs) {
+	public IExpr createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs, final IExpr rhs) {
 		if (fOperatorString.equals("//")) {
 			// lhs // rhs ==> rhs[lhs]
 			IAST function = F.ast(rhs);
