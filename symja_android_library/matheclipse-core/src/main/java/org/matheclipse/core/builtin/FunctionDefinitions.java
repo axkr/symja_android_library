@@ -121,7 +121,6 @@ public final class FunctionDefinitions {
 		NMaximize.setEvaluator(new org.matheclipse.core.reflection.system.NMaximize());
 		NMinimize.setEvaluator(new org.matheclipse.core.reflection.system.NMinimize());
 		NonCommutativeMultiply.setEvaluator(new org.matheclipse.core.reflection.system.NonCommutativeMultiply());
-		NonNegative.setEvaluator(new org.matheclipse.core.reflection.system.NonNegative());
 		Normal.setEvaluator(new org.matheclipse.core.reflection.system.Normal());
 		NRoots.setEvaluator(new org.matheclipse.core.reflection.system.NRoots());
 		NSolve.setEvaluator(new org.matheclipse.core.reflection.system.NSolve());
@@ -135,7 +134,6 @@ public final class FunctionDefinitions {
 		Pochhammer.setEvaluator(new org.matheclipse.core.reflection.system.Pochhammer());
 		PolyGamma.setEvaluator(new org.matheclipse.core.reflection.system.PolyGamma());
 		PolyLog.setEvaluator(new org.matheclipse.core.reflection.system.PolyLog());
-		Positive.setEvaluator(new org.matheclipse.core.reflection.system.Positive());
 		PowerMod.setEvaluator(new org.matheclipse.core.reflection.system.PowerMod());
 		PrimitiveRoots.setEvaluator(new org.matheclipse.core.reflection.system.PrimitiveRoots());
 		Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());

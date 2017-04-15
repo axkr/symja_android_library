@@ -58,6 +58,8 @@ public class Min extends AbstractFunctionEvaluator {
 			if (comp == IExpr.COMPARE_TERNARY.TRUE) {
 				min1 = min2;
 				evaled = true;
+			} else if (comp == IExpr.COMPARE_TERNARY.FALSE) {
+				evaled = true;
 			} else {
 				if (comp == IExpr.COMPARE_TERNARY.UNDEFINED) {
 					// undetermined

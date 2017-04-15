@@ -2196,6 +2196,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGreater() {
+		check("{Greater(), Greater(x), Greater(1)}", "{True,True,True}");
 		check("Pi>0", "True");
 		check("Pi+E<8", "True");
 		check("2/17 > 1/5 > Pi/10", "False");
@@ -2205,6 +2206,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("x>=x", "True");
 	}
 
+	public void testGreaterEqual() {
+		check("{GreaterEqual(), GreaterEqual(x), GreaterEqual(1)}", "{True,True,True}");
+		check("Pi>=0", "True");
+		check("Pi+E<=8", "True");
+		check("2/17 >= 1/5 >= Pi/10", "False");
+		check("x>=x", "True");
+		check("x>x", "False");
+	}
+	
 	public void testGroebnerBasis() {
 		check("GroebnerBasis({-5*x^2+y*z-x-1, 2*x+3*x*y+y^2,x-3*y+x*z-2*z^2},{x,y,z}, MonomialOrder ->DegreeReverseLexicographic)",
 				"{x-3*y+x*z-2*z^2,2*x+3*x*y+y^2,1+x+5*x^2-y*z,-1+27*y+5*y^2-z-29*y*z+18*z^2+y*z^2\n"
@@ -2644,10 +2654,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLess() {
+		check("3<4", "True");
+		check("{Less(), Less(x), Less(1)}", "{True,True,True}");
 		check("(2*x+5)<(5^(1/2))", "x<1/2*(-5+Sqrt(5))");
 		check("(-2*x+5)<(5^(1/2))", "x>-(-5+Sqrt(5))/2");
 	}
 
+	public void testLessEqual() {
+		check("3<=4", "True");
+		check("{LessEqual(), LessEqual(x), LessEqual(1)}", "{True,True,True}");
+		check("(2*x+5)<=(5^(1/2))", "x<=1/2*(-5+Sqrt(5))");
+		check("(-2*x+5)<=(5^(1/2))", "x>=-(-5+Sqrt(5))/2");
+	}
+	
 	public void testLetterQ() {
 		check("LetterQ(\"a\")", "True");
 		check("LetterQ(\"2\")", "False");
@@ -2942,6 +2961,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMax() {
+		check("Max(4, -8, 1)", "4");
+		check("Max({1,2},3,{-3,3.5,-Infinity},{{1/2}})", "3.5");
+		check("Max(x, y)", "Max(x,y)");
+		check("Max(5, x, -3, y, 40)", "Max(40,x,y)");
+		check("Max()", "-Infinity");
+		check("Max(x)", "x");
 		check("Max(Abs(x), Abs(y))", "Max(Abs(x),Abs(y))");
 	}
 
@@ -2978,6 +3003,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("MemberQ(a + b + c, a + c)", "False");
 	}
 
+	public void testMin() {
+		check("Min(5, x, -3, y, 40)", "Min(-3,x,y)");
+		check("Min(4, -8, 1)", "-8");
+		check("Min({1,2},3,{-3,3.5,-Infinity},{{1/2}})", "-Infinity");
+		check("Min(x, y)", "Min(x,y)");
+		check("Min(5, x, -3, y, 40)", "Min(-3,x,y)");
+		check("Min()", "Infinity");
+		check("Min(x)", "x");
+		check("Min(Abs(x), Abs(y))", "Min(Abs(x),Abs(y))");
+	}
 	public void testMod() {
 		check("Mod(-10,3)", "2");
 		check("Mod(10,3)", "1");
@@ -3537,7 +3572,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("NoneTrue({12, 16, x, 14, y}, TrueQ(# < 10) &)", "True");
 		check("NoneTrue(f(1, 7, 3), OddQ)", "False");
 	}
-
+	
+	public void testNonNegative() {
+		check("{Positive(0), NonNegative(0)}", "{False,True}"); 
+	}
+	
 	public void testNor() {
 		check("Nor( )", "True");
 		check("Nor(2+2)", "!4");
@@ -4052,6 +4091,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Position(f(f(g(a), a), a, h(a), f), f, Heads->True)", "{{0},{1,0},{4}}");
 
 		check("Position({f(a), g(b), f(c)}, f(x_))", "{{1},{3}}");
+	}
+	
+	public void testPositive() {
+		check("Positive(1)", "True");
+		check("Positive(0)", "False");
+		check("Positive(1 + 2 I)", "False");
+		check("Positive(Pi)", "True");
+		check("Positive(x)", "Positive(x)");
+		check("Positive(Sin({11, 14}))", "{False,True}");
 	}
 
 	public void testPossibleZeroQ() {

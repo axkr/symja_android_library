@@ -58,6 +58,8 @@ public class Max extends AbstractFunctionEvaluator {
 			if (comp == IExpr.COMPARE_TERNARY.TRUE) {
 				max1 = max2;
 				evaled = true;
+			} else if (comp == IExpr.COMPARE_TERNARY.FALSE) {
+				evaled = true;
 			} else {
 				if (comp == IExpr.COMPARE_TERNARY.UNDEFINED) {
 					// undetermined

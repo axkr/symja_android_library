@@ -19,6 +19,7 @@ import org.matheclipse.core.eval.exception.BooleanFunctionConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.StringX;
@@ -56,9 +57,11 @@ public final class BooleanFunctions {
 		F.LessEqual.setEvaluator(new LessEqual());
 		F.Nand.setEvaluator(new Nand());
 		F.NoneTrue.setEvaluator(new NoneTrue());
+		F.NonNegative.setEvaluator(new NonNegative());
 		F.Nor.setEvaluator(new Nor());
 		F.Not.setEvaluator(new Not());
 		F.Or.setEvaluator(new Or());
+		F.Positive.setEvaluator(new Positive());
 		F.SameQ.setEvaluator(new SameQ());
 		F.SatisfiableQ.setEvaluator(new SatisfiableQ());
 		F.TautologyQ.setEvaluator(new TautologyQ());
@@ -671,7 +674,7 @@ public final class BooleanFunctions {
 				} else if (o1.isFalse()) {
 					return IExpr.COMPARE_TERNARY.TRUE;
 				}
-			} 
+			}
 			if (o0.isConstant() && o1.isConstant()) {
 				return IExpr.COMPARE_TERNARY.FALSE;
 			}
@@ -907,8 +910,10 @@ public final class BooleanFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3);
-
+			// Validate.checkRange(ast, 3);
+			if (ast.size() <= 2) {
+				return F.True;
+			}
 			if (ast.isAST2()) {
 				IExpr arg1 = ast.arg1();
 				IExpr arg2 = ast.arg2();
@@ -1347,6 +1352,29 @@ public final class BooleanFunctions {
 
 	}
 
+	private final static class NonNegative extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			ISignedNumber arg1 = ast.arg1().evalSignedNumber();
+			if (arg1 != null) {
+				return F.bool(!arg1.isNegative());
+			}
+			if (ast.arg1().isNumber()) {
+				return F.False;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+
+	}
+
 	private static class Nor extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -1518,6 +1546,29 @@ public final class BooleanFunctions {
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.ONEIDENTITY | ISymbol.FLAT);
 		}
+	}
+
+	private final static class Positive extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			ISignedNumber arg1 = ast.arg1().evalSignedNumber();
+			if (arg1 != null) {
+				return F.bool(arg1.isPositive());
+			}
+			if (ast.arg1().isNumber()) {
+				return F.False;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+
 	}
 
 	/**
