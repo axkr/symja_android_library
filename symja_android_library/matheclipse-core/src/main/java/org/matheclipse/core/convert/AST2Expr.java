@@ -36,12 +36,11 @@ import org.matheclipse.parser.client.ast.SymbolNode;
 import org.matheclipse.parser.client.eval.DoubleNode;
 
 /**
- * Converts a parsed <code>org.matheclipse.parser.client.ast.ASTNode</code>
- * expression into an IExpr expression
+ * Converts a parsed <code>org.matheclipse.parser.client.ast.ASTNode</code> expression into an IExpr expression
  * 
  */
 public class AST2Expr {
-	
+
 	public final static String[] UPPERCASE_SYMBOL_STRINGS = { "D", "E", "I", "N" };
 
 	public final static String[] SYMBOL_STRINGS = { "$Aborted", "All", "Algebraics", "Automatic", "Booleans",
@@ -105,7 +104,7 @@ public class AST2Expr {
 			"PolynomialQuotient", "PolynomialQuotientRemainder", "PolynomialRemainder", "Position", "Positive",
 			"PossibleZeroQ", "Power", "PowerExpand", "PowerMod", "PreDecrement", "PreIncrement", "Prepend", "PrependTo",
 			"Prime", "PrimeOmega", "PrimePowerQ", "PrimeQ", "PrimitiveRoots", "Print", "Product", "ProductLog",
-			"PseudoInverse", "Put", "QRDecomposition", "Quiet", "Quotient", "RandomInteger", "RandomReal",
+			"PseudoInverse", "Put", "QRDecomposition", "Quiet", "Quit", "Quotient", "RandomInteger", "RandomReal",
 			"RandomSample", "Range", "Rational", "Rationalize", "Re", "Reap", "Reduce", "Refine", "Repeated",
 			"RepeatedNull", "Replace", "ReplaceAll", "ReplaceList", "ReplacePart", "ReplaceRepeated", "Rest",
 			"Resultant", "Return", "Reverse", "Riffle", "RogersTanimotoDissimilarity", "RootIntervals", "Root",
@@ -222,8 +221,7 @@ public class AST2Expr {
 	 * Converts a parsed FunctionNode expression into an IAST expression.
 	 * 
 	 * @param functionNode
-	 *            the parsed elements which should be added to the
-	 *            <code>IAST</code>
+	 *            the parsed elements which should be added to the <code>IAST</code>
 	 * @param ast
 	 *            the empty <code>IAST</code> instance without any elements
 	 * @return the <code>ast</code>with the added elements
@@ -248,8 +246,7 @@ public class AST2Expr {
 	 * @param node
 	 * @return
 	 * @throws ConversionException
-	 * @deprecated use <code>convert(ASTNode node, EvalEngine engine)</code>
-	 *             instead
+	 * @deprecated use <code>convert(ASTNode node, EvalEngine engine)</code> instead
 	 */
 	public IExpr convert(ASTNode node) throws ConversionException {
 		return convert(node, EvalEngine.get());
@@ -492,8 +489,8 @@ public class AST2Expr {
 	}
 
 	/**
-	 * Convert less or greater relations on input. Example: convert expressions
-	 * like <code>a<b<=c</code> to <code>Less[a,b]&&LessEqual[b,c]</code>.
+	 * Convert less or greater relations on input. Example: convert expressions like <code>a<b<=c</code> to
+	 * <code>Less[a,b]&&LessEqual[b,c]</code>.
 	 * 
 	 * @param ast
 	 * @param compareHead

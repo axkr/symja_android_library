@@ -973,6 +973,9 @@ public abstract class AbstractAST implements IAST {
 	public final String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		final String sep = ",";
 		final IExpr temp = head();
+		if (temp.equals(F.HoldForm) && size() == 2) {
+			return arg1().internalFormString(symbolsAsFactoryMethod, depth);
+		}
 		if (temp.equals(F.Hold) && size() == 2) {
 			return arg1().internalFormString(symbolsAsFactoryMethod, depth);
 		}

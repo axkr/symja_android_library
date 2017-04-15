@@ -872,10 +872,6 @@ public class OutputFormFactory {
 				convertSlotSequence(buf, list);
 				return;
 			}
-			if (head.equals(F.Hold) && (list.isAST1())) {
-				convert(buf, list.arg1());
-				return;
-			}
 			if (head.equals(F.HoldForm) && (list.isAST1())) {
 				convert(buf, list.arg1());
 				return;

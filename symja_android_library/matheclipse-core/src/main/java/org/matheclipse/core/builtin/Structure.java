@@ -30,6 +30,7 @@ public class Structure {
 		F.MapThread.setEvaluator(new MapThread());
 		F.OrderedQ.setEvaluator(new OrderedQ());
 		F.Operate.setEvaluator(new Operate());
+		F.Quit.setEvaluator(new Quit());
 		F.Scan.setEvaluator(new Scan());
 		F.Sort.setEvaluator(new Sort());
 		F.Symbol.setEvaluator(new Symbol());
@@ -354,7 +355,16 @@ public class Structure {
 			return result;
 		}
 	}
+ 
+	private final static class Quit extends AbstractFunctionEvaluator {
 
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 1);
+			return F.Null;
+		}
+	}
+	
 	/**
 	 * @see Map
 	 */

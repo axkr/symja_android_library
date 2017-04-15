@@ -1019,6 +1019,7 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "productlog" : "ProductLog");
 	public final static IBuiltInSymbol PseudoInverse = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "pseudoinverse" : "PseudoInverse");
+	public final static IBuiltInSymbol Quit = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "quit" : "Quit");
 	public final static IBuiltInSymbol QRDecomposition = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "qrdecomposition" : "QRDecomposition");
 	public final static IBuiltInSymbol Quotient = initFinalSymbol(
@@ -3653,7 +3654,7 @@ public class F {
 		}
 		return unaryAST1(Im, a0);
 	}
-	
+
 	public static IAST Implies(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Implies, a0, a1);
 	}
@@ -4085,7 +4086,7 @@ public class F {
 	public static IAST Limit(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(Limit, a0, a1, a2);
 	}
-	
+
 	public static IAST Line() {
 		return ast(Line);
 	}

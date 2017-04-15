@@ -1193,8 +1193,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Derivative(1,1)[Power][a, x]", "a^(-1+x)+(x*Log(a))/a^(1-x)");
 		check("Derivative(1,1)[Power][x, x]", "x^(-1+x)+x^x*Log(x)");
 
-		check("Hold((-1)*Sin(#)&[x])", "-Sin(#1)&[x]");
-		check("Hold(Derivative(1)[Cos][x])", "Cos'(x)");
+		check("Hold((-1)*Sin(#)&[x])", "Hold(-Sin(#1)&[x])");
+		check("Hold(Derivative(1)[Cos][x])", "Hold(Cos'(x))");
 		check("Derivative(1)[Cos][x]", "-Sin(x)");
 		check("Derivative(1)[Sin][x]", "Cos(x)");
 		check("Derivative(4)[Cos][x]", "Cos(x)");
@@ -2285,6 +2285,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Inverse(HilbertMatrix(3))", "{{9,-36,30},\n" + " {-36,192,-180},\n" + " {30,-180,180}}");
 	}
 
+	public void testHold() {
+		check("Hold(3*2)", "Hold(3*2)");
+		check("Hold(2+2)", "Hold(2+2)");
+		check("lst = Hold(1 + 2, 2*3*4*5, 1/0, Quit())", "Hold(1+2,2*3*4*5,1/0,Quit())");
+		check("Apply(List, Map(Hold, lst))", "{Hold(1+2),Hold(2*3*4*5),Hold(1/0),Hold(Quit())}");
+		check("expr = Hold({1 + 2, g(3 + 4, 2*3), f(1 + g(2 + 3))})", "Hold({1+2,g(3+4,2*3),f(1+g(2+3))})");
+		check("pos = Position[expr, _Plus]", "{{1,1},{1,2,1},{1,3,1,2,1},{1,3,1}}");
+		check("val = Extract(expr, pos)", "{3,7,5,1+g(5)}");
+		check("ReplacePart(expr, Thread(pos -> val))", "Hold({3,g(7,2*3),f(1+g(5))})");
+	}
+	
 	public void testHornerForm() {
 		check("HornerForm(11*x^3 - 4*x^2 + 7*x + 2)", "2+x*(7+x*(-4+11*x))");
 		check("HornerForm(a+b*x+c*x^2,x)", "a+x*(b+c*x)");

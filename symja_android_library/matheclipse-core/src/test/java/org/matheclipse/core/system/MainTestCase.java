@@ -1628,7 +1628,7 @@ public class MainTestCase extends AbstractTestCase {
 
 	public void testSystem186() {
 		check("Function(x,(x^3))[x,y]", "x^3");
-		check("Hold(f(#1, y)& [x])", "f(#1,y)&[x]");
+		check("Hold(f(#1, y)& [x])", "Hold(f(#1,y)&[x])");
 	}
 
 	public void testSystem187() {

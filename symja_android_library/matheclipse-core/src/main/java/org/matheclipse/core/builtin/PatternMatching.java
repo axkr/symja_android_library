@@ -91,7 +91,7 @@ public final class PatternMatching {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
-			IExpr leftHandSide = ast.arg1();
+			IExpr leftHandSide = engine.evaluate(ast.arg1());
 			if (leftHandSide.isAST()) {
 				leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
 			}
