@@ -121,9 +121,8 @@ public class IntegerSym extends AbstractIntegerSym {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns
-	 * a negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
+	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -171,7 +170,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	public IExpr inc() {
 		return add(F.C1);
 	}
-	
+
 	@Override
 	public IInteger div(final IInteger that) {
 		if (that instanceof IntegerSym) {
@@ -211,7 +210,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	 */
 	@Override
 	public IAST divisors() {
-		if (isOne()||isMinusOne()) {
+		if (isOne() || isMinusOne()) {
 			return F.List(F.C1);
 		}
 		Set<IInteger> set = new TreeSet<IInteger>();
@@ -292,16 +291,16 @@ public class IntegerSym extends AbstractIntegerSym {
 			int q = ((IInteger) element.arg1()).intValue();
 			int c = ((IInteger) element.arg2()).intValue();
 			if (c == 1) {
-				phi = phi*(q-1);
+				phi = phi * (q - 1);
 			} else {
-				phi = phi*((q-1)*IntMath.pow(q, c - 1));
+				phi = phi * ((q - 1) * IntMath.pow(q, c - 1));
 			}
 		}
 		return F.integer(phi);
 	}
+
 	/**
-	 * Get the highest exponent of <code>base</code> that divides
-	 * <code>this</code>
+	 * Get the highest exponent of <code>base</code> that divides <code>this</code>
 	 * 
 	 * @return the exponent
 	 */
@@ -323,8 +322,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	}
 
 	/**
-	 * Returns the greatest common divisor of this large integer and the one
-	 * specified.
+	 * Returns the greatest common divisor of this large integer and the one specified.
 	 * 
 	 */
 	@Override
@@ -746,6 +744,32 @@ public class IntegerSym extends AbstractIntegerSym {
 			} while (temp.compareTo(result) < 0);
 			return result;
 		}
+	}
+
+	@Override
+	public IInteger[] nthRootSplit(int n) throws ArithmeticException {
+		IInteger[] result = new IInteger[2];
+		if (sign() == 0) {
+			result[0] = AbstractIntegerSym.valueOf(0);
+			result[1] = AbstractIntegerSym.valueOf(1);
+			return result;
+		} else if (sign() < 0) {
+			if (n % 2 == 0) {
+				// even exponent n
+				throw new ArithmeticException();
+			} else {
+				// odd exponent n
+				result = negate().nthRootSplit(n);
+				result[1] = result[1].negate();
+				return result;
+			}
+		}
+
+		long b = fIntValue;
+		long[] nthRoot = Primality.countRoot1021(b, n);
+		result[0] = AbstractIntegerSym.valueOf(nthRoot[0]);
+		result[1] = AbstractIntegerSym.valueOf(nthRoot[1]);
+		return result;
 	}
 
 	@Override

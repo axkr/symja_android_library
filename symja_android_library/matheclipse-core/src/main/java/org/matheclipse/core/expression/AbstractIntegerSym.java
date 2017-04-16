@@ -412,7 +412,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	public IAST factorize(IAST result) {
 		IInteger b = this;
 		if (sign() < 0) {
-			b = b.multiply(F.CN1);
+			b = b.negate();
 			result.append(F.CN1);
 		} else if (b.isZero()) {
 			result.append(F.C0);
@@ -423,8 +423,6 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		}
 
 		if (b instanceof IntegerSym) {
-			// SortedMap<Long, Integer> map = new TreeMap<Long, Integer>();
-			// PrimeInteger.smallPrimeDivisors(b.longValue(), map);
 			Map<Long, Integer> map = PrimeInteger.factors(b.longValue());
 			for (Map.Entry<Long, Integer> entry : map.entrySet()) {
 				long key = entry.getKey();
@@ -456,8 +454,6 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		b = valueOf(rest);
 
 		SortedMap<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
-
-		// Primality.pollardRhoFactors(rest, bigMap);
 		Primality.ellipticCurveFactors(rest, bigMap);
 
 		for (Map.Entry<BigInteger, Integer> entry : bigMap.entrySet()) {

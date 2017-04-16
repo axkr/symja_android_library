@@ -15,14 +15,21 @@ import static org.matheclipse.core.expression.F.integer;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.JASConvert;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.eval.util.Options;
+import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
@@ -39,12 +46,18 @@ import org.matheclipse.core.interfaces.ISymbol;
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
 
+import edu.jas.arith.BigRational;
+import edu.jas.arith.ModInteger;
+import edu.jas.arith.ModIntegerRing;
+import edu.jas.poly.GenPolynomial;
+import edu.jas.ufd.FactorAbstract;
+import edu.jas.ufd.FactorFactory;
+
 public final class NumberTheory {
 	private static class BellB extends AbstractFunctionEvaluator {
 
 		/**
-		 * Generates the Bell Number of the given index, where B(1) is 1. This
-		 * is recursive.
+		 * Generates the Bell Number of the given index, where B(1) is 1. This is recursive.
 		 * 
 		 * @param index
 		 * @return
@@ -94,10 +107,9 @@ public final class NumberTheory {
 	/**
 	 * Compute the Bernoulli number of the first kind.
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Bernoulli_number">Wikipedia -
-	 * Bernoulli number</a>. <br/>
-	 * For better performing implementations see <a href=
-	 * "http://oeis.org/wiki/User:Peter_Luschny/ComputationAndAsymptoticsOfBernoulliNumbers"
+	 * See <a href="http://en.wikipedia.org/wiki/Bernoulli_number">Wikipedia - Bernoulli number</a>. <br/>
+	 * For better performing implementations see
+	 * <a href= "http://oeis.org/wiki/User:Peter_Luschny/ComputationAndAsymptoticsOfBernoulliNumbers"
 	 * >ComputationAndAsymptoticsOfBernoulliNumbers</a>
 	 * 
 	 */
@@ -191,8 +203,7 @@ public final class NumberTheory {
 	/**
 	 * Returns the binomial coefficient of 2 integers.
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Binomial_coefficient">Binomial
-	 * coefficient</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Binomial_coefficient">Binomial coefficient</a>
 	 */
 	private static class Binomial extends AbstractArg2 {
 
@@ -287,9 +298,7 @@ public final class NumberTheory {
 	 * The Carmichael function.
 	 * </p>
 	 * <p>
-	 * See:
-	 * <a href="https://en.wikipedia.org/wiki/Carmichael_function">Wikipedia -
-	 * Carmichael function</a>
+	 * See: <a href="https://en.wikipedia.org/wiki/Carmichael_function">Wikipedia - Carmichael function</a>
 	 * </p>
 	 *
 	 */
@@ -319,9 +328,7 @@ public final class NumberTheory {
 
 	/**
 	 * 
-	 * See
-	 * <a href="http://en.wikipedia.org/wiki/Catalan_number">Wikipedia:Catalan
-	 * number</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Catalan_number">Wikipedia:Catalan number</a>
 	 * 
 	 */
 	private static class CatalanNumber extends AbstractTrigArg1 {
@@ -359,9 +366,7 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * See
-	 * <a href="https://rosettacode.org/wiki/Chinese_remainder_theorem">Rosetta
-	 * Code: Chinese remainder theorem</a>
+	 * See <a href="https://rosettacode.org/wiki/Chinese_remainder_theorem">Rosetta Code: Chinese remainder theorem</a>
 	 *
 	 */
 	private static class ChineseRemainder extends AbstractFunctionEvaluator {
@@ -411,8 +416,8 @@ public final class NumberTheory {
 		 * Calculate the chinese remainder of 2 integer lists.
 		 * </p>
 		 * <p>
-		 * See <a href="https://rosettacode.org/wiki/Chinese_remainder_theorem">
-		 * Rosetta Code: Chinese remainder theorem</a>
+		 * See <a href="https://rosettacode.org/wiki/Chinese_remainder_theorem"> Rosetta Code: Chinese remainder
+		 * theorem</a>
 		 * </p>
 		 *
 		 */
@@ -435,8 +440,8 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * The integers a and b are said to be <i>coprime</i> or <i>relatively
-	 * prime</i> if they have no common factor other than 1.
+	 * The integers a and b are said to be <i>coprime</i> or <i>relatively prime</i> if they have no common factor other
+	 * than 1.
 	 * 
 	 * See <a href="http://en.wikipedia.org/wiki/Coprime">Wikipedia:Coprime</a>
 	 */
@@ -551,8 +556,8 @@ public final class NumberTheory {
 		}
 
 		/**
-		 * Return F.True or F.False if result is divisible. Return
-		 * <code>F.NIL</code>, if the result could not be determined.
+		 * Return F.True or F.False if result is divisible. Return <code>F.NIL</code>, if the result could not be
+		 * determined.
 		 * 
 		 * @param result
 		 * @return
@@ -607,8 +612,7 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * <code>DivisorSigma(k,n)</code> - the sum of the <code>k</code>-th powers
-	 * of the divisors of <code>n</code>.
+	 * <code>DivisorSigma(k,n)</code> - the sum of the <code>k</code>-th powers of the divisors of <code>n</code>.
 	 *
 	 */
 	private static class DivisorSigma extends AbstractFunctionEvaluator {
@@ -714,8 +718,7 @@ public final class NumberTheory {
 		 * @param a
 		 *            list of integers
 		 * @param n
-		 *            the zero-based index of the coefficient. n=0 for the E_0
-		 *            term.
+		 *            the zero-based index of the coefficient. n=0 for the E_0 term.
 		 */
 		protected void set(ArrayList<IInteger> a, final int n) {
 			while (n >= a.size()) {
@@ -763,9 +766,7 @@ public final class NumberTheory {
 	/**
 	 * Euler phi function
 	 * 
-	 * See:
-	 * <a href="http://en.wikipedia.org/wiki/Euler%27s_totient_function">Euler's
-	 * totient function</a>
+	 * See: <a href="http://en.wikipedia.org/wiki/Euler%27s_totient_function">Euler's totient function</a>
 	 */
 	private static class EulerPhi extends AbstractTrigArg1 {
 
@@ -920,9 +921,8 @@ public final class NumberTheory {
 	 * <p>
 	 * Fibonacci sequence. Algorithm in <code>O(log(n))</code> time.F
 	 * </p>
-	 * See: <a href=
-	 * "https://www.rosettacode.org/wiki/Fibonacci_sequence#Iterative_28">
-	 * Roseatta code: Fibonacci sequence.</a>
+	 * See: <a href= "https://www.rosettacode.org/wiki/Fibonacci_sequence#Iterative_28"> Roseatta code: Fibonacci
+	 * sequence.</a>
 	 */
 	private static class Fibonacci extends AbstractTrigArg1 {
 
@@ -969,8 +969,7 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * See <a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia -
-	 * Jacobi symbol</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia - Jacobi symbol</a>
 	 */
 	private static class JacobiSymbol extends AbstractArg2 {
 
@@ -1090,8 +1089,7 @@ public final class NumberTheory {
 	 * <p>
 	 * Lucas number.
 	 * </p>
-	 * See: <a href= "https://en.wikipedia.org/wiki/Lucas_number">Wikipedia:
-	 * Lucas number</a>
+	 * See: <a href= "https://en.wikipedia.org/wiki/Lucas_number">Wikipedia: Lucas number</a>
 	 */
 	private static class LucasL extends AbstractTrigArg1 {
 
@@ -1121,9 +1119,7 @@ public final class NumberTheory {
 	/**
 	 * The Möbius function.
 	 * 
-	 * See
-	 * <a href="http://en.wikipedia.org/wiki/M%C3%B6bius_function">Wikipedia:
-	 * Möbius function</a>
+	 * See <a href="http://en.wikipedia.org/wiki/M%C3%B6bius_function">Wikipedia: Möbius function</a>
 	 */
 	private static class MoebiusMu extends AbstractTrigArg1 {
 
@@ -1152,8 +1148,7 @@ public final class NumberTheory {
 	/**
 	 * Returns the multinomial coefficient.
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Multinomial_coefficient">
-	 * Multinomial coefficient</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Multinomial_coefficient"> Multinomial coefficient</a>
 	 */
 	private static class Multinomial extends AbstractFunctionEvaluator {
 		public static IInteger multinomial(final IAST ast) {
@@ -1204,11 +1199,8 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * See
-	 * <a href="https://en.wikipedia.org/wiki/Multiplicative_order">Wikipedia:
-	 * Multiplicative order</a> and
-	 * <a href="https://rosettacode.org/wiki/Multiplicative_order">Rosettacode.
-	 * org: Multiplicative order</a>.
+	 * See <a href="https://en.wikipedia.org/wiki/Multiplicative_order">Wikipedia: Multiplicative order</a> and
+	 * <a href="https://rosettacode.org/wiki/Multiplicative_order">Rosettacode. org: Multiplicative order</a>.
 	 *
 	 */
 	private static class MultiplicativeOrder extends AbstractFunctionEvaluator {
@@ -1264,9 +1256,7 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * Get the next prime number. See:
-	 * <a href="http://en.wikipedia.org/wiki/Prime_number">Wikipedia:Prime
-	 * number</a>
+	 * Get the next prime number. See: <a href="http://en.wikipedia.org/wiki/Prime_number">Wikipedia:Prime number</a>
 	 * 
 	 * @see org.matheclipse.core.builtin.function.PrimeQ
 	 */
@@ -1296,12 +1286,9 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * <code>Prime(i)</code> gives the i-th prime number for <code>i</code> less
-	 * equal 103000000.
+	 * <code>Prime(i)</code> gives the i-th prime number for <code>i</code> less equal 103000000.
 	 * 
-	 * See:
-	 * <a href="https://bitbucket.org/dafis/javaprimes">https://bitbucket.org/
-	 * dafis/ javaprimes</a><br />
+	 * See: <a href="https://bitbucket.org/dafis/javaprimes">https://bitbucket.org/ dafis/ javaprimes</a><br />
 	 * <a href=
 	 * "http://stackoverflow.com/questions/9625663/calculating-and-printing-the-nth-prime-number/9704912#9704912">
 	 * stackoverflow. com - Calculating and printing the nth prime number</a>
@@ -1474,9 +1461,8 @@ public final class NumberTheory {
 				if (i.isNegative()) {
 					i = i.negate();
 				}
-				IExpr expr = engine.evaluate(F.FactorInteger(i));
-				if (expr.isAST1()) {
-					IAST list = (IAST) expr;
+				IAST list = i.factorInteger();
+				if (list.isAST1()) {
 					IInteger temp = (IInteger) list.get(1).getAt(2);
 					if (!temp.isOne()) {
 						return F.True;
@@ -1493,11 +1479,132 @@ public final class NumberTheory {
 	}
 
 	/**
+	 * Check if a univariate polynomial or an integer number is square free
+	 * 
+	 */
+	private final static class SquareFreeQ extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			VariablesSet eVar = new VariablesSet(ast.arg1());
+			if (eVar.isSize(0)) {
+				IExpr arg1 = ast.arg1();
+				if (arg1.isZero()) {
+					return F.False;
+				}
+				if (arg1.isInteger()) {
+					IInteger i = (IInteger) arg1;
+					if (i.isNegative()) {
+						i = i.negate();
+					}
+					IAST list = i.factorInteger();
+					for (int j = 1; j < list.size(); j++) {
+						IInteger temp = (IInteger) list.get(j).getAt(2);
+						if (temp.isGreaterThan(F.C1)) {
+							return F.False;
+						}
+					}
+
+					return F.True;
+				}
+				if (arg1.isAtom()) {
+					return F.False;
+				}
+			}
+			if (!eVar.isSize(1)) {
+				throw new WrongArgumentType(ast, ast.arg1(), 1,
+						"SquareFreeQ only implemented for univariate polynomials");
+			}
+			try {
+				IExpr expr = F.evalExpandAll(ast.arg1());
+				ASTRange r = new ASTRange(eVar.getVarList(), 1);
+				List<IExpr> varList = r;
+
+				if (ast.isAST2()) {
+					return F.bool(isSquarefreeWithOption(ast, expr, varList, engine));
+				}
+				return F.bool(isSquarefree(expr, varList));
+			} catch (JASConversionException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			}
+			return F.NIL;
+		}
+
+		public static boolean isSquarefree(IExpr expr, List<IExpr> varList) throws JASConversionException {
+			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+			GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
+
+			FactorAbstract<BigRational> factorAbstract = FactorFactory.getImplementation(BigRational.ONE);
+			return factorAbstract.isSquarefree(poly);
+		}
+
+		public static boolean isSquarefreeWithOption(final IAST lst, IExpr expr, List<IExpr> varList,
+				final EvalEngine engine) throws JASConversionException {
+			final Options options = new Options(lst.topHead(), lst, 2, engine);
+			IExpr option = options.getOption("Modulus");
+			if (option.isSignedNumber()) {
+
+				// found "Modulus" option => use ModIntegerRing
+				ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((ISignedNumber) option);
+				JASConvert<ModInteger> jas = new JASConvert<ModInteger>(varList, modIntegerRing);
+				GenPolynomial<ModInteger> poly = jas.expr2JAS(expr, false);
+
+				FactorAbstract<ModInteger> factorAbstract = FactorFactory.getImplementation(modIntegerRing);
+				return factorAbstract.isSquarefree(poly);
+			}
+			// option = options.getOption("GaussianIntegers");
+			// if (option.equals(F.True)) {
+			// try {
+			// ComplexRing<edu.jas.arith.BigInteger> fac = new
+			// ComplexRing<edu.jas.arith.BigInteger>(edu.jas.arith.BigInteger.ONE);
+			//
+			// JASConvert<edu.jas.structure.Complex<edu.jas.arith.BigInteger>> jas =
+			// new JASConvert<edu.jas.structure.Complex<edu.jas.arith.BigInteger>>(
+			// varList, fac);
+			// GenPolynomial<edu.jas.structure.Complex<edu.jas.arith.BigInteger>>
+			// poly = jas.expr2Poly(expr);
+			// FactorAbstract<edu.jas.structure.Complex<edu.jas.arith.BigInteger>>
+			// factorAbstract = FactorFactory
+			// .getImplementation(fac);
+			// SortedMap<GenPolynomial<edu.jas.structure.Complex<edu.jas.arith.BigInteger>>,
+			// Long> map = factorAbstract.factors(poly);
+			// IAST result = F.Times();
+			// for
+			// (SortedMap.Entry<GenPolynomial<edu.jas.structure.Complex<edu.jas.arith.BigInteger>>,
+			// Long> entry : map.entrySet()) {
+			// GenPolynomial<edu.jas.structure.Complex<edu.jas.arith.BigInteger>>
+			// singleFactor = entry.getKey();
+			// // GenPolynomial<edu.jas.arith.BigComplex> integerCoefficientPoly
+			// // = (GenPolynomial<edu.jas.arith.BigComplex>) jas
+			// // .factorTerms(singleFactor)[2];
+			// // Long val = entry.getValue();
+			// // result.add(F.Power(jas.integerPoly2Expr(integerCoefficientPoly),
+			// // F.integer(val)));
+			// System.out.println(singleFactor);
+			// }
+			// return result;
+			// } catch (ArithmeticException ae) {
+			// // toInt() conversion failed
+			// if (Config.DEBUG) {
+			// ae.printStackTrace();
+			// }
+			// return null; // no evaluation
+			// }
+			// }
+			return false; // no evaluation
+		}
+
+	}
+
+	/**
 	 * Stirling numbers of the first kind.
 	 * 
-	 * See <a href=
-	 * "https://en.wikipedia.org/wiki/Stirling_numbers_of_the_first_kind" >
-	 * Wikipedia - Stirling numbers of the first kind</a>
+	 * See <a href= "https://en.wikipedia.org/wiki/Stirling_numbers_of_the_first_kind" > Wikipedia - Stirling numbers of
+	 * the first kind</a>
 	 */
 	private static class StirlingS1 extends AbstractFunctionEvaluator {
 
@@ -1579,9 +1686,8 @@ public final class NumberTheory {
 	/**
 	 * Stirling numbers of the second kind.
 	 * 
-	 * See <a href=
-	 * "http://en.wikipedia.org/wiki/Stirling_numbers_of_the_second_kind" >
-	 * Wikipedia - Stirling numbers of the second kind</a>
+	 * See <a href= "http://en.wikipedia.org/wiki/Stirling_numbers_of_the_second_kind" > Wikipedia - Stirling numbers of
+	 * the second kind</a>
 	 */
 	private static class StirlingS2 extends AbstractFunctionEvaluator {
 
@@ -1650,8 +1756,7 @@ public final class NumberTheory {
 	/**
 	 * Returns the subfactorial of a positive integer n
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Derangement">Wikipedia -
-	 * Derangement</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Derangement">Wikipedia - Derangement</a>
 	 * 
 	 */
 	private static class Subfactorial extends AbstractTrigArg1 {
@@ -1661,8 +1766,7 @@ public final class NumberTheory {
 		 * Iterative subfactorial algorithm based on the recurrence:
 		 * <code>Subfactorial(n) = n * Subfactorial(n-1) + (-1)^n</code>
 		 * </p>
-		 * See <a href="http://en.wikipedia.org/wiki/Derangement">Wikipedia -
-		 * Derangement</a>
+		 * See <a href="http://en.wikipedia.org/wiki/Derangement">Wikipedia - Derangement</a>
 		 * 
 		 * <pre>
 		 * result = 1;
@@ -1723,7 +1827,7 @@ public final class NumberTheory {
 	}
 
 	static {
-		
+
 		F.BellB.setEvaluator(new BellB());
 		F.BernoulliB.setEvaluator(new BernoulliB());
 		F.Binomial.setEvaluator(new Binomial());
@@ -1753,6 +1857,7 @@ public final class NumberTheory {
 		F.Prime.setEvaluator(new Prime());
 		F.PrimeOmega.setEvaluator(new PrimeOmega());
 		F.PrimePowerQ.setEvaluator(new PrimePowerQ());
+		F.SquareFreeQ.setEvaluator(new SquareFreeQ());
 		F.StirlingS1.setEvaluator(new StirlingS1());
 		F.StirlingS2.setEvaluator(new StirlingS2());
 		F.Subfactorial.setEvaluator(new Subfactorial());
@@ -1802,9 +1907,8 @@ public final class NumberTheory {
 	 * <p>
 	 * Fibonacci sequence. Algorithm in <code>O(log(n))</code> time.
 	 * </p>
-	 * See: <a href=
-	 * "https://www.rosettacode.org/wiki/Fibonacci_sequence#Iterative_28">
-	 * Roseatta code: Fibonacci sequence.</a>
+	 * See: <a href= "https://www.rosettacode.org/wiki/Fibonacci_sequence#Iterative_28"> Roseatta code: Fibonacci
+	 * sequence.</a>
 	 * 
 	 * @param iArg
 	 * @return

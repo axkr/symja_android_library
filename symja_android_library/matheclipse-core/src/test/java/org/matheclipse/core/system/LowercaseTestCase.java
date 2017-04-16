@@ -2299,6 +2299,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("pos = Position[expr, _Plus]", "{{1,1},{1,2,1},{1,3,1,2,1},{1,3,1}}");
 		check("val = Extract(expr, pos)", "{3,7,5,1+g(5)}");
 		check("ReplacePart(expr, Thread(pos -> val))", "Hold({3,g(7,2*3),f(1+g(5))})");
+		check("Hold(6/8)==6/8", "Hold(6/8)==3/4"); 
 	} 
 			
 	public void testHoldForm() {
@@ -4135,6 +4136,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		check("54^(1/3)", "3*2^(1/3)");
 		// check("Exp(y + Log(x))", "x+E^y");
 		check("E^(2*(y+Log(x)))", "E^(2*y)*x^2");
 		// don't change see issue #137
@@ -4280,6 +4282,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPrimePowerQ() {
+		check("13^9", "10604499373");
+		check("PrimePowerQ(10604499373)", "True");
 		check("PrimePowerQ(-8)", "True");
 		check("PrimePowerQ(9)", "True");
 		check("PrimePowerQ(52142)", "False");
@@ -5212,13 +5216,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testSquareFreeQ() {
 		check("SquareFreeQ(5)", "True");
-		check("SquareFreeQ(20)", "True");
+		check("SquareFreeQ(20)", "False");
+		check("SquareFreeQ(10)", "True");
+		check("SquareFreeQ(12)", "False");
 		check("SquareFreeQ(x^4-1)", "True");
 		check("SquareFreeQ(x^4 - 2 x^2 + 1)", "False");
 		check("SquareFreeQ(x^2+1)", "True");
 		check("SquareFreeQ(9 + 6*x + x^2)", "False");
 		check("SquareFreeQ(x^2 + 1, Modulus -> 2)", "False");
-
 	}
 
 	public void testSquaredEuclideanDistance() {

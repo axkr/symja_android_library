@@ -169,7 +169,6 @@ public final class FunctionDefinitions {
 		SinIntegral.setEvaluator(new org.matheclipse.core.reflection.system.SinIntegral());
 		SokalSneathDissimilarity.setEvaluator(new org.matheclipse.core.reflection.system.SokalSneathDissimilarity());
 		Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
-		SquareFreeQ.setEvaluator(new org.matheclipse.core.reflection.system.SquareFreeQ());
 		StieltjesGamma.setEvaluator(new org.matheclipse.core.reflection.system.StieltjesGamma());
 		StringDrop.setEvaluator(new org.matheclipse.core.reflection.system.StringDrop());
 		StringJoin.setEvaluator(new org.matheclipse.core.reflection.system.StringJoin());
