@@ -567,8 +567,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBinomial() {
+		check("Binomial(4,2)", "6");
+		check("Binomial(5,3)", "10");
+		
+		
 		check("Binomial(n0, 2)", "1/2*n0*(-1+n0)");
-
 		check("Binomial(k/3, k)", "Binomial(k/3,k)");
 		check("Binomial(0, 0)", "1");
 		check("Binomial(1000, 500)",
@@ -576,7 +579,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "9389861248392450237016536260608502154610480220975005067991754989421969951847542\\\n"
 						+ "3665484263751733356162464079737887344364574161119497604571044985756287880514600\\\n"
 						+ "994219426752366915856603136862602484428109296905863799821216320");
-		check("Binomial(5, 3)", "10");
 		check("Binomial(n0, n0)", "1");
 		check("Binomial(n0, 0)", "1");
 		check("Binomial(n0, n0-1)", "n0");
@@ -1972,6 +1974,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFibonacci() {
+		check("Fibonacci(0)", "0");
+		check("Fibonacci(1)", "1");
+		check("Fibonacci(10)", "55");
+		check("Fibonacci(200)", "280571172992510140037611932413038677189525");
 		check("Table(Fibonacci(-n), {n, 10})", "{1,-1,2,-3,5,-8,13,-21,34,-55}");
 		check("Table(Fibonacci(n), {n, 20})", "{1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765}");
 		check("Fibonacci(1000)",
@@ -2971,6 +2977,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMatchingDissimilarity() {
+		check("MatchingDissimilarity({1, 0, 1, 1, 0, 1, 1}, {0, 1, 1, 0, 0, 0, 1})", "4/7");
 		check("MatchingDissimilarity({1, 0, 1, 1, 0}, {1, 1, 0, 1, 1})", "3/5");
 		check("MatchingDissimilarity({True, False, True}, {True, True, False})", "2/3");
 		check("MatchingDissimilarity({1, 1, 1, 1}, {1, 1, 1, 1})", "0");
@@ -3171,7 +3178,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMultinomial() {
+		check("Multinomial(2, 3, 4, 5)", "2522520");
+		check("Multinomial( )", "1");
 		check("Multinomial(1)", "1");
+		check("Multinomial(2, 3)", "10");
 		check("Multinomial(f(x))", "1");
 		check("Multinomial(f(x), g(x))", "Binomial(f(x)+g(x),f(x))");
 		check("Multinomial(n-k, k)", "Binomial(n,-k+n)");
@@ -3987,7 +3997,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPermutations() {
-		check("Permutations({a},{0})", "{{}}");
+        check("Permutations({a},{0})", "{{}}");
 		check("Permutations({a,b,c,d},{3})",
 				"{{a,b,c},{a,b,d},{a,c,b},{a,c,d},{a,d,b},{a,d,c},{b,a,c},{b,a,d},{b,c,a},{b,c,d},{b,d,a},{b,d,c},{c,a,b},{c,a,d},{c,b,a},{c,b,d},{c,d,a},{c,d,b},{d,a,b},{d,a,c},{d,b,a},{d,b,c},{d,c,a},{d,c,b}}");
 		check("Permutations({a,a,b})", "{{a,a,b},{a,b,a},{b,a,a}}");
@@ -5379,7 +5389,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSubsets() {
+		check("Subsets()", "Subsets()");
+		check("Subsets({})", "{{}}");
 		check("Subsets({a,b,c})", "{{},{a},{b},{c},{a,b},{a,c},{b,c},{a,b,c}}");
+		check("Subsets({a,b,c},2)", "{{},{a},{b},{c},{a,b},{a,c},{b,c}}");
+		check("Subsets({a,b,c},{2})", "{{a,b},{a,c},{b,c}}");
 		check("Subsets({a,b,c,d},{2})", "{{a,b},{a,c},{a,d},{b,c},{b,d},{c,d}}");
 	}
 

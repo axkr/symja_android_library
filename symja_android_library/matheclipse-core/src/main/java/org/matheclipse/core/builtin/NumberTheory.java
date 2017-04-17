@@ -1171,7 +1171,7 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2);
+			Validate.checkRange(ast, 1);
 
 			if (ast.isAST1()) {
 				return F.C1;

@@ -43,7 +43,6 @@ public final class FunctionDefinitions {
 		D.setEvaluator(new org.matheclipse.core.reflection.system.D());
 		Default.setEvaluator(new org.matheclipse.core.reflection.system.Default());
 		Derivative.setEvaluator(new org.matheclipse.core.reflection.system.Derivative());
-		DiceDissimilarity.setEvaluator(new org.matheclipse.core.reflection.system.DiceDissimilarity());
 		Discriminant.setEvaluator(new org.matheclipse.core.reflection.system.Discriminant());
 		Distribute.setEvaluator(new org.matheclipse.core.reflection.system.Distribute());
 		Divergence.setEvaluator(new org.matheclipse.core.reflection.system.Divergence());
@@ -108,7 +107,6 @@ public final class FunctionDefinitions {
 		LowerCaseQ.setEvaluator(new org.matheclipse.core.reflection.system.LowerCaseQ());
 		MapAll.setEvaluator(new org.matheclipse.core.reflection.system.MapAll());
 		MapAt.setEvaluator(new org.matheclipse.core.reflection.system.MapAt());
-		MatchingDissimilarity.setEvaluator(new org.matheclipse.core.reflection.system.MatchingDissimilarity());
 		Max.setEvaluator(new org.matheclipse.core.reflection.system.Max());
 		Min.setEvaluator(new org.matheclipse.core.reflection.system.Min());
 		Mod.setEvaluator(new org.matheclipse.core.reflection.system.Mod());
@@ -149,13 +147,10 @@ public final class FunctionDefinitions {
 		ReplaceList.setEvaluator(new org.matheclipse.core.reflection.system.ReplaceList());
 		ReplaceRepeated.setEvaluator(new org.matheclipse.core.reflection.system.ReplaceRepeated());
 		Resultant.setEvaluator(new org.matheclipse.core.reflection.system.Resultant());
-		RogersTanimotoDissimilarity
-				.setEvaluator(new org.matheclipse.core.reflection.system.RogersTanimotoDissimilarity());
 		Root.setEvaluator(new org.matheclipse.core.reflection.system.Root());
 		RootIntervals.setEvaluator(new org.matheclipse.core.reflection.system.RootIntervals());
 		Roots.setEvaluator(new org.matheclipse.core.reflection.system.Roots());
 		Round.setEvaluator(new org.matheclipse.core.reflection.system.Round());
-		RussellRaoDissimilarity.setEvaluator(new org.matheclipse.core.reflection.system.RussellRaoDissimilarity());
 		Sec.setEvaluator(new org.matheclipse.core.reflection.system.Sec());
 		Sech.setEvaluator(new org.matheclipse.core.reflection.system.Sech());
 		Series.setEvaluator(new org.matheclipse.core.reflection.system.Series());
@@ -167,7 +162,6 @@ public final class FunctionDefinitions {
 		Sinc.setEvaluator(new org.matheclipse.core.reflection.system.Sinc());
 		Sinh.setEvaluator(new org.matheclipse.core.reflection.system.Sinh());
 		SinIntegral.setEvaluator(new org.matheclipse.core.reflection.system.SinIntegral());
-		SokalSneathDissimilarity.setEvaluator(new org.matheclipse.core.reflection.system.SokalSneathDissimilarity());
 		Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
 		StieltjesGamma.setEvaluator(new org.matheclipse.core.reflection.system.StieltjesGamma());
 		StringDrop.setEvaluator(new org.matheclipse.core.reflection.system.StringDrop());
@@ -176,7 +170,6 @@ public final class FunctionDefinitions {
 		StringTake.setEvaluator(new org.matheclipse.core.reflection.system.StringTake());
 		StruveH.setEvaluator(new org.matheclipse.core.reflection.system.StruveH());
 		StruveL.setEvaluator(new org.matheclipse.core.reflection.system.StruveL());
-		Subsets.setEvaluator(new org.matheclipse.core.reflection.system.Subsets());
 		Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());
 		Surd.setEvaluator(new org.matheclipse.core.reflection.system.Surd());
 		SyntaxLength.setEvaluator(new org.matheclipse.core.reflection.system.SyntaxLength());
@@ -191,7 +184,6 @@ public final class FunctionDefinitions {
 		TrigReduce.setEvaluator(new org.matheclipse.core.reflection.system.TrigReduce());
 		TrigToExp.setEvaluator(new org.matheclipse.core.reflection.system.TrigToExp());
 		UnitStep.setEvaluator(new org.matheclipse.core.reflection.system.UnitStep());
-		YuleDissimilarity.setEvaluator(new org.matheclipse.core.reflection.system.YuleDissimilarity());
 		
 		Zeta.setEvaluator(new org.matheclipse.core.reflection.system.Zeta());
 	}

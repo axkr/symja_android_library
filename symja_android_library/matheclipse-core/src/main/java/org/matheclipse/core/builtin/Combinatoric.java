@@ -6,31 +6,38 @@ import java.util.List;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.reflection.system.Subsets;
 
 public final class Combinatoric {
 
 	static {
 		F.CartesianProduct.setEvaluator(new CartesianProduct());
+		F.DiceDissimilarity.setEvaluator(new DiceDissimilarity());
 		F.IntegerPartitions.setEvaluator(new IntegerPartitions());
 		F.KOrderlessPartitions.setEvaluator(new KOrderlessPartitions());
 		F.KPartitions.setEvaluator(new KPartitions());
+		F.MatchingDissimilarity.setEvaluator(new MatchingDissimilarity());
 		F.Partition.setEvaluator(new Partition());
 		F.Permutations.setEvaluator(new Permutations());
+		F.RogersTanimotoDissimilarity.setEvaluator(new RogersTanimotoDissimilarity());
+		F.RussellRaoDissimilarity.setEvaluator(new RussellRaoDissimilarity());
+		F.SokalSneathDissimilarity.setEvaluator(new SokalSneathDissimilarity());
+		F.Subsets.setEvaluator(new Subsets());
 		F.Tuples.setEvaluator(new Tuples());
+		F.YuleDissimilarity.setEvaluator(new YuleDissimilarity());
 	}
 
 	/**
 	 * Cartesian product for multiple lists.
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Cartesian_product">Wikipedia -
-	 * Cartesian product</a>
+	 * See: <a href="http://en.wikipedia.org/wiki/Cartesian_product">Wikipedia - Cartesian product</a>
 	 */
 	private final static class CartesianProduct extends AbstractFunctionEvaluator {
 
@@ -142,9 +149,7 @@ public final class Combinatoric {
 		 * Cartesian product iterable.
 		 * 
 		 * <br/>
-		 * See
-		 * <a href="http://en.wikipedia.org/wiki/Cartesian_product">Wikipedia -
-		 * Cartesian product</a>
+		 * See <a href="http://en.wikipedia.org/wiki/Cartesian_product">Wikipedia - Cartesian product</a>
 		 * 
 		 * @author Heinz Kredel
 		 * @author Axel Kramer (Modifications for Symja)
@@ -207,20 +212,66 @@ public final class Combinatoric {
 		}
 	}
 
+	private final static class DiceDissimilarity extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			int dim1 = ast.arg1().isVector();
+			int dim2 = ast.arg2().isVector();
+			if (dim1 == dim2 && dim1 > 0) {
+				IAST u = (IAST) ast.arg1();
+				IAST v = (IAST) ast.arg2();
+				int length = u.size();
+				int n10 = 0;
+				int n01 = 0;
+				int n11 = 0;
+				IExpr x, y;
+				for (int i = 1; i < length; i++) {
+					x = u.get(i);
+					y = v.get(i);
+					if ((x.isOne() || x.isTrue()) && (y.isZero() || y.isFalse())) {
+						n10++;
+						continue;
+					}
+					if ((x.isZero() || x.isFalse()) && (y.isOne() || y.isTrue())) {
+						n01++;
+						continue;
+					}
+					if ((x.isOne() || x.isTrue()) && (y.isOne() || y.isTrue())) {
+						n11++;
+						continue;
+					}
+					if ((x.isZero() || x.isFalse() || x.isOne() || x.isTrue())
+							&& (y.isZero() || y.isFalse() || y.isOne() || y.isTrue())) {
+						continue;
+					}
+					return F.NIL;
+				}
+
+				return F.Divide(F.integer((long) n10 + (long) n01),
+						F.integer(2L * (long) n11 + (long) n10 + (long) n01));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
 	/**
 	 * Generate all integer partitions for a given integer number. See
-	 * <a href="http://en.wikipedia.org/wiki/Integer_partition">Wikipedia -
-	 * Integer partition</a>
+	 * <a href="http://en.wikipedia.org/wiki/Integer_partition">Wikipedia - Integer partition</a>
 	 * 
 	 */
 	private final static class IntegerPartitions extends AbstractFunctionEvaluator {
 		/**
-		 * Returns all partitions of a given int number (i.e.
-		 * NumberPartitions(3) => [3,0,0] [2,1,0] [1,1,1] ).
+		 * Returns all partitions of a given int number (i.e. NumberPartitions(3) => [3,0,0] [2,1,0] [1,1,1] ).
 		 * 
-		 * See
-		 * <a href="http://en.wikipedia.org/wiki/Integer_partition">Wikipedia -
-		 * Integer partition</a>
+		 * See <a href="http://en.wikipedia.org/wiki/Integer_partition">Wikipedia - Integer partition</a>
 		 */
 		public final static class NumberPartitionsIterable implements Iterator<int[]>, Iterable<int[]> {
 
@@ -475,17 +526,14 @@ public final class Combinatoric {
 	}
 
 	/**
-	 * Generate a list of all all k-partitions for a given list with N elements.
-	 * <br/>
+	 * Generate a list of all all k-partitions for a given list with N elements. <br/>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Partition_of_a_set">Wikipedia -
-	 * Partition of a set</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Partition_of_a_set">Wikipedia - Partition of a set</a>
 	 * 
 	 */
 	private static final class KPartitions extends AbstractFunctionEvaluator {
 		/**
-		 * This class returns the indexes for partitioning a list of N elements.
-		 * <br/>
+		 * This class returns the indexes for partitioning a list of N elements. <br/>
 		 * Usage pattern:
 		 * 
 		 * <pre>
@@ -495,19 +543,16 @@ public final class Combinatoric {
 		 * }
 		 * </pre>
 		 * 
-		 * Example: KPartitionsIterable(3,5) gives the following sequences [0,
-		 * 1, 2], [0, 1, 3], [0, 1, 4], [0, 2, 3], [0, 2, 4], [0, 3, 4] <br/>
-		 * If you interpret these integer lists as indexes for a list
-		 * {a,b,c,d,e} which should be partitioned into 3 parts the results are:
-		 * <br/>
-		 * {{{a},{b},{c,d,e}}, {{a},{b,c},{d,e}}, {{a},{b,c,d},{e}},
-		 * {{a,b},{c},{d,e}}, {{a,b},{c,d},{e}}, {{a,b,c},{d},{e}}}
+		 * Example: KPartitionsIterable(3,5) gives the following sequences [0, 1, 2], [0, 1, 3], [0, 1, 4], [0, 2, 3],
+		 * [0, 2, 4], [0, 3, 4] <br/>
+		 * If you interpret these integer lists as indexes for a list {a,b,c,d,e} which should be partitioned into 3
+		 * parts the results are: <br/>
+		 * {{{a},{b},{c,d,e}}, {{a},{b,c},{d,e}}, {{a},{b,c,d},{e}}, {{a,b},{c},{d,e}}, {{a,b},{c,d},{e}},
+		 * {{a,b,c},{d},{e}}}
 		 * 
 		 * <br/>
 		 * <br/>
-		 * See
-		 * <a href="http://en.wikipedia.org/wiki/Partition_of_a_set">Wikipedia -
-		 * Partition of a set</a>
+		 * See <a href="http://en.wikipedia.org/wiki/Partition_of_a_set">Wikipedia - Partition of a set</a>
 		 */
 		public final static class KPartitionsIterable implements Iterator<int[]>, Iterable<int[]> {
 
@@ -543,8 +588,7 @@ public final class Combinatoric {
 			/**
 			 * Get the index array for the next partition.
 			 * 
-			 * @return <code>null</code> if no further index array could be
-			 *         generated
+			 * @return <code>null</code> if no further index array could be generated
 			 */
 			private final int[] nextBeforehand() {
 				if (fPartitionsIndex[0] < 0) {
@@ -571,8 +615,7 @@ public final class Combinatoric {
 			/**
 			 * Get the index array for the next partition.
 			 * 
-			 * @return <code>null</code> if no further index array could be
-			 *         generated
+			 * @return <code>null</code> if no further index array could be generated
 			 */
 			@Override
 			public int[] next() {
@@ -599,12 +642,9 @@ public final class Combinatoric {
 		}
 
 		/**
-		 * This <code>Iterable</code> iterates through all k-partition lists for
-		 * a given list with N elements. <br/>
+		 * This <code>Iterable</code> iterates through all k-partition lists for a given list with N elements. <br/>
 		 * 
-		 * See
-		 * <a href="http://en.wikipedia.org/wiki/Partition_of_a_set">Wikipedia -
-		 * Partition of a set</a>
+		 * See <a href="http://en.wikipedia.org/wiki/Partition_of_a_set">Wikipedia - Partition of a set</a>
 		 * 
 		 */
 		public final static class KPartitionsList implements Iterator<IAST>, Iterable<IAST> {
@@ -625,8 +665,7 @@ public final class Combinatoric {
 			/**
 			 * Get the index array for the next partition.
 			 * 
-			 * @return <code>null</code> if no further index array could be
-			 *         generated
+			 * @return <code>null</code> if no further index array could be generated
 			 */
 			@Override
 			public IAST next() {
@@ -695,6 +734,50 @@ public final class Combinatoric {
 		}
 	}
 
+	private final static class MatchingDissimilarity extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			int dim1 = ast.arg1().isVector();
+			int dim2 = ast.arg2().isVector();
+			if (dim1 == dim2 && dim1 > 0) {
+				IAST u = (IAST) ast.arg1();
+				IAST v = (IAST) ast.arg2();
+				int length = u.size();
+				int n10 = 0;
+				int n01 = 0;
+				IExpr x, y;
+				for (int i = 1; i < length; i++) {
+					x = u.get(i);
+					y = v.get(i);
+					if ((x.isOne() || x.isTrue()) && (y.isZero() || y.isFalse())) {
+						n10++;
+						continue;
+					}
+					if ((x.isZero() || x.isFalse()) && (y.isOne() || y.isTrue())) {
+						n01++;
+						continue;
+					}
+					if ((x.isZero() || x.isFalse() || x.isOne() || x.isTrue())
+							&& (y.isZero() || y.isFalse() || y.isOne() || y.isTrue())) {
+						continue;
+					}
+					return F.NIL;
+				}
+
+				return F.Divide(F.integer((long) n10 + (long) n01), F.integer(length - 1));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
 	/**
 	 * 
 	 * @see Permutations
@@ -751,11 +834,9 @@ public final class Combinatoric {
 	public final static class Permutations extends AbstractFunctionEvaluator {
 
 		/**
-		 * Generate an <code>java.lang.Iterable</code> for (multiset)
-		 * permutations
+		 * Generate an <code>java.lang.Iterable</code> for (multiset) permutations
 		 * 
-		 * See
-		 * <a href="http://en.wikipedia.org/wiki/Permutation">Permutation</a>
+		 * See <a href="http://en.wikipedia.org/wiki/Permutation">Permutation</a>
 		 */
 		public final static class KPermutationsIterable implements Iterator<int[]>, Iterable<int[]> {
 
@@ -804,9 +885,8 @@ public final class Combinatoric {
 			}
 
 			/**
-			 * Create an iterator which gives all possible permutations of
-			 * <code>data</code> which contains at most <code>parts</code>
-			 * number of elements. Repeated elements are treated as same.
+			 * Create an iterator which gives all possible permutations of <code>data</code> which contains at most
+			 * <code>parts</code> number of elements. Repeated elements are treated as same.
 			 * 
 			 * @param data
 			 *            a list of integers which should be permutated.
@@ -817,15 +897,13 @@ public final class Combinatoric {
 			}
 
 			/**
-			 * Create an iterator which gives all possible permutations of
-			 * <code>data</code> which contains at most <code>parts</code>
-			 * number of elements. Repeated elements are treated as same.
+			 * Create an iterator which gives all possible permutations of <code>data</code> which contains at most
+			 * <code>parts</code> number of elements. Repeated elements are treated as same.
 			 * 
 			 * @param data
 			 *            a list of integers which should be permutated.
 			 * @param len
-			 *            consider only the first <code>n</code> elements of
-			 *            <code>data</code> for permutation
+			 *            consider only the first <code>n</code> elements of <code>data</code> for permutation
 			 * @param parts
 			 */
 			public KPermutationsIterable(final int[] data, final int len, final int parts) {
@@ -905,11 +983,9 @@ public final class Combinatoric {
 		}
 
 		/**
-		 * Generate an <code>java.lang.Iterable<IAST></code> for (multiset)
-		 * permutations
+		 * Generate an <code>java.lang.Iterable<IAST></code> for (multiset) permutations
 		 * 
-		 * See
-		 * <a href="http://en.wikipedia.org/wiki/Permutation">Permutation</a>
+		 * See <a href="http://en.wikipedia.org/wiki/Permutation">Permutation</a>
 		 */
 		private final static class KPermutationsList implements Iterator<IAST>, Iterable<IAST> {
 
@@ -920,9 +996,8 @@ public final class Combinatoric {
 			final private KPermutationsIterable fIterable;
 
 			/**
-			 * Create an iterator which gives all possible permutations of
-			 * <code>list</code> which contains at most <code>parts</code>
-			 * number of elements. Repeated elements are treated as same.
+			 * Create an iterator which gives all possible permutations of <code>list</code> which contains at most
+			 * <code>parts</code> number of elements. Repeated elements are treated as same.
 			 * 
 			 * @param list
 			 *            a list of elements
@@ -931,8 +1006,7 @@ public final class Combinatoric {
 			 * @param resultList
 			 *            a template AST where the elements could be appended.
 			 * @param offset
-			 *            the offset from which to start the list of elements in
-			 *            the list
+			 *            the offset from which to start the list of elements in the list
 			 */
 			public KPermutationsList(final IAST list, final int parts, IAST resultList, final int offset) {
 				fIterable = new KPermutationsIterable(list, parts, offset);
@@ -955,8 +1029,7 @@ public final class Combinatoric {
 			/**
 			 * Get the index array for the next permutation.
 			 * 
-			 * @return <code>null</code> if no further index array could be
-			 *         generated
+			 * @return <code>null</code> if no further index array could be generated
 			 */
 			@Override
 			public IAST next() {
@@ -1023,6 +1096,371 @@ public final class Combinatoric {
 			return F.NIL;
 		}
 
+	}
+
+	private final static class RogersTanimotoDissimilarity extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			int dim1 = ast.arg1().isVector();
+			int dim2 = ast.arg2().isVector();
+			if (dim1 == dim2 && dim1 > 0) {
+				IAST u = (IAST) ast.arg1();
+				IAST v = (IAST) ast.arg2();
+				int length = u.size();
+				int n10 = 0;
+				int n01 = 0;
+				int n00 = 0;
+				int n11 = 0;
+				IExpr x, y;
+				for (int i = 1; i < length; i++) {
+					x = u.get(i);
+					y = v.get(i);
+					if ((x.isOne() || x.isTrue()) && (y.isZero() || y.isFalse())) {
+						n10++;
+						continue;
+					}
+					if ((x.isZero() || x.isFalse()) && (y.isOne() || y.isTrue())) {
+						n01++;
+						continue;
+					}
+					if ((x.isZero() || x.isFalse()) && (y.isZero() || y.isFalse())) {
+						n00++;
+						continue;
+					}
+					if ((x.isOne() || x.isTrue()) && (y.isOne() || y.isTrue())) {
+						n11++;
+						continue;
+					}
+					if ((x.isZero() || x.isFalse() || x.isOne() || x.isTrue())
+							&& (y.isZero() || y.isFalse() || y.isOne() || y.isTrue())) {
+						continue;
+					}
+					return F.NIL;
+				}
+
+				long r = 2L * ((long) n10 + (long) n01);
+				if (r == 0L) {
+					return F.C0;
+				}
+				return F.Divide(F.integer(r), F.integer((long) n11 + (long) n00 + (long) r));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private final static class RussellRaoDissimilarity extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			int dim1 = ast.arg1().isVector();
+			int dim2 = ast.arg2().isVector();
+			if (dim1 == dim2 && dim1 > 0) {
+				IAST u = (IAST) ast.arg1();
+				IAST v = (IAST) ast.arg2();
+				int length = u.size();
+				int n10 = 0;
+				int n01 = 0;
+				int n00 = 0;
+				IExpr x, y;
+				for (int i = 1; i < length; i++) {
+					x = u.get(i);
+					y = v.get(i);
+					if ((x.isOne() || x.isTrue()) && (y.isZero() || y.isFalse())) {
+						n10++;
+						continue;
+					}
+					if ((x.isZero() || x.isFalse()) && (y.isOne() || y.isTrue())) {
+						n01++;
+						continue;
+					}
+					if ((x.isZero() || x.isFalse()) && (y.isZero() || y.isFalse())) {
+						n00++;
+						continue;
+					}
+					if ((x.isZero() || x.isFalse() || x.isOne() || x.isTrue())
+							&& (y.isZero() || y.isFalse() || y.isOne() || y.isTrue())) {
+						continue;
+					}
+					return F.NIL;
+				}
+
+				long r = (long) n10 + (long) n01 + (long) n00;
+				if (r == 0L) {
+					return F.C0;
+				}
+				return F.Divide(F.integer(r), F.integer(length - 1));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private final static class SokalSneathDissimilarity extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			int dim1 = ast.arg1().isVector();
+			int dim2 = ast.arg2().isVector();
+			if (dim1 == dim2 && dim1 > 0) {
+				IAST u = (IAST) ast.arg1();
+				IAST v = (IAST) ast.arg2();
+				int length = u.size();
+				int n10 = 0;
+				int n01 = 0;
+				int n00 = 0;
+				int n11 = 0;
+				IExpr x, y;
+				for (int i = 1; i < length; i++) {
+					x = u.get(i);
+					y = v.get(i);
+					if ((x.isOne() || x.isTrue()) && (y.isZero() || y.isFalse())) {
+						n10++;
+						continue;
+					}
+					if ((x.isZero() || x.isFalse()) && (y.isOne() || y.isTrue())) {
+						n01++;
+						continue;
+					}
+					if ((x.isZero() || x.isFalse()) && (y.isZero() || y.isFalse())) {
+						n00++;
+						continue;
+					}
+					if ((x.isOne() || x.isTrue()) && (y.isOne() || y.isTrue())) {
+						n11++;
+						continue;
+					}
+					if ((x.isZero() || x.isFalse() || x.isOne() || x.isTrue())
+							&& (y.isZero() || y.isFalse() || y.isOne() || y.isTrue())) {
+						continue;
+					}
+					return F.NIL;
+				}
+
+				long r = 2L * ((long) n10 + (long) n01);
+				if (r == 0L) {
+					return F.C0;
+				}
+				return F.Divide(F.integer(r), F.integer((long) n11 + r));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	/**
+	 * Generate a list of all k-combinations from a given list
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Combination">Combination</a>
+	 */
+	public final static class Subsets extends AbstractFunctionEvaluator {
+		/**
+		 * Iterable for all k-combinations from a set
+		 * 
+		 * See <a href="http://en.wikipedia.org/wiki/Combination">Combination</a>
+		 */
+		private final static class KSubsetsIterable implements Iterator<int[]>, Iterable<int[]> {
+
+			final private int n;
+			final private int k;
+			final private int x[];
+			private long bin;
+			private boolean first;
+
+			public KSubsetsIterable(final int len, final int parts) {
+				super();
+				n = len;
+				k = parts;
+				// f = fun;
+				x = new int[n];
+				for (int a = 0; a < n; a++) {
+					x[a] = a;
+				}
+				bin = binomial(n, k);
+				first = true;
+			}
+
+			@Override
+			public int[] next() {
+				if (bin-- == 0) {
+					return null;
+				}
+				if (first) {
+					first = false;
+					return x;
+				}
+				int i = k - 1;
+				while (x[i] == n - k + i) {
+					i--;
+				}
+				x[i] = x[i] + 1;
+				for (int j = i + 1; j < n; j++) {
+					x[j] = x[j - 1] + 1;
+				}
+				return x;
+			}
+
+			public static long binomial(final long n, final long k) {
+				long bin = 1;
+				long kSub = k;
+				if (kSub > (n / 2)) {
+					kSub = n - kSub;
+				}
+				for (long i = 1; i <= kSub; i++) {
+					bin = (bin * (n - i + 1)) / i;
+				}
+				return bin;
+			}
+
+			@Override
+			public boolean hasNext() {
+				return true;
+			}
+
+			@Override
+			public void remove() {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public Iterator<int[]> iterator() {
+				return this;
+			}
+		}
+
+		/**
+		 * Iterate over the lists of all k-combinations from a given list
+		 * 
+		 * See <a href="http://en.wikipedia.org/wiki/Combination">Combination</a>
+		 */
+		public final static class KSubsetsList implements Iterator<IAST>, Iterable<IAST> {
+
+			final private IAST fList;
+			final private IAST fResultList;
+			final private int fOffset;
+			final private Iterator<int[]> fIterable;
+			final private int fK;
+
+			public KSubsetsList(final Iterator<int[]> iterable, final IAST list, final int k, IAST resultList) {
+				this(iterable, list, k, resultList, 0);
+			}
+
+			public KSubsetsList(final Iterator<int[]> iterable, final IAST list, final int k, IAST resultList,
+					final int offset) {
+				fIterable = iterable;
+				fList = list;
+				fK = k;
+				fResultList = resultList;
+				fOffset = offset;
+			}
+
+			/**
+			 * Get the index array for the next partition.
+			 * 
+			 * @return <code>null</code> if no further index array could be generated
+			 */
+			@Override
+			public IAST next() {
+				int j[] = fIterable.next();
+				if (j == null) {
+					return null;
+				}
+
+				IAST temp = fResultList.clone();
+				for (int i = 0; i < fK; i++) {
+					temp.append(fList.get(j[i] + fOffset));
+				}
+
+				return temp;
+			}
+
+			@Override
+			public boolean hasNext() {
+				return fIterable.hasNext();
+			}
+
+			@Override
+			public void remove() {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public Iterator<IAST> iterator() {
+				return this;
+			}
+
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 1, 3);
+			if (ast.isAST0()) {
+				return F.NIL;
+			}
+			if (ast.arg1().isAST()) {
+				final IAST f = (IAST) ast.arg1();
+				int n = f.size() - 1;
+				final LevelSpecification level;
+				if (ast.isAST2()) {
+					if (ast.arg2().isInteger()) {
+						try {
+							n = ((IInteger) ast.arg2()).toInt();
+							level = new LevelSpecification(0, n);
+						} catch (ArithmeticException ae) {
+							return F.NIL;
+						}
+					} else {
+						level = new LevelSpecification(ast.arg2(), false);
+					}
+				} else {
+					level = new LevelSpecification(0, n);
+				}
+
+				int k;
+				final IAST result = F.ast(f.head());
+				level.setFromLevelAsCurrent();
+				while (level.isInRange()) {
+					k = level.getCurrentLevel();
+					final KSubsetsList iter = createKSubsets(f, k, F.ast(F.List), 1);
+					for (IAST part : iter) {
+						if (part == null) {
+							break;
+						}
+						result.append(part);
+					}
+					level.incCurrentLevel();
+				}
+
+				return result;
+			}
+			return F.NIL;
+		}
+
+		public static KSubsetsList createKSubsets(final IAST list, final int k, IAST resultList, final int offset) {
+			return new KSubsetsList(new KSubsetsIterable(list.size() - offset, k), list, k, resultList, offset);
+		}
 	}
 
 	/**
@@ -1099,8 +1537,7 @@ public final class Combinatoric {
 		 * @param result
 		 *            the result list
 		 * @param subResult
-		 *            the current subList which should be inserted in the result
-		 *            list
+		 *            the current subList which should be inserted in the result list
 		 */
 		private void tuplesOfLists(final IAST originalList, final int k, IAST result, IAST subResult) {
 			if (k == originalList.size()) {
@@ -1115,6 +1552,64 @@ public final class Combinatoric {
 				tuplesOfLists(originalList, k + 1, result, temp);
 			}
 
+		}
+
+	}
+
+	private final static class YuleDissimilarity extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			int dim1 = ast.arg1().isVector();
+			int dim2 = ast.arg2().isVector();
+			if (dim1 == dim2 && dim1 > 0) {
+				IAST u = (IAST) ast.arg1();
+				IAST v = (IAST) ast.arg2();
+				int length = u.size();
+				int n10 = 0;
+				int n01 = 0;
+				int n00 = 0;
+				int n11 = 0;
+				IExpr x, y;
+				for (int i = 1; i < length; i++) {
+					x = u.get(i);
+					y = v.get(i);
+					if ((x.isOne() || x.isTrue()) && (y.isZero() || y.isFalse())) {
+						n10++;
+						continue;
+					}
+					if ((x.isZero() || x.isFalse()) && (y.isOne() || y.isTrue())) {
+						n01++;
+						continue;
+					}
+					if ((x.isZero() || x.isFalse()) && (y.isZero() || y.isFalse())) {
+						n00++;
+						continue;
+					}
+					if ((x.isOne() || x.isTrue()) && (y.isOne() || y.isTrue())) {
+						n11++;
+						continue;
+					}
+					if ((x.isZero() || x.isFalse() || x.isOne() || x.isTrue())
+							&& (y.isZero() || y.isFalse() || y.isOne() || y.isTrue())) {
+						continue;
+					}
+					return F.NIL;
+				}
+
+				long r = 2L * (long) n10 * (long) n01;
+				if (r == 0L) {
+					return F.C0;
+				}
+				return F.Divide(F.integer(r), F.integer((long) n11 * (long) n00 + (long) n10 * (long) n01));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
 		}
 
 	}

@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.hipparchus.fraction.BigFraction;
+import org.matheclipse.core.builtin.Combinatoric.Subsets;
+import org.matheclipse.core.builtin.Combinatoric.Subsets.KSubsetsList;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -21,8 +23,6 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.numbertheory.Primality;
-import org.matheclipse.core.reflection.system.Subsets;
-import org.matheclipse.core.reflection.system.Subsets.KSubsetsList;
 
 import com.google.common.math.BigIntegerMath;
 
