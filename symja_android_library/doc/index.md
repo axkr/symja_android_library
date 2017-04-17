@@ -318,6 +318,7 @@ The result of the previous query to Symja can be accessed by %:
 * [Split](functions/Split.md)
 * [SplitBy](functions/SplitBy.md)
 * [SquaredEuclideanDistance](functions/SquaredEuclideanDistance.md)
+* [SquareFreeQ](functions/SquareFreeQ.md)
 * [Switch](functions/Switch.md)
 * [Symbol](functions/Symbol.md)
 * [SymbolName](functions/SymbolName.md)
