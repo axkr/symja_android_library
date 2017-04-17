@@ -2,6 +2,8 @@
 
 ```
 Factorial(n)
+
+n!
 ``` 
 
 > returns the factorial number of the integer `n`

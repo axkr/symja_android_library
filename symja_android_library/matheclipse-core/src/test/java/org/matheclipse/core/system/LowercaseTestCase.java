@@ -1778,6 +1778,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactorial() {
+		check("3!", "6");
+		check("3!!", "3");
 		check("Factorial(0)", "1");
 		check("Factorial(1)", "1");
 		check("Factorial(-1)", "-1");
