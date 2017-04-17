@@ -110,6 +110,19 @@ The result of the previous query to Symja can be accessed by %:
 3 + 4
 ```
 
+In the console available functions can be determined with the `?` operator
+
+```
+?ArcC*
+ArcCos, ArcCosh, ArcCot, ArcCoth, ArcCsc, ArcCsch
+```
+
+Documentation can be displayed by asking for information for the function name.
+
+```
+?Integrate
+```
+
 ## Expression types
 
 | Type          		| Description         																							| Input Example 						|
@@ -193,6 +206,7 @@ The result of the previous query to Symja can be accessed by %:
 * [DesignMatrix](functions/DesignMatrix.md)
 * [Det](functions/Det.md)
 * [DiagonalMatrix](functions/DiagonalMatrix.md)
+* [DiceDissimilarity](functions/DiceDissimilarity.md)
 * [DigitQ](functions/DigitQ.md)
 * [Dimensions](functions/Dimensions.md)
 * [Discriminant](functions/Discriminant.md)
@@ -218,6 +232,7 @@ The result of the previous query to Symja can be accessed by %:
 * [Factor](functions/Factor.md)
 * [Factorial](functions/Factorial.md)
 * [FactorInteger](functions/FactorInteger.md)
+* [Fibonacci](functions/Fibonacci.md)
 * [FindRoot](functions/FindRoot.md)
 * [First](functions/First.md)
 * [FixedPoint](functions/FixedPoint.md)
@@ -241,6 +256,7 @@ The result of the previous query to Symja can be accessed by %:
 * [Integrate](functions/Integrate.md)
 * [InterpolatingPolynomial](functions/InterpolatingPolynomial.md)
 * [Inverse](functions/Inverse.md)
+* [JaccardDissimilarity](functions/JaccardDissimilarity.md)
 * [JavaForm](functions/JavaForm.md)
 * [Join](functions/Join.md)
 * [Last](functions/Last.md)
@@ -258,6 +274,7 @@ The result of the previous query to Symja can be accessed by %:
 * [ManhattanDistance](functions/ManhattanDistance.md)
 * [Map](functions/Map.md)
 * [MapThread](functions/MapThread.md)
+* [MatchingDissimilarity](functions/MatchingDissimilarity.md)
 * [MatrixPower](functions/MatrixPower.md)
 * [MatrixQ](functions/MatrixQ.md)
 * [MatrixRank](functions/MatrixRank.md)
@@ -266,6 +283,7 @@ The result of the previous query to Symja can be accessed by %:
 * [Min](functions/Min.md)
 * [Mod](functions/Mod.md)
 * [Most](functions/Most.md)
+* [Multinomial](functions/Multinomial.md)
 * [N](functions/N.md)
 * [Nest - Kopie](functions/Nest - Kopie.md)
 * [Nest](functions/Nest.md)
@@ -303,15 +321,18 @@ The result of the previous query to Symja can be accessed by %:
 * [ReplacePart](functions/ReplacePart.md)
 * [Rest](functions/Rest.md)
 * [Return](functions/Return.md)
+* [RogersTanimotoDissimilarity](functions/RogersTanimotoDissimilarity.md)
 * [RowReduce](functions/RowReduce.md)
 * [Rule](functions/Rule.md)
 * [RuleDelayed](functions/RuleDelayed.md)
+* [RussellRaoDissimilarity](functions/RussellRaoDissimilarity.md)
 * [SameQ](functions/SameQ.md)
 * [Scan](functions/Scan.md)
 * [Select](functions/Select.md)
 * [Simplify](functions/Simplify.md)
 * [Sin](functions/Sin.md)
 * [SingularValueDecomposition](functions/SingularValueDecomposition.md)
+* [SokalSneathDissimilarity](functions/SokalSneathDissimilarity.md)
 * [Solve](functions/Solve.md)
 * [Sort](functions/Sort.md)
 * [Span](functions/Span.md)
@@ -319,6 +340,7 @@ The result of the previous query to Symja can be accessed by %:
 * [SplitBy](functions/SplitBy.md)
 * [SquaredEuclideanDistance](functions/SquaredEuclideanDistance.md)
 * [SquareFreeQ](functions/SquareFreeQ.md)
+* [Subsets](functions/Subsets.md)
 * [Switch](functions/Switch.md)
 * [Symbol](functions/Symbol.md)
 * [SymbolName](functions/SymbolName.md)
@@ -341,3 +363,5 @@ The result of the previous query to Symja can be accessed by %:
 * [Which](functions/Which.md)
 * [While](functions/While.md)
 * [Xor](functions/Xor.md)
+* [YuleDissimilarity](functions/YuleDissimilarity.md)
+
