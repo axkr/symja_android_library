@@ -74,18 +74,18 @@ public class AST2Expr {
 			"EuclideanDistance", "EulerE", "EulerPhi", "EvenQ", "Except", "Exists", "Exp", "Expand", "ExpandAll",
 			"ExpIntegralE", "ExpIntegralEi", "Exponent", "Export", "ExtendedGCD", "Extract", "Factor", "Factorial",
 			"Factorial2", "FactorInteger", "FactorSquareFree", "FactorSquareFreeList", "FactorTerms", "Flatten",
-			"Fibonacci", "FindInstance", "FindRoot", "First", "Fit", "FixedPoint", "Floor", "Fold", "FoldList", "For",
-			"ForAll", "FractionalPart", "FreeQ", "FresnelC", "FresnelS", "FrobeniusSolve", "FromCharacterCode",
-			"FromContinuedFraction", "FromPolarCoordinates", "FullForm", "FullSimplify", "Function", "Gamma", "Gather",
-			"GCD", "GeometricMean", "Get", "Graphics", "Graphics3D", "Graphics3D", "Greater", "GreaterEqual",
-			"GroebnerBasis", "Haversine", "HarmonicNumber", "Head", "HeavisideTheta", "HermiteH", "HilbertMatrix",
-			"Hold", "HoldForm", "Horner", "HornerForm", "HurwitzZeta", "HypergeometricDistribution",
-			"HypergeometricPFQ", "Hypergeometric1F1", "Hypergeometric2F1", "Identity", "IdentityMatrix", "If", "Im",
-			"Implies", "Import", "Increment", "Inner", "Insert", "Interval", "IntegerExponent", "IntegerPart",
-			"IntegerPartitions", "IntegerQ", "Integrate", "Interpolation", "InterpolatingFunction",
-			"InterpolatingPolynomial", "Intersection", "Inverse", "InverseErf", "InverseErfc", "InverseFunction",
-			"InverseHaversine", "JaccardDissimilarity", "JacobiMatrix", "JacobiSymbol", "JavaForm", "Join",
-			"KOrderlessPartitions", "KPartitions", "KroneckerDelta", "Kurtosis", "Last", "LCM", "LeafCount",
+			"Fibonacci", "FindInstance", "FindRoot", "First", "Fit", "FixedPoint", "FixedPointList", "Floor", "Fold",
+			"FoldList", "For", "ForAll", "FractionalPart", "FreeQ", "FresnelC", "FresnelS", "FrobeniusSolve",
+			"FromCharacterCode", "FromContinuedFraction", "FromPolarCoordinates", "FullForm", "FullSimplify",
+			"Function", "Gamma", "Gather", "GCD", "GeometricMean", "Get", "Graphics", "Graphics3D", "Graphics3D",
+			"Greater", "GreaterEqual", "GroebnerBasis", "Haversine", "HarmonicNumber", "Head", "HeavisideTheta",
+			"HermiteH", "HilbertMatrix", "Hold", "HoldForm", "Horner", "HornerForm", "HurwitzZeta",
+			"HypergeometricDistribution", "HypergeometricPFQ", "Hypergeometric1F1", "Hypergeometric2F1", "Identity",
+			"IdentityMatrix", "If", "Im", "Implies", "Import", "Increment", "Inner", "Insert", "Interval",
+			"IntegerExponent", "IntegerPart", "IntegerPartitions", "IntegerQ", "Integrate", "Interpolation",
+			"InterpolatingFunction", "InterpolatingPolynomial", "Intersection", "Inverse", "InverseErf", "InverseErfc",
+			"InverseFunction", "InverseHaversine", "JaccardDissimilarity", "JacobiMatrix", "JacobiSymbol", "JavaForm",
+			"Join", "KOrderlessPartitions", "KPartitions", "KroneckerDelta", "Kurtosis", "Last", "LCM", "LeafCount",
 			"LaguerreL", "LaplaceTransform", "LegendreP", "Length", "Less", "LessEqual", "LetterQ", "Level", "LevelQ",
 			"Limit", "Line", "LinearModelFit", "LinearProgramming", "LinearSolve", "LiouvilleLambda", "List", "ListQ",
 			"Log", "Log2", "Log10", "LogGamma", "LogicalExpand", "LogisticSigmoid", "LogIntegral", "LowerCaseQ",
@@ -400,7 +400,7 @@ public class AST2Expr {
 				return F.Rational(fr.isSign() ? numerator.negate() : numerator, denominator);
 			}
 			return F.Rational(fr.isSign() ? numerator.negate() : numerator, denominator);
-//			return F.fraction(numerator, fr.isSign() ? (IInteger) denominator.negate() : denominator);
+			// return F.fraction(numerator, fr.isSign() ? (IInteger) denominator.negate() : denominator);
 		}
 		if (node instanceof StringNode) {
 			return F.$str(node.getString());

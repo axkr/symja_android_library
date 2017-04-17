@@ -629,6 +629,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BrayCurtisDistance({-1, -1}, {10, 10})", "11/9");
 	}
 
+	public void testBreak() {
+		check("n = 0", "0");
+		check("While(True, If(n>10, Break()); n=n+1)", "");
+		check("n", "11");
+	}
+	
 	public void testCancel() {
 		check("Cancel(x / x ^ 2)", "1/x");
 		check("Cancel(x / x ^ 2 + y / y ^ 2)", "1/x+1/y");
@@ -954,6 +960,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ConstantArray(c, {3, 4})", "{{c,c,c,c},{c,c,c,c},{c,c,c,c}}");
 	}
 
+	public void testContinue() {
+		check("For(i=1, i<=8, i=i+1, If(Mod(i,2) == 0, Continue()); Print(i))", "");
+	}
+	
 	public void testContinuedFraction() {
 		check("ContinuedFraction(Pi,10)", "{3,7,15,1,292,1,1,1,2,1}");
 		check("ContinuedFraction(47/17)", "{2,1,3,4}");
@@ -1095,9 +1105,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testDefer() {
 		check("Defer(3*2)", "3*2");
-		check("Defer(6/8)==6/8", "6/8==3/4"); 
+		check("Defer(6/8)==6/8", "6/8==3/4");
 	}
-	
+
 	public void testDegree() {
 		check("Round(Pi/Degree^2)", "10313");
 		check("Pi/4 < 60 Degree < Pi", "True");
@@ -1356,6 +1366,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDo() {
+		check("Do(Print(i), {i, 2, 4})", "");
+		check("Do(Print({i, j}), {i,1,2}, {j,3,5})", "");
+		check("Do(If(i > 10, Break(), If(Mod(i, 2) == 0, Continue()); Print(i)), {i, 5, 20})", "");
+		check("Do(Print(\"hi\"),{1+1})", "");
+		
 		check("reap(do(if(primeQ(2^n0 - 1), sow(n0)), {n0, 100}))[[2, 1]]", "{2,3,5,7,13,17,19,31,61,89}");
 		check("$t = x; Do($t = 1/(1 + $t), {5}); $t", "1/(1+1/(1+1/(1+1/(1+1/(1+x)))))");
 		check("Nest(1/(1 + #) &, x, 5)", "1/(1+1/(1+1/(1+1/(1+1/(1+x)))))");
@@ -2004,6 +2019,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFixedPoint() {
+		check("FixedPoint(Cos, 1.0)", "0.7390851332151607");
+		check("FixedPoint(#+1 &, 1, 20)", "21");
+		check("FixedPoint(f, x, 0)", "x");
+		check("FixedPoint(f, x, -1)", "FixedPoint(f,x,-1)");
+		check("FixedPoint(Cos, 1.0, Infinity)", "0.7390851332151607");
+		
 		check("FixedPoint((# + 2/#)/2 &, 1.)", "1.414213562373095");
 		check("FixedPoint(1 + Floor(#/2) &, 1000)", "2");
 		check("21!=0", "True");
@@ -2014,6 +2035,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("FixedPoint(# /. {a_, b_} /; b != 0 -> {b, Mod(a, b)} &, {28, 21})", "{7,0}");
 	}
 
+	public void testFixedPointList() {
+		check("FixedPointList(Cos, 1.0, 4)", "{1.0,0.5403023058681398,0.8575532158463934,0.6542897904977791,0.7934803587425656}");
+		check("newton(n_) := FixedPointList(.5(# + n/#) &, 1.);  newton(9)", "{1.0,5.0,3.4,3.023529411764706,3.00009155413138,3.000000001396984,3.0,3.0}");
+		
+		// Get the "hailstone" sequence of a number:
+		check("collatz(1) := 1", "");
+		check("collatz(x_ ? EvenQ) := x / 2", "");
+		check("collatz(x_) := 3*x + 1", "");
+		check("FixedPointList(collatz, 14)", "{14,7,22,11,34,17,52,26,13,40,20,10,5,16,8,4,2,1,1}");
+		
+		check("FixedPointList(f, x, 0)", "{x}");
+		check("FixedPointList(f, x, -1) ", "FixedPointList(f,x,-1)");
+		check("Last(FixedPointList(Cos, 1.0, Infinity))", "0.7390851332151607");
+	}
+	
 	public void testFlatten() {
 		check("Flatten({{a, b}, {c, {d}, e}, {f, {g, h}}})", "{a,b,c,d,e,f,g,h}");
 		check("Flatten({{a, b}, {c, {d}, e}, {f, {g, h}}}, 1)", "{a,b,c,{d},e,f,{g,h}}");
@@ -2055,6 +2091,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFor() {
+		check("n := 1; For(i=1, i<=10, i=i+1, n = n * i);n", "3628800");
+		check("n==10!", "True");
+		check("n := 1;For(i=1, i<=10, i=i+1, If(i > 5, Return(i)); n = n * i)", "6");
+		check("n", "120");
+		
 		check("For($i = 0, $i < 4, $i++, Print($i))", "");
 		check("For($i = 0, $i < 4, $i++)", "");
 		check("$i = 0;For($j = 0, $i < 4, $i++, Print($i));$i", "4");
@@ -2219,7 +2260,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("x>=x", "True");
 		check("x>x", "False");
 	}
-	
+
 	public void testGroebnerBasis() {
 		check("GroebnerBasis({-5*x^2+y*z-x-1, 2*x+3*x*y+y^2,x-3*y+x*z-2*z^2},{x,y,z}, MonomialOrder ->DegreeReverseLexicographic)",
 				"{x-3*y+x*z-2*z^2,2*x+3*x*y+y^2,1+x+5*x^2-y*z,-1+27*y+5*y^2-z-29*y*z+18*z^2+y*z^2\n"
@@ -2299,14 +2340,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("pos = Position[expr, _Plus]", "{{1,1},{1,2,1},{1,3,1,2,1},{1,3,1}}");
 		check("val = Extract(expr, pos)", "{3,7,5,1+g(5)}");
 		check("ReplacePart(expr, Thread(pos -> val))", "Hold({3,g(7,2*3),f(1+g(5))})");
-		check("Hold(6/8)==6/8", "Hold(6/8)==3/4"); 
-	} 
-			
+		check("Hold(6/8)==6/8", "Hold(6/8)==3/4");
+	}
+
 	public void testHoldForm() {
 		check("HoldForm(3*2)", "3*2");
-		check("HoldForm(6/8)==6/8", "6/8==3/4"); 
+		check("HoldForm(6/8)==6/8", "6/8==3/4");
 	}
-	
+
 	public void testHornerForm() {
 		check("HornerForm(11*x^3 - 4*x^2 + 7*x + 2)", "2+x*(7+x*(-4+11*x))");
 		check("HornerForm(a+b*x+c*x^2,x)", "a+x*(b+c*x)");
@@ -2329,6 +2370,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIf() {
+		check("If(1<2, a, b)", "a");
+		check("If(1<2, a)", "a");
+		check("If(False, a) //FullForm", "\"Null\"");
 		check("If(a>b,true)", "");
 	}
 
@@ -2688,7 +2732,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("(2*x+5)<=(5^(1/2))", "x<=1/2*(-5+Sqrt(5))");
 		check("(-2*x+5)<=(5^(1/2))", "x>=-(-5+Sqrt(5))/2");
 	}
-	
+
 	public void testLetterQ() {
 		check("LetterQ(\"a\")", "True");
 		check("LetterQ(\"2\")", "False");
@@ -3035,6 +3079,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Min(x)", "x");
 		check("Min(Abs(x), Abs(y))", "Min(Abs(x),Abs(y))");
 	}
+
 	public void testMod() {
 		check("Mod(-10,3)", "2");
 		check("Mod(10,3)", "1");
@@ -3528,6 +3573,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testNest() {
 		check("Nest(f, x, 3)", "f(f(f(x)))");
+		check("Nest((1+#) ^ 2 &, x, 2)", "(1+(1+x)^2)^2");
+		
+		check("Nest(f, x, 3)", "f(f(f(x)))");
 		check("Nest((1 + #)^2 &, 1, 3)", "676");
 		check("Nest((1 + #)^2 &, x, 5)", "(1+(1+(1+(1+(1+x)^2)^2)^2)^2)^2");
 		check("Nest(Sqrt, 100.0, 4)", "1.333521432163324");
@@ -3535,12 +3583,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testNestList() {
 		check("NestList(f, x, 4)", "{x,f(x),f(f(x)),f(f(f(x))),f(f(f(f(x))))}");
+		check("NestList(2 # &, 1, 8)", "{1,2,4,8,16,32,64,128,256}");
 		check("NestList(Cos, 1.0, 10)",
 				"{1.0,0.5403023058681398,0.8575532158463934,0.6542897904977791,0.7934803587425656,0.7013687736227565,0.7639596829006542,0.7221024250267077,0.7504177617637605,0.7314040424225098,0.7442373549005569}");
 		check("NestList((1 + #)^2 &, x, 3)", "{x,(1+x)^2,(1+(1+x)^2)^2,(1+(1+(1+x)^2)^2)^2}");
 	}
 
 	public void testNestWhile() {
+		check("NestWhile(#/2&, 10000, IntegerQ)", "625/2");
 		check("NestWhile(#/2 &, 123456, EvenQ)", "1929");
 		check("NestWhile(Log, 100, # > 0 &)", "Log(Log(Log(Log(100))))");
 	}
@@ -3594,11 +3644,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("NoneTrue({12, 16, x, 14, y}, TrueQ(# < 10) &)", "True");
 		check("NoneTrue(f(1, 7, 3), OddQ)", "False");
 	}
-	
+
 	public void testNonNegative() {
-		check("{Positive(0), NonNegative(0)}", "{False,True}"); 
+		check("{Positive(0), NonNegative(0)}", "{False,True}");
 	}
-	
+
 	public void testNor() {
 		check("Nor( )", "True");
 		check("Nor(2+2)", "!4");
@@ -4114,7 +4164,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Position({f(a), g(b), f(c)}, f(x_))", "{{1},{3}}");
 	}
-	
+
 	public void testPositive() {
 		check("Positive(1)", "True");
 		check("Positive(0)", "False");
@@ -4668,10 +4718,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testReturn() {
+		check("f(x_) := (If(x < 0, Return(0)); x)", "");
+		check("f(-1)", "0");
+		
+		check("Do(If(i > 3, Return()); Print(i), {i, 10})", "");
+		
+		check("g(x_) := (Do(If(x < 0, Return(0)), {i, {2, 1, 0, -1}}); x)", "");
+		check("g(-1)", "-1");
+		
+		check("h(x_) := (If(x < 0, Return()); x)", "");
+		check("h(1)", "1");
+		check("h(-1) // FullForm", "\"Null\"");
+		
+		check("f(x_) := Return(x)", "");
+		check("g(y_) := Module({}, z = f(y); 2)", "");
+		check("g(1)", "2");
+		
 		check("$a(x_):=Return(1); $b(x_):=Module({},$c=$a(y);2); $b(1)", "2");
-		check("($f(x_) := (If(x > 5, Return(a)); x + 3));$f(6)", "a");
-		check("($g(x_) := (Do(If(x > 5, Return(a)), {3}); x));$g(6)", "6");
-		check("($h(x_) := (Catch(Do(If(x > 5, Throw(a)), {3}); x)));$h(6)", "a");
+		check("$f(x_) := (If(x > 5, Return(a)); x + 3); $f(6)", "a");
+		check("$g(x_) := (Do( If(x > 5, Return(a)), {3}); x); $g(6)", "6");
+		check("$h(x_) := Catch(Do(If(x > 5, Throw(a)), {3}); x); $h(6)", "a");
 	}
 
 	public void testRiffle() {
@@ -5422,6 +5488,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSwitch() {
+		check("Switch(2, 1, x, 2, y, 3, z)", "y");
+		check("Switch(5, 1, x, 2, y)", "Switch(5,1,x,2,y)");
+		check("Switch(5, 1, x, 2, y, _, z)", "z");
+		check("Switch(2, 1)", "Switch(2,1)");
 		check("$f(b_) := switch(b, True, 1, False, 0, _, -1);{$f(True), $f(False), $f(x)}", "{1,0,-1}");
 	}
 
@@ -5796,7 +5866,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("a != a != a", "False");
 		check("a != b != a", "a!=b!=a");
 		check("{Unequal(), Unequal(x), Unequal(1)}", "{True,True,True}");
-		
+
 		check("{\"a\",\"b\"}!={\"a\",\"b\"}", "False");
 		check("{\"a\",\"b\"}!={\"b\",\"a\"}", "True");
 		check("{\"a\",b}!={\"a\",c}", "{\"a\",b}!={\"a\",c}");
@@ -5905,6 +5975,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testWhich() {
+		check("n=5;Which(n == 3, x, n == 5, y)", "y");
+		check("f(x_) := Which(x < 0, -x, x == 0, 0, x > 0, x);f(-3)", "3");
+		check("Which(False, a)", "");
+		check("Which(False, a, x, b, True, c)", "Which(x,b,True,c)");
+		check("Which(a, b, c)", "Which(a,b,c)");
+		
 		check("$a = 2;which($a == 1, x, $a == 2, b)", "b");
 		check("Which(1 < 0, a,  x == 0, b,  0 < 1, c)", "Which(x==0,b,0<1,c)");
 		check("$a = 2;which($a == 1, x, $a == 3, b)", "");
@@ -5914,6 +5990,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testWhile() {
+		check("{a, b} = {27, 6}; While(b != 0, {a, b} = {b, Mod(a, b)});a", "3");
+		check("i = 1; While(True, If(i^2 > 100, Return(i + 1), i++))", "12");
 		check("$n = 1; While($n < 4, Print($n); $n++)", "");
 		check("$n = 1; While(++$n < 4); $n", "4");
 		check("$n = 1; While($n < 4, $n++); $n", "4");

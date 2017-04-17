@@ -1,11 +1,16 @@
 package org.matheclipse.core.builtin;
 
+import static org.matheclipse.core.expression.F.List;
+
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.function.NestWhileList;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ConditionException;
@@ -21,6 +26,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.interfaces.IIterator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -41,9 +47,14 @@ public final class Programming {
 		F.Condition.setEvaluator(new Condition());
 		F.Continue.setEvaluator(new Continue());
 		F.Do.setEvaluator(new Do());
+		F.FixedPoint.setEvaluator(new FixedPoint());
+		F.FixedPointList.setEvaluator(new FixedPointList());
 		F.For.setEvaluator(new For());
 		F.If.setEvaluator(new If());
 		F.Module.setEvaluator(new Module());
+		F.Nest.setEvaluator(new Nest());
+		F.NestList.setEvaluator(new NestList());
+		F.NestWhile.setEvaluator(new NestWhile());
 		F.Part.setEvaluator(new Part());
 		F.Reap.setEvaluator(new Reap());
 		F.Return.setEvaluator(new Return());
@@ -57,13 +68,11 @@ public final class Programming {
 
 	/**
 	 * <p>
-	 * <code>Break()</code> leaves a <code>Do</code>, <code>For</code> or
-	 * <code>While</code> loop.
+	 * <code>Break()</code> leaves a <code>Do</code>, <code>For</code> or <code>While</code> loop.
 	 * </p>
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Break">
-	 * Break</a>
+	 * See the online Symja function reference:
+	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Break"> Break</a>
 	 * </p>
 	 *
 	 */
@@ -92,9 +101,8 @@ public final class Programming {
 	/**
 	 * 
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Block">
-	 * Block</a>
+	 * See the online Symja function reference:
+	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Block"> Block</a>
 	 * </p>
 	 *
 	 */
@@ -123,9 +131,8 @@ public final class Programming {
 
 	/**
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Catch">
-	 * Catch</a>
+	 * See the online Symja function reference:
+	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Catch"> Catch</a>
 	 * </p>
 	 */
 	private final static class Catch extends AbstractCoreFunctionEvaluator {
@@ -228,7 +235,8 @@ public final class Programming {
 	 * 
 	 */
 	private final static class Do extends AbstractCoreFunctionEvaluator {
-		public static class DoIterator {
+
+		private static class DoIterator {
 
 			final List<? extends IIterator<IExpr>> fIterList;
 			final EvalEngine fEngine;
@@ -249,7 +257,7 @@ public final class Programming {
 							while (iter.hasNext()) {
 								try {
 									iter.next();
-									fEngine.evaluate(input);
+									doIt(input);
 								} catch (final ReturnException e) {
 									return e.getValue();
 								} catch (final BreakException e) {
@@ -266,6 +274,8 @@ public final class Programming {
 					}
 					return F.Null;
 				}
+				fEngine.evaluate(input);
+
 				return F.NIL;
 			}
 		}
@@ -291,6 +301,111 @@ public final class Programming {
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
+	}
+
+	private final static class FixedPoint extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 3, 4);
+
+			try {
+				final int iterationLimit = engine.getIterationLimit();
+				int iterationCounter = 1;
+
+				IExpr f = ast.arg1();
+				IExpr current = ast.arg2();
+				int iterations = Integer.MAX_VALUE;
+				if (ast.isAST3()) {
+					if (ast.arg3().isInfinity()) {
+						iterations = Integer.MAX_VALUE;
+					} else if (ast.arg3().isNegativeInfinity()) {
+						iterations = Integer.MIN_VALUE;
+					} else {
+						iterations = Validate.checkIntType(ast, 3, Integer.MIN_VALUE);
+					}
+				}
+				if (iterations < 0) {
+					engine.printMessage("FixedPoint: Non-negative integer expected.");
+					return F.NIL;
+				}
+				if (iterations > 0) {
+					IExpr last;
+					do {
+						last = current;
+						current = engine.evaluate(F.Apply(f, F.List(current)));
+						if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+							IterationLimitExceeded.throwIt(iterationCounter, ast);
+						}
+					} while ((!current.isSame(last)) && (--iterations > 0));
+				}
+				return current;
+
+			} finally {
+				engine.setNumericMode(false);
+			}
+
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
+	}
+	
+	private final static class FixedPointList extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 3, 4);
+
+			try {
+				final int iterationLimit = engine.getIterationLimit();
+				int iterationCounter = 1;
+
+				IExpr f = ast.arg1();
+				IAST list=F.List();
+				IExpr current = ast.arg2();
+				list.append(current);
+				int iterations = Integer.MAX_VALUE;
+				if (ast.isAST3()) {
+					if (ast.arg3().isInfinity()) {
+						iterations = Integer.MAX_VALUE;
+					} else if (ast.arg3().isNegativeInfinity()) {
+						iterations = Integer.MIN_VALUE;
+					} else {
+						iterations = Validate.checkIntType(ast, 3, Integer.MIN_VALUE);
+					}
+				}
+				if (iterations < 0) {
+					engine.printMessage("FixedPoint: Non-negative integer expected.");
+					return F.NIL;
+				}
+				if (iterations > 0) {
+					IExpr last;
+					do {
+						last = current;
+						current = engine.evaluate(F.Apply(f, F.List(current)));
+						list.append(current);
+						if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+							IterationLimitExceeded.throwIt(iterationCounter, ast);
+						}
+					} while ((!current.isSame(last)) && (--iterations > 0));
+				}
+				return list;
+
+			} finally {
+				engine.setNumericMode(false);
+			}
+
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
 	}
 
 	/**
@@ -440,6 +555,96 @@ public final class Programming {
 
 	}
 
+	private final static class Nest extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 4);
+
+			return evaluateNest(ast, engine);
+		}
+
+		public static IExpr evaluateNest(final IAST ast, EvalEngine engine) {
+			IExpr arg3 = engine.evaluate(ast.arg3());
+			if (arg3.isInteger()) {
+				final int n = Validate.checkIntType(arg3);
+				return nest(ast.arg2(), n, Functors.append(F.ast(ast.arg1())), engine);
+			}
+			return F.NIL;
+		}
+
+		public static IExpr nest(final IExpr expr, final int n, final Function<IExpr, IExpr> fn, EvalEngine engine) {
+			IExpr temp = expr;
+			for (int i = 0; i < n; i++) {
+				temp = engine.evaluate(fn.apply(temp));
+			}
+			return temp;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	private final static class NestList extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 4);
+
+			return evaluateNestList(ast, List(), engine);
+		}
+
+		public static IExpr evaluateNestList(final IAST ast, final IAST resultList, EvalEngine engine) {
+			IExpr arg3 = engine.evaluate(ast.arg3());
+			if (arg3.isInteger()) {
+				final int n = Validate.checkIntType(arg3);
+				nestList(ast.arg2(), n, Functors.append(F.ast(ast.arg1())), resultList, engine);
+				return resultList;
+			}
+			return F.NIL;
+		}
+
+		public static void nestList(final IExpr expr, final int n, final Function<IExpr, IExpr> fn,
+				final IAST resultList, EvalEngine engine) {
+			IExpr temp = expr;
+			resultList.append(temp);
+			for (int i = 0; i < n; i++) {
+				temp = engine.evaluate(fn.apply(temp));
+				resultList.append(temp);
+			}
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	private final static class NestWhile extends NestWhileList {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 4);
+
+			return nestWhile(ast.arg2(), engine.evaluate(ast.arg3()), Functors.append(F.ast(ast.arg1())), engine);
+		}
+
+		public static IExpr nestWhile(final IExpr expr, final IExpr test, final Function<IExpr, IExpr> fn,
+				EvalEngine engine) {
+			IExpr temp = expr;
+			Predicate<IExpr> predicate = Predicates.isTrue(test);
+
+			while (predicate.test(temp)) {
+				temp = engine.evaluate(fn.apply(temp));
+			}
+			return temp;
+
+		}
+
+	}
+
 	private final static class Part extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -569,16 +774,21 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 4);
-			final IExpr arg1 = engine.evaluate(ast.arg1());
-			IPatternMatcher matcher;
-			for (int i = 2; i < ast.size(); i += 2) {
-				matcher = engine.evalPatternMatcher(ast.get(i));
-				if (matcher.test(arg1) && (i + 1 < ast.size())) {
-					return engine.evaluate(ast.get(i + 1));
+			// Validate.checkRange(ast, 4);
+			if ((ast.size() & 0x0001) != 0x0000) {
+				engine.printMessage("Switch: number of arguments must be odd");
+			}
+			if (ast.size() > 3) {
+				final IExpr arg1 = engine.evaluate(ast.arg1());
+				IPatternMatcher matcher;
+				for (int i = 2; i < ast.size(); i += 2) {
+					matcher = engine.evalPatternMatcher(ast.get(i));
+					if (matcher.test(arg1) && (i + 1 < ast.size())) {
+						return engine.evaluate(ast.get(i + 1));
+					}
 				}
 			}
-			return F.Null;
+			return F.NIL;
 		}
 
 		@Override
@@ -611,8 +821,10 @@ public final class Programming {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkEven(ast);
-
+			// Validate.checkEven(ast);
+			if (((ast.size() - 1) & 0x0001) == 0x0001) {
+				engine.printMessage("Which: number of arguments must be evaen");
+			}
 			for (int i = 1; i < ast.size(); i += 2) {
 				IExpr temp = engine.evaluate(ast.get(i));
 				if (temp.isFalse()) {
@@ -682,15 +894,13 @@ public final class Programming {
 	}
 
 	/**
-	 * Remember which local variable names (appended with the module counter) we
-	 * use in the given <code>variablesMap</code>.
+	 * Remember which local variable names (appended with the module counter) we use in the given
+	 * <code>variablesMap</code>.
 	 * 
 	 * @param variablesList
-	 *            initializer variables list from the <code>Module</code>
-	 *            function
+	 *            initializer variables list from the <code>Module</code> function
 	 * @param varAppend
-	 *            the module counter string which aer appended to the variable
-	 *            names.
+	 *            the module counter string which aer appended to the variable names.
 	 * @param variablesMap
 	 *            the resulting module variables map
 	 * @param engine
@@ -745,8 +955,7 @@ public final class Programming {
 	}
 
 	/**
-	 * Check the (possible nested) module condition in pattern matcher without
-	 * evaluating a result.
+	 * Check the (possible nested) module condition in pattern matcher without evaluating a result.
 	 * 
 	 * @param arg1
 	 * @param arg2
@@ -776,8 +985,7 @@ public final class Programming {
 	}
 
 	/**
-	 * Check the (possible nested) condition in pattern matcher without
-	 * evaluating a result.
+	 * Check the (possible nested) condition in pattern matcher without evaluating a result.
 	 * 
 	 * @param arg1
 	 * @param arg2
@@ -815,16 +1023,14 @@ public final class Programming {
 	}
 
 	/**
-	 * Get the <code>Part[...]</code> of n expression. If the expression is no
-	 * <code>IAST</code> return the expression.
+	 * Get the <code>Part[...]</code> of n expression. If the expression is no <code>IAST</code> return the expression.
 	 * 
 	 * @param expr
 	 *            the expression from which parts should be extracted
 	 * @param ast
 	 *            the <code>Part[...]</code> expression
 	 * @param pos
-	 *            the index position from which the sub-expressions should be
-	 *            extracted
+	 *            the index position from which the sub-expressions should be extracted
 	 * @param engine
 	 *            the evaluation engine
 	 * @return

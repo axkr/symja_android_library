@@ -368,8 +368,9 @@ public class F {
 			new org.matheclipse.core.builtin.function.Exponent());
 	public final static IBuiltInSymbol First = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "first" : "First");
 	public final static IBuiltInSymbol FixedPoint = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fixedpoint" : "FixedPoint",
-			new org.matheclipse.core.builtin.function.FixedPoint());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fixedpoint" : "FixedPoint");
+	public final static IBuiltInSymbol FixedPointList = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fixedpointlist" : "FixedPointList");
 	public final static IBuiltInSymbol Flatten = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "flatten" : "Flatten");
 	public final static IBuiltInSymbol Fold = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fold" : "Fold");
@@ -433,14 +434,11 @@ public class F {
 	public final static IBuiltInSymbol N = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "N" : "N",
 			new org.matheclipse.core.builtin.function.N());
 	public final static IBuiltInSymbol Nand = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nand" : "Nand");
-	public final static IBuiltInSymbol Nest = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nest" : "Nest",
-			new org.matheclipse.core.builtin.function.Nest());
+	public final static IBuiltInSymbol Nest = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nest" : "Nest");
 	public final static IBuiltInSymbol NestList = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nestlist" : "NestList",
-			new org.matheclipse.core.builtin.function.NestList());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nestlist" : "NestList");
 	public final static IBuiltInSymbol NestWhile = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nestwhile" : "NestWhile",
-			new org.matheclipse.core.builtin.function.NestWhile());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nestwhile" : "NestWhile");
 	public final static IBuiltInSymbol NestWhileList = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nestwhilelist" : "NestWhileList",
 			new org.matheclipse.core.builtin.function.NestWhileList());
