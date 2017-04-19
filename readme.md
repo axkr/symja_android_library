@@ -1,5 +1,3 @@
-<!-- toc -->
-
 ## Symja Library - Java Symbolic Math System
 
 **Note**: this repository contains the **Java 8 project**. The **Android library project** can be found in the [SymjaAndroid repository](https://bitbucket.org/axelclk/symjaandroid).
@@ -15,6 +13,66 @@
 
 * [Mobile web interface symjaweb.appspot.com](http://symjaweb.appspot.com/)  
 * [Notebook interface symjaweb.appspot.com/new.jsp](http://symjaweb.appspot.com/new.jsp)
+
+### Quick start
+Unzip the download-file from the Downloads/Release section in a folder and start the symja.bat console. Read the [getting started tutorial](symja_android_library/doc/index.md) for the description of the Symja language.
+
+
+### Examples
+
+![Console Examples](console.gif)
+
+```mma
+>>> 24/60
+2/5
+
+>>> N(24/60)
+0.4
+
+>>> sin(30*degree)
+1/2
+
+>>> sin(pi/2)
+1
+
+>>> a+a+4*b^2+3*b^2
+2*a+7*b^2
+
+>>> solve({x^2-11==y, x+y==-9}, {x,y})
+{{x->-2,y->-7},{x->1,y->-10}}
+
+>>> dsolve({y'(x)==y(x)+2,y(0)==1},y(x), x)
+{{y(x)->-2+3*E^x}}
+
+>>> integrate(cos(x)^5, x)
+-2/3*Sin(x)^3+Sin(x)^5/5+Sin(x)
+
+>>> D(sin(x^3), x)
+3*x^2*Cos(x^3)
+
+>>> factor(-1+x^16)
+(-1+x)*(1+x)*(1+x^2)*(1+x^4)*(1+x^8)
+
+>>> factor(5+x^12, Modulus->7)
+(2+x^3)*(4+x^6)*(5+x^3)
+
+>>> expand((-1+x)*(1+x)*(1+x^2)*(1+x^4)*(1+x^8))
+-1+x^16
+
+>>> det({{1,2},{3,4}})
+-2
+
+>>> inverse({{1,2},{3,4}})
+{{-2,1},
+ {3/2,-1/2}}
+
+>>> factorinteger(2^15-5)
+{{3,1},{67,1},{163,1}}
+
+>>> refine(abs(n*abs(m)), n<0)
+-n*Abs(m)
+```
+
 
 ### Maven Usage
 
@@ -76,65 +134,6 @@ The *Excelsior JET Maven Plugin* provides Maven users with an easy way to compil
 down to optimized native Windows, OS X, or Linux executables with [Excelsior JET](http://excelsiorjet.com).
 ```
 mvn jet:build -pl matheclipse-core
-```
-
-### Quick start
-Unzip the download-file from the Downloads/Release section in a folder and start the symja.bat console. Read the [getting started tutorial](symja_android_library/doc/index.md) for the description of the Symja language.
-
-
-### Examples
-
-![Console Examples](console.gif)
-
-```
->>> 24/60
-2/5
-
->>> N(24/60)
-0.4
-
->>> sin(30*degree)
-1/2
-
->>> sin(pi/2)
-1
-
->>> a+a+4*b^2+3*b^2
-2*a+7*b^2
-
->>> solve({x^2-11==y, x+y==-9}, {x,y})
-{{x->-2,y->-7},{x->1,y->-10}}
-
->>> dsolve({y'(x)==y(x)+2,y(0)==1},y(x), x)
-{{y(x)->-2+3*E^x}}
-
->>> integrate(cos(x)^5, x)
--2/3*Sin(x)^3+Sin(x)^5/5+Sin(x)
-
->>> D(sin(x^3), x)
-3*x^2*Cos(x^3)
-
->>> factor(-1+x^16)
-(-1+x)*(1+x)*(1+x^2)*(1+x^4)*(1+x^8)
-
->>> factor(5+x^12, Modulus->7)
-(2+x^3)*(4+x^6)*(5+x^3)
-
->>> expand((-1+x)*(1+x)*(1+x^2)*(1+x^4)*(1+x^8))
--1+x^16
-
->>> det({{1,2},{3,4}})
--2
-
->>> inverse({{1,2},{3,4}})
-{{-2,1},
- {3/2,-1/2}}
-
->>> factorinteger(2^15-5)
-{{3,1},{67,1},{163,1}}
-
->>> refine(abs(n*abs(m)), n<0)
--n*Abs(m)
 ```
 
 ### Getting started
