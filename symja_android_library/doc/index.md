@@ -1,3 +1,8 @@
+
+- [Basic calculations](#basic-calculations)
+- [Expression types](#expression-types)
+- [Functions Reference](#functions-reference) 
+
 ## Basic calculations
 
 Symja can be used to calculate basic stuff:

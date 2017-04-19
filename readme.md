@@ -4,7 +4,7 @@
 
 
 - [Features](#features)
-- [Online demo:](#online-demo)
+- [Online demo](#online-demo)
 - [Quick start](#quick-start)
 - [Examples](#examples)
 - [Maven Usage](#maven-usage)
