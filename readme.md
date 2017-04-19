@@ -2,14 +2,26 @@
 
 **Note**: this repository contains the **Java 8 project**. The **Android library project** can be found in the [SymjaAndroid repository](https://bitbucket.org/axelclk/symjaandroid).
 
-### Features:
+
+- [Features](#features)
+- [Online demo:](#online-demo)
+- [Quick start](#quick-start)
+- [Examples](#examples)
+- [Maven Usage](#maven-usage)
+- [Getting started](#getting-started)
+- [BitBucket GIT](#bitbucket-git)
+- [Contact](#contact)
+- [License](#license)
+
+
+### Features
 
 * arbitrary precision integers, rational and complex numbers
 * differentiation, integration, equation solving, polynomial and linear algebra functions...
 * a general purpose Term Rewriting System and Pattern Matching engine
 * use human readable math expression strings or the internal abstract syntax tree (AST) representation to code in Java.
    
-### Online demo: 
+### Online demo
 
 * [Mobile web interface symjaweb.appspot.com](http://symjaweb.appspot.com/)  
 * [Notebook interface symjaweb.appspot.com/new.jsp](http://symjaweb.appspot.com/new.jsp)
