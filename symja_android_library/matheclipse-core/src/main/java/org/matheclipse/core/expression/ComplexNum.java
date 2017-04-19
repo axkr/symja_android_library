@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.F.num;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatRuntimeException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -532,6 +533,11 @@ public class ComplexNum implements IComplexNum {
 		return newInstance(fComplex.pow(((ComplexNum) val).fComplex));
 	}
 
+	@Override
+	public long precision() throws ApfloatRuntimeException {
+		return 15;
+	}
+	
 	/**
 	 * @param that
 	 * @return

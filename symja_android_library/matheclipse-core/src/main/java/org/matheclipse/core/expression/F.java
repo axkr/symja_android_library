@@ -810,6 +810,8 @@ public class F {
 	public final static IBuiltInSymbol Inner = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inner" : "Inner");
 	public final static IBuiltInSymbol IntegerExponent = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerexponent" : "IntegerExponent");
+	public final static IBuiltInSymbol IntegerLength = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerlength" : "IntegerLength");
 	public final static IBuiltInSymbol IntegerPart = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerpart" : "IntegerPart");
 	public final static IBuiltInSymbol IntegerPartitions = initFinalSymbol(
@@ -903,6 +905,7 @@ public class F {
 	public final static IBuiltInSymbol Median = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "median" : "Median");
 	public final static IBuiltInSymbol Min = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "min" : "Min");
+	public final static IBuiltInSymbol Minus = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "minus" : "Minus");
 	public final static IBuiltInSymbol Mod = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mod" : "Mod");
 	public final static IBuiltInSymbol MoebiusMu = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "moebiusmu" : "MoebiusMu");
@@ -999,6 +1002,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "powerexpand" : "PowerExpand");
 	public final static IBuiltInSymbol PowerMod = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "powermod" : "PowerMod");
+	public final static IBuiltInSymbol Precision = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "precision" : "Precision");
 	public final static IBuiltInSymbol PreDecrement = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "predecrement" : "PreDecrement");
 	public final static IBuiltInSymbol PreIncrement = initFinalSymbol(

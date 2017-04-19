@@ -26,4 +26,6 @@ public interface IComplexNum extends INumber {
 	public IComplexNum multiply(IComplexNum val);
 
 	public IComplexNum pow(IComplexNum val);
+	
+	public long precision();
 }

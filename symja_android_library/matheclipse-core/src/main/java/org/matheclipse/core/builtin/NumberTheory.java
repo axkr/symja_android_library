@@ -1145,6 +1145,43 @@ public final class NumberTheory {
 
 	}
 
+	private static class IntegerLength extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 1, 2);
+
+			if (ast.arg1().isInteger()) {
+				IInteger radix = F.C10;
+				if (ast.isAST2()) {
+					if (ast.arg2().isInteger()) {
+						radix = ((IInteger) ast.arg2());
+					} else {
+						return F.NIL;
+					}
+				}
+				IInteger iArg1 = (IInteger) ast.arg1();
+				if (iArg1.isZero()) {
+					return F.C1;
+				}
+				long l = 0L;
+				iArg1 = iArg1.abs();
+				while (iArg1.isGreaterThan(F.C0)) {
+					iArg1 = iArg1.div(radix);
+					l++;
+				}
+
+				return F.integer(l);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		}
+	}
+
 	/**
 	 * Returns the multinomial coefficient.
 	 * 
@@ -1164,9 +1201,6 @@ public final class NumberTheory {
 				result = result.div(factorial(k[i]));
 			}
 			return result;
-		}
-
-		public Multinomial() {
 		}
 
 		@Override
@@ -1846,6 +1880,7 @@ public final class NumberTheory {
 		F.Factorial2.setEvaluator(new Factorial2());
 		F.FactorInteger.setEvaluator(new FactorInteger());
 		F.Fibonacci.setEvaluator(new Fibonacci());
+		F.IntegerLength.setEvaluator(new IntegerLength());
 		F.JacobiSymbol.setEvaluator(new JacobiSymbol());
 		F.KroneckerDelta.setEvaluator(new KroneckerDelta());
 		F.LiouvilleLambda.setEvaluator(new LiouvilleLambda());

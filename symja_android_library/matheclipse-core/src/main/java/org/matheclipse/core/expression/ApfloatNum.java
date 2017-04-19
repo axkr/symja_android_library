@@ -158,6 +158,7 @@ public class ApfloatNum implements INum {
 		return valueOf(ApfloatMath.pow(fApfloat, ((ApfloatNum) val).fApfloat));
 	}
 
+	@Override
 	public long precision() throws ApfloatRuntimeException {
 		return fApfloat.precision();
 	}

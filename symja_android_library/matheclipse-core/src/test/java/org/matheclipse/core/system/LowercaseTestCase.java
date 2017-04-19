@@ -1339,6 +1339,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "2,x^3,x^2,-x^3,x^4,x^3,-x^4,x^5,x^2,-x^3,x^4,x^3,-x^4,x^5,x^4,-x^5,x^6}");
 	}
 
+	public void testDivide() {
+		check("30 / 5", "6"); 
+		check("1 / 8", "1/8"); 
+		check("Pi / 4", "Pi/4"); 
+		check("Pi / 4.0", "0.7853981633974483"); 
+		check("N(1 / 8)", "0.125"); 
+		check("a / b / c", "a/(b*c)"); 
+		check("a / (b / c)", "(a*c)/b"); 
+		check("a / b / (c / (d / e))", "(a*d)/(b*c*e)"); 
+		check("a / (b ^ 2 * c ^ 3 / e)", "(a*e)/(b^2*c^3)"); 
+		check("1 / 4.0", "0.25"); 
+		check("10 / 3 // FullForm", "\"Rational(10,3)\""); 
+		check("a / b // FullForm", "\"Times(a, Power(b, -1))\""); 
+	}
+	
 	public void testDivisible() {
 		check("Divisible(2 Pi, Pi/2)", "True");
 		check("Divisible(10,3)", "False");
@@ -3089,6 +3104,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Min(Abs(x), Abs(y))", "Min(Abs(x),Abs(y))");
 	}
 
+	public void testMinus() {
+		check("Minus(a)", "-a");
+		check("-a //FullForm", "\"Times(-1, a)\"");
+		check("-(x - 2/3)", "2/3-x");
+		check("-Range(10)", "{-1,-2,-3,-4,-5,-6,-7,-8,-9,-10}");
+	}
+	
 	public void testMod() {
 		check("Mod(-10,3)", "2");
 		check("Mod(10,3)", "1");
@@ -3200,8 +3222,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testNames() {
 		check("Names(\"Int*\" )",
-				"{Interval,IntegerExponent,IntegerPart,IntegerPartitions,IntegerQ,Integrate,Interpolation,InterpolatingFunction,InterpolatingPolynomial,Intersection,Integer,Integers}");
-		check("Names(\"Integer*\" )", "{IntegerExponent,IntegerPart,IntegerPartitions,IntegerQ,Integer,Integers}");
+				"{Interval,IntegerExponent,IntegerLength,IntegerPart,IntegerPartitions,IntegerQ,Integrate,Interpolation,InterpolatingFunction,InterpolatingPolynomial,Intersection,Integer,Integers}");
+		check("Names(\"Integer*\" )", "{IntegerExponent,IntegerLength,IntegerPart,IntegerPartitions,IntegerQ,Integer,Integers}");
 		check("Names(\"IntegerPart\" )", "{IntegerPart}");
 		// check("Names(\"*\" )", "{}");
 	}
@@ -4021,6 +4043,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPlus() {
+		check("1 + 2", "3");
+		check("a + b + a", "2*a+b");
+		check("a + a + 3 * a", "5*a");
+		check("a + b + 4.5 + a + b + a + 2 + 1.5*b", "6.5+3.0*a+3.5*b");
+		check("Plus @@ {2, 4, 6}", "12");
+		check("Plus @@ Range(1000)", "500500");
+		check("a /. n_. + x_ :> {n, x}", "{0,a}");
+		check("-2*a - 2*b", "-2*a-2*b");
+		check("1 - I * Sqrt(3)", "1-I*Sqrt(3)");
+		check("Head(3 + 2 I)", "Complex");
+		check("N(Pi, 30) + N(E, 30)", "5.85987448204883847382293085463");
+		check("N(Pi, 30) + N(E, 30) // Precision", "30");
+		check("N(Pi, 30) + I", "3.14159265358979323846264338327+I*1");
+		check("N(Pi, 30) + E", "5.85987448204883829099102473027");
+		
 		check("Interval({1,6})+Interval({0,2})", "Interval({1,8})");
 		check("Interval({a,b})+z", "z+Interval({a,b})");
 		check("(Interval({-1,1})+1/2)^2 - 1/4", "Interval({-1/4,2})");
@@ -4198,6 +4235,33 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		check("0^(3+I*4)", "0");
+		check("4 ^ (1/2)", "2");
+		// TODO 4^(1/3) should give 2^(2/3)
+		check("4 ^ (1/3)", "4^(1/3)");
+		check("3^123", "48519278097689642681155855396759336072749841943521979872827");
+		check("(y ^ 2) ^ (1/2)", "Sqrt(y^2)");
+		check("(y ^ 2) ^ 3", "y^6");
+		check("4.0 ^ (1/3)", "1.5874010519681994");
+		check("a /. x_ ^ n_. :> {x, n}", "{a,1}");
+		check("(1.5 + 1.0*I) ^ 3.5", "-3.682940057821917+I*6.951392664028508");
+		check("(1.5 + 1.0*I) ^ (3.5 + 1.5*I)", "-3.1918162904562815+I*0.6456585094161581");
+		check("1/0", "ComplexInfinity");
+		check("0 ^ -2", "ComplexInfinity");
+		check("0 ^ (-1/2)", "ComplexInfinity");
+		check("0 ^ -Pi", "ComplexInfinity");
+		check("0 ^ I", "Indeterminate");
+		check("0 ^ (2*I*E)", "Indeterminate");
+		check("0 ^ - (Pi + 2*E*I)", "ComplexInfinity");
+		check("0^0", "Indeterminate");
+		check("Sqrt(-3+2.*I)", "0.5502505227003375+I*1.8173540210239707");
+		check("Sqrt(-3+2*I)", "Sqrt(-3+I*2)");
+		check("(3/2+1/2I)^2", "2+I*3/2");
+		check("I ^ I", "I^I");
+		check("2 ^ 2.0", "4.0");
+		check("Pi ^ 4.", "97.40909103400242");
+		check("a^b", "a^b");
+		
 		check("54^(1/3)", "3*2^(1/3)");
 		// check("Exp(y + Log(x))", "x+E^y");
 		check("E^(2*(y+Log(x)))", "E^(2*y)*x^2");
@@ -5399,6 +5463,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Subsets({a,b,c,d},{2})", "{{a,b},{a,c},{a,d},{b,c},{b,d},{c,d}}");
 	}
 
+	public void testSubtract() {
+		check("5 - 3", "2");
+		check("a - b // FullForm", "\"Plus(a, Times(-1, b))\"");
+		check("a - b - c", "a-b-c");
+		check("a - (b - c)", "a-b+c");
+	}
+	
 	public void testSum() {
 		check("Sum(k, {k, Range(5)})", "15");
 		check("Sum(i^2 - i + 10 ,{i,1,10})", "430");
@@ -5703,6 +5774,34 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTimes() {
+		check("Floor(Log(7,1024))", "3");
+		check("10*2", "20");
+		check("a*a", "a^2");
+		check("x ^ 10 * x ^ -2", "x^8");
+		check("{1, 2, 3} * 4", "{4,8,12}");
+		check("Times @@ {1, 2, 3, 4}", "24");
+		check("IntegerLength(Times@@Range(100))", "158");
+		check("a /. n_. * x_ :> {n, x} ", "{1,a}");
+		check("-a*b // FullForm", "\"Times(-1, a, b)\"");
+		check("-(x - 2/3)", "2/3-x");  
+		check("-(h/2) // FullForm", "\"Times(Rational(-1,2), h)\"");
+		check("x / x", "1");
+		check("2*x^2 / x^2", "2");
+		check("3.*Pi", "9.42477796076938");
+		check("Head(3 * I) ", "Complex");
+		check("Head(Times(I, 1/2))", "Complex");
+		check("Head(Pi * I)", "Times");
+		check("-2.123456789 * x", "-2.123456789*x");
+		check("-2.123456789 * I", "I*(-2.123456789)");
+		check("N(Pi, 30) * I", "I*3.14159265358979323846264338327");
+		check("N(I*Pi, 30)", "I*3.14159265358979323846264338327");
+		check("N(Pi * E, 30)", "8.53973422267356706546355086954");
+		check("N(Pi, 30) * N(E, 30)", "8.53973422267356706546355086954");
+		check("N(Pi, 30) * E", "8.53973422267356649108017774746");
+		check("N(Pi, 30) * E // Precision", "30");
+		check("", "");
+		
+		
 		// issue #137
 		check("12*2^x*3^y", "2^(2+x)*3^(1+y)");
 		check("8*2^x", "2^(3+x)");

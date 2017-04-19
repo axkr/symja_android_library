@@ -39,4 +39,6 @@ public interface INum extends ISignedNumber {
 	 *             if conversion to <code>int</code> is not possible.
 	 */
 	public int toInt() throws ArithmeticException;
+	
+	public long precision();
 }

@@ -35,6 +35,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.ApcomplexNum;
@@ -69,6 +70,7 @@ public final class Arithmetic {
 		F.Power.setDefaultValue(2, F.C1);
 		F.Power.setEvaluator(CONST_POWER);
 		F.Sqrt.setEvaluator(new Sqrt());
+		F.Minus.setEvaluator(new Minus());
 
 		F.AddTo.setEvaluator(new AddTo());
 		F.DivideBy.setEvaluator(new DivideBy());
@@ -79,6 +81,9 @@ public final class Arithmetic {
 		F.Increment.setEvaluator(new Increment());
 		F.PreDecrement.setEvaluator(new PreDecrement());
 		F.PreIncrement.setEvaluator(new PreIncrement());
+
+		F.Precision.setEvaluator(new Precision());
+
 	}
 
 	/**
@@ -185,6 +190,20 @@ public final class Arithmetic {
 		}
 	}
 
+	private final static class Minus extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.size() == 2) {
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				return F.Times(F.CN1, arg1);
+			}
+			engine.printMessage("Minus: exactly 1 argument expected");
+			return F.NIL;
+		}
+
+	}
+
 	public static class Plus extends AbstractArgMultiple implements INumeric {
 
 		private static HashedOrderlessMatcher ORDERLESS_MATCHER = new HashedOrderlessMatcher();
@@ -231,7 +250,11 @@ public final class Arithmetic {
 					if (ast.get(i) instanceof ApfloatNum) {
 						number = number.add((INum) ast.get(i));
 					} else {
-						number = number.add((INum) ast.get(i));
+						if (number instanceof ApfloatNum) {
+							number = number.add(((INum) ast.get(i)).apfloatNumValue(number.precision()));
+						} else {
+							number = number.add((INum) ast.get(i));
+						}
 					}
 				} else if (ast.get(i) instanceof IComplexNum) {
 					start = i;
@@ -258,7 +281,12 @@ public final class Arithmetic {
 						complexNumber = complexNumber.add(F.complexNum(((ApfloatNum) number).apfloatValue()));
 					}
 				} else if (ast.get(i) instanceof IComplexNum) {
-					complexNumber = complexNumber.add((IComplexNum) ast.get(i));
+					if (complexNumber instanceof ApcomplexNum) {
+						complexNumber = complexNumber
+								.add(((IComplexNum) ast.get(i)).apcomplexNumValue(complexNumber.precision()));
+					} else {
+						complexNumber = complexNumber.add((IComplexNum) ast.get(i));
+					}
 				} else {
 					return F.NIL;
 				}
@@ -734,24 +762,7 @@ public final class Arithmetic {
 			}
 			if (arg1.isZero()) {
 				EvalEngine ee = EvalEngine.get();
-				if (arg2.isZero()) {
-					// 0^0
-					// TODO add a real log message
-					// throw new DivisionByZero("0^0");
-					ee.printMessage("Infinite expression 0^0");
-					return F.Indeterminate;
-				}
-
-				IExpr a = arg2.re();
-				if (a.isSignedNumber()) {
-					if (((ISignedNumber) a).isNegative()) {
-						ee.printMessage("Infinite expression 0^(negative number)");
-						return F.CComplexInfinity;
-					}
-					return F.C0;
-				}
-
-				return F.NIL;
+				return powerZero(arg2, ee);
 			}
 			if (arg1.isInterval1()) {
 				if (arg2.isInteger()) {
@@ -907,6 +918,58 @@ public final class Arithmetic {
 		}
 
 		/**
+		 * Determine <code>0 ^ exponent</code>.
+		 * 
+		 * @param exponent
+		 *            the exponent of the 0-Power expression
+		 * @param engine
+		 *            the evaluation engine
+		 * @return
+		 */
+		private IExpr powerZero(final IExpr exponent, EvalEngine engine) {
+			if (exponent.isZero()) {
+				// 0^0
+				// TODO add a real log message
+				// throw new DivisionByZero("0^0");
+				engine.printMessage("Infinite expression 0^0");
+				return F.Indeterminate;
+			}
+
+			IExpr a = exponent.re();
+			if (a.isSignedNumber()) {
+				if (((ISignedNumber) a).isNegative()) {
+					engine.printMessage("Infinite expression 0^(negative number)");
+					return F.CComplexInfinity;
+				}
+				if (a.isZero()) {
+					engine.printMessage("Infinite expression 0^0.");
+					return F.Indeterminate;
+				}
+				return F.C0;
+			}
+			if (a.isNumericFunction()) {
+				IExpr temp = F.evaln(a);
+				if (temp.isSignedNumber()) {
+					if (((ISignedNumber) temp).isNegative()) {
+						engine.printMessage("Infinite expression 0^(negative number)");
+						return F.CComplexInfinity;
+					}
+					if (temp.isZero()) {
+						engine.printMessage("Infinite expression 0^0.");
+						return F.Indeterminate;
+					}
+					return F.C0;
+				}
+				if (temp.isComplex() || temp.isComplexNumeric()) {
+					engine.printMessage("Indeterminate expression 0 ^ (complex number) encountered.");
+					return F.Indeterminate;
+				}
+			}
+
+			return F.NIL;
+		}
+
+		/**
 		 * Simplify <code>E^(y+Log(x))</code> to <code>x*E^(y)</code>
 		 * 
 		 * @param plus
@@ -1027,6 +1090,25 @@ public final class Arithmetic {
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.ONEIDENTITY | ISymbol.NUMERICFUNCTION);
 			super.setUp(newSymbol);
+		}
+	}
+
+	private final static class Precision extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.size() == 2) {
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				if (arg1 instanceof INum) {
+					return F.integer(((INum) arg1).precision());
+				}
+				if (arg1 instanceof IComplexNum) {
+					return F.integer(((IComplexNum) arg1).precision());
+				}
+				engine.printMessage("Precision: Numeric expression expected");
+				return F.NIL;
+			}
+			return Validate.checkSize(ast, 2);
 		}
 	}
 
@@ -1386,7 +1468,11 @@ public final class Arithmetic {
 					if (ast.get(i) instanceof ApfloatNum) {
 						number = number.multiply((INum) ast.get(i));
 					} else {
-						number = number.multiply((INum) ast.get(i));
+						if (number instanceof ApfloatNum) {
+							number = number.multiply(((INum) ast.get(i)).apfloatNumValue(number.precision()));
+						} else {
+							number = number.multiply((INum) ast.get(i));
+						}
 					}
 				} else if (ast.get(i) instanceof IComplexNum) {
 					start = i;
@@ -1413,7 +1499,12 @@ public final class Arithmetic {
 						complexNumber = complexNumber.multiply(F.complexNum(((ApfloatNum) number).apfloatValue()));
 					}
 				} else if (ast.get(i) instanceof IComplexNum) {
-					complexNumber = complexNumber.multiply((IComplexNum) ast.get(i));
+					if (complexNumber instanceof ApcomplexNum) {
+						complexNumber = complexNumber
+								.multiply(((IComplexNum) ast.get(i)).apcomplexNumValue(complexNumber.precision()));
+					} else {
+						complexNumber = complexNumber.multiply((IComplexNum) ast.get(i));
+					}
 				} else {
 					return F.NIL;
 				}

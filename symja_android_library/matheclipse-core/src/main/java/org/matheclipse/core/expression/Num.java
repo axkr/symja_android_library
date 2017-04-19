@@ -2,6 +2,7 @@ package org.matheclipse.core.expression;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatRuntimeException;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -543,6 +544,11 @@ public class Num implements INum {
 		return valueOf(Math.pow(fDouble, val.getRealPart()));
 	}
 
+	@Override
+	public long precision() throws ApfloatRuntimeException {
+		return 15L;
+	}
+	
 	@Override
 	public IInteger round() {
 		return F.integer(NumberUtil.toLong(Math.rint(fDouble)));
