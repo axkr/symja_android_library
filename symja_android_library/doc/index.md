@@ -263,6 +263,7 @@ Documentation can be displayed by asking for information for the function name.
 * [Implies](functions/Implies.md)
 * [Inner](functions/Inner.md)
 * [IntegerExponent](functions/IntegerExponent.md)
+* [IntegerLength](functions/IntegerLength.md)
 * [Integrate](functions/Integrate.md)
 * [InterpolatingPolynomial](functions/InterpolatingPolynomial.md)
 * [Intersection](functions/Intersection.md)
