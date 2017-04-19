@@ -1,8 +1,10 @@
+<!-- toc -->
+
 ## Symja Library - Java Symbolic Math System
 
 **Note**: this repository contains the **Java 8 project**. The **Android library project** can be found in the [SymjaAndroid repository](https://bitbucket.org/axelclk/symjaandroid).
 
-###Features:
+### Features:
 
 * arbitrary precision integers, rational and complex numbers
 * differentiation, integration, equation solving, polynomial and linear algebra functions...
@@ -18,7 +20,7 @@
 
 Using Maven, add the following to your `pom.xml`
 
-```
+```xml
 <dependencies>
   <dependency>
     <groupId>org.matheclipse</groupId>
@@ -77,12 +79,10 @@ mvn jet:build -pl matheclipse-core
 ```
 
 ### Quick start
-Include the latest **matheclipse-core-1.0.0-SNAPSHOT.jar** from the Downloads/Release section in your 
-classpath and start coding using parsed input strings or the internal object hierarchy.
+Unzip the download-file from the Downloads/Release section in a folder and start the symja.bat console. Read the [getting started tutorial](symja_android_library/doc/index.md) for the description of the Symja language.
 
 
-
-###Examples
+### Examples
 
 ![Console Examples](console.gif)
 
@@ -182,12 +182,12 @@ See also the "Getting started with Symja" document on the BitBucket Wiki pages:
 
 * [Symja wiki pages](https://bitbucket.org/axelclk/symja_android_library/wiki)
 
-###Contact
+### Contact
 
 If you have any questions about using or developing for this project, shoot me
 an [email][1]!
 
-###License
+### License
 
 * the complete Symja system is published under the GNU GENERAL PUBLIC LICENSE Version 3.
 
