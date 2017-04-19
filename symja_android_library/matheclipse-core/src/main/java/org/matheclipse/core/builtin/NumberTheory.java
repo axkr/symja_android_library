@@ -1149,7 +1149,7 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 1, 2);
+			Validate.checkRange(ast, 2, 3);
 
 			if (ast.arg1().isInteger()) {
 				IInteger radix = F.C10;
@@ -1159,6 +1159,10 @@ public final class NumberTheory {
 					} else {
 						return F.NIL;
 					}
+				} 
+				if (radix.isLessThan(F.C1)) {
+					engine.printMessage("IntegerLength: The base must be greater than 1");
+					return F.NIL;
 				}
 				IInteger iArg1 = (IInteger) ast.arg1();
 				if (iArg1.isZero()) {

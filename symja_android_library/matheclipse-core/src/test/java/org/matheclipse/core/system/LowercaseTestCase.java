@@ -569,8 +569,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testBinomial() {
 		check("Binomial(4,2)", "6");
 		check("Binomial(5,3)", "10");
-		
-		
+
 		check("Binomial(n0, 2)", "1/2*n0*(-1+n0)");
 		check("Binomial(k/3, k)", "Binomial(k/3,k)");
 		check("Binomial(0, 0)", "1");
@@ -636,7 +635,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("While(True, If(n>10, Break()); n=n+1)", "");
 		check("n", "11");
 	}
-	
+
 	public void testCancel() {
 		check("Cancel(x / x ^ 2)", "1/x");
 		check("Cancel(x / x ^ 2 + y / y ^ 2)", "1/x+1/y");
@@ -965,7 +964,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testContinue() {
 		check("For(i=1, i<=8, i=i+1, If(Mod(i,2) == 0, Continue()); Print(i))", "");
 	}
-	
+
 	public void testContinuedFraction() {
 		check("ContinuedFraction(Pi,10)", "{3,7,15,1,292,1,1,1,2,1}");
 		check("ContinuedFraction(47/17)", "{2,1,3,4}");
@@ -1340,20 +1339,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDivide() {
-		check("30 / 5", "6"); 
-		check("1 / 8", "1/8"); 
-		check("Pi / 4", "Pi/4"); 
-		check("Pi / 4.0", "0.7853981633974483"); 
-		check("N(1 / 8)", "0.125"); 
-		check("a / b / c", "a/(b*c)"); 
-		check("a / (b / c)", "(a*c)/b"); 
-		check("a / b / (c / (d / e))", "(a*d)/(b*c*e)"); 
-		check("a / (b ^ 2 * c ^ 3 / e)", "(a*e)/(b^2*c^3)"); 
-		check("1 / 4.0", "0.25"); 
-		check("10 / 3 // FullForm", "\"Rational(10,3)\""); 
-		check("a / b // FullForm", "\"Times(a, Power(b, -1))\""); 
+		check("30 / 5", "6");
+		check("1 / 8", "1/8");
+		check("Pi / 4", "Pi/4");
+		check("Pi / 4.0", "0.7853981633974483");
+		check("N(1 / 8)", "0.125");
+		check("a / b / c", "a/(b*c)");
+		check("a / (b / c)", "(a*c)/b");
+		check("a / b / (c / (d / e))", "(a*d)/(b*c*e)");
+		check("a / (b ^ 2 * c ^ 3 / e)", "(a*e)/(b^2*c^3)");
+		check("1 / 4.0", "0.25");
+		check("10 / 3 // FullForm", "\"Rational(10,3)\"");
+		check("a / b // FullForm", "\"Times(a, Power(b, -1))\"");
 	}
-	
+
 	public void testDivisible() {
 		check("Divisible(2 Pi, Pi/2)", "True");
 		check("Divisible(10,3)", "False");
@@ -1387,7 +1386,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Do(Print({i, j}), {i,1,2}, {j,3,5})", "");
 		check("Do(If(i > 10, Break(), If(Mod(i, 2) == 0, Continue()); Print(i)), {i, 5, 20})", "");
 		check("Do(Print(\"hi\"),{1+1})", "");
-		
+
 		check("reap(do(if(primeQ(2^n0 - 1), sow(n0)), {n0, 100}))[[2, 1]]", "{2,3,5,7,13,17,19,31,61,89}");
 		check("$t = x; Do($t = 1/(1 + $t), {5}); $t", "1/(1+1/(1+1/(1+1/(1+1/(1+x)))))");
 		check("Nest(1/(1 + #) &, x, 5)", "1/(1+1/(1+1/(1+1/(1+1/(1+x)))))");
@@ -2047,7 +2046,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("FixedPoint(f, x, 0)", "x");
 		check("FixedPoint(f, x, -1)", "FixedPoint(f,x,-1)");
 		check("FixedPoint(Cos, 1.0, Infinity)", "0.7390851332151607");
-		
+
 		check("FixedPoint((# + 2/#)/2 &, 1.)", "1.414213562373095");
 		check("FixedPoint(1 + Floor(#/2) &, 1000)", "2");
 		check("21!=0", "True");
@@ -2059,20 +2058,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFixedPointList() {
-		check("FixedPointList(Cos, 1.0, 4)", "{1.0,0.5403023058681398,0.8575532158463934,0.6542897904977791,0.7934803587425656}");
-		check("newton(n_) := FixedPointList(.5(# + n/#) &, 1.);  newton(9)", "{1.0,5.0,3.4,3.023529411764706,3.00009155413138,3.000000001396984,3.0,3.0}");
-		
+		check("FixedPointList(Cos, 1.0, 4)",
+				"{1.0,0.5403023058681398,0.8575532158463934,0.6542897904977791,0.7934803587425656}");
+		check("newton(n_) := FixedPointList(.5(# + n/#) &, 1.);  newton(9)",
+				"{1.0,5.0,3.4,3.023529411764706,3.00009155413138,3.000000001396984,3.0,3.0}");
+
 		// Get the "hailstone" sequence of a number:
 		check("collatz(1) := 1", "");
 		check("collatz(x_ ? EvenQ) := x / 2", "");
 		check("collatz(x_) := 3*x + 1", "");
 		check("FixedPointList(collatz, 14)", "{14,7,22,11,34,17,52,26,13,40,20,10,5,16,8,4,2,1,1}");
-		
+
 		check("FixedPointList(f, x, 0)", "{x}");
 		check("FixedPointList(f, x, -1) ", "FixedPointList(f,x,-1)");
 		check("Last(FixedPointList(Cos, 1.0, Infinity))", "0.7390851332151607");
 	}
-	
+
 	public void testFlatten() {
 		check("Flatten({{a, b}, {c, {d}, e}, {f, {g, h}}})", "{a,b,c,d,e,f,g,h}");
 		check("Flatten({{a, b}, {c, {d}, e}, {f, {g, h}}}, 1)", "{a,b,c,{d},e,f,{g,h}}");
@@ -2118,7 +2119,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("n==10!", "True");
 		check("n := 1;For(i=1, i<=10, i=i+1, If(i > 5, Return(i)); n = n * i)", "6");
 		check("n", "120");
-		
+
 		check("For($i = 0, $i < 4, $i++, Print($i))", "");
 		check("For($i = 0, $i < 4, $i++)", "");
 		check("$i = 0;For($j = 0, $i < 4, $i++, Print($i));$i", "4");
@@ -2481,6 +2482,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("IntegerPart(2.4)", "2");
 		check("IntegerPart(-2.4)", "-2");
 		check("IntegerPart({-2.4, -2.5, -3.0})", "{-2,-2,-3}");
+	}
+
+	public void testIntegerLength() {
+		check("IntegerLength(123456)", "6");
+		check("IntegerLength(10^10000)", "10001");
+		check("IntegerLength(-10^1000)", "1001");
+		check("IntegerLength(8, 2)", "4");
+		check("IntegerLength /@ (10 ^ Range(100)) == Range(2, 101)", "True");
+		check("IntegerLength(3, -2)", "IntegerLength(3,-2)");
+		check("IntegerLength(0)", "1");
+		check("IntegerLength /@ (10 ^ Range(100) - 1) == Range(1, 100)", "True");
 	}
 
 	public void testIntegrate() {
@@ -3110,7 +3122,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("-(x - 2/3)", "2/3-x");
 		check("-Range(10)", "{-1,-2,-3,-4,-5,-6,-7,-8,-9,-10}");
 	}
-	
+
 	public void testMod() {
 		check("Mod(-10,3)", "2");
 		check("Mod(10,3)", "1");
@@ -3223,7 +3235,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testNames() {
 		check("Names(\"Int*\" )",
 				"{Interval,IntegerExponent,IntegerLength,IntegerPart,IntegerPartitions,IntegerQ,Integrate,Interpolation,InterpolatingFunction,InterpolatingPolynomial,Intersection,Integer,Integers}");
-		check("Names(\"Integer*\" )", "{IntegerExponent,IntegerLength,IntegerPart,IntegerPartitions,IntegerQ,Integer,Integers}");
+		check("Names(\"Integer*\" )",
+				"{IntegerExponent,IntegerLength,IntegerPart,IntegerPartitions,IntegerQ,Integer,Integers}");
 		check("Names(\"IntegerPart\" )", "{IntegerPart}");
 		// check("Names(\"*\" )", "{}");
 	}
@@ -3608,7 +3621,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testNest() {
 		check("Nest(f, x, 3)", "f(f(f(x)))");
 		check("Nest((1+#) ^ 2 &, x, 2)", "(1+(1+x)^2)^2");
-		
+
 		check("Nest(f, x, 3)", "f(f(f(x)))");
 		check("Nest((1 + #)^2 &, 1, 3)", "676");
 		check("Nest((1 + #)^2 &, x, 5)", "(1+(1+(1+(1+(1+x)^2)^2)^2)^2)^2");
@@ -4021,7 +4034,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPermutations() {
-        check("Permutations({a},{0})", "{{}}");
+		check("Permutations({a},{0})", "{{}}");
 		check("Permutations({a,b,c,d},{3})",
 				"{{a,b,c},{a,b,d},{a,c,b},{a,c,d},{a,d,b},{a,d,c},{b,a,c},{b,a,d},{b,c,a},{b,c,d},{b,d,a},{b,d,c},{c,a,b},{c,a,d},{c,b,a},{c,b,d},{c,d,a},{c,d,b},{d,a,b},{d,a,c},{d,b,a},{d,b,c},{d,c,a},{d,c,b}}");
 		check("Permutations({a,a,b})", "{{a,a,b},{a,b,a},{b,a,a}}");
@@ -4057,7 +4070,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("N(Pi, 30) + N(E, 30) // Precision", "30");
 		check("N(Pi, 30) + I", "3.14159265358979323846264338327+I*1");
 		check("N(Pi, 30) + E", "5.85987448204883829099102473027");
-		
+
 		check("Interval({1,6})+Interval({0,2})", "Interval({1,8})");
 		check("Interval({a,b})+z", "z+Interval({a,b})");
 		check("(Interval({-1,1})+1/2)^2 - 1/4", "Interval({-1/4,2})");
@@ -4261,7 +4274,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("2 ^ 2.0", "4.0");
 		check("Pi ^ 4.", "97.40909103400242");
 		check("a^b", "a^b");
-		
+
 		check("54^(1/3)", "3*2^(1/3)");
 		// check("Exp(y + Log(x))", "x+E^y");
 		check("E^(2*(y+Log(x)))", "E^(2*y)*x^2");
@@ -4796,20 +4809,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testReturn() {
 		check("f(x_) := (If(x < 0, Return(0)); x)", "");
 		check("f(-1)", "0");
-		
+
 		check("Do(If(i > 3, Return()); Print(i), {i, 10})", "");
-		
+
 		check("g(x_) := (Do(If(x < 0, Return(0)), {i, {2, 1, 0, -1}}); x)", "");
 		check("g(-1)", "-1");
-		
+
 		check("h(x_) := (If(x < 0, Return()); x)", "");
 		check("h(1)", "1");
 		check("h(-1) // FullForm", "\"Null\"");
-		
+
 		check("f(x_) := Return(x)", "");
 		check("g(y_) := Module({}, z = f(y); 2)", "");
 		check("g(1)", "2");
-		
+
 		check("$a(x_):=Return(1); $b(x_):=Module({},$c=$a(y);2); $b(1)", "2");
 		check("$f(x_) := (If(x > 5, Return(a)); x + 3); $f(6)", "a");
 		check("$g(x_) := (Do( If(x > 5, Return(a)), {3}); x); $g(6)", "6");
@@ -5469,7 +5482,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("a - b - c", "a-b-c");
 		check("a - (b - c)", "a-b+c");
 	}
-	
+
 	public void testSum() {
 		check("Sum(k, {k, Range(5)})", "15");
 		check("Sum(i^2 - i + 10 ,{i,1,10})", "430");
@@ -5774,6 +5787,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTimes() {
+		String s = System.getProperty("os.name");
+		if (s.contains("Windows")) {
+			check("N(Pi, 30) * I", "I*3.14159265358979323846264338327");
+			check("N(I*Pi, 30)", "I*3.14159265358979323846264338327");
+			check("N(Pi * E, 30)", "8.53973422267356706546355086954");
+			check("N(Pi, 30) * N(E, 30)", "8.53973422267356706546355086954");
+			check("N(Pi, 30) * E", "8.53973422267356649108017774746");
+			check("N(Pi, 30) * E // Precision", "30");
+		}
 		check("Floor(Log(7,1024))", "3");
 		check("10*2", "20");
 		check("a*a", "a^2");
@@ -5783,7 +5805,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("IntegerLength(Times@@Range(100))", "158");
 		check("a /. n_. * x_ :> {n, x} ", "{1,a}");
 		check("-a*b // FullForm", "\"Times(-1, a, b)\"");
-		check("-(x - 2/3)", "2/3-x");  
+		check("-(x - 2/3)", "2/3-x");
 		check("-(h/2) // FullForm", "\"Times(Rational(-1,2), h)\"");
 		check("x / x", "1");
 		check("2*x^2 / x^2", "2");
@@ -5793,15 +5815,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Head(Pi * I)", "Times");
 		check("-2.123456789 * x", "-2.123456789*x");
 		check("-2.123456789 * I", "I*(-2.123456789)");
-		check("N(Pi, 30) * I", "I*3.14159265358979323846264338327");
-		check("N(I*Pi, 30)", "I*3.14159265358979323846264338327");
-		check("N(Pi * E, 30)", "8.53973422267356706546355086954");
-		check("N(Pi, 30) * N(E, 30)", "8.53973422267356706546355086954");
-		check("N(Pi, 30) * E", "8.53973422267356649108017774746");
-		check("N(Pi, 30) * E // Precision", "30");
-		check("", "");
-		
-		
+
 		// issue #137
 		check("12*2^x*3^y", "2^(2+x)*3^(1+y)");
 		check("8*2^x", "2^(3+x)");
@@ -6097,7 +6111,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Which(False, a)", "");
 		check("Which(False, a, x, b, True, c)", "Which(x,b,True,c)");
 		check("Which(a, b, c)", "Which(a,b,c)");
-		
+
 		check("$a = 2;which($a == 1, x, $a == 2, b)", "b");
 		check("Which(1 < 0, a,  x == 0, b,  0 < 1, c)", "Which(x==0,b,0<1,c)");
 		check("$a = 2;which($a == 1, x, $a == 3, b)", "");
