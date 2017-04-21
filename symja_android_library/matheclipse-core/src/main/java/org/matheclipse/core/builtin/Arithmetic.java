@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.ArcCos;
 import static org.matheclipse.core.expression.F.ArcCot;
 import static org.matheclipse.core.expression.F.ArcSin;
 import static org.matheclipse.core.expression.F.ArcTan;
+import static org.matheclipse.core.expression.F.Arg;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.C2;
@@ -12,11 +13,16 @@ import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.CN1D2;
 import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.Cosh;
+import static org.matheclipse.core.expression.F.E;
 import static org.matheclipse.core.expression.F.Equal;
+import static org.matheclipse.core.expression.F.Im;
 import static org.matheclipse.core.expression.F.Log;
+import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Pi;
+import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Positive;
 import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Re;
 import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Sinh;
 import static org.matheclipse.core.expression.F.Times;
@@ -28,7 +34,14 @@ import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.y;
 import static org.matheclipse.core.expression.F.y_;
 
-import org.matheclipse.core.builtin.function.DirectedInfinity;
+import java.util.function.DoubleUnaryOperator;
+import java.util.function.Function;
+
+import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
+import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.exception.Validate;
@@ -36,13 +49,17 @@ import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.NumberUtil;
+import org.matheclipse.core.generic.interfaces.INumericFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -55,6 +72,7 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.HashedOrderlessMatcher;
+import org.matheclipse.core.reflection.system.rules.AbsRules;
 import org.matheclipse.core.reflection.system.rules.PowerRules;
 
 public final class Arithmetic {
@@ -72,17 +90,149 @@ public final class Arithmetic {
 		F.Sqrt.setEvaluator(new Sqrt());
 		F.Minus.setEvaluator(new Minus());
 
+		F.Abs.setEvaluator(new Abs());
 		F.AddTo.setEvaluator(new AddTo());
+		F.Conjugate.setEvaluator(new Conjugate());
+		F.Decrement.setEvaluator(new Decrement());
+		F.DirectedInfinity.setEvaluator(new DirectedInfinity());
 		F.DivideBy.setEvaluator(new DivideBy());
+		F.Im.setEvaluator(new Im());
+		F.Increment.setEvaluator(new Increment());
+		F.Precision.setEvaluator(new Precision());
+		F.PreDecrement.setEvaluator(new PreDecrement());
+		F.PreIncrement.setEvaluator(new PreIncrement());
+		F.Re.setEvaluator(new Re());
 		F.SubtractFrom.setEvaluator(new SubtractFrom());
 		F.TimesBy.setEvaluator(new TimesBy());
 
-		F.Decrement.setEvaluator(new Decrement());
-		F.Increment.setEvaluator(new Increment());
-		F.PreDecrement.setEvaluator(new PreDecrement());
-		F.PreIncrement.setEvaluator(new PreIncrement());
+	}
 
-		F.Precision.setEvaluator(new Precision());
+	/**
+	 * Absolute value of a number. See <a href="http://en.wikipedia.org/wiki/Absolute_value">Wikipedia:Absolute
+	 * value</a>
+	 */
+	private final static class Abs extends AbstractTrigArg1 implements INumeric, AbsRules, DoubleUnaryOperator {
+
+		private static final class AbsNumericFunction implements INumericFunction<IExpr> {
+			final ISymbol symbol;
+
+			public AbsNumericFunction(ISymbol symbol) {
+				this.symbol = symbol;
+			}
+
+			@Override
+			public IExpr apply(double value) {
+				if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {
+					double result = Math.abs(value);
+					if (result > 0.0) {
+						return symbol;
+					}
+				}
+				return F.NIL;
+			}
+		}
+
+		private static final class AbsTimesFunction implements Function<IExpr, IExpr> {
+			@Override
+			public IExpr apply(IExpr expr) {
+				if (expr.isNumber()) {
+					return ((INumber) expr).abs();
+				}
+				IExpr temp = F.eval(F.Abs(expr));
+				if (!temp.topHead().equals(F.Abs)) {
+					return temp;
+				}
+				return F.NIL;
+			}
+		}
+
+		@Override
+		public double applyAsDouble(double operand) {
+			return Math.abs(operand);
+		}
+
+		@Override
+		public IExpr e1ApcomplexArg(Apcomplex arg1) {
+			return F.num(ApcomplexMath.abs(arg1));
+		}
+
+		@Override
+		public IExpr e1ApfloatArg(Apfloat arg1) {
+			return F.num(ApfloatMath.abs(arg1));
+		}
+
+		@Override
+		public IExpr e1ComplexArg(final Complex arg1) {
+			return F.num(ComplexNum.dabs(arg1));
+		}
+
+		@Override
+		public IExpr e1DblArg(final double arg1) {
+			return F.num(Math.abs(arg1));
+		}
+
+		@Override
+		public double evalReal(final double[] stack, final int top, final int size) {
+			if (size != 1) {
+				throw new UnsupportedOperationException();
+			}
+			return Math.abs(stack[top]);
+		}
+
+		@Override
+		public IExpr evaluateArg1(final IExpr arg1) {
+			if (arg1.isDirectedInfinity()) {
+				return F.CInfinity;
+			}
+			if (arg1.isNumber()) {
+				return ((INumber) arg1).abs();
+			}
+			if (arg1.isNumericFunction()) {
+				IExpr temp = F.evaln(arg1);
+				if (temp.isSignedNumber()) {
+					if (temp.isNegative()) {
+						return arg1.negate();
+					} else {
+						return arg1;
+					}
+				}
+			}
+			if (arg1.isNegativeResult()) {
+				return F.Negate(arg1);
+			}
+			if (arg1.isNonNegativeResult()) {
+				return arg1;
+			}
+			if (arg1.isSymbol()) {
+				ISymbol sym = (ISymbol) arg1;
+				return sym.mapConstantDouble(new AbsNumericFunction(sym));
+			}
+
+			if (arg1.isTimes()) {
+				IAST[] result = ((IAST) arg1).filter(new AbsTimesFunction());
+				if (result[0].size() > 1) {
+					if (result[1].size() > 1) {
+						result[0].append(F.Abs(result[1]));
+					}
+					return result[0];
+				}
+			}
+			if (arg1.isPower() && arg1.getAt(2).isSignedNumber()) {
+				return F.Power(F.Abs(arg1.getAt(1)), arg1.getAt(2));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
 
 	}
 
@@ -120,6 +270,117 @@ public final class Arithmetic {
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
+	}
+
+	/**
+	 * Conjugate the given argument.
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Complex_conjugation">Wikipedia:Complex conjugation</a>
+	 */
+	private final static class Conjugate extends AbstractTrigArg1 implements INumeric {
+
+		/**
+		 * Conjugate numbers and special objects like <code>Infinity</code> and <code>Indeterminate</code>.
+		 * 
+		 * @param arg1
+		 * @return <code>F.NIL</code> if the evaluation wasn't possible
+		 */
+		private IExpr conjugate(IExpr arg1) {
+			if (arg1.isNumber()) {
+				return ((INumber) arg1).conjugate();
+			}
+			if (arg1.isRealResult()) {
+				return arg1;
+			}
+			if (arg1.isDirectedInfinity()) {
+				IAST directedInfininty = (IAST) arg1;
+				if (directedInfininty.isComplexInfinity()) {
+					return F.CComplexInfinity;
+				}
+				if (directedInfininty.isAST1()) {
+					if (directedInfininty.isInfinity()) {
+						return F.CInfinity;
+					}
+					IExpr conjug = F.eval(F.Conjugate(directedInfininty.arg1()));
+					return F.Times(conjug, F.CInfinity);
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public double evalReal(final double[] stack, final int top, final int size) {
+			if (size != 1) {
+				throw new UnsupportedOperationException();
+			}
+			return stack[top];
+		}
+
+		@Override
+		public IExpr numericEval(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+			IExpr arg1 = ast.arg1();
+			return evaluateArg1(arg1);
+		}
+
+		@Override
+		public IExpr evaluateArg1(final IExpr arg1) {
+			IExpr temp = conjugate(arg1);
+			if (temp.isPresent()) {
+				return temp;
+			}
+			if (arg1.isPower()) {
+				IExpr p1 = ((IAST) arg1).arg1();
+				if (p1.isPositiveResult()) {
+					return F.Power(p1, F.Conjugate(((IAST) arg1).arg2()));
+				}
+			}
+			if (arg1.isPlus()) {
+				return ((IAST) arg1).mapThread(F.Conjugate(F.Null), 1);
+			}
+			if (arg1.isTimes()) {
+				IAST result = F.NIL;
+				IAST clone = ((IAST) arg1).clone();
+				int i = 1;
+				while (i < clone.size()) {
+					temp = conjugate(clone.get(i));
+					if (temp.isPresent()) {
+						clone.remove(i);
+						if (!result.isPresent()) {
+							result = ((IAST) arg1).copyHead();
+						}
+						result.append(temp);
+						continue;
+					}
+					i++;
+				}
+				if (result.isPresent()) {
+					if (clone.isAST0()) {
+						return result;
+					}
+					if (clone.isAST0()) {
+						result.append(F.Conjugate(clone.arg1()));
+						return result;
+					}
+					result.append(F.Conjugate(clone));
+					return result;
+				}
+			} else if (arg1.isConjugate()) {
+				return arg1.getAt(1);
+			} else if (arg1.isAST(F.Zeta, 2)) {
+				return F.Zeta(F.Conjugate(arg1.getAt(1)));
+			} else if (arg1.isAST(F.Zeta, 3) && arg1.getAt(1).isSignedNumber() && arg1.getAt(2).isSignedNumber()) {
+				return F.Zeta(F.Conjugate(arg1.getAt(1)), F.Conjugate(arg1.getAt(2)));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+
 	}
 
 	private static class Decrement extends AbstractFunctionEvaluator {
@@ -173,6 +434,233 @@ public final class Arithmetic {
 		@Override
 		protected ISymbol getFunctionSymbol() {
 			return F.DivideBy;
+		}
+
+	}
+
+	private final static class DirectedInfinity extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 1, 2);
+
+			if (ast.isAST1()) {
+				boolean numericMode = engine.isNumericMode();
+				boolean evaled = false;
+				try {
+					engine.setNumericMode(false);
+					IExpr arg1 = ast.arg1();
+					IExpr temp = engine.evalLoop(arg1);
+					if (temp.isPresent()) {
+						arg1 = temp;
+						evaled = true;
+					}
+					if (arg1.isIndeterminate() || arg1.isZero()) {
+						return F.CComplexInfinity;
+					}
+					if (arg1.isSignedNumber()) {
+						if (arg1.isOne() || arg1.isMinusOne()) {
+							if (evaled) {
+								return F.DirectedInfinity(arg1);
+							}
+							return F.NIL;
+						}
+						if (arg1.isNegative()) {
+							return F.DirectedInfinity(F.CN1);
+						} else {
+							return F.DirectedInfinity(F.C1);
+						}
+					}
+					if (arg1.isNumber()) {
+						IExpr arg1Abs = engine.evaluate(F.Divide(arg1, F.Abs(arg1)));
+						if (arg1.equals(arg1Abs)) {
+							if (evaled) {
+								return F.DirectedInfinity(arg1);
+							}
+							return F.NIL;
+						}
+						return F.DirectedInfinity(arg1Abs);
+					}
+					if (arg1.isNumericFunction()) {
+						IExpr a1 = F.evaln(arg1);
+						if (a1.isSignedNumber()) {
+							if (a1.isZero()) {
+								return F.CComplexInfinity;
+							}
+							if (a1.isNegative()) {
+								return F.DirectedInfinity(F.CN1);
+							} else {
+								return F.DirectedInfinity(F.C1);
+							}
+						}
+					}
+					if (evaled) {
+						return F.DirectedInfinity(arg1);
+					}
+				} finally {
+					engine.setNumericMode(numericMode);
+				}
+			}
+			return F.NIL;
+
+		}
+
+		public static IExpr timesInf(IAST inf, IExpr a2) {
+			if (inf.isAST1()) {
+				IExpr result;
+				IExpr a1 = inf.arg1();
+				if (a1.isNumber()) {
+					if (a2.isNumber()) {
+						result = a1.times(a2);
+						if (result.isSignedNumber()) {
+							if (result.isNegative()) {
+								return F.CNInfinity;
+							} else {
+								return F.CInfinity;
+							}
+						} else if (result.isImaginaryUnit()) {
+							return F.DirectedInfinity(F.CI);
+						} else if (result.isNegativeImaginaryUnit()) {
+							return F.DirectedInfinity(F.CNI);
+						}
+					} else if (a2.isSymbol()) {
+						if (a1.isOne()) {
+							return F.DirectedInfinity(a2);
+						} else if (a1.isMinusOne() || a1.equals(F.CI) || a1.equals(F.CNI)) {
+							return F.DirectedInfinity(F.Times(a1, a2));
+						}
+					}
+				} else if (a1.isSymbol()) {
+					if (a2.isSignedNumber()) {
+						if (a2.isNegative()) {
+							return F.DirectedInfinity(F.Times(F.CN1, F.Sign(a1)));
+						} else {
+							return F.DirectedInfinity(a1);
+						}
+					} else if (a2.equals(F.CI)) {
+						return F.DirectedInfinity(F.Times(F.CI, a1));
+					} else if (a2.equals(F.CNI)) {
+						return F.DirectedInfinity(F.Times(F.CNI, F.Sign(a1)));
+					}
+				}
+				result = F.Divide(F.Times(a1, a2), F.Abs(F.Times(a1, a2)));
+				return F.DirectedInfinity(result);
+			}
+			// ComplexInfinity
+			return inf;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			// don't set ISymbol.NUMERICFUNCTION);
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
+	}
+
+	/**
+	 * Get the imaginary part of an expression
+	 * 
+	 * See: <a href="http://en.wikipedia.org/wiki/Imaginary_part">Imaginary part</a>
+	 */
+	private final static class Im extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			IExpr arg1 = ast.arg1();
+			if (arg1.isDirectedInfinity()) {
+				IAST directedInfininty = (IAST) arg1;
+				if (directedInfininty.isComplexInfinity()) {
+					return F.Indeterminate;
+				}
+				if (directedInfininty.isAST1()) {
+					if (directedInfininty.isInfinity()) {
+						return F.C0;
+					}
+					IExpr im = engine.evaluate(F.Im(directedInfininty.arg1()));
+					if (im.isNumber()) {
+						if (im.isZero()) {
+							return F.C0;
+						}
+						return F.Times(F.Sign(im), F.CInfinity);
+					}
+				}
+			}
+			if (arg1.isNumber()) {
+				return ((INumber) arg1).im();
+			}
+			// if (arg1.isSignedNumber()) {
+			// return F.C0;
+			// }
+			// if (arg1.isComplex()) {
+			// return ((IComplex) arg1).getIm();
+			// }
+			// if (arg1 instanceof IComplexNum) {
+			// return F.num(((IComplexNum) arg1).getImaginaryPart());
+			// }
+			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+			if (negExpr.isPresent()) {
+				return Negate(Im(negExpr));
+			}
+			if (arg1.isTimes()) {
+				if (arg1.getAt(1).isSignedNumber()) {
+					IAST temp = ((IAST) arg1).removeAtClone(1);
+					return F.Times(arg1.getAt(1), F.Im(temp));
+				}
+				if (arg1.getAt(1).isImaginaryUnit()) {
+					// Im(I*temp) -> Re(temp)
+					return ((IAST) arg1).removeAtClone(1).re();
+				}
+			}
+			if (arg1.isPlus()) {
+				return ((IAST) arg1).mapThread((IAST) F.Im(null), 1);
+			}
+			if (arg1.isPower()) {
+				IAST astPower = (IAST) arg1;
+				if (astPower.arg1().isRealResult()) {
+					// test for x^(a+I*b)
+					IExpr x = astPower.arg1();
+					if (astPower.arg2().isNumber()) {
+						// (x^2)^(a/2)*E^(-b*Arg[x])*Sin[a*Arg[x]+1/2*b*Log[x^2]]
+						IExpr a = ((INumber) astPower.arg2()).re();
+						IExpr b = ((INumber) astPower.arg2()).im();
+						return imPowerComplex(x, a, b);
+					}
+					if (astPower.arg2().isNumericFunction()) {
+						// (x^2)^(a/2)*E^(-b*Arg[x])*Sin[a*Arg[x]+1/2*b*Log[x^2]]
+						IExpr a = engine.evaluate(F.Re(astPower.arg2()));
+						IExpr b = engine.evaluate(F.Im(astPower.arg2()));
+						return imPowerComplex(x, a, b);
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * Evaluate <code>Im(x^(a+I*b))</code>
+		 * 
+		 * @param x
+		 * @param a
+		 *            the real part of the exponent
+		 * @param b
+		 *            the imaginary part of the exponent
+		 * @return
+		 */
+		private IExpr imPowerComplex(IExpr x, IExpr a, IExpr b) {
+			if (x.isE()) {
+				// Im(E^(a+I*b)) -> E^a*Sin[b]
+				return Times(Power(F.E, a), Sin(b));
+			}
+			return Times(Times(Power(Power(x, C2), Times(C1D2, a)), Power(E, Times(Negate(b), Arg(x)))),
+					Sin(Plus(Times(a, Arg(x)), Times(Times(C1D2, b), Log(Power(x, C2))))));
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		}
 
 	}
@@ -1145,6 +1633,111 @@ public final class Arithmetic {
 		@Override
 		protected ISymbol getFunctionSymbol() {
 			return F.PreIncrement;
+		}
+
+	}
+
+	/**
+	 * Get the real part of an expression
+	 * 
+	 * See: <a href="http://en.wikipedia.org/wiki/Real_part">Real part</a>
+	 */
+	private final static class Re extends AbstractEvaluator {
+
+		public static IExpr evalRe(IExpr expr, EvalEngine engine) {
+			if (expr.isDirectedInfinity()) {
+				IAST directedInfininty = (IAST) expr;
+				if (directedInfininty.isComplexInfinity()) {
+					return F.Indeterminate;
+				}
+				if (directedInfininty.isAST1()) {
+					if (directedInfininty.isInfinity()) {
+						return F.CInfinity;
+					}
+					IExpr re = directedInfininty.arg1().re();
+					if (re.isNumber()) {
+						if (re.isZero()) {
+							return F.C0;
+						}
+						return F.Times(F.Sign(re), F.CInfinity);
+					}
+				}
+			}
+			if (expr.isNumber()) {
+				return ((INumber) expr).re();
+			}
+
+			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(expr);
+			if (negExpr.isPresent()) {
+				return Negate(Re(negExpr));
+			}
+			if (expr.isTimes()) {
+				if (expr.getAt(1).isSignedNumber()) {
+					IAST temp = ((IAST) expr).removeAtClone(1);
+					return F.Times(expr.getAt(1), F.Re(temp));
+				}
+				if (expr.getAt(1).isImaginaryUnit()) {
+					// Re(I*temp) -> -Im(temp)
+					IAST temp = ((IAST) expr).removeAtClone(1);
+					return F.Times(F.CN1, F.Im(temp));
+				}
+			}
+			if (expr.isPlus()) {
+				return ((IAST) expr).mapThread((IAST) F.Re(null), 1);
+			}
+			if (expr.isPower()) {
+				IAST astPower = (IAST) expr;
+				if (astPower.arg1().isRealResult()) {
+					// test for x^(a+I*b)
+					IExpr x = astPower.arg1();
+					if (astPower.arg2().isNumber()) {
+						// (x^2)^(a/2)*E^(-b*Arg[x])*Cos[a*Arg[x]+1/2*b*Log[x^2]]
+						IExpr a = ((INumber) astPower.arg2()).re();
+						IExpr b = ((INumber) astPower.arg2()).im();
+						return rePowerComplex(x, a, b);
+					}
+					// (x^2)^(a/2)*E^(-b*Arg[x])*Cos[a*Arg[x]+1/2*b*Log[x^2]]
+					IExpr a = astPower.arg2().re();
+					IExpr b = astPower.arg2().im();
+					return rePowerComplex(x, a, b);
+				}
+			}
+			return F.NIL;
+		}
+
+		public Re() {
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			IExpr arg1 = ast.arg1();
+			return evalRe(arg1, engine);
+		}
+
+		/**
+		 * Evaluate <code>Re(x^(a+I*b))</code>
+		 * 
+		 * @param x
+		 * @param a
+		 *            the real part of the exponent
+		 * @param b
+		 *            the imaginary part of the exponent
+		 * @return
+		 */
+		private static IExpr rePowerComplex(IExpr x, IExpr a, IExpr b) {
+			if (x.isE()) {
+				// Re(E^(a+I*b)) -> E^a*Cos[b]
+				return Times(Power(F.E, a), Cos(b));
+			}
+			return Times(Times(Power(Power(x, C2), Times(C1D2, a)), Power(E, Times(Negate(b), Arg(x)))),
+					Cos(Plus(Times(a, Arg(x)), Times(Times(C1D2, b), Log(Power(x, C2))))));
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		}
 
 	}

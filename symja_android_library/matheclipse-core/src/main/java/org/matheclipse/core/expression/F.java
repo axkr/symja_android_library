@@ -355,14 +355,15 @@ public class F {
 	public final static IBuiltInSymbol DigitQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "digitq" : "DigitQ");
 	public final static IBuiltInSymbol DirectedInfinity = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "directedinfinity" : "DirectedInfinity",
-			new org.matheclipse.core.builtin.function.DirectedInfinity());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "directedinfinity" : "DirectedInfinity");
 	public final static IBuiltInSymbol Do = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "do" : "Do");
 	public final static IBuiltInSymbol Drop = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "drop" : "Drop");
 	public final static IBuiltInSymbol Element = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "element" : "Element",
 			new org.matheclipse.core.builtin.function.Element());
 	public final static IBuiltInSymbol EvenQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "evenq" : "EvenQ");
+	public final static IBuiltInSymbol ExactNumberQ = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "exactnumberq" : "ExactNumberQ");
 	public final static IBuiltInSymbol Exponent = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "exponent" : "Exponent",
 			new org.matheclipse.core.builtin.function.Exponent());
@@ -398,6 +399,8 @@ public class F {
 	public final static IBuiltInSymbol If = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "if" : "If");
 	public final static IBuiltInSymbol Implies = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "implies" : "Implies");
+	public final static IBuiltInSymbol InexactNumberQ = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inexactnumberq" : "InexactNumberQ");
 	public final static IBuiltInSymbol Insert = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "insert" : "Insert",
 			new org.matheclipse.core.builtin.function.Insert());
@@ -415,6 +418,8 @@ public class F {
 	public final static IBuiltInSymbol LevelQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "levelq" : "LevelQ");
 	public final static IBuiltInSymbol ListQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "listq" : "ListQ");
+	public final static IBuiltInSymbol MachineNumberQ = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "machinenumberq" : "MachineNumberQ");
 	public final static IBuiltInSymbol MatchQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matchq" : "MatchQ");
 	public final static IBuiltInSymbol MathMLForm = initFinalSymbol(
@@ -475,6 +480,8 @@ public class F {
 	public final static IBuiltInSymbol Rational = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rational" : "Rational",
 			new org.matheclipse.core.builtin.function.Rational());
+	public final static IBuiltInSymbol RealNumberQ = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "realnumberq" : "RealNumberQ");
 	public final static IBuiltInSymbol Reap = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "reap" : "Reap");
 	public final static IBuiltInSymbol Refine = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "refine" : "Refine",

@@ -228,14 +228,9 @@ public class ApcomplexNum implements IComplexNum {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
-		// if (engine.isNumericMode() && engine.getNumericPrecision() <=
-		// ApfloatNum.DOUBLE_PRECISION) {
-		// return ComplexNum.valueOf(fApcomplex.real().doubleValue(),
-		// fApcomplex.imag().doubleValue());
-		// }
-		if (fApcomplex.imag().equals(Apcomplex.ZERO)) {
-			return ApfloatNum.valueOf(fApcomplex.real());
-		}
+//		if (fApcomplex.imag().equals(Apcomplex.ZERO)) {
+//			return ApfloatNum.valueOf(fApcomplex.real());
+//		}
 		return F.NIL;
 	}
 

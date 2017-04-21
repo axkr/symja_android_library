@@ -4,7 +4,6 @@ import static org.matheclipse.core.expression.F.*;
 
 public final class FunctionDefinitions {
 	static {
-		Abs.setEvaluator(new org.matheclipse.core.reflection.system.Abs());
 		AbsArg.setEvaluator(new org.matheclipse.core.reflection.system.AbsArg());
 		ArcCos.setEvaluator(new org.matheclipse.core.reflection.system.ArcCos());
 		ArcCosh.setEvaluator(new org.matheclipse.core.reflection.system.ArcCosh());
@@ -30,7 +29,6 @@ public final class FunctionDefinitions {
 		CoefficientRules.setEvaluator(new org.matheclipse.core.reflection.system.CoefficientRules());
 		ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
 		ComposeList.setEvaluator(new org.matheclipse.core.reflection.system.ComposeList());
-		Conjugate.setEvaluator(new org.matheclipse.core.reflection.system.Conjugate());
 		ContinuedFraction.setEvaluator(new org.matheclipse.core.reflection.system.ContinuedFraction());
 		Cos.setEvaluator(new org.matheclipse.core.reflection.system.Cos());
 		Cosh.setEvaluator(new org.matheclipse.core.reflection.system.Cosh());
@@ -80,7 +78,6 @@ public final class FunctionDefinitions {
 		HornerForm.setEvaluator(new org.matheclipse.core.reflection.system.HornerForm());
 		Hypergeometric1F1.setEvaluator(new org.matheclipse.core.reflection.system.Hypergeometric1F1());
 		Hypergeometric2F1.setEvaluator(new org.matheclipse.core.reflection.system.Hypergeometric2F1());
-		Im.setEvaluator(new org.matheclipse.core.reflection.system.Im());
 		Import.setEvaluator(new org.matheclipse.core.reflection.system.Import());
 		IntegerExponent.setEvaluator(new org.matheclipse.core.reflection.system.IntegerExponent());
 		IntegerPart.setEvaluator(new org.matheclipse.core.reflection.system.IntegerPart());
@@ -141,7 +138,6 @@ public final class FunctionDefinitions {
 		RandomReal.setEvaluator(new org.matheclipse.core.reflection.system.RandomReal());
 		RandomSample.setEvaluator(new org.matheclipse.core.reflection.system.RandomSample());
 		Rationalize.setEvaluator(new org.matheclipse.core.reflection.system.Rationalize());
-		Re.setEvaluator(new org.matheclipse.core.reflection.system.Re());
 		Replace.setEvaluator(new org.matheclipse.core.reflection.system.Replace());
 		ReplaceAll.setEvaluator(new org.matheclipse.core.reflection.system.ReplaceAll());
 		ReplaceList.setEvaluator(new org.matheclipse.core.reflection.system.ReplaceList());

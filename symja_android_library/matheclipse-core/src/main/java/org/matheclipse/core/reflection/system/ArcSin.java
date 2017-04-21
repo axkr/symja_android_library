@@ -23,8 +23,7 @@ import org.matheclipse.core.reflection.system.rules.ArcSinRules;
 /**
  * Arcsine
  * 
- * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
- * Inverse_trigonometric functions</a>
+ * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" > Inverse_trigonometric functions</a>
  */
 public class ArcSin extends AbstractTrigArg1 implements INumeric, ArcSinRules, DoubleUnaryOperator {
 
@@ -47,7 +46,11 @@ public class ArcSin extends AbstractTrigArg1 implements INumeric, ArcSinRules, D
 
 	@Override
 	public IExpr e1ApfloatArg(Apfloat arg1) {
-		return F.num(ApfloatMath.asin(arg1));
+		try {
+			return F.num(ApfloatMath.asin(arg1));
+		} catch (ArithmeticException ae) {
+			return F.complexNum(ApcomplexMath.asin(new Apcomplex(arg1,Apfloat.ZERO)));
+		}
 	}
 
 	@Override

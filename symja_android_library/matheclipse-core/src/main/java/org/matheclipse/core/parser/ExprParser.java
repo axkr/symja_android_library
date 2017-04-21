@@ -776,7 +776,7 @@ public class ExprParser extends ExprScanner {
 				number = '-' + number;
 			}
 			if (numFormat < 0) {
-				temp = new NumStr(number);
+				temp = getReal(number);
 				// temp = fFactory.createDouble(number);
 			} else {
 				temp = F.integer(number, numFormat);
@@ -787,6 +787,32 @@ public class ExprParser extends ExprScanner {
 		}
 		getNextToken();
 		return temp;
+	}
+
+	public static INum getReal(String str) {
+		int index = str.indexOf("*^");
+		int fExponent = 1;
+		String fFloatStr = str;
+		if (index > 0) {
+			fFloatStr = str.substring(0, index);
+			fExponent = Integer.parseInt(str.substring(index + 2));
+		}
+		if (fFloatStr.length() > 15) {
+			int precision = fFloatStr.length();
+			Apfloat apfloatValue = new Apfloat(fFloatStr, precision);
+			if (fExponent != 1) {
+				// value * 10 ^ exponent
+				return F.num(apfloatValue.multiply(ApfloatMath.pow(new Apfloat(10, precision), new Apint(fExponent))));
+			}
+			return F.num(apfloatValue);
+		}
+
+		double fDouble = Double.parseDouble(fFloatStr);
+		if (fExponent != 1) {
+			// value * 10 ^ exponent
+			fDouble = fDouble * Math.pow(10, fExponent);
+		}
+		return new NumStr(fFloatStr, fExponent);
 	}
 
 	/**

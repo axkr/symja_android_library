@@ -166,6 +166,9 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		check("(0.0+I*0.0)^10.0", "0.0");
+		
+		
 		check("(Infinity)^(-Infinity)", "0");
 		check("(ComplexInfinity)^(-Infinity)", "0");
 		check("(ComplexInfinity)^(Infinity)", "ComplexInfinity");
@@ -421,8 +424,9 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem003() {
-		check("1.6969545188681513*^4", "16969.545188681514");
-		check("1.6969545188681513*^-10", "1.6969545188681515E-10");
+		check("1.6969545188681513E4", "1.6969545188681513e4");
+		check("1.6969545188681513*^4", "1.69695451886815129e4");
+		check("1.6969545188681513*^-10", "1.6969545188681513e-10");
 		check("-0.0001E+15", "-1.0E11");
 		check("-0.0001E-15", "0.0");
 	}
@@ -433,9 +437,9 @@ public class MainTestCase extends AbstractTestCase {
 
 		check("Chop((-2.4492935982947064E-16)+I*(-1.0E-19))", "0");
 		check("Chop(2.0+I*(-2.4492935982947064E-16))", "2.0");
-		check("Chop((-2.4492935982947064E-16)+I*0.5)", "I*0.5");
+		check("Chop((-2.4492935982947064E-16)+I*0.5)", "I*0.5000000000000001");
 
-		check("Chop({2.0+I*(-2.4492935982947064E-16),(-2.4492935982947064E-16)+I*0.5})", "{2.0,I*0.5}");
+		check("Chop({2.0+I*(-2.4492935982947064E-16),(-2.4492935982947064E-16)+I*0.5})", "{2.0,I*0.5000000000000001}");
 	}
 
 	public void testSystem005() {
@@ -2620,7 +2624,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("Conjugate(I)", "-I");
 		check("Conjugate(I+c)", "-I+Conjugate(c)");
 		check("Conjugate(I*c)", "-I*Conjugate(c)");
-		check("Conjugate(a+I+c)", "-I+Conjugate(a+c)");
+		check("Conjugate(a+I+c)", "-I+Conjugate(a)+Conjugate(c)");
 		check("Conjugate(a*I*c)", "-I*Conjugate(a*c)");
 	}
 

@@ -6,6 +6,7 @@ import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
 import org.hipparchus.complex.Complex;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -32,12 +33,14 @@ public class ComplexNum implements IComplexNum {
 
 	/** The square root of -1. A number representing "0.0 + 1.0i" */
 	public static final ComplexNum I = valueOf(0.0, 1.0);
-
-	/** The square root of -1. A number representing "0.0 - 1.0i" */
-	public static final ComplexNum NI = valueOf(0.0, -1.0);
+	
+	public static final ComplexNum INF = valueOf(Complex.INF);
 
 	/** A complex number representing "NaN + NaNi" */
-	public static final ComplexNum NaN = valueOf(Double.NaN, Double.NaN);
+	public static final ComplexNum NaN = valueOf(Complex.NaN);
+	
+	/** The square root of -1. A number representing "0.0 - 1.0i" */
+	public static final ComplexNum NI = valueOf(0.0, -1.0);
 
 	/** A complex number representing "-1.0 + 0.0i" */
 	public static final ComplexNum MINUS_ONE = valueOf(-1.0, 0.0);
@@ -322,9 +325,9 @@ public class ComplexNum implements IComplexNum {
 		if (engine.isNumericMode() && engine.isApfloat()) {
 			return ApcomplexNum.valueOf(getRealPart(), getImaginaryPart(), engine.getNumericPrecision());
 		}
-		if (F.isZero(getImaginaryPart())) {
-			return F.num(getRealPart());
-		}
+		// if (F.isZero(getImaginaryPart())) {
+		// return F.num(getRealPart());
+		// }
 		return F.NIL;
 	}
 
@@ -528,6 +531,18 @@ public class ComplexNum implements IComplexNum {
 
 	@Override
 	public IComplexNum pow(final IComplexNum val) {
+		if (Complex.equals(fComplex, Complex.ZERO, Config.DOUBLE_EPSILON)) {
+			ISignedNumber sn=val.re();
+			if (sn.isNegative()) {
+				EvalEngine.get().printMessage("Infinite expression 0^(negative number)");
+				return INF;
+			}
+			if (sn.isZero()) {
+				EvalEngine.get().printMessage("Infinite expression 0^0.");
+				return NaN;
+			}
+			return ZERO;
+		}
 		return newInstance(fComplex.pow(((ComplexNum) val).fComplex));
 	}
 

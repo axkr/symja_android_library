@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin.function;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -26,7 +27,7 @@ public class N extends AbstractCoreFunctionEvaluator {
 		final boolean numericMode = engine.isNumericMode();
 		final int oldPrecision = engine.getNumericPrecision();
 		try {
-			int numericPrecision = EvalEngine.DOUBLE_PRECISION;
+			int numericPrecision = Config.MACHINE_PRECISION;
 			if (ast.isAST2()) {
 				numericPrecision = Validate.checkIntType(ast.arg2());
 			}

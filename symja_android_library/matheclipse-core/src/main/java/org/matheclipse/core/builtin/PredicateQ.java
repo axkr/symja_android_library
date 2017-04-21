@@ -31,9 +31,12 @@ public class PredicateQ {
 		F.BooleanQ.setEvaluator(new BooleanQ());
 		F.DigitQ.setEvaluator(new DigitQ());
 		F.EvenQ.setEvaluator(new EvenQ());
+		F.ExactNumberQ.setEvaluator(new ExactNumberQ());
 		F.FreeQ.setEvaluator(new FreeQ());
+		F.InexactNumberQ.setEvaluator(new InexactNumberQ());
 		F.IntegerQ.setEvaluator(new IntegerQ());
 		F.ListQ.setEvaluator(new ListQ());
+		F.MachineNumberQ.setEvaluator(new MachineNumberQ());
 		F.MatchQ.setEvaluator(new MatchQ());
 		F.MatrixQ.setEvaluator(new MatrixQ());
 		F.MemberQ.setEvaluator(new MemberQ());
@@ -43,6 +46,7 @@ public class PredicateQ {
 		F.OddQ.setEvaluator(new OddQ());
 		F.PossibleZeroQ.setEvaluator(new PossibleZeroQ());
 		F.PrimeQ.setEvaluator(new PrimeQ());
+		F.RealNumberQ.setEvaluator(new RealNumberQ());
 		F.SymbolQ.setEvaluator(new SymbolQ());
 		F.SyntaxQ.setEvaluator(new SyntaxQ());
 		F.UpperCaseQ.setEvaluator(new UpperCaseQ());
@@ -53,9 +57,8 @@ public class PredicateQ {
 	/**
 	 * ArrayQ tests whether an expression is a full array.
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/ArrayQ">
-	 * ArrayQ</a>
+	 * See the online Symja function reference:
+	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/ArrayQ"> ArrayQ</a>
 	 * </p>
 	 *
 	 */
@@ -87,16 +90,14 @@ public class PredicateQ {
 		}
 
 		/**
-		 * Determine the depth of the given expression <code>expr</code> which
-		 * should be a full array of (possibly nested) lists. Return
-		 * <code>-1</code> if the expression isn't a full array.
+		 * Determine the depth of the given expression <code>expr</code> which should be a full array of (possibly
+		 * nested) lists. Return <code>-1</code> if the expression isn't a full array.
 		 * 
 		 * @param expr
 		 * @param depth
 		 *            start depth of the full array
 		 * @param predicate
-		 *            an optional <code>Predicate</code> which would be applied
-		 *            to all elements which aren't lists.
+		 *            an optional <code>Predicate</code> which would be applied to all elements which aren't lists.
 		 * @return <code>-1</code> if the expression isn't a full array.
 		 */
 		private static int determineDepth(final IExpr expr, int depth, Predicate<IExpr> predicate) {
@@ -151,12 +152,10 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Returns <code>True</code>, if the given expression is an atomic object
-	 * (i.e. no AST instance)
+	 * Returns <code>True</code>, if the given expression is an atomic object (i.e. no AST instance)
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/AtomQ">
-	 * AtomQ</a>
+	 * See the online Symja function reference:
+	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/AtomQ"> AtomQ</a>
 	 * </p>
 	 *
 	 */
@@ -176,8 +175,7 @@ public class PredicateQ {
 	/**
 	 * Predicate function
 	 * 
-	 * Returns <code>True</code> if the first argument is an integer;
-	 * <code>False</code> otherwise
+	 * Returns <code>True</code> if the first argument is an integer; <code>False</code> otherwise
 	 */
 	private static class BooleanQ extends AbstractCorePredicateEvaluator {
 
@@ -198,8 +196,7 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Returns <code>True</code>, if the given expression is a string which only
-	 * contains digits.
+	 * Returns <code>True</code>, if the given expression is a string which only contains digits.
 	 * 
 	 */
 	private static class DigitQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
@@ -238,8 +235,7 @@ public class PredicateQ {
 	/**
 	 * Predicate function
 	 * 
-	 * Returns <code>True</code> if the 1st argument is an even integer number;
-	 * <code>False</code> otherwise
+	 * Returns <code>True</code> if the 1st argument is an even integer number; <code>False</code> otherwise
 	 */
 	private static class EvenQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
 		public EvenQ() {
@@ -285,17 +281,15 @@ public class PredicateQ {
 		}
 
 		/**
-		 * Checks if <code>orderless1.size()</code> is greater or equal
-		 * <code>orderless2.size()</code> and returns <code>false</code>, if
-		 * every argument in <code>orderless2</code> equals an argument in
-		 * <code>orderless1</code>. I.e. <code>orderless1</code> doesn't contain
-		 * every argument of <code>orderless2</code>.
+		 * Checks if <code>orderless1.size()</code> is greater or equal <code>orderless2.size()</code> and returns
+		 * <code>false</code>, if every argument in <code>orderless2</code> equals an argument in
+		 * <code>orderless1</code>. I.e. <code>orderless1</code> doesn't contain every argument of
+		 * <code>orderless2</code>.
 		 * 
 		 * @param orderless1
 		 * @param orderless2
-		 * @return <code>false</code> if <code>orderless1.size()</code> is
-		 *         greater or equal <code>orderless2.size()</code> and if every
-		 *         argument in <code>orderless2</code> equals an argument in
+		 * @return <code>false</code> if <code>orderless1.size()</code> is greater or equal
+		 *         <code>orderless2.size()</code> and if every argument in <code>orderless2</code> equals an argument in
 		 *         <code>orderless1</code>
 		 */
 		public boolean isFreeOrderless(IAST orderless1, IAST orderless2) {
@@ -328,8 +322,7 @@ public class PredicateQ {
 	/**
 	 * Predicate function
 	 * 
-	 * Returns <code>True</code> if the first argument is an integer;
-	 * <code>False</code> otherwise
+	 * Returns <code>True</code> if the first argument is an integer; <code>False</code> otherwise
 	 */
 	private static class IntegerQ extends AbstractCorePredicateEvaluator {
 
@@ -352,8 +345,7 @@ public class PredicateQ {
 	/**
 	 * Predicate function
 	 * 
-	 * Returns <code>True</code> if the 1st argument is a list expression;
-	 * <code>False</code> otherwise
+	 * Returns <code>True</code> if the 1st argument is a list expression; <code>False</code> otherwise
 	 */
 	private static class ListQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
 		public ListQ() {
@@ -401,8 +393,7 @@ public class PredicateQ {
 	/**
 	 * Predicate function
 	 * 
-	 * Returns <code>True</code> if the 1st argument is a matrix;
-	 * <code>False</code> otherwise
+	 * Returns <code>True</code> if the 1st argument is a matrix; <code>False</code> otherwise
 	 */
 	private static class MatrixQ extends AbstractCoreFunctionEvaluator {
 
@@ -469,8 +460,8 @@ public class PredicateQ {
 	/**
 	 * Predicate function
 	 * 
-	 * Returns <code>True</code> if the 1st argument is a <code>Missing()</code>
-	 * expression; <code>False</code> otherwise
+	 * Returns <code>True</code> if the 1st argument is a <code>Missing()</code> expression; <code>False</code>
+	 * otherwise
 	 */
 	private static class MissingQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
 
@@ -489,30 +480,71 @@ public class PredicateQ {
 	 * Returns <code>True</code>, if the given expression is an number object
 	 * 
 	 */
-	private static class NumberQ extends AbstractCoreFunctionEvaluator implements Predicate<IExpr> {
+	private static class NumberQ extends AbstractCoreFunctionEvaluator {
 		/**
-		 * Returns <code>True</code> if the 1st argument is a number;
-		 * <code>False</code> otherwise
+		 * Returns <code>True</code> if the 1st argument is a number; <code>False</code> otherwise
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-			IExpr arg1 = engine.evaluate(ast.arg1());
-			if (arg1.isDirectedInfinity()) {
-				return F.False;
+			if (ast.isAST1()) {
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				return F.bool(arg1.isNumber());
 			}
-			return F.bool(arg1.isNumber());
+			Validate.checkSize(ast, 2);
+			return F.NIL;
 		}
+	}
 
+	private static class RealNumberQ extends AbstractCoreFunctionEvaluator {
 		@Override
-		public boolean test(final IExpr expr) {
-			return expr.isNumber();
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				return F.bool(arg1.isRealNumber());
+			}
+			Validate.checkSize(ast, 2);
+			return F.NIL;
+		}
+	}
+
+	private static class MachineNumberQ extends AbstractCoreFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				return F.bool(arg1.isMachineNumber());
+			}
+			Validate.checkSize(ast, 2);
+			return F.NIL;
+		}
+	}
+
+	private static class ExactNumberQ extends AbstractCoreFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				return F.bool(arg1.isExactNumber());
+			}
+			Validate.checkSize(ast, 2);
+			return F.NIL;
+		}
+	}
+
+	private static class InexactNumberQ extends AbstractCoreFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				IExpr arg1 = engine.evaluate(ast.arg1());
+				return F.bool(arg1.isInexactNumber());
+			}
+			Validate.checkSize(ast, 2);
+			return F.NIL;
 		}
 	}
 
 	/**
-	 * Returns <code>True</code>, if the given expression is a numeric function
-	 * or value.
+	 * Returns <code>True</code>, if the given expression is a numeric function or value.
 	 * 
 	 */
 	private static class NumericQ extends AbstractCoreFunctionEvaluator implements Predicate<IExpr> {
@@ -531,8 +563,7 @@ public class PredicateQ {
 		}
 
 		/**
-		 * Returns <code>True</code> if the first argument is a numeric object;
-		 * <code>False</code> otherwise
+		 * Returns <code>True</code> if the first argument is a numeric object; <code>False</code> otherwise
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -550,8 +581,7 @@ public class PredicateQ {
 	/**
 	 * Predicate function
 	 * 
-	 * Returns <code>True</code> if the 1st argument is an odd integer number;
-	 * <code>False</code> otherwise
+	 * Returns <code>True</code> if the 1st argument is an odd integer number; <code>False</code> otherwise
 	 */
 	private static class OddQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
 		public OddQ() {
@@ -578,8 +608,7 @@ public class PredicateQ {
 	/**
 	 * Predicate function
 	 * 
-	 * Returns <code>True</code> if the 1st argument is <code>0</code>;
-	 * <code>False</code> otherwise
+	 * Returns <code>True</code> if the 1st argument is <code>0</code>; <code>False</code> otherwise
 	 */
 	private static class PossibleZeroQ extends AbstractCorePredicateEvaluator {
 
@@ -600,9 +629,7 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Test if a number is prime. See:
-	 * <a href="http://en.wikipedia.org/wiki/Prime_number">Wikipedia:Prime
-	 * number</a>
+	 * Test if a number is prime. See: <a href="http://en.wikipedia.org/wiki/Prime_number">Wikipedia:Prime number</a>
 	 * 
 	 * @see org.matheclipse.core.reflection.system.NextPrime
 	 */
@@ -633,8 +660,7 @@ public class PredicateQ {
 
 	private static class SymbolQ extends AbstractCoreFunctionEvaluator implements Predicate<IExpr> {
 		/**
-		 * Returns <code>True</code> if the 1st argument is a symbol;
-		 * <code>False</code> otherwise
+		 * Returns <code>True</code> if the 1st argument is a symbol; <code>False</code> otherwise
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -650,8 +676,7 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Returns <code>True</code>, if the given expression is a string which has
-	 * the correct syntax
+	 * Returns <code>True</code>, if the given expression is a string which has the correct syntax
 	 * 
 	 */
 	private static class SyntaxQ extends AbstractCorePredicateEvaluator implements Predicate<String> {
@@ -681,8 +706,7 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Returns <code>True</code>, if the given expression is a string which only
-	 * contains upper case characters
+	 * Returns <code>True</code>, if the given expression is a string which only contains upper case characters
 	 *
 	 */
 	private static class UpperCaseQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
@@ -725,8 +749,7 @@ public class PredicateQ {
 	private static class ValueQ extends AbstractCoreFunctionEvaluator implements Predicate<IExpr> {
 
 		/**
-		 * Returns <code>True</code> if the 1st argument is an atomic object;
-		 * <code>False</code> otherwise
+		 * Returns <code>True</code> if the 1st argument is an atomic object; <code>False</code> otherwise
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -745,8 +768,7 @@ public class PredicateQ {
 	/**
 	 * Predicate function
 	 *
-	 * Returns <code>True</code> if the 1st argument is a vector;
-	 * <code>False</code> otherwise
+	 * Returns <code>True</code> if the 1st argument is a vector; <code>False</code> otherwise
 	 */
 	private static class VectorQ extends AbstractCoreFunctionEvaluator {
 

@@ -26,10 +26,12 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
+import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NILPointer;
+import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.IVisitor;
@@ -1495,6 +1497,46 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return this instanceof INumber;
 	}
 
+	/**
+	 * Test if this expression is a number with no imaginary component. I.e. an instance of type <code>IRational</code>
+	 * or <code>INum</code>.
+	 * 
+	 * @return
+	 */
+	default boolean isRealNumber() {
+		return this instanceof IRational || this instanceof INum;
+	}
+
+	/**
+	 * Test if this expression is a machine-precision (Java double type) real or complex number. I.e. an instance of type <code>Num</code>
+	 * or <code>ComplexNum</code>.
+	 * 
+	 * @return
+	 */
+	default boolean isMachineNumber() {
+		return this instanceof Num || this instanceof ComplexNum;
+	}
+
+	/**
+	 * Test if this expression is an exact number. I.e. an instance of type <code>IRational</code>
+	 * or <code>IComplex</code>.
+	 * 
+	 * @return
+	 */
+	default boolean isExactNumber() {
+		return this instanceof IRational || this instanceof IComplex;
+	}
+
+	/**
+	 * Test if this expression is an inexact number. I.e. an instance of type <code>INum</code>
+	 * or <code>IComplexNum</code>.
+	 * 
+	 * @return
+	 */
+	default boolean isInexactNumber() {
+		return this instanceof INum || this instanceof IComplexNum;
+	}
+	
 	/**
 	 * Check if this expression equals an <code>IInteger</code> value. The value of an <code>INum</code> or the value of
 	 * an <code>IInteger</code> object can be equal to <code>value</code>.

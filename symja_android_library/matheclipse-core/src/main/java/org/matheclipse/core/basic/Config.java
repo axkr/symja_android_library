@@ -153,4 +153,10 @@ public class Config {
 	 */
 	public static boolean JAS_NO_THREADS = false;
 
+	/**
+	 * Use <code>Num</code> objects for numeric calculations up to 15 digits
+	 * precision.
+	 */
+	public static final int MACHINE_PRECISION = 15;
+
 }

@@ -52,12 +52,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	static int fAnonymousCounter = 0;
 
-	/**
-	 * Use <code>Num</code> objects for numeric calculations up to 15 digits
-	 * precision.
-	 */
-	public static final int DOUBLE_PRECISION = 15;
-
 	public final static boolean DEBUG = false;
 
 	transient private static final ThreadLocal<EvalEngine> instance = new ThreadLocal<EvalEngine>() {
@@ -103,7 +97,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @see ApcomplexNum
 	 */
 	public static boolean isApfloat(int precision) {
-		return precision > EvalEngine.DOUBLE_PRECISION;
+		return precision > Config.MACHINE_PRECISION;
 	}
 
 	/**
@@ -1530,7 +1524,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @see ApcomplexNum
 	 */
 	public boolean isApfloat() {
-		return fNumericPrecision > EvalEngine.DOUBLE_PRECISION;
+		return fNumericPrecision > Config.MACHINE_PRECISION;
 	}
 
 	/**

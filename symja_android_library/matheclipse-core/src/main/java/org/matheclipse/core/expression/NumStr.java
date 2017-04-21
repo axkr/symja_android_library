@@ -10,6 +10,10 @@ public class NumStr extends Num {
 	private int fExponent;
 
 	public NumStr(String floatStr) {
+		this(floatStr, 1);
+	}
+
+	public NumStr(String floatStr, int exponent) {
 		int index = floatStr.indexOf("*^");
 		fExponent = 1;
 		fFloatStr = floatStr;

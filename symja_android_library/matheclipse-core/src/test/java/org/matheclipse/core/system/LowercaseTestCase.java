@@ -922,7 +922,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("1 / ComplexInfinity", "0");
 		check("ComplexInfinity + ComplexInfinity", "Indeterminate");
 		check("ComplexInfinity * Infinity", "ComplexInfinity");
-		check("FullForm(ComplexInfinity)", "\"DirectedInfinity()\""); 
+		check("FullForm(ComplexInfinity)", "\"DirectedInfinity()\"");
 	}
 
 	public void testComposition() {
@@ -936,6 +936,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testConjugate() {
+		check("Conjugate(3 + 4*I)", "3-I*4");
+		check("Conjugate(3)", "3");
+		check("Conjugate(a + b * I)", "-I*Conjugate(b)+Conjugate(a)");
+		check("Conjugate(a * b * I)", "-I*Conjugate(a*b)");
+		check("Conjugate({{1, 2 + I*4, a + I*b}, {I}})", "{{1,2-I*4,-I*Conjugate(b)+Conjugate(a)},{-I}}");
+		check("{Conjugate(Pi), Conjugate(E)}", "{Pi,E}");
+		check("Conjugate(1.5 + 2.5*I)", "1.5+I*(-2.5)");
+
 		check("Conjugate(1-I)", "1+I");
 		check("Conjugate(1+I)", "1-I");
 		check("Conjugate(Conjugate(x))", "x");
@@ -1276,18 +1284,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testDirectedInfinity() {
 		check("Table(DirectedInfinity(i), {i, {1, -1, I, -I}})", "{Infinity,-Infinity,I*Infinity,-I*Infinity}");
-		
+
 		check("DirectedInfinity(1 + I)^ -1", "0");
 		check("1/DirectedInfinity(1 + I)", "0");
 		check("DirectedInfinity(1 + I)", "DirectedInfinity((1+I)/Sqrt(2))");
-		check("DirectedInfinity(1+I)+DirectedInfinity(2+I)", "DirectedInfinity((1+I)/Sqrt(2))+DirectedInfinity((2+I)/Sqrt(5))");
-		
+		check("DirectedInfinity(1+I)+DirectedInfinity(2+I)",
+				"DirectedInfinity((1+I)/Sqrt(2))+DirectedInfinity((2+I)/Sqrt(5))");
+
 		check("DirectedInfinity(Sqrt(3))", "Infinity");
 		check("DirectedInfinity(1) + DirectedInfinity(-1)", "Indeterminate");
-		
+
 		check("DirectedInfinity(1)", "Infinity");
 		check("DirectedInfinity()", "ComplexInfinity");
-	
+
 		check("DirectedInfinity(Indeterminate)", "ComplexInfinity");
 		check("ComplexInfinity+b", "ComplexInfinity");
 		// Power()
@@ -1637,6 +1646,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testEulerPhi() {
 		check("Table(EulerPhi(k), {k, 0, 20})", "{0,1,1,2,2,4,2,6,4,6,4,10,4,12,6,8,8,16,6,18,8}");
 		check("EulerPhi(50!)", "4218559200885839042679312107816703841788854953574400000000000000");
+	}
+
+	public void testExactNumberQ() {
+		check("ExactNumberQ(10)", "True");
+		check("ExactNumberQ(4.0)", "False");
+		check("ExactNumberQ(n)", "False");
+		check("ExactNumberQ(1+I)", "True");
+		check("ExactNumberQ(1 + 1. * I)", "False");
 	}
 
 	public void testExcept() {
@@ -2420,6 +2437,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("If(a>b,true)", "");
 	}
 
+	public void testI() {
+		check("(3+I)*(3-I)", "10");
+	}
+
 	public void testIm() {
 		check("Im(0)", "0");
 		check("Im(I)", "1");
@@ -2449,6 +2470,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIndeterminate() {
+		check("Tan(Indeterminate)", "Indeterminate");
 		check("{And(True, Indeterminate), And(False, Indeterminate)}", "{Indeterminate,False}");
 		check("Indeterminate==Indeterminate", "False");
 		check("Indeterminate===Indeterminate", "True");
@@ -2460,6 +2482,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Integrate(Indeterminate,x)", "Indeterminate");
 		check("D(Indeterminate,x)", "Indeterminate");
 		check("DirectedInfinity(Indeterminate)", "ComplexInfinity");
+	}
+
+	public void testInexactNumberQ() {
+		check("InexactNumberQ(a)", "False");
+		check("InexactNumberQ(3.0)", "True");
+		check("InexactNumberQ(2/3)", "False");
+		check("InexactNumberQ(4.0+I)", "True");
 	}
 
 	public void testInfinity() {
@@ -2647,8 +2676,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testInverseHaversine() {
 		check("InverseHaversine(1/4)", "Pi/3");
 		check("InverseHaversine(0.7)", "1.9823131728623846");
-
-		check("ArcSin(1.3038404810405297)", "1.5707963267948966+I*(-0.7610396837318266)");
+		// Java double machine precision
+		// check("ArcSin(1.3038404810405)", "1.5707963267948966+I*(-0.7610396837317912)");
+		// apfloat/apcomplex precision
+		check("ArcSin(1.3038404810405297)", "1.5707963267948966+I*(-7.610396837318266e-1)");
 		check("InverseHaversine(1.7)", "3.141592653589793+I*(-1.5220793674636532)");
 	}
 
@@ -2987,6 +3018,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"9719417773590817520798198207932647373779787915534568508272808108477251881844481\\\n"
 						+ "5269080619149045968297679578305403209347401163036907660573971740862463751801641\\\n"
 						+ "201490284097309096322681531675707666695323797578127");
+	}
+
+	public void testMachineNumberQ() {
+		check("MachineNumberQ(3.14159265358979324)", "False");
+		check("MachineNumberQ(1.5 + 2.3*I)", "True");
+		check("MachineNumberQ(2.71828182845904524 + 3.14159265358979324*I)", "False");
+		check("MachineNumberQ(1.5 + 3.14159265358979324*I)", "False");
+		check("MachineNumberQ(1.5 + 5 *I)", "True");
 	}
 
 	public void testManhattanDistance() {
@@ -3833,6 +3872,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{0,-1,1,0,0},\n" + " {0,-1,0,1,0}}");
 	}
 
+	public void testNumberQ() {
+		check("NumberQ(3+I)", "True");
+		check("NumberQ(5!)", "True");
+		check("NumberQ(Pi)", "False");
+	}
+
 	public void testNumerator() {
 		check("Numerator(Csc(x))", "Csc(x)");
 		check("Numerator(Csc(x), Trig->True)", "1");
@@ -4635,12 +4680,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRe() {
+		check("Re(3+4I)", "3");
+		check("Re(0.5 + 2.3*I)", "0.5");
+		check("Im(0.5 + 2.3*I)", "2.3");
 		check("Re(0)", "0");
 		check("Re(I)", "0");
 		check("Re(Indeterminate)", "Indeterminate");
 		check("Re(Infinity)", "Infinity");
 		check("Re(-Infinity)", "-Infinity");
 		check("Re(ComplexInfinity)", "Indeterminate");
+	}
+
+	public void testRealNumberQ() {
+		check("RealNumberQ(10)", "True");
+		check("RealNumberQ(4.0)", "True");
+		check("RealNumberQ(1+I)", "False");
+		check("RealNumberQ(0*I)", "True");
+		check("RealNumberQ(0.0*I)", "False");
 	}
 
 	public void testReap() {
