@@ -17,28 +17,28 @@ public interface PolyLogRules {
 
   final public static IAST RULES = List(
     IInit(PolyLog, SIZES),
-    // PolyLog(2,-1)=-Pi^2/12
+    // PolyLog(2,-1)=Rational(-1,12)*Pi^2
     ISet(PolyLog(C2,CN1),
       Times(QQ(-1L,12L),Sqr(Pi))),
-    // PolyLog(2,1)=Pi^2/6
+    // PolyLog(2,1)=Rational(1,6)*Pi^2
     ISet(PolyLog(C2,C1),
       Times(QQ(1L,6L),Sqr(Pi))),
-    // PolyLog(2,1/2)=Pi^2/12-Log(2)^2/2
+    // PolyLog(2,Rational(1,2))=Rational(1,12)*Pi^2-Rational(1,2)*Log(2)^2
     ISet(PolyLog(C2,C1D2),
       Plus(Times(QQ(1L,12L),Sqr(Pi)),Times(CN1D2,Sqr(Log(C2))))),
-    // PolyLog(2,2)=Pi^2/4-Pi*I*Log(2)
+    // PolyLog(2,2)=Rational(1,4)*Pi^2-Pi*I*Log(2)
     ISet(PolyLog(C2,C2),
       Plus(Times(C1D4,Sqr(Pi)),Times(CNI,Pi,Log(C2)))),
-    // PolyLog(2,I)=I*Catalan-Pi^2/48
+    // PolyLog(2,I)=I*Catalan-Rational(1,48)*Pi^2
     ISet(PolyLog(C2,CI),
       Plus(Times(CI,Catalan),Times(QQ(-1L,48L),Sqr(Pi)))),
-    // PolyLog(2,(-1)*I)=(-1)*I*Catalan-Pi^2/48
+    // PolyLog(2,(-1)*I)=(-1)*I*Catalan-Rational(1,48)*Pi^2
     ISet(PolyLog(C2,CNI),
       Plus(Times(CNI,Catalan),Times(QQ(-1L,48L),Sqr(Pi)))),
-    // PolyLog(2,1+(-1)*I)=Pi^2/16-I*Catalan-I*Pi*Log(2)/4
+    // PolyLog(2,1+(-1)*I)=Rational(1,16)*Pi^2-I*Catalan-I*Pi*Rational(1,4)*Log(2)
     ISet(PolyLog(C2,CC(1L,1L,-1L,1L)),
       Plus(Times(CNI,Catalan),Times(QQ(1L,16L),Sqr(Pi)),Times(CC(0L,1L,-1L,4L),Pi,Log(C2)))),
-    // PolyLog(2,1+I)=Pi^2/16+I*Catalan+I*Pi*Log(2)/4
+    // PolyLog(2,1+I)=Rational(1,16)*Pi^2+I*Catalan+I*Pi*Rational(1,4)*Log(2)
     ISet(PolyLog(C2,CC(1L,1L,1L,1L)),
       Plus(Times(CI,Catalan),Times(QQ(1L,16L),Sqr(Pi)),Times(CC(0L,1L,1L,4L),Pi,Log(C2))))
   );

@@ -17,7 +17,7 @@ public interface PowerRules {
 
   final public static IAST RULES = List(
     IInit(Power, SIZES),
-    // E^(3/2*I*Pi)=(-1)*I
+    // E^(Rational(3,2)*I*Pi)=(-1)*I
     ISet(Power(E,Times(CC(0L,1L,3L,2L),Pi)),
       CNI),
     // E^(Pi*c_Complex):=Module({r=Re(c),j=Im(c)},If(EvenQ(j),1,-1)/;r==0&&IntegerQ(j))

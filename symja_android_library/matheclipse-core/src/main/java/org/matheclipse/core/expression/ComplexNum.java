@@ -20,9 +20,8 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 /**
- * <code>IComplexNum</code> implementation which wraps a
- * <code>org.apache.commons.math3.complex.Complex</code> value to represent a
- * numeric complex floating-point number.
+ * <code>IComplexNum</code> implementation which wraps a <code>org.apache.commons.math3.complex.Complex</code> value to
+ * represent a numeric complex floating-point number.
  */
 public class ComplexNum implements IComplexNum {
 
@@ -42,7 +41,7 @@ public class ComplexNum implements IComplexNum {
 
 	/** A complex number representing "-1.0 + 0.0i" */
 	public static final ComplexNum MINUS_ONE = valueOf(-1.0, 0.0);
-	
+
 	/** A complex number representing "1.0 + 0.0i" */
 	public static final ComplexNum ONE = valueOf(1.0, 0.0);
 
@@ -210,9 +209,8 @@ public class ComplexNum implements IComplexNum {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns
-	 * a negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
+	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -267,7 +265,7 @@ public class ComplexNum implements IComplexNum {
 	public IExpr inc() {
 		return add(ONE);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public double dabs() {
@@ -537,7 +535,7 @@ public class ComplexNum implements IComplexNum {
 	public long precision() throws ApfloatRuntimeException {
 		return 15;
 	}
-	
+
 	/**
 	 * @param that
 	 * @return

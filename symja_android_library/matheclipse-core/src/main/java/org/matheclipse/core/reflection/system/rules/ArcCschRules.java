@@ -20,16 +20,16 @@ public interface ArcCschRules {
     // ArcCsch(0)=ComplexInfinity
     ISet(ArcCsch(C0),
       CComplexInfinity),
-    // ArcCsch(I)=-1/2*Pi*I
+    // ArcCsch(I)=Rational(-1,2)*Pi*I
     ISet(ArcCsch(CI),
       Times(CC(0L,1L,-1L,2L),Pi)),
-    // ArcCsch(2*I/Sqrt(3))=-1/3*Pi*I
+    // ArcCsch(2*I/Sqrt(3))=Rational(-1,3)*Pi*I
     ISet(ArcCsch(Times(CC(0L,1L,2L,1L),C1DSqrt3)),
       Times(CC(0L,1L,-1L,3L),Pi)),
-    // ArcCsch(I*Sqrt(2))=-1/4*Pi*I
+    // ArcCsch(I*Sqrt(2))=Rational(-1,4)*Pi*I
     ISet(ArcCsch(Times(CI,CSqrt2)),
       Times(CC(0L,1L,-1L,4L),Pi)),
-    // ArcCsch(2*I)=-1/6*Pi*I
+    // ArcCsch(2*I)=Rational(-1,6)*Pi*I
     ISet(ArcCsch(CC(0L,1L,2L,1L)),
       Times(CC(0L,1L,-1L,6L),Pi)),
     // ArcCsch(1)=Log(Sqrt(2)+1)

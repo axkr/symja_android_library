@@ -17,19 +17,19 @@ public interface PolyGammaRules {
 
   final public static IAST RULES = List(
     IInit(PolyGamma, SIZES),
-    // PolyGamma(-5/2)=46/15-EulerGamma-Log(4)
+    // PolyGamma(Rational(-5,2))=Rational(46,15)-EulerGamma-Log(4)
     ISet(PolyGamma(QQ(-5L,2L)),
       Plus(QQ(46L,15L),Negate(EulerGamma),Negate(Log(C4)))),
     // PolyGamma(1)=-EulerGamma
     ISet(PolyGamma(C1),
       Negate(EulerGamma)),
-    // PolyGamma(1,1/4)=Pi^2+8*Catalan
+    // PolyGamma(1,Rational(1,4))=Pi^2+8*Catalan
     ISet(PolyGamma(C1,C1D4),
       Plus(Times(C8,Catalan),Sqr(Pi))),
-    // PolyGamma(1,3/4)=Pi^2-8*Catalan
+    // PolyGamma(1,Rational(3,4))=Pi^2-8*Catalan
     ISet(PolyGamma(C1,QQ(3L,4L)),
       Plus(Times(CN8,Catalan),Sqr(Pi))),
-    // PolyGamma(2,5/6)=4*Sqrt(3)*Pi^3-182*Zeta(3)
+    // PolyGamma(2,Rational(5,6))=4*Sqrt(3)*Pi^3-182*Zeta(3)
     ISet(PolyGamma(C2,QQ(5L,6L)),
       Plus(Times(C4,CSqrt3,Power(Pi,3)),Times(ZZ(-182L),Zeta(C3)))),
     // PolyGamma(n_IntegerQ):=Sum(1/k,{k,1,n+(-1)*1})-EulerGamma/;n>0

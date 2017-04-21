@@ -22,23 +22,66 @@ public class DirectedInfinity extends AbstractCoreFunctionEvaluator {
 
 		if (ast.isAST1()) {
 			boolean numericMode = engine.isNumericMode();
+			boolean evaled = false;
 			try {
 				engine.setNumericMode(false);
-				IExpr temp = engine.evalLoop(ast.arg1());
+				IExpr arg1 = ast.arg1();
+				IExpr temp = engine.evalLoop(arg1);
 				if (temp.isPresent()) {
-					if (temp.isIndeterminate()) {
-						return F.CComplexInfinity;
-					}
-					return F.DirectedInfinity(temp);
+					arg1 = temp;
+					evaled = true;
 				}
-				if (ast.arg1().isIndeterminate()) {
+				if (arg1.isIndeterminate() || arg1.isZero()) {
 					return F.CComplexInfinity;
+				}
+				if (arg1.isSignedNumber()) {
+					if (arg1.isOne() || arg1.isMinusOne()) {
+						if (evaled) {
+							return F.DirectedInfinity(arg1);
+						}
+						return F.NIL;
+					}
+					if (arg1.isNegative()) {
+						return F.DirectedInfinity(F.CN1);
+					} else {
+						return F.DirectedInfinity(F.C1);
+					}
+				}
+				if (arg1.isNumber()) {
+					IExpr arg1Abs = engine.evaluate(F.Divide(arg1, F.Abs(arg1)));
+					if (arg1.equals(arg1Abs)) {
+						if (evaled) {
+							return F.DirectedInfinity(arg1);
+						}
+						return F.NIL;
+					}
+					return F.DirectedInfinity(arg1Abs);
+				}
+				if (arg1.isNumericFunction()) {
+					IExpr a1 = F.evaln(arg1);
+					if (a1.isSignedNumber()) {
+						if (a1.isZero()) {
+							return F.CComplexInfinity;
+						}
+						if (a1.isNegative()) {
+							return F.DirectedInfinity(F.CN1);
+						} else {
+							return F.DirectedInfinity(F.C1);
+						}
+					}
+					// if (a1.isNumber()) {
+					// return F.DirectedInfinity(engine.evaluate(F.Divide(arg1, F.Abs(arg1))));
+					// }
+				}
+				if (evaled) {
+					return F.DirectedInfinity(arg1);
 				}
 			} finally {
 				engine.setNumericMode(numericMode);
 			}
 		}
 		return F.NIL;
+
 	}
 
 	public static IExpr timesInf(IAST inf, IExpr a2) {

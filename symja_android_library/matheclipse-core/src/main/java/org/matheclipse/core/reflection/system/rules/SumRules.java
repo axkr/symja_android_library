@@ -18,6 +18,9 @@ public interface SumRules {
     // Sum(i_^k_Symbol,{i_Symbol,1,n_Symbol}):=HarmonicNumber(n,-k)/;FreeQ(k,i)&&FreeQ(n,i)
     ISetDelayed(Sum(Power(i_,$p(k,Symbol)),List($p(i,Symbol),C1,$p(n,Symbol))),
       Condition(HarmonicNumber(n,Negate(k)),And(FreeQ(k,i),FreeQ(n,i)))),
+    // Sum(i_^k_,{i_Symbol,1,Infinity}):=Zeta(-k)/;FreeQ(k,i)
+    ISetDelayed(Sum(Power(i_,k_),List($p(i,Symbol),C1,oo)),
+      Condition(Zeta(Negate(k)),FreeQ(k,i))),
     // Sum(Ceiling(Log(i_)),{i_Symbol,1,n_Symbol}):=(Floor(Log(n))*E^(Floor(Log(n))+1)-(Floor(Log(n))+1)*E^Floor(Log(n))+1)/(E+(-1)*1)+(n-E^Floor(Log(n)))*Ceiling(Log(n))/;FreeQ(n,i)
     ISetDelayed(Sum(Ceiling(Log(i_)),List($p(i,Symbol),C1,$p(n,Symbol))),
       Condition(Plus(Times(Plus(Times(Floor(Log(n)),Power(E,Plus(Floor(Log(n)),C1))),Times(CN1,Plus(Floor(Log(n)),C1),Power(E,Floor(Log(n)))),C1),Power(Plus(E,Negate(C1)),-1)),Times(Plus(n,Negate(Power(E,Floor(Log(n))))),Ceiling(Log(n)))),FreeQ(n,i))),

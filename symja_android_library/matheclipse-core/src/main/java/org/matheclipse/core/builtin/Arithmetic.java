@@ -759,6 +759,9 @@ public final class Arithmetic {
 				if (arg2.isOne()) {
 					return arg1;
 				}
+				if (arg2.isMinusOne()) {
+					return F.C0;
+				}
 			}
 			if (arg1.isZero()) {
 				EvalEngine ee = EvalEngine.get();

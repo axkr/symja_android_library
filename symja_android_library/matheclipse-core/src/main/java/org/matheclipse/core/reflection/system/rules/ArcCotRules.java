@@ -17,34 +17,34 @@ public interface ArcCotRules {
 
   final public static IAST RULES = List(
     IInit(ArcCot, SIZES),
-    // ArcCot(0)=Pi/2
+    // ArcCot(0)=Rational(1,2)*Pi
     ISet(ArcCot(C0),
       Times(C1D2,Pi)),
-    // ArcCot(2-Sqrt(3))=5/12*Pi
+    // ArcCot(2-Sqrt(3))=Rational(5,12)*Pi
     ISet(ArcCot(Plus(C2,Negate(CSqrt3))),
       Times(QQ(5L,12L),Pi)),
-    // ArcCot(Sqrt(2)+(-1)*1)=3/8*Pi
+    // ArcCot(Sqrt(2)+(-1)*1)=Rational(3,8)*Pi
     ISet(ArcCot(Plus(CN1,CSqrt2)),
       Times(QQ(3L,8L),Pi)),
-    // ArcCot(1/Sqrt(3))=Pi/3
+    // ArcCot(1/Sqrt(3))=Rational(1,3)*Pi
     ISet(ArcCot(C1DSqrt3),
       Times(C1D3,Pi)),
-    // ArcCot(1)=Pi/4
+    // ArcCot(1)=Rational(1,4)*Pi
     ISet(ArcCot(C1),
       Times(C1D4,Pi)),
-    // ArcCot(Sqrt(1+2/Sqrt(5)))=Pi/5
+    // ArcCot(Sqrt(1+2/Sqrt(5)))=Rational(1,5)*Pi
     ISet(ArcCot(Sqrt(Plus(C1,Times(C2,C1DSqrt5)))),
       Times(QQ(1L,5L),Pi)),
-    // ArcCot(Sqrt(3))=Pi/6
+    // ArcCot(Sqrt(3))=Rational(1,6)*Pi
     ISet(ArcCot(CSqrt3),
       Times(QQ(1L,6L),Pi)),
-    // ArcCot(1+Sqrt(2))=Pi/8
+    // ArcCot(1+Sqrt(2))=Rational(1,8)*Pi
     ISet(ArcCot(Plus(C1,CSqrt2)),
       Times(QQ(1L,8L),Pi)),
-    // ArcCot(Sqrt(5+2*Sqrt(5)))=Pi/10
+    // ArcCot(Sqrt(5+2*Sqrt(5)))=Rational(1,10)*Pi
     ISet(ArcCot(Sqrt(Plus(C5,Times(C2,CSqrt5)))),
       Times(QQ(1L,10L),Pi)),
-    // ArcCot(2+Sqrt(3))=Pi/12
+    // ArcCot(2+Sqrt(3))=Rational(1,12)*Pi
     ISet(ArcCot(Plus(C2,CSqrt3)),
       Times(QQ(1L,12L),Pi)),
     // ArcCot(I)=(-1)*I*Infinity

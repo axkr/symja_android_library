@@ -38,13 +38,13 @@ public interface LogRules {
     // Log(0)=-Infinity
     ISet(Log(C0),
       Noo),
-    // Log(I)=1/2*Pi*I
+    // Log(I)=Rational(1,2)*Pi*I
     ISet(Log(CI),
       Times(CC(0L,1L,1L,2L),Pi)),
-    // Log((-1)*I)=1/2*-Pi*I
+    // Log((-1)*I)=Rational(1,2)*-Pi*I
     ISet(Log(CNI),
       Times(CC(0L,1L,-1L,2L),Pi)),
-    // Log(1/2*(1+Sqrt(5)))=ArcCsch(2)
+    // Log(Rational(1,2)*(1+Sqrt(5)))=ArcCsch(2)
     ISet(Log(Times(C1D2,Plus(C1,CSqrt5))),
       ArcCsch(C2)),
     // Log(Infinity)=Infinity

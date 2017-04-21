@@ -918,6 +918,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ComplexExpand(Tan(x))", "Sin(2*x)/(1+Cos(2*x))");
 	}
 
+	public void testComplexInfinity() {
+		check("1 / ComplexInfinity", "0");
+		check("ComplexInfinity + ComplexInfinity", "Indeterminate");
+		check("ComplexInfinity * Infinity", "ComplexInfinity");
+		check("FullForm(ComplexInfinity)", "\"DirectedInfinity()\""); 
+	}
+
 	public void testComposition() {
 		check("Composition(f, g, h)[x, y]", "f(g(h(x,y)))");
 		check("Composition(1 + #^# &, a # &, #/(# + 1) &)[x]", "1+((a*x)/(1+x))^((a*x)/(1+x))");
@@ -1268,6 +1275,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDirectedInfinity() {
+		check("Table(DirectedInfinity(i), {i, {1, -1, I, -I}})", "{Infinity,-Infinity,I*Infinity,-I*Infinity}");
+		
+		check("DirectedInfinity(1 + I)^ -1", "0");
+		check("1/DirectedInfinity(1 + I)", "0");
+		check("DirectedInfinity(1 + I)", "DirectedInfinity((1+I)/Sqrt(2))");
+		check("DirectedInfinity(1+I)+DirectedInfinity(2+I)", "DirectedInfinity((1+I)/Sqrt(2))+DirectedInfinity((2+I)/Sqrt(5))");
+		
+		check("DirectedInfinity(Sqrt(3))", "Infinity");
+		check("DirectedInfinity(1) + DirectedInfinity(-1)", "Indeterminate");
+		
+		check("DirectedInfinity(1)", "Infinity");
+		check("DirectedInfinity()", "ComplexInfinity");
+	
 		check("DirectedInfinity(Indeterminate)", "ComplexInfinity");
 		check("ComplexInfinity+b", "ComplexInfinity");
 		// Power()
@@ -2440,6 +2460,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Integrate(Indeterminate,x)", "Indeterminate");
 		check("D(Indeterminate,x)", "Indeterminate");
 		check("DirectedInfinity(Indeterminate)", "ComplexInfinity");
+	}
+
+	public void testInfinity() {
+		check("1 / Infinity", "0");
+		check("Infinity + 100", "Infinity");
+		check("Sum(1/x^2, {x, 1, Infinity})", "Pi^2/6");
+		check("FullForm(Infinity)", "\"DirectedInfinity(1)\"");
+		check("(2 + 3.5*I) / Infinity", "0.0");
+		check("Infinity + Infinity", "Infinity");
+		check("Infinity / Infinity", "Indeterminate");
 	}
 
 	public void testInner() {
@@ -5370,6 +5400,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("SplitBy(Tuples({1, 2}, 3), First)",
 				"{{{1,1,1},{1,1,2},{1,2,1},{1,2,2}},{{2,1,1},{2,1,2},{2,2,1},{2,2,2}}}");
 
+	}
+
+	public void testSqrt() {
+		check("Sqrt(4)", "2");
+		check("Sqrt(5)", "Sqrt(5)");
+		check("Sqrt(5) // N", "2.23606797749979");
+		check("Sqrt(a)^2", "a");
+		check("Sqrt(-4)", "I*2");
+		check("I == Sqrt(-1)", "True");
+		check("N(Sqrt(2), 50)", "1.41421356237309504880168872420969807856967187537694");
 	}
 
 	public void testSquareFreeQ() {

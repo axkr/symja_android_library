@@ -9,42 +9,42 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public interface DerivativeRules {
   final public static IAST RULES1 = List(
-    // ArcCos->(-1/Sqrt(1-#1^2)&)
+    // ArcCos->(-(1-#1^2)^Rational(-1,2)&)
     Rule(ArcCos,
-      Function(Negate(Power(Plus(C1,Negate(Sqr(Slot1))),CN1D2)))),
-    // ArcCosh->(1/Sqrt(#1^2+(-1)*1)&)
+      Function(Negate(Power(Plus(C1,Negate(Sqr(Slot1))),Rational(CN1,C2))))),
+    // ArcCosh->((#1^2+(-1)*1)^Rational(-1,2)&)
     Rule(ArcCosh,
-      Function(Power(Plus(Sqr(Slot1),Negate(C1)),CN1D2))),
+      Function(Power(Plus(Sqr(Slot1),Negate(C1)),Rational(CN1,C2)))),
     // ArcCot->(1/(-1-#1^2)&)
     Rule(ArcCot,
       Function(Negate(Power(Plus(C1,Sqr(Slot1)),-1)))),
     // ArcCoth->(1/(1-#1^2)&)
     Rule(ArcCoth,
       Function(Power(Plus(C1,Negate(Sqr(Slot1))),-1))),
-    // ArcCsc->(-1/(#1^2*Sqrt(1-1/#1^2))&)
+    // ArcCsc->(-(1-1/#1^2)^Rational(-1,2)/#1^2&)
     Rule(ArcCsc,
-      Function(Times(CN1,Power(Slot1,-2),Power(Plus(C1,Negate(Power(Slot1,-2))),CN1D2)))),
-    // ArcCsch->(-1/(Abs(#1)*Sqrt(1+#1^2))&)
+      Function(Times(CN1,Power(Slot1,-2),Power(Plus(C1,Negate(Power(Slot1,-2))),Rational(CN1,C2))))),
+    // ArcCsch->(-(1+#1^2)^Rational(-1,2)/Abs(#1)&)
     Rule(ArcCsch,
-      Function(Times(CN1,Power(Abs(Slot1),-1),Power(Plus(C1,Sqr(Slot1)),CN1D2)))),
-    // ArcSin->(1/Sqrt(1-#1^2)&)
+      Function(Times(CN1,Power(Abs(Slot1),-1),Power(Plus(C1,Sqr(Slot1)),Rational(CN1,C2))))),
+    // ArcSin->((1-#1^2)^Rational(-1,2)&)
     Rule(ArcSin,
-      Function(Power(Plus(C1,Negate(Sqr(Slot1))),CN1D2))),
-    // ArcSinh->(1/Sqrt(1+#1^2)&)
+      Function(Power(Plus(C1,Negate(Sqr(Slot1))),Rational(CN1,C2)))),
+    // ArcSinh->((1+#1^2)^Rational(-1,2)&)
     Rule(ArcSinh,
-      Function(Power(Plus(C1,Sqr(Slot1)),CN1D2))),
+      Function(Power(Plus(C1,Sqr(Slot1)),Rational(CN1,C2)))),
     // ArcTan->(1/(1+#1^2)&)
     Rule(ArcTan,
       Function(Power(Plus(C1,Sqr(Slot1)),-1))),
     // ArcTanh->(1/(1-#1^2)&)
     Rule(ArcTanh,
       Function(Power(Plus(C1,Negate(Sqr(Slot1))),-1))),
-    // ArcSec->(1/(#1^2*Sqrt(1-1/#1^2))&)
+    // ArcSec->((1-1/#1^2)^Rational(-1,2)/#1^2&)
     Rule(ArcSec,
-      Function(Times(Power(Slot1,-2),Power(Plus(C1,Negate(Power(Slot1,-2))),CN1D2)))),
-    // ArcSech->(-1/(#1*Sqrt(1-#1^2))&)
+      Function(Times(Power(Slot1,-2),Power(Plus(C1,Negate(Power(Slot1,-2))),Rational(CN1,C2))))),
+    // ArcSech->(-(1-#1^2)^Rational(-1,2)/#1&)
     Rule(ArcSech,
-      Function(Times(CN1,Power(Slot1,-1),Power(Plus(C1,Negate(Sqr(Slot1))),CN1D2)))),
+      Function(Times(CN1,Power(Slot1,-1),Power(Plus(C1,Negate(Sqr(Slot1))),Rational(CN1,C2))))),
     // Ceiling->(0&)
     Rule(Ceiling,
       Function(C0)),
@@ -63,21 +63,21 @@ public interface DerivativeRules {
     // FractionalPart->(1&)
     Rule(FractionalPart,
       Function(C1)),
-    // FresnelC->(Cos(1/2*Pi*#1^2)&)
+    // FresnelC->(Cos(Rational(1,2)*Pi*#1^2)&)
     Rule(FresnelC,
-      Function(Cos(Times(C1D2,Pi,Sqr(Slot1))))),
-    // FresnelS->(Sin(1/2*Pi*#1^2)&)
+      Function(Cos(Times(Rational(C1,C2),Pi,Sqr(Slot1))))),
+    // FresnelS->(Sin(Rational(1,2)*Pi*#1^2)&)
     Rule(FresnelS,
-      Function(Sin(Times(C1D2,Pi,Sqr(Slot1))))),
+      Function(Sin(Times(Rational(C1,C2),Pi,Sqr(Slot1))))),
     // Gamma->(Gamma(#1)*PolyGamma(#1)&)
     Rule(Gamma,
       Function(Times(Gamma(Slot1),PolyGamma(Slot1)))),
     // IntegerPart->(0&)
     Rule(IntegerPart,
       Function(C0)),
-    // InverseErf->(1/2*Sqrt(Pi)*E^InverseErf(x)^2&)
+    // InverseErf->(Rational(1,2)*Sqrt(Pi)*E^InverseErf(x)^2&)
     Rule(InverseErf,
-      Function(Times(C1D2,Sqrt(Pi),Power(E,Sqr(InverseErf(x)))))),
+      Function(Times(Rational(C1,C2),Sqrt(Pi),Power(E,Sqr(InverseErf(x)))))),
     // Log->(1/#1&)
     Rule(Log,
       Function(Power(Slot1,-1))),
@@ -125,9 +125,9 @@ public interface DerivativeRules {
       Function(Times(CN1,Tanh(Slot1),Sech(Slot1))))
   );
   final public static IAST RULES2 = List(
-    // ArcSin->(#1/(1-#1^2)^(3/2)&)
+    // ArcSin->(#1*(1-#1^2)^Rational(-3,2)&)
     Rule(ArcSin,
-      Function(Times(Slot1,Power(Plus(C1,Negate(Sqr(Slot1))),QQ(-3L,2L))))),
+      Function(Times(Slot1,Power(Plus(C1,Negate(Sqr(Slot1))),Rational(CN3,C2))))),
     // Gamma->(Gamma(#1)*PolyGamma(#1)^2+Gamma(#1)*PolyGamma(1,#1)&)
     Rule(Gamma,
       Function(Plus(Times(Gamma(Slot1),Sqr(PolyGamma(Slot1))),Times(Gamma(Slot1),PolyGamma(C1,Slot1))))),
@@ -151,17 +151,17 @@ public interface DerivativeRules {
     // PolyGamma->(PolyGamma(#2,#1)&)
     Rule(PolyGamma,
       Function(PolyGamma(Slot2,Slot1))),
-    // Cos->(Cos(#1+1/2*Pi*#2)&)
+    // Cos->(Cos(#1+Rational(1,2)*Pi*#2)&)
     Rule(Cos,
-      Function(Cos(Plus(Slot1,Times(C1D2,Pi,Slot2))))),
-    // Sin->(Sin(#1+1/2*Pi*#2)&)
+      Function(Cos(Plus(Slot1,Times(Rational(C1,C2),Pi,Slot2))))),
+    // Sin->(Sin(#1+Rational(1,2)*Pi*#2)&)
     Rule(Sin,
-      Function(Sin(Plus(Slot1,Times(C1D2,Pi,Slot2)))))
+      Function(Sin(Plus(Slot1,Times(Rational(C1,C2),Pi,Slot2)))))
   );
   final public static IAST RULES4 = List(
-    // {BesselJ,0,1}->(1/2*(BesselJ(-1+#1,#2)-BesselJ(1+#1,#2))&)
+    // {BesselJ,0,1}->(Rational(1,2)*(BesselJ(-1+#1,#2)-BesselJ(1+#1,#2))&)
     Rule(List(BesselJ,C0,C1),
-      Function(Times(C1D2,Plus(BesselJ(Plus(CN1,Slot1),Slot2),Negate(BesselJ(Plus(C1,Slot1),Slot2)))))),
+      Function(Times(Rational(C1,C2),Plus(BesselJ(Plus(CN1,Slot1),Slot2),Negate(BesselJ(Plus(C1,Slot1),Slot2)))))),
     // {Power,1,0}->(#2/#1^(1-#2)&)
     Rule(List(Power,C1,C0),
       Function(Times(Power(Slot1,Plus(CN1,Slot2)),Slot2))),

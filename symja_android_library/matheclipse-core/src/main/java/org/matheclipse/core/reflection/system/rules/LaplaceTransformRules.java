@@ -26,9 +26,9 @@ public interface LaplaceTransformRules {
     // LaplaceTransform(a_.*E^(b_.+c_.*t_),t_,s_):=LaplaceTransform(a*E^b,t,s-c)/;FreeQ({b,c},t)
     ISetDelayed(LaplaceTransform(Times(Power(E,Plus(b_DEFAULT,Times(c_DEFAULT,t_))),a_DEFAULT),t_,s_),
       Condition(LaplaceTransform(Times(a,Power(E,b)),t,Plus(s,Negate(c))),FreeQ(List(b,c),t))),
-    // LaplaceTransform(Sqrt(t_),t_,s_):=Sqrt(Pi)/(2*s^(3/2))
+    // LaplaceTransform(t_^Rational(1,2),t_,s_):=Sqrt(Pi)/(2*s^Rational(3,2))
     ISetDelayed(LaplaceTransform(Sqrt(t_),t_,s_),
-      Times(Sqrt(Pi),Power(Times(C2,Power(s,QQ(3L,2L))),-1))),
+      Times(Sqrt(Pi),Power(Times(C2,Power(s,Rational(C3,C2))),-1))),
     // LaplaceTransform(Sin(t_),t_,s_):=1/(s^2+1)
     ISetDelayed(LaplaceTransform(Sin(t_),t_,s_),
       Power(Plus(Sqr(s),C1),-1)),
@@ -50,10 +50,10 @@ public interface LaplaceTransformRules {
     // LaplaceTransform(Log(t_)^2,t_,s_):=(6*EulerGamma^2+Pi^2+6*Log(s)*(2*EulerGamma+Log(s)))/(6*s)
     ISetDelayed(LaplaceTransform(Sqr(Log(t_)),t_,s_),
       Times(Plus(Times(C6,Sqr(EulerGamma)),Sqr(Pi),Times(C6,Log(s),Plus(Times(C2,EulerGamma),Log(s)))),Power(Times(C6,s),-1))),
-    // LaplaceTransform(Erf(t_),t_,s_):=E^(s^2/4)*Erfc(s/2)/s
+    // LaplaceTransform(Erf(t_),t_,s_):=E^(Rational(1,4)*s^2)*Erfc(Rational(1,2)*s)/s
     ISetDelayed(LaplaceTransform(Erf(t_),t_,s_),
-      Times(Power(E,Times(C1D4,Sqr(s))),Erfc(Times(C1D2,s)),Power(s,-1))),
-    // LaplaceTransform(Erf(Sqrt(t_)),t_,s_):=1/(Sqrt(s+1)*s)
+      Times(Power(E,Times(Rational(C1,C4),Sqr(s))),Erfc(Times(Rational(C1,C2),s)),Power(s,-1))),
+    // LaplaceTransform(Erf(t_^Rational(1,2)),t_,s_):=1/(Sqrt(s+1)*s)
     ISetDelayed(LaplaceTransform(Erf(Sqrt(t_)),t_,s_),
       Power(Times(Sqrt(Plus(s,C1)),s),-1))
   );

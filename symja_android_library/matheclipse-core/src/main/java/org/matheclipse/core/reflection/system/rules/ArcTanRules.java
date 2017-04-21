@@ -23,34 +23,34 @@ public interface ArcTanRules {
     // ArcTan(0,0)=0
     ISet(ArcTan(C0,C0),
       C0),
-    // ArcTan(2-Sqrt(3))=Pi/12
+    // ArcTan(2-Sqrt(3))=Rational(1,12)*Pi
     ISet(ArcTan(Plus(C2,Negate(CSqrt3))),
       Times(QQ(1L,12L),Pi)),
-    // ArcTan(Sqrt(2)+(-1)*1)=Pi/8
+    // ArcTan(Sqrt(2)+(-1)*1)=Rational(1,8)*Pi
     ISet(ArcTan(Plus(CN1,CSqrt2)),
       Times(QQ(1L,8L),Pi)),
-    // ArcTan(1/Sqrt(3))=Pi/6
+    // ArcTan(1/Sqrt(3))=Rational(1,6)*Pi
     ISet(ArcTan(C1DSqrt3),
       Times(QQ(1L,6L),Pi)),
-    // ArcTan(Sqrt(5-2*Sqrt(5)))=Pi/5
+    // ArcTan(Sqrt(5-2*Sqrt(5)))=Rational(1,5)*Pi
     ISet(ArcTan(Sqrt(Plus(C5,Times(CN2,CSqrt5)))),
       Times(QQ(1L,5L),Pi)),
-    // ArcTan(1)=Pi/4
+    // ArcTan(1)=Rational(1,4)*Pi
     ISet(ArcTan(C1),
       Times(C1D4,Pi)),
-    // ArcTan(1,1)=Pi/4
+    // ArcTan(1,1)=Rational(1,4)*Pi
     ISet(ArcTan(C1,C1),
       Times(C1D4,Pi)),
-    // ArcTan(-1,-1)=-3/4*Pi
+    // ArcTan(-1,-1)=Rational(-3,4)*Pi
     ISet(ArcTan(CN1,CN1),
       Times(QQ(-3L,4L),Pi)),
-    // ArcTan(Sqrt(3))=Pi/3
+    // ArcTan(Sqrt(3))=Rational(1,3)*Pi
     ISet(ArcTan(CSqrt3),
       Times(C1D3,Pi)),
-    // ArcTan(1+Sqrt(2))=3/8*Pi
+    // ArcTan(1+Sqrt(2))=Rational(3,8)*Pi
     ISet(ArcTan(Plus(C1,CSqrt2)),
       Times(QQ(3L,8L),Pi)),
-    // ArcTan(2+Sqrt(3))=5/12*Pi
+    // ArcTan(2+Sqrt(3))=Rational(5,12)*Pi
     ISet(ArcTan(Plus(C2,CSqrt3)),
       Times(QQ(5L,12L),Pi)),
     // ArcTan(I)=I*Infinity
@@ -59,16 +59,16 @@ public interface ArcTanRules {
     // ArcTan(Infinity,y_)=0
     ISet(ArcTan(oo,y_),
       C0),
-    // ArcTan(Infinity)=Pi/2
+    // ArcTan(Infinity)=Rational(1,2)*Pi
     ISet(ArcTan(oo),
       Times(C1D2,Pi)),
-    // ArcTan(-Infinity)=-Pi/2
+    // ArcTan(-Infinity)=Rational(1,2)*-Pi
     ISet(ArcTan(Noo),
       Times(CN1D2,Pi)),
-    // ArcTan(I*Infinity)=Pi/2
+    // ArcTan(I*Infinity)=Rational(1,2)*Pi
     ISet(ArcTan(DirectedInfinity(CI)),
       Times(C1D2,Pi)),
-    // ArcTan((-1)*I*Infinity)=-Pi/2
+    // ArcTan((-1)*I*Infinity)=Rational(1,2)*-Pi
     ISet(ArcTan(DirectedInfinity(CNI)),
       Times(CN1D2,Pi))
   );
