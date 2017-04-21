@@ -17,7 +17,6 @@ import org.matheclipse.core.interfaces.IExpr;
  */
 public class MainTestCase extends AbstractTestCase {
 
-	
 	public MainTestCase(String name) {
 		super(name);
 		Config.SERVER_MODE = true;
@@ -167,8 +166,7 @@ public class MainTestCase extends AbstractTestCase {
 
 	public void testPower() {
 		check("(0.0+I*0.0)^10.0", "0.0");
-		
-		
+
 		check("(Infinity)^(-Infinity)", "0");
 		check("(ComplexInfinity)^(-Infinity)", "0");
 		check("(ComplexInfinity)^(Infinity)", "ComplexInfinity");
@@ -424,9 +422,13 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem003() {
-		check("1.6969545188681513E4", "1.6969545188681513e4");
-		check("1.6969545188681513*^4", "1.69695451886815129e4");
-		check("1.6969545188681513*^-10", "1.6969545188681513e-10");
+		// TODO use ExprParser#getReal() if apfloat problems are fixed
+		// check("1.6969545188681513E4", "1.6969545188681513e4");
+		// check("1.6969545188681513*^4", "1.69695451886815129e4");
+		// check("1.6969545188681513*^-10", "1.6969545188681513e-10");
+		check("1.6969545188681513E4", "16969.545188681514");
+		check("1.6969545188681513*^-10", "1.6969545188681515E-10");
+
 		check("-0.0001E+15", "-1.0E11");
 		check("-0.0001E-15", "0.0");
 	}
@@ -437,9 +439,9 @@ public class MainTestCase extends AbstractTestCase {
 
 		check("Chop((-2.4492935982947064E-16)+I*(-1.0E-19))", "0");
 		check("Chop(2.0+I*(-2.4492935982947064E-16))", "2.0");
-		check("Chop((-2.4492935982947064E-16)+I*0.5)", "I*0.5000000000000001");
+		check("Chop((-2.4492935982947064E-16)+I*0.5)", "I*0.5");
 
-		check("Chop({2.0+I*(-2.4492935982947064E-16),(-2.4492935982947064E-16)+I*0.5})", "{2.0,I*0.5000000000000001}");
+		check("Chop({2.0+I*(-2.4492935982947064E-16),(-2.4492935982947064E-16)+I*0.5})", "{2.0,I*0.5}");
 	}
 
 	public void testSystem005() {
@@ -3162,7 +3164,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("Solve({x+y==1, x-y==0}, {x,y})", "{{x->1/2,y->1/2}}");
 		check("Solve(x*(-0.006*x^2.0+1.0)^2.0-0.1*x==7.217,x)",
 				"{{x->5.56905563448817+I*(-5.000250639949137)},{x->5.569055634488171+I*5.000250639949136},{x->-14.046984417469663+I*3.7076764944679854},{x->-14.04698441746977+I*(-3.707676494467971)},{x->16.955857565963093+I*(-1.3552527156068807E-14)}}");
-		
+
 		check("CoefficientList(x*(-0.006*x^2.0+1.0)^2.0-0.1*x-7.217,x)", "{-7.217,0.9,0,-0.012,0,3.6E-5}");
 
 		check("Solve(2.5*x^2+1650==0,x)", "{{x->I*(-25.69046515733026)},{x->I*25.69046515733026}}");
@@ -3586,10 +3588,8 @@ public class MainTestCase extends AbstractTestCase {
 		check("LinearSolve({{1,0,-3},{0,1,2},{0,0,0}},{-5,4,0})", "{-5,4,0}");
 
 		// prints additional message to console
-		check("LinearSolve({{1,0,0},{0,1,0},{0,0,0}},{3,2,1})", "LinearSolve(\n" + 
-				"{{1,0,0},\n" + 
-				" {0,1,0},\n" + 
-				" {0,0,0}},{3,2,1})");
+		check("LinearSolve({{1,0,0},{0,1,0},{0,0,0}},{3,2,1})",
+				"LinearSolve(\n" + "{{1,0,0},\n" + " {0,1,0},\n" + " {0,0,0}},{3,2,1})");
 
 		check("LinearSolve({{1,2,3},{2,-1,1},{3,0,-1}},{9,8,3})", "{2,-1,3}");
 	}

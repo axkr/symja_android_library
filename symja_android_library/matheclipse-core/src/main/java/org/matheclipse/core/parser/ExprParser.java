@@ -776,7 +776,9 @@ public class ExprParser extends ExprScanner {
 				number = '-' + number;
 			}
 			if (numFormat < 0) {
-				temp = getReal(number);
+				// TODO use getReal() if apfloat problems are fixed
+				// temp = getReal(number);
+				temp = new NumStr(number);
 				// temp = fFactory.createDouble(number);
 			} else {
 				temp = F.integer(number, numFormat);
@@ -789,7 +791,7 @@ public class ExprParser extends ExprScanner {
 		return temp;
 	}
 
-	public static INum getReal(String str) {
+	private static INum getReal(String str) {
 		int index = str.indexOf("*^");
 		int fExponent = 1;
 		String fFloatStr = str;
