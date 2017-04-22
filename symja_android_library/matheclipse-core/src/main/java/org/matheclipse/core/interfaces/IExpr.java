@@ -781,10 +781,14 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * <p>
 	 * Test if this expression is an AST list, where the string representation of the <b>header element</b> at index
 	 * position <code>0</code> equals the given <code>symbol</code> and some optional <b>argument elements</b> at the
 	 * index positions <code>1..(size()-1)</code>. Therefore this expression is no <b>atomic expression</b>. Example:
 	 * <code>isAST("Sin")</code> gives <code>true</code> for <code>Sin[Pi/2]</code>.
+	 * </p>
+	 * <b>Note:</b> this is a performance critical method, only use it in special cases like for example UI handling
+	 * etc.
 	 * 
 	 * @param headerStr
 	 *            string representation of the <b>header element</b> at index position <code>0</code>
@@ -1508,8 +1512,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is a machine-precision (Java double type) real or complex number. I.e. an instance of type <code>Num</code>
-	 * or <code>ComplexNum</code>.
+	 * Test if this expression is a machine-precision (Java double type) real or complex number. I.e. an instance of
+	 * type <code>Num</code> or <code>ComplexNum</code>.
 	 * 
 	 * @return
 	 */
@@ -1518,8 +1522,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is an exact number. I.e. an instance of type <code>IRational</code>
-	 * or <code>IComplex</code>.
+	 * Test if this expression is an exact number. I.e. an instance of type <code>IRational</code> or
+	 * <code>IComplex</code>.
 	 * 
 	 * @return
 	 */
@@ -1528,15 +1532,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is an inexact number. I.e. an instance of type <code>INum</code>
-	 * or <code>IComplexNum</code>.
+	 * Test if this expression is an inexact number. I.e. an instance of type <code>INum</code> or
+	 * <code>IComplexNum</code>.
 	 * 
 	 * @return
 	 */
 	default boolean isInexactNumber() {
 		return this instanceof INum || this instanceof IComplexNum;
 	}
-	
+
 	/**
 	 * Check if this expression equals an <code>IInteger</code> value. The value of an <code>INum</code> or the value of
 	 * an <code>IInteger</code> object can be equal to <code>value</code>.

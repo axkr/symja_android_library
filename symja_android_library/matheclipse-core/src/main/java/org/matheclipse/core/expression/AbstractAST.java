@@ -1263,6 +1263,10 @@ public abstract class AbstractAST implements IAST {
 			if (name.length() > 0) {
 				name = symbol.toLowerCase(Locale.ENGLISH);
 			}
+			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(name);
+			if (str != null) {
+				name = str;
+			}
 			return head().toString().equals(name);
 		}
 		return head().toString().equals(symbol);

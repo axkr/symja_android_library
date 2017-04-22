@@ -31,8 +31,7 @@ public class Console {
 	private ExprEvaluator fEvaluator;
 
 	/**
-	 * 60 seconds timeout limit as the default value for Symja expression
-	 * evaluation.
+	 * 60 seconds timeout limit as the default value for Symja expression evaluation.
 	 */
 	private long fSeconds = 60;
 
@@ -103,7 +102,8 @@ public class Console {
 						console.fSeconds = 60;
 						continue;
 					} else if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
-						IAST list = Names.getNamesByPrefix(trimmedInput.substring(1));
+						String name = trimmedInput.substring(1);
+						IAST list = Names.getNamesByPrefix(name);
 						for (int i = 1; i < list.size(); i++) {
 							System.out.print(list.get(i).toString());
 							if (i != list.size() - 1) {
@@ -113,6 +113,9 @@ public class Console {
 						System.out.println();
 						if (list.size() == 2) {
 							printDocumentation(list.get(1).toString());
+						} else if (list.size() == 1
+								&& (name.equals("D") || name.equals("E") || name.equals("I") || name.equals("N"))) {
+							printDocumentation(name);
 						}
 						continue;
 					}
@@ -138,8 +141,7 @@ public class Console {
 	}
 
 	/**
-	 * Load the documentation fro ressources folder if available ad print to
-	 * output.
+	 * Load the documentation fro ressources folder if available ad print to output.
 	 * 
 	 * @param symbolName
 	 */
@@ -149,28 +151,30 @@ public class Console {
 
 		// Get file from resources folder
 		ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-		
+
 		try {
 			InputStream is = classloader.getResourceAsStream(fileName);
-			final BufferedReader f = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-			String line;
-			boolean emptyLine = false;
-			while ((line = f.readLine()) != null) {
-				if (line.startsWith("```")) {
-					continue;
-				}
-				if (line.trim().length() == 0) {
-					if (emptyLine) {
+			if (is != null) {
+				final BufferedReader f = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+				String line;
+				boolean emptyLine = false;
+				while ((line = f.readLine()) != null) {
+					if (line.startsWith("```")) {
 						continue;
 					}
-					emptyLine = true;
-				} else {
-					emptyLine = false;
+					if (line.trim().length() == 0) {
+						if (emptyLine) {
+							continue;
+						}
+						emptyLine = true;
+					} else {
+						emptyLine = false;
+					}
+					System.out.println(line);
 				}
-				System.out.println(line);
+				f.close();
+				is.close();
 			}
-			f.close();
-			is.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -253,8 +257,7 @@ public class Console {
 	}
 
 	/**
-	 * Evaluates the given string-expression and returns the result in
-	 * <code>OutputForm</code>
+	 * Evaluates the given string-expression and returns the result in <code>OutputForm</code>
 	 * 
 	 * @param inputExpression
 	 * @return
@@ -373,8 +376,8 @@ public class Console {
 	}
 
 	/**
-	 * Get the default rules textfile name, which should be loaded at startup.
-	 * This file replaces the default built-in System.mep resource stream.
+	 * Get the default rules textfile name, which should be loaded at startup. This file replaces the default built-in
+	 * System.mep resource stream.
 	 * 
 	 * @return default rules textfile name
 	 */

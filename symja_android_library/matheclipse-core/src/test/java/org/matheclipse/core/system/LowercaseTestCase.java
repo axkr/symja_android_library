@@ -3305,6 +3305,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Select(Range(43), MultiplicativeOrder(#, 43) == EulerPhi(43) &)", "{3,5,12,18,19,20,26,28,29,30,33,34}");
 	}
 
+//	public void testN() {
+//		check("N(Pi)", "3.141592653589793");
+//		check("N(Pi, 50)", "3.1415926535897932384626433832795028841971693993751");
+//		check("N(1/7)", "0.14285714285714285");
+//		check("N(1/7, 20)", "1.4285714285714285714e-1"); 
+//	}
+
 	public void testNames() {
 		check("Names(\"Int*\" )",
 				"{Interval,IntegerExponent,IntegerLength,IntegerPart,IntegerPartitions,IntegerQ,Integrate,Interpolation,InterpolatingFunction,InterpolatingPolynomial,Intersection,Integer,Integers}");
@@ -5468,7 +5475,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sqrt(5) // N", "2.23606797749979");
 		check("Sqrt(a)^2", "a");
 		check("Sqrt(-4)", "I*2");
-		check("I == Sqrt(-1)", "True"); 
+		check("I == Sqrt(-1)", "True");
 		// TODO use ExprParser#getReal() if apfloat problems are fixed
 		// check("N(Sqrt(2), 50)", "1.41421356237309504880168872420969807856967187537694");
 	}
