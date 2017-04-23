@@ -127,15 +127,16 @@ public class Iterator {
 							return true;
 						}
 					}
-				} else {
+				}
+				//else {
 					IExpr sub = evalEngine.evaluate(Divide(Subtract(maxCounterOrList, count), step));
 					if (sub.isSignedNumber()) {
 						return !((ISignedNumber) sub).isNegative();
 					}
 					return false;
-				}
+				//}
 			}
-			return false;
+//			return false;
 		}
 
 		@Override

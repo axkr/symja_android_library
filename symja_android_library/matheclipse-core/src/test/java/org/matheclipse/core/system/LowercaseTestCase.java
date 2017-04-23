@@ -593,6 +593,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBoole() {
+		check("Boole(2 == 2)", "1");
+		check("Boole(7 < 5)  ", "0");
+		check("Boole(a == 7)", "Boole(a==7)");
+		
 		check("{Boole(False), Boole(True)}", "{0,1}");
 		check("Boole({True, False, True, True, False})", "{1,0,1,1,0}");
 		check("Boole({a, False, b, True, f()})", "{Boole(a),0,Boole(b),1,Boole(f())}");
@@ -899,6 +903,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Commonest({b, a, c, 2, a, b, 1, 2}, 4)", "{b,a,2,c}");
 		check("Commonest({b, a, c, 2, a, b, 1, 2})", "{b,a,2}");
 		check("Commonest({1, 2, 2, 3, 3, 3, 4})", "{3}");
+	}
+
+	public void testComplex() {
+		check("Head(2 + 3*I)", "Complex");
+		check("Complex(1, 2/3)", "1+I*2/3");
+		check("Abs(Complex(3, 4))", "5");
+		check("-2 / 3 - I", "-2/3-I");
+		check("Complex(10, 0)", "10");
+		check("0. + I", "I*1.0");
+		check("1 + 0*I", "1");
+		check("Head(1 + 0*I)", "Integer");
+		check("Complex(0.0, 0.0)", "0.0");
+		check("0.*I", "0.0");
+		check("0. + 0.*I", "0.0");
+		check("1. + 0.*I", "1.0");
+		check("0. + 1.*I", "I*1.0");
+		check("Complex(1, Complex(0, 1))", "0");
+		check("Complex(1, Complex(1, 0))", "1+I");
+		check("Complex(1, Complex(1, 1))", "I");
+		check("3/4+6/7", "45/28");
+		check("Complex(3/4,-(6/7)*I)", "45/28");
 	}
 
 	public void testComplexExpand() {
@@ -1841,6 +1866,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Factorial(19)", "121645100408832000");
 		check("Factorial(20)", "2432902008176640000");
 		check("Factorial(21)", "51090942171709440000");
+		check("10.5!", "1.1899423083962249E7");
+		check("!a! //FullForm", "\"Not(Factorial(a))\"");
 	}
 
 	// public void testExpand() {
@@ -2254,6 +2281,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testGamma() {
 		check("Gamma(8)", "5040");
+		check("Gamma(1/2)", "Sqrt(Pi)");
 		// check("Gamma(1.0+I)", "");
 		check("Gamma(2.2)", "1.1018024908797128");
 	}
@@ -2341,8 +2369,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testHarmonicNumber() {
 		check("HarmonicNumber(2,-3/2)", "1+2*Sqrt(2)");
-		check("Table(HarmonicNumber(n), {n, 10})",
-				"{1,3/2,11/6,25/12,137/60,49/20,363/140,761/280,7129/2520,7381/2520}");
+		check("Table(HarmonicNumber(n), {n, 8})", "{1,3/2,11/6,25/12,137/60,49/20,363/140,761/280}");
 		check("HarmonicNumber(4,r)", "1+2^(-r)+3^(-r)+4^(-r)");
 		check("HarmonicNumber(1,r)", "1");
 		check("HarmonicNumber(0,r)", "0");
@@ -2519,6 +2546,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testInsert() {
 		check("Insert({a, b, c, d, e}, x, 3)", "{a,b,x,c,d,e}");
 		check("Insert({a, b, c, d, e}, x, -2)", "{a,b,c,d,x,e}");
+	}
+
+	public void testInteger() {
+		check("Head(5)", "Integer");
+		check("{a, b} = {2^10000, 2^10000 + 1}; {a == b, a < b, a <= b}", "{False,True,True}");
 	}
 
 	public void testIntegerExponent() {
@@ -3305,12 +3337,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Select(Range(43), MultiplicativeOrder(#, 43) == EulerPhi(43) &)", "{3,5,12,18,19,20,26,28,29,30,33,34}");
 	}
 
-//	public void testN() {
-//		check("N(Pi)", "3.141592653589793");
-//		check("N(Pi, 50)", "3.1415926535897932384626433832795028841971693993751");
-//		check("N(1/7)", "0.14285714285714285");
-//		check("N(1/7, 20)", "1.4285714285714285714e-1"); 
-//	}
+	// public void testN() {
+	// check("N(Pi)", "3.141592653589793");
+	// check("N(Pi, 50)", "3.1415926535897932384626433832795028841971693993751");
+	// check("N(1/7)", "0.14285714285714285");
+	// check("N(1/7, 20)", "1.4285714285714285714e-1");
+	// }
 
 	public void testNames() {
 		check("Names(\"Int*\" )",
@@ -4129,16 +4161,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPiecewise() {
+		check("Piecewise({{0, x <= 0}}, 1)", "Piecewise({{0,x<=0}},1)");
 		check("Piecewise({{1, False}})", "0");
+		check("Piecewise({{0 ^ 0, False}}, -1)", "-1");
+		
 		check("$pw = Piecewise({{Sin(x)/x, x < 0}, {1, x == 0}}, -x^2/100 + 1); $pw /. {{x -> -5}, {x -> 0}, {x -> 5}}",
 				"{Sin(5)/5,1,3/4}");
 		check("Piecewise({{e1, True}, {e2, d2}, {e3, d3}}, e0)", "e1");
 		check("Piecewise({{e1, d1}, {e2, d2}, {e3, True}, {e4, d4}, {e5, d5}}, e0)",
-				"Piecewise(\n" + "{{e1,d1},\n" + " {e2,d2},\n" + " {e3,True}})");
+				"Piecewise({{e1,d1},{e2,d2},{e3,True}})");
 		check("Piecewise({{e1, d1}, {e2, d2}, {e3, d2 && d3}, {e4, d4}}, e0)",
-				"Piecewise(\n" + "{{e1,d1},\n" + " {e2,d2},\n" + " {e3,d2&&d3},\n" + " {e4,d4}},e0)");
+				"Piecewise({{e1,d1},{e2,d2},{e3,d2&&d3},{e4,d4}},e0)");
 		check("Piecewise({{e1, d1}, {e2, d2}, {e3, False}, {e4, d4}, {e5, d5}}, e0)",
-				"Piecewise(\n" + "{{e1,d1},\n" + " {e2,d2},\n" + " {e4,d4},\n" + " {e5,d5}},e0)");
+				"Piecewise({{e1,d1},{e2,d2},{e4,d4},{e5,d5}},e0)");
 	}
 
 	public void testPlus() {
@@ -4539,6 +4574,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testProduct() {
+		check("Product(k, {k, 1, 10})", "3628800");
+		check("10!", "3628800");
+		check("Product(x^k, {k, 2, 20, 2})", "x^110");
+		check("Product(2 ^ i, {i, 1, n})", "2^(1/2*n*(1+n))");
+		check("Product(k, {k, 3, n})", "n!/2");
+		check("Product(k, {k, 10, n})", "n!/362880");
+		
+		check("primorial(0) = 1", "1");
+		check("primorial(n_Integer) := Product(Prime(k), {k, 1, n})", "");
+		check("primorial(12)", "7420738134810");
+		
 		check("Product(i^2 - i + 10 ,{i,1,10})", "1426481971200000");
 		check("Product(a^i, {i, n})", "a^(1/2*n*(1+n))");
 		check("Product(c, {i, 1, j}, {j, 2})", "c^(2*j)");
@@ -4677,6 +4723,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRational() {
+		check("Head(1/2)", "Rational");
+		check("Rational(1, 2)", "1/2");
+		check("-2/3", "-2/3");
 		check("f[22/7, 201/64, x/y] /. Rational[n_, d_] :> d/n", "f(7/22,64/201,x/y)");
 	}
 
@@ -4700,6 +4749,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Re(Infinity)", "Infinity");
 		check("Re(-Infinity)", "-Infinity");
 		check("Re(ComplexInfinity)", "Indeterminate");
+	}
+
+	public void testReal() {
+		check("Head(1.5)", "Real");
 	}
 
 	public void testRealNumberQ() {
@@ -5595,6 +5648,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSum() {
+		check("Sum(k, {k, 1, 10})", "55");
+		check("Sum(i * j, {i, 1, 10}, {j, 1, 10})", "3025");
+		check("Sum(k, {k, 1, n})", "1/2*n*(1+n)");
+		check("Sum(k, {k, n, 2*n})", "3/2*n*(1+n)");
+		check("Sum(k, {k, 2, 2})", "2");
+		check("Sum(k, {k, 2, 3})", "5");
+		check("Sum(k, {k, I, I + 1})", "1+I*2");
+		check("Sum(1 / k ^ 2, {k, 1, n})  ", "HarmonicNumber(n,2)");
+		check("Simplify(Sum(x ^ 2, {x, 1, y}) - y * (y + 1) * (2 * y + 1) / 6)", "0");
+		check("Sum( 2 ^ (-i), {i, 1, Infinity})", "1");
+		check("Sum( (1/2) ^ i, {i, 1, Infinity})", "1");
+		check("Sum(1 / k ^ 2, {k, 1, Infinity}) ", "Pi^2/6");
+		check("Sum(i / Log(i), {i, 1, Infinity})", "Sum(i/Log(i),{i,1,Infinity})");
+		check("Sum(Cos(Pi*i), {i, 1, Infinity})", "Sum(Cos(i*Pi),{i,1,Infinity})");
+		check("Sum(x^k*Sum(y^l,{l,0,4}),{k,0,4})",
+				"1+y+y^2+y^3+y^4+x*(1+y+y^2+y^3+y^4)+(1+y+y^2+y^3+y^4)*x^2+(1+y+y^2+y^3+y^4)*x^3+(\n"
+						+ "1+y+y^2+y^3+y^4)*x^4");
+		check("Sum(2^(-i), {i, 1, Infinity})", "1");
+		check("Sum((-3)^(-i), {i, 1, Infinity})", "-1/4");
+		
 		check("Sum(k, {k, Range(5)})", "15");
 		check("Sum(i^2 - i + 10 ,{i,1,10})", "430");
 		check("Sum(i!,{i,3,n})", "-4-Subfactorial(-1)+(-1)^(1+n)*Gamma(2+n)*Subfactorial(-2-n)");

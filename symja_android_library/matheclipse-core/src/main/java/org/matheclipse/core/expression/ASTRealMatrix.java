@@ -425,7 +425,7 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 
 	/** {@inheritDoc} */
 	@Override
-	public final int[] isMatrix() {
+	public final int[] isMatrix(boolean setMatrixFormat) {
 		int[] dim = new int[2];
 		dim[0] = matrix.getRowDimension();
 		dim[1] = matrix.getColumnDimension();

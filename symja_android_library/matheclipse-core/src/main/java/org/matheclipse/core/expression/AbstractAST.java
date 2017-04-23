@@ -1612,7 +1612,7 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public int[] isMatrix() {
+	public int[] isMatrix(boolean setMatrixFormat) {
 		if (isEvalFlagOn(IAST.IS_MATRIX)) {
 			final int[] dim = new int[2];
 			dim[0] = size() - 1;
@@ -1636,7 +1636,9 @@ public abstract class AbstractAST implements IAST {
 							return null;
 						}
 					}
-					addEvalFlags(IAST.IS_MATRIX);
+					if (setMatrixFormat) {
+						addEvalFlags(IAST.IS_MATRIX);
+					}
 					return dim;
 				}
 			}

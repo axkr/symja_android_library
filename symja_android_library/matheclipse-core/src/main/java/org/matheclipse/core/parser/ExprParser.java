@@ -23,10 +23,9 @@ import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.function.Blank;
-import org.matheclipse.core.builtin.function.Complex;
 import org.matheclipse.core.builtin.function.Pattern;
-import org.matheclipse.core.builtin.function.Rational;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -203,12 +202,12 @@ public class ExprParser extends ExprScanner {
 				return expr;
 			}
 		} else if (head.equals(F.Complex)) {
-			final IExpr expr = Complex.CONST.evaluate(ast, fEngine);
+			final IExpr expr = Arithmetic.CONST_COMPLEX.evaluate(ast, fEngine);
 			if (expr.isPresent()) {
 				return expr;
 			}
 		} else if (head.equals(F.Rational)) {
-			final IExpr expr = Rational.CONST.evaluate(ast, fEngine);
+			final IExpr expr = Arithmetic.CONST_RATIONAL.evaluate(ast, fEngine);
 			if (expr.isPresent()) {
 				return expr;
 			}

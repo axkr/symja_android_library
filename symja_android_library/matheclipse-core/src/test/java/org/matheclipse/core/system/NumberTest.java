@@ -6,7 +6,6 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 import org.apfloat.Apcomplex;
-import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.matheclipse.core.expression.F;
@@ -29,29 +28,34 @@ public class NumberTest extends TestCase {
 		}
 	}
 
-//	public void testApfloatZeroZero() {
-//		// 0.0 ^ 0.0
-//		Apcomplex c = ApcomplexMath.pow(Apcomplex.ZERO, Apcomplex.ZERO);
+//	public void testApfloatSin() {
+//		Apfloat c = ApfloatMath.sin(ApfloatMath.pow(new Apfloat("10", 10), new Apfloat("100", 10)));
 //		assertEquals(c.toString(), "NaN");
 //	}
-//	
-//	public void testApfloatNan() {
-//		// 0.0 ^ (0.0 + I)
-//		Apcomplex c = ApcomplexMath.pow(Apcomplex.ZERO, new Apcomplex(new Apfloat(0.0, 30), Apfloat.ONE));
-//		assertEquals(c.toString(), "NaN");
-//	}
-//	
-//	public void testApfloatInfinity() {
-//		// 0.0 ^ (-1.0 + I)
-//		Apcomplex c = ApcomplexMath.pow(Apcomplex.ZERO, new Apcomplex(new Apfloat(-1.0, 30), Apfloat.ONE));
-//		assertEquals(c.toString(), "INF");
-//	}
-//	
-//	public void testApfloatZero() {
-//		// 0.0 ^ (1.0 + I)
-//		Apcomplex c = ApcomplexMath.pow(Apcomplex.ZERO, new Apcomplex(Apfloat.ONE, Apfloat.ONE));
-//		assertEquals(c.toString(), "0");
-//	}
+
+	// public void testApfloatZeroZero() {
+	// // 0.0 ^ 0.0
+	// Apcomplex c = ApcomplexMath.pow(Apcomplex.ZERO, Apcomplex.ZERO);
+	// assertEquals(c.toString(), "NaN");
+	// }
+	//
+	// public void testApfloatNan() {
+	// // 0.0 ^ (0.0 + I)
+	// Apcomplex c = ApcomplexMath.pow(Apcomplex.ZERO, new Apcomplex(new Apfloat(0.0, 30), Apfloat.ONE));
+	// assertEquals(c.toString(), "NaN");
+	// }
+	//
+	// public void testApfloatInfinity() {
+	// // 0.0 ^ (-1.0 + I)
+	// Apcomplex c = ApcomplexMath.pow(Apcomplex.ZERO, new Apcomplex(new Apfloat(-1.0, 30), Apfloat.ONE));
+	// assertEquals(c.toString(), "INF");
+	// }
+	//
+	// public void testApfloatZero() {
+	// // 0.0 ^ (1.0 + I)
+	// Apcomplex c = ApcomplexMath.pow(Apcomplex.ZERO, new Apcomplex(Apfloat.ONE, Apfloat.ONE));
+	// assertEquals(c.toString(), "0");
+	// }
 
 	public void testPower() {
 		IFraction f = FractionSym.valueOf(2, 3);

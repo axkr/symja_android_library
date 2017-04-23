@@ -332,8 +332,7 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "compile" : "Compile",
 			new org.matheclipse.core.builtin.function.Compile());
 	public final static IBuiltInSymbol Complex = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complex" : "Complex",
-			new org.matheclipse.core.builtin.function.Complex());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complex" : "Complex");
 	public final static IBuiltInSymbol CompoundExpression = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "compoundexpression" : "CompoundExpression");
 	public final static IBuiltInSymbol Condition = initFinalSymbol(
@@ -478,8 +477,7 @@ public class F {
 	public final static IBuiltInSymbol Quiet = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "quiet" : "Quiet",
 			new org.matheclipse.core.builtin.function.Quiet());
 	public final static IBuiltInSymbol Rational = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rational" : "Rational",
-			new org.matheclipse.core.builtin.function.Rational());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rational" : "Rational");
 	public final static IBuiltInSymbol RealNumberQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "realnumberq" : "RealNumberQ");
 	public final static IBuiltInSymbol Reap = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "reap" : "Reap");
@@ -4618,6 +4616,10 @@ public class F {
 		return ast(a, Plus).prependClone(ZZ(num));
 	}
 
+	public static IAST Pochhammer(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Pochhammer, a0, a1);
+	}
+	
 	public static IAST PolyGamma(final IExpr a0) {
 		return unaryAST1(PolyGamma, a0);
 	}

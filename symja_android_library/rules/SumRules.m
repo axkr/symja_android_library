@@ -12,7 +12,10 @@ Sum(i_^k_Symbol, {i_Symbol,1,n_Symbol}) := HarmonicNumber(n, -k)
   
 Sum(i_^k_, {i_Symbol,1,Infinity}) := Zeta(-k)
   /; FreeQ(k,i),
-  
+
+Sum(k_^(a_.*i_), {i_Symbol,1,Infinity}) := -(k^a)/(-1+(k^a))
+  /; FreeQ(k,i) && a<0 && (k>1 || k<(-1)),
+   
 Sum(Ceiling(Log(i_)), {i_Symbol,1,n_Symbol}):=
   ( Floor(Log(n))*E^(Floor(Log(n))+1)-(Floor(Log(n))+1)*E^Floor(Log(n))+1 ) * (E-1)^(-1) + (n-E^Floor(Log(n)))*Ceiling(Log(n))
   /; FreeQ(n,i),

@@ -6,17 +6,24 @@ import static org.matheclipse.core.expression.F.ArcCot;
 import static org.matheclipse.core.expression.F.ArcSin;
 import static org.matheclipse.core.expression.F.ArcTan;
 import static org.matheclipse.core.expression.F.Arg;
+import static org.matheclipse.core.expression.F.BernoulliB;
+import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.CN1D2;
+import static org.matheclipse.core.expression.F.Conjugate;
 import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.Cosh;
 import static org.matheclipse.core.expression.F.E;
 import static org.matheclipse.core.expression.F.Equal;
+import static org.matheclipse.core.expression.F.Factorial;
+import static org.matheclipse.core.expression.F.Factorial2;
+import static org.matheclipse.core.expression.F.Gamma;
 import static org.matheclipse.core.expression.F.Im;
 import static org.matheclipse.core.expression.F.Log;
+import static org.matheclipse.core.expression.F.NIL;
 import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Pi;
 import static org.matheclipse.core.expression.F.Plus;
@@ -25,15 +32,20 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Re;
 import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Sinh;
+import static org.matheclipse.core.expression.F.Sqrt;
+import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.a;
 import static org.matheclipse.core.expression.F.a_;
 import static org.matheclipse.core.expression.F.fraction;
+import static org.matheclipse.core.expression.F.integer;
+import static org.matheclipse.core.expression.F.num;
 import static org.matheclipse.core.expression.F.x;
 import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.expression.F.y;
 import static org.matheclipse.core.expression.F.y_;
 
+import java.math.BigInteger;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 
@@ -41,10 +53,12 @@ import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
-import org.hipparchus.complex.Complex;
+import org.hipparchus.fraction.BigFraction;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
@@ -79,6 +93,8 @@ public final class Arithmetic {
 	public final static Plus CONST_PLUS = new Plus();
 	public final static Times CONST_TIMES = new Times();
 	public final static Power CONST_POWER = new Power();
+	public final static Complex CONST_COMPLEX = new Complex();
+	public final static Rational CONST_RATIONAL = new Rational();
 
 	static {
 		F.Plus.setDefaultValue(F.C0);
@@ -92,15 +108,21 @@ public final class Arithmetic {
 
 		F.Abs.setEvaluator(new Abs());
 		F.AddTo.setEvaluator(new AddTo());
+		F.Complex.setEvaluator(CONST_COMPLEX);
 		F.Conjugate.setEvaluator(new Conjugate());
 		F.Decrement.setEvaluator(new Decrement());
 		F.DirectedInfinity.setEvaluator(new DirectedInfinity());
 		F.DivideBy.setEvaluator(new DivideBy());
+		F.Gamma.setEvaluator(new Gamma());
+		F.HarmonicNumber.setEvaluator(new HarmonicNumber());
 		F.Im.setEvaluator(new Im());
 		F.Increment.setEvaluator(new Increment());
+		F.Piecewise.setEvaluator(new Piecewise());
+		F.Pochhammer.setEvaluator(new Pochhammer());
 		F.Precision.setEvaluator(new Precision());
 		F.PreDecrement.setEvaluator(new PreDecrement());
 		F.PreIncrement.setEvaluator(new PreIncrement());
+		F.Rational.setEvaluator(CONST_RATIONAL);
 		F.Re.setEvaluator(new Re());
 		F.SubtractFrom.setEvaluator(new SubtractFrom());
 		F.TimesBy.setEvaluator(new TimesBy());
@@ -162,7 +184,7 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public IExpr e1ComplexArg(final Complex arg1) {
+		public IExpr e1ComplexArg(final org.hipparchus.complex.Complex arg1) {
 			return F.num(ComplexNum.dabs(arg1));
 		}
 
@@ -263,6 +285,63 @@ public final class Arithmetic {
 			if (results != null) {
 				return results[1];
 			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	public final static class Complex extends AbstractCoreFunctionEvaluator {
+
+		public Complex() {
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			try {
+				IExpr realExpr = engine.evaluate(ast.arg1());
+				IExpr imaginaryExpr = engine.evaluate(ast.arg2());
+				if (realExpr.isComplex() || realExpr.isComplexNumeric() || imaginaryExpr.isComplex()
+						|| imaginaryExpr.isComplexNumeric()) {
+					return F.Plus(realExpr, F.Times(F.CI, imaginaryExpr));
+					// if (((IComplex) imaginaryExpr).getRealPart().isZero()) {
+					// imaginaryExpr = ((IComplex) imaginaryExpr).getImaginaryPart();
+					// }
+				}
+				// else if (imaginaryExpr.isComplexNumeric()) {
+				// if (F.isZero(((IComplexNum) imaginaryExpr).getRealPart())) {
+				// imaginaryExpr = F.num(((IComplexNum) imaginaryExpr).getImaginaryPart());
+				// }
+				// }
+				if (realExpr.isRational() && imaginaryExpr.isRational()) {
+					IRational re;
+					if (realExpr.isInteger()) {
+						re = (IInteger) realExpr; // F.fraction((IInteger) arg1, F.C1);
+					} else {
+						re = (IFraction) realExpr;
+					}
+					IRational im;
+					if (imaginaryExpr.isInteger()) {
+						im = (IInteger) imaginaryExpr; // F.fraction((IInteger) arg2, F.C1);
+					} else {
+						im = (IFraction) imaginaryExpr;
+					}
+					return F.complex(re, im);
+				}
+				if (realExpr instanceof INum && imaginaryExpr instanceof INum) {
+					return F.complexNum(((INum) realExpr).doubleValue(), ((INum) imaginaryExpr).doubleValue());
+				}
+			} catch (Exception e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			}
+
 			return F.NIL;
 		}
 
@@ -559,6 +638,187 @@ public final class Arithmetic {
 	}
 
 	/**
+	 * <p>
+	 * Returns the Gamma function value.
+	 * </p>
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Gamma_function">Gamma function</a> and
+	 * <a href= "https://en.wikipedia.org/wiki/Particular_values_of_the_Gamma_function"> Particular values of the Gamma
+	 * function</a>
+	 * 
+	 */
+	private final static class Gamma extends AbstractTrigArg1 implements DoubleUnaryOperator {
+
+		/**
+		 * Implement: <code>Gamma(x_Integer) := (x-1)!</code>
+		 * 
+		 * @param x
+		 * @return
+		 */
+		public static IInteger gamma(final IInteger x) {
+			return NumberTheory.factorial(x.subtract(C1));
+		}
+
+		@Override
+		public double applyAsDouble(double operand) {
+			return org.hipparchus.special.Gamma.gamma(operand);
+		}
+
+		@Override
+		public IExpr e1DblArg(final double arg1) {
+			double gamma = org.hipparchus.special.Gamma.gamma(arg1);
+			return num(gamma);
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 4);
+
+			if (ast.isAST1()) {
+				return evaluateArg1(ast.arg1());
+			}
+			return NIL;
+		}
+
+		@Override
+		public IExpr evaluateArg1(final IExpr arg1) {
+			if (arg1.isInteger()) {
+				return gamma((IInteger) arg1);
+			}
+			if (arg1.isFraction()) {
+				IFraction frac = (IFraction) arg1;
+				if (frac.getDenominator().equals(C2)) {
+					IInteger n = frac.getNumerator();
+					if (arg1.isNegative()) {
+						n = n.negate();
+						return Times(Power(CN1, Times(C1D2, Plus(C1, n))), Power(C2, n), Sqrt(Pi),
+								Power(Factorial(n), -1), Factorial(Times(C1D2, Plus(CN1, n))));
+					} else {
+						// Sqrt(Pi) * (n-2)!! / 2^((n-1)/2)
+						return Times(Sqrt(Pi), Factorial2(n.subtract(C2)), Power(C2, Times(C1D2, Subtract(C1, n))));
+					}
+				}
+			}
+			if (arg1.isAST()) {
+				IAST z = (IAST) arg1;
+				if (z.isAST(Conjugate, 2)) {
+					// mirror symmetry for Conjugate()
+					return Conjugate(Gamma(z.arg1()));
+				}
+
+			}
+			return NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
+	/**
+	 * Harmonic number of a given integer value
+	 * 
+	 * See: <a href="http://en.wikipedia.org/wiki/Harmonic_number">Harmonic number</a>
+	 */
+	private final static class HarmonicNumber extends AbstractEvaluator {
+
+		public HarmonicNumber() {
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			IExpr arg1 = ast.arg1();
+			if (ast.isAST2()) {
+				IExpr arg2 = ast.arg2();
+				if (arg2.isOne()) {
+					return F.HarmonicNumber(arg1);
+				} else {
+					// generalized harmonic number
+					if (arg2.isInteger()) {
+						if (arg1.isInfinity()) {
+							if (arg2.isPositive() && ((IInteger) arg2).isEven()) {
+								// Module({v=s/2},((2*Pi)^(2*v)*(-1)^(v+1)*BernoulliB(2*v))/(2*(2*v)!))
+								IExpr v = Times(C1D2, arg2);
+								return Times(Power(Times(C2, Pi), Times(C2, v)), Power(CN1, Plus(v, C1)),
+										BernoulliB(Times(C2, v)), Power(Times(C2, Factorial(Times(C2, v))), CN1));
+							}
+							return F.NIL;
+						}
+					}
+					if (arg1.isInteger()) {
+						int n = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);
+						if (n < 0) {
+							return F.NIL;
+						}
+						if (n == 0) {
+							return C0;
+						}
+						IAST result = Plus();
+						for (int i = 1; i <= n; i++) {
+							result.append(Power(integer(i), Negate(arg2)));
+						}
+						return result;
+					}
+					return F.NIL;
+				}
+			}
+			if (arg1.isInteger()) {
+
+				int n = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);
+				if (n < 0) {
+					return F.NIL;
+				}
+				if (n == 0) {
+					return C0;
+				}
+				if (n == 1) {
+					return C1;
+				}
+
+				return fraction(harmonicNumber(n));
+			}
+
+			return F.NIL;
+		}
+
+		/**
+		 * The Harmonic number at the index specified
+		 * 
+		 * @param n
+		 *            the index, non-negative.
+		 * @return the H_1=1 for n=1, H_2=3/2 for n=2 etc. For values of n less than 1, zero is returned.
+		 */
+		public BigFraction harmonicNumber(int n) {
+			if (n < 1)
+				return BigFraction.ZERO;
+			else {
+				/*
+				 * start with 1 as the result
+				 */
+				BigFraction a = new BigFraction(1, 1);
+
+				/*
+				 * add 1/i for i=2..n
+				 */
+				for (int i = 2; i <= n; i++) {
+					a = a.add(new BigFraction(1, i));
+				}
+				return a;
+			}
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+
+	}
+
+	/**
 	 * Get the imaginary part of an expression
 	 * 
 	 * See: <a href="http://en.wikipedia.org/wiki/Imaginary_part">Imaginary part</a>
@@ -690,6 +950,90 @@ public final class Arithmetic {
 			return F.NIL;
 		}
 
+	}
+
+	/**
+	 * A piecewise-defined function (also called a piecewise function or a hybrid function) is a function which is
+	 * defined by multiple subfunctions, each subfunction applying to a certain interval of the main function's domain.
+	 * 
+	 * See: <a href="http://en.wikipedia.org/wiki/Piecewise">Wikipedia:Piecewise</a>
+	 * 
+	 */
+	private final static class Piecewise extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+			int[] dim = ast.arg1().isMatrix(false);
+			if (dim == null || dim[0] <= 0 || dim[1] != 2) {
+				throw new WrongArgumentType(ast, ast.arg1(), 1,
+						"Matrix with row-dimension > 0 and column-dimension == 2 expected!");
+			}
+			IAST matrix = (IAST) ast.arg1();
+			IExpr defaultValue = F.C0;
+			if (ast.isAST2()) {
+				defaultValue = ast.arg2();
+			}
+			IExpr cond;
+			IAST row;
+			IAST result = F.List();
+			IAST pw = F.ast(F.Piecewise);
+			pw.append(result);
+			boolean evaluated = false;
+			boolean noBoolean = false;
+			for (int i = 1; i < matrix.size(); i++) {
+				row = matrix.getAST(i);
+				cond = row.arg2();
+				if (cond.isTrue()) {
+					if (!evaluated && i == matrix.size() - 1) {
+						return F.NIL;
+					}
+					if (noBoolean) {
+						result.append(F.List(row.arg1(), F.True));
+						return pw;
+					}
+					return row.arg1();
+				} else if (cond.isFalse()) {
+					evaluated = true;
+					continue;
+				}
+				cond = engine.evaluateNull(cond);
+				if (!cond.isPresent()) {
+					noBoolean = true;
+					result.append(F.List(row.arg1(), row.arg2()));
+					continue;
+				} else if (cond.isTrue()) {
+					evaluated = true;
+					if (noBoolean) {
+						result.append(F.List(row.arg1(), F.True));
+						return pw;
+					}
+					return row.arg1();
+				} else if (cond.isFalse()) {
+					evaluated = true;
+					continue;
+				} else {
+					result.append(F.List(row.arg1(), cond));
+					noBoolean = true;
+					continue;
+				}
+			}
+			if (!noBoolean) {
+				return defaultValue;
+			} else {
+				if (evaluated) {
+					pw.append(defaultValue);
+					return pw;
+				}
+			}
+
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.NUMERICFUNCTION);
+		}
 	}
 
 	public static class Plus extends AbstractArgMultiple implements INumeric {
@@ -875,6 +1219,77 @@ public final class Arithmetic {
 			super.setUp(newSymbol);
 		}
 
+	}
+
+	/**
+	 * Compute Pochhammer's symbol (this)_n.
+	 * 
+	 * @param n
+	 *            The number of product terms in the evaluation.
+	 * @return Gamma(this+n)/Gamma(this) = this*(this+1)*...*(this+n-1).
+	 */
+	private final static class Pochhammer extends AbstractArg2 {
+
+		@Override
+		public IExpr e2ObjArg(final IExpr a, final IExpr n) {
+			if (a.isRational() && n.isInteger()) {
+				BigFraction bf = ((IRational) a).getFraction();
+				BigFraction ph = pochhammer(bf, ((IInteger) n).toBigNumerator());
+				if (ph != null) {
+					return F.fraction(ph);
+				}
+			}
+			if (a.isInteger() && a.isPositive()) {
+				IExpr temp = EvalEngine.get().evaluate(F.Plus(((IInteger) a).subtract(F.C1), n));
+				if (temp.isSymbol()) {
+					return F.Divide(F.Factorial(temp), F.Gamma(a));
+				}
+			}
+			return F.Divide(F.Gamma(F.Plus(a, n)), F.Gamma(a));
+		}
+
+		/**
+		 * Compute Pochhammer's symbol (this)_n.
+		 * 
+		 * @param n
+		 *            The number of product terms in the evaluation.
+		 * @return Gamma(this+n)/Gamma(this) = this*(this+1)*...*(this+n-1).
+		 */
+		public static BigFraction pochhammer(BigFraction th, final BigInteger n) {
+			if (n.compareTo(BigInteger.ZERO) < 0) {
+				BigFraction res = BigFraction.ONE;
+				BigInteger i = BigInteger.valueOf(-1);
+				for (; i.compareTo(n) >= 0; i = i.subtract(BigInteger.ONE)) {
+					res = res.multiply(th.add(i));
+				}
+				return res.reciprocal();
+			} else if (n.equals(BigInteger.ZERO)) {
+				return BigFraction.ONE;
+			} else {
+				BigFraction res = new BigFraction(th.getNumerator(), th.getDenominator());
+				BigInteger i = BigInteger.ONE;
+				for (; i.compareTo(n) < 0; i = i.add(BigInteger.ONE)) {
+					res = res.multiply(th.add(i));
+				}
+				return res;
+			}
+		}
+
+		/**
+		 * Compute pochhammer's symbol (this)_n.
+		 * 
+		 * @param n
+		 *            The number of product terms in the evaluation.
+		 * @return Gamma(this+n)/GAMMA(this).
+		 */
+		public static BigFraction pochhammer(BigFraction th, int n) {
+			return pochhammer(th, BigInteger.valueOf(n));
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		}
 	}
 
 	public static class Power extends AbstractArg2 implements INumeric, PowerRules {
@@ -1633,6 +2048,74 @@ public final class Arithmetic {
 		@Override
 		protected ISymbol getFunctionSymbol() {
 			return F.PreIncrement;
+		}
+
+	}
+
+	/**
+	 * Representation for a rational number
+	 * 
+	 */
+	public final static class Rational extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			try {
+				// try to convert into a fractional number
+				IExpr arg0 = ast.arg1();
+				IExpr arg1 = ast.arg2();
+				if (arg0.isInteger() && arg1.isInteger()) {
+					// already evaluated
+				} else if (arg0 instanceof INum && arg1 instanceof INum) {
+					// already evaluated
+				} else {
+					arg0 = engine.evaluate(arg0);
+					arg1 = engine.evaluate(arg1);
+				}
+				if (arg0.isInteger() && arg1.isInteger()) {
+					// symbolic mode
+					IInteger numerator = (IInteger) arg0;
+					IInteger denominator = (IInteger) arg1;
+					if (denominator.isZero()) {
+						engine.printMessage(
+								"Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
+						if (numerator.isZero()) {
+							// 0^0
+							return F.Indeterminate;
+						}
+						return F.CComplexInfinity;
+					}
+					if (numerator.isZero()) {
+						return F.C0;
+					}
+					return F.fraction(numerator, denominator);
+				} else if (arg0 instanceof INum && arg1 instanceof INum) {
+					// numeric mode
+					INum numerator = (INum) arg0;
+					INum denominator = (INum) arg1;
+					if (denominator.isZero()) {
+						engine.printMessage(
+								"Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
+						if (numerator.isZero()) {
+							// 0^0
+							return F.Indeterminate;
+						}
+						return F.CComplexInfinity;
+					}
+					if (numerator.isZero()) {
+						return F.C0;
+					}
+					return F.num(numerator.doubleValue() / denominator.doubleValue());
+				}
+			} catch (Exception e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			}
+
+			return F.NIL;
 		}
 
 	}

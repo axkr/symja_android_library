@@ -1306,7 +1306,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @return
 	 * @see #isList()
-	 * @see #isMatrix()
+	 * @see #isMatrix(boolean)
 	 * @see #isVector()
 	 */
 	default boolean isListOfLists() {
@@ -1338,9 +1338,24 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * Test if this expression is a matrix and return the dimensions as array [row-dimension, column-dimension]. This
 	 * expression is only a matrix, if all elements are lists with the header <code>List</code> and have the same size.
 	 * 
+	 * @param setMatrixFormat
+	 *            TODO
+	 * 
 	 * @return <code>null</code> if the expression is not a matrix
 	 */
 	default int[] isMatrix() {
+		return isMatrix(true);
+	}
+
+	/**
+	 * Test if this expression is a matrix and return the dimensions as array [row-dimension, column-dimension]. This
+	 * expression is only a matrix, if all elements are lists with the header <code>List</code> and have the same size.
+	 * 
+	 * @param setMatrixFormat
+	 *            set the <code>IAST.IS_MATRIX</code> flag for formatting as a matrix.
+	 * @return <code>null</code> if the expression is not a matrix
+	 */
+	default int[] isMatrix(boolean setMatrixFormat) {
 		// default: no matrix
 		return null;
 	}

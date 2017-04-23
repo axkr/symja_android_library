@@ -95,16 +95,16 @@ public class BasicTeXTestCase extends TestCase {
 		check("Complex(-a, -1)", " - a - \\imag");
 		check("Complex(a, -b)", "a - b\\,\\imag");
 		check("Complex(a, b)", "a + b\\,\\imag");
-		check("Complex(3/4,-(6/7)*I)", "\\frac{3}{4} - \\frac{6}{7}\\,i "); 
+		check("Complex(3/4,-(6/7)*I)", "\\frac{3}{4}+\\frac{6}{7}"); 
 		check("3/4-(6/7)*I", "\\frac{3}{4}-\\frac{6}{7}\\,i ");
 		check("1+2*I", "1+2\\,i ");
 		check("1-2*I", "1-2\\,i ");
 		check("-2*I", "\\left( -2\\right) \\cdot i ");
 		check("1-2*I", "1-2\\,i ");
-		check("Complex(1,-2*I)", "1 - 2\\,i ");
-		check("Complex(3.0,-2.0*I)", "3.0 + -2.0\\,i ");
-		check("Complex(0,-2*I)", "-2\\,i ");
-		check("Complex(0,-1*I)", "-1\\,i ");
+		check("Complex(1,-2*I)", "1+2");
+		check("Complex(3.0, -2.0)", "3.0 + -2.0\\,i ");
+		check("Complex(0,-2)", "-2\\,i ");
+		check("Complex(0,-1)", "-1\\,i ");
 	}
 
 	public void testTeX016() {

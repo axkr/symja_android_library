@@ -66,11 +66,9 @@ public final class FunctionDefinitions {
 		FromCharacterCode.setEvaluator(new org.matheclipse.core.reflection.system.FromCharacterCode());
 		FromContinuedFraction.setEvaluator(new org.matheclipse.core.reflection.system.FromContinuedFraction());
 		FromPolarCoordinates.setEvaluator(new org.matheclipse.core.reflection.system.FromPolarCoordinates());
-		Gamma.setEvaluator(new org.matheclipse.core.reflection.system.Gamma());
 		GCD.setEvaluator(new org.matheclipse.core.reflection.system.GCD());
 		GeometricMean.setEvaluator(new org.matheclipse.core.reflection.system.GeometricMean());
 		GroebnerBasis.setEvaluator(new org.matheclipse.core.reflection.system.GroebnerBasis());
-		HarmonicNumber.setEvaluator(new org.matheclipse.core.reflection.system.HarmonicNumber());
 		Haversine.setEvaluator(new org.matheclipse.core.reflection.system.Haversine());
 		HeavisideTheta.setEvaluator(new org.matheclipse.core.reflection.system.HeavisideTheta());
 		HermiteH.setEvaluator(new org.matheclipse.core.reflection.system.HermiteH());
@@ -123,10 +121,8 @@ public final class FunctionDefinitions {
 		Out.setEvaluator(new org.matheclipse.core.reflection.system.Out());
 		Outer.setEvaluator(new org.matheclipse.core.reflection.system.Outer());
 		PDF.setEvaluator(new org.matheclipse.core.reflection.system.PDF());
-		Piecewise.setEvaluator(new org.matheclipse.core.reflection.system.Piecewise());
 		Plot.setEvaluator(new org.matheclipse.core.reflection.system.Plot());
 		Plot3D.setEvaluator(new org.matheclipse.core.reflection.system.Plot3D());
-		Pochhammer.setEvaluator(new org.matheclipse.core.reflection.system.Pochhammer());
 		PolyGamma.setEvaluator(new org.matheclipse.core.reflection.system.PolyGamma());
 		PolyLog.setEvaluator(new org.matheclipse.core.reflection.system.PolyLog());
 		PowerMod.setEvaluator(new org.matheclipse.core.reflection.system.PowerMod());
