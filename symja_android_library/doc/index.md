@@ -167,6 +167,7 @@ Documentation can be displayed by asking for information for the function name.
 * [Attributes](functions/Attributes.md)
 * [BernoulliB](functions/BernoulliB.md)
 * [Binomial](functions/Binomial.md)
+* [BitLength](functions/BitLength.md)
 * [Block](functions/Block.md)
 * [Boole](functions/Boole.md)
 * [BooleanMinimize](functions/BooleanMinimize.md)
