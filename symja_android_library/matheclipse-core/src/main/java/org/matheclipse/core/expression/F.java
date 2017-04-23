@@ -26,6 +26,7 @@ import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.Combinatoric;
 import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.builtin.FunctionDefinitions;
+import org.matheclipse.core.builtin.IntegerFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.builtin.NumberTheory;
@@ -583,6 +584,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "besselj" : "BesselJ");
 	public final static IBuiltInSymbol Binomial = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "binomial" : "Binomial");
+	public final static IBuiltInSymbol BitLength = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "bitlength" : "BitLength");
 	public final static IBuiltInSymbol Boole = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "boole" : "Boole");
 	public final static IBuiltInSymbol BooleanConvert = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "booleanconvert" : "BooleanConvert");
@@ -1876,6 +1879,7 @@ public class F {
 			LinearAlgebra.initialize();
 			ListFunctions.initialize();
 			Combinatoric.initialize();
+			IntegerFunctions.initialize();
 
 			// initialize only the utility function rules for Integrate
 			// final EvalEngine engine = EvalEngine.get();

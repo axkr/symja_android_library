@@ -20,7 +20,6 @@ public final class FunctionDefinitions {
 		Arg.setEvaluator(new org.matheclipse.core.reflection.system.Arg());
 		BesselJ.setEvaluator(new org.matheclipse.core.reflection.system.BesselJ());
 		CDF.setEvaluator(new org.matheclipse.core.reflection.system.CDF());
-		Ceiling.setEvaluator(new org.matheclipse.core.reflection.system.Ceiling());
 		CentralMoment.setEvaluator(new org.matheclipse.core.reflection.system.CentralMoment());
 		ChebyshevT.setEvaluator(new org.matheclipse.core.reflection.system.ChebyshevT());
 		ChebyshevU.setEvaluator(new org.matheclipse.core.reflection.system.ChebyshevU());
@@ -58,7 +57,6 @@ public final class FunctionDefinitions {
 		FindInstance.setEvaluator(new org.matheclipse.core.reflection.system.FindInstance());
 		FindRoot.setEvaluator(new org.matheclipse.core.reflection.system.FindRoot());
 		Fit.setEvaluator(new org.matheclipse.core.reflection.system.Fit());
-		Floor.setEvaluator(new org.matheclipse.core.reflection.system.Floor());
 		FractionalPart.setEvaluator(new org.matheclipse.core.reflection.system.FractionalPart());
 		FresnelC.setEvaluator(new org.matheclipse.core.reflection.system.FresnelC());
 		FresnelS.setEvaluator(new org.matheclipse.core.reflection.system.FresnelS());

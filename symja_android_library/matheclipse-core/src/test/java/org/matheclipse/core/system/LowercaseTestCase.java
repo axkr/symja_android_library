@@ -592,6 +592,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Binomial(k, 6)", "Binomial(k,6)");
 	}
 
+	public void testBitLength() {
+		check("BitLength(1023)", "10");
+		check("BitLength(100) ", "7");
+		check("BitLength(-5)", "3");
+		check("BitLength(0)", "0");
+		check("BitLength(2^123-1)", "123");
+		check("BitLength(-(2^123-1))", "123");
+		check("", "");
+		check("", "");
+		
+	}
+	
 	public void testBoole() {
 		check("Boole(2 == 2)", "1");
 		check("Boole(7 < 5)  ", "0");
@@ -728,6 +740,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCeiling() {
+		check("Ceiling(1/3)", "1");
+		check("Ceiling(-1/3)", "0");
+		check("Ceiling(1.2)", "2");
+		check("Ceiling(3/2)", "2");
+		check("Ceiling(1.3 + 0.7*I)", "2+I");
+		check("Ceiling(2.6, 0.5)", "3.0");
+		check("Ceiling(10.4, -1) ", "10");
+		check("Ceiling(-10.4, -1) ", "-11");
+		
 		check("Ceiling(1.5)", "2");
 		check("Ceiling(1.5 + 2.7 I)", "2+I*3");
 	}
@@ -2156,6 +2177,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFloor() {
+		check("Floor(1/3)", "0");
+		check("Floor(-1/3)", "-1");
+		check("Floor(10.4)", "10");
+		check("Floor(10/3)", "3");
+		check("Floor(10)", "10");
+		check("Floor(21, 2)", "20");
+		check("Floor(2.6, 0.5)", "2.5");
+		check("Floor(-10.4)", "-11");
+		check("Floor(1.5 + 2.7*I)", "1+I*2");
+		check("Floor(10.4, -1)", "11");
+		check("Floor(-10.4, -1) ", "-10");
+		
 		check("Floor(1.5)", "1");
 		check("Floor(1.5 + 2.7 I)", "1+I*2");
 	}

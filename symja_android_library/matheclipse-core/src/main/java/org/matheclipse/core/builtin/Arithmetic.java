@@ -66,6 +66,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -93,8 +94,8 @@ public final class Arithmetic {
 	public final static Plus CONST_PLUS = new Plus();
 	public final static Times CONST_TIMES = new Times();
 	public final static Power CONST_POWER = new Power();
-	public final static Complex CONST_COMPLEX = new Complex();
-	public final static Rational CONST_RATIONAL = new Rational();
+	public final static IFunctionEvaluator CONST_COMPLEX = new Complex();
+	public final static IFunctionEvaluator CONST_RATIONAL = new Rational();
 
 	static {
 		F.Plus.setDefaultValue(F.C0);
@@ -294,7 +295,7 @@ public final class Arithmetic {
 		}
 	}
 
-	public final static class Complex extends AbstractCoreFunctionEvaluator {
+	private final static class Complex extends AbstractCoreFunctionEvaluator {
 
 		public Complex() {
 		}
@@ -2056,7 +2057,7 @@ public final class Arithmetic {
 	 * Representation for a rational number
 	 * 
 	 */
-	public final static class Rational extends AbstractCoreFunctionEvaluator {
+	private final static class Rational extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
