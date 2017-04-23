@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.eval.interfaces.ISymbolEvaluator;
 import org.matheclipse.core.generic.interfaces.INumericFunction;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
@@ -80,6 +81,12 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 			return temp;
 		}
 		return F.NIL;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr evaluateHead(IAST ast, EvalEngine engine) {
+		return isConstant() ? F.NIL : super.evaluateHead(ast, engine);
 	}
 
 	/** {@inheritDoc} */

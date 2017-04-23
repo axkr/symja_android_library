@@ -41,9 +41,7 @@ public class ConstantDefinitions {
 	/**
 	 * Catalan constant
 	 * 
-	 * See:
-	 * <a href="http://en.wikipedia.org/wiki/Catalan%27s_constant">Wikipedia:
-	 * Catalan 's constant</a>
+	 * See: <a href="http://en.wikipedia.org/wiki/Catalan%27s_constant">Wikipedia: Catalan 's constant</a>
 	 * 
 	 */
 	private static class Catalan extends AbstractSymbolEvaluator implements ISignedNumberConstant {
@@ -89,8 +87,7 @@ public class ConstantDefinitions {
 	/**
 	 * The constant Degree converts to Pi/180 radians
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Degree_(angle)">Degree
-	 * (angle)</a>
+	 * See: <a href="http://en.wikipedia.org/wiki/Degree_(angle)">Degree (angle)</a>
 	 * 
 	 */
 	private static class Degree extends AbstractSymbolEvaluator implements ISignedNumberConstant {
@@ -125,9 +122,7 @@ public class ConstantDefinitions {
 	/**
 	 * Euler's constant E
 	 * 
-	 * See:
-	 * <a href="http://en.wikipedia.org/wiki/Exponential_function">Wikipedia -
-	 * Exponential function</a>
+	 * See: <a href="http://en.wikipedia.org/wiki/Exponential_function">Wikipedia - Exponential function</a>
 	 */
 	private static class E extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 		public E() {
@@ -156,9 +151,7 @@ public class ConstantDefinitions {
 	/**
 	 * Euler gamma constant
 	 * 
-	 * See
-	 * <a href="http://en.wikipedia.org/wiki/Euler–Mascheroni_constant">Euler–
-	 * Mascheroni constant</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Euler–Mascheroni_constant">Euler– Mascheroni constant</a>
 	 */
 	private static class EulerGamma extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 		final static public double EULER_GAMMA = 0.57721566490153286060651209008240243104215933593992;
@@ -185,8 +178,7 @@ public class ConstantDefinitions {
 	/**
 	 * Glaisher constant
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Glaisher-Kinkelin_constant">
-	 * Wikipedia: Glaisher-Kinkelin constant</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Glaisher-Kinkelin_constant"> Wikipedia: Glaisher-Kinkelin constant</a>
 	 * 
 	 */
 	private static class Glaisher extends AbstractSymbolEvaluator implements ISignedNumberConstant {
@@ -214,8 +206,7 @@ public class ConstantDefinitions {
 	/**
 	 * Golden ratio
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Golden_ratio">Wikipedia:Golden
-	 * ratio</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Golden_ratio">Wikipedia:Golden ratio</a>
 	 */
 	private static class GoldenRatio extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 		final static public double GOLDEN_RATIO = 1.6180339887498948482045868343656381177203091798058;
@@ -226,7 +217,8 @@ public class ConstantDefinitions {
 		@Override
 		public IExpr evaluate(final ISymbol symbol) {
 			// 1/2*(1+5^(1/2))
-			return F.Times(F.C1D2, F.Plus(F.C1, F.Power(F.integer(5), F.C1D2)));
+			// return F.Times(F.C1D2, F.Plus(F.C1, F.Power(F.integer(5), F.C1D2)));
+			return F.NIL;
 		}
 
 		@Override
@@ -290,9 +282,7 @@ public class ConstantDefinitions {
 	/**
 	 * Khinchin constant
 	 * 
-	 * See:
-	 * <a href="http://en.wikipedia.org/wiki/Khinchin%27s_constant">Wikipedia:
-	 * Khinchin's constant</a>
+	 * See: <a href="http://en.wikipedia.org/wiki/Khinchin%27s_constant">Wikipedia: Khinchin's constant</a>
 	 * 
 	 */
 	private static class Khinchin extends AbstractSymbolEvaluator implements ISignedNumberConstant {

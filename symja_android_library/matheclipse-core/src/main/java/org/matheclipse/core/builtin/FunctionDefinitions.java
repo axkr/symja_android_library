@@ -29,7 +29,6 @@ public final class FunctionDefinitions {
 		ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
 		ComposeList.setEvaluator(new org.matheclipse.core.reflection.system.ComposeList());
 		ContinuedFraction.setEvaluator(new org.matheclipse.core.reflection.system.ContinuedFraction());
-		Cos.setEvaluator(new org.matheclipse.core.reflection.system.Cos());
 		Cosh.setEvaluator(new org.matheclipse.core.reflection.system.Cosh());
 		CosIntegral.setEvaluator(new org.matheclipse.core.reflection.system.CosIntegral());
 		Cot.setEvaluator(new org.matheclipse.core.reflection.system.Cot());
@@ -51,7 +50,6 @@ public final class FunctionDefinitions {
 		EllipticE.setEvaluator(new org.matheclipse.core.reflection.system.EllipticE());
 		EllipticPi.setEvaluator(new org.matheclipse.core.reflection.system.EllipticPi());
 		Erf.setEvaluator(new org.matheclipse.core.reflection.system.Erf());
-		Exp.setEvaluator(new org.matheclipse.core.reflection.system.Exp());
 		Export.setEvaluator(new org.matheclipse.core.reflection.system.Export());
 		ExtendedGCD.setEvaluator(new org.matheclipse.core.reflection.system.ExtendedGCD());
 		FindInstance.setEvaluator(new org.matheclipse.core.reflection.system.FindInstance());
@@ -93,9 +91,6 @@ public final class FunctionDefinitions {
 		LetterQ.setEvaluator(new org.matheclipse.core.reflection.system.LetterQ());
 		Limit.setEvaluator(new org.matheclipse.core.reflection.system.Limit());
 		LinearProgramming.setEvaluator(new org.matheclipse.core.reflection.system.LinearProgramming());
-		Log.setEvaluator(new org.matheclipse.core.reflection.system.Log());
-		Log10.setEvaluator(new org.matheclipse.core.reflection.system.Log10());
-		Log2.setEvaluator(new org.matheclipse.core.reflection.system.Log2());
 		LogisticSigmoid.setEvaluator(new org.matheclipse.core.reflection.system.LogisticSigmoid());
 		LowerCaseQ.setEvaluator(new org.matheclipse.core.reflection.system.LowerCaseQ());
 		MapAll.setEvaluator(new org.matheclipse.core.reflection.system.MapAll());
@@ -148,7 +143,6 @@ public final class FunctionDefinitions {
 		Share.setEvaluator(new org.matheclipse.core.reflection.system.Share());
 		Sign.setEvaluator(new org.matheclipse.core.reflection.system.Sign());
 		SignCmp.setEvaluator(new org.matheclipse.core.reflection.system.SignCmp());
-		Sin.setEvaluator(new org.matheclipse.core.reflection.system.Sin());
 		Sinc.setEvaluator(new org.matheclipse.core.reflection.system.Sinc());
 		Sinh.setEvaluator(new org.matheclipse.core.reflection.system.Sinh());
 		SinIntegral.setEvaluator(new org.matheclipse.core.reflection.system.SinIntegral());
@@ -163,7 +157,6 @@ public final class FunctionDefinitions {
 		Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());
 		Surd.setEvaluator(new org.matheclipse.core.reflection.system.Surd());
 		SyntaxLength.setEvaluator(new org.matheclipse.core.reflection.system.SyntaxLength());
-		Tan.setEvaluator(new org.matheclipse.core.reflection.system.Tan());
 		Tanh.setEvaluator(new org.matheclipse.core.reflection.system.Tanh());
 		Taylor.setEvaluator(new org.matheclipse.core.reflection.system.Taylor());
 		ToCharacterCode.setEvaluator(new org.matheclipse.core.reflection.system.ToCharacterCode());

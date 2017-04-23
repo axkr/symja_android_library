@@ -2715,7 +2715,7 @@ public final class Arithmetic {
 			// ORDERLESS_MATCHER.setUpHashRule("Log[x_]", "Log[y_]^(-1)",
 			// Log.getFunction());
 			ORDERLESS_MATCHER.defineHashRule(Log(x_), Power(Log(y_), CN1),
-					org.matheclipse.core.reflection.system.Log.getFunction());
+					ExpTrigsFunctions.integerLogFunction());
 			// addTrigRules(F.Sin, F.Cot, F.Cos);
 			// addTrigRules(F.Sin, F.Sec, F.Tan);
 			// addTrigRules(F.Cos, F.Tan, F.Sin);

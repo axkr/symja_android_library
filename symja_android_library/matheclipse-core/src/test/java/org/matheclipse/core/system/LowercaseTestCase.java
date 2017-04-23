@@ -601,14 +601,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BitLength(-(2^123-1))", "123");
 		check("", "");
 		check("", "");
-		
+
 	}
-	
+
 	public void testBoole() {
 		check("Boole(2 == 2)", "1");
 		check("Boole(7 < 5)  ", "0");
 		check("Boole(a == 7)", "Boole(a==7)");
-		
+
 		check("{Boole(False), Boole(True)}", "{0,1}");
 		check("Boole({True, False, True, True, False})", "{1,0,1,1,0}");
 		check("Boole({a, False, b, True, f()})", "{Boole(a),0,Boole(b),1,Boole(f())}");
@@ -748,7 +748,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Ceiling(2.6, 0.5)", "3.0");
 		check("Ceiling(10.4, -1) ", "10");
 		check("Ceiling(-10.4, -1) ", "-11");
-		
+
 		check("Ceiling(1.5)", "2");
 		check("Ceiling(1.5 + 2.7 I)", "2+I*3");
 	}
@@ -1039,6 +1039,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCos() {
+		check("Cos(0)", "1");
+		check("Cos(3*Pi)", "-1");
+		check("Cos(1.5*Pi)", "-1.8369701987210297E-16");
+		
 		check("Cos(z+1/2*Pi)", "-Sin(z)");
 		check("Cos(Pi)", "-1");
 		check("Cos(z+Pi)", "-Cos(z)");
@@ -1171,6 +1175,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDegree() {
+		check("Sin(30*Degree)", "1/2");
+		check("Degree == Pi / 180", "True");
+		check("Cos(Degree(x))", "Cos(Degree(x))");
+		check("N(Degree)", "0.017453292519943295");
+
 		check("Round(Pi/Degree^2)", "10313");
 		check("Pi/4 < 60 Degree < Pi", "True");
 		check("FullSimplify(Pi/Degree)", "180");
@@ -1710,6 +1719,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExp() {
+		check("Exp(1)", "E");
+		check("Exp(10.0)", "22026.465794806703");
+		check("Exp(x) //FullForm", "\"Power(E, x)\"");
+		// TODO check("Exp(1.*^20)", "Overflow()");
+		check("Exp(1.*^20)", "Infinity");
+
 		check("Exp(a+b)", "E^(a+b)");
 		check("E^(I*Pi)", "-1");
 		check("E^(2*I*Pi)", "1");
@@ -2188,7 +2203,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Floor(1.5 + 2.7*I)", "1+I*2");
 		check("Floor(10.4, -1)", "11");
 		check("Floor(-10.4, -1) ", "-10");
-		
+
 		check("Floor(1.5)", "1");
 		check("Floor(1.5 + 2.7 I)", "1+I*2");
 	}
@@ -2361,6 +2376,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 			check("DotProduct({a,b,c},{d,e,f}, Spherical)",
 					"a*d*Cos(b)*Cos(e)+a*d*Cos(c)*Cos(f)*Sin(b)*Sin(e)+a*d*Sin(b)*Sin(c)*Sin(e)*Sin(f)");
 		}
+	}
+
+	public void testGoldenRatio() {
+		check("N(GoldenRatio)", "1.618033988749895");
+		check("Log(GoldenRatio)", "ArcCsch(2)");
 	}
 
 	public void testGreater() {
@@ -3033,13 +3053,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLog() {
+		
+		check("Log({0, 1, E, E * E, E ^ 3, E ^ x})", "{-Infinity,0,1,2,3,Log(E^x)}");
+		check("Log(0.)", "Indeterminate");
+		check("Log(1000) / Log(10)", "3");
+		check("Log(1.4)", "0.3364722366212129");
+		check("Log(Exp(1.4))", "1.3999999999999997");
+		check("Log(-1.4)", "0.3364722366212129+I*3.141592653589793");
 
+		check("Log(-1)", "I*Pi");
 		// test alias
 		check("Ln(E)", "1");
 		check("ln(E)", "1");
 
 		check("Log(a, b)", "Log(b)/Log(a)");
 		check("Log(Pi^E)", "E*Log(Pi)");
+		check("Log(E^10)", "10");
 		check("Log(E)", "1");
 		check("Log(-E)", "1+I*Pi");
 		check("D(Log(a, x),x)", "1/(x*Log(a))");
@@ -3061,15 +3090,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Log(I*Infinity)", "Infinity");
 		check("Log(-I*Infinity)", "Infinity");
 		check("Log(ComplexInfinity)", "Infinity");
-
-		check("Log(0.0)", "-Infinity");
 	}
 
 	public void testLog10() {
+		check("Log10(1000)", "3");
+		check("Log10({2., 5.})", "{0.30102999566398114,0.6989700043360186}");
+		check("Log10(E ^ 3)", "3/Log(10)");
+		
 		check("Log10(x)", "Log(x)/Log(10)");
 	}
 
 	public void testLog2() {
+		check("Log2(4 ^ 8)", "16");
+		check("Log2(5.6)", "2.4854268271702415");
+		check("Log2(E ^ 2) ", "2/Log(2)");
 		check("Log2(x)", "Log(x)/Log(2)");
 	}
 
@@ -4197,7 +4231,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Piecewise({{0, x <= 0}}, 1)", "Piecewise({{0,x<=0}},1)");
 		check("Piecewise({{1, False}})", "0");
 		check("Piecewise({{0 ^ 0, False}}, -1)", "-1");
-		
+
 		check("$pw = Piecewise({{Sin(x)/x, x < 0}, {1, x == 0}}, -x^2/100 + 1); $pw /. {{x -> -5}, {x -> 0}, {x -> 5}}",
 				"{Sin(5)/5,1,3/4}");
 		check("Piecewise({{e1, True}, {e2, d2}, {e3, d3}}, e0)", "e1");
@@ -4613,11 +4647,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Product(2 ^ i, {i, 1, n})", "2^(1/2*n*(1+n))");
 		check("Product(k, {k, 3, n})", "n!/2");
 		check("Product(k, {k, 10, n})", "n!/362880");
-		
+
 		check("primorial(0) = 1", "1");
 		check("primorial(n_Integer) := Product(Prime(k), {k, 1, n})", "");
 		check("primorial(12)", "7420738134810");
-		
+
 		check("Product(i^2 - i + 10 ,{i,1,10})", "1426481971200000");
 		check("Product(a^i, {i, n})", "a^(1/2*n*(1+n))");
 		check("Product(c, {i, 1, j}, {j, 2})", "c^(2*j)");
@@ -5236,6 +5270,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSin() {
+		check("Sin(0)", "0");
+		check("Sin(0.5)", "0.479425538604203");
+		check("Sin(3*Pi)", "0");
+		check("Sin(1.0 + I)", "1.2984575814159773+I*0.6349639147847361");
+		
 		check("Sin(1.1*Pi)", "-0.30901699437494773");
 		check("Sin({-0.5,9.1})", "{-0.479425538604203,0.3190983623493521}");
 		check("Sin({{0.5,1.1},{6.4,7.5}})",
@@ -5700,7 +5739,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "1+y+y^2+y^3+y^4)*x^4");
 		check("Sum(2^(-i), {i, 1, Infinity})", "1");
 		check("Sum((-3)^(-i), {i, 1, Infinity})", "-1/4");
-		
+
 		check("Sum(k, {k, Range(5)})", "15");
 		check("Sum(i^2 - i + 10 ,{i,1,10})", "430");
 		check("Sum(i!,{i,3,n})", "-4-Subfactorial(-1)+(-1)^(1+n)*Gamma(2+n)*Subfactorial(-2-n)");
@@ -5910,6 +5949,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTan() {
+		check("Tan(0)", "0");
+		check("Tan(Pi / 2)", "ComplexInfinity");
+		check("Tan(0.5 Pi)", "1.633123935319537E16");
+		
 		check("Tan(Pi/2)", "ComplexInfinity");
 		check("Tan(1/6*Pi)", "1/Sqrt(3)");
 		check("Tan(Pi)", "0");
@@ -5941,7 +5984,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("TeXForm(Infinity)", "\"\\infty\"");
 		check("TeXForm(-Infinity)", "\"-\\infty\"");
 		check("TeXForm(Hold(GoldenRatio))", "\"\\text{Hold}(\\phi)\"");
-		check("TeXForm(GoldenRatio)", "\"\\frac{1+\\sqrt{5}}{2}\"");
+		check("TeXForm(GoldenRatio)", "\"\\phi\"");
 		check("TeXForm(2+I*3)", "\"2 + 3\\,i \"");
 		check("TeXForm(a+b^2)", "\"a+b^{2}\"");
 		check("TeXForm(Expand((x+y)^3))", "\"x^{3}+3\\,x^{2}\\,y+3\\,x\\,y^{2}+y^{3}\"");

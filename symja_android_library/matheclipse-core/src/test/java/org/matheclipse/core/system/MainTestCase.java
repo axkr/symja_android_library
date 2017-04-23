@@ -846,7 +846,7 @@ public class MainTestCase extends AbstractTestCase {
 
 	public void testSystem070() {
 		check("Degree", "Pi/180");
-		check("GoldenRatio", "1/2*(1+Sqrt(5))");
+		check("GoldenRatio+GoldenRatio", "2*GoldenRatio");
 	}
 
 	public void testSystem071() {

@@ -13,7 +13,7 @@ public interface LogRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 17, 4 };
+  final public static int[] SIZES = { 19, 3 };
 
   final public static IAST RULES = List(
     IInit(Log, SIZES),
@@ -23,11 +23,8 @@ public interface LogRules {
     // Log(E)=1
     ISet(Log(E),
       C1),
-    // Log(E^x_IntegerQ):=x
-    ISetDelayed(Log(Power(E,$p(x,IntegerQ))),
-      x),
-    // Log(E^x_Rational):=x
-    ISetDelayed(Log(Power(E,$p(x,Rational))),
+    // Log(E^x_RealNumberQ):=x
+    ISetDelayed(Log(Power(E,$p(x,RealNumberQ))),
       x),
     // Log(E^I)=I
     ISet(Log(Power(E,CI)),
@@ -35,6 +32,9 @@ public interface LogRules {
     // Log(E^((-1)*I))=(-1)*I
     ISet(Log(Power(E,CNI)),
       CNI),
+    // Log(0.0)=Indeterminate
+    ISet(Log(num(0.0)),
+      Indeterminate),
     // Log(0)=-Infinity
     ISet(Log(C0),
       Noo),
@@ -44,6 +44,9 @@ public interface LogRules {
     // Log((-1)*I)=Rational(1,2)*-Pi*I
     ISet(Log(CNI),
       Times(CC(0L,1L,-1L,2L),Pi)),
+    // Log(GoldenRatio)=ArcCsch(2)
+    ISet(Log(GoldenRatio),
+      ArcCsch(C2)),
     // Log(Rational(1,2)*(1+Sqrt(5)))=ArcCsch(2)
     ISet(Log(Times(C1D2,Plus(C1,CSqrt5))),
       ArcCsch(C2)),
