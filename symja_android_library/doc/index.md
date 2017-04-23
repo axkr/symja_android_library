@@ -151,8 +151,6 @@ Documentation can be displayed by asking for information for the function name.
 | Pure Functions		| pure functions can be expressed with the `&` operator															| `(#^3)&[x]`  gives `x^3` 				|
 | Parts of an expression| `expr[[index]]`   																							| `{a, b, c, d}[[2]]`  gives `b`		|
 
-
-
 ## Functions Reference
 
 * [Abs](functions/Abs.md)
@@ -188,6 +186,7 @@ Documentation can be displayed by asking for information for the function name.
 * [Coefficient](functions/Coefficient.md)
 * [CoefficientList](functions/CoefficientList.md)
 * [Collect](functions/Collect.md)
+* [Complex](functions/Complex.md)
 * [ComplexInfinity](functions/ComplexInfinity.md)
 * [CompoundExpression](functions/CompoundExpression.md)
 * [Conjugate](functions/Conjugate.md)
@@ -255,9 +254,11 @@ Documentation can be displayed by asking for information for the function name.
 * [For](functions/For.md)
 * [FreeQ](functions/FreeQ.md)
 * [FrobeniusSolve](functions/FrobeniusSolve.md)
+* [Gamma](functions/Gamma.md)
 * [GCD](functions/GCD.md)
 * [Greater](functions/Greater.md)
 * [GreaterEqual](functions/GreaterEqual.md)
+* [HarmonicNumber](functions/HarmonicNumber.md)
 * [Head](functions/Head.md)
 * [Hold](functions/Hold.md)
 * [HoldForm](functions/HoldForm.md)
@@ -270,8 +271,10 @@ Documentation can be displayed by asking for information for the function name.
 * [InexactNumberQ](functions/InexactNumberQ.md)
 * [Infinity](functions/Infinity.md)
 * [Inner](functions/Inner.md)
+* [Integer](functions/Integer.md)
 * [IntegerExponent](functions/IntegerExponent.md)
 * [IntegerLength](functions/IntegerLength.md)
+* [IntegerQ](functions/IntegerQ.md)
 * [Integrate](functions/Integrate.md)
 * [InterpolatingPolynomial](functions/InterpolatingPolynomial.md)
 * [Intersection](functions/Intersection.md)
@@ -336,6 +339,7 @@ Documentation can be displayed by asking for information for the function name.
 * [Outer](functions/Outer.md)
 * [Part](functions/Part.md)
 * [Partition](functions/Partition.md)
+* [Pi](functions/Pi.md)
 * [Piecewise](functions/Piecewise.md)
 * [Plus](functions/Plus.md)
 * [Pochhammer](functions/Pochhammer.md)
@@ -347,13 +351,17 @@ Documentation can be displayed by asking for information for the function name.
 * [Prime](functions/Prime.md)
 * [PrimePowerQ](functions/PrimePowerQ.md)
 * [PrimeQ](functions/PrimeQ.md)
+* [Product](functions/Product.md)
 * [PseudoInverse](functions/PseudoInverse.md)
 * [QRDecomposition](functions/QRDecomposition.md)
 * [Quotient](functions/Quotient.md)
 * [Range](functions/Range.md)
+* [Rational](functions/Rational.md)
 * [Re](functions/Re.md)
+* [Real](functions/Real.md)
 * [RealNumberQ](functions/RealNumberQ.md)
 * [Refine](functions/Refine.md)
+* [Replace](functions/Replace.md)
 * [ReplacePart](functions/ReplacePart.md)
 * [Rest](functions/Rest.md)
 * [Return](functions/Return.md)
@@ -380,6 +388,7 @@ Documentation can be displayed by asking for information for the function name.
 * [SquareFreeQ](functions/SquareFreeQ.md)
 * [Subsets](functions/Subsets.md)
 * [Subtract](functions/Subtract.md)
+* [Sum](functions/Sum.md)
 * [Switch](functions/Switch.md)
 * [Symbol](functions/Symbol.md)
 * [SymbolName](functions/SymbolName.md)

@@ -8,4 +8,8 @@ Pochhammer(a, n)
 See:  
 * [Wikipedia - Pochhammer symbol](http://en.wikipedia.org/wiki/Pochhammer_symbol)
 
- 
+### Examples
+```  
+>> Pochhammer(4, 8)
+6652800
+```
