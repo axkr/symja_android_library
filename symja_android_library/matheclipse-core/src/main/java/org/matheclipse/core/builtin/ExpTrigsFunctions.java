@@ -393,8 +393,11 @@ public class ExpTrigsFunctions {
 				// I*Pi / 2
 				return F.complexNum(new Complex(0.0, Math.PI).divide(new Complex(2.0)));
 			}
+			if (F.isZero(arg1)) {
+				return e1ComplexArg(new Complex(arg1));
+			}
 			double c = 1.0 / arg1;
-			double val=(Math.log(1.0 + c) - Math.log(1.0 - c)) / 2.0;
+			double val = (Math.log(1.0 + c) - Math.log(1.0 - c)) / 2.0;
 			if (Double.isNaN(val)) {
 				return e1ComplexArg(new Complex(arg1));
 			}
