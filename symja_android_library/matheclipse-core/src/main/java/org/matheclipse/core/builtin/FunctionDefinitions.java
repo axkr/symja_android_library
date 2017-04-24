@@ -5,18 +5,7 @@ import static org.matheclipse.core.expression.F.*;
 public final class FunctionDefinitions {
 	static {
 		AbsArg.setEvaluator(new org.matheclipse.core.reflection.system.AbsArg());
-		ArcCos.setEvaluator(new org.matheclipse.core.reflection.system.ArcCos());
-		ArcCosh.setEvaluator(new org.matheclipse.core.reflection.system.ArcCosh());
-		ArcCot.setEvaluator(new org.matheclipse.core.reflection.system.ArcCot());
-		ArcCoth.setEvaluator(new org.matheclipse.core.reflection.system.ArcCoth());
 		ArcCsc.setEvaluator(new org.matheclipse.core.reflection.system.ArcCsc());
-		ArcCsch.setEvaluator(new org.matheclipse.core.reflection.system.ArcCsch());
-		ArcSec.setEvaluator(new org.matheclipse.core.reflection.system.ArcSec());
-		ArcSech.setEvaluator(new org.matheclipse.core.reflection.system.ArcSech());
-		ArcSin.setEvaluator(new org.matheclipse.core.reflection.system.ArcSin());
-		ArcSinh.setEvaluator(new org.matheclipse.core.reflection.system.ArcSinh());
-		ArcTan.setEvaluator(new org.matheclipse.core.reflection.system.ArcTan());
-		ArcTanh.setEvaluator(new org.matheclipse.core.reflection.system.ArcTanh());
 		Arg.setEvaluator(new org.matheclipse.core.reflection.system.Arg());
 		BesselJ.setEvaluator(new org.matheclipse.core.reflection.system.BesselJ());
 		CDF.setEvaluator(new org.matheclipse.core.reflection.system.CDF());
@@ -29,12 +18,7 @@ public final class FunctionDefinitions {
 		ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
 		ComposeList.setEvaluator(new org.matheclipse.core.reflection.system.ComposeList());
 		ContinuedFraction.setEvaluator(new org.matheclipse.core.reflection.system.ContinuedFraction());
-		Cosh.setEvaluator(new org.matheclipse.core.reflection.system.Cosh());
 		CosIntegral.setEvaluator(new org.matheclipse.core.reflection.system.CosIntegral());
-		Cot.setEvaluator(new org.matheclipse.core.reflection.system.Cot());
-		Coth.setEvaluator(new org.matheclipse.core.reflection.system.Coth());
-		Csc.setEvaluator(new org.matheclipse.core.reflection.system.Csc());
-		Csch.setEvaluator(new org.matheclipse.core.reflection.system.Csch());
 		Curl.setEvaluator(new org.matheclipse.core.reflection.system.Curl());
 		D.setEvaluator(new org.matheclipse.core.reflection.system.D());
 		Default.setEvaluator(new org.matheclipse.core.reflection.system.Default());
@@ -136,15 +120,12 @@ public final class FunctionDefinitions {
 		RootIntervals.setEvaluator(new org.matheclipse.core.reflection.system.RootIntervals());
 		Roots.setEvaluator(new org.matheclipse.core.reflection.system.Roots());
 		Round.setEvaluator(new org.matheclipse.core.reflection.system.Round());
-		Sec.setEvaluator(new org.matheclipse.core.reflection.system.Sec());
-		Sech.setEvaluator(new org.matheclipse.core.reflection.system.Sech());
 		Series.setEvaluator(new org.matheclipse.core.reflection.system.Series());
 		SeriesData.setEvaluator(new org.matheclipse.core.reflection.system.SeriesData());
 		Share.setEvaluator(new org.matheclipse.core.reflection.system.Share());
 		Sign.setEvaluator(new org.matheclipse.core.reflection.system.Sign());
 		SignCmp.setEvaluator(new org.matheclipse.core.reflection.system.SignCmp());
 		Sinc.setEvaluator(new org.matheclipse.core.reflection.system.Sinc());
-		Sinh.setEvaluator(new org.matheclipse.core.reflection.system.Sinh());
 		SinIntegral.setEvaluator(new org.matheclipse.core.reflection.system.SinIntegral());
 		Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
 		StieltjesGamma.setEvaluator(new org.matheclipse.core.reflection.system.StieltjesGamma());
@@ -157,7 +138,6 @@ public final class FunctionDefinitions {
 		Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());
 		Surd.setEvaluator(new org.matheclipse.core.reflection.system.Surd());
 		SyntaxLength.setEvaluator(new org.matheclipse.core.reflection.system.SyntaxLength());
-		Tanh.setEvaluator(new org.matheclipse.core.reflection.system.Tanh());
 		Taylor.setEvaluator(new org.matheclipse.core.reflection.system.Taylor());
 		ToCharacterCode.setEvaluator(new org.matheclipse.core.reflection.system.ToCharacterCode());
 		ToPolarCoordinates.setEvaluator(new org.matheclipse.core.reflection.system.ToPolarCoordinates());

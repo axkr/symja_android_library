@@ -385,6 +385,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArcCos() {
+		check("ArcCos(0)", "Pi/2");
+		check("ArcCos(1)", "0");
+		check("Integrate(ArcCos(x), {x, -1, 1})", "Pi");
+
 		check("arccos(-11)", "-Pi+ArcCos(11)");
 		check("arccos(-x)", "-Pi+ArcCos(x)");
 		check("D(ArcCos(x),x)", "-1/Sqrt(1-x^2)");
@@ -393,12 +397,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testArcCosh() {
 		check("ArcCosh(0)", "I*1/2*Pi");
+		check("ArcCosh(0.0)", "I*1.5707963267948966");
+		check("ArcCosh(1.4)", "0.867014726490565");
 		check("ArcCosh(-x)", "ArcCosh(-x)");
 		check("D(ArcCosh(x),x)", "1/Sqrt(-1+x^2)");
 		check("ArcCosh(-Infinity)", "ArcCosh(-Infinity)");
 	}
 
 	public void testArcCot() {
+		check("ArcCot(0)", "Pi/2");
+		check("ArcCot(1)", "Pi/4");
+
 		check("arccot(complexinfinity)", "0");
 		check("arccot(0)", "Pi/2");
 		check("arccot(-11)", "-Pi+ArcCot(11)");
@@ -408,25 +417,33 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testArcCoth() {
 		check("ArcCoth(0)", "I*1/2*Pi");
+		check("ArcCoth(0.0)", "I*1.5707963267948966");
+		check("ArcCoth(0.5)", "0.5493061443340549+I*(-1.5707963267948966)");
 		check("ArcCoth(-x)", "-ArcCoth(x)");
 		check("ArcCoth(-1)", "-Infinity");
 		check("D(ArcCoth(x),x)", "1/(1-x^2)");
 	}
 
 	public void testArcCsc() {
+		check("ArcCsc(1)", "Pi/2");
+		check("ArcCsc(-1)", "-Pi/2");
 		check("arccsc(0)", "ComplexInfinity");
 		check("arccsc(-x)", "-ArcCsc(x)");
 		check("D(ArcCsc(x),x)", "-1/(x^2*Sqrt(1-1/x^2))");
 	}
 
 	public void testArcCsch() {
-		check("ArcCsch(-Infinity)", "0");
 		check("arccsch(0)", "ComplexInfinity");
+		check("ArcCsch(1.0)", "0.8813735870195429");
+		check("ArcCsch(-Infinity)", "0");
+		
 		check("arccsch(-x)", "-ArcCsch(x)");
 		check("diff(ArcCsch(x),x)", "-1/(Sqrt(1+x^2)*Abs(x))");
 	}
 
 	public void testArcSec() {
+		check("ArcSec(1)", "0");
+		check("ArcSec(-1)", "Pi");
 		check("ArcSec(0)", "ComplexInfinity");
 		check("ArcSec(-x)", "ArcSec(-x)");
 		check("diff(ArcSec(x),x)", "1/(x^2*Sqrt(1-1/x^2))");
@@ -435,24 +452,43 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testArcSech() {
 		check("ArcSech(0)", "Infinity");
 		check("ArcSech(1)", "0");
+		check("ArcSech(0.5)", "1.3169578969248166");
 		check("ArcSech(-x)", "ArcSech(-x)");
 		check("ArcSech(-2)", "I*2/3*Pi");
 		check("D(ArcSech(x),x)", "-1/(x*Sqrt(1-x^2))");
 	}
 
 	public void testArcSin() {
+		check("ArcSin(0)", "0");
+		check("ArcSin(1)", "Pi/2");
 		check("arcsin(-11)", "-ArcSin(11)");
 		check("arcsin(-x)", "-ArcSin(x)");
 		check("diff(ArcSin(x),x)", "1/Sqrt(1-x^2)");
 	}
 
 	public void testArcSinh() {
-		// check("ArcSinh(0)", "0");
+		check("ArcSinh(0)", "0");
+		check("ArcSinh(0.0)", "0.0");
+		check("ArcSinh(1.0)", "0.8813735870195429");
 		// check("ArcSinh(-x)", "-ArcSinh(x)");
 		check("diff(ArcSinh(x),x)", "1/Sqrt(1+x^2)");
 	}
-
+ 
 	public void testArcTan() {
+		check("ArcTan(1)", "Pi/4");
+		check("ArcTan(1.0)", "0.7853981633974483");
+		check("ArcTan(-1.0)", "-0.7853981633974483");
+
+		check("ArcTan(1, 1)", "Pi/4");
+		check("ArcTan(-1, 1)", "3/4*Pi");
+		check("ArcTan(1, -1)", "-Pi/4");
+		check("ArcTan(-1, -1)", "-3/4*Pi");
+
+		check("ArcTan(1, 0)", "0");
+		check("ArcTan(-1, 0)", "Pi");
+		check("ArcTan(0, 1)", "Pi/2");
+		check("ArcTan(0, -1)", "-Pi/2");
+
 		check("Abs( ArcTan(ComplexInfinity) )", "Pi/2");
 		check("arctan(infinity)", "Pi/2");
 		check("arctan(1)", "Pi/4");
@@ -466,8 +502,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArcTanh() {
+		
 		check("ArcTanh(0)", "0");
-
+		check("ArcTanh(1)", "Infinity");
+		check("ArcTanh(2+I)", "ArcTanh(2+I)");
+		check("ArcTanh(0.5 + 2*I)", "0.09641562020299621+I*1.1265564408348223");
+		
+		check("ArcTanh(I)", "I*1/4*Pi");
 		check("ArcTanh(Infinity)", "-I*1/2*Pi");
 		check("ArcTanh(I*Infinity)", "I*1/2*Pi");
 		check("ArcTanh(ComplexInfinity)", "Pi/2");
@@ -1042,7 +1083,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Cos(0)", "1");
 		check("Cos(3*Pi)", "-1");
 		check("Cos(1.5*Pi)", "-1.8369701987210297E-16");
-		
+
 		check("Cos(z+1/2*Pi)", "-Sin(z)");
 		check("Cos(Pi)", "-1");
 		check("Cos(z+Pi)", "-Cos(z)");
@@ -1074,12 +1115,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCot() {
+		check("Cot(Pi/4)", "1");
+		check("Cot(0)", "ComplexInfinity");
+		check("Cot(1.)", "0.6420926159343308");
+
 		check("Cot(z+1/2*Pi)", "-Tan(z)");
 		check("Cot(Pi)", "ComplexInfinity");
 		check("Cot(z+Pi)", "Cot(z)");
 		check("Cot(z+42*Pi)", "Cot(z)");
 		check("Cot(x+y+z+43*Pi)", "Cot(x+y+z)");
 		check("Cot(z+42*a*Pi)", "Cot(42*a*Pi+z)");
+	}
+
+	public void testCoth() {
+		check("Coth(0)", "ComplexInfinity");
+		check("Coth(0.)", "ComplexInfinity");
 	}
 
 	public void testCount() {
@@ -1118,6 +1168,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testCsc() {
 		check("Csc(0)", "ComplexInfinity");
+		check("Csc(1)", "Csc(1)");
+		check("Csc(1.)", "1.1883951057781212");
 		check("Csc(2/5*Pi)", "Sqrt(2-2/Sqrt(5))");
 		check("Csc(23/12*Pi)", "-2*Sqrt(2+Sqrt(3))");
 		check("Csc(z+1/2*Pi)", "Sec(z)");
@@ -1129,6 +1181,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCsch() {
+		check("Csch(0)", "ComplexInfinity");
 		check("Csch(-x)", "-Csch(x)");
 		check("Csch(1.8)", "0.3398846914154937");
 		check("D(Csch(x),x)", "-Coth(x)*Csch(x)");
@@ -3053,7 +3106,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLog() {
-		
+
 		check("Log({0, 1, E, E * E, E ^ 3, E ^ x})", "{-Infinity,0,1,2,3,Log(E^x)}");
 		check("Log(0.)", "Indeterminate");
 		check("Log(1000) / Log(10)", "3");
@@ -3096,7 +3149,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Log10(1000)", "3");
 		check("Log10({2., 5.})", "{0.30102999566398114,0.6989700043360186}");
 		check("Log10(E ^ 3)", "3/Log(10)");
-		
+
 		check("Log10(x)", "Log(x)/Log(10)");
 	}
 
@@ -5148,6 +5201,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSec() {
+		check("Sec(0)", "1");
+		check("Sec(1)", "Sec(1)");
+		check("Sec(1.)", "1.8508157176809255");
+
 		check("Sec(Pi/2)", "ComplexInfinity");
 		check("Sec(0)", "1");
 		check("Sec(2/5*Pi)", "1+Sqrt(5)");
@@ -5163,6 +5220,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSech() {
+		check("Sech(0)", "1");
 		check("Sech(1.8)", "0.3218048695065878");
 		check("Sech(-x)", "Sech(x)");
 		check("D(Sech(x),x)", "-Sech(x)*Tanh(x)");
@@ -5274,7 +5332,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sin(0.5)", "0.479425538604203");
 		check("Sin(3*Pi)", "0");
 		check("Sin(1.0 + I)", "1.2984575814159773+I*0.6349639147847361");
-		
+
 		check("Sin(1.1*Pi)", "-0.30901699437494773");
 		check("Sin({-0.5,9.1})", "{-0.479425538604203,0.3190983623493521}");
 		check("Sin({{0.5,1.1},{6.4,7.5}})",
@@ -5952,7 +6010,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Tan(0)", "0");
 		check("Tan(Pi / 2)", "ComplexInfinity");
 		check("Tan(0.5 Pi)", "1.633123935319537E16");
-		
+
 		check("Tan(Pi/2)", "ComplexInfinity");
 		check("Tan(1/6*Pi)", "1/Sqrt(3)");
 		check("Tan(Pi)", "0");
@@ -5967,6 +6025,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Tan(x+y+z+43*Pi)", "Tan(x+y+z)");
 		check("Tan(z+42*a*Pi)", "Tan(42*a*Pi+z)");
 		check("Tan(z+4/3*Pi)", "Tan(Pi/3+z)");
+	}
+
+	public void testTanh() {
+		check("Tanh(0)", "0");
 	}
 
 	public void testTautologyQ() {
