@@ -1,4 +1,4 @@
-## QRDecomposition ==
+## QRDecomposition
 
 ```
 QRDecomposition(matrix)
