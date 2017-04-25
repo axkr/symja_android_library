@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.F.ArcCos;
 import static org.matheclipse.core.expression.F.ArcCot;
 import static org.matheclipse.core.expression.F.ArcCoth;
+import static org.matheclipse.core.expression.F.ArcCsc;
 import static org.matheclipse.core.expression.F.ArcCsch;
 import static org.matheclipse.core.expression.F.ArcSin;
 import static org.matheclipse.core.expression.F.ArcSinh;
@@ -42,9 +43,12 @@ import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ComplexResultException;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;
@@ -68,6 +72,7 @@ import org.matheclipse.core.reflection.system.rules.ArcCosRules;
 import org.matheclipse.core.reflection.system.rules.ArcCoshRules;
 import org.matheclipse.core.reflection.system.rules.ArcCotRules;
 import org.matheclipse.core.reflection.system.rules.ArcCothRules;
+import org.matheclipse.core.reflection.system.rules.ArcCscRules;
 import org.matheclipse.core.reflection.system.rules.ArcCschRules;
 import org.matheclipse.core.reflection.system.rules.ArcSecRules;
 import org.matheclipse.core.reflection.system.rules.ArcSechRules;
@@ -91,10 +96,13 @@ import org.matheclipse.core.reflection.system.rules.TanhRules;
 
 public class ExpTrigsFunctions {
 	static {
+
+		F.AngleVector.setEvaluator(new AngleVector());
 		F.ArcCos.setEvaluator(new ArcCos());
 		F.ArcCosh.setEvaluator(new ArcCosh());
 		F.ArcCot.setEvaluator(new ArcCot());
 		F.ArcCoth.setEvaluator(new ArcCoth());
+		F.ArcCsc.setEvaluator(new ArcCsc());
 		F.ArcCsch.setEvaluator(new ArcCsch());
 		F.ArcSec.setEvaluator(new ArcSec());
 		F.ArcSech.setEvaluator(new ArcSech());
@@ -109,7 +117,10 @@ public class ExpTrigsFunctions {
 		F.Csc.setEvaluator(new Csc());
 		F.Csch.setEvaluator(new Csch());
 		F.Exp.setEvaluator(new Exp());
+		F.Haversine.setEvaluator(new Haversine());
+		F.InverseHaversine.setEvaluator(new InverseHaversine());
 		F.Log.setEvaluator(new Log());
+		F.LogisticSigmoid.setEvaluator(new LogisticSigmoid());
 		F.Log10.setEvaluator(new Log10());
 		F.Log2.setEvaluator(new Log2());
 		F.Sec.setEvaluator(new Sec());
@@ -118,6 +129,54 @@ public class ExpTrigsFunctions {
 		F.Sinh.setEvaluator(new Sinh());
 		F.Tan.setEvaluator(new Tan());
 		F.Tanh.setEvaluator(new Tanh());
+
+	}
+
+	private final static class AngleVector extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			IExpr arg1 = ast.arg1();
+			IExpr phi;
+			if (ast.isAST2()) {
+				IExpr arg2 = ast.arg2();
+
+				if (arg1.isAST(F.List, 3)) {
+					IExpr x = ((IAST) arg1).arg1();
+					IExpr y = ((IAST) arg1).arg2();
+					if (arg2.isAST(F.List, 3)) {
+						// 'AngleVector[{x_, y_}, {r_, phi_}]': '{x + r * Cos[phi], y + r * Sin[phi]}'
+						IExpr r = ((IAST) arg2).arg1();
+						phi = ((IAST) arg2).arg2();
+						return F.List(F.Plus(x, F.Times(r, F.Cos(phi))), F.Plus(y, F.Times(r, F.Sin(phi))));
+					} else {
+						phi = arg2;
+					}
+					// 'AngleVector[{x_, y_}, phi_]': '{x + Cos[phi], y + Sin[phi]}'
+					return F.List(F.Plus(x, F.Cos(phi)), F.Plus(y, F.Sin(phi)));
+				}
+				return F.NIL;
+			}
+
+			if (arg1.isAST(F.List, 3)) {
+				// 'AngleVector[{r_, phi_}]': '{r * Cos[phi], r * Sin[phi]}'
+				IExpr r = ((IAST) arg1).arg1();
+				phi = ((IAST) arg1).arg2();
+				return F.List(F.Times(r, F.Cos(phi)), F.Times(r, F.Sin(phi)));
+			} else {
+				phi = arg1;
+			}
+			// 'AngleVector[phi_]': '{Cos[phi], Sin[phi]}'
+			return F.List(F.Cos(phi), F.Sin(phi));
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.NUMERICFUNCTION);
+		}
+
 	}
 
 	/**
@@ -420,6 +479,40 @@ public class ExpTrigsFunctions {
 		@Override
 		public IAST getRuleAST() {
 			return RULES;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
+	/**
+	 * Inverse hyperbolic tangent
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse hyperbolic functions</a>
+	 */
+	private final static class ArcCsc extends AbstractTrigArg1 implements ArcCscRules {
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
+		}
+
+		public ArcCsc() {
+		}
+
+		@Override
+		public IExpr evaluateArg1(final IExpr arg1) {
+			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+			if (negExpr.isPresent()) {
+				return Negate(ArcCsc(negExpr));
+			}
+			IExpr imPart = AbstractFunctionEvaluator.getPureImaginaryPart(arg1);
+			if (imPart.isPresent()) {
+				return F.Times(F.CNI, F.ArcCsch(imPart));
+			}
+			return F.NIL;
 		}
 
 		@Override
@@ -1349,6 +1442,37 @@ public class ExpTrigsFunctions {
 		}
 	}
 
+	private final static class Haversine extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+			return F.Power(F.Sin(F.C1D2.times(ast.arg1())), F.C2);
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		}
+
+	}
+
+	private final static class InverseHaversine extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			return F.Times(F.C2, F.ArcSin(F.Sqrt(ast.arg1())));
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		}
+
+	}
+
 	/**
 	 * See <a href="http://en.wikipedia.org/wiki/Logarithm">Wikipedia - Logarithm</a>
 	 * 
@@ -1466,6 +1590,33 @@ public class ExpTrigsFunctions {
 			}
 			return F.NIL;
 		}
+	}
+
+	/**
+	 * Logistic function
+	 * 
+	 * See <a href="https://en.wikipedia.org/wiki/Logistic_function">Wikipedia: Logistic function</a>
+	 * 
+	 */
+	private final static class LogisticSigmoid extends AbstractEvaluator {
+
+		public LogisticSigmoid() {
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+			if (ast.arg1().isNumber()) {
+				return F.Power(F.Plus(F.C1, F.Power(F.E, F.Times(F.CN1, ast.arg1()))), F.CN1);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		}
+
 	}
 
 	private final static class Log10 extends AbstractArg1 implements INumeric {

@@ -1037,6 +1037,17 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is representing a DirectedInfinity (i.e. <code>Infinity->DirectedInfinity[1]</code>,
+	 * <code>-Infinity->DirectedInfinity[-1]</code>, <code>ComplexInfinity->DirectedInfinity[]</code>)
+	 * 
+	 * @param x
+	 * @return
+	 */
+	default boolean isDirectedInfinity(IExpr x) {
+		return false;
+	}
+
+	/**
 	 * Test if this expression equals <code>E</code> (base of the natural logarithm; approximately equal to 2.71828...)
 	 * in symbolic or numeric mode.
 	 * 

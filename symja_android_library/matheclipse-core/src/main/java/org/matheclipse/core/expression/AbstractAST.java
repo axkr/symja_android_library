@@ -1395,6 +1395,12 @@ public abstract class AbstractAST implements IAST {
 		return isSameHead(F.DirectedInfinity, 1, 2);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isDirectedInfinity(IExpr x) {
+		return isSameHead(F.DirectedInfinity, 2) && arg1().equals(x);
+	}
+
 	@Override
 	public final boolean isEmpty() {
 		return size() == 0;

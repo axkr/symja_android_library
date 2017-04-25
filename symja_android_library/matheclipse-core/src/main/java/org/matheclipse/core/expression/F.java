@@ -33,6 +33,7 @@ import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.builtin.Programming;
+import org.matheclipse.core.builtin.SpecialFunctions;
 import org.matheclipse.core.builtin.Structure;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -547,6 +548,8 @@ public class F {
 	public final static IBuiltInSymbol AddTo = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "addto" : "AddTo");
 	public final static IBuiltInSymbol AllTrue = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "alltrue" : "AllTrue");
+	public final static IBuiltInSymbol AngleVector = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "anglevector" : "AngleVector");
 	public final static IBuiltInSymbol AnyTrue = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "anytrue" : "AnyTrue");
 	public final static IBuiltInSymbol Apart = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "apart" : "Apart");
@@ -1880,6 +1883,7 @@ public class F {
 			ListFunctions.initialize();
 			Combinatoric.initialize();
 			IntegerFunctions.initialize();
+			SpecialFunctions.initialize();
 
 			// initialize only the utility function rules for Integrate
 			// final EvalEngine engine = EvalEngine.get();

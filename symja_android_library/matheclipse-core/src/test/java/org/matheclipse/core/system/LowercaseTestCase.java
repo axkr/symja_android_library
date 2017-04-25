@@ -317,6 +317,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BooleanConvert(! (a || b || c))", "!a&&!b&&!c");
 	}
 
+	public void testAngleVector() {
+		check("AngleVector(90*Degree)", "{0,1}");
+		check("AngleVector({1, 10}, a)", "{1+Cos(a),10+Sin(a)}");
+	}
+
 	public void testAnyTrue() {
 		check("AnyTrue({}, EvenQ)", "False");
 		check("AnyTrue({1, 2, 3, 4, 5, 6}, EvenQ)", "True");
@@ -417,9 +422,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testArcCoth() {
 		check("ArcCoth(0)", "I*1/2*Pi");
-		//TODO fails in bitbucket pipelines
-//		check("ArcCoth(0.0)", "I*1.5707963267948966");
-//		check("ArcCoth(0.5)", "0.5493061443340549+I*(-1.5707963267948966)");
+		// TODO fails in bitbucket pipelines
+		// check("ArcCoth(0.0)", "I*1.5707963267948966");
+		// check("ArcCoth(0.5)", "0.5493061443340549+I*(-1.5707963267948966)");
 		check("ArcCoth(-x)", "-ArcCoth(x)");
 		check("ArcCoth(-1)", "-Infinity");
 		check("D(ArcCoth(x),x)", "1/(1-x^2)");
@@ -437,7 +442,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("arccsch(0)", "ComplexInfinity");
 		check("ArcCsch(1.0)", "0.8813735870195429");
 		check("ArcCsch(-Infinity)", "0");
-		
+
 		check("arccsch(-x)", "-ArcCsch(x)");
 		check("diff(ArcCsch(x),x)", "-1/(Sqrt(1+x^2)*Abs(x))");
 	}
@@ -474,7 +479,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("ArcSinh(-x)", "-ArcSinh(x)");
 		check("diff(ArcSinh(x),x)", "1/Sqrt(1+x^2)");
 	}
- 
+
 	public void testArcTan() {
 		check("ArcTan(1)", "Pi/4");
 		check("ArcTan(1.0)", "0.7853981633974483");
@@ -503,12 +508,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArcTanh() {
-		
+
 		check("ArcTanh(0)", "0");
 		check("ArcTanh(1)", "Infinity");
 		check("ArcTanh(2+I)", "ArcTanh(2+I)");
 		check("ArcTanh(0.5 + 2*I)", "0.09641562020299621+I*1.1265564408348223");
-		
+
 		check("ArcTanh(I)", "I*1/4*Pi");
 		check("ArcTanh(Infinity)", "-I*1/2*Pi");
 		check("ArcTanh(I*Infinity)", "I*1/2*Pi");
@@ -1047,6 +1052,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Conjugate(Transpose({{1,2+I,3},{4,5-I,6},{7,8,9}}))", "{{1,4,7},{2-I,5+I,8},{3,6,9}}");
 		check("Conjugate(Zeta(x))", "Zeta(Conjugate(x))");
 		check("Conjugate(Zeta(11,7))", "Zeta(11,7)");
+
+		check("Conjugate(Erf(x))", "Erf(Conjugate(x))");
 	}
 
 	public void testConjugateTranspose() {
@@ -1735,10 +1742,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testErf() {
+		check("Erf(I*Infinity)", "I*Infinity");
+		check("Erf(-I*Infinity)", "-I*Infinity");
+
+		check("Erf(-x)", "-Erf(x)");
+		check("Erf(1.0)", "0.8427007929497151");
+		check("Erf(0)", "0");
+		check("{Erf(0, x), Erf(x, 0)}", "{Erf(x),-Erf(x)}");
+
+		check("Erf(ComplexInfinity)", "Indeterminate");
 		check("Erf(Infinity)", "1");
 		check("Erf(-Infinity)", "-1");
-		check("Erf(-x)", "-Erf(x)");
-		check("Erf(0)", "0");
 		check("Erf(0.95)", "0.8208908072732778");
 	}
 
@@ -2484,6 +2498,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHaversine() {
+		check("Haversine(1.5)", "0.4646313991661485");
+		check("Haversine(0.5 + 2 * I)", "-1.150818666457047+I*0.8694047522371576");
 		check("Haversine(0.5)", "0.06120871905481365");
 		check("Haversine(1.5+I)", "0.44542339697277344+I*0.5861286494553963");
 		check("Haversine(Pi/3)", "1/4");
@@ -2813,6 +2829,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInverseHaversine() {
+		check("InverseHaversine(0.5)", "1.5707963267948968");
+		check("InverseHaversine(1 + 2.5 * I)", "1.764589463349828+I*2.3309746530493127");
 		check("InverseHaversine(1/4)", "Pi/3");
 		check("InverseHaversine(0.7)", "1.9823131728623846");
 		// Java double machine precision
@@ -3163,6 +3181,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testLogisticSigmoid() {
 		check("LogisticSigmoid(0.5)", "0.6224593312018546");
+		check("LogisticSigmoid(0.5 + 2.3*I)", "1.0647505893884985+I*0.8081774171575826");
+		check("LogisticSigmoid({-0.2, 0.1, 0.3})", "{0.45016600268752216,0.52497918747894,0.574442516811659}");
+		check("LogisticSigmoid(I*Pi)", "LogisticSigmoid(I*Pi)");
 		check("LogisticSigmoid(0.5 + 2.3 I)", "1.0647505893884985+I*0.8081774171575826");
 		check("LogisticSigmoid({-0.2, 0.1, 0.3})", "{0.45016600268752216,0.52497918747894,0.574442516811659}");
 	}

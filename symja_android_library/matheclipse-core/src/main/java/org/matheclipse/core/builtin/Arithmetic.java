@@ -88,6 +88,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.HashedOrderlessMatcher;
 import org.matheclipse.core.reflection.system.rules.AbsRules;
+import org.matheclipse.core.reflection.system.rules.ConjugateRules;
 import org.matheclipse.core.reflection.system.rules.PowerRules;
 
 public final class Arithmetic {
@@ -357,7 +358,7 @@ public final class Arithmetic {
 	 * 
 	 * See <a href="http://en.wikipedia.org/wiki/Complex_conjugation">Wikipedia:Complex conjugation</a>
 	 */
-	private final static class Conjugate extends AbstractTrigArg1 implements INumeric {
+	private final static class Conjugate extends AbstractTrigArg1 implements INumeric, ConjugateRules {
 
 		/**
 		 * Conjugate numbers and special objects like <code>Infinity</code> and <code>Indeterminate</code>.
@@ -453,6 +454,11 @@ public final class Arithmetic {
 				return F.Zeta(F.Conjugate(arg1.getAt(1)), F.Conjugate(arg1.getAt(2)));
 			}
 			return F.NIL;
+		}
+
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
 		}
 
 		@Override
@@ -2714,8 +2720,7 @@ public final class Arithmetic {
 					| ISymbol.NUMERICFUNCTION);
 			// ORDERLESS_MATCHER.setUpHashRule("Log[x_]", "Log[y_]^(-1)",
 			// Log.getFunction());
-			ORDERLESS_MATCHER.defineHashRule(Log(x_), Power(Log(y_), CN1),
-					ExpTrigsFunctions.integerLogFunction());
+			ORDERLESS_MATCHER.defineHashRule(Log(x_), Power(Log(y_), CN1), ExpTrigsFunctions.integerLogFunction());
 			// addTrigRules(F.Sin, F.Cot, F.Cos);
 			// addTrigRules(F.Sin, F.Sec, F.Tan);
 			// addTrigRules(F.Cos, F.Tan, F.Sin);

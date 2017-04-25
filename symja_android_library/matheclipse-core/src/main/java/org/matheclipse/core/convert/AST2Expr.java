@@ -50,12 +50,12 @@ public class AST2Expr {
 			"PrecisionGoal", "Primes", "Rationals", "Real", "Reals", "Second", "Slot", "SlotSequence", "String",
 			"Symbol", "TooLarge", "Trig", "True", "Variable", "Unknown" };
 
-	public final static String[] FUNCTION_STRINGS = { "Abs", "AbsArg", "AddTo", "AllTrue", "And", "AnyTrue",
-			"AlgebraicNumber", "Alternatives", "Apart", "AppellF1", "Append", "AppendTo", "Apply", "ArcCos", "ArcCosh",
-			"ArcCot", "ArcCoth", "ArcCsc", "ArcCsch", "ArcSec", "ArcSech", "ArcSin", "ArcSinh", "ArcTan", "ArcTanh",
-			"Arg", "Array", "ArrayDepth", "ArrayQ", "Assumptions", "AtomQ", "Attributes", "Begin", "BeginPackage",
-			"BellB", "BellY", "BernoulliB", "BernoulliDistribution", "BesselI", "BesselJ", "BesselK", "BesselY",
-			"Binomial", "BinomialDistribution", "Blank", "Block", "Boole", "BooleanQ", "BooleanConvert",
+	public final static String[] FUNCTION_STRINGS = { "Abs", "AbsArg", "AddTo", "AllTrue", "And", "AngleVector",
+			"AnyTrue", "AlgebraicNumber", "Alternatives", "Apart", "AppellF1", "Append", "AppendTo", "Apply", "ArcCos",
+			"ArcCosh", "ArcCot", "ArcCoth", "ArcCsc", "ArcCsch", "ArcSec", "ArcSech", "ArcSin", "ArcSinh", "ArcTan",
+			"ArcTanh", "Arg", "Array", "ArrayDepth", "ArrayQ", "Assumptions", "AtomQ", "Attributes", "Begin",
+			"BeginPackage", "BellB", "BellY", "BernoulliB", "BernoulliDistribution", "BesselI", "BesselJ", "BesselK",
+			"BesselY", "Binomial", "BinomialDistribution", "Blank", "Block", "Boole", "BooleanQ", "BooleanConvert",
 			"BooleanMinimize", "BooleanTable", "BooleanVariables", "BrayCurtisDistance", "Break", "CanberraDistance",
 			"Cancel", "CarmichaelLambda", "CartesianProduct", "Cases", "CatalanNumber", "Catch", "Catenate", "CDF",
 			"Ceiling", "CentralMoment", "CharacteristicPolynomial", "ChebyshevT", "ChebyshevU", "ChessboardDistance",
