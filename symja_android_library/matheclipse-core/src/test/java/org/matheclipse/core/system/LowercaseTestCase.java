@@ -813,7 +813,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testChebyshevT() {
-		check("ChebyshevT(Indeterminate,0)", "Indeterminate");
+		check("ChebyshevT(8, x)", "1-32*x^2+160*x^4-256*x^6+128*x^8");
+		// TODO add non-integer args implementation
+		// check("ChebyshevT(1 - I, 0.5)", "0.800143 + 1.08198 I");
 
 		check("ChebyshevT(n,0)", "Cos(1/2*n*Pi)");
 		check("ChebyshevT({0,1,2,3,4}, x)", "{1,x,-1+2*x^2,-3*x+4*x^3,1-8*x^2+8*x^4}");
@@ -822,6 +824,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testChebyshevU() {
+		check("ChebyshevU(8, x)", "1-40*x^2+240*x^4-448*x^6+256*x^8");
+		// TODO add non-integer args implementation
+		// check("ChebyshevU(1 - I, 0.5)", "1.60029 + 0.721322 I");
 		check("ChebyshevU(n, 1)", "1+n");
 		check("ChebyshevU({0,1,2,3,4,5}, x)", "{1,2*x,-1+4*x^2,-4*x+8*x^3,1-12*x^2+16*x^4,6*x-32*x^3+32*x^5}");
 		check("ChebyshevU(0, x)", "1");
@@ -1756,6 +1761,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Erf(0.95)", "0.8208908072732778");
 	}
 
+	public void testErfc() {
+		check("Erfc(-x) / 2", "1/2*(2-Erfc(x))");
+		check("Erfc(1.0)", "0.15729920705028488");
+		check("Erfc(0)", "1");
+	}
+
 	public void testEuclideanDistance() {
 		check("EuclideanDistance({-1, -1}, {1, 1})", "2*Sqrt(2)");
 		check("EuclideanDistance({a, b}, {c, d})", "Sqrt(Abs(a-c)^2+Abs(b-d)^2)");
@@ -2535,6 +2546,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHermiteH() {
+		check("HermiteH(8, x)", "1680-13440*x^2+13440*x^4-3584*x^6+256*x^8");
+		check("HermiteH(3, 1 + I)", "-28+I*4");
+		// TODO add non integer arg implementation
+		// check("HermiteH(4.2, 2)", "");
 		check("HermiteH(10, x)", "-30240+302400*x^2-403200*x^4+161280*x^6-23040*x^8+1024*x^10");
 	}
 
@@ -2799,7 +2814,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInverseErf() {
-		check("InverseErf(0)", "0");
+		check("InverseErf /@ {-1, 0, 1}", "{-Infinity,0,Infinity}");
+		check("InverseErf /@ {0.9, 1.0, 1.1}", "{1.1630871536766743,Infinity,InverseErf(1.1)}");
 		check("InverseErf(1)", "Infinity");
 		check("InverseErf(-1)", "-Infinity");
 		check("InverseErf(0.6)", "0.5951160814499948");
@@ -2812,6 +2828,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInverseErfc() {
+		check("InverseErfc /@ {0, 1, 2}", "{Infinity,0,-Infinity}");
 		check("InverseErfc(0)", "Infinity");
 		check("InverseErfc(1)", "0");
 		check("InverseErfc(2)", "-Infinity");
@@ -2905,6 +2922,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLaguerreL() {
+		check("LaguerreL(8, x)", "1-8*x+14*x^2-28/3*x^3+35/12*x^4-7/15*x^5+7/180*x^6-x^7/630+x^8/40320");
+		// TODO add non-integer implementation
+		// check("LaguerreL(3/2, 1.7)", "");
 		check("LaguerreL(3, x)", "1-3*x+3/2*x^2-x^3/6");
 		check("LaguerreL(4, x)", "1-4*x+3*x^2-2/3*x^3+x^4/24");
 		check("LaguerreL(5, x)", "1-5*x+5*x^2-5/3*x^3+5/24*x^4-x^5/120");
@@ -2956,8 +2976,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLegendreP() {
-		check("LegendreP(1,x)", "x");
 		check("LegendreP(4,x)", "3/8-15/4*x^2+35/8*x^4");
+		// TODO implement non integer args
+		// check("LegendreP(5/2, 1.5) ", "x");
+
+		check("LegendreP(1,x)", "x");
 		check("LegendreP(7,x)", "-35/16*x+315/16*x^3-693/16*x^5+429/16*x^7");
 		check("LegendreP(10,x)", "-63/256+3465/256*x^2-15015/128*x^4+45045/128*x^6-109395/256*x^8+46189/256*x^10");
 	}
@@ -4757,6 +4780,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testProductLog() {
+		check("z == ProductLog(z) * E ^ ProductLog(z)", "True");
+		check("ProductLog(0)", "0");
+		check("ProductLog(E)", "1");
+
 		String s = System.getProperty("os.name");
 		if (s.contains("Windows")) {
 			check("ProductLog(-1.5)", "-3.2783735915572e-2+I*1.549643823350159");
@@ -4767,7 +4794,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 			check("N(ProductLog(-1),20)", "-3.181315052047641353e-1+I*1.3372357014306894089");
 		}
 
-		check("ProductLog(0)", "0");
 		check("ProductLog(-Pi/2)", "I*1/2*Pi");
 		check("ProductLog(-1/E)", "-1");
 
@@ -5756,6 +5782,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStruveH() {
+		check("StruveH(1.5, 3.5)", "1.1319901169676305");
 		check("StruveH(I,0)", "0");
 		check("StruveH(-1+I,0)", "Indeterminate");
 		check("StruveH(-2+I,0)", "ComplexInfinity");
@@ -5765,6 +5792,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStruveL() {
+		check("StruveL(1.5, 3.5)", "4.414171898670692");
 		check("StruveL(I,0)", "0");
 		check("StruveL(-1+I,0)", "Indeterminate");
 		check("StruveL(-2+I,0)", "ComplexInfinity");
@@ -6501,6 +6529,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testZeta() {
+		check("Zeta(2)", "Pi^2/6");
+		// TODO add implementation
+		// check("Zeta(-2.5 + I)", "0.0235936 + 0.0014078*I");
 		check("Zeta(s, 0)", "Zeta(s)");
 		check("Zeta(s, 1/2)", "(-1+s^2)*Zeta(s)");
 		check("Zeta(s, -1)", "1+Zeta(s)");
@@ -6511,7 +6542,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Zeta(6)", "Pi^6/945");
 		check("Zeta(-11)", "691/32760");
 		check("Zeta(-42)", "0");
-		check("Zeta(2)", "Pi^2/6");
+
 		check("Zeta(Infinity)", "1");
 	}
 }

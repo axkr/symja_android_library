@@ -2731,6 +2731,8 @@ public final class Arithmetic {
 			ORDERLESS_MATCHER.defineHashRule(F.Cos(x_), F.Tan(x_), F.Sin(x));
 			ORDERLESS_MATCHER.defineHashRule(F.Csc(x_), F.Tan(x_), F.Sec(x));
 			ORDERLESS_MATCHER.defineHashRule(F.Cos(x_), F.Csc(x_), F.Cot(x));
+			ORDERLESS_MATCHER.defineHashRule(F.ProductLog(x_), F.Power(F.E, F.ProductLog(x_)), x);
+
 			super.setUp(newSymbol);
 		}
 
