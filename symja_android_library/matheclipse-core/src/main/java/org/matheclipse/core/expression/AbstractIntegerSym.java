@@ -378,7 +378,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		IInteger factor;
 		IInteger last = F.CN2;
 		int count = 0;
-		final IAST iFactors = factorize(F.List());
+		final IAST iFactors = factorize(F.ListAlloc(10));
 		final IAST list = List();
 		IAST subList = null;
 		for (int i = 1; i < iFactors.size(); i++) {

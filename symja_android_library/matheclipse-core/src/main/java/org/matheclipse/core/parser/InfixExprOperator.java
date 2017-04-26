@@ -49,6 +49,9 @@ public class InfixExprOperator extends AbstractExprOperator {
 			function.append(lhs);
 			return function;
 		}
-		return F.$(F.$s(getFunctionName()), lhs, rhs);
+		IAST function = F.ast(F.$s(getFunctionName()), 10, false);
+		function.append(lhs);
+		function.append(rhs);
+		return function;
 	}
 }

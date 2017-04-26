@@ -2638,8 +2638,9 @@ public final class ListFunctions {
 		 */
 		public IAST take(final IAST list, final int level, final ISequence[] sequenceSpecifications) {
 			ISequence sequ = sequenceSpecifications[level];
-			sequ.setListSize(list.size());
-			final IAST resultList = list.copyHead();
+			int size = list.size();
+			sequ.setListSize(size);
+			final IAST resultList = list.copyHead(10 > size ? size : 10);
 			final int newLevel = level + 1;
 			int start = sequ.getStart();
 			int end = sequ.getEnd();

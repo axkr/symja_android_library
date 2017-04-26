@@ -440,7 +440,8 @@ public class Structure {
 			try {
 				final IAST arg1 = F.ast(ast.arg1());
 				if (lastIndex == 3) {
-					IAST result = F.List();
+					IExpr arg2 = ast.arg2();
+					IAST result = F.ListAlloc(10);
 					java.util.function.Function<IExpr, IExpr> sf = Functors.scan(arg1, result);
 					VisitorLevelSpecification level = new VisitorLevelSpecification(sf, ast.get(lastIndex), heads);
 

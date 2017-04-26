@@ -618,7 +618,7 @@ public class ExprParser extends ExprScanner {
 	 * 
 	 */
 	IAST getFunction(final IExpr head) throws SyntaxError {
-		final IAST function = F.ast(head);
+		final IAST function = F.ast(head,10,false);
 
 		getNextToken();
 
