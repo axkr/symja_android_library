@@ -1655,10 +1655,6 @@ public final class NumberTheory {
 			return F.NIL;
 		}
 
-		public StirlingS1() {
-			// default ctor
-		}
-
 		/** {@inheritDoc} */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1700,10 +1696,6 @@ public final class NumberTheory {
 				}
 			}
 			return Times(Power(Factorial(kArg2), CN1), temp);
-		}
-
-		public StirlingS2() {
-			// default ctor
 		}
 
 		/** {@inheritDoc} */

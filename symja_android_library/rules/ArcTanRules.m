@@ -17,5 +17,9 @@
  ArcTan(Infinity)=Pi/2,
  ArcTan(-Infinity)=-Pi/2,
  ArcTan(I*Infinity)=Pi/2,
- ArcTan(-I*Infinity)=-Pi/2
+ ArcTan(-I*Infinity)=-Pi/2,
+ 
+ ArcTan(x_?RealNumberQ, y_?RealNumberQ) :=  
+   If(x == 0, If(y == 0, 0, If(y > 0, Pi/2, -Pi/2)), If(x > 0,
+        ArcTan(y/x), If(y >= 0, ArcTan(y/x) + Pi, ArcTan(y/x) - Pi)))
  }

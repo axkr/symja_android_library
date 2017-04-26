@@ -5458,6 +5458,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		// TODO check type of result in Solve()
+		// check("Solve(x^3 == 1, x, Reals)", "{{x->1}}");
 		check("Solve(x+5.0==a,x)", "{{x->-5.0+a}}");
 
 		check("Solve(-8828.206-582.222*b+55.999*b^2.0+4.8*b^3.0==0, b)",
@@ -5748,6 +5750,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStirlingS1() {
+		check("StirlingS1(9,6)", "-4536");
 		check("StirlingS1(0,0)", "1");
 		check("StirlingS1(1,1)", "1");
 		check("StirlingS1(0,1)", "0");
@@ -5760,6 +5763,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStirlingS2() {
+		check("StirlingS2(10,6)", "22827");
 		check("StirlingS2(0,0)", "1");
 		check("StirlingS2(1,1)", "1");
 		check("StirlingS2(0,1)", "0");
