@@ -415,6 +415,8 @@ Documentation can be displayed by asking for information for the function name.
 * [Sec](functions/Sec.md)
 * [Sech](functions/Sech.md)
 * [Select](functions/Select.md)
+* [Set](functions/Set.md)
+* [SetDelayed](functions/SetDelayed.md)
 * [Simplify](functions/Simplify.md)
 * [Sin](functions/Sin.md)
 * [SingularValueDecomposition](functions/SingularValueDecomposition.md)
