@@ -11,7 +11,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 /**
  * Get the list of attributes of a given symbol.
  * <p>
- * See the online Symja function reference: <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Attributes">Attributes</a>
+ * See the online Symja function reference:
+ * <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Attributes">Attributes</a>
  * </p>
  *
  */
@@ -21,8 +22,8 @@ public class Attributes extends AbstractCoreFunctionEvaluator {
 	}
 
 	/**
-   *
-   */
+	*
+	*/
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
@@ -50,26 +51,26 @@ public class Attributes extends AbstractCoreFunctionEvaluator {
 
 			if ((attributea & ISymbol.HOLDALL) != ISymbol.NOATTRIBUTE) {
 				result.append(F.HoldAll);
-			}
+			} else {
+				if ((attributea & ISymbol.HOLDFIRST) != ISymbol.NOATTRIBUTE) {
+					result.append(F.HoldFirst);
+				}
 
-			if ((attributea & ISymbol.HOLDFIRST) != ISymbol.NOATTRIBUTE) {
-				result.append(F.HoldFirst);
-			}
-
-			if ((attributea & ISymbol.HOLDREST) != ISymbol.NOATTRIBUTE) {
-				result.append(F.HoldRest);
+				if ((attributea & ISymbol.HOLDREST) != ISymbol.NOATTRIBUTE) {
+					result.append(F.HoldRest);
+				}
 			}
 
 			if ((attributea & ISymbol.NHOLDALL) != ISymbol.NOATTRIBUTE) {
 				result.append(F.NHoldAll);
-			}
+			} else {
+				if ((attributea & ISymbol.NHOLDFIRST) != ISymbol.NOATTRIBUTE) {
+					result.append(F.NHoldFirst);
+				}
 
-			if ((attributea & ISymbol.NHOLDFIRST) != ISymbol.NOATTRIBUTE) {
-				result.append(F.NHoldFirst);
-			}
-
-			if ((attributea & ISymbol.NHOLDREST) != ISymbol.NOATTRIBUTE) {
-				result.append(F.NHoldRest);
+				if ((attributea & ISymbol.NHOLDREST) != ISymbol.NOATTRIBUTE) {
+					result.append(F.NHoldRest);
+				}
 			}
 
 			if ((attributea & ISymbol.NUMERICFUNCTION) != ISymbol.NOATTRIBUTE) {

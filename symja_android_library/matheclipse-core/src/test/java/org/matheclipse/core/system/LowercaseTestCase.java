@@ -5314,6 +5314,49 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Sqrt(x)-x^(3/2)/6+x^(5/2)/120-x^(7/2)/5040+x^(9/2)/362880+O(x)^(11/2)");
 	}
 
+	public void testSet() {
+		// TODO debug this
+		// check("B = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}} ", "{{1,2,3},{4,5,6},{7,8,9}}");
+		// check("B[[1;;2, 2;;-1]] = {{t, u}, {y, z}}", "{{t,u},{y,z}}");
+		// check("B", "{{1,t,u},{4,y,z},{7,8,9}}");
+
+		check("a = 3", "3");
+		check("a", "3");
+		check("{a, b, c} = {10, 2, 3}   ", "{10,2,3}");
+		check("{a, b, {c, {d}}} = {1, 2, {{c1, c2}, {a}}} ", "{1,2,{{c1,c2},{10}}}");
+		check("d", "10");
+		check("a", "1");
+		check("x = a", "1");
+		check("a = 2", "2");
+		check("x", "1");
+
+		check("a = b = c = 2", "2");
+		check("a == b == c == 2", "True");
+
+		check("A = {{1, 2}, {3, 4}}", "{{1,2},{3,4}}");
+		check("A[[1, 2]] = 5", "5");
+		check("A", "{{1,5},{3,4}}");
+		check("A[[;;, 2]] = {6, 7} ", "{6,7}");
+		check("A", "{{1,6},{3,7}}");
+
+		// check("B = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}} ", "{{1,2,3},{4,5,6},{7,8,9}}");
+		// check("B[[1;;2, 2;;-1]] = {{t, u}, {y, z}}", "{{t,u},{y,z}}");
+		// check("B", "{{1,t,u},{4,y,z},{7,8,9}}");
+	}
+
+	public void testSetDelayed() {
+		check("Attributes(SetDelayed)  ", "{HoldAll}");
+		check("a = 1", "1");
+		check("x := a", "");
+		check("x", "1");
+		check("a = 2", "2");
+		check("x", "2");
+
+		check("f(x_) := p(x) /; x>0", "");
+		check("f(3)", "p(3)");
+		check("f(-3)", "f(-3)");
+	}
+
 	public void testShare() {
 		check("Share(Table(j*(x + i), {i, 5}, {j, i}))", "24");
 		check("Share(Table(xi = x + i; Table(j*xi, {j, i}), {i, 5}))", "0");

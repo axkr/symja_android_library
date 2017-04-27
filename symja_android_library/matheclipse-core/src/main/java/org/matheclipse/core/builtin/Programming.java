@@ -1169,7 +1169,7 @@ public final class Programming {
 						"Part[] index " + indx + " of " + ast.toString() + " is out of bounds."));
 			}
 			IAST result = F.NIL;
-			IExpr temp = assignPart(arg1, ast, p1, value, engine);
+			IExpr temp = assignPart(arg1.get(indx), ast, p1, value, engine);
 			if (temp.isPresent()) {
 				if (!result.isPresent()) {
 					result = arg1.clone();

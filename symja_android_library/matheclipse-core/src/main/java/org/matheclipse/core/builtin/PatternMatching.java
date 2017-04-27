@@ -18,11 +18,12 @@ import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ISymbol.RuleType;
 import org.matheclipse.core.patternmatching.PatternMatcher;
+import org.matheclipse.core.patternmatching.RulesData;
 
 public final class PatternMatching {
 
 	static {
-		
+
 		F.Clear.setEvaluator(new Clear());
 		F.ClearAll.setEvaluator(new ClearAll());
 		F.Rule.setEvaluator(new Rule());
@@ -37,8 +38,8 @@ public final class PatternMatching {
 
 	/**
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Clear">Clear</a>
+	 * See the online Symja function reference:
+	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Clear">Clear</a>
 	 * </p>
 	 */
 	private static class Clear extends AbstractCoreFunctionEvaluator {
@@ -65,8 +66,8 @@ public final class PatternMatching {
 
 	/**
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/ClearAll">ClearAll</a>
+	 * See the online Symja function reference:
+	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/ClearAll">ClearAll</a>
 	 * </p>
 	 */
 	private final static class ClearAll extends AbstractCoreFunctionEvaluator {
@@ -145,15 +146,27 @@ public final class PatternMatching {
 				IAST part = ((IAST) leftHandSide);
 				if (part.arg1().isSymbol()) {
 					ISymbol symbol = (ISymbol) part.arg1();
-					IExpr temp = symbol.getRulesData().evalDownRule(symbol);
-					if (rightHandSide.isList()) {
-						IExpr res = Programming.assignPart(temp, part, 2, ((IAST) rightHandSide).iterator(), engine);
-						symbol.putDownRule(RuleType.SET, true, symbol, res, false);
-						return rightHandSide;
+					RulesData rd = symbol.getRulesData();
+					if (rd == null) {
+						engine.printMessage(
+								"Set: no value defined for symbol '" + symbol.toString() + "' in Part() expression.");
 					} else {
-						IExpr res = Programming.assignPart(temp, part, 2, rightHandSide, engine);
-						symbol.putDownRule(RuleType.SET, true, symbol, res, false);
-						return rightHandSide;
+						IExpr temp = symbol.getRulesData().evalDownRule(symbol);
+						if (!temp.isPresent()) {
+							engine.printMessage(
+									"Set: no value defined for symbol '" + symbol.toString() + "' in Part() expression.");
+						} else {
+							if (rightHandSide.isList()) {
+								IExpr res = Programming.assignPart(temp, part, 2, ((IAST) rightHandSide).iterator(),
+										engine);
+								symbol.putDownRule(RuleType.SET, true, symbol, res, false);
+								return rightHandSide;
+							} else {
+								IExpr res = Programming.assignPart(temp, part, 2, rightHandSide, engine);
+								symbol.putDownRule(RuleType.SET, true, symbol, res, false);
+								return rightHandSide;
+							}
+						}
 					}
 				}
 
