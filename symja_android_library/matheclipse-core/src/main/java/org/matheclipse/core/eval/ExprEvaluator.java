@@ -35,7 +35,8 @@ public class ExprEvaluator {
 
 		@Override
 		public IExpr call() throws Exception {
-			// TODO Auto-generated method stub
+			EvalEngine.set(fEngine);
+			fEngine.reset();
 			return fEngine.evaluate(fExpr);
 		}
 
@@ -52,10 +53,8 @@ public class ExprEvaluator {
 	private IExpr fExpr;
 
 	/**
-	 * Constructor for an <code>IExpr</code> object evaluator. By default no
-	 * output history for the <code>Out()</code> function is stored in the
-	 * evaluation engine. <code>$ans</code> won't get evaluate to the last
-	 * result.
+	 * Constructor for an <code>IExpr</code> object evaluator. By default no output history for the <code>Out()</code>
+	 * function is stored in the evaluation engine. <code>$ans</code> won't get evaluate to the last result.
 	 * 
 	 */
 	public ExprEvaluator() {
@@ -63,56 +62,46 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Constructor for an <code>IExpr</code> object evaluator. By default no
-	 * output history for the <code>Out()</code> function is stored in the
-	 * evaluation engine. <code>$ans</code> won't get evaluate to the last
-	 * result.
+	 * Constructor for an <code>IExpr</code> object evaluator. By default no output history for the <code>Out()</code>
+	 * function is stored in the evaluation engine. <code>$ans</code> won't get evaluate to the last result.
 	 * 
 	 * @param outListDisabled
-	 *            if <code>false</code> create a
-	 *            <code>LastCalculationsHistory(historyCapacity)</code>,
-	 *            otherwise no history of the last calculations will be saved
-	 *            and the <code>Out()</code> function (or <code>$ans</code>
-	 *            variable or the <code>%</code> operator) will be unevaluated.
+	 *            if <code>false</code> create a <code>LastCalculationsHistory(historyCapacity)</code>, otherwise no
+	 *            history of the last calculations will be saved and the <code>Out()</code> function (or
+	 *            <code>$ans</code> variable or the <code>%</code> operator) will be unevaluated.
 	 * @param historyCapacity
-	 *            the number of last entries of the calculations which should be
-	 *            stored.
+	 *            the number of last entries of the calculations which should be stored.
 	 */
 	public ExprEvaluator(boolean outListDisabled, int historyCapacity) {
 		this(new EvalEngine(true), outListDisabled, historyCapacity);
 	}
 
 	/**
-	 * Constructor for an <code>IExpr</code> object evaluator. By default no
-	 * output history for the <code>Out()</code> function is stored in the
-	 * evaluation engine. <code>$ans</code> won't get evaluate to the last
-	 * result.
+	 * Constructor for an <code>IExpr</code> object evaluator. By default no output history for the <code>Out()</code>
+	 * function is stored in the evaluation engine. <code>$ans</code> won't get evaluate to the last result.
 	 * 
 	 * @parm engine
 	 * @param outListDisabled
-	 *            if <code>false</code> create a
-	 *            <code>LastCalculationsHistory(historyCapacity)</code>,
-	 *            otherwise no history of the last calculations will be saved
-	 *            and the <code>Out()</code> function (or <code>$ans</code>
-	 *            variable or the <code>%</code> operator) will be unevaluated.
+	 *            if <code>false</code> create a <code>LastCalculationsHistory(historyCapacity)</code>, otherwise no
+	 *            history of the last calculations will be saved and the <code>Out()</code> function (or
+	 *            <code>$ans</code> variable or the <code>%</code> operator) will be unevaluated.
 	 * @param historyCapacity
-	 *            the number of last entries of the calculations which should be
-	 *            stored.
+	 *            the number of last entries of the calculations which should be stored.
 	 */
 	public ExprEvaluator(EvalEngine engine, boolean outListDisabled, int historyCapacity) {
 		this.fVariableMap = new IdentityHashMap<>();
 		this.fVariables = new ArrayList<>();
 		this.engine = engine;
+		EvalEngine.set(engine);
 		if (!outListDisabled) {
 			engine.setOutListDisabled(outListDisabled, historyCapacity);
 		}
 	}
 
 	/**
-	 * Clear all <b>local variables</b> defined with the
-	 * <code>defineVariable()</code> method for this evaluator. <b>Note:</b>
-	 * global variables assigned in scripting mode can be cleared with the
-	 * <code>Clear(variable)</code> function.
+	 * Clear all <b>local variables</b> defined with the <code>defineVariable()</code> method for this evaluator.
+	 * <b>Note:</b> global variables assigned in scripting mode can be cleared with the <code>Clear(variable)</code>
+	 * function.
 	 * 
 	 * @see #defineVariable(ISymbol, IExpr)
 	 */
@@ -125,8 +114,7 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Define a given variable on the <b>local variable stack</b> without
-	 * assigning a value.
+	 * Define a given variable on the <b>local variable stack</b> without assigning a value.
 	 * 
 	 * @param variable
 	 * @param value
@@ -136,8 +124,7 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Define a double value for a given variable name on the <b>local variable
-	 * stack</b> .
+	 * Define a double value for a given variable name on the <b>local variable stack</b> .
 	 * 
 	 * @param variable
 	 * @param value
@@ -147,9 +134,8 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Define a value for a given variable name on the <b>local variable
-	 * stack</b>. The value is evaluated before it's assigned to the local
-	 * variable.
+	 * Define a value for a given variable name on the <b>local variable stack</b>. The value is evaluated before it's
+	 * assigned to the local variable.
 	 * 
 	 * @param variable
 	 * @param value
@@ -159,6 +145,7 @@ public class ExprEvaluator {
 		if (value != null) {
 			F.join();
 			// this evaluation step may throw an exception
+			EvalEngine.set(engine);
 			IExpr temp = engine.evaluate(value);
 			variable.set(temp);
 		}
@@ -168,52 +155,47 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Define a given variable name on the <b>local variable stack</b> without
-	 * assigning a value.
+	 * Define a given variable name on the <b>local variable stack</b> without assigning a value.
 	 * 
 	 * @param variableName
 	 * @param value
 	 */
 	public ISymbol defineVariable(String variableName) {
-		return defineVariable(F.userSymbol(variableName), null);
+		return defineVariable(F.userSymbol(variableName, engine), null);
 	}
 
 	/**
-	 * Define a boolean value for a given variable name on the< b>local variable
-	 * stack</b>
+	 * Define a boolean value for a given variable name on the< b>local variable stack</b>
 	 * 
 	 * @param variableName
 	 * @param value
 	 */
 	public void defineVariable(String variableName, boolean value) {
-		defineVariable(F.userSymbol(variableName), value ? F.True : F.False);
+		defineVariable(F.userSymbol(variableName, engine), value ? F.True : F.False);
 	}
 
 	/**
-	 * Define a double value for a given variable name on the< b>local variable
-	 * stack</b>
+	 * Define a double value for a given variable name on the< b>local variable stack</b>
 	 * 
 	 * @param variableName
 	 * @param value
 	 */
 	public ISymbol defineVariable(String variableName, double value) {
-		return defineVariable(F.userSymbol(variableName), F.num(value));
+		return defineVariable(F.userSymbol(variableName, engine), F.num(value));
 	}
 
 	/**
-	 * Define a value for a given variable name on the< b>local variable
-	 * stack</b>
+	 * Define a value for a given variable name on the< b>local variable stack</b>
 	 * 
 	 * @param variableName
 	 * @param value
 	 */
 	public ISymbol defineVariable(String variableName, IExpr value) {
-		return defineVariable(F.userSymbol(variableName), value);
+		return defineVariable(F.userSymbol(variableName, engine), value);
 	}
 
 	/**
-	 * Reevaluate the last <code>expression</code> (possibly after a new
-	 * variable assignment).
+	 * Reevaluate the last <code>expression</code> (possibly after a new variable assignment).
 	 * 
 	 * @return
 	 * @throws SyntaxError
@@ -226,8 +208,8 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Evaluate an expression for the given &quot;local variables list&quot;. If
-	 * evaluation is not possible return the input object.
+	 * Evaluate an expression for the given &quot;local variables list&quot;. If evaluation is not possible return the
+	 * input object.
 	 * 
 	 * @param expr
 	 *            the expression which should be evaluated
@@ -236,6 +218,7 @@ public class ExprEvaluator {
 	public IExpr evaluate(final IExpr expr) {
 		fExpr = expr;
 		F.join();
+		EvalEngine.set(engine);
 		engine.reset();
 		IExpr temp = engine.evaluate(expr);
 		if (!engine.isOutListDisabled()) {
@@ -245,8 +228,7 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Parse the given <code>expression String</code> and evaluate it to an
-	 * IExpr value
+	 * Parse the given <code>expression String</code> and evaluate it to an IExpr value
 	 * 
 	 * @param inputExpression
 	 * @return
@@ -254,6 +236,7 @@ public class ExprEvaluator {
 	 */
 	public IExpr evaluate(final String inputExpression) {
 		if (inputExpression != null) {
+			EvalEngine.set(engine);
 			engine.reset();
 			fExpr = engine.parse(inputExpression);
 			if (fExpr != null) {
@@ -265,8 +248,7 @@ public class ExprEvaluator {
 
 	/**
 	 * <p>
-	 * Parse the given <code>expression String</code> and evaluate it to an
-	 * IExpr value.
+	 * Parse the given <code>expression String</code> and evaluate it to an IExpr value.
 	 * </p>
 	 * 
 	 * @param inputExpression
@@ -276,16 +258,16 @@ public class ExprEvaluator {
 	 * @param timeUnit
 	 *            with timeoutDuration, the maximum length of time to wait
 	 * @param interruptible
-	 *            whether to respond to thread interruption by aborting the
-	 *            operation and throwing InterruptedException; if false, the
-	 *            operation is allowed to complete or time out, and the current
-	 *            thread's interrupt status is re-asserted.
+	 *            whether to respond to thread interruption by aborting the operation and throwing InterruptedException;
+	 *            if false, the operation is allowed to complete or time out, and the current thread's interrupt status
+	 *            is re-asserted.
 	 * @return
 	 * @throws SyntaxError
 	 */
 	public IExpr evaluateWithTimeout(final String inputExpression, long timeoutDuration, TimeUnit timeUnit,
 			boolean interruptible) {
 		if (inputExpression != null) {
+			EvalEngine.set(engine);
 			engine.reset();
 			fExpr = engine.parse(inputExpression);
 			if (fExpr != null) {
@@ -311,8 +293,7 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Parse the given <code>expression String</code> and evaluate it to a
-	 * double value
+	 * Parse the given <code>expression String</code> and evaluate it to a double value
 	 * 
 	 * @param expression
 	 * @return
@@ -320,6 +301,7 @@ public class ExprEvaluator {
 	 */
 	public double evaluateDoube(final String inputExpression) {
 		if (inputExpression != null) {
+			EvalEngine.set(engine);
 			engine.reset();
 			fExpr = engine.parse(inputExpression);
 			if (fExpr != null) {
@@ -337,15 +319,14 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Returns the expression value to which the specified variableName is
-	 * mapped, or {@code null} if this map contains no mapping for the
-	 * variableName.
+	 * Returns the expression value to which the specified variableName is mapped, or {@code null} if this map contains
+	 * no mapping for the variableName.
 	 * 
 	 * @param variableName
 	 * @return
 	 */
 	public IExpr getVariable(String variableName) {
-		return fVariableMap.get(F.userSymbol(variableName));
+		return fVariableMap.get(F.userSymbol(variableName, engine));
 	}
 
 	/**
@@ -357,7 +338,7 @@ public class ExprEvaluator {
 	public String toJavaForm(final String inputExpression) throws MathException {
 		IExpr parsedExpression;
 		if (inputExpression != null) {
-			ExprParser parser = new ExprParser(EvalEngine.get());
+			ExprParser parser = new ExprParser(engine);
 			parsedExpression = parser.parse(inputExpression);
 			return parsedExpression.internalFormString(false, 0);
 		}
@@ -365,8 +346,8 @@ public class ExprEvaluator {
 	}
 
 	/**
-	 * Converts the inputExpression string into a Scala expression and writes
-	 * the result to the given <code>Writer</code>string.
+	 * Converts the inputExpression string into a Scala expression and writes the result to the given
+	 * <code>Writer</code>string.
 	 * 
 	 * @param inputExpression
 	 * @param out
@@ -374,7 +355,7 @@ public class ExprEvaluator {
 	public String toScalaForm(final String inputExpression) throws MathException {
 		IExpr parsedExpression;
 		if (inputExpression != null) {
-			ExprParser parser = new ExprParser(EvalEngine.get());
+			ExprParser parser = new ExprParser(engine);
 			parsedExpression = parser.parse(inputExpression);
 			return parsedExpression.internalScalaString(false, 0);
 		}

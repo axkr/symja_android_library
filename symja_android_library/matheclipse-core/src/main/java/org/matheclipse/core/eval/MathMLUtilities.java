@@ -48,6 +48,7 @@ public class MathMLUtilities {
 	 */
 	public MathMLUtilities(final EvalEngine evalEngine, final boolean mathMTagPrefix, final boolean mathMLHeader) {
 		fEvalEngine = evalEngine;
+		EvalEngine.set(fEvalEngine); 
 		// set the thread local instance
 		startRequest();
 		if (mathMTagPrefix) {
@@ -81,7 +82,7 @@ public class MathMLUtilities {
 		// ASTNode node;
 		if (inputExpression != null) {
 			try {
-				ExprParser parser = new ExprParser(EvalEngine.get());
+				ExprParser parser = new ExprParser(fEvalEngine);
 				parsedExpression = parser.parse(inputExpression);
 				// node = fEvalEngine.parseNode(inputExpression);
 				// parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
@@ -134,7 +135,7 @@ public class MathMLUtilities {
 		// ASTNode node;
 		if (inputExpression != null) {
 			try {
-				ExprParser parser = new ExprParser(EvalEngine.get());
+				ExprParser parser = new ExprParser(fEvalEngine);
 				parsedExpression = parser.parse(inputExpression);
 				// node = fEvalEngine.parseNode(inputExpression);
 				// parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);

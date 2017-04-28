@@ -502,7 +502,7 @@ public class Structure {
 			Validate.checkSize(ast, 2);
 
 			if (ast.arg1().isString()) {
-				return F.userSymbol(ast.arg1().toString());
+				return F.userSymbol(ast.arg1().toString(), engine);
 			}
 			return F.NIL;
 		}

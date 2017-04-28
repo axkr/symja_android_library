@@ -351,7 +351,7 @@ public class AST2Expr {
 		}
 		if (node instanceof SymbolNode) {
 			String nodeStr = node.getString();
-			return convertSymbol(nodeStr);
+			return convertSymbol(nodeStr, engine);
 		}
 		// because of inheritance: check Pattern3Node before Pattern2Node before
 		// PatternNode
@@ -433,17 +433,17 @@ public class AST2Expr {
 			return F.num(((DoubleNode) node).doubleValue());
 		}
 
-		return F.userSymbol(node.toString());
+		return F.userSymbol(node.toString(), engine);
 	}
 
-	public IExpr convertSymbol(final String nodeStr) {
+	public IExpr convertSymbol(final String nodeStr, EvalEngine engine) {
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			if (nodeStr.length() == 1) {
 				if (nodeStr.equals("I")) {
 					// special - convert on input
 					return F.CI;
 				}
-				return F.userSymbol(nodeStr);
+				return F.userSymbol(nodeStr, engine);
 			}
 			String lowercaseStr = nodeStr.toLowerCase(Locale.ENGLISH);
 			if (lowercaseStr.equals("infinity")) {
@@ -455,9 +455,9 @@ public class AST2Expr {
 			}
 			String temp = PREDEFINED_ALIASES_MAP.get(lowercaseStr);
 			if (temp != null) {
-				return F.userSymbol(temp);
+				return F.userSymbol(temp, engine);
 			}
-			return F.userSymbol(lowercaseStr);
+			return F.userSymbol(lowercaseStr, engine);
 		} else {
 			String lowercaseStr = nodeStr;
 			if (fLowercaseEnabled) {
@@ -484,7 +484,7 @@ public class AST2Expr {
 				// special - convert on input
 				return F.CInfinity;
 			}
-			return F.userSymbol(lowercaseStr);
+			return F.userSymbol(lowercaseStr, engine);
 		}
 	}
 

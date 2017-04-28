@@ -75,6 +75,7 @@ public class EvalUtilities extends MathMLUtilities {
 	public IExpr evaluate(final String inputExpression) throws MathException {
 		if (inputExpression != null) {
 			startRequest();
+			EvalEngine.set(fEvalEngine);;
 			fEvalEngine.reset();
 			IExpr parsedExpression = fEvalEngine.parse(inputExpression);
 			if (parsedExpression != null) {
@@ -149,6 +150,7 @@ public class EvalUtilities extends MathMLUtilities {
 		if (parsedExpression != null) {
 			F.join();
 			startRequest();
+			EvalEngine.set(fEvalEngine);
 			fEvalEngine.reset();
 			IExpr temp = fEvalEngine.evaluate(parsedExpression);
 			fEvalEngine.addOut(temp);
@@ -166,7 +168,9 @@ public class EvalUtilities extends MathMLUtilities {
 	 */
 	public String toJavaForm(final String inputExpression) throws MathException {
 		if (inputExpression != null) {
-			ExprParser parser = new ExprParser(EvalEngine.get());
+			EvalEngine.set(fEvalEngine);
+			fEvalEngine.reset();
+			ExprParser parser = new ExprParser(fEvalEngine);
 			IExpr parsedExpression = parser.parse(inputExpression);
 			// node = fEvalEngine.parseNode(inputExpression);
 			// parsedExpression = AST2Expr.CONST.convert(node, fEvalEngine);
@@ -196,7 +200,7 @@ public class EvalUtilities extends MathMLUtilities {
 		if (inputExpression != null) {
 			// try {
 			startRequest();
-			fEvalEngine.reset();
+			EvalEngine.set(fEvalEngine);
 			IExpr parsedExpression = fEvalEngine.parse(inputExpression);
 			if (parsedExpression != null) {
 				F.join();
@@ -229,6 +233,7 @@ public class EvalUtilities extends MathMLUtilities {
 		if (parsedExpression != null) {
 			F.join();
 			startRequest();
+			EvalEngine.set(fEvalEngine);
 			fEvalEngine.reset();
 			IAST temp = fEvalEngine.evalTrace(parsedExpression, matcher, list);
 			return temp;
@@ -240,6 +245,8 @@ public class EvalUtilities extends MathMLUtilities {
 	@Override
 	synchronized public void toMathML(final String inputExpression, final Writer out) {
 		try {
+			EvalEngine.set(fEvalEngine);
+			fEvalEngine.reset();
 			final IExpr result = evaluate(inputExpression);
 			if (result.isPresent()) {
 				toMathML(result, out);

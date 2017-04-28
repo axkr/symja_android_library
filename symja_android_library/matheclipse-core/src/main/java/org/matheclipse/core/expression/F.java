@@ -4627,7 +4627,7 @@ public class F {
 	public static IAST Pochhammer(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Pochhammer, a0, a1);
 	}
-	
+
 	public static IAST PolyGamma(final IExpr a0) {
 		return unaryAST1(PolyGamma, a0);
 	}
@@ -4864,8 +4864,20 @@ public class F {
 	 * @return the symbol object from the context path
 	 */
 	public static ISymbol userSymbol(final String symbolName) {
-		ContextPath contextPath = EvalEngine.get().getContextPath();
-		return contextPath.getSymbol(symbolName);
+		return userSymbol(symbolName, EvalEngine.get());
+	}
+
+	/**
+	 * Get or create a user defined symbol which is retrieved from the evaluation engines context path.
+	 * 
+	 * @param symbolName
+	 *            the name of the symbol
+	 * @param engine
+	 *            the evaluation engine
+	 * @return the symbol object from the context path
+	 */
+	public static ISymbol userSymbol(final String symbolName, EvalEngine engine) {
+		return engine.getContextPath().getSymbol(symbolName);
 	}
 
 	/**
