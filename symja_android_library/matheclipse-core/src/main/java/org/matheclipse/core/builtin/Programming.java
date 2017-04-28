@@ -1109,17 +1109,6 @@ public final class Programming {
 				"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 	}
 
-	private static IExpr assignIndex(IAST ast, int position, IExpr value) {
-		if (position < 0) {
-			position = ast.size() + position;
-		}
-		if ((position < 0) || (position >= ast.size())) {
-			throw new WrappedException(new IndexOutOfBoundsException(
-					"Part[] index " + position + " of " + ast.toString() + " is out of bounds."));
-		}
-		return ast.setAtClone(position, value);
-	}
-
 	public static IExpr assignPart(final IExpr assignedExpr, final IAST part, int partPosition, IExpr value,
 			EvalEngine engine) {
 		if (!assignedExpr.isAST() || partPosition >= part.size()) {
@@ -1180,7 +1169,7 @@ public final class Programming {
 					IExpr ires = null;
 
 					final int indx = Validate.checkIntType(list, i, Integer.MIN_VALUE);
-					ires = assignIndex(assignedAST, indx, value);
+					ires = assignPartValue(assignedAST, indx, value);
 					if (ires == null) {
 						return F.NIL;
 					}
@@ -1281,7 +1270,7 @@ public final class Programming {
 					IExpr ires = null;
 
 					final int indx = Validate.checkIntType(list, i, Integer.MIN_VALUE);
-					ires = assignIndex(assignedAST, indx, list);
+					ires = assignPartValue(assignedAST, indx, list);
 					if (ires == null) {
 						return F.NIL;
 					}
@@ -1303,25 +1292,25 @@ public final class Programming {
 		throw new WrongArgumentType(part, assignedAST, partPosition,
 				"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 	}
-
+	
 	/**
 	 * Assign the <code>value</code> to the given position in the left-hand-side. <code>lhs[[position]] = value</code>
 	 * 
 	 * @param lhs
 	 *            left-hand-side
-	 * @param position
+	 * @param partPosition
 	 * @param value
 	 * @return
 	 */
-	private static IExpr assignPartValue(IAST lhs, int position, IAST value) {
-		if (position < 0) {
-			position = lhs.size() + position;
+	private static IExpr assignPartValue(IAST lhs, int partPosition, IExpr value) {
+		if (partPosition < 0) {
+			partPosition = lhs.size() + partPosition;
 		}
-		if ((position < 0) || (position >= lhs.size())) {
+		if ((partPosition < 0) || (partPosition >= lhs.size())) {
 			throw new WrappedException(new IndexOutOfBoundsException(
-					"Part[] index " + position + " of " + lhs.toString() + " is out of bounds."));
+					"Part[] index " + partPosition + " of " + lhs.toString() + " is out of bounds."));
 		}
-		return lhs.setAtClone(position, value);
+		return lhs.setAtClone(partPosition, value);
 	}
 
 	/**
@@ -1330,7 +1319,7 @@ public final class Programming {
 	 * 
 	 * @param expr
 	 * @param element
-	 * @param ast
+	 * @param partPosition
 	 * @param pos
 	 * @param result
 	 *            will be cloned if an assignment occurs and returned by this method
@@ -1340,9 +1329,9 @@ public final class Programming {
 	 *            the evaluation engineF
 	 * @return the (cloned and value assigned) result AST from input
 	 */
-	private static IAST assignPartSpanValue(IAST expr, IExpr element, final IAST ast, int pos, IAST result,
+	private static IAST assignPartSpanValue(IAST expr, IExpr element, final IAST part, int partPosition, IAST result,
 			int position, IExpr value, EvalEngine engine) {
-		IExpr resultValue = assignPart(element, ast, pos, value, engine);
+		IExpr resultValue = assignPart(element, part, partPosition, value, engine);
 		if (resultValue.isPresent()) {
 			if (!result.isPresent()) {
 				result = expr.clone();
