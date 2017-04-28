@@ -353,7 +353,7 @@ public final class Programming {
 		}
 
 	}
-	
+
 	private final static class FixedPointList extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -365,7 +365,7 @@ public final class Programming {
 				int iterationCounter = 1;
 
 				IExpr f = ast.arg1();
-				IAST list=F.List();
+				IAST list = F.List();
 				IExpr current = ast.arg2();
 				list.append(current);
 				int iterations = Integer.MAX_VALUE;
@@ -1133,26 +1133,17 @@ public final class Programming {
 			int last = span[1];
 			int step = span[2];
 			IAST result = F.NIL;
+			IExpr element;
 
 			if (step < 0 && start >= last) {
 				for (int i = start; i >= last; i += step) {
-					IExpr temp = assignPart(arg1.get(i), ast, p1, value, engine);
-					if (temp.isPresent()) {
-						if (!result.isPresent()) {
-							result = arg1.clone();
-						}
-						result.set(i, temp);
-					}
+					element = arg1.get(i);
+					result = assignPartSpanValue(arg1, element, ast, p1, result, i, value, engine);
 				}
 			} else if (step > 0 && (last != 1 || start <= last)) {
 				for (int i = start; i <= last; i += step) {
-					IExpr temp = assignPart(arg1.get(i), ast, p1, value, engine);
-					if (temp.isPresent()) {
-						if (!result.isPresent()) {
-							result = arg1.clone();
-						}
-						result.set(i, temp);
-					}
+					element = arg1.get(i);
+					result = assignPartSpanValue(arg1, element, ast, p1, result, i, value, engine);
 				}
 			} else {
 				throw new WrongArgumentType(ast, arg2, pos,
@@ -1211,19 +1202,19 @@ public final class Programming {
 				"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 	}
 
-	private static IExpr assignIndex(IAST ast, int position, java.util.Iterator<IExpr> iter) {
-		if (position < 0) {
-			position = ast.size() + position;
+	private static IAST assignPartSpanValue(IAST expr, IExpr element, final IAST ast, int pos, IAST result, int spanIndx,
+			IExpr value, EvalEngine engine) {
+		IExpr temp = assignPart(element, ast, pos, value, engine);
+		if (temp.isPresent()) {
+			if (!result.isPresent()) {
+				result = expr.clone();
+			}
+			result.set(spanIndx, temp);
 		}
-		if ((position < 0) || (position >= ast.size())) {
-			throw new WrappedException(new IndexOutOfBoundsException(
-					"Part[] index " + position + " of " + ast.toString() + " is out of bounds."));
-		}
-		return ast.setAtClone(position, iter.next());
+		return result;
 	}
 
-	public static IExpr assignPart(final IExpr expr, final IAST ast, int pos, java.util.Iterator<IExpr> iter,
-			EvalEngine engine) {
+	public static IExpr assignPart(final IExpr expr, final IAST ast, int pos, IAST rhs, int rhsPos, EvalEngine engine) {
 		if (!expr.isAST() || pos >= ast.size()) {
 			return expr;
 		}
@@ -1238,18 +1229,39 @@ public final class Programming {
 			IAST result = F.NIL;
 
 			if (step < 0 && start >= last) {
+				int rhsIndx = 1;
 				for (int i = start; i >= last; i += step) {
-					IExpr temp = assignPart(arg1.get(i), ast, p1, iter, engine);
+					IExpr temp = rhs.get(rhsIndx++);
+					if (!temp.isList()) {
+						temp = assignPart(arg1.get(i), ast, p1, temp, engine);
+					} else {
+						temp = assignPart(arg1.get(i), ast, p1, (IAST) temp, 1, engine);
+					}
+
 					if (temp.isPresent()) {
 						if (!result.isPresent()) {
 							result = arg1.clone();
 						}
 						result.set(i, temp);
 					}
+					// IExpr temp = assignPart(arg1.get(i), ast, p1, rhs, rhsPos++, engine);
+					// if (temp.isPresent()) {
+					// if (!result.isPresent()) {
+					// result = arg1.clone();
+					// }
+					// result.set(i, temp);
+					// }
 				}
 			} else if (step > 0 && (last != 1 || start <= last)) {
+				int rhsIndx = 1;
 				for (int i = start; i <= last; i += step) {
-					IExpr temp = assignPart(arg1.get(i), ast, p1, iter, engine);
+					IExpr temp = rhs.get(rhsIndx++);
+					if (!temp.isList()) {
+						temp = assignPart(arg1.get(i), ast, p1, temp, engine);
+					} else {
+						temp = assignPart(arg1.get(i), ast, p1, (IAST) temp, 1, engine);
+					}
+
 					if (temp.isPresent()) {
 						if (!result.isPresent()) {
 							result = arg1.clone();
@@ -1265,10 +1277,10 @@ public final class Programming {
 		} else if (arg2.isSignedNumber()) {
 			final int indx = Validate.checkIntType(ast, pos, Integer.MIN_VALUE);
 			IExpr ires = null;
-			ires = assignIndex(arg1, indx, iter);
+			ires = assignRHSIndex(arg1, indx, rhs, rhsPos++);
 			if (p1 < ast.size()) {
 				if (ires.isAST()) {
-					return assignPart((IAST) ires, ast, p1, iter, engine);
+					return assignPart((IAST) ires, ast, p1, rhs, rhsPos++, engine);
 				} else {
 					throw new WrongArgumentType(ast, arg1, pos,
 							"Wrong argument for Part[] function. Function or list expected.");
@@ -1292,7 +1304,7 @@ public final class Programming {
 					}
 					if (p1 < ast.size()) {
 						if (ires.isAST()) {
-							temp = assignPart(ires, ast, p1, iter, engine);
+							temp = assignPart(ires, ast, p1, rhs, rhsPos++, engine);
 							result.append(temp);
 						} else {
 							throw new WrongArgumentType(ast, arg1, pos,
@@ -1307,6 +1319,18 @@ public final class Programming {
 		}
 		throw new WrongArgumentType(ast, arg1, pos,
 				"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
+	}
+
+	private static IExpr assignRHSIndex(IAST lhs, int position, IAST rhs, int pos) { // java.util.Iterator<IExpr> iter)
+																						// {
+		if (position < 0) {
+			position = lhs.size() + position;
+		}
+		if ((position < 0) || (position >= lhs.size())) {
+			throw new WrappedException(new IndexOutOfBoundsException(
+					"Part[] index " + position + " of " + lhs.toString() + " is out of bounds."));
+		}
+		return lhs.setAtClone(position, rhs.get(pos));
 	}
 
 	public static Programming initialize() {

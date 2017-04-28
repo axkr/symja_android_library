@@ -4410,6 +4410,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialExtendedGCD() {
+		// Wikipedia: finite field GF(28) - p = x8 + x4 + x3 + x + 1, and a = x6 + x4 + x + 1
+		check("PolynomialExtendedGCD(x^8 + x^4 + x^3 + x + 1, x^6 + x^4 + x + 1, x, Modulus->2)", "{1,{1+x^2+x^3+x^4+x^5,x+x^3+x^6+x^7}}");
+
 		// check("PolynomialExtendedGCD((x - a)*(b*x - c)^2, (x - a)*(x^2 -
 		// b*c), x)", "");
 		check("PolynomialExtendedGCD((x - 1)*(x - 2)^2, (x - 1)*(x^2 - 3), x)", "{-1+x,{7+4*x,9-4*x}}");
@@ -5315,10 +5318,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSet() {
-		// TODO debug this
-		// check("B = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}} ", "{{1,2,3},{4,5,6},{7,8,9}}");
-		// check("B[[1;;2, 2;;-1]] = {{t, u}, {y, z}}", "{{t,u},{y,z}}");
-		// check("B", "{{1,t,u},{4,y,z},{7,8,9}}");
+//		check("A = {{1, 2}, {3, 4}}", "{{1,2},{3,4}}");
+//		check("A[[;;, 2]] = {6, 7} ", "{6,7}");
+//		check("A", "{{1,6},{3,7}}");
+//		
+		
+//		check("B = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}} ", "{{1,2,3},{4,5,6},{7,8,9}}");
+//		check("B[[1;;2, 2;;-1]] = {{t, u}, {y, z}}", "{{t,u},{y,z}}");
+//		check("B", "{{1,t,u},{4,y,z},{7,8,9}}");
 
 		check("a = 3", "3");
 		check("a", "3");
@@ -5339,9 +5346,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("A[[;;, 2]] = {6, 7} ", "{6,7}");
 		check("A", "{{1,6},{3,7}}");
 
-		// check("B = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}} ", "{{1,2,3},{4,5,6},{7,8,9}}");
-		// check("B[[1;;2, 2;;-1]] = {{t, u}, {y, z}}", "{{t,u},{y,z}}");
-		// check("B", "{{1,t,u},{4,y,z},{7,8,9}}");
+		check("B = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}} ", "{{1,2,3},{4,5,6},{7,8,9}}");
+		check("B[[1;;2, 2;;-1]] = {{t, u}, {y, z}}", "{{t,u},{y,z}}");
+		check("B", "{{1,t,u},{4,y,z},{7,8,9}}");
 	}
 
 	public void testSetDelayed() {

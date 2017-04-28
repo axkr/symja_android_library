@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ICreatePatternMatcher;
 import org.matheclipse.core.expression.F;
@@ -151,21 +152,25 @@ public final class PatternMatching {
 						engine.printMessage(
 								"Set: no value defined for symbol '" + symbol.toString() + "' in Part() expression.");
 					} else {
-						IExpr temp = symbol.getRulesData().evalDownRule(symbol);
-						if (!temp.isPresent()) {
-							engine.printMessage(
-									"Set: no value defined for symbol '" + symbol.toString() + "' in Part() expression.");
-						} else {
-							if (rightHandSide.isList()) {
-								IExpr res = Programming.assignPart(temp, part, 2, ((IAST) rightHandSide).iterator(),
-										engine);
-								symbol.putDownRule(RuleType.SET, true, symbol, res, false);
-								return rightHandSide;
+						try {
+							IExpr temp = symbol.getRulesData().evalDownRule(symbol);
+							if (!temp.isPresent()) {
+								engine.printMessage("Set: no value defined for symbol '" + symbol.toString()
+										+ "' in Part() expression.");
 							} else {
-								IExpr res = Programming.assignPart(temp, part, 2, rightHandSide, engine);
-								symbol.putDownRule(RuleType.SET, true, symbol, res, false);
-								return rightHandSide;
+								if (rightHandSide.isList()) {
+									IExpr res = Programming.assignPart(temp, part, 2, (IAST) rightHandSide, 1, engine);
+									symbol.putDownRule(RuleType.SET, true, symbol, res, false);
+									return rightHandSide;
+								} else {
+									IExpr res = Programming.assignPart(temp, part, 2, rightHandSide, engine);
+									symbol.putDownRule(RuleType.SET, true, symbol, res, false);
+									return rightHandSide;
+								}
 							}
+						} catch (RuntimeException npe) {
+							engine.printMessage("Set: wrong argument for Part[] function: " + part.toString()
+									+ " selects no part expression.");
 						}
 					}
 				}
