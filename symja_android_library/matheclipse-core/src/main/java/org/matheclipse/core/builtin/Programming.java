@@ -1120,14 +1120,15 @@ public final class Programming {
 		return ast.setAtClone(position, value);
 	}
 
-	public static IExpr assignPart(final IExpr expr, final IAST ast, int pos, IExpr value, EvalEngine engine) {
-		if (!expr.isAST() || pos >= ast.size()) {
+	public static IExpr assignPart(final IExpr assignedExpr, final IAST part, int partPosition, IExpr value,
+			EvalEngine engine) {
+		if (!assignedExpr.isAST() || partPosition >= part.size()) {
 			return value;
 		}
-		IAST arg1 = (IAST) expr;
-		final IExpr arg2 = engine.evaluate(ast.get(pos));
-		int p1 = pos + 1;
-		int[] span = arg2.isSpan(arg1.size());
+		IAST assignedAST = (IAST) assignedExpr;
+		final IExpr arg2 = engine.evaluate(part.get(partPosition));
+		int partPositionPlus1 = partPosition + 1;
+		int[] span = arg2.isSpan(assignedAST.size());
 		if (span != null) {
 			int start = span[0];
 			int last = span[1];
@@ -1137,33 +1138,33 @@ public final class Programming {
 
 			if (step < 0 && start >= last) {
 				for (int i = start; i >= last; i += step) {
-					element = arg1.get(i);
-					result = assignPartSpanValue(arg1, element, ast, p1, result, i, value, engine);
+					element = assignedAST.get(i);
+					result = assignPartSpanValue(assignedAST, element, part, partPositionPlus1, result, i, value, engine);
 				}
 			} else if (step > 0 && (last != 1 || start <= last)) {
 				for (int i = start; i <= last; i += step) {
-					element = arg1.get(i);
-					result = assignPartSpanValue(arg1, element, ast, p1, result, i, value, engine);
+					element = assignedAST.get(i);
+					result = assignPartSpanValue(assignedAST, element, part, partPositionPlus1, result, i, value, engine);
 				}
 			} else {
-				throw new WrongArgumentType(ast, arg2, pos,
+				throw new WrongArgumentType(part, arg2, partPosition,
 						"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 			}
 			return result;
 		} else if (arg2.isSignedNumber()) {
 			int indx = Validate.checkIntType(arg2, Integer.MIN_VALUE);
 			if (indx < 0) {
-				indx = ast.size() + indx;
+				indx = part.size() + indx;
 			}
-			if ((indx < 0) || (indx >= ast.size())) {
+			if ((indx < 0) || (indx >= part.size())) {
 				throw new WrappedException(new IndexOutOfBoundsException(
-						"Part[] index " + indx + " of " + ast.toString() + " is out of bounds."));
+						"Part[] index " + indx + " of " + part.toString() + " is out of bounds."));
 			}
 			IAST result = F.NIL;
-			IExpr temp = assignPart(arg1.get(indx), ast, p1, value, engine);
+			IExpr temp = assignPart(assignedAST.get(indx), part, partPositionPlus1, value, engine);
 			if (temp.isPresent()) {
 				if (!result.isPresent()) {
-					result = arg1.clone();
+					result = assignedAST.clone();
 				}
 				result.set(indx, temp);
 			}
@@ -1179,16 +1180,16 @@ public final class Programming {
 					IExpr ires = null;
 
 					final int indx = Validate.checkIntType(list, i, Integer.MIN_VALUE);
-					ires = assignIndex(arg1, indx, value);
+					ires = assignIndex(assignedAST, indx, value);
 					if (ires == null) {
 						return F.NIL;
 					}
-					if (p1 < ast.size()) {
+					if (partPositionPlus1 < part.size()) {
 						if (ires.isAST()) {
-							temp = assignPart(ires, ast, p1, value, engine);
+							temp = assignPart(ires, part, partPositionPlus1, value, engine);
 							result.append(temp);
 						} else {
-							throw new WrongArgumentType(ast, arg1, pos,
+							throw new WrongArgumentType(part, assignedAST, partPosition,
 									"Wrong argument for Part[] function. Function or list expected.");
 						}
 					} else {
@@ -1198,30 +1199,19 @@ public final class Programming {
 			}
 			return result;
 		}
-		throw new WrongArgumentType(ast, arg1, pos,
+		throw new WrongArgumentType(part, assignedAST, partPosition,
 				"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 	}
 
-	private static IAST assignPartSpanValue(IAST expr, IExpr element, final IAST ast, int pos, IAST result, int spanIndx,
-			IExpr value, EvalEngine engine) {
-		IExpr temp = assignPart(element, ast, pos, value, engine);
-		if (temp.isPresent()) {
-			if (!result.isPresent()) {
-				result = expr.clone();
-			}
-			result.set(spanIndx, temp);
+	public static IExpr assignPart(final IExpr assignedExpr, final IAST part, int partPosition, IAST rhs, int rhsPos,
+			EvalEngine engine) {
+		if (!assignedExpr.isAST() || partPosition >= part.size()) {
+			return assignedExpr;
 		}
-		return result;
-	}
-
-	public static IExpr assignPart(final IExpr expr, final IAST ast, int pos, IAST rhs, int rhsPos, EvalEngine engine) {
-		if (!expr.isAST() || pos >= ast.size()) {
-			return expr;
-		}
-		IAST arg1 = (IAST) expr;
-		final IExpr arg2 = ast.get(pos);
-		int p1 = pos + 1;
-		int[] span = arg2.isSpan(arg1.size());
+		IAST assignedAST = (IAST) assignedExpr;
+		final IExpr arg2 = part.get(partPosition);
+		int partPositionPlus1 = partPosition + 1;
+		int[] span = arg2.isSpan(assignedAST.size());
 		if (span != null) {
 			int start = span[0];
 			int last = span[1];
@@ -1233,56 +1223,49 @@ public final class Programming {
 				for (int i = start; i >= last; i += step) {
 					IExpr temp = rhs.get(rhsIndx++);
 					if (!temp.isList()) {
-						temp = assignPart(arg1.get(i), ast, p1, temp, engine);
+						temp = assignPart(assignedAST.get(i), part, partPositionPlus1, temp, engine);
 					} else {
-						temp = assignPart(arg1.get(i), ast, p1, (IAST) temp, 1, engine);
+						temp = assignPart(assignedAST.get(i), part, partPositionPlus1, (IAST) temp, 1, engine);
 					}
 
 					if (temp.isPresent()) {
 						if (!result.isPresent()) {
-							result = arg1.clone();
+							result = assignedAST.clone();
 						}
 						result.set(i, temp);
 					}
-					// IExpr temp = assignPart(arg1.get(i), ast, p1, rhs, rhsPos++, engine);
-					// if (temp.isPresent()) {
-					// if (!result.isPresent()) {
-					// result = arg1.clone();
-					// }
-					// result.set(i, temp);
-					// }
 				}
 			} else if (step > 0 && (last != 1 || start <= last)) {
 				int rhsIndx = 1;
 				for (int i = start; i <= last; i += step) {
 					IExpr temp = rhs.get(rhsIndx++);
 					if (!temp.isList()) {
-						temp = assignPart(arg1.get(i), ast, p1, temp, engine);
+						temp = assignPart(assignedAST.get(i), part, partPositionPlus1, temp, engine);
 					} else {
-						temp = assignPart(arg1.get(i), ast, p1, (IAST) temp, 1, engine);
+						temp = assignPart(assignedAST.get(i), part, partPositionPlus1, (IAST) temp, 1, engine);
 					}
 
 					if (temp.isPresent()) {
 						if (!result.isPresent()) {
-							result = arg1.clone();
+							result = assignedAST.clone();
 						}
 						result.set(i, temp);
 					}
 				}
 			} else {
-				throw new WrongArgumentType(ast, arg2, pos,
+				throw new WrongArgumentType(part, arg2, partPosition,
 						"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 			}
 			return result;
 		} else if (arg2.isSignedNumber()) {
-			final int indx = Validate.checkIntType(ast, pos, Integer.MIN_VALUE);
+			final int indx = Validate.checkIntType(part, partPosition, Integer.MIN_VALUE);
 			IExpr ires = null;
-			ires = assignRHSIndex(arg1, indx, rhs, rhsPos++);
-			if (p1 < ast.size()) {
+			ires = assignPartValue(assignedAST, indx, rhs.getAST(rhsPos++));
+			if (partPositionPlus1 < part.size()) {
 				if (ires.isAST()) {
-					return assignPart((IAST) ires, ast, p1, rhs, rhsPos++, engine);
+					return assignPart((IAST) ires, part, partPositionPlus1, rhs, rhsPos++, engine);
 				} else {
-					throw new WrongArgumentType(ast, arg1, pos,
+					throw new WrongArgumentType(part, assignedAST, partPosition,
 							"Wrong argument for Part[] function. Function or list expected.");
 				}
 			}
@@ -1298,16 +1281,16 @@ public final class Programming {
 					IExpr ires = null;
 
 					final int indx = Validate.checkIntType(list, i, Integer.MIN_VALUE);
-					ires = assignIndex(arg1, indx, list);
+					ires = assignIndex(assignedAST, indx, list);
 					if (ires == null) {
 						return F.NIL;
 					}
-					if (p1 < ast.size()) {
+					if (partPositionPlus1 < part.size()) {
 						if (ires.isAST()) {
-							temp = assignPart(ires, ast, p1, rhs, rhsPos++, engine);
+							temp = assignPart(ires, part, partPositionPlus1, rhs, rhsPos++, engine);
 							result.append(temp);
 						} else {
-							throw new WrongArgumentType(ast, arg1, pos,
+							throw new WrongArgumentType(part, assignedAST, partPosition,
 									"Wrong argument for Part[] function. Function or list expected.");
 						}
 					} else {
@@ -1317,12 +1300,20 @@ public final class Programming {
 			}
 			return result;
 		}
-		throw new WrongArgumentType(ast, arg1, pos,
+		throw new WrongArgumentType(part, assignedAST, partPosition,
 				"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 	}
 
-	private static IExpr assignRHSIndex(IAST lhs, int position, IAST rhs, int pos) { // java.util.Iterator<IExpr> iter)
-																						// {
+	/**
+	 * Assign the <code>value</code> to the given position in the left-hand-side. <code>lhs[[position]] = value</code>
+	 * 
+	 * @param lhs
+	 *            left-hand-side
+	 * @param position
+	 * @param value
+	 * @return
+	 */
+	private static IExpr assignPartValue(IAST lhs, int position, IAST value) {
 		if (position < 0) {
 			position = lhs.size() + position;
 		}
@@ -1330,7 +1321,35 @@ public final class Programming {
 			throw new WrappedException(new IndexOutOfBoundsException(
 					"Part[] index " + position + " of " + lhs.toString() + " is out of bounds."));
 		}
-		return lhs.setAtClone(position, rhs.get(pos));
+		return lhs.setAtClone(position, value);
+	}
+
+	/**
+	 * Call <code>assignPart(element, ast, pos, value, engine)</code> recursively and assign the result to the given
+	 * position in the result. <code>result[[position]] = resultValue</code>
+	 * 
+	 * @param expr
+	 * @param element
+	 * @param ast
+	 * @param pos
+	 * @param result
+	 *            will be cloned if an assignment occurs and returned by this method
+	 * @param position
+	 * @param value
+	 * @param engine
+	 *            the evaluation engineF
+	 * @return the (cloned and value assigned) result AST from input
+	 */
+	private static IAST assignPartSpanValue(IAST expr, IExpr element, final IAST ast, int pos, IAST result,
+			int position, IExpr value, EvalEngine engine) {
+		IExpr resultValue = assignPart(element, ast, pos, value, engine);
+		if (resultValue.isPresent()) {
+			if (!result.isPresent()) {
+				result = expr.clone();
+			}
+			result.set(position, resultValue);
+		}
+		return result;
 	}
 
 	public static Programming initialize() {
