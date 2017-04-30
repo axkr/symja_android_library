@@ -910,7 +910,7 @@ public class Parser extends Scanner {
 				} else {
 					PostfixOperator postfixOperator = determinePostfixOperator();
 					if (postfixOperator != null) {
-						if (postfixOperator.getPrecedence() > min_precedence) {
+						if (postfixOperator.getPrecedence() >= min_precedence) {
 							getNextToken();
 							rhs = postfixOperator.createFunction(fFactory, rhs);
 							continue;

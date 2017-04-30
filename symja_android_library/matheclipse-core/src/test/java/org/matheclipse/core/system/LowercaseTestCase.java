@@ -293,6 +293,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("AbsArg(z) /. z -> {1, I, 0}", "{{1,1,0},{0,Pi/2,0}}");
 	}
 
+	public void testAddTo() {
+		check("a = 10", "10");
+		check("a += 2", "12");
+		check("a", "12");
+	}
+
 	public void testAllTrue() {
 		check("AllTrue({}, EvenQ)", "True");
 		check("AllTrue({1, 2, 3, 4, 5, 6}, EvenQ)", "False");
@@ -1294,6 +1300,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("DeleteDuplicates({})", "{}");
 	}
 
+	public void testDecrement() {
+		check("a = 5", "5");
+		check("a--", "5");
+		check("a", "4");
+	}
+
 	public void testDenominator() {
 		check("Denominator(Csc(x))", "1");
 		check("Denominator(Csc(x), Trig->True)", "Sin(x)");
@@ -1501,6 +1513,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("1 / 4.0", "0.25");
 		check("10 / 3 // FullForm", "\"Rational(10,3)\"");
 		check("a / b // FullForm", "\"Times(a, Power(b, -1))\"");
+	}
+
+	public void testDivideBy() {
+		check("a = 10", "10");
+		check("a /= 2", "5");
+		check("a", "5");
 	}
 
 	public void testDivisible() {
@@ -2253,6 +2271,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Last(FixedPointList(Cos, 1.0, Infinity))", "0.7390851332151607");
 	}
 
+//	public void testFlat() {
+//		check("SetAttributes(f, Flat)", "");
+//		check("f(a, f(b, c))", "f(a,b,c)");
+//
+//		check("f(a, b, c) /. f(a, b) -> d", "f(d,c)");
+//		check("SetAttributes({u, v}, Flat)", "");
+//		check("u(x_) := {x}", "");
+//		check("u()", "u()");
+//		// `Flat` is taken into account in pattern matching
+//		 check("u(a)", "{a}");
+//		 // stack overflow?
+//		check("u(a, b)", "");
+//		check("", "");
+//		check("", "");
+//		check("", "");
+//	}
+
 	public void testFlatten() {
 		check("Flatten({{a, b}, {c, {d}, e}, {f, {g, h}}})", "{a,b,c,d,e,f,g,h}");
 		check("Flatten({{a, b}, {c, {d}, e}, {f, {g, h}}}, 1)", "{a,b,c,{d},e,f,{g,h}}");
@@ -2632,6 +2667,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testImportExport() {
 		check("Export(\"c:\\\\temp\\\\out.dat\", {{5.7, 4.3}, {-1.2, 7.8}, {a, f(x)}})", "\"c:\\temp\\out.dat\"");
 		check("Import(\"c:\\\\temp\\\\out.dat\", \"Table\")", "{{5.7,4.3},{-1.2,7.8},{a,f(x)}}");
+	}
+
+	public void testIncrement() {
+		check("a = 2", "2");
+		check("a++", "2");
+		check("a", "3");
+		check("++++a+++++2//Hold//FullForm", "\"Hold(Plus(PreIncrement(PreIncrement(Increment(Increment(a)))), 2))\"");
 	}
 
 	public void testIndeterminate() {
@@ -4411,7 +4453,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testPolynomialExtendedGCD() {
 		// Wikipedia: finite field GF(28) - p = x8 + x4 + x3 + x + 1, and a = x6 + x4 + x + 1
-		check("PolynomialExtendedGCD(x^8 + x^4 + x^3 + x + 1, x^6 + x^4 + x + 1, x, Modulus->2)", "{1,{1+x^2+x^3+x^4+x^5,x+x^3+x^6+x^7}}");
+		check("PolynomialExtendedGCD(x^8 + x^4 + x^3 + x + 1, x^6 + x^4 + x + 1, x, Modulus->2)",
+				"{1,{1+x^2+x^3+x^4+x^5,x+x^3+x^6+x^7}}");
 
 		// check("PolynomialExtendedGCD((x - a)*(b*x - c)^2, (x - a)*(x^2 -
 		// b*c), x)", "");
@@ -4684,6 +4727,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PowerMod(0, -1, 2)", "PowerMod(0,-1,2)");
 		check("PowerMod(5, 2, 0)", "PowerMod(5,2,0)");
 
+	}
+
+	public void testPreDecrement() {
+		check("a = 2", "2");
+		check("--a", "1");
+		check("a", "1");
+	}
+
+	public void testPreIncrement() {
+		check("a = 2", "2");
+		check("++a", "3");
+		check("a", "3");
 	}
 
 	public void testPrependTo() {
@@ -5318,14 +5373,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSet() {
-//		check("A = {{1, 2}, {3, 4}}", "{{1,2},{3,4}}");
-//		check("A[[;;, 2]] = {6, 7} ", "{6,7}");
-//		check("A", "{{1,6},{3,7}}");
-//		
-		
-//		check("B = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}} ", "{{1,2,3},{4,5,6},{7,8,9}}");
-//		check("B[[1;;2, 2;;-1]] = {{t, u}, {y, z}}", "{{t,u},{y,z}}");
-//		check("B", "{{1,t,u},{4,y,z},{7,8,9}}");
+		// check("A = {{1, 2}, {3, 4}}", "{{1,2},{3,4}}");
+		// check("A[[;;, 2]] = {6, 7} ", "{6,7}");
+		// check("A", "{{1,6},{3,7}}");
+		//
+
+		// check("B = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}} ", "{{1,2,3},{4,5,6},{7,8,9}}");
+		// check("B[[1;;2, 2;;-1]] = {{t, u}, {y, z}}", "{{t,u},{y,z}}");
+		// check("B", "{{1,t,u},{4,y,z},{7,8,9}}");
 
 		check("a = 3", "3");
 		check("a", "3");
@@ -5349,6 +5404,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("B = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}} ", "{{1,2,3},{4,5,6},{7,8,9}}");
 		check("B[[1;;2, 2;;-1]] = {{t, u}, {y, z}}", "{{t,u},{y,z}}");
 		check("B", "{{1,t,u},{4,y,z},{7,8,9}}");
+	}
+
+	public void testSetAttributes() {
+		check("SetAttributes(f, Flat)", "");
+		check("Attributes(f)", "{Flat}");
+		check("SetAttributes({f, g}, {Flat, Orderless})", "");
+		check("Attributes(f)", "{Flat,Orderless}");
 	}
 
 	public void testSetDelayed() {
@@ -5881,6 +5943,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("a - (b - c)", "a-b+c");
 	}
 
+	public void testSubtractFrom() {
+		check("a = 10", "10");
+		check("a -= 2", "8");
+		check("a", "8");
+	}
+
 	public void testSum() {
 		check("Sum(k, {k, 1, 10})", "55");
 		check("Sum(i * j, {i, 1, 10}, {j, 1, 10})", "3025");
@@ -6266,6 +6334,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Times()", "1");
 		// OutputForm: I*Infinity is DirectedInfinity[I]
 		check("I*Infinity", "I*Infinity");
+	}
+
+	public void testTimesBy() {
+		check("a = 10", "10");
+		check("a *= 2", "20");
+		check("a", "20");
 	}
 
 	public void testTogether() {

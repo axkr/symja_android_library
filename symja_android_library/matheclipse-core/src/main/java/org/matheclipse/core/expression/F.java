@@ -22,6 +22,7 @@ import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.Arithmetic;
+import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.Combinatoric;
 import org.matheclipse.core.builtin.ConstantDefinitions;
@@ -312,8 +313,7 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arrayq" : "ArrayQ");
 	public final static IBuiltInSymbol AtomQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "atomq" : "AtomQ");
 	public final static IBuiltInSymbol Attributes = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "attributes" : "Attributes",
-			new org.matheclipse.core.builtin.function.Attributes());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "attributes" : "Attributes");
 	public final static IBuiltInSymbol Blank = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "blank" : "Blank",
 			new org.matheclipse.core.builtin.function.Blank());
 	public final static IBuiltInSymbol Block = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "block" : "Block");
@@ -1866,7 +1866,8 @@ public class F {
 
 			Arithmetic.initialize();
 			PredicateQ.initialize();
-
+			AttributeFunctions.initialize();
+ 
 			createInverseFunctionMap();
 			createDenominatorFunctionMap();
 			createNumeratorFunctionMap();

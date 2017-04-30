@@ -1153,7 +1153,7 @@ public class ExprParser extends ExprScanner {
 				} else {
 					PostfixExprOperator postfixOperator = determinePostfixOperator();
 					if (postfixOperator != null) {
-						if (postfixOperator.getPrecedence() > min_precedence) {
+						if (postfixOperator.getPrecedence() >= min_precedence) {
 							getNextToken();
 							// rhs =
 							// F.$(F.$s(postfixOperator.getFunctionName()),
