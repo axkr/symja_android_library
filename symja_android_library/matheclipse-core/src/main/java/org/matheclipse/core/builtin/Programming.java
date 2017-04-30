@@ -310,8 +310,9 @@ public final class Programming {
 			Validate.checkRange(ast, 3, 4);
 
 			try {
-				final int iterationLimit = engine.getIterationLimit();
-				int iterationCounter = 1;
+				// use EvalEngine's iterationLimit only for evaluation control
+				// final int iterationLimit = engine.getIterationLimit();
+				// int iterationCounter = 1;
 
 				IExpr f = ast.arg1();
 				IExpr current = ast.arg2();
@@ -334,9 +335,9 @@ public final class Programming {
 					do {
 						last = current;
 						current = engine.evaluate(F.Apply(f, F.List(current)));
-						if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
-							IterationLimitExceeded.throwIt(iterationCounter, ast);
-						}
+						// if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+						// IterationLimitExceeded.throwIt(iterationCounter, ast);
+						// }
 					} while ((!current.isSame(last)) && (--iterations > 0));
 				}
 				return current;
@@ -361,8 +362,9 @@ public final class Programming {
 			Validate.checkRange(ast, 3, 4);
 
 			try {
-				final int iterationLimit = engine.getIterationLimit();
-				int iterationCounter = 1;
+				// use EvalEngine's iterationLimit only for evaluation control
+				// final int iterationLimit = engine.getIterationLimit();
+				// int iterationCounter = 1;
 
 				IExpr f = ast.arg1();
 				IAST list = F.List();
@@ -388,9 +390,9 @@ public final class Programming {
 						last = current;
 						current = engine.evaluate(F.Apply(f, F.List(current)));
 						list.append(current);
-						if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
-							IterationLimitExceeded.throwIt(iterationCounter, ast);
-						}
+						// if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+						// IterationLimitExceeded.throwIt(iterationCounter, ast);
+						// }
 					} while ((!current.isSame(last)) && (--iterations > 0));
 				}
 				return list;
@@ -423,8 +425,9 @@ public final class Programming {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 4, 5);
-			final int iterationLimit = engine.getIterationLimit();
-			int iterationCounter = 1;
+			// use EvalEngine's iterationLimit only for evaluation control
+			// final int iterationLimit = engine.getIterationLimit();
+			// int iterationCounter = 1;
 
 			// For(start, test, incr, body)
 			engine.evaluate(ast.arg1()); // start
@@ -444,16 +447,16 @@ public final class Programming {
 					if (ast.size() == 5) {
 						engine.evaluate(body);
 					}
-					if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
-						IterationLimitExceeded.throwIt(iterationCounter, ast);
-					}
+					// if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+					// IterationLimitExceeded.throwIt(iterationCounter, ast);
+					// }
 				} catch (final BreakException e) {
 					exit = true;
 					return F.Null;
 				} catch (final ContinueException e) {
-					if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
-						IterationLimitExceeded.throwIt(iterationCounter, ast);
-					}
+					// if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+					// IterationLimitExceeded.throwIt(iterationCounter, ast);
+					// }
 					continue;
 				} catch (final ReturnException e) {
 					return e.getValue();
@@ -857,8 +860,10 @@ public final class Programming {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
 
-			final int iterationLimit = engine.getIterationLimit();
-			int iterationCounter = 1;
+			// use EvalEngine's iterationLimit only for evaluation control
+			// final int iterationLimit = engine.getIterationLimit();
+			// int iterationCounter = 1;
+
 			// While(test, body)
 			IExpr test = ast.arg1();
 			IExpr body = F.Null;
@@ -871,9 +876,9 @@ public final class Programming {
 					if (ast.isAST2()) {
 						engine.evaluate(body);
 					}
-					if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
-						IterationLimitExceeded.throwIt(iterationCounter, ast);
-					}
+					// if (iterationLimit >= 0 && iterationLimit <= ++iterationCounter) {
+					// IterationLimitExceeded.throwIt(iterationCounter, ast);
+					// }
 				} catch (final BreakException e) {
 					return F.Null;
 				} catch (final ContinueException e) {
@@ -1128,12 +1133,14 @@ public final class Programming {
 			if (step < 0 && start >= last) {
 				for (int i = start; i >= last; i += step) {
 					element = assignedAST.get(i);
-					result = assignPartSpanValue(assignedAST, element, part, partPositionPlus1, result, i, value, engine);
+					result = assignPartSpanValue(assignedAST, element, part, partPositionPlus1, result, i, value,
+							engine);
 				}
 			} else if (step > 0 && (last != 1 || start <= last)) {
 				for (int i = start; i <= last; i += step) {
 					element = assignedAST.get(i);
-					result = assignPartSpanValue(assignedAST, element, part, partPositionPlus1, result, i, value, engine);
+					result = assignPartSpanValue(assignedAST, element, part, partPositionPlus1, result, i, value,
+							engine);
 				}
 			} else {
 				throw new WrongArgumentType(part, arg2, partPosition,
@@ -1292,7 +1299,7 @@ public final class Programming {
 		throw new WrongArgumentType(part, assignedAST, partPosition,
 				"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 	}
-	
+
 	/**
 	 * Assign the <code>value</code> to the given position in the left-hand-side. <code>lhs[[position]] = value</code>
 	 * 

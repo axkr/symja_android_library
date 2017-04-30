@@ -19,25 +19,20 @@ public class IterationLimitExceeded extends MathException {
 	 */
 	long fLimit;
 
-	IExpr fExpr;
 
-	public IterationLimitExceeded(final long limit, final IExpr expr) {
+	public IterationLimitExceeded(final long limit) {
 		fLimit = limit;
-		fExpr = expr;
 	}
 
 	@Override
 	public String getMessage() {
-		if (fExpr == null) {
-			return "Iteration limit " + fLimit + " exceeded at: null";
-		}
-		return "Iteration limit " + fLimit + " exceeded at: " + ToString.outputForm(fExpr);
+		return "Iteration limit of " + fLimit + " exceeded.";
 	}
 
 	public static void throwIt(long iterationCounter, final IExpr expr) {
 		// HeapContext.enter();
 		// try {
-		throw new IterationLimitExceeded(iterationCounter, expr);// expr.copy());
+		throw new IterationLimitExceeded(iterationCounter);// expr.copy());
 		// } finally {
 		// HeapContext.exit();
 		// }

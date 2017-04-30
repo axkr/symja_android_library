@@ -36,8 +36,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	}
 
 	/**
-	 * Matches an <code>IAST</code> with header attribute <code>Orderless</code>
-	 * .
+	 * Matches an <code>IAST</code> with header attribute <code>Orderless</code> .
 	 * 
 	 * @see ISymbol#ORDERLESS
 	 */
@@ -48,15 +47,14 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		private IAST fLHSEvalAST;
 
 		/**
-		 * The used (i.e. matched) expression indexes in the LHS evaluation
-		 * expression; <code>-1</code> indicates an unused index.
+		 * The used (i.e. matched) expression indexes in the LHS evaluation expression; <code>-1</code> indicates an
+		 * unused index.
 		 */
 		private int[] fUsedIndex;
 
 		/**
-		 * Match a pattern expression against an evaluation expression, there
-		 * the arguments are commutative (i.e. the head of the AST expression
-		 * has attribute <code>Orderless</code>)
+		 * Match a pattern expression against an evaluation expression, there the arguments are commutative (i.e. the
+		 * head of the AST expression has attribute <code>Orderless</code>)
 		 * 
 		 * @param lhsPatternAST
 		 *            the pattern AST
@@ -89,8 +87,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		/**
 		 * 
 		 * @param lhsPosition
-		 *            the position in the LHS expression which should actually
-		 *            be matched.
+		 *            the position in the LHS expression which should actually be matched.
 		 * @param stackMatcher
 		 *            TODO
 		 * @return
@@ -145,8 +142,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	protected class StackMatcher extends ArrayDeque<Entry> {
 
 		/**
-		 * Match the entries of the stack recursively starting from the top
-		 * entry.
+		 * Match the entries of the stack recursively starting from the top entry.
 		 * 
 		 * @return <code>true</code> if all expressions could be matched.
 		 */
@@ -202,8 +198,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	private static final long serialVersionUID = -6708462090303928690L;
 
 	/**
-	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e.
-	 * <code>f[x_,y_]</code> is equivalent to <code>f[a_,b_]</code> )
+	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to
+	 * <code>f[a_,b_]</code> )
 	 * 
 	 * @param patternExpr1
 	 * @param patternExpr2
@@ -273,9 +269,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	}
 
 	/**
-	 * Transform the ast recursively, according to the attributes Flat, HoldAll,
-	 * HoldFirst, HoldRest, Orderless for the left-hand-side of a Set[] or
-	 * SetDelayed[] expression. Delegates to
+	 * Transform the ast recursively, according to the attributes Flat, HoldAll, HoldFirst, HoldRest, Orderless for the
+	 * left-hand-side of a Set[] or SetDelayed[] expression. Delegates to
 	 * <code>EvalEngine#evalSetAttributes()</code>method
 	 * 
 	 * @param ast
@@ -299,9 +294,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	protected IExpr fPatternCondition;
 
 	/**
-	 * A map from a pattern to a possibly found value during pattern-matching.
-	 * Will be set to <code>null</code> if the left-hand-side pattern expression
-	 * contains no pattern.
+	 * A map from a pattern to a possibly found value during pattern-matching. Will be set to <code>null</code> if the
+	 * left-hand-side pattern expression contains no pattern.
 	 */
 	protected transient PatternMap fPatternMap;
 
@@ -331,8 +325,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	}
 
 	/**
-	 * Check if the condition for this pattern matcher evaluates to
-	 * <code>true</code>.
+	 * Check if the condition for this pattern matcher evaluates to <code>true</code>.
 	 */
 	public boolean checkCondition() {
 
@@ -355,8 +348,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	}
 
 	/**
-	 * Check if the condition for the right-hand-sides
-	 * <code>Module[] or Condition[]</code> expressions evaluates to
+	 * Check if the condition for the right-hand-sides <code>Module[] or Condition[]</code> expressions evaluates to
 	 * <code>true</code>. Override it in subclasses.
 	 * 
 	 * @return <code>true</code>
@@ -549,8 +541,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	}
 
 	/**
-	 * Get the priority of this pattern-matcher. Lower values have higher
-	 * priorities.
+	 * Get the priority of this pattern-matcher. Lower values have higher priorities.
 	 * 
 	 * @return the priority
 	 */
@@ -708,11 +699,11 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	}
 
 	/**
-	 * Match all sub-expressions which contain no pattern objects if possible
-	 * (i.e. no FLAT or Orderless expressions,...)
+	 * Match all sub-expressions which contain no pattern objects if possible (i.e. no Flat or Orderless
+	 * expressions,...)
 	 * 
-	 * Distinguishes between "equally" matched list-expressions and list
-	 * expressions with <code>expr.isPatternExpr()==true</code>.
+	 * Distinguishes between "equally" matched list-expressions and list expressions with
+	 * <code>expr.isPatternExpr()==true</code>.
 	 * 
 	 * @param lhsPatternAST
 	 * @param lhsEvalAST
@@ -752,15 +743,14 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	}
 
 	/**
-	 * Match the <code>lhsPatternAST</code> with its <code>Default[]</code>
-	 * values.
+	 * Match the <code>lhsPatternAST</code> with its <code>Default[]</code> values.
 	 * 
 	 * @param symbolWithDefaultValue
 	 *            the symbol for getting the associated default values from
 	 * @param lhsPatternAST
 	 *            left-hand-side which may contain patterns with default values
-	 * @return <code>F.NIL</code> if the given <code>lhsPatternAST</code> could
-	 *         not be matched or contains no pattern with default value.
+	 * @return <code>F.NIL</code> if the given <code>lhsPatternAST</code> could not be matched or contains no pattern
+	 *         with default value.
 	 */
 	private IExpr matchDefaultArgumentsAST(ISymbol symbolWithDefaultValue, IAST lhsPatternAST) {
 		IAST cloned = F.ast(lhsPatternAST.head(), lhsPatternAST.size(), false);
@@ -931,6 +921,9 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 						return true;
 					}
 				}
+				if (lhsPatternAST.size() == lhsEvalAST.size()) {
+					return matchASTSequence(lhsPatternAST, lhsEvalAST, 0, stackMatcher);
+				}
 				return false;
 			}
 			FlatStepVisitor visitor = new FlatStepVisitor(sym, lhsPatternAST, lhsEvalAST, stackMatcher, fPatternMap);
@@ -941,15 +934,14 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	}
 
 	/**
-	 * Match the <code>lhsPatternAST</code> with its <code>Default[]</code>
-	 * values.
+	 * Match the <code>lhsPatternAST</code> with its <code>Default[]</code> values.
 	 * 
 	 * @param symbolWithDefaultValue
 	 *            the symbol for getting the associated default values from
 	 * @param lhsPatternAST
 	 *            left-hand-side which may contain patterns with default values
-	 * @return <code>F.NIL</code> if the given <code>lhsPatternAST</code> could
-	 *         not be matched or contains no pattern with default value.
+	 * @return <code>F.NIL</code> if the given <code>lhsPatternAST</code> could not be matched or contains no pattern
+	 *         with default value.
 	 */
 	private IExpr matchOptionalArgumentsAST(ISymbol symbolWithDefaultValue, IAST lhsPatternAST, IAST lhsEvalAST) {
 		int lhsSize = lhsEvalAST.size();

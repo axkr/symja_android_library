@@ -2271,22 +2271,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Last(FixedPointList(Cos, 1.0, Infinity))", "0.7390851332151607");
 	}
 
-//	public void testFlat() {
-//		check("SetAttributes(f, Flat)", "");
-//		check("f(a, f(b, c))", "f(a,b,c)");
-//
-//		check("f(a, b, c) /. f(a, b) -> d", "f(d,c)");
-//		check("SetAttributes({u, v}, Flat)", "");
-//		check("u(x_) := {x}", "");
-//		check("u()", "u()");
-//		// `Flat` is taken into account in pattern matching
-//		 check("u(a)", "{a}");
-//		 // stack overflow?
-//		check("u(a, b)", "");
-//		check("", "");
-//		check("", "");
-//		check("", "");
-//	}
+	public void testFlat() {
+		check("SetAttributes(f, Flat)", "");
+		check("f(a, f(b, c))", "f(a,b,c)");
+
+		check("f(a, b, c) /. f(a, b) -> d", "f(d,c)");
+		check("SetAttributes({u, v}, Flat)", "");
+		check("u(x_) := {x}", "");
+		check("u()", "u()");
+		// `Flat` is taken into account in pattern matching
+		check("u(a)", "{a}");
+		// stack overflow?
+		check("u(a, b)", "Iteration limit of 1000 exceeded.");
+		check("u(a, b, c)", "Iteration limit of 1000 exceeded.");
+		
+		check("v(x_) := x   ", "");
+		check("v()", "v()");
+		check("v(a)", "a");
+		check("v(a, b)", "Iteration limit of 1000 exceeded.");
+		check("v(a, b, c)", "Iteration limit of 1000 exceeded.");
+	}
 
 	public void testFlatten() {
 		check("Flatten({{a, b}, {c, {d}, e}, {f, {g, h}}})", "{a,b,c,d,e,f,g,h}");

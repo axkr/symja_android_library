@@ -328,7 +328,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 *            if <code>true</code>, the parser doesn't distinguidh between upper and lower case identifiers
 	 */
 	public EvalEngine(final String sessionID, final int recursionLimit, final PrintStream out, boolean relaxedSyntax) {
-		this(sessionID, recursionLimit, -1, out, relaxedSyntax);
+		this(sessionID, recursionLimit, 1000, out, relaxedSyntax);
 	}
 
 	public EvalEngine(final String sessionID, final PrintStream out) {
