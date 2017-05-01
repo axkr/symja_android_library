@@ -857,6 +857,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Chop(0.00000000001)", "0");
 	}
 
+	public void testClearAttributes() {
+		check("SetAttributes(f, {Orderless, Flat})", "");
+		check("Attributes(f)", "{Flat,Orderless}");
+		check("ClearAttributes(f, Flat)", "");
+		check("Attributes(f)", "{Orderless}");
+		check("ClearAttributes(f, Flat)", "");
+		check("Attributes(f)", "{Orderless}");
+	}
+
 	public void testCoefficient() {
 		// check("Apply(Plus,((Coefficient(x*(b+a),x,#1)*x^#1)&))", "");
 
@@ -2284,7 +2293,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// stack overflow?
 		check("u(a, b)", "Iteration limit of 1000 exceeded.");
 		check("u(a, b, c)", "Iteration limit of 1000 exceeded.");
-		
+
 		check("v(x_) := x   ", "");
 		check("v()", "v()");
 		check("v(a)", "a");
@@ -4157,6 +4166,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("OddQ({1,3}) && OddQ({5,7})", "{True,True}&&{True,True}");
 	}
 
+	public void testOneIdentity() {
+		check("SetAttributes(f, OneIdentity)", "");
+		check("f(a)", "f(a)");
+	}
+
 	public void testOperate() {
 		check("Operate(p, f(a, b))", "p(f)[a,b]");
 		check("Operate(p, f(a, b), 1)", "p(f)[a,b]");
@@ -4208,6 +4222,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("OrderedQ({6*x,x^2})", "True");
 		check("OrderedQ({a,a})", "True");
 		check("OrderedQ({x, y, x + y})", "True");
+	}
+
+	public void testOrderless() {
+		check("SetAttributes(f, Orderless)", "");
+		check("f(c, a, b, a + b, 3, 1.0)", "f(1.0,3,a,b,a+b,c)");
+		check("f(a, b) == f(b, a)", "True");
+		check("SetAttributes(f, Flat)", "");
+		check("f(a, b, c) /. f(a, c) -> d", "f(b,d)");
 	}
 
 	public void testOuter() {

@@ -1157,6 +1157,9 @@ public final class Arithmetic {
 			if (size == 1) {
 				return F.C0;
 			}
+			if (size == 2 && ast.head() == F.Plus) {
+				return ast.arg1();
+			}
 			if (size > 2) {
 				PlusOp plusOp = new PlusOp(size);
 				for (int i = 1; i < size; i++) {
@@ -1998,6 +2001,18 @@ public final class Arithmetic {
 			return RULES;
 		}
 
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			int size = ast.size();
+			if (size == 1) {
+				return F.C1;
+			}
+			if (size == 2 && ast.head() == F.Power) {
+				return ast.arg1();
+			}
+			return super.evaluate(ast, engine);
+		}
+
 		/** {@inheritDoc} */
 		@Override
 		public void setUp(final ISymbol newSymbol) {
@@ -2612,6 +2627,9 @@ public final class Arithmetic {
 			int size = ast.size();
 			if (size == 1) {
 				return F.C1;
+			}
+			if (size == 2 && ast.head() == F.Times) {
+				return ast.arg1();
 			}
 			if (size > 2) {
 				IAST temp = evaluateHashsRepeated(ast);

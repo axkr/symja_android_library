@@ -97,6 +97,16 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
+	public final void addAttributes(final int attributes) {
+		fAttributes |= attributes;
+		if (fSymbolName.charAt(0) == '$' && Config.SERVER_MODE) {
+			EvalEngine engine = EvalEngine.get();
+			engine.addModifiedVariable(this);
+		}
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public final IExpr apply(IExpr... expressions) {
 		return F.ast(expressions, this);
 	}
@@ -114,6 +124,16 @@ public class Symbol implements ISymbol, Serializable {
 		}
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public final void clearAttributes(final int attributes) {
+		fAttributes &= (0xffff ^ attributes);
+		if (fSymbolName.charAt(0) == '$' && Config.SERVER_MODE) {
+			EvalEngine engine = EvalEngine.get();
+			engine.addModifiedVariable(this);
+		}
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public final void clearAll(EvalEngine engine) {

@@ -327,6 +327,8 @@ public class F {
 	public final static IBuiltInSymbol Clear = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "clear" : "Clear");
 	public final static IBuiltInSymbol ClearAll = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "clearall" : "ClearAll");
+	public final static IBuiltInSymbol ClearAttributes = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "clearattributes" : "ClearAttributes");
 	public final static IBuiltInSymbol Collect = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "collect" : "Collect",
 			new org.matheclipse.core.builtin.function.Collect());
