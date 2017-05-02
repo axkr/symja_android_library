@@ -24,6 +24,7 @@ import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.Zeta;
 import static org.matheclipse.core.expression.F.k;
 
+import java.math.BigDecimal;
 import java.util.function.DoubleUnaryOperator;
 
 import org.apfloat.Apcomplex;
@@ -31,6 +32,7 @@ import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
 import org.hipparchus.exception.MathIllegalStateException;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractArg12;
@@ -437,17 +439,18 @@ public class SpecialFunctions {
 		@Override
 		public IExpr e1DblArg(final INum d) {
 			try {
-				return F.num(ApfloatMath.w(new Apfloat(d.doubleValue())));
+				return F.num(ApfloatMath.w(new Apfloat(new BigDecimal(d.doubleValue()), Config.MACHINE_PRECISION)));
 			} catch (Exception ce) {
 
 			}
-			return F.complexNum(ApcomplexMath.w(new Apfloat(d.doubleValue())));
+			return F.complexNum(ApcomplexMath.w(new Apfloat(new BigDecimal(d.doubleValue()), Config.MACHINE_PRECISION)));
 		}
 
 		@Override
 		public IExpr e1DblComArg(IComplexNum arg1) {
-			return F.complexNum(ApcomplexMath
-					.w(new Apcomplex(new Apfloat(arg1.getRealPart()), new Apfloat(arg1.getImaginaryPart()))));
+			Apcomplex c = new Apcomplex(new Apfloat(new BigDecimal(arg1.getRealPart()), Config.MACHINE_PRECISION),
+					new Apfloat(new BigDecimal(arg1.getImaginaryPart()), Config.MACHINE_PRECISION));
+			return F.complexNum(ApcomplexMath.w(c));
 		}
 
 		@Override

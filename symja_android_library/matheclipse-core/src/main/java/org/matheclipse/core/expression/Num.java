@@ -1,5 +1,7 @@
 package org.matheclipse.core.expression;
 
+import java.math.BigDecimal;
+
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
@@ -109,7 +111,7 @@ public class Num implements INum {
 	}
 
 	public Apcomplex apcomplexValue(long precision) {
-		return new Apcomplex(new Apfloat(fDouble, precision));
+		return new Apcomplex(new Apfloat(new BigDecimal(fDouble), precision));
 	}
 
 	@Override

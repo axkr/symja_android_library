@@ -2,6 +2,8 @@ package org.matheclipse.core.expression;
 
 import static org.matheclipse.core.expression.F.num;
 
+import java.math.BigDecimal;
+
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
@@ -33,12 +35,12 @@ public class ComplexNum implements IComplexNum {
 
 	/** The square root of -1. A number representing "0.0 + 1.0i" */
 	public static final ComplexNum I = valueOf(0.0, 1.0);
-	
+
 	public static final ComplexNum INF = valueOf(Complex.INF);
 
 	/** A complex number representing "NaN + NaNi" */
 	public static final ComplexNum NaN = valueOf(Complex.NaN);
-	
+
 	/** The square root of -1. A number representing "0.0 - 1.0i" */
 	public static final ComplexNum NI = valueOf(0.0, -1.0);
 
@@ -162,8 +164,8 @@ public class ComplexNum implements IComplexNum {
 	}
 
 	public Apcomplex apcomplexValue(long precision) {
-		return new Apcomplex(new Apfloat(fComplex.getReal(), precision),
-				new Apfloat(fComplex.getImaginary(), precision));
+		return new Apcomplex(new Apfloat(new BigDecimal(fComplex.getReal()), precision),
+				new Apfloat(new BigDecimal(fComplex.getImaginary()), precision));
 	}
 
 	@Override
@@ -532,7 +534,7 @@ public class ComplexNum implements IComplexNum {
 	@Override
 	public IComplexNum pow(final IComplexNum val) {
 		if (Complex.equals(fComplex, Complex.ZERO, Config.DOUBLE_EPSILON)) {
-			ISignedNumber sn=val.re();
+			ISignedNumber sn = val.re();
 			if (sn.isNegative()) {
 				EvalEngine.get().printMessage("Infinite expression 0^(negative number)");
 				return INF;
