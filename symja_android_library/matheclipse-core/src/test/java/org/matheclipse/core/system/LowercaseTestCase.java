@@ -4415,7 +4415,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 			check("N(Pi, 30) + N(E, 30)", "5.85987448204883847382293085463");
 			check("N(Pi, 30) + N(E, 30) // Precision", "30");
 			check("N(Pi, 30) + I", "3.14159265358979323846264338327+I*1");
-			check("N(Pi, 30) + E", "5.85987448204883829099102473027");
+			check("N(Pi, 30) + E", "5.85987448204883832925824168169");
 //		}
 		check("1 + 2", "3");
 		check("a + b + a", "2*a+b");
@@ -6307,15 +6307,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTimes() {
-		String s = System.getProperty("os.name");
-		if (s.contains("Windows")) {
+//		String s = System.getProperty("os.name");
+//		if (s.contains("Windows")) {
 			check("N(Pi, 30) * I", "I*3.14159265358979323846264338327");
 			check("N(I*Pi, 30)", "I*3.14159265358979323846264338327");
 			check("N(Pi * E, 30)", "8.53973422267356706546355086954");
 			check("N(Pi, 30) * N(E, 30)", "8.53973422267356706546355086954");
-			check("N(Pi, 30) * E", "8.53973422267356649108017774746");
+			check("N(Pi, 30) * E", "8.53973422267356661130018539536");
 			check("N(Pi, 30) * E // Precision", "30");
-		}
+//		}
 		check("Floor(Log(7,1024))", "3");
 		check("10*2", "20");
 		check("a*a", "a^2");

@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 
@@ -66,7 +67,7 @@ public class ApfloatNum implements INum {
 	}
 
 	private ApfloatNum(final double value, long precision) {
-		fApfloat = new Apfloat(value, precision);
+		fApfloat = new Apfloat(new BigDecimal(value), precision);
 	}
 
 	private ApfloatNum(final String value, long precision) {
