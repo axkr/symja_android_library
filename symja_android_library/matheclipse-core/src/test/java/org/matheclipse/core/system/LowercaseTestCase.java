@@ -4864,21 +4864,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testProductLog() {
 		check("ProductLog(2.5 + 2*I)", "1.05616796894863+I*3.5256052020787e-1");
-		
-		
+
 		check("z == ProductLog(z) * E ^ ProductLog(z)", "True");
 		check("ProductLog(0)", "0");
 		check("ProductLog(E)", "1");
 
-		// String s = System.getProperty("os.name");
-		// if (s.contains("Windows")) {
-		check("ProductLog(-1.5)", "-3.278373591557e-2+I*1.54964382335015");
-		check("ProductLog({0.2, 0.5, 0.8})", "{1.68915973499109e-1,3.51733711249196e-1,4.90067858801579e-1}");
-		check("ProductLog(2.5 + 2*I)", "1.05616796894863+I*3.5256052020787e-1");
-		check("N(ProductLog(4/10),50)", "2.9716775067313854677972696224702134190445810155014e-1");
+		String s = System.getProperty("os.name");
+		if (s.contains("Windows")) {
+			check("ProductLog(-1.5)", "-3.278373591557e-2+I*1.54964382335015");
+			check("ProductLog({0.2, 0.5, 0.8})", "{1.68915973499109e-1,3.51733711249196e-1,4.90067858801579e-1}");
+			check("ProductLog(2.5 + 2*I)", "1.05616796894863+I*3.5256052020787e-1");
+			check("N(ProductLog(4/10),50)", "2.9716775067313854677972696224702134190445810155014e-1");
 
-		check("N(ProductLog(-1),20)", "-3.181315052047641353e-1+I*1.3372357014306894089");
-		// }
+			check("N(ProductLog(-1),20)", "-3.181315052047641353e-1+I*1.3372357014306894089");
+		}
 
 		check("ProductLog(-Pi/2)", "I*1/2*Pi");
 		check("ProductLog(-1/E)", "-1");
