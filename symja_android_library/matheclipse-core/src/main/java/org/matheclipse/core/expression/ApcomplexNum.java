@@ -1,5 +1,6 @@
 package org.matheclipse.core.expression;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.apfloat.Apcomplex;
@@ -21,9 +22,8 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 /**
- * <code>IComplexNum</code> implementation which wraps a
- * <code>org.apache.commons.math3.complex.Apcomplex</code> value to represent a
- * numeric complex floating-point number.
+ * <code>IComplexNum</code> implementation which wraps a <code>org.apache.commons.math3.complex.Apcomplex</code> value
+ * to represent a numeric complex floating-point number.
  */
 public class ApcomplexNum implements IComplexNum {
 
@@ -36,16 +36,16 @@ public class ApcomplexNum implements IComplexNum {
 	}
 
 	public static ApcomplexNum valueOf(final double real, long precision) {
-		return valueOf(new Apcomplex(new Apfloat(real, precision), Apcomplex.ZERO));
+		return valueOf(new Apcomplex(new Apfloat(new BigDecimal(real), precision), Apcomplex.ZERO));
 	}
 
 	public static ApcomplexNum valueOf(final double real, final double imaginary, long precision) {
-		return valueOf(new Apcomplex(new Apfloat(real, precision), new Apfloat(imaginary, precision)));
+		return valueOf(new Apcomplex(new Apfloat(new BigDecimal(real), precision),
+				new Apfloat(new BigDecimal(imaginary), precision)));
 	}
 
 	/**
-	 * Create a <code>ApcomplexNum</code> complex number from the real and
-	 * imaginary <code>BigInteger</code> parts.
+	 * Create a <code>ApcomplexNum</code> complex number from the real and imaginary <code>BigInteger</code> parts.
 	 * 
 	 * @param realNumerator
 	 *            the real numbers numerator part
@@ -80,10 +80,10 @@ public class ApcomplexNum implements IComplexNum {
 
 	/** A complex number representing "1.0 + 0.0i" */
 	public static final ApcomplexNum ONE = new ApcomplexNum(Apcomplex.ONE);
-	
+
 	/** A complex number representing "-1.0 + 0.0i" */
 	public static final ApcomplexNum MINUS_ONE = ONE.negate();
-	
+
 	/** A complex number representing "0.0 + 0.0i" */
 	public static final ApcomplexNum ZERO = new ApcomplexNum(Apcomplex.ZERO);
 
@@ -134,7 +134,7 @@ public class ApcomplexNum implements IComplexNum {
 	public IExpr inc() {
 		return add(ONE);
 	}
-	
+
 	/**
 	 * @return
 	 */
@@ -201,7 +201,7 @@ public class ApcomplexNum implements IComplexNum {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * @param that
 	 * @return
@@ -228,9 +228,9 @@ public class ApcomplexNum implements IComplexNum {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
-//		if (fApcomplex.imag().equals(Apcomplex.ZERO)) {
-//			return ApfloatNum.valueOf(fApcomplex.real());
-//		}
+		// if (fApcomplex.imag().equals(Apcomplex.ZERO)) {
+		// return ApfloatNum.valueOf(fApcomplex.real());
+		// }
 		return F.NIL;
 	}
 
@@ -238,7 +238,7 @@ public class ApcomplexNum implements IComplexNum {
 	public INumber evalNumber() {
 		return this;
 	}
-	
+
 	@Override
 	public boolean isSame(IExpr expression, double epsilon) {
 		if (expression instanceof ApcomplexNum) {
@@ -281,7 +281,7 @@ public class ApcomplexNum implements IComplexNum {
 	public IExpr complexArg() {
 		return F.num(ApcomplexMath.arg(fApcomplex));
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public int compareAbsValueToOne() {
@@ -442,9 +442,8 @@ public class ApcomplexNum implements IComplexNum {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns
-	 * a negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
+	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {

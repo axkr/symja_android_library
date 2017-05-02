@@ -18,45 +18,6 @@ import junit.framework.TestCase;
 
 public class NumberTest extends TestCase {
 
-	public void testApfloat() {
-		String s = System.getProperty("os.name");
-		if (s.contains("Windows")) {
-			// simulate Symja expr: N(Pi, 30) + E
-			Apfloat f = ApfloatMath.pi(30).add(new Apfloat(Math.E, 30));
-
-			assertEquals(f.toString(), "5.85987448204883829099102473027");
-		}
-	}
-
-//	public void testApfloatSin() {
-//		Apfloat c = ApfloatMath.sin(ApfloatMath.pow(new Apfloat("10", 10), new Apfloat("100", 10)));
-//		assertEquals(c.toString(), "NaN");
-//	}
-
-	// public void testApfloatZeroZero() {
-	// // 0.0 ^ 0.0
-	// Apcomplex c = ApcomplexMath.pow(Apcomplex.ZERO, Apcomplex.ZERO);
-	// assertEquals(c.toString(), "NaN");
-	// }
-	//
-	// public void testApfloatNan() {
-	// // 0.0 ^ (0.0 + I)
-	// Apcomplex c = ApcomplexMath.pow(Apcomplex.ZERO, new Apcomplex(new Apfloat(0.0, 30), Apfloat.ONE));
-	// assertEquals(c.toString(), "NaN");
-	// }
-	//
-	// public void testApfloatInfinity() {
-	// // 0.0 ^ (-1.0 + I)
-	// Apcomplex c = ApcomplexMath.pow(Apcomplex.ZERO, new Apcomplex(new Apfloat(-1.0, 30), Apfloat.ONE));
-	// assertEquals(c.toString(), "INF");
-	// }
-	//
-	// public void testApfloatZero() {
-	// // 0.0 ^ (1.0 + I)
-	// Apcomplex c = ApcomplexMath.pow(Apcomplex.ZERO, new Apcomplex(Apfloat.ONE, Apfloat.ONE));
-	// assertEquals(c.toString(), "0");
-	// }
-
 	public void testPower() {
 		IFraction f = FractionSym.valueOf(2, 3);
 

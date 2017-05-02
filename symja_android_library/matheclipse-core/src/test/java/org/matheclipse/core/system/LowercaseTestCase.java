@@ -2492,8 +2492,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGet() {
-		String s = System.getProperty("os.name");
-		if (s.contains("Windows")) {
+		if (Config.TEST_FILESYSTEM) {
 			String pathToVectorAnalysis;
 			pathToVectorAnalysis = getClass().getResource("/VectorAnalysis.m").toString();
 			// remove 'file:/'
@@ -4410,13 +4409,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPlus() {
-//		String s = System.getProperty("os.name");
-//		if (s.contains("Windows")) {
-			check("N(Pi, 30) + N(E, 30)", "5.85987448204883847382293085463");
-			check("N(Pi, 30) + N(E, 30) // Precision", "30");
-			check("N(Pi, 30) + I", "3.14159265358979323846264338327+I*1");
-			check("N(Pi, 30) + E", "5.85987448204883832925824168169");
-//		}
+		// String s = System.getProperty("os.name");
+		// if (s.contains("Windows")) {
+		check("N(Pi, 30) + N(E, 30)", "5.85987448204883847382293085463");
+		check("N(Pi, 30) + N(E, 30) // Precision", "30");
+		check("N(Pi, 30) + I", "3.14159265358979323846264338327+I*1");
+		check("N(Pi, 30) + E", "5.85987448204883832925824168169");
+		// }
 		check("1 + 2", "3");
 		check("a + b + a", "2*a+b");
 		check("a + a + 3 * a", "5*a");
@@ -4868,15 +4867,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ProductLog(0)", "0");
 		check("ProductLog(E)", "1");
 
-		String s = System.getProperty("os.name");
-		if (s.contains("Windows")) {
-			check("ProductLog(-1.5)", "-3.2783735915572e-2+I*1.549643823350159");
-			check("ProductLog({0.2, 0.5, 0.8})", "{1.689159734991096e-1,3.517337112491959e-1,4.900678588015799e-1}");
-			check("ProductLog(2.5 + 2*I)", "1.056167968948635+I*3.5256052020787e-1");
-			check("N(ProductLog(4/10),50)", "2.9716775067313854677972696224702134190445810155014e-1");
+		// String s = System.getProperty("os.name");
+		// if (s.contains("Windows")) {
+		check("ProductLog(-1.5)", "-3.2783735915572e-2+I*1.549643823350159");
+		check("ProductLog({0.2, 0.5, 0.8})", "{1.689159734991096e-1,3.517337112491959e-1,4.900678588015799e-1}");
+		check("ProductLog(2.5 + 2*I)", "1.056167968948635+I*3.5256052020787e-1");
+		check("N(ProductLog(4/10),50)", "2.9716775067313854677972696224702134190445810155014e-1");
 
-			check("N(ProductLog(-1),20)", "-3.181315052047641353e-1+I*1.3372357014306894089");
-		}
+		check("N(ProductLog(-1),20)", "-3.181315052047641353e-1+I*1.3372357014306894089");
+		// }
 
 		check("ProductLog(-Pi/2)", "I*1/2*Pi");
 		check("ProductLog(-1/E)", "-1");
@@ -4919,8 +4918,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPutGet() {
-		String s = System.getProperty("os.name");
-		if (s.contains("Windows")) {
+		if (Config.TEST_FILESYSTEM) {
 			check("Put(x + y, \"c:/temp/example_file1.m\"); Get(\"c:/temp/example_file1.m\")", "x+y");
 			check("Put(x + y, 2x^2 + 4z!, Cos(x) + I Sin(x), \"c:/temp/example_file2.m\");"
 					+ "Get(\"c:/temp/example_file2.m\")", "I*Sin(x)+Cos(x)");
@@ -6307,15 +6305,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTimes() {
-//		String s = System.getProperty("os.name");
-//		if (s.contains("Windows")) {
-			check("N(Pi, 30) * I", "I*3.14159265358979323846264338327");
-			check("N(I*Pi, 30)", "I*3.14159265358979323846264338327");
-			check("N(Pi * E, 30)", "8.53973422267356706546355086954");
-			check("N(Pi, 30) * N(E, 30)", "8.53973422267356706546355086954");
-			check("N(Pi, 30) * E", "8.53973422267356661130018539536");
-			check("N(Pi, 30) * E // Precision", "30");
-//		}
+		// String s = System.getProperty("os.name");
+		// if (s.contains("Windows")) {
+		check("N(Pi, 30) * I", "I*3.14159265358979323846264338327");
+		check("N(I*Pi, 30)", "I*3.14159265358979323846264338327");
+		check("N(Pi * E, 30)", "8.53973422267356706546355086954");
+		check("N(Pi, 30) * N(E, 30)", "8.53973422267356706546355086954");
+		check("N(Pi, 30) * E", "8.53973422267356661130018539536");
+		check("N(Pi, 30) * E // Precision", "30");
+		// }
 		check("Floor(Log(7,1024))", "3");
 		check("10*2", "20");
 		check("a*a", "a^2");
