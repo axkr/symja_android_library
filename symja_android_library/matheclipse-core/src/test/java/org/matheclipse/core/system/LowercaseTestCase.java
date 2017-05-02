@@ -4410,13 +4410,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPlus() {
-		String s = System.getProperty("os.name");
-		if (s.contains("Windows")) {
+//		String s = System.getProperty("os.name");
+//		if (s.contains("Windows")) {
 			check("N(Pi, 30) + N(E, 30)", "5.85987448204883847382293085463");
 			check("N(Pi, 30) + N(E, 30) // Precision", "30");
 			check("N(Pi, 30) + I", "3.14159265358979323846264338327+I*1");
 			check("N(Pi, 30) + E", "5.85987448204883829099102473027");
-		}
+//		}
 		check("1 + 2", "3");
 		check("a + b + a", "2*a+b");
 		check("a + a + 3 * a", "5*a");
