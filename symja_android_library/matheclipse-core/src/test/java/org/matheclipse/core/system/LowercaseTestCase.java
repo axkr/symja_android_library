@@ -4255,19 +4255,36 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPadLeft() {
+		check("PadLeft({1, 2, 3}, 5)", "{0,0,1,2,3}");
+		check("PadLeft(x(a, b, c), 5) ", "x(0,0,a,b,c)");
+		check("PadLeft({1, 2, 3}, 2)", "{2,3}");
+		check("PadLeft({1, 2, 3}, 1)", "{3}");
+		check("PadLeft({{}, {1, 2}, {1, 2, 3}})", "{{0,0,0},{0,1,2},{1,2,3}}");
+		
+		
 		check("PadLeft({a, b, c}, 10)", "{0,0,0,0,0,0,0,a,b,c}");
 		check("PadLeft({a, b, c}, 10, {x, y, z})", "{z,x,y,z,x,y,z,a,b,c}");
 		check("PadLeft({a, b, c}, 9, {x, y, z})", "{x,y,z,x,y,z,a,b,c}");
 		check("PadLeft({a, b, c}, 8, {x, y, z})", "{y,z,x,y,z,a,b,c}");
 		check("PadLeft({a, b, c}, 10, 42)", "{42,42,42,42,42,42,42,a,b,c}");
+		// TODO
+		// check("PadLeft({1, 2, 3}, 10, {a, b, c}, 2)", "{b, c, a, b, c, 1, 2, 3, a, b}");
+		
 	}
 
 	public void testPadRight() {
+		check("PadRight({1, 2, 3}, 5)", "{1,2,3,0,0}");
+		check("PadRight(x(a, b, c), 5) ", "x(a,b,c,0,0)");
+		check("PadRight({1, 2, 3}, 2)", "{1,2}");
+		check("PadRight({1, 2, 3}, 1)", "{1}");
+		check("PadRight({{}, {1, 2}, {1, 2, 3}})", "{{0,0,0},{1,2,0},{1,2,3}}");
+		
 		check("PadRight({a, b, c}, 10)", "{a,b,c,0,0,0,0,0,0,0}");
 		check("PadRight({a, b, c}, 10, {x, y, z})", "{a,b,c,x,y,z,x,y,z,x}");
 		check("PadRight({a, b, c}, 9, {x, y, z})", "{a,b,c,x,y,z,x,y,z}");
 		check("PadRight({a, b, c}, 8, {x, y, z})", "{a,b,c,x,y,z,x,y}");
 		check("PadRight({a, b, c}, 10, 42)", "{a,b,c,42,42,42,42,42,42,42}");
+		
 	}
 
 	public void testParserFixedPoint() {
@@ -5876,6 +5893,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("FullForm(1;;4;;2)", "\"Span(1, 4, 2)\"");
 		check("FullForm(2;;-2)", "\"Span(2, -2)\"");
 		check("FullForm(;;3)", "\"Span(1, 3)\"");
+		// check("a ;; b ;; c ;; d", "(1;;d) (a;;b;;c)");
 
 		check("{a, b, c, d, e, f, g, h}[[2 ;; -3]]", "{b,c,d,e,f}");
 		check("{a, b, c, d, e, f, g, h}[[2 ;; 5]]", "{b,c,d,e}");
@@ -6184,8 +6202,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Take({1, 2, 3, 4, 5}, {2, 1})", "{}");
 		check("Take({1, 2, 3, 4, 5}, {1, 0, 2})", "{}");
 		check("Take({1, 2, 3, 4, 5}, {1, 0, -1})", "Take({1,2,3,4,5},{1,0,-1})");
-		check("", "");
-		check("", "");
 
 		check("Take({a, b, c, d, e, f}, All)", "{a,b,c,d,e,f}");
 		check("Take({a, b, c, d, e, f}, 4)", "{a,b,c,d}");

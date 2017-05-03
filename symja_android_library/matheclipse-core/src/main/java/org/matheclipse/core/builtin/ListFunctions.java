@@ -1685,9 +1685,29 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-			int n = Validate.checkIntType(ast, 2);
+			Validate.checkRange(ast, 2, 4);
 
+			if (ast.isAST1()) {
+				if (ast.arg1().isListOfLists()) {
+					IAST list = (IAST) ast.arg1();
+					int maxSize = -1;
+					for (int i = 1; i < list.size(); i++) {
+						IAST subList = (IAST) list.get(i);
+						if (subList.size() > maxSize) {
+							maxSize = subList.size();
+						}
+					}
+					if (maxSize > 0) {
+						IAST result = F.ListAlloc(list.size());
+						for (int i = 1; i < list.size(); i++) {
+							result.append(padLeftAtom(list.getAST(i), maxSize - 1, F.C0));
+						}
+						return result;
+					}
+				}
+				return ast.arg1();
+			}
+			int n = Validate.checkIntType(ast, 2);
 			if (ast.arg1().isAST()) {
 				IAST arg1 = (IAST) ast.arg1();
 				if (ast.size() > 3) {
@@ -1713,6 +1733,9 @@ public final class ListFunctions {
 				}
 				result.appendArgs(ast);
 				return result;
+			}
+			if (n > 0 && n < ast.size()) {
+				return ast.copyFrom(ast.size()-n);
 			}
 			return ast;
 		}
@@ -1749,9 +1772,30 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 3, 4);
-			int n = Validate.checkIntType(ast, 2);
+			Validate.checkRange(ast, 2, 4);
 
+			if (ast.isAST1()) {
+				if (ast.arg1().isListOfLists()) {
+					IAST list = (IAST) ast.arg1();
+					int maxSize = -1;
+					for (int i = 1; i < list.size(); i++) {
+						IAST subList = (IAST) list.get(i);
+						if (subList.size() > maxSize) {
+							maxSize = subList.size();
+						}
+					}
+					if (maxSize > 0) {
+						IAST result = F.ListAlloc(list.size());
+						for (int i = 1; i < list.size(); i++) {
+							result.append(padRightAtom(list.getAST(i), maxSize - 1, F.C0));
+						}
+						return result;
+					}
+				}
+				return ast.arg1();
+			}
+
+			int n = Validate.checkIntType(ast, 2);
 			if (ast.arg1().isAST()) {
 				IAST arg1 = (IAST) ast.arg1();
 				if (ast.size() > 3) {
@@ -1777,6 +1821,9 @@ public final class ListFunctions {
 					result.append(atom);
 				}
 				return result;
+			}
+			if (n > 0 && n < ast.size()) {
+				return ast.copyUntil(n+1);
 			}
 			return ast;
 		}
