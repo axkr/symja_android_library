@@ -853,7 +853,10 @@ public class Solve extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 4);
-		IAST variables = Validate.checkSymbolOrSymbolList(ast, 2);
+		IAST variables = Validate.checkIsVariableOrVariableList(ast, 2, engine);
+		if (variables == null) {
+			return F.NIL;
+		}
 		IExpr domain = F.Complexes;
 		if (ast.isAST3()) {
 			domain = ast.arg3();

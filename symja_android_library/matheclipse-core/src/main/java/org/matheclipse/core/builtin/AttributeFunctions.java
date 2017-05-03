@@ -39,6 +39,11 @@ public class AttributeFunctions {
 				final ISymbol sym = ((ISymbol) ast.arg1());
 				int attributea = sym.getAttributes();
 
+				
+				if ((attributea & ISymbol.CONSTANT) != ISymbol.NOATTRIBUTE) {
+					result.append(F.Constant);
+				}
+				
 				if ((attributea & ISymbol.FLAT) != ISymbol.NOATTRIBUTE) {
 					result.append(F.Flat);
 				}

@@ -1084,6 +1084,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ConjugateTranspose({{1, 2 I, 3}, {3 + 4 I, 5, I}})", "{{1,3-I*4},\n" + " {-I*2,5},\n" + " {3,-I}}");
 	}
 
+	public void testConstant() {
+		check("Attributes(E)", "{Constant}");
+		check("Solve(x + E == 0, E) ", "Solve(E+x==0,E)");
+	}
+	
 	public void testConstantArray() {
 		check("ConstantArray(a, 3)", "{a,a,a}");
 		check("ConstantArray(a, {2, 3})", "{{a,a,a},{a,a,a}}");
@@ -3195,6 +3200,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LiouvilleLambda({1,2,3,4,5,6,20})", "{1,-1,-1,1,-1,1,-1}");
 	}
 
+	public void testListable() {
+		check("SetAttributes(f, Listable)", "");
+		check("f({1, 2, 3}, {4, 5, 6})", "{f(1,4),f(2,5),f(3,6)}");
+		check("f({1, 2, 3}, 4)", "{f(1,4),f(2,4),f(3,4)}");
+		check("{{1, 2}, {3, 4}} + {5, 6}", "{{6,7},{9,10}}");
+	}
+	
 	public void testListQ() {
 		check("ListQ({1, 2, 3})", "True");
 		check("ListQ({{1, 2}, {3, 4}})", "True");
@@ -3985,6 +3997,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("NextPrime(100, -5)", "73");
 		// check("NextPrime(10, -5)", "-2");
 		// check("NextPrime(5.5, 100)", "563");
+	}
+	
+	public void testNHoldAll() {
+		check("N(f(2, 3))", "f(2.0,3.0)");
+		check("SetAttributes(f, NHoldAll)", "");
+		check("N(f(2, 3))", "f(2,3)");
 	}
 
 	public void testNIntegrate() {
