@@ -352,7 +352,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Apart(1 < (x + 1)/(x - 1) < 2)", "1<1+2/(-1+x)<2");
 	}
 
+	public void testAppend() {
+		check("Append({1, 2, 3}, 4) ", "{1,2,3,4}");
+		check("Append(f(a, b), c)", "f(a,b,c)");
+		check("Append({a, b}, {c, d})  ", "{a,b,{c,d}}");
+		check("Append(a, b)", "Append(a,b)");
+	}
+	
 	public void testAppendTo() {
+		check("s = {}", "{}");
+		check("AppendTo(s, 1)", "{1}");
+		check("s", "{1}");
+		
+		check("y = f()", "f()");
+		check("AppendTo(y, x)", "f(x)");
+		check("y", "f(x)");
+		
+		check("AppendTo({}, 1)", "AppendTo({},1)");
+		check("AppendTo(a, b)", "AppendTo(a,b)");
+		
 		check("$l = {1, 2, 4, 9};appendto($l, 16)", "{1,2,4,9,16}");
 		check("$l = {1, 2, 4, 9};appendto($l, 16);$l", "{1,2,4,9,16}");
 	}
@@ -4800,8 +4818,28 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("++a", "3");
 		check("a", "3");
 	}
+	
+	public void testPrepend() {
+		check("Prepend({2, 3, 4}, 1)", "{1,2,3,4}");
+		check("Prepend(f(b, c), a)", "f(a,b,c)");
+		check("Prepend({c, d}, {a, b})", "{{a,b},c,d}");
+		check("Prepend(a, b)", "Prepend(a,b)");
+	}
 
 	public void testPrependTo() {
+		check("s = {1, 2, 4, 9}", "{1,2,4,9}");
+		check("PrependTo(s, 0)", "{0,1,2,4,9}");
+		check("s", "{0,1,2,4,9}");
+		
+		check("y = f(a, b, c)", "f(a,b,c)");
+		check("PrependTo(y, x)", "f(x,a,b,c)");
+		check("y", "f(x,a,b,c)");
+		
+		check("PrependTo({a, b}, 1)", "PrependTo({a,b},1)");
+		check("PrependTo(a, b)", "PrependTo(a,b)");
+		check("x = 1 + 2", "3");
+		check("PrependTo(x, {3, 4}) ", "PrependTo(x,{3,4})");
+		
 		check("$l = {1, 2, 4, 9};PrependTo($l, 16)", "{16,1,2,4,9}");
 		check("$l = {1, 2, 4, 9};PrependTo($l, 16);$l", "{16,1,2,4,9}");
 	}

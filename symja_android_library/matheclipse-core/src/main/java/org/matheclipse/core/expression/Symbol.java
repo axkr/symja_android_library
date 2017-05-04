@@ -43,14 +43,13 @@ public class Symbol implements ISymbol, Serializable {
 	 */
 	protected int fAttributes = NOATTRIBUTE;
 	/**
-	 * The pattern matching &quot;down value&quot; rules associated with this
-	 * symbol.
+	 * The pattern matching &quot;down value&quot; rules associated with this symbol.
 	 */
 	private transient RulesData fRulesData;
 
 	/**
-	 * The name of this symbol. The characters may be all lower-cases if the
-	 * system doesn't distinguish between lower- and upper-case function names.
+	 * The name of this symbol. The characters may be all lower-cases if the system doesn't distinguish between lower-
+	 * and upper-case function names.
 	 */
 	protected String fSymbolName;
 	/**
@@ -104,7 +103,7 @@ public class Symbol implements ISymbol, Serializable {
 			engine.addModifiedVariable(this);
 		}
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final IExpr apply(IExpr... expressions) {
@@ -133,7 +132,7 @@ public class Symbol implements ISymbol, Serializable {
 			engine.addModifiedVariable(this);
 		}
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final void clearAll(EvalEngine engine) {
@@ -142,9 +141,8 @@ public class Symbol implements ISymbol, Serializable {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns
-	 * a negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
+	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -782,14 +780,14 @@ public class Symbol implements ISymbol, Serializable {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol) {
+	public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol, EvalEngine engine) {
 		IExpr[] result = new IExpr[2];
 		IExpr symbolValue;
 		if (hasLocalVariableStack()) {
 			symbolValue = get();
 			result[0] = symbolValue;
 			IExpr calculatedResult = function.apply(symbolValue);
-			if (calculatedResult != null) {
+			if (calculatedResult.isPresent()) {
 				set(calculatedResult);
 				result[1] = calculatedResult;
 				return result;
@@ -803,24 +801,24 @@ public class Symbol implements ISymbol, Serializable {
 					if (symbolValue != null) {
 						result[0] = symbolValue;
 						IExpr calculatedResult = function.apply(symbolValue);
-						if (calculatedResult != null) {
+						if (calculatedResult.isPresent()) {
 							pme.setRHS(calculatedResult);
 							result[1] = calculatedResult;
 							return result;
-						}
+						} 
 					}
 				}
 			}
 		}
-		throw new WrongArgumentType(this, functionSymbol.toString() + " - Symbol: " + toString()
-				+ " has no value! Reassignment with a new value is not possible");
+		engine.printMessage(toString() + " is not a variable with a value, so its value cannot be changed.");
+		return null;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IExpr[] reassignSymbolValue( IAST ast, ISymbol functionSymbol, EvalEngine engine) {
+	public IExpr[] reassignSymbolValue(IAST ast, ISymbol functionSymbol, EvalEngine engine) {
 		IExpr[] result = new IExpr[2];
 		IExpr symbolValue;
 		if (hasLocalVariableStack()) {
@@ -828,7 +826,7 @@ public class Symbol implements ISymbol, Serializable {
 			result[0] = symbolValue;
 			// IExpr calculatedResult = function.apply(symbolValue);
 			ast.set(1, symbolValue);
-			IExpr calculatedResult = engine.evaluate(ast);//F.binaryAST2(this, symbolValue, value));
+			IExpr calculatedResult = engine.evaluate(ast);// F.binaryAST2(this, symbolValue, value));
 			if (calculatedResult != null) {
 				set(calculatedResult);
 				result[1] = calculatedResult;

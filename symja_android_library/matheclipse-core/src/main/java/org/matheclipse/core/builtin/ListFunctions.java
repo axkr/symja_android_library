@@ -138,7 +138,10 @@ public final class ListFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
 			IExpr arg1 = engine.evaluate(ast.arg1());
-			IAST arg1AST = Validate.checkASTType(arg1);
+			IAST arg1AST = Validate.checkASTType(arg1, engine);
+			if (arg1AST == null) {
+				return F.NIL;
+			}
 			IExpr arg2 = engine.evaluate(ast.arg2());
 			return arg1AST.appendClone(arg2);
 		}
@@ -175,10 +178,13 @@ public final class ListFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
-			ISymbol sym = Validate.checkSymbolType(ast, 1);
+			ISymbol sym = Validate.checkSymbolType(ast, 1, engine);
+			if (sym == null) {
+				return F.NIL;
+			}
 			IExpr arg2 = engine.evaluate(ast.arg2());
 			Function<IExpr, IExpr> function = new AppendToFunction(arg2);
-			IExpr[] results = sym.reassignSymbolValue(function, F.AppendTo);
+			IExpr[] results = sym.reassignSymbolValue(function, F.AppendTo, engine);
 			if (results != null) {
 				return results[1];
 			}
@@ -1735,7 +1741,7 @@ public final class ListFunctions {
 				return result;
 			}
 			if (n > 0 && n < ast.size()) {
-				return ast.copyFrom(ast.size()-n);
+				return ast.copyFrom(ast.size() - n);
 			}
 			return ast;
 		}
@@ -1823,7 +1829,7 @@ public final class ListFunctions {
 				return result;
 			}
 			if (n > 0 && n < ast.size()) {
-				return ast.copyUntil(n+1);
+				return ast.copyUntil(n + 1);
 			}
 			return ast;
 		}
@@ -1965,7 +1971,10 @@ public final class ListFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
 			IExpr arg1 = engine.evaluate(ast.arg1());
-			IAST arg1AST = Validate.checkASTType(arg1);
+			IAST arg1AST = Validate.checkASTType(arg1, engine);
+			if (arg1AST == null) {
+				return F.NIL;
+			}
 			IExpr arg2 = engine.evaluate(ast.arg2());
 			return arg1AST.appendAtClone(1, arg2);
 		}
@@ -1994,10 +2003,13 @@ public final class ListFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
-			ISymbol sym = Validate.checkSymbolType(ast, 1);
+			ISymbol sym = Validate.checkSymbolType(ast, 1, engine);
+			if (sym == null) {
+				return F.NIL;
+			}
 			IExpr arg2 = engine.evaluate(ast.arg2());
 			Function<IExpr, IExpr> function = new PrependToFunction(arg2);
-			IExpr[] results = sym.reassignSymbolValue(function, F.PrependTo);
+			IExpr[] results = sym.reassignSymbolValue(function, F.PrependTo, engine);
 			if (results != null) {
 				return results[1];
 			}

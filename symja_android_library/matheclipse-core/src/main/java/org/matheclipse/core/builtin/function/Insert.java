@@ -19,14 +19,17 @@ public class Insert extends AbstractCoreFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 4);
-		
+
 		IExpr arg1 = engine.evaluate(ast.arg1());
-		IAST arg1AST = Validate.checkASTType(arg1);
+		IAST arg1AST = Validate.checkASTType(arg1, engine);
+		if (arg1AST == null) {
+			return F.NIL;
+		}
 		IExpr arg2 = engine.evaluate(ast.arg2());
 		IExpr arg3 = engine.evaluate(ast.arg3());
 		if (arg3.isInteger()) {
 			try {
-				int i = Validate.checkIntType(arg3,  Integer.MIN_VALUE);
+				int i = Validate.checkIntType(arg3, Integer.MIN_VALUE);
 				if (i < 0) {
 					i = 1 + arg1AST.size() + i;
 				}

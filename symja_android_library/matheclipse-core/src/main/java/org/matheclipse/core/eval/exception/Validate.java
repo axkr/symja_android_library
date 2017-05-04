@@ -483,6 +483,22 @@ public final class Validate {
 	}
 
 	/**
+	 * Check if the argument at the given position is a symbol.
+	 * 
+	 * @param position
+	 *            the position which has to be a symbol.
+	 * @return <code>null</code> if the argument at the given position is not a symbol.
+	 */
+	public static ISymbol checkSymbolType(IAST ast, int position, EvalEngine engine) {
+		if (ast.get(position).isSymbol()) {
+			return (ISymbol) ast.get(position);
+		}
+		engine.printMessage(
+				ast.get(position).toString() + " is not a variable with a value, so its value cannot be changed.");
+		return null;
+	}
+
+	/**
 	 * Check if the argument at the given position is a variable, i.e. a symbol which doesnt't have the
 	 * <code>Constant</code> set.
 	 * 
@@ -542,11 +558,12 @@ public final class Validate {
 	 * @throws WrongArgumentType
 	 *             if it's not an AST.
 	 */
-	public static IAST checkASTType(IExpr expr) {
+	public static IAST checkASTType(IExpr expr, EvalEngine engine) {
 		if (expr.isAST()) {
 			return (IAST) expr;
 		}
-		throw new WrongArgumentType(expr, "Function(AST) expected!");
+		engine.printMessage("Nonatomic expression expected.");
+		return null;
 	}
 
 	private Validate() {

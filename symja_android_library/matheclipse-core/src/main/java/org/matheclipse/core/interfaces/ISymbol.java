@@ -458,12 +458,14 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @param functionSymbol
 	 *            if this method throws a WrongArgumentType exception the symbol will be displayed in the exceptions
 	 *            message
+	 * @param engine
+	 *            the evaluation engine
 	 * @return an array with the currently assigned value of the symbol and the new calculated value of the symbol or
 	 *         <code>null</code> if the reassignment isn't possible.
 	 * 
 	 * @see WrongArgumentType
 	 */
-	public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol);
+	public IExpr[] reassignSymbolValue(Function<IExpr, IExpr> function, ISymbol functionSymbol, EvalEngine engine);
 
 	/**
 	 * Apply the ast to the currently assigned value of the symbol and reassign the result value to the symbol. Used for
@@ -475,10 +477,10 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @param functionSymbol
 	 *            if this method throws a WrongArgumentType exception the symbol will be displayed in the exceptions
 	 *            message
+	 * @param engine
+	 *            the evaluation engine
 	 * @return an array with the currently assigned value of the symbol and the new calculated value of the symbol or
 	 *         <code>null</code> if the reassignment isn't possible.
-	 * 
-	 * @see WrongArgumentType
 	 */
 	public IExpr[] reassignSymbolValue(IAST ast, ISymbol functionSymbol, EvalEngine engine);
 
