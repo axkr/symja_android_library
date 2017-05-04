@@ -39,11 +39,10 @@ public class AttributeFunctions {
 				final ISymbol sym = ((ISymbol) ast.arg1());
 				int attributea = sym.getAttributes();
 
-				
 				if ((attributea & ISymbol.CONSTANT) != ISymbol.NOATTRIBUTE) {
 					result.append(F.Constant);
 				}
-				
+
 				if ((attributea & ISymbol.FLAT) != ISymbol.NOATTRIBUTE) {
 					result.append(F.Flat);
 				}
@@ -114,11 +113,11 @@ public class AttributeFunctions {
 				for (int i = 1; i < list.size(); i++) {
 					if (list.get(i).isSymbol()) {
 						final ISymbol sym = ((ISymbol) list.get(i));
-					    clearAttributes(sym, ast, arg2, engine);
+						clearAttributes(sym, ast, arg2, engine);
 					}
 				}
 				return F.Null;
-				
+
 			}
 			return F.NIL;
 		}
@@ -131,6 +130,12 @@ public class AttributeFunctions {
 			}
 			if (arg2.isSymbol()) {
 				ISymbol attribute = (ISymbol) arg2;
+
+				if (attribute == F.Constant) {
+					sym.clearAttributes(ISymbol.CONSTANT);
+					return F.Null;
+				}
+
 				if (attribute == F.Flat) {
 					sym.clearAttributes(ISymbol.FLAT);
 					return F.Null;
@@ -189,54 +194,59 @@ public class AttributeFunctions {
 			} else {
 				if (ast.arg2().isList()) {
 					final IAST lst = (IAST) ast.arg2();
-					int symbolAttributes = ISymbol.NOATTRIBUTE;
+					// int symbolAttributes = ISymbol.NOATTRIBUTE;
 					for (int i = 1; i < lst.size(); i++) {
 						ISymbol attribute = (ISymbol) lst.get(i);
+
+						if (attribute == F.Constant) {
+							sym.clearAttributes(ISymbol.CONSTANT);
+							return F.Null;
+						}
+
 						if (attribute == F.Flat) {
-							sym.clearAttributes(symbolAttributes | ISymbol.FLAT);
+							sym.clearAttributes(ISymbol.FLAT);
 						}
 
 						if (attribute == F.Listable) {
-							sym.clearAttributes(symbolAttributes | ISymbol.LISTABLE);
+							sym.clearAttributes(ISymbol.LISTABLE);
 						}
 
 						if (attribute == F.OneIdentity) {
-							sym.clearAttributes(symbolAttributes | ISymbol.ONEIDENTITY);
+							sym.clearAttributes(ISymbol.ONEIDENTITY);
 						}
 
 						if (attribute == F.Orderless) {
-							sym.clearAttributes(symbolAttributes | ISymbol.ORDERLESS);
+							sym.clearAttributes(ISymbol.ORDERLESS);
 						}
 
 						if (attribute == F.HoldAll) {
-							sym.clearAttributes(symbolAttributes | ISymbol.HOLDALL);
+							sym.clearAttributes(ISymbol.HOLDALL);
 						}
 
 						if (attribute == F.HoldFirst) {
-							sym.clearAttributes(symbolAttributes | ISymbol.HOLDFIRST);
+							sym.clearAttributes(ISymbol.HOLDFIRST);
 						}
 
 						if (attribute == F.HoldRest) {
-							sym.clearAttributes(symbolAttributes | ISymbol.HOLDREST);
+							sym.clearAttributes(ISymbol.HOLDREST);
 						}
 
 						if (attribute == F.NHoldAll) {
-							sym.clearAttributes(symbolAttributes | ISymbol.NHOLDALL);
+							sym.clearAttributes(ISymbol.NHOLDALL);
 						}
 
 						if (attribute == F.NHoldFirst) {
-							sym.clearAttributes(symbolAttributes | ISymbol.NHOLDFIRST);
+							sym.clearAttributes(ISymbol.NHOLDFIRST);
 						}
 
 						if (attribute == F.NHoldRest) {
-							sym.clearAttributes(symbolAttributes | ISymbol.NHOLDREST);
+							sym.clearAttributes(ISymbol.NHOLDREST);
 						}
 
 						if (attribute == F.NumericFunction) {
-							sym.clearAttributes(symbolAttributes | ISymbol.NUMERICFUNCTION);
+							sym.clearAttributes(ISymbol.NUMERICFUNCTION);
 						}
-
-						symbolAttributes = sym.getAttributes();
+						// symbolAttributes = sym.getAttributes();
 					}
 					// end for
 
@@ -247,7 +257,7 @@ public class AttributeFunctions {
 		}
 
 	}
-	
+
 	/**
 	 * Set the attributes for a symbol
 	 * 
@@ -269,11 +279,11 @@ public class AttributeFunctions {
 				for (int i = 1; i < list.size(); i++) {
 					if (list.get(i).isSymbol()) {
 						final ISymbol sym = ((ISymbol) list.get(i));
-					    addAttributes(sym, ast, arg2, engine);
+						addAttributes(sym, ast, arg2, engine);
 					}
 				}
 				return F.Null;
-				
+
 			}
 			return F.NIL;
 		}
@@ -286,6 +296,12 @@ public class AttributeFunctions {
 			}
 			if (arg2.isSymbol()) {
 				ISymbol attribute = (ISymbol) arg2;
+
+				if (attribute == F.Constant) {
+					sym.addAttributes(ISymbol.CONSTANT);
+					return F.Null;
+				}
+
 				if (attribute == F.Flat) {
 					sym.addAttributes(ISymbol.FLAT);
 					return F.Null;
@@ -344,54 +360,52 @@ public class AttributeFunctions {
 			} else {
 				if (ast.arg2().isList()) {
 					final IAST lst = (IAST) ast.arg2();
-					int symbolAttributes = ISymbol.NOATTRIBUTE;
 					for (int i = 1; i < lst.size(); i++) {
 						ISymbol attribute = (ISymbol) lst.get(i);
 						if (attribute == F.Flat) {
-							sym.addAttributes(symbolAttributes | ISymbol.FLAT);
+							sym.addAttributes(ISymbol.FLAT);
 						}
 
 						if (attribute == F.Listable) {
-							sym.addAttributes(symbolAttributes | ISymbol.LISTABLE);
+							sym.addAttributes(ISymbol.LISTABLE);
 						}
 
 						if (attribute == F.OneIdentity) {
-							sym.addAttributes(symbolAttributes | ISymbol.ONEIDENTITY);
+							sym.addAttributes(ISymbol.ONEIDENTITY);
 						}
 
 						if (attribute == F.Orderless) {
-							sym.addAttributes(symbolAttributes | ISymbol.ORDERLESS);
+							sym.addAttributes(ISymbol.ORDERLESS);
 						}
 
 						if (attribute == F.HoldAll) {
-							sym.addAttributes(symbolAttributes | ISymbol.HOLDALL);
+							sym.addAttributes(ISymbol.HOLDALL);
 						}
 
 						if (attribute == F.HoldFirst) {
-							sym.addAttributes(symbolAttributes | ISymbol.HOLDFIRST);
+							sym.addAttributes(ISymbol.HOLDFIRST);
 						}
 
 						if (attribute == F.HoldRest) {
-							sym.addAttributes(symbolAttributes | ISymbol.HOLDREST);
+							sym.addAttributes(ISymbol.HOLDREST);
 						}
 
 						if (attribute == F.NHoldAll) {
-							sym.addAttributes(symbolAttributes | ISymbol.NHOLDALL);
+							sym.addAttributes(ISymbol.NHOLDALL);
 						}
 
 						if (attribute == F.NHoldFirst) {
-							sym.addAttributes(symbolAttributes | ISymbol.NHOLDFIRST);
+							sym.addAttributes(ISymbol.NHOLDFIRST);
 						}
 
 						if (attribute == F.NHoldRest) {
-							sym.addAttributes(symbolAttributes | ISymbol.NHOLDREST);
+							sym.addAttributes(ISymbol.NHOLDREST);
 						}
 
 						if (attribute == F.NumericFunction) {
-							sym.addAttributes(symbolAttributes | ISymbol.NUMERICFUNCTION);
+							sym.addAttributes(ISymbol.NUMERICFUNCTION);
 						}
 
-						symbolAttributes = sym.getAttributes();
 					}
 					// end for
 
