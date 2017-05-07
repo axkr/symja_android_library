@@ -169,16 +169,16 @@ public interface CosRules {
       Cosh(C1)),
     // Cos(ArcTan(x_)):=(1+x^2)^Rational(-1,2)
     ISetDelayed(Cos(ArcTan(x_)),
-      Power(Plus(C1,Sqr(x)),Rational(CN1,C2))),
+      Power(Plus(C1,Sqr(x)),CN1D2)),
     // Cos(Pi*x_NumberQ):=If(x<1,-Cos((1-x)*Pi),If(x<2,Cos((2-x)*Pi),Cos((x-2*Quotient(IntegerPart(x),2))*Pi)))/;x>=Rational(1,2)
     ISetDelayed(Cos(Times(Pi,$p(x,NumberQ))),
-      Condition(If(Less(x,C1),Negate(Cos(Times(Plus(C1,Negate(x)),Pi))),If(Less(x,C2),Cos(Times(Plus(C2,Negate(x)),Pi)),Cos(Times(Plus(x,Times(CN1,C2,Quotient(IntegerPart(x),C2))),Pi)))),GreaterEqual(x,Rational(C1,C2)))),
+      Condition(If(Less(x,C1),Negate(Cos(Times(Plus(C1,Negate(x)),Pi))),If(Less(x,C2),Cos(Times(Plus(C2,Negate(x)),Pi)),Cos(Times(Plus(x,Times(CN1,C2,Quotient(IntegerPart(x),C2))),Pi)))),GreaterEqual(x,C1D2))),
     // Cos(ArcCos(x_)):=x
     ISetDelayed(Cos(ArcCos(x_)),
       x),
     // Cos(ArcSin(x_)):=(1-x^2)^Rational(1,2)
     ISetDelayed(Cos(ArcSin(x_)),
-      Power(Plus(C1,Negate(Sqr(x))),Rational(C1,C2))),
+      Power(Plus(C1,Negate(Sqr(x))),C1D2)),
     // Cos(I*Infinity)=Infinity
     ISet(Cos(DirectedInfinity(CI)),
       oo),

@@ -12,8 +12,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Differentiation of a function. See
- * <a href="http://en.wikipedia.org/wiki/Derivative">Wikipedia:Derivative</a>
+ * Differentiation of a function. See <a href="http://en.wikipedia.org/wiki/Derivative">Wikipedia:Derivative</a>
  */
 public class D extends AbstractFunctionEvaluator {
 
@@ -29,16 +28,16 @@ public class D extends AbstractFunctionEvaluator {
 	 * @param header
 	 * @return
 	 */
-	private IExpr getDerivativeArg1(IExpr x, final IExpr a1, final IExpr head) {
+	private IExpr getDerivativeArg1(IExpr x, final IExpr a1, final IExpr head, EvalEngine engine) {
 		if (head.isSymbol()) {
 			ISymbol header = (ISymbol) head;
-			IExpr der = Derivative.derivative(1, header);
+			IExpr der = Derivative.derivative(1, header, engine);
 			if (der.isPresent()) {
 				// we've found a derivative for a function of the form f[x_]
 				IExpr derivative = F.eval(F.unaryAST1(der, a1));
 				return F.Times(F.D(a1, x), derivative);
 			}
-			IAST fDerivParam = createDerivative(1, header, a1);
+			IAST fDerivParam = Derivative.createDerivative(1, header, a1);
 			if (x.equals(a1)) {
 				return fDerivParam;
 			}
@@ -56,75 +55,66 @@ public class D extends AbstractFunctionEvaluator {
 	 * @param header
 	 * @return
 	 */
-	private IExpr getDerivativeArg2(IExpr x, final IExpr a1, final IExpr a2, final IExpr head) {
+	private IExpr getDerivativeArgN(IExpr x, final IAST ast, final IExpr head) {
+		IAST[] deriv = ast.isDerivative();
+		if (deriv != null) {
+			IAST plus = F.PlusAlloc(ast.size());
+			for (int i = 1; i < ast.size(); i++) {
+				plus.append(F.Times(F.D(ast.get(i), x), addDerivative(i, deriv[0], deriv[1].arg1(), ast)));
+			}
+			return plus;
+		}
 		if (head.isSymbol()) {
-			int n = 1;
-			int m = 1;
-			ISymbol header = (ISymbol) head;
-			if (a1.isFree(x)) {
-				n = 0;
+			IAST plus = F.PlusAlloc(ast.size());
+			for (int i = 1; i < ast.size(); i++) {
+				plus.append(F.Times(F.D(ast.get(i), x), createDerivative(i, head, ast)));
 			}
-			if (a2.isFree(x)) {
-				m = 0;
-			}
-			IExpr der = Derivative.derivative(n, m, header);
-			if (der != null) {
-				// we've found a derivative for a function of the form f[x_, y_]
-				IExpr derivative = F.eval(F.binaryAST2(der, a1, a2));
-				IAST times = F.Times();
-				if (n == 1) {
-					times.append(F.D(a1, x));
-				}
-				if (m == 1) {
-					times.append(F.D(a2, x));
-				}
-				times.append(derivative);
-				return times;
-			}
-			IAST fDerivParam = createDerivative(n, m, header, a1, a2);
-			if (x.equals(a1) || x.equals(a2)) {
-				return fDerivParam;
-			}
-			return F.Times(F.D(a1, x), F.D(a2, x), fDerivParam);
+			return plus;
 		}
 		return F.NIL;
 	}
 
 	/**
-	 * Create <code>Derivative[n][header][arg1]</code>
+	 * Create <code>Derivative[...,1,...][header][arg1, arg2, ...]</code>
 	 * 
 	 * @param n
+	 *            the position of the <code>1</code>
 	 * @param header
 	 * @param arg1
 	 * @return
 	 */
-	private IAST createDerivative(final int n, final IExpr header, final IExpr arg1) {
-		IAST deriv = F.Derivative(F.integer(n));
-		IAST fDeriv = F.ast(deriv);
-		fDeriv.append(header);
-		IAST fDerivParam = F.ast(fDeriv);
-		fDerivParam.append(arg1);
-		return fDerivParam;
+	private IAST createDerivative(final int pos, final IExpr header, final IAST args) {
+		IAST derivativeHead1 = F.ast(F.Derivative, args.size(), false);
+		for (int i = 1; i < args.size(); i++) {
+			if (i == pos) {
+				derivativeHead1.append(F.C1);
+			} else {
+				derivativeHead1.append(F.C0);
+			}
+		}
+		IAST derivativeHead2 = F.ast(derivativeHead1);
+		derivativeHead2.append(header);
+		IAST derivativeAST = F.ast(derivativeHead2, args.size(), false);
+		for (int i = 1; i < args.size(); i++) {
+			derivativeAST.append(args.get(i));
+		}
+		return derivativeAST;
 	}
 
-	/**
-	 * Create <code>Derivative[n][header][arg1, arg2]</code>
-	 * 
-	 * @param n
-	 * @param m
-	 * @param header
-	 * @param arg1
-	 * @param arg2
-	 * @return
-	 */
-	private IAST createDerivative(final int n, final int m, final IExpr header, final IExpr arg1, final IExpr arg2) {
-		IAST deriv = F.Derivative(F.integer(n), F.integer(m));
-		IAST fDeriv = F.ast(deriv);
-		fDeriv.append(header);
-		IAST fDerivParam = F.ast(fDeriv);
-		fDerivParam.append(arg1);
-		fDerivParam.append(arg2);
-		return fDerivParam;
+	private IAST addDerivative(final int pos, IAST deriveHead, final IExpr header, final IAST args) {
+		IAST derivativeHead1 = deriveHead.clone();
+		for (int i = 1; i < derivativeHead1.size(); i++) {
+			if (i == pos) {
+				derivativeHead1.set(i, derivativeHead1.get(i).inc());
+			}
+		}
+		IAST derivativeHead2 = F.ast(derivativeHead1);
+		derivativeHead2.append(header);
+		IAST derivativeAST = F.ast(derivativeHead2, args.size(), false);
+		for (int i = 1; i < args.size(); i++) {
+			derivativeAST.append(args.get(i));
+		}
+		return derivativeAST;
 	}
 
 	@Override
@@ -248,7 +238,7 @@ public class D extends AbstractFunctionEvaluator {
 				// return F.C0;
 				// }
 			} else if (listArg1.isAST1()) {
-				IAST[] derivStruct = listArg1.isDerivative();
+				IAST[] derivStruct = listArg1.isDerivativeAST1();
 				if (derivStruct != null && derivStruct[2] != null) {
 					IAST headAST = derivStruct[1];
 					IAST a1Head = derivStruct[0];
@@ -257,7 +247,7 @@ public class D extends AbstractFunctionEvaluator {
 							int n = ((IInteger) a1Head.arg1()).toInt();
 							IExpr arg1 = listArg1.arg1();
 							if (n > 0) {
-								IAST fDerivParam = createDerivative(n + 1, headAST.arg1(), arg1);
+								IAST fDerivParam = Derivative.createDerivative(n + 1, headAST.arg1(), arg1);
 								if (x.equals(arg1)) {
 									return fDerivParam;
 								}
@@ -269,9 +259,11 @@ public class D extends AbstractFunctionEvaluator {
 					}
 					return F.NIL;
 				}
-				return getDerivativeArg1(x, listArg1.arg1(), header);
-			} else if (listArg1.isAST2()) {
-				return getDerivativeArg2(x, listArg1.arg1(), listArg1.arg2(), header);
+				return getDerivativeArg1(x, listArg1.arg1(), header, engine);
+				// } else if (listArg1.isAST2()) {
+				// return getDerivativeArg2(x, listArg1.arg1(), listArg1.arg2(), header);
+			} else if (listArg1.isAST()) {
+				return getDerivativeArgN(x, listArg1, header);
 			}
 
 		}

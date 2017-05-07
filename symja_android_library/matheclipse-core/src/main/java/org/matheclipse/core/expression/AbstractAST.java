@@ -983,6 +983,13 @@ public abstract class AbstractAST implements IAST {
 		if (this.equals(F.Slot2)) {
 			return "Slot2";
 		}
+		if (temp.equals(F.Rational) && size() == 3) {
+			if (arg1().isInteger() && arg2().isInteger()) {
+				return F.QQ((IInteger) arg1(), (IInteger) arg2()).internalJavaString(symbolsAsFactoryMethod, depth,
+						useOperators);
+			}
+			return arg1().internalFormString(symbolsAsFactoryMethod, depth);
+		}
 		if (isPower()) {
 			if (equalsAt(2, F.C1D2)) {
 				if (arg1().isInteger()) {
@@ -1368,7 +1375,7 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST[] isDerivative() {
+	public final IAST[] isDerivativeAST1() {
 		if (head().isAST()) {
 			IAST headAST = (IAST) head();
 			if (headAST.isAST(F.Derivative, 2)) {
@@ -1379,6 +1386,35 @@ public abstract class AbstractAST implements IAST {
 			}
 
 			if (headAST.head().isAST(F.Derivative, 2)) {
+				if (this.size() != ((IAST) headAST.head()).size()) {
+					return null;
+				}
+				IAST[] result = new IAST[3];
+				result[0] = (IAST) headAST.head();
+				result[1] = headAST;
+				result[2] = this;
+				return result;
+			}
+		}
+		return null;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IAST[] isDerivative() {
+		if (head().isAST()) {
+			IAST headAST = (IAST) head();
+			if (headAST.isASTSizeGE(F.Derivative, 2)) {
+				IAST[] result = new IAST[3];
+				result[0] = headAST;
+				result[1] = this;
+				return result;
+			}
+
+			if (headAST.head().isASTSizeGE(F.Derivative, 2)) {
+				if (this.size() != ((IAST) headAST.head()).size()) {
+					return null;
+				}
 				IAST[] result = new IAST[3];
 				result[0] = (IAST) headAST.head();
 				result[1] = headAST;

@@ -49,7 +49,7 @@ public interface LimitRules {
       Power(E,a)),
     // Limit(HarmonicNumber(y_Symbol,s_IntegerQ),x_Symbol->Infinity):=Module({v=Rational(1,2)*s},((2*Pi)^(2*v)*(-1)^(v+1)*BernoulliB(2*v))/(2*(2*v)!))/;EvenQ(s)&&Positive(s)
     ISetDelayed(Limit(HarmonicNumber($p(y,Symbol),$p(s,IntegerQ)),Rule($p(x,Symbol),oo)),
-      Condition(Module(List(Set(v,Times(Rational(C1,C2),s))),Times(Power(Times(C2,Pi),Times(C2,v)),Power(CN1,Plus(v,C1)),BernoulliB(Times(C2,v)),Power(Times(C2,Factorial(Times(C2,v))),-1))),And(EvenQ(s),Positive(s)))),
+      Condition(Module(List(Set(v,Times(C1D2,s))),Times(Power(Times(C2,Pi),Times(C2,v)),Power(CN1,Plus(v,C1)),BernoulliB(Times(C2,v)),Power(Times(C2,Factorial(Times(C2,v))),-1))),And(EvenQ(s),Positive(s)))),
     // Limit(x_/Abs(x_),x_Symbol->0,Direction->1):=-1
     ISetDelayed(Limit(Times(x_,Power(Abs(x_),-1)),Rule($p(x,Symbol),C0),Rule(Direction,C1)),
       CN1),

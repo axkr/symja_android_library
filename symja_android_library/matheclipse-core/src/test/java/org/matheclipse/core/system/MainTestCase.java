@@ -2836,9 +2836,8 @@ public class MainTestCase extends AbstractTestCase {
 
 	public void testSystem406() {
 		check("JacobiMatrix({f(u),f(v),f(w),f(x)}, {u,v,w})", "{{f'(u),0,0},{0,f'(v),0},{0,0,f'(w)},{0,0,0}}");
-		check("Curl({f(u,v,w),f(v,w,u),f(w,u,v),f(x)}, {u,v,w})",
-				"{-D(f(v,w,u),w)+D(f(w,u,v),v),-D(f(w,u,v),u)+D(f(u,v,w),w),-D(f(u,v,w),v)+D(f(v,w,u),u),f(x)}");
-		check("Divergence({f(u,v,w),f(v,w,u),f(w,u,v)}, {u,v,w})", "D(f(u,v,w),u)+D(f(v,w,u),v)+D(f(w,u,v),w)");
+		check("Divergence({f(u,v,w),f(v,w,u),f(w,u,v)}, {u,v,w})",
+				"Derivative(1,0,0)[f][u,v,w]+Derivative(1,0,0)[f][v,w,u]+Derivative(1,0,0)[f][w,u,v]");
 	}
 
 	public void testSystem407() {

@@ -358,19 +358,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Append({a, b}, {c, d})  ", "{a,b,{c,d}}");
 		check("Append(a, b)", "Append(a,b)");
 	}
-	
+
 	public void testAppendTo() {
 		check("s = {}", "{}");
 		check("AppendTo(s, 1)", "{1}");
 		check("s", "{1}");
-		
+
 		check("y = f()", "f()");
 		check("AppendTo(y, x)", "f(x)");
 		check("y", "f(x)");
-		
+
 		check("AppendTo({}, 1)", "AppendTo({},1)");
 		check("AppendTo(a, b)", "AppendTo(a,b)");
-		
+
 		check("$l = {1, 2, 4, 9};appendto($l, 16)", "{1,2,4,9,16}");
 		check("$l = {1, 2, 4, 9};appendto($l, 16);$l", "{1,2,4,9,16}");
 	}
@@ -1106,7 +1106,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Attributes(E)", "{Constant}");
 		check("Solve(x + E == 0, E) ", "Solve(E+x==0,E)");
 	}
-	
+
 	public void testConstantArray() {
 		check("ConstantArray(a, 3)", "{a,a,a}");
 		check("ConstantArray(a, {2, 3})", "{{a,a,a},{a,a,a}}");
@@ -1251,11 +1251,44 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCurl() {
-		check("Curl({f[x, y, z], g[x, y, z], h[x, y, z]}, {x, y, z})",
-				"{-D(g(x,y,z),z)+D(h(x,y,z),y),-D(h(x,y,z),x)+D(f(x,y,z),z),-D(f(x,y,z),y)+D(g(x,y,z),x)}");
+		check("Curl({f(x, y, z), g(x, y, z), h(x, y, z)}, {x, y, z})",
+				"{-Derivative(0,0,1)[g][x,y,z]+Derivative(0,1,0)[h][x,y,z],-Derivative(1,0,0)[h][x,y,z]+Derivative(\n" + 
+				"0,0,1)[f][x,y,z],-Derivative(0,1,0)[f][x,y,z]+Derivative(1,0,0)[g][x,y,z]}");
 	}
 
 	public void testD() {
+		check("D(Derivative(0,1,0)[f][x,x*y,z+x^2],x)",
+				"2*x*Derivative(0,1,1)[f][x,x*y,x^2+z]+y*Derivative(0,2,0)[f][x,x*y,x^2+z]+Derivative(\n"
+						+ "1,1,0)[f][x,x*y,x^2+z]");
+
+		check("D(x^3 + x^2, x)", "2*x+3*x^2");
+		check("D(x^3 + x^2, {x, 2})", "2+6*x");
+		check("D(Sin(Cos(x)), x)", "-Cos(Cos(x))*Sin(x)");
+		check("D(Sin(x), {x, 2})", "-Sin(x)");
+		check("D(Cos(t), {t, 2})", "-Cos(t)");
+		check("D(y, x)", "0");
+		check("D(x, x)", "1");
+		check("D(f(x), x)", "f'(x)");
+		// TODO
+		check("D(f(x, x), x)", "Derivative(0,1)[f][x,x]+Derivative(1,0)[f][x,x]");
+		// chain rule
+		check("D(f(2*x+1, 2*y, x+y), x)", "2*Derivative(1,0,0)[f][1+2*x,2*y,x+y]+Derivative(0,0,1)[f][1+2*x,2*y,x+y]");
+		check("D(f(x^2, x, 2*y), {x,2}, y) // Expand",
+				"2*Derivative(0,2,1)[f][x^2,x,2*y]+4*Derivative(1,0,1)[f][x^2,x,2*y]+8*x*Derivative(\n"
+						+ "1,1,1)[f][x^2,x,2*y]+8*x^2*Derivative(2,0,1)[f][x^2,x,2*y]");
+
+		check("D(x ^ 3 * Cos(y), {{x, y}})", "{3*x^2*Cos(y),-x^3*Sin(y)}");
+		check("D(Sin(x) * Cos(y), {{x,y}, 2})", "{{-Cos(y)*Sin(x),-Cos(x)*Sin(y)},{-Cos(x)*Sin(y),-Cos(y)*Sin(x)}}");
+		check("D(2/3*Cos(x) - 1/3*x*Cos(x)*Sin(x) ^ 2,x)//Expand  ",
+				"1/3*x*Sin(x)^3-1/3*Sin(x)^2*Cos(x)-2/3*Sin(x)-2/3*x*Cos(x)^2*Sin(x)");
+		check("D(f(#1), {#1,2})", "f''(#1)");
+		check("D((#1&)(t),{t,4})", "0");
+		// TODO allow Attributes(f) = {HoldAll}
+		check("Attributes(f) = {HoldAll}; Apart(f''(x + x))", "f''(2*x)");
+		check("Attributes(f) = {}; Apart(f''(x + x)) ", "f''(2*x)");
+
+		check("D({#^2}, #)", "{2*#1}");
+
 		// Koepf Seite 40-43
 		check("D(Sum(k*x^k, {k,0,10}),x)", "1+4*x+9*x^2+16*x^3+25*x^4+36*x^5+49*x^6+64*x^7+81*x^8+100*x^9");
 		check("D((x^2+3)*(3*x+2),x)", "2*x*(2+3*x)+3*(3+x^2)");
@@ -1370,6 +1403,33 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDerivative() {
+//		check("#1^1&", "#1&");
+		check("Derivative(0)[#1^2&]", "#1^2&");
+		check("Derivative(1)[# ^ 3&] ", "3*(#1^2&)");
+		check("Derivative(2)[# ^ 3&] ", "6*(#1&)");
+		check("Derivative(1)[Sin]", "Cos(#1)&");
+		check("Derivative(3)[Sin]", "-Cos(#1)&");
+		check("Derivative(2)[# ^ 3&] ", "6*(#1&)");
+		check("", "");
+		check("", "");
+		check("", "");
+		check("", "");
+		check("", "");
+		check("", "");
+		check("", "");
+		check("", "");
+		check("", "");
+		check("", "");
+		check("", "");
+		check("", "");
+		check("", "");
+		check("", "");
+		check("", "");
+		check("", "");
+		check("", "");
+		check("", "");
+		check("", "");
+
 		check("D(f(a,b),b)", "Derivative(0,1)[f][a,b]");
 		check("D(f(a,b),x)", "0");
 		check("g(u0_,u1_):=D(f(u0,u1),u1);g(a,b)", "Derivative(0,1)[f][a,b]");
@@ -3224,7 +3284,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("f({1, 2, 3}, 4)", "{f(1,4),f(2,4),f(3,4)}");
 		check("{{1, 2}, {3, 4}} + {5, 6}", "{{6,7},{9,10}}");
 	}
-	
+
 	public void testListQ() {
 		check("ListQ({1, 2, 3})", "True");
 		check("ListQ({{1, 2}, {3, 4}})", "True");
@@ -4016,7 +4076,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("NextPrime(10, -5)", "-2");
 		// check("NextPrime(5.5, 100)", "563");
 	}
-	
+
 	public void testNHoldAll() {
 		check("N(f(2, 3))", "f(2.0,3.0)");
 		check("SetAttributes(f, NHoldAll)", "");
@@ -4296,8 +4356,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PadLeft({1, 2, 3}, 2)", "{2,3}");
 		check("PadLeft({1, 2, 3}, 1)", "{3}");
 		check("PadLeft({{}, {1, 2}, {1, 2, 3}})", "{{0,0,0},{0,1,2},{1,2,3}}");
-		
-		
+
 		check("PadLeft({a, b, c}, 10)", "{0,0,0,0,0,0,0,a,b,c}");
 		check("PadLeft({a, b, c}, 10, {x, y, z})", "{z,x,y,z,x,y,z,a,b,c}");
 		check("PadLeft({a, b, c}, 9, {x, y, z})", "{x,y,z,x,y,z,a,b,c}");
@@ -4305,7 +4364,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PadLeft({a, b, c}, 10, 42)", "{42,42,42,42,42,42,42,a,b,c}");
 		// TODO
 		// check("PadLeft({1, 2, 3}, 10, {a, b, c}, 2)", "{b, c, a, b, c, 1, 2, 3, a, b}");
-		
+
 	}
 
 	public void testPadRight() {
@@ -4314,13 +4373,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PadRight({1, 2, 3}, 2)", "{1,2}");
 		check("PadRight({1, 2, 3}, 1)", "{1}");
 		check("PadRight({{}, {1, 2}, {1, 2, 3}})", "{{0,0,0},{1,2,0},{1,2,3}}");
-		
+
 		check("PadRight({a, b, c}, 10)", "{a,b,c,0,0,0,0,0,0,0}");
 		check("PadRight({a, b, c}, 10, {x, y, z})", "{a,b,c,x,y,z,x,y,z,x}");
 		check("PadRight({a, b, c}, 9, {x, y, z})", "{a,b,c,x,y,z,x,y,z}");
 		check("PadRight({a, b, c}, 8, {x, y, z})", "{a,b,c,x,y,z,x,y}");
 		check("PadRight({a, b, c}, 10, 42)", "{a,b,c,42,42,42,42,42,42,42}");
-		
+
 	}
 
 	public void testParserFixedPoint() {
@@ -4818,7 +4877,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("++a", "3");
 		check("a", "3");
 	}
-	
+
 	public void testPrepend() {
 		check("Prepend({2, 3, 4}, 1)", "{1,2,3,4}");
 		check("Prepend(f(b, c), a)", "f(a,b,c)");
@@ -4830,16 +4889,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("s = {1, 2, 4, 9}", "{1,2,4,9}");
 		check("PrependTo(s, 0)", "{0,1,2,4,9}");
 		check("s", "{0,1,2,4,9}");
-		
+
 		check("y = f(a, b, c)", "f(a,b,c)");
 		check("PrependTo(y, x)", "f(x,a,b,c)");
 		check("y", "f(x,a,b,c)");
-		
+
 		check("PrependTo({a, b}, 1)", "PrependTo({a,b},1)");
 		check("PrependTo(a, b)", "PrependTo(a,b)");
 		check("x = 1 + 2", "3");
 		check("PrependTo(x, {3, 4}) ", "PrependTo(x,{3,4})");
-		
+
 		check("$l = {1, 2, 4, 9};PrependTo($l, 16)", "{16,1,2,4,9}");
 		check("$l = {1, 2, 4, 9};PrependTo($l, 16);$l", "{16,1,2,4,9}");
 	}

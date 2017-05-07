@@ -800,7 +800,7 @@ public class OutputFormFactory {
 			if (!header.isSymbol()) {
 				// print expressions like: f(#1, y)& [x]
 
-				IAST[] derivStruct = list.isDerivative();
+				IAST[] derivStruct = list.isDerivativeAST1();
 				if (derivStruct != null) {
 					IAST a1Head = derivStruct[0];
 					IAST headAST = derivStruct[1];

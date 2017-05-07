@@ -172,13 +172,13 @@ public interface SinRules {
       x),
     // Sin(ArcCos(x_)):=(1-x^2)^Rational(1,2)
     ISetDelayed(Sin(ArcCos(x_)),
-      Power(Plus(C1,Negate(Sqr(x))),Rational(C1,C2))),
+      Power(Plus(C1,Negate(Sqr(x))),C1D2)),
     // Sin(ArcTan(x_)):=x/(1+x^2)^Rational(1,2)
     ISetDelayed(Sin(ArcTan(x_)),
-      Times(x,Power(Power(Plus(C1,Sqr(x)),Rational(C1,C2)),-1))),
+      Times(x,Power(Power(Plus(C1,Sqr(x)),C1D2),-1))),
     // Sin(x_NumberQ*Pi):=If(x<1,Sin((1-x)*Pi),If(x<2,-Sin((2-x)*Pi),Sin((x-2*Quotient(IntegerPart(x),2))*Pi)))/;x>=Rational(1,2)
     ISetDelayed(Sin(Times(Pi,$p(x,NumberQ))),
-      Condition(If(Less(x,C1),Sin(Times(Plus(C1,Negate(x)),Pi)),If(Less(x,C2),Negate(Sin(Times(Plus(C2,Negate(x)),Pi))),Sin(Times(Plus(x,Times(CN1,C2,Quotient(IntegerPart(x),C2))),Pi)))),GreaterEqual(x,Rational(C1,C2)))),
+      Condition(If(Less(x,C1),Sin(Times(Plus(C1,Negate(x)),Pi)),If(Less(x,C2),Negate(Sin(Times(Plus(C2,Negate(x)),Pi))),Sin(Times(Plus(x,Times(CN1,C2,Quotient(IntegerPart(x),C2))),Pi)))),GreaterEqual(x,C1D2))),
     // Sin(I*Infinity)=I*Infinity
     ISet(Sin(DirectedInfinity(CI)),
       DirectedInfinity(CI)),

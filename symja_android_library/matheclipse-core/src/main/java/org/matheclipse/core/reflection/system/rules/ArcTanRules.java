@@ -73,6 +73,6 @@ public interface ArcTanRules {
       Times(CN1D2,Pi)),
     // ArcTan(x_?RealNumberQ,y_?RealNumberQ):=If(x==0,If(y==0,0,If(y>0,Rational(1,2)*Pi,Rational(1,2)*-Pi)),If(x>0,ArcTan(y/x),If(y>=0,ArcTan(y/x)+Pi,ArcTan(y/x)-Pi)))
     ISetDelayed(ArcTan(PatternTest(x_,RealNumberQ),PatternTest(y_,RealNumberQ)),
-      If(Equal(x,C0),If(Equal(y,C0),C0,If(Greater(y,C0),Times(Rational(C1,C2),Pi),Times(Rational(C1,C2),CN1,Pi))),If(Greater(x,C0),ArcTan(Times(y,Power(x,-1))),If(GreaterEqual(y,C0),Plus(ArcTan(Times(y,Power(x,-1))),Pi),Plus(ArcTan(Times(y,Power(x,-1))),Negate(Pi))))))
+      If(Equal(x,C0),If(Equal(y,C0),C0,If(Greater(y,C0),Times(C1D2,Pi),Times(C1D2,CN1,Pi))),If(Greater(x,C0),ArcTan(Times(y,Power(x,-1))),If(GreaterEqual(y,C0),Plus(ArcTan(Times(y,Power(x,-1))),Pi),Plus(ArcTan(Times(y,Power(x,-1))),Negate(Pi))))))
   );
 }

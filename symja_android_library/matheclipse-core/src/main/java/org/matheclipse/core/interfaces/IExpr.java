@@ -1006,8 +1006,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	/**
 	 * <p>
-	 * Test if this expression is a <code>Derivative[number,...][symbol][arg]</code> or
-	 * <code>Derivative[number,...][symbol]</code> expression and return the corresponding <code>IAST</code> structures.
+	 * Test if this expression is a <code>Derivative[number][symbol][arg]</code> or
+	 * <code>Derivative[number][symbol]</code> expression with one argument and return the corresponding
+	 * <code>IAST</code> structures.
 	 * <ul>
 	 * <li>The expression at index <code>[0]</code> contains the <code>Derivative[number,...]</code> AST part.</li>
 	 * <li>The expression at index <code>[1]</code> contains the <code>Derivative[...][symbol]</code> AST part.</li>
@@ -1019,8 +1020,30 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * <b>Note:</b> the result at index <code>[2]</code> maybe <code>null</code> , if no argument is available.
 	 * </p>
 	 * 
-	 * @return <code>null</code> if the expression is not a <code>Derivative[number,...][symbol][arg]</code> or
-	 *         <code>Derivative[number,...][symbol]</code> expression.
+	 * @return <code>null</code> if the expression is not a <code>Derivative[number][symbol][arg]</code> or
+	 *         <code>Derivative[number][symbol]</code> expression.
+	 */
+	default IAST[] isDerivativeAST1() {
+		return null;
+	}
+
+	/**
+	 * <p>
+	 * Test if this expression is a <code>Derivative[number, ...][symbol][arg,...]</code> or
+	 * <code>Derivative[number][symbol]</code> expression and return the corresponding <code>IAST</code> structures.
+	 * <ul>
+	 * <li>The expression at index <code>[0]</code> contains the <code>Derivative[number, ...]</code> AST part.</li>
+	 * <li>The expression at index <code>[1]</code> contains the <code>Derivative[...][symbol]</code> AST part.</li>
+	 * <li>The expression at index <code>[2]</code> contains the <code>Derivative[...][...][arg, ...]</code> AST part,
+	 * if available.</li>
+	 * </ul>
+	 * </p>
+	 * <p>
+	 * <b>Note:</b> the result at index <code>[2]</code> maybe <code>null</code> , if no argument is available.
+	 * </p>
+	 * 
+	 * @return <code>null</code> if the expression is not a <code>Derivative[number, ...][symbol][arg, ...]</code> or
+	 *         <code>Derivative[number, ...][symbol]</code> expression.
 	 */
 	default IAST[] isDerivative() {
 		return null;

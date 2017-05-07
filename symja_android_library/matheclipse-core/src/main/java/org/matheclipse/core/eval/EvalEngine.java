@@ -406,7 +406,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @param attr
 	 * @return
 	 */
-	private IAST evalArgs(final IAST ast, final int attr) {
+	public IAST evalArgs(final IAST ast, final int attr) {
 		final int astSize = ast.size();
 		if (astSize > 1) {
 			boolean numericMode = fNumericMode;

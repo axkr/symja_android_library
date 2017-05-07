@@ -223,7 +223,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
 					temp = temp.getAt(2);
 					negate = false;
 				}
-				IAST[] deriveExpr = temp.isDerivative();
+				IAST[] deriveExpr = temp.isDerivativeAST1();
 				if (deriveExpr != null) {
 					for (int i = 1; i < uFunctionSymbols.size(); i++) {
 						if (deriveExpr[1].arg1().equals(uFunctionSymbols.get(i))) {

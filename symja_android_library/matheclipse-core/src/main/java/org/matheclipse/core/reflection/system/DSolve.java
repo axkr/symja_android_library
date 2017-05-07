@@ -87,7 +87,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 			int j = 1;
 			IAST[] deriveExpr = null;
 			while (j < eq.size()) {
-				IAST[] temp = eq.get(j).isDerivative();
+				IAST[] temp = eq.get(j).isDerivativeAST1();
 				if (temp != null) {
 					if (deriveExpr != null) {
 						// TODO manage multiple Derive() functions in one

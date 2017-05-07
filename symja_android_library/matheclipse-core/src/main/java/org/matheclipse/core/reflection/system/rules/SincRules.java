@@ -61,10 +61,10 @@ public interface SincRules {
       Times(x,Power(ArcSin(x),-1))),
     // Sinc(ArcCos(x_)):=(1-x^2)^Rational(1,2)/ArcCos(x)
     ISetDelayed(Sinc(ArcCos(x_)),
-      Times(Power(Plus(C1,Negate(Sqr(x))),Rational(C1,C2)),Power(ArcCos(x),-1))),
+      Times(Power(Plus(C1,Negate(Sqr(x))),C1D2),Power(ArcCos(x),-1))),
     // Sinc(ArcTan(x_)):=(x*1/(1+x^2)^Rational(1,2))/ArcTan(x)
     ISetDelayed(Sinc(ArcTan(x_)),
-      Times(x,Power(Power(Plus(C1,Sqr(x)),Rational(C1,C2)),-1),Power(ArcTan(x),-1))),
+      Times(x,Power(Power(Plus(C1,Sqr(x)),C1D2),-1),Power(ArcTan(x),-1))),
     // Sinc(I*Infinity)=Infinity
     ISet(Sinc(DirectedInfinity(CI)),
       oo),

@@ -97,16 +97,16 @@ public interface TanRules {
       Times(CI,Tanh(C1))),
     // Tan(ArcSin(x_)):=x*(1-x^2)^(1/Rational(1,2))
     ISetDelayed(Tan(ArcSin(x_)),
-      Times(x,Power(Plus(C1,Negate(Sqr(x))),Power(Rational(C1,C2),-1)))),
+      Times(x,Power(Plus(C1,Negate(Sqr(x))),Power(C1D2,-1)))),
     // Tan(Pi*x_NumberQ):=If(x<1,-Tan((1-x)*Pi),If(x<2,Tan((x+(-1)*1)*Pi),Tan((x-2*Quotient(IntegerPart(x),2))*Pi)))/;x>Rational(1,2)
     ISetDelayed(Tan(Times(Pi,$p(x,NumberQ))),
-      Condition(If(Less(x,C1),Negate(Tan(Times(Plus(C1,Negate(x)),Pi))),If(Less(x,C2),Tan(Times(Plus(x,Negate(C1)),Pi)),Tan(Times(Plus(x,Times(CN1,C2,Quotient(IntegerPart(x),C2))),Pi)))),Greater(x,Rational(C1,C2)))),
+      Condition(If(Less(x,C1),Negate(Tan(Times(Plus(C1,Negate(x)),Pi))),If(Less(x,C2),Tan(Times(Plus(x,Negate(C1)),Pi)),Tan(Times(Plus(x,Times(CN1,C2,Quotient(IntegerPart(x),C2))),Pi)))),Greater(x,C1D2))),
     // Tan(ArcTan(x_)):=x
     ISetDelayed(Tan(ArcTan(x_)),
       x),
     // Tan(ArcCos(x_)):=(1-x^2)^Rational(1,2)/x
     ISetDelayed(Tan(ArcCos(x_)),
-      Times(Power(Plus(C1,Negate(Sqr(x))),Rational(C1,C2)),Power(x,-1))),
+      Times(Power(Plus(C1,Negate(Sqr(x))),C1D2),Power(x,-1))),
     // Tan(ArcCot(x_)):=1/x
     ISetDelayed(Tan(ArcCot(x_)),
       Power(x,-1)),
