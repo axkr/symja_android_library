@@ -241,6 +241,7 @@ Documentation can be displayed by asking for information for the function name.
 * [DeleteDuplicates](functions/DeleteDuplicates.md)
 * [Denominator](functions/Denominator.md)
 * [Depth](functions/Depth.md)
+* [Derivative](functions/Derivative.md)
 * [DesignMatrix](functions/DesignMatrix.md)
 * [Det](functions/Det.md)
 * [DiagonalMatrix](functions/DiagonalMatrix.md)
