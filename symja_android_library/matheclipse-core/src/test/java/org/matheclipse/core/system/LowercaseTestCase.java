@@ -1403,16 +1403,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDerivative() {
-//		check("#1^1&", "#1&");
 		check("Derivative(0)[#1^2&]", "#1^2&");
 		check("Derivative(1)[# ^ 3&] ", "3*(#1^2&)");
 		check("Derivative(2)[# ^ 3&] ", "6*(#1&)");
 		check("Derivative(1)[Sin]", "Cos(#1)&");
 		check("Derivative(3)[Sin]", "-Cos(#1)&");
 		check("Derivative(2)[# ^ 3&] ", "6*(#1&)");
-		check("", "");
-		check("", "");
-		check("", "");
+		check("Sin'(x)", "Cos(x)");
+		check("(# ^ 4&)''", "12*(#1^2&)");
+		check("f'(x) // FullForm", "\"Derivative(1)[f][x]\"");
 		check("", "");
 		check("", "");
 		check("", "");

@@ -751,20 +751,21 @@ public abstract class AbstractAST implements IAST {
 	@Override
 	public final String fullFormString() {
 		final String sep = ", ";
-		IExpr temp = head();
+		IExpr head = head();
 		StringBuilder text = new StringBuilder();
-		if (temp == null) {
+		if (head == null) {
 			text.append("<null-head>");
+			head = F.Null;
 		} else {
-			text.append(temp.fullFormString());
+			text.append(head.fullFormString());
 		}
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS && head.isSymbol()) {
 			text.append('(');
 		} else {
 			text.append('[');
 		}
 		for (int i = 1; i < size(); i++) {
-			temp = get(i);
+			IExpr temp = get(i);
 			if (temp == null) {
 				text.append("<null-arg>");
 			} else {
@@ -774,7 +775,7 @@ public abstract class AbstractAST implements IAST {
 				}
 			}
 		}
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS && head.isSymbol()) {
 			text.append(')');
 		} else {
 			text.append(']');
