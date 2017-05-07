@@ -67,48 +67,67 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 	@Override
 	public IExpr evaluate(IAST ast, EvalEngine engine) {
 		if (ast.isAST1()) {
-			if (ast.head().isAST(F.Derivative, 2)) {
-				// Derivative(n)
-				IAST head = (IAST) ast.head();
-				if (head.arg1().isInteger()) {
-					try {
-						int n = ((IInteger) head.arg1()).toInt();
-						IExpr arg1 = ast.arg1();
-						if (n >= 0) {
-							if (arg1.isSymbol()) {
-								ISymbol symbol = (ISymbol) arg1;
-								return derivative(n, symbol, engine);
-							} else {
-								if (arg1.isFunction()) {
-									return derivative(n, (IAST) arg1, engine);
+			IAST[] derivativeAST = ast.isDerivative();
+			if (derivativeAST != null) {
+				IAST derivativeHead = derivativeAST[0];
+				boolean isZero = true;
+				for (int i = 1; i < derivativeHead.size(); i++) {
+					if (!derivativeHead.get(i).isZero()) {
+						isZero = false;
+						break;
+					}
+				}
+				if (isZero) {
+					if (derivativeAST[2] == null) {
+						return derivativeAST[1].arg1();
+					}
+				} else {
+					if (derivativeAST[2] != null) {
+					}
+				}
+				if (ast.head().isAST(F.Derivative, 2)) {
+					// Derivative(n)
+					IAST head = (IAST) ast.head();
+					if (head.arg1().isInteger()) {
+						try {
+							int n = ((IInteger) head.arg1()).toInt();
+							IExpr arg1 = ast.arg1();
+							if (n >= 0) {
+								if (arg1.isSymbol()) {
+									ISymbol symbol = (ISymbol) arg1;
+									return derivative(n, symbol, engine);
+								} else {
+									if (arg1.isFunction()) {
+										return derivative(n, (IAST) arg1, engine);
+									}
 								}
 							}
-						}
-					} catch (ArithmeticException ae) {
+						} catch (ArithmeticException ae) {
 
+						}
 					}
+					return F.NIL;
 				}
-				return F.NIL;
-			}
-			if (ast.head().isAST(F.Derivative, 3)) {
-				// Derivative(n, m)
-				IAST head = (IAST) ast.head();
-				if (head.arg1().isInteger() && head.arg2().isInteger()) {
-					try {
-						int n = ((IInteger) head.arg1()).toInt();
-						int m = ((IInteger) head.arg2()).toInt();
-						IExpr arg1 = ast.arg1();
-						if (n >= 0 && m >= 0) {
-							if (arg1.isSymbol()) {
-								ISymbol symbol = (ISymbol) arg1;
-								return derivative(n, m, symbol, engine);
+				if (ast.head().isAST(F.Derivative, 3)) {
+					// Derivative(n, m)
+					IAST head = (IAST) ast.head();
+					if (head.arg1().isInteger() && head.arg2().isInteger()) {
+						try {
+							int n = ((IInteger) head.arg1()).toInt();
+							int m = ((IInteger) head.arg2()).toInt();
+							IExpr arg1 = ast.arg1();
+							if (n >= 0 && m >= 0) {
+								if (arg1.isSymbol()) {
+									ISymbol symbol = (ISymbol) arg1;
+									return derivative(n, m, symbol, engine);
+								}
 							}
-						}
-					} catch (ArithmeticException ae) {
+						} catch (ArithmeticException ae) {
 
+						}
 					}
+					return F.NIL;
 				}
-				return F.NIL;
 			}
 		}
 		return F.NIL;

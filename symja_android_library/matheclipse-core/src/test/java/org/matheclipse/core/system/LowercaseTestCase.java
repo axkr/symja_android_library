@@ -1252,8 +1252,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testCurl() {
 		check("Curl({f(x, y, z), g(x, y, z), h(x, y, z)}, {x, y, z})",
-				"{-Derivative(0,0,1)[g][x,y,z]+Derivative(0,1,0)[h][x,y,z],-Derivative(1,0,0)[h][x,y,z]+Derivative(\n" + 
-				"0,0,1)[f][x,y,z],-Derivative(0,1,0)[f][x,y,z]+Derivative(1,0,0)[g][x,y,z]}");
+				"{-Derivative(0,0,1)[g][x,y,z]+Derivative(0,1,0)[h][x,y,z],-Derivative(1,0,0)[h][x,y,z]+Derivative(\n"
+						+ "0,0,1)[f][x,y,z],-Derivative(0,1,0)[f][x,y,z]+Derivative(1,0,0)[g][x,y,z]}");
 	}
 
 	public void testD() {
@@ -1412,17 +1412,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sin'(x)", "Cos(x)");
 		check("(# ^ 4&)''", "12*(#1^2&)");
 		check("f'(x) // FullForm", "\"Derivative(1)[f][x]\"");
-		check("", "");
-		check("", "");
-		check("", "");
-		check("", "");
-		check("", "");
-		check("", "");
-		check("", "");
-		check("", "");
-		check("", "");
-		check("", "");
-		check("", "");
+		// TODO
+		// check("Derivative(1)[#2 Sin(#1)+Cos(#2)&]", "Cos(#1)*#2&");
+		// check("Derivative(1,2)[#2^3 Sin(#1)+Cos(#2)&]", "6*Cos(#1)*#2&");
+		// TODO Deriving with respect to an unknown parameter yields 0
+		// check("Derivative(1,2,1)[#2^3*Sin(#1)+Cos(#2)&]", "");
+		check("Derivative(0,0,0)[a+b+c]", "a+b+c");
+		// TODO You can calculate the derivative of custom functions
+		// check("f(x_) := x ^ 2", "");
+		// check("f'(x)", "");
+		check("Derivative(2, 1)[h]", "Derivative(2,1)[h]");
+		check("Derivative(2, 0, 1, 0)[h(g)]", "Derivative(2,0,1,0)[h(g)]");
+		
+		// parser tests
+		check("Hold(f'') // FullForm ", "\"Hold(Derivative(2)[f])\"");
+		check("Hold(f ' ') // FullForm ", "\"Hold(Derivative(2)[f])\"");
+		check("Hold(f '' '') // FullForm ", "\"Hold(Derivative(4)[f])\"");
+		check("Hold(Derivative(x)[4] ') // FullForm ", "\"Hold(Derivative(1)[Derivative(x)[4]])\"");
 		check("", "");
 		check("", "");
 		check("", "");
