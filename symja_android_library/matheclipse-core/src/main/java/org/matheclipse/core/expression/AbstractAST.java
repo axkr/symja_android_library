@@ -729,6 +729,51 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public final IAST partition(ISymbol operator, Predicate<? super IExpr> predicate, IExpr init1, IExpr init2,
+			ISymbol combiner, ISymbol action) {
+		if (head().equals(operator)) {
+			IAST result = F.ast(action, 3, false);
+			final int size = size();
+			int newSize = size / 2;
+			if (newSize <= 4) {
+				newSize = 5;
+			} else {
+				newSize += 4;
+			}
+			IAST yesAST = F.ast(combiner, newSize, false);
+			IAST noAST = F.ast(combiner, newSize, false);
+			for (int i = 1; i < size; i++) {
+				if (predicate.test(get(i))) {
+					yesAST.append(get(i));
+				} else {
+					noAST.append(get(i));
+				}
+			}
+			if (yesAST.size() > 1) {
+				result.append(F.eval(yesAST));
+			} else {
+				result.append(init1);
+			}
+			if (noAST.size() > 1) {
+				result.append(F.eval(noAST));
+			} else {
+				result.append(init2);
+			}
+			return result;
+		}
+		return F.NIL;
+	}
+
+	public final IAST partitionPlus(Predicate<? super IExpr> predicate, IExpr initYes, IExpr initNo, ISymbol action) {
+		return partition(F.Plus, predicate, initYes, initNo, F.Plus, F.List);
+	}
+
+	public final IAST partitionTimes(Predicate<? super IExpr> predicate, IExpr initYes, IExpr initNo, ISymbol action) {
+		return partition(F.Times, predicate, initYes, initNo, F.Times, F.List);
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public final int findFirstEquals(final IExpr expr) {
 		for (int i = 1; i < size(); i++) {
 			if (equalsAt(i, expr)) {

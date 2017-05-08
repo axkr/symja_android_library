@@ -1043,22 +1043,21 @@ public final class BooleanFunctions {
 			if (lhs.isAST()) {
 				IAST lhsAST = (IAST) lhs;
 				if (lhsAST.isTimes()) {
-					IAST[] result = lhsAST.filter(Predicates.isNumericFunction());
-					if (result[0].size() > 1) {
-						IExpr temp = result[0].getOneIdentity(F.C0);
-						if (temp.isNegative()) {
+					IAST result = lhsAST.partitionTimes(Predicates.isNumericFunction(), F.C0, F.C1, F.List);
+					if (!result.get(1).isZero()) {
+						if (result.get(1).isNegative()) {
 							useOppositeHeader = !useOppositeHeader;
 						}
-						rhs = rhs.divide(temp);
-						return createComparatorResult(result[1].getOneIdentity(F.C1), rhs, useOppositeHeader,
-								originalHead, oppositeHead);
+						rhs = rhs.divide(result.get(1));
+						return createComparatorResult(result.get(2), rhs, useOppositeHeader, originalHead,
+								oppositeHead);
 					}
 				} else if (lhsAST.isPlus()) {
-					IAST[] result = lhsAST.filter(Predicates.isNumericFunction());
-					if (result[0].size() > 1) {
-						rhs = rhs.subtract(result[0].getOneIdentity(F.C0));
-						return createComparatorResult(result[1].getOneIdentity(F.C0), rhs, useOppositeHeader,
-								originalHead, oppositeHead);
+					IAST result = lhsAST.partitionPlus(Predicates.isNumericFunction(), F.C0, F.C0, F.List);
+					if (!result.get(1).isZero()) {
+						rhs = rhs.subtract(result.get(1));
+						return createComparatorResult(result.get(2), rhs, useOppositeHeader, originalHead,
+								oppositeHead);
 					}
 				}
 			}

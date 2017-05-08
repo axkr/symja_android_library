@@ -118,17 +118,14 @@ public class Algebra {
 	}
 
 	/**
-	 * Evaluate the partial fraction decomposition of a univariate polynomial
-	 * fraction.
+	 * Evaluate the partial fraction decomposition of a univariate polynomial fraction.
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Partial_fraction">Wikipedia -
-	 * Partial fraction decomposition</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Partial_fraction">Wikipedia - Partial fraction decomposition</a>
 	 */
 	private static class Apart extends AbstractFunctionEvaluator {
 
 		/**
-		 * Return the denominator for the given <code>Power[...]</code> AST, by
-		 * separating positive and negative powers.
+		 * Return the denominator for the given <code>Power[...]</code> AST, by separating positive and negative powers.
 		 * 
 		 * @param powerAST
 		 *            a power expression (a^b)
@@ -173,15 +170,13 @@ public class Algebra {
 		}
 
 		/**
-		 * Returns an AST with head <code>Plus</code>, which contains the
-		 * partial fraction decomposition of the numerator and denominator
-		 * parts.
+		 * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition of the
+		 * numerator and denominator parts.
 		 * 
 		 * @deprecated untested at the moment
 		 * @param parts
 		 * @param variableList
-		 * @return <code>null</code> if the partial fraction decomposition
-		 *         wasn't constructed
+		 * @return <code>null</code> if the partial fraction decomposition wasn't constructed
 		 */
 		@Deprecated
 		private static IAST partialFractionDecompositionInteger(IExpr[] parts, IAST variableList) {
@@ -298,9 +293,8 @@ public class Algebra {
 	private static class Cancel extends AbstractFunctionEvaluator {
 
 		/**
-		 * This predicate identifies polynomial expressions. It requires that
-		 * the given expression is already expanded for
-		 * <code>Plus,Power and Times</code> operations.
+		 * This predicate identifies polynomial expressions. It requires that the given expression is already expanded
+		 * for <code>Plus,Power and Times</code> operations.
 		 */
 		private static final class PolynomialPredicate implements Predicate<IExpr> {
 
@@ -341,10 +335,8 @@ public class Algebra {
 		}
 
 		/**
-		 * Calculate the GCD[] of the integer factors in each element of the
-		 * <code>numeratorPlus</code> expression with the
-		 * <code>denominatorInt</code>. After that return the result divided by
-		 * the gcd value, if possible.
+		 * Calculate the GCD[] of the integer factors in each element of the <code>numeratorPlus</code> expression with
+		 * the <code>denominatorInt</code>. After that return the result divided by the gcd value, if possible.
 		 * 
 		 * @param numeratorPlus
 		 *            a <code>Plus[...]</code> expression as the numerator
@@ -382,24 +374,23 @@ public class Algebra {
 		/**
 		 * 
 		 * @param powerTimesAST
-		 *            an <code>Times[...] or Power[...]</code> AST, where common
-		 *            factors should be canceled out.
+		 *            an <code>Times[...] or Power[...]</code> AST, where common factors should be canceled out.
 		 * @return <code>F.NIL</code> is no evaluation was possible
 		 * @throws JASConversionException
 		 */
 		public static IExpr cancelPowerTimes(IExpr powerTimesAST) throws JASConversionException {
 			IExpr[] parts = getFractionalParts(powerTimesAST, false);
 			if (parts != null && parts[0].isPlus() && parts[1].isPlus()) {
-				IAST[] numParts = ((IAST) parts[0]).filter(new PolynomialPredicate());
-				IAST[] denParts = ((IAST) parts[1]).filter(new PolynomialPredicate());
-				IExpr denParts0 = F.eval(denParts[0]);
-				if (!denParts0.isOne()) {
-					IExpr[] result = cancelGCD(numParts[0], denParts0);
+				IAST numParts = ((IAST) parts[0]).partitionPlus(new PolynomialPredicate(), F.C0, F.C1, F.List);
+				IAST denParts = ((IAST) parts[1]).partitionPlus(new PolynomialPredicate(), F.C0, F.C1, F.List);
+				if (denParts.isPresent() && !denParts.get(1).isOne()) {
+					IExpr[] result = cancelGCD(numParts.get(1), denParts.get(1));
 					if (result != null) {
-						return F.Times(result[0], result[1], numParts[1].getOneIdentity(F.C1),
-								F.Power(F.Times(result[2], denParts[1].getOneIdentity(F.C1)), F.CN1));
+						return F.Times(result[0], result[1], numParts.get(2),
+								F.Power(F.Times(result[2], denParts.get(2)), F.CN1));
 					}
 				}
+
 			}
 			return F.NIL;
 		}
@@ -450,9 +441,7 @@ public class Algebra {
 	/**
 	 * Get the denominator part of an expression
 	 * 
-	 * See
-	 * <a href="http://en.wikipedia.org/wiki/Fraction_(mathematics)">Wikipedia:
-	 * Fraction (mathematics)</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Fraction_(mathematics)">Wikipedia: Fraction (mathematics)</a>
 	 * 
 	 * @see org.matheclipse.core.reflection.system.Numerator
 	 */
@@ -495,14 +484,12 @@ public class Algebra {
 		}
 
 		/**
-		 * Get the &quot;denominator form&quot; of the given function. Example:
-		 * <code>Csc[x]</code> gives <code>Sin[x]</code>.
+		 * Get the &quot;denominator form&quot; of the given function. Example: <code>Csc[x]</code> gives
+		 * <code>Sin[x]</code>.
 		 * 
 		 * @param function
-		 *            the function which should be transformed to
-		 *            &quot;denominator form&quot; determine the denominator by
-		 *            splitting up functions like
-		 *            <code>Tan[9,Cot[], Csc[],...</code>
+		 *            the function which should be transformed to &quot;denominator form&quot; determine the denominator
+		 *            by splitting up functions like <code>Tan[9,Cot[], Csc[],...</code>
 		 * @param trig
 		 * @return
 		 */
@@ -677,8 +664,8 @@ public class Algebra {
 			}
 
 			/**
-			 * Expand <code>(a+b)^i</code> with <code>i</code> an integer number
-			 * in the range Integer.MIN_VALUE to Integer.MAX_VALUE.
+			 * Expand <code>(a+b)^i</code> with <code>i</code> an integer number in the range Integer.MIN_VALUE to
+			 * Integer.MAX_VALUE.
 			 * 
 			 * @param powerAST
 			 * @return
@@ -709,9 +696,7 @@ public class Algebra {
 
 			/**
 			 * Expand a polynomial power with the multinomial theorem. See
-			 * <a href=
-			 * "http://en.wikipedia.org/wiki/Multinomial_theorem">Wikipedia -
-			 * Multinomial theorem</a>
+			 * <a href= "http://en.wikipedia.org/wiki/Multinomial_theorem">Wikipedia - Multinomial theorem</a>
 			 * 
 			 * @param plusAST
 			 * @param n
@@ -829,9 +814,8 @@ public class Algebra {
 			}
 
 			/**
-			 * Evaluate <code>expr1 * expr2</code> and expand the resulting
-			 * expression, if it's an <code>IAST</code>. After that add the
-			 * resulting expression to the <code>PlusOp</code>
+			 * Evaluate <code>expr1 * expr2</code> and expand the resulting expression, if it's an <code>IAST</code>.
+			 * After that add the resulting expression to the <code>PlusOp</code>
 			 * 
 			 * @param result
 			 * @param expr
@@ -1077,8 +1061,7 @@ public class Algebra {
 		}
 
 		/**
-		 * Factor the <code>expr</code> with the option given in
-		 * <code>ast</code>.
+		 * Factor the <code>expr</code> with the option given in <code>ast</code>.
 		 * 
 		 * @param ast
 		 * @param expr
@@ -1271,9 +1254,7 @@ public class Algebra {
 	/**
 	 * Get the numerator part of an expression
 	 * 
-	 * See
-	 * <a href="http://en.wikipedia.org/wiki/Fraction_(mathematics)">Wikipedia:
-	 * Fraction (mathematics)</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Fraction_(mathematics)">Wikipedia: Fraction (mathematics)</a>
 	 * 
 	 * @see org.matheclipse.core.reflection.system.Denominator
 	 */
@@ -1316,14 +1297,12 @@ public class Algebra {
 		}
 
 		/**
-		 * Get the &quot;numerator form&quot; of the given function. Example:
-		 * <code>Csc[x]</code> gives <code>Sin[x]</code>.
+		 * Get the &quot;numerator form&quot; of the given function. Example: <code>Csc[x]</code> gives
+		 * <code>Sin[x]</code>.
 		 * 
 		 * @param function
-		 *            the function which should be transformed to
-		 *            &quot;denominator form&quot; determine the denominator by
-		 *            splitting up functions like
-		 *            <code>Tan[9,Cot[], Csc[],...</code>
+		 *            the function which should be transformed to &quot;denominator form&quot; determine the denominator
+		 *            by splitting up functions like <code>Tan[9,Cot[], Csc[],...</code>
 		 * @param trig
 		 * @return
 		 */
@@ -1347,9 +1326,9 @@ public class Algebra {
 	}
 
 	/**
-	 * Greatest common divisor of two polynomials. See: <a href=
-	 * "http://en.wikipedia.org/wiki/Greatest_common_divisor_of_two_polynomials"
-	 * >Wikipedia:Greatest common divisor of two polynomials</a>
+	 * Greatest common divisor of two polynomials. See:
+	 * <a href= "http://en.wikipedia.org/wiki/Greatest_common_divisor_of_two_polynomials" >Wikipedia:Greatest common
+	 * divisor of two polynomials</a>
 	 */
 	private static class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
 
@@ -1433,9 +1412,9 @@ public class Algebra {
 	}
 
 	/**
-	 * Greatest common divisor of two polynomials. See: <a href=
-	 * "http://en.wikipedia.org/wiki/Greatest_common_divisor_of_two_polynomials"
-	 * > Wikipedia:Greatest common divisor of two polynomials</a>
+	 * Greatest common divisor of two polynomials. See:
+	 * <a href= "http://en.wikipedia.org/wiki/Greatest_common_divisor_of_two_polynomials" > Wikipedia:Greatest common
+	 * divisor of two polynomials</a>
 	 */
 	private static class PolynomialGCD extends AbstractFunctionEvaluator {
 
@@ -1519,9 +1498,9 @@ public class Algebra {
 	}
 
 	/**
-	 * Least common multiple of two polynomials. See also: <a href=
-	 * "http://en.wikipedia.org/wiki/Greatest_common_divisor_of_two_polynomials"
-	 * >Wikipedia:Greatest common divisor of two polynomials</a>
+	 * Least common multiple of two polynomials. See also:
+	 * <a href= "http://en.wikipedia.org/wiki/Greatest_common_divisor_of_two_polynomials" >Wikipedia:Greatest common
+	 * divisor of two polynomials</a>
 	 */
 	private static class PolynomialLCM extends AbstractFunctionEvaluator {
 
@@ -1590,15 +1569,13 @@ public class Algebra {
 	}
 
 	/**
-	 * Returns <code>True</code>, if the given expression is a polynoomial
-	 * object
+	 * Returns <code>True</code>, if the given expression is a polynoomial object
 	 * 
 	 */
 	private static class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicate<IExpr, IExpr> {
 
 		/**
-		 * Returns <code>True</code> if the given expression is a polynoomial
-		 * object; <code>False</code> otherwise
+		 * Returns <code>True</code> if the given expression is a polynoomial object; <code>False</code> otherwise
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1674,9 +1651,7 @@ public class Algebra {
 
 	/**
 	 * 
-	 * See: <a href=
-	 * "http://en.wikipedia.org/wiki/Polynomial_long_division">Wikipedia:
-	 * Polynomial long division</a>
+	 * See: <a href= "http://en.wikipedia.org/wiki/Polynomial_long_division">Wikipedia: Polynomial long division</a>
 	 * 
 	 * @see org.matheclipse.core.reflection.system.PolynomialRemainder
 	 * @see org.matheclipse.core.reflection.system.PolynomialQuotientRemainder
@@ -1716,9 +1691,7 @@ public class Algebra {
 
 	/**
 	 * 
-	 * See:
-	 * <a href="http://en.wikipedia.org/wiki/Polynomial_long_division">Wikipedia
-	 * :Polynomial long division</a>
+	 * See: <a href="http://en.wikipedia.org/wiki/Polynomial_long_division">Wikipedia :Polynomial long division</a>
 	 * 
 	 * @see org.matheclipse.core.reflection.system.PolynomialQuotient
 	 * @see org.matheclipse.core.reflection.system.PolynomialRemainder
@@ -1814,9 +1787,7 @@ public class Algebra {
 
 	/**
 	 * 
-	 * See: <a href=
-	 * "http://en.wikipedia.org/wiki/Polynomial_long_division">Wikipedia:Polynomial
-	 * long division</a>
+	 * See: <a href= "http://en.wikipedia.org/wiki/Polynomial_long_division">Wikipedia:Polynomial long division</a>
 	 * 
 	 * @see org.matheclipse.core.reflection.system.PolynomialQuotient
 	 * @see org.matheclipse.core.reflection.system.PolynomialQuotientRemainder
@@ -2268,12 +2239,10 @@ public class Algebra {
 	private static class Together extends AbstractFunctionEvaluator {
 
 		/**
-		 * Calls <code>Together</code> for each argument of the
-		 * <code>ast</code>.
+		 * Calls <code>Together</code> for each argument of the <code>ast</code>.
 		 * 
 		 * @param ast
-		 * @return <code>F.NIL</code> if the <code>ast</code> couldn't be
-		 *         evaluated.
+		 * @return <code>F.NIL</code> if the <code>ast</code> couldn't be evaluated.
 		 */
 		private static IAST togetherForEach(final IAST ast) {
 			IAST result = F.NIL;
@@ -2292,12 +2261,10 @@ public class Algebra {
 		}
 
 		/**
-		 * Do a <code>ExpandAll(ast)</code> and call <code>togetherAST</code>
-		 * afterwards with the result..
+		 * Do a <code>ExpandAll(ast)</code> and call <code>togetherAST</code> afterwards with the result..
 		 * 
 		 * @param ast
-		 * @return <code>null</code> couldn't be transformed by
-		 *         <code>ExpandAll(()</code> od <code>togetherAST()</code>
+		 * @return <code>null</code> couldn't be transformed by <code>ExpandAll(()</code> od <code>togetherAST()</code>
 		 */
 		private static IExpr togetherNull(IAST ast) {
 			boolean evaled = false;
@@ -2323,8 +2290,7 @@ public class Algebra {
 		 * 
 		 * @param plusAST
 		 *            a <code>Plus[...]</code> expresion
-		 * @return <code>null</code> couldn't be transformed by
-		 *         <code>ExpandAll(()</code> od <code>togetherAST()</code>
+		 * @return <code>null</code> couldn't be transformed by <code>ExpandAll(()</code> od <code>togetherAST()</code>
 		 */
 		private static IExpr togetherPlus(IAST plusAST) {
 			if (plusAST.size() <= 2) {
@@ -2505,18 +2471,14 @@ public class Algebra {
 	 * ]
 	 * </pre>
 	 * 
-	 * for the given expressions <code>numeratorPolynomial</code> and
-	 * <code>denominatorPolynomial</code>.
+	 * for the given expressions <code>numeratorPolynomial</code> and <code>denominatorPolynomial</code>.
 	 * 
 	 * 
 	 * @param numeratorPolynomial
-	 *            a <code>BigRational</code> polynomial which could be converted
-	 *            to JAS polynomial
+	 *            a <code>BigRational</code> polynomial which could be converted to JAS polynomial
 	 * @param denominatorPolynomial
-	 *            a <code>BigRational</code> polynomial which could be converted
-	 *            to JAS polynomial
-	 * @return <code>null</code> if the expressions couldn't be converted to JAS
-	 *         polynomials or gcd equals 1
+	 *            a <code>BigRational</code> polynomial which could be converted to JAS polynomial
+	 * @return <code>null</code> if the expressions couldn't be converted to JAS polynomials or gcd equals 1
 	 * @throws JASConversionException
 	 */
 	public static IExpr[] cancelGCD(IExpr numeratorPolynomial, IExpr denominatorPolynomial)
@@ -2624,7 +2586,7 @@ public class Algebra {
 				temp = expandAll((IAST) localAST.get(i), patt, expandNegativePowers, distributePlus);
 				if (temp.isPresent()) {
 					if (!result.isPresent()) {
-						
+
 						if (temp.isAST()) {
 							size += ((IAST) temp).size();
 						}
@@ -2781,12 +2743,11 @@ public class Algebra {
 	}
 
 	/**
-	 * Split the expression into numerator and denominator parts, by calling the
-	 * <code>Numerator[]</code> and <code>Denominator[]</code> functions
+	 * Split the expression into numerator and denominator parts, by calling the <code>Numerator[]</code> and
+	 * <code>Denominator[]</code> functions
 	 * 
 	 * @param ast
-	 * @return an array with the numerator, denominator and the evaluated
-	 *         <code>Together[expr]</code>.
+	 * @return an array with the numerator, denominator and the evaluated <code>Together[expr]</code>.
 	 */
 	public static IExpr[] getNumeratorDenominator(IAST ast) {
 		IExpr[] result = new IExpr[3];
@@ -2803,25 +2764,22 @@ public class Algebra {
 	}
 
 	/**
-	 * Return the numerator and denominator for the given
-	 * <code>Times[...]</code> AST, by separating positive and negative powers.
+	 * Return the numerator and denominator for the given <code>Times[...]</code> AST, by separating positive and
+	 * negative powers.
 	 * 
 	 * @param timesAST
 	 *            a times expression (a*b*c....)
 	 * @param splitNumeratorOne
-	 *            split a fractional number into numerator and denominator, only
-	 *            if the numerator is 1, if <code>true</code>, ignore
-	 *            <code>splitFractionalNumbers</code> parameter.
+	 *            split a fractional number into numerator and denominator, only if the numerator is 1, if
+	 *            <code>true</code>, ignore <code>splitFractionalNumbers</code> parameter.
 	 * @param splitFractionalNumbers
 	 *            split a fractional number into numerator and denominator
 	 * @param trig
-	 *            try to find a trigonometric numerator/denominator form
-	 *            (Example: Csc[x] gives 1 / Sin[x])
+	 *            try to find a trigonometric numerator/denominator form (Example: Csc[x] gives 1 / Sin[x])
 	 * @param evalParts
 	 *            evaluate the determined parts
-	 * @return the numerator and denominator expression and an optional
-	 *         fractional number (maybe <code>null</code>), if splitNumeratorOne
-	 *         is <code>true</code>.
+	 * @return the numerator and denominator expression and an optional fractional number (maybe <code>null</code>), if
+	 *         splitNumeratorOne is <code>true</code>.
 	 */
 	public static IExpr[] getFractionalPartsTimes(final IAST timesAST, boolean splitNumeratorOne,
 			boolean splitFractionalNumbers, boolean trig, boolean evalParts) {
@@ -2927,15 +2885,12 @@ public class Algebra {
 	}
 
 	/**
-	 * Split the expression into numerator and denominator parts, by separating
-	 * positive and negative powers.
+	 * Split the expression into numerator and denominator parts, by separating positive and negative powers.
 	 * 
 	 * @param arg
 	 * @param trig
-	 *            determine the denominator by splitting up functions like
-	 *            <code>Tan[9,Cot[], Csc[],...</code>
-	 * @return the numerator and denominator expression or <code>null</code> if
-	 *         no denominator was found.
+	 *            determine the denominator by splitting up functions like <code>Tan[9,Cot[], Csc[],...</code>
+	 * @return the numerator and denominator expression or <code>null</code> if no denominator was found.
 	 */
 	public static IExpr[] getFractionalParts(final IExpr arg, boolean trig) {
 		IExpr[] parts = null;
@@ -2964,16 +2919,15 @@ public class Algebra {
 	}
 
 	/**
-	 * Returns an AST with head <code>Plus</code>, which contains the partial
-	 * fraction decomposition of the numerator and denominator parts.
+	 * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition of the numerator
+	 * and denominator parts.
 	 * 
 	 * @param pf
 	 *            partial fraction generator
 	 * @param parts
 	 * @param variable
 	 *            a variable
-	 * @return <code>F.NIL</code> if the partial fraction decomposition wasn't
-	 *         constructed
+	 * @return <code>F.NIL</code> if the partial fraction decomposition wasn't constructed
 	 */
 	public static IExpr partialFractionDecompositionRational(IPartialFractionGenerator pf, IExpr[] parts,
 			ISymbol variable) {
@@ -3031,8 +2985,7 @@ public class Algebra {
 	}
 
 	/**
-	 * Split the expression into numerator and denominator parts, by separating
-	 * positive and negative powers.
+	 * Split the expression into numerator and denominator parts, by separating positive and negative powers.
 	 * 
 	 * @param arg
 	 * @return the numerator and denominator expression

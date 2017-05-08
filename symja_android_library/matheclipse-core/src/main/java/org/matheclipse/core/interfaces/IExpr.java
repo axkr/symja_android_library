@@ -977,16 +977,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the evaluator implements the
-	 * <code>ISignedNumberConstant</code> interface (see package <code>org.matheclipse.core.builtin.constant</code>).
-	 * 
-	 * @return
-	 */
-	default boolean isSignedNumberConstant() {
-		return false;
-	}
-
-	/**
 	 * Test if this expression is the function <code>Cos[&lt;arg&gt;]</code>
 	 * 
 	 * @return
@@ -1002,6 +992,28 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default boolean isCosh() {
 		return false;
+	}
+
+	/**
+	 * <p>
+	 * Test if this expression is a <code>Derivative[number, ...][symbol][arg,...]</code> or
+	 * <code>Derivative[number][symbol]</code> expression and return the corresponding <code>IAST</code> structures.
+	 * <ul>
+	 * <li>The expression at index <code>[0]</code> contains the <code>Derivative[number, ...]</code> AST part.</li>
+	 * <li>The expression at index <code>[1]</code> contains the <code>Derivative[...][symbol]</code> AST part.</li>
+	 * <li>The expression at index <code>[2]</code> contains the <code>Derivative[...][...][arg, ...]</code> AST part,
+	 * if available.</li>
+	 * </ul>
+	 * </p>
+	 * <p>
+	 * <b>Note:</b> the result at index <code>[2]</code> maybe <code>null</code> , if no argument is available.
+	 * </p>
+	 * 
+	 * @return <code>null</code> if the expression is not a <code>Derivative[number, ...][symbol][arg, ...]</code> or
+	 *         <code>Derivative[number, ...][symbol]</code> expression.
+	 */
+	default IAST[] isDerivative() {
+		return null;
 	}
 
 	/**
@@ -1024,28 +1036,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *         <code>Derivative[number][symbol]</code> expression.
 	 */
 	default IAST[] isDerivativeAST1() {
-		return null;
-	}
-
-	/**
-	 * <p>
-	 * Test if this expression is a <code>Derivative[number, ...][symbol][arg,...]</code> or
-	 * <code>Derivative[number][symbol]</code> expression and return the corresponding <code>IAST</code> structures.
-	 * <ul>
-	 * <li>The expression at index <code>[0]</code> contains the <code>Derivative[number, ...]</code> AST part.</li>
-	 * <li>The expression at index <code>[1]</code> contains the <code>Derivative[...][symbol]</code> AST part.</li>
-	 * <li>The expression at index <code>[2]</code> contains the <code>Derivative[...][...][arg, ...]</code> AST part,
-	 * if available.</li>
-	 * </ul>
-	 * </p>
-	 * <p>
-	 * <b>Note:</b> the result at index <code>[2]</code> maybe <code>null</code> , if no argument is available.
-	 * </p>
-	 * 
-	 * @return <code>null</code> if the expression is not a <code>Derivative[number, ...][symbol][arg, ...]</code> or
-	 *         <code>Derivative[number, ...][symbol]</code> expression.
-	 */
-	default IAST[] isDerivative() {
 		return null;
 	}
 
@@ -1081,6 +1071,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default boolean isE() {
 		return false;
+	}
+
+	/**
+	 * Test if this expression is an exact number. I.e. an instance of type <code>IRational</code> or
+	 * <code>IComplex</code>.
+	 * 
+	 * @return
+	 */
+	default boolean isExactNumber() {
+		return this instanceof IRational || this instanceof IComplex;
 	}
 
 	/**
@@ -1263,6 +1263,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is an inexact number. I.e. an instance of type <code>INum</code> or
+	 * <code>IComplexNum</code>.
+	 * 
+	 * @return
+	 */
+	default boolean isInexactNumber() {
+		return this instanceof INum || this instanceof IComplexNum;
+	}
+
+	/**
 	 * Test if this expression is representing <code>Infinity</code> (i.e. <code>Infinity->DirectedInfinity[1]</code>)
 	 * 
 	 * @return
@@ -1366,6 +1376,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default boolean isLTOrdered(IExpr expr) {
 		return compareTo(expr) < 0;
+	}
+
+	/**
+	 * Test if this expression is a machine-precision (Java double type) real or complex number. I.e. an instance of
+	 * type <code>Num</code> or <code>ComplexNum</code>.
+	 * 
+	 * @return
+	 */
+	default boolean isMachineNumber() {
+		return this instanceof Num || this instanceof ComplexNum;
 	}
 
 	/**
@@ -1548,46 +1568,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default boolean isNumber() {
 		return this instanceof INumber;
-	}
-
-	/**
-	 * Test if this expression is a number with no imaginary component. I.e. an instance of type <code>IRational</code>
-	 * or <code>INum</code>.
-	 * 
-	 * @return
-	 */
-	default boolean isRealNumber() {
-		return this instanceof IRational || this instanceof INum;
-	}
-
-	/**
-	 * Test if this expression is a machine-precision (Java double type) real or complex number. I.e. an instance of
-	 * type <code>Num</code> or <code>ComplexNum</code>.
-	 * 
-	 * @return
-	 */
-	default boolean isMachineNumber() {
-		return this instanceof Num || this instanceof ComplexNum;
-	}
-
-	/**
-	 * Test if this expression is an exact number. I.e. an instance of type <code>IRational</code> or
-	 * <code>IComplex</code>.
-	 * 
-	 * @return
-	 */
-	default boolean isExactNumber() {
-		return this instanceof IRational || this instanceof IComplex;
-	}
-
-	/**
-	 * Test if this expression is an inexact number. I.e. an instance of type <code>INum</code> or
-	 * <code>IComplexNum</code>.
-	 * 
-	 * @return
-	 */
-	default boolean isInexactNumber() {
-		return this instanceof INum || this instanceof IComplexNum;
 	}
 
 	/**
@@ -1935,6 +1915,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is a number with no imaginary component. I.e. an instance of type <code>IRational</code>
+	 * or <code>INum</code>.
+	 * 
+	 * @return
+	 */
+	default boolean isRealNumber() {
+		return this instanceof IRational || this instanceof INum;
+	}
+
+	/**
 	 * Test if this expression is a real function (i.e. a number, a symbolic constant or an integer function where all
 	 * arguments are also &quot;reals functions&quot;)
 	 * 
@@ -1959,21 +1949,21 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is of the form <code>Rule[&lt;arg1&gt;, &lt;arg2&gt;]</code>.
+	 * 
+	 * @return
+	 */
+	default boolean isRule() {
+		return false;
+	}
+
+	/**
 	 * Test if this expression is of the form <code>Rule[&lt;arg1&gt;, &lt;arg2&gt;]</code> or
 	 * <code>RuleDelayed[&lt;arg1&gt;, &lt;arg2&gt;]</code>.
 	 * 
 	 * @return
 	 */
 	default boolean isRuleAST() {
-		return false;
-	}
-
-	/**
-	 * Test if this expression is of the form <code>Rule[&lt;arg1&gt;, &lt;arg2&gt;]</code>.
-	 * 
-	 * @return
-	 */
-	default boolean isRule() {
 		return false;
 	}
 
@@ -2025,6 +2015,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default boolean isSignedNumber() {
 		return this instanceof ISignedNumber;
+	}
+
+	/**
+	 * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the evaluator implements the
+	 * <code>ISignedNumberConstant</code> interface (see package <code>org.matheclipse.core.builtin.constant</code>).
+	 * 
+	 * @return
+	 */
+	default boolean isSignedNumberConstant() {
+		return false;
 	}
 
 	/**
@@ -2370,6 +2370,86 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default <X extends Throwable> IExpr orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
 		return this;
+	}
+
+	/**
+	 * <p>
+	 * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and append
+	 * the arguments which satisfy the predicate to the <code>1st element</code> of the resulting AST, or otherwise
+	 * append it to the <code>2nd element</code> of the resulting AST.
+	 * </p>
+	 * <p>
+	 * See: <a href="https://people.eecs.berkeley.edu/~fateman/papers/partition.pdf">Fateman - Partitioning of Algebraic
+	 * Subexpressions in Computer Algebra Systems</a>
+	 * </p>
+	 * 
+	 * @param operator
+	 *            the if the head of this expression equals <code>operator</code>, otherwise return <code>F.NIL</code>.
+	 * @param predicate
+	 *            the predicate which filters each element in this AST
+	 * @param initTrue
+	 *            the result for the 1st result element, if the predicate doesn't give <code>true</code> for any of the
+	 *            arguments in this AST.
+	 * @param initFalse
+	 *            the result for the 2nd result element, if the predicate doesn't give <code>false</code> for any of the
+	 *            arguments in this AST.
+	 * @param combiner
+	 *            the 1st and 2md results element head
+	 * @return <code>F.NIL</code> if partitioning wasn't possible
+	 */
+	default IAST partition(ISymbol operator, Predicate<? super IExpr> predicate, IExpr initTrue, IExpr initFalse,
+			ISymbol combiner, ISymbol action) {
+		return F.NIL;
+	}
+
+	/**
+	 * <p>
+	 * Select all elements by applying the <code>predicate</code> to each argument in this <code>Plus(...)</code>
+	 * expression and append the arguments which satisfy the predicate to the <code>1st element</code> of the resulting
+	 * AST, or otherwise append it to the <code>2nd element</code> of the resulting AST.
+	 * </p>
+	 * <p>
+	 * See: <a href="https://people.eecs.berkeley.edu/~fateman/papers/partition.pdf">Fateman - Partitioning of Algebraic
+	 * Subexpressions in Computer Algebra Systems</a>
+	 * </p>
+	 * 
+	 * @param predicate
+	 *            the predicate which filters each element in this AST
+	 * @param initTrue
+	 *            the result for the 1st result element, if the predicate doesn't give <code>true</code> for any of the
+	 *            arguments in this AST.
+	 * @param initFalse
+	 *            the result for the 2nd result element, if the predicate doesn't give <code>false</code> for any of the
+	 *            arguments in this AST.
+	 * @return <code>F.NIL</code> if partitioning wasn't possible
+	 */
+	default IAST partitionPlus(Predicate<? super IExpr> predicate, IExpr initTrue, IExpr initFalse, ISymbol action) {
+		return F.NIL;
+	}
+
+	/**
+	 * <p>
+	 * Select all elements by applying the <code>predicate</code> to each argument in this <code>Times(...)</code>
+	 * expression and append the arguments which satisfy the predicate to the <code>1st element</code> of the resulting
+	 * AST, or otherwise append it to the <code>2nd element</code> of the resulting AST.
+	 * </p>
+	 * <p>
+	 * See: <a href="https://people.eecs.berkeley.edu/~fateman/papers/partition.pdf">Fateman - Partitioning of Algebraic
+	 * Subexpressions in Computer Algebra Systems</a>
+	 * </p>
+	 * 
+	 * @param predicate
+	 *            the predicate which filters each element in this AST
+	 * @param initTrue
+	 *            the result for the 1st result element, if the predicate doesn't give <code>true</code> for any of the
+	 *            arguments in this AST.
+	 * @param initFalse
+	 *            the result for the 2nd result element, if the predicate doesn't give <code>false</code> for any of the
+	 *            arguments in this AST.
+	 * @return <code>F.NIL</code> if partitioning wasn't possible
+	 */
+	default IAST partitionTimes(Predicate<? super IExpr> predicate, IExpr initTrue, IExpr initFalse, ISymbol action) {
+		return F.NIL;
 	}
 
 	/**

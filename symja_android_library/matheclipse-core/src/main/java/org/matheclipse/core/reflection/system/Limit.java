@@ -407,9 +407,9 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			return F.C1;
 		}
 		if (arg1.isTimes() && arg2.isFree(data.getSymbol())) {
-			IAST[] isFreeResult = ((IAST) arg1).filter(Predicates.isFree(data.getSymbol()));
-			if (isFreeResult[1].size() < ((IAST) arg1).size()) {
-				return F.Times(F.Power(isFreeResult[0], arg2), data.limit(F.Power(isFreeResult[1], arg2)));
+			IAST isFreeResult = ((IAST) arg1).partitionTimes(Predicates.isFree(data.getSymbol()), F.C1, F.C1, F.List);
+			if (!isFreeResult.get(2).isOne()) {
+				return F.Times(F.Power(isFreeResult.get(1), arg2), data.limit(F.Power(isFreeResult.get(2), arg2)));
 			}
 		}
 		if (powerAST.arg2().isNumericFunction()) {
@@ -511,11 +511,10 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	}
 
 	private static IExpr timesLimit(final IAST timesAST, LimitData data) {
-		IAST[] isFreeResult = timesAST.filter(Predicates.isFree(data.getSymbol()));
-		if (isFreeResult[1].size() < timesAST.size()) {
-			return F.Times(isFreeResult[0], data.limit(isFreeResult[1]));
+		IAST isFreeResult = timesAST.partitionTimes(Predicates.isFree(data.getSymbol()), F.C1, F.C1, F.List);
+		if (!isFreeResult.get(1).isOne()) {
+			return F.Times(isFreeResult.get(1), data.limit(isFreeResult.get(2)));
 		}
-
 		IExpr[] parts = Algebra.getFractionalPartsTimes(timesAST, false, false, true, true);
 		if (parts != null) {
 
@@ -572,14 +571,12 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			arg1.set(1, powerAST.arg1());
 			return F.Times(powerAST.arg2(), data.limit(arg1));
 		} else if (logAST.arg1().isTimes()) {
-
-			IAST timesAST = (IAST) logAST.arg1();
-			IAST[] isFreeResult = timesAST.filter(Predicates.isFree(data.getSymbol()));
-			if (isFreeResult[1].size() < timesAST.size()) {
+			IAST isFreeResult = logAST.arg1().partitionTimes(Predicates.isFree(data.getSymbol()), F.C1, F.C1, F.List);
+			if (!isFreeResult.get(1).isOne()) {
 				IAST arg1 = logAST.clone();
-				arg1.set(1, isFreeResult[0]);
+				arg1.set(1, isFreeResult.get(1));
 				IAST arg2 = logAST.clone();
-				arg2.set(1, isFreeResult[1]);
+				arg2.set(1, isFreeResult.get(2));
 				return F.Plus(arg1, data.limit(arg2));
 			}
 		}
