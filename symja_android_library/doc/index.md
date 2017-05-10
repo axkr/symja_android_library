@@ -1,7 +1,18 @@
 
+- [Installation](#installation)
 - [Basic calculations](#basic-calculations)
 - [Expression types](#expression-types)
 - [Functions Reference](#functions-reference) 
+
+## Installation
+
+Download the latest release from 
+* (github.com/axkr/symja_android_library/releases)[https://github.com/axkr/symja_android_library/releases]
+
+unzip the download in a separate folder and modify the symja.bat file to use your Java 8 installation path to run the Symja console:
+```
+"C:\Program Files\Java\jdk1.8.0_25\bin\java" -classpath "lib/*" org.matheclipse.core.eval.Console 
+```
 
 ## Basic calculations
 
