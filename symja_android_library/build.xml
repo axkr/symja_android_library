@@ -44,7 +44,7 @@
 
 	<target name="jar" description="Create full &quot;/build/jar/symja-YYYY-MM-DD.jar&quot; file for download" depends="doc">
 		<mkdir dir="${jar.dir}" />
-		<!--	<unjar src="lib/apfloat-1.8.2.jar" dest="${classes.dir}">
+		<!--	<unjar src="lib/apfloat-1.8.3.jar" dest="${classes.dir}">
 			<patternset>
 				<exclude name="**/*.java" />
 			</patternset>
@@ -121,7 +121,7 @@
 	<target name="fatjar" description="CreateRetroLambda &quot;symja_retro-YYYY-MM-DD.jar&quot; file for download" depends="retro_compile">
 		<mkdir dir="${jar.dir}" />
 
-		<unjar src="lib/apfloat-1.8.2.jar" dest="${fatjar.dir}">
+		<unjar src="lib/apfloat-1.8.3.jar" dest="${fatjar.dir}">
 			<patternset>
 				<exclude name="**/*.java" />
 				<exclude name="**/MANIFEST.MF" />

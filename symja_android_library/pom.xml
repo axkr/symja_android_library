@@ -64,7 +64,7 @@
 			<dependency>
 				<groupId>org.apfloat</groupId>
 				<artifactId>apfloat</artifactId>
-				<version>1.8.2</version>
+				<version>1.8.3</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
