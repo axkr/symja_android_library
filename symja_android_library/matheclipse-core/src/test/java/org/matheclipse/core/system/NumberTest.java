@@ -33,8 +33,8 @@ public class NumberTest extends TestCase {
 	public void testNumberFormat() {
 		StringBuilder buf = new StringBuilder();
 		try {
-			DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.ENGLISH);
-			DecimalFormat decimalFormat = new DecimalFormat("#.#####", otherSymbols);
+			DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
+			DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
 			OutputFormFactory factory = OutputFormFactory.get(true, false, decimalFormat);
 
 			IExpr expr = F.num("12345.123456789");

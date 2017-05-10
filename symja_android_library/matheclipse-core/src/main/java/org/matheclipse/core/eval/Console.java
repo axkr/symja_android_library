@@ -11,11 +11,14 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.reflection.system.Names;
@@ -29,6 +32,8 @@ import org.matheclipse.parser.client.math.MathException;
 public class Console {
 
 	private ExprEvaluator fEvaluator;
+	
+	private OutputFormFactory fOutputFactory;
 
 	/**
 	 * 60 seconds timeout limit as the default value for Symja expression evaluation.
@@ -209,6 +214,9 @@ public class Console {
 	 */
 	public Console() {
 		fEvaluator = new ExprEvaluator(false, 100);
+		DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
+		DecimalFormat decimalFormat = new DecimalFormat("0.0####", usSymbols);
+		fOutputFactory = OutputFormFactory.get(true, false, decimalFormat);
 	}
 
 	/**
@@ -275,7 +283,10 @@ public class Console {
 				if (result.equals(F.Null)) {
 					return "";
 				}
-				return result.toString();
+				StringBuilder strBuffer = new StringBuilder();
+				fOutputFactory.convert(strBuffer, result);
+				return strBuffer.toString();
+				// return result.toString();
 			}
 		} catch (final SyntaxError se) {
 			String msg = se.getMessage();
