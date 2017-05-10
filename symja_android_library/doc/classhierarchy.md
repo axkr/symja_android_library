@@ -1,16 +1,3 @@
- 
-
-## Installation
-
-Download the latest release from 
-* [github.com/axkr/symja_android_library/releases](https://github.com/axkr/symja_android_library/releases)
-
-unzip the download in a separate folder and modify the symja.bat file to use your Java 8 installation path to run the Symja console:
-```
-"C:\Program Files\Java\jdk1.8.0_25\bin\java" -classpath "lib/*" org.matheclipse.core.eval.Console 
-```
-
-
 ## Symja Class Hierarchy
 
 All atomic math objects like integer numbers (IntegerSym), fractional numbers (FractionSym), 
@@ -24,7 +11,7 @@ in a tree form called [[http://en.wikipedia.org/wiki/Abstract_syntax_tree|Abstra
 The head (i.e. Sin, Plus, PrimeQ,...) of the function is stored at index 0 in the list. 
 The n arguments of the function are stored in the indexes 1..n.
 
-For example the function f(x,y,z) is internally represented by an AST derived from the 
+For example the function f(x,y,z) is internally represented by an AST derived from the  
 java.util.List: [ f, x, y, z ]. Of course these lists can be nested and form a tree of 
 java.util.Lists and other atomic Symja math objects.
 For example `f(x,y,g(Pi,v,h(w,3)))` is represented by the nested IAST tree structure: 
