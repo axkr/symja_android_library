@@ -7,7 +7,7 @@
 ## Installation
 
 Download the latest release from 
-* (github.com/axkr/symja_android_library/releases)[https://github.com/axkr/symja_android_library/releases]
+* [github.com/axkr/symja_android_library/releases](https://github.com/axkr/symja_android_library/releases)
 
 unzip the download in a separate folder and modify the symja.bat file to use your Java 8 installation path to run the Symja console:
 ```
