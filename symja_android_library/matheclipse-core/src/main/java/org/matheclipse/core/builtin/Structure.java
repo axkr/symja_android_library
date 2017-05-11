@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
@@ -210,7 +211,7 @@ public class Structure {
 
 				final IAST function = (IAST) ast.head();
 				if (function.isAST1()) {
-					return replaceSlots(function.arg1(), ast);
+					return Lambda.replaceSlotsOrElse(function.arg1(), ast, function.arg1());
 				} else if (function.isAST2()) {
 					IAST symbolSlots;
 					if (function.arg1().isList()) {
@@ -241,10 +242,6 @@ public class Structure {
 				rulesMap.put(symbolSlots.get(i), ast.get(i));
 			}
 			return rulesMap;
-		}
-
-		public static IExpr replaceSlots(final IExpr expr, final IAST list) {
-			return expr.replaceSlots(list).orElse(expr);
 		}
 
 		@Override

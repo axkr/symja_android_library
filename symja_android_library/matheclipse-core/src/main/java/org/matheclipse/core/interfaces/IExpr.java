@@ -2661,6 +2661,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @param slotsList
 	 *            the values for the slots.
 	 * @return <code>null</code> if no substitution occurred.
+	 * @deprecated use org.matheclipse.core.eval.util.Lambda#replaceSlots() instead
 	 */
 	default IExpr replaceSlots(final IAST slotsList) {
 		return accept(new VisitorReplaceSlots(slotsList));

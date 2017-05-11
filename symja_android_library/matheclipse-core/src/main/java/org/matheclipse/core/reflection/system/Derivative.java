@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -163,7 +164,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 			if (result != null) {
 				// replace Slot[2] with the integer number
 				IAST slotsList = F.List(F.NIL, F.integer(n));
-				return F.unaryAST1(F.Function, engine.evaluate(result.replaceSlots(slotsList)));
+				return F.unaryAST1(F.Function, engine.evaluate(Lambda.replaceSlotsOrElse(result, slotsList, result)));
 			}
 		}
 		return F.NIL;
