@@ -921,7 +921,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	 */
 	@Override
 	public int toInt() throws ArithmeticException {
-		return NumberUtil.toInt(fIntValue);
+		return fIntValue;
 	}
 
 	/**
@@ -929,7 +929,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	 */
 	@Override
 	public long toLong() throws ArithmeticException {
-		return NumberUtil.toLong(fIntValue);
+		return fIntValue;
 	}
 
 	@Override
