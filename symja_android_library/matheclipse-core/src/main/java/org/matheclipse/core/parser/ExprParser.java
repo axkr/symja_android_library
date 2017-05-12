@@ -618,7 +618,7 @@ public class ExprParser extends ExprScanner {
 	 * 
 	 */
 	IAST getFunction(final IExpr head) throws SyntaxError {
-		final IAST function = F.ast(head,10,false);
+		final IAST function = F.ast(head, 10, false);
 
 		getNextToken();
 
@@ -992,7 +992,8 @@ public class ExprParser extends ExprScanner {
 
 	private IExpr parseCompoundExpressionNull(InfixExprOperator infixOperator, IExpr rhs) {
 		if (infixOperator.getOperatorString().equals(";")) {
-			if (fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE || fToken == TT_PRECEDENCE_CLOSE) {
+			if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
+					|| fToken == TT_PRECEDENCE_CLOSE) {
 				return createInfixFunction(infixOperator, rhs, F.Null);
 				// return infixOperator.createFunction(fFactory, rhs,
 				// fFactory.createSymbol("Null"));
