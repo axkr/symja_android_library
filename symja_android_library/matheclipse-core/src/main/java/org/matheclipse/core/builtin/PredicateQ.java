@@ -41,6 +41,7 @@ public class PredicateQ {
 		F.MatrixQ.setEvaluator(new MatrixQ());
 		F.MemberQ.setEvaluator(new MemberQ());
 		F.MissingQ.setEvaluator(new MissingQ());
+		F.NotListQ.setEvaluator(new NotListQ());
 		F.NumberQ.setEvaluator(new NumberQ());
 		F.NumericQ.setEvaluator(new NumericQ());
 		F.OddQ.setEvaluator(new OddQ());
@@ -348,8 +349,6 @@ public class PredicateQ {
 	 * Returns <code>True</code> if the 1st argument is a list expression; <code>False</code> otherwise
 	 */
 	private static class ListQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
-		public ListQ() {
-		}
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -473,6 +472,24 @@ public class PredicateQ {
 		@Override
 		public boolean test(final IExpr expr) {
 			return expr.isAST(F.Missing, 2);
+		}
+	}
+
+	/**
+	 * Predicate function
+	 * 
+	 * Returns <code>True</code> if the 1st argument is a list expression; <code>False</code> otherwise
+	 */
+	private static class NotListQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
+
+		@Override
+		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
+			return !arg1.isList();
+		}
+
+		@Override
+		public boolean test(final IExpr expr) {
+			return !expr.isList();
 		}
 	}
 

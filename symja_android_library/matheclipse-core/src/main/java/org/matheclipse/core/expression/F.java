@@ -450,6 +450,9 @@ public class F {
 	public final static IBuiltInSymbol NestWhileList = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nestwhilelist" : "NestWhileList",
 			new org.matheclipse.core.builtin.function.NestWhileList());
+	public final static IBuiltInSymbol NotListQ = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "notlistq" : "NotListQ");
+
 	public final static IBuiltInSymbol Nor = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nor" : "Nor");
 	public final static IBuiltInSymbol NumberQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "numberq" : "NumberQ");
@@ -1869,7 +1872,7 @@ public class F {
 			Arithmetic.initialize();
 			PredicateQ.initialize();
 			AttributeFunctions.initialize();
- 
+
 			createInverseFunctionMap();
 			createDenominatorFunctionMap();
 			createNumeratorFunctionMap();
