@@ -70,6 +70,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 		if (ast.isAST1()) {
 			IAST[] derivativeAST = ast.isDerivative();
 			if (derivativeAST != null) {
+
 				IAST derivativeHead = derivativeAST[0];
 				boolean isZero = true;
 				for (int i = 1; i < derivativeHead.size(); i++) {
@@ -86,6 +87,17 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 					if (derivativeAST[2] != null) {
 					}
 				}
+
+//				if (derivativeHead.size() == 2) {
+//					IAST functions = derivativeAST[1];
+//					if (functions.size() == 2) {
+//						IExpr dResult = engine.evaluate(
+//								F.D(F.unaryAST1(functions.arg1(), F.Slot1), F.List(F.Slot1, derivativeHead.arg1())));
+//						if (!dResult.isAST(F.D)) {
+//							return F.Function(dResult);
+//						}
+//					}
+//				}
 				if (ast.head().isAST(F.Derivative, 2)) {
 					// Derivative(n)
 					IAST head = (IAST) ast.head();

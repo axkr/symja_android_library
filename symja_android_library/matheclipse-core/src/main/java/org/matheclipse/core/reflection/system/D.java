@@ -10,13 +10,19 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.DRules;
 
 /**
  * Differentiation of a function. See <a href="http://en.wikipedia.org/wiki/Derivative">Wikipedia:Derivative</a>
  */
-public class D extends AbstractFunctionEvaluator {
+public class D extends AbstractFunctionEvaluator implements DRules {
 
 	public D() {
+	}
+
+	@Override
+	public IAST getRuleAST() {
+		return RULES;
 	}
 
 	/**
@@ -39,6 +45,7 @@ public class D extends AbstractFunctionEvaluator {
 			}
 			IAST fDerivParam = Derivative.createDerivative(1, header, a1);
 			if (x.equals(a1)) {
+				// return F.NIL;
 				return fDerivParam;
 			}
 			return F.Times(F.D(a1, x), fDerivParam);
@@ -77,7 +84,7 @@ public class D extends AbstractFunctionEvaluator {
 	/**
 	 * Create <code>Derivative[...,1,...][header][arg1, arg2, ...]</code>
 	 * 
-	 * @param n
+	 * @param pos
 	 *            the position of the <code>1</code>
 	 * @param header
 	 * @param arg1
@@ -146,18 +153,17 @@ public class D extends AbstractFunctionEvaluator {
 				return subList.args().mapLeft(F.List(), new BinaryEval(F.D, engine), fx);
 			} else if (xList.isAST2() && xList.arg2().isInteger()) {
 				int n = Validate.checkIntType(xList, 2, 1);
-
-				if (xList.arg1().isList()) {
-					x = F.List(xList.arg1());
-				} else {
-					x = xList.arg1();
+				if (n >= 0) {
+					if (xList.arg1().isList()) {
+						x = F.List(xList.arg1());
+					} else {
+						x = xList.arg1();
+					}
+					for (int i = 0; i < n; i++) {
+						fx = engine.evaluate(F.D(fx, x));
+					}
+					return fx;
 				}
-				for (int i = 0; i < n; i++) {
-					fx = F.eval(F.D, fx, x);
-				}
-
-				return fx;
-
 			}
 			return F.NIL;
 

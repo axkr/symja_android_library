@@ -824,6 +824,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCompoundExpression() {
+		check("a=100;", "");
+		check("a", "100");
 		check("Catch[$a = 2; Throw[$a]; $a = 5]", "2");
 	}
 
@@ -1018,6 +1020,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testD() {
+		check("D(Sin(t), {t, 1})", "Cos(t)");
 		check("D(Derivative(0,1,0)[f][x,x*y,z+x^2],x)",
 				"2*x*Derivative(0,1,1)[f][x,x*y,x^2+z]+y*Derivative(0,2,0)[f][x,x*y,x^2+z]+Derivative(\n"
 						+ "1,1,0)[f][x,x*y,x^2+z]");
@@ -1164,12 +1167,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDerivative() {
+		check("y''", "Derivative(2)[y]");
+		
+		check("Derivative(1)[# ^ 3&] ", "3*(#1^2&)");
+		check("Derivative(1)[Sin]", "Cos(#1)&");
+		
 		check("Derivative(0)[#1^2&]", "#1^2&");
 		check("Derivative(1)[# ^ 3&] ", "3*(#1^2&)");
 		check("Derivative(2)[# ^ 3&] ", "6*(#1&)");
 		check("Derivative(1)[Sin]", "Cos(#1)&");
 		check("Derivative(3)[Sin]", "-Cos(#1)&");
-		check("Derivative(2)[# ^ 3&] ", "6*(#1&)");
 		check("Sin'(x)", "Cos(x)");
 		check("(# ^ 4&)''", "12*(#1^2&)");
 		check("f'(x) // FullForm", "\"Derivative(1)[f][x]\"");
@@ -1190,11 +1197,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Hold(f ' ') // FullForm ", "\"Hold(Derivative(2)[f])\"");
 		check("Hold(f '' '') // FullForm ", "\"Hold(Derivative(4)[f])\"");
 		check("Hold(Derivative(x)[4] ') // FullForm ", "\"Hold(Derivative(1)[Derivative(x)[4]])\"");
-		check("", "");
-		check("", "");
-		check("", "");
-		check("", "");
-		check("", "");
 
 		check("D(f(a,b),b)", "Derivative(0,1)[f][a,b]");
 		check("D(f(a,b),x)", "0");

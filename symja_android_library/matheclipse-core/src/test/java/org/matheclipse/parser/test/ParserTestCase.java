@@ -294,7 +294,7 @@ public class ParserTestCase extends TestCase {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("a+b;");
-			assertEquals(obj.toString(), "CompoundExpression(Plus(a, b), Null)");
+			assertEquals(obj.toString(), "c");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
