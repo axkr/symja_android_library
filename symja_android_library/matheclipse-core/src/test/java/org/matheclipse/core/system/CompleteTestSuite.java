@@ -2,6 +2,10 @@ package org.matheclipse.core.system;
 
 import org.matheclipse.core.form.mathml.MathMLPresentationTestCase;
 import org.matheclipse.core.form.tex.BasicTeXTestCase;
+import org.matheclipse.parser.test.BracketBalancerTestCase;
+import org.matheclipse.parser.test.ParserTestCase;
+import org.matheclipse.parser.test.RelaxedParserTestCase;
+import org.matheclipse.parser.test.eval.EvalDoubleTestCase;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -44,6 +48,11 @@ public class CompleteTestSuite extends TestCase {
 		suite.addTestSuite(LowercaseTestCase.class);
 		suite.addTestSuite(SerializableTest.class);
 		suite.addTestSuite(PatternsTest.class);
+		
+		suite.addTestSuite(ParserTestCase.class);
+		suite.addTestSuite(RelaxedParserTestCase.class);
+		suite.addTestSuite(BracketBalancerTestCase.class);
+		suite.addTestSuite(EvalDoubleTestCase.class);
 		
 		return suite;
 
