@@ -60,29 +60,34 @@ public class Sum extends ListFunctions.Table implements SumRules {
 			IAST sum = ast.setAtCopy(1, null);
 			return ((IAST) arg1).mapThread(sum, 1);
 		}
+		IExpr temp;
+		temp = evaluateTableThrow(ast, Plus(), Plus(), engine);
+		if (temp.isPresent()) {
+			return temp;
+		}
 
 		VariablesSet variablesSet = determineIteratorExprVariables(ast);
 		IAST varList = variablesSet.getVarList();
 		IExpr argN = ast.get(ast.size() - 1);
 		IIterator<IExpr> iterator = null;
-		IExpr temp;
+
 		if (argN.isList()) {
 			argN = evalBlockWithoutReap(argN, varList);
 			iterator = Iterator.create((IAST) argN, engine);
-			if (iterator.isSetIterator() || iterator.isNumericFunction()) {
-				IAST resultList = Plus();
-				temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
-				if (temp.isPresent() && !temp.equals(resultList)) {
-					if (ast.isAST2()) {
-						return temp;
-					} else {
-						IAST result = ast.clone();
-						result.remove(ast.size() - 1);
-						result.set(1, temp);
-						return result;
-					}
-				}
-			}
+			// if (iterator.isSetIterator() || iterator.isNumericFunction()) {
+			// IAST resultList = Plus();
+			// temp = evaluateLast(ast.arg1(), iterator, resultList, C0);
+			// if (temp.isPresent() && !temp.equals(resultList)) {
+			// if (ast.isAST2()) {
+			// return temp;
+			// } else {
+			// IAST result = ast.clone();
+			// result.remove(ast.size() - 1);
+			// result.set(1, temp);
+			// return result;
+			// }
+			// }
+			// }
 		}
 
 		// arg1 = evalBlockExpandWithoutReap(ast.arg1(), varList);
@@ -167,8 +172,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 	 * @param arg1
 	 *            the first argument of the <code>Sum[]</code> function.
 	 * @param list
-	 *            constructed as
-	 *            <code>{Symbol: var, Integer: from, Symbol: to}</code>
+	 *            constructed as <code>{Symbol: var, Integer: from, Symbol: to}</code>
 	 * @return
 	 */
 	private IExpr definiteSum(final IExpr expr, final IIterator iterator, IAST list, EvalEngine engine) {
@@ -258,8 +262,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 	 * @param arg1
 	 *            the first argument of the <code>Sum[]</code> function.
 	 * @param list
-	 *            constructed as
-	 *            <code>{Symbol: var, Integer: from, Infinity}</code>
+	 *            constructed as <code>{Symbol: var, Integer: from, Infinity}</code>
 	 * @return
 	 */
 	private IExpr definiteSumInfinity(final IExpr expr, final IIterator iterator, IAST list, EvalEngine engine) {
@@ -319,9 +322,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
 	}
 
 	/**
-	 * See <a href=
-	 * "http://en.wikipedia.org/wiki/Summation#Some_summations_of_polynomial_expressions">
-	 * Wikipedia - Summation#Some_summations_of_polynomial_expressions</a>.
+	 * See <a href= "http://en.wikipedia.org/wiki/Summation#Some_summations_of_polynomial_expressions"> Wikipedia -
+	 * Summation#Some_summations_of_polynomial_expressions</a>.
 	 * 
 	 * @param powAST
 	 *            an AST of the form <code>Power[var, i_Integer]</code>
@@ -342,9 +344,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
 	}
 
 	/**
-	 * See <a href=
-	 * "http://en.wikipedia.org/wiki/Summation#Some_summations_of_polynomial_expressions">
-	 * Wikipedia - Summation#Some_summations_of_polynomial_expressions</a>.
+	 * See <a href= "http://en.wikipedia.org/wiki/Summation#Some_summations_of_polynomial_expressions"> Wikipedia -
+	 * Summation#Some_summations_of_polynomial_expressions</a>.
 	 * 
 	 * @param from
 	 *            TODO
@@ -367,11 +368,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 			} else {
 				term1 = F
 						.eval(ExpandAll(
-								Plus(Times(
-										Power(Plus(fromMinusOne,
-												C1),
-												Plus(p,
-														C1)),
+								Plus(Times(Power(Plus(fromMinusOne, C1), Plus(p, C1)),
 										Power(Plus(p, C1), CN1)), Sum(
 												Times(Times(
 														Times(Power(Plus(fromMinusOne, C1),
@@ -384,16 +381,9 @@ public class Sum extends ListFunctions.Table implements SumRules {
 		if (p.isOne()) {
 			term2 = Times(C1D2, to, Plus(C1, to));
 		} else {
-			term2 = F
-					.eval(ExpandAll(
-							Plus(Times(
-									Power(Plus(to, C1),
-											Plus(p, C1)),
-									Power(Plus(p, C1), CN1)),
-									Sum(Times(
-											Times(Times(Power(Plus(to, C1), Plus(Plus(p, Times(CN1, k)), C1)),
-													Binomial(p, k)), BernoulliB(k)),
-											Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)), List(k, C1, p)))));
+			term2 = F.eval(ExpandAll(Plus(Times(Power(Plus(to, C1), Plus(p, C1)), Power(Plus(p, C1), CN1)), Sum(Times(
+					Times(Times(Power(Plus(to, C1), Plus(Plus(p, Times(CN1, k)), C1)), Binomial(p, k)), BernoulliB(k)),
+					Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)), List(k, C1, p)))));
 		}
 		if (!term1.isPresent()) {
 			return term2;

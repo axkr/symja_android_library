@@ -2472,6 +2472,30 @@ public final class ListFunctions {
 			}
 			return F.NIL;
 		}
+		
+		protected static IExpr evaluateTableThrow(final IAST ast, final IAST resultList, IExpr defaultValue,
+				EvalEngine engine) {
+			try {
+				if (ast.size() > 2) {
+					final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
+					for (int i = 2; i < ast.size(); i++) {
+						if (ast.get(i).isList()) {
+							iterList.add(Iterator.create((IAST) ast.get(i), engine));
+						} else {
+							iterList.add(Iterator.create(F.List(ast.get(i)), engine));
+						}
+					}
+
+					final TableGenerator generator = new TableGenerator(iterList, resultList,
+							new UnaryArrayFunction(engine, ast.arg1()), defaultValue);
+					return generator.tableThrow();
+				}
+			} catch (final ClassCastException e) {
+				// the iterators are generated only from IASTs
+			} catch (final NoEvalException e) {
+			}
+			return F.NIL;
+		}
 
 		/**
 		 * Evaluate only the last iterator in <code>ast</code> (i.e. <code>ast.get(ast.size() - 1)</code>) for

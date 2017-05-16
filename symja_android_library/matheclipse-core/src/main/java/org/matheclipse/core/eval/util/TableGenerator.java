@@ -1,7 +1,6 @@
 package org.matheclipse.core.eval.util;
 
 import java.util.List;
-import java.util.function.Function;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.interfaces.IArrayFunction;
@@ -73,6 +72,44 @@ public class TableGenerator {
 					iter.tearDown();
 				}
 			}
+			return fDefaultValue;
+
+		}
+		return fFunction.evaluate(fCurrentIndex);
+	}
+
+	public IExpr tableThrow() {
+		if (fIndex < fIterList.size()) {
+			final IIterator<IExpr> iter = fIterList.get(fIndex);
+
+			try {
+				if (iter.setUpThrow()) {
+					final int index = fIndex++;
+					if (fPrototypeList.head().equals(F.Plus) || fPrototypeList.head().equals(F.Times)) {
+						if (iter.hasNext()) {
+							fCurrentIndex[index] = iter.next();
+							IExpr temp = table();
+							if (temp == null) {
+								temp = fDefaultValue;
+							}
+							if (temp.isNumber()) {
+								if (fPrototypeList.head().equals(F.Plus)) {
+									return tablePlus(temp, iter, index);
+								} else {
+									return tableTimes(temp, iter, index);
+								}
+							} else {
+								return createGenericTable(iter, index, iter.allocHint(), temp, null);
+							}
+						}
+					}
+					return createGenericTable(iter, index, iter.allocHint(), null, null);
+				}
+			} finally {
+				--fIndex;
+				iter.tearDown();
+			}
+
 			return fDefaultValue;
 
 		}

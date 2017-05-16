@@ -2,12 +2,12 @@ package org.matheclipse.core.generic.interfaces;
 
 import java.util.Iterator;
 
+import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Interface for an iterator with additional tearDown() method, to run the
- * iterator again
+ * Interface for an iterator with additional tearDown() method, to run the iterator again
  */
 public interface IIterator<E> extends Iterator<E> {
 	/**
@@ -17,6 +17,19 @@ public interface IIterator<E> extends Iterator<E> {
 	 */
 	default boolean setUp() {
 		return true;
+	}
+
+	/**
+	 * Set up this iterator.
+	 * 
+	 * @return
+	 */
+	default boolean setUpThrow() {
+		boolean result = setUp();
+		if (!isSetIterator() && !isNumericFunction()) {
+			throw NoEvalException.CONST;
+		}
+		return result;
 	}
 
 	/**
@@ -65,8 +78,7 @@ public interface IIterator<E> extends Iterator<E> {
 	}
 
 	/**
-	 * Test if &quot;lower limit&quot;, &quot;upper limit&quot; and
-	 * &quot;step&quot; are numeric functions.
+	 * Test if &quot;lower limit&quot;, &quot;upper limit&quot; and &quot;step&quot; are numeric functions.
 	 * 
 	 * @return
 	 */
@@ -84,8 +96,7 @@ public interface IIterator<E> extends Iterator<E> {
 	}
 
 	/**
-	 * Test if there's a valid variable set for the iterator and the &quot;upper
-	 * limit&quot; is a list.
+	 * Test if there's a valid variable set for the iterator and the &quot;upper limit&quot; is a list.
 	 * 
 	 * @return
 	 */

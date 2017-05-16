@@ -5878,10 +5878,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSum() {
-		check("Sum(g(i),{i,10,2})", "0");
+		
 		check("Sum(f(k,j),{k,0,-1+2}, {j,0,-1+k})", "f(1,0)");
 		check("Sum(k, {k, 1, n})", "1/2*n*(1+n)");
 		check("Sum(k, {k, 1, 10})", "55");
+		check("Sum(g(i),{i,10,2})", "0");
 		
 //		check("Table(f(k,j), {k,0,-1+3},{j,0,-1+k})", "{{},{f(1,0)},{f(2,0),f(2,1)}}");
 		check("Sum(f(k,j),{k,0,-1+2}, {j,0,-1+k})", "f(1,0)");

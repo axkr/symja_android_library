@@ -20,9 +20,7 @@ import org.matheclipse.core.reflection.system.rules.ProductRules;
 /**
  * Product of expressions.
  * 
- * See
- * <a href="http://en.wikipedia.org/wiki/Multiplication#Capital_Pi_notation">
- * Wikipedia Multiplication</a>
+ * See <a href="http://en.wikipedia.org/wiki/Multiplication#Capital_Pi_notation"> Wikipedia Multiplication</a>
  */
 public class Product extends ListFunctions.Table implements ProductRules {
 	// TODO solve initialization problem in using 'implements ProductRules {'
@@ -52,6 +50,11 @@ public class Product extends ListFunctions.Table implements ProductRules {
 			return ((IAST) arg1).mapThread(prod, 1);
 		}
 
+		IExpr temp = evaluateTableThrow(ast, Times(), Times(), engine);
+		if (temp.isPresent()) {
+			return temp;
+		}
+
 		// arg1 = evalBlockExpandWithoutReap(arg1,
 		// determineIteratorVariables(ast));
 
@@ -75,7 +78,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 		}
 		IExpr argN = ast.get(ast.size() - 1);
 		if (ast.size() >= 3 && argN.isList()) {
-			IIterator iterator =  Iterator.create((IAST) argN, engine);
+			IIterator iterator = Iterator.create((IAST) argN, engine);
 			if (iterator.isValidVariable()) {
 				if (iterator.getLowerLimit().isInteger() && iterator.getUpperLimit().isSymbol()
 						&& iterator.getStep().isOne()) {
@@ -126,7 +129,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 				}
 			}
 			IAST resultList = Times();
-			IExpr temp = evaluateLast(ast.arg1(), iterator, resultList, C1);
+			temp = evaluateLast(ast.arg1(), iterator, resultList, C1);
 			if (!temp.isPresent() || temp.equals(resultList)) {
 				return F.NIL;
 			}

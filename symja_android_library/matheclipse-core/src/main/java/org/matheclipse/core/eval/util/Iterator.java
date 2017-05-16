@@ -190,6 +190,9 @@ public class Iterator {
 
 		@Override
 		public boolean setUp() {
+			if (variable != null) {
+				variable.pushLocalVariable();
+			}
 			lowerLimit = originalLowerLimit;
 			if (!(originalLowerLimit.isSignedNumber())) {
 				lowerLimit = evalEngine.evalWithoutNumericReset(originalLowerLimit);
@@ -222,10 +225,10 @@ public class Iterator {
 				count = lowerLimit;
 			}
 			if (variable != null) {
-				variable.pushLocalVariable(count);
+				variable.set(count);
 			}
 			return true;
-		}
+		} 
 
 		/**
 		 * Method Declaration.
@@ -351,6 +354,9 @@ public class Iterator {
 
 		@Override
 		public boolean setUp() {
+			if (variable != null) {
+				variable.pushLocalVariable();
+			}
 			count = lowerLimit;
 			if (step < 0) {
 				if (lowerLimit < upperLimit) {
@@ -363,7 +369,7 @@ public class Iterator {
 			}
 
 			if (variable != null) {
-				variable.pushLocalVariable(originalLowerLimit);
+				variable.set(originalLowerLimit);
 			}
 			return true;
 		}
@@ -631,6 +637,9 @@ public class Iterator {
 
 		@Override
 		public boolean setUp() {
+			if (variable != null) {
+				variable.pushLocalVariable();
+			}
 			count = lowerLimit;
 			if (step.isNegative()) {
 				if (lowerLimit.lessThan(upperLimit).isTrue()) {
@@ -643,7 +652,7 @@ public class Iterator {
 			}
 
 			if (variable != null) {
-				variable.pushLocalVariable(originalLowerLimit);
+				variable.set(originalLowerLimit);
 			}
 			return true;
 		}
@@ -782,6 +791,9 @@ public class Iterator {
 
 		@Override
 		public boolean setUp() {
+			if (variable != null) {
+				variable.pushLocalVariable();
+			}
 			count = lowerLimit;
 			if (step < 0) {
 				if (lowerLimit < upperLimit) {
@@ -794,7 +806,7 @@ public class Iterator {
 			}
 
 			if (variable != null) {
-				variable.pushLocalVariable(originalLowerLimit);
+				variable.set(originalLowerLimit);
 			}
 			return true;
 		}
