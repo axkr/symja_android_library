@@ -36,5 +36,44 @@
   D(Tan(f_),x_NotListQ):=D(f,x)*Sec(f)^2,
   D(Tanh(f_),x_NotListQ):=D(f,x)*Sech(f)^(2),
   D(Sec(f_),x_NotListQ):=D(f,x)*Sec(f)*Tan(f),
-  D(Sech(f_),x_NotListQ):=D(f,x)*(-1)*Tanh(f)*Sech(f)
+  D(Sech(f_),x_NotListQ):=D(f,x)*(-1)*Tanh(f)*Sech(f),
+  
+  
+  D(ArcCos(x_), {x_, 2}) := -(x/(1 - x^2)^(3/2)),
+  D(ArcCot(x_), {x_, 2}) := (2*x)/(1 + x^2)^2,
+  D(ArcSin(x_), {x_, 2}) := x/(1 - x^2)^(3/2),
+  D(ArcTan(x_), {x_, 2}) := -((2*x)/(1 + x^2)^2),
+  
+  D(Tan(x_), {x_, 2}) := 2*Sec(x)^2*Tan(x),
+  
+  D(ArcCos(x_), {x_, n_IntegerQ}) := KroneckerDelta(n)*ArcCos(x) - 
+    ((-1)^(n - 1)/(1 - x^2)^(n - 1/2))*Sum((1/(2*k - n + 1)!)*(Pochhammer(1 - n, k)*Pochhammer(1/2, k)*2^(2*k + 1 - n)*x^(2*k + 1 - n)*(x^2 - 1)^(n - 1 - k)), {k, 0, n - 1})
+    /; n >= 0,
+  D(ArcCot(x_), {x_, n_IntegerQ}) := KroneckerDelta(n)*ArcCot(x) - 
+    Sum((((-1)^k*k! * Pochhammer(2*k - n + 2, 2*(n - k) - 2))/ ((n - k - 1)! * (2*x)^(n - 2*k - 1)))*(1 + x^2)^(-k - 1), {k, 0, n - 1})
+    /; n >= 0,
+  D(ArcSin(x_), {x_, n_IntegerQ}) := KroneckerDelta(n)*ArcSin(x) + 
+    ((-1)^(n - 1)/(1 - x^2)^(n - 1/2))*Sum((Pochhammer(1 - n, k)*Pochhammer(1/2, k)*2^(2*k + 1 - n)*x^(2*k + 1 - n)*(x^2 - 1)^(n - 1 - k))/(2*k - n + 1)!, {k, 0, n - 1}) 
+    /; n >= 0,
+  D(ArcTan(x_), {x_, n_IntegerQ}) := KroneckerDelta(n)*ArcTan(x) + 
+    Sum((((-1)^k*k! * Pochhammer(2*k - n + 2, 2*(n - k) - 2))/ ((n - k - 1)! * (2*x)^(n - 2*k - 1)))*(1 + x^2)^(-k - 1), {k, 0, n - 1})
+    /; n >= 0,
+      
+  D(Cos(x_), {x_, n_IntegerQ}) := Cos(x + (Pi*n)/2) 
+    /; n >= 0,
+  D(Cot(x_), {x_, n_IntegerQ}) := Cot(x)*KroneckerDelta(n) - Csc(x)^2*KroneckerDelta(n - 1) - 
+    n*Sum((((-1)^j*Binomial(n - 1, k))/(k + 1))*Sin(x)^(-2*k - 2)*2^(n - 2*k)*Binomial(2*k, j)*(k - j)^(n - 1)*Sin((n*Pi)/2 + 2*(k - j)*x), {k, 0, n - 1}, {j, 0, k - 1}) 
+      /; n >= 0,
+  D(Sin(x_), {x_, n_IntegerQ}) := Sin(x + (Pi*n)/2) 
+    /; n >= 0, 
+  D(Tan(x_), {x_, n_IntegerQ}) := Tan(x)*KroneckerDelta(n) + Sec(x)^2* KroneckerDelta(n - 1) + 
+    n*Sum((((-1)^k*Binomial(n - 1, k))/(k + 1))*Cos(x)^(-2*k - 2)*2^(n - 2*k)*Binomial(2*k, j)*(k - j)^(n - 1)*Sin((n*Pi)/2 + 2*(k - j)*x), {k, 0, n - 1}, {j, 0, k - 1})
+      /; n >= 0,
+  
+  D(Log(x_), {x_, n_IntegerQ}) := ((-1)^(n - 1)*(n - 1)!)/x^n
+    /; n >= 0,
+    
+  
+  D(BesselJ(f_, g_),x_NotListQ):= 1/2*(BesselJ(-1+f, g)-BesselJ(1+f, g))*D(g,x)+D(f,x)*Derivative(1,0)[BesselJ][f,g],
+  D(ProductLog(f_, g_),x_NotListQ):= ProductLog(f,g)*D(g,x)/(g*(1+ProductLog(f,g)))+D(f,x)*Derivative(1,0)[ProductLog][f,g] 
 }
