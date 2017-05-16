@@ -37,12 +37,12 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 	private IExpr getDerivativeArg1(IExpr x, final IExpr a1, final IExpr head, EvalEngine engine) {
 		if (head.isSymbol()) {
 			ISymbol header = (ISymbol) head;
-			IExpr der = Derivative.derivative(1, header, engine);
-			if (der.isPresent()) {
-				// we've found a derivative for a function of the form f[x_]
-				IExpr derivative = F.eval(F.unaryAST1(der, a1));
-				return F.Times(F.D(a1, x), derivative);
-			}
+//			IExpr der = Derivative.derivative(1, header, engine);
+//			if (der.isPresent()) {
+//				// we've found a derivative for a function of the form f[x_]
+//				IExpr derivative = F.eval(F.unaryAST1(der, a1));
+//				return F.Times(F.D(a1, x), derivative);
+//			}
 			IAST fDerivParam = Derivative.createDerivative(1, header, a1);
 			if (x.equals(a1)) {
 				// return F.NIL;
@@ -189,35 +189,24 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 				return listArg1.mapThread(F.D(F.Null, x), 1);
 			} else if (listArg1.isTimes()) {
 				return listArg1.args().map(F.Plus(), new BinaryBindIth1st(listArg1, F.D(F.Null, x)));
-			} else if (listArg1.isPower() && !listArg1.isFreeAt(1, x) && !listArg1.isFreeAt(2, x)) {
-				// if (listArg1.isFreeAt(2, x)) {
-				// return getDerivativeArg2(x, listArg1.arg1(), listArg1.arg2(),
-				// header);
-				//
-				// // D[x_^i_NumberQ, z_]:= i*x^(i-1)*D[x,z];
-				// final IAST timesList = F.Times();
-				// timesList.add(listArg1.arg2());
-				// final IAST powerList = F.Power();
-				// powerList.add(listArg1.arg1());
-				// final IAST plusList = F.Plus();
-				// plusList.add(listArg1.arg2());
-				// plusList.add(F.CN1);
-				// powerList.add(plusList);
-				// timesList.add(powerList);
-				// timesList.add(F.D(listArg1.arg1(), ast.arg2()));
-				// return timesList;
-				// } else {
-
+			} else if (listArg1.isPower()) {// && !listArg1.isFreeAt(1, x) && !listArg1.isFreeAt(2, x)) {
 				final IExpr f = listArg1.arg1();
 				final IExpr g = listArg1.arg2();
 				final IExpr y = ast.arg2();
+				if (listArg1.isFreeAt(2, x)) {
+					// g*D(f,y)*f^(g-1)
+					return F.Times(g, F.D(f, y), F.Power(f, g.dec()));
+				}
+				if (listArg1.isFreeAt(1, x)) {
+					// D(g,y)*Log(f)*f^g
+					return F.Times(F.D(g, y), F.Log(f), F.Power(f, g));
+				}
 
 				// D[f_^g_,y_]:= f^g*(((g*D[f,y])/f)+Log[f]*D[g,y])
 				final IAST resultList = F.Times();
 				resultList.append(F.Power(f, g));
 				resultList.append(F.Plus(F.Times(g, F.D(f, y), F.Power(f, F.CN1)), F.Times(F.Log(f), F.D(g, y))));
 				return resultList;
-				// }
 			} else if ((header == F.Log) && (listArg1.isAST2())) {
 				if (listArg1.isFreeAt(1, x)) {
 					// D[Log[i_FreeQ(x), x_], z_]:= (x*Log[a])^(-1)*D[x,z];

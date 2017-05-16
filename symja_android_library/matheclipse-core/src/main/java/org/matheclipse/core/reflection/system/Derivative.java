@@ -1,12 +1,10 @@
 package org.matheclipse.core.reflection.system;
 
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -22,17 +20,17 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 	/**
 	 * Mapped symbol to value for Derivative[1][&lt;symbol&gt;]
 	 */
-	private static Map<ISymbol, IExpr> DERIVATIVE_1_MAP = new IdentityHashMap<ISymbol, IExpr>(197);
+	// private static Map<ISymbol, IExpr> DERIVATIVE_1_MAP = new IdentityHashMap<ISymbol, IExpr>(197);
 
 	/**
 	 * Mapped symbol to value for Derivative[2][&lt;symbol&gt;]
 	 */
-	private static Map<ISymbol, IExpr> DERIVATIVE_2_MAP = new IdentityHashMap<ISymbol, IExpr>(97);
+	// private static Map<ISymbol, IExpr> DERIVATIVE_2_MAP = new IdentityHashMap<ISymbol, IExpr>(97);
 
 	/**
 	 * Mapped symbol to value for Derivative[&lt;n&gt;][&lt;symbol&gt;]
 	 */
-	private static Map<ISymbol, IExpr> DERIVATIVE_N_MAP = new IdentityHashMap<ISymbol, IExpr>(197);
+	// private static Map<ISymbol, IExpr> DERIVATIVE_N_MAP = new IdentityHashMap<ISymbol, IExpr>(197);
 
 	/**
 	 * Mapped symbol to value for Derivative[&lt;n&gt;, &lt;m&gt;][&lt;symbol&gt;]
@@ -40,21 +38,21 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 	private static Map<IAST, IExpr> DERIVATIVE_N_M_MAP = new HashMap<IAST, IExpr>(197);
 
 	static {
-		for (int i = 1; i < RULES1.size(); i++) {
-			IAST rule = (IAST) RULES1.get(i);
-			// Derivative[1][symbol]
-			DERIVATIVE_1_MAP.put((ISymbol) rule.arg1(), rule.arg2());
-		}
-		for (int i = 1; i < RULES2.size(); i++) {
-			IAST rule = (IAST) RULES2.get(i);
-			// Derivative[2][symbol]
-			DERIVATIVE_2_MAP.put((ISymbol) rule.arg1(), rule.arg2());
-		}
-		for (int i = 1; i < RULES3.size(); i++) {
-			IAST rule = (IAST) RULES3.get(i);
-			// Derivative[n][symbol]
-			DERIVATIVE_N_MAP.put((ISymbol) rule.arg1(), rule.arg2());
-		}
+		// for (int i = 1; i < RULES1.size(); i++) {
+		// IAST rule = (IAST) RULES1.get(i);
+		// // Derivative[1][symbol]
+		// DERIVATIVE_1_MAP.put((ISymbol) rule.arg1(), rule.arg2());
+		// }
+		// for (int i = 1; i < RULES2.size(); i++) {
+		// IAST rule = (IAST) RULES2.get(i);
+		// // Derivative[2][symbol]
+		// DERIVATIVE_2_MAP.put((ISymbol) rule.arg1(), rule.arg2());
+		// }
+		// for (int i = 1; i < RULES3.size(); i++) {
+		// IAST rule = (IAST) RULES3.get(i);
+		// // Derivative[n][symbol]
+		// DERIVATIVE_N_MAP.put((ISymbol) rule.arg1(), rule.arg2());
+		// }
 		for (int i = 1; i < RULES4.size(); i++) {
 			IAST rule = (IAST) RULES4.get(i);
 			// Derivative[n][symbol]
@@ -83,21 +81,38 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 					if (derivativeAST[2] == null) {
 						return derivativeAST[1].arg1();
 					}
-				} else {
-					if (derivativeAST[2] != null) {
-					}
 				}
 
-//				if (derivativeHead.size() == 2) {
-//					IAST functions = derivativeAST[1];
-//					if (functions.size() == 2) {
-//						IExpr dResult = engine.evaluate(
-//								F.D(F.unaryAST1(functions.arg1(), F.Slot1), F.List(F.Slot1, derivativeHead.arg1())));
-//						if (!dResult.isAST(F.D)) {
-//							return F.Function(dResult);
-//						}
-//					}
-//				}
+				if (derivativeHead.size() == 2) {
+					IExpr head = derivativeHead.arg1();
+					if (head.isInteger()) {
+						IAST functions = derivativeAST[1];
+						if (functions.size() == 2) {
+							try {
+								int n = ((IInteger) head).toInt();
+								if (n >= 1) {
+									IExpr dExpr;
+									IExpr dResult;
+									if (n == 1) {
+										dExpr = F.D(F.unaryAST1(functions.arg1(), F.Slot1), F.Slot1);
+										dResult = F.D.evalDownRule(engine, dExpr);
+									} else {
+										dExpr = F.D(F.unaryAST1(functions.arg1(), F.Slot1),
+												F.List(F.Slot1, derivativeHead.arg1()));
+										dResult = F.D.evalDownRule(engine, dExpr);
+									}
+
+									if (dResult.isPresent()) {
+										dResult = engine.evaluate(dResult);
+										return F.Function(dResult);
+									}
+								}
+							} catch (ArithmeticException ae) {
+
+							}
+						}
+					}
+				}
 				if (ast.head().isAST(F.Derivative, 2)) {
 					// Derivative(n)
 					IAST head = (IAST) ast.head();
@@ -108,7 +123,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 							if (n >= 0) {
 								if (arg1.isSymbol()) {
 									ISymbol symbol = (ISymbol) arg1;
-									return derivative(n, symbol, engine);
+									// return derivative(n, symbol, engine);
 								} else {
 									if (arg1.isFunction()) {
 										return derivative(n, (IAST) arg1, engine);
@@ -155,32 +170,32 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 	 *            the function symbol which should be searched in the look-up table.
 	 * @return <code>null</code> if no entry was found
 	 */
-	public static IExpr derivative(int n, ISymbol symbol, EvalEngine engine) {
-		if (n == 1) {
-			// Derivative[1][symbol]
-			IExpr result = DERIVATIVE_1_MAP.get(symbol);
-			if (result != null) {
-				return F.unaryAST1(F.Function, engine.evaluate(result));
-			}
-		}
-		if (n == 2) {
-			// Derivative[2][symbol]
-			IExpr result = DERIVATIVE_2_MAP.get(symbol);
-			if (result != null) {
-				return F.unaryAST1(F.Function, engine.evaluate(result));
-			}
-		}
-		if (n > 0) {
-			// Derivative[n][symbol]
-			IExpr result = DERIVATIVE_N_MAP.get(symbol);
-			if (result != null) {
-				// replace Slot[2] with the integer number
-				IAST slotsList = F.List(F.NIL, F.integer(n));
-				return F.unaryAST1(F.Function, engine.evaluate(Lambda.replaceSlotsOrElse(result, slotsList, result)));
-			}
-		}
-		return F.NIL;
-	}
+	// public static IExpr derivative(int n, ISymbol symbol, EvalEngine engine) {
+	// if (n == 1) {
+	// // Derivative[1][symbol]
+	// IExpr result = DERIVATIVE_1_MAP.get(symbol);
+	// if (result != null) {
+	// return F.unaryAST1(F.Function, engine.evaluate(result));
+	// }
+	// }
+	// if (n == 2) {
+	// // Derivative[2][symbol]
+	// IExpr result = DERIVATIVE_2_MAP.get(symbol);
+	// if (result != null) {
+	// return F.unaryAST1(F.Function, engine.evaluate(result));
+	// }
+	// }
+	// if (n > 0) {
+	// // Derivative[n][symbol]
+	// IExpr result = DERIVATIVE_N_MAP.get(symbol);
+	// if (result != null) {
+	// // replace Slot[2] with the integer number
+	// IAST slotsList = F.List(F.NIL, F.integer(n));
+	// return F.unaryAST1(F.Function, engine.evaluate(Lambda.replaceSlotsOrElse(result, slotsList, result)));
+	// }
+	// }
+	// return F.NIL;
+	// }
 
 	public static IExpr derivative(int n, IAST function, EvalEngine engine) {
 		if (n == 0) {
@@ -215,7 +230,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 	 *            the function symbol which should be searched in the look-up table.
 	 * @return <code>F.NIL</code> if no entry was found
 	 */
-	public static IExpr derivative(int n, int m, ISymbol symbol, EvalEngine engine) {
+	private static IExpr derivative(int n, int m, ISymbol symbol, EvalEngine engine) {
 		IAST listKey = F.List(symbol, F.integer(n), F.integer(m));
 		IExpr result = DERIVATIVE_N_M_MAP.get(listKey);
 		if (result != null) {
