@@ -4051,6 +4051,10 @@ public class F {
 		return binaryAST2(Join, a0, a1);
 	}
 
+	public static IAST KroneckerDelta(final IExpr a0) {
+		return unaryAST1(KroneckerDelta, a0);
+	}
+	
 	public static IAST LaplaceTransform(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(LaplaceTransform, a0, a1, a2);
 	}
@@ -5183,8 +5187,11 @@ public class F {
 	}
 
 	public static IAST Sum(final IExpr a0, final IExpr a1) {
-
 		return binaryAST2(Sum, a0, a1);
+	}
+	
+	public static IAST Sum(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(Sum, a0, a1, a2);
 	}
 
 	public static IAST SurfaceGraphics() {

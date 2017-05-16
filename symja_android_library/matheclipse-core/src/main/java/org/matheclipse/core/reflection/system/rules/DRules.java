@@ -13,7 +13,7 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 38 };
+  final public static int[] SIZES = { 0, 54 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -130,6 +130,54 @@ public interface DRules {
       Times(D(f,x),Sec(f),Tan(f))),
     // D(Sech(f_),x_NotListQ):=D(f,x)*(-1)*Tanh(f)*Sech(f)
     ISetDelayed(D(Sech(f_),$p(x,NotListQ)),
-      Times(D(f,x),CN1,Tanh(f),Sech(f)))
+      Times(D(f,x),CN1,Tanh(f),Sech(f))),
+    // D(ArcCos(x_),{x_,2}):=-x/(1-x^2)^Rational(3,2)
+    ISetDelayed(D(ArcCos(x_),List(x_,C2)),
+      Times(CN1,x,Power(Power(Plus(C1,Negate(Sqr(x))),QQ(3L,2L)),-1))),
+    // D(ArcCot(x_),{x_,2}):=(2*x)/(1+x^2)^2
+    ISetDelayed(D(ArcCot(x_),List(x_,C2)),
+      Times(C2,x,Power(Plus(C1,Sqr(x)),-2))),
+    // D(ArcSin(x_),{x_,2}):=x/(1-x^2)^Rational(3,2)
+    ISetDelayed(D(ArcSin(x_),List(x_,C2)),
+      Times(x,Power(Power(Plus(C1,Negate(Sqr(x))),QQ(3L,2L)),-1))),
+    // D(ArcTan(x_),{x_,2}):=-(2*x)/(1+x^2)^2
+    ISetDelayed(D(ArcTan(x_),List(x_,C2)),
+      Times(CN1,C2,x,Power(Plus(C1,Sqr(x)),-2))),
+    // D(Tan(x_),{x_,2}):=2*Sec(x)^2*Tan(x)
+    ISetDelayed(D(Tan(x_),List(x_,C2)),
+      Times(C2,Sqr(Sec(x)),Tan(x))),
+    // D(ArcCos(x_),{x_,n_IntegerQ}):=KroneckerDelta(n)*ArcCos(x)-(-1)^(n+(-1)*1)/(1-x^2)^(n-Rational(1,2))*Sum((Pochhammer(1-n,k)*Pochhammer(Rational(1,2),k)*2^(2*k+1-n)*x^(2*k+1-n)*(x^2+(-1)*1)^(n+(-1)*1-k))/(2*k-n+1)!,{k,0,n+(-1)*1})/;n>=0
+    ISetDelayed(D(ArcCos(x_),List(x_,$p(n,IntegerQ))),
+      Condition(Plus(Times(KroneckerDelta(n),ArcCos(x)),Times(CN1,Power(CN1,Plus(n,Negate(C1))),Power(Power(Plus(C1,Negate(Sqr(x))),Plus(n,Negate(C1D2))),-1),Sum(Times(Power(Factorial(Plus(Times(C2,k),Negate(n),C1)),-1),Pochhammer(Plus(C1,Negate(n)),k),Pochhammer(C1D2,k),Power(C2,Plus(Times(C2,k),C1,Negate(n))),Power(x,Plus(Times(C2,k),C1,Negate(n))),Power(Plus(Sqr(x),Negate(C1)),Plus(n,Negate(C1),Negate(k)))),List(k,C0,Plus(n,Negate(C1)))))),GreaterEqual(n,C0))),
+    // D(ArcCot(x_),{x_,n_IntegerQ}):=KroneckerDelta(n)*ArcCot(x)-Sum(((-1)^k*k!*Pochhammer(2*k-n+2,2*(n-k)+(-1)*2)*1/((n-k+(-1)*1)!*(2*x)^(n-2*k+(-1)*1)))/(1+x^2)^(k+1),{k,0,n+(-1)*1})/;n>=0
+    ISetDelayed(D(ArcCot(x_),List(x_,$p(n,IntegerQ))),
+      Condition(Plus(Times(KroneckerDelta(n),ArcCot(x)),Negate(Sum(Times(Power(CN1,k),Factorial(k),Pochhammer(Plus(Times(C2,k),Negate(n),C2),Plus(Times(C2,Plus(n,Negate(k))),Negate(C2))),Power(Times(Factorial(Plus(n,Negate(k),Negate(C1))),Power(Times(C2,x),Plus(n,Times(CN1,C2,k),Negate(C1)))),-1),Power(Plus(C1,Sqr(x)),Plus(Negate(k),Negate(C1)))),List(k,C0,Plus(n,Negate(C1)))))),GreaterEqual(n,C0))),
+    // D(ArcSin(x_),{x_,n_IntegerQ}):=KroneckerDelta(n)*ArcSin(x)+(-1)^(n+(-1)*1)/(1-x^2)^(n-Rational(1,2))*Sum((Pochhammer(1-n,k)*Pochhammer(Rational(1,2),k)*2^(2*k+1-n)*x^(2*k+1-n)*(x^2+(-1)*1)^(n+(-1)*1-k))/(2*k-n+1)!,{k,0,n+(-1)*1})/;n>=0
+    ISetDelayed(D(ArcSin(x_),List(x_,$p(n,IntegerQ))),
+      Condition(Plus(Times(KroneckerDelta(n),ArcSin(x)),Times(Power(CN1,Plus(n,Negate(C1))),Power(Power(Plus(C1,Negate(Sqr(x))),Plus(n,Negate(C1D2))),-1),Sum(Times(Pochhammer(Plus(C1,Negate(n)),k),Pochhammer(C1D2,k),Power(C2,Plus(Times(C2,k),C1,Negate(n))),Power(x,Plus(Times(C2,k),C1,Negate(n))),Power(Plus(Sqr(x),Negate(C1)),Plus(n,Negate(C1),Negate(k))),Power(Factorial(Plus(Times(C2,k),Negate(n),C1)),-1)),List(k,C0,Plus(n,Negate(C1)))))),GreaterEqual(n,C0))),
+    // D(ArcTan(x_),{x_,n_IntegerQ}):=KroneckerDelta(n)*ArcTan(x)+Sum(((-1)^k*k!*Pochhammer(2*k-n+2,2*(n-k)+(-1)*2)*1/((n-k+(-1)*1)!*(2*x)^(n-2*k+(-1)*1)))/(1+x^2)^(k+1),{k,0,n+(-1)*1})/;n>=0
+    ISetDelayed(D(ArcTan(x_),List(x_,$p(n,IntegerQ))),
+      Condition(Plus(Times(KroneckerDelta(n),ArcTan(x)),Sum(Times(Power(CN1,k),Factorial(k),Pochhammer(Plus(Times(C2,k),Negate(n),C2),Plus(Times(C2,Plus(n,Negate(k))),Negate(C2))),Power(Times(Factorial(Plus(n,Negate(k),Negate(C1))),Power(Times(C2,x),Plus(n,Times(CN1,C2,k),Negate(C1)))),-1),Power(Plus(C1,Sqr(x)),Plus(Negate(k),Negate(C1)))),List(k,C0,Plus(n,Negate(C1))))),GreaterEqual(n,C0))),
+    // D(Cos(x_),{x_,n_IntegerQ}):=Cos(x+Rational(1,2)*Pi*n)/;n>=0
+    ISetDelayed(D(Cos(x_),List(x_,$p(n,IntegerQ))),
+      Condition(Cos(Plus(x,Times(C1D2,Pi,n))),GreaterEqual(n,C0))),
+    // D(Cot(x_),{x_,n_IntegerQ}):=Cot(x)*KroneckerDelta(n)-Csc(x)^2*KroneckerDelta(n+(-1)*1)-n*Sum((((-1)^j*Binomial(n+(-1)*1,k))/(k+1)*2^(n-2*k)*Binomial(2*k,j)*(k-j)^(n+(-1)*1)*Sin(Rational(1,2)*n*Pi+2*(k-j)*x))/Sin(x)^(2*k+2),{k,0,n+(-1)*1},{j,0,k+(-1)*1})/;n>=0
+    ISetDelayed(D(Cot(x_),List(x_,$p(n,IntegerQ))),
+      Condition(Plus(Times(Cot(x),KroneckerDelta(n)),Times(CN1,Sqr(Csc(x)),KroneckerDelta(Plus(n,Negate(C1)))),Times(CN1,n,Sum(Times(Power(CN1,j),Binomial(Plus(n,Negate(C1)),k),Power(Plus(k,C1),-1),Power(Sin(x),Plus(Times(CN2,k),Negate(C2))),Power(C2,Plus(n,Times(CN1,C2,k))),Binomial(Times(C2,k),j),Power(Plus(k,Negate(j)),Plus(n,Negate(C1))),Sin(Plus(Times(C1D2,n,Pi),Times(C2,Plus(k,Negate(j)),x)))),List(k,C0,Plus(n,Negate(C1))),List(j,C0,Plus(k,Negate(C1)))))),GreaterEqual(n,C0))),
+    // D(Sin(x_),{x_,n_IntegerQ}):=Sin(x+Rational(1,2)*Pi*n)/;n>=0
+    ISetDelayed(D(Sin(x_),List(x_,$p(n,IntegerQ))),
+      Condition(Sin(Plus(x,Times(C1D2,Pi,n))),GreaterEqual(n,C0))),
+    // D(Tan(x_),{x_,n_IntegerQ}):=Tan(x)*KroneckerDelta(n)+Sec(x)^2*KroneckerDelta(n+(-1)*1)+n*Sum((((-1)^k*Binomial(n+(-1)*1,k))/(k+1)*2^(n-2*k)*Binomial(2*k,j)*(k-j)^(n+(-1)*1)*Sin(Rational(1,2)*n*Pi+2*(k-j)*x))/Cos(x)^(2*k+2),{k,0,n+(-1)*1},{j,0,k+(-1)*1})/;n>=0
+    ISetDelayed(D(Tan(x_),List(x_,$p(n,IntegerQ))),
+      Condition(Plus(Times(Tan(x),KroneckerDelta(n)),Times(Sqr(Sec(x)),KroneckerDelta(Plus(n,Negate(C1)))),Times(n,Sum(Times(Power(CN1,k),Binomial(Plus(n,Negate(C1)),k),Power(Plus(k,C1),-1),Power(Cos(x),Plus(Times(CN2,k),Negate(C2))),Power(C2,Plus(n,Times(CN1,C2,k))),Binomial(Times(C2,k),j),Power(Plus(k,Negate(j)),Plus(n,Negate(C1))),Sin(Plus(Times(C1D2,n,Pi),Times(C2,Plus(k,Negate(j)),x)))),List(k,C0,Plus(n,Negate(C1))),List(j,C0,Plus(k,Negate(C1)))))),GreaterEqual(n,C0))),
+    // D(Log(x_),{x_,n_IntegerQ}):=((-1)^(n+(-1)*1)*(n+(-1)*1)!)/x^n/;n>=0
+    ISetDelayed(D(Log(x_),List(x_,$p(n,IntegerQ))),
+      Condition(Times(Power(CN1,Plus(n,Negate(C1))),Factorial(Plus(n,Negate(C1))),Power(Power(x,n),-1)),GreaterEqual(n,C0))),
+    // D(BesselJ(f_,g_),x_NotListQ):=Rational(1,2)*(BesselJ(-1+f,g)-BesselJ(1+f,g))*D(g,x)+D(f,x)*Derivative(1,0)[BesselJ][f,g]
+    ISetDelayed(D(BesselJ(f_,g_),$p(x,NotListQ)),
+      Plus(Times(C1D2,Plus(BesselJ(Plus(CN1,f),g),Negate(BesselJ(Plus(C1,f),g))),D(g,x)),Times(D(f,x),$($(Derivative(C1,C0),BesselJ),f,g)))),
+    // D(ProductLog(f_,g_),x_NotListQ):=ProductLog(f,g)*D(g,x)/(g*(1+ProductLog(f,g)))+D(f,x)*Derivative(1,0)[ProductLog][f,g]
+    ISetDelayed(D(ProductLog(f_,g_),$p(x,NotListQ)),
+      Plus(Times(ProductLog(f,g),D(g,x),Power(Times(g,Plus(C1,ProductLog(f,g))),-1)),Times(D(f,x),$($(Derivative(C1,C0),ProductLog),f,g))))
   );
 }

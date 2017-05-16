@@ -1168,10 +1168,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testDerivative() {
 		check("y''", "Derivative(2)[y]");
-		
+
 		check("Derivative(1)[# ^ 3&] ", "3*(#1^2&)");
 		check("Derivative(1)[Sin]", "Cos(#1)&");
-		
+
 		check("Derivative(0)[#1^2&]", "#1^2&");
 		check("Derivative(1)[# ^ 3&] ", "3*(#1^2&)");
 		check("Derivative(2)[# ^ 3&] ", "6*(#1&)");
@@ -1191,7 +1191,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("f'(x)", "");
 		check("Derivative(2, 1)[h]", "Derivative(2,1)[h]");
 		check("Derivative(2, 0, 1, 0)[h(g)]", "Derivative(2,0,1,0)[h(g)]");
-		
+
 		// parser tests
 		check("Hold(f'') // FullForm ", "\"Hold(Derivative(2)[f])\"");
 		check("Hold(f ' ') // FullForm ", "\"Hold(Derivative(2)[f])\"");
@@ -4735,6 +4735,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Product(i^2 - i + 10 ,{i,1,10})", "1426481971200000");
 		check("Product(a^i, {i, n})", "a^(1/2*n*(1+n))");
+		check("Product(c, {j, 2}, {i, 1, j})", "c^3");
 		check("Product(c, {i, 1, j}, {j, 2})", "c^(2*j)");
 		check("Product(c, {i, 1, j}, {j, 1, 2})", "c^(2*j)");
 		check("Product(c, {i, 1, n})", "c^n");
@@ -5877,6 +5878,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSum() {
+		check("Sum(g(i),{i,10,2})", "0");
+		check("Sum(f(k,j),{k,0,-1+2}, {j,0,-1+k})", "f(1,0)");
+		check("Sum(k, {k, 1, n})", "1/2*n*(1+n)");
+		check("Sum(k, {k, 1, 10})", "55");
+		
+//		check("Table(f(k,j), {k,0,-1+3},{j,0,-1+k})", "{{},{f(1,0)},{f(2,0),f(2,1)}}");
+		check("Sum(f(k,j),{k,0,-1+2}, {j,0,-1+k})", "f(1,0)");
+		check("Sum(f(i,j), {i, 1, 2}, {j, 1, 3})", "f(1,1)+f(1,2)+f(1,3)+f(2,1)+f(2,2)+f(2,3)");
+//		check("Sum(f(k,j), {k,0,-1+2},{j,0,-1+k})", "f(1,0)");
+//		check("Sum(((-1)^k*Binomial(-1+2,k)*2^((-1)*2*k+2)*Binomial(2*k,j)*Sin(1/2*2*Pi+2*(-j+k)*#1))/((\n"
+//				+ "1+k)*Cos(#1)^(2+2*k)*(-j+k)^(1-2)),{k,0,-1+2},{j,0,-1+k})", "");
+		check("Sum(j+k, {k,0,-1+2},{j,0,-1+k})", "1");
 		check("Sum(k, {k, 1, 10})", "55");
 		check("Sum(i * j, {i, 1, 10}, {j, 1, 10})", "3025");
 		check("Sum(k, {k, 1, n})", "1/2*n*(1+n)");
@@ -5923,7 +5936,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sum(i^5,{i,1,n})", "-n^2/12+5/12*n^4+n^5/2+n^6/6");
 		check("Sum(f(i,1),{i,{a,b}})", "f(a,1)+f(b,1)");
 
-		check("Sum(c/(i-j+1), {j,i+1,n}, {i,1,n})", "c*Sum(1/(i-j+1),{j,i+1,n},{i,1,n})");
+		check("Sum(c/(i-j+1), {j,i+1,n}, {i,1,n})", "c*Sum(1/(i-j+1),{j,1+i,n},{i,1,n})");
 		check("Sum(-(-c*j+c),{j,i+1,n})", "-c*(-i+n)+1/2*c*(1+i+n)*(-i+n)");
 
 		check("Sum(c*(i-j+1), {j,i+1,n}, {i,1,n})",
