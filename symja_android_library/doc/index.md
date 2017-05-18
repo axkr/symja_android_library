@@ -265,6 +265,7 @@ Documentation can be displayed by asking for information for the function name.
 * [Divergence](functions/Divergence.md)
 * [Divide](functions/Divide.md)
 * [DivideBy](functions/DivideBy.md)
+* [Divisors](functions/Divisors.md)
 * [Do](functions/Do.md)
 * [Dot](functions/Dot.md)
 * [Drop](functions/Drop.md)
@@ -433,6 +434,7 @@ Documentation can be displayed by asking for information for the function name.
 * [Prepend](functions/Prepend.md)
 * [PrependTo](functions/PrependTo.md)
 * [Prime](functions/Prime.md)
+* [PrimeOmega](functions/PrimeOmega.md)
 * [PrimePowerQ](functions/PrimePowerQ.md)
 * [PrimeQ](functions/PrimeQ.md)
 * [Product](functions/Product.md)
@@ -520,3 +522,4 @@ Documentation can be displayed by asking for information for the function name.
 * [Xor](functions/Xor.md)
 * [YuleDissimilarity](functions/YuleDissimilarity.md)
 * [Zeta](functions/Zeta.md)
+

@@ -16,6 +16,9 @@ import static org.matheclipse.core.expression.F.integer;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
@@ -42,6 +45,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numbertheory.Primality;
 
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
@@ -1145,8 +1149,6 @@ public final class NumberTheory {
 
 	}
 
-	
-
 	/**
 	 * Returns the multinomial coefficient.
 	 * 
@@ -1204,24 +1206,6 @@ public final class NumberTheory {
 	 */
 	private static class MultiplicativeOrder extends AbstractFunctionEvaluator {
 
-		private static IInteger multiplicativeOrder(IInteger a, IInteger prime, long exponent) {
-			IInteger m = prime.pow(exponent);
-			IInteger t = m.div(prime).multiply(prime.subtract(F.C1));
-			IAST divisors = t.divisors();
-			int len = divisors.size();
-			for (int i = 1; i < len; i++) {
-				IInteger factor = divisors.getInt(i);
-				if (a.modPow(factor, m).isOne()) {
-					return factor;
-				}
-			}
-			return F.C0;
-		}
-
-		public MultiplicativeOrder() {
-			// default ctor
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
@@ -1238,13 +1222,7 @@ public final class NumberTheory {
 						return F.NIL;
 					}
 
-					IAST primeExponentList = n.factorInteger();
-					IInteger res = F.C1;
-					for (int i = 1; i < primeExponentList.size(); i++) {
-						res = res.lcm(multiplicativeOrder(k, primeExponentList.getAST(i).getInt(1),
-								primeExponentList.getAST(i).getInt(2).toLong()));
-					}
-					return res;
+					return F.ZZ(Primality.multiplicativeOrder(k.toBigNumerator(), n.toBigNumerator()));
 				} catch (ArithmeticException ae) {
 
 				}
@@ -1293,92 +1271,6 @@ public final class NumberTheory {
 	 * stackoverflow. com - Calculating and printing the nth prime number</a>
 	 */
 	private static class Prime extends AbstractFunctionEvaluator {
-
-		// Speed up counting by counting the primes per
-		// array slot and not individually. This yields
-		// another factor of about 1.24 or so.
-		public static long nthPrime(long n) {
-			if (n < 2L) {
-				return 2L;
-			}
-			if (n == 2L) {
-				return 3L;
-			}
-			if (n == 3L) {
-				return 5L;
-			}
-			long limit, root, count = 2;
-			limit = (long) (n * (Math.log(n) + Math.log(Math.log(n)))) + 3;
-			root = (long) Math.sqrt(limit);
-			switch ((int) (limit % 6)) {
-			case 0:
-				limit = 2 * (limit / 6) - 1;
-				break;
-			case 5:
-				limit = 2 * (limit / 6) + 1;
-				break;
-			default:
-				limit = 2 * (limit / 6);
-			}
-			switch ((int) (root % 6)) {
-			case 0:
-				root = 2 * (root / 6) - 1;
-				break;
-			case 5:
-				root = 2 * (root / 6) + 1;
-				break;
-			default:
-				root = 2 * (root / 6);
-			}
-			int dim = (int) ((limit + 31) >> 5);
-			int[] sieve = new int[dim];
-			int start, s1, s2, tempi;
-			for (int i = 0; i < root; ++i) {
-				if ((sieve[i >> 5] & (1 << (i & 31))) == 0) {
-					if ((i & 1) == 0) {
-						tempi = i + i;
-						start = i * (tempi + i + 10) + 7;
-						s1 = tempi + 3;
-						s2 = tempi + tempi + 7;
-					} else {
-						tempi = i + i;
-						start = i * (tempi + i + 8) + 4;
-						s1 = tempi + tempi + 5;
-						s2 = tempi + 3;
-					}
-					for (long j = start; j < limit; j += s2) {
-						sieve[(int) (j >> 5)] |= 1 << (j & 31);
-						j += s1;
-						if (j >= limit)
-							break;
-						sieve[(int) (j >> 5)] |= 1 << (j & 31);
-					}
-				}
-			}
-			int i;
-			for (i = 0; count < n; ++i) {
-				count += popCount(~sieve[i]);
-			}
-			--i;
-			int mask = ~sieve[i];
-			int p;
-			for (p = 31; count >= n; --p) {
-				count -= (mask >> p) & 1;
-			}
-			return 3 * (p + (i << 5)) + 7 + (p & 1);
-		}
-
-		// Count number of set bits in an int
-		public static int popCount(int n) {
-			n -= (n >>> 1) & 0x55555555;
-			n = ((n >>> 2) & 0x33333333) + (n & 0x33333333);
-			n = ((n >> 4) & 0x0F0F0F0F) + (n & 0x0F0F0F0F);
-			return (n * 0x01010101) >> 24;
-		}
-
-		public Prime() {
-		}
-
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
@@ -1389,7 +1281,7 @@ public final class NumberTheory {
 					if (nthPrime > 103000000L) {
 						return F.NIL;
 					}
-					return F.integer(nthPrime(nthPrime));
+					return F.integer(Primality.prime(nthPrime));
 				} catch (RuntimeException ae) {
 					if (Config.SHOW_STACKTRACE) {
 						ae.printStackTrace();
@@ -1406,15 +1298,11 @@ public final class NumberTheory {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
 			super.setUp(newSymbol);
 		}
-
 	}
 
 	/**
 	 */
 	private static class PrimeOmega extends AbstractFunctionEvaluator {
-
-		public PrimeOmega() {
-		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1425,17 +1313,13 @@ public final class NumberTheory {
 				return F.C0;
 			}
 			if (arg1.isInteger() && arg1.isPositive()) {
-				IExpr expr = engine.evaluate(F.FactorInteger(arg1));
-				if (expr.isList()) {
-					IAST list = (IAST) expr;
-					IInteger temp;
-					IInteger sum = F.C0;
-					for (int i = 1; i < list.size(); i++) {
-						temp = (IInteger) list.get(i).getAt(2);
-						sum = sum.add(temp);
-					}
-					return sum;
+				SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
+				Primality.factorInteger(((IInteger) arg1).toBigNumerator(), map);
+				BigInteger sum = BigInteger.ZERO;
+				for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
+					sum = sum.add(BigInteger.valueOf(entry.getValue()));
 				}
+				return F.ZZ(sum);
 			}
 			return F.NIL;
 		}

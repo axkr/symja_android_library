@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.matheclipse.combinatoric.KSubsets;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -1273,79 +1274,6 @@ public final class Combinatoric {
 	 * See <a href="http://en.wikipedia.org/wiki/Combination">Combination</a>
 	 */
 	public final static class Subsets extends AbstractFunctionEvaluator {
-		/**
-		 * Iterable for all k-combinations from a set
-		 * 
-		 * See <a href="http://en.wikipedia.org/wiki/Combination">Combination</a>
-		 */
-		private final static class KSubsetsIterable implements Iterator<int[]>, Iterable<int[]> {
-
-			final private int n;
-			final private int k;
-			final private int x[];
-			private long bin;
-			private boolean first;
-
-			public KSubsetsIterable(final int len, final int parts) {
-				super();
-				n = len;
-				k = parts;
-				// f = fun;
-				x = new int[n];
-				for (int a = 0; a < n; a++) {
-					x[a] = a;
-				}
-				bin = binomial(n, k);
-				first = true;
-			}
-
-			@Override
-			public int[] next() {
-				if (bin-- == 0) {
-					return null;
-				}
-				if (first) {
-					first = false;
-					return x;
-				}
-				int i = k - 1;
-				while (x[i] == n - k + i) {
-					i--;
-				}
-				x[i] = x[i] + 1;
-				for (int j = i + 1; j < n; j++) {
-					x[j] = x[j - 1] + 1;
-				}
-				return x;
-			}
-
-			public static long binomial(final long n, final long k) {
-				long bin = 1;
-				long kSub = k;
-				if (kSub > (n / 2)) {
-					kSub = n - kSub;
-				}
-				for (long i = 1; i <= kSub; i++) {
-					bin = (bin * (n - i + 1)) / i;
-				}
-				return bin;
-			}
-
-			@Override
-			public boolean hasNext() {
-				return true;
-			}
-
-			@Override
-			public void remove() {
-				throw new UnsupportedOperationException();
-			}
-
-			@Override
-			public Iterator<int[]> iterator() {
-				return this;
-			}
-		}
 
 		/**
 		 * Iterate over the lists of all k-combinations from a given list
@@ -1459,7 +1387,7 @@ public final class Combinatoric {
 		}
 
 		public static KSubsetsList createKSubsets(final IAST list, final int k, IAST resultList, final int offset) {
-			return new KSubsetsList(new KSubsetsIterable(list.size() - offset, k), list, k, resultList, offset);
+			return new KSubsetsList(new KSubsets.KSubsetsIterable(list.size() - offset, k), list, k, resultList, offset);
 		}
 	}
 

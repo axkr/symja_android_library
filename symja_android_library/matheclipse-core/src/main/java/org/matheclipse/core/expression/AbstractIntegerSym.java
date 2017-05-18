@@ -183,10 +183,9 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	}
 
 	/**
-	 * Returns the IInteger for the specified character sequence stated in the
-	 * specified radix. The characters must all be digits of the specified
-	 * radix, except the first character which may be a plus sign
-	 * <code>'+'</code> or a minus sign <code>'-'</code> .
+	 * Returns the IInteger for the specified character sequence stated in the specified radix. The characters must all
+	 * be digits of the specified radix, except the first character which may be a plus sign <code>'+'</code> or a minus
+	 * sign <code>'-'</code> .
 	 * 
 	 * @param integerString
 	 *            the character sequence to parse.
@@ -194,8 +193,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	 *            the radix to be used while parsing.
 	 * @return the corresponding large integer.
 	 * @throws NumberFormatException
-	 *             if the specified character sequence does not contain a
-	 *             parsable large integer.
+	 *             if the specified character sequence does not contain a parsable large integer.
 	 */
 	public static IInteger valueOf(final String integerString, final int radix) {
 		try {
@@ -308,8 +306,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	 * IntegerSym extended greatest common divisor.
 	 * 
 	 * @param that
-	 *            if that is of type IntegerSym calculate the extended GCD
-	 *            otherwise call <code>super#egcd(IExpr)</code>
+	 *            if that is of type IntegerSym calculate the extended GCD otherwise call <code>super#egcd(IExpr)</code>
 	 * 
 	 * @return [ gcd(this,S), a, b ] with a*this + b*S = gcd(this,S).
 	 */
@@ -454,7 +451,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		b = valueOf(rest);
 
 		SortedMap<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
-		Primality.ellipticCurveFactors(rest, bigMap);
+		Primality.factorInteger(rest, bigMap);
 
 		for (Map.Entry<BigInteger, Integer> entry : bigMap.entrySet()) {
 			BigInteger key = entry.getKey();
@@ -537,8 +534,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	}
 
 	/**
-	 * See: <a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia -
-	 * Jacobi symbol</a><br/>
+	 * See: <a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia - Jacobi symbol</a><br/>
 	 * Book: Algorithmen Arbeitsbuch - D.Herrmann page 160
 	 * 
 	 * @param b
@@ -588,8 +584,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	}
 
 	/**
-	 * Returns the least common multiple of this large integer and the one
-	 * specified.
+	 * Returns the least common multiple of this large integer and the one specified.
 	 * 
 	 */
 	@Override
@@ -599,7 +594,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		}
 		IInteger a = abs();
 		IInteger b = that.abs();
-		IInteger lcm = a.multiply(b).div(gcd(b));
+		IInteger gcd = a.gcd(b);
+		IInteger lcm = a.multiply(b).div(gcd);
 		return lcm;
 	}
 
@@ -615,9 +611,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	public abstract IInteger negate();
 
 	/**
-	 * Split this integer into the nth-root (with prime factors less equal 1021)
-	 * and the &quot;rest-factor&quot;, so that
-	 * <code>this== (nth-root ^ n) + rest</code>
+	 * Split this integer into the nth-root (with prime factors less equal 1021) and the &quot;rest-factor&quot;, so
+	 * that <code>this== (nth-root ^ n) + rest</code>
 	 * 
 	 * @return <code>{nth-root, rest}</code>
 	 */

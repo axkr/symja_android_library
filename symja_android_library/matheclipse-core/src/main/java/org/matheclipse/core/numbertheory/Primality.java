@@ -19,7 +19,21 @@ package org.matheclipse.core.numbertheory;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import org.hipparchus.analysis.solvers.MullerSolver;
+import org.matheclipse.combinatoric.KSubsets;
+import org.matheclipse.combinatoric.KSubsets.KSubsetsList;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IInteger;
 
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
@@ -455,10 +469,21 @@ public class Primality {
 		}
 	}
 
-	public static BigInteger ellipticCurveFactors(final BigInteger val, Map<BigInteger, Integer> map) {
+	public static List<BigInteger> factorize(final BigInteger val, List<BigInteger> result) {
+		SortedMap<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
+		Primality.factorInteger(val, bigMap);
+		for (Map.Entry<BigInteger, Integer> entry : bigMap.entrySet()) {
+			BigInteger key = entry.getKey();
+			for (int i = 0; i < entry.getValue(); i++) {
+				result.add(key);
+			}
+		}
+		return result;
+	}
+
+	public static void factorInteger(final BigInteger val, Map<BigInteger, Integer> map) {
 		EllipticCurveMethod ecm = new EllipticCurveMethod(val);
 		ecm.factorize(map);
-		return null;
 	}
 
 	public static BigInteger rho(final BigInteger val) {
@@ -591,5 +616,204 @@ public class Primality {
 			result *= prime;
 		}
 		return result;
+	}
+
+	/**
+	 * Return all divisors of this integer number.
+	 * 
+	 * <pre>
+	 * divisors(24) ==> [1,2,3,4,6,8,12,24]
+	 * </pre>
+	 */
+	public static List<BigInteger> divisors(BigInteger val) {
+		if (val.equals(BigInteger.ONE) || val.equals(BigInteger.valueOf(-1))) {
+			ArrayList<BigInteger> result = new ArrayList<BigInteger>();
+			result.add(BigInteger.ONE);
+			return result;
+		}
+
+		Set<BigInteger> set = new TreeSet<BigInteger>();
+
+		final List<BigInteger> primeFactorsList = factorize(val, new ArrayList<BigInteger>());
+		int len = primeFactorsList.size();
+
+		// build the k-subsets from the primeFactorsList
+		for (int k = 1; k < len; k++) {
+			final KSubsetsList<BigInteger, List<BigInteger>> iter = KSubsets.createKSubsets(primeFactorsList, k, 0);
+			for (List<BigInteger> subset : iter) {
+				if (subset == null) {
+					break;
+				}
+				// create the product of all integers in the k-subset
+				BigInteger factor = BigInteger.ONE;
+				for (int j = 0; j < subset.size(); j++) {
+					factor = factor.multiply((BigInteger) subset.get(j));
+				}
+				// add this divisor to the set collection
+				set.add(factor);
+			}
+		}
+
+		// build the final divisors list from the tree set
+		final ArrayList<BigInteger> resultList = new ArrayList<BigInteger>();
+		resultList.add(BigInteger.ONE);
+		for (BigInteger entry : set) {
+			resultList.add(entry);
+		}
+		resultList.add(val);
+		return resultList;
+	}
+
+	/**
+	 * Least common multiple
+	 * 
+	 * @param arg1
+	 * @param arg2
+	 * @return
+	 */
+	public static BigInteger lcm(BigInteger arg1, BigInteger arg2) {
+		if (arg1.equals(BigInteger.ZERO) || arg2.equals(BigInteger.ZERO)) {
+			return BigInteger.ZERO;
+		}
+		BigInteger a = arg1.abs();
+		BigInteger b = arg2.abs();
+		BigInteger gcd = arg1.gcd(arg2);
+		return a.multiply(b).divide(gcd);
+	}
+
+	/**
+	 * See <a href="https://en.wikipedia.org/wiki/Multiplicative_order">Wikipedia: Multiplicative order</a> and
+	 * <a href="https://rosettacode.org/wiki/Multiplicative_order">Rosettacode. org: Multiplicative order</a>.
+	 *
+	 * @return <code>null</code> if GCD(k,N) != 1 or is negative
+	 */
+	public static BigInteger multiplicativeOrder(BigInteger k, BigInteger n) {
+		if (n.compareTo(BigInteger.ZERO) < 0) {
+			return null;
+		}
+		if (!k.gcd(n).equals(BigInteger.ONE)) {
+			return null;
+		}
+		SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
+		Primality.factorInteger(n, map);
+		BigInteger res = BigInteger.ONE;
+		for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
+			res = lcm(res, multiplicativeOrder(k, entry.getKey(), entry.getValue()));
+		}
+		return res;
+	}
+
+	private static BigInteger multiplicativeOrder(BigInteger a, BigInteger prime, int exponent) {
+		BigInteger m = prime.pow(exponent);
+		BigInteger t = m.divide(prime).multiply(prime.subtract(BigInteger.ONE));
+		List<BigInteger> divisors = divisors(t);
+		int len = divisors.size();
+		for (int i = 0; i < len; i++) {
+			BigInteger factor = divisors.get(i);
+			if (a.modPow(factor, m).equals(BigInteger.ONE)) {
+				return factor;
+			}
+		}
+		return BigInteger.ZERO;
+	}
+
+	public static BigInteger primeOmega(final BigInteger val) {
+		SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
+		Primality.factorInteger(val, map);
+		BigInteger sum = BigInteger.ZERO;
+		for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
+			sum = sum.add(BigInteger.valueOf(entry.getValue()));
+		}
+		return sum;
+	}
+
+	/**
+	 * <code>Prime(i)</code> gives the i-th prime number for <code>i</code> less equal 103000000.
+	 * 
+	 * See: <a href="https://bitbucket.org/dafis/javaprimes">https://bitbucket.org/dafis/javaprimes</a><br />
+	 * <a href=
+	 * "http://stackoverflow.com/questions/9625663/calculating-and-printing-the-nth-prime-number/9704912#9704912">
+	 * stackoverflow. com - Calculating and printing the nth prime number</a>
+	 */
+	public static long prime(long n) {
+		// Speed up counting by counting the primes per
+		// array slot and not individually. This yields
+		// another factor of about 1.24 or so.
+		if (n < 2L) {
+			return 2L;
+		}
+		if (n == 2L) {
+			return 3L;
+		}
+		if (n == 3L) {
+			return 5L;
+		}
+		long limit, root, count = 2;
+		limit = (long) (n * (Math.log(n) + Math.log(Math.log(n)))) + 3;
+		root = (long) Math.sqrt(limit);
+		switch ((int) (limit % 6)) {
+		case 0:
+			limit = 2 * (limit / 6) - 1;
+			break;
+		case 5:
+			limit = 2 * (limit / 6) + 1;
+			break;
+		default:
+			limit = 2 * (limit / 6);
+		}
+		switch ((int) (root % 6)) {
+		case 0:
+			root = 2 * (root / 6) - 1;
+			break;
+		case 5:
+			root = 2 * (root / 6) + 1;
+			break;
+		default:
+			root = 2 * (root / 6);
+		}
+		int dim = (int) ((limit + 31) >> 5);
+		int[] sieve = new int[dim];
+		int start, s1, s2, tempi;
+		for (int i = 0; i < root; ++i) {
+			if ((sieve[i >> 5] & (1 << (i & 31))) == 0) {
+				if ((i & 1) == 0) {
+					tempi = i + i;
+					start = i * (tempi + i + 10) + 7;
+					s1 = tempi + 3;
+					s2 = tempi + tempi + 7;
+				} else {
+					tempi = i + i;
+					start = i * (tempi + i + 8) + 4;
+					s1 = tempi + tempi + 5;
+					s2 = tempi + 3;
+				}
+				for (long j = start; j < limit; j += s2) {
+					sieve[(int) (j >> 5)] |= 1 << (j & 31);
+					j += s1;
+					if (j >= limit)
+						break;
+					sieve[(int) (j >> 5)] |= 1 << (j & 31);
+				}
+			}
+		}
+		int i;
+		for (i = 0; count < n; ++i) {
+			count += popCount(~sieve[i]);
+		}
+		--i;
+		int mask = ~sieve[i];
+		int p;
+		for (p = 31; count >= n; --p) {
+			count -= (mask >> p) & 1;
+		}
+		return 3 * (p + (i << 5)) + 7 + (p & 1);
+	}
+
+	// Count number of set bits in an int
+	private static int popCount(int n) {
+		n -= (n >>> 1) & 0x55555555;
+		n = ((n >>> 2) & 0x33333333) + (n & 0x33333333);
+		n = ((n >> 4) & 0x0F0F0F0F) + (n & 0x0F0F0F0F);
+		return (n * 0x01010101) >> 24;
 	}
 }

@@ -5,9 +5,6 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-import org.apfloat.Apcomplex;
-import org.apfloat.Apfloat;
-import org.apfloat.ApfloatMath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.FractionSym;
 import org.matheclipse.core.form.output.OutputFormFactory;

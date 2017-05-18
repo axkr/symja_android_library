@@ -1391,6 +1391,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDivisors() {
+		check("Divisors(990)", "{1,2,3,5,6,9,10,11,15,18,22,30,33,45,55,66,90,99,110,165,198,330,495,990}");
+		check("Divisors(341550071728321)", "{1,10670053,32010157,341550071728321}");
+		check("Divisors(2010)", "{1,2,3,5,6,10,15,30,67,134,201,335,402,670,1005,2010}");
+		
 		check("Divisors(1)", "{1}");
 		check("Divisors(6)", "{1,2,3,6}");
 		check("Divisors(-2)", "{1,2}");
@@ -4686,6 +4690,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPrimeOmega() {
+		check("PrimeOmega(990)", "5");
+		check("PrimeOmega(2010)", "4");
 		check("PrimeOmega(2^2)", "2");
 		check("PrimeOmega(3*2^2)", "3");
 		check("PrimeOmega(50!)", "108");
