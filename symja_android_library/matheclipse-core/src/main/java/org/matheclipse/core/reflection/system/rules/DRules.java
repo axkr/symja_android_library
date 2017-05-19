@@ -13,7 +13,7 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 54 };
+  final public static int[] SIZES = { 0, 63 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -143,9 +143,36 @@ public interface DRules {
     // D(ArcTan(x_),{x_,2}):=-(2*x)/(1+x^2)^2
     ISetDelayed(D(ArcTan(x_),List(x_,C2)),
       Times(CN1,C2,x,Power(Plus(C1,Sqr(x)),-2))),
+    // D(ArcCosh(x_),{x_,2}):=-x/((-1+x)^Rational(3,2)*(1+x)^Rational(3,2))
+    ISetDelayed(D(ArcCosh(x_),List(x_,C2)),
+      Times(CN1,x,Power(Times(Power(Plus(CN1,x),QQ(3L,2L)),Power(Plus(C1,x),QQ(3L,2L))),-1))),
+    // D(ArcCoth(x_),{x_,2}):=(2*x)/(1-x^2)^2
+    ISetDelayed(D(ArcCoth(x_),List(x_,C2)),
+      Times(C2,x,Power(Plus(C1,Negate(Sqr(x))),-2))),
+    // D(ArcSinh(x_),{x_,2}):=-x/(1+x^2)^Rational(3,2)
+    ISetDelayed(D(ArcSinh(x_),List(x_,C2)),
+      Times(CN1,x,Power(Power(Plus(C1,Sqr(x)),QQ(3L,2L)),-1))),
+    // D(ArcTanh(x_),{x_,2}):=(2*x)/(1-x^2)^2
+    ISetDelayed(D(ArcTanh(x_),List(x_,C2)),
+      Times(C2,x,Power(Plus(C1,Negate(Sqr(x))),-2))),
+    // D(Cos(x_),{x_,2}):=-Cos(x)
+    ISetDelayed(D(Cos(x_),List(x_,C2)),
+      Negate(Cos(x))),
+    // D(Cot(x_),{x_,2}):=2*Cot(x)*Csc(x)^2
+    ISetDelayed(D(Cot(x_),List(x_,C2)),
+      Times(C2,Cot(x),Sqr(Csc(x)))),
+    // D(Sin(x_),{x_,2}):=-Sin(x)
+    ISetDelayed(D(Sin(x_),List(x_,C2)),
+      Negate(Sin(x))),
     // D(Tan(x_),{x_,2}):=2*Sec(x)^2*Tan(x)
     ISetDelayed(D(Tan(x_),List(x_,C2)),
       Times(C2,Sqr(Sec(x)),Tan(x))),
+    // D(x_^a_,{x_,n_IntegerQ}):=Pochhammer(a-n+1,n)*x^(a-n)/;n>=0&&FreeQ(a,x)
+    ISetDelayed(D(Power(x_,a_),List(x_,$p(n,IntegerQ))),
+      Condition(Times(Pochhammer(Plus(a,Negate(n),C1),n),Power(x,Plus(a,Negate(n)))),And(GreaterEqual(n,C0),FreeQ(a,x)))),
+    // D(a_^x_,{x_,n_IntegerQ}):=a^x*Log(x)^n/;n>=0&&FreeQ(a,x)
+    ISetDelayed(D(Power(a_,x_),List(x_,$p(n,IntegerQ))),
+      Condition(Times(Power(a,x),Power(Log(x),n)),And(GreaterEqual(n,C0),FreeQ(a,x)))),
     // D(ArcCos(x_),{x_,n_IntegerQ}):=KroneckerDelta(n)*ArcCos(x)-(-1)^(n+(-1)*1)/(1-x^2)^(n-Rational(1,2))*Sum((Pochhammer(1-n,k)*Pochhammer(Rational(1,2),k)*2^(2*k+1-n)*x^(2*k+1-n)*(x^2+(-1)*1)^(n+(-1)*1-k))/(2*k-n+1)!,{k,0,n+(-1)*1})/;n>=0
     ISetDelayed(D(ArcCos(x_),List(x_,$p(n,IntegerQ))),
       Condition(Plus(Times(KroneckerDelta(n),ArcCos(x)),Times(CN1,Power(CN1,Plus(n,Negate(C1))),Power(Power(Plus(C1,Negate(Sqr(x))),Plus(n,Negate(C1D2))),-1),Sum(Times(Power(Factorial(Plus(Times(C2,k),Negate(n),C1)),-1),Pochhammer(Plus(C1,Negate(n)),k),Pochhammer(C1D2,k),Power(C2,Plus(Times(C2,k),C1,Negate(n))),Power(x,Plus(Times(C2,k),C1,Negate(n))),Power(Plus(Sqr(x),Negate(C1)),Plus(n,Negate(C1),Negate(k)))),List(k,C0,Plus(n,Negate(C1)))))),GreaterEqual(n,C0))),

@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -91,25 +92,14 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 							try {
 								int n = ((IInteger) head).toInt();
 								if (n >= 1) {
-									IExpr dExpr;
-									IExpr dResult;
-									if (n == 1) {
-										dExpr = F.D(F.unaryAST1(functions.arg1(), F.Slot1), F.Slot1);
-										dResult = F.D.evalDownRule(engine, dExpr);
-									} else {
-										dExpr = F.D(F.unaryAST1(functions.arg1(), F.Slot1),
-												F.List(F.Slot1, derivativeHead.arg1()));
-										dResult = F.D.evalDownRule(engine, dExpr);
-									}
-
-									if (dResult.isPresent()) {
-										dResult = engine.evaluate(dResult);
-										return F.Function(dResult);
-									}
+									IAST fullDerivative = derivativeAST[2];
+									return evaluateDArg1IfPossible(n, derivativeHead, functions, fullDerivative,
+											engine);
 								}
 							} catch (ArithmeticException ae) {
-
+								// toInt() may throw ArithmeticException
 							}
+							return F.NIL;
 						}
 					}
 				}
@@ -157,6 +147,61 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 					return F.NIL;
 				}
 			}
+		}
+		return F.NIL;
+	}
+
+	/**
+	 * Evaluate a <code>Derivative(1)[f]</code> or <code>Derivative(1)[f][x]</code> expression.
+	 * 
+	 * @param n
+	 *            the number of derivative depth
+	 * @param head
+	 * @param headDerivative
+	 * @param fullDerivative
+	 * @param engine
+	 * @return
+	 */
+	private IExpr evaluateDArg1IfPossible(int n, IAST head, IAST headDerivative, IAST fullDerivative,
+			EvalEngine engine) {
+		IExpr newFunction;
+		IExpr symbol = F.Slot1;
+		if (fullDerivative == null) {
+			newFunction = engine.evaluate(F.unaryAST1(headDerivative.arg1(), symbol));
+		} else {
+			if (fullDerivative.size() != 2) {
+				return F.NIL;
+			}
+			symbol = fullDerivative.arg1();
+			newFunction = engine.evaluate(F.unaryAST1(headDerivative.arg1(), symbol));
+		}
+
+		IAST dExpr;
+		if (n == 1) {
+			dExpr = F.D(newFunction, symbol);
+		} else {
+			dExpr = F.D(newFunction, F.List(symbol, F.ZZ(n)));
+		}
+		dExpr.setEvalFlags(IAST.IS_DERIVATIVE_EVALED);
+
+		IExpr dResult = engine.evalRules(F.D, dExpr);
+
+		if (dResult.isPresent()) {
+			dResult = engine.evaluate(dResult);
+			return F.Function(dResult);
+		}
+		if (n > 1) {
+			for (int i = 0; i < n; i++) {
+				dExpr = F.D(newFunction, symbol);
+				dExpr.setEvalFlags(IAST.IS_DERIVATIVE_EVALED);
+				dResult = engine.evalRules(F.D, dExpr);
+				if (!dResult.isPresent()) {
+					return F.NIL;
+				} else {
+					newFunction = engine.evaluate(dResult);
+				}
+			}
+			return F.Function(newFunction);
 		}
 		return F.NIL;
 	}

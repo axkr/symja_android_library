@@ -146,6 +146,11 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public final int IS_HASH_EVALED = 0x4000;
 
 	/**
+	 * This expression is already evaluated in the Derivative[] function
+	 */
+	public final int IS_DERIVATIVE_EVALED = 0x8000;
+	
+	/**
 	 * 
 	 * @param collection
 	 * @return

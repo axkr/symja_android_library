@@ -43,9 +43,22 @@
   D(ArcCot(x_), {x_, 2}) := (2*x)/(1 + x^2)^2,
   D(ArcSin(x_), {x_, 2}) := x/(1 - x^2)^(3/2),
   D(ArcTan(x_), {x_, 2}) := -((2*x)/(1 + x^2)^2),
-  
+ 
+  D(ArcCosh(x_), {x_, 2}) :=  -(x/((-1 + x)^(3/2)*(1 + x)^(3/2))),
+  D(ArcCoth(x_), {x_, 2}) :=  (2*x)/(1 - x^2)^2,
+  D(ArcSinh(x_), {x_, 2}) := -(x/(1 + x^2)^(3/2)),
+  D(ArcTanh(x_), {x_, 2}) := (2*x)/(1 - x^2)^2,
+   
+  D(Cos(x_), {x_, 2}) := -Cos(x),
+  D(Cot(x_), {x_, 2}) := 2*Cot(x)*Csc(x)^2,
+  D(Sin(x_), {x_, 2}) := -Sin(x),
   D(Tan(x_), {x_, 2}) := 2*Sec(x)^2*Tan(x),
   
+  D(x_^a_, {x_, n_IntegerQ}) := Pochhammer(a - n + 1, n)*x^(a - n)
+    /; n >= 0 && FreeQ(a,x),
+  D(a_^x_, {x_, n_IntegerQ}) := a^x*Log(x)^n
+    /; n >= 0 && FreeQ(a,x),
+    
   D(ArcCos(x_), {x_, n_IntegerQ}) := KroneckerDelta(n)*ArcCos(x) - 
     ((-1)^(n - 1)/(1 - x^2)^(n - 1/2))*Sum((1/(2*k - n + 1)!)*(Pochhammer(1 - n, k)*Pochhammer(1/2, k)*2^(2*k + 1 - n)*x^(2*k + 1 - n)*(x^2 - 1)^(n - 1 - k)), {k, 0, n - 1})
     /; n >= 0,

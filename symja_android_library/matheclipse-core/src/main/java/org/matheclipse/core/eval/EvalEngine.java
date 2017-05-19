@@ -524,11 +524,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			return result;
 		}
 
-//		if ((ISymbol.ONEIDENTITY & attr) == ISymbol.ONEIDENTITY) {
-//			if (ast.head().isSymbol()) {
-//				return ast.arg1();
-//			}
-//		}
+		// if ((ISymbol.ONEIDENTITY & attr) == ISymbol.ONEIDENTITY) {
+		// if (ast.head().isSymbol()) {
+		// return ast.arg1();
+		// }
+		// }
 
 		if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 			final IExpr arg1 = ast.arg1();
@@ -600,8 +600,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			if ((ISymbol.HOLDALL & attr) == ISymbol.HOLDALL) {
 				// check for Set or SetDelayed necessary, because of dynamic
 				// evaluation then initializing rules for predefined symbols
-				// (i.e. Sin,
-				// Cos,...)
+				// (i.e. Sin, Cos,...)
 				if (!(symbol.equals(F.Set) || symbol.equals(F.SetDelayed) || symbol.equals(F.UpSet)
 						|| symbol.equals(F.UpSetDelayed))) {
 					return F.NIL;
@@ -620,9 +619,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			}
 		}
 
-		// if (symbol instanceof MethodSymbol) {
-		// return ((MethodSymbol) symbol).invoke(ast);
-		// } else {
 		if (symbol.isBuiltInSymbol()) {
 			final IEvaluator module = ((IBuiltInSymbol) symbol).getEvaluator();
 			if (module instanceof IFunctionEvaluator) {

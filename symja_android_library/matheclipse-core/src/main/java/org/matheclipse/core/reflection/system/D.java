@@ -37,12 +37,12 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 	private IExpr getDerivativeArg1(IExpr x, final IExpr a1, final IExpr head, EvalEngine engine) {
 		if (head.isSymbol()) {
 			ISymbol header = (ISymbol) head;
-//			IExpr der = Derivative.derivative(1, header, engine);
-//			if (der.isPresent()) {
-//				// we've found a derivative for a function of the form f[x_]
-//				IExpr derivative = F.eval(F.unaryAST1(der, a1));
-//				return F.Times(F.D(a1, x), derivative);
-//			}
+			// IExpr der = Derivative.derivative(1, header, engine);
+			// if (der.isPresent()) {
+			// // we've found a derivative for a function of the form f[x_]
+			// IExpr derivative = F.eval(F.unaryAST1(der, a1));
+			// return F.Times(F.D(a1, x), derivative);
+			// }
 			IAST fDerivParam = Derivative.createDerivative(1, header, a1);
 			if (x.equals(a1)) {
 				// return F.NIL;
@@ -152,6 +152,9 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 				IAST subList = (IAST) xList.arg1();
 				return subList.args().mapLeft(F.List(), new BinaryEval(F.D, engine), fx);
 			} else if (xList.isAST2() && xList.arg2().isInteger()) {
+				if (ast.isEvalFlagOn(IAST.IS_DERIVATIVE_EVALED)) {
+					return F.NIL;
+				}
 				int n = Validate.checkIntType(xList, 2, 1);
 				if (n >= 0) {
 					if (xList.arg1().isList()) {
@@ -232,7 +235,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 				// // D(LaplaceTransform(c,t,s), t) -> 0
 				// return F.C0;
 				// }
-			} else if (listArg1.isAST1()) {
+			} else if (listArg1.isAST1() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
 				IAST[] derivStruct = listArg1.isDerivativeAST1();
 				if (derivStruct != null && derivStruct[2] != null) {
 					IAST headAST = derivStruct[1];
@@ -257,7 +260,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 				return getDerivativeArg1(x, listArg1.arg1(), header, engine);
 				// } else if (listArg1.isAST2()) {
 				// return getDerivativeArg2(x, listArg1.arg1(), listArg1.arg2(), header);
-			} else if (listArg1.isAST()) {
+			} else if (listArg1.isAST() && ast.isEvalFlagOff(IAST.IS_DERIVATIVE_EVALED)) {
 				return getDerivativeArgN(x, listArg1, header);
 			}
 

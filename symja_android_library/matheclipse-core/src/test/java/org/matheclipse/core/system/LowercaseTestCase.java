@@ -1020,6 +1020,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testD() {
+		check("D(f(x), x)", "f'(x)");
+		
 		check("D(Sin(t), {t, 1})", "Cos(t)");
 		check("D(Derivative(0,1,0)[f][x,x*y,z+x^2],x)",
 				"2*x*Derivative(0,1,1)[f][x,x*y,x^2+z]+y*Derivative(0,2,0)[f][x,x*y,x^2+z]+Derivative(\n"
@@ -1167,19 +1169,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDerivative() {
+		
+		check("h(x_):=Sin(x)+x^2", "");
+		check("h'(x)", "2*x+Cos(x)");
+		check("h'(0.5)", "1.8775825618903728");
+		check("h''(x)", "2-Sin(x)");
+		
+		check("h(x_):=x*Cos(x)", "");
+		check("h'", "-Sin(#1)*#1+Cos(#1)&");
+		check("h''", "-2*Sin(#1)-Cos(#1)*#1&");
+		
 		check("y''", "Derivative(2)[y]");
 
-		check("Derivative(1)[# ^ 3&] ", "3*(#1^2&)");
 		check("Derivative(1)[Sin]", "Cos(#1)&");
 
 		check("Derivative(0)[#1^2&]", "#1^2&");
-		check("Derivative(1)[# ^ 3&] ", "3*(#1^2&)");
-		check("Derivative(2)[# ^ 3&] ", "6*(#1&)");
+		check("Derivative(1)[# ^ 3&] ", "3*#1^2&");
+		check("Derivative(2)[# ^ 3&] ", "6*#1&");
+		check("Derivative(1)[E ^ #&] ", "E^#1&");
 		check("Derivative(1)[Sin]", "Cos(#1)&");
 		check("Derivative(3)[Sin]", "-Cos(#1)&");
 		check("Sin'(x)", "Cos(x)");
-		check("(# ^ 4&)''", "12*(#1^2&)");
-		check("f'(x) // FullForm", "\"Derivative(1)[f][x]\"");
+		check("(# ^ 4&)''", "12*#1^2&");
+//		check("f'(x) // FullForm", "\"Derivative(1)[f][x]\"");
 		// TODO
 		// check("Derivative(1)[#2 Sin(#1)+Cos(#2)&]", "Cos(#1)*#2&");
 		// check("Derivative(1,2)[#2^3 Sin(#1)+Cos(#2)&]", "6*Cos(#1)*#2&");
@@ -1190,7 +1202,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("f(x_) := x ^ 2", "");
 		// check("f'(x)", "");
 		check("Derivative(2, 1)[h]", "Derivative(2,1)[h]");
-		check("Derivative(2, 0, 1, 0)[h(g)]", "Derivative(2,0,1,0)[h(g)]");
+		check("Derivative(2, 0, 1, 0)[k(g)]", "Derivative(2,0,1,0)[k(g)]");
 
 		// parser tests
 		check("Hold(f'') // FullForm ", "\"Hold(Derivative(2)[f])\"");
