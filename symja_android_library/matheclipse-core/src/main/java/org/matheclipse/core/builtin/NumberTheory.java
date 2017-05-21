@@ -1340,17 +1340,7 @@ public final class NumberTheory {
 
 			IExpr arg1 = ast.arg1();
 			if (arg1.isInteger()) {
-				IInteger i = (IInteger) arg1;
-				if (i.isNegative()) {
-					i = i.negate();
-				}
-				IAST list = i.factorInteger();
-				if (list.isAST1()) {
-					IInteger temp = (IInteger) list.get(1).getAt(2);
-					if (!temp.isOne()) {
-						return F.True;
-					}
-				}
+				return F.bool(Primality.isPrimePower(((IInteger)arg1).toBigNumerator()));
 			}
 			return F.False;
 		}
@@ -1378,19 +1368,7 @@ public final class NumberTheory {
 					return F.False;
 				}
 				if (arg1.isInteger()) {
-					IInteger i = (IInteger) arg1;
-					if (i.isNegative()) {
-						i = i.negate();
-					}
-					IAST list = i.factorInteger();
-					for (int j = 1; j < list.size(); j++) {
-						IInteger temp = (IInteger) list.get(j).getAt(2);
-						if (temp.isGreaterThan(F.C1)) {
-							return F.False;
-						}
-					}
-
-					return F.True;
+					return F.bool(Primality.isSquareFree(((IInteger) arg1).toBigNumerator()));
 				}
 				if (arg1.isAtom()) {
 					return F.False;

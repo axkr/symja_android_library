@@ -30,9 +30,12 @@ import java.util.TreeSet;
 import org.hipparchus.analysis.solvers.MullerSolver;
 import org.matheclipse.combinatoric.KSubsets;
 import org.matheclipse.combinatoric.KSubsets.KSubsetsList;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 
 import com.google.common.math.BigIntegerMath;
@@ -717,14 +720,57 @@ public class Primality {
 		return BigInteger.ZERO;
 	}
 
-	public static BigInteger primeOmega(final BigInteger val) {
+	public static BigInteger primeOmega(BigInteger val) {
 		SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
-		Primality.factorInteger(val, map);
+		factorInteger(val, map);
 		BigInteger sum = BigInteger.ZERO;
 		for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
 			sum = sum.add(BigInteger.valueOf(entry.getValue()));
 		}
 		return sum;
+	}
+
+	/**
+	 * Return <code>true</code> if <code>val</code> is a power of a prime number.
+	 * 
+	 * @param val
+	 * @return
+	 */
+	public static boolean isPrimePower(BigInteger val) {
+		if (val.compareTo(BigInteger.ZERO) < 0) {
+			val = val.negate();
+		}
+		SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
+		factorInteger(val, map);
+		if (map.size() == 1) {
+			for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
+				if (entry.getValue() > 1) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Return <code>true</code> if <code>val</code> is square free.
+	 * 
+	 * @param val
+	 * @return
+	 */
+	public static boolean isSquareFree(BigInteger val) {
+		if (val.compareTo(BigInteger.ZERO) < 0) {
+			val = val.negate();
+		}
+		SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
+		factorInteger(val, map);
+		for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
+			if (entry.getValue() > 1) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
