@@ -29,7 +29,7 @@ To get back the original number:
 2010
 ```
     
-FactorInteger' factors rationals using negative exponents:
+`FactorInteger` factors rationals using negative exponents:
 ```
 >> FactorInteger(2010 / 2011)
 {{2, 1}, {3, 1}, {5, 1}, {67, 1}, {2011, -1}}
