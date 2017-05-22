@@ -27,16 +27,9 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.hipparchus.analysis.solvers.MullerSolver;
 import org.matheclipse.combinatoric.KSubsets;
 import org.matheclipse.combinatoric.KSubsets.KSubsetsList;
-import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.eval.exception.ReturnException;
 
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
@@ -48,6 +41,38 @@ import com.google.common.math.LongMath;
  * 
  */
 public class Primality {
+
+	private static class PrimePowerTreedMap extends TreeMap<BigInteger, Integer> {
+		private static final long serialVersionUID = 7802239809732541730L;
+
+		@Override
+		public Integer put(BigInteger key, Integer value) {
+			Integer result = super.put(key, value);
+			if (size() > 1) {
+				// not a prime power:
+				throw ReturnException.RETURN_FALSE;
+			}
+			return result;
+		}
+	}
+
+	private static class SquareFreeTreedMap extends TreeMap<BigInteger, Integer> {
+		private static final long serialVersionUID = -7769218967264615452L;
+
+		@Override
+		public Integer put(BigInteger key, Integer value) {
+			Integer result = super.put(key, value);
+			if (value > 1) {
+				// not a square free number:
+				throw ReturnException.RETURN_FALSE;
+			}
+			if (result != null && result > 1) {
+				// not a square free number:
+				throw ReturnException.RETURN_FALSE;
+			}
+			return result;
+		}
+	}
 
 	private final static SecureRandom random = new SecureRandom();
 	private final static BigInteger TWO = new BigInteger("2");
@@ -740,14 +765,17 @@ public class Primality {
 		if (val.compareTo(BigInteger.ZERO) < 0) {
 			val = val.negate();
 		}
-		SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
-		factorInteger(val, map);
-		if (map.size() == 1) {
-			for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
-				if (entry.getValue() > 1) {
-					return true;
+		try {
+			SortedMap<BigInteger, Integer> map = new PrimePowerTreedMap();
+			factorInteger(val, map);
+			if (map.size() == 1) {
+				for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
+					if (entry.getValue() > 1) {
+						return true;
+					}
 				}
 			}
+		} catch (ReturnException re) {
 		}
 		return false;
 	}
@@ -762,15 +790,18 @@ public class Primality {
 		if (val.compareTo(BigInteger.ZERO) < 0) {
 			val = val.negate();
 		}
-		SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
-		factorInteger(val, map);
-		for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
-			if (entry.getValue() > 1) {
-				return false;
-			}
+		SortedMap<BigInteger, Integer> map = new SquareFreeTreedMap();
+		try {
+			factorInteger(val, map);
+			// for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
+			// if (entry.getValue() > 1) {
+			// return false;
+			// }
+			// }
+			return true;
+		} catch (ReturnException re) {
 		}
-
-		return true;
+		return false;
 	}
 
 	/**

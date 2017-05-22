@@ -5771,6 +5771,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSquareFreeQ() {
+		check("SquareFreeQ(9)", "False");
+		
 		check("SquareFreeQ(5)", "True");
 		check("SquareFreeQ(9)", "False");
 		check("SquareFreeQ(20)", "False");
