@@ -2111,6 +2111,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testFit() {
 		check("Fit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, 1, x)", "0.18644067796610156+0.6949152542372881*x");
+		check("Fit({{1,1},{2,4},{3,9},{4,16}},2,x)", "x^2.0");
 	}
 
 	public void testFixedPoint() {

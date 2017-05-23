@@ -54,6 +54,8 @@ public class CompleteTestSuite extends TestCase {
 		suite.addTestSuite(BracketBalancerTestCase.class);
 		suite.addTestSuite(EvalDoubleTestCase.class);
 		
+		suite.addTestSuite(NumberTheoryTestCase.class);
+		
 		return suite;
 
 	}
