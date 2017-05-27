@@ -14,6 +14,10 @@ import java.util.TreeSet;
 import org.matheclipse.combinatoric.KSubsets;
 import org.matheclipse.combinatoric.KSubsets.KSubsetsList;
 import org.matheclipse.core.eval.exception.ReturnException;
+import org.matheclipse.core.expression.AbstractIntegerSym;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IInteger;
 
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
@@ -694,6 +698,68 @@ public class Primality {
 	}
 
 	/**
+	 * Euler phi function.
+	 * 
+	 * See: <a href="http://en.wikipedia.org/wiki/Euler%27s_totient_function">Euler's totient function</a>
+	 * 
+	 * @return Euler's totient function
+	 * @throws ArithmeticException
+	 */
+	public static BigInteger eulerPhi(BigInteger value) {
+		if (value.equals(BigInteger.ZERO)) {
+			return BigInteger.ZERO;
+		}
+		if (value.compareTo(BigInteger.ZERO) < 0) {
+			value = value.negate();
+		}
+		if (value.equals(BigInteger.ONE)) {
+			return BigInteger.ONE;
+		}
+		SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
+		factorInteger(value, map);
+		BigInteger phi = BigInteger.ONE;
+		for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
+			BigInteger q = entry.getKey();
+			int c = entry.getValue();
+			if (c == 1) {
+				phi = phi.multiply(q.subtract(BigInteger.ONE));
+			} else {
+				phi = phi.multiply(q.subtract(BigInteger.ONE).multiply(q.pow(c - 1)));
+			}
+		}
+		return phi;
+	}
+
+	public static int moebiusMu(BigInteger value) {
+		if (value.compareTo(BigInteger.ZERO) < 0) {
+			value = value.negate();
+		}
+		if (value.equals(BigInteger.ONE)) {
+			return 1;
+		}
+		SortedMap<BigInteger, Integer> map = new SquareFreeTreedMap();
+		try {
+			factorInteger(value, map);
+			// value is square-free
+			Integer max = 1;
+			for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
+				Integer c = entry.getValue();
+				if (c.compareTo(max) > 0) {
+					return 0;
+				}
+			}
+			if ((map.size() & 0x00000001) == 0x00000001) {
+				// odd number
+				return -1;
+			}
+			return 1;
+		} catch (ReturnException re) {
+			// not square-free
+		}
+		return 0;
+	}
+
+	/**
 	 * See <a href="https://en.wikipedia.org/wiki/Multiplicative_order">Wikipedia: Multiplicative order</a> and
 	 * <a href="https://rosettacode.org/wiki/Multiplicative_order">Rosettacode. org: Multiplicative order</a>.
 	 *
@@ -729,9 +795,9 @@ public class Primality {
 		return BigInteger.ZERO;
 	}
 
-	public static BigInteger primeOmega(BigInteger val) {
+	public static BigInteger primeOmega(BigInteger value) {
 		SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
-		factorInteger(val, map);
+		factorInteger(value, map);
 		BigInteger sum = BigInteger.ZERO;
 		for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
 			sum = sum.add(BigInteger.valueOf(entry.getValue()));

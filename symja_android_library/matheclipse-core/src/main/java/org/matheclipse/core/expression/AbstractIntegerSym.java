@@ -368,6 +368,11 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		}
 		return F.NIL;
 	}
+	
+	@Override
+	public IInteger eulerPhi() throws ArithmeticException {
+		return AbstractIntegerSym.valueOf( Primality.eulerPhi(toBigNumerator()));
+	}
 
 	/** {@inheritDoc} */
 	@Override
@@ -597,6 +602,11 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		IInteger gcd = a.gcd(b);
 		IInteger lcm = a.multiply(b).div(gcd);
 		return lcm;
+	}
+
+	@Override
+	public IInteger moebiusMu() { 
+		return AbstractIntegerSym.valueOf(Primality.moebiusMu(toBigNumerator()));
 	}
 
 	/**

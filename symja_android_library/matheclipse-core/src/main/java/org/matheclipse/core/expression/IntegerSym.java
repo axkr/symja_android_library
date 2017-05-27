@@ -276,29 +276,6 @@ public class IntegerSym extends AbstractIntegerSym {
 		return fIntValue == value;
 	}
 
-	@Override
-	public IInteger eulerPhi() throws ArithmeticException {
-		if (isZero()) {
-			return F.C0;
-		}
-		if (isOne()) {
-			return F.C1;
-		}
-		IAST ast = factorInteger();
-		int phi = 1;
-		for (int i = 1; i < ast.size(); i++) {
-			IAST element = (IAST) ast.get(i);
-			int q = ((IInteger) element.arg1()).intValue();
-			int c = ((IInteger) element.arg2()).intValue();
-			if (c == 1) {
-				phi = phi * (q - 1);
-			} else {
-				phi = phi * ((q - 1) * IntMath.pow(q, c - 1));
-			}
-		}
-		return F.integer(phi);
-	}
-
 	/**
 	 * Get the highest exponent of <code>base</code> that divides <code>this</code>
 	 * 
@@ -597,30 +574,6 @@ public class IntegerSym extends AbstractIntegerSym {
 			throw new ArithmeticException("the argument " + m.toString() + " should be nonzero.");
 		}
 		return valueOf(toBigNumerator().modPow(exp.toBigNumerator(), m.toBigNumerator()));
-	}
-
-	@Override
-	public IInteger moebiusMu() {
-		if (this.compareTo(AbstractIntegerSym.valueOf(1)) == 0) {
-			return AbstractIntegerSym.valueOf(1);
-		}
-		IAST ast = factorInteger();
-		IInteger max = AbstractIntegerSym.valueOf(1);
-		for (int i = 1; i < ast.size(); i++) {
-			IAST element = (IAST) ast.get(i);
-			IInteger c = (AbstractIntegerSym) element.arg2();
-			if (c.compareTo(max) > 0) {
-				max = c;
-			}
-		}
-		if (max.compareTo(AbstractIntegerSym.valueOf(1)) > 0) {
-			return AbstractIntegerSym.valueOf(0);
-		}
-		if (((ast.size() - 1) & 0x00000001) == 0x00000001) {
-			// odd number
-			return AbstractIntegerSym.valueOf(-1);
-		}
-		return AbstractIntegerSym.valueOf(1);
 	}
 
 	/**

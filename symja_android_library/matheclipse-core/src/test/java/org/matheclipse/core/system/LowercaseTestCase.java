@@ -1673,7 +1673,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testEulerPhi() {
 		check("Table(EulerPhi(k), {k, 0, 20})", "{0,1,1,2,2,4,2,6,4,6,4,10,4,12,6,8,8,16,6,18,8}");
+		check("Table(EulerPhi(-k), {k, 0, 20})", "{0,1,1,2,2,4,2,6,4,6,4,10,4,12,6,8,8,16,6,18,8}");
 		check("EulerPhi(50!)", "4218559200885839042679312107816703841788854953574400000000000000");
+		check("Table(EulerPhi(10^k), {k, 0, 10})", "{1,4,40,400,4000,40000,400000,4000000,40000000,400000000,4000000000}");
 	}
 
 	public void testExactNumberQ() {
@@ -3377,6 +3379,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("MoebiusMu(17291)", "-1");
 		check("MoebiusMu({2, 4, 7, 9})", "{-1,0,-1,0}");
 		check("MoebiusMu(-100)", "0");
+		check("Table(MoebiusMu(k), {k, 12})", "{1,-1,-1,0,-1,1,-1,0,0,1,-1,0}");
+		check("Table(MoebiusMu(-k), {k, 12})", "{1,-1,-1,0,-1,1,-1,0,0,1,-1,0}");
+		check("FactorInteger(183245)", "{{5,1},{67,1},{547,1}}");
+		check("MoebiusMu(183245)", "-1");
+		check("MoebiusMu(210)", "1");
+		check("MoebiusMu(192)", "0");
 	}
 
 	public void testMonomialList() {

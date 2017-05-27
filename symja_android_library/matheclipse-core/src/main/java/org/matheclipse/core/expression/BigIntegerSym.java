@@ -27,8 +27,7 @@ import org.matheclipse.core.numbertheory.Primality;
 import com.google.common.math.BigIntegerMath;
 
 /**
- * IInteger implementation which delegates most of the methods to the BigInteger
- * methods.
+ * IInteger implementation which delegates most of the methods to the BigInteger methods.
  * 
  * @see AbstractIntegerSym
  * @see IntegerSym
@@ -156,9 +155,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns
-	 * a negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
+	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -317,32 +315,9 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		return fBigIntValue.intValue() == value && fBigIntValue.bitLength() <= 31;
 	}
 
-	@Override
-	public IInteger eulerPhi() throws ArithmeticException {
-		if (isZero()) {
-			return F.C0;
-		}
-		if (isOne()) {
-			return F.C1;
-		}
-		IAST ast = factorInteger();
-		IInteger phi = AbstractIntegerSym.valueOf(1);
-		for (int i = 1; i < ast.size(); i++) {
-			IAST element = (IAST) ast.get(i);
-			IInteger q = (IInteger) element.arg1();
-			int c = ((IInteger) element.arg2()).toInt();
-			if (c == 1) {
-				phi = phi.multiply(q.subtract(AbstractIntegerSym.valueOf(1)));
-			} else {
-				phi = phi.multiply(q.subtract(AbstractIntegerSym.valueOf(1)).multiply(q.pow(c - 1)));
-			}
-		}
-		return phi;
-	}
 
 	/**
-	 * Get the highest exponent of <code>base</code> that divides
-	 * <code>this</code>
+	 * Get the highest exponent of <code>base</code> that divides <code>this</code>
 	 * 
 	 * @return the exponent
 	 */
@@ -364,8 +339,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	}
 
 	/**
-	 * Returns the greatest common divisor of this large integer and the one
-	 * specified.
+	 * Returns the greatest common divisor of this large integer and the one specified.
 	 * 
 	 */
 	@Override
@@ -596,30 +570,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
 			throw new ArithmeticException("the argument " + m.toString() + " should be nonzero.");
 		}
 		return valueOf(fBigIntValue.modPow(exp.toBigNumerator(), m.toBigNumerator()));
-	}
-
-	@Override
-	public IInteger moebiusMu() {
-		if (this.compareTo(AbstractIntegerSym.valueOf(1)) == 0) {
-			return AbstractIntegerSym.valueOf(1);
-		}
-		IAST ast = factorInteger();
-		IInteger max = AbstractIntegerSym.valueOf(1);
-		for (int i = 1; i < ast.size(); i++) {
-			IAST element = (IAST) ast.get(i);
-			IInteger c = (IInteger) element.arg2();
-			if (c.compareTo(max) > 0) {
-				max = c;
-			}
-		}
-		if (max.compareTo(AbstractIntegerSym.valueOf(1)) > 0) {
-			return AbstractIntegerSym.valueOf(0);
-		}
-		if (((ast.size() - 1) & 0x00000001) == 0x00000001) {
-			// odd number
-			return AbstractIntegerSym.valueOf(-1);
-		}
-		return AbstractIntegerSym.valueOf(1);
 	}
 
 	/**
