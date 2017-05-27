@@ -313,7 +313,7 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
-			if (arg1.isInteger() && !arg1.isNegative()) {
+			if (arg1.isInteger()) {
 				try {
 					return ((IInteger) arg1).charmichaelLambda();
 				} catch (ArithmeticException ae) {
@@ -1340,7 +1340,7 @@ public final class NumberTheory {
 
 			IExpr arg1 = ast.arg1();
 			if (arg1.isInteger()) {
-				return F.bool(Primality.isPrimePower(((IInteger)arg1).toBigNumerator()));
+				return F.bool(Primality.isPrimePower(((IInteger) arg1).toBigNumerator()));
 			}
 			return F.False;
 		}

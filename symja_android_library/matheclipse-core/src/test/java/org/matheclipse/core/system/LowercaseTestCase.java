@@ -513,6 +513,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("CarmichaelLambda(15)", "4");
 		check("CarmichaelLambda(11)", "10");
 		check("CarmichaelLambda(50)", "20");
+		check("Table(CarmichaelLambda(-k), {k, 12})", "{1,1,2,2,4,2,6,2,6,4,10,2}");
+		check("Table(CarmichaelLambda(10^k), {k, 0, 10})",
+				"{1,4,20,100,500,5000,50000,500000,5000000,50000000,500000000}");
 	}
 
 	public void testCases() {
@@ -1021,7 +1024,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testD() {
 		check("D(f(x), x)", "f'(x)");
-		
+
 		check("D(Sin(t), {t, 1})", "Cos(t)");
 		check("D(Derivative(0,1,0)[f][x,x*y,z+x^2],x)",
 				"2*x*Derivative(0,1,1)[f][x,x*y,x^2+z]+y*Derivative(0,2,0)[f][x,x*y,x^2+z]+Derivative(\n"
@@ -1169,16 +1172,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDerivative() {
-		
+
 		check("h(x_):=Sin(x)+x^2", "");
 		check("h'(x)", "2*x+Cos(x)");
 		check("h'(0.5)", "1.8775825618903728");
 		check("h''(x)", "2-Sin(x)");
-		
+
 		check("h(x_):=x*Cos(x)", "");
 		check("h'", "-Sin(#1)*#1+Cos(#1)&");
 		check("h''", "-2*Sin(#1)-Cos(#1)*#1&");
-		
+
 		check("y''", "Derivative(2)[y]");
 
 		check("Derivative(1)[Sin]", "Cos(#1)&");
@@ -1191,7 +1194,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Derivative(3)[Sin]", "-Cos(#1)&");
 		check("Sin'(x)", "Cos(x)");
 		check("(# ^ 4&)''", "12*#1^2&");
-//		check("f'(x) // FullForm", "\"Derivative(1)[f][x]\"");
+		// check("f'(x) // FullForm", "\"Derivative(1)[f][x]\"");
 		// TODO
 		// check("Derivative(1)[#2 Sin(#1)+Cos(#2)&]", "Cos(#1)*#2&");
 		// check("Derivative(1,2)[#2^3 Sin(#1)+Cos(#2)&]", "6*Cos(#1)*#2&");
@@ -1406,7 +1409,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Divisors(990)", "{1,2,3,5,6,9,10,11,15,18,22,30,33,45,55,66,90,99,110,165,198,330,495,990}");
 		check("Divisors(341550071728321)", "{1,10670053,32010157,341550071728321}");
 		check("Divisors(2010)", "{1,2,3,5,6,10,15,30,67,134,201,335,402,670,1005,2010}");
-		
+
 		check("Divisors(1)", "{1}");
 		check("Divisors(6)", "{1,2,3,6}");
 		check("Divisors(-2)", "{1,2}");
@@ -1675,7 +1678,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Table(EulerPhi(k), {k, 0, 20})", "{0,1,1,2,2,4,2,6,4,6,4,10,4,12,6,8,8,16,6,18,8}");
 		check("Table(EulerPhi(-k), {k, 0, 20})", "{0,1,1,2,2,4,2,6,4,6,4,10,4,12,6,8,8,16,6,18,8}");
 		check("EulerPhi(50!)", "4218559200885839042679312107816703841788854953574400000000000000");
-		check("Table(EulerPhi(10^k), {k, 0, 10})", "{1,4,40,400,4000,40000,400000,4000000,40000000,400000000,4000000000}");
+		check("Table(EulerPhi(10^k), {k, 0, 10})",
+				"{1,4,40,400,4000,40000,400000,4000000,40000000,400000000,4000000000}");
 	}
 
 	public void testExactNumberQ() {
@@ -5781,7 +5785,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testSquareFreeQ() {
 		check("SquareFreeQ(9)", "False");
-		
+
 		check("SquareFreeQ(5)", "True");
 		check("SquareFreeQ(9)", "False");
 		check("SquareFreeQ(20)", "False");
@@ -5907,18 +5911,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSum() {
-		
+
 		check("Sum(f(k,j),{k,0,-1+2}, {j,0,-1+k})", "f(1,0)");
 		check("Sum(k, {k, 1, n})", "1/2*n*(1+n)");
 		check("Sum(k, {k, 1, 10})", "55");
 		check("Sum(g(i),{i,10,2})", "0");
-		
-//		check("Table(f(k,j), {k,0,-1+3},{j,0,-1+k})", "{{},{f(1,0)},{f(2,0),f(2,1)}}");
+
+		// check("Table(f(k,j), {k,0,-1+3},{j,0,-1+k})", "{{},{f(1,0)},{f(2,0),f(2,1)}}");
 		check("Sum(f(k,j),{k,0,-1+2}, {j,0,-1+k})", "f(1,0)");
 		check("Sum(f(i,j), {i, 1, 2}, {j, 1, 3})", "f(1,1)+f(1,2)+f(1,3)+f(2,1)+f(2,2)+f(2,3)");
-//		check("Sum(f(k,j), {k,0,-1+2},{j,0,-1+k})", "f(1,0)");
-//		check("Sum(((-1)^k*Binomial(-1+2,k)*2^((-1)*2*k+2)*Binomial(2*k,j)*Sin(1/2*2*Pi+2*(-j+k)*#1))/((\n"
-//				+ "1+k)*Cos(#1)^(2+2*k)*(-j+k)^(1-2)),{k,0,-1+2},{j,0,-1+k})", "");
+		// check("Sum(f(k,j), {k,0,-1+2},{j,0,-1+k})", "f(1,0)");
+		// check("Sum(((-1)^k*Binomial(-1+2,k)*2^((-1)*2*k+2)*Binomial(2*k,j)*Sin(1/2*2*Pi+2*(-j+k)*#1))/((\n"
+		// + "1+k)*Cos(#1)^(2+2*k)*(-j+k)^(1-2)),{k,0,-1+2},{j,0,-1+k})", "");
 		check("Sum(j+k, {k,0,-1+2},{j,0,-1+k})", "1");
 		check("Sum(k, {k, 1, 10})", "55");
 		check("Sum(i * j, {i, 1, 10}, {j, 1, 10})", "3025");

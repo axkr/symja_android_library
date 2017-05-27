@@ -14,10 +14,6 @@ import java.util.TreeSet;
 import org.matheclipse.combinatoric.KSubsets;
 import org.matheclipse.combinatoric.KSubsets.KSubsetsList;
 import org.matheclipse.core.eval.exception.ReturnException;
-import org.matheclipse.core.expression.AbstractIntegerSym;
-import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IInteger;
 
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
@@ -695,6 +691,32 @@ public class Primality {
 		BigInteger b = arg2.abs();
 		BigInteger gcd = arg1.gcd(arg2);
 		return a.multiply(b).divide(gcd);
+	}
+
+	public static BigInteger charmichaelLambda(BigInteger value) {
+		if (value.equals(BigInteger.ZERO)) {
+			return BigInteger.ZERO;
+		}
+		if (value.compareTo(BigInteger.ZERO) < 0) {
+			value = value.negate();
+		}
+		if (value.equals(BigInteger.ONE)) {
+			return BigInteger.ONE;
+		}
+
+		SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
+		factorInteger(value, map);
+		BigInteger l = BigInteger.ONE;
+		for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
+			BigInteger base = entry.getKey();
+			int exponent = entry.getValue();
+			if (exponent >= 3 && base.equals(TWO)) {
+				l = lcm(l, base.pow(exponent - 2));
+			} else {
+				l = lcm(l, (base.pow(exponent - 1)).multiply(base.subtract(BigInteger.ONE)));
+			}
+		}
+		return l;
 	}
 
 	/**

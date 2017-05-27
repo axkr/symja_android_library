@@ -259,26 +259,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
 	@Override
 	public IInteger charmichaelLambda() {
-		if (isZero()) {
-			return F.C0;
-		}
-		if (isOne()) {
-			return F.C1;
-		}
-		IInteger l = F.C1;
-		IAST list = factorInteger();
-		IInteger base;
-		long exponent;
-		for (int i = 1; i < list.size(); i++) {
-			base = (IInteger) list.getAST(i).arg1();
-			exponent = ((IInteger) list.getAST(i).arg2()).toLong();
-			if (exponent >= 3 && base.equals(F.C2)) {
-				l = l.lcm(base.pow(exponent - 2));
-			} else {
-				l = l.lcm((base.pow(exponent - 1)).multiply(base.subtract(F.C1)));
-			}
-		}
-		return l;
+		return AbstractIntegerSym.valueOf(Primality.charmichaelLambda(toBigNumerator()));
 	}
 
 	@Override
@@ -368,10 +349,10 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		}
 		return F.NIL;
 	}
-	
+
 	@Override
 	public IInteger eulerPhi() throws ArithmeticException {
-		return AbstractIntegerSym.valueOf( Primality.eulerPhi(toBigNumerator()));
+		return AbstractIntegerSym.valueOf(Primality.eulerPhi(toBigNumerator()));
 	}
 
 	/** {@inheritDoc} */
@@ -605,7 +586,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	}
 
 	@Override
-	public IInteger moebiusMu() { 
+	public IInteger moebiusMu() {
 		return AbstractIntegerSym.valueOf(Primality.moebiusMu(toBigNumerator()));
 	}
 
