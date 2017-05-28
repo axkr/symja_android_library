@@ -37,7 +37,11 @@ public class ExprEvaluator {
 		public IExpr call() throws Exception {
 			EvalEngine.set(fEngine);
 			fEngine.reset();
-			return fEngine.evaluate(fExpr);
+			IExpr temp= fEngine.evaluate(fExpr);
+			if (!fEngine.isOutListDisabled()) {
+				fEngine.addOut(temp);
+			}
+			return temp;
 		}
 
 	}

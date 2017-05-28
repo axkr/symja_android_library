@@ -37,7 +37,7 @@ public class Out extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Get the specified history line fro the <code>EvalEngine's</code> history
+	 * Get the specified history line from the <code>EvalEngine's</code> history
 	 * list. <br />
 	 * <b>Note</b> that the history maybe disabled in the
 	 * <code>EvalEngine</code>.
