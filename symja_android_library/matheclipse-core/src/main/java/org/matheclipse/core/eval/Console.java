@@ -216,10 +216,11 @@ public class Console {
 		msg.append("org.matheclipse.core.eval.Console [options]" + lineSeparator);
 		msg.append(lineSeparator);
 		msg.append("Program arguments: " + lineSeparator);
-		msg.append("  -h or -help                print usage messages" + lineSeparator);
-		msg.append("  -c or '-code <command>'    run the command" + lineSeparator);
-		msg.append("  -f or -file <filename>     use given file as input script" + lineSeparator);
-		msg.append("  -d or -default <filename>  use given textfile for system rules" + lineSeparator);
+		msg.append("  -h or -help                                 print usage messages" + lineSeparator);
+		msg.append("  -c or -code <command>                       run the command" + lineSeparator);
+		msg.append("  -f or -function <function> -args arg1 arg2  run the function" + lineSeparator);
+		msg.append("        -file <filename>                      use given file as input script" + lineSeparator);
+		msg.append("  -d or -default <filename>                   use given textfile for system rules" + lineSeparator);
 
 		msg.append("To stop the program type: exit<RETURN>" + lineSeparator);
 		msg.append("To continue an input line type: \\<RETURN>" + lineSeparator);
@@ -248,6 +249,7 @@ public class Console {
 	 *            the aruments of the program
 	 */
 	private void setArgs(final String args[]) {
+		String function = null;
 		for (int i = 0; i < args.length; i++) {
 			final String arg = args[i];
 
@@ -264,12 +266,48 @@ public class Console {
 					System.exit(-1);
 					return;
 				}
+			} else if (arg.equals("-function") || arg.equals("-f")) {
+				try {
+					function = args[i + 1];
+					i++;
+				} catch (final ArrayIndexOutOfBoundsException aioobe) {
+					final String msg = "You must specify a function when " + "using the -function argument";
+					System.out.println(msg);
+					System.exit(-1);
+					return;
+				}
+			} else if (arg.equals("-args") || arg.equals("-a")) {
+				try {
+					if (function != null) {
+						StringBuilder inputExpression = new StringBuilder(1024);
+						inputExpression.append(function);
+						inputExpression.append("(");
+						for (int j = i + 1; j < args.length; j++) {
+							if (j != i + 1) {
+								inputExpression.append(", ");
+							}
+							inputExpression.append(args[j]);
+						}
+						inputExpression.append(")");
+						String outputExpression = interpreter(inputExpression.toString());
+						if (outputExpression.length() > 0) {
+							System.out.println(outputExpression);
+						}
+						System.exit(1);
+					}
+					return;
+				} catch (final ArrayIndexOutOfBoundsException aioobe) {
+					final String msg = "You must specify a function when " + "using the -function argument";
+					System.out.println(msg);
+					System.exit(-1);
+					return;
+				}
 			} else if (arg.equals("-help") || arg.equals("-h")) {
 				printUsageCompletely();
 				return;
 				// } else if (arg.equals("-debug")) {
 				// Config.DEBUG = true;
-			} else if (arg.equals("-file") || arg.equals("-f")) {
+			} else if (arg.equals("-file")) {
 				try {
 					fFile = new File(args[i + 1]);
 					i++;
