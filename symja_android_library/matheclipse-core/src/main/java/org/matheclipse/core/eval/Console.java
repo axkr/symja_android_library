@@ -32,7 +32,7 @@ import org.matheclipse.parser.client.math.MathException;
 public class Console {
 
 	private ExprEvaluator fEvaluator;
-	
+
 	private OutputFormFactory fOutputFactory;
 
 	/**
@@ -49,7 +49,7 @@ public class Console {
 	public static void main(final String args[]) {
 		F.initSymbols(null, null, true); // console.getDefaultSystemRulesFilename(),
 											// null, false);
-		printUsage();
+
 		Console console;
 		try {
 			console = new Console();
@@ -61,6 +61,7 @@ public class Console {
 		String trimmedInput = null;
 		String outputExpression = null;
 		console.setArgs(args);
+
 		final File file = console.getFile();
 		if (file != null) {
 			try {
@@ -194,8 +195,29 @@ public class Console {
 		msg.append("org.matheclipse.core.eval.Console [options]" + lineSeparator);
 		msg.append(lineSeparator);
 		msg.append("Program arguments: " + lineSeparator);
-		msg.append("  -h or -help                print this message" + lineSeparator);
-		// msg.append(" -debug print debugging information" + lSep);
+		msg.append("  -h or -help                print usage messages" + lineSeparator);
+
+		msg.append("To stop the program type: exit<RETURN>" + lineSeparator);
+		msg.append("To continue an input line type: \\<RETURN>" + lineSeparator);
+		msg.append("at the end of the line." + lineSeparator);
+		msg.append("To disable the evaluation timeout type: timeoutoff<RETURN>" + lineSeparator);
+		msg.append("To enable the evaluation timeout type: timeouton<RETURN>" + lineSeparator);
+		msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
+
+		System.out.println(msg.toString());
+	}
+
+	/**
+	 * Prints the usage of how to use this class to System.out
+	 */
+	private static void printUsageCompletely() {
+		final String lineSeparator = System.getProperty("line.separator");
+		final StringBuffer msg = new StringBuffer();
+		msg.append("org.matheclipse.core.eval.Console [options]" + lineSeparator);
+		msg.append(lineSeparator);
+		msg.append("Program arguments: " + lineSeparator);
+		msg.append("  -h or -help                print usage messages" + lineSeparator);
+		msg.append("  -c or '-code <command>'    run the command" + lineSeparator);
 		msg.append("  -f or -file <filename>     use given file as input script" + lineSeparator);
 		msg.append("  -d or -default <filename>  use given textfile for system rules" + lineSeparator);
 
@@ -229,8 +251,21 @@ public class Console {
 		for (int i = 0; i < args.length; i++) {
 			final String arg = args[i];
 
-			if (arg.equals("-help") || arg.equals("-h")) {
-				printUsage();
+			if (arg.equals("-code") || arg.equals("-c")) {
+				try {
+					String outputExpression = interpreter(args[i + 1]);
+					if (outputExpression.length() > 0) {
+						System.out.println(outputExpression);
+					}
+					System.exit(1);
+				} catch (final ArrayIndexOutOfBoundsException aioobe) {
+					final String msg = "You must specify a command when " + "using the -code argument";
+					System.out.println(msg);
+					System.exit(-1);
+					return;
+				}
+			} else if (arg.equals("-help") || arg.equals("-h")) {
+				printUsageCompletely();
 				return;
 				// } else if (arg.equals("-debug")) {
 				// Config.DEBUG = true;
@@ -261,7 +296,7 @@ public class Console {
 			}
 
 		}
-
+		printUsage();
 	}
 
 	/**
@@ -286,7 +321,6 @@ public class Console {
 				StringBuilder strBuffer = new StringBuilder();
 				fOutputFactory.convert(strBuffer, result);
 				return strBuffer.toString();
-				// return result.toString();
 			}
 		} catch (final SyntaxError se) {
 			String msg = se.getMessage();
