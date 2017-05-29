@@ -1025,6 +1025,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testD() {
 		check("D(x*f(x)*f'(x), x)", "x*f'(x)^2+f(x)*f'(x)+x*f(x)*f''(x)");
 		check("D(f(x), x)", "f'(x)");
+		check("Sin'(2)", "Cos(2)");
+		check("D(Sin(x) + Cos(2*x), {x, 2}) /. x -> 0", "-4");
 
 		check("D(Sin(t), {t, 1})", "Cos(t)");
 		check("D(Derivative(0,1,0)[f][x,x*y,z+x^2],x)",
@@ -1074,6 +1076,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(3*x^3*f'(Sqrt(1+x^2)))/(1+x^2)^(5/2)+(-3*x*f'(Sqrt(1+x^2)))/(1+x^2)^(3/2)+(-3*x^\n"
 						+ "3*f''(Sqrt(1+x^2)))/(1+x^2)^2+(3*x*f''(Sqrt(1+x^2)))/(1+x^2)+(x^3*Derivative(3)[f][Sqrt(\n"
 						+ "1+x^2)])/(1+x^2)^(3/2)");
+		
+		check("f(x_) := x^5 + 6*x^3", "");
+		check("D(f(x), x)", "18*x^2+5*x^4");
+		check("f'(x)", "18*x^2+5*x^4");
+		check("D(f(x), x) /. x->5", "3575");
+		check("D(f(x), {x, 3}) /. x -> -1", "96");
+		
+		check("D(x^2 * E^(5*y), x)", "2*E^(5*y)*x");
+		check("D(x^2 * E^(5*y), y)", "5*E^(5*y)*x^2");
+		check("D(x^2 * E^(5*y), {x,2}, {y,3})", "250*E^(5*y)");
+		
+		check("D(Sin(g(x)) + g''(x), x)", "Cos(g(x))*g'(x)+Derivative(3)[g][x]");
 	}
 
 	public void testDefer() {
