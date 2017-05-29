@@ -1023,6 +1023,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testD() {
+		check("D(x*f(x)*f'(x), x)", "x*f'(x)^2+f(x)*f'(x)+x*f(x)*f''(x)");
 		check("D(f(x), x)", "f'(x)");
 
 		check("D(Sin(t), {t, 1})", "Cos(t)");

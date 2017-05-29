@@ -40,6 +40,8 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.parser.client.SyntaxError;
+import org.matheclipse.parser.client.ast.FunctionNode;
+import org.matheclipse.parser.client.ast.IntegerNode;
 import org.matheclipse.parser.client.operator.InfixOperator;
 
 /**
@@ -1048,19 +1050,10 @@ public class ExprParser extends ExprScanner {
 					continue;
 				}
 			} else {
+				if (fToken == TT_DERIVATIVE) {
+					lhs = parseDerivative(lhs);
+				}
 				if (fToken != TT_OPERATOR) {
-					if (fToken == TT_DERIVATIVE) {
-						int derivativeCounter = 1;
-						getNextToken();
-						while (fToken == TT_DERIVATIVE) {
-							derivativeCounter++;
-							getNextToken();
-						}
-						IAST deriv = F.$(DERIVATIVE, F.integer(derivativeCounter));
-						lhs = F.$(deriv, lhs);
-						lhs = parseArguments(lhs);
-						continue;
-					}
 					break;
 				}
 				infixOperator = determineBinaryOperator();
@@ -1132,6 +1125,9 @@ public class ExprParser extends ExprScanner {
 					continue;
 				}
 			} else {
+				if (fToken == TT_DERIVATIVE) {
+					rhs = parseDerivative(rhs);
+				}
 				if (lookahead != TT_OPERATOR) {
 					break;
 				}
@@ -1169,6 +1165,25 @@ public class ExprParser extends ExprScanner {
 		}
 		return rhs;
 
+	}
+
+	/**
+	 * Parse expressions like <code>expr''[x]</code>
+	 * 
+	 * @param expr
+	 * @return
+	 */
+	private IExpr parseDerivative(IExpr expr) {
+		int derivativeCounter = 1;
+		getNextToken();
+		while (fToken == TT_DERIVATIVE) {
+			derivativeCounter++;
+			getNextToken();
+		}
+		IAST deriv = F.$(DERIVATIVE, F.integer(derivativeCounter));
+		expr = F.$(deriv, expr);
+		expr = parseArguments(expr);
+		return expr;
 	}
 
 	public List<IExpr> parsePackage(final String expression) throws SyntaxError {

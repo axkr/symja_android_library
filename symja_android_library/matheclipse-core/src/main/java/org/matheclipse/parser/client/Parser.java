@@ -789,20 +789,10 @@ public class Parser extends Scanner {
 					continue;
 				}
 			} else {
+				if (fToken == TT_DERIVATIVE) {
+					lhs = parseDerivative(lhs);
+				}
 				if (fToken != TT_OPERATOR) {
-					if (fToken == TT_DERIVATIVE) {
-						int derivativeCounter = 1;
-						getNextToken();
-						while (fToken == TT_DERIVATIVE) {
-							derivativeCounter++;
-							getNextToken();
-						}
-						FunctionNode head = fFactory.createFunction(DERIVATIVE, new IntegerNode(derivativeCounter));
-						FunctionNode deriv = fFactory.createAST(head);
-						deriv.add(lhs);
-						lhs = parseArguments(deriv);
-						continue;
-					}
 					break;
 				}
 				infixOperator = determineBinaryOperator();
@@ -871,6 +861,9 @@ public class Parser extends Scanner {
 					continue;
 				}
 			} else {
+				if (fToken == TT_DERIVATIVE) {
+					rhs = parseDerivative(rhs);
+				}
 				if (lookahead != TT_OPERATOR) {
 					break;
 				}
@@ -903,6 +896,20 @@ public class Parser extends Scanner {
 		}
 		return rhs;
 
+	}
+
+	private ASTNode parseDerivative(ASTNode expr) {
+		int derivativeCounter = 1;
+		getNextToken();
+		while (fToken == TT_DERIVATIVE) {
+			derivativeCounter++;
+			getNextToken();
+		}
+		FunctionNode head = fFactory.createFunction(DERIVATIVE, new IntegerNode(derivativeCounter));
+		FunctionNode deriv = fFactory.createAST(head);
+		deriv.add(expr);
+		expr = parseArguments(deriv);
+		return expr;
 	}
 
 	/**

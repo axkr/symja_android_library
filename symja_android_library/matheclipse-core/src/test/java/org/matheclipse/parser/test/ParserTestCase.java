@@ -300,4 +300,26 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
+	
+	public void testParser23() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("f[x]*f''[x]");
+			assertEquals(obj.toString(), "Times(f(x), Derivative(2)[f][x])");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
+	public void testParser24() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("x'[t] == 10*(y[t] - x[t])");
+			assertEquals(obj.toString(), "Equal(Derivative(1)[x][t], Times(10, Plus(y(t), Times(-1, x(t)))))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
 }
