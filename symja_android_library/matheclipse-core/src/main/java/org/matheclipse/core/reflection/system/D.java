@@ -148,9 +148,16 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 		if (x.isList()) {
 			// D[fx_, {...}]
 			IAST xList = (IAST) x;
-			if (xList.isAST1() && xList.arg1().isList()) {
+			if (xList.isAST1() && xList.arg1().isListOfLists()) {
 				IAST subList = (IAST) xList.arg1();
-				return subList.args().mapLeft(F.List(), new BinaryEval(F.D, engine), fx);
+				IAST result = F.ListAlloc(subList.size());
+				for (int i = 1; i < subList.size(); i++) {
+					result.append(F.D(fx, F.List(subList.get(i))));
+				}
+				return result;
+			} else if (xList.isAST1() && xList.arg1().isList()) {
+				IAST subList = (IAST) xList.arg1();
+				 return subList.args().mapLeft(F.List(), new BinaryEval(F.D, engine), fx);
 			} else if (xList.isAST2() && xList.arg2().isInteger()) {
 				if (ast.isEvalFlagOn(IAST.IS_DERIVATIVE_EVALED)) {
 					return F.NIL;

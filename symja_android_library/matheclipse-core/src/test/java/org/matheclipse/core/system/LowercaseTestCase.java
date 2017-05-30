@@ -1076,18 +1076,30 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(3*x^3*f'(Sqrt(1+x^2)))/(1+x^2)^(5/2)+(-3*x*f'(Sqrt(1+x^2)))/(1+x^2)^(3/2)+(-3*x^\n"
 						+ "3*f''(Sqrt(1+x^2)))/(1+x^2)^2+(3*x*f''(Sqrt(1+x^2)))/(1+x^2)+(x^3*Derivative(3)[f][Sqrt(\n"
 						+ "1+x^2)])/(1+x^2)^(3/2)");
-		
+
 		check("f(x_) := x^5 + 6*x^3", "");
 		check("D(f(x), x)", "18*x^2+5*x^4");
 		check("f'(x)", "18*x^2+5*x^4");
 		check("D(f(x), x) /. x->5", "3575");
 		check("D(f(x), {x, 3}) /. x -> -1", "96");
-		
+
 		check("D(x^2 * E^(5*y), x)", "2*E^(5*y)*x");
 		check("D(x^2 * E^(5*y), y)", "5*E^(5*y)*x^2");
 		check("D(x^2 * E^(5*y), {x,2}, {y,3})", "250*E^(5*y)");
-		
+
 		check("D(Sin(g(x)) + g''(x), x)", "Cos(g(x))*g'(x)+Derivative(3)[g][x]");
+
+		check("D(Subscript(x, 1)^2 + Sin(Subscript(x, 1)*Subscript(x, 2)), Subscript(x, 1))",
+				"2*Subscript(x,1)+Cos(Subscript(x,1)*Subscript(x,2))*Subscript(x,2)");
+
+		check("D({3*t^2, 4*t, Sin(t)}, t)", "{6*t,4,Cos(t)}");
+		check("D({x^n, {Exp(x), Log(x)}, {Sin(x), Cos(x), Tan(x)}}, x)",
+				"{n/x^(1-n),{E^x,1/x},{Cos(x),-Sin(x),Sec(x)^2}}");
+		check("D(x^2 + 5*y^3, {{x, y}})", 
+				"{2*x,15*y^2}");
+		check("D(x^2 + 5*y^3, {{x, y}, 2})", "{{2,0},{0,30*y}}");
+		check("D((x^2+5*y^3+z^4)/E^w,{{x,y}})", "{(2*x)/E^w,(15*y^2)/E^w}");
+		check("D(E^(-w)*(x^2 + 5*y^3 + z^4), {{{x, y}, {z, w}}})", "{{(2*x)/E^w,(15*y^2)/E^w},{(4*z^3)/E^w,-(x^2+5*y^3+z^4)/E^w}}");
 	}
 
 	public void testDefer() {
@@ -4284,6 +4296,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Cases({1,2,3,5,x,y,4},_?NumberQ)", "{1,2,3,5,4}");
 		check("MatchQ({1,8,Pi},{__?Positive})", "True");
 		check("MatchQ({1,I,0},{__?Positive})", "False");
+
+		check("f(x_?NumericQ):= NIntegrate(Sin(t^3), {t, 0, x})", "");
+		check("f(2)", "0.4519484771568255");
+		check("f((1+Sqrt(2))/5)", "0.0135767506042311");
+		check("f(a)", "f(a)");
 
 		check("{3,-5,2,7,-6,3} /. _?Negative:>0", "{3,0,2,7,0,3}");
 
