@@ -907,6 +907,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Cos(z+42*Pi)", "Cos(z)");
 		check("Cos(x+y+z+43*Pi)", "-Cos(x+y+z)");
 		check("Cos(z+42*a*Pi)", "Cos(42*a*Pi+z)");
+		check("Cos(Sqrt(x^2))", "Cos(x)");
 	}
 
 	public void testCosh() {
@@ -5313,6 +5314,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sec(x+y+z+43*Pi)", "-Sec(x+y+z)");
 		check("Sec(z+42*a*Pi)", "Sec(42*a*Pi+z)");
 		check("Sec(z+4/3*Pi)", "-Sec(Pi/3+z)");
+		check("Sec(Sqrt(x^2))", "Sec(x)");
 	}
 
 	public void testSech() {

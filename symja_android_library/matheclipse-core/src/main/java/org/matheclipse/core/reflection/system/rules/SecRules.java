@@ -13,7 +13,7 @@ public interface SecRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 43, 0 };
+  final public static int[] SIZES = { 43, 1 };
 
   final public static IAST RULES = List(
     IInit(Sec, SIZES),
@@ -145,6 +145,9 @@ public interface SecRules {
       C0),
     // Sec(ComplexInfinity)=Indeterminate
     ISet(Sec(CComplexInfinity),
-      Indeterminate)
+      Indeterminate),
+    // Sec(Sqrt(x_^2)):=Sec(x)
+    ISetDelayed(Sec(Sqrt(Sqr(x_))),
+      Sec(x))
   );
 }

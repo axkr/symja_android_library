@@ -42,5 +42,6 @@
  
  Sec(I*Infinity)=0,
  Sec(-I*Infinity)=0,
- Sec(ComplexInfinity)=Indeterminate
+ Sec(ComplexInfinity)=Indeterminate,
+ Sec(Sqrt(x_^2)):=Sec(x)
 }

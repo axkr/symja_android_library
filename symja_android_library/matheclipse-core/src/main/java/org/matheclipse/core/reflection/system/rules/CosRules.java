@@ -13,7 +13,7 @@ public interface CosRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 55, 4 };
+  final public static int[] SIZES = { 55, 5 };
 
   final public static IAST RULES = List(
     IInit(Cos, SIZES),
@@ -179,6 +179,9 @@ public interface CosRules {
     // Cos(ArcSin(x_)):=(1-x^2)^Rational(1,2)
     ISetDelayed(Cos(ArcSin(x_)),
       Power(Plus(C1,Negate(Sqr(x))),C1D2)),
+    // Cos(Sqrt(x_^2)):=Cos(x)
+    ISetDelayed(Cos(Sqrt(Sqr(x_))),
+      Cos(x)),
     // Cos(I*Infinity)=Infinity
     ISet(Cos(DirectedInfinity(CI)),
       oo),
