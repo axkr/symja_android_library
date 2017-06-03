@@ -42,12 +42,36 @@ public class Max extends AbstractFunctionEvaluator {
 	}
 
 	private IExpr maximum(IAST list, boolean flattenedList) {
+		boolean evaled = false;
+		int j = 1;
+		IAST f = F.NIL;
+		for (int i = 1; i < list.size(); i++) {
+			if (list.get(i).isNegativeInfinity()) {
+				evaled = true;
+				if (f.isPresent()) {
+					f.remove(j);
+				} else {
+					f = list.removeAtClone(j);
+				}
+				continue;
+			}
+			j++;
+		}
+		if (evaled) {
+			if (f.isAST0()) {
+				return F.CNInfinity;
+			}
+			list = f;
+		}
+		if (!evaled) {
+			evaled = flattenedList;
+		}
 		IExpr max1;
 		IExpr max2;
-		boolean evaled = flattenedList;
 		max1 = list.arg1();
-		IAST f = list.copyHead();
+
 		IExpr.COMPARE_TERNARY comp;
+		f = list.copyHead();
 		for (int i = 2; i < list.size(); i++) {
 			max2 = list.get(i);
 			if (max1.equals(max2)) {
@@ -73,7 +97,7 @@ public class Max extends AbstractFunctionEvaluator {
 			}
 		}
 		if (f.size() > 1) {
-			f.append(1, max1);
+			f.append(max1);
 			if (!evaled) {
 				return F.NIL;
 			}

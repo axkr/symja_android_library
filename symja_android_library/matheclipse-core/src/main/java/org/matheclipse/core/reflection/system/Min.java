@@ -42,14 +42,43 @@ public class Min extends AbstractFunctionEvaluator {
 	}
 
 	private IExpr minimum(IAST list, final boolean flattenedList) {
+		boolean evaled = false;
+		int j = 1;
+		IAST f = F.NIL;
+		for (int i = 1; i < list.size(); i++) {
+			if (list.get(i).isInfinity()) {
+				evaled = true;
+				if (f.isPresent()) {
+					f.remove(j);
+				} else {
+					f = list.removeAtClone(j);
+				}
+				continue;
+			}
+			j++;
+		}
+		if (evaled) {
+			if (f.isAST0()) {
+				return F.CNInfinity;
+			}
+			list = f;
+		}
+		if (!evaled) {
+			evaled = flattenedList;
+		}
+
 		IExpr min1;
 		IExpr min2;
-		boolean evaled = flattenedList;
-		min1 = list.arg1();
-		IAST f = list.copyHead();
+		min1 =  list.arg1();
+		f = list.copyHead();
 		IExpr.COMPARE_TERNARY comp;
 		for (int i = 2; i < list.size(); i++) {
 			min2 = list.get(i);
+			if (min2.isInfinity()) {
+				evaled = true;
+				continue;
+			}
+
 			if (min1.equals(min2)) {
 				continue;
 			}

@@ -46,6 +46,7 @@ public class Refine extends AbstractCoreFunctionEvaluator {
 	public static IExpr refineAssumptions(final IExpr expr, IAssumptions assumptions, EvalEngine engine) {
 		try {
 			engine.setAssumptions(assumptions);
+			// System.out.println(expr.toString());
 			return engine.evalWithoutNumericReset(expr);
 		} finally {
 			engine.setAssumptions(null);

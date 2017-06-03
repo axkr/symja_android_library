@@ -1096,11 +1096,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("D({3*t^2, 4*t, Sin(t)}, t)", "{6*t,4,Cos(t)}");
 		check("D({x^n, {Exp(x), Log(x)}, {Sin(x), Cos(x), Tan(x)}}, x)",
 				"{n/x^(1-n),{E^x,1/x},{Cos(x),-Sin(x),Sec(x)^2}}");
-		check("D(x^2 + 5*y^3, {{x, y}})", 
-				"{2*x,15*y^2}");
+		check("D(x^2 + 5*y^3, {{x, y}})", "{2*x,15*y^2}");
 		check("D(x^2 + 5*y^3, {{x, y}, 2})", "{{2,0},{0,30*y}}");
 		check("D((x^2+5*y^3+z^4)/E^w,{{x,y}})", "{(2*x)/E^w,(15*y^2)/E^w}");
-		check("D(E^(-w)*(x^2 + 5*y^3 + z^4), {{{x, y}, {z, w}}})", "{{(2*x)/E^w,(15*y^2)/E^w},{(4*z^3)/E^w,-(x^2+5*y^3+z^4)/E^w}}");
+		check("D(E^(-w)*(x^2 + 5*y^3 + z^4), {{{x, y}, {z, w}}})",
+				"{{(2*x)/E^w,(15*y^2)/E^w},{(4*z^3)/E^w,-(x^2+5*y^3+z^4)/E^w}}");
 	}
 
 	public void testDefer() {
@@ -2412,17 +2412,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGreater() {
+		check("Infinity>Infinity", "False");
+		
+		check("Refine(Infinity>x, x>0)", "True");
+		check("Refine(-Infinity>x, x>0)", "False");
+		
 		check("{Greater(), Greater(x), Greater(1)}", "{True,True,True}");
 		check("Pi>0", "True");
 		check("Pi+E<8", "True");
 		check("2/17 > 1/5 > Pi/10", "False");
 		check("x<x", "False");
 		check("x<=x", "True");
-		check("x>x", "False");
+		check("x>x", "False"); 
 		check("x>=x", "True");
 	}
 
 	public void testGreaterEqual() {
+		check("Infinity>=Infinity", "True");
+		
+		check("Refine(Infinity>=x, x>0)", "True");
+		check("Refine(-Infinity>=x, x>0)", "False");
+		
 		check("{GreaterEqual(), GreaterEqual(x), GreaterEqual(1)}", "{True,True,True}");
 		check("Pi>=0", "True");
 		check("Pi+E<=8", "True");
@@ -2955,6 +2965,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLess() {
+		check("Infinity<Infinity", "False");
+		
+		check("Refine(Infinity<x, x>0)", "False");
+		check("Refine(-Infinity<x, x>0)", "True");
+		
 		check("3<4", "True");
 		check("{Less(), Less(x), Less(1)}", "{True,True,True}");
 		check("(2*x+5)<(5^(1/2))", "x<1/2*(-5+Sqrt(5))");
@@ -2962,6 +2977,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLessEqual() {
+		check("Infinity<=Infinity", "True");
+		
+		check("Refine(Infinity<=x, x>0)", "False");
+		check("Refine(-Infinity<=x, x>0)", "True");
+		
 		check("3<=4", "True");
 		check("{LessEqual(), LessEqual(x), LessEqual(1)}", "{True,True,True}");
 		check("(2*x+5)<=(5^(1/2))", "x<=1/2*(-5+Sqrt(5))");
@@ -3296,6 +3316,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMax() {
+		
+		check("Refine(Max(Infinity,x), x>0)", "Infinity");
+		check("Refine(Max(Infinity,x,y), x>0&&y>0)", "Infinity");
+		check("Refine(Max(Infinity,x,y), x>0)", "Max(Infinity,y)");
+		check("Refine(Max(x,Infinity), x>0)", "Infinity");
+		check("Refine(Max(x,y,Infinity), x>0&&y>0)", "Infinity");
+		
+		check("Refine(Max(-Infinity,x), x>0)", "x");
+		check("Refine(Max(-Infinity,x,y), x>0&&y>0)", "Max(x,y)");
+		check("Refine(Max(x,-Infinity), x>0)", "x");
+		check("Refine(Max(x,y,-Infinity), x>0&&y>0)", "Max(x,y)");
+		check("Refine(Max(x,y,-Infinity), x>0)", "Max(x,y)");
+		
 		check("Max(4, -8, 1)", "4");
 		check("Max({1,2},3,{-3,3.5,-Infinity},{{1/2}})", "3.5");
 		check("Max(x, y)", "Max(x,y)");
@@ -3339,6 +3372,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMin() {
+		check("Refine(Min(-Infinity,x), x>0)", "-Infinity");
+		check("Refine(Min(-Infinity,x,y), x>0&&y>0)", "-Infinity");
+		check("Refine(Min(-Infinity,x,y), x>0)", "Min(y,-Infinity)");
+		check("Refine(Min(x,-Infinity), x>0)", "-Infinity");
+		check("Refine(Min(x,y,-Infinity), x>0&&y>0)", "-Infinity");
+		
+		check("Refine(Min(Infinity,x), x>0)", "x");
+		check("Refine(Min(Infinity,x,y), x>0&&y>0)", "Min(x,y)");
+		check("Refine(Min(x,Infinity), x>0)", "x");
+		check("Refine(Min(x,y,Infinity), x>0&&y>0)", "Min(x,y)");
+		check("Refine(Min(x,y,Infinity), x>0&&y>0)", "Min(x,y)");
+		
+		check("Refine(Infinity<x, x>0)", "False");
+		
 		check("Min(5, x, -3, y, 40)", "Min(-3,x,y)");
 		check("Min(4, -8, 1)", "-8");
 		check("Min({1,2},3,{-3,3.5,-Infinity},{{1/2}})", "-Infinity");
@@ -4351,6 +4398,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPlus() {
+		check("Refine(Infinity+x, x>0)", "Infinity");
+		
 		// String s = System.getProperty("os.name");
 		// if (s.contains("Windows")) {
 		check("N(Pi, 30) + N(E, 30)", "5.85987448204883847382293085463");

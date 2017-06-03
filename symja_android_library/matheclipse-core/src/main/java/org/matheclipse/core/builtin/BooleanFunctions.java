@@ -873,10 +873,18 @@ public final class BooleanFunctions {
 				} else if (a0.isInterval1()) {
 					return compareGreaterIntervalTernary(a0.lower(), a0.upper(), a1.lower(), a1.upper());
 				}
-			} else if (a0.isInfinity() && a1.isNegativeInfinity()) {
-				return IExpr.COMPARE_TERNARY.TRUE;
-			} else if (a0.isNegativeInfinity() && a1.isInfinity()) {
+			} else if (a0.isInfinity()) {
+				if (a1.isRealResult() || a1.isNegativeInfinity()) {
+					return IExpr.COMPARE_TERNARY.TRUE;
+				}
+			} else if (a0.isNegativeInfinity()) {
+				if (a1.isRealResult() || a1.isInfinity()) {
+					return IExpr.COMPARE_TERNARY.FALSE;
+				}
+			} else if (a1.isInfinity() && a0.isRealResult()) {
 				return IExpr.COMPARE_TERNARY.FALSE;
+			} else if (a1.isNegativeInfinity() && a0.isRealResult()) {
+				return IExpr.COMPARE_TERNARY.TRUE;
 			} else if (a0.isInterval1() && a1.isInterval1()) {
 				return compareGreaterIntervalTernary(a0.lower(), a0.upper(), a1.lower(), a1.upper());
 			}
@@ -1007,8 +1015,8 @@ public final class BooleanFunctions {
 		 *            right-hand-side of the comparator expression
 		 * @return the simplified comparator expression or <code>null</code> if no simplification was found
 		 */
-		protected IAST simplifyCompare(IExpr a1, IExpr a2) {
-			return simplifyCompare(a1, a2, F.Greater, F.Less);
+		protected IExpr simplifyCompare(IExpr a1, IExpr a2) {
+			return simplifyCompare(a1, a2, F.Greater, F.Less, true);
 		}
 
 		/**
@@ -1023,9 +1031,12 @@ public final class BooleanFunctions {
 		 *            symbol of the comparator operator for which the simplification was started
 		 * @param oppositeHead
 		 *            opposite of the symbol of the comparator operator for which the comparison was started
+		 * @param setTrue
+		 *            if <code>true</code> return F.True otherwise F.False
 		 * @return the simplified comparator expression or <code>F.NIL</code> if no simplification was found
 		 */
-		final protected IAST simplifyCompare(IExpr a1, IExpr a2, ISymbol originalHead, ISymbol oppositeHead) {
+		final protected IExpr simplifyCompare(IExpr a1, IExpr a2, ISymbol originalHead, ISymbol oppositeHead,
+				boolean setTrue) {
 			IExpr lhs;
 			IExpr rhs;
 			boolean useOppositeHeader = false;
@@ -1042,6 +1053,26 @@ public final class BooleanFunctions {
 			}
 			if (lhs.isAST()) {
 				IAST lhsAST = (IAST) lhs;
+				if (useOppositeHeader) {
+					setTrue = !setTrue;
+				}
+				if (lhsAST.isInfinity() && rhs.isRealResult()) {
+					// Infinity > rhs ?
+					return setTrue ? F.True : F.False;
+				}
+				if (lhsAST.isNegativeInfinity() && rhs.isRealResult()) {
+					// -Infinity > rhs ?
+					return setTrue ? F.False : F.True;
+					// return createComparatorResult(F.CN1, F.C1, useOppositeHeader, originalHead, oppositeHead);
+				}
+				if (rhs.isInfinity() && lhsAST.isRealResult()) {
+					// lhs > Infinity ?
+					return setTrue ? F.False : F.True;
+				}
+				if (rhs.isNegativeInfinity() && lhsAST.isRealResult()) {
+					// lhs > -Infinity ?
+					return setTrue ? F.True : F.False;
+				}
 				if (lhsAST.isTimes()) {
 					IAST result = lhsAST.partitionTimes(Predicates.isNumericFunction(), F.C0, F.C1, F.List);
 					if (!result.get(1).isZero()) {
@@ -1102,8 +1133,8 @@ public final class BooleanFunctions {
 
 		/** {@inheritDoc} */
 		@Override
-		protected IAST simplifyCompare(IExpr a1, IExpr a2) {
-			return simplifyCompare(a1, a2, F.GreaterEqual, F.LessEqual);
+		protected IExpr simplifyCompare(IExpr a1, IExpr a2) {
+			return simplifyCompare(a1, a2, F.GreaterEqual, F.LessEqual, true);
 		}
 
 		/** {@inheritDoc} */
@@ -1198,8 +1229,8 @@ public final class BooleanFunctions {
 
 		/** {@inheritDoc} */
 		@Override
-		protected IAST simplifyCompare(IExpr a1, IExpr a2) {
-			return simplifyCompare(a1, a2, F.Less, F.Greater);
+		protected IExpr simplifyCompare(IExpr a1, IExpr a2) {
+			return simplifyCompare(a1, a2, F.Less, F.Greater, false);
 		}
 
 		/** {@inheritDoc} */
@@ -1244,8 +1275,8 @@ public final class BooleanFunctions {
 
 		/** {@inheritDoc} */
 		@Override
-		protected IAST simplifyCompare(IExpr a1, IExpr a2) {
-			return simplifyCompare(a1, a2, F.LessEqual, F.GreaterEqual);
+		protected IExpr simplifyCompare(IExpr a1, IExpr a2) {
+			return simplifyCompare(a1, a2, F.LessEqual, F.GreaterEqual, false);
 		}
 
 		/** {@inheritDoc} */
