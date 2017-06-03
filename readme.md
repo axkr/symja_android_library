@@ -19,7 +19,7 @@
 * arbitrary precision integers, rational and complex numbers
 * differentiation, integration, equation solving, polynomial and linear algebra functions...
 * a general purpose Term Rewriting System and Pattern Matching engine
-* use human readable math expression strings or the internal abstract syntax tree (AST) representation to code in Java.
+* use human readable math expression strings or the internal abstract syntax tree (AST) representation to code in Java. See the [Unit test examples](symja_android_library/src/master/symja_android_library/matheclipse-core/src/test/java/org/matheclipse/core/system/LowercaseTestCase.java)
    
 ### Online demo
 
