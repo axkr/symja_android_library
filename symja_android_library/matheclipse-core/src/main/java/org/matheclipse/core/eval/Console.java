@@ -37,6 +37,11 @@ public class Console {
 	private OutputFormFactory fOutputFactory;
 
 	/**
+	 * Use pretty printer for expression output n print stream
+	 */
+	private boolean fPrettyPrinter;
+
+	/**
 	 * 60 seconds timeout limit as the default value for Symja expression evaluation.
 	 */
 	private long fSeconds = 60;
@@ -128,8 +133,11 @@ public class Console {
 						inputExpression = inputExpression + postfix;
 					}
 					System.out.println("In [" + COUNTER + "]: " + inputExpression);
-					console.resultPrinter(inputExpression);
-					// console.prettyPrinter(inputExpression);
+					if (console.fPrettyPrinter) {
+						console.prettyPrinter(inputExpression);
+					} else {
+						console.resultPrinter(inputExpression);
+					}
 					COUNTER++;
 				}
 				// } catch (final MathRuntimeException mre) {
@@ -230,6 +238,7 @@ public class Console {
 		msg.append("  -f or -function <function> -args arg1 arg2  run the function" + lineSeparator);
 		msg.append("        -file <filename>                      use given file as input script" + lineSeparator);
 		msg.append("  -d or -default <filename>                   use given textfile for system rules" + lineSeparator);
+		msg.append("  -pp                                         enable pretty printer" + lineSeparator);
 
 		msg.append("To stop the program type: exit<RETURN>" + lineSeparator);
 		msg.append("To continue an input line type: \\<RETURN>" + lineSeparator);
@@ -334,6 +343,8 @@ public class Console {
 					System.out.println(msg);
 					return;
 				}
+			} else if (arg.equals("-pp")) {
+				fPrettyPrinter = true;
 			} else if (arg.charAt(0) == '-') {
 				// we don't have any more args to recognize!
 				final String msg = "Unknown arg: " + arg;
@@ -371,7 +382,9 @@ public class Console {
 			}
 		} catch (final SyntaxError se) {
 			String msg = se.getMessage();
+			System.err.println();
 			System.err.println(msg);
+			return "";
 		} catch (final RuntimeException re) {
 			Throwable me = re.getCause();
 			if (me instanceof MathException) {
@@ -379,12 +392,16 @@ public class Console {
 			} else {
 				Validate.printException(buf, re);
 			}
+			return "";
 		} catch (final Exception e) {
 			Validate.printException(buf, e);
+			return "";
 		} catch (final OutOfMemoryError e) {
 			Validate.printException(buf, e);
+			return "";
 		} catch (final StackOverflowError e) {
 			Validate.printException(buf, e);
+			return "";
 		}
 		return buf.toString();
 	}
@@ -409,7 +426,9 @@ public class Console {
 			}
 		} catch (final SyntaxError se) {
 			String msg = se.getMessage();
+			System.err.println();
 			System.err.println(msg);
+			return null;
 		} catch (final RuntimeException re) {
 			Throwable me = re.getCause();
 			if (me instanceof MathException) {
@@ -417,12 +436,16 @@ public class Console {
 			} else {
 				Validate.printException(buf, re);
 			}
+			return null;
 		} catch (final Exception e) {
 			Validate.printException(buf, e);
+			return null;
 		} catch (final OutOfMemoryError e) {
 			Validate.printException(buf, e);
+			return null;
 		} catch (final StackOverflowError e) {
 			Validate.printException(buf, e);
+			return null;
 		}
 		String[] strArray = new String[3];
 		strArray[0] = "";

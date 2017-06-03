@@ -8,6 +8,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
 /**
@@ -25,6 +26,7 @@ public class ASCIIPrettyPrinter3 {
 	 */
 	public final static boolean PLUS_CALL = true;
 
+	boolean fractionPrinted;
 	StringBuilder line1;
 	StringBuilder line2;
 	StringBuilder line3;
@@ -33,10 +35,12 @@ public class ASCIIPrettyPrinter3 {
 		line1 = new StringBuilder();
 		line2 = new StringBuilder();
 		line3 = new StringBuilder();
+		fractionPrinted = false;
 	}
 
 	public void print(String numerator) {
 		printFraction(numerator, null);
+		fractionPrinted=false;
 	}
 
 	public void printFraction(String numerator, String denominator) {
@@ -49,6 +53,7 @@ public class ASCIIPrettyPrinter3 {
 			for (int i = 0; i < len; i++) {
 				line3.append(" ");
 			}
+			fractionPrinted=false;
 			return;
 		}
 
@@ -88,6 +93,7 @@ public class ASCIIPrettyPrinter3 {
 		for (int i = 0; i < rest; i++) {
 			line3.append(" ");
 		}
+		fractionPrinted = true;
 	}
 
 	public String toString() {
@@ -104,10 +110,11 @@ public class ASCIIPrettyPrinter3 {
 	}
 
 	public void convert(final IExpr expr) {
+		fractionPrinted=false;
 		convert(expr, 0, NO_PLUS_CALL);
 	}
 
-	public void convert(final IExpr expr, final int precedence, boolean caller) {
+	private void convert(final IExpr expr, final int precedence, boolean caller) {
 		if (expr.isPlus()) {
 			if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
 				print(" ( ");
@@ -120,15 +127,36 @@ public class ASCIIPrettyPrinter3 {
 				print(" ) ");
 			}
 		} else if (expr.isTimes()) {
-			if (caller == PLUS_CALL) {
-				print(" + ");
-			}
 			convertTimes((IAST) expr, precedence, caller);
 		} else if (expr.isPower()) {
 			if (caller == PLUS_CALL) {
 				print(" + ");
 			}
 			convertTimesPowerFraction((IAST) expr, precedence);
+		} else if (expr.isAST() && expr.head().isSymbol()) {
+			if (caller == PLUS_CALL) {
+				print(" + ");
+			}
+			IAST ast = (IAST) expr;
+			ISymbol head = (ISymbol) ast.head();
+			if (head.equals(F.List)) {
+				print("{");
+			} else {
+				print(head.toString() + "(");
+			}
+			for (int i = 1; i < ast.size(); i++) {
+				fractionPrinted=false;
+				if (i != 1) {
+					print(", ");
+				}
+				convert(ast.get(i), 0, false);
+
+			}
+			if (head.equals(F.List)) {
+				print("}");
+			} else {
+				print(")");
+			}
 		} else {
 			if (expr.isSignedNumber()) {
 				convertNumber((ISignedNumber) expr, caller);
@@ -148,8 +176,12 @@ public class ASCIIPrettyPrinter3 {
 			if (ASTNodeFactory.TIMES_PRECEDENCE < precedence) {
 				print(" ( ");
 			}
-			if (convertNumber((ISignedNumber) arg1, caller)) {
-				print(" * ");
+			if (arg1.isMinusOne()) {
+				print(" - ");
+			} else {
+				if (convertNumber((ISignedNumber) arg1, caller)) {
+					print(" * ");
+				}
 			}
 
 			IExpr timesExpr = times.removeAtClone(1).getOneIdentity(F.C0);
@@ -217,18 +249,26 @@ public class ASCIIPrettyPrinter3 {
 					IFraction frac = (IFraction) number;
 					printFraction(frac.toBigNumerator().toString(), frac.toBigDenominator().toString());
 				} else {
-					convert(number);
+					convert(number, 0, NO_PLUS_CALL);
 				}
 				return true;
 			}
 		} else {
-			if (negative) {
-				print("-");
-			}
+
 			if (number.isFraction()) {
+				if (negative) {
+					if (fractionPrinted) {
+						print(" - ");
+					} else {
+						print("- ");
+					}
+				}
 				IFraction frac = (IFraction) number;
 				printFraction(frac.toBigNumerator().toString(), frac.toBigDenominator().toString());
 			} else {
+				if (negative) {
+					print("-");
+				}
 				print(number.toString());
 			}
 			return true;
