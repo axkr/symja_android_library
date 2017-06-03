@@ -55,7 +55,7 @@ public class CompleteTestSuite extends TestCase {
 		suite.addTestSuite(EvalDoubleTestCase.class);
 		
 		suite.addTestSuite(NumberTheoryTestCase.class);
-		
+		suite.addTestSuite(ASCIIPrintTest.class);
 		return suite;
 
 	}

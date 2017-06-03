@@ -935,7 +935,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				}
 				IAST newPlus = F.Plus();
 				for (int j = 1; j < plus.size(); j++) {
-					fractionalParts = Algebra.getFractionalPartsRational(plus.get(j));
+					fractionalParts = Algebra.fractionalPartsRational(plus.get(j));
 					if (fractionalParts != null && !fractionalParts[1].isOne()) {
 						for (int k = 1; k < plus.size(); k++) {
 							if (k != j) {

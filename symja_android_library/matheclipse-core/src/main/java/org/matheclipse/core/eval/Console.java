@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.form.output.ASCIIPrettyPrinter3;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.reflection.system.Names;
@@ -59,7 +60,6 @@ public class Console {
 		}
 		String inputExpression = null;
 		String trimmedInput = null;
-		String outputExpression = null;
 		console.setArgs(args);
 
 		final File file = console.getFile();
@@ -74,11 +74,8 @@ public class Console {
 				}
 				f.close();
 				inputExpression = buff.toString();
-				outputExpression = console.interpreter(inputExpression);
 				System.out.println("In [" + COUNTER + "]: " + inputExpression);
-				if (outputExpression.length() > 0) {
-					System.out.println("Out[" + COUNTER + "]: " + outputExpression);
-				}
+				console.resultPrinter(inputExpression);
 				COUNTER++;
 			} catch (final IOException ioe) {
 				final String msg = "Cannot read from the specified file. "
@@ -130,11 +127,9 @@ public class Console {
 						System.err.println("Automatically closing brackets: " + postfix);
 						inputExpression = inputExpression + postfix;
 					}
-					outputExpression = console.interpreter(inputExpression);
 					System.out.println("In [" + COUNTER + "]: " + inputExpression);
-					if (outputExpression.length() > 0) {
-						System.out.println("Out[" + COUNTER + "]: " + outputExpression);
-					}
+					console.resultPrinter(inputExpression);
+					// console.prettyPrinter(inputExpression);
 					COUNTER++;
 				}
 				// } catch (final MathRuntimeException mre) {
@@ -144,6 +139,20 @@ public class Console {
 				System.out.println(e.getMessage());
 			}
 		}
+	}
+
+	private String resultPrinter(String inputExpression) {
+		String outputExpression = interpreter(inputExpression);
+		if (outputExpression.length() > 0) {
+			System.out.println("Out[" + COUNTER + "]: " + outputExpression);
+		}
+		return outputExpression;
+	}
+
+	private void prettyPrinter(String inputExpression) {
+		System.out.println();
+		String[] outputExpression = prettyPrinter3Lines(inputExpression);
+		ASCIIPrettyPrinter3.prettyPrinter(System.out, outputExpression, "Out[" + COUNTER + "]: ");
 	}
 
 	/**
@@ -378,6 +387,48 @@ public class Console {
 			Validate.printException(buf, e);
 		}
 		return buf.toString();
+	}
+
+	private String[] prettyPrinter3Lines(final String inputExpression) {
+		IExpr result;
+
+		final StringWriter buf = new StringWriter();
+		try {
+			if (fSeconds <= 0) {
+				result = fEvaluator.evaluate(inputExpression);
+			} else {
+				result = fEvaluator.evaluateWithTimeout(inputExpression, fSeconds, TimeUnit.SECONDS, true);
+			}
+			if (result != null) {
+				if (result.equals(F.Null)) {
+					return null;
+				}
+				ASCIIPrettyPrinter3 strBuffer = new ASCIIPrettyPrinter3();
+				strBuffer.convert(result);
+				return strBuffer.toStringBuilder();
+			}
+		} catch (final SyntaxError se) {
+			String msg = se.getMessage();
+			System.err.println(msg);
+		} catch (final RuntimeException re) {
+			Throwable me = re.getCause();
+			if (me instanceof MathException) {
+				Validate.printException(buf, me);
+			} else {
+				Validate.printException(buf, re);
+			}
+		} catch (final Exception e) {
+			Validate.printException(buf, e);
+		} catch (final OutOfMemoryError e) {
+			Validate.printException(buf, e);
+		} catch (final StackOverflowError e) {
+			Validate.printException(buf, e);
+		}
+		String[] strArray = new String[3];
+		strArray[0] = "";
+		strArray[1] = buf.toString();
+		strArray[3] = "";
+		return strArray;
 	}
 
 	/**

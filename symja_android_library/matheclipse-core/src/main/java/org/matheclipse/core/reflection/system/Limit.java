@@ -496,7 +496,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		IExpr y = F.Power(x, F.CN1); // substituting by 1/x
 		IExpr temp = F.evalQuiet(F.subst(arg1, x, y));
 		if (temp.isTimes()) {
-			IExpr[] parts = Algebra.getFractionalPartsTimes((IAST) temp, false, false, true, true);
+			IExpr[] parts = Algebra.fractionalPartsTimesPower((IAST) temp, false, false, true, true);
 			if (parts != null) {
 				if (!parts[1].isOne()) { // denominator != 1
 					LimitData ndData = new LimitData(x, F.C0, F.Rule(x, F.C0), data.getDirection());
@@ -515,7 +515,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		if (!isFreeResult.get(1).isOne()) {
 			return F.Times(isFreeResult.get(1), data.limit(isFreeResult.get(2)));
 		}
-		IExpr[] parts = Algebra.getFractionalPartsTimes(timesAST, false, false, true, true);
+		IExpr[] parts = Algebra.fractionalPartsTimesPower(timesAST, false, false, true, true);
 		if (parts != null) {
 
 			IExpr numerator = parts[0];

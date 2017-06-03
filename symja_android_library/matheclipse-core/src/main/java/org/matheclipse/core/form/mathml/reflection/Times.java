@@ -42,7 +42,7 @@ public class Times extends AbstractOperator {
 	 * @caller
 	 */
 	public boolean convertTimesFraction(final StringBuffer buf, final IAST f, final int precedence, final int caller) {
-		IExpr[] parts = Algebra.getFractionalPartsTimes(f, false, true, false, false);
+		IExpr[] parts = Algebra.fractionalPartsTimesPower(f, false, true, false, false);
 		if (parts == null) {
 			convertTimesOperator(buf, f, precedence, caller);
 			return true;
