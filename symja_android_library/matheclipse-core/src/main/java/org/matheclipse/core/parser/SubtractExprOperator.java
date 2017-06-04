@@ -16,6 +16,7 @@
 package org.matheclipse.core.parser;
 
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class SubtractExprOperator extends InfixExprOperator {
@@ -27,6 +28,9 @@ public class SubtractExprOperator extends InfixExprOperator {
 	public IExpr createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs, final IExpr rhs) {
 		if (rhs.isNumber()) {
 			return F.Plus(lhs, rhs.negate());
+		}
+		if (rhs.isTimes() && ((IAST) rhs).arg1().isNumber()) {
+			return F.Plus(lhs, ((IAST) rhs).setAtClone(1, ((IAST) rhs).arg1().negate()));
 		}
 		return F.Plus(lhs, F.Times(F.CN1, rhs));
 	}
