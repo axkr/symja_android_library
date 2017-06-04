@@ -182,6 +182,12 @@ public class PatternMatchingTestCase extends TestCase {
 		checkPattern("g[x_,42, y_]", "g[a,42,b]", "[a, b]");
 	}
 
+//	public void testSlotPatternMatching() {
+//		checkPattern("b_.* #+c_.*#^2", "#-1*#^2", "");
+//		checkPattern("b_.* #+c_.*#^2", "#+#^2", "[1, 1]");
+//		checkPattern("a_. + b_.* #+c_.*#^2", "-1+#+#^2", "[-1, 1, 1]");
+//	}
+	
 	/**
 	 * The JUnit setup method
 	 */

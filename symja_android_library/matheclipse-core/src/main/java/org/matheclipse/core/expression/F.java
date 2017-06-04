@@ -4911,6 +4911,10 @@ public class F {
 		return unaryAST1(Reverse, a);
 	}
 
+	public static IAST Root(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Root, a0, a1);
+	}
+	
 	public static IAST Roots(final IExpr a0) {
 		return unaryAST1(Roots, a0);
 	}

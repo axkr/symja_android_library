@@ -207,6 +207,13 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			 if (ast.head().equals(F.Function)) {
+			 IExpr temp = engine.evalSetAttributes(ast, true);
+			 if (temp.isPresent() && !temp.equals(ast)) {
+			 return temp;
+			 }
+			 return F.NIL;
+			 }
 			if (ast.head().isAST()) {
 
 				final IAST function = (IAST) ast.head();
@@ -246,7 +253,7 @@ public class Structure {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			// don't set HOLDALL - the arguments are evaluated before aopplying the 'function head'
+			// don't set HOLDALL - the arguments are evaluated before applying the 'function head'
 		}
 	}
 

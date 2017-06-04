@@ -165,7 +165,7 @@ public abstract class AbstractAST implements IAST {
 
 	private static int compareToPowerExpr(final IAST lhsPowerAST, final IExpr rhsSymbolOrPattern) {
 		IExpr arg1 = lhsPowerAST.arg1();
-		if (arg1.isSymbolOrPatternObject()) {
+		if (arg1.isSymbolOrPattern()) {
 			// if (rhsSymbolOrPattern.isPlus() || rhsSymbolOrPattern.isTimes())
 			// {
 			// return (-1) * compareToTimes((IAST) rhsSymbolOrPattern,
@@ -194,7 +194,7 @@ public abstract class AbstractAST implements IAST {
 			// compare from the last this (Times) element:
 			final IExpr lastTimes = lhsAST.get(lhsAST.size() - 1);
 			int cp;
-			if (lastTimes.isSymbolOrPatternObject()) {
+			if (lastTimes.isSymbolOrPattern()) {
 				cp = lastTimes.compareTo(rhsAST.arg1());
 				if (cp != 0) {
 					return cp;
@@ -471,7 +471,7 @@ public abstract class AbstractAST implements IAST {
 			return compareToAST(this, (IAST) rhsExpr);
 		}
 
-		if (rhsExpr.isSymbolOrPatternObject() && (isPlus() || isTimes())) {
+		if (rhsExpr.isSymbolOrPattern() && (isPlus() || isTimes())) {
 			return compareToTimesExpr(this, rhsExpr);
 		}
 		if (isPower()) {

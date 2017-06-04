@@ -213,7 +213,7 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 		}
 		ast.setEvalFlags(listEvalFlags);
 		// disable flag "pattern with default value"
-		listEvalFlags &= IAST.CONTAINS_NO_DEFAULT_PATTERN_MASK;
+//		listEvalFlags &= IAST.CONTAINS_NO_DEFAULT_PATTERN_MASK;
 		return listEvalFlags;
 	}
 

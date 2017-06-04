@@ -103,7 +103,6 @@ public final class FunctionDefinitions {
 		ReplaceList.setEvaluator(new org.matheclipse.core.reflection.system.ReplaceList());
 		ReplaceRepeated.setEvaluator(new org.matheclipse.core.reflection.system.ReplaceRepeated());
 		Resultant.setEvaluator(new org.matheclipse.core.reflection.system.Resultant());
-		Root.setEvaluator(new org.matheclipse.core.reflection.system.Root());
 		RootIntervals.setEvaluator(new org.matheclipse.core.reflection.system.RootIntervals());
 		Roots.setEvaluator(new org.matheclipse.core.reflection.system.Roots());
 		Round.setEvaluator(new org.matheclipse.core.reflection.system.Round());

@@ -64,6 +64,7 @@ import org.matheclipse.core.polynomials.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.ExprTermOrder;
 import org.matheclipse.core.polynomials.IPartialFractionGenerator;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
+import org.matheclipse.core.reflection.system.rules.RootRules;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
 import org.matheclipse.core.visit.VisitorExpr;
 
@@ -112,6 +113,7 @@ public class Algebra {
 		F.PolynomialRemainder.setEvaluator(new PolynomialRemainder());
 
 		F.PowerExpand.setEvaluator(new PowerExpand());
+		F.Root.setEvaluator(new Root());
 		F.Simplify.setEvaluator(new Simplify());
 		F.Together.setEvaluator(new Together());
 		F.Variables.setEvaluator(new Variables());
@@ -1924,6 +1926,19 @@ public class Algebra {
 		}
 	}
 
+	private static class Root extends AbstractFunctionEvaluator  implements RootRules {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			return F.NIL;
+		}
+		
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
+		}
+	}
+	
 	/**
 	 * Try to simplify a given expression
 	 */

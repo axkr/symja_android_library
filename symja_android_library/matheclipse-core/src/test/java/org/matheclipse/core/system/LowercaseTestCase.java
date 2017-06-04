@@ -2413,26 +2413,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testGreater() {
 		check("Infinity>Infinity", "False");
-		
+
 		check("Refine(Infinity>x, x>0)", "True");
 		check("Refine(-Infinity>x, x>0)", "False");
-		
+
 		check("{Greater(), Greater(x), Greater(1)}", "{True,True,True}");
 		check("Pi>0", "True");
 		check("Pi+E<8", "True");
 		check("2/17 > 1/5 > Pi/10", "False");
 		check("x<x", "False");
 		check("x<=x", "True");
-		check("x>x", "False"); 
+		check("x>x", "False");
 		check("x>=x", "True");
 	}
 
 	public void testGreaterEqual() {
 		check("Infinity>=Infinity", "True");
-		
+
 		check("Refine(Infinity>=x, x>0)", "True");
 		check("Refine(-Infinity>=x, x>0)", "False");
-		
+
 		check("{GreaterEqual(), GreaterEqual(x), GreaterEqual(1)}", "{True,True,True}");
 		check("Pi>=0", "True");
 		check("Pi+E<=8", "True");
@@ -2966,10 +2966,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testLess() {
 		check("Infinity<Infinity", "False");
-		
+
 		check("Refine(Infinity<x, x>0)", "False");
 		check("Refine(-Infinity<x, x>0)", "True");
-		
+
 		check("3<4", "True");
 		check("{Less(), Less(x), Less(1)}", "{True,True,True}");
 		check("(2*x+5)<(5^(1/2))", "x<1/2*(-5+Sqrt(5))");
@@ -2978,10 +2978,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testLessEqual() {
 		check("Infinity<=Infinity", "True");
-		
+
 		check("Refine(Infinity<=x, x>0)", "False");
 		check("Refine(-Infinity<=x, x>0)", "True");
-		
+
 		check("3<=4", "True");
 		check("{LessEqual(), LessEqual(x), LessEqual(1)}", "{True,True,True}");
 		check("(2*x+5)<=(5^(1/2))", "x<=1/2*(-5+Sqrt(5))");
@@ -3267,6 +3267,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMatchQ() {
+		check("MatchQ((-1-1*#^2-3*#)&, (a_.+c_.*#^2+b_.* #)&)", "True");
+		check("MatchQ(#-1*#^2, b_.* #+c_.*#^2)", "True");
+		
 		check("MatchQ(_Integer)[123]", "True");
 		check("MatchQ(22/7, _Rational)", "True");
 		check("MatchQ(6/3, _Rational)", "False");
@@ -3316,19 +3319,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMax() {
-		
+
 		check("Refine(Max(Infinity,x), x>0)", "Infinity");
 		check("Refine(Max(Infinity,x,y), x>0&&y>0)", "Infinity");
 		check("Refine(Max(Infinity,x,y), x>0)", "Max(Infinity,y)");
 		check("Refine(Max(x,Infinity), x>0)", "Infinity");
 		check("Refine(Max(x,y,Infinity), x>0&&y>0)", "Infinity");
-		
+
 		check("Refine(Max(-Infinity,x), x>0)", "x");
 		check("Refine(Max(-Infinity,x,y), x>0&&y>0)", "Max(x,y)");
 		check("Refine(Max(x,-Infinity), x>0)", "x");
 		check("Refine(Max(x,y,-Infinity), x>0&&y>0)", "Max(x,y)");
 		check("Refine(Max(x,y,-Infinity), x>0)", "Max(x,y)");
-		
+
 		check("Max(4, -8, 1)", "4");
 		check("Max({1,2},3,{-3,3.5,-Infinity},{{1/2}})", "3.5");
 		check("Max(x, y)", "Max(x,y)");
@@ -3377,15 +3380,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Refine(Min(-Infinity,x,y), x>0)", "Min(y,-Infinity)");
 		check("Refine(Min(x,-Infinity), x>0)", "-Infinity");
 		check("Refine(Min(x,y,-Infinity), x>0&&y>0)", "-Infinity");
-		
+
 		check("Refine(Min(Infinity,x), x>0)", "x");
 		check("Refine(Min(Infinity,x,y), x>0&&y>0)", "Min(x,y)");
 		check("Refine(Min(x,Infinity), x>0)", "x");
 		check("Refine(Min(x,y,Infinity), x>0&&y>0)", "Min(x,y)");
 		check("Refine(Min(x,y,Infinity), x>0&&y>0)", "Min(x,y)");
-		
+
 		check("Refine(Infinity<x, x>0)", "False");
-		
+
 		check("Min(5, x, -3, y, 40)", "Min(-3,x,y)");
 		check("Min(4, -8, 1)", "-8");
 		check("Min({1,2},3,{-3,3.5,-Infinity},{{1/2}})", "-Infinity");
@@ -4399,7 +4402,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testPlus() {
 		check("Refine(Infinity+x, x>0)", "Infinity");
-		
+
 		// String s = System.getProperty("os.name");
 		// if (s.contains("Windows")) {
 		check("N(Pi, 30) + N(E, 30)", "5.85987448204883847382293085463");
@@ -5263,7 +5266,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRoot() {
-		// check("Root((#^2-3#-1)&, 1)", "");
+		// check("Root((x^2 - 3*x - 1)&, 2)", "Root(-1-3*x+x^2&,2)");
+		check("Root((#^2 - 3*# - 1)&, 2)", "3/2+Sqrt(13)/2");
+		check("Root((-3#-1)&, 1)", "-1/3");
+
 	}
 
 	public void testRoots() {

@@ -321,5 +321,5 @@ public class ParserTestCase extends TestCase {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
 		}
-	}
+	} 
 }
