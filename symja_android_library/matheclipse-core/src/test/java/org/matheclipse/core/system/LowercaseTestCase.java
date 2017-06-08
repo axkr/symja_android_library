@@ -1215,6 +1215,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Derivative(1)[Sin]", "Cos(#1)&");
 
 		check("Derivative(0)[#1^2&]", "#1^2&");
+		check("Derivative(1)[#1^2&]", "2*#1&");
+		check("Derivative(1)[3*# ^ 2+5*# ^ 3&] ", "15*#1^2+6*#1&");
 		check("Derivative(1)[# ^ 3&] ", "3*#1^2&");
 		check("Derivative(2)[# ^ 3&] ", "6*#1&");
 		check("Derivative(1)[E ^ #&] ", "E^#1&");
