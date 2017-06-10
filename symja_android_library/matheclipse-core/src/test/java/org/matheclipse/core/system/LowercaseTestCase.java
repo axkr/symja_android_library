@@ -3271,7 +3271,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testMatchQ() {
 		check("MatchQ((-1-1*#^2-3*#)&, (a_.+c_.*#^2+b_.* #)&)", "True");
 		check("MatchQ(#-1*#^2, b_.* #+c_.*#^2)", "True");
-		
+
 		check("MatchQ(_Integer)[123]", "True");
 		check("MatchQ(22/7, _Rational)", "True");
 		check("MatchQ(6/3, _Rational)", "False");
@@ -4403,6 +4403,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPlus() {
+		check("2+4/3*2^b/c", "2+4/3*2^b/c");
 		check("Refine(Infinity+x, x>0)", "Infinity");
 
 		// String s = System.getProperty("os.name");
@@ -5268,10 +5269,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRoot() {
-		// check("Root((x^2 - 3*x - 1)&, 2)", "Root(-1-3*x+x^2&,2)");
+		
 		check("Root((#^2 - 3*# - 1)&, 2)", "3/2+Sqrt(13)/2");
 		check("Root((-3#-1)&, 1)", "-1/3");
-
+	 
+//		check("Root((#^3-#^2-#+a)&, 1)",
+//				"1/3+4/3*2^(1/3)/(11-27*a+Sqrt(-256+(11-27*a)^2))^(1/3)+(11-27*a+Sqrt(-256+(11-27*a)^\n" + 
+//				"2))^(1/3)/(3*2^(1/3))");
+//		check("Root((#^3-#^2-#+a)&, 2)",
+//				"1/3+4/3*2^(1/3)/(E^(I*2/3*Pi)*(11-27*a+Sqrt(-256+(11-27*a)^2))^(1/3))+(E^(I*2/3*Pi)*(\n" + 
+//				"11-27*a+Sqrt(-256+(11-27*a)^2))^(1/3))/(3*2^(1/3))");
+//		check("Root((#^3-#^2-#+a)&, 3)",
+//				"1/3+4/3*2^(1/3)/(E^(I*4/3*Pi)*(11-27*a+Sqrt(-256+(11-27*a)^2))^(1/3))+(E^(I*4/3*Pi)*(\n" + 
+//				"11-27*a+Sqrt(-256+(11-27*a)^2))^(1/3))/(3*2^(1/3))");
 	}
 
 	public void testRoots() {
