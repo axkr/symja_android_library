@@ -533,6 +533,7 @@ public class OutputFormFactory {
 			if (fraction != null) {
 				convertNumber(buf, (ISignedNumber) fraction, ASTNodeFactory.PLUS_PRECEDENCE, caller);
 				append(buf, "*");
+				caller = NO_PLUS_CALL;
 			}
 			if (numerator.isSignedNumber()) {
 				convertNumber(buf, (ISignedNumber) numerator, ASTNodeFactory.PLUS_PRECEDENCE, caller);
