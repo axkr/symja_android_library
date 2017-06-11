@@ -1169,6 +1169,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "together" : "Together");
 	public final static IBuiltInSymbol ToPolarCoordinates = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "topolarcoordinates" : "ToPolarCoordinates");
+	public final static IBuiltInSymbol ToRadicals = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "toradicals" : "ToRadicals");
 	public final static IBuiltInSymbol ToString = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tostring" : "ToString");
 	public final static IBuiltInSymbol Total = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "total" : "Total");

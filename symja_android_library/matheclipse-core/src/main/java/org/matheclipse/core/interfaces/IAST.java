@@ -1063,7 +1063,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * replaced by the current argument of this AST:
 	 * 
 	 * <pre>
-	 * plusAST.mapAt(F.D(null, F.x), 1);
+	 * plusAST.mapThread(F.D(null, F.x), 1);
 	 * </pre>
 	 * 
 	 * @param replacement

@@ -2094,7 +2094,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is a symbol (instanceof ISymbol) or a pattern object (instanceof IPatternObject) 
+	 * Test if this expression is a symbol (instanceof ISymbol) or a pattern object (instanceof IPatternObject)
 	 * 
 	 * @return
 	 */

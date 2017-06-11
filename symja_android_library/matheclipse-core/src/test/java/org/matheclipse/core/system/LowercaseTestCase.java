@@ -5269,19 +5269,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRoot() {
-		
 		check("Root((#^2 - 3*# - 1)&, 2)", "3/2+Sqrt(13)/2");
 		check("Root((-3#-1)&, 1)", "-1/3");
-	 
-//		check("Root((#^3-#^2-#+a)&, 1)",
-//				"1/3+4/3*2^(1/3)/(11-27*a+Sqrt(-256+(11-27*a)^2))^(1/3)+(11-27*a+Sqrt(-256+(11-27*a)^\n" + 
-//				"2))^(1/3)/(3*2^(1/3))");
-//		check("Root((#^3-#^2-#+a)&, 2)",
-//				"1/3+4/3*2^(1/3)/(E^(I*2/3*Pi)*(11-27*a+Sqrt(-256+(11-27*a)^2))^(1/3))+(E^(I*2/3*Pi)*(\n" + 
-//				"11-27*a+Sqrt(-256+(11-27*a)^2))^(1/3))/(3*2^(1/3))");
-//		check("Root((#^3-#^2-#+a)&, 3)",
-//				"1/3+4/3*2^(1/3)/(E^(I*4/3*Pi)*(11-27*a+Sqrt(-256+(11-27*a)^2))^(1/3))+(E^(I*4/3*Pi)*(\n" + 
-//				"11-27*a+Sqrt(-256+(11-27*a)^2))^(1/3))/(3*2^(1/3))");
 	}
 
 	public void testRoots() {
@@ -5609,6 +5598,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSlot() {
+//		check("x^2+x", "x+x^2");
+		
+		check("f = If(#1 == 1, 1, #1 #0(#1 - 1)) &", "If(#1==1,1,#1*#0[-1+#1])&");
+		check("f(10)", "3628800");
+		check("# &[1, 2, 3]", "1");
+		check("#1 &[1, 2, 3]", "1");
+		check("g(#0) &[x]", "g(g(#0)&)");
+		
+//		check("#1^2+#1", "#1^2+#1");
+//		check("#1+#1^7", "#1");
 		check("#", "#1");
 		check("#42", "#42");
 	}
@@ -6474,6 +6473,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{{Sqrt(x^2+y^2),ArcTan(x,y)},{1,0}},{{2,Pi},{1,Pi/2}}}");
 		check("ToPolarCoordinates({{{1, -1}}})", "{{{Sqrt(2),-Pi/4}}}");
 		check("ToPolarCoordinates({{} , {}})", "{{},{}}");
+	}
+	
+	public void testToRadicals() {
+		check("ToRadicals(Root((#^2 - 3*# - 1)&, 2))", "3/2+Sqrt(13)/2");
+		check("ToRadicals(Root((-3#-1)&, 1))", "-1/3");
+		check("ToRadicals(Sin(Root((#^7-#^2-#+a)&, 1)))",
+				"Sin(Root(a-#1^2+#1^7-#1&,1))");
+		check("ToRadicals(Root((#^7-#^2-#+a)&, 1)+Root((#^6-#^2-#+a)&, 1))",
+				"Root(a-#1^2+#1^6-#1&,1)+Root(a-#1^2+#1^7-#1&,1)");
+		check("ToRadicals(Root((#^3-#^2-#+a)&, 1))",
+				"1/3+4/3*2^(1/3)/(11-27*a+Sqrt(-256+(11-27*a)^2))^(1/3)+(11-27*a+Sqrt(-256+(11-27*a)^\n"
+						+ "2))^(1/3)/(3*2^(1/3))");
+		check("ToRadicals(Root((#^3-#^2-#+a)&, 2))",
+				"1/3+4/3*2^(1/3)/(E^(I*2/3*Pi)*(11-27*a+Sqrt(-256+(11-27*a)^2))^(1/3))+(E^(I*2/3*Pi)*(\n"
+						+ "11-27*a+Sqrt(-256+(11-27*a)^2))^(1/3))/(3*2^(1/3))");
+		check("ToRadicals(Root((#^3-#^2-#+a)&, 3))",
+				"1/3+4/3*2^(1/3)/(E^(I*4/3*Pi)*(11-27*a+Sqrt(-256+(11-27*a)^2))^(1/3))+(E^(I*4/3*Pi)*(\n"
+						+ "11-27*a+Sqrt(-256+(11-27*a)^2))^(1/3))/(3*2^(1/3))");
 	}
 
 	public void testTotal() {

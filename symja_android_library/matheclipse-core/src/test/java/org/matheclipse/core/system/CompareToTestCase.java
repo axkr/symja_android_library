@@ -1,6 +1,6 @@
 package org.matheclipse.core.system;
 
-import static org.matheclipse.core.expression.F.ArcCos;
+import static org.matheclipse.core.expression.F.*;
 import static org.matheclipse.core.expression.F.ArcSin;
 import static org.matheclipse.core.expression.F.ArcTan;
 import static org.matheclipse.core.expression.F.C1;
@@ -24,8 +24,7 @@ import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Tests for the Java port of the
- * <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based integrator</a>.
+ * Tests for the Java port of the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based integrator</a>.
  * 
  */
 public class CompareToTestCase extends AbstractTestCase {
@@ -72,6 +71,18 @@ public class CompareToTestCase extends AbstractTestCase {
 		assertEquals(1, res);
 	}
 
+	public void testCT004() {
+		IExpr ast1, ast2;
+
+		ast1 = Slot1;
+		ast2 = Power(Slot1, C2);
+		ast1 = eval(ast1);
+		ast2 = eval(ast2);
+
+		int res = ast1.compareTo(ast2);
+		assertEquals(1, res);
+	}
+
 	public void testOut001() {
 		IExpr ast1, ast2;
 		// -Infinity
@@ -98,7 +109,7 @@ public class CompareToTestCase extends AbstractTestCase {
 		IPattern x3_b = F.$p(x3, b);
 		IPattern x3_c = F.$p(x3, c);
 		IPattern x4_c = F.$p(x4, c);
-		  
+
 		IAST ast1 = F.Times(F.CN1, x1_c, x3_b, x3_c);
 		IAST ast2 = F.Times(F.CN1, x3, x5, x1_c, x4_c);
 
@@ -109,7 +120,7 @@ public class CompareToTestCase extends AbstractTestCase {
 
 		check("-Infinity+b+a", "-Infinity+a+b");
 	}
-	
+
 	public void testIssue122b() {
 		// x5_c <||> x3*x4_c => -1
 		ISymbol b = F.$s("b");
@@ -123,16 +134,16 @@ public class CompareToTestCase extends AbstractTestCase {
 		IPattern x3_c = F.$p(x3, c);
 		IPattern x4_c = F.$p(x4, c);
 		IPattern x5_c = F.$p(x5, c);
-		
-		IAST ast2 = F.Times( x3, x4_c);
+
+		IAST ast2 = F.Times(x3, x4_c);
 		int res = x5_c.compareTo(ast2);
-		assertEquals(1, res); 
+		assertEquals(1, res);
 		res = ast2.compareTo(x5_c);
 		assertEquals(-1, res);
 
 		check("-Infinity+b+a", "-Infinity+a+b");
 	}
-	
+
 	public void testIssue122c() {
 		ISymbol b = F.$s("b");
 		ISymbol c = F.$s("c");
@@ -144,12 +155,12 @@ public class CompareToTestCase extends AbstractTestCase {
 		IPattern x3_b = F.$p(x3, b);
 		IPattern x3_c = F.$p(x3, c);
 		IPattern x5_c = F.$p(x5, c);
-		
-		IAST ast1 = F.Times(x3, x5, x5_c );
+
+		IAST ast1 = F.Times(x3, x5, x5_c);
 		IAST ast2 = F.Times(F.CN1, x1_c, x3_b, x3_c);
-		
+
 		int res = ast1.compareTo(ast2);
-		assertEquals(2, res); 
+		assertEquals(2, res);
 		res = ast2.compareTo(ast1);
 		assertEquals(-2, res);
 

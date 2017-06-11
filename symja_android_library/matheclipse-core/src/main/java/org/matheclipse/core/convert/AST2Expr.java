@@ -118,10 +118,10 @@ public class AST2Expr {
 			"Subsuperscript", "Subsets", "SubtractFrom", "Sum", "Superscript", "SurfaceGraphics", "Switch",
 			"SyntaxLength", "SymbolName", "SymbolQ", "SyntaxQ", "Table", "Take", "Tally", "Tan", "Tanh", "TautologyQ",
 			"Taylor", "TeXForm", "Thread", "Through", "Throw", "TimeConstrained", "Times", "TimesBy", "Timing",
-			"ToCharacterCode", "Together", "ToPolarCoordinates", "ToString", "Total", "ToUnicode", "Tr", "Trace",
-			"Transpose", "TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Tuples", "Unequal", "Unevaluated", "Union",
-			"Unique", "UnitStep", "UnitVector", "UnsameQ", "Unset", "UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ",
-			"VandermondeMatrix", "Variables", "Variance", "VectorAngle", "VectorQ", "Which", "While", "Xor",
+			"ToCharacterCode", "Together", "ToPolarCoordinates", "ToRadicals", "ToString", "Total", "ToUnicode", "Tr",
+			"Trace", "Transpose", "TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Tuples", "Unequal", "Unevaluated",
+			"Union", "Unique", "UnitStep", "UnitVector", "UnsameQ", "Unset", "UpperCaseQ", "UpSet", "UpSetDelayed",
+			"ValueQ", "VandermondeMatrix", "Variables", "Variance", "VectorAngle", "VectorQ", "Which", "While", "Xor",
 			"YuleDissimilarity", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;

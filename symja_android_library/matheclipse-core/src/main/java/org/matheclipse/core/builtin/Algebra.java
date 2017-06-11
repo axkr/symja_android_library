@@ -52,7 +52,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
-import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -68,6 +67,7 @@ import org.matheclipse.core.polynomials.ExprTermOrder;
 import org.matheclipse.core.polynomials.IPartialFractionGenerator;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
+//import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.core.visit.VisitorExpr;
 
 import com.google.common.math.LongMath;
@@ -118,6 +118,7 @@ public class Algebra {
 		F.Root.setEvaluator(new Root());
 		F.Simplify.setEvaluator(new Simplify());
 		F.Together.setEvaluator(new Together());
+		F.ToRadicals.setEvaluator(new ToRadicals());
 		F.Variables.setEvaluator(new Variables());
 	}
 
@@ -1928,7 +1929,7 @@ public class Algebra {
 		}
 	}
 
-	private static class Root extends AbstractFunctionEvaluator {
+	private static class ToRadicals extends AbstractFunctionEvaluator {
 
 		/**
 		 * Root of a polynomial: <code>a + b*Slot1</code>.
@@ -1941,7 +1942,7 @@ public class Algebra {
 		 *            <code>1 <= nthRoot <= 3</code> otherwise return F.NIL;
 		 * @return
 		 */
-		private IExpr root1(IExpr a, IExpr b, int nthRoot) {
+		private static IExpr root1(IExpr a, IExpr b, int nthRoot) {
 			if (nthRoot != 1) {
 				return F.NIL;
 			}
@@ -1961,7 +1962,7 @@ public class Algebra {
 		 *            <code>1 <= nthRoot <= 3</code> otherwise return F.NIL;
 		 * @return
 		 */
-		private IExpr root2(IExpr a, IExpr b, IExpr c, int nthRoot) {
+		private static IExpr root2(IExpr a, IExpr b, IExpr c, int nthRoot) {
 			if (nthRoot < 1 || nthRoot > 3) {
 				return F.NIL;
 			}
@@ -1985,7 +1986,7 @@ public class Algebra {
 		 *            <code>1 <= nthRoot <= 3</code> otherwise return F.NIL;
 		 * @return
 		 */
-		private IExpr root3(IExpr a, IExpr b, IExpr c, IExpr d, int nthRoot) {
+		private static IExpr root3(IExpr a, IExpr b, IExpr c, IExpr d, int nthRoot) {
 			if (nthRoot < 1 || nthRoot > 3) {
 				return F.NIL;
 			}
@@ -2017,7 +2018,7 @@ public class Algebra {
 		 *            <code>1 <= nthRoot <= 4</code> otherwise return F.NIL;
 		 * @return
 		 */
-		private IExpr root4(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e, int nthRoot) {
+		private static IExpr root4(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e, int nthRoot) {
 			if (nthRoot < 1 || nthRoot > 4) {
 				return F.NIL;
 			}
@@ -2068,8 +2069,51 @@ public class Algebra {
 
 		}
 
+		private static class ToRadicalsVisitor extends VisitorExpr {
+			IAST replacement;
+
+			private ToRadicalsVisitor(IAST replacement) {
+				this.replacement = replacement;
+			}
+
+			// D[a_+b_+c_,x_] -> D[a,x]+D[b,x]+D[c,x]
+			// return listArg1.mapThread(F.D(F.Null, x), 1);
+			@Override
+			public IExpr visit(IAST ast) {
+				if (!ast.isAST(F.Root)) {
+					IAST cloned = replacement.setAtClone(1, null);
+					return ((IAST) ast).mapThread(cloned, 1);
+				}
+				return F.NIL;
+			}
+
+		}
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.size() >= 2) {
+				IExpr arg1 = ast.arg1();
+				IExpr temp = Structure.threadLogicEquationOperators(arg1, ast, 1);
+				if (temp.isPresent()) {
+					return temp;
+				}
+				if (arg1.isAST()) {
+					ToRadicalsVisitor visitor = new ToRadicalsVisitor(ast);
+					temp = ((IAST) arg1).accept(visitor);
+					if (temp.isPresent()) {
+						return temp;
+					}
+					temp = rootToRadicals((IAST) arg1, 4);
+					if (temp.isPresent()) {
+						return temp;
+					}
+				}
+				return arg1;
+			}
+			return F.NIL;
+		}
+
+		private static IExpr rootToRadicals(final IAST ast, int maxDegree) {
 			if (ast.size() == 3 && ast.arg2().isInteger()) {
 				IExpr expr = ast.arg1();
 				if (expr.isFunction()) {
@@ -2090,7 +2134,7 @@ public class Algebra {
 						IExpr c;
 						IExpr d;
 						IExpr e;
-						if (varDegree >= 1 && varDegree <= 2) {
+						if (varDegree >= 1 && varDegree <= maxDegree) {
 							a = C0;
 							b = C0;
 							c = C0;
@@ -2117,10 +2161,10 @@ public class Algebra {
 								return root1(a, b, k);
 							} else if (varDegree == 2) {
 								return root2(a, b, c, k);
-								// } else if (varDegree == 3) {
-								// return root3(a, b, c, d, k);
-								// } else if (varDegree == 4) {
-								// return root4(a, b, c, d, e, k);
+							} else if (varDegree == 3) {
+								return root3(a, b, c, d, k);
+							} else if (varDegree == 4) {
+								return root4(a, b, c, d, e, k);
 							}
 						}
 					} catch (JASConversionException e2) {
@@ -2131,6 +2175,15 @@ public class Algebra {
 				}
 			}
 			return F.NIL;
+		}
+
+	}
+
+	private static class Root extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			return ToRadicals.rootToRadicals(ast, 2);
 		}
 
 	}
