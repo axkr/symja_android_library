@@ -207,13 +207,13 @@ public class Structure {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			 if (ast.head().equals(F.Function)) {
-			 IExpr temp = engine.evalSetAttributes(ast, true);
-			 if (temp.isPresent() && !temp.equals(ast)) {
-			 return temp;
-			 }
-			 return F.NIL;
-			 }
+			if (ast.head().equals(F.Function)) {
+				IExpr temp = engine.evalSetAttributes(ast, true);
+				if (temp.isPresent() && !temp.equals(ast)) {
+					return temp;
+				}
+				return F.NIL;
+			}
 			if (ast.head().isAST()) {
 
 				final IAST function = (IAST) ast.head();
@@ -630,12 +630,12 @@ public class Structure {
 		if (expr.isAST()) {
 			IAST ast = (IAST) expr;
 			if (ast.size() > 1) {
-				IAST cloned = replacement.clone();
-				cloned.set(position, null);
 				ISymbol[] logicEquationHeads = { F.And, F.Or, F.Xor, F.Nand, F.Nor, F.Not, F.Implies, F.Equivalent,
 						F.Equal, F.Unequal, F.Less, F.Greater, F.LessEqual, F.GreaterEqual };
 				for (int i = 0; i < logicEquationHeads.length; i++) {
 					if (ast.isAST(logicEquationHeads[i])) {
+						IAST cloned = replacement.clone();
+						cloned.set(position, null);
 						return ((IAST) ast).mapThread(cloned, position);
 					}
 				}
@@ -661,12 +661,12 @@ public class Structure {
 		if (expr.isAST()) {
 			IAST ast = (IAST) expr;
 			if (ast.size() > 1) {
-				IAST cloned = replacement.clone();
-				cloned.set(position, null);
 				ISymbol[] plusLogicEquationHeads = { F.Plus, F.And, F.Or, F.Xor, F.Nand, F.Nor, F.Not, F.Implies,
 						F.Equivalent, F.Equal, F.Unequal, F.Less, F.Greater, F.LessEqual, F.GreaterEqual };
 				for (int i = 0; i < plusLogicEquationHeads.length; i++) {
 					if (ast.isAST(plusLogicEquationHeads[i])) {
+						IAST cloned = replacement.clone();
+						cloned.set(position, null);
 						return ((IAST) ast).mapThread(cloned, position);
 					}
 				}
