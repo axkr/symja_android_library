@@ -20,6 +20,10 @@ public class VisitorReplaceSlots extends VisitorExpr {
 
 	private IExpr getSlot(IntegerSym ii) {
 		int i = ii.toInt();
+		if (i == 0) {
+			// #0 represents the head expression
+			return astSlots.head();
+		}
 		if (i > 0 && i < astSlots.size()) {
 			return astSlots.get(i);
 		}
