@@ -15,6 +15,6 @@ True
 >> MatchQ(123, _Real)
 False
 	 
->> MatchQ(_Integer)(123)
+>> MatchQ(_Integer)[123]
 True
 ```

@@ -13,7 +13,7 @@ x===y
 Any object is the same as itself:
 ```
 >> a===a
- = True
+True
 ```
 
 Unlike `Equal`, `SameQ` only yields `True` if `x` and `y` have the same type:

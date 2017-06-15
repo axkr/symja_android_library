@@ -6,7 +6,8 @@ Eliminate(list-of-equations, list-of-variables)
 
 > attempts to eliminate the variables from the `list-of-variables` in the `list-of-equations`.
 
-See:  
+See:
+
 * [Wikipedia - System of linear equations - Elimination of variables](http://en.wikipedia.org/wiki/System_of_linear_equations#Elimination_of_variables)
  
 ### Examples 

@@ -6,7 +6,8 @@ Eigenvalues(matrix)
 
 > get the numerical eigenvalues of the ##matrix##.
 
-See:  
+See:
+
 * [Wikipedia - Eigenvalue](http://en.wikipedia.org/wiki/Eigenvalue)
 
 ### Examples
