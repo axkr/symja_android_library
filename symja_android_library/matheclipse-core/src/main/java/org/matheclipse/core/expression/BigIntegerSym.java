@@ -128,10 +128,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		return valueOf(newnum);
 	}
 
-	/**
-	 * @return
-	 */
-	public int bitLength() {
+	public long bitLength() {
 		return fBigIntValue.bitLength();
 	}
 

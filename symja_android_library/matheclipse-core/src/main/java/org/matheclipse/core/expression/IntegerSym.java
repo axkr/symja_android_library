@@ -102,6 +102,13 @@ public class IntegerSym extends AbstractIntegerSym {
 		return valueOf(newnum);
 	}
 
+	public long bitLength() {
+		if (fIntValue == 0) {
+			return 0L;
+		}
+		return 32 - Integer.numberOfLeadingZeros(fIntValue < 0 ? -fIntValue : fIntValue);
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public int compareAbsValueToOne() {

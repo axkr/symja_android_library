@@ -6473,6 +6473,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTogether() {
+		check("Together(a/b+c/d)", "(b*c+a*d)/(b*d)");
 		// TODO return {x (2 + y) / (1 + y) ^ 2}
 		check("Together({x / (y+1) + x / (y+1)^2})", "{(2*x+x*y)/(1+2*y+y^2)}");
 

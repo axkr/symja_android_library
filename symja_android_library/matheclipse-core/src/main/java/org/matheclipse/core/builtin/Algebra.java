@@ -2641,10 +2641,6 @@ public class Algebra {
 			return F.NIL;
 		}
 
-		public Together() {
-			// default ctor
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);

@@ -21,6 +21,17 @@ public interface IInteger extends IRational {
 	public IInteger add(IInteger val);
 
 	/**
+     * Returns the number of bits in the minimal two's-complement
+     * representation of this IInteger, <i>excluding</i> a sign bit.
+     * For positive IIntegers, this is equivalent to the number of bits in
+     * the ordinary binary representation.  
+     *
+     * @return number of bits in the minimal two's-complement
+     *         representation of this IInteger, <i>excluding</i> a sign bit.
+     */
+	public long bitLength();
+	
+	/**
 	 * 
 	 * @return <i>&#x03BB;</i>(<i>n</i>) where <i>n</i> is the number
 	 *         represented by this factors

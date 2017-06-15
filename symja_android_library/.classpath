@@ -12,7 +12,6 @@
 	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
 	<classpathentry kind="lib" path="lib/commons-csv-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/guava-20.0.jar"/>
-	<classpathentry kind="lib" path="lib/jas-2.6.5733.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-core-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-fft-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-fitting-1.1.jar"/>
@@ -20,5 +19,6 @@
 	<classpathentry kind="lib" path="lib/hipparchus-optim-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-stat-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/apfloat-1.8.3.jar"/>
+	<classpathentry kind="lib" path="lib/jas-2.6.5765.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
