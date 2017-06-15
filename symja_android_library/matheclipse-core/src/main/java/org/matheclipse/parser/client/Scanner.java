@@ -64,14 +64,12 @@ public class Scanner {
 	final static public int TT_LIST_CLOSE = 17;
 
 	/**
-	 * Token type: opening brackets for starting the &quot;index part&quot; of
-	 * an expression
+	 * Token type: opening brackets for starting the &quot;index part&quot; of an expression
 	 */
 	final static public int TT_PARTOPEN = 18;
 
 	/**
-	 * Token type: closing brackets for ending the &quot;index part&quot; of an
-	 * expression
+	 * Token type: closing brackets for ending the &quot;index part&quot; of an expression
 	 */
 	final static public int TT_PARTCLOSE = 19;
 
@@ -155,8 +153,7 @@ public class Scanner {
 
 	/**
 	 * <p>
-	 * Simple bracket balancer for pairs of &quot;( )&quot;, &quot;[ ]&quot;,
-	 * &quot;{ }&quot; brackets.
+	 * Simple bracket balancer for pairs of &quot;( )&quot;, &quot;[ ]&quot;, &quot;{ }&quot; brackets.
 	 * </p>
 	 * <p>
 	 * Doesn't work for comments or strings at the moment.
@@ -164,8 +161,8 @@ public class Scanner {
 	 * 
 	 * @param sourceCode
 	 *            the source which should be checked for balanced brackets
-	 * @return the resulting String which can close the "open brackets" or
-	 *         <code>null</code> if the brackets are unbalanced.
+	 * @return the resulting String which can close the "open brackets" or <code>null</code> if the brackets are
+	 *         unbalanced.
 	 */
 	public static String balanceCode(CharSequence sourceCode) {
 		Stack<Character> openBracketStack = new Stack<Character>();
@@ -294,9 +291,8 @@ public class Scanner {
 	}
 
 	/**
-	 * Verify the length of the input string and get the next character from the
-	 * input string. If the current position is greater than the input length,
-	 * set current character to SPACE and token to TT_EOF.
+	 * Verify the length of the input string and get the next character from the input string. If the current position
+	 * is greater than the input length, set current character to SPACE and token to TT_EOF.
 	 * 
 	 */
 	private void getChar() {
@@ -408,8 +404,8 @@ public class Scanner {
 	 */
 	protected void getNextToken() throws SyntaxError {
 
-		while (fInputString.length() > fCurrentPosition) { 
-			
+		while (fInputString.length() > fCurrentPosition) {
+
 			getNextChar();
 			fToken = TT_EOF;
 
@@ -765,9 +761,7 @@ public class Scanner {
 		initializeNullScanner();
 		StringBuilder buf = new StringBuilder(s.length());
 		fInputString = Characters.substituteCharacters(s, buf);
-		if (s != null) {
-			getNextToken();
-		}
+		getNextToken();
 	}
 
 	private void initializeNullScanner() {
@@ -779,8 +773,7 @@ public class Scanner {
 	}
 
 	/**
-	 * Determines if the current character is white space according to
-	 * <code>Character#isWhitespace()</code> method.
+	 * Determines if the current character is white space according to <code>Character#isWhitespace()</code> method.
 	 * 
 	 * @return
 	 */

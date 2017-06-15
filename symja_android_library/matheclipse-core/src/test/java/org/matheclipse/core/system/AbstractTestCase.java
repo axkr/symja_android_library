@@ -50,7 +50,7 @@ public abstract class AbstractTestCase extends TestCase {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			assertEquals("", e);
+			assertEquals("", "1");
 		}
 	}
 
@@ -79,7 +79,7 @@ public abstract class AbstractTestCase extends TestCase {
 			assertEquals(strResult, buf.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
-			assertEquals("", e);
+			assertEquals("", "1");
 		} finally {
 			Config.SERVER_MODE = mode;
 		}

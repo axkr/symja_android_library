@@ -109,14 +109,12 @@ public class ExprScanner {
 	final static public int TT_LIST_CLOSE = 17;
 
 	/**
-	 * Token type: opening brackets for starting the &quot;index part&quot; of
-	 * an expression
+	 * Token type: opening brackets for starting the &quot;index part&quot; of an expression
 	 */
 	final static public int TT_PARTOPEN = 18;
 
 	/**
-	 * Token type: closing brackets for ending the &quot;index part&quot; of an
-	 * expression
+	 * Token type: closing brackets for ending the &quot;index part&quot; of an expression
 	 */
 	final static public int TT_PARTCLOSE = 19;
 
@@ -214,9 +212,7 @@ public class ExprScanner {
 		initializeNullScanner();
 		StringBuilder buf = new StringBuilder(s.length());
 		fInputString = Characters.substituteCharacters(s, buf);
-		if (s != null) {
-			getNextToken();
-		}
+		getNextToken();
 	}
 
 	private void initializeNullScanner() {
@@ -228,9 +224,8 @@ public class ExprScanner {
 	}
 
 	/**
-	 * Verify the length of the input string and get the next character from the
-	 * input string. If the current position is greater than the input length,
-	 * set current character to SPACE and token to TT_EOF.
+	 * Verify the length of the input string and get the next character from the input string. If the current position
+	 * is greater than the input length, set current character to SPACE and token to TT_EOF.
 	 * 
 	 */
 	private void getChar() {
@@ -301,8 +296,7 @@ public class ExprScanner {
 	}
 
 	/**
-	 * Determines if the current character is white space according to
-	 * <code>Character#isWhitespace()</code> method.
+	 * Determines if the current character is white space according to <code>Character#isWhitespace()</code> method.
 	 * 
 	 * @return
 	 */

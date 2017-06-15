@@ -4,8 +4,7 @@
 package jp.ac.kobe_u.cs.cream;
 
 /**
- * IntFunc constraint implements
- * arithmetic unary function on integers.
+ * IntFunc constraint implements arithmetic unary function on integers.
  * 
  * @see IntArith
  * @see IntComparison
@@ -34,12 +33,16 @@ public class IntFunc extends Constraint {
 	private Variable[] v;
 
 	/**
-	 * Adds the constraint of <tt>v0 == f(v1)</tt>
-	 * to the constraint network <tt>net</tt>.
-	 * @param net the constraint network
-	 * @param f the function
-	 * @param v0 the result
-	 * @param v1 the argument
+	 * Adds the constraint of <tt>v0 == f(v1)</tt> to the constraint network <tt>net</tt>.
+	 * 
+	 * @param net
+	 *            the constraint network
+	 * @param f
+	 *            the function
+	 * @param v0
+	 *            the result
+	 * @param v1
+	 *            the argument
 	 */
 	public IntFunc(Network net, int f, Variable v0, Variable v1) {
 		this(net, f, new Variable[] { v0, v1 });
@@ -212,16 +215,15 @@ public class IntFunc extends Constraint {
 				if (d1.size() > 1)
 					v1.updateDomain(new IntDomain(0), trail);
 				return true;
-			} else if (sign > 0) {
-				if (d1.min() <= 0) {
-					d1 = d1.capInterval(1, IntDomain.MAX_VALUE);
-					if (d1.isEmpty())
-						return false;
-					v1.updateDomain(d1, trail);
-				}
-				return true;
 			}
-			return false;
+			if (d1.min() <= 0) {
+				d1 = d1.capInterval(1, IntDomain.MAX_VALUE);
+				if (d1.isEmpty()) {
+					return false;
+				}
+				v1.updateDomain(d1, trail);
+			}
+			return true;
 		}
 
 		// v0 = sign(v1)

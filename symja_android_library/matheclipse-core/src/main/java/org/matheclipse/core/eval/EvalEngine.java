@@ -413,11 +413,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			boolean localNumericMode = fNumericMode;
 
 			if (!fNumericMode) {
-				if (!fNumericMode) {
-					if ((ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION) {
-						if (ast.hasNumericArgument()) {
-							localNumericMode = true;
-						}
+				if ((ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION) {
+					if (ast.hasNumericArgument()) {
+						localNumericMode = true;
 					}
 				}
 			}

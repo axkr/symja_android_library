@@ -217,13 +217,13 @@ public class BigFractionSym extends AbstractFractionSym {
 
 	@Override
 	public boolean equals(Object o) {
-		if (o instanceof FractionSym) {
-			final FractionSym r = (FractionSym) o;
-			return equalsFraction(r.fNumerator, r.fDenominator);
-		}
 		if (o instanceof BigFractionSym) {
 			BigFractionSym r = (BigFractionSym) o;
 			return fFraction.equals(r.fFraction);
+		}
+		if (o instanceof FractionSym) {
+			final FractionSym r = (FractionSym) o;
+			return equalsFraction(r.fNumerator, r.fDenominator);
 		}
 		return false;
 	}

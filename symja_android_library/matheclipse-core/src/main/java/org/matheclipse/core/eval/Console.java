@@ -450,7 +450,7 @@ public class Console {
 		String[] strArray = new String[3];
 		strArray[0] = "";
 		strArray[1] = buf.toString();
-		strArray[3] = "";
+		strArray[2] = "";
 		return strArray;
 	}
 

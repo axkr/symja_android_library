@@ -43,7 +43,7 @@ public class PatternMatchingTestCase extends TestCase {
 			assertEquals(evaledResult, expectedResult);
 		} catch (Exception e) {
 			e.printStackTrace();
-			assertEquals(e, "");
+			assertEquals("", "1");
 		}
 	}
 
@@ -90,7 +90,7 @@ public class PatternMatchingTestCase extends TestCase {
 			assertEquals(buf.toString(), strResult);
 		} catch (Exception e) {
 			e.printStackTrace();
-			assertEquals(e, "");
+			assertEquals("", "1");
 		}
 	}
 
@@ -114,7 +114,7 @@ public class PatternMatchingTestCase extends TestCase {
 			assertEquals(buf.toString(), strResult);
 		} catch (Exception e) {
 			e.printStackTrace();
-			assertEquals(e, "");
+			assertEquals("", "1");
 		}
 	}
 

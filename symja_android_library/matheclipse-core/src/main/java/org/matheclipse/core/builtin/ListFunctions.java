@@ -1488,8 +1488,8 @@ public final class ListFunctions {
 
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			try {
-				@SuppressWarnings("unused")
-				VisitorLevelSpecification vls = new VisitorLevelSpecification(null, arg1, false);
+				// throws MathException if Level isn't defined correctly
+				new VisitorLevelSpecification(null, arg1, false);
 				return F.True;
 			} catch (MathException me) {
 				// thrown in VisitorLevelSpecification ctor

@@ -9,8 +9,8 @@ import java.util.Set;
 
 /**
  * Open addressed map from K to V. The map can contain up to <code>tableSize</code> key/value entries. Otherwise a // *
- * <code>java.lang.IllegalStateException</code> exception will be thrown. The <code>entrySet()</code> method is not implemented and
- * throws a <code>java.lang.IllegalStateException</code> exception.
+ * <code>java.lang.IllegalStateException</code> exception will be thrown. The <code>entrySet()</code> method is not
+ * implemented and throws a <code>java.lang.IllegalStateException</code> exception.
  *
  * <p>
  * This class is not synchronized.
@@ -23,8 +23,8 @@ import java.util.Set;
  */
 public class OpenFixedSizeMap<K, V> extends AbstractMap<K, V> implements Map<K, V>, Cloneable, Serializable {
 	/**
-     *
-     */
+	 *
+	 */
 	private static final long serialVersionUID = -7777565424942239816L;
 
 	private Object[] table;
@@ -33,8 +33,8 @@ public class OpenFixedSizeMap<K, V> extends AbstractMap<K, V> implements Map<K, 
 
 	/**
 	 * Open addressed map from K to V. The map can contain up to <code>tableSize</code> key/value entries. Otherwise a
-	 * <code>java.lang.IllegalStateException</code> exception will be thrown. The <code>entrySet()</code> method is not implemented
-	 * and throws a <code>java.lang.IllegalStateException</code> exception.
+	 * <code>java.lang.IllegalStateException</code> exception will be thrown. The <code>entrySet()</code> method is not
+	 * implemented and throws a <code>java.lang.IllegalStateException</code> exception.
 	 * 
 	 * @param tableSize
 	 */
@@ -66,16 +66,17 @@ public class OpenFixedSizeMap<K, V> extends AbstractMap<K, V> implements Map<K, 
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (getClass() != obj.getClass())
-			return false;
-		OpenFixedSizeMap other = (OpenFixedSizeMap) obj;
-		if (size != other.size)
-			return false;
-		if (!Arrays.equals(table, other.table))
-			return false;
-		return true;
+		}
+		if (obj instanceof OpenFixedSizeMap) {
+			OpenFixedSizeMap<K, V> other = (OpenFixedSizeMap<K, V>) obj;
+			if (size != other.size) {
+				return false;
+			}
+			return Arrays.equals(table, other.table);
+		}
+		return false;
 	}
 
 	@SuppressWarnings("unchecked")

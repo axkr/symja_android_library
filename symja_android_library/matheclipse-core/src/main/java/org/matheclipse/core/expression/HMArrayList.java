@@ -140,9 +140,9 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 			throw new IndexOutOfBoundsException(
 					"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
 		}
-		if (this == collection) {
-			collection = clone().args();
-		}
+		// if (this == collection) {
+		// collection = clone().args();
+		// }
 		Object[] dumparray = collection.toArray();
 		int growSize = dumparray.length;
 		if (growSize == 0) {
