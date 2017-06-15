@@ -5150,7 +5150,7 @@ public class EllipticCurveMethod {
 					break;
 				}
 			}
-			if (j < 0 || j >= 0 && Prod[j] >= TestNbr[j]) {
+			if (Prod[j] >= TestNbr[j]) {
 				Pr = 0;
 				for (j = 0; j < NumberLength; j++) {
 					Prod[j] = (Pr = (Pr >> 31) + Prod[j] - TestNbr[j]) & MaxUInt;
