@@ -1,7 +1,7 @@
-## RuleDelayeed
+## RuleDelayed
 
 ```
-RuleDelayeed(x, y)
+RuleDelayed(x, y)
 
 x :> y
 ```

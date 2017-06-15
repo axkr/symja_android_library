@@ -11,6 +11,7 @@ Except(c, p)
 > represents a pattern object that matches `p` but not `c`.
  
 ### Examples
+
 ```
 >> Cases({x, a, b, x, c}, Except(x))
 {a,b,c}

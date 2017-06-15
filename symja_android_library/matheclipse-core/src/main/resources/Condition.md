@@ -10,6 +10,7 @@ pattern /; expr
 > places an additional constraint on `pattern` that only allows it to match if `expr` evaluates to `True`.
    
 ### Examples
+
 The controlling expression of a `Condition` can use variables from the pattern:
 ```
 > f(3) /. f(x_) /; x>0 -> t

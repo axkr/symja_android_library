@@ -710,6 +710,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCoefficientList() {
+		check("CoefficientList(a+b*x, x)", "{a,b}");
+		check("CoefficientList(a+b*x+c*x^2, x)", "{a,b,c}");
+		check("CoefficientList(a+c*x^2, x)", "{a,0,c}");
 		check("CoefficientList(0, x)", "{}");
 		check("CoefficientList((x+3)^5, x)", "{243,405,270,90,15,1}");
 		check("CoefficientList(1 + 6 x - x^4, x)", "{1,6,0,0,-1}");

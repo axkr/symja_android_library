@@ -26,7 +26,7 @@ Leaves in the beginning of a pattern rather match fewer leaves:
 >> f(a, b, c, d) /. f(start__, end__) -> {{start}, {end}}
 {{a},{b,c,d}}
 ```
-
+ 
 Optional arguments using 'Optional':
 ```
 >> f(a) /. f(x_, y_:3) -> {x, y}
@@ -43,6 +43,5 @@ The attributes 'Flat', 'Orderless', and 'OneIdentity' affect pattern matching.
 * [MatchQ](functions/MatchQ.md)
 * [Optional](functions/Optional.md)
 * [PatternTest](functions/PatternTest.md)
-* [Replace](functions/Replace.md)
 * [Rule](functions/Rule.md)
 * [RuleDelayed](functions/RuleDelayed.md)
