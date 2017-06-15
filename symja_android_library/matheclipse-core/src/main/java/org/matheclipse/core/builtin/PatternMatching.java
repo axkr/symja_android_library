@@ -3,18 +3,17 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.RuleDelayed;
 
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ICreatePatternMatcher;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ISymbol.RuleType;
@@ -27,6 +26,7 @@ public final class PatternMatching {
 
 		F.Clear.setEvaluator(new Clear());
 		F.ClearAll.setEvaluator(new ClearAll());
+		F.Optional.setEvaluator(new Optional());
 		F.Rule.setEvaluator(new Rule());
 		F.RuleDelayed.setEvaluator(new RuleDelayed());
 		F.Set.setEvaluator(new Set());
@@ -79,6 +79,24 @@ public final class PatternMatching {
 			ISymbol symbol = Validate.checkSymbolType(ast, 1);
 			symbol.clearAll(engine);
 			return F.Null;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	private static class Optional extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 3);
+			if (ast.arg1().isPattern()) {
+				IPattern patt = (IPattern) ast.arg1();
+				return F.$p(patt.getSymbol(), patt.getCondition(), ast.arg2());
+			}
+			return F.NIL;
 		}
 
 		@Override
@@ -217,8 +235,6 @@ public final class PatternMatching {
 		}
 
 	}
-
-	
 
 	private final static class SetDelayed extends AbstractCoreFunctionEvaluator implements ICreatePatternMatcher {
 

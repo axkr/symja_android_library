@@ -426,6 +426,7 @@ Documentation can be displayed by asking for information for the function name.
 * [OddQ](functions/OddQ.md)
 * [OneIdentity](functions/OneIdentity.md)
 * [Operate](functions/Operate.md)
+* [Optional](functions/Optional.md)
 * [Or](functions/Or.md)
 * [Order](functions/Order.md)
 * [OrderedQ](functions/OrderedQ.md)

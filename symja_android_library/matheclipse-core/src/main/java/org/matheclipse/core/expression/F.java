@@ -459,6 +459,7 @@ public class F {
 	public final static IBuiltInSymbol NumericQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "numericq" : "NumericQ");
 	public final static IBuiltInSymbol OddQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "oddq" : "OddQ");
+	public final static IBuiltInSymbol Optional = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "optional" : "Optional");
 	public final static IBuiltInSymbol Or = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "or" : "Or");
 	public final static IBuiltInSymbol Package = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "package" : "Package",

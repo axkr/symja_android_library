@@ -41,6 +41,7 @@ The attributes 'Flat', 'Orderless', and 'OneIdentity' affect pattern matching.
 * [Condition](functions/Condition.md)
 * [Except](functions/Except.md)
 * [MatchQ](functions/MatchQ.md)
+* [Optional](functions/Optional.md)
 * [PatternTest](functions/PatternTest.md)
 * [Replace](functions/Replace.md)
 * [Rule](functions/Rule.md)

@@ -4186,6 +4186,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Operate(p, f(x, y))", "p(f)[x,y]");
 	}
 
+	public void testOptional() {
+		check("f(x_, Optional(y_,1)) := {x, y}", "");
+		check("f(1, 2)", "{1,2}");
+		check("f(a)", "{a,1}"); 
+		
+ 		check("g(x_, y_:1) := {x, y}", "");
+		check("g(1, 2)", "{1,2}");
+		check("g(a)", "{a,1}"); 
+		
+		// check("Default(h)=0", "0");
+		// check("h(a) /. h(x_, y_.) -> {x, y}", ""); 
+
+	}
+	
 	public void testOr() {
 		check("False || True", "True");
 		check("a || False || b", "a||b");
