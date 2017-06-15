@@ -64,7 +64,7 @@ public class RulesData implements Serializable {
 					if (arg1.isAST(F.PatternTest, 3)) {
 						return true;
 					}
-					if (arg1.isAST(F.Except, 2, 3)) {
+					if (arg1.isAlternatives() || arg1.isExcept()) {
 						return true;
 					}
 					if (arg1.isCondition()) {
@@ -300,9 +300,8 @@ public class RulesData implements Serializable {
 	}
 
 	/**
-	 * Create a pattern hash value for the left-hand-side expression and insert
-	 * the left-hand-side as a simple pattern rule to the
-	 * <code>fSimplePatternRules</code>.
+	 * Create a pattern hash value for the left-hand-side expression and insert the left-hand-side as a simple pattern
+	 * rule to the <code>fSimplePatternRules</code>.
 	 * 
 	 * @param leftHandSide
 	 * @param pmEvaluator
@@ -318,9 +317,8 @@ public class RulesData implements Serializable {
 	}
 
 	/**
-	 * Create a pattern hash value for the left-hand-side expression and insert
-	 * the left-hand-side as a simple pattern rule to the
-	 * <code>fSimplePatternRules</code>.
+	 * Create a pattern hash value for the left-hand-side expression and insert the left-hand-side as a simple pattern
+	 * rule to the <code>fSimplePatternRules</code>.
 	 * 
 	 * @param leftHandSide
 	 * @param pmEvaluator

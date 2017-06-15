@@ -583,7 +583,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			}
 			return false;
 		}
-		if (lhsPatternAST.isAST(F.Except, 2, 3)) {
+		if (lhsPatternAST.isExcept()) {
 			if (lhsPatternAST.isAST2()) {
 				return !matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, stackMatcher)
 						&& matchExpr(lhsPatternAST.arg2(), lhsEvalExpr, stackMatcher);
@@ -824,10 +824,21 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				IAST alternatives = (IAST) lhsPatternExpr;
 				for (int i = 1; i < alternatives.size(); i++) {
 					if (matchExpr(alternatives.get(i), lhsEvalExpr)) {
-						return true;
+						matched = true;
+						break;
 					}
 				}
-				return false;
+				if (!matched) {
+					return false;
+				}
+			} else if (lhsPatternExpr.isExcept()) {
+				IAST except = (IAST) lhsPatternExpr;
+				if (except.isAST2()) {
+					matched = !matchExpr(except.arg1(), lhsEvalExpr, stackMatcher)
+							&& matchExpr(except.arg2(), lhsEvalExpr, stackMatcher);
+				} else {
+					matched = !matchExpr(except.arg1(), lhsEvalExpr, stackMatcher);
+				}
 			} else {
 				IAST lhsPatternAST = (IAST) lhsPatternExpr;
 				IExpr[] patternValues = fPatternMap.copyPattern();

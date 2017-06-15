@@ -1502,6 +1502,12 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public final boolean isExcept() {
+		return isAST(F.Except, 2, 3);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isExpanded() {
 		return !(isPlusTimesPower() && (isEvalFlagOff(IAST.IS_EXPANDED)));
 	}

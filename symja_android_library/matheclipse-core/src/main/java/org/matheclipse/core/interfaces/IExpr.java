@@ -638,6 +638,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is the <code>Except</code> function <code>Except[&lt;pattern1&gt;]</code> or
+	 * <code>Except[&lt;pattern1&gt;, &lt;pattern2&gt;]</code>
+	 * 
+	 * @return
+	 */
+	default boolean isExcept() {
+		return false;
+	}
+
+	/**
 	 * Test if this expression is the function <code>And[&lt;arg&gt;,...]</code>
 	 * 
 	 * @return

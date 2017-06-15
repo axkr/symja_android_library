@@ -162,12 +162,17 @@ Documentation can be displayed by asking for information for the function name.
 | Pure Functions		| pure functions can be expressed with the `&` operator															| `(#^3)&[x]`  gives `x^3` 				|
 | Parts of an expression| `expr[[index]]`   																							| `{a, b, c, d}[[2]]`  gives `b`		|
 
+## Reference of built-in symbols
+
+* [Patterns and rules](patterns-and-rules.md)
+
 ## Functions Reference
 
 * [Abs](functions/Abs.md)
 * [AddTo](functions/AddTo.md)
 * [All](functions/All.md)
 * [AllTrue](functions/AllTrue.md)
+* [Alternatives](functions/Alternatives.md)
 * [And](functions/And.md)
 * [AngleVector](functions/AngleVector.md)
 * [AnyTrue](functions/AnyTrue.md)
@@ -227,6 +232,7 @@ Documentation can be displayed by asking for information for the function name.
 * [ComplexInfinity](functions/ComplexInfinity.md)
 * [ComposeList](functions/ComposeList.md)
 * [CompoundExpression](functions/CompoundExpression.md)
+* [Condition](functions/Condition.md)
 * [Conjugate](functions/Conjugate.md)
 * [ConjugateTranspose](functions/ConjugateTranspose.md)
 * [Constant](functions/Constant.md)
@@ -287,6 +293,7 @@ Documentation can be displayed by asking for information for the function name.
 * [EvalF](functions/EvalF.md)
 * [EvenQ](functions/EvenQ.md)
 * [ExactNumberQ](functions/ExactNumberQ.md)
+* [Except](functions/Except.md)
 * [Exp](functions/Exp.md)
 * [Expand](functions/Expand.md)
 * [ExpandAll](functions/ExpandAll.md)
@@ -383,6 +390,7 @@ Documentation can be displayed by asking for information for the function name.
 * [Map](functions/Map.md)
 * [MapThread](functions/MapThread.md)
 * [MatchingDissimilarity](functions/MatchingDissimilarity.md)
+* [MatchQ](functions/MatchQ.md)
 * [MatrixPower](functions/MatrixPower.md)
 * [MatrixQ](functions/MatrixQ.md)
 * [MatrixRank](functions/MatrixRank.md)
@@ -419,6 +427,7 @@ Documentation can be displayed by asking for information for the function name.
 * [OneIdentity](functions/OneIdentity.md)
 * [Operate](functions/Operate.md)
 * [Or](functions/Or.md)
+* [Order](functions/Order.md)
 * [OrderedQ](functions/OrderedQ.md)
 * [Orderless](functions/Orderless.md)
 * [Outer](functions/Outer.md)
@@ -426,6 +435,7 @@ Documentation can be displayed by asking for information for the function name.
 * [PadRight](functions/PadRight.md)
 * [Part](functions/Part.md)
 * [Partition](functions/Partition.md)
+* [PatternTest](functions/PatternTest.md)
 * [Pi](functions/Pi.md)
 * [Piecewise](functions/Piecewise.md)
 * [Plus](functions/Plus.md)

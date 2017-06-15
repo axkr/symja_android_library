@@ -45,20 +45,19 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	private boolean fRuleWithoutPattern;
 
 	/**
-	 * Contains the symbols of the patterns. The corresponding value (or
-	 * <code>null</code>) is stored in <code>fPatternValuesArray</code>.
+	 * Contains the symbols of the patterns. The corresponding value (or <code>null</code>) is stored in
+	 * <code>fPatternValuesArray</code>.
 	 */
 	private IExpr[] fSymbolsArray;
 
 	/**
-	 * Contains the current values of the pattern symbols. The corresponding
-	 * symbol is stored in <code>fSymbolsArray</code>.
+	 * Contains the current values of the pattern symbols. The corresponding symbol is stored in
+	 * <code>fSymbolsArray</code>.
 	 */
 	private IExpr[] fPatternValuesArray;
 
 	/**
-	 * The default priority when associating a new rule to a symbol. Lower
-	 * values have higher priorities.
+	 * The default priority when associating a new rule to a symbol. Lower values have higher priorities.
 	 */
 	public final static int DEFAULT_RULE_PRIORITY = Integer.MAX_VALUE;
 
@@ -74,8 +73,8 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	}
 
 	/**
-	 * Set the index of <code>fPatternSymbolsArray</code> where the
-	 * <code>pattern</code> stores it's assigned value during pattern matching.
+	 * Set the index of <code>fPatternSymbolsArray</code> where the <code>pattern</code> stores it's assigned value
+	 * during pattern matching.
 	 * 
 	 * @param pattern
 	 * @param patternIndexMap
@@ -135,8 +134,7 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	}
 
 	/**
-	 * Copy the found pattern matches from the given <code>patternMap</code>
-	 * back to this maps pattern values.
+	 * Copy the found pattern matches from the given <code>patternMap</code> back to this maps pattern values.
 	 * 
 	 * @param patternMap
 	 */
@@ -152,14 +150,12 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	}
 
 	/**
-	 * Determine all patterns (i.e. all objects of instance IPattern) in the
-	 * given expression
+	 * Determine all patterns (i.e. all objects of instance IPattern) in the given expression
 	 * 
 	 * Increments this classes pattern counter.
 	 * 
 	 * @param lhsPatternExpr
-	 *            the (left-hand-side) expression which could contain pattern
-	 *            objects.
+	 *            the (left-hand-side) expression which could contain pattern objects.
 	 * @return the piority of this pattern-matcher
 	 */
 	protected int determinePatterns(final IExpr lhsPatternExpr) {
@@ -179,22 +175,20 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	}
 
 	/**
-	 * Determine all patterns (i.e. all objects of instance IPattern) in the
-	 * given expression
+	 * Determine all patterns (i.e. all objects of instance IPattern) in the given expression
 	 * 
 	 * Increments this classes pattern counter.
 	 * 
 	 * @param patternIndexMap
 	 * @param lhsPatternExpr
-	 *            the (left-hand-side) expression which could contain pattern
-	 *            objects.
+	 *            the (left-hand-side) expression which could contain pattern objects.
 	 * @param treeLevel
 	 *            TODO
 	 */
 	private int determinePatternsRecursive(Map<IExpr, Integer> patternIndexMap, final IAST lhsPatternExpr,
 			int treeLevel) {
 		final IAST ast = lhsPatternExpr;
-		if (lhsPatternExpr.isAST(F.Except, 2, 3)) {
+		if (lhsPatternExpr.isAlternatives() || lhsPatternExpr.isExcept()) {
 			fRuleWithoutPattern = false;
 		}
 		int listEvalFlags = IAST.NO_FLAG;
@@ -213,7 +207,7 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 		}
 		ast.setEvalFlags(listEvalFlags);
 		// disable flag "pattern with default value"
-//		listEvalFlags &= IAST.CONTAINS_NO_DEFAULT_PATTERN_MASK;
+		// listEvalFlags &= IAST.CONTAINS_NO_DEFAULT_PATTERN_MASK;
 		return listEvalFlags;
 	}
 
@@ -306,8 +300,7 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	}
 
 	/**
-	 * Check if all symbols in the symbols array have corresponding values
-	 * assigned.
+	 * Check if all symbols in the symbols array have corresponding values assigned.
 	 * 
 	 * @return
 	 */
@@ -406,8 +399,8 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	}
 
 	/**
-	 * Substitute all patterns and symbols in the given expression with the
-	 * current value of the corresponding internal pattern values arrays
+	 * Substitute all patterns and symbols in the given expression with the current value of the corresponding internal
+	 * pattern values arrays
 	 * 
 	 * @param lhsPatternExpr
 	 *            left-hand-side expression which may containe pattern objects
@@ -447,12 +440,11 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	}
 
 	/**
-	 * Substitute all symbols in the given expression with the current value of
-	 * the corresponding internal pattern values arrays
+	 * Substitute all symbols in the given expression with the current value of the corresponding internal pattern
+	 * values arrays
 	 * 
 	 * @param rhsExpr
-	 *            right-hand-side expression, substitute all symbols from the
-	 *            pattern-matching values
+	 *            right-hand-side expression, substitute all symbols from the pattern-matching values
 	 * 
 	 * @return
 	 */

@@ -68,6 +68,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("AllTrue({12, 16, x, 14, y}, TrueQ(# < 10) &)", "False");
 		check("AllTrue(f(1, 7, 3), OddQ)", "True");
 	}
+	
+	public void testAlternatives() {
+		check("a+b+c+d/.(a|b)->t", "c+d+2*t");
+		check("a+b+c+d/.Except(b,(a|c))->t", "b+d+2*t");
+	}
 
 	public void testAnd() {
 		check("True && True && False", "False");
@@ -830,6 +835,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("a=100;", "");
 		check("a", "100");
 		check("Catch[$a = 2; Throw[$a]; $a = 5]", "2");
+	}
+	
+	public void testCondition() {
+		check("f(3) /. f(x_) /; x>0 -> t", "t");
+		check("f(-3) /. f(x_) /; x>0 -> t", "f(-3)");
+		check("f(x_) := p(x) /; x>0", "");
+		check("f(3)", "p(3)");
+		check("f(-3)", "f(-3)");
 	}
 
 	public void testConjugate() {
@@ -1721,6 +1734,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExcept() {
+		check("Cases({x, a, b, x, c}, Except(x))", "{a,b,c}");
+		check("Cases({a, 0, b, 1, c, 2, 3}, Except(1, _Integer))", "{0,2,3}");
+		
+		check("Cases({1, 0, 2, 0, 3}, (0|2))", "{0,2,0}");
 		check("Cases({1, 0, 2, 0, 3}, Except(0))", "{1,2,3}");
 		check("Cases({a, b, 0, 1, 2, x, y}, Except(_Integer))", "{a,b,x,y}");
 		check("Cases({a, b, 0, 1, 2, x, y}, Except(0, _Integer))", "{1,2}");
@@ -3269,6 +3286,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMatchQ() {
+		check("MatchQ(123, _Integer)", "True");
+		check("MatchQ(123, _Real)", "False");
+		
 		check("MatchQ((-1-1*#^2-3*#)&, (a_.+c_.*#^2+b_.* #)&)", "True");
 		check("MatchQ(#-1*#^2, b_.* #+c_.*#^2)", "True");
 
@@ -4178,6 +4198,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BooleanConvert(! (a || b || c))", "!a&&!b&&!c");
 	}
 
+	public void testOrder() {
+		check("Order(3,4)", "1");
+		check("Order(4,3)", "-1");
+		check("Order(6,Pi)", "1");
+		check("Order(6,N(Pi))", "-1");
+	}
+
 	public void testOrderedQ() {
 		check("OrderedQ({a, b})", "True");
 		check("OrderedQ({b, a})", "False");
@@ -4340,7 +4367,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Partition({a, b, c, d, e}, 2)", "{{a,b},{c,d}}");
 	}
 
+	public void testPatternAndRules() {
+		check("a + b + c /. a + b -> t", "c+t");
+		check("a + 2 + b + c + x * y /. n_Integer + s__Symbol + rest_ -> {n, s, rest}", "{2,a,b+c+x*y}");
+		check("f(a, b, c, d) /. f(first_, rest___) -> {first, {rest}}", "{a,{b,c,d}}");
+		check("f(4) /. f(x_?(# > 0&)) -> x ^ 2", "16");
+		check("f(4) /. f(x_) /; x > 0 -> x ^ 2", "16");
+		check("f(a, b, c, d) /. f(start__, end__) -> {{start}, {end}}", "{{a},{b,c,d}}");
+		check("f(a) /. f(x_, y_:3) -> {x, y}", "{a,3}");
+		// check("f(y, a->3) /. f(x_, OptionsPattern({a->2, b->5})) -> {x, OptionValue(a), OptionValue(b)}", "");
+	}
+
 	public void testPatternTest() {
+		check("MatchQ(3, _Integer?(#>0&))", "True");
+		check("MatchQ(-3, _Integer?(#>0&))", "False");
+		
 		check("$j(x_, y_:1, z_:2) := jp[x, y, z]; $j(a,b)", "jp(a,b,2)");
 		check("$j(x_, y_:1, z_:2) := jp[x, y, z]; $j(a)", "jp(a,1,2)");
 		check("$f(x_:2):={x};$f()", "{2}");
@@ -5598,16 +5639,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSlot() {
-//		check("x^2+x", "x+x^2");
-		
+		// check("x^2+x", "x+x^2");
+
 		check("f = If(#1 == 1, 1, #1 #0(#1 - 1)) &", "If(#1==1,1,#1*#0[-1+#1])&");
 		check("f(10)", "3628800");
 		check("# &[1, 2, 3]", "1");
 		check("#1 &[1, 2, 3]", "1");
 		check("g(#0) &[x]", "g(g(#0)&)");
-		
-//		check("#1^2+#1", "#1^2+#1");
-//		check("#1+#1^7", "#1");
+
+		// check("#1^2+#1", "#1^2+#1");
+		// check("#1+#1^7", "#1");
 		check("#", "#1");
 		check("#42", "#42");
 	}
@@ -6474,12 +6515,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ToPolarCoordinates({{{1, -1}}})", "{{{Sqrt(2),-Pi/4}}}");
 		check("ToPolarCoordinates({{} , {}})", "{{},{}}");
 	}
-	
+
 	public void testToRadicals() {
 		check("ToRadicals(Root((#^2 - 3*# - 1)&, 2))", "3/2+Sqrt(13)/2");
 		check("ToRadicals(Root((-3#-1)&, 1))", "-1/3");
-		check("ToRadicals(Sin(Root((#^7-#^2-#+a)&, 1)))",
-				"Sin(Root(a-#1^2+#1^7-#1&,1))");
+		check("ToRadicals(Sin(Root((#^7-#^2-#+a)&, 1)))", "Sin(Root(a-#1^2+#1^7-#1&,1))");
 		check("ToRadicals(Root((#^7-#^2-#+a)&, 1)+Root((#^6-#^2-#+a)&, 1))",
 				"Root(a-#1^2+#1^6-#1&,1)+Root(a-#1^2+#1^7-#1&,1)");
 		check("ToRadicals(Root((#^3-#^2-#+a)&, 1))",
