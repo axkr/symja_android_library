@@ -164,10 +164,14 @@ Documentation can be displayed by asking for information for the function name.
 
 ## Reference of built-in symbols
 
+* [Control statements](control-statements.md)
+* [Linear algebra](linear-algebra.md)
+* [Number theoretic functions](number-theoretic-functions.md)
 * [Patterns and rules](patterns-and-rules.md)
 
 ## Functions Reference
 
+* [Abort](functions/Abort.md)
 * [Abs](functions/Abs.md)
 * [AddTo](functions/AddTo.md)
 * [All](functions/All.md)
@@ -472,7 +476,7 @@ Documentation can be displayed by asking for information for the function name.
 * [Real](functions/Real.md)
 * [RealNumberQ](functions/RealNumberQ.md)
 * [Reals](functions/Reals.md)
-* [Refine](functions/Refine.md) 
+* [Refine](functions/Refine.md)
 * [ReplacePart](functions/ReplacePart.md)
 * [Rest](functions/Rest.md)
 * [Return](functions/Return.md)
