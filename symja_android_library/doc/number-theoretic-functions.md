@@ -14,5 +14,4 @@
 * [PrimePi](functions/PrimePi.md)
 * [PrimePowerQ](functions/PrimePowerQ.md)
 * [PrimeQ](functions/PrimeQ.md) 
-* [Quotient](functions/Quotient.md)
-* [RandomPrime](functions/RandomPrime.md) 
+* [Quotient](functions/Quotient.md) 
