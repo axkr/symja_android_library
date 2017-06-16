@@ -4746,6 +4746,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("$l = {1, 2, 4, 9};PrependTo($l, 16);$l", "{16,1,2,4,9}");
 	}
 
+	public void testPrimePi() {
+		check("PrimePi(3.5)", "2");
+
+		check("PrimePi(100)", "25");
+		check("PrimePi(-1)", "0");
+		check("PrimePi(3.5)", "2");
+		check("PrimePi(E)", "1");
+
+		check("PrimePi(1)", "0");
+		check("PrimePi(2)", "1");
+
+		// check("PrimePi(1000000)", "78498");
+		check("PrimePi(10000)", "1229");
+		check("PrimePi(5.2)", "3");
+
+		check("PrimePi(997)", "168");
+		check("Prime(168)", "997");
+	}
+
 	public void testPrime() {
 		check("Prime(10^6)", "15485863");
 		check("Prime(10^7)", "179424673");

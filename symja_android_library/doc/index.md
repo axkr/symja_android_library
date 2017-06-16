@@ -463,6 +463,7 @@ Documentation can be displayed by asking for information for the function name.
 * [PrependTo](functions/PrependTo.md)
 * [Prime](functions/Prime.md)
 * [PrimeOmega](functions/PrimeOmega.md)
+* [PrimePi](functions/PrimePi.md)
 * [PrimePowerQ](functions/PrimePowerQ.md)
 * [PrimeQ](functions/PrimeQ.md)
 * [Product](functions/Product.md)

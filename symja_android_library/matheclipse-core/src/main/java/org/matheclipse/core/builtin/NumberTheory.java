@@ -1300,8 +1300,59 @@ public final class NumberTheory {
 		}
 	}
 
-	/**
-	 */
+	private static class PrimePi extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			IExpr arg1 = ast.arg1();
+			if (arg1.isNegative() || arg1.isOne() || arg1.isZero()) {
+				return F.C0;
+			}
+			try {
+				IExpr x = F.NIL;
+				if (arg1.isInteger() && arg1.isPositive()) {
+					x = (IInteger) arg1;
+				}
+
+				if (arg1.isSignedNumber() && arg1.isPositive()) {
+					x = engine.evaluate(((ISignedNumber) arg1).floorFraction());
+				} else {
+					ISignedNumber sn = arg1.evalSignedNumber();
+					if (sn != null) {
+						x = engine.evaluate(sn.floorFraction());
+					}
+				}
+
+				if (x.isInteger()) {
+					// TODO improve performance by caching some values?
+
+					// throws ArithmeticException if x is to large
+					int maxK = ((IInteger) x).toInt();
+					int result = 0;
+					BigInteger temp = BigInteger.ONE;
+					for (int i = 2; i <= maxK; i++) {
+						temp = temp.nextProbablePrime();
+						if (temp.intValue() > maxK) {
+							break;
+						}
+						result++;
+					}
+					return F.integer(result);
+				}
+			} catch (ArithmeticException ae) {
+				// integer arg to large?
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+	}
+
 	private static class PrimeOmega extends AbstractFunctionEvaluator {
 
 		@Override
@@ -1708,6 +1759,7 @@ public final class NumberTheory {
 		F.MultiplicativeOrder.setEvaluator(new MultiplicativeOrder());
 		F.NextPrime.setEvaluator(new NextPrime());
 		F.Prime.setEvaluator(new Prime());
+		F.PrimePi.setEvaluator(new PrimePi());
 		F.PrimeOmega.setEvaluator(new PrimeOmega());
 		F.PrimePowerQ.setEvaluator(new PrimePowerQ());
 		F.SquareFreeQ.setEvaluator(new SquareFreeQ());

@@ -1029,6 +1029,8 @@ public class F {
 	public final static IBuiltInSymbol Prime = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "prime" : "Prime");
 	public final static IBuiltInSymbol PrimeOmega = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primeomega" : "PrimeOmega");
+	public final static IBuiltInSymbol PrimePi = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primepi" : "PrimePi");
 	public final static IBuiltInSymbol PrimePowerQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primepowerq" : "PrimePowerQ");
 	public final static IBuiltInSymbol PrimitiveRoots = initFinalSymbol(
@@ -3325,6 +3327,10 @@ public class F {
 		return unaryAST1(EvenQ, a);
 	}
 
+	public static IAST EulerPhi(final IExpr a0) {
+		return unaryAST1(EulerPhi, a0);
+	}
+	
 	public static IAST Exp(final IExpr a0) {
 		return binaryAST2(Power, E, a0);
 	}
