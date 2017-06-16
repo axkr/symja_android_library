@@ -50,7 +50,7 @@ public class AST2Expr {
 			"OneIdentity", "Orderless", "Pi", "PrecisionGoal", "Primes", "Rationals", "Real", "Reals", "Second", "Slot",
 			"SlotSequence", "String", "Symbol", "TooLarge", "Trig", "True", "Variable", "Unknown" };
 
-	public final static String[] FUNCTION_STRINGS = { "Abs", "AbsArg", "AddTo", "AllTrue", "And", "AngleVector",
+	public final static String[] FUNCTION_STRINGS = { "Abort", "Abs", "AbsArg", "AddTo", "AllTrue", "And", "AngleVector",
 			"AnyTrue", "AlgebraicNumber", "Alternatives", "Apart", "AppellF1", "Append", "AppendTo", "Apply", "ArcCos",
 			"ArcCosh", "ArcCot", "ArcCoth", "ArcCsc", "ArcCsch", "ArcSec", "ArcSech", "ArcSin", "ArcSinh", "ArcTan",
 			"ArcTanh", "Arg", "Array", "ArrayDepth", "ArrayQ", "Assumptions", "AtomQ", "Attributes", "Begin",

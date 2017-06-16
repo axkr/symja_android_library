@@ -12,10 +12,10 @@ import java.util.function.Predicate;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.function.NestWhileList;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ContinueException;
-import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.ThrowException;
@@ -39,7 +39,7 @@ public final class Programming {
 	final static Programming CONST = new Programming();
 
 	static {
-
+		F.Abort.setEvaluator(new Abort());
 		F.Break.setEvaluator(new Break());
 		F.Block.setEvaluator(new Block());
 		F.Catch.setEvaluator(new Catch());
@@ -63,6 +63,24 @@ public final class Programming {
 		F.Throw.setEvaluator(new Throw());
 		F.Which.setEvaluator(new Which());
 		F.While.setEvaluator(new While());
+
+	}
+
+	private final static class Abort extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST0()) {
+				throw AbortException.ABORTED;
+			}
+			Validate.checkSize(ast, 1);
+
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
 
 	}
 

@@ -302,6 +302,7 @@ public class F {
 	public final static IBuiltInSymbol PoissonDistribution = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "poissondistribution" : "PoissonDistribution");
 
+	public final static IBuiltInSymbol Abort = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "abort" : "Abort");
 	public final static IBuiltInSymbol And = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "and" : "And");
 	public final static IBuiltInSymbol Append = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "append" : "Append");

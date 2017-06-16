@@ -17,6 +17,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalUtilities;
+import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
@@ -64,6 +65,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
 
 	public Object eval(final String script, final ScriptContext context) throws ScriptException {
 		final ArrayList<ISymbol> list = new ArrayList<ISymbol>();
+		boolean relaxedSyntax = false;
 		try {
 			// first assign the EvalEngine to the current thread:
 			fUtility.startRequest();
@@ -75,8 +77,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
 				symbol.pushLocalVariable(Object2Expr.convert(currEntry.getValue()));
 				list.add(symbol);
 			}
-
-			boolean relaxedSyntax = false;
+			
 			final Object relaxedSyntaxBoolean = get("RELAXED_SYNTAX");
 			if (Boolean.TRUE.equals(relaxedSyntaxBoolean)) {
 				relaxedSyntax = true;
@@ -105,17 +106,20 @@ public class MathScriptEngine extends AbstractScriptEngine {
 			} else {
 				// return the object as String representation
 				if (result != null) {
-					if (result.equals(F.Null)) {
-						return "";
-					}
-					final StringWriter buf = new StringWriter();
-					OutputFormFactory.get(relaxedSyntax).convert(buf, result);
-					// print the result in the console
-					return buf.toString();
+					return printResult(result, relaxedSyntax);
 				}
 				return "";
 			}
 
+		} catch (final AbortException e) {
+			try {
+				return printResult(F.Aborted, relaxedSyntax);
+			} catch (IOException e1) {
+				if (Config.DEBUG) {
+					e.printStackTrace();
+				}
+				return e1.getMessage();
+			}
 		} catch (final MathException e) {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();
@@ -151,6 +155,16 @@ public class MathScriptEngine extends AbstractScriptEngine {
 			}
 		}
 
+	}
+
+	private Object printResult(IExpr result, boolean relaxedSyntax) throws IOException {
+		if (result.equals(F.Null)) {
+			return "";
+		}
+		final StringWriter buf = new StringWriter();
+		OutputFormFactory.get(relaxedSyntax).convert(buf, result);
+		// print the result in the console
+		return buf.toString();
 	}
 
 	public ScriptEngineFactory getFactory() {

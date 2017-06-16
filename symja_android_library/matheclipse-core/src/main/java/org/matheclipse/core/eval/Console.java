@@ -16,10 +16,11 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.form.output.ASCIIPrettyPrinter3;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.reflection.system.Names;
@@ -373,12 +374,14 @@ public class Console {
 				result = fEvaluator.evaluateWithTimeout(inputExpression, fSeconds, TimeUnit.SECONDS, true);
 			}
 			if (result != null) {
-				if (result.equals(F.Null)) {
-					return "";
-				}
-				StringBuilder strBuffer = new StringBuilder();
-				fOutputFactory.convert(strBuffer, result);
-				return strBuffer.toString();
+				return printResult(result);
+			}
+		} catch (final AbortException re) { 
+			try {
+				return printResult(F.Aborted);
+			} catch (IOException e) {
+				Validate.printException(buf, e);
+				return "";
 			}
 		} catch (final SyntaxError se) {
 			String msg = se.getMessage();
@@ -404,6 +407,15 @@ public class Console {
 			return "";
 		}
 		return buf.toString();
+	}
+
+	private String printResult(IExpr result) throws IOException {
+		if (result.equals(F.Null)) {
+			return "";
+		}
+		StringBuilder strBuffer = new StringBuilder();
+		fOutputFactory.convert(strBuffer, result);
+		return strBuffer.toString();
 	}
 
 	private String[] prettyPrinter3Lines(final String inputExpression) {

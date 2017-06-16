@@ -23,6 +23,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("expand((a+b+c)^3)", "a^3+3*a^2*b+3*a*b^2+b^3+3*a^2*c+6*a*b*c+3*b^2*c+3*a*c^2+3*b*c^2+c^3");
 	}
 
+	public void testAbort() {
+		check("Print(\"a\"); Abort(); Print(\"b\")", "$Aborted");
+	}
+
 	public void testAbs() {
 		check("Abs(-x)", "Abs(x)");
 		check("Abs(Conjugate(z))", "Abs(z)");
@@ -68,7 +72,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("AllTrue({12, 16, x, 14, y}, TrueQ(# < 10) &)", "False");
 		check("AllTrue(f(1, 7, 3), OddQ)", "True");
 	}
-	
+
 	public void testAlternatives() {
 		check("a+b+c+d/.(a|b)->t", "c+d+2*t");
 		check("a+b+c+d/.Except(b,(a|c))->t", "b+d+2*t");
@@ -346,6 +350,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArrayDepth() {
+		check("ArrayDepth({{a,b},{c,d}})", "2");
+		check("ArrayDepth(x)", "0");
 		check("ArrayDepth({{1, 2}, {3, 4}})", "2");
 		check("ArrayDepth({1, 2, 3, 4})", "1");
 		check("ArrayDepth({{a, b}, {c}})", "1");
@@ -839,7 +845,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("a", "100");
 		check("Catch[$a = 2; Throw[$a]; $a = 5]", "2");
 	}
-	
+
 	public void testCondition() {
 		check("f(3) /. f(x_) /; x>0 -> t", "t");
 		check("f(-3) /. f(x_) /; x>0 -> t", "f(-3)");
@@ -1739,7 +1745,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testExcept() {
 		check("Cases({x, a, b, x, c}, Except(x))", "{a,b,c}");
 		check("Cases({a, 0, b, 1, c, 2, 3}, Except(1, _Integer))", "{0,2,3}");
-		
+
 		check("Cases({1, 0, 2, 0, 3}, (0|2))", "{0,2,0}");
 		check("Cases({1, 0, 2, 0, 3}, Except(0))", "{1,2,3}");
 		check("Cases({a, b, 0, 1, 2, x, y}, Except(_Integer))", "{a,b,x,y}");
@@ -3185,7 +3191,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testMatchQ() {
 		check("MatchQ(123, _Integer)", "True");
 		check("MatchQ(123, _Real)", "False");
-		
+
 		check("MatchQ((-1-1*#^2-3*#)&, (a_.+c_.*#^2+b_.* #)&)", "True");
 		check("MatchQ(#-1*#^2, b_.* #+c_.*#^2)", "True");
 
@@ -4086,17 +4092,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testOptional() {
 		check("f(x_, Optional(y_,1)) := {x, y}", "");
 		check("f(1, 2)", "{1,2}");
-		check("f(a)", "{a,1}"); 
-		
- 		check("g(x_, y_:1) := {x, y}", "");
+		check("f(a)", "{a,1}");
+
+		check("g(x_, y_:1) := {x, y}", "");
 		check("g(1, 2)", "{1,2}");
-		check("g(a)", "{a,1}"); 
-		
+		check("g(a)", "{a,1}");
+
 		// check("Default(h)=0", "0");
-		// check("h(a) /. h(x_, y_.) -> {x, y}", ""); 
+		// check("h(a) /. h(x_, y_.) -> {x, y}", "");
 
 	}
-	
+
 	public void testOr() {
 		check("False || True", "True");
 		check("a || False || b", "a||b");
@@ -4292,7 +4298,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testPatternTest() {
 		check("MatchQ(3, _Integer?(#>0&))", "True");
 		check("MatchQ(-3, _Integer?(#>0&))", "False");
-		
+
 		check("$j(x_, y_:1, z_:2) := jp[x, y, z]; $j(a,b)", "jp(a,b,2)");
 		check("$j(x_, y_:1, z_:2) := jp[x, y, z]; $j(a)", "jp(a,1,2)");
 		check("$f(x_:2):={x};$f()", "{2}");
