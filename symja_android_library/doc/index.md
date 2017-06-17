@@ -152,7 +152,7 @@ Documentation can be displayed by asking for information for the function name.
 | Lists					| comma separated list of elements which are surrounded by `{ ... }`  											| `{a, b, c, d} `  						|
 | Vectors				| vectors are like list, but cannot contain sub-lists `{ ... }`  												| `{1, 2, 3, 4}`  						|
 | Matrices				| a matrix contains the rows as sub-lists 																		| `{{1, 2}, {3, 4}}`  					|
-| Predefined Functions	| predefined function names start with an upper case character and the arguments are surrounded by `( ... )`	| `Sin(0), PrimeQ(13)` 					|
+| Predefined Functions	| predefined function names start with an upper case character and the arguments are enclosed by `( ... )`	| `Sin(0), PrimeQ(13)` 					|
 | Predefined Constants	| predefined constant names start with an upper case character 													| `Degree, E, Pi, False, True, ... `	|
 | User-defined variables| identifiers which you would like to assign a value start with a `$` character in the server environment		| `$a=42`  								|
 | User-defined variables| in the Symja console app user-defined variables can be defined without a preceding `$` character				| `a=42`  								|

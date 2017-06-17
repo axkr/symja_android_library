@@ -19,8 +19,10 @@ lhs == rhs
 ```
 >> a==a
 True
+
 >> a==b
 a == b
+
 >> 1==1.
 True
 ```
