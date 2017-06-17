@@ -3922,6 +3922,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testNonNegative() {
 		check("{Positive(0), NonNegative(0)}", "{False,True}");
 	}
+	
+	public void testNonPositive() {
+		check("{Negative(0), NonPositive(0)}", "{False,True}");
+	}
 
 	public void testNor() {
 		check("Nor( )", "True");

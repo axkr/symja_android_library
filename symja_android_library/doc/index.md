@@ -167,8 +167,10 @@ Documentation can be displayed by asking for information for the function name.
 ## Reference of built-in symbols
 
 * [Combinatorial](combinatorial.md)
+* [Comparison](comparison.md)
 * [Control statements](control-statements.md)
 * [Linear algebra](linear-algebra.md)
+* [Logic](logic.md)
 * [Number theoretic functions](number-theoretic-functions.md)
 * [Patterns and rules](patterns-and-rules.md)
 
@@ -422,6 +424,7 @@ Documentation can be displayed by asking for information for the function name.
 * [None](functions/None.md)
 * [NoneTrue](functions/NoneTrue.md)
 * [NonNegative](functions/NonNegative.md)
+* [NonPositive](functions/NonPositive.md)
 * [Norm](functions/Norm.md)
 * [Normalize](functions/Normalize.md)
 * [Not](functions/Not.md)

@@ -73,7 +73,6 @@ public final class FunctionDefinitions {
 		MonomialList.setEvaluator(new org.matheclipse.core.reflection.system.MonomialList());
 		Names.setEvaluator(new org.matheclipse.core.reflection.system.Names());
 		NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
-		Negative.setEvaluator(new org.matheclipse.core.reflection.system.Negative());
 		NFourierTransform.setEvaluator(new org.matheclipse.core.reflection.system.NFourierTransform());
 		NIntegrate.setEvaluator(new org.matheclipse.core.reflection.system.NIntegrate());
 		NMaximize.setEvaluator(new org.matheclipse.core.reflection.system.NMaximize());

@@ -56,8 +56,10 @@ public final class BooleanFunctions {
 		F.Less.setEvaluator(CONST_LESS);
 		F.LessEqual.setEvaluator(new LessEqual());
 		F.Nand.setEvaluator(new Nand());
+		F.Negative.setEvaluator(new Negative());
 		F.NoneTrue.setEvaluator(new NoneTrue());
 		F.NonNegative.setEvaluator(new NonNegative());
+		F.NonPositive.setEvaluator(new NonPositive());
 		F.Nor.setEvaluator(new Nor());
 		F.Not.setEvaluator(new Not());
 		F.Or.setEvaluator(new Or());
@@ -1332,6 +1334,31 @@ public final class BooleanFunctions {
 		}
 	}
 
+	private static class Negative extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+			IExpr arg1 = ast.arg1();
+			if (arg1.isSignedNumber()) {
+				if (((ISignedNumber) arg1).isNegative()) {
+					return F.True;
+				}
+				return F.False;
+			}
+			if (arg1.isNumber()) {
+				return F.False;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+
+	}
+
 	private static class NoneTrue extends AbstractFunctionEvaluator {
 
 		@Override
@@ -1391,6 +1418,29 @@ public final class BooleanFunctions {
 			ISignedNumber arg1 = ast.arg1().evalSignedNumber();
 			if (arg1 != null) {
 				return F.bool(!arg1.isNegative());
+			}
+			if (ast.arg1().isNumber()) {
+				return F.False;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+
+	}
+	
+	private final static class NonPositive extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			ISignedNumber arg1 = ast.arg1().evalSignedNumber();
+			if (arg1 != null) {
+				return F.bool(!arg1.isPositive());
 			}
 			if (ast.arg1().isNumber()) {
 				return F.False;

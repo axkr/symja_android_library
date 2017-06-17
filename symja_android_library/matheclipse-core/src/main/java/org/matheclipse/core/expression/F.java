@@ -957,6 +957,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nonetrue" : "NoneTrue");
 	public final static IBuiltInSymbol NonNegative = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nonnegative" : "NonNegative");
+	public final static IBuiltInSymbol NonPositive = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nonpositive" : "NonPositive");
 	public final static IBuiltInSymbol Norm = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "norm" : "Norm");
 	public final static IBuiltInSymbol Normal = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "normal" : "Normal");
