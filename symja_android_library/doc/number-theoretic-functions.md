@@ -1,10 +1,12 @@
 ## Number theoretic functions
 
 * [CoprimeQ](functions/CoprimeQ.md)
+* [Divisors](functions/Divisors.md)
 * [EvenQ](functions/EvenQ.md)
 * [FactorInteger](functions/FactorInteger.md)
 * [GCD](functions/GCD.md)
 * [IntegerExponent](functions/IntegerExponent.md)
+* [JacobiSymbol](functions/JacobiSymbol.md)
 * [LCM](functions/LCM.md)
 * [Mod](functions/Mod.md)
 * [NextPrime](functions/NextPrime.md)

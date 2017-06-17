@@ -154,16 +154,19 @@ Documentation can be displayed by asking for information for the function name.
 | Matrices				| a matrix contains the rows as sublists 																		| `{{1, 2}, {3, 4}}`  					|
 | Predefined Functions	| predefined function names start with an upper case character and the arguments are surrounded by `( ... )`	| `Sin(0), PrimeQ(13)` 					|
 | Predefined Constants	| predefined constant names start with an upper case character 													| `Degree, E, Pi, False, True, ... `	|
-| Userdefined variables	| identifiers which you would like to assign a value start with a `$` character 								| `$a=42`  								|
-| Userdefined rules		| identifiers which you would like to assign a rule start with a `$` character  								| `$f(x_,y_):={x,y}`  					|
-| Pattern Symbols		| patterns end with a preceding `_` and could have a constraint 												| `$f(x_IntegerQ):={x}`  				|
+| Userdefined variables	| identifiers which you would like to assign a value start with a `$` character in the server environment		| `$a=42`  								|
+| Userdefined variables	| in the Symja console app userdefined variables can be defined without a preceding `$` character				| `a=42`  								|
+| Userdefined rules		| identifiers which you would like to assign a rule start with a `$` character in the server environment		| `$f(x_,y_):={x,y}`  					|
+| Userdefined rules		| in the Symja console app userdefined rules can be defined without a preceding `$` character					| `f(x_,y_):={x,y}`  
+| Pattern Symbols		| patterns end with a preceding `_` and could have a constraint 												| `$f(x_Integer):={x}`  				|
 | Strings				| character strings are enclosed by double quote characters  													| `"Hello World"`  						|
-| Slots					| a `#` character followed by an optional number 																| `#` or `#2`   						|
+| Slots					| a `#` character followed by an optional integer number 														| `#` or `#2`   						|
 | Pure Functions		| pure functions can be expressed with the `&` operator															| `(#^3)&[x]`  gives `x^3` 				|
 | Parts of an expression| `expr[[index]]`   																							| `{a, b, c, d}[[2]]`  gives `b`		|
 
 ## Reference of built-in symbols
 
+* [Combinatorial](combinatorial.md)
 * [Control statements](control-statements.md)
 * [Linear algebra](linear-algebra.md)
 * [Number theoretic functions](number-theoretic-functions.md)
