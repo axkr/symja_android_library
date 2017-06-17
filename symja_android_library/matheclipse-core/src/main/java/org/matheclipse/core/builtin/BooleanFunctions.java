@@ -1339,16 +1339,14 @@ public final class BooleanFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
-			IExpr arg1 = ast.arg1();
-			if (arg1.isSignedNumber()) {
-				if (((ISignedNumber) arg1).isNegative()) {
-					return F.True;
-				}
+			ISignedNumber arg1 = ast.arg1().evalSignedNumber();
+			if (arg1 != null) {
+				return F.bool(arg1.isNegative());
+			}
+			if (ast.arg1().isNumber()) {
 				return F.False;
 			}
-			if (arg1.isNumber()) {
-				return F.False;
-			}
+			
 			return F.NIL;
 		}
 

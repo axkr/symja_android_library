@@ -3834,9 +3834,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ " {19.900000000000013,-1.3563508805926336,-2.3873032702684966,12.389986364305651}})");
 	}
 
+	public void testNegative() {
+		check("Negative(0)", "False");
+		check("Negative(-3)", "True");
+		check("Negative(10/7)", "False");
+		check("Negative(1+2*I)", "False");
+		check("Negative(a + b)", "Negative(a+b)");
+ 		check("Negative(-E)", "True");
+		check("Negative(Sin({11, 14}))", "{True,False}");
+	}
+
 	public void testNearest() {
-		check("Nearest[{1, 2, 4, 8, 16, 32}, 20]", "{16}");
-		check("Nearest[{1, 2, 4, 8, 16, 24, 32}, 20]", "{16,24}");
+		check("Nearest({1, 2, 4, 8, 16, 32}, 20)", "{16}");
+		check("Nearest({1, 2, 4, 8, 16, 24, 32}, 20)", "{16,24}");
 	}
 
 	public void testNest() {
@@ -3922,7 +3932,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testNonNegative() {
 		check("{Positive(0), NonNegative(0)}", "{False,True}");
 	}
-	
+
 	public void testNonPositive() {
 		check("{Negative(0), NonPositive(0)}", "{False,True}");
 	}
