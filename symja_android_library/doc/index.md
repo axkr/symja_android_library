@@ -124,6 +124,8 @@ In contrast to combinatorial belief, 0^0 is undefined:
 The result of the previous query to Symja can be accessed by %:
 ```
 3 + 4
+
+% ^ 2
 ```
 
 In the console available functions can be determined with the `?` operator
@@ -163,6 +165,19 @@ Documentation can be displayed by asking for information for the function name.
 | Slots					| a `#` character followed by an optional integer number 														| `#` or `#2`   						|
 | Pure Functions		| pure functions can be expressed with the `&` operator															| `(#^3)&[x]`  gives `x^3` 				|
 | Parts of an expression| `expr[[index]]`   																							| `{a, b, c, d}[[2]]`  gives `b`		|
+
+## Tutorial
+
+The following sections are introductions to the basic principles of the language of Symja. 
+A few examples and functions are presented. Only their most common usages are listed; 
+for a full description of their possible arguments, options, etc., see their entry in the "function reference" of built-in symbols.
+
+* [Symbols and assignments](symbols-and-assignments.md)
+* [Comparisons and Boolean logic](comparisons-and-boolean logic.md)
+* [Strings](strings.md)
+* [Lists](lists.md)
+* [The structure of things](the-structure-of-things.md)
+* [Functions and patterns](functions-and-patterns.md)
 
 ## Reference of built-in symbols
 
