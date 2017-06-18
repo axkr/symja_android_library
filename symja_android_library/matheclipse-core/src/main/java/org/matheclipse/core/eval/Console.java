@@ -414,6 +414,7 @@ public class Console {
 			return "";
 		}
 		StringBuilder strBuffer = new StringBuilder();
+		fOutputFactory.reset();
 		fOutputFactory.convert(strBuffer, result);
 		return strBuffer.toString();
 	}

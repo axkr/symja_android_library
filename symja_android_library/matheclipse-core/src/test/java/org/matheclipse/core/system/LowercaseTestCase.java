@@ -948,7 +948,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("N(CosineDistance({7, 9}, {71, 89}))", "7.596457213221441E-5");
 		check("CosineDistance({a, b}, {c, d})", "1-(a*c+b*d)/(Sqrt(Abs(a)^2+Abs(b)^2)*Sqrt(Abs(c)^2+Abs(d)^2))");
 		check("CosineDistance({a, b, c}, {x, y, z})",
-				"1-(a*x+b*y+c*z)/(Sqrt(Abs(a)^2+Abs(b)^2+Abs(c)^2)*Sqrt(Abs(x)^2+Abs(y)^2+Abs(z)^\n" + "2))");
+				"1-(a*x+b*y+c*z)/(Sqrt(Abs(a)^2+Abs(b)^2+Abs(c)^2)*Sqrt(Abs(x)^2+Abs(y)^2+Abs(z)^\n" + 
+				"2))");
 	}
 
 	public void testCosIntegral() {

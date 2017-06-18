@@ -63,6 +63,10 @@ public class OutputFormFactory {
 		fNumberFormat = numberFormat;
 	}
 
+	public void reset() {
+		fColumnCounter = 0;
+	}
+
 	/**
 	 * Get an <code>OutputFormFactory</code> for converting an internal expression to a user readable string.
 	 * 
@@ -769,7 +773,6 @@ public class OutputFormFactory {
 	}
 
 	public void convert(final Appendable buf, final IExpr o) throws IOException {
-		// fColumnCounter = 0;
 		convert(buf, o, Integer.MIN_VALUE, false);
 	}
 
