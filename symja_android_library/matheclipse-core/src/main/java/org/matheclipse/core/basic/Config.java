@@ -88,8 +88,9 @@ public class Config {
 	public static boolean PARSER_USE_LOWERCASE_SYMBOLS = true;
 
 	/**
-	 * If <code>true</code> the parser doesn't allow "square brackets" instead of "parentheses" in relaxed mode. The
-	 * syntax <code>f[x, y, ...]</code> isn't allowed then. Always use <code>f(x, y, ...)</code>
+	 * If <code>true</code> the parser doesn't allow "square brackets" instead of "parentheses" for enclosing function
+	 * arguments in relaxed mode. The syntax <code>f[x, y, ...]</code> isn't allowed then. Always use
+	 * <code>f(x, y, ...)</code>.
 	 * 
 	 */
 	public final static boolean PARSER_USE_STRICT_SYNTAX = false;
