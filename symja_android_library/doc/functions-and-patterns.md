@@ -5,7 +5,7 @@ Functions can be defined in the following way:
 >> f(x_) := x ^ 2
 ```
 
-This tells Mathics to replace every occurrence of f with one (arbitrary) parameter x with x ^ 2.
+This tells Symja to replace every occurrence of `f` with one (arbitrary) parameter `x` with `x ^ 2`.
 ```
 >> f(3)
 9
@@ -21,7 +21,7 @@ f(1,2)
 ```
 
 In fact, functions in Symja are just one aspect of patterns: 
-`f(x_)` is a pattern that matches expressions like f(3) and f(a). 
+`f(x_)` is a pattern that matches expressions like `f(3)` and `f(a)`. 
 The following patterns are available:
 
 ```
@@ -144,7 +144,7 @@ Here, `N` is applied to x before the actual matching, simply yielding x. With a 
 ```
 
 In addition to defining functions as rules for certain patterns, there are pure functions that can be defined using the `&` postfix operator, 
-where everything before it is treated as the funtion body and `#` can be used as argument placeholder:
+where everything before it is treated as the function body and `#` can be used as argument placeholder:
 ```
 >> h = # ^ 2 &;
 
@@ -160,7 +160,7 @@ Multiple arguments can simply be indexed:
 10
 ```
 
-It is also possible to name arguments using Function:
+It is also possible to name arguments using `Function`:
 ```
 >> p = Function({x, y}, x * y);
 

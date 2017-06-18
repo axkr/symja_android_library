@@ -2,6 +2,8 @@
 - [Installation](#installation)
 - [Basic calculations](#basic-calculations)
 - [Expression types](#expression-types)
+- [Tutorial](#tutorial)
+- [Reference of built-in symbols](#reference-of-built-in-symbols)
 - [Functions Reference](#functions-reference) 
 
 ## Installation
@@ -173,7 +175,7 @@ A few examples and functions are presented. Only their most common usages are li
 for a full description of their possible arguments, options, etc., see their entry in the "function reference" of built-in symbols.
 
 * [Symbols and assignments](symbols-and-assignments.md)
-* [Comparisons and Boolean logic](comparisons-and-boolean logic.md)
+* [Comparisons and Boolean logic](comparisons-and-boolean-logic.md)
 * [Strings](strings.md)
 * [Lists](lists.md)
 * [The structure of things](the-structure-of-things.md)

@@ -1,6 +1,6 @@
 ## Lists
 
-Lists can be entered in Mathics with curly braces { and }:
+Lists can be entered in Mathics with curly braces `{` and `}`:
 ```
 >> mylist = {a, b, c, d}
 {a,b,c,d}
@@ -21,7 +21,7 @@ There are various functions for constructing lists:
 {4,9,16,25}
 ```
 
-The number of elements of a list can be determined with Length:
+The number of elements of a list can be determined with `Length`:
 ```
 >> Length(mylist)
 4
