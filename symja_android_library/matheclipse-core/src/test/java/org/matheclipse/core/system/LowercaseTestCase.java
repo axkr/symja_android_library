@@ -146,6 +146,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testApply() {
+		check("Times @@ {1, 2, 3, 4}", "24");
 		check("f @@ {{a, b}, {c}, d}", "f({a,b},{c},d)");
 		check("apply(head, {3,4,5})", "Symbol");
 		check("apply(f, a)", "a");
@@ -3446,12 +3447,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Select(Range(43), MultiplicativeOrder(#, 43) == EulerPhi(43) &)", "{3,5,12,18,19,20,26,28,29,30,33,34}");
 	}
 
-	// public void testN() {
-	// check("N(Pi)", "3.141592653589793");
-	// check("N(Pi, 50)", "3.1415926535897932384626433832795028841971693993751");
-	// check("N(1/7)", "0.14285714285714285");
-	// check("N(1/7, 20)", "1.4285714285714285714e-1");
-	// }
+	public void testN() {
+		check("{1, 2} /. x_Integer -> N(x)", "{1,2}");
+		check("{1, 2} /. x_Integer :> N(x)", "{1.0,2.0}");
+		// check("N(Pi)", "3.141592653589793");
+		// check("N(Pi, 50)", "3.1415926535897932384626433832795028841971693993751");
+		// check("N(1/7)", "0.14285714285714285");
+		// check("N(1/7, 20)", "1.4285714285714285714e-1");
+	}
 
 	public void testNames() {
 		check("Names(\"Int*\" )",
@@ -3840,7 +3843,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Negative(10/7)", "False");
 		check("Negative(1+2*I)", "False");
 		check("Negative(a + b)", "Negative(a+b)");
- 		check("Negative(-E)", "True");
+		check("Negative(-E)", "True");
 		check("Negative(Sin({11, 14}))", "{True,False}");
 	}
 
@@ -4375,6 +4378,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPlus() {
+		check("{1,2}+{4,5,6}", "{1,2}+{4,5,6}");
 		check("2+4/3*2^b/c", "2+4/3*2^b/c");
 		check("Refine(Infinity+x, x>0)", "Infinity");
 
@@ -5109,6 +5113,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testReplaceAll() {
+		// TODO
+		// check("ReplaceAll({a, b, c}, {___, x__, ___} -> {x})", "{a}");
+
 		check("ReplaceAll({a -> 1})[{a, b}]", "{1,b}");
 		check("{x, x^2, y, z} /. x -> a", "{a,a^2,y,z}");
 		check("{x, x^2, y, z} /. x -> {a, b}", "{{a,b},{a^2,b^2},y,z}");
@@ -5174,6 +5181,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("ReplacePart({a, b, c, d, e}, xxx, 3)", "{a,b,xxx,d,e}");
 		check("ReplacePart({a,b,c^n}, x+y, {{3, 2}, 2})", "{a,x+y,c^(x+y)}");
+	}
+
+	public void testReplaceList() {
+		// TODO
+		// check("ReplaceList({a, b, c}, {___, x__, ___} -> {x})", "{{a},{a, b},{a,b,c},{b},{b,c},{c}}");
 	}
 
 	public void testReplaceTransformations() {
@@ -5937,6 +5949,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("StirlingS2({2, 4, 6}, 2)", "{1,7,31}");
 		check("StirlingS2(10,4)", "34105");
 		check("StirlingS2(1000, 500)", "11897164077580438091910055658742826<<SHORT>>", 35);
+	}
+
+	public void testStringJoin() {
+		check("\"Hello\" <> \" \" <> \"world!\"", "\"Hello world!\"");
+		check("\"Debian\" <> 6", "\"Debian\"<>6");
+		check("\"Debian\" <> ToString(6)", "\"Debian6\"");
 	}
 
 	public void testStringLength() {

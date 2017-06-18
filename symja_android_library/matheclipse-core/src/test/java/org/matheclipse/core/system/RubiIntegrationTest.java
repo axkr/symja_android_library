@@ -236,7 +236,8 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		check("D(b^(-2)*Sin(b*x+a)-Cos(b*x+a)*b^(-1)*x,x)", "x*Sin(a+b*x)");
 		check("Integrate(x*Sin(a + b*x)^2,x)", "-(Cos(2*a+2*b*x)/(4*b^2)+(x*Sin(2*a+2*b*x))/(2*b))/2+x^2/4");
 		check("Integrate(x*Sin(a + b*x)^3,x)",
-				"3/4*((-x*Cos(a+b*x))/b+Sin(a+b*x)/b^2)-((-x*Cos(3*a+3*b*x))/(3*b)+Sin(3*a+3*b*x)/(\n" + "9*b^2))/4");
+				"-((x*Cos(a+b*x))/b-Sin(a+b*x)/b^2)/4+1/2*((-x*Cos(a+b*x))/b+Sin(a+b*x)/b^2)-((-x*Cos(\n" + 
+				"3*a+3*b*x))/(3*b)+Sin(3*a+3*b*x)/(9*b^2))/4");
 
 		check("Integrate(x^2*Sin(a + b*x),x)", "(2*(Cos(a+b*x)/b^2+(x*Sin(a+b*x))/b))/b+(-x^2*Cos(a+b*x))/b");
 		check("Integrate(x^2*Sin(a + b*x)^2,x)",

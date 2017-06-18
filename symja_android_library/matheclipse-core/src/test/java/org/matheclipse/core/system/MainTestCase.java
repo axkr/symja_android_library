@@ -3517,6 +3517,8 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem1107() {
+		check("f(4) /. f(x_) /; x > 0 -> x ^ 2", "16");
+		
 		check("a + b + c /. a + b -> t", "c+t");
 		check("a + b + c /. a + c -> t", "b+t");
 		// check("a + 2 + b + c + x * y /. n_Integer + s__Symbol + rest_ -> {n,

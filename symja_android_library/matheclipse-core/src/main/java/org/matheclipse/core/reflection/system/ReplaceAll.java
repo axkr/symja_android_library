@@ -24,12 +24,18 @@ public class ReplaceAll extends AbstractEvaluator {
 			if (ast.arg2().isListOfLists()) {
 				IAST result = F.List();
 				for (IExpr subList : (IAST) ast.arg2()) {
-					result.append(F.subst(ast.arg1(), (IAST) subList));
+					IExpr temp = engine.evaluate(subList);
+					if (temp.isAST()) {
+						result.append(F.subst(ast.arg1(), (IAST) temp));
+					}
 				}
 				return result;
 			}
 			if (ast.arg2().isAST()) {
-				return F.subst(ast.arg1(), (IAST) ast.arg2());
+				IExpr temp = engine.evaluate(ast.arg2());
+				if (temp.isAST()) {
+					return F.subst(ast.arg1(), (IAST) temp);
+				}
 			} else {
 				WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
 				engine.printMessage(wat.getMessage());

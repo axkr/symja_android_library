@@ -12,6 +12,7 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
+import javax.print.attribute.standard.PrinterMessageFromOperator;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
@@ -156,6 +157,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					listLength = ((IAST) ast.get(i)).size() - 1;
 				} else {
 					if (listLength != ((IAST) ast.get(i)).size() - 1) {
+						EvalEngine.get().printMessage("Lists of unequal length cannot be combined: "+ast.toString());
 						ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
 						return F.NIL;
 					}

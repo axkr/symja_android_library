@@ -769,10 +769,11 @@ public class OutputFormFactory {
 	}
 
 	public void convert(final Appendable buf, final IExpr o) throws IOException {
+		// fColumnCounter = 0;
 		convert(buf, o, Integer.MIN_VALUE, false);
 	}
 
-	public void convertNumber(final Appendable buf, final INumber o, final int precedence, boolean caller)
+	private void convertNumber(final Appendable buf, final INumber o, final int precedence, boolean caller)
 			throws IOException {
 		if (o instanceof INum) {
 			convertDouble(buf, (INum) o, precedence, caller);
@@ -796,7 +797,7 @@ public class OutputFormFactory {
 		}
 	}
 
-	public void convert(final Appendable buf, final IExpr o, final int precedence, boolean isASTHead)
+	private void convert(final Appendable buf, final IExpr o, final int precedence, boolean isASTHead)
 			throws IOException {
 		if (o instanceof IAST) {
 			final IAST list = (IAST) o;
