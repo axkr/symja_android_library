@@ -13,6 +13,8 @@
 * [NoneTrue](functions/NoneTrue.md)
 * [Not](functions/Not.md)
 * [Or](functions/Or.md) 
+* [SatisfiableQ](functions/SatisfiableQ.md)
+* [TautologyQ](functions/TautologyQ.md)
 * [True](functions/True.md)
 * [TrueQ](functions/TrueQ.md)
 * [Xor](functions/Xor.md) 
