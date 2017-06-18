@@ -974,6 +974,11 @@ public class ExprParser extends ExprScanner {
 			}
 			if (fRelaxedSyntax) {
 				if (fToken == TT_ARGUMENTS_OPEN) {
+					if (Config.PARSER_USE_STRICT_SYNTAX) {
+						if (head.isSymbolOrPattern()) {
+							throwSyntaxError("'(' expected after symbol or pattern instead of '['.");
+						}
+					}
 					IAST ast = getFunctionArguments(head);
 					return convert(ast);
 				} else if (fToken == TT_PRECEDENCE_OPEN) {

@@ -1694,7 +1694,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("Product(x,{x,2,3,-1})", "1");
 		check("Product(x,{x,0,-1,2})", "1");
 		// check("Product(x,{a,10,z})", "x^(-10)*x^(z+1)");
-		check("Product[i^(x),{i,1,n}]", "(n!)^x");
+		check("Product(i^(x),{i,1,n})", "(n!)^x");
 	}
 
 	public void testSystem195() {
@@ -3526,7 +3526,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("f(4) /. f(x_?(# > 0&)) -> x ^ 2", "16");
 		check("f(4) /. f(x_) /; x > 0 -> x ^ 2", "16");
 
-		check("f(a, b, c, d) /. f[start__, end__] -> {{start}, {end}}", "{{a},{b,c,d}}");
+		check("f(a, b, c, d) /. f(start__, end__) -> {{start}, {end}}", "{{a},{b,c,d}}");
 	}
 
 	// public void testSystem1108() {

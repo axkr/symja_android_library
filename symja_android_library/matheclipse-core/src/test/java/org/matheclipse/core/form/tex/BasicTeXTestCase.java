@@ -125,9 +125,9 @@ public class BasicTeXTestCase extends TestCase {
 	}
 	
 	public void testTeX020() {
-		check("Hold[++x]", "\\text{Hold}(\\text{++}x)");
-		check("Hold[y^2/.x->3]", "\\text{Hold}(y^{2}\\text{/.}\\,x\\to 3)");
-		check("Hold[y^2//.x->3]", "\\text{Hold}(y^{2}\\text{//.}\\,x\\to 3)");
+		check("Hold(++x)", "\\text{Hold}(\\text{++}x)");
+		check("Hold(y^2/.x->3)", "\\text{Hold}(y^{2}\\text{/.}\\,x\\to 3)");
+		check("Hold(y^2//.x->3)", "\\text{Hold}(y^{2}\\text{//.}\\,x\\to 3)");
 		check("Hold(1 * 5 * x + 1 * 63)", "\\text{Hold}(5\\,x+63)");
 		check("10*f(x)", "10\\,f(x)");
 		check("Hold((5*3)/2)", "\\text{Hold}(\\frac{3\\cdot 5}{2})");

@@ -368,7 +368,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ArrayQ({{1, 2}, {3, 4}},2)", "True");
 		check("ArrayQ({1, 2, 3, x}, 1, NumericQ)", "False");
 		check("ArrayQ({1, 2, 3, 4}, 1, NumericQ)", "True");
-		check("ArrayQ[{{{E, 1}, {Pi, 2}}, {{Sin(1), Cos(2)}, {Sinh(1), Cosh(1)}}}, _, NumericQ]", "True");
+		check("ArrayQ({{{E, 1}, {Pi, 2}}, {{Sin(1), Cos(2)}, {Sinh(1), Cosh(1)}}}, _, NumericQ)", "True");
 		check("ArrayQ({1, 2., E, Pi + I}, 1)", "True");
 		check("ArrayQ({{1,2},{3,4}},2,NumericQ)", "True");
 		check("ArrayQ({{a, b}, {c, d}},2,SymbolQ)", "True");
@@ -843,7 +843,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testCompoundExpression() {
 		check("a=100;", "");
 		check("a", "100");
-		check("Catch[$a = 2; Throw[$a]; $a = 5]", "2");
+		check("Catch($a = 2; Throw($a); $a = 5)", "2");
 	}
 
 	public void testCondition() {
@@ -914,7 +914,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testCoprimeQ() {
 		check("CoprimeQ(8,9,11)", "True");
-		check("CoprimeQ[{1, 2, 3, 4, 5}, 6]", "{True,False,False,False,True}");
+		check("CoprimeQ({1, 2, 3, 4, 5}, 6)", "{True,False,False,False,True}");
 		check("CoprimeQ(2, 3, 5)", "True");
 	}
 
@@ -1370,7 +1370,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("DirectedInfinity(x)*DirectedInfinity(y)", "DirectedInfinity(x*y)");
 		check("Table(DirectedInfinity(i), {i, {1, -1, I, -I}})", "{Infinity,-Infinity,I*Infinity,-I*Infinity}");
 		check("(1 + I) Infinity", "DirectedInfinity((1+I)/Sqrt(2))");
-		check("{DirectedInfinity[], DirectedInfinity[Indeterminate]}", "{ComplexInfinity,ComplexInfinity}");
+		check("{DirectedInfinity(), DirectedInfinity(Indeterminate)}", "{ComplexInfinity,ComplexInfinity}");
 		check("Infinity/Infinity", "Indeterminate");
 		check("3*DirectedInfinity(z)", "DirectedInfinity(z)");
 		check("I DirectedInfinity(z)", "DirectedInfinity(I*z)");
@@ -1422,7 +1422,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Distribute((a + b).(x + y + z))", "a.x+a.y+a.z+b.x+b.y+b.z");
 		check("Distribute(f(g(a, b), g(c, d, e)), g, f, gp, fp)",
 				"gp(fp(a,c),fp(a,d),fp(a,e),fp(b,c),fp(b,d),fp(b,e))");
-		check("Distribute[Factor[x^6 - 1], Plus, Times, List, Times]",
+		check("Distribute(Factor(x^6 - 1), Plus, Times, List, Times)",
 				"{-1,x,-x^2,-x,x^2,-x^3,-x^2,x^3,-x^4,-x,x^2,-x^3,-x^2,x^3,-x^4,-x^3,x^4,-x^5,x,-x^\n"
 						+ "2,x^3,x^2,-x^3,x^4,x^3,-x^4,x^5,x^2,-x^3,x^4,x^3,-x^4,x^5,x^4,-x^5,x^6}");
 	}
@@ -1519,8 +1519,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Drop(Range(6), {1, 3, 1}) ", "{4,5,6}");
 
 		check("Drop({a, b, c, d, e, f}, 2)", "{c,d,e,f}");
-		check("Drop[{a, b, c, d, e, f}, -3]", "{a,b,c}");
-		check("Drop[{a, b, c, d, e, f}, {2, 4}]", "{a,e,f}");
+		check("Drop({a, b, c, d, e, f}, -3)", "{a,b,c}");
+		check("Drop({a, b, c, d, e, f}, {2, 4})", "{a,e,f}");
 		check("Drop({{11, 12, 13}, {21, 22, 23}, {31, 32, 33}}, 1, 2)", "{{23},{33}}");
 		check("Drop({{11, 12, 13}, {21, 22, 23}, a, {31, 32, 33}}, 1, 2)",
 				"Drop({{11,12,13},{21,22,23},a,{31,32,33}},1,2)");
@@ -2444,7 +2444,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("lst = Hold(1 + 2, 2*3*4*5, 1/0, Quit())", "Hold(1+2,2*3*4*5,1/0,Quit())");
 		check("Apply(List, Map(Hold, lst))", "{Hold(1+2),Hold(2*3*4*5),Hold(1/0),Hold(Quit())}");
 		check("expr = Hold({1 + 2, g(3 + 4, 2*3), f(1 + g(2 + 3))})", "Hold({1+2,g(3+4,2*3),f(1+g(2+3))})");
-		check("pos = Position[expr, _Plus]", "{{1,1},{1,2,1},{1,3,1,2,1},{1,3,1}}");
+		check("pos = Position(expr, _Plus)", "{{1,1},{1,2,1},{1,3,1,2,1},{1,3,1}}");
 		check("val = Extract(expr, pos)", "{3,7,5,1+g(5)}");
 		check("ReplacePart(expr, Thread(pos -> val))", "Hold({3,g(7,2*3),f(1+g(5))})");
 		check("Hold(6/8)==6/8", "Hold(6/8)==3/4");
@@ -2620,7 +2620,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testInterpolatingFunction() {
 		check("InterpolatingFunction({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}})",
 				"InterpolatingFunction({{0,0},{1,1},{2,3},{3,4},{4,3},{5,0}})");
-		check("ipf=InterpolatingFunction({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}});{ipf[2.5],ipf[3.0],ipf[3.5]}",
+		check("ipf=InterpolatingFunction({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}});{ipf(2.5),ipf(3.0),ipf(3.5)}",
 				"{3.7109375,4.0,3.7734375}");
 		check("InterpolatingFunction({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}})",
 				"InterpolatingFunction({{0,0},{1,1},{2,3},{3,4},{4,3},{5,0}})");
@@ -2756,8 +2756,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testJacobiSymbol() {
-		check("JacobiSymbol(10^10+1, Prime[1000])", "1");
-		check("JacobiSymbol(10^11+1, Prime[2000])", "-1");
+		check("JacobiSymbol(10^10+1, Prime(1000))", "1");
+		check("JacobiSymbol(10^11+1, Prime(2000))", "-1");
 		check("JacobiSymbol(10, 5)", "0");
 		check("Table(f(n, m), {n, 0, 10}, {m, 1, n, 2})",
 				"{{},{f(1,1)},{f(2,1)},{f(3,1),f(3,3)},{f(4,1),f(4,3)},{f(5,1),f(5,3),f(5,5)},{f(\n"
@@ -4313,8 +4313,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("MatchQ(3, _Integer?(#>0&))", "True");
 		check("MatchQ(-3, _Integer?(#>0&))", "False");
 
-		check("$j(x_, y_:1, z_:2) := jp[x, y, z]; $j(a,b)", "jp(a,b,2)");
-		check("$j(x_, y_:1, z_:2) := jp[x, y, z]; $j(a)", "jp(a,1,2)");
+		check("$j(x_, y_:1, z_:2) := jp(x, y, z); $j(a,b)", "jp(a,b,2)");
+		check("$j(x_, y_:1, z_:2) := jp(x, y, z); $j(a)", "jp(a,1,2)");
 		check("$f(x_:2):={x};$f()", "{2}");
 		check("$f(x_:2):={x};$f(a)", "{a}");
 
@@ -4465,7 +4465,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testPolynomialGCD() {
 		check("PolynomialGCD((x + 1)^3, x^3 + x, Modulus -> 2)", "(1+x)^2");
 		check("PolynomialGCD((x - a)*(b x - c)^2, (x - a)*(x^2 - b*c))", "a-x");
-		check("PolynomialGCD[(1 + x)^2*(2 + x)*(4 + x), (1 + x)*(2 + x)*(3 + x)]", "2+3*x+x^2");
+		check("PolynomialGCD((1 + x)^2*(2 + x)*(4 + x), (1 + x)*(2 + x)*(3 + x))", "2+3*x+x^2");
 		check("PolynomialGCD(x^4 - 4, x^4 + 4 x^2 + 4)", "2+x^2");
 
 		check("PolynomialGCD(x^2 + 2 x y + y^2, x^3 + y^3)", "x+y");
@@ -4989,7 +4989,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Head(1/2)", "Rational");
 		check("Rational(1, 2)", "1/2");
 		check("-2/3", "-2/3");
-		check("f[22/7, 201/64, x/y] /. Rational[n_, d_] :> d/n", "f(7/22,64/201,x/y)");
+		check("f(22/7, 201/64, x/y) /. Rational(n_, d_) :> d/n", "f(7/22,64/201,x/y)");
 	}
 
 	public void testRationalize() {
@@ -5180,7 +5180,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("x + y /. x -> 3", "3+y");
 		check("x + y /. {x -> a, y -> b}", "a+b");
 		check("x + y /. {{x -> 1, y -> 2}, {x -> 4, y -> 2}}", "{3,6}");
-		check("Solve[x^3 - 5 x^2 + 2 x + 8 == 0, x]", "{{x->-1},{x->2},{x->4}}");
+		check("Solve(x^3 - 5 x^2 + 2 x + 8 == 0, x)", "{{x->-1},{x->2},{x->4}}");
 		check("x^2 + 6 /. {{x->-1},{x->2},{x->4}}", "{7,10,22}");
 		check("{x^2, x^3, x^4} /. {x^3 -> u, x^n_ -> p(n)}", "{p(2),u,p(4)}");
 		check("h(x + h(y)) /. h(u_) -> u^2", "(x+h(y))^2");
@@ -5330,8 +5330,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSatisfiableQ() {
-		check("SatisfiableQ[(a || b) && (! a || ! b), {a, b}]", "True");
-		check("SatisfiableQ[(a && b) && (! a || ! b), {a, b}]", "False");
+		check("SatisfiableQ((a || b) && (! a || ! b), {a, b})", "True");
+		check("SatisfiableQ((a && b) && (! a || ! b), {a, b})", "False");
 	}
 
 	public void testScan() {
@@ -6149,13 +6149,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSymbol() {
-		check("Head[x]", "Symbol");
+		check("Head(x)", "Symbol");
 		check("Symbol(\"x\") + Symbol(\"x\")", "2*x");
-		check("i\\[CapitalGamma]j\\[hjgg]", "iγj\\(hjgg)");
+		check("i\\[CapitalGamma]j\\(hjgg)", "iγj\\(hjgg)");
 		check("i\\[Alpha]j=10;i\\[Alpha]j", "10");
-		// check("{\\[Eta], \\[CapitalGamma]\\[Beta], Z\\[Infinity],
-		// \\[Angle]XYZ, \\[FilledSquare]r, i\\[Ellipsis]j}",
-		// "");
 	}
 
 	public void testSymbolName() {
@@ -6189,10 +6186,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Table(x,-1)", "{}");
 		check("Table(0,{4-1})", "{0,0,0}");
 		check("$a=10;Table($a^2, {$a, 10})", "{1,4,9,16,25,36,49,64,81,100}");
-		check("Table(f[a], {a, 0, 20, 2})", "{f(0),f(2),f(4),f(6),f(8),f(10),f(12),f(14),f(16),f(18),f(20)}");
+		check("Table(f(a), {a, 0, 20, 2})", "{f(0),f(2),f(4),f(6),f(8),f(10),f(12),f(14),f(16),f(18),f(20)}");
 		check("Table(x, {10})", "{x,x,x,x,x,x,x,x,x,x}");
 		check("Table(10 a + j, {a, 4}, {j, 3})", "{{11,12,13},{21,22,23},{31,32,33},{41,42,43}}");
-		check("Table(f[a], {a, 10, -5, -2})", "{f(10),f(8),f(6),f(4),f(2),f(0),f(-2),f(-4)}");
+		check("Table(f(a), {a, 10, -5, -2})", "{f(10),f(8),f(6),f(4),f(2),f(0),f(-2),f(-4)}");
 		check("Table(Sqrt(x), {x, {1, 4, 9, 16}})", "{1,2,3,4}");
 		check("Table(100*a + 10 j + k, {a, 3}, {j, 2}, {k, 4})",
 				"{{{111,112,113,114},{121,122,123,124}},{{211,212,213,214},{221,222,223,224}},{{\n"
@@ -6332,7 +6329,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Through(p(f,g)[x,y])", "p(f(x,y),g(x,y))");
 		check("Through(f(g)[x])", "f(g(x))");
 		check("NestList(Through, f(a)[b][c][d], 3)", "{f(a)[b][c][d],f(a)[b][c(d)],f(a)[b(c(d))],f(a(b(c(d))))}");
-		check("Through( ((D[#, x] &) + (D[#, x, x] &))[f[x]] )", "f'(x)+f''(x)");
+		check("Through( ((D(#, x) &) + (D(#, x, x) &))[f(x)] )", "f'(x)+f''(x)");
 		check("Through((f*g)[x,y],Plus)", "(f*g)[x,y]");
 		check("Through((f+g+h)[x,y],Plus)", "f(x,y)+g(x,y)+h(x,y)");
 	}
@@ -6631,9 +6628,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testValueQ() {
-		check("ValueQ[x]", "False");
-		check("x=1; ValueQ[x]", "True");
-		check("ValueQ[True]", "False");
+		check("ValueQ(x)", "False");
+		check("x=1; ValueQ(x)", "True");
+		check("ValueQ(True)", "False");
 	}
 
 	public void testVariables() {

@@ -22,6 +22,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
 public class MathScriptEngine extends AbstractScriptEngine {
@@ -77,7 +78,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
 				symbol.pushLocalVariable(Object2Expr.convert(currEntry.getValue()));
 				list.add(symbol);
 			}
-			
+
 			final Object relaxedSyntaxBoolean = get("RELAXED_SYNTAX");
 			if (Boolean.TRUE.equals(relaxedSyntaxBoolean)) {
 				relaxedSyntax = true;
@@ -120,6 +121,12 @@ public class MathScriptEngine extends AbstractScriptEngine {
 				}
 				return e1.getMessage();
 			}
+		} catch (final SyntaxError e) {
+			if (Config.DEBUG) {
+				e.printStackTrace();
+			}
+			// catch parser errors here
+			return e.getMessage();
 		} catch (final MathException e) {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();

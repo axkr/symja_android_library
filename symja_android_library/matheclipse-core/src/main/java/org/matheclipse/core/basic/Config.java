@@ -88,6 +88,13 @@ public class Config {
 	public static boolean PARSER_USE_LOWERCASE_SYMBOLS = true;
 
 	/**
+	 * If <code>true</code> the parser doesn't allow "square brackets" instead of "parentheses" in relaxed mode. The
+	 * syntax <code>f[x, y, ...]</code> isn't allowed then. Always use <code>f(x, y, ...)</code>
+	 * 
+	 */
+	public final static boolean PARSER_USE_STRICT_SYNTAX = false;
+
+	/**
 	 * Used to parse Rubi files. See <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - Symbolic Integration Rules</a>
 	 */
 	public static boolean RUBI_CONVERT_SYMBOLS = false;

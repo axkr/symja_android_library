@@ -18,13 +18,14 @@ package org.matheclipse.parser.client;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.matheclipse.core.expression.F;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FunctionNode;
 import org.matheclipse.parser.client.ast.IConstantOperators;
 import org.matheclipse.parser.client.ast.IParserFactory;
 import org.matheclipse.parser.client.ast.IntegerNode;
 import org.matheclipse.parser.client.ast.NumberNode;
+import org.matheclipse.parser.client.ast.PatternNode;
 import org.matheclipse.parser.client.ast.SymbolNode;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
@@ -731,6 +732,11 @@ public class Parser extends Scanner {
 	private ASTNode parseArguments(ASTNode lhs) {
 		if (fRelaxedSyntax) {
 			if (fToken == TT_ARGUMENTS_OPEN) {
+				if (Config.PARSER_USE_STRICT_SYNTAX) {
+					if (lhs instanceof SymbolNode || lhs instanceof PatternNode) {
+						throwSyntaxError("'(' expected after symbol or pattern instead of '['.");
+					}
+				}
 				lhs = getFunctionArguments(lhs);
 			} else if (fToken == TT_PRECEDENCE_OPEN) {
 				lhs = getFunction(lhs);
