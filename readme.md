@@ -13,22 +13,23 @@
 - [Contact](#contact)
 - [License](#license)
 
+### Quick start 
+
+Read the [Symja Manual](symja_android_library/doc/index.md) for the description of the Symja language.
 
 ### Features
 
+Features of the Symja language:
+
 * arbitrary precision integers, rational and complex numbers
 * differentiation, integration, equation solving, polynomial and linear algebra functions...
-* a general purpose Term Rewriting System and Pattern Matching engine
+* a general purpose [Term Rewriting System and Pattern Matching engine](symja_android_library/doc/functions-and-patterns.md)
 * use human readable math expression strings or the internal abstract syntax tree (AST) representation to code in Java. See the [Unit test examples](symja_android_library/matheclipse-core/src/test/java/org/matheclipse/core/system/LowercaseTestCase.java)
    
 ### Online demo
 
 * [Mobile web interface symjaweb.appspot.com](http://symjaweb.appspot.com/)  
 * [Notebook interface symjaweb.appspot.com/new.jsp](http://symjaweb.appspot.com/new.jsp)
-
-### Quick start
-Unzip the download-file from the Downloads/Release section in a folder and start the symja.bat console. Read the [getting started tutorial](symja_android_library/doc/index.md) for the description of the Symja language.
-
 
 ### Examples
 
