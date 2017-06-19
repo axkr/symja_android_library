@@ -18,7 +18,7 @@ Which(cond1, expr1, cond2, expr2, ...)
 Do(expr, {i, max})
 ```
 
-> evaluates `expr` `max` times, substituting `i` in `` with values from `1` to `max`.
+> evaluates `expr` `max` times, substituting `i` in `expr` with values from `1` to `max`.
 
 ```
 For(start, test, incr, body)

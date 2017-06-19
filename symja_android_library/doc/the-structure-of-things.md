@@ -1,6 +1,6 @@
 ## The structure of things
 
-Every expression in Mathics is built upon the same principle: it consists of a head and an arbitrary number of children, 
+Every expression in Symja is built upon the same principle: it consists of a head and an arbitrary number of children, 
 unless it is an atom, i.e. it can not be subdivided any further. 
 To put it another way: everything is a function call. This can be best seen when displaying expressions in their “full form”:
 ```
