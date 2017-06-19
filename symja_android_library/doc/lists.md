@@ -1,6 +1,6 @@
 ## Lists
 
-Lists can be entered in Mathics with curly braces `{` and `}`:
+Lists can be entered in Symja with curly braces `{` and `}`:
 ```
 >> mylist = {a, b, c, d}
 {a,b,c,d}

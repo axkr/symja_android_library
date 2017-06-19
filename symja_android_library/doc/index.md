@@ -180,6 +180,8 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Lists](lists.md)
 * [The structure of things](the-structure-of-things.md)
 * [Functions and patterns](functions-and-patterns.md)
+* [Control statements](control-statements.md)
+* [Scoping](scoping.md)
 
 ## Reference of built-in symbols
 
