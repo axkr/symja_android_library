@@ -820,6 +820,14 @@ public class Parser extends Scanner {
 						while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
 								&& infixOperator.getOperatorString().equals(fOperatorString)) {
 							getNextToken();
+							if (";".equals(infixOperator.getOperatorString())) {
+								if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
+										|| fToken == TT_PRECEDENCE_CLOSE) {
+									((FunctionNode) lhs).add(fFactory.createSymbol("Null"));
+									break;
+								}
+							}
+							
 							rhs = parseLookaheadOperator(infixOperator.getPrecedence());
 							((FunctionNode) lhs).add(rhs);
 						}

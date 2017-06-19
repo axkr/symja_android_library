@@ -38,6 +38,20 @@ public class RelaxedParserTestCase extends TestCase {
 	public void testParser2() {
 		try {
 			Parser p = new Parser(true);
+			Object obj = p.parse("1; 2; 3;");
+			assertEquals(obj.toString(), "CompoundExpression(1, 2, 3, Null)");
+			
+			obj = p.parse("1; 2; 3");
+			assertEquals(obj.toString(), "CompoundExpression(1, 2, 3)");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("1", "0");
+		}
+	}
+	
+	public void testParser3() {
+		try {
+			Parser p = new Parser(true);
 			Object obj = p.parse("a sin()cos()x()y z");
 			assertEquals(obj.toString(), "Times(Times(Times(Times(Times(a, sin()), cos()), x()), y), z)");
 		} catch (Exception e) {

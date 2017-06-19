@@ -842,6 +842,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCompoundExpression() {
+		check("1; 2; 3;", "");
+		check("1; 2; 3", "3");
+		check("a=100", "100");
 		check("a=100;", "");
 		check("a", "100");
 		check("Catch($a = 2; Throw($a); $a = 5)", "2");

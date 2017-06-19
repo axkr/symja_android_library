@@ -1080,6 +1080,14 @@ public class ExprParser extends ExprScanner {
 						while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
 								&& infixOperator.getOperatorString().equals(fOperatorString)) {
 							getNextToken();
+							if (infixOperator.getOperatorString().equals(";")) {
+								if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
+										|| fToken == TT_PRECEDENCE_CLOSE) {
+									((IAST) lhs).append(F.Null);
+									break;
+								}
+							}
+
 							rhs = parseLookaheadOperator(infixOperator.getPrecedence());
 							((IAST) lhs).append(rhs);
 						}
