@@ -2,10 +2,9 @@
 
 **Note**: this repository contains the **Java 8 project**. The **Android library project** can be found in the [SymjaAndroid repository](https://bitbucket.org/axelclk/symjaandroid).
 
-
+- [Quick start](#quick-start)
 - [Features](#features)
 - [Online demo](#online-demo)
-- [Quick start](#quick-start)
 - [Examples](#examples)
 - [Maven Usage](#maven-usage)
 - [Getting started](#getting-started)
