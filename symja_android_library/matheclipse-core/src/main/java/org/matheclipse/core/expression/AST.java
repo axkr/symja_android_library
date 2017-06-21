@@ -19,27 +19,22 @@ import org.matheclipse.core.interfaces.ISymbol;
  * </p>
  * 
  * <p>
- * In Symja, an abstract syntax tree (AST), is a tree representation of the
- * abstract syntactic structure of the Symja source code. Each node of the tree
- * denotes a construct occurring in the source code. The syntax is 'abstract' in
- * the sense that it does not represent every detail that appears in the real
- * syntax. For instance, grouping parentheses are implicit in the tree
- * structure, and a syntactic construct such as a <code>Sin[x]</code> expression
- * will be denoted by an AST with 2 nodes. One node for the header
- * <code>Sin</code> and one node for the argument <code>x</code>.
+ * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic structure of the Symja
+ * source code. Each node of the tree denotes a construct occurring in the source code. The syntax is 'abstract' in the
+ * sense that it does not represent every detail that appears in the real syntax. For instance, grouping parentheses are
+ * implicit in the tree structure, and a syntactic construct such as a <code>Sin[x]</code> expression will be denoted by
+ * an AST with 2 nodes. One node for the header <code>Sin</code> and one node for the argument <code>x</code>.
  * </p>
  * 
  * Internally an AST is represented as a list which contains
  * <ul>
- * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos,
- * Inverse, Plus, Times,...) at index <code>0</code> and</li>
- * <li>the <code>n</code> arguments of a function in the index
- * <code>1 to n</code></li>
+ * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus, Times,...) at index
+ * <code>0</code> and</li>
+ * <li>the <code>n</code> arguments of a function in the index <code>1 to n</code></li>
  * </ul>
  * 
  * <p>
- * See: <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Wikipedia:
- * Abstract syntax tree</a>.
+ * See: <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Wikipedia: Abstract syntax tree</a>.
  * </p>
  */
 public class AST extends HMArrayList implements Externalizable {
@@ -64,8 +59,7 @@ public class AST extends HMArrayList implements Externalizable {
 	/**
 	 * 
 	 * @param intialCapacity
-	 *            the initial capacity (i.e. number of arguments without the
-	 *            header element) of the list.
+	 *            the initial capacity (i.e. number of arguments without the header element) of the list.
 	 * @param head
 	 * @return
 	 */
@@ -76,8 +70,7 @@ public class AST extends HMArrayList implements Externalizable {
 	}
 
 	/**
-	 * Constructs a list with header <i>symbol</i> and the arguments containing
-	 * the given DoubleImpl values.
+	 * Constructs a list with header <i>symbol</i> and the arguments containing the given DoubleImpl values.
 	 * 
 	 * @param symbol
 	 * @param arr
@@ -93,8 +86,8 @@ public class AST extends HMArrayList implements Externalizable {
 	}
 
 	/**
-	 * Constructs a list with header <i>symbol</i> and the arguments containing
-	 * the given DoubleImpl matrix values as <i>List</i> rows
+	 * Constructs a list with header <i>symbol</i> and the arguments containing the given DoubleImpl matrix values as
+	 * <i>List</i> rows
 	 * 
 	 * @param symbol
 	 * @param matrix
@@ -119,18 +112,30 @@ public class AST extends HMArrayList implements Externalizable {
 		return new AST(eArr);
 	}
 
-	public static AST newInstance(final ISymbol symbol, final org.hipparchus.complex.Complex... arr) {
+	public static AST newInstance(final ISymbol symbol, boolean evalComplex,
+			final org.hipparchus.complex.Complex... arr) {
 		IExpr[] eArr = new IExpr[arr.length + 1];
 		eArr[0] = symbol;
-		for (int i = 1; i <= arr.length; i++) {
-			eArr[i] = ComplexNum.valueOf(arr[i - 1].getReal(), arr[i - 1].getImaginary());
+		if (evalComplex) {
+			double im;
+			for (int i = 1; i <= arr.length; i++) {
+				im = arr[i - 1].getImaginary();
+				if (F.isZero(im)) {
+					eArr[i] = Num.valueOf(arr[i - 1].getReal());
+				} else {
+					eArr[i] = ComplexNum.valueOf(arr[i - 1].getReal(), arr[i - 1].getImaginary());
+				}
+			}
+		} else {
+			for (int i = 1; i <= arr.length; i++) {
+				eArr[i] = ComplexNum.valueOf(arr[i - 1].getReal(), arr[i - 1].getImaginary());
+			}
 		}
 		return new AST(eArr);
 	}
 
 	/**
-	 * simple parser to simplify unit tests. The parser assumes that the String
-	 * contains no syntax errors.
+	 * simple parser to simplify unit tests. The parser assumes that the String contains no syntax errors.
 	 * 
 	 * Example &quot;List[x,List[y]]&quot;
 	 * 
@@ -180,8 +185,7 @@ public class AST extends HMArrayList implements Externalizable {
 	}
 
 	/**
-	 * The enumeration map which possibly maps the properties (keys) to a user
-	 * defined object.
+	 * The enumeration map which possibly maps the properties (keys) to a user defined object.
 	 * 
 	 */
 	protected transient EnumMap<PROPERTY, Object> fProperties = null;
@@ -212,11 +216,9 @@ public class AST extends HMArrayList implements Externalizable {
 	 * Constructs an empty list with the specified initial capacity.
 	 * 
 	 * @param initialCapacity
-	 *            the initial capacity (i.e. number of arguments without the
-	 *            header element) of the list.
+	 *            the initial capacity (i.e. number of arguments without the header element) of the list.
 	 * @param setLength
-	 *            if <code>true</code>, sets the array's size to
-	 *            initialCapacity.
+	 *            if <code>true</code>, sets the array's size to initialCapacity.
 	 */
 	protected AST(final int initialCapacity, final boolean setLength) {
 		super(initialCapacity + 1);
@@ -292,8 +294,7 @@ public class AST extends HMArrayList implements Externalizable {
 	}
 
 	/**
-	 * Returns a shallow copy of this <tt>AST</tt> instance. (The elements
-	 * themselves are not copied.)
+	 * Returns a shallow copy of this <tt>AST</tt> instance. (The elements themselves are not copied.)
 	 * 
 	 * @return a clone of this <tt>AST</tt> instance.
 	 */
@@ -305,8 +306,8 @@ public class AST extends HMArrayList implements Externalizable {
 	}
 
 	/**
-	 * Returns the value to which the specified property is mapped, or
-	 * <code>null</code> if this map contains no mapping for the property.
+	 * Returns the value to which the specified property is mapped, or <code>null</code> if this map contains no mapping
+	 * for the property.
 	 * 
 	 * @param key
 	 * @return
@@ -331,9 +332,9 @@ public class AST extends HMArrayList implements Externalizable {
 	}
 
 	/**
-	 * Associates the specified value with the specified property in the
-	 * associated <code>EnumMap<PROPERTY, Object></code> map. If the map
-	 * previously contained a mapping for this key, the old value is replaced.
+	 * Associates the specified value with the specified property in the associated
+	 * <code>EnumMap<PROPERTY, Object></code> map. If the map previously contained a mapping for this key, the old value
+	 * is replaced.
 	 * 
 	 * @param key
 	 * @param value

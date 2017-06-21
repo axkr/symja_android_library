@@ -26,6 +26,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 import jp.ac.kobe_u.cs.cream.DefaultSolver;
@@ -450,7 +451,6 @@ public class Solve extends AbstractFunctionEvaluator {
 						}
 						return fEngine.evaluate(
 								F.Subtract(F.Expand(F.Power(F.Negate(plus), arg2.inverse())), function.arg1()));
-
 					}
 				}
 

@@ -116,7 +116,7 @@ public class Object2Expr {
 			return list;
 		}
 		if (obj instanceof org.hipparchus.complex.Complex[]) {
-			return AST.newInstance(F.List, (org.hipparchus.complex.Complex[]) obj);
+			return AST.newInstance(F.List, false, (org.hipparchus.complex.Complex[]) obj);
 		}
 		if (obj instanceof boolean[]) {
 			final boolean[] array = (boolean[]) obj;
@@ -133,7 +133,7 @@ public class Object2Expr {
 		return F.$str(obj.toString());
 	}
 
-	public static IAST convertComplex(org.hipparchus.complex.Complex[] array) throws ConversionException {
-		return AST.newInstance(F.List, array);
+	public static IAST convertComplex(boolean evalComplex, org.hipparchus.complex.Complex[] array) throws ConversionException {
+		return AST.newInstance(F.List, evalComplex, array);
 	}
 }

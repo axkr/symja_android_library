@@ -79,7 +79,7 @@ public class NRoots extends AbstractFunctionEvaluator {
 		if (coefficients != null) {
 			LaguerreSolver solver = new LaguerreSolver(Config.DEFAULT_ROOTS_CHOP_DELTA);
 			Complex[] roots = solver.solveAllComplex(coefficients, 0);
-			return Object2Expr.convertComplex(roots);
+			return Object2Expr.convertComplex(true, roots);
 		}
 		IExpr denom = F.C1;
 		if (expr.isAST()) {
