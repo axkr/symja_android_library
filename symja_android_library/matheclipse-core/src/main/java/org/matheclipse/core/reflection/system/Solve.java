@@ -441,16 +441,19 @@ public class Solve extends AbstractFunctionEvaluator {
 						if (temp.isPresent()) {
 							return temp;
 						}
-					} else if (function.isPower() && function.arg2().isFraction()) {
-						// issue #95
-						IFraction arg2 = (IFraction) function.arg2();
-						IExpr plus = plusAST.removeAtClone(i).getOneIdentity(F.C0);
-						if (plus.isPositiveResult()) {
-							// no solution possible
-							return NO_EQUATION_SOLUTION;
+					} else if (function.isPower()) {
+						if (function.arg2().isFraction()
+								|| (function.arg2().isRealNumber() && !function.arg2().isNumIntValue())) {
+							ISignedNumber arg2 = (ISignedNumber) function.arg2();
+							IExpr plus = plusAST.removeAtClone(i).getOneIdentity(F.C0);
+							if (plus.isPositiveResult()) {
+								// no solution possible
+								return NO_EQUATION_SOLUTION;
+							}
+							return fEngine.evaluate(
+									F.Subtract(F.Expand(F.Power(F.Negate(plus), arg2.inverse())), function.arg1()));
 						}
-						return fEngine.evaluate(
-								F.Subtract(F.Expand(F.Power(F.Negate(plus), arg2.inverse())), function.arg1()));
+
 					}
 				}
 

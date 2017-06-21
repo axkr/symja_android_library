@@ -5635,8 +5635,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		check("Solve(60+abc==120.0,abc)", "{{abc->60.0}}");
+		check("Solve(Sqrt(x)==16.1,x)", "{{x->259.21000000000004}}");
+		
 		// TODO check type of result in Solve()
 		// check("Solve(x^3 == 1, x, Reals)", "{{x->1}}");
+		
 		check("Solve(x+5.0==a,x)", "{{x->-5.0+a}}");
 
 		check("Solve(-8828.206-582.222*b+55.999*b^2.0+4.8*b^3.0==0, b)",
