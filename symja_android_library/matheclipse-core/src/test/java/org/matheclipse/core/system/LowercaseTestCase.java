@@ -951,8 +951,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("N(CosineDistance({7, 9}, {71, 89}))", "7.596457213221441E-5");
 		check("CosineDistance({a, b}, {c, d})", "1-(a*c+b*d)/(Sqrt(Abs(a)^2+Abs(b)^2)*Sqrt(Abs(c)^2+Abs(d)^2))");
 		check("CosineDistance({a, b, c}, {x, y, z})",
-				"1-(a*x+b*y+c*z)/(Sqrt(Abs(a)^2+Abs(b)^2+Abs(c)^2)*Sqrt(Abs(x)^2+Abs(y)^2+Abs(z)^\n" + 
-				"2))");
+				"1-(a*x+b*y+c*z)/(Sqrt(Abs(a)^2+Abs(b)^2+Abs(c)^2)*Sqrt(Abs(x)^2+Abs(y)^2+Abs(z)^\n" + "2))");
 	}
 
 	public void testCosIntegral() {
@@ -5637,10 +5636,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSolve() {
 		check("Solve(60+abc==120.0,abc)", "{{abc->60.0}}");
 		check("Solve(Sqrt(x)==16.1,x)", "{{x->259.21000000000004}}");
-		
+
 		// TODO check type of result in Solve()
 		// check("Solve(x^3 == 1, x, Reals)", "{{x->1}}");
-		
+
 		check("Solve(x+5.0==a,x)", "{{x->-5.0+a}}");
 
 		check("Solve(-8828.206-582.222*b+55.999*b^2.0+4.8*b^3.0==0, b)",
@@ -6532,6 +6531,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTrigExpand() {
+		check("TrigExpand(Sin(2*x+3*y))",
+				"-Cos(x)^2*Sin(y)^3+Sin(x)^2*Sin(y)^3+2*Cos(y)^3*Cos(x)*Sin(x)-6*Sin(y)^2*Cos(x)*Cos(y)*Sin(x)+\n" + 
+				"3*Cos(x)^2*Cos(y)^2*Sin(y)-3*Cos(y)^2*Sin(x)^2*Sin(y)");
 		check("trigexpand(Sin(2 x))", "2*Cos(x)*Sin(x)");
 		check("trigexpand(Sin(x)*Tan(x))", "Sin(x)*Tan(x)");
 		check("trigexpand(Sin(x + y))", "Cos(y)*Sin(x)+Cos(x)*Sin(y)");
