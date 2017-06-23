@@ -909,10 +909,34 @@ public class Solve extends AbstractFunctionEvaluator {
 			return temp;
 		}
 
+		if (termsEqualZeroList.size() == 2 && variables.size() == 2) {
+			return eliminateOneVariable(termsEqualZeroList, variables.arg1());
+		}
+
 		return F.NIL;
 
 		// return solvePlusEquationsSimplified(termsEqualZeroList,
 		// variables,engine);
+	}
+
+	/**
+	 * Use the <code>Eliminate()</code> function to extract one variable.
+	 * 
+	 * @param termsEqualZeroList
+	 *            a list of expressions which equals zero.
+	 * @param variable
+	 *            the variable which should be eliminated in the term
+	 * @return
+	 */
+	private IExpr eliminateOneVariable(IAST termsEqualZeroList, IExpr variable) {
+		if (!termsEqualZeroList.arg1().isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(), true)) {
+			return F.NIL;
+		}
+		IAST[] tempAST = Eliminate.eliminateOneVariable(termsEqualZeroList, variable);
+		if (tempAST != null && tempAST[1] != null) {
+			return F.List(F.List(tempAST[1]));
+		}
+		return F.NIL;
 	}
 
 	/**

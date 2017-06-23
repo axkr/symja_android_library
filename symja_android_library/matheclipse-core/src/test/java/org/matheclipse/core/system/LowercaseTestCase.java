@@ -5634,7 +5634,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+
+		// Issue #155
+		check("Solve(x==2*Sqrt(y)*Sqrt(z),y)", "{{y->x^2/(4*z)}}");
+
+		// Issue #151
 		check("Solve(60+abc==120.0,abc)", "{{abc->60.0}}");
+		
+		// Issue #152
 		check("Solve(Sqrt(x)==16.1,x)", "{{x->259.21000000000004}}");
 
 		// TODO check type of result in Solve()
@@ -5715,6 +5722,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Solve(a x + y == 7 && b x - y == 1, {x, y})", "{{x->8/(a+b),y->(a-7*b)/(-a-b)}}");
 		check("Solve({a x + y == 7, b x - y == 1}, {x, y})", "{{x->8/(a+b),y->(a-7*b)/(-a-b)}}");
 
+		check("Solve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)", "Solve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)");
 	}
 
 	public void testSolveIssue130() {
@@ -6532,8 +6540,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testTrigExpand() {
 		check("TrigExpand(Sin(2*x+3*y))",
-				"-Cos(x)^2*Sin(y)^3+Sin(x)^2*Sin(y)^3+2*Cos(y)^3*Cos(x)*Sin(x)-6*Sin(y)^2*Cos(x)*Cos(y)*Sin(x)+\n" + 
-				"3*Cos(x)^2*Cos(y)^2*Sin(y)-3*Cos(y)^2*Sin(x)^2*Sin(y)");
+				"-Cos(x)^2*Sin(y)^3+Sin(x)^2*Sin(y)^3+2*Cos(y)^3*Cos(x)*Sin(x)-6*Sin(y)^2*Cos(x)*Cos(y)*Sin(x)+\n"
+						+ "3*Cos(x)^2*Cos(y)^2*Sin(y)-3*Cos(y)^2*Sin(x)^2*Sin(y)");
 		check("trigexpand(Sin(2 x))", "2*Cos(x)*Sin(x)");
 		check("trigexpand(Sin(x)*Tan(x))", "Sin(x)*Tan(x)");
 		check("trigexpand(Sin(x + y))", "Cos(y)*Sin(x)+Cos(x)*Sin(y)");
