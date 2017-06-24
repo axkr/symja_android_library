@@ -1063,38 +1063,63 @@ public final class Combinatoric {
 			if (ast.arg1().isAST()) {
 				final IAST list = (IAST) ast.arg1();
 				int parts = list.size() - 1;
-				if (ast.isAST2() && ast.get(2).isList()) {
-					IAST sequence = (IAST) ast.get(2);
-					// TODO use ISequence here
-					if (!sequence.isAST1() || !sequence.arg1().isInteger()) {
+				if (ast.isAST2()) {
+					if (ast.arg2().isInteger()) {
+						try {
+							int maxPart = ((IInteger) ast.arg2()).toInt();
+							if (maxPart >= 0) {
+								maxPart = maxPart < parts ? maxPart : parts;
+								final IAST result = F.ListAlloc(100);
+								for (int i = 0; i <= maxPart; i++) {
+									createPermutationsWithNParts(list, i, result);
+								}
+								return result;
+							}
+						} catch (ArithmeticException ae) {
+							//
+						}
 						return F.NIL;
 					}
-					parts = Validate.checkIntType(sequence.arg1());
-					if (parts < 0 && parts > list.size() - 1) {
-						return F.NIL;
-					}
-				}
-
-				final IAST result = F.ast(list.head());
-				if (list.size() <= 2) {
-					if (list.isAST1()) {
-						if (parts == 0) {
-							result.append(F.List());
-						} else {
-							result.append(list);
+					if (ast.arg2().isList()) {
+						IAST sequence = (IAST) ast.arg2();
+						// TODO use ISequence here
+						if (!sequence.isAST1() || !sequence.arg1().isInteger()) {
+							return F.NIL;
+						}
+						parts = Validate.checkIntType(sequence.arg1());
+						if (parts < 0 && parts > list.size() - 1) {
+							return F.NIL;
 						}
 					}
-					return result;
 				}
 
-				final KPermutationsList perm = new KPermutationsList(list, parts, F.ast(list.head()), 1);
-				for (IAST temp : perm) {
-					result.append(temp);
-				}
-				return result;
-
+				final IAST result = F.ListAlloc(100);
+				return createPermutationsWithNParts(list, parts, result);
 			}
 			return F.NIL;
+		}
+
+		private IAST createPermutationsWithNParts(final IAST list, int parts, final IAST result) {
+			if (parts == 0) {
+				result.append(F.List());
+				return result;
+			} 
+			if (list.size() <= 2) {
+				if (list.isAST1()) {
+					if (parts == 0) {
+						result.append(F.List());
+					} else {
+						result.append(list);
+					}
+				}
+				return result;
+			}
+
+			final KPermutationsList perm = new KPermutationsList(list, parts, F.ast(list.head()), 1);
+			for (IAST temp : perm) {
+				result.append(temp);
+			}
+			return result;
 		}
 
 	}
@@ -1387,7 +1412,8 @@ public final class Combinatoric {
 		}
 
 		public static KSubsetsList createKSubsets(final IAST list, final int k, IAST resultList, final int offset) {
-			return new KSubsetsList(new KSubsets.KSubsetsIterable(list.size() - offset, k), list, k, resultList, offset);
+			return new KSubsetsList(new KSubsets.KSubsetsIterable(list.size() - offset, k), list, k, resultList,
+					offset);
 		}
 	}
 

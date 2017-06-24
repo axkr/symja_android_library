@@ -4368,6 +4368,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPermutations() {
+		check("Permutations({1, 2, 3}, 2)", 
+				"{{},{1},{2},{3},{1,2},{1,3},{2,1},{2,3},{3,1},{3,2}}");
+		check("Permutations({1, 2, 3}, {2})", 
+				"{{1,2},{1,3},{2,1},{2,3},{3,1},{3,2}}");
 		check("Permutations({a,b,c})",
 				"{{a,b,c},{a,c,b},{b,a,c},{b,c,a},{c,a,b},{c,b,a}}");
 		check("Permutations({a,b,c}, {2})",
