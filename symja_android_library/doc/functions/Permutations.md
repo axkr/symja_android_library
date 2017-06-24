@@ -9,6 +9,9 @@ Permutations(list)
 Permutations(list, {n})
 ```
 > finds a list of all possible permutations containing exactly `n` elements.
+	
+See:  
+* [Wikipedia - Permutation](https://en.wikipedia.org/wiki/Permutation)
 	 
 ### Examples
 

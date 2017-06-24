@@ -7,7 +7,7 @@ NullSpace(matrix)
 > returns a list of vectors that span the nullspace of the `matrix`.
 
 See:     
-* (Wikipedia - Kernel (linear algebra))(http://en.wikipedia.org/wiki/Kernel_%28linear_algebra%29)
+* [Wikipedia - Kernel (linear algebra)](http://en.wikipedia.org/wiki/Kernel_%28linear_algebra%29)
 
 ### Examples 
 
@@ -16,7 +16,7 @@ See:
 {{3,-5,1,0,0,0},
  {-2,1,0,-7,1,0},
  {8,-4,0,9,0,1}}
-```  
+```   
  
 ```   
 >> NullSpace({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})   
