@@ -2371,6 +2371,8 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem334() {
+		check("Complement({1,2,3},{2,3,4})", "{1}");
+		check("Complement({2,3,4},{1,2,3})", "{4}");
 		check("Complement({1},{2})", "{1}");
 		check("Complement({1,2,2,4,6},{2,3,4,5})", "{1,6}");
 	}
@@ -2804,9 +2806,9 @@ public class MainTestCase extends AbstractTestCase {
 		check("Expand(1/2*((b^2*c^2-12)^(1/2)-b*c))", "-1/2*b*c+Sqrt(-12+b^2*c^2)/2");
 
 		check("ExpandAll(3.0+x*(4.0+x*(5.0+(33.0+x^2.0)*x^4.0)))", "3.0+4.0*x+5.0*x^2.0+33.0*x^6.0+x^8.0");
-		check("Horner(3+4*x+5*x^2+33*x^6.0+x^8)", "3.0+x*(4.0+x*(5.0+(33.0+x^2.0)*x^4.0))");
+		check("HornerForm(3+4*x+5*x^2+33*x^6.0+x^8)", "3.0+x*(4.0+x*(5.0+(33.0+x^2.0)*x^4.0))");
 		check("ExpandAll(3+x*(4+x*(5+(33+x^2)*x^4)))", "3+4*x+5*x^2+33*x^6+x^8");
-		check("Horner(3+4*x+5*x^2+33*x^6+x^8)", "3+x*(4+x*(5+(33+x^2)*x^4))");
+		check("HornerForm(3+4*x+5*x^2+33*x^6+x^8)", "3+x*(4+x*(5+(33+x^2)*x^4))");
 	}
 
 	public void testSystem402() {

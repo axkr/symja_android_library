@@ -581,6 +581,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// " u),$lst((2)),$lst((3))})","");
 	}
 
+	public void testCatalan() {
+		check("N(Catalan)", "0.915965594177219");
+	}
+
 	public void testCatenate() {
 		check("Catenate({{1, 2, 3}, {4, 5}})", "{1,2,3,4,5}");
 		check("Catenate({{1,2,3},{a,b,c},{4,5,6}})", "{1,2,3,a,b,c,4,5,6}");
@@ -2999,7 +3003,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Limit(E^(-x)*Sqrt(x), x -> Infinity)", "0");
 		check("Limit(Sin(x)/x,x->0)", "1");
 		check("Limit(x*Sin(1/x),x->Infinity)", "1");
-		
+
 		check("Limit(-x,x->Infinity)", "-Infinity");
 		check("Limit((1 + x/n)^n, n -> Infinity)", "E^x");
 		check("Limit((x^2 - 2 x - 8)/(x - 4), x -> 4)", "6");
@@ -3901,15 +3905,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNIntegrate() {
-		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Trapezoid, MaxIterations->5000)", "-0.0208333271245165");
-		
-		
+		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Trapezoid, MaxIterations->5000)",
+				"-0.0208333271245165");
+
 		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1})", "-0.0208333333333333");
 		// LegendreGauss is default method
 		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->LegendreGauss)", "-0.0208333333333333");
 		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Simpson)", "-0.0208333320915699");
 		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Trapezoid)", "-0.0208333271245165");
-		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Trapezoid, MaxIterations->5000)", "-0.0208333271245165");
+		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Trapezoid, MaxIterations->5000)",
+				"-0.0208333271245165");
 		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Romberg)", "-0.0208333333333333");
 		check("NIntegrate (x, {x, 0,2}, Method->Simpson)", "2.0");
 		check("NIntegrate(Cos(x), {x, 0, Pi})", "0.0");
@@ -4368,15 +4373,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPermutations() {
-		check("Permutations({1, 2, 3}, 2)", 
-				"{{},{1},{2},{3},{1,2},{1,3},{2,1},{2,3},{3,1},{3,2}}");
-		check("Permutations({1, 2, 3}, {2})", 
-				"{{1,2},{1,3},{2,1},{2,3},{3,1},{3,2}}");
-		check("Permutations({a,b,c})",
-				"{{a,b,c},{a,c,b},{b,a,c},{b,c,a},{c,a,b},{c,b,a}}");
-		check("Permutations({a,b,c}, {2})",
-				"{{a,b},{a,c},{b,a},{b,c},{c,a},{c,b}}");
-		
+		check("Permutations({1, 2, 3}, 2)", "{{},{1},{2},{3},{1,2},{1,3},{2,1},{2,3},{3,1},{3,2}}");
+		check("Permutations({1, 2, 3}, {2})", "{{1,2},{1,3},{2,1},{2,3},{3,1},{3,2}}");
+		check("Permutations({a,b,c})", "{{a,b,c},{a,c,b},{b,a,c},{b,c,a},{c,a,b},{c,b,a}}");
+		check("Permutations({a,b,c}, {2})", "{{a,b},{a,c},{b,a},{b,c},{c,a},{c,b}}");
+
 		check("Permutations({a},{0})", "{{}}");
 		check("Permutations({a,b,c,d},{3})",
 				"{{a,b,c},{a,b,d},{a,c,b},{a,c,d},{a,d,b},{a,d,c},{b,a,c},{b,a,d},{b,c,a},{b,c,d},{b,d,a},{b,d,c},{c,a,b},{c,a,d},{c,b,a},{c,b,d},{c,d,a},{c,d,b},{d,a,b},{d,a,c},{d,b,a},{d,b,c},{d,c,a},{d,c,b}}");
