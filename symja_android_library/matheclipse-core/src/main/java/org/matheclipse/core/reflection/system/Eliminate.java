@@ -369,21 +369,18 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	/**
 	 * Analyze the <code>Equal()</code> terms, if we find an expression which equals the given <code>variabe</code>
 	 * 
-	 * @param termsEqualZeroList
-	 *            list of <code>Equal()</code> terms
+	 * @param analyzerList
+	 *            the list of <code>Equal()</code> terms with statistics of it's equations.
 	 * @param variable
 	 *            the variable which should be eliminated.
-	 * @return <code>F.NIL</code> if we can't eliminate an equation from the list for the given <code>variabe</code>
+	 * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>variable</code> or
+	 *         the eliminated list of equations in index <code>[0]</code> and the last rule which is used for variable
+	 *         elimination in index <code>[1]</code>.
 	 */
-	public static IAST[] eliminateOneVariable(ArrayList<VariableCounterVisitor> analyzerList, IExpr variable) {
-		IAST[] result = new IAST[2];
-		IAST equalAST;
-		IAST termsEqualZeroList = F.ListAlloc(analyzerList.size());
-		VariableCounterVisitor exprAnalyzer;
+	private static IAST[] eliminateOneVariable(ArrayList<VariableCounterVisitor> analyzerList, IExpr variable) {
+		IAST eliminatedResultEquations = F.ListAlloc(analyzerList.size());
 		for (int i = 0; i < analyzerList.size(); i++) {
-			exprAnalyzer = analyzerList.get(i);
-			equalAST = exprAnalyzer.getExpr();
-			IExpr variableExpr = eliminateAnalyze(equalAST, variable);
+			IExpr variableExpr = eliminateAnalyze(analyzerList.get(i).getExpr(), variable);
 			if (variableExpr.isPresent()) {
 				variableExpr = F.eval(variableExpr);
 				IExpr expr;
@@ -394,15 +391,15 @@ public class Eliminate extends AbstractFunctionEvaluator {
 					IExpr temp = expr.replaceAll(rule);
 					if (temp.isPresent()) {
 						temp = F.expandAll(temp, true, true);
-						termsEqualZeroList.append(temp);
+						eliminatedResultEquations.append(temp);
 					} else {
-						termsEqualZeroList.append(expr);
+						eliminatedResultEquations.append(expr);
 					}
 				}
-				result[0] = termsEqualZeroList;
+				IAST[] result = new IAST[2];
+				result[0] = eliminatedResultEquations;
 				result[1] = rule;
 				return result;
-
 			}
 		}
 		return null;

@@ -3900,6 +3900,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNIntegrate() {
+		check("NIntegrate (x, {x, 0,2}, Method->Simpson)", "2.0");
 		check("NIntegrate(Cos(x), {x, 0, Pi})", "0.0");
 		check("NIntegrate(1/Sin(Sqrt(x)), {x, 0, 1}, PrecisionGoal->10)", "2.1108620052");
 	}
