@@ -7,6 +7,7 @@ Subsets(list)
         
 ```
 Subsets(list, n)
+```
 > finds a list of all possible subsets containing at most `n` elements.
         
 ```
@@ -15,6 +16,7 @@ Subsets(list, {n})
 > finds a list of all possible subsets containing exactly `n` elements.
 	 
 ### Examples
+
 ```
 >> Subsets({a, b, c})   
 {{},{a},{b},{c},{a,b},{a,c},{b,c},{a,b,c}}  

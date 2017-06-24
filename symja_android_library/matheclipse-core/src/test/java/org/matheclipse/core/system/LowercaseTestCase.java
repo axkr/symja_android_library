@@ -3900,6 +3900,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNIntegrate() {
+		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Trapezoid, MaxIterations->5000)", "-0.0208333271245165");
+		
+		
+		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1})", "-0.0208333333333333");
+		// LegendreGauss is default method
+		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->LegendreGauss)", "-0.0208333333333333");
+		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Simpson)", "-0.0208333320915699");
+		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Trapezoid)", "-0.0208333271245165");
+		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Trapezoid, MaxIterations->5000)", "-0.0208333271245165");
+		check("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Romberg)", "-0.0208333333333333");
 		check("NIntegrate (x, {x, 0,2}, Method->Simpson)", "2.0");
 		check("NIntegrate(Cos(x), {x, 0, Pi})", "0.0");
 		check("NIntegrate(1/Sin(Sqrt(x)), {x, 0, 1}, PrecisionGoal->10)", "2.1108620052");
@@ -4357,6 +4367,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPermutations() {
+		check("Permutations({a,b,c})",
+				"{{a,b,c},{a,c,b},{b,a,c},{b,c,a},{c,a,b},{c,b,a}}");
+		check("Permutations({a,b,c}, {2})",
+				"{{a,b},{a,c},{b,a},{b,c},{c,a},{c,b}}");
+		
 		check("Permutations({a},{0})", "{{}}");
 		check("Permutations({a,b,c,d},{3})",
 				"{{a,b,c},{a,b,d},{a,c,b},{a,c,d},{a,d,b},{a,d,c},{b,a,c},{b,a,d},{b,c,a},{b,c,d},{b,d,a},{b,d,c},{c,a,b},{c,a,d},{c,b,a},{c,b,d},{c,d,a},{c,d,b},{d,a,b},{d,a,c},{d,b,a},{d,b,c},{d,c,a},{d,c,b}}");
@@ -5641,7 +5656,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		// Issue #151
 		check("Solve(60+abc==120.0,abc)", "{{abc->60.0}}");
-		
+
 		// Issue #152
 		check("Solve(Sqrt(x)==16.1,x)", "{{x->259.21000000000004}}");
 

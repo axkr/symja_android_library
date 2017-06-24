@@ -194,7 +194,6 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Patterns and rules](patterns-and-rules.md)
 
 ## Functions Reference
-
 * [Abort](functions/Abort.md)
 * [Abs](functions/Abs.md)
 * [AddTo](functions/AddTo.md)
@@ -467,6 +466,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Part](functions/Part.md)
 * [Partition](functions/Partition.md)
 * [PatternTest](functions/PatternTest.md)
+* [Permutations](functions/Permutations.md)
 * [Pi](functions/Pi.md)
 * [Piecewise](functions/Piecewise.md)
 * [Plus](functions/Plus.md)
