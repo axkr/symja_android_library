@@ -2998,8 +2998,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Limit(a+b+2*x,x->Infinity)", "Infinity");
 		check("Limit(E^(-x)*Sqrt(x), x -> Infinity)", "0");
 		check("Limit(Sin(x)/x,x->0)", "1");
+		check("Limit(x*Sin(1/x),x->Infinity)", "1");
+		
 		check("Limit(-x,x->Infinity)", "-Infinity");
-		check("Limit(Sin(x)/x, x -> 0)", "1");
 		check("Limit((1 + x/n)^n, n -> Infinity)", "E^x");
 		check("Limit((x^2 - 2 x - 8)/(x - 4), x -> 4)", "6");
 		check("Limit((x^3-1)/(2*x^3-3x),x->Infinity)", "1/2");
