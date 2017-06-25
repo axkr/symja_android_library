@@ -401,7 +401,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 			}
 		} else if (exprPoly.isNumber()) {
 			return new ExprPolynomial(this, exprPoly);
-		}
+		} 
 		if (exprPoly.isFree(Predicates.in(vars), true)) {
 			return new ExprPolynomial(this, exprPoly);
 		}

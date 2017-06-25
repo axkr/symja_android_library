@@ -1,6 +1,7 @@
 package org.matheclipse.core.convert;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -29,11 +30,11 @@ import edu.jas.poly.TermOrderByName;
 import edu.jas.structure.RingFactory;
 
 /**
- * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from
- * and to MathEclipse <code>IExpr</code> objects
+ * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from and to MathEclipse <code>IExpr</code>
+ * objects
  * 
- * <b>Note:</b>: set the "no complex number" flag to <code>false</code> to allow
- * complex numbers on input in method <code>expr2IExprJAS(IExpr)</code>
+ * <b>Note:</b>: set the "no complex number" flag to <code>false</code> to allow complex numbers on input in method
+ * <code>expr2IExprJAS(IExpr)</code>
  * 
  */
 public class JASIExpr {
@@ -49,8 +50,7 @@ public class JASIExpr {
 	private final List<? extends IExpr> fVariables;
 
 	/**
-	 * "numeric function" flag to allow numeric functions on input in method
-	 * <code>expr2IExprJAS(IExpr)</code>
+	 * "numeric function" flag to allow numeric functions on input in method <code>expr2IExprJAS(IExpr)</code>
 	 * 
 	 * @see {@link #expr2IExprJAS(IExpr)}
 	 */
@@ -150,14 +150,11 @@ public class JASIExpr {
 	}
 
 	/**
-	 * Convert the given expression into a
-	 * <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial. Only
-	 * symbolic numbers are converted (i.e. no <code>INum</code> or
-	 * <code>IComplexNum</code> values are converted into the polynomial
-	 * structure)
+	 * Convert the given expression into a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial. Only
+	 * symbolic numbers are converted (i.e. no <code>INum</code> or <code>IComplexNum</code> values are converted into
+	 * the polynomial structure)
 	 * 
-	 * <b>Note:</b>: set the "no complex number" flag to <code>false</code> to
-	 * allow complex numbers on input in method
+	 * <b>Note:</b>: set the "no complex number" flag to <code>false</code> to allow complex numbers on input in method
 	 * <code>expr2IExprJAS(IExpr)</code>
 	 * 
 	 * @param exprPoly
@@ -225,7 +222,7 @@ public class JASIExpr {
 						}
 						ExpVector e = ExpVector.create(fVariables.size(), ix, exponent);
 						return fPolyFactory.getONE().multiply(e);
-					} 
+					}
 				}
 			} else if (fNumericFunction) {
 				if (ast.isNumericFunction()) {
@@ -266,8 +263,8 @@ public class JASIExpr {
 	}
 
 	/**
-	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a>
-	 * polynomial to a MathEclipse AST with head <code>Plus</code>
+	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial to a MathEclipse AST with head
+	 * <code>Plus</code>
 	 * 
 	 * @param poly
 	 *            a JAS polynomial
@@ -280,8 +277,8 @@ public class JASIExpr {
 	}
 
 	/**
-	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a>
-	 * polynomial to a MathEclipse AST with head <code>Plus</code>
+	 * Converts a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial to a MathEclipse AST with head
+	 * <code>Plus</code>
 	 * 
 	 * @param poly
 	 *            a JAS polynomial
@@ -300,7 +297,7 @@ public class JASIExpr {
 			IExpr coeff = monomial.coefficient();
 			ExpVector exp = monomial.exponent();
 			IAST monomTimes = F.Times();
-			monomialToExpr(coeff, exp, monomTimes); 
+			monomialToExpr(coeff, exp, monomTimes);
 			result.append(monomTimes.getOneIdentity(F.C1));
 		}
 		return result.getOneIdentity(F.C0);
@@ -331,14 +328,12 @@ public class JASIExpr {
 	}
 
 	/**
-	 * BigInteger from BigRational coefficients. Represent as polynomial with
-	 * BigInteger coefficients by multiplication with the gcd of the numerators
-	 * and the lcm of the denominators of the BigRational coefficients.
+	 * BigInteger from BigRational coefficients. Represent as polynomial with BigInteger coefficients by multiplication
+	 * with the gcd of the numerators and the lcm of the denominators of the BigRational coefficients.
 	 * 
 	 * @param A
 	 *            polynomial with BigRational coefficients to be converted.
-	 * @return Object[] with 3 entries: [0]->gcd [1]->lcm and [2]->polynomial
-	 *         with BigInteger coefficients.
+	 * @return Object[] with 3 entries: [0]->gcd [1]->lcm and [2]->polynomial with BigInteger coefficients.
 	 */
 	public Object[] factorTerms(GenPolynomial<BigRational> A) {
 		return PolyUtil.integerFromRationalCoefficientsFactor(fBigIntegerPolyFactory, A);
@@ -352,9 +347,8 @@ public class JASIExpr {
 	}
 
 	/**
-	 * BigInteger from BigRational coefficients. Represent as polynomial with
-	 * BigInteger coefficients by multiplication with the lcm of the numerators
-	 * of the BigRational coefficients.
+	 * BigInteger from BigRational coefficients. Represent as polynomial with BigInteger coefficients by multiplication
+	 * with the lcm of the numerators of the BigRational coefficients.
 	 * 
 	 * @param A
 	 *            polynomial with BigRational coefficients to be converted.
@@ -403,4 +397,20 @@ public class JASIExpr {
 		}
 	}
 
+	/**
+	 * Check if the polynomial contains an inexact coefficient.
+	 * 
+	 * @param polynomial
+	 * @return
+	 */
+	public static boolean isInexactCoefficient(GenPolynomial<IExpr> polynomial) {
+		Iterator<IExpr> iter = polynomial.coefficientIterator();
+		while (iter.hasNext()) {
+			IExpr expr = iter.next();
+			if (expr.isInexactNumber()) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

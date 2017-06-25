@@ -21,6 +21,7 @@ import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.function.BiPredicate;
@@ -2742,7 +2743,10 @@ public class Algebra {
 				result[0] = jas.exprPoly2Expr(gcd);
 				result[1] = jas.exprPoly2Expr(p1);
 				result[2] = jas.exprPoly2Expr(p2);
-			} else {
+			} else { 
+				if (JASIExpr.isInexactCoefficient(gcd)) {
+					return null;
+				}
 				result[0] = F.C1;
 				result[1] = F.eval(jas.exprPoly2Expr(p1.divide(gcd)));
 				result[2] = F.eval(jas.exprPoly2Expr(p2.divide(gcd)));

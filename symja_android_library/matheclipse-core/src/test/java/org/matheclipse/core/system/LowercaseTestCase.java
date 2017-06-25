@@ -5657,6 +5657,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testSolve() {
 
+		// Issue #162
+		check("Solve((5.0*x)/y==(0.8*y)/x,x)", "{{x->-0.4*y},{x->0.4*y}}");
+		// Issue #161
+		check("Solve((0.6000000000000001*2.5)/y==z/x,x)", "{{x->0.6666666666666665*y*z}}");
+		// Issue #160
+		check("Solve((2.10937501y)/(0.6923076944378698z)==(0.6923076944378698*z)/x,x)",
+				"{{x->(0.22721893523232692*z)/(y*1/z)}}");
+		// Issue #159
+		check("Solve(x==2.0*Sqrt(y)*Sqrt(z),y)",
+				"{{y->0.25*(x/Sqrt(z))^2.0}}");
+
 		// Issue #155
 		check("Solve(x==2*Sqrt(y)*Sqrt(z),y)", "{{y->x^2/(4*z)}}");
 
@@ -6563,27 +6574,33 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testTrigExpand() {
 		check("TrigExpand(Cosh(2*a))", "Cosh(a)^2+Sinh(a)^2");
 		check("TrigExpand(Cosh(3*a))", "Cosh(a)^3+3*Sinh(a)^2*Cosh(a)");
-		
+
 		check("TrigExpand(Cosh(a+b))", "Cosh(a)*Cosh(b)+Sinh(a)*Sinh(b)");
-		check("TrigExpand(Cosh(a+b+c))", "Cosh(a)*Cosh(b)*Cosh(c)+Cosh(c)*Sinh(a)*Sinh(b)+Cosh(b)*Sinh(a)*Sinh(c)+Cosh(a)*Sinh(b)*Sinh(c)");
-		
+		check("TrigExpand(Cosh(a+b+c))",
+				"Cosh(a)*Cosh(b)*Cosh(c)+Cosh(c)*Sinh(a)*Sinh(b)+Cosh(b)*Sinh(a)*Sinh(c)+Cosh(a)*Sinh(b)*Sinh(c)");
+
 		check("TrigExpand(Sinh(2*a))", "2*Cosh(a)*Sinh(a)");
 		check("TrigExpand(Sinh(3*a))", "Sinh(a)^3+3*Cosh(a)^2*Sinh(a)");
 		check("TrigExpand(Sinh(4*a))", "4*Sinh(a)^3*Cosh(a)+4*Cosh(a)^3*Sinh(a)");
-		
+
 		check("TrigExpand(Sinh(a+b))", "Cosh(b)*Sinh(a)+Cosh(a)*Sinh(b)");
-		check("TrigExpand(Sinh(a+b+c))", "Cosh(b)*Cosh(c)*Sinh(a)+Cosh(a)*Cosh(c)*Sinh(b)+Cosh(a)*Cosh(b)*Sinh(c)+Sinh(a)*Sinh(b)*Sinh(c)");
-		
+		check("TrigExpand(Sinh(a+b+c))",
+				"Cosh(b)*Cosh(c)*Sinh(a)+Cosh(a)*Cosh(c)*Sinh(b)+Cosh(a)*Cosh(b)*Sinh(c)+Sinh(a)*Sinh(b)*Sinh(c)");
+
 		check("TrigExpand(Tanh(a+b))", "(Tanh(a)+Tanh(b))/(1+Tanh(a)*Tanh(b))");
-		check("TrigExpand(Tanh(a+b+c))", "((Tanh(b)+Tanh(c))/(1+Tanh(b)*Tanh(c))+Tanh(a))/(1+(Tanh(a)*Tanh(b)+Tanh(a)*Tanh(c))/(\n" + 
-				"1+Tanh(b)*Tanh(c)))");
-		
-		
-		check("TrigExpand(Csc(a+b+c))", "1/(Cos(b)*Cos(c)*Sin(a)+Cos(a)*Cos(c)*Sin(b)+Cos(a)*Cos(b)*Sin(c)-Sin(a)*Sin(b)*Sin(c))");
-		check("TrigExpand(Sec(a+b+c))", "1/(Cos(a)*Cos(b)*Cos(c)-Cos(c)*Sin(a)*Sin(b)-Cos(b)*Sin(a)*Sin(c)-Cos(a)*Sin(b)*Sin(c))");
-		check("TrigExpand(Cot(a+b+c))", "(Cos(a)*Cos(b)*Cos(c)-Cos(c)*Sin(a)*Sin(b)-Cos(b)*Sin(a)*Sin(c)-Cos(a)*Sin(b)*Sin(c))/(Cos(b)*Cos(c)*Sin(a)+Cos(a)*Cos(c)*Sin(b)+Cos(a)*Cos(b)*Sin(c)-Sin(a)*Sin(b)*Sin(c))");
-		check("TrigExpand(Tan(a+b+c))", "(Cos(b)*Cos(c)*Sin(a)+Cos(a)*Cos(c)*Sin(b)+Cos(a)*Cos(b)*Sin(c)-Sin(a)*Sin(b)*Sin(c))/(Cos(a)*Cos(b)*Cos(c)-Cos(c)*Sin(a)*Sin(b)-Cos(b)*Sin(a)*Sin(c)-Cos(a)*Sin(b)*Sin(c))");
-		
+		check("TrigExpand(Tanh(a+b+c))",
+				"((Tanh(b)+Tanh(c))/(1+Tanh(b)*Tanh(c))+Tanh(a))/(1+(Tanh(a)*Tanh(b)+Tanh(a)*Tanh(c))/(\n"
+						+ "1+Tanh(b)*Tanh(c)))");
+
+		check("TrigExpand(Csc(a+b+c))",
+				"1/(Cos(b)*Cos(c)*Sin(a)+Cos(a)*Cos(c)*Sin(b)+Cos(a)*Cos(b)*Sin(c)-Sin(a)*Sin(b)*Sin(c))");
+		check("TrigExpand(Sec(a+b+c))",
+				"1/(Cos(a)*Cos(b)*Cos(c)-Cos(c)*Sin(a)*Sin(b)-Cos(b)*Sin(a)*Sin(c)-Cos(a)*Sin(b)*Sin(c))");
+		check("TrigExpand(Cot(a+b+c))",
+				"(Cos(a)*Cos(b)*Cos(c)-Cos(c)*Sin(a)*Sin(b)-Cos(b)*Sin(a)*Sin(c)-Cos(a)*Sin(b)*Sin(c))/(Cos(b)*Cos(c)*Sin(a)+Cos(a)*Cos(c)*Sin(b)+Cos(a)*Cos(b)*Sin(c)-Sin(a)*Sin(b)*Sin(c))");
+		check("TrigExpand(Tan(a+b+c))",
+				"(Cos(b)*Cos(c)*Sin(a)+Cos(a)*Cos(c)*Sin(b)+Cos(a)*Cos(b)*Sin(c)-Sin(a)*Sin(b)*Sin(c))/(Cos(a)*Cos(b)*Cos(c)-Cos(c)*Sin(a)*Sin(b)-Cos(b)*Sin(a)*Sin(c)-Cos(a)*Sin(b)*Sin(c))");
+
 		check("TrigExpand(Csc(2*x))", "1/2*Csc(x)*Sec(x)");
 		check("TrigExpand(Sec(2*x))", "1/(Cos(x)^2-Sin(x)^2)");
 		check("TrigExpand(Cot(2*x))", "Cot(x)/2-Tan(x)/2");

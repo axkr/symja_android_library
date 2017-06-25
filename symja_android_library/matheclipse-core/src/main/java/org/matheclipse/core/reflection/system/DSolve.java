@@ -14,8 +14,8 @@ import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
 
 /**
- * See: <a href="https://en.wikipedia.org/wiki/Ordinary_differential_equation">
- * Wikipedia:Ordinary differential equation</a>
+ * See: <a href="https://en.wikipedia.org/wiki/Ordinary_differential_equation"> Wikipedia:Ordinary differential
+ * equation</a>
  * 
  */
 public class DSolve extends AbstractFunctionEvaluator {
@@ -147,8 +147,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Equation <code>-1+y(0)</code> gives <code>[0, 1]</code> (representing the
-	 * boundary equation y(0)==1)
+	 * Equation <code>-1+y(0)</code> gives <code>[0, 1]</code> (representing the boundary equation y(0)==1)
 	 * 
 	 * @param equation
 	 *            the equation
@@ -213,6 +212,103 @@ public class DSolve extends AbstractFunctionEvaluator {
 			IExpr qInt = engine.evaluate(F.Plus(C_1, F.Expand(F.Integrate(F.Times(F.CN1, q, pInt), xVar))));
 			return engine.evaluate(F.Expand(F.Divide(qInt, pInt)));
 		}
+	}
+
+	private static IExpr odeSolve(EvalEngine engine, IAST w, IExpr x, IExpr y) {
+		IExpr[] p = odeTransform(engine, w, x, y);
+		if (p != null) {
+			IExpr m = p[0];
+			IExpr n = p[1];
+			IExpr f = odeSeparable(m, n, x, y);
+			if (f.isPresent()) {
+				return f;
+			}
+			return exactSolve(engine, m, n, x, y);
+		}
+		return F.NIL;
+	}
+
+	private static IExpr[] odeTransform(EvalEngine engine, IAST w, IExpr x, IExpr y) {
+		IExpr v = engine.evaluate(F.Together(F.Subtract(w.arg1(), w.arg2())));
+		IExpr numerator = engine.evaluate(F.Numerator(v));
+		IExpr dyx = engine.evaluate(F.D(y, x));
+		IExpr m = engine.evaluate(F.Coefficient(numerator, dyx, F.C0));
+		IExpr n = engine.evaluate(F.Coefficient(numerator, dyx, F.C1));
+		return new IExpr[] { m, n };
+	}
+
+	private static IExpr odeSeparable(IExpr m, IExpr n, IExpr x, IExpr y) {
+
+		return F.NIL;
+	}
+
+	/**
+	 * An implicit solution to the differential equation <code>m + n*(dy/dx) == 0</code> or <code>F.NIL</code>.
+	 * 
+	 * @param m
+	 *            algebraic expression
+	 * @param n
+	 *            algebraic expression
+	 * @param x
+	 *            symbol
+	 * @param y
+	 *            symbol
+	 * @return
+	 */
+	private static IExpr exactSolve(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y) {
+
+		if (n.isZero()) {
+			return F.NIL;
+		}
+		if (m.isZero()) {
+			return F.Equal(y, F.CSymbol);
+		}
+		IExpr my = engine.evaluate(F.D(m, y));
+		IExpr nx = engine.evaluate(F.D(n, x));
+
+		IExpr d = engine.evaluate(F.Subtract(my, nx));
+
+		IExpr u = F.NIL;
+		if (d.isZero()) {
+			u = F.C1;
+		} else {
+			IExpr f = engine.evaluate(F.Together(F.Divide(d, n)));
+			if (f.isFree(y)) {
+				u = engine.evaluate(F.Exp(F.Integrate(f, x)));
+				d = F.C0;
+			} else {
+				IExpr g = engine.evaluate(F.Together(F.Divide(d.negate(), m)));
+				if (g.isFree(x)) {
+					u = engine.evaluate(F.Exp(F.Integrate(g, y)));
+					d = F.C0;
+				}
+			}
+		}
+
+		if (d.isZero()) {
+			IExpr g = engine.evaluate(F.Integrate(F.Times(u, m), x));
+			IExpr hp = engine.evaluate(F.Subtract(F.Times(u, n), F.D(g, y)));
+			IExpr h = engine.evaluate(F.Integrate(hp, y));
+			return F.Equal(engine.evaluate(F.Plus(g, h)), F.CSymbol);
+		}
+
+		return F.NIL;
+	}
+
+	public static void main(String[] args) {
+		Config.SERVER_MODE = false;
+		F.initSymbols();
+		F.join();
+		EvalEngine engine = new EvalEngine(true);
+		EvalEngine.set(engine);
+
+		IExpr fy = F.y;
+
+		// IExpr result = exactSolve(engine, F.Power(fy, F.CN2), F.Times(F.C2, F.x), fy, F.x);
+		IExpr result = odeSolve(engine, F.Equal(F.Times(F.C2, F.Power(fy, F.C2), F.x), F.C0), fy, F.x);
+
+		result = engine.evaluate(F.Solve(result, F.y));
+		System.out.println(result.toString());
 	}
 
 }
