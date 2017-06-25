@@ -118,18 +118,10 @@ public class TrigExpand extends AbstractEvaluator {
 							return F.Divide(F.C1, expandCosTimes(n, theta));
 						} else if (ast.isSinh()) {
 							int nInt = n.toInt();
-							IAST plusAST = F.PlusAlloc(nInt);
-							for (int i = 0; i < nInt; i++) {
-								plusAST.append(theta);
-							}
-							return expandSinhPlus(plusAST, 1);
+							return expandSinhPlus(F.constantArray(F.Plus, theta, nInt), 1);
 						} else if (ast.isCosh()) {
 							int nInt = n.toInt();
-							IAST plusAST = F.PlusAlloc(nInt);
-							for (int i = 0; i < nInt; i++) {
-								plusAST.append(theta);
-							}
-							return expandCoshPlus(plusAST, 1);
+							return expandCoshPlus(F.constantArray(F.Plus, theta, nInt), 1);
 						}
 					} catch (ArithmeticException ae) {
 

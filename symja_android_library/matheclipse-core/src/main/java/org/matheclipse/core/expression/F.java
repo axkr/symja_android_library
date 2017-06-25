@@ -460,7 +460,8 @@ public class F {
 	public final static IBuiltInSymbol NumericQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "numericq" : "NumericQ");
 	public final static IBuiltInSymbol OddQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "oddq" : "OddQ");
-	public final static IBuiltInSymbol Optional = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "optional" : "Optional");
+	public final static IBuiltInSymbol Optional = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "optional" : "Optional");
 	public final static IBuiltInSymbol Or = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "or" : "Or");
 	public final static IBuiltInSymbol Package = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "package" : "Package",
@@ -1288,7 +1289,7 @@ public class F {
 
 	public final static IPattern m_Integer = new Pattern(m, IntegerHead);
 	public final static IPattern n_Integer = new Pattern(n, IntegerHead);
-	
+
 	public final static IPattern a_Symbol = new Pattern(a, SymbolHead);
 	public final static IPattern b_Symbol = new Pattern(b, SymbolHead);
 	public final static IPattern c_Symbol = new Pattern(c, SymbolHead);
@@ -2497,6 +2498,43 @@ public class F {
 	}
 
 	/**
+	 * Create a new <code>List()</code> with <code>copies</code> number of arguments, which are set to
+	 * <code>value</code>.
+	 * 
+	 * @param value
+	 *            initialize all elements with <code>value</code>.
+	 * @param copies
+	 *            the initial capacity (i.e. number of arguments without the header element) of the list.
+	 * @return
+	 */
+	public static IAST constantArray(final IExpr value, final int copies) {
+		return constantArray(F.List, value, copies);
+	}
+
+	/**
+	 * Create a new abstract syntax tree (AST) with a <code>head</code> and <code>copies</code> number of arguments,
+	 * which are set to <code>value</code>.
+	 * 
+	 * @param head
+	 *            the header expression of the function. If the ast represents a function like
+	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+	 * @param value
+	 *            initialize all elements with <code>value</code>.
+	 * @param copies
+	 *            the initial capacity (i.e. number of arguments without the header element) of the list.
+	 * @return
+	 */
+	public static IAST constantArray(final IExpr head, final IExpr value, final int copies) {
+		final AST ast = AST.newInstance(copies, head);
+
+		for (int i = 0; i < copies; i++) {
+			ast.append(value);
+		}
+
+		return ast;
+	}
+
+	/**
 	 * Create a new abstract syntax tree (AST).
 	 * 
 	 * @param arr
@@ -3335,7 +3373,7 @@ public class F {
 	public static IAST EulerPhi(final IExpr a0) {
 		return unaryAST1(EulerPhi, a0);
 	}
-	
+
 	public static IAST Exp(final IExpr a0) {
 		return binaryAST2(Power, E, a0);
 	}
@@ -4069,7 +4107,7 @@ public class F {
 	public static IAST KroneckerDelta(final IExpr a0) {
 		return unaryAST1(KroneckerDelta, a0);
 	}
-	
+
 	public static IAST LaplaceTransform(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(LaplaceTransform, a0, a1, a2);
 	}
@@ -4929,7 +4967,7 @@ public class F {
 	public static IAST Root(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Root, a0, a1);
 	}
-	
+
 	public static IAST Roots(final IExpr a0) {
 		return unaryAST1(Roots, a0);
 	}
@@ -5208,7 +5246,7 @@ public class F {
 	public static IAST Sum(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Sum, a0, a1);
 	}
-	
+
 	public static IAST Sum(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(Sum, a0, a1, a2);
 	}

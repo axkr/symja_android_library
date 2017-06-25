@@ -686,7 +686,7 @@ public final class ListFunctions {
 					final List<ArrayIterator> iterList = new ArrayList<ArrayIterator>();
 					if ((ast.isAST2()) && (ast.arg2().isInteger())) {
 						indx1 = Validate.checkIntType(ast, 2);
-						iterList.add(new ArrayIterator(indx1));
+						return F.constantArray(ast.arg1(), indx1);
 					} else if ((ast.isAST2()) && ast.arg2().isList()) {
 						final IAST dimIter = (IAST) ast.arg2();
 						for (int i = 1; i < dimIter.size(); i++) {
