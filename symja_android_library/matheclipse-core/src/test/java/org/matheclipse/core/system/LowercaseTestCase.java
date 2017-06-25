@@ -5665,8 +5665,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Solve((2.10937501y)/(0.6923076944378698z)==(0.6923076944378698*z)/x,x)",
 				"{{x->(0.22721893523232692*z)/(y*1/z)}}");
 		// Issue #159
-		check("Solve(x==2.0*Sqrt(y)*Sqrt(z),y)",
-				"{{y->0.25*(x/Sqrt(z))^2.0}}");
+		check("Solve(x==2*Sqrt(y)*Sqrt(z),y)", "{{y->x^2/(4*z)}}");
+		check("Solve(x==2.0*Sqrt(y)*Sqrt(z),y)", "{{y->0.25*(x/Sqrt(z))^2.0}}");
 
 		// Issue #155
 		check("Solve(x==2*Sqrt(y)*Sqrt(z),y)", "{{y->x^2/(4*z)}}");
