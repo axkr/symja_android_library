@@ -17,6 +17,7 @@ import static org.matheclipse.core.expression.F.evalExpandAll;
 
 import java.util.function.Function;
 
+import org.matheclipse.core.builtin.Structure;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -40,66 +41,237 @@ public class TrigExpand extends AbstractEvaluator {
 	private final static class TrigExpandFunction implements Function<IExpr, IExpr> {
 		@Override
 		public IExpr apply(IExpr ast) {
-			IExpr temp = F.NIL;
 			if (ast.isAST1()) {
 				if (ast.getAt(1).isPlus()) {
-					if (ast.isSin()) {
-						temp = expandSinPlus((IAST) ast.getAt(1), 1);
-					} else if (ast.isCos()) {
-						temp = expandCosPlus((IAST) ast.getAt(1), 1);
-					}
+					IAST plusAST = (IAST) ast.getAt(1);
+					return expandPlus((IAST) ast, plusAST);
 				} else if (ast.getAt(1).isTimes()) {
 					IAST timesAST = (IAST) ast.getAt(1);
-					if (timesAST.arg1().isInteger()) {
-						IInteger n = (IInteger) timesAST.arg1();
-						if (n.compareInt(0) > 0) {
-							IExpr theta = timesAST.removeAtClone(1).getOneIdentity(F.C1);
-							if (ast.isSin()) {
-								// Sin(n*theta)
-								return Sum(
-										Times(Times(Times(Power(CN1, Times(Plus(F.i, CN1), C1D2)), Binomial(n, F.i)),
-												Power(Cos(theta), Plus(n, Times(CN1, F.i)))), Power(Sin(theta), F.i)),
-										List(F.i, C1, n, C2));
-							} else if (ast.isCos()) {
-								// Cos(n*theta)
-								return Sum(
-										Times(Times(Times(Power(CN1, Times(F.i, C1D2)), Binomial(n, F.i)),
-												Power(Cos(theta), Plus(n, Times(CN1, F.i)))), Power(Sin(theta), F.i)),
-										List(F.i, C0, n, C2));
+					return expandTimes((IAST) ast, timesAST);
+				}
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * Expand <code>f(a+b+c+...)</code> and f a trig function.
+		 * 
+		 * @param n
+		 * @param theta
+		 * @return
+		 */
+		private IExpr expandPlus(IAST ast, IAST plusAST) {
+			if (ast.isSin()) {
+				return expandSinPlus(plusAST, 1);
+			} else if (ast.isCos()) {
+				return expandCosPlus(plusAST, 1);
+			} else if (ast.isAST(F.Cot, 2)) {
+				// Cos(x) / Sin(x)
+				return F.Divide(expandCosPlus(plusAST, 1), expandSinPlus(plusAST, 1));
+			} else if (ast.isTan()) {
+				// Sin(x) / Cos(x)
+				return F.Divide(expandSinPlus(plusAST, 1), expandCosPlus(plusAST, 1));
+			} else if (ast.isAST(F.Csc, 2)) {
+				// 1 / Sin(x)
+				return F.Divide(F.C1, expandSinPlus(plusAST, 1));
+			} else if (ast.isAST(F.Sec, 2)) {
+				// 1 / Cos(x)
+				return F.Divide(F.C1, expandCosPlus(plusAST, 1));
+			} else if (ast.isSinh()) {
+				return expandSinhPlus(plusAST, 1);
+			} else if (ast.isCosh()) {
+				return expandCoshPlus(plusAST, 1);
+			} else if (ast.isTanh()) {
+				return expandTanhPlus(plusAST, 1);
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * Expand <code>f(n*theta)</code> and f a trig function.
+		 * 
+		 * @param n
+		 * @param theta
+		 * @return
+		 */
+		private IExpr expandTimes(IAST ast, IAST timesAST) {
+			if (timesAST.arg1().isInteger()) {
+				IInteger n = (IInteger) timesAST.arg1();
+				if (n.compareInt(0) > 0) {
+					try {
+						IExpr theta = timesAST.removeAtClone(1).getOneIdentity(F.C1);
+						if (ast.isSin()) {
+							return expandSinTimes(n, theta);
+						} else if (ast.isCos()) {
+							return expandCosTimes(n, theta);
+						} else if (ast.isAST(F.Cot, 2)) {
+							// Cos(x) / Sin(x)
+							return F.Divide(expandCosTimes(n, theta), expandSinTimes(n, theta));
+						} else if (ast.isTan()) {
+							// Sin(x) / Cos(x)
+							return F.Divide(expandSinTimes(n, theta), expandCosTimes(n, theta));
+						} else if (ast.isAST(F.Csc, 2)) {
+							// 1 / Sin(x)
+							return F.Divide(F.C1, expandSinTimes(n, theta));
+						} else if (ast.isAST(F.Sec, 2)) {
+							// 1 / Cos(x)
+							return F.Divide(F.C1, expandCosTimes(n, theta));
+						} else if (ast.isSinh()) {
+							int nInt = n.toInt();
+							IAST plusAST = F.PlusAlloc(nInt);
+							for (int i = 0; i < nInt; i++) {
+								plusAST.append(theta);
 							}
+							return expandSinhPlus(plusAST, 1);
+						} else if (ast.isCosh()) {
+							int nInt = n.toInt();
+							IAST plusAST = F.PlusAlloc(nInt);
+							for (int i = 0; i < nInt; i++) {
+								plusAST.append(theta);
+							}
+							return expandCoshPlus(plusAST, 1);
 						}
+					} catch (ArithmeticException ae) {
+
 					}
 				}
 			}
-			return temp;
+			return F.NIL;
 		}
 
+		/**
+		 * <code>Cos(n*theta)</code>
+		 * 
+		 * @param n
+		 * @param theta
+		 * @return
+		 */
+		private static IExpr expandCosTimes(IInteger n, IExpr theta) {
+			return Sum(
+					Times(Times(Times(Power(CN1, Times(F.i, C1D2)), Binomial(n, F.i)),
+							Power(Cos(theta), Plus(n, Times(CN1, F.i)))), Power(Sin(theta), F.i)),
+					List(F.i, C0, n, C2));
+		}
+
+		/**
+		 * <code>Sin(n*theta)</code>
+		 * 
+		 * @param n
+		 * @param theta
+		 * @return
+		 */
+		private static IExpr expandSinTimes(IInteger n, IExpr theta) {
+			return Sum(
+					Times(Times(Times(Power(CN1, Times(Plus(F.i, CN1), C1D2)), Binomial(n, F.i)),
+							Power(Cos(theta), Plus(n, Times(CN1, F.i)))), Power(Sin(theta), F.i)),
+					List(F.i, C1, n, C2));
+		}
+
+		/**
+		 * <code>Sin(a+b+c+...)</code>
+		 * 
+		 * @param plusAST
+		 * @param startPosition
+		 * @return
+		 */
 		private static IExpr expandSinPlus(IAST plusAST, int startPosition) {
-			if (startPosition > plusAST.size() - 2) {
-				return F.NIL;
-			}
 			IAST result = Plus();
+			IExpr lhs = plusAST.get(startPosition);
 			if (startPosition == plusAST.size() - 2) {
-				result.append(Times(Sin(plusAST.get(startPosition)), Cos(plusAST.get(startPosition + 1))));
-				result.append(Times(Cos(plusAST.get(startPosition)), Sin(plusAST.get(startPosition + 1))));
+				IExpr rhs = plusAST.get(startPosition + 1);
+				result.append(Times(Sin(lhs), Cos(rhs)));
+				result.append(Times(Cos(lhs), Sin(rhs)));
 			} else {
-				result.append(Times(Sin(plusAST.get(startPosition)), expandCosPlus(plusAST, startPosition + 1)));
-				result.append(Times(Cos(plusAST.get(startPosition)), expandSinPlus(plusAST, startPosition + 1)));
+				result.append(Times(Sin(lhs), expandCosPlus(plusAST, startPosition + 1)));
+				result.append(Times(Cos(lhs), expandSinPlus(plusAST, startPosition + 1)));
 			}
 			return result;
 		}
 
-		private static IExpr expandCosPlus(IAST plusAST, int startPosition) {
-			if (startPosition > plusAST.size() - 2) {
-				return F.NIL;
-			}
+		/**
+		 * <code>Sinh(a+b+c+...)</code>
+		 * 
+		 * @param plusAST
+		 * @param startPosition
+		 * @return
+		 */
+		private static IExpr expandSinhPlus(IAST plusAST, int startPosition) {
 			IAST result = Plus();
+			IExpr lhs = plusAST.get(startPosition);
 			if (startPosition == plusAST.size() - 2) {
-				result.append(Times(Cos(plusAST.get(startPosition)), Cos(plusAST.get(startPosition + 1))));
-				result.append(Times(CN1, Sin(plusAST.get(startPosition)), Sin(plusAST.get(startPosition + 1))));
+				// Sinh(x)*Cosh(y) + Cosh(x)*Sinh(y)
+				IExpr rhs = plusAST.get(startPosition + 1);
+				result.append(Times(F.Sinh(lhs), F.Cosh(rhs)));
+				result.append(Times(F.Cosh(lhs), F.Sinh(rhs)));
 			} else {
-				result.append(Times(Cos(plusAST.get(startPosition)), expandCosPlus(plusAST, startPosition + 1)));
-				result.append(Times(CN1, Sin(plusAST.get(startPosition)), expandSinPlus(plusAST, startPosition + 1)));
+				result.append(Times(F.Sinh(lhs), expandCoshPlus(plusAST, startPosition + 1)));
+				result.append(Times(F.Cosh(lhs), expandSinhPlus(plusAST, startPosition + 1)));
+			}
+			return result;
+		}
+
+		/**
+		 * <code>Sin(a+b+c+...)</code>
+		 * 
+		 * @param plusAST
+		 * @param startPosition
+		 * @return
+		 */
+		private static IExpr expandCosPlus(IAST plusAST, int startPosition) {
+			IAST result = Plus();
+			IExpr lhs = plusAST.get(startPosition);
+			if (startPosition == plusAST.size() - 2) {
+				IExpr rhs = plusAST.get(startPosition + 1);
+				result.append(Times(Cos(lhs), Cos(rhs)));
+				result.append(Times(CN1, Sin(lhs), Sin(rhs)));
+			} else {
+				result.append(Times(Cos(lhs), expandCosPlus(plusAST, startPosition + 1)));
+				result.append(Times(CN1, Sin(lhs), expandSinPlus(plusAST, startPosition + 1)));
+			}
+			return result;
+		}
+
+		/**
+		 * <code>Cosh(a+b+c+...)</code>
+		 * 
+		 * @param plusAST
+		 * @param startPosition
+		 * @return
+		 */
+		private static IExpr expandCoshPlus(IAST plusAST, int startPosition) {
+			IAST result = Plus();
+			IExpr lhs = plusAST.get(startPosition);
+			if (startPosition == plusAST.size() - 2) {
+				// Cosh(x)*Cosh(y) + Sinh(x)*Sinh(y)
+				IExpr rhs = plusAST.get(startPosition + 1);
+				result.append(Times(F.Cosh(lhs), F.Cosh(rhs)));
+				result.append(Times(F.Sinh(lhs), F.Sinh(rhs)));
+			} else {
+				result.append(Times(F.Cosh(lhs), expandCoshPlus(plusAST, startPosition + 1)));
+				result.append(Times(F.Sinh(lhs), expandSinhPlus(plusAST, startPosition + 1)));
+			}
+			return result;
+		}
+
+		/**
+		 * <code>Cosh(a+b+c+...)</code>
+		 * 
+		 * @param plusAST
+		 * @param startPosition
+		 * @return
+		 */
+		private static IExpr expandTanhPlus(IAST plusAST, int startPosition) {
+			IAST result = Times();
+			IExpr lhs = plusAST.get(startPosition);
+			if (startPosition == plusAST.size() - 2) {
+				// (Tanh(x)+Tanh(y)) / (1+Tanh(x)*Tanh(y))
+				IExpr rhs = plusAST.get(startPosition + 1);
+				result.append(Plus(F.Tanh(lhs), F.Tanh(rhs)));
+				result.append(F.Power(Plus(F.C1, Times(F.Tanh(lhs), F.Tanh(rhs))), F.CN1));
+			} else {
+				result.append(Plus(F.Tanh(lhs), expandTanhPlus(plusAST, startPosition + 1)));
+				result.append(
+						F.Power(Plus(F.C1, Times(F.Tanh(lhs), expandTanhPlus(plusAST, startPosition + 1))), F.CN1));
 			}
 			return result;
 		}
@@ -112,8 +284,13 @@ public class TrigExpand extends AbstractEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
+		IExpr temp = Structure.threadLogicEquationOperators(ast.arg1(), ast, 1);
+		if (temp.isPresent()) {
+			return temp;
+		}
+
+		temp = ast.arg1();
 		IExpr result;
-		IExpr temp = ast.arg1();
 		do {
 			result = evalExpandAll(temp);
 			temp = result.accept(visitor);

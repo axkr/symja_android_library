@@ -1286,6 +1286,9 @@ public class F {
 	public final static IPattern F_ = initPredefinedPattern(FSymbol);
 	public final static IPattern G_ = initPredefinedPattern(GSymbol);
 
+	public final static IPattern m_Integer = new Pattern(m, IntegerHead);
+	public final static IPattern n_Integer = new Pattern(n, IntegerHead);
+	
 	public final static IPattern a_Symbol = new Pattern(a, SymbolHead);
 	public final static IPattern b_Symbol = new Pattern(b, SymbolHead);
 	public final static IPattern c_Symbol = new Pattern(c, SymbolHead);

@@ -2744,6 +2744,8 @@ public final class Arithmetic {
 			// addTrigRules(F.Cos, F.Tan, F.Sin);
 			// addTrigRules(F.Csc, F.Tan, F.Sec);
 			// addTrigRules(F.Cos, F.Csc, F.Cot);
+			
+			// Sin(x)*Cot(x) -> Cos(x)
 			ORDERLESS_MATCHER.defineHashRule(F.Sin(x_), F.Cot(x_), F.Cos(x));
 			ORDERLESS_MATCHER.defineHashRule(F.Sin(x_), F.Sec(x_), F.Tan(x));
 			ORDERLESS_MATCHER.defineHashRule(F.Cos(x_), F.Tan(x_), F.Sin(x));
@@ -2751,6 +2753,20 @@ public final class Arithmetic {
 			ORDERLESS_MATCHER.defineHashRule(F.Cos(x_), F.Csc(x_), F.Cot(x));
 			ORDERLESS_MATCHER.defineHashRule(F.ProductLog(x_), F.Power(F.E, F.ProductLog(x_)), x);
 
+			// Cos(x)^m * Sec(x)^n -> Cos(x)^(m-n)
+			ORDERLESS_MATCHER.definePatternHashRule(Power(Cos(x_), F.m_Integer), Power(F.Sec(x_), F.n_Integer),
+					Power(Cos(x), Subtract(F.m, F.n)), F.And(Positive(F.m), F.Greater(F.m, F.n)));
+			// Cos(x)^m * Sec(x) -> Cos(x)^(m-1)
+			ORDERLESS_MATCHER.definePatternHashRule(Power(Cos(x_), F.m_Integer), F.Sec(x_),
+					Power(Cos(x), Subtract(F.m, F.C1)));
+			
+			// Sin(x)^m * Csc(x)^n -> Sin(x)^(m-n)
+			ORDERLESS_MATCHER.definePatternHashRule(Power(Sin(x_), F.m_Integer), Power(F.Csc(x_), F.n_Integer),
+					Power(Sin(x), Subtract(F.m, F.n)), F.And(Positive(F.m), F.Greater(F.m, F.n)));
+			// Sin(x)^m * Csc(x) -> Sin(x)^(m-1)
+			ORDERLESS_MATCHER.definePatternHashRule(Power(Sin(x_), F.m_Integer), F.Csc(x_),
+					Power(Sin(x), Subtract(F.m, F.C1)));
+			
 			super.setUp(newSymbol);
 		}
 
