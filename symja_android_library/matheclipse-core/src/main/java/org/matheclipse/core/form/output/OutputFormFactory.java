@@ -812,20 +812,19 @@ public class OutputFormFactory {
 				if (derivStruct != null) {
 					IAST a1Head = derivStruct[0];
 					IAST headAST = derivStruct[1];
-					if (a1Head.isAST1() && a1Head.arg1().isInteger() && headAST.isAST1() && headAST.arg1().isSymbol()
-							&& derivStruct[2] != null) {
+					if (a1Head.isAST1() && a1Head.arg1().isInteger() && headAST.isAST1()
+							&& (headAST.arg1().isSymbol() || headAST.arg1().isAST()) && derivStruct[2] != null) {
 						try {
 							int n = ((IInteger) a1Head.arg1()).toInt();
-							// IExpr arg1 = listArg1.arg1();
 							if (n == 1 || n == 2) {
-								ISymbol f = (ISymbol) headAST.arg1();
-								convertSymbol(buf, f);
+								IExpr symbolOrAST = headAST.arg1();
+								convert(buf, symbolOrAST);
 								if (n == 1) {
 									append(buf, "'");
 								} else if (n == 2) {
 									append(buf, "''");
 								}
-								convertArgs(buf, f, list);
+								convertArgs(buf, symbolOrAST, list);
 								return;
 							}
 						} catch (ArithmeticException ae) {

@@ -1229,8 +1229,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Depth(f(a, b)[c])", "2");
 	}
 
-	public void testDerivative() {
-
+	public void testDerivative() { 
 		check("h(x_):=Sin(x)+x^2", "");
 		check("h'(x)", "2*x+Cos(x)");
 		check("h'(0.5)", "1.8775825618903728");
@@ -1301,6 +1300,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Derivative(2)[Tan]", "2*Sec(#1)^2*Tan(#1)&");
 		check("Derivative(4)[Log][x]", "-6/x^4");
 		check("Derivative(2)[ArcSin][x]", "x/(1-x^2)^(3/2)");
+		
+		check("Derivative(1)[2]", "0&");
+		check("Derivative(1)[2][x,y,z]", "0");
+		check("Derivative(10)[2][x,y,z]", "0");
+		check("Derivative(10,9,8)[2][a,b,c]", "0");
+		check("Derivative(1)[Cos[3]][z]", "Cos(3)'[z]");
+		check("y = x^2 + 1; x = 1","1");
+		check("y'","0&");
 	}
 
 	public void testDesignMatrix() {

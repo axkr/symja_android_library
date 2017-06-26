@@ -66,86 +66,86 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 
 	@Override
 	public IExpr evaluate(IAST ast, EvalEngine engine) {
-		if (ast.isAST1()) {
-			IAST[] derivativeAST = ast.isDerivative();
-			if (derivativeAST != null) {
+		IAST[] derivativeAST = ast.isDerivative();
+		if (derivativeAST != null) {
+			IAST derivativeHead = derivativeAST[0];
+			IAST functions = derivativeAST[1];
+			if (functions.size() == 2 && functions.arg1().isNumber()) {
+				return F.Function(F.C0);
+			}
+			boolean isZero = true;
+			for (int i = 1; i < derivativeHead.size(); i++) {
+				if (!derivativeHead.get(i).isZero()) {
+					isZero = false;
+					break;
+				}
+			}
+			if (isZero) {
+				if (derivativeAST[2] == null) {
+					return derivativeAST[1].arg1();
+				}
+			}
 
-				IAST derivativeHead = derivativeAST[0];
-				boolean isZero = true;
-				for (int i = 1; i < derivativeHead.size(); i++) {
-					if (!derivativeHead.get(i).isZero()) {
-						isZero = false;
-						break;
-					}
-				}
-				if (isZero) {
-					if (derivativeAST[2] == null) {
-						return derivativeAST[1].arg1();
-					}
-				}
-
-				if (derivativeHead.size() == 2) {
-					IExpr head = derivativeHead.arg1();
-					if (head.isInteger()) {
-						IAST functions = derivativeAST[1];
-						if (functions.size() == 2) {
-							try {
-								int n = ((IInteger) head).toInt();
-								if (n >= 1) {
-									IAST fullDerivative = derivativeAST[2];
-									return evaluateDArg1IfPossible(n, derivativeHead, functions, fullDerivative,
-											engine);
-								}
-							} catch (ArithmeticException ae) {
-								// toInt() may throw ArithmeticException
-							}
-							return F.NIL;
-						}
-					}
-				}
-				if (ast.head().isAST(F.Derivative, 2)) {
-					// Derivative(n)
-					IAST head = (IAST) ast.head();
-					if (head.arg1().isInteger()) {
+			if (derivativeHead.size() == 2) {
+				IExpr head = derivativeHead.arg1();
+				if (head.isInteger()) {
+					// IAST functions = derivativeAST[1];
+					if (functions.size() == 2) {
 						try {
-							int n = ((IInteger) head.arg1()).toInt();
-							IExpr arg1 = ast.arg1();
-							if (n >= 0) {
-								if (arg1.isSymbol()) {
-									ISymbol symbol = (ISymbol) arg1;
-									// return derivative(n, symbol, engine);
-								} else {
-									if (arg1.isFunction()) {
-										return derivative(n, (IAST) arg1, engine);
-									}
-								}
+							int n = ((IInteger) head).toInt();
+							if (n >= 1) {
+								IAST fullDerivative = derivativeAST[2];
+								return evaluateDArg1IfPossible(n, derivativeHead, functions, fullDerivative, engine);
 							}
 						} catch (ArithmeticException ae) {
-
+							// toInt() may throw ArithmeticException
 						}
+						return F.NIL;
 					}
-					return F.NIL;
 				}
-				if (ast.head().isAST(F.Derivative, 3)) {
-					// Derivative(n, m)
-					IAST head = (IAST) ast.head();
-					if (head.arg1().isInteger() && head.arg2().isInteger()) {
-						try {
-							int n = ((IInteger) head.arg1()).toInt();
-							int m = ((IInteger) head.arg2()).toInt();
-							IExpr arg1 = ast.arg1();
-							if (n >= 0 && m >= 0) {
-								if (arg1.isSymbol()) {
-									ISymbol symbol = (ISymbol) arg1;
-									return derivative(n, m, symbol, engine);
+			}
+			if (ast.head().isAST(F.Derivative, 2)) {
+				// Derivative(n)
+				IAST head = (IAST) ast.head();
+				if (head.arg1().isInteger()) {
+					try {
+						int n = ((IInteger) head.arg1()).toInt();
+						IExpr arg1 = ast.arg1();
+						if (n >= 0) {
+							if (arg1.isSymbol()) {
+								ISymbol symbol = (ISymbol) arg1;
+								// return derivative(n, symbol, engine);
+							} else {
+								if (arg1.isFunction()) {
+									return derivative(n, (IAST) arg1, engine);
 								}
 							}
-						} catch (ArithmeticException ae) {
-
 						}
+					} catch (ArithmeticException ae) {
+
 					}
-					return F.NIL;
 				}
+				return F.NIL;
+			}
+			if (ast.head().isAST(F.Derivative, 3)) {
+				// Derivative(n, m)
+				IAST head = (IAST) ast.head();
+				if (head.arg1().isInteger() && head.arg2().isInteger()) {
+					try {
+						int n = ((IInteger) head.arg1()).toInt();
+						int m = ((IInteger) head.arg2()).toInt();
+						IExpr arg1 = ast.arg1();
+						if (n >= 0 && m >= 0) {
+							if (arg1.isSymbol()) {
+								ISymbol symbol = (ISymbol) arg1;
+								return derivative(n, m, symbol, engine);
+							}
+						}
+					} catch (ArithmeticException ae) {
+
+					}
+				}
+				return F.NIL;
 			}
 		}
 		return F.NIL;
@@ -166,15 +166,13 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 			EvalEngine engine) {
 		IExpr newFunction;
 		IExpr symbol = F.Slot1;
-		if (fullDerivative == null) {
-			newFunction = engine.evaluate(F.unaryAST1(headDerivative.arg1(), symbol));
-		} else {
+		if (fullDerivative != null) {
 			if (fullDerivative.size() != 2) {
 				return F.NIL;
 			}
 			symbol = fullDerivative.arg1();
-			newFunction = engine.evaluate(F.unaryAST1(headDerivative.arg1(), symbol));
 		}
+		newFunction = engine.evaluate(F.unaryAST1(headDerivative.arg1(), symbol));
 
 		IAST dExpr;
 		if (n == 1) {
