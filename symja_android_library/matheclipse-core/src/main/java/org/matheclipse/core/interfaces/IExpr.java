@@ -1821,7 +1821,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            the variable of the polynomial
 	 * @return
 	 */
-	default boolean isPolynomial(@Nullable ISymbol variable) {
+	default boolean isPolynomial(@Nullable IExpr variable) {
 		return isNumber();
 	}
 

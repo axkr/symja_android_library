@@ -1944,7 +1944,7 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isPolynomial(ISymbol variable) {
+	public final boolean isPolynomial(IExpr variable) {
 		return isPolynomial(F.List(variable));
 	}
 

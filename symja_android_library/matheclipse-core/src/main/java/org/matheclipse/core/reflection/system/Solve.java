@@ -928,7 +928,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	 *            the variable which should be eliminated in the term
 	 * @return
 	 */
-	private IExpr eliminateOneVariable(IAST termsEqualZeroList, IExpr variable) {
+	private static IExpr eliminateOneVariable(IAST termsEqualZeroList, IExpr variable) {
 		if (!termsEqualZeroList.arg1().isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(), true)) {
 			return F.NIL;
 		}

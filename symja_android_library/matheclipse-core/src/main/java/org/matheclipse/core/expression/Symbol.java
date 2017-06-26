@@ -615,7 +615,7 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isPolynomial(ISymbol variable) {
+	public boolean isPolynomial(IExpr variable) {
 		if (variable == null) {
 			return true;
 		}

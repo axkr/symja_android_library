@@ -54,6 +54,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 					IExpr C_1 = F.$(F.CSymbol, F.C1); // constant C(1)
 					IExpr equation = listOfEquations.arg1();
 
+					// return odeSolve(engine, F.Equal(equation, F.C0), xVar, uFunction1Arg, C_1);
 					IExpr temp = solveSingleODE(equation, uFunction1Arg, xVar, listOfVariables, C_1, engine);
 					if (temp.isPresent()) {
 						if (boundaryCondition != null) {
@@ -214,12 +215,12 @@ public class DSolve extends AbstractFunctionEvaluator {
 		}
 	}
 
-	private static IExpr odeSolve(EvalEngine engine, IAST w, IExpr x, IExpr y) {
+	private static IExpr odeSolve(EvalEngine engine, IAST w, IExpr x, IExpr y, IExpr C_1) {
 		IExpr[] p = odeTransform(engine, w, x, y);
 		if (p != null) {
 			IExpr m = p[0];
 			IExpr n = p[1];
-			IExpr f = odeSeparable(m, n, x, y);
+			IExpr f = odeSeparable(engine, m, n, x, y, C_1);
 			if (f.isPresent()) {
 				return f;
 			}
@@ -237,8 +238,38 @@ public class DSolve extends AbstractFunctionEvaluator {
 		return new IExpr[] { m, n };
 	}
 
-	private static IExpr odeSeparable(IExpr m, IExpr n, IExpr x, IExpr y) {
+	private static IExpr odeSeparable(EvalEngine engine, IExpr m, IExpr n, IExpr x, IExpr y, IExpr C_1) {
+		if (n.isOne()) {
+			IExpr fxExpr = F.NIL;
+			IExpr gyExpr = F.NIL;
+			if (m.isFree(y)) {
+				gyExpr = F.C1;
+				fxExpr = m;
+			} else if (m.isTimes()) {
+				IAST timesAST = (IAST) m;
+				IAST fx = F.Times();
+				IAST gy = F.Times();
+				for (int i = 1; i < timesAST.size(); i++) {
+					if (timesAST.get(i).isFree(y)) {
+						fx.append(timesAST.get(i));
+					} else {
+						gy.append(timesAST.get(i));
+					}
+				}
+				fxExpr = engine.evaluate(fx);
+				gyExpr = engine.evaluate(gy);
+			}
+			if (fxExpr.isPresent() && gyExpr.isPresent()) {
+				gyExpr = engine.evaluate(F.Integrate(F.Divide(F.C1, gyExpr), y));
+				fxExpr = engine.evaluate(F.Plus(F.Integrate(F.Times(F.CN1, fxExpr), x), C_1));
+				IExpr yEquation = engine.evaluate(F.Subtract(gyExpr, fxExpr));
+				IAST[] result = Eliminate.eliminateVariable(F.Equal(yEquation, F.C0), y);
+				if (result != null) {
+					return result[1];
+				}
+			}
 
+		}
 		return F.NIL;
 	}
 
@@ -303,9 +334,10 @@ public class DSolve extends AbstractFunctionEvaluator {
 		EvalEngine.set(engine);
 
 		IExpr fy = F.y;
+		IExpr C_1 = F.$(F.CSymbol, F.C1); // constant C(1)
 
 		// IExpr result = exactSolve(engine, F.Power(fy, F.CN2), F.Times(F.C2, F.x), fy, F.x);
-		IExpr result = odeSolve(engine, F.Equal(F.Times(F.C2, F.Power(fy, F.C2), F.x), F.C0), fy, F.x);
+		IExpr result = odeSolve(engine, F.Equal(F.Times(F.C2, F.Power(fy, F.C2), F.x), F.C0), fy, F.x, C_1);
 
 		result = engine.evaluate(F.Solve(result, F.y));
 		System.out.println(result.toString());

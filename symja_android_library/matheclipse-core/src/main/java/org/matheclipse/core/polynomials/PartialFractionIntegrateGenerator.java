@@ -34,9 +34,9 @@ import edu.jas.poly.Monomial;
 public class PartialFractionIntegrateGenerator implements IPartialFractionGenerator {
 	IAST result;
 	JASConvert<BigRational> jas;
-	ISymbol x;
+	IExpr x;
 
-	public PartialFractionIntegrateGenerator(ISymbol x) {
+	public PartialFractionIntegrateGenerator(IExpr x) {
 		this.result = null;
 		this.x = x;
 	}

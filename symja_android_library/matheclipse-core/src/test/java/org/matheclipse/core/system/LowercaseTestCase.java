@@ -1229,7 +1229,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Depth(f(a, b)[c])", "2");
 	}
 
-	public void testDerivative() { 
+	public void testDerivative() {
 		check("h(x_):=Sin(x)+x^2", "");
 		check("h'(x)", "2*x+Cos(x)");
 		check("h'(0.5)", "1.8775825618903728");
@@ -1300,14 +1300,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Derivative(2)[Tan]", "2*Sec(#1)^2*Tan(#1)&");
 		check("Derivative(4)[Log][x]", "-6/x^4");
 		check("Derivative(2)[ArcSin][x]", "x/(1-x^2)^(3/2)");
-		
+
 		check("Derivative(1)[2]", "0&");
 		check("Derivative(1)[2][x,y,z]", "0");
 		check("Derivative(10)[2][x,y,z]", "0");
 		check("Derivative(10,9,8)[2][a,b,c]", "0");
 		check("Derivative(1)[Cos[3]][z]", "Cos(3)'[z]");
-		check("y = x^2 + 1; x = 1","1");
-		check("y'","0&");
+		check("y = x^2 + 1; x = 1", "1");
+		check("y'", "0&");
 	}
 
 	public void testDesignMatrix() {
@@ -1542,8 +1542,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDSolve() {
+		// check("DSolve(y'(x) == 2*x*y(x)^2, y(x), x)", "y(x)->1/(-x^2-C(1))");
+		// check("DSolve(y'(x)==y(x),y(x), x)", "y(x)->E^(x+C(1))");
 		check("DSolve(D(f(x, y), x) == D(f(x, y), y), f, {x, y})",
 				"DSolve(Derivative(1,0)[f][x,y]==Derivative(0,1)[f][x,y],f,{x,y})");
+
 		check("DSolve({y'(x)==y(x),y(0)==1},y(x), x)", "{{y(x)->E^x}}");
 		check("DSolve({y'(x)==y(x)+2,y(0)==1},y(x), x)", "{{y(x)->-2+3*E^x}}");
 
@@ -2628,6 +2631,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegrate() {
+		check("Integrate(1/y(x)^2,y(x))", "-1/y(x)");
 		check("Integrate(f(x,y),x)", "Integrate(f(x,y),x)");
 		check("Integrate(f(x,x),x)", "Integrate(f(x,x),x)");
 	}

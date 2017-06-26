@@ -191,7 +191,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		check("Integrate(x^a, x)", "x^(1+a)/(1+a)");
 		check("Integrate(f(x), x)", "Integrate(f(x),x)");
 		check("Integrate(x^(-1),{x, 0, 1})", "Integrate(1/x,{x,0,1})");
-		check("Integrate(f(x)+g(x), {x, a, b})", "Integrate(f(x),{x,a,b})+Integrate(g(x),{x,a,b})");
+		check("Integrate(f(x)+g(x), {x, a, b})", "Integrate(f(x)+g(x),{x,a,b})");
 		check("Integrate(Sin(x), {x, 3, 4})", "-Cos(4)+Cos(3)");
 		check("Integrate(Sin(x), {x, a, b})", "-Cos(b)+Cos(a)");
 		check("Integrate(Sin(x*y),y)", "-Cos(x*y)/x");

@@ -297,6 +297,9 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	 */
 	public static IExpr extractVariable(IExpr exprWithVariable, IExpr exprWithoutVariable, Predicate<IExpr> predicate,
 			IExpr variable) {
+		if (exprWithVariable.equals(variable)) {
+			return exprWithoutVariable;
+		}
 		if (exprWithVariable.isAST()) {
 			IAST ast = (IAST) exprWithVariable;
 			if (ast.isAST1()) {
@@ -357,9 +360,10 @@ public class Eliminate extends AbstractFunctionEvaluator {
 					}
 				}
 			}
-		} else if (exprWithVariable.equals(variable)) {
-			return exprWithoutVariable;
 		}
+//		else if (exprWithVariable.equals(variable)) {
+//			return exprWithoutVariable;
+//		}
 		return F.NIL;
 	}
 
@@ -447,6 +451,16 @@ public class Eliminate extends AbstractFunctionEvaluator {
 			analyzerList.add(exprAnalyzer);
 		}
 		Collections.sort(analyzerList);
+
+		return eliminateOneVariable(analyzerList, variable);
+	}
+	
+	public static IAST[] eliminateVariable(IAST equalAST, IExpr variable) {
+		VariableCounterVisitor exprAnalyzer;
+		ArrayList<VariableCounterVisitor> analyzerList = new ArrayList<VariableCounterVisitor>();
+			exprAnalyzer = new VariableCounterVisitor(equalAST, variable);
+			equalAST.accept(exprAnalyzer);
+			analyzerList.add(exprAnalyzer);
 
 		return eliminateOneVariable(analyzerList, variable);
 	}
