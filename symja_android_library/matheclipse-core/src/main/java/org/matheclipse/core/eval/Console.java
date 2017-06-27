@@ -405,7 +405,7 @@ public class Console {
 		} catch (final StackOverflowError e) {
 			Validate.printException(buf, e);
 			return "";
-		}
+		} 
 		return buf.toString();
 	}
 

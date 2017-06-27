@@ -36,12 +36,16 @@ public class ExprEvaluator {
 		@Override
 		public IExpr call() throws Exception {
 			EvalEngine.set(fEngine);
-			fEngine.reset();
-			IExpr temp= fEngine.evaluate(fExpr);
-			if (!fEngine.isOutListDisabled()) {
-				fEngine.addOut(temp);
+			try {
+				fEngine.reset();
+				IExpr temp = fEngine.evaluate(fExpr);
+				if (!fEngine.isOutListDisabled()) {
+					fEngine.addOut(temp);
+				}
+				return temp;
+			} finally {
+				EvalEngine.remove();
 			}
-			return temp;
 		}
 
 	}
@@ -49,6 +53,7 @@ public class ExprEvaluator {
 	static {
 		F.initSymbols(null, null, true);
 	}
+	
 	private Map<ISymbol, IExpr> fVariableMap;
 	private final List<ISymbol> fVariables;
 
@@ -239,13 +244,17 @@ public class ExprEvaluator {
 	 * @throws SyntaxError
 	 */
 	public IExpr evaluate(final String inputExpression) {
-		if (inputExpression != null) {
-			EvalEngine.set(engine);
-			engine.reset();
-			fExpr = engine.parse(inputExpression);
-			if (fExpr != null) {
-				return evaluate(fExpr);
+		try {
+			if (inputExpression != null) {
+				EvalEngine.set(engine);
+				engine.reset();
+				fExpr = engine.parse(inputExpression);
+				if (fExpr != null) {
+					return evaluate(fExpr);
+				}
 			}
+		} finally {
+			EvalEngine.remove();
 		}
 		return null;
 	}

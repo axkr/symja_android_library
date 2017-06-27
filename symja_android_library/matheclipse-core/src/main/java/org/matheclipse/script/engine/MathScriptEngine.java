@@ -160,6 +160,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
 					list.get(i).popLocalVariable();
 				}
 			}
+			EvalEngine.remove();
 		}
 
 	}
