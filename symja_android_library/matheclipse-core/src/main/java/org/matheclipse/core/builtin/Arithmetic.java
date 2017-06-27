@@ -1846,7 +1846,7 @@ public final class Arithmetic {
 		 * 
 		 * @param timesAST
 		 * @param arg2
-		 * @return
+		 * @return <code>F.NIL</code> if the transformation isn't possible.
 		 */
 		private static IExpr powerTimesInverse(IAST timesAST, final IExpr arg2) {
 			IAST resultAST = F.NIL;
