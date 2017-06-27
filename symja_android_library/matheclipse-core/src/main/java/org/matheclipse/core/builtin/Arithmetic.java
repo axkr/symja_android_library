@@ -1763,6 +1763,13 @@ public final class Arithmetic {
 								}
 							}
 						}
+						if (arg2.isMinusOne() && arg1.isTimes()) {
+							IAST timesAST = (IAST) arg1;
+							IExpr temp = powerTimesInverse(timesAST, arg2);
+							if (temp.isPresent()) {
+								return temp;
+							}
+						}
 					}
 				}
 			}
@@ -1831,6 +1838,35 @@ public final class Arithmetic {
 				}
 			}
 			return F.NIL;
+		}
+
+		/**
+		 * Transform <code>Power(Times(a,b,c,Power(d,-1.0)....), -1.0)</code> to
+		 * <code>Times(a^(-1.0),b^(-1.0),c^(-1.0),d,....)</code>
+		 * 
+		 * @param timesAST
+		 * @param arg2
+		 * @return
+		 */
+		private static IExpr powerTimesInverse(IAST timesAST, final IExpr arg2) {
+			IAST resultAST = F.NIL;
+			for (int i = 1; i < timesAST.size(); i++) {
+				IExpr temp = timesAST.get(i);
+				if (temp.isPower() && temp.getAt(2).isMinusOne()) {
+					if (!resultAST.isPresent()) {
+						resultAST = timesAST.clone();
+						for (int j = 1; j < i; j++) {
+							resultAST.set(j, F.Power(timesAST.get(j), arg2));
+						}
+					}
+					resultAST.set(i, temp.getAt(1));
+				} else {
+					if (resultAST.isPresent()) {
+						resultAST.set(i, F.Power(temp, arg2));
+					}
+				}
+			}
+			return resultAST;
 		}
 
 		/**
@@ -2744,7 +2780,7 @@ public final class Arithmetic {
 			// addTrigRules(F.Cos, F.Tan, F.Sin);
 			// addTrigRules(F.Csc, F.Tan, F.Sec);
 			// addTrigRules(F.Cos, F.Csc, F.Cot);
-			
+
 			// Sin(x)*Cot(x) -> Cos(x)
 			ORDERLESS_MATCHER.defineHashRule(F.Sin(x_), F.Cot(x_), F.Cos(x));
 			ORDERLESS_MATCHER.defineHashRule(F.Sin(x_), F.Sec(x_), F.Tan(x));
@@ -2759,14 +2795,14 @@ public final class Arithmetic {
 			// Cos(x)^m * Sec(x) -> Cos(x)^(m-1)
 			ORDERLESS_MATCHER.definePatternHashRule(Power(Cos(x_), F.m_Integer), F.Sec(x_),
 					Power(Cos(x), Subtract(F.m, F.C1)));
-			
+
 			// Sin(x)^m * Csc(x)^n -> Sin(x)^(m-n)
 			ORDERLESS_MATCHER.definePatternHashRule(Power(Sin(x_), F.m_Integer), Power(F.Csc(x_), F.n_Integer),
 					Power(Sin(x), Subtract(F.m, F.n)), F.And(Positive(F.m), F.Greater(F.m, F.n)));
 			// Sin(x)^m * Csc(x) -> Sin(x)^(m-1)
 			ORDERLESS_MATCHER.definePatternHashRule(Power(Sin(x_), F.m_Integer), F.Csc(x_),
 					Power(Sin(x), Subtract(F.m, F.C1)));
-			
+
 			super.setUp(newSymbol);
 		}
 

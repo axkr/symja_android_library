@@ -4617,6 +4617,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		check("(y*1/z)^(-1.0)", "z/y");
 		check("0^(3+I*4)", "0");
 		check("4 ^ (1/2)", "2");
 		// TODO 4^(1/3) should give 2^(2/3)
@@ -5667,14 +5668,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
-
+		// Issue #166
+		check("Solve(2*x/y==x/z,x)", "{{x->0}}");
+		// Issue #165
+		check("Solve((3.0*y)/x==(1.5*y)/z,x)", "{{x->2.0*z}}");
 		// Issue #162
 		check("Solve((5.0*x)/y==(0.8*y)/x,x)", "{{x->-0.4*y},{x->0.4*y}}");
 		// Issue #161
 		check("Solve((0.6000000000000001*2.5)/y==z/x,x)", "{{x->0.6666666666666665*y*z}}");
 		// Issue #160
 		check("Solve((2.10937501y)/(0.6923076944378698z)==(0.6923076944378698*z)/x,x)",
-				"{{x->(0.22721893523232692*z)/(y*1/z)}}");
+				"{{x->(0.22721893523232692*z^2.0)/y}}");
 		// Issue #159
 		check("Solve(x==2*Sqrt(y)*Sqrt(z),y)", "{{y->x^2/(4*z)}}");
 		check("Solve(x==2.0*Sqrt(y)*Sqrt(z),y)", "{{y->0.25*(x/Sqrt(z))^2.0}}");
