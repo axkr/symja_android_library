@@ -269,7 +269,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	 *            the variable which should be eliminated.
 	 * @return <code>F.NIL</code> if we can't find an equation for the given <code>variable</code>.
 	 */
-	public static IExpr eliminateAnalyze(IAST equalAST, IExpr variable) {
+	private static IExpr eliminateAnalyze(IAST equalAST, IExpr variable) {
 		IExpr arg1 = equalAST.arg1();
 		IExpr arg2 = equalAST.arg2();
 		Predicate<IExpr> predicate = Predicates.in(variable);
@@ -285,6 +285,24 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	}
 
 	/**
+	 * Extract the variable from the given <code>expr</code> assuming <code>expr == 0</code>.
+	 * 
+	 * @param expr
+	 *            an expression.
+	 * @param variable
+	 *            the variable which should be eliminated.
+	 * @return <code>F.NIL</code> if we can't find an equation for the given <code>variable</code>.
+	 */
+	public static IExpr extractVariable(IExpr expr, IExpr variable) {
+		Predicate<IExpr> predicate = Predicates.in(variable);
+		IExpr result = F.NIL;
+		if (!expr.isFree(predicate, true)) {
+			result = extractVariable(expr, F.C0, predicate, variable);
+		}
+		return result;
+	}
+
+	/**
 	 * Extract a value for the given <code>variabe</code>.
 	 * 
 	 * @param exprWithVariable
@@ -295,7 +313,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	 *            the variable which should be eliminated.
 	 * @return <code>F.NIL</code> if we can't find an equation for the given <code>variable</code>.
 	 */
-	public static IExpr extractVariable(IExpr exprWithVariable, IExpr exprWithoutVariable, Predicate<IExpr> predicate,
+	private static IExpr extractVariable(IExpr exprWithVariable, IExpr exprWithoutVariable, Predicate<IExpr> predicate,
 			IExpr variable) {
 		if (exprWithVariable.equals(variable)) {
 			return exprWithoutVariable;
@@ -361,9 +379,9 @@ public class Eliminate extends AbstractFunctionEvaluator {
 				}
 			}
 		}
-//		else if (exprWithVariable.equals(variable)) {
-//			return exprWithoutVariable;
-//		}
+		// else if (exprWithVariable.equals(variable)) {
+		// return exprWithoutVariable;
+		// }
 		return F.NIL;
 	}
 
@@ -384,6 +402,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	private static IAST[] eliminateOneVariable(ArrayList<VariableCounterVisitor> analyzerList, IExpr variable) {
 		IAST eliminatedResultEquations = F.ListAlloc(analyzerList.size());
 		for (int i = 0; i < analyzerList.size(); i++) {
+			IExpr temp = analyzerList.get(i).getExpr();
 			IExpr variableExpr = eliminateAnalyze(analyzerList.get(i).getExpr(), variable);
 			if (variableExpr.isPresent()) {
 				variableExpr = F.eval(variableExpr);
@@ -392,7 +411,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 				analyzerList.remove(i);
 				for (int j = 0; j < analyzerList.size(); j++) {
 					expr = analyzerList.get(j).getExpr();
-					IExpr temp = expr.replaceAll(rule);
+					temp = expr.replaceAll(rule);
 					if (temp.isPresent()) {
 						temp = F.expandAll(temp, true, true);
 						eliminatedResultEquations.append(temp);
@@ -454,14 +473,5 @@ public class Eliminate extends AbstractFunctionEvaluator {
 
 		return eliminateOneVariable(analyzerList, variable);
 	}
-	
-	public static IAST[] eliminateVariable(IAST equalAST, IExpr variable) {
-		VariableCounterVisitor exprAnalyzer;
-		ArrayList<VariableCounterVisitor> analyzerList = new ArrayList<VariableCounterVisitor>();
-			exprAnalyzer = new VariableCounterVisitor(equalAST, variable);
-			equalAST.accept(exprAnalyzer);
-			analyzerList.add(exprAnalyzer);
 
-		return eliminateOneVariable(analyzerList, variable);
-	}
 }

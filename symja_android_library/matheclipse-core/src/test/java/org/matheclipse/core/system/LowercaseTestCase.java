@@ -1541,9 +1541,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Drop({{11,12,13},{21,22,23},a,{31,32,33}},1,2)");
 	}
 
-	public void testDSolve() {
+//	public void testDSolve() {
+//		check("DSolve({(2*y(x)-x^2)+(2*x-y(x)^2)*y'(x)==0},y(x), x)", "{{y(x)->1/(x^2-C(1))}}");
+//		check("DSolve({y'(x)==2*x*y(x)^2},y(x), x)", "{{y(x)->1/(-x^2-C(1))}}");
+//		check("DSolve({(2*y(x)-x^2)+(2*x-y(x)^2)*y'(x)==0},y(x), x)", "{{y(x)->1/(x^2-C(1))}}");
+//		check("DSolve({(6*x*y(x)+y(x)^2)*y'(x)==-2*x-3*y[x]^2},y(x), x)", "{{y(x)->E^x}}");
+//	}
+	
+	public void testDSolve () {
 		// check("DSolve(y'(x) == 2*x*y(x)^2, y(x), x)", "y(x)->1/(-x^2-C(1))");
 		// check("DSolve(y'(x)==y(x),y(x), x)", "y(x)->E^(x+C(1))");
+		check("DSolve({y'(x)==2*x*y(x)^2},y(x), x)", "{{y(x)->1/(-x^2-C(1))}}");
+		
 		check("DSolve(D(f(x, y), x) == D(f(x, y), y), f, {x, y})",
 				"DSolve(Derivative(1,0)[f][x,y]==Derivative(0,1)[f][x,y],f,{x,y})");
 
@@ -1567,7 +1576,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("DSolve(y'(x) == -y(x), y(x), x)", "{{y(x)->C(1)/E^x}}");
 		check("DSolve(y'(x) == y(x)+a*Cos(x), y(x), x)", "{{y(x)->E^x*C(1)-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
 		// not implemented yet
-		check("DSolve(y'(x) == -3*y(x)^2, y(x), x)", "DSolve(y'(x)==-3*y(x)^2,y(x),x)");
+		check("DSolve(y'(x) == -3*y(x)^2, y(x), x)", "{{y(x)->1/(3*x-C(1))}}");
+		check("DSolve({y'(x) == -3*y(x)^2, y(0)==2}, y(x), x)", "{{y(x)->1/(1/2+3*x)}}");
 	}
 
 	public void testEasterSunday() {
