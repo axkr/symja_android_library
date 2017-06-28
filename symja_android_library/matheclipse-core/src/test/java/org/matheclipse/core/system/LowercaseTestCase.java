@@ -5668,6 +5668,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+
 		// Issue #166
 		check("Solve(2*x/y==x/z,x)", "{{x->0}}");
 		// Issue #165
@@ -5771,6 +5772,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Solve({a x + y == 7, b x - y == 1}, {x, y})", "{{x->8/(a+b),y->(a-7*b)/(-a-b)}}");
 
 		check("Solve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)", "Solve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)");
+
+		// Issue #168
+		check("y=297.0004444386505", "297.0004444386505");
+		check("z=22.13904248493947", "22.13904248493947");
+		check("Solve(x/y==z/x,x)", "{{x->-81.08825721072805},{x->81.08825721072805}}");
 	}
 
 	public void testSolveIssue130() {
