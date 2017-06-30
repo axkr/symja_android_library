@@ -78,9 +78,11 @@ public class ContextPath {
 		symbol = new Symbol(name);
 		context.put(name, symbol);
 		// engine.putUserVariable(name, symbol);
-		// if (name.charAt(0) == '$') {
-		// SYMBOL_OBSERVER.createUserSymbol(symbol);
-		// }
+		if (Config.SERVER_MODE) {
+			if (name.charAt(0) == '$') {
+				F.SYMBOL_OBSERVER.createUserSymbol(symbol);
+			}
+		}
 
 		return symbol;
 	}
@@ -96,7 +98,7 @@ public class ContextPath {
 		}
 		Context context;
 		ISymbol symbol;
-		for (int i = path.size() - 1; i >= 0; i--) { 
+		for (int i = path.size() - 1; i >= 0; i--) {
 			context = path.get(i);
 			if (context.equals(Context.SYSTEM)) {
 				// don't remove predefined symbols
@@ -106,7 +108,7 @@ public class ContextPath {
 			if (symbol != null) {
 				return symbol;
 			}
-		} 
+		}
 		return null;
 	}
 

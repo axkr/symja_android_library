@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.StringWriter;
@@ -19,11 +18,10 @@ import java.util.concurrent.TimeUnit;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.form.output.ASCIIPrettyPrinter3;
 import org.matheclipse.core.form.output.OutputFormFactory;
-import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.reflection.system.Names;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
@@ -111,21 +109,7 @@ public class Console {
 						console.fSeconds = 60;
 						continue;
 					} else if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
-						String name = trimmedInput.substring(1);
-						IAST list = Names.getNamesByPrefix(name);
-						for (int i = 1; i < list.size(); i++) {
-							System.out.print(list.get(i).toString());
-							if (i != list.size() - 1) {
-								System.out.print(", ");
-							}
-						}
-						System.out.println();
-						if (list.size() == 2) {
-							printDocumentation(list.get(1).toString());
-						} else if (list.size() == 1
-								&& (name.equals("D") || name.equals("E") || name.equals("I") || name.equals("N"))) {
-							printDocumentation(name);
-						}
+						Documentation.findDocumentation(System.out,trimmedInput);
 						continue;
 					}
 					String postfix = Scanner.balanceCode(inputExpression);
@@ -162,46 +146,6 @@ public class Console {
 		System.out.println();
 		String[] outputExpression = prettyPrinter3Lines(inputExpression);
 		ASCIIPrettyPrinter3.prettyPrinter(System.out, outputExpression, "Out[" + COUNTER + "]: ");
-	}
-
-	/**
-	 * Load the documentation fro ressources folder if available ad print to output.
-	 * 
-	 * @param symbolName
-	 */
-	private static void printDocumentation(String symbolName) {
-		// read markdown file
-		String fileName = symbolName + ".md";
-
-		// Get file from resources folder
-		ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-
-		try {
-			InputStream is = classloader.getResourceAsStream(fileName);
-			if (is != null) {
-				final BufferedReader f = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-				String line;
-				boolean emptyLine = false;
-				while ((line = f.readLine()) != null) {
-					if (line.startsWith("```")) {
-						continue;
-					}
-					if (line.trim().length() == 0) {
-						if (emptyLine) {
-							continue;
-						}
-						emptyLine = true;
-					} else {
-						emptyLine = false;
-					}
-					System.out.println(line);
-				}
-				f.close();
-				is.close();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	/**
