@@ -93,6 +93,9 @@ public abstract class AbstractTestCase extends TestCase {
 			synchronized (fScriptManager) {
 				fScriptEngine = new MathScriptEngine();// fScriptManager.getEngineByExtension("m");
 				fScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
+				EvalEngine engine =   EvalEngine.get();
+				engine.setRecursionLimit(1024);
+				engine.setIterationLimit(500);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

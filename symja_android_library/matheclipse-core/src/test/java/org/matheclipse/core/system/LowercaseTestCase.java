@@ -2143,14 +2143,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// `Flat` is taken into account in pattern matching
 		check("u(a)", "{a}");
 		// stack overflow?
-		check("u(a, b)", "Iteration limit of 1000 exceeded.");
-		check("u(a, b, c)", "Iteration limit of 1000 exceeded.");
+		check("u(a, b)", "Iteration limit of 500 exceeded.");
+		check("u(a, b, c)", "Iteration limit of 500 exceeded.");
 
 		check("v(x_) := x   ", "");
 		check("v()", "v()");
 		check("v(a)", "a");
-		check("v(a, b)", "Iteration limit of 1000 exceeded.");
-		check("v(a, b, c)", "Iteration limit of 1000 exceeded.");
+		check("v(a, b)", "Iteration limit of 500 exceeded.");
+		check("v(a, b, c)", "Iteration limit of 500 exceeded.");
 	}
 
 	public void testFlatten() {
