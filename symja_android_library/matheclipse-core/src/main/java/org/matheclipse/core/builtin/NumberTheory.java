@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
@@ -46,6 +48,7 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.numbertheory.Primality;
+import org.matheclipse.parser.client.math.MathException;
 
 import com.google.common.math.BigIntegerMath;
 import com.google.common.math.LongMath;
@@ -630,11 +633,21 @@ public final class NumberTheory {
 
 			IExpr arg1 = ast.arg1();
 			IExpr arg2 = ast.arg2();
+			if (arg1.isOne() && arg2.isOne()) {
+				return F.C1;
+			}
 			if (arg2.isInteger() && arg2.isPositive()) {
 
 				IInteger n = (IInteger) arg2;
 				IAST list = n.divisors();
 				if (list.isList()) {
+					if (arg1.isOne()) {
+						IInteger sum = F.C0;
+						for (int i = 1; i < list.size(); i++) {
+							sum = sum.add(((IInteger) list.get(i)));
+						}
+						return sum;
+					}
 					if (arg1.isInteger()) {
 						// special formula if k is integer
 						IInteger k = (IInteger) arg1;
@@ -1262,6 +1275,201 @@ public final class NumberTheory {
 
 	}
 
+	private static class PartitionsP extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			IExpr arg1 = ast.arg1();
+			if (arg1.isZero()) {
+				return F.C1;
+			}
+			if (arg1.isInteger() && arg1.isPositive()) {
+				if (arg1.isOne()) {
+					return F.C1;
+				}
+				if (arg1.equals(F.C2)) {
+					return F.C2;
+				}
+				if (arg1.equals(F.C3)) {
+					return F.C3;
+				}
+				try {
+					IExpr result = F.REMEMBER_INTEGER_CACHE.get(ast, new Callable<IExpr>() {
+						@Override
+						public IExpr call() throws Exception {
+							return sumPartitionsP(engine, (IInteger) arg1);
+						}
+
+					});
+					if (result != null) {
+						return result;
+					}
+				} catch (ArithmeticException e) {
+					// e.printStackTrace();
+				} catch (MathException e) {
+					// e.printStackTrace();
+				} catch (ExecutionException e) {
+					// e.printStackTrace();
+				}
+				return F.NIL;
+			}
+			if (arg1.isInfinity()) {
+				return F.CInfinity;
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * TODO because of recursion you can get stack-overflows
+		 * 
+		 * @param engine
+		 * @param n
+		 * @return
+		 */
+		private static IExpr sumPartitionsP(EvalEngine engine, IInteger n) {
+			// Sum(PartitionsQ(n - 2*k) * PartitionsP(k), {k, 0, Floor(n/2)})
+			int floorND2 = n.div(F.C2).toInt();
+			IInteger sum = F.C0;
+			for (int k = 0; k <= floorND2; k++) {
+				IExpr temp = termPartitionsP(engine, n, k);
+				if (!temp.isInteger()) {
+					return F.NIL;
+				}
+				sum = sum.add((IInteger) temp);
+			}
+			return sum;
+		}
+
+		private static IExpr termPartitionsP(EvalEngine engine, IInteger n, int k) {
+			// PartitionsQ(n - 2*k) * PartitionsP(k)
+			IInteger k2 = F.ZZ(k);
+			return engine.evaluate(Times(F.PartitionsQ(Plus(Times(F.CN2, k2), n)), F.PartitionsP(k2)));
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+	}
+
+	private static class PartitionsQ extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			IExpr arg1 = ast.arg1();
+			if (arg1.isZero()) {
+				return F.C1;
+			}
+			if (arg1.isInteger() && arg1.isPositive()) {
+				if (arg1.isOne()) {
+					return F.C1;
+				}
+				if (arg1.equals(F.C2)) {
+					return F.C1;
+				}
+				if (arg1.equals(F.C3)) {
+					return F.C2;
+				}
+
+				try {
+					IInteger n = (IInteger) arg1;
+					if (n.isLessThan(F.ZZ(201))) {
+						IExpr result = F.REMEMBER_INTEGER_CACHE.get(ast, new Callable<IExpr>() {
+							@Override
+							public IExpr call() throws Exception {
+								return partitionsQ(engine, (IInteger) arg1);
+							}
+
+						});
+						if (result != null) {
+							return result;
+						}
+					}
+				} catch (ArithmeticException e) {
+					// e.printStackTrace();
+				} catch (MathException e) {
+					// e.printStackTrace();
+				} catch (ExecutionException e) {
+					// e.printStackTrace();
+				}
+				return F.NIL;
+			}
+			if (arg1.isInfinity()) {
+				return F.CInfinity;
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * TODO because of recursion you can get stack-overflows
+		 * 
+		 * @param engine
+		 * @param n
+		 * @return
+		 */
+		private static IExpr partitionsQ(EvalEngine engine, IInteger n) {
+			// (1/n)*Sum(DivisorSigma(1, k)*PartitionsQ(n - k), {k, 1, n}) - (2/n)*Sum(DivisorSigma(1, k)*PartitionsQ(n
+			// - 2*k), {k, 1, Floor(n/2)})
+			IFraction nInverse = F.QQ(F.C1, n);
+			IExpr sum1 = sumPartitionsQ1(engine, n);
+			if (!sum1.isPresent()) {
+				return F.NIL;
+			}
+			IExpr sum2 = sumPartitionsQ2(engine, n);
+			if (!sum2.isPresent()) {
+				return F.NIL;
+			}
+			return engine.evaluate(Plus(Times(nInverse, sum1), Times(F.CN2, nInverse, sum2)));
+		}
+
+		private static IExpr sumPartitionsQ1(EvalEngine engine, IInteger n) {
+			int nInt = n.toInt();
+			IInteger sum = F.C0;
+			for (int k = 1; k <= nInt; k++) {
+				IExpr temp = termPartitionsQ1(engine, n, k);
+				if (!temp.isInteger()) {
+					return F.NIL;
+				}
+				sum = sum.add((IInteger) temp);
+			}
+			return sum;
+		}
+
+		private static IExpr termPartitionsQ1(EvalEngine engine, IInteger n, int k) {
+			// DivisorSigma(1, k)*PartitionsQ(n - k)
+			IInteger k2 = F.ZZ(k);
+			return engine.evaluate(Times(F.DivisorSigma(C1, k2), F.PartitionsQ(Plus(Negate(k2), n))));
+		}
+
+		private static IExpr sumPartitionsQ2(EvalEngine engine, IInteger n) {
+			int floorND2 = n.div(F.C2).toInt();
+			IInteger sum = F.C0;
+			for (int k = 1; k <= floorND2; k++) {
+				IExpr temp = termPartitionsQ2(engine, n, k);
+				if (!temp.isInteger()) {
+					return F.NIL;
+				}
+				sum = sum.add((IInteger) temp);
+			}
+			return sum;
+		}
+
+		private static IExpr termPartitionsQ2(EvalEngine engine, IInteger n, int k) {
+			// DivisorSigma(1, k)*PartitionsQ(n - 2*k)
+			IInteger k2 = F.ZZ(k);
+			return engine.evaluate(Times(F.DivisorSigma(C1, k2), F.PartitionsQ(Plus(Times(F.CN2, k2), n))));
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+	}
+
 	/**
 	 * <code>Prime(i)</code> gives the i-th prime number for <code>i</code> less equal 103000000.
 	 * 
@@ -1758,6 +1966,8 @@ public final class NumberTheory {
 		F.Multinomial.setEvaluator(new Multinomial());
 		F.MultiplicativeOrder.setEvaluator(new MultiplicativeOrder());
 		F.NextPrime.setEvaluator(new NextPrime());
+		F.PartitionsP.setEvaluator(new PartitionsP());
+		F.PartitionsQ.setEvaluator(new PartitionsQ());
 		F.Prime.setEvaluator(new Prime());
 		F.PrimePi.setEvaluator(new PrimePi());
 		F.PrimeOmega.setEvaluator(new PrimeOmega());

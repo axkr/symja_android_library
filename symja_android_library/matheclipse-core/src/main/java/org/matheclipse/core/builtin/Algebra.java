@@ -353,13 +353,16 @@ public class Algebra {
 			gcd.append(denominatorInt);
 			boolean evaled = true;
 			for (int i = 1; i < plus.size(); i++) {
-				if (plus.get(i).isInteger()) {
-					gcd.append(plus.get(i));
-				} else if (plus.get(i).isTimes() && plus.get(i).getAt(1).isInteger()) {
-					gcd.append(plus.get(i).getAt(1));
+				IExpr temp = plus.get(i);
+				if (temp.isInteger()) {
+					gcd.append(temp);
 				} else {
-					evaled = false;
-					break;
+					if (temp.isTimes() && temp.getAt(1).isInteger()) {
+						gcd.append(temp.getAt(1));
+					} else {
+						evaled = false;
+						break;
+					}
 				}
 			}
 			if (evaled) {

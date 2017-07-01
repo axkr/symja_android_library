@@ -396,9 +396,6 @@ public final class Combinatoric {
 			}
 		}
 
-		public IntegerPartitions() {
-		}
-
 		/**
 		 * {@inheritDoc}
 		 */

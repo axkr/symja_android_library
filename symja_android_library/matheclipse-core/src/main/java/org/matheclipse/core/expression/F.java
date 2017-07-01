@@ -57,6 +57,9 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
 import edu.jas.kern.ComputerThreads;
 
 /**
@@ -65,6 +68,18 @@ import edu.jas.kern.ComputerThreads;
  * 
  */
 public class F {
+
+	/**
+	 * <p>
+	 * In computing, memoization or memoisation is an optimization technique used primarily to speed up computer
+	 * programs by storing the results of expensive function calls and returning the cached result when the same inputs
+	 * occur again. This cache is especially useed for recursive integer functions to remember the results of the
+	 * recursive call.
+	 * </p>
+	 * 
+	 * See: <a href="https://en.wikipedia.org/wiki/Memoization">Wikipedia - Memoization</a>
+	 */
+	public static Cache<IAST, IExpr> REMEMBER_INTEGER_CACHE = CacheBuilder.newBuilder().maximumSize(5000).build();
 
 	/**
 	 * Set to <code>true</code> at the start of initSymbols() method
@@ -987,6 +1002,10 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "padright" : "PadRight");
 	public final static IBuiltInSymbol Partition = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "partition" : "Partition");
+	public final static IBuiltInSymbol PartitionsP = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "partitionsp" : "PartitionsP");
+	public final static IBuiltInSymbol PartitionsQ = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "partitionsq" : "PartitionsQ");
 	public final static IBuiltInSymbol PDF = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "pdf" : "PDF");
 	public final static IBuiltInSymbol Permutations = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "permutations" : "Permutations");
@@ -3138,6 +3157,10 @@ public class F {
 		return binaryAST2(Divisible, a0, a1);
 	}
 
+	public static IAST DivisorSigma(final IExpr a0, final IExpr a1) {
+		return binaryAST2(DivisorSigma, a0, a1);
+	}
+
 	public static IAST Do(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Do, a0, a1);
 	}
@@ -4598,6 +4621,14 @@ public class F {
 			part.append(a[i]);
 		}
 		return part;
+	}
+
+	public static IAST PartitionsP(final IExpr a0) {
+		return unaryAST1(PartitionsP, a0);
+	}
+
+	public static IAST PartitionsQ(final IExpr a0) {
+		return unaryAST1(PartitionsQ, a0);
 	}
 
 	public static IAST PatternTest(final IExpr a0, final IExpr a1) {

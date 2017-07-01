@@ -1541,18 +1541,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Drop({{11,12,13},{21,22,23},a,{31,32,33}},1,2)");
 	}
 
-//	public void testDSolve() {
-//		check("DSolve({(2*y(x)-x^2)+(2*x-y(x)^2)*y'(x)==0},y(x), x)", "{{y(x)->1/(x^2-C(1))}}");
-//		check("DSolve({y'(x)==2*x*y(x)^2},y(x), x)", "{{y(x)->1/(-x^2-C(1))}}");
-//		check("DSolve({(2*y(x)-x^2)+(2*x-y(x)^2)*y'(x)==0},y(x), x)", "{{y(x)->1/(x^2-C(1))}}");
-//		check("DSolve({(6*x*y(x)+y(x)^2)*y'(x)==-2*x-3*y[x]^2},y(x), x)", "{{y(x)->E^x}}");
-//	}
-	
-	public void testDSolve () {
+	// public void testDSolve() {
+	// check("DSolve({(2*y(x)-x^2)+(2*x-y(x)^2)*y'(x)==0},y(x), x)", "{{y(x)->1/(x^2-C(1))}}");
+	// check("DSolve({y'(x)==2*x*y(x)^2},y(x), x)", "{{y(x)->1/(-x^2-C(1))}}");
+	// check("DSolve({(2*y(x)-x^2)+(2*x-y(x)^2)*y'(x)==0},y(x), x)", "{{y(x)->1/(x^2-C(1))}}");
+	// check("DSolve({(6*x*y(x)+y(x)^2)*y'(x)==-2*x-3*y[x]^2},y(x), x)", "{{y(x)->E^x}}");
+	// }
+
+	public void testDSolve() {
 		// check("DSolve(y'(x) == 2*x*y(x)^2, y(x), x)", "y(x)->1/(-x^2-C(1))");
 		// check("DSolve(y'(x)==y(x),y(x), x)", "y(x)->E^(x+C(1))");
 		check("DSolve({y'(x)==2*x*y(x)^2},y(x), x)", "{{y(x)->1/(-x^2-C(1))}}");
-		
+
 		check("DSolve(D(f(x, y), x) == D(f(x, y), y), f, {x, y})",
 				"DSolve(Derivative(1,0)[f][x,y]==Derivative(0,1)[f][x,y],f,{x,y})");
 
@@ -4340,6 +4340,34 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Partition({a, b, c, d, e, f}, 2)", "{{a,b},{c,d},{e,f}}");
 		check("Partition({a, b, c, d, e, f}, 3, 1)", "{{a,b,c},{b,c,d},{c,d,e},{d,e,f}}");
 		check("Partition({a, b, c, d, e}, 2)", "{{a,b},{c,d}}");
+	}
+
+	public void testPartitionsP() {
+		check("PartitionsP(5)", "7");
+		check("PartitionsP(6)", "11");
+		check("IntegerPartitions(6)",
+				"{{6},{5,1},{4,2},{4,1,1},{3,3},{3,2,1},{3,1,1,1},{2,2,2},{2,2,1,1},{2,1,1,1,1},{\n" + "1,1,1,1,1,1}}");
+		check("PartitionsP(9)", "30");
+		check("PartitionsP(50)", "204226");
+		check("PartitionsP(100)", "190569292");
+		check("PartitionsP(200)", "3972999029388");
+		// upper limit to avoid stack overflow
+		check("PartitionsP(201)", "PartitionsP(201)");
+	}
+
+	public void testPartitionsQ() {
+		check("PartitionsQ(3)", "2");
+		check("PartitionsQ(5)", "3");
+		check("PartitionsQ(6)", "4");
+		check("PartitionsQ(10)", "10");
+		check("PartitionsQ(15)", "27");
+		check("PartitionsQ(16)", "32");
+		check("PartitionsQ(17)", "38");
+		check("PartitionsQ(18)", "46");
+		check("PartitionsQ(20)", "64");
+		check("PartitionsQ(50)", "3658");
+		// upper limit to avid stack overflow
+		check("PartitionsQ(201)", "PartitionsQ(201)");
 	}
 
 	public void testPatternAndRules() {
