@@ -11,6 +11,8 @@
 * [Mod](functions/Mod.md)
 * [NextPrime](functions/NextPrime.md)
 * [OddQ](functions/OddQ.md)
+* [PartitionsP](functions/PartitionsP.md)
+* [PartitionsQ](functions/PartitionsQ.md)
 * [PowerMod](functions/PowerMod.md)
 * [Prime](functions/Prime.md)
 * [PrimePi](functions/PrimePi.md)
