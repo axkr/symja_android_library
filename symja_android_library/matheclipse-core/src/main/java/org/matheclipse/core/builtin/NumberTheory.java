@@ -549,35 +549,43 @@ public final class NumberTheory {
 					return F.NIL;
 				}
 
-				IAST result = F.NIL;
-				int j = 1;
-				for (int i = 1; i < size; i++) {
-					INumber temp = ast.get(i).evalNumber();
-					if (temp != null) {
-						if (temp.isZero()) {
-							if (!result.isPresent()) {
-								result = ast.removeAtClone(i);
-								continue;
-							} else {
-								result.remove(j);
-							}
-							continue;
-						}
-						if (temp.isNumber()) {
-							return F.C0;
-						}
-					}
-					j++;
-				}
+				IExpr result = removeEval(ast);
 				if (result.isPresent()) {
-					if (result.size() > 1) {
-						return result;
+					if (result.isAST()) {
+						if (result.isAST() && ((IAST) result).size() > 1) {
+							return result;
+						}
+						return F.C1;
 					}
-					return F.C1;
+					return result;
 				}
 
 			}
 			return F.NIL;
+		}
+
+		private static IExpr removeEval(final IAST ast) {
+			IAST result = F.NIL;
+			int size = ast.size();
+			int j = 1;
+			for (int i = 1; i < size; i++) {
+				INumber temp = ast.get(i).evalNumber();
+				if (temp != null) {
+					if (temp.isZero()) {
+						if (!result.isPresent()) {
+							result = ast.removeAtClone(i);
+						} else {
+							result.remove(j);
+						}
+						continue;
+					}
+					if (temp.isNumber()) {
+						return F.C0;
+					}
+				}
+				j++;
+			}
+			return result;
 		}
 
 		@Override
