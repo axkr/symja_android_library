@@ -503,9 +503,6 @@ public final class NumberTheory {
 	 */
 	private static class DiracDelta extends AbstractEvaluator {
 
-		public DiracDelta() {
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			int size = ast.size();
@@ -528,6 +525,64 @@ public final class NumberTheory {
 		@Override
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.ORDERLESS | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		}
+	}
+
+	private static class DiscreteDelta extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			int size = ast.size();
+			if (size > 1) {
+				IExpr arg1 = ast.arg1();
+
+				if (size == 2) {
+					INumber temp = arg1.evalNumber();
+					if (temp != null) {
+						if (temp.isZero()) {
+							return F.C1;
+						}
+						if (temp.isNumber()) {
+							return F.C0;
+						}
+					}
+					return F.NIL;
+				}
+
+				IAST result = F.NIL;
+				int j = 1;
+				for (int i = 1; i < size; i++) {
+					INumber temp = ast.get(i).evalNumber();
+					if (temp != null) {
+						if (temp.isZero()) {
+							if (!result.isPresent()) {
+								result = ast.removeAtClone(i);
+								continue;
+							} else {
+								result.remove(j);
+							}
+							continue;
+						}
+						if (temp.isNumber()) {
+							return F.C0;
+						}
+					}
+					j++;
+				}
+				if (result.isPresent()) {
+					if (result.size() > 1) {
+						return result;
+					}
+					return F.C1;
+				}
+
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.ORDERLESS | ISymbol.NUMERICFUNCTION);
 		}
 	}
 
@@ -1014,9 +1069,6 @@ public final class NumberTheory {
 	}
 
 	private static class KroneckerDelta extends AbstractEvaluator {
-
-		public KroneckerDelta() {
-		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1949,6 +2001,7 @@ public final class NumberTheory {
 		F.CoprimeQ.setEvaluator(new CoprimeQ());
 		F.CubeRoot.setEvaluator(new CubeRoot());
 		F.DiracDelta.setEvaluator(new DiracDelta());
+		F.DiscreteDelta.setEvaluator(new DiscreteDelta());
 		F.Divisible.setEvaluator(new Divisible());
 		F.Divisors.setEvaluator(new Divisors());
 		F.DivisorSigma.setEvaluator(new DivisorSigma());

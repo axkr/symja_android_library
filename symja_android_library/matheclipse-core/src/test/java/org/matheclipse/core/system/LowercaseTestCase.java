@@ -1347,6 +1347,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Dimensions(Array(a, {2, 1, 4, 3}))", "{2,1,4,3}");
 	}
 
+	public void testDiscreteDelta() {
+		check("DiscreteDelta(0)", "1");
+		check("DiscreteDelta(42)", "0");
+		check("DiscreteDelta(-1)", "0");
+		check("DiscreteDelta(-42)", "0");
+		check("DiscreteDelta({1.6, 1.6000000000000000000000000})", "DiscreteDelta({1.6,1.6})");
+		check("DiscreteDelta(1.6, 1.6000000000000000000000000)", "0");
+		check("DiscreteDelta(0, 0, 0.0)", "1");
+		check("DiscreteDelta(1, 2, 3)", "0");
+	}
+	
 	public void testDiracDelta() {
 		check("DiracDelta(0)", "DiracDelta(0)");
 		check("DiracDelta(42)", "0");

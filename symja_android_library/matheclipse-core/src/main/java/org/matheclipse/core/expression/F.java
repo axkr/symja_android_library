@@ -714,6 +714,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "dimensions" : "Dimensions");
 	public final static IBuiltInSymbol DiracDelta = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "diracdelta" : "DiracDelta");
+	public final static IBuiltInSymbol DiscreteDelta = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "discretedelta" : "DiscreteDelta");
 	public final static IBuiltInSymbol Discriminant = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "discriminant" : "Discriminant");
 	public final static IBuiltInSymbol Distribute = initFinalSymbol(
