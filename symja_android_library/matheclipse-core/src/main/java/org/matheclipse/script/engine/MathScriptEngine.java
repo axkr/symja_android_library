@@ -4,7 +4,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.script.AbstractScriptEngine;
@@ -30,6 +34,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
 
 	private EvalUtilities fUtility;
 	private EvalEngine fEngine;
+	private String fDecimalFormat;
 
 	// static {
 	// run the static groovy code for the MathEclipse domain specific language
@@ -77,6 +82,11 @@ public class MathScriptEngine extends AbstractScriptEngine {
 				symbol = F.userSymbol(currEntry.getKey(), fEngine);
 				symbol.pushLocalVariable(Object2Expr.convert(currEntry.getValue()));
 				list.add(symbol);
+			}
+
+			final Object decimalFormat = get("DECIMAL_FORMAT");
+			if (decimalFormat instanceof String) {
+				fDecimalFormat = (String) decimalFormat;
 			}
 
 			final Object relaxedSyntaxBoolean = get("RELAXED_SYNTAX");
@@ -170,7 +180,13 @@ public class MathScriptEngine extends AbstractScriptEngine {
 			return "";
 		}
 		final StringWriter buf = new StringWriter();
-		OutputFormFactory.get(relaxedSyntax).convert(buf, result);
+		DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
+		DecimalFormat decimalFormat = new DecimalFormat("0.0####", usSymbols);
+		if (fDecimalFormat != null) {
+			OutputFormFactory.get(relaxedSyntax, false, decimalFormat).convert(buf, result);
+		} else {
+			OutputFormFactory.get(relaxedSyntax).convert(buf, result);
+		}
 		// print the result in the console
 		return buf.toString();
 	}

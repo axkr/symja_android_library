@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
+import org.matheclipse.core.interfaces.ISignedNumber;
 
 /**
  * IFraction implementation which reimplements methods of the Apache
@@ -28,8 +29,7 @@ public class FractionSym extends AbstractFractionSym {
 	private static final long serialVersionUID = 1225728601457694359L;
 
 	/**
-	 * Check if numerator and denominator are equal and the numerator isn't
-	 * zero.
+	 * Check if numerator and denominator are equal and the numerator isn't zero.
 	 * 
 	 * @param num
 	 *            Numerator
@@ -46,8 +46,8 @@ public class FractionSym extends AbstractFractionSym {
 	int fDenominator;
 
 	/**
-	 * Construct a rational from two ints. The constructor is private and does
-	 * not normalize. Use the static constructor valueOf instead.
+	 * Construct a rational from two ints. The constructor is private and does not normalize. Use the static constructor
+	 * valueOf instead.
 	 * 
 	 * @param nom
 	 *            Numerator
@@ -141,8 +141,7 @@ public class FractionSym extends AbstractFractionSym {
 	}
 
 	/**
-	 * Return a new rational representing the smallest integral rational not
-	 * smaller than <code>this</code>.
+	 * Return a new rational representing the smallest integral rational not smaller than <code>this</code>.
 	 * 
 	 * @return Next bigger integer of <code>this</code>.
 	 */
@@ -194,18 +193,11 @@ public class FractionSym extends AbstractFractionSym {
 		if (expr instanceof AbstractIntegerSym) {
 			return compareTo(new BigFractionSym(((AbstractIntegerSym) expr).toBigNumerator(), BigInteger.ONE));
 		}
-		if (expr instanceof Num) {
-			double d = doubleValue() - ((Num) expr).getRealPart();
-			if (d < 0.0) {
-				return -1;
-			}
-			if (d > 0.0) {
-				return 1;
-			}
-			return super.compareTo(expr);
-		}
 		if (expr instanceof BigFractionSym) {
 			return -expr.compareTo(this);
+		}
+		if (expr.isSignedNumber()) {
+			return Double.compare(doubleValue(), ((ISignedNumber) expr).doubleValue());
 		}
 		return super.compareTo(expr);
 	}
@@ -229,7 +221,7 @@ public class FractionSym extends AbstractFractionSym {
 	public IExpr inc() {
 		return add(F.C1);
 	}
-	
+
 	/**
 	 * Return a new rational representing <code>this / other</code>.
 	 * 
@@ -311,8 +303,7 @@ public class FractionSym extends AbstractFractionSym {
 	}
 
 	/**
-	 * Return a new rational representing the biggest integral rational not
-	 * bigger than <code>this</code>.
+	 * Return a new rational representing the biggest integral rational not bigger than <code>this</code>.
 	 * 
 	 * @return Next smaller integer of <code>this</code>.
 	 */
@@ -333,8 +324,7 @@ public class FractionSym extends AbstractFractionSym {
 	}
 
 	/**
-	 * Returns the fractional part of the rational, i.e. the number
-	 * this.sub(this.floor()).
+	 * Returns the fractional part of the rational, i.e. the number this.sub(this.floor()).
 	 * 
 	 * @return Next smaller integer of <code>this</code>.
 	 */
@@ -380,9 +370,8 @@ public class FractionSym extends AbstractFractionSym {
 	}
 
 	/**
-	 * Compute the gcd of two rationals (this and other). The gcd is the
-	 * rational number, such that dividing this and other with the gcd will
-	 * yield two co-prime integers.
+	 * Compute the gcd of two rationals (this and other). The gcd is the rational number, such that dividing this and
+	 * other with the gcd will yield two co-prime integers.
 	 * 
 	 * @param other
 	 *            the second rational argument.
@@ -482,8 +471,8 @@ public class FractionSym extends AbstractFractionSym {
 	}
 
 	/**
-	 * Check whether this rational corresponds to a (finite) rational value.
-	 * This function can be used to test for infinites and NaNs.
+	 * Check whether this rational corresponds to a (finite) rational value. This function can be used to test for
+	 * infinites and NaNs.
 	 * 
 	 * @return true if and only if this rational is not infinite or NaN.
 	 */

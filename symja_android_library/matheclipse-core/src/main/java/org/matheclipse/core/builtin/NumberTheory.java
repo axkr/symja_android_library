@@ -33,6 +33,7 @@ import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.AbstractFractionSym;
@@ -565,6 +566,12 @@ public final class NumberTheory {
 		}
 
 		private static IExpr removeEval(final IAST ast) {
+			// return Lambda.removeStop(ast, (x) -> {
+			// IExpr temp = x.evalNumber();
+			// return temp == null ? false : x.isZero();
+			// }, x -> {
+			// return x.isNumber() ? F.C0 : null;
+			// });
 			IAST result = F.NIL;
 			int size = ast.size();
 			int j = 1;

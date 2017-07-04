@@ -2011,6 +2011,19 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Check if the object at index 0 (i.e. the head of the list) is the same object as <code>head</code> and if the
+	 * size of the list is greater or equal <code>length</code>.
+	 * 
+	 * @param head
+	 *            object to compare with element at location <code>0</code>
+	 * @param length
+	 * @return
+	 */
+	default boolean isSameHeadSizeGE(IExpr head, int length) {
+		return false;
+	}
+	
+	/**
 	 * Test if this expression is a sequence (i.e. an AST with head Sequence)
 	 * 
 	 * @return

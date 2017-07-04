@@ -150,6 +150,9 @@ public class Num implements INum {
 		if (expr instanceof Num) {
 			return Double.compare(fDouble, ((Num) expr).fDouble);
 		}
+		if (expr.isSignedNumber()) {
+			return Double.compare(fDouble, ((ISignedNumber) expr).doubleValue());
+		}
 		return INum.super.compareTo(expr);
 	}
 

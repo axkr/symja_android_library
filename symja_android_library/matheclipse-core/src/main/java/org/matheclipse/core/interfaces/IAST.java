@@ -149,7 +149,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * This expression is already evaluated in the Derivative[] function
 	 */
 	public final int IS_DERIVATIVE_EVALED = 0x8000;
-	
+
 	/**
 	 * 
 	 * @param collection
@@ -920,6 +920,20 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	@Override
 	public boolean isPower();
 
+	/**
+	 * Check if the object at index 0 (i.e. the head of the list) is the same object as <code>head</code> and if the
+	 * size of the list is greater or equal <code>length</code>.
+	 * 
+	 * @param head
+	 *            object to compare with element at location <code>0</code>
+	 * @param length
+	 * @return
+	 */
+	default boolean isSameHeadSizeGE(IExpr head, int length) {
+		int size = size();
+		return head().equals(head) && length <= size;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 */

@@ -19,6 +19,7 @@ import junit.framework.TestCase;
  */
 public abstract class AbstractTestCase extends TestCase {
 	protected ScriptEngine fScriptEngine;
+	protected ScriptEngine fNumericScriptEngine;
 	protected static ScriptEngineManager fScriptManager = new ScriptEngineManager();
 
 	public AbstractTestCase(String name) {
@@ -52,6 +53,14 @@ public abstract class AbstractTestCase extends TestCase {
 			e.printStackTrace();
 			assertEquals("", "1");
 		}
+	}
+	
+	public void checNumeric(String evalString, String expectedResult) {
+		check(fNumericScriptEngine, evalString, expectedResult, -1);
+	}
+
+	public void checNumeric(String evalString, String expectedResult, int resultLength) {
+		check(fNumericScriptEngine, evalString, expectedResult, resultLength);
 	}
 
 	public void check(IAST ast, String strResult) {
@@ -93,8 +102,13 @@ public abstract class AbstractTestCase extends TestCase {
 			synchronized (fScriptManager) {
 				fScriptEngine = new MathScriptEngine();// fScriptManager.getEngineByExtension("m");
 				fScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
+				fScriptEngine.put("DECIMAL_FORMAT", "0.0####");
+				
+				fNumericScriptEngine = new MathScriptEngine();// fScriptManager.getEngineByExtension("m");
+				fNumericScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
+				
 				EvalEngine engine =   EvalEngine.get();
-				engine.setRecursionLimit(1024);
+				engine.setRecursionLimit(256);
 				engine.setIterationLimit(500);
 			}
 		} catch (Exception e) {

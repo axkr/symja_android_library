@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.text.CollationKey;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -37,7 +39,7 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 public class Symbol implements ISymbol, Serializable {
-
+	private final static Collator US_COLLATOR = Collator.getInstance(Locale.US);
 	/**
 	 * The attribute values of the symbol represented by single bits.
 	 */
@@ -147,12 +149,14 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public int compareTo(final IExpr expr) {
 		if (expr instanceof Symbol) {
+			// O-2
 			if (this == expr) {
 				// Symbols are unique objects
 				// Makes no sense to compare the symbol names, if they are equal
 				return 0;
 			}
-			return fSymbolName.compareTo(((Symbol) expr).fSymbolName);
+			// sort lexicographically
+			return US_COLLATOR.compare( fSymbolName,((Symbol) expr).fSymbolName);
 		}
 		return ISymbol.super.compareTo(expr);
 	}
@@ -805,7 +809,7 @@ public class Symbol implements ISymbol, Serializable {
 							pme.setRHS(calculatedResult);
 							result[1] = calculatedResult;
 							return result;
-						} 
+						}
 					}
 				}
 			}

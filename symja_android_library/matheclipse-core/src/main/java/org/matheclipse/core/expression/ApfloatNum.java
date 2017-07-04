@@ -450,6 +450,9 @@ public class ApfloatNum implements INum {
 		if (expr instanceof ApfloatNum) {
 			return fApfloat.compareTo(((ApfloatNum) expr).fApfloat);
 		}
+		if (expr.isSignedNumber()) {
+			return Double.compare(fApfloat.doubleValue(), ((ISignedNumber) expr).doubleValue());
+		}
 		return INum.super.compareTo(expr);
 	}
 

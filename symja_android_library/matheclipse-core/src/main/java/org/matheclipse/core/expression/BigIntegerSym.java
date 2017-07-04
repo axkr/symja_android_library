@@ -166,14 +166,8 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		if (expr instanceof IFraction) {
 			return -((IFraction) expr).compareTo(AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE));
 		}
-		if (expr instanceof Num) {
-			double d = fBigIntValue.doubleValue() - ((Num) expr).getRealPart();
-			if (d < 0.0) {
-				return -1;
-			}
-			if (d > 0.0) {
-				return 1;
-			}
+		if (expr.isSignedNumber()) {
+			return Double.compare(fBigIntValue.doubleValue(), ((ISignedNumber) expr).doubleValue());
 		}
 		return super.compareTo(expr);
 	}
@@ -311,7 +305,6 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	public final boolean equalsInt(int value) {
 		return fBigIntValue.intValue() == value && fBigIntValue.bitLength() <= 31;
 	}
-
 
 	/**
 	 * Get the highest exponent of <code>base</code> that divides <code>this</code>

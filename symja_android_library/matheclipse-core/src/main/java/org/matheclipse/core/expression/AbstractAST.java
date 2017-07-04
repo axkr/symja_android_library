@@ -134,9 +134,57 @@ public abstract class AbstractAST implements IAST {
 
 	private static final long serialVersionUID = -8682706994448890660L;
 
-	private static int compareToAST(final IAST lhaAST, final IAST rhsAST) {
+	private static int compareToASTDecreasing(final IAST lhsAST, final IAST rhsAST) {
+		int i = lhsAST.size();
+		int j = rhsAST.size();
+		int k;
+		if (i > j) {
+			k = j;
+		} else {
+			k = i;
+		}
+		k--;
+		while (k > 0) {
+			int cp = lhsAST.get(--i).compareTo(rhsAST.get(--j));
+			if (cp != 0) {
+				return cp;
+			}
+			k--;
+		}
+		if (i > j) {
+			return 1;
+		}
+		if (i < j) {
+			return -1;
+		}
+		return 0;
+	}
 
-		if (lhaAST.isPlusTimesPower()) {
+	private static int compareToASTDecreasingArg1(final IAST lhsAST, final IExpr arg1, IInteger value) {
+		int i = lhsAST.size();
+		int cp = lhsAST.get(i - 1).compareTo(arg1);
+		if (cp != 0) {
+			return cp;
+		}
+		if (i >= 2) {
+			i--;
+			cp = lhsAST.get(i - 1).compareTo(value);
+			if (cp != 0) {
+				return cp;
+			}
+		}
+		if (i > 1) {
+			return 1;
+		}
+		if (i < 1) {
+			return -1;
+		}
+		return 0;
+	}
+
+	private static int compareToASTIncreasing(final IAST lhsAST, final IAST rhsAST) {
+
+		if (lhsAST.isPlusTimesPower()) {
 			if (!rhsAST.isPlusTimesPower()) {
 				return -1;
 			}
@@ -147,118 +195,27 @@ public abstract class AbstractAST implements IAST {
 		}
 
 		// compare the headers
-		int cp = lhaAST.head().compareTo(rhsAST.head());
+		int cp = lhsAST.head().compareTo(rhsAST.head());
 		if (cp != 0) {
 			return cp;
 		}
 
-		final int commonArgSize = (lhaAST.size() > rhsAST.size()) ? rhsAST.size() : lhaAST.size();
+		final int commonArgSize = (lhsAST.size() > rhsAST.size()) ? rhsAST.size() : lhsAST.size();
 		for (int i = 1; i < commonArgSize; i++) {
-			cp = lhaAST.get(i).compareTo(rhsAST.get(i));
+			cp = lhsAST.get(i).compareTo(rhsAST.get(i));
 			if (cp != 0) {
 				return cp;
 			}
 		}
 
-		return lhaAST.size() - rhsAST.size();
-	}
-
-	private static int compareToPowerExpr(final IAST lhsPowerAST, final IExpr rhsSymbolOrPattern) {
-		IExpr arg1 = lhsPowerAST.arg1();
-		if (arg1.isSymbolOrPattern()) {
-			// if (rhsSymbolOrPattern.isPlus() || rhsSymbolOrPattern.isTimes())
-			// {
-			// return (-1) * compareToTimes((IAST) rhsSymbolOrPattern,
-			// lhsPowerAST);
-			// }
-			final int cp = arg1.compareTo(rhsSymbolOrPattern);
-			if (cp != 0) {
-				return cp;
-			}
-			// "x^1" compared to "x^arg2()"
-			IExpr arg2 = lhsPowerAST.arg2();
-			if (arg2.isNumeric()) {
-				return lhsPowerAST.arg2().compareTo(F.CD1);
-			}
-			return arg2.compareTo(F.C1);
+		if (lhsAST.size() > rhsAST.size()) {
+			return 1;
 		}
-		return 1;
-	}
-
-	/**
-	 * Compares lhsAST (Times) AST with the specified rhsAST for order. Returns a negative integer, zero, or a positive
-	 * integer as lhsAST (Times) AST is canonical less than, equal to, or greater than the specified AST.
-	 */
-	private static int compareToTimes(final IAST lhsAST, final IAST rhsAST) {
-		if (rhsAST.isPower()) {
-			// compare from the last this (Times) element:
-			final IExpr lastTimes = lhsAST.get(lhsAST.size() - 1);
-			int cp;
-			if (lastTimes.isSymbolOrPattern()) {
-				cp = lastTimes.compareTo(rhsAST.arg1());
-				if (cp != 0) {
-					return cp;
-				}
-				IExpr arg2 = rhsAST.arg2();
-				if (arg2.isNumeric()) {
-					return F.CD1.compareTo(arg2);
-				}
-				return F.C1.compareTo(arg2);
-				// return F.C1.compareTo(rhsAST.arg2());
-			} else if (lastTimes.isPower()) {
-				// compare 2 Power ast's
-				cp = ((IAST) lastTimes).arg1().compareTo(rhsAST.arg1());
-				if (cp != 0) {
-					return cp;
-				}
-				cp = ((IAST) lastTimes).arg2().compareTo(rhsAST.arg2());
-				if (cp != 0) {
-					return cp;
-				}
-				return 1;
-			} else {
-				return compareToAST(lhsAST, rhsAST);
-			}
-		} else if (rhsAST.isTimes()) {
-			// compare from the last element:
-			int i0 = lhsAST.size();
-			int i1 = rhsAST.size();
-			int commonArgCounter = (i0 > i1) ? i1 : i0;
-			int cp;
-			while (--commonArgCounter > 0) {
-				cp = lhsAST.get(--i0).compareTo(rhsAST.get(--i1));
-				if (cp != 0) {
-					return cp;
-				}
-			}
-			return lhsAST.size() - rhsAST.size();
+		if (lhsAST.size() < rhsAST.size()) {
+			return -1;
 		}
-
-		return compareToAST(lhsAST, rhsAST);
-	}
-
-	/**
-	 * Compares lhsTimesAST (Times) AST with the specified rhsSymbolOrPattern for order. Returns a negative integer,
-	 * zero, or a positive integer as lhsTimesAST (Times) AST is canonical less than, equal to, or greater than the
-	 * specified AST.
-	 */
-	private static int compareToTimesExpr(final IAST lhsTimesAST, final IExpr rhsSymbolOrPattern) {
-		// compare from the last this (Times) element:
-		final IExpr lastTimes = lhsTimesAST.get(lhsTimesAST.size() - 1);
-		int cp;
-		if (!(lastTimes instanceof IAST)) {
-			cp = lastTimes.compareTo(rhsSymbolOrPattern);
-			if (cp != 0) {
-				return cp;
-			}
-		} else {
-			if (lastTimes.isPower()) {
-				return compareToPowerExpr((IAST) lastTimes, rhsSymbolOrPattern);
-			}
-		}
-
-		return 1;
-	}
+		return 0;
+	} 
 
 	private static void internalFormOrderless(IAST ast, StringBuilder text, final String sep,
 			boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
@@ -453,34 +410,70 @@ public abstract class AbstractAST implements IAST {
 			if (!rhsExpr.isAST(F.DirectedInfinity)) {
 				return -1;
 			}
-			return compareToAST(this, (IAST) rhsExpr);
+			return compareToASTIncreasing(this, (IAST) rhsExpr);
 		} else {
 			if (rhsExpr.isAST(F.DirectedInfinity)) {
 				return 1;
 			}
 		}
+		if (rhsExpr.isNumber()) {
+			// O-7
+			return 1;
+		}
 
 		if (rhsExpr.isAST()) {
+			IAST rhs = (IAST) rhsExpr;
+			if (isSameHeadSizeGE(F.Plus, 1) && rhs.isSameHeadSizeGE(F.Plus, 1)) {
+				// O-3
+				return compareToASTDecreasing(this, rhs);
+			}
+			if (isSameHeadSizeGE(F.Times, 1) && rhs.isSameHeadSizeGE(F.Times, 1)) {
+				// O-3
+				return compareToASTDecreasing(this, rhs);
+			}
+
 			// special comparison for Times?
-			if (isTimes()) {
-				return compareToTimes(this, (IAST) rhsExpr);
+			// if (isTimes()) {
+			// return compareToTimes(this, rhs);
+			// }
+			if (isPower() && rhs.isPower()) {
+				// O-4
+				int baseCompare = arg1().compareTo(rhs.arg1());
+				if (baseCompare == 0) {
+					return arg2().compareTo(rhs.arg2());
+				}
+				return baseCompare;
 			}
-			if (rhsExpr.isTimes()) {
-				return -1 * compareToTimes((IAST) rhsExpr, this);
+		}
+		if (isSameHeadSizeGE(F.Times, 1)) {
+			// O-8
+			return compareToASTDecreasingArg1(this, rhsExpr, F.C1);
+		}
+		if (isPower() && !rhsExpr.isSameHeadSizeGE(F.Times, 1) && !rhsExpr.isSameHeadSizeGE(F.Plus, 1)) {
+			// O-9
+			return compareTo(F.Power(rhsExpr, F.C1));
+		}
+		if (isSameHeadSizeGE(F.Plus, 1) && !rhsExpr.isSameHeadSizeGE(F.Plus, 1)
+				&& !rhsExpr.isSameHeadSizeGE(F.Times, 1)) {
+			// O-10
+			return compareToASTDecreasingArg1(this, rhsExpr, F.C0);
+		}
+		if (rhsExpr.isAST()) {
+			if (!rhsExpr.isPlusTimesPower()) {
+				return compareToASTIncreasing(this, (IAST) rhsExpr);
 			}
-			return compareToAST(this, (IAST) rhsExpr);
 		}
 
-		if (rhsExpr.isSymbolOrPattern() && (isPlus() || isTimes())) {
-			return compareToTimesExpr(this, rhsExpr);
-		}
-		if (isPower()) {
-			return compareToPowerExpr(this, rhsExpr);
-		}
-
-		int x = hierarchy();
-		int y = rhsExpr.hierarchy();
-		return (x < y) ? -1 : ((x == y) ? 0 : 1);
+		return IAST.super.compareTo(rhsExpr);
+		// if (rhsExpr.isSymbolOrPattern() && (isPlus() || isTimes())) {
+		// return compareToTimesExpr(this, rhsExpr);
+		// }
+		// if (isPower()) {
+		// return compareToPowerExpr(this, rhsExpr);
+		// }
+		// int x = hierarchy();
+		// int y = rhsExpr.hierarchy();
+		// return (x < y) ? -1 : ((x == y) ? 0 : 1);
 	}
 
 	/** {@inheritDoc} */
@@ -1505,7 +1498,7 @@ public abstract class AbstractAST implements IAST {
 	public final boolean isExcept() {
 		return isAST(F.Except, 2, 3);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isExpanded() {
@@ -2225,20 +2218,6 @@ public abstract class AbstractAST implements IAST {
 		return head().equals(head) && minLength <= size && maxLength >= size;
 	}
 
-	/**
-	 * Check if the object at index 0 (i.e. the head of the list) is the same object as <code>head</code> and if the
-	 * size of the list is greater or equal <code>length</code>.
-	 * 
-	 * @param head
-	 *            object to compare with element at location <code>0</code>
-	 * @param length
-	 * @return
-	 */
-	public boolean isSameHeadSizeGE(IExpr head, int length) {
-		int size = size();
-		return head().equals(head) && length <= size;
-	}
-
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isSequence() {
@@ -2389,6 +2368,12 @@ public abstract class AbstractAST implements IAST {
 			return dim;
 		}
 		return -1;
+	}
+
+	@Override
+	public boolean isZERO() {
+		return isZero();
+		// return PredicateQ.possibleZeroQ(this, EvalEngine.get());
 	}
 
 	// @Override

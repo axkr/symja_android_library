@@ -143,14 +143,8 @@ public class IntegerSym extends AbstractIntegerSym {
 		if (expr instanceof AbstractFractionSym) {
 			return -((AbstractFractionSym) expr).compareTo(AbstractFractionSym.valueOf(fIntValue));
 		}
-		if (expr instanceof Num) {
-			double d = (fIntValue) - ((Num) expr).getRealPart();
-			if (d < 0.0) {
-				return -1;
-			}
-			if (d > 0.0) {
-				return 1;
-			}
+		if (expr.isSignedNumber()) {
+			return Double.compare(fIntValue, ((ISignedNumber) expr).doubleValue());
 		}
 		return super.compareTo(expr);
 	}

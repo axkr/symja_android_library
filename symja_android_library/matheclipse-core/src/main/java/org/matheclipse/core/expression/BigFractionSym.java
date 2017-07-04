@@ -11,6 +11,7 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
+import org.matheclipse.core.interfaces.ISignedNumber;
 
 /**
  * IFraction implementation which uses methods of the Apache
@@ -146,15 +147,9 @@ public class BigFractionSym extends AbstractFractionSym {
 		if (expr instanceof IInteger) {
 			return fFraction.compareTo(new BigFraction(((IInteger) expr).toBigNumerator(), BigInteger.ONE));
 		}
-		if (expr instanceof Num) {
-			double d = fFraction.doubleValue() - ((Num) expr).getRealPart();
-			if (d < 0.0) {
-				return -1;
-			}
-			if (d > 0.0) {
-				return 1;
-			}
-		}
+		if (expr.isSignedNumber()) {
+			return Double.compare(fFraction.doubleValue(), ((ISignedNumber) expr).doubleValue());
+		} 
 		return super.compareTo(expr);
 	}
 
