@@ -1,7 +1,13 @@
 package org.matheclipse.core.examples;
 
+import java.io.StringWriter;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
+
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
@@ -26,6 +32,14 @@ public class SymbolicSO43739728 {
 			result = util.evaluate(F.N(formula));
 			// I*1.4142135623730951
 			System.out.println(result.toString());
+
+			// print result in decimal format
+			final StringWriter buf = new StringWriter();
+			DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
+			DecimalFormat decimalFormat = new DecimalFormat("0.0####", usSymbols);
+			OutputFormFactory.get(true, false, decimalFormat).convert(buf, result);
+			// I*1.41421
+			System.out.println(buf.toString());
 
 		} catch (SyntaxError e) {
 			// catch Symja parser errors here

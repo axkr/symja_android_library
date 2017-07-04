@@ -42,7 +42,7 @@ public class CompareToTestCase extends AbstractTestCase {
 		ast2 = eval(ast2);
 
 		int res = ast1.compareTo(ast2);
-		assertEquals(4, res);
+		assertEquals(1, res);
 	}
 
 	public void testCT002() {
@@ -163,9 +163,9 @@ public class CompareToTestCase extends AbstractTestCase {
 		IAST ast2 = F.Times(F.CN1, x1_c, x3_b, x3_c);
 
 		int res = ast1.compareTo(ast2);
-		assertEquals(2, res);
+		assertEquals(1, res);
 		res = ast2.compareTo(ast1);
-		assertEquals(-2, res);
+		assertEquals(-1, res);
 
 		check("-Infinity+b+a", "-Infinity+a+b");
 	}
