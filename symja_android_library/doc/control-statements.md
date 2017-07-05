@@ -90,6 +90,6 @@ Inside For, While, and Do loops, Break() exits the loop and Continue() continues
 * [NestList](functions/NestList.md)
 * [NestWhile](functions/NestWhile.md)
 * [Return](functions/Return.md)
-* [Switch](functions/Swith.md)
+* [Switch](functions/Switch.md)
 * [Which](functions/Which.md)
 * [While](functions/While.md)
