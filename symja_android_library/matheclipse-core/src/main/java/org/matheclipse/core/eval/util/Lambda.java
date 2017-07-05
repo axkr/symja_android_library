@@ -1,5 +1,7 @@
 package org.matheclipse.core.eval.util;
 
+import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -50,14 +52,22 @@ public class Lambda {
 		return expr.accept(new VisitorReplaceArgs(exprsList));
 	}
 
-	private static IExpr remove(IAST ast, Predicate<IExpr> predicate) {
+	/**
+	 * Remove the arguments from <code>ast</code> which give <code>true</code> for the <code>predicate</code>
+	 * 
+	 * @param ast
+	 * @param predicate
+	 * @return the cloned ast with removed elements or <code>F.NIL</code> if the <code>predicate</code> never gives
+	 *         <code>true</code>.
+	 */
+	public static IAST remove(IAST ast, Predicate<IExpr> predicate) {
 		IAST result = F.NIL;
 		int size = ast.size();
-		int j = 0;
-		for (int i = 0; i < size; i++) {
+		int j = 1;
+		for (int i = 1; i < size; i++) {
 			IExpr temp = ast.get(i);
 			if (predicate.test(temp)) {
-				if (result == null) {
+				if (!result.isPresent()) {
 					result = ast.removeAtClone(i);
 					continue;
 				}
@@ -71,7 +81,7 @@ public class Lambda {
 		return result;
 	}
 
-	public static IExpr removeStop(IAST ast, Predicate<IExpr> predicate, Function<IExpr, IExpr> function) {
+	private static IExpr removeStop(IAST ast, Predicate<IExpr> predicate, Function<IExpr, IExpr> function) {
 		IAST result = F.NIL;
 		int size = ast.size();
 		int j = 1;
@@ -82,7 +92,7 @@ public class Lambda {
 				return t;
 			}
 			if (predicate.test(temp)) {
-				if (result == null) {
+				if (!result.isPresent()) {
 					result = ast.removeAtClone(i);
 					continue;
 				}
@@ -96,16 +106,94 @@ public class Lambda {
 		return result;
 	}
 
+	/**
+	 * Append each argument of <code>ast</code> to <code>result</code> by applying the given <code>function</code> to
+	 * each argument.
+	 * 
+	 * @param ast
+	 * @param result
+	 * @param function
+	 * @return
+	 */
+	public static IAST forEachAppend(IAST ast, IAST result, Function<IExpr, IExpr> function) {
+		int size = ast.size();
+		for (int i = 1; i < size; i++) {
+			result.append(function.apply(ast.get(i)));
+		}
+		return result;
+	}
+
+	/**
+	 * Consume each argument of <code>ast</code> which fulfills the <code>predicate</code>.
+	 * 
+	 * @param ast
+	 * @param result
+	 * @param function
+	 * @return
+	 */
+	public static void forEach(IAST ast, Predicate<IExpr> predicate, Consumer<IExpr> consumer) {
+		int size = ast.size();
+		for (int i = 1; i < size; i++) {
+			IExpr t = ast.get(i);
+			if (predicate.test(t)) {
+				consumer.accept(t);
+			}
+		}
+	}
+
+	/**
+	 * Compare the arguments pairwise with the <code>stopPredicate</code>. If the predicate gives <code>true</code>
+	 * return the <code>stopExpr</code>. If the <code>stopPredicate</code> gives false for each pairwise comparison
+	 * return the <code>resultExpr</code>
+	 * 
+	 * @param ast
+	 * @param stopPredicate
+	 * @param stopExpr
+	 * @param resultExpr
+	 * @return
+	 */
+	public static IExpr compareStop(IAST ast, BiPredicate<IExpr, IExpr> stopPredicate, IExpr stopExpr,
+			IExpr resultExpr) {
+		int size = ast.size();
+		for (int i = 2; i < size; i++) {
+			if (stopPredicate.test(ast.get(i - 1), ast.get(i))) {
+				return stopExpr;
+			}
+		}
+		return resultExpr;
+	}
+
+	/**
+	 * Tests each argument with the <code>stopPredicate</code>. If the predicate gives <code>true</code> return
+	 * <code>true</code>. If the <code>stopPredicate</code> gives false for each test return <code>false</code>
+	 * 
+	 * @param ast
+	 * @param stopPredicate
+	 * @return
+	 */
+	public static boolean compareStop(IAST ast, Predicate<IExpr> stopPredicate) {
+		int size = ast.size();
+		for (int i = 2; i < size; i++) {
+			if (stopPredicate.test(ast.get(i))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private static IExpr testMap(IAST ast, Predicate<IExpr> predicate, Function<IExpr, IExpr> function) {
 		IAST result = F.NIL;
 		int size = ast.size();
-		for (int i = 0; i < size; i++) {
+		for (int i = 1; i < size; i++) {
 			IExpr temp = ast.get(i);
 			if (predicate.test(temp)) {
-				if (result == null) {
+				if (!result.isPresent()) {
 					result = ast.clone();
 				}
-				result.set(i, function.apply(temp));
+				temp = function.apply(temp);
+				if (temp != null) {
+					result.set(i, function.apply(temp));
+				}
 				continue;
 			}
 		}
@@ -117,10 +205,10 @@ public class Lambda {
 			Function<IExpr, IExpr> function2) {
 		IAST result = F.NIL;
 		int size = list.size();
-		for (int i = 0; i < size; i++) {
+		for (int i = 1; i < size; i++) {
 			IExpr temp = list.get(i);
 			if (predicate.test(temp)) {
-				if (result == null) {
+				if (!result.isPresent()) {
 					result = list.clone();
 					for (int j = 0; j < i; j++) {
 						result.set(j, function2.apply(temp));

@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ICreatePatternMatcher;
+import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -47,13 +48,13 @@ public final class PatternMatching {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2);
-
-			for (int i = 1; i < ast.size(); i++) {
-				if (ast.get(i).isSymbol()) {
-					ISymbol symbol = (ISymbol) ast.get(i);
-					symbol.clear(engine);
-				}
-			}
+			Lambda.forEach(ast, x -> x.isSymbol(), x -> ((ISymbol) x).clear(engine));
+			// for (int i = 1; i < ast.size(); i++) {
+			// if (ast.get(i).isSymbol()) {
+			// ISymbol symbol = (ISymbol) ast.get(i);
+			// symbol.clear(engine);
+			// }
+			// }
 
 			return F.Null;
 		}

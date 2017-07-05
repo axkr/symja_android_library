@@ -3287,7 +3287,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMax() {
-
 		check("Refine(Max(Infinity,x), x>0)", "Infinity");
 		check("Refine(Max(Infinity,x,y), x>0&&y>0)", "Infinity");
 		check("Refine(Max(Infinity,x,y), x>0)", "Max(Infinity,y)");

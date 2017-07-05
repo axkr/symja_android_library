@@ -21,6 +21,7 @@ import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.generic.Predicates;
@@ -361,19 +362,11 @@ public final class BooleanFunctions {
 			}
 
 			public IAST convertNand(IAST ast) {
-				IAST result = F.Or();
-				for (int i = 1; i < ast.size(); i++) {
-					result.append(Not(ast.get(i)));
-				}
-				return result;
+				return Lambda.forEachAppend(ast, F.Or(), x -> F.Not(x));
 			}
 
 			public IAST convertNor(IAST ast) {
-				IAST result = F.And();
-				for (int i = 1; i < ast.size(); i++) {
-					result.append(Not(ast.get(i)));
-				}
-				return result;
+				return Lambda.forEachAppend(ast, F.And(), x -> F.Not(x));
 			}
 
 			public IAST convertXor(IAST ast) {
@@ -1346,7 +1339,7 @@ public final class BooleanFunctions {
 			if (ast.arg1().isNumber()) {
 				return F.False;
 			}
-			
+
 			return F.NIL;
 		}
 
@@ -1429,7 +1422,7 @@ public final class BooleanFunctions {
 		}
 
 	}
-	
+
 	private final static class NonPositive extends AbstractEvaluator {
 
 		@Override
@@ -1657,14 +1650,8 @@ public final class BooleanFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() > 1) {
-				for (int i = 2; i < ast.size(); i++) {
-					if (!ast.get(i - 1).isSame(ast.get(i))) {
-						return F.False;
-					}
-				}
-				return F.True;
+				return Lambda.compareStop(ast, (x, y) -> !x.isSame(y), F.False, F.True);
 			}
-
 			return F.False;
 		}
 

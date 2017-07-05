@@ -2659,54 +2659,56 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			int size = ast.size();
+		public IExpr evaluate(final IAST ast1, EvalEngine engine) {
+			IAST astTimes = ast1;
+			int size = astTimes.size();
 			if (size == 1) {
 				return F.C1;
 			}
-			if (size == 2 && ast.head() == F.Times) {
-				return ast.arg1();
+			if (size == 2 && astTimes.head() == F.Times) {
+				return astTimes.arg1();
 			}
 			if (size > 2) {
-				IAST temp = evaluateHashsRepeated(ast);
+				IAST temp = evaluateHashsRepeated(astTimes);
 				if (temp.isPresent()) {
 					return temp.getOneIdentity(F.C1);
 				}
 			}
 			if (size == 3) {
-				if ((ast.arg1().isNumeric() || ast.arg1().isOne() || ast.arg1().isMinusOne()) && ast.arg2().isPlus()) {
-					if (ast.arg1().isOne()) {
-						return ast.arg2();
+				if ((astTimes.arg1().isNumeric() || astTimes.arg1().isOne() || astTimes.arg1().isMinusOne())
+						&& astTimes.arg2().isPlus()) {
+					if (astTimes.arg1().isOne()) {
+						return astTimes.arg2();
 					}
 					// distribute the number over the sum:
-					final IAST arg2 = (IAST) ast.arg2();
-					return arg2.mapThread(F.Times(ast.arg1(), null), 2);
+					final IAST arg2 = (IAST) astTimes.arg2();
+					return arg2.mapThread(F.Times(astTimes.arg1(), null), 2);
 				}
-				return distributeLeadingFactor(binaryOperator(ast.arg1(), ast.arg2()), ast);
+				return distributeLeadingFactor(binaryOperator(astTimes.arg1(), astTimes.arg2()), astTimes);
 			}
 
 			if (size > 3) {
-				final ISymbol sym = ast.topHead();
+				final ISymbol sym = astTimes.topHead();
 				IAST result = null;
 				IExpr tres;
-				IExpr temp = ast.arg1();
+				IExpr temp = astTimes.arg1();
 				boolean evaled = false;
 				int i = 2;
 
-				while (i < ast.size()) {
+				while (i < astTimes.size()) {
 
-					tres = binaryOperator(temp, ast.get(i));
+					tres = binaryOperator(temp, astTimes.get(i));
 
 					if (!tres.isPresent()) {
 
-						for (int j = i + 1; j < ast.size(); j++) {
-							tres = binaryOperator(temp, ast.get(j));
+						for (int j = i + 1; j < astTimes.size(); j++) {
+							tres = binaryOperator(temp, astTimes.get(j));
 
 							if (tres.isPresent()) {
 								evaled = true;
 								temp = tres;
 
-								ast.remove(j);
+								astTimes = astTimes.removeAtClone(j);
 
 								break;
 							}
@@ -2714,13 +2716,13 @@ public final class Arithmetic {
 
 						if (!tres.isPresent()) {
 							if (result == null) {
-								result = F.ast(sym, ast.size() - i + 1, false);
+								result = F.ast(sym, astTimes.size() - i + 1, false);
 							}
 							result.append(temp);
-							if (i == ast.size() - 1) {
-								result.append(ast.get(i));
+							if (i == astTimes.size() - 1) {
+								result.append(astTimes.get(i));
 							} else {
-								temp = ast.get(i);
+								temp = astTimes.get(i);
 							}
 							i++;
 						}
@@ -2729,9 +2731,9 @@ public final class Arithmetic {
 						evaled = true;
 						temp = tres;
 
-						if (i == (ast.size() - 1)) {
+						if (i == (astTimes.size() - 1)) {
 							if (result == null) {
-								result = F.ast(sym, ast.size() - i + 1, false);
+								result = F.ast(sym, astTimes.size() - i + 1, false);
 							}
 							result.append(temp);
 						}
@@ -2747,7 +2749,7 @@ public final class Arithmetic {
 
 					return distributeLeadingFactor(result, F.NIL);
 				}
-				return distributeLeadingFactor(F.NIL, ast);
+				return distributeLeadingFactor(F.NIL, astTimes);
 			}
 
 			return F.NIL;

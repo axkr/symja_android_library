@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -21,11 +22,14 @@ public class PowerMod extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 4);
 
-		for (int i = 1; i < ast.size(); i++) {
-			if (!(ast.get(i).isInteger())) {
-				return F.NIL;
-			}
+		if (Lambda.compareStop(ast, x -> !x.isInteger())) {
+			return F.NIL;
 		}
+		// for (int i = 1; i < ast.size(); i++) {
+		// if (!(ast.get(i).isInteger())) {
+		// return F.NIL;
+		// }
+		// }
 		IInteger arg1 = (IInteger) ast.get(1);
 		IInteger arg2 = (IInteger) ast.get(2);
 		IInteger arg3 = (IInteger) ast.get(3);

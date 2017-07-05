@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -44,24 +45,13 @@ public class Max extends AbstractFunctionEvaluator {
 	private IExpr maximum(IAST list, boolean flattenedList) {
 		boolean evaled = false;
 		int j = 1;
-		IAST f = F.NIL;
-		for (int i = 1; i < list.size(); i++) {
-			if (list.get(i).isNegativeInfinity()) {
-				evaled = true;
-				if (f.isPresent()) {
-					f.remove(j);
-				} else {
-					f = list.removeAtClone(j);
-				}
-				continue;
-			}
-			j++;
-		}
-		if (evaled) {
+		IAST f = Lambda.remove(list, x -> x.isNegativeInfinity());
+		if (f.isPresent()) {
 			if (f.isAST0()) {
 				return F.CNInfinity;
 			}
 			list = f;
+			evaled = true;
 		}
 		if (!evaled) {
 			evaled = flattenedList;

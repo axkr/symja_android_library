@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -43,25 +44,13 @@ public class Min extends AbstractFunctionEvaluator {
 
 	private IExpr minimum(IAST list, final boolean flattenedList) {
 		boolean evaled = false;
-		int j = 1;
-		IAST f = F.NIL;
-		for (int i = 1; i < list.size(); i++) {
-			if (list.get(i).isInfinity()) {
-				evaled = true;
-				if (f.isPresent()) {
-					f.remove(j);
-				} else {
-					f = list.removeAtClone(j);
-				}
-				continue;
-			}
-			j++;
-		}
-		if (evaled) {
+		IAST f = Lambda.remove(list, x -> x.isInfinity());
+		if (f.isPresent()) {
 			if (f.isAST0()) {
 				return F.CNInfinity;
 			}
 			list = f;
+			evaled = true;
 		}
 		if (!evaled) {
 			evaled = flattenedList;
@@ -69,7 +58,7 @@ public class Min extends AbstractFunctionEvaluator {
 
 		IExpr min1;
 		IExpr min2;
-		min1 =  list.arg1();
+		min1 = list.arg1();
 		f = list.copyHead();
 		IExpr.COMPARE_TERNARY comp;
 		for (int i = 2; i < list.size(); i++) {

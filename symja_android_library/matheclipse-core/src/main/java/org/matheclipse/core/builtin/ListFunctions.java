@@ -35,6 +35,7 @@ import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.util.ISequence;
 import org.matheclipse.core.eval.util.Iterator;
+import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.LevelSpec;
 import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.eval.util.Options;
@@ -613,9 +614,10 @@ public final class ListFunctions {
 						inner.append(temp);
 						inner = temp;
 					}
-					for (int i = 1; i < ast.size(); i++) {
-						inner.append(ast.get(i));
-					}
+					inner.appendArgs(ast);
+					// for (int i = 1; i < ast.size(); i++) {
+					// inner.append(ast.get(i));
+					// }
 					return result;
 				}
 
