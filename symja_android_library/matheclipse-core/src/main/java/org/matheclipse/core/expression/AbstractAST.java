@@ -135,51 +135,37 @@ public abstract class AbstractAST implements IAST {
 	private static final long serialVersionUID = -8682706994448890660L;
 
 	private static int compareToASTDecreasing(final IAST lhsAST, final IAST rhsAST) {
-		int i = lhsAST.size();
-		int j = rhsAST.size();
+		int lhsSize = lhsAST.size();
+		int rhsSize = rhsAST.size();
 		int k;
-		if (i > j) {
-			k = j;
+		if (lhsSize > rhsSize) {
+			k = rhsSize;
 		} else {
-			k = i;
+			k = lhsSize;
 		}
 		k--;
-		while (k > 0) {
-			int cp = lhsAST.get(--i).compareTo(rhsAST.get(--j));
+		while (k-- > 0) {
+			int cp = lhsAST.get(--lhsSize).compareTo(rhsAST.get(--rhsSize));
 			if (cp != 0) {
 				return cp;
 			}
-			k--;
 		}
-		if (i > j) {
-			return 1;
-		}
-		if (i < j) {
-			return -1;
-		}
-		return 0;
+		return (lhsSize > rhsSize) ? 1 : (lhsSize < rhsSize) ? -1 : 0;
 	}
 
 	private static int compareToASTDecreasingArg1(final IAST lhsAST, final IExpr arg1, IInteger value) {
-		int i = lhsAST.size();
-		int cp = lhsAST.get(i - 1).compareTo(arg1);
+		int lhsSize = lhsAST.size();
+		int cp = lhsAST.get(lhsSize - 1).compareTo(arg1);
 		if (cp != 0) {
 			return cp;
 		}
-		if (i >= 2) {
-			i--;
-			cp = lhsAST.get(i - 1).compareTo(value);
+		if (lhsSize >= 2) {
+			cp = lhsAST.get(--lhsSize - 1).compareTo(value);
 			if (cp != 0) {
 				return cp;
 			}
 		}
-		if (i > 1) {
-			return 1;
-		}
-		if (i < 1) {
-			return -1;
-		}
-		return 0;
+		return 1;
 	}
 
 	private static int compareToASTIncreasing(final IAST lhsAST, final IAST rhsAST) {
@@ -200,8 +186,8 @@ public abstract class AbstractAST implements IAST {
 			return cp;
 		}
 
-		final int commonArgSize = (lhsAST.size() > rhsAST.size()) ? rhsAST.size() : lhsAST.size();
-		for (int i = 1; i < commonArgSize; i++) {
+		final int minimumSize = (lhsAST.size() > rhsAST.size()) ? rhsAST.size() : lhsAST.size();
+		for (int i = 1; i < minimumSize; i++) {
 			cp = lhsAST.get(i).compareTo(rhsAST.get(i));
 			if (cp != 0) {
 				return cp;
@@ -215,7 +201,21 @@ public abstract class AbstractAST implements IAST {
 			return -1;
 		}
 		return 0;
-	} 
+	}
+
+	private static int compareToASTIncreasingArg1(final IAST lhsAST, final IExpr arg1, IInteger value) {
+		int cp = lhsAST.get(1).compareTo(arg1);
+		if (cp != 0) {
+			return cp;
+		}
+		if (lhsAST.size() >= 2) {
+			cp = lhsAST.get(2).compareTo(value);
+			if (cp != 0) {
+				return cp;
+			}
+		}
+		return 1;
+	}
 
 	private static void internalFormOrderless(IAST ast, StringBuilder text, final String sep,
 			boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
@@ -432,10 +432,6 @@ public abstract class AbstractAST implements IAST {
 				return compareToASTDecreasing(this, rhs);
 			}
 
-			// special comparison for Times?
-			// if (isTimes()) {
-			// return compareToTimes(this, rhs);
-			// }
 			if (isPower() && rhs.isPower()) {
 				// O-4
 				int baseCompare = arg1().compareTo(rhs.arg1());
@@ -451,7 +447,7 @@ public abstract class AbstractAST implements IAST {
 		}
 		if (isPower() && !rhsExpr.isSameHeadSizeGE(F.Times, 1) && !rhsExpr.isSameHeadSizeGE(F.Plus, 1)) {
 			// O-9
-			return compareTo(F.Power(rhsExpr, F.C1));
+			return compareToASTIncreasingArg1(this, rhsExpr, F.C1);
 		}
 		if (isSameHeadSizeGE(F.Plus, 1) && !rhsExpr.isSameHeadSizeGE(F.Plus, 1)
 				&& !rhsExpr.isSameHeadSizeGE(F.Times, 1)) {
@@ -465,15 +461,6 @@ public abstract class AbstractAST implements IAST {
 		}
 
 		return IAST.super.compareTo(rhsExpr);
-		// if (rhsExpr.isSymbolOrPattern() && (isPlus() || isTimes())) {
-		// return compareToTimesExpr(this, rhsExpr);
-		// }
-		// if (isPower()) {
-		// return compareToPowerExpr(this, rhsExpr);
-		// }
-		// int x = hierarchy();
-		// int y = rhsExpr.hierarchy();
-		// return (x < y) ? -1 : ((x == y) ? 0 : 1);
 	}
 
 	/** {@inheritDoc} */
