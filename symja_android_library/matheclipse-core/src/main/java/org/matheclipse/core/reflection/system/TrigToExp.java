@@ -49,31 +49,31 @@ import org.matheclipse.core.patternmatching.Matcher;
  */
 public class TrigToExp extends AbstractEvaluator {
 
-	final static Matcher matcher = new Matcher();
+	final static Matcher MATCHER = new Matcher();
 	static {
-		matcher.caseOf(Sin(x_),
+		MATCHER.caseOf(Sin(x_),
 				Subtract(Times(C1D2, CI, Power(E, Times(CNI, x))), Times(C1D2, CI, Power(E, Times(CI, x)))));
-		matcher.caseOf(Cos(x_), Plus(Times(C1D2, Power(E, Times(CNI, x))), Times(C1D2, Power(E, Times(CI, x)))));
-		matcher.caseOf(Tan(x_), Times(CI, Subtract(Power(E, Times(CNI, x)), Power(E, Times(CI, x))),
+		MATCHER.caseOf(Cos(x_), Plus(Times(C1D2, Power(E, Times(CNI, x))), Times(C1D2, Power(E, Times(CI, x)))));
+		MATCHER.caseOf(Tan(x_), Times(CI, Subtract(Power(E, Times(CNI, x)), Power(E, Times(CI, x))),
 				Power(Plus(Power(E, Times(CNI, x)), Power(E, Times(CI, x))), CN1)));
-		matcher.caseOf(ArcSin(x_), Times(CNI, Log(Plus(Sqrt(Subtract(C1, Sqr(x))), Times(CI, x)))));
-		matcher.caseOf(ArcCos(x_),
+		MATCHER.caseOf(ArcSin(x_), Times(CNI, Log(Plus(Sqrt(Subtract(C1, Sqr(x))), Times(CI, x)))));
+		MATCHER.caseOf(ArcCos(x_),
 				Plus(Times(C1D2, Pi), Times(CI, Log(Plus(Sqrt(Subtract(C1, Sqr(x))), Times(CI, x))))));
-		matcher.caseOf(ArcTan(x_),
+		MATCHER.caseOf(ArcTan(x_),
 				Subtract(Times(C1D2, CI, Log(Plus(C1, Times(CNI, x)))), Times(C1D2, CI, Log(Plus(C1, Times(CI, x))))));
 		// JavaForm[(E^x+E^(-x))/2]
-		matcher.caseOf(Cosh(x_), Times(C1D2, Plus(Power(E, x), Power(E, Times(CN1, x)))));
+		MATCHER.caseOf(Cosh(x_), Times(C1D2, Plus(Power(E, x), Power(E, Times(CN1, x)))));
 		// JavaForm[2/(E^x-E^(-x))]
-		matcher.caseOf(Csch(x_), Times(C2, Power(Plus(Power(E, x), Times(CN1, Power(E, Times(CN1, x)))), CN1)));
+		MATCHER.caseOf(Csch(x_), Times(C2, Power(Plus(Power(E, x), Times(CN1, Power(E, Times(CN1, x)))), CN1)));
 		// JavaForm[((E^(-x))+E^x)/((-E^(-x))+E^x)]
-		matcher.caseOf(Coth(x_), Times(Plus(Power(E, x), Power(E, Times(CN1, x))),
+		MATCHER.caseOf(Coth(x_), Times(Plus(Power(E, x), Power(E, Times(CN1, x))),
 				Power(Plus(Power(E, x), Times(CN1, Power(E, Times(CN1, x)))), CN1)));
 		// JavaForm[2/(E^x+E^(-x))]
-		matcher.caseOf(Sech(x_), Times(C2, Power(Plus(Power(E, x), Power(E, Times(CN1, x))), CN1)));
+		MATCHER.caseOf(Sech(x_), Times(C2, Power(Plus(Power(E, x), Power(E, Times(CN1, x))), CN1)));
 		// JavaForm[(E^x-E^(-x))/2]
-		matcher.caseOf(Sinh(x_), Times(C1D2, Plus(Power(E, x), Times(CN1, Power(E, Times(CN1, x))))));
+		MATCHER.caseOf(Sinh(x_), Times(C1D2, Plus(Power(E, x), Times(CN1, Power(E, Times(CN1, x))))));
 		// JavaForm[((-E^(-x))+E^x)/((E^(-x))+E^x)]
-		matcher.caseOf(Tanh(x_), Times(Plus(Times(CN1, Power(E, Times(CN1, x))), Power(E, x)),
+		MATCHER.caseOf(Tanh(x_), Times(Plus(Times(CN1, Power(E, Times(CN1, x))), Power(E, x)),
 				Power(Plus(Power(E, Times(CN1, x)), Power(E, x)), CN1)));
 	}
 
@@ -84,7 +84,7 @@ public class TrigToExp extends AbstractEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 		IExpr arg1 = ast.arg1();
-		return matcher.replaceAll(arg1).orElse(arg1);
+		return MATCHER.replaceAll(arg1).orElse(arg1);
 	}
 
 	@Override
