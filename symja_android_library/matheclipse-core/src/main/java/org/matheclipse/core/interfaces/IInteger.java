@@ -12,6 +12,10 @@ public interface IInteger extends IRational {
 	 */
 	public final static int PRIME_CERTAINTY = 32;
 
+	/** {@inheritDoc} */
+	@Override
+	public IInteger abs();
+
 	/**
 	 * <code>this + val</code>
 	 * 
@@ -21,20 +25,17 @@ public interface IInteger extends IRational {
 	public IInteger add(IInteger val);
 
 	/**
-     * Returns the number of bits in the minimal two's-complement
-     * representation of this IInteger, <i>excluding</i> a sign bit.
-     * For positive IIntegers, this is equivalent to the number of bits in
-     * the ordinary binary representation.  
-     *
-     * @return number of bits in the minimal two's-complement
-     *         representation of this IInteger, <i>excluding</i> a sign bit.
-     */
+	 * Returns the number of bits in the minimal two's-complement representation of this IInteger, <i>excluding</i> a
+	 * sign bit. For positive IIntegers, this is equivalent to the number of bits in the ordinary binary representation.
+	 *
+	 * @return number of bits in the minimal two's-complement representation of this IInteger, <i>excluding</i> a sign
+	 *         bit.
+	 */
 	public long bitLength();
-	
+
 	/**
 	 * 
-	 * @return <i>&#x03BB;</i>(<i>n</i>) where <i>n</i> is the number
-	 *         represented by this factors
+	 * @return <i>&#x03BB;</i>(<i>n</i>) where <i>n</i> is the number represented by this factors
 	 * @throws ArithmeticException
 	 *             if internal conversion to <code>long</code> is not possible.
 	 */
@@ -52,8 +53,7 @@ public interface IInteger extends IRational {
 	public IInteger div(final IInteger that);
 
 	/**
-	 * Returns an array of two IIntegers containing (this / that) followed by
-	 * (this % that).
+	 * Returns an array of two IIntegers containing (this / that) followed by (this % that).
 	 * 
 	 * @param that
 	 * @return
@@ -73,16 +73,10 @@ public interface IInteger extends IRational {
 	 */
 	public IAST divisors();
 
-	/** {@inheritDoc} */
-	@Override
-	public IInteger abs();
-
 	/**
 	 * Euler phi function.
 	 * 
-	 * See:
-	 * <a href="http://en.wikipedia.org/wiki/Euler%27s_totient_function">Euler's
-	 * totient function</a>
+	 * See: <a href="http://en.wikipedia.org/wiki/Euler%27s_totient_function">Euler's totient function</a>
 	 * 
 	 * @return Euler's totient function
 	 * @throws ArithmeticException
@@ -90,8 +84,7 @@ public interface IInteger extends IRational {
 	public IInteger eulerPhi() throws ArithmeticException;
 
 	/**
-	 * Get the highest exponent of <code>base</code> that divides
-	 * <code>this</code>
+	 * Get the highest exponent of <code>base</code> that divides <code>this</code>
 	 * 
 	 * @param base
 	 *            an integer greater than 1
@@ -101,8 +94,7 @@ public interface IInteger extends IRational {
 	public IExpr exponent(IInteger base);
 
 	/**
-	 * Returns the greatest common divisor of this large integer and the one
-	 * specified.
+	 * Returns the greatest common divisor of this large integer and the one specified.
 	 * 
 	 * @param val
 	 *            an integer value
@@ -111,12 +103,18 @@ public interface IInteger extends IRational {
 	public IInteger gcd(IInteger val);
 
 	/**
-	 * Converts this large integer to <code>int</code>; unlike {@link #toInt}
-	 * this method raises no exception, if this integer cannot be represented by
-	 * an <code>int</code> type.
+	 * Number of digits in base <code>radix</code> implementation.
 	 * 
-	 * @return the numeric value represented by this integer after conversion to
-	 *         type <code>int</code>.
+	 * @param radix
+	 * @return
+	 */
+	public long integerLength(IInteger radix);
+
+	/**
+	 * Converts this large integer to <code>int</code>; unlike {@link #toInt} this method raises no exception, if this
+	 * integer cannot be represented by an <code>int</code> type.
+	 * 
+	 * @return the numeric value represented by this integer after conversion to type <code>int</code>.
 	 */
 	public int intValue();
 
@@ -135,33 +133,26 @@ public interface IInteger extends IRational {
 	public boolean isOdd();
 
 	/**
-	 * Returns {@code true} if this IInteger is probably prime, {@code false} if
-	 * it's definitely composite.
+	 * Returns {@code true} if this IInteger is probably prime, {@code false} if it's definitely composite.
 	 *
-	 * @return {@code true} if this IInteger is probably prime, {@code false} if
-	 *         it's definitely composite.
+	 * @return {@code true} if this IInteger is probably prime, {@code false} if it's definitely composite.
 	 */
 	public boolean isProbablePrime();
 
 	/**
-	 * Returns {@code true} if this IInteger is probably prime, {@code false} if
-	 * it's definitely composite. If {@code certainty} is &le; 0, {@code true}
-	 * is returned.
+	 * Returns {@code true} if this IInteger is probably prime, {@code false} if it's definitely composite. If
+	 * {@code certainty} is &le; 0, {@code true} is returned.
 	 *
 	 * @param certainty
-	 *            a measure of the uncertainty that the caller is willing to
-	 *            tolerate: if the call returns {@code true} the probability
-	 *            that this IInteger is prime exceeds (1 - 1/2<sup>
-	 *            {@code certainty}</sup>). The execution time of this method is
-	 *            proportional to the value of this parameter.
-	 * @return {@code true} if this IInteger is probably prime, {@code false} if
-	 *         it's definitely composite.
+	 *            a measure of the uncertainty that the caller is willing to tolerate: if the call returns {@code true}
+	 *            the probability that this IInteger is prime exceeds (1 - 1/2<sup> {@code certainty}</sup>). The
+	 *            execution time of this method is proportional to the value of this parameter.
+	 * @return {@code true} if this IInteger is probably prime, {@code false} if it's definitely composite.
 	 */
 	public boolean isProbablePrime(int certainty);
 
 	/**
-	 * See: <a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia -
-	 * Jacobi symbol</a><br/>
+	 * See: <a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia - Jacobi symbol</a><br/>
 	 * Book: Algorithmen Arbeitsbuch - D.Herrmann page 160
 	 * 
 	 * @param b
@@ -182,13 +173,11 @@ public interface IInteger extends IRational {
 	public IInteger lcm(IInteger val);
 
 	/**
-	 * Converts this IInteger to a {@code long}. This conversion is analogous to
-	 * a <i>narrowing primitive conversion</i> from {@code long} to {@code int}
-	 * as defined in section 5.1.3 of <cite>The Java&trade; Language
-	 * Specification</cite>: if this IInteger is too big to fit in a
-	 * {@code long}, only the low-order 64 bits are returned. Note that this
-	 * conversion can lose information about the overall magnitude of the
-	 * IInteger value as well as return a result with the opposite sign.
+	 * Converts this IInteger to a {@code long}. This conversion is analogous to a <i>narrowing primitive conversion</i>
+	 * from {@code long} to {@code int} as defined in section 5.1.3 of <cite>The Java&trade; Language
+	 * Specification</cite>: if this IInteger is too big to fit in a {@code long}, only the low-order 64 bits are
+	 * returned. Note that this conversion can lose information about the overall magnitude of the IInteger value as
+	 * well as return a result with the opposite sign.
 	 *
 	 * @return this IInteger converted to a {@code long}.
 	 */
@@ -216,6 +205,7 @@ public interface IInteger extends IRational {
 	 * @param value
 	 * @return
 	 */
+	@Override
 	public IInteger multiply(int value);
 
 	/**
@@ -236,8 +226,7 @@ public interface IInteger extends IRational {
 	public IInteger nthRoot(int n) throws ArithmeticException;
 
 	/**
-	 * Split this integer into the nth-root (with prime factors less equal 1021)
-	 * and the &quot;rest factor&quot;
+	 * Split this integer into the nth-root (with prime factors less equal 1021) and the &quot;rest factor&quot;
 	 * 
 	 * @param n
 	 *            nth-root
@@ -245,6 +234,7 @@ public interface IInteger extends IRational {
 	 */
 	public IInteger[] nthRootSplit(int n);
 
+	@Override
 	public IInteger pow(final long exp) throws ArithmeticException;
 
 	public IInteger[] primitiveRoots() throws ArithmeticException;

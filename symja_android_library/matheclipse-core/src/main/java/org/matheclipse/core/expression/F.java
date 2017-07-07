@@ -171,6 +171,8 @@ public class F {
 	public final static IBuiltInSymbol PatternTest = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "patterntest" : "PatternTest");
 	public final static IBuiltInSymbol Colon = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "colon" : "Colon");
+	public final static IBuiltInSymbol ComplexityFunction = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complexityfunction" : "ComplexityFunction");
 	public final static IBuiltInSymbol Repeated = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "repeated" : "Repeated");
 	public final static IBuiltInSymbol RepeatedNull = initFinalSymbol(

@@ -128,6 +128,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		return valueOf(newnum);
 	}
 
+	@Override
 	public long bitLength() {
 		return fBigIntValue.bitLength();
 	}
@@ -370,6 +371,17 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		return F.C0;
 	}
 
+	@Override
+	public long integerLength(IInteger radix) {
+		long length = 0L;
+		IInteger ai = this;
+		while (!ai.isZero()) {
+			ai = ai.div(radix);
+			length++;
+		}
+		return length;
+	}
+	
 	@Override
 	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		int value = NumberUtil.toInt(fBigIntValue);

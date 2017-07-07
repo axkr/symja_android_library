@@ -638,16 +638,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is the <code>Except</code> function <code>Except[&lt;pattern1&gt;]</code> or
-	 * <code>Except[&lt;pattern1&gt;, &lt;pattern2&gt;]</code>
-	 * 
-	 * @return
-	 */
-	default boolean isExcept() {
-		return false;
-	}
-
-	/**
 	 * Test if this expression is the function <code>And[&lt;arg&gt;,...]</code>
 	 * 
 	 * @return
@@ -1091,6 +1081,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default boolean isExactNumber() {
 		return this instanceof IRational || this instanceof IComplex;
+	}
+
+	/**
+	 * Test if this expression is the <code>Except</code> function <code>Except[&lt;pattern1&gt;]</code> or
+	 * <code>Except[&lt;pattern1&gt;, &lt;pattern2&gt;]</code>
+	 * 
+	 * @return
+	 */
+	default boolean isExcept() {
+		return false;
 	}
 
 	/**
@@ -2022,7 +2022,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isSameHeadSizeGE(IExpr head, int length) {
 		return false;
 	}
-	
+
 	/**
 	 * Test if this expression is a sequence (i.e. an AST with head Sequence)
 	 * 
@@ -2229,6 +2229,17 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default long leafCount() {
 		return isAtom() ? 1L : 0L;
+	}
+
+	/**
+	 * Count the number of leaves of this expression; for integer numbers in exact integer, fractional and complex
+	 * numbers count the digits of the integers. This function is used in <code>Simplify</code> as the default
+	 * &quot;complexity function&quot;.
+	 * 
+	 * @return
+	 */
+	default long leafCountSimplify() {
+		return leafCount();
 	}
 
 	/**
@@ -2688,6 +2699,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>null</code> if no substitution occurred.
 	 * @deprecated use org.matheclipse.core.eval.util.Lambda#replaceSlots() instead
 	 */
+	@Deprecated
 	default IExpr replaceSlots(final IAST slotsList) {
 		return accept(new VisitorReplaceSlots(slotsList));
 	}

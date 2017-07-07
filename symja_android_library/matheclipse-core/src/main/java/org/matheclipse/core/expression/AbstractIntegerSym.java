@@ -568,7 +568,12 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		}
 		return F.CN1;
 	}
-
+	
+	@Override
+	public long leafCountSimplify() {
+		return integerLength(F.C10);
+	}
+	
 	/**
 	 * Returns the least common multiple of this large integer and the one specified.
 	 * 

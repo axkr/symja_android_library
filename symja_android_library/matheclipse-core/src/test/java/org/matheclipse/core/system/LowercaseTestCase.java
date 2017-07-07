@@ -2904,6 +2904,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LCM(20, 30, 40, 50)", "600");
 		// check("LCM(1/3, 2/5, 3/7)", "");
 	}
+	
+	public void testLeafCount() {
+		check("LeafCount(10+I)", "3");
+	}
 
 	public void testLegendreP() {
 		check("LegendreP(4,x)", "3/8-15/4*x^2+35/8*x^4");
@@ -5620,12 +5624,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSimplify() {
+		check("Simplify(Abs(x), x<0)", "Abs(x)");
+		check("complexity(x_) := 2*Count(x, _Abs, {0, 10}) + LeafCount(x)", "");
+		check("Simplify(Abs(x), x<0, ComplexityFunction->complexity)", "-x");
+		
+		check("Simplify(100*Log(2))", "100*Log(2)");
 		check("Simplify(2*Sin(x)^2 + 2*Cos(x)^2)", "2");
 		check("Simplify(f(x))", "f(x)");
 		check("Simplify(a*x^2+b*x^2)", "(a+b)*x^2");
 
 		check("Simplify(5*x*(6*x+30))", "30*x*(5+x)");
 		check("Simplify(Sqrt(x^2), Assumptions -> x>0)", "x");
+		check("Simplify(Sqrt(x^2), x>0)", "x");
 		check("Together(2/(1/Tan(x) + Tan(x)))", "2/(Cot(x)+Tan(x))");
 		check("Together(2*Tan(x)/(1 + Tan(x)^2))", "(2*Tan(x))/(1+Tan(x)^2)");
 		check("Simplify(Sin(x)^2 + Cos(x)^2)", "1");

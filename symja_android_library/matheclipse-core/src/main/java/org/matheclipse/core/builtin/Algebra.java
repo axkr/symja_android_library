@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
@@ -70,6 +71,7 @@ import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
 //import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.core.visit.VisitorExpr;
+import org.matheclipse.parser.client.math.ArithmeticMathException;
 
 import com.google.common.math.LongMath;
 
@@ -2253,20 +2255,22 @@ public class Algebra {
 
 		private static class SimplifyVisitor extends VisitorExpr {
 			final IsBasicExpressionVisitor isBasicAST = new IsBasicExpressionVisitor();
+			final Function<IExpr, Long> fComplexityFunction;
 
-			public SimplifyVisitor() {
+			public SimplifyVisitor(Function<IExpr, Long> complexityFunction) {
 				super();
+				fComplexityFunction = complexityFunction;
 			}
 
 			private IExpr tryExpandAllTransformation(IAST plusAST, IExpr test) {
 				IExpr result = F.NIL;
-				long minCounter = plusAST.leafCount();
+				long minCounter = fComplexityFunction.apply(plusAST);
 				IExpr temp;
 				long count;
 
 				try {
 					temp = F.evalExpandAll(test);
-					count = temp.leafCount();
+					count = fComplexityFunction.apply(temp);
 					if (count < minCounter) {
 						result = temp;
 					}
@@ -2282,13 +2286,13 @@ public class Algebra {
 				if (expr.isAST()) {
 					// try ExpandAll, Together, Apart, Factor to reduce the
 					// expression
-					long minCounter = expr.leafCount();
+					long minCounter = fComplexityFunction.apply(expr);
 					IExpr temp;
 					long count;
 
 					try {
 						temp = F.evalExpandAll(expr);
-						count = temp.leafCount();
+						count = fComplexityFunction.apply(temp);
 						if (count < minCounter) {
 							minCounter = count;
 							result = temp;
@@ -2299,7 +2303,7 @@ public class Algebra {
 
 					try {
 						temp = F.eval(F.Together(expr));
-						count = temp.leafCount();
+						count = fComplexityFunction.apply(temp);
 						if (count < minCounter) {
 							minCounter = count;
 							result = temp;
@@ -2310,7 +2314,7 @@ public class Algebra {
 
 					try {
 						temp = F.eval(F.Factor(expr));
-						count = temp.leafCount();
+						count = fComplexityFunction.apply(temp);
 						if (count < minCounter) {
 							minCounter = count;
 							result = temp;
@@ -2321,7 +2325,7 @@ public class Algebra {
 
 					try {
 						temp = F.eval(F.Apart(expr));
-						count = temp.leafCount();
+						count = fComplexityFunction.apply(temp);
 						if (count < minCounter) {
 							minCounter = count;
 							result = temp;
@@ -2409,8 +2413,9 @@ public class Algebra {
 				}
 
 				temp = F.evalExpandAll(ast);
-				long minCounter = ast.leafCount();
-				long count = temp.leafCount();
+				long minCounter = fComplexityFunction.apply(ast);
+
+				long count = fComplexityFunction.apply(temp);
 				if (count < minCounter) {
 					return temp;
 				}
@@ -2432,37 +2437,84 @@ public class Algebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
+			Validate.checkRange(ast, 2);
 
 			IExpr arg1 = ast.arg1();
+			IExpr assumptionExpr = F.NIL;
+			IExpr complexityFunctionHead = F.NIL;
+
+			if (ast.size() > 2) {
+				IExpr arg2 = ast.arg2();
+
+				if (!arg2.isRule()) {
+					assumptionExpr = arg2;
+				}
+				final Options options = new Options(ast.topHead(), ast, 2, engine);
+				IExpr option = options.getOption("Assumptions");
+				if (option.isPresent()) {
+					assumptionExpr = option;
+				}
+				complexityFunctionHead = options.getOption("ComplexityFunction");
+			}
 			if (arg1.isAtom()) {
 				return arg1;
 			}
 
-			if (ast.size() > 2) {
-				IExpr arg2 = ast.arg2();
-				IAssumptions assumptions = Refine.determineAssumptions(ast.topHead(), arg2, engine);
-				if (assumptions != null) {
-					arg1 = Refine.refineAssumptions(arg1, assumptions, engine);
+			try {
+				Function<IExpr, Long> complexityFunction = createComplexityFunction(complexityFunctionHead, engine);
+				long minCounter = complexityFunction.apply(arg1);
+				IExpr result = arg1;
+				long count = 0L;
+				if (assumptionExpr.isPresent()) {
+					IAssumptions assumptions = Refine.determineAssumptions(ast.topHead(), assumptionExpr, engine);
+					if (assumptions != null) {
+						arg1 = Refine.refineAssumptions(arg1, assumptions, engine);
+						count = complexityFunction.apply(arg1);
+						if (count < minCounter) {
+							minCounter = count;
+							result = arg1;
+						}
+					}
 				}
-			}
 
-			long minCounter = arg1.leafCount();
-
-			IExpr result = arg1;
-			long count = 0L;
-			IExpr temp = arg1.accept(new SimplifyVisitor());
-			while (temp.isPresent()) {
-				count = temp.leafCount();
-				if (count < minCounter) {
-					minCounter = count;
-					result = temp;
-					temp = result.accept(new SimplifyVisitor());
-				} else {
-					return result;
+				IExpr temp = arg1.accept(new SimplifyVisitor(complexityFunction));
+				while (temp.isPresent()) {
+					count = complexityFunction.apply(temp);
+					if (count < minCounter) {
+						minCounter = count;
+						result = temp;
+						temp = result.accept(new SimplifyVisitor(complexityFunction));
+					} else {
+						return result;
+					}
 				}
+				return result;
+
+			} catch (ArithmeticException e) {
+				//
 			}
-			return result;
+			return F.NIL;
+		}
+
+		/**
+		 * Creata the complexity function which determines the &quot;more simplified&quot; expression.
+		 * @param complexityFunctionHead
+		 * @param engine
+		 * @return
+		 */
+		private static Function<IExpr, Long> createComplexityFunction(IExpr complexityFunctionHead, EvalEngine engine) {
+			Function<IExpr, Long> complexityFunction = x -> x.leafCountSimplify();
+			if (complexityFunctionHead.isPresent()) {
+				final IExpr head = complexityFunctionHead;
+				complexityFunction = x -> {
+					IExpr temp = engine.evaluate(F.unaryAST1(head, x));
+					if (temp.isInteger() && !temp.isNegative()) {
+						return ((IInteger) temp).toLong();
+					}
+					return Long.MAX_VALUE;
+				};
+			}
+			return complexityFunction;
 		}
 
 	}
@@ -2746,7 +2798,7 @@ public class Algebra {
 				result[0] = jas.exprPoly2Expr(gcd);
 				result[1] = jas.exprPoly2Expr(p1);
 				result[2] = jas.exprPoly2Expr(p2);
-			} else { 
+			} else {
 				if (JASIExpr.isInexactCoefficient(gcd)) {
 					return null;
 				}

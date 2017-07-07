@@ -20,14 +20,14 @@ public class LeafCount extends AbstractCoreFunctionEvaluator {
 	/**
 	 * Calculate the number of leaves in an AST
 	 */
-	public static class LeafCountVisitor extends AbstractVisitorLong {
+	public static class SimplifyLeafCountVisitor extends AbstractVisitorLong {
 		int fHeadOffset;
 
-		public LeafCountVisitor() {
+		public SimplifyLeafCountVisitor() {
 			this(1);
 		}
 
-		public LeafCountVisitor(int hOffset) {
+		public SimplifyLeafCountVisitor(int hOffset) {
 			fHeadOffset = hOffset;
 		}
 
@@ -44,6 +44,45 @@ public class LeafCount extends AbstractCoreFunctionEvaluator {
 		@Override
 		public long visit(IComplexNum element) {
 			return 3;
+		}
+
+		@Override
+		public long visit(IAST list) {
+			long sum = 0;
+			for (int i = fHeadOffset; i < list.size(); i++) {
+				sum += list.get(i).accept(this);
+			}
+			return sum;
+		}
+	}
+	
+	/**
+	 * Calculate the number of leaves in an AST
+	 */
+	public static class LeafCountVisitor extends AbstractVisitorLong {
+		int fHeadOffset;
+
+		public LeafCountVisitor() {
+			this(1);
+		}
+
+		public LeafCountVisitor(int hOffset) {
+			fHeadOffset = hOffset;
+		}
+
+		@Override
+		public long visit(IFraction element) {
+			return element.leafCount();
+		}
+
+		@Override
+		public long visit(IComplex element) {
+			return element.leafCount();
+		}
+
+		@Override
+		public long visit(IComplexNum element) {
+			return element.leafCount();
 		}
 
 		@Override

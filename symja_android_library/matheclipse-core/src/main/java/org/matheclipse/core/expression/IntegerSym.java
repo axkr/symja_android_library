@@ -102,6 +102,7 @@ public class IntegerSym extends AbstractIntegerSym {
 		return valueOf(newnum);
 	}
 
+	@Override
 	public long bitLength() {
 		if (fIntValue == 0) {
 			return 0L;
@@ -345,6 +346,17 @@ public class IntegerSym extends AbstractIntegerSym {
 		return F.C0;
 	}
 
+	@Override
+	public long integerLength(IInteger radix) {
+		long length = 0L;
+		IInteger ai = this;
+		while (!ai.isZero()) {
+			ai = ai.div(radix);
+			length++;
+		}
+		return length;
+	}
+	
 	@Override
 	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		int value = NumberUtil.toInt(fIntValue);

@@ -217,9 +217,8 @@ public class ComplexSym implements IComplex {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns
-	 * a negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
+	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -473,6 +472,16 @@ public class ComplexSym implements IComplex {
 	@Override
 	public boolean isZero() {
 		return NumberUtil.isZero(fReal) && NumberUtil.isZero(fImaginary);
+	}
+
+	@Override
+	public long leafCountSimplify() {
+		return 1 + fReal.leafCountSimplify() + fImaginary.leafCountSimplify();
+	}
+
+	@Override
+	public long leafCount() {
+		return 1 + fReal.leafCount() + fImaginary.leafCount();
 	}
 
 	@Override

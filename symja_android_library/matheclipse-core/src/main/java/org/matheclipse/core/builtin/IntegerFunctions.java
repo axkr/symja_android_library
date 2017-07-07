@@ -226,12 +226,7 @@ public class IntegerFunctions {
 				if (iArg1.isZero()) {
 					return F.C1;
 				}
-				long l = 0L;
-				iArg1 = iArg1.abs();
-				while (iArg1.isGreaterThan(F.C0)) {
-					iArg1 = iArg1.div(radix);
-					l++;
-				}
+				long l = iArg1.integerLength( radix);
 
 				return F.integer(l);
 			}

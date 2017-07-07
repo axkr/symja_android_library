@@ -67,9 +67,8 @@ public abstract class AbstractFractionSym implements IFraction {
 	}
 
 	/**
-	 * Construct a rational from two BigIntegers. Use this method to create a
-	 * rational number if the numerator or denominator may be to big to fit in
-	 * an Java int. This method normalizes the rational number.
+	 * Construct a rational from two BigIntegers. Use this method to create a rational number if the numerator or
+	 * denominator may be to big to fit in an Java int. This method normalizes the rational number.
 	 * 
 	 * @param num
 	 *            Numerator
@@ -115,9 +114,8 @@ public abstract class AbstractFractionSym implements IFraction {
 	}
 
 	/**
-	 * Construct a rational from two longs. Use this method to create a rational
-	 * number. This method normalizes the rational number and may return a
-	 * previously created one. This method does not work if called with value
+	 * Construct a rational from two longs. Use this method to create a rational number. This method normalizes the
+	 * rational number and may return a previously created one. This method does not work if called with value
 	 * Long.MIN_VALUE.
 	 * 
 	 * @param newnum
@@ -142,9 +140,8 @@ public abstract class AbstractFractionSym implements IFraction {
 	}
 
 	/**
-	 * Construct a rational from two longs. Use this method to create a rational
-	 * number. This method normalizes the rational number and may return a
-	 * previously created one. This method does not work if called with value
+	 * Construct a rational from two longs. Use this method to create a rational number. This method normalizes the
+	 * rational number and may return a previously created one. This method does not work if called with value
 	 * Long.MIN_VALUE.
 	 * 
 	 * @param newnum
@@ -185,8 +182,7 @@ public abstract class AbstractFractionSym implements IFraction {
 	}
 
 	/**
-	 * Rationalize the given double value with
-	 * <code>Config.DOUBLE_EPSILON</code> maximum error allowed.
+	 * Rationalize the given double value with <code>Config.DOUBLE_EPSILON</code> maximum error allowed.
 	 * 
 	 * @param value
 	 * @return
@@ -196,14 +192,12 @@ public abstract class AbstractFractionSym implements IFraction {
 	}
 
 	/**
-	 * Rationalize the given double value with <code>epsilon</code> maximum
-	 * error allowed.
+	 * Rationalize the given double value with <code>epsilon</code> maximum error allowed.
 	 * 
 	 * @param value
 	 *            the double value to convert to a fraction.
 	 * @param epsilon
-	 *            maximum error allowed. The resulting fraction is within
-	 *            epsilon of value, in absolute terms.
+	 *            maximum error allowed. The resulting fraction is within epsilon of value, in absolute terms.
 	 * @return
 	 */
 	public static IFraction valueOfEpsilon(final double value, final double epsilon) {
@@ -298,7 +292,7 @@ public abstract class AbstractFractionSym implements IFraction {
 			return null;
 		}
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public IRational divideBy(IRational that) {
@@ -422,8 +416,7 @@ public abstract class AbstractFractionSym implements IFraction {
 	}
 
 	/**
-	 * Check whether this rational represents an integral value (i.e. the
-	 * denominator equals 1).
+	 * Check whether this rational represents an integral value (i.e. the denominator equals 1).
 	 * 
 	 * @return <code>true</code> iff value is integral.
 	 */
@@ -450,6 +443,16 @@ public abstract class AbstractFractionSym implements IFraction {
 	@Override
 	public boolean isRationalValue(IRational value) {
 		return equals(value);
+	}
+
+	@Override
+	public long leafCountSimplify() {
+		return 1 + getNumerator().integerLength(F.C10) + getDenominator().integerLength(F.C10);
+	}
+
+	@Override
+	public long leafCount() {
+		return 3;
 	}
 
 	/**

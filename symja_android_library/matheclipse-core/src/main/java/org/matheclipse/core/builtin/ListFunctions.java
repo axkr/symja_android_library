@@ -767,9 +767,6 @@ public final class ListFunctions {
 
 		}
 
-		public Count() {
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 3, 4);
