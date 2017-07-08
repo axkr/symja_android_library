@@ -1,11 +1,9 @@
-package org.matheclipse.core.reflection.system;
+package org.matheclipse.core.data;
 
 import static org.matheclipse.core.expression.F.NIL;
 
 import java.util.HashMap;
 
-import org.matheclipse.core.data.ElementData1;
-import org.matheclipse.core.data.ElementData2;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -19,6 +17,13 @@ import org.matheclipse.core.interfaces.ISymbol;
  *  
  */
 public class ElementData extends AbstractFunctionEvaluator {
+	String[] PROPERTIES_DATA = { "Abbreviation", "AbsoluteBoilingPoint", "AbsoluteMeltingPoint", "AtomicNumber",
+			"AtomicRadius", "AtomicWeight", "Block", "BoilingPoint", "BrinellHardness", "BulkModulus", "CovalentRadius",
+			"CrustAbundance", "Density", "DiscoveryYear", "ElectroNegativity", "ElectronAffinity",
+			"ElectronConfiguration", "ElectronConfigurationString", "ElectronShellConfiguration", "FusionHeat", "Group",
+			"IonizationEnergies", "LiquidDensity", "MeltingPoint", "MohsHardness", "Name", "Period", "PoissonRatio",
+			"Series", "ShearModulus", "SpecificHeat", "StandardName", "ThermalConductivity", "VanDerWaalsRadius",
+			"VaporizationHeat", "VickersHardness", "YoungModulus" };
 
 	private static java.util.Map<IExpr, IExpr> MAP_NUMBER_NAME = new HashMap<IExpr, IExpr>();
 
@@ -36,6 +41,15 @@ public class ElementData extends AbstractFunctionEvaluator {
 				IExpr temp = MAP_NUMBER_NAME.get(ast.arg1());
 				if (temp != null) {
 					return temp;
+				}
+			}
+			if (ast.arg1() instanceof IStringX  ) {
+				if (ast.arg1().toString().equals("Properties")) {
+					IAST list=F.ListAlloc(PROPERTIES_DATA.length);
+					for (int i = 0; i < PROPERTIES_DATA.length; i++) {
+						list.append(F.$str(PROPERTIES_DATA[i]));
+					}
+					return list;
 				}
 			}
 		} else {
@@ -67,27 +81,37 @@ public class ElementData extends AbstractFunctionEvaluator {
 		if (propertyStr.equals("AtomicWeight")) {
 			return propertyList.get(9);
 		}
-		// if (propertyStr.equals("MeltingPoint")) {
-		// return propertyList.get(14);
-		// }
+		if (propertyStr.equals("AbsoluteMeltingPoint")) {
+			return propertyList.get(14);
+		}
+		if (propertyStr.equals("MeltingPoint")) {
+			return propertyList.get(14);
+		}
+		if (propertyStr.equals("AbsoluteBoilingPoint")) {
+			return propertyList.get(15);
+		}
 		if (propertyStr.equals("BoilingPoint")) {
 			return propertyList.get(16);
 		}
-
-//		if (propertyStr.equals("AtomicRadius")) {
-//			return propertyList.get(25);
-//		}
+		if (propertyStr.equals("SpecificHeat")) {
+			return propertyList.get(17);
+		}
+		if (propertyStr.equals("ElectroNegativity")) {
+			return propertyList.get(20);
+		}
+		// if (propertyStr.equals("AtomicRadius")) {
+		// return propertyList.get(25);
+		// }
 		if (propertyStr.equals("VanDerWaalsRadius")) {
 			return propertyList.get(26);
 		}
-//		if (propertyStr.equals("CovalentRadius")) {
-//			return propertyList.get(27);
-//		}
+		// if (propertyStr.equals("CovalentRadius")) {
+		// return propertyList.get(27);
+		// }
 		if (propertyStr.equals("IonizationEnergies")) {
 			return propertyList.get(28);
 		}
-		
-		
+
 		if (propertyStr.equals("ElectronAffinity")) {
 			return propertyList.get(29);
 		}

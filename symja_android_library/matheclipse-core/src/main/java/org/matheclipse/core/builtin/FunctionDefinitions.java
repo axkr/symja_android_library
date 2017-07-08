@@ -26,7 +26,7 @@ public final class FunctionDefinitions {
 		Dot.setEvaluator(new org.matheclipse.core.reflection.system.Dot());
 		DSolve.setEvaluator(new org.matheclipse.core.reflection.system.DSolve());
 		EasterSunday.setEvaluator(new org.matheclipse.core.reflection.system.EasterSunday());
-		ElementData.setEvaluator(new org.matheclipse.core.reflection.system.ElementData());
+		ElementData.setEvaluator(new org.matheclipse.core.data.ElementData());
 		Eliminate.setEvaluator(new org.matheclipse.core.reflection.system.Eliminate());
 		EllipticE.setEvaluator(new org.matheclipse.core.reflection.system.EllipticE());
 		EllipticPi.setEvaluator(new org.matheclipse.core.reflection.system.EllipticPi());
