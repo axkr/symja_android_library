@@ -43,9 +43,9 @@ public class ElementData extends AbstractFunctionEvaluator {
 					return temp;
 				}
 			}
-			if (ast.arg1() instanceof IStringX  ) {
+			if (ast.arg1() instanceof IStringX) {
 				if (ast.arg1().toString().equals("Properties")) {
-					IAST list=F.ListAlloc(PROPERTIES_DATA.length);
+					IAST list = F.ListAlloc(PROPERTIES_DATA.length);
 					for (int i = 0; i < PROPERTIES_DATA.length; i++) {
 						list.append(F.$str(PROPERTIES_DATA[i]));
 					}
@@ -78,11 +78,32 @@ public class ElementData extends AbstractFunctionEvaluator {
 		if (propertyStr.equals("Name")) {
 			return propertyList.get(4);
 		}
+		if (propertyStr.equals("Block")) {
+			return propertyList.get(5);
+		}
+		if (propertyStr.equals("Group")) {
+			return propertyList.get(6);
+		}
+		if (propertyStr.equals("Period")) {
+			return propertyList.get(7);
+		}
+		if (propertyStr.equals("Series")) {
+			return propertyList.get(8);
+		}
 		if (propertyStr.equals("AtomicWeight")) {
 			return propertyList.get(9);
 		}
+		if (propertyStr.equals("DiscoveryYear")) {
+			return propertyList.get(10);
+		}
+		if (propertyStr.equals("LiquidDensity")) {
+			return propertyList.get(11);
+		}
+		if (propertyStr.equals("Density")) {
+			return propertyList.get(12);
+		}
 		if (propertyStr.equals("AbsoluteMeltingPoint")) {
-			return propertyList.get(14);
+			return propertyList.get(13);
 		}
 		if (propertyStr.equals("MeltingPoint")) {
 			return propertyList.get(14);
@@ -96,22 +117,39 @@ public class ElementData extends AbstractFunctionEvaluator {
 		if (propertyStr.equals("SpecificHeat")) {
 			return propertyList.get(17);
 		}
+		if (propertyStr.equals("FusionHeat")) {
+			return propertyList.get(18);
+		}
+		if (propertyStr.equals("VaporizationHeat")) {
+			return propertyList.get(19);
+		}
 		if (propertyStr.equals("ElectroNegativity")) {
 			return propertyList.get(20);
 		}
-		// if (propertyStr.equals("AtomicRadius")) {
-		// return propertyList.get(25);
-		// }
+		if (propertyStr.equals("CrustAbundance")) {
+			return propertyList.get(21);
+		}
+		if (propertyStr.equals("MohsHardness")) {
+			return propertyList.get(22);
+		}
+		if (propertyStr.equals("VickersHardness")) {
+			return propertyList.get(23);
+		}
+		if (propertyStr.equals("BrinellHardness")) {
+			return propertyList.get(24);
+		}
+		if (propertyStr.equals("AtomicRadius")) {
+			return propertyList.get(25);
+		}
 		if (propertyStr.equals("VanDerWaalsRadius")) {
 			return propertyList.get(26);
 		}
-		// if (propertyStr.equals("CovalentRadius")) {
-		// return propertyList.get(27);
-		// }
+		if (propertyStr.equals("CovalentRadius")) {
+			return propertyList.get(27);
+		}
 		if (propertyStr.equals("IonizationEnergies")) {
 			return propertyList.get(28);
 		}
-
 		if (propertyStr.equals("ElectronAffinity")) {
 			return propertyList.get(29);
 		}
@@ -138,7 +176,7 @@ public class ElementData extends AbstractFunctionEvaluator {
 		}
 		if (propertyStr.equals("ElectronShellConfiguration")) {
 			return propertyList.get(37);
-		}
+		} 
 		return NIL;
 	}
 

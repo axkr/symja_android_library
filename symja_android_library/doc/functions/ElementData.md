@@ -20,6 +20,7 @@ ElementData(n, "property")
 "Tungsten"
 
 >> ElementData("He", "AbsoluteBoilingPoint")
+4.22
 
 >> ElementData("Carbon", "IonizationEnergies")
 {1086.5,2352.6,4620.5,6222.7,37831,47277.0}
