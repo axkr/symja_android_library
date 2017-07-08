@@ -312,6 +312,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [E](functions/E.md)
 * [Eigenvalues](functions/Eigenvalues.md)
 * [Eigenvectors](functions/Eigenvectors.md)
+* [ElementData](functions/ElementData.md)
 * [Eliminate](functions/Eliminate.md)
 * [Equal](functions/Equal.md)
 * [Equivalent](functions/Equivalent.md)
