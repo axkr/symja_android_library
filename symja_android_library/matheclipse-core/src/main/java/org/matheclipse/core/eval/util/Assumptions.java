@@ -93,7 +93,6 @@ public class Assumptions extends AbstractAssumptions {
 	 * @return <code>null</code> if <code>Assumptions</code> could not be created from the given expression.
 	 */
 	public static IAssumptions getInstance(IExpr expr) {
-
 		if (expr.isAST()) {
 			IAST ast = (IAST) expr;
 			Assumptions assumptions = new Assumptions();

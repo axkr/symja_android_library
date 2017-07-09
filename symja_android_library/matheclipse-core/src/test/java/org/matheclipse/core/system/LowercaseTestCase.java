@@ -1634,7 +1634,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testElementData() {
 		// TODO
 		// check("Length(ElementData(All))", "118");
-		
+
 		check("ElementData(74)", "\"Tungsten\"");
 		check("ElementData(\"He\", \"AbsoluteBoilingPoint\")", "4.22");
 		check("ElementData(\"Carbon\", \"IonizationEnergies\")", "{1086.5,2352.6,4620.5,6222.7,37831,47277.0}");
@@ -4030,11 +4030,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("NumericQ(3+I)", "True");
 		check("NumberQ(5!)", "True");
 		check("NumberQ(Pi)", "False");
-		
+
 		check("SetAttributes(f, NumericFunction)", "");
 		check("NumericQ(f(Pi))", "True");
 	}
-	
+
 	public void testNumerator() {
 		check("Numerator(Csc(x))", "Csc(x)");
 		check("Numerator(Csc(x), Trig->True)", "1");
@@ -4426,7 +4426,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testPochhammer() {
 		check("Pochhammer(2,3)", "24");
-		
+
 		check("Pochhammer(4, 8)", "6652800");
 		check("Pochhammer(10, 6)", "3603600");
 		check("Pochhammer(10, -6)", "1/60480");
@@ -5055,6 +5055,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRefine() {
+		// TODO
+		// check("Refine((a^b)^c, -1<b&&b<(-1))", "a^(b*c)");
+		check("Refine(Re(a+I*b), Element(a, Reals)&&Element(b, Reals))", "a");
+		
+		check("Refine(Log(x), x<0)", "I*Pi+Log(-x)");
+
+		check("(x^3)^(1/3)", "(x^3)^(1/3)");
+		check("Refine((x^3)^(1/3), x>=0)", "x");
+
 		check("Refine(Sqrt(x^2), Element(x, Reals))", "Abs(x)");
 		check("Refine(Sqrt(x^2), Assumptions -> Element(x, Reals))", "Abs(x)");
 		check("Refine(Sqrt(x^2), Element(x, Integers))", "Abs(x)");
@@ -5089,6 +5098,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Refine(Log(-4), x<0)", "I*Pi+Log(4)");
 
 		check("Refine(Sin(k*Pi), Element(k, Integers))", "0");
+		check("Sin(k*Pi)", "Sin(k*Pi)");
 		check("Refine(Cos(x+k*Pi), Element(k, Integers))", "(-1)^k*Cos(x)");
 
 		check("Refine(Floor(2*a + 1), Element(a, Integers))", "1+2*a");
@@ -5099,6 +5109,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Refine(Arg(x), Assumptions -> x>0)", "0");
 		check("Refine(Arg(x), Assumptions -> x<0)", "Pi");
+		
 	}
 
 	public void testReplace() {

@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 
-public class AbstractAssumptions implements IAssumptions {
+public abstract class AbstractAssumptions implements IAssumptions {
 
 	@Override
 	public boolean isNegative(IExpr expr) {
@@ -62,6 +62,13 @@ public class AbstractAssumptions implements IAssumptions {
 		return false;
 	}
 
+	/**
+	 * Test if <code>expr</code> is assumed to be an negative number.
+	 * 
+	 * @param expr
+	 * @return <code>true</code> if <code>expr</code> is assumed to be a negative number. Return <code>false</code> in
+	 *         all other cases.
+	 */
 	public static boolean assumeNegative(final IExpr expr) {
 		if (expr.isSignedNumber()) {
 			return ((ISignedNumber) expr).isNegative();
@@ -81,6 +88,13 @@ public class AbstractAssumptions implements IAssumptions {
 		return false;
 	}
 
+	/**
+	 * Test if <code>expr</code> is assumed to be an positive number.
+	 * 
+	 * @param expr
+	 * @return <code>true</code> if <code>expr</code> is assumed to be a positive number. Return <code>false</code> in
+	 *         all other cases.
+	 */
 	public static boolean assumePositive(final IExpr expr) {
 		if (expr.isSignedNumber()) {
 			return ((ISignedNumber) expr).isPositive();
@@ -100,6 +114,13 @@ public class AbstractAssumptions implements IAssumptions {
 		return false;
 	}
 
+	/**
+	 * Test if <code>expr</code> is assumed to be an non negative number.
+	 * 
+	 * @param expr
+	 * @return <code>true</code> if <code>expr</code> is assumed to be a non negative number. Return <code>false</code>
+	 *         in all other cases.
+	 */
 	public static boolean assumeNonNegative(final IExpr expr) {
 		if (expr.isSignedNumber()) {
 			return !((ISignedNumber) expr).isNegative();
@@ -169,6 +190,13 @@ public class AbstractAssumptions implements IAssumptions {
 		return null;
 	}
 
+	/**
+	 * Test if <code>expr</code> is assumed to be an boolean value.
+	 * 
+	 * @param expr
+	 * @return <code>F.True</code> or <code>F.False</code> if <code>expr</code> is assumed to be a boolean value or no
+	 *         boolean value. In all other cases return <code>null</code>.
+	 */
 	public static ISymbol assumeBoolean(final IExpr expr) {
 		if (expr.isTrue() || expr.isFalse()) {
 			return F.True;
@@ -185,6 +213,13 @@ public class AbstractAssumptions implements IAssumptions {
 		return null;
 	}
 
+	/**
+	 * Test if <code>expr</code> is assumed to be a complex number.
+	 * 
+	 * @param expr
+	 * @return <code>F.True</code> or <code>F.False</code> if <code>expr</code> is assumed to be a complex number or no
+	 *         complex number. In all other cases return <code>null</code>.
+	 */
 	public static ISymbol assumeComplex(final IExpr expr) {
 		if (expr.isNumber()) {
 			return F.True;
@@ -216,6 +251,13 @@ public class AbstractAssumptions implements IAssumptions {
 		return null;
 	}
 
+	/**
+	 * Test if <code>expr</code> is assumed to be an integer.
+	 * 
+	 * @param expr
+	 * @return <code>F.True</code> or <code>F.False</code> if <code>expr</code> is assumed to be an integer or no
+	 *         integer. In all other cases return <code>null</code>.
+	 */
 	public static ISymbol assumeInteger(final IExpr expr) {
 		if (expr.isInteger()) {
 			return F.True;
@@ -235,6 +277,13 @@ public class AbstractAssumptions implements IAssumptions {
 		return null;
 	}
 
+	/**
+	 * Test if <code>expr</code> is assumed to be an prime number.
+	 * 
+	 * @param expr
+	 * @return <code>F.True</code> or <code>F.False</code> if <code>expr</code> is assumed to be a prime number or no
+	 *         prime number. In all other cases return <code>null</code>.
+	 */
 	public static ISymbol assumePrime(final IExpr expr) {
 		if (expr.isInteger() && ((IInteger) expr).isProbablePrime()) {
 			return F.True;
@@ -242,17 +291,6 @@ public class AbstractAssumptions implements IAssumptions {
 		if (expr.isNumber()) {
 			return F.False;
 		}
-		// if (expr.isAST()) {
-		// IAST ast = (IAST) expr;
-		// if (ast.isPower() && ast.arg1().isRational() &&
-		// ast.arg2().isRational()) {
-		// IExpr arg2 = ast.arg2();
-		// if (arg2.equals(F.C1D2)) {
-		// return F.False;
-		// }
-		// }
-		// }
-
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
 		if (assumptions != null) {
 			if (assumptions.isPrime(expr)) {
@@ -262,6 +300,13 @@ public class AbstractAssumptions implements IAssumptions {
 		return null;
 	}
 
+	/**
+	 * Test if <code>expr</code> is assumed to be a rational number.
+	 * 
+	 * @param expr
+	 * @return <code>F.True</code> or <code>F.False</code> if <code>expr</code> is assumed to be a rational number or no
+	 *         rational number. In all other cases return <code>null</code>.
+	 */
 	public static ISymbol assumeRational(final IExpr expr) {
 		if (expr.isRational()) {
 			return F.True;
@@ -284,6 +329,13 @@ public class AbstractAssumptions implements IAssumptions {
 		return null;
 	}
 
+	/**
+	 * Test if <code>expr</code> is assumed to be a real number.
+	 * 
+	 * @param expr
+	 * @return <code>F.True</code> or <code>F.False</code> if <code>expr</code> is assumed to be a real number or no
+	 *         real number. In all other cases return <code>null</code>.
+	 */
 	public static ISymbol assumeReal(final IExpr expr) {
 		if (expr.isSignedNumber()) {
 			return F.True;

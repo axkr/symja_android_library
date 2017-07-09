@@ -12,8 +12,14 @@ Refine(expression, assumptions)
 Abs(m)+n
 
 >> Refine(-Infinity<x, x>0)
-True
+True 
 
 >> Refine(Max(Infinity,x,y), x>0)
 Max(Infinity,y)
+
+>> Refine(Sin(k*Pi), Element(k, Integers))
+0
+
+>> Sin(k*Pi)
+Sin(k*Pi)
 ```  

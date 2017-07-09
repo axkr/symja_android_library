@@ -68,6 +68,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.ComplexNum;
@@ -110,6 +111,7 @@ public final class Arithmetic {
 
 		F.Abs.setEvaluator(new Abs());
 		F.AddTo.setEvaluator(new AddTo());
+		F.Arg.setEvaluator(new Arg());
 		F.Complex.setEvaluator(CONST_COMPLEX);
 		F.Conjugate.setEvaluator(new Conjugate());
 		F.Decrement.setEvaluator(new Decrement());
@@ -296,6 +298,83 @@ public final class Arithmetic {
 		}
 	}
 
+	/**
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Argument_%28complex_analysis%29">
+	 * Wikipedia - Argument (complex_analysis)</a>
+	 * 
+	 */
+	private static class Arg extends AbstractFunctionEvaluator implements INumeric, DoubleUnaryOperator {
+
+		@Override
+		public double applyAsDouble(double operand) {
+			if (operand < 0) {
+				return Math.PI;
+			}
+			return 0.0;
+		}
+
+		@Override
+		public double evalReal(final double[] stack, final int top, final int size) {
+			if (size != 1) {
+				throw new UnsupportedOperationException();
+			}
+			if (stack[top] < 0) {
+				return Math.PI;
+			} else if (stack[top] >= 0) {
+				return 0;
+			}
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			final IExpr arg1 = ast.arg1();
+			if (arg1.isIndeterminate()) {
+				return F.Indeterminate;
+			}
+			if (arg1.isDirectedInfinity()) {
+				IAST directedInfininty = (IAST) arg1;
+				if (directedInfininty.isAST1()) {
+					if (directedInfininty.isInfinity()) {
+						return F.C0;
+					}
+					return F.Arg(directedInfininty.arg1());
+				} else if (arg1.isComplexInfinity()) {
+					return F.Interval(F.List(F.Pi.negate(), F.Pi));
+				}
+			} else if (arg1.isNumber()) {
+				return ((INumber) arg1).complexArg();
+			}
+			if (arg1.isNumericFunction()) {
+				IExpr temp = engine.evalN(arg1);
+				if (temp.isSignedNumber()) {
+					if (temp.isNegative()) {
+						return F.Pi;
+					}
+					return F.C0;
+				}
+			}
+
+			if (AbstractAssumptions.assumeNegative(arg1)) {
+				return F.Pi;
+			}
+			if (AbstractAssumptions.assumePositive(arg1)) {
+				return F.C0;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION | ISymbol.NHOLDFIRST);
+			super.setUp(newSymbol);
+		}
+	}
+
+	
 	private final static class Complex extends AbstractCoreFunctionEvaluator {
 
 		public Complex() {
@@ -858,15 +937,9 @@ public final class Arithmetic {
 			if (arg1.isNumber()) {
 				return ((INumber) arg1).im();
 			}
-			// if (arg1.isSignedNumber()) {
-			// return F.C0;
-			// }
-			// if (arg1.isComplex()) {
-			// return ((IComplex) arg1).getIm();
-			// }
-			// if (arg1 instanceof IComplexNum) {
-			// return F.num(((IComplexNum) arg1).getImaginaryPart());
-			// }
+			if (arg1.isRealResult()) {
+				return F.C0;
+			}
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 			if (negExpr.isPresent()) {
 				return Negate(Im(negExpr));
@@ -2212,7 +2285,10 @@ public final class Arithmetic {
 			if (expr.isNumber()) {
 				return ((INumber) expr).re();
 			}
-
+			if (expr.isRealResult()) {
+				return expr;
+			}
+			
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(expr);
 			if (negExpr.isPresent()) {
 				return Negate(Re(negExpr));
@@ -2249,9 +2325,6 @@ public final class Arithmetic {
 				}
 			}
 			return F.NIL;
-		}
-
-		public Re() {
 		}
 
 		@Override

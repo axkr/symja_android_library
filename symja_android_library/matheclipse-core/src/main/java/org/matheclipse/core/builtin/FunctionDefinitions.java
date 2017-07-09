@@ -5,7 +5,6 @@ import static org.matheclipse.core.expression.F.*;
 public final class FunctionDefinitions {
 	static {
 		AbsArg.setEvaluator(new org.matheclipse.core.reflection.system.AbsArg());
-		Arg.setEvaluator(new org.matheclipse.core.reflection.system.Arg());
 		BesselJ.setEvaluator(new org.matheclipse.core.reflection.system.BesselJ());
 		CDF.setEvaluator(new org.matheclipse.core.reflection.system.CDF());
 		CentralMoment.setEvaluator(new org.matheclipse.core.reflection.system.CentralMoment());

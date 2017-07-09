@@ -55,7 +55,7 @@ public class Round extends AbstractFunctionEvaluator implements INumeric {
 				return signedNumber.round();
 			}
 
-			if (F.True.equals(AbstractAssumptions.assumeInteger(arg1))) {
+			if (arg1.isIntegerResult()) {
 				return arg1;
 			}
 
@@ -77,7 +77,7 @@ public class Round extends AbstractFunctionEvaluator implements INumeric {
 		}
 		return F.NIL;
 	}
- 
+
 	@Override
 	public void setUp(final ISymbol newSymbol) {
 		newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);

@@ -575,7 +575,7 @@ public class ExpTrigsFunctions {
 		@Override
 		public IExpr e1DblArg(final double d) {
 			// log(1+Sqrt(1-d^2) / d)
-			if (F.isZero(d)){
+			if (F.isZero(d)) {
 				return F.Indeterminate;
 			}
 			return F.num(Math.log((1 + Math.sqrt(1 - d * d)) / d));
@@ -1009,7 +1009,7 @@ public class ExpTrigsFunctions {
 						return Sin(Subtract(Divide(Pi, C2), arg1));
 					}
 				}
-				if (F.True.equals(AbstractAssumptions.assumeInteger(parts.arg2()))) {
+				if (parts.arg2().isIntegerResult()) {
 					// period n*Pi
 					return Times(Power(CN1, parts.arg2()), Cos(parts.arg1()));
 				}
@@ -1178,7 +1178,7 @@ public class ExpTrigsFunctions {
 					}
 				}
 
-				if (F.True.equals(AbstractAssumptions.assumeInteger(parts.arg2()))) {
+				if (parts.arg2().isIntegerResult()) {
 					// period n*Pi
 					return Times(Power(CN1, parts.arg2()), Csc(parts.arg1()));
 				}
@@ -1338,7 +1338,7 @@ public class ExpTrigsFunctions {
 
 				}
 
-				if (F.True.equals(AbstractAssumptions.assumeInteger(parts.arg2()))) {
+				if (parts.arg2().isIntegerResult()) {
 					// period Pi
 					return Cot(parts.arg1());
 				}
@@ -1578,7 +1578,7 @@ public class ExpTrigsFunctions {
 						return temp;
 					}
 				}
-				if (AbstractAssumptions.assumePositive(arg1) && F.True.equals(AbstractAssumptions.assumeReal(arg2))) {
+				if (AbstractAssumptions.assumePositive(arg1) && arg2.isRealResult()) {
 					// Log(arg1 ^ arg2) == arg2*Log(arg1) ||| arg1 > 0 && arg2 is
 					// Real
 					return temp;
@@ -1747,7 +1747,7 @@ public class ExpTrigsFunctions {
 					}
 				}
 
-				if (F.True.equals(AbstractAssumptions.assumeInteger(parts.arg2()))) {
+				if (parts.arg2().isIntegerResult()) {
 					// period n*Pi
 					return Times(Power(CN1, parts.arg2()), Sec(parts.arg1()));
 				}
@@ -1917,7 +1917,7 @@ public class ExpTrigsFunctions {
 					}
 				}
 
-				if (F.True.equals(AbstractAssumptions.assumeInteger(parts.arg2()))) {
+				if (parts.arg2().isIntegerResult()) {
 					// period n*Pi
 					return Times(Power(CN1, parts.arg2()), Sin(parts.arg1()));
 				}
@@ -2094,7 +2094,7 @@ public class ExpTrigsFunctions {
 					}
 				}
 
-				if (F.True.equals(AbstractAssumptions.assumeInteger(parts.arg2()))) {
+				if (parts.arg2().isIntegerResult()) {
 					// period Pi
 					return F.Tan(parts.arg1());
 				}
