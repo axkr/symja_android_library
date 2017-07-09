@@ -255,6 +255,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testArcSech() {
 		check("ArcSech(0)", "Infinity");
+		check("ArcSech(0.0)", "Indeterminate");
 		check("ArcSech(1)", "0");
 		checNumeric("ArcSech(0.5)", "1.3169578969248166");
 		check("ArcSech(-x)", "ArcSech(-x)");
@@ -3116,7 +3117,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLog() {
-
 		check("Log({0, 1, E, E * E, E ^ 3, E ^ x})", "{-Infinity,0,1,2,3,Log(E^x)}");
 		check("Log(0.)", "Indeterminate");
 		check("Log(1000) / Log(10)", "3");
@@ -4030,6 +4030,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("NumericQ(3+I)", "True");
 		check("NumberQ(5!)", "True");
 		check("NumberQ(Pi)", "False");
+		
+		check("SetAttributes(f, NumericFunction)", "");
+		check("NumericQ(f(Pi))", "True");
 	}
 	
 	public void testNumerator() {
@@ -4422,6 +4425,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPochhammer() {
+		check("Pochhammer(2,3)", "24");
+		
 		check("Pochhammer(4, 8)", "6652800");
 		check("Pochhammer(10, 6)", "3603600");
 		check("Pochhammer(10, -6)", "1/60480");

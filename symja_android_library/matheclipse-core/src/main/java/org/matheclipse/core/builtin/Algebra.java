@@ -1836,11 +1836,9 @@ public class Algebra {
 					}
 					if (x1.isTimes()) {
 						IAST timesAST = (IAST) x1;
-						// Log[x_ * y_ * z_] :> Log(x)*Log(y)*Log(z)
+						// Log[x_ * y_ * z_] :> Log(x)+Log(y)+Log(z)
 						IAST logResult = timesAST.setAtClone(0, F.Plus);
 						logResult = logResult.mapThread(F.Log(F.Null), 1);
-						// if (assumptions) {
-						// }
 						return powerExpand(logResult, assumptions);
 					}
 				}

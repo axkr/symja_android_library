@@ -575,6 +575,9 @@ public class ExpTrigsFunctions {
 		@Override
 		public IExpr e1DblArg(final double d) {
 			// log(1+Sqrt(1-d^2) / d)
+			if (F.isZero(d)){
+				return F.Indeterminate;
+			}
 			return F.num(Math.log((1 + Math.sqrt(1 - d * d)) / d));
 		}
 
@@ -1607,6 +1610,7 @@ public class ExpTrigsFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
 			if (ast.arg1().isNumber()) {
+				// 1 / (1 + Exp(-arg1))
 				return F.Power(F.Plus(F.C1, F.Power(F.E, F.Times(F.CN1, ast.arg1()))), F.CN1);
 			}
 			return F.NIL;

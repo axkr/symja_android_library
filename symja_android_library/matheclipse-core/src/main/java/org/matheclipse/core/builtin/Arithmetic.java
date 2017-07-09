@@ -1238,7 +1238,7 @@ public final class Arithmetic {
 	 *            The number of product terms in the evaluation.
 	 * @return Gamma(this+n)/Gamma(this) = this*(this+1)*...*(this+n-1).
 	 */
-	private final static class Pochhammer extends AbstractArg2 {
+	private final static class Pochhammer extends AbstractArg2 {// implements PochhammerRules {
 
 		@Override
 		public IExpr e2ObjArg(final IExpr a, final IExpr n) {
@@ -1295,6 +1295,11 @@ public final class Arithmetic {
 		public static BigFraction pochhammer(BigFraction th, int n) {
 			return pochhammer(th, BigInteger.valueOf(n));
 		}
+
+		// @Override
+		// public IAST getRuleAST() {
+		// return RULES;
+		// }
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {

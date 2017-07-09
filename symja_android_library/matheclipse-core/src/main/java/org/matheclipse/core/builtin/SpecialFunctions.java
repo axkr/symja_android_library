@@ -423,7 +423,6 @@ public class SpecialFunctions {
 			return PolynomialsUtils.createLegendrePolynomial(degree, ast.arg2());
 		}
 
-
 		@Override
 		public IAST getRuleAST() {
 			return RULES;
