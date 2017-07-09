@@ -49,6 +49,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.PolynomialsUtils;
+import org.matheclipse.core.reflection.system.rules.LegendrePRules;
 import org.matheclipse.core.reflection.system.rules.ProductLogRules;
 import org.matheclipse.core.reflection.system.rules.StruveHRules;
 import org.matheclipse.core.reflection.system.rules.StruveLRules;
@@ -411,14 +412,21 @@ public class SpecialFunctions {
 
 	}
 
-	private final static class LegendreP extends AbstractFunctionEvaluator {
+	private final static class LegendreP extends AbstractFunctionEvaluator implements LegendrePRules  {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
+			
+			
 			int degree = Validate.checkIntType(ast.arg1());
-
 			return PolynomialsUtils.createLegendrePolynomial(degree, ast.arg2());
+		}
+
+
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
 		}
 
 	}

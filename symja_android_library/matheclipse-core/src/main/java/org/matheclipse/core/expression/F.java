@@ -4146,7 +4146,11 @@ public class F {
 	public static IAST LCM(final IExpr a0, final IExpr a1) {
 		return binaryAST2(LCM, a0, a1);
 	}
-
+	
+	public static IAST LegendreP(final IExpr a0, final IExpr a1) {
+		return binaryAST2(LegendreP, a0, a1);
+	}
+	
 	// public static IAST KOrderlessPartitions(final IExpr a0) {
 	//
 	// return unaryAST2(KOrderlessPartitions, a0);

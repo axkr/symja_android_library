@@ -37,19 +37,19 @@ public interface SincRules {
       C0),
     // Sinc(Rational(5,12)*Pi)=(3*Sqrt(2)*(1+Sqrt(3)))/(5*Pi)
     ISet(Sinc(Times(QQ(5L,12L),Pi)),
-      Times(QQ(3L,5L),Plus(C1,CSqrt3),CSqrt2,Power(Pi,-1))),
+      Times(QQ(3L,5L),CSqrt2,Plus(C1,CSqrt3),Power(Pi,-1))),
     // Sinc(Rational(1,5)*Pi)=(5*Sqrt(Rational(5,8)-Rational(1,8)*Sqrt(5)))/Pi
     ISet(Sinc(Times(QQ(1L,5L),Pi)),
-      Times(C5,Power(Pi,-1),Sqrt(Plus(QQ(5L,8L),Times(QQ(-1L,8L),CSqrt5))))),
+      Times(C5,Sqrt(Plus(QQ(5L,8L),Times(QQ(-1L,8L),CSqrt5))),Power(Pi,-1))),
     // Sinc(Rational(1,12)*Pi)=(3*Sqrt(2)*(-1+Sqrt(3)))/Pi
     ISet(Sinc(Times(QQ(1L,12L),Pi)),
-      Times(C3,Plus(CN1,CSqrt3),CSqrt2,Power(Pi,-1))),
+      Times(C3,CSqrt2,Plus(CN1,CSqrt3),Power(Pi,-1))),
     // Sinc(Rational(1,10)*Pi)=(5*(-1+Sqrt(5)))/(2*Pi)
     ISet(Sinc(Times(QQ(1L,10L),Pi)),
       Times(QQ(5L,2L),Plus(CN1,CSqrt5),Power(Pi,-1))),
     // Sinc(Rational(2,5)*Pi)=(5*Sqrt(Rational(5,8)+Rational(1,8)*Sqrt(5)))/(2*Pi)
     ISet(Sinc(Times(QQ(2L,5L),Pi)),
-      Times(QQ(5L,2L),Power(Pi,-1),Sqrt(Plus(QQ(5L,8L),Times(QQ(1L,8L),CSqrt5))))),
+      Times(QQ(5L,2L),Sqrt(Plus(QQ(5L,8L),Times(QQ(1L,8L),CSqrt5))),Power(Pi,-1))),
     // Sinc(Rational(3,10)*Pi)=(5*(1+Sqrt(5)))/(6*Pi)
     ISet(Sinc(Times(QQ(3L,10L),Pi)),
       Times(QQ(5L,6L),Plus(C1,CSqrt5),Power(Pi,-1))),

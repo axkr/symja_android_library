@@ -22,7 +22,7 @@ public interface SinRules {
       C0),
     // Sin(Rational(1,12)*Pi)=(-1+Sqrt(3))/(2*Sqrt(2))
     ISet(Sin(Times(QQ(1L,12L),Pi)),
-      Times(C1D2,Plus(CN1,CSqrt3),C1DSqrt2)),
+      Times(C1D2,C1DSqrt2,Plus(CN1,CSqrt3))),
     // Sin(Rational(1,10)*Pi)=Rational(1,4)*(Sqrt(5)+(-1)*1)
     ISet(Sin(Times(QQ(1L,10L),Pi)),
       Times(C1D4,Plus(CN1,CSqrt5))),
@@ -52,13 +52,13 @@ public interface SinRules {
       Times(C1D2,Sqrt(C1D2),Sqrt(Plus(C5,CSqrt5)))),
     // Sin(Rational(5,12)*Pi)=(1+Sqrt(3))/(2*Sqrt(2))
     ISet(Sin(Times(QQ(5L,12L),Pi)),
-      Times(C1D2,Plus(C1,CSqrt3),C1DSqrt2)),
+      Times(C1D2,C1DSqrt2,Plus(C1,CSqrt3))),
     // Sin(Rational(1,2)*Pi)=1
     ISet(Sin(Times(C1D2,Pi)),
       C1),
     // Sin(Rational(7,12)*Pi)=(1+Sqrt(3))/(2*Sqrt(2))
     ISet(Sin(Times(QQ(7L,12L),Pi)),
-      Times(C1D2,Plus(C1,CSqrt3),C1DSqrt2)),
+      Times(C1D2,C1DSqrt2,Plus(C1,CSqrt3))),
     // Sin(Rational(3,5)*Pi)=Rational(1,2)*Sqrt(Rational(1,2)*(5+Sqrt(5)))
     ISet(Sin(Times(QQ(3L,5L),Pi)),
       Times(C1D2,Sqrt(C1D2),Sqrt(Plus(C5,CSqrt5)))),
@@ -88,13 +88,13 @@ public interface SinRules {
       Times(C1D4,Plus(CN1,CSqrt5))),
     // Sin(Rational(11,12)*Pi)=(-1+Sqrt(3))/(2*Sqrt(2))
     ISet(Sin(Times(QQ(11L,12L),Pi)),
-      Times(C1D2,Plus(CN1,CSqrt3),C1DSqrt2)),
+      Times(C1D2,C1DSqrt2,Plus(CN1,CSqrt3))),
     // Sin(Pi)=0
     ISet(Sin(Pi),
       C0),
     // Sin(Rational(13,12)*Pi)=-(-1+Sqrt(3))/(2*Sqrt(2))
     ISet(Sin(Times(QQ(13L,12L),Pi)),
-      Times(CN1D2,Plus(CN1,CSqrt3),C1DSqrt2)),
+      Times(CN1D2,C1DSqrt2,Plus(CN1,CSqrt3))),
     // Sin(Rational(11,10)*Pi)=Rational(-1,4)*(Sqrt(5)+(-1)*1)
     ISet(Sin(Times(QQ(11L,10L),Pi)),
       Times(CN1D4,Plus(CN1,CSqrt5))),
@@ -124,13 +124,13 @@ public interface SinRules {
       Times(CN1D2,Sqrt(C1D2),Sqrt(Plus(C5,CSqrt5)))),
     // Sin(Rational(17,12)*Pi)=-(1+Sqrt(3))/(2*Sqrt(2))
     ISet(Sin(Times(QQ(17L,12L),Pi)),
-      Times(CN1D2,Plus(C1,CSqrt3),C1DSqrt2)),
+      Times(CN1D2,C1DSqrt2,Plus(C1,CSqrt3))),
     // Sin(Rational(3,2)*Pi)=-1
     ISet(Sin(Times(QQ(3L,2L),Pi)),
       CN1),
     // Sin(Rational(19,12)*Pi)=-(1+Sqrt(3))/(2*Sqrt(2))
     ISet(Sin(Times(QQ(19L,12L),Pi)),
-      Times(CN1D2,Plus(C1,CSqrt3),C1DSqrt2)),
+      Times(CN1D2,C1DSqrt2,Plus(C1,CSqrt3))),
     // Sin(Rational(8,5)*Pi)=Rational(-1,2)*Sqrt(Rational(1,2)*(5+Sqrt(5)))
     ISet(Sin(Times(QQ(8L,5L),Pi)),
       Times(CN1D2,Sqrt(C1D2),Sqrt(Plus(C5,CSqrt5)))),
@@ -160,7 +160,7 @@ public interface SinRules {
       Times(CN1D4,Plus(CN1,CSqrt5))),
     // Sin(Rational(23,12)*Pi)=-(-1+Sqrt(3))/(2*Sqrt(2))
     ISet(Sin(Times(QQ(23L,12L),Pi)),
-      Times(CN1D2,Plus(CN1,CSqrt3),C1DSqrt2)),
+      Times(CN1D2,C1DSqrt2,Plus(CN1,CSqrt3))),
     // Sin(2*Pi)=0
     ISet(Sin(Times(C2,Pi)),
       C0),

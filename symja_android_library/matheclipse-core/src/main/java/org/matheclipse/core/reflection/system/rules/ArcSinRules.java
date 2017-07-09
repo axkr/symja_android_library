@@ -21,7 +21,7 @@ public interface ArcSinRules {
     ISet(ArcSin(C0),
       C0),
     // ArcSin((Sqrt(3)+(-1)*1)/(2*Sqrt(2)))=Rational(1,12)*Pi
-    ISet(ArcSin(Times(C1D2,Plus(CN1,CSqrt3),C1DSqrt2)),
+    ISet(ArcSin(Times(C1D2,C1DSqrt2,Plus(CN1,CSqrt3))),
       Times(QQ(1L,12L),Pi)),
     // ArcSin(Rational(1,4)*(Sqrt(5)+(-1)*1))=Rational(1,10)*Pi
     ISet(ArcSin(Times(C1D4,Plus(CN1,CSqrt5))),
@@ -48,7 +48,7 @@ public interface ArcSinRules {
     ISet(ArcSin(Times(C1D2,Sqrt(C1D2),Sqrt(Plus(C5,CSqrt5)))),
       Times(QQ(2L,5L),Pi)),
     // ArcSin((1+Sqrt(3))/(2*Sqrt(2)))=Rational(5,12)*Pi
-    ISet(ArcSin(Times(C1D2,Plus(C1,CSqrt3),C1DSqrt2)),
+    ISet(ArcSin(Times(C1D2,C1DSqrt2,Plus(C1,CSqrt3))),
       Times(QQ(5L,12L),Pi)),
     // ArcSin(1)=Rational(1,2)*Pi
     ISet(ArcSin(C1),

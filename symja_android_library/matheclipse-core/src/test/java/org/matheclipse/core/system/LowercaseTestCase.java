@@ -2924,6 +2924,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLegendreP() {
+		check("LegendreP(Pi,0)", "Sqrt(Pi)/(Gamma(1/2*(1-Pi))*Gamma(1+Pi/2))");
+		check("LegendreP(111,1)", "1");
 		check("LegendreP(4,x)", "3/8-15/4*x^2+35/8*x^4");
 		// TODO implement non integer args
 		// check("LegendreP(5/2, 1.5) ", "x");
@@ -4021,6 +4023,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("NumberQ(Pi)", "False");
 	}
 
+	public void testNumericQ() {
+		check("NumericQ(Sqrt(sin(2)))", "True");
+		check("NumericQ(E+Pi)", "True");
+		check("NumericQ(Pi)", "True");
+		check("NumericQ(3+I)", "True");
+		check("NumberQ(5!)", "True");
+		check("NumberQ(Pi)", "False");
+	}
+	
 	public void testNumerator() {
 		check("Numerator(Csc(x))", "Csc(x)");
 		check("Numerator(Csc(x), Trig->True)", "1");
