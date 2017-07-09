@@ -14,8 +14,8 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 
 /**
- * IFraction implementation which uses methods of the Apache
- * <code>org.apache.commons.math3.fraction.BigFraction</code> methods.
+ * IFraction implementation which uses methods of the Apache <code>org.apache.commons.math3.fraction.BigFraction</code>
+ * methods.
  * 
  * @see IFraction
  * @see FractionSym
@@ -39,8 +39,8 @@ public class BigFractionSym extends AbstractFractionSym {
 	 * <p>
 	 * Construct a rational from two BigIntegers.
 	 * </p>
-	 * <b>Note:</b> the constructor is package private and does not normalize.
-	 * Use the static constructor valueOf instead.
+	 * <b>Note:</b> the constructor is package private and does not normalize. Use the static constructor valueOf
+	 * instead.
 	 * 
 	 * @param nom
 	 *            Numerator
@@ -106,8 +106,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	}
 
 	/**
-	 * Return a new rational representing the smallest integral rational not
-	 * smaller than <code>this</code>.
+	 * Return a new rational representing the smallest integral rational not smaller than <code>this</code>.
 	 * 
 	 * @return Next bigger integer of <code>this</code>.
 	 */
@@ -117,8 +116,9 @@ public class BigFractionSym extends AbstractFractionSym {
 			return this;
 		}
 		BigInteger div = toBigNumerator().divide(toBigDenominator());
-		if (toBigNumerator().signum() > 0)
+		if (toBigNumerator().signum() > 0) {
 			div = div.add(BigInteger.ONE);
+		}
 		return AbstractFractionSym.valueOf(div, BigInteger.ONE);
 	}
 
@@ -149,7 +149,7 @@ public class BigFractionSym extends AbstractFractionSym {
 		}
 		if (expr.isSignedNumber()) {
 			return Double.compare(fFraction.doubleValue(), ((ISignedNumber) expr).doubleValue());
-		} 
+		}
 		return super.compareTo(expr);
 	}
 
@@ -251,8 +251,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	}
 
 	/**
-	 * Return a new rational representing the biggest integral rational not
-	 * bigger than <code>this</code>.
+	 * Return a new rational representing the biggest integral rational not bigger than <code>this</code>.
 	 * 
 	 * @return Next smaller integer of <code>this</code>.
 	 */
@@ -269,19 +268,18 @@ public class BigFractionSym extends AbstractFractionSym {
 	}
 
 	/**
-	 * Returns the fractional part of the rational, i.e. the number
-	 * this.sub(this.floor()).
+	 * Returns the fractional part of the rational
 	 * 
 	 * @return Next smaller integer of <code>this</code>.
 	 */
-	public IFraction frac() {
+	public IFraction fractionalPart() {
 		if (isIntegral()) {
 			return AbstractFractionSym.ZERO;
 		}
 		BigInteger den = fFraction.getDenominator();
 		BigInteger newnum = fFraction.getNumerator().mod(den);
-		if (newnum.signum() < 0) {
-			newnum = newnum.add(den);
+		if (isNegative()) {
+			return AbstractFractionSym.valueOf(newnum.negate(), den);
 		}
 		return AbstractFractionSym.valueOf(newnum, den);
 	}
@@ -316,9 +314,8 @@ public class BigFractionSym extends AbstractFractionSym {
 	}
 
 	/**
-	 * Compute the gcd of two rationals (this and other). The gcd is the
-	 * rational number, such that dividing this and other with the gcd will
-	 * yield two co-prime integers.
+	 * Compute the gcd of two rationals (this and other). The gcd is the rational number, such that dividing this and
+	 * other with the gcd will yield two co-prime integers.
 	 * 
 	 * @param other
 	 *            the second rational argument.
@@ -427,8 +424,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	}
 
 	/**
-	 * Check whether this rational represents an integral value (i.e. the
-	 * denominator equals 1).
+	 * Check whether this rational represents an integral value (i.e. the denominator equals 1).
 	 * 
 	 * @return <code>true</code> iff value is integral.
 	 */

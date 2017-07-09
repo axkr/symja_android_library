@@ -348,9 +348,6 @@ public abstract class AbstractFractionSym implements IFraction {
 		return result;
 	}
 
-	@Override
-	public abstract IFraction floorFraction();
-
 	/**
 	 * Returns the denominator of this fraction.
 	 * 

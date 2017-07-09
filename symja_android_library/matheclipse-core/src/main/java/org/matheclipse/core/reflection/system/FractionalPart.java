@@ -3,8 +3,6 @@ package org.matheclipse.core.reflection.system;
 import static org.matheclipse.core.expression.F.FractionalPart;
 import static org.matheclipse.core.expression.F.Negate;
 
-import java.math.BigInteger;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -30,6 +28,12 @@ public class FractionalPart extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		IExpr arg1 = ast.arg1();
+		if (arg1.isInteger()) {
+			return F.C0;
+		} else if (arg1.isFraction()) {
+			IFraction fr = (IFraction) arg1;
+			return fr.fractionalPart();
+		} 
 		ISignedNumber signedNumber = arg1.evalSignedNumber();
 		if (signedNumber != null) {
 			return signedNumberFractionalPart(signedNumber);
@@ -46,29 +50,7 @@ public class FractionalPart extends AbstractFunctionEvaluator {
 			return F.C0;
 		} else if (arg1.isFraction()) {
 			IFraction fr = (IFraction) arg1;
-			BigInteger num = fr.toBigNumerator();
-			BigInteger den = fr.toBigDenominator();
-			BigInteger div = num.divide(den);
-			if (div.equals(BigInteger.ZERO)) {
-				return F.C0;
-			}
-			return F.fraction(div, den);
-			// } else if (arg1.isComplex()) {
-			// IComplex fr = (IComplex) arg1;
-			// BigFraction re = fr.getRealPart();
-			// BigFraction im = fr.getImaginaryPart();
-			//
-			// IFraction reResult;
-			// IFraction imResult;
-			// BigInteger num = re.getNumerator();
-			// BigInteger den = re.getDenominator();
-			// BigInteger div = num.divide(den);
-			// if (div.equals(BigInteger.ZERO)) {
-			// reResult = F.C0;
-			// } else {
-			//
-			// }
-			// return F.complex(div, den);
+			return fr.fractionalPart();
 		} else if (arg1 instanceof INum) {
 			INum num = (INum) arg1;
 			return F.num(num.getRealPart() % 1);

@@ -595,6 +595,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCeiling() {
+		check("Ceiling(-9/4)", "-2");
 		check("Ceiling(1/3)", "1");
 		check("Ceiling(-1/3)", "0");
 		check("Ceiling(1.2)", "2");
@@ -1831,6 +1832,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExpand() {
+		check("Expand((x + 3)^(5/2)+(x + 1)^(3/2))", "Sqrt(1+x)+x*Sqrt(1+x)+9*Sqrt(3+x)+6*x*Sqrt(3+x)+x^2*Sqrt(3+x)");
+		check("Expand((x + 1)^(5/2))", "Sqrt(1+x)+2*x*Sqrt(1+x)+x^2*Sqrt(1+x)");
+		check("Expand((x + 1)^(-5/2))", "1/(1+x)^(5/2)");
+		
 		check("Expand((x + y) ^ 3) ", "x^3+3*x^2*y+3*x*y^2+y^3");
 		check("Expand((a + b) (a + c + d))", "a^2+a*b+a*c+b*c+a*d+b*d");
 		check("Expand((a + b) (a + c + d) (e + f) + e a a)",
@@ -2199,6 +2204,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFloor() {
+		check("Floor(-9/4)", "-3");
 		check("Floor(1/3)", "0");
 		check("Floor(-1/3)", "-1");
 		check("Floor(10.4)", "10");
@@ -2249,6 +2255,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFractionalPart() {
+		
+		check("FractionalPart(-9/4)", "-1/4");
+		check("FractionalPart(-9/4)+IntegerPart(-9/4)", "-9/4");
+		check("FractionalPart(-2.25)+IntegerPart(-2.25)", "-2.25");
+		check("FractionalPart(9/4)+IntegerPart(9/4)", "9/4");
+		check("FractionalPart(2.25)+IntegerPart(2.25)", "2.25");
+		check("FractionalPart(0)+IntegerPart(0)", "0");
+		check("FractionalPart(0.0)+IntegerPart(0.0)", "0.0");
+		check("FractionalPart(1)+IntegerPart(1)", "1");
+		check("FractionalPart(1.0)+IntegerPart(1.0)", "1.0");
+		check("FractionalPart(-1)+IntegerPart(-1)", "-1");
+		check("FractionalPart(-1.0)+IntegerPart(-1.0)", "-1.0");
 		checNumeric("FractionalPart(2.4)", "0.3999999999999999");
 		checNumeric("FractionalPart(-2.4)", "-0.3999999999999999");
 		checNumeric("FractionalPart({-2.4, -2.5, -3.0})", "{-0.3999999999999999,-0.5,0.0}");
@@ -2652,6 +2670,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegerPart() {
+		check("IntegerPart(-9/4)", "-2");
 		check("IntegerPart(2.4)", "2");
 		check("IntegerPart(-2.4)", "-2");
 		check("IntegerPart({-2.4, -2.5, -3.0})", "{-2,-2,-3}");
@@ -3799,6 +3818,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNegative() {
+		check("Negative(-9/4)", "True");
+		check("Negative(0.1+I)", "False");
 		check("Negative(0)", "False");
 		check("Negative(-3)", "True");
 		check("Negative(10/7)", "False");
@@ -3904,10 +3925,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNonNegative() {
+		check("NonNegative(-9/4)", "False");
+		check("NonNegative(0.1+I)", "False");
+		check("NonNegative(I)", "False");
 		check("{Positive(0), NonNegative(0)}", "{False,True}");
 	}
 
 	public void testNonPositive() {
+		check("NonPositive(-9/4)", "True");
+		check("NonPositive(-0.1+I)", "False");
+		check("NonPositive(I)", "False");
 		check("{Negative(0), NonPositive(0)}", "{False,True}");
 	}
 
@@ -4578,6 +4605,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPositive() {
+		check("Positive(-9/4)", "False");
+		check("Positive(0.1+I)", "False");
 		check("Positive(1)", "True");
 		check("Positive(0)", "False");
 		check("Positive(1 + 2 I)", "False");
@@ -5058,7 +5087,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO
 		// check("Refine((a^b)^c, -1<b&&b<(-1))", "a^(b*c)");
 		check("Refine(Re(a+I*b), Element(a, Reals)&&Element(b, Reals))", "a");
-		
+
 		check("Refine(Log(x), x<0)", "I*Pi+Log(-x)");
 
 		check("(x^3)^(1/3)", "(x^3)^(1/3)");
@@ -5109,7 +5138,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Refine(Arg(x), Assumptions -> x>0)", "0");
 		check("Refine(Arg(x), Assumptions -> x<0)", "Pi");
-		
+
 	}
 
 	public void testReplace() {

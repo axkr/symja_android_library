@@ -14,6 +14,16 @@ public interface IFraction extends IRational {
 	@Override
 	public IFraction abs();
 
+	
+	@Override
+	public abstract IFraction floorFraction();
+	
+	/**
+	 * Return the fractional part of this fraction
+	 * @return
+	 */
+	public IFraction fractionalPart();
+	
 	public IFraction add(IFraction parm1);
 
 	public IFraction div(IFraction other);
@@ -84,4 +94,6 @@ public interface IFraction extends IRational {
 	 */
 	@Override
 	public BigInteger toBigNumerator();
+	
+	 
 }

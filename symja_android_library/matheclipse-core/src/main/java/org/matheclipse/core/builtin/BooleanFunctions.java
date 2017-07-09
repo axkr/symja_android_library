@@ -1332,14 +1332,18 @@ public final class BooleanFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
-			ISignedNumber arg1 = ast.arg1().evalSignedNumber();
-			if (arg1 != null) {
+			IExpr arg1 = ast.arg1();
+			if (arg1.isSignedNumber()) {
 				return F.bool(arg1.isNegative());
 			}
-			if (ast.arg1().isNumber()) {
+			if (arg1.isNumber()) {
 				return F.False;
 			}
-
+			ISignedNumber signedNumber = arg1.evalSignedNumber();
+			if (signedNumber != null) {
+				return F.bool(signedNumber.isNegative());
+			}
+			
 			return F.NIL;
 		}
 
@@ -1405,13 +1409,17 @@ public final class BooleanFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
-
-			ISignedNumber arg1 = ast.arg1().evalSignedNumber();
-			if (arg1 != null) {
+			
+			IExpr arg1 = ast.arg1();
+			if (arg1.isSignedNumber()) {
 				return F.bool(!arg1.isNegative());
 			}
-			if (ast.arg1().isNumber()) {
+			if (arg1.isNumber()) {
 				return F.False;
+			}
+			ISignedNumber signedNumber = arg1.evalSignedNumber();
+			if (signedNumber != null) {
+				return F.bool(!signedNumber.isNegative());
 			}
 			return F.NIL;
 		}
@@ -1429,12 +1437,16 @@ public final class BooleanFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
 
-			ISignedNumber arg1 = ast.arg1().evalSignedNumber();
-			if (arg1 != null) {
+			IExpr arg1 = ast.arg1();
+			if (arg1.isSignedNumber()) {
 				return F.bool(!arg1.isPositive());
 			}
-			if (ast.arg1().isNumber()) {
+			if (arg1.isNumber()) {
 				return F.False;
+			}
+			ISignedNumber signedNumber = arg1.evalSignedNumber();
+			if (signedNumber != null) {
+				return F.bool(!signedNumber.isPositive());
 			}
 			return F.NIL;
 		}
@@ -1625,13 +1637,18 @@ public final class BooleanFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
 
-			ISignedNumber arg1 = ast.arg1().evalSignedNumber();
-			if (arg1 != null) {
+			IExpr arg1 = ast.arg1();
+			if (arg1.isNumber()) {
 				return F.bool(arg1.isPositive());
 			}
-			if (ast.arg1().isNumber()) {
+			if (arg1.isNumber()) {
 				return F.False;
 			}
+			ISignedNumber signedNumber = arg1.evalSignedNumber();
+			if (signedNumber != null) {
+				return F.bool(signedNumber.isPositive());
+			}
+			
 			return F.NIL;
 		}
 

@@ -2080,10 +2080,12 @@ public class MainTestCase extends AbstractTestCase {
 
 	public void testSystem273() {
 		check("Negative(-I)", "False");
+		check("Negative(0)", "False");
 	}
 
 	public void testSystem274() {
 		check("NonNegative(3-I)", "False");
+		check("NonNegative(0)", "True");
 	}
 
 	public void testSystem275() {

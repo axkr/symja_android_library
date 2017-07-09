@@ -94,6 +94,9 @@ public class IntegerFunctions {
 		}
 
 		public IExpr evalCeiling(IExpr arg1) {
+			if (arg1.isNumber()) {
+				return ((INumber) arg1).ceilFraction();
+			}
 			INumber number = arg1.evalNumber();
 			if (number != null) {
 				return number.ceilFraction();
@@ -173,6 +176,9 @@ public class IntegerFunctions {
 		}
 
 		public IExpr evalFloor(IExpr arg1) {
+			if (arg1.isNumber()) {
+				return ((INumber) arg1).floorFraction();
+			}
 			INumber number = arg1.evalNumber();
 			if (number != null) {
 				return number.floorFraction();
@@ -226,7 +232,7 @@ public class IntegerFunctions {
 				if (iArg1.isZero()) {
 					return F.C1;
 				}
-				long l = iArg1.integerLength( radix);
+				long l = iArg1.integerLength(radix);
 
 				return F.integer(l);
 			}

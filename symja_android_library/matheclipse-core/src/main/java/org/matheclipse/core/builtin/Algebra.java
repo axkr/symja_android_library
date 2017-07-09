@@ -675,6 +675,19 @@ public class Algebra {
 			 */
 			public IExpr expandPowerNull(final IAST powerAST) {
 				if ((powerAST.arg1().isPlus())) {
+					
+					if (powerAST.arg2().isFraction()) {
+						IFraction fraction = (IFraction) powerAST.arg2();
+						if (fraction.isPositive()) {
+							INumber floorPart = fraction.floorFraction().normalize();
+							if (!floorPart.isZero()) {
+								IFraction fractionalPart = fraction.fractionalPart();
+								return expandAST(F.Times(F.Power(powerAST.arg1(), fractionalPart),
+										F.Power(powerAST.arg1(), floorPart)));
+							}
+						}
+					}
+					
 					try {
 						int exp = Validate.checkPowerExponent(powerAST);
 						IAST plusAST = (IAST) powerAST.arg1();
@@ -2496,6 +2509,7 @@ public class Algebra {
 
 		/**
 		 * Creata the complexity function which determines the &quot;more simplified&quot; expression.
+		 * 
 		 * @param complexityFunctionHead
 		 * @param engine
 		 * @return

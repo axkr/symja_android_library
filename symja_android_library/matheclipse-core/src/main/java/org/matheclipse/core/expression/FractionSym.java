@@ -151,10 +151,6 @@ public class FractionSym extends AbstractFractionSym {
 			return this;
 		}
 		int div = fNumerator / fDenominator;
-		// Java rounds the wrong way for positive numbers.
-		// We know that the division is not exact due to
-		// normalization and mdenom != 1, so adding
-		// one fixes the result for positive numbers.
 		if (fNumerator > 0) {
 			div++;
 		}
@@ -313,10 +309,6 @@ public class FractionSym extends AbstractFractionSym {
 			return this;
 		}
 		int div = fNumerator / fDenominator;
-		// Java rounds the wrong way for negative numbers.
-		// We know that the division is not exact due to
-		// normalization and mdenom != 1, so subtracting
-		// one fixes the result for negative numbers.
 		if (fNumerator < 0) {
 			div--;
 		}
@@ -328,18 +320,11 @@ public class FractionSym extends AbstractFractionSym {
 	 * 
 	 * @return Next smaller integer of <code>this</code>.
 	 */
-	public IFraction frac() {
+	public IFraction fractionalPart() {
 		if (fDenominator == 1) {
 			return AbstractFractionSym.ZERO;
 		}
-		int newnum = fNumerator % fDenominator;
-		// Java rounds the wrong way for negative numbers.
-		// We know that the division is not exact due to
-		// normalization and mdenom != 1, so subtracting
-		// one fixes the result for negative numbers.
-		if (newnum < 0)
-			newnum += fDenominator;
-		return valueOf(newnum, fDenominator);
+		return valueOf(fNumerator % fDenominator, fDenominator);
 	}
 
 	@Override
