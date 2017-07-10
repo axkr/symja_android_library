@@ -94,17 +94,17 @@ public class Console {
 				inputExpression = console.readString(System.out, ">> ");
 				if (inputExpression != null) {
 					trimmedInput = inputExpression.trim();
-					if ((inputExpression.length() >= 4)
-							&& inputExpression.toLowerCase(Locale.ENGLISH).substring(0, 4).equals("exit")) {
+					if ((trimmedInput.length() >= 4)
+							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 4).equals("exit")) {
 						System.out.println("Closing Symja console... bye.");
 						System.exit(0);
-					} else if ((inputExpression.length() >= 10)
-							&& inputExpression.toLowerCase(Locale.ENGLISH).substring(0, 10).equals("timeoutoff")) {
+					} else if ((trimmedInput.length() >= 10)
+							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 10).equals("timeoutoff")) {
 						System.out.println("Disabling timeout for evaluation");
 						console.fSeconds = -1;
 						continue;
-					} else if ((inputExpression.length() >= 9)
-							&& inputExpression.toLowerCase(Locale.ENGLISH).substring(0, 9).equals("timeouton")) {
+					} else if ((trimmedInput.length() >= 9)
+							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 9).equals("timeouton")) {
 						System.out.println("Enabling timeout for evaluation to 60 seconds.");
 						console.fSeconds = 60;
 						continue;
@@ -428,12 +428,10 @@ public class Console {
 	/**
 	 * read a string from the console. The string is terminated by a newline
 	 * 
-	 * @param out
-	 *            Description of Parameter
 	 * @return the input string (without the newline)
 	 */
 
-	public String readString(final PrintStream out) {
+	public String readString() {
 		final StringBuffer input = new StringBuffer();
 		final BufferedReader in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
 		boolean done = false;
@@ -472,7 +470,7 @@ public class Console {
 
 	public String readString(final PrintStream out, final String prompt) {
 		printPrompt(out, prompt);
-		return readString(out);
+		return readString();
 	}
 
 	/**

@@ -20,5 +20,6 @@
 	<classpathentry kind="lib" path="lib/apfloat-1.8.3.jar"/>
 	<classpathentry kind="lib" path="lib/jas-2.6.5765.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/txtmark-0.13.jar" sourcepath="C:/Users/dev/.m2/repository/com/github/rjeschke/txtmark/0.13/txtmark-0.13-sources.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

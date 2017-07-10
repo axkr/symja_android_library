@@ -13,10 +13,9 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
-/**
- *  
- */
+
 public class ElementData extends AbstractFunctionEvaluator {
+
 	String[] PROPERTIES_DATA = { "Abbreviation", "AbsoluteBoilingPoint", "AbsoluteMeltingPoint", "AtomicNumber",
 			"AtomicRadius", "AtomicWeight", "Block", "BoilingPoint", "BrinellHardness", "BulkModulus", "CovalentRadius",
 			"CrustAbundance", "Density", "DiscoveryYear", "ElectroNegativity", "ElectronAffinity",
@@ -176,7 +175,7 @@ public class ElementData extends AbstractFunctionEvaluator {
 		}
 		if (propertyStr.equals("ElectronShellConfiguration")) {
 			return propertyList.get(37);
-		} 
+		}
 		return NIL;
 	}
 

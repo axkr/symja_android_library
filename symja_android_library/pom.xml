@@ -132,6 +132,11 @@
 				<version>4.12</version>
 				<scope>test</scope>
 			</dependency>
+			<dependency>
+				<groupId>com.github.rjeschke</groupId>
+				<artifactId>txtmark</artifactId>
+				<version>0.13</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 

@@ -126,9 +126,68 @@ public class Algebra {
 	}
 
 	/**
-	 * Evaluate the partial fraction decomposition of a univariate polynomial fraction.
+	 * <h2>Apart</h2>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Partial_fraction">Wikipedia - Partial fraction decomposition</a>
+	 * <pre>
+	 * <code>Apart(expr)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * rewrites <code>expr</code> as a sum of individual fractions.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>Apart(expr, var)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * treats <code>var</code> as main variable.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Apart((x-1)/(x^2+x))
+	 * 2/(x+1)-1/x
+	 * 
+	 * &gt;&gt; Apart(1 / (x^2 + 5x + 6))
+	 * 1/(2+x)+1/(-3-x) 
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * When several variables are involved, the results can be different depending on the main variable:
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Apart(1 / (x^2 - y^2), x)
+	 * -1 / (2 y (x + y)) + 1 / (2 y (x - y))
+	 * &gt;&gt; Apart(1 / (x^2 - y^2), y)
+	 * 1 / (2 x (x + y)) + 1 / (2 x (x - y))
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * 'Apart' is 'Listable':
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Apart({1 / (x^2 + 5x + 6)})
+	 * {1/(2+x)+1/(-3-x)}
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * But it does not touch other expressions:
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Sin(1 / (x ^ 2 - y ^ 2)) // Apart
+	 * Sin(1/(x^2-y^2))
+	 * </code>
+	 * </pre>
 	 */
 	private static class Apart extends AbstractFunctionEvaluator {
 
@@ -293,7 +352,37 @@ public class Algebra {
 	}
 
 	/**
-	 * Cancel(expr) - cancels out common factors in numerators and denominators.
+	 * <h2>Cancel</h2>
+	 * 
+	 * <pre>
+	 * <code>Cancel(expr)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * cancels out common factors in numerators and denominators.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Cancel(x / x ^ 2)
+	 * 1/x
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * 'Cancel' threads over sums:
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Cancel(x / x ^ 2 + y / y ^ 2)
+	 * 1/x+1/y
+	 * 
+	 * &gt;&gt; Cancel(f(x) / x + x * f(x) / x ^ 2)
+	 * (2*f(x))/x
+	 * </code>
+	 * </pre>
 	 */
 	private static class Cancel extends AbstractFunctionEvaluator {
 
@@ -447,11 +536,29 @@ public class Algebra {
 	}
 
 	/**
-	 * Get the denominator part of an expression
+	 * <h2>Denominator</h2>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Fraction_(mathematics)">Wikipedia: Fraction (mathematics)</a>
+	 * <pre>
+	 * <code>Denominator(expr)
+	 * </code>
+	 * </pre>
 	 * 
-	 * @see org.matheclipse.core.reflection.system.Numerator
+	 * <blockquote>
+	 * <p>
+	 * gives the denominator in <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Denominator(a / b)
+	 * b
+	 * &gt;&gt; Denominator(2 / 3)
+	 * 3
+	 * &gt;&gt; Denominator(a + b)
+	 * 1
+	 * </code>
+	 * </pre>
 	 */
 	private static class Denominator extends AbstractEvaluator {
 
@@ -518,6 +625,51 @@ public class Algebra {
 
 	}
 
+	/**
+	 * <pre>Expand(expr)
+	 * </pre>
+	 * <blockquote><p>expands out positive rational powers and products of sums in <code>expr</code>.</p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <pre>&gt;&gt; Expand((x + y) ^ 3)
+	 * x^3+3*x^2*y+3*x*y^2+y^3
+	 * 
+	 * &gt;&gt; Expand((a + b) (a + c + d))  
+	 * a^2+a*b+a*c+b*c+a*d+b*d 
+	 * 
+	 * &gt;&gt; Expand((a + b) (a + c + d) (e + f) + e a a)  
+	 * 2*a^2*e+a*b*e+a*c*e+b*c*e+a*d*e+b*d*e+a^2*f+a*b*f+a*c*f+b*c*f+a*d*f+b*d*f 
+	 * 
+	 * &gt;&gt; Expand((a + b) ^ 2 * (c + d))  
+	 * a^2*c+2*a*b*c+b^2*c+a^2*d+2*a*b*d+b^2*d 
+	 * 
+	 * &gt;&gt; Expand((x + y) ^ 2 + x y) 
+	 * x^2+3*x*y+y^2  
+	 * 
+	 * &gt;&gt; Expand(((a + b) (c + d)) ^ 2 + b (1 + a))  
+	 * a^2*c^2+2*a*b*c^2+b^2*c^2+2*a^2*c*d+4*a*b*c*d+2*b^2*c*d+a^2*d^2+2*a*b*d^2+b^2*d^2+b(1+a) 
+	 * </pre>
+	 * <p><code>Expand</code> expands out rational powers by expanding the <code>Floor()</code> part of the rational powers number:</p>
+	 * <pre>&gt;&gt; Expand((x + 3)^(5/2)+(x + 1)^(3/2)) Sqrt(1+x)+x*Sqrt(1+x)+9*Sqrt(3+x)+6*x*Sqrt(3+x)+x^2*Sqrt(3+x)
+	 * </pre>
+	 * <p><code>Expand</code> expands items in lists and rules:<br  /></p>
+	 * <pre>&gt;&gt; Expand({4 (x + y), 2 (x + y) -&gt; 4 (x + y)})  
+	 * {4*x+4*y,2*(x+y)-&gt;4*(x+y)} 
+	 * </pre>
+	 * <p><code>Expand</code> does not change any other expression.<br  /></p>
+	 * <pre>&gt;&gt; Expand(Sin(x*(1 + y)))  
+	 * Sin(x*(1+y)) 
+	 * 
+	 * &gt;&gt; a*(b*(c+d)+e) // Expand  
+	 * a*b*c+a*b*d+a*e 
+	 * 
+	 * &gt;&gt; (y^2)^(1/2)/(2x+2y)//Expand  
+	 * Sqrt(y^2)/(2*x+2*y) 
+	 * 
+	 * &gt;&gt; 2(3+2x)^2/(5+x^2+3x)^3 // Expand  
+	 * 18/(5+3*x+x^2)^3+(24*x)/(5+3*x+x^2)^3+(8*x^2)/(5+3*x+x^2)^3 
+	 * </pre>
+	 */
 	private static class Expand extends AbstractFunctionEvaluator {
 		public final static Expand CONST = new Expand();
 
@@ -675,7 +827,7 @@ public class Algebra {
 			 */
 			public IExpr expandPowerNull(final IAST powerAST) {
 				if ((powerAST.arg1().isPlus())) {
-					
+
 					if (powerAST.arg2().isFraction()) {
 						IFraction fraction = (IFraction) powerAST.arg2();
 						if (fraction.isPositive()) {
@@ -687,7 +839,7 @@ public class Algebra {
 							}
 						}
 					}
-					
+
 					try {
 						int exp = Validate.checkPowerExponent(powerAST);
 						IAST plusAST = (IAST) powerAST.arg1();
@@ -943,6 +1095,45 @@ public class Algebra {
 		}
 	}
 
+	/**
+	 * <h2>ExpandAll</h2>
+	 * 
+	 * <pre>
+	 * <code>ExpandAll(expr)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * expands out all positive integer powers and products of sums in <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; ExpandAll((a + b) ^ 2 / (c + d)^2)
+	 * (a^2+2*a*b+b^2)/(c^2+2*c*d+d^2)
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * <code>ExpandAll</code> descends into sub expressions
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; ExpandAll((a + Sin(x*(1 + y)))^2)
+	 * a^2+Sin(x+x*y)^2+2*a*Sin(x+x*y) 
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * <code>ExpandAll</code> also expands heads
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; ExpandAll(((1 + x)(1 + y))[x])
+	 * (1+x+y+x*y)[x]
+	 * </code>
+	 * </pre>
+	 */
 	private static class ExpandAll extends AbstractFunctionEvaluator {
 		public final static ExpandAll CONST = new ExpandAll();
 
@@ -971,8 +1162,32 @@ public class Algebra {
 	}
 
 	/**
-	 * Factor a univariate polynomial
+	 * <h2>Factor</h2>
 	 * 
+	 * <pre>
+	 * <code>Factor(expr)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * factors the polynomial expression <code>expr</code>
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Factor(1+2*x+x^2, x)
+	 * (1+x)^2
+	 * </code>
+	 * </pre>
+	 * 
+	 * <pre>
+	 * <code>``` 
+	 * &gt;&gt; Factor(x^4-1, GaussianIntegers-&gt;True)
+	 * (x-1)*(x+1)*(x-I)*(x+I)
+	 * </code>
+	 * </pre>
 	 */
 	private static class Factor extends AbstractFunctionEvaluator {
 
@@ -1103,8 +1318,18 @@ public class Algebra {
 	}
 
 	/**
-	 * Factors out only multiple factors of a univariate polynomial
+	 * <h2>FactorSquareFree</h2>
 	 * 
+	 * <pre>
+	 * <code>FactorSquareFree(polynomial)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * factor the polynomial expression <code>polynomial</code> square free.
+	 * </p>
+	 * </blockquote>
 	 */
 	private static class FactorSquareFree extends Factor {
 
@@ -1139,8 +1364,18 @@ public class Algebra {
 	}
 
 	/**
-	 * Factors out only multiple factors of a univariate polynomial
+	 * <h2>FactorSquareFreeList</h2>
 	 * 
+	 * <pre>
+	 * <code>FactorSquareFreeList(polynomial)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * get the square free factors of the polynomial expression <code>polynomial</code>.
+	 * </p>
+	 * </blockquote>
 	 */
 	private static class FactorSquareFreeList extends Factor {
 
@@ -1174,6 +1409,27 @@ public class Algebra {
 
 	}
 
+	/**
+	 * <h2>FactorTerms</h2>
+	 * 
+	 * <pre>
+	 * <code>FactorTerms(poly)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * pulls out any overall numerical factor in <code>poly</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; FactorTerms(3+3/4*x^3+12/17*x^2, x)
+	 * 3/68*(17*x^3+16*x^2+68)
+	 * </code>
+	 * </pre>
+	 */
 	private static class FactorTerms extends AbstractFunctionEvaluator {
 
 		@Override
@@ -1255,11 +1511,29 @@ public class Algebra {
 	}
 
 	/**
-	 * Get the numerator part of an expression
+	 * <h2>Numerator</h2>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Fraction_(mathematics)">Wikipedia: Fraction (mathematics)</a>
+	 * <pre>
+	 * <code>Numerator(expr)
+	 * </code>
+	 * </pre>
 	 * 
-	 * @see org.matheclipse.core.reflection.system.Denominator
+	 * <blockquote>
+	 * <p>
+	 * gives the numerator in <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Numerator(a / b)
+	 * a
+	 * &gt;&gt; Numerator(2 / 3)
+	 * 2
+	 * &gt;&gt; Numerator(a + b)
+	 * a + b
+	 * </code>
+	 * </pre>
 	 */
 	private static class Numerator extends AbstractEvaluator {
 
@@ -1325,9 +1599,46 @@ public class Algebra {
 	}
 
 	/**
-	 * Greatest common divisor of two polynomials. See:
-	 * <a href= "http://en.wikipedia.org/wiki/Greatest_common_divisor_of_two_polynomials" >Wikipedia:Greatest common
-	 * divisor of two polynomials</a>
+	 * <h2>PolynomialExtendedGCD</h2>
+	 * 
+	 * <pre>
+	 * <code>PolynomialExtendedGCD(p, q, x)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the extended GCD ('greatest common divisor') of the univariate polynomials <code>p</code> and
+	 * <code>q</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>PolynomialExtendedGCD(p, q, x, Modulus -&gt; prime)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the extended GCD ('greatest common divisor') of the univariate polynomials <code>p</code> and
+	 * <code>q</code> modulus the <code>prime</code> integer.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href=
+	 * "https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm#Polynomial_extended_Euclidean_algorithm">Wikipedia:
+	 * Polynomial extended Euclidean algorithm</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; PolynomialExtendedGCD(x^8 + x^4 + x^3 + x + 1, x^6 + x^4 + x + 1, x, Modulus-&gt;2)
+	 * {1,{1+x^2+x^3+x^4+x^5,x+x^3+x^6+x^7}}
+	 * </code>
+	 * </pre>
 	 */
 	private static class PolynomialExtendedGCD extends AbstractFunctionEvaluator {
 
@@ -1411,9 +1722,30 @@ public class Algebra {
 	}
 
 	/**
-	 * Greatest common divisor of two polynomials. See:
-	 * <a href= "http://en.wikipedia.org/wiki/Greatest_common_divisor_of_two_polynomials" > Wikipedia:Greatest common
-	 * divisor of two polynomials</a>
+	 * <h2>PolynomialGCD</h2>
+	 * 
+	 * <pre>
+	 * <code>PolynomialGCD(p, q)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the GCD ('greatest common divisor') of the polynomials <code>p</code> and <code>q</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>PolynomialGCD(p, q, Modulus -&gt; prime)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the GCD ('greatest common divisor') of the polynomials <code>p</code> and <code>q</code> modulus the
+	 * <code>prime</code> integer.
+	 * </p>
+	 * </blockquote>
 	 */
 	private static class PolynomialGCD extends AbstractFunctionEvaluator {
 
@@ -1497,9 +1829,30 @@ public class Algebra {
 	}
 
 	/**
-	 * Least common multiple of two polynomials. See also:
-	 * <a href= "http://en.wikipedia.org/wiki/Greatest_common_divisor_of_two_polynomials" >Wikipedia:Greatest common
-	 * divisor of two polynomials</a>
+	 * <h2>PolynomialLCM</h2>
+	 * 
+	 * <pre>
+	 * <code>PolynomialLCM(p, q)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the LCM ('least common multiple') of the polynomials <code>p</code> and <code>q</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>PolynomialLCM(p, q, Modulus -&gt; prime)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the LCM ('least common multiple') of the polynomials <code>p</code> and <code>q</code> modulus the
+	 * <code>prime</code> integer.
+	 * </p>
+	 * </blockquote>
 	 */
 	private static class PolynomialLCM extends AbstractFunctionEvaluator {
 
@@ -1565,8 +1918,31 @@ public class Algebra {
 	}
 
 	/**
-	 * Returns <code>True</code>, if the given expression is a polynoomial object
+	 * <h2>PolynomialQ</h2>
 	 * 
+	 * <pre>
+	 * <code>PolynomialQ(p, x)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * return <code>True</code> if <code>p</code> is a polynomial for the variable <code>x</code>. Return
+	 * <code>False</code> in all other cases.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>PolynomialQ(p, {x, y, ...})
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * return <code>True</code> if <code>p</code> is a polynomial for the variables <code>x, y, ...</code> defined in
+	 * the list. Return <code>False</code> in all other cases.
+	 * </p>
+	 * </blockquote>
 	 */
 	private static class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicate<IExpr, IExpr> {
 
@@ -1646,11 +2022,31 @@ public class Algebra {
 	}
 
 	/**
+	 * <h2>PolynomialQuotient</h2>
 	 * 
-	 * See: <a href= "http://en.wikipedia.org/wiki/Polynomial_long_division">Wikipedia: Polynomial long division</a>
+	 * <pre>
+	 * <code>PolynomialQuotient(p, q, x)
+	 * </code>
+	 * </pre>
 	 * 
-	 * @see org.matheclipse.core.reflection.system.PolynomialRemainder
-	 * @see org.matheclipse.core.reflection.system.PolynomialQuotientRemainder
+	 * <blockquote>
+	 * <p>
+	 * returns the polynomial quotient of the polynomials <code>p</code> and <code>q</code> for the variable
+	 * <code>x</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>PolynomialQuotient(p, q, x, Modulus -&gt; prime)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the polynomial quotient of the polynomials <code>p</code> and <code>q</code> for the variable
+	 * <code>x</code> modulus the <code>prime</code> integer.
+	 * </p>
+	 * </blockquote>
 	 */
 	private static class PolynomialQuotient extends PolynomialQuotientRemainder {
 
@@ -1683,11 +2079,31 @@ public class Algebra {
 	}
 
 	/**
+	 * <h2>PolynomialQuotientRemainder</h2>
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Polynomial_long_division">Wikipedia :Polynomial long division</a>
+	 * <pre>
+	 * <code>PolynomialQuotientRemainder(p, q, x)
+	 * </code>
+	 * </pre>
 	 * 
-	 * @see org.matheclipse.core.reflection.system.PolynomialQuotient
-	 * @see org.matheclipse.core.reflection.system.PolynomialRemainder
+	 * <blockquote>
+	 * <p>
+	 * returns a list with the polynomial quotient and remainder of the polynomials <code>p</code> and <code>q</code>
+	 * for the variable <code>x</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>PolynomialQuotientRemainder(p, q, x, Modulus -&gt; prime)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns list with the polynomial quotient and remainder of the polynomials <code>p</code> and <code>q</code> for
+	 * the variable <code>x</code> modulus the <code>prime</code> integer.
+	 * </p>
+	 * </blockquote>
 	 */
 	private static class PolynomialQuotientRemainder extends AbstractFunctionEvaluator {
 
@@ -1776,11 +2192,31 @@ public class Algebra {
 	}
 
 	/**
+	 * <h2>PolynomialQuotient</h2>
 	 * 
-	 * See: <a href= "http://en.wikipedia.org/wiki/Polynomial_long_division">Wikipedia:Polynomial long division</a>
+	 * <pre>
+	 * <code>PolynomialQuotient(p, q, x)
+	 * </code>
+	 * </pre>
 	 * 
-	 * @see org.matheclipse.core.reflection.system.PolynomialQuotient
-	 * @see org.matheclipse.core.reflection.system.PolynomialQuotientRemainder
+	 * <blockquote>
+	 * <p>
+	 * returns the polynomial remainder of the polynomials <code>p</code> and <code>q</code> for the variable
+	 * <code>x</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * <code>PolynomialQuotient(p, q, x, Modulus -&gt; prime)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the polynomial remainder of the polynomials <code>p</code> and <code>q</code> for the variable
+	 * <code>x</code> modulus the <code>prime</code> integer.
+	 * </p>
+	 * </blockquote>
 	 */
 	private static class PolynomialRemainder extends PolynomialQuotientRemainder {
 
@@ -1813,7 +2249,37 @@ public class Algebra {
 	}
 
 	/**
-	 * Expand the powers of a given expression.
+	 * <h2>PowerExpand</h2>
+	 * 
+	 * <pre>
+	 * <code>PowerExpand(expr)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * expands out powers of the form <code>(x^y)^z</code> and <code>(x*y)^z</code> in <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; PowerExpand((a ^ b) ^ c)
+	 * a^(b*c)
+	 * 
+	 * &gt;&gt; PowerExpand((a * b) ^ c)
+	 * a^c*b^c
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * <code>PowerExpand</code> is not correct without certain assumptions:
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; PowerExpand((x ^ 2) ^ (1/2))
+	 * x
+	 * </code>
+	 * </pre>
 	 */
 	private static class PowerExpand extends AbstractFunctionEvaluator {
 
@@ -2206,7 +2672,79 @@ public class Algebra {
 	}
 
 	/**
-	 * Try to simplify a given expression
+	 * <pre>
+	 * Simplify(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * simplifies <code>expr</code>
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Simplify(expr, option1, option2, ...)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * simplify <code>expr</code> with some additional options set
+	 * </p>
+	 * </blockquote>
+	 * <ul>
+	 * <li>Assumptions - use assumptions to simplify the expression</li>
+	 * <li>ComplexFunction - use this function to determine the &ldquo;weight&rdquo; of an expression.</li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Simplify(1/2*(2*x+2))
+	 * x+1
+	 * 
+	 * &gt;&gt; Simplify(2*Sin(x)^2 + 2*Cos(x)^2)
+	 * 2
+	 * 
+	 * &gt;&gt; Simplify(x)
+	 * x
+	 * 
+	 * &gt;&gt; Simplify(f(x))
+	 * f(x)
+	 * 
+	 * &gt;&gt; Simplify(a*x^2+b*x^2)
+	 * (a+b)*x^2
+	 * </pre>
+	 * <p>
+	 * Simplify with an assumption:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Simplify(Sqrt(x^2), Assumptions -&gt; x&gt;0)
+	 * x
+	 * </pre>
+	 * <p>
+	 * For <code>Assumptions</code> you can define the assumption directly as second argument:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Simplify(Sqrt(x^2), x&gt;0)
+	 * x
+	 * </pre>
+	 * 
+	 * <pre>
+	 * ```
+	 * &gt;&gt; Simplify(Abs(x), x&lt;0)
+	 * Abs(x)
+	 * </pre>
+	 * <p>
+	 * With this &ldquo;complexity function&rdquo; the <code>Abs</code> expression gets a &ldquo;heavier weight&rdquo;.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; complexity(x_) := 2*Count(x, _Abs, {0, 10}) + LeafCount(x)
+	 * 
+	 * &gt;&gt; Simplify(Abs(x), x&lt;0, ComplexityFunction-&gt;complexity)
+	 * -x
+	 * </pre>
 	 */
 	private static class Simplify extends AbstractFunctionEvaluator {
 
@@ -2532,7 +3070,48 @@ public class Algebra {
 	}
 
 	/**
-	 * Determine a common denominator for the expressions of a sum.
+	 * <h2>Together</h2>
+	 * 
+	 * <pre>
+	 * <code>Together(expr)
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * writes sums of fractions in <code>expr</code> together.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt;&gt; Together(a/b+x/y)
+	 * (a*y+b*x)*b^(-1)*y^(-1)
+	 * 
+	 * &gt;&gt; Together(a / c + b / c)
+	 * (a+b)/c
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * <code>Together</code> operates on lists:
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Together({x / (y+1) + x / (y+1)^2})
+	 * {x (2 + y) / (1 + y) ^ 2}
+	 * </code>
+	 * </pre>
+	 * <p>
+	 * But it does not touch other functions:
+	 * </p>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Together(f(a / c + b / c))
+	 * f(a/c+b/c)
+	 * &gt;&gt; f(x)/x+f(x)/x^2//Together
+	 * f(x)/x^2+f(x)/x
+	 * </code>
+	 * </pre>
 	 */
 	private static class Together extends AbstractFunctionEvaluator {
 
@@ -2731,7 +3310,31 @@ public class Algebra {
 	}
 
 	/**
-	 * Determine the variable symbols of an expression
+	 * <h2>Variables</h2>
+	 * 
+	 * <pre>
+	 * <code>Variables[expr]
+	 * </code>
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * gives a list of the variables that appear in the polynomial <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * <code>&gt;&gt; Variables(a x^2 + b x + c)
+	 * {a,b,c,x}
+	 * 
+	 * &gt;&gt; Variables({a + b x, c y^2 + x/2})
+	 * {a,b,c,x,y}
+	 * 
+	 * &gt;&gt; Variables(x + Sin(y))
+	 * {x,Sin(y)}
+	 * </code>
+	 * </pre>
 	 */
 	private static class Variables extends AbstractFunctionEvaluator {
 
