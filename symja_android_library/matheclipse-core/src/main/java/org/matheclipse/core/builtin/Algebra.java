@@ -216,6 +216,14 @@ public class Algebra {
 					if (sn.isInteger() && powerAST.arg1().isAST()) {
 						// positive integer
 						IAST function = (IAST) powerAST.arg1();
+//						if (function.isTimes()) {
+//							IExpr[] partsArg1 = fractionalPartsTimesPower(function, true, true, trig, true);
+//							if (partsArg1 != null) {
+//								parts[0] = F.Power(partsArg1[0], sn);
+//								parts[1] = F.Power(partsArg1[1], sn);
+//								return parts;
+//							}
+//						}
 						IExpr numerForm = Numerator.getTrigForm(function, trig);
 						if (numerForm.isPresent()) {
 							IExpr denomForm = Denominator.getTrigForm(function, trig);
@@ -626,12 +634,19 @@ public class Algebra {
 	}
 
 	/**
-	 * <pre>Expand(expr)
+	 * <pre>
+	 * Expand(expr)
 	 * </pre>
-	 * <blockquote><p>expands out positive rational powers and products of sums in <code>expr</code>.</p>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * expands out positive rational powers and products of sums in <code>expr</code>.
+	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
-	 * <pre>&gt;&gt; Expand((x + y) ^ 3)
+	 * 
+	 * <pre>
+	 * &gt;&gt; Expand((x + y) ^ 3)
 	 * x^3+3*x^2*y+3*x*y^2+y^3
 	 * 
 	 * &gt;&gt; Expand((a + b) (a + c + d))  
@@ -647,17 +662,30 @@ public class Algebra {
 	 * x^2+3*x*y+y^2  
 	 * 
 	 * &gt;&gt; Expand(((a + b) (c + d)) ^ 2 + b (1 + a))  
-	 * a^2*c^2+2*a*b*c^2+b^2*c^2+2*a^2*c*d+4*a*b*c*d+2*b^2*c*d+a^2*d^2+2*a*b*d^2+b^2*d^2+b(1+a) 
+	 * a^2*c^2+2*a*b*c^2+b^2*c^2+2*a^2*c*d+4*a*b*c*d+2*b^2*c*d+a^2*d^2+2*a*b*d^2+b^2*d^2+b(1+a)
 	 * </pre>
-	 * <p><code>Expand</code> expands out rational powers by expanding the <code>Floor()</code> part of the rational powers number:</p>
-	 * <pre>&gt;&gt; Expand((x + 3)^(5/2)+(x + 1)^(3/2)) Sqrt(1+x)+x*Sqrt(1+x)+9*Sqrt(3+x)+6*x*Sqrt(3+x)+x^2*Sqrt(3+x)
+	 * <p>
+	 * <code>Expand</code> expands out rational powers by expanding the <code>Floor()</code> part of the rational powers
+	 * number:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Expand((x + 3)^(5/2)+(x + 1)^(3/2)) Sqrt(1+x)+x*Sqrt(1+x)+9*Sqrt(3+x)+6*x*Sqrt(3+x)+x^2*Sqrt(3+x)
 	 * </pre>
-	 * <p><code>Expand</code> expands items in lists and rules:<br  /></p>
-	 * <pre>&gt;&gt; Expand({4 (x + y), 2 (x + y) -&gt; 4 (x + y)})  
-	 * {4*x+4*y,2*(x+y)-&gt;4*(x+y)} 
+	 * <p>
+	 * <code>Expand</code> expands items in lists and rules:<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Expand({4 (x + y), 2 (x + y) -&gt; 4 (x + y)})  
+	 * {4*x+4*y,2*(x+y)-&gt;4*(x+y)}
 	 * </pre>
-	 * <p><code>Expand</code> does not change any other expression.<br  /></p>
-	 * <pre>&gt;&gt; Expand(Sin(x*(1 + y)))  
+	 * <p>
+	 * <code>Expand</code> does not change any other expression.<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Expand(Sin(x*(1 + y)))  
 	 * Sin(x*(1+y)) 
 	 * 
 	 * &gt;&gt; a*(b*(c+d)+e) // Expand  
@@ -667,7 +695,7 @@ public class Algebra {
 	 * Sqrt(y^2)/(2*x+2*y) 
 	 * 
 	 * &gt;&gt; 2(3+2x)^2/(5+x^2+3x)^3 // Expand  
-	 * 18/(5+3*x+x^2)^3+(24*x)/(5+3*x+x^2)^3+(8*x^2)/(5+3*x+x^2)^3 
+	 * 18/(5+3*x+x^2)^3+(24*x)/(5+3*x+x^2)^3+(8*x^2)/(5+3*x+x^2)^3
 	 * </pre>
 	 */
 	private static class Expand extends AbstractFunctionEvaluator {
@@ -3260,15 +3288,7 @@ public class Algebra {
 						result = togetherForEach(ast);
 					} else {
 						// Power
-						if (ast.arg1().isAST()) {
-							IExpr temp = togetherNull((IAST) ast.arg1());
-							if (temp.isPresent()) {
-								if (!result.isPresent()) {
-									result = ast.copy();
-								}
-								result.set(1, temp);
-							}
-						}
+						result = togetherPower(ast, result);
 					}
 					if (result.isPresent()) {
 						IExpr temp = F.eval(result);
@@ -3286,6 +3306,29 @@ public class Algebra {
 			}
 
 			return F.NIL;
+		}
+
+		private static IAST togetherPower(final IAST ast, IAST result) {
+			if (ast.arg1().isAST()) {
+				IExpr temp = togetherNull((IAST) ast.arg1());
+				if (temp.isPresent()) {
+					if (!result.isPresent()) {
+						result = ast.copy();
+					}
+					if (ast.arg2().isNegative() && temp.isTimes()) {
+						IExpr[] fractionalParts = fractionalPartsRational(temp);
+						if (fractionalParts != null) {
+							result.set(1, F.Divide(fractionalParts[1], fractionalParts[0]));
+							result.set(2, ast.arg2().negate());
+						} else {
+							result.set(1, temp);
+						}
+					} else {
+						result.set(1, temp);
+					}
+				}
+			}
+			return result;
 		}
 
 		@Override
