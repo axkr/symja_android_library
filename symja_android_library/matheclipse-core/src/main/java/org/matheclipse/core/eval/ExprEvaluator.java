@@ -294,12 +294,13 @@ public class ExprEvaluator {
 	 *            whether to respond to thread interruption by aborting the operation and throwing InterruptedException;
 	 *            if false, the operation is allowed to complete or time out, and the current thread's interrupt status
 	 *            is re-asserted.
-	 * @return
+	 * @return 
 	 * @throws SyntaxError
 	 */
 	public IExpr evaluateWithTimeout(final String inputExpression, long timeoutDuration, TimeUnit timeUnit,
 			boolean interruptible) {
 		if (inputExpression != null) {
+			F.join();
 			EvalEngine.set(engine);
 			engine.reset();
 			fExpr = engine.parse(inputExpression);
