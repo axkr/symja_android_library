@@ -260,6 +260,26 @@ public class ExprEvaluator {
 	}
 
 	/**
+	 * Parse the given <code>expression String</code> without evaluation
+	 * 
+	 * @param inputExpression
+	 * @return
+	 * @throws SyntaxError
+	 */
+	public IExpr parse(final String inputExpression) {
+		try {
+			if (inputExpression != null) {
+				EvalEngine.set(engine);
+				engine.reset();
+				return engine.parse(inputExpression);
+			}
+		} finally {
+			EvalEngine.remove();
+		}
+		return null;
+	}
+	
+	/**
 	 * <p>
 	 * Parse the given <code>expression String</code> and evaluate it to an IExpr value.
 	 * </p>
