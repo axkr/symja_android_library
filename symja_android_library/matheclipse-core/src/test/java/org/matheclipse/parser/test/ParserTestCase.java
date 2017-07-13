@@ -2,6 +2,8 @@ package org.matheclipse.parser.test;
 
 import junit.framework.TestCase;
 
+import java.util.List;
+
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
@@ -322,4 +324,33 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	} 
+	
+	public void testParser25() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("Int[f_'[x_]*g_[x_] + f_[x_]*g_'[x_],x_Symbol]");
+			assertEquals(obj.toString(), "Int(Plus(Times(Derivative(1)[f_][x_], g_(x_)), Times(f_(x_), Derivative(1)[g_][x_])), x_Symbol)");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
+	public void testParser26() {
+		try {
+			Parser p = new Parser(false, true);
+			List<ASTNode> obj = p.parsePackage("	SumSimplerAuxQ[u_,v_] :=\r\n" + 
+					"			  v=!=0 && \r\n" + 
+					"			  NonnumericFactors[u]===NonnumericFactors[v] &&\r\n" + 
+					"			  (NumericFactor[u]/NumericFactor[v]<-1/2 || NumericFactor[u]/NumericFactor[v]==-1/2 && NumericFactor[u]<0)\r\n" + 
+					"\r\n" + 
+					"");
+			assertEquals(obj.toString(), 
+					"[SetDelayed(SumSimplerAuxQ(u_, v_), And(UnsameQ(v, 0), SameQ(NonnumericFactors(u), NonnumericFactors(v)), Or(Less(Times(NumericFactor(u), Power(NumericFactor(v), -1)), -1/2), And(Equal(Times(NumericFactor(u), Power(NumericFactor(v), -1)), -1/2), Less(NumericFactor(u), 0)))))]");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
 }

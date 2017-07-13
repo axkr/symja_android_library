@@ -827,7 +827,9 @@ public class Parser extends Scanner {
 									break;
 								}
 							}
-							
+							while (fToken == TT_NEWLINE) {
+								getNextToken();
+							}
 							rhs = parseLookaheadOperator(infixOperator.getPrecedence());
 							((FunctionNode) lhs).add(rhs);
 						}

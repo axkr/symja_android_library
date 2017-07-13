@@ -1087,7 +1087,9 @@ public class ExprParser extends ExprScanner {
 									break;
 								}
 							}
-
+							while (fToken == TT_NEWLINE) {
+								getNextToken();
+							}
 							rhs = parseLookaheadOperator(infixOperator.getPrecedence());
 							((IAST) lhs).append(rhs);
 						}
