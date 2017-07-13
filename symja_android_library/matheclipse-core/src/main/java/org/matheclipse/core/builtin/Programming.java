@@ -33,6 +33,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.visit.ModuleReplaceAll;
+import org.matheclipse.core.visit.WithReplaceAll;
 import org.matheclipse.parser.client.math.MathException;
 
 public final class Programming {
@@ -63,7 +64,7 @@ public final class Programming {
 		F.Throw.setEvaluator(new Throw());
 		F.Which.setEvaluator(new Which());
 		F.While.setEvaluator(new While());
-
+		F.With.setEvaluator(new With());
 	}
 
 	private final static class Abort extends AbstractCoreFunctionEvaluator {
@@ -558,7 +559,7 @@ public final class Programming {
 			final java.util.IdentityHashMap<ISymbol, ISymbol> moduleVariables = new IdentityHashMap<ISymbol, ISymbol>();
 
 			try {
-				rememberVariables(intializerList, varAppend, moduleVariables, engine);
+				rememberModuleVariables(intializerList, varAppend, moduleVariables, engine);
 				IExpr subst = arg2.accept(new ModuleReplaceAll(moduleVariables));
 				if (subst.isPresent()) {
 					return engine.evaluate(subst);
@@ -916,6 +917,85 @@ public final class Programming {
 
 	}
 
+	private final static class With extends AbstractCoreFunctionEvaluator {
+		/**
+		 *
+		 */
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			if (ast.arg1().isList()) {
+				IAST lst = (IAST) ast.arg1();
+				IExpr arg2 = ast.arg2();
+				return evalWith(lst, arg2, engine);
+			}
+
+			return F.NIL;
+		}
+
+		/**
+		 * <code>Module[{variablesList}, rhs ]</code>
+		 * 
+		 * @param intializerList
+		 * @param arg2
+		 * @param engine
+		 * @return
+		 */
+		private static IExpr evalWith(IAST intializerList, IExpr arg2, final EvalEngine engine) {
+			// final int moduleCounter = engine.incModuleCounter();
+			// final String varAppend = "$" + moduleCounter;
+			final java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables = new IdentityHashMap<ISymbol, IExpr>();
+
+			try {
+				rememberWithVariables(intializerList, moduleVariables);
+				IExpr subst = arg2.accept(new WithReplaceAll(moduleVariables));
+				if (subst.isPresent()) {
+					return engine.evaluate(subst);
+				}
+				return arg2;
+			} finally {
+				// removeUserVariables(moduleVariables);
+			}
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
+	}
+
+	/**
+	 * Remember which local variable names (appended with the module counter) we use in the given
+	 * <code>variablesMap</code>.
+	 * 
+	 * @param variablesList
+	 *            initializer variables list from the <code>Module</code> function
+	 * @param variablesMap
+	 *            the resulting module variables map
+	 */
+	private static void rememberWithVariables(IAST variablesList, final java.util.Map<ISymbol, IExpr> variablesMap) {
+		ISymbol oldSymbol;
+		IExpr newExpr;
+		for (int i = 1; i < variablesList.size(); i++) {
+			// if (variablesList.get(i).isSymbol()) {
+			// oldSymbol = (ISymbol) variablesList.get(i);
+			// newSymbol = F.userSymbol(oldSymbol.toString() + varAppend, engine);
+			// variablesMap.put(oldSymbol, newSymbol);
+			// } else {
+			if (variablesList.get(i).isAST(F.Set, 3)) {
+				final IAST setFun = (IAST) variablesList.get(i);
+				if (setFun.arg1().isSymbol()) {
+					oldSymbol = (ISymbol) setFun.arg1();
+					newExpr = setFun.arg2();
+					variablesMap.put(oldSymbol, newExpr);
+				}
+			}
+			// }
+		}
+	}
+
 	/**
 	 * Remember which local variable names (appended with the module counter) we use in the given
 	 * <code>variablesMap</code>.
@@ -929,7 +1009,7 @@ public final class Programming {
 	 * @param engine
 	 *            the evaluation engine
 	 */
-	private static void rememberVariables(IAST variablesList, final String varAppend,
+	private static void rememberModuleVariables(IAST variablesList, final String varAppend,
 			final java.util.Map<ISymbol, ISymbol> variablesMap, final EvalEngine engine) {
 		ISymbol oldSymbol;
 		ISymbol newSymbol;
@@ -993,7 +1073,7 @@ public final class Programming {
 			final java.util.Map<ISymbol, ISymbol> moduleVariables = new IdentityHashMap<ISymbol, ISymbol>();
 
 			try {
-				rememberVariables(intializerList, varAppend, moduleVariables, engine);
+				rememberModuleVariables(intializerList, varAppend, moduleVariables, engine);
 				IExpr result = F.subst(arg2, Functors.rules(moduleVariables));
 				if (result.isCondition()) {
 					return checkCondition(result.getAt(1), result.getAt(2), engine);

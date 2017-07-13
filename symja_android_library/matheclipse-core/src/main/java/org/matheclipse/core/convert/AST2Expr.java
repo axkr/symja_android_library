@@ -43,8 +43,8 @@ public class AST2Expr {
 	public final static String[] UPPERCASE_SYMBOL_STRINGS = { "D", "E", "I", "N" };
 
 	public final static String[] SYMBOL_STRINGS = { "$Aborted", "All", "Algebraics", "Automatic", "Booleans",
-			"CharacterEncoding", "ComplexInfinity", "Catalan", "Complexes", "ComplexityFunction", "Constant", "Degree", "Disputed",
-			"EulerGamma", "False", "Flat", "Glaisher", "GoldenRatio", "HoldAll", "HoldFirst", "HoldRest",
+			"CharacterEncoding", "ComplexInfinity", "Catalan", "Complexes", "ComplexityFunction", "Constant", "Degree",
+			"Disputed", "EulerGamma", "False", "Flat", "Glaisher", "GoldenRatio", "HoldAll", "HoldFirst", "HoldRest",
 			"Indeterminate", "Infinity", "Integer", "Integers", "Khinchin", "Listable", "MaxIterations", "MaxPoints",
 			"Method", "Modulus", "None", "Nonexistent", "NotApplicable", "NotAvailable", "Null", "NumericFunction",
 			"OneIdentity", "Orderless", "Pi", "PrecisionGoal", "Primes", "Rationals", "Real", "Reals", "Second", "Slot",
@@ -122,7 +122,7 @@ public class AST2Expr {
 			"ToRadicals", "ToString", "Total", "ToUnicode", "Tr", "Trace", "Transpose", "TrigExpand", "TrigReduce",
 			"TrigToExp", "TrueQ", "Tuples", "Unequal", "Unevaluated", "Union", "Unique", "UnitStep", "UnitVector",
 			"UnsameQ", "Unset", "UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables",
-			"Variance", "VectorAngle", "VectorQ", "Which", "While", "Xor", "YuleDissimilarity", "Zeta" };
+			"Variance", "VectorAngle", "VectorQ", "Which", "While", "With", "Xor", "YuleDissimilarity", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 

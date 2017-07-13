@@ -566,7 +566,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "vectorq" : "VectorQ");
 	public final static IBuiltInSymbol Which = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "which" : "Which");
 	public final static IBuiltInSymbol While = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "while" : "While");
-
+	public final static IBuiltInSymbol With = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "with" : "With");
+	
 	public final static IBuiltInSymbol Abs = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "abs" : "Abs");
 	public final static IBuiltInSymbol AbsArg = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "absarg" : "AbsArg");
@@ -5530,6 +5531,10 @@ public class F {
 		return binaryAST2(While, a0, a1);
 	}
 
+	public static IAST With(final IExpr a0, final IExpr a1) {
+		return binaryAST2(With, a0, a1);
+	}
+	
 	public static IAST Zeta(final IExpr a0) {
 		return unaryAST1(Zeta, a0);
 	}

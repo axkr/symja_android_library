@@ -1835,7 +1835,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Expand((x + 3)^(5/2)+(x + 1)^(3/2))", "Sqrt(1+x)+x*Sqrt(1+x)+9*Sqrt(3+x)+6*x*Sqrt(3+x)+x^2*Sqrt(3+x)");
 		check("Expand((x + 1)^(5/2))", "Sqrt(1+x)+2*x*Sqrt(1+x)+x^2*Sqrt(1+x)");
 		check("Expand((x + 1)^(-5/2))", "1/(1+x)^(5/2)");
-		
+
 		check("Expand((x + y) ^ 3) ", "x^3+3*x^2*y+3*x*y^2+y^3");
 		check("Expand((a + b) (a + c + d))", "a^2+a*b+a*c+b*c+a*d+b*d");
 		check("Expand((a + b) (a + c + d) (e + f) + e a a)",
@@ -2255,7 +2255,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFractionalPart() {
-		
+
 		check("FractionalPart(-9/4)", "-1/4");
 		check("FractionalPart(-9/4)+IntegerPart(-9/4)", "-9/4");
 		check("FractionalPart(-2.25)+IntegerPart(-2.25)", "-2.25");
@@ -5705,7 +5705,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
-
+//		check("x=20.796855124168776", "20.79686"); 
+//		check("Clear(x);Solve(x==(-1.0000000000000002)*Sqrt(y^2.0),y)", "{{y->1.0*Sqrt(x^2.0)}}");
+		
 		// Issue #166
 		check("Solve(2*x/y==x/z,x)", "{{x->0}}");
 		// Issue #165
@@ -6530,10 +6532,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTogether() {
-//		check("Together(1/Sqrt(1+1/x) + (1+1/x)^(3/2) )", " ");
+		// check("Together(1/Sqrt(1+1/x) + (1+1/x)^(3/2) )", " ");
 		check("Together(1/Sqrt(1+1/x)  )", "Sqrt(x/(1+x))");
 		check("Together(1+1/(1+1/x))", "(1+2*x)/(1+x)");
-		
+
 		check("Together(a/b+c/d)", "(b*c+a*d)/(b*d)");
 		// TODO return {x (2 + y) / (1 + y) ^ 2}
 		check("Together({x / (y+1) + x / (y+1)^2})", "{(2*x+x*y)/(1+2*y+y^2)}");
@@ -6875,6 +6877,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("$n = 1; While(True, If($n > 10, Break()); $n++);$n", "11");
 	}
 
+	public void testWith() {
+		check("With({x=2, y=16},x^y)", "65536");
+	}
+	
 	public void testXor() {
 		check("Xor(False, True)", "True");
 		check("Xor(True, True)", "False");
