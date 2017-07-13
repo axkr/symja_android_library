@@ -4,7 +4,7 @@
 Eigenvalues(matrix)
 ```
 
-> get the numerical eigenvalues of the ##matrix##.
+> get the numerical eigenvalues of the `matrix`.
 
 See:
 
