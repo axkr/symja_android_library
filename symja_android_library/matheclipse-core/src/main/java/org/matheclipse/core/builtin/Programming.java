@@ -948,7 +948,7 @@ public final class Programming {
 			final java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables = new IdentityHashMap<ISymbol, IExpr>();
 
 			try {
-				rememberWithVariables(intializerList, moduleVariables);
+				rememberWithVariables(intializerList, moduleVariables, engine);
 				IExpr subst = arg2.accept(new WithReplaceAll(moduleVariables));
 				if (subst.isPresent()) {
 					return engine.evaluate(subst);
@@ -975,7 +975,8 @@ public final class Programming {
 	 * @param variablesMap
 	 *            the resulting module variables map
 	 */
-	private static void rememberWithVariables(IAST variablesList, final java.util.Map<ISymbol, IExpr> variablesMap) {
+	private static void rememberWithVariables(IAST variablesList, final java.util.Map<ISymbol, IExpr> variablesMap,
+			EvalEngine engine) {
 		ISymbol oldSymbol;
 		IExpr newExpr;
 		for (int i = 1; i < variablesList.size(); i++) {
@@ -988,8 +989,17 @@ public final class Programming {
 				final IAST setFun = (IAST) variablesList.get(i);
 				if (setFun.arg1().isSymbol()) {
 					oldSymbol = (ISymbol) setFun.arg1();
-					newExpr = setFun.arg2();
-					variablesMap.put(oldSymbol, newExpr);
+					IExpr rightHandSide = setFun.arg2();
+					try {
+						IExpr temp = engine.evaluate(rightHandSide);
+						variablesMap.put(oldSymbol, temp);
+					} catch (MathException me) {
+						if (Config.DEBUG) {
+							me.printStackTrace();
+						}
+						variablesMap.put(oldSymbol, rightHandSide);
+					}
+
 				}
 			}
 			// }

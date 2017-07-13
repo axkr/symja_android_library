@@ -39,7 +39,7 @@ public class TimeConstrained extends AbstractCoreFunctionEvaluator {
 		}
 
 	}
-	
+
 	public TimeConstrained() {
 	}
 
@@ -51,11 +51,13 @@ public class TimeConstrained extends AbstractCoreFunctionEvaluator {
 		long seconds = 0L;
 		try {
 			if (arg2.isSignedNumber()) {
+				arg2=((ISignedNumber) arg2).ceilFraction();
 				seconds = ((ISignedNumber) arg2).toLong();
 			} else {
 				engine.printMessage("TimeConstrained: " + ast.arg2().toString() + " is not a Java long value.");
 				return F.NIL;
 			}
+
 		} catch (ArithmeticException ae) {
 			engine.printMessage("TimeConstrained: " + ast.arg2().toString() + " is not a Java long value.");
 			return F.NIL;

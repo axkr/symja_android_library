@@ -817,10 +817,11 @@ public class Parser extends Scanner {
 						}
 						rhs = parseLookaheadOperator(infixOperator.getPrecedence());
 						lhs = infixOperator.createFunction(fFactory, lhs, rhs);
+						String infixOperatorString = infixOperator.getOperatorString();
 						while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
-								&& infixOperator.getOperatorString().equals(fOperatorString)) {
+								&& infixOperatorString.equals(fOperatorString)) {
 							getNextToken();
-							if (";".equals(infixOperator.getOperatorString())) {
+							if (";".equals(infixOperatorString)) {
 								if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
 										|| fToken == TT_PRECEDENCE_CLOSE) {
 									((FunctionNode) lhs).add(fFactory.createSymbol("Null"));

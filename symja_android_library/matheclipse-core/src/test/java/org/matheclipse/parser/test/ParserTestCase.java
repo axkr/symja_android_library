@@ -339,11 +339,11 @@ public class ParserTestCase extends TestCase {
 	public void testParser26() {
 		try {
 			Parser p = new Parser(false, true);
-			List<ASTNode> obj = p.parsePackage("	SumSimplerAuxQ[u_,v_] :=\r\n" + 
-					"			  v=!=0 && \r\n" + 
-					"			  NonnumericFactors[u]===NonnumericFactors[v] &&\r\n" + 
-					"			  (NumericFactor[u]/NumericFactor[v]<-1/2 || NumericFactor[u]/NumericFactor[v]==-1/2 && NumericFactor[u]<0)\r\n" + 
-					"\r\n" + 
+			List<ASTNode> obj = p.parsePackage("	SumSimplerAuxQ[u_,v_] :=\n" + 
+					"			  v=!=0 && \n" + 
+					"			  NonnumericFactors[u]===NonnumericFactors[v] &&\n" + 
+					"			  (NumericFactor[u]/NumericFactor[v]<-1/2 || NumericFactor[u]/NumericFactor[v]==-1/2 && NumericFactor[u]<0)\n" + 
+					"\n" + 
 					"");
 			assertEquals(obj.toString(), 
 					"[SetDelayed(SumSimplerAuxQ(u_, v_), And(UnsameQ(v, 0), SameQ(NonnumericFactors(u), NonnumericFactors(v)), Or(Less(Times(NumericFactor(u), Power(NumericFactor(v), -1)), -1/2), And(Equal(Times(NumericFactor(u), Power(NumericFactor(v), -1)), -1/2), Less(NumericFactor(u), 0)))))]");
@@ -352,5 +352,37 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
+	
+	public void testParser27() {
+		try {
+			Parser p = new Parser(false, true);
+			List<ASTNode> obj = p.parsePackage("\n" + 
+					"TryTanhSubst[u_,x_Symbol] :=\n" + 
+					"  FalseQ[FunctionOfLinear[u,x]] &&\n" + 
+					"  Not[MatchQ[u,r_.*(s_+t_)^n_. /; IntegerQ[n] && n>0]] &&\n" + 
+					"(*Not[MatchQ[u,Log[f_[x]^2] /; SinhCoshQ[f]]]  && *)\n" + 
+					"  Not[MatchQ[u,Log[v_]]]  &&\n" + 
+					"  Not[MatchQ[u,1/(a_+b_.*f_[x]^n_) /; SinhCoshQ[f] && IntegerQ[n] && n>2]] &&\n" + 
+					"  Not[MatchQ[u,f_[m_.*x]*g_[n_.*x] /; IntegersQ[m,n] && SinhCoshQ[f] && SinhCoshQ[g]]] &&\n" + 
+					"  Not[MatchQ[u,r_.*(a_.*s_^m_)^p_ /; FreeQ[{a,m,p},x] && Not[m===2 && (s===Sech[x] || s===Csch[x])]]] &&\n" + 
+					"  u===ExpandIntegrand[u,x]\n" + 
+					"\n" + 
+					"TryPureTanhSubst[u_,x_Symbol] :=\n" + 
+					"  Not[MatchQ[u,Log[v_]]]  &&\n" + 
+					"  Not[MatchQ[u,ArcTanh[a_.*Tanh[v_]] /; FreeQ[a,x]]] &&\n" + 
+					"  Not[MatchQ[u,ArcTanh[a_.*Coth[v_]] /; FreeQ[a,x]]] &&\n" + 
+					"  Not[MatchQ[u,ArcCoth[a_.*Tanh[v_]] /; FreeQ[a,x]]] &&\n" + 
+					"  Not[MatchQ[u,ArcCoth[a_.*Coth[v_]] /; FreeQ[a,x]]] &&\n" + 
+					"  u===ExpandIntegrand[u,x]\n" + 
+					"\n" + 
+					"");
+			assertEquals(obj.toString(), 
+					"[SetDelayed(TryTanhSubst(u_, x_Symbol), And(FalseQ(FunctionOfLinear(u, x)), Not(MatchQ(u, Condition(Times(r_., Power(Plus(s_, t_), n_.)), And(IntegerQ(n), Greater(n, 0))))), Not(MatchQ(u, Log(v_))), Not(MatchQ(u, Condition(Power(Plus(a_, Times(b_., Power(f_(x), n_))), -1), And(SinhCoshQ(f), IntegerQ(n), Greater(n, 2))))), Not(MatchQ(u, Condition(Times(f_(Times(m_., x)), g_(Times(n_., x))), And(IntegersQ(m, n), SinhCoshQ(f), SinhCoshQ(g))))), Not(MatchQ(u, Condition(Times(r_., Power(Times(a_., Power(s_, m_)), p_)), And(FreeQ(List(a, m, p), x), Not(And(SameQ(m, 2), Or(SameQ(s, Sech(x)), SameQ(s, Csch(x))))))))), SameQ(u, ExpandIntegrand(u, x)))), SetDelayed(TryPureTanhSubst(u_, x_Symbol), And(Not(MatchQ(u, Log(v_))), Not(MatchQ(u, Condition(ArcTanh(Times(a_., Tanh(v_))), FreeQ(a, x)))), Not(MatchQ(u, Condition(ArcTanh(Times(a_., Coth(v_))), FreeQ(a, x)))), Not(MatchQ(u, Condition(ArcCoth(Times(a_., Tanh(v_))), FreeQ(a, x)))), Not(MatchQ(u, Condition(ArcCoth(Times(a_., Coth(v_))), FreeQ(a, x)))), SameQ(u, ExpandIntegrand(u, x))))]");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
 	
 }

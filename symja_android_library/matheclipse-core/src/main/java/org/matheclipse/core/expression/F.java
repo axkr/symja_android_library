@@ -4193,6 +4193,10 @@ public class F {
 		}
 		return binaryAST2(Less, a0, a1);
 	}
+	
+	public static IAST Less(final IExpr... a) {
+		return ast(a, Less);
+	}
 
 	public static IExpr LessEqual(final IExpr a0, final IExpr a1) {
 		if (a0.isSignedNumber() && a1.isSignedNumber()) {
@@ -4201,6 +4205,10 @@ public class F {
 		return binaryAST2(LessEqual, a0, a1);
 	}
 
+	public static IAST LessEqual(final IExpr... a) {
+		return ast(a, LessEqual);
+	}
+	
 	public static IAST Limit(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Limit, a0, a1);
 	}
@@ -4624,6 +4632,10 @@ public class F {
 		return binary(Or, a0, a1);
 	}
 
+	public static IAST Or(final IExpr... a) {
+		return ast(a, Or);
+	}
+	
 	public static IAST Order(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Order, a0, a1);
 	}
