@@ -17,8 +17,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * UtilityFunction constructors from the
- * <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based integrator</a>.
+ * UtilityFunction constructors from the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based integrator</a>.
  * 
  * TODO a lot of functions are only placeholders at the moment.
  * 
@@ -75,7 +74,7 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST H(final IExpr a0) {
-		return unaryAST1(F.GSymbol, a0);
+		return unaryAST1(H, a0);
 	}
 
 	public static IAST H(final IExpr a0, final IExpr a1) {
@@ -106,9 +105,9 @@ public class UtilityFunctionCtors {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "Dist"), a0, a1, a2);
 	}
 
-//	private static ISymbol $sDBG(final String symbolName) {
-//		return $s(symbolName, false);
-//	}
+	// private static ISymbol $sDBG(final String symbolName) {
+	// return $s(symbolName, false);
+	// }
 
 	public static IAST AbsorbMinusSign(final IExpr a0) {
 		return unaryAST1($s(INTEGRATE_PREFIX + "AbsorbMinusSign"), a0);
@@ -141,7 +140,11 @@ public class UtilityFunctionCtors {
 	public static IAST AlgebraicFunctionQ(final IExpr a0, final IExpr a1) {
 		return binaryAST2($s(INTEGRATE_PREFIX + "AlgebraicFunctionQ"), a0, a1);
 	}
-
+	
+	public static IAST AlgebraicFunctionQ(final IExpr a0, final IExpr a1,final IExpr a2) {
+		return ternaryAST3($s(INTEGRATE_PREFIX + "AlgebraicFunctionQ"), a0, a1, a2);
+	}
+	
 	public static IAST AlgebraicTrigFunctionQ(final IExpr a0, final IExpr a1) {
 		return binaryAST2($s(INTEGRATE_PREFIX + "AlgebraicTrigFunctionQ"), a0, a1);
 	}
@@ -718,6 +721,10 @@ public class UtilityFunctionCtors {
 		return unaryAST1($s(INTEGRATE_PREFIX + "InverseTrigQ"), a0);
 	}
 
+	public static IAST J(final IExpr a0) {
+		return unaryAST1(J, a0);
+	}
+	
 	public static IAST KernelSubst(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "KernelSubst"), a0, a1, a2);
 	}
@@ -961,6 +968,10 @@ public class UtilityFunctionCtors {
 	public static IAST NormalizeTrig(final IExpr a0, final IExpr a1) {
 		return binaryAST2($s(INTEGRATE_PREFIX + "NormalizeTrig"), a0, a1);
 	}
+	
+	public static IAST NormalizeTrig(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+		return quaternary($s(INTEGRATE_PREFIX + "NormalizeTrig"), a0, a1, a2, a3);
+	}
 
 	public static IAST NotFalseQ(final IExpr a0) {
 		return unaryAST1($s(INTEGRATE_PREFIX + "NotFalseQ"), a0);
@@ -973,7 +984,11 @@ public class UtilityFunctionCtors {
 	public static IAST NumericFactor(final IExpr a0) {
 		return unaryAST1($s(INTEGRATE_PREFIX + "NumericFactor"), a0);
 	}
-
+	 
+	public static IAST NthRoot(final IExpr a0, final IExpr a1) {
+		return binaryAST2($s(INTEGRATE_PREFIX + "NthRoot"), a0, a1);
+	}
+	
 	public static IAST OddHyperbolicPowerQ(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "OddHyperbolicPowerQ"), a0, a1, a2);
 	}
@@ -1008,6 +1023,10 @@ public class UtilityFunctionCtors {
 
 	public static IAST PiecewiseLinearQ(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "PiecewiseLinearQ"), a0, a1, a2);
+	}
+
+	public static IAST PolyQ(final IExpr a0, final IExpr a1) {
+		return binaryAST2($s(INTEGRATE_PREFIX + "PolyQ"), a0, a1);
 	}
 
 	public static IAST PolyQ(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -1355,6 +1374,10 @@ public class UtilityFunctionCtors {
 		return quaternary($s(INTEGRATE_PREFIX + "SquareRootOfQuadraticSubst"), a0, a1, a2, a3);
 	}
 
+	public static IAST Subst(final IExpr a0, final IExpr a1) {
+		return binaryAST2($s(INTEGRATE_PREFIX + "Subst"), a0, a1);
+	}
+	
 	public static IAST Subst(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "Subst"), a0, a1, a2);
 	}

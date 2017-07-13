@@ -2397,7 +2397,11 @@ public class F {
 	public static IAST Append(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Append, a0, a1);
 	}
-
+	
+	public static IAST AppendTo(final IExpr a0, final IExpr a1) {
+		return binaryAST2(AppendTo, a0, a1);
+	}
+	
 	public static IAST Apply(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Apply, a0, a1);
 	}
@@ -2778,6 +2782,10 @@ public class F {
 		return binary(Times, CN1, Infinity);
 	}
 
+	public static IAST Coefficient(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Coefficient, a0, a1);
+	}
+	
 	public static IAST Coefficient(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(Coefficient, a0, a1, a2);
 	}
@@ -2790,6 +2798,10 @@ public class F {
 		return binaryAST2(Collect, a0, a1);
 	}
 
+	public static IAST Colon(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Colon, a0, a1);
+	}
+	
 	public static int compareTo(IExpr a, IExpr b) throws UnsupportedOperationException {
 		if (a instanceof ISignedNumber && b instanceof ISignedNumber) {
 			return a.compareTo(b);
@@ -4742,6 +4754,10 @@ public class F {
 		return binaryAST2(PolyLog, a0, a1);
 	}
 
+	public static IAST PolynomialGCD(final IExpr a0, final IExpr a1) {
+		return binaryAST2(PolynomialGCD, a0, a1);
+	}
+	
 	public static IAST PolynomialQ(final IExpr a0, final IExpr a1) {
 		return binaryAST2(PolynomialQ, a0, a1);
 	}
@@ -5034,6 +5050,10 @@ public class F {
 	public static IAST SameQ(final IExpr a0, final IExpr a1) {
 		return binaryAST2(SameQ, a0, a1);
 	}
+	
+	public static IAST SameQ(final IExpr a0, final double d) {
+		return binaryAST2(SameQ, a0, F.num(d));
+	}
 
 	public static IAST Scan(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Scan, a0, a1);
@@ -5295,6 +5315,10 @@ public class F {
 		return ast(SurfaceGraphics);
 	}
 
+	public static IAST Switch(final IExpr... a) {
+		return ast(a, Switch);
+	}
+	
 	public static IAST Table(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Table, a0, a1);
 	}
