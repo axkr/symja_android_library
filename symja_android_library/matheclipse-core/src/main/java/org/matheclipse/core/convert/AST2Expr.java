@@ -59,7 +59,7 @@ public class AST2Expr {
 			"BooleanConvert", "BooleanMinimize", "BooleanTable", "BooleanVariables", "BrayCurtisDistance", "Break",
 			"CanberraDistance", "Cancel", "CarmichaelLambda", "CartesianProduct", "Cases", "CatalanNumber", "Catch",
 			"Catenate", "CDF", "Ceiling", "CentralMoment", "CharacteristicPolynomial", "ChebyshevT", "ChebyshevU",
-			"ChessboardDistance", "ChineseRemainder", "Chop", "Clear", "ClearAll", "Coefficient", "CoefficientList",
+			"ChessboardDistance", "ChineseRemainder", "Chop", "Clear", "ClearAll", "ClearAttributes", "Coefficient", "CoefficientList",
 			"CoefficientRules", "Colon", "Collect", "Commonest", "Complement", "Compile", "Complex", "ComplexExpand",
 			"ComplexInfinity", "ComposeList", "Composition", "CompoundExpression", "Condition", "Conjugate",
 			"ConjugateTranspose", "ConstantArray", "Continue", "ContinuedFraction", "CoprimeQ", "Cos", "Cosh",

@@ -16,7 +16,7 @@ public class AttributeFunctions {
 		F.ClearAttributes.setEvaluator(new ClearAttributes());
 		F.SetAttributes.setEvaluator(new SetAttributes());
 	}
-
+	
 	/**
 	 * Get the list of attributes of a given symbol.
 	 * <p>

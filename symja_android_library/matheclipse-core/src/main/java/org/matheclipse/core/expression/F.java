@@ -2779,6 +2779,10 @@ public class F {
 		return ast(a, Clear);
 	}
 
+	public static IAST ClearAttributes(final IExpr a0, final IExpr a1) {
+		return binaryAST2(ClearAttributes, a0, a1);
+	}
+	
 	public static IAST CNInfinity() {
 		return binary(Times, CN1, Infinity);
 	}
