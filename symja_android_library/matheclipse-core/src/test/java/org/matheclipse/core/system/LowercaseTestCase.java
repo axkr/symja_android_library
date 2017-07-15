@@ -1941,7 +1941,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testFactor() {
 		// TODO return (2 + 2 x + 3 x ^ 2 + x ^ 4) / ((1 + x) ^ 2 (1 + x ^ 2) ^
 		// 2)
-		check("Factor(1 / (x^2+2x+1) + 1 / (x^4+2x^2+1))", "Factor(1/(1+2*x+x^2)+1/(1+2*x^2+x^4))");
+		check("Factor(1 / (x^2+2x+1) + 1 / (x^4+2x^2+1))", "(2+2*x+3*x^2+x^4)/((1+x)^2*(1+x^2)^2)");
 
 		check("Factor({x+x^2})", "{x*(1+x)}");
 		check("Factor(x^259+1)",
@@ -3430,12 +3430,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testModule() {
+//		check("num=Sin(3*I);Module({v=N(num)},If(PossibleZeroQ(Re(v)),Im(v)>0,Re(v)>0))", "True");
+//		check("Module({x=5}, Hold(x))", "Hold(x$1)");
 		check("xm=10;Module({xm=xm}, xm=xm+1;xm)", "11");
 		check("xm=10;Module({xm=xm}, xm=xm+1;xm);xm", "10");
 		check("xm=10;Module({t=xm}, xm=xm+1;t)", "10");
 		check("xm=10;Module({t=xm}, xm=xm+1;t);xm", "11");
-		check("Module({a}, Block({a}, a))", "a");
-		check("Module({a}, Block({}, a))", "a$6");
+		check("Module({a}, Block({a}, a))", "a$6");
+		check("Module({a}, Block({}, a))", "a$7");
 		check("t === Module({t}, t)", "False");
 		check("$g(x_) := Module({v=x},int(v,x)/;v=!=x);$g(f(x))", "$g(f(x))");
 		check("$g(x_) := Module({v=x},int1(v,x)/;v===x);$g(f(x))", "int1(f(x),f(x))");
@@ -3449,6 +3451,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("$gcd(m0_, n0_) :=\n" + " Module({m = m0, n = n0},\n" + "  While(n != 0, {m, n} = {n, Mod(m, n)});\n"
 				+ "  m\n" + "  );$gcd(18, 21)", "3");
 
+		check("{Module({x}, x), Module({x}, x)}", "{x$17,x$18}");
+		check("Module({e = Expand((1 + x)^5)}, Function(x, e))", "Function(x$20,e$19)");
+		check("Module({a,b}, Block({c}, c+a))", "a$21+c");
+		
 		if (Config.SERVER_MODE == false) {
 			check("f(x0_) :=\n" + " Module({x = x0},\n" + "  While(x > 0, x = Log(x));\n" + "  x\n" + "  );f(2.0)",
 					"-0.36651");
@@ -4242,7 +4248,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPart() {
-
+		check("lst=False;lst[[2]]", "(False[[2]])");
 		check("T = {a, b, c, d}", "{a,b,c,d}");
 		check("T[[2]]=3", "3");
 		check("T", "{a,3,c,d}");
@@ -6879,6 +6885,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testWith() {
 		check("With({x=2, y=16},x^y)", "65536");
+		check("With({x = 7, y = a + 1}, x/y)", "7/(1+a)");
+		check("With({x = a}, (1 + x^2) &)", "1+a^2&");
+		check("Table(With({i = j}, Hold(i)), {j, 5})", "{Hold(1),Hold(2),Hold(3),Hold(4),Hold(5)}");
+		
+		check("With({y = Sin(1.0)}, Sum(y^i, {i, 0, 10}))", "5.36323");
+		check("With({e = Expand((1 + x)^5)}, Function(x, e))", "Function(x$11,1+5*x+10*x^2+10*x^3+5*x^4+x^5)");
+		check("With({e = Expand((1 + x)^5)}, Function @@ {x, e})", "Function(x,1+5*x+10*x^2+10*x^3+5*x^4+x^5)");
+		
+		check("x=5;With({x = x}, Hold(x))", "Hold(5)");
+		
+		check("newton(f_, x0_) := With({fp = f'}, FixedPoint(# - f(#)/fp(#) &, x0))", "");
+		check("newton(Cos,1.33)", "1.5708");
+		
+		check("newton(Cos(#)-#&,1.33)", "0.73909");
+		
+		check("With({f = Function(n, If(n == 0, 1, n*f(n - 1)))}, f(10))", "10*f(9)");
+		// check("Timing(Do(With({x = 5}, x;), {10^5}))", "");
+		// check("Timing(Do(Module({x = 5}, x;), {10^5}))", "");
 	}
 	
 	public void testXor() {

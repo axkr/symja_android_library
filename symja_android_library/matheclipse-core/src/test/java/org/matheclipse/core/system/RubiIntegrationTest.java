@@ -1,9 +1,72 @@
 package org.matheclipse.core.system;
 
-import org.matheclipse.core.interfaces.IAST;
+import static org.matheclipse.core.expression.F.$s;
+import static org.matheclipse.core.expression.F.AtomQ;
+import static org.matheclipse.core.expression.F.C0;
+import static org.matheclipse.core.expression.F.C1;
+import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.C3;
+import static org.matheclipse.core.expression.F.C4;
+import static org.matheclipse.core.expression.F.CI;
+import static org.matheclipse.core.expression.F.CN2;
+import static org.matheclipse.core.expression.F.Coefficient;
+import static org.matheclipse.core.expression.F.Complex;
+import static org.matheclipse.core.expression.F.Condition;
+import static org.matheclipse.core.expression.F.Cos;
+import static org.matheclipse.core.expression.F.Exponent;
+import static org.matheclipse.core.expression.F.FreeQ;
+import static org.matheclipse.core.expression.F.Head;
+import static org.matheclipse.core.expression.F.I;
+import static org.matheclipse.core.expression.F.If;
+import static org.matheclipse.core.expression.F.Integrate;
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.MatchQ;
+import static org.matheclipse.core.expression.F.MemberQ;
+import static org.matheclipse.core.expression.F.Negate;
+import static org.matheclipse.core.expression.F.Null;
+import static org.matheclipse.core.expression.F.Pi;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Sin;
+import static org.matheclipse.core.expression.F.Sqr;
+import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.UnsameQ;
+import static org.matheclipse.core.expression.F.ZZ;
+import static org.matheclipse.core.expression.F.a;
+import static org.matheclipse.core.expression.F.a_DEFAULT;
+import static org.matheclipse.core.expression.F.b;
+import static org.matheclipse.core.expression.F.b_DEFAULT;
+import static org.matheclipse.core.expression.F.c;
+import static org.matheclipse.core.expression.F.f;
+import static org.matheclipse.core.expression.F.fraction;
+import static org.matheclipse.core.expression.F.m;
+import static org.matheclipse.core.expression.F.p;
+import static org.matheclipse.core.expression.F.v;
+import static org.matheclipse.core.expression.F.x;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.AbortRubi;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.ContentFactor;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.ContentFactorAux;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.DeactivateTrig;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.ExpandToSum;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.FixSimplify;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.FunctionOfTrig;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.FunctionOfTrigOfLinearQ;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.LinearQ;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.NumericFactor;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.PolyQ;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.QuadraticMatchQ;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.RealNumericQ;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.RemoveContent;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.SimpFixFactor;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.SubstForFractionalPowerOfLinear;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.SumQ;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.TrigSimplifyAux;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.UnifyNegativeBaseFactors;
 
-import static org.matheclipse.core.expression.F.*;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.*;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Tests for the Java port of the
@@ -66,11 +129,18 @@ public class RubiIntegrationTest extends AbstractTestCase {
 
 	public void testRubi004() {
 		IAST ast;
-		ast = RemoveContent(Plus(Times(a, b), Times(a, c)), x);
-		check(ast, "1");
+//		ast = RemoveContent(Plus(Times(a, b), Times(a, c)), x);
+//		check(ast, "1");
 
 		ast = RemoveContent(Plus(Times(a, x), Times(a, c)), x);
-		check(ast, "c+x");
+//		ISymbol num=$s("num");
+//		ISymbol tmp=$s("tmp");
+//		IExpr expn=Plus(Times(a, x), Times(a, c)); //$s("expn");
+//		ast=F.Module(
+//				  F.List(F.Set(num,C1),tmp),
+//				  F.CompoundExpression(F.Set(tmp,F.Map(F.Function(F.If(F.And(SumQ(F.Slot1),F.Less(NumericFactor(F.Part(F.Slot1,C1)),C0)),F.CompoundExpression(F.Set(num,F.Negate(num)),ContentFactorAux(F.Negate(F.Slot1))),ContentFactorAux(F.Slot1))),expn)),F.Times(num,UnifyNegativeBaseFactors(tmp)))
+//				); 
+		check(F.eval(ast).toString(), "c+x");
 
 		ast = RemoveContent(Plus(Times(x, b), Times(x, c)), x);
 		check(ast, "x");

@@ -47,22 +47,6 @@ public class TimeConstrained extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 4);
 
-		IExpr arg2 = engine.evaluate(ast.arg2());
-		long seconds = 0L;
-		try {
-			if (arg2.isSignedNumber()) {
-				arg2=((ISignedNumber) arg2).ceilFraction();
-				seconds = ((ISignedNumber) arg2).toLong();
-			} else {
-				engine.printMessage("TimeConstrained: " + ast.arg2().toString() + " is not a Java long value.");
-				return F.NIL;
-			}
-
-		} catch (ArithmeticException ae) {
-			engine.printMessage("TimeConstrained: " + ast.arg2().toString() + " is not a Java long value.");
-			return F.NIL;
-		}
-
 		if (Config.JAS_NO_THREADS) {
 			// no thread can be spawned
 			try {
@@ -75,29 +59,47 @@ public class TimeConstrained extends AbstractCoreFunctionEvaluator {
 				}
 			}
 			return F.Aborted;
-		} else {
-			TimeLimiter timeLimiter = new SimpleTimeLimiter();
-			Callable<IExpr> work = new EvalCallable(ast.arg1(), engine);
+		}
 
-			try {
-				return timeLimiter.callWithTimeout(work, seconds, TimeUnit.SECONDS, true);
-			} catch (java.util.concurrent.TimeoutException e) {
-				if (ast.isAST3()) {
-					return ast.arg3();
-				}
-				return F.Aborted;
-			} catch (com.google.common.util.concurrent.UncheckedTimeoutException e) {
-				if (ast.isAST3()) {
-					return ast.arg3();
-				}
-				return F.Aborted;
-			} catch (Exception e) {
-				if (Config.DEBUG) {
-					e.printStackTrace();
-				}
-				return F.Null;
+		IExpr arg2 = engine.evaluate(ast.arg2());
+		long seconds = 0L;
+		try {
+			// if (ast.arg2().toString().equals("§timelimit")){
+			// arg2=F.num(5.0);
+			// }
+			if (arg2.isSignedNumber()) {
+				arg2 = ((ISignedNumber) arg2).ceilFraction();
+				seconds = ((ISignedNumber) arg2).toLong();
+			} else {
+				engine.printMessage("TimeConstrained: " + ast.arg2().toString() + " is not a Java long value.");
+				return F.NIL;
 			}
 
+		} catch (ArithmeticException ae) {
+			engine.printMessage("TimeConstrained: " + ast.arg2().toString() + " is not a Java long value.");
+			return F.NIL;
+		}
+
+		TimeLimiter timeLimiter = new SimpleTimeLimiter();
+		Callable<IExpr> work = new EvalCallable(ast.arg1(), engine);
+
+		try {
+			return timeLimiter.callWithTimeout(work, seconds, TimeUnit.SECONDS, true);
+		} catch (java.util.concurrent.TimeoutException e) {
+			if (ast.isAST3()) {
+				return ast.arg3();
+			}
+			return F.Aborted;
+		} catch (com.google.common.util.concurrent.UncheckedTimeoutException e) {
+			if (ast.isAST3()) {
+				return ast.arg3();
+			}
+			return F.Aborted;
+		} catch (Exception e) {
+			if (Config.DEBUG) {
+				e.printStackTrace();
+			}
+			return F.Null;
 		}
 
 	}

@@ -322,6 +322,10 @@ public class VariablesSet {
 	 */
 	public static IAST getVariables(IExpr expr) {
 		Set<IExpr> fVariablesSet = new TreeSet<IExpr>();
+		return addVariables(fVariablesSet, expr);
+	}
+
+	public static IAST addVariables(Set<IExpr> fVariablesSet, IExpr expr) {
 		expr.accept(new AlgebraVariablesVisitor(fVariablesSet));
 		final Iterator<IExpr> iter = fVariablesSet.iterator();
 		final IAST list = F.ListAlloc(fVariablesSet.size());

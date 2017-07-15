@@ -216,14 +216,14 @@ public class Algebra {
 					if (sn.isInteger() && powerAST.arg1().isAST()) {
 						// positive integer
 						IAST function = (IAST) powerAST.arg1();
-//						if (function.isTimes()) {
-//							IExpr[] partsArg1 = fractionalPartsTimesPower(function, true, true, trig, true);
-//							if (partsArg1 != null) {
-//								parts[0] = F.Power(partsArg1[0], sn);
-//								parts[1] = F.Power(partsArg1[1], sn);
-//								return parts;
-//							}
-//						}
+						// if (function.isTimes()) {
+						// IExpr[] partsArg1 = fractionalPartsTimesPower(function, true, true, trig, true);
+						// if (partsArg1 != null) {
+						// parts[0] = F.Power(partsArg1[0], sn);
+						// parts[1] = F.Power(partsArg1[1], sn);
+						// return parts;
+						// }
+						// }
 						IExpr numerForm = Numerator.getTrigForm(function, trig);
 						if (numerForm.isPresent()) {
 							IExpr denomForm = Denominator.getTrigForm(function, trig);
@@ -1224,16 +1224,23 @@ public class Algebra {
 			Validate.checkRange(ast, 2, 3);
 
 			VariablesSet eVar = new VariablesSet(ast.arg1());
-			// if (!eVar.isSize(1)) {
-			// throw new WrongArgumentType(ast, ast.arg1(), 1,
-			// "Factorization only implemented for univariate polynomials");
-			// }
-			try {
-				if (ast.arg1().isList()) {
-					return ((IAST) ast.arg1()).mapThread(F.List(), ast, 1);
+
+			if (ast.arg1().isList()) {
+				return ((IAST) ast.arg1()).mapThread(F.List(), ast, 1);
+			}
+			IExpr expr = ast.arg1();
+			if (ast.isAST1()) {
+				expr = engine.evaluate(F.Together(ast.arg1()));
+				if (expr.isAST()) {
+					IExpr[] parts = Algebra.getNumeratorDenominator((IAST) expr);
+					if (!parts[1].isOne()){
+						return F.Divide(F.Factor(parts[0]), F.Factor(parts[1]));
+					}
 				}
-				IExpr expr = F.evalExpandAll(ast.arg1());
-				ASTRange r = new ASTRange(eVar.getVarList(), 1);
+			}
+
+			ASTRange r = new ASTRange(eVar.getVarList(), 1);
+			try {
 				List<IExpr> varList = r;
 
 				if (ast.isAST2()) {
@@ -1246,7 +1253,7 @@ public class Algebra {
 					e.printStackTrace();
 				}
 			}
-			return F.NIL;
+			return expr;
 		}
 
 		public static IExpr factor(IExpr expr, List<IExpr> varList, boolean factorSquareFree)
@@ -3381,11 +3388,6 @@ public class Algebra {
 	 */
 	private static class Variables extends AbstractFunctionEvaluator {
 
-		public Variables() {
-		}
-
-		/**
-		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);

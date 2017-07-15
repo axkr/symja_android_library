@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.F.List;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.function.NestWhileList;
+import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.BreakException;
@@ -33,7 +35,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.visit.ModuleReplaceAll;
-import org.matheclipse.core.visit.WithReplaceAll;
 import org.matheclipse.parser.client.math.MathException;
 
 public final class Programming {
@@ -556,17 +557,17 @@ public final class Programming {
 		private static IExpr evalModule(IAST intializerList, IExpr arg2, final EvalEngine engine) {
 			final int moduleCounter = engine.incModuleCounter();
 			final String varAppend = "$" + moduleCounter;
-			final java.util.IdentityHashMap<ISymbol, ISymbol> moduleVariables = new IdentityHashMap<ISymbol, ISymbol>();
+			final java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables = new IdentityHashMap<ISymbol, IExpr>();
 
 			try {
 				rememberModuleVariables(intializerList, varAppend, moduleVariables, engine);
-				IExpr subst = arg2.accept(new ModuleReplaceAll(moduleVariables));
+				IExpr subst = arg2.accept(new ModuleReplaceAll(moduleVariables, engine));
 				if (subst.isPresent()) {
 					return engine.evaluate(subst);
 				}
 				return arg2;
 			} finally {
-				removeUserVariables(moduleVariables);
+//				removeUserVariables(moduleVariables);
 			}
 		}
 
@@ -673,34 +674,46 @@ public final class Programming {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() >= 3) {
 				try {
-					IExpr arg1 = engine.evaluate(ast.arg1());
-					if (arg1.isAST()) {
-						IAST evaledAST = F.NIL;
+					IExpr arg1 = engine.evalLoop(ast.arg1());
+					if (arg1.isPresent()) {
+						if (!arg1.isAST()) {
+							IExpr result = ast.setAtClone(1, arg1);
+							engine.printMessage("Part: " + result + " could not extract a part");
+							return result;
+						}
+					} else {
+						arg1 = ast.arg1();
+						if (!arg1.isAST()) {
+							engine.printMessage("Part: " + ast + " could not extract a part");
+							return F.NIL;
+						}
+					}
+					IAST evaledAST = F.NIL;
 
-						boolean numericMode = engine.isNumericMode();
-						IExpr temp;
-						try {
-							int astSize = ast.size();
-							for (int i = 2; i < astSize; i++) {
-								temp = engine.evalLoop(ast.get(i));
-								if (temp.isPresent()) {
-									if (evaledAST.isPresent()) {
-										evaledAST.set(i, temp);
-									} else {
-										evaledAST = ast.copy();
-										evaledAST.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
-										evaledAST.set(i, temp);
-									}
+					boolean numericMode = engine.isNumericMode();
+					IExpr temp;
+					try {
+						int astSize = ast.size();
+						for (int i = 2; i < astSize; i++) {
+							temp = engine.evalLoop(ast.get(i));
+							if (temp.isPresent()) {
+								if (evaledAST.isPresent()) {
+									evaledAST.set(i, temp);
+								} else {
+									evaledAST = ast.copy();
+									evaledAST.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+									evaledAST.set(i, temp);
 								}
 							}
-						} finally {
-							engine.setNumericMode(numericMode);
 						}
-						if (evaledAST.isPresent()) {
-							return part((IAST) arg1, evaledAST, 2, engine);
-						}
-						return part((IAST) arg1, ast, 2, engine);
+					} finally {
+						engine.setNumericMode(numericMode);
 					}
+					if (evaledAST.isPresent()) {
+						return part((IAST) arg1, evaledAST, 2, engine);
+					}
+					return part((IAST) arg1, ast, 2, engine);
+
 				} catch (WrongArgumentType wat) {
 					engine.printMessage(wat.getMessage());
 				}
@@ -943,13 +956,20 @@ public final class Programming {
 		 * @return
 		 */
 		private static IExpr evalWith(IAST intializerList, IExpr arg2, final EvalEngine engine) {
-			// final int moduleCounter = engine.incModuleCounter();
-			// final String varAppend = "$" + moduleCounter;
+			final int moduleCounter = engine.incModuleCounter();
+			final String varAppend = "$" + moduleCounter;
 			final java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables = new IdentityHashMap<ISymbol, IExpr>();
+			final java.util.Set<IExpr> renamedVarsSet = new HashSet<IExpr>();
+			final java.util.IdentityHashMap<ISymbol, ISymbol> renamedVars = new IdentityHashMap<ISymbol, ISymbol>();
 
 			try {
-				rememberWithVariables(intializerList, moduleVariables, engine);
-				IExpr subst = arg2.accept(new WithReplaceAll(moduleVariables));
+				rememberWithVariables(intializerList, moduleVariables, renamedVarsSet, engine);
+				for (IExpr expr : renamedVarsSet) {
+					if (expr.isSymbol()) {
+						renamedVars.put((ISymbol) expr, F.$s(expr.toString() + varAppend));
+					}
+				}
+				IExpr subst = arg2.accept(new ModuleReplaceAll(moduleVariables, engine));
 				if (subst.isPresent()) {
 					return engine.evaluate(subst);
 				}
@@ -976,7 +996,7 @@ public final class Programming {
 	 *            the resulting module variables map
 	 */
 	private static void rememberWithVariables(IAST variablesList, final java.util.Map<ISymbol, IExpr> variablesMap,
-			EvalEngine engine) {
+			final java.util.Set<IExpr> renamedVars, EvalEngine engine) {
 		ISymbol oldSymbol;
 		IExpr newExpr;
 		for (int i = 1; i < variablesList.size(); i++) {
@@ -992,6 +1012,7 @@ public final class Programming {
 					IExpr rightHandSide = setFun.arg2();
 					try {
 						IExpr temp = engine.evaluate(rightHandSide);
+						VariablesSet.addVariables(renamedVars, temp);
 						variablesMap.put(oldSymbol, temp);
 					} catch (MathException me) {
 						if (Config.DEBUG) {
@@ -1020,12 +1041,15 @@ public final class Programming {
 	 *            the evaluation engine
 	 */
 	private static void rememberModuleVariables(IAST variablesList, final String varAppend,
-			final java.util.Map<ISymbol, ISymbol> variablesMap, final EvalEngine engine) {
+			final java.util.Map<ISymbol, IExpr> variablesMap, final EvalEngine engine) {
 		ISymbol oldSymbol;
 		ISymbol newSymbol;
 		for (int i = 1; i < variablesList.size(); i++) {
 			if (variablesList.get(i).isSymbol()) {
 				oldSymbol = (ISymbol) variablesList.get(i);
+				if (oldSymbol.toString().equals("num")){
+					System.out.println(variablesList.toString());
+				}
 				newSymbol = F.userSymbol(oldSymbol.toString() + varAppend, engine);
 				variablesMap.put(oldSymbol, newSymbol);
 				newSymbol.pushLocalVariable();
@@ -1058,12 +1082,12 @@ public final class Programming {
 	 */
 	public static void removeUserVariables(final Map<ISymbol, ISymbol> moduleVariables) {
 		// remove all module variables from eval engine
-		ISymbol temp;
+		ISymbol temp; 
 		for (ISymbol symbol : moduleVariables.values()) {
 			temp = F.removeUserSymbol(symbol.toString());
-			if (Config.DEBUG && temp == null) {
-				throw new NullPointerException("Remove user-defined variabe: " + symbol.toString());
-			}
+//			if (Config.DEBUG && temp == null) {
+//				throw new NullPointerException("Remove user-defined variabe: " + symbol.toString());
+//			}
 		}
 	}
 
@@ -1080,7 +1104,7 @@ public final class Programming {
 			IAST intializerList = (IAST) arg1;
 			final int moduleCounter = engine.incModuleCounter();
 			final String varAppend = "$" + moduleCounter;
-			final java.util.Map<ISymbol, ISymbol> moduleVariables = new IdentityHashMap<ISymbol, ISymbol>();
+			final java.util.Map<ISymbol, IExpr> moduleVariables = new IdentityHashMap<ISymbol, IExpr>();
 
 			try {
 				rememberModuleVariables(intializerList, varAppend, moduleVariables, engine);
@@ -1091,7 +1115,7 @@ public final class Programming {
 					return checkModuleCondition(result.getAt(1), result.getAt(2), engine);
 				}
 			} finally {
-				removeUserVariables(moduleVariables);
+//				removeUserVariables(moduleVariables);
 			}
 		}
 		return true;
