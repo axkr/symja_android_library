@@ -567,7 +567,7 @@ public final class Programming {
 				}
 				return arg2;
 			} finally {
-//				removeUserVariables(moduleVariables);
+				// removeUserVariables(moduleVariables);
 			}
 		}
 
@@ -1047,9 +1047,9 @@ public final class Programming {
 		for (int i = 1; i < variablesList.size(); i++) {
 			if (variablesList.get(i).isSymbol()) {
 				oldSymbol = (ISymbol) variablesList.get(i);
-				if (oldSymbol.toString().equals("num")){
-					System.out.println(variablesList.toString());
-				}
+				// if (oldSymbol.toString().equals("num")){
+				// System.out.println(variablesList.toString());
+				// }
 				newSymbol = F.userSymbol(oldSymbol.toString() + varAppend, engine);
 				variablesMap.put(oldSymbol, newSymbol);
 				newSymbol.pushLocalVariable();
@@ -1082,12 +1082,12 @@ public final class Programming {
 	 */
 	public static void removeUserVariables(final Map<ISymbol, ISymbol> moduleVariables) {
 		// remove all module variables from eval engine
-		ISymbol temp; 
+		ISymbol temp;
 		for (ISymbol symbol : moduleVariables.values()) {
 			temp = F.removeUserSymbol(symbol.toString());
-//			if (Config.DEBUG && temp == null) {
-//				throw new NullPointerException("Remove user-defined variabe: " + symbol.toString());
-//			}
+			// if (Config.DEBUG && temp == null) {
+			// throw new NullPointerException("Remove user-defined variabe: " + symbol.toString());
+			// }
 		}
 	}
 
@@ -1115,7 +1115,7 @@ public final class Programming {
 					return checkModuleCondition(result.getAt(1), result.getAt(2), engine);
 				}
 			} finally {
-//				removeUserVariables(moduleVariables);
+				// removeUserVariables(moduleVariables);
 			}
 		}
 		return true;
