@@ -217,6 +217,14 @@ public class UtilityFunctionCtors {
 		return binaryAST2($s(INTEGRATE_PREFIX + "CollectReciprocals"), a0, a1);
 	}
 
+	public static IAST Coeff(final IExpr a0, final IExpr a1) {
+		return binaryAST2($s(INTEGRATE_PREFIX + "Coeff"), a0, a1);
+	}
+	
+	public static IAST Coeff(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3($s(INTEGRATE_PREFIX + "Coeff"), a0, a1, a2);
+	}
+	
 	public static IAST CombineExponents(final IExpr a0) {
 		return unaryAST1($s(INTEGRATE_PREFIX + "CombineExponents"), a0);
 	}
@@ -402,7 +410,15 @@ public class UtilityFunctionCtors {
 	public static IAST ExpandTrigToExp(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "ExpandTrigToExp"), a0, a1, a2);
 	}
+	
+	public static IAST Expon(final IExpr a0, final IExpr a1 ) {
+		return binaryAST2($s(INTEGRATE_PREFIX + "Expon"), a0, a1);
+	}
 
+	public static IAST Expon(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3($s(INTEGRATE_PREFIX + "Expon"), a0, a1, a2);
+	}
+	
 	public static IAST ExponentIn(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "ExponentIn"), a0, a1, a2);
 	}
@@ -454,7 +470,15 @@ public class UtilityFunctionCtors {
 	public static IAST FixSimplify(final IExpr a0) {
 		return unaryAST1($s(INTEGRATE_PREFIX + "FixSimplify"), a0);
 	}
-
+	
+	public static IAST FracPart(final IExpr a0) {
+		return unaryAST1($s(INTEGRATE_PREFIX + "FracPart"), a0);
+	}
+	
+	public static IAST FracPart(final IExpr a0, final IExpr a1) {
+		return binaryAST2($s(INTEGRATE_PREFIX + "FracPart"), a0, a1);
+	}
+ 
 	public static IAST FractionOrNegativeQ(final IExpr... a) {
 		return ast(a, $s(INTEGRATE_PREFIX + "FractionOrNegativeQ"));
 	}
@@ -769,6 +793,14 @@ public class UtilityFunctionCtors {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "InertTrigSumQ"), a0, a1, a2);
 	}
 
+	public static IAST IntPart(final IExpr a0) {
+		return unaryAST1($s(INTEGRATE_PREFIX + "IntPart"), a0);
+	}
+	
+	public static IAST IntPart(final IExpr a0, final IExpr a1) {
+		return binaryAST2($s(INTEGRATE_PREFIX + "IntPart"), a0, a1);
+	}
+	
 	public static IAST IntSum(final IExpr a0, final IExpr a1) {
 		return binaryAST2($s(INTEGRATE_PREFIX + "IntSum"), a0, a1);
 	}
