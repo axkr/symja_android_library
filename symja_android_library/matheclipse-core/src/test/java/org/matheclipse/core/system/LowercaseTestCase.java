@@ -3281,7 +3281,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("MatchQ(22/7, _Rational)", "True");
 		check("MatchQ(6/3, _Rational)", "False");
 	}
-
+	
+	public void testMathMLForm() {
+		check("MathMLForm(D(sin(x)*cos(x),x))", "\"<?xml version=\"1.0\"?>\n" + 
+				"<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n" + 
+				"<math mode=\"display\">\n" + 
+				"<mfrac><mrow><mo>&#x2202;</mo><mrow><mrow><mi>sin</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mo>&#x2062;</mo><mrow><mi>cos</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow></mrow></mrow><mrow><mo>&#x2202;</mo><mi>x</mi></mrow></mfrac></math>\"");
+	}
+	
 	public void testMatrices() {
 		check("Table(a(i0, j), {i0, 2}, {j, 2})", "{{a(1,1),a(1,2)},{a(2,1),a(2,2)}}");
 		check("Array(a, {2, 2})", "{{a(1,1),a(1,2)},{a(2,1),a(2,2)}}");
@@ -4870,6 +4877,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPrimeQ() {
+		// Mersenne Prime
+		// https://en.wikipedia.org/wiki/Mersenne_prime
+		check("PrimeQ(131071)", "True");
+		check("PrimeQ(524287)", "True");
+		check("PrimeQ(2147483647)", "True");
+		
 		check("PrimeQ(99999999999971)", "True");
 		check("Select(Range(100), PrimeQ)", "{2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97}");
 		check("PrimeQ(Range(20))",

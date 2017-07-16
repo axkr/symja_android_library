@@ -31,6 +31,15 @@ import com.google.common.math.IntMath;
  * @see BigIntegerSym
  */
 public class IntegerSym extends AbstractIntegerSym {
+	// All primes smaller than 210
+	public static long[] Primes_210 = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73,
+			79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191,
+			193, 197, 199 };
+
+	// All numbers coprime to 210 (and 1)
+	public static long[] CoPrimes_210 = { 1, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83,
+			89, 97, 101, 103, 107, 109, 113, 121, 127, 131, 137, 139, 143, 149, 151, 157, 163, 167, 169, 173, 179, 181,
+			187, 191, 193, 197, 199, 209 };
 
 	/**
 	 * 
@@ -356,7 +365,7 @@ public class IntegerSym extends AbstractIntegerSym {
 		}
 		return length;
 	}
-	
+
 	@Override
 	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		int value = NumberUtil.toInt(fIntValue);
@@ -503,7 +512,35 @@ public class IntegerSym extends AbstractIntegerSym {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isProbablePrime() {
+		// if (fIntValue <= 210)
+		// return Contains(Primes_210, fIntValue);
+		//
+		// for (int i = 0; i < Primes_210.length; i++) {
+		// if (fIntValue % Primes_210[i] == 0)
+		// return false;
+		// }
+		//
+		// long relativeSqrt = (new Double(Math.sqrt(fIntValue))).longValue() + 1;
+		// int step = 210;
+		//
+		// for (long i = step; i <= relativeSqrt; i += step) {
+		// for (int j = 0; j < CoPrimes_210.length && (i + CoPrimes_210[j]) <= relativeSqrt; j++) {
+		// if (fIntValue % (i + CoPrimes_210[j]) == 0)
+		// return false;
+		// }
+		// }
+		//
+		// return true;
 		return isProbablePrime(PRIME_CERTAINTY);
+	}
+
+	private static boolean Contains(long[] array, long number) {
+		for (int i = 0; i < array.length; i++) {
+			if (array[i] == number)
+				return true;
+		}
+
+		return false;
 	}
 
 	/** {@inheritDoc} */
