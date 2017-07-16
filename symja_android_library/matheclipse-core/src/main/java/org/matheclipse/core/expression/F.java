@@ -4363,7 +4363,11 @@ public class F {
 	public static IAST MatchQ(final IExpr a0, final IExpr a1) {
 		return binaryAST2(MatchQ, a0, a1);
 	}
-
+	
+	public static IAST MathMLForm(final IExpr a0) {
+		return unaryAST1(MathMLForm, a0);
+	}
+	
 	public static IAST MatrixPower(final IExpr a0, final IExpr a1) {
 
 		return binaryAST2(MatrixPower, a0, a1);
@@ -5355,6 +5359,10 @@ public class F {
 
 	public static IAST Taylor(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Taylor, a0, a1);
+	}
+
+	public static IAST TeXForm(final IExpr a0) {
+		return unaryAST1(TeXForm, a0);
 	}
 
 	public final static IAST ternary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2) {
