@@ -385,4 +385,52 @@ public class ParserTestCase extends TestCase {
 	}
 	
 	
+	public void testParser28() {
+		try {
+			Parser p = new Parser(false, true);
+			List<ASTNode> list = p.parsePackage("\n" + 
+					"TrigSimplifyAux[u_] := u\n" + 
+					"\n" + 
+					"\n" + 
+					"(* ::Section::Closed:: *)\n" + 
+					"(*Factoring functions*)\n" + 
+					"\n" + 
+					"\n" + 
+					"(* ::Subsection::Closed:: *)\n" + 
+					"(*ContentFactor*)\n" + 
+					"\n" + 
+					"\n" + 
+					"(* ContentFactor[expn] returns expn with the content of sum factors factored out. *)\n" + 
+					"(* Basis: a*b+a*c == a*(b+c) *)\n" + 
+					"ContentFactor[expn_] :=\n" + 
+					"  TimeConstrained[ContentFactorAux[expn],2.0,expn];\n" + 
+					"\n" + 
+					"ContentFactorAux[expn_] :=\n" + 
+					"  If[AtomQ[expn],\n" + 
+					"    expn,\n" + 
+					"  If[IntegerPowerQ[expn],\n" + 
+					"    If[SumQ[expn[[1]]] && NumericFactor[expn[[1,1]]]<0,\n" + 
+					"      (-1)^expn[[2]] * ContentFactorAux[-expn[[1]]]^expn[[2]],\n" + 
+					"    ContentFactorAux[expn[[1]]]^expn[[2]]],\n" + 
+					"  If[ProductQ[expn],\n" + 
+					"    Module[{num=1,tmp},\n" + 
+					"    tmp=Map[Function[If[SumQ[#] && NumericFactor[#[[1]]]<0, num=-num; ContentFactorAux[-#], ContentFactorAux[#]]], expn];\n" + 
+					"    num*UnifyNegativeBaseFactors[tmp]],\n" + 
+					"  If[SumQ[expn],\n" + 
+					"    With[{lst=CommonFactors[Apply[List,expn]]},\n" + 
+					"    If[lst[[1]]===1 || lst[[1]]===-1,\n" + 
+					"      expn,\n" + 
+					"    lst[[1]]*Apply[Plus,Rest[lst]]]],\n" + 
+					"  expn]]]]\n" + 
+					"\n" + 
+					"");
+			assertEquals(list.size(), 3);
+			assertEquals(list.get(1).toString(), 
+					"CompoundExpression(SetDelayed(ContentFactor(expn_), TimeConstrained(ContentFactorAux(expn), 2.0, expn)), Null)");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+	
 }
