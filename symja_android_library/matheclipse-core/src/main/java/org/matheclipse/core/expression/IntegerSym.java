@@ -512,35 +512,35 @@ public class IntegerSym extends AbstractIntegerSym {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isProbablePrime() {
-		// if (fIntValue <= 210)
-		// return Contains(Primes_210, fIntValue);
-		//
+		// int n = fIntValue;
+		// if (n < 0) {
+		// n *= (-1);
+		// }
+		// if (n <= 210) {
 		// for (int i = 0; i < Primes_210.length; i++) {
-		// if (fIntValue % Primes_210[i] == 0)
+		// if (Primes_210[i] == n) {
+		// return true;
+		// }
+		// }
+		// return false;
+		// }
+		// for (int i = 0; i < Primes_210.length; i++) {
+		// if (n % Primes_210[i] == 0)
 		// return false;
 		// }
 		//
-		// long relativeSqrt = (new Double(Math.sqrt(fIntValue))).longValue() + 1;
+		// long relativeSqrt = (new Double(Math.sqrt(n))).longValue() + 1;
 		// int step = 210;
 		//
 		// for (long i = step; i <= relativeSqrt; i += step) {
 		// for (int j = 0; j < CoPrimes_210.length && (i + CoPrimes_210[j]) <= relativeSqrt; j++) {
-		// if (fIntValue % (i + CoPrimes_210[j]) == 0)
+		// if (n % (i + CoPrimes_210[j]) == 0)
 		// return false;
 		// }
 		// }
 		//
 		// return true;
 		return isProbablePrime(PRIME_CERTAINTY);
-	}
-
-	private static boolean Contains(long[] array, long number) {
-		for (int i = 0; i < array.length; i++) {
-			if (array[i] == number)
-				return true;
-		}
-
-		return false;
 	}
 
 	/** {@inheritDoc} */

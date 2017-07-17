@@ -80,7 +80,12 @@ public class NMinimize extends AbstractFunctionEvaluator {
 			SimplexSolver solver = new SimplexSolver();
 			PointValuePair solution = solver.optimize(optData);
 			double[] values = solution.getPointRef();
-			IAST result = F.List(F.num(f.value(values)), F.List(values));
+			IAST list = F.ListAlloc(values.length);
+			List<IExpr> varList = vars.getArrayList();
+			for (int i = 0; i < values.length; i++) {
+				list.append(F.Rule(varList.get(i), F.num(values[i])));
+			}
+			IAST result = F.List(F.num(f.value(values)), list);
 			return result;
 		} catch (MathIllegalStateException oe) {
 			throw new WrappedException(oe);

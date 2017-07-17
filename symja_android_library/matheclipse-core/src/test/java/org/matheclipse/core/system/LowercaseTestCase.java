@@ -3281,14 +3281,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("MatchQ(22/7, _Rational)", "True");
 		check("MatchQ(6/3, _Rational)", "False");
 	}
-	
+
 	public void testMathMLForm() {
-		check("MathMLForm(D(sin(x)*cos(x),x))", "\"<?xml version=\"1.0\"?>\n" + 
-				"<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n" + 
-				"<math mode=\"display\">\n" + 
-				"<mfrac><mrow><mo>&#x2202;</mo><mrow><mrow><mi>sin</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mo>&#x2062;</mo><mrow><mi>cos</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow></mrow></mrow><mrow><mo>&#x2202;</mo><mi>x</mi></mrow></mfrac></math>\"");
+		check("MathMLForm(D(sin(x)*cos(x),x))", "\"<?xml version=\"1.0\"?>\n"
+				+ "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
+				+ "<math mode=\"display\">\n"
+				+ "<mfrac><mrow><mo>&#x2202;</mo><mrow><mrow><mi>sin</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mo>&#x2062;</mo><mrow><mi>cos</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow></mrow></mrow><mrow><mo>&#x2202;</mo><mi>x</mi></mrow></mfrac></math>\"");
 	}
-	
+
 	public void testMatrices() {
 		check("Table(a(i0, j), {i0, 2}, {j, 2})", "{{a(1,1),a(1,2)},{a(2,1),a(2,2)}}");
 		check("Array(a, {2, 2})", "{{a(1,1),a(1,2)},{a(2,1),a(2,2)}}");
@@ -3437,8 +3437,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testModule() {
-//		check("num=Sin(3*I);Module({v=N(num)},If(PossibleZeroQ(Re(v)),Im(v)>0,Re(v)>0))", "True");
-//		check("Module({x=5}, Hold(x))", "Hold(x$1)");
+		// check("num=Sin(3*I);Module({v=N(num)},If(PossibleZeroQ(Re(v)),Im(v)>0,Re(v)>0))", "True");
+		// check("Module({x=5}, Hold(x))", "Hold(x$1)");
 		check("xm=10;Module({xm=xm}, xm=xm+1;xm)", "11");
 		check("xm=10;Module({xm=xm}, xm=xm+1;xm);xm", "10");
 		check("xm=10;Module({t=xm}, xm=xm+1;t)", "10");
@@ -3461,7 +3461,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("{Module({x}, x), Module({x}, x)}", "{x$17,x$18}");
 		check("Module({e = Expand((1 + x)^5)}, Function(x, e))", "Function(x$20,e$19)");
 		check("Module({a,b}, Block({c}, c+a))", "a$21+c");
-		
+
 		if (Config.SERVER_MODE == false) {
 			check("f(x0_) :=\n" + " Module({x = x0},\n" + "  While(x > 0, x = Log(x));\n" + "  x\n" + "  );f(2.0)",
 					"-0.36651");
@@ -3909,13 +3909,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNMaximize() {
-		check("NMaximize({-x - y, 3 x + 2 y >= 7 && x + 2 y >= 6 && x >= 0 && y >= 0}, {x, y})", "{-3.25,{0.5,2.75}}");
+		check("NMaximize({-2*x+y-5, x+2*y<=6 && 3*x + 2*y <= 12 }, {x, y})", "{-2.0,{x->0.0,y->3.0}}");
+		check("NMaximize({-x - y, 3 x + 2 y >= 7 && x + 2 y >= 6}, {x, y})",
+				"{-3.25,{x->0.5,y->2.75}}");
 	}
 
 	public void testNMinimize() {
+		// TODO non-linear not supported
+		// check("NMinimize({x^2 - (y - 1)^2, x^2 + y^2 <= 4}, {x, y})", "");
+		check("NMinimize({-2*y+x-5, x+2*y<=6 && 3*x + 2*y <= 12 }, {x, y})", "{-11.0,{x->0.0,y->3.0}}");
+		check("NMinimize({-2*x+y-5, x+2*y<=6 && 3*x + 2*y <= 12 }, {x, y})", "{-13.0,{x->4.0,y->0.0}}");
 		check("NMinimize({x + 2*y, -5*x + y == 7 && x + y >= 26 && x >= 3 && y >= 4}, {x, y})",
-				"{48.83333,{3.16667,22.83333}}");
-		check("NMinimize({x + y, 3*x + 2*y >= 7 && x + 2 y >= 6 && x >= 0 && y >= 0}, {x, y})", "{3.25,{0.5,2.75}}");
+				"{48.83333,{x->3.16667,y->22.83333}}");
+		check("NMinimize({x + y, 3*x + 2*y >= 7 && x + 2 y >= 6 }, {x, y})", "{3.25,{x->0.5,y->2.75}}");
 	}
 
 	public void testNonCommutativeMultiply() {
@@ -4882,7 +4888,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PrimeQ(131071)", "True");
 		check("PrimeQ(524287)", "True");
 		check("PrimeQ(2147483647)", "True");
-		
+
 		check("PrimeQ(99999999999971)", "True");
 		check("Select(Range(100), PrimeQ)", "{2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97}");
 		check("PrimeQ(Range(20))",
@@ -5724,9 +5730,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
-//		check("x=20.796855124168776", "20.79686"); 
-//		check("Clear(x);Solve(x==(-1.0000000000000002)*Sqrt(y^2.0),y)", "{{y->1.0*Sqrt(x^2.0)}}");
-		
+		// check("x=20.796855124168776", "20.79686");
+		// check("Clear(x);Solve(x==(-1.0000000000000002)*Sqrt(y^2.0),y)", "{{y->1.0*Sqrt(x^2.0)}}");
+
 		// Issue #166
 		check("Solve(2*x/y==x/z,x)", "{{x->0}}");
 		// Issue #165
@@ -6901,23 +6907,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("With({x = 7, y = a + 1}, x/y)", "7/(1+a)");
 		check("With({x = a}, (1 + x^2) &)", "1+a^2&");
 		check("Table(With({i = j}, Hold(i)), {j, 5})", "{Hold(1),Hold(2),Hold(3),Hold(4),Hold(5)}");
-		
+
 		check("With({y = Sin(1.0)}, Sum(y^i, {i, 0, 10}))", "5.36323");
 		check("With({e = Expand((1 + x)^5)}, Function(x, e))", "Function(x$11,1+5*x+10*x^2+10*x^3+5*x^4+x^5)");
 		check("With({e = Expand((1 + x)^5)}, Function @@ {x, e})", "Function(x,1+5*x+10*x^2+10*x^3+5*x^4+x^5)");
-		
+
 		check("x=5;With({x = x}, Hold(x))", "Hold(5)");
-		
+
 		check("newton(f_, x0_) := With({fp = f'}, FixedPoint(# - f(#)/fp(#) &, x0))", "");
 		check("newton(Cos,1.33)", "1.5708");
-		
+
 		check("newton(Cos(#)-#&,1.33)", "0.73909");
-		
+
 		check("With({f = Function(n, If(n == 0, 1, n*f(n - 1)))}, f(10))", "10*f(9)");
 		// check("Timing(Do(With({x = 5}, x;), {10^5}))", "");
 		// check("Timing(Do(Module({x = 5}, x;), {10^5}))", "");
 	}
-	
+
 	public void testXor() {
 		check("Xor(False, True)", "True");
 		check("Xor(True, True)", "False");

@@ -450,6 +450,8 @@ for a full description of their possible arguments, options, etc., see their ent
 * [NHoldFirst](functions/NHoldFirst.md)
 * [NHoldRest](functions/NHoldRest.md)
 * [NIntegrate](functions/NIntegrate.md)
+* [NMaximize](functions/NMaximize.md)
+* [NMinimize](functions/NMinimize.md)
 * [None](functions/None.md)
 * [NoneTrue](functions/NoneTrue.md)
 * [NonNegative](functions/NonNegative.md)

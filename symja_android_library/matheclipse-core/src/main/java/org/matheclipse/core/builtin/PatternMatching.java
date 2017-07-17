@@ -225,7 +225,7 @@ public final class PatternMatching {
 			try {
 				rightHandSide = engine.evaluate(rightHandSide);
 			} catch (final ConditionException e) {
-				System.out.println("Condition[] in right-hand-side of Set[]");
+//				System.out.println("Condition[] in right-hand-side of Set[]");
 			} catch (final ReturnException e) {
 				rightHandSide = e.getValue();
 			}

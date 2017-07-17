@@ -1552,8 +1552,8 @@ public final class NumberTheory {
 
 			if (ast.arg1().isInteger()) {
 				try {
-					long nthPrime = ((IInteger) ast.arg1()).toLong();
-					if (nthPrime > 103000000L) {
+					int nthPrime = ((IInteger) ast.arg1()).toInt();
+					if (nthPrime < 0 || nthPrime > 103000000) {
 						return F.NIL;
 					}
 					return F.integer(Primality.prime(nthPrime));

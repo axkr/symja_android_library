@@ -40,7 +40,7 @@ public class ASCIIPrettyPrinter3 {
 
 	public void print(String numerator) {
 		printFraction(numerator, null);
-		fractionPrinted=false;
+		fractionPrinted = false;
 	}
 
 	public void printFraction(String numerator, String denominator) {
@@ -53,7 +53,7 @@ public class ASCIIPrettyPrinter3 {
 			for (int i = 0; i < len; i++) {
 				line3.append(" ");
 			}
-			fractionPrinted=false;
+			fractionPrinted = false;
 			return;
 		}
 
@@ -110,7 +110,7 @@ public class ASCIIPrettyPrinter3 {
 	}
 
 	public void convert(final IExpr expr) {
-		fractionPrinted=false;
+		fractionPrinted = false;
 		convert(expr, 0, NO_PLUS_CALL);
 	}
 
@@ -145,7 +145,7 @@ public class ASCIIPrettyPrinter3 {
 				print(head.toString() + "(");
 			}
 			for (int i = 1; i < ast.size(); i++) {
-				fractionPrinted=false;
+				fractionPrinted = false;
 				if (i != 1) {
 					print(", ");
 				}
@@ -294,7 +294,7 @@ public class ASCIIPrettyPrinter3 {
 				}
 				out.println(outputExpression[0]);
 
-				System.out.println(prefix + outputExpression[1]);
+				// System.out.println(prefix + outputExpression[1]);
 				for (int i = 0; i < prefix.length(); i++) {
 					out.print(" ");
 				}
