@@ -270,18 +270,21 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	 * @return <code>F.NIL</code> if we can't find an equation for the given <code>variable</code>.
 	 */
 	private static IExpr eliminateAnalyze(IAST equalAST, IExpr variable) {
-		IExpr arg1 = equalAST.arg1();
-		IExpr arg2 = equalAST.arg2();
-		Predicate<IExpr> predicate = Predicates.in(variable);
-		boolean boolArg1 = arg1.isFree(predicate, true);
-		boolean boolArg2 = arg2.isFree(predicate, true);
-		IExpr result = F.NIL;
-		if (!boolArg1 && boolArg2) {
-			result = extractVariable(arg1, arg2, predicate, variable);
-		} else if (boolArg1 && !boolArg2) {
-			result = extractVariable(arg2, arg1, predicate, variable);
+		if (equalAST.isAST(F.Equal, 3)) {
+			IExpr arg1 = equalAST.arg1();
+			IExpr arg2 = equalAST.arg2();
+			Predicate<IExpr> predicate = Predicates.in(variable);
+			boolean boolArg1 = arg1.isFree(predicate, true);
+			boolean boolArg2 = arg2.isFree(predicate, true);
+			IExpr result = F.NIL;
+			if (!boolArg1 && boolArg2) {
+				result = extractVariable(arg1, arg2, predicate, variable);
+			} else if (boolArg1 && !boolArg2) {
+				result = extractVariable(arg2, arg1, predicate, variable);
+			}
+			return result;
 		}
-		return result;
+		return F.NIL;
 	}
 
 	/**

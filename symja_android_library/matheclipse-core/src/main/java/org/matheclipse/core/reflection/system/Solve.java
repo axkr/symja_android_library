@@ -849,10 +849,6 @@ public class Solve extends AbstractFunctionEvaluator {
 		return F.binaryAST2(F.List, a0, a1);
 	}
 
-	public Solve() {
-		// empty constructor
-	}
-
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 4);
@@ -932,7 +928,10 @@ public class Solve extends AbstractFunctionEvaluator {
 		if (!termsEqualZeroList.arg1().isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(), true)) {
 			return F.NIL;
 		}
-		IAST[] tempAST = Eliminate.eliminateOneVariable(termsEqualZeroList, variable);
+		// copy the termsEqualZeroList back to a list of F.Equal(...) expressions
+		// because Eliminate() operates on equations.
+		IAST equalsASTList = termsEqualZeroList.mapThread(F.Equal(F.Null, F.C0), 1);
+		IAST[] tempAST = Eliminate.eliminateOneVariable(equalsASTList, variable);
 		if (tempAST != null && tempAST[1] != null) {
 			return F.List(F.List(tempAST[1]));
 		}
