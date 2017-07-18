@@ -24,7 +24,6 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -303,18 +302,20 @@ public class Solve extends AbstractFunctionEvaluator {
 				return;
 			}
 			if (expr.isPower()) {
-				if (((IAST) expr).arg2().isInteger()) {
+				IExpr arg1 = ((IAST) expr).arg1();
+				IExpr exponent = ((IAST) expr).arg2();
+				if (exponent.isInteger()) {
 					if (fEquationType == LINEAR) {
 						fEquationType = POLYNOMIAL;
 					}
-					getTimesArgumentEquationType(((IAST) expr).arg1());
+					getTimesArgumentEquationType(arg1);
 					return;
 				}
-				if (((IAST) expr).arg2().isNumIntValue()) {
+				if (exponent.isNumIntValue()) {
 					if (fEquationType == LINEAR) {
 						fEquationType = POLYNOMIAL;
 					}
-					getTimesArgumentEquationType(((IAST) expr).arg1());
+					getTimesArgumentEquationType(arg1);
 					return;
 				}
 			}
@@ -778,24 +779,23 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @return
 	 */
 	private static IAST rootsOfUnivariatePolynomial(ExprAnalyzer exprAnalyzer, EvalEngine engine) {
-		IExpr expr = exprAnalyzer.getNumerator();
-		IExpr denom = exprAnalyzer.getDenominator();
+		IExpr numerator = exprAnalyzer.getNumerator();
+		IExpr denominator = exprAnalyzer.getDenominator();
 		// try to solve the expr for a symbol in the symbol set
 		for (ISymbol sym : exprAnalyzer.getSymbolSet()) {
 			IExpr temp = F.NIL;
-			if (expr.isNumericMode() && denom.isOne()) {
-				temp = NRoots.roots(expr, F.List(sym), engine);
+			if (numerator.isNumericMode() && denominator.isOne()) {
+				temp = NRoots.roots(numerator, F.List(sym), engine);
 			}
 			if (!temp.isPresent()) {
-				temp = Roots.rootsOfVariable(expr, denom, F.List(sym), expr.isNumericMode(), engine);
+				temp = Roots.rootsOfVariable(numerator, denominator, F.List(sym), numerator.isNumericMode(), engine);
 			}
 			if (temp.isPresent()) {
 				IAST resultList = F.List();
 				if (temp.isASTSizeGE(F.List, 2)) {
 					IAST rootsList = (IAST) temp;
 					for (IExpr root : rootsList) {
-						IAST rule = F.Rule(sym, root);
-						resultList.append(rule);
+						resultList.append(F.Rule(sym, root));
 					}
 					return resultList;
 				}
@@ -807,7 +807,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Sort the arguments, which are assumed to be of type <code>IAST</code>
+	 * Sort the arguments, which are assumed to be of type <code>List()</code>
 	 * 
 	 * @param resultList
 	 * @return
@@ -832,21 +832,21 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @return <code>List[numerator, denominator]</code>
 	 */
 	private static IAST splitNumeratorDenominator(IAST expr, EvalEngine engine, boolean evalTogether) {
-		IExpr a0, a1;
+		IExpr numerator, denominator;
 		if (evalTogether) {
-			a0 = Algebra.together(expr);
+			numerator = Algebra.together(expr);
 		} else {
-			a0 = expr;
+			numerator = expr;
 		}
 		// split expr into numerator and denominator
-		a1 = engine.evaluate(F.Denominator(a0));
-		if (!a1.isOne()) {
+		denominator = engine.evaluate(F.Denominator(numerator));
+		if (!denominator.isOne()) {
 			// search roots for the numerator expression
-			a0 = engine.evaluate(F.Numerator(a0));
+			numerator = engine.evaluate(F.Numerator(numerator));
 		} else {
-			a0 = expr;
+			numerator = expr;
 		}
-		return F.binaryAST2(F.List, a0, a1);
+		return F.binaryAST2(F.List, numerator, denominator);
 	}
 
 	@Override
@@ -911,8 +911,6 @@ public class Solve extends AbstractFunctionEvaluator {
 
 		return F.NIL;
 
-		// return solvePlusEquationsSimplified(termsEqualZeroList,
-		// variables,engine);
 	}
 
 	/**
@@ -946,61 +944,61 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @param engine
 	 * @return
 	 */
-	private IExpr solvePlusEquationsSimplified(IAST termsEqualZeroList, IAST variables, EvalEngine engine) {
-		IExpr temp;
-		boolean forEvaled = false;
-		for (int i = 1; i < termsEqualZeroList.size(); i++) {
-			temp = termsEqualZeroList.get(i);
-			if (temp.isPlus()) {
-				IAST plus = (IAST) temp;
-				IExpr[] fractionalParts;
-				boolean evaled = false;
-				IAST[] factors = new IAST[plus.size() - 1];
-				for (int j = 0; j < factors.length; j++) {
-					factors[j] = F.Times();
-				}
-				IAST newPlus = F.Plus();
-				for (int j = 1; j < plus.size(); j++) {
-					fractionalParts = Algebra.fractionalPartsRational(plus.get(j));
-					if (fractionalParts != null && !fractionalParts[1].isOne()) {
-						for (int k = 1; k < plus.size(); k++) {
-							if (k != j) {
-								// append the denominator
-								factors[k - 1].append(fractionalParts[1]);
-							}
-						}
-						newPlus.append(fractionalParts[0]);
-						evaled = true;
-						continue;
-					}
-					newPlus.append(plus.get(j));
-				}
-				if (evaled) {
-					forEvaled = true;
-					for (int j = 1; j < plus.size(); j++) {
-						IExpr factor = factors[j - 1].getOneIdentity(F.C1);
-						if (!factor.isOne()) {
-							newPlus.set(j, F.Times(factor, newPlus.get(j)));
-						} else {
-							newPlus.set(j, newPlus.get(j));
-						}
-					}
-					termsEqualZeroList.set(i, F.expandAll(newPlus, true, true));
-				}
-			}
-		}
-		if (forEvaled) {
-			engine.printMessage(
-					"Solve: using of simplified rational expressions may not give solutions for all variables.");
-
-			temp = solveTimesEquationsRecursively(termsEqualZeroList, variables, engine);
-			if (temp.isPresent()) {
-				return temp;
-			}
-			return solveEquations(termsEqualZeroList, variables, 0, engine);
-		}
-		return F.NIL;
-	}
+	// private IExpr solvePlusEquationsSimplified(IAST termsEqualZeroList, IAST variables, EvalEngine engine) {
+	// IExpr temp;
+	// boolean forEvaled = false;
+	// for (int i = 1; i < termsEqualZeroList.size(); i++) {
+	// temp = termsEqualZeroList.get(i);
+	// if (temp.isPlus()) {
+	// IAST plus = (IAST) temp;
+	// IExpr[] fractionalParts;
+	// boolean evaled = false;
+	// IAST[] factors = new IAST[plus.size() - 1];
+	// for (int j = 0; j < factors.length; j++) {
+	// factors[j] = F.Times();
+	// }
+	// IAST newPlus = F.Plus();
+	// for (int j = 1; j < plus.size(); j++) {
+	// fractionalParts = Algebra.fractionalPartsRational(plus.get(j));
+	// if (fractionalParts != null && !fractionalParts[1].isOne()) {
+	// for (int k = 1; k < plus.size(); k++) {
+	// if (k != j) {
+	// // append the denominator
+	// factors[k - 1].append(fractionalParts[1]);
+	// }
+	// }
+	// newPlus.append(fractionalParts[0]);
+	// evaled = true;
+	// continue;
+	// }
+	// newPlus.append(plus.get(j));
+	// }
+	// if (evaled) {
+	// forEvaled = true;
+	// for (int j = 1; j < plus.size(); j++) {
+	// IExpr factor = factors[j - 1].getOneIdentity(F.C1);
+	// if (!factor.isOne()) {
+	// newPlus.set(j, F.Times(factor, newPlus.get(j)));
+	// } else {
+	// newPlus.set(j, newPlus.get(j));
+	// }
+	// }
+	// termsEqualZeroList.set(i, F.expandAll(newPlus, true, true));
+	// }
+	// }
+	// }
+	// if (forEvaled) {
+	// engine.printMessage(
+	// "Solve: using of simplified rational expressions may not give solutions for all variables.");
+	//
+	// temp = solveTimesEquationsRecursively(termsEqualZeroList, variables, engine);
+	// if (temp.isPresent()) {
+	// return temp;
+	// }
+	// return solveEquations(termsEqualZeroList, variables, 0, engine);
+	// }
+	// return F.NIL;
+	// }
 
 	/**
 	 * 
@@ -1174,52 +1172,48 @@ public class Solve extends AbstractFunctionEvaluator {
 			int value = ((IInteger) expr).toInt(); // throws ArithmeticException
 			return new IntVariable(net, value);
 		}
-		if (expr.isPlus()) {
+		if (expr.isAST()) {
 			IAST ast = (IAST) expr;
-			IntVariable result = integerVariable(net, map, ast.arg1());
-			for (int i = 2; i < ast.size(); i++) {
-				result = result.add(integerVariable(net, map, ast.get(i)));
-			}
-			return result;
-		} else if (expr.isTimes()) {
-			IAST ast = (IAST) expr;
-			IntVariable result = integerVariable(net, map, ast.arg1());
-			for (int i = 2; i < ast.size(); i++) {
-				result = result.multiply(integerVariable(net, map, ast.get(i)));
-			}
-			return result;
-		} else if (expr.isPower()) {
-			IAST ast = (IAST) expr;
-			if (ast.arg2().isInteger()) {
-				int value = ((IInteger) ast.arg2()).toInt();
-				if (value > 0) {
-					IntVariable result = integerVariable(net, map, ast.arg1());
-					for (int i = 1; i < value; i++) {
-						result = result.multiply(integerVariable(net, map, ast.arg1()));
-					}
-					return result;
+			if (ast.isPlus()) {
+				IntVariable result = integerVariable(net, map, ast.arg1());
+				for (int i = 2; i < ast.size(); i++) {
+					result = result.add(integerVariable(net, map, ast.get(i)));
 				}
+				return result;
+			} else if (ast.isTimes()) {
+				IntVariable result = integerVariable(net, map, ast.arg1());
+				for (int i = 2; i < ast.size(); i++) {
+					result = result.multiply(integerVariable(net, map, ast.get(i)));
+				}
+				return result;
+			} else if (ast.isPower()) {
+				if (ast.arg2().isInteger()) {
+					int value = ((IInteger) ast.arg2()).toInt();
+					if (value > 0) {
+						IntVariable result = integerVariable(net, map, ast.arg1());
+						for (int i = 1; i < value; i++) {
+							result = result.multiply(integerVariable(net, map, ast.arg1()));
+						}
+						return result;
+					}
+				}
+			} else if (ast.isASTSizeGE(F.Max, 3)) {
+				IntVariable result = integerVariable(net, map, ast.arg1());
+				for (int i = 2; i < ast.size(); i++) {
+					result = result.max(integerVariable(net, map, ast.get(i)));
+				}
+				return result;
+			} else if (ast.isASTSizeGE(F.Min, 3)) {
+				IntVariable result = integerVariable(net, map, ast.arg1());
+				for (int i = 2; i < ast.size(); i++) {
+					result = result.min(integerVariable(net, map, ast.get(i)));
+				}
+				return result;
+			} else if (ast.isAbs()) {
+				return integerVariable(net, map, ast.arg1()).abs();
+			} else if (ast.isAST(F.Sign, 2)) {
+				return integerVariable(net, map, ast.arg1()).sign();
 			}
-		} else if (expr.isASTSizeGE(F.Max, 3)) {
-			IAST ast = (IAST) expr;
-			IntVariable result = integerVariable(net, map, ast.arg1());
-			for (int i = 2; i < ast.size(); i++) {
-				result = result.max(integerVariable(net, map, ast.get(i)));
-			}
-			return result;
-		} else if (expr.isASTSizeGE(F.Min, 3)) {
-			IAST ast = (IAST) expr;
-			IntVariable result = integerVariable(net, map, ast.arg1());
-			for (int i = 2; i < ast.size(); i++) {
-				result = result.min(integerVariable(net, map, ast.get(i)));
-			}
-			return result;
-		} else if (expr.isAbs()) {
-			IAST ast = (IAST) expr;
-			return integerVariable(net, map, ast.arg1()).abs();
-		} else if (expr.isAST(F.Sign, 2)) {
-			IAST ast = (IAST) expr;
-			return integerVariable(net, map, ast.arg1()).sign();
 		}
 		throw new WrongArgumentType(expr, "for Solve(..., Integers)");
 	}

@@ -232,31 +232,31 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	 * @return
 	 */
 	private static IAST checkEquations(final IAST ast, int position) {
-		IAST equalList = F.List();
-		IAST eqns = F.NIL;
-		if (ast.get(position).isList()) {
-			eqns = (IAST) ast.get(position);
-			for (int i = 1; i < eqns.size(); i++) {
-				if (eqns.get(i).isEqual()) {
-					IAST equalAST = (IAST) eqns.get(i);
+		IExpr arg = ast.get(position);
+		if (arg.isList()) {
+			IAST list = (IAST) arg;
+			IAST equalList = F.ListAlloc(list.size());
+			for (int i = 1; i < list.size(); i++) {
+				if (list.get(i).isEqual()) {
+					IAST equalAST = (IAST) list.get(i);
 					// equalList.add(F.Equal(F.evalExpandAll(eq.arg1()),
 					// F.evalExpandAll(eq.arg2())));
 					equalList.append(BooleanFunctions.equals(equalAST));
 				} else {
 					// not an equation
-					throw new WrongArgumentType(eqns, eqns.get(i), i, "Equal[] expression (a==b) expected");
+					throw new WrongArgumentType(list, list.get(i), i, "Equal[] expression (a==b) expected");
 				}
 			}
-		} else {
-			if (ast.get(position).isEqual()) {
-				IAST equalAST = (IAST) ast.get(position);
-				equalList.append(F.Equal(F.evalExpandAll(equalAST.arg1()), F.evalExpandAll(equalAST.arg2())));
-			} else {
-				// not an equation
-				throw new WrongArgumentType(ast, ast.arg1(), 1, "Equal[] expression (a==b) expected");
-			}
+			return equalList;
 		}
-		return equalList;
+		if (arg.isEqual()) {
+			IAST equalList = F.List();
+			IAST equalAST = (IAST) arg;
+			equalList.append(F.Equal(F.evalExpandAll(equalAST.arg1()), F.evalExpandAll(equalAST.arg2())));
+			return equalList;
+		}
+		// not an equation
+		throw new WrongArgumentType(ast, ast.arg1(), 1, "Equal[] expression (a==b) expected");
 	}
 
 	/**
