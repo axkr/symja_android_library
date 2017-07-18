@@ -1074,6 +1074,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is the function <code>Equal[&lt;arg1&gt;, &lt;arg2&gt;]</code>
+	 * 
+	 * @return
+	 */
+	default boolean isEqual() {
+		return false;
+	}
+	
+	/**
 	 * Test if this expression is an exact number. I.e. an instance of type <code>IRational</code> or
 	 * <code>IComplex</code>.
 	 * 

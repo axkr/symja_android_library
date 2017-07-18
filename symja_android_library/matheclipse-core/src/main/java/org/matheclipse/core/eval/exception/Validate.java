@@ -581,21 +581,11 @@ public final class Validate {
 	 */
 	public static IAST checkEquations(final IAST ast, int position) {
 		IExpr expr = ast.get(position);
-		IAST eqns = null;
-		IAST eq;
 		IAST termsEqualZeroList = F.List();
 		if (expr.isList() || expr.isAnd()) {
-
-			// a list of equations or a boolean AND expression of equations
-			eqns = (IAST) expr;
-			for (int i = 1; i < eqns.size(); i++) {
-				if (eqns.get(i).isAST(F.Equal, 3)) {
-					eq = (IAST) eqns.get(i);
-					termsEqualZeroList.append(F.expandAll(F.Subtract(eq.arg1(), eq.arg2()), true, true));
-				} else {
-					// not an equation
-					throw new WrongArgumentType(eqns, eqns.get(i), i, "Equal[] expression (a==b) expected");
-				}
+			IAST listOrAndAST = (IAST) expr;
+			for (int i = 1; i < listOrAndAST.size(); i++) {
+				termsEqualZeroList.append(checkEquation(listOrAndAST.get(i)));
 			}
 
 		} else {
@@ -661,10 +651,9 @@ public final class Validate {
 	 * @return
 	 */
 	public static IExpr checkEquation(IExpr expr) {
-		IAST eq;
-		if (expr.isAST(F.Equal, 3)) {
-			eq = (IAST) expr;
-			return F.evalExpandAll(F.Subtract(eq.arg1(), eq.arg2()));
+		if (expr.isEqual()) {
+			IAST equal = (IAST) expr;
+			return F.evalExpandAll(F.Subtract(equal.arg1(), equal.arg2()));
 		} else {
 			// not an equation
 			throw new WrongArgumentType(expr, "Equal[] expression (a==b) expected");

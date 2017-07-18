@@ -901,26 +901,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public boolean isFreeAt(int position, final IExpr pattern);
 
 	/**
-	 * Is this a list (i.e. with header == List)
-	 * 
-	 * @return
-	 */
-	@Override
-	public boolean isList();
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean isPlus();
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean isPower();
-
-	/**
 	 * Check if the object at index 0 (i.e. the head of the list) is the same object as <code>head</code> and if the
 	 * size of the list is greater or equal <code>length</code>.
 	 * 

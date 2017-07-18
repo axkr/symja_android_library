@@ -1470,6 +1470,12 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public final boolean isEqual() {
+		return isSameHead(F.Equal, 3);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public final boolean isEvalFlagOff(final int i) {
 		return (fEvalFlags & i) == 0;
 	}
