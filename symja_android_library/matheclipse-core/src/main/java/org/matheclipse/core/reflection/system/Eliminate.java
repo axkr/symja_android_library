@@ -234,24 +234,23 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	private static IAST checkEquations(final IAST ast, int position) {
 		IAST equalList = F.List();
 		IAST eqns = F.NIL;
-		IAST eq;
 		if (ast.get(position).isList()) {
 			eqns = (IAST) ast.get(position);
 			for (int i = 1; i < eqns.size(); i++) {
-				if (eqns.get(i).isAST(F.Equal, 3)) {
-					eq = (IAST) eqns.get(i);
+				if (eqns.get(i).isEqual()) {
+					IAST equalAST = (IAST) eqns.get(i);
 					// equalList.add(F.Equal(F.evalExpandAll(eq.arg1()),
 					// F.evalExpandAll(eq.arg2())));
-					equalList.append(BooleanFunctions.equals(eq));
+					equalList.append(BooleanFunctions.equals(equalAST));
 				} else {
 					// not an equation
 					throw new WrongArgumentType(eqns, eqns.get(i), i, "Equal[] expression (a==b) expected");
 				}
 			}
 		} else {
-			if (ast.get(position).isAST(F.Equal, 3)) {
-				eq = (IAST) ast.get(position);
-				equalList.append(F.Equal(F.evalExpandAll(eq.arg1()), F.evalExpandAll(eq.arg2())));
+			if (ast.get(position).isEqual()) {
+				IAST equalAST = (IAST) ast.get(position);
+				equalList.append(F.Equal(F.evalExpandAll(equalAST.arg1()), F.evalExpandAll(equalAST.arg2())));
 			} else {
 				// not an equation
 				throw new WrongArgumentType(ast, ast.arg1(), 1, "Equal[] expression (a==b) expected");
@@ -270,7 +269,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	 * @return <code>F.NIL</code> if we can't find an equation for the given <code>variable</code>.
 	 */
 	private static IExpr eliminateAnalyze(IAST equalAST, IExpr variable) {
-		if (equalAST.isAST(F.Equal, 3)) {
+		if (equalAST.isEqual()) {
 			IExpr arg1 = equalAST.arg1();
 			IExpr arg2 = equalAST.arg2();
 			Predicate<IExpr> predicate = Predicates.in(variable);

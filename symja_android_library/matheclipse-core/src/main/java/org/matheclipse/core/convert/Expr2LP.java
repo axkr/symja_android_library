@@ -40,7 +40,7 @@ public class Expr2LP {
 		double[] coefficients = new double[fVariables.size()];
 		if (fExpr.isAST()) {
 			IAST ast = (IAST) fExpr;
-			if (ast.isAST(F.Equal, 3)) {
+			if (ast.isEqual()) {
 				IExpr expr = F.eval(F.Subtract(ast.arg1(), ast.arg2()));
 				ISignedNumber num = expr2ObjectiveFunction(expr, coefficients);
 				if (num == null) {

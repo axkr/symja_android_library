@@ -55,12 +55,12 @@ public class Roots extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 
 		IExpr arg1 = ast.arg1();
-		if (arg1.isAST(F.Equal, 3)) {
-			IAST eq = (IAST) arg1;
-			if (eq.arg2().isZero()) {
-				arg1 = eq.arg1();
+		if (arg1.isEqual()) {
+			IAST equalAST = (IAST) arg1;
+			if (equalAST.arg2().isZero()) {
+				arg1 = equalAST.arg1();
 			} else {
-				arg1 = engine.evaluate(F.Subtract(eq.arg1(), eq.arg2()));
+				arg1 = engine.evaluate(F.Subtract(equalAST.arg1(), equalAST.arg2()));
 			}
 		} else {
 			throw new WrongArgumentType(ast, ast.arg1(), 1, "Equal() expression expected!");

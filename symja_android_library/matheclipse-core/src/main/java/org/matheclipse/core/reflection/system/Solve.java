@@ -1123,7 +1123,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				if (temp.isAST2()) {
 					lhs = integerVariable(net, map, temp.arg1());
 					rhs = integerVariable(net, map, temp.arg2());
-					if (temp.isAST(F.Equal, 3)) {
+					if (temp.isEqual()) {
 						lhs.equals(rhs);
 					} else if (temp.isAST(F.Unequal, 3)) {
 						lhs.notEquals(rhs);

@@ -24,14 +24,12 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Function for
- * <a href="http://en.wikipedia.org/wiki/Numerical_integration">numerical
- * integration</a> of univariate real functions.
+ * Function for <a href="http://en.wikipedia.org/wiki/Numerical_integration">numerical integration</a> of univariate
+ * real functions.
  * 
  * Uses the <a href=
  * "http://commons.apache.org/math/apidocs/org/apache/commons/math/analysis/integration/UnivariateRealIntegratorImpl.html"
- * >Commons math LegendreGaussIntegrator, RombergIntegrator, SimpsonIntegrator,
- * TrapezoidIntegrator</a> implementations.
+ * >Commons math LegendreGaussIntegrator, RombergIntegrator, SimpsonIntegrator, TrapezoidIntegrator</a> implementations.
  */
 public class NIntegrate extends AbstractFunctionEvaluator {
 
@@ -45,12 +43,10 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 	 * Integrate a function numerically.
 	 * 
 	 * @param method
-	 *            the following methods are possible: LegendreGauss, Simpson,
-	 *            Romberg, Trapezoid
+	 *            the following methods are possible: LegendreGauss, Simpson, Romberg, Trapezoid
 	 * @param list
-	 *            a list of the form <code>{x, lowerBound, upperBound}</code>,
-	 *            where <code>lowerBound</code> and <code>upperBound</code> are
-	 *            numbers which could be converted to a Java double value.
+	 *            a list of the form <code>{x, lowerBound, upperBound}</code>, where <code>lowerBound</code> and
+	 *            <code>upperBound</code> are numbers which could be converted to a Java double value.
 	 * @param min
 	 *            Lower bound of the integration interval.
 	 * @param max
@@ -140,8 +136,9 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 				ISignedNumber min = list.arg2().evalSignedNumber();
 				ISignedNumber max = list.arg3().evalSignedNumber();
 				if (min != null && max != null) {
-					if (function.isAST(F.Equal, 3)) {
-						function = F.Plus(((IAST) function).arg1(), F.Negate(((IAST) function).arg2()));
+					if (function.isEqual()) {
+						IAST equalAST = (IAST) function;
+						function = F.Plus(equalAST.arg1(), F.Negate(equalAST.arg2()));
 					}
 					try {
 						double result = integrate(method.getSymbolName(), list, min.doubleValue(), max.doubleValue(),
