@@ -401,15 +401,15 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 
 	private static IExpr powerLimit(final IAST powerAST, LimitData data) {
 		// IAST rule = data.getRule();
-		IExpr arg1 = powerAST.arg1();
-		IExpr arg2 = powerAST.arg1();
+		IExpr base = powerAST.arg1();
+		IExpr exponent = powerAST.arg1();
 		if (powerAST.arg2().equals(data.getSymbol()) && data.getLimitValue().isZero()) {
 			return F.C1;
 		}
-		if (arg1.isTimes() && arg2.isFree(data.getSymbol())) {
-			IAST isFreeResult = ((IAST) arg1).partitionTimes(Predicates.isFree(data.getSymbol()), F.C1, F.C1, F.List);
+		if (base.isTimes() && exponent.isFree(data.getSymbol())) {
+			IAST isFreeResult = ((IAST) base).partitionTimes(Predicates.isFree(data.getSymbol()), F.C1, F.C1, F.List);
 			if (!isFreeResult.get(2).isOne()) {
-				return F.Times(F.Power(isFreeResult.get(1), arg2), data.limit(F.Power(isFreeResult.get(2), arg2)));
+				return F.Times(F.Power(isFreeResult.get(1), exponent), data.limit(F.Power(isFreeResult.get(2), exponent)));
 			}
 		}
 		if (powerAST.arg2().isNumericFunction()) {

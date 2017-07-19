@@ -177,7 +177,7 @@ public class JASConvert<C extends RingElem<C>> {
 					}
 					return result;
 				} else if (ast.isPower() && ast.arg1().isSymbol()) {
-					final ISymbol expr = (ISymbol) ast.arg1();
+					final ISymbol base = (ISymbol) ast.arg1();
 					int exponent = -1;
 					try {
 						exponent = Validate.checkPowerExponent(ast);
@@ -188,12 +188,12 @@ public class JASConvert<C extends RingElem<C>> {
 								"JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
 					}
 					try {
-						return fPolyFactory.univariate(expr.getSymbolName(), exponent);
+						return fPolyFactory.univariate(base.getSymbolName(), exponent);
 					} catch (IllegalArgumentException iae) {
 						// fall through
 					}
 				} else if (ast.isPower() && ast.arg1().isSlot()) {
-					final IAST expr = (IAST) ast.arg1();
+					final IAST base = (IAST) ast.arg1();
 					int exponent = -1;
 					try {
 						exponent = Validate.checkPowerExponent(ast);
@@ -204,7 +204,7 @@ public class JASConvert<C extends RingElem<C>> {
 								"JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
 					}
 					try {
-						return fPolyFactory.univariate(expr.toString(), exponent);
+						return fPolyFactory.univariate(base.toString(), exponent);
 					} catch (IllegalArgumentException iae) {
 						// fall through
 					}

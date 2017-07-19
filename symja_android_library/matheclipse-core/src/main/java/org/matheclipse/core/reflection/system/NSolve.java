@@ -270,18 +270,20 @@ public class NSolve extends AbstractFunctionEvaluator {
 				return;
 			}
 			if (expr.isPower()) {
-				if (((IAST) expr).arg2().isInteger()) {
+				IExpr base = ((IAST) expr).arg1();
+				IExpr exponent = ((IAST) expr).arg2();
+				if (exponent.isInteger()) {
 					if (equationType == LINEAR) {
 						equationType = POLYNOMIAL;
 					}
-					getTimesEquationType(((IAST) expr).arg1());
+					getTimesEquationType(base);
 					return;
 				}
-				if (((IAST) expr).arg2().isNumIntValue()) {
+				if (exponent.isNumIntValue()) {
 					if (equationType == LINEAR) {
 						equationType = POLYNOMIAL;
 					}
-					getTimesEquationType(((IAST) expr).arg1());
+					getTimesEquationType(base);
 					return;
 				}
 			}

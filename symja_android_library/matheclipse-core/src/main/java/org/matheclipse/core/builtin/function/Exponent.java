@@ -106,7 +106,7 @@ public class Exponent extends AbstractCoreFunctionEvaluator {
 		for (int i = 1; i < timesAST.size(); i++) {
 			argi = timesAST.get(i);
 			if (argi.isPower()) {
-				IAST pow = (IAST) timesAST.get(i);
+				IAST pow = (IAST) argi;
 				if (matcher.test(pow.arg1())) {
 					collector.add(pow.arg2());
 					evaled = true;

@@ -169,9 +169,9 @@ public class JASModInteger {
 				}
 				return result;
 			} else if (ast.isPower()) {
-				final IExpr expr = ast.arg1();
+				final IExpr base = ast.arg1();
 				for (int i = 0; i < fVariables.size(); i++) {
-					if (fVariables.get(i).equals(expr)) {
+					if (fVariables.get(i).equals(base)) {
 						int exponent = -1;
 						try {
 							exponent = Validate.checkPowerExponent(ast);
@@ -234,9 +234,9 @@ public class JASModInteger {
 				}
 				return result;
 			} else if (ast.isPower()) {
-				final IExpr expr = ast.arg1();
+				final IExpr base = ast.arg1();
 				for (int i = 0; i < fVariables.size(); i++) {
-					if (fVariables.get(i).equals(expr)) {
+					if (fVariables.get(i).equals(base)) {
 						int exponent = -1;
 						try {
 							exponent = Validate.checkPowerExponent(ast);

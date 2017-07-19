@@ -203,19 +203,21 @@ public class Algebra {
 		public static IExpr[] fractionalPartsPower(final IAST powerAST, boolean trig) {
 			IExpr[] parts = new IExpr[2];
 			parts[0] = F.C1;
-			IExpr arg2 = powerAST.arg2();
-			if (arg2.isSignedNumber()) {
-				ISignedNumber sn = (ISignedNumber) arg2;
+			
+			IExpr arg1 = powerAST.arg1();
+			IExpr exponent = powerAST.arg2();
+			if (exponent.isSignedNumber()) {
+				ISignedNumber sn = (ISignedNumber) exponent;
 				if (sn.isMinusOne()) {
-					parts[1] = powerAST.arg1();
+					parts[1] = arg1;
 					return parts;
 				} else if (sn.isNegative()) {
-					parts[1] = F.Power(powerAST.arg1(), sn.negate());
+					parts[1] = F.Power(arg1, sn.negate());
 					return parts;
 				} else {
-					if (sn.isInteger() && powerAST.arg1().isAST()) {
+					if (sn.isInteger() && arg1.isAST()) {
 						// positive integer
-						IAST function = (IAST) powerAST.arg1();
+						IAST function = (IAST) arg1;
 						// if (function.isTimes()) {
 						// IExpr[] partsArg1 = fractionalPartsTimesPower(function, true, true, trig, true);
 						// if (partsArg1 != null) {
@@ -236,9 +238,9 @@ public class Algebra {
 					}
 				}
 			}
-			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg2);
+			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(exponent);
 			if (negExpr.isPresent()) {
-				parts[1] = F.Power(powerAST.arg1(), negExpr);
+				parts[1] = F.Power(arg1, negExpr);
 				return parts;
 			}
 			return null;
@@ -854,23 +856,24 @@ public class Algebra {
 			 * @return
 			 */
 			public IExpr expandPowerNull(final IAST powerAST) {
-				if ((powerAST.arg1().isPlus())) {
-
-					if (powerAST.arg2().isFraction()) {
-						IFraction fraction = (IFraction) powerAST.arg2();
+				IExpr base = powerAST.arg1();
+				if ((base.isPlus())) {
+					IExpr exponent = powerAST.arg2();
+					if (exponent.isFraction()) {
+						IFraction fraction = (IFraction) exponent;
 						if (fraction.isPositive()) {
 							INumber floorPart = fraction.floorFraction().normalize();
 							if (!floorPart.isZero()) {
 								IFraction fractionalPart = fraction.fractionalPart();
-								return expandAST(F.Times(F.Power(powerAST.arg1(), fractionalPart),
-										F.Power(powerAST.arg1(), floorPart)));
+								return expandAST(F.Times(F.Power(base, fractionalPart),
+										F.Power(base, floorPart)));
 							}
 						}
 					}
 
 					try {
 						int exp = Validate.checkPowerExponent(powerAST);
-						IAST plusAST = (IAST) powerAST.arg1();
+						IAST plusAST = (IAST) base;
 						if (exp < 0) {
 							if (expandNegativePowers) {
 								exp *= (-1);
@@ -1233,7 +1236,7 @@ public class Algebra {
 				expr = engine.evaluate(F.Together(ast.arg1()));
 				if (expr.isAST()) {
 					IExpr[] parts = Algebra.getNumeratorDenominator((IAST) expr);
-					if (!parts[1].isOne()){
+					if (!parts[1].isOne()) {
 						return F.Divide(F.Factor(parts[0]), F.Factor(parts[1]));
 					}
 				}
@@ -2397,10 +2400,12 @@ public class Algebra {
 					if (x1.isPower()) {
 						// Power[x_ ^ y_, z_] :> x ^(y*z)
 						IAST powerAST = (IAST) x1;
-						IAST powerResult = Power(powerAST.arg1(), Times(powerAST.arg2(), x2));
+						IExpr base = powerAST.arg1();
+						IExpr exponent = powerAST.arg2();
+						IAST powerResult = Power(base, Times(exponent, x2));
 						if (assumptions) {
 							IAST floorResult = Floor(Divide(
-									Subtract(Pi, Im(Times(powerAST.arg2(), Log(powerAST.arg1())))), Times(C2, Pi)));
+									Subtract(Pi, Im(Times(exponent, Log(base)))), Times(C2, Pi)));
 							IAST expResult = Power(E, Times(C2, I, Pi, x2, floorResult));
 							IAST timesResult = Times(powerResult, expResult);
 							return timesResult;
@@ -3848,18 +3853,20 @@ public class Algebra {
 	 */
 	public static IExpr[] fractionalParts(final IExpr arg, boolean trig) {
 		IExpr[] parts = null;
-		if (arg.isTimes()) {
-			parts = fractionalPartsTimesPower((IAST) arg, false, true, trig, true);
-		} else if (arg.isPower()) {
-			parts = Apart.fractionalPartsPower((IAST) arg, trig);
-			if (parts == null) {
-				return null;
-			}
-		} else {
-			if (arg.isAST()) {
-				IExpr numerForm = Numerator.getTrigForm((IAST) arg, trig);
+		if (arg.isAST()) {
+			IAST ast = (IAST) arg;
+			if (arg.isTimes()) {
+				parts = fractionalPartsTimesPower(ast, false, true, trig, true);
+			} else if (arg.isPower()) {
+				parts = Apart.fractionalPartsPower(ast, trig);
+				if (parts == null) {
+					return null;
+				}
+			} else {
+
+				IExpr numerForm = Numerator.getTrigForm(ast, trig);
 				if (numerForm.isPresent()) {
-					IExpr denomForm = Denominator.getTrigForm((IAST) arg, trig);
+					IExpr denomForm = Denominator.getTrigForm(ast, trig);
 					if (denomForm.isPresent()) {
 						parts = new IExpr[2];
 						parts[0] = numerForm;

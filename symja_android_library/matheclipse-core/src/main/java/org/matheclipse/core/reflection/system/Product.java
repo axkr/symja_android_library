@@ -59,12 +59,12 @@ public class Product extends ListFunctions.Table implements ProductRules {
 		// determineIteratorVariables(ast));
 
 		if (arg1.isPower()) {
-			IExpr powArg2 = arg1.getAt(2);
+			IExpr exponent = arg1.getAt(2);
 			boolean flag = true;
 			// Prod( i^a, {i,from,to},... )
 			for (int i = 2; i < ast.size(); i++) {
 				IIterator iterator = Iterator.create((IAST) ast.get(i), engine);
-				if (iterator.isValidVariable() && powArg2.isFree(iterator.getVariable())) {
+				if (iterator.isValidVariable() && exponent.isFree(iterator.getVariable())) {
 					continue;
 				}
 				flag = false;
@@ -73,7 +73,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 			if (flag) {
 				IAST prod = ast.copy();
 				prod.set(1, arg1.getAt(1));
-				return F.Power(prod, powArg2);
+				return F.Power(prod, exponent);
 			}
 		}
 		IExpr argN = ast.get(ast.size() - 1);

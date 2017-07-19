@@ -58,7 +58,7 @@ public class Coefficient extends AbstractFunctionEvaluator {
 			for (int i = 1; i < arg2AST.size(); i++) {
 				long value = 1L;
 				IExpr a1 = arg2AST.get(i);
-				if (arg2AST.get(i).isPower() && arg2AST.get(i).getAt(2).isInteger()) {
+				if (a1.isPower() && a1.getAt(2).isInteger()) {
 					a1 = arg2AST.get(i).getAt(1);
 					IInteger ii = (IInteger) arg2AST.get(i).getAt(2);
 					try {

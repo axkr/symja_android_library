@@ -205,10 +205,10 @@ public class JASIExpr {
 				}
 				return result;
 			} else if (ast.isPower()) {
-				final IExpr expr = ast.arg1();
-				if (expr instanceof ISymbol) {
+				final IExpr base = ast.arg1();
+				if (base instanceof ISymbol) {
 					ExpVector leer = fPolyFactory.evzero;
-					int ix = leer.indexVar(expr.toString(), fPolyFactory.getVars());
+					int ix = leer.indexVar(base.toString(), fPolyFactory.getVars());
 					if (ix >= 0) {
 						int exponent = -1;
 						try {

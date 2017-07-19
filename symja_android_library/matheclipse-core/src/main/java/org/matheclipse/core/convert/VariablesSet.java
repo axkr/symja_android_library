@@ -111,17 +111,17 @@ public class VariablesSet {
 				}
 				return false;
 			} else if (list.isPower()) {
-				IExpr arg1 = list.arg1();
-				IExpr arg2 = list.arg2();
+				IExpr base = list.arg1();
+				IExpr exponent = list.arg2();
 
-				if (arg2.isRational()) {
+				if (exponent.isRational()) {
 					for (int i = 1; i < list.size(); i++) {
 						list.get(i).accept(this);
 					}
 					return false;
-				} else if (arg2.isNumber()) {
+				} else if (exponent.isNumber()) {
 					fCollection.add(list);
-				} else if (!arg1.isNumericFunction()) {
+				} else if (!base.isNumericFunction()) {
 					fCollection.add(list);
 				}
 			} else {

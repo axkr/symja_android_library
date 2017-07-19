@@ -1565,10 +1565,10 @@ public class ExpTrigsFunctions {
 		@Override
 		public IExpr e1ObjArg(IExpr expr) {
 			if (expr.isPower()) {
-				IExpr arg1 = expr.getAt(1);
-				IExpr arg2 = expr.getAt(2);
+				IExpr base = expr.getAt(1);
+				IExpr exponent = expr.getAt(2);
 				// arg2*Log(arg1)
-				IExpr temp = F.eval(Times(arg2, F.Log(arg1)));
+				IExpr temp = F.eval(Times(exponent, F.Log(base)));
 				IExpr imTemp = F.eval(F.Im(temp));
 				if (imTemp.isSignedNumber()) {
 					if (((ISignedNumber) imTemp).isGreaterThan(F.num(-1 * Math.PI))
@@ -1578,7 +1578,7 @@ public class ExpTrigsFunctions {
 						return temp;
 					}
 				}
-				if (AbstractAssumptions.assumePositive(arg1) && arg2.isRealResult()) {
+				if (AbstractAssumptions.assumePositive(base) && exponent.isRealResult()) {
 					// Log(arg1 ^ arg2) == arg2*Log(arg1) ||| arg1 > 0 && arg2 is
 					// Real
 					return temp;

@@ -490,9 +490,9 @@ public final class Arithmetic {
 				return temp;
 			}
 			if (arg1.isPower()) {
-				IExpr p1 = ((IAST) arg1).arg1();
-				if (p1.isPositiveResult()) {
-					return F.Power(p1, F.Conjugate(((IAST) arg1).arg2()));
+				IExpr base = ((IAST) arg1).arg1();
+				if (base.isPositiveResult()) {
+					return F.Power(base, F.Conjugate(((IAST) arg1).arg2()));
 				}
 			}
 			if (arg1.isPlus()) {
@@ -959,19 +959,21 @@ public final class Arithmetic {
 			}
 			if (arg1.isPower()) {
 				IAST astPower = (IAST) arg1;
-				if (astPower.arg1().isRealResult()) {
+				IExpr base = astPower.arg1();
+				if (base.isRealResult()) {
 					// test for x^(a+I*b)
-					IExpr x = astPower.arg1();
-					if (astPower.arg2().isNumber()) {
+					IExpr x = base;
+					IExpr exponent = astPower.arg2();
+					if (exponent.isNumber()) {
 						// (x^2)^(a/2)*E^(-b*Arg[x])*Sin[a*Arg[x]+1/2*b*Log[x^2]]
-						IExpr a = ((INumber) astPower.arg2()).re();
-						IExpr b = ((INumber) astPower.arg2()).im();
+						IExpr a = ((INumber) exponent).re();
+						IExpr b = ((INumber) exponent).im();
 						return imPowerComplex(x, a, b);
 					}
-					if (astPower.arg2().isNumericFunction()) {
+					if (exponent.isNumericFunction()) {
 						// (x^2)^(a/2)*E^(-b*Arg[x])*Sin[a*Arg[x]+1/2*b*Log[x^2]]
-						IExpr a = engine.evaluate(F.Re(astPower.arg2()));
-						IExpr b = engine.evaluate(F.Im(astPower.arg2()));
+						IExpr a = engine.evaluate(F.Re(exponent));
+						IExpr b = engine.evaluate(F.Im(exponent));
 						return imPowerComplex(x, a, b);
 					}
 				}
@@ -2309,19 +2311,16 @@ public final class Arithmetic {
 			}
 			if (expr.isPower()) {
 				IAST astPower = (IAST) expr;
-				if (astPower.arg1().isRealResult()) {
+				IExpr base = astPower.arg1();
+				if (base.isRealResult()) {
 					// test for x^(a+I*b)
-					IExpr x = astPower.arg1();
-					if (astPower.arg2().isNumber()) {
+					IExpr exponent = astPower.arg2();
+					if (exponent.isNumber()) {
 						// (x^2)^(a/2)*E^(-b*Arg[x])*Cos[a*Arg[x]+1/2*b*Log[x^2]]
-						IExpr a = ((INumber) astPower.arg2()).re();
-						IExpr b = ((INumber) astPower.arg2()).im();
-						return rePowerComplex(x, a, b);
+						return rePowerComplex(x, ((INumber) exponent).re(), ((INumber) exponent).im());
 					}
 					// (x^2)^(a/2)*E^(-b*Arg[x])*Cos[a*Arg[x]+1/2*b*Log[x^2]]
-					IExpr a = astPower.arg2().re();
-					IExpr b = astPower.arg2().im();
-					return rePowerComplex(x, a, b);
+					return rePowerComplex(x, exponent.re(), exponent.im());
 				}
 			}
 			return F.NIL;
