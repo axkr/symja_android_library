@@ -393,6 +393,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testBellB() {
 		check("BellB(10)", "115975");
+		check("BellB(15)", "1382958545");
 		check("BellB({1,2,3,4,5,6})", "{1,2,5,15,52,203}");
 	}
 
@@ -415,6 +416,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBinomial() {
+		check("Binomial(n, n+1)", "0");
+		check("Binomial(n, n+2)", "0");
 		check("Binomial(4,2)", "6");
 		check("Binomial(5,3)", "10");
 
@@ -528,6 +531,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("CarmichaelLambda(10)", "4");
 		check("CarmichaelLambda(15)", "4");
 		check("CarmichaelLambda(11)", "10");
+		check("CarmichaelLambda(35)", "12");
 		check("CarmichaelLambda(50)", "20");
 		check("Table(CarmichaelLambda(-k), {k, 12})", "{1,1,2,2,4,2,6,2,6,4,10,2}");
 		check("Table(CarmichaelLambda(10^k), {k, 0, 10})",
@@ -587,6 +591,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testCatalan() {
 		checNumeric("N(Catalan)", "0.915965594177219");
+	}
+	
+	public void testCatalanNumber() {
+		checNumeric("CatalanNumber(-10)", "0");
+		checNumeric("CatalanNumber(-1)", "-1");
+		checNumeric("CatalanNumber(0)", "1");
+		checNumeric("CatalanNumber(1)", "1");
+		checNumeric("CatalanNumber(3)", "5");
+		checNumeric("CatalanNumber(10)", "16796");
 	}
 
 	public void testCatenate() {
@@ -648,6 +661,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testChineseRemainder() {
+		// wikipedia example
+		check("ChineseRemainder({0,3,4},{3,4,5})", "39");
+		
 		check("ChineseRemainder({23},{17})", "6");
 		check("ChineseRemainder({91},{25})", "16");
 		check("ChineseRemainder({913},{25})", "13");
@@ -1365,7 +1381,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testDiracDelta() {
 		check("DiracDelta(0)", "DiracDelta(0)");
-		check("DiracDelta(42)", "0");
+		check("DiracDelta(1+I)", "DiracDelta(1+I)");
 		check("DiracDelta(-1)", "0");
 		check("DiracDelta(-42)", "0");
 		check("DiracDelta({1.6, 1.6000000000000000000000000})", "{0,0}");
@@ -1481,6 +1497,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testDivisible() {
 		check("Divisible(2 Pi, Pi/2)", "True");
+		check("Divisible(42,7)", "True");
 		check("Divisible(10,3)", "False");
 		check("Divisible(2^100-1,3)", "True");
 		check("Divisible({200, 201, 202, 203}, 3)", "{False,True,False,False}");
@@ -1505,6 +1522,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDivisorSigma() {
+		check("DivisorSigma(0,12)", "6");
+		check("DivisorSigma(1,12)", "28");
 		check("DivisorSigma(1,20)", "42");
 		check("DivisorSigma(2,20)", "546");
 		check("DivisorSigma(2, {1, 2, 3, 4, 5})", "{1,5,10,21,26}");
@@ -3522,6 +3541,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMultinomial() {
+		check("Multinomial(0,0,0,0,0)", "1");
 		check("Multinomial(2, 3, 4, 5)", "2522520");
 		check("Multinomial( )", "1");
 		check("Multinomial(1)", "1");
@@ -6123,6 +6143,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSubfactorial() {
+		check("Subfactorial(12)", "176214841");
 		check("Subfactorial(n)", "Subfactorial(n)");
 		check("Table(Subfactorial(n), {n, 10})", "{0,1,2,9,44,265,1854,14833,133496,1334961}");
 

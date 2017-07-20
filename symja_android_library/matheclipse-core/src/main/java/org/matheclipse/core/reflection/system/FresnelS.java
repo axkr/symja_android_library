@@ -51,6 +51,9 @@ public class FresnelS extends AbstractTrigArg1 implements INumeric, DoubleUnaryO
 		if (arg1.equals(F.CNIInfinity)) {
 			return F.Divide(F.CI, F.C2);
 		}
+		if (arg1.equals(F.CComplexInfinity)) {
+			return F.Indeterminate;
+		}
 		IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 		if (negExpr.isPresent()) {
 			return F.Negate(F.FresnelS(negExpr));
