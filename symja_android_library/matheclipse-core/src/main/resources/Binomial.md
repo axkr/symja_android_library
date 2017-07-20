@@ -11,7 +11,7 @@ See:
 
 ### Examples
 ``` 
->>> Binomial(4,2)
+>> Binomial(4,2)
 6
  
 >> Binomial(5, 3)   

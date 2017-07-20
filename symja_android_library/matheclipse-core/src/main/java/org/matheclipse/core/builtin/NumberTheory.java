@@ -62,6 +62,30 @@ import edu.jas.ufd.FactorAbstract;
 import edu.jas.ufd.FactorFactory;
 
 public final class NumberTheory {
+
+	/**
+	 * <pre>
+	 * BellB(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * the Bell number function counts the number of different ways to partition a set that has exactly <code>n</code>
+	 * elements
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Bell_number">Wikipedia - Bell number</a></li>
+	 * </ul>
+	 * 
+	 * <pre>
+	 * &gt;&gt; BellB(15)
+	 * 1382958545
+	 * </pre>
+	 */
 	private static class BellB extends AbstractFunctionEvaluator {
 
 		/**
@@ -81,9 +105,6 @@ public final class NumberTheory {
 				return sum;
 			}
 			return BigInteger.ONE;
-		}
-
-		public BellB() {
 		}
 
 		@Override
@@ -113,18 +134,31 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * Compute the Bernoulli number of the first kind.
+	 * <pre>
+	 * BernoulliB(expr)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Bernoulli_number">Wikipedia - Bernoulli number</a>. <br/>
-	 * For better performing implementations see
-	 * <a href= "http://oeis.org/wiki/User:Peter_Luschny/ComputationAndAsymptoticsOfBernoulliNumbers"
-	 * >ComputationAndAsymptoticsOfBernoulliNumbers</a>
-	 * 
+	 * <blockquote>
+	 * <p>
+	 * computes the Bernoulli number of the first kind.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Bernoulli_number">Wikipedia - Bernoulli number</a></li>
+	 * </ul>
 	 */
 	private static class BernoulliB extends AbstractFunctionEvaluator {
 
 		/**
 		 * Compute the Bernoulli number of the first kind.
+		 * 
+		 * See <a href="http://en.wikipedia.org/wiki/Bernoulli_number">Wikipedia - Bernoulli number</a>. <br/>
+		 * For better performing implementations see
+		 * <a href= "http://oeis.org/wiki/User:Peter_Luschny/ComputationAndAsymptoticsOfBernoulliNumbers"
+		 * >ComputationAndAsymptoticsOfBernoulliNumbers</a>
 		 * 
 		 * @param biggi
 		 * @return
@@ -132,7 +166,7 @@ public final class NumberTheory {
 		public static IFraction bernoulliNumber(final IInteger biggi) {
 			int N = 0;
 			try {
-				N = biggi.toInt(); // NumberUtil.toInt(biggi);
+				N = biggi.toInt();
 				return bernoulliNumber(N);
 			} catch (ArithmeticException ae) {
 				//
@@ -172,19 +206,6 @@ public final class NumberTheory {
 			return bernoulli[n];
 		}
 
-		// /**
-		// * Compute the Bernoulli number of the first kind.
-		// *
-		// * @param biggi
-		// * @return
-		// */
-		// public static IFraction bernoulliNumber(final IInteger biggi) {
-		// return bernoulliNumber(biggi.getBigNumerator());
-		// }
-
-		public BernoulliB() {
-		}
-
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
@@ -209,9 +230,30 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * Returns the binomial coefficient of 2 integers.
+	 * <pre>
+	 * Binomial(n, k)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Binomial_coefficient">Binomial coefficient</a>
+	 * <blockquote>
+	 * <p>
+	 * returns the binomial coefficient of the 2 integers <code>n</code> and <code>k</code>
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Binomial_coefficient">Wikipedia - Binomial coefficient</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt;&gt; Binomial(4,2)
+	 * 6
+	 * 
+	 * &gt;&gt; Binomial(5, 3)   
+	 * 10
+	 * </pre>
 	 */
 	private static class Binomial extends AbstractArg2 {
 
@@ -243,9 +285,6 @@ public final class NumberTheory {
 				i = i.add(F.C1);
 			}
 			return bin;
-		}
-
-		public Binomial() {
 		}
 
 		@Override
@@ -283,10 +322,16 @@ public final class NumberTheory {
 			if (n.equals(k)) {
 				return F.C1;
 			}
-			IExpr nMinus1 = F.eval(F.Subtract(n, F.C1));
-			if (nMinus1.equals(k)) {
+			IExpr difference = F.eval(F.Subtract(n, F.C1));
+			if (difference.equals(k)) {
 				return n;
 			}
+			difference = F.eval(F.Subtract(k, n));
+			if (difference.isIntegerResult() && difference.isPositiveResult()) {
+				// k-n is a positive integer number
+				return F.C0;
+			}
+
 			IExpr boole = F.eval(F.Greater(F.Times(F.C2, k), n));
 			if (boole.isTrue()) {
 				// case k*2 > n : Binomial[n, k] -> Binomial[n, n-k]
@@ -302,18 +347,28 @@ public final class NumberTheory {
 	}
 
 	/**
+	 * <pre>
+	 * CarmichaelLambda(n)
+	 * </pre>
+	 * 
+	 * <blockquote>
 	 * <p>
-	 * The Carmichael function.
+	 * the Carmichael function of <code>n</code>
 	 * </p>
+	 * </blockquote>
 	 * <p>
-	 * See: <a href="https://en.wikipedia.org/wiki/Carmichael_function">Wikipedia - Carmichael function</a>
+	 * See:<br />
 	 * </p>
-	 *
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Carmichael_function">Wikipedia - Carmichael function</a></li>
+	 * </ul>
+	 * 
+	 * <pre>
+	 * &gt;&gt; CarmichaelLambda(35)
+	 * 12
+	 * </pre>
 	 */
 	private static class CarmichaelLambda extends AbstractTrigArg1 {
-
-		public CarmichaelLambda() {
-		}
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
@@ -335,12 +390,33 @@ public final class NumberTheory {
 	}
 
 	/**
+	 * <pre>
+	 * CatalanNumber(n)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Catalan_number">Wikipedia:Catalan number</a>
+	 * <blockquote>
+	 * <p>
+	 * returns the catalan number for the integer argument <code>n</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Catalan_number">Wikipedia - Catalan number</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
 	 * 
+	 * <pre>
+	 * &gt;&gt; CatalanNumber(4)
+	 * 14
+	 * </pre>
 	 */
 	private static class CatalanNumber extends AbstractTrigArg1 {
 		public static IInteger catalanNumber(IInteger n) {
+			if (n.equals(F.CN1)) {
+				return F.CN1;
+			}
 			n = n.add(F.C1);
 			if (!(n.compareInt(0) > 0)) {
 				return F.C0;
@@ -353,9 +429,6 @@ public final class NumberTheory {
 				i = i.add(F.C1);
 			}
 			return c.div(n);
-		}
-
-		public CatalanNumber() {
 		}
 
 		@Override
@@ -374,8 +447,29 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * See <a href="https://rosettacode.org/wiki/Chinese_remainder_theorem">Rosetta Code: Chinese remainder theorem</a>
-	 *
+	 * <pre>
+	 * ChineseRemainder({a1, a2, a3,...}, {n1, n2, n3,...})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * the chinese remainder function.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Chinese_remainder_theorem">Wikipedia -
+	 * Chinese_remainder_theorem</a></li>
+	 * <li><a href="https://rosettacode.org/wiki/Chinese_remainder_theorem">Rosetta Code - Chinese remainder
+	 * theorem</a></li>
+	 * </ul>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ChineseRemainder({0,3,4},{3,4,5})
+	 * 39
+	 * </pre>
 	 */
 	private static class ChineseRemainder extends AbstractFunctionEvaluator {
 		private static long chineseRemainder(long[] n, long[] a) {
@@ -416,9 +510,6 @@ public final class NumberTheory {
 			return x1;
 		}
 
-		public ChineseRemainder() {
-		}
-
 		/**
 		 * <p>
 		 * Calculate the chinese remainder of 2 integer lists.
@@ -448,13 +539,44 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * The integers a and b are said to be <i>coprime</i> or <i>relatively prime</i> if they have no common factor other
-	 * than 1.
+	 * <pre>
+	 * CoprimeQ(x, y)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Coprime">Wikipedia:Coprime</a>
+	 * <blockquote>
+	 * <p>
+	 * tests whether <code>x</code> and <code>y</code> are coprime by computing their greatest common divisor.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Coprime">Wikipedia - Coprime</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; CoprimeQ(7, 9)
+	 * True
+	 * &gt;&gt; CoprimeQ(-4, 9)
+	 * True
+	 * &gt;&gt; CoprimeQ(12, 15)
+	 * False 
+	 * &gt;&gt; CoprimeQ(2, 3, 5)
+	 * True
+	 * &gt;&gt; CoprimeQ(2, 4, 5)
+	 * False
+	 * </pre>
 	 */
 	private static class CoprimeQ extends AbstractFunctionEvaluator {
 
+		/**
+		 * The integers a and b are said to be <i>coprime</i> or <i>relatively prime</i> if they have no common factor
+		 * other than 1.
+		 * 
+		 * See <a href="http://en.wikipedia.org/wiki/Coprime">Wikipedia:Coprime</a>
+		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 3);
@@ -500,7 +622,30 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * DiracDelta function returns <code>0</code> for all x != 0
+	 * <pre>
+	 * DiracDelta(x)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * <code>DiracDelta</code> function returns <code>0</code> for all real numbers <code>x</code> where
+	 * <code>x != 0</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; DiracDelta(-42)
+	 * 0
+	 * </pre>
+	 * <p>
+	 * <code>DiracDelta</code> doesn't evaluate for <code>0</code>:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; DiracDelta(0)
+	 * DiracDelta(0)
+	 * </pre>
 	 */
 	private static class DiracDelta extends AbstractEvaluator {
 
@@ -529,6 +674,24 @@ public final class NumberTheory {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * DiscreteDelta(n1, n2, n3, ...)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * <code>DiscreteDelta</code> function returns <code>1</code> if all the <code>ni</code> are <code>0</code>. Returns
+	 * <code>0</code> otherwise.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; DiscreteDelta(0, 0, 0.0)
+	 * 1
+	 * </pre>
+	 */
 	private static class DiscreteDelta extends AbstractEvaluator {
 
 		@Override
@@ -566,12 +729,6 @@ public final class NumberTheory {
 		}
 
 		private static IExpr removeEval(final IAST ast) {
-			// return Lambda.removeStop(ast, (x) -> {
-			// IExpr temp = x.evalNumber();
-			// return temp == null ? false : x.isZero();
-			// }, x -> {
-			// return x.isNumber() ? F.C0 : null;
-			// });
 			IAST result = F.NIL;
 			int size = ast.size();
 			int j = 1;
@@ -601,10 +758,24 @@ public final class NumberTheory {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Divisible(n, m)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>n</code> could be divide by <code>m</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Divisible(42,7)
+	 * True
+	 * </pre>
+	 */
 	private static class Divisible extends AbstractFunctionEvaluator {
-
-		public Divisible() {
-		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -658,16 +829,35 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * Return the divisors of an integer number.
+	 * <pre>
+	 * Divisors(n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns all integers that divide the integer <code>n</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
 	 * 
 	 * <pre>
-	 * divisors(24) ==> {1,2,3,4,6,8,12,24}
+	 * &gt;&gt; Divisors(990)
+	 * {1,2,3,5,6,9,10,11,15,18,22,30,33,45,55,66,90,99,110,165,198,330,495,990}
+	 * </pre>
+	 * 
+	 * <pre>
+	 * ```
+	 * &gt;&gt; Divisors(341550071728321)
+	 * {1,10670053,32010157,341550071728321}
+	 * </pre>
+	 * 
+	 * <pre>
+	 * ```
+	 * &gt;&gt; Divisors(2010)
+	 * {1,2,3,5,6,10,15,30,67,134,201,335,402,670,1005,2010}
 	 * </pre>
 	 */
 	private static class Divisors extends AbstractTrigArg1 {
-
-		public Divisors() {
-		}
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
@@ -689,13 +879,31 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * <code>DivisorSigma(k,n)</code> - the sum of the <code>k</code>-th powers of the divisors of <code>n</code>.
-	 *
+	 * <pre>
+	 * DivisorSigma(k, n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the sum of the <code>k</code>-th powers of the divisors of <code>n</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Divisor_function">Wikipedia - Divisor function</a></li>
+	 * </ul>
+	 * 
+	 * <pre>
+	 * &gt;&gt; DivisorSigma(0,12)
+	 * 6
+	 * 
+	 * &gt;&gt; DivisorSigma(1,12)
+	 * 28
+	 * </pre>
 	 */
 	private static class DivisorSigma extends AbstractFunctionEvaluator {
-
-		public DivisorSigma() {
-		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -751,18 +959,29 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * <p>
-	 * Euler number
-	 * </p>
+	 * <pre>
+	 * EulerE(n)
+	 * </pre>
 	 * 
+	 * <blockquote>
 	 * <p>
-	 * See <a href="http://oeis.org/A000364">A000364</a> in the OEIS.
+	 * gives the euler number <code>En</code>.
 	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Euler_number">Wikipedia - Euler number</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; EulerE(6)
+	 * -61
+	 * </pre>
 	 */
 	private static class EulerE extends AbstractTrigArg1 {
-
-		public EulerE() {
-		}
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
@@ -851,14 +1070,30 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * Euler phi function
+	 * <pre>
+	 * EulerPhi(n)
+	 * </pre>
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Euler%27s_totient_function">Euler's totient function</a>
+	 * <blockquote>
+	 * <p>
+	 * compute Euler's totient function.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Euler%27s_totient_function">Wikipedia - Euler's totient
+	 * function</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; EulerPhi(10)
+	 * 4
+	 * </pre>
 	 */
 	private static class EulerPhi extends AbstractTrigArg1 {
-
-		public EulerPhi() {
-		}
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
@@ -879,15 +1114,34 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * Returns the factorial of an integer n
+	 * <pre>
+	 * Factorial(n)
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Factorial">Factorial</a>
+	 * n!
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the factorial number of the integer <code>n</code>
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Factorial(3)
+	 * 6
+	 * 
+	 * &gt;&gt; 4!
+	 * 24 
+	 * 
+	 * &gt;&gt; 10.5!
+	 * 1.1899423083962249E7
+	 * 
+	 * &gt;&gt; !a! //FullForm
+	 * "Not(Factorial(a))"
+	 * </pre>
 	 */
 	private static class Factorial extends AbstractTrigArg1 {
-
-		public Factorial() {
-		}
 
 		@Override
 		public IExpr e1DblArg(final double arg1) {
@@ -895,6 +1149,11 @@ public final class NumberTheory {
 			return F.num(d);
 		}
 
+		/**
+		 * Returns the factorial of an integer n
+		 * 
+		 * See <a href="http://en.wikipedia.org/wiki/Factorial">Factorial</a>
+		 */
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
 			if (arg1.isInteger()) {
@@ -909,6 +1168,31 @@ public final class NumberTheory {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Factorial2(n)
+	 * 
+	 * n!!
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the double factorial number of the integer <code>n</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Factorial#Double_factorial">Wikipedia - Double Factorial</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Factorial2(3)
+	 * 3
+	 * </pre>
+	 */
 	private static class Factorial2 extends AbstractTrigArg1 {
 
 		public static IInteger factorial2(final IInteger iArg) {
@@ -937,9 +1221,6 @@ public final class NumberTheory {
 			}
 
 			return result;
-		}
-
-		public Factorial2() {
 		}
 
 		@Override
@@ -980,14 +1261,51 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * Return the factors of an integer number
+	 * <pre>
+	 * FactorInteger(n)
+	 * </pre>
 	 * 
-	 * FactorInteger[-32536] ==> {{-1,1},{2,3},{7,2},{83,1}}
+	 * <blockquote>
+	 * <p>
+	 * returns the factorization of <code>n</code> as a list of factors and exponents.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt;&gt; FactorInteger(990)
+	 * {{2,1},{3,2},{5,1},{11,1}}
+	 * </pre>
+	 * 
+	 * <pre>
+	 * ```
+	 * &gt;&gt;&gt; FactorInteger(341550071728321)
+	 * {{10670053,1},{32010157,1}}
+	 * </pre>
+	 * 
+	 * <pre>
+	 * ```
+	 * &gt;&gt; factors = FactorInteger(2010)
+	 * {{2, 1}, {3, 1}, {5, 1}, {67, 1}}
+	 * </pre>
+	 * <p>
+	 * To get back the original number:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Times @@ Power @@@ factors
+	 * 2010
+	 * </pre>
+	 * <p>
+	 * <code>FactorInteger</code> factors rationals using negative exponents:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; FactorInteger(2010 / 2011)
+	 * {{2, 1}, {3, 1}, {5, 1}, {67, 1}, {2011, -1}}
+	 * </pre>
 	 */
 	private static class FactorInteger extends AbstractTrigArg1 {
-
-		public FactorInteger() {
-		}
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
@@ -1005,42 +1323,40 @@ public final class NumberTheory {
 	}
 
 	/**
+	 * <pre>
+	 * Fibonacci(n)
+	 * </pre>
+	 * 
+	 * <blockquote>
 	 * <p>
-	 * Fibonacci sequence. Algorithm in <code>O(log(n))</code> time.F
+	 * returns the Fibonacci number of the integer <code>n</code>
 	 * </p>
-	 * See: <a href= "https://www.rosettacode.org/wiki/Fibonacci_sequence#Iterative_28"> Roseatta code: Fibonacci
-	 * sequence.</a>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Fibonacci(0)
+	 * 0
+	 * 
+	 * &gt;&gt; Fibonacci(1)
+	 * 1
+	 * 
+	 * &gt;&gt; Fibonacci(10)
+	 * 55
+	 * 
+	 * &gt;&gt; Fibonacci(200)
+	 * 280571172992510140037611932413038677189525
+	 * </pre>
 	 */
 	private static class Fibonacci extends AbstractTrigArg1 {
 
-		public Fibonacci() {
-		}
-
-		// public static BigInteger fibonacci(long k) {
-		// return fibonacci(BigInteger.valueOf(k));
-		// }
-
-		// public static BigInteger fibonacci(BigInteger temp) {
-		// BigInteger a = BigInteger.ONE;
-		// BigInteger b = BigInteger.ZERO;
-		// BigInteger c = BigInteger.ONE;
-		// BigInteger d = BigInteger.ZERO;
-		// BigInteger result = BigInteger.ZERO;
-		// while (!temp.equals(BigInteger.ZERO)) {
-		// if (NumberUtil.isOdd(temp)) {
-		// d = result.multiply(c);
-		// result = a.multiply(c).add(result.multiply(b).add(d));
-		// a = a.multiply(b).add(d);
-		// }
-		//
-		// d = c.multiply(c);
-		// c = b.multiply(c).shiftLeft(1).add(d);
-		// b = b.multiply(b).add(d);
-		// temp = temp.shiftRight(1);
-		// }
-		// return result;
-		// }
-
+		/**
+		 * <p>
+		 * Fibonacci sequence. Algorithm in <code>O(log(n))</code> time.F
+		 * </p>
+		 * See: <a href= "https://www.rosettacode.org/wiki/Fibonacci_sequence#Iterative_28"> Roseatta code: Fibonacci
+		 * sequence.</a>
+		 */
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
 			if (arg1.isInteger()) {
@@ -1056,12 +1372,29 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * See <a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia - Jacobi symbol</a>
+	 * <pre>
+	 * JacobiSymbol(m, n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * calculates the Jacobi symbol.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia - Jacobi symbol</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; JacobiSymbol(1001, 9907)
+	 * -1
+	 * </pre>
 	 */
 	private static class JacobiSymbol extends AbstractArg2 {
-
-		public JacobiSymbol() {
-		}
 
 		@Override
 		public IExpr e2IntArg(final IInteger i0, final IInteger i1) {
@@ -1123,12 +1456,7 @@ public final class NumberTheory {
 		}
 	}
 
-	/**
-	 */
 	private static class LiouvilleLambda extends AbstractFunctionEvaluator {
-
-		public LiouvilleLambda() {
-		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1177,9 +1505,6 @@ public final class NumberTheory {
 	 */
 	private static class LucasL extends AbstractTrigArg1 {
 
-		public LucasL() {
-		}
-
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
 			try {
@@ -1201,14 +1526,29 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * The Möbius function.
+	 * <pre>
+	 * MoebiusMu(expr)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/M%C3%B6bius_function">Wikipedia: Möbius function</a>
+	 * <blockquote>
+	 * <p>
+	 * calculate the Möbius function.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/M%C3%B6bius_function">Wikipedia - Möbius function</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; MoebiusMu(30)
+	 * -1
+	 * </pre>
 	 */
 	private static class MoebiusMu extends AbstractTrigArg1 {
-
-		public MoebiusMu() {
-		}
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
@@ -1230,9 +1570,38 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * Returns the multinomial coefficient.
+	 * <pre>
+	 * Multinomial(n1, n2, ...)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Multinomial_coefficient"> Multinomial coefficient</a>
+	 * <blockquote>
+	 * <p>
+	 * gives the multinomial coefficient <code>(n1+n2+...)!/(n1! n2! ...)</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Multinomial_coefficient">Wikipedia: Multinomial coefficient</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Multinomial(2, 3, 4, 5)
+	 * 2522520
+	 * 
+	 * &gt;&gt; Multinomial()
+	 * 1
+	 * </pre>
+	 * <p>
+	 * <code>Multinomial(n-k, k)</code> is equivalent to <code>Binomial(n, k)</code>.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Multinomial(2, 3)
+	 * 10
+	 * </pre>
 	 */
 	private static class Multinomial extends AbstractFunctionEvaluator {
 		public static IInteger multinomial(final IAST ast) {
@@ -1313,9 +1682,41 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * Get the next prime number. See: <a href="http://en.wikipedia.org/wiki/Prime_number">Wikipedia:Prime number</a>
+	 * <pre>
+	 * NextPrime(n)
+	 * </pre>
 	 * 
-	 * @see org.matheclipse.core.builtin.function.PrimeQ
+	 * <blockquote>
+	 * <p>
+	 * gives the next prime after <code>n</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * NextPrime(n, k)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * gives the <code>k</code>th prime after <code>n</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; NextPrime(10000)
+	 * 10007
+	 * &gt;&gt; NextPrime(100, -5)
+	 * 73
+	 * &gt;&gt; NextPrime(10, -5)
+	 * -2
+	 * &gt;&gt; NextPrime(100, 5)
+	 * 113
+	 * &gt;&gt; NextPrime(5.5, 100)
+	 * 563
+	 * &gt;&gt; NextPrime(5, 10.5)
+	 * NextPrime(5, 10.5)
+	 * </pre>
 	 */
 	private static class NextPrime extends AbstractFunctionEvaluator {
 
@@ -1342,6 +1743,29 @@ public final class NumberTheory {
 
 	}
 
+	/**
+	 * <pre>
+	 * PartitionsP(n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * gives the number of unrestricted partitions of the integer <code>n</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PartitionsP(50)
+	 * 204226
+	 * 
+	 * &gt;&gt; PartitionsP(6)
+	 * 11
+	 * 
+	 * &gt;&gt; IntegerPartitions(6)
+	 * {{6},{5,1},{4,2},{4,1,1},{3,3},{3,2,1},{3,1,1,1},{2,2,2},{2,2,1,1},{2,1,1,1,1},{1,1,1,1,1,1}}
+	 * </pre>
+	 */
 	private static class PartitionsP extends AbstractFunctionEvaluator {
 
 		@Override
@@ -1421,6 +1845,26 @@ public final class NumberTheory {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * PartitionsQ(n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * gives the number of partitions of the integer <code>n</code> into distinct parts
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PartitionsQ(50)
+	 * 3658
+	 * 
+	 * &gt;&gt; PartitionsQ(6)
+	 * 4
+	 * </pre>
+	 */
 	private static class PartitionsQ extends AbstractFunctionEvaluator {
 
 		@Override
@@ -1538,14 +1982,33 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * <code>Prime(i)</code> gives the i-th prime number for <code>i</code> less equal 103000000.
+	 * <pre>
+	 * Prime(n)
+	 * </pre>
 	 * 
-	 * See: <a href="https://bitbucket.org/dafis/javaprimes">https://bitbucket.org/ dafis/ javaprimes</a><br />
-	 * <a href=
-	 * "http://stackoverflow.com/questions/9625663/calculating-and-printing-the-nth-prime-number/9704912#9704912">
-	 * stackoverflow. com - Calculating and printing the nth prime number</a>
+	 * <blockquote>
+	 * <p>
+	 * returns the <code>n</code>th prime number.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Prime(1)
+	 * 2
+	 * &gt;&gt; Prime(167)
+	 * 991
+	 * </pre>
 	 */
 	private static class Prime extends AbstractFunctionEvaluator {
+		/**
+		 * <code>Prime(i)</code> gives the i-th prime number for <code>i</code> less equal 103000000.
+		 * 
+		 * See: <a href="https://bitbucket.org/dafis/javaprimes">https://bitbucket.org/ dafis/ javaprimes</a><br />
+		 * <a href=
+		 * "http://stackoverflow.com/questions/9625663/calculating-and-printing-the-nth-prime-number/9704912#9704912">
+		 * stackoverflow. com - Calculating and printing the nth prime number</a>
+		 */
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
@@ -1628,6 +2091,35 @@ public final class NumberTheory {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * PrimeOmega(n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the sum of the exponents of the prime factorization of <code>n</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt;&gt; PrimeOmega(990)
+	 * {{2,1},{3,2},{5,1},{11,1}}
+	 * </pre>
+	 * 
+	 * <pre>
+	 * ```
+	 * &gt;&gt;&gt; PrimeOmega(341550071728321)
+	 * {{10670053,1},{32010157,1}}
+	 * </pre>
+	 * 
+	 * <pre>
+	 * ```
+	 * &gt;&gt; PrimeOmega(2010)
+	 * {{2, 1}, {3, 1}, {5, 1}, {67, 1}}
+	 * </pre>
+	 */
 	private static class PrimeOmega extends AbstractFunctionEvaluator {
 
 		@Override
@@ -1657,6 +2149,33 @@ public final class NumberTheory {
 	}
 
 	/**
+	 * <pre>
+	 * PrimePowerQ(n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>n</code> is a power of a prime number.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PrimePowerQ(9)
+	 * True
+	 * 
+	 * &gt;&gt; PrimePowerQ(52142)
+	 * False
+	 * 
+	 * &gt;&gt; PrimePowerQ(-8)
+	 * True
+	 * 
+	 * &gt;&gt; PrimePowerQ(371293)
+	 * True
+	 * 
+	 * &gt;&gt; PrimePowerQ(1)
+	 * False
+	 * </pre>
 	 */
 	private static class PrimePowerQ extends AbstractFunctionEvaluator {
 
@@ -1678,8 +2197,24 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * Check if a univariate polynomial or an integer number is square free
+	 * <pre>
+	 * SquareFreeQ(n)
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>n</code> a square free integer number or a square free univariate polynomial.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; SquareFreeQ(9)
+	 * False
+	 * 
+	 * &gt;&gt; SquareFreeQ(105)
+	 * True
+	 * </pre>
 	 */
 	private final static class SquareFreeQ extends AbstractFunctionEvaluator {
 
@@ -1788,10 +2323,28 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * Stirling numbers of the first kind.
+	 * <pre>
+	 * StirlingS1(n, k)
+	 * </pre>
 	 * 
-	 * See <a href= "https://en.wikipedia.org/wiki/Stirling_numbers_of_the_first_kind" > Wikipedia - Stirling numbers of
-	 * the first kind</a>
+	 * <blockquote>
+	 * <p>
+	 * returns the Stirling numbers of the first kind.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Stirling_numbers_of_the_first_kind">Wikipedia - Stirling numbers of
+	 * the first kind</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt;&gt; StirlingS1(9, 6)
+	 * -4536
+	 * </pre>
 	 */
 	private static class StirlingS1 extends AbstractFunctionEvaluator {
 
@@ -1867,10 +2420,28 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * Stirling numbers of the second kind.
+	 * <pre>
+	 * StirlingS2(n, k)
+	 * </pre>
 	 * 
-	 * See <a href= "http://en.wikipedia.org/wiki/Stirling_numbers_of_the_second_kind" > Wikipedia - Stirling numbers of
-	 * the second kind</a>
+	 * <blockquote>
+	 * <p>
+	 * returns the Stirling numbers of the second kind.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Stirling_numbers_of_the_second_kind">Wikipedia - Stirling numbers of
+	 * the second kind</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt;&gt; StirlingS2(10, 6)
+	 * 22827
+	 * </pre>
 	 */
 	private static class StirlingS2 extends AbstractFunctionEvaluator {
 
@@ -1933,10 +2504,27 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * Returns the subfactorial of a positive integer n
+	 * <pre>
+	 * Subfactorial(n)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Derangement">Wikipedia - Derangement</a>
+	 * <blockquote>
+	 * <p>
+	 * returns the subfactorial number of the integer <code>n</code>
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Derangement">Wikipedia - Derangement</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
 	 * 
+	 * <pre>
+	 * &gt;&gt; Subfactorial(12)
+	 * 176214841
+	 * </pre>
 	 */
 	private static class Subfactorial extends AbstractTrigArg1 {
 
