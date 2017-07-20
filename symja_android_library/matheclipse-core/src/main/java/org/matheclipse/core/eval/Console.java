@@ -91,7 +91,7 @@ public class Console {
 
 		while (true) {
 			try {
-				inputExpression = console.readString(System.out, ">> ");
+				inputExpression = console.readString(System.out, "▶  ");
 				if (inputExpression != null) {
 					trimmedInput = inputExpression.trim();
 					if ((trimmedInput.length() >= 4)

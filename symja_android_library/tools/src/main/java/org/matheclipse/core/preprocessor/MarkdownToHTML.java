@@ -103,8 +103,9 @@ public class MarkdownToHTML {
 		final BufferedReader in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
 		boolean done = false;
 
-		try {
+		try { 
 			while (!done) {
+				System.out.print("▶ ");  
 				final String s = in.readLine();
 				if (s != null) {
 					if ((s.length() > 0) && (s.charAt(s.length() - 1) != '\\')) {
