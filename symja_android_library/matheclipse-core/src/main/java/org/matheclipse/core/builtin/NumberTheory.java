@@ -39,6 +39,7 @@ import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
@@ -62,6 +63,14 @@ import edu.jas.ufd.FactorAbstract;
 import edu.jas.ufd.FactorFactory;
 
 public final class NumberTheory {
+
+	private static final int[] FIBONACCI_45 = { 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597,
+			2584, 4181, 6765, 10946, 17711, 28657, 46368, 75025, 121393, 196418, 317811, 514229, 832040, 1346269,
+			2178309, 3524578, 5702887, 9227465, 14930352, 24157817, 39088169, 63245986, 102334155, 165580141, 267914296,
+			433494437, 701408733, 1134903170 };
+
+	private static final int[] BELLB_14 = { 1, 1, 2, 5, 15, 52, 203, 877, 4140, 21147, 115975, 678570, 4213597,
+			27644437, 190899322 };
 
 	/**
 	 * <pre>
@@ -95,6 +104,9 @@ public final class NumberTheory {
 		 * @return
 		 */
 		public static BigInteger generateBellNumber(int index) {
+			if (index < BELLB_14.length) {
+				return BigInteger.valueOf(BELLB_14[index]);
+			}
 			if (index > 1) {
 				BigInteger sum = BigInteger.ZERO;
 				for (int i = 0; i < index; i++) {
@@ -112,7 +124,7 @@ public final class NumberTheory {
 			Validate.checkSize(ast, 2);
 
 			IExpr arg1 = ast.arg1();
-			if (arg1.isOne()) {
+			if (arg1.isZero()) {
 				return F.C1;
 			}
 			if (arg1.isInteger() && arg1.isPositive()) {
@@ -915,39 +927,43 @@ public final class NumberTheory {
 				return F.C1;
 			}
 			if (arg2.isInteger() && arg2.isPositive()) {
-
 				IInteger n = (IInteger) arg2;
-				IAST list = n.divisors();
-				if (list.isList()) {
-					if (arg1.isOne()) {
-						IInteger sum = F.C0;
-						for (int i = 1; i < list.size(); i++) {
-							sum = sum.add(((IInteger) list.get(i)));
-						}
-						return sum;
-					}
-					if (arg1.isInteger()) {
-						// special formula if k is integer
-						IInteger k = (IInteger) arg1;
-						try {
-							long kl = k.toLong();
+				return divisorSigma(arg1, n);
+			}
+			return F.NIL;
+		}
 
-							IInteger sum = F.C0;
-							for (int i = 1; i < list.size(); i++) {
-								sum = sum.add(((IInteger) list.get(i)).pow(kl));
-							}
-							return sum;
-						} catch (ArithmeticException ae) {
-							//
-						}
-					}
-					// general formula
-					IAST sum = F.PlusAlloc(list.size());
+		private static IExpr divisorSigma(IExpr arg1, IInteger n) {
+			IAST list = n.divisors();
+			if (list.isList()) {
+				if (arg1.isOne()) {
+					IInteger sum = F.C0;
 					for (int i = 1; i < list.size(); i++) {
-						sum.append(F.Power(list.get(i), arg1));
+						sum = sum.add(((IInteger) list.get(i)));
 					}
 					return sum;
 				}
+				if (arg1.isInteger()) {
+					// special formula if k is integer
+					IInteger k = (IInteger) arg1;
+					try {
+						long kl = k.toLong();
+
+						IInteger sum = F.C0;
+						for (int i = 1; i < list.size(); i++) {
+							sum = sum.add(((IInteger) list.get(i)).pow(kl));
+						}
+						return sum;
+					} catch (ArithmeticException ae) {
+						//
+					}
+				}
+				// general formula
+				IAST sum = F.PlusAlloc(list.size());
+				for (int i = 1; i < list.size(); i++) {
+					sum.append(F.Power(list.get(i), arg1));
+				}
+				return sum;
 			}
 			return F.NIL;
 		}
@@ -1359,8 +1375,8 @@ public final class NumberTheory {
 		 */
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
-			if (arg1.isInteger()) {
-				return fibonacci((IInteger) arg1);
+			if (arg1 instanceof IntegerSym) {
+				return fibonacci(((IInteger) arg1).toInt());
 			}
 			return F.NIL;
 		}
@@ -1507,14 +1523,13 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
-			try {
-				if (arg1.isInteger()) {
-					IInteger n = (IInteger) arg1;
-					// LucasL(n) = Fibonacci(n-1) + Fibonacci(n+1)
-					return fibonacci(n.subtract(F.CN1)).add(fibonacci(n.add(F.CN1)));
+			if (arg1 instanceof IntegerSym) {
+				int i = ((IInteger) arg1).toInt();
+				if (i < 0) {
+					i *= (-1);
 				}
-			} catch (ArithmeticException ae) {
-				// because of toInt() method
+				// LucasL(n) = Fibonacci(n-1) + Fibonacci(n+1)
+				return fibonacci(i - 1).add(fibonacci(i + 1));
 			}
 			return F.NIL;
 		}
@@ -1768,6 +1783,49 @@ public final class NumberTheory {
 	 */
 	private static class PartitionsP extends AbstractFunctionEvaluator {
 
+		private static class BigIntegerPartitionsP {
+			/**
+			 * The list of all partitions as a java.util.List.
+			 */
+			protected ArrayList<BigInteger> fList = new ArrayList<BigInteger>();
+
+			/**
+			 * Default constructor initializing a list of partitions up to 7.
+			 */
+			public BigIntegerPartitionsP() {
+				fList.add(BigInteger.valueOf(1));
+				fList.add(BigInteger.valueOf(1));
+				fList.add(BigInteger.valueOf(2));
+				fList.add(BigInteger.valueOf(3));
+				fList.add(BigInteger.valueOf(5));
+				fList.add(BigInteger.valueOf(7));
+			}
+
+			/**
+			 * Return the number of partitions of i
+			 * 
+			 * @param n
+			 *            the zero-based index into the list of partitions
+			 * @param capacity
+			 *            capacity of the list which should be ensured
+			 * @return the ith partition number. This is 1 if i=0 or 1, 2 if i=2 and so forth.
+			 */
+			private BigInteger sumPartitionsP(int n, int capacity) {
+				fList.ensureCapacity(capacity);
+				while (fList.size() <= capacity) {
+					BigInteger per = BigInteger.ZERO;
+					BigInteger cursiz = BigInteger.valueOf(fList.size());
+					for (int k = 0; k < fList.size(); k++) {
+						BigInteger tmp = fList.get(k).multiply(NumberTheory.divisorSigma(1, fList.size() - k));
+						per = per.add(tmp);
+					}
+					fList.add(per.divide(cursiz));
+				}
+				return fList.get(n);
+			}
+
+		}
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
@@ -1813,30 +1871,21 @@ public final class NumberTheory {
 		}
 
 		/**
-		 * TODO because of recursion you can get stack-overflows
 		 * 
 		 * @param engine
 		 * @param n
+		 *            positive integer number
 		 * @return
 		 */
 		private static IExpr sumPartitionsP(EvalEngine engine, IInteger n) {
-			// Sum(PartitionsQ(n - 2*k) * PartitionsP(k), {k, 0, Floor(n/2)})
-			int floorND2 = n.div(F.C2).toInt();
-			IInteger sum = F.C0;
-			for (int k = 0; k <= floorND2; k++) {
-				IExpr temp = termPartitionsP(engine, n, k);
-				if (!temp.isInteger()) {
-					return F.NIL;
+			if (n instanceof IntegerSym) {
+				int i = n.toInt();
+				if (i < Integer.MAX_VALUE - 3) {
+					BigIntegerPartitionsP bipp = new BigIntegerPartitionsP();
+					return F.ZZ(bipp.sumPartitionsP(i, i + 3));
 				}
-				sum = sum.add((IInteger) temp);
 			}
-			return sum;
-		}
-
-		private static IExpr termPartitionsP(EvalEngine engine, IInteger n, int k) {
-			// PartitionsQ(n - 2*k) * PartitionsP(k)
-			IInteger k2 = F.ZZ(k);
-			return engine.evaluate(Times(F.PartitionsQ(Plus(Times(F.CN2, k2), n)), F.PartitionsP(k2)));
+			return F.NIL;
 		}
 
 		@Override
@@ -2684,19 +2733,26 @@ public final class NumberTheory {
 	 * @param iArg
 	 * @return
 	 */
-	public static IInteger fibonacci(final IInteger iArg) {
-		IInteger a = F.C1;
-		IInteger b = F.C0;
-		IInteger c = F.C1;
-		IInteger d = F.C0;
-		IInteger result = F.C0;
-		IInteger temp = iArg;
-		if (iArg.isNegative()) {
-			temp = temp.negate();
+	public static IInteger fibonacci(int iArg) {
+		int temp = iArg;
+		if (temp < 0) {
+			temp *= (-1);
+		}
+		if (temp < FIBONACCI_45.length) {
+			int result = FIBONACCI_45[temp];
+			if (iArg < 0 && ((iArg & 0x00000001) == 0x00000000)) {
+				return F.ZZ(-result);
+			}
+			return F.ZZ(result);
 		}
 
-		while (!temp.isZero()) {
-			if (temp.isOdd()) {
+		BigInteger a = BigInteger.ONE;
+		BigInteger b = BigInteger.ZERO;
+		BigInteger c = BigInteger.ONE;
+		BigInteger d = BigInteger.ZERO;
+		BigInteger result = BigInteger.ZERO;
+		while (temp != 0) {
+			if ((temp & 0x00000001) == 0x00000001) { // odd?
 				d = result.multiply(c);
 				result = a.multiply(c).add(result.multiply(b).add(d));
 				a = a.multiply(b).add(d);
@@ -2705,16 +2761,39 @@ public final class NumberTheory {
 			d = c.multiply(c);
 			c = b.multiply(c).shiftLeft(1).add(d);
 			b = b.multiply(b).add(d);
-			temp = temp.shiftRight(1);
+			temp >>= 1;
 		}
-		if (iArg.isNegative() && iArg.isEven()) {
-			return result.negate();
+
+		if (iArg < 0 && ((iArg & 0x00000001) == 0x00000000)) { // even
+			return F.ZZ(result.negate());
 		}
-		return result;
+		return F.ZZ(result);
 	}
 
 	public static NumberTheory initialize() {
 		return CONST;
+	}
+
+	public static BigInteger divisorSigma(int exponent, int n) {
+		IAST list = F.ZZ(n).divisors();
+		if (list.isList()) {
+			if (exponent == 1) {
+				IInteger sum = F.C0;
+				for (int i = 1; i < list.size(); i++) {
+					sum = sum.add(((IInteger) list.get(i)));
+				}
+				return sum.toBigNumerator();
+			}
+
+			long kl = exponent;
+
+			IInteger sum = F.C0;
+			for (int i = 1; i < list.size(); i++) {
+				sum = sum.add(((IInteger) list.get(i)).pow(kl));
+			}
+			return sum.toBigNumerator();
+		}
+		return null;
 	}
 
 	/**

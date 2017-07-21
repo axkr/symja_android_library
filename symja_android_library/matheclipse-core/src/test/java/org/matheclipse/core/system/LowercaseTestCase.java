@@ -1,8 +1,5 @@
 package org.matheclipse.core.system;
 
-import java.text.Collator;
-import java.util.Locale;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -392,8 +389,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBellB() {
+		check("Table(BellB(k), {k, 0, 14})",
+				"{1,1,2,5,15,52,203,877,4140,21147,115975,678570,4213597,27644437,190899322}");
 		check("BellB(10)", "115975");
 		check("BellB(15)", "1382958545");
+		// check("BellB(100)", "1382958545");
 		check("BellB({1,2,3,4,5,6})", "{1,2,5,15,52,203}");
 	}
 
@@ -592,7 +592,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testCatalan() {
 		checNumeric("N(Catalan)", "0.915965594177219");
 	}
-	
+
 	public void testCatalanNumber() {
 		checNumeric("CatalanNumber(-10)", "0");
 		checNumeric("CatalanNumber(-1)", "-1");
@@ -663,7 +663,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testChineseRemainder() {
 		// wikipedia example
 		check("ChineseRemainder({0,3,4},{3,4,5})", "39");
-		
+
 		check("ChineseRemainder({23},{17})", "6");
 		check("ChineseRemainder({91},{25})", "16");
 		check("ChineseRemainder({913},{25})", "13");
@@ -2100,12 +2100,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFibonacci() {
+		check("Table(Fibonacci(n), {n, 45})",
+				"{1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765,10946,17711,\n"
+						+ "28657,46368,75025,121393,196418,317811,514229,832040,1346269,2178309,3524578,\n"
+						+ "5702887,9227465,14930352,24157817,39088169,63245986,102334155,165580141,\n"
+						+ "267914296,433494437,701408733,1134903170}");
+		// check("Fibonacci(10000)", "0");
 		check("Fibonacci(0)", "0");
 		check("Fibonacci(1)", "1");
 		check("Fibonacci(10)", "55");
 		check("Fibonacci(200)", "280571172992510140037611932413038677189525");
 		check("Table(Fibonacci(-n), {n, 10})", "{1,-1,2,-3,5,-8,13,-21,34,-55}");
-		check("Table(Fibonacci(n), {n, 20})", "{1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765}");
 		check("Fibonacci(1000)",
 				"4346655768693745643568852767504062580256466051737178040248172908953655541794905\\\n"
 						+ "1890403879840079255169295922593080322634775209689623239873322471161642996440906\\\n"
@@ -3930,8 +3935,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testNMaximize() {
 		check("NMaximize({-2*x+y-5, x+2*y<=6 && 3*x + 2*y <= 12 }, {x, y})", "{-2.0,{x->0.0,y->3.0}}");
-		check("NMaximize({-x - y, 3 x + 2 y >= 7 && x + 2 y >= 6}, {x, y})",
-				"{-3.25,{x->0.5,y->2.75}}");
+		check("NMaximize({-x - y, 3 x + 2 y >= 7 && x + 2 y >= 6}, {x, y})", "{-3.25,{x->0.5,y->2.75}}");
 	}
 
 	public void testNMinimize() {
@@ -4350,6 +4354,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPartitionsP() {
+		check("PartitionsP({1,2,3,4,5,6,7})", "{1,2,3,5,7,11,15}");
 		check("PartitionsP(5)", "7");
 		check("PartitionsP(6)", "11");
 		check("IntegerPartitions(6)",
@@ -4358,8 +4363,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PartitionsP(50)", "204226");
 		check("PartitionsP(100)", "190569292");
 		check("PartitionsP(200)", "3972999029388");
-		// upper limit to avoid stack overflow
-		check("PartitionsP(201)", "PartitionsP(201)");
+		check("PartitionsP(300)", "9253082936723602");
+		// check("PartitionsP(1000)", "24061467864032622473692149727991");
 	}
 
 	public void testPartitionsQ() {
