@@ -3301,7 +3301,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMatchQ() {
-		check("MatchQ(Sin(Cos(x)), F_(G_(v_)) /; Print(F,G,v) )", "False");
+		check("MatchQ(Sin(Cos(x)), F_(G_(v_)) /; F==Sin&&G==Cos&&v==x )", "True");
 		check("MatchQ(Sin(x*y), F_(G_(v_)) /; Print(F,G,v) )", "False");
 		
 		check("MatchQ(Sin(Cos(x)), F_(G_(v_)))", "True");
