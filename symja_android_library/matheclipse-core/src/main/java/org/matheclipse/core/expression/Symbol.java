@@ -156,7 +156,7 @@ public class Symbol implements ISymbol, Serializable {
 				return 0;
 			}
 			// sort lexicographically
-			return US_COLLATOR.compare( fSymbolName,((Symbol) expr).fSymbolName);
+			return US_COLLATOR.compare(fSymbolName, ((Symbol) expr).fSymbolName);
 		}
 		return ISymbol.super.compareTo(expr);
 	}
@@ -510,6 +510,11 @@ public class Symbol implements ISymbol, Serializable {
 				name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toLowerCase(Locale.ENGLISH));
 			}
 			if (name != null) {
+				return name;
+			}
+		} else {
+			String name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toLowerCase(Locale.ENGLISH));
+			if (name != null && name.equals(fSymbolName)) {
 				return name;
 			}
 		}
