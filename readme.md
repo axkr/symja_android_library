@@ -1,10 +1,10 @@
 ## Symja Library - Java Symbolic Math System
 
-**Note**: this repository contains the **Java 8 project**. The **Android library project** can be found in the [SymjaAndroid repository](https://bitbucket.org/axelclk/symjaandroid).
+**Note**: this repository contains the **Java 8 project**.  
 
 - [Quick start](#quick-start)
 - [Features](#features)
-- [Online demo](#online-demo)
+- [Demos](#demos)
 - [Examples](#examples)
 - [Maven Usage](#maven-usage)
 - [Getting started](#getting-started)
@@ -27,7 +27,11 @@ Features of the Symja language:
 * a general purpose [Term Rewriting System and Pattern Matching engine](symja_android_library/doc/functions-and-patterns.md)
 * use human readable math expression strings or the internal abstract syntax tree (AST) representation to code in Java. See the [Unit test examples](symja_android_library/matheclipse-core/src/test/java/org/matheclipse/core/system/LowercaseTestCase.java)
    
-### Online demo
+### Demos
+
+* [Android App Calculator N+ on Google play store](https://play.google.com/store/apps/details?id=com.duy.calculator.free) - [Github repository](https://github.com/tranleduy2000/ncalc)
+
+Older (i.e. Java 7 based) online versions on Google Appengine:
 
 * [Mobile web interface symjaweb.appspot.com](http://symjaweb.appspot.com/)  
 * [Notebook interface symjaweb.appspot.com/new.jsp](http://symjaweb.appspot.com/new.jsp)
