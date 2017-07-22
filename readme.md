@@ -1,6 +1,6 @@
 ## Symja Library - Java Symbolic Math System
 
-**Note**: this repository contains the **Java 8 project**.  
+**Note**: this repository contains the **Java 8** version of the project.  
 
 - [Quick start](#quick-start)
 - [Features](#features)
