@@ -4,9 +4,9 @@ Join(l1, l2)
 ```
 > concatenates the lists `l1` and `l2`.
 
-###Examples
+### Examples
 
-'Join' concatenates lists:
+`Join` concatenates lists:
 ```
 >> Join({a, b}, {c, d, e})
 {a,b,c,d,e}

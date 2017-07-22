@@ -14,9 +14,38 @@ import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
 
 /**
- * See: <a href="https://en.wikipedia.org/wiki/Ordinary_differential_equation"> Wikipedia:Ordinary differential
- * equation</a>
+ * <pre>
+ * DSolve(equation, f(var), var)
+ * </pre>
  * 
+ * <blockquote>
+ * <p>
+ * attempts to solve a linear differential <code>equation</code> for the function <code>f(var)</code> and variable
+ * <code>var</code>.
+ * </p>
+ * </blockquote>
+ * <p>
+ * See:<br />
+ * </p>
+ * <ul>
+ * <li><a href="https://en.wikipedia.org/wiki/Ordinary_differential_equation">Wikipedia - Ordinary differential
+ * equation</a></li>
+ * </ul>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; DSolve({y'(x)==y(x)+2},y(x), x)
+ * {{y(x)-&gt;-2+E^x*C(1)}}
+ * 
+ * &gt;&gt;&gt; DSolve({y'(x)==y(x)+2,y(0)==1},y(x), x)
+ * {{y(x)-&gt;-2+3*E^x}}
+ * </pre>
+ * 
+ * <h3>Related terms</h3>
+ * <p>
+ * <a href="Factor.md">Factor</a>, <a href="FindRoot.md">FindRoot</a>,
+ * <a href="NRoots.md">NRoots</a>,<a href="Solve.md">Solve</a>
+ * </p>
  */
 public class DSolve extends AbstractFunctionEvaluator {
 

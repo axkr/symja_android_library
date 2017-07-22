@@ -16,9 +16,27 @@ import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
 
 /**
+ * <pre>
+ * Coefficient(polynomial, variable, exponent)
+ * </pre>
  * 
- * See: <a href="http://en.wikipedia.org/wiki/Coefficient">Wikipedia -
- * Coefficient</a>
+ * <blockquote>
+ * <p>
+ * get the coefficient of <code>variable^exponent</code> in <code>polynomial</code>.
+ * </p>
+ * </blockquote>
+ * <p>
+ * See:<br />
+ * </p>
+ * <ul>
+ * <li><a href="http://en.wikipedia.org/wiki/Coefficient">Wikipedia - Coefficient Coefficient</a></li>
+ * </ul>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt;&gt; Coefficient(10(x^2)+2(y^2)+2*x, x, 2)
+ * 10
+ * </pre>
  */
 public class Coefficient extends AbstractFunctionEvaluator {
 

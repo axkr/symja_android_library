@@ -6,7 +6,7 @@ MatchQ(expr, form)
 
 > tests whether `expr` matches `form`.
  
-###Examples
+### Examples
 
 ```  
 >> MatchQ(123, _Integer)

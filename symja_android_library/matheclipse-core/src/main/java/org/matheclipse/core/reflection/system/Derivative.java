@@ -14,7 +14,70 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.DerivativeRules;
 
 /**
- * Determine the derivative of a given function symbol.
+ * <pre>
+ * Derivative(n)[f]
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * represents the <code>n</code>-th derivative of the function <code>f</code>.<br />
+ * </p>
+ * </blockquote>
+ * 
+ * <pre>
+ * Derivative(n1, n2, n3,...)[f]
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * represents a multivariate derivative.
+ * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; Derivative(1)[Sin]    
+ * Cos(#1)&amp;    
+ * 
+ * &gt;&gt; Derivative(3)[Sin]    
+ * -Cos(#1)&amp;   
+ * 
+ * &gt;&gt; Derivative(2)[# ^ 3&amp;]    
+ * 6*(#1&amp;)
+ * </pre>
+ * <p>
+ * <code>Derivative</code> can be entered using <code>'</code>:<br />
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; Sin'(x)    
+ * Cos(x)    
+ * 
+ * &gt;&gt; (# ^ 4&amp;)''    
+ * 12*(#1^2&amp;)   
+ * 
+ * &gt;&gt; f'(x) // FullForm    
+ * "Derivative(1)[f][x]"
+ * </pre>
+ * <p>
+ * The <code>0</code>th derivative of any expression is the expression itself:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; Derivative(0,0,0)[a+b+c]    
+ * a+b+c
+ * </pre>
+ * <p>
+ * Unknown derivatives:<br />
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; Derivative(2, 1)[h]    
+ * Derivative(2,1)[h]   
+ * 
+ * &gt;&gt; Derivative(2, 0, 1, 0)[h(g)]    
+ * Derivative(2,0,1,0)[h(g)]
+ * </pre>
  */
 public class Derivative extends AbstractFunctionEvaluator implements DerivativeRules {
 

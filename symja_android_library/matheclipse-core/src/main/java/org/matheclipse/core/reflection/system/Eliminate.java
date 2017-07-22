@@ -25,10 +25,29 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
 
 /**
- * Try to eliminate a variable in a set of equations (i.e. <code>Equal[...]</code> expressions).
+ * <pre>
+ * Eliminate(list - of - equations, list - of - variables)
+ * </pre>
  * 
- * See <a href= "http://en.wikipedia.org/wiki/System_of_linear_equations#Elimination_of_variables"> Wikipedia - System
- * of linear equations - Elimination of variables</a>.
+ * <blockquote>
+ * <p>
+ * attempts to eliminate the variables from the <code>list-of-variables</code> in the <code>list-of-equations</code>.
+ * </p>
+ * </blockquote>
+ * <p>
+ * See:
+ * </p>
+ * <ul>
+ * <li><a href="http://en.wikipedia.org/wiki/System_of_linear_equations#Elimination_of_variables">Wikipedia - System of
+ * linear equations - Elimination of variables</a></li>
+ * </ul>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt;&gt; Eliminate({x==2+y, y==z}, y)
+ * x==2+z
+ * </pre>
+ * 
  */
 public class Eliminate extends AbstractFunctionEvaluator {
 

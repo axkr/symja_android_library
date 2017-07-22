@@ -5,7 +5,7 @@ AtomQ(x)
  
 > is true if `x` is an atom (an object such as a number or string, which cannot be divided into subexpressions using 'Part').
 
-###Examples
+### Examples
 ``` 
 >> AtomQ(x)
 True

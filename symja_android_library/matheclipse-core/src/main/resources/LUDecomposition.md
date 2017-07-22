@@ -6,7 +6,8 @@ LUDecomposition(matrix)
 
 > calculate the LUP-decomposition of a square `matrix`.
  
-See:  
+See:    
+* [Wikipedia - LU decomposition](https://en.wikipedia.org/wiki/LU_decomposition)
 * [Commons Math - Class FieldLUDecomposition](http://commons.apache.org/proper/commons-math/apidocs/org/apache/commons/math3/linear/FieldLUDecomposition.html)
  
 ### Examples

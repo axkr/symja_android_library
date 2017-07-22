@@ -1,8 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
 import org.hipparchus.exception.MathIllegalArgumentException;
-import org.hipparchus.exception.MathIllegalArgumentException;
-import org.hipparchus.exception.MathIllegalArgumentException;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -12,13 +10,32 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * <b>Newton polynomial interpolation</b> , is the interpolation polynomial for a given set of data points in the Newton form. The
- * Newton polynomial is sometimes called Newton's divided differences interpolation polynomial because the coefficients of the
- * polynomial are calculated using divided differences.
- * <p>
+ * <pre>
+ * InterpolatingPolynomial(data - list, symbol)
+ * </pre>
  * 
- * See: <a href="http://en.wikipedia.org/wiki/Polynomial_interpolation">Wikipedia - Polynomial interpolation</a> and <a
- * href="http://en.wikipedia.org/wiki/Newton_polynomial">Wikipedia - Newton Polynomial</a>
+ * <blockquote>
+ * <p>
+ * get the polynomial representation for the given <code>data-list</code>.
+ * </p>
+ * </blockquote>
+ * <p>
+ * Newton polynomial interpolation, is the interpolation polynomial for a given set of data points in the Newton form.
+ * The Newton polynomial is sometimes called Newton's divided differences interpolation polynomial because the
+ * coefficients of the polynomial are calculated using divided differences.
+ * </p>
+ * <p>
+ * See:<br />
+ * </p>
+ * <ul>
+ * <li><a href="https://en.wikipedia.org/wiki/Newton_polynomial">Wikipedia - Newton Polynomial</a></li>
+ * </ul>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; InterpolatingPolynomial({{1,7},{3,11},{5,27}},x)
+ * (3/2*x-5/2)*(x-1)+7
+ * </pre>
  */
 public class InterpolatingPolynomial extends AbstractEvaluator {
 

@@ -16,6 +16,32 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
+/**
+ * <pre>Dot(x, y) or x . y
+ * </pre>
+ * <blockquote><p><code>x . y</code> computes the vector dot product or matrix product <code>x . y</code>.</p>
+ * </blockquote>
+ * <p>See:<br  /></p>
+ * <ul>
+ * <li><a href="https://en.wikipedia.org/wiki/Matrix_multiplication">Wikipedia - Matrix multiplication</a></li>
+ * </ul>
+ * <h3>Examples</h3>
+ * <p>Scalar product of vectors:</p>
+ * <pre>&gt;&gt; {a, b, c} . {x, y, z}
+ * a*x+b*y+c*z 
+ * </pre>
+ * <p>Product of matrices and vectors:</p>
+ * <pre>&gt;&gt; {{a, b}, {c, d}} . {x, y}
+ * {a*x+b*y,c*x+d*y}
+ * </pre>
+ * <p>Matrix product:</p>
+ * <pre>&gt;&gt; {{a, b}, {c, d}} . {{r, s}, {t, u}}
+ * {{a*r+b*t,a*s+b*u}, {c*r+d*t,c*s+d*u}}
+ * 
+ * &gt;&gt; a . b
+ * a.b
+ * </pre>
+ */
 public class Dot extends AbstractNonOrderlessArgMultiple {
 
 	public Dot() {
