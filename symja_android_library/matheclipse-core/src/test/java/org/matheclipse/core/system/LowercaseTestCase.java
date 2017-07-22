@@ -687,7 +687,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testCoefficient() {
 		// check("Apply(Plus,((Coefficient(x*(b+a),x,#1)*x^#1)&))", "");
-
+		check("Coefficient(x*y,y,1)", "x");
+		check("Coefficient(Sin(x*y),y,1)", "0");
+		check("Coefficient(x*y,y,Exponent(x*y,y))", "x");
+		
 		check("Coefficient(Sin(a)^3*#1 + b*y + c, #1)", "Sin(a)^3");
 		check("Coefficient((#1 + 2)^2 + (#1 + 3)^3, #1, 0)", "31");
 		check("Coefficient(42*#1^2+y^3*#1^2+(#1 + 2)^2*(#1 + 2)^2,#1,2)", "66+y^3");
@@ -1920,6 +1923,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExponent() {
+		check("Exponent(x*y,y,List)", "{1}");
+		check("Exponent(Sin(x*y),y)", "0");
+
 		check("Exponent(f(x^2),x)", "0");
 		check("Exponent(f(x^2),x,List)", "{0}");
 		check("Exponent(x*(b+a),x)", "1");
@@ -3295,6 +3301,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMatchQ() {
+		check("MatchQ(Sin(Cos(x)), F_(G_(v_)) /; Print(F,G,v) )", "False");
+		check("MatchQ(Sin(x*y), F_(G_(v_)) /; Print(F,G,v) )", "False");
+		
+		check("MatchQ(Sin(Cos(x)), F_(G_(v_)))", "True");
+		
+		check("MatchQ(Sin(3*y),Sin(u_*v_) /; IntegerQ(u))", "True");
 		check("MatchQ(123, _Integer)", "True");
 		check("MatchQ(123, _Real)", "False");
 

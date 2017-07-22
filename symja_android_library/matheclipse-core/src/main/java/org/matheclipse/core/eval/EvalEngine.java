@@ -895,10 +895,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				// if (temp == F.Null&&!expr.isAST(F.SetDelayed)) {
 				// System.out.println(expr.toString());
 				// }
-				// if (expr.isAST(F.Integrate)) {
-				// System.out.println("(0):" + expr.toString());
-				// System.out.println("(1) --> " + temp.toString());
-				// }
+//				 if (expr.isAST(F.Integrate)) {
+//				 System.out.println("(0):" + expr.toString());
+//				 System.out.println("(1) --> " + temp.toString());
+//				 }
 				if (fTraceMode) {
 					fTraceStack.add(expr, temp, fRecursionCounter, 0L, "Evaluation loop");
 				}
@@ -910,11 +910,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						// if (temp == F.Null&&!result.isAST(F.SetDelayed)) {
 						// System.out.println(expr.toString());
 						// }
-						// if (result.isAST(F.Integrate)) {
-						// System.out.println(result.toString());
-						// System.out.println("("+iterationCounter+") --> " +
-						// temp.toString());
-						// }
+//						 if (result.isAST(F.Integrate)) {
+//						 System.out.println(result.toString());
+//						 System.out.println("("+iterationCounter+") --> " +
+//						 temp.toString());
+//						 }
 						if (fTraceMode) {
 							fTraceStack.add(result, temp, fRecursionCounter, iterationCounter, "Evaluation loop");
 						}

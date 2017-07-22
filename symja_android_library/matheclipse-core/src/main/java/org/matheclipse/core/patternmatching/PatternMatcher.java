@@ -653,15 +653,15 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				return false;
 			}
 
-			IExpr e1 = lhsPatternAST.head();
-			IExpr e2 = lhsEvalAST.head();
-			if (e1.isSymbol() && e2.isSymbol()) {
-				if (!e1.equals(e2)) {
+			final IExpr lhsPatternHead = lhsPatternAST.head();
+			final IExpr lhsEvalHead = lhsEvalAST.head();
+			if (lhsPatternHead.isSymbol() && lhsEvalHead.isSymbol()) {
+				if (!lhsPatternHead.equals(lhsEvalHead)) {
 					return false;
 				}
 			} else {
 				// TODO create correct stack-matcher for the following call:
-				if (!matchExpr(lhsPatternAST.head(), lhsEvalAST.head())) {
+				if (!matchExpr(lhsPatternHead, lhsEvalHead, null)) {
 					return false;
 				}
 			}

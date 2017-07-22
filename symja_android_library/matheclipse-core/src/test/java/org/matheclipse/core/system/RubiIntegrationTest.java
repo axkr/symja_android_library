@@ -257,6 +257,9 @@ public class RubiIntegrationTest extends AbstractTestCase {
 	}
 
 	public void testSystemIntegrate() {
+		check("Integrate(Sin(x*y),y)", "-Cos(x*y)/x");
+		
+		
 		check("Integrate(x^(-1),x)", "Log(x)");
 		check("Integrate(x^(-1),{x,0,1})", "Integrate(1/x,{x,0,1})");
 		check("Integrate(x^a, x)", "x^(1+a)/(1+a)");
