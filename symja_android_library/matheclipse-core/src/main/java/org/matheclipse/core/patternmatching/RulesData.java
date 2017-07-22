@@ -28,7 +28,7 @@ import org.matheclipse.core.visit.AbstractVisitor;
  * The pattern matching rules associated with a symbol.
  */
 public class RulesData implements Serializable {
-
+	static boolean showSteps = false;
 	private static final long serialVersionUID = -7747268035549814899L;
 	/**
 	 * 
@@ -524,7 +524,7 @@ public class RulesData implements Serializable {
 	 */
 	public IExpr evalDownRule(final IExpr expr) {
 		PatternMatcherEquals res;
-		boolean showSteps = false;
+
 		if (Config.SHOW_PATTERN_EVAL_STEPS) {
 			showSteps = Config.SHOW_PATTERN_SYMBOL_STEPS.contains(expr.topHead());
 			if (showSteps) {
@@ -580,23 +580,27 @@ public class RulesData implements Serializable {
 				for (IPatternMatcher patternEvaluator : fPatternDownRules) {
 					pmEvaluator = (IPatternMatcher) patternEvaluator.clone();
 					if (showSteps) {
-						IExpr rhs = pmEvaluator.getRHS();
-						if (!rhs.isPresent()) {
-							rhs = F.Null;
-						}
-						System.out.println("  COMPLEX: " + pmEvaluator.getLHS().toString() + "  :=  " + rhs.toString());
-					}
-					result = pmEvaluator.eval(expr);
-					if (result.isPresent()) {
-						if (showSteps) {
+						if (pmEvaluator.getLHS().head().equals(F.Integrate)) {
 							IExpr rhs = pmEvaluator.getRHS();
 							if (!rhs.isPresent()) {
 								rhs = F.Null;
 							}
-							// System.out.println("\nCOMPLEX: " +
-							// pmEvaluator.getLHS().toString() + " := " +
-							// rhs.toString());
-							System.out.println(" >>> " + expr.toString() + "  >>>>  " + result.toString());
+							System.out
+									.println(" COMPLEX: " + pmEvaluator.getLHS().toString() + " := " + rhs.toString());
+						}
+					}
+					result = pmEvaluator.eval(expr);
+					if (result.isPresent()) {
+						if (showSteps) {
+							if (pmEvaluator.getLHS().head().equals(F.Integrate)) {
+								IExpr rhs = pmEvaluator.getRHS();
+								if (!rhs.isPresent()) {
+									rhs = F.Null;
+								}
+								System.out.println(
+										"\nCOMPLEX: " + pmEvaluator.getLHS().toString() + " := " + rhs.toString());
+								System.out.println(" >>> " + expr.toString() + "  >>>>  " + result.toString());
+							}
 						}
 						return result;
 					}
@@ -619,12 +623,12 @@ public class RulesData implements Serializable {
 			for (IPatternMatcher patternEvaluator : nset) {
 				pmEvaluator = (IPatternMatcher) patternEvaluator.clone();
 				if (showSteps) {
-					IExpr rhs = pmEvaluator.getRHS();
-					if (!rhs.isPresent()) {
-						rhs = F.Null;
-					}
-					System.out.println("  SIMPLE:  " + pmEvaluator.getLHS().toString() + " <<>> " + expression);
-					// + " := " + rhs.toString());
+					// IExpr rhs = pmEvaluator.getRHS();
+					// if (!rhs.isPresent()) {
+					// rhs = F.Null;
+					// }
+					// System.out.println(" SIMPLE: " + pmEvaluator.getLHS().toString() + " <<>> " + expression);
+					// // + " := " + rhs.toString());
 				}
 				result = pmEvaluator.eval(expression);
 				if (result.isPresent()) {
@@ -633,9 +637,7 @@ public class RulesData implements Serializable {
 						if (!rhs.isPresent()) {
 							rhs = F.Null;
 						}
-						// System.out.println("\nSIMPLE: " +
-						// pmEvaluator.getLHS().toString() + " := " +
-						// rhs.toString());
+						System.out.println("\nSIMPLE: " + pmEvaluator.getLHS().toString() + " := " + rhs.toString());
 						System.out.println(" >>> " + expression.toString() + "  >>>>  " + result.toString());
 					}
 					return result;

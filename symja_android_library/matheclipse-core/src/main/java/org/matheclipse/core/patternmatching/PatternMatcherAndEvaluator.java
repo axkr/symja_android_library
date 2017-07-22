@@ -38,8 +38,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	 * @param leftHandSide
 	 *            could contain pattern expressions for "pattern-matching"
 	 * @param rightHandSide
-	 *            the result which should be evaluated if the "pattern-matching"
-	 *            succeeds
+	 *            the result which should be evaluated if the "pattern-matching" succeeds
 	 */
 	public PatternMatcherAndEvaluator(final IExpr leftHandSide, final IExpr rightHandSide) {
 		this(ISymbol.RuleType.SET_DELAYED, leftHandSide, rightHandSide);
@@ -49,13 +48,11 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	 * ine a pattern-matching rule.
 	 * 
 	 * @param setSymbol
-	 *            the symbol which defines this pattern-matching rule (i.e. Set,
-	 *            SetDelayed,...)
+	 *            the symbol which defines this pattern-matching rule (i.e. Set, SetDelayed,...)
 	 * @param leftHandSide
 	 *            could contain pattern expressions for "pattern-matching"
 	 * @param rightHandSide
-	 *            the result which should be evaluated if the "pattern-matching"
-	 *            succeeds
+	 *            the result which should be evaluated if the "pattern-matching" succeeds
 	 */
 	public PatternMatcherAndEvaluator(final ISymbol.RuleType setSymbol, final IExpr leftHandSide,
 			final IExpr rightHandSide) {
@@ -106,8 +103,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	}
 
 	/**
-	 * Check if the two expressions are equivalent. (i.e. <code>f[x_,y_]</code>
-	 * is equivalent to <code>f[a_,b_]</code> )
+	 * Check if the two expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to <code>f[a_,b_]</code> )
 	 * 
 	 * @param patternExpr1
 	 * @param patternExpr2
@@ -142,8 +138,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	}
 
 	/**
-	 * Check if the condition for the right-hand-sides
-	 * <code>Module[] or Condition[]</code> expressions evaluates to
+	 * Check if the condition for the right-hand-sides <code>Module[] or Condition[]</code> expressions evaluates to
 	 * <code>true</code>.
 	 * 
 	 * @return <code>true</code> if the right-hand-sides condition is fulfilled.
@@ -196,6 +191,18 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
 		fPatternMap.initPattern();
 		if (matchExpr(fLhsPatternExpr, leftHandSide)) {
+
+			if (RulesData.showSteps) {
+				if (fLhsPatternExpr.head().equals(F.Integrate)) {
+					IExpr rhs = fRightHandSide;
+					if (!rhs.isPresent()) {
+						rhs = F.Null;
+					}
+					System.out.println("\nCOMPLEX: " + fLhsPatternExpr.toString() + " := " + rhs.toString());
+					System.out.println("\n>>>>> " + toString());
+				}
+			}
+
 			IExpr result = fPatternMap.substituteSymbols(fRightHandSide);
 			try {
 				result = F.eval(result);

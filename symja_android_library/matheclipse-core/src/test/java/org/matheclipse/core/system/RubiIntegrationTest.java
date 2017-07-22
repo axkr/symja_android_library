@@ -44,33 +44,28 @@ import static org.matheclipse.core.expression.F.p;
 import static org.matheclipse.core.expression.F.v;
 import static org.matheclipse.core.expression.F.x;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.AbortRubi;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.BinomialParts;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.ContentFactor;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.ContentFactorAux;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.DeactivateTrig;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.EasyDQ;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.ExpandToSum;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.FixSimplify;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.FunctionOfTrig;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.FunctionOfTrigOfLinearQ;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.LinearQ;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.NumericFactor;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.PolyQ;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.QuadraticMatchQ;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.RealNumericQ;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.RemoveContent;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.SimpFixFactor;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.SubstForFractionalPowerOfLinear;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.SumQ;
 import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.TrigSimplifyAux;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.UnifyNegativeBaseFactors;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Tests for the Java port of the
- * <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based integrator</a>.
+ * Tests for the Java port of the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based integrator</a>.
  * 
  */
 public class RubiIntegrationTest extends AbstractTestCase {
@@ -129,17 +124,17 @@ public class RubiIntegrationTest extends AbstractTestCase {
 
 	public void testRubi004() {
 		IAST ast;
-//		ast = RemoveContent(Plus(Times(a, b), Times(a, c)), x);
-//		check(ast, "1");
+		// ast = RemoveContent(Plus(Times(a, b), Times(a, c)), x);
+		// check(ast, "1");
 
 		ast = RemoveContent(Plus(Times(a, x), Times(a, c)), x);
-//		ISymbol num=$s("num");
-//		ISymbol tmp=$s("tmp");
-//		IExpr expn=Plus(Times(a, x), Times(a, c)); //$s("expn");
-//		ast=F.Module(
-//				  F.List(F.Set(num,C1),tmp),
-//				  F.CompoundExpression(F.Set(tmp,F.Map(F.Function(F.If(F.And(SumQ(F.Slot1),F.Less(NumericFactor(F.Part(F.Slot1,C1)),C0)),F.CompoundExpression(F.Set(num,F.Negate(num)),ContentFactorAux(F.Negate(F.Slot1))),ContentFactorAux(F.Slot1))),expn)),F.Times(num,UnifyNegativeBaseFactors(tmp)))
-//				); 
+		// ISymbol num=$s("num");
+		// ISymbol tmp=$s("tmp");
+		// IExpr expn=Plus(Times(a, x), Times(a, c)); //$s("expn");
+		// ast=F.Module(
+		// F.List(F.Set(num,C1),tmp),
+		// F.CompoundExpression(F.Set(tmp,F.Map(F.Function(F.If(F.And(SumQ(F.Slot1),F.Less(NumericFactor(F.Part(F.Slot1,C1)),C0)),F.CompoundExpression(F.Set(num,F.Negate(num)),ContentFactorAux(F.Negate(F.Slot1))),ContentFactorAux(F.Slot1))),expn)),F.Times(num,UnifyNegativeBaseFactors(tmp)))
+		// );
 		check(F.eval(ast).toString(), "c+x");
 
 		ast = RemoveContent(Plus(Times(x, b), Times(x, c)), x);
@@ -220,6 +215,13 @@ public class RubiIntegrationTest extends AbstractTestCase {
 
 	}
 
+	public void testRubi011() {
+		IAST ast;
+		// DeactivateTrig(Sin(a+b*x)^3,x)
+		ast = DeactivateTrig(Power(Sin(Plus(a, Times(b, x))), C3), x);
+		check(ast, "§sin[a+b*x]^3");
+	}
+
 	public void testRubi012() {
 		IAST ast;
 		// 2*(a+b*x),x
@@ -230,11 +232,25 @@ public class RubiIntegrationTest extends AbstractTestCase {
 
 	}
 
-	public void testRubi011() {
+	// public void testRubi013() {
+	// IAST ast;
+	// //
+	// ast = BinomialParts(F.unary(F.g, x), x);
+	//
+	// check(ast, "False");
+	//
+	// ast = BinomialParts(Times(F.unaryAST1(F.f, x), F.unaryAST1(F.g, x)), x);
+	//
+	// check(ast, "False");
+	// }
+	
+	public void testRubi014() {
 		IAST ast;
-		// DeactivateTrig(Sin(a+b*x)^3,x)
-		ast = DeactivateTrig(Power(Sin(Plus(a, Times(b, x))), C3), x);
-		check(ast, "§sin[a+b*x]^3");
+		// 
+		ast = EasyDQ(x, x);
+ 
+		check(ast, "True");
+
 	}
 
 	public void testSqrtSin() {
@@ -248,18 +264,16 @@ public class RubiIntegrationTest extends AbstractTestCase {
 
 		// check("(-x^2-2*x)^(1/2)+2*ArcTan(x*(-x^2-2*x)^(-1/2))+x*ArcSin(x+1)",
 		// "(-2*x-x^2)^(1/2)+x*ArcSin(1+x)+2*ArcTan(x*(-2*x-x^2)^(-1/2))");
-		check("Integrate(ArcSin(x+1),x)", 
-				"x*ArcSin(1+x)+I*(Sqrt(2*x+x^2)-2*(-Log(1-x/Sqrt(2*x+x^2))/2+Log(2+(2*x)/Sqrt(2*x+x^\n" + 
-				"2))/2))");
+		check("Integrate(ArcSin(x+1),x)",
+				"x*ArcSin(1+x)+I*(Sqrt(2*x+x^2)-2*(-Log(1-x/Sqrt(2*x+x^2))/2+Log(2+(2*x)/Sqrt(2*x+x^\n" + "2))/2))");
 
-		check("Integrate(ArcCos(x+1),x)", "x*ArcCos(1+x)-I*(Sqrt(2*x+x^2)-2*(-Log(1-x/Sqrt(2*x+x^2))/2+Log(2+(2*x)/Sqrt(2*x+x^\n" + 
-				"2))/2))");
+		check("Integrate(ArcCos(x+1),x)",
+				"x*ArcCos(1+x)-I*(Sqrt(2*x+x^2)-2*(-Log(1-x/Sqrt(2*x+x^2))/2+Log(2+(2*x)/Sqrt(2*x+x^\n" + "2))/2))");
 	}
 
 	public void testSystemIntegrate() {
 		check("Integrate(Sin(x*y),y)", "-Cos(x*y)/x");
-		
-		
+
 		check("Integrate(x^(-1),x)", "Log(x)");
 		check("Integrate(x^(-1),{x,0,1})", "Integrate(1/x,{x,0,1})");
 		check("Integrate(x^a, x)", "x^(1+a)/(1+a)");
@@ -276,11 +290,11 @@ public class RubiIntegrationTest extends AbstractTestCase {
 	}
 
 	public void testTrig001() {
-		check("Sin(x)*tan(x)","Sin(x)*Tan(x)");
+		check("Sin(x)*tan(x)", "Sin(x)*Tan(x)");
 		check("int(Sin(x)*tan(x),x)",
-				"Csc(x)^2*(1/2*(-Log(Cos(x/2)-Sin(x/2))+Log(Cos(x/2)+Sin(x/2)))-(-Log(1+Sin(x))/2+Log(\n" + 
-				"-2+2*Sin(x))/2+2*Sin(x))/2)*Sin(x)^2");
-		
+				"Csc(x)^2*(1/2*(-Log(Cos(x/2)-Sin(x/2))+Log(Cos(x/2)+Sin(x/2)))-(-Log(1+Sin(x))/2+Log(\n"
+						+ "-2+2*Sin(x))/2+2*Sin(x))/2)*Sin(x)^2");
+
 		check("Integrate(Sin(a + b*x)^3,x)", "-(Cos(a+b*x)-Cos(a+b*x)^3/3)/b");
 
 		check("Integrate(Sin(a+x),x)", "-Cos(a+x)");
@@ -310,13 +324,12 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		check("D(b^(-2)*Sin(b*x+a)-Cos(b*x+a)*b^(-1)*x,x)", "x*Sin(a+b*x)");
 		check("Integrate(x*Sin(a + b*x)^2,x)", "x^2/4-(Cos(2*a+2*b*x)/(4*b^2)+(x*Sin(2*a+2*b*x))/(2*b))/2");
 		check("Integrate(x*Sin(a + b*x)^3,x)",
-				"1/2*((-x*Cos(a+b*x))/b+Sin(a+b*x)/b^2)-((x*Cos(a+b*x))/b-Sin(a+b*x)/b^2)/4-((-x*Cos(\n" + 
-				"3*a+3*b*x))/(3*b)+Sin(3*a+3*b*x)/(9*b^2))/4");
+				"1/2*((-x*Cos(a+b*x))/b+Sin(a+b*x)/b^2)-((x*Cos(a+b*x))/b-Sin(a+b*x)/b^2)/4-((-x*Cos(\n"
+						+ "3*a+3*b*x))/(3*b)+Sin(3*a+3*b*x)/(9*b^2))/4");
 
 		check("Integrate(x^2*Sin(a + b*x),x)", "(-x^2*Cos(a+b*x))/b+(2*(Cos(a+b*x)/b^2+(x*Sin(a+b*x))/b))/b");
 		check("Integrate(x^2*Sin(a + b*x)^2,x)",
-				"x^3/6-((x^2*Sin(2*a+2*b*x))/(2*b)-((-x*Cos(2*a+2*b*x))/(2*b)+Sin(2*a+2*b*x)/(4*b^\n" + 
-				"2))/b)/2");
+				"x^3/6-((x^2*Sin(2*a+2*b*x))/(2*b)-((-x*Cos(2*a+2*b*x))/(2*b)+Sin(2*a+2*b*x)/(4*b^\n" + "2))/b)/2");
 
 		check("Integrate((a + b*Sin(c + g*x)),x)", "a*x+(-b*Cos(c+g*x))/g");
 		check("Integrate((a + b*Sin(c + g*x))^2,x)",
@@ -332,13 +345,13 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		// +
 		// "2),x))", "");
 		check("Integrate((a + b*Sin(c + g*x))^3,x)",
-				"a^3*x+(-3*a^2*b*Cos(c+g*x))/g+(-b^3*(Cos(c+g*x)-Cos(c+g*x)^3/3))/g+3*a*b^2*(x/2+(-Cos(c+g*x)*Sin(c+g*x))/(\n" + 
-				"2*g))");
+				"a^3*x+(-3*a^2*b*Cos(c+g*x))/g+(-b^3*(Cos(c+g*x)-Cos(c+g*x)^3/3))/g+3*a*b^2*(x/2+(-Cos(c+g*x)*Sin(c+g*x))/(\n"
+						+ "2*g))");
 
 		check("Integrate((a + b*Sin(c + g*x))^4,x)",
-				"a^4*x+(-4*a^3*b*Cos(c+g*x))/g+(-4*a*b^3*(Cos(c+g*x)-Cos(c+g*x)^3/3))/g+6*a^2*b^2*(x/\n" + 
-				"2+(-Cos(c+g*x)*Sin(c+g*x))/(2*g))+b^4*(3/4*(x/2+(-Cos(c+g*x)*Sin(c+g*x))/(2*g))+(-Cos(c+g*x)*Sin(c+g*x)^\n" + 
-				"3)/(4*g))");
+				"a^4*x+(-4*a^3*b*Cos(c+g*x))/g+(-4*a*b^3*(Cos(c+g*x)-Cos(c+g*x)^3/3))/g+6*a^2*b^2*(x/\n"
+						+ "2+(-Cos(c+g*x)*Sin(c+g*x))/(2*g))+b^4*(3/4*(x/2+(-Cos(c+g*x)*Sin(c+g*x))/(2*g))+(-Cos(c+g*x)*Sin(c+g*x)^\n"
+						+ "3)/(4*g))");
 
 		check("$f(a_.+b_.*c_):={a,b,c};$f(x)", "{0,1,x}");
 
@@ -371,8 +384,8 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		// check("Integrate(x^p*(a*x^n+b*x^(12*n+n+p+1))^12,x)", "");
 
 		check("D(b^(-1)*x^(-m*n-n)*(m+1)^(-1)*(p+m*n+1)^(-1)*(b*x^(p+m*n+n+1)+a*x^n)^(m+1),x)",
-				"(((a*n)/x^(1-n)+b*(1+n+m*n+p)*x^(n+m*n+p))*(a*x^n+b*x^(1+n+m*n+p))^m)/(b*(1+m*n+p)*x^(n+m*n))+((-n-m*n)*(a*x^n+b*x^(\n" + 
-				"1+n+m*n+p))^(1+m))/(b*(1+m)*(1+m*n+p)*x^(1+n+m*n))");
+				"(((a*n)/x^(1-n)+b*(1+n+m*n+p)*x^(n+m*n+p))*(a*x^n+b*x^(1+n+m*n+p))^m)/(b*(1+m*n+p)*x^(n+m*n))+((-n-m*n)*(a*x^n+b*x^(\n"
+						+ "1+n+m*n+p))^(1+m))/(b*(1+m)*(1+m*n+p)*x^(1+n+m*n))");
 
 		// check("Simplify((-m*n-n)*b^(-1)*x^(-m*n-n-1)*(m+1)^(-1)*(p+m*n+1)^(-1)*(b*x^(p+m*n+n+1)+a*x^n)^(m+\n"
 		// +
@@ -399,13 +412,13 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		// check("Integrate(1/(1+sec(a+b*x)), x)", "");
 
 		check("Integrate(Sin(x)*Cos(x),x)", "-Cos(x)^2/2");
-//		try {
-//			Thread.wait(1000000000);
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
- 		check("Integrate(Sin(x)*Cos(x)*Pi,x)", "-1/2*Pi*Cos(x)^2");
+		// try {
+		// Thread.wait(1000000000);
+		// } catch (InterruptedException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		check("Integrate(Sin(x)*Cos(x)*Pi,x)", "-1/2*Pi*Cos(x)^2");
 		check("D((-1/2)*Pi*Cos(x)^2,x)", "Pi*Cos(x)*Sin(x)");
 
 		check("Integrate(1/(1+sin(a+b*x)), x)", "-Cos(a+b*x)/(b*(1+Sin(a+b*x)))");
@@ -455,8 +468,8 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		// + "2*x*2^(-1/2)+1)*2^(-1/2)-ArcTan(-2*x*2^(-1/2)+1)*2^(-1/2)),x))",
 		// "");
 		check("Integrate(1/(1+x^4),x)",
-				"1/2*(-ArcTan(1+(-2*x)/Sqrt(2))/Sqrt(2)+ArcTan(1+(2*x)/Sqrt(2))/Sqrt(2))+1/2*(Log(\n" + 
-				"1+Sqrt(2)*x+x^2)/(2*Sqrt(2))-Log(1-Sqrt(2)*x+x^2)/(2*Sqrt(2)))");
+				"1/2*(-ArcTan(1+(-2*x)/Sqrt(2))/Sqrt(2)+ArcTan(1+(2*x)/Sqrt(2))/Sqrt(2))+1/2*(Log(\n"
+						+ "1+Sqrt(2)*x+x^2)/(2*Sqrt(2))-Log(1-Sqrt(2)*x+x^2)/(2*Sqrt(2)))");
 	}
 
 	public void testIssue110() {

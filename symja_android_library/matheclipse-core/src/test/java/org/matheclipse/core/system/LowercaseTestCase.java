@@ -4600,7 +4600,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialQ() {
-
+		check("PolynomialQ(f(x), x)", "False");
 		check("PolynomialQ(f(a)+f(a)^2, f(a))", "True");
 		check("PolynomialQ(Sin(f(a))+f(a)^2, f(a))", "False");
 		check("PolynomialQ(x^3 - 2 x/y + 3 x z, x)", "True");
