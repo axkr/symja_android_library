@@ -203,7 +203,7 @@ public class Algebra {
 		public static IExpr[] fractionalPartsPower(final IAST powerAST, boolean trig) {
 			IExpr[] parts = new IExpr[2];
 			parts[0] = F.C1;
-			
+
 			IExpr arg1 = powerAST.arg1();
 			IExpr exponent = powerAST.arg2();
 			if (exponent.isSignedNumber()) {
@@ -865,8 +865,7 @@ public class Algebra {
 							INumber floorPart = fraction.floorFraction().normalize();
 							if (!floorPart.isZero()) {
 								IFraction fractionalPart = fraction.fractionalPart();
-								return expandAST(F.Times(F.Power(base, fractionalPart),
-										F.Power(base, floorPart)));
+								return expandAST(F.Times(F.Power(base, fractionalPart), F.Power(base, floorPart)));
 							}
 						}
 					}
@@ -2404,8 +2403,8 @@ public class Algebra {
 						IExpr exponent = powerAST.arg2();
 						IAST powerResult = Power(base, Times(exponent, x2));
 						if (assumptions) {
-							IAST floorResult = Floor(Divide(
-									Subtract(Pi, Im(Times(exponent, Log(base)))), Times(C2, Pi)));
+							IAST floorResult = Floor(
+									Divide(Subtract(Pi, Im(Times(exponent, Log(base)))), Times(C2, Pi)));
 							IAST expResult = Power(E, Times(C2, I, Pi, x2, floorResult));
 							IAST timesResult = Times(powerResult, expResult);
 							return timesResult;
@@ -2844,6 +2843,10 @@ public class Algebra {
 
 		private static class SimplifyVisitor extends VisitorExpr {
 			final IsBasicExpressionVisitor isBasicAST = new IsBasicExpressionVisitor();
+			/**
+			 * This function is used to determine the “weight” of an expression. For example by counting the leafs of an
+			 * expression with the <code>IExpr#leafCountSimplify()</code> method.
+			 */
 			final Function<IExpr, Long> fComplexityFunction;
 
 			public SimplifyVisitor(Function<IExpr, Long> complexityFunction) {
@@ -2929,11 +2932,22 @@ public class Algebra {
 
 			@Override
 			public IExpr visit(IAST ast) {
+				IExpr result = F.NIL;
 				IExpr temp;
 
 				temp = visitAST(ast);
 				if (temp.isPresent()) {
-					return temp;
+					long minCounter = fComplexityFunction.apply(ast);
+					long count = fComplexityFunction.apply(temp);
+					if (count < minCounter) {
+						minCounter = count;
+						if (temp.isAST()) {
+							ast = (IAST) temp;
+							result = temp;
+						} else {
+							return temp;
+						}
+					}
 				}
 
 				if (ast.isPlus()) {
@@ -2957,6 +2971,13 @@ public class Algebra {
 							return F.Plus(temp, restPlus);
 						}
 					}
+
+					temp = tryTransformations(ast);
+					if (temp.isPresent()) {
+						return temp;
+					}
+					return result;
+
 				} else if (ast.isTimes()) {
 					IAST basicTimes = F.Times();
 					IAST restTimes = F.Times();
@@ -2999,6 +3020,12 @@ public class Algebra {
 							return F.Times(temp, restTimes);
 						}
 					}
+
+					temp = tryTransformations(ast);
+					if (temp.isPresent()) {
+						return temp;
+					}
+					return result;
 				}
 
 				temp = F.evalExpandAll(ast);
@@ -3008,7 +3035,7 @@ public class Algebra {
 				if (count < minCounter) {
 					return temp;
 				}
-				return F.NIL;
+				return result;
 			}
 
 			private IExpr tryExpandAll(IAST ast, IExpr temp, IExpr arg1, int i) {
@@ -3066,7 +3093,13 @@ public class Algebra {
 					}
 				}
 
-				IExpr temp = arg1.accept(new SimplifyVisitor(complexityFunction));
+				IExpr temp = arg1.replaceAll(F.List(F.Rule(F.GoldenRatio, F.Times(F.C1D2, F.Plus(F.C1, F.Sqrt(F.C5)))),
+						F.Rule(F.Degree, F.Divide(F.Pi, F.ZZ(180)))));
+				if (temp.isPresent()) {
+					arg1 = temp;
+				}
+
+				temp = arg1.accept(new SimplifyVisitor(complexityFunction));
 				while (temp.isPresent()) {
 					count = complexityFunction.apply(temp);
 					if (count < minCounter) {
@@ -3264,7 +3297,14 @@ public class Algebra {
 
 			IExpr exprNumerator = F.evalExpand(numerator.getOneIdentity(F.C0));
 			IExpr exprDenominator = F.evalExpand(denominator.getOneIdentity(F.C1));
-
+			if (exprNumerator.isZero()) {
+				if (exprDenominator.isZero()) {
+					// let the standard evaluation handle the division by zero
+					// 0^0
+					return F.Times(exprNumerator, F.Power(exprDenominator, F.CN1));
+				}
+				return F.C0;
+			}
 			if (!exprDenominator.isOne()) {
 				try {
 					IExpr[] result = cancelGCD(exprNumerator, exprDenominator);

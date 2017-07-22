@@ -3301,6 +3301,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMatchQ() {
+		check("MatchQ(Simplify(1 + 1/GoldenRatio - GoldenRatio), 0)", "True");
+		
 		check("MatchQ(Sin(Cos(x)), F_(G_(v_)) /; F==Sin&&G==Cos&&v==x )", "True");
 		check("MatchQ(Sin(x*y), F_(G_(v_)) /; Print(F,G,v) )", "False");
 		
@@ -3316,6 +3318,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("MatchQ(_Integer)[123]", "True");
 		check("MatchQ(22/7, _Rational)", "True");
 		check("MatchQ(6/3, _Rational)", "False");
+		
 	}
 
 	public void testMathMLForm() {
@@ -5653,6 +5656,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSimplify() {
+		check("Simplify(1 + 1/GoldenRatio - GoldenRatio)", "0");
+//		check("Simplify(-15-6*x)/(3*(1+x+x^2))", "");
 		check("Simplify(Abs(x), x<0)", "Abs(x)");
 		check("complexity(x_) := 2*Count(x, _Abs, {0, 10}) + LeafCount(x)", "");
 		check("Simplify(Abs(x), x<0, ComplexityFunction->complexity)", "-x");
@@ -5672,6 +5677,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Simplify(3/(x + 3) + x/(x + 3))", "1");
 
 		check("Simplify(2*Tan(x)/(1 + Tan(x)^2))", "(2*Tan(x))/(1+Tan(x)^2)");
+		
 	}
 
 	public void testSin() {
@@ -6595,6 +6601,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTogether() {
+		check("Together(1/2-Sqrt(5)/2+2/(1+Sqrt(5)))", "0");
 		// check("Together(1/Sqrt(1+1/x) + (1+1/x)^(3/2) )", " ");
 		check("Together(1/Sqrt(1+1/x)  )", "Sqrt(x/(1+x))");
 		check("Together(1+1/(1+1/x))", "(1+2*x)/(1+x)");
