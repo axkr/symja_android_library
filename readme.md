@@ -29,7 +29,7 @@ Features of the Symja language:
    
 ### Demos
 
-* [Android App Calculator N+ on Google play store](https://play.google.com/store/apps/details?id=com.duy.calculator.free) - [Github repository](https://github.com/tranleduy2000/ncalc)
+* [Android App Calculator N+ on Google play store](https://play.google.com/store/apps/details?id=com.duy.calculator.free) - available as open source in this [Github repository](https://github.com/tranleduy2000/ncalc)
 
 Older (i.e. Java 7 based) online versions on Google Appengine:
 
