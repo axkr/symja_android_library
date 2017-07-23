@@ -22,8 +22,9 @@ public class ReplaceAll extends AbstractEvaluator {
 		Validate.checkSize(ast, 3);
 		try {
 			if (ast.arg2().isListOfLists()) {
-				IAST result = F.List();
-				for (IExpr subList : (IAST) ast.arg2()) {
+				IAST list = (IAST) ast.arg2();
+				IAST result = F.ListAlloc(list.size());
+				for (IExpr subList : list) {
 					IExpr temp = engine.evaluate(subList);
 					if (temp.isAST()) {
 						result.append(F.subst(ast.arg1(), (IAST) temp));

@@ -53,9 +53,11 @@ public class Options {
 			fDefaultOptionsList = null;
 		}
 		this.fCurrentOptionsList = null;
+		
 		if (currentOptionsList != null && startIndex < currentOptionsList.size()) {
-			this.fCurrentOptionsList = List();
-			for (int i = startIndex; i < currentOptionsList.size(); i++) {
+			int size = currentOptionsList.size();
+			this.fCurrentOptionsList = F.ListAlloc(size);
+			for (int i = startIndex; i < size; i++) {
 				this.fCurrentOptionsList.append(1, currentOptionsList.get(i));
 			}
 		}

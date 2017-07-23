@@ -1,7 +1,5 @@
 package org.matheclipse.core.expression;
 
-import static org.matheclipse.core.expression.F.List;
-
 import java.io.Externalizable;
 import java.math.BigInteger;
 import java.util.Map;
@@ -361,10 +359,12 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		IInteger factor;
 		IInteger last = F.CN2;
 		int count = 0;
-		final IAST iFactors = factorize(F.ListAlloc(10));
-		final IAST list = List();
+		final IAST iFactors = factorize();
+
 		IAST subList = null;
-		for (int i = 1; i < iFactors.size(); i++) {
+		int size = iFactors.size();
+		final IAST list = F.ListAlloc(size);
+		for (int i = 1; i < size; i++) {
 			factor = (IInteger) iFactors.get(i);
 			if (!last.equals(factor)) {
 				if (subList != null) {
@@ -392,21 +392,23 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	 *            add the prime factors to this result list
 	 * @return
 	 */
-	public IAST factorize(IAST result) {
+	public IAST factorize() {
+
 		IInteger b = this;
 		if (sign() < 0) {
 			b = b.negate();
-			result.append(F.CN1);
 		} else if (b.isZero()) {
-			result.append(F.C0);
-			return result;
+			return F.List(F.C0);
 		} else if (b.isOne()) {
-			result.append(F.C1);
-			return result;
+			return F.List(F.C1);
 		}
 
 		if (b instanceof IntegerSym) {
 			Map<Long, Integer> map = PrimeInteger.factors(b.longValue());
+			IAST result = F.ListAlloc(map.size() + 1);
+			if (sign() < 0) {
+				result.append(F.CN1);
+			}
 			for (Map.Entry<Long, Integer> entry : map.entrySet()) {
 				long key = entry.getKey();
 				IInteger is = valueOf(key);
@@ -420,6 +422,10 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		SortedMap<Integer, Integer> map = new TreeMap<Integer, Integer>();
 		BigInteger rest = Primality.countPrimes32749(b.toBigNumerator(), map);
 
+		IAST result = F.ListAlloc(map.size() + 10);
+		if (sign() < 0) {
+			result.append(F.CN1);
+		}
 		for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
 			int key = entry.getKey();
 			AbstractIntegerSym is = valueOf(key);
@@ -568,12 +574,12 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		}
 		return F.CN1;
 	}
-	
+
 	@Override
 	public long leafCountSimplify() {
 		return integerLength(F.C10);
 	}
-	
+
 	/**
 	 * Returns the least common multiple of this large integer and the one specified.
 	 * 

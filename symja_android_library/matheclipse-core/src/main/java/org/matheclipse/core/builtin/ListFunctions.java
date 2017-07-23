@@ -526,21 +526,24 @@ public final class ListFunctions {
 				}
 			});
 
-			IAST result = F.List();
-			if (tallyResult.size() > 1) {
+			int size = tallyResult.size();
+			if (size > 1) {
 				if (n == -1) {
 					IInteger max = (IInteger) ((IAST) tallyResult.arg1()).arg2();
+					IAST result = F.ListAlloc(size);
 					result.append(((IAST) tallyResult.arg1()).arg1());
-					for (int i = 2; i < tallyResult.size(); i++) {
+					for (int i = 2; i < size; i++) {
 						if (max.equals(((IAST) tallyResult.get(i)).arg2())) {
 							result.append(((IAST) tallyResult.get(i)).arg1());
 						} else {
 							break;
 						}
 					}
+					return result;
 				} else {
 					int counter = 0;
-					for (int i = 1; i < tallyResult.size(); i++) {
+					IAST result = F.ListAlloc(size);
+					for (int i = 1; i < size; i++) {
 						if (counter < n) {
 							result.append(((IAST) tallyResult.get(i)).arg1());
 							counter++;
@@ -548,9 +551,10 @@ public final class ListFunctions {
 							break;
 						}
 					}
+					return result;
 				}
 			}
-			return result;
+			return F.List();
 		}
 
 		@Override
@@ -578,7 +582,7 @@ public final class ListFunctions {
 		}
 
 		public static IExpr complement(final IAST arg1, final IAST arg2) {
-			IAST result = F.List();
+
 			Set<IExpr> set2 = arg2.asSet();
 			Set<IExpr> set3 = new HashSet<IExpr>();
 			for (int i = 1; i < arg1.size(); i++) {
@@ -587,6 +591,7 @@ public final class ListFunctions {
 					set3.add(temp);
 				}
 			}
+			IAST result = F.ListAlloc(set3.size());
 			for (IExpr expr : set3) {
 				result.append(expr);
 			}
@@ -978,11 +983,13 @@ public final class ListFunctions {
 			}
 			if (ast.arg1().isList()) {
 				IAST list = (IAST) ast.arg1();
-				final IAST result = F.List();
+
 				IExpr temp;
 				boolean evaledTrue;
 				BiPredicate<IExpr, IExpr> biPredicate = Predicates.isBinaryTrue(test);
-				for (int i = 1; i < list.size(); i++) {
+				int size = list.size();
+				final IAST result = F.ListAlloc(size);
+				for (int i = 1; i < size; i++) {
 					temp = list.get(i);
 					evaledTrue = false;
 					for (int j = 1; j < result.size(); j++) {
@@ -1103,8 +1110,8 @@ public final class ListFunctions {
 				IAST arg1 = (IAST) ast.arg1();
 				IAST arg2 = (IAST) ast.arg2();
 				if (arg2.isListOfLists()) {
-					IAST result = F.List();
 					final int arg2Size = arg2.size();
+					IAST result = F.ListAlloc(arg2Size);
 					for (int i = 1; i < arg2Size; i++) {
 						IExpr temp = extract(arg1, arg2.getAST(i));
 						if (!temp.isPresent()) {
@@ -1274,15 +1281,13 @@ public final class ListFunctions {
 				for (int i = 1; i < arg1.size(); i++) {
 					IAST list = map.get(arg1.get(i));
 					if (list == null) {
-						list = F.List();
-						list.append(arg1.get(i));
-						map.put(arg1.get(i), list);
+						map.put(arg1.get(i), F.List(arg1.get(i)));
 					} else {
 						list.append(arg1.get(i));
 					}
 				}
 
-				IAST result = F.List();
+				IAST result = F.ListAlloc(map.size());
 				for (Map.Entry<IExpr, IAST> entry : map.entrySet()) {
 					result.append(entry.getValue());
 				}
@@ -1309,9 +1314,9 @@ public final class ListFunctions {
 			Validate.checkRange(ast, 2, 3);
 
 			if (ast.isAST1() && ast.arg1().isAST()) {
-				final IAST result = F.List();
 				IAST arg1 = (IAST) ast.arg1();
 				Set<IExpr> set = arg1.asSet();
+				final IAST result = F.ListAlloc(set.size());
 				for (IExpr IExpr : set) {
 					result.append(IExpr);
 				}
@@ -2471,7 +2476,7 @@ public final class ListFunctions {
 			}
 			return F.NIL;
 		}
-		
+
 		protected static IExpr evaluateTableThrow(final IAST ast, final IAST resultList, IExpr defaultValue,
 				EvalEngine engine) {
 			try {
@@ -2539,8 +2544,9 @@ public final class ListFunctions {
 		 * @return
 		 */
 		public IAST determineIteratorVariables(final IAST ast) {
-			IAST variableList = F.List();
-			for (int i = 2; i < ast.size(); i++) {
+			int size = ast.size();
+			IAST variableList = F.ListAlloc(size);
+			for (int i = 2; i < size; i++) {
 				if (ast.get(i).isVariable()) {
 					variableList.append(ast.get(i));
 				} else {
@@ -2614,7 +2620,7 @@ public final class ListFunctions {
 	private final static class Tally extends AbstractEvaluator {
 
 		private static IAST createResultList(java.util.Map<IExpr, Integer> map) {
-			IAST result = F.List();
+			IAST result = F.ListAlloc(map.size());
 			for (java.util.Map.Entry<IExpr, Integer> entry : map.entrySet()) {
 				result.append(F.List(entry.getKey(), F.integer(entry.getValue())));
 			}
@@ -2810,9 +2816,9 @@ public final class ListFunctions {
 			Validate.checkRange(ast, 2, 3);
 
 			if (ast.isAST1() && ast.arg1().isAST()) {
-				final IAST result = F.List();
 				IAST arg1 = (IAST) ast.arg1();
 				Set<IExpr> set = arg1.asSet();
+				final IAST result = F.ListAlloc(set.size());
 				for (IExpr IExpr : set) {
 					result.append(IExpr);
 				}

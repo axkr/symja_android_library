@@ -731,17 +731,13 @@ public final class Programming {
 
 			IAST oldList = engine.getReapList();
 			try {
-				IAST result = F.List();
 				IAST reapList = F.ListAlloc(10);
 				engine.setReapList(reapList);
 				IExpr expr = engine.evaluate(ast.arg1());
-				result.append(expr);
 				if (reapList.isAST0()) {
-					result.append(F.List());
-				} else {
-					result.append(F.List(reapList));
+					return F.List(expr, F.CEmptyList);
 				}
-				return result;
+				return F.List(expr, F.List(reapList));
 			} finally {
 				engine.setReapList(oldList);
 			}

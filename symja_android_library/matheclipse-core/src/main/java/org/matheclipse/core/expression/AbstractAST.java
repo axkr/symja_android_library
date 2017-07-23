@@ -479,6 +479,10 @@ public abstract class AbstractAST implements IAST {
 	public IAST copy() {
 		return clone();
 	}
+	
+	public IAST copyAlloc(int capacity) {
+		return copy();
+	}
 
 	/** {@inheritDoc} */
 	@Override

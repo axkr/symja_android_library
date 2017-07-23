@@ -913,7 +913,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 		int size = size();
 		return head().equals(head) && length <= size;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */

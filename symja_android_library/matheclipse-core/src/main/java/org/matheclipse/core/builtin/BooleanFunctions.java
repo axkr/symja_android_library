@@ -448,15 +448,13 @@ public final class BooleanFunctions {
 				variables = vSet.getVarList();
 			}
 
-			IAST resultList = F.List();
-			booleanTable(ast.arg1(), variables, 1, resultList);
-			return resultList;
+			return booleanTable(ast.arg1(), variables, 1, F.ListAlloc(variables.size()));
 		}
 
-		private static void booleanTable(IExpr expr, IAST variables, int position, IAST resultList) {
+		private static IAST booleanTable(IExpr expr, IAST variables, int position, IAST resultList) {
 			if (variables.size() <= position) {
 				resultList.append(EvalEngine.get().evalTrue(expr) ? F.True : F.False);
-				return;
+				return resultList;
 			}
 			IExpr sym = variables.get(position);
 			if (sym.isSymbol()) {
@@ -473,6 +471,7 @@ public final class BooleanFunctions {
 					((ISymbol) sym).popLocalVariable();
 				}
 			}
+			return resultList;
 		}
 	}
 

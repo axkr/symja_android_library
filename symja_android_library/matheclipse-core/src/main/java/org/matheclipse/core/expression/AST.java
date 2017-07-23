@@ -304,7 +304,7 @@ public class AST extends HMArrayList implements Externalizable {
 		ast.fProperties = null;
 		return ast;
 	}
-
+	
 	/**
 	 * Returns the value to which the specified property is mapped, or <code>null</code> if this map contains no mapping
 	 * for the property.

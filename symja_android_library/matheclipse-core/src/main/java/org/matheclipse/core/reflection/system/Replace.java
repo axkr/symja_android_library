@@ -31,8 +31,7 @@ public class Replace extends AbstractEvaluator {
 		 * 
 		 * @param input
 		 *            the expression which should be replaced by the given rules
-		 * @return the expression created by the replacements or
-		 *         <code>null</code> if no replacement occurs
+		 * @return the expression created by the replacements or <code>null</code> if no replacement occurs
 		 */
 		@Override
 		public IExpr apply(IExpr input) {
@@ -71,9 +70,10 @@ public class Replace extends AbstractEvaluator {
 
 	private static IExpr replaceExpr(final IAST ast, IExpr arg1, IExpr rules, final EvalEngine engine) {
 		if (rules.isListOfLists()) {
-			IAST result = F.List();
+			IAST rulesList = (IAST) rules;
+			IAST result = F.ListAlloc(rulesList.size());
 
-			for (IExpr list : (IAST) rules) {
+			for (IExpr list : rulesList) {
 				IAST subList = (IAST) list;
 				IExpr temp = F.NIL;
 				for (IExpr element : subList) {
@@ -90,11 +90,7 @@ public class Replace extends AbstractEvaluator {
 						throw wat;
 					}
 				}
-				if (temp.isPresent()) {
-					result.append(temp);
-				} else {
-					result.append(arg1);
-				}
+				result.append(temp.orElse(arg1));
 			}
 			return result;
 		} else if (rules.isList()) {
@@ -131,8 +127,9 @@ public class Replace extends AbstractEvaluator {
 		VisitorLevelSpecification level = new VisitorLevelSpecification(replaceFunction, exprLevelSpecification, false);
 
 		if (rules.isListOfLists()) {
-			IAST result = F.List();
-			for (IExpr list : (IAST) rules) {
+			IAST rulesList = (IAST) rules;
+			IAST result = F.ListAlloc(rulesList.size());
+			for (IExpr list : rulesList) {
 				IExpr temp = F.NIL;
 				IAST subList = (IAST) list;
 				for (IExpr element : subList) {

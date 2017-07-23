@@ -350,8 +350,8 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 		newList.array = array.clone();
 		newList.hashValue = 0;
 		return newList;
-	}
-
+	} 
+	
 	/**
 	 * Ensures that after this operation the {@code ArrayList} can hold the specified number of elements without further
 	 * growing.

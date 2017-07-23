@@ -70,11 +70,10 @@ public class Series extends AbstractFunctionEvaluator {
 	 */
 	private IExpr createSeriesData(final IExpr function, IExpr x, IExpr x0, final int n, IExpr step) {
 		IInteger nExpr = F.integer(n);
-		IAST result = F.List();
+		IAST result = F.ListAlloc(n);
 		IAST seriesData = F.SeriesData(x, x0, result, x0, F.Plus(nExpr, step), step);
 		IExpr derivedFunction = function;
 		for (int i = 0; i <= n; i++) {
-
 			result.append(
 					F.Times(F.Power(F.Factorial(F.integer(i)), F.CN1), F.ReplaceAll(derivedFunction, F.Rule(x, x0))));
 			derivedFunction = F.D(derivedFunction, x);

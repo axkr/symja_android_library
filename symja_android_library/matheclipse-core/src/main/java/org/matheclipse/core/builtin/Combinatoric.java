@@ -188,9 +188,9 @@ public final class Combinatoric {
 				return new CartesianProductIterator(comps, fEmptyResultList);
 			}
 
-		}
-
-		public CartesianProduct() {
+			int size() {
+				return comps.size();
+			}
 		}
 
 		@Override
@@ -205,7 +205,7 @@ public final class Combinatoric {
 				}
 			}
 			CartesianProductList cpi = new CartesianProductList(la, F.List());
-			IAST result = F.List();
+			IAST result = F.ListAlloc(cpi.size());
 			for (IAST iast : cpi) {
 				result.append(iast);
 			}
@@ -1100,7 +1100,7 @@ public final class Combinatoric {
 			if (parts == 0) {
 				result.append(F.List());
 				return result;
-			} 
+			}
 			if (list.size() <= 2) {
 				if (list.isAST1()) {
 					if (parts == 0) {

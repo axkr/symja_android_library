@@ -19,8 +19,9 @@ public class ReplaceRepeated extends AbstractEvaluator {
 		try {
 			Validate.checkSize(ast, 3);
 			if (ast.arg2().isListOfLists()) {
-				IAST result = F.List();
-				for (IExpr subList : (IAST) ast.arg2()) {
+				IAST list = (IAST) ast.arg2();
+				IAST result = F.ListAlloc(list.size());
+				for (IExpr subList : list) {
 					IExpr temp = engine.evaluate(subList);
 					if (temp.isAST()) {
 						result.append(ast.arg1().replaceRepeated((IAST) temp));

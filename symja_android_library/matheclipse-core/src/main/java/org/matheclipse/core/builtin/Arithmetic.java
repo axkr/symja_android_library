@@ -1058,7 +1058,7 @@ public final class Arithmetic {
 			}
 			IExpr cond;
 			IAST row;
-			IAST result = F.List();
+			IAST result = F.ListAlloc(matrix.size());
 			IAST pw = F.ast(F.Piecewise);
 			pw.append(result);
 			boolean evaluated = false;

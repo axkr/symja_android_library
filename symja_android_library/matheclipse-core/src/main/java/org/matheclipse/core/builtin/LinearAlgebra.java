@@ -654,13 +654,13 @@ public final class LinearAlgebra {
 			if (ast.arg1().isAST()) {
 				IAST list = (IAST) ast.arg1();
 				int m = list.size();
-				IAST res = F.List();
+				IAST res = F.ListAlloc(m);
 				int offset = 0;
 				if ((ast.isAST2())) {
 					offset = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
 				}
 				for (int i = 1; i < m; i++) {
-					IAST row = F.List();
+					IAST row = F.ListAlloc(m);
 					for (int j = 1; j < m; j++) {
 						if (i + offset == j) {
 							row.append(list.get(i));
@@ -736,28 +736,27 @@ public final class LinearAlgebra {
 	 */
 	private static class Dimensions extends AbstractFunctionEvaluator {
 
-		public Dimensions() {
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
 
-			int n = Integer.MAX_VALUE;
+			int maximumLevel = Integer.MAX_VALUE;
 			if (ast.isAST2() && ast.arg2().isInteger()) {
-				n = Validate.checkIntType(ast, 2);
+				maximumLevel = Validate.checkIntType(ast, 2);
 			}
 			if (ast.arg1().isAST()) {
-				IAST res = F.List();
-				if (n > 0) {
+				if (maximumLevel > 0) {
 					IAST list = (IAST) ast.arg1();
 					IExpr header = list.head();
-					ArrayList<Integer> dims = getDimensions(list, header, n - 1);
-					for (int i = 0; i < dims.size(); i++) {
+					ArrayList<Integer> dims = getDimensions(list, header, maximumLevel - 1);
+					int dimsSize = dims.size();
+					IAST res = F.ListAlloc(dimsSize);
+					for (int i = 0; i < dimsSize; i++) {
 						res.append(F.integer(dims.get(i).intValue()));
 					}
+					return res;
 				}
-				return res;
+				return F.List();
 			}
 
 			return F.List();
@@ -847,11 +846,13 @@ public final class LinearAlgebra {
 		@Override
 		public IAST realMatrixEval(RealMatrix matrix) {
 			try {
-				IAST list = F.List();
+
 				EigenDecomposition ed = new EigenDecomposition(matrix);
 				double[] realValues = ed.getRealEigenvalues();
 				double[] imagValues = ed.getImagEigenvalues();
-				for (int i = 0; i < realValues.length; i++) {
+				int size = realValues.length;
+				IAST list = F.ListAlloc(size);
+				for (int i = 0; i < size; i++) {
 					if (F.isZero(imagValues[i])) {
 						list.append(F.num(realValues[i]));
 					} else {
@@ -894,10 +895,6 @@ public final class LinearAlgebra {
 	 * </pre>
 	 */
 	private static class Eigenvectors extends AbstractMatrix1Expr {
-
-		public Eigenvectors() {
-			super();
-		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -969,9 +966,10 @@ public final class LinearAlgebra {
 		@Override
 		public IAST realMatrixEval(RealMatrix matrix) {
 			try {
-				IAST list = F.List();
 				EigenDecomposition ed = new EigenDecomposition(matrix);
-				for (int i = 0; i < matrix.getColumnDimension(); i++) {
+				int size = matrix.getColumnDimension();
+				IAST list = F.ListAlloc(size);
+				for (int i = 0; i < size; i++) {
 					RealVector rv = ed.getEigenvector(i);
 					list.append(Convert.realVector2List(rv));
 				}
@@ -1097,11 +1095,10 @@ public final class LinearAlgebra {
 				return F.NIL;
 			}
 
-			final IAST resultList = F.List();
 			final int[] indexArray = new int[2];
 			indexArray[0] = rowSize;
 			indexArray[1] = columnSize;
-			final IndexTableGenerator generator = new IndexTableGenerator(indexArray, resultList,
+			final IndexTableGenerator generator = new IndexTableGenerator(indexArray, F.List,
 					new HilbertFunctionDiagonal());
 			final IAST matrix = (IAST) generator.table();
 			matrix.addEvalFlags(IAST.IS_MATRIX);
@@ -1375,12 +1372,14 @@ public final class LinearAlgebra {
 					variables = (IAST) ast.arg2();
 				}
 				if (variables.isPresent()) {
+					int variablesSize = variables.size();
 					IAST vector = (IAST) ast.arg1();
-					IAST jacobiMatrix = F.List();
+					int vectorSize = vector.size();
+					IAST jacobiMatrix = F.ListAlloc(vectorSize);
 					IAST jacobiRow = null;
-					for (int i = 1; i < vector.size(); i++) {
-						jacobiRow = F.List();
-						for (int j = 1; j < variables.size(); j++) {
+					for (int i = 1; i < vectorSize; i++) {
+						jacobiRow = F.ListAlloc(variablesSize);
+						for (int j = 1; j < variablesSize; j++) {
 							jacobiRow.append(F.D(vector.get(i), variables.get(j)));
 						}
 						jacobiMatrix.append(jacobiRow);
@@ -1518,19 +1517,13 @@ public final class LinearAlgebra {
 				final FieldMatrix<IExpr> uMatrix = lu.getU();
 				final int[] iArr = lu.getPivot();
 				// final int permutationCount = lu.getPermutationCount();
-				final IAST iList = List();
-				for (int i = 0; i < iArr.length; i++) {
-					// +1 because in MathEclipse the offset is +1 compared to
-					// java arrays
+				int size = iArr.length;
+				final IAST iList = F.ListAlloc(size);
+				for (int i = 0; i < size; i++) {
+					// +1 because in Symja the offset is +1 compared to java arrays
 					iList.append(F.integer(iArr[i] + 1));
 				}
-				final IAST result = List();
-				final IAST lMatrixAST = Convert.matrix2List(lMatrix);
-				final IAST uMatrixAST = Convert.matrix2List(uMatrix);
-				result.append(lMatrixAST);
-				result.append(uMatrixAST);
-				result.append(iList);
-				return result;
+				return F.List(Convert.matrix2List(lMatrix), Convert.matrix2List(uMatrix), iList);
 
 			} catch (final ClassCastException e) {
 				if (Config.SHOW_STACKTRACE) {
@@ -1641,7 +1634,7 @@ public final class LinearAlgebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
 			int[] dimensions = ast.arg1().isMatrix();
-			if (dimensions != null && dimensions[0] == dimensions[1]) {
+			if (dimensions != null && dimensions[0] == dimensions[1] && dimensions[0] > 0) {
 				// a matrix with square dimensions
 				IAST matrix = (IAST) ast.arg1();
 				IExpr variable = ast.arg2();
@@ -2232,13 +2225,8 @@ public final class LinearAlgebra {
 		@Override
 		public IAST realMatrixEval(RealMatrix matrix) {
 			try {
-				IAST list = F.List();
 				org.hipparchus.linear.QRDecomposition ed = new org.hipparchus.linear.QRDecomposition(matrix);
-				RealMatrix rMatrix = ed.getR();
-				RealMatrix qMatrix = ed.getQ();
-				list.append(Convert.realMatrix2List(qMatrix));
-				list.append(Convert.realMatrix2List(rMatrix));
-				return list;
+				return F.List(Convert.realMatrix2List(ed.getQ()), Convert.realMatrix2List(ed.getR()));
 			} catch (Exception ime) {
 				throw new WrappedException(ime);
 			}
@@ -2394,18 +2382,8 @@ public final class LinearAlgebra {
 				if (matrix != null) {
 					final org.hipparchus.linear.SingularValueDecomposition svd = new org.hipparchus.linear.SingularValueDecomposition(
 							matrix);
-					final RealMatrix uMatrix = svd.getU();
-					final RealMatrix sMatrix = svd.getS();
-					final RealMatrix vMatrix = svd.getV();
-
-					final IAST result = List();
-					final IAST uMatrixAST = new ASTRealMatrix(uMatrix, false);
-					final IAST sMatrixAST = new ASTRealMatrix(sMatrix, false);
-					final IAST vMatrixAST = new ASTRealMatrix(vMatrix, false);
-					result.append(uMatrixAST);
-					result.append(sMatrixAST);
-					result.append(vMatrixAST);
-					return result;
+					return F.List(new ASTRealMatrix(svd.getU(), false), new ASTRealMatrix(svd.getS(), false),
+							new ASTRealMatrix(svd.getV(), false));
 				}
 
 			} catch (final WrongArgumentType e) {
@@ -2731,7 +2709,6 @@ public final class LinearAlgebra {
 				final IAST lst = (IAST) ast.arg1();
 				final int len0 = lst.size() - 1;
 
-				final IAST resultList = List();
 				final int[] indexArray = new int[2];
 				indexArray[0] = len0;
 				indexArray[1] = len0;
@@ -2742,7 +2719,7 @@ public final class LinearAlgebra {
 						return Power(lst.get(index[0] + 1), F.integer(index[1]));
 					}
 				};
-				final IndexTableGenerator generator = new IndexTableGenerator(indexArray, resultList, function);
+				final IndexTableGenerator generator = new IndexTableGenerator(indexArray, F.List, function);
 				final IAST matrix = (IAST) generator.table();
 				matrix.addEvalFlags(IAST.IS_MATRIX);
 				return matrix;
@@ -2814,7 +2791,7 @@ public final class LinearAlgebra {
 	 * @return a list of values which solve the equations or <code>F#NIL</code>, if the equations have no solution.
 	 */
 	public static IAST cramersRule2x3(FieldMatrix<IExpr> matrix, boolean quiet, EvalEngine engine) {
-		IAST list = F.List();
+		IAST list = F.ListAlloc(2);
 		// a1 * b2 - b1 * a2
 		IExpr denominator = determinant2x2(matrix);
 		if (denominator.isZero()) {
@@ -2852,7 +2829,7 @@ public final class LinearAlgebra {
 	 * @return a list of values which solve the equations or <code>F#NIL</code>, if the equations have no solution.
 	 */
 	public static IAST cramersRule3x4(FieldMatrix<IExpr> matrix, boolean quiet, EvalEngine engine) {
-		IAST list = F.List();
+		IAST list = F.ListAlloc(3);
 		FieldMatrix<IExpr> denominatorMatrix = matrix.getSubMatrix(0, 2, 0, 2);
 		IExpr denominator = determinant3x3(denominatorMatrix);
 		if (denominator.isZero()) {
@@ -2930,11 +2907,10 @@ public final class LinearAlgebra {
 	 * @return
 	 */
 	public static IAST diagonalMatrix(final IExpr[] valueArray, int dimension) {
-		final IAST resultList = F.List();
 		final int[] indexArray = new int[2];
 		indexArray[0] = dimension;
 		indexArray[1] = dimension;
-		final IndexTableGenerator generator = new IndexTableGenerator(indexArray, resultList,
+		final IndexTableGenerator generator = new IndexTableGenerator(indexArray, F.List,
 				new IndexFunctionDiagonal(valueArray));
 		final IAST matrix = (IAST) generator.table();
 		matrix.addEvalFlags(IAST.IS_MATRIX);
@@ -3001,7 +2977,7 @@ public final class LinearAlgebra {
 				return F.NIL;
 			}
 		}
-		IAST list = F.List();
+		IAST list = F.ListAlloc(rows < cols - 1 ? cols - 1 : rows);
 		for (int j = 0; j < rows; j++) {
 			list.append(F.eval(F.Together(rowReduced.getEntry(j, cols - 1))));
 		}
@@ -3042,10 +3018,10 @@ public final class LinearAlgebra {
 				// no solution
 				return F.List();
 			}
-			IAST list = F.List();
-			IAST rule;
-			for (int j = 1; j < smallList.size(); j++) {
-				rule = F.Rule(listOfVariables.get(j), F.eval(smallList.get(j)));
+			int size = smallList.size();
+			IAST list = F.ListAlloc(size);
+			for (int j = 1; j < size; j++) {
+				IAST rule = F.Rule(listOfVariables.get(j), F.eval(smallList.get(j)));
 				list.append(rule);
 			}
 

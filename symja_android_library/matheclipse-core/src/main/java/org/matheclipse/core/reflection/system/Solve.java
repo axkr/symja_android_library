@@ -363,8 +363,9 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 
 		public void reset() {
-			this.fMatrixRow = F.List();
-			for (int i = 1; i < fListOfVariables.size(); i++) {
+			int size = fListOfVariables.size();
+			this.fMatrixRow = F.ListAlloc(size);
+			for (int i = 1; i < size; i++) {
 				fMatrixRow.append(F.C0);
 			}
 			this.fPlusAST = F.Plus();
@@ -742,15 +743,15 @@ public class Solve extends AbstractFunctionEvaluator {
 		if (maximumNumberOfResults > 0 && maximumNumberOfResults < resultList.size()) {
 			return;
 		}
-		if (variables.size() <= position) {
+		int size = variables.size();
+		if (size <= position) {
 			if (EvalEngine.get().evalTrue(expr)) {
-				IAST list = F.List();
-				for (int i = 1; i < variables.size(); i++) {
+				IAST list = F.ListAlloc(size);
+				for (int i = 1; i < size; i++) {
 					ISymbol sym = (ISymbol) variables.get(i);
 					list.append(F.Rule(sym, sym.get()));
 				}
 				resultList.append(list);
-
 			}
 			return;
 		}
@@ -791,9 +792,9 @@ public class Solve extends AbstractFunctionEvaluator {
 				temp = Roots.rootsOfVariable(numerator, denominator, F.List(sym), numerator.isNumericMode(), engine);
 			}
 			if (temp.isPresent()) {
-				IAST resultList = F.List();
 				if (temp.isASTSizeGE(F.List, 2)) {
 					IAST rootsList = (IAST) temp;
+					IAST resultList = F.ListAlloc(rootsList.size());
 					for (IExpr root : rootsList) {
 						resultList.append(F.Rule(sym, root));
 					}

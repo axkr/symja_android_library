@@ -3075,6 +3075,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLevel() {
+		check("Level(a + b ^ 3 * f(2 x ^ 2), {-1}, g)", "g(a,b,3,2,x,2)");
 		check("Level(a + b ^ 3 * f(2 x ^ 2), {-1})", "{a,b,3,2,x,2}");
 		check("Level({{{{a}}}}, 3)", "{{a},{{a}},{{{a}}}}");
 		check("Level({{{{a}}}}, -4)", "{{{{a}}}}");

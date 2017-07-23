@@ -1043,7 +1043,7 @@ public class Algebra {
 				this.m = plusAST.size() - 1;
 				this.parts = new int[m];
 				// precalculate all Power[] ASTs:
-				this.precalculatedPowerASTs = F.List();
+				this.precalculatedPowerASTs = F.ListAlloc(plusAST.size());
 				for (IExpr expr : plusAST) {
 					precalculatedPowerASTs.append(expr);
 				}
@@ -1112,7 +1112,7 @@ public class Algebra {
 			if (ast.arg1().isAST()) {
 				IAST arg1 = (IAST) ast.arg1();
 				if (arg1.isList()) {
-					return arg1.mapThread(F.List(), ast, 1);
+					return arg1.mapThread(F.ListAlloc(arg1.size()), ast, 1);
 				}
 				IExpr patt = null;
 				if (ast.size() > 2) {
@@ -1228,7 +1228,8 @@ public class Algebra {
 			VariablesSet eVar = new VariablesSet(ast.arg1());
 
 			if (ast.arg1().isList()) {
-				return ((IAST) ast.arg1()).mapThread(F.List(), ast, 1);
+				IAST list = (IAST) ast.arg1();
+				return list.mapThread(F.ListAlloc(list.size()), ast, 1);
 			}
 			IExpr expr = ast.arg1();
 			if (ast.isAST1()) {
@@ -1311,7 +1312,7 @@ public class Algebra {
 			} else {
 				map = factorAbstract.factors(poly);
 			}
-			IAST result = F.List();
+			IAST result = F.ListAlloc(map.size() + 1);
 			if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
 				result.append(F.List(F.fraction(gcd, lcm), F.C1));
 			}
@@ -1473,7 +1474,7 @@ public class Algebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
 
-			IAST variableList = F.List();
+			IAST variableList = F.NIL;
 			if (ast.isAST2()) {
 				if (ast.arg2().isSymbol()) {
 					ISymbol variable = (ISymbol) ast.arg2();
@@ -1494,7 +1495,7 @@ public class Algebra {
 					variableList = eVar.getVarList();
 				}
 			}
-			if (variableList.size() != 2) {
+			if (!variableList.isPresent() || variableList.size() != 2) {
 				// FactorTerms only possible for univariate polynomials
 				return F.NIL;
 			}
@@ -2159,10 +2160,7 @@ public class Algebra {
 					if (result == null) {
 						return F.NIL;
 					}
-					IAST list = F.List();
-					list.append(result[0]);
-					list.append(result[1]);
-					return list;
+					return F.List(result[0], result[1]);
 				}
 				return F.NIL;
 			}
@@ -2170,10 +2168,7 @@ public class Algebra {
 			if (result == null) {
 				return F.NIL;
 			}
-			IAST list = F.List();
-			list.append(result[0]);
-			list.append(result[1]);
-			return list;
+			return F.List(result[0], result[1]);
 		}
 
 		public static IExpr[] quotientRemainder(final IExpr arg1, IExpr arg2, ISymbol variable) {
@@ -2647,9 +2642,8 @@ public class Algebra {
 						ExprPolynomial polynomial = ring.create(expr, false, true);
 
 						long varDegree = polynomial.degree(0);
-						IAST result = List();
 						if (polynomial.isConstant()) {
-							return result;
+							return F.CEmptyList;
 						}
 						IExpr a;
 						IExpr b;

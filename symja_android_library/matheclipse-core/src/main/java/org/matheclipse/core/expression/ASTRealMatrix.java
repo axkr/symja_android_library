@@ -98,7 +98,7 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 			this.matrix = matrix;
 		}
 	}
-
+	
 	/**
 	 * Adds the objects in the specified collection to this {@code ArrayList}.
 	 * 

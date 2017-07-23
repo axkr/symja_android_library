@@ -2,8 +2,10 @@ package org.matheclipse.core.eval.util;
 
 import javax.annotation.Nonnull;
 
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Table structure generator (i.e. lists, vectors, matrices, tensors)
@@ -11,7 +13,7 @@ import org.matheclipse.core.interfaces.IExpr;
 public class IndexTableGenerator {
 	final int[] fIndexArray;
 
-	final IAST fPrototypeList;
+	final ISymbol fHead;
 
 	final IIndexFunction<? extends IExpr> fFunction;
 
@@ -19,29 +21,29 @@ public class IndexTableGenerator {
 
 	int[] fCurrentIndex;
 
-//	private final INestedList<IExpr, IAST> fCopier;
-
 	/**
 	 * 
 	 * @param indexArray
-	 * @param prototypeList prototype for cloning the basic structure of the resulting lists
+	 * @param head
+	 *            the head of the resulting lists
 	 * @param function
 	 */
-	public IndexTableGenerator(final int[] indexArray, final IAST prototypeList, final IIndexFunction<? extends IExpr> function) {
+	public IndexTableGenerator(final int[] indexArray, final ISymbol head,
+			final IIndexFunction<? extends IExpr> function) {
 		fIndexArray = indexArray;
-		fPrototypeList = prototypeList;
+		fHead = head;
 		fFunction = function;
 		fIndex = 0;
 		fCurrentIndex = new int[indexArray.length];
-//		fCopier = copier;
 	}
 
-	@Nonnull public IExpr table() {
+	@Nonnull
+	public IExpr table() {
 		if (fIndex < fIndexArray.length) {
 			final int iter = fIndexArray[fIndex];
 			final int index = fIndex++;
 			try {
-				final IAST result = fPrototypeList.clone();
+				final IAST result = F.ast(fHead, iter, false);
 				for (int i = 0; i < iter; i++) {
 					fCurrentIndex[index] = i;
 					result.append(table());

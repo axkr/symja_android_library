@@ -240,7 +240,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 			return F.List(F.C1);
 		}
 		Set<IInteger> set = new TreeSet<IInteger>();
-		final IAST primeFactorsList = factorize(F.List());
+		final IAST primeFactorsList = factorize();
 		int len = primeFactorsList.size() - 1;
 
 		// build the k-subsets from the primeFactorsList

@@ -1504,6 +1504,11 @@ public class F {
 	public final static INum CD1 = Num.valueOf(1.0);
 
 	/**
+	 * Represents <code>List()</code> (i.e. the constant empty list)
+	 */
+	public static IAST CEmptyList;
+	
+	/**
 	 * Represents <code>Infinity</code> (i.e. <code>Infinity-&gt;DirectedInfinity(1)</code>)
 	 */
 	public static IAST CInfinity;
@@ -1755,6 +1760,8 @@ public class F {
 			Slot.setAttributes(ISymbol.NHOLDALL);
 			SlotSequence.setAttributes(ISymbol.NHOLDALL);
 
+			CEmptyList = headAST0(List);
+			
 			CInfinity = unaryAST1(DirectedInfinity, C1);
 			oo = CInfinity;
 			CNInfinity = unaryAST1(DirectedInfinity, CN1);

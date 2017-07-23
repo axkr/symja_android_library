@@ -34,7 +34,8 @@ public class ToPolarCoordinates extends AbstractEvaluator {
 				return F.List(sqrtExpr, F.ArcCos(F.Divide(x, sqrtExpr)), F.ArcTan(y, z));
 			}
 		} else if (ast.arg1().isList()) {
-			return ((IAST) ast.arg1()).mapThread(F.List(), ast, 1);
+			IAST list = (IAST) ast.arg1();
+			return list.mapThread(F.ListAlloc(list.size()), ast, 1);
 		}
 		return F.NIL;
 	}

@@ -795,7 +795,8 @@ public final class NumberTheory {
 
 			if (ast.arg1().isList()) {
 				// thread over first list
-				return ((IAST) ast.arg1()).mapThread(F.List(), ast, 1);
+				IAST list = (IAST) ast.arg1();
+				return list.mapThread(F.ListAlloc(list.size()), ast, 1);
 			}
 
 			IExpr result = engine.evaluate(F.Divide(ast.arg1(), ast.arg2()));

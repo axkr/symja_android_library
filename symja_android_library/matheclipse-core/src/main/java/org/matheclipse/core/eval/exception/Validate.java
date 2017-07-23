@@ -581,17 +581,16 @@ public final class Validate {
 	 */
 	public static IAST checkEquations(final IAST ast, int position) {
 		IExpr expr = ast.get(position);
-		IAST termsEqualZeroList = F.List();
 		if (expr.isList() || expr.isAnd()) {
 			IAST listOrAndAST = (IAST) expr;
-			for (int i = 1; i < listOrAndAST.size(); i++) {
+			int size = listOrAndAST.size();
+			IAST termsEqualZeroList = F.ListAlloc(size);
+			for (int i = 1; i < size; i++) {
 				termsEqualZeroList.append(checkEquation(listOrAndAST.get(i)));
 			}
-
-		} else {
-			termsEqualZeroList.append(checkEquation(expr));
+			return termsEqualZeroList;
 		}
-		return termsEqualZeroList;
+		return F.List(checkEquation(expr));
 	}
 
 	/**
