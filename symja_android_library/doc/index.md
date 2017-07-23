@@ -424,6 +424,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [MatchingDissimilarity](functions/MatchingDissimilarity.md)
 * [MatchQ](functions/MatchQ.md)
 * [MathMLForm](functions/MathMLForm.md)
+* [MatrixMinimalPolynomial](functions/MatrixMinimalPolynomial.md)
 * [MatrixPower](functions/MatrixPower.md)
 * [MatrixQ](functions/MatrixQ.md)
 * [MatrixRank](functions/MatrixRank.md)

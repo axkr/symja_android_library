@@ -3337,6 +3337,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMatrixMinimalPolynomial() {
+		// wikipedia
+		check("MatrixMinimalPolynomial({{1, -1, -1}, {1, -2, 1}, {0, 1, -3}}, x)", "-1+x+4*x^2+x^3");
+		
 		check("MatrixMinimalPolynomial({{2, 0}, {0, 2}}, x)", "-2+x");
 		check("MatrixMinimalPolynomial({{3, -1, 0}, {0, 2, 0}, {1, -1, 2}}, x)", "6-5*x+x^2");
 		check("CharacteristicPolynomial({{3, -1, 0}, {0, 2, 0}, {1, -1, 2}}, x)", "12-16*x+7*x^2-x^3");
@@ -6695,10 +6698,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTr() {
+		check("Tr({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", "15");
+		check("Tr({{a, b, c}, {d, e, f}, {g, h, i}})", "a+e+i");
 		check("Tr({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, f)", "f(1,5,9)");
-		// check("Tr[{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, Plus, 1]", "");
 	}
-
+ 
 	public void testTrace() {
 		check("Trace(u = 2; Do(u = u*u, {3}); u, Times)", "{{{{u*u,2*2}},{{u*u,4*4}},{{u*u,16*16}}}}");
 		check("x=5;Trace(Mod((3 + x)^2, x - 1))", "{{{{x,5},3+5,8},8^2,64},{{x,5},-1+5,4},Mod(64,4),0}");

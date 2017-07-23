@@ -5,7 +5,11 @@ PseudoInverse(matrix)
 
 > computes the Moore-Penrose pseudoinverse of the `matrix`. If `matrix` is invertible, the pseudoinverse equals the inverse.
 
+See:
+* [Wikipedia: Moore-Penrose pseudoinverse](https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_pseudoinverse)
+ 
 ### Examples
+
 ```
 >> PseudoInverse({{1, 2}, {2, 3}, {3, 4}})
 {{1.0000000000000002,2.000000000000001},

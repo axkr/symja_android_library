@@ -70,7 +70,7 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public final class LinearAlgebra {
-	
+
 	static {
 		F.ArrayDepth.setEvaluator(new ArrayDepth());
 		F.BrayCurtisDistance.setEvaluator(new BrayCurtisDistance());
@@ -113,6 +113,26 @@ public final class LinearAlgebra {
 		F.VectorAngle.setEvaluator(new VectorAngle());
 	}
 
+	/**
+	 * <pre>
+	 * ArrayDepth(a)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the depth of the non-ragged array <code>a</code>, defined as <code>Length(Dimensions(a))</code>.<br />
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ArrayDepth({{a,b},{c,d}})   
+	 * 2    
+	 * 
+	 * &gt;&gt; ArrayDepth(x)
+	 * 0
+	 * </pre>
+	 */
 	private final static class ArrayDepth extends AbstractFunctionEvaluator {
 
 		@Override
@@ -137,7 +157,20 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * BrayCurtisDistance of two vectors
+	 * <pre>
+	 * BrayCurtisDistance(u, v)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the Bray Curtis distance between <code>u</code> and <code>v</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * &gt;&gt; BrayCurtisDistance[{-1, -1}, {10, 10}]
+	 * 11/9
+	 * </pre>
 	 */
 	private final static class BrayCurtisDistance extends AbstractEvaluator {
 
@@ -167,7 +200,22 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * CanberraDistance of two vectors
+	 * <pre>
+	 * CanberraDistance(u, v)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the canberra distance between <code>u</code> and <code>v</code>, which is a weighted version of the
+	 * Manhattan distance.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; CanberraDistance({-1, -1}, {1, 1})
+	 * 2
+	 * </pre>
 	 */
 	private final static class CanberraDistance extends AbstractEvaluator {
 
@@ -197,10 +245,28 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Compute the characteristic polynomial of a square matrix.
+	 * <pre>
+	 * CharacteristicPolynomial(matrix, var)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Characteristic_polynomial">
-	 * Wikipedia - Characteristic polynomial</a>
+	 * <blockquote>
+	 * <p>
+	 * computes the characteristic polynomial of a <code>matrix</code> for the variable <code>var</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Characteristic_polynomial">Wikipedia - Characteristic
+	 * polynomial</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; CharacteristicPolynomial({{1, 2}, {42, 43}}, x)
+	 * -41-44*x+x^2
+	 * </pre>
 	 */
 	private final static class CharacteristicPolynomial extends AbstractFunctionEvaluator {
 
@@ -230,8 +296,7 @@ public final class LinearAlgebra {
 		 * @param matrix
 		 *            the square matrix
 		 * @param variable
-		 *            the variable which should be used in the resulting
-		 *            characteristic polynomial
+		 *            the variable which should be used in the resulting characteristic polynomial
 		 * @return
 		 */
 		public static IAST generateCharacteristicPolynomial(int dim, IAST matrix, IExpr variable) {
@@ -242,7 +307,23 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * ChessboardDistance of two vectors
+	 * <pre>
+	 * ChessboardDistance(u, v)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the chessboard distance (also known as Chebyshev distance) between <code>u</code> and <code>v</code>,
+	 * which is the number of moves a king on a chessboard needs to get from square <code>u</code> to square
+	 * <code>v</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ChessboardDistance({-1, -1}, {1, 1})
+	 * 2
+	 * </pre>
 	 */
 	private final static class ChessboardDistance extends AbstractEvaluator {
 
@@ -276,11 +357,22 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Conjugate and transpose a matrix.
+	 * <pre>
+	 * ConjugateTranspose(matrix)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Complex_conjugation">Wikipedia:
-	 * Complex conjugation</a> and
-	 * <a href="http://en.wikipedia.org/wiki/Transpose">Transpose</a>
+	 * <blockquote>
+	 * <p>
+	 * get the transposed <code>matrix</code> with conjugated matrix elements.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Transpose">Wikipedia - Transpose</a></li>
+	 * <li><a href="http://en.wikipedia.org/wiki/Complex_conjugation">Wikipedia - Complex conjugation</a></li>
+	 * </ul>
 	 */
 	private final static class ConjugateTranspose extends Transpose {
 
@@ -296,7 +388,24 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * CosineDistance of two vectors
+	 * <pre>
+	 * CosineDistance(u, v)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the cosine distance between <code>u</code> and <code>v</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; N(CosineDistance({7, 9}, {71, 89}))
+	 * 7.596457213221441E-5
+	 * 
+	 * &gt;&gt; CosineDistance({a, b}, {c, d})
+	 * 1-(a*c+b*d)/(Sqrt(Abs(a)^2+Abs(b)^2)*Sqrt(Abs(c)^2+Abs(d)^2))
+	 * </pre>
 	 */
 	private final static class CosineDistance extends AbstractEvaluator {
 
@@ -326,10 +435,39 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Calculate the cross product of 2 vectors with dimension 3.
+	 * <pre>
+	 * Cross(a, b)
+	 * </pre>
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Cross_product">Wikipedia:Cross
-	 * product</a>
+	 * <blockquote>
+	 * <p>
+	 * computes the vector cross product of <code>a</code> and <code>b</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Cross_product">Wikipedia: Cross product</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Cross({x1, y1, z1}, {x2, y2, z2})
+	 * {-y2*z1+y1*z2,x2*z1-x1*z2,-x2*y1+x1*y2}
+	 * 
+	 * &gt;&gt; Cross({x, y})
+	 * {-y,x}
+	 * </pre>
+	 * <p>
+	 * The arguments are expected to be vectors of equal length, and the number of arguments is expected to be 1 less
+	 * than their length.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Cross({1, 2}, {3, 4, 5})
+	 * Cross({1, 2}, {3, 4, 5})
+	 * </pre>
 	 */
 	private final static class Cross extends AbstractFunctionEvaluator {
 
@@ -364,6 +502,26 @@ public final class LinearAlgebra {
 
 	}
 
+	/**
+	 * <pre>
+	 * DesignMatrix(m, f, x)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the design matrix.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, x, x)
+	 * {{1,2},{1,3},{1,5},{1,7}}
+	 * 
+	 * &gt;&gt; DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, f(x), x)
+	 * {{1,f(2)},{1,f(3)},{1,f(5)},{1,f(7)}}
+	 * </pre>
+	 */
 	private static class DesignMatrix extends AbstractEvaluator {
 
 		public DesignMatrix() {
@@ -405,10 +563,35 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Compute the determinant of a matrix
+	 * <pre>
+	 * Det(matrix)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Determinant">Determinant</a>
+	 * <blockquote>
+	 * <p>
+	 * computes the determinant of the <code>matrix</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Determinant">Wikipedia: Determinant</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
 	 * 
+	 * <pre>
+	 * &gt;&gt; Det({{1, 1, 0}, {1, 0, 1}, {0, 1, 1}})
+	 * -2
+	 * </pre>
+	 * <p>
+	 * Symbolic determinant:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Det({{a, b, c}, {d, e, f}, {g, h, i}})
+	 * -c*e*g+b*f*g+c*d*h-a*f*h-b*d*i+a*e*i
+	 * </pre>
 	 */
 	private static class Det extends AbstractMatrix1Expr {
 
@@ -436,7 +619,28 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Create a diagonal matrix from a list
+	 * <pre>
+	 * DiagonalMatrix(list)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * gives a matrix with the values in $list$ on its diagonal and zeroes elsewhere.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * &gt;&gt; DiagonalMatrix({1, 2, 3})
+	 * {{1, 0, 0}, {0, 2, 0}, {0, 0, 3}}
+	 * 
+	 * &gt;&gt; MatrixForm(%)
+	 *  1   0   0
+	 *  0   2   0
+	 *  0   0   3
+	 * 
+	 * &gt;&gt; DiagonalMatrix(a + b)
+	 * DiagonalMatrix(a + b)
+	 * </pre>
 	 */
 	private static class DiagonalMatrix extends AbstractFunctionEvaluator {
 
@@ -483,7 +687,52 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Get the dimensions of an expression
+	 * <pre>
+	 * Dimensions(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a list of the dimensions of the expression <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * A vector of length 3:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Dimensions({a, b, c})
+	 *  = {3}
+	 * </pre>
+	 * <p>
+	 * A 3x2 matrix:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Dimensions({{a, b}, {c, d}, {e, f}})
+	 *  = {3, 2}
+	 * </pre>
+	 * <p>
+	 * Ragged arrays are not taken into account:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Dimensions({{a, b}, {b, c}, {c, d, e}})
+	 * {3}
+	 * </pre>
+	 * <p>
+	 * The expression can have any head:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Dimensions[f[f[a, b, c]]]
+	 * {1, 3}
+	 * &gt;&gt; Dimensions({})
+	 * {0}
+	 * &gt;&gt; Dimensions({{}})
+	 * {1, 0}
+	 * </pre>
 	 */
 	private static class Dimensions extends AbstractFunctionEvaluator {
 
@@ -522,11 +771,27 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Compute the numerical Eigenvalues of a real symmetric matrix
+	 * <pre>
+	 * Eigenvalues(matrix)
+	 * </pre>
 	 * 
-	 * See: <a href=
-	 * "http://en.wikipedia.org/wiki/Eigenvalue,_eigenvector_and_eigenspace" >
-	 * Wikipedia - Eigenvalue, eigenvector and eigenspace</a>
+	 * <blockquote>
+	 * <p>
+	 * get the numerical eigenvalues of the <code>matrix</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Eigenvalue">Wikipedia - Eigenvalue</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt;&gt; Eigenvalues({{1,0,0},{0,1,0},{0,0,1}})
+	 * {1.0,1.0,1.0}
+	 * </pre>
 	 */
 	private static class Eigenvalues extends AbstractMatrix1Expr {
 
@@ -606,11 +871,27 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Compute the numerical Eigenvectors of a real symmetric matrix
+	 * <pre>
+	 * Eigenvectors(matrix)
+	 * </pre>
 	 * 
-	 * See: <a href=
-	 * "http://en.wikipedia.org/wiki/Eigenvalue,_eigenvector_and_eigenspace" >
-	 * Eigenvalue, eigenvector and eigenspace</a>
+	 * <blockquote>
+	 * <p>
+	 * get the numerical eigenvectors of the <code>matrix</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Eigenvalue">Wikipedia - Eigenvalue</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt;&gt; Eigenvectors({{1,0,0},{0,1,0},{0,0,1}})
+	 * {{1.0,0.0,0.0},{0.0,1.0,0.0},{0.0,0.0,1.0}}
+	 * </pre>
 	 */
 	private static class Eigenvectors extends AbstractMatrix1Expr {
 
@@ -707,7 +988,24 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * EuclidianDistance of two vectors
+	 * <pre>
+	 * EuclideanDistance(u, v)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the euclidean distance between <code>u</code> and <code>v</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; EuclideanDistance({-1, -1}, {1, 1})
+	 * 2*Sqrt(2)
+	 * 
+	 * &gt;&gt; EuclideanDistance({a, b}, {c, d})
+	 * Sqrt(Abs(a-c)^2+Abs(b-d)^2)
+	 * </pre>
 	 */
 	private final static class EuclideanDistance extends AbstractEvaluator {
 
@@ -744,9 +1042,28 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Hilbert matrix, defined by A<sub>i,j</sub> = 1 / (i+j-1). See <a>
-	 * href="http://en.wikipedia.org/wiki/Hilbert_matrix">Wikipedia:Hilbert
-	 * matrix</a>
+	 * <pre>
+	 * HilbertMatrix(n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * gives the hilbert matrix with <code>n</code> rows and columns.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Hilbert_matrix">Wikipedia - Hilbert matrix</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; HilbertMatrix(2)
+	 * {{1,1/2},
+	 *  {1/2,1/3}}
+	 * </pre>
 	 */
 	private static class HilbertMatrix extends AbstractFunctionEvaluator {
 
@@ -793,10 +1110,21 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Create an identity matrix
+	 * <pre>
+	 * IdentityMatrix(n)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Identity_matrix">Wikipedia -
-	 * Identity matrix</a>
+	 * <blockquote>
+	 * <p>
+	 * gives the identity matrix with <code>n</code> rows and columns.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; IdentityMatrix(3)
+	 * {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}
+	 * </pre>
 	 */
 	private static class IdentityMatrix extends AbstractFunctionEvaluator {
 
@@ -817,6 +1145,38 @@ public final class LinearAlgebra {
 
 	}
 
+	/**
+	 * <pre>
+	 * Inner(f, x, y, g)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * computes a generalised inner product of <code>x</code> and <code>y</code>, using a multiplication function
+	 * <code>f</code> and an addition function <code>g</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Inner(f, {a, b}, {x, y}, g)
+	 * g(f(a, x), f(b, y))
+	 * </pre>
+	 * <p>
+	 * 'Inner' can be used to compute a dot product:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Inner(Times, {a, b}, {c, d}, Plus) == {a, b} . {c, d}
+	 * </pre>
+	 * <p>
+	 * The inner product of two boolean matrices:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Inner(And, {{False, False}, {False, True}}, {{True, False}, {True, True}}, Or)
+	 * {{False, False}, {True, True}}
+	 * </pre>
+	 */
 	private static class Inner extends AbstractFunctionEvaluator {
 
 		private static class InnerAlgorithm {
@@ -916,10 +1276,42 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Invert a matrix
+	 * <pre>
+	 * Inverse(matrix)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Invertible_matrix">Invertible
-	 * matrix</a>
+	 * <blockquote>
+	 * <p>
+	 * computes the inverse of the <code>matrix</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Invertible_matrix">Wikipedia - Invertible matrix</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Inverse({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}})
+	 * {{-3,2,0},
+	 *  {2,-1,0},
+	 *  {1,-2,1}}
+	 * </pre>
+	 * <p>
+	 * The matrix <code>{{1, 0}, {0, 0}}</code> is singular.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Inverse({{1, 0}, {0, 0}}) 
+	 * Inverse({{1, 0}, {0, 0}})
+	 * 
+	 * &gt;&gt; Inverse({{1, 0, 0}, {0, Sqrt(3)/2, 1/2}, {0,-1 / 2, Sqrt(3)/2}})
+	 * {{1,0,0},
+	 *  {0,Sqrt(3)/2,-1/2},
+	 *  {0,1/2,1/(1/(2*Sqrt(3))+Sqrt(3)/2)}}
+	 * </pre>
 	 */
 	private final static class Inverse extends AbstractMatrix1Matrix {
 
@@ -951,10 +1343,21 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Create a Jacobian matrix.
+	 * <pre>
+	 * JacobiMatrix(matrix, var)
+	 * </pre>
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Jacobian">Jacobian</a>
-	 * 
+	 * <blockquote>
+	 * <p>
+	 * creates a Jacobian matrix.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Jacobian">Wikipedia - Jacobian</a></li>
+	 * </ul>
 	 */
 	private static class JacobiMatrix extends AbstractFunctionEvaluator {
 		public JacobiMatrix() {
@@ -992,9 +1395,56 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Determine <code>x</code> for Matrix <code>A</code> in the equation
-	 * <code>A.x==b</code>
+	 * <pre>
+	 * LinearSolve(matrix, right)
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * solves the linear equation system 'matrix . x = right' and returns one corresponding solution <code>x</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; LinearSolve({{1, 1, 0}, {1, 0, 1}, {0, 1, 1}}, {1, 2, 3})
+	 * {0,1,2}
+	 * </pre>
+	 * <p>
+	 * Test the solution:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; {{1, 1, 0}, {1, 0, 1}, {0, 1, 1}} . {0, 1, 2}
+	 * {1,2,3}
+	 * </pre>
+	 * <p>
+	 * If there are several solutions, one arbitrary solution is returned:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; LinearSolve({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, {1, 1, 1})
+	 * {-1,1,0}
+	 * </pre>
+	 * <p>
+	 * Infeasible systems are reported:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; LinearSolve({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, {1, -2, 3})
+	 *  : Linear equation encountered that has no solution.
+	 * LinearSolve({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, {1, -2, 3})
+	 * </pre>
+	 * <p>
+	 * Argument {1, {2}} at position 1 is not a non-empty rectangular matrix.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; LinearSolve({1, {2}}, {1, 2})
+	 * LinearSolve({1, {2}}, {1, 2})
+	 * &gt;&gt; LinearSolve({{1, 2}, {3, 4}}, {1, {2}}) 
+	 * LinearSolve({{1, 2}, {3, 4}}, {1, {2}})
+	 * </pre>
 	 */
 	private static class LinearSolve extends AbstractFunctionEvaluator {
 
@@ -1022,6 +1472,37 @@ public final class LinearAlgebra {
 
 	}
 
+	/**
+	 * <pre>
+	 * LUDecomposition(matrix)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * calculate the LUP-decomposition of a square <code>matrix</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/LU_decomposition">Wikipedia - LU decomposition</a></li>
+	 * <li><a href=
+	 * "http://commons.apache.org/proper/commons-math/apidocs/org/apache/commons/math3/linear/FieldLUDecomposition.html">Commons
+	 * Math - Class FieldLUDecomposition</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt;&gt; LUDecomposition[{{1, 2, 3}, {3, 4, 11}, {13, 7, 8}}]
+	 * {{{1,0,0},
+	 *   {3,1,0},
+	 *   {13,19/2,1}},
+	 *  {{1,2,3},
+	 *   {0,-2,2},
+	 *   {0,0,-50}},{1,2,3}}
+	 * </pre>
+	 */
 	private static class LUDecomposition extends AbstractFunctionEvaluator {
 
 		@Override
@@ -1067,10 +1548,28 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * The Manhattan distance of two vectors.
+	 * <pre>
+	 * ManhattanDistance(u, v)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Taxicab_geometry">Taxicab
-	 * geometry</a>
+	 * <blockquote>
+	 * <p>
+	 * returns the Manhattan distance between <code>u</code> and <code>v</code>, which is the number of horizontal or
+	 * vertical moves in the grid like Manhattan city layout to get from <code>u</code> to <code>v</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Taxicab_geometry">Wikipedia - Taxicab geometry</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ManhattanDistance({-1, -1}, {1, 1})
+	 * 4
+	 * </pre>
 	 */
 	private final static class ManhattanDistance extends AbstractEvaluator {
 
@@ -1109,11 +1608,28 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Compute the minimal polynomial of a matrix.
+	 * <pre>
+	 * MatrixMinimalPolynomial(matrix, var)
+	 * </pre>
 	 * 
-	 * See <a href=
-	 * "https://en.wikipedia.org/wiki/Minimal_polynomial_(linear_algebra)">
-	 * Wikipedia - Minimal polynomial (linear algebra)</a>
+	 * <blockquote>
+	 * <p>
+	 * computes the matrix minimal polynomial of a <code>matrix</code> for the variable <code>var</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Minimal_polynomial_(linear_algebra)">Wikipedia - Minimal polynomial
+	 * (linear algebra)</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; MatrixMinimalPolynomial({{1, -1, -1}, {1, -2, 1}, {0, 1, -3}}, x)
+	 * -1+x+4*x^2+x^3
+	 * </pre>
 	 */
 	private static class MatrixMinimalPolynomial extends AbstractFunctionEvaluator {
 
@@ -1147,6 +1663,37 @@ public final class LinearAlgebra {
 		}
 
 	}
+
+	/**
+	 * <pre>
+	 * MatrixPower(matrix, n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * computes the <code>n</code>th power of a <code>matrix</code>
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; MatrixPower({{1, 2}, {1, 1}}, 10)
+	 * {{3363,4756},
+	 *  {2378,3363}}
+	 * 
+	 * &gt;&gt; MatrixPower({{1, 2}, {2, 5}}, -3)
+	 * {{169,-70},
+	 *  {-70,29}}
+	 * </pre>
+	 * <p>
+	 * Argument {{1, 0}, {0}} at position 1 is not a non-empty rectangular matrix.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; MatrixPower({{1, 0}, {0}}, 2)
+	 * MatrixPower({{1, 0}, {0}}, 2)
+	 * </pre>
+	 */
 
 	private final static class MatrixPower extends AbstractFunctionEvaluator {
 
@@ -1210,11 +1757,39 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Compute the rank of a matrix.
+	 * <pre>
+	 * MatrixRank(matrix)
+	 * </pre>
 	 * 
-	 * See: <a href=
-	 * "http://en.wikipedia.org/wiki/Rank_%28linear_algebra%29">Wikipedia - Rank
-	 * (linear algebra)</a>.
+	 * <blockquote>
+	 * <p>
+	 * returns the rank of <code>matrix</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Rank_%28linear_algebra%29">Wikipedia - Rank (linear algebra</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; MatrixRank({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})
+	 * 2
+	 * &gt;&gt; MatrixRank({{1, 1, 0}, {1, 0, 1}, {0, 1, 1}})
+	 * 3
+	 * &gt;&gt; MatrixRank({{a, b}, {3 a, 3 b}})
+	 * 1
+	 * </pre>
+	 * <p>
+	 * Argument <code>{{1, 0}, {0}}</code> at position <code>1</code> is not a non-empty rectangular matrix.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; MatrixRank({{1, 0}, {0}})
+	 * MatrixRank({{1, 0}, {0}})
+	 * </pre>
 	 */
 	private final static class MatrixRank extends AbstractFunctionEvaluator {
 
@@ -1252,7 +1827,81 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Norm of a given argument
+	 * <pre>
+	 * Norm(m, l)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * computes the <code>l</code>-norm of matrix <code>m</code> (currently only works for vectors!).<br />
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Norm(m)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * computes the 2-norm of matrix <code>m</code> (currently only works for vectors!).<br />
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Norm({1, 2, 3, 4}, 2)    
+	 * Sqrt(30)    
+	 * 
+	 * &gt;&gt; Norm({10, 100, 200}, 1)    
+	 * 310    
+	 * 
+	 * &gt;&gt; Norm({a, b, c})
+	 * Sqrt(Abs(a)^2+Abs(b)^2+Abs(c)^2)    
+	 * 
+	 * &gt;&gt; Norm({-100, 2, 3, 4}, Infinity)    
+	 * 100    
+	 * 
+	 * &gt;&gt; Norm(1 + I)    
+	 * Sqrt(2)
+	 * </pre>
+	 * <p>
+	 * The first Norm argument should be a number, vector, or matrix.<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Norm({1, {2, 3}})    
+	 * Norm({1, {2, 3}})    
+	 * 
+	 * &gt;&gt; Norm({x, y})    
+	 * Sqrt(Abs(x)^2+Abs(y)^2) 
+	 * 
+	 * &gt;&gt; Norm({x, y}, p)    
+	 * (Abs(x) ^ p + Abs(y) ^ p) ^ (1 / p)
+	 * </pre>
+	 * <p>
+	 * The second argument of Norm, 0, should be a symbol, Infinity, or an integer or real number not less than 1 for
+	 * vector p-norms; or 1, 2, Infinity, or &ldquo;Frobenius&rdquo; for matrix norms.<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Norm({x, y}, 0)    
+	 * Norm({x, y}, 0)
+	 * </pre>
+	 * <p>
+	 * The second argument of Norm, 0.5, should be a symbol, Infinity, or an integer or real number not less than 1 for
+	 * vector p-norms; or 1, 2, Infinity, or &ldquo;Frobenius&rdquo; for matrix norms.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Norm({x, y}, 0.5)     
+	 * Norm({x, y}, 0.5)
+	 * 
+	 * &gt;&gt; Norm({})    
+	 * Norm({})
+	 * 
+	 * &gt;&gt; Norm(0)    
+	 * 0
+	 * </pre>
 	 */
 	private final static class Norm extends AbstractEvaluator {
 
@@ -1312,8 +1961,43 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * <code>Normalize[vector]</code> calculates the normalized
-	 * <code>vector</code>.
+	 * <pre>
+	 * Normalize(v)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * calculates the normalized vector <code>v</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Normalize(z)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * calculates the normalized complex number <code>z</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Normalize({1, 1, 1, 1})
+	 * {1/2,1/2,1/2,1/2}
+	 * 
+	 * &gt;&gt; Normalize(1 + I)
+	 * (1+I)/Sqrt(2) 
+	 * 
+	 * &gt;&gt; Normalize(0)
+	 * 0
+	 * 
+	 * &gt;&gt; Normalize({0})
+	 * {0}
+	 * 
+	 * &gt;&gt; Normalize({})
+	 * {}
+	 * </pre>
 	 */
 	private final static class Normalize extends AbstractEvaluator {
 
@@ -1339,13 +2023,51 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Compute the null space of a matrix.
+	 * <pre>
+	 * NullSpace(matrix)
+	 * </pre>
 	 * 
-	 * See: <a href=
-	 * "http://en.wikipedia.org/wiki/Kernel_%28linear_algebra%29">Wikipedia -
-	 * Kernel (linear algebra)</a>. <a href=
-	 * "http://en.wikibooks.org/wiki/Linear_Algebra/Null_Spaces">Wikibooks -
-	 * Null Spaces</a>
+	 * <blockquote>
+	 * <p>
+	 * returns a list of vectors that span the nullspace of the <code>matrix</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Kernel_%28linear_algebra%29">Wikipedia - Kernel (linear
+	 * algebra)</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; NullSpace({{1,0,-3,0,2,-8},{0,1,5,0,-1,4},{0,0,0,1,7,-9},{0,0,0,0,0,0}})
+	 * {{3,-5,1,0,0,0},
+	 *  {-2,1,0,-7,1,0},
+	 *  {8,-4,0,9,0,1}}
+	 * </pre>
+	 * 
+	 * <pre>
+	 * ```   
+	 * &gt;&gt; NullSpace({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})   
+	 * {{1,-2,1}}
+	 * 
+	 * &gt;&gt; A = {{1, 1, 0}, {1, 0, 1}, {0, 1, 1}}   
+	 * &gt;&gt; NullSpace(A)   
+	 * {}   
+	 * 
+	 * &gt;&gt; MatrixRank(A)   
+	 * 3
+	 * </pre>
+	 * <p>
+	 * Argument {1, {2}} at position 1 is not a non-empty rectangular matrix.<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; NullSpace({1, {2}})    
+	 * NullSpace({1, {2}})
+	 * </pre>
 	 */
 	private static class NullSpace extends AbstractFunctionEvaluator {
 
@@ -1384,11 +2106,46 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Pseudoinverse of a matrix
+	 * <pre>
+	 * PseudoInverse(matrix)
+	 * </pre>
 	 * 
-	 * See <a href=
-	 * "https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_pseudoinverse">
-	 * Moore-Penrose pseudoinverse</a>
+	 * <blockquote>
+	 * <p>
+	 * computes the Moore-Penrose pseudoinverse of the <code>matrix</code>. If <code>matrix</code> is invertible, the
+	 * pseudoinverse equals the inverse.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_pseudoinverse">Wikipedia: Moore-Penrose
+	 * pseudoinverse</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PseudoInverse({{1, 2}, {2, 3}, {3, 4}})
+	 * {{1.0000000000000002,2.000000000000001},
+	 *  {1.9999999999999976,2.999999999999996},
+	 *  {3.000000000000001,4.0}}
+	 * &gt;&gt; PseudoInverse({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}})
+	 * {{-2.999999999999998,1.9999999999999967,4.440892098500626E-16},
+	 *  {1.999999999999999,-0.9999999999999982,-2.7755575615628914E-16},
+	 *  {0.9999999999999999,-1.9999999999999991,1.0}}
+	 * &gt;&gt; PseudoInverse({{1.0, 2.5}, {2.5, 1.0}}) 
+	 * {{-0.19047619047619038,0.47619047619047616},
+	 *  {0.47619047619047616,-0.1904761904761904}}
+	 * </pre>
+	 * <p>
+	 * Argument {1, {2}} at position 1 is not a non-empty rectangular matrix.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PseudoInverse({1, {2}})
+	 * PseudoInverse({1, {2}})
+	 * </pre>
 	 */
 	private final static class PseudoInverse extends AbstractMatrix1Matrix {
 
@@ -1415,6 +2172,29 @@ public final class LinearAlgebra {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * QRDecomposition(matrix)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * computes the QR decomposition of the <code>matrix</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; QRDecomposition({{1, 2}, {3, 4}, {5, 6}})
+	 * {
+	 * {{-0.16903085094570325,0.8970852271450604,0.4082482904638636},
+	 *  {-0.50709255283711,0.2760262237369421,-0.8164965809277258},
+	 *  {-0.8451542547285165,-0.3450327796711773,0.40824829046386274}},
+	 * {{-5.916079783099616,-7.437357441610944},
+	 *  {0.0,0.828078671210824},
+	 *  {0.0,0.0}}}
+	 * </pre>
+	 */
 	private static class QRDecomposition extends AbstractMatrix1Expr {
 
 		@Override
@@ -1426,7 +2206,7 @@ public final class LinearAlgebra {
 				if (dim != null) {
 					// if (dim[0] == 1 && dim[1] == 1) {
 					// }
-					
+
 					// if (dim[0] == 2 && dim[1] == 2) {
 					// matrix = Convert.list2Matrix((IAST) ast.arg1());
 					// if (matrix != null) {
@@ -1460,7 +2240,7 @@ public final class LinearAlgebra {
 				list.append(Convert.realMatrix2List(rMatrix));
 				return list;
 			} catch (Exception ime) {
-				throw new WrappedException(ime); 
+				throw new WrappedException(ime);
 			}
 		}
 
@@ -1471,17 +2251,47 @@ public final class LinearAlgebra {
 	}
 
 	/**
+	 * <pre>
+	 * RowReduce(matrix)
+	 * </pre>
+	 * 
+	 * <blockquote>
 	 * <p>
-	 * Reduce the matrix to row reduced echelon form.
+	 * returns the reduced row-echelon form of <code>matrix</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row echelon form</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; RowReduce({{1,1,0,1,5},{1,0,0,2,2},{0,0,1,4,-1},{0,0,0,0,0}})
+	 * {{1,0,0,2,2},  
+	 *  {0,1,0,-1,3},
+	 *  {0,0,1,4,-1},
+	 *  {0,0,0,0,0}}
+	 * 
+	 * &gt;&gt; RowReduce({{1, 0, a}, {1, 1, b}})   
+	 * {{1,0,a},
+	 *  {0,1,-a+b}}
+	 * 
+	 * &gt;&gt; RowReduce({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})
+	 * {{1,0,-1},
+	 *  {0,1,2},
+	 *  {0,0,0}}
+	 * </pre>
+	 * <p>
+	 * Argument {{1, 0}, {0}} at position 1 is not a non-empty rectangular matrix.<br />
 	 * </p>
 	 * 
-	 * See:
-	 * <ul>
-	 * <li><a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia -
-	 * Row echelon form</a></li>
-	 * <li><a href="https://www.math.hmc.edu/calculus/tutorials/linearsystems/">
-	 * Solving Systems of Linear Equations; Row Reduction </a></li>
-	 * </ul>
+	 * <pre>
+	 * &gt;&gt; RowReduce({{1, 0}, {0}})   
+	 * RowReduce({{1, 0}, {0}})
+	 * </pre>
 	 */
 	private static class RowReduce extends AbstractFunctionEvaluator {
 
@@ -1516,9 +2326,60 @@ public final class LinearAlgebra {
 	}
 
 	/**
+	 * <pre>
+	 * SingularValueDecomposition(matrix)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Singular_value_decomposition">
-	 * Wikipedia: Singular value decomposition</a>
+	 * <blockquote>
+	 * <p>
+	 * calculates the singular value decomposition for the <code>matrix</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * 'SingularValueDecomposition' returns <code>u</code>, <code>s</code>, <code>w</code> such that
+	 * <code>matrix =u s v</code>, <code>u' u</code>=1, <code>v' v</code>=1, and <code>s</code> is diagonal.
+	 * </p>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Singular_value_decomposition">Wikipedia: Singular value
+	 * decomposition</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; SingularValueDecomposition({{1.5, 2.0}, {2.5, 3.0}}) 
+	 * {
+	 * {{0.5389535334972082,0.8423354965397538},
+	 *  {0.8423354965397537,-0.5389535334972083}},
+	 * {{4.635554529660638,0.0},
+	 *  {0.0,0.10786196059193007}},
+	 * {{0.6286775450376476,-0.7776660879615599},
+	 *  {0.7776660879615599,0.6286775450376476}}}
+	 * </pre>
+	 * <p>
+	 * Symbolic SVD is not implemented, performing numerically.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; SingularValueDecomposition({{3/2, 2}, {5/2, 3}}) 
+	 * {
+	 * {{0.5389535334972082,0.8423354965397538},
+	 *  {0.8423354965397537,-0.5389535334972083}},
+	 * {{4.635554529660638,0.0},
+	 *  {0.0,0.10786196059193007}},
+	 * {{0.6286775450376476,-0.7776660879615599},
+	 *  {0.7776660879615599,0.6286775450376476}}}
+	 * </pre>
+	 * <p>
+	 * Argument {1, {2}} at position 1 is not a non-empty rectangular matrix.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; SingularValueDecomposition({1, {2}})
+	 * SingularValueDecomposition({1, {2}})
+	 * </pre>
 	 */
 	private final static class SingularValueDecomposition extends AbstractFunctionEvaluator {
 
@@ -1565,7 +2426,21 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * SquaredEuclidianDistance of two vectors
+	 * <pre>
+	 * SquaredEuclideanDistance(u, v)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns squared the euclidean distance between <code>u$</code> and <code>v</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; SquaredEuclideanDistance({-1, -1}, {1, 1})
+	 * 8
+	 * </pre>
 	 */
 	private final static class SquaredEuclideanDistance extends AbstractEvaluator {
 
@@ -1599,10 +2474,36 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Trace of a matrix.<br>
+	 * <pre>
+	 * Tr(matrix)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Trace_(linear_algebra)">Trace
-	 * (linear algebra)</a>
+	 * <blockquote>
+	 * <p>
+	 * computes the trace of the <code>matrix</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Trace_matrix">Wikipedia - Trace (linear algebra)</a><br />
+	 * </li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Tr({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})
+	 * 15
+	 * </pre>
+	 * <p>
+	 * Symbolic trace:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Tr({{a, b, c}, {d, e, f}, {g, h, i}})
+	 * a+e+i
+	 * </pre>
 	 */
 	private static class Tr extends AbstractEvaluator {
 
@@ -1641,9 +2542,34 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Transpose a matrix.
+	 * <pre>
+	 * Transpose(m)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Transpose">Transpose</a>
+	 * <blockquote>
+	 * <p>
+	 * transposes rows and columns in the matrix <code>m</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Transpose">Wikipedia - Transpose</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Transpose({{1, 2, 3}, {4, 5, 6}})
+	 * {{1, 4}, {2, 5}, {3, 6}}
+	 * &gt;&gt; MatrixForm(%)
+	 * 1   4
+	 * 2   5
+	 * 3   6
+	 * 
+	 * &gt;&gt; Transpose(x)
+	 * Transpose(x)
+	 * </pre>
 	 */
 	private static class Transpose extends AbstractEvaluator {
 
@@ -1701,10 +2627,39 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Create a unit vector
+	 * <pre>
+	 * UnitVector(position)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Unit_vector">Wikipedia - Unit
-	 * vector</a>
+	 * <blockquote>
+	 * <p>
+	 * returns a unit vector with element <code>1</code> at the given <code>position</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * UnitVector(dimension, position)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a unit vector with dimension <code>dimension</code> and an element <code>1</code> at the given
+	 * <code>position</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Unit_vector">Wikipedia - Unit vector</a><br />
+	 * </li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; UnitVector(4,3)
+	 * {0,0,1,0}
+	 * </pre>
 	 */
 	private final static class UnitVector extends AbstractFunctionEvaluator {
 
@@ -1741,10 +2696,29 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Vandermonde matrix, defined by A<sub>i,j</sub> = vector[i]^(j-1). See
-	 * <a href="http://en.wikipedia.org/wiki/Vandermonde_matrix">Vandermonde
-	 * matrix</a>
+	 * <pre>
+	 * VandermondeMatrix(n)
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * gives the Vandermonde matrix with <code>n</code> rows and columns.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Vandermonde_matrix">Wikipedia - Vandermonde matrix</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; VandermondeMatrix({a,b,c})
+	 * {{1,a,a^2},
+	 *  {1,b,b^2},
+	 *  {1,c,c^2}}
+	 * </pre>
 	 */
 	private static class VandermondeMatrix extends AbstractFunctionEvaluator {
 		public VandermondeMatrix() {
@@ -1779,14 +2753,30 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * <p>
-	 * VectorAngle(arg1, arg2) calculates the angle between vectors arg1 and
-	 * arg2.
-	 * </p>
+	 * <pre>
+	 * VectorAngle(u, v)
+	 * </pre>
 	 * 
-	 * See: <a href=
-	 * "https://en.wikipedia.org/wiki/Angle#Dot_product_and_generalisation">Wikipedia
-	 * - Angle - Dot product and generalisation</a>
+	 * <blockquote>
+	 * <p>
+	 * gives the angles between vectors <code>u</code> and <code>v</code>
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; VectorAngle({1, 0}, {0, 1})
+	 * Pi/2
+	 * 
+	 * &gt;&gt; VectorAngle({1, 2}, {3, 1})
+	 * Pi/4
+	 * 
+	 * &gt;&gt; VectorAngle({1, 1, 0}, {1, 0, 1})
+	 * Pi/3
+	 * 
+	 * &gt;&gt; VectorAngle({0, 1}, {0, 1})
+	 * 0
+	 * </pre>
 	 */
 	private static class VectorAngle extends AbstractFunctionEvaluator {
 
@@ -1808,15 +2798,12 @@ public final class LinearAlgebra {
 
 	/**
 	 * <p>
-	 * Use cramer's rule to solve linear equations represented by a
-	 * <code>2 x 3</code> augmented matrix which represents the system
-	 * <code>M.x == b</code>, where the columns of the <code>2 x 2</code> matrix
-	 * <code>M</code> are augmented by the vector <code>b</code>. This method
-	 * assumes that the dimensions of the matrix are already checked by the
+	 * Use cramer's rule to solve linear equations represented by a <code>2 x 3</code> augmented matrix which represents
+	 * the system <code>M.x == b</code>, where the columns of the <code>2 x 2</code> matrix <code>M</code> are augmented
+	 * by the vector <code>b</code>. This method assumes that the dimensions of the matrix are already checked by the
 	 * caller.
 	 * </p>
-	 * See: <a href="https://en.wikipedia.org/wiki/Cramer's_rule">Wikipedia
-	 * Cramer's rule</a>
+	 * See: <a href="https://en.wikipedia.org/wiki/Cramer's_rule">Wikipedia Cramer's rule</a>
 	 * 
 	 * @param matrix
 	 *            the <code>2 x 3</code> augmented matrix
@@ -1824,8 +2811,7 @@ public final class LinearAlgebra {
 	 *            show no message if there is no solution
 	 * @param engine
 	 *            the evaluation engine
-	 * @return a list of values which solve the equations or <code>F#NIL</code>,
-	 *         if the equations have no solution.
+	 * @return a list of values which solve the equations or <code>F#NIL</code>, if the equations have no solution.
 	 */
 	public static IAST cramersRule2x3(FieldMatrix<IExpr> matrix, boolean quiet, EvalEngine engine) {
 		IAST list = F.List();
@@ -1850,15 +2836,12 @@ public final class LinearAlgebra {
 
 	/**
 	 * <p>
-	 * Use cramer's rule to solve linear equations represented by a
-	 * <code>3 x 4</code> augmented matrix which represents the system
-	 * <code>M.x == b</code>, where the columns of the <code>3 x 3</code> matrix
-	 * <code>M</code> are augmented by the vector <code>b</code>. This method
-	 * assumes that the dimensions of the matrix are already checked by the
+	 * Use cramer's rule to solve linear equations represented by a <code>3 x 4</code> augmented matrix which represents
+	 * the system <code>M.x == b</code>, where the columns of the <code>3 x 3</code> matrix <code>M</code> are augmented
+	 * by the vector <code>b</code>. This method assumes that the dimensions of the matrix are already checked by the
 	 * caller.
 	 * </p>
-	 * See: <a href="https://en.wikipedia.org/wiki/Cramer's_rule">Wikipedia
-	 * Cramer's rule</a>
+	 * See: <a href="https://en.wikipedia.org/wiki/Cramer's_rule">Wikipedia Cramer's rule</a>
 	 * 
 	 * @param matrix
 	 *            the <code>3 x 4</code> augmented matrix
@@ -1866,8 +2849,7 @@ public final class LinearAlgebra {
 	 *            show no message if there is no solution
 	 * @param engine
 	 *            the evaluation engine
-	 * @return a list of values which solve the equations or <code>F#NIL</code>,
-	 *         if the equations have no solution.
+	 * @return a list of values which solve the equations or <code>F#NIL</code>, if the equations have no solution.
 	 */
 	public static IAST cramersRule3x4(FieldMatrix<IExpr> matrix, boolean quiet, EvalEngine engine) {
 		IAST list = F.List();
@@ -1902,8 +2884,8 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Get the determinant of a <code>2 x 2</code> matrix. This method assumes
-	 * that the dimensions of the matrix are already checked by the caller.
+	 * Get the determinant of a <code>2 x 2</code> matrix. This method assumes that the dimensions of the matrix are
+	 * already checked by the caller.
 	 * 
 	 * @param matrix
 	 *            a 2x2 matrix
@@ -1917,8 +2899,8 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Get the determinant of a <code>3 x 3</code> matrix. This method assumes
-	 * that the dimensions of the matrix are already checked by the caller.
+	 * Get the determinant of a <code>3 x 3</code> matrix. This method assumes that the dimensions of the matrix are
+	 * already checked by the caller.
 	 * 
 	 * @param matrix
 	 *            a 3x3 matrix
@@ -1937,8 +2919,8 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Create a diagonal matrix from <code>valueArray[0]</code> (non-diagonal
-	 * elements) and <code>valueArray[1]</code> (diagonal elements).
+	 * Create a diagonal matrix from <code>valueArray[0]</code> (non-diagonal elements) and <code>valueArray[1]</code>
+	 * (diagonal elements).
 	 * 
 	 * @param valueArray
 	 *            2 values for non-diagonal and diagonal elemnets of the matrix.
@@ -1988,14 +2970,12 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Return the solution of the given (augmented-)matrix interpreted as a
-	 * system of linear equations
+	 * Return the solution of the given (augmented-)matrix interpreted as a system of linear equations
 	 * 
 	 * @param matrix
 	 * @param engine
 	 *            the evaluation engine
-	 * @return <code>F.NIL</code> if the linear system is inconsistent and has
-	 *         no solution
+	 * @return <code>F.NIL</code> if the linear system is inconsistent and has no solution
 	 */
 	public static IAST rowReduced2List(FieldMatrix<IExpr> matrix, EvalEngine engine) {
 
@@ -2034,8 +3014,8 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Row reduce the given <code>(augmented-)matrix</code> and append the
-	 * result as rules for the given <code>variableList</code>.
+	 * Row reduce the given <code>(augmented-)matrix</code> and append the result as rules for the given
+	 * <code>variableList</code>.
 	 * 
 	 * @param matrix
 	 *            a (augmented-)matrix
