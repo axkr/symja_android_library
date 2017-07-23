@@ -14,8 +14,24 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
+ * <pre>
+ * FrobeniusSolve(listOfIntegers, nonNegativeInteger)
+ * </pre>
  * 
+ * <blockquote>
+ * <p>
+ * get a list of solutions for the Frobenius equation given by the <code>listOfIntegers</code> and the
+ * <code>nonNegativeInteger</code>.
+ * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
  * 
+ * <pre>
+ * &gt;&gt; FrobeniusSolve({2, 3, 4}, 29)
+ * {{0,3,5},{0,7,2},{1,1,6},{1,5,3},{1,9,0},{2,3,4},{2,7,1},{3,1,5},{3,5,2},{4,3,3},{
+ * 4,7,0},{5,1,4},{5,5,1},{6,3,2},{7,1,3},{7,5,0},{8,3,1},{9,1,2},{10,3,0},{11,1,1},{
+ * 13,1,0}}
+ * </pre>
  */
 public class FrobeniusSolve extends AbstractEvaluator {
 

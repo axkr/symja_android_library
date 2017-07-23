@@ -11,6 +11,11 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
+/**
+ * <pre>ComposeList(list-of-symbols, variable)
+ * </pre>
+ * <h3>Examples</h3>
+ */
 public class ComposeList extends AbstractEvaluator {
 
 	public ComposeList() {

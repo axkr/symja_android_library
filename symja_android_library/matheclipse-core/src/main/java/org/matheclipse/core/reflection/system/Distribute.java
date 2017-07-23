@@ -8,7 +8,27 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- *  
+ * <pre>
+ * Distribute(f(x1, x2, x3,...))
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * distributes <code>f</code> over <code>Plus</code> appearing in any of the <code>xi</code>.
+ * </p>
+ * </blockquote>
+ * <p>
+ * See:<br />
+ * </p>
+ * <ul>
+ * <li><a href="http://en.wikipedia.org/wiki/Distributive_property">Wikipedia - Distributive property</a></li>
+ * </ul>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; Distribute((a+b)*(x+y+z))
+ * a*x+a*y+a*z+b*x+b*y+B*z
+ * </pre>
  */
 public class Distribute extends AbstractFunctionEvaluator {
 

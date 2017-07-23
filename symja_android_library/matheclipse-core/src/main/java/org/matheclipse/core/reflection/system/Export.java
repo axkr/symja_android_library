@@ -13,7 +13,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 
 /**
- * Import some data from file system.
+ * Export some data from file system.
  *
  */
 public class Export extends AbstractEvaluator {

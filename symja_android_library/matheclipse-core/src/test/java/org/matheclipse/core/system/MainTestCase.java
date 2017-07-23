@@ -639,17 +639,17 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem040() {
-		checNumeric("(-15.0)^.5", "2.3715183290419594E-16+I*3.872983346207417");
-		checNumeric("(-15.0)^0.5", "2.3715183290419594E-16+I*3.872983346207417");
-		checNumeric(".5^.5", "0.7071067811865476");
-		checNumeric("N((-15)^(1/2))", "2.3715183290419594E-16+I*3.872983346207417");
-		checNumeric("N(Sin(1/2))", "0.479425538604203");
-		checNumeric("N(1/6*(I*44^(1/2)+2))", "0.3333333333333333+I*1.1055415967851332");
+		checkNumeric("(-15.0)^.5", "2.3715183290419594E-16+I*3.872983346207417");
+		checkNumeric("(-15.0)^0.5", "2.3715183290419594E-16+I*3.872983346207417");
+		checkNumeric(".5^.5", "0.7071067811865476");
+		checkNumeric("N((-15)^(1/2))", "2.3715183290419594E-16+I*3.872983346207417");
+		checkNumeric("N(Sin(1/2))", "0.479425538604203");
+		checkNumeric("N(1/6*(I*44^(1/2)+2))", "0.3333333333333333+I*1.1055415967851332");
 		// test automatic numericMode (triggered by double value "0.5"):
 	}
 
 	public void testSystem041() {
-		checNumeric("Sin(0.5)", "0.479425538604203");
+		checkNumeric("Sin(0.5)", "0.479425538604203");
 	}
 
 	public void testSystem042() {
@@ -849,7 +849,7 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem071() {
-		checNumeric("N(EulerGamma)", "0.5772156649015329");
+		checkNumeric("N(EulerGamma)", "0.5772156649015329");
 		check("D(Sinh(x),x)", "Cosh(x)");
 	}
 
@@ -1547,18 +1547,18 @@ public class MainTestCase extends AbstractTestCase {
 		check("(-1.0)/48", "-0.02083");
 
 		// to low max points
-		checNumeric("NIntegrate(1/(x^2), {x, 1, 1000}, Method->LegendreGauss, MaxPoints->7)", "0.1045310822478283");
-		checNumeric("NIntegrate(1/(x^2), {x, 1, 1000}, Method->LegendreGauss, MaxPoints->100)", "0.9988852159737868");
+		checkNumeric("NIntegrate(1/(x^2), {x, 1, 1000}, Method->LegendreGauss, MaxPoints->7)", "0.1045310822478283");
+		checkNumeric("NIntegrate(1/(x^2), {x, 1, 1000}, Method->LegendreGauss, MaxPoints->100)", "0.9988852159737868");
 
-		checNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Trapezoid)", "-0.0208333271245165");
-		checNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Simpson, MaxIterations->10)",
+		checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Trapezoid)", "-0.0208333271245165");
+		checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Simpson, MaxIterations->10)",
 				"maximal count (10) exceeded");
-		checNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Simpson)", "-0.0208333320915699");
+		checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Simpson)", "-0.0208333320915699");
 
-		checNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Romberg, MaxIterations->10)",
+		checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Romberg, MaxIterations->10)",
 				"-0.0208333333333333");
-		checNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Romberg)", "-0.0208333333333333");
-		checNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1})", "-0.0208333333333333");
+		checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1},Method->Romberg)", "-0.0208333333333333");
+		checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1),{x,0,1})", "-0.0208333333333333");
 
 	}
 
@@ -2269,17 +2269,17 @@ public class MainTestCase extends AbstractTestCase {
 
 	public void testSystem316() {
 
-		checNumeric("Arg(1.0+I)", "0.7853981633974483");
-		checNumeric("Arg(1.0-I)", "-0.7853981633974483");
+		checkNumeric("Arg(1.0+I)", "0.7853981633974483");
+		checkNumeric("Arg(1.0-I)", "-0.7853981633974483");
 
-		checNumeric("Arg(-1.0-I)", "-2.356194490192345");
-		checNumeric("Arg(-1.0+I)", "2.356194490192345");
+		checkNumeric("Arg(-1.0-I)", "-2.356194490192345");
+		checkNumeric("Arg(-1.0+I)", "2.356194490192345");
 
-		checNumeric("Arg(3.0+5*I)", "1.0303768265243125");
-		checNumeric("Arg(3.0-5*I)", "-1.0303768265243125");
+		checkNumeric("Arg(3.0+5*I)", "1.0303768265243125");
+		checkNumeric("Arg(3.0-5*I)", "-1.0303768265243125");
 
-		checNumeric("Arg(-3.0-5*I)", "-2.1112158270654806");
-		checNumeric("Arg(-3.0+5*I)", "2.1112158270654806");
+		checkNumeric("Arg(-3.0-5*I)", "-2.1112158270654806");
+		checkNumeric("Arg(-3.0+5*I)", "2.1112158270654806");
 
 		check("Arg(1+I)", "Pi/4");
 		check("Arg(1-I)", "-Pi/4");
@@ -2437,7 +2437,7 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem346() {
-		checNumeric("Exp(1.0)", "2.718281828459045");
+		checkNumeric("Exp(1.0)", "2.718281828459045");
 		check("Exp(Log(a+b))", "a+b");
 	}
 
@@ -2584,48 +2584,6 @@ public class MainTestCase extends AbstractTestCase {
 
 	}
 
-	public void testSystem379() {
-		checNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})", "{x->3.4341896575482007}");
-		checNumeric("$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n" + "$R=100;\n" + "$d=0.00;\n"
-				+ "$vn=0;\n" + "$EAj=0;\n" + "$zj=0;\n" + "$sz=1;\n"
-				+ "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA))+(Sum((($R*(1+$d)^(Floor(i0/$Z)))/(1+$AA))*(1+p-$g)^(($n-i0-$vn)/$Z),{i0,0,$n-1}))+(Sum(($EAj*(1+p-$g)^(($n-$zj)/$Z))/(1+$AA),{j,1,$sz})) - 30199, {p, 0, 0.1})",
-				"{p->0.04999709393822401}");
-		checNumeric("$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n" + "$res=15474;\n"
-				+ "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA)) - $res, {p, 0, 0.1})", "{p->0.049993464334866594}");
-	}
-
-	public void testSystem380() {
-		checNumeric("Exp(3.4341896)", "31.006274895944433");
-		checNumeric("Pi^3.0", "31.006276680299816");
-		// default to Newton method
-		checNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})", "{x->3.4341896575482007}");
-		checNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Newton)", "{x->3.4341896575482007}");
-
-		// only a start value is given:
-		checNumeric("FindRoot(Exp(x)==Pi^3,{x,3}, Method->Newton)", "{x->3.4341896575482007}");
-
-		checNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Bisection)", "{x->3.434189647436142}");
-		checNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Method->Brent)", "{x->3.4341896127725238}");
-		checNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Muller)", "{x->3.4341896575483015}");
-		checNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Ridders)", "{x->3.4341896575482007}");
-		checNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Secant)", "{x->3.4341896575036097}");
-		checNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->100)",
-				"maximal count (100) exceeded");
-		checNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->32000)", "convergence failed");
-		checNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Illinois)", "{x->3.4341896915055257}");
-		checNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Pegasus)", "{x->3.4341896575481976}");
-
-	}
-
-	public void testSystem381() {
-		checNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Brent)", "{x->3.4341896127725238}");
-	}
-
-	public void testSystem382() {
-		check("FindRoot(Sin(x),{x,-0.5,0.5}, Secant)", "{x->0.0}");
-
-	}
-
 	public void testSystem383() {
 		check("Conjugate(I)", "-I");
 		check("Conjugate(I+c)", "-I+Conjugate(c)");
@@ -2697,7 +2655,7 @@ public class MainTestCase extends AbstractTestCase {
 	public void testSystem390() {
 		check("Apply((1 + 1/#) &, 10)", "11/10");
 		check("FixedPoint((1 + 1/#) &, 10, 3)", "32/21");
-		checNumeric("FixedPoint((Cos(#))&,0.8)", "0.7390851332151607");
+		checkNumeric("FixedPoint((Cos(#))&,0.8)", "0.7390851332151607");
 	}
 
 	public void testSystem391() {
@@ -2791,7 +2749,7 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem399() {
-		checNumeric("Erf(3.0)", "0.9999779095030014");
+		checkNumeric("Erf(3.0)", "0.9999779095030014");
 	}
 
 	public void testSystem400() {
@@ -2879,12 +2837,12 @@ public class MainTestCase extends AbstractTestCase {
 		check("Abs(-12/90)", "2/15");
 		check("Abs(-12/90*Pi*x*y)", "2/15*Pi*Abs(x*y)");
 		check("Abs(2/15)", "2/15");
-		checNumeric("Abs(-5.0 +  3.0*I )", "5.8309518948453");
+		checkNumeric("Abs(-5.0 +  3.0*I )", "5.8309518948453");
 		check("Abs(3-4*I)", "5");
 		check("Norm(-0.5)", "0.5");
 		check("Norm(-3)", "3");
 		check("Norm(42)", "42");
-		checNumeric("Norm(-5.0 +  3.0*I )", "5.8309518948453");
+		checkNumeric("Norm(-5.0 +  3.0*I )", "5.8309518948453");
 		check("Norm(3-4*I)", "5");
 		check("Norm(-12/90)", "2/15");
 		check("Norm(2/15)", "2/15");
@@ -3168,12 +3126,12 @@ public class MainTestCase extends AbstractTestCase {
 		check("Solve(x*(-0.006*x^2.0+1.0)^2.0-0.1*x==7.217,x)",
 				"{{x->5.56906+I*(-5.00025)},{x->5.56906+I*5.00025},{x->-14.04698+I*3.70768},{x->-14.04698+I*(-3.70768)},{x->16.95586+I*(-0.0)}}");
 
-		checNumeric("CoefficientList(x*(-0.006*x^2.0+1.0)^2.0-0.1*x-7.217,x)", "{-7.217,0.9,0,-0.012,0,3.6E-5}");
+		checkNumeric("CoefficientList(x*(-0.006*x^2.0+1.0)^2.0-0.1*x-7.217,x)", "{-7.217,0.9,0,-0.012,0,3.6E-5}");
 
-		checNumeric("Solve(2.5*x^2+1650==0,x)", "{{x->I*(-25.69046515733026)},{x->I*25.69046515733026}}");
-		checNumeric("Solve(x*(x^2+1)^2==7,x)",
+		checkNumeric("Solve(2.5*x^2+1650==0,x)", "{{x->I*(-25.69046515733026)},{x->I*25.69046515733026}}");
+		checkNumeric("Solve(x*(x^2+1)^2==7,x)",
 				"{{x->1.1927223989709494},{x->-0.9784917834108953+I*(-1.038932735856145)},{x->-0.9784917834108953+I*1.038932735856145},{x->0.38213058392542043+I*(-1.6538990550344321)},{x->0.38213058392542043+I*1.6538990550344321}}");
-		checNumeric("NSolve(x*(x^2+1)^2==7,x)",
+		checkNumeric("NSolve(x*(x^2+1)^2==7,x)",
 				"{{x->1.1927223989709494},{x->-0.9784917834108953+I*(-1.038932735856145)},{x->-0.9784917834108953+I*1.038932735856145},{x->0.38213058392542043+I*(-1.6538990550344321)},{x->0.38213058392542043+I*1.6538990550344321}}");
 		check("Solve(x^2==a^2,x)", "{{x->-a},{x->a}}");
 		check("Solve(4*x^(-2)-1==0,x)", "{{x->-2},{x->2}}");
@@ -3338,7 +3296,7 @@ public class MainTestCase extends AbstractTestCase {
 		// +
 		// "1/3)*(12*87^(1/2)+146)^(1/3)+(-I*1/2*3^(1/2)-1/2)*(1/2)^(1/3)*(-12*87^(1/2)+146)^(\n"
 		// + "1/3)+4)}");
-		checNumeric("N({1/2*(I*15^(1/2)-5),1/2*(-I*15^(1/2)-5)})",
+		checkNumeric("N({1/2*(I*15^(1/2)-5),1/2*(-I*15^(1/2)-5)})",
 				"{-2.5+I*1.9364916731037085,-2.5+I*(-1.9364916731037085)}");
 
 		check("Roots(x^6-1==0, x)", "x==-1||x==1||x==-(-1)^(1/3)||x==(-1)^(1/3)||x==-(-1)^(2/3)||x==(-1)^(2/3)");

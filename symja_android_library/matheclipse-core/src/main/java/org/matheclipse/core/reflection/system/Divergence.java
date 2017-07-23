@@ -8,9 +8,27 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * See <a href="http://en.wikipedia.org/wiki/Divergence">Wikipedia - Divergence</a>
+ * <pre>
+ * Divergence({f1, f2, f3,...},{x1, x2, x3,...})
+ * </pre>
  * 
- * Example: <code>Divergence[{f[u,v,w],f[v,w,u],f[w,u,v]}, {u,v,w}]</code>.
+ * <blockquote>
+ * <p>
+ * compute the divergence.
+ * </p>
+ * </blockquote>
+ * <p>
+ * See:<br />
+ * </p>
+ * <ul>
+ * <li><a href="http://en.wikipedia.org/wiki/Divergence">Wikipedia - Divergence</a></li>
+ * </ul>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; Divergence({x^2, y^3},{x, y})
+ * 2*x+3*y^2
+ * </pre>
  */
 public class Divergence extends AbstractFunctionEvaluator {
 	public Divergence() {
@@ -19,8 +37,7 @@ public class Divergence extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
-		if ((ast.arg1().isVector() == ast.arg2().isVector())
-				&& (ast.arg1().isVector() >= 0)) {
+		if ((ast.arg1().isVector() == ast.arg2().isVector()) && (ast.arg1().isVector() >= 0)) {
 			IAST vector = (IAST) ast.arg1();
 			IAST variables = (IAST) ast.arg2();
 			IAST divergenceValue = F.Plus();

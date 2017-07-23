@@ -14,21 +14,20 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
+
 /**
- * Polynomial fitting of a given data point set.
- * 
- * <p>
- * Syntax: <code>Fit[ data, degree, variable ] </code>
- * </p>
- * 
- * 
- * Examples:<br/>
- * <code>Fit[{{1,1},{2,4},{3,9},{4,16}},2,x]  gives  x^2.0</code><br/>
- * <code>Fit[{1,4,9,16},2,x]  gives  x^2.0</code>
- * 
- * <p>
- * See <a href="http://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm" >Levenberg–Marquardt algorithm</a>
- * </p>
+ * <pre>Fit(list-of-points, degree, variable)
+ * </pre>
+ * <blockquote><p>solve a least squares problem using the Levenberg-Marquardt algorithm.</p>
+ * </blockquote>
+ * <p>See:<br  /></p>
+ * <ul>
+ * <li><a href="http://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm">Wikipedia - Levenberg–Marquardt algorithm</a></li>
+ * </ul>
+ * <h3>Examples</h3>
+ * <pre>&gt;&gt; Fit({{1,1},{2,4},{3,9},{4,16}},2,x)
+ * x^2.0
+ * </pre>
  */
 public class Fit extends AbstractFunctionEvaluator {
 

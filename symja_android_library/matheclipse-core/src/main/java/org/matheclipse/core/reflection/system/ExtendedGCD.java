@@ -13,16 +13,50 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Returns the gcd of two positive numbers plus the bezout relations
+ * <pre>
+ * ExtendedGCD(n1, n2, ...)
+ * </pre>
  * 
- * See
- * <a href="http://en.wikipedia.org/wiki/Extended_Euclidean_algorithm">Extended
- * Euclidean algorithm</a> and See
- * <a href="http://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity">Bézout's
- * identity</a>
+ * <blockquote>
+ * <p>
+ * computes the extended greatest common divisor of the given integers.
+ * </p>
+ * </blockquote>
+ * <p>
+ * See:
+ * </p>
+ * <ul>
+ * <li><a href="https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm">Wikipedia: Extended Euclidean
+ * algorithm</a></li>
+ * <li><a href="https://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity">Wikipedia: Bézout's identity</a></li>
+ * </ul>
+ * <h3>Examples</h3>
  * 
- * @author jeremy watts
- * @version 05/03/07
+ * <pre>
+ * &gt;&gt; ExtendedGCD(10, 15)
+ * {5,{-1,1}}
+ * </pre>
+ * <p>
+ * <code>ExtendedGCD</code> works with any number of arguments:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; ExtendedGCD(10, 15, 7)
+ * {1,{-3,3,-2}}
+ * </pre>
+ * <p>
+ * Compute the greatest common divisor and check the result:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; numbers = {10, 20, 14};
+ * 
+ * &gt;&gt; {gcd, factors} = ExtendedGCD(Sequence @@ numbers)
+ * {2,{3,0,-2}}
+ * 
+ * &gt;&gt; Plus @@ (numbers * factors)
+ * 2
+ * </pre>
  */
 public class ExtendedGCD extends AbstractFunctionEvaluator {
 
@@ -32,10 +66,8 @@ public class ExtendedGCD extends AbstractFunctionEvaluator {
 	/**
 	 * Returns the gcd of two positive numbers plus the bezout relations
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Extended_Euclidean_algorithm">
-	 * Extended Euclidean algorithm</a> and See
-	 * <a href="http://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity">Bézout's
-	 * identity</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Extended_Euclidean_algorithm"> Extended Euclidean algorithm</a> and See
+	 * <a href="http://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity">Bézout's identity</a>
 	 * 
 	 */
 	@Override

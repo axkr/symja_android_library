@@ -23,9 +23,18 @@ import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing; 
 
 /**
- * 
- * See <a href="http://en.wikipedia.org/wiki/Discriminant">Wikipedia -
- * Discriminant</a>
+ * <pre>Discriminant(poly, var)
+ * </pre>
+ * <blockquote><p>computes the discriminant of the polynomial <code>poly</code> with respect to the variable <code>var</code>.</p>
+ * </blockquote>
+ * <p>See:<br  /></p>
+ * <ul>
+ * <li><a href="http://en.wikipedia.org/wiki/Discriminant">Wikipedia - Discriminant</a></li>
+ * </ul>
+ * <h3>Examples</h3>
+ * <pre>&gt;&gt; Discriminant(a*x^2+b*x+c,x)
+ * b^2-4*a*c
+ * </pre>
  */
 public class Discriminant extends AbstractFunctionEvaluator {
 	// b^2-4*a*c

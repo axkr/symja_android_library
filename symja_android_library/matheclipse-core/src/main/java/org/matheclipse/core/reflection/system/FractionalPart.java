@@ -16,7 +16,21 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Get the fractional part auf a number
+ * <pre>
+ * FractionalPart(number)
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * get the fractional part of a <code>number</code>.
+ * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; FractionalPart(1.5)
+ * 0.5
+ * </pre>
  */
 public class FractionalPart extends AbstractFunctionEvaluator {
 
@@ -33,7 +47,7 @@ public class FractionalPart extends AbstractFunctionEvaluator {
 		} else if (arg1.isFraction()) {
 			IFraction fr = (IFraction) arg1;
 			return fr.fractionalPart();
-		} 
+		}
 		ISignedNumber signedNumber = arg1.evalSignedNumber();
 		if (signedNumber != null) {
 			return signedNumberFractionalPart(signedNumber);

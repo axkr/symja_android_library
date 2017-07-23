@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
@@ -70,6 +71,12 @@ public class StringX implements IStringX {
 		d = new StringX(null);
 		// }
 		d.fString = value;
+		return d;
+	}
+
+	public static StringX newInstance(final byte[] bytes, Charset charset) {
+		StringX d = new StringX(null);
+		d.fString = new String(bytes, charset);
 		return d;
 	}
 
@@ -192,9 +199,8 @@ public class StringX implements IStringX {
 	// }
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns
-	 * a negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
+	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -235,7 +241,7 @@ public class StringX implements IStringX {
 	public boolean contentEquals(final CharSequence cs) {
 		return fString.contentEquals(cs);
 	}
-	
+
 	@Override
 	public IExpr copy() {
 		try {
@@ -245,7 +251,7 @@ public class StringX implements IStringX {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * @param suffix
 	 * @return

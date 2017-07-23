@@ -4,7 +4,7 @@
 FractionalPart(number)
 ```
 
-> get the fractional part auf a `number`. 
+> get the fractional part of a `number`. 
 
 ### Examples
 

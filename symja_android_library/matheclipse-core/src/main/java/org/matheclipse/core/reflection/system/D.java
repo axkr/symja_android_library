@@ -14,7 +14,151 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.DRules;
 
 /**
- * Differentiation of a function. See <a href="http://en.wikipedia.org/wiki/Derivative">Wikipedia:Derivative</a>
+ * <pre>
+ * D(f, x)
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * gives the partial derivative of <code>f</code> with respect to <code>x</code>.
+ * </p>
+ * </blockquote>
+ * 
+ * <pre>
+ * D(f, x, y, ...)
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * differentiates successively with respect to <code>x</code>, <code>y</code>, etc.
+ * </p>
+ * </blockquote>
+ * 
+ * <pre>
+ * D(f, {x,n})
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * gives the multiple derivative of order <code>n</code>.<br />
+ * </p>
+ * </blockquote>
+ * 
+ * <pre>
+ * D(f, {{x1, x2, ...}})
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * gives the vector derivative of <code>f</code> with respect to <code>x1</code>, <code>x2</code>, etc.
+ * </p>
+ * </blockquote>
+ * <p>
+ * <strong>Note</strong>: the upper case identifier <code>D</code> is different from the lower case identifier
+ * <code>d</code>.
+ * </p>
+ * <h3>Examples</h3>
+ * <p>
+ * First-order derivative of a polynomial:<br />
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; D(x^3 + x^2, x)   
+ * 2*x+3*x^2
+ * </pre>
+ * <p>
+ * Second-order derivative:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; D(x^3 + x^2, {x, 2})    
+ * 2+6*x
+ * </pre>
+ * <p>
+ * Trigonometric derivatives:<br />
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; D(Sin(Cos(x)), x)    
+ * -Cos(Cos(x))*Sin(x) 
+ * 
+ * &gt;&gt; D(Sin(x), {x, 2})    
+ * -Sin(x)    
+ * 
+ * &gt;&gt; D(Cos(t), {t, 2})    
+ * -Cos(t)
+ * </pre>
+ * <p>
+ * Unknown variables are treated as constant:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; D(y, x)    
+ * 0    
+ * 
+ * &gt;&gt; D(x, x)    
+ * 1    
+ * 
+ * &gt;&gt; D(x + y, x)    
+ * 1
+ * </pre>
+ * <p>
+ * Derivatives of unknown functions are represented using 'Derivative':<br />
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; D(f(x), x)    
+ * f'(x)    
+ * 
+ * &gt;&gt; D(f(x, x), x)    
+ * Derivative(0,1)[f][x,x]+Derivative(1,0)[f][x,x]
+ * </pre>
+ * <p>
+ * Chain rule:<br />
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; D(f(2*x+1, 2*y, x+y)    
+ * 2*Derivative(1,0,0)[f][1+2*x,2*y,x+y]+Derivative(0,0,1)[f][1+2*x,2*y,x+y]    
+ * 
+ * &gt;&gt; D(f(x^2, x, 2*y), {x,2}, y) // Expand    
+ * 2*Derivative(0,2,1)[f][x^2,x,2*y]+4*Derivative(1,0,1)[f][x^2,x,2*y]+8*x*Derivative(
+ * 1,1,1)[f][x^2,x,2*y]+8*x^2*Derivative(2,0,1)[f][x^2,x,2*y]
+ * </pre>
+ * <p>
+ * Compute the gradient vector of a function:<br />
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; D(x ^ 3 * Cos(y), {{x, y}})   
+ * {3*x^2*Cos(y),-x^3*Sin(y)}
+ * </pre>
+ * <p>
+ * Hesse matrix:<br />
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; D(Sin(x) * Cos(y), {{x,y}, 2})    
+ * {{-Cos(y)*Sin(x),-Cos(x)*Sin(y)},{-Cos(x)*Sin(y),-Cos(y)*Sin(x)}}  
+ * 
+ * &gt;&gt; D(2/3*Cos(x) - 1/3*x*Cos(x)*Sin(x) ^ 2,x)//Expand    
+ * 1/3*x*Sin(x)^3-1/3*Sin(x)^2*Cos(x)-2/3*Sin(x)-2/3*x*Cos(x)^2*Sin(x)
+ * 
+ * &gt;&gt; D(f(#1), {#1,2})    
+ * f''(#1)   
+ * 
+ * &gt;&gt; D((#1&amp;)(t),{t,4})    
+ * 0    
+ * 
+ * &gt;&gt; Attributes(f) = {HoldAll}; Apart(f''(x + x))    
+ * f''(2*x)  
+ * 
+ * &gt;&gt; Attributes(f) = {}; Apart(f''(x + x))    
+ * f''(2*x)  
+ * 
+ * &gt;&gt; D({#^2}, #)
+ * {2*#1}
+ * </pre>
  */
 public class D extends AbstractFunctionEvaluator implements DRules {
 

@@ -55,11 +55,11 @@ public abstract class AbstractTestCase extends TestCase {
 		}
 	}
 	
-	public void checNumeric(String evalString, String expectedResult) {
+	public void checkNumeric(String evalString, String expectedResult) {
 		check(fNumericScriptEngine, evalString, expectedResult, -1);
 	}
 
-	public void checNumeric(String evalString, String expectedResult, int resultLength) {
+	public void checkNumeric(String evalString, String expectedResult, int resultLength) {
 		check(fNumericScriptEngine, evalString, expectedResult, resultLength);
 	}
 

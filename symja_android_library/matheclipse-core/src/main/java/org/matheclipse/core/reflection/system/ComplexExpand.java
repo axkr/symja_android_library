@@ -31,10 +31,18 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorExpr;
 
 /**
- * Exponential definitions for trigonometric functions
- * 
- * See <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities">
- * Wikipedia - List of trigonometric identities</a>
+ * <pre>ComplexExpand(expr)
+ * </pre>
+ * <blockquote><p>get the expanded <code>expr</code>. All variable symbols in <code>expr</code> are assumed to be non complex numbers.</p>
+ * </blockquote>
+ * <p>See:<br  /></p>
+ * <ul>
+ * <li><a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities">Wikipedia - List of trigonometric identities</a></li>
+ * </ul>
+ * <h3>Examples</h3>
+ * <pre>&gt;&gt; ComplexExpand(Sin(x+I*y))
+ * Cosh(y)*Sin(x)+I*Cos(x)*Sinh(y)
+ * </pre>
  */
 public class ComplexExpand extends AbstractEvaluator {
 

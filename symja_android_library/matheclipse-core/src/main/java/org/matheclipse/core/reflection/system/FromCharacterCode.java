@@ -1,7 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
