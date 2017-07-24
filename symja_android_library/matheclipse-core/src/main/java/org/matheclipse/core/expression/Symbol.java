@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.text.CollationKey;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,6 +38,8 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 public class Symbol implements ISymbol, Serializable {
+	final private Context fContext;
+
 	private final static Collator US_COLLATOR = Collator.getInstance(Locale.US);
 	/**
 	 * The attribute values of the symbol represented by single bits.
@@ -60,8 +61,9 @@ public class Symbol implements ISymbol, Serializable {
 	 */
 	protected final int fHashValue;
 
-	public Symbol(final String symbolName) {
+	public Symbol(final String symbolName, Context context) {
 		super();
+		fContext = context;
 		fHashValue = symbolName.hashCode();
 		fSymbolName = symbolName;
 	}
@@ -100,11 +102,24 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public final void addAttributes(final int attributes) {
 		fAttributes |= attributes;
-		if (fSymbolName.charAt(0) == '$' && Config.SERVER_MODE) {
-			EvalEngine engine = EvalEngine.get();
-			engine.addModifiedVariable(this);
+		if (isLocked()) {
+			throw new RuleCreationError(this);
 		}
+		EvalEngine engine = EvalEngine.get();
+		engine.addModifiedVariable(this);
 	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isLocked(boolean packageMode) {
+		return !packageMode && fContext == Context.SYSTEM; // fSymbolName.charAt(0) != '$';
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isLocked() {
+		return !EvalEngine.get().isPackageMode() && fContext == Context.SYSTEM; // fSymbolName.charAt(0) != '$';
+	} 
 
 	/** {@inheritDoc} */
 	@Override
@@ -116,8 +131,8 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public final void clear(EvalEngine engine) {
 		if (!engine.isPackageMode()) {
-			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
-				throw new RuleCreationError(null);
+			if (isLocked()) {
+				throw new RuleCreationError(this);
 			}
 		}
 		if (fRulesData != null) {
@@ -129,10 +144,11 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public final void clearAttributes(final int attributes) {
 		fAttributes &= (0xffff ^ attributes);
-		if (fSymbolName.charAt(0) == '$' && Config.SERVER_MODE) {
-			EvalEngine engine = EvalEngine.get();
-			engine.addModifiedVariable(this);
+		if (isLocked()) {
+			throw new RuleCreationError(this);
 		}
+		EvalEngine engine = EvalEngine.get();
+		engine.addModifiedVariable(this);
 	}
 
 	/** {@inheritDoc} */
@@ -395,6 +411,12 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public final int getAttributes() {
 		return fAttributes;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public final Context getContext() {
+		return fContext;
 	}
 
 	/** {@inheritDoc} */
@@ -716,7 +738,7 @@ public class Symbol implements ISymbol, Serializable {
 			final IExpr leftHandSide, final IExpr rightHandSide, final int priority, boolean packageMode) {
 		EvalEngine evalEngine = EvalEngine.get();
 		if (!packageMode) {
-			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
+			if (isLocked(packageMode)) {
 				throw new RuleCreationError(leftHandSide);
 			}
 
@@ -750,7 +772,7 @@ public class Symbol implements ISymbol, Serializable {
 			final IAST leftHandSide, final IExpr rightHandSide, final int priority) {
 		EvalEngine engine = EvalEngine.get();
 		if (!engine.isPackageMode()) {
-			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
+			if (isLocked(false)) {
 				throw new RuleCreationError(leftHandSide);
 			}
 
@@ -869,7 +891,7 @@ public class Symbol implements ISymbol, Serializable {
 	public final void removeRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide,
 			boolean packageMode) {
 		if (!packageMode) {
-			if (Config.SERVER_MODE && (fSymbolName.charAt(0) != '$')) {
+			if (isLocked(packageMode)) {
 				throw new RuleCreationError(leftHandSide);
 			}
 
@@ -891,10 +913,11 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public final void setAttributes(final int attributes) {
 		fAttributes = attributes;
-		if (fSymbolName.charAt(0) == '$' && Config.SERVER_MODE) {
-			EvalEngine engine = EvalEngine.get();
-			engine.addModifiedVariable(this);
+		if (isLocked()) {
+			throw new RuleCreationError(this);
 		}
+		EvalEngine engine = EvalEngine.get();
+		engine.addModifiedVariable(this);
 	}
 
 	/** {@inheritDoc} */

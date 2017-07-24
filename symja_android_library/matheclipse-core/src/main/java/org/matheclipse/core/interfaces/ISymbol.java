@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.interfaces.INumericFunction;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -227,6 +228,13 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public int getAttributes();
 
 	/**
+	 * Get the context this symbol is assigned to.
+	 * 
+	 * @return
+	 */
+	public Context getContext();
+
+	/**
 	 * Get the <i>general default value</i> for this symbol (i.e. <code>1</code> is the default value for
 	 * <code>Times</code>, <code>0</code> is the default value for <code>Plus</code>). The general default value is used
 	 * in pattern-matching for expressions like <code>a_. * b_. + c_</code>
@@ -301,6 +309,20 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 *         <code>Orderless</code> attribute.
 	 */
 	boolean hasOrderlessFlatAttribute();
+
+	/**
+	 * Gives <code>true</code> if the system is in server mode and cannot be modified
+	 * 
+	 * @return
+	 */
+	public boolean isLocked(boolean packageMode);
+
+	/**
+	 * Gives <code>true</code> if the system is in server mode and cannot be modified
+	 * 
+	 * @return
+	 */
+	public boolean isLocked();
 
 	/**
 	 * Tests if this symbols name equals the given string

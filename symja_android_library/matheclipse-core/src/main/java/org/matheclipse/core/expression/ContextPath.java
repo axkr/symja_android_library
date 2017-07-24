@@ -75,7 +75,7 @@ public class ContextPath {
 		// }
 		// }
 		// }
-		symbol = new Symbol(name);
+		symbol = new Symbol(name, context);
 		context.put(name, symbol);
 		// engine.putUserVariable(name, symbol);
 		if (Config.SERVER_MODE) {

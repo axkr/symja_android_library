@@ -36,7 +36,7 @@ public class Package extends AbstractCoreFunctionEvaluator {
 			throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);
 		}
 		if (Config.SERVER_MODE) {
-			throw new RuleCreationError(null);
+			throw new RuleCreationError(F.Package);
 		}
 		IAST symbols = (IAST) ast.arg2();
 		IAST list = (IAST) ast.arg3();

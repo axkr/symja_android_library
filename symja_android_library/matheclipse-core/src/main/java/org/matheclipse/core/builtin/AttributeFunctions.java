@@ -16,7 +16,7 @@ public class AttributeFunctions {
 		F.ClearAttributes.setEvaluator(new ClearAttributes());
 		F.SetAttributes.setEvaluator(new SetAttributes());
 	}
-	
+
 	/**
 	 * Get the list of attributes of a given symbol.
 	 * <p>
@@ -275,20 +275,12 @@ public class AttributeFunctions {
 			}
 			if (ast.arg1().isList()) {
 				IAST list = (IAST) ast.arg1();
-				IExpr arg2 = engine.evaluate(ast.arg2());
-				for (int i = 1; i < list.size(); i++) {
-					if (list.get(i).isSymbol()) {
-						final ISymbol sym = ((ISymbol) list.get(i));
-						addAttributes(sym, ast, arg2, engine);
-					}
-				}
-				return F.Null;
-
+				return setSymbolsAttributes(ast, engine, list);
 			}
 			return F.NIL;
 		}
 
-		private IExpr addAttributes(final ISymbol sym, final IAST ast, IExpr arg2, EvalEngine engine) {
+		private static IExpr addAttributes(final ISymbol sym, final IAST ast, IExpr arg2, EvalEngine engine) {
 			if (!engine.isPackageMode()) {
 				if (Config.SERVER_MODE && (sym.toString().charAt(0) != '$')) {
 					throw new RuleCreationError(sym);
@@ -415,6 +407,17 @@ public class AttributeFunctions {
 			return F.Null;
 		}
 
+	}
+
+	static IExpr setSymbolsAttributes(final IAST ast, EvalEngine engine, IAST list) {
+		IExpr arg2 = engine.evaluate(ast.arg2());
+		for (int i = 1; i < list.size(); i++) {
+			if (list.get(i).isSymbol()) {
+				final ISymbol sym = ((ISymbol) list.get(i));
+				SetAttributes.addAttributes(sym, ast, arg2, engine);
+			}
+		}
+		return F.Null;
 	}
 
 	final static AttributeFunctions CONST = new AttributeFunctions();

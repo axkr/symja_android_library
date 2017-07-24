@@ -12,7 +12,6 @@ import org.hipparchus.analysis.solvers.RiddersSolver;
 import org.hipparchus.analysis.solvers.SecantSolver;
 import org.matheclipse.commons.math.analysis.solvers.DifferentiableUnivariateFunction;
 import org.matheclipse.commons.math.analysis.solvers.NewtonSolver;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -143,7 +142,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class FindRoot extends AbstractFunctionEvaluator {
 
-	public final static ISymbol Newton = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "newton" : "Newton");
+	// public final static ISymbol Newton = F.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "newton" :
+	// "Newton");
 
 	public FindRoot() {
 	}
@@ -152,7 +152,7 @@ public class FindRoot extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3);
 
-		ISymbol method = Newton;
+		String method = "Newton";
 		int maxIterations = 100;
 		if (ast.size() >= 4) {
 			final Options options = new Options(ast.topHead(), ast, 3, engine);
@@ -162,10 +162,10 @@ public class FindRoot extends AbstractFunctionEvaluator {
 			}
 			IExpr optionMethod = options.getOption("Method");
 			if (optionMethod.isSymbol()) {
-				method = ((ISymbol) optionMethod);
+				method = optionMethod.toString();
 			} else {
 				if (ast.arg3().isSymbol()) {
-					method = (ISymbol) ast.arg3();
+					method = ast.arg3().toString();
 				}
 			}
 		}
@@ -191,29 +191,29 @@ public class FindRoot extends AbstractFunctionEvaluator {
 		return F.NIL;
 	}
 
-	private double findRoot(ISymbol method, int maxIterations, IAST list, ISignedNumber min, ISignedNumber max,
+	private double findRoot(String method, int maxIterations, IAST list, ISignedNumber min, ISignedNumber max,
 			IExpr function, EvalEngine engine) {
 		ISymbol xVar = (ISymbol) list.arg1();
 		function = engine.evaluate(function);
 		UnivariateFunction f = new UnaryNumerical(function, xVar, engine);
 		BaseAbstractUnivariateSolver<UnivariateFunction> solver = null;
-		if (method.isSymbolName("Bisection")) {
+		if (method.equalsIgnoreCase("Bisection")) {
 			solver = new BisectionSolver();
-		} else if (method.isSymbolName("Brent")) {
+		} else if (method.equalsIgnoreCase("Brent")) {
 			solver = new BrentSolver();
 			// } else if (method.isSymbolName("Laguerre")) {
 			// solver = new LaguerreSolver();
-		} else if (method.isSymbolName("Muller")) {
+		} else if (method.equalsIgnoreCase("Muller")) {
 			solver = new MullerSolver();
-		} else if (method.isSymbolName("Ridders")) {
+		} else if (method.equalsIgnoreCase("Ridders")) {
 			solver = new RiddersSolver();
-		} else if (method.isSymbolName("Secant")) {
+		} else if (method.equalsIgnoreCase("Secant")) {
 			solver = new SecantSolver();
-		} else if (method.isSymbolName("RegulaFalsi")) {
+		} else if (method.equalsIgnoreCase("RegulaFalsi")) {
 			solver = new RegulaFalsiSolver();
-		} else if (method.isSymbolName("Illinois")) {
+		} else if (method.equalsIgnoreCase("Illinois")) {
 			solver = new IllinoisSolver();
-		} else if (method.isSymbolName("Pegasus")) {
+		} else if (method.equalsIgnoreCase("Pegasus")) {
 			solver = new PegasusSolver();
 		} else {
 			// default: NewtonSolver

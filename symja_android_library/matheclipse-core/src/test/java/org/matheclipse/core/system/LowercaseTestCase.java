@@ -3558,8 +3558,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 			check("fib(n_) :=\n" + " Module({f},\n" + "  f(1) = f(2) = 1;\n"
 					+ "  f(i_) := f(i) = f(i - 1) + f(i - 2);\n" + "  f(n)\n" + "  );fib(5)", "5");
 
-			check("gcd(m0_, n0_) :=\n" + " Module({m = m0, n = n0},\n" + "  While(n != 0, {m, n} = {n, Mod(m, n)});\n"
-					+ "  m\n" + "  );gcd(18, 21)", "3");
+			check("myGCD(m0_, n0_) :=\n" + " Module({m = m0, n = n0},\n" + "  While(n != 0, {m, n} = {n, Mod(m, n)});\n"
+					+ "  m\n" + "  );myGCD(18, 21)", "3");
 		}
 	}
 
@@ -7009,7 +7009,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("With({e = Expand((1 + x)^5)}, Function @@ {x, e})", "Function(x,1+5*x+10*x^2+10*x^3+5*x^4+x^5)");
 
 		check("x=5;With({x = x}, Hold(x))", "Hold(5)");
-
+		
 		check("newton(f_, x0_) := With({fp = f'}, FixedPoint(# - f(#)/fp(#) &, x0))", "");
 		check("newton(Cos,1.33)", "1.5708");
 

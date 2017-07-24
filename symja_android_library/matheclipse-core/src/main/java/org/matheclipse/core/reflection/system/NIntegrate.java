@@ -36,8 +36,8 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 	public static final int DEFAULT_MAX_POINTS = 100;
 	public static final int DEFAULT_MAX_ITERATIONS = 10000;
 
-	public final static ISymbol LegendreGauss = F
-			.initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "legendregauss" : "LegendreGauss");
+	// public final static ISymbol LegendreGauss = F
+	// .initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "legendregauss" : "LegendreGauss");
 
 	/**
 	 * Integrate a function numerically.
@@ -93,7 +93,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3);
 
-		ISymbol method = LegendreGauss;
+		String method = "LegendreGauss";
 		int maxPoints = DEFAULT_MAX_POINTS;
 		int maxIterations = DEFAULT_MAX_ITERATIONS;
 		int precisionGoal = 16; // automatic scale value
@@ -101,7 +101,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 			final Options options = new Options(ast.topHead(), ast, 3, engine);
 			IExpr option = options.getOption("Method");
 			if (option.isSymbol()) {
-				method = (ISymbol) option;
+				method = option.toString();
 			}
 			option = options.getOption("MaxPoints");
 			if (option.isSignedNumber()) {
@@ -141,7 +141,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 						function = F.Plus(equalAST.arg1(), F.Negate(equalAST.arg2()));
 					}
 					try {
-						double result = integrate(method.getSymbolName(), list, min.doubleValue(), max.doubleValue(),
+						double result = integrate(method, list, min.doubleValue(), max.doubleValue(),
 								function, maxPoints, maxIterations);
 						result = Precision.round(result, precisionGoal);
 						return Num.valueOf(result);

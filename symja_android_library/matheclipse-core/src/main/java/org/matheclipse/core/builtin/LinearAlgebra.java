@@ -59,6 +59,7 @@ import org.matheclipse.core.eval.util.IIndexFunction;
 import org.matheclipse.core.eval.util.IndexFunctionDiagonal;
 import org.matheclipse.core.eval.util.IndexTableGenerator;
 import org.matheclipse.core.expression.ASTRealMatrix;
+import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Symbol;
@@ -1638,7 +1639,7 @@ public final class LinearAlgebra {
 				// a matrix with square dimensions
 				IAST matrix = (IAST) ast.arg1();
 				IExpr variable = ast.arg2();
-				ISymbol i = new Symbol("§i");
+				ISymbol i = new Symbol("§i", Context.SYSTEM);
 				int n = 1;
 				IAST qu = F.List();
 				IAST mnm = (IAST) engine

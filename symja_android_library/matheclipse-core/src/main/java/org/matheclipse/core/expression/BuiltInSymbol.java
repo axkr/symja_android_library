@@ -44,7 +44,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	}
 
 	public BuiltInSymbol(final String symbolName, final IEvaluator evaluator) {
-		super(symbolName);
+		super(symbolName, Context.SYSTEM);
 		fEvaluator = evaluator;
 	}
 

@@ -164,51 +164,58 @@ public final class PatternMatching {
 			Validate.checkSize(ast, 3);
 			final IExpr leftHandSide = ast.arg1();
 			IExpr rightHandSide = ast.arg2();
-			if (leftHandSide.isAST(F.Part) && ((IAST) leftHandSide).size() > 1) {
-				IAST part = ((IAST) leftHandSide);
-				if (part.arg1().isSymbol()) {
-					ISymbol symbol = (ISymbol) part.arg1();
-					RulesData rd = symbol.getRulesData();
-					if (rd == null) {
-						engine.printMessage(
-								"Set: no value defined for symbol '" + symbol.toString() + "' in Part() expression.");
-					} else {
-						try {
-							IExpr temp = symbol.getRulesData().evalDownRule(symbol);
-							if (!temp.isPresent()) {
-								engine.printMessage("Set: no value defined for symbol '" + symbol.toString()
-										+ "' in Part() expression.");
-							} else {
-								if (rightHandSide.isList()) {
-									IExpr res = Programming.assignPart(temp, part, 2, (IAST) rightHandSide, 1, engine);
-									symbol.putDownRule(RuleType.SET, true, symbol, res, false);
-									return rightHandSide;
+			if (leftHandSide.isAST()) {
+				IAST leftHandSideAST = (IAST) leftHandSide;
+				if (leftHandSideAST.isAST(F.Part) && leftHandSideAST.size() > 1) {
+					IAST part = leftHandSideAST;
+					if (part.arg1().isSymbol()) {
+						ISymbol symbol = (ISymbol) part.arg1();
+						RulesData rd = symbol.getRulesData();
+						if (rd == null) {
+							engine.printMessage("Set: no value defined for symbol '" + symbol.toString()
+									+ "' in Part() expression.");
+						} else {
+							try {
+								IExpr temp = symbol.getRulesData().evalDownRule(symbol);
+								if (!temp.isPresent()) {
+									engine.printMessage("Set: no value defined for symbol '" + symbol.toString()
+											+ "' in Part() expression.");
 								} else {
-									IExpr res = Programming.assignPart(temp, part, 2, rightHandSide, engine);
-									symbol.putDownRule(RuleType.SET, true, symbol, res, false);
-									return rightHandSide;
+									if (rightHandSide.isList()) {
+										IExpr res = Programming.assignPart(temp, part, 2, (IAST) rightHandSide, 1,
+												engine);
+										symbol.putDownRule(RuleType.SET, true, symbol, res, false);
+										return rightHandSide;
+									} else {
+										IExpr res = Programming.assignPart(temp, part, 2, rightHandSide, engine);
+										symbol.putDownRule(RuleType.SET, true, symbol, res, false);
+										return rightHandSide;
+									}
 								}
+							} catch (RuntimeException npe) {
+								engine.printMessage("Set: wrong argument for Part[] function: " + part.toString()
+										+ " selects no part expression.");
 							}
-						} catch (RuntimeException npe) {
-							engine.printMessage("Set: wrong argument for Part[] function: " + part.toString()
-									+ " selects no part expression.");
 						}
 					}
-				}
 
-			}
-			if (leftHandSide.isList()) {
-				// thread over lists
-				try {
-					rightHandSide = engine.evaluate(rightHandSide);
-				} catch (final ReturnException e) {
-					rightHandSide = e.getValue();
+				} else if (leftHandSideAST.isList()) {
+					// thread over lists
+					try {
+						rightHandSide = engine.evaluate(rightHandSide);
+					} catch (final ReturnException e) {
+						rightHandSide = e.getValue();
+					}
+					IExpr temp = EvalEngine.threadASTListArgs(F.Set(leftHandSideAST, rightHandSide));
+					if (temp.isPresent()) {
+						return engine.evaluate(temp);
+					}
+					return F.NIL;
+				} else if (leftHandSideAST.isAST(F.Attributes, 2)) {
+					IAST symbolList = Validate.checkSymbolOrSymbolList(leftHandSideAST, 1);
+					symbolList.forEach(x -> ((ISymbol) x).setAttributes(ISymbol.NOATTRIBUTE));
+					return AttributeFunctions.setSymbolsAttributes(ast, engine, symbolList);
 				}
-				IExpr temp = EvalEngine.threadASTListArgs(F.Set(leftHandSide, rightHandSide));
-				if (temp.isPresent()) {
-					return engine.evaluate(temp);
-				}
-				return F.NIL;
 			}
 			Object[] result;
 			result = createPatternMatcher(leftHandSide, rightHandSide, engine.isPackageMode(), engine);
@@ -225,7 +232,7 @@ public final class PatternMatching {
 			try {
 				rightHandSide = engine.evaluate(rightHandSide);
 			} catch (final ConditionException e) {
-//				System.out.println("Condition[] in right-hand-side of Set[]");
+				// System.out.println("Condition[] in right-hand-side of Set[]");
 			} catch (final ReturnException e) {
 				rightHandSide = e.getValue();
 			}

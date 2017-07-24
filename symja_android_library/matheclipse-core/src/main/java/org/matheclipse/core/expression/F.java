@@ -68,6 +68,10 @@ import edu.jas.kern.ComputerThreads;
  * 
  */
 public class F {
+	
+	static {
+		EvalEngine.get().setPackageMode(true);
+	}
 
 	/**
 	 * <p>
@@ -1741,6 +1745,7 @@ public class F {
 				@Override
 				public void run() {
 					final EvalEngine engine = EvalEngine.get();
+					engine.setPackageMode(true);
 					IAST ruleList = org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
 					if (ruleList != null) {
 						engine.addRules(ruleList);
@@ -1750,6 +1755,7 @@ public class F {
 						engine.addRules(ruleList);
 					}
 					Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
+					engine.setPackageMode(false);
 				}
 			};
 
@@ -3798,7 +3804,7 @@ public class F {
 	 * @return
 	 */
 	public static ISymbol initFinalHiddenSymbol(final String symbolName) {
-		ISymbol temp = new Symbol(symbolName);
+		ISymbol temp = new Symbol(symbolName, Context.SYSTEM);
 		HIDDEN_SYMBOLS_MAP.put(symbolName, temp);
 		return temp;
 	}
@@ -4298,30 +4304,7 @@ public class F {
 		return unaryAST1(ListQ, a);
 	}
 
-	/**
-	 * Get a local symbol which is created or retrieved from the eval engines thread local variables map and push a
-	 * value on the local stack;
-	 * 
-	 * @param symbolName
-	 *            the name of the symbol
-	 * @param value
-	 * @return
-	 */
-	public static ISymbol local(@Nonnull final String symbolName, @Nonnull IExpr value) {
-		// HashMap<String, ISymbol> variableMap = EvalEngine.getVariableMap();
-		// ISymbol temp = variableMap.get(symbolName);
-		// if (temp != null) {
-		// temp.pushLocalVariable(value);
-		// return temp;
-		// }
-		ISymbol temp = new Symbol(symbolName);
-		// variableMap.put(symbolName, temp);
-		temp.pushLocalVariable(value);
-		return temp;
-	}
-
 	public static IAST Log(final IExpr a0) {
-
 		return unaryAST1(Log, a0);
 	}
 
@@ -4867,7 +4850,7 @@ public class F {
 				lcSymbolName = symbolName.toLowerCase(Locale.ENGLISH);
 			}
 		}
-		temp = new Symbol(lcSymbolName);
+		temp = new Symbol(lcSymbolName, Context.SYSTEM);
 		Context.SYSTEM.put(lcSymbolName, temp);
 		return temp;
 	}
