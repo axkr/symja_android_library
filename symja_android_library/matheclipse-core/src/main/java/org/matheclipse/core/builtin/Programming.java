@@ -338,12 +338,13 @@ public final class Programming {
 				IExpr current = ast.arg2();
 				int iterations = Integer.MAX_VALUE;
 				if (ast.isAST3()) {
-					if (ast.arg3().isInfinity()) {
+					IExpr arg3 = ast.arg3();
+					if (arg3.isInfinity()) {
 						iterations = Integer.MAX_VALUE;
-					} else if (ast.arg3().isNegativeInfinity()) {
+					} else if (arg3.isNegativeInfinity()) {
 						iterations = Integer.MIN_VALUE;
 					} else {
-						iterations = Validate.checkIntType(ast, 3, Integer.MIN_VALUE);
+						iterations = Validate.checkIntType(arg3, Integer.MIN_VALUE);
 					}
 				}
 				if (iterations < 0) {
@@ -1156,7 +1157,7 @@ public final class Programming {
 	}
 
 	/**
-	 * Get the <code>Part[...]</code> of n expression. If the expression is no <code>IAST</code> return the expression.
+	 * Get the <code>Part[...]</code> of an expression. If the expression is no <code>IAST</code> return the expression.
 	 * 
 	 * @param expr
 	 *            the expression from which parts should be extracted
@@ -1218,7 +1219,7 @@ public final class Programming {
 				if (listArg.isInteger()) {
 					IExpr ires = null;
 
-					final int indx = Validate.checkIntType(list, i, Integer.MIN_VALUE);
+					final int indx = Validate.checkIntType(listArg, Integer.MIN_VALUE);
 					ires = getIndex(arg1, indx);
 					if (ires == null) {
 						return F.NIL;
@@ -1303,7 +1304,7 @@ public final class Programming {
 				if (listArg.isInteger()) {
 					IExpr ires = null;
 
-					final int indx = Validate.checkIntType(list, i, Integer.MIN_VALUE);
+					final int indx = Validate.checkIntType(listArg, Integer.MIN_VALUE);
 					ires = assignPartValue(assignedAST, indx, value);
 					if (ires == null) {
 						return F.NIL;
@@ -1404,7 +1405,7 @@ public final class Programming {
 				if (listArg.isInteger()) {
 					IExpr ires = null;
 
-					final int indx = Validate.checkIntType(list, i, Integer.MIN_VALUE);
+					final int indx = Validate.checkIntType(listArg, Integer.MIN_VALUE);
 					ires = assignPartValue(assignedAST, indx, list);
 					if (ires == null) {
 						return F.NIL;

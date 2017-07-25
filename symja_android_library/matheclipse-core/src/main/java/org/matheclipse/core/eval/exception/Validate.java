@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -72,15 +73,16 @@ public final class Validate {
 	 * @throws WrongArgumentType
 	 */
 	public static long checkLongType(IExpr expr) {
-		long exponent = 0;
+		if (expr instanceof IntegerSym) {
+			// IntegerSym always fits into a long number
+			return ((IntegerSym) expr).toLong();
+		}
 		try {
 			// the following may throw ArithmeticException
 			if (expr instanceof IInteger) {
-				exponent = ((IInteger) expr).toLong();
-				return exponent;
+				return ((IInteger) expr).toLong();
 			} else if (expr instanceof INum) {
-				exponent = ((INum) expr).toLong();
-				return exponent;
+				return ((INum) expr).toLong();
 			}
 		} catch (ArithmeticException ae) {
 			//
@@ -129,6 +131,15 @@ public final class Validate {
 	 * @throws WrongArgumentType
 	 */
 	public static int checkIntType(IAST ast, int pos, int startValue) {
+		if (ast.get(pos) instanceof IntegerSym) {
+			// IntegerSym always fits into an int number
+			int result = ((IntegerSym) ast.get(pos)).toInt();
+			if (startValue > result) {
+				throw new WrongArgumentType(ast.get(pos), "Trying to convert the expression into the integer range: "
+						+ startValue + " - " + Integer.MAX_VALUE);
+			}
+			return result;
+		}
 		if (ast.get(pos).isSignedNumber()) {
 			try {
 				int result = ((ISignedNumber) ast.get(pos)).toInt();
@@ -227,6 +238,15 @@ public final class Validate {
 	 * @throws WrongArgumentType
 	 */
 	public static int checkIntType(IExpr expr, int startValue) {
+		if (expr instanceof IntegerSym) {
+			// IntegerSym always fits into an int number
+			int result = ((IntegerSym) expr).toInt();
+			if (startValue > result) {
+				throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
+						+ startValue + " - " + Integer.MAX_VALUE);
+			}
+			return result;
+		}
 		if (expr.isSignedNumber()) {
 			try {
 				int result = ((ISignedNumber) expr).toInt();

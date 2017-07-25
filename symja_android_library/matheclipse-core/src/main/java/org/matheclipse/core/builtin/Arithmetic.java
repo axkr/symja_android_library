@@ -843,7 +843,7 @@ public final class Arithmetic {
 						if (n == 0) {
 							return C0;
 						}
-						IAST result = Plus();
+						IAST result = F.PlusAlloc(n);
 						for (int i = 1; i <= n; i++) {
 							result.append(Power(integer(i), Negate(arg2)));
 						}
@@ -1058,16 +1058,17 @@ public final class Arithmetic {
 			}
 			IExpr cond;
 			IAST row;
-			IAST result = F.ListAlloc(matrix.size());
+			int matrixSize = matrix.size();
+			IAST result = F.ListAlloc(matrixSize);
 			IAST pw = F.ast(F.Piecewise);
 			pw.append(result);
 			boolean evaluated = false;
 			boolean noBoolean = false;
-			for (int i = 1; i < matrix.size(); i++) {
+			for (int i = 1; i < matrixSize; i++) {
 				row = matrix.getAST(i);
 				cond = row.arg2();
 				if (cond.isTrue()) {
-					if (!evaluated && i == matrix.size() - 1) {
+					if (!evaluated && i == matrixSize - 1) {
 						return F.NIL;
 					}
 					if (noBoolean) {
@@ -1876,10 +1877,11 @@ public final class Arithmetic {
 							doMap = true;
 						} else {
 							for (int i = 1; i < astArg1.size(); i++) {
-								if (astArg1.get(i).isNumber()) {
+								IExpr temp = astArg1.get(i);
+								if (temp.isNumber()) {
 									doMap = true;
 									break;
-								} else if (astArg1.get(i).isPower()) {
+								} else if (temp.isPower()) {
 									doMap = true;
 									break;
 								}
