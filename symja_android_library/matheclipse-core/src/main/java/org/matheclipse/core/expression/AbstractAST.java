@@ -479,7 +479,7 @@ public abstract class AbstractAST implements IAST {
 	public IAST copy() {
 		return clone();
 	}
-	
+
 	public IAST copyAlloc(int capacity) {
 		return copy();
 	}
@@ -667,6 +667,18 @@ public abstract class AbstractAST implements IAST {
 	@Override
 	public final IAST filter(IAST filterAST, IExpr expr) {
 		return filter(filterAST, Predicates.isTrue(expr));
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean exists(Predicate<? super IExpr> predicate) {
+		final int size = size();
+		for (int i = 1; i < size; i++) {
+			if (predicate.test(get(i))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/** {@inheritDoc} */
@@ -1477,7 +1489,7 @@ public abstract class AbstractAST implements IAST {
 	public final boolean isEqual() {
 		return isSameHead(F.Equal, 3);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isEvalFlagOff(final int i) {

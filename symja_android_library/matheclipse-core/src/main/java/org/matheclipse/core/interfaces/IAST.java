@@ -622,6 +622,16 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public boolean equalsAt(int position, final IExpr expr);
 
 	/**
+	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return if
+	 * one of the arguments satisfy the predicate.
+	 * 
+	 * @param predicate
+	 *            the predicate which filters each argument in this <code>AST</code>
+	 * @return the <code>true</code> if the predicate is true the first time or <code>false</code> otherwise
+	 */
+	public boolean exists(Predicate<? super IExpr> predicate);
+
+	/**
 	 * Select all elements by applying the <code>function</code> to each argument in this <code>AST</code> and append
 	 * the result elements for which the function returns non-null elements to the <code>0th element</code> of the
 	 * result array, or otherwise append it to the <code>1st element</code> of the result array.
