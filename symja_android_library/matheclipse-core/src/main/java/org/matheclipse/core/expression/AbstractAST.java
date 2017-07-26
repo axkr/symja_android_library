@@ -639,11 +639,12 @@ public abstract class AbstractAST implements IAST {
 	public IAST filter(IAST filterAST, IAST restAST, final Function<IExpr, IExpr> function) {
 		final int size = size();
 		for (int i = 1; i < size; i++) {
-			IExpr expr = function.apply(get(i));
+			IExpr temp = get(i);
+			IExpr expr = function.apply(temp);
 			if (expr.isPresent()) {
 				filterAST.append(expr);
 			} else {
-				restAST.append(get(i));
+				restAST.append(temp);
 			}
 		}
 		return filterAST;
@@ -654,10 +655,11 @@ public abstract class AbstractAST implements IAST {
 	public IAST filter(IAST filterAST, IAST restAST, Predicate<? super IExpr> predicate) {
 		final int size = size();
 		for (int i = 1; i < size; i++) {
-			if (predicate.test(get(i))) {
-				filterAST.append(get(i));
+			IExpr temp = get(i);
+			if (predicate.test(temp)) {
+				filterAST.append(temp);
 			} else {
-				restAST.append(get(i));
+				restAST.append(temp);
 			}
 		}
 		return filterAST;
@@ -2453,9 +2455,10 @@ public abstract class AbstractAST implements IAST {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final IAST map(final IAST clonedResultAST, final Function<IExpr, IExpr> function) {
+	public IAST map(final IAST clonedResultAST, final Function<IExpr, IExpr> function) {
 		IExpr temp;
-		for (int i = 1; i < size(); i++) {
+		int size = size();
+		for (int i = 1; i < size; i++) {
 			temp = function.apply(get(i));
 			if (temp != null) {
 				clonedResultAST.set(i, temp);
@@ -2469,7 +2472,8 @@ public abstract class AbstractAST implements IAST {
 	 */
 	@Override
 	public final IAST map(IAST resultAST, IAST secondAST, BiFunction<IExpr, IExpr, IExpr> function) {
-		for (int i = 1; i < size(); i++) {
+		int size = size();
+		for (int i = 1; i < size; i++) {
 			resultAST.append(function.apply(get(i), secondAST.get(i)));
 		}
 		return resultAST;
@@ -2485,7 +2489,7 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST mapThread(IAST appendAST, final IAST replacement, int position) {
+	public IAST mapThread(IAST appendAST, final IAST replacement, int position) {
 		final Function<IExpr, IExpr> function = Functors.replaceArg(replacement, position);
 		IExpr temp;
 		for (int i = 1; i < size(); i++) {

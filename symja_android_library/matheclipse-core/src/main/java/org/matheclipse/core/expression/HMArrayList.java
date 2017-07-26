@@ -27,7 +27,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.RandomAccess;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
+import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -350,8 +353,8 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 		newList.array = array.clone();
 		newList.hashValue = 0;
 		return newList;
-	} 
-	
+	}
+
 	/**
 	 * Ensures that after this operation the {@code ArrayList} can hold the specified number of elements without further
 	 * growing.
@@ -394,6 +397,77 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 			return true;
 		}
 		return super.equals(obj);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean exists(Predicate<? super IExpr> predicate) {
+		for (int i = firstIndex + 1; i < lastIndex; i++) {
+			if (predicate.test(array[i])) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IAST filter(IAST filterAST, IAST restAST, final Function<IExpr, IExpr> function) {
+		for (int i = firstIndex + 1; i < lastIndex; i++) {
+			IExpr temp = array[i];
+			IExpr expr = function.apply(temp);
+			if (expr.isPresent()) {
+				filterAST.append(expr);
+			} else {
+				restAST.append(temp);
+			}
+		}
+		return filterAST;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IAST filter(IAST filterAST, IAST restAST, Predicate<? super IExpr> predicate) {
+		for (int i = firstIndex + 1; i < lastIndex; i++) {
+			IExpr temp = array[i];
+			if (predicate.test(temp)) {
+				filterAST.append(temp);
+			} else {
+				restAST.append(temp);
+			}
+		}
+		return filterAST;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public final IAST map(final IAST clonedResultAST, final Function<IExpr, IExpr> function) {
+		IExpr temp;
+		int j = 1;
+		for (int i = firstIndex + 1; i < lastIndex; i++) {
+			temp = function.apply(array[i]);
+			if (temp != null) {
+				clonedResultAST.set(j, temp);
+			}
+			j++;
+		}
+		return clonedResultAST;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IAST mapThread(IAST appendAST, final IAST replacement, int position) {
+		final Function<IExpr, IExpr> function = Functors.replaceArg(replacement, position);
+		IExpr temp;
+		for (int i = firstIndex + 1; i < lastIndex; i++) {
+			temp = function.apply(array[i]);
+			if (temp != null) {
+				appendAST.append(temp);
+			}
+		}
+		return appendAST;
 	}
 
 	@Override
