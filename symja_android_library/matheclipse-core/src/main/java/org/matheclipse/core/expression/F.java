@@ -2033,6 +2033,19 @@ public class F {
 	public final static IAST $(final IExpr head, final IExpr... a) {
 		return ast(a, head);
 	}
+	
+	/**
+	 * Create a new abstract syntax tree (AST).
+	 * 
+	 * @param head
+	 *            the header symbol of the function. If the ast represents a function like
+	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
+	 * @param a
+	 * @return
+	 */
+	public final static IAST function(final ISymbol head, final IExpr... a) {
+		return ast(a, head);
+	}
 
 	/**
 	 * Create a <code>Blank[]</code> pattern object for pattern-matching and term rewriting
@@ -2266,6 +2279,23 @@ public class F {
 	 * @return
 	 */
 	public static ISymbol $s(final String symbolName) {
+		return $s(symbolName, true);
+	}
+	
+	/**
+	 * <p>
+	 * Get or create a global predefined symbol which is retrieved from the SYSTEM context map or created or retrieved
+	 * from the SYSTEM context variables map.
+	 * </p>
+	 * <p>
+	 * <b>Note:</b> user defined variables on the context path are defined with method <code>userSymbol()</code>
+	 * </p>
+	 * 
+	 * @param symbolName
+	 *            the name of the symbol
+	 * @return
+	 */
+	public static ISymbol symbol(final String symbolName) {
 		return $s(symbolName, true);
 	}
 
