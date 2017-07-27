@@ -268,10 +268,6 @@ public final class Arithmetic {
 	 */
 	private static class AddTo extends AbstractFunctionEvaluator {
 
-		public AddTo() {
-
-		}
-
 		protected IAST getAST(final IExpr value) {
 			return F.Plus(null, value);
 		}

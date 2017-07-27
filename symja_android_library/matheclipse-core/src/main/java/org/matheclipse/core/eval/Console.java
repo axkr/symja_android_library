@@ -313,7 +313,7 @@ public class Console {
 		final StringWriter buf = new StringWriter();
 		try {
 			if (fSeconds <= 0) {
-				result = fEvaluator.evaluate(inputExpression);
+				result = fEvaluator.eval(inputExpression);
 			} else {
 				result = fEvaluator.evaluateWithTimeout(inputExpression, fSeconds, TimeUnit.SECONDS, true);
 			}
@@ -369,7 +369,7 @@ public class Console {
 		final StringWriter buf = new StringWriter();
 		try {
 			if (fSeconds <= 0) {
-				result = fEvaluator.evaluate(inputExpression);
+				result = fEvaluator.eval(inputExpression);
 			} else {
 				result = fEvaluator.evaluateWithTimeout(inputExpression, fSeconds, TimeUnit.SECONDS, true);
 			}

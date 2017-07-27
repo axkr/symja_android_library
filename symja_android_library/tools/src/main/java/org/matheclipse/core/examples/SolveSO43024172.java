@@ -17,18 +17,18 @@ public class SolveSO43024172 {
 	public static void main(String[] args) {
 		try {
 			ExprEvaluator util = new ExprEvaluator();
-			IExpr expr = util.evaluate("(x1)^2+4*(x2)^2-2*x1-4*x2");
+			IExpr expr = util.eval("(x1)^2+4*(x2)^2-2*x1-4*x2");
 			System.out.println(expr.toString());
 			
 			// determine the variables used in the expression
 			IAST variableList = VariablesSet.getVariables(expr);
 			System.out.println(variableList.toString());
 			
-			IExpr a = util.evaluate("a");
-			IExpr x1 = util.evaluate("x1");
-			IExpr x2 = util.evaluate("x2");
-			IExpr x1Substitute = util.evaluate("5+a");
-			IExpr x2Substitute = util.evaluate("2");
+			IExpr a = util.eval("a");
+			IExpr x1 = util.eval("x1");
+			IExpr x2 = util.eval("x2");
+			IExpr x1Substitute = util.eval("5+a");
+			IExpr x2Substitute = util.eval("2");
 
 			IAST astRules = F.List(F.Rule(x1, x1Substitute), F.Rule(x2, x2Substitute));
 			// {x1->5+a,x2->2}
@@ -38,14 +38,14 @@ public class SolveSO43024172 {
 			// -2*(5+a)+(5+a)^2+(-4)*2+4*2^2
 			System.out.println(replacedExpr.toString());
 			// 8+(5+a)^2-2*(5+a)
-			replacedExpr = util.evaluate(replacedExpr);
+			replacedExpr = util.eval(replacedExpr);
 			System.out.println(replacedExpr.toString());
 
 			// replacedExpr = util.evaluate(F.ExpandAll(replacedExpr));
 			// 23+8*a+a^2
 			// System.out.println(replacedExpr.toString());
 
-			IExpr derivedExpr = util.evaluate(F.D(replacedExpr, a));
+			IExpr derivedExpr = util.eval(F.D(replacedExpr, a));
 			// -2+2*(5+a)
 			System.out.println(derivedExpr.toString());
 
@@ -53,7 +53,7 @@ public class SolveSO43024172 {
 			// -2+2*(5+a)==0
 			System.out.println(equation.toString());
 
-			IExpr solvedEquation = util.evaluate(F.Solve(equation, a));
+			IExpr solvedEquation = util.eval(F.Solve(equation, a));
 			// {{a->-4}}
 			System.out.println(solvedEquation.toString());
 

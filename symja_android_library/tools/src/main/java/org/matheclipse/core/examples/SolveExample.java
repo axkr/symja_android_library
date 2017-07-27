@@ -10,11 +10,11 @@ public class SolveExample {
 	public static void main(String[] args) {
 		try {
 			ExprEvaluator util = new ExprEvaluator();
-			IExpr result = util.evaluate("Solve(2*x==5 + 4*x,x)");
+			IExpr result = util.eval("Solve(2*x==5 + 4*x,x)");
 			// print: {{x->-5/2}}
 			System.out.println(result.toString());
 
-			result = util.evaluate("Roots(2*x==5+4*x, x)");
+			result = util.eval("Roots(2*x==5+4*x, x)");
 			// print: x==-5/2
 			System.out.println(result.toString());
 		} catch (SyntaxError e) {

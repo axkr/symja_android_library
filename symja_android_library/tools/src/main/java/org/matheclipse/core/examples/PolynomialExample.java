@@ -16,7 +16,7 @@ public class PolynomialExample {
 	public static void main(String[] args) {
 		try {
 			ExprEvaluator util = new ExprEvaluator();
-			IExpr expr = util.evaluate("x^2+y+a*x+b*y+c");
+			IExpr expr = util.eval("x^2+y+a*x+b*y+c");
 			System.out.println(expr.toString());
 
 			final IAST variables = F.List(F.x, F.y);

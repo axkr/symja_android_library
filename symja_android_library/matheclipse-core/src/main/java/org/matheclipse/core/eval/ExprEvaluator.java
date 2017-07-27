@@ -53,7 +53,7 @@ public class ExprEvaluator {
 	static {
 		F.initSymbols(null, null, true);
 	}
-	
+
 	private Map<ISymbol, IExpr> fVariableMap;
 	private final List<ISymbol> fVariables;
 
@@ -204,27 +204,53 @@ public class ExprEvaluator {
 	}
 
 	/**
+	 * 
+	 * @return
+	 * @deprecated use eval()
+	 */
+	public final IExpr evaluate() {
+		return eval();
+	}
+
+	/**
+	 * 
+	 * @return
+	 * @deprecated use eval()
+	 */
+	public final IExpr evaluate(final IExpr expr) {
+		return eval(expr);
+	}
+
+	/**
+	 * 
+	 * @return
+	 * @deprecated use eval()
+	 */
+	public final IExpr evaluate(final String inputExpression) {
+		return eval(inputExpression);
+	}
+
+	/**
 	 * Reevaluate the last <code>expression</code> (possibly after a new variable assignment).
 	 * 
 	 * @return
 	 * @throws SyntaxError
 	 */
-	public IExpr evaluate() {
+	public IExpr eval() {
 		if (fExpr == null) {
 			throw new SyntaxError(0, 0, 0, " ", "No parser input defined", 1);
 		}
-		return evaluate(fExpr);
+		return eval(fExpr);
 	}
 
 	/**
-	 * Evaluate an expression for the given &quot;local variables list&quot;. If evaluation is not possible return the
-	 * input object.
+	 * Evaluate an expression. If evaluation is not possible return the input object.
 	 * 
 	 * @param expr
 	 *            the expression which should be evaluated
 	 * @return the evaluated object
 	 */
-	public IExpr evaluate(final IExpr expr) {
+	public IExpr eval(final IExpr expr) {
 		fExpr = expr;
 		F.join();
 		EvalEngine.set(engine);
@@ -237,20 +263,42 @@ public class ExprEvaluator {
 	}
 
 	/**
+	 * Evaluate an expression and test if the result is <code>F.True</code>.
+	 * 
+	 * @param expr
+	 *            the expression which should be evaluated
+	 * @return <code>true</code> if the result is <code>F.True</code> otherwise return <code>false</code>
+	 */
+	public boolean isTrue(final IExpr expr) {
+		return eval(expr).isTrue();
+	}
+
+	/**
+	 * Evaluate an expression and test if the result is <code>F.False</code>.
+	 * 
+	 * @param expr
+	 *            the expression which should be evaluated
+	 * @return <code>true</code> if the result is <code>F.False</code> otherwise return <code>false</code>
+	 */
+	public boolean isFalse(final IExpr expr) {
+		return eval(expr).isFalse();
+	}
+
+	/**
 	 * Parse the given <code>expression String</code> and evaluate it to an IExpr value
 	 * 
 	 * @param inputExpression
 	 * @return
 	 * @throws SyntaxError
 	 */
-	public IExpr evaluate(final String inputExpression) {
+	public IExpr eval(final String inputExpression) {
 		try {
 			if (inputExpression != null) {
 				EvalEngine.set(engine);
 				engine.reset();
 				fExpr = engine.parse(inputExpression);
 				if (fExpr != null) {
-					return evaluate(fExpr);
+					return eval(fExpr);
 				}
 			}
 		} finally {
@@ -278,7 +326,7 @@ public class ExprEvaluator {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * <p>
 	 * Parse the given <code>expression String</code> and evaluate it to an IExpr value.
@@ -294,7 +342,7 @@ public class ExprEvaluator {
 	 *            whether to respond to thread interruption by aborting the operation and throwing InterruptedException;
 	 *            if false, the operation is allowed to complete or time out, and the current thread's interrupt status
 	 *            is re-asserted.
-	 * @return 
+	 * @return
 	 * @throws SyntaxError
 	 */
 	public IExpr evaluateWithTimeout(final String inputExpression, long timeoutDuration, TimeUnit timeUnit,
@@ -327,23 +375,47 @@ public class ExprEvaluator {
 	}
 
 	/**
+	 * 
+	 * @deprecated use evalf(inputExpression)
+	 */
+	public double evaluateDouble(final String inputExpression) {
+		return evalf(inputExpression);
+	}
+
+	/**
 	 * Parse the given <code>expression String</code> and evaluate it to a double value
 	 * 
 	 * @param expression
 	 * @return
 	 * @throws SyntaxError
 	 */
-	public double evaluateDoube(final String inputExpression) {
+	public double evalf(final String inputExpression) {
 		if (inputExpression != null) {
 			EvalEngine.set(engine);
 			engine.reset();
 			fExpr = engine.parse(inputExpression);
 			if (fExpr != null) {
-				IExpr temp = evaluate(F.N(fExpr));
+				IExpr temp = eval(F.N(fExpr));
 				if (temp.isSignedNumber()) {
 					return ((ISignedNumber) temp).doubleValue();
 				}
 			}
+		}
+		return Double.NaN;
+	}
+
+	/**
+	 * Evaluate an expression to a double value
+	 * 
+	 * @param expr
+	 * @return <code>Double.NaN</code> if the evaluation to a double value is not possible
+	 */
+	public double evalf(final IExpr expr) {
+		EvalEngine.set(engine);
+		engine.reset();
+		IExpr temp = eval(F.N(expr));
+		if (temp.isSignedNumber()) {
+			return ((ISignedNumber) temp).doubleValue();
 		}
 		return Double.NaN;
 	}

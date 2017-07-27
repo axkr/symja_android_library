@@ -68,7 +68,7 @@ import edu.jas.kern.ComputerThreads;
  * 
  */
 public class F {
-	
+
 	static {
 		EvalEngine.get().setPackageMode(true);
 	}
@@ -571,7 +571,7 @@ public class F {
 	public final static IBuiltInSymbol Which = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "which" : "Which");
 	public final static IBuiltInSymbol While = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "while" : "While");
 	public final static IBuiltInSymbol With = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "with" : "With");
-	
+
 	public final static IBuiltInSymbol Abs = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "abs" : "Abs");
 	public final static IBuiltInSymbol AbsArg = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "absarg" : "AbsArg");
@@ -1511,7 +1511,7 @@ public class F {
 	 * Represents <code>List()</code> (i.e. the constant empty list)
 	 */
 	public static IAST CEmptyList;
-	
+
 	/**
 	 * Represents <code>Infinity</code> (i.e. <code>Infinity-&gt;DirectedInfinity(1)</code>)
 	 */
@@ -1767,7 +1767,7 @@ public class F {
 			SlotSequence.setAttributes(ISymbol.NHOLDALL);
 
 			CEmptyList = headAST0(List);
-			
+
 			CInfinity = unaryAST1(DirectedInfinity, C1);
 			oo = CInfinity;
 			CNInfinity = unaryAST1(DirectedInfinity, CN1);
@@ -2033,7 +2033,7 @@ public class F {
 	public final static IAST $(final IExpr head, final IExpr... a) {
 		return ast(a, head);
 	}
-	
+
 	/**
 	 * Create a new abstract syntax tree (AST).
 	 * 
@@ -2207,12 +2207,48 @@ public class F {
 	 * @return IPattern
 	 */
 	public static IPattern $p(@Nonnull final String symbolName, final IExpr check, boolean def) {
-		// if (symbolName == null) {
-		// return org.matheclipse.core.expression.Pattern.valueOf(null, check,
-		// def);
-		// }
 		return org.matheclipse.core.expression.Pattern.valueOf($s(symbolName), check, def);
 	}
+	
+	/**
+	 * Create a pattern for pattern-matching and term rewriting
+	 * 
+	 * @param symbol
+	 * @return IPattern
+	 */
+	public static IPattern pattern(final ISymbol symbol) {
+		return org.matheclipse.core.expression.Pattern.valueOf(symbol);
+	}
+	
+	/**
+	 * Create a pattern for pattern-matching and term rewriting
+	 * 
+	 * @param symbol
+	 * @param check
+	 *            additional condition which should be checked in pattern-matching
+	 * @param def
+	 *            if <code>true</code>, the pattern can match to a default value associated with the AST's head the
+	 *            pattern is used in.
+	 * @return IPattern
+	 */
+	public static IPattern pattern(final ISymbol symbol, final IExpr check, final boolean def) {
+		return org.matheclipse.core.expression.Pattern.valueOf(symbol, check, def);
+	}
+	
+	/**
+	 * Create a pattern for pattern-matching and term rewriting
+	 * 
+	 * @param symbol
+	 * @param check
+	 *            additional condition which should be checked in pattern-matching
+	 * @param defaultValue
+	 *            use this <code>defaultValue</code> in pattern-matching if an argument is optional
+	 * @return IPattern
+	 */
+	public static IPattern pattern(final ISymbol symbol, final IExpr check, final IExpr defaultValue) {
+		return org.matheclipse.core.expression.Pattern.valueOf(symbol, check, defaultValue);
+	}
+	
 
 	/**
 	 * Create a pattern for pattern-matching and term rewriting
@@ -2281,7 +2317,7 @@ public class F {
 	public static ISymbol $s(final String symbolName) {
 		return $s(symbolName, true);
 	}
-	
+
 	/**
 	 * <p>
 	 * Get or create a global predefined symbol which is retrieved from the SYSTEM context map or created or retrieved
@@ -2441,11 +2477,11 @@ public class F {
 	public static IAST Append(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Append, a0, a1);
 	}
-	
+
 	public static IAST AppendTo(final IExpr a0, final IExpr a1) {
 		return binaryAST2(AppendTo, a0, a1);
 	}
-	
+
 	public static IAST Apply(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Apply, a0, a1);
 	}
@@ -2825,7 +2861,7 @@ public class F {
 	public static IAST ClearAttributes(final IExpr a0, final IExpr a1) {
 		return binaryAST2(ClearAttributes, a0, a1);
 	}
-	
+
 	public static IAST CNInfinity() {
 		return binary(Times, CN1, Infinity);
 	}
@@ -2833,7 +2869,7 @@ public class F {
 	public static IAST Coefficient(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Coefficient, a0, a1);
 	}
-	
+
 	public static IAST Coefficient(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(Coefficient, a0, a1, a2);
 	}
@@ -2849,7 +2885,7 @@ public class F {
 	public static IAST Colon(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Colon, a0, a1);
 	}
-	
+
 	public static int compareTo(IExpr a, IExpr b) throws UnsupportedOperationException {
 		if (a instanceof ISignedNumber && b instanceof ISignedNumber) {
 			return a.compareTo(b);
@@ -4206,11 +4242,11 @@ public class F {
 	public static IAST LCM(final IExpr a0, final IExpr a1) {
 		return binaryAST2(LCM, a0, a1);
 	}
-	
+
 	public static IAST LegendreP(final IExpr a0, final IExpr a1) {
 		return binaryAST2(LegendreP, a0, a1);
 	}
-	
+
 	// public static IAST KOrderlessPartitions(final IExpr a0) {
 	//
 	// return unaryAST2(KOrderlessPartitions, a0);
@@ -4240,7 +4276,7 @@ public class F {
 		}
 		return binaryAST2(Less, a0, a1);
 	}
-	
+
 	public static IAST Less(final IExpr... a) {
 		return ast(a, Less);
 	}
@@ -4255,7 +4291,7 @@ public class F {
 	public static IAST LessEqual(final IExpr... a) {
 		return ast(a, LessEqual);
 	}
-	
+
 	public static IAST Limit(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Limit, a0, a1);
 	}
@@ -4383,11 +4419,11 @@ public class F {
 	public static IAST MatchQ(final IExpr a0, final IExpr a1) {
 		return binaryAST2(MatchQ, a0, a1);
 	}
-	
+
 	public static IAST MathMLForm(final IExpr a0) {
 		return unaryAST1(MathMLForm, a0);
 	}
-	
+
 	public static IAST MatrixPower(final IExpr a0, final IExpr a1) {
 
 		return binaryAST2(MatrixPower, a0, a1);
@@ -4663,7 +4699,7 @@ public class F {
 	public static IAST Or(final IExpr... a) {
 		return ast(a, Or);
 	}
-	
+
 	public static IAST Order(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Order, a0, a1);
 	}
@@ -4798,7 +4834,7 @@ public class F {
 	public static IAST PolynomialGCD(final IExpr a0, final IExpr a1) {
 		return binaryAST2(PolynomialGCD, a0, a1);
 	}
-	
+
 	public static IAST PolynomialQ(final IExpr a0, final IExpr a1) {
 		return binaryAST2(PolynomialQ, a0, a1);
 	}
@@ -4834,6 +4870,10 @@ public class F {
 
 	public static IAST PossibleZeroQ(final IExpr a0) {
 		return unaryAST1(PossibleZeroQ, a0);
+	}
+
+	public static IAST pow(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Power, a0, a1);
 	}
 
 	public static IAST Power(final IExpr a0, final IExpr a1) {
@@ -5091,7 +5131,7 @@ public class F {
 	public static IAST SameQ(final IExpr a0, final IExpr a1) {
 		return binaryAST2(SameQ, a0, a1);
 	}
-	
+
 	public static IAST SameQ(final IExpr a0, final double d) {
 		return binaryAST2(SameQ, a0, F.num(d));
 	}
@@ -5287,6 +5327,23 @@ public class F {
 	}
 
 	/**
+	 * Substitute all (sub-) expressions <code>x</code> with <code>y</code>. If no substitution matches, the method
+	 * returns the given <code>expr</code>.
+	 * 
+	 * @param expr
+	 *            the complete expresssion
+	 * @param x
+	 *            the subexpression which should be replaced
+	 * @param y
+	 *            the expression which replaces <code>x</code>
+	 * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or the substituted
+	 *         expression.
+	 */
+	public static IExpr subs(final IExpr expr, final IExpr x, final IExpr y) {
+		return expr.replaceAll(F.Rule(x, y)).orElse(expr);
+	}
+
+	/**
 	 * Substitute all (sub-) expressions with the given unary function. If no substitution matches, the method returns
 	 * the given <code>expr</code>.
 	 * 
@@ -5359,7 +5416,7 @@ public class F {
 	public static IAST Switch(final IExpr... a) {
 		return ast(a, Switch);
 	}
-	
+
 	public static IAST Table(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Table, a0, a1);
 	}
@@ -5578,7 +5635,7 @@ public class F {
 	public static IAST With(final IExpr a0, final IExpr a1) {
 		return binaryAST2(With, a0, a1);
 	}
-	
+
 	public static IAST Zeta(final IExpr a0) {
 		return unaryAST1(Zeta, a0);
 	}

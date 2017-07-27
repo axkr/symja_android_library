@@ -88,7 +88,7 @@ public class MathUtils {
 		ExprEvaluator parser = new ExprEvaluator();
 		double a, b;
 		try {
-			a = parser.evaluateDoube(aS);
+			a = parser.evalf(aS);
 		} catch (MathException e) {
 			// throw new ParseError(context.getString(R.string.invalidStart) +
 			// e.getMessage(), e.context);
@@ -96,7 +96,7 @@ public class MathUtils {
 		}
 		try {
 			// b = parser.parse(bS).getVal();
-			b = parser.evaluateDoube(bS);
+			b = parser.evalf(bS);
 		} catch (MathException e) {
 			// throw new ParseError(context.getString(R.string.invalidEnd) +
 			// e.getMessage(), e.context);

@@ -24,12 +24,12 @@ public class SymbolicSO43739728 {
 			IExpr formula = F.Times(F.QQ(3, 4), F.QQ(4, 3), F.Sqrt(F.ZZ(2)), F.CI);
 
 			// symbolic evaluation
-			IExpr result = util.evaluate(formula);
+			IExpr result = util.eval(formula);
 			// print: I*Sqrt(2)
 			System.out.println(result.toString());
 
 			// numerical evaluations
-			result = util.evaluate(F.N(formula));
+			result = util.eval(F.N(formula));
 			// I*1.4142135623730951
 			System.out.println(result.toString());
 

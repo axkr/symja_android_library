@@ -29,34 +29,34 @@ public class CalculusExample {
 			// Use the Java form to create an expression with F.* static
 			// methods:
 			IAST function = D(Times(Sin(x), Cos(x)), x);
-			IExpr result = util.evaluate(function);
+			IExpr result = util.eval(function);
 			// print: Cos(x)^2-Sin(x)^2
 			System.out.println(result.toString());
 
 			// Note "diff" is an alias for the "D" function
-			result = util.evaluate("diff(sin(x)*cos(x),x)");
+			result = util.eval("diff(sin(x)*cos(x),x)");
 			// print: Cos(x)^2-Sin(x)^2
 			System.out.println(result.toString());
 
 			// evaluate the last result ($ans contains "last answer")
-			result = util.evaluate("$ans+cos(x)^2");
+			result = util.eval("$ans+cos(x)^2");
 			// print: 2*Cos(x)^2-Sin(x)^2
 			System.out.println(result.toString());
 
 			// evaluate an Integrate[] expression
-			result = util.evaluate("integrate(sin(x)^5,x)");
+			result = util.eval("integrate(sin(x)^5,x)");
 			// print: 2/3*Cos(x)^3-1/5*Cos(x)^5-Cos(x)
 			System.out.println(result.toString());
 
 			// set the value of a variable "a" to 10
 			// Note: in server mode the variable name must have a preceding '$'
 			// character
-			result = util.evaluate("a=10");
+			result = util.eval("a=10");
 			// print: 10
 			System.out.println(result.toString());
 
 			// do a calculation with variable "a"
-			result = util.evaluate("a*3+b");
+			result = util.eval("a*3+b");
 			// print: 30+b
 			System.out.println(result.toString());
 
@@ -64,15 +64,15 @@ public class CalculusExample {
 			// Note: single character identifiers are case sensistive
 			// (the "N()" function input must be written as upper case
 			// character)
-			result = util.evaluate("N(sinh(5))");
+			result = util.eval("N(sinh(5))");
 			// print: 74.20321057778875
 			System.out.println(result.toString());
 
 			// define a function with a recursive factorial function definition.
 			// Note: fac(0) is the stop condition.
-			result = util.evaluate("fac(x_IntegerQ):=x*fac(x-1);fac(0)=1");
+			result = util.eval("fac(x_IntegerQ):=x*fac(x-1);fac(0)=1");
 			// now calculate factorial of 10:
-			result = util.evaluate("fac(10)");
+			result = util.eval("fac(10)");
 			// print: 3628800
 			System.out.println(result.toString());
 
