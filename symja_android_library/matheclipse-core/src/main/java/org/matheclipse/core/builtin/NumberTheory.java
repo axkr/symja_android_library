@@ -1564,6 +1564,43 @@ public final class NumberTheory {
 
 	}
 
+	private static class MersennePrimeExponentQ extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			IExpr arg1 = ast.arg1();
+			if (!arg1.isInteger() || arg1.isZero() || arg1.isOne() || arg1.isNegative()) {
+				return F.False;
+			}
+
+			try {
+				long n = ((IInteger) arg1).toLong();
+				if (n <= MPE_45[MPE_45.length - 1]) {
+					for (int i = 0; i < MPE_45.length; i++) {
+						if (MPE_45[i] == n) {
+							return F.True;
+						}
+					}
+					return F.False;
+				}
+				if (n < Integer.MAX_VALUE) {
+					// 2^n - 1
+					BigInteger b2nm1 = BigInteger.ONE.shiftLeft((int) n).subtract(BigInteger.ONE);
+					return F.bool(b2nm1.isProbablePrime(32));
+				}
+			} catch (ArithmeticException ae) {
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+	}
+
 	/**
 	 * <pre>
 	 * MoebiusMu(expr)
@@ -2767,6 +2804,7 @@ public final class NumberTheory {
 		F.LiouvilleLambda.setEvaluator(new LiouvilleLambda());
 		F.LucasL.setEvaluator(new LucasL());
 		F.MersennePrimeExponent.setEvaluator(new MersennePrimeExponent());
+		F.MersennePrimeExponentQ.setEvaluator(new MersennePrimeExponentQ());
 		F.MoebiusMu.setEvaluator(new MoebiusMu());
 		F.Multinomial.setEvaluator(new Multinomial());
 		F.MultiplicativeOrder.setEvaluator(new MultiplicativeOrder());

@@ -947,7 +947,8 @@ public class F {
 	public final static IBuiltInSymbol Mean = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mean" : "Mean");
 	public final static IBuiltInSymbol MersennePrimeExponent = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mersenneprimeexponent" : "MersennePrimeExponent");
-
+	public final static IBuiltInSymbol MersennePrimeExponentQ = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mersenneprimeexponentq" : "MersennePrimeExponentQ");
 	public final static IBuiltInSymbol Median = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "median" : "Median");
 	public final static IBuiltInSymbol Min = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "min" : "Min");

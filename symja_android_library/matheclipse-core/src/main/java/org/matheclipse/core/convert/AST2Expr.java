@@ -92,7 +92,7 @@ public class AST2Expr {
 			"MachineNumberQ", "ManhattanDistance", "MantissaExponent", "Map", "MapAt", "MapAll", "MapThread",
 			"MatchingDissimilarity", "MatchQ", "MathMLForm", "MatrixForm", "MatrixMinimalPolynomial", "MatrixPower",
 			"MatrixQ", "MatrixRank", "Max", "Mean", "Median", "MemberQ", "MeshRange", "MessageName",
-			"MersennePrimeExponent", "Min", "MinimalPolynomial", "Minus", "Missing", "MissingQ", "Mod", "Module",
+			"MersennePrimeExponent", "MersennePrimeExponentQ", "Min", "MinimalPolynomial", "Minus", "Missing", "MissingQ", "Mod", "Module",
 			"MoebiusMu", "MonomialList", "Most", "Multinomial", "MultiplicativeOrder", "Names", "Nand", "NDSolve",
 			"Nearest", "Negative", "Nest", "NestList", "NestWhile", "NestWhileList", "NextPrime", "NFourierTransform",
 			"NIntegrate", "NMaximize", "NMinimize", "NonCommutativeMultiply", "NonNegative", "NonPositive", "NoneTrue",

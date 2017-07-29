@@ -3486,6 +3486,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("MersennePrimeExponent(45)", "37156667");
 		check("MersennePrimeExponent(46)", "MersennePrimeExponent(46)");
 	}
+	public void testMersennePrimeExponentQ() {
+		check("Select(Range(10000), MersennePrimeExponentQ)", "{2,3,5,7,13,17,19,31,61,89,107,127,521,607,1279,2203,2281,3217,4253,4423,9689,\n" + 
+				"9941}");
+	}
 
 	public void testMin() {
 		check("Refine(Min(-Infinity,x), x>0)", "-Infinity");
