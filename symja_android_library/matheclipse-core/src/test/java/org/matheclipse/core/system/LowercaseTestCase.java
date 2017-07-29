@@ -3478,6 +3478,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMersennePrimeExponent() {
+		check("Table(MersennePrimeExponent(i), {i,20})",
+				"{2,3,5,7,13,17,19,31,61,89,107,127,521,607,1279,2203,2281,3217,4253,4423}");
 		check("MersennePrimeExponent(1)", "2");
 		check("MersennePrimeExponent(21)", "9689");
 		check("MersennePrimeExponent(22)", "9941");
@@ -3486,9 +3488,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("MersennePrimeExponent(45)", "37156667");
 		check("MersennePrimeExponent(46)", "MersennePrimeExponent(46)");
 	}
+
 	public void testMersennePrimeExponentQ() {
-		check("Select(Range(10000), MersennePrimeExponentQ)", "{2,3,5,7,13,17,19,31,61,89,107,127,521,607,1279,2203,2281,3217,4253,4423,9689,\n" + 
-				"9941}");
+		check("Select(Range(10000), MersennePrimeExponentQ)",
+				"{2,3,5,7,13,17,19,31,61,89,107,127,521,607,1279,2203,2281,3217,4253,4423,9689,\n" + "9941}");
 	}
 
 	public void testMin() {
@@ -4466,6 +4469,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPerfectNumber() {
+		check("Table(PerfectNumber(i), {i,5})", "{6,28,496,8128,33550336}");
 		check("PerfectNumber(1)", "6");
 		check("PerfectNumber(2)", "28");
 		check("PerfectNumber(3)", "496");

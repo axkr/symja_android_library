@@ -184,7 +184,6 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Scoping](scoping.md)
 
 ## Reference of built-in symbols
-
 * [Abort](functions/Abort.md)
 * [Abs](functions/Abs.md)
 * [AddTo](functions/AddTo.md)
@@ -432,6 +431,8 @@ for a full description of their possible arguments, options, etc., see their ent
 * [MatrixRank](functions/MatrixRank.md)
 * [Max](functions/Max.md)
 * [MemberQ](functions/MemberQ.md)
+* [MersennePrimeExponent](functions/MersennePrimeExponent.md)
+* [MersennePrimeExponentQ](functions/MersennePrimeExponentQ.md)
 * [Min](functions/Min.md)
 * [Minus](functions/Minus.md)
 * [Mod](functions/Mod.md)
@@ -480,6 +481,8 @@ for a full description of their possible arguments, options, etc., see their ent
 * [PartitionsP](functions/PartitionsP.md)
 * [PartitionsQ](functions/PartitionsQ.md)
 * [PatternTest](functions/PatternTest.md)
+* [PerfectNumber](functions/PerfectNumber.md)
+* [PerfectNumberQ](functions/PerfectNumberQ.md)
 * [Permutations](functions/Permutations.md)
 * [Pi](functions/Pi.md)
 * [Piecewise](functions/Piecewise.md)
@@ -587,7 +590,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [TrigToExp](functions/TrigToExp.md)
 * [True](functions/True.md)
 * [TrueQ](functions/TrueQ.md)
-* [Tuples](functions/Tuples.md)
+* [Tuples](functions/Tuples.md)  
 * [Unequal](functions/Unequal.md)
 * [Union](functions/Union.md)
 * [UnitStep](functions/UnitStep.md)
