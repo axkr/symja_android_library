@@ -48,7 +48,6 @@ public class BesselJ extends AbstractFunctionEvaluator {
 				return F.C1;
 			}
 			if (arg1.isInteger()) {
-				// (<integer>, 0)
 				return F.C0;
 			}
 

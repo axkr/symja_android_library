@@ -945,6 +945,9 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matrixrank" : "MatrixRank");
 	public final static IBuiltInSymbol Max = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "max" : "Max");
 	public final static IBuiltInSymbol Mean = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mean" : "Mean");
+	public final static IBuiltInSymbol MersennePrimeExponent = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mersenneprimeexponent" : "MersennePrimeExponent");
+
 	public final static IBuiltInSymbol Median = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "median" : "Median");
 	public final static IBuiltInSymbol Min = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "min" : "Min");
@@ -1015,6 +1018,10 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "partitionsp" : "PartitionsP");
 	public final static IBuiltInSymbol PartitionsQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "partitionsq" : "PartitionsQ");
+	public final static IBuiltInSymbol PerfectNumber = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "perfectnumber" : "PerfectNumber");
+	public final static IBuiltInSymbol PerfectNumberQ = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "perfectnumberq" : "PerfectNumberQ");
 	public final static IBuiltInSymbol PDF = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "pdf" : "PDF");
 	public final static IBuiltInSymbol Permutations = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "permutations" : "Permutations");
@@ -2209,7 +2216,7 @@ public class F {
 	public static IPattern $p(@Nonnull final String symbolName, final IExpr check, boolean def) {
 		return org.matheclipse.core.expression.Pattern.valueOf($s(symbolName), check, def);
 	}
-	
+
 	/**
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
@@ -2219,7 +2226,7 @@ public class F {
 	public static IPattern pattern(final ISymbol symbol) {
 		return org.matheclipse.core.expression.Pattern.valueOf(symbol);
 	}
-	
+
 	/**
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
@@ -2234,7 +2241,7 @@ public class F {
 	public static IPattern pattern(final ISymbol symbol, final IExpr check, final boolean def) {
 		return org.matheclipse.core.expression.Pattern.valueOf(symbol, check, def);
 	}
-	
+
 	/**
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
@@ -2248,7 +2255,6 @@ public class F {
 	public static IPattern pattern(final ISymbol symbol, final IExpr check, final IExpr defaultValue) {
 		return org.matheclipse.core.expression.Pattern.valueOf(symbol, check, defaultValue);
 	}
-	
 
 	/**
 	 * Create a pattern for pattern-matching and term rewriting

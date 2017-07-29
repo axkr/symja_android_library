@@ -27,13 +27,13 @@ Leaves in the beginning of a pattern rather match fewer leaves:
 {{a},{b,c,d}}
 ```
  
-Optional arguments using 'Optional':
+Optional arguments using `Optional`:
 ```
 >> f(a) /. f(x_, y_:3) -> {x, y}
 {a,3}
 ```
 
-The attributes 'Flat', 'Orderless', and 'OneIdentity' affect pattern matching.
+The attributes `Flat`, `Orderless`, and `OneIdentity` affect pattern matching.
 
 ## Functions Reference 
 

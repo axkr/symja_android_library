@@ -1541,6 +1541,29 @@ public final class NumberTheory {
 		}
 	}
 
+	private static class MersennePrimeExponent extends AbstractTrigArg1 {
+
+		@Override
+		public IExpr evaluateArg1(final IExpr arg1) {
+			if (arg1.isInteger() && arg1.isPositive()) {
+				if (arg1 instanceof IntegerSym) {
+					int n = ((IInteger) arg1).toInt();
+					if (n > NumberTheory.MPE_45.length) {
+						return F.NIL;
+					}
+					return F.ZZ(NumberTheory.MPE_45[n - 1]);
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+
+	}
+
 	/**
 	 * <pre>
 	 * MoebiusMu(expr)
@@ -2023,6 +2046,81 @@ public final class NumberTheory {
 			// DivisorSigma(1, k)*PartitionsQ(n - 2*k)
 			IInteger k2 = F.ZZ(k);
 			return engine.evaluate(Times(F.DivisorSigma(C1, k2), F.PartitionsQ(Plus(Times(F.CN2, k2), n))));
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+	}
+
+	private static class PerfectNumber extends AbstractTrigArg1 {
+
+		@Override
+		public IExpr evaluateArg1(final IExpr arg1) {
+			if (arg1.isInteger() && arg1.isPositive()) {
+				if (arg1 instanceof IntegerSym) {
+					int n = ((IInteger) arg1).toInt();
+					if (n > NumberTheory.MPE_45.length) {
+						return F.NIL;
+					}
+					if (n <= NumberTheory.PN_8.length) {
+						return F.ZZ(NumberTheory.PN_8[n - 1]);
+					}
+					// 2^p
+					BigInteger b2p = BigInteger.ONE.shiftLeft(NumberTheory.MPE_45[n - 1]);
+					// 2^(p-1)
+					BigInteger b2pm1 = b2p.shiftRight(1);
+					return F.ZZ(b2p.subtract(BigInteger.ONE).multiply(b2pm1));
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+
+	}
+
+	private static class PerfectNumberQ extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			IExpr arg1 = ast.arg1();
+			if (!arg1.isInteger() || arg1.isZero() || arg1.isOne() || arg1.isNegative()) {
+				return F.False;
+			}
+
+			IInteger n = (IInteger) arg1;
+
+			try {
+				long value = n.toLong();
+				if (value <= Long.MAX_VALUE) {
+					for (int i = 0; i < PN_8.length; i++) {
+						if (PN_8[i] == value) {
+							return F.True;
+						}
+					}
+					return F.False;
+				}
+			} catch (ArithmeticException ae) {
+				return F.NIL;
+			}
+
+			IAST list = n.divisors();
+			if (list.isList()) {
+				IInteger sum = F.C0;
+				int size = list.size() - 1;
+				for (int i = 1; i < size; i++) {
+					sum = sum.add((IInteger) list.get(i));
+				}
+				return F.bool(sum.equals(n));
+			}
+			return F.False;
 		}
 
 		@Override
@@ -2668,12 +2766,15 @@ public final class NumberTheory {
 		F.KroneckerDelta.setEvaluator(new KroneckerDelta());
 		F.LiouvilleLambda.setEvaluator(new LiouvilleLambda());
 		F.LucasL.setEvaluator(new LucasL());
+		F.MersennePrimeExponent.setEvaluator(new MersennePrimeExponent());
 		F.MoebiusMu.setEvaluator(new MoebiusMu());
 		F.Multinomial.setEvaluator(new Multinomial());
 		F.MultiplicativeOrder.setEvaluator(new MultiplicativeOrder());
 		F.NextPrime.setEvaluator(new NextPrime());
 		F.PartitionsP.setEvaluator(new PartitionsP());
 		F.PartitionsQ.setEvaluator(new PartitionsQ());
+		F.PerfectNumber.setEvaluator(new PerfectNumber());
+		F.PerfectNumberQ.setEvaluator(new PerfectNumberQ());
 		F.Prime.setEvaluator(new Prime());
 		F.PrimePi.setEvaluator(new PrimePi());
 		F.PrimeOmega.setEvaluator(new PrimeOmega());
@@ -2815,6 +2916,26 @@ public final class NumberTheory {
 		}
 		return result;
 	}
+
+	/**
+	 * The first 49 perfect numbers.
+	 * 
+	 * See <a href="https://en.wikipedia.org/wiki/List_of_perfect_numbers">List_of_perfect_numbers</a>
+	 */
+	private final static long[] PN_8 = { 6, 28, 496, 8128, 33550336L, 8589869056L, 137438691328L,
+			2305843008139952128L };
+
+	/**
+	 * The first 45 mersenne prime exponents.
+	 * 
+	 * See <a href="https://en.wikipedia.org/wiki/Mersenne_prime">Mersenne prime</a>
+	 */
+	protected final static int[] MPE_45 = { 2, 3, 5, 7, 13, 17, 19, 31, 61, 89, 107, 127, 521, 607, 1279, 2203, 2281,
+			3217, 4253, 4423, 9689, 9941, 11213, 19937, 21701, 23209, 44497, 86243, 110503, 132049, 216091, 756839,
+			859433, 1257787, 1398269, 2976221, 3021377, 6972593, 13466917, 20996011, 24036583, 25964951, 30402457,
+			32582657, 37156667
+
+	};
 
 	private NumberTheory() {
 

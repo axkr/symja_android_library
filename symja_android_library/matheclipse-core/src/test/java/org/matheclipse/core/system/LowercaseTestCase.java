@@ -1956,8 +1956,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ExtendedGCD(3,{5,15})", "{{1,{2,-1}},{3,{1,0}}}");
 		check("ExtendedGCD(6,21)", "{3,{-3,1}}");
 		check("GCD(6,21)", "3");
-		
-		
+
 		check("ExtendedGCD(10, 15)", "{5,{-1,1}}");
 		check("ExtendedGCD(10, 15, 7)", "{1,{-3,3,-2}}");
 
@@ -2163,7 +2162,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testFindRoot() {
 		check("FindRoot(Exp(x)-1 == 0,{x,-50,100}, Method->Muller)", "{x->0.0}");
 		check("Exp(1.2436240901689538E-16) - 1", "0.0");
-		
+
 		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})", "{x->3.4341896575482007}");
 		checkNumeric(
 				"$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n" + "$R=100;\n" + "$d=0.00;\n"
@@ -2189,7 +2188,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Secant)", "{x->3.4341896575036097}");
 		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->100)",
 				"maximal count (100) exceeded");
-		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->32000)", "convergence failed");
+		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->32000)",
+				"convergence failed");
 		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Illinois)", "{x->3.4341896915055257}");
 		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Pegasus)", "{x->3.4341896575481976}");
 
@@ -2764,6 +2764,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegrate() {
+		// check("Integrate(x/(1+x+x^7),x)", "");
 		check("Integrate(1/y(x)^2,y(x))", "-1/y(x)");
 		check("Integrate(f(x,y),x)", "Integrate(f(x,y),x)");
 		check("Integrate(f(x,x),x)", "Integrate(f(x,x),x)");
@@ -3476,6 +3477,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("MemberQ(a + b + c, a + c)", "False");
 	}
 
+	public void testMersennePrimeExponent() {
+		check("MersennePrimeExponent(1)", "2");
+		check("MersennePrimeExponent(21)", "9689");
+		check("MersennePrimeExponent(22)", "9941");
+		check("MersennePrimeExponent(23)", "11213");
+		check("MersennePrimeExponent(44)", "32582657");
+		check("MersennePrimeExponent(45)", "37156667");
+		check("MersennePrimeExponent(46)", "MersennePrimeExponent(46)");
+	}
+
 	public void testMin() {
 		check("Refine(Min(-Infinity,x), x>0)", "-Infinity");
 		check("Refine(Min(-Infinity,x,y), x>0&&y>0)", "-Infinity");
@@ -3987,7 +3998,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1})", "-0.0208333333333333");
 		// LegendreGauss is default method
-		checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->LegendreGauss)", "-0.0208333333333333");
+		checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->LegendreGauss)",
+				"-0.0208333333333333");
 		checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Simpson)", "-0.0208333320915699");
 		checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Trapezoid)", "-0.0208333271245165");
 		checkNumeric("NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method->Trapezoid, MaxIterations->5000)",
@@ -4224,6 +4236,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testOptional() {
+		check("f(a) /. f(x_, y_:3) -> {x, y}", "{a,3}");
+
 		check("f(x_, Optional(y_,1)) := {x, y}", "");
 		check("f(1, 2)", "{1,2}");
 		check("f(a)", "{a,1}");
@@ -4445,6 +4459,28 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PartitionsQ(50)", "3658");
 		// upper limit to avid stack overflow
 		check("PartitionsQ(201)", "PartitionsQ(201)");
+	}
+
+	public void testPerfectNumber() {
+		check("PerfectNumber(1)", "6");
+		check("PerfectNumber(2)", "28");
+		check("PerfectNumber(3)", "496");
+		check("PerfectNumber(6)", "8589869056");
+		check("PerfectNumber(7)", "137438691328");
+		check("PerfectNumber(8)", "2305843008139952128");
+
+		// big integer results:
+		check("PerfectNumber(9)", "2658455991569831744654692615953842176");
+		check("PerfectNumber(10)", "191561942608236107294793378084303638130997321548169216");
+		check("PerfectNumber(46)", "PerfectNumber(46)");
+	}
+
+	public void testPerfectNumberQ() {
+		check("PerfectNumberQ(6)", "True");
+		check("PerfectNumberQ(1)", "False");
+		check("PerfectNumberQ(35)", "False");
+		check("Select(Range(1000), PerfectNumberQ)", "{6,28,496}");
+
 	}
 
 	public void testPatternAndRules() {
@@ -7009,7 +7045,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("With({e = Expand((1 + x)^5)}, Function @@ {x, e})", "Function(x,1+5*x+10*x^2+10*x^3+5*x^4+x^5)");
 
 		check("x=5;With({x = x}, Hold(x))", "Hold(5)");
-		
+
 		check("newton(f_, x0_) := With({fp = f'}, FixedPoint(# - f(#)/fp(#) &, x0))", "");
 		check("newton(Cos,1.33)", "1.5708");
 
