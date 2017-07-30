@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.RandomAccess;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -401,13 +402,35 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean exists(Predicate<? super IExpr> predicate) {
-		for (int i = firstIndex + 1; i < lastIndex; i++) {
+	public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
+		int start = firstIndex + startOffset;
+		for (int i = start; i < lastIndex; i++) {
 			if (predicate.test(array[i])) {
 				return true;
 			}
 		}
 		return false;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public void forEach(Consumer<? super IExpr> action, int startOffset) {
+		int start = firstIndex + startOffset;
+		for (int i = start; i < lastIndex; i++) {
+			action.accept(array[i]);
+		}
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean forAll(Predicate<? super IExpr> predicate, int startOffset) {
+		int start = firstIndex + startOffset;
+		for (int i = start; i < lastIndex; i++) {
+			if (!predicate.test(array[i])) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/** {@inheritDoc} */

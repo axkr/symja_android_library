@@ -2790,12 +2790,7 @@ public class Algebra {
 			public boolean visit(IAST ast) {
 				if (ast.isTimes() || ast.isPlus()) {
 					// check the arguments
-					for (int i = 1; i < ast.size(); i++) {
-						if (!ast.get(i).accept(this)) {
-							return false;
-						}
-					}
-					return true;
+					return ast.forAll(x -> x.accept(this), 1);
 				}
 				if (ast.isPower() && (ast.arg2().isInteger())) {
 					// check the arguments

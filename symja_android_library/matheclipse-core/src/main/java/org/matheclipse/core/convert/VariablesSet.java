@@ -16,14 +16,12 @@ import org.matheclipse.core.visit.AbstractVisitorBoolean;
 import org.matheclipse.core.visit.VisitorCollectionBoolean;
 
 /**
- * Determine the variable symbols from a Symja expression and store them
- * internally in a <code>java.util.Set</code>.
+ * Determine the variable symbols from a Symja expression and store them internally in a <code>java.util.Set</code>.
  */
 public class VariablesSet {
 	/**
-	 * Collect the variables which satisfy the <code>IExpr#isVariable()</code>
-	 * predicate and which are used in logical functions like Not, And, OR,
-	 * Xor,...
+	 * Collect the variables which satisfy the <code>IExpr#isVariable()</code> predicate and which are used in logical
+	 * functions like Not, And, OR, Xor,...
 	 * 
 	 * @see IExpr#isVariable()
 	 */
@@ -38,9 +36,7 @@ public class VariablesSet {
 					F.Unequal };
 			for (int i = 0; i < logicEquationHeads.length; i++) {
 				if (ast.isAST(logicEquationHeads[i])) {
-					for (int j = 1; j < ast.size(); j++) {
-						ast.get(j).accept(this);
-					}
+					ast.forEach(x->x.accept(this));
 					break;
 				}
 			}
@@ -58,8 +54,8 @@ public class VariablesSet {
 	}
 
 	/**
-	 * Return <code>true</code>, if the expression contains one of the variable
-	 * store in the internal <code>java.util.Set</code>.
+	 * Return <code>true</code>, if the expression contains one of the variable store in the internal
+	 * <code>java.util.Set</code>.
 	 * 
 	 * @see IExpr#isVariable()
 	 */
@@ -69,12 +65,7 @@ public class VariablesSet {
 		}
 
 		public boolean visit(IAST list) {
-			for (int i = 1; i < list.size(); i++) {
-				if (list.get(i).accept(this)) {
-					return true;
-				}
-			}
-			return false;
+			return list.exists(x -> x.accept(this), 1);
 		}
 
 		public boolean visit(ISymbol symbol) {
@@ -106,18 +97,14 @@ public class VariablesSet {
 		@Override
 		public boolean visit(IAST list) {
 			if (list.isList() || list.isPlus() || list.isTimes()) {
-				for (int i = 1; i < list.size(); i++) {
-					list.get(i).accept(this);
-				}
+				list.forEach(x -> x.accept(this));
 				return false;
 			} else if (list.isPower()) {
 				IExpr base = list.arg1();
 				IExpr exponent = list.arg2();
 
 				if (exponent.isRational()) {
-					for (int i = 1; i < list.size(); i++) {
-						list.get(i).accept(this);
-					}
+					list.forEach(x -> x.accept(this));
 					return false;
 				} else if (exponent.isNumber()) {
 					fCollection.add(list);
@@ -152,8 +139,7 @@ public class VariablesSet {
 	}
 
 	/**
-	 * Return a <code>Predicate</code> which tests, if the given input is free
-	 * of the variables set.
+	 * Return a <code>Predicate</code> which tests, if the given input is free of the variables set.
 	 * 
 	 * @param exprVar
 	 * @return
@@ -205,8 +191,7 @@ public class VariablesSet {
 	 * Add the symbol to the set of variables.
 	 * 
 	 * @param symbol
-	 * @return <tt>true</tt> if the underlying set did not already contain the
-	 *         symbol
+	 * @return <tt>true</tt> if the underlying set did not already contain the symbol
 	 */
 	public boolean add(final IExpr symbol) {
 		return fVariablesSet.add(symbol);
@@ -222,9 +207,8 @@ public class VariablesSet {
 	}
 
 	/**
-	 * Add the variables which satisfy the <code>IExpr#isVariable()</code>
-	 * predicate and which are used in logical functions like Not, And, OR,
-	 * Xor,...
+	 * Add the variables which satisfy the <code>IExpr#isVariable()</code> predicate and which are used in logical
+	 * functions like Not, And, OR, Xor,...
 	 * 
 	 * @param expression
 	 */
@@ -248,8 +232,7 @@ public class VariablesSet {
 	}
 
 	/**
-	 * Append the set of variables to a <code>List&lt;IExpr&gt;</code> list of
-	 * variables.
+	 * Append the set of variables to a <code>List&lt;IExpr&gt;</code> list of variables.
 	 * 
 	 * @return the list of variables.
 	 */
@@ -284,8 +267,7 @@ public class VariablesSet {
 	}
 
 	/**
-	 * Transform the set of variables into a <code>List&lt;IExpr&gt;</code> list
-	 * of ordered variables.
+	 * Transform the set of variables into a <code>List&lt;IExpr&gt;</code> list of ordered variables.
 	 * 
 	 * @return the ordered list of variables.
 	 */
@@ -299,8 +281,7 @@ public class VariablesSet {
 	}
 
 	/**
-	 * Transform the set of variables into an <code>IAST</code> list of ordered
-	 * variables.
+	 * Transform the set of variables into an <code>IAST</code> list of ordered variables.
 	 * 
 	 * @return the ordered list of variables.
 	 */
@@ -314,9 +295,8 @@ public class VariablesSet {
 	}
 
 	/**
-	 * Transform the set of variables into an <code>IAST</code> list of ordered
-	 * variables. Looks only inside sums, products, and rational powers and
-	 * lists for variables.
+	 * Transform the set of variables into an <code>IAST</code> list of ordered variables. Looks only inside sums,
+	 * products, and rational powers and lists for variables.
 	 * 
 	 * @return the ordered list of variables.
 	 */
@@ -359,8 +339,7 @@ public class VariablesSet {
 	 * Check if the expression contains the given number of variables.
 	 * 
 	 * @param expr
-	 * @return <code>true</code> if the expr contains the given number of
-	 *         variables.
+	 * @return <code>true</code> if the expr contains the given number of variables.
 	 */
 	public boolean isSize(int size) {
 		return fVariablesSet.size() == size;

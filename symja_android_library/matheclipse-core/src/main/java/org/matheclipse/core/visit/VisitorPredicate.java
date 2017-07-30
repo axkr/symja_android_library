@@ -64,23 +64,10 @@ public class VisitorPredicate implements IVisitorBoolean {
 		return fMatcher.test(element);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.matheclipse.core.expression.IVisitorBoolean#visit(org.matheclipse.
-	 * core.expression.AST)
-	 */
 	public boolean visit(IAST list) {
 		if (fMatcher.test(list)) {
 			return true;
 		}
-		int size = list.size();
-		for (int i = fHeadOffset; i < size; i++) {
-			if (list.get(i).accept(this)) {
-				return true;
-			}
-		}
-		return false;
+		return list.exists(x->x.accept(this), fHeadOffset);
 	}
 }

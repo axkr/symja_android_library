@@ -627,9 +627,23 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>
+	 * @param startOffset
+	 *            start offset from which the element have to be tested
 	 * @return the <code>true</code> if the predicate is true the first time or <code>false</code> otherwise
 	 */
-	public boolean exists(Predicate<? super IExpr> predicate);
+	public boolean exists(Predicate<? super IExpr> predicate, int startOffset);
+
+	/**
+	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return if
+	 * all of the arguments satisfy the predicate.
+	 * 
+	 * @param predicate
+	 *            the predicate which filters each argument in this <code>AST</code>
+	 * @param startOffset
+	 *            start offset from which the element have to be tested
+	 * @return the <code>true</code> if the predicate is true for all elements or <code>false</code> otherwise
+	 */
+	public boolean forAll(Predicate<? super IExpr> predicate, int startOffset);
 
 	/**
 	 * Select all elements by applying the <code>function</code> to each argument in this <code>AST</code> and append
@@ -740,6 +754,19 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	@Override
 	public void forEach(Consumer<? super IExpr> action);
+
+	/**
+	 * <p>
+	 * Iterate over all elements from index <code>startOffset</code> to <code>size()-1</code> and call the method
+	 * <code>Consumer.accept()</code> for these elements.
+	 * </p>
+	 * <b>Note:</b> the 0-th element (i.e. the head of the AST) will not be selected.
+	 * 
+	 * @param action
+	 * @param startOffset
+	 *            the start offset from which the action.accept() method should be executed
+	 */
+	public void forEach(Consumer<? super IExpr> action, int startOffset);
 
 	/**
 	 * Returns the element at the specified location in this {@code IAST}.

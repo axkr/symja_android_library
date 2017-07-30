@@ -673,14 +673,26 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean exists(Predicate<? super IExpr> predicate) {
+	public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
 		final int size = size();
-		for (int i = 1; i < size; i++) {
+		for (int i = startOffset; i < size; i++) {
 			if (predicate.test(get(i))) {
 				return true;
 			}
 		}
 		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean forAll(Predicate<? super IExpr> predicate, int startOffset) {
+		final int size = size();
+		for (int i = startOffset; i < size; i++) {
+			if (!predicate.test(get(i))) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/** {@inheritDoc} */
@@ -784,8 +796,14 @@ public abstract class AbstractAST implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public void forEach(Consumer<? super IExpr> action) {
+		forEach(action, 1);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public void forEach(Consumer<? super IExpr> action, int startOffset) {
 		final int size = size();
-		for (int i = 1; i < size; i++) {
+		for (int i = startOffset; i < size; i++) {
 			action.accept(get(i));
 		}
 	}
@@ -1751,16 +1769,7 @@ public abstract class AbstractAST implements IAST {
 		if (predicate.test(this)) {
 			return true;
 		}
-		int start = 1;
-		if (heads) {
-			start = 0;
-		}
-		for (int i = start; i < size(); i++) {
-			if (get(i).isMember(predicate, heads)) {
-				return true;
-			}
-		}
-		return false;
+		return exists(x -> x.isMember(predicate, heads), heads ? 0 : 1);
 	}
 
 	/** {@inheritDoc} */

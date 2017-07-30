@@ -169,9 +169,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 			}
 			try {
 				fCurrentDepth++;
-				for (int i = 1; i < ast.size(); i++) {
-					ast.get(i).accept(this);
-				}
+				ast.forEach(x->x.accept(this));
 			} finally {
 				fCurrentDepth--;
 			}

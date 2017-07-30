@@ -293,7 +293,7 @@ public class PredicateQ {
 		 *         <code>orderless2.size()</code> and if every argument in <code>orderless2</code> equals an argument in
 		 *         <code>orderless1</code>
 		 */
-		public boolean isFreeOrderless(IAST orderless1, IAST orderless2) {
+		private static boolean isFreeOrderless(IAST orderless1, IAST orderless2) {
 			if (orderless1.size() >= orderless2.size()) {
 				IExpr temp;
 				boolean evaled = false;

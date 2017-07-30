@@ -5,7 +5,7 @@ import java.util.Collection;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
-public class VisitorCollectionBoolean<T extends IExpr> extends AbstractVisitorBoolean {
+abstract public class VisitorCollectionBoolean<T extends IExpr> extends AbstractVisitorBoolean {
 	protected int fHeadOffset;
 
 	protected Collection<T> fCollection;
@@ -24,9 +24,7 @@ public class VisitorCollectionBoolean<T extends IExpr> extends AbstractVisitorBo
 
 	public boolean visit(IAST list) {
 		int size=list.size();
-		for (int i = fHeadOffset; i < size; i++) {
-			list.get(i).accept(this);
-		}
+		list.forEach(x->x.accept(this), fHeadOffset);
 		return false;
 	}
 }
