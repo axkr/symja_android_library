@@ -2456,8 +2456,31 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST map(final Function<IExpr, IExpr> function) {
-		return map(copy(), function);
+	public IAST map(final Function<IExpr, IExpr> function, final int startOffset) {
+		IExpr temp;
+		IAST result = F.NIL;
+		int i = startOffset;
+		int size = size();
+		while (i < size) {
+			temp = function.apply(get(i));
+			if (temp.isPresent()) {
+				// something was evaluated - return a new IAST:
+				result = copy();
+				result.set(i++, temp);
+				break;
+			}
+			i++;
+		}
+		if (result.isPresent()) {
+			while (i < size) {
+				temp = function.apply(get(i));
+				if (temp.isPresent()) {
+					result.set(i, temp);
+				}
+				i++;
+			}
+		}
+		return (IAST) result.orElse(this);
 	}
 
 	/**
@@ -2513,7 +2536,7 @@ public abstract class AbstractAST implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public final IAST mapThread(final IAST replacement, int position) {
-		return map(Functors.replaceArg(replacement, position));
+		return map(Functors.replaceArg(replacement, position), 1);
 	}
 
 	/**
@@ -2678,7 +2701,7 @@ public abstract class AbstractAST implements IAST {
 			return F.C0;
 		}
 		if (this.isPlus()) {
-			IAST plus = this.map(x -> x.times(that));
+			IAST plus = this.map(x -> x.times(that), 1);
 			return F.eval(plus);
 		}
 		return F.eval(F.Times(this, that));

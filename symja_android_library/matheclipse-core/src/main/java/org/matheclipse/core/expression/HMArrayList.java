@@ -411,7 +411,7 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 		}
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public void forEach(Consumer<? super IExpr> action, int startOffset) {
@@ -420,7 +420,7 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 			action.accept(array[i]);
 		}
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean forAll(Predicate<? super IExpr> predicate, int startOffset) {
@@ -462,15 +462,40 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 		return filterAST;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
+	@Override
+	public final IAST map(final Function<IExpr, IExpr> function, final int startOffset) {
+		IAST result = F.NIL;
+		int i = firstIndex + startOffset;
+		int j = startOffset;
+		while (i < lastIndex) {
+			IExpr temp = function.apply(array[i++]);
+			if (temp.isPresent()) {
+				// something was evaluated - return a new IAST:
+				result = copy();
+				result.set(j++, temp);
+				break;
+			}
+			j++;
+		}
+		if (result.isPresent()) {
+			while (i < lastIndex) {
+				IExpr temp = function.apply(array[i++]);
+				if (temp.isPresent()) {
+					result.set(j, temp);
+				}
+				j++;
+			}
+		}
+		return (IAST) result.orElse(this);
+	}
+
+	/** {@inheritDoc} */
 	@Override
 	public final IAST map(final IAST clonedResultAST, final Function<IExpr, IExpr> function) {
-		IExpr temp;
 		int j = 1;
 		for (int i = firstIndex + 1; i < lastIndex; i++) {
-			temp = function.apply(array[i]);
+			IExpr temp = function.apply(array[i]);
 			if (temp != null) {
 				clonedResultAST.set(j, temp);
 			}

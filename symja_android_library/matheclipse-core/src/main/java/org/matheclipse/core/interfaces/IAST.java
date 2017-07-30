@@ -989,8 +989,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public int lastIndexOf(IExpr object);
 
 	/**
-	 * Maps the elements of this IAST with the unary functor. If the function returns <code>null</code> the original
-	 * element is used (i.e. the functor didn't modified this AST).
+	 * Maps the elements of this IAST with the unary <code>functor</code>. If the <code>functor</code> returns
+	 * <code>F.NIL</code> the original element of this AST list is used.
 	 * 
 	 * <br />
 	 * <br />
@@ -1003,12 +1003,14 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @param functor
 	 *            a unary function
+	 * @param startOffset
+	 *            the startOffset from there the <code>functor</code> should be used.
 	 * @return
 	 */
-	public IAST map(final Function<IExpr, IExpr> functor);
+	public IAST map(final Function<IExpr, IExpr> functor, final int startOffset);
 
 	/**
-	 * Maps the elements of this IAST with the unary functor. If the function returns <code>null</code> the original
+	 * Maps the elements of this IAST with the unary functor. If the function returns <code>F.NIL</code> the original
 	 * element of the result list is used.
 	 * 
 	 * @param clonedResultAST
@@ -1079,7 +1081,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *            IAST.
 	 * @param position
 	 * @return <code>appendAST</code>
-	 * @see IAST#map(Function)
+	 * @see IAST#map(Function, int)
 	 */
 	public IAST mapThread(IAST appendAST, final IAST replacement, int position);
 
@@ -1102,7 +1104,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *            IAST.
 	 * @param position
 	 * @return
-	 * @see IAST#map(Function)
+	 * @see IAST#map(Function, int)
 	 */
 	public IAST mapThread(final IAST replacement, int position);
 

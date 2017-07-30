@@ -456,7 +456,7 @@ public class Structure {
 
 				} else {
 					if (ast.arg2().isAST()) {
-						engine.evaluate(((IAST) ast.arg2()).map(Functors.append(arg1)));
+						engine.evaluate(((IAST) ast.arg2()).map(Functors.append(arg1), 1));
 					} else {
 						engine.evaluate(ast.arg2());
 					}
