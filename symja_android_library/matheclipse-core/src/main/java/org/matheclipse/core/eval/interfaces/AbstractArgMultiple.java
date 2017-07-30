@@ -125,6 +125,10 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 	 * @param lhs2
 	 * @param rhs
 	 * @param condition
+	 * @see org.matheclipse.core.patternmatching.HashedOrderlessMatcher#defineHashRule(org.matheclipse.core.interfaces.IExpr,
+	 *      org.matheclipse.core.interfaces.IExpr,
+	 *      org.matheclipse.core.interfaces.IExpr,
+	 *      org.matheclipse.core.interfaces.IExpr)
 	 */
 	public void defineHashRule(IExpr lhs1, IExpr lhs2, IExpr rhs, IExpr condition) {
 		getHashRuleMap().defineHashRule(lhs1, lhs2, rhs, condition);
@@ -135,6 +139,10 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 	 * @param lhs2
 	 * @param rhs
 	 * @param condition
+	 * @see org.matheclipse.core.patternmatching.HashedOrderlessMatcher#defineHashRule(org.matheclipse.core.interfaces.IExpr,
+	 *      org.matheclipse.core.interfaces.IExpr,
+	 *      org.matheclipse.core.interfaces.IExpr,
+	 *      org.matheclipse.core.interfaces.IExpr)
 	 */
 	public void setUpHashRule2(IExpr lhs1, IExpr lhs2, IExpr rhs, IExpr condition) {
 		getHashRuleMap().definePatternHashRule(lhs1, lhs2, rhs, condition);

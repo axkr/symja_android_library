@@ -27,6 +27,20 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
 	 *            second left-hand-side pattern
 	 * @param rhsResult
 	 *            the right-hand-side result
+	 * @param defaultHashCode
+	 */
+//	public HashedPatternRules(IExpr lhsPattern1, IExpr lhsPattern2, IExpr rhsResult, boolean defaultHashCode) {
+//		this(lhsPattern1, lhsPattern2, rhsResult, null, defaultHashCode);
+//	}
+
+	/**
+	 * 
+	 * @param lhsPattern1
+	 *            first left-hand-side pattern
+	 * @param lhsPattern2
+	 *            second left-hand-side pattern
+	 * @param rhsResult
+	 *            the right-hand-side result
 	 * @param condition
 	 *            a condition test
 	 * @param defaultHashCode
