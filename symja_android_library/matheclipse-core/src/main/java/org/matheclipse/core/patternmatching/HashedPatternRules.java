@@ -11,27 +11,13 @@ import org.matheclipse.core.interfaces.ISymbol;
  * To set up a rule like<br/>
  * <code>Sin[x]^2+Cos[x]^2 -> 1</code> <bR/>
  * use the method:<br/>
- * <code>setUpHashRule("Sin[x_]^2", "Cos[x_]^2", "1")</code>
+ * <code>HashedPatternRules(F.Sin(F.x_)^F.C2, F.Cos(F.x_)^F.C2, F.C1)</code>
  * 
  */
 public class HashedPatternRules extends AbstractHashedPatternRules {
 	final IExpr fCondition;
 
 	final IExpr fRHS;
-
-	/**
-	 * 
-	 * @param lhsPattern1
-	 *            first left-hand-side pattern
-	 * @param lhsPattern2
-	 *            second left-hand-side pattern
-	 * @param rhsResult
-	 *            the right-hand-side result
-	 * @param defaultHashCode
-	 */
-	public HashedPatternRules(IExpr lhsPattern1, IExpr lhsPattern2, IExpr rhsResult, boolean defaultHashCode) {
-		this(lhsPattern1, lhsPattern2, rhsResult, null, defaultHashCode);
-	}
 
 	/**
 	 * 

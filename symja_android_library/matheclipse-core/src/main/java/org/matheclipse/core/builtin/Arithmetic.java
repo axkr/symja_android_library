@@ -2852,11 +2852,6 @@ public final class Arithmetic {
 			// ORDERLESS_MATCHER.setUpHashRule("Log[x_]", "Log[y_]^(-1)",
 			// Log.getFunction());
 			ORDERLESS_MATCHER.defineHashRule(Log(x_), Power(Log(y_), CN1), ExpTrigsFunctions.integerLogFunction());
-			// addTrigRules(F.Sin, F.Cot, F.Cos);
-			// addTrigRules(F.Sin, F.Sec, F.Tan);
-			// addTrigRules(F.Cos, F.Tan, F.Sin);
-			// addTrigRules(F.Csc, F.Tan, F.Sec);
-			// addTrigRules(F.Cos, F.Csc, F.Cot);
 
 			// Sin(x)*Cot(x) -> Cos(x)
 			ORDERLESS_MATCHER.defineHashRule(F.Sin(x_), F.Cot(x_), F.Cos(x));

@@ -10,33 +10,33 @@ import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
-public class HashValueVisitor extends AbstractVisitorInt {
+/**
+ * Calculate a special hash value for <code>HashedOrderlessMatcher</code> methods.
+ *
+ */
+final public class HashValueVisitor extends AbstractVisitorInt {
+
+	public final static HashValueVisitor HASH_VALUE_VISITOR = new HashValueVisitor();
 
 	public HashValueVisitor() {
 	}
 
-	public void setUp() {
-		// fCurrentDepth = 0;
-	}
-
-	public int visit(IAST list) {
-		int hash = 0;
-		if (list.size() > 1) {
-			if (list.arg1().isAST()) {
-				IAST temp = (IAST) list.arg1();
-				hash = list.head().hashCode() + (31 * temp.head().hashCode() + temp.size()) + list.size();
-			} else {
-				hash = (31 * list.head().hashCode() + list.size());
+	/**
+	 * Calculate a hash value. Especially if the first argument of the given <code>ast</code> is itself an
+	 * <code>AST</code> object.
+	 * 
+	 * @return the calculated hash value.
+	 */
+	public int visit(IAST ast) {
+		final int size = ast.size();
+		if (size > 1) {
+			if (ast.arg1().isAST()) {
+				IAST temp = (IAST) ast.arg1();
+				return ast.head().hashCode() + (31 * temp.head().hashCode() + temp.size()) + size;
 			}
-		} else {
-			if (list.isAST0()) {
-				hash = (17 * list.head().hashCode());
-			} else {
-				// this case shouldn't happen
-				hash = 41;
-			}
+			return (31 * ast.head().hashCode() + size);
 		}
-		return hash;
+		return (size == 1) ? (17 * ast.head().hashCode()) : 41;
 	}
 
 	public int visit(IComplex element) {
