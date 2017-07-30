@@ -258,20 +258,20 @@ public final class BooleanFunctions {
 		 */
 		public IExpr anyTrue(IAST list, IExpr head, EvalEngine engine) {
 			IAST logicalOr = F.Or();
-			int size = list.size();
-			for (int i = 1; i < size; i++) {
-				IExpr temp = engine.evaluate(F.unary(head, list.get(i)));
-				if (temp.isTrue()) {
-					return F.True;
-				} else if (temp.isFalse()) {
-					continue;
-				}
-				logicalOr.append(temp);
+			if (list.exists(x -> anyTrueArgument(x, head, logicalOr, engine), 1)) {
+				return F.True;
 			}
-			if (logicalOr.size() > 1) {
-				return logicalOr;
+			return logicalOr.isAST0() ? F.False : logicalOr;
+		}
+
+		private static boolean anyTrueArgument(IExpr x, IExpr head, IAST resultCollector, EvalEngine engine) {
+			IExpr temp = engine.evaluate(F.unary(head, x));
+			if (temp.isTrue()) {
+				return true;
+			} else if (!temp.isFalse()) {
+				resultCollector.append(temp);
 			}
-			return F.False;
+			return false;
 		}
 
 		@Override
@@ -1342,7 +1342,7 @@ public final class BooleanFunctions {
 			if (signedNumber != null) {
 				return F.bool(signedNumber.isNegative());
 			}
-			
+
 			return F.NIL;
 		}
 
@@ -1381,20 +1381,20 @@ public final class BooleanFunctions {
 		 */
 		public IExpr noneTrue(IAST list, IExpr head, EvalEngine engine) {
 			IAST logicalNor = F.ast(F.Nor);
-			int size = list.size();
-			for (int i = 1; i < size; i++) {
-				IExpr temp = engine.evaluate(F.unary(head, list.get(i)));
-				if (temp.isTrue()) {
-					return F.False;
-				} else if (temp.isFalse()) {
-					continue;
-				}
-				logicalNor.append(temp);
+			if (list.exists(x -> noneTrueArgument(x, head, logicalNor, engine), 1)) {
+				return F.False;
 			}
-			if (logicalNor.size() > 1) {
-				return logicalNor;
+			return logicalNor.isAST0() ? F.True : logicalNor;
+		}
+
+		private static boolean noneTrueArgument(IExpr x, IExpr head, IAST resultCollector, EvalEngine engine) {
+			IExpr temp = engine.evaluate(F.unary(head, x));
+			if (temp.isTrue()) {
+				return true;
+			} else if (!temp.isFalse()) {
+				resultCollector.append(temp);
 			}
-			return F.True;
+			return false;
 		}
 
 		@Override
@@ -1408,7 +1408,7 @@ public final class BooleanFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
-			
+
 			IExpr arg1 = ast.arg1();
 			if (arg1.isSignedNumber()) {
 				return F.bool(!arg1.isNegative());
@@ -1647,7 +1647,7 @@ public final class BooleanFunctions {
 			if (signedNumber != null) {
 				return F.bool(signedNumber.isPositive());
 			}
-			
+
 			return F.NIL;
 		}
 
