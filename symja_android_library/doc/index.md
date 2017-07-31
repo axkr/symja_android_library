@@ -499,6 +499,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Reals](functions/Reals.md)
 * [Reap](functions/Reap.md)
 * [Refine](functions/Refine.md)
+* [ReplaceAll](functions/ReplaceAll.md)
 * [ReplacePart](functions/ReplacePart.md)
 * [Rest](functions/Rest.md)
 * [Return](functions/Return.md)
