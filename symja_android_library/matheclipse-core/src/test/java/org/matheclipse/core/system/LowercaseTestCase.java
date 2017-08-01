@@ -5179,6 +5179,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Quotient(19, -4)", "-5");
 	}
 
+	public void testRandom() {
+		//
+		// check("RandomInteger(100)", "");
+		// check("RandomReal()", "0.53275");
+		//
+		// check("{Exp[x], x^2, 1/x, 2}", "{E^x,x^2,1/x,2}");
+		// check("RandomChoice({1,2,3,4,5,6,7})", "3");
+
+	}
+
 	public void testRange() {
 		// check("Range(0,10,Pi)", "");
 		check("Range(5)", "{1,2,3,4,5}");

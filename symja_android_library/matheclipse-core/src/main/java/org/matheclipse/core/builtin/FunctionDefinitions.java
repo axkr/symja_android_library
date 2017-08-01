@@ -92,9 +92,7 @@ public final class FunctionDefinitions {
 		PrimitiveRoots.setEvaluator(new org.matheclipse.core.reflection.system.PrimitiveRoots());
 		Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
 		Quotient.setEvaluator(new org.matheclipse.core.reflection.system.Quotient());
-		RandomInteger.setEvaluator(new org.matheclipse.core.reflection.system.RandomInteger());
-		RandomReal.setEvaluator(new org.matheclipse.core.reflection.system.RandomReal());
-		RandomSample.setEvaluator(new org.matheclipse.core.reflection.system.RandomSample());
+		
 		Rationalize.setEvaluator(new org.matheclipse.core.reflection.system.Rationalize());
 		Replace.setEvaluator(new org.matheclipse.core.reflection.system.Replace());
 		ReplaceAll.setEvaluator(new org.matheclipse.core.reflection.system.ReplaceAll());

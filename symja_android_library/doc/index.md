@@ -160,6 +160,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Expression types](expression-types.md)
 
 ## Reference of built-in symbols
+
 * [Abort](functions/Abort.md)
 * [Abs](functions/Abs.md)
 * [AddTo](functions/AddTo.md)
@@ -490,6 +491,9 @@ for a full description of their possible arguments, options, etc., see their ent
 * [PseudoInverse](functions/PseudoInverse.md)
 * [QRDecomposition](functions/QRDecomposition.md)
 * [Quotient](functions/Quotient.md)
+* [RandomChoice](functions/RandomChoice.md)
+* [RandomInteger](functions/RandomInteger.md)
+* [RandomReal](functions/RandomReal.md)
 * [Range](functions/Range.md)
 * [Rational](functions/Rational.md)
 * [Rationalize](functions/Rationalize.md)
@@ -567,7 +571,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [TrigToExp](functions/TrigToExp.md)
 * [True](functions/True.md)
 * [TrueQ](functions/TrueQ.md)
-* [Tuples](functions/Tuples.md)  
+* [Tuples](functions/Tuples.md)
 * [Unequal](functions/Unequal.md)
 * [Union](functions/Union.md)
 * [UnitStep](functions/UnitStep.md)

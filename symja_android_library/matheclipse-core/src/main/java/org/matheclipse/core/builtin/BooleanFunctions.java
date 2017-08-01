@@ -6,7 +6,6 @@ import static org.matheclipse.core.expression.F.Implies;
 import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Nand;
 import static org.matheclipse.core.expression.F.Nor;
-import static org.matheclipse.core.expression.F.Not;
 import static org.matheclipse.core.expression.F.Or;
 import static org.matheclipse.core.expression.F.Xor;
 

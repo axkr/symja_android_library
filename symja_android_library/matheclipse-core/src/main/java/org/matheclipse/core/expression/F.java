@@ -34,6 +34,7 @@ import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.builtin.Programming;
+import org.matheclipse.core.builtin.RandomFunctions;
 import org.matheclipse.core.builtin.SpecialFunctions;
 import org.matheclipse.core.builtin.Structure;
 import org.matheclipse.core.convert.Object2Expr;
@@ -1085,6 +1086,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "qrdecomposition" : "QRDecomposition");
 	public final static IBuiltInSymbol Quotient = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "quotient" : "Quotient");
+	public final static IBuiltInSymbol RandomChoice = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "randomchoice" : "RandomChoice");
 	public final static IBuiltInSymbol RandomInteger = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "randominteger" : "RandomInteger");
 	public final static IBuiltInSymbol RandomReal = initFinalSymbol(
@@ -1947,6 +1950,7 @@ public class F {
 			Combinatoric.initialize();
 			IntegerFunctions.initialize();
 			SpecialFunctions.initialize();
+			RandomFunctions.initialize();
 
 			// initialize only the utility function rules for Integrate
 			// final EvalEngine engine = EvalEngine.get();
