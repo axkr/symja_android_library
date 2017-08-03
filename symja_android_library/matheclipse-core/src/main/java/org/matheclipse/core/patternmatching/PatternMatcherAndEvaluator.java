@@ -270,10 +270,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		if (comp == 0) {
 			if (obj instanceof PatternMatcherAndEvaluator) {
 				PatternMatcherAndEvaluator pm = (PatternMatcherAndEvaluator) obj;
-				if (fRightHandSide != null) {
-					if (pm.fRightHandSide == null) {
-						return 1;
-					}
+				if (fRightHandSide != null && pm.fRightHandSide != null) {
 					if (fRightHandSide.isCondition()) {
 						if (pm.fRightHandSide.isCondition()) {
 							if (equivalentRHS(fRightHandSide.getAt(2), pm.fRightHandSide.getAt(2), fPatternMap,
@@ -297,14 +294,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 					} else if (pm.fRightHandSide.isModule()) {
 						return 1;
 					}
-				} else {
-					if (pm.fRightHandSide != null) {
-						return -1;
-					}
 				}
 				return 0;
-				// } else {
-				// return -1;
 			}
 		}
 		return comp;
