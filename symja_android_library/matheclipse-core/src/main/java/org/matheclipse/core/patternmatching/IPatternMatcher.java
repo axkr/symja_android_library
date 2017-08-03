@@ -1,6 +1,7 @@
 package org.matheclipse.core.patternmatching;
 
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -10,8 +11,18 @@ import org.matheclipse.core.interfaces.IExpr;
 /**
  * Interface for the pattern matcher
  */
-public abstract class IPatternMatcher
-		implements Predicate<IExpr>, Cloneable, Comparable<IPatternMatcher>, Serializable {
+public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Serializable {// Comparable<IPatternMatcher>,
+																							// Serializable {
+	public final static EquivalenceComparator EQUIVALENCE_COMPARATOR = new EquivalenceComparator();
+
+	public static class EquivalenceComparator implements Comparator<IPatternMatcher>, Serializable {
+
+		private static final long serialVersionUID = 8357661139299702326L;
+
+		public int compare(final IPatternMatcher o1, final IPatternMatcher o2) {
+			return o1.equivalentTo(o2);
+		}
+	}
 
 	/**
 	 * 
@@ -56,13 +67,15 @@ public abstract class IPatternMatcher
 		return true;
 	}
 
+	public abstract int equivalentTo(IPatternMatcher pm);
+
 	/**
 	 * Compare the matchers for equivalence
 	 * 
 	 * @param obj
 	 * @return
 	 */
-	public abstract int equivalent(final IPatternMatcher obj);
+//	public abstract int equivalent(final IPatternMatcher obj);
 
 	/**
 	 * Compare only the left-hand-side expressions in the matchers for equivalence

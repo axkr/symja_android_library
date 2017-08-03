@@ -151,7 +151,8 @@ public class RulesData implements Serializable {
 			if (sizes.length > 1) {
 				if (sizes[1] >= 16) {
 					capacity = sizes[1];
-					fSimplePatternDownRules = new OpenIntToSet<IPatternMatcher>(capacity);
+					fSimplePatternDownRules = new OpenIntToSet<IPatternMatcher>(IPatternMatcher.EQUIVALENCE_COMPARATOR,
+							capacity);
 				}
 			}
 		}
@@ -714,28 +715,28 @@ public class RulesData implements Serializable {
 	private Set<IPatternMatcher> getPatternDownRules() {
 		if (fPatternDownRules == null) {
 			// fPatternDownRules = new TreeSet<IPatternMatcher>();
-			fPatternDownRules = new TreeSet<IPatternMatcher>();
+			fPatternDownRules = new TreeSet<IPatternMatcher>(IPatternMatcher.EQUIVALENCE_COMPARATOR);
 		}
 		return fPatternDownRules;
 	}
 
 	private OpenIntToSet<IPatternMatcher> getSimpleOrderlessPatternDownRules() {
 		if (fSimpleOrderlesPatternDownRules == null) {
-			fSimpleOrderlesPatternDownRules = new OpenIntToSet<IPatternMatcher>();
+			fSimpleOrderlesPatternDownRules = new OpenIntToSet<IPatternMatcher>(IPatternMatcher.EQUIVALENCE_COMPARATOR);
 		}
 		return fSimpleOrderlesPatternDownRules;
 	}
 
 	private OpenIntToSet<IPatternMatcher> getSimplePatternDownRules() {
 		if (fSimplePatternDownRules == null) {
-			fSimplePatternDownRules = new OpenIntToSet<IPatternMatcher>();
+			fSimplePatternDownRules = new OpenIntToSet<IPatternMatcher>(IPatternMatcher.EQUIVALENCE_COMPARATOR);
 		}
 		return fSimplePatternDownRules;
 	}
 
 	private OpenIntToSet<IPatternMatcher> getSimplePatternUpRules() {
 		if (fSimplePatternUpRules == null) {
-			fSimplePatternUpRules = new OpenIntToSet<IPatternMatcher>();
+			fSimplePatternUpRules = new OpenIntToSet<IPatternMatcher>(IPatternMatcher.EQUIVALENCE_COMPARATOR);
 		}
 		return fSimplePatternUpRules;
 	}

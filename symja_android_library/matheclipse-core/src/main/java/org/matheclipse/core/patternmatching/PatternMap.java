@@ -23,7 +23,8 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  */
 public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
-
+	private final static IExpr[] EMPTY_ARRAY = {};
+	
 	/**
 	 * 
 	 */
@@ -62,7 +63,7 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	public final static int DEFAULT_RULE_PRIORITY = Integer.MAX_VALUE;
 
 	protected PatternMap() {
-		this(new IExpr[0]);
+		this(EMPTY_ARRAY);
 	}
 
 	private PatternMap(IExpr[] exprArray) {

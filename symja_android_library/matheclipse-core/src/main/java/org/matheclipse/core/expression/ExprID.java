@@ -10,14 +10,35 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 /**
- * The ExprID class holds an index for the <code>F.GLOBAL_IDS[]</code> array of
- * predefined constant expressions. The ExprID is especially used in the
- * serialization and deserialization of an <code>IExpr</code> object, by
- * representing an index entry in the <code>F.GLOBAL_IDS[]</code> array.
+ * The ExprID class holds an index for the <code>F.GLOBAL_IDS[]</code> array of predefined constant expressions. The
+ * ExprID is especially used in the serialization and deserialization of an <code>IExpr</code> object, by representing
+ * an index entry in the <code>F.GLOBAL_IDS[]</code> array.
  *
  * @see F#GLOBAL_IDS
  */
 public class ExprID implements IExpr {
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + fExprID;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ExprID other = (ExprID) obj;
+		if (fExprID != other.fExprID)
+			return false;
+		return true;
+	}
+
 	/**
 	 * 
 	 */
@@ -26,9 +47,8 @@ public class ExprID implements IExpr {
 	private short fExprID;
 
 	/**
-	 * The ExprID class holds an index for the <code>F.GLOBAL_IDS[]</code> array
-	 * of predefined constant expressions. The ExprID is especially used in the
-	 * serialization and deserialization of an <code>IExpr</code> object, by
+	 * The ExprID class holds an index for the <code>F.GLOBAL_IDS[]</code> array of predefined constant expressions. The
+	 * ExprID is especially used in the serialization and deserialization of an <code>IExpr</code> object, by
 	 * representing an index entry in the <code>F.GLOBAL_IDS[]</code> array.
 	 *
 	 * @param the
@@ -70,8 +90,7 @@ public class ExprID implements IExpr {
 	}
 
 	/**
-	 * Get the index for the <code>F.GLOBAL_IDS[]</code> array of predefined
-	 * constant expressions.
+	 * Get the index for the <code>F.GLOBAL_IDS[]</code> array of predefined constant expressions.
 	 *
 	 * @see F#GLOBAL_IDS
 	 */
@@ -90,8 +109,7 @@ public class ExprID implements IExpr {
 	}
 
 	/**
-	 * In deserialization process return the <code>F.GLOBAL_IDS[ExprID]</code>
-	 * expression.
+	 * In deserialization process return the <code>F.GLOBAL_IDS[ExprID]</code> expression.
 	 * 
 	 * @return the <code>F.GLOBAL_IDS[ExprID]</code> expression
 	 * @throws ObjectStreamException

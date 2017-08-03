@@ -4,10 +4,13 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
+
+import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 /**
  * Open addressed map from int to Set<T>.
@@ -319,6 +322,8 @@ public class OpenIntToSet<T> implements Serializable {
 	private static int probe(final int perturb, final int j) {
 		return (j << 2) + j + perturb + 1;
 	}
+	
+	private Comparator<T> comparator;
 
 	/** Keys table. */
 	private int[] keys;
@@ -342,8 +347,8 @@ public class OpenIntToSet<T> implements Serializable {
 	 * Build an empty map with default size and using zero for missing entries.
 	 *
 	 */
-	public OpenIntToSet() {
-		this(DEFAULT_EXPECTED_SIZE);
+	public OpenIntToSet(Comparator<T> comparator) {
+		this(comparator, DEFAULT_EXPECTED_SIZE);
 	}
 
 	/**
@@ -353,12 +358,13 @@ public class OpenIntToSet<T> implements Serializable {
 	 *            expected number of elements in the map
 	 */
 	@SuppressWarnings("unchecked")
-	public OpenIntToSet(final int expectedSize) {
+	public OpenIntToSet(Comparator<T> comparator, final int expectedSize) {
 		final int capacity = computeCapacity(expectedSize);
-		keys = new int[capacity];
-		values = new TreeSet[capacity];
-		states = new byte[capacity];
-		mask = capacity - 1;
+		this.comparator = comparator;
+		this.keys = new int[capacity];
+		this.values = new TreeSet[capacity];
+		this.states = new byte[capacity];
+		this.mask = capacity - 1;
 	}
 
 	/**
@@ -602,7 +608,7 @@ public class OpenIntToSet<T> implements Serializable {
 		keys[index] = key;
 		states[index] = FULL;
 		if (values[index] == null) {
-			values[index] = new TreeSet<T>();
+			values[index] = new TreeSet<T>(comparator);
 			values[index].add(value);
 		} else {
 			values[index].add(value);

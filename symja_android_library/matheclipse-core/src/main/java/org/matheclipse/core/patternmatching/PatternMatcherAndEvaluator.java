@@ -69,39 +69,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		return v;
 	}
 
-	@Override
-	public boolean equals(final Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj instanceof PatternMatcherAndEvaluator) {
-			PatternMatcherAndEvaluator pm = (PatternMatcherAndEvaluator) obj;
-			// don't compare fSetSymbol here
-			if (super.equals(pm)) {
-				// return equivalentRHS(fRightHandSide, pm.fRightHandSide);
-				if (fRightHandSide.isCondition()) {
-					if (pm.fRightHandSide.isCondition()) {
-						return equivalentRHS(fRightHandSide.getAt(2), pm.fRightHandSide.getAt(2), fPatternMap,
-								pm.fPatternMap);
-					}
-					return false;
-				} else if (pm.fRightHandSide.isCondition()) {
-					return false;
-				} else if (fRightHandSide.isModule()) {
-					if (pm.fRightHandSide.isModule()) {
-						return equivalentRHS(fRightHandSide.getAt(2), pm.fRightHandSide.getAt(2), fPatternMap,
-								pm.fPatternMap);
-					}
-					return false;
-				} else if (pm.fRightHandSide.isModule()) {
-					return false;
-				}
-				return true;
-			}
-		}
-		return false;
-	}
-
 	/**
 	 * Check if the two expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to <code>f[a_,b_]</code> )
 	 * 
@@ -131,12 +98,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		// TODO refine equivalent for RHS symbols which are patterns on the LHS.
 		return equivalent(patternExpr1, patternExpr2, pm1, pm2);
 	}
-
-	@Override
-	public int hashCode() {
-		return super.hashCode() * 53;
-	}
-
+ 
 	/**
 	 * Check if the condition for the right-hand-sides <code>Module[] or Condition[]</code> expressions evaluates to
 	 * <code>true</code>.
@@ -333,5 +295,33 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		if (fLhsPatternExpr != null) {
 			fPriority = fPatternMap.determinePatterns(fLhsPatternExpr);
 		}
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((fRightHandSide == null) ? 0 : fRightHandSide.hashCode());
+		result = prime * result + ((fSetSymbol == null) ? 0 : fSetSymbol.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PatternMatcherAndEvaluator other = (PatternMatcherAndEvaluator) obj;
+		if (fRightHandSide == null) {
+			if (other.fRightHandSide != null)
+				return false;
+		} else if (!fRightHandSide.equals(other.fRightHandSide))
+			return false;
+		if (fSetSymbol != other.fSetSymbol)
+			return false;
+		return true;
 	}
 }

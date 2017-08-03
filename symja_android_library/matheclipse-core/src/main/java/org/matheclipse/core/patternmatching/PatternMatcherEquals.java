@@ -124,8 +124,19 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 		fRightHandSide = rightHandSide;
 	}
 
+//	@Override
+//	public int compareTo(IPatternMatcher o) {
+//		if (getPriority() < o.getPriority()) {
+//			return -1;
+//		}
+//		if (getPriority() > o.getPriority()) {
+//			return 1;
+//		}
+//		return 0;
+//	}
+	
 	@Override
-	public int compareTo(IPatternMatcher o) {
+	public int equivalentTo(IPatternMatcher o) {
 		if (getPriority() < o.getPriority()) {
 			return -1;
 		}
@@ -133,6 +144,7 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 			return 1;
 		}
 		return 0;
+//		return equivalent(o);
 	}
 
 	@Override
@@ -172,13 +184,8 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 	}
 
 	@Override
-	public int equivalent(IPatternMatcher obj) {
-		return compareTo(obj);
-	}
-
-	@Override
 	public int equivalentLHS(IPatternMatcher obj) {
-		return compareTo(obj);
+		return equivalentTo(obj);
 	}
 
 	@Override

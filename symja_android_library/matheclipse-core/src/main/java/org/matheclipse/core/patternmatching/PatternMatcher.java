@@ -367,8 +367,19 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		return v;
 	}
 
+	// @Override
+	// public int compareTo(IPatternMatcher pm) {
+	// if (fPriority < pm.getPriority()) {
+	// return -1;
+	// }
+	// if (fPriority > pm.getPriority()) {
+	// return 1;
+	// }
+	// return equivalent(pm);
+	// }
+
 	@Override
-	public int compareTo(IPatternMatcher o) {
+	public int equivalentTo(IPatternMatcher o) {
 		if (fPriority < o.getPriority()) {
 			return -1;
 		}
@@ -378,38 +389,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		return equivalent(o);
 	}
 
-	@Override
-	public boolean equals(final Object obj) {
-		if (obj instanceof IPatternMatcher) {
-			return equivalent((IPatternMatcher) obj) == 0;
-		}
-		return false;
-		// if (this == obj) {
-		// return true;
-		// }
-		// if (obj instanceof PatternMatcher) {
-		// final PatternMatcher pm = (PatternMatcher) obj;
-		// if (fPatternMap.size() != pm.fPatternMap.size()) {
-		// return false;
-		// }
-		// if (isRuleWithoutPatterns()) {
-		// return fLhsPatternExpr.equals(pm.fLhsPatternExpr);
-		// }
-		// if (equivalent(fLhsPatternExpr, pm.fLhsPatternExpr, fPatternMap,
-		// pm.fPatternMap)) {
-		// if ((fPatternCondition != null) && (pm.fPatternCondition != null)) {
-		// return fPatternCondition.equals(pm.fPatternCondition);
-		// }
-		// if ((fPatternCondition != null) || (pm.fPatternCondition != null)) {
-		// return false;
-		// }
-		// return true;
-		// }
-		// }
-		// return false;
-	}
-
-	public int equivalent(final IPatternMatcher obj) {
+	protected int equivalent(final IPatternMatcher obj) {
 		if (this == obj) {
 			return 0;
 		}
@@ -556,7 +536,12 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
 	@Override
 	public int hashCode() {
-		return fLhsPatternExpr.hashCode();
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((fPatternCondition == null) ? 0 : fPatternCondition.hashCode());
+//		result = prime * result + ((fPatternMap == null) ? 0 : fPatternMap.hashCode());
+//		result = prime * result + fPriority;
+		return result;
 	}
 
 	protected final void init(IExpr patternExpr) {
@@ -1047,5 +1032,29 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		objectOutput.writeObject(fLhsPatternExpr);
 		objectOutput.writeObject(fPatternCondition);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PatternMatcher other = (PatternMatcher) obj;
+		if (fPatternCondition == null) {
+			if (other.fPatternCondition != null)
+				return false;
+		} else if (!fPatternCondition.equals(other.fPatternCondition))
+			return false;
+		// if (fPatternMap == null) {
+		// if (other.fPatternMap != null)
+		// return false;
+		// } else if (!fPatternMap.equals(other.fPatternMap))
+		// return false;
+//		if (fPriority != other.fPriority)
+//			return false;
+		return true;
 	}
 }
