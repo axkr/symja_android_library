@@ -926,7 +926,7 @@ public class RulesData implements Serializable {
 			}
 
 			if (fPatternDownRules != null) {
-				fPatternDownRules.remove(pmEvaluator);
+				fPatternDownRules.removeIf(x -> x.equivalentLHS(pmEvaluator) == 0);
 				return;
 			}
 		}

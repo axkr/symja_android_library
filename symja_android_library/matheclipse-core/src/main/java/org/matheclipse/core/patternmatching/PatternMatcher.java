@@ -414,22 +414,27 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			return 0;
 		}
 		if (obj instanceof PatternMatcher) {
-			final PatternMatcher pm = (PatternMatcher) obj;
-			if (fPatternMap.size() != pm.fPatternMap.size()) {
-				return (fPatternMap.size() < pm.fPatternMap.size()) ? -1 : 1;
-			}
-			if (isRuleWithoutPatterns()) {
-				return fLhsPatternExpr.compareTo(pm.fLhsPatternExpr);
-			}
-			if (equivalent(fLhsPatternExpr, pm.fLhsPatternExpr, fPatternMap, pm.fPatternMap)) {
-				if (fPatternCondition != null) {
-					if (pm.fPatternCondition != null) {
-						return fPatternCondition.compareTo(pm.fPatternCondition);
-					}
-					return 1;
+			return equivalentLHS(obj);
+		}
+		return fLhsPatternExpr.compareTo(obj.fLhsPatternExpr);
+	}
+
+	public int equivalentLHS(final IPatternMatcher obj) {
+		final PatternMatcher pm = (PatternMatcher) obj;
+		if (fPatternMap.size() != pm.fPatternMap.size()) {
+			return (fPatternMap.size() < pm.fPatternMap.size()) ? -1 : 1;
+		}
+		if (isRuleWithoutPatterns()) {
+			return fLhsPatternExpr.compareTo(pm.fLhsPatternExpr);
+		}
+		if (equivalent(fLhsPatternExpr, pm.fLhsPatternExpr, fPatternMap, pm.fPatternMap)) {
+			if (fPatternCondition != null) {
+				if (pm.fPatternCondition != null) {
+					return fPatternCondition.compareTo(pm.fPatternCondition);
 				}
-				return (pm.fPatternCondition != null) ? -1 : 0;
+				return 1;
 			}
+			return (pm.fPatternCondition != null) ? -1 : 0;
 		}
 		return fLhsPatternExpr.compareTo(obj.fLhsPatternExpr);
 	}

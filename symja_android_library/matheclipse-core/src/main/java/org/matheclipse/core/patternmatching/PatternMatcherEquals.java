@@ -15,8 +15,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ISymbol.RuleType;
 
 /**
- * Matches a given expression by simply comparing the left-hand-side expression
- * of this pattern matcher with the <code>equals()</code> method.
+ * Matches a given expression by simply comparing the left-hand-side expression of this pattern matcher with the
+ * <code>equals()</code> method.
  * 
  */
 public class PatternMatcherEquals extends IPatternMatcher implements Externalizable {
@@ -49,13 +49,11 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 	/**
 	 * 
 	 * @param setSymbol
-	 *            the symbol which defines this pattern-matching rule (i.e. Set,
-	 *            SetDelayed,...)
+	 *            the symbol which defines this pattern-matching rule (i.e. Set, SetDelayed,...)
 	 * @param leftHandSide
 	 *            could contain pattern expressions for "pattern-matching"
 	 * @param rightHandSide
-	 *            the result which should be evaluated if the "pattern-matching"
-	 *            succeeds
+	 *            the result which should be evaluated if the "pattern-matching" succeeds
 	 */
 	public PatternMatcherEquals(final ISymbol.RuleType setSymbol, @Nonnull final IExpr leftHandSide,
 			@Nonnull final IExpr rightHandSide) {
@@ -176,5 +174,29 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 	@Override
 	public int equivalent(IPatternMatcher obj) {
 		return compareTo(obj);
+	}
+
+	@Override
+	public int equivalentLHS(IPatternMatcher obj) {
+		return compareTo(obj);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + ((fSetSymbol == null) ? 0 : fSetSymbol.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof PatternMatcherEquals) {
+			if (!super.equals(obj)) {
+				return false;
+			}
+			return fSetSymbol == ((PatternMatcherEquals) obj).fSetSymbol;
+		}
+		return false;
 	}
 }
