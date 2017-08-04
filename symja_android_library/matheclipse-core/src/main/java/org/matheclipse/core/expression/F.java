@@ -4214,6 +4214,28 @@ public class F {
 	}
 
 	/**
+	 * Check difference is less than a constant
+	 * 
+	 * infinity == infinity returns true eg 1/0
+	 * 
+	 * -infinity == infinity returns false eg -1/0
+	 * 
+	 * -infinity == -infinity returns true
+	 * 
+	 * undefined == undefined returns false eg 0/0
+	 * 
+	 * @return whether x is equal to y
+	 * 
+	 * 
+	 */
+	final public static boolean isEqual(double x, double y) {
+		if (x == y) {
+			return true;
+		}
+		return ((x - Config.DOUBLE_EPSILON) <= y) && (y <= (x + Config.DOUBLE_EPSILON));
+	}
+
+	/**
 	 * Test if the absolute value is less <code>Config.DOUBLE_EPSILON</code>.
 	 * 
 	 * @param value
@@ -4226,12 +4248,12 @@ public class F {
 	/**
 	 * Test if the absolute value is less than the given epsilon.
 	 * 
-	 * @param value
+	 * @param x
 	 * @param epsilon
 	 * @return
 	 */
-	public static boolean isZero(double value, double epsilon) {
-		return Math.abs(value) < epsilon;
+	public static boolean isZero(double x, double epsilon) {
+		return -epsilon < x && x < epsilon;
 	}
 
 	public static IAST Join(final IExpr a0, final IExpr a1) {
