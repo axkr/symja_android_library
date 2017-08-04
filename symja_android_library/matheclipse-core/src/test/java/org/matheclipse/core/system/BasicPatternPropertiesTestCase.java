@@ -41,7 +41,7 @@ public class BasicPatternPropertiesTestCase extends TestCase {
 			IExpr pat2 = AST2Expr.CONST.convert(node);
 			PatternMatcher matcher2 = new PatternMatcher(pat2);
 			
-			assertEquals(matcher1.compareTo(matcher2), result);
+			assertEquals(matcher1.equivalentTo(matcher2), result);
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals(Integer.MAX_VALUE, result);

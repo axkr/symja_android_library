@@ -27,7 +27,7 @@ public class PatternsTest extends AbstractTestCase {
 		ast2.append(Times(a_, x_));
 		PatternMatcher pm1 = new PatternMatcher(ast1);
 		PatternMatcher pm2 = new PatternMatcher(ast2);
-		int cpr = pm1.compareTo(pm2);
+		int cpr = pm1.equivalentTo(pm2);
 		assertEquals(cpr, 1);
 
 	}
@@ -40,7 +40,7 @@ public class PatternsTest extends AbstractTestCase {
 		ast2.append(Times(a_, x_));
 		PatternMatcher pm1 = new PatternMatcher(ast1);
 		PatternMatcher pm2 = new PatternMatcher(ast2);
-		int cpr = pm1.compareTo(pm2);
+		int cpr = pm1.equivalentTo(pm2);
 		assertEquals(cpr, -1);
 
 	}
