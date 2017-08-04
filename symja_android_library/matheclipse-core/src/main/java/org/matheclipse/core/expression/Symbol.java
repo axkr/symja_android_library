@@ -38,7 +38,7 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 public class Symbol implements ISymbol, Serializable {
-	final private Context fContext;
+	protected Context fContext;
 
 	private final static Collator US_COLLATOR = Collator.getInstance(Locale.US);
 	/**
@@ -119,7 +119,7 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public boolean isLocked() {
 		return !EvalEngine.get().isPackageMode() && fContext == Context.SYSTEM; // fSymbolName.charAt(0) != '$';
-	} 
+	}
 
 	/** {@inheritDoc} */
 	@Override
@@ -240,10 +240,13 @@ public class Symbol implements ISymbol, Serializable {
 			return true;
 		}
 		if (obj instanceof Symbol) {
-			if (fHashValue != ((Symbol) obj).fHashValue) {
+			Symbol symbol = (Symbol) obj;
+			if (fHashValue != symbol.fHashValue) {
 				return false;
 			}
-			return fSymbolName.equals(((Symbol) obj).fSymbolName);
+			if (fSymbolName.equals(symbol.fSymbolName)) {
+				return fContext.equals(symbol.fContext);
+			}
 		}
 		return false;
 	}
@@ -412,7 +415,7 @@ public class Symbol implements ISymbol, Serializable {
 	public final int getAttributes() {
 		return fAttributes;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final Context getContext() {
@@ -787,12 +790,19 @@ public class Symbol implements ISymbol, Serializable {
 	private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		fSymbolName = stream.readUTF();
 		fAttributes = stream.read();
+		fContext = (Context) stream.readObject();
 	}
 
 	public Object readResolve() throws ObjectStreamException {
-		Symbol sym = (Symbol) F.userSymbol(fSymbolName);
-		sym.fAttributes = fAttributes;
-		return sym;
+		ISymbol sym = fContext.get(fSymbolName);
+		if (sym != null) {
+			return sym;
+		}
+		// probably user defined
+		Symbol symbol = new Symbol(fSymbolName, fContext);
+		fContext.put(fSymbolName, symbol);
+		symbol.fAttributes = fAttributes;
+		return symbol;
 	}
 
 	/** {@inheritDoc} */
@@ -958,6 +968,7 @@ public class Symbol implements ISymbol, Serializable {
 	private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
 		stream.writeUTF(fSymbolName);
 		stream.write(fAttributes);
+		stream.writeObject(fContext);
 	}
 
 	private Object writeReplace() throws ObjectStreamException {

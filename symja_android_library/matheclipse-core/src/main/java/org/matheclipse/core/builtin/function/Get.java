@@ -46,7 +46,7 @@ public class Get extends AbstractFunctionEvaluator {
 						continue;
 					} else if (head.equals(F.Begin) && ast.size() >= 2) {
 						try {
-							contextPath.add(new Context(ast.arg1().toString()));
+							contextPath.add(engine.getContextPath().getContext(ast.arg1().toString()));
 							i = addContextToPath(contextPath, node, i, engine, F.End);
 						} finally {
 							contextPath.remove(contextPath.size() - 1);
@@ -90,7 +90,7 @@ public class Get extends AbstractFunctionEvaluator {
 					IExpr head = temp.head();
 					if (head.equals(F.BeginPackage) && ast.size() >= 2) {
 						String contextName = Validate.checkContextName(ast, 1);
-						packageContext = new Context(contextName);
+						packageContext = engine.getContextPath().getContext(contextName);
 						ISymbol endSymbol = F.EndPackage;
 						for (int j = 2; j < ast.size(); j++) {
 							FileReader reader = new FileReader(ast.get(j).toString());
@@ -130,13 +130,12 @@ public class Get extends AbstractFunctionEvaluator {
 	 * Parse the <code>reader</code> input.
 	 * </p>
 	 * <p>
-	 * This method ignores the first line of the script if it starts with the
-	 * <code>#!</code> characters (i.e. Unix Script Executables)
+	 * This method ignores the first line of the script if it starts with the <code>#!</code> characters (i.e. Unix
+	 * Script Executables)
 	 * </p>
 	 * <p>
-	 * <b>Note</b>: uses the <code>ASTNode</code> parser and not the
-	 * <code>ExprParser</code>, because otherwise the symbols couldn't be
-	 * assigned to the contexts.
+	 * <b>Note</b>: uses the <code>ASTNode</code> parser and not the <code>ExprParser</code>, because otherwise the
+	 * symbols couldn't be assigned to the contexts.
 	 * </p>
 	 * 
 	 * @param reader

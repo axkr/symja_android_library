@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import java.io.IOException;
+import java.io.ObjectStreamException;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
@@ -174,6 +175,17 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 			}
 		}
 		return F.NIL;
+	}
+	
+	public Object readResolve() throws ObjectStreamException {
+		ISymbol sym = fContext.get(fSymbolName);
+		if (sym != null) {
+			return sym;
+		}
+		BuiltInSymbol symbol = new BuiltInSymbol(fSymbolName);
+		fContext.put(fSymbolName, symbol);
+		symbol.fAttributes = fAttributes;
+		return symbol;
 	}
 
 	/** {@inheritDoc} */

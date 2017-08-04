@@ -1,32 +1,48 @@
 package org.matheclipse.core.expression;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class ContextPath {
+	public final Map<String, Context> fContextMap;
 	List<Context> path = new ArrayList<Context>();
 
 	public ContextPath() {
-		path.add(Context.SYSTEM);
-		path.add(new Context("Global"));
+		this("Global");
 	}
 
 	public ContextPath(String contextName) {
+		fContextMap = new HashMap<String, Context>(17);
 		path.add(Context.SYSTEM);
-		path.add(new Context(contextName));
+		fContextMap.put(Context.SYSTEM.contextName, Context.SYSTEM);
+		path.add(getContext(contextName));
 	}
 
 	public ContextPath(Context context) {
+		fContextMap = new HashMap<String, Context>(17);
 		path.add(Context.SYSTEM);
+		fContextMap.put(Context.SYSTEM.contextName, Context.SYSTEM);
 		path.add(context);
 	}
 
-	public boolean add(Context e) {
-		return path.add(e);
+	public Context getContext(String contextName) {
+		Context context = fContextMap.get(contextName);
+		if (context != null) {
+			return context;
+		}
+		context = new Context(contextName);
+		fContextMap.put(contextName, context);
+		return context;
+	}
+
+	public boolean add(Context context) {
+		return path.add(context);
 	}
 
 	public Context get(int index) {

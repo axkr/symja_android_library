@@ -311,7 +311,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		// fNamespace = fExpressionFactory.getNamespace();
 
 		init();
-		fContextPath = new ContextPath();
+//		fContextPath = new ContextPath();
 
 		// set this EvalEngine to the thread local
 		set(this);
@@ -1468,6 +1468,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		// fTraceList = null;
 		fStopRequested = false;
 		fModifiedVariablesList = new HashSet<ISymbol>();
+		fContextPath = new ContextPath();
 	}
 
 	/**
