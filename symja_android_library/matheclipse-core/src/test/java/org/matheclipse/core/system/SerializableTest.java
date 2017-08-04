@@ -8,7 +8,6 @@ import java.io.ObjectOutputStream;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.reflection.system.Share;
 import org.matheclipse.core.visit.AbstractVisitor;
@@ -159,15 +158,24 @@ public class SerializableTest extends TestCase {
 
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			
+			long start0 = System.currentTimeMillis();
 			oos.writeObject(original);
 			byte[] bArray = baos.toByteArray();
 			baos.close();
 			oos.close();
+			
+			long start1 = System.currentTimeMillis();
 			ByteArrayInputStream bais = new ByteArrayInputStream(bArray);
 			ObjectInputStream ois = new ObjectInputStream(bais);
 			Object copy = ois.readObject();
 			bais.close();
 			ois.close();
+			long end = System.currentTimeMillis();
+			long temp = start1-start0;
+			System.out.println(Long.valueOf(temp).toString());
+			temp = end-start1;
+			System.out.println(Long.valueOf(temp).toString());
 			assertEquals(original.toString(), copy.toString());
 
 		} catch (ClassNotFoundException cnfe) {
