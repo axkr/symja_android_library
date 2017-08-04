@@ -57,7 +57,6 @@ public final class FunctionDefinitions {
 		Interpolation.setEvaluator(new org.matheclipse.core.reflection.system.Interpolation());
 		Interval.setEvaluator(new org.matheclipse.core.reflection.system.Interval()); 
 		InverseFunction.setEvaluator(new org.matheclipse.core.reflection.system.InverseFunction());
-		JaccardDissimilarity.setEvaluator(new org.matheclipse.core.reflection.system.JaccardDissimilarity());
 		LaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.LaplaceTransform());
 		LCM.setEvaluator(new org.matheclipse.core.reflection.system.LCM());
 		LetterQ.setEvaluator(new org.matheclipse.core.reflection.system.LetterQ());
@@ -111,18 +110,10 @@ public final class FunctionDefinitions {
 		SinIntegral.setEvaluator(new org.matheclipse.core.reflection.system.SinIntegral());
 		Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
 		StieltjesGamma.setEvaluator(new org.matheclipse.core.reflection.system.StieltjesGamma());
-		StringDrop.setEvaluator(new org.matheclipse.core.reflection.system.StringDrop());
-		StringJoin.setEvaluator(new org.matheclipse.core.reflection.system.StringJoin());
-		StringLength.setEvaluator(new org.matheclipse.core.reflection.system.StringLength());
-		StringTake.setEvaluator(new org.matheclipse.core.reflection.system.StringTake());
 		Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());
 		Surd.setEvaluator(new org.matheclipse.core.reflection.system.Surd());
-		SyntaxLength.setEvaluator(new org.matheclipse.core.reflection.system.SyntaxLength());
 		Taylor.setEvaluator(new org.matheclipse.core.reflection.system.Taylor());
-		ToCharacterCode.setEvaluator(new org.matheclipse.core.reflection.system.ToCharacterCode());
 		ToPolarCoordinates.setEvaluator(new org.matheclipse.core.reflection.system.ToPolarCoordinates());
-		ToString.setEvaluator(new org.matheclipse.core.reflection.system.ToString());
-		ToUnicode.setEvaluator(new org.matheclipse.core.reflection.system.ToUnicode());
 		TrigExpand.setEvaluator(new org.matheclipse.core.reflection.system.TrigExpand());
 		TrigReduce.setEvaluator(new org.matheclipse.core.reflection.system.TrigReduce());
 		TrigToExp.setEvaluator(new org.matheclipse.core.reflection.system.TrigToExp());

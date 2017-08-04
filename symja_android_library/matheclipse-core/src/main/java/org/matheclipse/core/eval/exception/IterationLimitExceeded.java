@@ -1,7 +1,6 @@
 package org.matheclipse.core.eval.exception;
 
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.reflection.system.ToString;
 import org.matheclipse.parser.client.math.MathException;
 
 /**

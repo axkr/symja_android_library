@@ -36,6 +36,7 @@ import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.builtin.RandomFunctions;
 import org.matheclipse.core.builtin.SpecialFunctions;
+import org.matheclipse.core.builtin.StringFunctions;
 import org.matheclipse.core.builtin.Structure;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -1950,6 +1951,7 @@ public class F {
 			Combinatoric.initialize();
 			IntegerFunctions.initialize();
 			SpecialFunctions.initialize();
+			StringFunctions.initialize();
 			RandomFunctions.initialize();
 
 			// initialize only the utility function rules for Integrate

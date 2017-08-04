@@ -1,7 +1,7 @@
 package org.matheclipse.core.eval.exception;
 
+import org.matheclipse.core.builtin.StringFunctions;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.reflection.system.ToString;
 import org.matheclipse.parser.client.math.MathException;
 
 /**
@@ -28,7 +28,7 @@ public class RecursionLimitExceeded extends MathException {
 		if (fExpr == null) {
 			return "Recursion limit " + fLimit + " exceeded at: null";
 		}
-		return "Recursion limit " + fLimit + " exceeded at: " + ToString.outputForm(fExpr);
+		return "Recursion limit " + fLimit + " exceeded at: " + StringFunctions.outputForm(fExpr);
 	}
 
 	public static void throwIt(final int limit, final IExpr expr) {
