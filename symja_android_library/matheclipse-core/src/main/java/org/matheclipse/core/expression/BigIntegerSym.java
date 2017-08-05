@@ -381,7 +381,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		}
 		return length;
 	}
-	
+
 	@Override
 	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		int value = NumberUtil.toInt(fBigIntValue);
@@ -790,12 +790,20 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		return fBigIntValue;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public int toInt() throws ArithmeticException {
 		return NumberUtil.toInt(fBigIntValue);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public int toIntDefault(int defaultValue) {
+		int val = fBigIntValue.intValue();
+		if (!fBigIntValue.equals(BigInteger.valueOf(val))) {
+			return defaultValue;
+		}
+		return val;
 	}
 
 	/**

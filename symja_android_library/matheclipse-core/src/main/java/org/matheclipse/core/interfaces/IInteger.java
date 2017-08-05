@@ -256,4 +256,15 @@ public interface IInteger extends IRational {
 	public BigInteger toBigNumerator();
 
 	public byte[] toByteArray();
+
+	/**
+	 * Converts this number to an <code>int</code> value; unlike {@link #intValue} this method returns
+	 * <code>defaultValue</code> if the value of this integer isn't in the range <code>Integer.MIN_VALUE</code> to
+	 * <code>Integer.MAX_VALUE</code>. 
+	 * 
+	 * @param defaultValue
+	 *            the default value, if this integer is not in the <code>int</code> range
+	 * @return the numeric value represented by this integer after conversion to type <code>int</code>.
+	 */
+	public int toIntDefault(int defaultValue);
 }

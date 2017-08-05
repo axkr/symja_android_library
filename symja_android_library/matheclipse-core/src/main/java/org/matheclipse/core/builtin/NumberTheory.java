@@ -128,12 +128,10 @@ public final class NumberTheory {
 				return F.C1;
 			}
 			if (arg1.isInteger() && arg1.isPositive()) {
-				try {
-					int index = ((IInteger) arg1).toInt();
+				int index = ((IInteger) arg1).toIntDefault(0);
+				if (index != 0) {
 					BigInteger bellB = generateBellNumber(index);
 					return F.integer(bellB);
-				} catch (ArithmeticException ae) {
-					//
 				}
 			}
 			return F.NIL;
@@ -176,12 +174,9 @@ public final class NumberTheory {
 		 * @return
 		 */
 		public static IFraction bernoulliNumber(final IInteger biggi) {
-			int N = 0;
-			try {
-				N = biggi.toInt();
-				return bernoulliNumber(N);
-			} catch (ArithmeticException ae) {
-				//
+			int n = biggi.toIntDefault(-1);
+			if (n >= 0) {
+				return bernoulliNumber(n);
 			}
 			return null;
 		}
@@ -278,15 +273,15 @@ public final class NumberTheory {
 				return F.C1;
 			}
 
-			try {
-				int ni = n.toInt();
-				int ki = k.toInt();
-				if (ki > ni) {
-					return F.C0;
+			int ni = n.toIntDefault(-1);
+			if (ni >= 0) {
+				int ki = k.toIntDefault(-1);
+				if (ki >= 0) {
+					if (ki > ni) {
+						return F.C0;
+					}
+					return AbstractIntegerSym.valueOf(BigIntegerMath.binomial(ni, ki));
 				}
-				return AbstractIntegerSym.valueOf(BigIntegerMath.binomial(ni, ki));
-			} catch (ArithmeticException ae) {
-				//
 			}
 
 			IInteger bin = F.C1;
@@ -1003,8 +998,8 @@ public final class NumberTheory {
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
 			if (arg1.isInteger()) {
-				try {
-					int n = ((IInteger) arg1).toInt();
+				int n = ((IInteger) arg1).toIntDefault(-1);
+				if (n >= 0) {
 					if ((n & 0x00000001) == 0x00000001) {
 						return F.C0;
 					}
@@ -1028,8 +1023,6 @@ public final class NumberTheory {
 						}
 					}
 					return eulerE;
-				} catch (ArithmeticException e) {
-					// integer to large?
 				}
 			}
 			return F.NIL;
@@ -1246,8 +1239,8 @@ public final class NumberTheory {
 				if (!arg1.isNegative()) {
 					return factorial2((IInteger) arg1);
 				}
-				try {
-					int n = ((IInteger) arg1).toInt();
+				int n = ((IInteger) arg1).toIntDefault(0);
+				if (n < 0) {
 					switch (n) {
 					case -1:
 						return F.C1;
@@ -1264,8 +1257,6 @@ public final class NumberTheory {
 					case -7:
 						return F.fraction(-1L, 15L);
 					}
-				} catch (ArithmeticException ae) {
-
 				}
 			}
 			return F.NIL;
@@ -1376,8 +1367,11 @@ public final class NumberTheory {
 		 */
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
-			if (arg1 instanceof IntegerSym) {
-				return fibonacci(((IInteger) arg1).toInt());
+			if (arg1.isInteger()) {
+				int n = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
+				if (n > Integer.MIN_VALUE) {
+					return fibonacci(n);
+				}
 			}
 			return F.NIL;
 		}
@@ -1524,13 +1518,15 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
-			if (arg1 instanceof IntegerSym) {
-				int i = ((IInteger) arg1).toInt();
-				if (i < 0) {
-					i *= (-1);
+			if (arg1.isInteger()) {
+				int i = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
+				if (i > Integer.MIN_VALUE) {
+					if (i < 0) {
+						i *= (-1);
+					}
+					// LucasL(n) = Fibonacci(n-1) + Fibonacci(n+1)
+					return fibonacci(i - 1).add(fibonacci(i + 1));
 				}
-				// LucasL(n) = Fibonacci(n-1) + Fibonacci(n+1)
-				return fibonacci(i - 1).add(fibonacci(i + 1));
 			}
 			return F.NIL;
 		}
@@ -1546,8 +1542,8 @@ public final class NumberTheory {
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
 			if (arg1.isInteger() && arg1.isPositive()) {
-				if (arg1 instanceof IntegerSym) {
-					int n = ((IInteger) arg1).toInt();
+				int n = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
+				if (n > 0) {
 					if (n > NumberTheory.MPE_45.length) {
 						return F.NIL;
 					}
@@ -1939,8 +1935,8 @@ public final class NumberTheory {
 		 * @return
 		 */
 		private static IExpr sumPartitionsP(EvalEngine engine, IInteger n) {
-			if (n instanceof IntegerSym) {
-				int i = n.toInt();
+			int i = n.toIntDefault(Integer.MIN_VALUE);
+			if (i >= 0) {
 				if (i < Integer.MAX_VALUE - 3) {
 					BigIntegerPartitionsP bipp = new BigIntegerPartitionsP();
 					return F.ZZ(bipp.sumPartitionsP(i, i + 3));
@@ -2048,14 +2044,16 @@ public final class NumberTheory {
 		}
 
 		private static IExpr sumPartitionsQ1(EvalEngine engine, IInteger n) {
-			int nInt = n.toInt();
 			IInteger sum = F.C0;
-			for (int k = 1; k <= nInt; k++) {
-				IExpr temp = termPartitionsQ1(engine, n, k);
-				if (!temp.isInteger()) {
-					return F.NIL;
+			int nInt = n.toIntDefault(Integer.MIN_VALUE);
+			if (nInt >= 0) {
+				for (int k = 1; k <= nInt; k++) {
+					IExpr temp = termPartitionsQ1(engine, n, k);
+					if (!temp.isInteger()) {
+						return F.NIL;
+					}
+					sum = sum.add((IInteger) temp);
 				}
-				sum = sum.add((IInteger) temp);
 			}
 			return sum;
 		}
@@ -2096,8 +2094,8 @@ public final class NumberTheory {
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
 			if (arg1.isInteger() && arg1.isPositive()) {
-				if (arg1 instanceof IntegerSym) {
-					int n = ((IInteger) arg1).toInt();
+				int n = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
+				if (n >= 0) {
 					if (n > NumberTheory.MPE_45.length) {
 						return F.NIL;
 					}
@@ -2199,11 +2197,11 @@ public final class NumberTheory {
 			Validate.checkSize(ast, 2);
 
 			if (ast.arg1().isInteger()) {
+				int nthPrime = ((IInteger) ast.arg1()).toIntDefault(Integer.MIN_VALUE);
+				if (nthPrime < 0 || nthPrime > 103000000) {
+					return F.NIL;
+				}
 				try {
-					int nthPrime = ((IInteger) ast.arg1()).toInt();
-					if (nthPrime < 0 || nthPrime > 103000000) {
-						return F.NIL;
-					}
 					return F.integer(Primality.prime(nthPrime));
 				} catch (RuntimeException ae) {
 					if (Config.SHOW_STACKTRACE) {
@@ -2233,26 +2231,24 @@ public final class NumberTheory {
 			if (arg1.isNegative() || arg1.isOne() || arg1.isZero()) {
 				return F.C0;
 			}
-			try {
-				IExpr x = F.NIL;
-				if (arg1.isInteger() && arg1.isPositive()) {
-					x = (IInteger) arg1;
+
+			IExpr x = F.NIL;
+			if (arg1.isInteger()) {
+				x = (IInteger) arg1;
+			} else if (arg1.isSignedNumber() && arg1.isPositive()) {
+				x = engine.evaluate(((ISignedNumber) arg1).floorFraction());
+			} else {
+				ISignedNumber sn = arg1.evalSignedNumber();
+				if (sn != null) {
+					x = engine.evaluate(sn.floorFraction());
 				}
+			}
 
-				if (arg1.isSignedNumber() && arg1.isPositive()) {
-					x = engine.evaluate(((ISignedNumber) arg1).floorFraction());
-				} else {
-					ISignedNumber sn = arg1.evalSignedNumber();
-					if (sn != null) {
-						x = engine.evaluate(sn.floorFraction());
-					}
-				}
+			if (x.isInteger() && x.isPositive()) {
+				// TODO improve performance by caching some values?
 
-				if (x.isInteger()) {
-					// TODO improve performance by caching some values?
-
-					// throws ArithmeticException if x is to large
-					int maxK = ((IInteger) x).toInt();
+				int maxK = ((IInteger) x).toIntDefault(Integer.MIN_VALUE);
+				if (maxK >= 0) {
 					int result = 0;
 					BigInteger temp = BigInteger.ONE;
 					for (int i = 2; i <= maxK; i++) {
@@ -2264,9 +2260,8 @@ public final class NumberTheory {
 					}
 					return F.integer(result);
 				}
-			} catch (ArithmeticException ae) {
-				// integer arg to large?
 			}
+
 			return F.NIL;
 		}
 
@@ -2558,8 +2553,9 @@ public final class NumberTheory {
 
 			IInteger nTimes2Subtractm = n.add(n.subtract(m));
 
-			try {
-				int counter = nSubtractm.toInt() + 1;
+			int counter = nSubtractm.toIntDefault(Integer.MIN_VALUE);
+			if (counter > Integer.MIN_VALUE) {
+				counter++;
 				IInteger k;
 				IAST temp = F.PlusAlloc(counter >= 0 ? counter : 0);
 				for (int i = 0; i < counter; i++) {
@@ -2575,8 +2571,6 @@ public final class NumberTheory {
 
 				}
 				return temp;
-			} catch (ArithmeticException ae) {
-				// because of toInt() method
 			}
 			return F.NIL;
 		}
@@ -2656,26 +2650,25 @@ public final class NumberTheory {
 				return F.C1;
 			}
 			if (nArg1.isInteger() && kArg2.isInteger()) {
-				if (kArg2.greaterThan(nArg1).isTrue()) {
+				IInteger ki = (IInteger) kArg2;
+				if (ki.greaterThan(nArg1).isTrue()) {
 					return C0;
 				}
-				if (kArg2.isZero()) {
+				if (ki.isZero()) {
 					return C0;
 				}
-				if (kArg2.isOne()) {
+				if (ki.isOne()) {
 					// {n,1}==1
 					return C1;
 				}
-				if (kArg2.equals(C2)) {
+				if (ki.equals(C2)) {
 					// {n,2}==2^(n-1)-1
 					return Subtract(Power(C2, Subtract(nArg1, C1)), C1);
 				}
 
-				try {
-					int k = ((ISignedNumber) kArg2).toInt();
-					return stirlingS2((IInteger) nArg1, (IInteger) kArg2, k);
-				} catch (ArithmeticException ae) {
-					// because of toInt() method
+				int k = ki.toIntDefault(0);
+				if (k != 0) {
+					return stirlingS2((IInteger) nArg1, ki, k);
 				}
 			}
 
@@ -2826,9 +2819,9 @@ public final class NumberTheory {
 	final static NumberTheory CONST = new NumberTheory();
 
 	public static IInteger factorial(final IInteger x) {
-		try {
-			int ni = x.toInt();
 
+		int ni = x.toIntDefault(Integer.MIN_VALUE);
+		if (ni > Integer.MIN_VALUE) {
 			BigInteger result;
 			if (ni < 0) {
 				result = BigIntegerMath.factorial(-1 * ni);
@@ -2843,9 +2836,6 @@ public final class NumberTheory {
 				result = BigIntegerMath.factorial(ni);
 			}
 			return AbstractIntegerSym.valueOf(result);
-
-		} catch (ArithmeticException ae) {
-			//
 		}
 
 		IInteger result = F.C1;

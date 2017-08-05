@@ -166,7 +166,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 				if (deriveExpr[0].isAST1() && deriveExpr[0].arg1().isInteger()) {
 					order = ((IInteger) deriveExpr[0].arg1()).toInt();
 					// TODO check how and that the uFunction and
-					// xVar is used in the deriv expression...
+					// xVar is used in the derive expression...
 				}
 			}
 		} catch (RuntimeException rex) {

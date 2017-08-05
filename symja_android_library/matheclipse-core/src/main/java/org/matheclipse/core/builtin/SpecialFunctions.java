@@ -79,10 +79,8 @@ public class SpecialFunctions {
 			IExpr arg1 = ast.arg1();
 			IExpr arg2 = ast.arg2();
 			if (arg1.isInteger()) {
-				int degree = -1;
-				try {
-					degree = ((ISignedNumber) arg1).toInt();
-				} catch (Exception ex) {
+				int degree = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
+				if (degree == Integer.MIN_VALUE) {
 					return F.NIL;
 				}
 				if (degree < 0) {
@@ -111,10 +109,8 @@ public class SpecialFunctions {
 			IExpr arg1 = ast.arg1();
 			IExpr arg2 = ast.arg2();
 			if (arg1.isInteger()) {
-				int degree = -1;
-				try {
-					degree = ((ISignedNumber) arg1).toInt();
-				} catch (Exception ex) {
+				int degree = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
+				if (degree == Integer.MIN_VALUE) {
 					return F.NIL;
 				}
 
@@ -412,13 +408,12 @@ public class SpecialFunctions {
 
 	}
 
-	private final static class LegendreP extends AbstractFunctionEvaluator implements LegendrePRules  {
+	private final static class LegendreP extends AbstractFunctionEvaluator implements LegendrePRules {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
-			
-			
+
 			int degree = Validate.checkIntType(ast.arg1());
 			return PolynomialsUtils.createLegendrePolynomial(degree, ast.arg2());
 		}
@@ -450,7 +445,8 @@ public class SpecialFunctions {
 			} catch (Exception ce) {
 
 			}
-			return F.complexNum(ApcomplexMath.w(new Apfloat(new BigDecimal(d.doubleValue()), Config.MACHINE_PRECISION)));
+			return F.complexNum(
+					ApcomplexMath.w(new Apfloat(new BigDecimal(d.doubleValue()), Config.MACHINE_PRECISION)));
 		}
 
 		@Override

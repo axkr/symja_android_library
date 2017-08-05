@@ -1112,18 +1112,14 @@ public final class Combinatoric {
 				int parts = list.size() - 1;
 				if (ast.isAST2()) {
 					if (ast.arg2().isInteger()) {
-						try {
-							int maxPart = ((IInteger) ast.arg2()).toInt();
-							if (maxPart >= 0) {
-								maxPart = maxPart < parts ? maxPart : parts;
-								final IAST result = F.ListAlloc(100);
-								for (int i = 0; i <= maxPart; i++) {
-									createPermutationsWithNParts(list, i, result);
-								}
-								return result;
+						int maxPart = ((IInteger) ast.arg2()).toIntDefault(-1);
+						if (maxPart >= 0) {
+							maxPart = maxPart < parts ? maxPart : parts;
+							final IAST result = F.ListAlloc(100);
+							for (int i = 0; i <= maxPart; i++) {
+								createPermutationsWithNParts(list, i, result);
 							}
-						} catch (ArithmeticException ae) {
-							//
+							return result;
 						}
 						return F.NIL;
 					}
@@ -1425,10 +1421,10 @@ public final class Combinatoric {
 				final LevelSpecification level;
 				if (ast.isAST2()) {
 					if (ast.arg2().isInteger()) {
-						try {
-							n = ((IInteger) ast.arg2()).toInt();
+						n = ((IInteger) ast.arg2()).toIntDefault(Integer.MIN_VALUE);
+						if (n > Integer.MIN_VALUE) {
 							level = new LevelSpecification(0, n);
-						} catch (ArithmeticException ae) {
+						} else {
 							return F.NIL;
 						}
 					} else {
@@ -1494,14 +1490,13 @@ public final class Combinatoric {
 				return F.NIL;
 			} else if (ast.isAST2() && arg1.isAST() && ast.arg2().isInteger()) {
 				IExpr arg2 = ast.arg2();
-				try {
-					int k = ((IInteger) arg2).toInt();
+
+				int k = ((IInteger) arg2).toIntDefault(Integer.MIN_VALUE);
+				if (k > Integer.MIN_VALUE) {
 					IAST result = F.List();
 					IAST temp = F.ast(arg1.head());
 					tuples((IAST) arg1, k, result, temp);
 					return result;
-				} catch (ArithmeticException ae) {
-					// because of toInt() method
 				}
 			}
 			return F.NIL;

@@ -363,15 +363,17 @@ public class Structure {
 				if (!ast.arg3().isInteger()) {
 					return F.NIL;
 				}
-				try {
-					headDepth = ((IInteger) ast.arg3()).toInt();
-					if (headDepth < 0) {
-						EvalEngine.get().printMessage("Non-negative integer expected at position 3 in Operate()");
-						return F.NIL;
-					}
-				} catch (ArithmeticException ae) {
+				IInteger depth = (IInteger) ast.arg3();
+				if (depth.isNegative()) {
+					EvalEngine.get().printMessage("Non-negative integer expected at position 3 in Operate()");
 					return F.NIL;
 				}
+				
+				headDepth = depth.toIntDefault(Integer.MIN_VALUE);
+				if (headDepth == Integer.MIN_VALUE) {
+					return F.NIL;
+				}
+
 			}
 
 			IExpr p = ast.arg1();

@@ -926,6 +926,12 @@ public class IntegerSym extends AbstractIntegerSym {
 	public int toInt() throws ArithmeticException {
 		return fIntValue;
 	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public int toIntDefault(int defaultValue) {
+		return fIntValue;
+	}
 
 	/**
 	 * {@inheritDoc}
