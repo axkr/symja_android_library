@@ -6,14 +6,15 @@ import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.BinaryApply;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * <pre>ComposeList(list-of-symbols, variable)
+ * <pre>
+ * ComposeList(list - of - symbols, variable)
  * </pre>
+ * 
  * <h3>Examples</h3>
  */
 public class ComposeList extends AbstractEvaluator {
@@ -31,7 +32,12 @@ public class ComposeList extends AbstractEvaluator {
 			if ((ast.isAST2()) && (ast.arg1().isAST())) {
 				// final EvalEngine engine = EvalEngine.get();
 				final IAST list = (IAST) ast.arg1();
-				ListFunctions.foldLeft(ast.arg2(), list, 1, list.size(), new BinaryApply(F.ast(ast.arg1())), resultList);
+				final IAST constant = F.ast(ast.arg1());
+				ListFunctions.foldLeft(ast.arg2(), list, 1, list.size(), (x, y) -> {
+					final IAST a = constant.apply(y);
+					a.append(x);
+					return a;
+				}, resultList);
 				return resultList;
 			}
 		} catch (final ArithmeticException e) {

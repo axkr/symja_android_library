@@ -35,12 +35,10 @@ import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.util.ISequence;
 import org.matheclipse.core.eval.util.Iterator;
-import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.LevelSpec;
 import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.eval.util.Sequence;
-import org.matheclipse.core.eval.util.TableGenerator;
 import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
@@ -48,18 +46,13 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.BinaryMap;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Functors;
-import org.matheclipse.core.generic.MultipleArrayFunction;
-import org.matheclipse.core.generic.MultipleConstArrayFunction;
-import org.matheclipse.core.generic.PositionConverter;
 import org.matheclipse.core.generic.Predicates;
-import org.matheclipse.core.generic.UnaryArrayFunction;
-import org.matheclipse.core.generic.UnaryRangeFunction;
 import org.matheclipse.core.generic.interfaces.IIterator;
-import org.matheclipse.core.generic.interfaces.IPositionConverter;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
@@ -125,6 +118,236 @@ public final class ListFunctions {
 		F.Variance.setEvaluator(new Variance());
 	}
 
+	private static interface IArrayFunction {
+		IExpr evaluate(IExpr[] index);
+	}
+
+	private static interface IPositionConverter<T> {
+		/**
+		 * Convert the integer position number >= 0 into an object
+		 *
+		 * @param position
+		 *            which should be converted to an object
+		 * @return
+		 */
+		T toObject(int position);
+
+		/**
+		 * Convert the object into an integer number >= 0
+		 *
+		 * @param position
+		 *            the object which should be converted
+		 * @return -1 if the conversion is not possible
+		 */
+		int toInt(T position);
+	}
+
+	/**
+	 * Table structure generator (i.e. lists, vectors, matrices, tensors)
+	 */
+	private static class TableGenerator {
+
+		final List<? extends IIterator<IExpr>> fIterList;
+
+		final IExpr fDefaultValue;
+
+		final IAST fPrototypeList;
+
+		final IArrayFunction fFunction;
+
+		int fIndex;
+
+		private IExpr[] fCurrentIndex;
+
+		public TableGenerator(final List<? extends IIterator<IExpr>> iterList, final IAST prototypeList,
+				final IArrayFunction function) {
+			this(iterList, prototypeList, function, (IExpr) null);
+		}
+
+		public TableGenerator(final List<? extends IIterator<IExpr>> iterList, final IAST prototypeList,
+				final IArrayFunction function, IExpr defaultValue) {
+			fIterList = iterList;
+			fPrototypeList = prototypeList;
+			fFunction = function;
+			fIndex = 0;
+			fCurrentIndex = new IExpr[iterList.size()];
+			fDefaultValue = defaultValue;
+		}
+
+		public IExpr table() {
+			if (fIndex < fIterList.size()) {
+				final IIterator<IExpr> iter = fIterList.get(fIndex);
+
+				if (iter.setUp()) {
+					try {
+						final int index = fIndex++;
+						if (fPrototypeList.head().equals(F.Plus) || fPrototypeList.head().equals(F.Times)) {
+							if (iter.hasNext()) {
+								fCurrentIndex[index] = iter.next();
+								IExpr temp = table();
+								if (temp == null) {
+									temp = fDefaultValue;
+								}
+								if (temp.isNumber()) {
+									if (fPrototypeList.head().equals(F.Plus)) {
+										return tablePlus(temp, iter, index);
+									} else {
+										return tableTimes(temp, iter, index);
+									}
+								} else {
+									return createGenericTable(iter, index, iter.allocHint(), temp, null);
+								}
+							}
+						}
+						return createGenericTable(iter, index, iter.allocHint(), null, null);
+					} finally {
+						--fIndex;
+						iter.tearDown();
+					}
+				}
+				return fDefaultValue;
+
+			}
+			return fFunction.evaluate(fCurrentIndex);
+		}
+
+		public IExpr tableThrow() {
+			if (fIndex < fIterList.size()) {
+				final IIterator<IExpr> iter = fIterList.get(fIndex);
+
+				try {
+					if (iter.setUpThrow()) {
+						final int index = fIndex++;
+						if (fPrototypeList.head().equals(F.Plus) || fPrototypeList.head().equals(F.Times)) {
+							if (iter.hasNext()) {
+								fCurrentIndex[index] = iter.next();
+								IExpr temp = table();
+								if (temp == null) {
+									temp = fDefaultValue;
+								}
+								if (temp.isNumber()) {
+									if (fPrototypeList.head().equals(F.Plus)) {
+										return tablePlus(temp, iter, index);
+									} else {
+										return tableTimes(temp, iter, index);
+									}
+								} else {
+									return createGenericTable(iter, index, iter.allocHint(), temp, null);
+								}
+							}
+						}
+						return createGenericTable(iter, index, iter.allocHint(), null, null);
+					}
+				} finally {
+					--fIndex;
+					iter.tearDown();
+				}
+
+				return fDefaultValue;
+
+			}
+			return fFunction.evaluate(fCurrentIndex);
+		}
+
+		private IExpr tablePlus(IExpr temp, final IIterator<IExpr> iter, final int index) {
+			INumber num;
+			int counter = 0;
+			num = (INumber) temp;
+			while (iter.hasNext()) {
+				fCurrentIndex[index] = iter.next();
+				temp = table();
+				if (temp == null) {
+					temp = fDefaultValue;
+				}
+				if (temp.isNumber()) {
+					num = (INumber) num.plus((INumber) temp);
+				} else {
+					return createGenericTable(iter, index, iter.allocHint() - counter, num, temp);
+				}
+				counter++;
+			}
+			return num;
+		}
+
+		private IExpr tableTimes(IExpr temp, final IIterator<IExpr> iter, final int index) {
+			INumber num;
+			int counter = 0;
+			num = (INumber) temp;
+			while (iter.hasNext()) {
+				fCurrentIndex[index] = iter.next();
+				temp = table();
+				if (temp == null) {
+					temp = fDefaultValue;
+				}
+				if (temp.isNumber()) {
+					num = (INumber) num.times((INumber) temp);
+				} else {
+					return createGenericTable(iter, index, iter.allocHint() - counter, num, temp);
+				}
+				counter++;
+			}
+			return num;
+		}
+
+		/**
+		 * 
+		 * @param iter
+		 *            the current Iterator index
+		 * @param index
+		 *            index
+		 * @return
+		 */
+		private IExpr createGenericTable(final IIterator<IExpr> iter, final int index, final int allocationHint,
+				IExpr arg1, IExpr arg2) {
+			final IAST result = fPrototypeList
+					.copyHead(fPrototypeList.size() + (allocationHint > 0 ? allocationHint : 0));
+			result.appendArgs(fPrototypeList);
+			if (arg1 != null) {
+				result.append(arg1);
+			}
+			if (arg2 != null) {
+				result.append(arg2);
+			}
+			while (iter.hasNext()) {
+				fCurrentIndex[index] = iter.next();
+				IExpr temp = table();
+				if (temp == null) {
+					result.append(fDefaultValue);
+				} else {
+					result.append(temp);
+				}
+			}
+			return result;
+		}
+	}
+
+	private static class PositionConverter implements IPositionConverter<IExpr> {
+		public IExpr toObject(final int i) {
+			if (i < 3) {
+				switch (i) {
+				case 0:
+					return F.C0;
+				case 1:
+					return F.C1;
+				case 2:
+					return F.C2;
+				}
+			}
+			return F.integer(i);
+		}
+
+		public int toInt(final IExpr position) {
+			if (position.isSignedNumber()) {
+				try {
+					return ((ISignedNumber) position).toInt();
+				} catch (ArithmeticException ae) {
+					//
+				}
+			}
+			return -1;
+		}
+	}
+
 	/**
 	 * 
 	 * <p>
@@ -159,7 +382,7 @@ public final class ListFunctions {
 	 */
 	private final static class AppendTo extends AbstractCoreFunctionEvaluator {
 
-		static class AppendToFunction implements Function<IExpr, IExpr> {
+		private static class AppendToFunction implements Function<IExpr, IExpr> {
 			private final IExpr value;
 
 			public AppendToFunction(final IExpr value) {
@@ -209,7 +432,26 @@ public final class ListFunctions {
 	 */
 	private final static class Array extends AbstractCoreFunctionEvaluator {
 
-		public static class ArrayIterator implements IIterator<IExpr> {
+		private static class MultipleArrayFunction implements IArrayFunction {
+			final EvalEngine fEngine;
+
+			final IAST fHeadAST;
+
+			public MultipleArrayFunction(final EvalEngine engine, final IAST headAST) {
+				fEngine = engine;
+				fHeadAST = headAST;
+			}
+
+			public IExpr evaluate(final IExpr[] index) {
+				final IAST ast = fHeadAST.clone();
+				for (int i = 0; i < index.length; i++) {
+					ast.append(index[i]);
+				}
+				return fEngine.evaluate(ast);
+			}
+		}
+
+		private static class ArrayIterator implements IIterator<IExpr> {
 			int fCurrent;
 
 			final int fFrom;
@@ -636,8 +878,19 @@ public final class ListFunctions {
 	 * Array structure generator for constant (i,j) value.
 	 */
 	private final static class ConstantArray extends AbstractEvaluator {
+		private static class MultipleConstArrayFunction implements IArrayFunction {
+			final IExpr fConstantExpr;
 
-		public static class ArrayIterator implements IIterator<IExpr> {
+			public MultipleConstArrayFunction(final IExpr expr) {
+				fConstantExpr = expr;
+			}
+
+			public IExpr evaluate(final IExpr[] index) {
+				return fConstantExpr;
+			}
+		}
+
+		private static class ArrayIterator implements IIterator<IExpr> {
 			int fCurrent;
 
 			final int fFrom;
@@ -1987,7 +2240,7 @@ public final class ListFunctions {
 
 	private final static class PrependTo extends AbstractCoreFunctionEvaluator {
 
-		static class PrependToFunction implements Function<IExpr, IExpr> {
+		private static class PrependToFunction implements Function<IExpr, IExpr> {
 			private final IExpr value;
 
 			public PrependToFunction(final IExpr value) {
@@ -2028,6 +2281,15 @@ public final class ListFunctions {
 	}
 
 	private final static class Range extends AbstractEvaluator {
+		private static class UnaryRangeFunction implements IArrayFunction {
+
+			public UnaryRangeFunction() {
+			}
+
+			public IExpr evaluate(final IExpr[] index) {
+				return (IExpr) index[0];
+			}
+		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2433,6 +2695,21 @@ public final class ListFunctions {
 	 * Table structure generator (i.e. lists, vectors, matrices, tensors)
 	 */
 	public static class Table extends AbstractFunctionEvaluator {
+
+		private static class UnaryArrayFunction implements IArrayFunction {
+			final EvalEngine fEngine;
+
+			final IExpr fValue;
+
+			public UnaryArrayFunction(final EvalEngine engine, final IExpr value) {
+				fEngine = engine;
+				fValue = value;
+			}
+
+			public IExpr evaluate(final IExpr[] index) {
+				return fEngine.evaluate(fValue);
+			}
+		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
