@@ -1,6 +1,7 @@
 package org.matheclipse.core.builtin;
 
 import java.util.HashMap;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalAttributes;
@@ -31,6 +32,8 @@ public class Structure {
 		F.Flatten.setEvaluator(new Flatten());
 		F.Function.setEvaluator(new Function());
 		F.Map.setEvaluator(new Map());
+		F.MapAll.setEvaluator(new MapAll());
+		F.MapAt.setEvaluator(new MapAt());
 		F.MapThread.setEvaluator(new MapThread());
 		F.OrderedQ.setEvaluator(new OrderedQ());
 		F.Operate.setEvaluator(new Operate());
@@ -81,7 +84,7 @@ public class Structure {
 
 		public static IExpr evalApply(IExpr arg1, IExpr arg2, IAST evaledAST, int lastIndex, boolean heads) {
 			VisitorLevelSpecification level = null;
-			java.util.function.Function<IExpr, IExpr> af = Functors.apply(arg1);
+			java.util.function.Function<IExpr, IExpr> af = x -> x.isAST() ? ((IAST) x).setAtCopy(0, arg1) : F.NIL;
 			try {
 				if (lastIndex == 3) {
 					level = new VisitorLevelSpecification(af, evaledAST.get(lastIndex), heads);
@@ -217,22 +220,27 @@ public class Structure {
 			if (ast.head().isAST()) {
 
 				final IAST function = (IAST) ast.head();
-				if (function.isAST1()) {
-					return Lambda.replaceSlotsOrElse(function.arg1(), ast, function.arg1());
-				} else if (function.isAST2()) {
-					IAST symbolSlots;
-					if (function.arg1().isList()) {
-						symbolSlots = (IAST) function.arg1();
-					} else {
-						symbolSlots = F.List(function.arg1());
+				if (function.size() > 1) {
+					IExpr arg1 = function.arg1();
+					if (function.isAST1()) {
+						return Lambda.replaceSlotsOrElse(arg1, ast, arg1);
+					} else if (function.isAST2()) {
+						IExpr arg2 = function.arg2();
+						IAST symbolSlots;
+						if (arg1.isList()) {
+							symbolSlots = (IAST) arg1;
+						} else {
+							symbolSlots = F.List(arg1);
+						}
+						if (symbolSlots.size() > ast.size()) {
+							throw new WrongNumberOfArguments(ast, symbolSlots.size() - 1, ast.size() - 1);
+						}
+						return arg2.replaceAll(x -> {
+							IExpr temp = getRulesMap(symbolSlots, ast).get(x);
+							return temp != null ? temp : F.NIL;
+						}).orElse(arg2);
 					}
-					if (symbolSlots.size() > ast.size()) {
-						throw new WrongNumberOfArguments(ast, symbolSlots.size() - 1, ast.size() - 1);
-					}
-					return function.arg2().replaceAll(Functors.rules(getRulesMap(symbolSlots, ast)))
-							.orElse(function.arg2());
 				}
-
 			}
 			return F.NIL;
 		}
@@ -280,19 +288,57 @@ public class Structure {
 			}
 
 			try {
-				final IAST arg1 = F.ast(ast.arg1());
+				IExpr arg1 = ast.arg1();
+				IExpr arg2 = ast.arg2();
+				VisitorLevelSpecification level;
 				if (lastIndex == 3) {
-					VisitorLevelSpecification level = new VisitorLevelSpecification(Functors.append(arg1),
-							ast.get(lastIndex), heads);
-					final IExpr result = ast.arg2().accept(level);
-					return result.isPresent() ? result : ast.arg2();
+					level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), ast.get(lastIndex), heads);
 				} else {
-					VisitorLevelSpecification level = new VisitorLevelSpecification(Functors.append(arg1), 1, heads);
-					final IExpr result = ast.arg2().accept(level);
-					return result.isPresent() ? result : ast.arg2();
+					level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), 1, heads);
 				}
+				return arg2.accept(level).orElse(arg2);
 			} catch (final MathException e) {
 				EvalEngine.get().printMessage(e.getMessage());
+			}
+			return F.NIL;
+		}
+
+	}
+
+	private static class MapAll extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 3);
+
+			final IExpr arg1 = ast.arg1();
+			final VisitorLevelSpecification level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), 0,
+					Integer.MAX_VALUE, false);
+
+			final IExpr result = ast.arg2().accept(level);
+			return result.isPresent() ? result : ast.arg2();
+		}
+
+	}
+
+	private static class MapAt extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 4);
+
+			final IExpr arg2 = ast.arg2();
+			if (arg2.isAST()) {
+				try {
+					final IExpr arg3 = ast.arg3();
+					if (arg3.isInteger()) {
+						final IExpr arg1 = ast.arg1();
+						IInteger i3 = (IInteger) arg3;
+						int n = i3.toInt();
+						return ((IAST) arg2).setAtCopy(n, F.unaryAST1(arg1, ((IAST) arg2).get(n)));
+					}
+				} catch (RuntimeException ae) {
+				}
 			}
 			return F.NIL;
 		}
@@ -368,7 +414,7 @@ public class Structure {
 					EvalEngine.get().printMessage("Non-negative integer expected at position 3 in Operate()");
 					return F.NIL;
 				}
-				
+
 				headDepth = depth.toIntDefault(Integer.MIN_VALUE);
 				if (headDepth == Integer.MIN_VALUE) {
 					return F.NIL;
@@ -444,23 +490,28 @@ public class Structure {
 			}
 
 			try {
-				final IAST arg1 = F.ast(ast.arg1());
+				IExpr arg1 = ast.arg1();
+				IExpr arg2 = ast.arg2();
 				if (lastIndex == 3) {
-					IExpr arg2 = ast.arg2();
 					IAST result = F.ListAlloc(10);
-					java.util.function.Function<IExpr, IExpr> sf = Functors.scan(arg1, result);
+					java.util.function.Function<IExpr, IExpr> sf = x -> {
+						IAST a = F.unaryAST1(arg1, x);
+						result.append(a);
+						return F.NIL;
+					};
+
 					VisitorLevelSpecification level = new VisitorLevelSpecification(sf, ast.get(lastIndex), heads);
 
-					ast.arg2().accept(level);
+					arg2.accept(level);
 					for (int i = 1; i < result.size(); i++) {
 						engine.evaluate(result.get(i));
 					}
 
 				} else {
-					if (ast.arg2().isAST()) {
-						engine.evaluate(((IAST) ast.arg2()).map(Functors.append(arg1), 1));
+					if (arg2.isAST()) {
+						engine.evaluate(((IAST) arg2).map(x -> F.unaryAST1(arg1, x), 1));
 					} else {
-						engine.evaluate(ast.arg2());
+						engine.evaluate(arg2);
 					}
 				}
 				return F.Null;

@@ -63,7 +63,6 @@ import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Symbol;
-import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
@@ -1909,31 +1908,27 @@ public final class LinearAlgebra {
 				if (dim == 0) {
 					return F.NIL;
 				}
+				IAST arg1AST = (IAST) arg1;
 				if (ast.isAST2()) {
 					IExpr arg2 = ast.arg2();
 					if (arg2.isInfinity()) {
-						return ((IAST) arg1).map(F.Max, Functors.replaceAll(F.Abs(F.Null), F.Null));
+						return arg1AST.map(F.Max, x -> F.Abs(x));
 					} else {
 						if (arg2.isSymbol() || arg2.isSignedNumber()) {
 							if (arg2.isZero()) {
-								// throw new WrongArgumentType(ast, ast.get(2),
-								// 2, "0 not allowed as second argument!");
 								engine.printMessage("Norm: 0 not allowed as second argument!");
 								return F.NIL;
 							}
 							if (arg2.isSignedNumber() && arg2.lessThan(F.C1).isTrue()) {
-								// throw new WrongArgumentType(ast, ast.get(2),
-								// 2, "Second argument is < 1!");
 								engine.printMessage("Norm: Second argument is < 1!");
 								return F.NIL;
 							}
-							return F.Power(((IAST) arg1).map(F.Plus,
-									Functors.replaceAll(F.Power(F.Abs(F.Null), arg2), F.Null)), arg2.inverse());
+							return F.Power(arg1AST.map(F.Plus, x -> F.Power(F.Abs(x), arg2)), arg2.inverse());
 						}
 					}
 					return F.NIL;
 				}
-				return F.Sqrt(((IAST) arg1).map(F.Plus, Functors.replaceAll(F.Sqr(F.Abs(F.Null)), F.Null)));
+				return F.Sqrt(arg1AST.map(F.Plus, x -> F.Sqr(F.Abs(x))));
 			}
 			if (arg1.isNumber()) {
 				if (ast.isAST2()) {

@@ -1,4 +1,4 @@
-package org.matheclipse.core.generic.interfaces;
+package org.matheclipse.core.interfaces;
 
 import javax.annotation.Nullable;
 

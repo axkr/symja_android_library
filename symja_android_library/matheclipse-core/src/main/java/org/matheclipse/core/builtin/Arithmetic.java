@@ -46,6 +46,7 @@ import static org.matheclipse.core.expression.F.y;
 import static org.matheclipse.core.expression.F.y_;
 
 import java.math.BigInteger;
+import java.util.function.DoubleFunction;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 
@@ -75,7 +76,6 @@ import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.NumberUtil;
-import org.matheclipse.core.generic.interfaces.INumericFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -139,7 +139,7 @@ public final class Arithmetic {
 	 */
 	private final static class Abs extends AbstractTrigArg1 implements INumeric, AbsRules, DoubleUnaryOperator {
 
-		private static final class AbsNumericFunction implements INumericFunction<IExpr> {
+		private static final class AbsNumericFunction implements DoubleFunction<IExpr> {
 			final ISymbol symbol;
 
 			public AbsNumericFunction(ISymbol symbol) {

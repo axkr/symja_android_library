@@ -63,8 +63,6 @@ public final class FunctionDefinitions {
 		Limit.setEvaluator(new org.matheclipse.core.reflection.system.Limit());
 		LinearProgramming.setEvaluator(new org.matheclipse.core.reflection.system.LinearProgramming());
 		LowerCaseQ.setEvaluator(new org.matheclipse.core.reflection.system.LowerCaseQ());
-		MapAll.setEvaluator(new org.matheclipse.core.reflection.system.MapAll());
-		MapAt.setEvaluator(new org.matheclipse.core.reflection.system.MapAt());
 		Max.setEvaluator(new org.matheclipse.core.reflection.system.Max());
 		Min.setEvaluator(new org.matheclipse.core.reflection.system.Min());
 		Mod.setEvaluator(new org.matheclipse.core.reflection.system.Mod());

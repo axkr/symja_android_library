@@ -6,7 +6,6 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.BinaryBindIth1st;
-import org.matheclipse.core.generic.BinaryEval;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -281,7 +280,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 		}
 		if (ast.size() > 3) {
 			// reduce arguments by folding D[fxy, x, y] to D[ D[fxy, x], y] ...
-			return ast.range(2).foldLeft(new BinaryEval(F.D, engine), fx);
+			return ast.range(2).foldLeft((x, y) -> engine.evaluate(F.D(x, y)), fx);
 		}
 
 		if (fx.isList()) {
@@ -303,7 +302,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 				return result;
 			} else if (xList.isAST1() && xList.arg1().isList()) {
 				IAST subList = (IAST) xList.arg1();
-				return subList.args().mapLeft(F.List(), new BinaryEval(F.D, engine), fx);
+				return subList.args().mapLeft(F.List(), (a, b) -> engine.evaluate(F.D(a, b)), fx);
 			} else if (xList.isAST2() && xList.arg2().isInteger()) {
 				if (ast.isEvalFlagOn(IAST.IS_DERIVATIVE_EVALED)) {
 					return F.NIL;

@@ -1067,7 +1067,7 @@ public final class BooleanFunctions {
 					return setTrue ? F.True : F.False;
 				}
 				if (lhsAST.isTimes()) {
-					IAST result = lhsAST.partitionTimes(Predicates.isNumericFunction(), F.C0, F.C1, F.List);
+					IAST result = lhsAST.partitionTimes(x->x.isNumericFunction(), F.C0, F.C1, F.List);
 					if (!result.get(1).isZero()) {
 						if (result.get(1).isNegative()) {
 							useOppositeHeader = !useOppositeHeader;
@@ -1077,7 +1077,7 @@ public final class BooleanFunctions {
 								oppositeHead);
 					}
 				} else if (lhsAST.isPlus()) {
-					IAST result = lhsAST.partitionPlus(Predicates.isNumericFunction(), F.C0, F.C0, F.List);
+					IAST result = lhsAST.partitionPlus(x->x.isNumericFunction(), F.C0, F.C0, F.List);
 					if (!result.get(1).isZero()) {
 						rhs = rhs.subtract(result.get(1));
 						return createComparatorResult(result.get(2), rhs, useOppositeHeader, originalHead,

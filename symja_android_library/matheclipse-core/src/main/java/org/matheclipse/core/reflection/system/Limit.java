@@ -11,7 +11,6 @@ import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -407,9 +406,10 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			return F.C1;
 		}
 		if (base.isTimes() && exponent.isFree(data.getSymbol())) {
-			IAST isFreeResult = ((IAST) base).partitionTimes(Predicates.isFree(data.getSymbol()), F.C1, F.C1, F.List);
+			IAST isFreeResult = ((IAST) base).partitionTimes(x -> x.isFree(data.getSymbol(), true), F.C1, F.C1, F.List);
 			if (!isFreeResult.get(2).isOne()) {
-				return F.Times(F.Power(isFreeResult.get(1), exponent), data.limit(F.Power(isFreeResult.get(2), exponent)));
+				return F.Times(F.Power(isFreeResult.get(1), exponent),
+						data.limit(F.Power(isFreeResult.get(2), exponent)));
 			}
 		}
 		if (powerAST.arg2().isNumericFunction()) {
@@ -511,7 +511,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	}
 
 	private static IExpr timesLimit(final IAST timesAST, LimitData data) {
-		IAST isFreeResult = timesAST.partitionTimes(Predicates.isFree(data.getSymbol()), F.C1, F.C1, F.List);
+		IAST isFreeResult = timesAST.partitionTimes(x -> x.isFree(data.getSymbol(), true), F.C1, F.C1, F.List);
 		if (!isFreeResult.get(1).isOne()) {
 			return F.Times(isFreeResult.get(1), data.limit(isFreeResult.get(2)));
 		}
@@ -571,7 +571,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			arg1.set(1, powerAST.arg1());
 			return F.Times(powerAST.arg2(), data.limit(arg1));
 		} else if (logAST.arg1().isTimes()) {
-			IAST isFreeResult = logAST.arg1().partitionTimes(Predicates.isFree(data.getSymbol()), F.C1, F.C1, F.List);
+			IAST isFreeResult = logAST.arg1().partitionTimes(x -> x.isFree(data.getSymbol(), true), F.C1, F.C1, F.List);
 			if (!isFreeResult.get(1).isOne()) {
 				IAST arg1 = logAST.clone();
 				arg1.set(1, isFreeResult.get(1));

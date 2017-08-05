@@ -29,7 +29,6 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Symbol;
-import org.matheclipse.core.generic.BinaryEval;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
@@ -87,9 +86,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 			}
 			if (holdallAST.size() > 3) {
 				// reduce arguments by folding Integrate[fxy, x, y] to
-				// Integrate[
-				// Integrate[fxy, y], x] ...
-				return holdallAST.range(2).foldRight(new BinaryEval(F.Integrate, engine), arg1);
+				// Integrate[Integrate[fxy, y], x] ...
+				return holdallAST.range(2).foldRight((x, y) -> engine.evaluate(F.Integrate(x, y)), arg1);
 			}
 
 			IExpr arg2 = engine.evaluateNull(holdallAST.arg2());
@@ -1151,8 +1149,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 		ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions4.RULES;
 		ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions5.RULES;
 		ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions6.RULES;
-//		ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions7.RULES;
-//		ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions8.RULES;
+		// ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions7.RULES;
+		// ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions8.RULES;
 		org.matheclipse.core.integrate.rubi45.UtilityFunctions.init();
 		return ast;
 	}

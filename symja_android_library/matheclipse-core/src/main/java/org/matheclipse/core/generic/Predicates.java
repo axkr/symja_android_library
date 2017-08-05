@@ -175,39 +175,39 @@ public class Predicates {
 	 * Check if the evaluation of an unary AST object gives <code>True</code>.
 	 * 
 	 */
-	private static class IsUnaryTrue<E extends IExpr> implements Predicate<E> {
-		protected final EvalEngine fEngine;
-
-		protected final IAST fAST;
-
-		/**
-		 * Define an unary AST with the header <code>head</code>. The
-		 * <code>apply()</code> method evaluates the created AST with the given
-		 * expression and checks if the result equals <code>True</code>.
-		 * 
-		 * @param engine
-		 *            the evaluation engine
-		 * @param head
-		 *            the AST's head expresion
-		 */
-		public IsUnaryTrue(final EvalEngine engine, final IExpr head) {
-			fEngine = engine;
-			fAST = F.unaryAST1(head, null);
-		}
-
-		/**
-		 * Check if the evaluation of an unary AST object gives
-		 * <code>True</code>, by setting the first argument of the AST to
-		 * <code>arg</code>.
-		 * 
-		 */
-		@Override
-		public boolean test(final IExpr arg) {
-			fAST.set(1, arg);
-			return fEngine.evalTrue(fAST);
-		}
-
-	}
+//	private static class IsUnaryTrue<E extends IExpr> implements Predicate<E> {
+//		protected final EvalEngine fEngine;
+//
+//		protected final IAST fAST;
+//
+//		/**
+//		 * Define an unary AST with the header <code>head</code>. The
+//		 * <code>apply()</code> method evaluates the created AST with the given
+//		 * expression and checks if the result equals <code>True</code>.
+//		 * 
+//		 * @param engine
+//		 *            the evaluation engine
+//		 * @param head
+//		 *            the AST's head expresion
+//		 */
+//		public IsUnaryTrue(final EvalEngine engine, final IExpr head) {
+//			fEngine = engine;
+//			fAST = F.unaryAST1(head, null);
+//		}
+//
+//		/**
+//		 * Check if the evaluation of an unary AST object gives
+//		 * <code>True</code>, by setting the first argument of the AST to
+//		 * <code>arg</code>.
+//		 * 
+//		 */
+//		@Override
+//		public boolean test(final IExpr arg) {
+//			fAST.set(1, arg);
+//			return fEngine.evalTrue(fAST);
+//		}
+//
+//	}
 
 	/**
 	 * Returns a predicate that evaluates to {@code true} if the object
@@ -299,14 +299,14 @@ public class Predicates {
 	 * @return a <code>java.util.function.Predicate</code> predicate of one
 	 *         argument.
 	 */
-	public static Predicate<IExpr> isFree(final IExpr expr) {
-		return new Predicate<IExpr>() {
-			@Override
-			public boolean test(IExpr input) {
-				return input.isFree(expr, true);
-			}
-		};
-	}
+//	public static Predicate<IExpr> isFree(final IExpr expr) {
+//		return new Predicate<IExpr>() {
+//			@Override
+//			public boolean test(IExpr input) {
+//				return input.isFree(expr, true);
+//			}
+//		};
+//	}
 
 	/**
 	 * Returns a predicate that evaluates to {@code true} if
@@ -314,14 +314,14 @@ public class Predicates {
 	 * 
 	 * @return
 	 */
-	public static Predicate<IExpr> isNumber() {
-		return new Predicate<IExpr>() {
-			@Override
-			public boolean test(IExpr input) {
-				return input.isNumber();
-			}
-		};
-	}
+//	public static Predicate<IExpr> isNumber() {
+//		return new Predicate<IExpr>() {
+//			@Override
+//			public boolean test(IExpr input) {
+//				return input.isNumber();
+//			}
+//		};
+//	}
 
 	/**
 	 * Returns a predicate that evaluates to {@code true} if
@@ -331,14 +331,14 @@ public class Predicates {
 	 * 
 	 * @return
 	 */
-	public static Predicate<IExpr> isNumeric() {
-		return new Predicate<IExpr>() {
-			@Override
-			public boolean test(IExpr input) {
-				return input.isNumeric();
-			}
-		};
-	}
+//	public static Predicate<IExpr> isNumeric() {
+//		return new Predicate<IExpr>() {
+//			@Override
+//			public boolean test(IExpr input) {
+//				return input.isNumeric();
+//			}
+//		};
+//	}
 
 	/**
 	 * Returns a predicate that evaluates to {@code true} if
@@ -349,14 +349,14 @@ public class Predicates {
 	 * 
 	 * @return
 	 */
-	public static Predicate<IExpr> isNumericFunction() {
-		return new Predicate<IExpr>() {
-			@Override
-			public boolean test(IExpr input) {
-				return input.isNumericFunction();
-			}
-		};
-	}
+//	public static Predicate<IExpr> isNumericFunction() {
+//		return new Predicate<IExpr>() {
+//			@Override
+//			public boolean test(IExpr input) {
+//				return input.isNumericFunction();
+//			}
+//		};
+//	}
 
 	/**
 	 * Returns a predicate that evaluates to {@code true} if the input is an
@@ -364,14 +364,14 @@ public class Predicates {
 	 * 
 	 * @return
 	 */
-	public static Predicate<IExpr> isPattern() {
-		return new Predicate<IExpr>() {
-			@Override
-			public boolean test(IExpr input) {
-				return (input instanceof IPattern);
-			}
-		};
-	}
+//	public static Predicate<IExpr> isPattern() {
+//		return new Predicate<IExpr>() {
+//			@Override
+//			public boolean test(IExpr input) {
+//				return (input instanceof IPattern);
+//			}
+//		};
+//	}
 
 	/**
 	 * Returns a predicate that evaluates to {@code true} if
@@ -379,14 +379,14 @@ public class Predicates {
 	 * 
 	 * @return
 	 */
-	public static Predicate<IExpr> isSignedNumber() {
-		return new Predicate<IExpr>() {
-			@Override
-			public boolean test(IExpr input) {
-				return input.isSignedNumber();
-			}
-		};
-	}
+//	public static Predicate<IExpr> isSignedNumber() {
+//		return new Predicate<IExpr>() {
+//			@Override
+//			public boolean test(IExpr input) {
+//				return input.isSignedNumber();
+//			}
+//		};
+//	}
 
 	/**
 	 * Check if the evaluation of the <code>expr</code> object gives
@@ -406,7 +406,7 @@ public class Predicates {
 				return (Predicate<IExpr>) eval;
 			}
 		}
-		return new IsUnaryTrue<IExpr>(engine, head);
+		return x -> engine.evalTrue(F.unaryAST1(head, x));
 	}
 
 	/**
@@ -420,9 +420,9 @@ public class Predicates {
 	 * @return a <code>java.util.function.Predicate</code> predicate of one
 	 *         argument.
 	 */
-	public static Predicate<IExpr> isTrue(IExpr head) {
-		return new IsUnaryTrue<IExpr>(EvalEngine.get(), head);
-	}
+//	public static Predicate<IExpr> isTrue(IExpr head) {
+//		return new IsUnaryTrue<IExpr>(EvalEngine.get(), head);
+//	}
 
 	/**
 	 *

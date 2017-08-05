@@ -2,12 +2,12 @@ package org.matheclipse.core.expression;
 
 import java.io.IOException;
 import java.io.ObjectStreamException;
+import java.util.function.DoubleFunction;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.eval.interfaces.ISymbolEvaluator;
-import org.matheclipse.core.generic.interfaces.INumericFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
@@ -167,7 +167,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr mapConstantDouble(INumericFunction<IExpr> function) {
+	public IExpr mapConstantDouble(DoubleFunction<IExpr> function) {
 		if (fEvaluator instanceof ISignedNumberConstant) {
 			double value = ((ISignedNumberConstant) fEvaluator).evalReal();
 			if (value < Integer.MAX_VALUE && value > Integer.MIN_VALUE) {

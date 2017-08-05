@@ -472,8 +472,7 @@ public class F {
 	public final static IBuiltInSymbol NestWhile = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nestwhile" : "NestWhile");
 	public final static IBuiltInSymbol NestWhileList = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nestwhilelist" : "NestWhileList",
-			new org.matheclipse.core.builtin.function.NestWhileList());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nestwhilelist" : "NestWhileList");
 	public final static IBuiltInSymbol NotListQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "notlistq" : "NotListQ");
 

@@ -668,7 +668,8 @@ public abstract class AbstractAST implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public final IAST filter(IAST filterAST, IExpr expr) {
-		return filter(filterAST, Predicates.isTrue(expr));
+		EvalEngine engine = EvalEngine.get();
+		return filter(filterAST, x -> engine.evalTrue(F.unaryAST1(expr, x)));
 	}
 
 	/** {@inheritDoc} */
@@ -2522,7 +2523,9 @@ public abstract class AbstractAST implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public IAST mapThread(IAST appendAST, final IAST replacement, int position) {
-		final Function<IExpr, IExpr> function = Functors.replaceArg(replacement, position);
+		EvalEngine engine = EvalEngine.get();
+		final Function<IExpr, IExpr> function = x -> engine.evaluate(replacement.setAtCopy(position, x));
+
 		IExpr temp;
 		for (int i = 1; i < size(); i++) {
 			temp = function.apply(get(i));
@@ -2536,7 +2539,9 @@ public abstract class AbstractAST implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public final IAST mapThread(final IAST replacement, int position) {
-		return map(Functors.replaceArg(replacement, position), 1);
+		EvalEngine engine = EvalEngine.get();
+		final Function<IExpr, IExpr> function = x -> engine.evaluate(replacement.setAtCopy(position, x));
+		return map(function, 1);
 	}
 
 	/**

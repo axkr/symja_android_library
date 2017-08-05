@@ -73,7 +73,7 @@ public class PredicateQ {
 			Predicate<IExpr> pred = null;
 			if ((ast.size() >= 4)) {
 				final IExpr arg3 = engine.evaluate(ast.arg3());
-				pred = Predicates.isTrue(arg3);
+				pred = x -> engine.evalTrue(F.unaryAST1(arg3, x));
 			}
 			int depth = determineDepth(arg1, 0, pred);
 			if (depth >= 0) {

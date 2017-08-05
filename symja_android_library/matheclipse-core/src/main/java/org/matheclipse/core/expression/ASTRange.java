@@ -11,9 +11,9 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.matheclipse.core.generic.interfaces.IUnaryIndexFunction;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IUnaryIndexFunction;
 
 /**
  * Create a range for a given <code>List</code> instance, with the exception of

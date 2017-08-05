@@ -3,6 +3,7 @@ package org.matheclipse.core.interfaces;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.function.DoubleFunction;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
@@ -11,7 +12,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.interfaces.INumericFunction;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
@@ -354,8 +354,8 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @see org.matheclipse.core.reflection.system.Ceiling
 	 * @see org.matheclipse.core.reflection.system.Floor
 	 */
-	default IExpr mapConstantDouble(INumericFunction<IExpr> function) {
-		return F.NIL;
+	default IExpr mapConstantDouble(DoubleFunction<IExpr> function) {
+		return F.NIL;  
 	}
 
 	/**

@@ -1,10 +1,8 @@
-package org.matheclipse.core.generic.interfaces;
+package org.matheclipse.core.interfaces;
 
 import java.util.Iterator;
 
 import org.matheclipse.core.eval.exception.NoEvalException;
-import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * Interface for an iterator with additional tearDown() method, to run the iterator again

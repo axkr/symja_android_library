@@ -31,6 +31,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -507,7 +508,12 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	/** {@inheritDoc} */
 	@Override
 	public final IAST mapThread(IAST appendAST, final IAST replacement, int position) {
-		final Function<IExpr, IExpr> function = Functors.replaceArg(replacement, position);
+//		final Function<IExpr, IExpr> function = Functors.replaceArg(replacement, position);
+		EvalEngine engine=EvalEngine.get();
+		final Function<IExpr, IExpr> function = x -> {
+			IAST a = replacement.setAtCopy(position, x);
+			return engine.evaluate(a);
+		};
 		IExpr temp;
 		for (int i = firstIndex + 1; i < lastIndex; i++) {
 			temp = function.apply(array[i]);

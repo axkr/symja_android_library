@@ -11,7 +11,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.function.NestWhileList;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
@@ -29,9 +28,9 @@ import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
-import org.matheclipse.core.generic.interfaces.IIterator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.visit.ModuleReplaceAll;
@@ -57,6 +56,7 @@ public final class Programming {
 		F.Nest.setEvaluator(new Nest());
 		F.NestList.setEvaluator(new NestList());
 		F.NestWhile.setEvaluator(new NestWhile());
+		F.NestWhileList.setEvaluator(new NestWhileList());
 		F.Part.setEvaluator(new Part());
 		F.Reap.setEvaluator(new Reap());
 		F.Return.setEvaluator(new Return());
@@ -592,7 +592,7 @@ public final class Programming {
 			IExpr arg3 = engine.evaluate(ast.arg3());
 			if (arg3.isInteger()) {
 				final int n = Validate.checkIntType(arg3);
-				return nest(ast.arg2(), n, Functors.append(F.ast(ast.arg1())), engine);
+				return nest(ast.arg2(), n, x -> F.unaryAST1(ast.arg1(), x), engine);
 			}
 			return F.NIL;
 		}
@@ -624,7 +624,8 @@ public final class Programming {
 			IExpr arg3 = engine.evaluate(ast.arg3());
 			if (arg3.isInteger()) {
 				final int n = Validate.checkIntType(arg3);
-				nestList(ast.arg2(), n, Functors.append(F.ast(ast.arg1())), resultList, engine);
+				IExpr arg1 = ast.arg1();
+				nestList(ast.arg2(), n, x -> F.unaryAST1(arg1, x), resultList, engine);
 				return resultList;
 			}
 			return F.NIL;
@@ -652,21 +653,47 @@ public final class Programming {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 4);
 
-			return nestWhile(ast.arg2(), engine.evaluate(ast.arg3()), Functors.append(F.ast(ast.arg1())), engine);
+			return nestWhile(ast.arg2(), engine.evaluate(ast.arg3()), x -> F.unaryAST1(ast.arg1(), x), engine);
 		}
 
 		public static IExpr nestWhile(final IExpr expr, final IExpr test, final Function<IExpr, IExpr> fn,
 				EvalEngine engine) {
 			IExpr temp = expr;
-			Predicate<IExpr> predicate = Predicates.isTrue(test);
-
-			while (predicate.test(temp)) {
+			while (engine.evalTrue(F.unaryAST1(test, temp))) {
 				temp = engine.evaluate(fn.apply(temp));
 			}
 			return temp;
 
 		}
 
+	}
+
+	private static class NestWhileList extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 4);
+
+			IExpr arg1 = ast.arg1();
+			return nestList(ast.arg2(), engine.evaluate(ast.arg3()), x -> F.unaryAST1(arg1, x), List(), engine);
+			// Functors.append(F.ast(ast.arg1())), List(), engine);
+		}
+
+		public static IAST nestList(final IExpr expr, final IExpr test, final Function<IExpr, IExpr> fn,
+				final IAST resultList, EvalEngine engine) {
+			IExpr temp = expr;
+			while (engine.evalTrue(F.unaryAST1(test, temp))) {
+				resultList.append(temp);
+				temp = engine.evaluate(fn.apply(temp));
+			}
+			resultList.append(temp);
+			return resultList;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
 	}
 
 	private final static class Part extends AbstractCoreFunctionEvaluator {
@@ -1105,7 +1132,10 @@ public final class Programming {
 
 			try {
 				rememberModuleVariables(intializerList, varAppend, moduleVariables, engine);
-				IExpr result = F.subst(arg2, Functors.rules(moduleVariables));
+				IExpr result = F.subst(arg2, x -> {
+					IExpr temp = moduleVariables.get(x);
+					return temp != null ? temp : F.NIL;
+				});
 				if (result.isCondition()) {
 					return checkCondition(result.getAt(1), result.getAt(2), engine);
 				} else if (result.isModule()) {

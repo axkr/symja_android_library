@@ -43,14 +43,13 @@ import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.BinaryMap;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
-import org.matheclipse.core.generic.interfaces.IIterator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -1460,7 +1459,7 @@ public final class ListFunctions {
 			return evaluateNestList(ast, engine);
 		}
 
-		public static IExpr evaluateNestList(final IAST ast, EvalEngine engine) {
+		private static IExpr evaluateNestList(final IAST ast, EvalEngine engine) {
 
 			try {
 				IExpr temp = engine.evaluate(ast.arg3());
@@ -1468,7 +1467,7 @@ public final class ListFunctions {
 					final IAST list = (IAST) temp;
 					IExpr arg1 = engine.evaluate(ast.arg1());
 					IExpr arg2 = engine.evaluate(ast.arg2());
-					return list.args().foldLeft(new BinaryMap(arg1), arg2);
+					return list.args().foldLeft((x, y) -> F.binaryAST2(arg1, x, y), arg2);
 				}
 			} catch (final ArithmeticException e) {
 
@@ -1491,7 +1490,7 @@ public final class ListFunctions {
 			return evaluateNestList(ast, List(), engine);
 		}
 
-		public static IExpr evaluateNestList(final IAST ast, final IAST resultList, EvalEngine engine) {
+		private static IExpr evaluateNestList(final IAST ast, final IAST resultList, EvalEngine engine) {
 
 			try {
 				IExpr temp = engine.evaluate(ast.arg3());
@@ -1499,8 +1498,7 @@ public final class ListFunctions {
 					final IAST list = (IAST) temp;
 					IExpr arg1 = engine.evaluate(ast.arg1());
 					IExpr arg2 = engine.evaluate(ast.arg2());
-					foldLeft(arg2, list, 1, list.size(), new BinaryMap(arg1), resultList);
-					return resultList;
+					return foldLeft(arg2, list, 1, list.size(), (x, y) -> F.binaryAST2(arg1, x, y), resultList);
 				}
 			} catch (final ArithmeticException e) {
 
@@ -1726,8 +1724,11 @@ public final class ListFunctions {
 					resultList = F.ast(ast.get(lastIndex));
 				}
 
-				final VisitorLevelSpecification level = new VisitorLevelSpecification(
-						Functors.collect(resultList.args()), ast.arg2(), heads);
+				final VisitorLevelSpecification level = new VisitorLevelSpecification(x -> {
+					resultList.append(x);
+					return F.NIL;
+				}, ast.arg2(), heads);
+				// Functors.collect(resultList.args()), ast.arg2(), heads);
 				arg1.accept(level);
 
 				return resultList;
@@ -2549,10 +2550,10 @@ public final class ListFunctions {
 				IExpr predicateHead = ast.arg2();
 				int allocSize = list.size() > 4 ? list.size() / 4 : 4;
 				if (size == 3) {
-					return list.filter(list.copyHead(allocSize), Predicates.isTrue(predicateHead));
+					return list.filter(list.copyHead(allocSize), x -> engine.evalTrue(F.unaryAST1(predicateHead, x)));
 				} else if ((size == 4) && ast.arg3().isInteger()) {
 					final int resultLimit = Validate.checkIntType(ast, 3);
-					return list.filter(list.copyHead(allocSize), Predicates.isTrue(predicateHead), resultLimit);
+					return list.filter(list.copyHead(allocSize), x -> engine.evalTrue(F.unaryAST1(predicateHead, x)), resultLimit);
 				}
 			}
 			return F.NIL;
@@ -2641,17 +2642,17 @@ public final class ListFunctions {
 				} else {
 					functorList = F.List(ast.arg2());
 				}
-				return splitByFunction(functorList, 1, (IAST) ast.arg1());
+				return splitByFunction(functorList, 1, (IAST) ast.arg1(), engine);
 			}
 			return F.NIL;
 		}
 
-		private IExpr splitByFunction(IAST functorList, int pos, IAST list) {
+		private IExpr splitByFunction(IAST functorList, int pos, IAST list, EvalEngine engine) {
 			if (pos >= functorList.size()) {
 				return F.NIL;
 			}
 			IExpr functorHead = functorList.get(pos);
-			Function<IExpr, IExpr> function = Functors.replaceArg(F.unaryAST1(functorHead, F.Slot1), 1);
+			final Function<IExpr, IExpr> function = x -> engine.evaluate(F.unaryAST1(functorHead, x));
 
 			IAST result = F.List();
 			if (list.size() > 1) {
@@ -2664,7 +2665,7 @@ public final class ListFunctions {
 					current = function.apply(list.get(i));
 					if (current.equals(last)) {
 					} else {
-						IExpr subList = splitByFunction(functorList, pos + 1, temp);
+						IExpr subList = splitByFunction(functorList, pos + 1, temp, engine);
 						if (subList.isPresent()) {
 							result.append(subList);
 						} else {
@@ -2675,7 +2676,7 @@ public final class ListFunctions {
 					temp.append(list.get(i));
 					last = current;
 				}
-				IExpr subList = splitByFunction(functorList, pos + 1, temp);
+				IExpr subList = splitByFunction(functorList, pos + 1, temp, engine);
 				if (subList.isPresent()) {
 					result.append(subList);
 				} else {
@@ -3064,7 +3065,8 @@ public final class ListFunctions {
 			Validate.checkRange(ast, 2, 3);
 
 			VisitorLevelSpecification level = null;
-			Function<IExpr, IExpr> tf = Functors.apply(F.Plus);
+			Function<IExpr, IExpr> tf = x -> x.isAST() ? ((IAST) x).setAtCopy(0, F.Plus) : F.NIL;
+
 			if (ast.isAST2()) {
 				level = new VisitorLevelSpecification(tf, ast.arg2(), false);
 				// increment level because we select only subexpressions
@@ -3217,7 +3219,6 @@ public final class ListFunctions {
 			IExpr elem = expr;
 			resultCollection.append(elem);
 			for (int i = start; i < end; i++) {
-
 				elem = binaryFunction.apply(elem, list.get(i));
 				resultCollection.append(elem);
 			}

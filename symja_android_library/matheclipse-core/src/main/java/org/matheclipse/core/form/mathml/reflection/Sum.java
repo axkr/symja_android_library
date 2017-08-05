@@ -3,8 +3,8 @@ package org.matheclipse.core.form.mathml.reflection;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.form.mathml.AbstractConverter;
-import org.matheclipse.core.generic.interfaces.IIterator;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class Sum extends AbstractConverter {
