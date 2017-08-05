@@ -622,8 +622,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	public IInteger[] nthRootSplit(int n) throws ArithmeticException {
 		IInteger[] result = new IInteger[2];
 		if (sign() == 0) {
-			result[0] = AbstractIntegerSym.valueOf(0);
-			result[1] = AbstractIntegerSym.valueOf(1);
+			result[0] = F.C0;
+			result[1] = F.C1;
 			return result;
 		} else if (sign() < 0) {
 			if (n % 2 == 0) {
@@ -730,27 +730,26 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
 		IAST ast = phi.factorInteger();
 		IInteger d[] = new IInteger[ast.size() - 1];
-		IAST element;
 		for (int i = 1; i < ast.size(); i++) {
-			element = (IAST) ast.get(i);
+			IAST element = (IAST) ast.get(i);
 			IInteger q = (IInteger) element.arg1();
 			d[i - 1] = phi.quotient(q);
 		}
 		int k = 0;
 		IInteger n = this;
-		IInteger m = AbstractIntegerSym.valueOf(1);
+		IInteger m = F.C1;
 
 		IInteger resultArray[] = new IInteger[size];
 		boolean b;
 		while (m.compareTo(n) < 0) {
-			b = m.gcd(n).compareTo(AbstractIntegerSym.valueOf(1)) == 0;
+			b = m.gcd(n).isOne();
 			for (int i = 0; i < d.length; i++) {
-				b = b && m.modPow(d[i], n).compareTo(AbstractIntegerSym.valueOf(1)) > 0;
+				b = b && m.modPow(d[i], n).isGreaterThan(F.C1);
 			}
 			if (b) {
 				resultArray[k++] = m;
 			}
-			m = m.add(AbstractIntegerSym.valueOf(1));
+			m = m.add(F.C1);
 		}
 		if (resultArray[0] == null) {
 			return new IInteger[0];

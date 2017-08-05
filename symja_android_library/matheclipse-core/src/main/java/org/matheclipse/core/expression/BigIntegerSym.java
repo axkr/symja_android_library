@@ -47,15 +47,15 @@ public class BigIntegerSym extends AbstractIntegerSym {
 			return BigInteger.ONE;
 		}
 		IAST ast = AbstractIntegerSym.valueOf(value).factorInteger();
-		IInteger phi = AbstractIntegerSym.valueOf(1);
+		IInteger phi = F.C1;
 		for (int i = 1; i < ast.size(); i++) {
 			IAST element = (IAST) ast.get(i);
 			IInteger q = (IInteger) element.arg1();
 			int c = ((IInteger) element.arg2()).toInt();
 			if (c == 1) {
-				phi = phi.multiply(q.subtract(AbstractIntegerSym.valueOf(1)));
+				phi = phi.multiply(q.subtract(F.C1));
 			} else {
-				phi = phi.multiply(q.subtract(AbstractIntegerSym.valueOf(1)).multiply(q.pow(c - 1)));
+				phi = phi.multiply(q.subtract(F.C1).multiply(q.pow(c - 1)));
 			}
 		}
 		return phi.toBigNumerator();
@@ -113,7 +113,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	@Override
 	public IInteger add(final IInteger that) {
 		return valueOf(fBigIntValue.add(that.toBigNumerator()));
-	}
+	} 
 
 	@Override
 	public IRational add(IRational parm1) {
@@ -610,7 +610,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		default:
 		}
 		return valueOf(fBigIntValue.multiply(BigInteger.valueOf(value)));
-	}
+	} 
 
 	@Override
 	public IRational multiply(IRational parm1) {
@@ -659,7 +659,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 			return sqrt();
 		}
 		if (sign() == 0) {
-			return AbstractIntegerSym.valueOf(0);
+			return F.C0;
 		} else if (sign() < 0) {
 			if (n % 2 == 0) {
 				// even exponent n

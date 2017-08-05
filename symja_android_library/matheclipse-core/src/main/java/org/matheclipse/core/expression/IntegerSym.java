@@ -727,7 +727,7 @@ public class IntegerSym extends AbstractIntegerSym {
 			return sqrt();
 		}
 		if (sign() == 0) {
-			return AbstractIntegerSym.valueOf(0);
+			return F.C0;
 		} else if (sign() < 0) {
 			if (n % 2 == 0) {
 				// even exponent n
@@ -753,8 +753,8 @@ public class IntegerSym extends AbstractIntegerSym {
 	public IInteger[] nthRootSplit(int n) throws ArithmeticException {
 		IInteger[] result = new IInteger[2];
 		if (sign() == 0) {
-			result[0] = AbstractIntegerSym.valueOf(0);
-			result[1] = AbstractIntegerSym.valueOf(1);
+			result[0] = F.C0;
+			result[1] = F.C1;
 			return result;
 		} else if (sign() < 0) {
 			if (n % 2 == 0) {
@@ -926,7 +926,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	public int toInt() throws ArithmeticException {
 		return fIntValue;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public int toIntDefault(int defaultValue) {
