@@ -294,7 +294,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	 */
 	@Override
 	public IExpr exponent(IInteger base) {
-		IntegerSym b = this;
+		IInteger b = this;
 		if (sign() < 0) {
 			b = b.negate();
 		} else if (b.isZero()) {
@@ -700,7 +700,11 @@ public class IntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
-	public IntegerSym negate() {
+	public IInteger negate() {
+		if (fIntValue == Integer.MIN_VALUE) {
+			// gives Integer.MAX_VALUE+1 which is a long number
+			return valueOf(-1L * (long) fIntValue);
+		}
 		return valueOf(-fIntValue);
 	}
 
