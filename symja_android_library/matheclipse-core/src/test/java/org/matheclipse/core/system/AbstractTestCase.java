@@ -2,6 +2,7 @@ package org.matheclipse.core.system;
 
 import java.io.StringWriter;
 
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
@@ -9,7 +10,9 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.TimeConstrainedEvaluator;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.graphics.Show2SVG;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.script.engine.MathScriptEngine;
 
 import junit.framework.TestCase;
@@ -54,7 +57,7 @@ public abstract class AbstractTestCase extends TestCase {
 			assertEquals("", "1");
 		}
 	}
-	
+
 	public void checkNumeric(String evalString, String expectedResult) {
 		check(fNumericScriptEngine, evalString, expectedResult, -1);
 	}
@@ -94,6 +97,30 @@ public abstract class AbstractTestCase extends TestCase {
 		}
 	}
 
+	public void checkSVGGraphics(String evalString, String expectedResult) {
+		checkSVGGraphics(fScriptEngine, evalString, expectedResult);
+	}
+
+	public void checkSVGGraphics(ScriptEngine scriptEngine, String evalString, String expectedResult) {
+		try {
+			if (evalString.length() == 0 && expectedResult.length() == 0) {
+				return;
+			}
+			scriptEngine.getContext().setAttribute("RETURN_OBJECT", Boolean.TRUE, ScriptContext.ENGINE_SCOPE);
+			IExpr result = (IExpr) scriptEngine.eval(evalString);
+			if (result.isAST()) {
+				StringBuilder buf = new StringBuilder(2048);
+				Show2SVG.toSVG((IAST) result, buf);
+				assertEquals(expectedResult, buf.toString());
+			} else {
+				assertEquals("", "1");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", "1");
+		}
+	}
+
 	/**
 	 * The JUnit setup method
 	 */
@@ -103,11 +130,11 @@ public abstract class AbstractTestCase extends TestCase {
 				fScriptEngine = new MathScriptEngine();// fScriptManager.getEngineByExtension("m");
 				fScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
 				fScriptEngine.put("DECIMAL_FORMAT", "0.0####");
-				
+
 				fNumericScriptEngine = new MathScriptEngine();// fScriptManager.getEngineByExtension("m");
 				fNumericScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
-				
-				EvalEngine engine =   EvalEngine.get();
+
+				EvalEngine engine = EvalEngine.get();
 				engine.setRecursionLimit(256);
 				engine.setIterationLimit(500);
 			}

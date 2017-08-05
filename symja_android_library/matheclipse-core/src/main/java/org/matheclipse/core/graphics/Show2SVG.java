@@ -6,6 +6,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.ISignedNumber;
 
 public class Show2SVG {
 
@@ -25,12 +26,11 @@ public class Show2SVG {
 	}
 
 	private static void graphicsToSVG(IAST ast, Appendable buf) throws IOException {
-		double width = 400;
-		double height = 200;
-		buf.append("<svg xmlns:svg=\"http://www.w3.org/2000/svg\" xmlns=\"http://www.w3.org/2000/svg\"\nversion=\"1.0\" "
-		// +
-		// "width=\"400.000000\" height=\"247.213595\" viewBox=\"-17.666667 -14.610939 435.333333 276.435473\">");
-				+ "width=\"400\" height=\"200\">\n");
+		int width = 350;
+		int height = 350;
+		buf.append("<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" "
+				+ "viewBox=\"-1.666667 -1.666667 353.333333 353.333333\"" + " width=\"" + width + "px\" height=\""
+				+ height + "px\">\n");
 
 		try {
 			for (int i = 1; i < ast.size(); i++) {
@@ -61,14 +61,14 @@ public class Show2SVG {
 				for (int i = 0; i < numberOfPoints; i++) {
 					point = pointList.get(i + 1);
 					if (point.isList() && ((IAST) point).isAST2()) {
-						x[i] = ((INum) ((IAST) point).arg1()).doubleValue();
+						x[i] = ((ISignedNumber) ((IAST) point).arg1()).doubleValue();
 						if (x[i] < xMin) {
 							xMin = x[i];
 						}
 						if (x[i] > xMax) {
 							xMax = x[i];
 						}
-						y[i] = ((INum) ((IAST) point).arg2()).doubleValue();
+						y[i] = ((ISignedNumber) ((IAST) point).arg2()).doubleValue();
 						if (y[i] < yMin) {
 							yMin = y[i];
 						}
@@ -77,22 +77,25 @@ public class Show2SVG {
 						}
 					}
 				}
-				double xAxisScalingFactor = width / (double) numberOfPoints;
+				double xAxisScalingFactor = width / (xMax - xMin); // (double) numberOfPoints;
 				double yAxisScalingFactor = height / (yMax - yMin);
 				for (int i = 0; i < numberOfPoints; i++) {
-					buf.append(Double.toString((i) * xAxisScalingFactor));
-					buf.append(" ");
+					// buf.append(Double.toString((i) * xAxisScalingFactor));
+					buf.append(Double.toString(((x[i] - xMin) * xAxisScalingFactor)));
+					buf.append(",");
 					buf.append(Double.toString(height - ((y[i] - yMin) * yAxisScalingFactor)));
-					if (i < numberOfPoints) {
-						buf.append(", ");
+					if (i < numberOfPoints-1) {
+						buf.append(" ");
 					}
 				}
 
 			}
 		} catch (RuntimeException ex) {
 			// catch cast exceptions for example
+			ex.printStackTrace();
 		} finally {
-			buf.append("\" style=\"stroke: rgb(24.720000%, 24.000000%, 60.000000%); stroke-opacity: 1; stroke-width: 0.666667px; fill: none\" />");
+			buf.append(
+					"\" \n          style=\"stroke: rgb(0.000000%, 0.000000%, 0.000000%); stroke-opacity: 1; stroke-width: 0.666667px; fill: none\" />");
 		}
 	}
 
