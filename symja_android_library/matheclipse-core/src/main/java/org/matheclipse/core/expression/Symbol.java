@@ -245,7 +245,9 @@ public class Symbol implements ISymbol, Serializable {
 				return false;
 			}
 			if (fSymbolName.equals(symbol.fSymbolName)) {
-				return fContext.equals(symbol.fContext);
+				// #172
+				// return fContext.equals(symbol.fContext);
+				return true;
 			}
 		}
 		return false;
