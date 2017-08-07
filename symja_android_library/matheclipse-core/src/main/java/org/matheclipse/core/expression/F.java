@@ -823,6 +823,8 @@ public class F {
 	public final static IBuiltInSymbol Gather = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "gather" : "Gather");
 	public final static IBuiltInSymbol GCD = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "gcd" : "GCD");
+	public final static IBuiltInSymbol GegenbauerC = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "gegenbauerc" : "GegenbauerC");
 	public final static IBuiltInSymbol GeometricMean = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "geometricmean" : "GeometricMean");
 	public final static IBuiltInSymbol Greater = initFinalSymbol(
@@ -3769,14 +3771,9 @@ public class F {
 		return binaryAST2(GCD, a0, a1);
 	}
 
-	/**
-	 * Get the namespace
-	 * 
-	 * @return
-	 */
-	// final public static Namespace getNamespace() {
-	// return SystemNamespace.DEFAULT;
-	// }
+	public static IAST GegenbauerC(final IExpr a0, final IExpr a1) {
+		return binaryAST2(GegenbauerC, a0, a1);
+	}
 
 	public static IAST Graphics() {
 
@@ -4268,6 +4265,10 @@ public class F {
 
 	public static IAST KroneckerDelta(final IExpr a0) {
 		return unaryAST1(KroneckerDelta, a0);
+	}
+	
+	public static IAST KroneckerDelta(final IExpr a0, final IExpr a1) {
+		return binaryAST2(KroneckerDelta, a0, a1);
 	}
 
 	public static IAST LaplaceTransform(final IExpr a0, final IExpr a1, final IExpr a2) {

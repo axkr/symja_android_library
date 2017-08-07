@@ -46,7 +46,6 @@ import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
-import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.PolynomialsUtils;
 import org.matheclipse.core.reflection.system.rules.LegendrePRules;
@@ -60,6 +59,7 @@ public class SpecialFunctions {
 		F.ChebyshevU.setEvaluator(new ChebyshevU());
 		F.Erf.setEvaluator(new Erf());
 		F.Erfc.setEvaluator(new Erfc());
+		F.GegenbauerC.setEvaluator(new GegenbauerC());
 		F.HermiteH.setEvaluator(new HermiteH());
 		F.InverseErf.setEvaluator(new InverseErf());
 		F.InverseErfc.setEvaluator(new InverseErfc());
@@ -272,14 +272,94 @@ public class SpecialFunctions {
 		}
 	}
 
+	private final static class GegenbauerC extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			IExpr n = ast.arg1();
+			IExpr z = ast.arg2();
+
+			int nInt = n.toIntDefault(Integer.MIN_VALUE);
+			if (nInt > Integer.MIN_VALUE) {
+				if (nInt == 0) {
+					return F.CComplexInfinity;
+				}
+				if (nInt == 1) {
+					// 2*z
+					return F.Times(F.C2, z);
+				}
+				if (nInt == 2) {
+					// 2*z^2 - 1
+					return F.Plus(F.CN1, F.Times(F.C2, F.Sqr(z)));
+				}
+				if (nInt > 2) {
+					// KroneckerDelta(n,0)/n + (2^n/n)*z^n + Sum(((-1)^k*(n - k - 1)!*(2 z)^(n - 2 k))/(k! * (n -
+					// 2*k)!), {k, 1, Floor(n/2)})
+					return Plus(
+							Times(Power(C2,
+									n),
+									Power(n,
+											-1),
+									Power(z, n)),
+							Times(Power(n, -1), F.KroneckerDelta(F.C0, n)),
+							Sum(Times(Power(CN1, k), Power(Times(C2, z), Plus(Times(F.CN2, k), n)),
+									Power(Times(Factorial(k), Factorial(Plus(Times(F.CN2, k), n))), -1),
+									Factorial(Plus(CN1, Negate(k), n))), List(k, C1, F.Floor(Times(C1D2, n)))));
+				}
+			}
+
+			int zInt = z.toIntDefault(Integer.MIN_VALUE);
+			if (zInt > Integer.MIN_VALUE) {
+				if (zInt == 0) {
+					// 2 * (1/v) * Cos(1/2*Pi*v)
+					return F.Times(F.C2, F.pow(n, F.CN1), F.Cos(F.Times(C1D2, F.Pi, n)));
+				}
+				if (zInt == 1) {
+					// 2 / v
+					return F.Divide(F.C2, n);
+				}
+				if (zInt == -1) {
+					// (2/v)*Cos(Pi*v)
+					return F.Times(F.C2, F.pow(n, F.CN1), F.Cos(F.Times(F.Pi, n)));
+				}
+			}
+
+			if (n.equals(F.C1D2)) {
+				// 4*Sqrt((1+z)/2)
+				return F.Times(F.C4, F.Sqrt(F.Times(F.C1D2, F.Plus(F.C1, z))));
+			}
+			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(n);
+			if (negExpr.isPresent()) {
+				return F.GegenbauerC(negExpr, z).negate();
+			}
+			if (n.isInteger() && n.isPositive()) {
+				negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
+				if (negExpr.isPresent()) {
+					return F.Times(F.Power(F.CN1, n), F.GegenbauerC(n, negExpr));
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
 	private final static class HermiteH extends AbstractFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
-			int degree = Validate.checkIntType(ast.arg1());
 
-			return PolynomialsUtils.createHermitePolynomial(degree, ast.arg2());
+			int degree = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+			if (degree > Integer.MIN_VALUE) {
+				return PolynomialsUtils.createHermitePolynomial(degree, ast.arg2());
+			}
+			return F.NIL;
 		}
 
 	}
@@ -401,9 +481,11 @@ public class SpecialFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
-			int degree = Validate.checkIntType(ast.arg1());
-
-			return PolynomialsUtils.createLaguerrePolynomial(degree, ast.arg2());
+			int degree = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+			if (degree > Integer.MIN_VALUE) {
+				return PolynomialsUtils.createLaguerrePolynomial(degree, ast.arg2());
+			}
+			return F.NIL;
 		}
 
 	}
@@ -414,8 +496,11 @@ public class SpecialFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
 
-			int degree = Validate.checkIntType(ast.arg1());
-			return PolynomialsUtils.createLegendrePolynomial(degree, ast.arg2());
+			int degree = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+			if (degree > Integer.MIN_VALUE) {
+				return PolynomialsUtils.createLegendrePolynomial(degree, ast.arg2());
+			}
+			return F.NIL;
 		}
 
 		@Override

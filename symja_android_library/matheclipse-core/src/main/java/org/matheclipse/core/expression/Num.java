@@ -19,8 +19,8 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 /**
- * <code>INum</code> implementation which wraps a <code>double</code> value to
- * represent a numeric floating-point number.
+ * <code>INum</code> implementation which wraps a <code>double</code> value to represent a numeric floating-point
+ * number.
  */
 public class Num implements INum {
 	/**
@@ -141,9 +141,8 @@ public class Num implements INum {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns
-	 * a negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
+	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -210,7 +209,7 @@ public class Num implements INum {
 	public IExpr inc() {
 		return add(F.CD1);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public Num abs() {
@@ -235,13 +234,13 @@ public class Num implements INum {
 
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
-		if (fDouble==Double.POSITIVE_INFINITY){
+		if (fDouble == Double.POSITIVE_INFINITY) {
 			return F.CInfinity;
 		}
-		if (fDouble==Double.NEGATIVE_INFINITY){
+		if (fDouble == Double.NEGATIVE_INFINITY) {
 			return F.CNInfinity;
 		}
-		if (Double.isNaN(fDouble)){
+		if (Double.isNaN(fDouble)) {
 			return F.Indeterminate;
 		}
 		if (engine.isNumericMode() && engine.isApfloat()) {
@@ -259,7 +258,7 @@ public class Num implements INum {
 	public INumber evalNumber() {
 		return this;
 	}
-	
+
 	public double exp() {
 		return Math.exp(fDouble);
 	}
@@ -540,9 +539,7 @@ public class Num implements INum {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * org.matheclipse.parser.interfaces.IDouble#pow(org.matheclipse.parser.
-	 * interfaces .IDouble)
+	 * @see org.matheclipse.parser.interfaces.IDouble#pow(org.matheclipse.parser. interfaces .IDouble)
 	 */
 	@Override
 	public INum pow(final INum val) {
@@ -553,7 +550,7 @@ public class Num implements INum {
 	public long precision() throws ApfloatRuntimeException {
 		return 15L;
 	}
-	
+
 	@Override
 	public IInteger round() {
 		return F.integer(NumberUtil.toLong(Math.rint(fDouble)));
@@ -608,6 +605,16 @@ public class Num implements INum {
 	@Override
 	public int toInt() throws ArithmeticException {
 		return NumberUtil.toInt(fDouble);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public int toIntDefault(int defaultValue) {
+		try {
+			return NumberUtil.toInt(fDouble);
+		} catch (ArithmeticException ae) {
+			return defaultValue;
+		}
 	}
 
 	/**

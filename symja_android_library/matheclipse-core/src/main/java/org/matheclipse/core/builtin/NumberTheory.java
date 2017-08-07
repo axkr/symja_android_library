@@ -1448,9 +1448,16 @@ public final class NumberTheory {
 					arg1 = temp;
 					for (int i = 2; i < size; i++) {
 						IExpr expr = ast.get(i);
-						temp = expr.evalNumber();
-						if (temp != null && temp.equals(arg1)) {
+						if (expr.equals(arg1)) {
 							continue;
+						}
+						temp = expr.evalNumber();
+						if (temp == null) {
+							return F.NIL;
+						} else {
+							if (temp.equals(arg1)) {
+								continue;
+							}
 						}
 						return F.C0;
 					}

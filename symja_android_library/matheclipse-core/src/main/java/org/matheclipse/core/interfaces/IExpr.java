@@ -1081,7 +1081,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isEqual() {
 		return false;
 	}
-	
+
 	/**
 	 * Test if this expression is an exact number. I.e. an instance of type <code>IRational</code> or
 	 * <code>IComplex</code>.
@@ -2785,6 +2785,19 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default double[][] toDoubleMatrix() {
 		return null;
+	}
+
+	/**
+	 * Converts this number to an <code>int</code> value; unlike {@link #intValue} this method returns
+	 * <code>defaultValue</code> if the value of this integer isn't in the range <code>Integer.MIN_VALUE</code> to
+	 * <code>Integer.MAX_VALUE</code> or the expression is not convertible to the int range.
+	 * 
+	 * @param defaultValue
+	 *            the default value, if this integer is not in the <code>int</code> range
+	 * @return the numeric value represented by this integer after conversion to type <code>int</code>.
+	 */
+	default int toIntDefault(int defaultValue) {
+		return defaultValue;
 	}
 
 	/**

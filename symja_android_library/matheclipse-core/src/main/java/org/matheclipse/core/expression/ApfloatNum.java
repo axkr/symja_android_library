@@ -23,8 +23,8 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 /**
- * <code>INum</code> implementation which wraps a <code>Apfloat</code> value to
- * represent a numeric floating-point number.
+ * <code>INum</code> implementation which wraps a <code>Apfloat</code> value to represent a numeric floating-point
+ * number.
  */
 public class ApfloatNum implements INum {
 
@@ -133,17 +133,17 @@ public class ApfloatNum implements INum {
 		// }
 		return F.NIL;
 	}
-	
+
 	@Override
 	public ISignedNumber evalSignedNumber() {
 		return this;
 	}
-	
+
 	@Override
 	public INumber evalNumber() {
 		return this;
 	}
-	
+
 	@Override
 	public INum add(final INum val) {
 		return valueOf(fApfloat.add(((ApfloatNum) val).fApfloat));
@@ -187,7 +187,7 @@ public class ApfloatNum implements INum {
 	public IExpr inc() {
 		return add(F.CD1);
 	}
-	
+
 	@Override
 	public IExpr plus(final IExpr that) {
 		if (that instanceof ApfloatNum) {
@@ -275,6 +275,16 @@ public class ApfloatNum implements INum {
 		int i = fApfloat.intValue();
 		if (i == Integer.MAX_VALUE || i == Integer.MIN_VALUE) {
 			throw new ArithmeticException("ApfloatNum:toInt: number out of range");
+		}
+		return i;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public int toIntDefault(int defaultValue) {
+		int i = fApfloat.intValue();
+		if (i == Integer.MAX_VALUE || i == Integer.MIN_VALUE) {
+			return defaultValue;
 		}
 		return i;
 	}
@@ -441,9 +451,8 @@ public class ApfloatNum implements INum {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns
-	 * a negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
+	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {

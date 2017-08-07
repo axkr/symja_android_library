@@ -2442,6 +2442,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Gather(Range(0, 3, 1/3), Floor(#1) == Floor(#2) &)", "{{0,1/3,2/3},{1,4/3,5/3},{2,7/3,8/3},{3}}");
 	}
 
+	public void testGegenbauerC() {
+		check("GegenbauerC(5,z)", "2*z-8*z^3+32/5*z^5");
+		check("GegenbauerC(1/2,z)", "4*Sqrt(1/2)*Sqrt(1+z)");
+		check("GegenbauerC(-1/2,z)", "-4*Sqrt(1/2)*Sqrt(1+z)");
+		check("GegenbauerC(v,0)", "(2*Cos(1/2*Pi*v))/v");
+		check("GegenbauerC(v,1)", "2/v");
+		check("GegenbauerC(v,-1)", "(2*Cos(Pi*v))/v");
+		check("GegenbauerC(v,i)", "GegenbauerC(v,i)");
+
+		check("GegenbauerC(0,z)", "ComplexInfinity");
+		check("GegenbauerC(1,z)", "2*z");
+		check("GegenbauerC(2,z)", "-1+2*z^2");
+		check("GegenbauerC(-v,z)", "-GegenbauerC(v,z)");
+		check("GegenbauerC(10,-z)", "-1/5+10*z^2-80*z^4+224*z^6-256*z^8+512/5*z^10");
+		check("GegenbauerC(11,-z)", "2*z-40*z^3+224*z^5-512*z^7+512*z^9-2048/11*z^11");
+	}
+
 	public void testGCD() {
 		check("GCD()", "0");
 		check("GCD(10)", "10");
@@ -2577,6 +2594,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHermiteH() {
+		check("HermiteH(i, x)", "HermiteH(i,x)");
 		check("HermiteH(8, x)", "1680-13440*x^2+13440*x^4-3584*x^6+256*x^8");
 		check("HermiteH(3, 1 + I)", "-28+I*4");
 		// TODO add non integer arg implementation
@@ -2927,6 +2945,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{JacobiSymbol(-3,1),JacobiSymbol(-3,3),JacobiSymbol(-3,5),JacobiSymbol(-3,7)}");
 	}
 
+	public void testJavaForm() {
+	}
+
 	public void testJoin() {
 		check("Join({a, b}, {c, d, e})", "{a,b,c,d,e}");
 		check("Join({{a, b}, {c, d}}, {{1, 2}, {3, 4}})", "{{a,b},{c,d},{1,2},{3,4}}");
@@ -2942,6 +2963,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testKroneckerDelta() {
+		check("KroneckerDelta(n,0)", "KroneckerDelta(0,n)");
 		check("KroneckerDelta(2 - I, 2. - I)", "1");
 
 		check("KroneckerDelta(0)", "1");
