@@ -155,14 +155,16 @@ public class Show2SVG {
 	}
 
 	private static void graphics3dToSVG(IAST ast, Appendable buf) throws IOException {
+		EvalEngine engine = EvalEngine.get();
+		IAST numericAST = (IAST) engine.evalN(ast);
 		int width = 400;
 		int height = 200;
 		Dimensions2D dim = new Dimensions2D(width, height);
 		buf.append("<graphics3d data=\"");
 		try {
-			for (int i = 1; i < ast.size(); i++) {
-				if (ast.get(i).isASTSizeGE(F.Line, 2)) {
-					lineToSVG(ast.getAST(i), buf, dim);
+			for (int i = 1; i < numericAST.size(); i++) {
+				if (numericAST.get(i).isASTSizeGE(F.Line, 2)) {
+					lineToSVG(numericAST.getAST(i), buf, dim);
 				}
 			}
 		} finally {
