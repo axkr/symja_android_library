@@ -91,7 +91,7 @@ public class Plot extends AbstractEvaluator {
 					}
 					final IExpr options[] = { Rule(F.PlotRange, F.Automatic), Rule(F.AxesStyle, F.Automatic),
 							Rule(F.AxesOrigin, List(F.C0, F.C0)), Rule(F.Axes, F.True), Rule(F.Background, F.White) };
-					graphics.append(F.ast(options, F.List));
+					graphics.appendAll(F.ast(options, F.List), 1, options.length);
 					return Show(graphics);
 				}
 			} catch (RuntimeException rex) {
@@ -110,21 +110,18 @@ public class Plot extends AbstractEvaluator {
 	 * @param xMax
 	 *            the maximum x-range value
 	 * @param yMin
-	 *            if <code>yMin != 0 && yMax != 0</code> filter only results
-	 *            which are in the y-range and set yMin or yMax as plot
-	 *            result-range.
+	 *            if <code>yMin != 0 && yMax != 0</code> filter only results which are in the y-range and set yMin or
+	 *            yMax as plot result-range.
 	 * @param yMax
-	 *            if <code>yMin != 0 && yMax != 0</code> filter only results
-	 *            which are in the y-range and set yMin or yMax as plot
-	 *            result-range.
+	 *            if <code>yMin != 0 && yMax != 0</code> filter only results which are in the y-range and set yMin or
+	 *            yMax as plot result-range.
 	 * @param function
 	 *            the function which should be plotted
 	 * @param xVar
 	 *            the variable name
 	 * @param engine
 	 *            the evaluation engine
-	 * @return <code>F.NIL</code> is no conversion of the data into an
-	 *         <code>IExpr</code> was possible
+	 * @return <code>F.NIL</code> is no conversion of the data into an <code>IExpr</code> was possible
 	 */
 	public IExpr plotLine(final double xMin, final double xMax, final double yMin, final double yMax,
 			final IExpr function, final ISymbol xVar, final EvalEngine engine) {
