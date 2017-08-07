@@ -101,7 +101,7 @@ public class AST2Expr {
 			"OddQ", "Operate", "Optional", "Options", "Or", "Order", "OrderedQ", "Out", "Outer", "Package", "PadLeft",
 			"PadRight", "ParametricPlot", "Part", "Partition", "PartitionsP", "PartitionsQ", "PerfectNumber",
 			"PerfectNumberQ", "Pattern", "PatternTest", "PDF", "Permutations", "Piecewise", "Plot", "PlotRange",
-			"Plot3D", "Plus", "Pochhammer", "PoissonDistribution", "PolyGamma", "Polygon", "PolyLog",
+			"Plot3D", "Plus", "Pochhammer", "Point", "PoissonDistribution", "PolyGamma", "Polygon", "PolyLog",
 			"PolynomialExtendedGCD", "PolynomialGCD", "PolynomialLCM", "PolynomialQ", "PolynomialQuotient",
 			"PolynomialQuotientRemainder", "PolynomialRemainder", "Position", "Positive", "PossibleZeroQ", "Power",
 			"PowerExpand", "PowerMod", "Precision", "PreDecrement", "PreIncrement", "Prepend", "PrependTo", "Prime",

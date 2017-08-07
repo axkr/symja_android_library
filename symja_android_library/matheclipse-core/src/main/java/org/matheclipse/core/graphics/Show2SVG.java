@@ -6,6 +6,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
@@ -33,9 +34,9 @@ public class Show2SVG {
 			this.width = width;
 			this.height = height;
 			this.xMin = Double.MAX_VALUE;
-			this.xMax = Double.MIN_VALUE;
+			this.xMax = -Double.MAX_VALUE;
 			this.yMin = Double.MAX_VALUE;
-			this.yMax = Double.MIN_VALUE;
+			this.yMax = -Double.MAX_VALUE;
 			this.plotRange = false;
 			this.axes = false;
 		}
@@ -48,6 +49,22 @@ public class Show2SVG {
 			buf.append("%, ");
 			buf.append(Float.toString(rgb[2] * 100));
 			buf.append("%");
+		}
+
+		public double getXScale() {
+			double diff = xMax - xMin;
+			if (F.isZero(diff)) {
+				return 0.0;
+			}
+			return width / diff;
+		}
+
+		public double getYScale() {
+			double diff = yMax - yMin;
+			if (F.isZero(diff)) {
+				return 0.0;
+			}
+			return height / (yMax - yMin);
 		}
 
 		public boolean isAxes() {
@@ -105,9 +122,37 @@ public class Show2SVG {
 			plotRange = true;
 		}
 	}
-	
+
 	private static final DecimalFormatSymbols US_SYNBOLS = new DecimalFormatSymbols(Locale.US);
 	private static final DecimalFormat FORMATTER = new DecimalFormat("0.0####", US_SYNBOLS);
+
+	private static void elementDimension(IAST ast, Dimensions2D dim) throws IOException {
+		for (int i = 1; i < ast.size(); i++) {
+			if (ast.get(i).isSymbol()) {
+				//
+			} else if (ast.get(i).isASTSizeGE(F.Line, 2)) {
+				lineDimension(ast.getAST(i), dim);
+			} else if (ast.get(i).isASTSizeGE(F.Point, 2)) {
+				pointDimension(ast.getAST(i), dim);
+			} else if (ast.get(i).isASTSizeGE(F.Rectangle, 1)) {
+				rectangleDimension(ast.getAST(i), dim);
+			}
+		}
+	}
+
+	private static void elementToSVG(IAST ast, Appendable buf, Dimensions2D dim) throws IOException {
+		for (int i = 1; i < ast.size(); i++) {
+			if (ast.get(i).isSymbol()) {
+				dim.setColorRGB(ast.get(i).toString());
+			} else if (ast.get(i).isASTSizeGE(F.Line, 2)) {
+				lineToSVG(ast.getAST(i), buf, dim);
+			} else if (ast.get(i).isASTSizeGE(F.Point, 2)) {
+				pointToSVG(ast.getAST(i), buf, dim);
+			} else if (ast.get(i).isASTSizeGE(F.Rectangle, 2)) {
+				rectangleToSVG(ast.getAST(i), buf, dim);
+			}
+		}
+	}
 
 	private static void graphics3dToSVG(IAST ast, Appendable buf) throws IOException {
 		int width = 400;
@@ -127,9 +172,10 @@ public class Show2SVG {
 
 	private static void graphicsToSVG(IAST ast, Appendable buf) throws IOException {
 		EvalEngine engine = EvalEngine.get();
+		IAST numericAST = (IAST) engine.evalN(ast);
 		Dimensions2D dim = new Dimensions2D(350, 350);
-		if (ast.size() > 2) {
-			final Options options = new Options(ast.topHead(), ast, 2, engine);
+		if (numericAST.size() > 2) {
+			final Options options = new Options(numericAST.topHead(), numericAST, 2, engine);
 			IExpr option = options.getOption("PlotRange");
 			if (option.isListOfLists() && ((IAST) option).size() == 3) {
 				IAST list = (IAST) option;
@@ -143,22 +189,23 @@ public class Show2SVG {
 
 		int width = dim.width;
 		int height = dim.height;
-		if (ast.arg1().isList()) {
-			IAST list = (IAST) ast.arg1();
+		IExpr arg1 = numericAST.arg1();
+		if (arg1.isList()) {
+			IAST list = (IAST) arg1;
 			elementDimension(list, dim);
 		} else {
-			elementDimension(ast, dim);
+			elementDimension(numericAST, dim);
 		}
 		buf.append("<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" "
 				+ "viewBox=\"-1.666667 -1.666667 353.333333 353.333333\"" + " width=\"" + width + "px\" height=\""
 				+ height + "px\">\n");
 
 		try {
-			if (ast.arg1().isList()) {
-				IAST list = (IAST) ast.arg1();
+			if (arg1.isList()) {
+				IAST list = (IAST) arg1;
 				elementToSVG(list, buf, dim);
 			} else {
-				elementToSVG(ast, buf, dim);
+				elementToSVG(numericAST, buf, dim);
 			}
 			if (dim.isAxes()) {
 				double xScale = width / (dim.xMax - dim.xMin);
@@ -200,30 +247,6 @@ public class Show2SVG {
 		}
 	}
 
-	private static void elementToSVG(IAST ast, Appendable buf, Dimensions2D dim) throws IOException {
-		for (int i = 1; i < ast.size(); i++) {
-			if (ast.get(i).isSymbol()) {
-				dim.setColorRGB(ast.get(i).toString());
-			} else if (ast.get(i).isASTSizeGE(F.Line, 2)) {
-				lineToSVG(ast.getAST(i), buf, dim);
-			} else if (ast.get(i).isASTSizeGE(F.Rectangle, 1)) {
-				rectangleToSVG(ast.getAST(i), buf, dim);
-			}
-		}
-	}
-
-	private static void elementDimension(IAST ast, Dimensions2D dim) throws IOException {
-		for (int i = 1; i < ast.size(); i++) {
-			if (ast.get(i).isSymbol()) {
-				//
-			} else if (ast.get(i).isASTSizeGE(F.Line, 2)) {
-				lineDimension(ast.getAST(i), dim);
-			} else if (ast.get(i).isASTSizeGE(F.Rectangle, 1)) {
-				rectangleDimension(ast.getAST(i), dim);
-			}
-		}
-	}
-
 	private static void lineDimension(IAST ast, Dimensions2D dim) {
 		if (ast.arg1().isList()) {
 			IAST pointList = (IAST) ast.arg1();
@@ -257,31 +280,6 @@ public class Show2SVG {
 				}
 			}
 			dim.minMax(xMin, xMax, yMin, yMax);
-		}
-	}
-
-	private static void rectangleDimension(IAST ast, Dimensions2D dim) throws IOException {
-		if (ast.size() == 2) {
-			if (ast.arg1().isAST(F.List, 3)) {
-				IAST list1 = (IAST) ast.arg1();
-
-				double x1 = ((ISignedNumber) ((IAST) list1).arg1()).doubleValue();
-				double y1 = ((ISignedNumber) ((IAST) list1).arg2()).doubleValue();
-				double x2 = x1 + 1.0;
-				double y2 = y1 + 1.0;
-
-				dim.minMax(x1, x2, y1, y2);
-			}
-		} else if (ast.size() == 3 && ast.arg1().isAST(F.List, 3) && ast.arg2().isAST(F.List, 3)) {
-			IAST list1 = (IAST) ast.arg1();
-			IAST list2 = (IAST) ast.arg2();
-
-			double x1 = ((ISignedNumber) ((IAST) list1).arg1()).doubleValue();
-			double y1 = ((ISignedNumber) ((IAST) list1).arg2()).doubleValue();
-			double x2 = ((ISignedNumber) ((IAST) list2).arg1()).doubleValue();
-			double y2 = ((ISignedNumber) ((IAST) list2).arg2()).doubleValue();
-
-			dim.minMax(x1, x2, y1, y2);
 		}
 	}
 
@@ -327,6 +325,108 @@ public class Show2SVG {
 		} finally {
 			buf.append(
 					"\" \n          style=\"stroke: rgb(0.000000%, 0.000000%, 0.000000%); stroke-opacity: 1; stroke-width: 0.666667px; fill: none\" />");
+		}
+	}
+
+	private static void pointDimension(IAST ast, Dimensions2D dim) throws IOException {
+		if (ast.size() == 2) {
+			IExpr arg1 = ast.arg1();
+			if (arg1.isListOfLists()) {
+				IAST list = (IAST) arg1;
+				for (int i = 1; i < list.size(); i++) {
+					if (list.get(i).isAST(F.List, 3)) {
+						IAST point = (IAST) list.get(i);
+						singlePointDimensions(point, dim);
+					}
+				}
+			} else if (arg1.isAST(F.List, 3)) {
+				IAST point = (IAST) ast.arg1();
+
+				singlePointDimensions(point, dim);
+			}
+		}
+	}
+
+	private static void singlePointDimensions(IAST point, Dimensions2D dim) {
+		double x1 = ((ISignedNumber) point.arg1()).doubleValue();
+		double y1 = ((ISignedNumber) point.arg2()).doubleValue();
+
+		dim.minMax(x1 - Config.DOUBLE_EPSILON, x1 + Config.DOUBLE_EPSILON, y1 - Config.DOUBLE_EPSILON,
+				y1 + Config.DOUBLE_EPSILON);
+	}
+
+	private static void pointToSVG(IAST ast, Appendable buf, Dimensions2D dim) throws IOException {
+
+		if (ast.size() == 2) {
+			IExpr arg1 = ast.arg1();
+			if (arg1.isListOfLists()) {
+				IAST list = (IAST) arg1;
+				for (int i = 1; i < list.size(); i++) {
+					if (list.get(i).isAST(F.List, 3)) {
+						IAST point = (IAST) list.get(i);
+						singlePointToSVG(point, buf, dim);
+					}
+				}
+			} else if (arg1.isAST(F.List, 3)) {
+				IAST point = (IAST) arg1;
+				singlePointToSVG(point, buf, dim);
+			}
+		}
+
+	}
+
+	private static void singlePointToSVG(IAST point, Appendable buf, Dimensions2D dim) throws IOException {
+		try {
+			double xMin = dim.xMin;
+			double yMax = dim.yMax;
+			buf.append("<circle ");
+			double xAxisScalingFactor = dim.getXScale();
+			double yAxisScalingFactor = dim.getYScale();
+
+			double x1 = ((ISignedNumber) point.arg1()).doubleValue();
+			double y1 = ((ISignedNumber) point.arg2()).doubleValue();
+			double r = 1.0;
+			// x="0.000000" y="0.000000" width="350.000000" height="350.000000"
+			buf.append("cx=\"");
+			buf.append(FORMATTER.format((x1 - xMin) * xAxisScalingFactor));
+			buf.append("\" cy=\"");
+			buf.append(FORMATTER.format((yMax - y1) * yAxisScalingFactor));
+			buf.append("\" r=\"");
+			buf.append(FORMATTER.format(r));
+		} catch (RuntimeException ex) {
+			// catch cast exceptions for example
+			ex.printStackTrace();
+		} finally {
+			buf.append("\" \n      style=\"stroke: none; stroke-width: 0.000000px; ");
+			buf.append("fill: rgb(");
+			dim.getColorRGB(buf);
+			buf.append("); ");
+			buf.append("fill-opacity: 1\" />\n");
+		}
+	}
+
+	private static void rectangleDimension(IAST ast, Dimensions2D dim) throws IOException {
+		if (ast.size() == 2) {
+			if (ast.arg1().isAST(F.List, 3)) {
+				IAST list1 = (IAST) ast.arg1();
+
+				double x1 = ((ISignedNumber) ((IAST) list1).arg1()).doubleValue();
+				double y1 = ((ISignedNumber) ((IAST) list1).arg2()).doubleValue();
+				double x2 = x1 + 1.0;
+				double y2 = y1 + 1.0;
+
+				dim.minMax(x1, x2, y1, y2);
+			}
+		} else if (ast.size() == 3 && ast.arg1().isAST(F.List, 3) && ast.arg2().isAST(F.List, 3)) {
+			IAST list1 = (IAST) ast.arg1();
+			IAST list2 = (IAST) ast.arg2();
+
+			double x1 = ((ISignedNumber) ((IAST) list1).arg1()).doubleValue();
+			double y1 = ((ISignedNumber) ((IAST) list1).arg2()).doubleValue();
+			double x2 = ((ISignedNumber) ((IAST) list2).arg1()).doubleValue();
+			double y2 = ((ISignedNumber) ((IAST) list2).arg2()).doubleValue();
+
+			dim.minMax(x1, x2, y1, y2);
 		}
 	}
 

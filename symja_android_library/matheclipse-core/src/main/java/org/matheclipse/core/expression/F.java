@@ -244,6 +244,8 @@ public class F {
 	public final static IBuiltInSymbol NHoldAll = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nholdall" : "NHoldAll");
 	public final static IBuiltInSymbol Line = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "line" : "Line");
+	public final static IBuiltInSymbol Point = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "point" : "Point");
+
 	public final static IBuiltInSymbol Rectangle = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rectangle" : "Rectangle");
 
