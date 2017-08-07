@@ -1708,7 +1708,7 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isListOfLists() {
+	public boolean isListOfLists() {
 		if (head().equals(F.List)) {
 			for (int i = 1; i < size(); i++) {
 				if (!get(i).isList()) {

@@ -85,7 +85,7 @@ public class Plot3D extends AbstractEvaluator {
 					options.append(Rule(F.PlotRange, F.Automatic));
 					options.append(Rule(F.MeshRange, List(List(xMin, xMax), List(yMin, yMax))));
 
-					graphics.append(options);
+					graphics.appendAll(options, 1, options.size());
 					return Show(graphics);
 				}
 			} catch (RuntimeException rex) {
@@ -115,8 +115,7 @@ public class Plot3D extends AbstractEvaluator {
 	 *            the y variable
 	 * @param engine
 	 *            the evaluation engine
-	 * @return <code>F.NIL</code> is no conversion of the data into an
-	 *         <code>IExpr</code> was possible
+	 * @return <code>F.NIL</code> is no conversion of the data into an <code>IExpr</code> was possible
 	 */
 	@Nonnull
 	public static IExpr plotArray(final double xMin, final double xMax, final double yMin, final double yMax,

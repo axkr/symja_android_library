@@ -155,6 +155,22 @@ public class NILPointer extends AbstractAST {
 		return false;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean isList() {
+		return false;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isListOfLists() { 
+		return false;
+	}
+	
+	public int[] isMatrix(boolean setMatrixFormat) {
+		return null;
+	}
+	
 	@Override
 	public final boolean isPresent() {
 		return false;
