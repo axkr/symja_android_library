@@ -294,15 +294,9 @@ public class SpecialFunctions {
 					return F.Plus(F.CN1, F.Times(F.C2, F.Sqr(z)));
 				}
 				if (nInt > 2) {
-					// KroneckerDelta(n,0)/n + (2^n/n)*z^n + Sum(((-1)^k*(n - k - 1)!*(2 z)^(n - 2 k))/(k! * (n -
+					// (2^n/n)*z^n + Sum(((-1)^k*(n - k - 1)!*(2*z)^(n - 2*k))/(k! * (n -
 					// 2*k)!), {k, 1, Floor(n/2)})
-					return Plus(
-							Times(Power(C2,
-									n),
-									Power(n,
-											-1),
-									Power(z, n)),
-							Times(Power(n, -1), F.KroneckerDelta(F.C0, n)),
+					return Plus(Times(Power(C2, n), Power(n, -1), Power(z, n)),
 							Sum(Times(Power(CN1, k), Power(Times(C2, z), Plus(Times(F.CN2, k), n)),
 									Power(Times(Factorial(k), Factorial(Plus(Times(F.CN2, k), n))), -1),
 									Factorial(Plus(CN1, Negate(k), n))), List(k, C1, F.Floor(Times(C1D2, n)))));
