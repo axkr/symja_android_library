@@ -211,6 +211,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ArcCosh(-x)", "ArcCosh(-x)");
 		check("D(ArcCosh(x),x)", "1/Sqrt(-1+x^2)");
 		check("ArcCosh(-Infinity)", "ArcCosh(-Infinity)");
+		check("ArcCosh(I*Infinity)", "Infinity");
 	}
 
 	public void testArcCot() {
@@ -3015,6 +3016,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLaplaceTransform() {
+		check("LaplaceTransform(E^2,t,-3+s)", "E^2/(-3+s)");
+		check("LaplaceTransform(c*t^2, t, s)", "(2*c)/s^3");
+		check("LaplaceTransform((t^3+t^4)*t^2, t, s)", "720/s^7+120/s^6");
+		check("LaplaceTransform(t^2*Exp(2+3*t), t, s)", "(-2*E^2)/(3-s)^3");
+		check("LaplaceTransform(Exp(2+3*t)/t, t, s)", "E^2*LaplaceTransform(1/t,t,-3+s)");
+		
 		check("LaplaceTransform(t, t, t)", "LaplaceTransform(t,t,t)");
 		check("LaplaceTransform(t, t, s)", "1/s^2");
 		check("LaplaceTransform(t, s, t)", "1");

@@ -20,9 +20,9 @@ public interface LaplaceTransformRules {
     // LaplaceTransform(a_*f_,t_,s_):=a*LaplaceTransform(f,t,s)/;FreeQ(a,t)
     ISetDelayed(LaplaceTransform(Times(a_,f_),t_,s_),
       Condition(Times(a,LaplaceTransform(f,t,s)),FreeQ(a,t))),
-    // LaplaceTransform(a_*t_^n_.,t_,s_):=(-1)^n*D(LaplaceTransform(a,t,s),{s,n})/;IntegerQ(n)&&n>0
+    // LaplaceTransform(a_*t_^n_.,t_,s_):=(-1)^n*D(LaplaceTransform(a,t,s),{s,n})/;FreeQ(n,t)&&n>0
     ISetDelayed(LaplaceTransform(Times(a_,Power(t_,n_DEFAULT)),t_,s_),
-      Condition(Times(Power(CN1,n),D(LaplaceTransform(a,t,s),List(s,n))),And(IntegerQ(n),Greater(n,C0)))),
+      Condition(Times(Power(CN1,n),D(LaplaceTransform(a,t,s),List(s,n))),And(FreeQ(n,t),Greater(n,C0)))),
     // LaplaceTransform(a_.*E^(b_.+c_.*t_),t_,s_):=LaplaceTransform(a*E^b,t,s-c)/;FreeQ({b,c},t)
     ISetDelayed(LaplaceTransform(Times(Power(E,Plus(b_DEFAULT,Times(c_DEFAULT,t_))),a_DEFAULT),t_,s_),
       Condition(LaplaceTransform(Times(a,Power(E,b)),t,Plus(s,Negate(c))),FreeQ(List(b,c),t))),

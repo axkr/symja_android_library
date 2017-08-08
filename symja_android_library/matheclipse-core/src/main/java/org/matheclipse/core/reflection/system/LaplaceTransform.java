@@ -24,7 +24,7 @@ public class LaplaceTransform extends AbstractFunctionEvaluator implements Lapla
 		IExpr t = ast.arg2();
 		IExpr s = ast.arg3();
 		if (!t.isList() && !s.isList() && !t.equals(s)) {
-			if (a1.isFree(t) && a1.isAtom()) {
+			if (a1.isFree(t)) {// && a1.isAtom()) {
 				return F.Divide(a1, s);
 			}
 			if (a1.equals(t) && a1.isFree(s)) {
@@ -32,9 +32,11 @@ public class LaplaceTransform extends AbstractFunctionEvaluator implements Lapla
 			}
 			if (ast.arg1().isAST()) {
 				IAST arg1 = (IAST) ast.arg1();
-				if (arg1.isPower() && arg1.arg1().equals(t) && arg1.arg2().isAtom()) {
+				if (arg1.isPower()) {
 					IExpr n = arg1.arg2();
-					return F.Divide(F.Gamma(F.Plus(F.C1, n)), F.Power(s, F.Plus(F.C1, n)));
+					if (arg1.isPower() && arg1.arg1().equals(t) && n.isAtom() && !n.isMinusOne()) {
+						return F.Divide(F.Gamma(F.Plus(F.C1, n)), F.Power(s, F.Plus(F.C1, n)));
+					}
 				}
 				if (arg1.isPlus()) {
 					// LaplaceTransform[a_+b_+c_,t_,s_] ->
