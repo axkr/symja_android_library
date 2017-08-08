@@ -93,6 +93,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BooleanConvert(! (a || b || c))", "!a&&!b&&!c");
 	}
 
+	public void testAntihermitianMatrixQ() {
+		check("AntihermitianMatrixQ({{I, 3 + 4*I}, {-3 + 4*I, 0}})", "True");
+		check("AntihermitianMatrixQ(({{I, a, b},  {-Conjugate[a], 0, c}, {-Conjugate[b],-Conjugate[c],-I} }))", "True");
+	}
+
+	public void testAntisymmetricMatrixQ() {
+		check("AntisymmetricMatrixQ({{0, -2, 3}, {2, 0, -4}, {-3, 4, 0}})", "True");
+	}
+
 	public void testAngleVector() {
 		check("AngleVector(90*Degree)", "{0,1}");
 		check("AngleVector({1, 10}, a)", "{1+Cos(a),10+Sin(a)}");
@@ -674,11 +683,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testCholeskyDecomposition() {
 		check("matG=CholeskyDecomposition({{11.0,3.0},{3.0, 5.0}})",
-				"{{3.3166247903554,0.9045340337332909},\n" + 
-				" {0.0,2.04494943258218}}");
-		check("Transpose(matG).matG",
-				"{{11.0,3.0},\n" + 
-				" {3.0,4.999999999999999}}");
+				"{{3.3166247903554,0.9045340337332909},\n" + " {0.0,2.04494943258218}}");
+		check("Transpose(matG).matG", "{{11.0,3.0},\n" + " {3.0,4.999999999999999}}");
 	}
 
 	public void testChop() {
@@ -2609,6 +2615,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO add non integer arg implementation
 		// check("HermiteH(4.2, 2)", "");
 		check("HermiteH(10, x)", "-30240+302400*x^2-403200*x^4+161280*x^6-23040*x^8+1024*x^10");
+	}
+
+	public void testHermitianMatrixQ() {
+		check("HermitianMatrixQ({{1, 3 + 4*I}, {3 - 4*I, 2}})", "True");
+		check("HermitianMatrixQ({{1, 3 + 3*I}, {3 - 4*I, 2}})", "False");
+		check("HermitianMatrixQ(Table(Re(i)*Re(j), {i, 10}, {j, 10}))", "True");
 	}
 
 	public void testHilbertMatrix() {
@@ -6499,6 +6511,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("SymbolQ(a)", "True");
 		check("SymbolQ(1)", "False");
 		check("SymbolQ(a+b)", "False");
+	}
+
+	public void testSymmetricMatrixQ() {
+		check("SymmetricMatrixQ({{1, 3 + 4*I}, {3 - 4*I, 2}})", "False");
+		check("SymmetricMatrixQ({{1, 3 + 3*I}, {3 + 3*I, 2}})", "True");
+		check("SymmetricMatrixQ(Table(Re(i)*Re(j), {i, 10}, {j, 10}))", "True");
+		check("Block({b = c}, SymmetricMatrixQ({{a, b}, {c, d}}))", "True");
 	}
 
 	public void testTable() {

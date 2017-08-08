@@ -332,6 +332,10 @@ public class F {
 
 	public final static IBuiltInSymbol Abort = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "abort" : "Abort");
 	public final static IBuiltInSymbol And = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "and" : "And");
+	public final static IBuiltInSymbol AntihermitianMatrixQ = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "antihermitianmatrixq" : "AntihermitianMatrixQ");
+	public final static IBuiltInSymbol AntisymmetricMatrixQ = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "antisymmetricmatrixq" : "AntisymmetricMatrixQ");
 	public final static IBuiltInSymbol Append = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "append" : "Append");
 	public final static IBuiltInSymbol AppendTo = initFinalSymbol(
@@ -420,6 +424,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.Get());
 	public final static IBuiltInSymbol Head = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "head" : "Head",
 			new org.matheclipse.core.builtin.function.Head());
+	public final static IBuiltInSymbol HermitianMatrixQ = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hermitianmatrixq" : "HermitianMatrixQ");
 	public final static IBuiltInSymbol Hold = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hold" : "Hold",
 			new org.matheclipse.core.builtin.function.Hold());
 	public final static IBuiltInSymbol HoldForm = initFinalSymbol(
@@ -543,6 +549,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "switch" : "Switch");
 	public final static IBuiltInSymbol SymbolQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "symbolq" : "SymbolQ");
+	public final static IBuiltInSymbol SymmetricMatrixQ = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "symmetricmatrixq" : "SymmetricMatrixQ");
 	public final static IBuiltInSymbol SyntaxQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "syntaxq" : "SyntaxQ");
 	public final static IBuiltInSymbol Take = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "take" : "Take");
@@ -4268,7 +4276,7 @@ public class F {
 	public static IAST KroneckerDelta(final IExpr a0) {
 		return unaryAST1(KroneckerDelta, a0);
 	}
-	
+
 	public static IAST KroneckerDelta(final IExpr a0, final IExpr a1) {
 		return binaryAST2(KroneckerDelta, a0, a1);
 	}

@@ -51,7 +51,7 @@ public class AST2Expr {
 			"SlotSequence", "String", "Symbol", "TooLarge", "Trig", "True", "Variable", "Unknown" };
 
 	public final static String[] FUNCTION_STRINGS = { "Abort", "Abs", "AbsArg", "AddTo", "AllTrue", "And",
-			"AngleVector", "AnyTrue", "AlgebraicNumber", "Alternatives", "Apart", "AppellF1", "Append", "AppendTo",
+			"AngleVector", "AnyTrue", "AntihermitianMatrixQ ", "AntisymmetricMatrixQ","AlgebraicNumber", "Alternatives", "Apart", "AppellF1", "Append", "AppendTo",
 			"Apply", "ArcCos", "ArcCosh", "ArcCot", "ArcCoth", "ArcCsc", "ArcCsch", "ArcSec", "ArcSech", "ArcSin",
 			"ArcSinh", "ArcTan", "ArcTanh", "Arg", "Array", "ArrayDepth", "ArrayQ", "Assumptions", "AtomQ",
 			"Attributes", "Begin", "BeginPackage", "BellB", "BellY", "BernoulliB", "BernoulliDistribution", "BesselI",
@@ -118,13 +118,13 @@ public class AST2Expr {
 			"Split", "SplitBy", "Sqrt", "SquaredEuclideanDistance", "SquareFreeQ", "StieltjesGamma", "StirlingS1",
 			"StirlingS2", "StringDrop", "StringJoin", "StringLength", "StringTake", "StruveH", "StruveL",
 			"Subfactorial", "Subscript", "Subsuperscript", "Subsets", "SubtractFrom", "Sum", "Superscript",
-			"SurfaceGraphics", "Switch", "SyntaxLength", "SymbolName", "SymbolQ", "SyntaxQ", "Table", "Take", "Tally",
-			"Tan", "Tanh", "TautologyQ", "Taylor", "TeXForm", "Thread", "Through", "Throw", "TimeConstrained", "Times",
-			"TimesBy", "Timing", "ToCharacterCode", "Together", "ToPolarCoordinates", "ToRadicals", "ToString", "Total",
-			"ToUnicode", "Tr", "Trace", "Transpose", "TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Tuples",
-			"Unequal", "Unevaluated", "Union", "Unique", "UnitStep", "UnitVector", "UnsameQ", "Unset", "UpperCaseQ",
-			"UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables", "Variance", "VectorAngle", "VectorQ",
-			"Which", "While", "With", "Xor", "YuleDissimilarity", "Zeta" };
+			"SurfaceGraphics", "Switch", "SyntaxLength", "SymbolName", "SymbolQ", "SymmetricMatrixQ", "SyntaxQ",
+			"Table", "Take", "Tally", "Tan", "Tanh", "TautologyQ", "Taylor", "TeXForm", "Thread", "Through", "Throw",
+			"TimeConstrained", "Times", "TimesBy", "Timing", "ToCharacterCode", "Together", "ToPolarCoordinates",
+			"ToRadicals", "ToString", "Total", "ToUnicode", "Tr", "Trace", "Transpose", "TrigExpand", "TrigReduce",
+			"TrigToExp", "TrueQ", "Tuples", "Unequal", "Unevaluated", "Union", "Unique", "UnitStep", "UnitVector",
+			"UnsameQ", "Unset", "UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables",
+			"Variance", "VectorAngle", "VectorQ", "Which", "While", "With", "Xor", "YuleDissimilarity", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 

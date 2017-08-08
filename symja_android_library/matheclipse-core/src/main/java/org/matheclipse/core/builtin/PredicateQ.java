@@ -26,6 +26,8 @@ public class PredicateQ {
 	public final static AtomQ ATOMQ = new AtomQ();
 
 	static {
+		F.AntisymmetricMatrixQ.setEvaluator(new AntisymmetricMatrixQ());
+		F.AntihermitianMatrixQ.setEvaluator(new AntihermitianMatrixQ());
 		F.ArrayQ.setEvaluator(new ArrayQ());
 		F.AtomQ.setEvaluator(ATOMQ);
 		F.BooleanQ.setEvaluator(new BooleanQ());
@@ -33,6 +35,7 @@ public class PredicateQ {
 		F.EvenQ.setEvaluator(new EvenQ());
 		F.ExactNumberQ.setEvaluator(new ExactNumberQ());
 		F.FreeQ.setEvaluator(new FreeQ());
+		F.HermitianMatrixQ.setEvaluator(new HermitianMatrixQ());
 		F.InexactNumberQ.setEvaluator(new InexactNumberQ());
 		F.IntegerQ.setEvaluator(new IntegerQ());
 		F.ListQ.setEvaluator(new ListQ());
@@ -49,10 +52,53 @@ public class PredicateQ {
 		F.PrimeQ.setEvaluator(new PrimeQ());
 		F.RealNumberQ.setEvaluator(new RealNumberQ());
 		F.SymbolQ.setEvaluator(new SymbolQ());
+		F.SymmetricMatrixQ.setEvaluator(new SymmetricMatrixQ());
 		F.SyntaxQ.setEvaluator(new SyntaxQ());
 		F.UpperCaseQ.setEvaluator(new UpperCaseQ());
 		F.ValueQ.setEvaluator(new ValueQ());
 		F.VectorQ.setEvaluator(new VectorQ());
+	}
+
+	private static class AntihermitianMatrixQ extends SymmetricMatrixQ {
+
+		protected boolean compareElements(IExpr expr1, IExpr expr2, EvalEngine engine) {
+			if (expr1.isNumber() && expr2.isNumber()) {
+				if (expr1.conjugate().negate().equals(expr2)) {
+					return true;
+				}
+				return false;
+			}
+			if (!engine.evalTrue(F.Equal(F.Times(F.CN1, F.Conjugate(expr1)), expr2))) {
+				return false;
+			}
+			return true;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private static class AntisymmetricMatrixQ extends SymmetricMatrixQ {
+
+		protected boolean compareElements(IExpr expr1, IExpr expr2, EvalEngine engine) {
+			if (expr1.isNumber() && expr2.isNumber()) {
+				if (expr1.negate().equals(expr2)) {
+					return true;
+				}
+				return false;
+			}
+			if (!engine.evalTrue(F.Equal(F.Times(F.CN1, expr1), expr2))) {
+				return false;
+			}
+			return true;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
 	}
 
 	/**
@@ -318,6 +364,33 @@ public class PredicateQ {
 			}
 			return true;
 		}
+	}
+
+	private static class HermitianMatrixQ extends SymmetricMatrixQ {
+		@Override
+		protected boolean compareElements(IExpr expr1, IExpr expr2, EvalEngine engine) {
+			if (expr1.isSignedNumber() && expr2.isSignedNumber()) {
+				if (expr1.equals(expr2)) {
+					return true;
+				}
+				return false;
+			}
+			if (expr1.isNumber() && expr2.isNumber()) {
+				if (expr1.conjugate().equals(expr2)) {
+					return true;
+				}
+				return false;
+			}
+			if (!engine.evalTrue(F.Equal(F.Conjugate(expr1), expr2))) {
+				return false;
+			}
+			return true;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
 	}
 
 	/**
@@ -690,6 +763,52 @@ public class PredicateQ {
 		public boolean test(final IExpr expr) {
 			return expr.isSymbol();
 		}
+	}
+
+	private static class SymmetricMatrixQ extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			final IExpr arg1 = engine.evaluate(ast.arg1());
+			int[] dims = arg1.isMatrix();
+			if (dims == null || dims[0] != dims[1]) {
+				// no square matrix
+				return F.False;
+			}
+
+			final IAST matrix = (IAST) arg1;
+			for (int i = 1; i <= dims[0]; i++) {
+				IAST row = matrix.getAST(i);
+				for (int j = i + 1; j <= dims[1]; j++) {
+					IExpr expr = row.get(j);
+					IExpr symmetricExpr = matrix.getPart(j, i);
+					if (!compareElements(expr, symmetricExpr, engine)) {
+						return F.False;
+					}
+				}
+			}
+			return F.True;
+		}
+
+		protected boolean compareElements(IExpr expr1, IExpr expr2, EvalEngine engine) {
+			if (expr1.isNumber() && expr2.isNumber()) {
+				if (expr1.equals(expr2)) {
+					return true;
+				}
+				return false;
+			}
+			if (!engine.evalTrue(F.Equal(expr1, expr2))) {
+				return false;
+			}
+			return true;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
 	}
 
 	/**
