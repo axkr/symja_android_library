@@ -77,6 +77,7 @@ public final class LinearAlgebra {
 		F.CanberraDistance.setEvaluator(new CanberraDistance());
 		F.CharacteristicPolynomial.setEvaluator(new CharacteristicPolynomial());
 		F.ChessboardDistance.setEvaluator(new ChessboardDistance());
+		F.CholeskyDecomposition.setEvaluator(new CholeskyDecomposition());
 		F.ConjugateTranspose.setEvaluator(new ConjugateTranspose());
 		F.CosineDistance.setEvaluator(new CosineDistance());
 		F.Cross.setEvaluator(new Cross());
@@ -356,6 +357,39 @@ public final class LinearAlgebra {
 
 	}
 
+	private final static class CholeskyDecomposition extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			RealMatrix matrix;
+			try {
+
+				matrix = ast.arg1().toRealMatrix();
+				if (matrix != null) {
+					final org.hipparchus.linear.CholeskyDecomposition svd = new org.hipparchus.linear.CholeskyDecomposition(
+							matrix);
+					return  new ASTRealMatrix(svd.getLT(), false);
+				}
+
+			} catch (final WrongArgumentType e) {
+				// WrongArgumentType occurs in list2RealMatrix(),
+				// if the matrix elements aren't pure numerical values
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			} catch (final IndexOutOfBoundsException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			}
+
+			return F.NIL;
+		}
+
+	}
+	
 	/**
 	 * <pre>
 	 * ConjugateTranspose(matrix)

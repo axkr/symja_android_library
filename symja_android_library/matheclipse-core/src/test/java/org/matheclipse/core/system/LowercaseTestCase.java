@@ -672,6 +672,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ChineseRemainder({1, 2}, {6, 10})", "ChineseRemainder({1,2},{6,10})");
 	}
 
+	public void testCholeskyDecomposition() {
+		check("matG=CholeskyDecomposition({{11.0,3.0},{3.0, 5.0}})",
+				"{{3.3166247903554,0.9045340337332909},\n" + 
+				" {0.0,2.04494943258218}}");
+		check("Transpose(matG).matG",
+				"{{11.0,3.0},\n" + 
+				" {3.0,4.999999999999999}}");
+	}
+
 	public void testChop() {
 		check("Chop(0.00000000001)", "0");
 	}

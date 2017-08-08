@@ -661,6 +661,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "chebyshevu" : "ChebyshevU");
 	public final static IBuiltInSymbol ChessboardDistance = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "chessboarddistance" : "ChessboardDistance");
+	public final static IBuiltInSymbol CholeskyDecomposition = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "choleskydecomposition" : "CholeskyDecomposition");
 	public final static IBuiltInSymbol ChineseRemainder = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "chineseremainder" : "ChineseRemainder");
 	public final static IBuiltInSymbol Coefficient = initFinalSymbol(
