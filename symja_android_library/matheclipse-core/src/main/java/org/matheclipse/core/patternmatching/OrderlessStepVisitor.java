@@ -10,8 +10,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher.StackMatcher;
 
 /**
- * This visitor is used in an <code>MultisetPartitionsIterator</code> to match
- * orderless expressions in pattern matching.
+ * This visitor is used in an <code>MultisetPartitionsIterator</code> to match orderless expressions in pattern
+ * matching.
  * 
  * @see PatternMatcher
  * @see MultisetPartitionsIterator
@@ -19,10 +19,8 @@ import org.matheclipse.core.patternmatching.PatternMatcher.StackMatcher;
 public class OrderlessStepVisitor extends FlatOrderlessStepVisitor implements IStepVisitor {
 
 	/**
-	 * This visitor is used in an <code>MultisetPartitionsIterator</code> to
-	 * match orderless expressions in pattern matching. The
-	 * <code>lhsPatternAST.size()</code> must be equal to
-	 * <code>lhsEvalAST.size()</code>.
+	 * This visitor is used in an <code>MultisetPartitionsIterator</code> to match orderless expressions in pattern
+	 * matching. The <code>lhsPatternAST.size()</code> must be equal to <code>lhsEvalAST.size()</code>.
 	 * 
 	 * @see PatternMatcher
 	 * @see MultisetPartitionsIterator
@@ -71,7 +69,7 @@ public class OrderlessStepVisitor extends FlatOrderlessStepVisitor implements IS
 				}
 			}
 
-			if (!stackMatcher.matchRest()) {
+			if (stackMatcher != null && !stackMatcher.matchRest()) {
 				matched = false;
 				return false;
 			}

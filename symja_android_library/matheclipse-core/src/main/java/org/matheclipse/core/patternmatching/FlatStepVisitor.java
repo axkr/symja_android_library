@@ -9,8 +9,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher.StackMatcher;
 
 /**
- * This visitor is used in an <code>NumberPartitionsIterator</code> to match
- * flat expressions in pattern matching.
+ * This visitor is used in an <code>NumberPartitionsIterator</code> to match flat expressions in pattern matching.
  * 
  * @see PatternMatcher
  * @see NumberPartitionsIterator
@@ -90,7 +89,7 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 				}
 			}
 
-			if (!stackMatcher.matchRest()) {
+			if (stackMatcher != null && !stackMatcher.matchRest()) {
 				matched = false;
 				return false;
 			}

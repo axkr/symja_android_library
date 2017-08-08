@@ -332,7 +332,7 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST filter(IAST filterAST, IAST restAST, final Function<IExpr, IExpr> function) {
+	public final IAST filterFunction(IAST filterAST, IAST restAST, final Function<IExpr, IExpr> function) {
 		final int size = size();
 		for (int i = 1; i < size; i++) {
 			IExpr expr = function.apply(get(i));

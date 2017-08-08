@@ -436,7 +436,7 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST filter(IAST filterAST, IAST restAST, final Function<IExpr, IExpr> function) {
+	public final IAST filterFunction(IAST filterAST, IAST restAST, final Function<IExpr, IExpr> function) {
 		for (int i = firstIndex + 1; i < lastIndex; i++) {
 			IExpr temp = array[i];
 			IExpr expr = function.apply(temp);

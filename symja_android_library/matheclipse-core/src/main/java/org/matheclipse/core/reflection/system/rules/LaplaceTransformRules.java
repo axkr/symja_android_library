@@ -13,13 +13,10 @@ public interface LaplaceTransformRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 12 };
+  final public static int[] SIZES = { 0, 13 };
 
   final public static IAST RULES = List(
     IInit(LaplaceTransform, SIZES),
-    // LaplaceTransform(a_*f_,t_,s_):=a*LaplaceTransform(f,t,s)/;FreeQ(a,t)
-    ISetDelayed(LaplaceTransform(Times(a_,f_),t_,s_),
-      Condition(Times(a,LaplaceTransform(f,t,s)),FreeQ(a,t))),
     // LaplaceTransform(a_*t_^n_.,t_,s_):=(-1)^n*D(LaplaceTransform(a,t,s),{s,n})/;FreeQ(n,t)&&n>0
     ISetDelayed(LaplaceTransform(Times(a_,Power(t_,n_DEFAULT)),t_,s_),
       Condition(Times(Power(CN1,n),D(LaplaceTransform(a,t,s),List(s,n))),And(FreeQ(n,t),Greater(n,C0)))),
@@ -55,6 +52,12 @@ public interface LaplaceTransformRules {
       Times(Power(E,Times(C1D4,Sqr(s))),Erfc(Times(C1D2,s)),Power(s,-1))),
     // LaplaceTransform(Erf(t_^Rational(1,2)),t_,s_):=1/(Sqrt(s+1)*s)
     ISetDelayed(LaplaceTransform(Erf(Sqrt(t_)),t_,s_),
-      Power(Times(Sqrt(Plus(s,C1)),s),-1))
+      Power(Times(Sqrt(Plus(s,C1)),s),-1)),
+    // LaplaceTransform(Derivative(1)[f_][t_],t_,s_):=s*LaplaceTransform(f(t),t,s)-f(0)/;FreeQ(f,t)
+    ISetDelayed(LaplaceTransform($($(Derivative(C1),f_),t_),t_,s_),
+      Condition(Plus(Times(s,LaplaceTransform($(f,t),t,s)),Negate($(f,C0))),FreeQ(f,t))),
+    // LaplaceTransform(Derivative(2)[f_][t_],t_,s_):=s^2*LaplaceTransform(f(t),t,s)-s*f(0)-f'(0)/;FreeQ(f,t)
+    ISetDelayed(LaplaceTransform($($(Derivative(C2),f_),t_),t_,s_),
+      Condition(Plus(Times(Sqr(s),LaplaceTransform($(f,t),t,s)),Times(CN1,s,$(f,C0)),Negate($($(Derivative(C1),f),C0))),FreeQ(f,t)))
   );
 }

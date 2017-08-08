@@ -3015,12 +3015,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LaguerreL(5, x)", "1-5*x+5*x^2-5/3*x^3+5/24*x^4-x^5/120");
 	}
 
+	public void testInverseLaplaceTransform() {
+		check("InverseLaplaceTransform(f(x)*s,s,t)", "f(x)*DiracDelta'(t)");
+		check("InverseLaplaceTransform(f(x),s,t)", "DiracDelta(t)*f(x)");
+		check("InverseLaplaceTransform(1/s,s,t)", "1");
+		check("InverseLaplaceTransform(1/s^5,s,t)", "t^4/24");
+		check("InverseLaplaceTransform(1/(s^2 +a^2),s,t)", "Sin(a*t)/a");
+		check("InverseLaplaceTransform(s/(s^2 +a^2),s,t)", "Cos(a*t)");
+		check("InverseLaplaceTransform(1/(1+s),s,t)", "E^(-t)");
+		check("InverseLaplaceTransform(1/(s^2-4),s,t)", "(-1+E^(4*t))/(4*E^(2*t))");
+		
+	}
+	
 	public void testLaplaceTransform() {
 		check("LaplaceTransform(E^2,t,-3+s)", "E^2/(-3+s)");
 		check("LaplaceTransform(c*t^2, t, s)", "(2*c)/s^3");
 		check("LaplaceTransform((t^3+t^4)*t^2, t, s)", "720/s^7+120/s^6");
 		check("LaplaceTransform(t^2*Exp(2+3*t), t, s)", "(-2*E^2)/(3-s)^3");
 		check("LaplaceTransform(Exp(2+3*t)/t, t, s)", "E^2*LaplaceTransform(1/t,t,-3+s)");
+		
+		check("LaplaceTransform(y'(t),t,s)", "s*LaplaceTransform(y(t),t,s)-y(0)");
+		check("LaplaceTransform(y''(t),t,s)", "s^2*LaplaceTransform(y(t),t,s)-s*y(0)-y'(0)");
 		
 		check("LaplaceTransform(t, t, t)", "LaplaceTransform(t,t,t)");
 		check("LaplaceTransform(t, t, s)", "1/s^2");

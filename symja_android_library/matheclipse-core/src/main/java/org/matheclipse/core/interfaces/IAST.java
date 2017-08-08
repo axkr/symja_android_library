@@ -657,22 +657,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IAST[] filter(final Function<IExpr, IExpr> function);
 
 	/**
-	 * Select all elements by applying the <code>function</code> to each argument in this <code>AST</code> and append
-	 * the result elements for which the <code>function</code> returns non-null elements to the <code>filterAST</code>,
-	 * or otherwise append the argument to the <code>restAST</code>.
-	 * 
-	 * @param filterAST
-	 *            the non-null elements which were returned by the <code>function#apply()</code> method
-	 * @param restAST
-	 *            the arguments in this <code>AST</code> for which the <code>function#apply()</code> method returned
-	 *            <code>null</code>
-	 * @param function
-	 *            the function which filters each argument by returning a possibly non-null value.
-	 * @return the given <code>filterAST</code>
-	 */
-	public IAST filter(IAST filterAST, IAST restAST, final Function<IExpr, IExpr> function);
-
-	/**
 	 * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and append
 	 * the elements which satisfy the <code>predicate</code> to the <code>filterAST</code>, or otherwise append it to
 	 * the <code>restAST</code>.

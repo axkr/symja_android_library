@@ -94,7 +94,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		 */
 		public boolean matchOrderlessAST(int lhsPosition, StackMatcher stackMatcher) {
 			if (lhsPosition >= fLHSPatternAST.size()) {
-				return stackMatcher == null ? true : stackMatcher.matchRest();
+				return stackMatcher == null || stackMatcher.matchRest();
 			}
 			boolean isNotInUse;
 			IExpr subPattern = fLHSPatternAST.get(lhsPosition);
@@ -539,8 +539,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + ((fPatternCondition == null) ? 0 : fPatternCondition.hashCode());
-//		result = prime * result + ((fPatternMap == null) ? 0 : fPatternMap.hashCode());
-//		result = prime * result + fPriority;
+		// result = prime * result + ((fPatternMap == null) ? 0 : fPatternMap.hashCode());
+		// result = prime * result + fPriority;
 		return result;
 	}
 
@@ -583,7 +583,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		}
 		if (lhsEvalExpr instanceof IAST) {
 			if (!lhsPatternAST.isPatternExpr() && lhsPatternAST.equals(lhsEvalExpr)) {
-				return stackMatcher.matchRest();
+				return stackMatcher == null || stackMatcher.matchRest();
 			}
 
 			final IAST lhsEvalAST = (IAST) lhsEvalExpr;
@@ -719,7 +719,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 					return false;
 				}
 			}
-			if (!stackMatcher.matchRest()) {
+			if (stackMatcher != null && !stackMatcher.matchRest()) {
 				matched = false;
 				return false;
 			}
@@ -866,10 +866,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			matched = lhsPatternExpr.equals(lhsEvalExpr);
 		}
 		if (matched) {
-			if (stackMatcher != null) {
-				return stackMatcher.matchRest();
-			}
-			return true;
+			return stackMatcher == null || stackMatcher.matchRest();
 		}
 		return false;
 
@@ -1053,8 +1050,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		// return false;
 		// } else if (!fPatternMap.equals(other.fPatternMap))
 		// return false;
-//		if (fPriority != other.fPriority)
-//			return false;
+		// if (fPriority != other.fPriority)
+		// return false;
 		return true;
 	}
 }

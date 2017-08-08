@@ -57,6 +57,7 @@ public final class FunctionDefinitions {
 		Interpolation.setEvaluator(new org.matheclipse.core.reflection.system.Interpolation());
 		Interval.setEvaluator(new org.matheclipse.core.reflection.system.Interval()); 
 		InverseFunction.setEvaluator(new org.matheclipse.core.reflection.system.InverseFunction());
+		InverseLaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.InverseLaplaceTransform());
 		LaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.LaplaceTransform());
 		LCM.setEvaluator(new org.matheclipse.core.reflection.system.LCM());
 		LetterQ.setEvaluator(new org.matheclipse.core.reflection.system.LetterQ());

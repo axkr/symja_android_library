@@ -897,6 +897,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inverseerfc" : "InverseErfc");
 	public final static IBuiltInSymbol InverseFunction = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inversefunction" : "InverseFunction");
+	public final static IBuiltInSymbol InverseLaplaceTransform = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inverselaplacetransform" : "InverseLaplaceTransform");
 	public final static IBuiltInSymbol InverseHaversine = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inversehaversine" : "InverseHaversine");
 	public final static IBuiltInSymbol JaccardDissimilarity = initFinalSymbol(
@@ -3232,7 +3234,11 @@ public class F {
 	public static IAST Det(final IExpr a0) {
 		return unaryAST1(Det, a0);
 	}
-
+	
+	public static IAST DiracDelta(final IExpr a0) {
+		return unaryAST1(DiracDelta, a0);
+	}
+	
 	public static IAST DirectedInfinity(final IExpr a0) {
 		return unaryAST1(DirectedInfinity, a0);
 	}
@@ -4119,6 +4125,10 @@ public class F {
 	public static IAST InverseFunction(final IExpr a) {
 		return unaryAST1(InverseFunction, a);
 	}
+	
+	public static IAST InverseLaplaceTransform(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(InverseLaplaceTransform, a0, a1, a2);
+	}
 
 	// public static ISymbol method(final String symbolName, final String
 	// className, final String methodName) {
@@ -4280,7 +4290,7 @@ public class F {
 	public static IAST KroneckerDelta(final IExpr a0, final IExpr a1) {
 		return binaryAST2(KroneckerDelta, a0, a1);
 	}
-
+	
 	public static IAST LaplaceTransform(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(LaplaceTransform, a0, a1, a2);
 	}
@@ -5344,6 +5354,10 @@ public class F {
 		return unaryAST1(StringJoin, a);
 	}
 
+	public static IAST Surd(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Surd, a0, a1);
+	}
+	
 	/**
 	 * Create a string expression
 	 * 
