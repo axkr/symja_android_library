@@ -357,6 +357,13 @@ public final class LinearAlgebra {
 
 	}
 
+	/**
+	 * Calculates the Cholesky decomposition of a matrix.
+	 * 
+	 * The Cholesky decomposition of a real symmetric positive-definite matrix A consists of a lower triangular matrix L
+	 * with same size such that: A = LL<sup>T</sup>. In a sense, this is the square root of A.
+	 *
+	 */
 	private final static class CholeskyDecomposition extends AbstractFunctionEvaluator {
 
 		@Override
@@ -368,9 +375,10 @@ public final class LinearAlgebra {
 
 				matrix = ast.arg1().toRealMatrix();
 				if (matrix != null) {
-					final org.hipparchus.linear.CholeskyDecomposition svd = new org.hipparchus.linear.CholeskyDecomposition(
+					final org.hipparchus.linear.CholeskyDecomposition dcomposition = new org.hipparchus.linear.CholeskyDecomposition(
 							matrix);
-					return  new ASTRealMatrix(svd.getLT(), false);
+					// Returns the transpose of the matrix L of the decomposition.
+					return new ASTRealMatrix(dcomposition.getLT(), false);
 				}
 
 			} catch (final WrongArgumentType e) {
@@ -389,7 +397,7 @@ public final class LinearAlgebra {
 		}
 
 	}
-	
+
 	/**
 	 * <pre>
 	 * ConjugateTranspose(matrix)
