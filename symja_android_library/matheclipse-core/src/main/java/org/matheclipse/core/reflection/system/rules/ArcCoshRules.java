@@ -13,7 +13,7 @@ public interface ArcCoshRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 12, 0 };
+  final public static int[] SIZES = { 13, 0 };
 
   final public static IAST RULES = List(
     IInit(ArcCosh, SIZES),
@@ -47,8 +47,11 @@ public interface ArcCoshRules {
     // ArcCosh(I)=Log(I*(1+Sqrt(2)))
     ISet(ArcCosh(CI),
       Log(Times(CI,Plus(C1,CSqrt2)))),
-    // ArcCosh(Infinity)=Infinity*ArcCosh(I*Infinity)=Infinity
+    // ArcCosh(Infinity)=Infinity
     ISet(ArcCosh(oo),
+      oo),
+    // ArcCosh(I*Infinity)=Infinity
+    ISet(ArcCosh(DirectedInfinity(CI)),
       oo),
     // ArcCosh(ComplexInfinity)=Infinity
     ISet(ArcCosh(CComplexInfinity),
