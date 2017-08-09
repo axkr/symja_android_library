@@ -171,6 +171,18 @@ public class NILPointer extends AbstractAST {
 		return null;
 	}
 	
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isPlus() {
+		return false;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isPower() {
+		return false;
+	}
+	
 	@Override
 	public final boolean isPresent() {
 		return false;
@@ -214,6 +226,12 @@ public class NILPointer extends AbstractAST {
 		return false;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isTimes() {
+		return false;
+	}
+	
 	@Override
 	public final IExpr orElse(final IExpr other) {
 		return other;

@@ -1947,7 +1947,7 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isPlus() {
+	public boolean isPlus() {
 		return isSameHeadSizeGE(F.Plus, 3);
 	}
 
@@ -2038,7 +2038,7 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isPower() {
+	public boolean isPower() {
 		return isSameHead(F.Power, 3);
 	}
 
@@ -2340,7 +2340,7 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isTimes() {
+	public boolean isTimes() {
 		return isSameHeadSizeGE(F.Times, 3);
 	}
 
