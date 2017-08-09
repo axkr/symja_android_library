@@ -1,7 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
@@ -11,8 +10,22 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Unit step <code>1</code> for all x greater equal <code>0</code>.
- * <code>0</code> in all other cases,
+ * <pre>
+ * UnitStep(expr)
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * returns <code>0</code>, if <code>expr</code> is less than <code>0</code> and returns <code>1</code>, if
+ * <code>expr</code> is greater equal than <code>0</code>.
+ * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; UnitStep(-42)
+ * 0
+ * </pre>
  */
 public class UnitStep extends AbstractEvaluator implements INumeric {
 
@@ -29,6 +42,9 @@ public class UnitStep extends AbstractEvaluator implements INumeric {
 		return 1.0;
 	}
 
+	/**
+	 * Unit step <code>1</code> for all x greater equal <code>0</code>. <code>0</code> in all other cases,
+	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		int size = ast.size();

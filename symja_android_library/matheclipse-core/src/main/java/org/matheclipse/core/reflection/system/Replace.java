@@ -13,6 +13,26 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 
+/**
+ * <pre>
+ * Rationalize(expression)
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * convert numerical real or imaginary parts in (sub-)expressions into rational numbers.
+ * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; Rationalize(6.75)
+ * 27/4
+ * 
+ * &gt;&gt; Rationalize(0.25+I*0.33333)
+ * 1/4+I*33333/100000
+ * </pre>
+ */
 public class Replace extends AbstractEvaluator {
 
 	private static final class ReplaceFunction implements Function<IExpr, IExpr> {

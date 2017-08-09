@@ -34,7 +34,6 @@ public final class FunctionDefinitions {
 		FindInstance.setEvaluator(new org.matheclipse.core.reflection.system.FindInstance());
 		FindRoot.setEvaluator(new org.matheclipse.core.reflection.system.FindRoot());
 		Fit.setEvaluator(new org.matheclipse.core.reflection.system.Fit());
-		FractionalPart.setEvaluator(new org.matheclipse.core.reflection.system.FractionalPart());
 		FresnelC.setEvaluator(new org.matheclipse.core.reflection.system.FresnelC());
 		FresnelS.setEvaluator(new org.matheclipse.core.reflection.system.FresnelS());
 		FrobeniusSolve.setEvaluator(new org.matheclipse.core.reflection.system.FrobeniusSolve());
@@ -50,8 +49,6 @@ public final class FunctionDefinitions {
 		Hypergeometric1F1.setEvaluator(new org.matheclipse.core.reflection.system.Hypergeometric1F1());
 		Hypergeometric2F1.setEvaluator(new org.matheclipse.core.reflection.system.Hypergeometric2F1());
 		Import.setEvaluator(new org.matheclipse.core.reflection.system.Import());
-		IntegerExponent.setEvaluator(new org.matheclipse.core.reflection.system.IntegerExponent());
-		IntegerPart.setEvaluator(new org.matheclipse.core.reflection.system.IntegerPart());
 		InterpolatingFunction.setEvaluator(new org.matheclipse.core.reflection.system.InterpolatingFunction());
 		InterpolatingPolynomial.setEvaluator(new org.matheclipse.core.reflection.system.InterpolatingPolynomial());
 		Interpolation.setEvaluator(new org.matheclipse.core.reflection.system.Interpolation());
@@ -66,7 +63,6 @@ public final class FunctionDefinitions {
 		LowerCaseQ.setEvaluator(new org.matheclipse.core.reflection.system.LowerCaseQ());
 		Max.setEvaluator(new org.matheclipse.core.reflection.system.Max());
 		Min.setEvaluator(new org.matheclipse.core.reflection.system.Min());
-		Mod.setEvaluator(new org.matheclipse.core.reflection.system.Mod());
 		MonomialList.setEvaluator(new org.matheclipse.core.reflection.system.MonomialList());
 		Names.setEvaluator(new org.matheclipse.core.reflection.system.Names());
 		NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
@@ -86,10 +82,7 @@ public final class FunctionDefinitions {
 		Plot3D.setEvaluator(new org.matheclipse.core.reflection.system.Plot3D());
 		PolyGamma.setEvaluator(new org.matheclipse.core.reflection.system.PolyGamma());
 		PolyLog.setEvaluator(new org.matheclipse.core.reflection.system.PolyLog());
-		PowerMod.setEvaluator(new org.matheclipse.core.reflection.system.PowerMod());
-		PrimitiveRoots.setEvaluator(new org.matheclipse.core.reflection.system.PrimitiveRoots());
 		Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
-		Quotient.setEvaluator(new org.matheclipse.core.reflection.system.Quotient());
 		
 		Rationalize.setEvaluator(new org.matheclipse.core.reflection.system.Rationalize());
 		Replace.setEvaluator(new org.matheclipse.core.reflection.system.Replace());
@@ -99,7 +92,6 @@ public final class FunctionDefinitions {
 		Resultant.setEvaluator(new org.matheclipse.core.reflection.system.Resultant());
 		RootIntervals.setEvaluator(new org.matheclipse.core.reflection.system.RootIntervals());
 		Roots.setEvaluator(new org.matheclipse.core.reflection.system.Roots());
-		Round.setEvaluator(new org.matheclipse.core.reflection.system.Round());
 		Series.setEvaluator(new org.matheclipse.core.reflection.system.Series());
 		SeriesData.setEvaluator(new org.matheclipse.core.reflection.system.SeriesData());
 		Share.setEvaluator(new org.matheclipse.core.reflection.system.Share());

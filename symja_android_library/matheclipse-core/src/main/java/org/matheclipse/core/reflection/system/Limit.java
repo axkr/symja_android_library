@@ -21,7 +21,21 @@ import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.reflection.system.rules.LimitRules;
 
 /**
- * Limit of a function. See <a href="http://en.wikipedia.org/wiki/List_of_limits">List of Limits</a>
+ * <pre>
+ * Limit(expr, x -&gt; x0)
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * gives the limit of <code>expr</code> as <code>x</code> approaches <code>x0</code>
+ * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; Limit(7+Sin(x)/x, x-&gt;Infinity)
+ * 7
+ * </pre>
  */
 public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 
@@ -601,6 +615,9 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	public Limit() {
 	}
 
+	/**
+	 * Limit of a function. See <a href="http://en.wikipedia.org/wiki/List_of_limits">List of Limits</a>
+	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 4);

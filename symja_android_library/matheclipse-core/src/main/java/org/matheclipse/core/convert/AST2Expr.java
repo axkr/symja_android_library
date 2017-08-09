@@ -106,7 +106,7 @@ public class AST2Expr {
 			"PolyGamma", "Polygon", "PolyLog", "PolynomialExtendedGCD", "PolynomialGCD", "PolynomialLCM", "PolynomialQ",
 			"PolynomialQuotient", "PolynomialQuotientRemainder", "PolynomialRemainder", "Position", "Positive",
 			"PossibleZeroQ", "Power", "PowerExpand", "PowerMod", "Precision", "PreDecrement", "PreIncrement", "Prepend",
-			"PrependTo", "Prime", "PrimeOmega", "PrimePi", "PrimePowerQ", "PrimeQ", "PrimitiveRoots", "Print",
+			"PrependTo", "Prime", "PrimeOmega", "PrimePi", "PrimePowerQ", "PrimeQ", "PrimitiveRootList", "Print",
 			"Product", "ProductLog", "PseudoInverse", "Put", "QRDecomposition", "Quiet", "Quit", "Quotient",
 			"RandomChoice", "RandomInteger", "RandomReal", "RandomSample", "Range", "Rational", "Rationalize", "Re",
 			"RealNumberQ", "Reap", "Rectangle", "Reduce", "Refine", "Repeated", "RepeatedNull", "Replace", "ReplaceAll",

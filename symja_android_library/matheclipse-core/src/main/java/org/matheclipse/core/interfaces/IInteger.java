@@ -237,7 +237,7 @@ public interface IInteger extends IRational {
 	@Override
 	public IInteger pow(final long exp) throws ArithmeticException;
 
-	public IInteger[] primitiveRoots() throws ArithmeticException;
+	public IInteger[] primitiveRootList() throws ArithmeticException;
 
 	public IInteger quotient(final IInteger that);
 

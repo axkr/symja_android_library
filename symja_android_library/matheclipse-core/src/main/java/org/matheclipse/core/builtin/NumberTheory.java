@@ -39,7 +39,6 @@ import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
@@ -2385,6 +2384,58 @@ public final class NumberTheory {
 
 	/**
 	 * <pre>
+	 * PrimitiveRootList(n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the list of the primitive roots of <code>n</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PrimitiveRootList(37)
+	 * {2,5,13,15,17,18,19,20,22,24,32,35}
+	 * 
+	 * &gt;&gt; PrimitiveRootList(127)
+	 * {3,6,7,12,14,23,29,39,43,45,46,48,53,55,56,57,58,65,67,78,83,85,86,91,92,93,96,97,101,106,109,110,112,114,116,118}
+	 * </pre>
+	 */
+	private static class PrimitiveRootList extends AbstractTrigArg1 {
+
+		/**
+		 * See: <a href= "http://exploringnumbertheory.wordpress.com/2013/09/09/finding-primitive-roots/"> Exploring
+		 * Number Theory - Finding Primitive Roots</a>
+		 */
+		@Override
+		public IExpr evaluateArg1(final IExpr arg1) {
+			if (arg1.isInteger()) {
+				try {
+					IInteger[] roots = ((IInteger) arg1).primitiveRootList();
+					if (roots != null) {
+						int size = roots.length;
+						IAST list = F.ListAlloc(size);
+						for (int i = 0; i < size; i++) {
+							list.append(roots[i]);
+						}
+						return list;
+					}
+				} catch (ArithmeticException e) {
+					// integer to large?
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+	}
+
+	/**
+	 * <pre>
 	 * SquareFreeQ(n)
 	 * </pre>
 	 * 
@@ -2817,6 +2868,7 @@ public final class NumberTheory {
 		F.PrimePi.setEvaluator(new PrimePi());
 		F.PrimeOmega.setEvaluator(new PrimeOmega());
 		F.PrimePowerQ.setEvaluator(new PrimePowerQ());
+		F.PrimitiveRootList.setEvaluator(new PrimitiveRootList());
 		F.SquareFreeQ.setEvaluator(new SquareFreeQ());
 		F.StirlingS1.setEvaluator(new StirlingS1());
 		F.StirlingS2.setEvaluator(new StirlingS2());

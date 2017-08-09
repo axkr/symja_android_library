@@ -18,13 +18,72 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.ProductRules;
 
 /**
- * Product of expressions.
+ * <pre>
+ * Product(expr, {i, imin, imax})
+ * </pre>
  * 
- * See <a href="http://en.wikipedia.org/wiki/Multiplication#Capital_Pi_notation"> Wikipedia Multiplication</a>
+ * <blockquote>
+ * <p>
+ * evaluates the discrete product of <code>expr</code> with <code>i</code> ranging from <code>imin</code> to
+ * <code>imax</code>.
+ * </p>
+ * </blockquote>
+ * 
+ * <pre>
+ * Product(expr, {i, imin, imax, di})
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * <code>i</code> ranges from <code>imin</code> to <code>imax</code> in steps of <code>di</code>.
+ * </p>
+ * </blockquote>
+ * 
+ * <pre>
+ * Product(expr, {i, imin, imax}, {j, jmin, jmax}, ...)
+ * </pre>
+ * 
+ * <blockquote><blockquote>
+ * <p>
+ * evaluates <code>expr</code> as a multiple sum, with <code>{i, ...}, {j, ...}, ...</code> being in
+ * outermost-to-innermost order.
+ * </p>
+ * </blockquote> </blockquote>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; Product(k, {k, 1, 10})
+ * 3628800
+ * 
+ * &gt;&gt; 10!
+ * 3628800
+ * 
+ * &gt;&gt; Product(x^k, {k, 2, 20, 2})
+ * x^110
+ * 
+ * &gt;&gt; Product(2 ^ i, {i, 1, n})
+ * 2^(1/2*n*(1+n))
+ * </pre>
+ * <p>
+ * Symbolic products involving the factorial are evaluated:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; Product(k, {k, 3, n})
+ * n! / 2
+ * </pre>
+ * <p>
+ * Evaluate the <code>n</code>th primorial:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; primorial(0) = 1;
+ * &gt;&gt; primorial(n_Integer) := Product(Prime(k), {k, 1, n});
+ * &gt;&gt; primorial(12)
+ * 7420738134810
+ * </pre>
  */
 public class Product extends ListFunctions.Table implements ProductRules {
-	// TODO solve initialization problem in using 'implements ProductRules {'
-	// RULES must be defined in this class at the moment!
 
 	public Product() {
 	}
@@ -34,6 +93,11 @@ public class Product extends ListFunctions.Table implements ProductRules {
 		return RULES;
 	}
 
+	/**
+	 * Product of expressions.
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Multiplication#Capital_Pi_notation"> Wikipedia Multiplication</a>
+	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3);

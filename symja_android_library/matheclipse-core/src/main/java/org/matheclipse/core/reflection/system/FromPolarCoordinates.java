@@ -9,7 +9,34 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Convert from polar coordinates to cartesian coordinates
+ * <pre>
+ * FromPolarCoordinates({r, t})
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * return the cartesian coordinates for the polar coordinates <code>{r, t}</code>.
+ * </p>
+ * </blockquote>
+ * 
+ * <pre>
+ * FromPolarCoordinates({r, t, p})
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * return the cartesian coordinates for the polar coordinates <code>{r, t, p}</code>.
+ * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; FromPolarCoordinates({r, t})
+ * {r*Cos(t),r*Sin(t)}
+ * 
+ * &gt;&gt; FromPolarCoordinates({r, t, p})
+ * {r*Cos(t),r*Cos(p)*Sin(t),r*Sin(p)*Sin(t)}
+ * </pre>
  */
 public class FromPolarCoordinates extends AbstractEvaluator {
 

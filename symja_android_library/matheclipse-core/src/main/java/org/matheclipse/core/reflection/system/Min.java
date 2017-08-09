@@ -12,6 +12,56 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
+/**
+ * <pre>
+ * Min(e_1, e_2, ..., e_i)
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * returns the expression with the lowest value among the <code>e_i</code>.
+ * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * <p>
+ * Minimum of a series of numbers:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; Max(4, -8, 1)
+ * -8
+ * </pre>
+ * <p>
+ * <code>Min</code> flattens lists in its arguments:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; Min({1,2},3,{-3,3.5,-Infinity},{{1/2}})
+ * -Infinity
+ * </pre>
+ * <p>
+ * <code>Min</code> with symbolic arguments remains in symbolic form:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; Min(x, y)
+ * Min(x,y)
+ * 
+ * &gt;&gt; Min(5, x, -3, y, 40)
+ * Min(-3,x,y)
+ * </pre>
+ * <p>
+ * With no arguments, <code>Min</code> gives <code>Infinity</code>:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; Min()
+ * Infinity
+ * 
+ * &gt;&gt; Min(x)
+ * x
+ * </pre>
+ */
 public class Min extends AbstractFunctionEvaluator {
 	public Min() {
 		// default ctor

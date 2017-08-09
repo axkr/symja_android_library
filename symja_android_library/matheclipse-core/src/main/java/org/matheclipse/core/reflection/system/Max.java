@@ -12,6 +12,56 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
+/**
+ * <pre>
+ * Max(e_1, e_2, ..., e_i)
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * returns the expression with the greatest value among the <code>e_i</code>.
+ * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * <p>
+ * Maximum of a series of numbers:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; Max(4, -8, 1)
+ * 4
+ * </pre>
+ * <p>
+ * <code>Max</code> flattens lists in its arguments:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; Max({1,2},3,{-3,3.5,-Infinity},{{1/2}})
+ * 3.5
+ * </pre>
+ * <p>
+ * <code>Max</code> with symbolic arguments remains in symbolic form:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; Max(x, y)
+ * Max(x,y)
+ * 
+ * &gt;&gt; Max(5, x, -3, y, 40)
+ * Max(40,x,y)
+ * </pre>
+ * <p>
+ * With no arguments, <code>Max</code> gives <code>-Infinity</code>:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; Max()
+ * -Infinity
+ * 
+ * &gt;&gt; Max(x)
+ * x
+ * </pre>
+ */
 public class Max extends AbstractFunctionEvaluator {
 	public Max() {
 		// default ctor

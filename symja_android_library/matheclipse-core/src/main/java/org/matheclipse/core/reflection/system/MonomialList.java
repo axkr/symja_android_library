@@ -32,9 +32,23 @@ import edu.jas.poly.TermOrder;
 import edu.jas.poly.TermOrderByName;
 
 /**
- * Get the list of monomials of a polynomial expression.
+ * <pre>
+ * MonomialList(polynomial, list - of - variables)
+ * </pre>
  * 
- * See <a href="http://en.wikipedia.org/wiki/Monomial">Wikipedia - Monomial<a/>
+ * <blockquote>
+ * <p>
+ * get the list of monomials of a <code>polynomial</code> expression, with respect to the
+ * <code>list-of-variables</code>.
+ * </p>
+ * </blockquote>
+ * <p>
+ * See:<br />
+ * </p>
+ * <ul>
+ * <li><a href="http://en.wikipedia.org/wiki/Monomial">Wikipedia - Monomial</a><br />
+ * </li>
+ * </ul>
  */
 public class MonomialList extends AbstractFunctionEvaluator {
 	/**
@@ -45,6 +59,11 @@ public class MonomialList extends AbstractFunctionEvaluator {
 	public MonomialList() {
 	}
 
+	/**
+	 * Get the list of monomials of a polynomial expression.
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Monomial">Wikipedia - Monomial<a/>
+	 */
 	@Override
 	public IExpr evaluate(final IAST ast, final EvalEngine engine) {
 		Validate.checkRange(ast, 2, 5);
@@ -121,8 +140,7 @@ public class MonomialList extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Get the monomial list of a univariate polynomial with coefficients
-	 * reduced by a modulo value.
+	 * Get the monomial list of a univariate polynomial with coefficients reduced by a modulo value.
 	 * 
 	 * @param polynomial
 	 * @param variable

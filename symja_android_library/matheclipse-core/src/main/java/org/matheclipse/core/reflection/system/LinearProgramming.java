@@ -25,8 +25,49 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 
 /**
- * The LinearProgramming provides an implementation of <a href="http://en.wikipedia.org/wiki/Simplex_algorithm">George Dantzig's
- * simplex algorithm</a> for solving linear optimization problems with linear equality and inequality constraints.
+ * <pre>
+ * LinearProgramming(coefficientsOfLinearObjectiveFunction, constraintList, constraintRelationList)
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * the <code>LinearProgramming</code> function provides an implementation of
+ * <a href="http://en.wikipedia.org/wiki/Simplex_algorithm">George Dantzig's simplex algorithm</a> for solving linear
+ * optimization problems with linear equality and inequality constraints and implicit non-negative variables.
+ * </p>
+ * </blockquote>
+ * <p>
+ * See:<br />
+ * </p>
+ * <ul>
+ * <li><a href="http://en.wikipedia.org/wiki/Linear_programming">Wikipedia - Linear programming</a></li>
+ * </ul>
+ * <p>
+ * See also: <a href="NMaximize.md">NMaximize</a>, <a href="NMinimize.md">NMinimize</a>
+ * </p>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; LinearProgramming({-2, 1, -5}, {{1, 2, 0},{3, 2, 0},{0,1,0},{0,0,1}}, {{6,-1},{12,-1},{0,1},{1,0}})
+ * {4.0,0.0,1.0}
+ * </pre>
+ * <p>
+ * solves the linear problem:
+ * </p>
+ * 
+ * <pre>
+ * Minimize -2x + y - 5
+ * </pre>
+ * <p>
+ * with the constraints:
+ * </p>
+ * 
+ * <pre>
+ *   x  + 2y &lt;=  6
+ *   3x + 2y &lt;= 12
+ *         x &gt;= 0
+ *         y &gt;= 0
+ * </pre>
  */
 public class LinearProgramming extends AbstractFunctionEvaluator {
 
@@ -34,6 +75,11 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
 		super();
 	}
 
+	/**
+	 * The LinearProgramming provides an implementation of
+	 * <a href="http://en.wikipedia.org/wiki/Simplex_algorithm">George Dantzig's simplex algorithm</a> for solving
+	 * linear optimization problems with linear equality and inequality constraints.
+	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		// switch to numeric calculation

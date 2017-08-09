@@ -36,7 +36,16 @@ import jp.ac.kobe_u.cs.cream.SolutionHandler;
 import jp.ac.kobe_u.cs.cream.Solver;
 
 /**
- * Try to solve a set of equations (i.e. <code>Equal[...]</code> expressions).
+ * <pre>Solve(equations, vars)
+ * </pre>
+ * <blockquote><p>attempts to solve <code>equations</code> for the variables <code>vars</code>.</p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * <pre>&gt;&gt; Solve({x^2==4,x+y^2==6}, {x,y})
+ * {{x-&gt;2,y-&gt;2},{x-&gt;2,y-&gt;-2},{x-&gt;-2,y-&gt;2*2^(1/2)},{x-&gt;-2,y-&gt;(-2)*2^(1/2)}}
+ * </pre>
+ * <h3>Related terms</h3>
+ * <p><a href="DSolve.md">DSolve</a>, <a href="Eliminate.md">Eliminate</a>, <a href="GroebnerBasis.md">GroebnerBasis</a>, <a href="FindRoot.md">FindRoot</a>, <a href="NRoots.md">NRoots</a></p>
  */
 public class Solve extends AbstractFunctionEvaluator {
 

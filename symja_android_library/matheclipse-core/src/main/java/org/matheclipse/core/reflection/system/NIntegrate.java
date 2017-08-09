@@ -9,7 +9,6 @@ import org.hipparchus.analysis.integration.gauss.GaussIntegrator;
 import org.hipparchus.analysis.integration.gauss.GaussIntegratorFactory;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.util.Precision;
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
@@ -24,12 +23,47 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Function for <a href="http://en.wikipedia.org/wiki/Numerical_integration">numerical integration</a> of univariate
- * real functions.
+ * <pre>
+ * NIntegrate(f, {x,a,b})
+ * </pre>
  * 
- * Uses the <a href=
- * "http://commons.apache.org/math/apidocs/org/apache/commons/math/analysis/integration/UnivariateRealIntegratorImpl.html"
- * >Commons math LegendreGaussIntegrator, RombergIntegrator, SimpsonIntegrator, TrapezoidIntegrator</a> implementations.
+ * <blockquote>
+ * <p>
+ * computes the numerical univariate real integral of <code>f</code> with respect to <code>x</code> from <code>a</code>
+ * to <code>b</code>.
+ * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1})
+ * -0.0208333333333333
+ * </pre>
+ * <p>
+ * LegendreGauss is the default method for numerical integration
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method-&gt;LegendreGauss)
+ * -0.0208333333333333
+ * 
+ * &gt;&gt; NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method-&gt;Simpson)
+ * -0.0208333320915699
+ * 
+ * &gt;&gt; NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method-&gt;Trapezoid)
+ * -0.0208333271245165
+ * 
+ * &gt;&gt; NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method-&gt;Romberg)
+ * -0.0208333333333333
+ * </pre>
+ * <p>
+ * Other options include <code>MaxIterations</code> and <code>MaxPoints</code>
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; NIntegrate((x-1)*(x-0.5)*x*(x+0.5)*(x+1), {x,0,1}, Method-&gt;Trapezoid, MaxIterations-&gt;5000)
+ * -0.0208333271245165
+ * </pre>
  */
 public class NIntegrate extends AbstractFunctionEvaluator {
 
@@ -89,6 +123,12 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 		// default ctor
 	}
 
+	/**
+	 * Function for <a href="http://en.wikipedia.org/wiki/Numerical_integration">numerical integration</a> of univariate
+	 * real functions.
+	 * 
+	 * Uses the LegendreGaussIntegrator, RombergIntegrator, SimpsonIntegrator, TrapezoidIntegrator implementations.
+	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3);
@@ -141,8 +181,8 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 						function = F.Plus(equalAST.arg1(), F.Negate(equalAST.arg2()));
 					}
 					try {
-						double result = integrate(method, list, min.doubleValue(), max.doubleValue(),
-								function, maxPoints, maxIterations);
+						double result = integrate(method, list, min.doubleValue(), max.doubleValue(), function,
+								maxPoints, maxIterations);
 						result = Precision.round(result, precisionGoal);
 						return Num.valueOf(result);
 					} catch (Exception e) {

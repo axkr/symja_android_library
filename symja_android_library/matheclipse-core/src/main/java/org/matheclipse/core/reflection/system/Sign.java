@@ -17,10 +17,22 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Gets the sign value of a number. See
- * <a href="http://en.wikipedia.org/wiki/Sign_function">Wikipedia - Sign
- * function</a>
+ * <pre>
+ * Sign(x)
+ * </pre>
  * 
+ * <blockquote>
+ * <p>
+ * gives <code>-1</code>, <code>0</code> or <code>1</code> depending on whether <code>x</code> is negative, zero or
+ * positive.
+ * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; Sign(-2.5)
+ * -1
+ * </pre>
  */
 public class Sign extends AbstractEvaluator {
 
@@ -41,6 +53,11 @@ public class Sign extends AbstractEvaluator {
 		}
 	}
 
+	/**
+	 * Gets the sign value of a number. See <a href="http://en.wikipedia.org/wiki/Sign_function">Wikipedia - Sign
+	 * function</a>
+	 * 
+	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);

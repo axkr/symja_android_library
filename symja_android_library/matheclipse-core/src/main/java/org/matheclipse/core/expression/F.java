@@ -1092,8 +1092,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primepi" : "PrimePi");
 	public final static IBuiltInSymbol PrimePowerQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primepowerq" : "PrimePowerQ");
-	public final static IBuiltInSymbol PrimitiveRoots = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primitiveroots" : "PrimitiveRoots");
+	public final static IBuiltInSymbol PrimitiveRootList = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primitiverootlist" : "PrimitiveRootList");
 	public final static IBuiltInSymbol Product = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "product" : "Product");
 	public final static IBuiltInSymbol ProductLog = initFinalSymbol(
@@ -1910,7 +1910,7 @@ public class F {
 					PolynomialQuotient, PolynomialQuotientRemainder, PolynomialRemainder, Position, Positive,
 					PossibleZeroQ, Power, PowerExpand, PowerMod, PreDecrement, PreIncrement, Prepend, PrependTo,
 					// Prime,
-					PrimeQ, PrimitiveRoots, Print, Product, ProductLog, Quiet, Quotient, RandomInteger, RandomReal,
+					PrimeQ, PrimitiveRootList, Print, Product, ProductLog, Quiet, Quotient, RandomInteger, RandomReal,
 					// RandomSample,
 					Range, Rational, Rationalize, Re, Reap, Refine, ReplaceAll, ReplacePart, ReplaceRepeated, Rest,
 					Resultant, Return, Reverse, Riffle, RootIntervals, RootOf, Roots, Surd, RotateLeft, RotateRight,

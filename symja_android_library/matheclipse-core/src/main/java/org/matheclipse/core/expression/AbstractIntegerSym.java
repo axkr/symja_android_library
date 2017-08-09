@@ -721,7 +721,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	 * @throws ArithmeticException
 	 */
 	@Override
-	public IInteger[] primitiveRoots() throws ArithmeticException {
+	public IInteger[] primitiveRootList() throws ArithmeticException {
 		IInteger phi = eulerPhi();
 		int size = phi.eulerPhi().toInt();
 		if (size <= 0) {

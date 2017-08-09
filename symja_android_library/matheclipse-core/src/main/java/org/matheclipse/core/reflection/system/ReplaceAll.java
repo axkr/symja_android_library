@@ -9,6 +9,46 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
+/**
+ * <pre>
+ * ReplaceAll(expr, i -&gt; new)
+ * </pre>
+ * <p>
+ * or
+ * </p>
+ * 
+ * <pre>
+ * expr /. i -&gt; new
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * replaces all <code>i</code> in <code>expr</code> with <code>new</code>.
+ * </p>
+ * </blockquote>
+ * 
+ * <pre>
+ * ReplaceAll(expr, {i1 -&gt; new1, i2 -&gt; new2, ... } )
+ * </pre>
+ * <p>
+ * or
+ * </p>
+ * 
+ * <pre>
+ * expr /. {i1 -&gt; new1, i2 -&gt; new2, ... }
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * replaces all <code>i</code>s in <code>expr</code> with <code>new</code>s.
+ * </p>
+ * </blockquote>
+ * 
+ * <pre>
+ * &gt;&gt; f(a) + f(b) /. f(x_) -&gt; x^2
+ * a^2+b^2
+ * </pre>
+ */
 public class ReplaceAll extends AbstractEvaluator {
 
 	public ReplaceAll() {

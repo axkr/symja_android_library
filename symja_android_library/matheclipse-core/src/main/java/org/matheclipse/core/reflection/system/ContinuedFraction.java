@@ -13,16 +13,31 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * <pre>ContinuedFraction(number)
+ * <pre>
+ * ContinuedFraction(number)
  * </pre>
- * <blockquote><p>get the continued fraction representation of <code>number</code>.</p>
+ * 
+ * <blockquote>
+ * <p>
+ * get the continued fraction representation of <code>number</code>.
+ * </p>
  * </blockquote>
- * <p>See:<br  /></p>
+ * <p>
+ * See:<br />
+ * </p>
  * <ul>
- * <li><a href="http://en.wikipedia.org/wiki/Continued_fraction">Wikipedia - Continued fraction</a></li>
+ * <li><a href="https://en.wikipedia.org/wiki/Continued_fraction">Wikipedia - Continued fraction</a></li>
  * </ul>
  * <h3>Examples</h3>
- * <pre>&gt;&gt;&gt; ContinuedFraction(45/16)
+ * 
+ * <pre>
+ * &gt;&gt; FromContinuedFraction({2,3,4,5})
+ * 157/68
+ * 
+ * &gt;&gt; ContinuedFraction(157/68)
+ * {2,3,4,5} 
+ * 
+ * &gt;&gt;&gt; ContinuedFraction(45/16)
  * {2,1,4,3}
  * </pre>
  */

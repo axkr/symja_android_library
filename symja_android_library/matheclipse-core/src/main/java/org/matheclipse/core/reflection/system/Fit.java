@@ -14,18 +14,27 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
-
 /**
- * <pre>Fit(list-of-points, degree, variable)
+ * <pre>
+ * Fit(list - of - points, degree, variable)
  * </pre>
- * <blockquote><p>solve a least squares problem using the Levenberg-Marquardt algorithm.</p>
+ * 
+ * <blockquote>
+ * <p>
+ * solve a least squares problem using the Levenberg-Marquardt algorithm.
+ * </p>
  * </blockquote>
- * <p>See:<br  /></p>
+ * <p>
+ * See:<br />
+ * </p>
  * <ul>
- * <li><a href="http://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm">Wikipedia - Levenberg–Marquardt algorithm</a></li>
+ * <li><a href="http://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm">Wikipedia - Levenberg–Marquardt
+ * algorithm</a></li>
  * </ul>
  * <h3>Examples</h3>
- * <pre>&gt;&gt; Fit({{1,1},{2,4},{3,9},{4,16}},2,x)
+ * 
+ * <pre>
+ * &gt;&gt; Fit({{1,1},{2,4},{3,9},{4,16}},2,x)
  * x^2.0
  * </pre>
  */
@@ -57,7 +66,7 @@ public class Fit extends AbstractFunctionEvaluator {
 
 			if (isMatrix != null && isMatrix[1] == 2) {
 				final double[][] elements = Expr2Object.toDoubleMatrix((IAST) ast.arg1());
-				if (elements==null){
+				if (elements == null) {
 					return F.NIL;
 				}
 				for (int i = 0; i < elements.length; i++) {

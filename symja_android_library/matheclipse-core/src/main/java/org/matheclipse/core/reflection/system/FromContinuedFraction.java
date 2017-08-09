@@ -10,15 +10,36 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Convert a list of numbers to a fraction. See <a href="http://en.wikipedia.org/wiki/Continued_fraction">Continued fraction</a>
+ * <pre>
+ * FromContinuedFraction({n1, n2, ...})
+ * </pre>
  * 
- * @see org.matheclipse.core.reflection.system.ContinuedFraction
+ * <blockquote>
+ * <p>
+ * return the number which represents the continued fraction list <code>{n1, n2, ...}</code>.
+ * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; FromContinuedFraction({2,3,4,5})
+ * 157/68
+ * 
+ * &gt;&gt; ContinuedFraction(157/68)
+ * {2,3,4,5}
+ * </pre>
  */
 public class FromContinuedFraction extends AbstractEvaluator {
 
 	public FromContinuedFraction() {
 	}
 
+	/**
+	 * Convert a list of numbers to a fraction. See <a href="http://en.wikipedia.org/wiki/Continued_fraction">Continued
+	 * fraction</a>
+	 * 
+	 * @see org.matheclipse.core.reflection.system.ContinuedFraction
+	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);

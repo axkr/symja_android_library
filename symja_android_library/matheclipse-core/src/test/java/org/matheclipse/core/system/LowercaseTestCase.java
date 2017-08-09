@@ -2412,7 +2412,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "2,1,0},{22,4,0,0},{27,1,1,0},{27,3,0,0},{32,0,1,0},{32,2,0,0},{37,1,0,0},{42,0,0,\n"
 						+ "0}}");
 	}
-
+	
+	public void testFromContinuedFraction() {
+		check("FromContinuedFraction({2,3,4,5})", "157/68");
+		check("ContinuedFraction(157/68)", "{2,3,4,5}");
+	}
+	
 	public void testFromPolarCoordinates() {
 		check("FromPolarCoordinates({r, t})", "{r*Cos(t),r*Sin(t)}");
 		check("FromPolarCoordinates({r, t, p})", "{r*Cos(t),r*Cos(p)*Sin(t),r*Sin(p)*Sin(t)}");
@@ -2547,20 +2552,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGroebnerBasis() {
+		check("GroebnerBasis({x*y-2*y, 2*y^2-x^2}, {y, x})", "{-2*x^2+x^3,-2*y+x*y,-x^2+2*y^2}");
+		check("GroebnerBasis({x*y-2*y, 2*y^2-x^2}, {x, y})", "{-2*y+y^3,-2*y+x*y,x^2-2*y^2}");
 		check("GroebnerBasis({-5*x^2+y*z-x-1, 2*x+3*x*y+y^2,x-3*y+x*z-2*z^2},{x,y,z}, MonomialOrder ->DegreeReverseLexicographic)",
 				"{x-3*y+x*z-2*z^2,2*x+3*x*y+y^2,1+x+5*x^2-y*z,-1+27*y+5*y^2-z-29*y*z+18*z^2+y*z^2\n"
 						+ "-20*z^3,6-156*y-20*y^2+6*z+174*y*z+y^2*z-104*z^2+120*z^3,180-20*x-4185*y-559*y^2+\n"
 						+ "15*y^3+162*z+4680*y*z-2808*z^2+3240*z^3,4026-20*x-106386*y-17140*y^2+4086*z+\n"
 						+ "114129*y*z-70866*z^2+78768*z^3+1560*z^4}");
-		check("GroebnerBasis({x^2 - 2 y^2, x y - 3}, {x, y})", "{-9+2*y^4,3*x-2*y^3}");
+		check("GroebnerBasis({x^2 - 2 y^2, x*y - 3}, {x, y})", "{-9+2*y^4,3*x-2*y^3}");
 		check("GroebnerBasis({x + y, x^2 - 1, y^2 - 2 x}, {x, y})", "{1}");
-		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2, z^2 - 2 x + 3 y}, {x, y, z})",
+		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x*y - z + 2, z^2 - 2 x + 3 y}, {x, y, z})",
 				"{1024-832*z-215*z^2+156*z^3-25*z^4+24*z^5+13*z^6+z^8,-11552+2560*y+2197*z+2764*z^\n"
 						+ "2+443*z^3+728*z^4+169*z^5+32*z^6+13*z^7,-34656+5120*x+6591*z+5732*z^2+1329*z^3+\n"
 						+ "2184*z^4+507*z^5+96*z^6+39*z^7}");
-		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2}, {x, y, z})",
+		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x*y - z + 2}, {x, y, z})",
 				"{4-y^2+y^4-4*z+z^2+y^2*z^2,-2*x-y+y^3+x*z+y*z^2,2+x*y-z,-1+x^2+y^2+z^2}");
-		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x y - z + 2, z^2 - 3 + x,x - y^2 + 1}, {x, y, z})", "{1}");
+		check("GroebnerBasis({x^2 + y^2 + z^2 - 1, x*y - z + 2, z^2 - 3 + x,x - y^2 + 1}, {x, y, z})", "{1}");
 	}
 
 	public void testHarmonicNumber() {
@@ -2785,13 +2792,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("IntegerExponent(10, b)", "IntegerExponent(10,b)");
 	}
 
-	public void testIntegerPart() {
-		check("IntegerPart(-9/4)", "-2");
-		check("IntegerPart(2.4)", "2");
-		check("IntegerPart(-2.4)", "-2");
-		check("IntegerPart({-2.4, -2.5, -3.0})", "{-2,-2,-3}");
-	}
-
 	public void testIntegerLength() {
 		check("IntegerLength(123456)", "6");
 		check("IntegerLength(10^10000)", "10001");
@@ -2801,6 +2801,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("IntegerLength(3, -2)", "IntegerLength(3,-2)");
 		check("IntegerLength(0)", "1");
 		check("IntegerLength /@ (10 ^ Range(100) - 1) == Range(1, 100)", "True");
+	}
+
+	public void testIntegerPart() {
+		check("IntegerPart(-9/4)", "-2");
+		check("IntegerPart(2.4)", "2");
+		check("IntegerPart(-2.4)", "-2");
+		check("IntegerPart({-2.4, -2.5, -3.0})", "{-2,-2,-3}");
 	}
 
 	public void testIntegrate() {
@@ -5097,12 +5104,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{False,True,True,False,True,False,True,False,False,False,True,False,True,False,False,False,True,False,True,False}");
 	}
 
-	public void testPrimitiveRoots() {
-		check("PrimitiveRoots(9)", "{2,5}");
-		check("PrimitiveRoots(7)", "{3,5}");
-		check("PrimitiveRoots(12)", "{}");
-		check("PrimitiveRoots(19)", "{2,3,10,13,14,15}");
-		check("PrimitiveRoots(43)", "{3,5,12,18,19,20,26,28,29,30,33,34}");
+	public void testPrimitiveRootList() {
+		check("PrimitiveRootList(9)", "{2,5}");
+		check("PrimitiveRootList(10)", "{3,7}");
+		check("PrimitiveRootList(7)", "{3,5}");
+		check("PrimitiveRootList(12)", "{}");
+		check("PrimitiveRootList(19)", "{2,3,10,13,14,15}");
+		check("PrimitiveRootList(43)", "{3,5,12,18,19,20,26,28,29,30,33,34}");
 	}
 
 	public void testPrint() {
@@ -5590,7 +5598,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Roots(x^3 - 5*x + 4==0,x)", "x==1||x==-1/2-Sqrt(17)/2||x==-1/2+Sqrt(17)/2");
 
 	}
-
+	 
 	public void testRotateLeft() {
 		check("RotateLeft({1,2,3,4,5},2)", "{3,4,5,1,2}");
 
@@ -5601,6 +5609,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	}
 
+	public void testRound() {
+		check("Round(3.4)", "3");
+		check("Round(3.5)", "4");
+		check("Round(3.6)", "4");
+		check("Round(-3.4)", "-3");
+		check("Round(-3.5)", "-4");
+		check("Round(-3.6)", "-4");
+	}
+	
 	public void testRowReduce() {
 		check("RowReduce({{1, 0, a}, {1, 1, b}})", "{{1,0,a},\n" + " {0,1,-a+b}}");
 		check("RowReduce({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", "{{1,0,-1},\n" + " {0,1,2},\n" + " {0,0,0}}");

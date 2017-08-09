@@ -9,8 +9,27 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.reflection.system.rules.LaplaceTransformRules;
 
 /**
- * See: <a href=""> Wikipedia:Laplace Transform</a>
+ * <pre>
+ * LaplaceTransform(f, s, t)
+ * </pre>
  * 
+ * <blockquote>
+ * <p>
+ * returns the laplace transform.
+ * </p>
+ * </blockquote>
+ * <p>
+ * See:
+ * </p>
+ * <ul>
+ * <li><a href="https://en.wikipedia.org/wiki/Laplace_transform">Wikipedia - Laplace transform</a></li>
+ * </ul>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; LaplaceTransform(t^2*Exp(2+3*t), t, s)
+ * (-2*E^2)/(3-s)^3
+ * </pre>
  */
 public class LaplaceTransform extends AbstractFunctionEvaluator implements LaplaceTransformRules {
 	public LaplaceTransform() {
@@ -37,7 +56,7 @@ public class LaplaceTransform extends AbstractFunctionEvaluator implements Lapla
 					IAST rest = F.TimesAlloc(arg1.size());
 					arg1.filter(result, rest, x -> x.isFree(t));
 					if (result.size() > 1) {
-						return F.Times(result.getOneIdentity(F.C1), F.LaplaceTransform(rest,t,s));
+						return F.Times(result.getOneIdentity(F.C1), F.LaplaceTransform(rest, t, s));
 					}
 				}
 				if (arg1.isPower()) {

@@ -19,21 +19,42 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Determine the numerical roots of a univariate polynomial
+ * <pre>
+ * NRoots(poly)
+ * </pre>
  * 
- * See Wikipedia entries for:
- * <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic equation
- * </a>, <a href="http://en.wikipedia.org/wiki/Cubic_function">Cubic
- * function</a> and
- * <a href="http://en.wikipedia.org/wiki/Quartic_function">Quartic function</a>
+ * <blockquote>
+ * <p>
+ * gives the numerical roots of polynomial <code>poly</code>.
+ * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
  * 
- * @see Roots
+ * <pre>
+ * &gt;&gt; NRoots(x^3-4*x^2+x+6)
+ * {2.9999999999999996,-1.0000000000000002,1.9999999999999998}
+ * </pre>
+ * 
+ * <h3>Related terms</h3>
+ * <p>
+ * <a href="DSolve.md">DSolve</a>, <a href="Eliminate.md">Eliminate</a>, <a href="GroebnerBasis.md">GroebnerBasis</a>,
+ * <a href="FindRoot.md">FindRoot</a>, <a href="Solve.md">Solve</a>
+ * </p>
  */
 public class NRoots extends AbstractFunctionEvaluator {
 
 	public NRoots() {
 	}
 
+	/**
+	 * Determine the numerical roots of a univariate polynomial
+	 * 
+	 * See Wikipedia entries for: <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic equation </a>,
+	 * <a href="http://en.wikipedia.org/wiki/Cubic_function">Cubic function</a> and
+	 * <a href="http://en.wikipedia.org/wiki/Quartic_function">Quartic function</a>
+	 * 
+	 * @see Roots
+	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);
@@ -156,9 +177,7 @@ public class NRoots extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * See <a href=
-	 * "http://stackoverflow.com/questions/13328676/c-solving-cubic-equations" >
-	 * http
+	 * See <a href= "http://stackoverflow.com/questions/13328676/c-solving-cubic-equations" > http
 	 * ://stackoverflow.com/questions/13328676/c-solving-cubic-equations</a>
 	 * 
 	 * @param a

@@ -39,13 +39,21 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.Matcher;
 
 /**
- * Exponential definitions for trigonometric functions
+ * <pre>
+ * TrigToExp(expr)
+ * </pre>
  * 
- * See <a href=
- * "http://en.wikipedia.org/wiki/List_of_trigonometric_identities#Exponential_definitions">
- * List of trigonometric identities - Exponential definitions</a>,<br/>
- * <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
- * function</a>
+ * <blockquote>
+ * <p>
+ * converts trigonometric functions in <code>expr</code> to exponentials.
+ * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; TrigToExp(Cos(x))
+ * 1/2*E^(I*x)+1/2*E^(-I*x)
+ * </pre>
  */
 public class TrigToExp extends AbstractEvaluator {
 
@@ -80,6 +88,13 @@ public class TrigToExp extends AbstractEvaluator {
 	public TrigToExp() {
 	}
 
+	/**
+	 * Exponential definitions for trigonometric functions
+	 * 
+	 * See <a href= "http://en.wikipedia.org/wiki/List_of_trigonometric_identities#Exponential_definitions"> List of
+	 * trigonometric identities - Exponential definitions</a>,<br/>
+	 * <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
+	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);

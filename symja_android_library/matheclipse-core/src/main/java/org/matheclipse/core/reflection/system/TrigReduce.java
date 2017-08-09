@@ -33,12 +33,22 @@ import org.matheclipse.core.patternmatching.HashedOrderlessMatcher;
 import org.matheclipse.core.visit.VisitorExpr;
 
 /**
- * Transform products of trigonometric functions into &quot;linear form&quot;.
+ * <pre>
+ * TrigReduce(expr)
+ * </pre>
  * 
- * <a href=
- * "http://en.wikipedia.org/wiki/List_of_trigonometric_identities#Product-to-sum_and_sum-to-product_identities"
- * >List of trigonometric identities - Product-to-sum and sum-to-product
- * identities</a>
+ * <blockquote>
+ * <p>
+ * rewrites products and powers of trigonometric functions in <code>expr</code> in terms of trigonometric functions with
+ * combined arguments.
+ * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; TrigReduce(2*Sin(x)*Cos(y))
+ * Sin(-y+x)+Sin(y+x)
+ * </pre>
  */
 public class TrigReduce extends AbstractEvaluator {
 	private static HashedOrderlessMatcher ORDERLESS_MATCHER = new HashedOrderlessMatcher();
@@ -80,6 +90,13 @@ public class TrigReduce extends AbstractEvaluator {
 		}
 	}
 
+	/**
+	 * Transform products of trigonometric functions into &quot;linear form&quot;.
+	 * 
+	 * <a href=
+	 * "http://en.wikipedia.org/wiki/List_of_trigonometric_identities#Product-to-sum_and_sum-to-product_identities"
+	 * >List of trigonometric identities - Product-to-sum and sum-to-product identities</a>
+	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);

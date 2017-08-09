@@ -31,9 +31,99 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.SumRules;
 
 /**
- * Summation of expressions.
+ * <pre>
+ * Sum(expr, {i, imin, imax})
+ * </pre>
  * 
- * See <a href="http://en.wikipedia.org/wiki/Summation">Wikipedia Summation</a>
+ * <blockquote>
+ * <p>
+ * evaluates the discrete sum of <code>expr</code> with <code>i</code> ranging from <code>imin</code> to
+ * <code>imax</code>.
+ * </p>
+ * </blockquote>
+ * 
+ * <pre>
+ * Sum(expr, {i, imin, imax, di})
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * <code>i</code> ranges from <code>imin</code> to <code>imax</code> in steps of <code>di</code>.
+ * </p>
+ * </blockquote>
+ * 
+ * <pre>
+ * Sum(expr, {i, imin, imax}, {j, jmin, jmax}, ...)
+ * </pre>
+ * 
+ * <blockquote><blockquote>
+ * <p>
+ * evaluates <code>expr</code> as a multiple sum, with <code>{i, ...}, {j, ...}, ...</code> being in
+ * outermost-to-innermost order.
+ * </p>
+ * </blockquote> </blockquote>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; Sum(k, {k, 1, 10})    
+ * 55
+ * </pre>
+ * <p>
+ * Double sum:<br />
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; Sum(i * j, {i, 1, 10}, {j, 1, 10})    
+ * 3025
+ * </pre>
+ * <p>
+ * Symbolic sums are evaluated:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; Sum(k, {k, 1, n})    
+ * 1/2*n*(1+n)
+ * 
+ * &gt;&gt; Sum(k, {k, n, 2*n})  
+ * 3/2*n*(1+n)
+ * 
+ * &gt;&gt; Sum(k, {k, I, I + 1})    
+ * 1+I*2   
+ * 
+ * &gt;&gt; Sum(1 / k ^ 2, {k, 1, n})    
+ * HarmonicNumber(n, 2)
+ * </pre>
+ * <p>
+ * Verify algebraic identities:<br />
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; Simplify(Sum(x ^ 2, {x, 1, y}) - y * (y + 1) * (2 * y + 1) / 6)   
+ * 0
+ * </pre>
+ * <p>
+ * Infinite sums:<br />
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; Sum(1 / 2 ^ i, {i, 1, Infinity})    
+ * 1    
+ * 
+ * &gt;&gt; Sum(1 / k ^ 2, {k, 1, Infinity})    
+ * Pi^2/6   
+ * 
+ * &gt;&gt; Sum(x^k*Sum(y^l,{l,0,4}),{k,0,4}))    
+ * 1+y+y^2+y^3+y^4+x*(1+y+y^2+y^3+y^4)+(1+y+y^2+y^3+y^4)*x^2+(1+y+y^2+y^3+y^4)*x^3+(1+y+y^2+y^3+y^4)*x^4  
+ * 
+ * &gt;&gt; Sum(2^(-i), {i, 1, Infinity})    
+ * 1    
+ * 
+ * &gt;&gt; Sum(i / Log(i), {i, 1, Infinity})    
+ * Sum(i/Log(i),{i,1,Infinity})    
+ * 
+ * &gt;&gt; Sum(Cos(Pi i), {i, 1, Infinity})    
+ * Sum(Cos(i*Pi),{i,1,Infinity})
+ * </pre>
  */
 public class Sum extends ListFunctions.Table implements SumRules {
 

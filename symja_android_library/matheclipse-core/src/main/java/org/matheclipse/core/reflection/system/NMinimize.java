@@ -23,6 +23,51 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
+/**
+ * <pre>
+ * NMinimize(coefficientsOfLinearObjectiveFunction, constraintList, constraintRelationList)
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * the <code>NMinimize</code> function provides an implementation of
+ * <a href="http://en.wikipedia.org/wiki/Simplex_algorithm">George Dantzig's simplex algorithm</a> for solving linear
+ * optimization problems with linear equality and inequality constraints and implicit non-negative variables.
+ * </p>
+ * </blockquote>
+ * <p>
+ * See:<br />
+ * </p>
+ * <ul>
+ * <li><a href="http://en.wikipedia.org/wiki/Linear_programming">Wikipedia - Linear programming</a></li>
+ * </ul>
+ * <p>
+ * See also: <a href="LinearProgramming.md">LinearProgramming</a>, <a href="NMaximize.md">NMaximize</a>
+ * </p>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; NMinimize({-2*x+y-5, x+2*y&lt;=6 &amp;&amp; 3*x + 2*y &lt;= 12}, {x, y})
+ * {-13.0,{x-&gt;4.0,y-&gt;0.0}
+ * </pre>
+ * <p>
+ * solves the linear problem:
+ * </p>
+ * 
+ * <pre>
+ * Minimize -2x + y - 5
+ * </pre>
+ * <p>
+ * with the constraints:
+ * </p>
+ * 
+ * <pre>
+ *   x  + 2y &lt;=  6
+ *   3x + 2y &lt;= 12
+ *         x &gt;= 0
+ *         y &gt;= 0
+ * </pre>
+ */
 public class NMinimize extends AbstractFunctionEvaluator {
 
 	public NMinimize() {

@@ -25,15 +25,21 @@ import edu.jas.poly.TermOrder;
 import edu.jas.poly.TermOrderByName;
 
 /**
- * Compute the Groebner basis for a list of polynomials.
- * 
- * See
+ * <pre>GroebnerBasis({polynomial-list},{variable-list})
+ * </pre>
+ * <blockquote><p>returns a Gröbner basis for the <code>polynomial-list</code> and <code>variable-list</code>.</p>
+ * </blockquote>
+ * <p>See:</p>
  * <ul>
- * <li><a href="https://en.wikipedia.org/wiki/Gr%C3%B6bner_basis">EN-Wikipedia:
- * Gröbner basis</a></li>
- * <li><a href="https://de.wikipedia.org/wiki/Gr%C3%B6bnerbasis">DE-Wikipedia:
- * Gröbner basis</a></li>
+ * <li><a href="https://en.wikipedia.org/wiki/Gröbner_basis">Wikipedia - Gröbner basis</a></li>
  * </ul>
+ * <h3>Examples</h3>
+ * <pre>&gt;&gt; GroebnerBasis({x*y-2*y, 2*y^2-x^2}, {y, x})
+ * {-2*x^2+x^3,-2*y+x*y,-x^2+2*y^2}
+ * 
+ * &gt;&gt; GroebnerBasis({x*y-2*y, 2*y^2-x^2}, {x, y})
+ * {-2*y+y^3,-2*y+x*y,x^2-2*y^2}
+ * </pre>
  */
 public class GroebnerBasis extends AbstractFunctionEvaluator {
 
@@ -41,6 +47,15 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 		// empty constructor
 	}
 
+	/**
+	 * Compute the Groebner basis for a list of polynomials.
+	 * 
+	 * See
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Gr%C3%B6bner_basis">EN-Wikipedia: Gröbner basis</a></li>
+	 * <li><a href="https://de.wikipedia.org/wiki/Gr%C3%B6bnerbasis">DE-Wikipedia: Gröbner basis</a></li>
+	 * </ul>
+	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.size() >= 3) {
@@ -73,10 +88,8 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 	 *            a list of variable symbols
 	 * @param termOrder
 	 *            the term order
-	 * @return <code>F.NIL</code> if
-	 *         <code>stopUnevaluatedOnPolynomialConversionError==true</code> and
-	 *         one of the polynomials in <code>listOfPolynomials</code> are not
-	 *         convertible to JAS polynomials
+	 * @return <code>F.NIL</code> if <code>stopUnevaluatedOnPolynomialConversionError==true</code> and one of the
+	 *         polynomials in <code>listOfPolynomials</code> are not convertible to JAS polynomials
 	 */
 	private static IAST computeGroebnerBasis(IAST listOfPolynomials, IAST listOfVariables, TermOrder termOrder) {
 		List<ISymbol> varList = new ArrayList<ISymbol>(listOfVariables.size() - 1);
@@ -121,17 +134,14 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Used in <code>Solve()</code> function to reduce the polynomial list of
-	 * equations.
+	 * Used in <code>Solve()</code> function to reduce the polynomial list of equations.
 	 * 
 	 * @param listOfPolynomials
 	 *            a list of polynomials
 	 * @param listOfVariables
 	 *            a list of variable symbols
-	 * @return <code>F.NIL</code> if
-	 *         <code>stopUnevaluatedOnPolynomialConversionError==true</code> and
-	 *         one of the polynomials in <code>listOfPolynomials</code> are not
-	 *         convertible to JAS polynomials
+	 * @return <code>F.NIL</code> if <code>stopUnevaluatedOnPolynomialConversionError==true</code> and one of the
+	 *         polynomials in <code>listOfPolynomials</code> are not convertible to JAS polynomials
 	 */
 	public static IAST solveGroebnerBasis(IAST listOfPolynomials, IAST listOfVariables) {
 		List<ISymbol> varList = new ArrayList<ISymbol>(listOfVariables.size() - 1);
@@ -162,7 +172,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 			return F.NIL;
 		}
 		GroebnerBaseAbstract<BigRational> engine = GBAlgorithmBuilder
-				.<BigRational> polynomialRing(jas.getPolynomialRingFactory()).fractionFree().syzygyPairlist().build();
+				.<BigRational>polynomialRing(jas.getPolynomialRingFactory()).fractionFree().syzygyPairlist().build();
 		List<GenPolynomial<BigRational>> opl = engine.GB(polyList);
 		IAST resultList = F.List();
 		// convert rational to integer coefficients and add

@@ -2674,20 +2674,20 @@ public class MainTestCase extends AbstractTestCase {
 
 	public void testSystem393a() {
 		// http://exploringnumbertheory.wordpress.com/2013/09/09/finding-primitive-roots/
-		check("PrimitiveRoots(127)", "{3,6,7,12,14,23,29,39,43,45,46,48,53,55,56,57,58,65,67,78,83,85,86,91,92,93,96,\n"
+		check("PrimitiveRootList(127)", "{3,6,7,12,14,23,29,39,43,45,46,48,53,55,56,57,58,65,67,78,83,85,86,91,92,93,96,\n"
 				+ "97,101,106,109,110,112,114,116,118}");
 		// http://exploringnumbertheory.wordpress.com/2013/09/12/an-elementary-algorithm-for-finding-primitive-roots/
-		check("PrimitiveRoots(11)", "{2,6,7,8}");
+		check("PrimitiveRootList(11)", "{2,6,7,8}");
 		// http://exploringnumbertheory.wordpress.com/2013/10/25/more-about-checking-for-primitive-roots/
-		check("PrimitiveRoots(37)", "{2,5,13,15,17,18,19,20,22,24,32,35}");
-		check("PrimitiveRoots(17)", "{3,5,6,7,10,11,12,14}");
+		check("PrimitiveRootList(37)", "{2,5,13,15,17,18,19,20,22,24,32,35}");
+		check("PrimitiveRootList(17)", "{3,5,6,7,10,11,12,14}");
 	}
 
 	public void testSystem394() {
-		check("PrimitiveRoots(8)", "{}");
-		check("PrimitiveRoots(9)", "{2,5}");
-		check("PrimitiveRoots(13)", "{2,6,7,11}");
-		check("PrimitiveRoots(25)", "{2,3,8,12,13,17,22,23}");
+		check("PrimitiveRootList(8)", "{}");
+		check("PrimitiveRootList(9)", "{2,5}");
+		check("PrimitiveRootList(13)", "{2,6,7,11}");
+		check("PrimitiveRootList(25)", "{2,3,8,12,13,17,22,23}");
 	}
 
 	public void testSystem395() {

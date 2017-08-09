@@ -36,20 +36,31 @@ import org.matheclipse.core.polynomials.QuarticSolver;
 import edu.jas.arith.BigRational;
 import edu.jas.poly.GenPolynomial;
 
+
 /**
- * Determine the roots of a univariate polynomial
- * 
- * See Wikipedia entries for:
- * <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic
- * equation </a>, <a href="http://en.wikipedia.org/wiki/Cubic_function">Cubic
- * function</a> and
- * <a href="http://en.wikipedia.org/wiki/Quartic_function">Quartic function</a>
+ * <pre>Roots(polynomial-equation, var)
+ * </pre>
+ * <blockquote><p>determine the roots of a univariate polynomial equation with respect to the variable <code>var</code>.</p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * <pre>&gt;&gt; Roots(3*x^3-5*x^2+5*x-2==0,x)
+ * x==2/3||x==1/2-I*1/2*Sqrt(3)||x==1/2+I*1/2*Sqrt(3)
+ * </pre>
  */
 public class Roots extends AbstractFunctionEvaluator {
 
 	public Roots() {
 	}
 
+	/**
+	 * Determine the roots of a univariate polynomial
+	 * 
+	 * See Wikipedia entries for:
+	 * <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic
+	 * equation </a>, <a href="http://en.wikipedia.org/wiki/Cubic_function">Cubic
+	 * function</a> and
+	 * <a href="http://en.wikipedia.org/wiki/Quartic_function">Quartic function</a>
+	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);

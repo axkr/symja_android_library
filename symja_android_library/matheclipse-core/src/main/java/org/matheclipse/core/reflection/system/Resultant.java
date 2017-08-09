@@ -11,7 +11,28 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
 
 /**
+ * <pre>
+ * Resultant(polynomial1, polynomial2, var)
+ * </pre>
  * 
+ * <blockquote>
+ * <p>
+ * computes the resultant of the polynomials <code>polynomial1</code> and <code>polynomial2</code> with respect to the
+ * variable <code>var</code>.
+ * </p>
+ * </blockquote>
+ * <p>
+ * See:<br />
+ * </p>
+ * <ul>
+ * <li><a href="https://en.wikipedia.org/wiki/Resultant">Wikipedia - Resultant</a></li>
+ * </ul>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; Resultant((x-y)^2-2 , y^3-5, y)
+ * 17-60*x+12*x^2-10*x^3-6*x^4+x^6
+ * </pre>
  */
 public class Resultant extends AbstractFunctionEvaluator {
 
@@ -135,7 +156,7 @@ public class Resultant extends AbstractFunctionEvaluator {
 	// }
 
 	@Override
-	public void setUp(final ISymbol newSymbol)  {
+	public void setUp(final ISymbol newSymbol) {
 		newSymbol.setAttributes(ISymbol.LISTABLE);
 	}
 }
