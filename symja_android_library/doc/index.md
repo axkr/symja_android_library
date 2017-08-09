@@ -219,6 +219,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [ChebyshevU](functions/ChebyshevU.md)
 * [ChessboardDistance](functions/ChessboardDistance.md)
 * [ChineseRemainder](functions/ChineseRemainder.md)
+* [CholeskyDecomposition](functions/CholeskyDecomposition.md)
 * [Chop](functions/Chop.md)
 * [Clear](functions/Clear.md)
 * [ClearAll](functions/ClearAll.md)
