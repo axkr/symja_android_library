@@ -1,13 +1,13 @@
 package org.matheclipse.core.reflection.system;
 
-import java.util.function.Predicate;
-
+import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.reflection.system.rules.InverseLaplaceTransformRules;
 
 /**
@@ -37,6 +37,15 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator implement
 					arg1.filter(result, rest, x -> x.isFree(s));
 					if (result.size() > 1) {
 						return F.Times(result.getOneIdentity(F.C1), F.InverseLaplaceTransform(rest, s, t));
+					}
+				}
+				if (arg1.isTimes() || arg1.isPower()) {
+					IExpr[] parts = Algebra.fractionalParts(arg1, false);
+					if (parts != null) {
+						IExpr temp= Algebra.partialFractionDecompositionRational(new PartialFractionGenerator(), parts, s);
+						if (temp.isPlus()){
+							return ((IAST)temp).mapThread(F.InverseLaplaceTransform(F.Null, s, t), 1);
+						}
 					}
 				}
 				if (arg1.isPlus()) {
