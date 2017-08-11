@@ -70,11 +70,7 @@ import edu.jas.kern.ComputerThreads;
  * 
  */
 public class F {
-
-	static {
-		EvalEngine.get().setPackageMode(true);
-	}
-
+ 
 	/**
 	 * <p>
 	 * In computing, memoization or memoisation is an optimization technique used primarily to speed up computer
@@ -1762,20 +1758,11 @@ public class F {
 
 	static {
 		try {
-			// if (Config.DEBUG) {
-			// System.out.println("Config.DEBUG == true");
-			// }
-			// if (Config.SHOW_STACKTRACE) {
-			// System.out.println("Config.SHOW_STACKTRACE == true");
-			// }
-			// System.out.println("F#static()");
-
 			ComputerThreads.NO_THREADS = Config.JAS_NO_THREADS;
 			INIT_THREAD = new Thread() {
 				@Override
 				public void run() {
 					final EvalEngine engine = EvalEngine.get();
-					engine.setPackageMode(true);
 					IAST ruleList = org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
 					if (ruleList != null) {
 						engine.addRules(ruleList);
@@ -3234,11 +3221,11 @@ public class F {
 	public static IAST Det(final IExpr a0) {
 		return unaryAST1(Det, a0);
 	}
-	
+
 	public static IAST DiracDelta(final IExpr a0) {
 		return unaryAST1(DiracDelta, a0);
 	}
-	
+
 	public static IAST DirectedInfinity(final IExpr a0) {
 		return unaryAST1(DirectedInfinity, a0);
 	}
@@ -4125,7 +4112,7 @@ public class F {
 	public static IAST InverseFunction(final IExpr a) {
 		return unaryAST1(InverseFunction, a);
 	}
-	
+
 	public static IAST InverseLaplaceTransform(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(InverseLaplaceTransform, a0, a1, a2);
 	}
@@ -4290,7 +4277,7 @@ public class F {
 	public static IAST KroneckerDelta(final IExpr a0, final IExpr a1) {
 		return binaryAST2(KroneckerDelta, a0, a1);
 	}
-	
+
 	public static IAST LaplaceTransform(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(LaplaceTransform, a0, a1, a2);
 	}
@@ -5357,7 +5344,7 @@ public class F {
 	public static IAST Surd(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Surd, a0, a1);
 	}
-	
+
 	/**
 	 * Create a string expression
 	 * 

@@ -38,7 +38,7 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 public class Symbol implements ISymbol, Serializable {
-	protected Context fContext;
+	protected transient Context fContext;
 
 	private final static Collator US_COLLATOR = Collator.getInstance(Locale.US);
 	/**
@@ -59,7 +59,7 @@ public class Symbol implements ISymbol, Serializable {
 	 * The hash value of this object computed in the constructor.
 	 * 
 	 */
-	protected final int fHashValue;
+	protected int fHashValue;
 
 	public Symbol(final String symbolName, Context context) {
 		super();
@@ -246,8 +246,8 @@ public class Symbol implements ISymbol, Serializable {
 			}
 			if (fSymbolName.equals(symbol.fSymbolName)) {
 				// #172
-				// return fContext.equals(symbol.fContext);
-				return true;
+				return fContext.equals(symbol.fContext);
+				// return true;
 			}
 		}
 		return false;
@@ -791,21 +791,31 @@ public class Symbol implements ISymbol, Serializable {
 
 	private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		fSymbolName = stream.readUTF();
+		fHashValue = fSymbolName.hashCode();
 		fAttributes = stream.read();
 		fContext = (Context) stream.readObject();
+		if (fContext == null) {
+			fContext = Context.SYSTEM;
+		} else {
+			boolean hasDownRulesData = stream.readBoolean();
+			if (hasDownRulesData) {
+				fRulesData = new RulesData(EvalEngine.get().getContext());
+				fRulesData = (RulesData) stream.readObject();
+			}
+		}
 	}
 
-	public Object readResolve() throws ObjectStreamException {
-		ISymbol sym = fContext.get(fSymbolName);
-		if (sym != null) {
-			return sym;
-		}
-		// probably user defined
-		Symbol symbol = new Symbol(fSymbolName, fContext);
-		fContext.put(fSymbolName, symbol);
-		symbol.fAttributes = fAttributes;
-		return symbol;
-	}
+	// public Object readResolve() throws ObjectStreamException {
+	// ISymbol sym = fContext.get(fSymbolName);
+	// if (sym != null) {
+	// return sym;
+	// }
+	// // probably user defined
+	// Symbol symbol = new Symbol(fSymbolName, fContext);
+	// fContext.put(fSymbolName, symbol);
+	// symbol.fAttributes = fAttributes;
+	// return symbol;
+	// }
 
 	/** {@inheritDoc} */
 	@Override
@@ -970,7 +980,17 @@ public class Symbol implements ISymbol, Serializable {
 	private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
 		stream.writeUTF(fSymbolName);
 		stream.write(fAttributes);
-		stream.writeObject(fContext);
+		if (fContext.equals(Context.SYSTEM)) {
+			stream.writeObject(null);
+		} else {
+			stream.writeObject(fContext);
+			if (fRulesData == null) {
+				stream.writeBoolean(false);
+			} else {
+				stream.writeBoolean(true);
+				stream.writeObject(fRulesData);
+			}
+		}
 	}
 
 	private Object writeReplace() throws ObjectStreamException {

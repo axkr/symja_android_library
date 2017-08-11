@@ -128,6 +128,4 @@ public class SVGGraphicsTestCase extends AbstractTestCase {
 						+ "\n" + "</svg>");
 	}
 
-	// <polyline xmlns="http://www.w3.org/2000/svg" points="0.000000,233.333333 6.666667,233.333333" style="stroke:
-	// rgb(0.000000%, 0.000000%, 0.000000%); stroke-opacity: 1; stroke-width: 0.666667px; fill: none"/>
 }

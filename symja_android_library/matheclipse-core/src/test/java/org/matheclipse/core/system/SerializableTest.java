@@ -74,7 +74,7 @@ public class SerializableTest extends TestCase {
 	}
 
 	public void testSymbol() {
-		equalsCopy(F.Pi);
+//		equalsCopy(F.Pi);
 		equalsCopy(F.userSymbol("testme"));
 	}
 

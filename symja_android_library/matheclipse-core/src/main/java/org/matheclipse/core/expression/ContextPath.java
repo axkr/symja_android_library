@@ -10,25 +10,52 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class ContextPath {
+	public final static String GLOBAL_CONTEXT_NAME = "Global";
+
 	public final Map<String, Context> fContextMap;
 	List<Context> path = new ArrayList<Context>();
 
 	public ContextPath() {
-		this("Global");
+		this(GLOBAL_CONTEXT_NAME);
 	}
 
 	public ContextPath(String contextName) {
 		fContextMap = new HashMap<String, Context>(17);
 		path.add(Context.SYSTEM);
-		fContextMap.put(Context.SYSTEM.contextName, Context.SYSTEM);
+		fContextMap.put(Context.SYSTEM.getContextName(), Context.SYSTEM);
 		path.add(getContext(contextName));
 	}
 
 	public ContextPath(Context context) {
 		fContextMap = new HashMap<String, Context>(17);
 		path.add(Context.SYSTEM);
-		fContextMap.put(Context.SYSTEM.contextName, Context.SYSTEM);
+		fContextMap.put(Context.SYSTEM.getContextName(), Context.SYSTEM);
 		path.add(context);
+	}
+
+	public Context getGlobalContext() {
+		int size = path.size();
+		int start = size - 1;
+		for (int i = start; i >= 0; i--) {
+			Context temp = path.get(i);
+			if (temp.getContextName().equals(GLOBAL_CONTEXT_NAME)) {
+				return temp;
+			}
+		}
+		return null;
+	}
+
+	public boolean setGlobalContext(Context context) {
+		int size = path.size();
+		int start = size - 1;
+		for (int i = start; i >= 0; i--) {
+			Context temp = path.get(i);
+			if (temp.getContextName().equals(GLOBAL_CONTEXT_NAME)) {
+				path.set(i, context);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public Context getContext(String contextName) {

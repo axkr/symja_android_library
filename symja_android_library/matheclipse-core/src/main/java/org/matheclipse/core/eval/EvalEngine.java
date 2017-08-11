@@ -12,7 +12,6 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
-import javax.print.attribute.standard.PrinterMessageFromOperator;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
@@ -29,13 +28,13 @@ import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IEvaluationEngine;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
@@ -46,6 +45,7 @@ import org.matheclipse.parser.client.math.MathException;
  */
 public class EvalEngine implements Serializable, IEvaluationEngine {
 
+	public static boolean PACKAGE_MODE = true;
 	/**
 	 * 
 	 */
@@ -157,7 +157,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					listLength = ((IAST) ast.get(i)).size() - 1;
 				} else {
 					if (listLength != ((IAST) ast.get(i)).size() - 1) {
-						EvalEngine.get().printMessage("Lists of unequal length cannot be combined: "+ast.toString());
+						EvalEngine.get().printMessage("Lists of unequal length cannot be combined: " + ast.toString());
 						ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
 						return F.NIL;
 					}
@@ -227,7 +227,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	protected int fIterationLimit;
 
-	protected boolean fPackageMode = false;
+	protected boolean fPackageMode = PACKAGE_MODE;
 
 	transient int fModuleCounter = 0;
 
@@ -311,7 +311,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		// fNamespace = fExpressionFactory.getNamespace();
 
 		init();
-//		fContextPath = new ContextPath();
+		// fContextPath = new ContextPath();
 
 		// set this EvalEngine to the thread local
 		set(this);
@@ -369,10 +369,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	public void addRules(IAST ruleList) {
-		boolean oldPackageMode = isPackageMode();
+		// boolean oldPackageMode = isPackageMode();
 		boolean oldTraceMode = isTraceMode();
 		try {
-			setPackageMode(true);
+			// setPackageMode(true);
 			setTraceMode(false);
 			final int ruleSize = ruleList.size();
 			for (int i = 1; i < ruleSize; i++) {
@@ -381,7 +381,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				}
 			}
 		} finally {
-			setPackageMode(oldPackageMode);
+			// setPackageMode(oldPackageMode);
 			setTraceMode(oldTraceMode);
 		}
 	}
@@ -895,10 +895,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				// if (temp == F.Null&&!expr.isAST(F.SetDelayed)) {
 				// System.out.println(expr.toString());
 				// }
-//				 if (expr.isAST(F.Integrate)) {
-//				 System.out.println("(0):" + expr.toString());
-//				 System.out.println("(1) --> " + temp.toString());
-//				 }
+				// if (expr.isAST(F.Integrate)) {
+				// System.out.println("(0):" + expr.toString());
+				// System.out.println("(1) --> " + temp.toString());
+				// }
 				if (fTraceMode) {
 					fTraceStack.add(expr, temp, fRecursionCounter, 0L, "Evaluation loop");
 				}
@@ -910,11 +910,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						// if (temp == F.Null&&!result.isAST(F.SetDelayed)) {
 						// System.out.println(expr.toString());
 						// }
-//						 if (result.isAST(F.Integrate)) {
-//						 System.out.println(result.toString());
-//						 System.out.println("("+iterationCounter+") --> " +
-//						 temp.toString());
-//						 }
+						// if (result.isAST(F.Integrate)) {
+						// System.out.println(result.toString());
+						// System.out.println("("+iterationCounter+") --> " +
+						// temp.toString());
+						// }
 						if (fTraceMode) {
 							fTraceStack.add(result, temp, fRecursionCounter, iterationCounter, "Evaluation loop");
 						}
@@ -1699,6 +1699,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	public void setPackageMode(boolean packageMode) {
+		if (!packageMode) {
+			PACKAGE_MODE = false;
+		}
 		fPackageMode = packageMode;
 	}
 
