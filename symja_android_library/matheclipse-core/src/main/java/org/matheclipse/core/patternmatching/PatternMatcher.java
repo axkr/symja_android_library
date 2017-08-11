@@ -40,7 +40,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 * 
 	 * @see ISymbol#ORDERLESS
 	 */
-	public class OrderlessMatcher {
+	private class OrderlessMatcher {
 
 		private IAST fLHSPatternAST;
 
@@ -139,7 +139,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 * 
 	 */
 	@SuppressWarnings("serial")
-	protected class StackMatcher extends ArrayDeque<Entry> {
+	public class StackMatcher extends ArrayDeque<Entry> {
 
 		/**
 		 * Match the entries of the stack recursively starting from the top entry.
@@ -298,6 +298,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 * left-hand-side pattern expression contains no pattern.
 	 */
 	protected transient PatternMap fPatternMap;
+
+	public PatternMap getPatternMap() {
+		return fPatternMap;
+	}
 
 	/**
 	 * Needed for serialization

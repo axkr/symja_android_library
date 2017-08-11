@@ -62,7 +62,7 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	 */
 	public final static int DEFAULT_RULE_PRIORITY = Integer.MAX_VALUE;
 
-	protected PatternMap() {
+	public PatternMap() {
 		this(EMPTY_ARRAY);
 	}
 
@@ -159,7 +159,7 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	 *            the (left-hand-side) expression which could contain pattern objects.
 	 * @return the piority of this pattern-matcher
 	 */
-	protected int determinePatterns(final IExpr lhsPatternExpr) {
+	public int determinePatterns(final IExpr lhsPatternExpr) {
 		fPriority = DEFAULT_RULE_PRIORITY;
 		if (lhsPatternExpr instanceof IAST) {
 			Map<IExpr, Integer> patternIndexMap = new IdentityHashMap<IExpr, Integer>();
@@ -215,14 +215,15 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public int get(IExpr patternOrSymbol) {
+		int length = fSymbolsArray.length;
 		if (patternOrSymbol.isSymbol()) {
-			for (int i = 0; i < fSymbolsArray.length; i++) {
+			for (int i = 0; i < length; i++) {
 				if (patternOrSymbol == fSymbolsArray[i]) {
 					return i;
 				}
 			}
 		} else {
-			for (int i = 0; i < fSymbolsArray.length; i++) {
+			for (int i = 0; i < length; i++) {
 				if (patternOrSymbol == fSymbolsArray[i]) {
 					return i;
 				}
