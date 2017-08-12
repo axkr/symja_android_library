@@ -23,6 +23,8 @@ public class MathMLPresentationTestCase extends TestCase {
 	 * Test mathml function
 	 */
 	public void testMathMLPresentation() {
+		check("-Infinity/Log[a]",
+				"<mfrac><mrow><mo>-</mo><mi>∞</mi></mrow><mrow><mi>log</mi><mo>&#x2061;</mo><mo>(</mo><mi>a</mi><mo>)</mo></mrow></mfrac>");
 		check("x*(1+x)^(-2)",
 				"<mfrac><mi>x</mi><msup><mrow><mrow><mo>(</mo><mi>x</mi><mo>+</mo><mn>1</mn><mo>)</mo></mrow></mrow><mn>2</mn></msup></mfrac>");
 		check("x/(1+x)/(1+x)",

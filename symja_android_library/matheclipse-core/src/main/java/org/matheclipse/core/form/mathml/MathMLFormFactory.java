@@ -483,13 +483,14 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 		CONSTANT_EXPRS.put(F.GoldenRatio, "<mi>\u03C7</mi>"); // phi
 		CONSTANT_EXPRS.put(F.Pi, "<mi>\u03C0</mi>");
-		CONSTANT_EXPRS.put(F.CInfinity, "<mi>\u221e</mi>"); //&infin;
-		CONSTANT_EXPRS.put(F.CNInfinity, "<mo>-</mo><mi>\u221e</mi>");
+		CONSTANT_EXPRS.put(F.CInfinity, "<mi>\u221e</mi>"); // &infin;
+		// mrow is important in mfrac element!
+		CONSTANT_EXPRS.put(F.CNInfinity, "<mrow><mo>-</mo><mi>\u221e</mi></mrow>");
 		CONSTANT_EXPRS.put(F.Catalan, "<mi>C</mi>");
 		CONSTANT_EXPRS.put(F.Degree, "<mi>\u00b0</mi>");
-		CONSTANT_EXPRS.put(F.Glaisher, "<mi>A</mi>"); 
+		CONSTANT_EXPRS.put(F.Glaisher, "<mi>A</mi>");
 		CONSTANT_EXPRS.put(F.EulerGamma, "<mi>\u03B3</mi>");
-		CONSTANT_EXPRS.put(F.Khinchin, "<mi>K</mi>"); 
+		CONSTANT_EXPRS.put(F.Khinchin, "<mi>K</mi>");
 
 	}
 }
