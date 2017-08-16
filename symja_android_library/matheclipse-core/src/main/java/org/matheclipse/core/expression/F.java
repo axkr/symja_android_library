@@ -4296,6 +4296,10 @@ public class F {
 		return binaryAST2(KroneckerDelta, a0, a1);
 	}
 
+	public static IAST LaguerreL(final IExpr a0, final IExpr a1) {
+		return binaryAST2(LaguerreL, a0, a1);
+	}
+	
 	public static IAST LaplaceTransform(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(LaplaceTransform, a0, a1, a2);
 	}

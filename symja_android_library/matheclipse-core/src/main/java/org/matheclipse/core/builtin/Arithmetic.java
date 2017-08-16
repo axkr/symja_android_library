@@ -1329,6 +1329,12 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr e2ObjArg(final IExpr a, final IExpr n) {
+			if (n.isZero()) {
+				return F.C1;
+			}
+			if (n.isOne()) {
+				return a;
+			}
 			if (a.isRational() && n.isInteger()) {
 				BigFraction bf = ((IRational) a).getFraction();
 				BigFraction ph = pochhammer(bf, ((IInteger) n).toBigNumerator());
@@ -1342,7 +1348,22 @@ public final class Arithmetic {
 					return F.Divide(F.Factorial(temp), F.Gamma(a));
 				}
 			}
-			return F.Divide(F.Gamma(F.Plus(a, n)), F.Gamma(a));
+
+			if (n.isInteger()) {
+				if (n.isPositive()) {
+					// Product(a + k, {k, 0, n - 1})
+					return F.Product(F.Plus(a, F.k), F.List(F.k, C0, Plus(F.CN1, n)));
+				}
+				if (n.isNegative()) {
+					// Product(1/(a - k), {k, 1, -n})
+					return Power(F.Product(Plus(a, Negate(F.k)), F.List(F.k, C1, n.negate())), -1);
+					// Product(1/(a - k), {k, 1, n}) /; Element[n, Integers] && n > 0
+				}
+			}
+			if (!a.isInteger() && !n.isInteger()) {
+				return F.Divide(F.Gamma(F.Plus(a, n)), F.Gamma(a));
+			}
+			return F.NIL;
 		}
 
 		/**
@@ -1382,11 +1403,6 @@ public final class Arithmetic {
 		public static BigFraction pochhammer(BigFraction th, int n) {
 			return pochhammer(th, BigInteger.valueOf(n));
 		}
-
-		// @Override
-		// public IAST getRuleAST() {
-		// return RULES;
-		// }
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {

@@ -477,7 +477,10 @@ public class SpecialFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
 			int degree = ast.arg1().toIntDefault(Integer.MIN_VALUE);
-			if (degree > Integer.MIN_VALUE) {
+			if (degree == 0) {
+				return F.C1;
+			}
+			if (degree > 0) {
 				return PolynomialsUtils.createLaguerrePolynomial(degree, ast.arg2());
 			}
 			return F.NIL;
@@ -749,7 +752,7 @@ public class SpecialFunctions {
 					// ((-1)^n/(n + 1))*BernoulliB(n + 1)
 					n = n.negate();
 					IExpr n1 = n.add(C1);
-					return Times(Power(CN1, n), Power(n1, -1), BernoulliB(n1));
+					return Times(Power(CN1, n), Power(n1, -1), BernoulliB(n1)); 
 				}
 				if (n.isEven()) {
 					// Zeta(2*n) :=
