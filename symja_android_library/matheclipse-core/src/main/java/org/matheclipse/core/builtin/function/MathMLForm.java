@@ -12,7 +12,10 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Return the MathML form of this expression.
+ * <pre>MathMLForm(expr)
+ * </pre>
+ * <blockquote><p>returns the MathMLForm form of the evaluated <code>expr</code>.</p>
+ * </blockquote>
  */
 public class MathMLForm extends AbstractCoreFunctionEvaluator {
 

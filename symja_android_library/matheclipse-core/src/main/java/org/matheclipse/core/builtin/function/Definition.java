@@ -12,6 +12,37 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
+/**
+ * <pre>
+ * Definition(symbol)
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * prints user-defined values and rules associated with <code>symbol</code>.
+ * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; Definition(ArcSinh)
+ * {ArcSinh(0)=0,
+ *  ArcSinh(I*1/2)=I*1/6*Pi,
+ *  ArcSinh(I)=I*1/2*Pi,
+ *  ArcSinh(1)=Log(1+Sqrt(2)),
+ *  ArcSinh(I*1/2*Sqrt(2))=I*1/4*Pi,
+ *  ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi,
+ *  ArcSinh(Infinity)=Infinity,
+ *  ArcSinh(I*Infinity)=Infinity,
+ *  ArcSinh(ComplexInfinity)=ComplexInfinity}
+ * 
+ * &gt;&gt; a=2
+ * 2
+ * 
+ * &gt;&gt; Definition(a)
+ * {a=2}
+ * </pre>
+ */
 public class Definition extends AbstractCoreFunctionEvaluator {
 
 	public Definition() {

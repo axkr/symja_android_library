@@ -7,6 +7,16 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
+/**
+ * <pre>HoldForm(expr)
+ * </pre>
+ * <blockquote><p><code>HoldForm</code> doesn't evaluate <code>expr</code> and didn't appear in the output</p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * <pre>&gt;&gt; HoldForm(3*2)
+ * 3*2
+ * </pre>
+ */
 public class HoldForm extends AbstractCoreFunctionEvaluator {
 
 	public HoldForm() {

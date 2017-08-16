@@ -12,7 +12,21 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Return the TeX form of this expression.
+ * <pre>
+ * TeXForm(expr)
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * returns the TeX form of the evaluated <code>expr</code>.
+ * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt;&gt; TeXForm(D(sin(x)*cos(x),x))
+ * "{\cos(x)}^{2}-{\sin(x)}^{2}"
+ * </pre>
  */
 public class TeXForm extends AbstractCoreFunctionEvaluator {
 

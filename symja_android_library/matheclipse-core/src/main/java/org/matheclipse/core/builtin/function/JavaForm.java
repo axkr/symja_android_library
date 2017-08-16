@@ -9,19 +9,54 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
+ * <pre>
+ * JavaForm(expr)
+ * </pre>
+ * 
+ * <blockquote>
  * <p>
- * Return the internal Java form of this expression. The Java form is useful for generating Symja programming expressions.
+ * returns the Symja Java form of the <code>expr</code>. In Java you can use the
+ * created Symja expressions.
  * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt;&gt; JavaForm[I/2*E^((-I)*x)-I/2*E^(I*x)]
+ * "Plus(Times(CC(0L,1L,1L,2L),Power(E,Times(CNI,x))),Times(CC(0L,1L,-1L,2L),Power(E,Times(CI,x))))"
+ * </pre>
  * <p>
- * See the online Symja function reference: <a
- * href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/JavaForm">JavaForm</a>
+ * JavaForm evaluates its argument before creating the Java form:
  * </p>
+ * 
+ * <pre>
+ * &gt;&gt;&gt; JavaForm(D(sin(x)*cos(x),x))
+ * "Plus(Sqr(Cos(x)),Negate(Sqr(Sin(x))))"
+ * </pre>
+ * <p>
+ * You can use <code>Hold</code> to suppress the evaluation:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt;&gt; JavaForm(Hold(D(sin(x)*cos(x),x)))
+ * "D(Times(Sin(x),Cos(x)),x)"
+ * </pre>
  */
 public class JavaForm extends AbstractCoreFunctionEvaluator {
 
 	public JavaForm() {
 	}
 
+	/**
+	 * <p>
+	 * Return the internal Java form of this expression. The Java form is useful for
+	 * generating Symja programming expressions.
+	 * </p>
+	 * <p>
+	 * See the online Symja function reference: <a href=
+	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/JavaForm">JavaForm</a>
+	 * </p>
+	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);

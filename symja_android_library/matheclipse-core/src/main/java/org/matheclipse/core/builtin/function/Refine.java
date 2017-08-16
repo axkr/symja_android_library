@@ -12,8 +12,26 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Refine(expr, assumptions) - evaluate expression for the given assumptions
+ * <pre>Refine(expression, assumptions)
+ * </pre>
+ * <blockquote><p>evaluate the <code>expression</code> for the given <code>assumptions</code>.</p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * <pre>&gt;&gt; Refine(Abs(n+Abs(m)), n&gt;=0)
+ * Abs(m)+n
  * 
+ * &gt;&gt; Refine(-Infinity&lt;x, x&gt;0)
+ * True 
+ * 
+ * &gt;&gt; Refine(Max(Infinity,x,y), x&gt;0)
+ * Max(Infinity,y)
+ * 
+ * &gt;&gt; Refine(Sin(k*Pi), Element(k, Integers))
+ * 0
+ * 
+ * &gt;&gt; Sin(k*Pi)
+ * Sin(k*Pi)
+ * </pre>
  */
 public class Refine extends AbstractCoreFunctionEvaluator {
 

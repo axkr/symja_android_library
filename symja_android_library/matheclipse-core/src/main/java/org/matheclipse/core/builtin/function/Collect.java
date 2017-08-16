@@ -17,14 +17,10 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 
 /**
- * <code>Collect(expr, variable)</code> - collect subexpressions in expr which
- * belong to the same variable.
- * 
- * <p>
- * See the online Symja function reference: <a href=
- * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Collect">
- * Collect</a>
- * </p>
+ * <pre>Collect(expr, variable)
+ * </pre>
+ * <blockquote><p>collect subexpressions in <code>expr</code> which belong to the same <code>variable</code>.</p>
+ * </blockquote>
  */
 public class Collect extends AbstractCoreFunctionEvaluator {
 

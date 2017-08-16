@@ -14,7 +14,22 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 
 /**
- * Get the exponent of a subexpression in a polynomial expression
+ * <pre>
+ * Exponent(polynomial, x)
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * gives the maximum power with which <code>x</code> appears in the expanded
+ * form of <code>polynomial</code>.
+ * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; Exponent(1+x^2+a*x^3, x)
+ * 3
+ * </pre>
  */
 public class Exponent extends AbstractCoreFunctionEvaluator {
 

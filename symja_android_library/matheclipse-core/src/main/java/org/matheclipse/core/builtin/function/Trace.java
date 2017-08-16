@@ -10,15 +10,32 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 
 /**
- * Trace the evaluation steps for a given expression. The resulting trace expression list is wrapped by Hold (i.e.
- * <code>Hold[{...}]</code>.
+ * <pre>
+ * Trace(expr)
+ * </pre>
  * 
+ * <blockquote>
+ * <p>
+ * return the evaluation steps which are used to get the result.
+ * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; Trace(D(Sin(x),x))
+ * {{Cos(#1)&amp;[x],Cos(x)},D(x,x)*Cos(x),{D(x,x),1},1*Cos(x),Cos(x)}
+ * </pre>
  */
 public class Trace extends AbstractCoreFunctionEvaluator {
 
 	public Trace() {
 	}
 
+	/**
+	 * Trace the evaluation steps for a given expression. The resulting trace
+	 * expression list is wrapped by Hold (i.e. <code>Hold[{...}]</code>.
+	 * 
+	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 2, 3);

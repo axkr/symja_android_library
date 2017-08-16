@@ -11,10 +11,15 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
-/** 
- * <p>
- * See the online Symja function reference: <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Chop">Chop</a>
- * </p>
+/**
+ * <pre>Chop(numerical-expr)
+ * </pre>
+ * <blockquote><p>replaces numerical values in the <code>numerical-expr</code> which are close to zero with symbolic value <code>0</code>.</p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * <pre>&gt;&gt; Chop(0.00000000001)
+ * 0
+ * </pre>
  */
 public class Chop extends AbstractCoreFunctionEvaluator {
 	public final static double DEFAULT_CHOP_DELTA = 1.0e-10;
