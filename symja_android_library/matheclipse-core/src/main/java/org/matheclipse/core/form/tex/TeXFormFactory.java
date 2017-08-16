@@ -241,9 +241,19 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 			final IAST f = ((IAST) o);
 			IExpr h = f.head();
 			if (h.isSymbol()) {
-				IConverter converter = reflection(((ISymbol) h).getSymbolName());
-				if ((converter != null) && (converter.convert(buf, f, precedence))) {
+				String headStr = ((ISymbol) h).getSymbolName();
+				if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+					String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
+					if (str != null) {
+						headStr = str;
+					}
+				}
+				final IConverter converter = operTab.get(headStr);
+				if (converter != null ) {
+					converter.setFactory(this);
+					if ( converter.convert(buf, f, precedence)) {
 					return;
+					}
 				}
 			}
 			convertAST(buf, f);
@@ -306,57 +316,38 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 		buf.append(")");
 
-	}
-
-	/** {@inheritDoc} */
-	public String getReflectionNamespace() {
-		return "org.matheclipse.core.form.tex.reflection.";
-	}
-
-	public IConverter reflection(final String headString) {
-		String headStr = headString;
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
-			if (str != null) {
-				headStr = str;
-			} else {
-				return null;
-			}
-		}
-		final IConverter converter = operTab.get(headStr);
-		if (converter != null) {
-			return converter;
-		}
-		final String namespace = getReflectionNamespace() + headStr;
-
-		Class<?> clazz = null;
-		try {
-			clazz = Class.forName(namespace);
-		} catch (final ClassNotFoundException e) {
-			// not a predefined function
-			return null;
-		}
-
-		AbstractConverter module;
-		try {
-			module = (AbstractConverter) clazz.newInstance();
-			module.setFactory(this);
-			// module.setExpressionFactory(fExprFactory);
-			operTab.put(headString, module);
-			return module;
-		} catch (final Throwable se) {
-			if (Config.DEBUG) {
-				se.printStackTrace();
-			}
-		}
-		return null;
-	}
+	} 
 
 	public void init() {
 		plusPrec = ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence();
 		// timesPrec =
 		// ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence();
-
+		operTab.put("Abs", new org.matheclipse.core.form.tex.reflection.Abs());
+		operTab.put("Binomial", new org.matheclipse.core.form.tex.reflection.Binomial());
+		operTab.put("Ceiling", new org.matheclipse.core.form.tex.reflection.Ceiling());
+		operTab.put("Complex", new org.matheclipse.core.form.tex.reflection.Complex());
+		operTab.put("CompoundExpression", new org.matheclipse.core.form.tex.reflection.CompoundExpression());
+		operTab.put("D", new org.matheclipse.core.form.tex.reflection.D());
+		operTab.put("DirectedInfinity", new org.matheclipse.core.form.tex.reflection.DirectedInfinity());
+		operTab.put("Floor", new org.matheclipse.core.form.tex.reflection.Floor());
+		operTab.put("HarmonicNumber", new org.matheclipse.core.form.tex.reflection.HarmonicNumber());
+		operTab.put("HurwitzZeta", new org.matheclipse.core.form.tex.reflection.HurwitzZeta());
+		operTab.put("Integrate", new org.matheclipse.core.form.tex.reflection.Integrate());
+		operTab.put("Limit", new org.matheclipse.core.form.tex.reflection.Limit());
+		operTab.put("List", new org.matheclipse.core.form.tex.reflection.List());
+		operTab.put("MatrixForm", new org.matheclipse.core.form.tex.reflection.MatrixForm());
+		operTab.put("Plus", new org.matheclipse.core.form.tex.reflection.Plus());
+		operTab.put("Power", new org.matheclipse.core.form.tex.reflection.Power());
+		operTab.put("Product", new org.matheclipse.core.form.tex.reflection.Product());
+		operTab.put("Rational", new org.matheclipse.core.form.tex.reflection.Rational());
+		operTab.put("Sqrt", new org.matheclipse.core.form.tex.reflection.Sqrt());
+		operTab.put("Subscript", new org.matheclipse.core.form.tex.reflection.Subscript());
+		operTab.put("Subsuperscript", new org.matheclipse.core.form.tex.reflection.Subsuperscript());
+		operTab.put("Sum", new org.matheclipse.core.form.tex.reflection.Sum());
+		operTab.put("Superscript", new org.matheclipse.core.form.tex.reflection.Superscript());
+		operTab.put("Times", new org.matheclipse.core.form.tex.reflection.Times());
+		operTab.put("Zeta", new org.matheclipse.core.form.tex.reflection.Zeta());
+		
 		operTab.put("Condition", new AbstractOperator(this,
 				ASTNodeFactory.MMA_STYLE_FACTORY.get("Condition").getPrecedence(), "\\text{/;}"));
 		operTab.put("Unset",

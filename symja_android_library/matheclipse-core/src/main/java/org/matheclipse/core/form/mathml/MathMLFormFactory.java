@@ -333,50 +333,6 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 	}
 
-	// public String getReflectionNamespace() {
-	// return "org.matheclipse.core.form.mathml.reflection.";
-	// }
-
-	// public IConverter reflection(final String headString) {
-	// String headStr = headString;
-	// if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-	// String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
-	// if (str != null) {
-	// headStr = str;
-	// } else {
-	// return null;
-	// }
-	// }
-	// final AbstractConverter converter = operTab.get(headStr);
-	// if (converter != null) {
-	// converter.setFactory(this);
-	// return converter;
-	// }
-	// final String namespace = getReflectionNamespace() + headStr;
-	//
-	// Class clazz = null;
-	// try {
-	// clazz = Class.forName(namespace);
-	// } catch (final ClassNotFoundException e) {
-	// // not a predefined function
-	// return null;
-	// }
-	//
-	// AbstractConverter module;
-	// try {
-	// module = (AbstractConverter) clazz.newInstance();
-	// module.setFactory(this);
-	// // module.setExpressionFactory(fExprFactory);
-	// operTab.put(headStr, module);
-	// return module;
-	// } catch (final Throwable se) {
-	// if (Config.DEBUG) {
-	// se.printStackTrace();
-	// }
-	// }
-	// return null;
-	// }
-
 	public void init() {
 		// operTab.put(Plus, new MMLOperator(this, "mrow", "+"));
 		// operTab.put(Equal, new MMLOperator(this, "mrow", "="));

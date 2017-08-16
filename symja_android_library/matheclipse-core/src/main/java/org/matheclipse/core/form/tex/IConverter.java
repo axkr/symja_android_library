@@ -15,4 +15,6 @@ public interface IConverter {
 	 *            the math function which should be converted to TeX
 	 */
 	public boolean convert(StringBuffer buffer, IAST function, int precedence);
+	
+	public void setFactory(final AbstractTeXFormFactory factory);
 }

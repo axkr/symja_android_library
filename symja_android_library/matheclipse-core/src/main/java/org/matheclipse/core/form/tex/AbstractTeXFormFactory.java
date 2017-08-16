@@ -29,7 +29,7 @@ abstract public class AbstractTeXFormFactory {
 	 * 
 	 * @return
 	 */
-	abstract public String getReflectionNamespace();
+//	abstract public String getReflectionNamespace();
 
 	/**
 	 * Determine the converter of the heads symbol string
@@ -37,7 +37,7 @@ abstract public class AbstractTeXFormFactory {
 	 * @param headString
 	 * @return
 	 */
-	abstract public IConverter reflection(String headString);
+	// abstract public IConverter reflection(String headString);
 
 	/**
 	 * convert a double nummber
