@@ -1350,14 +1350,16 @@ public final class Arithmetic {
 			}
 
 			if (n.isInteger()) {
-				if (n.isPositive()) {
-					// Product(a + k, {k, 0, n - 1})
-					return F.Product(F.Plus(a, F.k), F.List(F.k, C0, Plus(F.CN1, n)));
-				}
-				if (n.isNegative()) {
-					// Product(1/(a - k), {k, 1, -n})
-					return Power(F.Product(Plus(a, Negate(F.k)), F.List(F.k, C1, n.negate())), -1);
-					// Product(1/(a - k), {k, 1, n}) /; Element[n, Integers] && n > 0
+				int ni = n.toIntDefault(Integer.MIN_VALUE);
+				if (ni > Integer.MIN_VALUE) {
+					if (ni > 0) {
+						// Product(a + k, {k, 0, n - 1})
+						return F.product(x -> F.Plus(a, x), 0, ni - 1);
+					}
+					if (ni<0) {
+						// Product(1/(a - k), {k, 1, -n})
+						return Power(F.product(x -> F.Plus(a, x.negate()), 1, -ni), -1);
+					}
 				}
 			}
 			if (!a.isInteger() && !n.isInteger()) {
