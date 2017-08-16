@@ -22,8 +22,7 @@ import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
 /**
- * A &quot;blank pattern&quot; with no assigned &quot;pattern name&quot; (i.e.
- * &quot;<code>_</code>&quot;)
+ * A &quot;blank pattern&quot; with no assigned &quot;pattern name&quot; (i.e. &quot;<code>_</code>&quot;)
  * 
  */
 public class Blank implements IPattern {
@@ -44,7 +43,7 @@ public class Blank implements IPattern {
 	/**
 	 * The expression which should check this pattern
 	 */
-	protected final IExpr fCondition;
+	final IExpr fCondition;
 
 	/**
 	 * Use default value, if no matching expression was found
@@ -172,7 +171,7 @@ public class Blank implements IPattern {
 			return null;
 		}
 	}
-	
+
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj) {
@@ -192,8 +191,8 @@ public class Blank implements IPattern {
 	}
 
 	/**
-	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e.
-	 * <code>f[x_,y_]</code> is equivalent to <code>f[a_,b_]</code> )
+	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to
+	 * <code>f[a_,b_]</code> )
 	 * 
 	 * @param patternObject
 	 * @param pm1

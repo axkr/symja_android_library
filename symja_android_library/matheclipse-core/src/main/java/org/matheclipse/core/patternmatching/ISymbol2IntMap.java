@@ -26,7 +26,7 @@ public interface ISymbol2IntMap {
 	 * Get the <code>int</code> value mapped to the given symbol.
 	 * 
 	 * @param patternOrSymbol
-	 * @return
+	 * @return <code>-1</code> if the symbol isn't available in this map.
 	 */
 	public int get(IExpr patternOrSymbol);
 

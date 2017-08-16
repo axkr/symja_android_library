@@ -97,9 +97,8 @@ public class Pattern extends Blank {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns
-	 * a negative integer, zero, or a positive integer as this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
+	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -134,8 +133,8 @@ public class Pattern extends Blank {
 	}
 
 	/**
-	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e.
-	 * <code>f[x_,y_]</code> is equivalent to <code>f[a_,b_]</code> )
+	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to
+	 * <code>f[a_,b_]</code> )
 	 * 
 	 * @param patternObject
 	 * @param pm1
@@ -263,7 +262,7 @@ public class Pattern extends Blank {
 		buffer.append("$p(");
 		String symbolStr = fSymbol.toString();
 		char ch = symbolStr.charAt(0);
-		if (symbolStr.length() == 1) {
+		if (symbolStr.length() == 1 && fDefaultValue == null) {
 			if (('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E')) {
 				if (!fDefault) {
 					if (fCondition == null) {
@@ -309,8 +308,15 @@ public class Pattern extends Blank {
 				buffer.append("," + fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperaators));
 			}
 		}
-		if (fDefault) {
-			buffer.append(",true");
+		if (fDefaultValue != null) {
+			if (fCondition == null) {
+				buffer.append(", null");
+			}
+			buffer.append("," + fDefaultValue.internalJavaString(symbolsAsFactoryMethod, 0, useOperaators));
+		} else {
+			if (fDefault) {
+				buffer.append(",true");
+			}
 		}
 
 		buffer.append(')');

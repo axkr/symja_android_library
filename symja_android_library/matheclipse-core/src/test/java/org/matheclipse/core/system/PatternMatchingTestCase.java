@@ -145,7 +145,7 @@ public class PatternMatchingTestCase extends TestCase {
 			IExpr pat = AST2Expr.CONST.convert(node);
 
 			PatternMatcher matcher = new PatternMatcher(pat);
-			assertEquals(matcher.getPriority(), priority);
+			assertEquals(matcher.getLHSPriority(), priority);
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals(0, priority);

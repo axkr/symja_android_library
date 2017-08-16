@@ -33,6 +33,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NILPointer;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.patternmatching.ISymbol2IntMap;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -1479,7 +1480,11 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @return
 	 */
-	default boolean isModule() {
+	default boolean isModuleOrWith() {
+		return false;
+	}
+	
+	default boolean isModuleOrWithCondition() {
 		return false;
 	}
 

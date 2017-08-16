@@ -160,7 +160,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
 			}
 			return "OutOfMemoryError";
 		} catch (final StackOverflowError e) {
-			if (Config.DEBUG) {
+			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}
 			return "StackOverflowError";

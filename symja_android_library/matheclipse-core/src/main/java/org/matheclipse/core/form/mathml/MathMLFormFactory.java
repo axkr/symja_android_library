@@ -1,6 +1,7 @@
 package org.matheclipse.core.form.mathml;
 
-import java.util.Hashtable;
+import java.util.HashMap;
+
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -41,20 +42,22 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 	}
 
+	public final static HashMap<ISymbol, IConverter> CONVERTERS = new HashMap<ISymbol, IConverter>(199);
+
 	/**
 	 * Table for constant symbols
 	 */
-	public final static Hashtable<String, Object> CONSTANT_SYMBOLS = new Hashtable<String, Object>(199);
+	public final static HashMap<String, Object> CONSTANT_SYMBOLS = new HashMap<String, Object>(199);
 
 	/**
 	 * Table for constant expressions
 	 */
-	public final static Hashtable<IExpr, String> CONSTANT_EXPRS = new Hashtable<IExpr, String>(199);
+	public final static HashMap<IExpr, String> CONSTANT_EXPRS = new HashMap<IExpr, String>(199);
 
 	/**
 	 * Description of the Field
 	 */
-	public final static Hashtable<String, AbstractConverter> operTab = new Hashtable<String, AbstractConverter>(199);
+	public final static HashMap<String, AbstractConverter> OPERATORS = new HashMap<String, AbstractConverter>(199);
 
 	private int plusPrec;
 
@@ -268,8 +271,10 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			}
 			IExpr h = ast.head();
 			if (h.isSymbol()) {
-				IConverter converter = reflection(((ISymbol) h).getSymbolName());
+				IConverter converter = CONVERTERS.get((ISymbol) h);
+				// IConverter converter = reflection(((ISymbol) h).getSymbolName());
 				if (converter != null) {
+					converter.setFactory(this);
 					StringBuffer sb = new StringBuffer();
 					if (converter.convert(sb, ast, precedence)) {
 						buf.append(sb);
@@ -311,7 +316,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		tagStart(buf, "mrow");
 		convertHead(buf, ast.head());
 		// &af; &#x2061;
-		tag(buf, "mo", "&#x2061;");
+//		tag(buf, "mo", "&#x2061;");
 		tagStart(buf, "mrow");
 		tag(buf, "mo", "(");
 		tagStart(buf, "mrow");
@@ -328,49 +333,49 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 	}
 
-	public String getReflectionNamespace() {
-		return "org.matheclipse.core.form.mathml.reflection.";
-	}
+	// public String getReflectionNamespace() {
+	// return "org.matheclipse.core.form.mathml.reflection.";
+	// }
 
-	public IConverter reflection(final String headString) {
-		String headStr = headString;
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
-			if (str != null) {
-				headStr = str;
-			} else {
-				return null;
-			}
-		}
-		final AbstractConverter converter = operTab.get(headStr);
-		if (converter != null) {
-			converter.setFactory(this);
-			return converter;
-		}
-		final String namespace = getReflectionNamespace() + headStr;
-
-		Class clazz = null;
-		try {
-			clazz = Class.forName(namespace);
-		} catch (final ClassNotFoundException e) {
-			// not a predefined function
-			return null;
-		}
-
-		AbstractConverter module;
-		try {
-			module = (AbstractConverter) clazz.newInstance();
-			module.setFactory(this);
-			// module.setExpressionFactory(fExprFactory);
-			operTab.put(headStr, module);
-			return module;
-		} catch (final Throwable se) {
-			if (Config.DEBUG) {
-				se.printStackTrace();
-			}
-		}
-		return null;
-	}
+	// public IConverter reflection(final String headString) {
+	// String headStr = headString;
+	// if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+	// String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
+	// if (str != null) {
+	// headStr = str;
+	// } else {
+	// return null;
+	// }
+	// }
+	// final AbstractConverter converter = operTab.get(headStr);
+	// if (converter != null) {
+	// converter.setFactory(this);
+	// return converter;
+	// }
+	// final String namespace = getReflectionNamespace() + headStr;
+	//
+	// Class clazz = null;
+	// try {
+	// clazz = Class.forName(namespace);
+	// } catch (final ClassNotFoundException e) {
+	// // not a predefined function
+	// return null;
+	// }
+	//
+	// AbstractConverter module;
+	// try {
+	// module = (AbstractConverter) clazz.newInstance();
+	// module.setFactory(this);
+	// // module.setExpressionFactory(fExprFactory);
+	// operTab.put(headStr, module);
+	// return module;
+	// } catch (final Throwable se) {
+	// if (Config.DEBUG) {
+	// se.printStackTrace();
+	// }
+	// }
+	// return null;
+	// }
 
 	public void init() {
 		// operTab.put(Plus, new MMLOperator(this, "mrow", "+"));
@@ -394,19 +399,19 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		// operTab.put(Power, new MMLOperator(this, "msup", ""));
 		plusPrec = ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence();
 
-		operTab.put("Sin", new MMLFunction(this, "sin"));
-		operTab.put("Cos", new MMLFunction(this, "cos"));
-		operTab.put("Tan", new MMLFunction(this, "tan"));
-		operTab.put("Cot", new MMLFunction(this, "cot"));
-		operTab.put("ArcSin", new MMLFunction(this, "arcsin"));
-		operTab.put("ArcCos", new MMLFunction(this, "arccos"));
-		operTab.put("ArcTan", new MMLFunction(this, "arctan"));
-		operTab.put("ArcCot", new MMLFunction(this, "arccot"));
-		operTab.put("ArcSinh", new MMLFunction(this, "arcsinh"));
-		operTab.put("ArcCosh", new MMLFunction(this, "arccosh"));
-		operTab.put("ArcTanh", new MMLFunction(this, "arctanh"));
-		operTab.put("ArcCoth", new MMLFunction(this, "arccoth"));
-		operTab.put("Log", new MMLFunction(this, "log"));
+		CONVERTERS.put(F.Sin, new MMLFunction(this, "sin"));
+		CONVERTERS.put(F.Cos, new MMLFunction(this, "cos"));
+		CONVERTERS.put(F.Tan, new MMLFunction(this, "tan"));
+		CONVERTERS.put(F.Cot, new MMLFunction(this, "cot"));
+		CONVERTERS.put(F.ArcSin, new MMLFunction(this, "arcsin"));
+		CONVERTERS.put(F.ArcCos, new MMLFunction(this, "arccos"));
+		CONVERTERS.put(F.ArcTan, new MMLFunction(this, "arctan"));
+		CONVERTERS.put(F.ArcCot, new MMLFunction(this, "arccot"));
+		CONVERTERS.put(F.ArcSinh, new MMLFunction(this, "arcsinh"));
+		CONVERTERS.put(F.ArcCosh, new MMLFunction(this, "arccosh"));
+		CONVERTERS.put(F.ArcTanh, new MMLFunction(this, "arctanh"));
+		CONVERTERS.put(F.ArcCoth, new MMLFunction(this, "arccoth"));
+		CONVERTERS.put(F.Log, new MMLFunction(this, "log"));
 
 		// operTab.put("Sum", new MMLSum(this));
 		// operTab.put("Integrate", new MMLIntegrate(this));
@@ -492,5 +497,36 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		CONSTANT_EXPRS.put(F.EulerGamma, "<mi>\u03B3</mi>");
 		CONSTANT_EXPRS.put(F.Khinchin, "<mi>K</mi>");
 
+		CONVERTERS.put(F.Abs, new org.matheclipse.core.form.mathml.reflection.Abs());
+		CONVERTERS.put(F.And, new org.matheclipse.core.form.mathml.reflection.And());
+		CONVERTERS.put(F.Binomial, new org.matheclipse.core.form.mathml.reflection.Binomial());
+		CONVERTERS.put(F.Ceiling, new org.matheclipse.core.form.mathml.reflection.Ceiling());
+		CONVERTERS.put(F.CompoundExpression, new org.matheclipse.core.form.mathml.reflection.CompoundExpression());
+		CONVERTERS.put(F.D, new org.matheclipse.core.form.mathml.reflection.D());
+		CONVERTERS.put(F.Equal, new org.matheclipse.core.form.mathml.reflection.Equal());
+		CONVERTERS.put(F.Factorial, new org.matheclipse.core.form.mathml.reflection.Factorial());
+		CONVERTERS.put(F.Factorial2, new org.matheclipse.core.form.mathml.reflection.Factorial2());
+		CONVERTERS.put(F.Floor, new org.matheclipse.core.form.mathml.reflection.Floor());
+		CONVERTERS.put(F.Greater, new org.matheclipse.core.form.mathml.reflection.Greater());
+		CONVERTERS.put(F.GreaterEqual, new org.matheclipse.core.form.mathml.reflection.GreaterEqual());
+		CONVERTERS.put(F.Integrate, new org.matheclipse.core.form.mathml.reflection.Integrate());
+		CONVERTERS.put(F.Less, new org.matheclipse.core.form.mathml.reflection.Less());
+		CONVERTERS.put(F.LessEqual, new org.matheclipse.core.form.mathml.reflection.LessEqual());
+		CONVERTERS.put(F.List, new org.matheclipse.core.form.mathml.reflection.List());
+		CONVERTERS.put(F.MatrixForm, new org.matheclipse.core.form.mathml.reflection.MatrixForm());
+		CONVERTERS.put(F.Not, new org.matheclipse.core.form.mathml.reflection.Not());
+		CONVERTERS.put(F.Or, new org.matheclipse.core.form.mathml.reflection.Or());
+		CONVERTERS.put(F.Part, new org.matheclipse.core.form.mathml.reflection.Part());
+		CONVERTERS.put(F.Plus, new org.matheclipse.core.form.mathml.reflection.Plus());
+		CONVERTERS.put(F.Power, new org.matheclipse.core.form.mathml.reflection.Power());
+		CONVERTERS.put(F.Product, new org.matheclipse.core.form.mathml.reflection.Product());
+		CONVERTERS.put(F.Rational, new org.matheclipse.core.form.mathml.reflection.Rational());
+		CONVERTERS.put(F.Rule, new org.matheclipse.core.form.mathml.reflection.Rule());
+		CONVERTERS.put(F.RuleDelayed, new org.matheclipse.core.form.mathml.reflection.RuleDelayed());
+		CONVERTERS.put(F.Set, new org.matheclipse.core.form.mathml.reflection.Set());
+		CONVERTERS.put(F.SetDelayed, new org.matheclipse.core.form.mathml.reflection.SetDelayed());
+		CONVERTERS.put(F.Sqrt, new org.matheclipse.core.form.mathml.reflection.Sqrt());
+		CONVERTERS.put(F.Sum, new org.matheclipse.core.form.mathml.reflection.Sum());
+		CONVERTERS.put(F.Times, org.matheclipse.core.form.mathml.reflection.Times.CONST);
 	}
 }

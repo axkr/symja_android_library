@@ -100,6 +100,18 @@ public class CompareToTestCase extends AbstractTestCase {
 
 		check("-Infinity+b+a", "-Infinity+a+b");
 	}
+	
+	public void testCT004() {
+		IAST ast1, ast2;
+		ast1 = F.ast(F.f);
+		ast2 = F.ast(F.f);
+		ast1.append(F.a);
+		ast2.append(F.a);
+		ast2.append(F.b);
+
+		int res = ast1.compareTo(ast2);
+		assertEquals(-1, res);
+	}
 
 	public void testIssue122a() {
 		ISymbol b = F.$s("b");

@@ -27,6 +27,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
+import org.matheclipse.core.patternmatching.ISymbol2IntMap;
 import org.matheclipse.core.patternmatching.PatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
@@ -46,13 +47,14 @@ public class Symbol implements ISymbol, Serializable {
 	 */
 	protected int fAttributes = NOATTRIBUTE;
 	/**
-	 * The pattern matching &quot;down value&quot; rules associated with this symbol.
+	 * The pattern matching &quot;down value&quot; rules associated with this
+	 * symbol.
 	 */
 	private transient RulesData fRulesData;
 
 	/**
-	 * The name of this symbol. The characters may be all lower-cases if the system doesn't distinguish between lower-
-	 * and upper-case function names.
+	 * The name of this symbol. The characters may be all lower-cases if the system
+	 * doesn't distinguish between lower- and upper-case function names.
 	 */
 	protected String fSymbolName;
 	/**
@@ -159,8 +161,9 @@ public class Symbol implements ISymbol, Serializable {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
-	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a
+	 * negative integer, zero, or a positive integer as this expression is canonical
+	 * less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -527,7 +530,7 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		if (symbolsAsFactoryMethod) {
-			return internalJavaStringAsFacoryMethod();
+			return internalJavaStringAsFactoryMethod();
 		}
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String name;
@@ -553,7 +556,7 @@ public class Symbol implements ISymbol, Serializable {
 	 * 
 	 * @return
 	 */
-	private String internalJavaStringAsFacoryMethod() {
+	private String internalJavaStringAsFactoryMethod() {
 		if (fSymbolName.length() == 1) {
 			char ch = fSymbolName.charAt(0);
 			if ('a' <= ch && ch <= 'z') {
@@ -570,6 +573,8 @@ public class Symbol implements ISymbol, Serializable {
 				if ('a' <= ch && ch <= 'z') {
 					return "p" + ch;
 				}
+			} else if (fSymbolName.equals("Int")) {
+				return "Integrate";
 			}
 		}
 		if (Character.isUpperCase(fSymbolName.charAt(0))) {

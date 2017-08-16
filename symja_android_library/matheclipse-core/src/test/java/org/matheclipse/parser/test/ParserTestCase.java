@@ -11,8 +11,7 @@ import org.matheclipse.parser.client.ast.ASTNode;
  * Tests parser function for SimpleParserFactory
  */
 public class ParserTestCase extends TestCase {
-	
-	
+
 	public ParserTestCase(String name) {
 		super(name);
 	}
@@ -245,7 +244,7 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser19() {
 		try {
 			Parser p = new Parser();
@@ -256,7 +255,7 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser20() {
 		try {
 			Parser p = new Parser();
@@ -278,8 +277,7 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
-	
+
 	public void testParserFunction() {
 		try {
 			Parser p = new Parser(true);
@@ -291,7 +289,7 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser22() {
 		try {
 			Parser p = new Parser();
@@ -302,7 +300,7 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser23() {
 		try {
 			Parser p = new Parser();
@@ -313,7 +311,7 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser24() {
 		try {
 			Parser p = new Parser();
@@ -323,114 +321,95 @@ public class ParserTestCase extends TestCase {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
 		}
-	} 
-	
+	}
+
 	public void testParser25() {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("Int[f_'[x_]*g_[x_] + f_[x_]*g_'[x_],x_Symbol]");
-			assertEquals(obj.toString(), "Int(Plus(Times(Derivative(1)[f_][x_], g_(x_)), Times(f_(x_), Derivative(1)[g_][x_])), x_Symbol)");
+			assertEquals(obj.toString(),
+					"Int(Plus(Times(Derivative(1)[f_][x_], g_(x_)), Times(f_(x_), Derivative(1)[g_][x_])), x_Symbol)");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser26() {
 		try {
 			Parser p = new Parser(false, true);
-			List<ASTNode> obj = p.parsePackage("	SumSimplerAuxQ[u_,v_] :=\n" + 
-					"			  v=!=0 && \n" + 
-					"			  NonnumericFactors[u]===NonnumericFactors[v] &&\n" + 
-					"			  (NumericFactor[u]/NumericFactor[v]<-1/2 || NumericFactor[u]/NumericFactor[v]==-1/2 && NumericFactor[u]<0)\n" + 
-					"\n" + 
-					"");
-			assertEquals(obj.toString(), 
+			List<ASTNode> obj = p.parsePackage("	SumSimplerAuxQ[u_,v_] :=\n" + "			  v=!=0 && \n"
+					+ "			  NonnumericFactors[u]===NonnumericFactors[v] &&\n"
+					+ "			  (NumericFactor[u]/NumericFactor[v]<-1/2 || NumericFactor[u]/NumericFactor[v]==-1/2 && NumericFactor[u]<0)\n"
+					+ "\n" + "");
+			assertEquals(obj.toString(),
 					"[SetDelayed(SumSimplerAuxQ(u_, v_), And(UnsameQ(v, 0), SameQ(NonnumericFactors(u), NonnumericFactors(v)), Or(Less(Times(NumericFactor(u), Power(NumericFactor(v), -1)), -1/2), And(Equal(Times(NumericFactor(u), Power(NumericFactor(v), -1)), -1/2), Less(NumericFactor(u), 0)))))]");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser27() {
 		try {
 			Parser p = new Parser(false, true);
-			List<ASTNode> obj = p.parsePackage("\n" + 
-					"TryTanhSubst[u_,x_Symbol] :=\n" + 
-					"  FalseQ[FunctionOfLinear[u,x]] &&\n" + 
-					"  Not[MatchQ[u,r_.*(s_+t_)^n_. /; IntegerQ[n] && n>0]] &&\n" + 
-					"(*Not[MatchQ[u,Log[f_[x]^2] /; SinhCoshQ[f]]]  && *)\n" + 
-					"  Not[MatchQ[u,Log[v_]]]  &&\n" + 
-					"  Not[MatchQ[u,1/(a_+b_.*f_[x]^n_) /; SinhCoshQ[f] && IntegerQ[n] && n>2]] &&\n" + 
-					"  Not[MatchQ[u,f_[m_.*x]*g_[n_.*x] /; IntegersQ[m,n] && SinhCoshQ[f] && SinhCoshQ[g]]] &&\n" + 
-					"  Not[MatchQ[u,r_.*(a_.*s_^m_)^p_ /; FreeQ[{a,m,p},x] && Not[m===2 && (s===Sech[x] || s===Csch[x])]]] &&\n" + 
-					"  u===ExpandIntegrand[u,x]\n" + 
-					"\n" + 
-					"TryPureTanhSubst[u_,x_Symbol] :=\n" + 
-					"  Not[MatchQ[u,Log[v_]]]  &&\n" + 
-					"  Not[MatchQ[u,ArcTanh[a_.*Tanh[v_]] /; FreeQ[a,x]]] &&\n" + 
-					"  Not[MatchQ[u,ArcTanh[a_.*Coth[v_]] /; FreeQ[a,x]]] &&\n" + 
-					"  Not[MatchQ[u,ArcCoth[a_.*Tanh[v_]] /; FreeQ[a,x]]] &&\n" + 
-					"  Not[MatchQ[u,ArcCoth[a_.*Coth[v_]] /; FreeQ[a,x]]] &&\n" + 
-					"  u===ExpandIntegrand[u,x]\n" + 
-					"\n" + 
-					"");
-			assertEquals(obj.toString(), 
+			List<ASTNode> obj = p.parsePackage("\n" + "TryTanhSubst[u_,x_Symbol] :=\n"
+					+ "  FalseQ[FunctionOfLinear[u,x]] &&\n"
+					+ "  Not[MatchQ[u,r_.*(s_+t_)^n_. /; IntegerQ[n] && n>0]] &&\n"
+					+ "(*Not[MatchQ[u,Log[f_[x]^2] /; SinhCoshQ[f]]]  && *)\n" + "  Not[MatchQ[u,Log[v_]]]  &&\n"
+					+ "  Not[MatchQ[u,1/(a_+b_.*f_[x]^n_) /; SinhCoshQ[f] && IntegerQ[n] && n>2]] &&\n"
+					+ "  Not[MatchQ[u,f_[m_.*x]*g_[n_.*x] /; IntegersQ[m,n] && SinhCoshQ[f] && SinhCoshQ[g]]] &&\n"
+					+ "  Not[MatchQ[u,r_.*(a_.*s_^m_)^p_ /; FreeQ[{a,m,p},x] && Not[m===2 && (s===Sech[x] || s===Csch[x])]]] &&\n"
+					+ "  u===ExpandIntegrand[u,x]\n" + "\n" + "TryPureTanhSubst[u_,x_Symbol] :=\n"
+					+ "  Not[MatchQ[u,Log[v_]]]  &&\n" + "  Not[MatchQ[u,ArcTanh[a_.*Tanh[v_]] /; FreeQ[a,x]]] &&\n"
+					+ "  Not[MatchQ[u,ArcTanh[a_.*Coth[v_]] /; FreeQ[a,x]]] &&\n"
+					+ "  Not[MatchQ[u,ArcCoth[a_.*Tanh[v_]] /; FreeQ[a,x]]] &&\n"
+					+ "  Not[MatchQ[u,ArcCoth[a_.*Coth[v_]] /; FreeQ[a,x]]] &&\n" + "  u===ExpandIntegrand[u,x]\n"
+					+ "\n" + "");
+			assertEquals(obj.toString(),
 					"[SetDelayed(TryTanhSubst(u_, x_Symbol), And(FalseQ(FunctionOfLinear(u, x)), Not(MatchQ(u, Condition(Times(r_., Power(Plus(s_, t_), n_.)), And(IntegerQ(n), Greater(n, 0))))), Not(MatchQ(u, Log(v_))), Not(MatchQ(u, Condition(Power(Plus(a_, Times(b_., Power(f_(x), n_))), -1), And(SinhCoshQ(f), IntegerQ(n), Greater(n, 2))))), Not(MatchQ(u, Condition(Times(f_(Times(m_., x)), g_(Times(n_., x))), And(IntegersQ(m, n), SinhCoshQ(f), SinhCoshQ(g))))), Not(MatchQ(u, Condition(Times(r_., Power(Times(a_., Power(s_, m_)), p_)), And(FreeQ(List(a, m, p), x), Not(And(SameQ(m, 2), Or(SameQ(s, Sech(x)), SameQ(s, Csch(x))))))))), SameQ(u, ExpandIntegrand(u, x)))), SetDelayed(TryPureTanhSubst(u_, x_Symbol), And(Not(MatchQ(u, Log(v_))), Not(MatchQ(u, Condition(ArcTanh(Times(a_., Tanh(v_))), FreeQ(a, x)))), Not(MatchQ(u, Condition(ArcTanh(Times(a_., Coth(v_))), FreeQ(a, x)))), Not(MatchQ(u, Condition(ArcCoth(Times(a_., Tanh(v_))), FreeQ(a, x)))), Not(MatchQ(u, Condition(ArcCoth(Times(a_., Coth(v_))), FreeQ(a, x)))), SameQ(u, ExpandIntegrand(u, x))))]");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
 		}
 	}
-	
-	
+
 	public void testParser28() {
 		try {
 			Parser p = new Parser(false, true);
-			List<ASTNode> list = p.parsePackage("\n" + 
-					"TrigSimplifyAux[u_] := u\n" + 
-					"\n" + 
-					"\n" + 
-					"(* ::Section::Closed:: *)\n" + 
-					"(*Factoring functions*)\n" + 
-					"\n" + 
-					"\n" + 
-					"(* ::Subsection::Closed:: *)\n" + 
-					"(*ContentFactor*)\n" + 
-					"\n" + 
-					"\n" + 
-					"(* ContentFactor[expn] returns expn with the content of sum factors factored out. *)\n" + 
-					"(* Basis: a*b+a*c == a*(b+c) *)\n" + 
-					"ContentFactor[expn_] :=\n" + 
-					"  TimeConstrained[ContentFactorAux[expn],2.0,expn];\n" + 
-					"\n" + 
-					"ContentFactorAux[expn_] :=\n" + 
-					"  If[AtomQ[expn],\n" + 
-					"    expn,\n" + 
-					"  If[IntegerPowerQ[expn],\n" + 
-					"    If[SumQ[expn[[1]]] && NumericFactor[expn[[1,1]]]<0,\n" + 
-					"      (-1)^expn[[2]] * ContentFactorAux[-expn[[1]]]^expn[[2]],\n" + 
-					"    ContentFactorAux[expn[[1]]]^expn[[2]]],\n" + 
-					"  If[ProductQ[expn],\n" + 
-					"    Module[{num=1,tmp},\n" + 
-					"    tmp=Map[Function[If[SumQ[#] && NumericFactor[#[[1]]]<0, num=-num; ContentFactorAux[-#], ContentFactorAux[#]]], expn];\n" + 
-					"    num*UnifyNegativeBaseFactors[tmp]],\n" + 
-					"  If[SumQ[expn],\n" + 
-					"    With[{lst=CommonFactors[Apply[List,expn]]},\n" + 
-					"    If[lst[[1]]===1 || lst[[1]]===-1,\n" + 
-					"      expn,\n" + 
-					"    lst[[1]]*Apply[Plus,Rest[lst]]]],\n" + 
-					"  expn]]]]\n" + 
-					"\n" + 
-					"");
+			List<ASTNode> list = p.parsePackage("\n" + "TrigSimplifyAux[u_] := u\n" + "\n" + "\n"
+					+ "(* ::Section::Closed:: *)\n" + "(*Factoring functions*)\n" + "\n" + "\n"
+					+ "(* ::Subsection::Closed:: *)\n" + "(*ContentFactor*)\n" + "\n" + "\n"
+					+ "(* ContentFactor[expn] returns expn with the content of sum factors factored out. *)\n"
+					+ "(* Basis: a*b+a*c == a*(b+c) *)\n" + "ContentFactor[expn_] :=\n"
+					+ "  TimeConstrained[ContentFactorAux[expn],2.0,expn];\n" + "\n" + "ContentFactorAux[expn_] :=\n"
+					+ "  If[AtomQ[expn],\n" + "    expn,\n" + "  If[IntegerPowerQ[expn],\n"
+					+ "    If[SumQ[expn[[1]]] && NumericFactor[expn[[1,1]]]<0,\n"
+					+ "      (-1)^expn[[2]] * ContentFactorAux[-expn[[1]]]^expn[[2]],\n"
+					+ "    ContentFactorAux[expn[[1]]]^expn[[2]]],\n" + "  If[ProductQ[expn],\n"
+					+ "    Module[{num=1,tmp},\n"
+					+ "    tmp=Map[Function[If[SumQ[#] && NumericFactor[#[[1]]]<0, num=-num; ContentFactorAux[-#], ContentFactorAux[#]]], expn];\n"
+					+ "    num*UnifyNegativeBaseFactors[tmp]],\n" + "  If[SumQ[expn],\n"
+					+ "    With[{lst=CommonFactors[Apply[List,expn]]},\n" + "    If[lst[[1]]===1 || lst[[1]]===-1,\n"
+					+ "      expn,\n" + "    lst[[1]]*Apply[Plus,Rest[lst]]]],\n" + "  expn]]]]\n" + "\n" + "");
 			assertEquals(list.size(), 3);
-			assertEquals(list.get(1).toString(), 
+			assertEquals(list.get(1).toString(),
 					"CompoundExpression(SetDelayed(ContentFactor(expn_), TimeConstrained(ContentFactorAux(expn), 2.0, expn)), Null)");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
+	public void testParser29() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("FracPart[m_*u_,n_:1]");
+			assertEquals(obj.toString(),
+					"FracPart(Times(m_, u_), Optional(n_, 1))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
 }

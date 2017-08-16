@@ -35,7 +35,7 @@ public class PredicateQ {
 		F.EvenQ.setEvaluator(new EvenQ());
 		F.ExactNumberQ.setEvaluator(new ExactNumberQ());
 		F.FreeQ.setEvaluator(new FreeQ());
-		F.HermitianMatrixQ.setEvaluator(new HermitianMatrixQ());
+		F.HermitianMatrixQ.setEvaluator(new HermitianMatrixQ()); 
 		F.InexactNumberQ.setEvaluator(new InexactNumberQ());
 		F.IntegerQ.setEvaluator(new IntegerQ());
 		F.ListQ.setEvaluator(new ListQ());

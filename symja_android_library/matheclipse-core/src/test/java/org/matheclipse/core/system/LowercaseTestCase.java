@@ -2412,12 +2412,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "2,1,0},{22,4,0,0},{27,1,1,0},{27,3,0,0},{32,0,1,0},{32,2,0,0},{37,1,0,0},{42,0,0,\n"
 						+ "0}}");
 	}
-	
+
 	public void testFromContinuedFraction() {
 		check("FromContinuedFraction({2,3,4,5})", "157/68");
 		check("ContinuedFraction(157/68)", "{2,3,4,5}");
 	}
-	
+
 	public void testFromPolarCoordinates() {
 		check("FromPolarCoordinates({r, t})", "{r*Cos(t),r*Sin(t)}");
 		check("FromPolarCoordinates({r, t, p})", "{r*Cos(t),r*Cos(p)*Sin(t),r*Sin(p)*Sin(t)}");
@@ -3445,10 +3445,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMathMLForm() {
-		check("MathMLForm(D(sin(x)*cos(x),x))", "\"<?xml version=\"1.0\"?>\n"
-				+ "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
-				+ "<math mode=\"display\">\n"
-				+ "<mfrac><mrow><mo>&#x2202;</mo><mrow><mrow><mi>sin</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mo>&#x2062;</mo><mrow><mi>cos</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow></mrow></mrow><mrow><mo>&#x2202;</mo><mi>x</mi></mrow></mfrac></math>\"");
+		check("MathMLForm(D(sin(x)*cos(x),x))", "\"<?xml version=\"1.0\"?>\n" + 
+				"<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n" + 
+				"<math mode=\"display\">\n" + 
+				"<mfrac><mrow><mo>&#x2202;</mo><mrow><mrow><mi>sin</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mo>&#x2062;</mo><mrow><mi>cos</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow></mrow></mrow><mrow><mo>&#x2202;</mo><mi>x</mi></mrow></mfrac></math>\"");
 	}
 
 	public void testMatrices() {
@@ -3640,9 +3640,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("$gcd(m0_, n0_) :=\n" + " Module({m = m0, n = n0},\n" + "  While(n != 0, {m, n} = {n, Mod(m, n)});\n"
 				+ "  m\n" + "  );$gcd(18, 21)", "3");
 
-		check("{Module({x}, x), Module({x}, x)}", "{x$17,x$18}");
-		check("Module({e = Expand((1 + x)^5)}, Function(x, e))", "Function(x$20,e$19)");
-		check("Module({a,b}, Block({c}, c+a))", "a$21+c");
+		check("{Module({x}, x), Module({x}, x)}", "{x$16,x$17}");
+		check("Module({e = Expand((1 + x)^5)}, Function(x, e))", "Function(x$19,e$18)");
+		check("Module({a,b}, Block({c}, c+a))", "a$20+c");
 
 		if (Config.SERVER_MODE == false) {
 			check("f(x0_) :=\n" + " Module({x = x0},\n" + "  While(x > 0, x = Log(x));\n" + "  x\n" + "  );f(2.0)",
@@ -5598,7 +5598,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Roots(x^3 - 5*x + 4==0,x)", "x==1||x==-1/2-Sqrt(17)/2||x==-1/2+Sqrt(17)/2");
 
 	}
-	 
+
 	public void testRotateLeft() {
 		check("RotateLeft({1,2,3,4,5},2)", "{3,4,5,1,2}");
 
@@ -5617,7 +5617,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Round(-3.5)", "-4");
 		check("Round(-3.6)", "-4");
 	}
-	
+
 	public void testRowReduce() {
 		check("RowReduce({{1, 0, a}, {1, 1, b}})", "{{1,0,a},\n" + " {0,1,-a+b}}");
 		check("RowReduce({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", "{{1,0,-1},\n" + " {0,1,2},\n" + " {0,0,0}}");

@@ -293,7 +293,10 @@ public class Parser extends Scanner {
 				// read '_:'
 				getNextToken();
 				ASTNode defaultValue = parseExpression();
-				temp = fFactory.createPattern(symbol, null, defaultValue);
+				final FunctionNode function = fFactory.createAST(fFactory.createSymbol("Optional"));
+				function.add(fFactory.createPattern(symbol, null, false));
+				function.add(defaultValue);
+				temp = function;
 			} else {
 				temp = symbol;
 			}
@@ -362,7 +365,13 @@ public class Parser extends Scanner {
 			// read '_:'
 			getNextToken();
 			ASTNode defaultValue = parseExpression();
-			temp = fFactory.createPattern(null, null, defaultValue);
+//			temp = fFactory.createPattern(null, null, defaultValue);
+			 
+			final FunctionNode function = fFactory.createAST(fFactory.createSymbol("Optional"));
+			function.add(fFactory.createPattern(null, null, false));
+			function.add(defaultValue);
+			temp = function;
+			
 			return parseArguments(temp);
 		} else if (fToken == TT_DIGIT) {
 			return getNumber(false);

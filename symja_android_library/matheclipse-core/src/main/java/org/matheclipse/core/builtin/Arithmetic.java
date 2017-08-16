@@ -134,7 +134,8 @@ public final class Arithmetic {
 	}
 
 	/**
-	 * Absolute value of a number. See <a href="http://en.wikipedia.org/wiki/Absolute_value">Wikipedia:Absolute
+	 * Absolute value of a number. See
+	 * <a href="http://en.wikipedia.org/wiki/Absolute_value">Wikipedia:Absolute
 	 * value</a>
 	 */
 	private final static class Abs extends AbstractTrigArg1 implements INumeric, AbsRules, DoubleUnaryOperator {
@@ -370,11 +371,7 @@ public final class Arithmetic {
 		}
 	}
 
-	
 	private final static class Complex extends AbstractCoreFunctionEvaluator {
-
-		public Complex() {
-		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -413,6 +410,15 @@ public final class Arithmetic {
 				if (realExpr instanceof INum && imaginaryExpr instanceof INum) {
 					return F.complexNum(((INum) realExpr).doubleValue(), ((INum) imaginaryExpr).doubleValue());
 				}
+
+				// don't optimize this way:
+				// if (imaginaryExpr.isZero()) {
+				// return realExpr;
+				// }
+				// if (realExpr.isZero()) {
+				// return F.Times(F.CI, imaginaryExpr);
+				// }
+
 			} catch (Exception e) {
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
@@ -431,12 +437,15 @@ public final class Arithmetic {
 	/**
 	 * Conjugate the given argument.
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Complex_conjugation">Wikipedia:Complex conjugation</a>
+	 * See
+	 * <a href="http://en.wikipedia.org/wiki/Complex_conjugation">Wikipedia:Complex
+	 * conjugation</a>
 	 */
 	private final static class Conjugate extends AbstractTrigArg1 implements INumeric, ConjugateRules {
 
 		/**
-		 * Conjugate numbers and special objects like <code>Infinity</code> and <code>Indeterminate</code>.
+		 * Conjugate numbers and special objects like <code>Infinity</code> and
+		 * <code>Indeterminate</code>.
 		 * 
 		 * @param arg1
 		 * @return <code>F.NIL</code> if the evaluation wasn't possible
@@ -724,9 +733,10 @@ public final class Arithmetic {
 	 * Returns the Gamma function value.
 	 * </p>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Gamma_function">Gamma function</a> and
-	 * <a href= "https://en.wikipedia.org/wiki/Particular_values_of_the_Gamma_function"> Particular values of the Gamma
-	 * function</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Gamma_function">Gamma function</a>
+	 * and <a href=
+	 * "https://en.wikipedia.org/wiki/Particular_values_of_the_Gamma_function">
+	 * Particular values of the Gamma function</a>
 	 * 
 	 */
 	private final static class Gamma extends AbstractTrigArg1 implements DoubleUnaryOperator {
@@ -802,7 +812,8 @@ public final class Arithmetic {
 	/**
 	 * Harmonic number of a given integer value
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Harmonic_number">Harmonic number</a>
+	 * See: <a href="http://en.wikipedia.org/wiki/Harmonic_number">Harmonic
+	 * number</a>
 	 */
 	private final static class HarmonicNumber extends AbstractEvaluator {
 
@@ -872,7 +883,8 @@ public final class Arithmetic {
 		 * 
 		 * @param n
 		 *            the index, non-negative.
-		 * @return the H_1=1 for n=1, H_2=3/2 for n=2 etc. For values of n less than 1, zero is returned.
+		 * @return the H_1=1 for n=1, H_2=3/2 for n=2 etc. For values of n less than 1,
+		 *         zero is returned.
 		 */
 		public BigFraction harmonicNumber(int n) {
 			if (n < 1)
@@ -1031,8 +1043,9 @@ public final class Arithmetic {
 	}
 
 	/**
-	 * A piecewise-defined function (also called a piecewise function or a hybrid function) is a function which is
-	 * defined by multiple subfunctions, each subfunction applying to a certain interval of the main function's domain.
+	 * A piecewise-defined function (also called a piecewise function or a hybrid
+	 * function) is a function which is defined by multiple subfunctions, each
+	 * subfunction applying to a certain interval of the main function's domain.
 	 * 
 	 * See: <a href="http://en.wikipedia.org/wiki/Piecewise">Wikipedia:Piecewise</a>
 	 * 
@@ -1216,12 +1229,14 @@ public final class Arithmetic {
 
 		/**
 		 * 
-		 * See: <a href="http://www.cs.berkeley.edu/~fateman/papers/newsimp.pdf"> Experiments in Hash-coded Algebraic
-		 * Simplification</a>
+		 * See: <a href="http://www.cs.berkeley.edu/~fateman/papers/newsimp.pdf">
+		 * Experiments in Hash-coded Algebraic Simplification</a>
 		 * 
 		 * @param ast
-		 *            the abstract syntax tree (AST) of the form <code>Plus(...)</code> which should be evaluated
-		 * @return the evaluated object or <code>null</code>, if evaluation isn't possible
+		 *            the abstract syntax tree (AST) of the form <code>Plus(...)</code>
+		 *            which should be evaluated
+		 * @return the evaluated object or <code>null</code>, if evaluation isn't
+		 *         possible
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1386,8 +1401,9 @@ public final class Arithmetic {
 		 * Calculate <code>interval({lower, upper}) ^ exponent</code>.
 		 * </p>
 		 * <p>
-		 * See: <a href= "https://de.wikipedia.org/wiki/Intervallarithmetik#Elementare_Funktionen"> Intervallarithmetik
-		 * - Elementare Funktionen</a>
+		 * See: <a href=
+		 * "https://de.wikipedia.org/wiki/Intervallarithmetik#Elementare_Funktionen">
+		 * Intervallarithmetik - Elementare Funktionen</a>
 		 * </p>
 		 * 
 		 * @param interval
@@ -1424,9 +1440,11 @@ public final class Arithmetic {
 		}
 
 		/**
-		 * Split this integer into the nth-root (with prime factors less equal 1021) and the &quot;rest factor&quot;
+		 * Split this integer into the nth-root (with prime factors less equal 1021) and
+		 * the &quot;rest factor&quot;
 		 * 
-		 * @return <code>{nth-root, rest factor}</code> or <code>null</code> if the root is not available
+		 * @return <code>{nth-root, rest factor}</code> or <code>null</code> if the root
+		 *         is not available
 		 */
 		private IInteger[] calculateRoot(IInteger a, IInteger root) {
 			try {
@@ -2288,7 +2306,7 @@ public final class Arithmetic {
 			if (expr.isRealResult()) {
 				return expr;
 			}
-			
+
 			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(expr);
 			if (negExpr.isPresent()) {
 				return Negate(Re(negExpr));
@@ -2485,8 +2503,10 @@ public final class Arithmetic {
 		 * @param ast
 		 *            the already evaluated expression
 		 * @param originalExpr
-		 *            the original expression which is used, if <code>!ast.isPresent()</code>
-		 * @return the evaluated object or <code>ast</code>, if the distribution of an integer factor isn't possible
+		 *            the original expression which is used, if
+		 *            <code>!ast.isPresent()</code>
+		 * @return the evaluated object or <code>ast</code>, if the distribution of an
+		 *         integer factor isn't possible
 		 */
 		private IExpr distributeLeadingFactor(IExpr ast, IAST originalExpr) {
 			IExpr expr = ast;
@@ -2953,7 +2973,8 @@ public final class Arithmetic {
 		}
 
 		/**
-		 * Try simpplifying <code>(power0Arg1 ^ power0Arg2) * (power1Arg1 ^ power1Arg2)</code>
+		 * Try simpplifying
+		 * <code>(power0Arg1 ^ power0Arg2) * (power1Arg1 ^ power1Arg2)</code>
 		 * 
 		 * @param power0Arg1
 		 * @param power0Arg2

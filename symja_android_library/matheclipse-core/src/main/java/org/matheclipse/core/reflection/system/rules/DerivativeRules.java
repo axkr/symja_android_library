@@ -162,6 +162,12 @@ public interface DerivativeRules {
     // {BesselJ,0,1}->Rational(1,2)*(BesselJ(-1+#1,#2)-BesselJ(1+#1,#2))
     Rule(List(BesselJ,C0,C1),
       Times(C1D2,Plus(BesselJ(Plus(CN1,Slot1),Slot2),Negate(BesselJ(Plus(C1,Slot1),Slot2))))),
+    // {Gamma,0,1}->-E^(-#2)/#2^(1-#1)
+    Rule(List(Gamma,C0,C1),
+      Times(CN1,Power(E,Negate(Slot2)),Power(Slot2,Plus(CN1,Slot1)))),
+    // {Gamma,1,0}->Gamma(#1,#2)*Log(#2)+MeijerG({{},{1,1}},{{0,0,#1},{}},#2)
+    Rule(List(Gamma,C1,C0),
+      Plus(Times(Gamma(Slot1,Slot2),Log(Slot2)),MeijerG(List(List(),List(C1,C1)),List(List(C0,C0,Slot1),List()),Slot2))),
     // {Power,1,0}->#2/#1^(1-#2)
     Rule(List(Power,C1,C0),
       Times(Power(Slot1,Plus(CN1,Slot2)),Slot2)),

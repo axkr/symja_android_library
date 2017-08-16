@@ -157,7 +157,7 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	 * 
 	 * @param lhsPatternExpr
 	 *            the (left-hand-side) expression which could contain pattern objects.
-	 * @return the piority of this pattern-matcher
+	 * @return the priority of this pattern-matcher
 	 */
 	public int determinePatterns(final IExpr lhsPatternExpr) {
 		fPriority = DEFAULT_RULE_PRIORITY;

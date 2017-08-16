@@ -1123,7 +1123,7 @@ public final class Programming {
 	 * @param engine
 	 * @return
 	 */
-	public static boolean checkModuleCondition(IExpr arg1, IExpr arg2, final EvalEngine engine) {
+	public static boolean checkModuleOrWithCondition(IExpr arg1, IExpr arg2, final EvalEngine engine) {
 		if (arg1.isList()) {
 			IAST intializerList = (IAST) arg1;
 			final int moduleCounter = engine.incModuleCounter();
@@ -1138,8 +1138,8 @@ public final class Programming {
 				});
 				if (result.isCondition()) {
 					return checkCondition(result.getAt(1), result.getAt(2), engine);
-				} else if (result.isModule()) {
-					return checkModuleCondition(result.getAt(1), result.getAt(2), engine);
+				} else if (result.isModuleOrWith()) {
+					return checkModuleOrWithCondition(result.getAt(1), result.getAt(2), engine);
 				}
 			} finally {
 				// removeUserVariables(moduleVariables);
@@ -1160,8 +1160,8 @@ public final class Programming {
 		if (engine.evalTrue(arg2)) {
 			if (arg1.isCondition()) {
 				return checkCondition(arg1.getAt(1), arg1.getAt(2), engine);
-			} else if (arg2.isModule()) {
-				return checkModuleCondition(arg2.getAt(1), arg2.getAt(2), engine);
+			} else if (arg2.isModuleOrWith()) {
+				return checkModuleOrWithCondition(arg2.getAt(1), arg2.getAt(2), engine);
 			}
 			return true;
 		}

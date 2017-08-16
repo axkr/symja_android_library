@@ -9,6 +9,7 @@ import org.hipparchus.analysis.integration.gauss.GaussIntegrator;
 import org.hipparchus.analysis.integration.gauss.GaussIntegratorFactory;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.util.Precision;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
@@ -186,6 +187,9 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 						result = Precision.round(result, precisionGoal);
 						return Num.valueOf(result);
 					} catch (Exception e) {
+						if (Config.SHOW_STACKTRACE){
+							e.printStackTrace();
+						}
 						throw new WrappedException(e);
 					}
 				}

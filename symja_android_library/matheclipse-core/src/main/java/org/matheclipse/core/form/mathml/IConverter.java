@@ -13,5 +13,7 @@ public interface IConverter {
    *@param  function  the math function which should be converted to MathML
    */
   public boolean convert(StringBuffer buffer, IAST function, int precedence);
+  
+  public void setFactory(final AbstractMathMLFormFactory factory);
 }
  

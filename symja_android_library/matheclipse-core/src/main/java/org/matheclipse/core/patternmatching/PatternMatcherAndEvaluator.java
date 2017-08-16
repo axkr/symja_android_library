@@ -23,6 +23,15 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	private static final long serialVersionUID = 2241135467123931061L;
 
 	private IExpr fRightHandSide;
+
+	/**
+	 * Leaf count of the right-hand-side of this matcher if it's a
+	 * <code>Condition()</code> or
+	 * <code>Module(...,Condition()) or With(...,Condition())</code> expression.
+	 * 
+	 */
+	protected transient long fRHSleafCountSimplify;
+
 	private ISymbol.RuleType fSetSymbol;
 
 	/**
@@ -38,7 +47,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	 * @param leftHandSide
 	 *            could contain pattern expressions for "pattern-matching"
 	 * @param rightHandSide
-	 *            the result which should be evaluated if the "pattern-matching" succeeds
+	 *            the result which should be evaluated if the "pattern-matching"
+	 *            succeeds
 	 */
 	public PatternMatcherAndEvaluator(final IExpr leftHandSide, final IExpr rightHandSide) {
 		this(ISymbol.RuleType.SET_DELAYED, leftHandSide, rightHandSide);
@@ -48,17 +58,38 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	 * ine a pattern-matching rule.
 	 * 
 	 * @param setSymbol
-	 *            the symbol which defines this pattern-matching rule (i.e. Set, SetDelayed,...)
+	 *            the symbol which defines this pattern-matching rule (i.e. Set,
+	 *            SetDelayed,...)
 	 * @param leftHandSide
 	 *            could contain pattern expressions for "pattern-matching"
 	 * @param rightHandSide
-	 *            the result which should be evaluated if the "pattern-matching" succeeds
+	 *            the result which should be evaluated if the "pattern-matching"
+	 *            succeeds
 	 */
 	public PatternMatcherAndEvaluator(final ISymbol.RuleType setSymbol, final IExpr leftHandSide,
 			final IExpr rightHandSide) {
 		super(leftHandSide);
 		fSetSymbol = setSymbol;
 		fRightHandSide = rightHandSide;
+		initRHSleafCountSimplify();
+	}
+
+	/**
+	 * Calculate the leaf count of the right-hand-side of this matcher if it's a
+	 * <code>Condition()</code> or
+	 * <code>Module(...,Condition()) or With(...,Condition())</code> expression.
+	 * 
+	 */
+	private void initRHSleafCountSimplify() {
+		fRHSleafCountSimplify = Long.MIN_VALUE;
+		if (fRightHandSide != null) {
+			if (fRightHandSide.isCondition()) {
+				fRHSleafCountSimplify = fRightHandSide.getAt(2).leafCountSimplify();
+			} else if (fRightHandSide.isModuleOrWithCondition()) {
+				IAST condition = (IAST) fRightHandSide.getAt(2);
+				fRHSleafCountSimplify = condition.getAt(2).leafCountSimplify();
+			}
+		}
 	}
 
 	@Override
@@ -70,7 +101,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	}
 
 	/**
-	 * Check if the two expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to <code>f[a_,b_]</code> )
+	 * Check if the two expressions are equivalent. (i.e. <code>f[x_,y_]</code> is
+	 * equivalent to <code>f[a_,b_]</code> )
 	 * 
 	 * @param patternExpr1
 	 * @param patternExpr2
@@ -78,36 +110,53 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	 * @param pm2
 	 * @return
 	 */
-	private static boolean equivalentRHS(final IExpr patternExpr1, final IExpr patternExpr2, final PatternMap pm1,
+	private static int equivalentRHS(final IExpr patternExpr1, final IExpr patternExpr2, final PatternMap pm1,
 			final PatternMap pm2) {
+		IExpr p1, p2;
 		if (patternExpr1.isCondition()) {
+			p1 = patternExpr1.getAt(2);
 			if (patternExpr2.isCondition()) {
-				return equivalentRHS(patternExpr1.getAt(2), patternExpr2.getAt(2), pm1, pm2);
+				p2 = patternExpr2.getAt(2);
+				if (equivalent(p1, p2, pm1, pm2)) {
+					return 0;
+				}
+				return p1.compareTo(p2);
+			} else if (patternExpr2.isModuleOrWithCondition()) {
+				p2 = ((IAST) patternExpr2.getAt(2)).getAt(2);
+				if (equivalent(p1, p2, pm1, pm2)) {
+					return 0;
+				}
+				return p1.compareTo(p2);
 			}
-			return false;
-		} else if (patternExpr2.isCondition()) {
-			return false;
-		} else if (patternExpr1.isModule()) {
-			if (patternExpr2.isModule()) {
-				return equivalentRHS(patternExpr1.getAt(2), patternExpr2.getAt(2), pm1, pm2);
+		} else if (patternExpr1.isModuleOrWithCondition()) {
+			p1 = ((IAST) patternExpr1.getAt(2)).getAt(2);
+			if (patternExpr2.isCondition()) {
+				p2 = patternExpr2.getAt(2);
+				if (equivalent(p1, p2, pm1, pm2)) {
+					return 0;
+				}
+				return p1.compareTo(p2);
+			} else if (patternExpr2.isModuleOrWithCondition()) {
+				p2 = ((IAST) patternExpr2.getAt(2)).getAt(2);
+				if (equivalent(p1, p2, pm1, pm2)) {
+					return 0;
+				}
+				return p1.compareTo(p2);
 			}
-			return false;
-		} else if (patternExpr2.isModule()) {
-			return false;
 		}
-		// TODO refine equivalent for RHS symbols which are patterns on the LHS.
-		return equivalent(patternExpr1, patternExpr2, pm1, pm2);
+		return 0;
 	}
- 
+
 	/**
-	 * Check if the condition for the right-hand-sides <code>Module[] or Condition[]</code> expressions evaluates to
+	 * Check if the condition for the right-hand-sides
+	 * <code>Module[], With[] or Condition[]</code> expressions evaluates to
 	 * <code>true</code>.
 	 * 
 	 * @return <code>true</code> if the right-hand-sides condition is fulfilled.
 	 */
 	@Override
 	public boolean checkRHSCondition(EvalEngine engine) {
-		if (!(fRightHandSide.isModule() || fRightHandSide.isCondition())) {
+		if (!(fRightHandSide.isModuleOrWith() || fRightHandSide.isCondition())) {
 			return true;
 		}
 		if (!fPatternMap.isAllPatternsAssigned()) {
@@ -116,8 +165,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		IExpr substConditon = fPatternMap.substituteSymbols(fRightHandSide);
 		if (substConditon.isCondition()) {
 			return Programming.checkCondition(substConditon.getAt(1), substConditon.getAt(2), engine);
-		} else if (substConditon.isModule()) {
-			return Programming.checkModuleCondition(substConditon.getAt(1), substConditon.getAt(2), engine);
+		} else if (substConditon.isModuleOrWith()) {
+			return Programming.checkModuleOrWithCondition(substConditon.getAt(1), substConditon.getAt(2), engine);
 		}
 		return true;
 	}
@@ -189,6 +238,17 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		return IExpr.ofNullable(fRightHandSide);
 	}
 
+	/**
+	 * Get the leaf count of the right-hand-side of this matcher if it's a
+	 * <code>Condition()</code> or
+	 * <code>Module(...,Condition()) or With(...,Condition())</code> expression.
+	 * 
+	 * @return the leaf count
+	 */
+	public long getRHSleafCountSimplify() {
+		return fRHSleafCountSimplify;
+	}
+
 	public IAST getAsAST() {
 		ISymbol setSymbol = getSetSymbol();
 		IExpr condition = getCondition();
@@ -226,38 +286,28 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	}
 
 	@Override
-	public int equivalent(final IPatternMatcher obj) {
+	int equivalent(final IPatternMatcher obj) {
 		// don't compare fSetSymbol here
 		int comp = super.equivalent(obj);
 		if (comp == 0) {
 			if (obj instanceof PatternMatcherAndEvaluator) {
 				PatternMatcherAndEvaluator pm = (PatternMatcherAndEvaluator) obj;
 				if (fRightHandSide != null && pm.fRightHandSide != null) {
-					if (fRightHandSide.isCondition()) {
-						if (pm.fRightHandSide.isCondition()) {
-							if (equivalentRHS(fRightHandSide.getAt(2), pm.fRightHandSide.getAt(2), fPatternMap,
-									pm.fPatternMap)) {
-								return 0;
+					if (fRightHandSide.isCondition() || fRightHandSide.isModuleOrWithCondition()) {
+						if (pm.fRightHandSide.isCondition() || pm.fRightHandSide.isModuleOrWithCondition()) {
+							if (getRHSleafCountSimplify() < pm.getRHSleafCountSimplify()) {
+								return -1;
 							}
-							return 1;
-						}
-						return -1;
-					} else if (pm.fRightHandSide.isCondition()) {
-						return 1;
-					} else if (fRightHandSide.isModule()) {
-						if (pm.fRightHandSide.isModule()) {
-							if (equivalentRHS(fRightHandSide.getAt(2), pm.fRightHandSide.getAt(2), fPatternMap,
-									pm.fPatternMap)) {
-								return 0;
+							if (getRHSleafCountSimplify() > pm.getRHSleafCountSimplify()) {
+								return 1;
 							}
-							return 1;
+							return equivalentRHS(fRightHandSide, pm.fRightHandSide, fPatternMap, pm.fPatternMap);
 						}
-						return -1;
-					} else if (pm.fRightHandSide.isModule()) {
 						return 1;
+					} else if (pm.fRightHandSide.isModuleOrWithCondition() || pm.fRightHandSide.isCondition()) {
+						return -1;
 					}
 				}
-				return 0;
 			}
 		}
 		return comp;
@@ -293,8 +343,9 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		}
 		this.fPatternMap = new PatternMap();
 		if (fLhsPatternExpr != null) {
-			fPriority = fPatternMap.determinePatterns(fLhsPatternExpr);
+			fLHSPriority = fPatternMap.determinePatterns(fLhsPatternExpr);
 		}
+		initRHSleafCountSimplify();
 	}
 
 	@Override

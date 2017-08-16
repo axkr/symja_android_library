@@ -137,10 +137,10 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 	
 	@Override
 	public int equivalentTo(IPatternMatcher o) {
-		if (getPriority() < o.getPriority()) {
+		if (getLHSPriority() < o.getLHSPriority()) {
 			return -1;
 		}
-		if (getPriority() > o.getPriority()) {
+		if (getLHSPriority() > o.getLHSPriority()) {
 			return 1;
 		}
 		return 0;
@@ -148,7 +148,7 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 	}
 
 	@Override
-	public int getPriority() {
+	public int getLHSPriority() {
 		return 0;
 	}
 

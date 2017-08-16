@@ -459,8 +459,12 @@ public class F {
 	public final static IBuiltInSymbol MathMLForm = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mathmlform" : "MathMLForm",
 			new org.matheclipse.core.builtin.function.MathMLForm());
-	public final static IBuiltInSymbol MatrixQ = initFinalSymbol(
+	public final static IBuiltInSymbol MatrixForm = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matrixform" : "MatrixForm");
+	public final static IBuiltInSymbol MatrixQ = initFinalSymbol( 
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matrixq" : "MatrixQ");
+	public final static IBuiltInSymbol MeijerG = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "meijerg" : "MeijerG");
 	public final static IBuiltInSymbol MemberQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "memberq" : "MemberQ");
 	public final static IBuiltInSymbol MessageName = initFinalSymbol(
@@ -2268,6 +2272,20 @@ public class F {
 		return org.matheclipse.core.expression.Pattern.valueOf(symbol, check, defaultValue);
 	}
 
+	/**
+	 * Create a pattern for pattern-matching and term rewriting
+	 * 
+	 * @param symbolName
+	 * @param check
+	 *            additional condition which should be checked in pattern-matching
+	 * @param defaultValue
+	 *            use this <code>defaultValue</code> in pattern-matching if an argument is optional
+	 * @return IPattern
+	 */
+	public static IPattern $p(@Nonnull final String symbolName, final IExpr check, final IExpr defaultValue) {
+		return org.matheclipse.core.expression.Pattern.valueOf($s(symbolName), check, defaultValue);
+	}
+	
 	/**
 	 * Create a pattern for pattern-matching and term rewriting
 	 * 
@@ -4496,6 +4514,10 @@ public class F {
 		return unaryAST1(Mean, a0);
 	}
 
+	public static IAST MeijerG(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(MeijerG, a0, a1, a2);
+	}
+	
 	public static IAST MemberQ(final IExpr a0, final IExpr a1) {
 		return binaryAST2(MemberQ, a0, a1);
 	}
@@ -4714,6 +4736,10 @@ public class F {
 		return unaryAST1(OddQ, a);
 	}
 
+	public static IAST Optional(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Optional, a0, a1);
+	}
+	
 	public static IAST Options(final IExpr a0) {
 
 		return unaryAST1(Options, a0);
