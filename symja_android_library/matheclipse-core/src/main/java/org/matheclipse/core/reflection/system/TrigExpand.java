@@ -151,10 +151,12 @@ public class TrigExpand extends AbstractEvaluator {
 		 * @return
 		 */
 		private static IExpr expandCosTimes(IInteger n, IExpr theta) {
-			return Sum(
-					Times(Times(Times(Power(CN1, Times(F.i, C1D2)), Binomial(n, F.i)),
-							Power(Cos(theta), Plus(n, Times(CN1, F.i)))), Power(Sin(theta), F.i)),
-					List(F.i, C0, n, C2));
+			int ni = n.toIntDefault(Integer.MIN_VALUE);
+			if (ni > Integer.MIN_VALUE) {
+				return F.sum(i -> Times(Times(Times(Power(CN1, Times(i, C1D2)), Binomial(n, i)),
+						Power(Cos(theta), Plus(n, Times(CN1, i)))), Power(Sin(theta), i)), 0, ni, 2);
+			}
+			return F.NIL;
 		}
 
 		/**
@@ -165,10 +167,12 @@ public class TrigExpand extends AbstractEvaluator {
 		 * @return
 		 */
 		private static IExpr expandSinTimes(IInteger n, IExpr theta) {
-			return Sum(
-					Times(Times(Times(Power(CN1, Times(Plus(F.i, CN1), C1D2)), Binomial(n, F.i)),
-							Power(Cos(theta), Plus(n, Times(CN1, F.i)))), Power(Sin(theta), F.i)),
-					List(F.i, C1, n, C2));
+			int ni = n.toIntDefault(Integer.MIN_VALUE);
+			if (ni > Integer.MIN_VALUE) {
+				return F.sum(i -> Times(Times(Times(Power(CN1, Times(Plus(i, CN1), C1D2)), Binomial(n, i)),
+						Power(Cos(theta), Plus(n, Times(CN1, i)))), Power(Sin(theta), i)), 1, ni, 2);
+			}
+			return F.NIL;
 		}
 
 		/**
@@ -287,7 +291,8 @@ public class TrigExpand extends AbstractEvaluator {
 	/**
 	 * Expands the argument of sine and cosine functions.
 	 * 
-	 * <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities" >List of trigonometric identities</a>
+	 * <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities" >List
+	 * of trigonometric identities</a>
 	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {

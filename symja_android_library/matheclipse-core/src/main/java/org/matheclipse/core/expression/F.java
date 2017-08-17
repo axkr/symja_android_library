@@ -4181,9 +4181,10 @@ public class F {
 		return unaryAST1(Interval, binaryAST2(List, min, max));
 	}
 
-	public static IAST intIterator(ISymbol head, final Function<IExpr, IExpr> function, final int from, final int to) {
+	public static IAST intIterator(ISymbol head, final Function<IExpr, IExpr> function, final int from, final int to,
+			final int step) {
 		IAST result = F.ast(head, to - from + 1, false);
-		for (int i = from; i <= to; i++) {
+		for (int i = from; i <= to; i += step) {
 			result.append(function.apply(F.ZZ(i)));
 		}
 		return result;
@@ -5096,7 +5097,7 @@ public class F {
 	}
 
 	public static IAST product(final Function<IExpr, IExpr> function, final int from, final int to) {
-		return intIterator(F.Times, function, from, to);
+		return intIterator(F.Times, function, from, to, 1);
 	}
 
 	public static IAST ProductLog(final IExpr a0) {
@@ -5570,8 +5571,31 @@ public class F {
 		return ternaryAST3(Sum, a0, a1, a2);
 	}
 
-	public static IAST sum(final Function<IExpr, IExpr> function, final int from, final int to) {
-		return intIterator(F.Plus, function, from, to);
+	/**
+	 * Evaluate the sum from <code>iMin</code> to <code>iMax</code> and step
+	 * <code>1</code>.
+	 * 
+	 * @param function
+	 * @param iMin
+	 * @param iMax
+	 * @return
+	 */
+	public static IAST sum(final Function<IExpr, IExpr> function, final int iMin, final int iMax) {
+		return intIterator(F.Plus, function, iMin, iMax, 1);
+	}
+
+	/**
+	 * Evaluate the sum from <code>iMin</code> to <code>iMax</code> and step
+	 * <code>iStep</code>.
+	 * 
+	 * @param function
+	 * @param iMin
+	 * @param iMax
+	 * @param iStep
+	 * @return
+	 */
+	public static IAST sum(final Function<IExpr, IExpr> function, final int iMin, final int iMax, final int iStep) {
+		return intIterator(F.Plus, function, iMin, iMax, iStep);
 	}
 
 	public static IAST SurfaceGraphics() {

@@ -272,7 +272,7 @@ public class SpecialFunctions {
 			super.setUp(newSymbol);
 		}
 	}
-	
+
 	private final static class GegenbauerC extends AbstractFunctionEvaluator {
 
 		@Override
@@ -297,10 +297,11 @@ public class SpecialFunctions {
 				if (nInt > 2) {
 					// (2^n/n)*z^n + Sum(((-1)^k*(n - k - 1)!*(2*z)^(n - 2*k))/(k! * (n -
 					// 2*k)!), {k, 1, Floor(n/2)})
+					int floorND2 = nInt / 2;
 					return Plus(Times(Power(C2, n), Power(n, -1), Power(z, n)),
-							Sum(Times(Power(CN1, k), Power(Times(C2, z), Plus(Times(F.CN2, k), n)),
+							F.sum(k -> Times(Power(CN1, k), Power(Times(C2, z), Plus(Times(F.CN2, k), n)),
 									Power(Times(Factorial(k), Factorial(Plus(Times(F.CN2, k), n))), -1),
-									Factorial(Plus(CN1, Negate(k), n))), List(k, C1, F.Floor(Times(C1D2, n)))));
+									Factorial(Plus(CN1, Negate(k), n))), 1, floorND2));
 				}
 			}
 
@@ -513,7 +514,8 @@ public class SpecialFunctions {
 	 * Lambert W function
 	 * </p>
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Lambert_W_function">Wikipedia - Lambert W function</a>
+	 * See: <a href="http://en.wikipedia.org/wiki/Lambert_W_function">Wikipedia -
+	 * Lambert W function</a>
 	 */
 	private final static class ProductLog extends AbstractArg12 implements ProductLogRules {
 		@Override
@@ -752,7 +754,7 @@ public class SpecialFunctions {
 					// ((-1)^n/(n + 1))*BernoulliB(n + 1)
 					n = n.negate();
 					IExpr n1 = n.add(C1);
-					return Times(Power(CN1, n), Power(n1, -1), BernoulliB(n1)); 
+					return Times(Power(CN1, n), Power(n1, -1), BernoulliB(n1));
 				}
 				if (n.isEven()) {
 					// Zeta(2*n) :=
@@ -779,12 +781,11 @@ public class SpecialFunctions {
 			}
 			if (s.isInteger() && a.isInteger()) {
 				if (!s.isPositive() || ((IInteger) s).isEven()) {
-					IInteger n = (IInteger) a;
-					if (n.isNegative()) {
-						n = n.negate();
-						// Zeta(s, -n) :=
-						// Zeta(s) + Sum(1/k^s, {k, 1, n})
-						return Plus(Sum(Power(Power(k, s), -1), List(k, C1, n)), Zeta(s));
+					int nInt = ((IInteger) a).toIntDefault(0); 
+					if (nInt < 0) {
+						nInt *= -1;
+						// Zeta(s, -n) := Zeta(s) + Sum(1/k^s, {k, 1, n})
+						return Plus(F.sum(k -> Power(Power(k, s), -1), 1, nInt), Zeta(s));
 					}
 				}
 			}
