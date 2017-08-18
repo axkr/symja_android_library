@@ -2,9 +2,11 @@
 
 ``` 
 DiagonalMatrix(list)
-``` 
+```
 
-> gives a matrix with the values in $list$ on its diagonal and zeroes elsewhere.
+> gives a matrix with the values in `list` on its diagonal and zeroes elsewhere.
+
+### Examples
 
 ```
 >> DiagonalMatrix({1, 2, 3})
