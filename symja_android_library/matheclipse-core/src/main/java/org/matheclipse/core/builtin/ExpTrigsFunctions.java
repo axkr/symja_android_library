@@ -182,7 +182,8 @@ public class ExpTrigsFunctions {
 	/**
 	 * Arccosine
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" > Inverse_trigonometric functions</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
+	 * Inverse_trigonometric functions</a>
 	 */
 	private final static class ArcCos extends AbstractTrigArg1 implements INumeric, ArcCosRules, DoubleUnaryOperator {
 
@@ -252,7 +253,8 @@ public class ExpTrigsFunctions {
 	/**
 	 * Inverse hyperbolic cosine
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse hyperbolic functions</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">
+	 * Inverse hyperbolic functions</a>
 	 */
 	private final static class ArcCosh extends AbstractTrigArg1 implements INumeric, ArcCoshRules, DoubleUnaryOperator {
 
@@ -317,7 +319,8 @@ public class ExpTrigsFunctions {
 	/**
 	 * Arccotangent
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" > Inverse_trigonometric functions</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
+	 * Inverse_trigonometric functions</a>
 	 */
 	private final static class ArcCot extends AbstractTrigArg1 implements ArcCotRules, DoubleUnaryOperator {
 
@@ -398,7 +401,8 @@ public class ExpTrigsFunctions {
 	/**
 	 * Arccotangent hyperbolic
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse hyperbolic functions</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">
+	 * Inverse hyperbolic functions</a>
 	 */
 	private final static class ArcCoth extends AbstractTrigArg1 implements ArcCothRules, DoubleUnaryOperator {
 
@@ -491,7 +495,8 @@ public class ExpTrigsFunctions {
 	/**
 	 * Inverse hyperbolic tangent
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse hyperbolic functions</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">
+	 * Inverse hyperbolic functions</a>
 	 */
 	private final static class ArcCsc extends AbstractTrigArg1 implements ArcCscRules {
 		@Override
@@ -525,7 +530,8 @@ public class ExpTrigsFunctions {
 	/**
 	 * Inverse hyperbolic tangent
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse hyperbolic functions</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">
+	 * Inverse hyperbolic functions</a>
 	 */
 	private final static class ArcCsch extends AbstractTrigArg1 implements ArcCschRules {
 
@@ -563,7 +569,8 @@ public class ExpTrigsFunctions {
 	/**
 	 * Inverse hyperbolic secant
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse hyperbolic functions</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">
+	 * Inverse hyperbolic functions</a>
 	 */
 	private final static class ArcSech extends AbstractTrigArg1 implements ArcSechRules {
 
@@ -615,7 +622,8 @@ public class ExpTrigsFunctions {
 	/**
 	 * Arcsine
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" > Inverse_trigonometric functions</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
+	 * Inverse_trigonometric functions</a>
 	 */
 	private final static class ArcSin extends AbstractTrigArg1 implements INumeric, ArcSinRules, DoubleUnaryOperator {
 
@@ -692,7 +700,8 @@ public class ExpTrigsFunctions {
 	/**
 	 * Arcsin hyperbolic
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse hyperbolic functions</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">
+	 * Inverse hyperbolic functions</a>
 	 */
 	private final static class ArcSinh extends AbstractTrigArg1 implements INumeric, ArcSinhRules, DoubleUnaryOperator {
 
@@ -753,7 +762,8 @@ public class ExpTrigsFunctions {
 	/**
 	 * Arctangent
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" > Inverse_trigonometric functions</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Inverse_trigonometric functions" >
+	 * Inverse_trigonometric functions</a>
 	 */
 	private final static class ArcTan extends AbstractArg12 implements INumeric, ArcTanRules {
 
@@ -856,7 +866,8 @@ public class ExpTrigsFunctions {
 	/**
 	 * Inverse hyperbolic tangent
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse hyperbolic functions</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function">
+	 * Inverse hyperbolic functions</a>
 	 */
 	private final static class ArcTanh extends AbstractTrigArg1 implements INumeric, ArcTanhRules, DoubleUnaryOperator {
 
@@ -928,9 +939,11 @@ public class ExpTrigsFunctions {
 	/**
 	 * Cosine function
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a> and
-	 * <a href="http://en.wikipedia.org/wiki/Exact_trigonometric_constants"> Wikipedia - Exact trigonometric
-	 * constants</a>
+	 * See
+	 * <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
+	 * functions</a> and
+	 * <a href="http://en.wikipedia.org/wiki/Exact_trigonometric_constants">
+	 * Wikipedia - Exact trigonometric constants</a>
 	 */
 	private final static class Cos extends AbstractTrigArg1 implements INumeric, CosRules, DoubleUnaryOperator {
 
@@ -1033,7 +1046,8 @@ public class ExpTrigsFunctions {
 	/**
 	 * Hyperbolic cotangent
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
+	 * function</a>
 	 */
 	private final static class Coth extends AbstractTrigArg1 implements INumeric, CothRules, DoubleUnaryOperator {
 
@@ -1101,7 +1115,9 @@ public class ExpTrigsFunctions {
 	/**
 	 * Cosecant function
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
+	 * See
+	 * <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
+	 * functions</a>
 	 */
 	private final static class Csc extends AbstractTrigArg1 implements INumeric, CscRules, DoubleUnaryOperator {
 
@@ -1201,7 +1217,8 @@ public class ExpTrigsFunctions {
 	/**
 	 * Hyperbolic cosine
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
+	 * function</a>
 	 */
 	private final static class Cosh extends AbstractTrigArg1 implements INumeric, CoshRules, DoubleUnaryOperator {
 
@@ -1269,7 +1286,9 @@ public class ExpTrigsFunctions {
 	/**
 	 * Cotangent function
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
+	 * See
+	 * <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
+	 * functions</a>
 	 */
 	private final static class Cot extends AbstractTrigArg1 implements INumeric, CotRules, DoubleUnaryOperator {
 
@@ -1362,7 +1381,8 @@ public class ExpTrigsFunctions {
 	/**
 	 * Hyperbolic Cosecant function
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic functions</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
+	 * functions</a>
 	 */
 	private final static class Csch extends AbstractTrigArg1 implements INumeric, CschRules, DoubleUnaryOperator {
 
@@ -1477,7 +1497,8 @@ public class ExpTrigsFunctions {
 	}
 
 	/**
-	 * See <a href="http://en.wikipedia.org/wiki/Logarithm">Wikipedia - Logarithm</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Logarithm">Wikipedia -
+	 * Logarithm</a>
 	 * 
 	 */
 	private final static class Log extends AbstractArg12 implements INumeric, LogRules {
@@ -1523,8 +1544,8 @@ public class ExpTrigsFunctions {
 		}
 
 		/**
-		 * Integer logarithm of <code>arg</code> for base <code>b</code>. Gives Log <sub>b</sub>(arg) or
-		 * <code>Log(arg)/Log(b)</code>.
+		 * Integer logarithm of <code>arg</code> for base <code>b</code>. Gives Log
+		 * <sub>b</sub>(arg) or <code>Log(arg)/Log(b)</code>.
 		 * 
 		 * @param b
 		 *            the base of the logarithm
@@ -1598,20 +1619,28 @@ public class ExpTrigsFunctions {
 	/**
 	 * Logistic function
 	 * 
-	 * See <a href="https://en.wikipedia.org/wiki/Logistic_function">Wikipedia: Logistic function</a>
+	 * See <a href="https://en.wikipedia.org/wiki/Logistic_function">Wikipedia:
+	 * Logistic function</a>
 	 * 
 	 */
 	private final static class LogisticSigmoid extends AbstractEvaluator {
 
-		public LogisticSigmoid() {
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
-			if (ast.arg1().isNumber()) {
+			IExpr arg1 = ast.arg1();
+			if (arg1.isZero()) {
+				return F.C1D2;
+			}
+			if (arg1.isInfinity()) {
+				return F.C1;
+			}
+			if (arg1.isNegativeInfinity()) {
+				return F.C0;
+			}
+			if (arg1.isNumber()) {
 				// 1 / (1 + Exp(-arg1))
-				return F.Power(F.Plus(F.C1, F.Power(F.E, F.Times(F.CN1, ast.arg1()))), F.CN1);
+				return F.Power(F.Plus(F.C1, F.Power(F.E, F.Times(F.CN1, arg1))), F.CN1);
 			}
 			return F.NIL;
 		}
@@ -1670,7 +1699,9 @@ public class ExpTrigsFunctions {
 	/**
 	 * Secant function
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
+	 * See
+	 * <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
+	 * functions</a>
 	 */
 	private final static class Sec extends AbstractTrigArg1 implements INumeric, SecRules, DoubleUnaryOperator {
 
@@ -1770,7 +1801,8 @@ public class ExpTrigsFunctions {
 	/**
 	 * Hyperbolic Secant function
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic functions</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
+	 * functions</a>
 	 */
 	private final static class Sech extends AbstractTrigArg1 implements INumeric, SechRules, DoubleUnaryOperator {
 
@@ -1838,7 +1870,9 @@ public class ExpTrigsFunctions {
 	/**
 	 * Sine function.
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
+	 * See
+	 * <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
+	 * functions</a>
 	 */
 	private final static class Sin extends AbstractTrigArg1 implements INumeric, SinRules, DoubleUnaryOperator {
 
@@ -1957,7 +1991,8 @@ public class ExpTrigsFunctions {
 	/**
 	 * Hyperbolic sine
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
+	 * function</a>
 	 */
 	private final static class Sinh extends AbstractTrigArg1 implements INumeric, SinhRules, DoubleUnaryOperator {
 
@@ -2025,7 +2060,9 @@ public class ExpTrigsFunctions {
 	/**
 	 * Tan
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric functions</a>
+	 * See
+	 * <a href="http://en.wikipedia.org/wiki/Trigonometric_functions">Trigonometric
+	 * functions</a>
 	 */
 	private final static class Tan extends AbstractTrigArg1 implements INumeric, TanRules, DoubleUnaryOperator {
 
@@ -2117,7 +2154,8 @@ public class ExpTrigsFunctions {
 	/**
 	 * Hyperbolic tangent
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
+	 * function</a>
 	 */
 	private final static class Tanh extends AbstractTrigArg1 implements INumeric, TanhRules, DoubleUnaryOperator {
 
