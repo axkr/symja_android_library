@@ -1741,7 +1741,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	public void setOutListDisabled(LastCalculationsHistory outList) {
 		this.fOutList = outList;
-		this.fOutListDisabled = true;
+		this.fOutListDisabled = false;
 	}
 
 	public void setOutPrintStream(final PrintStream outPrintStream) {
