@@ -97,7 +97,6 @@ public final class FunctionDefinitions {
 		Share.setEvaluator(new org.matheclipse.core.reflection.system.Share());
 		Sign.setEvaluator(new org.matheclipse.core.reflection.system.Sign());
 		SignCmp.setEvaluator(new org.matheclipse.core.reflection.system.SignCmp());
-		Sinc.setEvaluator(new org.matheclipse.core.reflection.system.Sinc());
 		SinIntegral.setEvaluator(new org.matheclipse.core.reflection.system.SinIntegral());
 		Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
 		StieltjesGamma.setEvaluator(new org.matheclipse.core.reflection.system.StieltjesGamma());

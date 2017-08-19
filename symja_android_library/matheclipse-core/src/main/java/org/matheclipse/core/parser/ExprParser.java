@@ -40,8 +40,6 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.parser.client.SyntaxError;
-import org.matheclipse.parser.client.ast.FunctionNode;
-import org.matheclipse.parser.client.ast.IntegerNode;
 import org.matheclipse.parser.client.operator.InfixOperator;
 
 /**

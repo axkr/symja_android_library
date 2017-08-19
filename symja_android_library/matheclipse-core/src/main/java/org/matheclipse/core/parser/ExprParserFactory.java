@@ -23,8 +23,102 @@ import java.util.Map;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 
 public class ExprParserFactory implements IExprParserFactory {
+
+	/**
+	 * @@@ operator (not @@ operator)
+	 *
+	 */
+	private static class ApplyOperator extends InfixExprOperator {
+		public ApplyOperator(final String oper, final String functionName, final int precedence, final int grouping) {
+			super(oper, functionName, precedence, grouping);
+		}
+
+		public IExpr createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs,
+				final IExpr rhs) {
+			IAST fn = F.ast(F.Apply);
+			fn.append(lhs);
+			fn.append(rhs);
+			if (fOperatorString.equals("@@")) {
+				return fn;
+			}
+			fn.append(F.List(F.C1));
+			return fn;
+		}
+
+	}
+
+	private static class DivideExprOperator extends InfixExprOperator {
+		public DivideExprOperator(final String oper, final String functionName, final int precedence,
+				final int grouping) {
+			super(oper, functionName, precedence, grouping);
+		}
+
+		public IExpr createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs,
+				final IExpr rhs) {
+
+			if (rhs.isInteger() && !rhs.isZero()) {
+				if (lhs.isInteger()) {
+					if (!parser.isHoldOrHoldFormOrDefer()) {
+						return F.fraction((IInteger) lhs, (IInteger) rhs);
+					}
+				}
+				return F.Times(F.fraction(F.C1, (IInteger) rhs), lhs);
+			}
+
+			if (lhs.equals(F.C1)) {
+				return F.Power(rhs, F.CN1);
+			}
+			if (rhs.isPower() && ((IAST) rhs).arg2().isNumber()) {
+				return F.Times(lhs, F.Power(((IAST) rhs).arg1(), ((IAST) rhs).arg2().negate()));
+			}
+			return F.Times(lhs, F.Power(rhs, F.CN1));
+		}
+	}
+
+	private static class PreMinusExprOperator extends PrefixExprOperator {
+
+		public PreMinusExprOperator(final String oper, final String functionName, final int precedence) {
+			super(oper, functionName, precedence);
+		}
+
+		public IExpr createFunction(final IExprParserFactory factory, final IExpr argument) {
+			return F.Times(F.CN1, argument);
+		}
+	}
+
+	private static class PrePlusExprOperator extends PrefixExprOperator {
+
+		public PrePlusExprOperator(final String oper, final String functionName, final int precedence) {
+			super(oper, functionName, precedence);
+		}
+
+		public IExpr createFunction(final IExprParserFactory factory, final IExpr argument) {
+			return argument;
+		}
+	}
+
+	private static class SubtractExprOperator extends InfixExprOperator {
+		public SubtractExprOperator(final String oper, final String functionName, final int precedence,
+				final int grouping) {
+			super(oper, functionName, precedence, grouping);
+		}
+
+		public IExpr createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs,
+				final IExpr rhs) {
+			if (rhs.isNumber()) {
+				return F.Plus(lhs, rhs.negate());
+			}
+			if (rhs.isTimes() && ((IAST) rhs).arg1().isNumber()) {
+				return F.Plus(lhs, ((IAST) rhs).setAtClone(1, ((IAST) rhs).arg1().negate()));
+			}
+			return F.Plus(lhs, F.Times(F.CN1, rhs));
+		}
+	}
 
 	public final static int PLUS_PRECEDENCE = 310;
 
@@ -77,8 +171,7 @@ public class ExprParserFactory implements IExprParserFactory {
 			new PostfixExprOperator("!", "Factorial", 610),
 			new InfixExprOperator("*", "Times", TIMES_PRECEDENCE, InfixExprOperator.NONE),
 			new InfixExprOperator("^", "Power", POWER_PRECEDENCE, InfixExprOperator.RIGHT_ASSOCIATIVE),
-			new InfixExprOperator(".", "Dot", 490, InfixExprOperator.NONE), 
-			new PrefixExprOperator("!", "Not", 230), 
+			new InfixExprOperator(".", "Dot", 490, InfixExprOperator.NONE), new PrefixExprOperator("!", "Not", 230),
 			new PreMinusExprOperator("-", "PreMinus", 485),
 			new InfixExprOperator("===", "SameQ", 290, InfixExprOperator.NONE),
 			new InfixExprOperator(":>", "RuleDelayed", 120, InfixExprOperator.RIGHT_ASSOCIATIVE),
@@ -94,8 +187,7 @@ public class ExprParserFactory implements IExprParserFactory {
 			new InfixExprOperator("!=", "Unequal", 290, InfixExprOperator.NONE),
 			new PostfixExprOperator("--", "Decrement", 660),
 			new InfixExprOperator("-=", "SubtractFrom", 100, InfixExprOperator.RIGHT_ASSOCIATIVE),
-			new PrePlusExprOperator("+", "PrePlus", 670), 
-			new PostfixExprOperator("...", "RepeatedNull", 170),
+			new PrePlusExprOperator("+", "PrePlus", 670), new PostfixExprOperator("...", "RepeatedNull", 170),
 			new InfixExprOperator("=!=", "UnsameQ", 290, InfixExprOperator.NONE),
 			new InfixExprOperator("->", "Rule", 120, InfixExprOperator.RIGHT_ASSOCIATIVE),
 			new InfixExprOperator("^:=", "UpSetDelayed", 40, InfixExprOperator.RIGHT_ASSOCIATIVE),
@@ -129,14 +221,6 @@ public class ExprParserFactory implements IExprParserFactory {
 		}
 	}
 
-	/**
-	 * Create a default ASTNode factory
-	 * 
-	 */
-	public ExprParserFactory() {
-		// this.fIgnoreCase = ignoreCase;
-	}
-
 	static public void addOperator(final Map<String, AbstractExprOperator> operatorMap,
 			final Map<String, ArrayList<AbstractExprOperator>> operatorTokenStartSet, final String operatorStr,
 			final String headStr, final AbstractExprOperator oper) {
@@ -150,35 +234,6 @@ public class ExprParserFactory implements IExprParserFactory {
 		} else {
 			list.add(oper);
 		}
-	}
-
-	public String getOperatorCharacters() {
-		return DEFAULT_OPERATOR_CHARACTERS;
-	}
-
-	/**
-	 * public Map<String, Operator> getIdentifier2OperatorMap()
-	 */
-	public Map<String, AbstractExprOperator> getIdentifier2OperatorMap() {
-		return fOperatorMap;
-	}
-
-	public AbstractExprOperator get(final String identifier) {
-		return fOperatorMap.get(identifier);
-	}
-
-	/**
-	 * 
-	 */
-	public Map<String, ArrayList<AbstractExprOperator>> getOperator2ListMap() {
-		return fOperatorTokenStartSet;
-	}
-
-	/**
-	 * 
-	 */
-	public List<AbstractExprOperator> getOperatorList(final String key) {
-		return fOperatorTokenStartSet.get(key);
 	}
 
 	static public InfixExprOperator createInfixOperator(final String operatorStr, final String headStr,
@@ -197,6 +252,11 @@ public class ExprParserFactory implements IExprParserFactory {
 		return oper;
 	}
 
+	static public PostfixExprOperator createPostfixOperator(final String operatorStr, final String headStr,
+			final int precedence) {
+		return new PostfixExprOperator(operatorStr, headStr, precedence);
+	}
+
 	static public PrefixExprOperator createPrefixOperator(final String operatorStr, final String headStr,
 			final int precedence) {
 		PrefixExprOperator oper;
@@ -210,9 +270,41 @@ public class ExprParserFactory implements IExprParserFactory {
 		return oper;
 	}
 
-	static public PostfixExprOperator createPostfixOperator(final String operatorStr, final String headStr,
-			final int precedence) {
-		return new PostfixExprOperator(operatorStr, headStr, precedence);
+	/**
+	 * Create a default ASTNode factory
+	 * 
+	 */
+	public ExprParserFactory() {
+		// this.fIgnoreCase = ignoreCase;
+	}
+
+	public AbstractExprOperator get(final String identifier) {
+		return fOperatorMap.get(identifier);
+	}
+
+	/**
+	 * public Map<String, Operator> getIdentifier2OperatorMap()
+	 */
+	public Map<String, AbstractExprOperator> getIdentifier2OperatorMap() {
+		return fOperatorMap;
+	}
+
+	/**
+	 * 
+	 */
+	public Map<String, ArrayList<org.matheclipse.core.parser.AbstractExprOperator>> getOperator2ListMap() {
+		return fOperatorTokenStartSet;
+	}
+
+	public String getOperatorCharacters() {
+		return DEFAULT_OPERATOR_CHARACTERS;
+	}
+
+	/**
+	 * 
+	 */
+	public List<AbstractExprOperator> getOperatorList(final String key) {
+		return fOperatorTokenStartSet.get(key);
 	}
 
 	public boolean isValidIdentifier(String identifier) {

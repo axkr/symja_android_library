@@ -11,6 +11,7 @@ import static org.matheclipse.core.expression.F.ArcTan;
 import static org.matheclipse.core.expression.F.ArcTanh;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.CD1;
 import static org.matheclipse.core.expression.F.CI;
 import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.CNI;
@@ -28,6 +29,7 @@ import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sec;
 import static org.matheclipse.core.expression.F.Sech;
 import static org.matheclipse.core.expression.F.Sin;
+import static org.matheclipse.core.expression.F.Sinc;
 import static org.matheclipse.core.expression.F.Sinh;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Tan;
@@ -90,6 +92,7 @@ import org.matheclipse.core.reflection.system.rules.LogRules;
 import org.matheclipse.core.reflection.system.rules.SecRules;
 import org.matheclipse.core.reflection.system.rules.SechRules;
 import org.matheclipse.core.reflection.system.rules.SinRules;
+import org.matheclipse.core.reflection.system.rules.SincRules;
 import org.matheclipse.core.reflection.system.rules.SinhRules;
 import org.matheclipse.core.reflection.system.rules.TanRules;
 import org.matheclipse.core.reflection.system.rules.TanhRules;
@@ -126,6 +129,7 @@ public class ExpTrigsFunctions {
 		F.Sec.setEvaluator(new Sec());
 		F.Sech.setEvaluator(new Sech());
 		F.Sin.setEvaluator(new Sin());
+		F.Sinc.setEvaluator(new Sinc());
 		F.Sinh.setEvaluator(new Sinh());
 		F.Tan.setEvaluator(new Tan());
 		F.Tanh.setEvaluator(new Tanh());
@@ -1971,6 +1975,75 @@ public class ExpTrigsFunctions {
 			super.setUp(newSymbol);
 		}
 
+	}
+
+	/**
+	 * Sinc function.
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Sinc_function">Sinc function</a>
+	 */
+	private static class Sinc extends AbstractTrigArg1 implements INumeric, SincRules, DoubleUnaryOperator {
+
+		@Override
+		public double applyAsDouble(double operand) {
+			return Math.sin(operand) / operand;
+		}
+
+		@Override
+		public IExpr e1ApcomplexArg(Apcomplex arg1) {
+			if (arg1.equals(Apcomplex.ZERO)) {
+				return F.num(Apcomplex.ONE);
+			}
+			return F.complexNum(ApcomplexMath.sin(arg1).divide(arg1));
+		}
+
+		@Override
+		public IExpr e1ApfloatArg(Apfloat arg1) {
+			if (arg1.equals(Apcomplex.ZERO)) {
+				return F.num(Apcomplex.ONE);
+			}
+			return F.num(ApfloatMath.sin(arg1).divide(arg1));
+		}
+
+		@Override
+		public IExpr e1DblArg(final double arg1) {
+			if (arg1 == 0.0) {
+				return CD1;
+			}
+			return num(Math.sin(arg1) / arg1);
+		}
+
+		@Override
+		public double evalReal(final double[] stack, final int top, final int size) {
+			if (size != 1) {
+				throw new UnsupportedOperationException();
+			}
+			double a1 = stack[top];
+			if (a1 == 0.0) {
+				return 1.0;
+			}
+			return Math.sin(a1) / a1;
+		}
+
+		@Override
+		public IExpr evaluateArg1(final IExpr arg1) {
+			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+			if (negExpr.isPresent()) {
+				return Sinc(negExpr);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
 	}
 
 	public static BinaryFunctorImpl<IExpr> integerLogFunction() {
