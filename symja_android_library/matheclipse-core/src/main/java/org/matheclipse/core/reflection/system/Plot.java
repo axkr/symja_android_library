@@ -69,8 +69,8 @@ public class Plot extends AbstractEvaluator {
 					if (ast.get(1).isList()) {
 						final IAST list = (IAST) ast.get(1);
 						final IAST primitives = List();
-						for (int i = 1; i < list.size(); i++) {
-							temp = plotLine(xMinD, xMaxd, yMinD, yMaxD, list.get(2), x, engine);
+						for (int i = 1; i < list.size(); i++) { 
+							temp = plotLine(xMinD, xMaxd, yMinD, yMaxD, list.get(i), x, engine);
 
 							if (temp.isPresent()) {
 								line.append(temp);

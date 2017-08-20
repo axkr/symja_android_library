@@ -1,7 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.N;
 import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.Show;
 import static org.matheclipse.core.expression.F.SurfaceGraphics;
@@ -50,10 +49,10 @@ public class Plot3D extends AbstractEvaluator {
 					// allOptions.add(optionsArray[i]);
 					// }
 					// allOptions = hOptions.replaceAll(allOptions);
-					final ISymbol x = (ISymbol) lst1.arg1();
+					// final ISymbol x = (ISymbol) lst1.arg1();
 					final IExpr xMin = engine.evalN(lst1.arg2());
 					final IExpr xMax = engine.evalN(lst1.arg3());
-					final ISymbol y = (ISymbol) lst2.arg1();
+					// final ISymbol y = (ISymbol) lst2.arg1();
 					final IExpr yMin = engine.evalN(lst2.arg2());
 					final IExpr yMax = engine.evalN(lst2.arg3());
 					if ((!(xMin instanceof INum)) || (!(xMax instanceof INum)) || (!(yMin instanceof INum))
@@ -115,7 +114,8 @@ public class Plot3D extends AbstractEvaluator {
 	 *            the y variable
 	 * @param engine
 	 *            the evaluation engine
-	 * @return <code>F.NIL</code> is no conversion of the data into an <code>IExpr</code> was possible
+	 * @return <code>F.NIL</code> is no conversion of the data into an
+	 *         <code>IExpr</code> was possible
 	 */
 	@Nonnull
 	public static IExpr plotArray(final double xMin, final double xMax, final double yMin, final double yMax,
