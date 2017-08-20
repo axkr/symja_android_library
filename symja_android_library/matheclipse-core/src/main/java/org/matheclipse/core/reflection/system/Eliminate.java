@@ -31,15 +31,17 @@ import org.matheclipse.core.visit.AbstractVisitorBoolean;
  * 
  * <blockquote>
  * <p>
- * attempts to eliminate the variables from the <code>list-of-variables</code> in the <code>list-of-equations</code>.
+ * attempts to eliminate the variables from the <code>list-of-variables</code>
+ * in the <code>list-of-equations</code>.
  * </p>
  * </blockquote>
  * <p>
  * See:
  * </p>
  * <ul>
- * <li><a href="http://en.wikipedia.org/wiki/System_of_linear_equations#Elimination_of_variables">Wikipedia - System of
- * linear equations - Elimination of variables</a></li>
+ * <li><a href=
+ * "http://en.wikipedia.org/wiki/System_of_linear_equations#Elimination_of_variables">Wikipedia
+ * - System of linear equations - Elimination of variables</a></li>
  * </ul>
  * <h3>Examples</h3>
  * 
@@ -55,7 +57,8 @@ public class Eliminate extends AbstractFunctionEvaluator {
 			implements Comparable<VariableCounterVisitor> {
 
 		/**
-		 * Count the number of nodes in <code>fExpr</code>, which equals <code>fVariable</code>.
+		 * Count the number of nodes in <code>fExpr</code>, which equals
+		 * <code>fVariable</code>.
 		 */
 		int fVariableCounter;
 
@@ -65,7 +68,8 @@ public class Eliminate extends AbstractFunctionEvaluator {
 		int fNodeCounter;
 
 		/**
-		 * The maximum number of recursion levels for visiting nodes, which equals <code>fVariable</code>.
+		 * The maximum number of recursion levels for visiting nodes, which equals
+		 * <code>fVariable</code>.
 		 */
 		int fMaxVariableDepth;
 
@@ -169,7 +173,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 			}
 			try {
 				fCurrentDepth++;
-				ast.forEach(x->x.accept(this));
+				ast.forEach(x -> x.accept(this));
 			} finally {
 				fCurrentDepth--;
 			}
@@ -241,14 +245,15 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Check if the argument at the given position is an equation (i.e. Equal[a,b]) or a list of equations and return a
-	 * list of expressions, which should be equal to <code>0</code>.
+	 * Check if the argument at the given position is an equation (i.e. Equal[a,b])
+	 * or a list of equations and return a list of expressions, which should be
+	 * equal to <code>0</code>.
 	 * 
 	 * @param ast
 	 * @param position
 	 * @return
 	 */
-	private static IAST checkEquations(final IAST ast, int position) {
+	private static IAST checkEquations(final IAST ast, int position, EvalEngine engine) {
 		IExpr arg = ast.get(position);
 		if (arg.isList()) {
 			IAST list = (IAST) arg;
@@ -269,7 +274,8 @@ public class Eliminate extends AbstractFunctionEvaluator {
 		if (arg.isEqual()) {
 			IAST equalList = F.List();
 			IAST equalAST = (IAST) arg;
-			equalList.append(F.Equal(F.evalExpandAll(equalAST.arg1()), F.evalExpandAll(equalAST.arg2())));
+			equalList.append(
+					F.Equal(F.evalExpandAll(equalAST.arg1(), engine), F.evalExpandAll(equalAST.arg2(), engine)));
 			return equalList;
 		}
 		// not an equation
@@ -283,7 +289,8 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	 *            an <code>Equal()</code> expression.
 	 * @param variable
 	 *            the variable which should be eliminated.
-	 * @return <code>F.NIL</code> if we can't find an equation for the given <code>variable</code>.
+	 * @return <code>F.NIL</code> if we can't find an equation for the given
+	 *         <code>variable</code>.
 	 */
 	private static IExpr eliminateAnalyze(IAST equalAST, IExpr variable) {
 		if (equalAST.isEqual()) {
@@ -304,13 +311,15 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Extract the variable from the given <code>expr</code> assuming <code>expr == 0</code>.
+	 * Extract the variable from the given <code>expr</code> assuming
+	 * <code>expr == 0</code>.
 	 * 
 	 * @param expr
 	 *            an expression.
 	 * @param variable
 	 *            the variable which should be eliminated.
-	 * @return <code>F.NIL</code> if we can't find an equation for the given <code>variable</code>.
+	 * @return <code>F.NIL</code> if we can't find an equation for the given
+	 *         <code>variable</code>.
 	 */
 	public static IExpr extractVariable(IExpr expr, IExpr variable) {
 		Predicate<IExpr> predicate = Predicates.in(variable);
@@ -330,7 +339,8 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	 *            expression which doesn't contain the given <code>variabe</code>.
 	 * @param variable
 	 *            the variable which should be eliminated.
-	 * @return <code>F.NIL</code> if we can't find an equation for the given <code>variable</code>.
+	 * @return <code>F.NIL</code> if we can't find an equation for the given
+	 *         <code>variable</code>.
 	 */
 	private static IExpr extractVariable(IExpr exprWithVariable, IExpr exprWithoutVariable, Predicate<IExpr> predicate,
 			IExpr variable) {
@@ -410,15 +420,18 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Analyze the <code>Equal()</code> terms, if we find an expression which equals the given <code>variabe</code>
+	 * Analyze the <code>Equal()</code> terms, if we find an expression which equals
+	 * the given <code>variabe</code>
 	 * 
 	 * @param analyzerList
-	 *            the list of <code>Equal()</code> terms with statistics of it's equations.
+	 *            the list of <code>Equal()</code> terms with statistics of it's
+	 *            equations.
 	 * @param variable
 	 *            the variable which should be eliminated.
-	 * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>variable</code> or
-	 *         the eliminated list of equations in index <code>[0]</code> and the last rule which is used for variable
-	 *         elimination in index <code>[1]</code>.
+	 * @return <code>null</code> if we can't eliminate an equation from the list for
+	 *         the given <code>variable</code> or the eliminated list of equations
+	 *         in index <code>[0]</code> and the last rule which is used for
+	 *         variable elimination in index <code>[1]</code>.
 	 */
 	private static IAST[] eliminateOneVariable(ArrayList<VariableCounterVisitor> analyzerList, IExpr variable) {
 		IAST eliminatedResultEquations = F.ListAlloc(analyzerList.size());
@@ -456,7 +469,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 		try {
 			IAST vars = Validate.checkSymbolOrSymbolList(ast, 2);
 
-			IAST termsEqualZeroList = checkEquations(ast, 1);
+			IAST termsEqualZeroList = checkEquations(ast, 1, engine);
 
 			IAST result = termsEqualZeroList;
 			IAST[] temp;

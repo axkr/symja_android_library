@@ -123,7 +123,7 @@ public class Plot3D extends AbstractEvaluator {
 		final double xStep = (xMax - xMin) / NUMBER_OF_DIVISIONS;
 		final double yStep = (yMax - yMin) / NUMBER_OF_DIVISIONS;
 
-		final BinaryNumerical hbn = new BinaryNumerical(function, xVar, yVar);
+		final BinaryNumerical hbn = new BinaryNumerical(function, xVar, yVar, engine);
 
 		final double data[][] = new double[NUMBER_OF_DIVISIONS + 1][NUMBER_OF_DIVISIONS + 1];
 		double x = xMin;

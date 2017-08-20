@@ -2,6 +2,7 @@ package org.matheclipse.core.visit;
 
 import java.util.function.Function;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -63,8 +64,8 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 	 * @throws MathException
 	 *             if the <code>expr</code> is not a <i>level specification</i>
 	 */
-	public VisitorLevelSpecification(final Function<IExpr, IExpr> function, final IExpr unevaledLevelExpr, boolean includeHeads) {
-		IExpr levelExpr = F.eval(unevaledLevelExpr);
+	public VisitorLevelSpecification(final Function<IExpr, IExpr> function, final IExpr unevaledLevelExpr, boolean includeHeads, final EvalEngine engine) {
+		IExpr levelExpr = engine.evaluate(unevaledLevelExpr);
 		fFromLevel = fToLevel = -1;
 		fFromDepth = fToDepth = 0;
 		this.fIncludeHeads = includeHeads;

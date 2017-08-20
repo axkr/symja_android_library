@@ -68,7 +68,7 @@ public class MonomialList extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, final EvalEngine engine) {
 		Validate.checkRange(ast, 2, 5);
 
-		IExpr expr = F.evalExpandAll(ast.arg1());
+		IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 		VariablesSet eVar;
 		IAST symbolList = F.List();
 		List<IExpr> varList;

@@ -3422,8 +3422,9 @@ public class F {
 	 * @param head
 	 * @param a0
 	 * @return the evaluated object
+	 * @deprecated
 	 */
-	public static IExpr eval(final ISymbol head, final IExpr a0) {
+	private static IExpr eval(final ISymbol head, final IExpr a0) {
 		final IAST ast = ast(head);
 		ast.append(a0);
 		return EvalEngine.get().evaluate(ast);
@@ -3436,8 +3437,9 @@ public class F {
 	 * @param a0
 	 * @param a1
 	 * @return the evaluated object
+	 * @deprecated
 	 */
-	public static IExpr eval(final ISymbol head, final IExpr a0, final IExpr a1) {
+	private static IExpr eval(final ISymbol head, final IExpr a0, final IExpr a1) {
 		final IAST ast = ast(head);
 		ast.append(a0);
 		ast.append(a1);
@@ -3452,33 +3454,14 @@ public class F {
 	 * @param a1
 	 * @param a2
 	 * @return the evaluated object
+	 * @deprecated
 	 */
-	public static IExpr eval(final ISymbol head, final IExpr a0, final IExpr a1, final IExpr a2) {
+	private static IExpr eval(final ISymbol head, final IExpr a0, final IExpr a1, final IExpr a2) {
 		final IAST ast = ast(head);
 		ast.append(a0);
 		ast.append(a1);
 		ast.append(a2);
 		return EvalEngine.get().evaluate(ast);
-	}
-
-	/**
-	 * Evaluate an expression for a local variable.
-	 * 
-	 * 
-	 * @param expr
-	 *            the expression which should be evaluated for the given symbol
-	 * @param symbol
-	 *            the symbol which should be evaluated as a local variable
-	 * @param localValue
-	 *            the value
-	 */
-	public static IExpr evalBlock(IExpr expr, ISymbol symbol, @Nonnull IExpr localValue) {
-		try {
-			symbol.pushLocalVariable(localValue);
-			return eval(expr);
-		} finally {
-			symbol.popLocalVariable();
-		}
 	}
 
 	/**
@@ -3521,7 +3504,21 @@ public class F {
 	 * @see EvalEngine#evaluate(IExpr)
 	 */
 	public static IExpr evalExpandAll(IExpr a) {
-		return EvalEngine.get().evaluate(ExpandAll(a));
+		return evalExpandAll(a, EvalEngine.get());
+	}
+
+	/**
+	 * Apply <code>ExpandAll()</code> to the given expression if it's an
+	 * <code>IAST</code>. If expanding wasn't possible this method returns the given
+	 * argument.
+	 * 
+	 * @param a
+	 *            the expression which should be evaluated
+	 * @return the evaluated expression
+	 * @see EvalEngine#evaluate(IExpr)
+	 */
+	public static IExpr evalExpandAll(IExpr a, EvalEngine engine) {
+		return engine.evaluate(ExpandAll(a));
 	}
 
 	/**

@@ -1,6 +1,8 @@
 package org.matheclipse.core.generic;
 
+import java.util.Deque;
 import java.util.function.Function;
+
 import org.hipparchus.analysis.UnivariateFunction;
 import org.matheclipse.commons.math.analysis.solvers.DifferentiableUnivariateFunction;
 import org.matheclipse.core.eval.DoubleStackEvaluator;
@@ -8,6 +10,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -27,7 +30,7 @@ public class UnaryNumerical implements Function<IExpr, IExpr>, DifferentiableUni
 	public UnaryNumerical(final IExpr fn, final ISymbol v) {
 		this(fn, v, EvalEngine.get());
 	}
-	
+
 	public UnaryNumerical(final IExpr fn, final ISymbol v, final EvalEngine engine) {
 		fVariable = v;
 		fFunction = fn;
@@ -35,17 +38,18 @@ public class UnaryNumerical implements Function<IExpr, IExpr>, DifferentiableUni
 	}
 
 	public IExpr apply(final IExpr firstArg) {
-		return F.evaln(F.subst(fFunction, F.Rule(fVariable, firstArg)));
+		return fEngine.evalN(F.subst(fFunction, F.Rule(fVariable, firstArg)));
 	}
 
 	public double value(double x) {
 		double result = 0.0;
 		final double[] stack = new double[10];
 		try {
-			fVariable.pushLocalVariable(Num.valueOf(x));
+			fEngine.localStackCreate(fVariable).push(Num.valueOf(x));
 			result = DoubleStackEvaluator.eval(stack, 0, fFunction);
 		} finally {
-			fVariable.popLocalVariable();
+			final Deque<IExpr> localVariableStack = fEngine.localStack(fVariable);
+			localVariableStack.pop();
 		}
 		return result;
 	}
@@ -54,7 +58,8 @@ public class UnaryNumerical implements Function<IExpr, IExpr>, DifferentiableUni
 	 * First derivative of unary function
 	 */
 	public UnivariateFunction derivative() {
-		IExpr expr = F.eval(F.D, fFunction, fVariable);
+		final IAST ast = F.D(fFunction, fVariable);
+		IExpr expr = fEngine.evaluate(ast);
 		return new UnaryNumerical(expr, fVariable, fEngine);
 	}
 

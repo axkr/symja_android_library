@@ -46,8 +46,8 @@ public class Resultant extends AbstractFunctionEvaluator {
 		// TODO allow multinomials
 		IExpr arg3 = Validate.checkSymbolType(ast, 3);
 		ISymbol x = (ISymbol) arg3;
-		IExpr a = F.evalExpandAll(ast.arg1());
-		IExpr b = F.evalExpandAll(ast.arg2());
+		IExpr a = F.evalExpandAll(ast.arg1(), engine);
+		IExpr b = F.evalExpandAll(ast.arg2(), engine);
 		ExprPolynomialRing ring = new ExprPolynomialRing(F.List(x));
 		try {
 			// check if a is a polynomial otherwise check ArithmeticException,

@@ -1074,7 +1074,8 @@ public final class Programming {
 				// }
 				newSymbol = F.userSymbol(oldSymbol.toString() + varAppend, engine);
 				variablesMap.put(oldSymbol, newSymbol);
-				newSymbol.pushLocalVariable();
+				// newSymbol.pushLocalVariable();
+				engine.localStackCreate(newSymbol).push(F.NIL);
 			} else {
 				if (variablesList.get(i).isAST(F.Set, 3)) {
 					final IAST setFun = (IAST) variablesList.get(i);
@@ -1090,7 +1091,8 @@ public final class Programming {
 								me.printStackTrace();
 							}
 						}
-						newSymbol.pushLocalVariable(rightHandSide);
+						engine.localStackCreate(newSymbol).push(rightHandSide);
+						// newSymbol.pushLocalVariable(rightHandSide);
 					}
 				}
 			}

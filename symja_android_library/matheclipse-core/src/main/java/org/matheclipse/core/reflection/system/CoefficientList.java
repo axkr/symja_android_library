@@ -26,7 +26,7 @@ public class CoefficientList extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
-		IExpr expr = F.evalExpandAll(ast.arg1());
+		IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 		ISymbol arg2 = Validate.checkSymbolType(ast, 2);
 		try {
 			ExprPolynomialRing ring = new ExprPolynomialRing(F.List(arg2));

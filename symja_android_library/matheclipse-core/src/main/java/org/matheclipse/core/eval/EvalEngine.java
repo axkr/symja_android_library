@@ -2,7 +2,9 @@ package org.matheclipse.core.eval;
 
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -108,8 +110,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @param symbol
 	 * @return <code>null</code> if the stack doesn't exist
 	 */
-	final public static List<IExpr> localStack(final ISymbol symbol) {
-		return get().getLocalVariableStackMap().get(symbol);
+	final public Deque<IExpr> localStack(final ISymbol symbol) {
+		return getLocalVariableStackMap().get(symbol);
 	}
 
 	/**
@@ -119,13 +121,24 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @param symbol
 	 * @return
 	 */
-	public static List<IExpr> localStackCreate(final ISymbol symbol) {
-		Map<ISymbol, List<IExpr>> localVariableStackMap = get().getLocalVariableStackMap();
-		List<IExpr> temp = localVariableStackMap.get(symbol);
+	// public static List<IExpr> localStackCreate(final ISymbol symbol) {
+	// return get().localStackCreate(symbol);
+	// }
+
+	/**
+	 * Get the local variable stack for a given symbol. If the local variable stack
+	 * doesn't exist, create a new one for the symbol.
+	 * 
+	 * @param symbol
+	 * @return
+	 */
+	public Deque<IExpr> localStackCreate(final ISymbol symbol) {
+		Map<ISymbol, Deque<IExpr>> localVariableStackMap = getLocalVariableStackMap();
+		Deque<IExpr> temp = localVariableStackMap.get(symbol);
 		if (temp != null) {
 			return temp;
 		}
-		temp = new ArrayList<IExpr>();
+		temp = new ArrayDeque<IExpr>();// new ArrayList<IExpr>();
 		localVariableStackMap.put(symbol, temp);
 		return temp;
 	}
@@ -150,7 +163,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		instance.set(engine);
 	}
 
-	public static IAST threadASTListArgs(final IAST ast) {
+	public IAST threadASTListArgs(final IAST ast) {
 		IAST result;
 		int listLength = 0;
 		final int astSize = ast.size();
@@ -160,7 +173,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					listLength = ((IAST) ast.get(i)).size() - 1;
 				} else {
 					if (listLength != ((IAST) ast.get(i)).size() - 1) {
-						EvalEngine.get().printMessage("Lists of unequal length cannot be combined: " + ast.toString());
+						printMessage("Lists of unequal length cannot be combined: " + ast.toString());
 						ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
 						return F.NIL;
 					}
@@ -188,7 +201,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * Associate a symbol name with a local variable stack in this thread.
 	 * 
 	 */
-	transient private HashMap<ISymbol, List<IExpr>> fLocalVariableStackMap = null;
+	transient private HashMap<ISymbol, Deque<IExpr>> fLocalVariableStackMap = null;
 
 	/**
 	 * If set to <code>true</code> the current thread should stop evaluation;
@@ -759,7 +772,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			for (int i = 1; i < localVariablesList.size(); i++) {
 				if (localVariablesList.get(i).isSymbol()) {
 					blockVariableSymbol = (ISymbol) localVariablesList.get(i);
-					blockVariableSymbol.pushLocalVariable();
+					// blockVariableSymbol.pushLocalVariable();
+					localStackCreate(blockVariableSymbol).push(F.NIL);
 					variables.add(blockVariableSymbol);
 				} else {
 					if (localVariablesList.get(i).isAST(F.Set, 3)) {
@@ -767,10 +781,14 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						final IAST setFun = (IAST) localVariablesList.get(i);
 						if (setFun.arg1().isSymbol()) {
 							blockVariableSymbol = (ISymbol) setFun.arg1();
-							blockVariableSymbol.pushLocalVariable();
+							// blockVariableSymbol.pushLocalVariable();
+							final Deque<IExpr> localVariableStack = localStackCreate(blockVariableSymbol);
+							localVariableStack.push(F.NIL);
 							// this evaluation step may throw an exception
 							IExpr temp = evaluate(setFun.arg2());
-							blockVariableSymbol.set(temp);
+							// blockVariableSymbol.set(temp);
+							localVariableStack.remove();
+							localVariableStack.push(temp);
 							variables.add(blockVariableSymbol);
 						}
 					} else {
@@ -782,12 +800,31 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			return evaluate(expr);
 		} finally {
 			// pop all local variables from local variable stack
-			for (int i = 0; i < variables.size(); i++) {
-				variables.get(i).popLocalVariable();
-			}
+			variables.forEach(x -> localStack(x).pop());
 		}
 	}
 
+	/**
+	 * Evaluate an expression for a local variable.
+	 * 
+	 * 
+	 * @param expr
+	 *            the expression which should be evaluated for the given symbol
+	 * @param symbol
+	 *            the symbol which should be evaluated as a local variable
+	 * @param localValue
+	 *            the value
+	 */
+	public IExpr evalBlock(IExpr expr, ISymbol symbol, IExpr localValue) {
+		Deque<IExpr> stack = localStackCreate(symbol);
+		try {
+			stack.push(localValue);
+			return evaluate(expr);
+		} finally {
+			stack.pop();
+		}
+	}
+	
 	/**
 	 * Evaluate the Flat and Orderless attributes of the given <code>ast</code>
 	 * recursively.
@@ -1420,9 +1457,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		return fIterationLimit;
 	}
 
-	final public Map<ISymbol, List<IExpr>> getLocalVariableStackMap() {
+	final public Map<ISymbol, Deque<IExpr>> getLocalVariableStackMap() {
 		if (fLocalVariableStackMap == null) {
-			fLocalVariableStackMap = new HashMap<ISymbol, List<IExpr>>();
+			fLocalVariableStackMap = new HashMap<ISymbol, Deque<IExpr>>();
 		}
 		return fLocalVariableStackMap;
 	}

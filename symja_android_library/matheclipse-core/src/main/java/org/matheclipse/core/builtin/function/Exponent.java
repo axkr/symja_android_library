@@ -53,7 +53,7 @@ public class Exponent extends AbstractCoreFunctionEvaluator {
 		}
 		Set<IExpr> collector = new TreeSet<IExpr>();
 
-		IExpr expr = F.evalExpandAll(ast.arg1());
+		IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 		if (expr.isZero()) {
 			collector.add(F.CNInfinity);
 		} else if (expr.isAST()) {

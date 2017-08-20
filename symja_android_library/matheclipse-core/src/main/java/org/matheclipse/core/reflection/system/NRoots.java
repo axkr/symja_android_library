@@ -92,7 +92,7 @@ public class NRoots extends AbstractFunctionEvaluator {
 			engine.printMessage("NRoots: factorization only possible for univariate polynomials");
 			return F.NIL;
 		}
-		IExpr expr = evalExpandAll(arg1);
+		IExpr expr = evalExpandAll(arg1, engine);
 
 		ISymbol sym = (ISymbol) variables.arg1();
 		double[] coefficients = Expr2Object.toPolynomial(expr, sym);

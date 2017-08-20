@@ -2,6 +2,7 @@ package org.matheclipse.core.visit;
 
 import java.util.function.Function;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -67,8 +68,8 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 	 * @see
 	 */
 	public VisitorRemoveLevelSpecification(final Function<IExpr, IExpr> function, final IExpr expr, int maximumRemoved,
-			boolean includeHeads) {
-		super(function, expr, includeHeads);
+			boolean includeHeads, final EvalEngine engine) {
+		super(function, expr, includeHeads, engine);
 		this.maximumRemoved = maximumRemoved;
 		this.removedCounter = 0;
 	}

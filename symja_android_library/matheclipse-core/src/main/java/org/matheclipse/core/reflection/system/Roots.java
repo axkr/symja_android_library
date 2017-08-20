@@ -102,7 +102,7 @@ public class Roots extends AbstractFunctionEvaluator {
 
 	protected static IAST roots(final IExpr arg1, boolean numericSolutions, IAST variables, EvalEngine engine) {
 
-		IExpr expr = evalExpandAll(arg1);
+		IExpr expr = evalExpandAll(arg1, engine);
 
 		IExpr denom = F.C1;
 		if (expr.isAST()) {

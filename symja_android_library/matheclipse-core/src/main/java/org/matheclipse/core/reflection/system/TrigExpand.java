@@ -306,7 +306,7 @@ public class TrigExpand extends AbstractEvaluator {
 		temp = ast.arg1();
 		IExpr result;
 		do {
-			result = evalExpandAll(temp);
+			result = evalExpandAll(temp, engine);
 			temp = result.accept(visitor);
 		} while (temp.isPresent());
 		return result;

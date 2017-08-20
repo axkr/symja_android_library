@@ -79,15 +79,15 @@ public class Structure {
 
 			IExpr arg1 = evaledAST.arg1();
 			IExpr arg2 = evaledAST.arg2();
-			return evalApply(arg1, arg2, evaledAST, lastIndex, heads);
+			return evalApply(arg1, arg2, evaledAST, lastIndex, heads, engine);
 		}
 
-		public static IExpr evalApply(IExpr arg1, IExpr arg2, IAST evaledAST, int lastIndex, boolean heads) {
+		public static IExpr evalApply(IExpr arg1, IExpr arg2, IAST evaledAST, int lastIndex, boolean heads, EvalEngine engine) {
 			VisitorLevelSpecification level = null;
 			java.util.function.Function<IExpr, IExpr> af = x -> x.isAST() ? ((IAST) x).setAtCopy(0, arg1) : F.NIL;
 			try {
 				if (lastIndex == 3) {
-					level = new VisitorLevelSpecification(af, evaledAST.get(lastIndex), heads);
+					level = new VisitorLevelSpecification(af, evaledAST.get(lastIndex), heads, engine);
 				} else {
 					level = new VisitorLevelSpecification(af, 0);
 				}
@@ -292,7 +292,7 @@ public class Structure {
 				IExpr arg2 = ast.arg2();
 				VisitorLevelSpecification level;
 				if (lastIndex == 3) {
-					level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), ast.get(lastIndex), heads);
+					level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), ast.get(lastIndex), heads, engine);
 				} else {
 					level = new VisitorLevelSpecification(x -> F.unaryAST1(arg1, x), 1, heads);
 				}
@@ -374,7 +374,7 @@ public class Structure {
 			VisitorLevelSpecification level = null;
 			java.util.function.Function<IExpr, IExpr> umt = new UnaryMapThread(ast.arg1());
 			if (ast.isAST3()) {
-				level = new VisitorLevelSpecification(umt, ast.arg3(), false);
+				level = new VisitorLevelSpecification(umt, ast.arg3(), false, engine);
 			} else {
 				level = new VisitorLevelSpecification(umt, 0);
 			}
@@ -500,7 +500,7 @@ public class Structure {
 						return F.NIL;
 					};
 
-					VisitorLevelSpecification level = new VisitorLevelSpecification(sf, ast.get(lastIndex), heads);
+					VisitorLevelSpecification level = new VisitorLevelSpecification(sf, ast.get(lastIndex), heads, engine);
 
 					arg2.accept(level);
 					for (int i = 1; i < result.size(); i++) {

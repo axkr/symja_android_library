@@ -7,6 +7,7 @@ import java.io.StringWriter;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -27,7 +28,6 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.core.patternmatching.ISymbol2IntMap;
 import org.matheclipse.core.patternmatching.PatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
@@ -390,11 +390,11 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public final IExpr get() {
-		final List<IExpr> localVariableStack = EvalEngine.localStack(this);
+		final Deque<IExpr> localVariableStack = EvalEngine.get().localStack(this);
 		if (localVariableStack == null) {
 			return null;
 		}
-		return localVariableStack.get(localVariableStack.size() - 1);
+		return localVariableStack.peek();
 	}
 
 	/**
@@ -489,7 +489,7 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean hasLocalVariableStack() {
-		final List<IExpr> localVariableStack = EvalEngine.localStack(this);
+		final Deque<IExpr> localVariableStack = EvalEngine.get().localStack(this);
 		return (localVariableStack != null) && !(localVariableStack.isEmpty());
 	}
 
@@ -718,20 +718,20 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public final void popLocalVariable() {
-		final List<IExpr> localVariableStack = EvalEngine.localStack(this);
-		localVariableStack.remove(localVariableStack.size() - 1);
+		final Deque<IExpr> localVariableStack = EvalEngine.get().localStack(this);
+		localVariableStack.pop(); 
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public final void pushLocalVariable() {
-		pushLocalVariable(null);
+		pushLocalVariable(F.NIL);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public final void pushLocalVariable(final IExpr expression) {
-		EvalEngine.localStackCreate(this).add(expression);
+		EvalEngine.get().localStackCreate(this).push(expression);
 	}
 
 	/** {@inheritDoc} */
@@ -932,8 +932,9 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public final void set(final IExpr value) {
-		final List<IExpr> localVariableStack = EvalEngine.localStack(this);
-		localVariableStack.set(localVariableStack.size() - 1, value);
+		final Deque<IExpr> localVariableStack = EvalEngine.get().localStack(this);
+		localVariableStack.remove();
+		localVariableStack.push(value);
 	}
 
 	/** {@inheritDoc} */

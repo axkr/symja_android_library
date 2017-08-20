@@ -199,7 +199,7 @@ public final class PatternMatching {
 					} catch (final ReturnException e) {
 						rightHandSide = e.getValue();
 					}
-					IExpr temp = EvalEngine.threadASTListArgs(F.Set(leftHandSideAST, rightHandSide));
+					IExpr temp = engine.threadASTListArgs(F.Set(leftHandSideAST, rightHandSide));
 					if (temp.isPresent()) {
 						return engine.evaluate(temp);
 					}
@@ -323,7 +323,7 @@ public final class PatternMatching {
 			final IExpr leftHandSide = ast.arg1();
 			if (leftHandSide.isList()) {
 				// thread over lists
-				IExpr temp = EvalEngine.threadASTListArgs(F.Unset(leftHandSide));
+				IExpr temp = engine.threadASTListArgs(F.Unset(leftHandSide));
 				if (temp.isPresent()) {
 					return engine.evaluate(temp);
 				}
@@ -378,7 +378,7 @@ public final class PatternMatching {
 				} catch (final ReturnException e) {
 					rightHandSide = e.getValue();
 				}
-				IExpr temp = EvalEngine.threadASTListArgs(F.UpSet(leftHandSide, rightHandSide));
+				IExpr temp = engine.threadASTListArgs(F.UpSet(leftHandSide, rightHandSide));
 				if (temp.isPresent()) {
 					return engine.evaluate(temp);
 				}

@@ -871,7 +871,7 @@ public class IntegerFunctions {
 			Validate.checkSize(ast, 2);
 
 			try {
-				IExpr arg1 = F.eval(ast.arg1());
+				IExpr arg1 = engine.evaluate(ast.arg1());
 				ISignedNumber signedNumber = arg1.evalSignedNumber();
 				if (signedNumber != null) {
 					return signedNumber.round();

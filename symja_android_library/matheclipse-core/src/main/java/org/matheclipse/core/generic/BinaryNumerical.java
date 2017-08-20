@@ -1,6 +1,9 @@
 package org.matheclipse.core.generic;
 
+import java.util.Deque;
+
 import org.matheclipse.core.eval.DoubleStackEvaluator;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
@@ -13,32 +16,41 @@ import org.matheclipse.core.interfaces.ISymbol;
  * @see org.matheclipse.core.reflection.system.Plot3D
  */
 public class BinaryNumerical extends BinaryFunctorImpl<IExpr> {
-	IExpr fun;
+	final IExpr fun;
 
-	ISymbol variable1;
+	final ISymbol variable1;
 
-	ISymbol variable2;
+	final ISymbol variable2;
 
-	public BinaryNumerical(final IExpr fn, final ISymbol v1, final ISymbol v2) {
+	final EvalEngine fEngine;
+
+	public BinaryNumerical(final IExpr fn, final ISymbol v1, final ISymbol v2, final EvalEngine engine) {
 		variable1 = v1;
 		variable2 = v2;
 		fun = fn;
+		fEngine = engine;
 	}
 
 	public IExpr apply(final IExpr firstArg, final IExpr secondArg) {
-		return F.evaln(F.subst(fun,F.List(F.Rule(variable1, firstArg), F.Rule(variable2, secondArg)) ));
+		return fEngine.evalN(F.subst(fun, F.List(F.Rule(variable1, firstArg), F.Rule(variable2, secondArg))));
 	}
 
 	public double value(double x, double y) {
 		double result = 0.0;
 		try {
-			variable1.pushLocalVariable(Num.valueOf(x));
-			variable2.pushLocalVariable(Num.valueOf(y));
+			// variable1.pushLocalVariable(Num.valueOf(x));
+			// variable2.pushLocalVariable(Num.valueOf(y));
+			fEngine.localStackCreate(variable1).push(Num.valueOf(x));
+			fEngine.localStackCreate(variable2).push(Num.valueOf(y));
 			final double[] stack = new double[10];
 			result = DoubleStackEvaluator.eval(stack, 0, fun);
 		} finally {
-			variable2.popLocalVariable();
-			variable1.popLocalVariable();
+			// variable2.popLocalVariable();
+			// variable1.popLocalVariable();
+			Deque<IExpr> localVariableStack = fEngine.localStack(variable2);
+			fEngine.localStack(variable2).pop();
+			localVariableStack = fEngine.localStack(variable1);
+			fEngine.localStack(variable1).pop();
 		}
 		return result;
 

@@ -34,12 +34,14 @@ import static org.matheclipse.core.expression.F.y;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.linear.BlockFieldMatrix;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.EigenDecomposition;
 import org.hipparchus.linear.FieldDecompositionSolver;
 import org.hipparchus.linear.FieldLUDecomposition;
 import org.hipparchus.linear.FieldMatrix;
+import org.hipparchus.linear.FieldVector;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.commons.math.linear.FieldReducedRowEchelonForm;
@@ -55,10 +57,12 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Matrix;
+import org.matheclipse.core.eval.interfaces.AbstractNonOrderlessArgMultiple;
 import org.matheclipse.core.eval.util.IIndexFunction;
 import org.matheclipse.core.eval.util.IndexFunctionDiagonal;
 import org.matheclipse.core.eval.util.IndexTableGenerator;
 import org.matheclipse.core.expression.ASTRealMatrix;
+import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
@@ -85,6 +89,7 @@ public final class LinearAlgebra {
 		F.Det.setEvaluator(new Det());
 		F.DiagonalMatrix.setEvaluator(new DiagonalMatrix());
 		F.Dimensions.setEvaluator(new Dimensions());
+		F.Dot.setEvaluator(new Dot());
 		F.Eigenvalues.setEvaluator(new Eigenvalues());
 		F.Eigenvectors.setEvaluator(new Eigenvectors());
 		F.EuclideanDistance.setEvaluator(new EuclideanDistance());
@@ -121,7 +126,8 @@ public final class LinearAlgebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns the depth of the non-ragged array <code>a</code>, defined as <code>Length(Dimensions(a))</code>.<br />
+	 * returns the depth of the non-ragged array <code>a</code>, defined as
+	 * <code>Length(Dimensions(a))</code>.<br />
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -207,8 +213,8 @@ public final class LinearAlgebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns the canberra distance between <code>u</code> and <code>v</code>, which is a weighted version of the
-	 * Manhattan distance.
+	 * returns the canberra distance between <code>u</code> and <code>v</code>,
+	 * which is a weighted version of the Manhattan distance.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -252,15 +258,17 @@ public final class LinearAlgebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * computes the characteristic polynomial of a <code>matrix</code> for the variable <code>var</code>.
+	 * computes the characteristic polynomial of a <code>matrix</code> for the
+	 * variable <code>var</code>.
 	 * </p>
 	 * </blockquote>
 	 * <p>
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="https://en.wikipedia.org/wiki/Characteristic_polynomial">Wikipedia - Characteristic
-	 * polynomial</a></li>
+	 * <li><a href=
+	 * "https://en.wikipedia.org/wiki/Characteristic_polynomial">Wikipedia -
+	 * Characteristic polynomial</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -297,7 +305,8 @@ public final class LinearAlgebra {
 		 * @param matrix
 		 *            the square matrix
 		 * @param variable
-		 *            the variable which should be used in the resulting characteristic polynomial
+		 *            the variable which should be used in the resulting characteristic
+		 *            polynomial
 		 * @return
 		 */
 		public static IAST generateCharacteristicPolynomial(int dim, IAST matrix, IExpr variable) {
@@ -314,9 +323,9 @@ public final class LinearAlgebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns the chessboard distance (also known as Chebyshev distance) between <code>u</code> and <code>v</code>,
-	 * which is the number of moves a king on a chessboard needs to get from square <code>u</code> to square
-	 * <code>v</code>.
+	 * returns the chessboard distance (also known as Chebyshev distance) between
+	 * <code>u</code> and <code>v</code>, which is the number of moves a king on a
+	 * chessboard needs to get from square <code>u</code> to square <code>v</code>.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -360,8 +369,9 @@ public final class LinearAlgebra {
 	/**
 	 * Calculates the Cholesky decomposition of a matrix.
 	 * 
-	 * The Cholesky decomposition of a real symmetric positive-definite matrix A consists of a lower triangular matrix L
-	 * with same size such that: A = LL<sup>T</sup>. In a sense, this is the square root of A.
+	 * The Cholesky decomposition of a real symmetric positive-definite matrix A
+	 * consists of a lower triangular matrix L with same size such that: A =
+	 * LL<sup>T</sup>. In a sense, this is the square root of A.
 	 *
 	 */
 	private final static class CholeskyDecomposition extends AbstractFunctionEvaluator {
@@ -412,8 +422,10 @@ public final class LinearAlgebra {
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="http://en.wikipedia.org/wiki/Transpose">Wikipedia - Transpose</a></li>
-	 * <li><a href="http://en.wikipedia.org/wiki/Complex_conjugation">Wikipedia - Complex conjugation</a></li>
+	 * <li><a href="http://en.wikipedia.org/wiki/Transpose">Wikipedia -
+	 * Transpose</a></li>
+	 * <li><a href="http://en.wikipedia.org/wiki/Complex_conjugation">Wikipedia -
+	 * Complex conjugation</a></li>
 	 * </ul>
 	 */
 	private final static class ConjugateTranspose extends Transpose {
@@ -490,7 +502,8 @@ public final class LinearAlgebra {
 	 * See:
 	 * </p>
 	 * <ul>
-	 * <li><a href="https://en.wikipedia.org/wiki/Cross_product">Wikipedia: Cross product</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/Cross_product">Wikipedia: Cross
+	 * product</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -502,8 +515,8 @@ public final class LinearAlgebra {
 	 * {-y,x}
 	 * </pre>
 	 * <p>
-	 * The arguments are expected to be vectors of equal length, and the number of arguments is expected to be 1 less
-	 * than their length.
+	 * The arguments are expected to be vectors of equal length, and the number of
+	 * arguments is expected to be 1 less than their length.
 	 * </p>
 	 * 
 	 * <pre>
@@ -618,7 +631,8 @@ public final class LinearAlgebra {
 	 * See:
 	 * </p>
 	 * <ul>
-	 * <li><a href="https://en.wikipedia.org/wiki/Determinant">Wikipedia: Determinant</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/Determinant">Wikipedia:
+	 * Determinant</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -667,7 +681,8 @@ public final class LinearAlgebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * gives a matrix with the values in $list$ on its diagonal and zeroes elsewhere.
+	 * gives a matrix with the values in $list$ on its diagonal and zeroes
+	 * elsewhere.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -813,6 +828,189 @@ public final class LinearAlgebra {
 
 	/**
 	 * <pre>
+	 * Dot(x, y) or x . y
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * <code>x . y</code> computes the vector dot product or matrix product
+	 * <code>x . y</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Matrix_multiplication">Wikipedia -
+	 * Matrix multiplication</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * Scalar product of vectors:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; {a, b, c} . {x, y, z}
+	 * a*x+b*y+c*z
+	 * </pre>
+	 * <p>
+	 * Product of matrices and vectors:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; {{a, b}, {c, d}} . {x, y}
+	 * {a*x+b*y,c*x+d*y}
+	 * </pre>
+	 * <p>
+	 * Matrix product:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; {{a, b}, {c, d}} . {{r, s}, {t, u}}
+	 * {{a*r+b*t,a*s+b*u}, {c*r+d*t,c*s+d*u}}
+	 * 
+	 * &gt;&gt; a . b
+	 * a.b
+	 * </pre>
+	 */
+	private static class Dot extends AbstractNonOrderlessArgMultiple {
+
+		@Override
+		public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
+
+			IExpr temp = numericalDot(o0, o1);
+			if (temp.isPresent()) {
+				return temp;
+			}
+
+			FieldMatrix<IExpr> matrix0;
+			FieldMatrix<IExpr> matrix1;
+			FieldVector<IExpr> vector0;
+			FieldVector<IExpr> vector1;
+			try {
+				IAST list;
+
+				if (o0.isMatrix() != null) {
+					list = (IAST) o0;
+					matrix0 = Convert.list2Matrix(list);
+					if (o1.isMatrix() != null) {
+						list = (IAST) o1;
+						matrix1 = Convert.list2Matrix(list);
+						return Convert.matrix2List(matrix0.multiply(matrix1));
+					} else if (o1.isVector() != (-1)) {
+						list = (IAST) o1;
+						vector1 = Convert.list2Vector(list);
+						IAST res = Convert.vector2List(matrix0.operate(vector1));
+						if (res == null) {
+							return F.NIL;
+						}
+						return res;
+					}
+				} else if (o0.isVector() != (-1)) {
+					list = (IAST) o0;
+					vector0 = Convert.list2Vector(list);
+					if (o1.isMatrix() != null) {
+						list = (IAST) o1;
+						matrix1 = Convert.list2Matrix(list);
+						return Convert.vector2List(matrix1.preMultiply(vector0));
+					} else if (o1.isVector() != (-1)) {
+						list = (IAST) o1;
+						vector1 = Convert.list2Vector(list);
+						if (vector1 != null) {
+							return vector0.dotProduct(vector1);
+						}
+					}
+				}
+
+			} catch (final ClassCastException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			} catch (final IndexOutOfBoundsException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			}
+			return F.NIL;
+		}
+
+		private IExpr numericalDot(final IExpr o0, final IExpr o1) throws MathIllegalArgumentException {
+			if (o0.isRealMatrix()) {
+				if (o1.isMatrix() != null) {
+					RealMatrix m1 = o1.toRealMatrix();
+					if (m1 != null) {
+						RealMatrix m0 = o0.toRealMatrix();
+						return new ASTRealMatrix(m0.multiply(m1), false);
+					}
+				} else if (o1.isVector() != (-1)) {
+					RealVector m1 = o1.toRealVector();
+					if (m1 != null) {
+						RealMatrix m0 = o0.toRealMatrix();
+						return new ASTRealVector(m0.operate(m1), false);
+					}
+				}
+			} else if (o0.isRealVector()) {
+				if (o1.isMatrix() != null) {
+					RealMatrix m1 = o1.toRealMatrix();
+					if (m1 != null) {
+						RealVector v0 = o0.toRealVector();
+						return new ASTRealVector(m1.preMultiply(v0), false);
+					}
+				} else if (o1.isVector() != (-1)) {
+					RealVector v1 = o1.toRealVector();
+					if (v1 != null) {
+						RealVector v0 = o0.toRealVector();
+						return F.num(v0.dotProduct(v1));
+					}
+				}
+			}
+
+			if (o1.isRealMatrix()) {
+				if (o0.isMatrix() != null) {
+					RealMatrix m0 = o0.toRealMatrix();
+					if (m0 != null) {
+						RealMatrix m1 = o1.toRealMatrix();
+						return new ASTRealMatrix(m0.multiply(m1), false);
+					}
+				} else if (o0.isVector() != (-1)) {
+					RealVector v0 = o0.toRealVector();
+					if (v0 != null) {
+						RealMatrix m1 = o1.toRealMatrix();
+						return new ASTRealVector(m1.preMultiply(v0), false);
+					}
+				}
+			} else if (o1.isRealVector()) {
+				if (o0.isMatrix() != null) {
+					RealMatrix m0 = o0.toRealMatrix();
+					if (m0 != null) {
+						RealVector m1 = o1.toRealVector();
+						return new ASTRealVector(m0.operate(m1), false);
+					}
+				} else if (o0.isVector() != (-1)) {
+					RealVector v0 = o0.toRealVector();
+					if (v0 != null) {
+						RealVector v1 = o1.toRealVector();
+						return F.num(v0.dotProduct(v1));
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr numericEval(final IAST ast, EvalEngine engine) {
+			return evaluate(ast, engine);
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
+		}
+
+	}
+
+	/**
+	 * <pre>
 	 * Eigenvalues(matrix)
 	 * </pre>
 	 * 
@@ -825,7 +1023,8 @@ public final class LinearAlgebra {
 	 * See:
 	 * </p>
 	 * <ul>
-	 * <li><a href="http://en.wikipedia.org/wiki/Eigenvalue">Wikipedia - Eigenvalue</a></li>
+	 * <li><a href="http://en.wikipedia.org/wiki/Eigenvalue">Wikipedia -
+	 * Eigenvalue</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -927,7 +1126,8 @@ public final class LinearAlgebra {
 	 * See:
 	 * </p>
 	 * <ul>
-	 * <li><a href="http://en.wikipedia.org/wiki/Eigenvalue">Wikipedia - Eigenvalue</a></li>
+	 * <li><a href="http://en.wikipedia.org/wiki/Eigenvalue">Wikipedia -
+	 * Eigenvalue</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -977,14 +1177,12 @@ public final class LinearAlgebra {
 										Times(C4, matrix.getEntry(0, 1), matrix.getEntry(1, 0)),
 										Times(CN2, matrix.getEntry(0, 0), matrix.getEntry(1, 1)),
 										Sqr(matrix.getEntry(1, 1))));
-								return List(List(
-										Times(CN1D2, Power(matrix.getEntry(1, 0), CN1),
+								return List(
+										List(Times(CN1D2, Power(matrix.getEntry(1, 0), CN1),
 												Plus(sqrtExpr, Negate(matrix.getEntry(0, 0)), matrix.getEntry(1, 1))),
-										C1), List(
-												Times(CN1D2,
-														Power(matrix.getEntry(1, 0), CN1), Plus(Negate(sqrtExpr),
-																Negate(matrix.getEntry(0, 0)), matrix.getEntry(1, 1))),
-												C1));
+												C1),
+										List(Times(CN1D2, Power(matrix.getEntry(1, 0), CN1), Plus(Negate(sqrtExpr),
+												Negate(matrix.getEntry(0, 0)), matrix.getEntry(1, 1))), C1));
 							}
 						}
 					}
@@ -1095,7 +1293,8 @@ public final class LinearAlgebra {
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="http://en.wikipedia.org/wiki/Hilbert_matrix">Wikipedia - Hilbert matrix</a></li>
+	 * <li><a href="http://en.wikipedia.org/wiki/Hilbert_matrix">Wikipedia - Hilbert
+	 * matrix</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -1191,8 +1390,9 @@ public final class LinearAlgebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * computes a generalised inner product of <code>x</code> and <code>y</code>, using a multiplication function
-	 * <code>f</code> and an addition function <code>g</code>.
+	 * computes a generalised inner product of <code>x</code> and <code>y</code>,
+	 * using a multiplication function <code>f</code> and an addition function
+	 * <code>g</code>.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -1328,7 +1528,8 @@ public final class LinearAlgebra {
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="https://en.wikipedia.org/wiki/Invertible_matrix">Wikipedia - Invertible matrix</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/Invertible_matrix">Wikipedia -
+	 * Invertible matrix</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -1395,7 +1596,8 @@ public final class LinearAlgebra {
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="http://en.wikipedia.org/wiki/Jacobian">Wikipedia - Jacobian</a></li>
+	 * <li><a href="http://en.wikipedia.org/wiki/Jacobian">Wikipedia -
+	 * Jacobian</a></li>
 	 * </ul>
 	 */
 	private static class JacobiMatrix extends AbstractFunctionEvaluator {
@@ -1442,7 +1644,8 @@ public final class LinearAlgebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * solves the linear equation system 'matrix . x = right' and returns one corresponding solution <code>x</code>.
+	 * solves the linear equation system 'matrix . x = right' and returns one
+	 * corresponding solution <code>x</code>.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -1527,7 +1730,8 @@ public final class LinearAlgebra {
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="https://en.wikipedia.org/wiki/LU_decomposition">Wikipedia - LU decomposition</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/LU_decomposition">Wikipedia - LU
+	 * decomposition</a></li>
 	 * <li><a href=
 	 * "http://commons.apache.org/proper/commons-math/apidocs/org/apache/commons/math3/linear/FieldLUDecomposition.html">Commons
 	 * Math - Class FieldLUDecomposition</a></li>
@@ -1589,15 +1793,17 @@ public final class LinearAlgebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns the Manhattan distance between <code>u</code> and <code>v</code>, which is the number of horizontal or
-	 * vertical moves in the grid like Manhattan city layout to get from <code>u</code> to <code>v</code>.
+	 * returns the Manhattan distance between <code>u</code> and <code>v</code>,
+	 * which is the number of horizontal or vertical moves in the grid like
+	 * Manhattan city layout to get from <code>u</code> to <code>v</code>.
 	 * </p>
 	 * </blockquote>
 	 * <p>
 	 * See:
 	 * </p>
 	 * <ul>
-	 * <li><a href="https://en.wikipedia.org/wiki/Taxicab_geometry">Wikipedia - Taxicab geometry</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/Taxicab_geometry">Wikipedia -
+	 * Taxicab geometry</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -1649,15 +1855,17 @@ public final class LinearAlgebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * computes the matrix minimal polynomial of a <code>matrix</code> for the variable <code>var</code>.
+	 * computes the matrix minimal polynomial of a <code>matrix</code> for the
+	 * variable <code>var</code>.
 	 * </p>
 	 * </blockquote>
 	 * <p>
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="https://en.wikipedia.org/wiki/Minimal_polynomial_(linear_algebra)">Wikipedia - Minimal polynomial
-	 * (linear algebra)</a></li>
+	 * <li><a href=
+	 * "https://en.wikipedia.org/wiki/Minimal_polynomial_(linear_algebra)">Wikipedia
+	 * - Minimal polynomial (linear algebra)</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -1805,7 +2013,9 @@ public final class LinearAlgebra {
 	 * See:
 	 * </p>
 	 * <ul>
-	 * <li><a href="https://en.wikipedia.org/wiki/Rank_%28linear_algebra%29">Wikipedia - Rank (linear algebra</a></li>
+	 * <li><a href=
+	 * "https://en.wikipedia.org/wiki/Rank_%28linear_algebra%29">Wikipedia - Rank
+	 * (linear algebra</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -1818,7 +2028,8 @@ public final class LinearAlgebra {
 	 * 1
 	 * </pre>
 	 * <p>
-	 * Argument <code>{{1, 0}, {0}}</code> at position <code>1</code> is not a non-empty rectangular matrix.
+	 * Argument <code>{{1, 0}, {0}}</code> at position <code>1</code> is not a
+	 * non-empty rectangular matrix.
 	 * </p>
 	 * 
 	 * <pre>
@@ -1868,7 +2079,8 @@ public final class LinearAlgebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * computes the <code>l</code>-norm of matrix <code>m</code> (currently only works for vectors!).<br />
+	 * computes the <code>l</code>-norm of matrix <code>m</code> (currently only
+	 * works for vectors!).<br />
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -1878,7 +2090,8 @@ public final class LinearAlgebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * computes the 2-norm of matrix <code>m</code> (currently only works for vectors!).<br />
+	 * computes the 2-norm of matrix <code>m</code> (currently only works for
+	 * vectors!).<br />
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -1914,8 +2127,9 @@ public final class LinearAlgebra {
 	 * (Abs(x) ^ p + Abs(y) ^ p) ^ (1 / p)
 	 * </pre>
 	 * <p>
-	 * The second argument of Norm, 0, should be a symbol, Infinity, or an integer or real number not less than 1 for
-	 * vector p-norms; or 1, 2, Infinity, or &ldquo;Frobenius&rdquo; for matrix norms.<br />
+	 * The second argument of Norm, 0, should be a symbol, Infinity, or an integer
+	 * or real number not less than 1 for vector p-norms; or 1, 2, Infinity, or
+	 * &ldquo;Frobenius&rdquo; for matrix norms.<br />
 	 * </p>
 	 * 
 	 * <pre>
@@ -1923,8 +2137,9 @@ public final class LinearAlgebra {
 	 * Norm({x, y}, 0)
 	 * </pre>
 	 * <p>
-	 * The second argument of Norm, 0.5, should be a symbol, Infinity, or an integer or real number not less than 1 for
-	 * vector p-norms; or 1, 2, Infinity, or &ldquo;Frobenius&rdquo; for matrix norms.
+	 * The second argument of Norm, 0.5, should be a symbol, Infinity, or an integer
+	 * or real number not less than 1 for vector p-norms; or 1, 2, Infinity, or
+	 * &ldquo;Frobenius&rdquo; for matrix norms.
 	 * </p>
 	 * 
 	 * <pre>
@@ -2067,8 +2282,9 @@ public final class LinearAlgebra {
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="http://en.wikipedia.org/wiki/Kernel_%28linear_algebra%29">Wikipedia - Kernel (linear
-	 * algebra)</a></li>
+	 * <li><a href=
+	 * "http://en.wikipedia.org/wiki/Kernel_%28linear_algebra%29">Wikipedia - Kernel
+	 * (linear algebra)</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -2143,16 +2359,17 @@ public final class LinearAlgebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * computes the Moore-Penrose pseudoinverse of the <code>matrix</code>. If <code>matrix</code> is invertible, the
-	 * pseudoinverse equals the inverse.
+	 * computes the Moore-Penrose pseudoinverse of the <code>matrix</code>. If
+	 * <code>matrix</code> is invertible, the pseudoinverse equals the inverse.
 	 * </p>
 	 * </blockquote>
 	 * <p>
 	 * See:
 	 * </p>
 	 * <ul>
-	 * <li><a href="https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_pseudoinverse">Wikipedia: Moore-Penrose
-	 * pseudoinverse</a></li>
+	 * <li><a href=
+	 * "https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_pseudoinverse">Wikipedia:
+	 * Moore-Penrose pseudoinverse</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -2290,7 +2507,8 @@ public final class LinearAlgebra {
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row echelon form</a></li>
+	 * <li><a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row
+	 * echelon form</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -2311,7 +2529,8 @@ public final class LinearAlgebra {
 	 *  {0,0,0}}
 	 * </pre>
 	 * <p>
-	 * Argument {{1, 0}, {0}} at position 1 is not a non-empty rectangular matrix.<br />
+	 * Argument {{1, 0}, {0}} at position 1 is not a non-empty rectangular
+	 * matrix.<br />
 	 * </p>
 	 * 
 	 * <pre>
@@ -2362,15 +2581,17 @@ public final class LinearAlgebra {
 	 * </p>
 	 * </blockquote>
 	 * <p>
-	 * 'SingularValueDecomposition' returns <code>u</code>, <code>s</code>, <code>w</code> such that
-	 * <code>matrix =u s v</code>, <code>u' u</code>=1, <code>v' v</code>=1, and <code>s</code> is diagonal.
+	 * 'SingularValueDecomposition' returns <code>u</code>, <code>s</code>,
+	 * <code>w</code> such that <code>matrix =u s v</code>, <code>u' u</code>=1,
+	 * <code>v' v</code>=1, and <code>s</code> is diagonal.
 	 * </p>
 	 * <p>
 	 * See:
 	 * </p>
 	 * <ul>
-	 * <li><a href="https://en.wikipedia.org/wiki/Singular_value_decomposition">Wikipedia: Singular value
-	 * decomposition</a></li>
+	 * <li><a href=
+	 * "https://en.wikipedia.org/wiki/Singular_value_decomposition">Wikipedia:
+	 * Singular value decomposition</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -2448,7 +2669,8 @@ public final class LinearAlgebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns squared the euclidean distance between <code>u$</code> and <code>v</code>.
+	 * returns squared the euclidean distance between <code>u$</code> and
+	 * <code>v</code>.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -2503,7 +2725,8 @@ public final class LinearAlgebra {
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="http://en.wikipedia.org/wiki/Trace_matrix">Wikipedia - Trace (linear algebra)</a><br />
+	 * <li><a href="http://en.wikipedia.org/wiki/Trace_matrix">Wikipedia - Trace
+	 * (linear algebra)</a><br />
 	 * </li>
 	 * </ul>
 	 * <h3>Examples</h3>
@@ -2571,7 +2794,8 @@ public final class LinearAlgebra {
 	 * See:
 	 * </p>
 	 * <ul>
-	 * <li><a href="https://en.wikipedia.org/wiki/Transpose">Wikipedia - Transpose</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/Transpose">Wikipedia -
+	 * Transpose</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -2649,7 +2873,8 @@ public final class LinearAlgebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns a unit vector with element <code>1</code> at the given <code>position</code>.
+	 * returns a unit vector with element <code>1</code> at the given
+	 * <code>position</code>.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -2659,15 +2884,16 @@ public final class LinearAlgebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns a unit vector with dimension <code>dimension</code> and an element <code>1</code> at the given
-	 * <code>position</code>.
+	 * returns a unit vector with dimension <code>dimension</code> and an element
+	 * <code>1</code> at the given <code>position</code>.
 	 * </p>
 	 * </blockquote>
 	 * <p>
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="http://en.wikipedia.org/wiki/Unit_vector">Wikipedia - Unit vector</a><br />
+	 * <li><a href="http://en.wikipedia.org/wiki/Unit_vector">Wikipedia - Unit
+	 * vector</a><br />
 	 * </li>
 	 * </ul>
 	 * <h3>Examples</h3>
@@ -2725,7 +2951,8 @@ public final class LinearAlgebra {
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="http://en.wikipedia.org/wiki/Vandermonde_matrix">Wikipedia - Vandermonde matrix</a></li>
+	 * <li><a href="http://en.wikipedia.org/wiki/Vandermonde_matrix">Wikipedia -
+	 * Vandermonde matrix</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -2813,12 +3040,14 @@ public final class LinearAlgebra {
 
 	/**
 	 * <p>
-	 * Use cramer's rule to solve linear equations represented by a <code>2 x 3</code> augmented matrix which represents
-	 * the system <code>M.x == b</code>, where the columns of the <code>2 x 2</code> matrix <code>M</code> are augmented
-	 * by the vector <code>b</code>. This method assumes that the dimensions of the matrix are already checked by the
-	 * caller.
+	 * Use cramer's rule to solve linear equations represented by a
+	 * <code>2 x 3</code> augmented matrix which represents the system
+	 * <code>M.x == b</code>, where the columns of the <code>2 x 2</code> matrix
+	 * <code>M</code> are augmented by the vector <code>b</code>. This method
+	 * assumes that the dimensions of the matrix are already checked by the caller.
 	 * </p>
-	 * See: <a href="https://en.wikipedia.org/wiki/Cramer's_rule">Wikipedia Cramer's rule</a>
+	 * See: <a href="https://en.wikipedia.org/wiki/Cramer's_rule">Wikipedia Cramer's
+	 * rule</a>
 	 * 
 	 * @param matrix
 	 *            the <code>2 x 3</code> augmented matrix
@@ -2826,7 +3055,8 @@ public final class LinearAlgebra {
 	 *            show no message if there is no solution
 	 * @param engine
 	 *            the evaluation engine
-	 * @return a list of values which solve the equations or <code>F#NIL</code>, if the equations have no solution.
+	 * @return a list of values which solve the equations or <code>F#NIL</code>, if
+	 *         the equations have no solution.
 	 */
 	public static IAST cramersRule2x3(FieldMatrix<IExpr> matrix, boolean quiet, EvalEngine engine) {
 		IAST list = F.ListAlloc(2);
@@ -2851,12 +3081,14 @@ public final class LinearAlgebra {
 
 	/**
 	 * <p>
-	 * Use cramer's rule to solve linear equations represented by a <code>3 x 4</code> augmented matrix which represents
-	 * the system <code>M.x == b</code>, where the columns of the <code>3 x 3</code> matrix <code>M</code> are augmented
-	 * by the vector <code>b</code>. This method assumes that the dimensions of the matrix are already checked by the
-	 * caller.
+	 * Use cramer's rule to solve linear equations represented by a
+	 * <code>3 x 4</code> augmented matrix which represents the system
+	 * <code>M.x == b</code>, where the columns of the <code>3 x 3</code> matrix
+	 * <code>M</code> are augmented by the vector <code>b</code>. This method
+	 * assumes that the dimensions of the matrix are already checked by the caller.
 	 * </p>
-	 * See: <a href="https://en.wikipedia.org/wiki/Cramer's_rule">Wikipedia Cramer's rule</a>
+	 * See: <a href="https://en.wikipedia.org/wiki/Cramer's_rule">Wikipedia Cramer's
+	 * rule</a>
 	 * 
 	 * @param matrix
 	 *            the <code>3 x 4</code> augmented matrix
@@ -2864,7 +3096,8 @@ public final class LinearAlgebra {
 	 *            show no message if there is no solution
 	 * @param engine
 	 *            the evaluation engine
-	 * @return a list of values which solve the equations or <code>F#NIL</code>, if the equations have no solution.
+	 * @return a list of values which solve the equations or <code>F#NIL</code>, if
+	 *         the equations have no solution.
 	 */
 	public static IAST cramersRule3x4(FieldMatrix<IExpr> matrix, boolean quiet, EvalEngine engine) {
 		IAST list = F.ListAlloc(3);
@@ -2899,8 +3132,8 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Get the determinant of a <code>2 x 2</code> matrix. This method assumes that the dimensions of the matrix are
-	 * already checked by the caller.
+	 * Get the determinant of a <code>2 x 2</code> matrix. This method assumes that
+	 * the dimensions of the matrix are already checked by the caller.
 	 * 
 	 * @param matrix
 	 *            a 2x2 matrix
@@ -2914,8 +3147,8 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Get the determinant of a <code>3 x 3</code> matrix. This method assumes that the dimensions of the matrix are
-	 * already checked by the caller.
+	 * Get the determinant of a <code>3 x 3</code> matrix. This method assumes that
+	 * the dimensions of the matrix are already checked by the caller.
 	 * 
 	 * @param matrix
 	 *            a 3x3 matrix
@@ -2934,8 +3167,8 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Create a diagonal matrix from <code>valueArray[0]</code> (non-diagonal elements) and <code>valueArray[1]</code>
-	 * (diagonal elements).
+	 * Create a diagonal matrix from <code>valueArray[0]</code> (non-diagonal
+	 * elements) and <code>valueArray[1]</code> (diagonal elements).
 	 * 
 	 * @param valueArray
 	 *            2 values for non-diagonal and diagonal elemnets of the matrix.
@@ -2984,12 +3217,14 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Return the solution of the given (augmented-)matrix interpreted as a system of linear equations
+	 * Return the solution of the given (augmented-)matrix interpreted as a system
+	 * of linear equations
 	 * 
 	 * @param matrix
 	 * @param engine
 	 *            the evaluation engine
-	 * @return <code>F.NIL</code> if the linear system is inconsistent and has no solution
+	 * @return <code>F.NIL</code> if the linear system is inconsistent and has no
+	 *         solution
 	 */
 	public static IAST rowReduced2List(FieldMatrix<IExpr> matrix, EvalEngine engine) {
 
@@ -3017,7 +3252,7 @@ public final class LinearAlgebra {
 		}
 		IAST list = F.ListAlloc(rows < cols - 1 ? cols - 1 : rows);
 		for (int j = 0; j < rows; j++) {
-			list.append(F.eval(F.Together(rowReduced.getEntry(j, cols - 1))));
+			list.append(engine.evaluate(F.Together(rowReduced.getEntry(j, cols - 1))));
 		}
 		if (rows < cols - 1) {
 			for (int i = rows; i < cols - 1; i++) {
@@ -3028,8 +3263,8 @@ public final class LinearAlgebra {
 	}
 
 	/**
-	 * Row reduce the given <code>(augmented-)matrix</code> and append the result as rules for the given
-	 * <code>variableList</code>.
+	 * Row reduce the given <code>(augmented-)matrix</code> and append the result as
+	 * rules for the given <code>variableList</code>.
 	 * 
 	 * @param matrix
 	 *            a (augmented-)matrix
@@ -3059,7 +3294,7 @@ public final class LinearAlgebra {
 			int size = smallList.size();
 			IAST list = F.ListAlloc(size);
 			for (int j = 1; j < size; j++) {
-				IAST rule = F.Rule(listOfVariables.get(j), F.eval(smallList.get(j)));
+				IAST rule = F.Rule(listOfVariables.get(j), engine.evaluate(smallList.get(j)));
 				list.append(rule);
 			}
 

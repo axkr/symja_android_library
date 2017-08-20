@@ -741,7 +741,7 @@ public class Discriminant extends AbstractFunctionEvaluator {
 		if (!arg2.isSymbol()) {
 			return F.NIL;
 		}
-		IExpr expr = F.evalExpandAll(ast.arg1());
+		IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 		try {
 			ExprPolynomialRing ring = new ExprPolynomialRing(F.List(arg2));
 			ExprPolynomial poly = ring.create(expr);

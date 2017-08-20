@@ -13,7 +13,79 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 
-
+/**
+ * <pre>
+ * ElementData("name“, ”property")
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * gives the value of the property for the chemical specified by name.
+ * </p>
+ * </blockquote>
+ * 
+ * <pre>
+ * ElementData(n, "property")
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * gives the value of the property for the nth chemical element.
+ * </p>
+ * </blockquote>
+ * <p>
+ * <code>ElementData</code> uses data from <a href=
+ * "https://en.wikipedia.org/wiki/List_of_data_references_for_chemical_elements">Wikipedia
+ * - List of data references for chemical elements</a>
+ * </p>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; ElementData(74)
+ * "Tungsten"
+ * 
+ * &gt;&gt; ElementData("He", "AbsoluteBoilingPoint")
+ * 4.22
+ * 
+ * &gt;&gt; ElementData("Carbon", "IonizationEnergies")
+ * {1086.5,2352.6,4620.5,6222.7,37831,47277.0}
+ * 
+ * &gt;&gt; ElementData(16, "ElectronConfigurationString")
+ * "[Ne] 3s2 3p4"
+ * 
+ * &gt;&gt; ElementData(73, "ElectronConfiguration")
+ * {{2},{2,6},{2,6,10},{2,6,10,14},{2,6,3},{2}}
+ * </pre>
+ * <p>
+ * Some properties are not appropriate for certain elements:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; ElementData("He", "ElectroNegativity")
+ * Missing(NotApplicable)
+ * </pre>
+ * <p>
+ * Some data is missing:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; ElementData("Tc", "SpecificHeat")
+ * Missing(NotAvailable)
+ * </pre>
+ * <p>
+ * All the known properties:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; ElementData("Properties")
+ * {"Abbreviation","AbsoluteBoilingPoint","AbsoluteMeltingPoint","AtomicNumber","AtomicRadius","AtomicWeight","Block",
+ * "BoilingPoint","BrinellHardness","BulkModulus","CovalentRadius","CrustAbundance","Density","DiscoveryYear","ElectroNegativity",
+ * "ElectronAffinity","ElectronConfiguration","ElectronConfigurationString","ElectronShellConfiguration","FusionHeat",
+ * "Group","IonizationEnergies","LiquidDensity","MeltingPoint","MohsHardness","Name","Period","PoissonRatio","Series",
+ * "ShearModulus","SpecificHeat","StandardName","ThermalConductivity","VanDerWaalsRadius","VaporizationHeat","VickersHardness",
+ * "YoungModulus"}
+ * </pre>
+ */
 public class ElementData extends AbstractFunctionEvaluator {
 
 	String[] PROPERTIES_DATA = { "Abbreviation", "AbsoluteBoilingPoint", "AbsoluteMeltingPoint", "AtomicNumber",

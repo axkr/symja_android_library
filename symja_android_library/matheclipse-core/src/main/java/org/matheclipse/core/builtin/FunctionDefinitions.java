@@ -22,7 +22,6 @@ public final class FunctionDefinitions {
 		Discriminant.setEvaluator(new org.matheclipse.core.reflection.system.Discriminant());
 		Distribute.setEvaluator(new org.matheclipse.core.reflection.system.Distribute());
 		Divergence.setEvaluator(new org.matheclipse.core.reflection.system.Divergence());
-		Dot.setEvaluator(new org.matheclipse.core.reflection.system.Dot());
 		DSolve.setEvaluator(new org.matheclipse.core.reflection.system.DSolve());
 		EasterSunday.setEvaluator(new org.matheclipse.core.reflection.system.EasterSunday());
 		ElementData.setEvaluator(new org.matheclipse.core.data.ElementData());
@@ -30,7 +29,6 @@ public final class FunctionDefinitions {
 		EllipticE.setEvaluator(new org.matheclipse.core.reflection.system.EllipticE());
 		EllipticPi.setEvaluator(new org.matheclipse.core.reflection.system.EllipticPi());
 		Export.setEvaluator(new org.matheclipse.core.reflection.system.Export());
-		ExtendedGCD.setEvaluator(new org.matheclipse.core.reflection.system.ExtendedGCD());
 		FindInstance.setEvaluator(new org.matheclipse.core.reflection.system.FindInstance());
 		FindRoot.setEvaluator(new org.matheclipse.core.reflection.system.FindRoot());
 		Fit.setEvaluator(new org.matheclipse.core.reflection.system.Fit());
@@ -57,12 +55,8 @@ public final class FunctionDefinitions {
 		InverseLaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.InverseLaplaceTransform());
 		LaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.LaplaceTransform());
 		LCM.setEvaluator(new org.matheclipse.core.reflection.system.LCM());
-		LetterQ.setEvaluator(new org.matheclipse.core.reflection.system.LetterQ());
 		Limit.setEvaluator(new org.matheclipse.core.reflection.system.Limit());
 		LinearProgramming.setEvaluator(new org.matheclipse.core.reflection.system.LinearProgramming());
-		LowerCaseQ.setEvaluator(new org.matheclipse.core.reflection.system.LowerCaseQ());
-		Max.setEvaluator(new org.matheclipse.core.reflection.system.Max());
-		Min.setEvaluator(new org.matheclipse.core.reflection.system.Min());
 		MonomialList.setEvaluator(new org.matheclipse.core.reflection.system.MonomialList());
 		Names.setEvaluator(new org.matheclipse.core.reflection.system.Names());
 		NDSolve.setEvaluator(new org.matheclipse.core.reflection.system.NDSolve());
@@ -80,8 +74,6 @@ public final class FunctionDefinitions {
 		PDF.setEvaluator(new org.matheclipse.core.reflection.system.PDF());
 		Plot.setEvaluator(new org.matheclipse.core.reflection.system.Plot());
 		Plot3D.setEvaluator(new org.matheclipse.core.reflection.system.Plot3D());
-		PolyGamma.setEvaluator(new org.matheclipse.core.reflection.system.PolyGamma());
-		PolyLog.setEvaluator(new org.matheclipse.core.reflection.system.PolyLog());
 		Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());
 		
 		Rationalize.setEvaluator(new org.matheclipse.core.reflection.system.Rationalize());
@@ -99,7 +91,6 @@ public final class FunctionDefinitions {
 		SignCmp.setEvaluator(new org.matheclipse.core.reflection.system.SignCmp());
 		SinIntegral.setEvaluator(new org.matheclipse.core.reflection.system.SinIntegral());
 		Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
-		StieltjesGamma.setEvaluator(new org.matheclipse.core.reflection.system.StieltjesGamma());
 		Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());
 		Surd.setEvaluator(new org.matheclipse.core.reflection.system.Surd());
 		Taylor.setEvaluator(new org.matheclipse.core.reflection.system.Taylor());

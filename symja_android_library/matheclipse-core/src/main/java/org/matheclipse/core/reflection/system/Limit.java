@@ -27,7 +27,8 @@ import org.matheclipse.core.reflection.system.rules.LimitRules;
  * 
  * <blockquote>
  * <p>
- * gives the limit of <code>expr</code> as <code>x</code> approaches <code>x0</code>
+ * gives the limit of <code>expr</code> as <code>x</code> approaches
+ * <code>x0</code>
  * </p>
  * </blockquote>
  * <h3>Examples</h3>
@@ -85,7 +86,8 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		}
 
 		/**
-		 * Create a new <code>F.Limit( arg1, ... )</code> expression from his <code>LimitData</code> object
+		 * Create a new <code>F.Limit( arg1, ... )</code> expression from his
+		 * <code>LimitData</code> object
 		 * 
 		 * @param arg1
 		 *            the first argument of the Limit expression
@@ -103,7 +105,8 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		}
 
 		/**
-		 * Map a <code>F.Limit( arg1, ... )</code> expression at each argument of the given <code>ast</code>.
+		 * Map a <code>F.Limit( arg1, ... )</code> expression at each argument of the
+		 * given <code>ast</code>.
 		 * 
 		 * @param ast
 		 * @return
@@ -208,7 +211,8 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	}
 
 	/**
-	 * Try L'hospitales rule. See <a href="http://en.wikipedia.org/wiki/L%27H%C3%B4pital%27s_rule"> Wikipedia
+	 * Try L'hospitales rule. See
+	 * <a href="http://en.wikipedia.org/wiki/L%27H%C3%B4pital%27s_rule"> Wikipedia
 	 * L'Hôpital's rule</a>
 	 * 
 	 * @param numerator
@@ -241,7 +245,8 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	}
 
 	/**
-	 * See: <a href="http://en.wikibooks.org/wiki/Calculus/Infinite_Limits">Limits at Infinity of Rational Functions</a>
+	 * See: <a href="http://en.wikibooks.org/wiki/Calculus/Infinite_Limits">Limits
+	 * at Infinity of Rational Functions</a>
 	 * 
 	 * @param numeratorPoly
 	 * @param denominatorPoly
@@ -252,8 +257,10 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	 * @param rule
 	 * @return
 	 */
-	// private static IExpr limitsInfinityOfRationalFunctions(GenPolynomial<IExpr> numeratorPoly,
-	// GenPolynomial<IExpr> denominatorPoly, ISymbol symbol, IExpr limit, IAST rule) {
+	// private static IExpr limitsInfinityOfRationalFunctions(GenPolynomial<IExpr>
+	// numeratorPoly,
+	// GenPolynomial<IExpr> denominatorPoly, ISymbol symbol, IExpr limit, IAST rule)
+	// {
 	// long numDegree = numeratorPoly.degree();
 	// long denomDegree = denominatorPoly.degree();
 	// if (numDegree > denomDegree) {
@@ -266,11 +273,13 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	// long oddDegree = (numDegree + denomDegree) % 2;
 	// if (oddDegree == 1) {
 	// return F.Limit(F.Times(
-	// F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient()),
+	// F.Divide(numeratorPoly.leadingBaseCoefficient(),
+	// denominatorPoly.leadingBaseCoefficient()),
 	// limit), rule);
 	// } else {
 	// return F.Limit(F.Times(
-	// F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient()),
+	// F.Divide(numeratorPoly.leadingBaseCoefficient(),
+	// denominatorPoly.leadingBaseCoefficient()),
 	// F.CInfinity), rule);
 	// }
 	// } else if (numDegree < denomDegree) {
@@ -283,11 +292,13 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	// // exponent of the highest term in the denominator,
 	// // the limit (at both \infty and -\infty) is the ratio of the
 	// // coefficients of the highest terms.
-	// return F.Divide(numeratorPoly.leadingBaseCoefficient(), denominatorPoly.leadingBaseCoefficient());
+	// return F.Divide(numeratorPoly.leadingBaseCoefficient(),
+	// denominatorPoly.leadingBaseCoefficient());
 	// }
 
 	/**
-	 * See: <a href="http://en.wikibooks.org/wiki/Calculus/Infinite_Limits">Limits at Infinity of Rational Functions</a>
+	 * See: <a href="http://en.wikibooks.org/wiki/Calculus/Infinite_Limits">Limits
+	 * at Infinity of Rational Functions</a>
 	 * 
 	 * @param numeratorPoly
 	 * @param denominatorPoly
@@ -350,6 +361,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		IExpr denValue;
 		IExpr limit = data.getLimitValue();
 		IAST rule = data.getRule();
+		EvalEngine engine = EvalEngine.get();
 		if (denominator.isOne() && numerator.isTimes()) {
 			// Limit[a_*b_*c_,sym->lim] ->
 			// Limit[a,sym->lim]*Limit[b,sym->lim]*Limit[c,sym->lim]
@@ -357,23 +369,23 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		}
 		if (!denominator.isNumber() || denominator.isZero()) {
 			ISymbol x = data.getSymbol();
-			denValue = F.evalBlock(denominator, x, limit);
+			denValue = engine.evalBlock(denominator, x, limit);
 			if (denValue.equals(F.Indeterminate)) {
 				return F.NIL;
 			} else if (denValue.isZero()) {
-				numValue = F.evalBlock(numerator, x, limit);
+				numValue = engine.evalBlock(numerator, x, limit);
 				if (numValue.isZero()) {
 					return lHospitalesRule(numerator, denominator, data);
 				}
 				return F.NIL;
 			} else if (F.CInfinity.equals(denValue)) {
-				numValue = F.evalBlock(numerator, x, limit);
+				numValue = engine.evalBlock(numerator, x, limit);
 				if (F.CInfinity.equals(numValue)) {
 					return lHospitalesRule(numerator, denominator, data);
 				}
 				return F.NIL;
 			} else if (denValue.isNegativeInfinity()) {
-				numValue = F.evalBlock(numerator, x, limit);
+				numValue = engine.evalBlock(numerator, x, limit);
 				if (numValue.isNegativeInfinity()) {
 					return lHospitalesRule(numerator, denominator, data);
 				}
@@ -497,8 +509,9 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	}
 
 	/**
-	 * Try a substitution. <code>y = 1/x</code>. As <code>|x|</code> approaches <code>Infinity</code> or
-	 * <code>-Infinity</code>, <code>y</code> approaches <code>0</code>.
+	 * Try a substitution. <code>y = 1/x</code>. As <code>|x|</code> approaches
+	 * <code>Infinity</code> or <code>-Infinity</code>, <code>y</code> approaches
+	 * <code>0</code>.
 	 * 
 	 * @param arg1
 	 * @param data
@@ -616,7 +629,8 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	}
 
 	/**
-	 * Limit of a function. See <a href="http://en.wikipedia.org/wiki/List_of_limits">List of Limits</a>
+	 * Limit of a function. See
+	 * <a href="http://en.wikipedia.org/wiki/List_of_limits">List of Limits</a>
 	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {

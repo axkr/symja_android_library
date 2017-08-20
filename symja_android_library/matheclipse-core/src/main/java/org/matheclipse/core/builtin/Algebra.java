@@ -64,7 +64,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.ExprMonomial;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
-import org.matheclipse.core.polynomials.ExprTermOrder;
 import org.matheclipse.core.polynomials.IPartialFractionGenerator;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
@@ -519,7 +518,7 @@ public class Algebra {
 						return result;
 					}
 				}
-				IExpr expandedArg1 = F.evalExpandAll(arg1);
+				IExpr expandedArg1 = F.evalExpandAll(arg1, engine);
 
 				if (expandedArg1.isPlus()) {
 					return ((IAST) expandedArg1).mapThread(F.Cancel(null), 1);
@@ -1377,7 +1376,7 @@ public class Algebra {
 						"Factorization only implemented for univariate polynomials");
 			}
 			try {
-				IExpr expr = F.evalExpandAll(ast.arg1());
+				IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 				ASTRange r = new ASTRange(eVar.getVarList(), 1);
 				List<IExpr> varList = r;
 
@@ -1423,7 +1422,7 @@ public class Algebra {
 						"Factorization only implemented for univariate polynomials");
 			}
 			try {
-				IExpr expr = F.evalExpandAll(ast.arg1());
+				IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 				ASTRange r = new ASTRange(eVar.getVarList(), 1);
 				List<IExpr> varList = r;
 
@@ -1496,8 +1495,7 @@ public class Algebra {
 				return F.NIL;
 			}
 			ASTRange r = new ASTRange(variableList, 1);
-			IExpr expr = F.evalExpandAll(ast.arg1());
-			// IExpr variable = variableList.arg1();
+			IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 			try {
 
 				JASConvert<BigRational> jas = new JASConvert<BigRational>(r, BigRational.ZERO);
@@ -1681,8 +1679,8 @@ public class Algebra {
 			Validate.checkRange(ast, 4, 5);
 
 			ISymbol x = Validate.checkSymbolType(ast, 3);
-			IExpr expr1 = F.evalExpandAll(ast.arg1());
-			IExpr expr2 = F.evalExpandAll(ast.arg2());
+			IExpr expr1 = F.evalExpandAll(ast.arg1(), engine);
+			IExpr expr2 = F.evalExpandAll(ast.arg2(), engine);
 			VariablesSet eVar = new VariablesSet();
 			eVar.add(x);
 
@@ -1736,8 +1734,8 @@ public class Algebra {
 					IAST list = F.List();
 					list.append(jas.exprPoly2Expr(result[0], x));
 					IAST subList = F.List();
-					subList.append(F.eval(F.Together(jas.exprPoly2Expr(result[1], x))));
-					subList.append(F.eval(F.Together(jas.exprPoly2Expr(result[2], x))));
+					subList.append(engine.evaluate(F.Together(jas.exprPoly2Expr(result[1], x))));
+					subList.append(engine.evaluate(F.Together(jas.exprPoly2Expr(result[2], x))));
 					list.append(subList);
 					return list;
 				} catch (JASConversionException e) {
@@ -1790,7 +1788,7 @@ public class Algebra {
 			VariablesSet eVar = new VariablesSet();
 			eVar.addVarList(ast, 1);
 
-			IExpr expr = F.evalExpandAll(ast.arg1());
+			IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 			if (ast.size() > 3 && ast.last().isRuleAST()) {
 				return gcdWithOption(ast, expr, eVar, engine);
 			}
@@ -1801,7 +1799,7 @@ public class Algebra {
 				GenPolynomial<BigInteger> temp;
 				GreatestCommonDivisorAbstract<BigInteger> factory = GCDFactory.getImplementation(BigInteger.ZERO);
 				for (int i = 2; i < ast.size(); i++) {
-					expr = F.evalExpandAll(ast.get(i));
+					expr = F.evalExpandAll(ast.get(i), engine);
 					temp = jas.expr2JAS(expr, false);
 					poly = factory.gcd(poly, temp);
 				}
@@ -1898,7 +1896,7 @@ public class Algebra {
 			eVar.addVarList(ast, 1);
 
 			ASTRange r = new ASTRange(eVar.getVarList(), 1);
-			IExpr expr = F.evalExpandAll(ast.arg1());
+			IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 			if (ast.size() > 3) {
 				final Options options = new Options(ast.topHead(), ast, ast.size() - 1, engine);
 				IExpr option = options.getOption("Modulus");
@@ -1911,7 +1909,7 @@ public class Algebra {
 						GenPolynomial<ModLong> temp;
 						GreatestCommonDivisorAbstract<ModLong> factory = GCDFactory.getImplementation(modIntegerRing);
 						for (int i = 2; i < ast.size() - 1; i++) {
-							expr = F.evalExpandAll(ast.get(i));
+							expr = F.evalExpandAll(ast.get(i), engine);
 							temp = jas.expr2JAS(expr);
 							poly = factory.lcm(poly, temp);
 						}
@@ -1932,7 +1930,7 @@ public class Algebra {
 				GenPolynomial<BigInteger> temp;
 				GreatestCommonDivisorAbstract<BigInteger> factory = GCDFactory.getImplementation(BigInteger.ZERO);
 				for (int i = 2; i < ast.size(); i++) {
-					expr = F.evalExpandAll(ast.get(i));
+					expr = F.evalExpandAll(ast.get(i), engine);
 					temp = jas.expr2JAS(expr, false);
 					poly = factory.lcm(poly, temp);
 				}
@@ -2007,22 +2005,22 @@ public class Algebra {
 		 *             <code>ExprPolynomialRing ring = new ExprPolynomialRing(variables); ExprPolynomial poly = ring.create(polnomialExpr);</code>
 		 *             if possible.
 		 */
-		private static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr, final IAST variables,
-				boolean numericFunction) {
-			IExpr expr = F.evalExpandAll(polnomialExpr);
-			int termOrder = ExprTermOrder.INVLEX;
-			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables, variables.size() - 1,
-					new ExprTermOrder(termOrder), true);
-			try {
-				ExprPolynomial poly = ring.create(expr);
-				ASTRange r = new ASTRange(variables, 1);
-				JASIExpr jas = new JASIExpr(r, numericFunction);
-				return jas.expr2IExprJAS(poly);
-			} catch (RuntimeException ex) {
-
-			}
-			return null;
-		}
+//		private static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr, final IAST variables,
+//				boolean numericFunction) {
+//			IExpr expr = F.evalExpandAll(polnomialExpr, engine);
+//			int termOrder = ExprTermOrder.INVLEX;
+//			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables, variables.size() - 1,
+//					new ExprTermOrder(termOrder), true);
+//			try {
+//				ExprPolynomial poly = ring.create(expr);
+//				ASTRange r = new ASTRange(variables, 1);
+//				JASIExpr jas = new JASIExpr(r, numericFunction);
+//				return jas.expr2IExprJAS(poly);
+//			} catch (RuntimeException ex) {
+//
+//			}
+//			return null;
+//		}
 
 		/**
 		 * 
@@ -2034,10 +2032,10 @@ public class Algebra {
 		 *             <code>ExprPolynomialRing ring = new ExprPolynomialRing(symbol); ExprPolynomial poly = ring.create(polnomialExpr);</code>
 		 *             if possible
 		 */
-		private static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr, final ISymbol symbol,
-				boolean numericFunction) {
-			return polynomial(polnomialExpr, List(symbol), numericFunction);
-		}
+//		private static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr, final ISymbol symbol,
+//				boolean numericFunction) {
+//			return polynomial(polnomialExpr, List(symbol), numericFunction);
+//		}
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
@@ -2088,8 +2086,8 @@ public class Algebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 4, 5);
 			ISymbol variable = Validate.checkSymbolType(ast, 3);
-			IExpr arg1 = F.evalExpandAll(ast.arg1());
-			IExpr arg2 = F.evalExpandAll(ast.arg2());
+			IExpr arg1 = F.evalExpandAll(ast.arg1(), engine);
+			IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
 
 			if (ast.size() == 5) {
 				final Options options = new Options(ast.topHead(), ast, 4, engine);
@@ -2145,8 +2143,8 @@ public class Algebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 4, 5);
 			ISymbol variable = Validate.checkSymbolType(ast, 3);
-			IExpr arg1 = F.evalExpandAll(ast.arg1());
-			IExpr arg2 = F.evalExpandAll(ast.arg2());
+			IExpr arg1 = F.evalExpandAll(ast.arg1(), engine);
+			IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
 
 			if (ast.size() == 5) {
 				final Options options = new Options(ast.topHead(), ast, 4, engine);
@@ -2252,8 +2250,8 @@ public class Algebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 4, 5);
 			ISymbol variable = Validate.checkSymbolType(ast, 3);
-			IExpr arg1 = F.evalExpandAll(ast.arg1());
-			IExpr arg2 = F.evalExpandAll(ast.arg2());
+			IExpr arg1 = F.evalExpandAll(ast.arg1(), engine);
+			IExpr arg2 = F.evalExpandAll(ast.arg2(), engine);
 
 			if (ast.size() == 5) {
 				final Options options = new Options(ast.topHead(), ast, 4, engine);

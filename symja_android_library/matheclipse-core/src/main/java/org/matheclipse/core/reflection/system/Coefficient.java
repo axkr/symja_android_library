@@ -109,7 +109,7 @@ public class Coefficient extends AbstractFunctionEvaluator {
 				}
 			}
 			ExpVectorLong expArr = new ExpVectorLong(exponents);
-			IExpr expr = F.evalExpandAll(ast.arg1());
+			IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, listOfVariables,
 					listOfVariables.size() - 1);
 			ExprPolynomial poly = ring.create(expr, true, true);

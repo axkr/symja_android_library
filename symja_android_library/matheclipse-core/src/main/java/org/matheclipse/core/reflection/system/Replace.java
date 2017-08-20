@@ -20,7 +20,8 @@ import org.matheclipse.core.visit.VisitorLevelSpecification;
  * 
  * <blockquote>
  * <p>
- * convert numerical real or imaginary parts in (sub-)expressions into rational numbers.
+ * convert numerical real or imaginary parts in (sub-)expressions into rational
+ * numbers.
  * </p>
  * </blockquote>
  * <h3>Examples</h3>
@@ -51,7 +52,8 @@ public class Replace extends AbstractEvaluator {
 		 * 
 		 * @param input
 		 *            the expression which should be replaced by the given rules
-		 * @return the expression created by the replacements or <code>null</code> if no replacement occurs
+		 * @return the expression created by the replacements or <code>null</code> if no
+		 *         replacement occurs
 		 */
 		@Override
 		public IExpr apply(IExpr input) {
@@ -144,7 +146,8 @@ public class Replace extends AbstractEvaluator {
 		// use replaceFunction#setRule() method to set the current rules which
 		// are initialized with null
 		ReplaceFunction replaceFunction = new ReplaceFunction(ast, null, engine);
-		VisitorLevelSpecification level = new VisitorLevelSpecification(replaceFunction, exprLevelSpecification, false);
+		VisitorLevelSpecification level = new VisitorLevelSpecification(replaceFunction, exprLevelSpecification, false,
+				engine);
 
 		if (rules.isListOfLists()) {
 			IAST rulesList = (IAST) rules;
@@ -202,7 +205,7 @@ public class Replace extends AbstractEvaluator {
 		Validate.checkRange(ast, 3, 4);
 		try {
 			IExpr arg1 = ast.arg1();
-			IExpr rules = F.eval(ast.arg2());
+			IExpr rules = engine.evaluate(ast.arg2());
 			if (ast.isAST3()) {
 				// arg3 should contain a "level specification":
 				return replaceExprWithLevelSpecification(ast, arg1, rules, ast.arg3(), engine);
