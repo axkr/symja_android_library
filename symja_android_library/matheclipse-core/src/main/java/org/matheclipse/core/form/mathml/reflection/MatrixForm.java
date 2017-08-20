@@ -32,14 +32,14 @@ public class MatrixForm extends AbstractConverter {
 				final IAST vector = (IAST) f.arg1();
 				fFactory.tagStart(buf, "mrow");
 				fFactory.tag(buf, "mo", "(");
-				fFactory.tagStart(buf, "mtable");
+				fFactory.tagStart(buf, "mtable", "columnalign=\"center\"");
 
 				IExpr temp;
 				for (int i = 1; i < vector.size(); i++) {
 
 					temp = vector.get(i);
 					fFactory.tagStart(buf, "mtr");
-					fFactory.tagStart(buf, "mtd");
+					fFactory.tagStart(buf, "mtd", "columnalign=\"center\"");
 					fFactory.convert(buf, temp, 0);
 					fFactory.tagEnd(buf, "mtd");
 					fFactory.tagEnd(buf, "mtr");
@@ -53,7 +53,7 @@ public class MatrixForm extends AbstractConverter {
 			final IAST matrix = (IAST) f.arg1();
 			fFactory.tagStart(buf, "mrow");
 			fFactory.tag(buf, "mo", "(");
-			fFactory.tagStart(buf, "mtable");
+			fFactory.tagStart(buf, "mtable", "columnalign=\"center\"");
 
 			IAST temp;
 			for (int i = 1; i < matrix.size(); i++) {
@@ -62,7 +62,7 @@ public class MatrixForm extends AbstractConverter {
 				fFactory.tagStart(buf, "mtr");
 				for (int j = 1; j < temp.size(); j++) {
 
-					fFactory.tagStart(buf, "mtd");
+					fFactory.tagStart(buf, "mtd", "columnalign=\"center\"");
 					fFactory.convert(buf, temp.get(j), 0);
 					fFactory.tagEnd(buf, "mtd");
 				}

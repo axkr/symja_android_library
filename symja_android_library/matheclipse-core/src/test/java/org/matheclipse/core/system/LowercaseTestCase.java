@@ -3273,6 +3273,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLinearSolve() {
+		check("LinearSolve({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, {1, 1, 1})", "{-1,1,0}");
 		check("LinearSolve({{1, 2}, {3, 4}}, {1, {2}})", "LinearSolve(\n" + "{{1,2},\n" + " {3,4}},{1,{2}})");
 
 		check("LinearSolve({{1, 1, 1}, {1, 2, 3}, {1, 4, 9}}, {1, 2, 3})", "{-1/2,2,-1/2}");
@@ -3472,7 +3473,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("MathMLForm(D(sin(x)*cos(x),x))", "\"<?xml version=\"1.0\"?>\n"
 				+ "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
 				+ "<math mode=\"display\">\n"
-				+ "<mfrac><mrow><mo>&#x2202;</mo><mrow><mrow><mi>sin</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mo>&#x2062;</mo><mrow><mi>cos</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow></mrow></mrow><mrow><mo>&#x2202;</mo><mi>x</mi></mrow></mfrac></math>\"");
+				+ "<mfrac><mrow><mo>&#x2202;</mo><mrow><mrow><mi>sin</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mo> </mo><mrow><mi>cos</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow></mrow></mrow><mrow><mo>&#x2202;</mo><mi>x</mi></mrow></mfrac></math>\"");
 	}
 
 	public void testMatrices() {

@@ -26,9 +26,8 @@ public class MathMLPresentationTestCase extends TestCase {
 		check("Integrate[f[x], x]",
 				"<mo>&#x222B;</mo><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow><mrow><mo>&#x2146;</mo><mi>x</mi></mrow>");
 
-		
-//		check("-Infinity/Log[a]",
-//				"<mfrac><mrow><mo>-</mo><mi>∞</mi></mrow><mrow><mi>log</mi><mo>&#x2061;</mo><mo>(</mo><mi>a</mi><mo>)</mo></mrow></mfrac>");
+		// check("-Infinity/Log[a]",
+		// "<mfrac><mrow><mo>-</mo><mi>∞</mi></mrow><mrow><mi>log</mi><mo>&#x2061;</mo><mo>(</mo><mi>a</mi><mo>)</mo></mrow></mfrac>");
 		check("x*(1+x)^(-2)",
 				"<mfrac><mi>x</mi><msup><mrow><mrow><mo>(</mo><mi>x</mi><mo>+</mo><mn>1</mn><mo>)</mo></mrow></mrow><mn>2</mn></msup></mfrac>");
 		check("x/(1+x)/(1+x)",
@@ -39,8 +38,7 @@ public class MathMLPresentationTestCase extends TestCase {
 		check("x^y", "<msup><mi>x</mi><mi>y</mi></msup>");
 		check("Abs[-x]",
 				"<mrow><mo>&LeftBracketingBar;</mo><mrow><mo>-</mo><mi>x</mi></mrow><mo>&RightBracketingBar;</mo></mrow>");
-		check("a*b*c*d",
-				"<mrow><mi>a</mi><mo> </mo><mi>b</mi><mo> </mo><mi>c</mi><mo> </mo><mi>d</mi></mrow>");
+		check("a*b*c*d", "<mrow><mi>a</mi><mo> </mo><mi>b</mi><mo> </mo><mi>c</mi><mo> </mo><mi>d</mi></mrow>");
 		check("k/2", "<mfrac><mi>k</mi><mn>2</mn></mfrac>");
 		check("Binomial[n,k/2]",
 				"<mrow><mo>(</mo><mfrac linethickness=\"0\"><mi>n</mi><mfrac><mi>k</mi><mn>2</mn></mfrac></mfrac><mo>)</mo></mrow>");
@@ -48,9 +46,10 @@ public class MathMLPresentationTestCase extends TestCase {
 		check("a*b+c", "<mrow><mi>c</mi><mo>+</mo><mrow><mi>a</mi><mo> </mo><mi>b</mi></mrow></mrow>");
 		// check("HEllipsis", "<mo>&hellip;</mo>");
 		check("MatrixForm[{a,b,c,d}]",
-				"<mrow><mo>(</mo><mtable><mtr><mtd><mi>a</mi></mtd></mtr><mtr><mtd><mi>b</mi></mtd></mtr><mtr><mtd><mi>c</mi></mtd></mtr><mtr><mtd><mi>d</mi></mtd></mtr></mtable><mo>)</mo></mrow>");
+				"<mrow><mo>(</mo><mtable columnalign=\"center\"><mtr><mtd columnalign=\"center\"><mi>a</mi></mtd></mtr><mtr><mtd columnalign=\"center\"><mi>b</mi></mtd></mtr><mtr><mtd columnalign=\"center\"><mi>c</mi></mtd></mtr><mtr><mtd columnalign=\"center\"><mi>d</mi></mtd></mtr></mtable><mo>)</mo></mrow>");
+
 		check("MatrixForm[{{a,b},{c,d}}]",
-				"<mrow><mo>(</mo><mtable><mtr><mtd><mi>a</mi></mtd><mtd><mi>b</mi></mtd></mtr><mtr><mtd><mi>c</mi></mtd><mtd><mi>d</mi></mtd></mtr></mtable><mo>)</mo></mrow>");
+				"<mrow><mo>(</mo><mtable columnalign=\"center\"><mtr><mtd columnalign=\"center\"><mi>a</mi></mtd><mtd columnalign=\"center\"><mi>b</mi></mtd></mtr><mtr><mtd columnalign=\"center\"><mi>c</mi></mtd><mtd columnalign=\"center\"><mi>d</mi></mtd></mtr></mtable><mo>)</mo></mrow>");
 
 		check("a*b+c", "<mrow><mi>c</mi><mo>+</mo><mrow><mi>a</mi><mo> </mo><mi>b</mi></mrow></mrow>");
 		check("a*b+c-2",
@@ -113,10 +112,9 @@ public class MathMLPresentationTestCase extends TestCase {
 		// Object obj = fParser.start();
 		// StringBuffer buf = new StringBuffer();
 		// fMathMLFactory.convert(buf, obj, 0);
-		assertEquals(stw.toString(),
-				"<?xml version=\"1.0\"?>\n"
-						+ "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
-						+ "<math mode=\"display\">\n" + strResult + "</math>");
+		assertEquals(stw.toString(), "<?xml version=\"1.0\"?>\n"
+				+ "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
+				+ "<math mode=\"display\">\n" + strResult + "</math>");
 
 	}
 
