@@ -23,7 +23,6 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.StringX;
-import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
@@ -91,9 +90,10 @@ public final class BooleanFunctions {
 		}
 
 		/**
-		 * If all expressions evaluates to <code>true</code> for a given unary predicate function return
-		 * <code>True</code>, if any expression evaluates to <code>false</code> return <code>False</code>, else return
-		 * an <code>And(...)</code> expression of the result expressions.
+		 * If all expressions evaluates to <code>true</code> for a given unary predicate
+		 * function return <code>True</code>, if any expression evaluates to
+		 * <code>false</code> return <code>False</code>, else return an
+		 * <code>And(...)</code> expression of the result expressions.
 		 * 
 		 * @param list
 		 *            list of expressions
@@ -129,11 +129,13 @@ public final class BooleanFunctions {
 	/**
 	 * 
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Logical_conjunction">Logical conjunction</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Logical_conjunction">Logical
+	 * conjunction</a>
 	 * 
 	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/And">And </a>
+	 * See the online Symja function reference: <a href=
+	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/And">And
+	 * </a>
 	 * </p>
 	 */
 	private static class And extends AbstractCoreFunctionEvaluator {
@@ -244,9 +246,10 @@ public final class BooleanFunctions {
 		}
 
 		/**
-		 * If any expression evaluates to <code>true</code> for a given unary predicate function return
-		 * <code>True</code>, if all are <code>false</code> return <code>False</code>, else return an
-		 * <code>Or(...)</code> expression of the result expressions.
+		 * If any expression evaluates to <code>true</code> for a given unary predicate
+		 * function return <code>True</code>, if all are <code>false</code> return
+		 * <code>False</code>, else return an <code>Or(...)</code> expression of the
+		 * result expressions.
 		 * 
 		 * @param list
 		 *            list of expressions
@@ -282,8 +285,9 @@ public final class BooleanFunctions {
 	/**
 	 * Predicate function
 	 * 
-	 * Returns <code>1</code> if the 1st argument evaluates to <code>True</code> ; returns <code>0</code> if the 1st
-	 * argument evaluates to <code>False</code>; and <code>null</code> otherwise.
+	 * Returns <code>1</code> if the 1st argument evaluates to <code>True</code> ;
+	 * returns <code>0</code> if the 1st argument evaluates to <code>False</code>;
+	 * and <code>null</code> otherwise.
 	 */
 	private static class Boole extends AbstractFunctionEvaluator {
 
@@ -390,7 +394,8 @@ public final class BooleanFunctions {
 	}
 
 	/**
-	 * Minimize a boolean function with the <a href="http://en.wikipedia.org/wiki/Quine%E2%80%93McCluskey_algorithm">
+	 * Minimize a boolean function with the
+	 * <a href="http://en.wikipedia.org/wiki/Quine%E2%80%93McCluskey_algorithm">
 	 * Quine McCluskey algorithm</a>.
 	 */
 	private static class BooleanMinimize extends AbstractFunctionEvaluator {
@@ -422,7 +427,8 @@ public final class BooleanFunctions {
 	}
 
 	/**
-	 * See <a href="https://en.wikipedia.org/wiki/Truth_table">Wikipedia: Truth table</a>
+	 * See <a href="https://en.wikipedia.org/wiki/Truth_table">Wikipedia: Truth
+	 * table</a>
 	 * 
 	 */
 	private static class BooleanTable extends AbstractFunctionEvaluator {
@@ -526,8 +532,8 @@ public final class BooleanFunctions {
 		}
 
 		/**
-		 * Try to simplify a comparator expression. Example: <code>3*x > 6</code> wll be simplified to
-		 * <code>x> 2</code>.
+		 * Try to simplify a comparator expression. Example: <code>3*x > 6</code> wll be
+		 * simplified to <code>x> 2</code>.
 		 * 
 		 * @param a1
 		 *            left-hand-side of the comparator expression
@@ -535,8 +541,9 @@ public final class BooleanFunctions {
 		 *            right-hand-side of the comparator expression
 		 * @param originalHead
 		 *            symbol for which the simplification was started
-		 * @return the simplified comparator expression or <code>null</code> if no simplification was found
-		 */
+		 * @return the simplified comparator expression or <code>null</code> if no
+		 *         simplification was found
+		 */ 
 		protected IExpr simplifyCompare(IExpr a1, IExpr a2, ISymbol originalHead) {
 			IExpr lhs, rhs;
 			if (a2.isNumber()) {
@@ -570,7 +577,7 @@ public final class BooleanFunctions {
 			if (ast.size() > 2) {
 				IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.UNDEFINED;
 				if (ast.isAST2()) {
-					return equalNull(ast.arg1(), ast.arg2());
+					return equalNull(ast.arg1(), ast.arg2(), engine);
 				}
 				boolean evaled = false;
 				IAST result = ast.clone();
@@ -578,7 +585,7 @@ public final class BooleanFunctions {
 				IExpr arg1 = F.expandAll(result.get(1), true, true);
 				while (i < result.size()) {
 					IExpr arg2 = F.expandAll(result.get(i), true, true);
-					b = prepareCompare(arg1, arg2);
+					b = prepareCompare(arg1, arg2, engine);
 					if (b == IExpr.COMPARE_TERNARY.FALSE) {
 						return F.False;
 					}
@@ -607,9 +614,10 @@ public final class BooleanFunctions {
 		 * 
 		 * @param arg1
 		 * @param arg2
+		 * @param engine
 		 * @return
 		 */
-		public IExpr.COMPARE_TERNARY prepareCompare(final IExpr arg1, final IExpr arg2) {
+		public IExpr.COMPARE_TERNARY prepareCompare(final IExpr arg1, final IExpr arg2, EvalEngine engine) {
 			if (arg1.isIndeterminate() || arg2.isIndeterminate()) {
 				return IExpr.COMPARE_TERNARY.FALSE;
 			}
@@ -622,7 +630,7 @@ public final class BooleanFunctions {
 				}
 				IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.TRUE;
 				for (int i = 1; i < size1; i++) {
-					b = prepareCompare(list1.get(i), list2.get(i));
+					b = prepareCompare(list1.get(i), list2.get(i), engine);
 					if (b == IExpr.COMPARE_TERNARY.FALSE) {
 						return IExpr.COMPARE_TERNARY.FALSE;
 					}
@@ -631,18 +639,19 @@ public final class BooleanFunctions {
 						return IExpr.COMPARE_TERNARY.UNDEFINED;
 					}
 				}
+				return IExpr.COMPARE_TERNARY.TRUE;
 			}
 			IExpr a0 = arg1;
 			IExpr a1 = arg2;
 			if (!a0.isSignedNumber() && a0.isNumericFunction()) {
-				a0 = F.evaln(a0);
+				a0 = engine.evalN(a0);
 			} else if (a1.isNumeric() && a0.isRational()) {
-				a0 = F.evaln(a0);
+				a0 = engine.evalN(a0);
 			}
 			if (!a1.isSignedNumber() && a1.isNumericFunction()) {
-				a1 = F.evaln(a1);
+				a1 = engine.evalN(a1);
 			} else if (a0.isNumeric() && a1.isRational()) {
-				a1 = F.evaln(a1);
+				a1 = engine.evalN(a1);
 			}
 
 			return compareTernary(a0, a1);
@@ -818,7 +827,8 @@ public final class BooleanFunctions {
 		 * <ul>
 		 * <li>Return TRUE if the comparison is <code>true</code></li>
 		 * <li>Return FALSE if the comparison is <code>false</code></li>
-		 * <li>Return UNDEFINED if the comparison is undetermined (i.e. could not be evaluated)</li>
+		 * <li>Return UNDEFINED if the comparison is undetermined (i.e. could not be
+		 * evaluated)</li>
 		 * </ul>
 		 * 
 		 * @param lower0
@@ -899,9 +909,11 @@ public final class BooleanFunctions {
 		 * @param useOppositeHeader
 		 *            use the opposite header to create the result
 		 * @param originalHead
-		 *            symbol of the comparator operator for which the simplification was started
+		 *            symbol of the comparator operator for which the simplification was
+		 *            started
 		 * @param oppositeHead
-		 *            opposite of the symbol of the comparator operator for which the comparison was started
+		 *            opposite of the symbol of the comparator operator for which the
+		 *            comparison was started
 		 * @return
 		 */
 		private IAST createComparatorResult(IExpr lhs, IExpr rhs, boolean useOppositeHeader, ISymbol originalHead,
@@ -941,7 +953,7 @@ public final class BooleanFunctions {
 			IExpr.COMPARE_TERNARY[] cResult = new IExpr.COMPARE_TERNARY[ast.size()];
 			cResult[0] = IExpr.COMPARE_TERNARY.TRUE;
 			for (int i = 1; i < ast.size() - 1; i++) {
-				b = prepareCompare(result.get(i), result.get(i + 1));
+				b = prepareCompare(result.get(i), result.get(i + 1), engine);
 				if (b == IExpr.COMPARE_TERNARY.FALSE) {
 					return F.False;
 				}
@@ -976,21 +988,23 @@ public final class BooleanFunctions {
 			return F.NIL;
 		}
 
-		public IExpr.COMPARE_TERNARY prepareCompare(final IExpr o0, final IExpr o1) {
-			IExpr a0 = o0;
-			IExpr a1 = o1;
+		private IExpr.COMPARE_TERNARY prepareCompare(IExpr a0, IExpr a1, EvalEngine engine) {
 			if (!a0.isSignedNumber() && a0.isNumericFunction()) {
-				a0 = F.evaln(a0);
+				a0 = engine.evalN(a0);
 			} else if (a1.isNumeric() && a0.isRational()) {
-				a0 = F.evaln(a0);
+				a0 = engine.evalN(a0);
 			}
 			if (!a1.isSignedNumber() && a1.isNumericFunction()) {
-				a1 = F.evaln(a1);
+				a1 = engine.evalN(a1);
 			} else if (a0.isNumeric() && a1.isRational()) {
-				a1 = F.evaln(a1);
+				a1 = engine.evalN(a1);
 			}
 
 			return compareTernary(a0, a1);
+		}
+
+		public IExpr.COMPARE_TERNARY prepareCompare(final IExpr o0, final IExpr o1) {
+			return prepareCompare(o0, o1, EvalEngine.get());
 		}
 
 		@Override
@@ -999,34 +1013,38 @@ public final class BooleanFunctions {
 		}
 
 		/**
-		 * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code> will be simplified to
-		 * <code>x &gt; 2</code>.
+		 * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code>
+		 * will be simplified to <code>x &gt; 2</code>.
 		 * 
 		 * @param a1
 		 *            left-hand-side of the comparator expression
 		 * @param a2
 		 *            right-hand-side of the comparator expression
-		 * @return the simplified comparator expression or <code>null</code> if no simplification was found
+		 * @return the simplified comparator expression or <code>null</code> if no
+		 *         simplification was found
 		 */
 		protected IExpr simplifyCompare(IExpr a1, IExpr a2) {
 			return simplifyCompare(a1, a2, F.Greater, F.Less, true);
 		}
 
 		/**
-		 * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code> wll be simplified to
-		 * <code>x &gt; 2</code>.
+		 * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code> wll
+		 * be simplified to <code>x &gt; 2</code>.
 		 * 
 		 * @param a1
 		 *            left-hand-side of the comparator expression
 		 * @param a2
 		 *            right-hand-side of the comparator expression
 		 * @param originalHead
-		 *            symbol of the comparator operator for which the simplification was started
+		 *            symbol of the comparator operator for which the simplification was
+		 *            started
 		 * @param oppositeHead
-		 *            opposite of the symbol of the comparator operator for which the comparison was started
+		 *            opposite of the symbol of the comparator operator for which the
+		 *            comparison was started
 		 * @param setTrue
 		 *            if <code>true</code> return F.True otherwise F.False
-		 * @return the simplified comparator expression or <code>F.NIL</code> if no simplification was found
+		 * @return the simplified comparator expression or <code>F.NIL</code> if no
+		 *         simplification was found
 		 */
 		final protected IExpr simplifyCompare(IExpr a1, IExpr a2, ISymbol originalHead, ISymbol oppositeHead,
 				boolean setTrue) {
@@ -1056,7 +1074,8 @@ public final class BooleanFunctions {
 				if (lhsAST.isNegativeInfinity() && rhs.isRealResult()) {
 					// -Infinity > rhs ?
 					return setTrue ? F.False : F.True;
-					// return createComparatorResult(F.CN1, F.C1, useOppositeHeader, originalHead, oppositeHead);
+					// return createComparatorResult(F.CN1, F.C1, useOppositeHeader, originalHead,
+					// oppositeHead);
 				}
 				if (rhs.isInfinity() && lhsAST.isRealResult()) {
 					// lhs > Infinity ?
@@ -1067,7 +1086,7 @@ public final class BooleanFunctions {
 					return setTrue ? F.True : F.False;
 				}
 				if (lhsAST.isTimes()) {
-					IAST result = lhsAST.partitionTimes(x->x.isNumericFunction(), F.C0, F.C1, F.List);
+					IAST result = lhsAST.partitionTimes(x -> x.isNumericFunction(), F.C0, F.C1, F.List);
 					if (!result.get(1).isZero()) {
 						if (result.get(1).isNegative()) {
 							useOppositeHeader = !useOppositeHeader;
@@ -1077,7 +1096,7 @@ public final class BooleanFunctions {
 								oppositeHead);
 					}
 				} else if (lhsAST.isPlus()) {
-					IAST result = lhsAST.partitionPlus(x->x.isNumericFunction(), F.C0, F.C0, F.List);
+					IAST result = lhsAST.partitionPlus(x -> x.isNumericFunction(), F.C0, F.C0, F.List);
 					if (!result.get(1).isZero()) {
 						rhs = rhs.subtract(result.get(1));
 						return createComparatorResult(result.get(2), rhs, useOppositeHeader, originalHead,
@@ -1367,9 +1386,10 @@ public final class BooleanFunctions {
 		}
 
 		/**
-		 * If any expression evaluates to <code>true</code> for a given unary predicate function return
-		 * <code>False</code>, if all are <code>false</code> return <code>True</code>, else return an
-		 * <code>Nor(...)</code> expression of the result expressions.
+		 * If any expression evaluates to <code>true</code> for a given unary predicate
+		 * function return <code>False</code>, if all are <code>false</code> return
+		 * <code>True</code>, else return an <code>Nor(...)</code> expression of the
+		 * result expressions.
 		 * 
 		 * @param list
 		 *            list of expressions
@@ -1538,7 +1558,8 @@ public final class BooleanFunctions {
 
 	/**
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Logical_disjunction">Logical disjunction</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Logical_disjunction">Logical
+	 * disjunction</a>
 	 * 
 	 */
 	private static class Or extends AbstractCoreFunctionEvaluator {
@@ -1725,7 +1746,8 @@ public final class BooleanFunctions {
 	}
 
 	/**
-	 * See <a href="https://en.wikipedia.org/wiki/Tautology_%28logic%29">Wikipedia: Tautology_</a>
+	 * See <a href="https://en.wikipedia.org/wiki/Tautology_%28logic%29">Wikipedia:
+	 * Tautology_</a>
 	 * 
 	 */
 	private static class TautologyQ extends AbstractFunctionEvaluator {
@@ -1781,7 +1803,8 @@ public final class BooleanFunctions {
 	}
 
 	/**
-	 * Returns <code>True</code> if the 1st argument evaluates to <code>True</code>; <code>False</code> otherwise
+	 * Returns <code>True</code> if the 1st argument evaluates to <code>True</code>;
+	 * <code>False</code> otherwise
 	 */
 	private static class TrueQ extends AbstractFunctionEvaluator {
 
@@ -1819,7 +1842,7 @@ public final class BooleanFunctions {
 					IExpr arg1 = F.expandAll(ast.arg1(), true, true);
 					IExpr arg2 = F.expandAll(ast.arg2(), true, true);
 
-					b = prepareCompare(arg1, arg2);
+					b = prepareCompare(arg1, arg2, engine);
 					if (b == IExpr.COMPARE_TERNARY.FALSE) {
 						return F.True;
 					}
@@ -1892,7 +1915,8 @@ public final class BooleanFunctions {
 
 	/**
 	 * 
-	 * See <a href="https://en.wikipedia.org/wiki/Exclusive_or">Wikipedia: Exclusive or</a>
+	 * See <a href="https://en.wikipedia.org/wiki/Exclusive_or">Wikipedia: Exclusive
+	 * or</a>
 	 * 
 	 */
 	private static class Xor extends AbstractFunctionEvaluator {
@@ -1966,14 +1990,15 @@ public final class BooleanFunctions {
 	 *            first argument
 	 * @param a2
 	 *            second argument
-	 * @return <code>F.NIL</code> or the simplified expression, if equality couldn't be determined.
+	 * @return <code>F.NIL</code> or the simplified expression, if equality couldn't
+	 *         be determined.
 	 */
-	public static IExpr equalNull(final IExpr a1, final IExpr a2) {
+	public static IExpr equalNull(final IExpr a1, final IExpr a2, EvalEngine engine) {
 		IExpr.COMPARE_TERNARY b;
 		IExpr arg1 = F.expandAll(a1, true, true);
 		IExpr arg2 = F.expandAll(a2, true, true);
 
-		b = CONST_EQUAL.prepareCompare(arg1, arg2);
+		b = CONST_EQUAL.prepareCompare(arg1, arg2, engine);
 		if (b == IExpr.COMPARE_TERNARY.FALSE) {
 			return F.False;
 		}
@@ -1985,7 +2010,7 @@ public final class BooleanFunctions {
 	}
 
 	public static IExpr equals(final IAST ast) {
-		return equalNull(ast.arg1(), ast.arg2()).orElse(ast);
+		return equalNull(ast.arg1(), ast.arg2(), EvalEngine.get()).orElse(ast);
 	}
 
 	final static BooleanFunctions CONST = new BooleanFunctions();

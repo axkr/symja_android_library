@@ -8,7 +8,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
@@ -26,8 +25,6 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.Functors;
-import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IIterator;
@@ -88,11 +85,13 @@ public final class Programming {
 
 	/**
 	 * <p>
-	 * <code>Break()</code> leaves a <code>Do</code>, <code>For</code> or <code>While</code> loop.
+	 * <code>Break()</code> leaves a <code>Do</code>, <code>For</code> or
+	 * <code>While</code> loop.
 	 * </p>
 	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Break"> Break</a>
+	 * See the online Symja function reference: <a href=
+	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Break">
+	 * Break</a>
 	 * </p>
 	 *
 	 */
@@ -121,8 +120,9 @@ public final class Programming {
 	/**
 	 * 
 	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Block"> Block</a>
+	 * See the online Symja function reference: <a href=
+	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Block">
+	 * Block</a>
 	 * </p>
 	 *
 	 */
@@ -151,8 +151,9 @@ public final class Programming {
 
 	/**
 	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Catch"> Catch</a>
+	 * See the online Symja function reference: <a href=
+	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Catch">
+	 * Catch</a>
 	 * </p>
 	 */
 	private final static class Catch extends AbstractCoreFunctionEvaluator {
@@ -186,11 +187,9 @@ public final class Programming {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() > 1) {
-				for (int i = 1; i < ast.size() - 1; i++) {
-					// as sideeffect evaluate the i-th argument
-					engine.evaluate(ast.get(i));
-				}
-				return engine.evaluate(ast.get(ast.size() - 1));
+				IExpr[] result = { F.Null };
+				ast.forEach(x -> result[0] = engine.evaluate(x));
+				return result[0];
 			}
 			return F.Null;
 		}
@@ -305,9 +304,7 @@ public final class Programming {
 			Validate.checkRange(ast, 3);
 			try {
 				final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
-				for (int i = 2; i < ast.size(); i++) {
-					iterList.add(Iterator.create((IAST) ast.get(i), engine));
-				}
+				ast.forEach(x -> iterList.add(Iterator.create((IAST) x, engine)), 2);
 				final DoIterator generator = new DoIterator(iterList, engine);
 				return generator.doIt(ast.arg1());
 			} catch (final ClassCastException e) {
@@ -1011,8 +1008,8 @@ public final class Programming {
 	}
 
 	/**
-	 * Remember which local variable names (appended with the module counter) we use in the given
-	 * <code>variablesMap</code>.
+	 * Remember which local variable names (appended with the module counter) we use
+	 * in the given <code>variablesMap</code>.
 	 * 
 	 * @param variablesList
 	 *            initializer variables list from the <code>Module</code> function
@@ -1052,13 +1049,14 @@ public final class Programming {
 	}
 
 	/**
-	 * Remember which local variable names (appended with the module counter) we use in the given
-	 * <code>variablesMap</code>.
+	 * Remember which local variable names (appended with the module counter) we use
+	 * in the given <code>variablesMap</code>.
 	 * 
 	 * @param variablesList
 	 *            initializer variables list from the <code>Module</code> function
 	 * @param varAppend
-	 *            the module counter string which aer appended to the variable names.
+	 *            the module counter string which aer appended to the variable
+	 *            names.
 	 * @param variablesMap
 	 *            the resulting module variables map
 	 * @param engine
@@ -1110,13 +1108,15 @@ public final class Programming {
 		for (ISymbol symbol : moduleVariables.values()) {
 			temp = F.removeUserSymbol(symbol.toString());
 			// if (Config.DEBUG && temp == null) {
-			// throw new NullPointerException("Remove user-defined variabe: " + symbol.toString());
+			// throw new NullPointerException("Remove user-defined variabe: " +
+			// symbol.toString());
 			// }
 		}
 	}
 
 	/**
-	 * Check the (possible nested) module condition in pattern matcher without evaluating a result.
+	 * Check the (possible nested) module condition in pattern matcher without
+	 * evaluating a result.
 	 * 
 	 * @param arg1
 	 * @param arg2
@@ -1149,7 +1149,8 @@ public final class Programming {
 	}
 
 	/**
-	 * Check the (possible nested) condition in pattern matcher without evaluating a result.
+	 * Check the (possible nested) condition in pattern matcher without evaluating a
+	 * result.
 	 * 
 	 * @param arg1
 	 * @param arg2
@@ -1187,14 +1188,16 @@ public final class Programming {
 	}
 
 	/**
-	 * Get the <code>Part[...]</code> of an expression. If the expression is no <code>IAST</code> return the expression.
+	 * Get the <code>Part[...]</code> of an expression. If the expression is no
+	 * <code>IAST</code> return the expression.
 	 * 
 	 * @param expr
 	 *            the expression from which parts should be extracted
 	 * @param ast
 	 *            the <code>Part[...]</code> expression
 	 * @param pos
-	 *            the index position from which the sub-expressions should be extracted
+	 *            the index position from which the sub-expressions should be
+	 *            extracted
 	 * @param engine
 	 *            the evaluation engine
 	 * @return
@@ -1460,7 +1463,8 @@ public final class Programming {
 	}
 
 	/**
-	 * Assign the <code>value</code> to the given position in the left-hand-side. <code>lhs[[position]] = value</code>
+	 * Assign the <code>value</code> to the given position in the left-hand-side.
+	 * <code>lhs[[position]] = value</code>
 	 * 
 	 * @param lhs
 	 *            left-hand-side
@@ -1480,8 +1484,9 @@ public final class Programming {
 	}
 
 	/**
-	 * Call <code>assignPart(element, ast, pos, value, engine)</code> recursively and assign the result to the given
-	 * position in the result. <code>result[[position]] = resultValue</code>
+	 * Call <code>assignPart(element, ast, pos, value, engine)</code> recursively
+	 * and assign the result to the given position in the result.
+	 * <code>result[[position]] = resultValue</code>
 	 * 
 	 * @param expr
 	 * @param element

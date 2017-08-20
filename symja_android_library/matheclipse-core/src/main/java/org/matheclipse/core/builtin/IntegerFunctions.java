@@ -741,11 +741,6 @@ public class IntegerFunctions {
 			if (Lambda.compareStop(ast, x -> !x.isInteger())) {
 				return F.NIL;
 			}
-			// for (int i = 1; i < ast.size(); i++) {
-			// if (!(ast.get(i).isInteger())) {
-			// return F.NIL;
-			// }
-			// }
 			IInteger arg1 = (IInteger) ast.get(1);
 			IInteger arg2 = (IInteger) ast.get(2);
 			IInteger arg3 = (IInteger) ast.get(3);

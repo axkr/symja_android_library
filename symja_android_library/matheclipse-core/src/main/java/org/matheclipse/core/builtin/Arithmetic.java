@@ -652,7 +652,7 @@ public final class Arithmetic {
 						return F.DirectedInfinity(arg1Abs);
 					}
 					if (arg1.isNumericFunction()) {
-						IExpr a1 = F.evaln(arg1);
+						IExpr a1 = engine.evalN(arg1);
 						if (a1.isSignedNumber()) {
 							if (a1.isZero()) {
 								return F.CComplexInfinity;
@@ -1402,9 +1402,9 @@ public final class Arithmetic {
 		 *            The number of product terms in the evaluation.
 		 * @return Gamma(this+n)/GAMMA(this).
 		 */
-		public static BigFraction pochhammer(BigFraction th, int n) {
-			return pochhammer(th, BigInteger.valueOf(n));
-		}
+//		public static BigFraction pochhammer(BigFraction th, int n) {
+//			return pochhammer(th, BigInteger.valueOf(n));
+//		}
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
@@ -2014,7 +2014,7 @@ public final class Arithmetic {
 				return F.C0;
 			}
 			if (a.isNumericFunction()) {
-				IExpr temp = F.evaln(a);
+				IExpr temp = engine.evalN(a);
 				if (temp.isSignedNumber()) {
 					if (((ISignedNumber) temp).isNegative()) {
 						engine.printMessage("Infinite expression 0^(negative number)");

@@ -194,7 +194,6 @@ public class AttributeFunctions {
 			} else {
 				if (ast.arg2().isList()) {
 					final IAST lst = (IAST) ast.arg2();
-					// int symbolAttributes = ISymbol.NOATTRIBUTE;
 					for (int i = 1; i < lst.size(); i++) {
 						ISymbol attribute = (ISymbol) lst.get(i);
 
@@ -246,9 +245,7 @@ public class AttributeFunctions {
 						if (attribute == F.NumericFunction) {
 							sym.clearAttributes(ISymbol.NUMERICFUNCTION);
 						}
-						// symbolAttributes = sym.getAttributes();
 					}
-					// end for
 
 					return F.Null;
 				}

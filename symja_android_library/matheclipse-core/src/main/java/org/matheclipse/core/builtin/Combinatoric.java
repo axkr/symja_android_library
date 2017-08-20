@@ -39,7 +39,8 @@ public final class Combinatoric {
 	/**
 	 * Cartesian product for multiple lists.
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Cartesian_product">Wikipedia - Cartesian product</a>
+	 * See: <a href="http://en.wikipedia.org/wiki/Cartesian_product">Wikipedia -
+	 * Cartesian product</a>
 	 */
 	private final static class CartesianProduct extends AbstractFunctionEvaluator {
 
@@ -151,7 +152,8 @@ public final class Combinatoric {
 		 * Cartesian product iterable.
 		 * 
 		 * <br/>
-		 * See <a href="http://en.wikipedia.org/wiki/Cartesian_product">Wikipedia - Cartesian product</a>
+		 * See <a href="http://en.wikipedia.org/wiki/Cartesian_product">Wikipedia -
+		 * Cartesian product</a>
 		 * 
 		 * @author Heinz Kredel
 		 * @author Axel Kramer (Modifications for Symja)
@@ -266,14 +268,17 @@ public final class Combinatoric {
 
 	/**
 	 * Generate all integer partitions for a given integer number. See
-	 * <a href="http://en.wikipedia.org/wiki/Integer_partition">Wikipedia - Integer partition</a>
+	 * <a href="http://en.wikipedia.org/wiki/Integer_partition">Wikipedia - Integer
+	 * partition</a>
 	 * 
 	 */
 	private final static class IntegerPartitions extends AbstractFunctionEvaluator {
 		/**
-		 * Returns all partitions of a given int number (i.e. NumberPartitions(3) => [3,0,0] [2,1,0] [1,1,1] ).
+		 * Returns all partitions of a given int number (i.e. NumberPartitions(3) =>
+		 * [3,0,0] [2,1,0] [1,1,1] ).
 		 * 
-		 * See <a href="http://en.wikipedia.org/wiki/Integer_partition">Wikipedia - Integer partition</a>
+		 * See <a href="http://en.wikipedia.org/wiki/Integer_partition">Wikipedia -
+		 * Integer partition</a>
 		 */
 		public final static class NumberPartitionsIterable implements Iterator<int[]>, Iterable<int[]> {
 
@@ -349,11 +354,6 @@ public final class Combinatoric {
 
 						} else {
 							k++;
-							// if (i == len - 1) {
-							// l += 1;
-							// i--;
-							// continue;
-							// }
 							if (fPartititionsIndex[i] != 1) {
 								i = k;
 							}
@@ -397,9 +397,7 @@ public final class Combinatoric {
 			}
 		}
 
-		/**
-		 * {@inheritDoc}
-		 */
+		/** {@inheritDoc} */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
@@ -476,9 +474,7 @@ public final class Combinatoric {
 
 	private final static class KOrderlessPartitions extends AbstractFunctionEvaluator {
 
-		/**
-		 * {@inheritDoc}
-		 */
+		/** {@inheritDoc} */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
@@ -574,9 +570,11 @@ public final class Combinatoric {
 	}
 
 	/**
-	 * Generate a list of all all k-partitions for a given list with N elements. <br/>
+	 * Generate a list of all all k-partitions for a given list with N elements.
+	 * <br/>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Partition_of_a_set">Wikipedia - Partition of a set</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Partition_of_a_set">Wikipedia -
+	 * Partition of a set</a>
 	 * 
 	 */
 	private static final class KPartitions extends AbstractFunctionEvaluator {
@@ -591,16 +589,17 @@ public final class Combinatoric {
 		 * }
 		 * </pre>
 		 * 
-		 * Example: KPartitionsIterable(3,5) gives the following sequences [0, 1, 2], [0, 1, 3], [0, 1, 4], [0, 2, 3],
-		 * [0, 2, 4], [0, 3, 4] <br/>
-		 * If you interpret these integer lists as indexes for a list {a,b,c,d,e} which should be partitioned into 3
-		 * parts the results are: <br/>
-		 * {{{a},{b},{c,d,e}}, {{a},{b,c},{d,e}}, {{a},{b,c,d},{e}}, {{a,b},{c},{d,e}}, {{a,b},{c,d},{e}},
-		 * {{a,b,c},{d},{e}}}
+		 * Example: KPartitionsIterable(3,5) gives the following sequences [0, 1, 2],
+		 * [0, 1, 3], [0, 1, 4], [0, 2, 3], [0, 2, 4], [0, 3, 4] <br/>
+		 * If you interpret these integer lists as indexes for a list {a,b,c,d,e} which
+		 * should be partitioned into 3 parts the results are: <br/>
+		 * {{{a},{b},{c,d,e}}, {{a},{b,c},{d,e}}, {{a},{b,c,d},{e}}, {{a,b},{c},{d,e}},
+		 * {{a,b},{c,d},{e}}, {{a,b,c},{d},{e}}}
 		 * 
 		 * <br/>
 		 * <br/>
-		 * See <a href="http://en.wikipedia.org/wiki/Partition_of_a_set">Wikipedia - Partition of a set</a>
+		 * See <a href="http://en.wikipedia.org/wiki/Partition_of_a_set">Wikipedia -
+		 * Partition of a set</a>
 		 */
 		public final static class KPartitionsIterable implements Iterator<int[]>, Iterable<int[]> {
 
@@ -690,9 +689,11 @@ public final class Combinatoric {
 		}
 
 		/**
-		 * This <code>Iterable</code> iterates through all k-partition lists for a given list with N elements. <br/>
+		 * This <code>Iterable</code> iterates through all k-partition lists for a given
+		 * list with N elements. <br/>
 		 * 
-		 * See <a href="http://en.wikipedia.org/wiki/Partition_of_a_set">Wikipedia - Partition of a set</a>
+		 * See <a href="http://en.wikipedia.org/wiki/Partition_of_a_set">Wikipedia -
+		 * Partition of a set</a>
 		 * 
 		 */
 		public final static class KPartitionsList implements Iterator<IAST>, Iterable<IAST> {
@@ -933,8 +934,9 @@ public final class Combinatoric {
 			}
 
 			/**
-			 * Create an iterator which gives all possible permutations of <code>data</code> which contains at most
-			 * <code>parts</code> number of elements. Repeated elements are treated as same.
+			 * Create an iterator which gives all possible permutations of <code>data</code>
+			 * which contains at most <code>parts</code> number of elements. Repeated
+			 * elements are treated as same.
 			 * 
 			 * @param data
 			 *            a list of integers which should be permutated.
@@ -945,13 +947,15 @@ public final class Combinatoric {
 			}
 
 			/**
-			 * Create an iterator which gives all possible permutations of <code>data</code> which contains at most
-			 * <code>parts</code> number of elements. Repeated elements are treated as same.
+			 * Create an iterator which gives all possible permutations of <code>data</code>
+			 * which contains at most <code>parts</code> number of elements. Repeated
+			 * elements are treated as same.
 			 * 
 			 * @param data
 			 *            a list of integers which should be permutated.
 			 * @param len
-			 *            consider only the first <code>n</code> elements of <code>data</code> for permutation
+			 *            consider only the first <code>n</code> elements of
+			 *            <code>data</code> for permutation
 			 * @param parts
 			 */
 			public KPermutationsIterable(final int[] data, final int len, final int parts) {
@@ -1044,8 +1048,9 @@ public final class Combinatoric {
 			final private KPermutationsIterable fIterable;
 
 			/**
-			 * Create an iterator which gives all possible permutations of <code>list</code> which contains at most
-			 * <code>parts</code> number of elements. Repeated elements are treated as same.
+			 * Create an iterator which gives all possible permutations of <code>list</code>
+			 * which contains at most <code>parts</code> number of elements. Repeated
+			 * elements are treated as same.
 			 * 
 			 * @param list
 			 *            a list of elements
@@ -1292,7 +1297,6 @@ public final class Combinatoric {
 				int length = u.size();
 				int n10 = 0;
 				int n01 = 0;
-				int n00 = 0;
 				int n11 = 0;
 				IExpr x, y;
 				for (int i = 1; i < length; i++) {
@@ -1307,7 +1311,6 @@ public final class Combinatoric {
 						continue;
 					}
 					if ((x.isZero() || x.isFalse()) && (y.isZero() || y.isFalse())) {
-						n00++;
 						continue;
 					}
 					if ((x.isOne() || x.isTrue()) && (y.isOne() || y.isTrue())) {

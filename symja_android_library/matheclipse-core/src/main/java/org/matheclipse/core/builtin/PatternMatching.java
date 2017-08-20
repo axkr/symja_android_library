@@ -49,13 +49,6 @@ public final class PatternMatching {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2);
 			Lambda.forEach(ast, x -> x.isSymbol(), x -> ((ISymbol) x).clear(engine));
-			// for (int i = 1; i < ast.size(); i++) {
-			// if (ast.get(i).isSymbol()) {
-			// ISymbol symbol = (ISymbol) ast.get(i);
-			// symbol.clear(engine);
-			// }
-			// }
-
 			return F.Null;
 		}
 

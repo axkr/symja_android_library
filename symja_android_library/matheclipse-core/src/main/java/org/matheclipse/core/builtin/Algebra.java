@@ -21,7 +21,6 @@ import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.function.BiPredicate;
@@ -71,7 +70,6 @@ import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
 //import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.core.visit.VisitorExpr;
-import org.matheclipse.parser.client.math.ArithmeticMathException;
 
 import com.google.common.math.LongMath;
 
@@ -701,7 +699,6 @@ public class Algebra {
 	 * </pre>
 	 */
 	private static class Expand extends AbstractFunctionEvaluator {
-		public final static Expand CONST = new Expand();
 
 		private static class Expander {
 
@@ -1165,7 +1162,6 @@ public class Algebra {
 	 * </pre>
 	 */
 	private static class ExpandAll extends AbstractFunctionEvaluator {
-		public final static ExpandAll CONST = new ExpandAll();
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3624,7 +3620,6 @@ public class Algebra {
 	public static IAST factorComplex(GenPolynomial<BigRational> polyRat, JASConvert<BigRational> jas,
 			List<IExpr> varList, ISymbol head, boolean noGCDLCM) {
 		TermOrder termOrder = TermOrderByName.Lexicographic;
-		// Object[] objects = jas.factorTerms(polyRat);
 		String[] vars = new String[varList.size()];
 		for (int i = 0; i < varList.size(); i++) {
 			vars[i] = varList.get(i).toString();
@@ -3839,11 +3834,9 @@ public class Algebra {
 					continue;
 				}
 			}
-			numerator.append(arg); // numerator.addMerge(arg);
+			numerator.append(arg); 
 		}
 		if (evaled) {
-			// result[0] = numerator.getProduct();
-			// result[1] = denominator.getProduct();
 			if (evalParts) {
 				result[0] = F.eval(numerator);
 				result[1] = F.eval(denominator);
