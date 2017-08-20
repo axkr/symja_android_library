@@ -1,10 +1,8 @@
 
 - [Installation](#installation)
-- [Basic calculations](#basic-calculations)
-- [Expression types](#expression-types)
+- [Basic calculations](#basic-calculations) 
 - [Tutorial](#tutorial)
 - [Reference of built-in symbols](#reference-of-built-in-symbols)
-- [Functions Reference](#functions-reference) 
 
 ## Installation
 
@@ -401,6 +399,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [List](functions/List.md)
 * [Listable](functions/Listable.md)
 * [ListQ](functions/ListQ.md)
+* [Ln](functions/Ln.md)
 * [Log](functions/Log.md)
 * [Log10](functions/Log10.md)
 * [Log2](functions/Log2.md)
@@ -540,6 +539,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Sign](functions/Sign.md)
 * [Simplify](functions/Simplify.md)
 * [Sin](functions/Sin.md)
+* [Sinc](functions/Sinc.md)
 * [SingularValueDecomposition](functions/SingularValueDecomposition.md)
 * [Sinh](functions/Sinh.md)
 * [Slot](functions/Slot.md)
