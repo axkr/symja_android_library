@@ -3473,7 +3473,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("MathMLForm(D(sin(x)*cos(x),x))", "\"<?xml version=\"1.0\"?>\n"
 				+ "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
 				+ "<math mode=\"display\">\n"
-				+ "<mfrac><mrow><mo>&#x2202;</mo><mrow><mrow><mi>sin</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mo> </mo><mrow><mi>cos</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow></mrow></mrow><mrow><mo>&#x2202;</mo><mi>x</mi></mrow></mfrac></math>\"");
+				+ "<mfrac><mrow><mo>&#x2202;</mo><mrow><mrow><mi>sin</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mo>&#8290;</mo><mrow><mi>cos</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow></mrow></mrow><mrow><mo>&#x2202;</mo><mi>x</mi></mrow></mfrac></math>\"");
 	}
 
 	public void testMatrices() {

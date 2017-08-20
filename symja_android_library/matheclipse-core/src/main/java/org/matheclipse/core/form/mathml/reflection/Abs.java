@@ -7,25 +7,29 @@ import org.matheclipse.core.interfaces.IAST;
  * Operator function conversions
  */
 public class Abs extends AbstractConverter {
-  public Abs() {
-  }
+	public Abs() {
+	}
 
-  /**
-    * Converts a given function into the corresponding MathML output
-    *
-    *@param  buf  StringBuffer for MathML output
-    *@param  f    The math function which should be converted to MathML
-    */
-  public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
-    if (f.size() != 2) {
-      return false;
-    }
-    fFactory.tagStart(buf, "mrow");
-    fFactory.tag(buf, "mo", "&LeftBracketingBar;");
-    fFactory.convert(buf, f.arg1(), 0);
-    fFactory.tag(buf, "mo", "&RightBracketingBar;");
-    fFactory.tagEnd(buf, "mrow");
+	/**
+	 * Converts a given function into the corresponding MathML output
+	 *
+	 * @param buf
+	 *            StringBuffer for MathML output
+	 * @param f
+	 *            The math function which should be converted to MathML
+	 */
+	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
+		if (f.size() != 2) {
+			return false;
+		}
+		fFactory.tagStart(buf, "mrow");
+		// fFactory.tag(buf, "mo", "&LeftBracketingBar;");
+		fFactory.tag(buf, "mo", "&#10072;");
+		fFactory.convert(buf, f.arg1(), 0);
+		// fFactory.tag(buf, "mo", "&RightBracketingBar;");
+		fFactory.tag(buf, "mo", "&#10072;");
+		fFactory.tagEnd(buf, "mrow");
 
-    return true;
-  }
+		return true;
+	}
 }

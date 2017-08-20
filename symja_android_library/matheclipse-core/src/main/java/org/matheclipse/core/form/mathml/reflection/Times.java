@@ -15,7 +15,7 @@ public class Times extends AbstractOperator {
 	public static Times CONST = new Times();
 	
 	public Times() {
-		super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence(), "mrow", " ");// "&#x2062;");
+		super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence(), "mrow", "&#8290;");// "&#x2062;");
 	}
 
 	/**
