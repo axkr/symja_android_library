@@ -23,6 +23,7 @@
   D(IntegerPart(f_),x_NotListQ):=0,
   D(InverseErf(f_),x_NotListQ):=D(f,x)*(1/2*Sqrt(Pi)*E^(InverseErf(f)^2)),
   D(Log(f_),x_NotListQ):=D(f,x)*f^(-1),
+  D(LogisticSigmoid(f_),x_NotListQ):=D(f,x)*LogisticSigmoid(f)*(1-LogisticSigmoid(f)),
   D(PolyGamma(f_),x_NotListQ):=D(f,x)*PolyGamma(1,f),
   D(Cot(f_),x_NotListQ):=D(f,x)*(-1)*Csc(f)^2,
   D(Coth(f_),x_NotListQ):=D(f,x)*(-1)*Sinh(f)^(-2),

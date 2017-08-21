@@ -81,6 +81,9 @@ public interface DerivativeRules {
     // Log->1/#1
     Rule(Log,
       Power(Slot1,-1)),
+    // LogisticSigmoid->LogisticSigmoid(#1)*(1-LogisticSigmoid(#1))
+    Rule(LogisticSigmoid,
+      Times(Plus(C1,Negate(LogisticSigmoid(Slot1))),LogisticSigmoid(Slot1))),
     // PolyGamma->PolyGamma(1,#1)
     Rule(PolyGamma,
       PolyGamma(C1,Slot1)),

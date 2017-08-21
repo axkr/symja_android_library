@@ -24,6 +24,7 @@
   IntegerPart->0,
   InverseErf->(1/2*Sqrt(Pi)*E^(InverseErf(x)^2)),
   Log->#^(-1),
+  LogisticSigmoid->LogisticSigmoid(#)*(1-LogisticSigmoid(#)),
   PolyGamma->PolyGamma(1,#),
   Cot->(-1)*Csc(#)^2,
   Coth->(-1)*Sinh(#)^(-2),
