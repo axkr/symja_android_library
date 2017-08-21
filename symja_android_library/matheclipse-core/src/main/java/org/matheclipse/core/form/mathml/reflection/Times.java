@@ -1,21 +1,21 @@
 package org.matheclipse.core.form.mathml.reflection;
 
 import org.matheclipse.core.builtin.Algebra;
-import org.matheclipse.core.form.mathml.AbstractOperator;
+import org.matheclipse.core.form.mathml.MMLOperator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
-public class Times extends AbstractOperator {
+public class Times extends MMLOperator {
 	public final static int NO_SPECIAL_CALL = 0;
 
 	public final static int PLUS_CALL = 1;
 
 	public static Times CONST = new Times();
-	
+
 	public Times() {
-		super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence(), "mrow", "&#8290;");// "&#x2062;");
+		super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence(), "mrow", "&#8290;");
 	}
 
 	/**
@@ -32,7 +32,8 @@ public class Times extends AbstractOperator {
 	}
 
 	/**
-	 * Try to split a given <code>Times[...]</code> function into nominator and denominator and add the corresponding MathML output
+	 * Try to split a given <code>Times[...]</code> function into nominator and
+	 * denominator and add the corresponding MathML output
 	 * 
 	 * @param buf
 	 *            StringBuffer for MathML output
@@ -80,7 +81,8 @@ public class Times extends AbstractOperator {
 	}
 
 	/**
-	 * Converts a given <code>Times[...]</code> function into the corresponding MathML output.
+	 * Converts a given <code>Times[...]</code> function into the corresponding
+	 * MathML output.
 	 * 
 	 * @param buf
 	 * @param timesAST
@@ -88,7 +90,8 @@ public class Times extends AbstractOperator {
 	 * @param caller
 	 * @return
 	 */
-	private boolean convertTimesOperator(final StringBuffer buf, final IAST timesAST, final int precedence, final int caller) {
+	private boolean convertTimesOperator(final StringBuffer buf, final IAST timesAST, final int precedence,
+			final int caller) {
 		int size = timesAST.size();
 		if (size > 1) {
 			IExpr arg1 = timesAST.arg1();
@@ -143,7 +146,7 @@ public class Times extends AbstractOperator {
 					precedenceOpen(buf, precedence);
 				}
 				fFactory.convert(buf, arg1, fPrecedence);
-				if (fOperator.compareTo("") != 0) {
+				if (fOperator.length() > 0) {
 					fFactory.tag(buf, "mo", fOperator);
 				}
 			}
@@ -151,7 +154,7 @@ public class Times extends AbstractOperator {
 
 		for (int i = 2; i < size; i++) {
 			fFactory.convert(buf, timesAST.get(i), fPrecedence);
-			if ((i < timesAST.size() - 1) && (fOperator.compareTo("") != 0)) {
+			if ((i < timesAST.size() - 1) && (fOperator.length() > 0)) {
 				fFactory.tag(buf, "mo", fOperator);
 			}
 		}

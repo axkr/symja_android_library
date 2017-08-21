@@ -41,14 +41,14 @@ public class MathMLUtilities {
 	 * 
 	 * @param evalEngine
 	 * @param mathMTagPrefix
-	 *            if set to <code>true</code> use &quot;m:&quot; as tag prefix
-	 *            for the MathML output.
+	 *            if set to <code>true</code> use &quot;m:&quot; as tag prefix for
+	 *            the MathML output.
 	 * @param mathMLHeader
 	 *            print MathML header in output
 	 */
 	public MathMLUtilities(final EvalEngine evalEngine, final boolean mathMTagPrefix, final boolean mathMLHeader) {
 		fEvalEngine = evalEngine;
-		EvalEngine.set(fEvalEngine); 
+		EvalEngine.set(fEvalEngine);
 		// set the thread local instance
 		startRequest();
 		if (mathMTagPrefix) {
@@ -71,8 +71,8 @@ public class MathMLUtilities {
 	}
 
 	/**
-	 * Converts the inputExpression string into a MathML expression and writes
-	 * the result to the given <code>Writer</code>
+	 * Converts the inputExpression string into a MathML expression and writes the
+	 * result to the given <code>Writer</code>
 	 * 
 	 * @param inputExpression
 	 * @param out
@@ -95,13 +95,17 @@ public class MathMLUtilities {
 	}
 
 	/**
-	 * Converts the objectExpression into a MathML expression and writes the
-	 * result to the given <code>Writer</code>
+	 * Converts the objectExpression into a MathML expression and writes the result
+	 * to the given <code>Writer</code>
 	 * 
 	 * @param objectExpression
 	 * @param out
 	 */
 	synchronized public void toMathML(final IExpr objectExpression, final Writer out) {
+		toMathML(objectExpression, out, false);
+	}
+
+	synchronized public void toMathML(final IExpr objectExpression, final Writer out, boolean useXmlns) {
 		final StringBuffer buf = new StringBuffer();
 
 		if (objectExpression != null) {
@@ -117,10 +121,17 @@ public class MathMLUtilities {
 								+ "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
 								+ "<math mode=\"display\">\n");
 					} else {
-						out.write("<math>");
+						if (useXmlns) {
+							out.write("<math xmlns=\"http://www.w3.org/1999/xhtml\">");
+						} else {
+							out.write("<math>");
+						}
 					}
 
 					out.write(buf.toString());
+					// if (useMstyle) {
+					// out.write("</mstyle>");
+					// }
 					out.write("</math>");
 				}
 			} catch (final Throwable e) {

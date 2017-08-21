@@ -218,33 +218,28 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tagStart(buf, "mi");
 			buf.append(sym.toString());
 			tagEnd(buf, "mi");
-		} else {
-			// if (convertedSymbol.equals(AST2Expr.TRUE_STRING)) {
-			// tagStart(buf, "mi");
-			// buf.append('&');
-			// buf.append(sym.toString());
-			// buf.append(';');
-			// tagEnd(buf, "mi");
-			// } else {
+		} else { 
 			if (convertedSymbol instanceof Operator) {
 				((Operator) convertedSymbol).convert(buf);
 			} else {
 				tagStart(buf, "mi");
 				buf.append(convertedSymbol.toString());
 				tagEnd(buf, "mi");
-			}
-			// }
+			} 
 		}
 	}
 
 	public void convertHead(final StringBuffer buf, final IExpr obj) {
-		if (obj instanceof ISymbol) {
-			// final Object ho = CONSTANT_SYMBOLS.get(((ISymbol) obj).getSymbolName());
-			tagStart(buf, "mi");
-			// if ((ho != null) && ho.equals(AST2Expr.TRUE_STRING)) {
-			// buf.append('&');
-			// }
-			buf.append(((ISymbol) obj).getSymbolName());
+		if (obj instanceof ISymbol) { 
+			String headStr = ((ISymbol) obj).getSymbolName();
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
+				if (str != null) {
+					headStr = str;
+				}
+			}
+			tagStart(buf, "mi"); 
+			buf.append(headStr);
 			tagEnd(buf, "mi");
 			// &af; &#x2061;
 			tag(buf, "mo", "&#x2061;");
@@ -316,7 +311,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		tagStart(buf, "mrow");
 		convertHead(buf, ast.head());
 		// &af; &#x2061;
-//		tag(buf, "mo", "&#x2061;");
+		// tag(buf, "mo", "&#x2061;");
 		tagStart(buf, "mrow");
 		tag(buf, "mo", "(");
 		tagStart(buf, "mrow");
@@ -333,26 +328,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 	}
 
-	public void init() {
-		// operTab.put(Plus, new MMLOperator(this, "mrow", "+"));
-		// operTab.put(Equal, new MMLOperator(this, "mrow", "="));
-		// operTab.put(Less, new MMLOperator(this, "mrow", "&lt;"));
-		// operTab.put(Greater, new MMLOperator(this, "mrow", "&gt;"));
-		// operTab.put(LessEqual, new MMLOperator(this, "mrow", "&leq;"));
-		// operTab.put(GreaterEqual, new MMLOperator(this, "mrow",
-		// "&GreaterEqual;"));
-		// operTab.put(Rule, new MMLOperator(this, "mrow", "-&gt;"));
-		// operTab.put(RuleDelayed, new MMLOperator(this, "mrow",
-		// "&RuleDelayed;"));
-		// operTab.put(Set, new MMLOperator(this, "mrow", "="));
-		// operTab.put(SetDelayed, new MMLOperator(this, "mrow", ":="));
-		// operTab.put(And, new MMLOperator(this, "mrow", "&and;"));
-		// operTab.put(Or, new MMLOperator(this, "mrow", "&or;"));
-		// operTab.put(Not, new MMLNot(this));
-
-		// operTab.put(Times, new MMLTimes(this, "mrow", "&InvisibleTimes;",
-		// exprFactory));
-		// operTab.put(Power, new MMLOperator(this, "msup", ""));
+	public void init() { 
 		plusPrec = ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence();
 
 		CONVERTERS.put(F.Sin, new MMLFunction(this, "sin"));
@@ -454,35 +430,43 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		CONSTANT_EXPRS.put(F.Khinchin, "<mi>K</mi>");
 
 		CONVERTERS.put(F.Abs, new org.matheclipse.core.form.mathml.reflection.Abs());
-		CONVERTERS.put(F.And, new org.matheclipse.core.form.mathml.reflection.And());
+		CONVERTERS.put(F.And, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("And").getPrecedence(), "&#x2227;"));
 		CONVERTERS.put(F.Binomial, new org.matheclipse.core.form.mathml.reflection.Binomial());
 		CONVERTERS.put(F.Ceiling, new org.matheclipse.core.form.mathml.reflection.Ceiling());
-		CONVERTERS.put(F.CompoundExpression, new org.matheclipse.core.form.mathml.reflection.CompoundExpression());
+		CONVERTERS.put(F.CompoundExpression,
+				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("CompoundExpression").getPrecedence(), ";"));
 		CONVERTERS.put(F.D, new org.matheclipse.core.form.mathml.reflection.D());
-		CONVERTERS.put(F.Equal, new org.matheclipse.core.form.mathml.reflection.Equal());
+		CONVERTERS.put(F.Equal, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Equal").getPrecedence(), "=="));
 		CONVERTERS.put(F.Factorial, new org.matheclipse.core.form.mathml.reflection.Factorial());
 		CONVERTERS.put(F.Factorial2, new org.matheclipse.core.form.mathml.reflection.Factorial2());
 		CONVERTERS.put(F.Floor, new org.matheclipse.core.form.mathml.reflection.Floor());
-		CONVERTERS.put(F.Greater, new org.matheclipse.core.form.mathml.reflection.Greater());
-		CONVERTERS.put(F.GreaterEqual, new org.matheclipse.core.form.mathml.reflection.GreaterEqual());
+		CONVERTERS.put(F.Greater,
+				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Greater").getPrecedence(), "&gt;"));
+		CONVERTERS.put(F.GreaterEqual,
+				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("GreaterEqual").getPrecedence(), "&#x2265;"));
 		CONVERTERS.put(F.Integrate, new org.matheclipse.core.form.mathml.reflection.Integrate());
-		CONVERTERS.put(F.Less, new org.matheclipse.core.form.mathml.reflection.Less());
-		CONVERTERS.put(F.LessEqual, new org.matheclipse.core.form.mathml.reflection.LessEqual());
+		CONVERTERS.put(F.Less, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Less").getPrecedence(), "&lt;"));
+		CONVERTERS.put(F.LessEqual,
+				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("LessEqual").getPrecedence(), "&#x2264;"));
 		CONVERTERS.put(F.List, new org.matheclipse.core.form.mathml.reflection.List());
 		CONVERTERS.put(F.MatrixForm, new org.matheclipse.core.form.mathml.reflection.MatrixForm());
 		CONVERTERS.put(F.Not, new org.matheclipse.core.form.mathml.reflection.Not());
-		CONVERTERS.put(F.Or, new org.matheclipse.core.form.mathml.reflection.Or());
+		CONVERTERS.put(F.Or, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Or").getPrecedence(), "&#x2228;"));
 		CONVERTERS.put(F.Part, new org.matheclipse.core.form.mathml.reflection.Part());
 		CONVERTERS.put(F.Plus, new org.matheclipse.core.form.mathml.reflection.Plus());
 		CONVERTERS.put(F.Power, new org.matheclipse.core.form.mathml.reflection.Power());
 		CONVERTERS.put(F.Product, new org.matheclipse.core.form.mathml.reflection.Product());
 		CONVERTERS.put(F.Rational, new org.matheclipse.core.form.mathml.reflection.Rational());
-		CONVERTERS.put(F.Rule, new org.matheclipse.core.form.mathml.reflection.Rule());
-		CONVERTERS.put(F.RuleDelayed, new org.matheclipse.core.form.mathml.reflection.RuleDelayed());
-		CONVERTERS.put(F.Set, new org.matheclipse.core.form.mathml.reflection.Set());
-		CONVERTERS.put(F.SetDelayed, new org.matheclipse.core.form.mathml.reflection.SetDelayed());
+		CONVERTERS.put(F.Rule, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Rule").getPrecedence(), "-&gt;"));
+		CONVERTERS.put(F.RuleDelayed,
+				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("RuleDelayed").getPrecedence(), "&#x29F4;"));
+		CONVERTERS.put(F.Set, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Set").getPrecedence(), "="));
+		CONVERTERS.put(F.SetDelayed,
+				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("SetDelayed").getPrecedence(), ":="));
 		CONVERTERS.put(F.Sqrt, new org.matheclipse.core.form.mathml.reflection.Sqrt());
 		CONVERTERS.put(F.Sum, new org.matheclipse.core.form.mathml.reflection.Sum());
 		CONVERTERS.put(F.Times, org.matheclipse.core.form.mathml.reflection.Times.CONST);
+		CONVERTERS.put(F.Unequal,
+				new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Unequal").getPrecedence(), "!="));
 	}
 }

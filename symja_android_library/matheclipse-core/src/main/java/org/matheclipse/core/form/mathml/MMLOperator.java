@@ -5,18 +5,18 @@ import org.matheclipse.core.interfaces.IAST;
 /**
  *
  */
-public abstract class AbstractOperator extends AbstractConverter {
+public class MMLOperator extends AbstractConverter {
 	protected int fPrecedence;
 	protected String fFirstTag;
 	protected String fOperator;
 
-	public AbstractOperator(final int precedence, final String firstTag, final String oper) {
+	public MMLOperator(final int precedence, final String firstTag, final String oper) {
 		fPrecedence = precedence;
 		fFirstTag = firstTag;
 		fOperator = oper;
 	}
 
-	public AbstractOperator(final int precedence, final String oper) {
+	public MMLOperator(final int precedence, final String oper) {
 		this(precedence, "mrow", oper);
 	}
 

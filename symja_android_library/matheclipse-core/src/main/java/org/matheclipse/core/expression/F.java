@@ -4536,7 +4536,11 @@ public class F {
 	public static IAST LogIntegral(final IExpr a) {
 		return unaryAST1(LogIntegral, a);
 	}
-
+	
+	public static IAST LogisticSigmoid(final IExpr a) {
+		return unaryAST1(LogisticSigmoid, a);
+	}
+	
 	public static IAST Map(final IExpr a0) {
 
 		return unaryAST1(Map, a0);

@@ -3363,6 +3363,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLogisticSigmoid() {
+		check("D(LogisticSigmoid(x),x)", "(1-LogisticSigmoid(x))*LogisticSigmoid(x)");
 		check("LogisticSigmoid(Infinity)", "1");
 		check("LogisticSigmoid(-Infinity)", "0");
 		check("LogisticSigmoid(0)", "1/2");

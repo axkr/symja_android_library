@@ -1,7 +1,7 @@
 package org.matheclipse.core.form.mathml.reflection;
 
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.form.mathml.AbstractOperator;
+import org.matheclipse.core.form.mathml.MMLOperator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -10,7 +10,7 @@ import org.matheclipse.parser.client.operator.ASTNodeFactory;
 /**
  * Operator function conversions
  */
-public class Plus extends AbstractOperator {
+public class Plus extends MMLOperator {
 
 	public Plus() {
 		super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence(), "mrow", "+");

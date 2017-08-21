@@ -23,6 +23,8 @@ public class MathMLPresentationTestCase extends TestCase {
 	 * Test mathml function
 	 */
 	public void testMathMLPresentation() {
+		check("DirectedInfinity[]",
+				"<mrow><mi>DirectedInfinity</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow></mrow><mo>)</mo></mrow></mrow>");
 		check("Integrate[f[x], x]",
 				"<mo>&#x222B;</mo><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow><mrow><mo>&#x2146;</mo><mi>x</mi></mrow>");
 
@@ -36,9 +38,9 @@ public class MathMLPresentationTestCase extends TestCase {
 		check("x^(1/3)", "<mroot><mi>x</mi><mn>3</mn></mroot>");
 		check("x^(2/3)", "<mroot><msup><mi>x</mi><mn>2</mn></msup><mn>3</mn></mroot>");
 		check("x^y", "<msup><mi>x</mi><mi>y</mi></msup>");
-		check("Abs[-x]",
-				"<mrow><mo>&#10072;</mo><mrow><mo>-</mo><mi>x</mi></mrow><mo>&#10072;</mo></mrow>");
-		check("a*b*c*d", "<mrow><mi>a</mi><mo>&#8290;</mo><mi>b</mi><mo>&#8290;</mo><mi>c</mi><mo>&#8290;</mo><mi>d</mi></mrow>");
+		check("Abs[-x]", "<mrow><mo>&#10072;</mo><mrow><mo>-</mo><mi>x</mi></mrow><mo>&#10072;</mo></mrow>");
+		check("a*b*c*d",
+				"<mrow><mi>a</mi><mo>&#8290;</mo><mi>b</mi><mo>&#8290;</mo><mi>c</mi><mo>&#8290;</mo><mi>d</mi></mrow>");
 		check("k/2", "<mfrac><mi>k</mi><mn>2</mn></mfrac>");
 		check("Binomial[n,k/2]",
 				"<mrow><mo>(</mo><mfrac linethickness=\"0\"><mi>n</mi><mfrac><mi>k</mi><mn>2</mn></mfrac></mfrac><mo>)</mo></mrow>");
@@ -70,7 +72,7 @@ public class MathMLPresentationTestCase extends TestCase {
 		check("4*x+4", "<mrow><mn>4</mn><mo>+</mo><mrow><mn>4</mn><mo>&#8290;</mo><mi>x</mi></mrow></mrow>");
 
 		check("x^2+4*x+4==0",
-				"<mrow><mrow><mn>4</mn><mo>+</mo><mrow><mn>4</mn><mo>&#8290;</mo><mi>x</mi></mrow><mo>+</mo><msup><mi>x</mi><mn>2</mn></msup></mrow><mo>=</mo><mn>0</mn></mrow>");
+				"<mrow><mrow><mn>4</mn><mo>+</mo><mrow><mn>4</mn><mo>&#8290;</mo><mi>x</mi></mrow><mo>+</mo><msup><mi>x</mi><mn>2</mn></msup></mrow><mo>==</mo><mn>0</mn></mrow>");
 
 		check("n!", "<mrow><mi>n</mi><mo>!</mo></mrow>");
 		check("Sum[i, {i,1,n}, {j,1,m}]",

@@ -1,13 +1,13 @@
 package org.matheclipse.core.form.mathml.reflection;
 
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.form.mathml.AbstractOperator;
+import org.matheclipse.core.form.mathml.MMLOperator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
-public class Power extends AbstractOperator {
+public class Power extends MMLOperator {
 
 	public Power() {
 		super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Power").getPrecedence(), "msup", "");
