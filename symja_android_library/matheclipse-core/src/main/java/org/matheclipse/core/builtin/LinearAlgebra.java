@@ -1699,7 +1699,7 @@ public final class LinearAlgebra {
 			if (ast.arg1().isMatrix() != null && ast.arg2().isVector() >= 0) {
 				try {
 					FieldMatrix<IExpr> augmentedMatrix = Convert.list2Matrix((IAST) ast.arg1(), (IAST) ast.arg2());
-					return LinearAlgebra.rowReduced2List(augmentedMatrix, engine);
+					return LinearAlgebra.rowReduced2List(augmentedMatrix, true, engine);
 				} catch (final ClassCastException e) {
 					if (Config.SHOW_STACKTRACE) {
 						e.printStackTrace();
@@ -3218,25 +3218,27 @@ public final class LinearAlgebra {
 
 	/**
 	 * Return the solution of the given (augmented-)matrix interpreted as a system
-	 * of linear equations
+	 * of linear equations.
 	 * 
 	 * @param matrix
+	 * @param quiet
+	 *            suppress warning messages if <code>true</code>
 	 * @param engine
 	 *            the evaluation engine
 	 * @return <code>F.NIL</code> if the linear system is inconsistent and has no
 	 *         solution
 	 */
-	public static IAST rowReduced2List(FieldMatrix<IExpr> matrix, EvalEngine engine) {
+	public static IAST rowReduced2List(FieldMatrix<IExpr> matrix, boolean quiet, EvalEngine engine) {
 
 		int rows = matrix.getRowDimension();
 		int cols = matrix.getColumnDimension();
 		if (rows == 2 && cols == 3) {
-			IAST list = cramersRule2x3(matrix, false, engine);
+			IAST list = cramersRule2x3(matrix, quiet, engine);
 			if (list.isPresent()) {
 				return list;
 			}
 		} else if (rows == 3 && cols == 4) {
-			IAST list = cramersRule3x4(matrix, false, engine);
+			IAST list = cramersRule3x4(matrix, quiet, engine);
 			if (list.isPresent()) {
 				return list;
 			}
