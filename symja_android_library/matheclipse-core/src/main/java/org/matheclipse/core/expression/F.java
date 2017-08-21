@@ -1763,7 +1763,7 @@ public class F {
 	/**
 	 * Waits for the INIT_THREAD which initializes the Integrate() rules.
 	 */
-	public static void join() {
+	public synchronized static void join() {
 		if (!Config.JAS_NO_THREADS && INIT_THREAD != null) {
 			try {
 				INIT_THREAD.join();
@@ -4020,28 +4020,30 @@ public class F {
 		initSymbols(null, null, false);
 	}
 
-	public synchronized static void initSymbols(Reader reader, ISymbolObserver symbolObserver) {
-		if (!isSystemStarted) {
-			try {
-				isSystemStarted = true;
-
-				if (Config.SHOW_PATTERN_EVAL_STEPS) {
-					// watch the rules which are used in pattern matching in
-					// system.out
-					Config.SHOW_PATTERN_SYMBOL_STEPS.add(Integrate);
-				}
-				if (symbolObserver != null) {
-					SYMBOL_OBSERVER = symbolObserver;
-				}
-
-				org.matheclipse.core.builtin.function.Package.loadPackage(EvalEngine.get(), reader);
-
-				isSystemInitialized = true;
-			} catch (Throwable th) {
-				th.printStackTrace();
-			}
-		}
-	}
+	// public synchronized static void initSymbols(Reader reader, ISymbolObserver
+	// symbolObserver) {
+	// if (!isSystemStarted) {
+	// try {
+	// isSystemStarted = true;
+	//
+	// if (Config.SHOW_PATTERN_EVAL_STEPS) {
+	// // watch the rules which are used in pattern matching in
+	// // system.out
+	// Config.SHOW_PATTERN_SYMBOL_STEPS.add(Integrate);
+	// }
+	// if (symbolObserver != null) {
+	// SYMBOL_OBSERVER = symbolObserver;
+	// }
+	//
+	// org.matheclipse.core.builtin.function.Package.loadPackage(EvalEngine.get(),
+	// reader);
+	//
+	// isSystemInitialized = true;
+	// } catch (Throwable th) {
+	// th.printStackTrace();
+	// }
+	// }
+	// }
 
 	/**
 	 * Initialize the complete System
