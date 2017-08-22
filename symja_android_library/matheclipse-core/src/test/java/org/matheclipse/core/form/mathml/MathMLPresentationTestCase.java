@@ -23,6 +23,12 @@ public class MathMLPresentationTestCase extends TestCase {
 	 * Test mathml function
 	 */
 	public void testMathMLPresentation() {
+		// 
+		check("-1/2-3/4*I",
+				"<mrow><mfrac><mrow><mrow><mo>(</mo><mn>-3</mn><mo>)</mo></mrow><mo>&#0183;</mo><mrow><mi>&#x2148;</mi></mrow></mrow><mn>4</mn></mfrac><mo>-</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow>");
+		check("1/2+3/4*I",
+				"<mrow><mfrac><mrow><mn>3</mn><mo>&#0183;</mo><mrow><mi>&#x2148;</mi></mrow></mrow><mn>4</mn></mfrac><mo>+</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow>");
+		
 		check("Sqrt[-1/2+2/3*I]",
 				"<msqrt><mrow><mfrac><mrow><mn>2</mn><mo>&#0183;</mo><mrow><mi>&#x2148;</mi></mrow></mrow><mn>3</mn></mfrac><mo>-</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow></msqrt>");
 		

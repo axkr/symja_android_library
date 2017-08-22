@@ -169,9 +169,10 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 	public void convertComplex(final StringBuffer buf, final IComplex c, final int precedence) {
 		boolean isReZero = c.getRealPart().isZero();
-		final boolean isImOne = c.getImaginaryPart().isOne();
-		final boolean isImNegative = c.getImaginaryPart().isLessThan(F.C0);
-		final boolean isImMinusOne = c.getImaginaryPart().isMinusOne();
+		IRational imaginaryPart = c.getImaginaryPart();
+		final boolean isImOne = imaginaryPart.isOne();
+		final boolean isImNegative = imaginaryPart.isLessThan(F.C0);
+		final boolean isImMinusOne = imaginaryPart.isMinusOne();
 		tagStart(buf, "mrow");
 		if (!isReZero) {
 			convertFraction(buf, c.getRealPart(), precedence);
@@ -187,7 +188,10 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		}
 		if (!isImOne && !isImMinusOne) {
 			tagStart(buf, "mrow");
-			convertFraction(buf, c.getImaginaryPart(), ASTNodeFactory.TIMES_PRECEDENCE);
+			if (isImNegative) {
+				imaginaryPart = imaginaryPart.negate();
+			}
+			convertFraction(buf, imaginaryPart, ASTNodeFactory.TIMES_PRECEDENCE);
 			// <!ENTITY InvisibleTimes "&#x2062;" >
 			tag(buf, "mo", "&#x2062;");
 			// <!ENTITY ImaginaryI "&#x2148;"
