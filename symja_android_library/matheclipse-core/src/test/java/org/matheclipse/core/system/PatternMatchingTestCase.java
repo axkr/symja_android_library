@@ -21,9 +21,9 @@ import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
 public class PatternMatchingTestCase extends TestCase {
-	
+
 	private Parser fParser;
- 
+
 	protected EvalUtilities util;
 
 	protected static boolean DEBUG = true;
@@ -72,13 +72,14 @@ public class PatternMatchingTestCase extends TestCase {
 			if (Config.SERVER_MODE) {
 				Parser parser = new Parser(relaxedSyntax);
 				ASTNode node = parser.parse(strEval);
-				IExpr inExpr = AST2Expr.CONST.convert(node);
-				TimeConstrainedEvaluator utility = new TimeConstrainedEvaluator(engine, false, Config.FOREVER, relaxedSyntax);
+				IExpr inExpr = new AST2Expr(false, engine).convert(node);
+				TimeConstrainedEvaluator utility = new TimeConstrainedEvaluator(engine, false, Config.FOREVER,
+						relaxedSyntax);
 				result = utility.constrainedEval(buf, inExpr);
 			} else {
 				Parser parser = new Parser(relaxedSyntax);
 				ASTNode node = parser.parse(strEval);
-				IExpr inExpr = AST2Expr.CONST.convert(node);
+				IExpr inExpr = new AST2Expr(false, engine).convert(node);
 				result = util.evaluate(inExpr);
 				if ((result != null) && !result.equals(F.Null)) {
 					OutputFormFactory off = OutputFormFactory.get(relaxedSyntax);
@@ -121,10 +122,11 @@ public class PatternMatchingTestCase extends TestCase {
 	public void checkPattern(String patternString, String evalString, String resultString) {
 		try {
 			ASTNode node = fParser.parse(patternString);
-			IExpr pat = AST2Expr.CONST.convert(node);
+			EvalEngine engine = EvalEngine.get();
+			IExpr pat = new AST2Expr(false, engine).convert(node);
 
 			node = fParser.parse(evalString);
-			IExpr eval = AST2Expr.CONST.convert(node);
+			IExpr eval = new AST2Expr(false, engine).convert(node);
 			PatternMatcher matcher = new PatternMatcher(pat);
 			if (matcher.test(eval)) {
 				ArrayList<IExpr> resultList = new ArrayList<IExpr>();
@@ -141,8 +143,9 @@ public class PatternMatchingTestCase extends TestCase {
 
 	public void checkPriority(String patternString, int priority) {
 		try {
+			EvalEngine engine = EvalEngine.get();
 			ASTNode node = fParser.parse(patternString);
-			IExpr pat = AST2Expr.CONST.convert(node);
+			IExpr pat = new AST2Expr(false, engine).convert(node);
 
 			PatternMatcher matcher = new PatternMatcher(pat);
 			assertEquals(matcher.getLHSPriority(), priority);
@@ -154,10 +157,11 @@ public class PatternMatchingTestCase extends TestCase {
 
 	public void comparePriority(String patternString1, String patternString2, int result) {
 		try {
+			EvalEngine engine = EvalEngine.get();
 			ASTNode node = fParser.parse(patternString1);
-			IExpr pat1 = AST2Expr.CONST.convert(node);
+			IExpr pat1 = new AST2Expr(false, engine).convert(node);
 			node = fParser.parse(patternString1);
-			IExpr pat2 = AST2Expr.CONST.convert(node);
+			IExpr pat2 = new AST2Expr(false, engine).convert(node);
 
 			PatternMatcher matcher1 = new PatternMatcher(pat1);
 			PatternMatcher matcher2 = new PatternMatcher(pat2);
@@ -182,19 +186,19 @@ public class PatternMatchingTestCase extends TestCase {
 		checkPattern("g[x_,42, y_]", "g[a,42,b]", "[a, b]");
 	}
 
-//	public void testSlotPatternMatching() {
-//		checkPattern("b_.* #+c_.*#^2", "#-1*#^2", "");
-//		checkPattern("b_.* #+c_.*#^2", "#+#^2", "[1, 1]");
-//		checkPattern("a_. + b_.* #+c_.*#^2", "-1+#+#^2", "[-1, 1, 1]");
-//	}
-	
+	// public void testSlotPatternMatching() {
+	// checkPattern("b_.* #+c_.*#^2", "#-1*#^2", "");
+	// checkPattern("b_.* #+c_.*#^2", "#+#^2", "[1, 1]");
+	// checkPattern("a_. + b_.* #+c_.*#^2", "-1+#+#^2", "[-1, 1, 1]");
+	// }
+
 	/**
 	 * The JUnit setup method
 	 */
 	protected void setUp() {
 		try {
 			// setup the evaluation engine (and bind to current thread)
-//			F.initSymbols();
+			// F.initSymbols();
 			EvalEngine engine = new EvalEngine(); // EvalEngine.get();
 			EvalEngine.set(engine);
 			engine.setSessionID("SpecialTestCase");

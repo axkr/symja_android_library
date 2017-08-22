@@ -435,8 +435,39 @@ public final class BooleanFunctions {
 	 */
 	private static class BooleanTable extends AbstractFunctionEvaluator {
 
-		public BooleanTable() {
-			// default ctor
+		private static class BooleanTableParameter {
+			public IAST variables;
+			public IAST resultList;
+			public EvalEngine engine;
+
+			public BooleanTableParameter(IAST variables, EvalEngine engine) {
+				this.variables = variables;
+				this.resultList = F.ListAlloc(variables.size());
+				this.engine = engine;
+			}
+
+			public IAST booleanTable(IExpr expr, int position) {
+				if (variables.size() <= position) {
+					resultList.append(engine.evalTrue(expr) ? F.True : F.False);
+					return resultList;
+				}
+				IExpr sym = variables.get(position);
+				if (sym.isSymbol()) {
+					try {
+						((ISymbol) sym).pushLocalVariable(F.True);
+						booleanTable(expr, position + 1);
+					} finally {
+						((ISymbol) sym).popLocalVariable();
+					}
+					try {
+						((ISymbol) sym).pushLocalVariable(F.False);
+						booleanTable(expr, position + 1);
+					} finally {
+						((ISymbol) sym).popLocalVariable();
+					}
+				}
+				return resultList;
+			}
 		}
 
 		@Override
@@ -455,31 +486,10 @@ public final class BooleanFunctions {
 				variables = vSet.getVarList();
 			}
 
-			return booleanTable(ast.arg1(), variables, 1, F.ListAlloc(variables.size()));
+			BooleanTableParameter btp = new BooleanTableParameter(variables, engine);
+			return btp.booleanTable(ast.arg1(), 1);
 		}
 
-		private static IAST booleanTable(IExpr expr, IAST variables, int position, IAST resultList) {
-			if (variables.size() <= position) {
-				resultList.append(EvalEngine.get().evalTrue(expr) ? F.True : F.False);
-				return resultList;
-			}
-			IExpr sym = variables.get(position);
-			if (sym.isSymbol()) {
-				try {
-					((ISymbol) sym).pushLocalVariable(F.True);
-					booleanTable(expr, variables, position + 1, resultList);
-				} finally {
-					((ISymbol) sym).popLocalVariable();
-				}
-				try {
-					((ISymbol) sym).pushLocalVariable(F.False);
-					booleanTable(expr, variables, position + 1, resultList);
-				} finally {
-					((ISymbol) sym).popLocalVariable();
-				}
-			}
-			return resultList;
-		}
 	}
 
 	/**

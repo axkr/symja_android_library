@@ -42,10 +42,7 @@ public class Import extends AbstractEvaluator {
 		try {
 			reader = new FileReader(arg1.toString());
 			if (arg2.contentEquals("Table")) {
-				AST2Expr ast2Expr = AST2Expr.CONST;
-				if (engine.isRelaxedSyntax()) {
-					ast2Expr = AST2Expr.CONST_LC;
-				}
+				AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
 				final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
 
 				CSVFormat csvFormat = CSVFormat.RFC4180.withDelimiter(' ');
@@ -55,7 +52,7 @@ public class Import extends AbstractEvaluator {
 					IAST columnList = F.List();
 					for (String string : record) {
 						final ASTNode node = parser.parse(string);
-						IExpr temp = ast2Expr.convert(node, engine);
+						IExpr temp = ast2Expr.convert(node);
 						columnList.append(temp);
 					}
 					rowList.append(columnList);

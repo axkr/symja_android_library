@@ -24,6 +24,9 @@ public class MathMLPresentationTestCase extends TestCase {
 	 */
 	public void testMathMLPresentation() {
 		// 
+		check("Cos[x^3]",
+				"<mrow><mi>cos</mi><mo>&#x2061;</mo><mo>(</mo><msup><mi>x</mi><mn>3</mn></msup><mo>)</mo></mrow>");
+		
 		check("-1/2-3/4*I",
 				"<mrow><mfrac><mrow><mrow><mo>(</mo><mn>-3</mn><mo>)</mo></mrow><mo>&#0183;</mo><mrow><mi>&#x2148;</mi></mrow></mrow><mn>4</mn></mfrac><mo>-</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow>");
 		check("1/2+3/4*I",

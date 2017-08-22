@@ -67,7 +67,7 @@ public class RulePreprocessor {
 			String symbolName, EvalEngine engine) {
 		try {
 			// convert ASTNode to an IExpr node
-			IExpr expr = AST2Expr.CONST.convert(node, engine);
+			IExpr expr = new AST2Expr(false, engine).convert(node);
 			if (expr.isListOfLists()) {
 				IAST list = (IAST) expr;
 				for (int i = 1; i < list.size(); i++) {

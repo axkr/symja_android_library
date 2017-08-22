@@ -23,10 +23,7 @@ public class ElementPreprocessor {
 			boolean relaxedSyntax = false;
 			String fileName = "C:\\Users\\dev\\git\\symja_android_library\\symja_android_library\\tools\\src\\main\\java\\org\\matheclipse\\core\\preprocessor\\element.csv";
 			reader = new FileReader(fileName);
-			AST2Expr ast2Expr = AST2Expr.CONST;
-			if (relaxedSyntax) {
-				ast2Expr = AST2Expr.CONST_LC;
-			}
+			AST2Expr ast2Expr = new AST2Expr(relaxedSyntax, engine);
 			final Parser parser = new Parser(relaxedSyntax, true);
 
 			CSVFormat csvFormat = CSVFormat.RFC4180.withDelimiter('\t');
@@ -46,7 +43,7 @@ public class ElementPreprocessor {
 						columnList.append(F.Missing(F.Unknown));
 					} else {
 						final ASTNode node = parser.parse(str);
-						IExpr temp = ast2Expr.convert(node, engine);
+						IExpr temp = ast2Expr.convert(node);
 						if (temp.isList() || temp.isSignedNumber()) {
 							columnList.append(temp);
 						} else {

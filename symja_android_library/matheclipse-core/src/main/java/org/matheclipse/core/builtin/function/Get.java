@@ -33,12 +33,9 @@ public class Get extends AbstractFunctionEvaluator {
 		ContextPath path = engine.getContextPath();
 		try {
 			engine.setContextPath(contextPath);
-			AST2Expr ast2Expr = AST2Expr.CONST;
-			if (engine.isRelaxedSyntax()) {
-				ast2Expr = AST2Expr.CONST_LC;
-			}
+			AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
 			while (i < node.size()) {
-				IExpr temp = ast2Expr.convert(node.get(i++), engine);
+				IExpr temp = ast2Expr.convert(node.get(i++));
 				if (temp.isAST()) {
 					IExpr head = temp.head();
 					IAST ast = (IAST) temp;
@@ -78,13 +75,10 @@ public class Get extends AbstractFunctionEvaluator {
 
 			IExpr temp;
 			int i = 0;
-			AST2Expr ast2Expr = AST2Expr.CONST;
-			if (engine.isRelaxedSyntax()) {
-				ast2Expr = AST2Expr.CONST_LC;
-			}
+			AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
 			IExpr result = F.Null;
 			while (i < node.size()) {
-				temp = ast2Expr.convert(node.get(i++), engine);
+				temp = ast2Expr.convert(node.get(i++));
 				if (temp.isAST()) {
 					IAST ast = (IAST) temp;
 					IExpr head = temp.head();
@@ -130,12 +124,13 @@ public class Get extends AbstractFunctionEvaluator {
 	 * Parse the <code>reader</code> input.
 	 * </p>
 	 * <p>
-	 * This method ignores the first line of the script if it starts with the <code>#!</code> characters (i.e. Unix
-	 * Script Executables)
+	 * This method ignores the first line of the script if it starts with the
+	 * <code>#!</code> characters (i.e. Unix Script Executables)
 	 * </p>
 	 * <p>
-	 * <b>Note</b>: uses the <code>ASTNode</code> parser and not the <code>ExprParser</code>, because otherwise the
-	 * symbols couldn't be assigned to the contexts.
+	 * <b>Note</b>: uses the <code>ASTNode</code> parser and not the
+	 * <code>ExprParser</code>, because otherwise the symbols couldn't be assigned
+	 * to the contexts.
 	 * </p>
 	 * 
 	 * @param reader

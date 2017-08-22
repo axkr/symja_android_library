@@ -101,7 +101,7 @@ public class Structure {
 					return arg2;
 				}
 			} catch (final MathException e) {
-				EvalEngine.get().printMessage(e.getMessage());
+				engine.printMessage(e.getMessage());
 			} catch (final ArithmeticException e) {
 
 			}
@@ -298,7 +298,7 @@ public class Structure {
 				}
 				return arg2.accept(level).orElse(arg2);
 			} catch (final MathException e) {
-				EvalEngine.get().printMessage(e.getMessage());
+				engine.printMessage(e.getMessage());
 			}
 			return F.NIL;
 		}
@@ -411,7 +411,7 @@ public class Structure {
 				}
 				IInteger depth = (IInteger) ast.arg3();
 				if (depth.isNegative()) {
-					EvalEngine.get().printMessage("Non-negative integer expected at position 3 in Operate()");
+					engine.printMessage("Non-negative integer expected at position 3 in Operate()");
 					return F.NIL;
 				}
 

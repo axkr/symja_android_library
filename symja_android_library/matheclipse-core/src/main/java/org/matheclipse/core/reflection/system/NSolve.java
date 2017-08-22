@@ -47,7 +47,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 			this.numer = expr;
 			this.denom = F.C1;
 			if (this.expr.isAST()) {
-				this.expr = Algebra.together((IAST) this.expr);
+				this.expr = Algebra.together((IAST) this.expr, engine);
 				// split expr into numerator and denominator
 				this.denom = engine.evaluate(F.Denominator(this.expr));
 				if (!this.denom.isOne()) {

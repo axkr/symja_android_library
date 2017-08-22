@@ -20,8 +20,9 @@ public class BasicPatternPropertiesTestCase extends TestCase {
 
 	public void checkPriority(String patternString, int priority) {
 		try {
+			EvalEngine engine = EvalEngine.get();
 			ASTNode node = fParser.parse(patternString);
-			IExpr pat = AST2Expr.CONST.convert(node);
+			IExpr pat = new AST2Expr(false, engine).convert(node);
 
 			PatternMatcher matcher = new PatternMatcher(pat);
 			assertEquals(matcher.getLHSPriority(), priority);
@@ -33,14 +34,15 @@ public class BasicPatternPropertiesTestCase extends TestCase {
 
 	public void comparePriority(String patternString1, String patternString2, int result) {
 		try {
+			EvalEngine engine = EvalEngine.get();
 			ASTNode node = fParser.parse(patternString1);
-			IExpr pat1 = AST2Expr.CONST.convert(node);
+			IExpr pat1 = new AST2Expr(false, engine).convert(node);
 			PatternMatcher matcher1 = new PatternMatcher(pat1);
-			
+
 			node = fParser.parse(patternString2);
-			IExpr pat2 = AST2Expr.CONST.convert(node);
+			IExpr pat2 = new AST2Expr(false, engine).convert(node);
 			PatternMatcher matcher2 = new PatternMatcher(pat2);
-			
+
 			assertEquals(matcher1.equivalentTo(matcher2), result);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -65,7 +67,7 @@ public class BasicPatternPropertiesTestCase extends TestCase {
 		comparePriority("f[x_]", "f[x__]", -1);
 		comparePriority("f[x_,y_,z_]", "f[x__]", -1);
 	}
-	
+
 	/**
 	 * The JUnit setup method
 	 */

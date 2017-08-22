@@ -15,6 +15,7 @@ import static org.matheclipse.core.expression.F.x;
 import static org.matheclipse.core.expression.F.y;
 
 import org.matheclipse.core.builtin.Algebra;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -29,7 +30,7 @@ public class ExpandTestCase extends AbstractTestCase {
 
 	public void testExpand001() {
 		IAST ast = Times(x, x);
-		IExpr temp = Algebra.expandAll(ast, null, false, false);
+		IExpr temp = Algebra.expandAll(ast, null, false, false, EvalEngine.get());
 		assertEquals(temp.toString(), "x^2");
 	}
 
@@ -41,13 +42,13 @@ public class ExpandTestCase extends AbstractTestCase {
 
 	public void testExpand003() {
 		IAST ast = Power(Plus(x, y), C3);
-		IExpr temp = Algebra.expandAll(ast, null, false, false);
+		IExpr temp = Algebra.expandAll(ast, null, false, false, EvalEngine.get());
 		assertEquals(temp.toString(), "x^3+y^3+3*x^2*y+3*x*y^2");
 	}
 
 	public void testExpand004() {
 		IAST ast = Plus(Sow(Power(a, 2)), C1);
-		IExpr temp = Algebra.expandAll(ast, null, false, false);
+		IExpr temp = Algebra.expandAll(ast, null, false, false, EvalEngine.get());
 		if (!temp.isPresent()) {
 			temp = ast;
 		}
@@ -57,7 +58,7 @@ public class ExpandTestCase extends AbstractTestCase {
 	public void testExpand005() {
 		// x / y
 		IAST ast = Times(x, Power(y, -1));
-		IExpr temp = Algebra.expandAll(ast, null, true, false);
+		IExpr temp = Algebra.expandAll(ast, null, true, false, EvalEngine.get());
 		// because of sorting and flattening flags:
 		assertEquals(temp, F.NIL);
 

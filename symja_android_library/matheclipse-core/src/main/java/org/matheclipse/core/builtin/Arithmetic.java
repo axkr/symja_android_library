@@ -1356,7 +1356,7 @@ public final class Arithmetic {
 						// Product(a + k, {k, 0, n - 1})
 						return F.product(x -> F.Plus(a, x), 0, ni - 1);
 					}
-					if (ni<0) {
+					if (ni < 0) {
 						// Product(1/(a - k), {k, 1, -n})
 						return Power(F.product(x -> F.Plus(a, x.negate()), 1, -ni), -1);
 					}
@@ -1402,9 +1402,9 @@ public final class Arithmetic {
 		 *            The number of product terms in the evaluation.
 		 * @return Gamma(this+n)/GAMMA(this).
 		 */
-//		public static BigFraction pochhammer(BigFraction th, int n) {
-//			return pochhammer(th, BigInteger.valueOf(n));
-//		}
+		// public static BigFraction pochhammer(BigFraction th, int n) {
+		// return pochhammer(th, BigInteger.valueOf(n));
+		// }
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
@@ -1790,8 +1790,7 @@ public final class Arithmetic {
 				}
 			}
 			if (arg1.isZero()) {
-				EvalEngine ee = EvalEngine.get();
-				return powerZero(arg2, ee);
+				return powerZero(arg2);
 			}
 			if (arg1.isInterval1()) {
 				if (arg2.isInteger()) {
@@ -1988,11 +1987,10 @@ public final class Arithmetic {
 		 * 
 		 * @param exponent
 		 *            the exponent of the 0-Power expression
-		 * @param engine
-		 *            the evaluation engine
 		 * @return
 		 */
-		private IExpr powerZero(final IExpr exponent, EvalEngine engine) {
+		private IExpr powerZero(final IExpr exponent) {
+			EvalEngine engine = EvalEngine.get();
 			if (exponent.isZero()) {
 				// 0^0
 				// TODO add a real log message

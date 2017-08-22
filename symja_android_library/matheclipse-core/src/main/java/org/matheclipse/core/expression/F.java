@@ -71,7 +71,7 @@ import edu.jas.kern.ComputerThreads;
  */
 public class F {
 	public static boolean PACKAGE_MODE = true;
-	
+
 	/**
 	 * <p>
 	 * In computing, memoization or memoisation is an optimization technique used
@@ -3648,7 +3648,7 @@ public class F {
 			if (!ast.isPresent()) {
 				ast = (IAST) a;
 			}
-			IExpr temp = Algebra.expandAll(ast, null, expandNegativePowers, distributePlus);
+			IExpr temp = Algebra.expandAll(ast, null, expandNegativePowers, distributePlus, engine);
 			if (temp.isPresent()) {
 				return temp;
 			}

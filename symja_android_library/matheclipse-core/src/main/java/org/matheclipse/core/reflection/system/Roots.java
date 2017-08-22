@@ -106,7 +106,7 @@ public class Roots extends AbstractFunctionEvaluator {
 
 		IExpr denom = F.C1;
 		if (expr.isAST()) {
-			expr = Algebra.together((IAST) expr);
+			expr = Algebra.together((IAST) expr, engine);
 
 			// split expr into numerator and denominator
 			denom = engine.evaluate(F.Denominator(expr));
