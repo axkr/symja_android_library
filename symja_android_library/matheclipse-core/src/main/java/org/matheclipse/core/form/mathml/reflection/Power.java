@@ -47,7 +47,7 @@ public class Power extends MMLOperator {
 			}
 		}
 		if (useMROOT > 0 && exp.isOne()) {
-			fFactory.convert(buf, arg1, fPrecedence); 
+			fFactory.convert(buf, arg1, 0); 
 		} else {
 			fFactory.tagStart(buf, "msup");
 			precedenceOpen(buf, precedence);
