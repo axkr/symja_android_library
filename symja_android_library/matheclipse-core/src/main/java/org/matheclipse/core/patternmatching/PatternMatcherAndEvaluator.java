@@ -173,7 +173,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr eval(final IExpr leftHandSide) {
+	public IExpr eval(final IExpr leftHandSide, EvalEngine engine) {
 		// if(fRightHandSide.isAST("Condition")) {
 		// System.out.println("2:"+fRightHandSide);
 		// }
@@ -201,7 +201,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		}
 
 		fPatternMap.initPattern();
-		if (matchExpr(fLhsPatternExpr, leftHandSide)) {
+		if (matchExpr(fLhsPatternExpr, leftHandSide, engine)) {
 
 			if (RulesData.showSteps) {
 				if (fLhsPatternExpr.head().equals(F.Integrate)) {
@@ -228,7 +228,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
 		if (fLhsPatternExpr.isAST() && leftHandSide.isAST()) {
 			fPatternMap.initPattern();
-			return evalAST((IAST) fLhsPatternExpr, (IAST) leftHandSide, fRightHandSide);
+			return evalAST((IAST) fLhsPatternExpr, (IAST) leftHandSide, fRightHandSide, engine);
 		}
 		return F.NIL;
 	}

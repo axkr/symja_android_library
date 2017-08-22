@@ -343,13 +343,12 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 		System.arraycopy(patternValuesArray, 0, fPatternValuesArray, 0, fPatternValuesArray.length);
 	}
 
-	public boolean isPatternTest(IExpr expr, IExpr patternTest) {
+	public boolean isPatternTest(IExpr expr, IExpr patternTest, EvalEngine engine) {
 		IExpr temp = substitutePatternOrSymbols(expr);
 		if (temp == null) {
 			temp = expr;
 		}
 		IAST test = F.unaryAST1(patternTest, null);
-		EvalEngine engine = EvalEngine.get();
 		if (temp.isSequence()) {
 			for (int i = 1; i < ((IAST) temp).size(); i++) {
 				test.set(1, ((IAST) temp).get(i));

@@ -12,6 +12,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
+import org.matheclipse.core.patternmatching.PatternMatcherEvalEngine;
 
 /**
  * <pre>
@@ -58,10 +59,10 @@ public class Exponent extends AbstractCoreFunctionEvaluator {
 			collector.add(F.CNInfinity);
 		} else if (expr.isAST()) {
 			IAST arg1 = (IAST) expr;
-			final IPatternMatcher matcher = new PatternMatcher(form);
+			final IPatternMatcher matcher = new PatternMatcherEvalEngine(form, engine);
 
 			if (arg1.isPower()) {
-				if (matcher.test(arg1.arg1())) {
+				if (matcher.test(arg1.arg1(), engine)) {
 					collector.add(arg1.arg2());
 				} else {
 					collector.add(F.C0);
@@ -70,7 +71,7 @@ public class Exponent extends AbstractCoreFunctionEvaluator {
 				for (int i = 1; i < arg1.size(); i++) {
 					if (arg1.get(i).isAtom()) {
 						if (arg1.get(i).isSymbol()) {
-							if (matcher.test(arg1.get(i))) {
+							if (matcher.test(arg1.get(i), engine)) {
 								collector.add(F.C1);
 							} else {
 								collector.add(F.C0);
@@ -80,23 +81,23 @@ public class Exponent extends AbstractCoreFunctionEvaluator {
 						}
 					} else if (arg1.get(i).isPower()) {
 						IAST pow = (IAST) arg1.get(i);
-						if (matcher.test(pow.arg1())) {
+						if (matcher.test(pow.arg1(), engine)) {
 							collector.add(pow.arg2());
 						} else {
 							collector.add(F.C0);
 						}
 					} else if (arg1.get(i).isTimes()) {
-						timesExponent((IAST) arg1.get(i), matcher, collector);
+						timesExponent((IAST) arg1.get(i), matcher, collector, engine);
 					} else {
 						collector.add(F.C0);
 					}
 				}
 			} else if (arg1.isTimes()) {
-				timesExponent(arg1, matcher, collector);
+				timesExponent(arg1, matcher, collector, engine);
 			}
 
 		} else if (expr.isSymbol()) {
-			final PatternMatcher matcher = new PatternMatcher(form);
+			final PatternMatcher matcher = new PatternMatcherEvalEngine(form, engine);
 			if (matcher.test(expr)) {
 				collector.add(F.C1);
 			} else {
@@ -115,20 +116,20 @@ public class Exponent extends AbstractCoreFunctionEvaluator {
 		return result;
 	}
 
-	private void timesExponent(IAST timesAST, final IPatternMatcher matcher, Set<IExpr> collector) {
+	private void timesExponent(IAST timesAST, final IPatternMatcher matcher, Set<IExpr> collector, EvalEngine engine) {
 		boolean evaled = false;
 		IExpr argi;
 		for (int i = 1; i < timesAST.size(); i++) {
 			argi = timesAST.get(i);
 			if (argi.isPower()) {
 				IAST pow = (IAST) argi;
-				if (matcher.test(pow.arg1())) {
+				if (matcher.test(pow.arg1(), engine)) {
 					collector.add(pow.arg2());
 					evaled = true;
 					break;
 				}
 			} else if (argi.isSymbol()) {
-				if (matcher.test(argi)) {
+				if (matcher.test(argi, engine)) {
 					collector.add(F.C1);
 					evaled = true;
 					break;

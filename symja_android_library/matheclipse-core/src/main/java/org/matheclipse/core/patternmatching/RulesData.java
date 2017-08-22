@@ -15,6 +15,7 @@ import java.util.TreeSet;
 import javax.annotation.Nonnull;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.eval.util.OpenIntToSet;
 import org.matheclipse.core.expression.Context;
@@ -301,8 +302,9 @@ public class RulesData implements Serializable {
 	}
 
 	/**
-	 * Create a pattern hash value for the left-hand-side expression and insert the left-hand-side as a simple pattern
-	 * rule to the <code>fSimplePatternRules</code>.
+	 * Create a pattern hash value for the left-hand-side expression and insert the
+	 * left-hand-side as a simple pattern rule to the
+	 * <code>fSimplePatternRules</code>.
 	 * 
 	 * @param leftHandSide
 	 * @param pmEvaluator
@@ -318,8 +320,9 @@ public class RulesData implements Serializable {
 	}
 
 	/**
-	 * Create a pattern hash value for the left-hand-side expression and insert the left-hand-side as a simple pattern
-	 * rule to the <code>fSimplePatternRules</code>.
+	 * Create a pattern hash value for the left-hand-side expression and insert the
+	 * left-hand-side as a simple pattern rule to the
+	 * <code>fSimplePatternRules</code>.
 	 * 
 	 * @param leftHandSide
 	 * @param pmEvaluator
@@ -523,7 +526,7 @@ public class RulesData implements Serializable {
 	 * @param expr
 	 * @return <code>F.NIL</code> if no evaluation was possible
 	 */
-	public IExpr evalDownRule(final IExpr expr) {
+	public IExpr evalDownRule(final IExpr expr, EvalEngine engine) {
 		PatternMatcherEquals res;
 
 		if (Config.SHOW_PATTERN_EVAL_STEPS) {
@@ -552,7 +555,8 @@ public class RulesData implements Serializable {
 				if (fSimplePatternDownRules != null) {
 					final int hash = ((IAST) expr).patternHashCode();
 					if (fSimplePatternDownRules.containsKey(hash)) {
-						IExpr temp = evalSimpleRatternDownRule(fSimplePatternDownRules, hash, astExpr, showSteps);
+						IExpr temp = evalSimpleRatternDownRule(fSimplePatternDownRules, hash, astExpr, showSteps,
+								engine);
 						if (temp.isPresent()) {
 							return temp;
 						}
@@ -566,7 +570,7 @@ public class RulesData implements Serializable {
 							hash = astExpr.get(i).head().hashCode();
 							if (fSimpleOrderlesPatternDownRules.containsKey(hash)) {
 								IExpr temp = evalSimpleRatternDownRule(fSimpleOrderlesPatternDownRules, hash, astExpr,
-										showSteps);
+										showSteps, engine);
 								if (temp.isPresent()) {
 									return temp;
 								}
@@ -590,7 +594,7 @@ public class RulesData implements Serializable {
 									.println(" COMPLEX: " + pmEvaluator.getLHS().toString() + " := " + rhs.toString());
 						}
 					}
-					result = pmEvaluator.eval(expr);
+					result = pmEvaluator.eval(expr, engine);
 					if (result.isPresent()) {
 						if (showSteps) {
 							if (pmEvaluator.getLHS().head().equals(F.Integrate)) {
@@ -614,7 +618,7 @@ public class RulesData implements Serializable {
 	}
 
 	public IExpr evalSimpleRatternDownRule(OpenIntToSet<IPatternMatcher> hashToMatcherMap, final int hash,
-			final IAST expression, boolean showSteps) throws CloneNotSupportedException {
+			final IAST expression, boolean showSteps, EvalEngine engine) throws CloneNotSupportedException {
 		IPatternMatcher pmEvaluator;
 
 		// TODO Performance hotspot
@@ -628,10 +632,11 @@ public class RulesData implements Serializable {
 					// if (!rhs.isPresent()) {
 					// rhs = F.Null;
 					// }
-					// System.out.println(" SIMPLE: " + pmEvaluator.getLHS().toString() + " <<>> " + expression);
+					// System.out.println(" SIMPLE: " + pmEvaluator.getLHS().toString() + " <<>> " +
+					// expression);
 					// // + " := " + rhs.toString());
 				}
-				result = pmEvaluator.eval(expression);
+				result = pmEvaluator.eval(expression, engine);
 				if (result.isPresent()) {
 					if (showSteps) {
 						IExpr rhs = pmEvaluator.getRHS();
@@ -648,7 +653,7 @@ public class RulesData implements Serializable {
 		return F.NIL;
 	}
 
-	public IExpr evalUpRule(final IExpr expression) {
+	public IExpr evalUpRule(final IExpr expression, EvalEngine engine) {
 		PatternMatcherEquals res;
 		if (fEqualUpRules != null) {
 			res = fEqualUpRules.get(expression);
@@ -669,7 +674,7 @@ public class RulesData implements Serializable {
 							IExpr result;
 							for (int i = 0; i < list.length; i++) {
 								pmEvaluator = (IPatternMatcher) list[i].clone();
-								result = pmEvaluator.eval(expression);
+								result = pmEvaluator.eval(expression, engine);
 								if (result.isPresent()) {
 									return result;
 								}

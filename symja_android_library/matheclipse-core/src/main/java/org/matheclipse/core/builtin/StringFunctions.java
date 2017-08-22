@@ -218,7 +218,7 @@ public final class StringFunctions {
 			}
 
 			final String str = ast.arg1().toString();
-			return F.integer(ExprParser.syntaxLength(str));
+			return F.integer(ExprParser.syntaxLength(str, engine));
 		}
 
 		@Override

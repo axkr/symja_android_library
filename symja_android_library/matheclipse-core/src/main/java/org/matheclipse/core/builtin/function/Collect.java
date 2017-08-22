@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.core.patternmatching.PatternMatcher;
+import org.matheclipse.core.patternmatching.PatternMatcherEvalEngine;
 
 /**
  * <pre>Collect(expr, variable)
@@ -84,7 +84,7 @@ public class Collect extends AbstractCoreFunctionEvaluator {
 			IAST poly = (IAST) expr;
 			IAST rest = F.PlusAlloc(poly.size());
 
-			IPatternMatcher matcher = new PatternMatcher(x);
+			IPatternMatcher matcher = new PatternMatcherEvalEngine(x, engine);
 			collectToMap(poly, matcher, map, rest);
 			if (listOfVariables != null && listPosition < listOfVariables.size()) {
 				// collect next pattern in sub-expressions

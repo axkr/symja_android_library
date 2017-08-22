@@ -39,8 +39,8 @@ import org.matheclipse.core.visit.VisitorExpr;
  * 
  * <blockquote>
  * <p>
- * rewrites products and powers of trigonometric functions in <code>expr</code> in terms of trigonometric functions with
- * combined arguments.
+ * rewrites products and powers of trigonometric functions in <code>expr</code>
+ * in terms of trigonometric functions with combined arguments.
  * </p>
  * </blockquote>
  * <h3>Examples</h3>
@@ -57,14 +57,17 @@ public class TrigReduce extends AbstractEvaluator {
 	}
 
 	static class TrigReduceVisitor extends VisitorExpr {
-		public TrigReduceVisitor() {
+		final EvalEngine fEngine;
+
+		public TrigReduceVisitor(EvalEngine engine) {
 			super();
+			fEngine = engine;
 		}
 
 		@Override
 		public IExpr visit(IAST ast) {
 			if (ast.isTimes()) {
-				IAST result = ORDERLESS_MATCHER.evaluate(ast);
+				IAST result = ORDERLESS_MATCHER.evaluate(ast, fEngine);
 				if (result.isPresent()) {
 					return result;
 				}
@@ -95,13 +98,14 @@ public class TrigReduce extends AbstractEvaluator {
 	 * 
 	 * <a href=
 	 * "http://en.wikipedia.org/wiki/List_of_trigonometric_identities#Product-to-sum_and_sum-to-product_identities"
-	 * >List of trigonometric identities - Product-to-sum and sum-to-product identities</a>
+	 * >List of trigonometric identities - Product-to-sum and sum-to-product
+	 * identities</a>
 	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
-		TrigReduceVisitor trigReduceVisitor = new TrigReduceVisitor();
+		TrigReduceVisitor trigReduceVisitor = new TrigReduceVisitor(engine);
 		IExpr temp = ast.arg1();
 		IExpr result = temp;
 		while (temp.isPresent()) {

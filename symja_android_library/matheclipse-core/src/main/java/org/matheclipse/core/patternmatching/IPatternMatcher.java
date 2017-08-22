@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -20,7 +21,7 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 		private static final long serialVersionUID = 8357661139299702326L;
 
 		public int compare(final IPatternMatcher o1, final IPatternMatcher o2) {
-			if (o1==o2) {
+			if (o1 == o2) {
 				return 0;
 			}
 			return o1.equivalentTo(o2);
@@ -93,10 +94,11 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 	 * 
 	 * @param leftHandSide
 	 *            left-hand-side expression
+	 * @param engine
 	 * @return <code>F.NIL</code> if the match wasn't successful, the evaluated
 	 *         expression otherwise.
 	 */
-	public abstract IExpr eval(final IExpr leftHandSide);
+	public abstract IExpr eval(final IExpr leftHandSide, EvalEngine engine);
 
 	/**
 	 * Get the "left-hand-side" of a pattern-matching rule.
@@ -128,8 +130,8 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 	public abstract int getLHSPriority();
 
 	/**
-	 * Get the priority of the left-and-side of this pattern-matcher. Lower values have higher
-	 * priorities.
+	 * Get the priority of the left-and-side of this pattern-matcher. Lower values
+	 * have higher priorities.
 	 * 
 	 * @return the priority
 	 */
@@ -168,4 +170,13 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 	 *         pattern-matchings left-hand-side expression.
 	 */
 	public abstract boolean test(IExpr expr);
+	
+	/**
+	 * Start pattern matching.
+	 * 
+	 * @param expr
+	 * @return <code>true</code> if the <code>expr</code> matches the
+	 *         pattern-matchings left-hand-side expression.
+	 */
+	public abstract boolean test(IExpr expr, EvalEngine engine);
 }

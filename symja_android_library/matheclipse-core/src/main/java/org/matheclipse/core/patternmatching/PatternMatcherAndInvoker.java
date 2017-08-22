@@ -96,7 +96,7 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr eval(final IExpr leftHandSide) {
+	public IExpr eval(final IExpr leftHandSide, EvalEngine engine) {
 
 		if (isRuleWithoutPatterns() && fLhsPatternExpr.equals(leftHandSide)) {
 			if (fTypes.length != 0) {
@@ -124,7 +124,7 @@ public class PatternMatcherAndInvoker extends PatternMatcher {
 			return F.NIL;
 		}
 		fPatternMap.initPattern();
-		if (matchExpr(fLhsPatternExpr, leftHandSide)) {
+		if (matchExpr(fLhsPatternExpr, leftHandSide, engine)) {
 
 			List<IExpr> args = fPatternMap.getValuesAsList();
 			try {

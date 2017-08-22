@@ -5551,7 +5551,7 @@ public class F {
 	 *         was possible or the substituted expression.
 	 */
 	public static IExpr subst(IExpr expr, IExpr subExpr, IExpr replacementExpr) {
-		return expr.replaceAll(Functors.rules(Rule(subExpr, replacementExpr))).orElse(expr);
+		return expr.replaceAll(Functors.rules(Rule(subExpr, replacementExpr), EvalEngine.get())).orElse(expr);
 	}
 
 	public static IAST Subtract(final IExpr a0, final IExpr a1) {

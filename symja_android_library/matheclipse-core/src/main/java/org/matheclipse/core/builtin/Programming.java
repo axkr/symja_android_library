@@ -839,7 +839,7 @@ public final class Programming {
 				IPatternMatcher matcher;
 				for (int i = 2; i < ast.size(); i += 2) {
 					matcher = engine.evalPatternMatcher(ast.get(i));
-					if (matcher.test(arg1) && (i + 1 < ast.size())) {
+					if (matcher.test(arg1, engine) && (i + 1 < ast.size())) {
 						return engine.evaluate(ast.get(i + 1));
 					}
 				}

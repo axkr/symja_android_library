@@ -57,7 +57,7 @@ import org.matheclipse.core.patternmatching.Matcher;
  */
 public class TrigToExp extends AbstractEvaluator {
 
-	final static Matcher MATCHER = new Matcher();
+	final static Matcher MATCHER = new Matcher(EvalEngine.get());
 	static {
 		MATCHER.caseOf(Sin(x_),
 				Subtract(Times(C1D2, CI, Power(E, Times(CNI, x))), Times(C1D2, CI, Power(E, Times(CI, x)))));
@@ -91,9 +91,11 @@ public class TrigToExp extends AbstractEvaluator {
 	/**
 	 * Exponential definitions for trigonometric functions
 	 * 
-	 * See <a href= "http://en.wikipedia.org/wiki/List_of_trigonometric_identities#Exponential_definitions"> List of
-	 * trigonometric identities - Exponential definitions</a>,<br/>
-	 * <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic function</a>
+	 * See <a href=
+	 * "http://en.wikipedia.org/wiki/List_of_trigonometric_identities#Exponential_definitions">
+	 * List of trigonometric identities - Exponential definitions</a>,<br/>
+	 * <a href="http://en.wikipedia.org/wiki/Hyperbolic_function">Hyperbolic
+	 * function</a>
 	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {

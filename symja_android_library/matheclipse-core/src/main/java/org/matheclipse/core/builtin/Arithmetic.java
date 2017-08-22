@@ -1261,7 +1261,7 @@ public final class Arithmetic {
 			}
 
 			if (size > 2) {
-				IExpr temp = evaluateHashsRepeated(ast);
+				IExpr temp = evaluateHashsRepeated(ast, engine);
 				if (temp.isAST(F.Plus, 2)) {
 					return ((IAST) temp).arg1();
 				}
@@ -2780,7 +2780,7 @@ public final class Arithmetic {
 				return astTimes.arg1();
 			}
 			if (size > 2) {
-				IAST temp = evaluateHashsRepeated(astTimes);
+				IAST temp = evaluateHashsRepeated(astTimes, engine);
 				if (temp.isPresent()) {
 					return temp.getOneIdentity(F.C1);
 				}

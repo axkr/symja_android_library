@@ -194,7 +194,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @param expression
 	 * @return <code>F.NIL</code> if no evaluation was possible
 	 */
-	public IExpr evalDownRule(IEvaluationEngine engine, IExpr expression);
+	public IExpr evalDownRule(EvalEngine engine, IExpr expression);
 
 	/**
 	 * Evaluate the given expression for the &quot;up value&quot; rules associated with this symbol
@@ -203,7 +203,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @param expression
 	 * @return <code>F.NIL</code> if no evaluation was possible
 	 */
-	public IExpr evalUpRule(IEvaluationEngine engine, IExpr expression);
+	public IExpr evalUpRule(EvalEngine engine, IExpr expression);
 
 	/**
 	 * Get the topmost value from the local variable stack

@@ -27,9 +27,11 @@ public class Functors {
 		/**
 		 * 
 		 * @param plusAST
-		 *            the complete AST which should be cloned in the {@code apply} method
+		 *            the complete AST which should be cloned in the {@code apply}
+		 *            method
 		 * @param position
-		 *            the position which should be replaced in the <code>apply()</code> method.
+		 *            the position which should be replaced in the <code>apply()</code>
+		 *            method.
 		 */
 		public RulesFunctor(Map<? extends IExpr, ? extends IExpr> rulesMap) {
 			fEqualRules = rulesMap;
@@ -47,17 +49,22 @@ public class Functors {
 	private static class RulesPatternFunctor implements Function<IExpr, IExpr> {
 		private final Map<IExpr, IExpr> fEqualRules;
 		private final List<PatternMatcherAndEvaluator> fMatchers;
+		private final EvalEngine fEngine;
 
 		/**
 		 * 
 		 * @param plusAST
-		 *            the complete AST which should be cloned in the {@code apply} method
+		 *            the complete AST which should be cloned in the {@code apply}
+		 *            method
 		 * @param position
-		 *            the position which should be replaced in the <code>apply()</code> method.
+		 *            the position which should be replaced in the <code>apply()</code>
+		 *            method.
 		 */
-		public RulesPatternFunctor(Map<IExpr, IExpr> equalRules, List<PatternMatcherAndEvaluator> matchers) {
+		public RulesPatternFunctor(Map<IExpr, IExpr> equalRules, List<PatternMatcherAndEvaluator> matchers,
+				EvalEngine engine) {
 			fEqualRules = equalRules;
 			fMatchers = matchers;
+			fEngine = engine;
 		}
 
 		@Override
@@ -68,7 +75,7 @@ public class Functors {
 				return temp;
 			}
 			for (int i = 0; i < fMatchers.size(); i++) {
-				temp = fMatchers.get(i).eval(arg);
+				temp = fMatchers.get(i).eval(arg, fEngine);
 				if (temp.isPresent()) {
 					return temp;
 				}
@@ -78,8 +85,8 @@ public class Functors {
 	}
 
 	/**
-	 * Create a functor from the given map, which calls the <code>rulesMap.get()</code> in the functors
-	 * <code>apply</code>method.
+	 * Create a functor from the given map, which calls the
+	 * <code>rulesMap.get()</code> in the functors <code>apply</code>method.
 	 * 
 	 * @param rulesMap
 	 * @return
@@ -89,7 +96,8 @@ public class Functors {
 	}
 
 	/**
-	 * Create a functor from the given rules. All strings in <code>strRules</code> are parsed in internal rules form.
+	 * Create a functor from the given rules. All strings in <code>strRules</code>
+	 * are parsed in internal rules form.
 	 * 
 	 * @param strRules
 	 *            array of rules of the form &quot;<code>x-&gt;y</code>&quot;
@@ -108,19 +116,20 @@ public class Functors {
 			expr = engine.evaluate(expr);
 			astRules.append(expr);
 		}
-		return rules(astRules);
+		return rules(astRules, engine);
 	}
 
 	/**
-	 * Create a functor from the given rules. If <code>astRules</code> is a <code>List[]</code> object, the elements of
-	 * the list are taken as the rules of the form <code>Rule[lhs, rhs]</code>, otherwise the <code>astRules</code>
+	 * Create a functor from the given rules. If <code>astRules</code> is a
+	 * <code>List[]</code> object, the elements of the list are taken as the rules
+	 * of the form <code>Rule[lhs, rhs]</code>, otherwise the <code>astRules</code>
 	 * itself is taken as the <code>Rule[lhs, rhs]</code>.
 	 * 
 	 * @param astRules
 	 * @return
 	 * @throws WrongArgumentType
 	 */
-	public static Function<IExpr, IExpr> rules(@Nonnull IAST astRules) throws WrongArgumentType {
+	public static Function<IExpr, IExpr> rules(@Nonnull IAST astRules, EvalEngine engine) throws WrongArgumentType {
 		final Map<IExpr, IExpr> equalRules;
 
 		List<PatternMatcherAndEvaluator> matchers = new ArrayList<PatternMatcherAndEvaluator>();
@@ -151,14 +160,14 @@ public class Functors {
 			}
 		}
 		if (matchers.size() > 0) {
-			return new RulesPatternFunctor(equalRules, matchers);
+			return new RulesPatternFunctor(equalRules, matchers, engine);
 		}
 		return rules(equalRules);
 	}
 
 	/**
-	 * A predicate to determine if an expression is an instance of <code>IPattern</code> or
-	 * <code>IPatternSequence</code>.
+	 * A predicate to determine if an expression is an instance of
+	 * <code>IPattern</code> or <code>IPatternSequence</code>.
 	 */
 	private static Predicate<IExpr> PATTERNQ_PREDICATE = new Predicate<IExpr>() {
 		@Override
@@ -196,8 +205,8 @@ public class Functors {
 	}
 
 	/**
-	 * Test if <code>expr</code> is an <code>IAST</code> with one argument and the head symbol contains the
-	 * <code>OneIdentity</code> attribute.
+	 * Test if <code>expr</code> is an <code>IAST</code> with one argument and the
+	 * head symbol contains the <code>OneIdentity</code> attribute.
 	 * 
 	 * @param expr
 	 * @return

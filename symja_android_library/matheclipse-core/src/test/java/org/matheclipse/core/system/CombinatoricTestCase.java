@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.matheclipse.combinatoric.MultisetPartitionsIterator;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.patternmatching.FlatOrderlessStepVisitor;
@@ -57,7 +58,7 @@ public class CombinatoricTestCase extends AbstractTestCase {
 
 		PatternMatcher patternMatcher = new PatternMatcher(lhsPatternAST);
 		PatternMap patternMap = patternMatcher.getPatternMap();
-		StackMatcher stackMatcher = patternMatcher.new StackMatcher();
+		StackMatcher stackMatcher = patternMatcher.new StackMatcher(EvalEngine.get());
 		FlatOrderlessStepVisitor visitor = new FlatOrderlessStepVisitor(F.Plus, lhsPatternAST, lhsEvalAST, stackMatcher,
 				patternMap);
 		MultisetPartitionsIterator iter = new MultisetPartitionsIterator(visitor, lhsPatternAST.size() - 1);

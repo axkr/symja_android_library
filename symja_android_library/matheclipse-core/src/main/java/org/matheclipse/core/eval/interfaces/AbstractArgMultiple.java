@@ -27,7 +27,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 			if (temp.isPresent()) {
 				return temp;
 			}
-			return evaluateHashsRepeated(ast);
+			return evaluateHashsRepeated(ast, engine);
 		}
 
 		if (ast.size() > 3) {
@@ -89,7 +89,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 				return result;
 			}
 			if (tempAST.size() > 2) {
-				return evaluateHashsRepeated(tempAST);
+				return evaluateHashsRepeated(tempAST, engine);
 			}
 		}
 
@@ -109,12 +109,12 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 	 * @return
 	 * @see HashedPatternRules
 	 */
-	public IAST evaluateHashsRepeated(final IAST orderlessAST) {
+	public IAST evaluateHashsRepeated(final IAST orderlessAST, EvalEngine engine) {
 		HashedOrderlessMatcher hashRuleMap = getHashRuleMap();
 		if (hashRuleMap == null) {
 			return F.NIL;
 		}
-		return hashRuleMap.evaluateRepeated(orderlessAST);
+		return hashRuleMap.evaluateRepeated(orderlessAST, engine);
 	}
 
 	/**

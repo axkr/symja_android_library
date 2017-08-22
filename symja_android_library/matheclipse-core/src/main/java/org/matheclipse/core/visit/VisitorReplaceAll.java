@@ -2,6 +2,7 @@ package org.matheclipse.core.visit;
 
 import java.util.function.Function;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
@@ -42,7 +43,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 
 	public VisitorReplaceAll(IAST ast, int offset) {
 		super();
-		this.fFunction = Functors.rules(ast);
+		this.fFunction = Functors.rules(ast, EvalEngine.get());
 		this.fOffset = offset;
 	}
 

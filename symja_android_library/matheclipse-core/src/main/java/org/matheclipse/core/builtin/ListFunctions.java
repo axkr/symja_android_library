@@ -55,6 +55,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
+import org.matheclipse.core.patternmatching.PatternMatcherEvalEngine;
 import org.matheclipse.core.reflection.system.Product;
 import org.matheclipse.core.reflection.system.Sum;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
@@ -677,7 +678,7 @@ public final class ListFunctions {
 					IAST result = F.List();
 					if (arg2.isRuleAST()) {
 						try {
-							Function<IExpr, IExpr> function = Functors.rules((IAST) arg2);
+							Function<IExpr, IExpr> function = Functors.rules((IAST) arg2, engine);
 							CasesRulesFunctor crf = new CasesRulesFunctor(function, result, maximumResults);
 							VisitorLevelSpecification level = new VisitorLevelSpecification(crf, arg3, false, engine);
 							arg1.accept(level);
@@ -689,7 +690,7 @@ public final class ListFunctions {
 					}
 
 					try {
-						final PatternMatcher matcher = new PatternMatcher(arg2);
+						final PatternMatcher matcher = new PatternMatcherEvalEngine(arg2, engine);
 						CasesPatternMatcherFunctor cpmf = new CasesPatternMatcherFunctor(matcher, result,
 								maximumResults);
 						VisitorLevelSpecification level = new VisitorLevelSpecification(cpmf, arg3, false, engine);
@@ -699,19 +700,19 @@ public final class ListFunctions {
 					}
 					return result;
 				} else {
-					return cases((IAST) arg1, arg2);
+					return cases((IAST) arg1, arg2, engine);
 				}
 			}
 			return F.List();
 		}
 
-		public static IAST cases(final IAST ast, final IExpr pattern) {
+		public static IAST cases(final IAST ast, final IExpr pattern, EvalEngine engine) {
 			if (pattern.isRuleAST()) {
-				Function<IExpr, IExpr> function = Functors.rules((IAST) pattern);
+				Function<IExpr, IExpr> function = Functors.rules((IAST) pattern, engine);
 				IAST[] results = ast.filter(function);
 				return results[0];
 			}
-			final PatternMatcher matcher = new PatternMatcher(pattern);
+			final PatternMatcher matcher = new PatternMatcherEvalEngine(pattern, engine);
 			return ast.filter(F.List(), matcher);
 		}
 
@@ -2176,8 +2177,8 @@ public final class ListFunctions {
 			return resultCollection;
 		}
 
-		public static IAST position(final IAST list, final IExpr pattern, final LevelSpec level) {
-			final PatternMatcher matcher = new PatternMatcher(pattern);
+		public static IAST position(final IAST list, final IExpr pattern, final LevelSpec level, EvalEngine engine) {
+			final PatternMatcher matcher = new PatternMatcherEvalEngine(pattern, engine);
 			final PositionConverter pos = new PositionConverter();
 
 			final IAST cloneList = List();
@@ -2202,7 +2203,7 @@ public final class ListFunctions {
 				final IExpr arg2 = engine.evalPattern(ast.arg2());
 				if (ast.isAST2()) {
 					final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE);
-					return position((IAST) arg1, arg2, level);
+					return position((IAST) arg1, arg2, level, engine);
 				}
 				if (ast.isAST3()) {
 					final Options options = new Options(ast.topHead(), ast, 2, engine);
@@ -2210,17 +2211,17 @@ public final class ListFunctions {
 					if (option.isPresent()) {
 						if (option.isTrue()) {
 							final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, true);
-							return position((IAST) arg1, arg2, level);
+							return position((IAST) arg1, arg2, level, engine);
 						}
 						if (option.isFalse()) {
 							final LevelSpec level = new LevelSpec(0, Integer.MAX_VALUE, false);
-							return position((IAST) arg1, arg2, level);
+							return position((IAST) arg1, arg2, level, engine);
 						}
 						return F.NIL;
 					}
 					final IExpr arg3 = engine.evaluate(ast.arg3());
 					final LevelSpec level = new LevelSpecification(arg3, true);
-					return position((IAST) arg1, arg2, level);
+					return position((IAST) arg1, arg2, level, engine);
 				}
 			}
 			return F.NIL;

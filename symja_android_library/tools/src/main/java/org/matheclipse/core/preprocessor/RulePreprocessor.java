@@ -48,7 +48,7 @@ public class RulePreprocessor {
 		IExpr leftHandSide = ast.arg1();
 		IExpr rightHandSide = ast.arg2();
 		if (ast.arg1().isAST()) {
-			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide);
+			leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, EvalEngine.get());
 		}
 		if (evalRHS) {
 			rightHandSide = F.eval(rightHandSide);
@@ -186,9 +186,8 @@ public class RulePreprocessor {
 	 * @param targetLocation
 	 *            target directory for the generated Java files
 	 * @param ignoreTimestamp
-	 *            if <code>false</code> only change the target file (*.java), if
-	 *            the source file (*.m) has a newer time stamp than the target
-	 *            file.
+	 *            if <code>false</code> only change the target file (*.java), if the
+	 *            source file (*.m) has a newer time stamp than the target file.
 	 */
 	public static void generateFunctionStrings(final File sourceLocation, File targetLocation,
 			boolean ignoreTimestamp) {

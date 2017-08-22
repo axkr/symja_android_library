@@ -77,9 +77,9 @@ public class ExprParser extends ExprScanner {
 
 	public final static ISymbol DERIVATIVE = F.Derivative;
 
-	public static int syntaxLength(final String str) throws SyntaxError {
+	public static int syntaxLength(final String str, EvalEngine engine) throws SyntaxError {
 		try {
-			ExprParser parser = new ExprParser(EvalEngine.get());
+			ExprParser parser = new ExprParser(engine);
 			parser.parse(str);
 		} catch (final SyntaxError e) {
 			return e.getStartOffset();
@@ -87,9 +87,9 @@ public class ExprParser extends ExprScanner {
 		return str.length();
 	}
 
-	public static boolean test(final String str) {
+	public static boolean test(final String str, EvalEngine engine) {
 		try {
-			ExprParser fParser = new ExprParser(EvalEngine.get());
+			ExprParser fParser = new ExprParser(engine);
 			final IExpr parsedExpression = fParser.parse(str);
 			// final Parser fParser = new Parser();
 			// final ASTNode parsedAST = fParser.parse(str);

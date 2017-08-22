@@ -61,7 +61,7 @@ public class Replace extends AbstractEvaluator {
 				for (IExpr element : (IAST) rules) {
 					if (element.isRuleAST()) {
 						IAST rule = (IAST) element;
-						Function<IExpr, IExpr> function = Functors.rules(rule);
+						Function<IExpr, IExpr> function = Functors.rules(rule, engine);
 						IExpr temp = function.apply(input);
 						if (temp.isPresent()) {
 							return temp;
@@ -76,7 +76,7 @@ public class Replace extends AbstractEvaluator {
 				return input;
 			}
 			if (rules.isRuleAST()) {
-				return replaceRule(input, (IAST) rules);
+				return replaceRule(input, (IAST) rules, engine);
 			} else {
 				WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
 				engine.printMessage(wat.getMessage());
@@ -101,7 +101,7 @@ public class Replace extends AbstractEvaluator {
 				for (IExpr element : subList) {
 					if (element.isRuleAST()) {
 						IAST rule = (IAST) element;
-						Function<IExpr, IExpr> function = Functors.rules(rule);
+						Function<IExpr, IExpr> function = Functors.rules(rule, engine);
 						temp = function.apply(arg1);
 						if (temp.isPresent()) {
 							break;
@@ -119,7 +119,7 @@ public class Replace extends AbstractEvaluator {
 			for (IExpr element : (IAST) rules) {
 				if (element.isRuleAST()) {
 					IAST rule = (IAST) element;
-					Function<IExpr, IExpr> function = Functors.rules(rule);
+					Function<IExpr, IExpr> function = Functors.rules(rule,engine);
 					IExpr temp = function.apply(arg1);
 					if (temp.isPresent()) {
 						return temp;
@@ -133,7 +133,7 @@ public class Replace extends AbstractEvaluator {
 			return arg1;
 		}
 		if (rules.isRuleAST()) {
-			return replaceRule(arg1, (IAST) rules);
+			return replaceRule(arg1, (IAST) rules, engine);
 		} else {
 			WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
 			engine.printMessage(wat.getMessage());
@@ -185,8 +185,8 @@ public class Replace extends AbstractEvaluator {
 	 * @param rule
 	 * @return
 	 */
-	private static IExpr replaceRule(IExpr arg1, IAST rule) {
-		Function<IExpr, IExpr> function = Functors.rules(rule);
+	private static IExpr replaceRule(IExpr arg1, IAST rule, EvalEngine engine) {
+		Function<IExpr, IExpr> function = Functors.rules(rule, engine);
 		IExpr temp = function.apply(arg1);
 		if (temp.isPresent()) {
 			return temp;

@@ -2,6 +2,7 @@ package org.matheclipse.core.patternmatching;
 
 import java.util.List;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToList;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.BinaryFunctorImpl;
@@ -10,7 +11,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.visit.HashValueVisitor;
 
 /**
- * Match two arguments of an <code>Orderless</code> AST into a new resulting expression.
+ * Match two arguments of an <code>Orderless</code> AST into a new resulting
+ * expression.
  * 
  * @see HashedPatternRules
  */
@@ -81,14 +83,15 @@ public class HashedOrderlessMatcher {
 	}
 
 	/**
-	 * Evaluate an <code>Orderless</code> AST with the defined <code>HashedPatternRules</code> as long as the header of
-	 * the given expression equals the evaluated expression.
+	 * Evaluate an <code>Orderless</code> AST with the defined
+	 * <code>HashedPatternRules</code> as long as the header of the given expression
+	 * equals the evaluated expression.
 	 * 
 	 * @param orderlessAST
 	 * @return
 	 * @see HashedPatternRules
 	 */
-	public IAST evaluateRepeated(final IAST orderlessAST) {
+	public IAST evaluateRepeated(final IAST orderlessAST, EvalEngine engine) {
 		if (orderlessAST.isEvalFlagOn(IAST.IS_HASH_EVALED)) {
 			return F.NIL;
 		}
@@ -107,7 +110,7 @@ public class HashedOrderlessMatcher {
 						hashValues[i] = temp.get(i + 1).accept(HashValueVisitor.HASH_VALUE_VISITOR);
 					}
 
-					result = evaluateHashedValues(temp, fPatternHashRuleMap, hashValues);
+					result = evaluateHashedValues(temp, fPatternHashRuleMap, hashValues, engine);
 					if (result.isPresent()) {
 						temp = result;
 						evaled = true;
@@ -125,7 +128,7 @@ public class HashedOrderlessMatcher {
 				for (int i = 0; i < size; i++) {
 					hashValues[i] = temp.get(i + 1).head().hashCode();
 				}
-				IAST result = evaluateHashedValues(temp, fHashRuleMap, hashValues);
+				IAST result = evaluateHashedValues(temp, fHashRuleMap, hashValues, engine);
 				if (result.isPresent()) {
 					return setIsHashEvaledFlag(result);
 				}
@@ -139,7 +142,8 @@ public class HashedOrderlessMatcher {
 	}
 
 	/**
-	 * Set the <code>IAST.IS_HASH_EVALED</code> for the given <code>ast</code>. And return the <code>ast</code>
+	 * Set the <code>IAST.IS_HASH_EVALED</code> for the given <code>ast</code>. And
+	 * return the <code>ast</code>
 	 * 
 	 * @param ast
 	 * @return
@@ -161,23 +165,25 @@ public class HashedOrderlessMatcher {
 	}
 
 	/**
-	 * Evaluate an <code>Orderless</code> AST only once with the defined <code>HashedPatternRules</code>.
+	 * Evaluate an <code>Orderless</code> AST only once with the defined
+	 * <code>HashedPatternRules</code>.
 	 * 
 	 * @param orderlessAST
 	 * @return
 	 * @see HashedPatternRules
 	 */
-	public IAST evaluate(final IAST orderlessAST) {
+	public IAST evaluate(final IAST orderlessAST, EvalEngine engine) {
 		// TODO Performance hotspot
 
 		// Compute hash values for each argument of the orderlessAST
-		// if hashValues[i]==0 then the corresponding argument is evaluated and not available anymore
+		// if hashValues[i]==0 then the corresponding argument is evaluated and not
+		// available anymore
 		int[] hashValues = new int[(orderlessAST.size() - 1)];
 		if (!fPatternHashRuleMap.isEmpty()) {
 			for (int i = 0; i < hashValues.length; i++) {
 				hashValues[i] = orderlessAST.get(i + 1).accept(HashValueVisitor.HASH_VALUE_VISITOR);
 			}
-			IAST result = evaluateHashedValues(orderlessAST, fPatternHashRuleMap, hashValues);
+			IAST result = evaluateHashedValues(orderlessAST, fPatternHashRuleMap, hashValues, engine);
 			if (result.isPresent()) {
 				return result;
 			}
@@ -186,13 +192,13 @@ public class HashedOrderlessMatcher {
 			for (int i = 0; i < hashValues.length; i++) {
 				hashValues[i] = orderlessAST.get(i + 1).head().hashCode();
 			}
-			return evaluateHashedValues(orderlessAST, fHashRuleMap, hashValues);
+			return evaluateHashedValues(orderlessAST, fHashRuleMap, hashValues, engine);
 		}
 		return F.NIL;
 	}
 
 	private static IAST evaluateHashedValues(final IAST orderlessAST,
-			OpenIntToList<AbstractHashedPatternRules> hashRuleMap, int[] hashValues) {
+			OpenIntToList<AbstractHashedPatternRules> hashRuleMap, int[] hashValues, EvalEngine engine) {
 		boolean evaled = false;
 		IAST result = orderlessAST.copyHead();
 		for (int i = 0; i < hashValues.length - 1; i++) {
@@ -217,14 +223,14 @@ public class HashedOrderlessMatcher {
 									continue;
 								}
 
-								if (updateHashValues(result, orderlessAST, hashRule, hashValues, j, i)) {
+								if (updateHashValues(result, orderlessAST, hashRule, hashValues, j, i, engine)) {
 									evaled = true;
 									break evaled;
 								}
 								continue;
 							}
 
-							if (updateHashValues(result, orderlessAST, hashRule, hashValues, i, j)) {
+							if (updateHashValues(result, orderlessAST, hashRule, hashValues, i, j, engine)) {
 								evaled = true;
 								break evaled;
 							}
@@ -234,7 +240,7 @@ public class HashedOrderlessMatcher {
 								continue;
 							}
 
-							if (updateHashValues(result, orderlessAST, hashRule, hashValues, j, i)) {
+							if (updateHashValues(result, orderlessAST, hashRule, hashValues, j, i, engine)) {
 								evaled = true;
 								break evaled;
 							}
@@ -242,12 +248,12 @@ public class HashedOrderlessMatcher {
 
 						}
 
-						if (updateHashValues(result, orderlessAST, hashRule, hashValues, i, j)) {
+						if (updateHashValues(result, orderlessAST, hashRule, hashValues, i, j, engine)) {
 							evaled = true;
 							break evaled;
 						}
 
-						if (updateHashValues(result, orderlessAST, hashRule, hashValues, j, i)) {
+						if (updateHashValues(result, orderlessAST, hashRule, hashValues, j, i, engine)) {
 							evaled = true;
 							break evaled;
 						}
@@ -269,9 +275,9 @@ public class HashedOrderlessMatcher {
 	}
 
 	private static boolean updateHashValues(IAST result, final IAST orderlessAST, AbstractHashedPatternRules hashRule,
-			int[] hashValues, int i, int j) {
+			int[] hashValues, int i, int j, EvalEngine engine) {
 		IExpr temp;
-		if ((temp = hashRule.evalDownRule(orderlessAST.get(i + 1), orderlessAST.get(j + 1))).isPresent()) {
+		if ((temp = hashRule.evalDownRule(orderlessAST.get(i + 1), orderlessAST.get(j + 1), engine)).isPresent()) {
 			hashValues[i] = 0;
 			hashValues[j] = 0;
 			result.append(temp);

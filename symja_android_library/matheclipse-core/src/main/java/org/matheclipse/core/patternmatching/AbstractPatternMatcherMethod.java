@@ -1,5 +1,6 @@
 package org.matheclipse.core.patternmatching;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
@@ -44,7 +45,7 @@ public abstract class AbstractPatternMatcherMethod extends PatternMatcher {
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr eval(final IExpr leftHandSide) {
+	public IExpr eval(final IExpr leftHandSide, EvalEngine engine) {
 		if (isRuleWithoutPatterns()) {
 			// no patterns found match equally:
 			if (fLhsPatternExpr.equals(leftHandSide)) {
@@ -64,7 +65,7 @@ public abstract class AbstractPatternMatcherMethod extends PatternMatcher {
 		}
 
 		fPatternMap.initPattern();
-		if (matchExpr(fLhsPatternExpr, leftHandSide)) {
+		if (matchExpr(fLhsPatternExpr, leftHandSide, engine)) {
 			try {
 				return evalMethod();
 			} catch (final ConditionException e) {

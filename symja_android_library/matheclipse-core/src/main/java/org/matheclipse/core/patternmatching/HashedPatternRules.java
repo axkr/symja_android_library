@@ -1,5 +1,6 @@
 package org.matheclipse.core.patternmatching;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
@@ -131,8 +132,8 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
 		return fRulesData;
 	}
 
-	public IExpr evalDownRule(IExpr e1, IExpr e2) {
-		return getRulesData().evalDownRule(F.List(e1, e2));
+	public IExpr evalDownRule(IExpr e1, IExpr e2, EvalEngine engine) {
+		return getRulesData().evalDownRule(F.List(e1, e2), engine);
 	}
 
 }

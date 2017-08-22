@@ -26,7 +26,6 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.form.output.OutputFormFactory;
-import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.interfaces.IAST;
@@ -44,6 +43,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
+import org.matheclipse.core.patternmatching.PatternMatcherEvalEngine;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
 import org.matheclipse.core.visit.IVisitor;
@@ -1580,7 +1580,7 @@ public abstract class AbstractAST implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isFree(final IExpr pattern, boolean heads) {
-		final IPatternMatcher matcher = new PatternMatcher(pattern);
+		final IPatternMatcher matcher = new PatternMatcherEvalEngine(pattern, EvalEngine.get());
 		return !isMember(matcher, heads);
 	}
 
@@ -1593,7 +1593,7 @@ public abstract class AbstractAST implements IAST {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isFreeAST(final IExpr pattern) {
-		final IPatternMatcher matcher = new PatternMatcher(pattern);
+		final IPatternMatcher matcher = new PatternMatcherEvalEngine(pattern, EvalEngine.get());
 		return isFreeAST(matcher);
 	}
 

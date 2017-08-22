@@ -1,5 +1,6 @@
 package org.matheclipse.core.patternmatching;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.visit.HashValueVisitor;
 
@@ -19,8 +20,10 @@ public abstract class AbstractHashedPatternRules {
 	 * @param lhsPattern2
 	 *            second left-hand-side pattern
 	 * @param defaultHashCode
-	 *            if <code>false</code> use a <code>HashValueVisitor()</code> to determine the tw0 hash values for the
-	 *            lhs... arguments. if <code>true</code> use the default <code>Object.hashCode()</code> method.
+	 *            if <code>false</code> use a <code>HashValueVisitor()</code> to
+	 *            determine the tw0 hash values for the lhs... arguments. if
+	 *            <code>true</code> use the default <code>Object.hashCode()</code>
+	 *            method.
 	 */
 	public AbstractHashedPatternRules(IExpr lhsPattern1, IExpr lhsPattern2, boolean defaultHashCode) {
 		fLHSPattern1 = lhsPattern1;
@@ -87,5 +90,5 @@ public abstract class AbstractHashedPatternRules {
 		return fLHSPattern2.isPattern();
 	}
 
-	public abstract IExpr evalDownRule(IExpr e1, IExpr e2);
+	public abstract IExpr evalDownRule(IExpr e1, IExpr e2, EvalEngine engine);
 }

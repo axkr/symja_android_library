@@ -169,7 +169,7 @@ public final class PatternMatching {
 									+ "' in Part() expression.");
 						} else {
 							try {
-								IExpr temp = symbol.getRulesData().evalDownRule(symbol);
+								IExpr temp = symbol.getRulesData().evalDownRule(symbol, engine);
 								if (!temp.isPresent()) {
 									engine.printMessage("Set: no value defined for symbol '" + symbol.toString()
 											+ "' in Part() expression.");

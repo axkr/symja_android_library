@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -66,6 +67,11 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 	public boolean test(IExpr lhsEvalExpr) {
 		return fLhsPatternExpr.equals(lhsEvalExpr);
 	}
+	
+	@Override
+	public boolean test(IExpr lhsEvalExpr, EvalEngine engine) {
+		return fLhsPatternExpr.equals(lhsEvalExpr);
+	}
 
 	@Override
 	public Object clone() throws CloneNotSupportedException {
@@ -77,7 +83,7 @@ public class PatternMatcherEquals extends IPatternMatcher implements Externaliza
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr eval(IExpr leftHandSide) {
+	public IExpr eval(IExpr leftHandSide, EvalEngine engine) {
 		if (test(leftHandSide)) {
 			return fRightHandSide;
 		}

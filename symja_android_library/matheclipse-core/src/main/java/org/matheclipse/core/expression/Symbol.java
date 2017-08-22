@@ -278,11 +278,11 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IExpr evalDownRule(final IEvaluationEngine ee, final IExpr expression) {
+	public final IExpr evalDownRule(final EvalEngine engine, final IExpr expression) {
 		if (fRulesData == null) {
 			return F.NIL;
 		}
-		return fRulesData.evalDownRule(expression);
+		return fRulesData.evalDownRule(expression, engine);
 	}
 
 	/** {@inheritDoc} */
@@ -366,11 +366,11 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IExpr evalUpRule(final IEvaluationEngine ee, final IExpr expression) {
+	public final IExpr evalUpRule(final EvalEngine engine, final IExpr expression) {
 		if (fRulesData == null) {
 			return F.NIL;
 		}
-		return fRulesData.evalUpRule(expression);
+		return fRulesData.evalUpRule(expression, engine);
 	}
 
 	/**
