@@ -117,7 +117,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	}
 
 	public void convertFraction(final StringBuffer buf, final IFraction f, final int precedence) {
-		boolean isInteger = f.isOne();
+		boolean isInteger = f.getDenominator().isOne();
 		if (f.isNegative() && (precedence > plusPrec)) {
 			tagStart(buf, "mrow");
 			tag(buf, "mo", "(");
@@ -147,7 +147,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tagStart(buf, "mrow");
 			tag(buf, "mo", "(");
 		}
-		if (f.isOne()) {
+		if (f.getDenominator().isOne() || f.getNumerator().isZero()) {
 			tagStart(buf, "mn");
 			buf.append(f.getNumerator().toString());
 			tagEnd(buf, "mn");
@@ -189,12 +189,12 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tagStart(buf, "mrow");
 			convertFraction(buf, c.getImaginaryPart(), ASTNodeFactory.TIMES_PRECEDENCE);
 			// <!ENTITY InvisibleTimes "&#x2062;" >
-			tag(buf, "mo", "&InvisibleTimes;"); // "&#x2062;");
-			// <!ENTITY ImaginaryI "&#x2148;" >
-			tag(buf, "mi", "&ImaginaryI;"); // "&#x2148;");
+			tag(buf, "mo", "&#x2062;");
+			// <!ENTITY ImaginaryI "&#x2148;"
+			tag(buf, "mi", "&#x2148;");
 			tagEnd(buf, "mrow");
 		} else {
-			tag(buf, "mi", "&ImaginaryI;"); // "&#x2148;");
+			tag(buf, "mi", "&#x2148;");
 		}
 		tagEnd(buf, "mrow");
 	}
@@ -218,19 +218,19 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tagStart(buf, "mi");
 			buf.append(sym.toString());
 			tagEnd(buf, "mi");
-		} else { 
+		} else {
 			if (convertedSymbol instanceof Operator) {
 				((Operator) convertedSymbol).convert(buf);
 			} else {
 				tagStart(buf, "mi");
 				buf.append(convertedSymbol.toString());
 				tagEnd(buf, "mi");
-			} 
+			}
 		}
 	}
 
 	public void convertHead(final StringBuffer buf, final IExpr obj) {
-		if (obj instanceof ISymbol) { 
+		if (obj instanceof ISymbol) {
 			String headStr = ((ISymbol) obj).getSymbolName();
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
@@ -238,7 +238,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 					headStr = str;
 				}
 			}
-			tagStart(buf, "mi"); 
+			tagStart(buf, "mi");
 			buf.append(headStr);
 			tagEnd(buf, "mi");
 			// &af; &#x2061;
@@ -328,7 +328,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 	}
 
-	public void init() { 
+	public void init() {
 		plusPrec = ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence();
 
 		CONVERTERS.put(F.Sin, new MMLFunction(this, "sin"));

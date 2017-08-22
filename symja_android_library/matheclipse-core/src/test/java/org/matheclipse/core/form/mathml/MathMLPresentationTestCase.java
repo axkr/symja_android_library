@@ -23,6 +23,8 @@ public class MathMLPresentationTestCase extends TestCase {
 	 * Test mathml function
 	 */
 	public void testMathMLPresentation() {
+		check("Sqrt[-4*I]",
+				"<msqrt><mrow><mrow><mo>(</mo><mrow><mo>(</mo><mn>-4</mn><mo>)</mo></mrow><mo>&#8290;</mo><mrow><mi>&#x2148;</mi></mrow><mo>)</mo></mrow></mrow></msqrt>");
 		check("DirectedInfinity[]",
 				"<mrow><mi>DirectedInfinity</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow></mrow><mo>)</mo></mrow></mrow>");
 		check("Integrate[f[x], x]",
@@ -61,8 +63,8 @@ public class MathMLPresentationTestCase extends TestCase {
 
 		check("a*(b+c)",
 				"<mrow><mi>a</mi><mo>&#8290;</mo><mrow><mrow><mo>(</mo><mi>c</mi><mo>+</mo><mi>b</mi><mo>)</mo></mrow></mrow></mrow>");
-		check("I", "<mrow><mi>i</mi></mrow>");
-		check("2*I", "<mrow><mn>2</mn><mo>&#8290;</mo><mrow><mi>i</mi></mrow></mrow>");
+		check("I", "<mrow><mi>&#x2148;</mi></mrow>");
+		check("2*I", "<mrow><mn>2</mn><mo>&#8290;</mo><mrow><mi>&#x2148;</mi></mrow></mrow>");
 		check("2/3", "<mfrac><mn>2</mn><mn>3</mn></mfrac>");
 
 		check("a+b", "<mrow><mi>b</mi><mo>+</mo><mi>a</mi></mrow>");

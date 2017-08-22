@@ -114,11 +114,15 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		if (f.isNegative() && (precedence > plusPrec)) {
 			buf.append("\\left( ");
 		}
-		buf.append("\\frac{");
-		buf.append(f.toBigNumerator().toString());
-		buf.append("}{");
-		buf.append(f.toBigDenominator().toString());
-		buf.append('}');
+		if (f.getDenominator().isOne()) {
+			buf.append(f.getNumerator().toString());
+		} else {
+			buf.append("\\frac{");
+			buf.append(f.toBigNumerator().toString());
+			buf.append("}{");
+			buf.append(f.toBigDenominator().toString());
+			buf.append('}');
+		}
 		if (f.isNegative() && (precedence > plusPrec)) {
 			buf.append("\\right) ");
 		}
@@ -154,7 +158,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		IRational re = c.getRealPart();
 		IRational im = c.getImaginaryPart();
 		if (!re.isZero()) {
-			convert(buf, c.getRealPart(), 0);
+			convert(buf, re, 0);
 			if (im.compareInt(0) >= 0) {
 				buf.append(" + ");
 			} else {
@@ -249,10 +253,10 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 					}
 				}
 				final IConverter converter = operTab.get(headStr);
-				if (converter != null ) {
+				if (converter != null) {
 					converter.setFactory(this);
-					if ( converter.convert(buf, f, precedence)) {
-					return;
+					if (converter.convert(buf, f, precedence)) {
+						return;
 					}
 				}
 			}
@@ -316,7 +320,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 		buf.append(")");
 
-	} 
+	}
 
 	public void init() {
 		plusPrec = ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence();
@@ -347,7 +351,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		operTab.put("Superscript", new org.matheclipse.core.form.tex.reflection.Superscript());
 		operTab.put("Times", new org.matheclipse.core.form.tex.reflection.Times());
 		operTab.put("Zeta", new org.matheclipse.core.form.tex.reflection.Zeta());
-		
+
 		operTab.put("Condition", new AbstractOperator(this,
 				ASTNodeFactory.MMA_STYLE_FACTORY.get("Condition").getPrecedence(), "\\text{/;}"));
 		operTab.put("Unset",

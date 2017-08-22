@@ -47,7 +47,6 @@ import org.matheclipse.parser.client.math.MathException;
  */
 public class EvalEngine implements Serializable, IEvaluationEngine {
 
-	public static boolean PACKAGE_MODE = true;
 	/**
 	 * 
 	 */
@@ -245,7 +244,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	protected int fIterationLimit;
 
-	protected boolean fPackageMode = PACKAGE_MODE;
+	protected boolean fPackageMode = F.PACKAGE_MODE;
 
 	transient int fModuleCounter = 0;
 
@@ -1787,7 +1786,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	public void setPackageMode(boolean packageMode) {
 		if (!packageMode) {
-			PACKAGE_MODE = false;
+			F.PACKAGE_MODE = false;
 		}
 		fPackageMode = packageMode;
 	}
