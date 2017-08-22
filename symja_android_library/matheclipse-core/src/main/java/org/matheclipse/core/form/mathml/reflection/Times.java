@@ -15,7 +15,7 @@ public class Times extends MMLOperator {
 	public static Times CONST = new Times();
 
 	public Times() {
-		super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence(), "mrow", "&#00B7;");// centerdot instead of
+		super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence(), "mrow", "&#0183;");// centerdot instead of
 																									// invisibletimes:
 																									// "&#8290;");
 	}
