@@ -2,9 +2,12 @@ package org.matheclipse.core.form.mathml;
 
 import java.util.HashMap;
 
+import org.apfloat.Apcomplex;
+import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
+import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -87,18 +90,60 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		}
 	}
 
-	public void convertDoubleComplex(final StringBuffer buf, final IComplexNum dc, final int precedence) {
+	public void convertApcomplex(final StringBuffer buf, final Apcomplex ac, final int precedence) {
+		Apfloat realPart = ac.real();
+		Apfloat imaginaryPart = ac.imag();
+		final boolean isImNegative = imaginaryPart.compareTo(Apfloat.ZERO)<0;
+
 		tagStart(buf, "mrow");
-		buf.append(String.valueOf(dc.getRealPart()));
-		tag(buf, "mo", "+");
-		tagStart(buf, "mrow");
-		buf.append(String.valueOf(dc.getImaginaryPart()));
+		tagStart(buf, "mn");
+		buf.append(String.valueOf(realPart));
+		tagEnd(buf, "mn");
+		if (isImNegative) {
+			tag(buf, "mo", "-");
+			imaginaryPart = imaginaryPart.negate();
+		} else {
+			tag(buf, "mo", "+");
+		}
+		tagStart(buf, "mn");
+		buf.append(String.valueOf(imaginaryPart));
+		tagEnd(buf, "mn");
 
 		// <!ENTITY InvisibleTimes "&#x2062;" >
-		tag(buf, "mo", "&#x2062;");
+		// <!ENTITY CenterDot "&#0183;" >
+		tag(buf, "mo", "&#0183;");
 		// <!ENTITY ImaginaryI "&#x2148;" >
-		tag(buf, "mi", "&ImaginaryI;");// "&#x2148;");
+		tag(buf, "mi", "&#x2148;");// "&#x2148;");
 		tagEnd(buf, "mrow");
+	}
+	public void convertDoubleComplex(final StringBuffer buf, final IComplexNum dc, final int precedence) {
+		if (dc instanceof ApcomplexNum) {
+			convertApcomplex(buf, ((ApcomplexNum) dc).apcomplexValue(), precedence);
+			return;
+		}
+		double realPart = dc.getRealPart();
+		double imaginaryPart = dc.getImaginaryPart();
+		final boolean isImNegative = imaginaryPart < 0;
+
+		tagStart(buf, "mrow");
+		tagStart(buf, "mn");
+		buf.append(realPart);
+		tagEnd(buf, "mn");
+		if (isImNegative) {
+			tag(buf, "mo", "-");
+			imaginaryPart *= (-1);
+		} else {
+			tag(buf, "mo", "+");
+		}
+		tagStart(buf, "mn");
+		buf.append(imaginaryPart);
+		tagEnd(buf, "mn");
+
+		// <!ENTITY InvisibleTimes "&#x2062;" >
+		// <!ENTITY CenterDot "&#0183;" >
+		tag(buf, "mo", "&#0183;");
+		// <!ENTITY ImaginaryI "&#x2148;" >
+		tag(buf, "mi", "&#x2148;");// "&#x2148;");
 		tagEnd(buf, "mrow");
 	}
 
@@ -193,7 +238,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			}
 			convertFraction(buf, imaginaryPart, ASTNodeFactory.TIMES_PRECEDENCE);
 			// <!ENTITY InvisibleTimes "&#x2062;" >
-			tag(buf, "mo", "&#x2062;");
+			// <!ENTITY CenterDot "&#0183;" >
+			tag(buf, "mo", "&#0183;");
 			// <!ENTITY ImaginaryI "&#x2148;"
 			tag(buf, "mi", "&#x2148;");
 			tagEnd(buf, "mrow");

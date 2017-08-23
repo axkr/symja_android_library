@@ -2,11 +2,13 @@ package org.matheclipse.core.form.mathml;
 
 import java.io.StringWriter;
 
-import junit.framework.TestCase;
-
+import org.apfloat.Apcomplex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.interfaces.IExpr;
+
+import junit.framework.TestCase;
 
 /**
  * Tests MathML presentation function
@@ -24,6 +26,24 @@ public class MathMLPresentationTestCase extends TestCase {
 	 */
 	public void testMathMLPresentation() {
 		// 
+		Apcomplex c = new Apcomplex("(-0.5,-4.0)");
+		check(F.complexNum(c) ,
+				"<mrow><mn>-5e-1</mn><mo>-</mo><mn>4</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
+		check(F.complexNum(-0.5, -4.0),
+				"<mrow><mn>-0.5</mn><mo>-</mo><mn>4.0</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
+		check(F.pattern(F.x),
+				"<mtext>x_</mtext>");
+		check(F.complexNum(0.5, 4.0),
+				"<mrow><mn>0.5</mn><mo>+</mo><mn>4.0</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
+		check(F.complexNum(-0.5, -4.0),
+				"<mrow><mn>-0.5</mn><mo>-</mo><mn>4.0</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
+		
+		check("0.5-0.75*x",
+				"<mrow><mrow><mrow><mo>(</mo><mn>-0.75</mn><mo>)</mo></mrow><mo>&#0183;</mo><mi>x</mi></mrow><mo>+</mo><mn>0.5</mn></mrow>");
+		
+		check("-0.33-0.75*y",
+				"<mrow><mrow><mrow><mo>(</mo><mn>-0.75</mn><mo>)</mo></mrow><mo>&#0183;</mo><mi>y</mi></mrow><mo>-</mo><mn>0.33</mn></mrow>");
+		
 		check("Cos[x^3]",
 				"<mrow><mi>cos</mi><mo>&#x2061;</mo><mo>(</mo><msup><mi>x</mi><mn>3</mn></msup><mo>)</mo></mrow>");
 		
@@ -124,6 +144,19 @@ public class MathMLPresentationTestCase extends TestCase {
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
 		mathUtil.toMathML(strEval, stw);
+		// fParser.initialize(strEval);
+		// Object obj = fParser.start();
+		// StringBuffer buf = new StringBuffer();
+		// fMathMLFactory.convert(buf, obj, 0);
+		assertEquals(stw.toString(), "<?xml version=\"1.0\"?>\n"
+				+ "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
+				+ "<math mode=\"display\">\n" + strResult + "</math>");
+
+	}
+	
+	public void check(IExpr expr, String strResult) {
+		StringWriter stw = new StringWriter();
+		mathUtil.toMathML(expr, stw);
 		// fParser.initialize(strEval);
 		// Object obj = fParser.start();
 		// StringBuffer buf = new StringBuffer();
