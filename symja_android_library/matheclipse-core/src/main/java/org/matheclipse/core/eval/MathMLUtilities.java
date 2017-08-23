@@ -106,7 +106,7 @@ public class MathMLUtilities {
 	}
 
 	synchronized public void toMathML(final IExpr objectExpression, final Writer out, boolean useXmlns) {
-		final StringBuffer buf = new StringBuffer();
+		final StringBuilder buf = new StringBuilder();
 
 		if (objectExpression != null) {
 			fMathMLFactory.convert(buf, objectExpression, 0);

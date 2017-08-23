@@ -29,7 +29,7 @@ public class Times extends MMLOperator {
 	 *            The math function which should be converted to MathML
 	 */
 	@Override
-	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
+	public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 		return convertTimesFraction(buf, f, precedence, NO_SPECIAL_CALL);
 	}
 
@@ -44,7 +44,7 @@ public class Times extends MMLOperator {
 	 * @precedence
 	 * @caller
 	 */
-	public boolean convertTimesFraction(final StringBuffer buf, final IAST f, final int precedence, final int caller) {
+	public boolean convertTimesFraction(final StringBuilder buf, final IAST f, final int precedence, final int caller) {
 		IExpr[] parts = Algebra.fractionalPartsTimesPower(f, false, true, false, false);
 		if (parts == null) {
 			convertTimesOperator(buf, f, precedence, caller);
@@ -92,7 +92,7 @@ public class Times extends MMLOperator {
 	 * @param caller
 	 * @return
 	 */
-	private boolean convertTimesOperator(final StringBuffer buf, final IAST timesAST, final int precedence,
+	private boolean convertTimesOperator(final StringBuilder buf, final IAST timesAST, final int precedence,
 			final int caller) {
 		int size = timesAST.size();
 		if (size > 1) {

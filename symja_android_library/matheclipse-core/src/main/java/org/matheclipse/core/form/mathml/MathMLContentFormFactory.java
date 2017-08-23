@@ -32,7 +32,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 			fOperator = oper;
 		}
 
-		public void convert(final StringBuffer buf) {
+		public void convert(final StringBuilder buf) {
 			tagStart(buf, "mo");
 			buf.append(fOperator);
 			tagEnd(buf, "mo");
@@ -66,13 +66,13 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 		init();
 	}
 
-	public void convertDouble(final StringBuffer buf, final INum d, final int precedence) {
+	public void convertDouble(final StringBuilder buf, final INum d, final int precedence) {
 		tagStart(buf, "cn", "type=\"real\"");
 		buf.append(d.toString());
 		tagEnd(buf, "cn");
 	}
 
-	public void convertDoubleComplex(final StringBuffer buf, final IComplexNum dc, final int precedence) {
+	public void convertDoubleComplex(final StringBuilder buf, final IComplexNum dc, final int precedence) {
 		// <cn type="complex-cartesian">3<sep/>4</cn>
 		tagStart(buf, "cn", "type=\"complex-cartesian\"");
 		buf.append(String.valueOf(dc.getRealPart()));
@@ -81,13 +81,13 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 		tagEnd(buf, "cn");
 	}
 
-	public void convertInteger(final StringBuffer buf, final IInteger i, final int precedence) {
+	public void convertInteger(final StringBuilder buf, final IInteger i, final int precedence) {
 		tagStart(buf, "cn", "type=\"integer\"");
 		buf.append(i.toString());
 		tagEnd(buf, "cn");
 	}
 
-	public void convertFraction(final StringBuffer buf, final IRational f, final int precedence) {
+	public void convertFraction(final StringBuilder buf, final IRational f, final int precedence) {
 		// <cn type="rational">3<sep/>4</cn>
 		tagStart(buf, "cn", "type=\"rational\"");
 		buf.append(String.valueOf(f.toBigNumerator().toString()));
@@ -96,7 +96,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 		tagEnd(buf, "cn");
 	}
 
-	public void convertFraction(final StringBuffer buf, final BigFraction f, final int precedence) {
+	public void convertFraction(final StringBuilder buf, final BigFraction f, final int precedence) {
 		tagStart(buf, "cn", "type=\"rational\"");
 		buf.append(String.valueOf(f.getNumerator().toString()));
 		tagStartEnd(buf, "sep");
@@ -104,7 +104,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 		tagEnd(buf, "cn");
 	}
 
-	public void convertComplex(final StringBuffer buf, final IComplex c, final int precedence) {
+	public void convertComplex(final StringBuilder buf, final IComplex c, final int precedence) {
 		// <cn type="complex-cartesian">3<sep/>4</cn>
 		tagStart(buf, "cn", "type=\"complex-cartesian\"");
 		convertFraction(buf, c.getRealPart(), precedence);
@@ -113,11 +113,11 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 		tagEnd(buf, "cn");
 	}
 
-	public void convertString(final StringBuffer buf, final String str) {
+	public void convertString(final StringBuilder buf, final String str) {
 		throw new Error("Cannot convert text string to content MathML");
 	}
 
-	public void convertSymbol(final StringBuffer buf, final ISymbol sym) {
+	public void convertSymbol(final StringBuilder buf, final ISymbol sym) {
 		String headStr = sym.getSymbolName();
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
@@ -157,12 +157,12 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 	 * @param p
 	 *            Description of Parameter
 	 */
-	// public void convertPattern(StringBuffer buf, HPattern p) {
+	// public void convertPattern(StringBuilder buf, HPattern p) {
 	// buf.append(" <mi>");
 	// buf.append(p.toString());
 	// tagEnd(buf, "mi");
 	// }
-	public void convertHead(final StringBuffer buf, final IExpr obj) {
+	public void convertHead(final StringBuilder buf, final IExpr obj) {
 		if (obj instanceof ISymbol) {
 			// final Object ho = CONSTANT_SYMBOLS.get(((ISymbol) obj).getSymbolName());
 			tagStart(buf, "mi");
@@ -178,7 +178,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 		convert(buf, obj, 0);
 	}
 
-	public void convert(final StringBuffer buf, final IExpr o, final int precedence) {
+	public void convert(final StringBuilder buf, final IExpr o, final int precedence) {
 		if (o instanceof IAST) {
 			final IAST f = ((IAST) o);
 			// System.out.println(f.getHeader().toString());
@@ -207,7 +207,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 			if (h.isSymbol()) {
 				IConverter converter = reflection(((ISymbol) h).getSymbolName());
 				if (converter != null) {
-					StringBuffer sb = new StringBuffer();
+					StringBuilder sb = new StringBuilder();
 					if (converter.convert(sb, ast, precedence)) {
 						buf.append(sb);
 						return;
@@ -245,7 +245,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 		convertString(buf, o.toString());
 	}
 
-	private void convertAST(final StringBuffer buf, final IAST ast) {
+	private void convertAST(final StringBuilder buf, final IAST ast) {
 		tagStart(buf, "mrow");
 		convertHead(buf, ast.head());
 		// &af; &#x2061;

@@ -20,14 +20,14 @@ public class MMLOperator extends AbstractConverter {
 		this(precedence, "mrow", oper);
 	}
 
-	public void precedenceOpen(final StringBuffer buf, final int precedence) {
+	public void precedenceOpen(final StringBuilder buf, final int precedence) {
 		if (precedence > fPrecedence) {
 			fFactory.tagStart(buf, "mrow");
 			fFactory.tag(buf, "mo", "(");
 		}
 	}
 
-	public void precedenceClose(final StringBuffer buf, final int precedence) {
+	public void precedenceClose(final StringBuilder buf, final int precedence) {
 		if (precedence > fPrecedence) {
 			fFactory.tag(buf, "mo", ")");
 			fFactory.tagEnd(buf, "mrow");
@@ -42,7 +42,7 @@ public class MMLOperator extends AbstractConverter {
 	 * @param f
 	 *            The math function which should be converted to MathML
 	 */
-	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
+	public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 		fFactory.tagStart(buf, fFirstTag);
 		precedenceOpen(buf, precedence);
 		for (int i = 1; i < f.size(); i++) {

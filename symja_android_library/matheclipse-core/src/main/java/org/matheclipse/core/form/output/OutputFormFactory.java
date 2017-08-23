@@ -974,7 +974,7 @@ public class OutputFormFactory {
 		return false;
 	}
 
-	private Operator getOperator(ISymbol head) {
+	public static Operator getOperator(ISymbol head) {
 		String headerStr = head.getSymbolName();
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headerStr);

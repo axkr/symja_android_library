@@ -36,7 +36,7 @@ abstract public class AbstractMathMLFormFactory {
 		fTagPrefix = tagPrefix;
 	}
 
-	public void entity(final StringBuffer buf, final String tag) {
+	public void entity(final StringBuilder buf, final String tag) {
 		if (USE_IDENTIFIERS) {
 			buf.append(tag);
 		} else {
@@ -49,25 +49,25 @@ abstract public class AbstractMathMLFormFactory {
 		}
 	}
 
-	public void tag(final StringBuffer buf, final String tag, final String data) {
+	public void tag(final StringBuilder buf, final String tag, final String data) {
 		tagStart(buf, tag);
 		entity(buf, data);
 		tagEnd(buf, tag);
 	}
 
-	public void tagStart(final StringBuffer buf, final String tag) {
+	public void tagStart(final StringBuilder buf, final String tag) {
 		buf.append("<" + fTagPrefix + tag + ">");
 	}
 
-	public void tagStart(final StringBuffer buf, final String tag, final String attr0) {
+	public void tagStart(final StringBuilder buf, final String tag, final String attr0) {
 		buf.append("<" + fTagPrefix + tag + " " + attr0 + ">");
 	}
 
-	public void tagEnd(final StringBuffer buf, final String tag) {
+	public void tagEnd(final StringBuilder buf, final String tag) {
 		buf.append("</" + fTagPrefix + tag + ">");
 	}
 
-	public void tagStartEnd(final StringBuffer buf, final String tag) {
+	public void tagStartEnd(final StringBuilder buf, final String tag) {
 		buf.append("<" + fTagPrefix + tag + " />");
 	}
 
@@ -93,7 +93,7 @@ abstract public class AbstractMathMLFormFactory {
 	 * @param d
 	 * @param precedence
 	 */
-	abstract public void convertDouble(StringBuffer buf, INum d, int precedence);
+	abstract public void convertDouble(StringBuilder buf, INum d, int precedence);
 
 	/**
 	 * convert a complex number with double real and imaginary part
@@ -102,7 +102,7 @@ abstract public class AbstractMathMLFormFactory {
 	 * @param d
 	 * @param precedence
 	 */
-	abstract public void convertDoubleComplex(StringBuffer buf, IComplexNum dc, int precedence);
+	abstract public void convertDoubleComplex(StringBuilder buf, IComplexNum dc, int precedence);
 
 	/**
 	 * convert an IInteger number
@@ -111,7 +111,7 @@ abstract public class AbstractMathMLFormFactory {
 	 * @param d
 	 * @param precedence
 	 */
-	abstract public void convertInteger(StringBuffer buf, IInteger i, int precedence);
+	abstract public void convertInteger(StringBuilder buf, IInteger i, int precedence);
 
 	/**
 	 * convert a fraction nummber
@@ -120,7 +120,7 @@ abstract public class AbstractMathMLFormFactory {
 	 * @param d
 	 * @param precedence
 	 */
-	abstract public void convertFraction(StringBuffer buf, IRational f, int precedence);
+	abstract public void convertFraction(StringBuilder buf, IRational f, int precedence);
 
 	/**
 	 * convert a complex nummber
@@ -129,7 +129,7 @@ abstract public class AbstractMathMLFormFactory {
 	 * @param d
 	 * @param precedence
 	 */
-	abstract public void convertComplex(StringBuffer buf, IComplex c, int precedence);
+	abstract public void convertComplex(StringBuilder buf, IComplex c, int precedence);
 
 	/**
 	 * convert a string
@@ -138,7 +138,7 @@ abstract public class AbstractMathMLFormFactory {
 	 * @param d
 	 * @param precedence
 	 */
-	abstract public void convertString(StringBuffer buf, String str);
+	abstract public void convertString(StringBuilder buf, String str);
 
 	/**
 	 * convert a symbol (i.e. functionname, constantname or variablename)
@@ -147,7 +147,7 @@ abstract public class AbstractMathMLFormFactory {
 	 * @param d
 	 * @param precedence
 	 */
-	abstract public void convertSymbol(StringBuffer buf, ISymbol sym);
+	abstract public void convertSymbol(StringBuilder buf, ISymbol sym);
 
 	/**
 	 * convert the heade of a function
@@ -156,7 +156,7 @@ abstract public class AbstractMathMLFormFactory {
 	 * @param d
 	 * @param precedence
 	 */
-	abstract public void convertHead(StringBuffer buf, IExpr obj);
+	abstract public void convertHead(StringBuilder buf, IExpr obj);
 
 	/**
 	 * general entry point for converting an object
@@ -165,6 +165,6 @@ abstract public class AbstractMathMLFormFactory {
 	 * @param d
 	 * @param precedence
 	 */
-	abstract public void convert(StringBuffer buf, IExpr o, int precedence);
+	abstract public void convert(StringBuilder buf, IExpr o, int precedence);
 
 }

@@ -5400,6 +5400,10 @@ public class F {
 		return unaryAST1(Slot, integer(i));
 	}
 
+	public static IAST SlotSequence(final int i) {
+		return unaryAST1(SlotSequence, integer(i));
+	}
+	
 	public static IAST Solve(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Solve, a0, a1);
 	}

@@ -25,7 +25,24 @@ public class MathMLPresentationTestCase extends TestCase {
 	 * Test mathml function
 	 */
 	public void testMathMLPresentation() {
-		// 
+		check("x /.y",
+				"<mrow><mi>x</mi><mo>/.</mo><mi>y</mi></mrow>");
+		check("f(x_,y_):={x,y}/;x>y",
+				"<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mtext>x_</mtext><mo>,</mo><mtext>y_</mtext></mrow><mo>)</mo></mrow></mrow><mo>:=</mo><mrow><mrow><mo>{</mo><mrow><mi>x</mi><mo>,</mo><mi>y</mi></mrow><mo>}</mo></mrow><mo>/;</mo><mrow><mi>x</mi><mo>&gt;</mo><mi>y</mi></mrow></mrow></mrow>");
+		
+		check("f(x)&",
+				"<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow><mo>&amp;</mo></mrow>");
+		check("f(x, #)&[y]",
+				"<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi><mo>,</mo><mi>#1</mi></mrow><mo>)</mo></mrow></mrow><mo>&amp;</mo></mrow><mo>[</mo><mi>y</mi><mo>]</mo>");
+		
+		check("f(x)[y][z]",
+				"<mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow><mo>[</mo><mi>y</mi><mo>]</mo><mo>[</mo><mi>z</mi><mo>]</mo>");
+		check("f'(x)",
+				"<mi>f</mi><mo>'</mo><mo>(</mo><mrow><mi>x</mi><mo>)</mo></mrow>");
+		check(F.Slot1,
+				"<mi>#1</mi>");
+		check(F.SlotSequence(2),
+				"<mi>##2</mi>");
 		Apcomplex c = new Apcomplex("(-0.5,-4.0)");
 		check(F.complexNum(c) ,
 				"<mrow><mn>-5e-1</mn><mo>-</mo><mn>4</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
@@ -44,7 +61,7 @@ public class MathMLPresentationTestCase extends TestCase {
 		check("-0.33-0.75*y",
 				"<mrow><mrow><mrow><mo>(</mo><mn>-0.75</mn><mo>)</mo></mrow><mo>&#0183;</mo><mi>y</mi></mrow><mo>-</mo><mn>0.33</mn></mrow>");
 		
-		check("Cos[x^3]",
+		check("Cos(x^3)",
 				"<mrow><mi>cos</mi><mo>&#x2061;</mo><mo>(</mo><msup><mi>x</mi><mn>3</mn></msup><mo>)</mo></mrow>");
 		
 		check("-1/2-3/4*I",
@@ -52,39 +69,39 @@ public class MathMLPresentationTestCase extends TestCase {
 		check("1/2+3/4*I",
 				"<mrow><mfrac><mrow><mn>3</mn><mo>&#0183;</mo><mrow><mi>&#x2148;</mi></mrow></mrow><mn>4</mn></mfrac><mo>+</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow>");
 		
-		check("Sqrt[-1/2+2/3*I]",
+		check("Sqrt(-1/2+2/3*I)",
 				"<msqrt><mrow><mfrac><mrow><mn>2</mn><mo>&#0183;</mo><mrow><mi>&#x2148;</mi></mrow></mrow><mn>3</mn></mfrac><mo>-</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow></msqrt>");
 		
-		check("Sqrt[-4*I]",
+		check("Sqrt(-4*I)",
 				"<msqrt><mrow><mrow><mo>(</mo><mn>-4</mn><mo>)</mo></mrow><mo>&#0183;</mo><mrow><mi>&#x2148;</mi></mrow></mrow></msqrt>");
-		check("DirectedInfinity[]",
+		check("DirectedInfinity()",
 				"<mrow><mi>DirectedInfinity</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow></mrow><mo>)</mo></mrow></mrow>");
-		check("Integrate[f[x], x]",
+		check("Integrate(f(x), x)",
 				"<mo>&#x222B;</mo><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow><mrow><mo>&#x2146;</mo><mi>x</mi></mrow>");
 
-		check("-Infinity/Log[a]",
+		check("-Infinity/Log(a)",
 				"<mfrac><mrow><mo>-</mo><mi>&#x221E;</mi></mrow><mrow><mi>log</mi><mo>&#x2061;</mo><mo>(</mo><mi>a</mi><mo>)</mo></mrow></mfrac>");
 		check("x*(1+x)^(-2)",
 				"<mfrac><mi>x</mi><msup><mrow><mrow><mo>(</mo><mi>x</mi><mo>+</mo><mn>1</mn><mo>)</mo></mrow></mrow><mn>2</mn></msup></mfrac>");
 		check("x/(1+x)/(1+x)",
 				"<mfrac><mi>x</mi><mrow><mrow><mrow><mo>(</mo><mi>x</mi><mo>+</mo><mn>1</mn><mo>)</mo></mrow></mrow><mo>&#0183;</mo><mrow><mrow><mo>(</mo><mi>x</mi><mo>+</mo><mn>1</mn><mo>)</mo></mrow></mrow></mrow></mfrac>");
-		check("Sqrt[x]", "<msqrt><mi>x</mi></msqrt>");
+		check("Sqrt(x)", "<msqrt><mi>x</mi></msqrt>");
 		check("x^(1/3)", "<mroot><mi>x</mi><mn>3</mn></mroot>");
 		check("x^(2/3)", "<mroot><msup><mi>x</mi><mn>2</mn></msup><mn>3</mn></mroot>");
 		check("x^y", "<msup><mi>x</mi><mi>y</mi></msup>");
-		check("Abs[-x]", "<mrow><mo>&#10072;</mo><mrow><mo>-</mo><mi>x</mi></mrow><mo>&#10072;</mo></mrow>");
+		check("Abs(-x)", "<mrow><mo>&#10072;</mo><mrow><mo>-</mo><mi>x</mi></mrow><mo>&#10072;</mo></mrow>");
 		check("a*b*c*d",
 				"<mrow><mi>a</mi><mo>&#0183;</mo><mi>b</mi><mo>&#0183;</mo><mi>c</mi><mo>&#0183;</mo><mi>d</mi></mrow>");
 		check("k/2", "<mfrac><mi>k</mi><mn>2</mn></mfrac>");
-		check("Binomial[n,k/2]",
+		check("Binomial(n,k/2)",
 				"<mrow><mo>(</mo><mfrac linethickness=\"0\"><mi>n</mi><mfrac><mi>k</mi><mn>2</mn></mfrac></mfrac><mo>)</mo></mrow>");
 
 		check("a*b+c", "<mrow><mi>c</mi><mo>+</mo><mrow><mi>a</mi><mo>&#0183;</mo><mi>b</mi></mrow></mrow>");
 		// check("HEllipsis", "<mo>&hellip;</mo>");
-		check("MatrixForm[{a,b,c,d}]",
+		check("MatrixForm({a,b,c,d})",
 				"<mrow><mo>(</mo><mtable columnalign=\"center\"><mtr><mtd columnalign=\"center\"><mi>a</mi></mtd></mtr><mtr><mtd columnalign=\"center\"><mi>b</mi></mtd></mtr><mtr><mtd columnalign=\"center\"><mi>c</mi></mtd></mtr><mtr><mtd columnalign=\"center\"><mi>d</mi></mtd></mtr></mtable><mo>)</mo></mrow>");
 
-		check("MatrixForm[{{a,b},{c,d}}]",
+		check("MatrixForm({{a,b},{c,d}})",
 				"<mrow><mo>(</mo><mtable columnalign=\"center\"><mtr><mtd columnalign=\"center\"><mi>a</mi></mtd><mtd columnalign=\"center\"><mi>b</mi></mtd></mtr><mtr><mtd columnalign=\"center\"><mi>c</mi></mtd><mtd columnalign=\"center\"><mi>d</mi></mtd></mtr></mtable><mo>)</mo></mrow>");
 
 		check("a*b+c", "<mrow><mi>c</mi><mo>+</mo><mrow><mi>a</mi><mo>&#0183;</mo><mi>b</mi></mrow></mrow>");
@@ -109,27 +126,27 @@ public class MathMLPresentationTestCase extends TestCase {
 				"<mrow><mrow><mn>4</mn><mo>+</mo><mrow><mn>4</mn><mo>&#0183;</mo><mi>x</mi></mrow><mo>+</mo><msup><mi>x</mi><mn>2</mn></msup></mrow><mo>==</mo><mn>0</mn></mrow>");
 
 		check("n!", "<mrow><mi>n</mi><mo>!</mo></mrow>"); 
-		check("Sum[i, {i,1,n}, {j,1,m}]",
+		check("Sum(i, {i,1,n}, {j,1,m})",
 				"<mrow><munderover><mo>&#x2211;</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><munderover><mo>&#x2211;</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn></mrow><mi>m</mi></munderover><mi>i</mi></mrow></mrow>");
 
-		check("Sum[i, {i,1,n}]",
+		check("Sum(i, {i,1,n})",
 				"<mrow><munderover><mo>&#x2211;</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mi>i</mi></mrow>");
-		check("Sum[i, i]",
+		check("Sum(i, i)",
 				"<mrow><munderover><mo>&#x2211;</mo><mrow><mi>i</mi></mrow><mi></mi></munderover><mi>i</mi></mrow>");
 
-		check("Product[i, {i,10,n,1}, {j,m}]",
+		check("Product(i, {i,10,n,1}, {j,m})",
 				"<mrow><munderover><mo>&#x220F;</mo><mrow><mi>i</mi><mo>=</mo><mn>10</mn></mrow><mi>n</mi></munderover><mrow><munderover><mo>&#x220F;</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn></mrow><mi>m</mi></munderover><mi>i</mi></mrow></mrow>");
 
-		check("Product[i, {i,1,n}]",
+		check("Product(i, {i,1,n})",
 				"<mrow><munderover><mo>&#x220F;</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mi>i</mi></mrow>");
 
-		check("Product[i, i]",
+		check("Product(i, i)",
 				"<mrow><munderover><mo>&#x220F;</mo><mrow><mi>i</mi></mrow><mi></mi></munderover><mi>i</mi></mrow>");
 
-		check("Integrate[Sin[x], x]",
+		check("Integrate(Sin(x), x)",
 				"<mo>&#x222B;</mo><mrow><mi>sin</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mrow><mo>&#x2146;</mo><mi>x</mi></mrow>");
 
-		check("Integrate[Sin[x], {x,a,b}, {y,c,d}]",
+		check("Integrate(Sin(x), {x,a,b}, {y,c,d})",
 				"<msubsup><mo>&#x222B;</mo><mi>a</mi><mi>b</mi></msubsup><msubsup><mo>&#x222B;</mo><mi>c</mi><mi>d</mi></msubsup><mrow><mi>sin</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mrow><mo>&#x2146;</mo><mi>y</mi></mrow><mrow><mo>&#x2146;</mo><mi>x</mi></mrow>");
 
 	}
@@ -173,7 +190,7 @@ public class MathMLPresentationTestCase extends TestCase {
 	protected void setUp() {
 		try {
 			// F.initSymbols();
-			EvalEngine engine = new EvalEngine(false);
+			EvalEngine engine = new EvalEngine(true);
 			mathUtil = new MathMLUtilities(engine, false, true);
 		} catch (Exception e) {
 			e.printStackTrace();

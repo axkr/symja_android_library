@@ -17,7 +17,7 @@ public class MMLFunction extends AbstractConverter {
    *@param  buf  StringBuffer for MathML output
    *@param  f    The math function which should be converted to MathML
    */
-  public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
+  public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 
     fFactory.tagStart(buf, "mrow");
     fFactory.tag(buf, "mi", fFunctionName);

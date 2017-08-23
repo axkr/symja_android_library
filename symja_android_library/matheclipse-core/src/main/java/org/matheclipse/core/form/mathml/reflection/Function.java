@@ -3,29 +3,27 @@ package org.matheclipse.core.form.mathml.reflection;
 import org.matheclipse.core.form.mathml.AbstractConverter;
 import org.matheclipse.core.interfaces.IAST;
 
-public class Rational extends AbstractConverter {
+public class Function extends AbstractConverter {
 
   /** constructor will be called by reflection */
-  public Rational() {
+  public Function() {
   }
 
   /**
    * Converts a given function into the corresponding MathML output
-   *
+   * 
    *@param  buf  StringBuffer for MathML output
    *@param  f    The math function which should be converted to MathML
    */
   public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
-    if (f.size() != 3) {
+    //    "<mrow>{0}<mo>!</mo></mrow>"
+    if (f.size() != 2) {
       return false;
     }
-    
-//  <mfrac><mi>k</mi><mn>2</mn></mfrac>
-    fFactory.tagStart(buf, "mfrac");
+    fFactory.tagStart(buf, "mrow");
     fFactory.convert(buf, f.arg1(), 0);
-    fFactory.convert(buf, f.arg2(), 0);
-    fFactory.tagEnd(buf, "mfrac");
-     
+    fFactory.tag(buf, "mo", "&amp;");
+    fFactory.tagEnd(buf, "mrow");
     return true;
   }
 }

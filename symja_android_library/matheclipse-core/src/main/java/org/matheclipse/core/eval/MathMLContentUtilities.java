@@ -56,7 +56,7 @@ public class MathMLContentUtilities {
 	 * @param out
 	 */
 	synchronized public void toMathML(final IExpr objectExpression, final Writer out) {
-		final StringBuffer buf = new StringBuffer();
+		final StringBuilder buf = new StringBuilder();
 
 		if (objectExpression != null) {
 			fMathMLFactory.convert(buf, objectExpression, 0);

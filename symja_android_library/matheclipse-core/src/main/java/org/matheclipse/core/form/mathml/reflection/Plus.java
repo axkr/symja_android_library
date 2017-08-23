@@ -22,7 +22,7 @@ public class Plus extends MMLOperator {
 	 * @see org.matheclipse.core.form.mathml.IConverter#convert(java.lang.StringBuffer, org.matheclipse.parser.interfaces.IAST, int)
 	 */
 	@Override
-	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
+	public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 		IExpr expr;
 		fFactory.tagStart(buf, fFirstTag);
 		precedenceOpen(buf, precedence);
