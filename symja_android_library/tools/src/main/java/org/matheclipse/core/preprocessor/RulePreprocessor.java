@@ -8,16 +8,14 @@ import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
-import org.matheclipse.parser.client.Parser;
-import org.matheclipse.parser.client.ast.ASTNode;
 
 /**
  * Generate java sources for Symja rule files.
@@ -63,11 +61,9 @@ public class RulePreprocessor {
 		}
 	}
 
-	public static void convert(ASTNode node, String rulePostfix, StringBuffer buffer, final PrintWriter out,
+	public static void convert(IExpr expr, String rulePostfix, StringBuffer buffer, final PrintWriter out,
 			String symbolName, EvalEngine engine) {
 		try {
-			// convert ASTNode to an IExpr node
-			IExpr expr = new AST2Expr(false, engine).convert(node);
 			if (expr.isListOfLists()) {
 				IAST list = (IAST) expr;
 				for (int i = 1; i < list.size(); i++) {
@@ -78,7 +74,7 @@ public class RulePreprocessor {
 			}
 		} catch (UnsupportedOperationException uoe) {
 			System.out.println(uoe.getMessage());
-			System.out.println(node.toString());
+			System.out.println(expr.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -159,7 +155,7 @@ public class RulePreprocessor {
 		out.print(FOOTER0);
 	}
 
-	public static ASTNode parseFileToList(File file) {
+	public static IExpr parseFileToList(File file, EvalEngine engine) {
 		try {
 			final BufferedReader f = new BufferedReader(new FileReader(file));
 			final StringBuffer buff = new StringBuffer(1024);
@@ -170,7 +166,7 @@ public class RulePreprocessor {
 			}
 			f.close();
 			String inputString = buff.toString();
-			Parser p = new Parser(true, false);
+			ExprParser p = new ExprParser(engine, true);
 			return p.parse(inputString);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -201,9 +197,9 @@ public class RulePreprocessor {
 					File sourceFile = new File(sourceLocation, files[i]);
 					// we are only interested in .m files
 					if (files[i].endsWith(".m")) {
-						ASTNode node = parseFileToList(sourceFile);
+						IExpr expr = parseFileToList(sourceFile, engine);
 
-						if (node != null) {
+						if (expr != null) {
 							buffer = new StringBuffer(100000);
 							PrintWriter out;
 							try {
@@ -222,7 +218,7 @@ public class RulePreprocessor {
 								out.print(HEADER);
 								out.print(className);
 								out.print(" {\n");
-								convert(node, "", buffer, out, symbolName, engine);
+								convert(expr, "", buffer, out, symbolName, engine);
 								out.println(FOOTER1);
 								out.close();
 							} catch (IOException e) {
