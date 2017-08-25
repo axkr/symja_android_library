@@ -15,6 +15,7 @@ import java.util.function.Function;
 
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RuleCreationError;
@@ -220,19 +221,24 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public String definitionToString() throws IOException {
 		StringWriter buf = new StringWriter();
-
+		IAST attributesList = AttributeFunctions.attributesList(this);
 		OutputFormFactory off = OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax());
 		off.setIgnoreNewLine(true);
 		List<IAST> list = definition();
-		buf.append("{");
+		// buf.append("{");
+		buf.append("Attributes(");
+		buf.append(this.toString());
+		buf.append(")=");
+		buf.append(attributesList.toString());
+		buf.append("\n");
 		for (int i = 0; i < list.size(); i++) {
 			off.convert(buf, list.get(i));
 			if (i < list.size() - 1) {
-				buf.append(",\n ");
+				buf.append("\n");
 				off.setColumnCounter(0);
 			}
 		}
-		buf.append("}\n");
+		// buf.append("}\n");
 		return buf.toString();
 	}
 
@@ -719,7 +725,7 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public final void popLocalVariable() {
 		final Deque<IExpr> localVariableStack = EvalEngine.get().localStack(this);
-		localVariableStack.pop(); 
+		localVariableStack.pop();
 	}
 
 	/** {@inheritDoc} */

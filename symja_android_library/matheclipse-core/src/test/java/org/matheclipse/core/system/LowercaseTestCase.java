@@ -1177,6 +1177,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Defer(3*2)", "3*2");
 		check("Defer(6/8)==6/8", "6/8==3/4");
 	}
+	
+	public void testDefinition() {
+		check("SetAttributes(f,Listable)", "");
+		check("f(x_):={x}", "");
+		check("Definition(f)", "\"Attributes(f)={Listable}\n" + 
+				"f(x_):={x}\"");
+	}
 
 	public void testDegree() {
 		check("Sin(30*Degree)", "1/2");

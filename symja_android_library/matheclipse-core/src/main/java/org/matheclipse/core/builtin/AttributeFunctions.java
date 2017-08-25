@@ -20,8 +20,8 @@ public class AttributeFunctions {
 	/**
 	 * Get the list of attributes of a given symbol.
 	 * <p>
-	 * See the online Symja function reference:
-	 * <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Attributes">Attributes</a>
+	 * See the online Symja function reference: <a href=
+	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Attributes">Attributes</a>
 	 * </p>
 	 *
 	 */
@@ -35,61 +35,12 @@ public class AttributeFunctions {
 			Validate.checkSize(ast, 2);
 
 			if (ast.arg1().isSymbol()) {
-				IAST result = F.List();
 				final ISymbol sym = ((ISymbol) ast.arg1());
-				int attributea = sym.getAttributes();
-
-				if ((attributea & ISymbol.CONSTANT) != ISymbol.NOATTRIBUTE) {
-					result.append(F.Constant);
-				}
-
-				if ((attributea & ISymbol.FLAT) != ISymbol.NOATTRIBUTE) {
-					result.append(F.Flat);
-				}
-
-				if ((attributea & ISymbol.LISTABLE) != ISymbol.NOATTRIBUTE) {
-					result.append(F.Listable);
-				}
-
-				if ((attributea & ISymbol.ONEIDENTITY) != ISymbol.NOATTRIBUTE) {
-					result.append(F.OneIdentity);
-				}
-
-				if ((attributea & ISymbol.ORDERLESS) != ISymbol.NOATTRIBUTE) {
-					result.append(F.Orderless);
-				}
-
-				if ((attributea & ISymbol.HOLDALL) != ISymbol.NOATTRIBUTE) {
-					result.append(F.HoldAll);
-				} else {
-					if ((attributea & ISymbol.HOLDFIRST) != ISymbol.NOATTRIBUTE) {
-						result.append(F.HoldFirst);
-					}
-
-					if ((attributea & ISymbol.HOLDREST) != ISymbol.NOATTRIBUTE) {
-						result.append(F.HoldRest);
-					}
-				}
-
-				if ((attributea & ISymbol.NHOLDALL) != ISymbol.NOATTRIBUTE) {
-					result.append(F.NHoldAll);
-				} else {
-					if ((attributea & ISymbol.NHOLDFIRST) != ISymbol.NOATTRIBUTE) {
-						result.append(F.NHoldFirst);
-					}
-
-					if ((attributea & ISymbol.NHOLDREST) != ISymbol.NOATTRIBUTE) {
-						result.append(F.NHoldRest);
-					}
-				}
-
-				if ((attributea & ISymbol.NUMERICFUNCTION) != ISymbol.NOATTRIBUTE) {
-					result.append(F.NumericFunction);
-				}
-				return result;
+				return attributesList(sym);
 			}
 			return F.NIL;
 		}
+
 	}
 
 	/**
@@ -404,6 +355,68 @@ public class AttributeFunctions {
 			return F.Null;
 		}
 
+	}
+
+	/**
+	 * Get the attrbutes of this <code>symbol</code> as symbolic constants in a
+	 * list.
+	 * 
+	 *  
+	 * @param symbol
+	 * @return
+	 */
+	public static IAST attributesList(final ISymbol symbol) {
+		IAST result = F.List();
+		int attributea = symbol.getAttributes();
+
+		if ((attributea & ISymbol.CONSTANT) != ISymbol.NOATTRIBUTE) {
+			result.append(F.Constant);
+		}
+
+		if ((attributea & ISymbol.FLAT) != ISymbol.NOATTRIBUTE) {
+			result.append(F.Flat);
+		}
+
+		if ((attributea & ISymbol.LISTABLE) != ISymbol.NOATTRIBUTE) {
+			result.append(F.Listable);
+		}
+
+		if ((attributea & ISymbol.ONEIDENTITY) != ISymbol.NOATTRIBUTE) {
+			result.append(F.OneIdentity);
+		}
+
+		if ((attributea & ISymbol.ORDERLESS) != ISymbol.NOATTRIBUTE) {
+			result.append(F.Orderless);
+		}
+
+		if ((attributea & ISymbol.HOLDALL) != ISymbol.NOATTRIBUTE) {
+			result.append(F.HoldAll);
+		} else {
+			if ((attributea & ISymbol.HOLDFIRST) != ISymbol.NOATTRIBUTE) {
+				result.append(F.HoldFirst);
+			}
+
+			if ((attributea & ISymbol.HOLDREST) != ISymbol.NOATTRIBUTE) {
+				result.append(F.HoldRest);
+			}
+		}
+
+		if ((attributea & ISymbol.NHOLDALL) != ISymbol.NOATTRIBUTE) {
+			result.append(F.NHoldAll);
+		} else {
+			if ((attributea & ISymbol.NHOLDFIRST) != ISymbol.NOATTRIBUTE) {
+				result.append(F.NHoldFirst);
+			}
+
+			if ((attributea & ISymbol.NHOLDREST) != ISymbol.NOATTRIBUTE) {
+				result.append(F.NHoldRest);
+			}
+		}
+
+		if ((attributea & ISymbol.NUMERICFUNCTION) != ISymbol.NOATTRIBUTE) {
+			result.append(F.NumericFunction);
+		}
+		return result;
 	}
 
 	static IExpr setSymbolsAttributes(final IAST ast, EvalEngine engine, IAST list) {

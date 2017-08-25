@@ -59,7 +59,7 @@ public class Definition extends AbstractCoreFunctionEvaluator {
 			stream = System.out;
 		}
 		try {
-			stream.println(symbol.definitionToString());
+			return F.stringx(symbol.definitionToString());
 		} catch (IOException e) {
 			stream.println(e.getMessage());
 			if (Config.DEBUG) {

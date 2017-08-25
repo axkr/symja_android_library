@@ -25,53 +25,48 @@ public class MathMLPresentationTestCase extends TestCase {
 	 * Test mathml function
 	 */
 	public void testMathMLPresentation() {
-		check("x /.y",
-				"<mrow><mi>x</mi><mo>/.</mo><mi>y</mi></mrow>");
+		check("\"hello\nworld\"", "<mtext>hello</mtext><mspace linebreak='newline' /><mtext>world</mtext><mspace linebreak='newline' />");
+		check("x /.y", "<mrow><mi>x</mi><mo>/.</mo><mi>y</mi></mrow>");
 		check("f(x_,y_):={x,y}/;x>y",
-				"<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mtext>x_</mtext><mo>,</mo><mtext>y_</mtext></mrow><mo>)</mo></mrow></mrow><mo>:=</mo><mrow><mrow><mo>{</mo><mrow><mi>x</mi><mo>,</mo><mi>y</mi></mrow><mo>}</mo></mrow><mo>/;</mo><mrow><mi>x</mi><mo>&gt;</mo><mi>y</mi></mrow></mrow></mrow>");
-		
+				"<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mtext>x_</mtext><mspace linebreak='newline' /><mo>,</mo><mtext>y_</mtext><mspace linebreak='newline' /></mrow><mo>)</mo></mrow></mrow><mo>:=</mo><mrow><mrow><mo>{</mo><mrow><mi>x</mi><mo>,</mo><mi>y</mi></mrow><mo>}</mo></mrow><mo>/;</mo><mrow><mi>x</mi><mo>&gt;</mo><mi>y</mi></mrow></mrow></mrow>");
+
 		check("f(x)&",
 				"<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow><mo>&amp;</mo></mrow>");
 		check("f(x, #)&[y]",
 				"<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi><mo>,</mo><mi>#1</mi></mrow><mo>)</mo></mrow></mrow><mo>&amp;</mo></mrow><mo>[</mo><mi>y</mi><mo>]</mo>");
-		
+
 		check("f(x)[y][z]",
 				"<mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow><mo>[</mo><mi>y</mi><mo>]</mo><mo>[</mo><mi>z</mi><mo>]</mo>");
-		check("f'(x)",
-				"<mi>f</mi><mo>'</mo><mo>(</mo><mrow><mi>x</mi><mo>)</mo></mrow>");
-		check(F.Slot1,
-				"<mi>#1</mi>");
-		check(F.SlotSequence(2),
-				"<mi>##2</mi>");
+		check("f'(x)", "<mi>f</mi><mo>'</mo><mo>(</mo><mrow><mi>x</mi><mo>)</mo></mrow>");
+		check(F.Slot1, "<mi>#1</mi>");
+		check(F.SlotSequence(2), "<mi>##2</mi>");
 		Apcomplex c = new Apcomplex("(-0.5,-4.0)");
-		check(F.complexNum(c) ,
-				"<mrow><mn>-5e-1</mn><mo>-</mo><mn>4</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
+		check(F.complexNum(c), "<mrow><mn>-5e-1</mn><mo>-</mo><mn>4</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
 		check(F.complexNum(-0.5, -4.0),
 				"<mrow><mn>-0.5</mn><mo>-</mo><mn>4.0</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
-		check(F.pattern(F.x),
-				"<mtext>x_</mtext>");
+		check(F.pattern(F.x), "<mtext>x_</mtext><mspace linebreak='newline' />");
 		check(F.complexNum(0.5, 4.0),
 				"<mrow><mn>0.5</mn><mo>+</mo><mn>4.0</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
 		check(F.complexNum(-0.5, -4.0),
 				"<mrow><mn>-0.5</mn><mo>-</mo><mn>4.0</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
-		
+
 		check("0.5-0.75*x",
 				"<mrow><mrow><mrow><mo>(</mo><mn>-0.75</mn><mo>)</mo></mrow><mo>&#0183;</mo><mi>x</mi></mrow><mo>+</mo><mn>0.5</mn></mrow>");
-		
+
 		check("-0.33-0.75*y",
 				"<mrow><mrow><mrow><mo>(</mo><mn>-0.75</mn><mo>)</mo></mrow><mo>&#0183;</mo><mi>y</mi></mrow><mo>-</mo><mn>0.33</mn></mrow>");
-		
+
 		check("Cos(x^3)",
 				"<mrow><mi>cos</mi><mo>&#x2061;</mo><mo>(</mo><msup><mi>x</mi><mn>3</mn></msup><mo>)</mo></mrow>");
-		
+
 		check("-1/2-3/4*I",
 				"<mrow><mfrac><mrow><mrow><mo>(</mo><mn>-3</mn><mo>)</mo></mrow><mo>&#0183;</mo><mrow><mi>&#x2148;</mi></mrow></mrow><mn>4</mn></mfrac><mo>-</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow>");
 		check("1/2+3/4*I",
 				"<mrow><mfrac><mrow><mn>3</mn><mo>&#0183;</mo><mrow><mi>&#x2148;</mi></mrow></mrow><mn>4</mn></mfrac><mo>+</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow>");
-		
+
 		check("Sqrt(-1/2+2/3*I)",
 				"<msqrt><mrow><mfrac><mrow><mn>2</mn><mo>&#0183;</mo><mrow><mi>&#x2148;</mi></mrow></mrow><mn>3</mn></mfrac><mo>-</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow></msqrt>");
-		
+
 		check("Sqrt(-4*I)",
 				"<msqrt><mrow><mrow><mo>(</mo><mn>-4</mn><mo>)</mo></mrow><mo>&#0183;</mo><mrow><mi>&#x2148;</mi></mrow></mrow></msqrt>");
 		check("DirectedInfinity()",
@@ -125,7 +120,7 @@ public class MathMLPresentationTestCase extends TestCase {
 		check("x^2+4*x+4==0",
 				"<mrow><mrow><mn>4</mn><mo>+</mo><mrow><mn>4</mn><mo>&#0183;</mo><mi>x</mi></mrow><mo>+</mo><msup><mi>x</mi><mn>2</mn></msup></mrow><mo>==</mo><mn>0</mn></mrow>");
 
-		check("n!", "<mrow><mi>n</mi><mo>!</mo></mrow>"); 
+		check("n!", "<mrow><mi>n</mi><mo>!</mo></mrow>");
 		check("Sum(i, {i,1,n}, {j,1,m})",
 				"<mrow><munderover><mo>&#x2211;</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><munderover><mo>&#x2211;</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn></mrow><mi>m</mi></munderover><mi>i</mi></mrow></mrow>");
 
@@ -170,7 +165,7 @@ public class MathMLPresentationTestCase extends TestCase {
 				+ "<math mode=\"display\">\n" + strResult + "</math>");
 
 	}
-	
+
 	public void check(IExpr expr, String strResult) {
 		StringWriter stw = new StringWriter();
 		mathUtil.toMathML(expr, stw);

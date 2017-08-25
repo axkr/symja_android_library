@@ -25,7 +25,6 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
-import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.PostfixOperator;
 import org.matheclipse.parser.client.operator.PrefixOperator;
 
@@ -263,9 +262,14 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	}
 
 	public void convertString(final StringBuilder buf, final String str) {
-		tagStart(buf, "mtext");
-		buf.append(str);
-		tagEnd(buf, "mtext");
+		String[] splittedStr = str.split("\\n");
+		for (int i = 0; i < splittedStr.length; i++) {
+			tagStart(buf, "mtext");
+			buf.append(splittedStr[i]);
+			tagEnd(buf, "mtext");
+			buf.append("<mspace linebreak='newline' />");
+		}
+		
 	}
 
 	public void convertSymbol(final StringBuilder buf, final ISymbol sym) {
@@ -560,7 +564,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 	public void convertInfixOperator(final StringBuilder buf, final IAST list, final InfixOperator oper,
 			final int precedence) {
-		
+
 		if (list.isAST2()) {
 			tagStart(buf, "mrow");
 			if (oper.getPrecedence() < precedence) {
