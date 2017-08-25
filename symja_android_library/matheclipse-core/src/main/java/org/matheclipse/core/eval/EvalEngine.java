@@ -1875,7 +1875,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	@Override
 	public String toString() {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		if (fLocalVariableStackMap != null) {
 			buf.append(fLocalVariableStackMap.toString());
 		}

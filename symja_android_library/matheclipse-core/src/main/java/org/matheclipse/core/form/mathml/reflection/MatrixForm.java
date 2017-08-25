@@ -15,7 +15,7 @@ public class MatrixForm extends AbstractConverter {
 	 * Converts a given function into the corresponding MathML output
 	 * 
 	 * @param buf
-	 *            StringBuffer for MathML output
+	 *            StringBuilder for MathML output
 	 * @param f
 	 *            The math function which should be converted to MathML
 	 */

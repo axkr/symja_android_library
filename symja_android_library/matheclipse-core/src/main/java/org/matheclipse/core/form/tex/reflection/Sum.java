@@ -13,7 +13,7 @@ public class Sum extends AbstractConverter {
 	}
 
 	/** {@inheritDoc} */
-	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
+	public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 		if (f.size() >= 3) {
 			return iteratorStep(buf, "\\sum", f, 2);
 		}
@@ -32,7 +32,7 @@ public class Sum extends AbstractConverter {
 	 * 
 	 * @return <code>true</code> if the expression could be transformed to LaTeX
 	 */
-	public boolean iteratorStep(final StringBuffer buf, final String mathSymbol, final IAST f, int i) {
+	public boolean iteratorStep(final StringBuilder buf, final String mathSymbol, final IAST f, int i) {
 		if (i >= f.size()) {
 			buf.append(" ");
 			fFactory.convertSubExpr(buf, f.arg1(), 0);

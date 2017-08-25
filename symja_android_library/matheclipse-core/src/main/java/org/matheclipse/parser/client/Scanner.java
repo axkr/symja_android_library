@@ -697,7 +697,7 @@ public class Scanner {
 		return null;
 	}
 
-	protected StringBuilder getStringBuffer() throws SyntaxError {
+	protected StringBuilder getStringBuilder() throws SyntaxError {
 		final StringBuilder ident = new StringBuilder();
 
 		if (fInputString.length() > fCurrentPosition) {

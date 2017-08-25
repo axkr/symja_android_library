@@ -37,7 +37,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 			fOperator = oper;
 		}
 
-		public void convert(final StringBuffer buf) {
+		public void convert(final StringBuilder buf) {
 			buf.append(fOperator);
 		}
 
@@ -76,7 +76,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		init();
 	}
 
-	public void convertDouble(final StringBuffer buf, final INum d, final int precedence) {
+	public void convertDouble(final StringBuilder buf, final INum d, final int precedence) {
 		if (d.isNegative() && (precedence > plusPrec)) {
 			buf.append("\\left( ");
 		}
@@ -86,7 +86,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 	}
 
-	public void convertDoubleComplex(final StringBuffer buf, final IComplexNum dc, final int precedence) {
+	public void convertDoubleComplex(final StringBuilder buf, final IComplexNum dc, final int precedence) {
 		if (precedence > plusPrec) {
 			buf.append("\\left( ");
 		}
@@ -100,7 +100,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 	}
 
-	public void convertInteger(final StringBuffer buf, final IInteger i, final int precedence) {
+	public void convertInteger(final StringBuilder buf, final IInteger i, final int precedence) {
 		if (i.isNegative() && (precedence > plusPrec)) {
 			buf.append("\\left( ");
 		}
@@ -110,7 +110,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 	}
 
-	public void convertFraction(final StringBuffer buf, final IFraction f, final int precedence) {
+	public void convertFraction(final StringBuilder buf, final IFraction f, final int precedence) {
 		if (f.isNegative() && (precedence > plusPrec)) {
 			buf.append("\\left( ");
 		}
@@ -128,7 +128,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 	}
 
-	public void convertFraction(final StringBuffer buf, final BigFraction f, final int precedence) {
+	public void convertFraction(final StringBuilder buf, final BigFraction f, final int precedence) {
 		boolean negative = f.compareTo(BigFraction.ZERO) < 0;
 		if (negative && (precedence > plusPrec)) {
 			buf.append("\\left( ");
@@ -147,7 +147,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 	}
 
-	public void convertComplex(final StringBuffer buf, final IComplex c, final int precedence) {
+	public void convertComplex(final StringBuilder buf, final IComplex c, final int precedence) {
 		if (c.isImaginaryUnit()) {
 			buf.append("i ");
 			return;
@@ -174,11 +174,11 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 	}
 
-	public void convertString(final StringBuffer buf, final String str) {
+	public void convertString(final StringBuilder buf, final String str) {
 		buf.append(str);
 	}
 
-	public void convertSymbol(final StringBuffer buf, final ISymbol sym) {
+	public void convertSymbol(final StringBuilder buf, final ISymbol sym) {
 		String headStr = sym.getSymbolName();
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
@@ -203,7 +203,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 	}
 
-	public void convertHead(final StringBuffer buf, final Object obj) {
+	public void convertHead(final StringBuilder buf, final Object obj) {
 		if (obj instanceof ISymbol) {
 			String str = ((ISymbol) obj).getSymbolName();
 			final Object ho = CONSTANT_SYMBOLS.get(((ISymbol) obj).getSymbolName());
@@ -232,7 +232,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		convert(buf, obj, 0);
 	}
 
-	public void convert(final StringBuffer buf, final Object o, final int precedence) {
+	public void convert(final StringBuilder buf, final Object o, final int precedence) {
 		if (o instanceof IExpr) {
 			IExpr expr = (IExpr) o;
 			String str = CONSTANT_EXPRS.get(expr);
@@ -295,7 +295,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 	}
 
 	@Override
-	public void convertAST(StringBuffer buf, final IAST f) {
+	public void convertAST(StringBuilder buf, final IAST f) {
 		convertHead(buf, f.head());
 		buf.append("(");
 		for (int i = 1; i < f.size(); i++) {
@@ -309,7 +309,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 	}
 
 	@Override
-	public void convertAST(StringBuffer buf, final IAST f, String headString) {
+	public void convertAST(StringBuilder buf, final IAST f, String headString) {
 		buf.append(headString);
 		buf.append("(");
 		for (int i = 1; i < f.size(); i++) {
@@ -529,7 +529,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 	}
 
 	@Override
-	public void convertSubExpr(StringBuffer buf, IExpr o, int precedence) {
+	public void convertSubExpr(StringBuilder buf, IExpr o, int precedence) {
 		if (o.isAST()) {
 			buf.append("{");
 		}

@@ -70,7 +70,7 @@ public class Console {
 		if (file != null) {
 			try {
 				final BufferedReader f = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
-				final StringBuffer buff = new StringBuffer(1024);
+				final StringBuilder buff = new StringBuilder(1024);
 				String line;
 				while ((line = f.readLine()) != null) {
 					buff.append(line);
@@ -153,7 +153,7 @@ public class Console {
 	 */
 	private static void printUsage() {
 		final String lineSeparator = System.getProperty("line.separator");
-		final StringBuffer msg = new StringBuffer();
+		final StringBuilder msg = new StringBuilder();
 		msg.append("org.matheclipse.core.eval.Console [options]" + lineSeparator);
 		msg.append(lineSeparator);
 		msg.append("Program arguments: " + lineSeparator);
@@ -174,7 +174,7 @@ public class Console {
 	 */
 	private static void printUsageCompletely() {
 		final String lineSeparator = System.getProperty("line.separator");
-		final StringBuffer msg = new StringBuffer();
+		final StringBuilder msg = new StringBuilder();
 		msg.append("org.matheclipse.core.eval.Console [options]" + lineSeparator);
 		msg.append(lineSeparator);
 		msg.append("Program arguments: " + lineSeparator);
@@ -432,7 +432,7 @@ public class Console {
 	 */
 
 	public String readString() {
-		final StringBuffer input = new StringBuffer();
+		final StringBuilder input = new StringBuilder();
 		final BufferedReader in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
 		boolean done = false;
 

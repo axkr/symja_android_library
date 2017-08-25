@@ -1478,7 +1478,7 @@ public final class ExprTermOrder implements Serializable {
      * @return string representation of weight matrix.
      */
     public String weightToString() {
-        StringBuffer erg = new StringBuffer();
+    	StringBuilder erg = new StringBuilder();
         if (weight != null) {
             erg.append("(");
             for (int j = 0; j < weight.length; j++) {
@@ -1507,7 +1507,7 @@ public final class ExprTermOrder implements Serializable {
      */
     public String weightToScript() {
         // cases Python and Ruby
-        StringBuffer erg = new StringBuffer();
+    	StringBuilder erg = new StringBuilder();
         if (weight != null) {
             erg.append("[");
             for (int j = 0; j < weight.length; j++) {
@@ -1535,9 +1535,8 @@ public final class ExprTermOrder implements Serializable {
      * @return script representation of ExprTermOrder.
      */
     public String toScript() {
-        // cases Python and Ruby
         if (weight != null) {
-            StringBuffer erg = new StringBuffer();
+        	StringBuilder erg = new StringBuilder();
             //erg.append("ExprTermOrder( ");
             erg.append(weightToScript());
             if (evend1 == evend2) {
@@ -1560,7 +1559,7 @@ public final class ExprTermOrder implements Serializable {
     @Override
     public String toString() {
         if (weight != null) {
-            StringBuffer erg = new StringBuffer();
+        	StringBuilder erg = new StringBuilder();
             erg.append("W( ");
             erg.append(weightToString());
             if (evend1 == evend2) {
@@ -1580,7 +1579,7 @@ public final class ExprTermOrder implements Serializable {
      * String representation of ExprTermOrder without prefix and weight matrix.
      */
     public String toStringPlain() {
-        StringBuffer erg = new StringBuffer();
+    	StringBuilder erg = new StringBuilder();
         if (weight != null) {
             return erg.toString();
         }
@@ -1599,7 +1598,7 @@ public final class ExprTermOrder implements Serializable {
      * Script representation of ExprTermOrder without prefix and weight matrix.
      */
     public String toScriptPlain() {
-        StringBuffer erg = new StringBuffer();
+    	StringBuilder erg = new StringBuilder();
         if (weight != null) {
             return toScript();
         }

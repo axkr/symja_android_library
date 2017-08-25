@@ -20,20 +20,20 @@ public class AbstractOperator extends AbstractConverter {
 		fOperator = oper;
 	}
 	
-	public void precedenceOpen(final StringBuffer buf, final int precedence) {
+	public void precedenceOpen(final StringBuilder buf, final int precedence) {
 		if (precedence > fPrecedence) {
 			buf.append("\\left( ");
 		}
 	}
 
-	public void precedenceClose(final StringBuffer buf, final int precedence) {
+	public void precedenceClose(final StringBuilder buf, final int precedence) {
 		if (precedence > fPrecedence) {
 			buf.append("\\right) ");
 		}
 	} 
 
 	/** {@inheritDoc} */
-	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
+	public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 		precedenceOpen(buf, precedence);
 		for (int i = 1; i < f.size(); i++) {
 			fFactory.convert(buf, f.get(i), fPrecedence);

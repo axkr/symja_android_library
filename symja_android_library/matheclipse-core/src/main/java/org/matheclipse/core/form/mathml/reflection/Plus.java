@@ -16,11 +16,6 @@ public class Plus extends MMLOperator {
 		super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence(), "mrow", "+");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.matheclipse.core.form.mathml.IConverter#convert(java.lang.StringBuffer, org.matheclipse.parser.interfaces.IAST, int)
-	 */
 	@Override
 	public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 		IExpr expr;

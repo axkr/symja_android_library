@@ -11,7 +11,7 @@ public class HurwitzZeta extends AbstractConverter {
 	}
 
 	/** {@inheritDoc} */
-	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
+	public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 		fFactory.convertAST(buf, f, "zeta ");
 		return true;
 	}

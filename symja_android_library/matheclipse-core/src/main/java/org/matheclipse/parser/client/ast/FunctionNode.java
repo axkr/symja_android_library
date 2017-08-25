@@ -220,7 +220,7 @@ final public class FunctionNode extends ASTNode implements java.util.List<ASTNod
 	@Override
 	public String toString() {
 		ASTNode head = fNodesList.get(0);
-		final StringBuffer buf = new StringBuffer();
+		final StringBuilder buf = new StringBuilder();
 		if (head == null) {
 			buf.append("<null-tag>");
 		} else {

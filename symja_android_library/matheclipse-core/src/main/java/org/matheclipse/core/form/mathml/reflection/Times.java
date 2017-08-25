@@ -24,7 +24,7 @@ public class Times extends MMLOperator {
 	 * Converts a given function into the corresponding MathML output
 	 * 
 	 * @param buf
-	 *            StringBuffer for MathML output
+	 *            StringBuilder for MathML output
 	 * @param f
 	 *            The math function which should be converted to MathML
 	 */
@@ -38,7 +38,7 @@ public class Times extends MMLOperator {
 	 * denominator and add the corresponding MathML output
 	 * 
 	 * @param buf
-	 *            StringBuffer for MathML output
+	 *            StringBuilder for MathML output
 	 * @param f
 	 *            The function which should be converted to MathML
 	 * @precedence

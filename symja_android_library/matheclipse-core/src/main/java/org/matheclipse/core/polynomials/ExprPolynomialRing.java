@@ -598,7 +598,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * @see edu.jas.structure.Element#toScript()
 	 */
 	public String toScript() {
-		StringBuffer s = new StringBuffer();
+		StringBuilder s = new StringBuilder();
 		switch (Scripting.getLang()) {
 		case Ruby:
 			s.append("PolyRing.new(");

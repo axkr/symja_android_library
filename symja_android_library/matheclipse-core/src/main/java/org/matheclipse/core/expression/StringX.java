@@ -174,17 +174,13 @@ public class StringX implements IStringX {
 		return newInstance(String.valueOf(obj));
 	}
 
-	public static StringX valueOf(final StringBuffer stringBuffer) {
-		return newInstance(stringBuffer.toString());
+	public static StringX valueOf(final StringBuilder builder) {
+		return newInstance(builder.toString());
 	}
 
 	private StringX(final String str) {
 		fString = str;
 	}
-
-	// public StringImpl(final StringBuffer stringBuffer) {
-	// fString = stringBuffer.toString();
-	// }
 
 	/**
 	 * @param index
@@ -365,7 +361,7 @@ public class StringX implements IStringX {
 	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
 		if (symbolsAsFactoryMethod) {
-			final StringBuffer buffer = new StringBuffer();
+			final StringBuilder buffer = new StringBuilder();
 			buffer.append("$str(\"");
 			buffer.append(fString);
 			buffer.append("\")");
@@ -377,7 +373,7 @@ public class StringX implements IStringX {
 	/** {@inheritDoc} */
 	@Override
 	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
-		final StringBuffer buffer = new StringBuffer();
+		final StringBuilder buffer = new StringBuilder();
 		buffer.append("$str(\"");
 		buffer.append(fString);
 		buffer.append("\")");

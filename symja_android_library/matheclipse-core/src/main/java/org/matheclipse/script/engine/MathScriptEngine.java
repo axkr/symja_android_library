@@ -55,7 +55,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
 
 	public Object eval(final Reader reader, final ScriptContext context) throws ScriptException {
 		final BufferedReader f = new BufferedReader(reader);
-		final StringBuffer buff = new StringBuffer(1024);
+		final StringBuilder buff = new StringBuilder(1024);
 		String line;
 		try {
 			while ((line = f.readLine()) != null) {

@@ -61,7 +61,7 @@ public class TeXUtilities {
 	 * @param out
 	 */
 	synchronized public void toTeX(final IExpr objectExpression, final Writer out) {
-		final StringBuffer buf = new StringBuffer();
+		final StringBuilder buf = new StringBuilder();
 
 		if (objectExpression != null) {
 			IExpr result = objectExpression;

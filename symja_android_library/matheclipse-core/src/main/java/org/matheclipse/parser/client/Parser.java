@@ -670,7 +670,7 @@ public class Parser extends Scanner {
 	}
 
 	private ASTNode getString() throws SyntaxError {
-		final StringBuilder ident = getStringBuffer();
+		final StringBuilder ident = getStringBuilder();
 
 		getNextToken();
 

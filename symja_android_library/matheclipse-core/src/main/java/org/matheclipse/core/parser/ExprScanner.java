@@ -798,8 +798,8 @@ public class ExprScanner {
 		return result;
 	}
 
-	protected StringBuffer getStringBuffer() throws SyntaxError {
-		final StringBuffer ident = new StringBuffer();
+	protected StringBuilder getStringBuilder() throws SyntaxError {
+		final StringBuilder ident = new StringBuilder();
 
 		if (fInputString.length() > fCurrentPosition) {
 			fCurrentChar = fInputString.charAt(fCurrentPosition++);

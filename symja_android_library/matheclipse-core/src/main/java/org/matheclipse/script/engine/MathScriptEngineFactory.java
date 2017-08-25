@@ -87,7 +87,7 @@ public class MathScriptEngineFactory implements javax.script.ScriptEngineFactory
 	}
 
 	public String getProgram(String... statements) {
-		final StringBuffer retval = new StringBuffer();
+		final StringBuilder retval = new StringBuilder();
 		final int len = statements.length;
 		for (int i = 0; i < len; i++) {
 			if (i == len - 1) {

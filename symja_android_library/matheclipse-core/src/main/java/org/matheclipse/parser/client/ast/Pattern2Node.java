@@ -70,7 +70,7 @@ final public class Pattern2Node extends PatternNode {
 
 	@Override
 	public String toString() {
-		final StringBuffer buff = new StringBuffer();
+		final StringBuilder buff = new StringBuilder();
 		if (fSymbol != null) {
 			buff.append(fSymbol.toString());
 		}

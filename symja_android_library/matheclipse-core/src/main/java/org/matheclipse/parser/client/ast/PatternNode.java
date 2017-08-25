@@ -112,7 +112,7 @@ public class PatternNode extends ASTNode {
 
 	@Override
 	public String toString() {
-		final StringBuffer buff = new StringBuffer();
+		final StringBuilder buff = new StringBuilder();
 		if (fSymbol != null) {
 			buff.append(fSymbol.toString());
 		}

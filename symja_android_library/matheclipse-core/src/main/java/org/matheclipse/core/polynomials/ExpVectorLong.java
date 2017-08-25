@@ -437,7 +437,7 @@ public final class ExpVectorLong {
 	 */
 	@Override
 	public String toString() {
-		StringBuffer s = new StringBuffer("(");
+		StringBuilder s = new StringBuilder("(");
 		for (int i = 0; i < length(); i++) {
 			s.append(getVal(i));
 			if (i < length() - 1) {
@@ -456,7 +456,7 @@ public final class ExpVectorLong {
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString(IAST vars) {
-		StringBuffer s = new StringBuffer();
+		StringBuilder s = new StringBuilder();
 		boolean pit;
 		int r = length();
 		if (r != vars.size() - 1) {
@@ -507,7 +507,7 @@ public final class ExpVectorLong {
 		if (vars == null) {
 			return "null";
 		}
-		StringBuffer s = new StringBuffer();
+		StringBuilder s = new StringBuilder();
 		for (int i = 1; i < vars.size(); i++) {
 			s.append(vars.get(i));
 			if (i < vars.size() - 1) {
@@ -539,7 +539,7 @@ public final class ExpVectorLong {
 		if (r != vars.size() - 1) {
 			return toString();
 		}
-		StringBuffer s = new StringBuffer();
+		StringBuilder s = new StringBuilder();
 		boolean pit;
 		long vi;
 		for (int i = r - 1; i > 0; i--) {

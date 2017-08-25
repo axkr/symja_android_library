@@ -203,7 +203,7 @@ public class PatternSequence implements IPatternSequence {
 	@Override
 	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
 		if (symbolsAsFactoryMethod) {
-			final StringBuffer buffer = new StringBuffer();
+			final StringBuilder buffer = new StringBuilder();
 			buffer.append("$ps(");
 			if (fSymbol == null) {
 				buffer.append("(ISymbol)null");
@@ -238,7 +238,7 @@ public class PatternSequence implements IPatternSequence {
 
 	@Override
 	public String toString() {
-		final StringBuffer buffer = new StringBuffer();
+		final StringBuilder buffer = new StringBuilder();
 		if (fSymbol == null) {
 			buffer.append("__");
 			if (fZeroArgsAllowed) {
@@ -277,7 +277,7 @@ public class PatternSequence implements IPatternSequence {
 
 	@Override
 	public String fullFormString() {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		if (fSymbol == null) {
 			buf.append("BlankSequence[");
 			if (fCondition != null) {

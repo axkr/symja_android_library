@@ -71,7 +71,7 @@ final public class FractionNode extends NumberNode {
 
 	@Override
 	public String toString() {
-		final StringBuffer buff = new StringBuffer();
+		final StringBuilder buff = new StringBuilder();
 		if (sign) {
 			buff.append('-');
 		}

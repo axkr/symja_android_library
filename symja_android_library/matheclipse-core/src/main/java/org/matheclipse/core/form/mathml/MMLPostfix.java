@@ -13,7 +13,7 @@ public class MMLPostfix extends AbstractConverter {
   /**
    * Converts a given function into the corresponding MathML output
    * 
-   *@param  buf  StringBuffer for MathML output
+   *@param  buf  StringBuilder for MathML output
    *@param  f    The math function which should be converted to MathML
    */
   public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {

@@ -22,12 +22,12 @@ public class Times extends AbstractOperator {
 	 * Converts a given function into the corresponding TeX output
 	 * 
 	 * @param buf
-	 *            StringBuffer for MathML output
+	 *            StringBuilder for TeX output
 	 * @param f
 	 *            The math function which should be converted to TeX
 	 */
 	@Override
-	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
+	public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 		return convertTimesFraction(buf, f, precedence, NO_SPECIAL_CALL);
 	}
 
@@ -36,13 +36,13 @@ public class Times extends AbstractOperator {
 	 * denominator and add the corresponding TeX output
 	 * 
 	 * @param buf
-	 *            StringBuffer for TeX output
+	 *            StringBuilder for TeX output
 	 * @param f
 	 *            The math function which should be converted to TeX
 	 * @precedence
 	 * @caller
 	 */
-	public boolean convertTimesFraction(final StringBuffer buf, final IAST f, final int precedence, final int caller) {
+	public boolean convertTimesFraction(final StringBuilder buf, final IAST f, final int precedence, final int caller) {
 		IExpr[] parts = Algebra.fractionalPartsTimesPower(f, false, true, false, false);
 		if (parts == null) {
 			convertTimesOperator(buf, f, precedence, caller);
@@ -99,7 +99,7 @@ public class Times extends AbstractOperator {
 		return false;
 	}
 
-	private boolean convertTimesOperator(final StringBuffer buf, final IAST timesAST, final int precedence,
+	private boolean convertTimesOperator(final StringBuilder buf, final IAST timesAST, final int precedence,
 			final int caller) {
 		int size = timesAST.size();
 

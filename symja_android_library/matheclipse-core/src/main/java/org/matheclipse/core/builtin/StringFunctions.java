@@ -157,7 +157,7 @@ public final class StringFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 3);
 
-			StringBuffer buf = new StringBuffer();
+			StringBuilder buf = new StringBuilder();
 			for (int i = 1; i < ast.size(); i++) {
 				if (ast.get(i).isString()) {
 					buf.append(ast.get(i).toString());
@@ -291,7 +291,7 @@ public final class StringFunctions {
 		}
 
 		public static String toUnicodeString(final String unicodeInput, final String inputEncoding) {
-			final StringBuffer unicodeStringBuffer = new StringBuffer();
+			final StringBuilder unicodeStringBuilder = new StringBuilder();
 			String unicodeString = null;
 
 			try {
@@ -306,10 +306,10 @@ public final class StringFunctions {
 							hexValueString = "0" + hexValueString;
 						}
 					}
-					unicodeStringBuffer.append(UNICODE_PREFIX);
-					unicodeStringBuffer.append(hexValueString);
+					unicodeStringBuilder.append(UNICODE_PREFIX);
+					unicodeStringBuilder.append(hexValueString);
 				}
-				unicodeString = unicodeStringBuffer.toString();
+				unicodeString = unicodeStringBuilder.toString();
 			} catch (final UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}

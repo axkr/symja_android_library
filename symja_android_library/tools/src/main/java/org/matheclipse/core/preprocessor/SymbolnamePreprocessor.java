@@ -16,16 +16,15 @@ public class SymbolnamePreprocessor {
 	 * @param sourceLocation
 	 *            source directory for rule (*.m) files
 	 * @param ignoreTimestamp
-	 *            if <code>false</code> only change the target file (*.java), if
-	 *            the source file (*.m) has a newer time stamp than the target
-	 *            file.
+	 *            if <code>false</code> only change the target file (*.java), if the
+	 *            source file (*.m) has a newer time stamp than the target file.
 	 */
 	public static void generateFunctionStrings1(final File sourceLocation, boolean ignoreTimestamp) {
 		if (sourceLocation.exists()) {
 			// Get the list of the files contained in the package
 			final String[] files = sourceLocation.list();
 			if (files != null) {
-				StringBuffer buffer = new StringBuffer(16000);
+				StringBuilder buffer = new StringBuilder(16000);
 				for (int i = 0; i < files.length; i++) {
 					File sourceFile = new File(sourceLocation, files[i]);
 					// we are only interested in .m files
@@ -59,7 +58,7 @@ public class SymbolnamePreprocessor {
 			// Get the list of the files contained in the package
 			final String[] files = sourceLocation.list();
 			if (files != null) {
-				StringBuffer buffer = new StringBuffer(16000);
+				StringBuilder buffer = new StringBuilder(16000);
 				for (int i = 0; i < files.length; i++) {
 					File sourceFile = new File(sourceLocation, files[i]);
 					// we are only interested in .m files
@@ -89,7 +88,7 @@ public class SymbolnamePreprocessor {
 			// Get the list of the files contained in the package
 			final String[] files = sourceLocation.list();
 			if (files != null) {
-				StringBuffer buffer = new StringBuffer(16000);
+				StringBuilder buffer = new StringBuilder(16000);
 				for (int i = 0; i < files.length; i++) {
 					File sourceFile = new File(sourceLocation, files[i]);
 					// we are only interested in .m files

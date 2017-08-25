@@ -9,7 +9,7 @@ public class D extends AbstractConverter {
 	}
 
 	/** {@inheritDoc} */
-	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
+	public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 		if (f.isAST2()) {
 
 			buf.append("\\frac{d}{{d");

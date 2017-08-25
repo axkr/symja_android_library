@@ -179,7 +179,7 @@ public class Pattern extends Blank {
 
 	@Override
 	public String fullFormString() {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		buf.append("Pattern");
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			buf.append('(');
@@ -258,7 +258,7 @@ public class Pattern extends Blank {
 
 	@Override
 	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperaators) {
-		final StringBuffer buffer = new StringBuffer();
+		final StringBuilder buffer = new StringBuilder();
 		buffer.append("$p(");
 		String symbolStr = fSymbol.toString();
 		char ch = symbolStr.charAt(0);
@@ -337,7 +337,7 @@ public class Pattern extends Blank {
 
 	@Override
 	public String toString() {
-		final StringBuffer buffer = new StringBuffer();
+		final StringBuilder buffer = new StringBuilder();
 		if (fCondition == null) {
 			buffer.append(fSymbol.toString());
 			buffer.append('_');

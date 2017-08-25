@@ -10,11 +10,11 @@ public interface IConverter {
 	 * Converts a given function into the corresponding TeX output
 	 * 
 	 * @param buffer
-	 *            StringBuffer for TeX output
-	 * @param function
+	 *            StringBuilder for TeX output
+	 * @param function 
 	 *            the math function which should be converted to TeX
 	 */
-	public boolean convert(StringBuffer buffer, IAST function, int precedence);
+	public boolean convert(StringBuilder buffer, IAST function, int precedence);
 	
 	public void setFactory(final AbstractTeXFormFactory factory);
 }

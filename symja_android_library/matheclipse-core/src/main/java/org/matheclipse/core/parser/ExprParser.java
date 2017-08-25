@@ -886,7 +886,7 @@ public class ExprParser extends ExprScanner {
 	 * @throws SyntaxError
 	 */
 	private IStringX getString() throws SyntaxError {
-		final StringBuffer ident = getStringBuffer();
+		final StringBuilder ident = getStringBuilder();
 
 		getNextToken();
 

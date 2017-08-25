@@ -99,7 +99,7 @@ public class MarkdownToHTML {
 	}
 
 	public static String readString() {
-		final StringBuffer input = new StringBuffer();
+		final StringBuilder input = new StringBuilder();
 		final BufferedReader in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
 		boolean done = false;
 

@@ -10,7 +10,7 @@ public class Floor extends AbstractConverter {
   }
 
   /** {@inheritDoc} */
-  public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
+  public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
     if (f.size() != 2) {
       return false;
     }

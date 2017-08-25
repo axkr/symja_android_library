@@ -61,7 +61,7 @@ public class MMAConsole {
 		if (file != null) {
 			try {
 				final BufferedReader f = new BufferedReader(new FileReader(file));
-				final StringBuffer buff = new StringBuffer(1024);
+				final StringBuilder buff = new StringBuilder(1024);
 				String line;
 				while ((line = f.readLine()) != null) {
 					buff.append(line);
@@ -176,7 +176,7 @@ public class MMAConsole {
 	 */
 	private static void printUsage() {
 		final String lineSeparator = System.getProperty("line.separator");
-		final StringBuffer msg = new StringBuffer();
+		final StringBuilder msg = new StringBuilder();
 		msg.append("org.matheclipse.core.eval.MMAConsole [options]" + lineSeparator);
 		msg.append(lineSeparator);
 		msg.append("Program arguments: " + lineSeparator);
@@ -312,7 +312,7 @@ public class MMAConsole {
 	 */
 
 	public String readString(final PrintStream out) {
-		final StringBuffer input = new StringBuffer();
+		final StringBuilder input = new StringBuilder();
 		final BufferedReader in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
 		boolean done = false;
 

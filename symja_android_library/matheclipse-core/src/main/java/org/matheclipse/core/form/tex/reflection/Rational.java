@@ -10,7 +10,7 @@ public class Rational extends AbstractOperator {
 		super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence(), "/");
 	}
 
-	public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
+	public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 		if (f.size() != 3) {
 			return super.convert(buf, f, precedence);
 		}

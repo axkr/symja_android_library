@@ -24,7 +24,7 @@ public class FromCharacterCode extends AbstractFunctionEvaluator {
 
 		if (ast.arg1().isList()) {
 			final IAST list = (IAST) ast.arg1();
-			final StringBuffer buffer = new StringBuffer();
+			final StringBuilder buffer = new StringBuilder();
 			char ch;
 			for (int i = 1; i < list.size(); i++) {
 				if (list.get(i).isInteger()) {

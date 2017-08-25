@@ -156,10 +156,6 @@ public class MathMLPresentationTestCase extends TestCase {
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
 		mathUtil.toMathML(strEval, stw);
-		// fParser.initialize(strEval);
-		// Object obj = fParser.start();
-		// StringBuffer buf = new StringBuffer();
-		// fMathMLFactory.convert(buf, obj, 0);
 		assertEquals(stw.toString(), "<?xml version=\"1.0\"?>\n"
 				+ "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
 				+ "<math mode=\"display\">\n" + strResult + "</math>");
@@ -169,10 +165,6 @@ public class MathMLPresentationTestCase extends TestCase {
 	public void check(IExpr expr, String strResult) {
 		StringWriter stw = new StringWriter();
 		mathUtil.toMathML(expr, stw);
-		// fParser.initialize(strEval);
-		// Object obj = fParser.start();
-		// StringBuffer buf = new StringBuffer();
-		// fMathMLFactory.convert(buf, obj, 0);
 		assertEquals(stw.toString(), "<?xml version=\"1.0\"?>\n"
 				+ "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
 				+ "<math mode=\"display\">\n" + strResult + "</math>");

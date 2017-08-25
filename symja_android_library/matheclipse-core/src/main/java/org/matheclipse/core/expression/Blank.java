@@ -218,7 +218,7 @@ public class Blank implements IPattern {
 
 	@Override
 	public String fullFormString() {
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 		buf.append("Blank");
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			buf.append('(');
@@ -287,7 +287,7 @@ public class Blank implements IPattern {
 
 	@Override
 	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
-		final StringBuffer buffer = new StringBuffer();
+		final StringBuilder buffer = new StringBuilder();
 		buffer.append("$b(");
 		if (fCondition != null) {
 			buffer.append(fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperators));
@@ -371,7 +371,7 @@ public class Blank implements IPattern {
 
 	@Override
 	public String toString() {
-		final StringBuffer buffer = new StringBuffer();
+		final StringBuilder buffer = new StringBuilder();
 		buffer.append('_');
 		if (fCondition != null) {
 			buffer.append(fCondition.toString());

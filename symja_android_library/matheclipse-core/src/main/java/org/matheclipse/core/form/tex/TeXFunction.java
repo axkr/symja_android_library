@@ -12,7 +12,7 @@ public class TeXFunction extends AbstractConverter {
   }
 
   /** {@inheritDoc} */
-  public boolean convert(final StringBuffer buf, final IAST f, final int precedence) {
+  public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
   	buf.append('\\');
   	buf.append(fFunctionName);
   	buf.append('(');

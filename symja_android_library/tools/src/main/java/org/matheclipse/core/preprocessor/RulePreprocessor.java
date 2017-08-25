@@ -42,7 +42,7 @@ public class RulePreprocessor {
 	public RulePreprocessor() {
 	}
 
-	public static void appendSetDelayedToBuffer(IAST ast, StringBuffer buffer, boolean evalRHS, boolean last) {
+	public static void appendSetDelayedToBuffer(IAST ast, StringBuilder buffer, boolean evalRHS, boolean last) {
 		IExpr leftHandSide = ast.arg1();
 		IExpr rightHandSide = ast.arg2();
 		if (ast.arg1().isAST()) {
@@ -61,7 +61,7 @@ public class RulePreprocessor {
 		}
 	}
 
-	public static void convert(IExpr expr, String rulePostfix, StringBuffer buffer, final PrintWriter out,
+	public static void convert(IExpr expr, String rulePostfix, StringBuilder buffer, final PrintWriter out,
 			String symbolName, EvalEngine engine) {
 		try {
 			if (expr.isListOfLists()) {
@@ -82,7 +82,7 @@ public class RulePreprocessor {
 
 	private static void convertExpr(IExpr expr, String rulePostfix, final PrintWriter out, String symbolName) {
 		boolean last;
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 		Set<ISymbol> headerSymbols = new HashSet<ISymbol>();
 		if (expr.isAST()) {
 			IAST list = (IAST) expr;
@@ -158,7 +158,7 @@ public class RulePreprocessor {
 	public static IExpr parseFileToList(File file, EvalEngine engine) {
 		try {
 			final BufferedReader f = new BufferedReader(new FileReader(file));
-			final StringBuffer buff = new StringBuffer(1024);
+			final StringBuilder buff = new StringBuilder(1024);
 			String line;
 			while ((line = f.readLine()) != null) {
 				buff.append(line);
@@ -191,7 +191,7 @@ public class RulePreprocessor {
 			// Get the list of the files contained in the package
 			final String[] files = sourceLocation.list();
 			if (files != null) {
-				StringBuffer buffer;
+				StringBuilder buffer;
 				EvalEngine engine = new EvalEngine(true);
 				for (int i = 0; i < files.length; i++) {
 					File sourceFile = new File(sourceLocation, files[i]);
@@ -200,7 +200,7 @@ public class RulePreprocessor {
 						IExpr expr = parseFileToList(sourceFile, engine);
 
 						if (expr != null) {
-							buffer = new StringBuffer(100000);
+							buffer = new StringBuilder(100000);
 							PrintWriter out;
 							try {
 								String className = files[i].substring(0, files[i].length() - 2);

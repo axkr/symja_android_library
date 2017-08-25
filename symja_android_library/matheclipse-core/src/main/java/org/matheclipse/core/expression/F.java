@@ -5480,7 +5480,7 @@ public class F {
 	 * @param str
 	 * @return
 	 */
-	final static public IStringX stringx(final StringBuffer str) {
+	final static public IStringX stringx(final StringBuilder str) {
 		return StringX.valueOf(str);
 	}
 

@@ -263,7 +263,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 		if (ring.vars != null) {
 			return toString(ring.vars);
 		}
-		StringBuffer s = new StringBuffer();
+		StringBuilder s = new StringBuilder();
 		s.append(this.getClass().getSimpleName() + ":");
 		s.append(ring.coFac.getClass().getSimpleName());
 		if (ring.coFac.characteristic().signum() != 0) {
@@ -293,7 +293,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString(IAST v) {
-		StringBuffer s = new StringBuffer();
+		StringBuilder s = new StringBuilder();
 		if (PrettyPrint.isTrue()) {
 			if (val.size() == 0) {
 				s.append("0");
@@ -372,11 +372,10 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * @see edu.jas.structure.Element#toScript()
 	 */
 	public String toScript() {
-		// Python case
 		if (isZero()) {
 			return "0";
 		}
-		StringBuffer s = new StringBuffer();
+		StringBuilder s = new StringBuilder();
 		if (val.size() > 1) {
 			s.append("( ");
 		}

@@ -40,7 +40,7 @@ public class FullForm extends AbstractCoreFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 
-		return F.stringx(new StringBuffer(engine.evaluate(ast.arg1()).fullFormString()));
+		return F.stringx(engine.evaluate(ast.arg1()).fullFormString());
 	}
 
 	@Override
