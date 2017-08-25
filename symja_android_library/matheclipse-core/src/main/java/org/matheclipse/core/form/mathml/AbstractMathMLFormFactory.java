@@ -1,6 +1,6 @@
 package org.matheclipse.core.form.mathml;
 
-import java.util.Hashtable;
+import java.util.HashMap;
 
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -18,9 +18,7 @@ abstract public class AbstractMathMLFormFactory {
 
 	public final static boolean USE_IDENTIFIERS = false;
 
-	public final static Hashtable<String, String> ENTITY_TABLE = new Hashtable<String, String>(199);
-
-	// public final ExprFactory fExprFactory;
+	public final static HashMap<String, String> ENTITY_TABLE = new HashMap<String, String>(199);
 
 	private final String fTagPrefix;
 

@@ -1,9 +1,9 @@
 package org.matheclipse.core.form.tex;
 
-import org.hipparchus.fraction.BigFraction;
 import java.math.BigInteger;
-import java.util.Hashtable;
+import java.util.HashMap;
 
+import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
@@ -50,17 +50,17 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 	/**
 	 * Table for constant symbols
 	 */
-	public final static Hashtable<String, Object> CONSTANT_SYMBOLS = new Hashtable<String, Object>(199);
+	public final static HashMap<String, Object> CONSTANT_SYMBOLS = new HashMap<String, Object>(199);
 
 	/**
 	 * Table for constant expressions
 	 */
-	public final static Hashtable<IExpr, String> CONSTANT_EXPRS = new Hashtable<IExpr, String>(199);
+	public final static HashMap<IExpr, String> CONSTANT_EXPRS = new HashMap<IExpr, String>(199);
 
 	/**
 	 * Description of the Field
 	 */
-	public final static Hashtable<String, AbstractConverter> operTab = new Hashtable<String, AbstractConverter>(199);
+	public final static HashMap<String, AbstractConverter> operTab = new HashMap<String, AbstractConverter>(199);
 
 	private int plusPrec;
 

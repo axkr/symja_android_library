@@ -1,8 +1,8 @@
 package org.matheclipse.core.form.mathml;
 
-import org.hipparchus.fraction.BigFraction;
-import java.util.Hashtable;
+import java.util.HashMap;
 
+import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -47,12 +47,12 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 	/**
 	 * Table for constant symbols
 	 */
-	public final static Hashtable<String, Object> CONSTANT_SYMBOLS = new Hashtable<String, Object>(199);
+	public final static HashMap<String, Object> CONSTANT_SYMBOLS = new HashMap<String, Object>(199);
 
 	/**
 	 * Description of the Field
 	 */
-	public final static Hashtable<String, AbstractConverter> operTab = new Hashtable<String, AbstractConverter>(199);
+	public final static HashMap<String, AbstractConverter> operTab = new HashMap<String, AbstractConverter>(199);
 
 	/**
 	 * Constructor
