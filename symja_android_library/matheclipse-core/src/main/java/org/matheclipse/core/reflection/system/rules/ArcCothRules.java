@@ -17,16 +17,16 @@ public interface ArcCothRules {
 
   final public static IAST RULES = List(
     IInit(ArcCoth, SIZES),
-    // ArcCoth(0)=I*Rational(1,2)*Pi
+    // ArcCoth(0)=I*Pi/2
     ISet(ArcCoth(C0),
       Times(CC(0L,1L,1L,2L),Pi)),
-    // ArcCoth(I/Sqrt(3))=Rational(-1,3)*Pi*I
+    // ArcCoth(I/Sqrt(3))=-1/3*Pi*I
     ISet(ArcCoth(Times(CI,C1DSqrt3)),
       Times(CC(0L,1L,-1L,3L),Pi)),
-    // ArcCoth(I)=Rational(-1,4)*Pi*I
+    // ArcCoth(I)=-1/4*Pi*I
     ISet(ArcCoth(CI),
       Times(CC(0L,1L,-1L,4L),Pi)),
-    // ArcCoth(I*Sqrt(3))=Rational(-1,6)*Pi*I
+    // ArcCoth(I*Sqrt(3))=-1/6*Pi*I
     ISet(ArcCoth(Times(CI,CSqrt3)),
       Times(CC(0L,1L,-1L,6L),Pi)),
     // ArcCoth(1)=Infinity

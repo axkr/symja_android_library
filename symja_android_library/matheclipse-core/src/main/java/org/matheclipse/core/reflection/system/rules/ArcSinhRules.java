@@ -20,16 +20,16 @@ public interface ArcSinhRules {
     // ArcSinh(0)=0
     ISet(ArcSinh(C0),
       C0),
-    // ArcSinh(Rational(1,2)*I)=Pi*Rational(1,6)*I
+    // ArcSinh(I/2)=Pi*I/6
     ISet(ArcSinh(CC(0L,1L,1L,2L)),
       Times(CC(0L,1L,1L,6L),Pi)),
-    // ArcSinh(Rational(1,2)*I*Sqrt(2))=Pi*Rational(1,4)*I
+    // ArcSinh(I/2*Sqrt(2))=Pi*I/4
     ISet(ArcSinh(Times(CC(0L,1L,1L,2L),CSqrt2)),
       Times(CC(0L,1L,1L,4L),Pi)),
-    // ArcSinh(Rational(1,2)*I*Sqrt(3))=Pi*Rational(1,3)*I
+    // ArcSinh(I/2*Sqrt(3))=Pi*I/3
     ISet(ArcSinh(Times(CC(0L,1L,1L,2L),CSqrt3)),
       Times(CC(0L,1L,1L,3L),Pi)),
-    // ArcSinh(I)=Pi*Rational(1,2)*I
+    // ArcSinh(I)=Pi*I/2
     ISet(ArcSinh(CI),
       Times(CC(0L,1L,1L,2L),Pi)),
     // ArcSinh(1)=Log(Sqrt(2)+1)

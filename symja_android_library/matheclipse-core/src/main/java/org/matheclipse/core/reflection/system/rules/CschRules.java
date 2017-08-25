@@ -20,37 +20,37 @@ public interface CschRules {
     // Csch(0)=ComplexInfinity
     ISet(Csch(C0),
       CComplexInfinity),
-    // Csch(Rational(1,6)*Pi*I)=(-2)*I
+    // Csch(1/6*Pi*I)=(-2)*I
     ISet(Csch(Times(CC(0L,1L,1L,6L),Pi)),
       CC(0L,1L,-2L,1L)),
-    // Csch(Rational(1,4)*Pi*I)=-Sqrt(2)*I
+    // Csch(1/4*Pi*I)=-Sqrt(2)*I
     ISet(Csch(Times(CC(0L,1L,1L,4L),Pi)),
       Times(CNI,CSqrt2)),
-    // Csch(Rational(1,2)*Pi*I)=(-1)*I
+    // Csch(1/2*Pi*I)=-I
     ISet(Csch(Times(CC(0L,1L,1L,2L),Pi)),
       CNI),
-    // Csch(Rational(3,4)*Pi*I)=-Sqrt(2)*I
+    // Csch(3/4*Pi*I)=-Sqrt(2)*I
     ISet(Csch(Times(CC(0L,1L,3L,4L),Pi)),
       Times(CNI,CSqrt2)),
-    // Csch(Rational(5,6)*Pi*I)=(-2)*I
+    // Csch(5/6*Pi*I)=(-2)*I
     ISet(Csch(Times(CC(0L,1L,5L,6L),Pi)),
       CC(0L,1L,-2L,1L)),
     // Csch(Pi*I)=ComplexInfinity
     ISet(Csch(Times(CI,Pi)),
       CComplexInfinity),
-    // Csch(Rational(7,6)*Pi*I)=2*I
+    // Csch(7/6*Pi*I)=2*I
     ISet(Csch(Times(CC(0L,1L,7L,6L),Pi)),
       CC(0L,1L,2L,1L)),
-    // Csch(Rational(5,4)*Pi*I)=Sqrt(2)*I
+    // Csch(5/4*Pi*I)=Sqrt(2)*I
     ISet(Csch(Times(CC(0L,1L,5L,4L),Pi)),
       Times(CI,CSqrt2)),
-    // Csch(Rational(3,2)*Pi*I)=I
+    // Csch(3/2*Pi*I)=I
     ISet(Csch(Times(CC(0L,1L,3L,2L),Pi)),
       CI),
-    // Csch(Rational(7,4)*Pi*I)=Sqrt(2)*I
+    // Csch(7/4*Pi*I)=Sqrt(2)*I
     ISet(Csch(Times(CC(0L,1L,7L,4L),Pi)),
       Times(CI,CSqrt2)),
-    // Csch(Rational(11,6)*Pi*I)=2*I
+    // Csch(11/6*Pi*I)=2*I
     ISet(Csch(Times(CC(0L,1L,11L,6L),Pi)),
       CC(0L,1L,2L,1L)),
     // Csch(2*Pi*I)=ComplexInfinity

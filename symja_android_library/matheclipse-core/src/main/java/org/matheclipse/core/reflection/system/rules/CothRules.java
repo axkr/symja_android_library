@@ -23,13 +23,13 @@ public interface CothRules {
     // Coth(0.0)=ComplexInfinity
     ISet(Coth(num(0.0)),
       CComplexInfinity),
-    // Coth(Rational(1,4)*Pi*I)=(-1)*I
+    // Coth(1/4*Pi*I)=-I
     ISet(Coth(Times(CC(0L,1L,1L,4L),Pi)),
       CNI),
-    // Coth(Rational(1,2)*Pi*I)=0
+    // Coth(1/2*Pi*I)=0
     ISet(Coth(Times(CC(0L,1L,1L,2L),Pi)),
       C0),
-    // Coth(Rational(3,4)*Pi*I)=I
+    // Coth(3/4*Pi*I)=I
     ISet(Coth(Times(CC(0L,1L,3L,4L),Pi)),
       CI),
     // Coth(Pi*I)=ComplexInfinity

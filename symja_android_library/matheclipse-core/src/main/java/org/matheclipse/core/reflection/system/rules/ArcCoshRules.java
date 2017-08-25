@@ -17,25 +17,25 @@ public interface ArcCoshRules {
 
   final public static IAST RULES = List(
     IInit(ArcCosh, SIZES),
-    // ArcCosh(0)=I*Rational(1,2)*Pi
+    // ArcCosh(0)=I*Pi/2
     ISet(ArcCosh(C0),
       Times(CC(0L,1L,1L,2L),Pi)),
-    // ArcCosh(Rational(1,2))=I*Rational(1,3)*Pi
+    // ArcCosh(1/2)=I*Pi/3
     ISet(ArcCosh(C1D2),
       Times(CC(0L,1L,1L,3L),Pi)),
-    // ArcCosh(Rational(-1,2))=Rational(2,3)*I*Pi
+    // ArcCosh(-1/2)=2/3*I*Pi
     ISet(ArcCosh(CN1D2),
       Times(CC(0L,1L,2L,3L),Pi)),
-    // ArcCosh(Rational(1,2)*Sqrt(2))=Rational(1,4)*I*Pi
+    // ArcCosh(Sqrt(2)/2)=1/4*I*Pi
     ISet(ArcCosh(C1DSqrt2),
       Times(CC(0L,1L,1L,4L),Pi)),
-    // ArcCosh(Rational(1,2)*-Sqrt(2))=Rational(3,4)*I*Pi
+    // ArcCosh((-1)*1/2*Sqrt(2))=3/4*I*Pi
     ISet(ArcCosh(Negate(C1DSqrt2)),
       Times(CC(0L,1L,3L,4L),Pi)),
-    // ArcCosh(Rational(1,2)*Sqrt(3))=Rational(1,6)*I*Pi
+    // ArcCosh(Sqrt(3)/2)=1/6*I*Pi
     ISet(ArcCosh(Times(C1D2,CSqrt3)),
       Times(CC(0L,1L,1L,6L),Pi)),
-    // ArcCosh(Rational(1,2)*-Sqrt(3))=Rational(5,6)*I*Pi
+    // ArcCosh((-1)*1/2*Sqrt(3))=5/6*I*Pi
     ISet(ArcCosh(Times(CN1D2,CSqrt3)),
       Times(CC(0L,1L,5L,6L),Pi)),
     // ArcCosh(1)=0

@@ -225,7 +225,6 @@ public class Symbol implements ISymbol, Serializable {
 		OutputFormFactory off = OutputFormFactory.get(EvalEngine.get().isRelaxedSyntax());
 		off.setIgnoreNewLine(true);
 		List<IAST> list = definition();
-		// buf.append("{");
 		buf.append("Attributes(");
 		buf.append(this.toString());
 		buf.append(")=");
@@ -238,7 +237,6 @@ public class Symbol implements ISymbol, Serializable {
 				off.setColumnCounter(0);
 			}
 		}
-		// buf.append("}\n");
 		return buf.toString();
 	}
 

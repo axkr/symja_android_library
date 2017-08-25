@@ -20,70 +20,70 @@ public interface SechRules {
     // Sech(0)=1
     ISet(Sech(C0),
       C1),
-    // Sech(Rational(1,6)*Pi*I)=2/Sqrt(3)
+    // Sech(1/6*Pi*I)=2/Sqrt(3)
     ISet(Sech(Times(CC(0L,1L,1L,6L),Pi)),
       Times(C2,C1DSqrt3)),
-    // Sech(Rational(1,5)*Pi*I)=Sqrt(5)+(-1)*1
+    // Sech(1/5*Pi*I)=-1+Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,1L,5L),Pi)),
       Plus(CN1,CSqrt5)),
-    // Sech(Rational(1,4)*Pi*I)=Sqrt(2)
+    // Sech(1/4*Pi*I)=Sqrt(2)
     ISet(Sech(Times(CC(0L,1L,1L,4L),Pi)),
       CSqrt2),
-    // Sech(Rational(1,3)*Pi*I)=2
+    // Sech(1/3*Pi*I)=2
     ISet(Sech(Times(CC(0L,1L,1L,3L),Pi)),
       C2),
-    // Sech(Rational(2,5)*Pi*I)=1+Sqrt(5)
+    // Sech(2/5*Pi*I)=1+Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,2L,5L),Pi)),
       Plus(C1,CSqrt5)),
-    // Sech(Rational(1,2)*Pi*I)=ComplexInfinity
+    // Sech(1/2*Pi*I)=ComplexInfinity
     ISet(Sech(Times(CC(0L,1L,1L,2L),Pi)),
       CComplexInfinity),
-    // Sech(Rational(2,3)*Pi*I)=-2
+    // Sech(2/3*Pi*I)=-2
     ISet(Sech(Times(CC(0L,1L,2L,3L),Pi)),
       CN2),
-    // Sech(Rational(3,4)*Pi*I)=-Sqrt(2)
+    // Sech(3/4*Pi*I)=-Sqrt(2)
     ISet(Sech(Times(CC(0L,1L,3L,4L),Pi)),
       Negate(CSqrt2)),
-    // Sech(Rational(4,5)*Pi*I)=1-Sqrt(5)
+    // Sech(4/5*Pi*I)=1-Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,4L,5L),Pi)),
       Plus(C1,Negate(CSqrt5))),
-    // Sech(Rational(5,6)*Pi*I)=-2/Sqrt(3)
+    // Sech(5/6*Pi*I)=-2/Sqrt(3)
     ISet(Sech(Times(CC(0L,1L,5L,6L),Pi)),
       Times(CN2,C1DSqrt3)),
     // Sech(Pi*I)=-1
     ISet(Sech(Times(CI,Pi)),
       CN1),
-    // Sech(Rational(7,6)*Pi*I)=-2/Sqrt(3)
+    // Sech(7/6*Pi*I)=-2/Sqrt(3)
     ISet(Sech(Times(CC(0L,1L,7L,6L),Pi)),
       Times(CN2,C1DSqrt3)),
-    // Sech(Rational(6,5)*Pi*I)=1-Sqrt(5)
+    // Sech(6/5*Pi*I)=1-Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,6L,5L),Pi)),
       Plus(C1,Negate(CSqrt5))),
-    // Sech(Rational(5,4)*Pi*I)=-Sqrt(2)
+    // Sech(5/4*Pi*I)=-Sqrt(2)
     ISet(Sech(Times(CC(0L,1L,5L,4L),Pi)),
       Negate(CSqrt2)),
-    // Sech(Rational(4,3)*Pi*I)=-2
+    // Sech(4/3*Pi*I)=-2
     ISet(Sech(Times(CC(0L,1L,4L,3L),Pi)),
       CN2),
-    // Sech(Rational(7,5)*Pi*I)=-1-Sqrt(5)
+    // Sech(7/5*Pi*I)=-1-Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,7L,5L),Pi)),
       Plus(CN1,Negate(CSqrt5))),
-    // Sech(Rational(3,2)*Pi*I)=ComplexInfinity
+    // Sech(3/2*Pi*I)=ComplexInfinity
     ISet(Sech(Times(CC(0L,1L,3L,2L),Pi)),
       CComplexInfinity),
-    // Sech(Rational(8,5)*Pi*I)=1+Sqrt(5)
+    // Sech(8/5*Pi*I)=1+Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,8L,5L),Pi)),
       Plus(C1,CSqrt5)),
-    // Sech(Rational(5,3)*Pi*I)=2
+    // Sech(5/3*Pi*I)=2
     ISet(Sech(Times(CC(0L,1L,5L,3L),Pi)),
       C2),
-    // Sech(Rational(7,4)*Pi*I)=Sqrt(2)
+    // Sech(7/4*Pi*I)=Sqrt(2)
     ISet(Sech(Times(CC(0L,1L,7L,4L),Pi)),
       CSqrt2),
-    // Sech(Rational(9,5)*Pi*I)=Sqrt(5)+(-1)*1
+    // Sech(9/5*Pi*I)=-1+Sqrt(5)
     ISet(Sech(Times(CC(0L,1L,9L,5L),Pi)),
       Plus(CN1,CSqrt5)),
-    // Sech(Rational(11,6)*Pi*I)=2/Sqrt(3)
+    // Sech(11/6*Pi*I)=2/Sqrt(3)
     ISet(Sech(Times(CC(0L,1L,11L,6L),Pi)),
       Times(C2,C1DSqrt3)),
     // Sech(2*Pi*I)=1

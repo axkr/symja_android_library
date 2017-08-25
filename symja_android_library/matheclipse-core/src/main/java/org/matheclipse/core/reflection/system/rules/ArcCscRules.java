@@ -20,25 +20,25 @@ public interface ArcCscRules {
     // ArcCsc(0)=ComplexInfinity
     ISet(ArcCsc(C0),
       CComplexInfinity),
-    // ArcCsc(1)=Rational(1,2)*Pi
+    // ArcCsc(1)=Pi/2
     ISet(ArcCsc(C1),
       Times(C1D2,Pi)),
-    // ArcCsc(2/Sqrt(3))=Rational(1,3)*Pi
+    // ArcCsc(2/Sqrt(3))=Pi/3
     ISet(ArcCsc(Times(C2,C1DSqrt3)),
       Times(C1D3,Pi)),
-    // ArcCsc(Sqrt(2))=Rational(1,4)*Pi
+    // ArcCsc(Sqrt(2))=Pi/4
     ISet(ArcCsc(CSqrt2),
       Times(C1D4,Pi)),
-    // ArcCsc(2)=Rational(1,6)*Pi
+    // ArcCsc(2)=Pi/6
     ISet(ArcCsc(C2),
       Times(QQ(1L,6L),Pi)),
-    // ArcCsc(1+Sqrt(5))=Rational(1,10)*Pi
+    // ArcCsc(1+Sqrt(5))=Pi/10
     ISet(ArcCsc(Plus(C1,CSqrt5)),
       Times(QQ(1L,10L),Pi)),
-    // ArcCsc(Sqrt(2)+Sqrt(6))=Rational(1,12)*Pi
+    // ArcCsc(Sqrt(2)+Sqrt(6))=Pi/12
     ISet(ArcCsc(Plus(CSqrt2,CSqrt6)),
       Times(QQ(1L,12L),Pi)),
-    // ArcCsc(I)=(-1)*I*Log(Sqrt(2)+1)
+    // ArcCsc(I)=-I*Log(Sqrt(2)+1)
     ISet(ArcCsc(CI),
       Times(CNI,Log(Plus(C1,CSqrt2)))),
     // ArcCsc(Infinity)=0
@@ -50,7 +50,7 @@ public interface ArcCscRules {
     // ArcCsc(I*Infinity)=0
     ISet(ArcCsc(DirectedInfinity(CI)),
       C0),
-    // ArcCsc((-1)*I*Infinity)=0
+    // ArcCsc(-I*Infinity)=0
     ISet(ArcCsc(DirectedInfinity(CNI)),
       C0),
     // ArcCsc(ComplexInfinity)=0

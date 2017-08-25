@@ -20,25 +20,25 @@ public interface ArcTanhRules {
     // ArcTanh(0)=0
     ISet(ArcTanh(C0),
       C0),
-    // ArcTanh(I/Sqrt(3))=Pi*Rational(1,6)*I
+    // ArcTanh(I/Sqrt(3))=Pi*I/6
     ISet(ArcTanh(Times(CI,C1DSqrt3)),
       Times(CC(0L,1L,1L,6L),Pi)),
-    // ArcTanh(I)=Pi*Rational(1,4)*I
+    // ArcTanh(I)=Pi*I/4
     ISet(ArcTanh(CI),
       Times(CC(0L,1L,1L,4L),Pi)),
-    // ArcTanh(I*Sqrt(3))=Pi*Rational(1,3)*I
+    // ArcTanh(I*Sqrt(3))=Pi*I/3
     ISet(ArcTanh(Times(CI,CSqrt3)),
       Times(CC(0L,1L,1L,3L),Pi)),
     // ArcTanh(1)=Infinity
     ISet(ArcTanh(C1),
       oo),
-    // ArcTanh(Infinity)=Rational(-1,2)*Pi*I
+    // ArcTanh(Infinity)=-1/2*Pi*I
     ISet(ArcTanh(oo),
       Times(CC(0L,1L,-1L,2L),Pi)),
-    // ArcTanh(I*Infinity)=Rational(1,2)*Pi*I
+    // ArcTanh(I*Infinity)=1/2*Pi*I
     ISet(ArcTanh(DirectedInfinity(CI)),
       Times(CC(0L,1L,1L,2L),Pi)),
-    // ArcTanh(ComplexInfinity)=Rational(1,2)*Pi
+    // ArcTanh(ComplexInfinity)=Pi/2
     ISet(ArcTanh(CComplexInfinity),
       Times(C1D2,Pi))
   );

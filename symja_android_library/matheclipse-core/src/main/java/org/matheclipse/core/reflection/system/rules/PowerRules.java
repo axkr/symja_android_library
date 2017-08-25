@@ -17,7 +17,7 @@ public interface PowerRules {
 
   final public static IAST RULES = List(
     IInit(Power, SIZES),
-    // E^(Rational(3,2)*I*Pi)=(-1)*I
+    // E^(3/2*I*Pi)=-I
     ISet(Power(E,Times(CC(0L,1L,3L,2L),Pi)),
       CNI),
     // E^(Pi*c_Complex):=Module({r=Re(c),j=Im(c)},If(EvenQ(j),1,-1)/;r==0&&IntegerQ(j))
@@ -29,7 +29,7 @@ public interface PowerRules {
     // E^(I*Infinity)=Indeterminate
     ISet(Power(E,DirectedInfinity(CI)),
       Indeterminate),
-    // E^((-1)*I*Infinity)=Indeterminate
+    // E^(-I*Infinity)=Indeterminate
     ISet(Power(E,DirectedInfinity(CNI)),
       Indeterminate),
     // E^ComplexInfinity=Indeterminate

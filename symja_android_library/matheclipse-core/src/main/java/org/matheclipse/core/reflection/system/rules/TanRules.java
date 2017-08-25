@@ -20,73 +20,73 @@ public interface TanRules {
     // Tan(0)=0
     ISet(Tan(C0),
       C0),
-    // Tan(Rational(1,12)*Pi)=2-Sqrt(3)
+    // Tan(Pi/12)=2-Sqrt(3)
     ISet(Tan(Times(QQ(1L,12L),Pi)),
       Plus(C2,Negate(CSqrt3))),
-    // Tan(Rational(1,10)*Pi)=Sqrt(1-2/Sqrt(5))
+    // Tan(Pi/10)=Sqrt(1-2/Sqrt(5))
     ISet(Tan(Times(QQ(1L,10L),Pi)),
       Sqrt(Plus(C1,Times(CN2,C1DSqrt5)))),
-    // Tan(Rational(1,8)*Pi)=-1+Sqrt(2)
+    // Tan(Pi/8)=-1+Sqrt(2)
     ISet(Tan(Times(QQ(1L,8L),Pi)),
       Plus(CN1,CSqrt2)),
-    // Tan(Rational(1,6)*Pi)=1/Sqrt(3)
+    // Tan(Pi/6)=1/Sqrt(3)
     ISet(Tan(Times(QQ(1L,6L),Pi)),
       C1DSqrt3),
-    // Tan(Rational(1,5)*Pi)=Sqrt(5-2*Sqrt(5))
+    // Tan(Pi/5)=Sqrt(5-2*Sqrt(5))
     ISet(Tan(Times(QQ(1L,5L),Pi)),
       Sqrt(Plus(C5,Times(CN2,CSqrt5)))),
-    // Tan(Rational(1,4)*Pi)=1
+    // Tan(Pi/4)=1
     ISet(Tan(Times(C1D4,Pi)),
       C1),
-    // Tan(Rational(3,10)*Pi)=Sqrt(1+2/Sqrt(5))
+    // Tan(3/10*Pi)=Sqrt(1+2/Sqrt(5))
     ISet(Tan(Times(QQ(3L,10L),Pi)),
       Sqrt(Plus(C1,Times(C2,C1DSqrt5)))),
-    // Tan(Rational(1,3)*Pi)=Sqrt(3)
+    // Tan(Pi/3)=Sqrt(3)
     ISet(Tan(Times(C1D3,Pi)),
       CSqrt3),
-    // Tan(Rational(3,8)*Pi)=1+Sqrt(2)
+    // Tan(3/8*Pi)=1+Sqrt(2)
     ISet(Tan(Times(QQ(3L,8L),Pi)),
       Plus(C1,CSqrt2)),
-    // Tan(Rational(2,5)*Pi)=Sqrt(5+2*Sqrt(5))
+    // Tan(2/5*Pi)=Sqrt(5+2*Sqrt(5))
     ISet(Tan(Times(QQ(2L,5L),Pi)),
       Sqrt(Plus(C5,Times(C2,CSqrt5)))),
-    // Tan(Rational(5,12)*Pi)=2+Sqrt(3)
+    // Tan(5/12*Pi)=2+Sqrt(3)
     ISet(Tan(Times(QQ(5L,12L),Pi)),
       Plus(C2,CSqrt3)),
-    // Tan(Rational(1,2)*Pi)=ComplexInfinity
+    // Tan(Pi/2)=ComplexInfinity
     ISet(Tan(Times(C1D2,Pi)),
       CComplexInfinity),
-    // Tan(Rational(7,12)*Pi)=-2-Sqrt(3)
+    // Tan(7/12*Pi)=-2-Sqrt(3)
     ISet(Tan(Times(QQ(7L,12L),Pi)),
       Plus(CN2,Negate(CSqrt3))),
-    // Tan(Rational(3,5)*Pi)=-Sqrt(5+2*Sqrt(5))
+    // Tan(3/5*Pi)=-Sqrt(5+2*Sqrt(5))
     ISet(Tan(Times(QQ(3L,5L),Pi)),
       Negate(Sqrt(Plus(C5,Times(C2,CSqrt5))))),
-    // Tan(Rational(5,8)*Pi)=-1-Sqrt(2)
+    // Tan(5/8*Pi)=-1-Sqrt(2)
     ISet(Tan(Times(QQ(5L,8L),Pi)),
       Plus(CN1,Negate(CSqrt2))),
-    // Tan(Rational(2,3)*Pi)=-Sqrt(3)
+    // Tan(2/3*Pi)=-Sqrt(3)
     ISet(Tan(Times(QQ(2L,3L),Pi)),
       Negate(CSqrt3)),
-    // Tan(Rational(7,10)*Pi)=-Sqrt(1+2/Sqrt(5))
+    // Tan(7/10*Pi)=-Sqrt(1+2/Sqrt(5))
     ISet(Tan(Times(QQ(7L,10L),Pi)),
       Negate(Sqrt(Plus(C1,Times(C2,C1DSqrt5))))),
-    // Tan(Rational(3,4)*Pi)=-1
+    // Tan(3/4*Pi)=-1
     ISet(Tan(Times(QQ(3L,4L),Pi)),
       CN1),
-    // Tan(Rational(4,5)*Pi)=-Sqrt(5-2*Sqrt(5))
+    // Tan(4/5*Pi)=-Sqrt(5-2*Sqrt(5))
     ISet(Tan(Times(QQ(4L,5L),Pi)),
       Negate(Sqrt(Plus(C5,Times(CN2,CSqrt5))))),
-    // Tan(Rational(5,6)*Pi)=-1/Sqrt(3)
+    // Tan(5/6*Pi)=-1/Sqrt(3)
     ISet(Tan(Times(QQ(5L,6L),Pi)),
       Negate(C1DSqrt3)),
-    // Tan(Rational(7,8)*Pi)=1-Sqrt(2)
+    // Tan(7/8*Pi)=1-Sqrt(2)
     ISet(Tan(Times(QQ(7L,8L),Pi)),
       Plus(C1,Negate(CSqrt2))),
-    // Tan(Rational(9,10)*Pi)=-Sqrt(1-2/Sqrt(5))
+    // Tan(9/10*Pi)=-Sqrt(1-2/Sqrt(5))
     ISet(Tan(Times(QQ(9L,10L),Pi)),
       Negate(Sqrt(Plus(C1,Times(CN2,C1DSqrt5))))),
-    // Tan(Rational(11,12)*Pi)=-2+Sqrt(3)
+    // Tan(11/12*Pi)=-2+Sqrt(3)
     ISet(Tan(Times(QQ(11L,12L),Pi)),
       Plus(CN2,CSqrt3)),
     // Tan(Pi)=0
@@ -95,25 +95,25 @@ public interface TanRules {
     // Tan(I)=I*Tanh(1)
     ISet(Tan(CI),
       Times(CI,Tanh(C1))),
-    // Tan(ArcSin(x_)):=x*(1-x^2)^(1/Rational(1,2))
+    // Tan(ArcSin(x_)):=x*(1-x^2)^(1/(1/2))
     ISetDelayed(Tan(ArcSin(x_)),
       Times(x,Power(Plus(C1,Negate(Sqr(x))),Power(C1D2,-1)))),
-    // Tan(Pi*x_NumberQ):=If(x<1,-Tan((1-x)*Pi),If(x<2,Tan((x+(-1)*1)*Pi),Tan((x-2*Quotient(IntegerPart(x),2))*Pi)))/;x>Rational(1,2)
+    // Tan(Pi*x_NumberQ):=If(x<1,-Tan((1-x)*Pi),If(x<2,Tan((-1+x)*Pi),Tan((x-2*Quotient(IntegerPart(x),2))*Pi)))/;x>1/2
     ISetDelayed(Tan(Times(Pi,$p(x,NumberQ))),
-      Condition(If(Less(x,C1),Negate(Tan(Times(Plus(C1,Negate(x)),Pi))),If(Less(x,C2),Tan(Times(Plus(x,Negate(C1)),Pi)),Tan(Times(Plus(x,Times(CN1,C2,Quotient(IntegerPart(x),C2))),Pi)))),Greater(x,C1D2))),
+      Condition(If(Less(x,C1),Negate(Tan(Times(Plus(C1,Negate(x)),Pi))),If(Less(x,C2),Tan(Times(Plus(CN1,x),Pi)),Tan(Times(Plus(x,Times(CN2,Quotient(IntegerPart(x),C2))),Pi)))),Greater(x,C1D2))),
     // Tan(ArcTan(x_)):=x
     ISetDelayed(Tan(ArcTan(x_)),
       x),
-    // Tan(ArcCos(x_)):=(1-x^2)^Rational(1,2)/x
+    // Tan(ArcCos(x_)):=Sqrt(1-x^2)/x
     ISetDelayed(Tan(ArcCos(x_)),
-      Times(Power(Plus(C1,Negate(Sqr(x))),C1D2),Power(x,-1))),
+      Times(Sqrt(Plus(C1,Negate(Sqr(x)))),Power(x,-1))),
     // Tan(ArcCot(x_)):=1/x
     ISetDelayed(Tan(ArcCot(x_)),
       Power(x,-1)),
     // Tan(I*Infinity)=I
     ISet(Tan(DirectedInfinity(CI)),
       CI),
-    // Tan((-1)*I*Infinity)=(-1)*I
+    // Tan(-I*Infinity)=-I
     ISet(Tan(DirectedInfinity(CNI)),
       CNI),
     // Tan(ComplexInfinity)=Indeterminate

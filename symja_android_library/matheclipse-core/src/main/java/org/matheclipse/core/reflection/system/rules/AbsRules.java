@@ -17,7 +17,7 @@ public interface AbsRules {
 
   final public static IAST RULES = List(
     IInit(Abs, SIZES),
-    // Abs(ArcTan(ComplexInfinity))=Rational(1,2)*Pi
+    // Abs(ArcTan(ComplexInfinity))=Pi/2
     ISet(Abs(ArcTan(CComplexInfinity)),
       Times(C1D2,Pi)),
     // Abs(E)=E

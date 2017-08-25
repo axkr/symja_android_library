@@ -20,7 +20,7 @@ public interface ProductLogRules {
     // ProductLog(0)=0
     ISet(ProductLog(C0),
       C0),
-    // ProductLog(Rational(1,2)*-Pi)=I*Rational(1,2)*Pi
+    // ProductLog((-1)*1/2*Pi)=I*Pi/2
     ISet(ProductLog(Times(CN1D2,Pi)),
       Times(CC(0L,1L,1L,2L),Pi)),
     // ProductLog(-1/E)=-1
@@ -29,7 +29,7 @@ public interface ProductLogRules {
     // ProductLog(E)=1
     ISet(ProductLog(E),
       C1),
-    // ProductLog(-1,Rational(-1,2)*Pi)=Rational(-1,2)*Pi*I
+    // ProductLog(-1,-Pi/2)=-1/2*Pi*I
     ISet(ProductLog(CN1,Times(CN1D2,Pi)),
       Times(CC(0L,1L,-1L,2L),Pi)),
     // ProductLog(-1,-1/E)=-1
@@ -44,7 +44,7 @@ public interface ProductLogRules {
     // ProductLog(I*Infinity)=Infinity
     ISet(ProductLog(DirectedInfinity(CI)),
       oo),
-    // ProductLog((-1)*I*Infinity)=Infinity
+    // ProductLog(-I*Infinity)=Infinity
     ISet(ProductLog(DirectedInfinity(CNI)),
       oo),
     // ProductLog(ComplexInfinity)=Infinity

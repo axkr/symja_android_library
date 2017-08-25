@@ -20,49 +20,49 @@ public interface SinhRules {
     // Sinh(0)=0
     ISet(Sinh(C0),
       C0),
-    // Sinh(Rational(1,6)*Pi*I)=Rational(1,2)*I
+    // Sinh(1/6*Pi*I)=I/2
     ISet(Sinh(Times(CC(0L,1L,1L,6L),Pi)),
       CC(0L,1L,1L,2L)),
-    // Sinh(Rational(1,4)*Pi*I)=Rational(1,2)*Sqrt(2)*I
+    // Sinh(1/4*Pi*I)=1/2*Sqrt(2)*I
     ISet(Sinh(Times(CC(0L,1L,1L,4L),Pi)),
       Times(CC(0L,1L,1L,2L),CSqrt2)),
-    // Sinh(Rational(1,3)*Pi*I)=Rational(1,2)*Sqrt(3)*I
+    // Sinh(1/3*Pi*I)=1/2*Sqrt(3)*I
     ISet(Sinh(Times(CC(0L,1L,1L,3L),Pi)),
       Times(CC(0L,1L,1L,2L),CSqrt3)),
-    // Sinh(Rational(1,2)*Pi*I)=I
+    // Sinh(1/2*Pi*I)=I
     ISet(Sinh(Times(CC(0L,1L,1L,2L),Pi)),
       CI),
-    // Sinh(Rational(2,3)*Pi*I)=Rational(1,2)*Sqrt(3)*I
+    // Sinh(2/3*Pi*I)=1/2*Sqrt(3)*I
     ISet(Sinh(Times(CC(0L,1L,2L,3L),Pi)),
       Times(CC(0L,1L,1L,2L),CSqrt3)),
-    // Sinh(Rational(3,4)*Pi*I)=Rational(1,2)*Sqrt(2)*I
+    // Sinh(3/4*Pi*I)=1/2*Sqrt(2)*I
     ISet(Sinh(Times(CC(0L,1L,3L,4L),Pi)),
       Times(CC(0L,1L,1L,2L),CSqrt2)),
-    // Sinh(Rational(5,6)*Pi*I)=Rational(1,2)*I
+    // Sinh(5/6*Pi*I)=I/2
     ISet(Sinh(Times(CC(0L,1L,5L,6L),Pi)),
       CC(0L,1L,1L,2L)),
     // Sinh(Pi*I)=0
     ISet(Sinh(Times(CI,Pi)),
       C0),
-    // Sinh(Rational(7,6)*Pi*I)=Rational(-1,2)*I
+    // Sinh(7/6*Pi*I)=-I/2
     ISet(Sinh(Times(CC(0L,1L,7L,6L),Pi)),
       CC(0L,1L,-1L,2L)),
-    // Sinh(Rational(5,4)*Pi*I)=Rational(-1,2)*Sqrt(2)*I
+    // Sinh(5/4*Pi*I)=-1/2*Sqrt(2)*I
     ISet(Sinh(Times(CC(0L,1L,5L,4L),Pi)),
       Times(CC(0L,1L,-1L,2L),CSqrt2)),
-    // Sinh(Rational(4,3)*Pi*I)=Rational(-1,2)*Sqrt(3)*I
+    // Sinh(4/3*Pi*I)=-1/2*Sqrt(3)*I
     ISet(Sinh(Times(CC(0L,1L,4L,3L),Pi)),
       Times(CC(0L,1L,-1L,2L),CSqrt3)),
-    // Sinh(Rational(3,2)*Pi*I)=(-1)*I
+    // Sinh(3/2*Pi*I)=-I
     ISet(Sinh(Times(CC(0L,1L,3L,2L),Pi)),
       CNI),
-    // Sinh(Rational(5,3)*Pi*I)=Rational(-1,2)*Sqrt(3)*I
+    // Sinh(5/3*Pi*I)=-1/2*Sqrt(3)*I
     ISet(Sinh(Times(CC(0L,1L,5L,3L),Pi)),
       Times(CC(0L,1L,-1L,2L),CSqrt3)),
-    // Sinh(Rational(7,4)*Pi*I)=Rational(-1,2)*Sqrt(2)*I
+    // Sinh(7/4*Pi*I)=-1/2*Sqrt(2)*I
     ISet(Sinh(Times(CC(0L,1L,7L,4L),Pi)),
       Times(CC(0L,1L,-1L,2L),CSqrt2)),
-    // Sinh(Rational(11,6)*Pi*I)=Rational(-1,2)*I
+    // Sinh(11/6*Pi*I)=-I/2
     ISet(Sinh(Times(CC(0L,1L,11L,6L),Pi)),
       CC(0L,1L,-1L,2L)),
     // Sinh(2*Pi*I)=0

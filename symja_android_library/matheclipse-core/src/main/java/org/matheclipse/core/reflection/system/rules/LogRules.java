@@ -29,7 +29,7 @@ public interface LogRules {
     // Log(E^I)=I
     ISet(Log(Power(E,CI)),
       CI),
-    // Log(E^((-1)*I))=(-1)*I
+    // Log(1/E^I)=-I
     ISet(Log(Power(E,CNI)),
       CNI),
     // Log(0.0)=Indeterminate
@@ -38,16 +38,16 @@ public interface LogRules {
     // Log(0)=-Infinity
     ISet(Log(C0),
       Noo),
-    // Log(I)=Rational(1,2)*Pi*I
+    // Log(I)=1/2*I*Pi
     ISet(Log(CI),
       Times(CC(0L,1L,1L,2L),Pi)),
-    // Log((-1)*I)=Rational(1,2)*-Pi*I
+    // Log(-I)=1/2*I*-Pi
     ISet(Log(CNI),
       Times(CC(0L,1L,-1L,2L),Pi)),
     // Log(GoldenRatio)=ArcCsch(2)
     ISet(Log(GoldenRatio),
       ArcCsch(C2)),
-    // Log(Rational(1,2)*(1+Sqrt(5)))=ArcCsch(2)
+    // Log(1/2*(1+Sqrt(5)))=ArcCsch(2)
     ISet(Log(Times(C1D2,Plus(C1,CSqrt5))),
       ArcCsch(C2)),
     // Log(Infinity)=Infinity
@@ -59,7 +59,7 @@ public interface LogRules {
     // Log(I*Infinity)=Infinity
     ISet(Log(DirectedInfinity(CI)),
       oo),
-    // Log((-1)*I*Infinity)=Infinity
+    // Log(-I*Infinity)=Infinity
     ISet(Log(DirectedInfinity(CNI)),
       oo),
     // Log(ComplexInfinity)=Infinity
@@ -94,7 +94,7 @@ public interface LogRules {
       CComplexInfinity),
     // Log(-1,z_):=-I/Pi*Log(z)
     ISetDelayed(Log(CN1,z_),
-      Times(CN1,CI,Power(Pi,-1),Log(z))),
+      Times(CNI,Power(Pi,-1),Log(z))),
     // Log(a_,1)=Indeterminate
     ISet(Log(a_,C1),
       Indeterminate)

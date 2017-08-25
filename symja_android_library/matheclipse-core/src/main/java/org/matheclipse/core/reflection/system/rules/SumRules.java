@@ -9,12 +9,12 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public interface SumRules {
   final public static IAST RULES1 = List(
-    // Sum(c_^i_,{i_Symbol,1,n_Symbol}):=(c*(c^n+(-1)*1))/(c+(-1)*1)/;FreeQ(c,i)&&FreeQ(n,i)
+    // Sum(c_^i_,{i_Symbol,1,n_Symbol}):=(c*(-1+c^n))/(-1+c)/;FreeQ(c,i)&&FreeQ(n,i)
     ISetDelayed(Sum(Power(c_,i_),List($p(i,Symbol),C1,$p(n,Symbol))),
-      Condition(Times(c,Plus(Power(c,n),Negate(C1)),Power(Plus(c,Negate(C1)),-1)),And(FreeQ(c,i),FreeQ(n,i)))),
-    // Sum(c_^i_,{i_Symbol,1,Infinity}):=-c/(c+(-1)*1)/;FreeQ(c,i)&&(!NumberQ(c)||c>-1&&c<1)
+      Condition(Times(c,Plus(CN1,Power(c,n)),Power(Plus(CN1,c),-1)),And(FreeQ(c,i),FreeQ(n,i)))),
+    // Sum(c_^i_,{i_Symbol,1,Infinity}):=-c/(-1+c)/;FreeQ(c,i)&&(!NumberQ(c)||c>-1&&c<1)
     ISetDelayed(Sum(Power(c_,i_),List($p(i,Symbol),C1,oo)),
-      Condition(Times(CN1,c,Power(Plus(c,Negate(C1)),-1)),And(FreeQ(c,i),Or(Not(NumberQ(c)),And(Greater(c,CN1),Less(c,C1)))))),
+      Condition(Times(CN1,c,Power(Plus(CN1,c),-1)),And(FreeQ(c,i),Or(Not(NumberQ(c)),And(Greater(c,CN1),Less(c,C1)))))),
     // Sum(i_^k_Symbol,{i_Symbol,1,n_Symbol}):=HarmonicNumber(n,-k)/;FreeQ(k,i)&&FreeQ(n,i)
     ISetDelayed(Sum(Power(i_,$p(k,Symbol)),List($p(i,Symbol),C1,$p(n,Symbol))),
       Condition(HarmonicNumber(n,Negate(k)),And(FreeQ(k,i),FreeQ(n,i)))),
@@ -24,22 +24,22 @@ public interface SumRules {
     // Sum(k_^(a_.*i_),{i_Symbol,1,Infinity}):=-k^a/(-1+k^a)/;FreeQ(k,i)&&a<0&&(k>1||k<-1)
     ISetDelayed(Sum(Power(k_,Times(a_DEFAULT,i_)),List($p(i,Symbol),C1,oo)),
       Condition(Times(CN1,Power(k,a),Power(Plus(CN1,Power(k,a)),-1)),And(FreeQ(k,i),Less(a,C0),Or(Greater(k,C1),Less(k,CN1))))),
-    // Sum(Ceiling(Log(i_)),{i_Symbol,1,n_Symbol}):=(Floor(Log(n))*E^(Floor(Log(n))+1)-(Floor(Log(n))+1)*E^Floor(Log(n))+1)/(E+(-1)*1)+(n-E^Floor(Log(n)))*Ceiling(Log(n))/;FreeQ(n,i)
+    // Sum(Ceiling(Log(i_)),{i_Symbol,1,n_Symbol}):=(Floor(Log(n))*E^(Floor(Log(n))+1)-(Floor(Log(n))+1)*E^Floor(Log(n))+1)/(-1+E)+(-E^Floor(Log(n))+n)*Ceiling(Log(n))/;FreeQ(n,i)
     ISetDelayed(Sum(Ceiling(Log(i_)),List($p(i,Symbol),C1,$p(n,Symbol))),
-      Condition(Plus(Times(Plus(Times(Floor(Log(n)),Power(E,Plus(Floor(Log(n)),C1))),Times(CN1,Plus(Floor(Log(n)),C1),Power(E,Floor(Log(n)))),C1),Power(Plus(E,Negate(C1)),-1)),Times(Plus(n,Negate(Power(E,Floor(Log(n))))),Ceiling(Log(n)))),FreeQ(n,i))),
-    // Sum(Ceiling(Log(a_,i_)),{i_Symbol,1,n_Symbol}):=(Floor(Log(a,n))*a^(Floor(Log(a,n))+1)-(Floor(Log(a,n))+1)*a^Floor(Log(a,n))+1)/(a+(-1)*1)+(n-a^Floor(Log(a,n)))*Ceiling(Log(a,n))/;FreeQ(a,i)&&FreeQ(n,i)
+      Condition(Plus(Times(Plus(Times(Floor(Log(n)),Power(E,Plus(Floor(Log(n)),C1))),Times(CN1,Plus(Floor(Log(n)),C1),Power(E,Floor(Log(n)))),C1),Power(Plus(CN1,E),-1)),Times(Plus(Negate(Power(E,Floor(Log(n)))),n),Ceiling(Log(n)))),FreeQ(n,i))),
+    // Sum(Ceiling(Log(a_,i_)),{i_Symbol,1,n_Symbol}):=(Floor(Log(a,n))*a^(Floor(Log(a,n))+1)-(Floor(Log(a,n))+1)*a^Floor(Log(a,n))+1)/(-1+a)+(-a^Floor(Log(a,n))+n)*Ceiling(Log(a,n))/;FreeQ(a,i)&&FreeQ(n,i)
     ISetDelayed(Sum(Ceiling(Log(a_,i_)),List($p(i,Symbol),C1,$p(n,Symbol))),
-      Condition(Plus(Times(Plus(Times(Floor(Log(a,n)),Power(a,Plus(Floor(Log(a,n)),C1))),Times(CN1,Plus(Floor(Log(a,n)),C1),Power(a,Floor(Log(a,n)))),C1),Power(Plus(a,Negate(C1)),-1)),Times(Plus(n,Negate(Power(a,Floor(Log(a,n))))),Ceiling(Log(a,n)))),And(FreeQ(a,i),FreeQ(n,i))))
+      Condition(Plus(Times(Plus(Times(Floor(Log(a,n)),Power(a,Plus(Floor(Log(a,n)),C1))),Times(CN1,Plus(Floor(Log(a,n)),C1),Power(a,Floor(Log(a,n)))),C1),Power(Plus(CN1,a),-1)),Times(Plus(Negate(Power(a,Floor(Log(a,n)))),n),Ceiling(Log(a,n)))),And(FreeQ(a,i),FreeQ(n,i))))
   );
   final public static IAST RULES2 = List(
     // Sum(Binomial(n_,i_),{i_Symbol,0,n_Symbol}):=2^n/;FreeQ(n,i)
     ISetDelayed(Sum(Binomial(n_,i_),List($p(i,Symbol),C0,$p(n,Symbol))),
       Condition(Power(C2,n),FreeQ(n,i))),
-    // Sum(i_*Binomial(n_,i_),{i_Symbol,0,n_Symbol}):=n*2^(n+(-1)*1)/;FreeQ(n,i)
+    // Sum(i_*Binomial(n_,i_),{i_Symbol,0,n_Symbol}):=n/2^(1-n)/;FreeQ(n,i)
     ISetDelayed(Sum(Times(i_,Binomial(n_,i_)),List($p(i,Symbol),C0,$p(n,Symbol))),
-      Condition(Times(n,Power(C2,Plus(n,Negate(C1)))),FreeQ(n,i))),
-    // Sum(i_!,{i_Symbol,0,n_Symbol}):=Gamma(n+2)*(-1)^(n+1)*Subfactorial(-n+(-1)*2)-Subfactorial(-1)/;FreeQ(n,i)
+      Condition(Times(n,Power(C2,Plus(CN1,n))),FreeQ(n,i))),
+    // Sum(i_!,{i_Symbol,0,n_Symbol}):=-Subfactorial(-1)+Gamma(n+2)*(-1)^(n+1)*Subfactorial(-2-n)/;FreeQ(n,i)
     ISetDelayed(Sum(Factorial(i_),List($p(i,Symbol),C0,$p(n,Symbol))),
-      Condition(Plus(Times(Gamma(Plus(n,C2)),Power(CN1,Plus(n,C1)),Subfactorial(Plus(Negate(n),Negate(C2)))),Negate(Subfactorial(CN1))),FreeQ(n,i)))
+      Condition(Plus(Negate(Subfactorial(CN1)),Times(Gamma(Plus(n,C2)),Power(CN1,Plus(n,C1)),Subfactorial(Plus(CN2,Negate(n))))),FreeQ(n,i)))
   );
 }
