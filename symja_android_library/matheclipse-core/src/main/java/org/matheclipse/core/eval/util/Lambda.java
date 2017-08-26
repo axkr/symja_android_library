@@ -173,7 +173,7 @@ public class Lambda {
 	 */
 	public static boolean compareStop(IAST ast, Predicate<IExpr> stopPredicate) {
 		int size = ast.size();
-		for (int i = 2; i < size; i++) {
+		for (int i = 1; i < size; i++) {
 			if (stopPredicate.test(ast.get(i))) {
 				return true;
 			}
