@@ -16,6 +16,7 @@ import javax.annotation.Nonnull;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.eval.util.OpenIntToSet;
 import org.matheclipse.core.expression.Context;
@@ -29,24 +30,14 @@ import org.matheclipse.core.visit.AbstractVisitor;
  * The pattern matching rules associated with a symbol.
  */
 public class RulesData implements Serializable {
-	static boolean showSteps = false;
 	private static final long serialVersionUID = -7747268035549814899L;
+	
+	static boolean showSteps = false;
+	
 	/**
 	 * 
 	 */
 	public static final int DEFAULT_VALUE_INDEX = Integer.MIN_VALUE;
-
-	public static boolean containsOrderlessASTOrDefaultPattern(final IAST lhsAST) {
-		for (int i = 1; i < lhsAST.size(); i++) {
-			if (lhsAST.get(i).isPatternDefault()) {
-				return true;
-			}
-			if (lhsAST.get(i).isOrderlessAST()) {
-				return true;
-			}
-		}
-		return false;
-	}
 
 	public static boolean isComplicatedPatternRule(final IExpr lhsExpr, Set<ISymbol> neededSymbols) {
 		if (lhsExpr.isAST()) {
@@ -62,53 +53,33 @@ public class RulesData implements Serializable {
 					return true;
 				} else if (lhsAST.arg1().isAST()) {
 					IAST arg1 = (IAST) lhsAST.arg1();
-					if (arg1.isAST(F.PatternTest, 3)) {
+					if (arg1.isCondition() || arg1.isPatternTest() || arg1.isAlternatives() || arg1.isExcept()) {
 						return true;
 					}
-					if (arg1.isAlternatives() || arg1.isExcept()) {
-						return true;
-					}
-					if (arg1.isCondition()) {
-						return true;
-					}
-					if (arg1.head().isPatternExpr()) {
+					IExpr head = arg1.head();
+					if (head.isPatternExpr()) {
 						// the head contains a pattern F_(a1, a2,...)
 						return true;
 					}
-					if (arg1.head().isSymbol()) {
-						attr = ((ISymbol) arg1.head()).getAttributes();
-						if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
-							if (neededSymbols != null) {
-								boolean isComplicated = false;
-								for (int i = 1; i < arg1.size(); i++) {
-									if (arg1.get(i).isPatternDefault()) {
-										isComplicated = true;
-										continue;
-									}
-									if (arg1.get(i).isAST()
-											&& !containsOrderlessASTOrDefaultPattern((IAST) arg1.get(i))) {
-										neededSymbols.add(arg1.get(i).topHead());
-									}
-								}
-								return isComplicated;
+					if (neededSymbols != null && arg1.isOrderlessAST()) {
+						boolean lambda = !Lambda.compareStop(lhsAST, x -> x.isPatternDefault() || x.isOrderlessAST(),
+								1);
+						boolean[] isComplicated = { false };
+						arg1.forEach(t -> {
+							if (t.isPatternDefault()) {
+								isComplicated[0] = true;
+							} else if (lambda && t.isAST() && t.head().isSymbol()) {
+								neededSymbols.add((ISymbol) t.head());
 							}
-						}
+						});
+						return isComplicated[0];
 					}
 					// the left hand side is associated with the first argument
-					// see if one of the arguments contain a pattern with defaut
+					// see if one of the arguments contain a pattern with default
 					// value
-					for (int i = 1; i < arg1.size(); i++) {
-						if (arg1.get(i).isPatternDefault()) {
-							return true;
-						}
-					}
-					return false;
+					return Lambda.compareStop(arg1, x -> x.isPatternDefault(), 1);
 				}
-				for (int i = 2; i < lhsAST.size(); i++) {
-					if (lhsAST.get(i).isPatternDefault()) {
-						return true;
-					}
-				}
+				return Lambda.compareStop(lhsAST, x -> x.isPatternDefault(), 2);
 			}
 		} else if (lhsExpr.isPattern()) {
 			return true;

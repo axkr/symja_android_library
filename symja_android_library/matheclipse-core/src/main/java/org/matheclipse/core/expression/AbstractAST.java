@@ -1965,6 +1965,12 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
+	public final boolean isPatternTest() {
+		return isAST(F.PatternTest, 3);
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public boolean isPlus() {
 		return isSameHeadSizeGE(F.Plus, 3);
 	}

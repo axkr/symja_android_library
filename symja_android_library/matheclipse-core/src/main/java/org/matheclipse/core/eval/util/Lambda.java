@@ -169,9 +169,10 @@ public class Lambda {
 	 * 
 	 * @param ast
 	 * @param stopPredicate
+	 * @param offset TODO
 	 * @return
 	 */
-	public static boolean compareStop(IAST ast, Predicate<IExpr> stopPredicate) {
+	public static boolean compareStop(IAST ast, Predicate<IExpr> stopPredicate, int offset) {
 		int size = ast.size();
 		for (int i = 1; i < size; i++) {
 			if (stopPredicate.test(ast.get(i))) {

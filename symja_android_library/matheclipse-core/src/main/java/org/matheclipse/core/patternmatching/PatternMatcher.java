@@ -603,7 +603,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			StackMatcher stackMatcher) {
 		// System.out.println(lhsPatternAST.toString()+" -
 		// "+lhsEvalExpr.toString());
-		if (lhsPatternAST.isAST(F.PatternTest, 3)) {
+		if (lhsPatternAST.isPatternTest()) {
 			if (matchExpr(lhsPatternAST.arg1(), lhsEvalExpr, engine, stackMatcher)) {
 				return fPatternMap.isPatternTest(lhsPatternAST.arg1(), lhsPatternAST.arg2(), engine);
 			}

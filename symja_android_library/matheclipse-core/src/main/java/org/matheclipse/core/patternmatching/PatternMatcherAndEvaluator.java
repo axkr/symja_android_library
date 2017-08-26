@@ -174,9 +174,6 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	/** {@inheritDoc} */
 	@Override
 	public IExpr eval(final IExpr leftHandSide, EvalEngine engine) {
-		// if(fRightHandSide.isAST("Condition")) {
-		// System.out.println("2:"+fRightHandSide);
-		// }
 		if (isRuleWithoutPatterns()) {
 			// no patterns found match equally:
 			if (fLhsPatternExpr.equals(leftHandSide)) {
@@ -195,8 +192,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 					return F.NIL;
 				}
 				// TODO implement equals matching for special cases, if the AST
-				// is
-				// Orderless or Flat
+				// is Orderless or Flat
 			}
 		}
 
@@ -254,14 +250,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		IExpr condition = getCondition();
 		if (condition != null) {
 			return F.binaryAST2(setSymbol, getLHS(), F.Condition(getRHS(), condition));
-			// ast = F.ast(setSymbol);
-			// ast.add(getLHS());
-			// ast.add(F.Condition(getRHS(), condition));
 		}
 		return F.binaryAST2(setSymbol, getLHS(), getRHS());
-		// ast = F.ast(setSymbol);
-		// ast.add(getLHS());
-		// ast.add(getRHS());
 	}
 
 	/**
@@ -359,20 +349,23 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (!super.equals(obj))
+		}
+		if (!super.equals(obj)) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		PatternMatcherAndEvaluator other = (PatternMatcherAndEvaluator) obj;
 		if (fRightHandSide == null) {
-			if (other.fRightHandSide != null)
+			if (other.fRightHandSide != null) {
 				return false;
-		} else if (!fRightHandSide.equals(other.fRightHandSide))
+			}
+		} else if (!fRightHandSide.equals(other.fRightHandSide)) {
 			return false;
-		if (fSetSymbol != other.fSetSymbol)
-			return false;
-		return true;
+		}
+		return fSetSymbol == other.fSetSymbol;
 	}
 }
