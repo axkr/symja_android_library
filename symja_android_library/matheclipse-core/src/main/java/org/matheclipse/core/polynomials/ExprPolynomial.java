@@ -5,22 +5,16 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.Function;
 
 import org.apache.log4j.Logger;
-import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
-import java.util.function.Function;
-
 import edu.jas.kern.PreemptingException;
 import edu.jas.kern.PrettyPrint;
-import edu.jas.poly.ExpVector;
-import edu.jas.poly.GenPolynomial;
-import edu.jas.poly.Monomial;
 import edu.jas.structure.NotInvertibleException;
 import edu.jas.structure.RingElem;
 
@@ -40,6 +34,11 @@ import edu.jas.structure.RingElem;
  * @author Heinz Kredel
  */
 public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMonomial> {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3069278103478903325L;
 
 	/**
 	 * The factory for the polynomial ring.

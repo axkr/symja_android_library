@@ -22,7 +22,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 import edu.jas.kern.PreemptStatus;
 import edu.jas.kern.PrettyPrint;
 import edu.jas.kern.Scripting;
-import edu.jas.poly.GenPolynomial;
 import edu.jas.structure.RingFactory;
 import edu.jas.util.CartesianProduct;
 import edu.jas.util.CartesianProductInfinite;
@@ -39,6 +38,11 @@ import edu.jas.util.LongIterable;
  */
 
 public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6136386786501333693L;
 
 	/**
 	 * The factory for the coefficients.
@@ -316,7 +320,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 */
 	public ExprPolynomial create(final IExpr exprPoly, boolean coefficient, boolean checkNegativeExponents)
 			throws ArithmeticException, ClassCastException {
-		int ix = evzero.indexVar(exprPoly, getVars());
+		int ix = ExpVectorLong.indexVar(exprPoly, getVars());
 		if (ix >= 0) {
 			ExpVectorLong e = new ExpVectorLong(vars.size() - 1, ix, 1L);
 			return getOne().multiply(e);
@@ -1532,7 +1536,7 @@ class GenPolynomialMonomialIterator implements Iterator<ExprPolynomial> {
 	 */
 	final ExprPolynomialRing ring;
 
-	final Iterator<List> iter;
+	final Iterator<List<IExpr>> iter;
 
 	ExprPolynomial current;
 
@@ -1567,7 +1571,7 @@ class GenPolynomialMonomialIterator implements Iterator<ExprPolynomial> {
 		CartesianProductInfinite ecp = new CartesianProductInfinite(eci);
 		iter = ecp.iterator();
 
-		List ec = iter.next();
+		List<IExpr> ec = iter.next();
 		List<Long> ecl = (List<Long>) ec.get(0);
 		IExpr c = (IExpr) ec.get(1); // zero
 		ExpVectorLong e = ExpVectorLong.create(ecl);
@@ -1594,7 +1598,7 @@ class GenPolynomialMonomialIterator implements Iterator<ExprPolynomial> {
 	public synchronized ExprPolynomial next() {
 		ExprPolynomial res = current;
 
-		List ec = iter.next();
+		List<IExpr> ec = iter.next();
 		IExpr c = (IExpr) ec.get(1);
 		while (c.isZero()) { // zero already done in first next
 			ec = iter.next();

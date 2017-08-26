@@ -34,8 +34,13 @@ import edu.jas.kern.Scripting;
 
 public final class ExprTermOrder implements Serializable {
 
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 360644493672021694L;
 
-    private static final Logger logger = Logger.getLogger(ExprTermOrder.class);
+
+	private static final Logger logger = Logger.getLogger(ExprTermOrder.class);
 
 
     private final boolean debug = logger.isDebugEnabled();
@@ -133,10 +138,8 @@ public final class ExprTermOrder implements Serializable {
     /**
      * Comparator for ExpVectors.
      */
-    public static abstract class EVComparator implements Comparator<ExpVectorLong>, Serializable {
-
-
-        public abstract int compare(ExpVectorLong e1, ExpVectorLong e2);
+    public static abstract class EVComparator implements Comparator<ExpVectorLong> {
+		public abstract int compare(ExpVectorLong e1, ExpVectorLong e2);
     }
 
 

@@ -17,8 +17,12 @@ import edu.jas.structure.NotInvertibleException;
  */
 public class AlgebraicNotInvertibleException extends NotInvertibleException {
 
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 4734826103269124125L;
 
-    public final ExprPolynomial f; // = f1 * f2
+	public final ExprPolynomial f; // = f1 * f2
 
     public final ExprPolynomial f1;
 
