@@ -1,8 +1,6 @@
 package org.matheclipse.core.system;
 
-import junit.framework.TestCase;
-
-public class IntervalTest extends TestCase {
+public class IntervalTest {
 
 	// public void test001() {
 	// SetIntervalContext ic = SetIntervalContexts.getExact();
