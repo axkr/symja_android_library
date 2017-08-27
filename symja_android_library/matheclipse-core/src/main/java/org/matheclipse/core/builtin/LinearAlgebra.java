@@ -1322,9 +1322,6 @@ public final class LinearAlgebra {
 			}
 		}
 
-		public HilbertMatrix() {
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
