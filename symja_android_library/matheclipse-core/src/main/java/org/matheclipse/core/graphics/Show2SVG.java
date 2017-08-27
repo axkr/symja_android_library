@@ -389,10 +389,18 @@ public class Show2SVG {
 			double y1 = ((ISignedNumber) point.arg2()).doubleValue();
 			double r = 1.0;
 			// x="0.000000" y="0.000000" width="350.000000" height="350.000000"
+			double cx = (x1 - xMin) * xAxisScalingFactor;
+			double cy = (yMax - y1) * yAxisScalingFactor;
+			if (F.isZero(cx)) {
+				cx = dim.width / 2.0;
+			}
+			if (F.isZero(cy)) {
+				cy = dim.height / 2.0;
+			}
 			buf.append("cx=\"");
-			buf.append(FORMATTER.format((x1 - xMin) * xAxisScalingFactor));
+			buf.append(FORMATTER.format(cx));
 			buf.append("\" cy=\"");
-			buf.append(FORMATTER.format((yMax - y1) * yAxisScalingFactor));
+			buf.append(FORMATTER.format(cy));
 			buf.append("\" r=\"");
 			buf.append(FORMATTER.format(r));
 		} catch (RuntimeException ex) {

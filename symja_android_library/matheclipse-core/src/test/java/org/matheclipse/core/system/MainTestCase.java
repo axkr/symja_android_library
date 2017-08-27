@@ -639,10 +639,10 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem040() {
-		checkNumeric("(-15.0)^.5", "2.3715183290419594E-16+I*3.872983346207417");
-		checkNumeric("(-15.0)^0.5", "2.3715183290419594E-16+I*3.872983346207417");
+		checkNumeric("(-15.0)^.5", "I*3.872983346207417");
+		checkNumeric("(-15.0)^0.5", "I*3.872983346207417");
 		checkNumeric(".5^.5", "0.7071067811865476");
-		checkNumeric("N((-15)^(1/2))", "2.3715183290419594E-16+I*3.872983346207417");
+		checkNumeric("N((-15)^(1/2))", "I*3.872983346207417");
 		checkNumeric("N(Sin(1/2))", "0.479425538604203");
 		checkNumeric("N(1/6*(I*44^(1/2)+2))", "0.3333333333333333+I*1.1055415967851332");
 		// test automatic numericMode (triggered by double value "0.5"):

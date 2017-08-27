@@ -3275,7 +3275,7 @@ public class Algebra {
 			IExpr temp;
 			IExpr[] fractionalParts;
 			for (int i = 1; i < plusAST.size(); i++) {
-				fractionalParts = fractionalPartsRational(plusAST.get(i));
+				fractionalParts = fractionalParts(plusAST.get(i), false);
 				if (fractionalParts != null) {
 					numerator.append(i, fractionalParts[0]);
 					temp = fractionalParts[1];
@@ -3338,7 +3338,7 @@ public class Algebra {
 						}
 						return F.Times(result[0], result[1], pInv);
 					}
-					return F.NIL;
+					return F.Times(exprNumerator, F.Power(exprDenominator, -1));
 				} catch (JASConversionException jce) {
 					if (Config.DEBUG) {
 						jce.printStackTrace();

@@ -4332,7 +4332,7 @@ public class F {
 		if (x == y) {
 			return true;
 		}
-		return ((x - Config.DOUBLE_EPSILON) <= y) && (y <= (x + Config.DOUBLE_EPSILON));
+		return ((x - Config.DOUBLE_TOLERANCE) <= y) && (y <= (x + Config.DOUBLE_TOLERANCE));
 	}
 
 	/**
@@ -4342,7 +4342,7 @@ public class F {
 	 * @return
 	 */
 	public static boolean isZero(double value) {
-		return isZero(value, Config.DOUBLE_EPSILON);
+		return isZero(value, Config.DOUBLE_TOLERANCE);
 	}
 
 	/**
