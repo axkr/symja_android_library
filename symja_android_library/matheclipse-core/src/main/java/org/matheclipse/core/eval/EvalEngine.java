@@ -103,14 +103,13 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Get the local variable stack for a given symbol. If the local variable stack
-	 * doesn't exist, return <code>null</code>
+	 * Removes the current thread's value for the EvalEngine's thread-local
+	 * variable.
 	 * 
-	 * @param symbol
-	 * @return <code>null</code> if the stack doesn't exist
+	 * @see java.lang.ThreadLocal#remove()
 	 */
-	final public Deque<IExpr> localStack(final ISymbol symbol) {
-		return getLocalVariableStackMap().get(symbol);
+	public static void remove() {
+		instance.remove();
 	}
 
 	/**
@@ -125,34 +124,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	// }
 
 	/**
-	 * Get the local variable stack for a given symbol. If the local variable stack
-	 * doesn't exist, create a new one for the symbol.
-	 * 
-	 * @param symbol
-	 * @return
-	 */
-	public Deque<IExpr> localStackCreate(final ISymbol symbol) {
-		Map<ISymbol, Deque<IExpr>> localVariableStackMap = getLocalVariableStackMap();
-		Deque<IExpr> temp = localVariableStackMap.get(symbol);
-		if (temp != null) {
-			return temp;
-		}
-		temp = new ArrayDeque<IExpr>();// new ArrayList<IExpr>();
-		localVariableStackMap.put(symbol, temp);
-		return temp;
-	}
-
-	/**
-	 * Removes the current thread's value for the EvalEngine's thread-local
-	 * variable.
-	 * 
-	 * @see java.lang.ThreadLocal#remove()
-	 */
-	public static void remove() {
-		instance.remove();
-	}
-
-	/**
 	 * Set the thread local evaluation engine instance
 	 * 
 	 * @param engine
@@ -161,40 +132,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	public static void set(final EvalEngine engine) {
 		instance.set(engine);
 	}
-
-	public IAST threadASTListArgs(final IAST ast) {
-		IAST result;
-		int listLength = 0;
-		final int astSize = ast.size();
-		for (int i = 1; i < astSize; i++) {
-			if (ast.get(i).isList()) {
-				if (listLength == 0) {
-					listLength = ((IAST) ast.get(i)).size() - 1;
-				} else {
-					if (listLength != ((IAST) ast.get(i)).size() - 1) {
-						printMessage("Lists of unequal length cannot be combined: " + ast.toString());
-						ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
-						return F.NIL;
-					}
-				}
-			}
-		}
-		if (listLength != 0) {
-			result = EvalAttributes.threadList(ast, F.List, ast.head(), listLength);
-			result.addEvalFlags(IAST.IS_LISTABLE_THREADED);
-			return result;
-		}
-		ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
-		return F.NIL;
-	}
-
-	/**
-	 * Associate a symbol name in this ThreadLocal with the symbol created in this
-	 * thread
-	 * 
-	 * @see ExprFactory.fSymbolMap for global symbol names
-	 */
-	// private Map<String, ISymbol> fUserVariableMap;
 
 	/**
 	 * Associate a symbol name with a local variable stack in this thread.
@@ -210,10 +147,24 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	transient int fRecursionCounter;
 
 	/**
+	 * Associate a symbol name in this ThreadLocal with the symbol created in this
+	 * thread
+	 * 
+	 * @see ExprFactory.fSymbolMap for global symbol names
+	 */
+	// private Map<String, ISymbol> fUserVariableMap;
+
+	/**
 	 * if <code>true</code> the engine evaluates in &quot;numeric&quot; mode,
 	 * otherwise the engine evaluates in &quot;symbolic&quot; mode.
 	 */
 	transient boolean fNumericMode;
+
+	/**
+	 * if <code>true</code> the engine evaluates in &quot;F.Together(expr)&quot; in
+	 * IExpr#times() method.
+	 */
+	transient boolean fTogetherMode;
 
 	/**
 	 * The precision for numeric operations.
@@ -823,7 +774,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			stack.pop();
 		}
 	}
-	
+
 	/**
 	 * Evaluate the Flat and Orderless attributes of the given <code>ast</code>
 	 * recursively.
@@ -1532,6 +1483,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	final public void init() {
 		fRecursionCounter = 0;
 		fNumericMode = false;
+		fTogetherMode = false;
 		fEvalLHSMode = false;
 		fTraceMode = false;
 		fTraceStack = null;
@@ -1614,6 +1566,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		return fStopRequested;
 	}
 
+	public boolean isTogetherMode() {
+		return fTogetherMode;
+	}
+
 	/**
 	 * If the trace mode is set the system writes an evaluation trace list or if
 	 * additionally the <i>stop after evaluation mode</i> is set returns the first
@@ -1623,6 +1579,35 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 */
 	public boolean isTraceMode() {
 		return fTraceMode;
+	}
+
+	/**
+	 * Get the local variable stack for a given symbol. If the local variable stack
+	 * doesn't exist, return <code>null</code>
+	 * 
+	 * @param symbol
+	 * @return <code>null</code> if the stack doesn't exist
+	 */
+	final public Deque<IExpr> localStack(final ISymbol symbol) {
+		return getLocalVariableStackMap().get(symbol);
+	}
+
+	/**
+	 * Get the local variable stack for a given symbol. If the local variable stack
+	 * doesn't exist, create a new one for the symbol.
+	 * 
+	 * @param symbol
+	 * @return
+	 */
+	public Deque<IExpr> localStackCreate(final ISymbol symbol) {
+		Map<ISymbol, Deque<IExpr>> localVariableStackMap = getLocalVariableStackMap();
+		Deque<IExpr> temp = localVariableStackMap.get(symbol);
+		if (temp != null) {
+			return temp;
+		}
+		temp = new ArrayDeque<IExpr>();// new ArrayList<IExpr>();
+		localVariableStackMap.put(symbol, temp);
+		return temp;
 	}
 
 	/**
@@ -1645,6 +1630,33 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		// return AST2Expr.CONST_LC.convert(node, this);
 		// }
 		// return AST2Expr.CONST.convert(node, this);
+	}
+
+	/**
+	 * Print a message to the <code>Out</code> stream, if the engine is not in
+	 * &quot;quiet mode&quot;.
+	 * 
+	 * @param str
+	 *            the message which should be printed
+	 */
+	public void printMessage(String str) {
+		if (!isQuietMode()) {
+			PrintStream stream = getOutPrintStream();
+			if (stream == null) {
+				stream = System.out;
+			}
+			stream.println(str);
+		}
+	}
+
+	/**
+	 * Reset the numeric mode flag and the recursion counter
+	 * 
+	 */
+	public void reset() {
+		fNumericMode = false;
+		fEvalLHSMode = false;
+		fRecursionCounter = 0;
 	}
 
 	/**
@@ -1686,33 +1698,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	// return parser.parse(expression);
 	// }
 	// }
-
-	/**
-	 * Print a message to the <code>Out</code> stream, if the engine is not in
-	 * &quot;quiet mode&quot;.
-	 * 
-	 * @param str
-	 *            the message which should be printed
-	 */
-	public void printMessage(String str) {
-		if (!isQuietMode()) {
-			PrintStream stream = getOutPrintStream();
-			if (stream == null) {
-				stream = System.out;
-			}
-			stream.println(str);
-		}
-	}
-
-	/**
-	 * Reset the numeric mode flag and the recursion counter
-	 * 
-	 */
-	public void reset() {
-		fNumericMode = false;
-		fEvalLHSMode = false;
-		fRecursionCounter = 0;
-	}
 
 	/**
 	 * Set the assumptions for this evaluation engine
@@ -1853,6 +1838,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		fStopRequested = stopRequested;
 	}
 
+	public void setTogetherMode(boolean fTogetherMode) {
+		this.fTogetherMode = fTogetherMode;
+	}
+
 	/**
 	 * @param b
 	 */
@@ -1871,6 +1860,32 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	public void stopRequest() {
 		fStopRequested = true;
+	}
+
+	public IAST threadASTListArgs(final IAST ast) {
+		IAST result;
+		int listLength = 0;
+		final int astSize = ast.size();
+		for (int i = 1; i < astSize; i++) {
+			if (ast.get(i).isList()) {
+				if (listLength == 0) {
+					listLength = ((IAST) ast.get(i)).size() - 1;
+				} else {
+					if (listLength != ((IAST) ast.get(i)).size() - 1) {
+						printMessage("Lists of unequal length cannot be combined: " + ast.toString());
+						ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
+						return F.NIL;
+					}
+				}
+			}
+		}
+		if (listLength != 0) {
+			result = EvalAttributes.threadList(ast, F.List, ast.head(), listLength);
+			result.addEvalFlags(IAST.IS_LISTABLE_THREADED);
+			return result;
+		}
+		ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
+		return F.NIL;
 	}
 
 	@Override

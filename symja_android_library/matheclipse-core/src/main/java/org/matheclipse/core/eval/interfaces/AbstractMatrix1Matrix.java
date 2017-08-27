@@ -18,14 +18,18 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		FieldMatrix<IExpr> matrix;
+		Validate.checkSize(ast, 2);
+
+		boolean togetherMode = engine.isTogetherMode();
 		try {
-			Validate.checkSize(ast, 2);
+			engine.setTogetherMode(true);
 
 			final IAST list = (IAST) ast.arg1();
 			matrix = Convert.list2Matrix(list);
-			matrix = matrixEval(matrix);
-			return Convert.matrix2List(matrix);
-			// return F.eval(F.Together(Convert.matrix2List(matrix)));
+			if (matrix != null) {
+				matrix = matrixEval(matrix);
+				return Convert.matrix2List(matrix);
+			}
 
 		} catch (final ClassCastException e) {
 			if (Config.SHOW_STACKTRACE) {
@@ -35,6 +39,8 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}
+		} finally {
+			engine.setTogetherMode(togetherMode);
 		}
 
 		return F.NIL;
@@ -43,12 +49,18 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr numericEval(final IAST ast, EvalEngine engine) {
 		RealMatrix matrix;
+		Validate.checkSize(ast, 2);
+
+		boolean togetherMode = engine.isTogetherMode();
 		try {
-			Validate.checkSize(ast, 2);
+			engine.setTogetherMode(true);
 
 			if (engine.isApfloat()) {
 				final IAST list = (IAST) ast.arg1();
 				FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(list);
+				if (fieldMatrix == null) {
+					return F.NIL;
+				}
 				fieldMatrix = matrixEval(fieldMatrix);
 				return Convert.matrix2List(fieldMatrix);
 			}
@@ -57,12 +69,14 @@ public abstract class AbstractMatrix1Matrix extends AbstractFunctionEvaluator {
 			if (matrix != null) {
 				matrix = realMatrixEval(matrix);
 				return Convert.realMatrix2List(matrix);
-			} 
+			}
 			return F.NIL;
 		} catch (final IndexOutOfBoundsException e) {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}
+		} finally {
+			engine.setTogetherMode(togetherMode);
 		}
 		return evaluate(ast, engine);
 	}

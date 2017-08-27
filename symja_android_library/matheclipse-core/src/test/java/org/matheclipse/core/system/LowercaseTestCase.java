@@ -2873,6 +2873,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testInterval() {
 		// https://de.wikipedia.org/wiki/Intervallarithmetik
 		check("Interval({1, 6}) * Interval({0, 2})", "Interval({0,12})");
+		check("Interval({1, 6}) + Interval({0, 2})", "Interval({1,8})");
 		check("Interval({-2, 5})^2", "Interval({0,25})");
 		check("Interval({-7, 5})^2", "Interval({0,49})");
 		check("Interval({-2, 5})^(-2)", "1/Interval({0,25})");
@@ -4271,7 +4272,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				+ "{0, 0, -1},\n" + "{1, 2, 1}})", "{{-2,1,0}}");
 		check("NullSpace({{1,2,3},{4,5,6},{7,8,9}})", "{{1,-2,1}}");
 		check("NullSpace({{1,1,0,1,5},{1,0,0,2,2},{0,0,1,4,-1},{0,0,0,0,0}})", "{{-2,1,-4,1,0},\n" + " {-2,-3,1,0,1}}");
-		check("NullSpace({{a,b,c}," + "{c,b,a}})", "{{1,-(a+c)/b,1}}");
+		check("NullSpace({{a,b,c}," + "{c,b,a}})", "{{1,(-a-c)/b,1}}");
 		check("NullSpace({{1,2,3}," + "{5,6,7}," + "{9,10,11}})", "{{1,-2,1}}");
 		check("NullSpace({{1,2,3,4}," + "{5,6,7,8}," + "{9,10,11,12}})", "{{1,-2,1,0},\n" + " {2,-3,0,1}}");
 		check("(-1/2+I*1/2)*(-I)", "1/2+I*1/2");

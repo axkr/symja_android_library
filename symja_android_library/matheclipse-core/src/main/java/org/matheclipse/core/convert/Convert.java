@@ -25,11 +25,12 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Conversions between an IExpr object and misc other object class types
  */
 public class Convert {
+
 	/**
 	 * Returns a FieldMatrix if possible.
 	 * 
 	 * @param listMatrix
-	 * @return
+	 * @return <code>null</code> if the conversion isn't possible.
 	 * @throws ClassCastException
 	 * @throws IndexOutOfBoundsException
 	 */
@@ -54,7 +55,7 @@ public class Convert {
 		final IExpr[][] elements = new IExpr[rowSize][colSize];
 		for (int i = 1; i < rowSize + 1; i++) {
 			currInRow = (IAST) listMatrix.get(i);
-			if (currInRow.head() != F.List) {
+			if (currInRow.head() != F.List || colSize != currInRow.size() - 1) {
 				return null;
 			}
 			for (int j = 1; j < colSize + 1; j++) {
@@ -97,7 +98,7 @@ public class Convert {
 		final IExpr[][] elements = new IExpr[rowSize][colSize + 1];
 		for (int i = 1; i < rowSize + 1; i++) {
 			currInRow = (IAST) listMatrix.get(i);
-			if (currInRow.head() != F.List) {
+			if (currInRow.head() != F.List || colSize != currInRow.size() - 1) {
 				return null;
 			}
 			for (int j = 1; j < colSize + 1; j++) {
@@ -212,12 +213,12 @@ public class Convert {
 				if (expr.isNumber()) {
 					currOutRow.append(expr);
 				} else {
-					if (expr.isPlusTimesPower()) {
-						// TODO Performance hotspot
-						currOutRow.append(F.eval(F.Together(expr)));
-					} else {
-						currOutRow.append(expr);
-					}
+					// if (expr.isPlusTimesPower()) {
+					// // TODO Performance hotspot
+					// currOutRow.append(F.eval(F.Together(expr)));
+					// } else {
+					currOutRow.append(expr);
+					// }
 				}
 			}
 		}
@@ -253,8 +254,7 @@ public class Convert {
 	}
 
 	/**
-	 * Converts a PolynomialFunction to the (polynomial) expression
-	 * representation.
+	 * Converts a PolynomialFunction to the (polynomial) expression representation.
 	 * 
 	 * @param pf
 	 *            the polynomial function
@@ -302,8 +302,7 @@ public class Convert {
 	}
 
 	/**
-	 * Convert a matrix of double values to a transposed matrix of double
-	 * values.
+	 * Convert a matrix of double values to a transposed matrix of double values.
 	 * 
 	 * @param dd
 	 * @return the transposed matrix of double values

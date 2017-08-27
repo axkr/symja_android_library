@@ -2652,14 +2652,6 @@ public abstract class AbstractAST implements IAST {
 		return 41;
 	}
 
-	@Override
-	public final IExpr plus(final IExpr that) {
-		if (that.isZero()) {
-			return this;
-		}
-		return F.eval(F.Plus(this, that));
-	}
-
 	/** {@inheritDoc} */
 	@Override
 	public final IAST prependClone(IExpr expr) {

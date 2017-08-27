@@ -1083,7 +1083,10 @@ public class Solve extends AbstractFunctionEvaluator {
 			if (vector.size() > 1) {
 				// solve a linear equation <code>matrix.x == vector</code>
 				FieldMatrix<IExpr> augmentedMatrix = Convert.list2Matrix(matrix, vector);
-				return LinearAlgebra.rowReduced2RulesList(augmentedMatrix, variables, resultList, engine);
+				if (augmentedMatrix != null) {
+					return LinearAlgebra.rowReduced2RulesList(augmentedMatrix, variables, resultList, engine);
+				}
+				return F.NIL;
 			}
 
 			return sortASTArguments(resultList);

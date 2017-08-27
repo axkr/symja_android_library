@@ -72,7 +72,9 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 				return realMatrixEval(matrix);
 			} else {
 				FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(list);
-				return matrixEval(fieldMatrix);
+				if (fieldMatrix != null) {
+					return matrixEval(fieldMatrix);
+				}
 			}
 		} catch (final IndexOutOfBoundsException e) {
 			if (Config.SHOW_STACKTRACE) {
