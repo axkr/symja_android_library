@@ -26,15 +26,12 @@ Features of the Symja language:
 * differentiation, integration, equation solving, polynomial and linear algebra functions...
 * a general purpose [Term Rewriting System and Pattern Matching engine](symja_android_library/doc/functions-and-patterns.md)
 * use human readable math expression strings or the internal abstract syntax tree (AST) representation to code in Java. See the [Unit test examples](symja_android_library/matheclipse-core/src/test/java/org/matheclipse/core/system/LowercaseTestCase.java)
-   
+     
 ### Demos
 
+* [Appengine web interface symjaweb.appspot.com](http://symjaweb.appspot.com/) - available as open source in this [Github repository](https://github.com/axkr/symja_web) 
+
 * [Android App Calculator N+ on Google play store](https://play.google.com/store/apps/details?id=com.duy.calculator.free) - available as open source in this [Github repository](https://github.com/tranleduy2000/ncalc)
-
-Older (i.e. Java 7 based) online versions on Google Appengine:
-
-* [Mobile web interface symjaweb.appspot.com](http://symjaweb.appspot.com/)  
-* [Notebook interface symjaweb.appspot.com/new.jsp](http://symjaweb.appspot.com/new.jsp)
 
 ### Examples
 
