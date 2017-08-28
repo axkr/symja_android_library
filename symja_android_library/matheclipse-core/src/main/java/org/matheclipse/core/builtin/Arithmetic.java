@@ -1454,9 +1454,6 @@ public final class Arithmetic {
 			return F.Interval(F.List(interval.lower().power(exponent), interval.upper().power(exponent)));
 		}
 
-		public Power() {
-		}
-
 		/**
 		 * Split this integer into the nth-root (with prime factors less equal 1021) and
 		 * the &quot;rest factor&quot;
@@ -1901,26 +1898,9 @@ public final class Arithmetic {
 			if (arg1.isAST()) {
 				IAST astArg1 = (IAST) arg1;
 				if (astArg1.isTimes()) {
-					if (arg2.isInteger()) {
+					if (arg2.isInteger() || arg2.isMinusOne()) {
 						// (a * b * c)^n => a^n * b^n * c^n
-						boolean doMap = false;
-						if (arg2.isPositive()) {
-							doMap = true;
-						} else {
-							for (int i = 1; i < astArg1.size(); i++) {
-								IExpr temp = astArg1.get(i);
-								if (temp.isNumber()) {
-									doMap = true;
-									break;
-								} else if (temp.isPower()) {
-									doMap = true;
-									break;
-								}
-							}
-						}
-						if (doMap) {
-							return astArg1.mapThread(Power(null, arg2), 1);
-						}
+						return astArg1.mapThread(Power(null, arg2), 1);
 					}
 					if (arg2.isNumber()) {
 						final IAST f0 = astArg1;

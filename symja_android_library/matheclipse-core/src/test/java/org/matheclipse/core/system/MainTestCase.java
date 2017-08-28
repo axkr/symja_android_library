@@ -1411,7 +1411,7 @@ public class MainTestCase extends AbstractTestCase {
 
 	public void testSystem165() {
 		// check("Expand(1 / ((x-1)(1+x)) )", "(x^2-1)^(-1)");
-		check("Expand(1/((x-1)*(1+x)))", "1/((-1+x)*(1+x))");
+		check("Expand(1/((x-1)*(1+x)))", "1/(-1+x^2)");
 		check("Expand((x+y+z)^3)", "x^3+3*x^2*y+3*x*y^2+y^3+3*x^2*z+6*x*y*z+3*y^2*z+3*x*z^2+3*y*z^2+z^3");
 		check("Expand((a+b)*(c+d))", "a*c+b*c+a*d+b*d");
 		// check("Expand((x+3)/((x+4)*(x+2)))", "(x+3)*(x^2+6*x+8)^(-1)");

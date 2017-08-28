@@ -1177,12 +1177,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Defer(3*2)", "3*2");
 		check("Defer(6/8)==6/8", "6/8==3/4");
 	}
-	
+
 	public void testDefinition() {
 		check("SetAttributes(f,Listable)", "");
 		check("f(x_):={x}", "");
-		check("Definition(f)", "\"Attributes(f)={Listable}\n" + 
-				"f(x_):={x}\"");
+		check("Definition(f)", "\"Attributes(f)={Listable}\n" + "f(x_):={x}\"");
 	}
 
 	public void testDegree() {
@@ -1752,6 +1751,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEqual() {
+		// Issue #174
+		check("x/(y*x)==0.25", "1/y==0.25");
+
 		check("a==a", "True");
 		check("a==b", "a==b");
 		check("1==1.", "True");
@@ -2679,12 +2681,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Hypergeometric1F1(-1,2,3.0)", "-0.5");
 		check("Hypergeometric1F1(1,2,3.0)", "6.36185");
 		checkNumeric("Hypergeometric1F1(1,{2,3,4},5.0)", "{29.4826318205153,11.393052728206118,6.235831636923671}");
-		
+
 	}
 
 	public void testHypergeometric2F1() {
 		check("Hypergeometric2F1(-2,b,c,1)", "(-b+b^2+c-2*b*c+c^2)/(c*(1+c))");
-		
+
 		check("Hypergeometric2F1(0.5,0.333,0.666,0.5)", "1.18566");
 		checkNumeric("Hypergeometric2F1(0.5,0.333,0.666,-0.5)", "0.9026782488379839");
 		checkNumeric("Hypergeometric2F1(0.5,0.333,0.666,0.75)", "1.397573218428824");
@@ -2920,9 +2922,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Inverse({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}})", "{{-3,2,0},\n" + " {2,-1,0},\n" + " {1,-2,1}}");
 		check("Inverse({{1, 0}, {0, 0}})", "Inverse({{1,0},{0,0}})");
 		check("Inverse({{1, 0, 0}, {0, Sqrt(3)/2, 1/2}, {0,-1 / 2, Sqrt(3)/2}})",
-				"{{1,0,0},\n" + 
-				" {0,Sqrt(3)/2,-1/2},\n" + 
-				" {0,1/2,Sqrt(3)/2}}");
+				"{{1,0,0},\n" + " {0,Sqrt(3)/2,-1/2},\n" + " {0,1/2,Sqrt(3)/2}}");
 		check("Inverse({{u, v}, {v, u}})", "{{u/(u^2-v^2),-v/(u^2-v^2)},\n" + " {-v/(u^2-v^2),u/(u^2-v^2)}}");
 	}
 
@@ -3123,7 +3123,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testLeafCount() {
 		check("LeafCount(10+I)", "3");
 	}
-	
+
 	public void testLegendreP() {
 		check("LegendreP(Pi,0)", "Sqrt(Pi)/(Gamma(1/2*(1-Pi))*Gamma(1+Pi/2))");
 		check("LegendreP(111,1)", "1");
@@ -3377,7 +3377,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LogisticSigmoid(Infinity)", "1");
 		check("LogisticSigmoid(-Infinity)", "0");
 		check("LogisticSigmoid(0)", "1/2");
-	
+
 		checkNumeric("LogisticSigmoid(0.5)", "0.6224593312018546");
 		checkNumeric("LogisticSigmoid(0.5 + 2.3*I)", "1.0647505893884985+I*0.8081774171575826");
 		checkNumeric("LogisticSigmoid({-0.2, 0.1, 0.3})", "{0.45016600268752216,0.52497918747894,0.574442516811659}");
@@ -4719,14 +4719,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPochhammer() {
-		check("Pochhammer(b-c, -10)", "1/((-10+b-c)*(-9+b-c)*(-8+b-c)*(-7+b-c)*(-6+b-c)*(-5+b-c)*(-4+b-c)*(-3+b-c)*(-2+b-c)*(\n" + 
-				"-1+b-c))");
-		
+		check("Pochhammer(b-c, -10)",
+				"1/((-10+b-c)*(-9+b-c)*(-8+b-c)*(-7+b-c)*(-6+b-c)*(-5+b-c)*(-4+b-c)*(-3+b-c)*(-2+b-c)*(\n"
+						+ "-1+b-c))");
+
 		check("Pochhammer(b-c, 2)", "(b-c)*(1+b-c)");
 		check("Pochhammer(b-c, 3)", "(b-c)*(1+b-c)*(2+b-c)");
 		check("Pochhammer(b-c, 10)", "(b-c)*(1+b-c)*(2+b-c)*(3+b-c)*(4+b-c)*(5+b-c)*(6+b-c)*(7+b-c)*(8+b-c)*(9+b-c)");
-		
-		
+
 		check("Pochhammer(2,3)", "24");
 
 		check("Pochhammer(4, 8)", "6652800");
@@ -4737,7 +4737,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Pochhammer(-10, -12)", "1/309744468633600");
 		check("Pochhammer(3/2, 1/2)", "2/Sqrt(Pi)");
 		check("Pochhammer(-5, -3)", "-1/336");
-		
+
 	}
 
 	public void testPolyGamma() {
@@ -6790,6 +6790,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testTimes() {
 		// String s = System.getProperty("os.name");
 		// if (s.contains("Windows")) {
+		check("x*y/(y*z)", "x/z");
+		check("x*y/(y^3*z)", "x/(y^2*z)");
+		check("x*y/(y^(2/3)*z)", "(x*y^(1/3))/z");
+		check("x*y/(y^(0.6666)*z)", "(x*y^0.3334)/z");
 		check("N(Pi, 30) * I", "I*3.14159265358979323846264338327");
 		check("N(I*Pi, 30)", "I*3.14159265358979323846264338327");
 		check("N(Pi * E, 30)", "8.53973422267356706546355086954");
