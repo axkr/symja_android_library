@@ -6016,6 +6016,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Clear(x);Solve(x==(-1.0000000000000002)*Sqrt(y^2.0),y)",
 		// "{{y->1.0*Sqrt(x^2.0)}}");
 
+		// Issue #175
+		check("Solve(Sqrt(-16.0+a^2.0)/(20.0-2.0*92)==0.5,a)", "{}");
+		
 		// Issue #166
 		check("Solve(2*x/y==x/z,x)", "{{x->0}}");
 		// Issue #165
