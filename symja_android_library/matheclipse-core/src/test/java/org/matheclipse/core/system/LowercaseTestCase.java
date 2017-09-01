@@ -2078,6 +2078,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testFactorInteger() {
+		check("FactorInteger(10+30*I,GaussianIntegers->True)", "{{-1,1},{1+I,3},{1+I*2,1},{2+I,2}}");
+		check("FactorInteger(11+14*I,GaussianIntegers->True)", "{{11+I*14,1}}");
+		check("FactorInteger(8+21*I,GaussianIntegers->True)", "{{1+I*2,1},{10+I,1}}");
+		
+		
+		check("FactorInteger(16,GaussianIntegers->True)", "{{1+I,8}}");
+		check("FactorInteger(8+21*I,GaussianIntegers->True)", "{{1+I*2,1},{10+I,1}}");
+		check("FactorInteger(361 - 1767*I ,GaussianIntegers->True)", "{{-1,1},{1+I,1},{2+I,1},{4+I,1},{7+I*2,1},{19,1}}");
+		check("FactorInteger(440-55*I,GaussianIntegers->True)", "{{-1,1},{1+I*2,1},{2+I,2},{2+I*3,1},{11,1}}");
+		check("FactorInteger(5,GaussianIntegers->True)", "{{-I,1},{1+I*2,1},{2+I,1}}");
+		check("FactorInteger(12,GaussianIntegers->True)", "{{-1,1},{1+I,4},{3,1}}");
+		check("FactorInteger(5+7*I,GaussianIntegers->True)", "{{1+I,1},{6+I,1}}");
+
 		check("factors = FactorInteger(2010)", "{{2,1},{3,1},{5,1},{67,1}}");
 		check("Times @@ Power @@@ factors", "2010");
 
@@ -6018,7 +6031,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		// Issue #175
 		check("Solve(Sqrt(-16.0+a^2.0)/(20.0-2.0*92)==0.5,a)", "{}");
-		
+
 		// Issue #166
 		check("Solve(2*x/y==x/z,x)", "{{x->0}}");
 		// Issue #165

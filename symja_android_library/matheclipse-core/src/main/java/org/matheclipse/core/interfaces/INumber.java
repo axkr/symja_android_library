@@ -127,7 +127,7 @@ public interface INumber extends IExpr {
 	 * @return real part
 	 */
 	public double getReal();
-
+	
 	/**
 	 * Returns the imaginary part of a complex number
 	 * 

@@ -48,6 +48,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.parser.client.math.MathException;
 
@@ -1529,12 +1530,39 @@ public final class NumberTheory {
 	 * {{2, 1}, {3, 1}, {5, 1}, {67, 1}, {2011, -1}}
 	 * </pre>
 	 */
-	private static class FactorInteger extends AbstractTrigArg1 {
+	private static class FactorInteger extends AbstractEvaluator {
 
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
-			if (arg1.isRational()) {
-				return ((IRational) arg1).factorInteger();
+		// public IExpr evaluateArg1(final IExpr arg1) {
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.size() >= 2 && ast.size() <= 3) {
+				IExpr arg1 = ast.arg1();
+				if (ast.size() == 2) {
+					if (arg1.isRational()) {
+						return ((IRational) arg1).factorInteger();
+					}
+					return F.NIL;
+				}
+				if (ast.size() == 3) {
+					final Options options = new Options(ast.topHead(), ast, 2, engine);
+					IExpr option = options.getOption("GaussianIntegers");
+					if (option.isTrue()) {
+						BigInteger re = BigInteger.ONE;
+						if (arg1.isInteger()) {
+							re = ((IInteger) arg1).toBigNumerator();
+							return GaussianInteger.factorize(re, BigInteger.ZERO, arg1);
+						} else if (arg1.isComplex()) {
+							IComplex c = (IComplex) arg1;
+							IRational rer = c.getRealPart();
+							IRational imr = c.getImaginaryPart();
+							if (rer.isInteger() && imr.isInteger()) {
+								re = ((IInteger) rer).toBigNumerator();
+								BigInteger im = ((IInteger) imr).toBigNumerator();
+								return GaussianInteger.factorize(re, im, arg1);
+							}
+						}
+					}
+				}
 			}
 			return F.NIL;
 		}
