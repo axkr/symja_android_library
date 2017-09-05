@@ -76,9 +76,6 @@ public final class BooleanFunctions {
 
 	private static class AllTrue extends AbstractFunctionEvaluator {
 
-		public AllTrue() {
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
@@ -106,16 +103,20 @@ public final class BooleanFunctions {
 		 */
 		public IExpr allTrue(IAST list, IExpr head, EvalEngine engine) {
 			IAST logicalAnd = F.And();
-			int size = list.size();
-			for (int i = 1; i < size; i++) {
-				IExpr temp = engine.evaluate(F.unary(head, list.get(i)));
+
+			if (!Lambda.forAll(list, x -> {
+				IExpr temp = engine.evaluate(F.unary(head, x));
 				if (temp.isTrue()) {
-					continue;
+					return true;
 				} else if (temp.isFalse()) {
-					return F.False;
+					return false;
 				}
 				logicalAnd.append(temp);
+				return true;
+			}, 1)) {
+				return F.False;
 			}
+
 			if (logicalAnd.size() > 1) {
 				return logicalAnd;
 			}
@@ -232,9 +233,6 @@ public final class BooleanFunctions {
 
 	private static class AnyTrue extends AbstractFunctionEvaluator {
 
-		public AnyTrue() {
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
@@ -317,10 +315,6 @@ public final class BooleanFunctions {
 
 	private static class BooleanConvert extends AbstractFunctionEvaluator {
 
-		public BooleanConvert() {
-			super();
-		}
-
 		static class BooleanConvertVisitor extends VisitorExpr {
 			public BooleanConvertVisitor() {
 				super();
@@ -401,10 +395,6 @@ public final class BooleanFunctions {
 	 * Quine McCluskey algorithm</a>.
 	 */
 	private static class BooleanMinimize extends AbstractFunctionEvaluator {
-
-		public BooleanMinimize() {
-			super();
-		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -497,10 +487,6 @@ public final class BooleanFunctions {
 	 */
 	private static class BooleanVariables extends AbstractFunctionEvaluator {
 
-		public BooleanVariables() {
-			// empty ctor
-		}
-
 		/**
 		 */
 		@Override
@@ -525,10 +511,6 @@ public final class BooleanFunctions {
 	 * 
 	 */
 	public static class Equal extends AbstractFunctionEvaluator implements ITernaryComparator {
-
-		public Equal() {
-			// default ctor
-		}
 
 		/**
 		 * Create the result for a <code>simplifyCompare()</code> step.
@@ -795,10 +777,6 @@ public final class BooleanFunctions {
 	 */
 	public static class Greater extends AbstractFunctionEvaluator implements ITernaryComparator {
 		public final static Greater CONST = new Greater();
-
-		public Greater() {
-			// default ctor
-		}
 
 		/**
 		 * Check assumptions for the comparison operator. Will be overridden in
@@ -1126,9 +1104,6 @@ public final class BooleanFunctions {
 	 */
 	public final static class GreaterEqual extends Greater {
 		public final static GreaterEqual CONST = new GreaterEqual();
-
-		public GreaterEqual() {
-		}
 
 		/** {@inheritDoc} */
 		@Override
@@ -1809,9 +1784,6 @@ public final class BooleanFunctions {
 
 	private static class Not extends AbstractArg1 {
 
-		public Not() {
-		}
-
 		@Override
 		public IExpr e1ObjArg(final IExpr o) {
 			if (o.isTrue()) {
@@ -1977,7 +1949,7 @@ public final class BooleanFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() > 1) {
-				return Lambda.compareStop(ast, (x, y) -> !x.isSame(y), F.False, F.True);
+				return Lambda.existsLeft(ast, (x, y) -> !x.isSame(y), F.False, F.True);
 			}
 			return F.False;
 		}
@@ -2043,9 +2015,6 @@ public final class BooleanFunctions {
 	 */
 	private static class TautologyQ extends AbstractFunctionEvaluator {
 
-		public TautologyQ() {
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
@@ -2099,9 +2068,6 @@ public final class BooleanFunctions {
 	 */
 	private static class TrueQ extends AbstractFunctionEvaluator {
 
-		public TrueQ() {
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
@@ -2120,10 +2086,6 @@ public final class BooleanFunctions {
 	 * 
 	 */
 	private final static class Unequal extends Equal {
-
-		public Unequal() {
-			// default ctor
-		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {

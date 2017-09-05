@@ -738,7 +738,7 @@ public class IntegerFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 4);
 
-			if (Lambda.compareStop(ast, x -> !x.isInteger(), 1)) {
+			if (Lambda.exists(ast, x -> !x.isInteger(), 1)) {
 				return F.NIL;
 			}
 			IInteger arg1 = (IInteger) ast.get(1);

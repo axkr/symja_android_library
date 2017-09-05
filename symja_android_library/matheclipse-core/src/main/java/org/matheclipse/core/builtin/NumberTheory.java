@@ -1958,7 +1958,7 @@ public final class NumberTheory {
 			if (ast.isAST2()) {
 				return F.Binomial(F.Plus(ast.arg1(), ast.arg2()), ast.arg1());
 			}
-			if (Lambda.compareStop(ast, x -> (!x.isInteger()) || ((IInteger) x).isNegative(), 1)) {
+			if (Lambda.exists(ast, x -> (!x.isInteger()) || ((IInteger) x).isNegative(), 1)) {
 				return F.NIL;
 			}
 			// for (int i = 1; i < ast.size(); i++) {

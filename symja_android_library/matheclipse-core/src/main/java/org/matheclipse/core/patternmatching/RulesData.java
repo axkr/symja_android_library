@@ -31,9 +31,9 @@ import org.matheclipse.core.visit.AbstractVisitor;
  */
 public class RulesData implements Serializable {
 	private static final long serialVersionUID = -7747268035549814899L;
-	
+
 	static boolean showSteps = false;
-	
+
 	/**
 	 * 
 	 */
@@ -62,8 +62,7 @@ public class RulesData implements Serializable {
 						return true;
 					}
 					if (neededSymbols != null && arg1.isOrderlessAST()) {
-						boolean lambda = !Lambda.compareStop(lhsAST, x -> x.isPatternDefault() || x.isOrderlessAST(),
-								1);
+						boolean lambda = !Lambda.exists(lhsAST, x -> x.isPatternDefault() || x.isOrderlessAST(), 1);
 						boolean[] isComplicated = { false };
 						arg1.forEach(t -> {
 							if (t.isPatternDefault()) {
@@ -77,9 +76,9 @@ public class RulesData implements Serializable {
 					// the left hand side is associated with the first argument
 					// see if one of the arguments contain a pattern with default
 					// value
-					return Lambda.compareStop(arg1, x -> x.isPatternDefault(), 1);
+					return Lambda.exists(arg1, x -> x.isPatternDefault(), 1);
 				}
-				return Lambda.compareStop(lhsAST, x -> x.isPatternDefault(), 2);
+				return Lambda.exists(lhsAST, x -> x.isPatternDefault(), 2);
 			}
 		} else if (lhsExpr.isPattern()) {
 			return true;

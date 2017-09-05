@@ -899,8 +899,7 @@ public class SpecialFunctions {
 							Power(Factorial(Times(C2, n)), -1), BernoulliB(Times(C2, n)));
 				}
 
-			}
-			if (arg1.isInfinity()) {
+			} else if (arg1.isInfinity()) {
 				return C1;
 			}
 			return NIL;

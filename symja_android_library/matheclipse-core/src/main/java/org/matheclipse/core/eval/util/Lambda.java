@@ -152,7 +152,7 @@ public class Lambda {
 	 * @param resultExpr
 	 * @return
 	 */
-	public static IExpr compareStop(IAST ast, BiPredicate<IExpr, IExpr> stopPredicate, IExpr stopExpr,
+	public static IExpr existsLeft(IAST ast, BiPredicate<IExpr, IExpr> stopPredicate, IExpr stopExpr,
 			IExpr resultExpr) {
 		int size = ast.size();
 		for (int i = 2; i < size; i++) {
@@ -172,14 +172,24 @@ public class Lambda {
 	 * @param offset TODO
 	 * @return
 	 */
-	public static boolean compareStop(IAST ast, Predicate<IExpr> stopPredicate, int offset) {
+	public static boolean exists(IAST ast, Predicate<IExpr> stopPredicate, int offset) {
 		int size = ast.size();
-		for (int i = 1; i < size; i++) {
+		for (int i = offset; i < size; i++) {
 			if (stopPredicate.test(ast.get(i))) {
 				return true;
 			}
 		}
 		return false;
+	}
+	
+	public static boolean forAll(IAST ast, Predicate<IExpr> predicate, int offset) {
+		int size = ast.size();
+		for (int i = offset; i < size; i++) {
+			if (!predicate.test(ast.get(i))) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private static IExpr testMap(IAST ast, Predicate<IExpr> predicate, Function<IExpr, IExpr> function) {

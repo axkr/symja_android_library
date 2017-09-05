@@ -7268,6 +7268,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testZeta() {
+		check("Zeta(-1)", "-1/12");
 		check("Zeta(2)", "Pi^2/6");
 		// TODO add implementation
 		// check("Zeta(-2.5 + I)", "0.0235936 + 0.0014078*I");
