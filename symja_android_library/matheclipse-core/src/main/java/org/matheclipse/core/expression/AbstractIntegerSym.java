@@ -589,6 +589,15 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		if (this.isZero() || that.isZero()) {
 			return F.C0;
 		}
+		if (this.equals(that)) {
+			return this.abs();
+		}
+		if (this.isOne()  ) {
+			return that.abs();
+		}
+		if (that.isOne()  ) {
+			return this.abs();
+		}
 		IInteger a = abs();
 		IInteger b = that.abs();
 		IInteger gcd = a.gcd(b);

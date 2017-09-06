@@ -2081,11 +2081,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("FactorInteger(10+30*I,GaussianIntegers->True)", "{{-1,1},{1+I,3},{1+I*2,1},{2+I,2}}");
 		check("FactorInteger(11+14*I,GaussianIntegers->True)", "{{11+I*14,1}}");
 		check("FactorInteger(8+21*I,GaussianIntegers->True)", "{{1+I*2,1},{10+I,1}}");
-		
-		
+
 		check("FactorInteger(16,GaussianIntegers->True)", "{{1+I,8}}");
 		check("FactorInteger(8+21*I,GaussianIntegers->True)", "{{1+I*2,1},{10+I,1}}");
-		check("FactorInteger(361 - 1767*I ,GaussianIntegers->True)", "{{-1,1},{1+I,1},{2+I,1},{4+I,1},{7+I*2,1},{19,1}}");
+		check("FactorInteger(361 - 1767*I ,GaussianIntegers->True)",
+				"{{-1,1},{1+I,1},{2+I,1},{4+I,1},{7+I*2,1},{19,1}}");
 		check("FactorInteger(440-55*I,GaussianIntegers->True)", "{{-1,1},{1+I*2,1},{2+I,2},{2+I*3,1},{11,1}}");
 		check("FactorInteger(5,GaussianIntegers->True)", "{{-I,1},{1+I*2,1},{2+I,1}}");
 		check("FactorInteger(12,GaussianIntegers->True)", "{{-1,1},{1+I,4},{3,1}}");
@@ -3118,6 +3118,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLCM() {
+		check("LCM(I)", "1");
+		check("LCM(-I)", "1");
+		check("LCM(-2)", "2");
 		check("LCM(10)", "10");
 		check("LCM(2, 3, 5)", "30");
 		check("LCM(-3, 7)", "21");
@@ -3127,9 +3130,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LCM(0,10)", "0");
 		check("LCM(10,0)", "0");
 		check("LCM(a)", "LCM(a)");
-
+		check("LCM(a,-a)", "LCM(-a,a)");
 		check("LCM(15, 20)", "60");
 		check("LCM(20, 30, 40, 50)", "600");
+		check("LCM(-36,45)", "180");
+		check("LCM(36,-45)", "180");
+		check("LCM(-36,-45)", "180");
+		check("LCM(2,3,4,5)", "60");
+		check("Sum(LCM(3, k), {k, 100})", "11784");
 		// check("LCM(1/3, 2/5, 3/7)", "");
 	}
 

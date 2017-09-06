@@ -28,8 +28,8 @@ public class LCM extends AbstractArgMultiple {
 		Validate.checkRange(ast, 2);
 
 		if (ast.isAST1()) {
-			if (ast.arg1().isSignedNumber()) {
-				return ast.arg1();
+			if (ast.arg1().isExactNumber()) {
+				return ast.arg1().abs();
 			}
 		}
 		return super.evaluate(ast, engine);
