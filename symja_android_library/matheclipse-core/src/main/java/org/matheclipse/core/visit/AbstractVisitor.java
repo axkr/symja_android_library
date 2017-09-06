@@ -32,6 +32,7 @@ public abstract class AbstractVisitor implements IVisitor<IExpr> {
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
+	@Override
 	public IExpr visit(IInteger element) {
 		return F.NIL;
 	}
@@ -40,6 +41,7 @@ public abstract class AbstractVisitor implements IVisitor<IExpr> {
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
+	@Override
 	public IExpr visit(IFraction element) {
 		return F.NIL;
 	}
@@ -48,6 +50,7 @@ public abstract class AbstractVisitor implements IVisitor<IExpr> {
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
+	@Override
 	public IExpr visit(IComplex element) {
 		return F.NIL;
 	}
@@ -56,6 +59,7 @@ public abstract class AbstractVisitor implements IVisitor<IExpr> {
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
+	@Override
 	public IExpr visit(INum element) {
 		return F.NIL;
 	}
@@ -64,6 +68,7 @@ public abstract class AbstractVisitor implements IVisitor<IExpr> {
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
+	@Override
 	public IExpr visit(IComplexNum element) {
 		return F.NIL;
 	}
@@ -72,6 +77,7 @@ public abstract class AbstractVisitor implements IVisitor<IExpr> {
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
+	@Override
 	public IExpr visit(ISymbol element) {
 		return F.NIL;
 	}
@@ -80,6 +86,7 @@ public abstract class AbstractVisitor implements IVisitor<IExpr> {
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
+	@Override
 	public IExpr visit(IPattern element) {
 		return F.NIL;
 	}
@@ -88,6 +95,7 @@ public abstract class AbstractVisitor implements IVisitor<IExpr> {
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
+	@Override
 	public IExpr visit(IPatternSequence element) {
 		return F.NIL;
 	}
@@ -96,6 +104,7 @@ public abstract class AbstractVisitor implements IVisitor<IExpr> {
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
+	@Override
 	public IExpr visit(IStringX element) {
 		return F.NIL;
 	}

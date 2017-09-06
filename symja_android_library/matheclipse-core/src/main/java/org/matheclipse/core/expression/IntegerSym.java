@@ -711,7 +711,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	public IInteger negate() {
 		if (fIntValue == Integer.MIN_VALUE) {
 			// gives Integer.MAX_VALUE+1 which is a long number
-			return valueOf(-1L * (long) fIntValue);
+			return valueOf(-1L * fIntValue);
 		}
 		return valueOf(-fIntValue);
 	}

@@ -941,7 +941,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	public static IAST getRuleASTStatic() {
 		F.Integrate.createRulesData(new int[] { 0, 100 });
 		IAST ast = F.ast(F.List, 10000, false);
-		CONST.getRuleASTRubi45(ast);
+		getRuleASTRubi45(ast);
 
 		// INT_FUNCTIONS.add(F.Times);
 		// INT_FUNCTIONS.add(F.Power);

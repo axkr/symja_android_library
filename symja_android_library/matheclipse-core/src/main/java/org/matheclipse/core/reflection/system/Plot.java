@@ -32,6 +32,7 @@ public class Plot extends AbstractEvaluator {
 	public Plot() {
 	}
 
+	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if ((ast.size() >= 3) && (ast.size() <= 4) && ast.arg2().isList()) {
 			try {
@@ -156,6 +157,7 @@ public class Plot extends AbstractEvaluator {
 		return Convert.toExprTransposed(data);
 	}
 
+	@Override
 	public void setUp(final ISymbol newSymbol) {
 		newSymbol.setAttributes(ISymbol.HOLDALL);
 	}

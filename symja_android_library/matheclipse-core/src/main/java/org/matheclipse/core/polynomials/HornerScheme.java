@@ -20,6 +20,7 @@ public class HornerScheme {
 	public HornerScheme() {
 		Comparator<ISignedNumber> comp = new Comparator<ISignedNumber>() {
 
+			@Override
 			public int compare(ISignedNumber arg0, ISignedNumber arg1) {
 				if (arg0.isGreaterThan(arg1)) {
 					return 1;

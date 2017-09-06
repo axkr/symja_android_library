@@ -1545,7 +1545,7 @@ public final class Arithmetic {
 				IInteger b;
 				IFraction f0Temp = f0;
 				if (f0.sign() < 0) {
-					f0Temp = (IFraction) f0Temp.negate();
+					f0Temp = f0Temp.negate();
 				}
 				if (f1.isNegative()) {
 					a = f0Temp.getDenominator();
@@ -2064,13 +2064,13 @@ public final class Arithmetic {
 			if (complexNumber.isImaginaryUnit()) {
 				return F.Power(F.CN1, F.C1D2.times(fractionNumber));
 			} else if (complexNumber.isNegativeImaginaryUnit()) {
-				IInteger numerator = ((IFraction) fractionNumber).getNumerator();
-				IInteger denominator = ((IFraction) fractionNumber).getDenominator();
+				IInteger numerator = fractionNumber.getNumerator();
+				IInteger denominator = fractionNumber.getDenominator();
 				IInteger div = numerator.div(denominator);
 				if (div.isOdd()) {
 					div = div.subtract(F.C1);
 				}
-				IRational rat = ((IFraction) fractionNumber).subtract(div);
+				IRational rat = fractionNumber.subtract(div);
 				numerator = rat.getNumerator();
 				denominator = rat.getDenominator().multiply(F.C2);
 				return F.Times(F.CN1, F.Power(F.CNI, div),
@@ -2174,6 +2174,7 @@ public final class Arithmetic {
 			super();
 		}
 
+		@Override
 		protected IAST getAST() {
 			return F.Plus(null, F.CN1);
 		}
@@ -2191,6 +2192,7 @@ public final class Arithmetic {
 
 	private static class PreIncrement extends PreDecrement {
 
+		@Override
 		protected IAST getAST() {
 			return F.Plus(null, F.C1);
 		}

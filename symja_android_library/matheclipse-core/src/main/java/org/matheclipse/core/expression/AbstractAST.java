@@ -42,7 +42,6 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
-import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherEvalEngine;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
@@ -794,10 +793,12 @@ public abstract class AbstractAST implements IAST {
 		return F.NIL;
 	}
 
+	@Override
 	public final IAST partitionPlus(Predicate<? super IExpr> predicate, IExpr initYes, IExpr initNo, ISymbol action) {
 		return partition(F.Plus, predicate, initYes, initNo, F.Plus, F.List);
 	}
 
+	@Override
 	public final IAST partitionTimes(Predicate<? super IExpr> predicate, IExpr initYes, IExpr initNo, ISymbol action) {
 		return partition(F.Times, predicate, initYes, initNo, F.Times, F.List);
 	}
@@ -2476,6 +2477,7 @@ public abstract class AbstractAST implements IAST {
 		return accept(new LeafCount.LeafCountVisitor(0));
 	}
 
+	@Override
 	public long leafCountSimplify() {
 		return accept(new LeafCount.SimplifyLeafCountVisitor(0));
 	}

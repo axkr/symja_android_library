@@ -60,6 +60,7 @@ public class ConstantDefinitions {
 			return F.num(CATALAN);
 		}
 
+		@Override
 		public double evalReal() {
 			return CATALAN;
 		}
@@ -109,6 +110,7 @@ public class ConstantDefinitions {
 			return F.num(DEGREE);
 		}
 
+		@Override
 		public double evalReal() {
 			return DEGREE;
 		}
@@ -138,10 +140,12 @@ public class ConstantDefinitions {
 			return F.num(Math.E);
 		}
 
+		@Override
 		public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
 			return F.num(ApfloatMath.exp(new Apfloat(1, engine.getNumericPrecision())));
 		}
 
+		@Override
 		public double evalReal() {
 			return Math.E;
 		}
@@ -169,6 +173,7 @@ public class ConstantDefinitions {
 			return F.num(EULER_GAMMA);
 		}
 
+		@Override
 		public double evalReal() {
 			return EULER_GAMMA;
 		}
@@ -197,6 +202,7 @@ public class ConstantDefinitions {
 			return F.num(GLAISHER);
 		}
 
+		@Override
 		public double evalReal() {
 			return GLAISHER;
 		}
@@ -231,6 +237,7 @@ public class ConstantDefinitions {
 			return F.num(GOLDEN_RATIO);
 		}
 
+		@Override
 		public double evalReal() {
 			return GOLDEN_RATIO;
 		}
@@ -301,6 +308,7 @@ public class ConstantDefinitions {
 			return F.num(KHINCHIN);
 		}
 
+		@Override
 		public double evalReal() {
 			return KHINCHIN;
 		}
@@ -325,10 +333,12 @@ public class ConstantDefinitions {
 			return F.num(Math.PI);
 		}
 
+		@Override
 		public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
 			return F.num(ApfloatMath.pi(engine.getNumericPrecision()));
 		}
 
+		@Override
 		public double evalReal() {
 			return Math.PI;
 		}

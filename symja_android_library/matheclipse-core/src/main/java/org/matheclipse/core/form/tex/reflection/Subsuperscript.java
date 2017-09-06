@@ -9,6 +9,7 @@ public class Subsuperscript extends AbstractConverter {
 	public Subsuperscript() {
 	}
 
+	@Override
 	public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 		if (f.size() != 4) {
 			return false;

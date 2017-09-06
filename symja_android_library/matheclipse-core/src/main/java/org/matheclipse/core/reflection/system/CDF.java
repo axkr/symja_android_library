@@ -29,7 +29,7 @@ public class CDF extends AbstractFunctionEvaluator {
 			IExpr xArg = ast.arg2();
 
 			if (arg1.isAST()) {
-				IAST dist = (IAST) arg1;
+				IAST dist = arg1;
 
 				if (dist.head().isSymbol()) {
 					ISymbol head = (ISymbol) dist.head();

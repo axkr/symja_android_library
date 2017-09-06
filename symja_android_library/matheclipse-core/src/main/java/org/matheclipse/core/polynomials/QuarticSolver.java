@@ -118,7 +118,7 @@ public class QuarticSolver {
 				if (x.equals(temp)) {
 					int exponent = -1;
 					try {
-						exponent = Validate.checkPowerExponent((IAST) ast);
+						exponent = Validate.checkPowerExponent(ast);
 					} catch (WrongArgumentType e) {
 					}
 					if (exponent < 0 || exponent > 4) {

@@ -1353,7 +1353,7 @@ public final class BooleanFunctions {
 			if (ast.arg1().isInterval1()) {
 				IAST list = (IAST) ast.arg1().getAt(1);
 				try {
-					return (ISignedNumber) list.arg2();
+					return list.arg2();
 				} catch (ClassCastException cca) {
 					// do nothing
 				}
@@ -1490,7 +1490,7 @@ public final class BooleanFunctions {
 			if (ast.arg1().isInterval1()) {
 				IAST list = (IAST) ast.arg1().getAt(1);
 				try {
-					return (ISignedNumber) list.arg1();
+					return list.arg1();
 				} catch (ClassCastException cca) {
 					// do nothing
 				}
@@ -1777,6 +1777,7 @@ public final class BooleanFunctions {
 			return F.NIL;
 		}
 
+		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}

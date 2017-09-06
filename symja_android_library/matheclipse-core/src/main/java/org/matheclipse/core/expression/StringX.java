@@ -234,6 +234,7 @@ public class StringX implements IStringX {
 	 * @param cs
 	 * @return
 	 */
+	@Override
 	public boolean contentEquals(final CharSequence cs) {
 		return fString.contentEquals(cs);
 	}

@@ -173,6 +173,7 @@ public class BasicTeXTestCase extends TestCase {
 	/**
 	 * The JUnit setup method
 	 */
+	@Override
 	protected void setUp() {
 		try {
 //			F.initSymbols();

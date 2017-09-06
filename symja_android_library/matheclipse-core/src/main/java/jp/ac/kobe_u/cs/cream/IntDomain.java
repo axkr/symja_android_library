@@ -99,6 +99,7 @@ public class IntDomain extends Domain {
 	/* (non-Javadoc)
 	 * @see jp.ac.kobe_u.cs.cream.Domain#equals(jp.ac.kobe_u.cs.cream.Domain)
 	 */
+	@Override
 	public boolean equals(Domain d0) {
 		if (this == d0)
 			return true;
@@ -122,6 +123,7 @@ public class IntDomain extends Domain {
 	/* (non-Javadoc)
 	 * @see jp.ac.kobe_u.cs.cream.Domain#clone()
 	 */
+	@Override
 	public Object clone() {
 		IntDomain d = new IntDomain();
 		try {
@@ -139,10 +141,12 @@ public class IntDomain extends Domain {
 	/* (non-Javadoc)
 	 * @see jp.ac.kobe_u.cs.cream.Domain#elements()
 	 */
+	@Override
 	public Iterator<Domain> elements() {
 		Iterator<Domain> iter = new Iterator<Domain>() {
 			private int choice = min;
 
+			@Override
 			public boolean hasNext() {
 				if (size == 0)
 					return false;
@@ -154,6 +158,7 @@ public class IntDomain extends Domain {
 				return false;
 			}
 
+			@Override
 			public Domain next() throws NoSuchElementException {
 				if (!hasNext())
 					throw new NoSuchElementException();
@@ -162,6 +167,7 @@ public class IntDomain extends Domain {
 				return d;
 			}
 
+			@Override
 			public void remove() throws UnsupportedOperationException {
 				throw new UnsupportedOperationException();
 			}
@@ -205,6 +211,7 @@ public class IntDomain extends Domain {
 	/* (non-Javadoc)
 	 * @see jp.ac.kobe_u.cs.cream.Domain#element()
 	 */
+	@Override
 	public Object element() throws NoSuchElementException {
 		return new Integer(value());
 	}
@@ -237,6 +244,7 @@ public class IntDomain extends Domain {
 	/* (non-Javadoc)
 	 * @see jp.ac.kobe_u.cs.cream.Domain#contains(java.lang.Object)
 	 */
+	@Override
 	public boolean contains(Object o) {
 		if (!(o instanceof Number))
 			return false;
@@ -262,6 +270,7 @@ public class IntDomain extends Domain {
 	 * Not implemented.
 	 * @param o
 	 */
+	@Override
 	public Domain insert(Object o) {
 		// TODO not implemented
 		System.out.println("insert: not implemented");
@@ -322,6 +331,7 @@ public class IntDomain extends Domain {
 	/* (non-Javadoc)
 	 * @see jp.ac.kobe_u.cs.cream.Domain#delete(java.lang.Object)
 	 */
+	@Override
 	public Domain delete(Object o) {
 		if (!(o instanceof Number))
 			return this;
@@ -375,6 +385,7 @@ public class IntDomain extends Domain {
 	/* (non-Javadoc)
 	 * @see jp.ac.kobe_u.cs.cream.Domain#cap(jp.ac.kobe_u.cs.cream.Domain)
 	 */
+	@Override
 	public Domain cap(Domain d) {
 		if (!(d instanceof IntDomain))
 			return EMPTY;
@@ -423,6 +434,7 @@ public class IntDomain extends Domain {
 	 * Not implemented.
 	 * @param d
 	 */
+	@Override
 	public Domain cup(Domain d) {
 		// TODO not implemented
 		System.out.println("cup: not implemented");
@@ -433,6 +445,7 @@ public class IntDomain extends Domain {
 	 * Not implemented.
 	 * @param d
 	 */
+	@Override
 	public Domain difference(Domain d) {
 		// TODO not implemented
 		System.out.println("difference: not implemented");
@@ -468,6 +481,7 @@ public class IntDomain extends Domain {
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
+	@Override
 	public String toString() {
 		StringBuilder s = new StringBuilder();
 		String delim = "";

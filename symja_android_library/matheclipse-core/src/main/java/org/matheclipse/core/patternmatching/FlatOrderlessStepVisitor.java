@@ -60,6 +60,7 @@ public class FlatOrderlessStepVisitor extends FlatStepVisitor implements IStepVi
 		}
 	}
 
+	@Override
 	public int[] getMultisetArray() {
 		return multiset;
 	}

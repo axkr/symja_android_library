@@ -165,6 +165,7 @@ public class FourColor extends Frame {
 			this.color = color;
 		}
 
+		@Override
 		public void paint(Graphics g) {
 			if (map == null)
 				return;
@@ -228,12 +229,14 @@ public class FourColor extends Frame {
 		Panel p = new Panel();
 		nextButton = new Button("Next");
 		nextButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				actionNext();
 			}
 		});
 		quitButton = new Button("Quit");
 		quitButton.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				actionQuit();
 			}
@@ -282,6 +285,7 @@ public class FourColor extends Frame {
 		}
 	}
 
+	@Override
 	public void paint(Graphics g) {
 		paintComponents(g);
 	}

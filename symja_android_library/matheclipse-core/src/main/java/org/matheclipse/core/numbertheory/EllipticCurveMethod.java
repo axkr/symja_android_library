@@ -18,14 +18,12 @@ import java.util.Map;
 
 /**
  * <p>
- * Use Elliptic Curve Method to find the prime number factors of a given
- * BigInteger.
+ * Use Elliptic Curve Method to find the prime number factors of a given BigInteger.
  * </p>
  *
  * <p>
- * See
- * <a href="https://en.wikipedia.org/wiki/Lenstra_elliptic_curve_factorization">
- * Wikipedia: Lenstra elliptic curve factorization </a>
+ * See <a href="https://en.wikipedia.org/wiki/Lenstra_elliptic_curve_factorization"> Wikipedia: Lenstra elliptic curve
+ * factorization </a>
  * </p>
  */
 public class EllipticCurveMethod {
@@ -82,12 +80,10 @@ public class EllipticCurveMethod {
 	/* Start of code "borrowed" from Paul Zimmermann's ECM4C */
 	/*********************************************************/
 	final private static int ADD = 6; /*
-										 * number of multiplications in an
-										 * addition
+										 * number of multiplications in an addition
 										 */
 	final private static int DUP = 5; /*
-										 * number of multiplications in a
-										 * duplicate
+										 * number of multiplications in a duplicate
 										 */
 	/**********************/
 
@@ -372,11 +368,9 @@ public class EllipticCurveMethod {
 	}
 
 	/**
-	 * Adds Q=(x2:z2) and R=(x1:z1) and puts the result in (x3:z3), using 5/6
-	 * mul, 6 add/sub and 6 mod. One assumes that Q-R=P or R-Q=P where P=(x:z).
-	 * Uses the following global variables: - n : number to factor - x, z :
-	 * coordinates of P - u, v, w : auxiliary variables Modifies: x3, z3, u, v,
-	 * w. (x3,z3) may be identical to (x2,z2) and to (x,z)
+	 * Adds Q=(x2:z2) and R=(x1:z1) and puts the result in (x3:z3), using 5/6 mul, 6 add/sub and 6 mod. One assumes that
+	 * Q-R=P or R-Q=P where P=(x:z). Uses the following global variables: - n : number to factor - x, z : coordinates of
+	 * P - u, v, w : auxiliary variables Modifies: x3, z3, u, v, w. (x3,z3) may be identical to (x2,z2) and to (x,z)
 	 */
 	private void add3(long[] x3, long[] z3, long[] x2, long[] z2, long[] x1, long[] z1, long[] x, long[] z) {
 		long[] t = fieldTX;
@@ -562,9 +556,8 @@ public class EllipticCurveMethod {
 						}
 						if (Computing3Squares == false) {
 							/*
-							 * System.out.println( primalityString + "P = " + P
-							 * + ",  Q = " + Q + "  (" + (i * (TestingQs + 1) +
-							 * j) * 100 / (NP * (TestingQs + 1)) + "%)");
+							 * System.out.println( primalityString + "P = " + P + ",  Q = " + Q + "  (" + (i *
+							 * (TestingQs + 1) + j) * 100 / (NP * (TestingQs + 1)) + "%)");
 							 */
 						}
 						PM = 1;
@@ -1053,8 +1046,7 @@ public class EllipticCurveMethod {
 				}
 				if (TestNbr[i] > biTmp[i]) {
 					BigNbrModN(biN, LengthN, biTmp); /* Compute N mod R */
-					if (BigNbrIsZero(
-							biTmp) == true) { /* If N is multiple of R.. */
+					if (BigNbrIsZero(biTmp) == true) { /* If N is multiple of R.. */
 						return 1; /* Number is composite */
 					}
 				}
@@ -1860,9 +1852,8 @@ public class EllipticCurveMethod {
 	}
 
 	/*
-	 * computes 2P=(x2:z2) from P=(x1:z1), with 5 mul, 4 add/sub, 5 mod. Uses
-	 * the following global variables: - n : number to factor - b : (a+2)/4 mod
-	 * n - u, v, w : auxiliary variables Modifies: x2, z2, u, v, w
+	 * computes 2P=(x2:z2) from P=(x1:z1), with 5 mul, 4 add/sub, 5 mod. Uses the following global variables: - n :
+	 * number to factor - b : (a+2)/4 mod n - u, v, w : auxiliary variables Modifies: x2, z2, u, v, w
 	 */
 	private void duplicate(long[] x2, long[] z2, long[] x1, long[] z1) {
 		long[] u = fieldUZ;
@@ -2033,11 +2024,9 @@ public class EllipticCurveMethod {
 			}
 			calculate_new_prime1: do {
 				currentPrime += 2;
-				for (Q = 3; Q
-						* Q <= currentPrime; Q += 2) { /*
-														 * Check if currentPrime
-														 * is prime
-														 */
+				for (Q = 3; Q * Q <= currentPrime; Q += 2) { /*
+																 * Check if currentPrime is prime
+																 */
 					if (currentPrime % Q == 0) {
 						continue calculate_new_prime1;
 					}
@@ -2147,11 +2136,9 @@ public class EllipticCurveMethod {
 			} /* end while */
 			calculate_new_prime2: do {
 				currentPrime += 2;
-				for (Q = 3; Q
-						* Q <= currentPrime; Q += 2) { /*
-														 * Check if currentPrime
-														 * is prime
-														 */
+				for (Q = 3; Q * Q <= currentPrime; Q += 2) { /*
+																 * Check if currentPrime is prime
+																 */
 					if (currentPrime % Q == 0) {
 						continue calculate_new_prime2;
 					}
@@ -2547,17 +2534,24 @@ public class EllipticCurveMethod {
 							}
 						}
 						switch (NumberLength) {
+						// fall through
 						case 7:
 							biR6 = biR[6];
+							// fall through
 						case 6:
 							biR5 = biR[5];
+							// fall through
 						case 5:
 							biR4 = biR[4];
+							// fall through
 						case 4:
 							biR3 = biR[3];
+							// fall through
 						case 3:
 							biR2 = biR[2];
+							// fall through
 						case 1:
+							// fall through
 						case 2:
 							biR1 = biR[1];
 							biR0 = biR[0];
@@ -2578,14 +2572,19 @@ public class EllipticCurveMethod {
 									Divisor = prime[index];
 									Rem = 0;
 									switch (NumberLength) {
+									// fall through
 									case 7:
 										Rem = (biR6 + (Rem << 31)) % Divisor;
+										// fall through
 									case 6:
 										Rem = (biR5 + (Rem << 31)) % Divisor;
+										// fall through
 									case 5:
 										Rem = (biR4 + (Rem << 31)) % Divisor;
+										// fall through
 									case 4:
 										Rem = (biR3 + (Rem << 31)) % Divisor;
+										// fall through
 									case 3:
 										Rem = (biR2 + (Rem << 31)) % Divisor;
 										Rem = (biR1 + (Rem << 31)) % Divisor;
@@ -2595,22 +2594,27 @@ public class EllipticCurveMethod {
 										break;
 									}
 									switch (NumberLength) {
+									// fall through
 									case 7:
 										Divid = biR6 + (Rem << 31);
 										Rem = Divid % Divisor;
 										biR6 = Divid / Divisor;
+										// fall through
 									case 6:
 										Divid = biR5 + (Rem << 31);
 										Rem = Divid % Divisor;
 										biR5 = Divid / Divisor;
+										// fall through
 									case 5:
 										Divid = biR4 + (Rem << 31);
 										Rem = Divid % Divisor;
 										biR4 = Divid / Divisor;
+										// fall through
 									case 4:
 										Divid = biR3 + (Rem << 31);
 										Rem = Divid % Divisor;
 										biR3 = Divid / Divisor;
+										// fall through
 									case 3:
 										Divid = biR2 + (Rem << 31);
 										Rem = Divid % Divisor;
@@ -2669,8 +2673,7 @@ public class EllipticCurveMethod {
 																// factor.
 							}
 							/*
-							 * factor biT (backup) storing in BiR the square
-							 * part
+							 * factor biT (backup) storing in BiR the square part
 							 */
 							LongToBigNbr(1, biR);
 							while (RemDivBigNbrByLong(biT, 3 * 3) == 0) {
@@ -2738,18 +2741,15 @@ public class EllipticCurveMethod {
 
 										/*
 										 * System.out.println(SIQSInfoText +
-										 * "\nSolving congruence matrix using Block Lanczos algorithm"
-										 * );
+										 * "\nSolving congruence matrix using Block Lanczos algorithm" );
 										 */
 										if (LinearAlgebraPhase(NbrPrimes, matrixB, prime, biT, biR, biU, vectExpParity,
 												vectLeftHandSide, TestNbr2)) {
-											return BigIntToBigNbr(
-													biT); /* Factor found */
+											return BigIntToBigNbr(biT); /* Factor found */
 										} else {
 											/*
 											 * System.out.println(SIQSInfoText +
-											 * "\nLinear dependences were found. Discarding 50 congruences..."
-											 * );
+											 * "\nLinear dependences were found. Discarding 50 congruences..." );
 											 */
 											pp -= 50; /* Factor not found */
 										}
@@ -2928,27 +2928,22 @@ public class EllipticCurveMethod {
 													pp -= i;
 												} else {
 													/*
-													 * System.out.println(
-													 * SIQSInfoText +
-													 * "\nSolving congruence matrix using Block Lanczos algorithm"
-													 * );
+													 * System.out.println( SIQSInfoText +
+													 * "\nSolving congruence matrix using Block Lanczos algorithm" );
 													 */
 													if (LinearAlgebraPhase(NbrPrimes, matrixB, prime, biT, biR, biU,
 															vectExpParity, vectLeftHandSide, TestNbr2)) {
 														return BigIntToBigNbr(biT); /*
-																					 * Factor
-																					 * found
+																					 * Factor found
 																					 */
 													} else {
 														/*
-														 * System.out.println(
-														 * SIQSInfoText +
+														 * System.out.println( SIQSInfoText +
 														 * "\nLinear dependences were found. Discarding 50 congruences..."
 														 * );
 														 */
 														pp -= 50; /*
-																	 * Factor
-																	 * not found
+																	 * Factor not found
 																	 */
 													}
 												}
@@ -3374,8 +3369,7 @@ public class EllipticCurveMethod {
 					P += 2;
 
 					/*
-					 * Initialize sieve2310[n]: 1 if gcd(P+2n,2310) > 1, 0
-					 * otherwise
+					 * Initialize sieve2310[n]: 1 if gcd(P+2n,2310) > 1, 0 otherwise
 					 */
 					u = (int) P;
 					for (i = 0; i < 2310; i++) {
@@ -3625,10 +3619,9 @@ public class EllipticCurveMethod {
 	/**
 	 * Gcd calculation:
 	 * <ul>
-	 * <li>Step 1: Set k<-0, and then repeatedly set k<-k+1, u<-u/2, v<-v/2 zero
-	 * or more times until u and v are not both even.</li>
-	 * <li>Step 2: If u is odd, set t<-(-v) and go to step 4. Otherwise set
-	 * t<-u.</li>
+	 * <li>Step 1: Set k<-0, and then repeatedly set k<-k+1, u<-u/2, v<-v/2 zero or more times until u and v are not
+	 * both even.</li>
+	 * <li>Step 2: If u is odd, set t<-(-v) and go to step 4. Otherwise set t<-u.</li>
 	 * <li>Step 3: Set t<-t/2</li>
 	 * <li>Step 4: If t is even, go back to step 3.</li>
 	 * <li>Step 5: If t>0, set u<-t, otherwise set v<-(-t).</li>
@@ -5628,8 +5621,7 @@ public class EllipticCurveMethod {
 	}
 
 	/**
-	 * Increment the &quot;number of factors&quot;. Ensure that the resulting
-	 * arrays have enough memory allocated.
+	 * Increment the &quot;number of factors&quot;. Ensure that the resulting arrays have enough memory allocated.
 	 */
 	private Object[] incNbrFactors() {
 		NbrFactors++;

@@ -23,6 +23,7 @@ public interface ISignedNumber extends INumber {
 	 */
 	public ApfloatNum apfloatNumValue(long precision);
 
+	@Override
 	default INumber conjugate() {
 		return this;
 	}

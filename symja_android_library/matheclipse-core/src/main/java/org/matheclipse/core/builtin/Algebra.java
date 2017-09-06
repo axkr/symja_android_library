@@ -348,7 +348,7 @@ public class Algebra {
 				IExpr[] parts = fractionalParts(arg1, false);
 				if (parts != null) {
 					return partialFractionDecompositionRational(new PartialFractionGenerator(), parts,
-							(ISymbol) variableList.arg1());
+							variableList.arg1());
 				}
 			}
 			return arg1;
@@ -452,7 +452,7 @@ public class Algebra {
 		 * @return <code>null</code> if no gcd value was found
 		 */
 		private static IExpr[] cancelPlusIntegerGCD(IAST numeratorPlus, IInteger denominatorInt) {
-			IAST plus = ((IAST) numeratorPlus).clone();
+			IAST plus = numeratorPlus.clone();
 			IAST gcd = F.ast(F.GCD, plus.size() + 1, false);
 			gcd.append(denominatorInt);
 			boolean evaled = true;
@@ -923,7 +923,7 @@ public class Algebra {
 
 				int k = plusAST.size() - 1;
 				long numberOfTerms = LongMath.binomial(n + k - 1, n);
-				if (numberOfTerms > (long) Integer.MAX_VALUE) {
+				if (numberOfTerms > Integer.MAX_VALUE) {
 					throw new ArithmeticException("");
 				}
 				final IAST expandedResult = F.ast(F.Plus, (int) numberOfTerms, false);
@@ -989,7 +989,7 @@ public class Algebra {
 			 */
 			private IExpr expandPlusTimesPlus(final IAST plusAST0, final IAST plusAST1) {
 				long numberOfTerms = (long) (plusAST0.size() - 1) * (long) (plusAST1.size() - 1);
-				if (numberOfTerms > (long) Integer.MAX_VALUE) {
+				if (numberOfTerms > Integer.MAX_VALUE) {
 					throw new ArithmeticException("");
 				}
 				final IAST result = F.ast(F.Plus, (int) numberOfTerms, false);
@@ -2060,6 +2060,7 @@ public class Algebra {
 		// return polynomial(polnomialExpr, List(symbol), numericFunction);
 		// }
 
+		@Deprecated
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}
@@ -2625,7 +2626,7 @@ public class Algebra {
 			public IExpr visit(IAST ast) {
 				if (!ast.isAST(F.Root)) {
 					IAST cloned = replacement.setAtClone(1, null);
-					return ((IAST) ast).mapThread(cloned, 1);
+					return ast.mapThread(cloned, 1);
 				}
 				return F.NIL;
 			}

@@ -27,6 +27,7 @@ final public class HashValueVisitor extends AbstractVisitorInt {
 	 * 
 	 * @return the calculated hash value.
 	 */
+	@Override
 	public int visit(IAST ast) {
 		final int size = ast.size();
 		if (size > 1) {
@@ -39,34 +40,42 @@ final public class HashValueVisitor extends AbstractVisitorInt {
 		return (size == 1) ? (17 * ast.head().hashCode()) : 41;
 	}
 
+	@Override
 	public int visit(IComplex element) {
 		return element.hashCode();
 	}
 
+	@Override
 	public int visit(IComplexNum element) {
 		return element.hashCode();
 	}
 
+	@Override
 	public int visit(IFraction element) {
 		return element.hashCode();
 	}
 
+	@Override
 	public int visit(IInteger element) {
 		return element.hashCode();
 	}
 
+	@Override
 	public int visit(INum element) {
 		return element.hashCode();
 	}
 
+	@Override
 	public int visit(IPattern element) {
 		return element.hashCode();
 	}
 
+	@Override
 	public int visit(IStringX element) {
 		return element.hashCode();
 	}
 
+	@Override
 	public int visit(ISymbol element) {
 		return element.hashCode();
 	}

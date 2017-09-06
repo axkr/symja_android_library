@@ -16,6 +16,7 @@ public abstract class AbstractMultsetIntStepVisitor implements IStepVisitor {
 	 * 
 	 * @see org.matheclipse.combinatoric.IStepVisitor#visit(int[][])
 	 */
+	@Override
 	public boolean visit(int[][] result) {
 		return true;
 	}
@@ -25,10 +26,12 @@ public abstract class AbstractMultsetIntStepVisitor implements IStepVisitor {
 	 * 
 	 * @see org.matheclipse.combinatoric.IStepVisitor#visit(int[][])
 	 */
+	@Override
 	public boolean visit(int[] result) {
 		return true;
 	}
 	
+	@Override
 	public int[] getMultisetArray() {
 		return multiset;
 	}

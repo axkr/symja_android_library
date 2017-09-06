@@ -139,6 +139,7 @@ public final class ExprTermOrder implements Serializable {
      * Comparator for ExpVectors.
      */
     public static abstract class EVComparator implements Comparator<ExpVectorLong> {
+		@Override
 		public abstract int compare(ExpVectorLong e1, ExpVectorLong e2);
     }
 

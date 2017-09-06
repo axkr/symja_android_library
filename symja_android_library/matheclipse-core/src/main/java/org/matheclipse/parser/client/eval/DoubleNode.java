@@ -34,6 +34,7 @@ final public class DoubleNode extends ASTNode {
 		return value;
 	}
 
+	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
 			return true;
@@ -44,11 +45,13 @@ final public class DoubleNode extends ASTNode {
 		return false;
 	}
 
+	@Override
 	public int hashCode() {
 		return MathUtils.hash(value);// Double.doubleToLongBits(value);
 		// return (int)(bits ^ (bits >>> 32));
 	}
 
+	@Override
 	public String toString() {
 		return Double.toString(value);
 	}

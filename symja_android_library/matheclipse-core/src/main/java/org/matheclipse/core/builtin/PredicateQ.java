@@ -60,6 +60,7 @@ public class PredicateQ {
 
 	private static class AntihermitianMatrixQ extends SymmetricMatrixQ {
 
+		@Override
 		protected boolean compareElements(IExpr expr1, IExpr expr2, EvalEngine engine) {
 			if (expr1.isNumber() && expr2.isNumber()) {
 				if (expr1.conjugate().negate().equals(expr2)) {
@@ -81,6 +82,7 @@ public class PredicateQ {
 
 	private static class AntisymmetricMatrixQ extends SymmetricMatrixQ {
 
+		@Override
 		protected boolean compareElements(IExpr expr1, IExpr expr2, EvalEngine engine) {
 			if (expr1.isNumber() && expr2.isNumber()) {
 				if (expr1.negate().equals(expr2)) {
@@ -212,6 +214,7 @@ public class PredicateQ {
 	 */
 	private static class AtomQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
 
+		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
 			return arg1.isAtom();
 		}

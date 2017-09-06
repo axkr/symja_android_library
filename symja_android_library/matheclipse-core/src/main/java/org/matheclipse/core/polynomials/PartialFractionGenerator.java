@@ -16,10 +16,12 @@ public class PartialFractionGenerator implements IPartialFractionGenerator {
 		this.result = null;
 	}
 
+	@Override
 	public void allocPlus(int size){
 		this.result = F.PlusAlloc(size);
 	}
 	
+	@Override
 	public void setJAS(JASConvert<BigRational> jas) {
 		this.jas = jas;
 	}

@@ -10,6 +10,7 @@ public class List extends AbstractConverter {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public boolean convert(final StringBuilder buf, final IAST ast, final int precedence) {
 
 		int[] dims = ast.isMatrix();

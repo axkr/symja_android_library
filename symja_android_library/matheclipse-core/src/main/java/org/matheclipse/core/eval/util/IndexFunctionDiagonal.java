@@ -14,6 +14,7 @@ public class IndexFunctionDiagonal implements IIndexFunction<IExpr> {
 		fValues = values;
 	}
 
+	@Override
 	public IExpr evaluate(final int[] index) {
 		if (isMatched(index)) {
 			return fValues[1];

@@ -38,6 +38,7 @@ public class ListSizeSequence extends AbstractSequence {
 	 * Set the current lists size. If no default <code>fEndOffset</code> is set
 	 * the current list size is used as the end offset (exclusive)
 	 */
+	@Override
 	public void setListSize(int size) {
 		fListSize = size;
 	}
@@ -45,6 +46,7 @@ public class ListSizeSequence extends AbstractSequence {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public int getStart() {
 		if (fStartOffset >= 0) {
 			return fStartOffset;
@@ -55,6 +57,7 @@ public class ListSizeSequence extends AbstractSequence {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public int getEnd() {
 		if (fEndOffset < 0) {
 			return fListSize + fEndOffset + 1;

@@ -79,11 +79,13 @@ public class TabooSearch extends LocalSearch {
 		taboo_i = (taboo_i + 1) % taboo.length;
 	}
 
+	@Override
 	public void startSearch() {
 		super.startSearch();
 		clearTaboo();
 	}
 
+	@Override
 	public void nextSearch() {
 		Operation locallyBestOp = null;
 		Solution locallyBestSol = null;

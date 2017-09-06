@@ -67,7 +67,7 @@ public class RulePreprocessor {
 			if (expr.isListOfLists()) {
 				IAST list = (IAST) expr;
 				for (int i = 1; i < list.size(); i++) {
-					convertExpr((IExpr) list.get(i), Integer.toString(i), out, null);
+					convertExpr(list.get(i), Integer.toString(i), out, null);
 				}
 			} else {
 				convertExpr(expr, rulePostfix, out, symbolName);
@@ -91,7 +91,7 @@ public class RulePreprocessor {
 				int simpleRuleCounter = 0;
 				for (int i = 1; i < list.size(); i++) {
 					last = i == (list.size() - 1);
-					expr = (IExpr) list.get(i);
+					expr = list.get(i);
 					if (expr.isAST(F.SetDelayed, 3)) {
 						IAST ast = (IAST) expr;
 						if (!RulesData.isComplicatedPatternRule(ast.arg1(), headerSymbols)) {
@@ -115,7 +115,7 @@ public class RulePreprocessor {
 
 			for (int i = 1; i < list.size(); i++) {
 				last = i == (list.size() - 1);
-				expr = (IExpr) list.get(i);
+				expr = list.get(i);
 				if (expr.isAST(F.SetDelayed, 3)) {
 					IAST ast = (IAST) expr;
 					buffer.append("    // " + ast.toString().replaceAll("\\n", "") + "\n");

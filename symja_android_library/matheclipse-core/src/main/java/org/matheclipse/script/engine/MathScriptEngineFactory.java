@@ -18,14 +18,17 @@ public class MathScriptEngineFactory implements javax.script.ScriptEngineFactory
 		Config.SERVER_MODE = false;
 	}
 
+	@Override
 	public String getEngineName() {
 		return "MathEclipse Script Engine";
 	}
 
+	@Override
 	public String getEngineVersion() {
 		return "1.0.0";
 	}
 
+	@Override
 	public List<String> getExtensions() {
 		final ArrayList<String> extList = new ArrayList<String>();
 		extList.add("m");
@@ -33,14 +36,17 @@ public class MathScriptEngineFactory implements javax.script.ScriptEngineFactory
 		return extList;
 	}
 
+	@Override
 	public String getLanguageName() {
 		return "MathEclipse Script Language";
 	}
 
+	@Override
 	public String getLanguageVersion() {
 		return "1.0.0";
 	}
 
+	@Override
 	public String getMethodCallSyntax(String obj, String m, String... args) {
 		String callSyntax = obj;
 		callSyntax += "." + m + "(";
@@ -54,22 +60,26 @@ public class MathScriptEngineFactory implements javax.script.ScriptEngineFactory
 		return callSyntax;
 	}
 
+	@Override
 	public List<String> getMimeTypes() {
 		final ArrayList<String> extList = new ArrayList<String>();
 		extList.add("code/matheclipse");
 		return extList;
 	}
 
+	@Override
 	public List<String> getNames() {
 		final ArrayList<String> extList = new ArrayList<String>();
 		extList.add("matheclipse script");
 		return extList;
 	}
 
+	@Override
 	public String getOutputStatement(final String toDisplay) {
 		return "Print[" + toDisplay + "]";
 	}
 
+	@Override
 	public Object getParameter(final String key) {
 		if (key.equals(ScriptEngine.ENGINE)) {
 			return getEngineName();
@@ -86,6 +96,7 @@ public class MathScriptEngineFactory implements javax.script.ScriptEngineFactory
 		}
 	}
 
+	@Override
 	public String getProgram(String... statements) {
 		final StringBuilder retval = new StringBuilder();
 		final int len = statements.length;
@@ -99,6 +110,7 @@ public class MathScriptEngineFactory implements javax.script.ScriptEngineFactory
 		return retval.toString();
 	}
 
+	@Override
 	public ScriptEngine getScriptEngine() {
 		return new MathScriptEngine();
 	}

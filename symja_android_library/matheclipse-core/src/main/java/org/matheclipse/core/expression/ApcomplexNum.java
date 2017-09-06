@@ -278,6 +278,7 @@ public class ApcomplexNum implements IComplexNum {
 		return Num.valueOf(dabs());
 	}
 
+	@Override
 	public IExpr complexArg() {
 		return F.num(ApcomplexMath.arg(fApcomplex));
 	}
@@ -519,6 +520,7 @@ public class ApcomplexNum implements IComplexNum {
 				F.integer(ApfloatMath.floor(fApcomplex.imag()).toBigInteger()));
 	}
 
+	@Override
 	public long precision() throws ApfloatRuntimeException {
 		return fApcomplex.precision();
 	}

@@ -241,6 +241,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	 * 
 	 * @return the leaf count
 	 */
+	@Override
 	public long getRHSleafCountSimplify() {
 		return fRHSleafCountSimplify;
 	}

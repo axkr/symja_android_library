@@ -16,7 +16,8 @@ public class MMLPostfix extends AbstractConverter {
    *@param  buf  StringBuilder for MathML output
    *@param  f    The math function which should be converted to MathML
    */
-  public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+  @Override
+public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
     if (f.isAST1()) {
       fFactory.tagStart(buf, "mrow");
       fFactory.convert(buf, f.arg1(), 0);

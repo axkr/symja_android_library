@@ -650,7 +650,7 @@ public class ExpTrigsFunctions {
 			try {
 				return F.num(ApfloatMath.asin(arg1));
 			} catch (ArithmeticException ae) {
-				return F.complexNum(ApcomplexMath.asin(new Apcomplex(arg1, Apfloat.ZERO)));
+				return F.complexNum(ApcomplexMath.asin(new Apcomplex(arg1, Apcomplex.ZERO)));
 			}
 		}
 
@@ -789,6 +789,7 @@ public class ExpTrigsFunctions {
 			return F.NIL;
 		}
 
+		@Override
 		public IExpr e2ObjArg(final IExpr x, final IExpr y) {
 			if (x.isZero() && y.isSignedNumber()) {
 				if (y.isZero()) {

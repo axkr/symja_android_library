@@ -34,6 +34,7 @@ public class ExprPolyIterator implements Iterator<ExprMonomial> {
 	 * 
 	 * @return true if the iteration has more monomials, else false.
 	 */
+	@Override
 	public boolean hasNext() {
 		return ms.hasNext();
 	}
@@ -43,6 +44,7 @@ public class ExprPolyIterator implements Iterator<ExprMonomial> {
 	 * 
 	 * @return next monomial.
 	 */
+	@Override
 	public ExprMonomial next() {
 		return new ExprMonomial(ms.next());
 	}
@@ -50,6 +52,7 @@ public class ExprPolyIterator implements Iterator<ExprMonomial> {
 	/**
 	 * Remove the last monomial returned from underlying set if allowed.
 	 */
+	@Override
 	public void remove() {
 		ms.remove();
 	}

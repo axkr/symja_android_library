@@ -149,6 +149,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * @return factory for this Element.
 	 * @see edu.jas.structure.Element#factory()
 	 */
+	@Override
 	public ExprPolynomialRing factory() {
 		return ring;
 	}
@@ -158,6 +159,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * 
 	 * @return copy of this.
 	 */
+	@Override
 	public ExprPolynomial copy() {
 		return new ExprPolynomial(ring, this.val);
 	}
@@ -370,6 +372,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * @return script compatible representation for this Element.
 	 * @see edu.jas.structure.Element#toScript()
 	 */
+	@Override
 	public String toScript() {
 		if (isZero()) {
 			return "0";
@@ -424,6 +427,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * @return script compatible representation for this ElemFactory.
 	 * @see edu.jas.structure.Element#toScriptFactory()
 	 */
+	@Override
 	public String toScriptFactory() {
 		// Python case
 		return factory().toScript();
@@ -439,6 +443,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 		return (val.size() == 0);
 	}
 
+	@Override
 	public boolean isZERO() {
 		return isZero();
 	}
@@ -460,6 +465,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 		return c.isOne();
 	}
 
+	@Override
 	public boolean isONE() {
 		return isOne();
 	}
@@ -470,6 +476,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * @return If this is a unit then true is returned, else false.
 	 * @see edu.jas.structure.RingElem#isUnit()
 	 */
+	@Override
 	public boolean isUnit() {
 		if (val.size() != 1) {
 			return false;
@@ -556,6 +563,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 *            GenPolynomial.
 	 * @return sign(this-b).
 	 */
+	@Override
 	public int compareTo(ExprPolynomial b) {
 		if (b == null) {
 			return 1;
@@ -604,6 +612,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * @return sign(ldcf(this)).
 	 * @deprecated for comparability with JAS only
 	 */
+	@Override
 	@Deprecated
 	public int signum() {
 		if (this.isZero()) {
@@ -910,6 +919,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * @return this+S.
 	 */
 	// public <T extends GenPolynomial> T sum(T /*GenPolynomial*/ S) {
+	@Override
 	public ExprPolynomial sum(ExprPolynomial S) {
 		if (S == null) {
 			return this;
@@ -1067,6 +1077,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 *            GenPolynomial.
 	 * @return this-S.
 	 */
+	@Override
 	public ExprPolynomial subtract(ExprPolynomial S) {
 		if (S == null) {
 			return this;
@@ -1383,6 +1394,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * 
 	 * @return -this.
 	 */
+	@Override
 	public ExprPolynomial negate() {
 		ExprPolynomial n = ring.getZero().copy();
 		// new GenPolynomial(ring, ring.getZERO().val);
@@ -1429,6 +1441,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * 
 	 * @return abs(this).
 	 */
+	@Override
 	public ExprPolynomial abs() {
 		if (leadingBaseCoefficient().signum() < 0) {
 			return this.negate();
@@ -1443,6 +1456,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 *            GenPolynomial.
 	 * @return this*S.
 	 */
+	@Override
 	public ExprPolynomial multiply(ExprPolynomial S) {
 		if (S == null) {
 			return ring.getZero();
@@ -1681,6 +1695,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 *         deg(remainder) &lt; deg(S) or remiander = 0.
 	 * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
 	 */
+	@Override
 	public ExprPolynomial[] quotientRemainder(ExprPolynomial S) {
 		if (S == null || S.isZero()) {
 			throw new ArithmeticException("division by zero");
@@ -1741,6 +1756,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * @return quotient with this = quotient * S + remainder.
 	 * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
 	 */
+	@Override
 	public ExprPolynomial divide(ExprPolynomial S) {
 		// if (this instanceof GenSolvablePolynomial || S instanceof
 		// GenSolvablePolynomial) {
@@ -1764,6 +1780,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * @return remainder with this = quotient * S + remainder.
 	 * @see edu.jas.poly.PolyUtil#baseSparsePseudoRemainder(edu.jas.poly.GenPolynomial,edu.jas.poly.GenPolynomial)
 	 */
+	@Override
 	public ExprPolynomial remainder(ExprPolynomial S) {
 		// if (this instanceof GenSolvablePolynomial || S instanceof
 		// GenSolvablePolynomial) {
@@ -1810,6 +1827,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 *            GenPolynomial.
 	 * @return gcd(this,S).
 	 */
+	@Override
 	public ExprPolynomial gcd(ExprPolynomial S) {
 		if (S == null || S.isZero()) {
 			return this;
@@ -1839,6 +1857,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 *            GenPolynomial.
 	 * @return [ gcd(this,S), a, b ] with a*this + b*S = gcd(this,S).
 	 */
+	@Override
 	public ExprPolynomial[] egcd(ExprPolynomial S) {
 		ExprPolynomial[] ret = new ExprPolynomial[3];
 		ret[0] = null;
@@ -1962,6 +1981,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * GenPolynomial inverse. Required by RingElem. Throws not invertible
 	 * exception.
 	 */
+	@Override
 	public ExprPolynomial inverse() {
 		if (isUnit()) { // only possible if ldbcf is unit
 			IExpr c = leadingBaseCoefficient().inverse();
@@ -2260,6 +2280,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * 
 	 * @return a PolyIterator.
 	 */
+	@Override
 	public Iterator<ExprMonomial> iterator() {
 		return new ExprPolyIterator(val);
 	}

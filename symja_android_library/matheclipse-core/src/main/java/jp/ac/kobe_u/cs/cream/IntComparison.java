@@ -64,10 +64,12 @@ public class IntComparison extends Constraint {
 		this.v = v;
 	}
 
+	@Override
 	public Constraint copy(Network net) {
 		return new IntComparison(net, comparison, Constraint.copy(this.v, net));
 	}
 
+	@Override
 	public boolean isModified() {
 		return isModified(v);
 	}
@@ -100,6 +102,7 @@ public class IntComparison extends Constraint {
 		return true;
 	}
 
+	@Override
 	public boolean satisfy(Trail trail) {
 		switch (comparison) {
 		case LE:
@@ -114,6 +117,7 @@ public class IntComparison extends Constraint {
 		return false;
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder c = new StringBuilder("IntComparison(");
 		switch (comparison) {

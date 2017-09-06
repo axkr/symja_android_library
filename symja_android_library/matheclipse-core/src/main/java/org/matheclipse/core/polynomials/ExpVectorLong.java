@@ -401,7 +401,7 @@ public final class ExpVectorLong {
 		if (V == null || V.length() == 0) {
 			return this;
 		}
-		ExpVectorLong Vl = (ExpVectorLong) V;
+		ExpVectorLong Vl = V;
 		if (val.length == 0) {
 			return Vl;
 		}
@@ -576,6 +576,7 @@ public final class ExpVectorLong {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 
+	@Override
 	public boolean equals(Object B) {
 		if (!(B instanceof ExpVectorLong)) {
 			return false;
@@ -649,7 +650,7 @@ public final class ExpVectorLong {
 
 	public ExpVectorLong sum(ExpVectorLong V) {
 		long[] u = val;
-		long[] v = ((ExpVectorLong) V).val;
+		long[] v = V.val;
 		ExpVectorLong result = valueOf(u.length);
 		long[] w = result.val;
 		for (int i = 0; i < u.length; i++) {
@@ -667,7 +668,7 @@ public final class ExpVectorLong {
 
 	public ExpVectorLong subtract(ExpVectorLong V) {
 		long[] u = val;
-		long[] v = ((ExpVectorLong) V).val;
+		long[] v = V.val;
 		ExpVectorLong result = valueOf(u.length);
 		long[] w = result.val;
 		for (int i = 0; i < u.length; i++) {
@@ -783,7 +784,7 @@ public final class ExpVectorLong {
 
 	public ExpVectorLong lcm(ExpVectorLong V) {
 		long[] u = val;
-		long[] v = ((ExpVectorLong) V).val;
+		long[] v = V.val;
 		ExpVectorLong result = valueOf(u.length);
 		long[] w = result.val;
 		for (int i = 0; i < u.length; i++) {
@@ -801,7 +802,7 @@ public final class ExpVectorLong {
 
 	public ExpVectorLong gcd(ExpVectorLong V) {
 		long[] u = val;
-		long[] v = ((ExpVectorLong) V).val;
+		long[] v = V.val;
 		ExpVectorLong result = valueOf(u.length);
 		long[] w = result.val;
 		for (int i = 0; i < u.length; i++) {
@@ -848,7 +849,7 @@ public final class ExpVectorLong {
 
 	public boolean multipleOf(ExpVectorLong V) {
 		long[] u = val;
-		long[] v = ((ExpVectorLong) V).val;
+		long[] v = V.val;
 		boolean t = true;
 		for (int i = 0; i < u.length; i++) {
 			if (u[i] < v[i]) {
@@ -1028,7 +1029,7 @@ public final class ExpVectorLong {
 
 	public int invLexCompareTo(ExpVectorLong V) {
 		long[] u = val;
-		long[] v = ((ExpVectorLong) V).val;
+		long[] v = V.val;
 		int t = 0;
 		for (int i = 0; i < u.length; i++) {
 			if (u[i] > v[i])
@@ -1051,7 +1052,7 @@ public final class ExpVectorLong {
 
 	public int invLexCompareTo(ExpVectorLong V, int begin, int end) {
 		long[] u = val;
-		long[] v = ((ExpVectorLong) V).val;
+		long[] v = V.val;
 		int t = 0;
 		for (int i = begin; i < end; i++) {
 			if (u[i] > v[i])
@@ -1072,7 +1073,7 @@ public final class ExpVectorLong {
 
 	public int invGradCompareTo(ExpVectorLong V) {
 		long[] u = val;
-		long[] v = ((ExpVectorLong) V).val;
+		long[] v = V.val;
 		int t = 0;
 		int i;
 		for (i = 0; i < u.length; i++) {
@@ -1116,7 +1117,7 @@ public final class ExpVectorLong {
 
 	public int invGradCompareTo(ExpVectorLong V, int begin, int end) {
 		long[] u = val;
-		long[] v = ((ExpVectorLong) V).val;
+		long[] v = V.val;
 		int t = 0;
 		int i;
 		for (i = begin; i < end; i++) {
@@ -1158,7 +1159,7 @@ public final class ExpVectorLong {
 
 	public int revInvLexCompareTo(ExpVectorLong V) {
 		long[] u = val;
-		long[] v = ((ExpVectorLong) V).val;
+		long[] v = V.val;
 		int t = 0;
 		for (int i = u.length - 1; i >= 0; i--) {
 			if (u[i] > v[i])
@@ -1181,7 +1182,7 @@ public final class ExpVectorLong {
 
 	public int revInvLexCompareTo(ExpVectorLong V, int begin, int end) {
 		long[] u = val;
-		long[] v = ((ExpVectorLong) V).val;
+		long[] v = V.val;
 		int t = 0;
 		for (int i = end - 1; i >= begin; i--) {
 			if (u[i] > v[i])
@@ -1202,7 +1203,7 @@ public final class ExpVectorLong {
 
 	public int revInvGradCompareTo(ExpVectorLong V) {
 		long[] u = val;
-		long[] v = ((ExpVectorLong) V).val;
+		long[] v = V.val;
 		int t = 0;
 		int i;
 		for (i = u.length - 1; i >= 0; i--) {
@@ -1246,7 +1247,7 @@ public final class ExpVectorLong {
 
 	public int revInvGradCompareTo(ExpVectorLong V, int begin, int end) {
 		long[] u = val;
-		long[] v = ((ExpVectorLong) V).val;
+		long[] v = V.val;
 		int t = 0;
 		int i;
 		for (i = end - 1; i >= begin; i--) {
@@ -1286,7 +1287,7 @@ public final class ExpVectorLong {
      */
     public int invTdegCompareTo(ExpVectorLong V) {
         long[] u = val;
-        long[] v = ((ExpVectorLong) V).val;
+        long[] v = V.val;
         int t = 0;
         int i;
         for (i = 0; i < u.length; i++) {
@@ -1326,7 +1327,7 @@ public final class ExpVectorLong {
      */
     public int revLexInvTdegCompareTo(ExpVectorLong V) {
         long[] u = val;
-        long[] v = ((ExpVectorLong) V).val;
+        long[] v = V.val;
         int t = 0;
         int i;
         for (i = u.length - 1; i >= 0; i--) {
@@ -1368,7 +1369,7 @@ public final class ExpVectorLong {
 	 */
 	public int invWeightCompareTo(long[][] w, ExpVectorLong V) {
 		long[] u = val;
-		long[] v = ((ExpVectorLong) V).val;
+		long[] v = V.val;
 		int t = 0;
 		int i;
 		for (i = 0; i < u.length; i++) {
@@ -1414,7 +1415,7 @@ public final class ExpVectorLong {
 	 */
 	public int invWeightCompareTo(long[][] w, ExpVectorLong V, int begin, int end) {
 		long[] u = val;
-		long[] v = ((ExpVectorLong) V).val;
+		long[] v = V.val;
 		int t = 0;
 		int i;
 		for (i = begin; i < end; i++) {

@@ -18,6 +18,7 @@ public class Power extends AbstractOperator {
 		super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Power").getPrecedence(), "^");
 	}
 
+	@Override
 	public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 		if (f.size() != 3) {
 			return super.convert(buf, f, precedence);

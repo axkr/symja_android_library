@@ -34,6 +34,7 @@ public class MarkdownToHTML {
 		if (sourceLocation.exists()) {
 			Builder builder = Configuration.builder();
 			BlockEmitter emitter = new BlockEmitter() {
+				@Override
 				public void emitBlock(StringBuilder out, List<String> lines, String meta) {
 					out.append("<pre>");
 					for (final String s : lines) {

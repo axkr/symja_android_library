@@ -1,7 +1,6 @@
 package org.matheclipse.core.builtin;
 
 import java.util.HashMap;
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalAttributes;
@@ -15,7 +14,6 @@ import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -689,7 +687,7 @@ public class Structure {
 					if (ast.isAST(logicEquationHeads[i])) {
 						IAST cloned = replacement.clone();
 						cloned.set(position, null);
-						return ((IAST) ast).mapThread(cloned, position);
+						return ast.mapThread(cloned, position);
 					}
 				}
 
@@ -720,7 +718,7 @@ public class Structure {
 					if (ast.isAST(plusLogicEquationHeads[i])) {
 						IAST cloned = replacement.clone();
 						cloned.set(position, null);
-						return ((IAST) ast).mapThread(cloned, position);
+						return ast.mapThread(cloned, position);
 					}
 				}
 

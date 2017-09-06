@@ -1,17 +1,12 @@
 package org.matheclipse.core.reflection.system;
 
 import static org.matheclipse.core.expression.F.Binomial;
-import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.Cos;
-import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Sin;
-import static org.matheclipse.core.expression.F.Sum;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.evalExpandAll;
 

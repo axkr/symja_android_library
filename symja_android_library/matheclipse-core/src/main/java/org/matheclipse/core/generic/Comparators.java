@@ -15,6 +15,7 @@ public class Comparators {
 	public static class ExprComparator implements Comparator<IExpr> {
 		public final static ExprComparator CONS = new ExprComparator();
 
+		@Override
 		public int compare(final IExpr o1, final IExpr o2) {
 			return o1.compareTo(o2);
 		}
@@ -28,6 +29,7 @@ public class Comparators {
 	public static class ExprReverseComparator implements Comparator<IExpr> {
 		public final static ExprReverseComparator CONS = new ExprReverseComparator();
 
+		@Override
 		public int compare(final IExpr o1, final IExpr o2) {
 			return -1 * o1.compareTo(o2);
 		}

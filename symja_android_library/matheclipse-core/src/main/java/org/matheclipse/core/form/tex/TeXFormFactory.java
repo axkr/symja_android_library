@@ -41,6 +41,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 			buf.append(fOperator);
 		}
 
+		@Override
 		public String toString() {
 			return fOperator;
 		}
@@ -76,6 +77,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		init();
 	}
 
+	@Override
 	public void convertDouble(final StringBuilder buf, final INum d, final int precedence) {
 		if (d.isNegative() && (precedence > plusPrec)) {
 			buf.append("\\left( ");
@@ -86,6 +88,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 	}
 
+	@Override
 	public void convertDoubleComplex(final StringBuilder buf, final IComplexNum dc, final int precedence) {
 		if (precedence > plusPrec) {
 			buf.append("\\left( ");
@@ -100,6 +103,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 	}
 
+	@Override
 	public void convertInteger(final StringBuilder buf, final IInteger i, final int precedence) {
 		if (i.isNegative() && (precedence > plusPrec)) {
 			buf.append("\\left( ");
@@ -110,6 +114,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 	}
 
+	@Override
 	public void convertFraction(final StringBuilder buf, final IFraction f, final int precedence) {
 		if (f.isNegative() && (precedence > plusPrec)) {
 			buf.append("\\left( ");
@@ -147,6 +152,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 	}
 
+	@Override
 	public void convertComplex(final StringBuilder buf, final IComplex c, final int precedence) {
 		if (c.isImaginaryUnit()) {
 			buf.append("i ");
@@ -174,10 +180,12 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 	}
 
+	@Override
 	public void convertString(final StringBuilder buf, final String str) {
 		buf.append(str);
 	}
 
+	@Override
 	public void convertSymbol(final StringBuilder buf, final ISymbol sym) {
 		String headStr = sym.getSymbolName();
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
@@ -203,6 +211,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 	}
 
+	@Override
 	public void convertHead(final StringBuilder buf, final Object obj) {
 		if (obj instanceof ISymbol) {
 			String str = ((ISymbol) obj).getSymbolName();
@@ -232,6 +241,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		convert(buf, obj, 0);
 	}
 
+	@Override
 	public void convert(final StringBuilder buf, final Object o, final int precedence) {
 		if (o instanceof IExpr) {
 			IExpr expr = (IExpr) o;

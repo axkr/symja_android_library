@@ -82,6 +82,7 @@ public class MultisetCombinationIterator implements Iterator<int[]> {
 	 * 
 	 * @see Iterator#next()
 	 */
+	@Override
 	public int[] next() {
 		if (result == null) {
 			result = new int[k];
@@ -115,6 +116,7 @@ public class MultisetCombinationIterator implements Iterator<int[]> {
 	 * 
 	 * @see Iterator#hasNext()
 	 */
+	@Override
 	public final boolean hasNext() {
 		if (result == null) {
 			return true;

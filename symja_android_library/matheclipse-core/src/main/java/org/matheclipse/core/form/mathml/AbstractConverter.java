@@ -24,7 +24,8 @@ public abstract class AbstractConverter implements IConverter {
   /**
    * @param factory
    */
-  public void setFactory(final AbstractMathMLFormFactory factory) {
+  @Override
+public void setFactory(final AbstractMathMLFormFactory factory) {
     fFactory = factory;
   }
 

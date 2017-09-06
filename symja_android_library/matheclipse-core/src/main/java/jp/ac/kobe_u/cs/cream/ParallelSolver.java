@@ -34,12 +34,14 @@ public class ParallelSolver extends Solver implements SolutionHandler {
 		return solvers;
 	}
 
+	@Override
 	public void setMonitor(Monitor monitor) {
 		for (Solver solver : solvers) {
 			solver.setMonitor(monitor);
 		}
 	}
 
+	@Override
 	public synchronized void stop() {
 		for (Solver solver : solvers) {
 			solver.stop();
@@ -47,6 +49,7 @@ public class ParallelSolver extends Solver implements SolutionHandler {
 		super.stop();
 	}
 
+	@Override
 	public synchronized void solved(Solver solver, Solution solution) {
 		if (isAborted() || solution == null) {
 			return;
@@ -91,6 +94,7 @@ public class ParallelSolver extends Solver implements SolutionHandler {
 		}
 	}
 
+	@Override
 	public void run() {
 		clearBest();
 		allStart();

@@ -16,7 +16,8 @@ public class Sqrt extends AbstractConverter {
     *@param  buf  StringBuilder for MathML output
     *@param  f    The math function which should be converted to MathML
     */
-  public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+  @Override
+public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
     if (f.size() != 2) {
       return false;
     }

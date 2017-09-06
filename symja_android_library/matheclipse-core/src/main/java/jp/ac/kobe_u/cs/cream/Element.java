@@ -31,14 +31,17 @@ public class Element extends Constraint {
 		this.v = v.clone();
 	}
 
+	@Override
 	public Constraint copy(Network net) {
 		return new Element(net, Constraint.copy(v0, net), Constraint.copy(v1, net), Constraint.copy(v, net));
 	}
 
+	@Override
 	public boolean isModified() {
 		return v0.isModified() || v1.isModified() || isModified(v);
 	}
 
+	@Override
 	public boolean satisfy(Trail trail) {
 		int n = v.length;
 		// limit the domain of v1 to 0..n-1
@@ -88,6 +91,7 @@ public class Element extends Constraint {
 		return true;
 	}
 
+	@Override
 	public String toString() {
 		return "Element(" + v0 + "," + v1 + "," + Constraint.toString(v) + ")";
 	}

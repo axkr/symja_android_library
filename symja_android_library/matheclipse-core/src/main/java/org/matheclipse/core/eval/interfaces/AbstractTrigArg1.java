@@ -1,8 +1,6 @@
 package org.matheclipse.core.eval.interfaces;
 
 import org.hipparchus.complex.Complex;
-import java.util.function.DoubleUnaryOperator;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.ApcomplexNum;
@@ -48,10 +46,12 @@ public abstract class AbstractTrigArg1 extends AbstractArg1 {
 		return evaluateArg1(arg1);
 	}
 
+	@Override
 	public IExpr e1DblArg(final double d) {
 		return F.NIL;
 	}
 
+	@Override
 	public IExpr e1ComplexArg(final Complex c) {
 		return F.NIL;
 	}

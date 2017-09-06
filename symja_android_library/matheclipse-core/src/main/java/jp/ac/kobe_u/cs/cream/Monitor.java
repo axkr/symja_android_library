@@ -71,12 +71,14 @@ public class Monitor extends Frame {
 		setResizable(true);
 		MenuItem close = new MenuItem("Close");
 		close.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				dispose();
 			}
 		});
 		MenuItem quit = new MenuItem("Quit");
 		quit.addActionListener(new ActionListener() {
+			@Override
 			public void actionPerformed(ActionEvent e) {
 				System.exit(0);
 			}
@@ -221,12 +223,14 @@ public class Monitor extends Frame {
 		}
 	}
 
+	@Override
 	public void update(Graphics g) {
 		Dimension size = getSize();
 		updateImage(size.width, size.height);
 		g.drawImage(image, 0, 0, null);
 	}
 
+	@Override
 	public void paint(Graphics g) {
 		if (image != null) {
 			g.drawImage(image, 0, 0, null);

@@ -33,14 +33,17 @@ public class Relation extends Constraint {
 		this.v1 = v1;
 	}
 
+	@Override
 	public Constraint copy(Network net) {
 		return new Relation(net, Constraint.copy(v0, net), rel, Constraint.copy(v1, net));
 	}
 
+	@Override
 	public boolean isModified() {
 		return v0.isModified() || v1.isModified();
 	}
 
+	@Override
 	public boolean satisfy(Trail trail) {
 		int m = rel.length;
 		int n = rel[0].length;
@@ -93,6 +96,7 @@ public class Relation extends Constraint {
 		return true;
 	}
 
+	@Override
 	public String toString() {
 		return "Relation(" + v0 + "," + v1 + ")";
 	}

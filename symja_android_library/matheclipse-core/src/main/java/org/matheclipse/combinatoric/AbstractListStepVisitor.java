@@ -46,6 +46,7 @@ public abstract class AbstractListStepVisitor<T> implements IStepVisitor {
 	 * 
 	 * @see org.matheclipse.combinatoric.IStepVisitor#visit(int[][])
 	 */
+	@Override
 	public boolean visit(int[][] result)	{
 		return true;
 	}
@@ -55,6 +56,7 @@ public abstract class AbstractListStepVisitor<T> implements IStepVisitor {
 	 * 
 	 * @see org.matheclipse.combinatoric.IStepVisitor#visit(int[][])
 	 */
+	@Override
 	public boolean visit(int[] result)	{
 		return true;
 	}
@@ -64,6 +66,7 @@ public abstract class AbstractListStepVisitor<T> implements IStepVisitor {
 	 * 
 	 * @see org.matheclipse.combinatoric.IStepVisitor#getMultisetArray()
 	 */
+	@Override
 	public int[] getMultisetArray() {
 		int[] result = new int[array.length];
 		int counter = 0;

@@ -37,10 +37,12 @@ public class UnaryNumerical implements Function<IExpr, IExpr>, DifferentiableUni
 		fEngine = engine;
 	}
 
+	@Override
 	public IExpr apply(final IExpr firstArg) {
 		return fEngine.evalN(F.subst(fFunction, F.Rule(fVariable, firstArg)));
 	}
 
+	@Override
 	public double value(double x) {
 		double result = 0.0;
 		final double[] stack = new double[10];
@@ -57,6 +59,7 @@ public class UnaryNumerical implements Function<IExpr, IExpr>, DifferentiableUni
 	/**
 	 * First derivative of unary function
 	 */
+	@Override
 	public UnivariateFunction derivative() {
 		final IAST ast = F.D(fFunction, fVariable);
 		IExpr expr = fEngine.evaluate(ast);

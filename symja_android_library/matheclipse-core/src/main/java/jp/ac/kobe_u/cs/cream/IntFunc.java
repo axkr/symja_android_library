@@ -62,10 +62,12 @@ public class IntFunc extends Constraint {
 		this.v = v;
 	}
 
+	@Override
 	public Constraint copy(Network net) {
 		return new IntFunc(net, func, Constraint.copy(this.v, net));
 	}
 
+	@Override
 	public boolean isModified() {
 		return isModified(v);
 	}
@@ -259,6 +261,7 @@ public class IntFunc extends Constraint {
 		return true;
 	}
 
+	@Override
 	public boolean satisfy(Trail trail) {
 		switch (func) {
 		case NEGATE:
@@ -271,6 +274,7 @@ public class IntFunc extends Constraint {
 		return false;
 	}
 
+	@Override
 	public String toString() {
 		String a = "";
 		switch (func) {

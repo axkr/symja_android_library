@@ -529,6 +529,7 @@ public final class LinearAlgebra {
 		public Cross() {
 		}
 
+		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
 			IExpr arg1 = ast.arg1();

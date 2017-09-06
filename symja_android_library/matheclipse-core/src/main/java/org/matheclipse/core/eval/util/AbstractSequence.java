@@ -26,6 +26,7 @@ public abstract class AbstractSequence implements ISequence {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public int getStep() {
 		return fStep;
 	}
@@ -33,6 +34,7 @@ public abstract class AbstractSequence implements ISequence {
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public int[] getIndices() {
 		int j = getStart();
 		int step = getStep();

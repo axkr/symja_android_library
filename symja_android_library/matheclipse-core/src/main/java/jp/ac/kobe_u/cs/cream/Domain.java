@@ -37,7 +37,8 @@ public abstract class Domain implements Cloneable {
      * Returns true when the domain is empty.
      * @return true when the domain is empty
      */
-    public abstract Object clone();
+    @Override
+	public abstract Object clone();
 
     /**
      * Returns true when the domain is equal to another domain <tt>d</tt>.

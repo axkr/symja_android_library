@@ -5,6 +5,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
+import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.FractionSym;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -16,11 +17,11 @@ import junit.framework.TestCase;
 public class NumberTest extends TestCase {
 
 	public void testPower() {
-		IFraction f = FractionSym.valueOf(2, 3);
+		IFraction f = AbstractFractionSym.valueOf(2, 3);
 
 		assertEquals(f.pow(-2).toString(), "9/4");
 
-		IFraction f0 = FractionSym.valueOf(5, 14);
+		IFraction f0 = AbstractFractionSym.valueOf(5, 14);
 		assertEquals(f0.pow(2).toString(), "25/196");
 	}
 

@@ -10,8 +10,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.matheclipse.core.patternmatching.IPatternMatcher;
-
 /**
  * Open addressed map from int to Set<T>.
  * <p>

@@ -35,14 +35,17 @@ public class Sequential extends Constraint {
 		this.a = a.clone();
 	}
 
+	@Override
 	public Constraint copy(Network net) {
 		return new Sequential(net, Constraint.copy(v, net), a);
 	}
 
+	@Override
 	public boolean isModified() {
 		return isModified(v);
 	}
 
+	@Override
 	public boolean satisfy(Trail trail) {
 		for (int i = 0; i < v.length - 1; i++) {
 			int j = i + 1;
@@ -62,6 +65,7 @@ public class Sequential extends Constraint {
 		return true;
 	}
 
+	@Override
 	public String toString() {
 		return "Sequential(" + Constraint.toString(v) + ","
 				+ Constraint.toString(a) + ")";

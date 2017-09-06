@@ -57,6 +57,7 @@ public class ExprParser extends ExprScanner {
 			fPrecision = precision;
 		}
 
+		@Override
 		public IExpr visit(INum element) {
 			if (element instanceof NumStr) {
 				Apfloat apfloatValue = new Apfloat(((NumStr) element).getFloatStr(), fPrecision);

@@ -124,6 +124,7 @@ public abstract class AbstractTestCase extends TestCase {
 	/**
 	 * The JUnit setup method
 	 */
+	@Override
 	protected void setUp() {
 		try {
 			synchronized (fScriptManager) {

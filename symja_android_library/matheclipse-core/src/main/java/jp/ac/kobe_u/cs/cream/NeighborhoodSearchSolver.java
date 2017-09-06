@@ -35,6 +35,7 @@ public class NeighborhoodSearchSolver extends DefaultSolver {
 		this.values = values;
 	}
 
+	@Override
 	public void run() {
 		clearBest();
 		Trail trail = getTrail();

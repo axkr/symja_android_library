@@ -27,6 +27,7 @@ public class DoubleVariable implements IDoubleValue {
 	 * 
 	 * @see org.matheclipse.parser.eval.IDoubleValue#getValue()
 	 */
+	@Override
 	public double getValue() {
 		return value;
 	}
@@ -36,6 +37,7 @@ public class DoubleVariable implements IDoubleValue {
 	 * 
 	 * @see org.matheclipse.parser.eval.IDoubleValue#setValue(double)
 	 */
+	@Override
 	public void setValue(double value) {
 		this.value = value;
 	}

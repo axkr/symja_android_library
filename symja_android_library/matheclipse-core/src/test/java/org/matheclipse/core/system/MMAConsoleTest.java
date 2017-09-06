@@ -15,6 +15,7 @@ public class MMAConsoleTest extends TestCase {
 	/**
 	 * The JUnit setup method
 	 */
+	@Override
 	protected void setUp() {
 		try {
 			console = new MMAConsole();

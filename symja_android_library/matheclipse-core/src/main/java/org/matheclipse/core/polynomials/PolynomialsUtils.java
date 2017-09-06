@@ -106,6 +106,7 @@ public class PolynomialsUtils {
 			private final BigFraction[] coeffs = { BigFraction.ZERO, BigFraction.TWO, BigFraction.ONE };
 
 			/** {@inheritDoc} */
+			@Override
 			public BigFraction[] generate(int k) {
 				return coeffs;
 			}
@@ -133,6 +134,7 @@ public class PolynomialsUtils {
 	public static IAST createHermitePolynomial(final int degree, final IExpr x) {
 		return buildPolynomial(degree, x, HERMITE_COEFFICIENTS, new RecurrenceCoefficientsGenerator() {
 			/** {@inheritDoc} */
+			@Override
 			public BigFraction[] generate(int k) {
 				return new BigFraction[] { BigFraction.ZERO, BigFraction.TWO, new BigFraction(2 * k) };
 			}
@@ -160,6 +162,7 @@ public class PolynomialsUtils {
 	public static IAST createLaguerrePolynomial(final int degree, final IExpr x) {
 		return buildPolynomial(degree, x, LAGUERRE_COEFFICIENTS, new RecurrenceCoefficientsGenerator() {
 			/** {@inheritDoc} */
+			@Override
 			public BigFraction[] generate(int k) {
 				final int kP1 = k + 1;
 				return new BigFraction[] { new BigFraction(2 * k + 1, kP1), new BigFraction(-1, kP1), new BigFraction(k, kP1) };
@@ -188,6 +191,7 @@ public class PolynomialsUtils {
 	public static IAST createLegendrePolynomial(final int degree, final IExpr x) {
 		return buildPolynomial(degree, x, LEGENDRE_COEFFICIENTS, new RecurrenceCoefficientsGenerator() {
 			/** {@inheritDoc} */
+			@Override
 			public BigFraction[] generate(int k) {
 				final int kP1 = k + 1;
 				return new BigFraction[] { BigFraction.ZERO, new BigFraction(k + kP1, kP1), new BigFraction(k, kP1) };

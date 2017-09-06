@@ -16,38 +16,47 @@ public abstract class AbstractVisitorLong implements IVisitorLong {
 		super();
 	}
 
+	@Override
 	public long visit(IInteger element) {
 		return 1;
 	}
 
+	@Override
 	public long visit(IFraction element) {
 		return 1;
 	}
 
+	@Override
 	public long visit(IComplex element) {
 		return 1;
 	}
 
+	@Override
 	public long visit(INum element) {
 		return 1;
 	}
 
+	@Override
 	public long visit(IComplexNum element) {
 		return 1;
 	}
 
+	@Override
 	public long visit(ISymbol element) {
 		return 1;
 	}
 
+	@Override
 	public long visit(IPattern element) {
 		return 1;
 	}
 
+	@Override
 	public long visit(IPatternSequence element) {
 		return 1;
 	}
 
+	@Override
 	public long visit(IStringX element) {
 		return 1;
 	}

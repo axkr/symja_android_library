@@ -28,7 +28,8 @@ public abstract class ReadOnlyIterator<T> implements Iterator<T> {
     /**
      * Not supported. Throws {@link UnsupportedOperationException} exception.
      */
-    public final void remove() {
+    @Override
+	public final void remove() {
         throw new UnsupportedOperationException(REMOVE_OPERATION_NOT_SUPPORTED_MESSAGE);
     }
 

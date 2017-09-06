@@ -39,6 +39,7 @@ public class ExprPolynomialComparator implements Serializable, Comparator<ExprPo
 	 *            second polynomial.
 	 * @return 0 if ( p1 == p2 ), -1 if ( p1 < p2 ) and +1 if ( p1 > p2 ).
 	 */
+	@Override
 	public int compare(ExprPolynomial p1, ExprPolynomial p2) {
 		// check if p1.tord = p2.tord = tord ?
 		int s = p1.compareTo(p2);

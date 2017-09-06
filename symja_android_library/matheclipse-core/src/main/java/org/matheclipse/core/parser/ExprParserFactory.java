@@ -38,6 +38,7 @@ public class ExprParserFactory implements IExprParserFactory {
 			super(oper, functionName, precedence, grouping);
 		}
 
+		@Override
 		public IExpr createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs,
 				final IExpr rhs) {
 			IAST fn = F.ast(F.Apply);
@@ -58,6 +59,7 @@ public class ExprParserFactory implements IExprParserFactory {
 			super(oper, functionName, precedence, grouping);
 		}
 
+		@Override
 		public IExpr createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs,
 				final IExpr rhs) {
 
@@ -86,6 +88,7 @@ public class ExprParserFactory implements IExprParserFactory {
 			super(oper, functionName, precedence);
 		}
 
+		@Override
 		public IExpr createFunction(final IExprParserFactory factory, final IExpr argument) {
 			return F.Times(F.CN1, argument);
 		}
@@ -97,6 +100,7 @@ public class ExprParserFactory implements IExprParserFactory {
 			super(oper, functionName, precedence);
 		}
 
+		@Override
 		public IExpr createFunction(final IExprParserFactory factory, final IExpr argument) {
 			return argument;
 		}
@@ -108,6 +112,7 @@ public class ExprParserFactory implements IExprParserFactory {
 			super(oper, functionName, precedence, grouping);
 		}
 
+		@Override
 		public IExpr createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs,
 				final IExpr rhs) {
 			if (rhs.isNumber()) {
@@ -278,6 +283,7 @@ public class ExprParserFactory implements IExprParserFactory {
 		// this.fIgnoreCase = ignoreCase;
 	}
 
+	@Override
 	public AbstractExprOperator get(final String identifier) {
 		return fOperatorMap.get(identifier);
 	}
@@ -285,6 +291,7 @@ public class ExprParserFactory implements IExprParserFactory {
 	/**
 	 * public Map<String, Operator> getIdentifier2OperatorMap()
 	 */
+	@Override
 	public Map<String, AbstractExprOperator> getIdentifier2OperatorMap() {
 		return fOperatorMap;
 	}
@@ -292,10 +299,12 @@ public class ExprParserFactory implements IExprParserFactory {
 	/**
 	 * 
 	 */
+	@Override
 	public Map<String, ArrayList<org.matheclipse.core.parser.AbstractExprOperator>> getOperator2ListMap() {
 		return fOperatorTokenStartSet;
 	}
 
+	@Override
 	public String getOperatorCharacters() {
 		return DEFAULT_OPERATOR_CHARACTERS;
 	}
@@ -303,10 +312,12 @@ public class ExprParserFactory implements IExprParserFactory {
 	/**
 	 * 
 	 */
+	@Override
 	public List<AbstractExprOperator> getOperatorList(final String key) {
 		return fOperatorTokenStartSet.get(key);
 	}
 
+	@Override
 	public boolean isValidIdentifier(String identifier) {
 		return true;
 	}

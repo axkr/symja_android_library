@@ -114,10 +114,10 @@ public class Show2SVG {
 		}
 
 		public void setPlotRange(IAST p1, IAST p2) {
-			double x1 = ((ISignedNumber) ((IAST) p1).arg1()).doubleValue();
-			double y1 = ((ISignedNumber) ((IAST) p1).arg2()).doubleValue();
-			double x2 = ((ISignedNumber) ((IAST) p2).arg1()).doubleValue();
-			double y2 = ((ISignedNumber) ((IAST) p2).arg2()).doubleValue();
+			double x1 = ((ISignedNumber) p1.arg1()).doubleValue();
+			double y1 = ((ISignedNumber) p1.arg2()).doubleValue();
+			double x2 = ((ISignedNumber) p2.arg1()).doubleValue();
+			double y2 = ((ISignedNumber) p2.arg2()).doubleValue();
 			minMax(x1, y1, x2, y2);
 			plotRange = true;
 		}
@@ -420,8 +420,8 @@ public class Show2SVG {
 			if (ast.arg1().isAST(F.List, 3)) {
 				IAST list1 = (IAST) ast.arg1();
 
-				double x1 = ((ISignedNumber) ((IAST) list1).arg1()).doubleValue();
-				double y1 = ((ISignedNumber) ((IAST) list1).arg2()).doubleValue();
+				double x1 = ((ISignedNumber) list1.arg1()).doubleValue();
+				double y1 = ((ISignedNumber) list1.arg2()).doubleValue();
 				double x2 = x1 + 1.0;
 				double y2 = y1 + 1.0;
 
@@ -431,10 +431,10 @@ public class Show2SVG {
 			IAST list1 = (IAST) ast.arg1();
 			IAST list2 = (IAST) ast.arg2();
 
-			double x1 = ((ISignedNumber) ((IAST) list1).arg1()).doubleValue();
-			double y1 = ((ISignedNumber) ((IAST) list1).arg2()).doubleValue();
-			double x2 = ((ISignedNumber) ((IAST) list2).arg1()).doubleValue();
-			double y2 = ((ISignedNumber) ((IAST) list2).arg2()).doubleValue();
+			double x1 = ((ISignedNumber) list1.arg1()).doubleValue();
+			double y1 = ((ISignedNumber) list1.arg2()).doubleValue();
+			double x2 = ((ISignedNumber) list2.arg1()).doubleValue();
+			double y2 = ((ISignedNumber) list2.arg2()).doubleValue();
 
 			dim.minMax(x1, x2, y1, y2);
 		}
@@ -455,8 +455,8 @@ public class Show2SVG {
 					double xAxisScalingFactor = width / (xMax - xMin);
 					double yAxisScalingFactor = height / (yMax - yMin);
 
-					double x1 = ((ISignedNumber) ((IAST) list1).arg1()).doubleValue();
-					double y1 = ((ISignedNumber) ((IAST) list1).arg2()).doubleValue();
+					double x1 = ((ISignedNumber) list1.arg1()).doubleValue();
+					double y1 = ((ISignedNumber) list1.arg2()).doubleValue();
 					double w = 1.0;
 					double h = 1.0;
 					// x="0.000000" y="0.000000" width="350.000000" height="350.000000"
@@ -476,10 +476,10 @@ public class Show2SVG {
 				double xAxisScalingFactor = width / (xMax - xMin);
 				double yAxisScalingFactor = height / (yMax - yMin);
 
-				double x1 = ((ISignedNumber) ((IAST) list1).arg1()).doubleValue();
-				double y1 = ((ISignedNumber) ((IAST) list1).arg2()).doubleValue();
-				double x2 = ((ISignedNumber) ((IAST) list2).arg1()).doubleValue();
-				double y2 = ((ISignedNumber) ((IAST) list2).arg2()).doubleValue();
+				double x1 = ((ISignedNumber) list1.arg1()).doubleValue();
+				double y1 = ((ISignedNumber) list1.arg2()).doubleValue();
+				double x2 = ((ISignedNumber) list2.arg1()).doubleValue();
+				double y2 = ((ISignedNumber) list2.arg2()).doubleValue();
 				double w = x2 - x1;
 				double h = y2 - y1;
 				buf.append("x=\"");

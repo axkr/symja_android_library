@@ -735,9 +735,9 @@ public final class Programming {
 						engine.setNumericMode(numericMode);
 					}
 					if (evaledAST.isPresent()) {
-						return part((IAST) arg1, evaledAST, 2, engine);
+						return part(arg1, evaledAST, 2, engine);
 					}
-					return part((IAST) arg1, ast, 2, engine);
+					return part(arg1, ast, 2, engine);
 
 				} catch (WrongArgumentType wat) {
 					engine.printMessage(wat.getMessage());
@@ -1237,7 +1237,7 @@ public final class Programming {
 			result = getIndex(arg1, indx);
 			if (p1 < ast.size()) {
 				if (result.isAST()) {
-					return part((IAST) result, ast, p1, engine);
+					return part(result, ast, p1, engine);
 				} else {
 					throw new WrongArgumentType(ast, arg1, pos,
 							"Wrong argument for Part[] function. Function or list expected.");
@@ -1423,7 +1423,7 @@ public final class Programming {
 			ires = assignPartValue(assignedAST, indx, rhs.getAST(rhsPos++));
 			if (partPositionPlus1 < part.size()) {
 				if (ires.isAST()) {
-					return assignPart((IAST) ires, part, partPositionPlus1, rhs, rhsPos++, engine);
+					return assignPart(ires, part, partPositionPlus1, rhs, rhsPos++, engine);
 				} else {
 					throw new WrongArgumentType(part, assignedAST, partPosition,
 							"Wrong argument for Part[] function. Function or list expected.");

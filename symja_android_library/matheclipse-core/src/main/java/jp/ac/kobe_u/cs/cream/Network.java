@@ -172,6 +172,7 @@ public class Network implements Cloneable {
 	 * 
 	 * @return a copy of this network
 	 */
+	@Override
 	public Object clone() {
 		Network net = new Network();
 		for (Variable v : variables) {
@@ -195,6 +196,7 @@ public class Network implements Cloneable {
 	 * 
 	 * @return the readable string representation
 	 */
+	@Override
 	public String toString() {
 		StringBuilder s = new StringBuilder("");
 		if (objective != null) {

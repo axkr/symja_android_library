@@ -9,6 +9,7 @@ public class DirectedInfinity extends AbstractConverter {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 		if (f.isAST1()) {
 			if (f.arg1().isOne()) {

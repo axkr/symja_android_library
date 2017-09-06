@@ -272,6 +272,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	 * 
 	 * @return Next smaller integer of <code>this</code>.
 	 */
+	@Override
 	public IFraction fractionalPart() {
 		if (isIntegral()) {
 			return AbstractFractionSym.ZERO;

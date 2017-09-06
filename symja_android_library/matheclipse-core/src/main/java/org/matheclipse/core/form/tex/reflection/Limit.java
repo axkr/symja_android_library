@@ -9,6 +9,7 @@ public class Limit extends AbstractConverter {
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 		if (f.isAST2() && f.arg2().isRuleAST()) {
 			final IAST rule = (IAST) f.arg2();

@@ -93,6 +93,7 @@ public abstract class Constraint {
 	 * Returns the string representation of the constraint.
 	 * @return the string representation
 	 */
+	@Override
 	public abstract String toString();
 	
 	protected static Variable copy(Variable v0, Network net) {

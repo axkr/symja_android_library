@@ -208,6 +208,7 @@ public class ExprEvaluator {
 	 * @return
 	 * @deprecated use eval()
 	 */
+	@Deprecated
 	public final IExpr evaluate() {
 		return eval();
 	}
@@ -217,6 +218,7 @@ public class ExprEvaluator {
 	 * @return
 	 * @deprecated use eval()
 	 */
+	@Deprecated
 	public final IExpr evaluate(final IExpr expr) {
 		return eval(expr);
 	}
@@ -226,6 +228,7 @@ public class ExprEvaluator {
 	 * @return
 	 * @deprecated use eval()
 	 */
+	@Deprecated
 	public final IExpr evaluate(final String inputExpression) {
 		return eval(inputExpression);
 	}
@@ -378,6 +381,7 @@ public class ExprEvaluator {
 	 * 
 	 * @deprecated use evalf(inputExpression)
 	 */
+	@Deprecated
 	public double evaluateDouble(final String inputExpression) {
 		return evalf(inputExpression);
 	}

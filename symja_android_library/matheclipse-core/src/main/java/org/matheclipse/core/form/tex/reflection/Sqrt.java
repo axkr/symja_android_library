@@ -11,7 +11,8 @@ public class Sqrt extends AbstractConverter {
   }
 
   /** {@inheritDoc} */
-  public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+  @Override
+public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
     if (f.size() != 2) {
       return false;
     }

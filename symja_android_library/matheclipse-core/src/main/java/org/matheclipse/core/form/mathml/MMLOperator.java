@@ -42,6 +42,7 @@ public class MMLOperator extends AbstractConverter {
 	 * @param f
 	 *            The math function which should be converted to MathML
 	 */
+	@Override
 	public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 		fFactory.tagStart(buf, fFirstTag);
 		precedenceOpen(buf, precedence);

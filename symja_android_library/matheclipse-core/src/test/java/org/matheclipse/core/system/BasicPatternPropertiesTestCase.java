@@ -71,6 +71,7 @@ public class BasicPatternPropertiesTestCase extends TestCase {
 	/**
 	 * The JUnit setup method
 	 */
+	@Override
 	protected void setUp() {
 		try {
 			// setup the evaluation engine (and bind to current thread)

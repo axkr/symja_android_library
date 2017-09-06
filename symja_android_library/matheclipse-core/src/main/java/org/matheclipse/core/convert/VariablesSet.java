@@ -31,6 +31,7 @@ public class VariablesSet {
 			super(collection);
 		}
 
+		@Override
 		public boolean visit(IAST ast) {
 			ISymbol[] logicEquationHeads = { F.And, F.Or, F.Not, F.Xor, F.Nand, F.Nor, F.Implies, F.Equivalent, F.Equal,
 					F.Unequal };
@@ -44,6 +45,7 @@ public class VariablesSet {
 			return false;
 		}
 
+		@Override
 		public boolean visit(ISymbol symbol) {
 			if (symbol.isVariable()) {
 				fCollection.add(symbol);
@@ -64,10 +66,12 @@ public class VariablesSet {
 			super();
 		}
 
+		@Override
 		public boolean visit(IAST list) {
 			return list.exists(x -> x.accept(this), 1);
 		}
 
+		@Override
 		public boolean visit(ISymbol symbol) {
 			if (symbol.isVariable()) {
 				return fVariablesSet.contains(symbol);
@@ -86,6 +90,7 @@ public class VariablesSet {
 			super(collection);
 		}
 
+		@Override
 		public boolean visit(ISymbol symbol) {
 			if (symbol.isVariable()) {
 				fCollection.add(symbol);
@@ -128,6 +133,7 @@ public class VariablesSet {
 			super(collection);
 		}
 
+		@Override
 		public boolean visit(ISymbol symbol) {
 			if (symbol.isVariable()) {
 				fCollection.add(symbol);

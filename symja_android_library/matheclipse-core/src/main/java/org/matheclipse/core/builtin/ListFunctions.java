@@ -260,7 +260,7 @@ public final class ListFunctions {
 					temp = fDefaultValue;
 				}
 				if (temp.isNumber()) {
-					num = (INumber) num.plus((INumber) temp);
+					num = (INumber) num.plus(temp);
 				} else {
 					return createGenericTable(iter, index, iter.allocHint() - counter, num, temp);
 				}
@@ -280,7 +280,7 @@ public final class ListFunctions {
 					temp = fDefaultValue;
 				}
 				if (temp.isNumber()) {
-					num = (INumber) num.times((INumber) temp);
+					num = (INumber) num.times(temp);
 				} else {
 					return createGenericTable(iter, index, iter.allocHint() - counter, num, temp);
 				}
@@ -322,6 +322,7 @@ public final class ListFunctions {
 	}
 
 	private static class PositionConverter implements IPositionConverter<IExpr> {
+		@Override
 		public IExpr toObject(final int i) {
 			if (i < 3) {
 				switch (i) {
@@ -336,6 +337,7 @@ public final class ListFunctions {
 			return F.integer(i);
 		}
 
+		@Override
 		public int toInt(final IExpr position) {
 			if (position.isSignedNumber()) {
 				try {
@@ -442,6 +444,7 @@ public final class ListFunctions {
 				fHeadAST = headAST;
 			}
 
+			@Override
 			public IExpr evaluate(final IExpr[] index) {
 				final IAST ast = fHeadAST.clone();
 				for (int i = 0; i < index.length; i++) {
@@ -886,6 +889,7 @@ public final class ListFunctions {
 				fConstantExpr = expr;
 			}
 
+			@Override
 			public IExpr evaluate(final IExpr[] index) {
 				return fConstantExpr;
 			}
@@ -2297,8 +2301,9 @@ public final class ListFunctions {
 			public UnaryRangeFunction() {
 			}
 
+			@Override
 			public IExpr evaluate(final IExpr[] index) {
-				return (IExpr) index[0];
+				return index[0];
 			}
 		}
 
@@ -2720,6 +2725,7 @@ public final class ListFunctions {
 				fValue = value;
 			}
 
+			@Override
 			public IExpr evaluate(final IExpr[] index) {
 				return fEngine.evaluate(fValue);
 			}
@@ -2869,13 +2875,13 @@ public final class ListFunctions {
 			VariablesSet variableList = new VariablesSet();
 			for (int i = 2; i < ast.size(); i++) {
 				if (ast.get(i).isVariable()) {
-					variableList.add((ISymbol) ast.get(i));
+					variableList.add(ast.get(i));
 				} else {
 					if (ast.get(i).isList()) {
 						IAST list = (IAST) ast.get(i);
 						if (list.size() >= 2) {
 							if (list.arg1().isVariable()) {
-								variableList.add((ISymbol) list.arg1());
+								variableList.add(list.arg1());
 							}
 						}
 					}
@@ -3198,7 +3204,7 @@ public final class ListFunctions {
 				}
 
 				if (arg1.isAST()) {
-					IAST dist = (IAST) arg1;
+					IAST dist = arg1;
 					if (dist.head().isSymbol()) {
 						ISymbol head = (ISymbol) dist.head();
 						if (arg1.isAST1()) {

@@ -45,6 +45,7 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 	 * 
 	 * @see org.matheclipse.combinatoric.IStepVisitor#visit(int[][])
 	 */
+	@Override
 	public boolean visit(int[][] result) {
 		if (matchSinglePartition(result, stackMatcher)) {
 			return false; // stop iterating and calling this visitor

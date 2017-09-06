@@ -252,18 +252,18 @@ public final class MathUtils {
 			return 0;
 		}
 		if ((k == 1) || (k == n - 1)) {
-			return Math.log((double) n);
+			return Math.log(n);
 		}
 		double logSum = 0;
 
 		// n!/k!
 		for (int i = k + 1; i <= n; i++) {
-			logSum += Math.log((double) i);
+			logSum += Math.log(i);
 		}
 
 		// divide by (n-k)!
 		for (int i = 2; i <= n - k; i++) {
-			logSum -= Math.log((double) i);
+			logSum -= Math.log(i);
 		}
 
 		return logSum;
@@ -405,7 +405,7 @@ public final class MathUtils {
 		}
 		double logSum = 0;
 		for (int i = 2; i <= n; i++) {
-			logSum += Math.log((double) i);
+			logSum += Math.log(i);
 		}
 		return logSum;
 	}

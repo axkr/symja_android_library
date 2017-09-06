@@ -42,8 +42,8 @@ public class Hypergeometric1F1 extends AbstractFunctionEvaluator {
 				return F.CComplexInfinity;
 			}
 			if (z.isSignedNumber()) {
-				double aDouble = ((ISignedNumber) n).doubleValue();
-				double bDoube = ((ISignedNumber) m).doubleValue();
+				double aDouble = n.doubleValue();
+				double bDoube = m.doubleValue();
 				double zDouble = ((ISignedNumber) z).doubleValue();
 				try {
 					return F.num(de.lab4inf.math.functions.KummerFunction.kummer(aDouble, bDoube, zDouble));

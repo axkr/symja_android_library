@@ -66,10 +66,12 @@ public class IBBSearch extends LocalSearch {
 		solution = solver.getBestSolution();
 	}
 
+	@Override
 	public void startSearch() {
 		bbSearch(initialTimeout);
 	}
 
+	@Override
 	public void nextSearch() {
 		if (isAborted())
 			return;

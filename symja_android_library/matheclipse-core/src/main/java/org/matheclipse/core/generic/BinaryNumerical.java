@@ -31,6 +31,7 @@ public class BinaryNumerical extends BinaryFunctorImpl<IExpr> {
 		fEngine = engine;
 	}
 
+	@Override
 	public IExpr apply(final IExpr firstArg, final IExpr secondArg) {
 		return fEngine.evalN(F.subst(fun, F.List(F.Rule(variable1, firstArg), F.Rule(variable2, secondArg))));
 	}

@@ -39,14 +39,17 @@ public class NotEquals extends Constraint {
 		this.v = v.clone();
 	}
 
+	@Override
 	public Constraint copy(Network net) {
 		return new NotEquals(net, Constraint.copy(v, net));
 	}
 
+	@Override
 	public boolean isModified() {
 		return isModified(v);
 	}
 
+	@Override
 	public boolean satisfy(Trail trail) {
 		for (int i = 0; i < v.length; i++) {
 			Domain d = v[i].getDomain();
@@ -65,6 +68,7 @@ public class NotEquals extends Constraint {
 		return true;
 	}
 
+	@Override
 	public String toString() {
 		return "NotEquals(" + Constraint.toString(v) + ")";
 	}

@@ -3425,6 +3425,7 @@ public class F {
 	 * @return the evaluated object
 	 * @deprecated
 	 */
+	@Deprecated
 	private static IExpr eval(final ISymbol head, final IExpr a0) {
 		final IAST ast = ast(head);
 		ast.append(a0);
@@ -3440,6 +3441,7 @@ public class F {
 	 * @return the evaluated object
 	 * @deprecated
 	 */
+	@Deprecated
 	private static IExpr eval(final ISymbol head, final IExpr a0, final IExpr a1) {
 		final IAST ast = ast(head);
 		ast.append(a0);
@@ -3457,6 +3459,7 @@ public class F {
 	 * @return the evaluated object
 	 * @deprecated
 	 */
+	@Deprecated
 	private static IExpr eval(final ISymbol head, final IExpr a0, final IExpr a1, final IExpr a2) {
 		final IAST ast = ast(head);
 		ast.append(a0);
@@ -4085,7 +4088,7 @@ public class F {
 					if (reader == null) {
 						InputStream systemPackage = F.class.getResourceAsStream("/System.mep");
 						if (systemPackage != null) {
-							reader = new InputStreamReader(systemPackage);
+							reader = new InputStreamReader(systemPackage, "UTF_8");
 						}
 					}
 					if (reader != null) {

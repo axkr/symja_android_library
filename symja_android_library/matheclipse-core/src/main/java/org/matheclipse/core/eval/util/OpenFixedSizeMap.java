@@ -42,6 +42,7 @@ public class OpenFixedSizeMap<K, V> extends AbstractMap<K, V> implements Map<K, 
 		table = new Object[tableSize << 1];
 	}
 
+	@Override
 	public Object clone() {
 		OpenFixedSizeMap<K, V> result = null;
 		try {
@@ -79,6 +80,7 @@ public class OpenFixedSizeMap<K, V> extends AbstractMap<K, V> implements Map<K, 
 		return false;
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public V get(Object key) {
 		int hash = hash(key);
@@ -135,6 +137,7 @@ public class OpenFixedSizeMap<K, V> extends AbstractMap<K, V> implements Map<K, 
 		} while (true);
 	}
 
+	@Override
 	public V put(K key, V value) {
 		if (size == (table.length >> 1))
 			throw new IllegalStateException("Map is full!");
@@ -155,6 +158,7 @@ public class OpenFixedSizeMap<K, V> extends AbstractMap<K, V> implements Map<K, 
 		}
 	}
 
+	@Override
 	public int size() {
 		return size;
 	}

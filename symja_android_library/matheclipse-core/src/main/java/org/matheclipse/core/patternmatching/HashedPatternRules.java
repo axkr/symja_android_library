@@ -132,6 +132,7 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
 		return fRulesData;
 	}
 
+	@Override
 	public IExpr evalDownRule(IExpr e1, IExpr e2, EvalEngine engine) {
 		return getRulesData().evalDownRule(F.List(e1, e2), engine);
 	}

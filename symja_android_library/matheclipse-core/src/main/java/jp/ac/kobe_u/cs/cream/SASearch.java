@@ -73,11 +73,13 @@ public class SASearch extends LocalSearch {
 		temperature = temp;
 	}
 
+	@Override
 	public void startSearch() {
 		super.startSearch();
 		temperature = solution.getObjectiveIntValue() / 10.0;
 	}
 
+	@Override
 	public void nextSearch() {
 		if (totalTimeout > 0) {
 			long elapsedTime = Math.max(1, System.currentTimeMillis()

@@ -45,6 +45,7 @@ public class Serialized extends Constraint {
 		order = null;
 	}
 
+	@Override
 	public Constraint copy(Network net) {
 		return new Serialized(net, Constraint.copy(v, net), a);
 	}
@@ -78,6 +79,7 @@ public class Serialized extends Constraint {
 				code[i][2] = a[i];
 			}
 			Comparator<int[]> comp = new Comparator<int[]>() {
+				@Override
 				public int compare(int[] p1, int[] p2) {
 					int k1 = p1[1];
 					int k2 = p2[1];
@@ -87,6 +89,7 @@ public class Serialized extends Constraint {
 			Arrays.sort(code, comp);
 		}
 
+		@Override
 		public void setTo(Network network) {
 			Serialized s = (Serialized) network.getConstraint(index);
 			if (code == null) {
@@ -99,6 +102,7 @@ public class Serialized extends Constraint {
 			}
 		}
 
+		@Override
 		public List<Operation> operations() {
 			List<Operation> operations = new LinkedList<Operation>();
 			for (int i = 0; i < code.length - 1; i++) {
@@ -142,6 +146,7 @@ public class Serialized extends Constraint {
 			this.j = j;
 		}
 
+		@Override
 		public void applyTo(Network network) {
 			Serialized s = (Serialized) network.getConstraint(index);
 			int t = s.order[i];
@@ -149,6 +154,7 @@ public class Serialized extends Constraint {
 			s.order[j] = t;
 		}
 
+		@Override
 		public boolean isTaboo(Operation op) {
 			if (!(op instanceof Swap))
 				return false;
@@ -157,14 +163,17 @@ public class Serialized extends Constraint {
 		}
 	}
 
+	@Override
 	protected void clearCondition() {
 		order = null;
 	}
 
+	@Override
 	protected Condition extractCondition() {
 		return new SerializedCondition();
 	}
 
+	@Override
 	public boolean isModified() {
 		return isModified(v);
 	}
@@ -211,12 +220,14 @@ public class Serialized extends Constraint {
 		return true;
 	}
 
+	@Override
 	public boolean satisfy(Trail trail) {
 		if (!satisfySequential(trail))
 			return false;
 		return satisfySerialized(trail);
 	}
 
+	@Override
 	public String toString() {
 		return "Serialized(" + Constraint.toString(v) + ","
 				+ Constraint.toString(a) + ")";

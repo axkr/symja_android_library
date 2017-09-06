@@ -11,6 +11,7 @@ import java.math.BigInteger;
 public interface IRational extends ISignedNumber, IBigNumber {
 
 	/** {@inheritDoc} */
+	@Override
 	public IRational abs();
 
 	public IRational add(IRational parm1);
@@ -86,6 +87,7 @@ public interface IRational extends ISignedNumber, IBigNumber {
 
 	public IRational multiply(IRational parm1);
 
+	@Override
 	public IRational negate();
 
 	/**

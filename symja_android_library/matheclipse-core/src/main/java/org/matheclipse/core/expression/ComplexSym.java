@@ -118,6 +118,7 @@ public class ComplexSym implements IComplex {
 		return F.Sqrt(fReal.multiply(fReal).add(fImaginary.multiply(fImaginary)));
 	}
 
+	@Override
 	public IExpr complexArg() {
 		// ic == ( x + I * y )
 		IRational x = getRealPart();

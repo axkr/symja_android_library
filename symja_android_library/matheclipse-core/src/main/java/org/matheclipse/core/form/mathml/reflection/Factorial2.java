@@ -17,6 +17,7 @@ public class Factorial2 extends AbstractConverter {
 	 * @param f
 	 *            The math function which should be converted to MathML
 	 */
+	@Override
 	public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 		// "<mrow>{0}<mo>!!</mo></mrow>"
 		if (f.size() != 2) {

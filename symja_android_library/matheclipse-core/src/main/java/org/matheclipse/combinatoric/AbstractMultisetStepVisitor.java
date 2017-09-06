@@ -72,6 +72,7 @@ public abstract class AbstractMultisetStepVisitor<T> extends AbstractListStepVis
 	// return true;
 	// }
 
+	@Override
 	public int[] getMultisetArray() {
 		return multiset;
 	}

@@ -760,9 +760,9 @@ public class SpecialFunctions {
 				if (z > 0) {
 					final int iterationSum = 10000;
 					for (int i = 1; i < iterationSum; ++i) {
-						gamma = gamma * (Math.pow((1 + ((double) 1 / i)), z) * Math.pow((1 + ((double) z / i)), -1));
+						gamma = gamma * (Math.pow((1 + ((double) 1 / i)), z) * Math.pow((1 + (z / i)), -1));
 					}
-					gamma = ((double) 1 / z) * gamma;
+					gamma = (1 / z) * gamma;
 				} else
 					return 0;
 				return gamma;

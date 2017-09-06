@@ -24,7 +24,8 @@ public abstract class AbstractConverter implements IConverter {
   /**
    * @param factory
    */
-  public void setFactory(final AbstractTeXFormFactory factory) {
+  @Override
+public void setFactory(final AbstractTeXFormFactory factory) {
     fFactory = factory;
   }
 

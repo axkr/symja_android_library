@@ -77,10 +77,12 @@ public class IntArith extends Constraint {
 		this.v = v;
 	}
 
+	@Override
 	public Constraint copy(Network net) {
 		return new IntArith(net, operation, Constraint.copy(this.v, net));
 	}
 
+	@Override
 	public boolean isModified() {
 		return isModified(v);
 	}
@@ -391,6 +393,7 @@ public class IntArith extends Constraint {
 		return true;
 	}
 
+	@Override
 	public boolean satisfy(Trail trail) {
 		switch (operation) {
 		case ADD:
@@ -407,6 +410,7 @@ public class IntArith extends Constraint {
 		return false;
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder a = new StringBuilder("IntArith(");
 		switch (operation) {

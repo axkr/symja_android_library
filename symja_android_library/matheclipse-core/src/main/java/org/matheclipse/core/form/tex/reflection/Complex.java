@@ -1,6 +1,5 @@
 package org.matheclipse.core.form.tex.reflection;
 
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.form.tex.AbstractOperator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -12,6 +11,7 @@ public class Complex extends AbstractOperator {
 		super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence(), "+");
 	}
 
+	@Override
 	public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 		if (f.size() != 3) {
 			return super.convert(buf, f, precedence);

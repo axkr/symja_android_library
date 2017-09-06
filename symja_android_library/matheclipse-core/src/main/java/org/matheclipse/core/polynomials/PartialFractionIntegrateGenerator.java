@@ -41,10 +41,12 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public void allocPlus(int size) {
 		this.result = F.PlusAlloc(size);
 	}
 
+	@Override
 	public void setJAS(JASConvert<BigRational> jas) {
 		this.jas = jas;
 	}

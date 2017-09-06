@@ -46,32 +46,38 @@ public class Rationalize extends AbstractFunctionEvaluator {
 			this.epsilon = epsilon;
 		}
 
+		@Override
 		public IExpr visit(IAST ast) {
 			if (ast.isNumericFunction()) {
 				ISignedNumber signedNumber = ast.evalSignedNumber();
 				if (signedNumber != null) {
-					return F.fraction(((ISignedNumber) signedNumber).doubleValue(), epsilon);
+					return F.fraction(signedNumber.doubleValue(), epsilon);
 				}
 			}
 			return super.visitAST(ast);
 		}
 
+		@Override
 		public IExpr visit(IComplex element) {
 			return element;
 		}
 
+		@Override
 		public IExpr visit(IComplexNum element) {
 			return F.complex(element.getRealPart(), element.getImaginaryPart(), epsilon);
 		}
 
+		@Override
 		public IExpr visit(IFraction element) {
 			return element;
 		}
 
+		@Override
 		public IExpr visit(IInteger element) {
 			return element;
 		}
 
+		@Override
 		public IExpr visit(INum element) {
 			return F.fraction(element.getRealPart(), epsilon);
 		}
@@ -80,11 +86,12 @@ public class Rationalize extends AbstractFunctionEvaluator {
 		 * 
 		 * @return <code>F.NIL</code>, if no evaluation is possible
 		 */
+		@Override
 		public IExpr visit(ISymbol element) {
 			if (element.isNumericFunction()) {
 				ISignedNumber signedNumber = element.evalSignedNumber();
 				if (signedNumber != null) {
-					return F.fraction(((ISignedNumber) signedNumber).doubleValue(), epsilon);
+					return F.fraction(signedNumber.doubleValue(), epsilon);
 				}
 			}
 			return F.NIL;
@@ -106,7 +113,7 @@ public class Rationalize extends AbstractFunctionEvaluator {
 				if (epsilonExpr == null) {
 					return F.NIL;
 				}
-				epsilon = ((ISignedNumber) epsilonExpr).doubleValue();
+				epsilon = epsilonExpr.doubleValue();
 			}
 			// try to convert into a fractional number
 			RationalizeVisitor rationalizeVisitor = new RationalizeVisitor(epsilon);

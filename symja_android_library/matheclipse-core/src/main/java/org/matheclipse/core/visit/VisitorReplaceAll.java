@@ -47,6 +47,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 		this.fOffset = offset;
 	}
 
+	@Override
 	public IExpr visit(IInteger element) {
 		return fFunction.apply(element);
 	}
@@ -55,6 +56,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
+	@Override
 	public IExpr visit(IFraction element) {
 		return fFunction.apply(element);
 	}
@@ -63,6 +65,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
+	@Override
 	public IExpr visit(IComplex element) {
 		return fFunction.apply(element);
 	}
@@ -71,6 +74,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
+	@Override
 	public IExpr visit(INum element) {
 		return fFunction.apply(element);
 	}
@@ -79,6 +83,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
+	@Override
 	public IExpr visit(IComplexNum element) {
 		return fFunction.apply(element);
 	}
@@ -87,6 +92,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
+	@Override
 	public IExpr visit(ISymbol element) {
 		return fFunction.apply(element);
 	}
@@ -95,6 +101,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
+	@Override
 	public IExpr visit(IPattern element) {
 		return fFunction.apply(element);
 	}
@@ -103,6 +110,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
+	@Override
 	public IExpr visit(IPatternSequence element) {
 		return fFunction.apply(element);
 	}
@@ -111,6 +119,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 	 * 
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
+	@Override
 	public IExpr visit(IStringX element) {
 		return fFunction.apply(element);
 	}
@@ -124,6 +133,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 		return visitAST(ast);
 	}
 
+	@Override
 	protected IExpr visitAST(IAST ast) {
 		IExpr temp;
 		IAST result = F.NIL;

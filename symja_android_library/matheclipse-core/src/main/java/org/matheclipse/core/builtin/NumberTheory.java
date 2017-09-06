@@ -2498,7 +2498,7 @@ public final class NumberTheory {
 
 			IExpr x = F.NIL;
 			if (arg1.isInteger()) {
-				x = (IInteger) arg1;
+				x = arg1;
 			} else if (arg1.isSignedNumber() && arg1.isPositive()) {
 				x = engine.evaluate(((ISignedNumber) arg1).floorFraction());
 			} else {

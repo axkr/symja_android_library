@@ -353,6 +353,7 @@ public abstract class Solver implements Runnable {
 			this.timeout = timeout;
 		}
 
+		@Override
 		public void run() {
 			clearBest();
 			for (start(timeout); waitNext(); resume()) {
@@ -571,6 +572,7 @@ public abstract class Solver implements Runnable {
 	 * The body of the solver. This method is called from {@link Solver#start}
 	 * methods.
 	 */
+	@Override
 	public abstract void run();
 
 	/**
@@ -680,6 +682,7 @@ public abstract class Solver implements Runnable {
 	 * 
 	 * @return the name of this solver
 	 */
+	@Override
 	public String toString() {
 		return name;
 	}

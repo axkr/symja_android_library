@@ -96,6 +96,7 @@ public class ASCIIPrettyPrinter3 {
 		fractionPrinted = true;
 	}
 
+	@Override
 	public String toString() {
 		return line1.toString() + "\n" + line2.toString() + "\n" + line3.toString();
 	}

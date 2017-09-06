@@ -17,6 +17,7 @@ public class Not extends AbstractConverter {
 	 * @param f
 	 *            The math function which should be converted to MathML
 	 */
+	@Override
 	public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 		// <mrow><mo>&not;</mo>{0}</mrow>
 		if (f.size() != 2) {

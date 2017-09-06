@@ -71,6 +71,7 @@ public class Share extends AbstractFunctionEvaluator {
 			fCounter = 0;
 		}
 
+		@Override
 		public IExpr visit(IInteger element) {
 			return null;
 		}
@@ -79,6 +80,7 @@ public class Share extends AbstractFunctionEvaluator {
 		 * 
 		 * @return <code>F.NIL</code>, if no evaluation is possible
 		 */
+		@Override
 		public IExpr visit(IFraction element) {
 			return null;
 		}
@@ -87,6 +89,7 @@ public class Share extends AbstractFunctionEvaluator {
 		 * 
 		 * @return <code>F.NIL</code>, if no evaluation is possible
 		 */
+		@Override
 		public IExpr visit(IComplex element) {
 			return null;
 		}
@@ -95,6 +98,7 @@ public class Share extends AbstractFunctionEvaluator {
 		 * 
 		 * @return <code>F.NIL</code>, if no evaluation is possible
 		 */
+		@Override
 		public IExpr visit(INum element) {
 			return null;
 		}
@@ -103,6 +107,7 @@ public class Share extends AbstractFunctionEvaluator {
 		 * 
 		 * @return <code>F.NIL</code>, if no evaluation is possible
 		 */
+		@Override
 		public IExpr visit(IComplexNum element) {
 			return null;
 		}
@@ -111,6 +116,7 @@ public class Share extends AbstractFunctionEvaluator {
 		 * 
 		 * @return <code>F.NIL</code>, if no evaluation is possible
 		 */
+		@Override
 		public IExpr visit(ISymbol element) {
 			return null;
 		}
@@ -119,6 +125,7 @@ public class Share extends AbstractFunctionEvaluator {
 		 * 
 		 * @return <code>F.NIL</code>, if no evaluation is possible
 		 */
+		@Override
 		public IExpr visit(IPattern element) {
 			return null;
 		}
@@ -127,6 +134,7 @@ public class Share extends AbstractFunctionEvaluator {
 		 * 
 		 * @return <code>F.NIL</code>, if no evaluation is possible
 		 */
+		@Override
 		public IExpr visit(IPatternSequence element) {
 			return null;
 		}
@@ -135,6 +143,7 @@ public class Share extends AbstractFunctionEvaluator {
 		 * 
 		 * @return <code>F.NIL</code>, if no evaluation is possible
 		 */
+		@Override
 		public IExpr visit(IStringX element) {
 			return null;
 		}
@@ -148,6 +157,7 @@ public class Share extends AbstractFunctionEvaluator {
 			return visitAST(ast);
 		}
 
+		@Override
 		protected IExpr visitAST(IAST ast) {
 			IExpr temp;
 			boolean evaled = false;

@@ -39,14 +39,17 @@ public class Equals extends Constraint {
 		this.v = v.clone();
 	}
 
+	@Override
 	public Constraint copy(Network net) {
 		return new Equals(net, Constraint.copy(v, net));
 	}
 
+	@Override
 	public boolean isModified() {
 		return isModified(v);
 	}
 
+	@Override
 	public boolean satisfy(Trail trail) {
 		Domain d = v[0].getDomain();
 		for (int i = 1; i < v.length; i++) {
@@ -60,6 +63,7 @@ public class Equals extends Constraint {
 		return true;
 	}
 
+	@Override
 	public String toString() {
 		return "Equals(" + Constraint.toString(v) + ")";
 	}

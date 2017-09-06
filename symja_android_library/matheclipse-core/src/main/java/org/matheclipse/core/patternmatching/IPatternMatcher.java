@@ -20,6 +20,7 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 
 		private static final long serialVersionUID = 8357661139299702326L;
 
+		@Override
 		public int compare(final IPatternMatcher o1, final IPatternMatcher o2) {
 			if (o1 == o2) {
 				return 0;
@@ -169,6 +170,7 @@ public abstract class IPatternMatcher implements Predicate<IExpr>, Cloneable, Se
 	 * @return <code>true</code> if the <code>expr</code> matches the
 	 *         pattern-matchings left-hand-side expression.
 	 */
+	@Override
 	public abstract boolean test(IExpr expr);
 	
 	/**

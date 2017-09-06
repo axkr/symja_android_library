@@ -47,6 +47,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tagEnd(buf, "mo");
 		}
 
+		@Override
 		public String toString() {
 			return fOperator;
 		}
@@ -87,6 +88,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		init();
 	}
 
+	@Override
 	public void convertDouble(final StringBuilder buf, final INum d, final int precedence) {
 		if (d.isNegative() && (precedence > plusPrec)) {
 			tagStart(buf, "mrow");
@@ -104,7 +106,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	public void convertApcomplex(final StringBuilder buf, final Apcomplex ac, final int precedence) {
 		Apfloat realPart = ac.real();
 		Apfloat imaginaryPart = ac.imag();
-		final boolean isImNegative = imaginaryPart.compareTo(Apfloat.ZERO) < 0;
+		final boolean isImNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
 
 		tagStart(buf, "mrow");
 		tagStart(buf, "mn");
@@ -128,6 +130,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		tagEnd(buf, "mrow");
 	}
 
+	@Override
 	public void convertDoubleComplex(final StringBuilder buf, final IComplexNum dc, final int precedence) {
 		if (dc instanceof ApcomplexNum) {
 			convertApcomplex(buf, ((ApcomplexNum) dc).apcomplexValue(), precedence);
@@ -159,6 +162,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		tagEnd(buf, "mrow");
 	}
 
+	@Override
 	public void convertInteger(final StringBuilder buf, final IInteger i, final int precedence) {
 		if (i.isNegative() && (precedence > plusPrec)) {
 			tagStart(buf, "mrow");
@@ -199,6 +203,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		}
 	}
 
+	@Override
 	public void convertFraction(final StringBuilder buf, final IRational f, final int precedence) {
 		if (f.isNegative() && (precedence > plusPrec)) {
 			tagStart(buf, "mrow");
@@ -224,6 +229,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		}
 	}
 
+	@Override
 	public void convertComplex(final StringBuilder buf, final IComplex c, final int precedence) {
 		boolean isReZero = c.getRealPart().isZero();
 		IRational imaginaryPart = c.getImaginaryPart();
@@ -261,6 +267,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		tagEnd(buf, "mrow");
 	}
 
+	@Override
 	public void convertString(final StringBuilder buf, final String str) {
 		String[] splittedStr = str.split("\\n");
 		for (int i = 0; i < splittedStr.length; i++) {
@@ -272,6 +279,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		
 	}
 
+	@Override
 	public void convertSymbol(final StringBuilder buf, final ISymbol sym) {
 		String headStr = sym.getSymbolName();
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
@@ -296,6 +304,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		}
 	}
 
+	@Override
 	public void convertHead(final StringBuilder buf, final IExpr obj) {
 		if (obj instanceof ISymbol) {
 			String headStr = ((ISymbol) obj).getSymbolName();
@@ -315,6 +324,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		convert(buf, obj, 0);
 	}
 
+	@Override
 	public void convert(final StringBuilder buf, final IExpr o, final int precedence) {
 		String str = CONSTANT_EXPRS.get(o);
 		if (str != null) {
@@ -333,7 +343,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			}
 			IExpr h = ast.head();
 			if (h.isSymbol()) {
-				IConverter converter = CONVERTERS.get((ISymbol) h);
+				IConverter converter = CONVERTERS.get(h);
 				// IConverter converter = reflection(((ISymbol) h).getSymbolName());
 				if (converter != null) {
 					converter.setFactory(this);

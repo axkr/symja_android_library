@@ -29,13 +29,16 @@ public class SimpleSequence extends AbstractSequence {
 	/**
 	 * This method is not used in this sequence implementation.
 	 */
+	@Override
 	public void setListSize(int size) {
 	}
 
+	@Override
 	public int getEnd() {
 		return fEndOffset + 1;
 	}
 
+	@Override
 	public int getStart() {
 		return fStartOffset;
 	}

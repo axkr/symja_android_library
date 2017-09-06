@@ -41,6 +41,7 @@ public class BinaryBindIth1st implements IUnaryIndexFunction<IExpr, IExpr> {
 	 * @param firstArg
 	 *          the i-th argument in the new AST
 	 */
+	@Override
 	public IExpr apply(int index, final IExpr firstArg) {
 		final IAST ast2 = fConstant2.setAtCopy(1, firstArg);
 		return fConstant1.setAtCopy(index, ast2);

@@ -103,11 +103,13 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 		}
 	}
 
+	@Override
 	public boolean add(IExpr element) {
 		fList.append(fEnd++, element);
 		return true;
 	}
 
+	@Override
 	public void add(int location, IExpr element) {
 		if (location < fStart && location > fEnd) {
 			throw new IndexOutOfBoundsException(

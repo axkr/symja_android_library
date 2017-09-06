@@ -255,7 +255,7 @@ public final class Combinatoric {
 				}
 
 				return F.Divide(F.integer((long) n10 + (long) n01),
-						F.integer(2L * (long) n11 + (long) n10 + (long) n01));
+						F.integer(2L * n11 + n10 + n01));
 			}
 			return F.NIL;
 		}
@@ -461,7 +461,7 @@ public final class Combinatoric {
 					return F.NIL;
 				}
 
-				return F.Divide(F.integer((long) n10 + (long) n01), F.integer((long) n11 + (long) n10 + (long) n01));
+				return F.Divide(F.integer((long) n10 + (long) n01), F.integer((long) n11 + (long) n10 + n01));
 			}
 			return F.NIL;
 		}
@@ -1219,7 +1219,7 @@ public final class Combinatoric {
 				if (r == 0L) {
 					return F.C0;
 				}
-				return F.Divide(F.integer(r), F.integer((long) n11 + (long) n00 + (long) r));
+				return F.Divide(F.integer(r), F.integer((long) n11 + (long) n00 + r));
 			}
 			return F.NIL;
 		}
@@ -1268,7 +1268,7 @@ public final class Combinatoric {
 					return F.NIL;
 				}
 
-				long r = (long) n10 + (long) n01 + (long) n00;
+				long r = (long) n10 + (long) n01 + n00;
 				if (r == 0L) {
 					return F.C0;
 				}
@@ -1328,7 +1328,7 @@ public final class Combinatoric {
 				if (r == 0L) {
 					return F.C0;
 				}
-				return F.Divide(F.integer(r), F.integer((long) n11 + r));
+				return F.Divide(F.integer(r), F.integer(n11 + r));
 			}
 			return F.NIL;
 		}
@@ -1598,7 +1598,7 @@ public final class Combinatoric {
 					return F.NIL;
 				}
 
-				long r = 2L * (long) n10 * (long) n01;
+				long r = 2L * n10 * n01;
 				if (r == 0L) {
 					return F.C0;
 				}

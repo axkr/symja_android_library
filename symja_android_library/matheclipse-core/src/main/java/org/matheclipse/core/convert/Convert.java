@@ -121,6 +121,7 @@ public class Convert {
 	 * @throws IndexOutOfBoundsException
 	 * @deprecated use {@link IExpr#toRealMatrix()}
 	 */
+	@Deprecated
 	public static RealMatrix list2RealMatrix(final IAST listMatrix)
 			throws ClassCastException, IndexOutOfBoundsException {
 		if (listMatrix == null) {
@@ -157,6 +158,7 @@ public class Convert {
 	 * @throws IndexOutOfBoundsException
 	 * @deprecated use {@link IExpr#toRealVector()}
 	 */
+	@Deprecated
 	public static RealVector list2RealVector(final IAST listVector)
 			throws ClassCastException, IndexOutOfBoundsException {
 		if (listVector instanceof ASTRealVector) {

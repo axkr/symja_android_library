@@ -15,6 +15,7 @@ public class PatternsTest extends AbstractTestCase {
 		super(name);
 	}
 
+	@Override
 	public void check(String evalString, String expectedResult) {
 		check(fScriptEngine, evalString, expectedResult, -1);
 	}

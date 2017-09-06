@@ -601,6 +601,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * @return script compatible representation for this Element.
 	 * @see edu.jas.structure.Element#toScript()
 	 */
+	@Override
 	public String toScript() {
 		StringBuilder s = new StringBuilder();
 		switch (Scripting.getLang()) {
@@ -775,6 +776,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * 
 	 * @return true if this ring is commutative, else false.
 	 */
+	@Override
 	public boolean isCommutative() {
 		return coFac.isCommutative();
 	}
@@ -784,6 +786,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * 
 	 * @return true if this ring is associative, else false.
 	 */
+	@Override
 	public boolean isAssociative() {
 		return coFac.isAssociative();
 	}
@@ -793,6 +796,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * 
 	 * @return false.
 	 */
+	@Override
 	public boolean isField() {
 		if (isField > 0) {
 			return true;
@@ -813,6 +817,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * 
 	 * @return characteristic of this ring.
 	 */
+	@Override
 	public java.math.BigInteger characteristic() {
 		return coFac.characteristic();
 	}
@@ -860,6 +865,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 *            long.
 	 * @return a GenPolynomial&lt;C&gt;.
 	 */
+	@Override
 	public ExprPolynomial fromInteger(long a) {
 		return new ExprPolynomial(this, coFac.fromInteger(a), evzero);
 	}
@@ -871,6 +877,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 *            BigInteger.
 	 * @return a GenPolynomial&lt;C&gt;.
 	 */
+	@Override
 	public ExprPolynomial fromInteger(BigInteger a) {
 		return new ExprPolynomial(this, coFac.fromInteger(a), evzero);
 	}
@@ -881,6 +888,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * @param c
 	 * @return a copy of c.
 	 */
+	@Override
 	public ExprPolynomial copy(ExprPolynomial c) {
 		// System.out.println("GP copy = " + this);
 		return new ExprPolynomial(this, c.val);
@@ -955,6 +963,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * @return list of generators for the algebraic structure.
 	 * @see edu.jas.structure.ElemFactory#generators()
 	 */
+	@Override
 	public List<ExprPolynomial> generators() {
 		List<? extends IExpr> cogens = coFac.generators();
 		List<? extends ExprPolynomial> univs = univariateList();
@@ -990,6 +999,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * @return true if this structure is finite, else false.
 	 * @see edu.jas.structure.ElemFactory#isFinite()
 	 */
+	@Override
 	public boolean isFinite() {
 		return (nvar == 0) && coFac.isFinite();
 	}
@@ -1460,6 +1470,7 @@ class GenPolynomialIterator implements Iterator<ExprPolynomial> {
 	 * 
 	 * @return true if the iteration has more elements, else false.
 	 */
+	@Override
 	public boolean hasNext() {
 		return true;
 	}
@@ -1469,6 +1480,7 @@ class GenPolynomialIterator implements Iterator<ExprPolynomial> {
 	 * 
 	 * @return next polynomial.
 	 */
+	@Override
 	public synchronized ExprPolynomial next() {
 		ExprPolynomial res = current;
 		if (!itercoeff.hasNext()) {
@@ -1519,6 +1531,7 @@ class GenPolynomialIterator implements Iterator<ExprPolynomial> {
 	/**
 	 * Remove an element if allowed.
 	 */
+	@Override
 	public void remove() {
 		throw new UnsupportedOperationException("cannnot remove elements");
 	}
@@ -1573,7 +1586,7 @@ class GenPolynomialMonomialIterator implements Iterator<ExprPolynomial> {
 
 		List<IExpr> ec = iter.next();
 		List<Long> ecl = (List<Long>) ec.get(0);
-		IExpr c = (IExpr) ec.get(1); // zero
+		IExpr c = ec.get(1); // zero
 		ExpVectorLong e = ExpVectorLong.create(ecl);
 		// System.out.println("exp = " + e);
 		// System.out.println("coeffs = " + c);
@@ -1585,6 +1598,7 @@ class GenPolynomialMonomialIterator implements Iterator<ExprPolynomial> {
 	 * 
 	 * @return true if the iteration has more elements, else false.
 	 */
+	@Override
 	public boolean hasNext() {
 		return true;
 	}
@@ -1594,15 +1608,16 @@ class GenPolynomialMonomialIterator implements Iterator<ExprPolynomial> {
 	 * 
 	 * @return next polynomial.
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public synchronized ExprPolynomial next() {
 		ExprPolynomial res = current;
 
 		List<IExpr> ec = iter.next();
-		IExpr c = (IExpr) ec.get(1);
+		IExpr c = ec.get(1);
 		while (c.isZero()) { // zero already done in first next
 			ec = iter.next();
-			c = (IExpr) ec.get(1);
+			c = ec.get(1);
 		}
 		List<Long> ecl = (List<Long>) ec.get(0);
 		ExpVectorLong e = ExpVectorLong.create(ecl);
@@ -1616,6 +1631,7 @@ class GenPolynomialMonomialIterator implements Iterator<ExprPolynomial> {
 	/**
 	 * Remove an element if allowed.
 	 */
+	@Override
 	public void remove() {
 		throw new UnsupportedOperationException("cannnot remove elements");
 	}

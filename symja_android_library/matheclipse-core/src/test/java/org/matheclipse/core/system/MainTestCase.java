@@ -22,10 +22,12 @@ public class MainTestCase extends AbstractTestCase {
 		Config.SERVER_MODE = true;
 	}
 
+	@Override
 	public void check(String evalString, String expectedResult) {
 		check(fScriptEngine, evalString, expectedResult, -1);
 	}
 
+	@Override
 	public void check(ScriptEngine scriptEngine, String evalString, String expectedResult, int resultLength) {
 		try {
 			if (evalString.length() == 0 && expectedResult.length() == 0) {
@@ -44,10 +46,12 @@ public class MainTestCase extends AbstractTestCase {
 		}
 	}
 
+	@Override
 	public void check(IAST ast, String strResult) {
 		check(EvalEngine.get(), true, ast, strResult);
 	}
 
+	@Override
 	public void check(EvalEngine engine, boolean configMode, IAST ast, String strResult) {
 		boolean mode = Config.SERVER_MODE;
 		try {

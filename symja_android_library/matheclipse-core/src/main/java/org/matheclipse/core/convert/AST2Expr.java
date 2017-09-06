@@ -203,6 +203,7 @@ public class AST2Expr {
 	 * @param tType
 	 * @deprecated
 	 */
+	@Deprecated
 	public AST2Expr(final Class<ASTNode> sType, final Class<IExpr> tType) {
 		this(false, EvalEngine.get());
 	}

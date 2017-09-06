@@ -64,6 +64,7 @@ public class Code implements Cloneable {
 	 * 
 	 * @return a copy of this code
 	 */
+	@Override
 	public Object clone() {
 		Code code = new Code();
 		code.conditions = conditions.clone();

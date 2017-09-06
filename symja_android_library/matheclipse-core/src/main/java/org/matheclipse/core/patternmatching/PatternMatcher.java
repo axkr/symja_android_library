@@ -285,7 +285,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 * @see org.matheclipse.core.eval.EvalEngine#evalSetAttributes()
 	 */
 	public static IExpr evalLeftHandSide(final IAST leftHandSide, final EvalEngine engine) {
-		return engine.evalSetAttributes((IAST) leftHandSide);
+		return engine.evalSetAttributes(leftHandSide);
 	}
 
 	/**
@@ -432,6 +432,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		return fLhsPatternExpr.compareTo(obj.fLhsPatternExpr);
 	}
 
+	@Override
 	public int equivalentLHS(final IPatternMatcher obj) {
 		final PatternMatcher pm = (PatternMatcher) obj;
 		if (fPatternMap.size() != pm.fPatternMap.size()) {
@@ -564,6 +565,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 * 
 	 * @return the priority
 	 */
+	@Override
 	public int getLHSPriority() {
 		return fLHSPriority;
 	}

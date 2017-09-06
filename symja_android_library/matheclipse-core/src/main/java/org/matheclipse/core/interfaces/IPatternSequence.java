@@ -12,6 +12,7 @@ public interface IPatternSequence extends IPatternObject, IExpr {
 	 * 
 	 * @return may return null;
 	 */
+	@Override
 	public IExpr getCondition();
 
 	/**

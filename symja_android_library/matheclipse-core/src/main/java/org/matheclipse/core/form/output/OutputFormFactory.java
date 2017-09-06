@@ -2,11 +2,7 @@ package org.matheclipse.core.form.output;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
-import java.util.Locale;
-
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
@@ -206,8 +202,8 @@ public class OutputFormFactory {
 		}
 		Apfloat realPart = dc.real();
 		Apfloat imaginaryPart = dc.imag();
-		boolean realZero = realPart.equals(Apfloat.ZERO);
-		boolean imaginaryZero = imaginaryPart.equals(Apfloat.ZERO);
+		boolean realZero = realPart.equals(Apcomplex.ZERO);
+		boolean imaginaryZero = imaginaryPart.equals(Apcomplex.ZERO);
 		if (realZero && imaginaryZero) {
 			convertDoubleString(buf, "0.0", ASTNodeFactory.PLUS_PRECEDENCE, false);
 		} else {
@@ -215,7 +211,7 @@ public class OutputFormFactory {
 				append(buf, String.valueOf(realPart));
 				if (!imaginaryZero) {
 					append(buf, "+I*");
-					final boolean isNegative = imaginaryPart.compareTo(Apfloat.ZERO) < 0;
+					final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
 					convertDoubleString(buf, String.valueOf(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE,
 							isNegative);
 				}
@@ -224,7 +220,7 @@ public class OutputFormFactory {
 					append(buf, "+");
 				}
 				append(buf, "I*");
-				final boolean isNegative = imaginaryPart.compareTo(Apfloat.ZERO) < 0;
+				final boolean isNegative = imaginaryPart.compareTo(Apcomplex.ZERO) < 0;
 				convertDoubleString(buf, String.valueOf(imaginaryPart), ASTNodeFactory.TIMES_PRECEDENCE, isNegative);
 			}
 		}

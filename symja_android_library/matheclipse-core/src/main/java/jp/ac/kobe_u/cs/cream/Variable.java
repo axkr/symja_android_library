@@ -204,6 +204,7 @@ public class Variable implements Cloneable {
 	 * 
 	 * @return the name of this variable
 	 */
+	@Override
 	public String toString() {
 		return name;
 	}

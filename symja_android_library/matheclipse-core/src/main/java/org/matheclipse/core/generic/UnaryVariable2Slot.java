@@ -30,6 +30,7 @@ public class UnaryVariable2Slot implements Function<IExpr, IExpr> {
 	 * 
 	 * @return <code>F.NIL</code>
 	 */
+	@Override
 	public IExpr apply(final IExpr firstArg) {
 		if (firstArg.isVariable()) {
 			if ((firstArg.toString().charAt(0) >= 'A') && (firstArg.toString().charAt(0) <= 'Z')) {

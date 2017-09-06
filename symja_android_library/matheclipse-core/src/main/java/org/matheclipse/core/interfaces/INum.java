@@ -21,6 +21,7 @@ public interface INum extends ISignedNumber {
 	public INum pow(INum val);
 
 	/** {@inheritDoc} */
+	@Override
 	public boolean isNumIntValue();
 
 	/**
@@ -38,6 +39,7 @@ public interface INum extends ISignedNumber {
 	 * @throws ArithmeticException
 	 *             if conversion to <code>int</code> is not possible.
 	 */
+	@Override
 	public int toInt() throws ArithmeticException;
 	
 	public long precision();

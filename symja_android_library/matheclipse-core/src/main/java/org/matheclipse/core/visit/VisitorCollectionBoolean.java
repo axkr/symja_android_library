@@ -22,6 +22,7 @@ abstract public class VisitorCollectionBoolean<T extends IExpr> extends Abstract
 		fCollection = collection;
 	}
 
+	@Override
 	public boolean visit(IAST list) {
 		int size=list.size();
 		list.forEach(x->x.accept(this), fHeadOffset);

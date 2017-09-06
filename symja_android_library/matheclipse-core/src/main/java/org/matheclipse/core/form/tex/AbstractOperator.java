@@ -33,6 +33,7 @@ public class AbstractOperator extends AbstractConverter {
 	} 
 
 	/** {@inheritDoc} */
+	@Override
 	public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
 		precedenceOpen(buf, precedence);
 		for (int i = 1; i < f.size(); i++) {

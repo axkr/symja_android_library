@@ -320,6 +320,7 @@ public class FractionSym extends AbstractFractionSym {
 	 * 
 	 * @return Next smaller integer of <code>this</code>.
 	 */
+	@Override
 	public IFraction fractionalPart() {
 		if (fDenominator == 1) {
 			return AbstractFractionSym.ZERO;

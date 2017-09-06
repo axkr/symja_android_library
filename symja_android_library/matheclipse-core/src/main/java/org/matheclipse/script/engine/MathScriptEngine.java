@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
-import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
@@ -49,10 +48,12 @@ public class MathScriptEngine extends AbstractScriptEngine {
 		fUtility = new EvalUtilities(fEngine, false, false);
 	}
 
+	@Override
 	public Bindings createBindings() {
 		return null;
 	}
 
+	@Override
 	public Object eval(final Reader reader, final ScriptContext context) throws ScriptException {
 		final BufferedReader f = new BufferedReader(reader);
 		final StringBuilder buff = new StringBuilder(1024);
@@ -69,6 +70,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
 		return null;
 	}
 
+	@Override
 	public Object eval(final String script, final ScriptContext context) throws ScriptException {
 		final ArrayList<ISymbol> list = new ArrayList<ISymbol>();
 		boolean relaxedSyntax = false;
@@ -191,6 +193,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
 		return buf.toString();
 	}
 
+	@Override
 	public ScriptEngineFactory getFactory() {
 		return new MathScriptEngineFactory();
 	}

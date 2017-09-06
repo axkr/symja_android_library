@@ -167,6 +167,7 @@ public class NILPointer extends AbstractAST {
 		return false;
 	}
 	
+	@Override
 	public int[] isMatrix(boolean setMatrixFormat) {
 		return null;
 	}

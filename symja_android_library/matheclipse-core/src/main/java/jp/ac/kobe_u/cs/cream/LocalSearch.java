@@ -152,6 +152,7 @@ public class LocalSearch extends Solver {
 		this.exchangeRate = exchangeRate;
 	}
 
+	@Override
 	public synchronized void stop() {
 		if (solver != null)
 			solver.stop();
@@ -196,6 +197,7 @@ public class LocalSearch extends Solver {
 		solver = null;
 	}
 
+	@Override
 	public void run() {
 		iterations = 0;
 		clearBest();
