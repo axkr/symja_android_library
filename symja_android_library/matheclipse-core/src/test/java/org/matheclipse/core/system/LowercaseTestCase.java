@@ -2505,6 +2505,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGCD() {
+		check("GCD(-2147483648)", "2147483648");
+		check("GCD(-2147483648, -2147483648/2)", "1073741824");
+		check("GCD(I)", "1");
+		check("GCD(-I)", "1");
+
 		check("GCD()", "0");
 		check("GCD(10)", "10");
 		check("GCD(2, 3, 5)", "1");
@@ -2513,6 +2518,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("GCD(b, a)", "GCD(a,b)");
 
 		check("GCD(20, 30)", "10");
+		check("GCD(-20, 30)", "10");
+		check("GCD(20, -30)", "10");
+		check("GCD(-20, -30)", "10");
 		check("GCD(10, y)", "GCD(10,y)");
 		check("GCD(4, {10, 11, 12, 13, 14})", "{2,1,4,1,2}");
 	}
@@ -3118,10 +3126,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLCM() {
+		// System.out.println(Integer.MIN_VALUE); =>-2147483648
+		check("LCM(-2147483648)", "2147483648");
 		check("LCM(I)", "1");
 		check("LCM(-I)", "1");
 		check("LCM(-2)", "2");
 		check("LCM(10)", "10");
+		check("LCM(-2147483648, -2147483648/2)", "2147483648");
 		check("LCM(2, 3, 5)", "30");
 		check("LCM(-3, 7)", "21");
 		check("LCM(4)", "4");

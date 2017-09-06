@@ -27,8 +27,8 @@ public class GCD extends AbstractArgMultiple {
 		if (ast.isAST0()) {
 			return F.C0;
 		} else if (ast.isAST1()) {
-			if (ast.arg1().isSignedNumber()) {
-				return ast.arg1();
+			if (ast.arg1().isExactNumber()) {
+				return ast.arg1().abs();
 			}
 		}
 		return super.evaluate(ast, engine);

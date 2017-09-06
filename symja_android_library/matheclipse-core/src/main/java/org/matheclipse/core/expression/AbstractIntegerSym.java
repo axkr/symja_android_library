@@ -8,6 +8,7 @@ import java.util.TreeMap;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -181,9 +182,10 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	}
 
 	/**
-	 * Returns the IInteger for the specified character sequence stated in the specified radix. The characters must all
-	 * be digits of the specified radix, except the first character which may be a plus sign <code>'+'</code> or a minus
-	 * sign <code>'-'</code> .
+	 * Returns the IInteger for the specified character sequence stated in the
+	 * specified radix. The characters must all be digits of the specified radix,
+	 * except the first character which may be a plus sign <code>'+'</code> or a
+	 * minus sign <code>'-'</code> .
 	 * 
 	 * @param integerString
 	 *            the character sequence to parse.
@@ -191,7 +193,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	 *            the radix to be used while parsing.
 	 * @return the corresponding large integer.
 	 * @throws NumberFormatException
-	 *             if the specified character sequence does not contain a parsable large integer.
+	 *             if the specified character sequence does not contain a parsable
+	 *             large integer.
 	 */
 	public static IInteger valueOf(final String integerString, final int radix) {
 		try {
@@ -285,7 +288,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	 * IntegerSym extended greatest common divisor.
 	 * 
 	 * @param that
-	 *            if that is of type IntegerSym calculate the extended GCD otherwise call <code>super#egcd(IExpr)</code>
+	 *            if that is of type IntegerSym calculate the extended GCD otherwise
+	 *            call <code>super#egcd(IExpr)</code>
 	 * 
 	 * @return [ gcd(this,S), a, b ] with a*this + b*S = gcd(this,S).
 	 */
@@ -526,7 +530,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	}
 
 	/**
-	 * See: <a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia - Jacobi symbol</a><br/>
+	 * See: <a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia - Jacobi
+	 * symbol</a><br/>
 	 * Book: Algorithmen Arbeitsbuch - D.Herrmann page 160
 	 * 
 	 * @param b
@@ -581,7 +586,8 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	}
 
 	/**
-	 * Returns the least common multiple of this large integer and the one specified.
+	 * Returns the least common multiple of this large integer and the one
+	 * specified.
 	 * 
 	 */
 	@Override
@@ -592,10 +598,10 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		if (this.equals(that)) {
 			return this.abs();
 		}
-		if (this.isOne()  ) {
+		if (this.isOne()) {
 			return that.abs();
 		}
-		if (that.isOne()  ) {
+		if (that.isOne()) {
 			return this.abs();
 		}
 		IInteger a = abs();
@@ -622,8 +628,9 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	public abstract IInteger negate();
 
 	/**
-	 * Split this integer into the nth-root (with prime factors less equal 1021) and the &quot;rest-factor&quot;, so
-	 * that <code>this== (nth-root ^ n) + rest</code>
+	 * Split this integer into the nth-root (with prime factors less equal 1021) and
+	 * the &quot;rest-factor&quot;, so that
+	 * <code>this== (nth-root ^ n) + rest</code>
 	 * 
 	 * @return <code>{nth-root, rest}</code>
 	 */
@@ -699,6 +706,15 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 				return F.C1;
 			}
 		}
+
+		if (this instanceof IntegerSym && exponent < 63) {
+			try {
+				return valueOf(ArithmeticUtils.pow((long)((IntegerSym) this).fIntValue, (int) exponent));
+			} catch (RuntimeException ex) {
+				//
+			}
+		}
+
 		long exp = exponent;
 		long b2pow = 0;
 

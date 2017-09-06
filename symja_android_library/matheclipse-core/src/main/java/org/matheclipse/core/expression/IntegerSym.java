@@ -560,10 +560,18 @@ public class IntegerSym extends AbstractIntegerSym {
 		return fIntValue == 0;
 	}
 
-	/**
-	 * 
-	 * @return
-	 */
+	@Override
+	public IInteger lcm(final IInteger that) {
+		if (that instanceof IntegerSym) {
+			try {
+				return valueOf(ArithmeticUtils.lcm(fIntValue, ((IntegerSym) that).fIntValue));
+			} catch (RuntimeException ex) {
+				//
+			}
+		}
+		return super.lcm(that);
+	}
+	
 	@Override
 	public long longValue() {
 		return fIntValue;
