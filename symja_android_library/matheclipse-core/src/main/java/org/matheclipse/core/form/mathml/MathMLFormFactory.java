@@ -420,6 +420,21 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 							convertArgs(buf, symbolOrAST, list);
 							return;
 						}
+						if (n>2){
+							IExpr symbolOrAST = headAST.arg1();
+							tagStart(buf, "msup");
+							convert(buf, symbolOrAST, 0);
+							tagStart(buf, "mrow");
+							tag(buf, "mo", "(");
+							tagStart(buf, "mn");
+							buf.append(Integer.toString(n));
+							tagEnd(buf, "mn");
+							tag(buf, "mo", ")");
+							tagEnd(buf, "mrow"); 
+							tagEnd(buf, "msup"); 
+							convertArgs(buf, symbolOrAST, list);
+							return;
+						}
 					} catch (ArithmeticException ae) {
 
 					}

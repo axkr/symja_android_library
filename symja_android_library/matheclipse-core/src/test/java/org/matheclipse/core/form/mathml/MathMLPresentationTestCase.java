@@ -154,8 +154,8 @@ public class MathMLPresentationTestCase extends TestCase {
 	}
 	
 	public void testSeries001() {
-		IExpr expr=EvalEngine.get().evaluate("Series(f(x),{x,a,2})");
-		check(expr, "<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>a</mi></mrow><mo>)</mo></mrow></mrow><mo>+</mo><mrow><mi>f</mi><mo>'</mo><mo>(</mo><mrow><mi>a</mi><mo>)</mo></mrow><mo>&#0183;</mo><mrow><mrow><mo>(</mo><mi>x</mi><mo>-</mo><mi>a</mi><mo>)</mo></mrow></mrow></mrow><mo>+</mo><mfrac><mrow><mi>f</mi><mo>''</mo><mo>(</mo><mrow><mi>a</mi><mo>)</mo></mrow><mo>&#0183;</mo><msup><mrow><mrow><mo>(</mo><mi>x</mi><mo>-</mo><mi>a</mi><mo>)</mo></mrow></mrow><mn>2</mn></msup></mrow><mn>2</mn></mfrac><mo>+</mo><msup><mrow><mi>O</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mrow><mi>x</mi><mo>-</mo><mi>a</mi></mrow></mrow><mo>)</mo></mrow></mrow><mn>3</mn></msup></mrow>");
+		IExpr expr=EvalEngine.get().evaluate("Series(f(x),{x,a,3})");
+		check(expr, "<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>a</mi></mrow><mo>)</mo></mrow></mrow><mo>+</mo><mrow><mi>f</mi><mo>'</mo><mo>(</mo><mrow><mi>a</mi><mo>)</mo></mrow><mo>&#0183;</mo><mrow><mrow><mo>(</mo><mi>x</mi><mo>-</mo><mi>a</mi><mo>)</mo></mrow></mrow></mrow><mo>+</mo><mfrac><mrow><mi>f</mi><mo>''</mo><mo>(</mo><mrow><mi>a</mi><mo>)</mo></mrow><mo>&#0183;</mo><msup><mrow><mrow><mo>(</mo><mi>x</mi><mo>-</mo><mi>a</mi><mo>)</mo></mrow></mrow><mn>2</mn></msup></mrow><mn>2</mn></mfrac><mo>+</mo><mfrac><mrow><msup><mi>f</mi><mrow><mo>(</mo><mn>3</mn><mo>)</mo></mrow></msup><mo>(</mo><mrow><mi>a</mi><mo>)</mo></mrow><mo>&#0183;</mo><msup><mrow><mrow><mo>(</mo><mi>x</mi><mo>-</mo><mi>a</mi><mo>)</mo></mrow></mrow><mn>3</mn></msup></mrow><mn>6</mn></mfrac><mo>+</mo><msup><mrow><mi>O</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mrow><mi>x</mi><mo>-</mo><mi>a</mi></mrow></mrow><mo>)</mo></mrow></mrow><mn>4</mn></msup></mrow>");
 		
 	}
 
