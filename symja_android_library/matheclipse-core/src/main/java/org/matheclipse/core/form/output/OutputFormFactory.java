@@ -1099,8 +1099,8 @@ public class OutputFormFactory {
 					exp = F.fraction(nmin + i - 1L, den).normalize();
 					pow = x.subtract(x0).power(exp);
 					call = convertSeriesDataArg(tempBuffer, list.get(i), pow, call);
-				}
-				plusArg = F.Power(F.O(x), F.fraction(nmax, den).normalize());
+				} 
+				plusArg = F.Power(F.O(x.subtract(x0)), F.fraction(nmax, den).normalize());
 				if (!plusArg.isZero()) {
 					convertPlusArgument(tempBuffer, plusArg, call);
 					call = PLUS_CALL;

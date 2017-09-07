@@ -11,7 +11,8 @@ import org.matheclipse.parser.client.operator.ASTNodeFactory;
  * Operator function conversions
  */
 public class Plus extends MMLOperator {
-
+    public final static Plus CONST = new Plus();
+    
 	public Plus() {
 		super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence(), "mrow", "+");
 	}

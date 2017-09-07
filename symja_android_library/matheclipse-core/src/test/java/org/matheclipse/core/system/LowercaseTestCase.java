@@ -5812,7 +5812,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSeries() {
 		// check("FullForm(Series(Exp(x),{x,0,10}))", "");
 		// check("Series(Sin(Sqrt(x)), {x, 0, 5})", "");
-		check("Series(f(x),{x,0,3})", "f(0)+f'(0)*x+f''(0)/2*x^2+Derivative(3)[f][0]/6*x^3+O(x)^4");
+		check("Series(f(x),{x,a,3})", "f(a)+f'(a)*(-a+x)+f''(a)/2*(-a+x)^2+Derivative(3)[f][a]/6*(-a+x)^3+O(-a+x)^4");
 		check("Series(Exp(x),{x,0,2})", "1+x+x^2/2+O(x)^3");
 		check("Series(Exp(f(x)),{x,0,2})", "E^f(0)+E^f(0)*f'(0)*x+1/2*(E^f(0)*f'(0)^2+E^f(0)*f''(0))*x^2+O(x)^3");
 		check("Series(Exp(x),{x,0,5})", "1+x+x^2/2+x^3/6+x^4/24+x^5/120+O(x)^6");
@@ -6751,6 +6751,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTaylor() {
+		check("Taylor(f(x),{x,a,2})", "f(a)+(-a+x)*f'(a)+1/2*(-a+x)^2*f''(a)");
 		check("Taylor(ArcSin(x),{x,0,10})", "x+x^3/6+3/40*x^5+5/112*x^7+35/1152*x^9");
 		check("Limit(ArcSin(x)/x,x->0)", "1");
 		check("(-0^2+1)^(-1/2)", "1");

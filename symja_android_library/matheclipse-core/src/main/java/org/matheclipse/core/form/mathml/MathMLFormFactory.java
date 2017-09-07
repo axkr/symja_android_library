@@ -12,6 +12,7 @@ import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.form.mathml.reflection.Plus;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
@@ -20,6 +21,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -33,7 +35,16 @@ import org.matheclipse.parser.client.operator.PrefixOperator;
  * 
  */
 public class MathMLFormFactory extends AbstractMathMLFormFactory {
+	/**
+	 * The conversion wasn't called with an operator preceding the <code>IExpr</code> object.
+	 */
+	public final static boolean NO_PLUS_CALL = false;
 
+	/**
+	 * The conversion was called with a &quot;+&quot; operator preceding the <code>IExpr</code> object.
+	 */
+	public final static boolean PLUS_CALL = true;
+	
 	class Operator {
 		String fOperator;
 
@@ -276,7 +287,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tagEnd(buf, "mtext");
 			buf.append("<mspace linebreak='newline' />");
 		}
-		
+
 	}
 
 	@Override
@@ -442,6 +453,11 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		if (head.equals(F.Part) && (list.size() >= 3)) {
 			convertPart(buf, list);
 			return;
+		}
+		if (head.equals(F.SeriesData) && (list.size() == 7)) {
+			if (convertSeriesData(buf, list, precedence)) {
+				return;
+			}
 		}
 		if (head.equals(F.Slot) && (list.isAST1()) && (list.arg1() instanceof IInteger)) {
 			convertSlot(buf, list);
@@ -695,8 +711,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	}
 
 	/**
-	 * This method will only be called if <code>list.isAST2()==true</code> and the
-	 * head equals "Part".
+	 * This method will only be called if <code>list.isAST2()==true</code> and the head equals "Part".
 	 * 
 	 * @param buf
 	 * @param list
@@ -725,6 +740,99 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		tagEnd(buf, "mrow");
 	}
 
+	/**
+	 * Convert a <code>SeriesData[...]</code> expression.
+	 * 
+	 * @param buf
+	 * @param seriesData
+	 *            <code>SeriesData[x, x0, list, nmin, nmax, den]</code> expression
+	 * @param precedence
+	 *            the precedence of the parent expression
+	 * @return <code>true</code> if the conversion was successful
+	 * @throws IOException
+	 */
+	public boolean convertSeriesData(final StringBuilder buf, final IAST seriesData, final int precedence) {
+		int operPrecedence = ASTNodeFactory.PLUS_PRECEDENCE;
+		StringBuilder tempBuffer = new StringBuilder();
+		tagStart(tempBuffer, "mrow");
+		if (operPrecedence < precedence) {
+			tag(tempBuffer, "mo", "(");
+		}
+		try {
+			IExpr plusArg;
+			// SeriesData[x, x0, list, nmin, nmax, den]
+			IExpr x = seriesData.arg1();
+			IExpr x0 = seriesData.arg2();
+			IAST list = (IAST) seriesData.arg3();
+			long nmin = ((IInteger) seriesData.arg4()).toLong();
+			long nmax = ((IInteger) seriesData.arg5()).toLong();
+			long den = ((IInteger) seriesData.get(6)).toLong();
+			int size = list.size();
+			boolean call = NO_PLUS_CALL;
+			if (size > 0) {
+				INumber exp = F.fraction(nmin, den).normalize();
+				IExpr pow = x.subtract(x0).power(exp);
+				call = convertSeriesDataArg(tempBuffer, list.arg1(), pow, call);
+				for (int i = 2; i < size; i++) {
+					tag(tempBuffer, "mo", "+");
+					exp = F.fraction(nmin + i - 1L, den).normalize();
+					pow = x.subtract(x0).power(exp);
+					call = convertSeriesDataArg(tempBuffer, list.get(i), pow, call);
+				}
+				plusArg = F.Power(F.O(x.subtract(x0)), F.fraction(nmax, den).normalize());
+				if (!plusArg.isZero()) {
+					tag(tempBuffer, "mo", "+");
+					convert (tempBuffer, plusArg, 0);
+					call = PLUS_CALL;
+				} 
+			} else {
+				return false;
+			}
+		} catch (Exception ex) {
+			return false;
+		}
+		if (operPrecedence < precedence) {
+			tag(tempBuffer, "mo", ")");
+		}
+		tagEnd(tempBuffer, "mrow");
+		buf.append(tempBuffer);
+		return true;
+	}
+
+	/**
+	 * Convert a factor of a <code>SeriesData</code> object.
+	 * 
+	 * @param buf
+	 * @param coefficient
+	 *            the coefficient expression of the factor
+	 * @param pow
+	 *            the power expression of the factor
+	 * @param call
+	 * @param operPrecedence
+	 * @return the current call status
+	 * @throws IOException
+	 */
+	private boolean convertSeriesDataArg(StringBuilder buf, IExpr coefficient, IExpr pow, boolean call)
+			throws IOException {
+		IExpr plusArg;
+		if (coefficient.isZero()) {
+			plusArg = F.C0;
+		} else if (coefficient.isOne()) {
+			plusArg = pow;
+		} else {
+			if (pow.isOne()) {
+				plusArg = coefficient;
+			} else {
+				plusArg = F.binary(F.Times, coefficient, pow);
+			}
+		}
+		if (!plusArg.isZero()) {
+			convert(buf, plusArg, 0);
+			call = PLUS_CALL;
+		}
+		return call;
+	}
+	
 	public void convertSlot(final StringBuilder buf, final IAST list) {
 		try {
 			final int slot = ((ISignedNumber) list.arg1()).toInt();
@@ -914,7 +1022,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		CONVERTERS.put(F.MatrixForm, new org.matheclipse.core.form.mathml.reflection.MatrixForm());
 		CONVERTERS.put(F.Not, new org.matheclipse.core.form.mathml.reflection.Not());
 		CONVERTERS.put(F.Or, new MMLOperator(ASTNodeFactory.MMA_STYLE_FACTORY.get("Or").getPrecedence(), "&#x2228;"));
-		CONVERTERS.put(F.Plus, new org.matheclipse.core.form.mathml.reflection.Plus());
+		CONVERTERS.put(F.Plus, Plus.CONST);
 		CONVERTERS.put(F.Power, new org.matheclipse.core.form.mathml.reflection.Power());
 		CONVERTERS.put(F.Product, new org.matheclipse.core.form.mathml.reflection.Product());
 		CONVERTERS.put(F.Rational, new org.matheclipse.core.form.mathml.reflection.Rational());

@@ -19,12 +19,7 @@ public class Taylor extends AbstractFunctionEvaluator {
 		if (ast.isAST2() && (ast.arg2().isVector() == 3)) {
 
 			IAST list = (IAST) ast.arg2();
-			final int lowerLimit = Validate.checkIntType(list, 2, Integer.MIN_VALUE);
-			if (lowerLimit != 0) {
-				// TODO support other cases than 0
-				return F.NIL;
-			}
-			final int upperLimit = Validate.checkIntType(list, 3, Integer.MIN_VALUE);
+			final int upperLimit = Validate.checkIntType(list, 3, 0);
 			if (upperLimit < 0) {
 				return F.NIL;
 			}
