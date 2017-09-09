@@ -37,7 +37,7 @@ public class MathMLPresentationTestCase extends TestCase {
 
 		check("f(x)[y][z]",
 				"<mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow><mo>[</mo><mi>y</mi><mo>]</mo><mo>[</mo><mi>z</mi><mo>]</mo>");
-		check("f'(x)", "<mi>f</mi><mo>'</mo><mo>(</mo><mrow><mi>x</mi><mo>)</mo></mrow>");
+		check("f'(x)", "<mrow><mi>f</mi><mo>'</mo><mrow><mo>(</mo><mi>x</mi><mo>)</mo></mrow></mrow>");
 		check(F.Slot1, "<mi>#1</mi>");
 		check(F.SlotSequence(2), "<mi>##2</mi>");
 		Apcomplex c = new Apcomplex("(-0.5,-4.0)");
@@ -153,9 +153,15 @@ public class MathMLPresentationTestCase extends TestCase {
 		check("-Infinity", "<mrow><mo>-</mo><mi>&#x221E;</mi></mrow>");
 	}
 	
+	public void testDerivatve001() {
+		IExpr expr=EvalEngine.get().evaluate("1/f''(x)");
+		check(expr, "<mfrac><mn>1</mn><mrow><mi>f</mi><mo>''</mo><mrow><mo>(</mo><mi>x</mi><mo>)</mo></mrow></mrow></mfrac>");
+		
+	}
+	
 	public void testSeries001() {
 		IExpr expr=EvalEngine.get().evaluate("Series(f(x),{x,a,3})");
-		check(expr, "<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>a</mi></mrow><mo>)</mo></mrow></mrow><mo>+</mo><mrow><mi>f</mi><mo>'</mo><mo>(</mo><mrow><mi>a</mi><mo>)</mo></mrow><mo>&#0183;</mo><mrow><mrow><mo>(</mo><mi>x</mi><mo>-</mo><mi>a</mi><mo>)</mo></mrow></mrow></mrow><mo>+</mo><mfrac><mrow><mi>f</mi><mo>''</mo><mo>(</mo><mrow><mi>a</mi><mo>)</mo></mrow><mo>&#0183;</mo><msup><mrow><mrow><mo>(</mo><mi>x</mi><mo>-</mo><mi>a</mi><mo>)</mo></mrow></mrow><mn>2</mn></msup></mrow><mn>2</mn></mfrac><mo>+</mo><mfrac><mrow><msup><mi>f</mi><mrow><mo>(</mo><mn>3</mn><mo>)</mo></mrow></msup><mo>(</mo><mrow><mi>a</mi><mo>)</mo></mrow><mo>&#0183;</mo><msup><mrow><mrow><mo>(</mo><mi>x</mi><mo>-</mo><mi>a</mi><mo>)</mo></mrow></mrow><mn>3</mn></msup></mrow><mn>6</mn></mfrac><mo>+</mo><msup><mrow><mi>O</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mrow><mi>x</mi><mo>-</mo><mi>a</mi></mrow></mrow><mo>)</mo></mrow></mrow><mn>4</mn></msup></mrow>");
+		check(expr, "<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>a</mi></mrow><mo>)</mo></mrow></mrow><mo>+</mo><mrow><mrow><mi>f</mi><mo>'</mo><mrow><mo>(</mo><mi>a</mi><mo>)</mo></mrow></mrow><mo>&#0183;</mo><mrow><mrow><mo>(</mo><mi>x</mi><mo>-</mo><mi>a</mi><mo>)</mo></mrow></mrow></mrow><mo>+</mo><mfrac><mrow><mrow><mi>f</mi><mo>''</mo><mrow><mo>(</mo><mi>a</mi><mo>)</mo></mrow></mrow><mo>&#0183;</mo><msup><mrow><mrow><mo>(</mo><mi>x</mi><mo>-</mo><mi>a</mi><mo>)</mo></mrow></mrow><mn>2</mn></msup></mrow><mn>2</mn></mfrac><mo>+</mo><mfrac><mrow><mrow><msup><mi>f</mi><mrow><mo>(</mo><mn>3</mn><mo>)</mo></mrow></msup><mrow><mo>(</mo><mi>a</mi><mo>)</mo></mrow></mrow><mo>&#0183;</mo><msup><mrow><mrow><mo>(</mo><mi>x</mi><mo>-</mo><mi>a</mi><mo>)</mo></mrow></mrow><mn>3</mn></msup></mrow><mn>6</mn></mfrac><mo>+</mo><msup><mrow><mi>O</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mrow><mi>x</mi><mo>-</mo><mi>a</mi></mrow></mrow><mo>)</mo></mrow></mrow><mn>4</mn></msup></mrow>");
 		
 	}
 

@@ -47,14 +47,26 @@ public class Power extends MMLOperator {
 			}
 		}
 		if (useMROOT > 0 && exp.isOne()) {
-			fFactory.convert(buf, arg1, 0); 
+			fFactory.convert(buf, arg1, 0);
 		} else {
-			fFactory.tagStart(buf, "msup");
-			precedenceOpen(buf, precedence);
-			fFactory.convert(buf, arg1, fPrecedence);
-			fFactory.convert(buf, exp, fPrecedence);
-			precedenceClose(buf, precedence);
-			fFactory.tagEnd(buf, "msup"); 
+			if (exp.isNegative()) {
+				exp = exp.negate();
+				fFactory.tagStart(buf, "mfrac");
+				fFactory.convert(buf, F.C1, 0);
+				if (exp.isOne()) {
+					fFactory.convert(buf, arg1, 0);
+				} else {
+					convert(buf, F.Power(arg1, exp), 0);
+				}
+				fFactory.tagEnd(buf, "mfrac");
+			} else {
+				precedenceOpen(buf, precedence);
+				fFactory.tagStart(buf, "msup");
+				fFactory.convert(buf, arg1, fPrecedence);
+				fFactory.convert(buf, exp, fPrecedence);
+				fFactory.tagEnd(buf, "msup");
+				precedenceClose(buf, precedence);
+			}
 		}
 		if (useMROOT == 1) {
 			fFactory.tagEnd(buf, "msqrt");

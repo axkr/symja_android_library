@@ -410,6 +410,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 					try {
 						int n = ((IInteger) a1Head.arg1()).toInt();
 						if (n == 1 || n == 2) {
+							tagStart(buf, "mrow");
 							IExpr symbolOrAST = headAST.arg1();
 							convert(buf, symbolOrAST, 0);
 							if (n == 1) {
@@ -418,9 +419,11 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 								tag(buf, "mo", "''");
 							}
 							convertArgs(buf, symbolOrAST, list);
+							tagEnd(buf, "mrow");
 							return;
 						}
 						if (n>2){
+							tagStart(buf, "mrow");
 							IExpr symbolOrAST = headAST.arg1();
 							tagStart(buf, "msup");
 							convert(buf, symbolOrAST, 0);
@@ -433,6 +436,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 							tagEnd(buf, "mrow"); 
 							tagEnd(buf, "msup"); 
 							convertArgs(buf, symbolOrAST, list);
+							tagEnd(buf, "mrow");
 							return;
 						}
 					} catch (ArithmeticException ae) {
@@ -869,6 +873,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	}
 
 	public void convertArgs(final StringBuilder buf, IExpr head, final IAST function) {
+		tagStart(buf, "mrow");
 		if (head.isAST()) {
 			// append(buf, "[");
 			tag(buf, "mo", "[");
@@ -879,7 +884,6 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			// append(buf, "[");
 			tag(buf, "mo", "[");
 		}
-		tagStart(buf, "mrow");
 		final int functionSize = function.size();
 		if (functionSize > 1) {
 			convert(buf, function.arg1(), 0);
