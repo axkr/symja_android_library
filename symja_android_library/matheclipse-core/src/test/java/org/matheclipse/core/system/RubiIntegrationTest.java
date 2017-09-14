@@ -43,22 +43,7 @@ import static org.matheclipse.core.expression.F.m;
 import static org.matheclipse.core.expression.F.p;
 import static org.matheclipse.core.expression.F.v;
 import static org.matheclipse.core.expression.F.x;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.AbortRubi;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.ContentFactor;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.DeactivateTrig;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.EasyDQ;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.ExpandToSum;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.FixSimplify;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.FunctionOfTrig;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.FunctionOfTrigOfLinearQ;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.LinearQ;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.PolyQ;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.QuadraticMatchQ;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.RealNumericQ;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.RemoveContent;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.SimpFixFactor;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.SubstForFractionalPowerOfLinear;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.TrigSimplifyAux;
+import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.*;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -124,6 +109,10 @@ public class RubiIntegrationTest extends AbstractTestCase {
 
 	public void testRubi004() {
 		IAST ast;
+		
+		// ast = RemoveContentAux(Plus(Times(x, b), Times(x, c)), x);
+		// check(ast, "x");
+		
 		// ast = RemoveContent(Plus(Times(a, b), Times(a, c)), x);
 		// check(ast, "1");
 
