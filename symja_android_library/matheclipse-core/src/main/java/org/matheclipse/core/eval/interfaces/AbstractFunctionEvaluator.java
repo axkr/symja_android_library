@@ -80,7 +80,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	 * Check if the expression is canonical negative.
 	 * 
 	 * @param expression
-	 * @return the negated negative expression or <code>null</code> if a
+	 * @return the negated negative expression or  <code>F.NIL</code> if a
 	 *         negative expression couldn't be extracted.
 	 */
 	public static IExpr getNormalizedNegativeExpression(final IExpr expression) {

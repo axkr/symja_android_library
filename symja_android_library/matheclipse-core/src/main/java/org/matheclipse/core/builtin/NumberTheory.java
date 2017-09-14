@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.Factorial;
 import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Plus;
@@ -670,6 +671,7 @@ public final class NumberTheory {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			int size = ast.size();
+			IAST result = F.NIL;
 			if (size > 1) {
 				for (int i = 1; i < size; i++) {
 					IExpr expr = ast.get(i);
@@ -678,12 +680,22 @@ public final class NumberTheory {
 						if (temp.isZero()) {
 							return F.NIL;
 						}
-						continue;
+						return F.C0;
 					}
-					return F.NIL;
+					IExpr negated = AbstractFunctionEvaluator.getNormalizedNegativeExpression(expr);
+					if (negated.isPresent()) {
+						if (!result.isPresent()) {
+							result = F.ast(F.DiracDelta);
+						}
+						result.append(negated);
+					} else {
+						if (result.isPresent()) {
+							result.append(expr);
+						}
+					}
 				}
 			}
-			return F.C0;
+			return result;
 		}
 
 		@Override

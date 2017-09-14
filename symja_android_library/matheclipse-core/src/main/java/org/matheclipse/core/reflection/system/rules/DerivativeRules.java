@@ -72,6 +72,9 @@ public interface DerivativeRules {
     // Gamma->Gamma(#1)*PolyGamma(#1)
     Rule(Gamma,
       Times(Gamma(Slot1),PolyGamma(Slot1))),
+    // HeavisideTheta->DiracDelta(#1)
+    Rule(HeavisideTheta,
+      DiracDelta(Slot1)),
     // IntegerPart->0
     Rule(IntegerPart,
       C0),

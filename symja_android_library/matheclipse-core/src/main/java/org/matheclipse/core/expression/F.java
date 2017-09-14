@@ -3897,6 +3897,10 @@ public class F {
 		return new AST0(head);
 	}
 
+	public static IAST HeavisideTheta(final IExpr a0) {
+		return unaryAST1(HeavisideTheta, a0);
+	}
+
 	public static IAST Hold(final IExpr a0) {
 		return unaryAST1(Hold, a0);
 	}
@@ -4085,12 +4089,12 @@ public class F {
 							e.printStackTrace();
 						}
 					}
-					if (reader == null) {
-						InputStream systemPackage = F.class.getResourceAsStream("/System.mep");
-						if (systemPackage != null) {
-							reader = new InputStreamReader(systemPackage, "UTF_8");
-						}
-					}
+					// if (reader == null) {
+					// InputStream systemPackage = F.class.getResourceAsStream("/System.mep");
+					// if (systemPackage != null) {
+					// reader = new InputStreamReader(systemPackage, "UTF-8");
+					// }
+					// }
 					if (reader != null) {
 						org.matheclipse.core.builtin.function.Package.loadPackage(EvalEngine.get(), reader);
 					}
@@ -5406,7 +5410,7 @@ public class F {
 	public static IAST SlotSequence(final int i) {
 		return unaryAST1(SlotSequence, integer(i));
 	}
-	
+
 	public static IAST Solve(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Solve, a0, a1);
 	}

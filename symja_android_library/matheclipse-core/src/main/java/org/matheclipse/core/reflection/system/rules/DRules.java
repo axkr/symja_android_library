@@ -13,7 +13,7 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 64 };
+  final public static int[] SIZES = { 0, 65 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -80,6 +80,9 @@ public interface DRules {
     // D(Gamma(f_),x_NotListQ):=D(f,x)*Gamma(f)*PolyGamma(f)
     ISetDelayed(D(Gamma(f_),$p(x,NotListQ)),
       Times(D(f,x),Gamma(f),PolyGamma(f))),
+    // D(HeavisideTheta(f_),x_NotListQ):=D(f,x)*DiracDelta(f)
+    ISetDelayed(D(HeavisideTheta(f_),$p(x,NotListQ)),
+      Times(D(f,x),DiracDelta(f))),
     // D(IntegerPart(f_),x_NotListQ):=0
     ISetDelayed(D(IntegerPart(f_),$p(x,NotListQ)),
       C0),

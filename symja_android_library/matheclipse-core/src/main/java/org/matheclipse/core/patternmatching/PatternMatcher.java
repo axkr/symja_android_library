@@ -700,7 +700,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				}
 			}
 
-			if (lhsPatternAST.isOrderlessAST()) {
+			if (lhsPatternAST.isOrderlessAST()&&lhsPatternAST.size()>2) {
 				// only "pure Orderless" and "FlatOrderless with same size()"
 				// will be handled here:
 				OrderlessStepVisitor visitor = new OrderlessStepVisitor(sym, lhsPatternAST, lhsEvalAST, stackMatcher,

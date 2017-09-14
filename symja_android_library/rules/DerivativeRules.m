@@ -21,6 +21,7 @@
   FresnelC->Cos((Pi*#^2)/2),
   FresnelS->Sin((Pi*#^2)/2),
   Gamma->Gamma(#)*PolyGamma(#),
+  HeavisideTheta->DiracDelta(#),
   IntegerPart->0,
   InverseErf->(1/2*Sqrt(Pi)*E^(InverseErf(x)^2)),
   Log->#^(-1),

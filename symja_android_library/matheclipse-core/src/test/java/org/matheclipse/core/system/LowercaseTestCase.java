@@ -1405,6 +1405,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDiracDelta() {
+		check("DiracDelta(x)", "DiracDelta(x)");
+		check("DiracDelta(-x)", "DiracDelta(x)");
+		check("DiracDelta(-x, -y)", "DiracDelta(x,y)");
+		check("DiracDelta(x, y, z)", "DiracDelta(x,y,z)");
+		check("DiracDelta(-x, 0.5, z)", "0");
 		check("DiracDelta(0)", "DiracDelta(0)");
 		check("DiracDelta(1+I)", "DiracDelta(1+I)");
 		check("DiracDelta(-1)", "0");
@@ -2638,6 +2643,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHeavisideTheta() {
+		check("Derivative(1)[HeavisideTheta]", "DiracDelta(#1)&");
+		check("HeavisideTheta(x)", "HeavisideTheta(x)");
+		check("D(HeavisideTheta(x), x)", "DiracDelta(x)");
 		check("HeavisideTheta(0)", "HeavisideTheta(0)");
 		check("HeavisideTheta(42)", "1");
 		check("HeavisideTheta(-1)", "0");
@@ -5431,6 +5439,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Refine(Abs(x), x>0)", "x");
 		check("Refine(Abs(x), Assumptions -> x>0)", "x");
 		check("Refine(Abs(x), x>1)", "x");
+		check("Refine(Abs(x)>=0, Element(x, Reals))", "True");
 
 		check("Refine(x>0, x>0)", "True");
 		check("Refine(x>=0, x>0)", "True");
