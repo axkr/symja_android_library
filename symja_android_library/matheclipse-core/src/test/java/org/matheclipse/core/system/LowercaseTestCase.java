@@ -2210,9 +2210,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Exp(1.2436240901689538E-16) - 1", "0.0");
 
 		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})", "{x->3.4341896575482007}");
-		checkNumeric("$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n" + "$R=100;\n"
-				+ "$d=0.00;\n" + "$vn=0;\n" + "$EAj=0;\n" + "$zj=0;\n" + "$sz=1;\n"
-				+ "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA))+(Sum((($R*(1+$d)^(Floor(i0/$Z)))/(1+$AA))*(1+p-$g)^(($n-i0-$vn)/$Z),{i0,0,$n-1}))+(Sum(($EAj*(1+p-$g)^(($n-$zj)/$Z))/(1+$AA),{j,1,$sz})) - 30199, {p, 0, 0.1})",
+		checkNumeric(
+				"$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n" + "$R=100;\n" + "$d=0.00;\n"
+						+ "$vn=0;\n" + "$EAj=0;\n" + "$zj=0;\n" + "$sz=1;\n"
+						+ "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA))+(Sum((($R*(1+$d)^(Floor(i0/$Z)))/(1+$AA))*(1+p-$g)^(($n-i0-$vn)/$Z),{i0,0,$n-1}))+(Sum(($EAj*(1+p-$g)^(($n-$zj)/$Z))/(1+$AA),{j,1,$sz})) - 30199, {p, 0, 0.1})",
 				"{p->0.04999709393822401}");
 		checkNumeric("$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n" + "$res=15474;\n"
 				+ "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA)) - $res, {p, 0, 0.1})", "{p->0.049993464334866594}");
@@ -5661,6 +5662,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("$h(x_) := Catch(Do(If(x > 5, Throw(a)), {3}); x); $h(6)", "a");
 	}
 
+	public void testReverse() {
+		check("Reverse({1, 2, 3})", "{3,2,1}");
+		check("Reverse(x(a,b,c))", "x(c,b,a)");
+		// check("Reverse({{1, 2}, {3, 4}}, 1)", "");
+	}
+
 	public void testRiffle() {
 		check("Riffle({1, 2, 3, 4, 5, 6, 7, 8, 9}, x)", "{1,x,2,x,3,x,4,x,5,x,6,x,7,x,8,x,9}");
 		check("Riffle({1, 2, 3, 4, 5, 6, 7, 8, 9}, {x, y})", "{1,x,2,y,3,x,4,y,5,x,6,y,7,x,8,y,9}");
@@ -6984,6 +6991,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTotal() {
+		check("Total({1, 2, 3})", "6");
+		check("Total({{1, 2, 3}, {4, 5, 6}, {7, 8 ,9}})", "{12,15,18}");
+		check("Total({{1, 2, 3}, {4, 5, 6}, {7, 8 ,9}}, 2)", "45");
+		check("Total({{1, 2, 3}, {4, 5, 6}, {7, 8 ,9}}, {2})", "{6,15,24}");
+			    
 		check("Total({x^2, 3 x^3, 1},{1})", "1+x^2+3*x^3");
 		check("Total({x^2, 3 x^3, 1})", "1+x^2+3*x^3");
 		check("Total({{1,2,3},{4,5,6},{7,8,9}})", "{12,15,18}");

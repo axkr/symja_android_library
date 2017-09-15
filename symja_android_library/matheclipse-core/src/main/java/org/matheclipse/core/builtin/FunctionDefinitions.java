@@ -7,7 +7,6 @@ public final class FunctionDefinitions {
 		AbsArg.setEvaluator(new org.matheclipse.core.reflection.system.AbsArg());
 		BesselJ.setEvaluator(new org.matheclipse.core.reflection.system.BesselJ());
 		CDF.setEvaluator(new org.matheclipse.core.reflection.system.CDF());
-		CentralMoment.setEvaluator(new org.matheclipse.core.reflection.system.CentralMoment());
 		Coefficient.setEvaluator(new org.matheclipse.core.reflection.system.Coefficient());
 		CoefficientList.setEvaluator(new org.matheclipse.core.reflection.system.CoefficientList());
 		CoefficientRules.setEvaluator(new org.matheclipse.core.reflection.system.CoefficientRules());

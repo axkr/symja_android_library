@@ -69,6 +69,7 @@ public final class ListFunctions {
 		F.Array.setEvaluator(new Array());
 		F.Cases.setEvaluator(new Cases());
 		F.Catenate.setEvaluator(new Catenate());
+		F.CentralMoment.setEvaluator(new CentralMoment());
 		F.Commonest.setEvaluator(new Commonest());
 		F.Complement.setEvaluator(new Complement());
 		F.Composition.setEvaluator(new Composition());
@@ -353,8 +354,8 @@ public final class ListFunctions {
 	/**
 	 * 
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Append">Append</a>
+	 * See the online Symja function reference:
+	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Append">Append</a>
 	 * </p>
 	 *
 	 */
@@ -377,8 +378,8 @@ public final class ListFunctions {
 	/**
 	 * 
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/AppendTo">AppendTo</a>
+	 * See the online Symja function reference:
+	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/AppendTo">AppendTo</a>
 	 * </p>
 	 *
 	 */
@@ -427,8 +428,8 @@ public final class ListFunctions {
 	 * Array structure generator
 	 * 
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Array">Array</a>
+	 * See the online Symja function reference:
+	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Array">Array</a>
 	 * </p>
 	 *
 	 */
@@ -571,9 +572,8 @@ public final class ListFunctions {
 
 	/**
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Cases">
-	 * Cases</a>
+	 * See the online Symja function reference:
+	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Cases"> Cases</a>
 	 * </p>
 	 */
 	private final static class Cases extends AbstractCoreFunctionEvaluator {
@@ -748,6 +748,49 @@ public final class ListFunctions {
 				return resultList;
 			}
 			return F.NIL;
+		}
+
+	}
+
+	/**
+	 * <pre>
+	 * CentralMoment(list, r)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * gives the the <code>r</code>th central moment (i.e. the <code>r</code>th moment about the mean) of
+	 * <code>list</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Central_moment">Wikipedia - Central moment</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt;&gt; CentralMoment({1.1, 1.2, 1.4, 2.1, 2.4}, 4)
+	 * 0.10085
+	 * </pre>
+	 */
+	private final static class CentralMoment extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			if (ast.arg1().isList()) {
+				IAST list = (IAST) ast.arg1();
+				IExpr r = ast.arg2();
+				return F.Divide(F.Total(F.Power(F.Subtract(list, F.Mean(list)), r)), F.Length(list));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
 		}
 
 	}
@@ -1269,8 +1312,7 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Drop(list,n) - delete the first n arguments from the list. Negative n counts
-	 * from the end.
+	 * Drop(list,n) - delete the first n arguments from the list. Negative n counts from the end.
 	 * 
 	 */
 	private final static class Drop extends AbstractCoreFunctionEvaluator {
@@ -1311,8 +1353,7 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Drop (remove) the list elements according to the
-		 * <code>sequenceSpecifications</code> for the list indexes.
+		 * Drop (remove) the list elements according to the <code>sequenceSpecifications</code> for the list indexes.
 		 * 
 		 * @param list
 		 * @param level
@@ -1405,14 +1446,14 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Traverse all <code>list</code> element's and filter out the elements in the
-		 * given <code>positions</code> list.
+		 * Traverse all <code>list</code> element's and filter out the elements in the given <code>positions</code>
+		 * list.
 		 * 
 		 * @param list
 		 * @param positions
 		 * @param positionConverter
-		 *            the <code>positionConverter</code> creates an <code>int</code>
-		 *            value from the given position objects in <code>positions</code>.
+		 *            the <code>positionConverter</code> creates an <code>int</code> value from the given position
+		 *            objects in <code>positions</code>.
 		 * @param headOffsez
 		 */
 		private static IExpr extract(final IAST list, final IAST positions,
@@ -1564,9 +1605,7 @@ public final class ListFunctions {
 	/**
 	 * Intersection of 2 sets
 	 * 
-	 * See: <a href=
-	 * "http://en.wikipedia.org/wiki/Intersection_(set_theory)">Intersection (set
-	 * theory)</a>
+	 * See: <a href= "http://en.wikipedia.org/wiki/Intersection_(set_theory)">Intersection (set theory)</a>
 	 */
 	private final static class Intersection extends AbstractFunctionEvaluator {
 
@@ -1769,8 +1808,7 @@ public final class ListFunctions {
 
 	/**
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Arithmetic_mean">Arithmetic
-	 * mean</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Arithmetic_mean">Arithmetic mean</a>
 	 */
 	private final static class Mean extends AbstractTrigArg1 {
 
@@ -1898,8 +1936,7 @@ public final class ListFunctions {
 		 * @param inputList
 		 * @param x
 		 * @param engine
-		 * @return the list of elements from <code>inputList</code> to which x is
-		 *         nearest
+		 * @return the list of elements from <code>inputList</code> to which x is nearest
 		 */
 		private static IAST numericalNearest(IAST inputList, INumber x, IExpr distanceFunction, EvalEngine engine) {
 			try {
@@ -2128,17 +2165,15 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Position(list, pattern) - return the positions where the pattern occurs in
-	 * list.
+	 * Position(list, pattern) - return the positions where the pattern occurs in list.
 	 *
 	 */
 	private final static class Position extends AbstractCoreFunctionEvaluator {
 
 		/**
-		 * Add the positions to the <code>resultCollection</code> where the matching
-		 * expressions appear in <code>list</code>. The <code>positionConverter</code>
-		 * converts the <code>int</code> position into an object for the
-		 * <code>resultCollection</code>.
+		 * Add the positions to the <code>resultCollection</code> where the matching expressions appear in
+		 * <code>list</code>. The <code>positionConverter</code> converts the <code>int</code> position into an object
+		 * for the <code>resultCollection</code>.
 		 * 
 		 * @param list
 		 * @param prototypeList
@@ -2399,8 +2434,7 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Return the <i>rest</i> of a given list, i.e. a sublist with all elements from
-	 * list[[2]]...list[[n]]
+	 * Return the <i>rest</i> of a given list, i.e. a sublist with all elements from list[[2]]...list[[n]]
 	 */
 	private final static class Rest extends AbstractCoreFunctionEvaluator {
 
@@ -2418,6 +2452,26 @@ public final class ListFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * Reverse(list)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * reverse the elements of the <code>list</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Reverse({1, 2, 3})
+	 * {3,2,1}
+	 * 
+	 * &gt;&gt; Reverse(x(a,b,c))
+	 * x(c,b,a)
+	 * </pre>
+	 */
 	private final static class Reverse extends AbstractFunctionEvaluator {
 
 		@Override
@@ -2583,10 +2637,22 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * <code>Skewness(list)</code> gives Pearson's moment coefficient of skewness
-	 * for <code>list</code> (a measure for estimating the symmetry of a
+	 * <pre>
+	 * Skewness(list)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * gives Pearson's moment coefficient of skewness for $list$ (a measure for estimating the symmetry of a
 	 * distribution).
-	 *
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt;&gt; Skewness({1.1, 1.2, 1.4, 2.1, 2.4})
+	 * 0.40704
+	 * </pre>
 	 */
 	private final static class Skewness extends AbstractEvaluator {
 
@@ -2743,8 +2809,7 @@ public final class ListFunctions {
 		 * 
 		 * @param ast
 		 * @param resultList
-		 *            the result list to which the generated expressions should be
-		 *            appended.
+		 *            the result list to which the generated expressions should be appended.
 		 * @param defaultValue
 		 *            the default value used in the iterator
 		 * @param engine
@@ -2800,16 +2865,14 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Evaluate only the last iterator in <code>ast</code> (i.e.
-		 * <code>ast.get(ast.size() - 1)</code>) for <code>Sum()</code> or
-		 * <code>Product()</code> function calls.
+		 * Evaluate only the last iterator in <code>ast</code> (i.e. <code>ast.get(ast.size() - 1)</code>) for
+		 * <code>Sum()</code> or <code>Product()</code> function calls.
 		 * 
 		 * @param expr
 		 * @param iter
 		 *            the iterator function
 		 * @param resultList
-		 *            the result list to which the generated expressions should be
-		 *            appended.
+		 *            the result list to which the generated expressions should be appended.
 		 * @param defaultValue
 		 *            the default value used if the iterator is invalid
 		 * @return <code>F.NIL</code> if no evaluation is possible
@@ -2838,8 +2901,7 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Determine all local variables of the iterators starting with index
-		 * <code>2</code>.
+		 * Determine all local variables of the iterators starting with index <code>2</code>.
 		 * 
 		 * @param ast
 		 * @return
@@ -2865,8 +2927,8 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Determine all local variables of the iterators starting with index
-		 * <code>2</code> in the given <code>ast</code>.
+		 * Determine all local variables of the iterators starting with index <code>2</code> in the given
+		 * <code>ast</code>.
 		 * 
 		 * @param ast
 		 * @return
@@ -2891,15 +2953,13 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Disable the <code>Reap() and Sow()</code> mode temporary and evaluate an
-		 * expression for the given &quot;local variables list&quot;. If evaluation is
-		 * not possible return the input object.
+		 * Disable the <code>Reap() and Sow()</code> mode temporary and evaluate an expression for the given &quot;local
+		 * variables list&quot;. If evaluation is not possible return the input object.
 		 * 
 		 * @param expr
 		 *            the expression which should be evaluated
 		 * @param localVariablesList
-		 *            a list of symbols which should be used as local variables inside
-		 *            the block
+		 *            a list of symbols which should be used as local variables inside the block
 		 * @return the evaluated object
 		 */
 		public static IExpr evalBlockWithoutReap(IExpr expr, IAST localVariablesList) {
@@ -3018,8 +3078,7 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Take the list elements according to the <code>sequenceSpecifications</code>
-		 * for the list indexes.
+		 * Take the list elements according to the <code>sequenceSpecifications</code> for the list indexes.
 		 * 
 		 * @param list
 		 * @param level
@@ -3081,8 +3140,50 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Sums up all elements of a list.
+	 * <pre>
+	 * Total(list)
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * adds all values in <code>list</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Total(list, n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * adds all values up to level <code>n</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Total(list, {n})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * totals only the values at level <code>{n}</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Total({1, 2, 3})
+	 * 6
+	 * 
+	 * &gt;&gt; Total({{1, 2, 3}, {4, 5, 6}, {7, 8 ,9}})
+	 * {12,15,18}
+	 * 
+	 * &gt;&gt; Total({{1, 2, 3}, {4, 5, 6}, {7, 8 ,9}}, 2)
+	 * 45
+	 * 
+	 * &gt;&gt; Total({{1, 2, 3}, {4, 5, 6}, {7, 8 ,9}}, {2})
+	 * {6,15,24}
+	 * </pre>
 	 */
 	private final static class Total extends AbstractFunctionEvaluator {
 
@@ -3112,9 +3213,7 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Union of two sets. See
-	 * <a href="http://en.wikipedia.org/wiki/Union_(set_theory)">Union (set
-	 * theory)</a>
+	 * Union of two sets. See <a href="http://en.wikipedia.org/wiki/Union_(set_theory)">Union (set theory)</a>
 	 */
 	private final static class Union extends AbstractFunctionEvaluator {
 
@@ -3231,11 +3330,9 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Fold the list from <code>start</code> index including to <code>end</code>
-	 * index excluding into the <code>resultCollection</code>. If the
-	 * <i>binaryFunction</i> returns <code>null</code>, the left element will be
-	 * added to the result list, otherwise the result will be <i>folded</i> again
-	 * with the next element in the list.
+	 * Fold the list from <code>start</code> index including to <code>end</code> index excluding into the
+	 * <code>resultCollection</code>. If the <i>binaryFunction</i> returns <code>null</code>, the left element will be
+	 * added to the result list, otherwise the result will be <i>folded</i> again with the next element in the list.
 	 * 
 	 * @param list
 	 * @param start
