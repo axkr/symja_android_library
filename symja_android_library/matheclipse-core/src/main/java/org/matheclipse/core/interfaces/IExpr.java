@@ -1502,9 +1502,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * [row-dimension, column-dimension]. This expression is only a matrix, if all
 	 * elements are lists with the header <code>List</code> and have the same size.
 	 * 
-	 * @param setMatrixFormat
-	 *            TODO
-	 * 
 	 * @return <code>null</code> if the expression is not a matrix
 	 */
 	default int[] isMatrix() {
@@ -1673,6 +1670,44 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default boolean isNonNegativeResult() {
 		return AbstractAssumptions.assumeNonNegative(this);
+	}
+
+	/**
+	 * Test if this expression unequals <code>0</code> and is a numeric complex
+	 * value or is assumed to be a negative or positive value.
+	 * 
+	 * @return
+	 */
+	default boolean isNonZeroComplexResult() {
+		if (isNonZeroRealResult()) {
+			return true;
+		}
+		if (isNumber()) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Test if this expression unequals <code>0</code> and is a numeric real value
+	 * or is assumed to be a negative or positive value.
+	 * 
+	 * @return
+	 */
+	default boolean isNonZeroRealResult() {
+		if (isZero()) {
+			return false;
+		}
+		if (isNegativeResult() || isPositiveResult()) {
+			return true;
+		}
+		if (isSignedNumber()) {
+			return true;
+		}
+		if (isNegativeInfinity() || isInfinity()) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -3001,6 +3036,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Convert this object into a <code>double[]</code> vector.
+	 * 
+	 * @return <code>null</code> if this object can not be converted into a
+	 *         <code>double[]</code> vector
+	 */
+	default double[] toDoubleVector() {
+		return null;
+	}
+
+	/**
 	 * Converts this number to an <code>int</code> value; unlike {@link #intValue}
 	 * this method returns <code>defaultValue</code> if the value of this integer
 	 * isn't in the range <code>Integer.MIN_VALUE</code> to
@@ -3015,16 +3060,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default int toIntDefault(int defaultValue) {
 		return defaultValue;
-	}
-
-	/**
-	 * Convert this object into a <code>double[]</code> vector.
-	 * 
-	 * @return <code>null</code> if this object can not be converted into a
-	 *         <code>double[]</code> vector
-	 */
-	default double[] toDoubleVector() {
-		return null;
 	}
 
 	/**

@@ -5426,7 +5426,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO
 		// check("Refine((a^b)^c, -1<b&&b<(-1))", "a^(b*c)");
 		
-		
+		check("Refine(DiscreteDelta(x),x>0)", "0");
+		check("Refine(DiscreteDelta(x),x<-1)", "0");
+		check("Refine(DiracDelta(x),x>0)", "0");
+		check("Refine(DiracDelta(x),x<-1)", "0");
 		check("Refine(UnitStep(-x),x>0)", "0");
 		check("Refine(UnitStep(x),x>0)", "1");
 		check("Refine(UnitStep(y,x), x>0&&y>0)", "1");

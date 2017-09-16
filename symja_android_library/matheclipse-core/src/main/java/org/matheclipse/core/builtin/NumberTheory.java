@@ -682,6 +682,9 @@ public final class NumberTheory {
 						}
 						return F.C0;
 					}
+					if (expr.isNonZeroRealResult()) {
+						return F.C0;
+					}
 					IExpr negated = AbstractFunctionEvaluator.getNormalizedNegativeExpression(expr);
 					if (negated.isPresent()) {
 						if (!result.isPresent()) {
@@ -740,6 +743,9 @@ public final class NumberTheory {
 							return F.C0;
 						}
 					}
+					if (arg1.isNonZeroComplexResult()) {
+						return F.C0;
+					}
 					return F.NIL;
 				}
 
@@ -763,7 +769,8 @@ public final class NumberTheory {
 			int size = ast.size();
 			int j = 1;
 			for (int i = 1; i < size; i++) {
-				INumber temp = ast.get(i).evalNumber();
+				IExpr expr = ast.get(i);
+				INumber temp = expr.evalNumber();
 				if (temp != null) {
 					if (temp.isZero()) {
 						if (!result.isPresent()) {
@@ -776,6 +783,9 @@ public final class NumberTheory {
 					if (temp.isNumber()) {
 						return F.C0;
 					}
+				}
+				if (expr.isNonZeroComplexResult()) {
+					return F.C0;
 				}
 				j++;
 			}
@@ -1692,35 +1702,36 @@ public final class NumberTheory {
 			int size = ast.size();
 			if (size > 1) {
 				IExpr arg1 = ast.arg1();
-				INumber temp = arg1.evalNumber();
-				if (temp != null) {
-					if (size == 2) {
-						if (temp.isZero()) {
-							return F.C1;
-						}
-						if (temp.isNumber()) {
-							return F.C0;
-						}
-						return F.NIL;
+				IExpr temp = arg1.evalNumber();
+				if (temp == null) {
+					temp = arg1;
+				}
+				if (size == 2) {
+					if (temp.isZero()) {
+						return F.C1;
 					}
-					arg1 = temp;
-					for (int i = 2; i < size; i++) {
-						IExpr expr = ast.get(i);
-						if (expr.equals(arg1)) {
-							continue;
-						}
-						temp = expr.evalNumber();
-						if (temp == null) {
-							return F.NIL;
-						} else {
-							if (temp.equals(arg1)) {
-								continue;
-							}
-						}
+					if (temp.isNonZeroComplexResult()) {
 						return F.C0;
 					}
-					return F.C1;
+					return F.NIL;
 				}
+				arg1 = temp;
+				for (int i = 2; i < size; i++) {
+					IExpr expr = ast.get(i);
+					if (expr.equals(arg1)) {
+						continue;
+					}
+					temp = expr.evalNumber();
+					if (temp == null) {
+						return F.NIL;
+					} else {
+						if (temp.equals(arg1)) {
+							continue;
+						}
+					}
+					return F.C0;
+				}
+				return F.C1;
 
 			}
 			return F.NIL;

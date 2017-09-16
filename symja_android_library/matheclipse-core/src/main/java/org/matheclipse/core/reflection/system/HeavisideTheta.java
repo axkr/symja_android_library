@@ -31,6 +31,12 @@ public class HeavisideTheta extends AbstractEvaluator {
 						continue;
 					}
 				} else {
+					if (expr.isNegativeResult()) {
+						return F.C0;
+					}
+					if (expr.isPositiveResult()) {
+						continue;
+					}
 					if (expr.isNegativeInfinity()) {
 						return F.C0;
 					}
