@@ -16,6 +16,8 @@
 
 Read the [Symja Manual](symja_android_library/doc/index.md) for the description of the Symja language.
 
+[![Join the chat at https://gitter.im/symja_android_library/Lobby](https://badges.gitter.im/symja_android_library/Lobby.svg)](https://gitter.im/symja_android_library/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Hosted on Algorithmia.com @[![Algorithmia.com](https://algorithmia.com/algorithms/axelclk/Computeralgebra/badge)](https://algorithmia.com/algorithms/axelclk/Computeralgebra)
 
 ### Features
