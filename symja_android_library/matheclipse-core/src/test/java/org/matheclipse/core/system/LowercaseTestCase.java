@@ -2210,10 +2210,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Exp(1.2436240901689538E-16) - 1", "0.0");
 
 		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})", "{x->3.4341896575482007}");
-		checkNumeric(
-				"$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n" + "$R=100;\n" + "$d=0.00;\n"
-						+ "$vn=0;\n" + "$EAj=0;\n" + "$zj=0;\n" + "$sz=1;\n"
-						+ "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA))+(Sum((($R*(1+$d)^(Floor(i0/$Z)))/(1+$AA))*(1+p-$g)^(($n-i0-$vn)/$Z),{i0,0,$n-1}))+(Sum(($EAj*(1+p-$g)^(($n-$zj)/$Z))/(1+$AA),{j,1,$sz})) - 30199, {p, 0, 0.1})",
+		checkNumeric("$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n" + "$R=100;\n"
+				+ "$d=0.00;\n" + "$vn=0;\n" + "$EAj=0;\n" + "$zj=0;\n" + "$sz=1;\n"
+				+ "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA))+(Sum((($R*(1+$d)^(Floor(i0/$Z)))/(1+$AA))*(1+p-$g)^(($n-i0-$vn)/$Z),{i0,0,$n-1}))+(Sum(($EAj*(1+p-$g)^(($n-$zj)/$Z))/(1+$AA),{j,1,$sz})) - 30199, {p, 0, 0.1})",
 				"{p->0.04999709393822401}");
 		checkNumeric("$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n" + "$res=15474;\n"
 				+ "FindRoot((($K*(1+p-$g)^($n/$Z))/(1+$AA)) - $res, {p, 0, 0.1})", "{p->0.049993464334866594}");
@@ -3344,6 +3343,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LiouvilleLambda(2*3^5)", "1");
 		check("LiouvilleLambda(50!)", "1");
 		check("LiouvilleLambda({1,2,3,4,5,6,20})", "{1,-1,-1,1,-1,1,-1}");
+	}
+
+	public void testList() {
+		// prints error
+		check("{1,2}+{4,5,6}", "{1,2}+{4,5,6}");
 	}
 
 	public void testListable() {
@@ -5421,6 +5425,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testRefine() {
 		// TODO
 		// check("Refine((a^b)^c, -1<b&&b<(-1))", "a^(b*c)");
+		
+		
+		check("Refine(UnitStep(-x),x>0)", "0");
+		check("Refine(UnitStep(x),x>0)", "1");
+		check("Refine(UnitStep(y,x), x>0&&y>0)", "1");
+
 		check("Refine(Re(a+I*b), Element(a, Reals)&&Element(b, Reals))", "a");
 
 		check("Refine(Log(x), x<0)", "I*Pi+Log(-x)");
@@ -6995,7 +7005,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Total({{1, 2, 3}, {4, 5, 6}, {7, 8 ,9}})", "{12,15,18}");
 		check("Total({{1, 2, 3}, {4, 5, 6}, {7, 8 ,9}}, 2)", "45");
 		check("Total({{1, 2, 3}, {4, 5, 6}, {7, 8 ,9}}, {2})", "{6,15,24}");
-			    
+
 		check("Total({x^2, 3 x^3, 1},{1})", "1+x^2+3*x^3");
 		check("Total({x^2, 3 x^3, 1})", "1+x^2+3*x^3");
 		check("Total({{1,2,3},{4,5,6},{7,8,9}})", "{12,15,18}");

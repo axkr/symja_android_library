@@ -59,6 +59,12 @@ public class UnitStep extends AbstractEvaluator implements INumeric {
 						continue;
 					}
 				} else {
+					if (expr.isNegativeResult()) {
+						return F.C0;
+					}
+					if (expr.isNonNegativeResult()) {
+						continue;
+					}
 					if (expr.isNegativeInfinity()) {
 						return F.C0;
 					}
