@@ -1,5 +1,7 @@
 ## Symja Library - Java Symbolic Math System
 
+[![Join the chat at https://gitter.im/symja_android_library/Lobby](https://badges.gitter.im/symja_android_library/Lobby.svg)](https://gitter.im/symja_android_library/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 **Note**: this repository contains the **Java 8** version of the project.  
 
 - [Quick start](#quick-start)
