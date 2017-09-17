@@ -1044,6 +1044,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is the function <code>Defer[&lt;arg&gt;]</code>
+	 * 
+	 * @return
+	 */
+	default boolean isDefer() {
+		return false;
+	}
+	
+	/**
 	 * <p>
 	 * Test if this expression is a
 	 * <code>Derivative[number, ...][symbol][arg,...]</code> or

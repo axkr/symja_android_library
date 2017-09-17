@@ -50,12 +50,16 @@
   D(ArcCoth(x_), {x_, 2}) :=  (2*x)/(1 - x^2)^2,
   D(ArcSinh(x_), {x_, 2}) := -(x/(1 + x^2)^(3/2)),
   D(ArcTanh(x_), {x_, 2}) := (2*x)/(1 - x^2)^2,
+  D(ArcCsc(x_), {x_, 2}) :=  (-1+2*x^2)/(Sqrt(1 - 1/x^2)*x^3*(-1+x^2)),
+  D(ArcSec(x_), {x_, 2}) := (1-2*x^2)/(Sqrt(1-1/x^2)*x^3*(-1+x^2)),
    
   D(Cos(x_), {x_, 2}) := -Cos(x),
   D(Cot(x_), {x_, 2}) := 2*Cot(x)*Csc(x)^2,
   D(Sin(x_), {x_, 2}) := -Sin(x),
   D(Tan(x_), {x_, 2}) := 2*Sec(x)^2*Tan(x),
-  
+  D(Csc(x_), {x_, 2}) := Csc(x)^3+Csc(x)*Cot(x)^2,
+  D(Sec(x_), {x_, 2}) := Sec(x)^3+Sec(x)*Tan(x)^2,
+     
   D(x_^a_, {x_, n_IntegerQ}) := Pochhammer(a - n + 1, n)*x^(a - n)
     /; n >= 0 && FreeQ(a,x),
   D(a_^x_, {x_, n_IntegerQ}) := a^x*Log(x)^n

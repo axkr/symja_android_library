@@ -889,52 +889,62 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		}
 
 		try {
+			IExpr result, temp;
 			fRecursionCounter++;
 			if (fTraceMode) {
 				fTraceStack.setUp(expr, fRecursionCounter);
-			}
-
-			IExpr temp = expr.evaluate(this);
-			if (temp.isPresent()) {
-
-				// if (temp == F.Null&&!expr.isAST(F.SetDelayed)) {
-				// System.out.println(expr.toString());
-				// }
-				// if (expr.isAST(F.Integrate)) {
-				// System.out.println("(0):" + expr.toString());
-				// System.out.println("(1) --> " + temp.toString());
-				// }
-				if (fTraceMode) {
+				 temp = expr.evaluate(this);
+				if (temp.isPresent()) {
 					fTraceStack.add(expr, temp, fRecursionCounter, 0L, "Evaluation loop");
-				}
-				IExpr result = temp;
-				long iterationCounter = 1;
-				do {
-					temp = result.evaluate(this);
-					if (temp.isPresent()) {
-						// if (temp == F.Null&&!result.isAST(F.SetDelayed)) {
-						// System.out.println(expr.toString());
-						// }
-						// if (result.isAST(F.Integrate)) {
-						// System.out.println(result.toString());
-						// System.out.println("("+iterationCounter+") --> " +
-						// temp.toString());
-						// }
-						if (fTraceMode) {
+					result = temp;
+					long iterationCounter = 1;
+					while (true) {
+						temp = result.evaluate(this);
+						if (temp.isPresent()) {
 							fTraceStack.add(result, temp, fRecursionCounter, iterationCounter, "Evaluation loop");
-						}
-						result = temp;
-						if (fIterationLimit >= 0 && fIterationLimit <= ++iterationCounter) {
-							IterationLimitExceeded.throwIt(iterationCounter, result);
+							result = temp;
+							if (fIterationLimit >= 0 && fIterationLimit <= ++iterationCounter) {
+								IterationLimitExceeded.throwIt(iterationCounter, result);
+							}
+						} else {
+							return result;
 						}
 					}
-				} while (temp.isPresent());
-				// System.out.println("(0):" + expr.toString());
-				// System.out.println("(" + iterationCounter + ") --> " +
-				// result.toString());
-				return result;
-
+				}
+			} else {
+				temp = expr.evaluate(this);
+				if (temp.isPresent()) {
+					// if (temp == F.Null&&!expr.isAST(F.SetDelayed)) {
+					// System.out.println(expr.toString());
+					// }
+					// if (expr.isAST(F.Integrate)) {
+					// System.out.println("(0):" + expr.toString());
+					// System.out.println("(1) --> " + temp.toString());
+					// }
+					result = temp;
+					long iterationCounter = 1;
+					while (true) {
+						temp = result.evaluate(this);
+						if (temp.isPresent()) {
+							// if (temp == F.Null&&!result.isAST(F.SetDelayed)) {
+							// System.out.println(expr.toString());
+							// }
+							// if (result.isAST(F.Integrate)) {
+							// System.out.println(result.toString());
+							// System.out.println("("+iterationCounter+") --> " +
+							// temp.toString());
+							// }
+							result = temp;
+							if (fIterationLimit >= 0 && fIterationLimit <= ++iterationCounter) {
+								IterationLimitExceeded.throwIt(iterationCounter, result);
+							}
+						} else {
+							return result;
+						}
+					}
+				}
 			}
+
 			return F.NIL;
 		} finally {
 			if (fTraceMode) {

@@ -13,7 +13,7 @@ public interface DRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 65 };
+  final public static int[] SIZES = { 0, 69 };
 
   final public static IAST RULES = List(
     IInit(D, SIZES),
@@ -161,6 +161,12 @@ public interface DRules {
     // D(ArcTanh(x_),{x_,2}):=(2*x)/(1-x^2)^2
     ISetDelayed(D(ArcTanh(x_),List(x_,C2)),
       Times(C2,x,Power(Plus(C1,Negate(Sqr(x))),-2))),
+    // D(ArcCsc(x_),{x_,2}):=(-1+2*x^2)/(Sqrt(1-1/x^2)*x^3*(-1+x^2))
+    ISetDelayed(D(ArcCsc(x_),List(x_,C2)),
+      Times(Plus(CN1,Times(C2,Sqr(x))),Power(Times(Sqrt(Plus(C1,Negate(Power(x,-2)))),Power(x,3),Plus(CN1,Sqr(x))),-1))),
+    // D(ArcSec(x_),{x_,2}):=(1-2*x^2)/(Sqrt(1-1/x^2)*x^3*(-1+x^2))
+    ISetDelayed(D(ArcSec(x_),List(x_,C2)),
+      Times(Plus(C1,Times(CN2,Sqr(x))),Power(Times(Sqrt(Plus(C1,Negate(Power(x,-2)))),Power(x,3),Plus(CN1,Sqr(x))),-1))),
     // D(Cos(x_),{x_,2}):=-Cos(x)
     ISetDelayed(D(Cos(x_),List(x_,C2)),
       Negate(Cos(x))),
@@ -173,6 +179,12 @@ public interface DRules {
     // D(Tan(x_),{x_,2}):=2*Sec(x)^2*Tan(x)
     ISetDelayed(D(Tan(x_),List(x_,C2)),
       Times(C2,Sqr(Sec(x)),Tan(x))),
+    // D(Csc(x_),{x_,2}):=Csc(x)^3+Csc(x)*Cot(x)^2
+    ISetDelayed(D(Csc(x_),List(x_,C2)),
+      Plus(Power(Csc(x),3),Times(Csc(x),Sqr(Cot(x))))),
+    // D(Sec(x_),{x_,2}):=Sec(x)^3+Sec(x)*Tan(x)^2
+    ISetDelayed(D(Sec(x_),List(x_,C2)),
+      Plus(Power(Sec(x),3),Times(Sec(x),Sqr(Tan(x))))),
     // D(x_^a_,{x_,n_IntegerQ}):=Pochhammer(a-n+1,n)*x^(a-n)/;n>=0&&FreeQ(a,x)
     ISetDelayed(D(Power(x_,a_),List(x_,$p(n,IntegerQ))),
       Condition(Times(Pochhammer(Plus(a,Negate(n),C1),n),Power(x,Plus(a,Negate(n)))),And(GreaterEqual(n,C0),FreeQ(a,x)))),

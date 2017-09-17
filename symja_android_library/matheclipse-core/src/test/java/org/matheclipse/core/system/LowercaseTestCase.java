@@ -1094,6 +1094,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testD() {
+
+		check("D(ArcCsc(x),{x,2})", "(-1+2*x^2)/(Sqrt(1-1/x^2)*x^3*(-1+x^2))");
+		check("D(ArcSec(x),{x,2})", "(1-2*x^2)/(Sqrt(1-1/x^2)*x^3*(-1+x^2))");
+
 		check("D(x*f(x)*f'(x), x)", "f(x)*f'(x)+x*f'(x)^2+x*f(x)*f''(x)");
 		check("D(f(x), x)", "f'(x)");
 		check("Sin'(2)", "Cos(2)");
@@ -5425,7 +5429,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testRefine() {
 		// TODO
 		// check("Refine((a^b)^c, -1<b&&b<(-1))", "a^(b*c)");
-		
+
 		check("Refine(DiscreteDelta(x),x>0)", "0");
 		check("Refine(DiscreteDelta(x),x<-1)", "0");
 		check("Refine(DiracDelta(x),x>0)", "0");
@@ -5841,6 +5845,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSeries() {
 		// check("FullForm(Series(Exp(x),{x,0,10}))", "");
 		// check("Series(Sin(Sqrt(x)), {x, 0, 5})", "");
+		check("D(Csc(x),{x,2})", "Cot(x)^2*Csc(x)+Csc(x)^3");
+		check("D(Tan(x)/Sin(x),x)", "Sec(x)*Tan(x)");
+		check("D(Tan(x)/Sin(x),{x,2})", "Sec(x)^3+Sec(x)*Tan(x)^2");
+		check("Series(Tan(x)/Sin(x),{x,a,2})",
+				"Sec(a)+Sec(a)*Tan(a)*(-a+x)+1/2*(Sec(a)^3+Sec(a)*Tan(a)^2)*(-a+x)^2+O(-a+x)^3");
+		check("Series(Tan(x)*Csc(x),{x,a,2})",
+				"Sec(a)+Sec(a)*Tan(a)*(-a+x)+1/2*(Sec(a)^3+Sec(a)*Tan(a)^2)*(-a+x)^2+O(-a+x)^3");
+		check("Series(f(x)+g(x),{x,a,2})", "f(a)+g(a)+(f'(a)+g'(a))*(-a+x)+1/2*(f''(a)+g''(a))*(-a+x)^2+O(-a+x)^3");
+
+		check("Series(Sin(f(x)),{x,0,2})",
+				"Sin(f(0))+Cos(f(0))*f'(0)*x+1/2*(-Sin(f(0))*f'(0)^2+Cos(f(0))*f''(0))*x^2+O(x)^3");
+		check("Series(Sin(x),{x,0,2})", "x+O(x)^3");
+
 		check("Series(f(x),{x,a,3})", "f(a)+f'(a)*(-a+x)+f''(a)/2*(-a+x)^2+Derivative(3)[f][a]/6*(-a+x)^3+O(-a+x)^4");
 		check("Series(Exp(x),{x,0,2})", "1+x+x^2/2+O(x)^3");
 		check("Series(Exp(f(x)),{x,0,2})", "E^f(0)+E^f(0)*f'(0)*x+1/2*(E^f(0)*f'(0)^2+E^f(0)*f''(0))*x^2+O(x)^3");

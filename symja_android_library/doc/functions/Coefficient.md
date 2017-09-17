@@ -12,6 +12,6 @@ See:
   
 ### Examples 
 ```
->>> Coefficient(10(x^2)+2(y^2)+2*x, x, 2)
+>> Coefficient(10(x^2)+2(y^2)+2*x, x, 2)
 10
 ```

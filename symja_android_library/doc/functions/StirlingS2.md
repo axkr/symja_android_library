@@ -11,6 +11,6 @@ See:
 
 ### Examples
 ``` 
->>> StirlingS2(10, 6)
+>> StirlingS2(10, 6)
 22827
 ```

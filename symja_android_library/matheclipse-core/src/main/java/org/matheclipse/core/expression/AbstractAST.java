@@ -1460,6 +1460,12 @@ public abstract class AbstractAST implements IAST {
 	public final boolean isCosh() {
 		return isSameHead(F.Cosh, 2);
 	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isDefer() {
+		return isSameHead(F.Defer, 2);
+	}
 
 	/** {@inheritDoc} */
 	@Override
