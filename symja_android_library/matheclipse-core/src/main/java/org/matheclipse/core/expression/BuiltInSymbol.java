@@ -21,6 +21,12 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
 	static class DummyEvaluator implements IEvaluator {
+
+		@Override
+		public void join() {
+			F.join();
+		}
+
 		@Override
 		public void setUp(ISymbol newSymbol) {
 			// do nothing because of dummy evaluator
@@ -36,7 +42,8 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
 	/**
 	 * The evaluation class of this built-in-function. See packages: package
-	 * <code>org.matheclipse.core.builtin.function</code> and <code>org.matheclipse.core.reflection.system</code>.
+	 * <code>org.matheclipse.core.builtin.function</code> and
+	 * <code>org.matheclipse.core.reflection.system</code>.
 	 */
 	private transient IEvaluator fEvaluator;
 
@@ -176,7 +183,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 		}
 		return F.NIL;
 	}
-	
+
 	public Object readResolve() throws ObjectStreamException {
 		ISymbol sym = fContext.get(fSymbolName);
 		if (sym != null) {
@@ -191,7 +198,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	/** {@inheritDoc} */
 	@Override
 	public final void setEvaluator(final IEvaluator evaluator) {
-		fEvaluator = evaluator;
 		evaluator.setUp(this);
+		fEvaluator = evaluator;
 	}
 }

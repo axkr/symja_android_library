@@ -152,7 +152,7 @@ public class ExprEvaluator {
 	public ISymbol defineVariable(ISymbol variable, IExpr value) {
 		variable.pushLocalVariable();
 		if (value != null) {
-			F.join();
+//			F.join();
 			// this evaluation step may throw an exception
 			EvalEngine.set(engine);
 			IExpr temp = engine.evaluate(value);
@@ -255,7 +255,7 @@ public class ExprEvaluator {
 	 */
 	public IExpr eval(final IExpr expr) {
 		fExpr = expr;
-		F.join();
+//		F.join();
 		EvalEngine.set(engine);
 		engine.reset();
 		IExpr temp = engine.evaluate(expr);
@@ -351,7 +351,7 @@ public class ExprEvaluator {
 	public IExpr evaluateWithTimeout(final String inputExpression, long timeoutDuration, TimeUnit timeUnit,
 			boolean interruptible) {
 		if (inputExpression != null) {
-			F.join();
+//			F.join();
 			EvalEngine.set(engine);
 			engine.reset();
 			fExpr = engine.parse(inputExpression);

@@ -79,7 +79,7 @@ public class EvalUtilities extends MathMLUtilities {
 			fEvalEngine.reset();
 			IExpr parsedExpression = fEvalEngine.parse(inputExpression);
 			if (parsedExpression != null) {
-				F.join();
+//				F.join();
 				fEvalEngine.reset();
 				IExpr temp = fEvalEngine.evaluate(parsedExpression);
 				fEvalEngine.addOut(temp);
@@ -128,7 +128,7 @@ public class EvalUtilities extends MathMLUtilities {
 				}
 			}
 			if (parsedExpression != null) {
-				F.join();
+//				F.join();
 				evalEngine.reset();
 				IExpr temp = evalEngine.evaluate(parsedExpression);
 				evalEngine.addOut(temp);
@@ -148,7 +148,7 @@ public class EvalUtilities extends MathMLUtilities {
 	 */
 	public IExpr evaluate(final IExpr parsedExpression) throws MathException {
 		if (parsedExpression != null) {
-			F.join();
+//			F.join();
 			startRequest();
 			EvalEngine.set(fEvalEngine);
 			fEvalEngine.reset();
@@ -203,7 +203,7 @@ public class EvalUtilities extends MathMLUtilities {
 			EvalEngine.set(fEvalEngine);
 			IExpr parsedExpression = fEvalEngine.parse(inputExpression);
 			if (parsedExpression != null) {
-				F.join();
+//				F.join();
 				fEvalEngine.reset();
 				IAST temp = fEvalEngine.evalTrace(parsedExpression, matcher, list);
 				fEvalEngine.addOut(temp);
@@ -231,7 +231,7 @@ public class EvalUtilities extends MathMLUtilities {
 	 */
 	public IAST evalTrace(final IExpr parsedExpression, Predicate<IExpr> matcher, IAST list) throws RuntimeException {
 		if (parsedExpression != null) {
-			F.join();
+//			F.join();
 			startRequest();
 			EvalEngine.set(fEvalEngine);
 			fEvalEngine.reset();

@@ -1759,13 +1759,15 @@ public class F {
 	 */
 	static IExpr[] GLOBAL_IDS = null;
 
+	public static java.util.concurrent.ThreadFactory THREAD_FACTORY = null;
+
 	static Thread INIT_THREAD = null;
 
 	/**
 	 * Waits for the INIT_THREAD which initializes the Integrate() rules.
 	 */
 	public synchronized static void join() {
-		if (!Config.JAS_NO_THREADS && INIT_THREAD != null) {
+		if ((THREAD_FACTORY != null) || !Config.JAS_NO_THREADS && INIT_THREAD != null) {
 			try {
 				INIT_THREAD.join();
 			} catch (InterruptedException e) {
@@ -1776,7 +1778,7 @@ public class F {
 	static {
 		try {
 			ComputerThreads.NO_THREADS = Config.JAS_NO_THREADS;
-			INIT_THREAD = new Thread() {
+			Runnable runnable = new Runnable() {
 				@Override
 				public void run() {
 					final EvalEngine engine = EvalEngine.get();
@@ -1792,6 +1794,12 @@ public class F {
 					engine.setPackageMode(false);
 				}
 			};
+
+			if (THREAD_FACTORY != null) {
+				INIT_THREAD = THREAD_FACTORY.newThread(runnable);
+			} else {
+				INIT_THREAD = new Thread(runnable);
+			}
 
 			ApfloatContext ctx = ApfloatContext.getContext();
 			ctx.setNumberOfProcessors(1);

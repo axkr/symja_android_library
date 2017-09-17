@@ -26,6 +26,7 @@ import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
+import org.matheclipse.core.expression.BuiltInSymbol;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
@@ -1056,6 +1057,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @return <code>F.NIL</code> if no evaluation happened
 	 */
 	public IExpr evalRules(ISymbol symbol, IAST ast) {
+		if (symbol instanceof BuiltInSymbol) {
+			((BuiltInSymbol)symbol).getEvaluator().join();
+		}
 		IExpr result;
 		for (int i = 1; i < ast.size(); i++) {
 			if (!(ast.get(i) instanceof IPatternObject)) {

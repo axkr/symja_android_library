@@ -146,7 +146,7 @@ public class Config {
 	 * 
 	 * @see edu.jas.ufd.GCDFactory#getProxy(edu.jas.structure.RingFactory)
 	 */
-	public static boolean JAS_NO_THREADS = true;
+	public static boolean JAS_NO_THREADS = false;
 
 	/**
 	 * Use <code>Num</code> objects for numeric calculations up to 15 digits precision.
