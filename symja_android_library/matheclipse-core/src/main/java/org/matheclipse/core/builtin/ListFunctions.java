@@ -73,6 +73,7 @@ public final class ListFunctions {
 		F.Commonest.setEvaluator(new Commonest());
 		F.Complement.setEvaluator(new Complement());
 		F.Composition.setEvaluator(new Composition());
+		F.Correlation.setEvaluator(new Correlation());
 		F.ConstantArray.setEvaluator(new ConstantArray());
 		F.Count.setEvaluator(new Count());
 		F.Covariance.setEvaluator(new Covariance());
@@ -111,6 +112,7 @@ public final class ListFunctions {
 		F.Skewness.setEvaluator(new Skewness());
 		F.Split.setEvaluator(new Split());
 		F.SplitBy.setEvaluator(new SplitBy());
+		F.StandardDeviation.setEvaluator(new StandardDeviation());
 		F.Table.setEvaluator(new Table());
 		F.Take.setEvaluator(new Take());
 		F.Tally.setEvaluator(new Tally());
@@ -354,8 +356,8 @@ public final class ListFunctions {
 	/**
 	 * 
 	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Append">Append</a>
+	 * See the online Symja function reference: <a href=
+	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Append">Append</a>
 	 * </p>
 	 *
 	 */
@@ -378,8 +380,8 @@ public final class ListFunctions {
 	/**
 	 * 
 	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/AppendTo">AppendTo</a>
+	 * See the online Symja function reference: <a href=
+	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/AppendTo">AppendTo</a>
 	 * </p>
 	 *
 	 */
@@ -428,8 +430,8 @@ public final class ListFunctions {
 	 * Array structure generator
 	 * 
 	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Array">Array</a>
+	 * See the online Symja function reference: <a href=
+	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Array">Array</a>
 	 * </p>
 	 *
 	 */
@@ -572,8 +574,9 @@ public final class ListFunctions {
 
 	/**
 	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Cases"> Cases</a>
+	 * See the online Symja function reference: <a href=
+	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Cases">
+	 * Cases</a>
 	 * </p>
 	 */
 	private final static class Cases extends AbstractCoreFunctionEvaluator {
@@ -759,15 +762,16 @@ public final class ListFunctions {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * gives the the <code>r</code>th central moment (i.e. the <code>r</code>th moment about the mean) of
-	 * <code>list</code>.
+	 * gives the the <code>r</code>th central moment (i.e. the <code>r</code>th
+	 * moment about the mean) of <code>list</code>.
 	 * </p>
 	 * </blockquote>
 	 * <p>
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="https://en.wikipedia.org/wiki/Central_moment">Wikipedia - Central moment</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/Central_moment">Wikipedia -
+	 * Central moment</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -1042,6 +1046,23 @@ public final class ListFunctions {
 		}
 	}
 
+	private final static class Correlation extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			IExpr a = (IAST) ast.arg1();
+			IExpr b = (IAST) ast.arg2();
+			int dim1 = a.isVector();
+			int dim2 = b.isVector();
+			if (dim1 >= 0&&dim1==dim2) {
+				return F.Divide(F.Covariance(a, b), F.Times(F.StandardDeviation(a), F.StandardDeviation(b)));
+			}
+			return F.NIL;
+		}
+
+	}
+	
 	/**
 	 * Count the number of elements in an expression which match the given pattern.
 	 * 
@@ -1312,7 +1333,8 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Drop(list,n) - delete the first n arguments from the list. Negative n counts from the end.
+	 * Drop(list,n) - delete the first n arguments from the list. Negative n counts
+	 * from the end.
 	 * 
 	 */
 	private final static class Drop extends AbstractCoreFunctionEvaluator {
@@ -1353,7 +1375,8 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Drop (remove) the list elements according to the <code>sequenceSpecifications</code> for the list indexes.
+		 * Drop (remove) the list elements according to the
+		 * <code>sequenceSpecifications</code> for the list indexes.
 		 * 
 		 * @param list
 		 * @param level
@@ -1446,14 +1469,14 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Traverse all <code>list</code> element's and filter out the elements in the given <code>positions</code>
-		 * list.
+		 * Traverse all <code>list</code> element's and filter out the elements in the
+		 * given <code>positions</code> list.
 		 * 
 		 * @param list
 		 * @param positions
 		 * @param positionConverter
-		 *            the <code>positionConverter</code> creates an <code>int</code> value from the given position
-		 *            objects in <code>positions</code>.
+		 *            the <code>positionConverter</code> creates an <code>int</code>
+		 *            value from the given position objects in <code>positions</code>.
 		 * @param headOffsez
 		 */
 		private static IExpr extract(final IAST list, final IAST positions,
@@ -1605,7 +1628,9 @@ public final class ListFunctions {
 	/**
 	 * Intersection of 2 sets
 	 * 
-	 * See: <a href= "http://en.wikipedia.org/wiki/Intersection_(set_theory)">Intersection (set theory)</a>
+	 * See: <a href=
+	 * "http://en.wikipedia.org/wiki/Intersection_(set_theory)">Intersection (set
+	 * theory)</a>
 	 */
 	private final static class Intersection extends AbstractFunctionEvaluator {
 
@@ -1808,7 +1833,8 @@ public final class ListFunctions {
 
 	/**
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Arithmetic_mean">Arithmetic mean</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Arithmetic_mean">Arithmetic
+	 * mean</a>
 	 */
 	private final static class Mean extends AbstractTrigArg1 {
 
@@ -1936,7 +1962,8 @@ public final class ListFunctions {
 		 * @param inputList
 		 * @param x
 		 * @param engine
-		 * @return the list of elements from <code>inputList</code> to which x is nearest
+		 * @return the list of elements from <code>inputList</code> to which x is
+		 *         nearest
 		 */
 		private static IAST numericalNearest(IAST inputList, INumber x, IExpr distanceFunction, EvalEngine engine) {
 			try {
@@ -2165,15 +2192,17 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Position(list, pattern) - return the positions where the pattern occurs in list.
+	 * Position(list, pattern) - return the positions where the pattern occurs in
+	 * list.
 	 *
 	 */
 	private final static class Position extends AbstractCoreFunctionEvaluator {
 
 		/**
-		 * Add the positions to the <code>resultCollection</code> where the matching expressions appear in
-		 * <code>list</code>. The <code>positionConverter</code> converts the <code>int</code> position into an object
-		 * for the <code>resultCollection</code>.
+		 * Add the positions to the <code>resultCollection</code> where the matching
+		 * expressions appear in <code>list</code>. The <code>positionConverter</code>
+		 * converts the <code>int</code> position into an object for the
+		 * <code>resultCollection</code>.
 		 * 
 		 * @param list
 		 * @param prototypeList
@@ -2434,7 +2463,8 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Return the <i>rest</i> of a given list, i.e. a sublist with all elements from list[[2]]...list[[n]]
+	 * Return the <i>rest</i> of a given list, i.e. a sublist with all elements from
+	 * list[[2]]...list[[n]]
 	 */
 	private final static class Rest extends AbstractCoreFunctionEvaluator {
 
@@ -2643,8 +2673,8 @@ public final class ListFunctions {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * gives Pearson's moment coefficient of skewness for $list$ (a measure for estimating the symmetry of a
-	 * distribution).
+	 * gives Pearson's moment coefficient of skewness for $list$ (a measure for
+	 * estimating the symmetry of a distribution).
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -2776,6 +2806,39 @@ public final class ListFunctions {
 
 	}
 
+	private final static class StandardDeviation extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			if (ast.arg1().isAST()) {
+				IAST arg1 = (IAST) ast.arg1();
+				int[] matrixDimensions = arg1.isMatrix();
+				if (matrixDimensions != null) { 
+					IAST result = F.ListAlloc(matrixDimensions[0]);
+					for (int i = 1; i < matrixDimensions[1] + 1; i++) {
+						IAST list = F.ListAlloc(matrixDimensions[1]);
+						IAST standardDeviation = F.StandardDeviation(list);
+						for (int j = 1; j < matrixDimensions[0] + 1; j++) {
+							list.append(arg1.getPart(j, i));
+						}
+						result.append(standardDeviation);
+					}
+					return result;
+				}
+
+				int dim = arg1.isVector();
+				if (dim >= 0) {
+					return F.Sqrt(F.Variance(arg1));
+				}
+			}
+			return F.NIL;
+		}
+
+	}
+
+	
 	/**
 	 * Table structure generator (i.e. lists, vectors, matrices, tensors)
 	 */
@@ -2809,7 +2872,8 @@ public final class ListFunctions {
 		 * 
 		 * @param ast
 		 * @param resultList
-		 *            the result list to which the generated expressions should be appended.
+		 *            the result list to which the generated expressions should be
+		 *            appended.
 		 * @param defaultValue
 		 *            the default value used in the iterator
 		 * @param engine
@@ -2865,14 +2929,16 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Evaluate only the last iterator in <code>ast</code> (i.e. <code>ast.get(ast.size() - 1)</code>) for
-		 * <code>Sum()</code> or <code>Product()</code> function calls.
+		 * Evaluate only the last iterator in <code>ast</code> (i.e.
+		 * <code>ast.get(ast.size() - 1)</code>) for <code>Sum()</code> or
+		 * <code>Product()</code> function calls.
 		 * 
 		 * @param expr
 		 * @param iter
 		 *            the iterator function
 		 * @param resultList
-		 *            the result list to which the generated expressions should be appended.
+		 *            the result list to which the generated expressions should be
+		 *            appended.
 		 * @param defaultValue
 		 *            the default value used if the iterator is invalid
 		 * @return <code>F.NIL</code> if no evaluation is possible
@@ -2901,7 +2967,8 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Determine all local variables of the iterators starting with index <code>2</code>.
+		 * Determine all local variables of the iterators starting with index
+		 * <code>2</code>.
 		 * 
 		 * @param ast
 		 * @return
@@ -2927,8 +2994,8 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Determine all local variables of the iterators starting with index <code>2</code> in the given
-		 * <code>ast</code>.
+		 * Determine all local variables of the iterators starting with index
+		 * <code>2</code> in the given <code>ast</code>.
 		 * 
 		 * @param ast
 		 * @return
@@ -2953,13 +3020,15 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Disable the <code>Reap() and Sow()</code> mode temporary and evaluate an expression for the given &quot;local
-		 * variables list&quot;. If evaluation is not possible return the input object.
+		 * Disable the <code>Reap() and Sow()</code> mode temporary and evaluate an
+		 * expression for the given &quot;local variables list&quot;. If evaluation is
+		 * not possible return the input object.
 		 * 
 		 * @param expr
 		 *            the expression which should be evaluated
 		 * @param localVariablesList
-		 *            a list of symbols which should be used as local variables inside the block
+		 *            a list of symbols which should be used as local variables inside
+		 *            the block
 		 * @return the evaluated object
 		 */
 		public static IExpr evalBlockWithoutReap(IExpr expr, IAST localVariablesList) {
@@ -3078,7 +3147,8 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Take the list elements according to the <code>sequenceSpecifications</code> for the list indexes.
+		 * Take the list elements according to the <code>sequenceSpecifications</code>
+		 * for the list indexes.
 		 * 
 		 * @param list
 		 * @param level
@@ -3213,7 +3283,9 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Union of two sets. See <a href="http://en.wikipedia.org/wiki/Union_(set_theory)">Union (set theory)</a>
+	 * Union of two sets. See
+	 * <a href="http://en.wikipedia.org/wiki/Union_(set_theory)">Union (set
+	 * theory)</a>
 	 */
 	private final static class Union extends AbstractFunctionEvaluator {
 
@@ -3281,13 +3353,6 @@ public final class ListFunctions {
 
 			if (ast.arg1().isAST()) {
 				IAST arg1 = (IAST) ast.arg1();
-				int dim = arg1.isVector();
-				if (dim >= 0) {
-					if (arg1.isRealVector()) {
-						return F.num(StatUtils.variance(arg1.toDoubleVector()));
-					}
-					return Covariance.vectorCovarianceSymbolic(arg1, arg1, dim);
-				}
 				int[] matrixDimensions = arg1.isMatrix();
 				if (matrixDimensions != null) {
 					if (arg1.isRealMatrix()) {
@@ -3299,7 +3364,24 @@ public final class ListFunctions {
 						}
 						return new ASTRealVector(result, false);
 					}
-					return F.NIL;
+					IAST result = F.ListAlloc(matrixDimensions[0]);
+					for (int i = 1; i < matrixDimensions[1] + 1; i++) {
+						IAST list = F.ListAlloc(matrixDimensions[1]);
+						IAST variance = F.Variance(list);
+						for (int j = 1; j < matrixDimensions[0] + 1; j++) {
+							list.append(arg1.getPart(j, i));
+						}
+						result.append(variance);
+					}
+					return result;
+				}
+
+				int dim = arg1.isVector();
+				if (dim >= 0) {
+					if (arg1.isRealVector()) {
+						return F.num(StatUtils.variance(arg1.toDoubleVector()));
+					}
+					return Covariance.vectorCovarianceSymbolic(arg1, arg1, dim);
 				}
 
 				if (arg1.isAST()) {
@@ -3330,9 +3412,11 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Fold the list from <code>start</code> index including to <code>end</code> index excluding into the
-	 * <code>resultCollection</code>. If the <i>binaryFunction</i> returns <code>null</code>, the left element will be
-	 * added to the result list, otherwise the result will be <i>folded</i> again with the next element in the list.
+	 * Fold the list from <code>start</code> index including to <code>end</code>
+	 * index excluding into the <code>resultCollection</code>. If the
+	 * <i>binaryFunction</i> returns <code>null</code>, the left element will be
+	 * added to the result list, otherwise the result will be <i>folded</i> again
+	 * with the next element in the list.
 	 * 
 	 * @param list
 	 * @param start

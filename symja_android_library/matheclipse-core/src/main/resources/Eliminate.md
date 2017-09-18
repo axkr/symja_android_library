@@ -12,7 +12,7 @@ See:
  
 ### Examples 
 ```
->>> Eliminate({x==2+y, y==z}, y)
+>> Eliminate({x==2+y, y==z}, y)
 x==2+z
 ```
 

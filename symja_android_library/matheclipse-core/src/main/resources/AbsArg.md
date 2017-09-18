@@ -9,7 +9,7 @@ AbsArg(expr)
 ### Examples
 
 ``` 
->>> AbsArg(I)
+>> AbsArg(I)
 {1, Pi/2}
 ``` 
 

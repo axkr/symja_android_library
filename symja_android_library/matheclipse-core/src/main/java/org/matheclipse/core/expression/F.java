@@ -704,6 +704,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "continuedfraction" : "ContinuedFraction");
 	public final static IBuiltInSymbol CoprimeQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "coprimeq" : "CoprimeQ");
+	public final static IBuiltInSymbol Correlation = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "correlation" : "Correlation");
 	public final static IBuiltInSymbol Cos = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cos" : "Cos");
 	public final static IBuiltInSymbol Cosh = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cosh" : "Cosh");
 	public final static IBuiltInSymbol CosineDistance = initFinalSymbol(
@@ -1186,6 +1188,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "squaredeuclideandistance" : "SquaredEuclideanDistance");
 	public final static IBuiltInSymbol SquareFreeQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "squarefreeq" : "SquareFreeQ");
+	public final static IBuiltInSymbol StandardDeviation = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "standarddeviation" : "StandardDeviation");
 	public final static IBuiltInSymbol StieltjesGamma = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "stieltjesgamma" : "StieltjesGamma");
 	public final static IBuiltInSymbol StirlingS1 = initFinalSymbol(
@@ -3236,6 +3240,10 @@ public class F {
 		return ternaryAST3(Count, a0, a1, a2);
 	}
 
+	public static IAST Covariance(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Covariance, a0, a1);
+	}
+	
 	public static IAST Cross(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Cross, a0, a1);
 	}
@@ -5455,6 +5463,10 @@ public class F {
 		return binaryAST2(Power, x, C1D2);
 	}
 
+	public static IAST StandardDeviation(final IExpr a0) {
+		return unaryAST1(StandardDeviation, a0);
+	}
+	
 	public static IAST StieltjesGamma(final IExpr a0) {
 		return unaryAST1(StieltjesGamma, a0);
 	}
@@ -5843,6 +5855,10 @@ public class F {
 		return binaryAST2(UpSetDelayed, a0, a1);
 	}
 
+	public static IAST Variance(final IExpr a0) {
+		return unaryAST1(Variance, a0);
+	}
+	
 	public static IAST While(final IExpr a0, final IExpr a1) {
 		return binaryAST2(While, a0, a1);
 	}

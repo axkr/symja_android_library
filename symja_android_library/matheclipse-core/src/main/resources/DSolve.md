@@ -13,7 +13,7 @@ See:
 >> DSolve({y'(x)==y(x)+2},y(x), x)
 {{y(x)->-2+E^x*C(1)}}
 
->>> DSolve({y'(x)==y(x)+2,y(0)==1},y(x), x)
+>> DSolve({y'(x)==y(x)+2,y(0)==1},y(x), x)
 {{y(x)->-2+3*E^x}}
 ``` 
 

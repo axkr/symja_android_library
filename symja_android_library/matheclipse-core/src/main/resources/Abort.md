@@ -8,7 +8,7 @@ Abort()
 
 ### Examples
 ``` 
->>> Print("a"); Abort(); Print("b")
+>> Print("a"); Abort(); Print("b")
 $Aborted
 ``` 
  
