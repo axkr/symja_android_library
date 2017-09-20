@@ -33,6 +33,9 @@ import static org.matheclipse.core.expression.F.y;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.linear.BlockFieldMatrix;
@@ -58,9 +61,11 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Matrix;
 import org.matheclipse.core.eval.interfaces.AbstractNonOrderlessArgMultiple;
+import org.matheclipse.core.eval.util.Array;
 import org.matheclipse.core.eval.util.IIndexFunction;
 import org.matheclipse.core.eval.util.IndexFunctionDiagonal;
 import org.matheclipse.core.eval.util.IndexTableGenerator;
+import org.matheclipse.core.eval.util.Ordering;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.Context;
@@ -1788,7 +1793,7 @@ public final class LinearAlgebra {
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
-			}finally {
+			} finally {
 				engine.setTogetherMode(togetherMode);
 			}
 
@@ -2832,15 +2837,14 @@ public final class LinearAlgebra {
 	 */
 	private static class Transpose extends AbstractEvaluator {
 
-		public Transpose() {
-
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			// TODO generalize transpose for all levels
-			Validate.checkRange(ast, 2);
+			Validate.checkRange(ast, 2, 3);
 
+			if (ast.size() == 3 && ast.arg1().isList() && ast.arg2().isList()) {
+				return nonArray((IAST) ast.arg1(), (IAST) ast.arg2());
+			}
 			final int[] dim = ast.arg1().isMatrix();
 			if (dim != null) {
 				final IAST originalMatrix = (IAST) ast.arg1();
@@ -2881,6 +2885,43 @@ public final class LinearAlgebra {
 
 		protected IExpr transform(final IExpr expr) {
 			return expr;
+		}
+
+		/**
+		 * generalization of {@link #of(IAST, Integer...)} as function only requires
+		 * that tensor has array structure up to sigma.length
+		 * 
+		 * {@link #nonArray(IAST, Integer...)} is typically a bit slower than
+		 * {@link #of(IAST, Integer...)}
+		 * 
+		 * @param tensor
+		 *            with array structure up to sigma.length
+		 * @param sigma
+		 *            is a permutation
+		 * @return
+		 * @throws Exception
+		 */
+		public static IExpr nonArray(IAST tensor, IAST _sigma) {
+			// IAST _sigma = Tensors.vector(sigma);
+			// if (!Sort.of(_sigma).equals(Range.of(0, sigma.size())))
+			// throw TensorRuntimeException.of(_sigma);
+			Integer[] sigma = new Integer[_sigma.size() - 1];
+			for (int i = 0; i < sigma.length; i++) {
+				sigma[i] = _sigma.get(i + 1).toIntDefault(-1);
+			}
+			return Array.of(list -> tensor.get(permute(list, sigma)), //
+					inverse(org.matheclipse.core.eval.util.Dimensions.of(tensor), _sigma));
+		}
+
+		// helper function
+		private static List<Integer> inverse(List<Integer> list, IAST sigma) {
+			return IntStream.of(Ordering.INCREASING.of(sigma)) //
+					.mapToObj(list::get).collect(Collectors.toList());
+		}
+
+		// helper function
+		private static List<Integer> permute(List<Integer> list, Integer... sigma) {
+			return Stream.of(sigma).map(list::get).collect(Collectors.toList());
 		}
 
 	}

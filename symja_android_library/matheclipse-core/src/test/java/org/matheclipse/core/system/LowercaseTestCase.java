@@ -992,10 +992,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCorrelation() {
-		check("Correlation({10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5}, {8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68})", 
+		check("Correlation({10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5}, {8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68})",
 				"0.81642");
 	}
-	
+
 	public void testCosineDistance() {
 		check("N(CosineDistance({7, 9}, {71, 89}))", "0.00008");
 		check("CosineDistance({a, b}, {c, d})", "1-(a*c+b*d)/(Sqrt(Abs(a)^2+Abs(b)^2)*Sqrt(Abs(c)^2+Abs(d)^2))");
@@ -3614,7 +3614,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Mean({26, 64, 36})", "42");
 		check("Mean({1, 1, 2, 3, 5, 8})", "10/3");
 		check("Mean({a, b})", "1/2*(a+b)");
-		
+
 		check("Mean({{a, u}, {b, v}, {c, w}})", "{1/3*(a+b+c),1/3*(u+v+w)}");
 		check("Mean({1.21, 3.4, 2.15, 4, 1.55})", "2.462");
 		check("Mean({a,b,c,d})", "1/4*(a+b+c+d)");
@@ -3630,7 +3630,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Median({26, 64, 36})", "36");
 		check("Median({-11, 38, 501, 1183})", "539/2");
 		check("Median({{100, 1, 10, 50}, {-1, 1, -2, 2}})", "{99/2,1,4,26}");
-		
+
 		check("Median({1,2,3,4,5,6,7.0})", "4.0");
 		check("Median({1,2,3,4,5,6,7.0,8})", "4.5");
 		check("Median({1,2,3,4,5,6,7})", "4");
@@ -5732,7 +5732,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("RotateLeft({1, 2, 3})", "{2,3,1}");
 		check("RotateLeft(Range(10),3)", "{4,5,6,7,8,9,10,1,2,3}");
 		check("RotateLeft(x(a,b,c),2)", "x(c,a,b)");
-		
+
 		check("RotateLeft({1,2,3,4,5},2)", "{3,4,5,1,2}");
 
 	}
@@ -5741,7 +5741,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("RotateRight({1, 2, 3})", "{3,1,2}");
 		check("RotateRight(Range(10),3)", "{8,9,10,1,2,3,4,5,6,7}");
 		check("RotateRight(x(a,b,c),2)", "x(b,c,a)");
-		
+
 		check("RotateRight({1,2,3,4,5},2)", "{4,5,1,2,3}");
 
 	}
@@ -6448,7 +6448,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("StandardDeviation({a, a})", "0");
 		check("StandardDeviation({{1, 10}, {-1, 20}})", "{Sqrt(2),5*Sqrt(2)}");
 	}
-	
+
 	public void testStieltjesGamma() {
 		check("StieltjesGamma(0)", "EulerGamma");
 		check("StieltjesGamma(0,a)", "-PolyGamma(0,a)");
@@ -7070,6 +7070,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Tr({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, f)", "f(1,5,9)");
 	}
 
+	public void testTranspose() {
+		// check("Array(a, {2, 3, 2})",
+		// "{{{a(1,1,1),a(1,1,2)},{a(1,2,1),a(1,2,2)},{a(1,3,1),a(1,3,2)}},{{a(2,1,1),a(2,1,\r\n"
+		// +
+		// "2)},{a(2,2,1),a(2,2,2)},{a(2,3,1),a(2,3,2)}}}");
+		check("m = Array(a, {2, 3, 2});Transpose(m, {1, 3, 2})", "15");
+	}
+
 	public void testTrace() {
 		check("Trace(u = 2; Do(u = u*u, {3}); u, Times)", "{{{{u*u,2*2}},{{u*u,4*4}},{{u*u,16*16}}}}");
 		check("x=5;Trace(Mod((3 + x)^2, x - 1))", "{{{{x,5},3+5,8},8^2,64},{{x,5},-1+5,4},Mod(64,4),0}");
@@ -7267,7 +7275,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Variance({1 + 2*I, 3 - 10*I})", "74");
 		check("Variance({a, a})", "0");
 		check("Variance({{1, 3, 5}, {4, 10, 100}})", "{9/2,49/2,9025/2}");
-		
+
 		check("Variance({Pi,E,3})//Together", "1/3*(9-3*E+E^2-3*Pi-E*Pi+Pi^2)");
 		check("Variance({a,b,c,d})",
 				"1/12*(-(-3*a+b+c+d)*Conjugate(a)-(a-3*b+c+d)*Conjugate(b)-(a+b-3*c+d)*Conjugate(c)-(a+b+c\n"

@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.hipparchus.complex.Complex;
 import org.hipparchus.linear.Array2DRowRealMatrix;
@@ -878,6 +880,20 @@ public abstract class AbstractAST implements IAST {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	public IExpr get(List<Integer> index) {
+		if (index.isEmpty()) {
+			return copy();
+		}
+		List<Integer> sublist = index.subList(1, index.size());
+		final int head = index.get(0);
+		if (head == ALL) {
+			return IAST.of(stream().map(tensor -> tensor.get(sublist)));
+		}
+		return get(head).get(sublist);
+	}
+
+
 	/**
 	 * Casts an <code>IExpr</code> at position <code>index</code> to an
 	 * <code>IAST</code>.
@@ -1460,7 +1476,7 @@ public abstract class AbstractAST implements IAST {
 	public final boolean isCosh() {
 		return isSameHead(F.Cosh, 2);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isDefer() {
@@ -2734,6 +2750,36 @@ public abstract class AbstractAST implements IAST {
 			}
 		}
 		return 1;
+	}
+
+	/**
+	 * Returns a sequential {@link Stream} with the specified range of the specified
+	 * array as its source.
+	 *
+	 * @return a {@code Stream} for the internal array range
+	 */
+	@Override
+	public Stream<IExpr> stream() {
+		return Arrays.stream(toArray(), 1, size());
+	}
+
+	/**
+	 * Returns a sequential {@link Stream} with the specified range of the specified
+	 * array as its source.
+	 *
+	 * @param startInclusive
+	 *            the first index to cover, inclusive
+	 * @param endExclusive
+	 *            index immediately past the last index to cover
+	 * @return a {@code Stream} for the internal array range
+	 * @throws ArrayIndexOutOfBoundsException
+	 *             if {@code startInclusive} is negative, {@code endExclusive} is
+	 *             less than {@code startInclusive}, or {@code endExclusive} is
+	 *             greater than the array size
+	 */
+	@Override
+	public Stream<IExpr> stream(int startInclusive, int endExclusive) {
+		return Arrays.stream(toArray(), startInclusive, endExclusive);
 	}
 
 	@Override

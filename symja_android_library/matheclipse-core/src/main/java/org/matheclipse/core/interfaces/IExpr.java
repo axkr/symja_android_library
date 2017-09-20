@@ -1812,6 +1812,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return isNumeric();
 	}
 
+	default IExpr get(List<Integer> index) {
+		return this;
+	}
+		  
 	/**
 	 * Check if this expression represents an <code>int</code> value. The value of
 	 * an <code>INum</code> object can be an <code>int</code> value.
