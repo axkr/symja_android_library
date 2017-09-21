@@ -4452,6 +4452,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Order(6,N(Pi))", "-1");
 	}
 
+	public void testOrdering() {
+		check("Ordering({c,a,b})", "{2,3,1}");
+		check("Ordering(f(3, 1, 2))", "{2,3,1}");
+		check("Ordering({2, 6, 1, 9, 1, 2, 3},4)", "{3,5,1,6}");
+	}
+	
 	public void testOrderedQ() {
 		check("OrderedQ({a, b})", "True");
 		check("OrderedQ({b, a})", "False");
@@ -6830,6 +6836,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Taylor(ArcSin(x),{x,0,10})", "x+x^3/6+3/40*x^5+5/112*x^7+35/1152*x^9");
 		check("Limit(ArcSin(x)/x,x->0)", "1");
 		check("(-0^2+1)^(-1/2)", "1");
+	}
+	
+	
+	public void testTensorDimensions() {
+		check("A=Array(a, {2, 3, 4});TensorDimensions(A)", "{2,3,4}");
+		check("TensorDimensions({{1,2},{3,4},{a,b}})", "{3,2}");
+	}
+	
+	public void testTensorRank() {
+		check("A=Array(a, {2, 3, 4});TensorRank(A)", "3");
+		check("TensorRank({{1,2},{3,4}})", "2");
+		
 	}
 
 	public void testTeXForm() {

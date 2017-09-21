@@ -2765,9 +2765,6 @@ public final class LinearAlgebra {
 	 */
 	private static class Tr extends AbstractEvaluator {
 
-		public Tr() {
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);

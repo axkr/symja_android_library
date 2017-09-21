@@ -2,7 +2,6 @@ package org.matheclipse.core.expression;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigInteger;
@@ -38,6 +37,7 @@ import org.matheclipse.core.builtin.RandomFunctions;
 import org.matheclipse.core.builtin.SpecialFunctions;
 import org.matheclipse.core.builtin.StringFunctions;
 import org.matheclipse.core.builtin.Structure;
+import org.matheclipse.core.builtin.TensorFunctions;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -1032,6 +1032,8 @@ public class F {
 	public final static IBuiltInSymbol Operate = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "operate" : "Operate");
 	public final static IBuiltInSymbol Order = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "order" : "Order");
+	public final static IBuiltInSymbol Ordering = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ordering" : "Ordering");
 	public final static IBuiltInSymbol OrderedQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "orderedq" : "OrderedQ");
 	public final static IBuiltInSymbol Out = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "out" : "Out");
@@ -1251,6 +1253,10 @@ public class F {
 	public final static IBuiltInSymbol ToUnicode = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tounicode" : "ToUnicode");
 	public final static IBuiltInSymbol Tr = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tr" : "Tr");
+	public final static IBuiltInSymbol TensorDimensions = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tensordimensions" : "TensorDimensions");
+	public final static IBuiltInSymbol TensorRank = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tensorrank" : "TensorRank");
 	public final static IBuiltInSymbol Transpose = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "transpose" : "Transpose");
 	public final static IBuiltInSymbol TrigExpand = initFinalSymbol(
@@ -1981,6 +1987,7 @@ public class F {
 			NumberTheory.initialize();
 			BooleanFunctions.initialize();
 			LinearAlgebra.initialize();
+			TensorFunctions.initialize();
 			ListFunctions.initialize();
 			Combinatoric.initialize();
 			IntegerFunctions.initialize();
@@ -3243,7 +3250,7 @@ public class F {
 	public static IAST Covariance(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Covariance, a0, a1);
 	}
-	
+
 	public static IAST Cross(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Cross, a0, a1);
 	}
@@ -3300,6 +3307,10 @@ public class F {
 
 	public static IAST Det(final IExpr a0) {
 		return unaryAST1(Det, a0);
+	}
+
+	public static IAST Dimensions(final IExpr a0) {
+		return unaryAST1(Dimensions, a0);
 	}
 
 	public static IAST DiracDelta(final IExpr a0) {
@@ -4509,6 +4520,14 @@ public class F {
 		return ast(List, capacity, false);
 	}
 
+	public static IAST List(final int n, final Integer... numbers) {
+		IInteger a[] = new IInteger[n];
+		for (int i = 0; i < n; i++) {
+			a[i] = new IntegerSym(numbers[i]);
+		}
+		return ast(a, List);
+	}
+
 	public static IAST List(final double... numbers) {
 		INum a[] = new INum[numbers.length];
 		for (int i = 0; i < numbers.length; i++) {
@@ -5466,7 +5485,7 @@ public class F {
 	public static IAST StandardDeviation(final IExpr a0) {
 		return unaryAST1(StandardDeviation, a0);
 	}
-	
+
 	public static IAST StieltjesGamma(final IExpr a0) {
 		return unaryAST1(StieltjesGamma, a0);
 	}
@@ -5858,7 +5877,7 @@ public class F {
 	public static IAST Variance(final IExpr a0) {
 		return unaryAST1(Variance, a0);
 	}
-	
+
 	public static IAST While(final IExpr a0, final IExpr a1) {
 		return binaryAST2(While, a0, a1);
 	}
