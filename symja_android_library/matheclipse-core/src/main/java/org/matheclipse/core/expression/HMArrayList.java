@@ -800,7 +800,7 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 
 	@Override
 	public Stream<IExpr> stream(int startInclusive, int endExclusive) {
-		return Arrays.stream(toArray(), firstIndex + startInclusive, lastIndex - firstIndex + endExclusive);
+		return Arrays.stream(toArray(), firstIndex + startInclusive, firstIndex + endExclusive);
 	}
 
 	/**

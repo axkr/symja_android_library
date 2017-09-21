@@ -22,5 +22,12 @@ public class Java8TestCase extends AbstractTestCase {
 		Consumer<IExpr> action = (IExpr x) -> System.out.println(x);
 		ast.forEach(action); 
 	}
+	
+	public void testStream001() {
+		IAST ast = List(C10, a, b, c, d, e);
+		Consumer<IExpr> action = (IExpr x) -> System.out.println(x);
+		ast.stream().forEach(action); 
+		ast.stream(0,7).forEach(action);
+	}
 
 }
