@@ -15,9 +15,9 @@ import org.matheclipse.core.interfaces.IAST;
  * "https://reference.wolfram.com/language/ref/Ordering.html">Ordering</a>
  */
 public enum Ordering {
-	INCREASING(tensor -> IntStream.range(0, tensor.size()) //
+	INCREASING(tensor -> IntStream.range(1, tensor.size()) //
 			.boxed().sorted((i, j) -> tensor.get(i).compareTo(tensor.get(j)))), //
-	DECREASING(tensor -> IntStream.range(0, tensor.size()) //
+	DECREASING(tensor -> IntStream.range(1, tensor.size()) //
 			.boxed().sorted((i, j) -> tensor.get(j).compareTo(tensor.get(i)))), //
 	;
 	// ---

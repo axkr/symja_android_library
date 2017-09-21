@@ -2921,7 +2921,7 @@ public final class LinearAlgebra {
 
 		// helper function
 		private static List<Integer> permute(List<Integer> list, Integer... sigma) {
-			return Stream.of(sigma).map(list::get).collect(Collectors.toList());
+			return Stream.of(sigma).map(i->list.get(i-1)).collect(Collectors.toList());
 		}
 
 	}

@@ -73,8 +73,9 @@ public enum Dimensions {
 		for (Set<Integer> set : complete)
 			if (set.size() == 1) {
 				int val = set.iterator().next(); // get unique element from set
-				// if (val == IExpr.LENGTH) // has scalar
-				// break;
+				if (val == 0) { // has scalar
+					break;
+				}
 				ret.add(val);
 			} else
 				break;
@@ -92,8 +93,9 @@ public enum Dimensions {
 
 	// helper function
 	private static List<Set<Integer>> _sets(IExpr tensor, int level, List<Set<Integer>> sets) {
-		if (sets.size() <= level)
+		if (sets.size() <= level) {
 			sets.add(new HashSet<>());
+		}
 		if (tensor.isAST()) {// ScalarQ.of(tensor))
 			sets.get(level).add(((IAST) tensor).size() - 1);
 			((IAST) tensor).stream().forEach(entry -> _sets(entry, level + 1, sets));

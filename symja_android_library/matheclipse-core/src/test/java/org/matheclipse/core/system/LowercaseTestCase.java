@@ -7075,7 +7075,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "{{{a(1,1,1),a(1,1,2)},{a(1,2,1),a(1,2,2)},{a(1,3,1),a(1,3,2)}},{{a(2,1,1),a(2,1,\r\n"
 		// +
 		// "2)},{a(2,2,1),a(2,2,2)},{a(2,3,1),a(2,3,2)}}}");
-		check("m = Array(a, {2, 3, 2});Transpose(m, {1, 3, 2})", "15");
+		check("m = Array(a, {2, 3, 2});Transpose(m, {1, 3, 2})", "");
 	}
 
 	public void testTrace() {

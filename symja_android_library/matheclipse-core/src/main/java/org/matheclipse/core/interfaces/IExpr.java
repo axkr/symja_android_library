@@ -1051,7 +1051,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isDefer() {
 		return false;
 	}
-	
+
 	/**
 	 * <p>
 	 * Test if this expression is a
@@ -1815,7 +1815,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default IExpr get(List<Integer> index) {
 		return this;
 	}
-		  
+
 	/**
 	 * Check if this expression represents an <code>int</code> value. The value of
 	 * an <code>INum</code> object can be an <code>int</code> value.

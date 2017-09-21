@@ -84,17 +84,17 @@ public enum Array {
 	private static IExpr _of(Function<List<Integer>, ? extends IExpr> function, List<Integer> dimensions,
 			List<Integer> index) {
 		int level = index.size();
-		if (level == dimensions.size())
+		if (level == dimensions.size()) {
 			return function.apply(index);
-
+		}
 		List<Integer> copy = new ArrayList<>(index);
 		copy.add(-1);
 		int length = dimensions.get(level);
-		if (length < 0)
+		if (length < 0) {
 			throw new IllegalArgumentException();
-
+		}
 		IAST tensor = F.ListAlloc(length);// Tensors.empty();
-		for (int count = 0; count < length; ++count) {
+		for (int count = 1; count < length; ++count) {
 			copy.set(level, count);
 			tensor.append(_of(function, dimensions, copy));
 		}
