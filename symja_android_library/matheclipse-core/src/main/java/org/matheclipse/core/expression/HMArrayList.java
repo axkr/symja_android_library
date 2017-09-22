@@ -30,14 +30,16 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * HMArrayList is an implementation of a list, backed by an array. All optional operations adding, removing, and
- * replacing are supported. The elements can be any objects.
+ * HMArrayList is an implementation of a list, backed by an array. All optional
+ * operations adding, removing, and replacing are supported. The elements can be
+ * any objects.
  * 
  * Copied and modified from the Apache Harmony project.
  * 
@@ -60,8 +62,9 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	}
 
 	/**
-	 * Constructs a newlist containing the elements of the specified collection. The initial size of the
-	 * {@code ArrayList} will be 10% higher than the size of the specified collection.
+	 * Constructs a newlist containing the elements of the specified collection. The
+	 * initial size of the {@code ArrayList} will be 10% higher than the size of the
+	 * specified collection.
 	 * 
 	 * @param collection
 	 *            the collection of elements to add.
@@ -107,7 +110,8 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	 * 
 	 * @param collection
 	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
+	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
+	 *         otherwise.
 	 */
 	@Override
 	public boolean appendAll(Collection<? extends IExpr> collection) {
@@ -125,14 +129,16 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	}
 
 	/**
-	 * Inserts the objects in the specified collection at the specified location in this List. The objects are added in
-	 * the order they are returned from the collection's iterator.
+	 * Inserts the objects in the specified collection at the specified location in
+	 * this List. The objects are added in the order they are returned from the
+	 * collection's iterator.
 	 * 
 	 * @param location
 	 *            the index at which to insert.
 	 * @param collection
 	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
+	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
+	 *         otherwise.
 	 * @throws IndexOutOfBoundsException
 	 *             when {@code location < 0 || > size()}
 	 */
@@ -203,9 +209,10 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	}
 
 	/**
-	 * Inserts the specified object into this {@code ArrayList} at the specified location. The object is inserted before
-	 * any previous element at the specified location. If the location is equal to the size of this {@code ArrayList},
-	 * the object is added at the end.
+	 * Inserts the specified object into this {@code ArrayList} at the specified
+	 * location. The object is inserted before any previous element at the specified
+	 * location. If the location is equal to the size of this {@code ArrayList}, the
+	 * object is added at the end.
 	 * 
 	 * @param location
 	 *            the index at which to insert the object.
@@ -247,12 +254,13 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	}
 
 	/**
-	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code>
-	 * function (i.e. get(1) ). <br />
-	 * <b>Example:</b> for the AST representing the expression <code>Sin(x)</code>, <code>arg1()</code> returns
-	 * <code>x</code>.
+	 * Get the first argument (i.e. the second element of the underlying list
+	 * structure) of the <code>AST</code> function (i.e. get(1) ). <br />
+	 * <b>Example:</b> for the AST representing the expression <code>Sin(x)</code>,
+	 * <code>arg1()</code> returns <code>x</code>.
 	 * 
-	 * @return the first argument of the function represented by this <code>AST</code>.
+	 * @return the first argument of the function represented by this
+	 *         <code>AST</code>.
 	 * @see IExpr#head()
 	 */
 	@Override
@@ -261,12 +269,13 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	}
 
 	/**
-	 * Get the second argument (i.e. the third element of the underlying list structure) of the <code>AST</code>
-	 * function (i.e. get(2) ). <br />
-	 * <b>Example:</b> for the AST representing the expression <code>x^y</code> (i.e. <code>Power(x, y)</code>),
-	 * <code>arg2()</code> returns <code>y</code>.
+	 * Get the second argument (i.e. the third element of the underlying list
+	 * structure) of the <code>AST</code> function (i.e. get(2) ). <br />
+	 * <b>Example:</b> for the AST representing the expression <code>x^y</code>
+	 * (i.e. <code>Power(x, y)</code>), <code>arg2()</code> returns <code>y</code>.
 	 * 
-	 * @return the second argument of the function represented by this <code>AST</code>.
+	 * @return the second argument of the function represented by this
+	 *         <code>AST</code>.
 	 * @see IExpr#head()
 	 */
 	@Override
@@ -275,12 +284,13 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	}
 
 	/**
-	 * Get the third argument (i.e. the fourth element of the underlying list structure) of the <code>AST</code>
-	 * function (i.e. get(3) ).<br />
-	 * <b>Example:</b> for the AST representing the expression <code>f(a, b, c)</code>, <code>arg3()</code> returns
-	 * <code>c</code>.
+	 * Get the third argument (i.e. the fourth element of the underlying list
+	 * structure) of the <code>AST</code> function (i.e. get(3) ).<br />
+	 * <b>Example:</b> for the AST representing the expression
+	 * <code>f(a, b, c)</code>, <code>arg3()</code> returns <code>c</code>.
 	 * 
-	 * @return the third argument of the function represented by this <code>AST</code>.
+	 * @return the third argument of the function represented by this
+	 *         <code>AST</code>.
 	 * @see IExpr#head()
 	 */
 	@Override
@@ -289,12 +299,13 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	}
 
 	/**
-	 * Get the fourth argument (i.e. the fifth element of the underlying list structure) of the <code>AST</code>
-	 * function (i.e. get(4) ).<br />
-	 * <b>Example:</b> for the AST representing the expression <code>f(a, b ,c, d)</code>, <code>arg4()</code> returns
-	 * <code>d</code>.
+	 * Get the fourth argument (i.e. the fifth element of the underlying list
+	 * structure) of the <code>AST</code> function (i.e. get(4) ).<br />
+	 * <b>Example:</b> for the AST representing the expression
+	 * <code>f(a, b ,c, d)</code>, <code>arg4()</code> returns <code>d</code>.
 	 * 
-	 * @return the fourth argument of the function represented by this <code>AST</code>.
+	 * @return the fourth argument of the function represented by this
+	 *         <code>AST</code>.
 	 * @see IExpr#head()
 	 */
 	@Override
@@ -303,12 +314,13 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	}
 
 	/**
-	 * Get the fifth argument (i.e. the sixth element of the underlying list structure) of the <code>AST</code> function
-	 * (i.e. get(5) ).<br />
-	 * <b>Example:</b> for the AST representing the expression <code>f(a, b ,c, d, e)</code>, <code>arg5()</code>
-	 * returns <code>e</code> .
+	 * Get the fifth argument (i.e. the sixth element of the underlying list
+	 * structure) of the <code>AST</code> function (i.e. get(5) ).<br />
+	 * <b>Example:</b> for the AST representing the expression
+	 * <code>f(a, b ,c, d, e)</code>, <code>arg5()</code> returns <code>e</code> .
 	 * 
-	 * @return the fifth argument of the function represented by this <code>AST</code>.
+	 * @return the fifth argument of the function represented by this
+	 *         <code>AST</code>.
 	 * @see IExpr#head()
 	 */
 	@Override
@@ -342,8 +354,8 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	}
 
 	/**
-	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this
-	 * {@code HMArrayList}.
+	 * Returns a new {@code HMArrayList} with the same elements, the same size and
+	 * the same capacity as this {@code HMArrayList}.
 	 * 
 	 * @return a shallow copy of this {@code ArrayList}
 	 * @see java.lang.Cloneable
@@ -357,8 +369,8 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	}
 
 	/**
-	 * Ensures that after this operation the {@code ArrayList} can hold the specified number of elements without further
-	 * growing.
+	 * Ensures that after this operation the {@code ArrayList} can hold the
+	 * specified number of elements without further growing.
 	 * 
 	 * @param minimumCapacity
 	 *            the minimum capacity asked for.
@@ -507,8 +519,9 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	/** {@inheritDoc} */
 	@Override
 	public final IAST mapThread(IAST appendAST, final IAST replacement, int position) {
-//		final Function<IExpr, IExpr> function = Functors.replaceArg(replacement, position);
-		EvalEngine engine=EvalEngine.get();
+		// final Function<IExpr, IExpr> function = Functors.replaceArg(replacement,
+		// position);
+		EvalEngine engine = EvalEngine.get();
 		final Function<IExpr, IExpr> function = x -> {
 			IAST a = replacement.setAtCopy(position, x);
 			return engine.evaluate(a);
@@ -620,11 +633,13 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	}
 
 	/**
-	 * Searches this list for the specified object and returns the index of the first occurrence.
+	 * Searches this list for the specified object and returns the index of the
+	 * first occurrence.
 	 * 
 	 * @param object
 	 *            the object to search for.
-	 * @return the index of the first occurrence of the object, or -1 if it was not found.
+	 * @return the index of the first occurrence of the object, or -1 if it was not
+	 *         found.
 	 */
 	public int indexOf(IExpr object) {
 		Iterator<IExpr> it = iterator();
@@ -710,7 +725,8 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	}
 
 	/**
-	 * Removes the objects in the specified range from the start to the end, but not including the end index.
+	 * Removes the objects in the specified range from the start to the end, but not
+	 * including the end index.
 	 * 
 	 * @param start
 	 *            the index at which to start removing.
@@ -744,7 +760,8 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	}
 
 	/**
-	 * Replaces the element at the specified location in this {@code ArrayList} with the specified object.
+	 * Replaces the element at the specified location in this {@code ArrayList} with
+	 * the specified object.
 	 * 
 	 * @param location
 	 *            the index at which to put the specified object.
@@ -776,8 +793,19 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 		return lastIndex - firstIndex;
 	}
 
+	@Override
+	public Stream<IExpr> stream() {
+		return Arrays.stream(array, firstIndex + 1, lastIndex - firstIndex);
+	}
+
+	@Override
+	public Stream<IExpr> stream(int startInclusive, int endExclusive) {
+		return Arrays.stream(toArray(), firstIndex + startInclusive, firstIndex + endExclusive);
+	}
+
 	/**
-	 * Returns a new array containing all elements contained in this {@code ArrayList}.
+	 * Returns a new array containing all elements contained in this
+	 * {@code ArrayList}.
 	 * 
 	 * @return an array of the elements from this {@code ArrayList}
 	 */
@@ -790,7 +818,8 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	}
 
 	/**
-	 * Sets the capacity of this {@code ArrayList} to be the same as the current size.
+	 * Sets the capacity of this {@code ArrayList} to be the same as the current
+	 * size.
 	 * 
 	 * @see #size
 	 */

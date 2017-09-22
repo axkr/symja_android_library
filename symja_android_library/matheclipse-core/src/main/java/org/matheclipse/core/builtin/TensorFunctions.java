@@ -16,8 +16,35 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class TensorFunctions {
 	static {
 		F.Ordering.setEvaluator(new Ordering());
+		F.ListCorrelate.setEvaluator(new ListCorrelate());
 		F.TensorDimensions.setEvaluator(new TensorDimensions());
 		F.TensorRank.setEvaluator(new TensorRank());
+	}
+
+	private static class ListCorrelate extends AbstractEvaluator {
+		/**
+		 * <pre>
+		  * ListCorrelate[{x, y}, {a, b, c, d, e, f}] ==
+		  * {a x + b y, b x + c y, c x + d y, d x + e y, e x + f y}
+		 * </pre>
+		 * 
+		 * @param kernel
+		 * @param tensor
+		 * @return correlation of kernel with tensor
+		 */
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+			if (ast.arg1().isAST() && ast.arg2().isAST()) {
+				IAST kernel = (IAST) ast.arg1();
+				IAST tensor = (IAST) ast.arg2();
+				// List<Integer> mask = LinearAlgebra.getDimensions(kernel, kernel.head(),
+				// Integer.MAX_VALUE);
+				// List<Integer> size = LinearAlgebra.getDimensions(tensor, tensor.head(),
+				// Integer.MAX_VALUE);
+			}
+			return F.NIL;
+		}
 	}
 
 	private static class Ordering extends AbstractEvaluator {

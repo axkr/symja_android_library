@@ -941,6 +941,10 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "linearprogramming" : "LinearProgramming");
 	public final static IBuiltInSymbol LinearSolve = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "linearsolve" : "LinearSolve");
+	public final static IBuiltInSymbol ListCorrelate = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "listcorrelate" : "ListCorrelate");
+	public final static IBuiltInSymbol ListConvolve = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "listconvolve" : "ListConvolve");
 	public final static IBuiltInSymbol LiouvilleLambda = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "liouvillelambda" : "LiouvilleLambda");
 	public final static IBuiltInSymbol Log = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "log" : "Log");
