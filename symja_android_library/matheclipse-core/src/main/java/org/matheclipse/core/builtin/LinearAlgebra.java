@@ -1312,17 +1312,6 @@ public final class LinearAlgebra {
 	 */
 	private static class HilbertMatrix extends AbstractFunctionEvaluator {
 
-		private static class HilbertFunctionDiagonal implements IIndexFunction<IExpr> {
-
-			public HilbertFunctionDiagonal() {
-			}
-
-			@Override
-			public IRational evaluate(final int[] index) {
-				return F.fraction(1L, 1L + index[0] + index[1]);
-			}
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
@@ -1343,7 +1332,7 @@ public final class LinearAlgebra {
 			indexArray[0] = rowSize;
 			indexArray[1] = columnSize;
 			final IndexTableGenerator generator = new IndexTableGenerator(indexArray, F.List,
-					new HilbertFunctionDiagonal());
+					indx -> F.fraction(1L, 1L + indx[0] + indx[1]));
 			final IAST matrix = (IAST) generator.table();
 			matrix.addEvalFlags(IAST.IS_MATRIX);
 			return matrix;
@@ -1788,7 +1777,7 @@ public final class LinearAlgebra {
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
-			}finally {
+			} finally {
 				engine.setTogetherMode(togetherMode);
 			}
 
@@ -2994,13 +2983,14 @@ public final class LinearAlgebra {
 				indexArray[0] = len0;
 				indexArray[1] = len0;
 
-				final IIndexFunction<IExpr> function = new IIndexFunction<IExpr>() {
-					@Override
-					public IExpr evaluate(int[] index) {
-						return Power(lst.get(index[0] + 1), F.integer(index[1]));
-					}
-				};
-				final IndexTableGenerator generator = new IndexTableGenerator(indexArray, F.List, function);
+				// final IIndexFunction<IExpr> function = new IIndexFunction<IExpr>() {
+				// @Override
+				// public IExpr evaluate(int[] index) {
+				// return Power(lst.get(index[0] + 1), F.integer(index[1]));
+				// }
+				// };
+				final IndexTableGenerator generator = new IndexTableGenerator(indexArray, F.List, //
+						indx -> Power(lst.get(indx[0] + 1), F.integer(indx[1])));
 				final IAST matrix = (IAST) generator.table();
 				matrix.addEvalFlags(IAST.IS_MATRIX);
 				return matrix;

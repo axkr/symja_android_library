@@ -22,7 +22,7 @@ public class IndexFunctionDiagonal implements IIndexFunction<IExpr> {
 		return fValues[0];
 	}
 
-	protected boolean isMatched(final int[] index) {
+	private static boolean isMatched(final int[] index) {
 		for (int i = 1; i < index.length; i++) {
 			if (index[i] != index[i - 1]) {
 				return false;
