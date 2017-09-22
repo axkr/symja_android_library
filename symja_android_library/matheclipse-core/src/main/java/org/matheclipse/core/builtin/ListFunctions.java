@@ -69,14 +69,11 @@ public final class ListFunctions {
 		F.Array.setEvaluator(new Array());
 		F.Cases.setEvaluator(new Cases());
 		F.Catenate.setEvaluator(new Catenate());
-
 		F.Commonest.setEvaluator(new Commonest());
 		F.Complement.setEvaluator(new Complement());
 		F.Composition.setEvaluator(new Composition());
-
 		F.ConstantArray.setEvaluator(new ConstantArray());
 		F.Count.setEvaluator(new Count());
-
 		F.DeleteDuplicates.setEvaluator(new DeleteDuplicates());
 		F.DeleteCases.setEvaluator(new DeleteCases());
 		F.Drop.setEvaluator(new Drop());
@@ -87,12 +84,10 @@ public final class ListFunctions {
 		F.Gather.setEvaluator(new Gather());
 		F.Intersection.setEvaluator(new Intersection());
 		F.Join.setEvaluator(new Join());
-
 		F.Last.setEvaluator(new Last());
 		F.Length.setEvaluator(new Length());
 		F.LevelQ.setEvaluator(new LevelQ());
 		F.Level.setEvaluator(new Level());
-
 		F.Most.setEvaluator(new Most());
 		F.Nearest.setEvaluator(new Nearest());
 		F.PadLeft.setEvaluator(new PadLeft());
@@ -108,7 +103,6 @@ public final class ListFunctions {
 		F.RotateLeft.setEvaluator(new RotateLeft());
 		F.RotateRight.setEvaluator(new RotateRight());
 		F.Select.setEvaluator(new Select());
-
 		F.Split.setEvaluator(new Split());
 		F.SplitBy.setEvaluator(new SplitBy());
 		F.StandardDeviation.setEvaluator(new StandardDeviation());
