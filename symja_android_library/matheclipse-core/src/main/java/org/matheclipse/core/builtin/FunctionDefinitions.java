@@ -6,7 +6,6 @@ public final class FunctionDefinitions {
 	static {
 		AbsArg.setEvaluator(new org.matheclipse.core.reflection.system.AbsArg());
 		BesselJ.setEvaluator(new org.matheclipse.core.reflection.system.BesselJ());
-		CDF.setEvaluator(new org.matheclipse.core.reflection.system.CDF());
 		Coefficient.setEvaluator(new org.matheclipse.core.reflection.system.Coefficient());
 		CoefficientList.setEvaluator(new org.matheclipse.core.reflection.system.CoefficientList());
 		CoefficientRules.setEvaluator(new org.matheclipse.core.reflection.system.CoefficientRules());
@@ -70,7 +69,6 @@ public final class FunctionDefinitions {
 		Order.setEvaluator(new org.matheclipse.core.reflection.system.Order());
 		Out.setEvaluator(new org.matheclipse.core.reflection.system.Out());
 		Outer.setEvaluator(new org.matheclipse.core.reflection.system.Outer());
-		PDF.setEvaluator(new org.matheclipse.core.reflection.system.PDF());
 		Plot.setEvaluator(new org.matheclipse.core.reflection.system.Plot());
 		Plot3D.setEvaluator(new org.matheclipse.core.reflection.system.Plot3D());
 		Product.setEvaluator(new org.matheclipse.core.reflection.system.Product());

@@ -24,6 +24,7 @@ import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.builtin.AttributeFunctions;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.Combinatoric;
+import org.matheclipse.core.builtin.ComputationalGeometryFunctions;
 import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.builtin.FunctionDefinitions;
 import org.matheclipse.core.builtin.IntegerFunctions;
@@ -35,6 +36,7 @@ import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.builtin.RandomFunctions;
 import org.matheclipse.core.builtin.SpecialFunctions;
+import org.matheclipse.core.builtin.StatisticsFunctions;
 import org.matheclipse.core.builtin.StringFunctions;
 import org.matheclipse.core.builtin.Structure;
 import org.matheclipse.core.builtin.TensorFunctions;
@@ -364,8 +366,7 @@ public class F {
 	public final static IBuiltInSymbol ClearAttributes = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "clearattributes" : "ClearAttributes");
 	public final static IBuiltInSymbol Collect = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "collect" : "Collect",
-			new org.matheclipse.core.builtin.function.Collect());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "collect" : "Collect");
 	public final static IBuiltInSymbol Compile = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "compile" : "Compile",
 			new org.matheclipse.core.builtin.function.Compile());
@@ -702,6 +703,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "constantarray" : "ConstantArray");
 	public final static IBuiltInSymbol ContinuedFraction = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "continuedfraction" : "ContinuedFraction");
+	public final static IBuiltInSymbol ConvexHullMesh = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "convexhullmesh" : "ConvexHullMesh");
 	public final static IBuiltInSymbol CoprimeQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "coprimeq" : "CoprimeQ");
 	public final static IBuiltInSymbol Correlation = initFinalSymbol(
@@ -1998,6 +2001,8 @@ public class F {
 			SpecialFunctions.initialize();
 			StringFunctions.initialize();
 			RandomFunctions.initialize();
+			StatisticsFunctions.initialize();
+			ComputationalGeometryFunctions.initialize();
 
 			// initialize only the utility function rules for Integrate
 			// final EvalEngine engine = EvalEngine.get();

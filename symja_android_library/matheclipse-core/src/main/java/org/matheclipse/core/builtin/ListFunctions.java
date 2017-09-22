@@ -69,14 +69,14 @@ public final class ListFunctions {
 		F.Array.setEvaluator(new Array());
 		F.Cases.setEvaluator(new Cases());
 		F.Catenate.setEvaluator(new Catenate());
-		F.CentralMoment.setEvaluator(new CentralMoment());
+
 		F.Commonest.setEvaluator(new Commonest());
 		F.Complement.setEvaluator(new Complement());
 		F.Composition.setEvaluator(new Composition());
-		F.Correlation.setEvaluator(new Correlation());
+
 		F.ConstantArray.setEvaluator(new ConstantArray());
 		F.Count.setEvaluator(new Count());
-		F.Covariance.setEvaluator(new Covariance());
+
 		F.DeleteDuplicates.setEvaluator(new DeleteDuplicates());
 		F.DeleteCases.setEvaluator(new DeleteCases());
 		F.Drop.setEvaluator(new Drop());
@@ -87,13 +87,12 @@ public final class ListFunctions {
 		F.Gather.setEvaluator(new Gather());
 		F.Intersection.setEvaluator(new Intersection());
 		F.Join.setEvaluator(new Join());
-		F.Kurtosis.setEvaluator(new Kurtosis());
+
 		F.Last.setEvaluator(new Last());
 		F.Length.setEvaluator(new Length());
 		F.LevelQ.setEvaluator(new LevelQ());
 		F.Level.setEvaluator(new Level());
-		F.Mean.setEvaluator(new Mean());
-		F.Median.setEvaluator(new Median());
+
 		F.Most.setEvaluator(new Most());
 		F.Nearest.setEvaluator(new Nearest());
 		F.PadLeft.setEvaluator(new PadLeft());
@@ -109,7 +108,7 @@ public final class ListFunctions {
 		F.RotateLeft.setEvaluator(new RotateLeft());
 		F.RotateRight.setEvaluator(new RotateRight());
 		F.Select.setEvaluator(new Select());
-		F.Skewness.setEvaluator(new Skewness());
+
 		F.Split.setEvaluator(new Split());
 		F.SplitBy.setEvaluator(new SplitBy());
 		F.StandardDeviation.setEvaluator(new StandardDeviation());
@@ -118,7 +117,7 @@ public final class ListFunctions {
 		F.Tally.setEvaluator(new Tally());
 		F.Total.setEvaluator(new Total());
 		F.Union.setEvaluator(new Union());
-		F.Variance.setEvaluator(new Variance());
+
 	}
 
 	private static interface IArrayFunction {
@@ -755,50 +754,6 @@ public final class ListFunctions {
 
 	}
 
-	/**
-	 * <pre>
-	 * CentralMoment(list, r)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * gives the the <code>r</code>th central moment (i.e. the <code>r</code>th
-	 * moment about the mean) of <code>list</code>.
-	 * </p>
-	 * </blockquote>
-	 * <p>
-	 * See:<br />
-	 * </p>
-	 * <ul>
-	 * <li><a href="https://en.wikipedia.org/wiki/Central_moment">Wikipedia -
-	 * Central moment</a></li>
-	 * </ul>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt;&gt; CentralMoment({1.1, 1.2, 1.4, 2.1, 2.4}, 4)
-	 * 0.10085
-	 * </pre>
-	 */
-	private final static class CentralMoment extends AbstractEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-			if (ast.arg1().isList()) {
-				IAST list = (IAST) ast.arg1();
-				IExpr r = ast.arg2();
-				return F.Divide(F.Total(F.Power(F.Subtract(list, F.Mean(list)), r)), F.Length(list));
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-		}
-
-	}
-
 	private final static class Commonest extends AbstractEvaluator {
 
 		@Override
@@ -1046,23 +1001,6 @@ public final class ListFunctions {
 		}
 	}
 
-	private final static class Correlation extends AbstractFunctionEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-			IExpr a = (IAST) ast.arg1();
-			IExpr b = (IAST) ast.arg2();
-			int dim1 = a.isVector();
-			int dim2 = b.isVector();
-			if (dim1 >= 0&&dim1==dim2) {
-				return F.Divide(F.Covariance(a, b), F.Times(F.StandardDeviation(a), F.StandardDeviation(b)));
-			}
-			return F.NIL;
-		}
-
-	}
-	
 	/**
 	 * Count the number of elements in an expression which match the given pattern.
 	 * 
@@ -1112,109 +1050,6 @@ public final class ListFunctions {
 			return F.integer(mf.getCounter());
 		}
 
-	}
-
-	/**
-	 * Compute the covariance.
-	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Covariance">Covariance</a>
-	 * 
-	 */
-	private final static class Covariance extends AbstractMatrix1Expr {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-			if (ast.size() == 2) {
-				return super.evaluate(ast, engine);
-			}
-
-			if (ast.size() == 3) {
-				final IAST arg1 = (IAST) ast.arg1();
-				final IAST arg2 = (IAST) ast.arg2();
-				return evaluateArg2(arg1, arg2, engine);
-			}
-			return F.NIL;
-		}
-
-		private IExpr evaluateArg2(final IAST arg1, final IAST arg2, EvalEngine engine) {
-			try {
-				// if (engine.isApfloat()) {
-				// FieldMatrix<IExpr> arg1FieldMatrix =
-				// Convert.list2Matrix(arg1);
-				// if (arg1FieldMatrix != null) {
-				// FieldMatrix<IExpr> arg2FieldMatrix =
-				// Convert.list2Matrix(arg2);
-				// if (arg1FieldMatrix != null) {
-				// return matrixEval2(arg1FieldMatrix, arg2FieldMatrix);
-				// }
-				// }
-				// return F.NIL;
-				// }
-				int arg1Length = arg1.isVector();
-				if (arg1Length > 1) {
-					int arg2Length = arg2.isVector();
-					if (arg1Length == arg2Length) {
-						try {
-							double[] arg1DoubleArray = arg1.toDoubleVector();
-							double[] arg2DoubleArray = arg2.toDoubleVector();
-							org.hipparchus.stat.correlation.Covariance cov = new org.hipparchus.stat.correlation.Covariance();
-							return F.num(cov.covariance(arg1DoubleArray, arg2DoubleArray, true));
-						} catch (Exception ex) {
-							//
-						}
-						return vectorCovarianceSymbolic(arg1, arg2, arg1Length);
-					}
-				}
-			} catch (final WrongArgumentType e) {
-				// WrongArgumentType occurs in list2RealMatrix(),
-				// if the matrix elements aren't pure numerical values
-			} catch (final IndexOutOfBoundsException e) {
-				if (Config.SHOW_STACKTRACE) {
-					e.printStackTrace();
-				}
-			}
-			return F.NIL;
-		}
-
-		public static IExpr vectorCovarianceSymbolic(final IAST arg1, final IAST arg2, int arg1Length) {
-			if (arg1Length == 2) {
-				return F.Times(F.C1D2, F.Subtract(arg1.arg1(), arg1.arg2()),
-						F.Subtract(F.Conjugate(arg2.arg1()), F.Conjugate(arg2.arg2())));
-			}
-			IAST num1 = arg1.apply(F.Plus);
-			IExpr factor = F.integer(-1 * (arg1.size() - 2));
-			IAST v1 = F.Plus();
-			for (int i = 1; i < arg1.size(); i++) {
-				v1.append(F.Times(F.CN1, num1.setAtClone(i, F.Times(factor, arg1.get(i))), F.Conjugate(arg2.get(i))));
-			}
-			return F.Divide(v1, F.integer((arg1.size() - 1) * (arg1.size() - 2)));
-		}
-
-		@Override
-		public IExpr matrixEval(FieldMatrix<IExpr> matrix) {
-			return F.NIL;
-		}
-
-		@Override
-		public IExpr numericEval(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-			if (ast.size() == 2) {
-				return super.numericEval(ast, engine);
-			}
-			if (ast.size() == 3) {
-				final IAST arg1 = (IAST) ast.arg1();
-				final IAST arg2 = (IAST) ast.arg2();
-				return evaluateArg2(arg1, arg2, engine);
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public IExpr realMatrixEval(RealMatrix matrix) {
-			org.hipparchus.stat.correlation.Covariance cov = new org.hipparchus.stat.correlation.Covariance(matrix);
-			return new ASTRealMatrix(cov.getCovarianceMatrix(), false);
-		}
 	}
 
 	private final static class DeleteCases extends AbstractCoreFunctionEvaluator {
@@ -1831,94 +1666,6 @@ public final class ListFunctions {
 
 	}
 
-	/**
-	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Arithmetic_mean">Arithmetic
-	 * mean</a>
-	 */
-	private final static class Mean extends AbstractTrigArg1 {
-
-		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
-			if (arg1.isRealVector()) {
-				return F.num(StatUtils.mean(arg1.toDoubleVector()));
-			}
-			if (arg1.isList()) {
-				final IAST list = (IAST) arg1;
-				return F.Times(list.apply(F.Plus), F.Power(F.integer(list.size() - 1), F.CN1));
-			}
-
-			if (arg1.isAST()) {
-				IAST dist = (IAST) arg1;
-				if (dist.head().isSymbol()) {
-					ISymbol head = (ISymbol) dist.head();
-					if (arg1.isAST1()) {
-						if (head.equals(F.BernoulliDistribution)) {
-							return dist.arg1();
-						} else if (head.equals(F.PoissonDistribution)) {
-							return dist.arg1();
-						}
-					} else if (arg1.isAST2()) {
-						if (head.equals(F.BinomialDistribution)) {
-							return F.Times(dist.arg1(), dist.arg2());
-						} else if (head.equals(F.NormalDistribution)) {
-							return dist.arg1();
-						}
-					} else if (arg1.isAST3()) {
-						IExpr n = dist.arg1();
-						IExpr nSucc = dist.arg2();
-						IExpr nTot = dist.arg3();
-						if (head.equals(F.HypergeometricDistribution)) {
-							return F.Divide(F.Times(n, nSucc), nTot);
-						}
-					}
-				}
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.NOATTRIBUTE);
-		}
-
-	}
-
-	/**
-	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Median">Median</a>
-	 */
-	private final static class Median extends AbstractTrigArg1 {
-
-		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
-			if (arg1.isRealVector()) {
-				return F.num(StatUtils.percentile(arg1.toDoubleVector(), 50));
-			}
-			if (arg1.isList()) {
-				final IAST list = (IAST) arg1;
-				if (list.size() > 1) {
-					final IAST sortedList = list.copy();
-					EvalAttributes.sort(sortedList);
-					int size = sortedList.size();
-					if ((size & 0x00000001) == 0x00000001) {
-						// odd number of elements
-						size = size / 2;
-						return F.Times(F.Plus(sortedList.get(size), sortedList.get(size + 1)), F.C1D2);
-					} else {
-						return sortedList.get(size / 2);
-					}
-				}
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.NOATTRIBUTE);
-		}
-	}
-
 	private final static class Most extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -2001,24 +1748,6 @@ public final class ListFunctions {
 			}
 			return F.NIL;
 		}
-	}
-
-	private final static class Kurtosis extends AbstractEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-			if (ast.arg1().isList()) {
-				IAST list = (IAST) ast.arg1();
-				return F.Divide(F.CentralMoment(list, F.C4), F.Power(F.CentralMoment(list, F.C2), F.C2));
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-		}
-
 	}
 
 	private final static class PadLeft extends AbstractFunctionEvaluator {
@@ -2666,42 +2395,6 @@ public final class ListFunctions {
 
 	}
 
-	/**
-	 * <pre>
-	 * Skewness(list)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * gives Pearson's moment coefficient of skewness for $list$ (a measure for
-	 * estimating the symmetry of a distribution).
-	 * </p>
-	 * </blockquote>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt;&gt; Skewness({1.1, 1.2, 1.4, 2.1, 2.4})
-	 * 0.40704
-	 * </pre>
-	 */
-	private final static class Skewness extends AbstractEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-			if (ast.arg1().isList()) {
-				IAST list = (IAST) ast.arg1();
-				return F.Divide(F.CentralMoment(list, F.C3), F.Power(F.CentralMoment(list, F.C2), F.C3D2));
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-		}
-
-	}
-
 	private final static class Split extends AbstractEvaluator {
 
 		@Override
@@ -2815,7 +2508,7 @@ public final class ListFunctions {
 			if (ast.arg1().isAST()) {
 				IAST arg1 = (IAST) ast.arg1();
 				int[] matrixDimensions = arg1.isMatrix();
-				if (matrixDimensions != null) { 
+				if (matrixDimensions != null) {
 					IAST result = F.ListAlloc(matrixDimensions[0]);
 					for (int i = 1; i < matrixDimensions[1] + 1; i++) {
 						IAST list = F.ListAlloc(matrixDimensions[1]);
@@ -2838,7 +2531,6 @@ public final class ListFunctions {
 
 	}
 
-	
 	/**
 	 * Table structure generator (i.e. lists, vectors, matrices, tensors)
 	 */
@@ -3338,75 +3030,6 @@ public final class ListFunctions {
 				result.append(expr);
 			}
 			return result;
-		}
-
-	}
-
-	/**
-	 * Compute the variance for a list of elements
-	 */
-	private final static class Variance extends AbstractFunctionEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
-			if (ast.arg1().isAST()) {
-				IAST arg1 = (IAST) ast.arg1();
-				int[] matrixDimensions = arg1.isMatrix();
-				if (matrixDimensions != null) {
-					if (arg1.isRealMatrix()) {
-						double[][] matrix = arg1.toDoubleMatrix();
-						matrix = Convert.toDoubleTransposed(matrix);
-						double[] result = new double[matrixDimensions[1]];
-						for (int i = 0; i < matrix.length; i++) {
-							result[i] = StatUtils.variance(matrix[i]);
-						}
-						return new ASTRealVector(result, false);
-					}
-					IAST result = F.ListAlloc(matrixDimensions[0]);
-					for (int i = 1; i < matrixDimensions[1] + 1; i++) {
-						IAST list = F.ListAlloc(matrixDimensions[1]);
-						IAST variance = F.Variance(list);
-						for (int j = 1; j < matrixDimensions[0] + 1; j++) {
-							list.append(arg1.getPart(j, i));
-						}
-						result.append(variance);
-					}
-					return result;
-				}
-
-				int dim = arg1.isVector();
-				if (dim >= 0) {
-					if (arg1.isRealVector()) {
-						return F.num(StatUtils.variance(arg1.toDoubleVector()));
-					}
-					return Covariance.vectorCovarianceSymbolic(arg1, arg1, dim);
-				}
-
-				if (arg1.isAST()) {
-					IAST dist = arg1;
-					if (dist.head().isSymbol()) {
-						ISymbol head = (ISymbol) dist.head();
-						if (arg1.isAST1()) {
-							if (head.equals(F.BernoulliDistribution)) {
-							} else if (head.equals(F.PoissonDistribution)) {
-							}
-						} else if (arg1.isAST2()) {
-							if (head.equals(F.BinomialDistribution)) {
-							} else if (head.equals(F.NormalDistribution)) {
-							}
-						} else if (arg1.isAST3()) {
-							IExpr n = dist.arg1();
-							IExpr nSucc = dist.arg2();
-							IExpr nTot = dist.arg3();
-							if (head.equals(F.HypergeometricDistribution)) {
-							}
-						}
-					}
-				}
-			}
-			return F.NIL;
 		}
 
 	}
