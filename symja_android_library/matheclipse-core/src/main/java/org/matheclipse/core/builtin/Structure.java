@@ -47,8 +47,9 @@ public class Structure {
 	/**
 	 * 
 	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Apply"> Apply</a>
+	 * See the online Symja function reference: <a href=
+	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Apply">
+	 * Apply</a>
 	 * </p>
 	 *
 	 */
@@ -80,7 +81,8 @@ public class Structure {
 			return evalApply(arg1, arg2, evaledAST, lastIndex, heads, engine);
 		}
 
-		public static IExpr evalApply(IExpr arg1, IExpr arg2, IAST evaledAST, int lastIndex, boolean heads, EvalEngine engine) {
+		public static IExpr evalApply(IExpr arg1, IExpr arg2, IAST evaledAST, int lastIndex, boolean heads,
+				EvalEngine engine) {
 			VisitorLevelSpecification level = null;
 			java.util.function.Function<IExpr, IExpr> af = x -> x.isAST() ? ((IAST) x).setAtCopy(0, arg1) : F.NIL;
 			try {
@@ -130,8 +132,9 @@ public class Structure {
 		}
 
 		/**
-		 * Calculates the depth of an expression. Atomic expressions (no sublists) have depth <code>1</code> Example:
-		 * the nested list <code>[x,[y]]</code> has depth <code>3</code>
+		 * Calculates the depth of an expression. Atomic expressions (no sublists) have
+		 * depth <code>1</code> Example: the nested list <code>[x,[y]]</code> has depth
+		 * <code>3</code>
 		 * 
 		 * @param headOffset
 		 * 
@@ -259,7 +262,8 @@ public class Structure {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			// don't set HOLDALL - the arguments are evaluated before applying the 'function head'
+			// don't set HOLDALL - the arguments are evaluated before applying the 'function
+			// head'
 		}
 	}
 
@@ -498,7 +502,8 @@ public class Structure {
 						return F.NIL;
 					};
 
-					VisitorLevelSpecification level = new VisitorLevelSpecification(sf, ast.get(lastIndex), heads, engine);
+					VisitorLevelSpecification level = new VisitorLevelSpecification(sf, ast.get(lastIndex), heads,
+							engine);
 
 					arg2.accept(level);
 					for (int i = 1; i < result.size(); i++) {
@@ -536,8 +541,7 @@ public class Structure {
 					if (ast.isAST1()) {
 						EvalAttributes.sort(shallowCopy);
 					} else {
-						// use the 2nd argument as a head for the comparator
-						// operation:
+						// use the 2nd argument as a head for the comparator operation:
 						EvalAttributes.sort(shallowCopy, new Predicates.IsBinaryFalse(ast.arg2()));
 					}
 					return shallowCopy;
@@ -603,8 +607,9 @@ public class Structure {
 		}
 
 		/**
-		 * Thread through all lists in the arguments of the IAST [i.e. the list header has the attribute
-		 * ISymbol.LISTABLE] example: Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}
+		 * Thread through all lists in the arguments of the IAST [i.e. the list header
+		 * has the attribute ISymbol.LISTABLE] example: Sin[{2,x,Pi}] ==>
+		 * {Sin[2],Sin[x],Sin[Pi]}
 		 * 
 		 * @param list
 		 * @param head
@@ -666,14 +671,16 @@ public class Structure {
 	}
 
 	/**
-	 * Maps the elements of the <code>expr</code> with the cloned <code>replacement</code>. <code>replacement</code> is
-	 * an IAST where the argument at the given position will be replaced by the currently mapped element.
+	 * Maps the elements of the <code>expr</code> with the cloned
+	 * <code>replacement</code>. <code>replacement</code> is an IAST where the
+	 * argument at the given position will be replaced by the currently mapped
+	 * element.
 	 * 
 	 * 
 	 * @param expr
 	 * @param replacement
-	 *            an IAST there the argument at the given position is replaced by the currently mapped argument of this
-	 *            IAST.
+	 *            an IAST there the argument at the given position is replaced by
+	 *            the currently mapped argument of this IAST.
 	 * @param position
 	 * @return
 	 */
@@ -697,14 +704,16 @@ public class Structure {
 	}
 
 	/**
-	 * Maps the elements of the <code>expr</code> with the cloned <code>replacement</code>. <code>replacement</code> is
-	 * an IAST where the argument at the given position will be replaced by the currently mapped element.
+	 * Maps the elements of the <code>expr</code> with the cloned
+	 * <code>replacement</code>. <code>replacement</code> is an IAST where the
+	 * argument at the given position will be replaced by the currently mapped
+	 * element.
 	 * 
 	 * 
 	 * @param expr
 	 * @param replacement
-	 *            an IAST there the argument at the given position is replaced by the currently mapped argument of this
-	 *            IAST.
+	 *            an IAST there the argument at the given position is replaced by
+	 *            the currently mapped argument of this IAST.
 	 * @param position
 	 * @return
 	 */

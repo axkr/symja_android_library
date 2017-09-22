@@ -4529,10 +4529,42 @@ public class F {
 		return ast(List, capacity, false);
 	}
 
+	/**
+	 * For positive n, add the first n elements of <code>numbers</code> to the
+	 * list.For negative n, add the first n elements of <code>numbers</code> to the
+	 * list.
+	 * 
+	 * @param n
+	 * @param numbers
+	 * @return
+	 */
 	public static IAST List(final int n, final Integer... numbers) {
-		IInteger a[] = new IInteger[n];
-		for (int i = 0; i < n; i++) {
-			a[i] = new IntegerSym(numbers[i]);
+		int nPositive = n;
+		if (n < 0) {
+			nPositive = -n;
+		}
+		int size = numbers.length;
+		if (nPositive > size) {
+			nPositive = size;
+		}
+		IInteger[] a = new IInteger[nPositive];
+		if (n < 0) {
+			if (nPositive < size) {
+				size = size + n;
+			} else {
+				size=0;
+			}
+			int j = 0;
+			for (int i = numbers.length - 1; i >= size; i--) {
+				a[j++] = new IntegerSym(numbers[i]);
+			}
+		} else {
+			if (n < size) {
+				size = n;
+			}
+			for (int i = 0; i < size; i++) {
+				a[i] = new IntegerSym(numbers[i]);
+			}
 		}
 		return ast(a, List);
 	}

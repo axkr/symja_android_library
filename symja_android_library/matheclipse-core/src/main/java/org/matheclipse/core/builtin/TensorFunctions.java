@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -55,7 +56,7 @@ public class TensorFunctions {
 		 *
 		 */
 		private static class ArrayIndexComparator implements Comparator<Integer> {
-			private final IAST ast;
+			protected final IAST ast;
 
 			public ArrayIndexComparator(IAST ast) {
 				this.ast = ast;
@@ -76,16 +77,38 @@ public class TensorFunctions {
 			}
 		}
 
+		private static class PredicateComparator extends ArrayIndexComparator {
+			final Comparator<IExpr> comparator;
+
+			public PredicateComparator(IAST ast, Comparator<IExpr> comparator) {
+				super(ast);
+				this.comparator = comparator;
+			}
+
+			@Override
+			public int compare(Integer index1, Integer index2) {
+				return comparator.compare(ast.get(index1), ast.get(index2));
+			}
+		}
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
+			Validate.checkRange(ast, 2, 4);
+
 			if (ast.arg1().isAST()) {
 				IAST list = (IAST) ast.arg1();
-				ArrayIndexComparator comparator = new ArrayIndexComparator(list);
+				ArrayIndexComparator comparator;
+				if (ast.size() >= 4) {
+					// use the 3rd argument as a head for the comparator operation:
+					comparator = new PredicateComparator(list, new Predicates.IsBinaryFalse(ast.arg3()));
+				} else {
+					// use the default IExpr#compareTo() method
+					comparator = new ArrayIndexComparator(list);
+				}
 				Integer[] indexes = comparator.createIndexArray();
 				Arrays.sort(indexes, comparator);
 				int n = indexes.length;
-				if (ast.size() == 3) {
+				if (ast.size() >= 3) {
 					IExpr arg2 = ast.arg2();
 					if (arg2.equals(F.All)) {
 						n = indexes.length;
@@ -93,9 +116,9 @@ public class TensorFunctions {
 						ISignedNumber sn = (ISignedNumber) arg2;
 						try {
 							n = sn.toInt();
-							if (n < 0) {
-								return F.NIL;
-							}
+							// if (n < 0) {
+							// return F.NIL;
+							// }
 						} catch (ArithmeticException ae) {
 							return F.NIL;
 						}
