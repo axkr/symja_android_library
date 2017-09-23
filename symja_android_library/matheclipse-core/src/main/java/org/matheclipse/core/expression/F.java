@@ -3469,42 +3469,6 @@ public class F {
 	}
 
 	/**
-	 * Create a function with 2 arguments and evaluate it.
-	 * 
-	 * @param head
-	 * @param a0
-	 * @param a1
-	 * @return the evaluated object
-	 * @deprecated
-	 */
-	@Deprecated
-	private static IExpr eval(final ISymbol head, final IExpr a0, final IExpr a1) {
-		final IAST ast = ast(head);
-		ast.append(a0);
-		ast.append(a1);
-		return EvalEngine.get().evaluate(ast);
-	}
-
-	/**
-	 * Create a function with 3 arguments and evaluate it.
-	 * 
-	 * @param head
-	 * @param a0
-	 * @param a1
-	 * @param a2
-	 * @return the evaluated object
-	 * @deprecated
-	 */
-	@Deprecated
-	private static IExpr eval(final ISymbol head, final IExpr a0, final IExpr a1, final IExpr a2) {
-		final IAST ast = ast(head);
-		ast.append(a0);
-		ast.append(a1);
-		ast.append(a2);
-		return EvalEngine.get().evaluate(ast);
-	}
-
-	/**
 	 * Evaluate <code>Expand()</code> for the given expression. returns the given
 	 * argument.
 	 * 
@@ -4504,6 +4468,10 @@ public class F {
 		return quaternary(LinearModelFit, a0, a1, a2, a3);
 	}
 
+	public static IAST LinearProgramming(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(LinearProgramming, a0, a1, a2);
+	}
+
 	public static IAST LinearSolve(final IExpr a0, final IExpr a1) {
 		return binaryAST2(LinearSolve, a0, a1);
 	}
@@ -4552,7 +4520,7 @@ public class F {
 			if (nPositive < size) {
 				size = size + n;
 			} else {
-				size=0;
+				size = 0;
 			}
 			int j = 0;
 			for (int i = numbers.length - 1; i >= size; i--) {
@@ -4821,6 +4789,14 @@ public class F {
 	 */
 	public static IAST newInstance(final int intialArgumentsCapacity, final IExpr head) {
 		return AST.newInstance(intialArgumentsCapacity, head);
+	}
+
+	public static IAST NMaximize(final IExpr a0, final IExpr a1) {
+		return binaryAST2(NMaximize, a0, a1);
+	}
+
+	public static IAST NMinimize(final IExpr a0, final IExpr a1) {
+		return binaryAST2(NMinimize, a0, a1);
 	}
 
 	public static IAST Norm(final IExpr a) {
