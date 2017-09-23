@@ -6,12 +6,17 @@ import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.Show;
 
+import java.util.Arrays;
+
+import org.hipparchus.stat.descriptive.moment.Mean;
+import org.hipparchus.stat.descriptive.moment.StandardDeviation;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.UnaryNumerical;
+import org.matheclipse.core.graphics.Dimensions2D;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
@@ -66,12 +71,12 @@ public class Plot extends AbstractEvaluator {
 					final IAST graphics = Graphics();
 					IAST line = Line();
 					IExpr temp;
-
+					Dimensions2D dim = new Dimensions2D();
 					if (ast.get(1).isList()) {
 						final IAST list = (IAST) ast.get(1);
 						final IAST primitives = List();
-						for (int i = 1; i < list.size(); i++) { 
-							temp = plotLine(xMinD, xMaxd, yMinD, yMaxD, list.get(i), x, engine);
+						for (int i = 1; i < list.size(); i++) {
+							temp = plotLine(xMinD, xMaxd, yMinD, yMaxD, list.get(i), x, dim, engine);
 
 							if (temp.isPresent()) {
 								line.append(temp);
@@ -84,13 +89,19 @@ public class Plot extends AbstractEvaluator {
 						graphics.append(primitives);
 
 					} else {
-						temp = plotLine(xMinD, xMaxd, yMinD, yMaxD, ast.get(1), x, engine);
+						temp = plotLine(xMinD, xMaxd, yMinD, yMaxD, ast.get(1), x, dim, engine);
 						if (temp.isPresent()) {
 							line.append(temp);
 							graphics.append(line);
 						}
 					}
-					final IExpr options[] = { Rule(F.PlotRange, F.Automatic), Rule(F.AxesStyle, F.Automatic),
+					IAST plotRange;
+					if (dim.isValidRange()) {
+						plotRange = Rule(F.PlotRange, F.List(F.List(dim.xMin, dim.xMax), F.List(dim.yMin, dim.yMax)));
+					} else {
+						plotRange = Rule(F.PlotRange, F.Automatic);
+					}
+					final IExpr options[] = { plotRange, Rule(F.AxesStyle, F.Automatic),
 							Rule(F.AxesOrigin, List(F.C0, F.C0)), Rule(F.Axes, F.True), Rule(F.Background, F.White) };
 					graphics.appendAll(F.ast(options, F.List), 1, options.length);
 					return Show(graphics);
@@ -105,27 +116,71 @@ public class Plot extends AbstractEvaluator {
 	}
 
 	/**
+	 * Calculates mean and standard deviation, throwing away all points which are
+	 * more than 'thresh' number of standard deviations away from the mean. These
+	 * are then used to find good vmin and vmax values. These values can then be
+	 * used to find Automatic Plotrange.
+	 * 
+	 * @param values
+	 *            of the y-axe
+	 * @return vmin and vmax value of the range
+	 */
+	private double[] automaticPlotRange(final double values[]) {
+
+		double thresh = 2.0;
+		double[] yValues = new double[values.length];
+		System.arraycopy(values, 0, yValues, 0, values.length);
+		Arrays.sort(yValues);
+		double valavg = new Mean().evaluate(yValues);
+		double valdev = new StandardDeviation().evaluate(yValues, valavg);
+
+		int n1 = 0;
+		int n2 = values.length - 1;
+		if (valdev != 0) {
+			for (double v : yValues) {
+				if (Math.abs(v - valavg) / valdev < thresh) {
+					break;
+				}
+				n1 += 1;
+			}
+			for (int i = yValues.length - 1; i >= 0; i--) {
+				double v = yValues[i];
+				if (Math.abs(v - valavg) / valdev < thresh) {
+					break;
+				}
+				n2 -= 1;
+			}
+		}
+
+		double vrange = yValues[n2] - yValues[n1];
+		double vmin = yValues[n1] - 0.05 * vrange; // 5% extra looks nice
+		double vmax = yValues[n2] + 0.05 * vrange;
+		return new double[] { vmin, vmax };
+	}
+
+	/**
 	 * 
 	 * @param xMin
 	 *            the minimum x-range value
 	 * @param xMax
 	 *            the maximum x-range value
 	 * @param yMin
-	 *            if <code>yMin != 0 && yMax != 0</code> filter only results which are in the y-range and set yMin or
-	 *            yMax as plot result-range.
+	 *            if <code>yMin != 0 && yMax != 0</code> filter only results which
+	 *            are in the y-range and set yMin or yMax as plot result-range.
 	 * @param yMax
-	 *            if <code>yMin != 0 && yMax != 0</code> filter only results which are in the y-range and set yMin or
-	 *            yMax as plot result-range.
+	 *            if <code>yMin != 0 && yMax != 0</code> filter only results which
+	 *            are in the y-range and set yMin or yMax as plot result-range.
 	 * @param function
 	 *            the function which should be plotted
 	 * @param xVar
 	 *            the variable name
 	 * @param engine
 	 *            the evaluation engine
-	 * @return <code>F.NIL</code> is no conversion of the data into an <code>IExpr</code> was possible
+	 * @return <code>F.NIL</code> is no conversion of the data into an
+	 *         <code>IExpr</code> was possible
 	 */
 	public IExpr plotLine(final double xMin, final double xMax, final double yMin, final double yMax,
-			final IExpr function, final ISymbol xVar, final EvalEngine engine) {
+			final IExpr function, final ISymbol xVar, Dimensions2D autoPlotRange, final EvalEngine engine) {
 		final double step = (xMax - xMin) / N;
 		double y;
 
@@ -154,6 +209,10 @@ public class Plot extends AbstractEvaluator {
 			}
 			x += step;
 		}
+		double[] vMinMax = automaticPlotRange(data[1]);
+		autoPlotRange.minMax(xMin, x, vMinMax[0], vMinMax[1]);
+		// autoPlotRange.append(F.List(xMin, vMinMax[0]));
+		// autoPlotRange.append(F.List(x, vMinMax[1]));
 		return Convert.toExprTransposed(data);
 	}
 
