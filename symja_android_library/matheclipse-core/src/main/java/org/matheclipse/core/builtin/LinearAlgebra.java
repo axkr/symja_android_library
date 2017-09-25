@@ -58,7 +58,6 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Matrix;
 import org.matheclipse.core.eval.interfaces.AbstractNonOrderlessArgMultiple;
-import org.matheclipse.core.eval.util.IIndexFunction;
 import org.matheclipse.core.eval.util.IndexFunctionDiagonal;
 import org.matheclipse.core.eval.util.IndexTableGenerator;
 import org.matheclipse.core.expression.ASTRealMatrix;
@@ -70,7 +69,6 @@ import org.matheclipse.core.expression.Symbol;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
-import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public final class LinearAlgebra {
@@ -804,21 +802,25 @@ public final class LinearAlgebra {
 			}
 			if (ast.arg1().isAST()) {
 				if (maximumLevel > 0) {
-					IAST list = (IAST) ast.arg1();
-					IExpr header = list.head();
-					ArrayList<Integer> dims = getDimensions(list, header, maximumLevel - 1);
-					int dimsSize = dims.size();
-					IAST res = F.ListAlloc(dimsSize);
-					for (int i = 0; i < dimsSize; i++) {
-						res.append(F.integer(dims.get(i).intValue()));
-					}
-					return res;
+					return dimensions(ast, maximumLevel);
 				}
 				return F.List();
 			}
 
 			return F.List();
 
+		}
+
+		public static IAST dimensions(final IAST ast, int maximumLevel) {
+			IAST list = (IAST) ast.arg1();
+			IExpr header = list.head();
+			ArrayList<Integer> dims = getDimensions(list, header, maximumLevel - 1);
+			int dimsSize = dims.size();
+			IAST res = F.ListAlloc(dimsSize);
+			for (int i = 0; i < dimsSize; i++) {
+				res.append(F.integer(dims.get(i).intValue()));
+			}
+			return res;
 		}
 
 		@Override
@@ -2818,19 +2820,43 @@ public final class LinearAlgebra {
 	 */
 	private static class Transpose extends AbstractEvaluator {
 
-		public Transpose() {
-
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			// TODO generalize transpose for all levels
-			Validate.checkRange(ast, 2);
+			Validate.checkRange(ast, 2, 3);
 
+			if (ast.size() == 3) {
+				if (ast.arg1().isList() && ast.arg2().isList()) {
+					IAST tensor = (IAST) ast.arg1();
+					ArrayList<Integer> dims = getDimensions(tensor, tensor.head(), Integer.MAX_VALUE);
+					int[] permutation = Validate.checkListOfInts(ast.arg2(), 1, dims.size());
+					int[] positions = new int[dims.size()];
+					return recursiveTranspose(tensor, positions, dims, permutation, 0, null);
+				}
+				return F.NIL;
+			}
 			final int[] dim = ast.arg1().isMatrix();
 			if (dim != null) {
 				final IAST originalMatrix = (IAST) ast.arg1();
 				return transpose(originalMatrix, dim[0], dim[1]);
+			}
+			return F.NIL;
+		}
+
+		private IAST recursiveTranspose(IAST tensor, int[] positions, ArrayList<Integer> dims, int[] permutation,
+				int permutationIndex, IAST result) {
+			if (permutationIndex >= permutation.length) {
+				result.append(tensor.getPart(positions));
+			} else {
+				int size = dims.get(permutation[permutationIndex] - 1);
+				IAST res = F.ListAlloc(size);
+				if (result != null) {
+					result.append(res);
+				}
+				for (int i = 0; i < size; i++) {
+					positions[permutation[permutationIndex] - 1] = i + 1;
+					recursiveTranspose(tensor, positions, dims, permutation, permutationIndex + 1, res);
+				}
+				return res;
 			}
 			return F.NIL;
 		}
