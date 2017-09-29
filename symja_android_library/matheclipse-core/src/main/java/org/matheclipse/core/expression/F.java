@@ -635,6 +635,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "bernoullib" : "BernoulliB");
 	public final static IBuiltInSymbol BesselJ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "besselj" : "BesselJ");
+	public final static IBuiltInSymbol Beta = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "beta" : "Beta");
 	public final static IBuiltInSymbol Binomial = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "binomial" : "Binomial");
 	public final static IBuiltInSymbol BitLength = initFinalSymbol(
@@ -2826,6 +2828,10 @@ public class F {
 		return binaryAST2(BesselK, a0, a1);
 	}
 
+	public static IAST Beta(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Beta, a0, a1);
+	}
+	
 	public static IAST Break() {
 		return headAST0(Break);
 	}
@@ -2866,6 +2872,10 @@ public class F {
 		return Object2Expr.convert(obj);
 	}
 
+	public static IAST CatalanNumber(final IExpr a) {
+		return unaryAST1(CatalanNumber, a);
+	}
+	
 	public static IAST Catch(final IExpr a) {
 		return unaryAST1(Catch, a);
 	}

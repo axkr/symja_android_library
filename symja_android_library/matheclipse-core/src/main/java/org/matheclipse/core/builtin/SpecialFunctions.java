@@ -48,6 +48,7 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.PolynomialsUtils;
+import org.matheclipse.core.reflection.system.rules.BetaRules;
 import org.matheclipse.core.reflection.system.rules.LegendrePRules;
 import org.matheclipse.core.reflection.system.rules.PolyGammaRules;
 import org.matheclipse.core.reflection.system.rules.PolyLogRules;
@@ -58,6 +59,7 @@ import org.matheclipse.core.reflection.system.rules.StruveLRules;
 
 public class SpecialFunctions {
 	static {
+		F.Beta.setEvaluator(new Beta());
 		F.ChebyshevT.setEvaluator(new ChebyshevT());
 		F.ChebyshevU.setEvaluator(new ChebyshevU());
 		F.Erf.setEvaluator(new Erf());
@@ -75,6 +77,46 @@ public class SpecialFunctions {
 		F.StruveH.setEvaluator(new StruveH());
 		F.StruveL.setEvaluator(new StruveL());
 		F.Zeta.setEvaluator(new Zeta());
+	}
+
+	private static class Beta extends AbstractFunctionEvaluator implements BetaRules {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			IExpr a = ast.arg1();
+			IExpr b = ast.arg2();
+
+			if (a.isNumber() && b.isNumber()) { 
+				if (a.isInteger() && a.isPositive() && b.isInteger() && b.isPositive()) {
+					return Times(Factorial(Plus(CN1, a)), Factorial(Plus(CN1, b)),
+							Power(Factorial(Plus(CN1, a, b)), -1));
+				}
+				return F.Times(F.Gamma(a), F.Gamma(b), F.Power(F.Gamma(F.Plus(a, b)), -1));
+			}
+			IExpr s = a.plus(F.C1).subtract(b);
+			if (s.isZero()) {
+				return F.Power(F.Times(a, b, F.CatalanNumber(a)), -1);
+			}
+			IExpr sum = a.plus(b);
+			if (sum.isInteger() && sum.isNegative()) {
+				return F.C0;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.ORDERLESS | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+
 	}
 
 	private final static class ChebyshevT extends AbstractFunctionEvaluator {

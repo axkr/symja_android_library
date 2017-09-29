@@ -425,6 +425,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BesselJ(4, 0)", "0");
 	}
 
+	public void testBeta() {
+		check("Beta(a, a+1)", "1/(a*(1+a)*CatalanNumber(a))");
+		check("Beta(b-1, b)", "1/((-1+b)*b*CatalanNumber(-1+b))");
+
+		check("Beta(5,4)", "1/280");
+		check("Beta(5/2,7/2)", "3/256*Pi");
+		check("Beta(2.3,3.2)", "0.05403");
+		// check("Beta(2.5+I,1-I)", "0.05403");
+
+		check("Beta(a, 0)", "ComplexInfinity");
+		check("Beta(0,b)", "ComplexInfinity");
+
+		check("Beta(-n-4, n+1)", "0");
+	}
+
 	public void testBinomial() {
 		check("Binomial(n, n+1)", "0");
 		check("Binomial(n, n+2)", "0");
