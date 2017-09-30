@@ -334,6 +334,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "poissondistribution" : "PoissonDistribution");
 
 	public final static IBuiltInSymbol Abort = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "abort" : "Abort");
+	public final static IBuiltInSymbol Accumulate = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "accumulate" : "Accumulate");
 	public final static IBuiltInSymbol And = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "and" : "And");
 	public final static IBuiltInSymbol AntihermitianMatrixQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "antihermitianmatrixq" : "AntihermitianMatrixQ");
@@ -635,8 +637,7 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "bernoullib" : "BernoulliB");
 	public final static IBuiltInSymbol BesselJ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "besselj" : "BesselJ");
-	public final static IBuiltInSymbol Beta = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "beta" : "Beta");
+	public final static IBuiltInSymbol Beta = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "beta" : "Beta");
 	public final static IBuiltInSymbol Binomial = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "binomial" : "Binomial");
 	public final static IBuiltInSymbol BitLength = initFinalSymbol(
@@ -2831,7 +2832,7 @@ public class F {
 	public static IAST Beta(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Beta, a0, a1);
 	}
-	
+
 	public static IAST Break() {
 		return headAST0(Break);
 	}
@@ -2875,7 +2876,7 @@ public class F {
 	public static IAST CatalanNumber(final IExpr a) {
 		return unaryAST1(CatalanNumber, a);
 	}
-	
+
 	public static IAST Catch(final IExpr a) {
 		return unaryAST1(Catch, a);
 	}

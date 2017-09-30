@@ -16,11 +16,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.hipparchus.linear.FieldMatrix;
-import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.stat.StatUtils;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -31,8 +27,6 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
-import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.util.ISequence;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.eval.util.LevelSpec;
@@ -40,8 +34,6 @@ import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.eval.util.Sequence;
 import org.matheclipse.core.expression.ASTRange;
-import org.matheclipse.core.expression.ASTRealMatrix;
-import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Functors;
@@ -64,6 +56,7 @@ import org.matheclipse.parser.client.math.MathException;
 
 public final class ListFunctions {
 	static {
+		F.Accumulate.setEvaluator(new Accumulate());
 		F.Append.setEvaluator(new Append());
 		F.AppendTo.setEvaluator(new AppendTo());
 		F.Array.setEvaluator(new Array());
@@ -344,6 +337,23 @@ public final class ListFunctions {
 			}
 			return -1;
 		}
+	}
+
+	private final static class Accumulate extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			if (ast.arg1().isAST()) {
+				IAST list = (IAST) ast.arg1();
+				IAST resultList = F.ast(list.head(), list.size(), false);
+				return foldLeft(null, list, 1, list.size(), (x, y) -> F.binaryAST2(F.Plus, x, y), resultList);
+
+			}
+			return F.NIL;
+		}
+
 	}
 
 	/**
@@ -1391,7 +1401,7 @@ public final class ListFunctions {
 			return evaluateNestList(ast, List(), engine);
 		}
 
-		private static IExpr evaluateNestList(final IAST ast, final IAST resultList, EvalEngine engine) {
+		private static IAST evaluateNestList(final IAST ast, final IAST resultList, EvalEngine engine) {
 
 			try {
 				IExpr temp = engine.evaluate(ast.arg3());
@@ -3035,6 +3045,9 @@ public final class ListFunctions {
 	 * added to the result list, otherwise the result will be <i>folded</i> again
 	 * with the next element in the list.
 	 * 
+	 * @param expr
+	 *            initial value. If <code>null</code>use first element of list as
+	 *            initial value.
 	 * @param list
 	 * @param start
 	 * @param end
@@ -3044,9 +3057,15 @@ public final class ListFunctions {
 	public static IAST foldLeft(final IExpr expr, final IAST list, final int start, final int end,
 			final BiFunction<IExpr, IExpr, ? extends IExpr> binaryFunction, final IAST resultCollection) {
 		if (start < end) {
-			IExpr elem = expr;
+			IExpr elem;
+			int from = start;
+			if (expr != null) {
+				elem = expr;
+			} else {
+				elem = list.get(from++);
+			}
 			resultCollection.append(elem);
-			for (int i = start; i < end; i++) {
+			for (int i = from; i < end; i++) {
 				elem = binaryFunction.apply(elem, list.get(i));
 				resultCollection.append(elem);
 			}

@@ -57,6 +57,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("AbsArg({1, I, 0})", "{{1,0},{1,Pi/2},{0,0}}");
 		check("AbsArg(z) /. z -> {1, I, 0}", "{{1,1,0},{0,Pi/2,0}}");
 	}
+	
+	public void testAccumulate() {
+		check("Accumulate({})", "{}");
+		check("Accumulate({a})", "{a}");
+		check("Accumulate({a, b})", "{a,a+b}");
+		check("Accumulate({a, b, c, d})", "{a,a+b,a+b+c,a+b+c+d}");
+		check("Accumulate(f(a, b, c, d))", "f(a,a+b,a+b+c,a+b+c+d)");
+	}
+
 
 	public void testAddTo() {
 		check("a = 10", "10");
