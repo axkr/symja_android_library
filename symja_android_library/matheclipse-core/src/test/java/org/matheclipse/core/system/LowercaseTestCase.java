@@ -57,7 +57,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("AbsArg({1, I, 0})", "{{1,0},{1,Pi/2},{0,0}}");
 		check("AbsArg(z) /. z -> {1, I, 0}", "{{1,1,0},{0,Pi/2,0}}");
 	}
-	
+
 	public void testAccumulate() {
 		check("Accumulate({})", "{}");
 		check("Accumulate({a})", "{a}");
@@ -65,7 +65,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Accumulate({a, b, c, d})", "{a,a+b,a+b+c,a+b+c+d}");
 		check("Accumulate(f(a, b, c, d))", "f(a,a+b,a+b+c,a+b+c+d)");
 	}
-
 
 	public void testAddTo() {
 		check("a = 10", "10");
@@ -3389,6 +3388,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("f({1, 2, 3}, {4, 5, 6})", "{f(1,4),f(2,5),f(3,6)}");
 		check("f({1, 2, 3}, 4)", "{f(1,4),f(2,4),f(3,4)}");
 		check("{{1, 2}, {3, 4}} + {5, 6}", "{{6,7},{9,10}}");
+	}
+
+	public void testListConvolve() {
+		check("ListConvolve({x, y}, {a, b, c, d, e, f})", "{b*x+a*y,c*x+b*y,d*x+c*y,e*x+d*y,f*x+e*y}");
+	}
+	
+	public void testListCorrelate() {
+		check("ListCorrelate({x, y}, {a, b, c, d, e, f})", "{a*x+b*y,b*x+c*y,c*x+d*y,d*x+e*y,e*x+f*y}");
 	}
 
 	public void testListQ() {

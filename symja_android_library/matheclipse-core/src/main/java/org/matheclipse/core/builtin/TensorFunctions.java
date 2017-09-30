@@ -17,16 +17,48 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class TensorFunctions {
 	static {
 		F.Ordering.setEvaluator(new Ordering());
+		F.ListConvolve.setEvaluator(new ListConvolve());
 		F.ListCorrelate.setEvaluator(new ListCorrelate());
 		F.TensorDimensions.setEvaluator(new TensorDimensions());
 		F.TensorRank.setEvaluator(new TensorRank());
 	}
 
+	private static class ListConvolve extends AbstractEvaluator {
+		/**
+		 * See: <a href=
+		 * "https://github.com/idsc-frazzoli/tensor/blob/master/src/main/java/ch/ethz/idsc/tensor/alg/ListConvolve.java">tensor/alg/ListConvolve.java</a>
+		 * 
+		 * <pre>
+		 * ListConvolve({x, y}, {a, b, c, d, e, f}) ==
+		 * {b*x+a*y,c*x+b*y,d*x+c*y,e*x+d*y,f*x+e*y}
+		 * </pre>
+		 */
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+			
+			if (ast.arg1().isAST() && ast.arg2().isAST()) {
+				IAST kernel = (IAST) ast.arg1();
+				IAST tensor = (IAST) ast.arg2();
+
+				int kernelSize = kernel.size();
+				int tensorSize = tensor.size();
+				if (kernelSize <= tensorSize) {
+					return ListCorrelate.listCorrelate(ListFunctions.reverse(kernel), kernelSize, tensor, tensorSize);
+				}
+			}
+			return F.NIL;
+		}
+	}
+
 	private static class ListCorrelate extends AbstractEvaluator {
 		/**
+		 * See: <a href=
+		 * "https://github.com/idsc-frazzoli/tensor/blob/master/src/main/java/ch/ethz/idsc/tensor/alg/ListCorrelate.java">tensor/alg/ListCorrelate.java</a>
+		 * 
 		 * <pre>
-		  * ListCorrelate[{x, y}, {a, b, c, d, e, f}] ==
-		  * {a x + b y, b x + c y, c x + d y, d x + e y, e x + f y}
+		 * ListCorrelate({x, y}, {a, b, c, d, e, f}) ==
+		 * {a*x+b*y,b*x+c*y,c*x+d*y,d*x+e*y,e*x+f*y}
 		 * </pre>
 		 * 
 		 * @param kernel
@@ -36,15 +68,32 @@ public class TensorFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
+			
 			if (ast.arg1().isAST() && ast.arg2().isAST()) {
 				IAST kernel = (IAST) ast.arg1();
 				IAST tensor = (IAST) ast.arg2();
-				// List<Integer> mask = LinearAlgebra.getDimensions(kernel, kernel.head(),
-				// Integer.MAX_VALUE);
-				// List<Integer> size = LinearAlgebra.getDimensions(tensor, tensor.head(),
-				// Integer.MAX_VALUE);
+				int kernelSize = kernel.size();
+				int tensorSize = tensor.size();
+				if (kernelSize <= tensorSize) {
+					return listCorrelate(kernel, kernelSize, tensor, tensorSize);
+				}
 			}
 			return F.NIL;
+		}
+
+		public static IExpr listCorrelate(IAST kernel, int kernelSize, IAST tensor, int tensorSize) {
+			ISymbol fFunction = F.Plus;
+			ISymbol gFunction = F.Times;
+			int diff = tensorSize - kernelSize;
+			IAST resultList = F.ListAlloc(tensorSize-1);
+			for (int i = 0; i <= diff; i++) {
+				IAST plus = F.ast(fFunction, kernelSize, false);
+				for (int k = 1; k < kernelSize; k++) {
+					plus.append(F.binaryAST2(gFunction, kernel.get(k), tensor.get(k + i)));
+				}
+				resultList.append(plus);
+			}
+			return resultList;
 		}
 	}
 

@@ -2242,10 +2242,9 @@ public final class ListFunctions {
 			if (functionList.size() != 2) {
 				return F.NIL;
 			}
-			if (!functionList.arg1().isAtom()) {
-				final IAST result = F.ast(functionList.arg1().head());
-				((IAST) functionList.arg1()).args().reverse(result.args());
-				return result;
+			if (functionList.arg1().isAST()) {
+				IAST list = (IAST) functionList.arg1();
+				return reverse(list);
 			}
 			return F.NIL;
 		}
@@ -3074,6 +3073,18 @@ public final class ListFunctions {
 		return resultCollection;
 	}
 
+	/**
+	 * Reverse the elements in the given <code>list</code>.
+	 * 
+	 * @param list
+	 * @return
+	 */
+	public static IAST reverse(IAST list) {
+		final IAST result = F.ast(list.head());
+		list.args().reverse(result.args());
+		return result;
+	}
+	
 	final static ListFunctions CONST = new ListFunctions();
 
 	public static ListFunctions initialize() {
