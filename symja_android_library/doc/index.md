@@ -162,6 +162,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Abort](functions/Abort.md)
 * [Abs](functions/Abs.md)
 * [AbsArg](functions/AbsArg.md)
+* [Accumulate](functions/Accumulate.md)
 * [AddTo](functions/AddTo.md)
 * [All](functions/All.md)
 * [AllTrue](functions/AllTrue.md)
@@ -195,6 +196,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Attributes](functions/Attributes.md)
 * [BellB](functions/BellB.md)
 * [BernoulliB](functions/BernoulliB.md)
+* [Beta](functions/Beta.md)
 * [Binomial](functions/Binomial.md)
 * [BitLength](functions/BitLength.md)
 * [Block](functions/Block.md)
@@ -403,6 +405,8 @@ for a full description of their possible arguments, options, etc., see their ent
 * [LinearSolve](functions/LinearSolve.md)
 * [List](functions/List.md)
 * [Listable](functions/Listable.md)
+* [ListConvolve](functions/ListConvolve.md)
+* [ListCorrelate](functions/ListCorrelate.md)
 * [ListQ](functions/ListQ.md)
 * [Ln](functions/Ln.md)
 * [Log](functions/Log.md)
@@ -619,5 +623,3 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Xor](functions/Xor.md)
 * [YuleDissimilarity](functions/YuleDissimilarity.md)
 * [Zeta](functions/Zeta.md)
-
-
