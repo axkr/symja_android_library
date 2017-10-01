@@ -338,6 +338,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArg() {
+
+		// issue #179
+		check("N(Arg(1+I*Sqrt(3)))", "1.0472");
+
 		check("Arg(Pi)", "0");
 		check("Arg(-Pi*E)", "Pi");
 		check("Arg(1.3)", "0");
@@ -3393,7 +3397,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testListConvolve() {
 		check("ListConvolve({x, y}, {a, b, c, d, e, f})", "{b*x+a*y,c*x+b*y,d*x+c*y,e*x+d*y,f*x+e*y}");
 	}
-	
+
 	public void testListCorrelate() {
 		check("ListCorrelate({x, y}, {a, b, c, d, e, f})", "{a*x+b*y,b*x+c*y,c*x+d*y,d*x+e*y,e*x+f*y}");
 	}

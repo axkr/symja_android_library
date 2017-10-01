@@ -352,6 +352,8 @@ public final class Arithmetic {
 						return F.Pi;
 					}
 					return F.C0;
+				} else if (temp.isNumber() && engine.isNumericMode()) {
+					return ((INumber) temp).complexArg();
 				}
 			}
 
