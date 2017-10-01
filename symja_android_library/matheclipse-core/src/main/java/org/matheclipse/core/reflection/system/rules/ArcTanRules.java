@@ -20,9 +20,9 @@ public interface ArcTanRules {
     // ArcTan(0)=0
     ISet(ArcTan(C0),
       C0),
-    // ArcTan(0,0)=0
+    // ArcTan(0,0)=Indeterminate
     ISet(ArcTan(C0,C0),
-      C0),
+      Indeterminate),
     // ArcTan(2-Sqrt(3))=Pi/12
     ISet(ArcTan(Plus(C2,Negate(CSqrt3))),
       Times(QQ(1L,12L),Pi)),
@@ -71,8 +71,8 @@ public interface ArcTanRules {
     // ArcTan(-I*Infinity)=(-1)*1/2*Pi
     ISet(ArcTan(DirectedInfinity(CNI)),
       Times(CN1D2,Pi)),
-    // ArcTan(x_?RealNumberQ,y_?RealNumberQ):=If(x==0,If(y==0,0,If(y>0,Pi/2,(-1)*1/2*Pi)),If(x>0,ArcTan(y/x),If(y>=0,ArcTan(y/x)+Pi,-Pi+ArcTan(y/x))))
+    // ArcTan(x_?RealNumberQ,y_?RealNumberQ):=If(x==0,If(y==0,Indeterminate,If(y>0,Pi/2,(-1)*1/2*Pi)),If(x>0,ArcTan(y/x),If(y>=0,ArcTan(y/x)+Pi,-Pi+ArcTan(y/x))))
     ISetDelayed(ArcTan(PatternTest(x_,RealNumberQ),PatternTest(y_,RealNumberQ)),
-      If(Equal(x,C0),If(Equal(y,C0),C0,If(Greater(y,C0),Times(C1D2,Pi),Times(CN1,C1D2,Pi))),If(Greater(x,C0),ArcTan(Times(Power(x,-1),y)),If(GreaterEqual(y,C0),Plus(ArcTan(Times(Power(x,-1),y)),Pi),Plus(Negate(Pi),ArcTan(Times(Power(x,-1),y)))))))
+      If(Equal(x,C0),If(Equal(y,C0),Indeterminate,If(Greater(y,C0),Times(C1D2,Pi),Times(CN1,C1D2,Pi))),If(Greater(x,C0),ArcTan(Times(Power(x,-1),y)),If(GreaterEqual(y,C0),Plus(ArcTan(Times(Power(x,-1),y)),Pi),Plus(Negate(Pi),ArcTan(Times(Power(x,-1),y)))))))
   );
 }

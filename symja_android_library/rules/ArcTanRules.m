@@ -1,6 +1,6 @@
 { 
  ArcTan(0)=0, 
- ArcTan(0,0)=0, 
+ ArcTan(0,0)=Indeterminate, 
  ArcTan(2-Sqrt(3))=1/12*Pi,
  ArcTan(Sqrt(2)-1)=1/8*Pi, 
  ArcTan(1/Sqrt(3))=1/6*Pi,   
@@ -20,6 +20,6 @@
  ArcTan(-I*Infinity)=-Pi/2,
  
  ArcTan(x_?RealNumberQ, y_?RealNumberQ) :=  
-   If(x == 0, If(y == 0, 0, If(y > 0, Pi/2, -Pi/2)), If(x > 0,
+   If(x == 0, If(y == 0, Indeterminate, If(y > 0, Pi/2, -Pi/2)), If(x > 0,
         ArcTan(y/x), If(y >= 0, ArcTan(y/x) + Pi, ArcTan(y/x) - Pi)))
  }

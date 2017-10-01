@@ -295,6 +295,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArcTan() {
+		// issue #180
+		check("ArcTan(1,Sqrt(3))", "Pi/3");
+
 		check("ArcTan(1)", "Pi/4");
 		checkNumeric("ArcTan(1.0)", "0.7853981633974483");
 		checkNumeric("ArcTan(-1.0)", "-0.7853981633974483");
@@ -316,6 +319,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("arctan(-x)", "-ArcTan(x)");
 		check("arctan(1,1)", "Pi/4");
 		check("arctan(-1,-1)", "-3/4*Pi");
+		check("arctan(0,0)", "Indeterminate");
 		checkNumeric("arctan(1.0,1.0)", "0.7853981633974483");
 		checkNumeric("N(1/4*pi)", "0.7853981633974483");
 		check("D(ArcTan(x),x)", "1/(1+x^2)");
