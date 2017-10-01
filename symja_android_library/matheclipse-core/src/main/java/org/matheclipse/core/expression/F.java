@@ -334,7 +334,7 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "poissondistribution" : "PoissonDistribution");
 
 	public final static IBuiltInSymbol Abort = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "abort" : "Abort");
-	public final static IBuiltInSymbol Accumulate = initFinalSymbol(
+	public final static IBuiltInSymbol Accumulate = initFinalSymbol( 
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "accumulate" : "Accumulate");
 	public final static IBuiltInSymbol And = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "and" : "And");
 	public final static IBuiltInSymbol AntihermitianMatrixQ = initFinalSymbol(

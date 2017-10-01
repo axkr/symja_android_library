@@ -2247,6 +2247,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFindRoot() {
+		// issue #181
+		check("FindRoot(2^x==0,{x,-100,100}, Method->Brent)", "{x->-100.0}");
+		// FindRoot: interval does not bracket a root: f(-1) = 0.5, f(100) =
+		// 1,267,650,600,228,229,400,000,000,000,000
+		check("FindRoot(2^x==0,{x,-1,100}, Method->Brent)", "{}");
+
+		checkNumeric("N(2^(-100))", "0.0");
+
 		check("FindRoot(Exp(x)-1 == 0,{x,-50,100}, Method->Muller)", "{x->0.0}");
 		check("Exp(1.2436240901689538E-16) - 1", "0.0");
 
@@ -2272,10 +2280,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Muller)", "{x->3.4341896575483015}");
 		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10}, Ridders)", "{x->3.4341896575482007}");
 		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Secant)", "{x->3.4341896575036097}");
+		// FindRoot: maximal count (100) exceeded
 		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->100)",
-				"maximal count (100) exceeded");
+				"FindRoot(E^x==Pi^3,{x,1,10},Method->regulafalsi,MaxIterations->100)");
+		// FindRoot: convergence failed
 		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Method->RegulaFalsi, MaxIterations->32000)",
-				"convergence failed");
+				"FindRoot(E^x==Pi^3,{x,1,10},Method->regulafalsi,MaxIterations->32000)");
 		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Illinois)", "{x->3.4341896915055257}");
 		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,1,10}, Pegasus)", "{x->3.4341896575481976}");
 
