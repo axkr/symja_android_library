@@ -31,17 +31,24 @@ public class StatisticsFunctions {
 		F.CDF.setEvaluator(new CDF());
 		F.PDF.setEvaluator(new PDF());
 		F.BernoulliDistribution.setEvaluator(new BernoulliDistribution());
+		F.BinCounts.setEvaluator(new BinCounts()); 
 		F.BinomialDistribution.setEvaluator(new BinomialDistribution());
 		F.CentralMoment.setEvaluator(new CentralMoment());
 		F.Correlation.setEvaluator(new Correlation());
 		F.Covariance.setEvaluator(new Covariance());
+		F.ErlangDistribution.setEvaluator(new ErlangDistribution());
+		F.ExponentialDistribution.setEvaluator(new ExponentialDistribution());
+		F.FrechetDistribution.setEvaluator(new FrechetDistribution());
+		F.GammaDistribution.setEvaluator(new GammaDistribution());
+		F.GeometricDistribution.setEvaluator(new GeometricDistribution());
+		F.GumbelDistribution.setEvaluator(new GumbelDistribution());
 		F.HypergeometricDistribution.setEvaluator(new HypergeometricDistribution());
 		F.Kurtosis.setEvaluator(new Kurtosis());
 		F.Mean.setEvaluator(new Mean());
 		F.Median.setEvaluator(new Median());
+		F.NakagamiDistribution.setEvaluator(new NakagamiDistribution());
 		F.NormalDistribution.setEvaluator(new NormalDistribution());
 		F.PoissonDistribution.setEvaluator(new PoissonDistribution());
-
 		F.Skewness.setEvaluator(new Skewness());
 		F.StudentTDistribution.setEvaluator(new StudentTDistribution());
 		F.Variance.setEvaluator(new Variance());
@@ -162,6 +169,27 @@ public class StatisticsFunctions {
 
 	}
 
+	private final static class BinCounts extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			IExpr dx = F.C1;
+			if (ast.size() == 3) {
+				dx = ast.arg2();
+			}
+			if (ast.arg1().isList()) {
+				IAST vector = (IAST) ast.arg1();
+				if (vector.size() == 1) {
+					return F.List();
+				}
+			}
+			return F.NIL;
+		}
+
+	}
+
 	private final static class BinomialDistribution extends AbstractEvaluator implements IDistribution {
 
 		@Override
@@ -255,6 +283,173 @@ public class StatisticsFunctions {
 				return F.Divide(F.Covariance(a, b), F.Times(F.StandardDeviation(a), F.StandardDeviation(b)));
 			}
 			return F.NIL;
+		}
+
+	}
+
+	private final static class FrechetDistribution extends AbstractEvaluator implements IDistribution {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			return F.NIL;
+		}
+
+		@Override
+		public int[] parameters(IAST dist) {
+			return null;
+		}
+
+		@Override
+		public IExpr mean(IAST dist) {
+			if (dist.isAST2()) {
+				IExpr n = dist.arg1();
+				IExpr m = dist.arg2();
+				// Piecewise({{m*Gamma(1 - 1/n), 1 < n}}, Infinity)
+				return F.Piecewise(
+						F.List(F.List(F.Times(m, F.Gamma(F.Subtract(F.C1, F.Power(n, F.CN1)))), F.Less(F.C1, n))),
+						F.CInfinity);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr variance(IAST dist) {
+			if (dist.isAST2()) {
+				IExpr n = dist.arg1();
+				IExpr m = dist.arg2();
+				// Piecewise({{m^2*(Gamma(1 - 2/n) - Gamma(1 - 1/n)^2), n > 2}}, Infinity)
+				return F.Piecewise(F.List(F.List(
+						F.Times(F.Sqr(m),
+								F.Plus(F.Gamma(F.Plus(F.C1, F.Times(F.CN2, F.Power(n, -1)))),
+										F.Negate(F.Sqr(F.Gamma(F.Plus(F.C1, F.Negate(F.Power(n, -1)))))))),
+						F.Greater(n, F.C2))), F.CInfinity);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private final static class GammaDistribution extends AbstractEvaluator implements IDistribution {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			return F.NIL;
+		}
+
+		@Override
+		public int[] parameters(IAST dist) {
+			return null;
+		}
+
+		@Override
+		public IExpr mean(IAST dist) {
+			if (dist.isAST2()) {
+				IExpr n = dist.arg1();
+				IExpr m = dist.arg2();
+				// m*n
+				return F.Times(m, n);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr variance(IAST dist) {
+			if (dist.isAST2()) {
+				IExpr n = dist.arg1();
+				IExpr m = dist.arg2();
+				// m^2*n
+				return F.Times(F.Sqr(m), n);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private final static class GeometricDistribution extends AbstractEvaluator implements IDistribution {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+			return F.NIL;
+		}
+
+		@Override
+		public int[] parameters(IAST dist) {
+			return null;
+		}
+
+		@Override
+		public IExpr mean(IAST dist) {
+			if (dist.isAST1()) {
+				// -1 + 1/n
+				IExpr n = dist.arg1();
+				return F.Plus(F.CN1, F.Power(n, F.CN1));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr variance(IAST dist) {
+			if (dist.isAST1()) {
+				// (1-n) / n^2
+				IExpr n = dist.arg1();
+				return F.Times(F.Subtract(F.C1, n), F.Power(n, F.CN2));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private final static class GumbelDistribution extends AbstractEvaluator implements IDistribution {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			return F.NIL;
+		}
+
+		@Override
+		public int[] parameters(IAST dist) {
+			return null;
+		}
+
+		@Override
+		public IExpr mean(IAST dist) {
+			if (dist.isAST2()) {
+				IExpr n = dist.arg1();
+				IExpr m = dist.arg2();
+				// -EulerGamma*m + n
+				return F.Plus(F.Times(F.CN1, F.EulerGamma, m), n);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr variance(IAST dist) {
+			if (dist.isAST2()) {
+				IExpr m = dist.arg2();
+				// (m^2*Pi^2)/6
+				return F.Times(F.QQ(1, 6), F.Sqr(m), F.Sqr(F.Pi));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
 		}
 
 	}
@@ -434,6 +629,82 @@ public class StatisticsFunctions {
 		}
 	}
 
+	private final static class ErlangDistribution extends AbstractEvaluator implements IDistribution {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			return F.NIL;
+		}
+
+		@Override
+		public int[] parameters(IAST dist) {
+			return null;
+		}
+
+		@Override
+		public IExpr mean(IAST dist) {
+			if (dist.isAST2()) {
+				IExpr n = dist.arg1();
+				IExpr m = dist.arg2();
+				// n/m
+				return F.Divide(n, m);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr variance(IAST dist) {
+			if (dist.isAST2()) {
+				IExpr n = dist.arg1();
+				IExpr m = dist.arg2();
+				// n/(m^2)
+				return F.Divide(n, F.Sqr(m));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private final static class ExponentialDistribution extends AbstractEvaluator implements IDistribution {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+			return F.NIL;
+		}
+
+		@Override
+		public int[] parameters(IAST dist) {
+			return null;
+		}
+
+		@Override
+		public IExpr mean(IAST dist) {
+			if (dist.isAST1()) {
+				return F.Power(dist.arg1(), F.CN1);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr variance(IAST dist) {
+			if (dist.isAST1()) {
+				return F.Power(dist.arg1(), F.CN2);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
 	private final static class Kurtosis extends AbstractEvaluator {
 
 		@Override
@@ -525,6 +796,48 @@ public class StatisticsFunctions {
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.NOATTRIBUTE);
 		}
+	}
+
+	private final static class NakagamiDistribution extends AbstractEvaluator implements IDistribution {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			return F.NIL;
+		}
+
+		@Override
+		public int[] parameters(IAST dist) {
+			return null;
+		}
+
+		@Override
+		public IExpr mean(IAST dist) {
+			if (dist.isAST2()) {
+				IExpr n = dist.arg1();
+				IExpr m = dist.arg2();
+				// (Sqrt(m)*Pochhammer(n,1/2))/Sqrt(n)
+				return F.Divide(F.Times(F.Sqrt(m), F.Pochhammer(n, F.C1D2)), F.Sqrt(n));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr variance(IAST dist) {
+			if (dist.isAST2()) {
+
+				IExpr n = dist.arg1();
+				IExpr m = dist.arg2();
+				// m - (m*Pochhammer(n, 1/2)^2)/n
+				return F.Subtract(m, F.Divide(F.Times(m, F.Sqr(F.Pochhammer(n, F.C1D2))), n));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
 	}
 
 	private final static class NormalDistribution extends AbstractEvaluator implements IDistribution {

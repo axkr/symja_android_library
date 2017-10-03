@@ -1368,7 +1368,7 @@ public final class Arithmetic {
 					}
 				}
 			}
-			if (!a.isInteger() && !n.isInteger()) {
+			if (a.isNumber() && n.isNumber()) {
 				return F.Divide(F.Gamma(F.Plus(a, n)), F.Gamma(a));
 			}
 			return F.NIL;

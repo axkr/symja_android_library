@@ -322,12 +322,28 @@ public class F {
 	public final static IBuiltInSymbol Superscript = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subscript" : "Superscript");
 
+	public final static IBuiltInSymbol BinCounts = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "bincounts" : "BinCounts");
 	public final static IBuiltInSymbol BinomialDistribution = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "binomialdistribution" : "BinomialDistribution");
 	public final static IBuiltInSymbol BernoulliDistribution = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "bernoullidistribution" : "BernoulliDistribution");
+	public final static IBuiltInSymbol ErlangDistribution = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "erlangdistribution" : "ErlangDistribution");
+	public final static IBuiltInSymbol ExponentialDistribution = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "exponentialdistribution" : "ExponentialDistribution");
+	public final static IBuiltInSymbol FrechetDistribution = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "frechetdistribution" : "FrechetDistribution");
+	public final static IBuiltInSymbol GammaDistribution = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "gammadistribution" : "GammaDistribution");
+	public final static IBuiltInSymbol GeometricDistribution = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "geometricdistribution" : "GeometricDistribution");
+	public final static IBuiltInSymbol GumbelDistribution = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "gumbeldistribution" : "GumbelDistribution");
 	public final static IBuiltInSymbol HypergeometricDistribution = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hypergeometricdistribution" : "HypergeometricDistribution");
+	public final static IBuiltInSymbol NakagamiDistribution = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nakagamidistribution" : "NakagamiDistribution");
 	public final static IBuiltInSymbol NormalDistribution = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "normaldistribution" : "NormalDistribution");
 	public final static IBuiltInSymbol PoissonDistribution = initFinalSymbol(
@@ -3875,7 +3891,7 @@ public class F {
 	}
 
 	public static IExpr Greater(final IExpr a0, final IExpr a1) {
-		return binaryAST2(Greater, a0, a1);  
+		return binaryAST2(Greater, a0, a1);
 	}
 
 	public static IExpr GreaterEqual(final IExpr a0, final IExpr a1) {
@@ -4428,12 +4444,10 @@ public class F {
 		return unaryAST1(Length, a);
 	}
 
-	
-
 	public static IExpr Less(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Less, a0, a1);
 	}
-	
+
 	public static IExpr LessEqual(final IExpr a0, final IExpr a1) {
 		return binaryAST2(LessEqual, a0, a1);
 	}

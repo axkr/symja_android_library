@@ -3670,9 +3670,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Mean(BernoulliDistribution(p))", "p");
 		check("Mean(BinomialDistribution(n, m))", "m*n");
+		check("Mean(ExponentialDistribution(n))", "1/n");
 		check("Mean(PoissonDistribution(p))", "p");
 		check("Mean(BinomialDistribution(n, p))", "n*p");
+		check("Mean(ErlangDistribution(n, m))", "n/m");
+		check("Mean(NakagamiDistribution(n, m))", "(Sqrt(m)*Pochhammer(n,1/2))/Sqrt(n)");
 		check("Mean(NormalDistribution(n, p))", "n");
+		check("Mean(FrechetDistribution(n, m))", "Piecewise({{m*Gamma(1-1/n),1<n}},Infinity)");
+		check("Mean(GammaDistribution(n, m))", "m*n");
+		check("Mean(GeometricDistribution(n))", "-1+1/n");
+		check("Mean(GumbelDistribution(n, m))", "-EulerGamma*m+n");
 		check("Mean(HypergeometricDistribution(n, ns, nt))", "(n*ns)/nt");
 		check("Mean(StudentTDistribution(4))", "0");
 		check("Mean(StudentTDistribution(n))", "Piecewise({{0,n>1}},Indeterminate)");
@@ -7360,14 +7367,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testVariance() {
 		check("Variance(BinomialDistribution(n, m))", "(1-m)*m*n");
 		check("Variance(BernoulliDistribution(n))", "(1-n)*n");
+		check("Variance(ErlangDistribution(n, m))", "n/m^2");
+		check("Variance(ExponentialDistribution(n))", "1/n^2");
+		check("Variance(NakagamiDistribution(n, m))", "m+(-m*Pochhammer(n,1/2)^2)/n");
 		check("Variance(NormalDistribution(n, m))", "m^2");
+		check("Variance(FrechetDistribution(n, m))", "Piecewise({{m^2*(Gamma(1-2/n)-Gamma(1-1/n)^2),n>2}},Infinity)");
+		check("Variance(GammaDistribution(n, m))", "m^2*n");
+		check("Variance(GeometricDistribution(n))", "(1-n)/n^2");
+		check("Variance(GumbelDistribution(n, m))", "1/6*m^2*Pi^2");
 		check("Variance(HypergeometricDistribution(n, ns, nt))", "(n*ns*(1-ns/nt)*(-n+nt))/((-1+nt)*nt)");
 		check("Variance(PoissonDistribution(n))", "n");
 		check("Variance(StudentTDistribution(4))", "2");
 		check("Variance(StudentTDistribution(n))", "Piecewise({{n/(-2+n),n>2}},Indeterminate)");
-		
+
 		check("Variance(WeibullDistribution(n, m))", "m^2*(-Gamma(1+1/n)^2+Gamma(1+2/n))");
-		
+
 		check("Variance({1, 2, 3})", "1");
 		check("Variance({7, -5, 101, 3})", "7475/3");
 		check("Variance({1 + 2*I, 3 - 10*I})", "74");
