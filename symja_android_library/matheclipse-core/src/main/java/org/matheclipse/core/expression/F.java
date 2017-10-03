@@ -334,7 +334,7 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "poissondistribution" : "PoissonDistribution");
 
 	public final static IBuiltInSymbol Abort = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "abort" : "Abort");
-	public final static IBuiltInSymbol Accumulate = initFinalSymbol( 
+	public final static IBuiltInSymbol Accumulate = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "accumulate" : "Accumulate");
 	public final static IBuiltInSymbol And = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "and" : "And");
 	public final static IBuiltInSymbol AntihermitianMatrixQ = initFinalSymbol(
@@ -552,6 +552,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "setattributes" : "SetAttributes");
 	public final static IBuiltInSymbol SetDelayed = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "setdelayed" : "SetDelayed");
+	public final static IBuiltInSymbol StudentTDistribution = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "studenttdistribution" : "StudentTDistribution");
 	public final static IBuiltInSymbol Sow = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sow" : "Sow");
 	public final static IBuiltInSymbol Switch = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "switch" : "Switch");
@@ -590,6 +592,9 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "valueq" : "ValueQ");
 	public final static IBuiltInSymbol VectorQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "vectorq" : "VectorQ");
+	public final static IBuiltInSymbol WeibullDistribution = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "weibulldistribution" : "WeibullDistribution");
+
 	public final static IBuiltInSymbol Which = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "which" : "Which");
 	public final static IBuiltInSymbol While = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "while" : "While");
 	public final static IBuiltInSymbol With = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "with" : "With");
@@ -3870,16 +3875,10 @@ public class F {
 	}
 
 	public static IExpr Greater(final IExpr a0, final IExpr a1) {
-		if (a0.isSignedNumber() && a1.isSignedNumber()) {
-			return ((ISignedNumber) a0).isGreaterThan(((ISignedNumber) a1)) ? True : False;
-		}
-		return binaryAST2(Greater, a0, a1);
+		return binaryAST2(Greater, a0, a1);  
 	}
 
 	public static IExpr GreaterEqual(final IExpr a0, final IExpr a1) {
-		if (a0.isSignedNumber() && a1.isSignedNumber()) {
-			return ((ISignedNumber) a0).isLessThan(((ISignedNumber) a1)) ? False : True;
-		}
 		return binaryAST2(GreaterEqual, a0, a1);
 	}
 
@@ -4429,26 +4428,14 @@ public class F {
 		return unaryAST1(Length, a);
 	}
 
+	
+
 	public static IExpr Less(final IExpr a0, final IExpr a1) {
-		if (a0.isSignedNumber() && a1.isSignedNumber()) {
-			return ((ISignedNumber) a0).isLessThan(((ISignedNumber) a1)) ? True : False;
-		}
 		return binaryAST2(Less, a0, a1);
 	}
-
-	public static IAST Less(final IExpr... a) {
-		return ast(a, Less);
-	}
-
+	
 	public static IExpr LessEqual(final IExpr a0, final IExpr a1) {
-		if (a0.isSignedNumber() && a1.isSignedNumber()) {
-			return ((ISignedNumber) a0).isGreaterThan(((ISignedNumber) a1)) ? False : True;
-		}
 		return binaryAST2(LessEqual, a0, a1);
-	}
-
-	public static IAST LessEqual(final IExpr... a) {
-		return ast(a, LessEqual);
 	}
 
 	public static IAST Limit(final IExpr a0, final IExpr a1) {
@@ -4957,6 +4944,14 @@ public class F {
 
 	public static IAST PatternTest(final IExpr a0, final IExpr a1) {
 		return binaryAST2(PatternTest, a0, a1);
+	}
+
+	public static IAST Piecewise(final IExpr a0) {
+		return unaryAST1(Piecewise, a0);
+	}
+
+	public static IAST Piecewise(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Piecewise, a0, a1);
 	}
 
 	public static IExpr plus(IExpr a, Integer i) {

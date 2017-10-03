@@ -492,6 +492,34 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Evaluate Greater, if both arguments are real numbers
+	 * 
+	 * @param a1
+	 * @return
+	 */
+	default IExpr greater(final IExpr a1) {
+		if (isSignedNumber() && a1.isSignedNumber()) {
+			return ((ISignedNumber) this).isGreaterThan(((ISignedNumber) a1)) ? F.True : F.False;
+		}
+		EvalEngine engine = EvalEngine.get();
+		return engine.evaluate(F.Greater(this, a1));
+	}
+
+	/**
+	 * Evaluate GreaterEqual, if both arguments are real numbers
+	 * 
+	 * @param a1
+	 * @return
+	 */
+	default IExpr greaterEqual(final IExpr a1) {
+		if (isSignedNumber() && a1.isSignedNumber()) {
+			return ((ISignedNumber) this).isLessThan(((ISignedNumber) a1)) ? F.False : F.True;
+		}
+		EvalEngine engine = EvalEngine.get();
+		return engine.evaluate(F.GreaterEqual(this, a1));
+	}
+
+	/**
 	 * Compare if <code>this >= that</code:
 	 * <ul>
 	 * <li>return F.True if the comparison is <code>true</code></li>
@@ -1051,7 +1079,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isDefer() {
 		return false;
 	}
-	
+
 	/**
 	 * <p>
 	 * Test if this expression is a
@@ -2457,6 +2485,34 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default long leafCountSimplify() {
 		return leafCount();
+	}
+
+	/**
+	 * Evaluate Less, if both arguments are real numbers
+	 * 
+	 * @param a1
+	 * @return
+	 */
+	default IExpr less(final IExpr a1) {
+		if (isSignedNumber() && a1.isSignedNumber()) {
+			return ((ISignedNumber) this).isLessThan(((ISignedNumber) a1)) ? F.True : F.False;
+		}
+		EvalEngine engine = EvalEngine.get();
+		return engine.evaluate(F.Less(this, a1));
+	}
+
+	/**
+	 * Evaluate LessEqual, if both arguments are real numbers
+	 * 
+	 * @param a1
+	 * @return
+	 */
+	default IExpr lessEqual(final IExpr a1) {
+		if (isSignedNumber() && a1.isSignedNumber()) {
+			return ((ISignedNumber) this).isGreaterThan(((ISignedNumber) a1)) ? F.False : F.True;
+		}
+		EvalEngine engine = EvalEngine.get();
+		return engine.evaluate(F.LessEqual(this, a1));
 	}
 
 	/**

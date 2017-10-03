@@ -120,15 +120,15 @@ public class AST2Expr {
 			"Skewness", "SokalSneathDissimilarity", "Solve", "Sort", "Sow", "Span", "Split", "SplitBy", "Sqrt",
 			"SquaredEuclideanDistance", "SquareFreeQ", "StandardDeviation", "StieltjesGamma", "StirlingS1",
 			"StirlingS2", "StringDrop", "StringJoin", "StringLength", "StringTake", "StruveH", "StruveL",
-			"Subfactorial", "Subscript", "Subsuperscript", "Subsets", "SubtractFrom", "Sum", "Superscript",
-			"SurfaceGraphics", "Switch", "SyntaxLength", "SymbolName", "SymbolQ", "SymmetricMatrixQ", "SyntaxQ",
-			"Table", "Take", "Tally", "Tan", "Tanh", "TautologyQ", "Taylor", "TensorDimensions", "TensorRank",
-			"TeXForm", "Thread", "Through", "Throw", "TimeConstrained", "Times", "TimesBy", "Timing", "ToCharacterCode",
-			"Together", "ToPolarCoordinates", "ToRadicals", "ToString", "Total", "ToUnicode", "Tr", "Trace",
-			"Transpose", "TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Tuples", "Unequal", "Unevaluated", "Union",
-			"Unique", "UnitStep", "UnitVector", "UnsameQ", "Unset", "UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ",
-			"VandermondeMatrix", "Variables", "Variance", "VectorAngle", "VectorQ", "Which", "While", "With", "Xor",
-			"YuleDissimilarity", "Zeta" };
+			"StudentTDistribution", "Subfactorial", "Subscript", "Subsuperscript", "Subsets", "SubtractFrom", "Sum",
+			"Superscript", "SurfaceGraphics", "Switch", "SyntaxLength", "SymbolName", "SymbolQ", "SymmetricMatrixQ",
+			"SyntaxQ", "Table", "Take", "Tally", "Tan", "Tanh", "TautologyQ", "Taylor", "TensorDimensions",
+			"TensorRank", "TeXForm", "Thread", "Through", "Throw", "TimeConstrained", "Times", "TimesBy", "Timing",
+			"ToCharacterCode", "Together", "ToPolarCoordinates", "ToRadicals", "ToString", "Total", "ToUnicode", "Tr",
+			"Trace", "Transpose", "TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Tuples", "Unequal", "Unevaluated",
+			"Union", "Unique", "UnitStep", "UnitVector", "UnsameQ", "Unset", "UpperCaseQ", "UpSet", "UpSetDelayed",
+			"ValueQ", "VandermondeMatrix", "Variables", "Variance", "VectorAngle", "VectorQ", "WeibullDistribution",
+			"Which", "While", "With", "Xor", "YuleDissimilarity", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 

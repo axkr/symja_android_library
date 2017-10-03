@@ -684,9 +684,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			}
 
 			if ((ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION) {
-				for (int i = 1; i < tempAST.size(); i++) {
-					if (tempAST.get(i).isIndeterminate()) {
-						return F.Indeterminate;
+				if (!((ISymbol.HOLDALL & attr) == ISymbol.HOLDALL)) {
+					for (int i = 1; i < tempAST.size(); i++) {
+						if (tempAST.get(i).isIndeterminate()) {
+							return F.Indeterminate;
+						}
 					}
 				}
 			}
@@ -894,7 +896,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			fRecursionCounter++;
 			if (fTraceMode) {
 				fTraceStack.setUp(expr, fRecursionCounter);
-				 temp = expr.evaluate(this);
+				temp = expr.evaluate(this);
 				if (temp.isPresent()) {
 					fTraceStack.add(expr, temp, fRecursionCounter, 0L, "Evaluation loop");
 					result = temp;
@@ -1058,7 +1060,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 */
 	public IExpr evalRules(ISymbol symbol, IAST ast) {
 		if (symbol instanceof BuiltInSymbol) {
-			((BuiltInSymbol)symbol).getEvaluator().join();
+			((BuiltInSymbol) symbol).getEvaluator().join();
 		}
 		IExpr result;
 		for (int i = 1; i < ast.size(); i++) {

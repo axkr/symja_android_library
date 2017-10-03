@@ -1057,10 +1057,11 @@ public final class Arithmetic {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
+
 			int[] dim = ast.arg1().isMatrix(false);
 			if (dim == null || dim[0] <= 0 || dim[1] != 2) {
-				throw new WrongArgumentType(ast, ast.arg1(), 1,
-						"Matrix with row-dimension > 0 and column-dimension == 2 expected!");
+				engine.printMessage("Piecewise: Matrix with row-dimension > 0 and column-dimension == 2 expected!");
+				return F.NIL;
 			}
 			IAST matrix = (IAST) ast.arg1();
 			IExpr defaultValue = F.C0;
@@ -1080,6 +1081,9 @@ public final class Arithmetic {
 				cond = row.arg2();
 				if (cond.isTrue()) {
 					if (!evaluated && i == matrixSize - 1) {
+						if (!row.arg1().isSymbol()) {
+							return row.arg1();
+						}
 						return F.NIL;
 					}
 					if (noBoolean) {

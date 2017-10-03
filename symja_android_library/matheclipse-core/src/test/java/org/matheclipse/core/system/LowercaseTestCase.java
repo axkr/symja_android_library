@@ -3674,6 +3674,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Mean(BinomialDistribution(n, p))", "n*p");
 		check("Mean(NormalDistribution(n, p))", "n");
 		check("Mean(HypergeometricDistribution(n, ns, nt))", "(n*ns)/nt");
+		check("Mean(StudentTDistribution(4))", "0");
+		check("Mean(StudentTDistribution(n))", "Piecewise({{0,n>1}},Indeterminate)");
+		check("Mean(WeibullDistribution(n, m))", "m*Gamma(1+1/n)");
 	}
 
 	public void testMedian() {
@@ -7360,6 +7363,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Variance(NormalDistribution(n, m))", "m^2");
 		check("Variance(HypergeometricDistribution(n, ns, nt))", "(n*ns*(1-ns/nt)*(-n+nt))/((-1+nt)*nt)");
 		check("Variance(PoissonDistribution(n))", "n");
+		check("Variance(StudentTDistribution(4))", "2");
+		check("Variance(StudentTDistribution(n))", "Piecewise({{n/(-2+n),n>2}},Indeterminate)");
+		
+		check("Variance(WeibullDistribution(n, m))", "m^2*(-Gamma(1+1/n)^2+Gamma(1+2/n))");
 		
 		check("Variance({1, 2, 3})", "1");
 		check("Variance({7, -5, 101, 3})", "7475/3");

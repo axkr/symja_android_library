@@ -43,7 +43,9 @@ public class StatisticsFunctions {
 		F.PoissonDistribution.setEvaluator(new PoissonDistribution());
 
 		F.Skewness.setEvaluator(new Skewness());
+		F.StudentTDistribution.setEvaluator(new StudentTDistribution());
 		F.Variance.setEvaluator(new Variance());
+		F.WeibullDistribution.setEvaluator(new WeibullDistribution());
 	}
 
 	interface IDistribution {
@@ -708,6 +710,42 @@ public class StatisticsFunctions {
 
 	}
 
+	private final static class StudentTDistribution extends AbstractEvaluator implements IDistribution {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+			return F.NIL;
+		}
+
+		@Override
+		public int[] parameters(IAST dist) {
+			return null;
+		}
+
+		@Override
+		public IExpr mean(IAST dist) {
+			if (dist.isAST1()) {
+				return F.Piecewise(F.List(F.List(F.C0, F.Greater(dist.arg1(), F.C1))), F.Indeterminate);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr variance(IAST dist) {
+			if (dist.isAST1()) {
+				IExpr n = dist.arg1();
+				return F.Piecewise(F.List(F.List(F.Divide(n, F.Plus(F.CN2, n)), F.Greater(n, F.C2))), F.Indeterminate);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
 	/**
 	 * Compute the variance for a list of elements
 	 */
@@ -765,6 +803,46 @@ public class StatisticsFunctions {
 				}
 			}
 			return F.NIL;
+		}
+
+	}
+
+	private final static class WeibullDistribution extends AbstractEvaluator implements IDistribution {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			return F.NIL;
+		}
+
+		@Override
+		public int[] parameters(IAST dist) {
+			return null;
+		}
+
+		@Override
+		public IExpr mean(IAST dist) {
+			if (dist.isAST2()) {
+				// m*Gamma(1 + 1/n)
+				return F.Times(dist.arg2(), F.Gamma(F.Plus(F.C1, F.Power(dist.arg1(), F.CN1))));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr variance(IAST dist) {
+			if (dist.isAST2()) {
+				IExpr n = dist.arg1();
+				IExpr m = dist.arg2();
+				// m^2*(-Gamma(1 + 1/n)^2 + Gamma(1 + 2/n))
+				return F.Times(F.Sqr(m), F.Plus(F.Negate(F.Sqr(F.Gamma(F.Plus(F.C1, F.Power(n, -1))))),
+						F.Gamma(F.Plus(F.C1, F.Times(F.C2, F.Power(n, -1))))));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
 		}
 
 	}
