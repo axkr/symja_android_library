@@ -813,7 +813,7 @@ public class IntegerFunctions {
 		}
 	}
 
-	final static IntegerFunctions CONST = new IntegerFunctions();
+	private final static IntegerFunctions CONST = new IntegerFunctions();
 
 	public static IntegerFunctions initialize() {
 		return CONST;

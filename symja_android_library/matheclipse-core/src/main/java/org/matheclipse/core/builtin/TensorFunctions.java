@@ -221,7 +221,7 @@ public class TensorFunctions {
 
 	}
 
-	final static TensorFunctions CONST = new TensorFunctions();
+	private final static TensorFunctions CONST = new TensorFunctions();
 
 	public static TensorFunctions initialize() {
 		return CONST;

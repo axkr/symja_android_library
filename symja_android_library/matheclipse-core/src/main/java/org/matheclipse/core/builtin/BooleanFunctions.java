@@ -2267,7 +2267,7 @@ public final class BooleanFunctions {
 		return equalNull(ast.arg1(), ast.arg2(), EvalEngine.get()).orElse(ast);
 	}
 
-	final static BooleanFunctions CONST = new BooleanFunctions();
+	private final static BooleanFunctions CONST = new BooleanFunctions();
 
 	public static BooleanFunctions initialize() {
 		return CONST;

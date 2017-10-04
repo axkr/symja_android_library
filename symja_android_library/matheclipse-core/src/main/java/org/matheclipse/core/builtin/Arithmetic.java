@@ -3030,7 +3030,7 @@ public final class Arithmetic {
 		}
 	}
 
-	final static Arithmetic CONST = new Arithmetic();
+	private final static Arithmetic CONST = new Arithmetic();
 
 	public static Arithmetic initialize() {
 		return CONST;

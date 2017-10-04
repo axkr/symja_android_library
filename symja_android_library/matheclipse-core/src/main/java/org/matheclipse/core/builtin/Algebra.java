@@ -4272,7 +4272,7 @@ public class Algebra {
 		return temp;
 	}
 
-	final static Algebra CONST = new Algebra();
+	private final static Algebra CONST = new Algebra();
 
 	public static Algebra initialize() {
 		return CONST;

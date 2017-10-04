@@ -736,7 +736,7 @@ public class Structure {
 		return F.NIL;
 	}
 
-	final static Structure CONST = new Structure();
+	private final static Structure CONST = new Structure();
 
 	public static Structure initialize() {
 		return CONST;

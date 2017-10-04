@@ -23,7 +23,7 @@ public class ComputationalGeometryFunctions {
 		}
 	}
 
-	final static ComputationalGeometryFunctions CONST = new ComputationalGeometryFunctions();
+	private final static ComputationalGeometryFunctions CONST = new ComputationalGeometryFunctions();
 
 	public static ComputationalGeometryFunctions initialize() {
 		return CONST;

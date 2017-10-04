@@ -981,7 +981,7 @@ public class SpecialFunctions {
 		}
 	}
 
-	final static SpecialFunctions CONST = new SpecialFunctions();
+	private final static SpecialFunctions CONST = new SpecialFunctions();
 
 	public static SpecialFunctions initialize() {
 		return CONST;

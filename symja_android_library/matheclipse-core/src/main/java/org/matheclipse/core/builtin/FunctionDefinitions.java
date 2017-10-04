@@ -98,7 +98,7 @@ public final class FunctionDefinitions {
 		UnitStep.setEvaluator(new org.matheclipse.core.reflection.system.UnitStep());
 	}
 
-	final static FunctionDefinitions CONST = new FunctionDefinitions();
+	private final static FunctionDefinitions CONST = new FunctionDefinitions();
 
 	public static FunctionDefinitions initialize() {
 		return CONST;

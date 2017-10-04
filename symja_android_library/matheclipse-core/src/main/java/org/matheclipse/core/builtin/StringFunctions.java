@@ -332,7 +332,7 @@ public final class StringFunctions {
 		return null;
 	}
 
-	final static StringFunctions CONST = new StringFunctions();
+	private final static StringFunctions CONST = new StringFunctions();
 
 	public static StringFunctions initialize() {
 		return CONST;

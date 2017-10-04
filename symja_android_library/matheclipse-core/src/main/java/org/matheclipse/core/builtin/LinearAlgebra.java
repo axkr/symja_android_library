@@ -3358,7 +3358,7 @@ public final class LinearAlgebra {
 		return resultList;
 	}
 
-	final static LinearAlgebra CONST = new LinearAlgebra();
+	private final static LinearAlgebra CONST = new LinearAlgebra();
 
 	public static LinearAlgebra initialize() {
 		return CONST;

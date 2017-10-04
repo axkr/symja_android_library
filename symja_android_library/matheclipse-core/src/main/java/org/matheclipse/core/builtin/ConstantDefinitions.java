@@ -28,7 +28,7 @@ public class ConstantDefinitions {
 		F.Pi.setEvaluator(new Pi());
 	}
 
-	final static ConstantDefinitions CONST = new ConstantDefinitions();
+	private final static ConstantDefinitions CONST = new ConstantDefinitions();
 
 	public static ConstantDefinitions initialize() {
 		return CONST;

@@ -2294,7 +2294,7 @@ public class ExpTrigsFunctions {
 		}
 	}
 
-	final static ExpTrigsFunctions CONST = new ExpTrigsFunctions();
+	private final static ExpTrigsFunctions CONST = new ExpTrigsFunctions();
 
 	public static ExpTrigsFunctions initialize() {
 		return CONST;

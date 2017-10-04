@@ -34,7 +34,7 @@ import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.parser.client.math.MathException;
 
 public final class Programming {
-	final static Programming CONST = new Programming();
+	private final static Programming CONST = new Programming();
 
 	static {
 		F.Abort.setEvaluator(new Abort());

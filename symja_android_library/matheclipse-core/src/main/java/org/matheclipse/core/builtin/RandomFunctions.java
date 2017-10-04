@@ -109,7 +109,7 @@ public final class RandomFunctions {
 		}
 	}
 
-	final static RandomFunctions CONST = new RandomFunctions();
+	private final static RandomFunctions CONST = new RandomFunctions();
 
 	public static RandomFunctions initialize() {
 		return CONST;

@@ -56,7 +56,7 @@ public abstract class Solver implements Runnable {
 	/**
 	 * A constant value for no options
 	 */
-	public static final int NONE = 0;
+	 static final int NONE = 0;
 
 	/**
 	 * An option value specifying to minimize the objective variable

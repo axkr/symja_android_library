@@ -3085,7 +3085,7 @@ public final class ListFunctions {
 		return result;
 	}
 	
-	final static ListFunctions CONST = new ListFunctions();
+	private final static ListFunctions CONST = new ListFunctions();
 
 	public static ListFunctions initialize() {
 		return CONST;

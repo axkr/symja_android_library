@@ -1160,7 +1160,7 @@ public class StatisticsFunctions {
 
 	}
 
-	final static StatisticsFunctions CONST = new StatisticsFunctions();
+	private final static StatisticsFunctions CONST = new StatisticsFunctions();
 
 	public static StatisticsFunctions initialize() {
 		return CONST;

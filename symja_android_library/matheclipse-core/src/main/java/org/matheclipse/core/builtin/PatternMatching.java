@@ -480,7 +480,7 @@ public final class PatternMatching {
 
 	}
 
-	final static PatternMatching CONST = new PatternMatching();
+	private final static PatternMatching CONST = new PatternMatching();
 
 	public static PatternMatching initialize() {
 		return CONST;

@@ -999,7 +999,7 @@ public class PredicateQ {
 		return expr.isZero();
 	}
 
-	final static PredicateQ CONST = new PredicateQ();
+	private final static PredicateQ CONST = new PredicateQ();
 
 	public static PredicateQ initialize() {
 		return CONST;

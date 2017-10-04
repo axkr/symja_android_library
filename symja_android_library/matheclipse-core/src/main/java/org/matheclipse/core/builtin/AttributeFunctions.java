@@ -430,7 +430,7 @@ public class AttributeFunctions {
 		return F.Null;
 	}
 
-	final static AttributeFunctions CONST = new AttributeFunctions();
+	private final static AttributeFunctions CONST = new AttributeFunctions();
 
 	public static AttributeFunctions initialize() {
 		return CONST;
