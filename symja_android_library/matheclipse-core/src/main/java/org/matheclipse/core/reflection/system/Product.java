@@ -127,7 +127,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 			boolean flag = true;
 			// Prod( i^a, {i,from,to},... )
 			for (int i = 2; i < ast.size(); i++) {
-				IIterator iterator = Iterator.create((IAST) ast.get(i), engine);
+				IIterator<IExpr> iterator = Iterator.create((IAST) ast.get(i), engine);
 				if (iterator.isValidVariable() && exponent.isFree(iterator.getVariable())) {
 					continue;
 				}
@@ -142,7 +142,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 		}
 		IExpr argN = ast.get(ast.size() - 1);
 		if (ast.size() >= 3 && argN.isList()) {
-			IIterator iterator = Iterator.create((IAST) argN, engine);
+			IIterator<IExpr> iterator = Iterator.create((IAST) argN, engine);
 			if (iterator.isValidVariable()) {
 				if (iterator.getLowerLimit().isInteger() && iterator.getUpperLimit().isSymbol()
 						&& iterator.getStep().isOne()) {

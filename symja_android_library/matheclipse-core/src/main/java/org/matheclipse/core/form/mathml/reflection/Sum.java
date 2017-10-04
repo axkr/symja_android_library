@@ -4,6 +4,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.form.mathml.AbstractConverter;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IIterator;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -29,7 +30,7 @@ public class Sum extends AbstractConverter {
 		}
 		fFactory.tagStart(buf, "mrow");
 		if (f.get(i).isList()) {
-			IIterator iterator = Iterator.create((IAST) f.get(i), EvalEngine.get());
+			IIterator<IExpr> iterator = Iterator.create((IAST) f.get(i), EvalEngine.get());
 			if (iterator.isValidVariable() && iterator.getStep().isOne()) {
 				fFactory.tagStart(buf, "munderover");
 				fFactory.tag(buf, "mo", mathSymbol);

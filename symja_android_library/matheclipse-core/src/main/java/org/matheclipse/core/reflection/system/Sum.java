@@ -265,7 +265,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 	 *            constructed as <code>{Symbol: var, Integer: from, Symbol: to}</code>
 	 * @return
 	 */
-	private IExpr definiteSum(final IExpr expr, final IIterator iterator, IAST list, EvalEngine engine) {
+	private IExpr definiteSum(final IExpr expr, final IIterator<IExpr> iterator, IAST list, EvalEngine engine) {
 		final ISymbol var = iterator.getVariable();
 		IExpr arg1 = expr;
 		final IExpr from = iterator.getLowerLimit();
@@ -355,7 +355,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 	 *            constructed as <code>{Symbol: var, Integer: from, Infinity}</code>
 	 * @return
 	 */
-	private IExpr definiteSumInfinity(final IExpr expr, final IIterator iterator, IAST list, EvalEngine engine) {
+	private IExpr definiteSumInfinity(final IExpr expr, final IIterator<IExpr> iterator, IAST list, EvalEngine engine) {
 		final ISymbol var = iterator.getVariable();
 		final IExpr from = iterator.getLowerLimit();
 		final IExpr to = iterator.getUpperLimit();
