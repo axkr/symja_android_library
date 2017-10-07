@@ -12,10 +12,8 @@ import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.CN1D2;
 import static org.matheclipse.core.expression.F.Conjugate;
 import static org.matheclipse.core.expression.F.Cos;
-import static org.matheclipse.core.expression.F.Cosh;
 import static org.matheclipse.core.expression.F.E;
 import static org.matheclipse.core.expression.F.Equal;
 import static org.matheclipse.core.expression.F.Factorial;
@@ -31,12 +29,9 @@ import static org.matheclipse.core.expression.F.Positive;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Re;
 import static org.matheclipse.core.expression.F.Sin;
-import static org.matheclipse.core.expression.F.Sinh;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.a;
-import static org.matheclipse.core.expression.F.a_;
 import static org.matheclipse.core.expression.F.fraction;
 import static org.matheclipse.core.expression.F.integer;
 import static org.matheclipse.core.expression.F.num;
@@ -59,7 +54,6 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
@@ -88,6 +82,8 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.HashedOrderlessMatcher;
+import org.matheclipse.core.patternmatching.HashedOrderlessMatcherPlus;
+import org.matheclipse.core.patternmatching.HashedOrderlessMatcherTimes;
 import org.matheclipse.core.reflection.system.rules.AbsRules;
 import org.matheclipse.core.reflection.system.rules.ConjugateRules;
 import org.matheclipse.core.reflection.system.rules.PowerRules;
@@ -1136,7 +1132,7 @@ public final class Arithmetic {
 
 	public static class Plus extends AbstractArgMultiple implements INumeric {
 
-		private static HashedOrderlessMatcher ORDERLESS_MATCHER = new HashedOrderlessMatcher();
+		private static HashedOrderlessMatcherPlus ORDERLESS_MATCHER = new HashedOrderlessMatcherPlus();
 
 		public Plus() {
 
@@ -1298,27 +1294,29 @@ public final class Arithmetic {
 
 			// ORDERLESS_MATCHER.setUpHashRule("Sin[x_]^2", "Cos[x_]^2", "a");
 			ORDERLESS_MATCHER.definePatternHashRule(Power(Sin(x_), C2), Power(Cos(x_), C2), C1);
-			// ORDERLESS_MATCHER.setUpHashRule("a_*Sin[x_]^2", "a_*Cos[x_]^2",
-			// "a");
-			ORDERLESS_MATCHER.defineHashRule(Times(a_, Power(Sin(x_), C2)), Times(a_, Power(Cos(x_), C2)), a);
-			// ORDERLESS_MATCHER.setUpHashRule("ArcSin[x_]", "ArcCos[x_]",
-			// "Pi/2");
+
+			// ORDERLESS_MATCHER.setUpHashRule("a_*Sin[x_]^2", "a_*Cos[x_]^2", "a");
+			// ORDERLESS_MATCHER.defineHashRule(Times(a_, Power(Sin(x_), C2)), Times(a_,
+			// Power(Cos(x_), C2)), a);
+
+			// ORDERLESS_MATCHER.setUpHashRule("ArcSin[x_]", "ArcCos[x_]", "Pi/2");
 			ORDERLESS_MATCHER.defineHashRule(ArcSin(x_), ArcCos(x_), Times(C1D2, Pi));
-			// ORDERLESS_MATCHER.setUpHashRule("ArcTan[x_]", "ArcCot[x_]",
-			// "Pi/2");
+			// ORDERLESS_MATCHER.setUpHashRule("ArcTan[x_]", "ArcCot[x_]", "Pi/2");
 			ORDERLESS_MATCHER.defineHashRule(ArcTan(x_), ArcCot(x_), Times(C1D2, Pi));
-			// ORDERLESS_MATCHER.setUpHashRule("ArcTan[x_]", "ArcTan[y_]",
-			// "Pi/2",
+			// ORDERLESS_MATCHER.setUpHashRule("ArcTan[x_]", "ArcTan[y_]", "Pi/2",
 			// "Positive[x]&&(y==1/x)");
 			ORDERLESS_MATCHER.defineHashRule(ArcTan(x_), ArcTan(y_), Times(C1D2, Pi),
 					And(Positive(x), Equal(y, Power(x, CN1))));
+
 			// ORDERLESS_MATCHER.setUpHashRule("-ArcTan[x_]", "-ArcTan[y_]",
 			// "-Pi/2", "Positive[x]&&(y==1/x)");
-			ORDERLESS_MATCHER.definePatternHashRule(Times(CN1, ArcTan(x_)), Times(CN1, ArcTan(y_)), Times(CN1D2, Pi),
-					And(Positive(x), Equal(y, Power(x, CN1))));
+			// ORDERLESS_MATCHER.definePatternHashRule(Times(CN1, ArcTan(x_)), Times(CN1,
+			// ArcTan(y_)), Times(CN1D2, Pi),
+			// And(Positive(x), Equal(y, Power(x, CN1))));
 			// ORDERLESS_MATCHER.setUpHashRule("Cosh[x_]^2", "-Sinh[x_]^2",
 			// "1");
-			ORDERLESS_MATCHER.definePatternHashRule(Power(Cosh(x_), C2), Times(CN1, Power(Sinh(x_), C2)), C1);
+			// ORDERLESS_MATCHER.definePatternHashRule(Power(Cosh(x_), C2), Times(CN1,
+			// Power(Sinh(x_), C2)), C1);
 			super.setUp(newSymbol);
 		}
 

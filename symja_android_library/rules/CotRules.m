@@ -25,6 +25,8 @@ Cot(9/10*Pi)=-Sqrt(5+2*Sqrt(5)),
 Cot(11/12*Pi)=-2-Sqrt(3),
 Cot(Pi)=ComplexInfinity,
 
+Cot(ArcCos(x_)):=x*(1-x^2)^(-1/2),
+Cot(ArcSin(x_)):=(1-x^2)^(1/2)*x^(-1),
 Cot(I*Infinity)=-I,
 Cot(-I*Infinity)=I,
 Cot(ComplexInfinity)=Indeterminate

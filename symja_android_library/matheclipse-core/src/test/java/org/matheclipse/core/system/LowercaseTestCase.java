@@ -279,6 +279,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArcSin() {
+		check("-3*ArcSin(x)-2*ArcCos(x)", "-Pi-ArcSin(x)");
+		check("-ArcSin(x)-2*ArcCos(x)", "-Pi/2-ArcCos(x)");
+		check("-5*ArcSin(x)-5*ArcCos(x)", "-5/2*Pi");
+		check("ArcSin(x)+ArcCos(x)", "Pi/2");
+		check("5*ArcSin(x)+5*ArcCos(x)", "5/2*Pi");
 		check("ArcSin(0)", "0");
 		check("ArcSin(1)", "Pi/2");
 		check("arcsin(-11)", "-ArcSin(11)");
@@ -295,6 +300,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArcTan() {
+		check("2*ArcTan(x)+4*ArcCot(x)", "Pi+2*ArcCot(x)");
+		check("7*ArcTan(x)+3*ArcCot(x)", "3/2*Pi+4*ArcTan(x)");
+		check("ArcTan(x)+ArcCot(x)", "Pi/2");
+		check("4*ArcTan(x)+4*ArcCot(x)", "2*Pi");
+		
 		// issue #180
 		check("ArcTan(1,Sqrt(3))", "Pi/3");
 
@@ -998,6 +1008,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCos() {
+		check("Cos(ArcSin(x))", "Sqrt(1-x^2)");
+		check("Cos(ArcTan(x))", "1/Sqrt(1+x^2)");
 		check("Cos(0)", "1");
 		check("Cos(3*Pi)", "-1");
 		check("Cos(1.5*Pi)", "0.0");
@@ -1039,6 +1051,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCot() {
+		check("Sin(x)*Cot(x)", "Cos(x)");
+//		check("Sin(x)^2*Cot(x)^2", "Cos(x)^2");
+//		check("Sin(x)^2*Cot(x)^4", "Cos(x)^2*Cot(x)^2");
+//		check("Sin(x)^4*Cot(x)^2", "Cos(x)^2*Sin(x)^2");
+		
+		check("Cot(ArcSin(x))", "Sqrt(1-x^2)/x");
+		check("Cot(ArcCos(x))", "x/Sqrt(1-x^2)");
+		
 		check("Cot(Pi/4)", "1");
 		check("Cot(0)", "ComplexInfinity");
 		check("Cot(1.)", "0.64209");
@@ -3423,6 +3443,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLog() {
+		check("Exp(Log(x))", "x");
+		check("Refine(Log(Exp(x)),Element(x, Reals))", "x");
 		check("Log({0, 1, E, E * E, E ^ 3, E ^ x})", "{-Infinity,0,1,2,3,Log(E^x)}");
 		check("Log(0.)", "Indeterminate");
 		check("Log(1000) / Log(10)", "3");
@@ -6096,6 +6118,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSin() {
+		check("Sin(ArcCos(x))", "Sqrt(1-x^2)");
+		check("Sin(ArcTan(x))", "x/Sqrt(1+x^2)");
+		
 		check("Sin(0)", "0");
 		checkNumeric("Sin(0.5)", "0.479425538604203");
 		check("Sin(3*Pi)", "0");
@@ -6872,6 +6897,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTan() {
+		check("Tan(ArcSin(x))", "x/Sqrt(1-x^2)");
+		check("Tan(ArcCos(x))", "Sqrt(1-x^2)/x");
+		
 		check("Tan(0)", "0");
 		check("Tan(Pi / 2)", "ComplexInfinity");
 		checkNumeric("Tan(0.5 Pi)", "1.633123935319537E16");

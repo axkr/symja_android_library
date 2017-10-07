@@ -114,12 +114,10 @@ public class MainTestCase extends AbstractTestCase {
 
 		check("a+Sin(x)^2+Cos(x)^2+2/3", "5/3+a");
 		check("a+Sin(x)^2+Cos(y)^2+2/3", "2/3+a+Cos(y)^2+Sin(x)^2");
-		check("a*Sin(x)^2+a*Cos(x)^2", "a");
 		check("a+ArcSin(x)+ArcCos(x)+2/3", "2/3+a+Pi/2");
 		check("a+ArcTan(17)+ArcTan(1/17)+2/3", "2/3+a+Pi/2");
 		check("a+ArcTan(-2)+ArcTan(-1/2)+2/3", "2/3+a-Pi/2");
 		check("ArcTan((-1+2*x)*3^(-1/2))", "ArcTan((-1+2*x)/Sqrt(3))");
-		check("a+Cosh(x)^2-Sinh(x)^2+2/3", "5/3+a");
 
 		check("Tan(x)^(-2)", "Cot(x)^2");
 		check("Cot(x)^(-2)", "Tan(x)^2");
@@ -193,8 +191,6 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem000a() {
-
-		check("a*Sin(x)^2+a*Cos(x)^2", "a");
 		check("Rationalize(0.25+I*0.33333)", "1/4+I*33333/100000");
 		check("Rational(2,3)", "2/3");
 		check("Rational(3,1)", "3");
