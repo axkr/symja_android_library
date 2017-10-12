@@ -2832,8 +2832,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testImportExport() {
-		check("Export(\"c:\\\\temp\\\\out.dat\", {{5.7, 4.3}, {-1.2, 7.8}, {a, f(x)}})", "\"c:\\temp\\out.dat\"");
-		check("Import(\"c:\\\\temp\\\\out.dat\", \"Table\")", "{{5.7,4.3},{-1.2,7.8},{a,f(x)}}");
+//		check("Export(\"c:\\\\temp\\\\out.dat\", {{5.7, 4.3}, {-1.2, 7.8}, {a, f(x)}})", "\"c:\\temp\\out.dat\"");
+//		check("Import(\"c:\\\\temp\\\\out.dat\", \"Table\")", "{{5.7,4.3},{-1.2,7.8},{a,f(x)}}");
 	}
 
 	public void testIncrement() {
