@@ -304,7 +304,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("7*ArcTan(x)+3*ArcCot(x)", "3/2*Pi+4*ArcTan(x)");
 		check("ArcTan(x)+ArcCot(x)", "Pi/2");
 		check("4*ArcTan(x)+4*ArcCot(x)", "2*Pi");
-		
+
 		// issue #180
 		check("ArcTan(1,Sqrt(3))", "Pi/3");
 
@@ -1052,13 +1052,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testCot() {
 		check("Sin(x)*Cot(x)", "Cos(x)");
-//		check("Sin(x)^2*Cot(x)^2", "Cos(x)^2");
-//		check("Sin(x)^2*Cot(x)^4", "Cos(x)^2*Cot(x)^2");
-//		check("Sin(x)^4*Cot(x)^2", "Cos(x)^2*Sin(x)^2");
-		
+		// check("Sin(x)^2*Cot(x)^2", "Cos(x)^2");
+		// check("Sin(x)^2*Cot(x)^4", "Cos(x)^2*Cot(x)^2");
+		// check("Sin(x)^4*Cot(x)^2", "Cos(x)^2*Sin(x)^2");
+
 		check("Cot(ArcSin(x))", "Sqrt(1-x^2)/x");
 		check("Cot(ArcCos(x))", "x/Sqrt(1-x^2)");
-		
+
 		check("Cot(Pi/4)", "1");
 		check("Cot(0)", "ComplexInfinity");
 		check("Cot(1.)", "0.64209");
@@ -2832,8 +2832,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testImportExport() {
-//		check("Export(\"c:\\\\temp\\\\out.dat\", {{5.7, 4.3}, {-1.2, 7.8}, {a, f(x)}})", "\"c:\\temp\\out.dat\"");
-//		check("Import(\"c:\\\\temp\\\\out.dat\", \"Table\")", "{{5.7,4.3},{-1.2,7.8},{a,f(x)}}");
+		// check("Export(\"c:\\\\temp\\\\out.dat\", {{5.7, 4.3}, {-1.2, 7.8}, {a,
+		// f(x)}})", "\"c:\\temp\\out.dat\"");
+		// check("Import(\"c:\\\\temp\\\\out.dat\", \"Table\")",
+		// "{{5.7,4.3},{-1.2,7.8},{a,f(x)}}");
 	}
 
 	public void testIncrement() {
@@ -4535,6 +4537,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testOrdering() {
+		check("Ordering({1,3,4,2,5,9,6})", "{1,4,2,3,5,7,6}");
+		check("Ordering({1,3,4,2,5,9,6},All,Greater)", "{6,7,5,3,2,4,1}");
+		
 		check("Ordering({2, 6, 1, 9, 1, 2, 3}, -1)", "{4}");
 		check("Ordering({2, 6, 1, 9, 1, 2, 3}, -3)", "{4,2,7}");
 
@@ -6120,7 +6125,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSin() {
 		check("Sin(ArcCos(x))", "Sqrt(1-x^2)");
 		check("Sin(ArcTan(x))", "x/Sqrt(1+x^2)");
-		
+
 		check("Sin(0)", "0");
 		checkNumeric("Sin(0.5)", "0.479425538604203");
 		check("Sin(3*Pi)", "0");
@@ -6899,7 +6904,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testTan() {
 		check("Tan(ArcSin(x))", "x/Sqrt(1-x^2)");
 		check("Tan(ArcCos(x))", "Sqrt(1-x^2)/x");
-		
+
 		check("Tan(0)", "0");
 		check("Tan(Pi / 2)", "ComplexInfinity");
 		checkNumeric("Tan(0.5 Pi)", "1.633123935319537E16");
@@ -7180,6 +7185,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTranspose() {
+		check("Transpose({{1, 2, 3}, {4, 5, 6}}, {2,1})", "{{1,4},{2,5},{3,6}}");
+		check("Transpose({{1, 2, 3}, {4, 5, 6}}, {1,2})", "{{1,2,3},{4,5,6}}");
+		
 		check("m = Array(a, {2, 3, 2})",
 				"{{{a(1,1,1),a(1,1,2)},{a(1,2,1),a(1,2,2)},{a(1,3,1),a(1,3,2)}},{{a(2,1,1),a(2,1,\n"
 						+ "2)},{a(2,2,1),a(2,2,2)},{a(2,3,1),a(2,3,2)}}}");
