@@ -213,11 +213,7 @@ public final class Arithmetic {
 			if (arg1.isNumericFunction()) {
 				IExpr temp = F.evaln(arg1);
 				if (temp.isSignedNumber()) {
-					if (temp.isNegative()) {
-						return arg1.negate();
-					} else {
-						return arg1;
-					}
+					return arg1.copySign((ISignedNumber) temp);
 				}
 			}
 			if (arg1.isNegativeResult()) {

@@ -1431,6 +1431,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Det({{a,b,c},{d,e,f},{g,h,i}})", "-c*e*g+b*f*g+c*d*h-a*f*h-b*d*i+a*e*i");
 	}
 
+	public void testDiagonal() {
+		check("Diagonal({{1,2,3},{4,5,6},{7,8,9}})", "{1,5,9}");
+		check("Diagonal({{1,2,3},{4,5,6},{7,8,9}}, 1)", "{2,6}");
+		check("Diagonal({{1,2,3},{4,5,6},{7,8,9}}, -1)", "{4,8}");
+	}
+	
 	public void testDiceDissimilarity() {
 		check("DiceDissimilarity({1, 0, 1, 1, 0}, {1, 1, 0, 1, 1})", "3/7");
 		check("DiceDissimilarity({True, False, True}, {True, True, False})", "1/2");
@@ -7204,6 +7210,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTr() {
+		check("Tr({{1, 2}, {4, 5}, {7, 8}})", "6");
+		check("Tr({{1, 2, 3}, {4, 5, 6} })", "6");
 		check("Tr({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", "15");
 		check("Tr({{a, b, c}, {d, e, f}, {g, h, i}})", "a+e+i");
 		check("Tr({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, f)", "f(1,5,9)");

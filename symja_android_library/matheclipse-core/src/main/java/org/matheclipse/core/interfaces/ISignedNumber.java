@@ -24,11 +24,6 @@ public interface ISignedNumber extends INumber {
 	public ApfloatNum apfloatNumValue(long precision);
 
 	@Override
-	default INumber conjugate() {
-		return this;
-	}
-
-	@Override
 	default IExpr complexArg() {
 		if (sign() < 0) {
 			return F.Pi;
@@ -36,9 +31,13 @@ public interface ISignedNumber extends INumber {
 		return F.C0;
 	}
 
+	@Override
+	default INumber conjugate() {
+		return this;
+	}
+
 	/**
-	 * Divide <code>this</code> signed number by <code>that</code> signed
-	 * number.
+	 * Divide <code>this</code> signed number by <code>that</code> signed number.
 	 * 
 	 * @param that
 	 *            a signed number
@@ -60,8 +59,8 @@ public interface ISignedNumber extends INumber {
 	public boolean isGreaterThan(ISignedNumber that);
 
 	/**
-	 * Test if <code>this</code> signed number is less <code>than</code> that
-	 * signed number..
+	 * Test if <code>this</code> signed number is less <code>than</code> that signed
+	 * number..
 	 * 
 	 * @return <code>this < that</code>
 	 */
@@ -89,11 +88,11 @@ public interface ISignedNumber extends INumber {
 
 	/**
 	 * If this is a <code>Interval[{lower, upper}]</code> expression return the
-	 * <code>lower</code> value. If this is a <code>ISignedNUmber</code>
-	 * expression return <code>this</code>.
+	 * <code>lower</code> value. If this is a <code>ISignedNUmber</code> expression
+	 * return <code>this</code>.
 	 * 
-	 * @return <code>F.NIL</code> if this expression is no interval and no
-	 *         signed number.
+	 * @return <code>F.NIL</code> if this expression is no interval and no signed
+	 *         number.
 	 */
 	@Override
 	default public IExpr lower() {
@@ -120,18 +119,17 @@ public interface ISignedNumber extends INumber {
 
 	/**
 	 * Returns the closest <code>IInteger</code> to the argument. The result is
-	 * rounded to an integer by adding 1/2 and taking the floor of the result.
-	 * <br/>
-	 * This method raises {@link ArithmeticException} if a numeric value cannot
-	 * be represented by an <code>long</code> type.
+	 * rounded to an integer by adding 1/2 and taking the floor of the result. <br/>
+	 * This method raises {@link ArithmeticException} if a numeric value cannot be
+	 * represented by an <code>long</code> type.
 	 * 
 	 * @return the closest integer to the argument.
 	 */
 	public IInteger round();
 
 	/**
-	 * Returns the signum function of this number (i.e., -1, 0 or 1 as the value
-	 * of this number is negative, zero or positive).
+	 * Returns the signum function of this number (i.e., -1, 0 or 1 as the value of
+	 * this number is negative, zero or positive).
 	 * 
 	 * @return -1 if this is a negative number;<br/>
 	 *         0 if this is a zero;<br/>
@@ -140,8 +138,7 @@ public interface ISignedNumber extends INumber {
 	public int sign();
 
 	/**
-	 * Subtract <code>that</code> signed number from <code>this</code> signed
-	 * number
+	 * Subtract <code>that</code> signed number from <code>this</code> signed number
 	 * 
 	 * @param that
 	 *            a signed number
@@ -175,11 +172,11 @@ public interface ISignedNumber extends INumber {
 
 	/**
 	 * If this is a <code>Interval[{lower, upper}]</code> expression return the
-	 * <code>upper</code> value. If this is a <code>ISignedNUmber</code>
-	 * expression return <code>this</code>.
+	 * <code>upper</code> value. If this is a <code>ISignedNUmber</code> expression
+	 * return <code>this</code>.
 	 * 
-	 * @return <code>F.NIL</code> if this expression is no interval and no
-	 *         signed number.
+	 * @return <code>F.NIL</code> if this expression is no interval and no signed
+	 *         number.
 	 */
 	@Override
 	default public IExpr upper() {

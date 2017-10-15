@@ -326,6 +326,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Return <code>negate()</code> if <code>number.sign() < 0</code>, otherwise return <code>this</code>
+	 * 
+	 * @param number
+	 * @return
+	 */
+	default IExpr copySign(ISignedNumber number) {
+		return number.sign() < 0 ? negate() : this;
+	}
+	
+	/**
 	 * Returns an <code>IExpr</code> whose value is <code>(this - 1)</code>.
 	 * Calculates <code>F.eval(F.Subtract(this, C1))</code> in the common case and
 	 * uses a specialized implementation for derived number classes.

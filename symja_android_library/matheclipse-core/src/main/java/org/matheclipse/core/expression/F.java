@@ -763,6 +763,8 @@ public class F {
 	public final static IBuiltInSymbol DesignMatrix = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "designmatrix" : "DesignMatrix");
 	public final static IBuiltInSymbol Det = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "det" : "Det");
+	public final static IBuiltInSymbol Diagonal = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "diagonal" : "Diagonal");
 	public final static IBuiltInSymbol DiagonalMatrix = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "diagonalmatrix" : "DiagonalMatrix");
 	public final static IBuiltInSymbol DiceDissimilarity = initFinalSymbol(

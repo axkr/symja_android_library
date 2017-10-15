@@ -63,8 +63,7 @@ public class FieldReducedRowEchelonForm {
 	 * <code>FieldMatrix&lt;T&gt;</code> matrix.
 	 * 
 	 * @param matrix
-	 *            matrix which will be transformed to a row reduced echelon
-	 *            matrix.
+	 *            matrix which will be transformed to a row reduced echelon matrix.
 	 * 
 	 * @see #rowReduce()
 	 */
@@ -79,12 +78,11 @@ public class FieldReducedRowEchelonForm {
 	}
 
 	/**
-	 * Constructor which creates row reduced echelon matrix from the given
-	 * augmented <code>matrix</code> and column-vector <code>b</code>.
+	 * Constructor which creates row reduced echelon matrix from the given augmented
+	 * <code>matrix</code> and column-vector <code>b</code>.
 	 * 
 	 * @param matrix
-	 *            matrix which will be transformed to a row reduced echelon
-	 *            matrix.
+	 *            matrix which will be transformed to a row reduced echelon matrix.
 	 * 
 	 * @see #rowReduce()
 	 */
@@ -149,8 +147,8 @@ public class FieldReducedRowEchelonForm {
 	/**
 	 * Get the row reduced echelon form of the matrix.
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia -
-	 * Row echelon form</a>.
+	 * See: <a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row
+	 * echelon form</a>.
 	 * 
 	 * @return
 	 */
@@ -194,8 +192,7 @@ public class FieldReducedRowEchelonForm {
 	}
 
 	/**
-	 * Test if the row <code>a.row</code> of the matrix contains only
-	 * zero-elements.
+	 * Test if the row <code>a.row</code> of the matrix contains only zero-elements.
 	 * 
 	 * @param a
 	 * @return
@@ -212,9 +209,9 @@ public class FieldReducedRowEchelonForm {
 	}
 
 	/**
-	 * Add the values of the row <code>to.row</code> to the product of the
-	 * values of the row <code>from.row * factor</code> and assign the result
-	 * values back to the row <code>to.row</code>.
+	 * Add the values of the row <code>to.row</code> to the product of the values of
+	 * the row <code>from.row * factor</code> and assign the result values back to
+	 * the row <code>to.row</code>.
 	 * 
 	 * @param to
 	 * @param from
@@ -234,14 +231,14 @@ public class FieldReducedRowEchelonForm {
 	 * 
 	 * See: <a href="http://en.wikipedia.org/wiki/Kernel_%28linear_algebra%29">
 	 * Wikipedia - Kernel (linear algebra)</a>.
-	 * <a href="http://en.wikibooks.org/wiki/Linear_Algebra/Null_Spaces">
-	 * Wikibooks - Null Spaces</a>.
+	 * <a href="http://en.wikibooks.org/wiki/Linear_Algebra/Null_Spaces"> Wikibooks
+	 * - Null Spaces</a>.
 	 * 
 	 * @param minusOneFactor
-	 *            factor <code>-1</code> for multiplying all elements of the
-	 *            free part of the reduced row echelon form matrix
-	 * @return <code>null</code> if the input matrix has full rank, otherwise
-	 *         return the nullspaace.
+	 *            factor <code>-1</code> for multiplying all elements of the free
+	 *            part of the reduced row echelon form matrix
+	 * @return <code>null</code> if the input matrix has full rank, otherwise return
+	 *         the nullspaace.
 	 */
 	public FieldMatrix<IExpr> getNullSpace(IExpr minusOneFactor) {
 		int rank = getMatrixRank();
@@ -316,8 +313,8 @@ public class FieldReducedRowEchelonForm {
 	/**
 	 * Create the &quot;reduced row echelon form&quot; of a matrix.
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia -
-	 * Row echelon form</a>.
+	 * See: <a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row
+	 * echelon form</a>.
 	 * 
 	 * @return
 	 */
@@ -371,7 +368,7 @@ public class FieldReducedRowEchelonForm {
 					continue;
 				}
 				RowColIndex belowPivot = new RowColIndex(i, pivot.col);
-				IExpr complement = (getCoordinate(belowPivot).negate().divide(getCoordinate(pivot)));
+				IExpr complement = getCoordinate(belowPivot).negate().divide(getCoordinate(pivot));
 				multiplyAdd(belowPivot, pivot, complement);
 			}
 			// Step 5
@@ -392,7 +389,7 @@ public class FieldReducedRowEchelonForm {
 				}
 
 				RowColIndex abovePivot = new RowColIndex(i, pivot.col);
-				IExpr complement = (getCoordinate(abovePivot).negate().divide(getCoordinate(pivot)));
+				IExpr complement = getCoordinate(abovePivot).negate().divide(getCoordinate(pivot));
 				multiplyAdd(abovePivot, pivot, complement);
 			}
 			// Step 4
@@ -443,8 +440,7 @@ public class FieldReducedRowEchelonForm {
 	}
 
 	/**
-	 * Multiply the <code>x.row</code> elements with the scalar
-	 * <code>factor</code>.
+	 * Multiply the <code>x.row</code> elements with the scalar <code>factor</code>.
 	 * 
 	 * @param x
 	 * @param d
