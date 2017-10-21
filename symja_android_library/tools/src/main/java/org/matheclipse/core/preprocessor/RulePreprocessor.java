@@ -235,9 +235,10 @@ public class RulePreprocessor {
 
 	public static void main(final String[] args) {
 		F.initSymbols();
-		File sourceLocation = new File("C:\\Users\\dev\\git\\symja_android_library\\symja_android_library\\rules");
+		// C:\\Users\\dev\\git\\symja_android_library
+		File sourceLocation = new File("..\\symja_android_library\\rules");
 		File targetLocation = new File(
-				"C:\\Users\\dev\\git\\symja_android_library\\symja_android_library\\matheclipse-core\\src\\main\\java\\org\\matheclipse\\core\\reflection\\system\\rules");
+				"..\\symja_android_library\\matheclipse-core\\src\\main\\java\\org\\matheclipse\\core\\reflection\\system\\rules");
 
 		generateFunctionStrings(sourceLocation, targetLocation, true);
 	}

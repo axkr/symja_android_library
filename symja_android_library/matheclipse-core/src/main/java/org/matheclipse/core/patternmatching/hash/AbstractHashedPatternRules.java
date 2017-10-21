@@ -1,7 +1,8 @@
-package org.matheclipse.core.patternmatching;
+package org.matheclipse.core.patternmatching.hash;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.visit.HashValueVisitor;
 
 public abstract class AbstractHashedPatternRules {
@@ -90,5 +91,15 @@ public abstract class AbstractHashedPatternRules {
 		return fLHSPattern2.isPattern();
 	}
 
-	public abstract IExpr evalDownRule(IExpr e1, IExpr e2, EvalEngine engine);
+	/**
+	 * 
+	 * @param e1
+	 * @param num1
+	 * @param e2
+	 * @param num2
+	 * @param engine
+	 * @return
+	 */
+	public abstract IExpr evalDownRule(IExpr e1, IExpr num1, IExpr e2, IExpr num2, EvalEngine engine);
+
 }

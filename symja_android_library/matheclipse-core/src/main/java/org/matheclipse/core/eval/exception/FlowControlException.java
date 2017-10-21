@@ -3,7 +3,7 @@ package org.matheclipse.core.eval.exception;
 import org.matheclipse.parser.client.math.MathException;
 
 /**
- * Base exeception for BreakException and ContinueException
+ * Base exception for BreakException and ContinueException
  * 
  * 
  */

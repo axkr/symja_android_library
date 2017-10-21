@@ -1548,32 +1548,6 @@ public class ExpTrigsFunctions {
 			return baseBLog(arg1, arg2);
 		}
 
-		/**
-		 * Integer logarithm of <code>arg</code> for base <code>b</code>. Gives Log
-		 * <sub>b</sub>(arg) or <code>Log(arg)/Log(b)</code>.
-		 * 
-		 * @param b
-		 *            the base of the logarithm
-		 * @param arg
-		 * @return
-		 */
-		public static IExpr baseBLog(final IInteger b, final IInteger arg) {
-			try {
-				long l1 = b.toLong();
-				long l2 = arg.toLong();
-				double res = Math.log(l2) / Math.log(l1);
-				if (F.isNumIntValue(res)) {
-					int r = Double.valueOf(Math.round(res)).intValue();
-					if (arg.equals(b.pow(r))) {
-						return F.integer(r);
-					}
-				}
-			} catch (ArithmeticException ae) {
-				// toLong() method failed
-			}
-			return F.NIL;
-		}
-
 		@Override
 		public double evalReal(final double[] stack, final int top, final int size) {
 			if (size != 1) {
@@ -2055,7 +2029,7 @@ public class ExpTrigsFunctions {
 			@Override
 			public IExpr apply(IExpr arg1, IExpr arg2) {
 				if (arg1.isInteger() && arg2.isInteger()) {
-					return Log.baseBLog((IInteger) arg2, (IInteger) arg1);
+					return baseBLog((IInteger) arg2, (IInteger) arg1);
 				}
 				return F.NIL;
 			}
@@ -2294,6 +2268,32 @@ public class ExpTrigsFunctions {
 		}
 	}
 
+	/**
+	 * Integer logarithm of <code>arg</code> for base <code>b</code>. Gives Log
+	 * <sub>b</sub>(arg) or <code>Log(arg)/Log(b)</code>.
+	 * 
+	 * @param b
+	 *            the base of the logarithm
+	 * @param arg
+	 * @return
+	 */
+	public static IExpr baseBLog(final IInteger b, final IInteger arg) {
+		try {
+			long l1 = b.toLong();
+			long l2 = arg.toLong();
+			double res = Math.log(l2) / Math.log(l1);
+			if (F.isNumIntValue(res)) {
+				int r = Double.valueOf(Math.round(res)).intValue();
+				if (arg.equals(b.pow(r))) {
+					return F.integer(r);
+				}
+			}
+		} catch (ArithmeticException ae) {
+			// toLong() method failed
+		}
+		return F.NIL;
+	}
+	
 	private final static ExpTrigsFunctions CONST = new ExpTrigsFunctions();
 
 	public static ExpTrigsFunctions initialize() {

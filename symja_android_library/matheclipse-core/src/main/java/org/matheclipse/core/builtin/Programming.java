@@ -97,9 +97,6 @@ public final class Programming {
 	 */
 	private final static class Break extends AbstractCoreFunctionEvaluator {
 
-		public Break() {
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.isAST0()) {
@@ -127,9 +124,6 @@ public final class Programming {
 	 *
 	 */
 	private final static class Block extends AbstractCoreFunctionEvaluator {
-		public Block() {
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
@@ -158,10 +152,6 @@ public final class Programming {
 	 */
 	private final static class Catch extends AbstractCoreFunctionEvaluator {
 
-		public Catch() {
-			super();
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
@@ -181,9 +171,6 @@ public final class Programming {
 
 	private final static class CompoundExpression extends AbstractCoreFunctionEvaluator {
 
-		public CompoundExpression() {
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() > 1) {
@@ -202,10 +189,6 @@ public final class Programming {
 	}
 
 	private final static class Condition extends AbstractCoreFunctionEvaluator {
-
-		public Condition() {
-			// default ctor
-		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -230,9 +213,6 @@ public final class Programming {
 	}
 
 	private final static class Continue extends AbstractCoreFunctionEvaluator {
-
-		public Continue() {
-		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -435,10 +415,6 @@ public final class Programming {
 	 * 
 	 */
 	private final static class For extends AbstractCoreFunctionEvaluator {
-
-		public For() {
-			super();
-		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -952,9 +928,6 @@ public final class Programming {
 	}
 
 	private final static class With extends AbstractCoreFunctionEvaluator {
-		/**
-		 *
-		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);

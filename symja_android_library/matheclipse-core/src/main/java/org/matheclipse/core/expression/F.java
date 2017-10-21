@@ -26,6 +26,7 @@ import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.Combinatoric;
 import org.matheclipse.core.builtin.ComputationalGeometryFunctions;
 import org.matheclipse.core.builtin.ConstantDefinitions;
+import org.matheclipse.core.builtin.ExpTrigsFunctions;
 import org.matheclipse.core.builtin.FunctionDefinitions;
 import org.matheclipse.core.builtin.IntegerFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
@@ -1850,6 +1851,7 @@ public class F {
 
 			Slot.setAttributes(ISymbol.NHOLDALL);
 			SlotSequence.setAttributes(ISymbol.NHOLDALL);
+			PatternTest.setAttributes(ISymbol.HOLDALL);
 
 			CEmptyList = headAST0(List);
 
@@ -2016,6 +2018,7 @@ public class F {
 			PatternMatching.initialize();
 			Algebra.initialize();
 			Structure.initialize();
+			ExpTrigsFunctions.initialize();
 			FunctionDefinitions.initialize();
 			NumberTheory.initialize();
 			BooleanFunctions.initialize();

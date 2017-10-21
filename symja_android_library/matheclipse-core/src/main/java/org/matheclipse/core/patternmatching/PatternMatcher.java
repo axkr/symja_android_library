@@ -555,7 +555,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 * 
 	 * @return <code>null</code> if no matched expression exists
 	 */
-	protected IExpr getPatternValue0() {
+	public IExpr getPatternValue0() {
 		return fPatternMap.getValue(0);
 	}
 

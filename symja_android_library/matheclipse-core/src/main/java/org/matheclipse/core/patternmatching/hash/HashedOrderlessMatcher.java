@@ -1,4 +1,4 @@
-package org.matheclipse.core.patternmatching;
+package org.matheclipse.core.patternmatching.hash;
 
 import java.util.List;
 
@@ -36,6 +36,10 @@ public class HashedOrderlessMatcher {
 		defineHashRule(lhs1, lhs2, rhs, null);
 	}
 
+	public void defineHashRule(AbstractHashedPatternRules hashRule) {
+		fHashRuleMap.put(hashRule.hashCode(), hashRule);
+	}
+	
 	/**
 	 * Define the rule for the <code>Orderless</code> operator <b>OP</b>.
 	 * <code>OP[lhs1, lhs2, ....] := OP[rhs, ...] /; condition</code>
@@ -283,7 +287,7 @@ public class HashedOrderlessMatcher {
 	protected boolean updateHashValues(IAST result, final IAST orderlessAST, AbstractHashedPatternRules hashRule,
 			int[] hashValues, int i, int j, EvalEngine engine) {
 		IExpr temp;
-		if ((temp = hashRule.evalDownRule(orderlessAST.get(i + 1), orderlessAST.get(j + 1), engine)).isPresent()) {
+		if ((temp = hashRule.evalDownRule(orderlessAST.get(i + 1), null, orderlessAST.get(j + 1), null, engine)).isPresent()) {
 			hashValues[i] = 0;
 			hashValues[j] = 0;
 			result.append(temp);

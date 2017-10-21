@@ -11,8 +11,8 @@ import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.patternmatching.HashedOrderlessMatcher;
-import org.matheclipse.core.patternmatching.HashedPatternRules;
+import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher;
+import org.matheclipse.core.patternmatching.hash.HashedPatternRules;
 
 /**
  *
@@ -125,7 +125,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 	 * @param lhs2
 	 * @param rhs
 	 * @param condition
-	 * @see org.matheclipse.core.patternmatching.HashedOrderlessMatcher#defineHashRule(org.matheclipse.core.interfaces.IExpr,
+	 * @see org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher#defineHashRule(org.matheclipse.core.interfaces.IExpr,
 	 *      org.matheclipse.core.interfaces.IExpr,
 	 *      org.matheclipse.core.interfaces.IExpr,
 	 *      org.matheclipse.core.interfaces.IExpr)
@@ -139,7 +139,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 	 * @param lhs2
 	 * @param rhs
 	 * @param condition
-	 * @see org.matheclipse.core.patternmatching.HashedOrderlessMatcher#defineHashRule(org.matheclipse.core.interfaces.IExpr,
+	 * @see org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher#defineHashRule(org.matheclipse.core.interfaces.IExpr,
 	 *      org.matheclipse.core.interfaces.IExpr,
 	 *      org.matheclipse.core.interfaces.IExpr,
 	 *      org.matheclipse.core.interfaces.IExpr)

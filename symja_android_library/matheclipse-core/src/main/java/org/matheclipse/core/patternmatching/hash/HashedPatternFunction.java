@@ -1,9 +1,11 @@
-package org.matheclipse.core.patternmatching;
+package org.matheclipse.core.patternmatching.hash;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.BinaryFunctorImpl;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.patternmatching.PatternMatcher;
+import org.matheclipse.core.patternmatching.PatternMatcherEvalEngine;
 
 /**
  * Data structure for <code>HashedOrderlessMatcher</code> to set up a rule with a <code>BinaryFunctorImpl<IExpr></code> evaluation
@@ -61,7 +63,7 @@ public class HashedPatternFunction extends AbstractHashedPatternRules {
 	}
 
 	@Override
-	public IExpr evalDownRule(IExpr e1, IExpr e2, EvalEngine engine) {
+	public IExpr evalDownRule(IExpr e1, IExpr num1, IExpr e2, IExpr num2, EvalEngine engine) {
 		PatternMatcher pm1 = new PatternMatcherEvalEngine(fLHSPattern1, engine);
 		PatternMatcher pm2 = new PatternMatcherEvalEngine(fLHSPattern2, engine);
 		if (pm1.test(e1, engine) && pm2.test(e2, engine)) {

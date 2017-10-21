@@ -120,7 +120,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	}
 
 	@Override
-	public boolean isBuiltInSymbol() {
+	final public boolean isBuiltInSymbol() {
 		return true;
 	}
 
@@ -132,43 +132,43 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isHoldOrHoldFormOrDefer() {
+	final public boolean isHoldOrHoldFormOrDefer() {
 		return this.equals(F.Defer) || this.equals(F.Hold) || this.equals(F.HoldForm);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isE() {
+	final public boolean isE() {
 		return this == F.E;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isFalse() {
+	final public boolean isFalse() {
 		return this == F.False;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isIndeterminate() {
+	final public boolean isIndeterminate() {
 		return this == F.Indeterminate;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isPi() {
+	final public boolean isPi() {
 		return this == F.Pi;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isSignedNumberConstant() {
+	final public boolean isSignedNumberConstant() {
 		return fEvaluator instanceof ISignedNumberConstant;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean isTrue() {
+	final public boolean isTrue() {
 		return this == F.True;
 	}
 

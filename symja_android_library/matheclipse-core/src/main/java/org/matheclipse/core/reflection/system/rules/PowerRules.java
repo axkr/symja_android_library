@@ -41,23 +41,23 @@ public interface PowerRules {
     // E^(a_*Log(x_)):=x^a/;FreeQ(a,x)
     ISetDelayed(Power(E,Times(a_,Log(x_))),
       Condition(Power(x,a),FreeQ(a,x))),
-    // Tan(x_)^m_IntegerQ:=Cot(x)^(-m)/;m<0
-    ISetDelayed(Power(Tan(x_),$p(m,IntegerQ)),
-      Condition(Power(Cot(x),Negate(m)),Less(m,C0))),
-    // Cot(x_)^m_IntegerQ:=Tan(x)^(-m)/;m<0
-    ISetDelayed(Power(Cot(x_),$p(m,IntegerQ)),
-      Condition(Power(Tan(x),Negate(m)),Less(m,C0))),
-    // Sec(x_)^m_IntegerQ:=Cos(x)^(-m)/;m<0
-    ISetDelayed(Power(Sec(x_),$p(m,IntegerQ)),
-      Condition(Power(Cos(x),Negate(m)),Less(m,C0))),
-    // Cos(x_)^m_IntegerQ:=Sec(x)^(-m)/;m<0
-    ISetDelayed(Power(Cos(x_),$p(m,IntegerQ)),
-      Condition(Power(Sec(x),Negate(m)),Less(m,C0))),
-    // Csc(x_)^m_IntegerQ:=Sin(x)^(-m)/;m<0
-    ISetDelayed(Power(Csc(x_),$p(m,IntegerQ)),
-      Condition(Power(Sin(x),Negate(m)),Less(m,C0))),
-    // Sin(x_)^m_IntegerQ:=Csc(x)^(-m)/;m<0
-    ISetDelayed(Power(Sin(x_),$p(m,IntegerQ)),
-      Condition(Power(Csc(x),Negate(m)),Less(m,C0)))
+    // Tan(x_)^m_?(IntegerQ(#1)&&#1<0&):=Cot(x)^(-m)
+    ISetDelayed(Power(Tan(x_),PatternTest(m_,Function(And(IntegerQ(Slot1),Less(Slot1,C0))))),
+      Power(Cot(x),Negate(m))),
+    // Cot(x_)^m_?(IntegerQ(#1)&&#1<0&):=Tan(x)^(-m)
+    ISetDelayed(Power(Cot(x_),PatternTest(m_,Function(And(IntegerQ(Slot1),Less(Slot1,C0))))),
+      Power(Tan(x),Negate(m))),
+    // Sec(x_)^m_?(IntegerQ(#1)&&#1<0&):=Cos(x)^(-m)
+    ISetDelayed(Power(Sec(x_),PatternTest(m_,Function(And(IntegerQ(Slot1),Less(Slot1,C0))))),
+      Power(Cos(x),Negate(m))),
+    // Cos(x_)^m_?(IntegerQ(#1)&&#1<0&):=Sec(x)^(-m)
+    ISetDelayed(Power(Cos(x_),PatternTest(m_,Function(And(IntegerQ(Slot1),Less(Slot1,C0))))),
+      Power(Sec(x),Negate(m))),
+    // Csc(x_)^m_?(IntegerQ(#1)&&#1<0&):=Sin(x)^(-m)
+    ISetDelayed(Power(Csc(x_),PatternTest(m_,Function(And(IntegerQ(Slot1),Less(Slot1,C0))))),
+      Power(Sin(x),Negate(m))),
+    // Sin(x_)^m_?(IntegerQ(#1)&&#1<0&):=Csc(x)^(-m)
+    ISetDelayed(Power(Sin(x_),PatternTest(m_,Function(And(IntegerQ(Slot1),Less(Slot1,C0))))),
+      Power(Csc(x),Negate(m)))
   );
 }

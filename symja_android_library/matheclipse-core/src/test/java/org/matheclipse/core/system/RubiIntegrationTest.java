@@ -288,7 +288,11 @@ public class RubiIntegrationTest extends AbstractTestCase {
 	}
 
 	public void testTrig001() {
+//		check("Sin(x)^2*sec(x)", "Sin(x)*Tan(x)");
 		check("Sin(x)*tan(x)", "Sin(x)*Tan(x)");
+		check("Cos(x)*tan(x)", "Sin(x)");
+		check("csc(x)*tan(x)", "Sec(x)");
+//		check("D(1/2*(-Log(Cos(x/2)-Sin(x/2))+Log(Cos(x/2)+Sin(x/2)))-(-Log(1+Sin(x))/2+Log(-2+2*Sin(x))/2+2*Sin(x))/2, x)" ,"");
 		check("int(Sin(x)*tan(x),x)",
 				"Csc(x)^2*(1/2*(-Log(Cos(x/2)-Sin(x/2))+Log(Cos(x/2)+Sin(x/2)))-(-Log(1+Sin(x))/2+Log(\n"
 						+ "-2+2*Sin(x))/2+2*Sin(x))/2)*Sin(x)^2");

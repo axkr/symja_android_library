@@ -4990,6 +4990,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialQ() {
+		check("PolynomialQ(Tan(x),x)", "False");
 		check("PolynomialQ(f(x), x)", "False");
 		check("PolynomialQ(f(a)+f(a)^2, f(a))", "True");
 		check("PolynomialQ(Sin(f(a))+f(a)^2, f(a))", "False");
@@ -7227,6 +7228,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTrigExpand() {
+		check("TrigExpand(Cot(2*x))", "Cot(x)/2-Tan(x)/2");
+		
 		check("TrigExpand(Cosh(2*a))", "Cosh(a)^2+Sinh(a)^2");
 		check("TrigExpand(Cosh(3*a))", "Cosh(a)^3+3*Cosh(a)*Sinh(a)^2");
 

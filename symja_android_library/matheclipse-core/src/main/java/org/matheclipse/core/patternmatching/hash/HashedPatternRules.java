@@ -1,10 +1,13 @@
-package org.matheclipse.core.patternmatching;
+package org.matheclipse.core.patternmatching.hash;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.RulesData;
 
 /**
  * Data structure for <code>HashedOrderlessMatcher</code>.
@@ -16,6 +19,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  */
 public class HashedPatternRules extends AbstractHashedPatternRules {
+
 	final IExpr fCondition;
 
 	final IExpr fRHS;
@@ -30,9 +34,10 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
 	 *            the right-hand-side result
 	 * @param defaultHashCode
 	 */
-//	public HashedPatternRules(IExpr lhsPattern1, IExpr lhsPattern2, IExpr rhsResult, boolean defaultHashCode) {
-//		this(lhsPattern1, lhsPattern2, rhsResult, null, defaultHashCode);
-//	}
+	// public HashedPatternRules(IExpr lhsPattern1, IExpr lhsPattern2, IExpr
+	// rhsResult, boolean defaultHashCode) {
+	// this(lhsPattern1, lhsPattern2, rhsResult, null, defaultHashCode);
+	// }
 
 	/**
 	 * 
@@ -47,7 +52,8 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
 	 * @param defaultHashCode
 	 *            TODO
 	 */
-	public HashedPatternRules(IExpr lhsPattern1, IExpr lhsPattern2, IExpr rhsResult, IExpr condition, boolean defaultHashCode) {
+	public HashedPatternRules(IExpr lhsPattern1, IExpr lhsPattern2, IExpr rhsResult, IExpr condition,
+			boolean defaultHashCode) {
 		super(lhsPattern1, lhsPattern2, defaultHashCode);
 		fCondition = condition;
 		fRHS = rhsResult;
@@ -116,7 +122,8 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
 	}
 
 	/**
-	 * Get (or create) the rule <code>{&lt;first-left-hand-side&gt;, &lt;second-left-hand-side&gt;}:=&lt;right-hand-side&gt;</code>
+	 * Get (or create) the rule
+	 * <code>{&lt;first-left-hand-side&gt;, &lt;second-left-hand-side&gt;}:=&lt;right-hand-side&gt;</code>
 	 * 
 	 * @return
 	 */
@@ -124,7 +131,8 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
 		if (fRulesData == null) {
 			fRulesData = new RulesData(Context.SYSTEM);
 			if (fCondition != null) {
-				fRulesData.putDownRule(ISymbol.RuleType.SET_DELAYED, false, F.List(fLHSPattern1, fLHSPattern2), F.Condition(fRHS, fCondition));
+				fRulesData.putDownRule(ISymbol.RuleType.SET_DELAYED, false, F.List(fLHSPattern1, fLHSPattern2),
+						F.Condition(fRHS, fCondition));
 			} else {
 				fRulesData.putDownRule(ISymbol.RuleType.SET_DELAYED, false, F.List(fLHSPattern1, fLHSPattern2), fRHS);
 			}
@@ -133,7 +141,7 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
 	}
 
 	@Override
-	public IExpr evalDownRule(IExpr e1, IExpr e2, EvalEngine engine) {
+	public IExpr evalDownRule(IExpr e1, IExpr num1, IExpr e2, IExpr num2, EvalEngine engine) {
 		return getRulesData().evalDownRule(F.List(e1, e2), engine);
 	}
 

@@ -212,6 +212,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
 			IExpr result = fPatternMap.substituteSymbols(fRightHandSide);
 			try {
+				// System.out.println(result.toString());
 				result = F.eval(result);
 			} catch (final ConditionException e) {
 				logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
