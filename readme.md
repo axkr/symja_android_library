@@ -1,6 +1,6 @@
 ## Symja Library - Java Symbolic Math System
 
-**Note**: this repository contains the **Java 8** version of the project.  
+**Note**: this repository contains the **Java 8** version of the project. The [NCalc project](https://github.com/tranleduy2000/ncalc) maintains a [Java 7 branch based on Retrolambda](https://github.com/tranleduy2000/symja_java7).
 
 - [Quick start](#quick-start)
 - [Features](#features)
@@ -11,7 +11,7 @@
 - [BitBucket GIT](#bitbucket-git)
 - [Contact](#contact)
 - [License](#license)
-
+ 
 ### Quick start 
 
 Read the [Symja Manual](symja_android_library/doc/index.md) for the description of the Symja language.
