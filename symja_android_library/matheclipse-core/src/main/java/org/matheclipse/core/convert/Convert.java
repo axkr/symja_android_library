@@ -55,7 +55,7 @@ public class Convert {
 		final IExpr[][] elements = new IExpr[rowSize][colSize];
 		for (int i = 1; i < rowSize + 1; i++) {
 			currInRow = (IAST) listMatrix.get(i);
-			if (currInRow.head() != F.List || colSize != currInRow.size() - 1) {
+			if (currInRow.isVector() < 0 || colSize != currInRow.size() - 1) {
 				return null;
 			}
 			for (int j = 1; j < colSize + 1; j++) {
@@ -115,8 +115,7 @@ public class Convert {
 	 * @param listMatrix
 	 * @return a RealMatrix or <code>null</code> if the given list is no matrix.
 	 * @throws WrongArgumentType
-	 *             if not all elements are convertable to a <code>double</code>
-	 *             value.
+	 *             if not all elements are convertable to a <code>double</code> value.
 	 * @throws ClassCastException
 	 * @throws IndexOutOfBoundsException
 	 * @deprecated use {@link IExpr#toRealMatrix()}
@@ -152,8 +151,7 @@ public class Convert {
 	 * @param listVector
 	 * @return a RealVector or <code>null</code> if the given list is no matrix.
 	 * @throws WrongArgumentType
-	 *             if not all elements are convertible to a <code>double</code>
-	 *             value.
+	 *             if not all elements are convertible to a <code>double</code> value.
 	 * @throws ClassCastException
 	 * @throws IndexOutOfBoundsException
 	 * @deprecated use {@link IExpr#toRealVector()}
@@ -173,6 +171,14 @@ public class Convert {
 		return new ArrayRealVector(elements, false);
 	}
 
+	/**
+	 * Returns a FieldVector if possible.
+	 * 
+	 * @param listVector
+	 * @return <code>null</code> if the conversion isn't possible.
+	 * @throws ClassCastException
+	 * @throws IndexOutOfBoundsException
+	 */
 	public static FieldVector<IExpr> list2Vector(final IAST listVector)
 			throws ClassCastException, IndexOutOfBoundsException {
 		if (listVector == null) {
@@ -229,8 +235,7 @@ public class Convert {
 	}
 
 	/**
-	 * Converts an array of coefficients into the (polynomial) expression
-	 * representation.
+	 * Converts an array of coefficients into the (polynomial) expression representation.
 	 * 
 	 * @param coefficients
 	 *            the coefficients of the polynomial function
@@ -323,8 +328,7 @@ public class Convert {
 	}
 
 	/**
-	 * Convert a matrix of double values to a transposed Symja matrix of
-	 * <code>List[List[...], ...]</code>.
+	 * Convert a matrix of double values to a transposed Symja matrix of <code>List[List[...], ...]</code>.
 	 * 
 	 * @param dd
 	 * @return <code>F.NIL</code> if no conversion was possible

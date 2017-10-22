@@ -1436,7 +1436,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Diagonal({{1,2,3},{4,5,6},{7,8,9}}, 1)", "{2,6}");
 		check("Diagonal({{1,2,3},{4,5,6},{7,8,9}}, -1)", "{4,8}");
 	}
-	
+
 	public void testDiceDissimilarity() {
 		check("DiceDissimilarity({1, 0, 1, 1, 0}, {1, 1, 0, 1, 1})", "3/7");
 		check("DiceDissimilarity({True, False, True}, {True, True, False})", "1/2");
@@ -3243,6 +3243,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LeafCount(10+I)", "3");
 	}
 
+	public void testLeastSquares() {
+		// {-1577780898195/827587904419-11087326045520/827587904419*I,
+		// 35583840059240/5793115330933+275839049310660/5793115330933*I,
+		// -3352155369084/827587904419-28321055437140/827587904419*I}
+		check("Table(Complex(i,Rational(2 * i + 2 + j, 1 + 9 * i + j)),{i,0,3},{j,0,2})", //
+				"{{I*2,I*3/2,I*4/3},{1+I*2/5,1+I*5/11,1+I*1/2},{2+I*6/19,2+I*7/20,2+I*8/21},{3+I*\n" + 
+				"2/7,3+I*9/29,3+I*1/3}}");
+		check("LeastSquares(Table(Complex(i,Rational(2 * i + 2 + j, 1 + 9 * i + j)),{i,0,3},{j,0,2}), {1,1,1,1})", //
+				"{-1577780898195/827587904419-I*11087326045520/827587904419,35583840059240/\n" + 
+				"5793115330933+I*275839049310660/5793115330933,-3352155369084/827587904419-I*\n" + 
+				"28321055437140/827587904419}");
+		check("LeastSquares({{1, 1}, {1, 2}, {1, 3.0}}, {7, 7, 8})", //
+				"{6.333333333333329,0.5000000000000018}");
+		check("LeastSquares({{1, 1}, {1, 2}, {1, 3}}, {7, 7, 8})", //
+				"{19/3,1/2}");
+		check("LeastSquares({{1, 1}, {1, 2}, {1, 3}}, {7, 7, x})", //
+				"{35/3-2/3*x,-7/2+x/2}");
+	}
+
 	public void testLegendreP() {
 		check("LegendreP(Pi,0)", "Sqrt(Pi)/(Gamma(1/2*(1-Pi))*Gamma(1+Pi/2))");
 		check("LegendreP(111,1)", "1");
@@ -4545,7 +4564,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testOrdering() {
 		check("Ordering({1,3,4,2,5,9,6})", "{1,4,2,3,5,7,6}");
 		check("Ordering({1,3,4,2,5,9,6},All,Greater)", "{6,7,5,3,2,4,1}");
-		
+
 		check("Ordering({2, 6, 1, 9, 1, 2, 3}, -1)", "{4}");
 		check("Ordering({2, 6, 1, 9, 1, 2, 3}, -3)", "{4,2,7}");
 
@@ -7194,7 +7213,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testTranspose() {
 		check("Transpose({{1, 2, 3}, {4, 5, 6}}, {2,1})", "{{1,4},{2,5},{3,6}}");
 		check("Transpose({{1, 2, 3}, {4, 5, 6}}, {1,2})", "{{1,2,3},{4,5,6}}");
-		
+
 		check("m = Array(a, {2, 3, 2})",
 				"{{{a(1,1,1),a(1,1,2)},{a(1,2,1),a(1,2,2)},{a(1,3,1),a(1,3,2)}},{{a(2,1,1),a(2,1,\n"
 						+ "2)},{a(2,2,1),a(2,2,2)},{a(2,3,1),a(2,3,2)}}}");
@@ -7229,7 +7248,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testTrigExpand() {
 		check("TrigExpand(Cot(2*x))", "Cot(x)/2-Tan(x)/2");
-		
+
 		check("TrigExpand(Cosh(2*a))", "Cosh(a)^2+Sinh(a)^2");
 		check("TrigExpand(Cosh(3*a))", "Cosh(a)^3+3*Cosh(a)*Sinh(a)^2");
 

@@ -43,7 +43,8 @@ public class MarkdownPreprocessor {
 	public static void main(final String[] args) {
 		F.initSymbols();
 		File sourceLocation = new File(
-				"C:\\Users\\dev\\git\\symja_android_library\\symja_android_library\\doc\\functions");
+				//C:\\Users\\dev\\git\\symja_android_library\\
+				"../symja_android_library/doc/functions");
 
 		generateFunctionStrings(sourceLocation);
 	}

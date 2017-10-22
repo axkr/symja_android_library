@@ -1937,7 +1937,7 @@ public abstract class AbstractAST implements IAST {
 	@Override
 	public boolean isNumericMode() {
 		ISymbol symbol = topHead();
-		if ((symbol.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION) {
+		if (isList()||(symbol.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION) {
 			// check if one of the arguments is &quot;numeric&quot;
 			for (int i = 1; i < size(); i++) {
 				if (get(i).isNumericMode()) {

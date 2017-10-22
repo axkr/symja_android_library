@@ -11,10 +11,9 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * The class <code>NILPointer</code> implements the constant object
- * <code>F#NIL</code> (not in list), which indicates in the evaluation process
- * that no evaluation was possible (i.e. no further definition was found to
- * create a new expression from the existing one).
+ * The class <code>NILPointer</code> implements the constant object <code>F#NIL</code> (not in list), which indicates in
+ * the evaluation process that no evaluation was possible (i.e. no further definition was found to create a new
+ * expression from the existing one).
  * 
  * @see F#NIL
  */
@@ -25,10 +24,9 @@ public class NILPointer extends AbstractAST {
 	private final static int SIZE = 0;
 
 	/**
-	 * The class <code>NILPointer</code> implements the constant object
-	 * <code>F#NIL</code> (not in list), which indicates in the evaluation
-	 * process that no evaluation was possible (i.e. no further definition was
-	 * found to create a new expression from the existing one).
+	 * The class <code>NILPointer</code> implements the constant object <code>F#NIL</code> (not in list), which
+	 * indicates in the evaluation process that no evaluation was possible (i.e. no further definition was found to
+	 * create a new expression from the existing one).
 	 * 
 	 * @see F#NIL
 	 */
@@ -36,9 +34,24 @@ public class NILPointer extends AbstractAST {
 	}
 
 	@Override
+	public boolean append(IExpr object) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void append(int location, IExpr object) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public boolean appendAll(Collection<? extends IExpr> collection) {
 		throw new UnsupportedOperationException();
 	}
+
+	// @Override
+	// public boolean addAll(List<? extends IExpr> ast) {
+	// throw new UnsupportedOperationException();
+	// }
 
 	@Override
 	public boolean appendAll(IAST ast, int startPosition, int endPosition) {
@@ -49,11 +62,6 @@ public class NILPointer extends AbstractAST {
 	public boolean appendAll(int location, Collection<? extends IExpr> collection) {
 		throw new UnsupportedOperationException();
 	}
-
-	// @Override
-	// public boolean addAll(List<? extends IExpr> ast) {
-	// throw new UnsupportedOperationException();
-	// }
 
 	@Override
 	public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition) {
@@ -72,16 +80,6 @@ public class NILPointer extends AbstractAST {
 
 	@Override
 	public IAST appendOneIdentity(IAST subAST) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean append(IExpr object) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void append(int location, IExpr object) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -160,33 +158,17 @@ public class NILPointer extends AbstractAST {
 	public boolean isList() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isListOfLists() { 
+	public final boolean isListOfLists() {
 		return false;
 	}
-	
+
+	/** {@inheritDoc} */
 	@Override
 	public int[] isMatrix(boolean setMatrixFormat) {
 		return null;
-	}
-	
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isPlus() {
-		return false;
-	}
-	
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isPower() {
-		return false;
-	}
-	
-	@Override
-	public final boolean isPresent() {
-		return false;
 	}
 
 	/** {@inheritDoc} */
@@ -194,19 +176,36 @@ public class NILPointer extends AbstractAST {
 	public final boolean isNumericFunction() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isNumericMode() {
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isOneIdentityAST1() {
 		return false;
 	}
-	
+
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isPlus() {
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isPower() {
+		return false;
+	}
+
+	@Override
+	public final boolean isPresent() {
+		return false;
+	}
+ 
 	@Override
 	public boolean isSameHead(IExpr head) {
 		return head().equals(head);
@@ -232,7 +231,7 @@ public class NILPointer extends AbstractAST {
 	public final boolean isTimes() {
 		return false;
 	}
-	
+
 	@Override
 	public final IExpr orElse(final IExpr other) {
 		return other;
@@ -263,8 +262,7 @@ public class NILPointer extends AbstractAST {
 	// }
 
 	/**
-	 * Removes the objects in the specified range from the start to the end, but
-	 * not including the end index.
+	 * Removes the objects in the specified range from the start to the end, but not including the end index.
 	 * 
 	 * @param start
 	 *            the index at which to start removing.
@@ -278,8 +276,7 @@ public class NILPointer extends AbstractAST {
 	}
 
 	/**
-	 * Replaces the element at the specified location in this {@code ArrayList}
-	 * with the specified object.
+	 * Replaces the element at the specified location in this {@code ArrayList} with the specified object.
 	 * 
 	 * @param location
 	 *            the index at which to put the specified object.
@@ -305,8 +302,7 @@ public class NILPointer extends AbstractAST {
 	}
 
 	/**
-	 * Returns a new array containing all elements contained in this
-	 * {@code ArrayList}.
+	 * Returns a new array containing all elements contained in this {@code ArrayList}.
 	 * 
 	 * @return an array of the elements from this {@code ArrayList}
 	 */

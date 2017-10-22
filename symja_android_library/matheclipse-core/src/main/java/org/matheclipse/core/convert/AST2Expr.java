@@ -35,8 +35,7 @@ import org.matheclipse.parser.client.ast.SymbolNode;
 import org.matheclipse.parser.client.eval.DoubleNode;
 
 /**
- * Converts a parsed <code>org.matheclipse.parser.client.ast.ASTNode</code>
- * expression into an IExpr expression
+ * Converts a parsed <code>org.matheclipse.parser.client.ast.ASTNode</code> expression into an IExpr expression
  * 
  */
 public class AST2Expr {
@@ -89,10 +88,10 @@ public class AST2Expr {
 			"InterpolatingFunction", "InterpolatingPolynomial", "Intersection", "Inverse", "InverseErf", "InverseErfc",
 			"InverseFunction", "InverseHaversine", "InverseLaplaceTransform", "JaccardDissimilarity", "JacobiMatrix",
 			"JacobiSymbol", "JavaForm", "Join", "KOrderlessPartitions", "KPartitions", "KroneckerDelta", "Kurtosis",
-			"Last", "LCM", "LeafCount", "LaguerreL", "LaplaceTransform", "LegendreP", "Length", "Less", "LessEqual",
-			"LetterQ", "Level", "LevelQ", "Limit", "Line", "LinearModelFit", "LinearProgramming", "LinearSolve",
-			"LiouvilleLambda", "List", "ListConvolve", "ListCorrelate", "ListQ", "Log", "Log2", "Log10", "LogGamma",
-			"LogicalExpand", "LogisticSigmoid", "LogIntegral", "LowerCaseQ", "LucasL", "LUDecomposition",
+			"Last", "LCM", "LeafCount", "LaguerreL", "LaplaceTransform", "LeastSquares", "LegendreP", "Length", "Less",
+			"LessEqual", "LetterQ", "Level", "LevelQ", "Limit", "Line", "LinearModelFit", "LinearProgramming",
+			"LinearSolve", "LiouvilleLambda", "List", "ListConvolve", "ListCorrelate", "ListQ", "Log", "Log2", "Log10",
+			"LogGamma", "LogicalExpand", "LogisticSigmoid", "LogIntegral", "LowerCaseQ", "LucasL", "LUDecomposition",
 			"MachineNumberQ", "ManhattanDistance", "MantissaExponent", "Map", "MapAt", "MapAll", "MapThread",
 			"MatchingDissimilarity", "MatchQ", "MathMLForm", "MatrixForm", "MatrixMinimalPolynomial", "MatrixPower",
 			"MatrixQ", "MatrixRank", "Max", "Mean", "Median", "MeijerG", "MemberQ", "MeshRange", "MessageName",
@@ -485,8 +484,8 @@ public class AST2Expr {
 	}
 
 	/**
-	 * Convert less or greater relations on input. Example: convert expressions like
-	 * <code>a<b<=c</code> to <code>Less[a,b]&&LessEqual[b,c]</code>.
+	 * Convert less or greater relations on input. Example: convert expressions like <code>a<b<=c</code> to
+	 * <code>Less[a,b]&&LessEqual[b,c]</code>.
 	 * 
 	 * @param ast
 	 * @param compareHead

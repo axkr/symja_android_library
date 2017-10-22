@@ -77,15 +77,13 @@ public class F {
 
 	/**
 	 * <p>
-	 * In computing, memoization or memoisation is an optimization technique used
-	 * primarily to speed up computer programs by storing the results of expensive
-	 * function calls and returning the cached result when the same inputs occur
-	 * again. This cache is especially useed for recursive integer functions to
-	 * remember the results of the recursive call.
+	 * In computing, memoization or memoisation is an optimization technique used primarily to speed up computer
+	 * programs by storing the results of expensive function calls and returning the cached result when the same inputs
+	 * occur again. This cache is especially useed for recursive integer functions to remember the results of the
+	 * recursive call.
 	 * </p>
 	 * 
-	 * See: <a href="https://en.wikipedia.org/wiki/Memoization">Wikipedia -
-	 * Memoization</a>
+	 * See: <a href="https://en.wikipedia.org/wiki/Memoization">Wikipedia - Memoization</a>
 	 */
 	public static Cache<IAST, IExpr> REMEMBER_INTEGER_CACHE = CacheBuilder.newBuilder().maximumSize(5000).build();
 
@@ -100,8 +98,7 @@ public class F {
 	public static boolean isSystemInitialized = false;
 
 	/**
-	 * The map for predefined strings for the
-	 * {@link IExpr#internalFormString(boolean, int)} method.
+	 * The map for predefined strings for the {@link IExpr#internalFormString(boolean, int)} method.
 	 */
 	public final static Map<String, String> PREDEFINED_INTERNAL_FORM_STRINGS = new HashMap<String, String>(61);
 
@@ -126,9 +123,8 @@ public class F {
 	};
 
 	/**
-	 * The constant object <code>NIL</code> (not in list) indicates in the
-	 * evaluation process that no evaluation was possible (i.e. no further
-	 * definition was found to create a new expression from the existing one).
+	 * The constant object <code>NIL</code> (not in list) indicates in the evaluation process that no evaluation was
+	 * possible (i.e. no further definition was found to create a new expression from the existing one).
 	 */
 	public final static NILPointer NIL = new NILPointer();
 
@@ -965,6 +961,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "lessequal" : "LessEqual");
 	public final static IBuiltInSymbol LetterQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "letterq" : "LetterQ");
+	public final static IBuiltInSymbol LeastSquares = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "leastsquares" : "LeastSquares");
 	public final static IBuiltInSymbol Level = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "level" : "Level");
 	public final static IBuiltInSymbol Limit = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "limit" : "Limit");
 	public final static IBuiltInSymbol LinearProgramming = initFinalSymbol(
@@ -1512,8 +1510,7 @@ public class F {
 	public final static IntegerSym C10 = new IntegerSym(10);
 
 	/**
-	 * Complex imaginary unit. The parsed symbol &quot;I&quot; is converted on input
-	 * to this constant.
+	 * Complex imaginary unit. The parsed symbol &quot;I&quot; is converted on input to this constant.
 	 */
 	public final static IComplex CI = ComplexSym.valueOf(BigInteger.ZERO, BigInteger.ONE);
 
@@ -1593,44 +1590,37 @@ public class F {
 	public static IAST CEmptyList;
 
 	/**
-	 * Represents <code>Infinity</code> (i.e.
-	 * <code>Infinity-&gt;DirectedInfinity(1)</code>)
+	 * Represents <code>Infinity</code> (i.e. <code>Infinity-&gt;DirectedInfinity(1)</code>)
 	 */
 	public static IAST CInfinity;
 
 	/**
-	 * Alias for CInfinity. Represents <code>Infinity</code> (i.e.
-	 * <code>Infinity-&gt;DirectedInfinity(1)</code>)
+	 * Alias for CInfinity. Represents <code>Infinity</code> (i.e. <code>Infinity-&gt;DirectedInfinity(1)</code>)
 	 */
 	public static IAST oo;
 
 	/**
-	 * Represents <code>-Infinity</code> (i.e.
-	 * <code>-Infinity-&gt;DirectedInfinity(-1)</code>)
+	 * Represents <code>-Infinity</code> (i.e. <code>-Infinity-&gt;DirectedInfinity(-1)</code>)
 	 */
 	public static IAST CNInfinity;
 
 	/**
-	 * Alias for CNInfinity. Represents <code>-Infinity</code> (i.e.
-	 * <code>-Infinity-&gt;DirectedInfinity(-1)</code>)
+	 * Alias for CNInfinity. Represents <code>-Infinity</code> (i.e. <code>-Infinity-&gt;DirectedInfinity(-1)</code>)
 	 */
 	public static IAST Noo;
 
 	/**
-	 * Represents <code>I*Infinity</code> (i.e.
-	 * <code>I*Infinity-&gt;DirectedInfinity(I)</code>)
+	 * Represents <code>I*Infinity</code> (i.e. <code>I*Infinity-&gt;DirectedInfinity(I)</code>)
 	 */
 	public static IAST CIInfinity;
 
 	/**
-	 * Represents <code>-I*Infinity</code> (i.e.
-	 * <code>-I*Infinity-&gt;DirectedInfinity(-I)</code>)
+	 * Represents <code>-I*Infinity</code> (i.e. <code>-I*Infinity-&gt;DirectedInfinity(-I)</code>)
 	 */
 	public static IAST CNIInfinity;
 
 	/**
-	 * Represents <code>ComplexInfinity</code> (i.e.
-	 * <code>ComplexInfinity-&gt;DirectedInfinity()</code>)
+	 * Represents <code>ComplexInfinity</code> (i.e. <code>ComplexInfinity-&gt;DirectedInfinity()</code>)
 	 */
 	public static IAST CComplexInfinity;
 
@@ -2118,9 +2108,8 @@ public class F {
 	 * Create a new abstract syntax tree (AST).
 	 * 
 	 * @param head
-	 *            the header expression of the function. If the ast represents a
-	 *            function like <code>f[x,y], Sin[x],...</code>, the
-	 *            <code>head</code> will be an instance of type ISymbol.
+	 *            the header expression of the function. If the ast represents a function like
+	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
 	 * @param a
 	 * @return
 	 */
@@ -2132,9 +2121,8 @@ public class F {
 	 * Create a new abstract syntax tree (AST).
 	 * 
 	 * @param head
-	 *            the header symbol of the function. If the ast represents a
-	 *            function like <code>f[x,y], Sin[x],...</code>, the
-	 *            <code>head</code> will be an instance of type ISymbol.
+	 *            the header symbol of the function. If the ast represents a function like
+	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
 	 * @param a
 	 * @return
 	 */
@@ -2143,8 +2131,7 @@ public class F {
 	}
 
 	/**
-	 * Create a <code>Blank[]</code> pattern object for pattern-matching and term
-	 * rewriting
+	 * Create a <code>Blank[]</code> pattern object for pattern-matching and term rewriting
 	 * 
 	 * @return IPattern
 	 */
@@ -2153,8 +2140,7 @@ public class F {
 	}
 
 	/**
-	 * Create a <code>Blank[condition]</code> pattern object for pattern-matching
-	 * and term rewriting
+	 * Create a <code>Blank[condition]</code> pattern object for pattern-matching and term rewriting
 	 * 
 	 * @param condition
 	 *            additional condition which should be checked in pattern-matching
@@ -2165,14 +2151,12 @@ public class F {
 	}
 
 	/**
-	 * Create a <code>Blank[condition]</code> pattern object for pattern-matching
-	 * and term rewriting
+	 * Create a <code>Blank[condition]</code> pattern object for pattern-matching and term rewriting
 	 * 
 	 * @param condition
 	 *            additional condition which should be checked in pattern-matching
 	 * @param def
-	 *            if <code>true</code> use a default value in pattern-matching if an
-	 *            argument is optional
+	 *            if <code>true</code> use a default value in pattern-matching if an argument is optional
 	 * @return IPattern
 	 */
 	public static IPattern $b(final IExpr condition, boolean def) {
@@ -2180,14 +2164,12 @@ public class F {
 	}
 
 	/**
-	 * Create a <code>Blank[condition]</code> pattern object for pattern-matching
-	 * and term rewriting
+	 * Create a <code>Blank[condition]</code> pattern object for pattern-matching and term rewriting
 	 * 
 	 * @param condition
 	 *            additional condition which should be checked in pattern-matching
 	 * @param defaultValue
-	 *            use this <code>defaultValue</code> in pattern-matching if an
-	 *            argument is optional
+	 *            use this <code>defaultValue</code> in pattern-matching if an argument is optional
 	 * @return IPattern
 	 */
 	public static IPattern $b(final IExpr condition, IExpr defaultValue) {
@@ -2195,8 +2177,7 @@ public class F {
 	}
 
 	/**
-	 * Create a <code>Pattern[]</code> pattern for pattern-matching and term
-	 * rewriting
+	 * Create a <code>Pattern[]</code> pattern for pattern-matching and term rewriting
 	 * 
 	 * @param symbol
 	 * @return IPattern
@@ -2236,8 +2217,8 @@ public class F {
 	 * @param check
 	 *            additional condition which should be checked in pattern-matching
 	 * @param def
-	 *            if <code>true</code>, the pattern can match to a default value
-	 *            associated with the AST's head the pattern is used in.
+	 *            if <code>true</code>, the pattern can match to a default value associated with the AST's head the
+	 *            pattern is used in.
 	 * @return IPattern
 	 */
 	public static IPattern $p(final ISymbol symbol, final IExpr check, final boolean def) {
@@ -2251,8 +2232,7 @@ public class F {
 	 * @param check
 	 *            additional condition which should be checked in pattern-matching
 	 * @param defaultValue
-	 *            use this <code>defaultValue</code> in pattern-matching if an
-	 *            argument is optional
+	 *            use this <code>defaultValue</code> in pattern-matching if an argument is optional
 	 * @return IPattern
 	 */
 	public static IPattern $p(final ISymbol symbol, final IExpr check, final IExpr defaultValue) {
@@ -2330,8 +2310,8 @@ public class F {
 	 * @param check
 	 *            additional condition which should be checked in pattern-matching
 	 * @param def
-	 *            if <code>true</code>, the pattern can match to a default value
-	 *            associated with the AST's head the pattern is used in.
+	 *            if <code>true</code>, the pattern can match to a default value associated with the AST's head the
+	 *            pattern is used in.
 	 * @return IPattern
 	 */
 	public static IPattern pattern(final ISymbol symbol, final IExpr check, final boolean def) {
@@ -2345,8 +2325,7 @@ public class F {
 	 * @param check
 	 *            additional condition which should be checked in pattern-matching
 	 * @param defaultValue
-	 *            use this <code>defaultValue</code> in pattern-matching if an
-	 *            argument is optional
+	 *            use this <code>defaultValue</code> in pattern-matching if an argument is optional
 	 * @return IPattern
 	 */
 	public static IPattern pattern(final ISymbol symbol, final IExpr check, final IExpr defaultValue) {
@@ -2360,8 +2339,7 @@ public class F {
 	 * @param check
 	 *            additional condition which should be checked in pattern-matching
 	 * @param defaultValue
-	 *            use this <code>defaultValue</code> in pattern-matching if an
-	 *            argument is optional
+	 *            use this <code>defaultValue</code> in pattern-matching if an argument is optional
 	 * @return IPattern
 	 */
 	public static IPattern $p(@Nonnull final String symbolName, final IExpr check, final IExpr defaultValue) {
@@ -2397,11 +2375,10 @@ public class F {
 	 * @param check
 	 *            additional condition which should be checked in pattern-matching
 	 * @param def
-	 *            if <code>true</code>, the pattern can match to a default value
-	 *            associated with the AST's head the pattern is used in.
+	 *            if <code>true</code>, the pattern can match to a default value associated with the AST's head the
+	 *            pattern is used in.
 	 * @param zeroArgsAllowed
-	 *            if <code>true</code> 0 argument sequences are allowed for this
-	 *            pattern
+	 *            if <code>true</code> 0 argument sequences are allowed for this pattern
 	 * @return IPattern
 	 */
 	public static IPatternSequence $ps(final ISymbol symbol, final IExpr check, final boolean def,
@@ -2422,12 +2399,11 @@ public class F {
 
 	/**
 	 * <p>
-	 * Get or create a global predefined symbol which is retrieved from the SYSTEM
-	 * context map or created or retrieved from the SYSTEM context variables map.
+	 * Get or create a global predefined symbol which is retrieved from the SYSTEM context map or created or retrieved
+	 * from the SYSTEM context variables map.
 	 * </p>
 	 * <p>
-	 * <b>Note:</b> user defined variables on the context path are defined with
-	 * method <code>userSymbol()</code>
+	 * <b>Note:</b> user defined variables on the context path are defined with method <code>userSymbol()</code>
 	 * </p>
 	 * 
 	 * @param symbolName
@@ -2440,12 +2416,11 @@ public class F {
 
 	/**
 	 * <p>
-	 * Get or create a global predefined symbol which is retrieved from the SYSTEM
-	 * context map or created or retrieved from the SYSTEM context variables map.
+	 * Get or create a global predefined symbol which is retrieved from the SYSTEM context map or created or retrieved
+	 * from the SYSTEM context variables map.
 	 * </p>
 	 * <p>
-	 * <b>Note:</b> user defined variables on the context path are defined with
-	 * method <code>userSymbol()</code>
+	 * <b>Note:</b> user defined variables on the context path are defined with method <code>userSymbol()</code>
 	 * </p>
 	 * 
 	 * @param symbolName
@@ -2458,19 +2433,17 @@ public class F {
 
 	/**
 	 * <p>
-	 * Get or create a global predefined symbol which is retrieved from the SYSTEM
-	 * context map or created or retrieved from the SYSTEM context variables map.
+	 * Get or create a global predefined symbol which is retrieved from the SYSTEM context map or created or retrieved
+	 * from the SYSTEM context variables map.
 	 * </p>
 	 * <p>
-	 * <b>Note:</b> user defined variables on the context path are defined with
-	 * method <code>userSymbol()</code>
+	 * <b>Note:</b> user defined variables on the context path are defined with method <code>userSymbol()</code>
 	 * </p>
 	 * 
 	 * @param symbolName
 	 *            the name of the symbol
 	 * @param setEval
-	 *            if <code>true</code> determine and assign the built-in evaluator
-	 *            object to the symbol.
+	 *            if <code>true</code> determine and assign the built-in evaluator object to the symbol.
 	 * @return
 	 */
 	private static ISymbol $s(final String symbolName, boolean setEval) {
@@ -2667,11 +2640,9 @@ public class F {
 	}
 
 	/**
-	 * Creates a new AST from the given <code>ast</code> and <code>head</code>. if
-	 * <code>include</code> is set to <code>true </code> all arguments from index
-	 * first to last-1 are copied in the new list if <code>include</code> is set to
-	 * <code> false </code> all arguments excluded from index first to last-1 are
-	 * copied in the new list
+	 * Creates a new AST from the given <code>ast</code> and <code>head</code>. if <code>include</code> is set to
+	 * <code>true </code> all arguments from index first to last-1 are copied in the new list if <code>include</code> is
+	 * set to <code> false </code> all arguments excluded from index first to last-1 are copied in the new list
 	 * 
 	 */
 	public static IAST ast(final IAST f, final IExpr head, final boolean include, final int first, final int last) {
@@ -2699,9 +2670,8 @@ public class F {
 	 * Create a new abstract syntax tree (AST).
 	 * 
 	 * @param head
-	 *            the header expression of the function. If the ast represents a
-	 *            function like <code>f[x,y], Sin[x],...</code>, the
-	 *            <code>head</code> will be an instance of type ISymbol.
+	 *            the header expression of the function. If the ast represents a function like
+	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
 	 * 
 	 */
 	public final static IAST ast(final IExpr head) {
@@ -2712,12 +2682,10 @@ public class F {
 	 * Create a new abstract syntax tree (AST).
 	 * 
 	 * @param head
-	 *            the header expression of the function. If the ast represents a
-	 *            function like <code>f[x,y], Sin[x],...</code>, the
-	 *            <code>head</code> will be an instance of type ISymbol.
+	 *            the header expression of the function. If the ast represents a function like
+	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
 	 * @param initialCapacity
-	 *            the initial capacity (i.e. number of arguments without the header
-	 *            element) of the list.
+	 *            the initial capacity (i.e. number of arguments without the header element) of the list.
 	 * @param initNull
 	 *            initialize all elements with <code>null</code>.
 	 * @return
@@ -2733,14 +2701,13 @@ public class F {
 	}
 
 	/**
-	 * Create a new <code>List()</code> with <code>copies</code> number of
-	 * arguments, which are set to <code>value</code>.
+	 * Create a new <code>List()</code> with <code>copies</code> number of arguments, which are set to
+	 * <code>value</code>.
 	 * 
 	 * @param value
 	 *            initialize all elements with <code>value</code>.
 	 * @param copies
-	 *            the initial capacity (i.e. number of arguments without the header
-	 *            element) of the list.
+	 *            the initial capacity (i.e. number of arguments without the header element) of the list.
 	 * @return
 	 */
 	public static IAST constantArray(final IExpr value, final int copies) {
@@ -2748,18 +2715,16 @@ public class F {
 	}
 
 	/**
-	 * Create a new abstract syntax tree (AST) with a <code>head</code> and
-	 * <code>copies</code> number of arguments, which are set to <code>value</code>.
+	 * Create a new abstract syntax tree (AST) with a <code>head</code> and <code>copies</code> number of arguments,
+	 * which are set to <code>value</code>.
 	 * 
 	 * @param head
-	 *            the header expression of the function. If the ast represents a
-	 *            function like <code>f[x,y], Sin[x],...</code>, the
-	 *            <code>head</code> will be an instance of type ISymbol.
+	 *            the header expression of the function. If the ast represents a function like
+	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
 	 * @param value
 	 *            initialize all elements with <code>value</code>.
 	 * @param copies
-	 *            the initial capacity (i.e. number of arguments without the header
-	 *            element) of the list.
+	 *            the initial capacity (i.e. number of arguments without the header element) of the list.
 	 * @return
 	 */
 	public static IAST constantArray(final IExpr head, final IExpr value, final int copies) {
@@ -2777,9 +2742,8 @@ public class F {
 	 * 
 	 * @param arr
 	 * @param head
-	 *            the header expression of the function. If the ast represents a
-	 *            function like <code>f[x,y], Sin[x],...</code>, the
-	 *            <code>head</code> will be an instance of type ISymbol.
+	 *            the header expression of the function. If the ast represents a function like
+	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
 	 * @return
 	 */
 	public static IAST ast(final IExpr[] arr, final IExpr head) {
@@ -2807,8 +2771,7 @@ public class F {
 	}
 
 	/**
-	 * Create a function with 2 arguments as a <code>AST2</code> immutable object
-	 * without evaluation.
+	 * Create a function with 2 arguments as a <code>AST2</code> immutable object without evaluation.
 	 * 
 	 * @param head
 	 * @param a0
@@ -2829,8 +2792,7 @@ public class F {
 	}
 
 	/**
-	 * Gives symbols "True" or "False" (type ISymbol) depending on the boolean
-	 * value.
+	 * Gives symbols "True" or "False" (type ISymbol) depending on the boolean value.
 	 * 
 	 * @param value
 	 * @return
@@ -2964,8 +2926,7 @@ public class F {
 	}
 
 	/**
-	 * Set real or imaginary parts of a numeric argument to zero, those absolute
-	 * value is less than a delta.
+	 * Set real or imaginary parts of a numeric argument to zero, those absolute value is less than a delta.
 	 * 
 	 * @param arg
 	 *            a numeric number
@@ -3094,11 +3055,9 @@ public class F {
 	 * Create a symbolic complex number
 	 * 
 	 * @param realPart
-	 *            the real double value part which should be converted to a complex
-	 *            number
+	 *            the real double value part which should be converted to a complex number
 	 * @param imagPart
-	 *            the imaginary double value part which should be converted to a
-	 *            complex number
+	 *            the imaginary double value part which should be converted to a complex number
 	 * @return IFraction
 	 */
 	public static IComplex complex(final double realPart, final double imagPart) {
@@ -3109,11 +3068,9 @@ public class F {
 	 * Create a symbolic complex number
 	 * 
 	 * @param realPart
-	 *            the real double value part which should be converted to a complex
-	 *            number
+	 *            the real double value part which should be converted to a complex number
 	 * @param imagPart
-	 *            the imaginary double value part which should be converted to a
-	 *            complex number
+	 *            the imaginary double value part which should be converted to a complex number
 	 * @param epsilon
 	 * @return IFraction
 	 */
@@ -3255,6 +3212,10 @@ public class F {
 
 	public static IAST ConstantArray(final IExpr a0, final IExpr a1) {
 		return binaryAST2(ConstantArray, a0, a1);
+	}
+
+	public static IAST ConjugateTranspose(final IExpr a0) {
+		return unaryAST1(ConjugateTranspose, a0);
 	}
 
 	public static IAST Continue() {
@@ -3400,8 +3361,7 @@ public class F {
 	}
 
 	/**
-	 * The division <code>a0 / a1</code> will be represented by
-	 * <code>Times(a0, Power(a1, -1))</code>.
+	 * The division <code>a0 / a1</code> will be represented by <code>Times(a0, Power(a1, -1))</code>.
 	 * 
 	 * @param a0
 	 *            numerator
@@ -3478,8 +3438,7 @@ public class F {
 	}
 
 	/**
-	 * Evaluate an expression. If no evaluation was possible this method returns the
-	 * given argument.
+	 * Evaluate an expression. If no evaluation was possible this method returns the given argument.
 	 * 
 	 * @param a
 	 *            the expression which should be evaluated
@@ -3506,8 +3465,7 @@ public class F {
 	}
 
 	/**
-	 * Evaluate <code>Expand()</code> for the given expression. returns the given
-	 * argument.
+	 * Evaluate <code>Expand()</code> for the given expression. returns the given argument.
 	 * 
 	 * @param a
 	 *            the expression which should be evaluated
@@ -3535,9 +3493,8 @@ public class F {
 	}
 
 	/**
-	 * Apply <code>ExpandAll()</code> to the given expression if it's an
-	 * <code>IAST</code>. If expanding wasn't possible this method returns the given
-	 * argument.
+	 * Apply <code>ExpandAll()</code> to the given expression if it's an <code>IAST</code>. If expanding wasn't possible
+	 * this method returns the given argument.
 	 * 
 	 * @param a
 	 *            the expression which should be evaluated
@@ -3549,9 +3506,8 @@ public class F {
 	}
 
 	/**
-	 * Apply <code>ExpandAll()</code> to the given expression if it's an
-	 * <code>IAST</code>. If expanding wasn't possible this method returns the given
-	 * argument.
+	 * Apply <code>ExpandAll()</code> to the given expression if it's an <code>IAST</code>. If expanding wasn't possible
+	 * this method returns the given argument.
 	 * 
 	 * @param a
 	 *            the expression which should be evaluated
@@ -3575,9 +3531,8 @@ public class F {
 	}
 
 	/**
-	 * Evaluate an expression in &quot;quiet mode&quot;. If no evaluation was
-	 * possible this method returns the given argument. In &quot;quiet mode&quot;
-	 * all warnings would be suppressed.
+	 * Evaluate an expression in &quot;quiet mode&quot;. If no evaluation was possible this method returns the given
+	 * argument. In &quot;quiet mode&quot; all warnings would be suppressed.
 	 * 
 	 * @param a
 	 *            the expression which should be evaluated
@@ -3591,14 +3546,12 @@ public class F {
 	}
 
 	/**
-	 * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not
-	 * possible return <code>null</code>. In &quot;quiet mode&quot; all warnings
-	 * would be suppressed.
+	 * Evaluate an expression in &quot;quiet mode&quot;. If evaluation is not possible return <code>null</code>. In
+	 * &quot;quiet mode&quot; all warnings would be suppressed.
 	 * 
 	 * @param expr
 	 *            the expression which should be evaluated
-	 * @return the evaluated object or <code>F.NIL</code> if no evaluation was
-	 *         possible
+	 * @return the evaluated object or <code>F.NIL</code> if no evaluation was possible
 	 * @see EvalEngine#evalQuietNull(IExpr)
 	 * @deprecated use EvalEngine#evalQuietNull()
 	 */
@@ -3608,8 +3561,7 @@ public class F {
 	}
 
 	/**
-	 * Evaluate the given expression and test if the result equals the symbol
-	 * <code>True</code>.
+	 * Evaluate the given expression and test if the result equals the symbol <code>True</code>.
 	 * 
 	 * @param expr
 	 * @return
@@ -3633,9 +3585,8 @@ public class F {
 	}
 
 	/**
-	 * Apply <code>Expand()</code> to the given expression if it's an
-	 * <code>IAST</code>. If expanding wasn't possible this method returns the given
-	 * argument.
+	 * Apply <code>Expand()</code> to the given expression if it's an <code>IAST</code>. If expanding wasn't possible
+	 * this method returns the given argument.
 	 * 
 	 * @param a
 	 *            the expression which should be evaluated
@@ -3668,9 +3619,8 @@ public class F {
 	}
 
 	/**
-	 * Apply <code>ExpandAll()</code> to the given expression if it's an
-	 * <code>IAST</code>. If expanding wasn't possible this method returns the given
-	 * argument.
+	 * Apply <code>ExpandAll()</code> to the given expression if it's an <code>IAST</code>. If expanding wasn't possible
+	 * this method returns the given argument.
 	 * 
 	 * @param a
 	 *            the expression which should be evaluated
@@ -3775,8 +3725,7 @@ public class F {
 	 * Create a "fractional" number
 	 * 
 	 * @param value
-	 *            the rational value which should be converted to a fractional
-	 *            number
+	 *            the rational value which should be converted to a fractional number
 	 * @return IFraction
 	 */
 	public static IFraction fraction(final BigFraction value) {
@@ -3919,9 +3868,8 @@ public class F {
 	 * Create a new abstract syntax tree (AST).
 	 * 
 	 * @param head
-	 *            the header expression of the function. If the ast represents a
-	 *            function like <code>f[x,y], Sin[x],...</code>, the
-	 *            <code>head</code> will be an instance of type ISymbol.
+	 *            the header expression of the function. If the ast represents a function like
+	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
 	 * 
 	 */
 	public final static IAST headAST0(final IExpr head) {
@@ -3989,11 +3937,9 @@ public class F {
 	}
 
 	/**
-	 * Convert the symbolName to lowercase (if
-	 * <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> is set) and insert a new
-	 * Symbol in the <code>PREDEFINED_SYMBOLS_MAP</code>. The symbol is created
-	 * using the given upper case string to use it as associated class name in
-	 * package org.matheclipse.core.reflection.system.
+	 * Convert the symbolName to lowercase (if <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> is set) and insert a new
+	 * Symbol in the <code>PREDEFINED_SYMBOLS_MAP</code>. The symbol is created using the given upper case string to use
+	 * it as associated class name in package org.matheclipse.core.reflection.system.
 	 * 
 	 * @param symbolName
 	 *            the predefined symbol name in upper-case form
@@ -4006,11 +3952,9 @@ public class F {
 	}
 
 	/**
-	 * Convert the symbolName to lowercase (if
-	 * <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> is set) and insert a new
-	 * Symbol in the <code>PREDEFINED_SYMBOLS_MAP</code>. The symbol is created
-	 * using the given upper case string to use it as associated class name in
-	 * package org.matheclipse.core.reflection.system.
+	 * Convert the symbolName to lowercase (if <code>Config.PARSER_USE_LOWERCASE_SYMBOLS</code> is set) and insert a new
+	 * Symbol in the <code>PREDEFINED_SYMBOLS_MAP</code>. The symbol is created using the given upper case string to use
+	 * it as associated class name in package org.matheclipse.core.reflection.system.
 	 * 
 	 * @param symbolName
 	 *            the predefined symbol name in upper-case form
@@ -4051,8 +3995,7 @@ public class F {
 	}
 
 	/**
-	 * Initialize the complete System. Calls
-	 * {@link #initSymbols(String, ISymbolObserver, boolean)} with parameters
+	 * Initialize the complete System. Calls {@link #initSymbols(String, ISymbolObserver, boolean)} with parameters
 	 * <code>null, null</code>.
 	 */
 	public synchronized static void initSymbols() {
@@ -4088,8 +4031,7 @@ public class F {
 	 * Initialize the complete System
 	 * 
 	 * @param fileName
-	 *            <code>null</code> or optional text filename, which includes the
-	 *            preloaded system rules
+	 *            <code>null</code> or optional text filename, which includes the preloaded system rules
 	 * @param symbolObserver
 	 *            the observer for newly created <code>ISymbols</code>
 	 * @param noPackageLoading
@@ -4295,8 +4237,8 @@ public class F {
 	}
 
 	/**
-	 * After a successful <code>isCase()</code> the symbols associated with the
-	 * patterns contain the matched values on the local stack.
+	 * After a successful <code>isCase()</code> the symbols associated with the patterns contain the matched values on
+	 * the local stack.
 	 * 
 	 * @param a
 	 * @param b
@@ -4506,8 +4448,7 @@ public class F {
 	 * Create a new <code>List</code> with the given <code>capacity</code>.
 	 * 
 	 * @param capacity
-	 *            the assumed number of arguments (+ 1 for the header expression is
-	 *            added internally).
+	 *            the assumed number of arguments (+ 1 for the header expression is added internally).
 	 * @return
 	 */
 	public static IAST ListAlloc(int capacity) {
@@ -4515,9 +4456,8 @@ public class F {
 	}
 
 	/**
-	 * For positive n, add the first n elements of <code>numbers</code> to the
-	 * list.For negative n, add the first n elements of <code>numbers</code> to the
-	 * list.
+	 * For positive n, add the first n elements of <code>numbers</code> to the list.For negative n, add the first n
+	 * elements of <code>numbers</code> to the list.
 	 * 
 	 * @param n
 	 * @param numbers
@@ -4766,11 +4706,9 @@ public class F {
 	}
 
 	/**
-	 * Multiplies the given argument by <code>-1</code>. The
-	 * <code>IExpr#negate()</code> method does evaluations, which don't agree with
-	 * pattern matching assumptions (in left-hand-sige expressions). so it is only
-	 * called called for <code>INumber</code> objects, otherwis a
-	 * <code>Times(CN1, x)</code> AST would be created.
+	 * Multiplies the given argument by <code>-1</code>. The <code>IExpr#negate()</code> method does evaluations, which
+	 * don't agree with pattern matching assumptions (in left-hand-sige expressions). so it is only called called for
+	 * <code>INumber</code> objects, otherwis a <code>Times(CN1, x)</code> AST would be created.
 	 * 
 	 * @param x
 	 *            the expression which should be negated.
@@ -4799,9 +4737,8 @@ public class F {
 	 * @param intialArgumentsCapacity
 	 *            the initial capacity of arguments of the AST.
 	 * @param head
-	 *            the header expression of the function. If the ast represents a
-	 *            function like <code>f[x,y], Sin[x],...</code>, the
-	 *            <code>head</code> will be an instance of type ISymbol.
+	 *            the header expression of the function. If the ast represents a function like
+	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
 	 * @return
 	 */
 	public static IAST newInstance(final int intialArgumentsCapacity, final IExpr head) {
@@ -5195,6 +5132,10 @@ public class F {
 	public static IAST ProductLog(final IExpr a0, final IExpr a1) {
 		return binaryAST2(ProductLog, a0, a1);
 	}
+	
+	public static IAST PseudoInverse(final IExpr a0) {
+		return unaryAST1(PseudoInverse, a0);
+	}
 
 	/**
 	 * Create a "fractional" number
@@ -5300,8 +5241,7 @@ public class F {
 	}
 
 	/**
-	 * Get or create a user defined symbol which is retrieved from the evaluation
-	 * engines context path.
+	 * Get or create a user defined symbol which is retrieved from the evaluation engines context path.
 	 * 
 	 * @param symbolName
 	 *            the name of the symbol
@@ -5312,8 +5252,7 @@ public class F {
 	}
 
 	/**
-	 * Get or create a user defined symbol which is retrieved from the evaluation
-	 * engines context path.
+	 * Get or create a user defined symbol which is retrieved from the evaluation engines context path.
 	 * 
 	 * @param symbolName
 	 *            the name of the symbol
@@ -5326,8 +5265,8 @@ public class F {
 	}
 
 	/**
-	 * Remove a user-defined symbol from the eval engines context path. Doesn't
-	 * remove predefined names from the System Context.
+	 * Remove a user-defined symbol from the eval engines context path. Doesn't remove predefined names from the System
+	 * Context.
 	 * 
 	 * @param symbolName
 	 *            the name of the symbol
@@ -5585,8 +5524,8 @@ public class F {
 	}
 
 	/**
-	 * Substitute all (sub-) expressions <code>x</code> with <code>y</code>. If no
-	 * substitution matches, the method returns the given <code>expr</code>.
+	 * Substitute all (sub-) expressions <code>x</code> with <code>y</code>. If no substitution matches, the method
+	 * returns the given <code>expr</code>.
 	 * 
 	 * @param expr
 	 *            the complete expresssion
@@ -5594,53 +5533,52 @@ public class F {
 	 *            the subexpression which should be replaced
 	 * @param y
 	 *            the expression which replaces <code>x</code>
-	 * @return the input <code>expr</code> if no substitution of a (sub-)expression
-	 *         was possible or the substituted expression.
+	 * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or the substituted
+	 *         expression.
 	 */
 	public static IExpr subs(final IExpr expr, final IExpr x, final IExpr y) {
 		return expr.replaceAll(F.Rule(x, y)).orElse(expr);
 	}
 
 	/**
-	 * Substitute all (sub-) expressions with the given unary function. If no
-	 * substitution matches, the method returns the given <code>expr</code>.
+	 * Substitute all (sub-) expressions with the given unary function. If no substitution matches, the method returns
+	 * the given <code>expr</code>.
 	 * 
 	 * @param expr
 	 * @param function
-	 *            if the unary functions <code>apply()</code> method returns
-	 *            <code>null</code> the expression isn't substituted.
-	 * @return the input <code>expr</code> if no substitution of a (sub-)expression
-	 *         was possible or the substituted expression.
+	 *            if the unary functions <code>apply()</code> method returns <code>null</code> the expression isn't
+	 *            substituted.
+	 * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or the substituted
+	 *         expression.
 	 */
 	public static IExpr subst(IExpr expr, final Function<IExpr, IExpr> function) {
 		return expr.replaceAll(function).orElse(expr);
 	}
 
 	/**
-	 * Substitute all (sub-) expressions with the given rule set. If no substitution
-	 * matches, the method returns the given <code>expr</code>.
+	 * Substitute all (sub-) expressions with the given rule set. If no substitution matches, the method returns the
+	 * given <code>expr</code>.
 	 * 
 	 * @param expr
 	 * @param astRules
-	 *            rules of the form <code>x-&gt;y</code> or
-	 *            <code>{a-&gt;b, c-&gt;d}</code>; the left-hand-side of the rule
-	 *            can contain pattern objects.
-	 * @return the input <code>expr</code> if no substitution of a (sub-)expression
-	 *         was possible or the substituted expression.
+	 *            rules of the form <code>x-&gt;y</code> or <code>{a-&gt;b, c-&gt;d}</code>; the left-hand-side of the
+	 *            rule can contain pattern objects.
+	 * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or the substituted
+	 *         expression.
 	 */
 	public static IExpr subst(IExpr expr, final IAST astRules) {
 		return expr.replaceAll(astRules).orElse(expr);
 	}
 
 	/**
-	 * Substitute all (sub-) expressions with the given replacement expression. If
-	 * no (sub-) expression matches, the method returns the given <code>expr</code>.
+	 * Substitute all (sub-) expressions with the given replacement expression. If no (sub-) expression matches, the
+	 * method returns the given <code>expr</code>.
 	 * 
 	 * @param expr
 	 * @param subExpr
 	 * @param replacementExpr
-	 * @return the input <code>expr</code> if no substitution of a (sub-)expression
-	 *         was possible or the substituted expression.
+	 * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or the substituted
+	 *         expression.
 	 */
 	public static IExpr subst(IExpr expr, IExpr subExpr, IExpr replacementExpr) {
 		return expr.replaceAll(Functors.rules(Rule(subExpr, replacementExpr), EvalEngine.get())).orElse(expr);
@@ -5668,8 +5606,7 @@ public class F {
 	}
 
 	/**
-	 * Evaluate the sum from <code>iMin</code> to <code>iMax</code> and step
-	 * <code>1</code>.
+	 * Evaluate the sum from <code>iMin</code> to <code>iMax</code> and step <code>1</code>.
 	 * 
 	 * @param function
 	 * @param iMin
@@ -5681,8 +5618,7 @@ public class F {
 	}
 
 	/**
-	 * Evaluate the sum from <code>iMin</code> to <code>iMax</code> and step
-	 * <code>iStep</code>.
+	 * Evaluate the sum from <code>iMin</code> to <code>iMax</code> and step <code>iStep</code>.
 	 * 
 	 * @param function
 	 * @param iMin
@@ -5733,8 +5669,7 @@ public class F {
 	}
 
 	/**
-	 * Create a function with 3 arguments as a <code>AST3</code> immutable object
-	 * without evaluation.
+	 * Create a function with 3 arguments as a <code>AST3</code> immutable object without evaluation.
 	 * 
 	 * @param head
 	 * @param a0
@@ -5873,8 +5808,7 @@ public class F {
 	}
 
 	/**
-	 * Create a function with 1 argument as a <code>AST1</code> immutable object
-	 * without evaluation.
+	 * Create a function with 1 argument as a <code>AST1</code> immutable object without evaluation.
 	 * 
 	 * @param head
 	 * @param a0
