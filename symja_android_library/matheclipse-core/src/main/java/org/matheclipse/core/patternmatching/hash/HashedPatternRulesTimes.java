@@ -5,8 +5,28 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
 public class HashedPatternRulesTimes extends HashedPatternRules {
+	/**
+	 * If <code>true</code> use only rules where both factors are equal, <b>HACK, to
+	 * avoid stack overflow in integration rules.</b>
+	 */
+	boolean useOnlyEqualFactors = false;
+
 	public HashedPatternRulesTimes(IExpr lhsPattern1, IExpr lhsPattern2, IExpr rhsResult) {
+		this(lhsPattern1, lhsPattern2, rhsResult, false);
+	}
+
+	/**
+	 * 
+	 * @param lhsPattern1
+	 * @param lhsPattern2
+	 * @param rhsResult
+	 * @param useOnlyEqualFactors
+	 *            If <code>true</code> use only rules where both factors are equal,
+	 *            <b>HACK, to avoid stack overflow in integration rules.</b>
+	 */
+	public HashedPatternRulesTimes(IExpr lhsPattern1, IExpr lhsPattern2, IExpr rhsResult, boolean useOnlyEqualFactors) {
 		super(lhsPattern1, lhsPattern2, rhsResult, null, true);
+		this.useOnlyEqualFactors = useOnlyEqualFactors;
 	}
 
 	public HashedPatternRulesTimes(IExpr lhsPattern1, IExpr lhsPattern2, IExpr rhsResult, IExpr condition,
@@ -21,12 +41,9 @@ public class HashedPatternRulesTimes extends HashedPatternRules {
 			if (num1.equals(num2)) {
 				return F.Power(temp, num2);
 			}
-			// IInteger plusMinusOne = F.C1;
-			// if (num1.isNegative() && num2.isNegative()) {
-			// num1 = num1.negate();
-			// num2 = num2.negate();
-			// plusMinusOne = F.CN1;
-			// }
+			if (useOnlyEqualFactors) {
+				return F.NIL;
+			}
 			if (num1.isPositive() && num2.isPositive()) {
 				IExpr diff = num1.subtract(num2);
 				if (diff.isPositive()) {
@@ -35,7 +52,7 @@ public class HashedPatternRulesTimes extends HashedPatternRules {
 				} else {
 					// num1 < num2
 					diff = diff.negate();
-					return F.Times(F.Power(e2, diff), F.Power(temp, num1));
+					return F.Times(e2.power(diff), temp.power(num2));
 				}
 			}
 		}

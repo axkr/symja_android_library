@@ -63,30 +63,6 @@ public class HashedOrderlessMatcherTimes extends HashedOrderlessMatcher {
 			hashValues[j] = 0;
 			result.append(temp);
 			return true;
-//			hashValues[i] = 0;
-//			hashValues[j] = 0;
-//			if (num1.equals(num2)) {
-//				result.append(F.Power(temp, num2));
-//				return true;
-//			}
-//			IInteger plusMinusOne = F.C1;
-//			if (num1.isNegative() && num2.isNegative()) {
-//				num1 = num1.negate();
-//				num2 = num2.negate();
-//				plusMinusOne = F.CN1;
-//			}
-//			if (num1.isPositive() && num2.isPositive()) {
-//				ISignedNumber diff = num1.subtractFrom(num2);
-//				if (diff.isPositive()) {
-//					// num1 > num2
-//					result.append(F.Times(F.Power(arg1, diff), F.Power(temp, num2)));
-//				} else {
-//					// num1 < num2
-//					diff = diff.negate();
-//					result.append(F.Times(F.Power(arg2, diff), F.Power(temp, num1)));
-//				}
-//				return true;
-//			}
 		}
 		return false;
 	}

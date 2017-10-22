@@ -5,14 +5,12 @@ import java.util.List;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToList;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.generic.BinaryFunctorImpl;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.visit.HashValueVisitor;
 
 /**
- * Match two arguments of an <code>Orderless</code> AST into a new resulting
- * expression.
+ * Match two arguments of an <code>Orderless</code> AST into a new resulting expression.
  * 
  */
 public class HashedOrderlessMatcher {
@@ -39,7 +37,7 @@ public class HashedOrderlessMatcher {
 	public void defineHashRule(AbstractHashedPatternRules hashRule) {
 		fHashRuleMap.put(hashRule.hashCode(), hashRule);
 	}
-	
+
 	/**
 	 * Define the rule for the <code>Orderless</code> operator <b>OP</b>.
 	 * <code>OP[lhs1, lhs2, ....] := OP[rhs, ...] /; condition</code>
@@ -51,11 +49,6 @@ public class HashedOrderlessMatcher {
 	 */
 	public void defineHashRule(final IExpr lhs1, final IExpr lhs2, final IExpr rhs, final IExpr condition) {
 		AbstractHashedPatternRules hashRule = new HashedPatternRules(lhs1, lhs2, rhs, condition, true);
-		fHashRuleMap.put(hashRule.hashCode(), hashRule);
-	}
-
-	public void defineHashRule(final IExpr lhs1, final IExpr lhs2, final BinaryFunctorImpl<IExpr> function) {
-		AbstractHashedPatternRules hashRule = new HashedPatternFunction(lhs1, lhs2, function, true);
 		fHashRuleMap.put(hashRule.hashCode(), hashRule);
 	}
 
@@ -86,9 +79,8 @@ public class HashedOrderlessMatcher {
 	}
 
 	/**
-	 * Evaluate an <code>Orderless</code> AST with the defined
-	 * <code>HashedPatternRules</code> as long as the header of the given expression
-	 * equals the evaluated expression.
+	 * Evaluate an <code>Orderless</code> AST with the defined <code>HashedPatternRules</code> as long as the header of
+	 * the given expression equals the evaluated expression.
 	 * 
 	 * @param orderlessAST
 	 * @return
@@ -144,8 +136,7 @@ public class HashedOrderlessMatcher {
 	}
 
 	/**
-	 * Set the <code>IAST.IS_HASH_EVALED</code> for the given <code>ast</code>. And
-	 * return the <code>ast</code>
+	 * Set the <code>IAST.IS_HASH_EVALED</code> for the given <code>ast</code>. And return the <code>ast</code>
 	 * 
 	 * @param ast
 	 * @return
@@ -167,8 +158,7 @@ public class HashedOrderlessMatcher {
 	}
 
 	/**
-	 * Evaluate an <code>Orderless</code> AST only once with the defined
-	 * <code>HashedPatternRules</code>.
+	 * Evaluate an <code>Orderless</code> AST only once with the defined <code>HashedPatternRules</code>.
 	 * 
 	 * @param orderlessAST
 	 * @return
@@ -287,7 +277,8 @@ public class HashedOrderlessMatcher {
 	protected boolean updateHashValues(IAST result, final IAST orderlessAST, AbstractHashedPatternRules hashRule,
 			int[] hashValues, int i, int j, EvalEngine engine) {
 		IExpr temp;
-		if ((temp = hashRule.evalDownRule(orderlessAST.get(i + 1), null, orderlessAST.get(j + 1), null, engine)).isPresent()) {
+		if ((temp = hashRule.evalDownRule(orderlessAST.get(i + 1), null, orderlessAST.get(j + 1), null, engine))
+				.isPresent()) {
 			hashValues[i] = 0;
 			hashValues[j] = 0;
 			result.append(temp);

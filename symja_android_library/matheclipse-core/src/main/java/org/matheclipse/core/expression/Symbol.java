@@ -50,7 +50,7 @@ public class Symbol implements ISymbol, Serializable {
 	 * The pattern matching &quot;down value&quot; rules associated with this
 	 * symbol.
 	 */
-	private transient RulesData fRulesData;
+	private transient RulesData fRulesData; 
 
 	/**
 	 * The name of this symbol. The characters may be all lower-cases if the system
@@ -138,7 +138,7 @@ public class Symbol implements ISymbol, Serializable {
 			}
 		}
 		if (fRulesData != null) {
-			fRulesData.clear();
+			fRulesData = null;
 		}
 	}
 

@@ -109,10 +109,10 @@ public class RubiIntegrationTest extends AbstractTestCase {
 
 	public void testRubi004() {
 		IAST ast;
-		
+
 		// ast = RemoveContentAux(Plus(Times(x, b), Times(x, c)), x);
 		// check(ast, "x");
-		
+
 		// ast = RemoveContent(Plus(Times(a, b), Times(a, c)), x);
 		// check(ast, "1");
 
@@ -232,25 +232,25 @@ public class RubiIntegrationTest extends AbstractTestCase {
 	//
 	// check(ast, "False");
 	// }
-	
+
 	public void testRubi014() {
 		IAST ast;
-		// 
+		//
 		ast = EasyDQ(x, x);
- 
+
 		check(ast, "True");
 
 	}
-	
-//	public void testRubi015() {
-//		IAST ast;
-//		// 
-//		ast = FracPart(F.CN1D2);
-// 
-//		check(ast, "-1/2");
-//
-//	}
-	
+
+	// public void testRubi015() {
+	// IAST ast;
+	// //
+	// ast = FracPart(F.CN1D2);
+	//
+	// check(ast, "-1/2");
+	//
+	// }
+
 	public void testSqrtSin() {
 		check("Integrate(Sqrt(a*Sin(x)^2),x)", "-Cot(x)*Sqrt(a*Sin(x)^2)");
 	}
@@ -288,20 +288,20 @@ public class RubiIntegrationTest extends AbstractTestCase {
 	}
 
 	public void testTrig001() {
-//		check("Sin(x)^2*sec(x)", "Sin(x)*Tan(x)");
+		// check("Sin(x)^2*sec(x)", "Sin(x)*Tan(x)");
 		check("Sin(x)*tan(x)", "Sin(x)*Tan(x)");
 		check("Cos(x)*tan(x)", "Sin(x)");
 		check("csc(x)*tan(x)", "Sec(x)");
-//		check("D(1/2*(-Log(Cos(x/2)-Sin(x/2))+Log(Cos(x/2)+Sin(x/2)))-(-Log(1+Sin(x))/2+Log(-2+2*Sin(x))/2+2*Sin(x))/2, x)" ,"");
 		check("int(Sin(x)*tan(x),x)",
-				"Csc(x)^2*(1/2*(-Log(Cos(x/2)-Sin(x/2))+Log(Cos(x/2)+Sin(x/2)))-(-Log(1+Sin(x))/2+Log(\n"
-						+ "-2+2*Sin(x))/2+2*Sin(x))/2)*Sin(x)^2");
+				"1/2*(-Log(Cos(x/2)-Sin(x/2))+Log(Cos(x/2)+Sin(x/2)))-(-Log(1+Sin(x))/2+Log(-2+2*Sin(x))/\n"
+						+ "2+2*Sin(x))/2");
 
 		check("Integrate(Sin(a + b*x)^3,x)", "-(Cos(a+b*x)-Cos(a+b*x)^3/3)/b");
 
 		check("Integrate(Sin(a+x),x)", "-Cos(a+x)");
 		check("Integrate(x*Sin(a+x),x)", "-I*1/2*E^(I*a)*Gamma(2,-I*x)+(I*1/2*Gamma(2,I*x))/E^(I*a)");
-		check("Integrate(x*Sin(a + b*x),x)", "(-I*1/2*E^(I*a)*Gamma(2,-I*b*x))/b^2+(I*1/2*Gamma(2,I*b*x))/(b^2*E^(I*a))");
+		check("Integrate(x*Sin(a + b*x),x)",
+				"(-I*1/2*E^(I*a)*Gamma(2,-I*b*x))/b^2+(I*1/2*Gamma(2,I*b*x))/(b^2*E^(I*a))");
 		check("$f(a_.+b_.*c_):={a,b,c};$f(x)", "{0,1,x}");
 		check("$h($g(a_.+b_.*c_)):={a,b,c};$h($g(x))", "{0,1,x}");
 
@@ -322,20 +322,19 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		check("Integrate(Sin(a + b*x)^(5/2),x)",
 				"-6/5*EllipticE(Pi/4-(a+b*x)/2,2)/b-2/5*(Cos(a+b*x)*Sin(a+b*x)^(3/2))/b");
 
-		check("Integrate(x*Sin(a + b*x),x)", "(-I*1/2*E^(I*a)*Gamma(2,-I*b*x))/b^2+(I*1/2*Gamma(2,I*b*x))/(b^2*E^(I*a))");
+		check("Integrate(x*Sin(a + b*x),x)",
+				"(-I*1/2*E^(I*a)*Gamma(2,-I*b*x))/b^2+(I*1/2*Gamma(2,I*b*x))/(b^2*E^(I*a))");
 		check("D(b^(-2)*Sin(b*x+a)-Cos(b*x+a)*b^(-1)*x,x)", "x*Sin(a+b*x)");
-		check("Integrate(x*Sin(a + b*x)^2,x)", "x^2/4-((E^(I*2*a)*Gamma(2,-I*2*b*x))/(8*b^2)+Gamma(2,I*2*b*x)/(8*b^2*E^(I*2*a)))/\n" + 
-				"2");
+		check("Integrate(x*Sin(a + b*x)^2,x)",
+				"x^2/4-((E^(I*2*a)*Gamma(2,-I*2*b*x))/(8*b^2)+Gamma(2,I*2*b*x)/(8*b^2*E^(I*2*a)))/\n" + "2");
 		check("Integrate(x*Sin(a + b*x)^3,x)",
-				"-((I*1/2*E^(I*a)*Gamma(2,-I*b*x))/b^2+(-I*1/2*Gamma(2,I*b*x))/(b^2*E^(I*a)))/4+1/\n" + 
-				"2*((-I*1/2*E^(I*a)*Gamma(2,-I*b*x))/b^2+(I*1/2*Gamma(2,I*b*x))/(b^2*E^(I*a)))-((-I*\n" + 
-				"1/18*E^(I*3*a)*Gamma(2,-I*3*b*x))/b^2+(I*1/18*Gamma(2,I*3*b*x))/(b^2*E^(I*3*a)))/\n" + 
-				"4");
+				"-((I*1/2*E^(I*a)*Gamma(2,-I*b*x))/b^2+(-I*1/2*Gamma(2,I*b*x))/(b^2*E^(I*a)))/4+1/\n"
+						+ "2*((-I*1/2*E^(I*a)*Gamma(2,-I*b*x))/b^2+(I*1/2*Gamma(2,I*b*x))/(b^2*E^(I*a)))-((-I*\n"
+						+ "1/18*E^(I*3*a)*Gamma(2,-I*3*b*x))/b^2+(I*1/18*Gamma(2,I*3*b*x))/(b^2*E^(I*3*a)))/\n" + "4");
 
 		check("Integrate(x^2*Sin(a + b*x),x)", "(E^(I*a)*Gamma(3,-I*b*x))/(2*b^3)+Gamma(3,I*b*x)/(2*b^3*E^(I*a))");
 		check("Integrate(x^2*Sin(a + b*x)^2,x)",
-				"x^3/6-((I*1/16*E^(I*2*a)*Gamma(3,-I*2*b*x))/b^3+(-I*1/16*Gamma(3,I*2*b*x))/(b^3*E^(I*\n" + 
-				"2*a)))/2");
+				"x^3/6-((I*1/16*E^(I*2*a)*Gamma(3,-I*2*b*x))/b^3+(-I*1/16*Gamma(3,I*2*b*x))/(b^3*E^(I*\n" + "2*a)))/2");
 
 		check("Integrate((a + b*Sin(c + g*x)),x)", "a*x+(-b*Cos(c+g*x))/g");
 		check("Integrate((a + b*Sin(c + g*x))^2,x)",
@@ -351,13 +350,13 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		// +
 		// "2),x))", "");
 		check("Integrate((a + b*Sin(c + g*x))^3,x)",
-				"a^3*x+(-3*a^2*b*Cos(c+g*x))/g+(-b^3*(Cos(c+g*x)-Cos(c+g*x)^3/3))/g+3*a*b^2*(x/2+(-Cos(c+g*x)*Sin(c+g*x))/(\n" + 
-				"2*g))");
+				"a^3*x+(-3*a^2*b*Cos(c+g*x))/g+(-b^3*(Cos(c+g*x)-Cos(c+g*x)^3/3))/g+3*a*b^2*(x/2+(-Cos(c+g*x)*Sin(c+g*x))/(\n"
+						+ "2*g))");
 
 		check("Integrate((a + b*Sin(c + g*x))^4,x)",
-				"a^4*x+(-4*a^3*b*Cos(c+g*x))/g+(-4*a*b^3*(Cos(c+g*x)-Cos(c+g*x)^3/3))/g+6*a^2*b^2*(x/\n" + 
-				"2+(-Cos(c+g*x)*Sin(c+g*x))/(2*g))+b^4*(3/4*(x/2+(-Cos(c+g*x)*Sin(c+g*x))/(2*g))+(-Cos(c+g*x)*Sin(c+g*x)^\n" + 
-				"3)/(4*g))");
+				"a^4*x+(-4*a^3*b*Cos(c+g*x))/g+(-4*a*b^3*(Cos(c+g*x)-Cos(c+g*x)^3/3))/g+6*a^2*b^2*(x/\n"
+						+ "2+(-Cos(c+g*x)*Sin(c+g*x))/(2*g))+b^4*(3/4*(x/2+(-Cos(c+g*x)*Sin(c+g*x))/(2*g))+(-Cos(c+g*x)*Sin(c+g*x)^\n"
+						+ "3)/(4*g))");
 
 		check("$f(a_.+b_.*c_):={a,b,c};$f(x)", "{0,1,x}");
 
@@ -458,9 +457,11 @@ public class RubiIntegrationTest extends AbstractTestCase {
 	}
 
 	public void testIssue82() {
-		check("Integrate(Sin(a^4)*a,a)", "(I*1/8*Sqrt(Pi)*Erf((-1)^(1/4)*a^2))/(-1)^(1/4)+(-I*1/8*Sqrt(Pi)*Erfi((-1)^(1/4)*a^\n" + 
-				"2))/(-1)^(1/4)");
-		check("Integrate(Sin(a^4)*a,{a,0,2.0})", "(0.15666+I*0.15666)*Erf(2.82843+I*2.82843)+(0.15666+I*0.15666)*Erfi(0.0)+(-0.15666+I*(-0.15666))*Erfi(2.82843+I*2.82843)");
+		check("Integrate(Sin(a^4)*a,a)",
+				"(I*1/8*Sqrt(Pi)*Erf((-1)^(1/4)*a^2))/(-1)^(1/4)+(-I*1/8*Sqrt(Pi)*Erfi((-1)^(1/4)*a^\n"
+						+ "2))/(-1)^(1/4)");
+		check("Integrate(Sin(a^4)*a,{a,0,2.0})",
+				"(0.15666+I*0.15666)*Erf(2.82843+I*2.82843)+(0.15666+I*0.15666)*Erfi(0.0)+(-0.15666+I*(-0.15666))*Erfi(2.82843+I*2.82843)");
 	}
 
 	public void testIssue83() {
@@ -475,8 +476,8 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		// + "2*x*2^(-1/2)+1)*2^(-1/2)-ArcTan(-2*x*2^(-1/2)+1)*2^(-1/2)),x))",
 		// "");
 		check("Integrate(1/(1+x^4),x)",
-				"1/2*(ArcTan((-Sqrt(2)+2*x)/Sqrt(2))/Sqrt(2)+ArcTan((Sqrt(2)+2*x)/Sqrt(2))/Sqrt(2))+\n" + 
-				"1/2*(Log(1+Sqrt(2)*x+x^2)/(2*Sqrt(2))-Log(1-Sqrt(2)*x+x^2)/(2*Sqrt(2)))");
+				"1/2*(ArcTan((-Sqrt(2)+2*x)/Sqrt(2))/Sqrt(2)+ArcTan((Sqrt(2)+2*x)/Sqrt(2))/Sqrt(2))+\n"
+						+ "1/2*(Log(1+Sqrt(2)*x+x^2)/(2*Sqrt(2))-Log(1-Sqrt(2)*x+x^2)/(2*Sqrt(2)))");
 	}
 
 	public void testIssue110() {

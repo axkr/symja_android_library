@@ -132,8 +132,7 @@ public final class Arithmetic {
 	}
 
 	/**
-	 * Absolute value of a number. See
-	 * <a href="http://en.wikipedia.org/wiki/Absolute_value">Wikipedia:Absolute
+	 * Absolute value of a number. See <a href="http://en.wikipedia.org/wiki/Absolute_value">Wikipedia:Absolute
 	 * value</a>
 	 */
 	private final static class Abs extends AbstractTrigArg1 implements INumeric, AbsRules, DoubleUnaryOperator {
@@ -291,8 +290,8 @@ public final class Arithmetic {
 
 	/**
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Argument_%28complex_analysis%29">
-	 * Wikipedia - Argument (complex_analysis)</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Argument_%28complex_analysis%29"> Wikipedia - Argument
+	 * (complex_analysis)</a>
 	 * 
 	 */
 	private static class Arg extends AbstractFunctionEvaluator implements INumeric, DoubleUnaryOperator {
@@ -433,15 +432,12 @@ public final class Arithmetic {
 	/**
 	 * Conjugate the given argument.
 	 * 
-	 * See
-	 * <a href="http://en.wikipedia.org/wiki/Complex_conjugation">Wikipedia:Complex
-	 * conjugation</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Complex_conjugation">Wikipedia:Complex conjugation</a>
 	 */
 	private final static class Conjugate extends AbstractTrigArg1 implements INumeric, ConjugateRules {
 
 		/**
-		 * Conjugate numbers and special objects like <code>Infinity</code> and
-		 * <code>Indeterminate</code>.
+		 * Conjugate numbers and special objects like <code>Infinity</code> and <code>Indeterminate</code>.
 		 * 
 		 * @param arg1
 		 * @return <code>F.NIL</code> if the evaluation wasn't possible
@@ -729,10 +725,9 @@ public final class Arithmetic {
 	 * Returns the Gamma function value.
 	 * </p>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Gamma_function">Gamma function</a>
-	 * and <a href=
-	 * "https://en.wikipedia.org/wiki/Particular_values_of_the_Gamma_function">
-	 * Particular values of the Gamma function</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Gamma_function">Gamma function</a> and
+	 * <a href= "https://en.wikipedia.org/wiki/Particular_values_of_the_Gamma_function"> Particular values of the Gamma
+	 * function</a>
 	 * 
 	 */
 	private final static class Gamma extends AbstractTrigArg1 implements DoubleUnaryOperator {
@@ -808,8 +803,7 @@ public final class Arithmetic {
 	/**
 	 * Harmonic number of a given integer value
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Harmonic_number">Harmonic
-	 * number</a>
+	 * See: <a href="http://en.wikipedia.org/wiki/Harmonic_number">Harmonic number</a>
 	 */
 	private final static class HarmonicNumber extends AbstractEvaluator {
 
@@ -879,8 +873,7 @@ public final class Arithmetic {
 		 * 
 		 * @param n
 		 *            the index, non-negative.
-		 * @return the H_1=1 for n=1, H_2=3/2 for n=2 etc. For values of n less than 1,
-		 *         zero is returned.
+		 * @return the H_1=1 for n=1, H_2=3/2 for n=2 etc. For values of n less than 1, zero is returned.
 		 */
 		public BigFraction harmonicNumber(int n) {
 			if (n < 1)
@@ -1039,9 +1032,8 @@ public final class Arithmetic {
 	}
 
 	/**
-	 * A piecewise-defined function (also called a piecewise function or a hybrid
-	 * function) is a function which is defined by multiple subfunctions, each
-	 * subfunction applying to a certain interval of the main function's domain.
+	 * A piecewise-defined function (also called a piecewise function or a hybrid function) is a function which is
+	 * defined by multiple subfunctions, each subfunction applying to a certain interval of the main function's domain.
 	 * 
 	 * See: <a href="http://en.wikipedia.org/wiki/Piecewise">Wikipedia:Piecewise</a>
 	 * 
@@ -1229,14 +1221,12 @@ public final class Arithmetic {
 
 		/**
 		 * 
-		 * See: <a href="http://www.cs.berkeley.edu/~fateman/papers/newsimp.pdf">
-		 * Experiments in Hash-coded Algebraic Simplification</a>
+		 * See: <a href="http://www.cs.berkeley.edu/~fateman/papers/newsimp.pdf"> Experiments in Hash-coded Algebraic
+		 * Simplification</a>
 		 * 
 		 * @param ast
-		 *            the abstract syntax tree (AST) of the form <code>Plus(...)</code>
-		 *            which should be evaluated
-		 * @return the evaluated object or <code>null</code>, if evaluation isn't
-		 *         possible
+		 *            the abstract syntax tree (AST) of the form <code>Plus(...)</code> which should be evaluated
+		 * @return the evaluated object or <code>null</code>, if evaluation isn't possible
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1421,9 +1411,8 @@ public final class Arithmetic {
 		 * Calculate <code>interval({lower, upper}) ^ exponent</code>.
 		 * </p>
 		 * <p>
-		 * See: <a href=
-		 * "https://de.wikipedia.org/wiki/Intervallarithmetik#Elementare_Funktionen">
-		 * Intervallarithmetik - Elementare Funktionen</a>
+		 * See: <a href= "https://de.wikipedia.org/wiki/Intervallarithmetik#Elementare_Funktionen"> Intervallarithmetik
+		 * - Elementare Funktionen</a>
 		 * </p>
 		 * 
 		 * @param interval
@@ -1457,11 +1446,9 @@ public final class Arithmetic {
 		}
 
 		/**
-		 * Split this integer into the nth-root (with prime factors less equal 1021) and
-		 * the &quot;rest factor&quot;
+		 * Split this integer into the nth-root (with prime factors less equal 1021) and the &quot;rest factor&quot;
 		 * 
-		 * @return <code>{nth-root, rest factor}</code> or <code>null</code> if the root
-		 *         is not available
+		 * @return <code>{nth-root, rest factor}</code> or <code>null</code> if the root is not available
 		 */
 		private IInteger[] calculateRoot(IInteger a, IInteger root) {
 			try {
@@ -2426,7 +2413,7 @@ public final class Arithmetic {
 		 */
 		public final static Times CONST = new Times();
 
-		private static HashedOrderlessMatcher ORDERLESS_MATCHER = new HashedOrderlessMatcher();
+		private static HashedOrderlessMatcherTimes ORDERLESS_MATCHER = new HashedOrderlessMatcherTimes();
 
 		private static IExpr eInfinity(IAST inf, IExpr o1) {
 			if (inf.isComplexInfinity()) {
@@ -2503,10 +2490,8 @@ public final class Arithmetic {
 		 * @param ast
 		 *            the already evaluated expression
 		 * @param originalExpr
-		 *            the original expression which is used, if
-		 *            <code>!ast.isPresent()</code>
-		 * @return the evaluated object or <code>ast</code>, if the distribution of an
-		 *         integer factor isn't possible
+		 *            the original expression which is used, if <code>!ast.isPresent()</code>
+		 * @return the evaluated object or <code>ast</code>, if the distribution of an integer factor isn't possible
 		 */
 		private IExpr distributeLeadingFactor(IExpr ast, IAST originalExpr) {
 			IExpr expr = ast;
@@ -2869,31 +2854,26 @@ public final class Arithmetic {
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE
 					| ISymbol.NUMERICFUNCTION);
-			// ORDERLESS_MATCHER.setUpHashRule("Log[x_]", "Log[y_]^(-1)",
-			// Log.getFunction());
-			ORDERLESS_MATCHER.defineHashRule(Log(x_), Power(Log(y_), CN1), ExpTrigsFunctions.integerLogFunction());
+
+			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesLog(Log(x_), Log(y_), F.Null));
 
 			// Sin(x)*Cot(x) -> Cos(x)
-			ORDERLESS_MATCHER.defineHashRule(F.Sin(x_), F.Cot(x_), F.Cos(x));
-			ORDERLESS_MATCHER.defineHashRule(F.Sin(x_), F.Sec(x_), F.Tan(x));
-			ORDERLESS_MATCHER.defineHashRule(F.Cos(x_), F.Tan(x_), F.Sin(x));
-			ORDERLESS_MATCHER.defineHashRule(F.Csc(x_), F.Tan(x_), F.Sec(x));
-			ORDERLESS_MATCHER.defineHashRule(F.Cos(x_), F.Csc(x_), F.Cot(x));
-			ORDERLESS_MATCHER.defineHashRule(F.ProductLog(x_), F.Power(F.E, F.ProductLog(x_)), x);
+			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(F.Sin(x_), F.Cot(x_), F.Cos(x)));
+			// Sin(x)*Csc(x) -> 1
+			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(F.Sin(x_), F.Csc(x_), F.C1));
 
-			// Cos(x)^m * Sec(x)^n -> Cos(x)^(m-n)
-			ORDERLESS_MATCHER.definePatternHashRule(Power(Cos(x_), F.m_Integer), Power(F.Sec(x_), F.n_Integer),
-					Power(Cos(x), Subtract(F.m, F.n)), F.And(Positive(F.m), F.Greater(F.m, F.n)));
-			// Cos(x)^m * Sec(x) -> Cos(x)^(m-1)
-			ORDERLESS_MATCHER.definePatternHashRule(Power(Cos(x_), F.m_Integer), F.Sec(x_),
-					Power(Cos(x), Subtract(F.m, F.C1)));
+			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(F.Tan(x_), F.Cot(x_), F.C1));
+			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(F.Cos(x_), F.Sec(x_), F.C1));
+			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(F.Cos(x_), F.Tan(x_), F.Sin(x)));
+			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(F.Csc(x_), F.Tan(x_), F.Sec(x)));
+			ORDERLESS_MATCHER
+					.defineHashRule(new HashedPatternRulesTimes(F.ProductLog(x_), F.Power(F.E, F.ProductLog(x_)), x));
 
-			// Sin(x)^m * Csc(x)^n -> Sin(x)^(m-n)
-			ORDERLESS_MATCHER.definePatternHashRule(Power(Sin(x_), F.m_Integer), Power(F.Csc(x_), F.n_Integer),
-					Power(Sin(x), Subtract(F.m, F.n)), F.And(Positive(F.m), F.Greater(F.m, F.n)));
-			// Sin(x)^m * Csc(x) -> Sin(x)^(m-1)
-			ORDERLESS_MATCHER.definePatternHashRule(Power(Sin(x_), F.m_Integer), F.Csc(x_),
-					Power(Sin(x), Subtract(F.m, F.C1)));
+			// TODO: HACK useOnlyEqualFactors = true in the following rules,
+			// to avoid stack overflow in integration rules.
+			// If true use only rules where both factors are equal,
+			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(F.Sin(x_), F.Sec(x_), F.Tan(x), true));
+			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(F.Cos(x_), F.Csc(x_), F.Cot(x), true));
 
 			super.setUp(newSymbol);
 		}
@@ -2973,8 +2953,7 @@ public final class Arithmetic {
 		}
 
 		/**
-		 * Try simpplifying
-		 * <code>(power0Arg1 ^ power0Arg2) * (power1Arg1 ^ power1Arg2)</code>
+		 * Try simpplifying <code>(power0Arg1 ^ power0Arg2) * (power1Arg1 ^ power1Arg2)</code>
 		 * 
 		 * @param power0Arg1
 		 * @param power0Arg2
