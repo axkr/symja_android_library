@@ -3248,12 +3248,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// 35583840059240/5793115330933+275839049310660/5793115330933*I,
 		// -3352155369084/827587904419-28321055437140/827587904419*I}
 		check("Table(Complex(i,Rational(2 * i + 2 + j, 1 + 9 * i + j)),{i,0,3},{j,0,2})", //
-				"{{I*2,I*3/2,I*4/3},{1+I*2/5,1+I*5/11,1+I*1/2},{2+I*6/19,2+I*7/20,2+I*8/21},{3+I*\n" + 
-				"2/7,3+I*9/29,3+I*1/3}}");
+				"{{I*2,I*3/2,I*4/3},{1+I*2/5,1+I*5/11,1+I*1/2},{2+I*6/19,2+I*7/20,2+I*8/21},{3+I*\n"
+						+ "2/7,3+I*9/29,3+I*1/3}}");
 		check("LeastSquares(Table(Complex(i,Rational(2 * i + 2 + j, 1 + 9 * i + j)),{i,0,3},{j,0,2}), {1,1,1,1})", //
-				"{-1577780898195/827587904419-I*11087326045520/827587904419,35583840059240/\n" + 
-				"5793115330933+I*275839049310660/5793115330933,-3352155369084/827587904419-I*\n" + 
-				"28321055437140/827587904419}");
+				"{-1577780898195/827587904419-I*11087326045520/827587904419,35583840059240/\n"
+						+ "5793115330933+I*275839049310660/5793115330933,-3352155369084/827587904419-I*\n"
+						+ "28321055437140/827587904419}");
 		check("LeastSquares({{1, 1}, {1, 2}, {1, 3.0}}, {7, 7, 8})", //
 				"{6.333333333333329,0.5000000000000018}");
 		check("LeastSquares({{1, 1}, {1, 2}, {1, 3}}, {7, 7, 8})", //
@@ -3371,6 +3371,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testLimit() {
+		// issue #184
+		check("N(Limit(tan(x),x->pi/2))", "-Infinity");
+		
+		check("Limit(Tan(x), x->Pi/2)", "-Infinity");
+		check("Limit(Tan(x), x->Pi/2, Direction->1)", "Infinity");
+		check("Limit(Tan(x), x->Pi/2, Direction->-1)", "-Infinity");
+		check("Limit(Tan(x+3*Pi), x->Pi/2)", "-Infinity");
+		check("Limit(Tan(x+3*Pi), x->Pi/2, Direction->1)", "Infinity");
+		check("Limit(Tan(x+3*Pi), x->Pi/2, Direction->-1)", "-Infinity");
+		check("Limit(Cot(x), x->0)", "Infinity");
+		check("Limit(Cot(x), x->0, Direction->1)", "-Infinity");
+		check("Limit(Cot(x), x->0, Direction->-1)", "Infinity");
+		check("Limit(Cot(x+Pi), x->0)", "Infinity");
+		check("Limit(Cot(x+Pi), x->0, Direction->1)", "-Infinity");
+		check("Limit(Cot(x+Pi), x->0, Direction->-1)", "Infinity");
+
 		check("Limit(Log(x^y), x->0)", "DirectedInfinity(-y)");
 		check("Limit(Log(y*x, b), x->1)", "Limit(1/Log(x*y),x->1)*Log(b)");
 		check("Limit(Log(y*x), x->0)", "-Infinity+Log(y)");
@@ -6971,6 +6987,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("A=Array(a, {2, 3, 4});TensorDimensions(A)", "{2,3,4}");
 		check("TensorDimensions({{1,2},{3,4},{a,b}})", "{3,2}");
 	}
+
+	// public void testTensorProduct() {
+	// check("TensorProduct({2, 3}, {{a, b}, {c, d}}, {x, y})", "2");
+	// }
 
 	public void testTensorRank() {
 		check("A=Array(a, {2, 3, 4});TensorRank(A)", "3");
