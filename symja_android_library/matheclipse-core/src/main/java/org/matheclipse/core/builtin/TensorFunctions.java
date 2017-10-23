@@ -4,9 +4,19 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.linear.FieldMatrix;
+import org.hipparchus.linear.FieldVector;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
+import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractNonOrderlessArgMultiple;
+import org.matheclipse.core.expression.ASTRealMatrix;
+import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
@@ -20,6 +30,7 @@ public class TensorFunctions {
 		F.ListConvolve.setEvaluator(new ListConvolve());
 		F.ListCorrelate.setEvaluator(new ListCorrelate());
 		F.TensorDimensions.setEvaluator(new TensorDimensions());
+		F.TensorProduct.setEvaluator(new TensorProduct());
 		F.TensorRank.setEvaluator(new TensorRank());
 	}
 
@@ -36,7 +47,7 @@ public class TensorFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
-			
+
 			if (ast.arg1().isAST() && ast.arg2().isAST()) {
 				IAST kernel = (IAST) ast.arg1();
 				IAST tensor = (IAST) ast.arg2();
@@ -68,7 +79,7 @@ public class TensorFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
-			
+
 			if (ast.arg1().isAST() && ast.arg2().isAST()) {
 				IAST kernel = (IAST) ast.arg1();
 				IAST tensor = (IAST) ast.arg2();
@@ -85,7 +96,7 @@ public class TensorFunctions {
 			ISymbol fFunction = F.Plus;
 			ISymbol gFunction = F.Times;
 			int diff = tensorSize - kernelSize;
-			IAST resultList = F.ListAlloc(tensorSize-1);
+			IAST resultList = F.ListAlloc(tensorSize - 1);
 			for (int i = 0; i <= diff; i++) {
 				IAST plus = F.ast(fFunction, kernelSize, false);
 				for (int k = 1; k < kernelSize; k++) {
@@ -100,8 +111,7 @@ public class TensorFunctions {
 	private static class Ordering extends AbstractEvaluator {
 
 		/**
-		 * See <a href="https://stackoverflow.com/a/4859279/24819">Get the indices of an
-		 * array after sorting?</a>
+		 * See <a href="https://stackoverflow.com/a/4859279/24819">Get the indices of an array after sorting?</a>
 		 *
 		 */
 		private static class ArrayIndexComparator implements Comparator<Integer> {
@@ -198,6 +208,35 @@ public class TensorFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private static class TensorProduct extends AbstractNonOrderlessArgMultiple {
+
+		@Override
+		public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
+			if (o0.isList() && o1.isList()) {
+//				IAST tensor1 = (IAST) o0;
+//				IAST tensor2 = (IAST) o0;
+//				return tensor1.mapList(tensor2::times, 1);
+			}
+
+			return F.NIL;
+		}
+
+		private IExpr numericalDot(final IExpr o0, final IExpr o1) throws MathIllegalArgumentException {
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr numericEval(final IAST ast, EvalEngine engine) {
+			return evaluate(ast, engine);
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
 		}
 
 	}

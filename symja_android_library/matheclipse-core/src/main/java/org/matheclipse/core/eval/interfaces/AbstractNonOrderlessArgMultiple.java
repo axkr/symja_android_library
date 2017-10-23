@@ -11,11 +11,23 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class AbstractNonOrderlessArgMultiple extends AbstractArg2 {
 
+	public IExpr evaluateArg0(final IAST ast, EvalEngine engine) {
+		return F.NIL;
+	}
+
+	public IExpr evaluateArg1(final IAST ast, EvalEngine engine) {
+		return F.NIL;
+	}
+
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		int size = ast.size();
 		if (size == 3) {
 			return binaryOperator(ast.arg1(), ast.arg2());
+		} else if (size == 1) {
+			return evaluateArg1(ast, engine);
+		} else if (size == 0) {
+			return evaluateArg0(ast, engine);
 		}
 
 		if (size > 3) {

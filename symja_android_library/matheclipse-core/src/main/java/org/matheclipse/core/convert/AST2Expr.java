@@ -123,13 +123,13 @@ public class AST2Expr {
 			"StringLength", "StringTake", "StruveH", "StruveL", "StudentTDistribution", "Subfactorial", "Subscript",
 			"Subsuperscript", "Subsets", "SubtractFrom", "Sum", "Superscript", "SurfaceGraphics", "Switch",
 			"SyntaxLength", "SymbolName", "SymbolQ", "SymmetricMatrixQ", "SyntaxQ", "Table", "Take", "Tally", "Tan",
-			"Tanh", "TautologyQ", "Taylor", "TensorDimensions", "TensorRank", "TeXForm", "Thread", "Through", "Throw",
-			"TimeConstrained", "Times", "TimesBy", "Timing", "ToCharacterCode", "Together", "ToPolarCoordinates",
-			"ToRadicals", "ToString", "Total", "ToUnicode", "Tr", "Trace", "Transpose", "TrigExpand", "TrigReduce",
-			"TrigToExp", "TrueQ", "Tuples", "Unequal", "Unevaluated", "Union", "Unique", "UnitStep", "UnitVector",
-			"UnsameQ", "Unset", "UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables",
-			"Variance", "VectorAngle", "VectorQ", "WeibullDistribution", "Which", "While", "With", "Xor",
-			"YuleDissimilarity", "Zeta" };
+			"Tanh", "TautologyQ", "Taylor", "TensorDimensions", "TensorProduct", "TensorRank", "TeXForm", "Thread",
+			"Through", "Throw", "TimeConstrained", "Times", "TimesBy", "Timing", "ToCharacterCode", "Together",
+			"ToPolarCoordinates", "ToRadicals", "ToString", "Total", "ToUnicode", "Tr", "Trace", "Transpose",
+			"TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Tuples", "Unequal", "Unevaluated", "Union", "Unique",
+			"UnitStep", "UnitVector", "UnsameQ", "Unset", "UpperCaseQ", "UpSet", "UpSetDelayed", "ValueQ",
+			"VandermondeMatrix", "Variables", "Variance", "VectorAngle", "VectorQ", "WeibullDistribution", "Which",
+			"While", "With", "Xor", "YuleDissimilarity", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 

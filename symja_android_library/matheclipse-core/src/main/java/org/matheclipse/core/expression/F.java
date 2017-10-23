@@ -1287,6 +1287,8 @@ public class F {
 	public final static IBuiltInSymbol Tr = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tr" : "Tr");
 	public final static IBuiltInSymbol TensorDimensions = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tensordimensions" : "TensorDimensions");
+	public final static IBuiltInSymbol TensorProduct = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tensorproduct" : "TensorProduct");
 	public final static IBuiltInSymbol TensorRank = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tensorrank" : "TensorRank");
 	public final static IBuiltInSymbol Transpose = initFinalSymbol(
