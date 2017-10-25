@@ -3373,7 +3373,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testLimit() {
 		// issue #184
 		check("N(Limit(tan(x),x->pi/2))", "-Infinity");
-		
+
 		check("Limit(Tan(x), x->Pi/2)", "-Infinity");
 		check("Limit(Tan(x), x->Pi/2, Direction->1)", "Infinity");
 		check("Limit(Tan(x), x->Pi/2, Direction->-1)", "-Infinity");
@@ -5446,6 +5446,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ProductLog(42,0)", "-Infinity");
 		check("ProductLog(-1,(-1/2)*Pi)", "-I*1/2*Pi");
 		check("ProductLog(-1,-E^(-1))", "-1");
+	}
+
+	public void testProjection() {
+		check("Projection({5, 6, 7}, {1, 0, 0})", //
+				"{5,0,0}");
+		check("Projection({5, 6, 7}, {1, 1, 1})", //
+				"{6,6,6}");
+		check("Projection({5, I, 7}, {1, 1, 1})", //
+				"{4+I*1/3,4+I*1/3,4+I*1/3}");
+		check("Projection({x,y}, {a,b}, Dot)", //
+				"{(a*(a*x+b*y))/(a^2+b^2),(b*(a*x+b*y))/(a^2+b^2)}");
+		check("Projection({x,y}, {a,b})", //
+				"{(a*(x*Conjugate(a)+y*Conjugate(b)))/(a*Conjugate(a)+b*Conjugate(b)),(b*(x*Conjugate(a)+y*Conjugate(b)))/(a*Conjugate(a)+b*Conjugate(b))}");
+		check("ip(p1_, p2_) := Integrate(p1*p2, {x, -1, 1}); Projection(x^2, LegendreP(2, x), ip)", //
+				"2/3*(-1/2+3/2*x^2)");
 	}
 
 	public void testPseudoInverse() {

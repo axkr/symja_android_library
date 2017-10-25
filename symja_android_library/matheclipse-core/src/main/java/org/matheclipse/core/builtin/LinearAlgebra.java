@@ -109,6 +109,7 @@ public final class LinearAlgebra {
 		F.Normalize.setEvaluator(new Normalize());
 		F.NullSpace.setEvaluator(new NullSpace());
 		F.PseudoInverse.setEvaluator(PseudoInverse.CONST);
+		F.Projection.setEvaluator(new Projection());
 		F.QRDecomposition.setEvaluator(new QRDecomposition());
 		F.RowReduce.setEvaluator(new RowReduce());
 		F.SingularValueDecomposition.setEvaluator(new SingularValueDecomposition());
@@ -1662,6 +1663,23 @@ public final class LinearAlgebra {
 
 	}
 
+	/**
+	 * <pre>
+	 * LeastSquares(matrix, right)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * solves the linear least-squares problem 'matrix . x = right'.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; LeastSquares(Table(Complex(i,Rational(2 * i + 2 + j, 1 + 9 * i + j)),{i,0,3},{j,0,2}), {1,1,1,1})
+	 * {-1577780898195/827587904419-I*11087326045520/827587904419,35583840059240/5793115330933+I*275839049310660/5793115330933,-3352155369084/827587904419-I*2832105547140/827587904419}
+	 * </pre>
+	 */
 	private static class LeastSquares extends AbstractFunctionEvaluator {
 
 		@Override
@@ -2493,6 +2511,90 @@ public final class LinearAlgebra {
 			DecompositionSolver solver = lu.getSolver();
 			return solver.getInverse();
 		}
+	}
+
+	/**
+	 * <pre>
+	 * Projection(vector1, vector2)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * Find the orthogonal projection of <code>vector1</code> onto another <code>vector2</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Projection(vector1, vector2, ipf)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * Find the orthogonal projection of <code>vector1</code> onto another <code>vector2</code> using the inner product
+	 * function <code>ipf</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Projection({5, I, 7}, {1, 1, 1})
+	 * {4+I*1/3,4+I*1/3,4+I*1/3}
+	 * </pre>
+	 */
+	private static class Projection extends AbstractEvaluator {
+
+		/**
+		 * Create a binary function &quot"dot product&quot; <code>head(u,v)</code> and evaluate it.
+		 * 
+		 * @param head
+		 *            the header of the binary function
+		 * @param u
+		 *            the first argument of the function
+		 * @param v
+		 *            the second argument of the function
+		 * @param engine
+		 *            the evaluation engine
+		 * @return the evaluated <code>head(u,v)</code> AST.
+		 */
+		private static IExpr dotProduct(IExpr head, IExpr u, IExpr v, EvalEngine engine) {
+			return engine.evaluate(F.binaryAST2(head, u, v));
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 3, 4);
+			int dim1 = ast.arg1().isVector();
+			int dim2 = ast.arg2().isVector();
+			if (ast.size() == 4) {
+				IExpr head = ast.arg3();
+				if (head.equals(F.Dot)) {
+					if (dim1 >= 0 && dim1 == dim2) {
+						FieldVector<IExpr> u = Convert.list2Vector((IAST) ast.arg1());
+						FieldVector<IExpr> v = Convert.list2Vector((IAST) ast.arg2());
+						return Convert.vector2List(u.projection(v));
+					}
+				}
+				IExpr u = ast.arg1();
+				IExpr v = ast.arg2();
+				return v.times(dotProduct(head, u, v, engine).divide(dotProduct(head, v, v, engine)));
+			}
+			if (dim1 >= 0 && dim1 == dim2) {
+				FieldVector<IExpr> u = Convert.list2Vector((IAST) ast.arg1());
+				FieldVector<IExpr> v = Convert.list2Vector((IAST) ast.arg2());
+				FieldVector<IExpr> vConjugate = v.copy();
+				for (int i = 0; i < dim2; i++) {
+					vConjugate.setEntry(i, vConjugate.getEntry(i).conjugate());
+				}
+
+				return Convert.vector2List(v.mapMultiply(u.dotProduct(vConjugate).divide(v.dotProduct(vConjugate))));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
 	}
 
 	/**

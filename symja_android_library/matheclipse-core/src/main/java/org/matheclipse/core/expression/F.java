@@ -1139,6 +1139,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "product" : "Product");
 	public final static IBuiltInSymbol ProductLog = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "productlog" : "ProductLog");
+	public final static IBuiltInSymbol Projection = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "projection" : "Projection");
 	public final static IBuiltInSymbol PseudoInverse = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "pseudoinverse" : "PseudoInverse");
 	public final static IBuiltInSymbol Quit = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "quit" : "Quit");

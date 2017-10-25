@@ -1,7 +1,7 @@
 ## Cross
-``` 
+```
 Cross(a, b)
-``` 
+```
 > computes the vector cross product of `a` and `b`.
 
 See:

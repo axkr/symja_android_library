@@ -5,18 +5,10 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.hipparchus.exception.MathIllegalArgumentException;
-import org.hipparchus.linear.FieldMatrix;
-import org.hipparchus.linear.FieldVector;
-import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.linear.RealVector;
-import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractNonOrderlessArgMultiple;
-import org.matheclipse.core.expression.ASTRealMatrix;
-import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
@@ -217,9 +209,9 @@ public class TensorFunctions {
 		@Override
 		public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
 			if (o0.isList() && o1.isList()) {
-//				IAST tensor1 = (IAST) o0;
-//				IAST tensor2 = (IAST) o0;
-//				return tensor1.mapList(tensor2::times, 1);
+				// IAST tensor1 = (IAST) o0;
+				// IAST tensor2 = (IAST) o0;
+				// return tensor1.mapList(tensor2::times, 1);
 			}
 
 			return F.NIL;

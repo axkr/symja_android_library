@@ -114,10 +114,10 @@ public class SymbolnamePreprocessor {
 
 	public static void main(final String[] args) {
 		File sourceLocation1 = new File(
-				"C:\\Users\\dev\\git\\symja_android_library\\symja_android_library\\matheclipse-core\\src\\main\\java\\org\\matheclipse\\core\\builtin\\function");
+				"..\\symja_android_library\\matheclipse-core\\src\\main\\java\\org\\matheclipse\\core\\builtin\\function");
 
 		File sourceLocation2 = new File(
-				"C:\\Users\\dev\\git\\symja_android_library\\symja_android_library\\matheclipse-core\\src\\main\\java\\org\\matheclipse\\core\\reflection\\system");
+				"..\\symja_android_library\\matheclipse-core\\src\\main\\java\\org\\matheclipse\\core\\reflection\\system");
 
 		generateFunctionStrings1(sourceLocation1, true);
 
