@@ -1,5 +1,7 @@
 package org.matheclipse.core.form.tex;
 
+import java.text.NumberFormat;
+
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -16,13 +18,20 @@ import org.matheclipse.core.interfaces.ISymbol;
 abstract public class AbstractTeXFormFactory {
 
 	public final static boolean USE_IDENTIFIERS = false;
+	
+	protected NumberFormat fNumberFormat = null;
 
 	/**
 	 * 
 	 */
-	public AbstractTeXFormFactory() {
+	public AbstractTeXFormFactory(NumberFormat numberFormat) {
+		 fNumberFormat= numberFormat;
 	}
 
+	protected String convertDoubleToFormattedString(double dValue) {
+		return fNumberFormat == null ? Double.toString(dValue) : fNumberFormat.format(dValue);
+	}
+	
 	/**
 	 * Returns the reflection package name which is used in
 	 * #getReflectionNamespace()

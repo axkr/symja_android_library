@@ -27,6 +27,8 @@ public class NumberTest extends TestCase {
 
 	/**
 	 * Format a double value with a <code>java.text.DecimalFormat</code> object.
+	 * 
+	 * See: <a href="https://docs.oracle.com/javase/tutorial/java/data/numberformat.html">numberformat article</a>
 	 */
 	public void testNumberFormat() {
 		StringBuilder buf = new StringBuilder();
@@ -41,5 +43,21 @@ public class NumberTest extends TestCase {
 			e.printStackTrace();
 		}
 		assertEquals(buf.toString(), "12345.12346");
+	}
+
+	public void testDoubleFormat() {
+		double a = 1.3;
+		double b = 1.0;
+		double result = a - b;
+
+		assertEquals("0.30000000000000004", Double.toString(result));
+		// prints 0.30000000000000004
+		// System.out.println(result);
+
+		DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(Locale.US);
+		DecimalFormat decimalFormat = new DecimalFormat("0.0####", otherSymbols);
+		assertEquals("0.3", decimalFormat.format(result));
+		// prints 0.3
+		// System.out.println(decimalFormat.format(result));
 	}
 }

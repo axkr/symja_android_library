@@ -1,6 +1,7 @@
 package org.matheclipse.core.form.tex;
 
 import java.math.BigInteger;
+import java.text.NumberFormat;
 import java.util.HashMap;
 
 import org.hipparchus.fraction.BigFraction;
@@ -24,8 +25,8 @@ import org.matheclipse.parser.client.operator.ASTNodeFactory;
  * </p>
  * 
  * <p>
- * In the method <code>getReflectionNamespace()</code> the package is set which
- * is used by Java reflection to determine special function implementations.
+ * In the method <code>getReflectionNamespace()</code> the package is set which is used by Java reflection to determine
+ * special function implementations.
  * </p>
  */
 public class TeXFormFactory extends AbstractTeXFormFactory {
@@ -69,11 +70,15 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 	 * Constructor
 	 */
 	public TeXFormFactory() {
-		this("");
+		this("", null);
 	}
 
 	public TeXFormFactory(final String tagPrefix) {
-		super();
+		this(tagPrefix, null);
+	}
+
+	public TeXFormFactory(final String tagPrefix, NumberFormat numberFormat) {
+		super(numberFormat);
 		init();
 	}
 
@@ -82,7 +87,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		if (d.isNegative() && (precedence > plusPrec)) {
 			buf.append("\\left( ");
 		}
-		buf.append(d.toString());
+		buf.append(convertDoubleToFormattedString(d.getRealPart()));
 		if (d.isNegative() && (precedence > plusPrec)) {
 			buf.append("\\right) ");
 		}
@@ -93,9 +98,11 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		if (precedence > plusPrec) {
 			buf.append("\\left( ");
 		}
-		convert(buf, dc.getRealPart(), 0);
+		// convert(buf, dc.getRealPart(), 0);
+		buf.append(convertDoubleToFormattedString(dc.getRealPart()));
 		buf.append(" + ");
-		convert(buf, dc.getImaginaryPart(), 0);
+		// convert(buf, dc.getImaginaryPart(), 0);
+		buf.append(convertDoubleToFormattedString(dc.getImaginaryPart()));
 		buf.append("\\,"); // InvisibleTimes
 		buf.append("i ");
 		if (precedence > plusPrec) {

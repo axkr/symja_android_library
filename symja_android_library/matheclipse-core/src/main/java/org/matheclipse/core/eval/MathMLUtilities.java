@@ -1,6 +1,7 @@
 package org.matheclipse.core.eval;
 
 import java.io.Writer;
+import java.text.NumberFormat;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.mathml.MathMLFormFactory;
@@ -10,8 +11,7 @@ import org.matheclipse.core.parser.ExprParser;
 /**
  * Convert an expression into presentation MathML output
  * 
- * See <a href="http://www.w3.org/TR/2000/CR-MathML2-20001113/byalpha.html">
- * Chracters ordered by Unicode</a>
+ * See <a href="http://www.w3.org/TR/2000/CR-MathML2-20001113/byalpha.html"> Chracters ordered by Unicode</a>
  * 
  */
 public class MathMLUtilities {
@@ -28,7 +28,6 @@ public class MathMLUtilities {
 	 * Print MathML header in output
 	 */
 	boolean fMathMLHeader;
-	// Parser fParser;
 
 	static {
 		// initialize the global available symbols
@@ -36,25 +35,41 @@ public class MathMLUtilities {
 	}
 
 	/**
-	 * Constructor for an object which converts an expression into presentation
-	 * MathML output
+	 * Constructor for an object which converts an expression into presentation MathML output
 	 * 
 	 * @param evalEngine
 	 * @param mathMTagPrefix
-	 *            if set to <code>true</code> use &quot;m:&quot; as tag prefix for
-	 *            the MathML output.
+	 *            if set to <code>true</code> use &quot;m:&quot; as tag prefix for the MathML output.
 	 * @param mathMLHeader
 	 *            print MathML header in output
+	 * @param numberFormat
+	 *            the number formatter (could be <code>null</code>)
 	 */
 	public MathMLUtilities(final EvalEngine evalEngine, final boolean mathMTagPrefix, final boolean mathMLHeader) {
+		this(evalEngine, mathMTagPrefix, mathMLHeader, null);
+	}
+
+	/**
+	 * Constructor for an object which converts an expression into presentation MathML output
+	 * 
+	 * @param evalEngine
+	 * @param mathMTagPrefix
+	 *            if set to <code>true</code> use &quot;m:&quot; as tag prefix for the MathML output.
+	 * @param mathMLHeader
+	 *            print MathML header in output
+	 * @param numberFormat
+	 *            the number formatter (could be <code>null</code>)
+	 */
+	public MathMLUtilities(final EvalEngine evalEngine, final boolean mathMTagPrefix, final boolean mathMLHeader,
+			NumberFormat numberFormat) {
 		fEvalEngine = evalEngine;
 		EvalEngine.set(fEvalEngine);
 		// set the thread local instance
 		startRequest();
 		if (mathMTagPrefix) {
-			fMathMLFactory = new MathMLFormFactory("m:");
+			fMathMLFactory = new MathMLFormFactory("m:", numberFormat);
 		} else {
-			fMathMLFactory = new MathMLFormFactory();
+			fMathMLFactory = new MathMLFormFactory("", numberFormat);
 		}
 		// fParser = new Parser(relaxedSyntax);
 		fMSIE = mathMTagPrefix;
@@ -71,8 +86,8 @@ public class MathMLUtilities {
 	}
 
 	/**
-	 * Converts the inputExpression string into a MathML expression and writes the
-	 * result to the given <code>Writer</code>
+	 * Converts the inputExpression string into a MathML expression and writes the result to the given
+	 * <code>Writer</code>
 	 * 
 	 * @param inputExpression
 	 * @param out
@@ -95,8 +110,7 @@ public class MathMLUtilities {
 	}
 
 	/**
-	 * Converts the objectExpression into a MathML expression and writes the result
-	 * to the given <code>Writer</code>
+	 * Converts the objectExpression into a MathML expression and writes the result to the given <code>Writer</code>
 	 * 
 	 * @param objectExpression
 	 * @param out
@@ -159,8 +173,8 @@ public class MathMLUtilities {
 	}
 
 	/**
-	 * Assign the associated EvalEngine to the current thread. Every subsequent
-	 * action evaluation in this thread affects the EvalEngine in this class.
+	 * Assign the associated EvalEngine to the current thread. Every subsequent action evaluation in this thread affects
+	 * the EvalEngine in this class.
 	 */
 	public void startRequest() {
 		EvalEngine.set(fEvalEngine);

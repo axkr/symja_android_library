@@ -1,6 +1,7 @@
 package org.matheclipse.core.form.mathml;
 
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.util.HashMap;
 
 import org.apfloat.Apcomplex;
@@ -11,6 +12,7 @@ import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ApcomplexNum;
+import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.mathml.reflection.Plus;
 import org.matheclipse.core.form.output.OutputFormFactory;
@@ -44,7 +46,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	 * The conversion was called with a &quot;+&quot; operator preceding the <code>IExpr</code> object.
 	 */
 	public final static boolean PLUS_CALL = true;
-	
+
 	class Operator {
 		String fOperator;
 
@@ -90,11 +92,15 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	 * Constructor
 	 */
 	public MathMLFormFactory() {
-		this("");
+		this("", null);
 	}
 
 	public MathMLFormFactory(final String tagPrefix) {
-		super(tagPrefix);
+		this(tagPrefix, null);
+	}
+
+	public MathMLFormFactory(final String tagPrefix, NumberFormat numberFormat) {
+		super(tagPrefix, numberFormat);
 		fRelaxedSyntax = true;
 		init();
 	}
@@ -106,12 +112,20 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tag(buf, "mo", "(");
 		}
 		tagStart(buf, "mn");
-		buf.append(d.toString());
+		if (d instanceof ApfloatNum) {
+			convertApfloat(buf, ((ApfloatNum) d).apfloatValue(), precedence);
+		} else {
+			buf.append(convertDoubleToFormattedString(d.getRealPart()));
+		}
 		tagEnd(buf, "mn");
 		if (d.isNegative() && (precedence > plusPrec)) {
 			tag(buf, "mo", ")");
 			tagEnd(buf, "mrow");
 		}
+	}
+
+	public void convertApfloat(final StringBuilder buf, final Apfloat realPart, final int precedence) {
+		buf.append(String.valueOf(realPart));
 	}
 
 	public void convertApcomplex(final StringBuilder buf, final Apcomplex ac, final int precedence) {
@@ -153,7 +167,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 		tagStart(buf, "mrow");
 		tagStart(buf, "mn");
-		buf.append(realPart);
+		buf.append(convertDoubleToFormattedString(realPart));
 		tagEnd(buf, "mn");
 		if (isImNegative) {
 			tag(buf, "mo", "-");
@@ -162,7 +176,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tag(buf, "mo", "+");
 		}
 		tagStart(buf, "mn");
-		buf.append(imaginaryPart);
+		buf.append(convertDoubleToFormattedString(imaginaryPart));
 		tagEnd(buf, "mn");
 
 		// <!ENTITY InvisibleTimes "&#x2062;" >
@@ -422,7 +436,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 							tagEnd(buf, "mrow");
 							return;
 						}
-						if (n>2){
+						if (n > 2) {
 							tagStart(buf, "mrow");
 							IExpr symbolOrAST = headAST.arg1();
 							tagStart(buf, "msup");
@@ -433,8 +447,8 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 							buf.append(Integer.toString(n));
 							tagEnd(buf, "mn");
 							tag(buf, "mo", ")");
-							tagEnd(buf, "mrow"); 
-							tagEnd(buf, "msup"); 
+							tagEnd(buf, "mrow");
+							tagEnd(buf, "msup");
 							convertArgs(buf, symbolOrAST, list);
 							tagEnd(buf, "mrow");
 							return;
@@ -801,9 +815,9 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 				plusArg = F.Power(F.O(x.subtract(x0)), F.fraction(nmax, den).normalize());
 				if (!plusArg.isZero()) {
 					tag(tempBuffer, "mo", "+");
-					convert (tempBuffer, plusArg, 0);
+					convert(tempBuffer, plusArg, 0);
 					call = PLUS_CALL;
-				} 
+				}
 			} else {
 				return false;
 			}
@@ -851,7 +865,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		}
 		return call;
 	}
-	
+
 	public void convertSlot(final StringBuilder buf, final IAST list) {
 		try {
 			final int slot = ((ISignedNumber) list.arg1()).toInt();
