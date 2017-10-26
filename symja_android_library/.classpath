@@ -11,15 +11,15 @@
 	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
 	<classpathentry kind="lib" path="lib/commons-csv-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/guava-20.0.jar"/>
-	<classpathentry kind="lib" path="lib/hipparchus-core-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/hipparchus-fft-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/hipparchus-fitting-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/hipparchus-ode-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/hipparchus-optim-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/hipparchus-stat-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/apfloat-1.8.3.jar"/>
 	<classpathentry kind="lib" path="lib/jas-2.6.5765.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/txtmark-0.13.jar" sourcepath="C:/Users/dev/.m2/repository/com/github/rjeschke/txtmark/0.13/txtmark-0.13-sources.jar"/>
+	<classpathentry kind="lib" path="lib/hipparchus-core-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/hipparchus-fft-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/hipparchus-fitting-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/hipparchus-ode-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/hipparchus-optim-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/hipparchus-stat-1.2.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
