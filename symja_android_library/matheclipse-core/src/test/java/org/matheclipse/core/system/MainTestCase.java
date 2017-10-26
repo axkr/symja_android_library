@@ -2868,9 +2868,18 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem412() {
-		check("DiagonalMatrix({1,2,3,4})", "{{1,0,0,0},{0,2,0,0},{0,0,3,0},{0,0,0,4}}");
-		check("DiagonalMatrix({1,2,3,4},2)", "{{0,0,1,0},{0,0,0,2},{0,0,0,0},{0,0,0,0}}");
-		check("DiagonalMatrix({1,2,3,4},-2)", "{{0,0,0,0},{0,0,0,0},{3,0,0,0},{0,4,0,0}}");
+		check("DiagonalMatrix({1,2,3,4})", "{{1,0,0,0},\n" + 
+				" {0,2,0,0},\n" + 
+				" {0,0,3,0},\n" + 
+				" {0,0,0,4}}");
+		check("DiagonalMatrix({1,2,3,4},2)", "{{0,0,1,0},\n" + 
+				" {0,0,0,2},\n" + 
+				" {0,0,0,0},\n" + 
+				" {0,0,0,0}}");
+		check("DiagonalMatrix({1,2,3,4},-2)", "{{0,0,0,0},\n" + 
+				" {0,0,0,0},\n" + 
+				" {3,0,0,0},\n" + 
+				" {0,4,0,0}}");
 	}
 
 	public void testSystem413() {

@@ -732,36 +732,15 @@ public final class LinearAlgebra {
 	 */
 	private static class DiagonalMatrix extends AbstractFunctionEvaluator {
 
-		public DiagonalMatrix() {
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
 
 			if (ast.arg1().isAST()) {
-				IAST list = (IAST) ast.arg1();
-				int m = list.size();
-				IAST res = F.ListAlloc(m);
-				int offset = 0;
-				if ((ast.isAST2())) {
-					offset = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
-				}
-				for (int i = 1; i < m; i++) {
-					IAST row = F.ListAlloc(m);
-					for (int j = 1; j < m; j++) {
-						if (i + offset == j) {
-							row.append(list.get(i));
-						} else {
-							row.append(F.C0);
-						}
-					}
-
-					res.append(row);
-				}
-
-				return res;
-
+				IAST vector = (IAST) ast.arg1();
+				int m = vector.size();
+				final int offset = ast.isAST2() ? Validate.checkIntType(ast, 2, Integer.MIN_VALUE) : 0;
+				return F.matrix((i, j) -> (i + offset) == j ? vector.get(i + 1) : F.C0, m - 1, m - 1);
 			}
 
 			return F.NIL;
@@ -1364,15 +1343,7 @@ public final class LinearAlgebra {
 			} else {
 				return F.NIL;
 			}
-
-			final int[] indexArray = new int[2];
-			indexArray[0] = rowSize;
-			indexArray[1] = columnSize;
-			final IndexTableGenerator generator = new IndexTableGenerator(indexArray, F.List,
-					indx -> F.fraction(1L, 1L + indx[0] + indx[1]));
-			final IAST matrix = (IAST) generator.table();
-			matrix.addEvalFlags(IAST.IS_MATRIX);
-			return matrix;
+			return F.matrix((i, j) -> F.QQ(1, i + j + 1), rowSize, columnSize);
 		}
 	}
 
@@ -1395,17 +1366,13 @@ public final class LinearAlgebra {
 	 */
 	private static class IdentityMatrix extends AbstractFunctionEvaluator {
 
-		public IdentityMatrix() {
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
 
 			if (ast.arg1().isInteger()) {
-				int indx = Validate.checkIntType(ast, 1);
-				final IExpr[] valueArray = { F.C0, F.C1 };
-				return diagonalMatrix(valueArray, indx);
+				int m = Validate.checkIntType(ast, 1);
+				return F.matrix((i, j) -> i == j ? F.C1 : F.C0, m, m);
 			}
 			return F.NIL;
 		}
@@ -2605,11 +2572,11 @@ public final class LinearAlgebra {
 			int[] dim = ast.arg1().isMatrix();
 			if (dim != null) {
 				// TODO
-//				IAST matrix = (IAST) ast.arg1();
-//				IExpr result = engine.evaluate(F.QRDecomposition(F.ConjugateTranspose(matrix)));
-//				if (result.isAST2()) {
-//					return ((IAST) result).arg1();
-//				}
+				// IAST matrix = (IAST) ast.arg1();
+				// IExpr result = engine.evaluate(F.QRDecomposition(F.ConjugateTranspose(matrix)));
+				// if (result.isAST2()) {
+				// return ((IAST) result).arg1();
+				// }
 			}
 			return F.NIL;
 		}

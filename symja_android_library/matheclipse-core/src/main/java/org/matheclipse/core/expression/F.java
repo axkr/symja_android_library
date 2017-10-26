@@ -9,7 +9,9 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 
 import javax.annotation.Nonnull;
 
@@ -5138,7 +5140,7 @@ public class F {
 	public static IAST ProductLog(final IExpr a0, final IExpr a1) {
 		return binaryAST2(ProductLog, a0, a1);
 	}
-	
+
 	public static IAST PseudoInverse(final IExpr a0) {
 		return unaryAST1(PseudoInverse, a0);
 	}
@@ -5181,11 +5183,11 @@ public class F {
 	public static IFraction QQ(final long numerator, final long denominator) {
 		return AbstractFractionSym.valueOf(numerator, denominator);
 	}
-	
+
 	public static IAST QRDecomposition(final IExpr a0) {
 		return unaryAST1(QRDecomposition, a0);
 	}
-	
+
 	public final static IAST quaternary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2,
 			final IExpr a3) {
 		return new AST(new IExpr[] { head, a0, a1, a2, a3 });
@@ -5907,4 +5909,43 @@ public class F {
 		return NIL;
 	}
 
+	/**
+	 * Generate a <code>n x m</code> matrix.
+	 * 
+	 * @param biFunction
+	 * @param n
+	 *            the number of rows of the matrix.
+	 * @param m
+	 *            the number of elements in one row
+	 * @return
+	 */
+	public static IAST matrix(BiFunction<Integer, Integer, ? extends IExpr> biFunction, int n, int m) {
+		IAST matrix = F.ListAlloc(n);
+		for (int i = 0; i < n; i++) {
+			IAST row = F.ListAlloc(m);
+			for (int j = 0; j < m; j++) {
+				row.append(biFunction.apply(i, j));
+			}
+			matrix.append(row);
+		}
+		matrix.addEvalFlags(IAST.IS_MATRIX);
+		return matrix;
+	}
+
+	/**
+	 * Generate a vector with <code>n</code> elements.
+	 * 
+	 * @param iFunction
+	 * @param n
+	 *            the number of elements of the vector.
+	 * @return
+	 */
+	public static IAST vector(IntFunction<? extends IExpr> iFunction, int n) {
+		IAST matrix = F.ListAlloc(n);
+		for (int i = 0; i < n; i++) {
+			matrix.append(iFunction.apply(i));
+		}
+		matrix.addEvalFlags(IAST.IS_VECTOR);
+		return matrix;
+	}
 }
