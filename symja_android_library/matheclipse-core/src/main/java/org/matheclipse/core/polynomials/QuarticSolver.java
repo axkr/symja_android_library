@@ -34,15 +34,11 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Solve polynomial equations up to fourth degree (
- * <code>Solve(a*x^4+b*x^3+c*x^2+d*x+e==0,x)</code>).
+ * Solve polynomial equations up to fourth degree ( <code>Solve(a*x^4+b*x^3+c*x^2+d*x+e==0,x)</code>).
  * 
- * See <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Wikipedia -
- * Quadratic equation</a> See <a href=
- * "http://en.wikipedia.org/wiki/Cubic_function#General_formula_of_roots">
- * Wikipedia - Cubic function</a> See
- * <a href="http://en.wikipedia.org/wiki/Quartic_equation">Wikipedia - Quartic
- * equation</a>
+ * See <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Wikipedia - Quadratic equation</a> See
+ * <a href= "http://en.wikipedia.org/wiki/Cubic_function#General_formula_of_roots"> Wikipedia - Cubic function</a> See
+ * <a href="http://en.wikipedia.org/wiki/Quartic_equation">Wikipedia - Quartic equation</a>
  * 
  * 
  * <br />
@@ -144,8 +140,7 @@ public class QuarticSolver {
 
 	/**
 	 * <code>Solve(a*x^4+b*x^3+c*x^2+d*x+e==0,x)</code>. See
-	 * <a href="http://en.wikipedia.org/wiki/Quartic_equation">Wikipedia - Quartic
-	 * equation</a>
+	 * <a href="http://en.wikipedia.org/wiki/Quartic_equation">Wikipedia - Quartic equation</a>
 	 * 
 	 * @param e
 	 * @param a
@@ -340,8 +335,7 @@ public class QuarticSolver {
 
 	/**
 	 * <code>Solve(a*x^4+b*x^3+c*x^2+d*x+e==0,x)</code>. See
-	 * <a href="http://en.wikipedia.org/wiki/Quartic_equation">Wikipedia - Quartic
-	 * equation</a>
+	 * <a href="http://en.wikipedia.org/wiki/Quartic_equation">Wikipedia - Quartic equation</a>
 	 * 
 	 * @param e
 	 * @param a
@@ -391,9 +385,8 @@ public class QuarticSolver {
 	}
 
 	/**
-	 * <code>Solve(a*x^3+b*x^2+c*x+d==0,x)</code>. See <a href=
-	 * "http://en.wikipedia.org/wiki/Cubic_function#General_formula_of_roots">
-	 * Wikipedia - Cubic function</a>
+	 * <code>Solve(a*x^3+b*x^2+c*x+d==0,x)</code>. See
+	 * <a href= "http://en.wikipedia.org/wiki/Cubic_function#General_formula_of_roots"> Wikipedia - Cubic function</a>
 	 * 
 	 * @param a
 	 * @param b
@@ -415,9 +408,9 @@ public class QuarticSolver {
 				result.append(additionalSulution);
 			}
 			// 18*a*b*c*d-4*b^3*d+b^2*c^2-4*a*c^3-27*a^2*d^2
-			IExpr discriminant = F.eval(
-					Plus(Times(integer(18L), a, b, c, d), Times(CN4, Power(b, C3), d), Times(Power(b, C2), Power(c, C2)),
-							Times(CN4, a, Power(c, C3)), Times(integer(-27L), Power(a, C2), Power(d, C2))));
+			IExpr discriminant = F.eval(Plus(Times(integer(18L), a, b, c, d), Times(CN4, Power(b, C3), d),
+					Times(Power(b, C2), Power(c, C2)), Times(CN4, a, Power(c, C3)),
+					Times(integer(-27L), Power(a, C2), Power(d, C2))));
 			// b^2 - 3*a*c
 			IExpr delta0 = F.eval(Plus(Power(b, C2), Times(CN1, C3, a, c)));
 			// (-2)*b^3 + 9*a*b*c - 27*a^2*d
@@ -500,8 +493,7 @@ public class QuarticSolver {
 	}
 
 	/**
-	 * <code>Solve(a*x^2+b*x+c==0,x)</code>. See
-	 * <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Wikipedia -
+	 * <code>Solve(a*x^2+b*x+c==0,x)</code>. See <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Wikipedia -
 	 * Quadratic equation</a>
 	 * 
 	 * @param a
@@ -530,7 +522,10 @@ public class QuarticSolver {
 			} else {
 				IExpr discriminantSqrt;
 				if (b.isZero()) {
-					IExpr temp = CN4.times(a).times(c);
+					// github issue #2
+					// to avoid introducing Sqrt's of negative numbers,
+					// split negation of expression a multiplication with factor 4
+					IExpr temp = a.times(c).negate().times(C4);
 					if (temp.isPower()) {
 						discriminantSqrt = F.Power(temp.getAt(1), F.Times(C1D2, temp.getAt(2)));
 					} else if (temp.isTimes()) {
@@ -600,10 +595,8 @@ public class QuarticSolver {
 	}
 
 	/**
-	 * Solve the special case of a "Quasi-symmetric equations"
-	 * <code>Solve(a*x^4+b*x^3+c*x^2+b*x+a==0,x)</code>. See
-	 * <a href="http://en.wikipedia.org/wiki/Quartic_equation">Wikipedia - Quartic
-	 * equation</a>. See Bronstein 1.6.2.4
+	 * Solve the special case of a "Quasi-symmetric equations" <code>Solve(a*x^4+b*x^3+c*x^2+b*x+a==0,x)</code>. See
+	 * <a href="http://en.wikipedia.org/wiki/Quartic_equation">Wikipedia - Quartic equation</a>. See Bronstein 1.6.2.4
 	 * 
 	 * @param a
 	 * @param c

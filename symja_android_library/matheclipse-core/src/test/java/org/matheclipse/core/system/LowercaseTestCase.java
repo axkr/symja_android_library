@@ -4621,7 +4621,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("SetAttributes(f, Flat)", "");
 		check("f(a, b, c) /. f(a, c) -> d", "f(b,d)");
 	}
-
+	
+//	public void testOrthogonalize() {
+//		check("Orthogonalize({{1, 0, 1}, {1, 1, 1}})", "");
+//	}
+	
 	public void testOuter() {
 		check("Outer(f, {a, b}, {x, y, z})", "{{f(a,x),f(a,y),f(a,z)},{f(b,x),f(b,y),f(b,z)}}");
 		check("Outer(Times, {1, 2, 3, 4}, {a, b, c})", "{{a,b,c},{2*a,2*b,2*c},{3*a,3*b,3*c},{4*a,4*b,4*c}}");
@@ -6275,6 +6279,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		// gh issue #2
+		check("Solve(x^2+y^2==5,x)", "{{x->-Sqrt(5-y^2)},{x->Sqrt(5-y^2)}}");
+		
 		// check("x=20.796855124168776", "20.79686");
 		// check("Clear(x);Solve(x==(-1.0000000000000002)*Sqrt(y^2.0),y)",
 		// "{{y->1.0*Sqrt(x^2.0)}}");
