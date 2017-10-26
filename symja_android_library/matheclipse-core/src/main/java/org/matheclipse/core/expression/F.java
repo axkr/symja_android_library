@@ -1068,6 +1068,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ordering" : "Ordering");
 	public final static IBuiltInSymbol OrderedQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "orderedq" : "OrderedQ");
+	public final static IBuiltInSymbol Orthogonalize = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "orthogonalize" : "Orthogonalize");
 	public final static IBuiltInSymbol Out = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "out" : "Out");
 	public final static IBuiltInSymbol Outer = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "outer" : "Outer");
 	public final static IBuiltInSymbol PadLeft = initFinalSymbol(
@@ -5179,7 +5181,11 @@ public class F {
 	public static IFraction QQ(final long numerator, final long denominator) {
 		return AbstractFractionSym.valueOf(numerator, denominator);
 	}
-
+	
+	public static IAST QRDecomposition(final IExpr a0) {
+		return unaryAST1(QRDecomposition, a0);
+	}
+	
 	public final static IAST quaternary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2,
 			final IExpr a3) {
 		return new AST(new IExpr[] { head, a0, a1, a2, a3 });

@@ -209,6 +209,7 @@ public class TensorFunctions {
 		@Override
 		public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
 			if (o0.isList() && o1.isList()) {
+				// TODO
 				// IAST tensor1 = (IAST) o0;
 				// IAST tensor2 = (IAST) o0;
 				// return tensor1.mapList(tensor2::times, 1);

@@ -70,7 +70,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.parser.client.math.MathException;
 
 public final class LinearAlgebra {
 
@@ -108,6 +107,7 @@ public final class LinearAlgebra {
 		F.Norm.setEvaluator(new Norm());
 		F.Normalize.setEvaluator(new Normalize());
 		F.NullSpace.setEvaluator(new NullSpace());
+		F.Orthogonalize.setEvaluator(new Orthogonalize());
 		F.PseudoInverse.setEvaluator(PseudoInverse.CONST);
 		F.Projection.setEvaluator(new Projection());
 		F.QRDecomposition.setEvaluator(new QRDecomposition());
@@ -2587,6 +2587,29 @@ public final class LinearAlgebra {
 				}
 
 				return Convert.vector2List(v.mapMultiply(u.dotProduct(vConjugate).divide(v.dotProduct(vConjugate))));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private static class Orthogonalize extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+			int[] dim = ast.arg1().isMatrix();
+			if (dim != null) {
+				// TODO
+//				IAST matrix = (IAST) ast.arg1();
+//				IExpr result = engine.evaluate(F.QRDecomposition(F.ConjugateTranspose(matrix)));
+//				if (result.isAST2()) {
+//					return ((IAST) result).arg1();
+//				}
 			}
 			return F.NIL;
 		}
