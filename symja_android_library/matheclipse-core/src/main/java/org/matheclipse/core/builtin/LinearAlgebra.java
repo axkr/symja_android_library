@@ -72,7 +72,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public final class LinearAlgebra {
-
+	
 	static {
 		F.ArrayDepth.setEvaluator(new ArrayDepth());
 		F.BrayCurtisDistance.setEvaluator(new BrayCurtisDistance());
@@ -278,24 +278,6 @@ public final class LinearAlgebra {
 	 */
 	private final static class CharacteristicPolynomial extends AbstractFunctionEvaluator {
 
-		public CharacteristicPolynomial() {
-			super();
-		}
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-			int[] dimensions = ast.arg1().isMatrix();
-			if (dimensions != null && dimensions[0] == dimensions[1]) {
-				// a matrix with square dimensions
-				IAST matrix = (IAST) ast.arg1();
-				IExpr variable = ast.arg2();
-				return generateCharacteristicPolynomial(dimensions[0], matrix, variable);
-			}
-
-			return F.NIL;
-		}
-
 		/**
 		 * Generate the characteristic polynomial of a square matrix.
 		 * 
@@ -310,6 +292,20 @@ public final class LinearAlgebra {
 		public static IAST generateCharacteristicPolynomial(int dim, IAST matrix, IExpr variable) {
 			final IExpr[] valuesForIdentityMatrix = { F.C0, variable };
 			return F.Det(F.Subtract(matrix, diagonalMatrix(valuesForIdentityMatrix, dim)));
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			int[] dimensions = ast.arg1().isMatrix();
+			if (dimensions != null && dimensions[0] == dimensions[1]) {
+				// a matrix with square dimensions
+				IAST matrix = (IAST) ast.arg1();
+				IExpr variable = ast.arg2();
+				return generateCharacteristicPolynomial(dimensions[0], matrix, variable);
+			}
+
+			return F.NIL;
 		}
 
 	}
@@ -425,10 +421,6 @@ public final class LinearAlgebra {
 	 */
 	private final static class ConjugateTranspose extends Transpose {
 
-		public ConjugateTranspose() {
-
-		}
-
 		@Override
 		protected IExpr transform(final IExpr expr) {
 			return expr.conjugate();
@@ -520,9 +512,6 @@ public final class LinearAlgebra {
 	 */
 	private final static class Cross extends AbstractFunctionEvaluator {
 
-		public Cross() {
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
@@ -573,9 +562,6 @@ public final class LinearAlgebra {
 	 * </pre>
 	 */
 	private static class DesignMatrix extends AbstractEvaluator {
-
-		public DesignMatrix() {
-		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -644,10 +630,6 @@ public final class LinearAlgebra {
 	 * </pre>
 	 */
 	private static class Det extends AbstractMatrix1Expr {
-
-		public Det() {
-			super();
-		}
 
 		@Override
 		public IExpr matrixEval(final FieldMatrix<IExpr> matrix) {
@@ -803,6 +785,18 @@ public final class LinearAlgebra {
 	 */
 	private static class Dimensions extends AbstractFunctionEvaluator {
 
+		public static IAST dimensions(final IAST ast, int maximumLevel) {
+			IAST list = (IAST) ast.arg1();
+			IExpr header = list.head();
+			ArrayList<Integer> dims = getDimensions(list, header, maximumLevel - 1);
+			int dimsSize = dims.size();
+			IAST res = F.ListAlloc(dimsSize);
+			for (int i = 0; i < dimsSize; i++) {
+				res.append(F.integer(dims.get(i).intValue()));
+			}
+			return res;
+		}
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
@@ -820,18 +814,6 @@ public final class LinearAlgebra {
 
 			return F.List();
 
-		}
-
-		public static IAST dimensions(final IAST ast, int maximumLevel) {
-			IAST list = (IAST) ast.arg1();
-			IExpr header = list.head();
-			ArrayList<Integer> dims = getDimensions(list, header, maximumLevel - 1);
-			int dimsSize = dims.size();
-			IAST res = F.ListAlloc(dimsSize);
-			for (int i = 0; i < dimsSize; i++) {
-				res.append(F.integer(dims.get(i).intValue()));
-			}
-			return res;
 		}
 
 		@Override
@@ -1059,10 +1041,6 @@ public final class LinearAlgebra {
 	 */
 	private static class Eigenvalues extends AbstractMatrix1Expr {
 
-		public Eigenvalues() {
-			super();
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			FieldMatrix<IExpr> matrix;
@@ -1109,6 +1087,11 @@ public final class LinearAlgebra {
 		}
 
 		@Override
+		public IExpr matrixEval(FieldMatrix<IExpr> matrix) {
+			return F.NIL;
+		}
+
+		@Override
 		public IAST realMatrixEval(RealMatrix matrix) {
 			try {
 
@@ -1128,11 +1111,6 @@ public final class LinearAlgebra {
 			} catch (Exception ime) {
 				throw new WrappedException(ime);
 			}
-		}
-
-		@Override
-		public IExpr matrixEval(FieldMatrix<IExpr> matrix) {
-			return F.NIL;
 		}
 	}
 
@@ -1227,6 +1205,11 @@ public final class LinearAlgebra {
 		}
 
 		@Override
+		public IExpr matrixEval(FieldMatrix<IExpr> matrix) {
+			return F.NIL;
+		}
+
+		@Override
 		public IAST realMatrixEval(RealMatrix matrix) {
 			try {
 				EigenDecomposition ed = new EigenDecomposition(matrix);
@@ -1240,11 +1223,6 @@ public final class LinearAlgebra {
 			} catch (Exception ime) {
 				throw new WrappedException(ime);
 			}
-		}
-
-		@Override
-		public IExpr matrixEval(FieldMatrix<IExpr> matrix) {
-			return F.NIL;
 		}
 	}
 
@@ -1481,9 +1459,6 @@ public final class LinearAlgebra {
 			}
 		}
 
-		public Inner() {
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 4, 5);
@@ -1549,11 +1524,6 @@ public final class LinearAlgebra {
 	 */
 	private final static class Inverse extends AbstractMatrix1Matrix {
 
-		@Override
-		public FieldMatrix<IExpr> matrixEval(FieldMatrix<IExpr> matrix) {
-			return inverseMatrix(matrix);
-		}
-
 		public static FieldMatrix<IExpr> inverseMatrix(FieldMatrix<IExpr> matrix) {
 			final FieldLUDecomposition<IExpr> lu = new FieldLUDecomposition<IExpr>(matrix);
 			FieldDecompositionSolver<IExpr> solver = lu.getSolver();
@@ -1562,6 +1532,11 @@ public final class LinearAlgebra {
 				return null;
 			}
 			return solver.getInverse();
+		}
+
+		@Override
+		public FieldMatrix<IExpr> matrixEval(FieldMatrix<IExpr> matrix) {
+			return inverseMatrix(matrix);
 		}
 
 		@Override
@@ -1594,8 +1569,6 @@ public final class LinearAlgebra {
 	 * </ul>
 	 */
 	private static class JacobiMatrix extends AbstractFunctionEvaluator {
-		public JacobiMatrix() {
-		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2416,68 +2389,27 @@ public final class LinearAlgebra {
 
 	}
 
-	/**
-	 * <pre>
-	 * PseudoInverse(matrix)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * computes the Moore-Penrose pseudoinverse of the <code>matrix</code>. If <code>matrix</code> is invertible, the
-	 * pseudoinverse equals the inverse.
-	 * </p>
-	 * </blockquote>
-	 * <p>
-	 * See:
-	 * </p>
-	 * <ul>
-	 * <li><a href= "https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_pseudoinverse">Wikipedia: Moore-Penrose
-	 * pseudoinverse</a></li>
-	 * </ul>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt; PseudoInverse({{1, 2}, {2, 3}, {3, 4}})
-	 * {{1.0000000000000002,2.000000000000001},
-	 *  {1.9999999999999976,2.999999999999996},
-	 *  {3.000000000000001,4.0}}
-	 * &gt;&gt; PseudoInverse({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}})
-	 * {{-2.999999999999998,1.9999999999999967,4.440892098500626E-16},
-	 *  {1.999999999999999,-0.9999999999999982,-2.7755575615628914E-16},
-	 *  {0.9999999999999999,-1.9999999999999991,1.0}}
-	 * &gt;&gt; PseudoInverse({{1.0, 2.5}, {2.5, 1.0}}) 
-	 * {{-0.19047619047619038,0.47619047619047616},
-	 *  {0.47619047619047616,-0.1904761904761904}}
-	 * </pre>
-	 * <p>
-	 * Argument {1, {2}} at position 1 is not a non-empty rectangular matrix.
-	 * </p>
-	 * 
-	 * <pre>
-	 * &gt;&gt; PseudoInverse({1, {2}})
-	 * PseudoInverse({1, {2}})
-	 * </pre>
-	 */
-	private final static class PseudoInverse extends AbstractMatrix1Matrix {
-		protected final static PseudoInverse CONST = new PseudoInverse();
+	private static class Orthogonalize extends AbstractEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			return numericEval(ast, engine);
+			Validate.checkRange(ast, 2, 3);
+			int[] dim = ast.arg1().isMatrix();
+			if (dim != null) {
+				// TODO
+				// IAST matrix = (IAST) ast.arg1();
+				// IExpr result = engine.evaluate(F.QRDecomposition(F.ConjugateTranspose(matrix)));
+				// if (result.isAST2()) {
+				// return ((IAST) result).arg1();
+				// }
+			}
+			return F.NIL;
 		}
 
 		@Override
-		public FieldMatrix<IExpr> matrixEval(FieldMatrix<IExpr> matrix) {
-			return null;
+		public void setUp(final ISymbol newSymbol) {
 		}
 
-		@Override
-		public RealMatrix realMatrixEval(RealMatrix matrix) {
-			final org.hipparchus.linear.SingularValueDecomposition lu = new org.hipparchus.linear.SingularValueDecomposition(
-					matrix);
-			DecompositionSolver solver = lu.getSolver();
-			return solver.getInverse();
-		}
 	}
 
 	/**
@@ -2564,27 +2496,68 @@ public final class LinearAlgebra {
 
 	}
 
-	private static class Orthogonalize extends AbstractEvaluator {
+	/**
+	 * <pre>
+	 * PseudoInverse(matrix)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * computes the Moore-Penrose pseudoinverse of the <code>matrix</code>. If <code>matrix</code> is invertible, the
+	 * pseudoinverse equals the inverse.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href= "https://en.wikipedia.org/wiki/Moore%E2%80%93Penrose_pseudoinverse">Wikipedia: Moore-Penrose
+	 * pseudoinverse</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PseudoInverse({{1, 2}, {2, 3}, {3, 4}})
+	 * {{1.0000000000000002,2.000000000000001},
+	 *  {1.9999999999999976,2.999999999999996},
+	 *  {3.000000000000001,4.0}}
+	 * &gt;&gt; PseudoInverse({{1, 2, 0}, {2, 3, 0}, {3, 4, 1}})
+	 * {{-2.999999999999998,1.9999999999999967,4.440892098500626E-16},
+	 *  {1.999999999999999,-0.9999999999999982,-2.7755575615628914E-16},
+	 *  {0.9999999999999999,-1.9999999999999991,1.0}}
+	 * &gt;&gt; PseudoInverse({{1.0, 2.5}, {2.5, 1.0}}) 
+	 * {{-0.19047619047619038,0.47619047619047616},
+	 *  {0.47619047619047616,-0.1904761904761904}}
+	 * </pre>
+	 * <p>
+	 * Argument {1, {2}} at position 1 is not a non-empty rectangular matrix.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PseudoInverse({1, {2}})
+	 * PseudoInverse({1, {2}})
+	 * </pre>
+	 */
+	private final static class PseudoInverse extends AbstractMatrix1Matrix {
+		protected final static PseudoInverse CONST = new PseudoInverse();
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-			int[] dim = ast.arg1().isMatrix();
-			if (dim != null) {
-				// TODO
-				// IAST matrix = (IAST) ast.arg1();
-				// IExpr result = engine.evaluate(F.QRDecomposition(F.ConjugateTranspose(matrix)));
-				// if (result.isAST2()) {
-				// return ((IAST) result).arg1();
-				// }
-			}
-			return F.NIL;
+			return numericEval(ast, engine);
 		}
 
 		@Override
-		public void setUp(final ISymbol newSymbol) {
+		public FieldMatrix<IExpr> matrixEval(FieldMatrix<IExpr> matrix) {
+			return null;
 		}
 
+		@Override
+		public RealMatrix realMatrixEval(RealMatrix matrix) {
+			final org.hipparchus.linear.SingularValueDecomposition lu = new org.hipparchus.linear.SingularValueDecomposition(
+					matrix);
+			DecompositionSolver solver = lu.getSolver();
+			return solver.getInverse();
+		}
 	}
 
 	/**
@@ -2645,6 +2618,11 @@ public final class LinearAlgebra {
 		}
 
 		@Override
+		public IExpr matrixEval(FieldMatrix<IExpr> matrix) {
+			return F.NIL;
+		}
+
+		@Override
 		public IAST realMatrixEval(RealMatrix matrix) {
 			try {
 				org.hipparchus.linear.QRDecomposition ed = new org.hipparchus.linear.QRDecomposition(matrix);
@@ -2652,11 +2630,6 @@ public final class LinearAlgebra {
 			} catch (Exception ime) {
 				throw new WrappedException(ime);
 			}
-		}
-
-		@Override
-		public IExpr matrixEval(FieldMatrix<IExpr> matrix) {
-			return F.NIL;
 		}
 	}
 
@@ -3052,6 +3025,10 @@ public final class LinearAlgebra {
 			return F.NIL;
 		}
 
+		protected IExpr transform(final IExpr expr) {
+			return expr;
+		}
+
 		/**
 		 * Transpose the given matrix.
 		 * 
@@ -3080,10 +3057,6 @@ public final class LinearAlgebra {
 			}
 			transposedMatrix.addEvalFlags(IAST.IS_MATRIX);
 			return transposedMatrix;
-		}
-
-		protected IExpr transform(final IExpr expr) {
-			return expr;
 		}
 
 	}
@@ -3258,6 +3231,8 @@ public final class LinearAlgebra {
 
 	}
 
+	private final static LinearAlgebra CONST = new LinearAlgebra();
+
 	/**
 	 * <p>
 	 * Use cramer's rule to solve linear equations represented by a <code>2 x 3</code> augmented matrix which represents
@@ -3430,6 +3405,10 @@ public final class LinearAlgebra {
 		return dims;
 	}
 
+	public static LinearAlgebra initialize() {
+		return CONST;
+	}
+
 	/**
 	 * Return the solution of the given (augmented-)matrix interpreted as a system of linear equations.
 	 * 
@@ -3546,12 +3525,6 @@ public final class LinearAlgebra {
 		}
 		resultList.append(list);
 		return resultList;
-	}
-
-	private final static LinearAlgebra CONST = new LinearAlgebra();
-
-	public static LinearAlgebra initialize() {
-		return CONST;
 	}
 
 	private LinearAlgebra() {
