@@ -513,6 +513,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [PrimitiveRootList](functions/PrimitiveRootList.md)
 * [Product](functions/Product.md)
 * [ProductLog](functions/ProductLog.md)
+* [Projection](functions/Projection.md)
 * [PseudoInverse](functions/PseudoInverse.md)
 * [QRDecomposition](functions/QRDecomposition.md)
 * [Quotient](functions/Quotient.md)
