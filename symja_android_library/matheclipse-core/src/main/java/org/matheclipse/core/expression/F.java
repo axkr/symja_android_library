@@ -434,6 +434,8 @@ public class F {
 	public final static IBuiltInSymbol FoldList = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "foldlist" : "FoldList");
 	public final static IBuiltInSymbol For = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "for" : "For");
+	public final static IBuiltInSymbol FourierMatrix = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fouriermatrix" : "FourierMatrix");
 	public final static IBuiltInSymbol FreeQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "freeq" : "FreeQ");
 	public final static IBuiltInSymbol FullForm = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fullform" : "FullForm" );
@@ -473,6 +475,8 @@ public class F {
 	public final static IBuiltInSymbol LevelQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "levelq" : "LevelQ");
 	public final static IBuiltInSymbol ListQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "listq" : "ListQ");
+	public final static IBuiltInSymbol LowerTriangularize = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "lowertriangularize" : "LowerTriangularize");
 	public final static IBuiltInSymbol MachineNumberQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "machinenumberq" : "MachineNumberQ");
 	public final static IBuiltInSymbol MatchQ = initFinalSymbol(
@@ -596,6 +600,8 @@ public class F {
 	public final static IBuiltInSymbol Unset = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unset" : "Unset");
 	public final static IBuiltInSymbol UpperCaseQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "uppercaseq" : "UpperCaseQ");
+	public final static IBuiltInSymbol UpperTriangularize = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "uppertriangularize" : "UpperTriangularize");
 	public final static IBuiltInSymbol UpSet = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "upset" : "UpSet");
 	public final static IBuiltInSymbol UpSetDelayed = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "upsetdelayed" : "UpSetDelayed");
@@ -1275,6 +1281,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "timesby" : "TimesBy");
 	public final static IBuiltInSymbol ToCharacterCode = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tocharactercode" : "ToCharacterCode");
+	public final static IBuiltInSymbol ToeplitzMatrix = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "toeplitzmatrix" : "ToeplitzMatrix");
 	public final static IBuiltInSymbol Together = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "together" : "Together");
 	public final static IBuiltInSymbol ToPolarCoordinates = initFinalSymbol(

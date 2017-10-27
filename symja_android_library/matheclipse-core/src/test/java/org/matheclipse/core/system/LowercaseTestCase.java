@@ -2452,6 +2452,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("For($t = 1; $k = 1, $k <= 5, $k++, $t *= $k; Print($t); If($k < 2, Continue()); $t += 2)", "");
 	}
 
+	public void testFourierMatrix() {
+		check("FourierMatrix(4)", //
+				"{{1/2,1/2,1/2,1/2},\n" + 
+				" {1/2,I*1/2,-1/2,-I*1/2},\n" + 
+				" {1/2,-1/2,1/2,-1/2},\n" + 
+				" {1/2,-I*1/2,-1/2,I*1/2}}");
+	}
+	
 	public void testFractionalPart() {
 
 		check("FractionalPart(-9/4)", "-1/4");
@@ -3568,6 +3576,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LogisticSigmoid(I*Pi)", "LogisticSigmoid(I*Pi)");
 		checkNumeric("LogisticSigmoid(0.5 + 2.3 I)", "1.0647505893884985+I*0.8081774171575826");
 		checkNumeric("LogisticSigmoid({-0.2, 0.1, 0.3})", "{0.45016600268752216,0.52497918747894,0.574442516811659}");
+	}
+
+	public void testLowerTriangularize() {
+		check("LowerTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}}, -1)", //
+				"{{0,0,0,0},\n" + 
+				" {d,0,0,0},\n" + 
+				" {h,i,0,0},\n" + 
+				" {l,m,n,0}}");
+		check("LowerTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}})", //
+				"{{a,0,0,0},\n" + 
+				" {d,e,0,0},\n" + 
+				" {h,i,j,0}}");
+		
+		check("LowerTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}})", //
+				"{{a,0,0,0},\n" + 
+				" {d,e,0,0},\n" + 
+				" {h,i,j,0},\n" + 
+				" {l,m,n,o}}");
+		
 	}
 
 	public void testLucasL() {
@@ -7167,6 +7194,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("a", "20");
 	}
 
+	public void testToeplitzMatrix() {
+		check("ToeplitzMatrix(3)", //
+				"{{1,2,3},\n" + 
+				" {2,1,2},\n" + 
+				" {3,2,1}}");
+		check("ToeplitzMatrix({a,b,c,d})", //
+				"{{a,b,c,d},\n" + " {b,a,b,c},\n" + " {c,b,a,b},\n" + " {d,c,b,a}}");
+		check("ToeplitzMatrix(4)", //
+				"{{1,2,3,4},\n" + " {2,1,2,3},\n" + " {3,2,1,2},\n" + " {4,3,2,1}}");
+	}
+
 	public void testTogether() {
 		check("Together(1/(2*Sqrt(3))+Sqrt(3)/2)", "2/Sqrt(3)");
 		check("Together(1/2-Sqrt(5)/2+2/(1+Sqrt(5)))", "0");
@@ -7456,6 +7494,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("$f(x_):=x^2;$f(x_)=.;$f(3)", "$f(3)");
 	}
 
+
+	public void testUpperTriangularize() {
+		check("UpperTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}}, 1)", //
+				"{{0,b,c,d},\n" + 
+				" {0,0,f,g},\n" + 
+				" {0,0,0,k},\n" + 
+				" {0,0,0,0}}");
+		check("UpperTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}})", //
+				"{{a,b,c,d},\n" + 
+				" {0,e,f,g},\n" + 
+				" {0,0,j,k}}");
+		check("UpperTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}})", //
+				"{{a,b,c,d},\n" + 
+				" {0,e,f,g},\n" + 
+				" {0,0,j,k},\n" + 
+				" {0,0,0,o}}");
+		
+	}
+	
 	public void testUpSet() {
 		check("$f($abc(0))^=100;$f($abc(0))", "100");
 	}

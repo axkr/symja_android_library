@@ -72,7 +72,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public final class LinearAlgebra {
-	
+
 	static {
 		F.ArrayDepth.setEvaluator(new ArrayDepth());
 		F.BrayCurtisDistance.setEvaluator(new BrayCurtisDistance());
@@ -92,6 +92,7 @@ public final class LinearAlgebra {
 		F.Eigenvalues.setEvaluator(new Eigenvalues());
 		F.Eigenvectors.setEvaluator(new Eigenvectors());
 		F.EuclideanDistance.setEvaluator(new EuclideanDistance());
+		F.FourierMatrix.setEvaluator(new FourierMatrix());
 		F.HilbertMatrix.setEvaluator(new HilbertMatrix());
 		F.IdentityMatrix.setEvaluator(new IdentityMatrix());
 		F.Inner.setEvaluator(new Inner());
@@ -99,6 +100,7 @@ public final class LinearAlgebra {
 		F.JacobiMatrix.setEvaluator(new JacobiMatrix());
 		F.LeastSquares.setEvaluator(new LeastSquares());
 		F.LinearSolve.setEvaluator(new LinearSolve());
+		F.LowerTriangularize.setEvaluator(new LowerTriangularize());
 		F.LUDecomposition.setEvaluator(new LUDecomposition());
 		F.ManhattanDistance.setEvaluator(new ManhattanDistance());
 		F.MatrixMinimalPolynomial.setEvaluator(new MatrixMinimalPolynomial());
@@ -114,8 +116,10 @@ public final class LinearAlgebra {
 		F.RowReduce.setEvaluator(new RowReduce());
 		F.SingularValueDecomposition.setEvaluator(new SingularValueDecomposition());
 		F.SquaredEuclideanDistance.setEvaluator(new SquaredEuclideanDistance());
+		F.ToeplitzMatrix.setEvaluator(new ToeplitzMatrix());
 		F.Tr.setEvaluator(new Tr());
 		F.Transpose.setEvaluator(new Transpose());
+		F.UpperTriangularize.setEvaluator(new UpperTriangularize());
 		F.UnitVector.setEvaluator(new UnitVector());
 		F.VandermondeMatrix.setEvaluator(new VandermondeMatrix());
 		F.VectorAngle.setEvaluator(new VectorAngle());
@@ -1280,6 +1284,34 @@ public final class LinearAlgebra {
 
 	}
 
+	private static class FourierMatrix extends AbstractFunctionEvaluator {
+
+		/**
+		 * Complex number on unit circle with given argument.
+		 * 
+		 * @param arg
+		 * @return complex number on unit circle with given argument
+		 */
+		private static IExpr unit(IExpr arg) {
+			return F.Plus(F.Cos(arg), F.Times(F.CI, F.Sin(arg)));
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			if (ast.arg1().isInteger()) {
+				int m = Validate.checkIntType(ast, 1);
+				int[] count = new int[1];
+				count[0] = 1;
+				IAST scalar = F.Sqrt(F.QQ(1, m));
+				return F.matrix((i, j) -> unit(F.QQ(2 * i * j, m).times(F.Pi)).times(scalar), m, m);
+			}
+			return F.NIL;
+		}
+
+	}
+
 	/**
 	 * <pre>
 	 * HilbertMatrix(n)
@@ -1745,6 +1777,25 @@ public final class LinearAlgebra {
 				}
 			}
 
+			return F.NIL;
+		}
+
+	}
+
+	private static class LowerTriangularize extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			int[] dim = ast.arg1().isMatrix();
+			if (dim != null) {
+				IAST matrix = (IAST) ast.arg1();
+				final int k = (ast.size() == 3 && ast.arg2().isInteger())
+						? Validate.checkIntType(ast, 2, Integer.MIN_VALUE)
+						: 0;
+				return F.matrix((i, j) -> i >= j - k ? matrix.getPart(i + 1, j + 1) : F.C0, dim[0], dim[1]);
+			}
 			return F.NIL;
 		}
 
@@ -2848,6 +2899,29 @@ public final class LinearAlgebra {
 
 	}
 
+	private static class ToeplitzMatrix extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			if (ast.arg1().isAST()) {
+				IAST vector = (IAST) ast.arg1();
+				int m = vector.size() - 1;
+				return F.matrix((i, j) -> i <= j ? vector.get(j - i + 1) : vector.get(i - j + 1), m, m);
+			}
+
+			if (ast.arg1().isInteger()) {
+				int m = Validate.checkIntType(ast, 1);
+				int[] count = new int[1];
+				count[0] = 1;
+				return F.matrix((i, j) -> i <= j ? F.ZZ(j - i + 1) : F.ZZ(i - j + 1), m, m);
+			}
+			return F.NIL;
+		}
+
+	}
+
 	/**
 	 * <pre>
 	 * Tr(matrix)
@@ -3124,6 +3198,27 @@ public final class LinearAlgebra {
 				if (k == 2) {
 					return F.List(F.C0, F.C1);
 				}
+			}
+			return F.NIL;
+		}
+
+	}
+
+	private static class UpperTriangularize extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			int[] dim = ast.arg1().isMatrix();
+			if (dim != null) {
+				IAST matrix = (IAST) ast.arg1();
+				final int k = (ast.size() == 3 && ast.arg2().isInteger())
+						? Validate.checkIntType(ast, 2, Integer.MIN_VALUE)
+						: 0;
+				int m = dim[0];
+				int n = dim[1];
+				return F.matrix((i, j) -> i <= j - k ? matrix.getPart(i + 1, j + 1) : F.C0, m, n);
 			}
 			return F.NIL;
 		}
