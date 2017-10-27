@@ -428,17 +428,19 @@ public class ComplexSym implements IComplex {
 
 	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-		return internalJavaString(symbolsAsFactoryMethod, depth, false);
+		return internalJavaString(symbolsAsFactoryMethod, depth, false, false);
 	}
 
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
+			boolean usePrefix) {
+		String prefix = usePrefix ? "F." : "";
 		if (fReal.isZero()) {
 			if (fImaginary.isOne()) {
-				return "CI";
+				return prefix + "CI";
 			}
 			if (fImaginary.isMinusOne()) {
-				return "CNI";
+				return prefix + "CNI";
 			}
 		}
 
@@ -446,12 +448,12 @@ public class ComplexSym implements IComplex {
 		int realDenominator = NumberUtil.toInt(fReal.toBigDenominator());
 		int imagNumerator = NumberUtil.toInt(fImaginary.toBigNumerator());
 		int imagDenominator = NumberUtil.toInt(fImaginary.toBigDenominator());
-		return "CC(" + realNumerator + "L," + realDenominator + "L," + imagNumerator + "L," + imagDenominator + "L)";
+		return prefix+"CC(" + realNumerator + "L," + realDenominator + "L," + imagNumerator + "L," + imagDenominator + "L)";
 	}
 
 	@Override
 	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-		return internalJavaString(symbolsAsFactoryMethod, depth, true);
+		return internalJavaString(symbolsAsFactoryMethod, depth, true, false);
 	}
 
 	@Override

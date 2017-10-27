@@ -201,14 +201,15 @@ public class PatternSequence implements IPatternSequence {
 	}
 
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix) {
 		if (symbolsAsFactoryMethod) {
+			String prefix = usePrefix ? "F." : "";
 			final StringBuilder buffer = new StringBuilder();
-			buffer.append("$ps(");
+			buffer.append(prefix+"$ps(");
 			if (fSymbol == null) {
 				buffer.append("(ISymbol)null");
 				if (fCondition != null) {
-					buffer.append("," + fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperators));
+					buffer.append("," + fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperators, false));
 				}
 				if (fDefault) {
 					if (fCondition == null) {
@@ -219,7 +220,7 @@ public class PatternSequence implements IPatternSequence {
 			} else {
 				buffer.append("\"" + fSymbol.toString() + "\"");
 				if (fCondition != null) {
-					buffer.append("," + fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperators));
+					buffer.append("," + fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperators, false));
 				}
 				if (fDefault) {
 					buffer.append(",true");

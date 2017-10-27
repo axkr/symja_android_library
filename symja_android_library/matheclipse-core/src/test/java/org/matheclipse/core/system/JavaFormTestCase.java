@@ -33,5 +33,19 @@ public class JavaFormTestCase extends AbstractTestCase {
 		result = util.evaluate(function);
 		assertEquals(result.internalFormString(true, -1), "oo");
 	}
+	
+	public void testJavaForm002() {
+		// don't distinguish between lower- and uppercase identifiers
+		Config.PARSER_USE_LOWERCASE_SYMBOLS = true;
+		EvalUtilities util = new EvalUtilities(false, true);
+
+		IAST function = Sinc(Times(CI, CInfinity));
+
+		IExpr result = PatternMatcher.evalLeftHandSide(function, EvalEngine.get());
+		assertEquals(result.internalJavaString(true, -1,false,true), "F.Sinc(F.DirectedInfinity(F.CI))");
+
+		result = util.evaluate(function);
+		assertEquals(result.internalJavaString(true, -1,false,true), "F.oo");
+	}
 
 }

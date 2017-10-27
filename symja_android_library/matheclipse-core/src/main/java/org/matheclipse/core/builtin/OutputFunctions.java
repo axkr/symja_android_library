@@ -184,9 +184,16 @@ public final class OutputFunctions {
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
+	 * <p>
+	 * JavaForm can add the <code>F.</code> prefix for class <code>org.matheclipse.core.expression.F</code> if you set
+	 * <code>prefix-&gt;True</code>:
+	 * </p>
 	 * 
 	 * <pre>
-	 * &gt;&gt;&gt; JavaForm[I/2*E^((-I)*x)-I/2*E^(I*x)]
+	 * &gt;&gt; JavaForm(D(sin(x)*cos(x),x), prefix-&gt;True)
+	 * "F.Plus(F.Sqr(F.Cos(F.x)),F.Negate(F.Sqr(F.Sin(F.x))))"
+	 * 
+	 * &gt;&gt; JavaForm(I/2*E^((-I)*x)-I/2*E^(I*x))
 	 * "Plus(Times(CC(0L,1L,1L,2L),Power(E,Times(CNI,x))),Times(CC(0L,1L,-1L,2L),Power(E,Times(CI,x))))"
 	 * </pre>
 	 * <p>
@@ -194,7 +201,7 @@ public final class OutputFunctions {
 	 * </p>
 	 * 
 	 * <pre>
-	 * &gt;&gt;&gt; JavaForm(D(sin(x)*cos(x),x))
+	 * &gt;&gt; JavaForm(D(sin(x)*cos(x),x))
 	 * "Plus(Sqr(Cos(x)),Negate(Sqr(Sin(x))))"
 	 * </pre>
 	 * <p>
@@ -202,43 +209,34 @@ public final class OutputFunctions {
 	 * </p>
 	 * 
 	 * <pre>
-	 * &gt;&gt;&gt; JavaForm(Hold(D(sin(x)*cos(x),x)))
+	 * &gt;&gt; JavaForm(Hold(D(sin(x)*cos(x),x)))
 	 * "D(Times(Sin(x),Cos(x)),x)"
+	 * 
+	 * &gt;&gt; JavaForm(Hold(D(sin(x)*cos(x),x)), prefix-&gt;True)
+	 * "F.D(F.Times(F.Sin(F.x),F.Cos(F.x)),F.x)"
 	 * </pre>
 	 */
 	private static class JavaForm extends AbstractCoreFunctionEvaluator {
 
-		/**
-		 * <p>
-		 * Return the internal Java form of this expression. The Java form is useful for generating Symja programming
-		 * expressions.
-		 * </p>
-		 * <p>
-		 * See the online Symja function reference:
-		 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/JavaForm">JavaForm</a>
-		 * </p>
-		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
 
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			boolean strictJava = false;
+			boolean usePrefix = false;
 			if (ast.isAST2()) {
 				IExpr arg2 = engine.evaluate(ast.arg2());
 				final Options options = new Options(ast.topHead(), arg2, engine);
 				strictJava = options.isOption("Strict");
+				usePrefix = options.isOption("Prefix");
 			}
-			String resultStr = javaForm(arg1, strictJava);
+			String resultStr = javaForm(arg1, strictJava, usePrefix);
 			return F.$str(resultStr);
 		}
 
-		public static String javaForm(IExpr arg1, boolean strictJava) {
-			// necessary for MathMLContentUtilities#toJava() method
-			// if (arg1.isAST()) {
-			// arg1 = PatternMatcher.evalLeftHandSide((IAST) arg1);
-			// }
-			return arg1.internalJavaString(strictJava, 0, false);
+		public static String javaForm(IExpr arg1, boolean strictJava, boolean usePrefix) {
+			return arg1.internalJavaString(strictJava, 0, false, usePrefix);
 		}
 
 	}

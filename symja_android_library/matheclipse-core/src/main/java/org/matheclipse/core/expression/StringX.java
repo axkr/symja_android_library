@@ -373,9 +373,10 @@ public class StringX implements IStringX {
 
 	/** {@inheritDoc} */
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix) {
 		final StringBuilder buffer = new StringBuilder();
-		buffer.append("$str(\"");
+		String prefix = usePrefix ? "F." : "";
+		buffer.append(prefix+"$str(\"");
 		buffer.append(fString);
 		buffer.append("\")");
 		return buffer.toString();

@@ -317,17 +317,19 @@ public class Num implements INum {
 
 	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-		return internalJavaString(symbolsAsFactoryMethod, depth, false);
+		return internalJavaString(symbolsAsFactoryMethod, depth, false, false);
 	}
 
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
-		return "num(" + fDouble + ")";
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
+			boolean usePrefix) {
+		String prefix = usePrefix ? "F." : "";
+		return prefix + "num(" + fDouble + ")";
 	}
 
 	@Override
 	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-		return internalJavaString(symbolsAsFactoryMethod, depth, true);
+		return internalJavaString(symbolsAsFactoryMethod, depth, true, false);
 	}
 
 	/**

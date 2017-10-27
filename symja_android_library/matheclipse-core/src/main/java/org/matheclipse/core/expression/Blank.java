@@ -286,11 +286,12 @@ public class Blank implements IPattern {
 	}
 
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix) {
+		String prefix = usePrefix ? "F." : "";
 		final StringBuilder buffer = new StringBuilder();
-		buffer.append("$b(");
+		buffer.append(prefix+"$b(");
 		if (fCondition != null) {
-			buffer.append(fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperators));
+			buffer.append(fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperators, false));
 		}
 		buffer.append(')');
 		return buffer.toString();

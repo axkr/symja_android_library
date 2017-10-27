@@ -3110,6 +3110,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testJavaForm() {
+		check("JavaForm(Hold(D(sin(x)*cos(x),x)), prefix->True)", //
+				"\"F.D(F.Times(F.Sin(F.x),F.Cos(F.x)),F.x)\"");
+		check("JavaForm(Hold(D(sin(x)*cos(x),x)))", //
+				"\"D(Times(Sin(x),Cos(x)),x)\"");
+		check("JavaForm(D(sin(x)*cos(x),x), prefix->True)", //
+				"\"F.Plus(F.Sqr(F.Cos(F.x)),F.Negate(F.Sqr(F.Sin(F.x))))\"");
+		check("JavaForm(D(sin(x)*cos(x),x))", //
+				"\"Plus(Sqr(Cos(x)),Negate(Sqr(Sin(x))))\"");
+		check("JavaForm(I/2*E^((-I)*x)-I/2*E^(I*x), Prefix->True)", //
+				"\"F.Plus(F.Times(F.CC(0L,1L,1L,2L),F.Power(F.E,F.Times(F.CNI,F.x))),F.Times(F.CC(0L,1L,-1L,2L),F.Power(F.E,F.Times(F.CI,F.x))))\"");
+		check("JavaForm(I/2*E^((-I)*x)-I/2*E^(I*x))", //
+				"\"Plus(Times(CC(0L,1L,1L,2L),Power(E,Times(CNI,x))),Times(CC(0L,1L,-1L,2L),Power(E,Times(CI,x))))\"");
+		check("JavaForm(a+b+x^2+I+7+3/4+x+y, Prefix->True)",
+				"\"F.Plus(F.CC(31L,4L,1L,1L),F.a,F.b,F.x,F.Sqr(F.x),F.y)\"");
+		check("JavaForm(a+b+x^2+I+7+3/4+x+y)", "\"Plus(CC(31L,4L,1L,1L),a,b,x,Sqr(x),y)\"");
 	}
 
 	public void testJoin() {

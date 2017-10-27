@@ -257,22 +257,23 @@ public class Pattern extends Blank {
 	}
 
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperaators) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperaators, boolean usePrefix) {
 		final StringBuilder buffer = new StringBuilder();
-		buffer.append("$p(");
+		String prefix = usePrefix ? "F." : "";
+		buffer.append(prefix+"$p(");
 		String symbolStr = fSymbol.toString();
 		char ch = symbolStr.charAt(0);
 		if (symbolStr.length() == 1 && fDefaultValue == null) {
 			if (('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'G' && ch != 'D' && ch != 'E')) {
 				if (!fDefault) {
 					if (fCondition == null) {
-						return symbolStr + "_";
+						return prefix+symbolStr + "_";
 					} else if (fCondition == F.SymbolHead) {
-						return symbolStr + "_Symbol";
+						return prefix+symbolStr + "_Symbol";
 					}
 				} else {
 					if (fCondition == null) {
-						return symbolStr + "_DEFAULT";
+						return prefix+symbolStr + "_DEFAULT";
 					}
 				}
 			}
@@ -283,11 +284,11 @@ public class Pattern extends Blank {
 				if ('a' <= ch2 && ch2 <= 'z') {
 					if (!fDefault) {
 						if (fCondition == null) {
-							return "p" + ch2 + "_";
+							return prefix+"p" + ch2 + "_";
 						}
 					} else {
 						if (fCondition == null) {
-							return "p" + ch2 + "_DEFAULT";
+							return prefix+"p" + ch2 + "_DEFAULT";
 						}
 					}
 				}
@@ -295,7 +296,7 @@ public class Pattern extends Blank {
 		}
 
 		if (symbolStr.length() == 1 && ('a' <= ch && ch <= 'z')) {
-			buffer.append(symbolStr);
+			buffer.append(prefix+symbolStr);
 		} else {
 			buffer.append("\"" + symbolStr + "\"");
 		}
@@ -305,14 +306,14 @@ public class Pattern extends Blank {
 			} else if (fCondition == F.SymbolHead) {
 				buffer.append(", SymbolHead");
 			} else {
-				buffer.append("," + fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperaators));
+				buffer.append("," + fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperaators, false));
 			}
 		}
 		if (fDefaultValue != null) {
 			if (fCondition == null) {
 				buffer.append(", null");
 			}
-			buffer.append("," + fDefaultValue.internalJavaString(symbolsAsFactoryMethod, 0, useOperaators));
+			buffer.append("," + fDefaultValue.internalJavaString(symbolsAsFactoryMethod, 0, useOperaators, false));
 		} else {
 			if (fDefault) {
 				buffer.append(",true");

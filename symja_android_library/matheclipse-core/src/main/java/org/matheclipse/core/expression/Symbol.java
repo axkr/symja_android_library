@@ -47,14 +47,13 @@ public class Symbol implements ISymbol, Serializable {
 	 */
 	protected int fAttributes = NOATTRIBUTE;
 	/**
-	 * The pattern matching &quot;down value&quot; rules associated with this
-	 * symbol.
+	 * The pattern matching &quot;down value&quot; rules associated with this symbol.
 	 */
-	private transient RulesData fRulesData; 
+	private transient RulesData fRulesData;
 
 	/**
-	 * The name of this symbol. The characters may be all lower-cases if the system
-	 * doesn't distinguish between lower- and upper-case function names.
+	 * The name of this symbol. The characters may be all lower-cases if the system doesn't distinguish between lower-
+	 * and upper-case function names.
 	 */
 	protected String fSymbolName;
 	/**
@@ -161,9 +160,8 @@ public class Symbol implements ISymbol, Serializable {
 	}
 
 	/**
-	 * Compares this expression with the specified expression for order. Returns a
-	 * negative integer, zero, or a positive integer as this expression is canonical
-	 * less than, equal to, or greater than the specified expression.
+	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
+	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
@@ -526,14 +524,16 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-		return internalJavaString(symbolsAsFactoryMethod, depth, false);
+		return internalJavaString(symbolsAsFactoryMethod, depth, false, false);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
+			boolean usePrefix) {
+		String prefix = usePrefix ? "F." : "";
 		if (symbolsAsFactoryMethod) {
-			return internalJavaStringAsFactoryMethod();
+			return prefix + internalJavaStringAsFactoryMethod();
 		}
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String name;
@@ -543,15 +543,20 @@ public class Symbol implements ISymbol, Serializable {
 				name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toLowerCase(Locale.ENGLISH));
 			}
 			if (name != null) {
-				return name;
+				return prefix + name;
 			}
 		} else {
 			String name = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(fSymbolName.toLowerCase(Locale.ENGLISH));
 			if (name != null && name.equals(fSymbolName)) {
-				return name;
+				return prefix + name;
 			}
 		}
-		return fSymbolName;
+		char ch = fSymbolName.charAt(0);
+		if (fSymbolName.length() == 1 && ('a' <= ch && ch <= 'z')) {
+			return prefix + fSymbolName;
+		} else {
+			return fSymbolName;
+		}
 	}
 
 	/**
@@ -595,7 +600,7 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-		return internalJavaString(symbolsAsFactoryMethod, depth, true);
+		return internalJavaString(symbolsAsFactoryMethod, depth, true, false);
 	}
 
 	/** {@inheritDoc} */

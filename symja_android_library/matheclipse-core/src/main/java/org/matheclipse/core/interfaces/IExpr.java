@@ -618,9 +618,12 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            the recursion depth of this call. <code>0</code> indicates &quot;recurse without a limit&quot;.
 	 * @param useOperators
 	 *            use operators instead of function names for representation of Plus, Times, Power,...
+	 * @param usePrefix
+	 *            use the <code>F....</code> class prefix for genrating Java code.
 	 * @return the internal Java form of this expression
 	 */
-	default String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators) {
+	default String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
+			boolean usePrefix) {
 		return toString();
 	}
 
