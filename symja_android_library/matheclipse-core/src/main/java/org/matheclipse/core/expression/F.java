@@ -34,6 +34,7 @@ import org.matheclipse.core.builtin.IntegerFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.builtin.NumberTheory;
+import org.matheclipse.core.builtin.OutputFunctions;
 import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.builtin.Programming;
@@ -435,8 +436,7 @@ public class F {
 	public final static IBuiltInSymbol For = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "for" : "For");
 	public final static IBuiltInSymbol FreeQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "freeq" : "FreeQ");
 	public final static IBuiltInSymbol FullForm = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fullform" : "FullForm",
-			new org.matheclipse.core.builtin.function.FullForm());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fullform" : "FullForm" );
 	public final static IBuiltInSymbol Function = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "function" : "Function");
 	public final static IBuiltInSymbol Get = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "get" : "Get",
@@ -448,8 +448,7 @@ public class F {
 	public final static IBuiltInSymbol Hold = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hold" : "Hold",
 			new org.matheclipse.core.builtin.function.Hold());
 	public final static IBuiltInSymbol HoldForm = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "holdform" : "HoldForm",
-			new org.matheclipse.core.builtin.function.HoldForm());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "holdform" : "HoldForm" );
 	public final static IBuiltInSymbol Identity = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "identity" : "Identity",
 			new org.matheclipse.core.builtin.function.Identity());
@@ -464,8 +463,7 @@ public class F {
 	public final static IBuiltInSymbol IntegerQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerq" : "IntegerQ");
 	public final static IBuiltInSymbol JavaForm = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "javaform" : "JavaForm",
-			new org.matheclipse.core.builtin.function.JavaForm());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "javaform" : "JavaForm" );
 	public final static IBuiltInSymbol Last = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "last" : "Last");
 	public final static IBuiltInSymbol LeafCount = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "leafcount" : "LeafCount",
@@ -480,8 +478,7 @@ public class F {
 	public final static IBuiltInSymbol MatchQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matchq" : "MatchQ");
 	public final static IBuiltInSymbol MathMLForm = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mathmlform" : "MathMLForm",
-			new org.matheclipse.core.builtin.function.MathMLForm());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mathmlform" : "MathMLForm" );
 	public final static IBuiltInSymbol MatrixForm = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matrixform" : "MatrixForm");
 	public final static IBuiltInSymbol MatrixQ = initFinalSymbol(
@@ -580,8 +577,7 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "syntaxq" : "SyntaxQ");
 	public final static IBuiltInSymbol Take = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "take" : "Take");
 	public final static IBuiltInSymbol TeXForm = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "texform" : "TeXForm",
-			new org.matheclipse.core.builtin.function.TeXForm());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "texform" : "TeXForm" );
 	public final static IBuiltInSymbol Throw = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "throw" : "Throw");
 	public final static IBuiltInSymbol TimeConstrained = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "timeconstrained" : "TimeConstrained",
@@ -2027,6 +2023,7 @@ public class F {
 			IntegerFunctions.initialize();
 			SpecialFunctions.initialize();
 			StringFunctions.initialize();
+			OutputFunctions.initialize();
 			RandomFunctions.initialize();
 			StatisticsFunctions.initialize();
 			ComputationalGeometryFunctions.initialize();
