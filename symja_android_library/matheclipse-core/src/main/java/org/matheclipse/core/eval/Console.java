@@ -45,6 +45,8 @@ public class Console {
 	 */
 	private long fSeconds = 60;
 
+	private boolean fUseJavaForm = false;
+
 	private File fFile;
 
 	private String fDefaultSystemRulesFilename;
@@ -98,6 +100,16 @@ public class Console {
 							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 4).equals("exit")) {
 						System.out.println("Closing Symja console... bye.");
 						System.exit(0);
+					} else if ((trimmedInput.length() >= 7)
+							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 7).equals("javaoff")) {
+						System.out.println("Disabling output for JavaForm");
+						console.fUseJavaForm = false;
+						continue;
+					} else if ((trimmedInput.length() >= 6)
+							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 6).equals("javaon")) {
+						System.out.println("Enabling output for JavaForm");
+						console.fUseJavaForm = true;
+						continue;
 					} else if ((trimmedInput.length() >= 10)
 							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 10).equals("timeoutoff")) {
 						System.out.println("Disabling timeout for evaluation");
@@ -109,7 +121,7 @@ public class Console {
 						console.fSeconds = 60;
 						continue;
 					} else if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
-						Documentation.findDocumentation(System.out,trimmedInput);
+						Documentation.findDocumentation(System.out, trimmedInput);
 						continue;
 					}
 					String postfix = Scanner.balanceCode(inputExpression);
@@ -162,8 +174,10 @@ public class Console {
 		msg.append("To stop the program type: exit<RETURN>" + lineSeparator);
 		msg.append("To continue an input line type: \\<RETURN>" + lineSeparator);
 		msg.append("at the end of the line." + lineSeparator);
-		msg.append("To disable the evaluation timeout type: timeoutoff<RETURN>" + lineSeparator);
 		msg.append("To enable the evaluation timeout type: timeouton<RETURN>" + lineSeparator);
+		msg.append("To disable the evaluation timeout type: timeoutoff<RETURN>" + lineSeparator);
+		msg.append("To enable the output in Java form: javaon<RETURN>" + lineSeparator);
+		msg.append("To disable the output in Java form: javaoff<RETURN>" + lineSeparator);
 		msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
 
 		System.out.println(msg.toString());
@@ -320,7 +334,7 @@ public class Console {
 			if (result != null) {
 				return printResult(result);
 			}
-		} catch (final AbortException re) { 
+		} catch (final AbortException re) {
 			try {
 				return printResult(F.Aborted);
 			} catch (IOException e) {
@@ -349,13 +363,16 @@ public class Console {
 		} catch (final StackOverflowError e) {
 			Validate.printException(buf, e);
 			return "";
-		} 
+		}
 		return buf.toString();
 	}
 
 	private String printResult(IExpr result) throws IOException {
 		if (result.equals(F.Null)) {
 			return "";
+		}
+		if (fUseJavaForm) {
+			return result.internalJavaString(false, -1, false, true);
 		}
 		StringBuilder strBuffer = new StringBuilder();
 		fOutputFactory.reset();
