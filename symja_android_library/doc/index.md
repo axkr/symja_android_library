@@ -533,6 +533,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Projection](functions/Projection.md)
 * [PseudoInverse](functions/PseudoInverse.md)
 * [QRDecomposition](functions/QRDecomposition.md)
+* [Quantile](functions/Quantile.md)
 * [Quotient](functions/Quotient.md)
 * [RandomChoice](functions/RandomChoice.md)
 * [RandomInteger](functions/RandomInteger.md)
@@ -646,3 +647,4 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Xor](functions/Xor.md)
 * [YuleDissimilarity](functions/YuleDissimilarity.md)
 * [Zeta](functions/Zeta.md)
+

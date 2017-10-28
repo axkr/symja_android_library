@@ -1,6 +1,6 @@
 ## DiagonalMatrix
 
-``` 
+```
 DiagonalMatrix(list)
 ```
 
