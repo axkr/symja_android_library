@@ -5,7 +5,10 @@ Median(list)
 ```
 
 > returns the median of `list`. 
-   
+  
+See:
+* [Wikipedia - Median](https://en.wikipedia.org/wiki/Median)
+
 ### Examples
 
 ``` 

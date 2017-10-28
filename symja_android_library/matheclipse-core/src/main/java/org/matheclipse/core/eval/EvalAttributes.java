@@ -1,5 +1,6 @@
 package org.matheclipse.core.eval;
 
+import java.util.Arrays;
 import java.util.Comparator;
 
 import javax.annotation.Nonnull;
@@ -7,13 +8,14 @@ import javax.annotation.Nonnull;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Comparators;
+import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Static methods for evaluating <code>ISymbol.FLAT, ISymbol.LISTABLE</code> and
- * <code>ISymbol.ORDERLESS</code> attributes.
+ * Static methods for evaluating <code>ISymbol.FLAT, ISymbol.LISTABLE</code> and <code>ISymbol.ORDERLESS</code>
+ * attributes.
  *
  * @see org.matheclipse.core.interfaces.ISymbol#FLAT
  * @see org.matheclipse.core.interfaces.ISymbol#LISTABLE
@@ -22,8 +24,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class EvalAttributes {
 
 	/**
-	 * Check the cached hashcode with the current one. Only necessary in DEBUG
-	 * mode.
+	 * Check the cached hashcode with the current one. Only necessary in DEBUG mode.
 	 * 
 	 * @param ast
 	 */
@@ -38,9 +39,8 @@ public class EvalAttributes {
 	}
 
 	/**
-	 * Flatten the list (i.e. typically the ASTs head has the attribute
-	 * ISymbol.FLAT) example: suppose the head f should be flattened out:
-	 * <code>f[a,b,f[x,y,f[u,v]],z] ==> f[a,b,x,y,u,v,z]</code>
+	 * Flatten the list (i.e. typically the ASTs head has the attribute ISymbol.FLAT) example: suppose the head f should
+	 * be flattened out: <code>f[a,b,f[x,y,f[u,v]],z] ==> f[a,b,x,y,u,v,z]</code>
 	 * 
 	 * @param ast
 	 *            the <code>AST</code> whose elements should be flattened.
@@ -65,17 +65,15 @@ public class EvalAttributes {
 	}
 
 	/**
-	 * Flatten the list (i.e. the ASTs head element has the same head) example:
-	 * suppose the head f should be flattened out:<br>
+	 * Flatten the list (i.e. the ASTs head element has the same head) example: suppose the head f should be flattened
+	 * out:<br>
 	 * <code>f[a,b,f[x,y,f[u,v]],z] ==> f[a,b,x,y,u,v,z]</code>
 	 * 
 	 * @param head
 	 *            the head of the expression, which should be flattened.
 	 * @param ast
-	 *            the <code>sublist</code> which should be added to the
-	 *            <code>result</code> list.
-	 * @return the flattened ast expression if a sublist was flattened out,
-	 *         otherwise return <code>F#NIL</code>..
+	 *            the <code>sublist</code> which should be added to the <code>result</code> list.
+	 * @return the flattened ast expression if a sublist was flattened out, otherwise return <code>F#NIL</code>..
 	 */
 	public static IAST flatten(final ISymbol head, final IAST ast) {
 		IExpr expr;
@@ -128,24 +126,21 @@ public class EvalAttributes {
 	}
 
 	/**
-	 * Flatten the list (i.e. the ASTs head element has the same head) element
-	 * has the same head) example: suppose the head f should be flattened out:
-	 * <br>
+	 * Flatten the list (i.e. the ASTs head element has the same head) element has the same head) example: suppose the
+	 * head f should be flattened out: <br>
 	 * <code>f[a,b,f[x,y,f[u,v]],z] ==> f[a,b,x,y,u,v,z]</code>
 	 * 
 	 * @param head
 	 *            the head of the expression, which should be flattened.
 	 * @param sublist
-	 *            the <code>sublist</code> which should be added to the
-	 *            <code>result</code> list.
+	 *            the <code>sublist</code> which should be added to the <code>result</code> list.
 	 * @param result
-	 *            the <code>result</code> list, where all sublist elements with
-	 *            the same <code>head</code> should be appended.
+	 *            the <code>result</code> list, where all sublist elements with the same <code>head</code> should be
+	 *            appended.
 	 * @param recursionCounter
 	 * @param level
 	 *            the recursion level up to which the list should be flattened
-	 * @return <code>true</code> if a sublist was flattened out into the
-	 *         <code>result</code> list.
+	 * @return <code>true</code> if a sublist was flattened out into the <code>result</code> list.
 	 */
 	public static boolean flatten(final ISymbol head, final IAST sublist, final IAST result, final int recursionCounter,
 			final int level) {
@@ -165,14 +160,55 @@ public class EvalAttributes {
 	}
 
 	/**
-	 * Sort the list (i.e. typically the ASTs head has the attribute
-	 * ISymbol.ORDERLESS) example: suppose the Symbol f has the attribute
-	 * ISymbol.ORDERLESS <code>f[z,d,a,b] ==> f[a,b,d,z]</code>
+	 * <p>
+	 * Copy the <code>ast</code> and return the sorted copy using function <code>Order(a, b)</code>.
+	 * </p>
+	 * 
+	 * @param ast
+	 * @return return the sorted copy
+	 */
+	public static final IAST copySort(final IAST ast) {
+		final IAST sortedList = ast.copy();
+		sort(sortedList);
+		return sortedList;
+	}
+	
+	/**
+	 * <p>
+	 * Copy the <code>ast</code> and return the sorted copy using function <code>>Less(a, b)</code>.
+	 * </p>
+	 * 
+	 * @param ast
+	 * @return return the sorted copy
+	 */
+	public static final IAST copySortLess(final IAST ast) {
+		final IAST sortedList = ast.copy();
+		sortLess(sortedList);
+		return sortedList;
+	}
+
+	/**
+	 * <p>
+	 * Sort the <code>ast</code> in place using function <code>Less</code>.
+	 * </p>
 	 * 
 	 * @param ast
 	 *            the AST will be sorted in place.
-	 * @return <code>true</code> if the sort algorithm was used;
-	 *         <code>false</code> otherwise
+	 * @return <code>true</code> if the sort algorithm was used; <code>false</code> otherwise
+	 */
+	public static final void sortLess(final IAST ast) {
+		 sort(ast, new Predicates.IsBinaryFalse(F.Less));
+	}
+
+	/**
+	 * <p>
+	 * Sort the <code>ast</code> in place using function <code>Order</code>.
+	 * </p>
+	 * <b>Example:</b> suppose the Symbol f has the attribute ISymbol.ORDERLESS <code>f(z,d,a,b) ==> f(a,b,d,z)</code>
+	 * 
+	 * @param ast
+	 *            the AST will be sorted in place.
+	 * @return <code>true</code> if the sort algorithm was used; <code>false</code> otherwise
 	 */
 	public static final boolean sort(final IAST ast) {
 		if ((ast.getEvalFlags() & IAST.IS_SORTED) == IAST.IS_SORTED) {
@@ -187,7 +223,7 @@ public class EvalAttributes {
 			case 4:
 				return sort3Args(ast);
 			default:
-				ast.args().sort(Comparators.ExprComparator.CONS);
+			    sort(ast, Comparators.ExprComparator.CONS);
 				ast.addEvalFlags(IAST.IS_SORTED);
 				if (Config.SHOW_STACKTRACE) {
 					checkCachedHashcode(ast);
@@ -199,12 +235,27 @@ public class EvalAttributes {
 		return false;
 	}
 
+	/**
+	 * <p>
+	 * Sort the <code>ast</code> in place using function <code>comparator#compare(a, b)</code>.
+	 * </p>
+	 * <b>Example:</b> suppose the Symbol f has the attribute ISymbol.ORDERLESS <code>f(z,d,a,b) ==> f(a,b,d,z)</code>
+	 * 
+	 * @param ast
+	 *            the AST will be sorted in place.
+	 * @return <code>true</code> if the sort algorithm was used; <code>false</code> otherwise
+	 */
 	public static final void sort(final IAST ast, Comparator<IExpr> comparator) {
-		ast.args().sort(comparator);
+		final IExpr[] a = ast.toArray(); 
+		int end=a.length;
+		Arrays.sort(a, 1, ast.size(), comparator);
+		for (int j = 1; j < end; j++) {
+			ast.set(j, a[j]);
+		}
 	}
 
 	/**
-	 * Sort an AST with 2 arguments.
+	 * Sort an AST with 2 arguments using function <code>Order</code>.
 	 * 
 	 * @param ast
 	 *            an ast with 2 arguments
@@ -228,7 +279,7 @@ public class EvalAttributes {
 	}
 
 	/**
-	 * Sort an AST with 3 arguments.
+	 * Sort an AST with 3 arguments using function <code>Order</code>.
 	 * 
 	 * @param ast
 	 *            an ast with 3 arguments
@@ -268,9 +319,8 @@ public class EvalAttributes {
 	}
 
 	/**
-	 * Thread through all (sub-)lists in the arguments of the IAST (i.e.
-	 * typically the ASTs head has the attribute ISymbol.LISTABLE) example:
-	 * <code>Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}</code>
+	 * Thread through all (sub-)lists in the arguments of the IAST (i.e. typically the ASTs head has the attribute
+	 * ISymbol.LISTABLE) example: <code>Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}</code>
 	 * 
 	 * @param ast
 	 * @param listHead
@@ -279,8 +329,7 @@ public class EvalAttributes {
 	 *            the arguments head (typically <code>ast.head()</code>)
 	 * @param listLength
 	 *            the length of the list
-	 * @return the resulting ast with the <code>argHead</code> threaded into
-	 *         each ast argument.
+	 * @return the resulting ast with the <code>argHead</code> threaded into each ast argument.
 	 */
 	public static IAST threadList(final IAST ast, final IExpr listHead, final IExpr argHead, final int listLength) {
 

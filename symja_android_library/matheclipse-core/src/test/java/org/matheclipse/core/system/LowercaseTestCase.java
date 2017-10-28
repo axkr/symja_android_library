@@ -2454,12 +2454,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testFourierMatrix() {
 		check("FourierMatrix(4)", //
-				"{{1/2,1/2,1/2,1/2},\n" + 
-				" {1/2,I*1/2,-1/2,-I*1/2},\n" + 
-				" {1/2,-1/2,1/2,-1/2},\n" + 
-				" {1/2,-I*1/2,-1/2,I*1/2}}");
+				"{{1/2,1/2,1/2,1/2},\n" + " {1/2,I*1/2,-1/2,-I*1/2},\n" + " {1/2,-1/2,1/2,-1/2},\n"
+						+ " {1/2,-I*1/2,-1/2,I*1/2}}");
 	}
-	
+
 	public void testFractionalPart() {
 
 		check("FractionalPart(-9/4)", "-1/4");
@@ -3580,21 +3578,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testLowerTriangularize() {
 		check("LowerTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}}, -1)", //
-				"{{0,0,0,0},\n" + 
-				" {d,0,0,0},\n" + 
-				" {h,i,0,0},\n" + 
-				" {l,m,n,0}}");
+				"{{0,0,0,0},\n" + " {d,0,0,0},\n" + " {h,i,0,0},\n" + " {l,m,n,0}}");
 		check("LowerTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}})", //
-				"{{a,0,0,0},\n" + 
-				" {d,e,0,0},\n" + 
-				" {h,i,j,0}}");
-		
+				"{{a,0,0,0},\n" + " {d,e,0,0},\n" + " {h,i,j,0}}");
+
 		check("LowerTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}})", //
-				"{{a,0,0,0},\n" + 
-				" {d,e,0,0},\n" + 
-				" {h,i,j,0},\n" + 
-				" {l,m,n,o}}");
-		
+				"{{a,0,0,0},\n" + " {d,e,0,0},\n" + " {h,i,j,0},\n" + " {l,m,n,o}}");
+
 	}
 
 	public void testLucasL() {
@@ -3794,6 +3784,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMedian() {
+		check("Median({{100, 1, 10, 50}, {-1, 1, -2, 2}})", "{99/2,1,4,26}");
+
 		check("Median({26, 64, 36})", "36");
 		check("Median({-11, 38, 501, 1183})", "539/2");
 		check("Median({{100, 1, 10, 50}, {-1, 1, -2, 2}})", "{99/2,1,4,26}");
@@ -5558,6 +5550,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ " {0.0,0.7276068751089992,1.4552137502179967}}}");
 	}
 
+	public void testQuantile() {
+		check("Quantile({1,2}, 0.5)", "1");
+		check("Quantile({Sqrt(2), E, Pi, Sqrt(3)}, 1/4)", "Sqrt(2)");
+		check("Quantile({Sqrt(2), E, Pi, Sqrt(3)}, 3/4)", "E");
+		check("Quantile(N({E, Pi, Sqrt(2), Sqrt(3)}), 1/4)", "1.41421");
+		check("Quantile({1, 2, 3, 4, 5, 6, 7}, 1/2)", "4");
+		check("Quantile({1, 2, 3, 4, 5, 6, 7}, 1/4)", "2");
+		check("Quantile({1, 2, 3, 4, 5, 6, 7}, {1/4, 3/4})", "{2,6}");
+		check("Quantile({1.0, 2.0, 3.0, 4.0, 5, 6, 7}, {1/4, 3/4})", "{2.0,6}");
+
+		check("Quantile({{1,2,3,4},{ E, Pi, Sqrt(2),Sqrt(3)}}, 0.75)", "{E,Pi,3,4}");
+		check("Quantile({{1,2},{ E, Pi, Sqrt(2),Sqrt(3)}}, 0.75)", "Quantile({{1,2},{E,Pi,Sqrt(2),Sqrt(3)}},0.75)");
+	}
+
 	public void testQuiet() {
 		check("Quiet(1/0)", "ComplexInfinity");
 		check("1/0", "ComplexInfinity");
@@ -7196,9 +7202,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testToeplitzMatrix() {
 		check("ToeplitzMatrix(3)", //
-				"{{1,2,3},\n" + 
-				" {2,1,2},\n" + 
-				" {3,2,1}}");
+				"{{1,2,3},\n" + " {2,1,2},\n" + " {3,2,1}}");
 		check("ToeplitzMatrix({a,b,c,d})", //
 				"{{a,b,c,d},\n" + " {b,a,b,c},\n" + " {c,b,a,b},\n" + " {d,c,b,a}}");
 		check("ToeplitzMatrix(4)", //
@@ -7494,25 +7498,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("$f(x_):=x^2;$f(x_)=.;$f(3)", "$f(3)");
 	}
 
-
 	public void testUpperTriangularize() {
 		check("UpperTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}}, 1)", //
-				"{{0,b,c,d},\n" + 
-				" {0,0,f,g},\n" + 
-				" {0,0,0,k},\n" + 
-				" {0,0,0,0}}");
+				"{{0,b,c,d},\n" + " {0,0,f,g},\n" + " {0,0,0,k},\n" + " {0,0,0,0}}");
 		check("UpperTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}})", //
-				"{{a,b,c,d},\n" + 
-				" {0,e,f,g},\n" + 
-				" {0,0,j,k}}");
+				"{{a,b,c,d},\n" + " {0,e,f,g},\n" + " {0,0,j,k}}");
 		check("UpperTriangularize({{a,b,c,d}, {d,e,f,g}, {h,i,j,k}, {l,m,n,o}})", //
-				"{{a,b,c,d},\n" + 
-				" {0,e,f,g},\n" + 
-				" {0,0,j,k},\n" + 
-				" {0,0,0,o}}");
-		
+				"{{a,b,c,d},\n" + " {0,e,f,g},\n" + " {0,0,j,k},\n" + " {0,0,0,o}}");
+
 	}
-	
+
 	public void testUpSet() {
 		check("$f($abc(0))^=100;$f($abc(0))", "100");
 	}

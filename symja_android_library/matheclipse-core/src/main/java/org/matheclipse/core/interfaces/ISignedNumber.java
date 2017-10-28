@@ -98,7 +98,7 @@ public interface ISignedNumber extends INumber {
 	default public IExpr lower() {
 		return this;
 	}
-
+	
 	/**
 	 * Returns (-1) * this
 	 * 

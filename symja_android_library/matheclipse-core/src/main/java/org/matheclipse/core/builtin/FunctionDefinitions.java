@@ -65,7 +65,6 @@ public final class FunctionDefinitions {
 		Normal.setEvaluator(new org.matheclipse.core.reflection.system.Normal());
 		NRoots.setEvaluator(new org.matheclipse.core.reflection.system.NRoots());
 		NSolve.setEvaluator(new org.matheclipse.core.reflection.system.NSolve());
-		Order.setEvaluator(new org.matheclipse.core.reflection.system.Order());
 		Out.setEvaluator(new org.matheclipse.core.reflection.system.Out());
 		Outer.setEvaluator(new org.matheclipse.core.reflection.system.Outer());
 		Plot.setEvaluator(new org.matheclipse.core.reflection.system.Plot());

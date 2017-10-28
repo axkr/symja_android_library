@@ -113,7 +113,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public final int IS_FLATTENED = 0x0100;
 
 	/**
-	 * This expression is an already sorted expression
+	 * This expression is an already sorted expression (i.e. sorted with the <code>Order()</code> function)
 	 */
 	public final int IS_SORTED = 0x0200;
 

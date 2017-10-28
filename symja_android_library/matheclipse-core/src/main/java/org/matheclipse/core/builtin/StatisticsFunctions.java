@@ -1,5 +1,7 @@
 package org.matheclipse.core.builtin;
 
+import java.util.function.Function;
+
 import org.hipparchus.distribution.IntegerDistribution;
 import org.hipparchus.distribution.RealDistribution;
 import org.hipparchus.linear.FieldMatrix;
@@ -23,6 +25,9 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -31,7 +36,7 @@ public class StatisticsFunctions {
 		F.CDF.setEvaluator(new CDF());
 		F.PDF.setEvaluator(new PDF());
 		F.BernoulliDistribution.setEvaluator(new BernoulliDistribution());
-		F.BinCounts.setEvaluator(new BinCounts()); 
+		F.BinCounts.setEvaluator(new BinCounts());
 		F.BinomialDistribution.setEvaluator(new BinomialDistribution());
 		F.CentralMoment.setEvaluator(new CentralMoment());
 		F.Correlation.setEvaluator(new Correlation());
@@ -49,6 +54,7 @@ public class StatisticsFunctions {
 		F.NakagamiDistribution.setEvaluator(new NakagamiDistribution());
 		F.NormalDistribution.setEvaluator(new NormalDistribution());
 		F.PoissonDistribution.setEvaluator(new PoissonDistribution());
+		F.Quantile.setEvaluator(new Quantile());
 		F.Skewness.setEvaluator(new Skewness());
 		F.StudentTDistribution.setEvaluator(new StudentTDistribution());
 		F.Variance.setEvaluator(new Variance());
@@ -233,16 +239,15 @@ public class StatisticsFunctions {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * gives the the <code>r</code>th central moment (i.e. the <code>r</code>th
-	 * moment about the mean) of <code>list</code>.
+	 * gives the the <code>r</code>th central moment (i.e. the <code>r</code>th moment about the mean) of
+	 * <code>list</code>.
 	 * </p>
 	 * </blockquote>
 	 * <p>
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="https://en.wikipedia.org/wiki/Central_moment">Wikipedia -
-	 * Central moment</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/Central_moment">Wikipedia - Central moment</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -725,8 +730,7 @@ public class StatisticsFunctions {
 
 	/**
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Arithmetic_mean">Arithmetic
-	 * mean</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Arithmetic_mean">Arithmetic mean</a>
 	 */
 	private final static class Mean extends AbstractTrigArg1 {
 
@@ -774,11 +778,28 @@ public class StatisticsFunctions {
 			if (arg1.isRealVector()) {
 				return F.num(StatUtils.percentile(arg1.toDoubleVector(), 50));
 			}
+			int[] dim = arg1.isMatrix();
+			if (dim == null && arg1.isListOfLists()) {
+				return F.NIL;
+			}
+			if (dim != null) {
+				IAST matrix = (IAST) arg1;
+				final int size = matrix.size();
+				final int rowSize = dim[1] + 1;
+				IAST result = F.ListAlloc(rowSize);
+				for (int j = 1; j < rowSize; j++) {
+					IAST row = F.ListAlloc(size);
+					for (int i = 1; i < size; i++) {
+						row.append(matrix.getPart(i, j));
+					}
+					result.append(F.Median(row));
+				}
+				return result;
+			}
 			if (arg1.isList()) {
 				final IAST list = (IAST) arg1;
 				if (list.size() > 1) {
-					final IAST sortedList = list.copy();
-					EvalAttributes.sort(sortedList);
+					final IAST sortedList = EvalAttributes.copySortLess(list);
 					int size = sortedList.size();
 					if ((size & 0x00000001) == 0x00000001) {
 						// odd number of elements
@@ -988,14 +1009,92 @@ public class StatisticsFunctions {
 	}
 
 	/**
+	 * 
+	 * See <a href="https://en.wikipedia.org/wiki/Quantile">Wikipedia - Quantile</a>
+	 */
+	private final static class Quantile extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			int[] dim = ast.arg1().isMatrix();
+			if (dim == null && ast.arg1().isListOfLists()) {
+				return F.NIL;
+			}
+			if (dim != null) {
+				IAST matrix = (IAST) ast.arg1();
+				final int size = matrix.size();
+				final int rowSize = dim[1] + 1;
+				IAST result = F.ListAlloc(rowSize);
+				for (int j = 1; j < rowSize; j++) {
+					IAST row = F.ListAlloc(size);
+					for (int i = 1; i < size; i++) {
+						row.append(matrix.getPart(i, j));
+					}
+					result.append(F.Quantile(row, ast.arg2()));
+				}
+				return result;
+			}
+
+			if (ast.arg1().isList()) {
+				IAST arg1 = (IAST) ast.arg1();
+				int dim1 = arg1.size() - 1;
+				try {
+					if (dim1 >= 0) {
+
+						final IAST sorted = EvalAttributes.copySortLess(arg1);
+						final IInteger length = F.ZZ(sorted.size() - 1);
+
+						int dim2 = ast.arg2().isVector();
+						if (dim2 >= 0) {
+							final IAST param = ((IAST) ast.arg2());
+							return param.map(scalar -> of(sorted, length, scalar), 1);
+						} else {
+							if (ast.arg2().isSignedNumber()) {
+								return of(sorted, length, ast.arg2());
+							}
+						}
+					}
+				} catch (ArithmeticException ae) {
+					if (Config.SHOW_STACKTRACE) {
+						ae.printStackTrace();
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+		private IExpr of(IAST sorted, IInteger length, IExpr scalar) {
+			if (scalar.isSignedNumber()) {
+				int index = 0;
+				if (scalar instanceof INum) {
+					index = ((INum) scalar).multiply(length).ceilFraction().subtract(F.C1).toIntDefault(-1);
+				} else {
+					index = ((IRational) scalar).multiply(length).ceil().subtract(F.C1).toIntDefault(-1);
+				}
+				if (index >= 0) {
+					return sorted.get(index + 1);
+				}
+			}
+			throw new ArithmeticException();
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.NOATTRIBUTE);
+		}
+	}
+
+	/**
 	 * <pre>
 	 * Skewness(list)
 	 * </pre>
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * gives Pearson's moment coefficient of skewness for $list$ (a measure for
-	 * estimating the symmetry of a distribution).
+	 * gives Pearson's moment coefficient of skewness for $list$ (a measure for estimating the symmetry of a
+	 * distribution).
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>

@@ -541,6 +541,8 @@ public class F {
 			new org.matheclipse.core.builtin.function.Print());
 	public final static IBuiltInSymbol Put = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "put" : "Put",
 			new org.matheclipse.core.builtin.function.Put());
+	public final static IBuiltInSymbol Quantile = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "quantile" : "Quantile");
 	public final static IBuiltInSymbol Quiet = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "quiet" : "Quiet",
 			new org.matheclipse.core.builtin.function.Quiet());
 	public final static IBuiltInSymbol Rational = initFinalSymbol(
@@ -4616,6 +4618,10 @@ public class F {
 		return unaryAST1(Mean, a0);
 	}
 
+	public static IAST Median(final IExpr a0) {
+		return unaryAST1(Median, a0);
+	}
+	
 	public static IAST MeijerG(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(MeijerG, a0, a1, a2);
 	}
@@ -5197,7 +5203,11 @@ public class F {
 			final IExpr a3) {
 		return new AST(new IExpr[] { head, a0, a1, a2, a3 });
 	}
-
+	
+	public static IAST Quantile(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Quantile, a0, a1);
+	}
+	
 	public static IAST Quiet(final IExpr a0) {
 		return unaryAST1(Quiet, a0);
 	}

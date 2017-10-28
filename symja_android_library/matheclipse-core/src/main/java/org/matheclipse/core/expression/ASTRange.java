@@ -16,8 +16,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IUnaryIndexFunction;
 
 /**
- * Create a range for a given <code>List</code> instance, with the exception of
- * the <code>sort()</code> method which may sort the internal elements range.
+ * Create a range for a given <code>List</code> instance, with the exception of the <code>sort()</code> method which may
+ * sort the internal elements range.
  * 
  */
 public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
@@ -81,8 +81,7 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	/**
 	 * Construct a range for a List
 	 * 
-	 * throws IndexOutOfBoundsException if <code>start</code> or
-	 * <code>end</code> aren't valid.
+	 * throws IndexOutOfBoundsException if <code>start</code> or <code>end</code> aren't valid.
 	 * 
 	 * @param list
 	 * @param start
@@ -136,8 +135,8 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Returns true if all branch predicates return true for all elements in the
-	 * range. Also returns true when there are no branch predicates.
+	 * Returns true if all branch predicates return true for all elements in the range. Also returns true when there are
+	 * no branch predicates.
 	 * 
 	 * @param predicates
 	 * @return true if all branch predicates return true, false otherwise
@@ -156,12 +155,10 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Returns true if the predicate returns true for at least one element in
-	 * the range.
+	 * Returns true if the predicate returns true for at least one element in the range.
 	 * 
 	 * @param predicate
-	 * @return true if the predicate returns true for at least one element,
-	 *         false otherwise
+	 * @return true if the predicate returns true for at least one element, false otherwise
 	 */
 	public boolean any(Predicate<IExpr> predicate) {
 		for (int i = fStart; i < fEnd; i++) {
@@ -174,12 +171,10 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Returns true if at least one branch predicate returns true for all
-	 * elements in the range.
+	 * Returns true if at least one branch predicate returns true for all elements in the range.
 	 * 
 	 * @param predicates
-	 * @return true if at least one branch predicate returns true, false
-	 *         otherwise
+	 * @return true if at least one branch predicate returns true, false otherwise
 	 */
 	public boolean any(Predicate<IExpr>[] predicates) {
 		for (int i = fStart; i < fEnd; i++) {
@@ -195,9 +190,8 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Compare all adjacent elements from lowest to highest index and return
-	 * true, if the binary predicate gives true in each step. If start &gt;=
-	 * (end-1) the method return false;
+	 * Compare all adjacent elements from lowest to highest index and return true, if the binary predicate gives true in
+	 * each step. If start &gt;= (end-1) the method return false;
 	 * 
 	 * @param predicate
 	 *            the binary predicate
@@ -249,12 +243,10 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Returns the number of elements in the range that match the given
-	 * predicate.
+	 * Returns the number of elements in the range that match the given predicate.
 	 * 
 	 * @param predicate
-	 * @return the number of elements in the range that match the given
-	 *         predicate.
+	 * @return the number of elements in the range that match the given predicate.
 	 */
 	public int countIf(Predicate<IExpr> predicate) {
 		int counter = 0;
@@ -268,17 +260,15 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Apply the function to each element in the range and append the result
-	 * elements for which the function returns non-null elements to the
-	 * filterList, or otherwise append it to the restList.
+	 * Apply the function to each element in the range and append the result elements for which the function returns
+	 * non-null elements to the filterList, or otherwise append it to the restList.
 	 * 
 	 * @param filterList
 	 *            the elements which match the predicate
 	 * @param restList
 	 *            the elements which don't match the predicate
 	 * @param function
-	 *            the function which filters each element in the range by
-	 *            returning a non-null result.
+	 *            the function which filters each element in the range by returning a non-null result.
 	 * @return the <code>filterList</code>
 	 */
 	public Collection<IExpr> filter(Collection<IExpr> filterList, Collection<IExpr> restList,
@@ -295,9 +285,8 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Apply the predicate to each element in the range and append the elements
-	 * which match the predicate to the filterList, or otherwise append it to
-	 * the restList.
+	 * Apply the predicate to each element in the range and append the elements which match the predicate to the
+	 * filterList, or otherwise append it to the restList.
 	 * 
 	 * @param filterList
 	 *            the elements which match the predicate
@@ -319,8 +308,8 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Apply the predicate to each element in the range and append the elements
-	 * which match the predicate to the <code>astResult</code>.
+	 * Apply the predicate to each element in the range and append the elements which match the predicate to the
+	 * <code>astResult</code>.
 	 * 
 	 * @param astResult
 	 * @param predicate
@@ -336,8 +325,7 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Apply the predicate to each element in the range and append the elements
-	 * to the list, which match the predicate.
+	 * Apply the predicate to each element in the range and append the elements to the list, which match the predicate.
 	 * 
 	 * @param astResult
 	 * @param predicate
@@ -363,8 +351,7 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Locates the first pair of adjacent elements in a range that match the
-	 * given predicate
+	 * Locates the first pair of adjacent elements in a range that match the given predicate
 	 * 
 	 * @param predicate
 	 *            a predicate that analyzes the given elements
@@ -375,9 +362,8 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Locates the first pair of adjacent elements in a range that match the
-	 * given predicate starting at index <code>start</start> and ending at the
-	 * ranges upper limit.
+	 * Locates the first pair of adjacent elements in a range that match the given predicate starting at index
+	 * <code>start</start> and ending at the ranges upper limit.
 	 * 
 	 * @param predicate
 	 *            a predicate that analyzes the given elements
@@ -394,9 +380,8 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Apply the functor to the elements of the range from left to right and
-	 * return the final result. Results do accumulate from one invocation to the
-	 * next: each time this method is called, the accumulation starts over with
+	 * Apply the functor to the elements of the range from left to right and return the final result. Results do
+	 * accumulate from one invocation to the next: each time this method is called, the accumulation starts over with
 	 * value from the previous function call.
 	 * 
 	 * @param function
@@ -413,9 +398,8 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Apply the functor to the elements of the range from right to left and
-	 * return the final result. Results do accumulate from one invocation to the
-	 * next: each time this method is called, the accumulation starts over with
+	 * Apply the functor to the elements of the range from right to left and return the final result. Results do
+	 * accumulate from one invocation to the next: each time this method is called, the accumulation starts over with
 	 * value from the previous function call.
 	 * 
 	 * @param function
@@ -432,12 +416,10 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Apply the functor to each element in the range and return the final
-	 * result.
+	 * Apply the functor to each element in the range and return the final result.
 	 * 
 	 * @param function
-	 * @return the result of the last execution of the functor, or null if the
-	 *         functor is not executed.
+	 * @return the result of the last execution of the functor, or null if the functor is not executed.
 	 */
 	public IExpr forEach(final Function<IExpr, ? extends IExpr> function) {
 		IExpr value = null;
@@ -574,10 +556,8 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Append the result of the pairwise mapped elements to the given
-	 * <code>list</code>. If the function evaluates to <code>null</code> append
-	 * the current range element directly otherwise evaluate the next pair of
-	 * elements
+	 * Append the result of the pairwise mapped elements to the given <code>list</code>. If the function evaluates to
+	 * <code>null</code> append the current range element directly otherwise evaluate the next pair of elements
 	 * 
 	 * @param list
 	 * @param function
@@ -627,8 +607,7 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	 * @param binaryFunction
 	 *            binary function
 	 * @param leftArg
-	 *            left argument of the binary functions <code>apply()</code>
-	 *            method.
+	 *            left argument of the binary functions <code>apply()</code> method.
 	 * @return
 	 */
 	public IAST mapLeft(IAST list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr leftArg) {
@@ -646,8 +625,7 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	 * @param binaryFunction
 	 *            a binary function
 	 * @param rightArg
-	 *            right argument of the binary functions <code>apply()</code>
-	 *            method.
+	 *            right argument of the binary functions <code>apply()</code> method.
 	 * @return the given list
 	 */
 	public Collection<IExpr> mapRight(Collection<IExpr> list, BiFunction<IExpr, IExpr, IExpr> binaryFunction,
@@ -693,8 +671,8 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Apply the predicate to each element in the range and append the elements
-	 * to the list, which don't match the predicate.
+	 * Apply the predicate to each element in the range and append the elements to the list, which don't match the
+	 * predicate.
 	 * 
 	 * @param list
 	 * @param predicate
@@ -711,8 +689,7 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Apply the function to each element in the range and append the results to
-	 * the list.
+	 * Apply the function to each element in the range and append the results to the list.
 	 * 
 	 * @param list
 	 * @param function
@@ -726,8 +703,7 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Append the ranges elements in reversed order to the given
-	 * <code>list</code>
+	 * Append the ranges elements in reversed order to the given <code>list</code>
 	 * 
 	 * @param list
 	 * @return
@@ -740,8 +716,7 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Rotate the ranges elements to the left by n places and append the
-	 * resulting elements to the <code>list</code>
+	 * Rotate the ranges elements to the left by n places and append the resulting elements to the <code>list</code>
 	 * 
 	 * @param list
 	 * @param n
@@ -760,8 +735,7 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Rotate the ranges elements to the right by n places and append the
-	 * resulting elements to the <code>list</code>
+	 * Rotate the ranges elements to the right by n places and append the resulting elements to the <code>list</code>
 	 * 
 	 * @param list
 	 * @param n
@@ -780,8 +754,7 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * The size of this range gives the number of elements, which this range
-	 * include
+	 * The size of this range gives the number of elements, which this range include
 	 * 
 	 * @return
 	 */
@@ -791,13 +764,14 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	}
 
 	/**
-	 * Sorts the elements of the specified range "in place" (i.IExpr. modify the
-	 * internal referenced list), according to the order induced by the
-	 * specified comparator.
+	 * Sorts the elements of the specified range "in place" (i.IExpr. modify the internal referenced list), according to
+	 * the order induced by the specified comparator.
+	 * 
+	 * @deprecated use EvalAttributes#sort(ast, comparator)
 	 */
 	@Override
 	public void sort(Comparator<? super IExpr> comparator) {
-		final IExpr[] a = fList.toArray();//new IExpr[fList.size()]);
+		final IExpr[] a = fList.toArray();// new IExpr[fList.size()]);
 		Arrays.sort(a, fStart, fEnd, comparator);
 		for (int j = fStart; j < fEnd; j++) {
 			fList.set(j, a[j]);

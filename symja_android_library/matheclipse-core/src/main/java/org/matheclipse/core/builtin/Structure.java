@@ -33,6 +33,7 @@ public class Structure {
 		F.MapAll.setEvaluator(new MapAll());
 		F.MapAt.setEvaluator(new MapAt());
 		F.MapThread.setEvaluator(new MapThread());
+		F.Order.setEvaluator(new Order());
 		F.OrderedQ.setEvaluator(new OrderedQ());
 		F.Operate.setEvaluator(new Operate());
 		F.Quit.setEvaluator(new Quit());
@@ -47,9 +48,8 @@ public class Structure {
 	/**
 	 * 
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Apply">
-	 * Apply</a>
+	 * See the online Symja function reference:
+	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Apply"> Apply</a>
 	 * </p>
 	 *
 	 */
@@ -132,9 +132,8 @@ public class Structure {
 		}
 
 		/**
-		 * Calculates the depth of an expression. Atomic expressions (no sublists) have
-		 * depth <code>1</code> Example: the nested list <code>[x,[y]]</code> has depth
-		 * <code>3</code>
+		 * Calculates the depth of an expression. Atomic expressions (no sublists) have depth <code>1</code> Example:
+		 * the nested list <code>[x,[y]]</code> has depth <code>3</code>
 		 * 
 		 * @param headOffset
 		 * 
@@ -386,6 +385,52 @@ public class Structure {
 
 	}
 
+	/**
+	 * <pre>
+	 * Order(a, b)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * is <code>0</code> if <code>a</code> equals <code>b</code>. Is <code>-1</code> or <code>1</code> according to
+	 * canonical order of <code>a</code> and <code>b</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Order(3,4)
+	 * 1
+	 * 
+	 * &gt;&gt; Order(4,3)
+	 * -1
+	 * </pre>
+	 */
+	private final static class Order extends AbstractFunctionEvaluator {
+
+		/**
+		 * Compares the first expression with the second expression for order. Returns 1, 0, -1 as this expression is
+		 * canonical less than, equal to, or greater than the specified expression. <br>
+		 * <br>
+		 * (<b>Implementation note</b>: see the different results in the <code>IExpr#compareTo(IExpr)</code> method)
+		 * 
+		 * @see org.matheclipse.core.interfaces.IExpr#compareTo(IExpr)
+		 */
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			final int cp = ast.arg1().compareTo(ast.arg2());
+			if (cp < 0) {
+				return F.C1;
+			} else if (cp > 0) {
+				return F.CN1;
+			}
+			return F.C0;
+		}
+
+	}
+
 	private final static class OrderedQ extends AbstractFunctionEvaluator implements Predicate<IAST> {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -533,6 +578,10 @@ public class Structure {
 			Validate.checkRange(ast, 2, 3);
 
 			if (ast.arg1().isAST()) {
+				IAST arg1 = (IAST) ast.arg1();
+				if (ast.isAST1() && (arg1.getEvalFlags() & IAST.IS_SORTED) == IAST.IS_SORTED) {
+					return arg1;
+				}
 				final IAST shallowCopy = ((IAST) ast.arg1()).copy();
 				if (shallowCopy.size() <= 2) {
 					return shallowCopy;
@@ -607,9 +656,8 @@ public class Structure {
 		}
 
 		/**
-		 * Thread through all lists in the arguments of the IAST [i.e. the list header
-		 * has the attribute ISymbol.LISTABLE] example: Sin[{2,x,Pi}] ==>
-		 * {Sin[2],Sin[x],Sin[Pi]}
+		 * Thread through all lists in the arguments of the IAST [i.e. the list header has the attribute
+		 * ISymbol.LISTABLE] example: Sin[{2,x,Pi}] ==> {Sin[2],Sin[x],Sin[Pi]}
 		 * 
 		 * @param list
 		 * @param head
@@ -671,16 +719,14 @@ public class Structure {
 	}
 
 	/**
-	 * Maps the elements of the <code>expr</code> with the cloned
-	 * <code>replacement</code>. <code>replacement</code> is an IAST where the
-	 * argument at the given position will be replaced by the currently mapped
-	 * element.
+	 * Maps the elements of the <code>expr</code> with the cloned <code>replacement</code>. <code>replacement</code> is
+	 * an IAST where the argument at the given position will be replaced by the currently mapped element.
 	 * 
 	 * 
 	 * @param expr
 	 * @param replacement
-	 *            an IAST there the argument at the given position is replaced by
-	 *            the currently mapped argument of this IAST.
+	 *            an IAST there the argument at the given position is replaced by the currently mapped argument of this
+	 *            IAST.
 	 * @param position
 	 * @return
 	 */
@@ -704,16 +750,14 @@ public class Structure {
 	}
 
 	/**
-	 * Maps the elements of the <code>expr</code> with the cloned
-	 * <code>replacement</code>. <code>replacement</code> is an IAST where the
-	 * argument at the given position will be replaced by the currently mapped
-	 * element.
+	 * Maps the elements of the <code>expr</code> with the cloned <code>replacement</code>. <code>replacement</code> is
+	 * an IAST where the argument at the given position will be replaced by the currently mapped element.
 	 * 
 	 * 
 	 * @param expr
 	 * @param replacement
-	 *            an IAST there the argument at the given position is replaced by
-	 *            the currently mapped argument of this IAST.
+	 *            an IAST there the argument at the given position is replaced by the currently mapped argument of this
+	 *            IAST.
 	 * @param position
 	 * @return
 	 */
