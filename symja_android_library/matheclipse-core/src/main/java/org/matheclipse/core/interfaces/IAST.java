@@ -636,18 +636,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public boolean exists(Predicate<? super IExpr> predicate, int startOffset);
 
 	/**
-	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return if
-	 * all of the arguments satisfy the predicate.
-	 * 
-	 * @param predicate
-	 *            the predicate which filters each argument in this <code>AST</code>
-	 * @param startOffset
-	 *            start offset from which the element have to be tested
-	 * @return the <code>true</code> if the predicate is true for all elements or <code>false</code> otherwise
-	 */
-	public boolean forAll(Predicate<? super IExpr> predicate, int startOffset);
-
-	/**
 	 * Select all elements by applying the <code>function</code> to each argument in this <code>AST</code> and append
 	 * the result elements for which the function returns non-null elements to the <code>0th element</code> of the
 	 * result array, or otherwise append it to the <code>1st element</code> of the result array.
@@ -730,6 +718,18 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <code>-1</code> if no position was found
 	 */
 	public int findFirstEquals(final IExpr expr);
+
+	/**
+	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return if
+	 * all of the arguments satisfy the predicate.
+	 * 
+	 * @param predicate
+	 *            the predicate which filters each argument in this <code>AST</code>
+	 * @param startOffset
+	 *            start offset from which the element have to be tested
+	 * @return the <code>true</code> if the predicate is true for all elements or <code>false</code> otherwise
+	 */
+	public boolean forAll(Predicate<? super IExpr> predicate, int startOffset);
 
 	/**
 	 * <p>
@@ -1056,6 +1056,22 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	default IAST mapAt(final IAST replacement, int position) {
 		return mapThread(replacement, position);
 	}
+
+	/**
+	 * <p>
+	 * This method assumes that <code>this</code> is a list of list in matrix form. It combines the column values in a
+	 * list as argument for the given <code>function</code>.
+	 * </p>
+	 * <b>Example</b> a matrix <code>{{x1, y1,...}, {x2, y2, ...}, ...}</code> will be converted to
+	 * <code>{f.apply({x1, x2,...}), f.apply({y1, y2, ...}), ...}</code>
+	 * 
+	 * @param dim
+	 *            the dimension of the matrix
+	 * @param f
+	 *            a unary function
+	 * @return
+	 */
+	public IExpr mapMatrixColumns(int[] dim, Function<IExpr, IExpr> f);
 
 	/**
 	 * Maps the elements of this IAST with the unary functor <code>Functors.replaceArg(replacement, position)</code>,

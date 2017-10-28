@@ -970,7 +970,7 @@ public abstract class AbstractAST implements IAST {
 	}
 
 	@Override
-	public final IExpr getPart(final int... positions) {
+	public IExpr getPart(final int... positions) {
 		IExpr expr = this;
 		int size = positions.length;
 		for (int i = 0; i < size; i++) {
@@ -2551,12 +2551,26 @@ public abstract class AbstractAST implements IAST {
 		return resultAST;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public final IAST map(final IExpr head, final Function<IExpr, IExpr> function) {
 		return map(setAtCopy(0, head), function);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr mapMatrixColumns(int[] dim, Function<IExpr, IExpr> f) {
+		final int rowSize = size();
+		int columnSize = dim[1];
+		IAST result = F.ListAlloc(columnSize++);
+		for (int j = 1; j < columnSize; j++) {
+			IAST row = F.ListAlloc(rowSize);
+			for (int i = 1; i < rowSize; i++) {
+				row.append(getPart(i, j));
+			}
+			result.append(f.apply(row));
+		}
+		return result;
 	}
 
 	/** {@inheritDoc} */

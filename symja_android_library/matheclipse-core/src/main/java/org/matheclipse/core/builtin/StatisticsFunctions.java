@@ -784,17 +784,7 @@ public class StatisticsFunctions {
 			}
 			if (dim != null) {
 				IAST matrix = (IAST) arg1;
-				final int size = matrix.size();
-				final int rowSize = dim[1] + 1;
-				IAST result = F.ListAlloc(rowSize);
-				for (int j = 1; j < rowSize; j++) {
-					IAST row = F.ListAlloc(size);
-					for (int i = 1; i < size; i++) {
-						row.append(matrix.getPart(i, j));
-					}
-					result.append(F.Median(row));
-				}
-				return result;
+				return matrix.mapMatrixColumns(dim, x -> F.Median(x));
 			}
 			if (arg1.isList()) {
 				final IAST list = (IAST) arg1;
@@ -1024,17 +1014,7 @@ public class StatisticsFunctions {
 			}
 			if (dim != null) {
 				IAST matrix = (IAST) ast.arg1();
-				final int size = matrix.size();
-				final int rowSize = dim[1] + 1;
-				IAST result = F.ListAlloc(rowSize);
-				for (int j = 1; j < rowSize; j++) {
-					IAST row = F.ListAlloc(size);
-					for (int i = 1; i < size; i++) {
-						row.append(matrix.getPart(i, j));
-					}
-					result.append(F.Quantile(row, ast.arg2()));
-				}
-				return result;
+				return matrix.mapMatrixColumns(dim, x -> F.Quantile(x, ast.arg2()));
 			}
 
 			if (ast.arg1().isList()) {

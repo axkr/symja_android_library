@@ -98,7 +98,7 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 			this.matrix = matrix;
 		}
 	}
-	
+
 	/**
 	 * Adds the objects in the specified collection to this {@code ArrayList}.
 	 * 
@@ -361,6 +361,14 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 		return new ASTRealVector(matrix.getRowVector(location - 1), false);
 	}
 
+	@Override
+	public final IExpr getPart(final int... positions) {
+		if (positions.length == 2) {
+			return F.num(matrix.getEntry(positions[0], positions[1]));
+		}
+		return super.getPart(positions);
+	}
+
 	public RealMatrix getRealMatrix() {
 		return matrix;
 	}
@@ -446,6 +454,17 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	@Override
 	public boolean isSameHeadSizeGE(IExpr head, int length) {
 		return F.$RealMatrix.equals(head) && length <= matrix.getRowDimension() + 1;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr mapMatrixColumns(int[] dim, Function<IExpr, IExpr> f) {
+		final int columnSize = dim[1];
+		IAST result = F.ListAlloc(columnSize);
+		for (int j = 0; j < columnSize; j++) {
+			result.append(f.apply(new ASTRealVector(matrix.getColumnVector(j), false)));
+		}
+		return result;
 	}
 
 	@Override
