@@ -330,6 +330,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "bernoullidistribution" : "BernoulliDistribution");
 	public final static IBuiltInSymbol ErlangDistribution = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "erlangdistribution" : "ErlangDistribution");
+	public final static IBuiltInSymbol DiscreteUniformDistribution = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "discreteuniformdistribution" : "DiscreteUniformDistribution");
 	public final static IBuiltInSymbol ExponentialDistribution = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "exponentialdistribution" : "ExponentialDistribution");
 	public final static IBuiltInSymbol FrechetDistribution = initFinalSymbol(
@@ -438,7 +440,7 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fouriermatrix" : "FourierMatrix");
 	public final static IBuiltInSymbol FreeQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "freeq" : "FreeQ");
 	public final static IBuiltInSymbol FullForm = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fullform" : "FullForm" );
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fullform" : "FullForm");
 	public final static IBuiltInSymbol Function = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "function" : "Function");
 	public final static IBuiltInSymbol Get = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "get" : "Get",
@@ -450,7 +452,7 @@ public class F {
 	public final static IBuiltInSymbol Hold = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hold" : "Hold",
 			new org.matheclipse.core.builtin.function.Hold());
 	public final static IBuiltInSymbol HoldForm = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "holdform" : "HoldForm" );
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "holdform" : "HoldForm");
 	public final static IBuiltInSymbol Identity = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "identity" : "Identity",
 			new org.matheclipse.core.builtin.function.Identity());
@@ -465,7 +467,7 @@ public class F {
 	public final static IBuiltInSymbol IntegerQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerq" : "IntegerQ");
 	public final static IBuiltInSymbol JavaForm = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "javaform" : "JavaForm" );
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "javaform" : "JavaForm");
 	public final static IBuiltInSymbol Last = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "last" : "Last");
 	public final static IBuiltInSymbol LeafCount = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "leafcount" : "LeafCount",
@@ -482,7 +484,7 @@ public class F {
 	public final static IBuiltInSymbol MatchQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matchq" : "MatchQ");
 	public final static IBuiltInSymbol MathMLForm = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mathmlform" : "MathMLForm" );
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mathmlform" : "MathMLForm");
 	public final static IBuiltInSymbol MatrixForm = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matrixform" : "MatrixForm");
 	public final static IBuiltInSymbol MatrixQ = initFinalSymbol(
@@ -583,7 +585,7 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "syntaxq" : "SyntaxQ");
 	public final static IBuiltInSymbol Take = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "take" : "Take");
 	public final static IBuiltInSymbol TeXForm = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "texform" : "TeXForm" );
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "texform" : "TeXForm");
 	public final static IBuiltInSymbol Throw = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "throw" : "Throw");
 	public final static IBuiltInSymbol TimeConstrained = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "timeconstrained" : "TimeConstrained",
@@ -4621,7 +4623,7 @@ public class F {
 	public static IAST Median(final IExpr a0) {
 		return unaryAST1(Median, a0);
 	}
-	
+
 	public static IAST MeijerG(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(MeijerG, a0, a1, a2);
 	}
@@ -5203,11 +5205,11 @@ public class F {
 			final IExpr a3) {
 		return new AST(new IExpr[] { head, a0, a1, a2, a3 });
 	}
-	
+
 	public static IAST Quantile(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Quantile, a0, a1);
 	}
-	
+
 	public static IAST Quiet(final IExpr a0) {
 		return unaryAST1(Quiet, a0);
 	}

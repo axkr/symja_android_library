@@ -3770,6 +3770,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Mean(ExponentialDistribution(n))", "1/n");
 		check("Mean(PoissonDistribution(p))", "p");
 		check("Mean(BinomialDistribution(n, p))", "n*p");
+		check("Mean(DiscreteUniformDistribution({l, r}))", "1/2*(l+r)");
 		check("Mean(ErlangDistribution(n, m))", "n/m");
 		check("Mean(NakagamiDistribution(n, m))", "(Sqrt(m)*Pochhammer(n,1/2))/Sqrt(n)");
 		check("Mean(NormalDistribution(n, p))", "n");
@@ -7542,6 +7543,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testVariance() {
 		check("Variance(BinomialDistribution(n, m))", "(1-m)*m*n");
 		check("Variance(BernoulliDistribution(n))", "(1-n)*n");
+		check("Variance(DiscreteUniformDistribution({l, r}))", "1/12*(-1+(1-l+r)^2)");
 		check("Variance(ErlangDistribution(n, m))", "n/m^2");
 		check("Variance(ExponentialDistribution(n))", "1/n^2");
 		check("Variance(NakagamiDistribution(n, m))", "m+(-m*Pochhammer(n,1/2)^2)/n");

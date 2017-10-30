@@ -1,7 +1,5 @@
 package org.matheclipse.core.builtin;
 
-import java.util.function.Function;
-
 import org.hipparchus.distribution.IntegerDistribution;
 import org.hipparchus.distribution.RealDistribution;
 import org.hipparchus.linear.FieldMatrix;
@@ -41,6 +39,7 @@ public class StatisticsFunctions {
 		F.CentralMoment.setEvaluator(new CentralMoment());
 		F.Correlation.setEvaluator(new Correlation());
 		F.Covariance.setEvaluator(new Covariance());
+		F.DiscreteUniformDistribution.setEvaluator(new DiscreteUniformDistribution());
 		F.ErlangDistribution.setEvaluator(new ErlangDistribution());
 		F.ExponentialDistribution.setEvaluator(new ExponentialDistribution());
 		F.FrechetDistribution.setEvaluator(new FrechetDistribution());
@@ -224,10 +223,6 @@ public class StatisticsFunctions {
 				return F.Times(dist.arg1(), dist.arg2(), F.Subtract(F.C1, dist.arg2()));
 			}
 			return F.NIL;
-		}
-
-		@Override
-		public void setUp(final ISymbol newSymbol) {
 		}
 
 	}
@@ -632,6 +627,55 @@ public class StatisticsFunctions {
 			org.hipparchus.stat.correlation.Covariance cov = new org.hipparchus.stat.correlation.Covariance(matrix);
 			return new ASTRealMatrix(cov.getCovarianceMatrix(), false);
 		}
+	}
+
+	private final static class DiscreteUniformDistribution extends AbstractEvaluator implements IDistribution {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+			return F.NIL;
+		}
+
+		@Override
+		public int[] parameters(IAST dist) {
+			return null;
+		}
+
+		@Override
+		public IExpr mean(IAST dist) {
+			IExpr[] minMax = minmax(dist);
+			if (minMax != null) {
+				// (max + min)/2
+				return F.Times(F.C1D2, F.Plus(minMax[0], minMax[1]));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr variance(IAST dist) {
+			IExpr[] minMax = minmax(dist);
+			if (minMax != null) {
+				// (1/12)*(-1+(1+max-min)^2)
+				return F.Times(F.QQ(1L, 12L), F.Plus(F.CN1, F.Sqr(F.Plus(F.C1, minMax[1], F.Negate(minMax[0])))));
+			}
+
+			return F.NIL;
+		}
+
+		public IExpr[] minmax(IAST dist) {
+			if (dist.size() == 2 && dist.arg1().isList()) {
+				IAST list = (IAST) dist.arg1();
+				if (list.isAST2()) {
+					IExpr min = list.arg1();
+					IExpr max = list.arg2();
+					// max-1+min;
+					return new IExpr[] { min, max };
+				}
+			}
+			return null;
+		}
+
 	}
 
 	private final static class ErlangDistribution extends AbstractEvaluator implements IDistribution {
