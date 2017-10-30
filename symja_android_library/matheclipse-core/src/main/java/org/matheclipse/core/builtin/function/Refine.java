@@ -12,12 +12,19 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * <pre>Refine(expression, assumptions)
+ * <pre>
+ * Refine(expression, assumptions)
  * </pre>
- * <blockquote><p>evaluate the <code>expression</code> for the given <code>assumptions</code>.</p>
+ * 
+ * <blockquote>
+ * <p>
+ * evaluate the <code>expression</code> for the given <code>assumptions</code>.
+ * </p>
  * </blockquote>
  * <h3>Examples</h3>
- * <pre>&gt;&gt; Refine(Abs(n+Abs(m)), n&gt;=0)
+ * 
+ * <pre>
+ * &gt;&gt; Refine(Abs(n+Abs(m)), n&gt;=0)
  * Abs(m)+n
  * 
  * &gt;&gt; Refine(-Infinity&lt;x, x&gt;0)
@@ -41,14 +48,16 @@ public class Refine extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		Validate.checkSize(ast, 3);
+		Validate.checkRange(ast, 2, 3);
 
-		final IExpr arg2 = engine.evaluate(ast.arg2());
-		IAssumptions assumptions = determineAssumptions(ast.topHead(), arg2, engine);
-		if (assumptions != null) {
-			return refineAssumptions(ast.arg1(), assumptions, engine);
+		if (ast.size() == 3) {
+			final IExpr arg2 = engine.evaluate(ast.arg2());
+			IAssumptions assumptions = determineAssumptions(ast.topHead(), arg2, engine);
+			if (assumptions != null) {
+				return refineAssumptions(ast.arg1(), assumptions, engine);
+			}
 		}
-		return F.NIL;
+		return ast.arg1();
 	}
 
 	public static IAssumptions determineAssumptions(final ISymbol symbol, final IExpr arg2, EvalEngine engine) {

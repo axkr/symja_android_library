@@ -4412,8 +4412,27 @@ public class F {
 		return binaryAST2(Less, a0, a1);
 	}
 
+	public static IAST Less(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(Less, a0, a1, a2);
+	}
+
+	public static IAST Less(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+		return quaternary(Less, a0, a1, a2, a3);
+	}
+
+	public static IAST Less(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {
+		return quinary(Less, a0, a1, a2, a3, a4);
+	}
 	public static IExpr LessEqual(final IExpr a0, final IExpr a1) {
 		return binaryAST2(LessEqual, a0, a1);
+	}
+	
+	public static IAST LessEqual(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(Less, a0, a1, a2);
+	}
+
+	public static IAST LessEqual(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+		return quaternary(Less, a0, a1, a2, a3);
 	}
 
 	public static IAST Limit(final IExpr a0, final IExpr a1) {
@@ -5233,11 +5252,19 @@ public class F {
 		}
 		return unaryAST1(Re, a0);
 	}
-
+	
+	public static IAST RealNumberQ(final IExpr a) {
+		return unaryAST1(RealNumberQ, a);
+	}
+	
 	public static IAST Reap(final IExpr a) {
 		return unaryAST1(Reap, a);
 	}
-
+	
+	public static IAST Refine(final IExpr a) {
+		return unaryAST1(Refine, a);
+	}
+	
 	public static IAST Refine(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Refine, a0, a1);
 	}
