@@ -48,6 +48,7 @@ public class StatisticsFunctions {
 		F.GumbelDistribution.setEvaluator(new GumbelDistribution());
 		F.HypergeometricDistribution.setEvaluator(new HypergeometricDistribution());
 		F.Kurtosis.setEvaluator(new Kurtosis());
+		F.LogNormalDistribution.setEvaluator(new LogNormalDistribution());
 		F.Mean.setEvaluator(new Mean());
 		F.Median.setEvaluator(new Median());
 		F.NakagamiDistribution.setEvaluator(new NakagamiDistribution());
@@ -55,6 +56,8 @@ public class StatisticsFunctions {
 		F.PoissonDistribution.setEvaluator(new PoissonDistribution());
 		F.Quantile.setEvaluator(new Quantile());
 		F.Skewness.setEvaluator(new Skewness());
+		F.StandardDeviation.setEvaluator(new StandardDeviation());
+		F.Standardize.setEvaluator(new Standardize());
 		F.StudentTDistribution.setEvaluator(new StudentTDistribution());
 		F.Variance.setEvaluator(new Variance());
 		F.WeibullDistribution.setEvaluator(new WeibullDistribution());
@@ -772,6 +775,47 @@ public class StatisticsFunctions {
 
 	}
 
+	private final static class LogNormalDistribution extends AbstractEvaluator implements IDistribution {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			return F.NIL;
+		}
+
+		@Override
+		public int[] parameters(IAST dist) {
+			return null;
+		}
+
+		@Override
+		public IExpr mean(IAST dist) {
+			if (dist.isAST2()) {
+				IExpr m = dist.arg1();
+				IExpr s = dist.arg2();
+				// E^(m+s^2/2)
+				return F.Power(F.E, F.Plus(m, F.Times(F.C1D2, F.Sqr(s))));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr variance(IAST dist) {
+			if (dist.isAST2()) {
+				IExpr m = dist.arg1();
+				IExpr s = dist.arg2();
+				// E^(2*m+s^2)*(-1+E^(s^2))
+				return F.Times(F.Plus(F.CN1, F.Power(F.E, F.Sqr(s))), F.Power(F.E, F.Plus(F.Times(F.C2, m), F.Sqr(s))));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
 	/**
 	 * 
 	 * See <a href="http://en.wikipedia.org/wiki/Arithmetic_mean">Arithmetic mean</a>
@@ -1142,6 +1186,73 @@ public class StatisticsFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private final static class StandardDeviation extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			if (ast.arg1().isAST()) {
+				IAST arg1 = (IAST) ast.arg1();
+				int[] matrixDimensions = arg1.isMatrix();
+
+				int[] dim = arg1.isMatrix();
+				if (dim == null && arg1.isListOfLists()) {
+					return F.NIL;
+				}
+				if (dim != null) {
+					IAST matrix = (IAST) arg1;
+					return matrix.mapMatrixColumns(dim, x -> F.StandardDeviation(x));
+				}
+
+				// if (matrixDimensions != null) {
+				// IAST result = F.ListAlloc(matrixDimensions[0]);
+				// for (int i = 1; i < matrixDimensions[1] + 1; i++) {
+				// IAST list = F.ListAlloc(matrixDimensions[1]);
+				// IAST standardDeviation = F.StandardDeviation(list);
+				// for (int j = 1; j < matrixDimensions[0] + 1; j++) {
+				// list.append(arg1.getPart(j, i));
+				// }
+				// result.append(standardDeviation);
+				// }
+				// return result;
+				// }
+				//
+				// int vectorDim = arg1.isVector();
+				// if (vectorDim >= 0) {
+				// return F.Sqrt(F.Variance(arg1));
+				// }
+			}
+			return F.Sqrt(F.Variance(ast.arg1()));
+		}
+
+	}
+
+	private final static class Standardize extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+			IExpr arg1 = ast.arg1();
+
+			int[] dim = arg1.isMatrix();
+			if (dim == null && arg1.isListOfLists()) {
+				return F.NIL;
+			}
+			if (dim != null) {
+				IAST matrix = (IAST) arg1;
+				return F.Transpose(matrix.mapMatrixColumns(dim, v -> F.Standardize(v)));
+			}
+
+			IExpr sd = engine.evaluate(F.StandardDeviation(arg1));
+			if (!sd.isZero()) {
+				return engine.evaluate(F.Divide(F.Subtract(arg1, F.Mean(arg1)), sd));
+			}
+			return F.NIL;
 		}
 
 	}

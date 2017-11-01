@@ -344,6 +344,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "gumbeldistribution" : "GumbelDistribution");
 	public final static IBuiltInSymbol HypergeometricDistribution = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hypergeometricdistribution" : "HypergeometricDistribution");
+	public final static IBuiltInSymbol LogNormalDistribution = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "lognormaldistribution" : "LogNormalDistribution");
 	public final static IBuiltInSymbol NakagamiDistribution = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nakagamidistribution" : "NakagamiDistribution");
 	public final static IBuiltInSymbol NormalDistribution = initFinalSymbol(
@@ -1234,6 +1236,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "squaredeuclideandistance" : "SquaredEuclideanDistance");
 	public final static IBuiltInSymbol SquareFreeQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "squarefreeq" : "SquareFreeQ");
+	public final static IBuiltInSymbol Standardize = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "standardize" : "Standardize");
 	public final static IBuiltInSymbol StandardDeviation = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "standarddeviation" : "StandardDeviation");
 	public final static IBuiltInSymbol StieltjesGamma = initFinalSymbol(
@@ -4423,10 +4427,11 @@ public class F {
 	public static IAST Less(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3, final IExpr a4) {
 		return quinary(Less, a0, a1, a2, a3, a4);
 	}
+
 	public static IExpr LessEqual(final IExpr a0, final IExpr a1) {
 		return binaryAST2(LessEqual, a0, a1);
 	}
-	
+
 	public static IAST LessEqual(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(Less, a0, a1, a2);
 	}
@@ -5252,19 +5257,19 @@ public class F {
 		}
 		return unaryAST1(Re, a0);
 	}
-	
+
 	public static IAST RealNumberQ(final IExpr a) {
 		return unaryAST1(RealNumberQ, a);
 	}
-	
+
 	public static IAST Reap(final IExpr a) {
 		return unaryAST1(Reap, a);
 	}
-	
+
 	public static IAST Refine(final IExpr a) {
 		return unaryAST1(Refine, a);
 	}
-	
+
 	public static IAST Refine(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Refine, a0, a1);
 	}
@@ -5521,6 +5526,10 @@ public class F {
 
 	public static IAST StandardDeviation(final IExpr a0) {
 		return unaryAST1(StandardDeviation, a0);
+	}
+
+	public static IAST Standardize(final IExpr a0) {
+		return unaryAST1(Standardize, a0);
 	}
 
 	public static IAST StieltjesGamma(final IExpr a0) {

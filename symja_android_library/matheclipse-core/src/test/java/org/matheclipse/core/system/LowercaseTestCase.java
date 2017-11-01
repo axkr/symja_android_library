@@ -3772,6 +3772,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Mean(BinomialDistribution(n, p))", "n*p");
 		check("Mean(DiscreteUniformDistribution({l, r}))", "1/2*(l+r)");
 		check("Mean(ErlangDistribution(n, m))", "n/m");
+		check("Mean(LogNormalDistribution(m,s))", "E^(m+s^2/2)");
 		check("Mean(NakagamiDistribution(n, m))", "(Sqrt(m)*Pochhammer(n,1/2))/Sqrt(n)");
 		check("Mean(NormalDistribution(n, p))", "n");
 		check("Mean(FrechetDistribution(n, m))", "Piecewise({{m*Gamma(1-1/n),1<n}},Infinity)");
@@ -5151,6 +5152,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		check("(2/3)^(-3/4)", "(3/2)^(3/4)");
 		check("(y*1/z)^(-1.0)", "z/y");
 		check("0^(3+I*4)", "0");
 		check("4 ^ (1/2)", "2");
@@ -6661,11 +6663,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("{a, b, c, d, e, f, g, h}[[2 ;; All]]", "{b,c,d,e,f,g,h}");
 	}
 
+	public void testStandardize() {
+		check("Standardize({6.5, 3.8, 6.6, 5.7, 6.0, 6.4, 5.3})", //
+				"{0.75705,-1.99453,0.85896,-0.05823,0.2475,0.65514,-0.46588}");
+		check("Standardize({{a,b},{c,d}})", //
+				"{{(Sqrt(2)*(a-(a+c)/2))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(2)*(b-(b+d)/\n"
+						+ "2))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))},\n"
+						+ " {(Sqrt(2)*(c-(a+c)/2))/Sqrt((a-c)*(Conjugate(a)-Conjugate(c))),(Sqrt(2)*(d-(b+d)/\n"
+						+ "2))/Sqrt((b-d)*(Conjugate(b)-Conjugate(d)))}}");
+	}
+
 	public void testStandardDeviation() {
 		check("StandardDeviation({1, 2, 3})", "1");
 		check("StandardDeviation({7, -5, 101, 100})", "Sqrt(13297)/2");
 		check("StandardDeviation({a, a})", "0");
 		check("StandardDeviation({{1, 10}, {-1, 20}})", "{Sqrt(2),5*Sqrt(2)}");
+		check("StandardDeviation({1.21, 3.4, 2, 4.66, 1.5, 5.61, 7.22})", "2.27183");
+		check("StandardDeviation(LogNormalDistribution(0, 1))", "Sqrt((-1+E)*E)");
 	}
 
 	public void testStieltjesGamma() {
@@ -7546,6 +7560,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Variance(DiscreteUniformDistribution({l, r}))", "1/12*(-1+(1-l+r)^2)");
 		check("Variance(ErlangDistribution(n, m))", "n/m^2");
 		check("Variance(ExponentialDistribution(n))", "1/n^2");
+		check("Variance(LogNormalDistribution(m,s))", "(-1+E^s^2)*E^(2*m+s^2)");
 		check("Variance(NakagamiDistribution(n, m))", "m+(-m*Pochhammer(n,1/2)^2)/n");
 		check("Variance(NormalDistribution(n, m))", "m^2");
 		check("Variance(FrechetDistribution(n, m))", "Piecewise({{m^2*(Gamma(1-2/n)-Gamma(1-1/n)^2),n>2}},Infinity)");

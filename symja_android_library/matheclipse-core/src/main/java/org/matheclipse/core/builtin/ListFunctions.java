@@ -98,7 +98,6 @@ public final class ListFunctions {
 		F.Select.setEvaluator(new Select());
 		F.Split.setEvaluator(new Split());
 		F.SplitBy.setEvaluator(new SplitBy());
-		F.StandardDeviation.setEvaluator(new StandardDeviation());
 		F.Table.setEvaluator(new Table());
 		F.Take.setEvaluator(new Take());
 		F.Tally.setEvaluator(new Tally());
@@ -2498,38 +2497,6 @@ public final class ListFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-		}
-
-	}
-
-	private final static class StandardDeviation extends AbstractFunctionEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
-			if (ast.arg1().isAST()) {
-				IAST arg1 = (IAST) ast.arg1();
-				int[] matrixDimensions = arg1.isMatrix();
-				if (matrixDimensions != null) {
-					IAST result = F.ListAlloc(matrixDimensions[0]);
-					for (int i = 1; i < matrixDimensions[1] + 1; i++) {
-						IAST list = F.ListAlloc(matrixDimensions[1]);
-						IAST standardDeviation = F.StandardDeviation(list);
-						for (int j = 1; j < matrixDimensions[0] + 1; j++) {
-							list.append(arg1.getPart(j, i));
-						}
-						result.append(standardDeviation);
-					}
-					return result;
-				}
-
-				int dim = arg1.isVector();
-				if (dim >= 0) {
-					return F.Sqrt(F.Variance(arg1));
-				}
-			}
-			return F.NIL;
 		}
 
 	}
