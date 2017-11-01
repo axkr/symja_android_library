@@ -1529,6 +1529,10 @@ public final class Arithmetic {
 				}
 			}
 
+			if (f1.isNegative() && !f0.getDenominator().isOne()) {
+				return F.Power(f0.inverse(), f1.negate());
+			}
+
 			if (!f1.getDenominator().isOne()) {
 				IInteger a;
 				IInteger b;
