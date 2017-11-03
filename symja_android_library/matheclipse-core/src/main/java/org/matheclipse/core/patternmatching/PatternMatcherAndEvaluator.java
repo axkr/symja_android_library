@@ -25,8 +25,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	private IExpr fRightHandSide;
 
 	/**
-	 * Leaf count of the right-hand-side of this matcher if it's a
-	 * <code>Condition()</code> or
+	 * Leaf count of the right-hand-side of this matcher if it's a <code>Condition()</code> or
 	 * <code>Module(...,Condition()) or With(...,Condition())</code> expression.
 	 * 
 	 */
@@ -47,8 +46,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	 * @param leftHandSide
 	 *            could contain pattern expressions for "pattern-matching"
 	 * @param rightHandSide
-	 *            the result which should be evaluated if the "pattern-matching"
-	 *            succeeds
+	 *            the result which should be evaluated if the "pattern-matching" succeeds
 	 */
 	public PatternMatcherAndEvaluator(final IExpr leftHandSide, final IExpr rightHandSide) {
 		this(ISymbol.RuleType.SET_DELAYED, leftHandSide, rightHandSide);
@@ -58,13 +56,11 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	 * ine a pattern-matching rule.
 	 * 
 	 * @param setSymbol
-	 *            the symbol which defines this pattern-matching rule (i.e. Set,
-	 *            SetDelayed,...)
+	 *            the symbol which defines this pattern-matching rule (i.e. Set, SetDelayed,...)
 	 * @param leftHandSide
 	 *            could contain pattern expressions for "pattern-matching"
 	 * @param rightHandSide
-	 *            the result which should be evaluated if the "pattern-matching"
-	 *            succeeds
+	 *            the result which should be evaluated if the "pattern-matching" succeeds
 	 */
 	public PatternMatcherAndEvaluator(final ISymbol.RuleType setSymbol, final IExpr leftHandSide,
 			final IExpr rightHandSide) {
@@ -75,8 +71,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	}
 
 	/**
-	 * Calculate the leaf count of the right-hand-side of this matcher if it's a
-	 * <code>Condition()</code> or
+	 * Calculate the leaf count of the right-hand-side of this matcher if it's a <code>Condition()</code> or
 	 * <code>Module(...,Condition()) or With(...,Condition())</code> expression.
 	 * 
 	 */
@@ -101,8 +96,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	}
 
 	/**
-	 * Check if the two expressions are equivalent. (i.e. <code>f[x_,y_]</code> is
-	 * equivalent to <code>f[a_,b_]</code> )
+	 * Check if the two expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to <code>f[a_,b_]</code> )
 	 * 
 	 * @param patternExpr1
 	 * @param patternExpr2
@@ -148,9 +142,8 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	}
 
 	/**
-	 * Check if the condition for the right-hand-sides
-	 * <code>Module[], With[] or Condition[]</code> expressions evaluates to
-	 * <code>true</code>.
+	 * Check if the condition for the right-hand-sides <code>Module[], With[] or Condition[]</code> expressions
+	 * evaluates to <code>true</code>.
 	 * 
 	 * @return <code>true</code> if the right-hand-sides condition is fulfilled.
 	 */
@@ -236,8 +229,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 	}
 
 	/**
-	 * Get the leaf count of the right-hand-side of this matcher if it's a
-	 * <code>Condition()</code> or
+	 * Get the leaf count of the right-hand-side of this matcher if it's a <code>Condition()</code> or
 	 * <code>Module(...,Condition()) or With(...,Condition())</code> expression.
 	 * 
 	 * @return the leaf count
@@ -283,6 +275,9 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 		int comp = super.equivalent(obj);
 		if (comp == 0) {
 			if (obj instanceof PatternMatcherAndEvaluator) {
+				// if (fLhsPatternExpr.equals(obj.fLhsPatternExpr)) {
+				// return 0;
+				// }
 				PatternMatcherAndEvaluator pm = (PatternMatcherAndEvaluator) obj;
 				if (fRightHandSide != null && pm.fRightHandSide != null) {
 					if (fRightHandSide.isCondition() || fRightHandSide.isModuleOrWithCondition()) {

@@ -1,6 +1,5 @@
 {
- Limit(x_^m_NumberQ, x_Symbol->Infinity):= Infinity /; Positive(m),
- Limit(x_^m_NumberQ, x_Symbol->Infinity):= 0 /; Negative(m),
+ Limit(x_^m_RealNumberQ, x_Symbol->Infinity):= If(m<0, 0, Infinity),
  Limit(m_NumberQ^x_, x_Symbol->Infinity):= If(m>1, Infinity, If(m==1, 1, 0)) /; Positive(m),
  Limit(m_NumberQ^(-x_), x_Symbol->Infinity):= 0 /; m>1,
  Limit(E^x_, x_Symbol->Infinity):= Infinity,

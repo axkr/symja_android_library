@@ -936,11 +936,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCondition() {
+		check("fac(n_ /; n > 0) := n!", "");
+		check("fac(3)+fac(-4)", "6+fac(-4)");
+		
+		check("Cases({3, -4, 5, -2}, x_ /; x < 0)", "{-4,-2}");
+		check("Cases({z(1, 1), z(-1, 1), z(-2, 2)}, z(x_ /; x < 0, y_))", "{z(-1,1),z(-2,2)}");
+		check("{1 + a, 2 + a, -3 + a} /. (x_ /; x < 0) + a -> p(x)", "{1+a,2+a,p(-3)}");
+
+		check("{6, -7, 3, 2, -1, -2} /. x_ /; x < 0 -> w", "{6,w,3,2,w,w}");
 		check("f(3) /. f(x_) /; x>0 -> t", "t");
 		check("f(-3) /. f(x_) /; x>0 -> t", "f(-3)");
 		check("f(x_) := p(x) /; x>0", "");
 		check("f(3)", "p(3)");
 		check("f(-3)", "f(-3)");
+
+		check("f(x_) := Module({u}, u^2 /; ((u = x - 1) > 0))", "");
+		check("f(0)", "f(0)");
+		check("g(x_) := Module({a}, a = Prime(10^x); (FactorInteger(a + 1)) /; a < 10^6)", "");
+		check("g(4)", "{{2,1},{3,1},{5,1},{3491,1}}");
+		check("g(5)", "g(5)");
 	}
 
 	public void testConjugate() {
@@ -3300,7 +3314,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LegendreP(7,x)", "-35/16*x+315/16*x^3-693/16*x^5+429/16*x^7");
 		check("LegendreP(10,x)", "-63/256+3465/256*x^2-15015/128*x^4+45045/128*x^6-109395/256*x^8+46189/256*x^10");
 	}
-	
+
 	public void testLegendreQ() {
 		check("LegendreQ(1,z)", "-1+z*(-Log(1-z)/2+Log(1+z)/2)");
 		check("LegendreQ(2,z)", "-3/2*z+1/2*(-1/2+3/2*z^2)*(-Log(1-z)+Log(1+z))");

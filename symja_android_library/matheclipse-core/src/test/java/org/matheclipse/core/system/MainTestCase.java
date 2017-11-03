@@ -755,7 +755,7 @@ public class MainTestCase extends AbstractTestCase {
 
 	// two rules are associated with condf
 	public void testSystem059() {
-		check("$condf(x_,y_):={x,y}/;NumberQ(x);$condf(x_,y_):={y,x}/;NumberQ(y)", "");
+		check("$condf(x_,y_):={x,y}/;NumberQ(x);$condf(x_,z_):={z,x}/;NumberQ(z)", "");
 		check("$condf(c,7)", "{7,c}");
 		check("{$condf(a,a),$condf(42,b),$condf(c,7)}", "{$condf(a,a),{42,b},{7,c}}");
 		// only the last rule is associated with condg

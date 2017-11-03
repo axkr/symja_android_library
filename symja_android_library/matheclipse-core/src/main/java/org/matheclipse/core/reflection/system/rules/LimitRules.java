@@ -13,16 +13,13 @@ public interface LimitRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 4, 13 };
+  final public static int[] SIZES = { 4, 12 };
 
   final public static IAST RULES = List(
     IInit(Limit, SIZES),
-    // Limit(x_^m_NumberQ,x_Symbol->Infinity):=Infinity/;Positive(m)
-    ISetDelayed(Limit(Power(x_,$p(m,NumberQ)),Rule($p(x,Symbol),oo)),
-      Condition(oo,Positive(m))),
-    // Limit(x_^m_NumberQ,x_Symbol->Infinity):=0/;Negative(m)
-    ISetDelayed(Limit(Power(x_,$p(m,NumberQ)),Rule($p(x,Symbol),oo)),
-      Condition(C0,Negative(m))),
+    // Limit(x_^m_RealNumberQ,x_Symbol->Infinity):=If(m<0,0,Infinity)
+    ISetDelayed(Limit(Power(x_,$p(m,RealNumberQ)),Rule($p(x,Symbol),oo)),
+      If(Less(m,C0),C0,oo)),
     // Limit(m_NumberQ^x_,x_Symbol->Infinity):=If(m>1,Infinity,If(m==1,1,0))/;Positive(m)
     ISetDelayed(Limit(Power($p(m,NumberQ),x_),Rule($p(x,Symbol),oo)),
       Condition(If(Greater(m,C1),oo,If(Equal(m,C1),C1,C0)),Positive(m))),
