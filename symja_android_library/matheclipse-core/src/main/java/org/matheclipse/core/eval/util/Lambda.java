@@ -165,11 +165,13 @@ public class Lambda {
 
 	/**
 	 * Tests each argument with the <code>stopPredicate</code>. If the predicate gives <code>true</code> return
-	 * <code>true</code>. If the <code>stopPredicate</code> gives false for each test return <code>false</code>
+	 * <code>true</code>. If the <code>stopPredicate</code> gives <code>false</code> for each test return
+	 * <code>false</code>
 	 * 
 	 * @param ast
 	 * @param stopPredicate
-	 * @param offset TODO
+	 * @param offset
+	 *            the offset where to start testing the predicate
 	 * @return
 	 */
 	public static boolean exists(IAST ast, Predicate<IExpr> stopPredicate, int offset) {
@@ -181,7 +183,17 @@ public class Lambda {
 		}
 		return false;
 	}
-	
+
+	/**
+	 * Tests each argument with the <code>predicate</code>. If the predicate gives <code>false</code> return
+	 * <code>false</code>. If the <code>predicate</code> gives <code>true</code> for each test return <code>true</code>
+	 * 
+	 * @param ast
+	 * @param stopPredicate
+	 * @param offset
+	 *            the offset where to start testing the predicate
+	 * @return
+	 */
 	public static boolean forAll(IAST ast, Predicate<IExpr> predicate, int offset) {
 		int size = ast.size();
 		for (int i = offset; i < size; i++) {
