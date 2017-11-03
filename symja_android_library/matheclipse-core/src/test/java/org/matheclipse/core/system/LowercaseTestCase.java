@@ -2781,9 +2781,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHypergeometric1F1() {
+		check("Hypergeometric1F1(1,b,z)", "(-1+b)*E^z*z^(1-b)*(Gamma(-1+b)-Gamma(-1+b,z))");
+		check("Hypergeometric1F1(2,b,z)", //
+				"(-1+b)*(1+(2-b)*E^z*z^(1-b)*(Gamma(-1+b)-Gamma(-1+b,z))+E^z*z^(2-b)*(Gamma(-1+b)-Gamma(\n"
+						+ "-1+b,z)))");
 		check("Hypergeometric1F1(-2,-1,0)", "1");
 		check("Hypergeometric1F1(-2,-1,z)", "ComplexInfinity");
-		check("Hypergeometric1F1(-2,-7,z)", "Hypergeometric1F1(-2,-7,z)");
+		check("Hypergeometric1F1(-2,-7,z)", "1+2/7*z+z^2/42");
 		check("Hypergeometric1F1(-2,0,z)", "ComplexInfinity");
 		check("Hypergeometric1F1(a,a,z)", "E^z");
 		check("Hypergeometric1F1(0,1,z)", "1");
@@ -3290,9 +3294,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO implement non integer args
 		// check("LegendreP(5/2, 1.5) ", "x");
 
+		check("LegendreP(0,x)", "1");
 		check("LegendreP(1,x)", "x");
+		check("LegendreP(2,x)", "-1/2+3/2*x^2");
 		check("LegendreP(7,x)", "-35/16*x+315/16*x^3-693/16*x^5+429/16*x^7");
 		check("LegendreP(10,x)", "-63/256+3465/256*x^2-15015/128*x^4+45045/128*x^6-109395/256*x^8+46189/256*x^10");
+	}
+	
+	public void testLegendreQ() {
+		check("LegendreQ(1,z)", "-1+z*(-Log(1-z)/2+Log(1+z)/2)");
+		check("LegendreQ(2,z)", "-3/2*z+1/2*(-1/2+3/2*z^2)*(-Log(1-z)+Log(1+z))");
+		check("LegendreQ(3,z)", "-1/6-5/3*(-1/2+3/2*z^2)+1/2*(-3/2*z+5/2*z^3)*(-Log(1-z)+Log(1+z))");
 	}
 
 	public void testLength() {

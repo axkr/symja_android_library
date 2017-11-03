@@ -30,6 +30,7 @@ import org.matheclipse.core.builtin.ComputationalGeometryFunctions;
 import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.builtin.ExpTrigsFunctions;
 import org.matheclipse.core.builtin.FunctionDefinitions;
+import org.matheclipse.core.builtin.HypergeometricFunctions;
 import org.matheclipse.core.builtin.IntegerFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.ListFunctions;
@@ -966,6 +967,8 @@ public class F {
 	public final static IBuiltInSymbol LCM = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "lcm" : "LCM");
 	public final static IBuiltInSymbol LegendreP = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "legendrep" : "LegendreP");
+	public final static IBuiltInSymbol LegendreQ = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "legendreq" : "LegendreQ");
 	public final static IBuiltInSymbol Less = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "less" : "Less");
 	public final static IBuiltInSymbol LessEqual = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "lessequal" : "LessEqual");
@@ -2042,6 +2045,7 @@ public class F {
 			OutputFunctions.initialize();
 			RandomFunctions.initialize();
 			StatisticsFunctions.initialize();
+			HypergeometricFunctions.initialize();
 			ComputationalGeometryFunctions.initialize();
 
 			// initialize only the utility function rules for Integrate
@@ -4387,6 +4391,10 @@ public class F {
 
 	public static IAST LegendreP(final IExpr a0, final IExpr a1) {
 		return binaryAST2(LegendreP, a0, a1);
+	}
+	
+	public static IAST LegendreQ(final IExpr a0, final IExpr a1) {
+		return binaryAST2(LegendreQ, a0, a1);
 	}
 
 	// public static IAST KOrderlessPartitions(final IExpr a0) {
