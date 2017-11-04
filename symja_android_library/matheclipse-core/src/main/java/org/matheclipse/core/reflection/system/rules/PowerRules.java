@@ -38,9 +38,9 @@ public interface PowerRules {
     // E^Log(x_):=x
     ISetDelayed(Power(E,Log(x_)),
       x),
-    // E^(a_*Log(x_)):=x^a/;FreeQ(a,x)
-    ISetDelayed(Power(E,Times(a_,Log(x_))),
-      Condition(Power(x,a),FreeQ(a,x))),
+    // E^(a_*Log(x_)/;FreeQ(a,x)):=x^a
+    ISetDelayed(Power(E,Condition(Times(a_,Log(x_)),FreeQ(a,x))),
+      Power(x,a)),
     // Tan(x_)^m_?(IntegerQ(#1)&&#1<0&):=Cot(x)^(-m)
     ISetDelayed(Power(Tan(x_),PatternTest(m_,Function(And(IntegerQ(Slot1),Less(Slot1,C0))))),
       Power(Cot(x),Negate(m))),
