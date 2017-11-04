@@ -23,8 +23,8 @@ public interface LegendreQRules {
     // LegendreQ(x_,-1)=ComplexInfinity
     ISet(LegendreQ(x_,CN1),
       CComplexInfinity),
-    // LegendreQ(x_IntegerQ,-1):=ComplexInfinity/;x<0
-    ISetDelayed(LegendreQ($p(x,IntegerQ),CN1),
+    // LegendreQ(x_IntegerQ,z_):=ComplexInfinity/;x<0
+    ISetDelayed(LegendreQ($p(x,IntegerQ),z_),
       Condition(CComplexInfinity,Less(x,C0))),
     // LegendreQ(0,z_):=-Log(1-z)/2+Log(1+z)/2
     ISetDelayed(LegendreQ(C0,z_),

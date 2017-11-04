@@ -1,7 +1,7 @@
  {  
    LegendreQ(x_, 1) = ComplexInfinity,
    LegendreQ(x_, -1) = ComplexInfinity,
-   LegendreQ(x_IntegerQ, -1) := ComplexInfinity 
+   LegendreQ(x_IntegerQ, z_) := ComplexInfinity 
      /; x<0,
    LegendreQ(0, z_) := (1/2)*Log(1 + z) - (1/2)*Log(1 - z),
    LegendreQ(1, z_) := -1+z*( - (1/2)*Log(1 - z) + (1/2)*Log(1 + z)),

@@ -412,6 +412,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [LCM](functions/LCM.md)
 * [LeastSquares](functions/LeastSquares.md)
 * [LegendreP](functions/LegendreP.md)
+* [LegendreQ](functions/LegendreQ.md)
 * [Length](functions/Length.md)
 * [Less](functions/Less.md)
 * [LessEqual](functions/LessEqual.md)
@@ -647,4 +648,3 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Xor](functions/Xor.md)
 * [YuleDissimilarity](functions/YuleDissimilarity.md)
 * [Zeta](functions/Zeta.md)
-

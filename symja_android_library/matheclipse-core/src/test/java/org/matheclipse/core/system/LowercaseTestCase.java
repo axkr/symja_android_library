@@ -2826,16 +2826,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// iterations! Limiting value: 9.789346
 		check("Hypergeometric2F1(0.5,0.333,0.666,1)", "Hypergeometric2F1(0.5,0.333,0.666,1.0)");
 	}
+	
+	public void testI() {
+		check("(3+I)*(3-I)", "10");
+	}
 
 	public void testIf() {
 		check("If(1<2, a, b)", "a");
 		check("If(1<2, a)", "a");
 		check("If(False, a) //FullForm", "\"Null\"");
 		check("If(a>b,true)", "");
-	}
-
-	public void testI() {
-		check("(3+I)*(3-I)", "10");
 	}
 
 	public void testIm() {
@@ -3316,9 +3316,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLegendreQ() {
+		check("LegendreQ(-3,z)", "ComplexInfinity");
 		check("LegendreQ(1,z)", "-1+z*(-Log(1-z)/2+Log(1+z)/2)");
 		check("LegendreQ(2,z)", "-3/2*z+1/2*(-1/2+3/2*z^2)*(-Log(1-z)+Log(1+z))");
 		check("LegendreQ(3,z)", "-1/6-5/3*(-1/2+3/2*z^2)+1/2*(-3/2*z+5/2*z^3)*(-Log(1-z)+Log(1+z))");
+		check("Expand(LegendreQ(4,z))", "55/24*z-35/8*z^3-3/16*Log(1-z)+15/8*z^2*Log(1-z)-35/16*z^4*Log(1-z)+3/16*Log(1+z)\n" + 
+				"-15/8*z^2*Log(1+z)+35/16*z^4*Log(1+z)");
 	}
 
 	public void testLength() {
@@ -3341,6 +3344,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Refine(-Infinity<x, x>0)", "True");
 
 		check("3<4", "True");
+		check("3<4<5", "True");
 		check("{Less(), Less(x), Less(1)}", "{True,True,True}");
 		check("(2*x+5)<(5^(1/2))", "x<1/2*(-5+Sqrt(5))");
 		check("(-2*x+5)<(5^(1/2))", "x>-(-5+Sqrt(5))/2");
@@ -3353,6 +3357,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Refine(-Infinity<=x, x>0)", "True");
 
 		check("3<=4", "True");
+		check("3<=4<=5", "True");
 		check("{LessEqual(), LessEqual(x), LessEqual(1)}", "{True,True,True}");
 		check("(2*x+5)<=(5^(1/2))", "x<=1/2*(-5+Sqrt(5))");
 		check("(-2*x+5)<=(5^(1/2))", "x>=-(-5+Sqrt(5))/2");
