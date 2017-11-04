@@ -37,6 +37,8 @@ Features of the Symja language:
 
 ### Examples
 
+To get an idea of the kinds of expressions Symja handles, see the [tests in this file](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/test/java/org/matheclipse/core/system/LowercaseTestCase.java).
+
 ![Console Examples](console.gif)
 
 ```mma
