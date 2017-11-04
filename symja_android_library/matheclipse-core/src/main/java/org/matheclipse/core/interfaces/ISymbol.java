@@ -315,14 +315,14 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * 
 	 * @return
 	 */
-	public boolean isLocked(boolean packageMode);
+	public boolean isLocked();
 
 	/**
 	 * Gives <code>true</code> if the system is in server mode and cannot be modified
 	 * 
 	 * @return
 	 */
-	public boolean isLocked();
+	public boolean isLocked(boolean packageMode);
 
 	/**
 	 * Tests if this symbols name equals the given string
@@ -355,7 +355,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @see org.matheclipse.core.reflection.system.Floor
 	 */
 	default IExpr mapConstantDouble(DoubleFunction<IExpr> function) {
-		return F.NIL;  
+		return F.NIL;
 	}
 
 	/**
@@ -506,8 +506,17 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 */
 	public IExpr[] reassignSymbolValue(IAST ast, ISymbol functionSymbol, EvalEngine engine);
 
-	public void removeRule(final IBuiltInSymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide,
-			boolean packageMode);
+	/**
+	 * Remove the rules associate with this symbol, which equals the given <code>leftHandSide</code> expression.
+	 * 
+	 * @param setSymbol
+	 * @param equalRule
+	 * @param leftHandSide
+	 * @param packageMode
+	 * @return <code>true</code> if a rule could be removed, <code>false</code> otherwise
+	 */
+	public boolean removeRule(final IBuiltInSymbol.RuleType setSymbol, final boolean equalRule,
+			final IExpr leftHandSide, boolean packageMode);
 
 	/**
 	 * Set the value of the local variable on top of the local variable stack

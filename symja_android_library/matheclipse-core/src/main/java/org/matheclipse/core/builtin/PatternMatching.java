@@ -344,17 +344,25 @@ public final class PatternMatching {
 		public void removeRule(IExpr leftHandSide, boolean packageMode) {
 			if (leftHandSide.isAST()) {
 				final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
-				lhsSymbol.removeRule(ISymbol.RuleType.SET, false, leftHandSide, packageMode);
+				if (!lhsSymbol.removeRule(ISymbol.RuleType.SET, false, leftHandSide, packageMode)) {
+					printAssignmentNotFound(leftHandSide);
+				}
 				return;
 			}
 			if (leftHandSide.isSymbol()) {
 				final ISymbol lhsSymbol = (ISymbol) leftHandSide;
 
-				lhsSymbol.removeRule(ISymbol.RuleType.SET, true, leftHandSide, packageMode);
+				if (!lhsSymbol.removeRule(ISymbol.RuleType.SET, true, leftHandSide, packageMode)) {
+					printAssignmentNotFound(leftHandSide);
+				}
 				return;
 			}
 
 			throw new RuleCreationError(leftHandSide);
+		}
+
+		private void printAssignmentNotFound(final IExpr leftHandSide) {
+			EvalEngine.get().printMessage("Assignment not found for: " + leftHandSide.toString());
 		}
 
 		@Override

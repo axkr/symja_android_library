@@ -272,9 +272,8 @@ public class RulesData implements Serializable {
 	}
 
 	/**
-	 * Create a pattern hash value for the left-hand-side expression and insert the
-	 * left-hand-side as a simple pattern rule to the
-	 * <code>fSimplePatternRules</code>.
+	 * Create a pattern hash value for the left-hand-side expression and insert the left-hand-side as a simple pattern
+	 * rule to the <code>fSimplePatternRules</code>.
 	 * 
 	 * @param leftHandSide
 	 * @param pmEvaluator
@@ -290,9 +289,8 @@ public class RulesData implements Serializable {
 	}
 
 	/**
-	 * Create a pattern hash value for the left-hand-side expression and insert the
-	 * left-hand-side as a simple pattern rule to the
-	 * <code>fSimplePatternRules</code>.
+	 * Create a pattern hash value for the left-hand-side expression and insert the left-hand-side as a simple pattern
+	 * rule to the <code>fSimplePatternRules</code>.
 	 * 
 	 * @param leftHandSide
 	 * @param pmEvaluator
@@ -863,49 +861,52 @@ public class RulesData implements Serializable {
 
 	}
 
-	public void removeRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide) {
+	public boolean removeRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide) {
 		if (equalRule) {
 			if (fEqualDownRules != null) {
-				fEqualDownRules.remove(leftHandSide);
-				return;
+				return fEqualDownRules.remove(leftHandSide) != null;
 			}
 		}
 
 		final PatternMatcherAndEvaluator pmEvaluator = new PatternMatcherAndEvaluator(setSymbol, leftHandSide, null);
 		if (pmEvaluator.isRuleWithoutPatterns()) {
 			if (fEqualDownRules != null) {
-				fEqualDownRules.remove(leftHandSide);
-				return;
+				return fEqualDownRules.remove(leftHandSide) != null;
 			}
 		}
 
 		Set<ISymbol> headerSymbols = new HashSet<ISymbol>();
+		boolean removed = false;
 		if (!isComplicatedPatternRule(leftHandSide, headerSymbols)) {
 			if (fSimplePatternDownRules != null) {
 				final int hash = ((IAST) leftHandSide).patternHashCode();
 				if (fSimplePatternDownRules.containsEntry(hash, pmEvaluator)) {
-					fSimplePatternDownRules.remove(hash, pmEvaluator);
+					if (fSimplePatternDownRules.remove(hash, pmEvaluator)) {
+						removed = true;
+					}
 				}
 			}
-			return;
+			return removed;
 		} else {
 			if (headerSymbols.size() > 0) {
 				if (fSimpleOrderlesPatternDownRules != null) {
 					for (ISymbol head : headerSymbols) {
 						final int hash = head.hashCode();
 						if (fSimpleOrderlesPatternDownRules.containsEntry(hash, pmEvaluator)) {
-							fSimpleOrderlesPatternDownRules.remove(hash, pmEvaluator);
+							if (fSimpleOrderlesPatternDownRules.remove(hash, pmEvaluator)) {
+								removed = true;
+							}
 						}
 					}
 				}
-				return;
+				return removed;
 			}
 
 			if (fPatternDownRules != null) {
-				fPatternDownRules.removeIf(x -> x.equivalentLHS(pmEvaluator) == 0);
-				return;
+				return fPatternDownRules.removeIf(x -> x.equivalentLHS(pmEvaluator) == 0);
 			}
 		}
+		return false;
 	}
 
 	@Override

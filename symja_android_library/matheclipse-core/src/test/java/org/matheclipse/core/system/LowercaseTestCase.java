@@ -7540,6 +7540,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testUnset() {
+		check("a=.", "");
 		check("$x=5;$x=.;$x", "$x");
 		check("$f(x_):=x^2;$f(x_)=.;$f(3)", "$f(3)");
 	}

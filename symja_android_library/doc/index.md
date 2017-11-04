@@ -635,6 +635,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [UnitStep](functions/UnitStep.md)
 * [UnitVector](functions/UnitVector.md)
 * [UnsameQ](functions/UnsameQ.md)
+* [Unset](functions/Unset.md)
 * [UpperTriangularize](functions/UpperTriangularize.md)
 * [ValueQ](functions/ValueQ.md)
 * [VandermondeMatrix](functions/VandermondeMatrix.md)

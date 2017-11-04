@@ -922,8 +922,9 @@ public class Symbol implements ISymbol, Serializable {
 				+ " has no value! Reassignment with a new value is not possible");
 	}
 
+	/** {@inheritDoc} */
 	@Override
-	public final void removeRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide,
+	public final boolean removeRule(final ISymbol.RuleType setSymbol, final boolean equalRule, final IExpr leftHandSide,
 			boolean packageMode) {
 		if (!packageMode) {
 			if (isLocked(packageMode)) {
@@ -933,8 +934,10 @@ public class Symbol implements ISymbol, Serializable {
 			EvalEngine.get().addModifiedVariable(this);
 		}
 		if (fRulesData != null) {
-			fRulesData.removeRule(setSymbol, equalRule, leftHandSide);
+			return fRulesData.removeRule(setSymbol, equalRule, leftHandSide);
+
 		}
+		return false;
 	}
 
 	/** {@inheritDoc} */
