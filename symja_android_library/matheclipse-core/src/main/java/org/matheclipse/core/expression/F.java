@@ -368,6 +368,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "appendto" : "AppendTo");
 	public final static IBuiltInSymbol Apply = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "apply" : "Apply");
 	public final static IBuiltInSymbol Array = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "array" : "Array");
+	public final static IBuiltInSymbol ArrayPad = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arraypad" : "ArrayPad");
 	public final static IBuiltInSymbol ArrayQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arrayq" : "ArrayQ");
 	public final static IBuiltInSymbol AtomQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "atomq" : "AtomQ");
@@ -4392,7 +4394,7 @@ public class F {
 	public static IAST LegendreP(final IExpr a0, final IExpr a1) {
 		return binaryAST2(LegendreP, a0, a1);
 	}
-	
+
 	public static IAST LegendreQ(final IExpr a0, final IExpr a1) {
 		return binaryAST2(LegendreQ, a0, a1);
 	}

@@ -60,6 +60,7 @@ public final class ListFunctions {
 		F.Append.setEvaluator(new Append());
 		F.AppendTo.setEvaluator(new AppendTo());
 		F.Array.setEvaluator(new Array());
+		F.ArrayPad.setEvaluator(new ArrayPad());
 		F.Cases.setEvaluator(new Cases());
 		F.Catenate.setEvaluator(new Catenate());
 		F.Commonest.setEvaluator(new Commonest());
@@ -358,8 +359,8 @@ public final class ListFunctions {
 	/**
 	 * 
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Append">Append</a>
+	 * See the online Symja function reference:
+	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Append">Append</a>
 	 * </p>
 	 *
 	 */
@@ -382,8 +383,8 @@ public final class ListFunctions {
 	/**
 	 * 
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/AppendTo">AppendTo</a>
+	 * See the online Symja function reference:
+	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/AppendTo">AppendTo</a>
 	 * </p>
 	 *
 	 */
@@ -432,8 +433,8 @@ public final class ListFunctions {
 	 * Array structure generator
 	 * 
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Array">Array</a>
+	 * See the online Symja function reference:
+	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Array">Array</a>
 	 * </p>
 	 *
 	 */
@@ -574,11 +575,74 @@ public final class ListFunctions {
 		}
 	}
 
+	private final static class ArrayPad extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 3, 4);
+
+			if (ast.arg1().isAST()) {
+				IAST arg1 = (IAST) ast.arg1();
+				int m = -1;
+				int n = -1;
+				if (ast.arg2().isAST(F.List, 3)) {
+					IAST list = (IAST) ast.arg2();
+					m = list.arg1().toIntDefault(-1);
+					n = list.arg2().toIntDefault(-1);
+				} else {
+					n = ast.arg2().toIntDefault(-1);
+					m = n;
+				}
+				if (m > 0 && n > 0) {
+					int[] dim = arg1.isMatrix();
+					if (dim != null) {
+						return arrayPadMatrixAtom(arg1, dim, m, n, ast.size() > 3 ? ast.arg3() : F.C0);
+					}
+					return arrayPadAtom(arg1, m, n, ast.size() > 3 ? ast.arg3() : F.C0);
+				}
+			}
+			return F.NIL;
+		}
+
+		private static IExpr arrayPadMatrixAtom(IAST matrix, int[] dim, int m, int n, IExpr atom) {
+			int columnDim = dim[1] + m + n;
+			IAST result = matrix.copyHead(dim[0] + m + n);
+			IAST row;
+			// prepend m rows
+			for (int i = 0; i < m; i++) {
+				result.append(F.constantArray(atom, columnDim));
+			}
+
+			for (int i = 1; i <= dim[0]; i++) {
+				row = matrix.getAST(i);
+				result.append(arrayPadAtom(row, m, n, atom));
+			}
+
+			// append n rows
+			for (int i = 0; i < n; i++) {
+				result.append(F.constantArray(atom, columnDim));
+			}
+			return result;
+		}
+
+		private static IExpr arrayPadAtom(IAST ast, int m, int n, IExpr atom) {
+			IAST result = ast.copyHead();
+			for (int i = 0; i < m; i++) {
+				result.append(atom);
+			}
+			result.appendArgs(ast);
+			for (int i = 0; i < n; i++) {
+				result.append(atom);
+			}
+			return result;
+		}
+
+	}
+
 	/**
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Cases">
-	 * Cases</a>
+	 * See the online Symja function reference:
+	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Cases"> Cases</a>
 	 * </p>
 	 */
 	private final static class Cases extends AbstractCoreFunctionEvaluator {
@@ -1171,8 +1235,7 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Drop(list,n) - delete the first n arguments from the list. Negative n counts
-	 * from the end.
+	 * Drop(list,n) - delete the first n arguments from the list. Negative n counts from the end.
 	 * 
 	 */
 	private final static class Drop extends AbstractCoreFunctionEvaluator {
@@ -1213,8 +1276,7 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Drop (remove) the list elements according to the
-		 * <code>sequenceSpecifications</code> for the list indexes.
+		 * Drop (remove) the list elements according to the <code>sequenceSpecifications</code> for the list indexes.
 		 * 
 		 * @param list
 		 * @param level
@@ -1307,14 +1369,14 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Traverse all <code>list</code> element's and filter out the elements in the
-		 * given <code>positions</code> list.
+		 * Traverse all <code>list</code> element's and filter out the elements in the given <code>positions</code>
+		 * list.
 		 * 
 		 * @param list
 		 * @param positions
 		 * @param positionConverter
-		 *            the <code>positionConverter</code> creates an <code>int</code>
-		 *            value from the given position objects in <code>positions</code>.
+		 *            the <code>positionConverter</code> creates an <code>int</code> value from the given position
+		 *            objects in <code>positions</code>.
 		 * @param headOffsez
 		 */
 		private static IExpr extract(final IAST list, final IAST positions,
@@ -1466,9 +1528,7 @@ public final class ListFunctions {
 	/**
 	 * Intersection of 2 sets
 	 * 
-	 * See: <a href=
-	 * "http://en.wikipedia.org/wiki/Intersection_(set_theory)">Intersection (set
-	 * theory)</a>
+	 * See: <a href= "http://en.wikipedia.org/wiki/Intersection_(set_theory)">Intersection (set theory)</a>
 	 */
 	private final static class Intersection extends AbstractFunctionEvaluator {
 
@@ -1712,8 +1772,7 @@ public final class ListFunctions {
 		 * @param inputList
 		 * @param x
 		 * @param engine
-		 * @return the list of elements from <code>inputList</code> to which x is
-		 *         nearest
+		 * @return the list of elements from <code>inputList</code> to which x is nearest
 		 */
 		private static IAST numericalNearest(IAST inputList, INumber x, IExpr distanceFunction, EvalEngine engine) {
 			try {
@@ -1924,17 +1983,15 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Position(list, pattern) - return the positions where the pattern occurs in
-	 * list.
+	 * Position(list, pattern) - return the positions where the pattern occurs in list.
 	 *
 	 */
 	private final static class Position extends AbstractCoreFunctionEvaluator {
 
 		/**
-		 * Add the positions to the <code>resultCollection</code> where the matching
-		 * expressions appear in <code>list</code>. The <code>positionConverter</code>
-		 * converts the <code>int</code> position into an object for the
-		 * <code>resultCollection</code>.
+		 * Add the positions to the <code>resultCollection</code> where the matching expressions appear in
+		 * <code>list</code>. The <code>positionConverter</code> converts the <code>int</code> position into an object
+		 * for the <code>resultCollection</code>.
 		 * 
 		 * @param list
 		 * @param prototypeList
@@ -2195,8 +2252,7 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Return the <i>rest</i> of a given list, i.e. a sublist with all elements from
-	 * list[[2]]...list[[n]]
+	 * Return the <i>rest</i> of a given list, i.e. a sublist with all elements from list[[2]]...list[[n]]
 	 */
 	private final static class Rest extends AbstractCoreFunctionEvaluator {
 
@@ -2534,8 +2590,7 @@ public final class ListFunctions {
 		 * 
 		 * @param ast
 		 * @param resultList
-		 *            the result list to which the generated expressions should be
-		 *            appended.
+		 *            the result list to which the generated expressions should be appended.
 		 * @param defaultValue
 		 *            the default value used in the iterator
 		 * @param engine
@@ -2591,16 +2646,14 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Evaluate only the last iterator in <code>ast</code> (i.e.
-		 * <code>ast.get(ast.size() - 1)</code>) for <code>Sum()</code> or
-		 * <code>Product()</code> function calls.
+		 * Evaluate only the last iterator in <code>ast</code> (i.e. <code>ast.get(ast.size() - 1)</code>) for
+		 * <code>Sum()</code> or <code>Product()</code> function calls.
 		 * 
 		 * @param expr
 		 * @param iter
 		 *            the iterator function
 		 * @param resultList
-		 *            the result list to which the generated expressions should be
-		 *            appended.
+		 *            the result list to which the generated expressions should be appended.
 		 * @param defaultValue
 		 *            the default value used if the iterator is invalid
 		 * @return <code>F.NIL</code> if no evaluation is possible
@@ -2629,8 +2682,7 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Determine all local variables of the iterators starting with index
-		 * <code>2</code>.
+		 * Determine all local variables of the iterators starting with index <code>2</code>.
 		 * 
 		 * @param ast
 		 * @return
@@ -2656,8 +2708,8 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Determine all local variables of the iterators starting with index
-		 * <code>2</code> in the given <code>ast</code>.
+		 * Determine all local variables of the iterators starting with index <code>2</code> in the given
+		 * <code>ast</code>.
 		 * 
 		 * @param ast
 		 * @return
@@ -2682,15 +2734,13 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Disable the <code>Reap() and Sow()</code> mode temporary and evaluate an
-		 * expression for the given &quot;local variables list&quot;. If evaluation is
-		 * not possible return the input object.
+		 * Disable the <code>Reap() and Sow()</code> mode temporary and evaluate an expression for the given &quot;local
+		 * variables list&quot;. If evaluation is not possible return the input object.
 		 * 
 		 * @param expr
 		 *            the expression which should be evaluated
 		 * @param localVariablesList
-		 *            a list of symbols which should be used as local variables inside
-		 *            the block
+		 *            a list of symbols which should be used as local variables inside the block
 		 * @return the evaluated object
 		 */
 		public static IExpr evalBlockWithoutReap(IExpr expr, IAST localVariablesList) {
@@ -2809,8 +2859,7 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Take the list elements according to the <code>sequenceSpecifications</code>
-		 * for the list indexes.
+		 * Take the list elements according to the <code>sequenceSpecifications</code> for the list indexes.
 		 * 
 		 * @param list
 		 * @param level
@@ -2945,9 +2994,7 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Union of two sets. See
-	 * <a href="http://en.wikipedia.org/wiki/Union_(set_theory)">Union (set
-	 * theory)</a>
+	 * Union of two sets. See <a href="http://en.wikipedia.org/wiki/Union_(set_theory)">Union (set theory)</a>
 	 */
 	private final static class Union extends AbstractFunctionEvaluator {
 
@@ -3005,15 +3052,12 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Fold the list from <code>start</code> index including to <code>end</code>
-	 * index excluding into the <code>resultCollection</code>. If the
-	 * <i>binaryFunction</i> returns <code>null</code>, the left element will be
-	 * added to the result list, otherwise the result will be <i>folded</i> again
-	 * with the next element in the list.
+	 * Fold the list from <code>start</code> index including to <code>end</code> index excluding into the
+	 * <code>resultCollection</code>. If the <i>binaryFunction</i> returns <code>null</code>, the left element will be
+	 * added to the result list, otherwise the result will be <i>folded</i> again with the next element in the list.
 	 * 
 	 * @param expr
-	 *            initial value. If <code>null</code>use first element of list as
-	 *            initial value.
+	 *            initial value. If <code>null</code>use first element of list as initial value.
 	 * @param list
 	 * @param start
 	 * @param end
@@ -3051,7 +3095,7 @@ public final class ListFunctions {
 		list.args().reverse(result.args());
 		return result;
 	}
-	
+
 	private final static ListFunctions CONST = new ListFunctions();
 
 	public static ListFunctions initialize() {

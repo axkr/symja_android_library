@@ -206,6 +206,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Arg](functions/Arg.md)
 * [Array](functions/Array.md)
 * [ArrayDepth](functions/ArrayDepth.md)
+* [ArrayPad](functions/ArrayPad.md)
 * [ArrayQ](functions/ArrayQ.md)
 * [AtomQ](functions/AtomQ.md)
 * [Attributes](functions/Attributes.md)
@@ -649,3 +650,4 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Xor](functions/Xor.md)
 * [YuleDissimilarity](functions/YuleDissimilarity.md)
 * [Zeta](functions/Zeta.md)
+

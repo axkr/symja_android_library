@@ -774,13 +774,13 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	/**
 	 * Test if this expression is an AST list, which contains the given <b>header element</b> at index position
-	 * <code>0</code> and optional <b>argument elements</b> at the index positions <code>1..(length-1)</code>. Therefore
-	 * this expression is not an <b>atomic expression</b>.
+	 * <code>0</code> and optional <b>argument elements</b> at the index positions <code>1..(length-1)</code>. If this
+	 * test gives <code>true</code> this expression is not an <b>atomic expression</b>.
 	 * 
 	 * @param header
 	 *            the header element at position 0, which should be tested
 	 * @param length
-	 *            the size the AST expression must have
+	 *            the size the AST expression must have (<b>inclusive head element</b>)
 	 * @return
 	 * @see #isAtom()
 	 */
@@ -790,8 +790,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	/**
 	 * Test if this expression is an AST list, which contains the given <b>header element</b> at index position
-	 * <code>0</code> and optional <b>argument elements</b> at the index positions <code>1..(length-1)</code>. Therefore
-	 * this expression is not an <b>atomic expression</b>.
+	 * <code>0</code> and optional <b>argument elements</b> at the index positions <code>1..(length-1)</code>. If this
+	 * test gives <code>true</code> this expression is not an <b>atomic expression</b>.
 	 * 
 	 * @param header
 	 *            the header element at position 0, which should be tested
@@ -809,8 +809,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	/**
 	 * Test if this expression is an AST list, which contains the given <b>header element</b> at index position
-	 * <code>0</code> and optional <b>argument elements</b> at the index positions <code>1..(length-1)</code>. Therefore
-	 * this expression is not an <b>atomic expression</b>.
+	 * <code>0</code> and optional <b>argument elements</b> at the index positions <code>1..(length-1)</code>. If this
+	 * test gives <code>true</code> this expression is not an <b>atomic expression</b>.
 	 * 
 	 * @param header
 	 *            the header element at position 0, which should be tested
@@ -829,11 +829,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * <p>
 	 * Test if this expression is an AST list, where the string representation of the <b>header element</b> at index
 	 * position <code>0</code> equals the given <code>symbol</code> and some optional <b>argument elements</b> at the
-	 * index positions <code>1..(size()-1)</code>. Therefore this expression is no <b>atomic expression</b>. Example:
-	 * <code>isAST("Sin")</code> gives <code>true</code> for <code>Sin[Pi/2]</code>.
+	 * index positions <code>1..(size()-1)</code>. If this test gives <code>true</code> this expression is not an
+	 * <b>atomic expression</b>.
 	 * </p>
+	 * <p>
+	 * Example: <code>isAST("Sin")</code> gives <code>true</code> for <code>Sin[Pi/2]</code>.
+	 * </p>
+	 * <p>
 	 * <b>Note:</b> this is a performance critical method, only use it in special cases like for example UI handling
 	 * etc.
+	 * </p>
 	 * 
 	 * @param headerStr
 	 *            string representation of the <b>header element</b> at index position <code>0</code>

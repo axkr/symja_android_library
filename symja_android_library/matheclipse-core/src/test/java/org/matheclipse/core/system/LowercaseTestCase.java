@@ -387,6 +387,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Array[f, 10, {0, 1}]", "");
 	}
 
+	public void testArrayPad() {
+		check("ArrayPad({a, b, c}, 1, x)", "{x,a,b,c,x}");
+		check("ArrayPad({{1, 2}, {3, 4}}, {1,2})", //
+				"{{0,0,0,0,0},{0,1,2,0,0},{0,3,4,0,0},{0,0,0,0,0},{0,0,0,0,0}}");
+		check("ArrayPad({{1, 2}, {3, 4}}, 2)", //
+				"{{0,0,0,0,0,0},{0,0,0,0,0,0},{0,0,1,2,0,0},{0,0,3,4,0,0},{0,0,0,0,0,0},{0,0,0,0,\n" + "0,0}}");
+		check("ArrayPad({1, 2, 3}, {2,4})", "{0,0,1,2,3,0,0,0,0}");
+		check("ArrayPad({1, 2, 3}, 1)", "{0,1,2,3,0}");
+		check("ArrayPad({1, 2, 3}, 2, x)", "{x,x,1,2,3,x,x}");
+	}
+
 	public void testArrayDepth() {
 		check("ArrayDepth({{a,b},{c,d}})", "2");
 		check("ArrayDepth(x)", "0");
@@ -938,7 +949,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testCondition() {
 		check("fac(n_ /; n > 0) := n!", "");
 		check("fac(3)+fac(-4)", "6+fac(-4)");
-		
+
 		check("Cases({3, -4, 5, -2}, x_ /; x < 0)", "{-4,-2}");
 		check("Cases({z(1, 1), z(-1, 1), z(-2, 2)}, z(x_ /; x < 0, y_))", "{z(-1,1),z(-2,2)}");
 		check("{1 + a, 2 + a, -3 + a} /. (x_ /; x < 0) + a -> p(x)", "{1+a,2+a,p(-3)}");
@@ -2826,7 +2837,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// iterations! Limiting value: 9.789346
 		check("Hypergeometric2F1(0.5,0.333,0.666,1)", "Hypergeometric2F1(0.5,0.333,0.666,1.0)");
 	}
-	
+
 	public void testI() {
 		check("(3+I)*(3-I)", "10");
 	}
@@ -3320,8 +3331,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LegendreQ(1,z)", "-1+z*(-Log(1-z)/2+Log(1+z)/2)");
 		check("LegendreQ(2,z)", "-3/2*z+1/2*(-1/2+3/2*z^2)*(-Log(1-z)+Log(1+z))");
 		check("LegendreQ(3,z)", "-1/6-5/3*(-1/2+3/2*z^2)+1/2*(-3/2*z+5/2*z^3)*(-Log(1-z)+Log(1+z))");
-		check("Expand(LegendreQ(4,z))", "55/24*z-35/8*z^3-3/16*Log(1-z)+15/8*z^2*Log(1-z)-35/16*z^4*Log(1-z)+3/16*Log(1+z)\n" + 
-				"-15/8*z^2*Log(1+z)+35/16*z^4*Log(1+z)");
+		check("Expand(LegendreQ(4,z))",
+				"55/24*z-35/8*z^3-3/16*Log(1-z)+15/8*z^2*Log(1-z)-35/16*z^4*Log(1-z)+3/16*Log(1+z)\n"
+						+ "-15/8*z^2*Log(1+z)+35/16*z^4*Log(1+z)");
 	}
 
 	public void testLength() {
