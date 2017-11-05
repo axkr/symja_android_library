@@ -216,10 +216,11 @@ public class BigFractionSym extends AbstractFractionSym {
 			BigFractionSym r = (BigFractionSym) o;
 			return fFraction.equals(r.fFraction);
 		}
-		if (o instanceof FractionSym) {
-			final FractionSym r = (FractionSym) o;
-			return equalsFraction(r.fNumerator, r.fDenominator);
-		}
+		// EQ_CHECK_FOR_OPERAND_NOT_COMPATIBLE_WITH_THIS
+		// if (o instanceof FractionSym) {
+		// final FractionSym r = (FractionSym) o;
+		// return equalsFraction(r.fNumerator, r.fDenominator);
+		// }
 		return false;
 	}
 
@@ -411,9 +412,11 @@ public class BigFractionSym extends AbstractFractionSym {
 				}
 			}
 		} catch (RuntimeException e) {
-			return prefix+"QQ(" + fFraction.getNumerator().toString() + "L," + fFraction.getDenominator().toString() + "L)";
+			return prefix + "QQ(" + fFraction.getNumerator().toString() + "L," + fFraction.getDenominator().toString()
+					+ "L)";
 		}
-		return prefix+"QQ(" + fFraction.getNumerator().toString() + "L," + fFraction.getDenominator().toString() + "L)";
+		return prefix + "QQ(" + fFraction.getNumerator().toString() + "L," + fFraction.getDenominator().toString()
+				+ "L)";
 	}
 
 	/**

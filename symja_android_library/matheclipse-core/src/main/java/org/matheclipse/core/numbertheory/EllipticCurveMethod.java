@@ -3011,7 +3011,7 @@ public class EllipticCurveMethod {
 			if (NbrFactors == 0) {
 				// System.out.println("Searching for small factors (less than
 				// 131072).");
-				TestComp = GetSmallFactors(NumberToFactor, PD, Exp, Typ, 0);
+				TestComp = GetSmallFactors(NumberToFactor, PD, Exp, 0);
 				if (TestComp != 1) { // There are factors greater than 131071.
 					PD[NbrFactors] = BigIntToBigNbr(TestNbr);
 					Exp[NbrFactors] = 1;
@@ -3105,7 +3105,7 @@ public class EllipticCurveMethod {
 								throw new ArithmeticException();
 							}
 							N2 = NumberToFactor.subtract(N1.multiply(N1));
-							TestComp = GetSmallFactors(N2, PD1, Exp1, Typ1, 1);
+							TestComp = GetSmallFactors(N2, PD1, Exp1, 1); // Typ1, 1);
 							if (TestComp >= 0) {
 								if (TestComp == 1) { // Number has all factors <
 														// 2^17
@@ -3730,7 +3730,8 @@ public class EllipticCurveMethod {
 		AddBigNbrModN(MontgomeryMultR1, MontgomeryMultR1, MontgomeryMultR2);
 	}
 
-	private long GetSmallFactors(BigInteger NumberToFactor, BigInteger PD[], int Exp[], int Typ[], int Type) {
+	private long GetSmallFactors(BigInteger NumberToFactor, BigInteger PD[], int Exp[], int Type) {
+		// int Typ[], int Type) {
 
 		long Div, TestComp;
 		int i;
@@ -3754,11 +3755,11 @@ public class EllipticCurveMethod {
 				if (Type == 0) {
 					PD = (BigInteger[]) temp[0];
 					Exp = (int[]) temp[1];
-					Typ = (int[]) temp[2];
+					// Typ = (int[]) temp[2];
 				} else {
 					PD = (BigInteger[]) temp[3];
 					Exp = (int[]) temp[4];
-					Typ = (int[]) temp[5];
+					// Typ = (int[]) temp[5];
 				}
 			}
 		}
@@ -3853,11 +3854,11 @@ public class EllipticCurveMethod {
 						if (Type == 0) {
 							PD = (BigInteger[]) temp[0];
 							Exp = (int[]) temp[1];
-							Typ = (int[]) temp[2];
+							// Typ = (int[]) temp[2];
 						} else {
 							PD = (BigInteger[]) temp[3];
 							Exp = (int[]) temp[4];
-							Typ = (int[]) temp[5];
+							// Typ = (int[]) temp[5];
 						}
 					}
 				}
@@ -3865,17 +3866,18 @@ public class EllipticCurveMethod {
 				Exp[NbrFactors] = 1;
 				TestComp = 1;
 				Object[] temp = incNbrFactors();
-				if (temp != null) {
-					if (Type == 0) {
-						PD = (BigInteger[]) temp[0];
-						Exp = (int[]) temp[1];
-						Typ = (int[]) temp[2];
-					} else {
-						PD = (BigInteger[]) temp[3];
-						Exp = (int[]) temp[4];
-						Typ = (int[]) temp[5];
-					}
-				}
+				//
+				// if (temp != null) {
+				// if (Type == 0) {
+				// PD = (BigInteger[]) temp[0];
+				// Exp = (int[]) temp[1];
+				// Typ = (int[]) temp[2];
+				// } else {
+				// PD = (BigInteger[]) temp[3];
+				// Exp = (int[]) temp[4];
+				// Typ = (int[]) temp[5];
+				// }
+				// }
 				break;
 			}
 		} /* end while */

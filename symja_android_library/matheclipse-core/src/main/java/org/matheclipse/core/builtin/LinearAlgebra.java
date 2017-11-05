@@ -1382,7 +1382,7 @@ public final class LinearAlgebra {
 
 			if (ast.arg1().isInteger()) {
 				int m = Validate.checkIntType(ast, 1);
-				return F.matrix((i, j) -> i == j ? F.C1 : F.C0, m, m);
+				return F.matrix((i, j) -> i.equals(j) ? F.C1 : F.C0, m, m);
 			}
 			return F.NIL;
 		}

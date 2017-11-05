@@ -80,16 +80,15 @@ public final class NumberTheory {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * the Bell number function counts the number of different ways to partition a
-	 * set that has exactly <code>n</code> elements
+	 * the Bell number function counts the number of different ways to partition a set that has exactly <code>n</code>
+	 * elements
 	 * </p>
 	 * </blockquote>
 	 * <p>
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="https://en.wikipedia.org/wiki/Bell_number">Wikipedia - Bell
-	 * number</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/Bell_number">Wikipedia - Bell number</a></li>
 	 * </ul>
 	 * 
 	 * <pre>
@@ -100,8 +99,7 @@ public final class NumberTheory {
 	private static class BellB extends AbstractFunctionEvaluator {
 
 		/**
-		 * Generates the Bell Number of the given index, where B(1) is 1. This is
-		 * recursive.
+		 * Generates the Bell Number of the given index, where B(1) is 1. This is recursive.
 		 * 
 		 * @param index
 		 * @return
@@ -160,8 +158,7 @@ public final class NumberTheory {
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="http://en.wikipedia.org/wiki/Bernoulli_number">Wikipedia -
-	 * Bernoulli number</a></li>
+	 * <li><a href="http://en.wikipedia.org/wiki/Bernoulli_number">Wikipedia - Bernoulli number</a></li>
 	 * </ul>
 	 */
 	private static class BernoulliB extends AbstractFunctionEvaluator {
@@ -169,10 +166,9 @@ public final class NumberTheory {
 		/**
 		 * Compute the Bernoulli number of the first kind.
 		 * 
-		 * See <a href="http://en.wikipedia.org/wiki/Bernoulli_number">Wikipedia -
-		 * Bernoulli number</a>. <br/>
-		 * For better performing implementations see <a href=
-		 * "http://oeis.org/wiki/User:Peter_Luschny/ComputationAndAsymptoticsOfBernoulliNumbers"
+		 * See <a href="http://en.wikipedia.org/wiki/Bernoulli_number">Wikipedia - Bernoulli number</a>. <br/>
+		 * For better performing implementations see
+		 * <a href= "http://oeis.org/wiki/User:Peter_Luschny/ComputationAndAsymptoticsOfBernoulliNumbers"
 		 * >ComputationAndAsymptoticsOfBernoulliNumbers</a>
 		 * 
 		 * @param biggi
@@ -248,16 +244,14 @@ public final class NumberTheory {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns the binomial coefficient of the 2 integers <code>n</code> and
-	 * <code>k</code>
+	 * returns the binomial coefficient of the 2 integers <code>n</code> and <code>k</code>
 	 * </p>
 	 * </blockquote>
 	 * <p>
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="http://en.wikipedia.org/wiki/Binomial_coefficient">Wikipedia -
-	 * Binomial coefficient</a></li>
+	 * <li><a href="http://en.wikipedia.org/wiki/Binomial_coefficient">Wikipedia - Binomial coefficient</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -374,8 +368,7 @@ public final class NumberTheory {
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="https://en.wikipedia.org/wiki/Carmichael_function">Wikipedia -
-	 * Carmichael function</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/Carmichael_function">Wikipedia - Carmichael function</a></li>
 	 * </ul>
 	 * 
 	 * <pre>
@@ -418,8 +411,7 @@ public final class NumberTheory {
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="http://en.wikipedia.org/wiki/Catalan_number">Wikipedia - Catalan
-	 * number</a></li>
+	 * <li><a href="http://en.wikipedia.org/wiki/Catalan_number">Wikipedia - Catalan number</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -476,11 +468,10 @@ public final class NumberTheory {
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href=
-	 * "https://en.wikipedia.org/wiki/Chinese_remainder_theorem">Wikipedia -
+	 * <li><a href= "https://en.wikipedia.org/wiki/Chinese_remainder_theorem">Wikipedia -
 	 * Chinese_remainder_theorem</a></li>
-	 * <li><a href="https://rosettacode.org/wiki/Chinese_remainder_theorem">Rosetta
-	 * Code - Chinese remainder theorem</a></li>
+	 * <li><a href="https://rosettacode.org/wiki/Chinese_remainder_theorem">Rosetta Code - Chinese remainder
+	 * theorem</a></li>
 	 * </ul>
 	 * 
 	 * <pre>
@@ -532,8 +523,8 @@ public final class NumberTheory {
 		 * Calculate the chinese remainder of 2 integer lists.
 		 * </p>
 		 * <p>
-		 * See <a href="https://rosettacode.org/wiki/Chinese_remainder_theorem"> Rosetta
-		 * Code: Chinese remainder theorem</a>
+		 * See <a href="https://rosettacode.org/wiki/Chinese_remainder_theorem"> Rosetta Code: Chinese remainder
+		 * theorem</a>
 		 * </p>
 		 *
 		 */
@@ -562,16 +553,14 @@ public final class NumberTheory {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * tests whether <code>x</code> and <code>y</code> are coprime by computing
-	 * their greatest common divisor.
+	 * tests whether <code>x</code> and <code>y</code> are coprime by computing their greatest common divisor.
 	 * </p>
 	 * </blockquote>
 	 * <p>
 	 * See:
 	 * </p>
 	 * <ul>
-	 * <li><a href="http://en.wikipedia.org/wiki/Coprime">Wikipedia -
-	 * Coprime</a></li>
+	 * <li><a href="http://en.wikipedia.org/wiki/Coprime">Wikipedia - Coprime</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -591,8 +580,8 @@ public final class NumberTheory {
 	private static class CoprimeQ extends AbstractFunctionEvaluator {
 
 		/**
-		 * The integers a and b are said to be <i>coprime</i> or <i>relatively prime</i>
-		 * if they have no common factor other than 1.
+		 * The integers a and b are said to be <i>coprime</i> or <i>relatively prime</i> if they have no common factor
+		 * other than 1.
 		 * 
 		 * See <a href="http://en.wikipedia.org/wiki/Coprime">Wikipedia:Coprime</a>
 		 */
@@ -647,8 +636,8 @@ public final class NumberTheory {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * <code>DiracDelta</code> function returns <code>0</code> for all real numbers
-	 * <code>x</code> where <code>x != 0</code>.
+	 * <code>DiracDelta</code> function returns <code>0</code> for all real numbers <code>x</code> where
+	 * <code>x != 0</code>.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -714,8 +703,8 @@ public final class NumberTheory {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * <code>DiscreteDelta</code> function returns <code>1</code> if all the
-	 * <code>ni</code> are <code>0</code>. Returns <code>0</code> otherwise.
+	 * <code>DiscreteDelta</code> function returns <code>1</code> if all the <code>ni</code> are <code>0</code>. Returns
+	 * <code>0</code> otherwise.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -805,8 +794,7 @@ public final class NumberTheory {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns <code>True</code> if <code>n</code> could be divide by
-	 * <code>m</code>.
+	 * returns <code>True</code> if <code>n</code> could be divide by <code>m</code>.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -846,8 +834,8 @@ public final class NumberTheory {
 		}
 
 		/**
-		 * Return F.True or F.False if result is divisible. Return <code>F.NIL</code>,
-		 * if the result could not be determined.
+		 * Return F.True or F.False if result is divisible. Return <code>F.NIL</code>, if the result could not be
+		 * determined.
 		 * 
 		 * @param result
 		 * @return
@@ -927,16 +915,14 @@ public final class NumberTheory {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns the sum of the <code>k</code>-th powers of the divisors of
-	 * <code>n</code>.
+	 * returns the sum of the <code>k</code>-th powers of the divisors of <code>n</code>.
 	 * </p>
 	 * </blockquote>
 	 * <p>
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="https://en.wikipedia.org/wiki/Divisor_function">Wikipedia -
-	 * Divisor function</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/Divisor_function">Wikipedia - Divisor function</a></li>
 	 * </ul>
 	 * 
 	 * <pre>
@@ -1020,8 +1006,7 @@ public final class NumberTheory {
 	 * See:
 	 * </p>
 	 * <ul>
-	 * <li><a href="http://en.wikipedia.org/wiki/Euler_number">Wikipedia - Euler
-	 * number</a></li>
+	 * <li><a href="http://en.wikipedia.org/wiki/Euler_number">Wikipedia - Euler number</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -1130,9 +1115,8 @@ public final class NumberTheory {
 	 * See:
 	 * </p>
 	 * <ul>
-	 * <li><a href=
-	 * "http://en.wikipedia.org/wiki/Euler%27s_totient_function">Wikipedia - Euler's
-	 * totient function</a></li>
+	 * <li><a href= "http://en.wikipedia.org/wiki/Euler%27s_totient_function">Wikipedia - Euler's totient
+	 * function</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -1175,12 +1159,9 @@ public final class NumberTheory {
 	 * See:
 	 * </p>
 	 * <ul>
-	 * <li><a href=
-	 * "https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm">Wikipedia:
-	 * Extended Euclidean algorithm</a></li>
-	 * <li><a href=
-	 * "https://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity">Wikipedia: Bézout's
-	 * identity</a></li>
+	 * <li><a href= "https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm">Wikipedia: Extended Euclidean
+	 * algorithm</a></li>
+	 * <li><a href= "https://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity">Wikipedia: Bézout's identity</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -1215,10 +1196,8 @@ public final class NumberTheory {
 		/**
 		 * Returns the gcd of two positive numbers plus the bezout relations
 		 * 
-		 * See <a href="http://en.wikipedia.org/wiki/Extended_Euclidean_algorithm">
-		 * Extended Euclidean algorithm</a> and See
-		 * <a href="http://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity">Bézout's
-		 * identity</a>
+		 * See <a href="http://en.wikipedia.org/wiki/Extended_Euclidean_algorithm"> Extended Euclidean algorithm</a> and
+		 * See <a href="http://en.wikipedia.org/wiki/B%C3%A9zout%27s_identity">Bézout's identity</a>
 		 * 
 		 */
 		@Override
@@ -1430,9 +1409,7 @@ public final class NumberTheory {
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href=
-	 * "http://en.wikipedia.org/wiki/Factorial#Double_factorial">Wikipedia - Double
-	 * Factorial</a></li>
+	 * <li><a href= "http://en.wikipedia.org/wiki/Factorial#Double_factorial">Wikipedia - Double Factorial</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -1513,8 +1490,7 @@ public final class NumberTheory {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns the factorization of <code>n</code> as a list of factors and
-	 * exponents.
+	 * returns the factorization of <code>n</code> as a list of factors and exponents.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -1628,9 +1604,8 @@ public final class NumberTheory {
 		 * <p>
 		 * Fibonacci sequence. Algorithm in <code>O(log(n))</code> time.F
 		 * </p>
-		 * See:
-		 * <a href= "https://www.rosettacode.org/wiki/Fibonacci_sequence#Iterative_28">
-		 * Roseatta code: Fibonacci sequence.</a>
+		 * See: <a href= "https://www.rosettacode.org/wiki/Fibonacci_sequence#Iterative_28"> Roseatta code: Fibonacci
+		 * sequence.</a>
 		 */
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
@@ -1663,8 +1638,7 @@ public final class NumberTheory {
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia - Jacobi
-	 * symbol</a></li>
+	 * <li><a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia - Jacobi symbol</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -1788,8 +1762,7 @@ public final class NumberTheory {
 	 * <p>
 	 * Lucas number.
 	 * </p>
-	 * See: <a href= "https://en.wikipedia.org/wiki/Lucas_number">Wikipedia: Lucas
-	 * number</a>
+	 * See: <a href= "https://en.wikipedia.org/wiki/Lucas_number">Wikipedia: Lucas number</a>
 	 */
 	private static class LucasL extends AbstractTrigArg1 {
 
@@ -1888,8 +1861,7 @@ public final class NumberTheory {
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href="http://en.wikipedia.org/wiki/M%C3%B6bius_function">Wikipedia -
-	 * Möbius function</a></li>
+	 * <li><a href="http://en.wikipedia.org/wiki/M%C3%B6bius_function">Wikipedia - Möbius function</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -1933,8 +1905,7 @@ public final class NumberTheory {
 	 * See:
 	 * </p>
 	 * <ul>
-	 * <li><a href="http://en.wikipedia.org/wiki/Multinomial_coefficient">Wikipedia:
-	 * Multinomial coefficient</a></li>
+	 * <li><a href="http://en.wikipedia.org/wiki/Multinomial_coefficient">Wikipedia: Multinomial coefficient</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -1946,8 +1917,7 @@ public final class NumberTheory {
 	 * 1
 	 * </pre>
 	 * <p>
-	 * <code>Multinomial(n-k, k)</code> is equivalent to
-	 * <code>Binomial(n, k)</code>.
+	 * <code>Multinomial(n-k, k)</code> is equivalent to <code>Binomial(n, k)</code>.
 	 * </p>
 	 * 
 	 * <pre>
@@ -2001,10 +1971,8 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * See <a href="https://en.wikipedia.org/wiki/Multiplicative_order">Wikipedia:
-	 * Multiplicative order</a> and
-	 * <a href="https://rosettacode.org/wiki/Multiplicative_order">Rosettacode. org:
-	 * Multiplicative order</a>.
+	 * See <a href="https://en.wikipedia.org/wiki/Multiplicative_order">Wikipedia: Multiplicative order</a> and
+	 * <a href="https://rosettacode.org/wiki/Multiplicative_order">Rosettacode. org: Multiplicative order</a>.
 	 *
 	 */
 	private static class MultiplicativeOrder extends AbstractFunctionEvaluator {
@@ -2147,8 +2115,7 @@ public final class NumberTheory {
 			 *            the zero-based index into the list of partitions
 			 * @param capacity
 			 *            capacity of the list which should be ensured
-			 * @return the ith partition number. This is 1 if i=0 or 1, 2 if i=2 and so
-			 *         forth.
+			 * @return the ith partition number. This is 1 if i=0 or 1, 2 if i=2 and so forth.
 			 */
 			private BigInteger sumPartitionsP(int n, int capacity) {
 				fList.ensureCapacity(capacity);
@@ -2241,8 +2208,7 @@ public final class NumberTheory {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * gives the number of partitions of the integer <code>n</code> into distinct
-	 * parts
+	 * gives the number of partitions of the integer <code>n</code> into distinct parts
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -2419,7 +2385,7 @@ public final class NumberTheory {
 
 			try {
 				long value = n.toLong();
-				if (value <= Long.MAX_VALUE) {
+				if (value > 0 && value <= PN_8[PN_8.length - 1]) {
 					for (int i = 0; i < PN_8.length; i++) {
 						if (PN_8[i] == value) {
 							return F.True;
@@ -2470,11 +2436,9 @@ public final class NumberTheory {
 	 */
 	private static class Prime extends AbstractFunctionEvaluator {
 		/**
-		 * <code>Prime(i)</code> gives the i-th prime number for <code>i</code> less
-		 * equal 103000000.
+		 * <code>Prime(i)</code> gives the i-th prime number for <code>i</code> less equal 103000000.
 		 * 
-		 * See: <a href="https://bitbucket.org/dafis/javaprimes">https://bitbucket.org/
-		 * dafis/ javaprimes</a><br />
+		 * See: <a href="https://bitbucket.org/dafis/javaprimes">https://bitbucket.org/ dafis/ javaprimes</a><br />
 		 * <a href=
 		 * "http://stackoverflow.com/questions/9625663/calculating-and-printing-the-nth-prime-number/9704912#9704912">
 		 * stackoverflow. com - Calculating and printing the nth prime number</a>
@@ -2565,8 +2529,7 @@ public final class NumberTheory {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns the sum of the exponents of the prime factorization of
-	 * <code>n</code>.
+	 * returns the sum of the exponents of the prime factorization of <code>n</code>.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -2687,9 +2650,8 @@ public final class NumberTheory {
 	private static class PrimitiveRootList extends AbstractTrigArg1 {
 
 		/**
-		 * See: <a href=
-		 * "http://exploringnumbertheory.wordpress.com/2013/09/09/finding-primitive-roots/">
-		 * Exploring Number Theory - Finding Primitive Roots</a>
+		 * See: <a href= "http://exploringnumbertheory.wordpress.com/2013/09/09/finding-primitive-roots/"> Exploring
+		 * Number Theory - Finding Primitive Roots</a>
 		 */
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
@@ -2724,8 +2686,7 @@ public final class NumberTheory {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns <code>True</code> if <code>n</code> a square free integer number or a
-	 * square free univariate polynomial.
+	 * returns <code>True</code> if <code>n</code> a square free integer number or a square free univariate polynomial.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -2858,9 +2819,8 @@ public final class NumberTheory {
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href=
-	 * "https://en.wikipedia.org/wiki/Stirling_numbers_of_the_first_kind">Wikipedia
-	 * - Stirling numbers of the first kind</a></li>
+	 * <li><a href= "https://en.wikipedia.org/wiki/Stirling_numbers_of_the_first_kind">Wikipedia - Stirling numbers of
+	 * the first kind</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -2955,9 +2915,8 @@ public final class NumberTheory {
 	 * See:<br />
 	 * </p>
 	 * <ul>
-	 * <li><a href=
-	 * "http://en.wikipedia.org/wiki/Stirling_numbers_of_the_second_kind">Wikipedia
-	 * - Stirling numbers of the second kind</a></li>
+	 * <li><a href= "http://en.wikipedia.org/wiki/Stirling_numbers_of_the_second_kind">Wikipedia - Stirling numbers of
+	 * the second kind</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -3039,8 +2998,7 @@ public final class NumberTheory {
 	 * See:
 	 * </p>
 	 * <ul>
-	 * <li><a href="http://en.wikipedia.org/wiki/Derangement">Wikipedia -
-	 * Derangement</a></li>
+	 * <li><a href="http://en.wikipedia.org/wiki/Derangement">Wikipedia - Derangement</a></li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -3056,8 +3014,7 @@ public final class NumberTheory {
 		 * Iterative subfactorial algorithm based on the recurrence:
 		 * <code>Subfactorial(n) = n * Subfactorial(n-1) + (-1)^n</code>
 		 * </p>
-		 * See <a href="http://en.wikipedia.org/wiki/Derangement">Wikipedia -
-		 * Derangement</a>
+		 * See <a href="http://en.wikipedia.org/wiki/Derangement">Wikipedia - Derangement</a>
 		 * 
 		 * <pre>
 		 * result = 1;
@@ -3205,9 +3162,8 @@ public final class NumberTheory {
 	 * <p>
 	 * Fibonacci sequence. Algorithm in <code>O(log(n))</code> time.
 	 * </p>
-	 * See:
-	 * <a href= "https://www.rosettacode.org/wiki/Fibonacci_sequence#Iterative_28">
-	 * Roseatta code: Fibonacci sequence.</a>
+	 * See: <a href= "https://www.rosettacode.org/wiki/Fibonacci_sequence#Iterative_28"> Roseatta code: Fibonacci
+	 * sequence.</a>
 	 * 
 	 * @param iArg
 	 * @return
@@ -3297,8 +3253,7 @@ public final class NumberTheory {
 	/**
 	 * The first 49 perfect numbers.
 	 * 
-	 * See <a href=
-	 * "https://en.wikipedia.org/wiki/List_of_perfect_numbers">List_of_perfect_numbers</a>
+	 * See <a href= "https://en.wikipedia.org/wiki/List_of_perfect_numbers">List_of_perfect_numbers</a>
 	 */
 	private final static long[] PN_8 = { 6, 28, 496, 8128, 33550336L, 8589869056L, 137438691328L,
 			2305843008139952128L };

@@ -1,5 +1,7 @@
 package org.matheclipse.core.patternmatching;
 
+import javax.annotation.Nonnull;
+
 import org.matheclipse.combinatoric.IStepVisitor;
 import org.matheclipse.combinatoric.MultisetPartitionsIterator;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
@@ -31,7 +33,7 @@ public class OrderlessStepVisitor extends FlatOrderlessStepVisitor implements IS
 	}
 
 	@Override
-	protected boolean matchSinglePartition(int[][] result, StackMatcher stackMatcher) {
+	protected boolean matchSinglePartition(int[][] result, @Nonnull StackMatcher stackMatcher) {
 		// IAST partitionElement;
 		// if (Config.SHOW_STACKTRACE == true) {
 		// }

@@ -113,7 +113,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	@Override
 	public IInteger add(final IInteger that) {
 		return valueOf(fBigIntValue.add(that.toBigNumerator()));
-	} 
+	}
 
 	@Override
 	public IRational add(IRational parm1) {
@@ -279,9 +279,10 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
 	@Override
 	public boolean equals(final Object obj) {
-		if (obj instanceof IntegerSym) {
-			return equalsInt(((IntegerSym) obj).fIntValue);
-		}
+		// EQ_CHECK_FOR_OPERAND_NOT_COMPATIBLE_WITH_THIS
+		// if (obj instanceof IntegerSym) {
+		// return equalsInt(((IntegerSym) obj).fIntValue);
+		// }
 		if (obj instanceof BigIntegerSym) {
 			if (hashCode() != obj.hashCode()) {
 				return false;
@@ -383,54 +384,55 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
+			boolean usePrefix) {
 		String prefix = usePrefix ? "F." : "";
 		int value = NumberUtil.toInt(fBigIntValue);
 		switch (value) {
 		case -1:
-			return prefix+"CN1";
+			return prefix + "CN1";
 		case -2:
-			return prefix+"CN2";
+			return prefix + "CN2";
 		case -3:
-			return prefix+"CN3";
+			return prefix + "CN3";
 		case -4:
-			return prefix+"CN4";
+			return prefix + "CN4";
 		case -5:
-			return prefix+"CN5";
+			return prefix + "CN5";
 		case -6:
-			return prefix+"CN6";
+			return prefix + "CN6";
 		case -7:
-			return prefix+"CN7";
+			return prefix + "CN7";
 		case -8:
-			return prefix+"CN8";
+			return prefix + "CN8";
 		case -9:
-			return prefix+"CN9";
+			return prefix + "CN9";
 		case -10:
-			return prefix+"CN10";
+			return prefix + "CN10";
 		case 0:
-			return prefix+"C0";
+			return prefix + "C0";
 		case 1:
-			return prefix+"C1";
+			return prefix + "C1";
 		case 2:
-			return prefix+"C2";
+			return prefix + "C2";
 		case 3:
-			return prefix+"C3";
+			return prefix + "C3";
 		case 4:
-			return prefix+"C4";
+			return prefix + "C4";
 		case 5:
-			return prefix+"C5";
+			return prefix + "C5";
 		case 6:
-			return prefix+"C6";
+			return prefix + "C6";
 		case 7:
-			return prefix+"C7";
+			return prefix + "C7";
 		case 8:
-			return prefix+"C8";
+			return prefix + "C8";
 		case 9:
-			return prefix+"C9";
+			return prefix + "C9";
 		case 10:
-			return prefix+"C10";
+			return prefix + "C10";
 		default:
-			return prefix+"ZZ(" + value + "L)";
+			return prefix + "ZZ(" + value + "L)";
 		}
 
 	}
@@ -611,7 +613,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		default:
 		}
 		return valueOf(fBigIntValue.multiply(BigInteger.valueOf(value)));
-	} 
+	}
 
 	@Override
 	public IRational multiply(IRational parm1) {

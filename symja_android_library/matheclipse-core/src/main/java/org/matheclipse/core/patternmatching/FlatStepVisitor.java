@@ -1,5 +1,7 @@
 package org.matheclipse.core.patternmatching;
 
+import javax.annotation.Nonnull;
+
 import org.matheclipse.combinatoric.AbstractListStepVisitor;
 import org.matheclipse.combinatoric.NumberPartitionsIterator;
 import org.matheclipse.core.expression.F;
@@ -62,7 +64,7 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 	 * @param stackMatcher
 	 * @return
 	 */
-	protected boolean matchSinglePartition(int[][] result, StackMatcher stackMatcher) {
+	protected boolean matchSinglePartition(int[][] result, @Nonnull StackMatcher stackMatcher) {
 		IAST partitionElement;
 		// if (Config.SHOW_STACKTRACE == true) {
 		// }

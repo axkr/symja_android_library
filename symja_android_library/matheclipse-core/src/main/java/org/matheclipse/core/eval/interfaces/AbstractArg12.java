@@ -26,14 +26,17 @@ import org.matheclipse.core.interfaces.ISymbol;
 public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 
 	public IExpr unaryOperator(final IExpr arg0) {
-		final IExpr result = e1ObjArg(arg0);
+		IExpr result = e1ObjArg(arg0);
 
 		if (result.isPresent()) {
 			return result;
 		}
 		// argument dispatching
 		if (arg0 instanceof IAST) {
-			e1FunArg((IAST) arg0);
+			result = e1FunArg((IAST) arg0);
+			if (result.isPresent()) {
+				return result;
+			}
 		}
 		final int hier = arg0.hierarchy();
 		if (hier <= IExpr.INTEGERID) {
@@ -108,10 +111,11 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 	}
 
 	public IExpr binaryOperator(final IExpr o0, final IExpr o1) {
-		IExpr result =  F.NIL;
+		IExpr result = F.NIL;
 		if (o0 instanceof ApcomplexNum) {
 			if (o1.isNumber()) {
-				result = e2ApcomplexArg((ApcomplexNum) o0, ((INumber) o1).apcomplexNumValue(((ApcomplexNum) o0).precision()));
+				result = e2ApcomplexArg((ApcomplexNum) o0,
+						((INumber) o1).apcomplexNumValue(((ApcomplexNum) o0).precision()));
 			}
 			if (result.isPresent()) {
 				return result;
@@ -119,7 +123,8 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 			return e2ObjArg(o0, o1);
 		} else if (o1 instanceof ApcomplexNum) {
 			if (o0.isNumber()) {
-				result = e2ApcomplexArg(((INumber) o0).apcomplexNumValue(((ApcomplexNum) o1).precision()), (ApcomplexNum) o1);
+				result = e2ApcomplexArg(((INumber) o0).apcomplexNumValue(((ApcomplexNum) o1).precision()),
+						(ApcomplexNum) o1);
 			}
 			if (result.isPresent()) {
 				return result;
@@ -145,7 +150,8 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 
 		if (o0 instanceof ApfloatNum) {
 			if (o1.isSignedNumber()) {
-				result = e2ApfloatArg((ApfloatNum) o0, ((ISignedNumber) o1).apfloatNumValue(((ApfloatNum) o0).precision()));
+				result = e2ApfloatArg((ApfloatNum) o0,
+						((ISignedNumber) o1).apfloatNumValue(((ApfloatNum) o0).precision()));
 			}
 			if (result.isPresent()) {
 				return result;
@@ -153,7 +159,8 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 			return e2ObjArg(o0, o1);
 		} else if (o1 instanceof ApfloatNum) {
 			if (o0.isSignedNumber()) {
-				result = e2ApfloatArg(((ISignedNumber) o0).apfloatNumValue(((ApfloatNum) o1).precision()), (ApfloatNum) o1);
+				result = e2ApfloatArg(((ISignedNumber) o0).apfloatNumValue(((ApfloatNum) o1).precision()),
+						(ApfloatNum) o1);
 			}
 			if (result.isPresent()) {
 				return result;

@@ -271,9 +271,10 @@ public class IntegerSym extends AbstractIntegerSym {
 		if (obj instanceof IntegerSym) {
 			return fIntValue == ((IntegerSym) obj).fIntValue;
 		}
-		if (obj instanceof BigIntegerSym) {
-			return ((BigIntegerSym) obj).equalsInt(fIntValue);
-		}
+		// EQ_CHECK_FOR_OPERAND_NOT_COMPATIBLE_WITH_THIS
+		// if (obj instanceof BigIntegerSym) {
+		// return ((BigIntegerSym) obj).equalsInt(fIntValue);
+		// }
 		return false;
 	}
 
