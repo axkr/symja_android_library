@@ -6744,6 +6744,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStirlingS2() {
+		check("StirlingS2(6,10)", "0");
 		check("StirlingS2(10,6)", "22827");
 		check("StirlingS2(0,0)", "1");
 		check("StirlingS2(1,1)", "1");

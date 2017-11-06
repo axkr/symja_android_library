@@ -5,7 +5,6 @@ import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.Factorial;
 import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Plus;
@@ -23,6 +22,8 @@ import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
+import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.util.CombinatoricsUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.VariablesSet;
@@ -2927,16 +2928,38 @@ public final class NumberTheory {
 	 */
 	private static class StirlingS2 extends AbstractFunctionEvaluator {
 
-		private static IExpr stirlingS2(IInteger nArg1, IInteger kArg2, int k) {
-			IAST temp = F.PlusAlloc(k >= 0 ? k : 0);
-			for (int i = 0; i < k; i++) {
-				if ((i & 1) == 1) { // isOdd(i) ?
-					temp.append(Times(Negate(Binomial(kArg2, integer(i))), Power(Plus(kArg2, integer(-i)), nArg1)));
-				} else {
-					temp.append(Times(Times(Binomial(kArg2, integer(i))), Power(Plus(kArg2, integer(-i)), nArg1)));
+		/**
+		 * Returns the Stirling number of the second kind, "{@code S(n,k)}", the number of ways of partitioning an
+		 * {@code n}-element set into {@code k} non-empty subsets.
+		 * 
+		 * @param n
+		 *            the size of the set
+		 * @param k
+		 *            the number of non-empty subsets
+		 * @param ki
+		 *            the number of non-empty subsets as int value
+		 * @return {@code S(nArg1,kArg2)}
+		 */
+		private static IExpr stirlingS2(IInteger n, IInteger k, int ki) {
+			try {
+				int ni = n.toIntDefault(0);
+				if (ni != 0 && ni <= 25) {// S(26,9) = 11201516780955125625 is larger than Long.MAX_VALUE
+					return F.ZZ(CombinatoricsUtils.stirlingS2(ni, ki));
+				}
+			} catch (MathRuntimeException mre) {
+				if (Config.DEBUG) {
+					mre.printStackTrace();
 				}
 			}
-			return Times(Power(Factorial(kArg2), CN1), temp);
+			IAST temp = F.PlusAlloc(ki >= 0 ? ki : 0);
+			for (int i = 0; i < ki; i++) {
+				if ((i & 1) == 1) { // isOdd(i) ?
+					temp.append(Times(Negate(Binomial(k, integer(i))), Power(Plus(k, integer(-i)), n)));
+				} else {
+					temp.append(Times(Times(Binomial(k, integer(i))), Power(Plus(k, integer(-i)), n)));
+				}
+			}
+			return Times(Power(Factorial(k), CN1), temp);
 		}
 
 		/** {@inheritDoc} */
