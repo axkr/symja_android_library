@@ -3,7 +3,6 @@ package org.matheclipse.core.form.mathml;
 import java.text.NumberFormat;
 import java.util.HashMap;
 
-//import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
