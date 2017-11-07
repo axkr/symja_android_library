@@ -3,7 +3,7 @@ package org.matheclipse.core.form.mathml;
 import java.text.NumberFormat;
 import java.util.HashMap;
 
-import org.hipparchus.fraction.BigFraction;
+//import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
@@ -106,13 +106,13 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 		tagEnd(buf, "cn");
 	}
 
-	public void convertFraction(final StringBuilder buf, final BigFraction f, final int precedence) {
-		tagStart(buf, "cn", "type=\"rational\"");
-		buf.append(String.valueOf(f.getNumerator().toString()));
-		tagStartEnd(buf, "sep");
-		buf.append(String.valueOf(f.getDenominator().toString()));
-		tagEnd(buf, "cn");
-	}
+//	public void convertFraction(final StringBuilder buf, final BigFraction f, final int precedence) {
+//		tagStart(buf, "cn", "type=\"rational\"");
+//		buf.append(String.valueOf(f.getNumerator().toString()));
+//		tagStartEnd(buf, "sep");
+//		buf.append(String.valueOf(f.getDenominator().toString()));
+//		tagEnd(buf, "cn");
+//	}
 
 	@Override
 	public void convertComplex(final StringBuilder buf, final IComplex c, final int precedence) {

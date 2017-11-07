@@ -1,10 +1,9 @@
 package org.matheclipse.core.form.tex;
 
-import java.math.BigInteger;
 import java.text.NumberFormat;
 import java.util.HashMap;
 
-import org.hipparchus.fraction.BigFraction;
+//import org.hipparchus.fraction.BigFraction;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
@@ -140,24 +139,24 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		}
 	}
 
-	public void convertFraction(final StringBuilder buf, final BigFraction f, final int precedence) {
-		boolean negative = f.compareTo(BigFraction.ZERO) < 0;
-		if (negative && (precedence > plusPrec)) {
-			buf.append("\\left( ");
-		}
-		if (f.getDenominator().equals(BigInteger.ONE)) {
-			buf.append(f.getNumerator().toString());
-		} else {
-			buf.append("\\frac{");
-			buf.append(f.getNumerator().toString());
-			buf.append("}{");
-			buf.append(f.getDenominator().toString());
-			buf.append('}');
-		}
-		if (negative && (precedence > plusPrec)) {
-			buf.append("\\right) ");
-		}
-	}
+	// public void convertFraction(final StringBuilder buf, final BigFraction f, final int precedence) {
+	// boolean negative = f.compareTo(BigFraction.ZERO) < 0;
+	// if (negative && (precedence > plusPrec)) {
+	// buf.append("\\left( ");
+	// }
+	// if (f.getDenominator().equals(BigInteger.ONE)) {
+	// buf.append(f.getNumerator().toString());
+	// } else {
+	// buf.append("\\frac{");
+	// buf.append(f.getNumerator().toString());
+	// buf.append("}{");
+	// buf.append(f.getDenominator().toString());
+	// buf.append('}');
+	// }
+	// if (negative && (precedence > plusPrec)) {
+	// buf.append("\\right) ");
+	// }
+	// }
 
 	@Override
 	public void convertComplex(final StringBuilder buf, final IComplex c, final int precedence) {
@@ -304,10 +303,10 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 			convertSymbol(buf, (ISymbol) o);
 			return;
 		}
-		if (o instanceof BigFraction) {
-			convertFraction(buf, (BigFraction) o, precedence);
-			return;
-		}
+		// if (o instanceof BigFraction) {
+		// convertFraction(buf, (BigFraction) o, precedence);
+		// return;
+		// }
 		convertString(buf, o.toString());
 	}
 
