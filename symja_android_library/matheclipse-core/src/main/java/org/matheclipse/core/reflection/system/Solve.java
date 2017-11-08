@@ -23,6 +23,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -107,7 +108,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		private long fLeafCount;
 
 		private HashSet<ISymbol> fSymbolSet;
-		private IAST fMatrixRow;
+		private IASTMutable fMatrixRow;
 		private IAST fPlusAST;
 
 		final IAST fListOfVariables;
@@ -844,7 +845,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	private static IAST sortASTArguments(IAST resultList) {
 		for (int i = 1; i < resultList.size(); i++) {
 			if (resultList.get(i).isList()) {
-				EvalAttributes.sort((IAST) resultList.get(i));
+				EvalAttributes.sort((IASTMutable) resultList.get(i));
 			}
 		}
 		return resultList;
@@ -898,7 +899,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
 				try {
 					IAST resultList = Solve.integerSolve(equationsAndInequations, variables);
-					EvalAttributes.sort(resultList);
+					EvalAttributes.sort((IASTMutable)resultList);
 					return resultList;
 				} catch (RuntimeException rex) {
 					if (Config.SHOW_STACKTRACE) {
@@ -1121,7 +1122,7 @@ public class Solve extends AbstractFunctionEvaluator {
 					Set<IExpr> subSolutionSet = new HashSet<IExpr>();
 					for (int j = 1; j < times.size(); j++) {
 						if (!times.get(j).isFree(Predicates.in(variables), true)) {
-							IAST clonedEqualZeroList = termsEqualZeroList.clone();
+							IASTMutable clonedEqualZeroList = termsEqualZeroList.clone();
 							clonedEqualZeroList.set(i, times.get(j));
 							IAST temp = solveEquations(clonedEqualZeroList, variables, 0, engine);
 							if (temp.size() > 1) {

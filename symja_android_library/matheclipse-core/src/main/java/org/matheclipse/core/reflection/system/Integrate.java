@@ -32,6 +32,7 @@ import org.matheclipse.core.expression.Symbol;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.PartialFractionIntegrateGenerator;
@@ -122,7 +123,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 				return F.NIL;
 			}
 
-			final IAST ast = holdallAST.setAtClone(1, arg1);
+			final IASTMutable ast = holdallAST.setAtClone(1, arg1);
 			ast.set(2, arg2);
 			// if (ast.arg2().isSymbol()) {
 			final IExpr x = ast.arg2();
@@ -940,7 +941,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 
 	public static IAST getRuleASTStatic() {
 		F.Integrate.createRulesData(new int[] { 0, 100 });
-		IAST ast = F.ast(F.List, 10000, false);
+		IASTMutable ast = F.ast(F.List, 10000, false);
 		getRuleASTRubi45(ast);
 
 		// INT_FUNCTIONS.add(F.Times);
@@ -986,7 +987,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		return ast;
 	}
 
-	private static void getRuleASTRubi45(IAST ast) {
+	private static void getRuleASTRubi45(IASTMutable ast) {
 		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules0.RULES);
 		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules1.RULES);
 		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules2.RULES);

@@ -25,6 +25,7 @@ import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -36,14 +37,20 @@ import org.matheclipse.core.polynomials.QuarticSolver;
 import edu.jas.arith.BigRational;
 import edu.jas.poly.GenPolynomial;
 
-
 /**
- * <pre>Roots(polynomial-equation, var)
+ * <pre>
+ * Roots(polynomial - equation, var)
  * </pre>
- * <blockquote><p>determine the roots of a univariate polynomial equation with respect to the variable <code>var</code>.</p>
+ * 
+ * <blockquote>
+ * <p>
+ * determine the roots of a univariate polynomial equation with respect to the variable <code>var</code>.
+ * </p>
  * </blockquote>
  * <h3>Examples</h3>
- * <pre>&gt;&gt; Roots(3*x^3-5*x^2+5*x-2==0,x)
+ * 
+ * <pre>
+ * &gt;&gt; Roots(3*x^3-5*x^2+5*x-2==0,x)
  * x==2/3||x==1/2-I*1/2*Sqrt(3)||x==1/2+I*1/2*Sqrt(3)
  * </pre>
  */
@@ -55,10 +62,8 @@ public class Roots extends AbstractFunctionEvaluator {
 	/**
 	 * Determine the roots of a univariate polynomial
 	 * 
-	 * See Wikipedia entries for:
-	 * <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic
-	 * equation </a>, <a href="http://en.wikipedia.org/wiki/Cubic_function">Cubic
-	 * function</a> and
+	 * See Wikipedia entries for: <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic equation </a>,
+	 * <a href="http://en.wikipedia.org/wiki/Cubic_function">Cubic function</a> and
 	 * <a href="http://en.wikipedia.org/wiki/Quartic_function">Quartic function</a>
 	 */
 	@Override
@@ -120,10 +125,9 @@ public class Roots extends AbstractFunctionEvaluator {
 
 	/**
 	 * <p>
-	 * Given a set of polynomial coefficients, compute the roots of the
-	 * polynomial. Depending on the polynomial being considered the roots may
-	 * contain complex number. When complex numbers are present they will come
-	 * in pairs of complex conjugates.
+	 * Given a set of polynomial coefficients, compute the roots of the polynomial. Depending on the polynomial being
+	 * considered the roots may contain complex number. When complex numbers are present they will come in pairs of
+	 * complex conjugates.
 	 * </p>
 	 * 
 	 * @param coefficients
@@ -173,7 +177,7 @@ public class Roots extends AbstractFunctionEvaluator {
 	 */
 	protected static IAST rootsOfVariable(final IExpr expr, final IExpr denominator, final IAST variables,
 			boolean numericSolutions, EvalEngine engine) {
-		IAST result = F.NIL;
+		IASTMutable result = F.NIL;
 		ASTRange r = new ASTRange(variables, 1);
 		List<IExpr> varList = r;
 		try {
@@ -190,7 +194,7 @@ public class Roots extends AbstractFunctionEvaluator {
 				return result;
 			}
 			// }
-			result = F.List();
+			result = F.ListAlloc(8);
 			IAST factorRational = Algebra.factorRational(polyRat, jas, varList, F.List);
 			for (int i = 1; i < factorRational.size(); i++) {
 				temp = F.evalExpand(factorRational.get(i));
@@ -258,15 +262,18 @@ public class Roots extends AbstractFunctionEvaluator {
 		return F.NIL;
 	}
 
-	private static IAST rootsOfExprPolynomial(final IExpr expr, IAST varList, boolean rootsOfQuartic) {
-		IAST result = F.NIL;
+	private static IASTMutable rootsOfExprPolynomial(final IExpr expr, IAST varList, boolean rootsOfQuartic) {
+		IASTMutable result = F.NIL;
 		try {
 			// try to generate a common expression polynomial
 			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, varList);
 			ExprPolynomial ePoly = ring.create(expr, false, false);
 			ePoly = ePoly.multiplyByMinimumNegativeExponents();
+			if (ePoly.degree(0) >= Integer.MAX_VALUE) {
+				return F.NIL;
+			}
 			if (ePoly.degree(0) >= 3) {
-				result = unitPolynomial(ePoly.degree(0), ePoly);
+				result = unitPolynomial((int)ePoly.degree(0), ePoly);
 				if (result.isPresent()) {
 					result = QuarticSolver.createSet(result);
 					return result;
@@ -300,7 +307,7 @@ public class Roots extends AbstractFunctionEvaluator {
 	 * @return <code>F.NIL</code> if no evaluation was possible.
 	 */
 	private static IAST rootsOfQuadraticExprPolynomial(final IExpr expr, IAST varList) {
-		IAST result = F.NIL;
+		IASTMutable result = F.NIL;
 		try {
 			// try to generate a common expression polynomial
 			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, varList);
@@ -327,11 +334,11 @@ public class Roots extends AbstractFunctionEvaluator {
 	 *            the polynomial
 	 * @return <code>F.NIL</code> if no evaluation was possible.
 	 */
-	private static IAST rootsOfQuarticPolynomial(ExprPolynomial polynomial) {
+	private static IASTMutable rootsOfQuarticPolynomial(ExprPolynomial polynomial) {
 		long varDegree = polynomial.degree(0);
 
 		if (polynomial.isConstant()) {
-			return List();
+			return F.ListAlloc(0);
 		}
 
 		IExpr a;
@@ -363,10 +370,9 @@ public class Roots extends AbstractFunctionEvaluator {
 					return F.NIL;
 				}
 			}
-			IAST result = QuarticSolver.quarticSolve(a, b, c, d, e);
+			IASTMutable result = QuarticSolver.quarticSolve(a, b, c, d, e);
 			if (result.isPresent()) {
-				result = QuarticSolver.createSet(result);
-				return result;
+				return QuarticSolver.createSet(result);
 			}
 		}
 
@@ -380,7 +386,7 @@ public class Roots extends AbstractFunctionEvaluator {
 	 * @param polynomial
 	 * @return
 	 */
-	private static IAST unitPolynomial(long varDegree, ExprPolynomial polynomial) {
+	private static IASTMutable unitPolynomial(int varDegree, ExprPolynomial polynomial) {
 		IExpr a;
 		IExpr b;
 		a = C0;
@@ -396,7 +402,7 @@ public class Roots extends AbstractFunctionEvaluator {
 				return F.NIL;
 			}
 		}
-		IAST result = F.List();
+		
 		// a * x^varDegree + b
 		if (!a.isOne()) {
 			a = F.Power(a, F.fraction(-1, varDegree));
@@ -406,11 +412,14 @@ public class Roots extends AbstractFunctionEvaluator {
 		}
 		if ((varDegree & 0x0001) == 0x0001) {
 			// odd
+			IASTMutable result = F.ListAlloc(varDegree);
 			for (int i = 1; i <= varDegree; i++) {
 				result.append(F.Times(F.Power(F.CN1, i - 1), F.Power(F.CN1, F.fraction(i, varDegree)), b, a));
 			}
+			return result;
 		} else {
 			// even
+			IASTMutable result = F.ListAlloc(varDegree);
 			long size = varDegree / 2;
 			int k = 1;
 			for (int i = 1; i <= size; i++) {
@@ -418,8 +427,9 @@ public class Roots extends AbstractFunctionEvaluator {
 				result.append(F.Times(F.Power(F.CN1, F.fraction(k, varDegree)), b, a));
 				k += 2;
 			}
+			return result;
 		}
-		return result;
+		
 	}
 
 	/**
@@ -429,11 +439,11 @@ public class Roots extends AbstractFunctionEvaluator {
 	 *            the polynomial
 	 * @return <code>F.NIL</code> if no evaluation was possible.
 	 */
-	private static IAST rootsOfQuadraticPolynomial(ExprPolynomial polynomial) {
+	private static IASTMutable rootsOfQuadraticPolynomial(ExprPolynomial polynomial) {
 		long varDegree = polynomial.degree(0);
-		IAST result = List();
+
 		if (polynomial.isConstant()) {
-			return result;
+			return F.ListAlloc(1);
 		}
 		IExpr a;
 		IExpr b;
@@ -443,7 +453,7 @@ public class Roots extends AbstractFunctionEvaluator {
 		if (varDegree <= 2) {
 			IEvalStepListener listener = EvalEngine.get().getStepListener();
 			if (listener != null) {
-				IAST temp = listener.rootsOfQuadraticPolynomial(polynomial);
+				IASTMutable temp = listener.rootsOfQuadraticPolynomial(polynomial);
 				if (temp.isPresent()) {
 					return temp;
 				}
@@ -471,7 +481,7 @@ public class Roots extends AbstractFunctionEvaluator {
 					throw new ArithmeticException("Roots::Unexpected exponent value: " + lExp);
 				}
 			}
-			result = QuarticSolver.quarticSolve(a, b, c, d, e);
+			IASTMutable result = QuarticSolver.quarticSolve(a, b, c, d, e);
 			if (result.isPresent()) {
 				result = QuarticSolver.createSet(result);
 				return result;

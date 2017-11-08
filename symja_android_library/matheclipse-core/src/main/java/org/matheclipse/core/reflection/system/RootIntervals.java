@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 import edu.jas.arith.BigRational;
@@ -47,7 +48,7 @@ public class RootIntervals extends AbstractFunctionEvaluator {
 	 * @param ast
 	 * @return
 	 */
-	public static IAST croots(final IExpr arg, boolean numeric) {
+	public static IASTMutable croots(final IExpr arg, boolean numeric) {
 
 		try {
 			VariablesSet eVar = new VariablesSet(arg);
@@ -72,7 +73,7 @@ public class RootIntervals extends AbstractFunctionEvaluator {
 
 			BigRational len = new BigRational(1, 100000L);
 
-			IAST resultList = F.List();
+			IASTMutable resultList = F.ListAlloc(roots.size());
 
 			if (numeric) {
 				for (Rectangle<BigRational> root : roots) {

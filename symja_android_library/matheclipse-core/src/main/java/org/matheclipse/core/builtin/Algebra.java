@@ -55,6 +55,7 @@ import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -428,12 +429,12 @@ public class Algebra {
 		 *            the integer gcd value
 		 * @return
 		 */
-		private static IExpr[] calculatePlusIntegerGCD(IAST numeratorPlus, IInteger denominatorInt, IInteger gcd) {
+		private static IExpr[] calculatePlusIntegerGCD(IASTMutable numeratorPlus, IInteger denominatorInt, IInteger gcd) {
 			for (int i = 1; i < numeratorPlus.size(); i++) {
 				if (numeratorPlus.get(i).isInteger()) {
 					numeratorPlus.set(i, ((IInteger) numeratorPlus.get(i)).div(gcd));
 				} else if (numeratorPlus.get(i).isTimes() && numeratorPlus.get(i).getAt(1).isInteger()) {
-					IAST times = ((IAST) numeratorPlus.get(i)).clone();
+					IASTMutable times = ((IAST) numeratorPlus.get(i)).clone();
 					times.set(1, ((IInteger) times.arg1()).div(gcd));
 					numeratorPlus.set(i, times);
 				} else {
@@ -459,7 +460,7 @@ public class Algebra {
 		 * @return <code>null</code> if no gcd value was found
 		 */
 		private static IExpr[] cancelPlusIntegerGCD(IAST numeratorPlus, IInteger denominatorInt) {
-			IAST plus = numeratorPlus.clone();
+			IASTMutable plus = numeratorPlus.clone();
 			IAST gcd = F.ast(F.GCD, plus.size() + 1, false);
 			gcd.append(denominatorInt);
 			boolean evaled = true;
@@ -625,7 +626,7 @@ public class Algebra {
 			if (expr.isAST()) {
 				Map<IExpr, IAST> map = new HashMap<IExpr, IAST>();
 				IAST poly = (IAST) expr;
-				IAST rest = F.PlusAlloc(poly.size());
+				IASTMutable rest = F.PlusAlloc(poly.size());
 
 				IPatternMatcher matcher = new PatternMatcherEvalEngine(x, engine);
 				collectToMap(poly, matcher, map, rest);
@@ -645,7 +646,7 @@ public class Algebra {
 				}
 
 				if (head != null) {
-					IAST simplifyAST = F.unaryAST1(head, null);
+					IASTMutable simplifyAST = (IASTMutable)F.unaryAST1(head, null);
 					IExpr coefficient;
 					for (int i = 1; i < rest.size(); i++) {
 						simplifyAST.set(1, rest.get(i));
@@ -1212,7 +1213,7 @@ public class Algebra {
 				if (numberOfTerms > Integer.MAX_VALUE) {
 					throw new ArithmeticException("");
 				}
-				final IAST result = F.ast(F.Plus, (int) numberOfTerms, false);
+				final IASTMutable result = F.ast(F.Plus, (int) numberOfTerms, false);
 				for (int i = 1; i < plusAST0.size(); i++) {
 					for (int j = 1; j < plusAST1.size(); j++) {
 						// evaluate to flatten out Times() exprs
@@ -1230,7 +1231,7 @@ public class Algebra {
 			 * @return
 			 */
 			private IExpr expandExprTimesPlus(final IExpr expr1, final IAST plusAST) {
-				final IAST result = F.ast(F.Plus, plusAST.size() - 1, false);
+				final IASTMutable result = F.ast(F.Plus, plusAST.size() - 1, false);
 				for (int i = 1; i < plusAST.size(); i++) {
 					// evaluate to flatten out Times() exprs
 					evalAndExpandAST(expr1, plusAST.get(i), result);
@@ -1246,7 +1247,7 @@ public class Algebra {
 			 * @param result
 			 * @param expr
 			 */
-			public void evalAndExpandAST(IExpr expr1, IExpr expr2, final IAST result) {
+			public void evalAndExpandAST(IExpr expr1, IExpr expr2, final IASTMutable result) {
 				IExpr arg = TimesOp.times(expr1, expr2);
 				if (arg.isAST()) {
 					result.appendPlus(expandAST((IAST) arg).orElse(arg));
@@ -2843,7 +2844,7 @@ public class Algebra {
 			// D[a_+b_+c_,x_] -> D[a,x]+D[b,x]+D[c,x]
 			// return listArg1.mapThread(F.D(F.Null, x), 1);
 			@Override
-			public IExpr visit(IAST ast) {
+			public IExpr visit(IASTMutable ast) {
 				if (!ast.isAST(F.Root)) {
 					IAST cloned = replacement.setAtClone(1, null);
 					return ast.mapThread(cloned, 1);
@@ -3171,18 +3172,16 @@ public class Algebra {
 			}
 
 			@Override
-			public IExpr visit(IAST ast) {
+			public IExpr visit(IASTMutable ast) {
 				IExpr result = F.NIL;
-				IExpr temp;
-
-				temp = visitAST(ast);
+				IExpr temp = visitAST(ast);
 				if (temp.isPresent()) {
 					long minCounter = fComplexityFunction.apply(ast);
 					long count = fComplexityFunction.apply(temp);
 					if (count < minCounter) {
 						minCounter = count;
 						if (temp.isAST()) {
-							ast = (IAST) temp;
+							ast = (IASTMutable) temp;
 							result = temp;
 						} else {
 							return temp;
@@ -3281,7 +3280,7 @@ public class Algebra {
 			private IExpr tryExpandAll(IAST ast, IExpr temp, IExpr arg1, int i) {
 				IExpr expandedAst = tryExpandAllTransformation((IAST) temp, F.Times(arg1, temp));
 				if (expandedAst.isPresent()) {
-					IAST result = F.Times();
+					IASTMutable result = F.TimesAlloc(ast.size());
 					// ast.range(2, ast.size()).toList(result.args());
 					result.appendAll(ast, 2, ast.size());
 					result.set(i - 1, expandedAst);
@@ -3435,8 +3434,8 @@ public class Algebra {
 		 * @param ast
 		 * @return <code>F.NIL</code> if the <code>ast</code> couldn't be evaluated.
 		 */
-		private static IAST togetherForEach(final IAST ast, EvalEngine engine) {
-			IAST result = F.NIL;
+		private static IASTMutable togetherForEach(final IAST ast, EvalEngine engine) {
+			IASTMutable result = F.NIL;
 			for (int i = 1; i < ast.size(); i++) {
 				if (ast.get(i).isAST()) {
 					IExpr temp = togetherNull((IAST) ast.get(i), engine);
@@ -3490,7 +3489,7 @@ public class Algebra {
 			if (plusAST.size() <= 2) {
 				return F.NIL;
 			}
-			IAST numerator = F.ast(F.Plus, plusAST.size(), false);
+			IASTMutable numerator = F.ast(F.Plus, plusAST.size(), false);
 			IAST denominator = F.ast(F.Times, plusAST.size(), false);
 			boolean evaled = false;
 			IExpr temp;
@@ -3579,7 +3578,7 @@ public class Algebra {
 				return togetherPlus(ast);
 			} else if (ast.isTimes() || ast.isPower()) {
 				try {
-					IAST result = F.NIL;
+					IASTMutable result = F.NIL;
 					if (ast.isTimes()) {
 						result = togetherForEach(ast, engine);
 					} else {
@@ -3604,7 +3603,7 @@ public class Algebra {
 			return F.NIL;
 		}
 
-		private static IAST togetherPower(final IAST ast, IAST result, EvalEngine engine) {
+		private static IASTMutable togetherPower(final IAST ast, IASTMutable result, EvalEngine engine) {
 			if (ast.arg1().isAST()) {
 				IExpr temp = togetherNull((IAST) ast.arg1(), engine);
 				if (temp.isPresent()) {
@@ -3812,7 +3811,7 @@ public class Algebra {
 			}
 			return F.NIL;
 		}
-		IAST result = F.NIL;
+		IASTMutable result = F.NIL;
 		IExpr temp = F.NIL;
 		int size = localAST.size();
 		if (localAST.head().isAST()) {

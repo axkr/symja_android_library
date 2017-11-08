@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -47,14 +48,14 @@ public class EvalAttributes {
 	 * 
 	 * @return returns the flattened list or <code>F.NIL</code>
 	 */
-	public static IAST flatten(@Nonnull final IAST ast) {
+	public static IASTMutable flatten(@Nonnull final IAST ast) {
 		if ((ast.getEvalFlags() & IAST.IS_FLATTENED) == IAST.IS_FLATTENED) {
 			// already flattened
 			return F.NIL;
 		}
 		final ISymbol sym = ast.topHead();
 		if (ast.isAST(sym)) {
-			IAST result = flatten(sym, ast);
+			IASTMutable result = flatten(sym, ast);
 			if (result.isPresent()) {
 				result.addEvalFlags(IAST.IS_FLATTENED);
 				return result;
@@ -75,7 +76,7 @@ public class EvalAttributes {
 	 *            the <code>sublist</code> which should be added to the <code>result</code> list.
 	 * @return the flattened ast expression if a sublist was flattened out, otherwise return <code>F#NIL</code>..
 	 */
-	public static IAST flatten(final ISymbol head, final IAST ast) {
+	public static IASTMutable flatten(final ISymbol head, final IAST ast) {
 		IExpr expr;
 		final int astSize = ast.size();
 		int newSize = 0;
@@ -91,7 +92,7 @@ public class EvalAttributes {
 			}
 		}
 		if (flattened) {
-			IAST result = F.ast(ast.head(), newSize, false);
+			IASTMutable result = F.ast(ast.head(), newSize, false);
 			for (int i = 1; i < astSize; i++) {
 				expr = ast.get(i);
 				if (expr.isAST(head)) {
@@ -168,11 +169,11 @@ public class EvalAttributes {
 	 * @return return the sorted copy
 	 */
 	public static final IAST copySort(final IAST ast) {
-		final IAST sortedList = ast.copy();
+		final IASTMutable sortedList = ast.copy();
 		sort(sortedList);
 		return sortedList;
 	}
-	
+
 	/**
 	 * <p>
 	 * Copy the <code>ast</code> and return the sorted copy using function <code>>Less(a, b)</code>.
@@ -182,7 +183,7 @@ public class EvalAttributes {
 	 * @return return the sorted copy
 	 */
 	public static final IAST copySortLess(final IAST ast) {
-		final IAST sortedList = ast.copy();
+		final IASTMutable sortedList = ast.copy();
 		sortLess(sortedList);
 		return sortedList;
 	}
@@ -196,8 +197,8 @@ public class EvalAttributes {
 	 *            the AST will be sorted in place.
 	 * @return <code>true</code> if the sort algorithm was used; <code>false</code> otherwise
 	 */
-	public static final void sortLess(final IAST ast) {
-		 sort(ast, new Predicates.IsBinaryFalse(F.Less));
+	public static final void sortLess(IASTMutable ast) {
+		sort(ast, new Predicates.IsBinaryFalse(F.Less));
 	}
 
 	/**
@@ -210,7 +211,7 @@ public class EvalAttributes {
 	 *            the AST will be sorted in place.
 	 * @return <code>true</code> if the sort algorithm was used; <code>false</code> otherwise
 	 */
-	public static final boolean sort(final IAST ast) {
+	public static final boolean sort(IASTMutable ast) {
 		if ((ast.getEvalFlags() & IAST.IS_SORTED) == IAST.IS_SORTED) {
 			return false;
 		}
@@ -223,7 +224,7 @@ public class EvalAttributes {
 			case 4:
 				return sort3Args(ast);
 			default:
-			    sort(ast, Comparators.ExprComparator.CONS);
+				sort(ast, Comparators.ExprComparator.CONS);
 				ast.addEvalFlags(IAST.IS_SORTED);
 				if (Config.SHOW_STACKTRACE) {
 					checkCachedHashcode(ast);
@@ -245,9 +246,9 @@ public class EvalAttributes {
 	 *            the AST will be sorted in place.
 	 * @return <code>true</code> if the sort algorithm was used; <code>false</code> otherwise
 	 */
-	public static final void sort(final IAST ast, Comparator<IExpr> comparator) {
-		final IExpr[] a = ast.toArray(); 
-		int end=a.length;
+	public static final void sort(final IASTMutable ast, Comparator<IExpr> comparator) {
+		final IExpr[] a = ast.toArray();
+		int end = a.length;
 		Arrays.sort(a, 1, ast.size(), comparator);
 		for (int j = 1; j < end; j++) {
 			ast.set(j, a[j]);
@@ -261,7 +262,7 @@ public class EvalAttributes {
 	 *            an ast with 2 arguments
 	 * @return
 	 */
-	private static boolean sort2Args(final IAST ast) {
+	private static boolean sort2Args(final IASTMutable ast) {
 		IExpr temp;
 		if (ast.arg1().compareTo(ast.arg2()) > 0) {
 			// swap arguments
@@ -285,7 +286,7 @@ public class EvalAttributes {
 	 *            an ast with 3 arguments
 	 * @return
 	 */
-	private static boolean sort3Args(final IAST ast) {
+	private static boolean sort3Args(final IASTMutable ast) {
 		IExpr temp;
 		// http://stackoverflow.com/questions/4793251/sorting-int-array-with-only-3-elements
 		boolean evaled = false;
@@ -331,12 +332,12 @@ public class EvalAttributes {
 	 *            the length of the list
 	 * @return the resulting ast with the <code>argHead</code> threaded into each ast argument.
 	 */
-	public static IAST threadList(final IAST ast, final IExpr listHead, final IExpr argHead, final int listLength) {
+	public static IASTMutable threadList(final IAST ast, final IExpr listHead, final IExpr argHead, final int listLength) {
 
-		final IAST result = F.ast(listHead, listLength, true);
+		final IASTMutable result = F.ast(listHead, listLength, true);
 		final int listSize = ast.size();
 		for (int j = 1; j < listLength + 1; j++) {
-			final IAST subResult = F.ast(argHead, listSize - 1, true);
+			final IASTMutable subResult = F.ast(argHead, listSize - 1, true);
 
 			for (int i = 1; i < listSize; i++) {
 				if (ast.get(i).isAST(listHead)) {

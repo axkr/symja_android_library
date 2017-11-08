@@ -24,6 +24,7 @@ import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -162,7 +163,7 @@ public final class BooleanFunctions {
 				flattenedAST = ast;
 			}
 
-			IAST result = flattenedAST.clone();
+			IASTMutable result = flattenedAST.clone();
 			int[] symbols = new int[flattenedAST.size()];
 			int[] notSymbols = new int[flattenedAST.size()];
 			for (int i = 1; i < flattenedAST.size(); i++) {
@@ -574,7 +575,7 @@ public final class BooleanFunctions {
 					return equalNull(ast.arg1(), ast.arg2(), engine);
 				}
 				boolean evaled = false;
-				IAST result = ast.clone();
+				IASTMutable result = ast.clone();
 				int i = 2;
 				IExpr arg1 = F.expandAll(result.get(1), true, true);
 				while (i < result.size()) {
@@ -1842,7 +1843,7 @@ public final class BooleanFunctions {
 				flattenedAST = ast;
 			}
 
-			IAST result = flattenedAST.clone();
+			IASTMutable result = flattenedAST.clone();
 			IExpr temp;
 			IExpr sym;
 			int[] symbols = new int[flattenedAST.size()];
@@ -2110,7 +2111,7 @@ public final class BooleanFunctions {
 					}
 				}
 
-				IAST result = ast.copy();
+				IASTMutable result = ast.copy();
 				for (int i = 1; i < result.size(); i++) {
 					result.set(i, F.expandAll(result.get(i), true, true));
 				}

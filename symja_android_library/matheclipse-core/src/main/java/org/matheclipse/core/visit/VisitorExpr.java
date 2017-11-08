@@ -2,6 +2,7 @@ package org.matheclipse.core.visit;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -137,7 +138,7 @@ public class VisitorExpr extends AbstractVisitor {
 	 * @return <code>F.NIL</code>, if no evaluation is possible
 	 */
 	@Override
-	public IExpr visit(IAST ast) {
+	public IExpr visit(IASTMutable ast) {
 		IExpr temp = F.NIL;
 		switch (ast.size()) {
 		case 1:
@@ -164,7 +165,7 @@ public class VisitorExpr extends AbstractVisitor {
 	 */
 	protected IExpr visitAST(IAST ast) {
 		IExpr temp;
-		IAST result = F.NIL;
+		IASTMutable result = F.NIL;
 		int i = 1;
 		int size = ast.size();
 		while (i < size) {

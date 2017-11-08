@@ -504,7 +504,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @return an array with the currently assigned value of the symbol and the new calculated value of the symbol or
 	 *         <code>null</code> if the reassignment isn't possible.
 	 */
-	public IExpr[] reassignSymbolValue(IAST ast, ISymbol functionSymbol, EvalEngine engine);
+	public IExpr[] reassignSymbolValue(IASTMutable ast, ISymbol functionSymbol, EvalEngine engine);
 
 	/**
 	 * Remove the rules associate with this symbol, which equals the given <code>leftHandSide</code> expression.

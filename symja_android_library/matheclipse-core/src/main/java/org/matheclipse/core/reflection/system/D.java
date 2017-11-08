@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.BinaryBindIth1st;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -252,7 +253,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 	}
 
 	private IAST addDerivative(final int pos, IAST deriveHead, final IExpr header, final IAST args) {
-		IAST derivativeHead1 = deriveHead.clone();
+		IASTMutable derivativeHead1 = deriveHead.clone();
 		for (int i = 1; i < derivativeHead1.size(); i++) {
 			if (i == pos) {
 				derivativeHead1.set(i, derivativeHead1.get(i).inc());

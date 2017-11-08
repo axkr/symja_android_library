@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -57,7 +58,7 @@ public final class Combinatoric {
 
 			final List<Iterator<IExpr>> compit;
 
-			IAST current;
+			IASTMutable current;
 
 			boolean empty;
 
@@ -67,7 +68,7 @@ public final class Combinatoric {
 			 * @param comps
 			 *            components of the cartesian product.
 			 */
-			public CartesianProductIterator(List<IAST> comps, IAST emptyResultList) {
+			public CartesianProductIterator(List<IAST> comps, IASTMutable emptyResultList) {
 				if (comps == null) {
 					throw new IllegalArgumentException("null comps not allowed");
 				}
@@ -163,7 +164,7 @@ public final class Combinatoric {
 			 */
 			public final List<IAST> comps;
 
-			private final IAST fEmptyResultList;
+			private final IASTMutable fEmptyResultList;
 
 			/**
 			 * CartesianProduct constructor.
@@ -171,7 +172,7 @@ public final class Combinatoric {
 			 * @param comps
 			 *            components of the cartesian product.
 			 */
-			public CartesianProductList(List<IAST> comps, IAST emptyResultList) {
+			public CartesianProductList(List<IAST> comps, IASTMutable emptyResultList) {
 				if (comps == null) {
 					throw new IllegalArgumentException("null components not allowed");
 				}
@@ -205,7 +206,7 @@ public final class Combinatoric {
 					return F.NIL;
 				}
 			}
-			CartesianProductList cpi = new CartesianProductList(la, F.List());
+			CartesianProductList cpi = new CartesianProductList(la, F.ListAlloc(la.size()));
 			IAST result = F.ListAlloc(cpi.size());
 			for (IAST iast : cpi) {
 				result.append(iast);

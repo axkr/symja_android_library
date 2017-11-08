@@ -5,6 +5,7 @@ import java.util.function.Function;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -229,7 +230,7 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 	 *            an AST where arguments could be removed.
 	 */
 	@Override
-	public IExpr visit(IAST clonedAST) {
+	public IExpr visit(IASTMutable clonedAST) {
 		int minDepth = -1;
 		IExpr arg;
 		IExpr temp;

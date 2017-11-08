@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -34,7 +35,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 		}
 
 		@Override
-		public IExpr visit(IAST ast) {
+		public IExpr visit(IASTMutable ast) {
 			IAST list = ast;
 			boolean evaled = false;
 			IExpr temp = matcher.apply(list);
@@ -46,7 +47,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 					return temp;
 				}
 			}
-			IAST result = F.NIL;
+			IASTMutable result = F.NIL;
 			int i = 1;
 			while (i < list.size()) {
 				temp = list.get(i).accept(this);

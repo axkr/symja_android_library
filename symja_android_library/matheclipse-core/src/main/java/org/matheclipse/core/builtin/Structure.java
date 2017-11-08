@@ -16,6 +16,7 @@ import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -59,7 +60,7 @@ public class Structure {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 3, 5);
 
-			IAST evaledAST = ast.clone();
+			IASTMutable evaledAST = ast.clone();
 			for (int i = 1; i < evaledAST.size(); i++) {
 				evaledAST.set(i, engine.evaluate(evaledAST.get(i)));
 			}
@@ -490,9 +491,9 @@ public class Structure {
 				}
 			}
 
-			IAST result = ((IAST) arg2).clone();
-			IAST last = result;
-			IAST head = result;
+			IASTMutable result = ((IAST) arg2).clone();
+			IASTMutable last = result;
+			IASTMutable head = result;
 
 			for (int i = 1; i < headDepth; i++) {
 				head = ((IAST) head.head()).clone();
@@ -582,7 +583,7 @@ public class Structure {
 				if (ast.isAST1() && (arg1.getEvalFlags() & IAST.IS_SORTED) == IAST.IS_SORTED) {
 					return arg1;
 				}
-				final IAST shallowCopy = ((IAST) ast.arg1()).copy();
+				final IASTMutable shallowCopy = ((IAST) ast.arg1()).copy();
 				if (shallowCopy.size() <= 2) {
 					return shallowCopy;
 				}
@@ -738,8 +739,7 @@ public class Structure {
 						F.Equal, F.Unequal, F.Less, F.Greater, F.LessEqual, F.GreaterEqual };
 				for (int i = 0; i < logicEquationHeads.length; i++) {
 					if (ast.isAST(logicEquationHeads[i])) {
-						IAST cloned = replacement.clone();
-						cloned.set(position, null);
+						IASTMutable cloned = replacement.setAtCopy(position, null);
 						return ast.mapThread(cloned, position);
 					}
 				}
@@ -769,8 +769,7 @@ public class Structure {
 						F.Equivalent, F.Equal, F.Unequal, F.Less, F.Greater, F.LessEqual, F.GreaterEqual };
 				for (int i = 0; i < plusLogicEquationHeads.length; i++) {
 					if (ast.isAST(plusLogicEquationHeads[i])) {
-						IAST cloned = replacement.clone();
-						cloned.set(position, null);
+						IASTMutable cloned = replacement.setAtCopy(position, null);
 						return ast.mapThread(cloned, position);
 					}
 				}

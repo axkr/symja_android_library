@@ -31,6 +31,7 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -52,7 +53,7 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
-public abstract class AbstractAST implements IAST {
+public abstract class AbstractAST implements IASTMutable {
 
 	protected static final class ASTIterator implements ListIterator<IExpr> {
 
@@ -247,7 +248,7 @@ public abstract class AbstractAST implements IAST {
 
 		if (expr.isAST()) {
 			IAST nestedList = (IAST) expr;
-			IAST result;
+			IASTMutable result;
 			final IExpr head = nestedList.head();
 			IExpr temp = variables2Slots(head, from, to);
 			if (temp.isPresent()) {
@@ -332,7 +333,7 @@ public abstract class AbstractAST implements IAST {
 	}
 
 	@Override
-	public IAST apply(final IExpr head) {
+	public IASTMutable apply(final IExpr head) {
 		return setAtCopy(0, head);
 	}
 
@@ -391,7 +392,7 @@ public abstract class AbstractAST implements IAST {
 	}
 
 	@Override
-	public IAST clone() {
+	public IASTMutable clone() {
 		AbstractAST ast = null;
 		try {
 			ast = (AbstractAST) super.clone();
@@ -462,7 +463,7 @@ public abstract class AbstractAST implements IAST {
 			}
 		}
 
-		return IAST.super.compareTo(rhsExpr);
+		return IASTMutable.super.compareTo(rhsExpr);
 	}
 
 	/** {@inheritDoc} */
@@ -478,7 +479,7 @@ public abstract class AbstractAST implements IAST {
 	}
 
 	@Override
-	public IAST copy() {
+	public IASTMutable copy() {
 		return clone();
 	}
 
@@ -497,13 +498,13 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST copyHead() {
+	public final IASTMutable copyHead() {
 		return AST.newInstance(head());
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST copyHead(final int intialCapacity) {
+	public final IASTMutable copyHead(final int intialCapacity) {
 		return AST.newInstance(intialCapacity, head());
 	}
 
@@ -2498,14 +2499,14 @@ public abstract class AbstractAST implements IAST {
 	@Override
 	public IAST map(final Function<IExpr, IExpr> function, final int startOffset) {
 		IExpr temp;
-		IAST result = F.NIL;
+		IASTMutable result = F.NIL;
 		int i = startOffset;
 		int size = size();
 		while (i < size) {
 			temp = function.apply(get(i));
 			if (temp.isPresent()) {
 				// something was evaluated - return a new IAST:
-				result = copy();
+				result = (IASTMutable)copy();
 				result.set(i++, temp);
 				break;
 			}
@@ -2527,7 +2528,7 @@ public abstract class AbstractAST implements IAST {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IAST map(final IAST clonedResultAST, final Function<IExpr, IExpr> function) {
+	public IAST map(final IASTMutable clonedResultAST, final Function<IExpr, IExpr> function) {
 		IExpr temp;
 		int size = size();
 		for (int i = 1; i < size; i++) {
@@ -2575,7 +2576,7 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST mapThread(IAST appendAST, final IAST replacement, int position) {
+	public IAST mapThread(IASTMutable appendAST, final IAST replacement, int position) {
 		EvalEngine engine = EvalEngine.get();
 		final Function<IExpr, IExpr> function = x -> engine.evaluate(replacement.setAtCopy(position, x));
 
@@ -2708,16 +2709,16 @@ public abstract class AbstractAST implements IAST {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST removeAtClone(int position) {
-		IAST ast = clone();
+	public final IASTMutable removeAtClone(int position) {
+		IASTMutable ast = clone();
 		ast.remove(position);
 		return ast;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST setAtClone(int position, IExpr expr) {
-		IAST ast = clone();
+	public final IASTMutable setAtClone(int position, IExpr expr) {
+		IASTMutable ast = clone();
 		ast.set(position, expr);
 		return ast;
 	}

@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -587,16 +588,13 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		}
 		if (logAST.arg1().isPower() && logAST.arg1().getAt(2).isFree(data.getSymbol())) {
 			IAST powerAST = (IAST) logAST.arg1();
-			IAST arg1 = logAST.clone();
-			arg1.set(1, powerAST.arg1());
+			IAST arg1 = logAST.setAtClone(1, powerAST.arg1());
 			return F.Times(powerAST.arg2(), data.limit(arg1));
 		} else if (logAST.arg1().isTimes()) {
 			IAST isFreeResult = logAST.arg1().partitionTimes(x -> x.isFree(data.getSymbol(), true), F.C1, F.C1, F.List);
 			if (!isFreeResult.get(1).isOne()) {
-				IAST arg1 = logAST.clone();
-				arg1.set(1, isFreeResult.get(1));
-				IAST arg2 = logAST.clone();
-				arg2.set(1, isFreeResult.get(2));
+				IAST arg1 = logAST.setAtClone(1, isFreeResult.get(1));
+				IAST arg2 = logAST.setAtClone(1, isFreeResult.get(2));
 				return F.Plus(arg1, data.limit(arg2));
 			}
 		}

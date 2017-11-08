@@ -8,11 +8,12 @@ import java.util.function.Predicate;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 
 public class Predicates {
 	private static class InASTPredicate implements Predicate<IExpr>, Serializable {
@@ -64,7 +65,7 @@ public class Predicates {
 	public static class IsBinaryFalse implements BiPredicate<IExpr, IExpr>, Comparator<IExpr> {
 		protected final EvalEngine fEngine;
 
-		protected final IAST fAST;
+		protected final IASTMutable fAST;
 
 		/**
 		 * Define a binary AST with the header <code>head</code>.
@@ -78,7 +79,7 @@ public class Predicates {
 
 		public IsBinaryFalse(final IExpr head, EvalEngine engine) {
 			fEngine = engine;
-			fAST = F.binaryAST2(head, null, null);
+			fAST = (IASTMutable)F.binaryAST2(head, null, null);
 		}
 
 		@Override
@@ -121,7 +122,7 @@ public class Predicates {
 	public static class IsBinaryTrue implements BiPredicate<IExpr, IExpr>, Comparator<IExpr> {
 		protected final EvalEngine fEngine;
 
-		protected final IAST fAST;
+		protected final IASTMutable fAST;
 
 		/**
 		 * Define a binary AST with the header <code>head</code>.
@@ -135,7 +136,7 @@ public class Predicates {
 
 		public IsBinaryTrue(final IExpr head, EvalEngine engine) {
 			fEngine = engine;
-			fAST = F.binaryAST2(head, null, null);
+			fAST = (IASTMutable)F.binaryAST2(head, null, null);
 		}
 
 		@Override

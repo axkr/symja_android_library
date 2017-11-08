@@ -23,6 +23,7 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -884,7 +885,7 @@ public class Symbol implements ISymbol, Serializable {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IExpr[] reassignSymbolValue(IAST ast, ISymbol functionSymbol, EvalEngine engine) {
+	public IExpr[] reassignSymbolValue(IASTMutable ast, ISymbol functionSymbol, EvalEngine engine) {
 		IExpr[] result = new IExpr[2];
 		IExpr symbolValue;
 		if (hasLocalVariableStack()) {

@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -341,10 +342,10 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 	}
 
 	@Override
-	public IExpr visit(IAST ast) {
+	public IExpr visit(IASTMutable ast) {
 		int minDepth = -1;
 		IExpr temp;
-		IAST result = F.NIL;
+		IASTMutable result = F.NIL;
 		try {
 			fCurrentLevel++;
 			if (fIncludeHeads) {

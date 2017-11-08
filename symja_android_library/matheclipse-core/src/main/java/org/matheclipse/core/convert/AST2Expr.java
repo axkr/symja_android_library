@@ -18,6 +18,7 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.util.SuggestTree;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
@@ -237,7 +238,7 @@ public class AST2Expr {
 	 * @return the <code>ast</code>with the added elements
 	 * @throws ConversionException
 	 */
-	public IAST convert(FunctionNode functionNode, IAST ast) throws ConversionException {
+	public IAST convert(FunctionNode functionNode, IASTMutable ast) throws ConversionException {
 		ast.set(0, convertNode(functionNode.get(0)));
 		for (int i = 1; i < functionNode.size(); i++) {
 			ast.append(convertNode(functionNode.get(i)));
@@ -264,20 +265,20 @@ public class AST2Expr {
 		if (node instanceof FunctionNode) {
 			final FunctionNode functionNode = (FunctionNode) node;
 			int size = functionNode.size();
-			IAST ast;
+			IASTMutable ast;
 			switch (size) {
 			case 1:
-				ast = F.headAST0(convertNode(functionNode.get(0)));
+				ast = (IASTMutable)F.headAST0(convertNode(functionNode.get(0)));
 				break;
 			case 2:
-				ast = F.unaryAST1(convertNode(functionNode.get(0)), convertNode(functionNode.get(1)));
+				ast = (IASTMutable)F.unaryAST1(convertNode(functionNode.get(0)), convertNode(functionNode.get(1)));
 				break;
 			case 3:
-				ast = F.binaryAST2(convertNode(functionNode.get(0)), convertNode(functionNode.get(1)),
+				ast = (IASTMutable)F.binaryAST2(convertNode(functionNode.get(0)), convertNode(functionNode.get(1)),
 						convertNode(functionNode.get(2)));
 				break;
 			case 4:
-				ast = F.ternaryAST3(convertNode(functionNode.get(0)), convertNode(functionNode.get(1)),
+				ast = (IASTMutable)F.ternaryAST3(convertNode(functionNode.get(0)), convertNode(functionNode.get(1)),
 						convertNode(functionNode.get(2)), convertNode(functionNode.get(3)));
 				break;
 			default:
@@ -493,7 +494,7 @@ public class AST2Expr {
 	 * @param compareHead
 	 * @return
 	 */
-	private IExpr rewriteLessGreaterAST(final IAST ast, ISymbol compareHead) {
+	private IExpr rewriteLessGreaterAST(final IASTMutable ast, ISymbol compareHead) {
 		IExpr temp;
 		boolean evaled = false;
 		IAST andAST = F.ast(F.And);

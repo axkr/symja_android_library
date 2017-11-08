@@ -50,6 +50,7 @@ import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -2701,7 +2702,7 @@ public class F {
 	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
 	 * 
 	 */
-	public final static IAST ast(final IExpr head) {
+	public final static IASTMutable ast(final IExpr head) {
 		return AST.newInstance(head);
 	}
 
@@ -2717,7 +2718,7 @@ public class F {
 	 *            initialize all elements with <code>null</code>.
 	 * @return
 	 */
-	public static IAST ast(final IExpr head, final int initialCapacity, final boolean initNull) {
+	public static IASTMutable ast(final IExpr head, final int initialCapacity, final boolean initNull) {
 		final AST ast = AST.newInstance(initialCapacity, head);
 		if (initNull) {
 			for (int i = 0; i < initialCapacity; i++) {
@@ -4502,7 +4503,7 @@ public class F {
 	 *            the assumed number of arguments (+ 1 for the header expression is added internally).
 	 * @return
 	 */
-	public static IAST ListAlloc(int capacity) {
+	public static IASTMutable ListAlloc(int capacity) {
 		return ast(List, capacity, false);
 	}
 
@@ -4996,7 +4997,7 @@ public class F {
 	 * @param size
 	 * @return
 	 */
-	public static IAST PlusAlloc(int size) {
+	public static IASTMutable PlusAlloc(int size) {
 		return ast(Plus, size, false);
 	}
 
@@ -5022,7 +5023,7 @@ public class F {
 				} else {
 					size++;
 				}
-				IAST result = PlusAlloc(size);
+				IASTMutable result = PlusAlloc(size);
 				if (a0.isPlus()) {
 					result.appendArgs((IAST) a0);
 				} else {
@@ -5664,7 +5665,7 @@ public class F {
 			if (a1.isZero()) {
 				return (IAST) a0;
 			}
-			IAST clone = F.PlusAlloc(((IAST) a0).size() + 1);
+			IASTMutable clone = F.PlusAlloc(((IAST) a0).size() + 1);
 			clone.appendArgs((IAST) a0);
 			clone.append(binary(Times, CN1, a1));
 			return clone;
@@ -5787,7 +5788,7 @@ public class F {
 	 * @param size
 	 * @return
 	 */
-	public static IAST TimesAlloc(int size) {
+	public static IASTMutable TimesAlloc(int size) {
 		return ast(Times, size, false);
 	}
 
@@ -5813,7 +5814,7 @@ public class F {
 				} else {
 					size++;
 				}
-				IAST result = TimesAlloc(size);
+				IASTMutable result = TimesAlloc(size);
 				if (a0.isTimes()) {
 					result.appendArgs((IAST) a0);
 				} else {

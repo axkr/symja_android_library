@@ -39,6 +39,7 @@ import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
@@ -288,7 +289,7 @@ public final class ListFunctions {
 		 */
 		private IExpr createGenericTable(final IIterator<IExpr> iter, final int index, final int allocationHint,
 				IExpr arg1, IExpr arg2) {
-			final IAST result = fPrototypeList
+			final IASTMutable result = fPrototypeList
 					.copyHead(fPrototypeList.size() + (allocationHint > 0 ? allocationHint : 0));
 			result.appendArgs(fPrototypeList);
 			if (arg1 != null) {
@@ -626,7 +627,7 @@ public final class ListFunctions {
 		}
 
 		private static IExpr arrayPadAtom(IAST ast, int m, int n, IExpr atom) {
-			IAST result = ast.copyHead();
+			IASTMutable result = ast.copyHead();
 			for (int i = 0; i < m; i++) {
 				result.append(atom);
 			}
@@ -810,7 +811,7 @@ public final class ListFunctions {
 					}
 					size += list.size() - 1;
 				}
-				IAST resultList = F.ast(F.List, size, false);
+				IASTMutable resultList = F.ast(F.List, size, false);
 				for (int i = 1; i < list.size(); i++) {
 					resultList.appendArgs((IAST) list.get(i));
 				}
@@ -833,7 +834,7 @@ public final class ListFunctions {
 				n = Validate.checkIntType(ast.arg2());
 			}
 
-			IAST tallyResult = Tally.tally1Arg(list);
+			IASTMutable tallyResult = Tally.tally1Arg(list);
 			EvalAttributes.sort(tallyResult, new Comparator<IExpr>() {
 				@Override
 				public int compare(IExpr o1, IExpr o2) {
@@ -906,7 +907,7 @@ public final class ListFunctions {
 					set3.add(temp);
 				}
 			}
-			IAST result = F.ListAlloc(set3.size());
+			IASTMutable result = F.ListAlloc(set3.size());
 			for (IExpr expr : set3) {
 				result.append(expr);
 			}
@@ -926,9 +927,9 @@ public final class ListFunctions {
 
 				IAST headList = (IAST) ast.head();
 				if (headList.size() > 1) {
-					IAST inner = F.ast(headList.get(1));
+					IASTMutable inner = F.ast(headList.get(1));
 					IAST result = inner;
-					IAST temp;
+					IASTMutable temp;
 					for (int i = 2; i < headList.size(); i++) {
 						temp = F.ast(headList.get(i));
 						inner.append(temp);
@@ -1156,7 +1157,7 @@ public final class ListFunctions {
 					if (ast.size() == 5) {
 						maximumRemoveOperations = Validate.checkIntType(ast, 4);
 					}
-					IAST arg1RemoveClone = ((IAST) arg1).clone();
+					IASTMutable arg1RemoveClone = ((IAST) arg1).clone();
 
 					try {
 						DeleteCasesPatternMatcherFunctor cpmf = new DeleteCasesPatternMatcherFunctor(matcher);
@@ -1254,7 +1255,7 @@ public final class ListFunctions {
 					final ISequence[] sequ = Sequence.createSequences(evaledAST, 2);
 					final IAST list = (IAST) arg1;
 					if (sequ != null) {
-						final IAST resultList = list.clone();
+						final IASTMutable resultList = list.clone();
 						drop(resultList, 0, sequ);
 						return resultList;
 					}
@@ -1285,7 +1286,7 @@ public final class ListFunctions {
 		 *            one or more ISequence specifications
 		 * @return
 		 */
-		private static IAST drop(final IAST list, final int level, final ISequence[] sequenceSpecifications) {
+		private static IAST drop(final IASTMutable list, final int level, final ISequence[] sequenceSpecifications) {
 			sequenceSpecifications[level].setListSize(list.size());
 			final int newLevel = level + 1;
 			int j = sequenceSpecifications[level].getStart();
@@ -1313,7 +1314,7 @@ public final class ListFunctions {
 			for (int j2 = 1; j2 < list.size(); j2++) {
 				if (sequenceSpecifications.length > newLevel) {
 					if (list.get(j2).isAST()) {
-						final IAST tempList = ((IAST) list.get(j2)).clone();
+						final IASTMutable tempList = ((IAST) list.get(j2)).clone();
 						list.set(j2, drop(tempList, newLevel, sequenceSpecifications));
 					} else {
 						throw new IllegalArgument("Cannot execute drop for argument: " + list.get(j2).toString());
@@ -1539,7 +1540,7 @@ public final class ListFunctions {
 			if (ast.isAST1() && ast.arg1().isAST()) {
 				IAST arg1 = (IAST) ast.arg1();
 				Set<IExpr> set = arg1.asSet();
-				final IAST result = F.ListAlloc(set.size());
+				final IASTMutable result = F.ListAlloc(set.size());
 				for (IExpr IExpr : set) {
 					result.append(IExpr);
 				}
@@ -1623,7 +1624,7 @@ public final class ListFunctions {
 				}
 
 			}
-			final IAST result = F.ast(head, size, false);
+			final IASTMutable result = F.ast(head, size, false);
 			for (int i = 1; i < ast.size(); i++) {
 				result.appendArgs((IAST) ast.get(i));
 			}
@@ -1858,7 +1859,7 @@ public final class ListFunctions {
 		public static IExpr padLeftAtom(IAST ast, int n, IExpr atom) {
 			int length = n - ast.size() + 1;
 			if (length > 0) {
-				IAST result = ast.copyHead();
+				IASTMutable result = ast.copyHead();
 				for (int i = 0; i < length; i++) {
 					result.append(atom);
 				}
@@ -1875,7 +1876,7 @@ public final class ListFunctions {
 			int length = n - ast.size() + 1;
 			if (length > 0) {
 
-				IAST result = ast.copyHead();
+				IASTMutable result = ast.copyHead();
 				if (arg2.size() < 2) {
 					return ast;
 				}
@@ -1946,7 +1947,7 @@ public final class ListFunctions {
 		public static IExpr padRightAtom(IAST ast, int n, IExpr atom) {
 			int length = n - ast.size() + 1;
 			if (length > 0) {
-				IAST result = ast.copyHead();
+				IASTMutable result = ast.copyHead();
 				result.appendArgs(ast);
 				for (int i = 0; i < length; i++) {
 					result.append(atom);
@@ -1962,7 +1963,7 @@ public final class ListFunctions {
 		public static IAST padRightAST(IAST ast, int n, IAST arg2) {
 			int length = n - ast.size() + 1;
 			if (length > 0) {
-				IAST result = ast.copyHead();
+				IASTMutable result = ast.copyHead();
 				result.appendArgs(ast);
 				if (arg2.size() < 2) {
 					return ast;
@@ -2763,8 +2764,8 @@ public final class ListFunctions {
 
 	private final static class Tally extends AbstractEvaluator {
 
-		private static IAST createResultList(java.util.Map<IExpr, Integer> map) {
-			IAST result = F.ListAlloc(map.size());
+		private static IASTMutable createResultList(java.util.Map<IExpr, Integer> map) {
+			IASTMutable result = F.ListAlloc(map.size());
 			for (java.util.Map.Entry<IExpr, Integer> entry : map.entrySet()) {
 				result.append(F.List(entry.getKey(), F.integer(entry.getValue())));
 			}
@@ -2792,7 +2793,7 @@ public final class ListFunctions {
 		public void setUp(final ISymbol newSymbol) {
 		}
 
-		public static IAST tally1Arg(IAST list) {
+		public static IASTMutable tally1Arg(IAST list) {
 			java.util.Map<IExpr, Integer> map = new LinkedHashMap<IExpr, Integer>();
 			for (int i = 1; i < list.size(); i++) {
 				Integer value = map.get(list.get(i));
@@ -3005,7 +3006,7 @@ public final class ListFunctions {
 			if (ast.isAST1() && ast.arg1().isAST()) {
 				IAST arg1 = (IAST) ast.arg1();
 				Set<IExpr> set = arg1.asSet();
-				final IAST result = F.ListAlloc(set.size());
+				final IASTMutable result = F.ListAlloc(set.size());
 				for (IExpr IExpr : set) {
 					result.append(IExpr);
 				}

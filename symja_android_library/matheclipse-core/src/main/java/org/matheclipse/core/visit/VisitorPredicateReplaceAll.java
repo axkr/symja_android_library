@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -34,7 +35,7 @@ public class VisitorPredicateReplaceAll extends VisitorReplaceAll {
 	}
 
 	@Override
-	public IExpr visit(IAST ast) {
+	public IExpr visit(IASTMutable ast) {
 		if (fPredicate.test(ast)) {
 			return visitAST(ast);
 		}

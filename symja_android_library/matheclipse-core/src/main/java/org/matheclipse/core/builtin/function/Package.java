@@ -15,6 +15,7 @@ import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -153,7 +154,7 @@ public class Package extends AbstractCoreFunctionEvaluator {
 	 * @return
 	 */
 	private static IAST convertSymbolsInList(IAST ast, HashMap<String, ISymbol> convertedSymbols) {
-		IAST result = ast.clone();
+		IASTMutable result = ast.clone();
 		for (int i = 0; i < result.size(); i++) {
 			IExpr expr = result.get(i);
 			if (expr.isAST()) {

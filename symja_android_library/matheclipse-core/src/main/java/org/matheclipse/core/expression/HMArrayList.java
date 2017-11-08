@@ -34,6 +34,7 @@ import java.util.stream.Stream;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -361,7 +362,7 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	 * @see java.lang.Cloneable
 	 */
 	@Override
-	public IAST clone() {
+	public IASTMutable clone() {
 		HMArrayList newList = (HMArrayList) super.clone();
 		newList.array = array.clone();
 		newList.hashValue = 0;
@@ -477,7 +478,7 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	/** {@inheritDoc} */
 	@Override
 	public final IAST map(final Function<IExpr, IExpr> function, final int startOffset) {
-		IAST result = F.NIL;
+		IASTMutable result = F.NIL;
 		int i = firstIndex + startOffset;
 		int j = startOffset;
 		while (i < lastIndex) {
@@ -504,7 +505,7 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST map(final IAST clonedResultAST, final Function<IExpr, IExpr> function) {
+	public final IAST map(final IASTMutable clonedResultAST, final Function<IExpr, IExpr> function) {
 		int j = 1;
 		for (int i = firstIndex + 1; i < lastIndex; i++) {
 			IExpr temp = function.apply(array[i]);
@@ -518,7 +519,7 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST mapThread(IAST appendAST, final IAST replacement, int position) {
+	public final IAST mapThread(IASTMutable appendAST, final IAST replacement, int position) {
 		// final Function<IExpr, IExpr> function = Functors.replaceArg(replacement,
 		// position);
 		EvalEngine engine = EvalEngine.get();

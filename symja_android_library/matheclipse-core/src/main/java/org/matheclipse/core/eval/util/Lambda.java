@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.visit.VisitorReplaceArgs;
 import org.matheclipse.core.visit.VisitorReplaceSlots;
@@ -205,7 +206,7 @@ public class Lambda {
 	}
 
 	private static IExpr testMap(IAST ast, Predicate<IExpr> predicate, Function<IExpr, IExpr> function) {
-		IAST result = F.NIL;
+		IASTMutable result = F.NIL;
 		int size = ast.size();
 		for (int i = 1; i < size; i++) {
 			IExpr temp = ast.get(i);
@@ -226,7 +227,7 @@ public class Lambda {
 
 	private static IExpr testMap2(IAST list, Predicate<IExpr> predicate, Function<IExpr, IExpr> function1,
 			Function<IExpr, IExpr> function2) {
-		IAST result = F.NIL;
+		IASTMutable result = F.NIL;
 		int size = list.size();
 		for (int i = 1; i < size; i++) {
 			IExpr temp = list.get(i);

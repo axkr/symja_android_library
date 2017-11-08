@@ -15,6 +15,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -278,7 +279,7 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 * @see java.lang.Cloneable
 	 */
 	@Override
-	public IAST clone() {
+	public IASTMutable clone() {
 		return new AST(arg0);
 	}
 
@@ -290,7 +291,7 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST copy() {
+	public IASTMutable copy() {
 		return new AST0(arg0);
 	}
 

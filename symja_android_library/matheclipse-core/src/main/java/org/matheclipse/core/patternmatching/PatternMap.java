@@ -13,6 +13,7 @@ import javax.annotation.Nonnull;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IPatternSequence;
@@ -348,7 +349,7 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 		if (temp == null) {
 			temp = expr;
 		}
-		IAST test = F.unaryAST1(patternTest, null);
+		IASTMutable test = (IASTMutable) F.unaryAST1(patternTest, null);
 		if (temp.isSequence()) {
 			for (int i = 1; i < ((IAST) temp).size(); i++) {
 				test.set(1, ((IAST) temp).get(i));

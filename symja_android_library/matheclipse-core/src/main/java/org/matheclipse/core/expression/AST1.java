@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -98,13 +99,13 @@ public class AST1 extends AST0 {
 	 * @see java.lang.Cloneable
 	 */
 	@Override
-	public IAST clone() {
+	public IASTMutable clone() {
 		return new AST(arg0, arg1);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST copy() {
+	public IASTMutable copy() {
 		return new AST1(arg0, arg1);
 	}
 

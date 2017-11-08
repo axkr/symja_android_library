@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -125,7 +126,7 @@ public class VisitorReplaceAll extends VisitorExpr {
 	}
 
 	@Override
-	public IExpr visit(IAST ast) {
+	public IExpr visit(IASTMutable ast) {
 		IExpr temp = fFunction.apply(ast);
 		if (temp.isPresent()) {
 			return temp;
@@ -136,15 +137,14 @@ public class VisitorReplaceAll extends VisitorExpr {
 	@Override
 	protected IExpr visitAST(IAST ast) {
 		IExpr temp;
-		IAST result = F.NIL;
+		IASTMutable result = F.NIL;
 		int i = fOffset;
 		int size = ast.size();
 		while (i < size) {
 			temp = ast.get(i).accept(this);
 			if (temp.isPresent()) {
 				// something was evaluated - return a new IAST:
-				result = ast.copy();
-				result.set(i++, temp);
+				result = ast.setAtCopy(i++, temp);
 				break;
 			}
 			i++;

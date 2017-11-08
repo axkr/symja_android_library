@@ -33,6 +33,7 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NumStr;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
@@ -160,7 +161,7 @@ public class ExprParser extends ExprScanner {
 		}
 	}
 
-	private IExpr convert(IAST ast) {
+	private IExpr convert(IASTMutable ast) {
 		IExpr head = ast.head();
 		if (ast.isAST(F.Hold) || ast.isAST(F.HoldForm)) {
 			return ast;
@@ -216,7 +217,7 @@ public class ExprParser extends ExprScanner {
 		return ast;
 	}
 
-	private IExpr convertN(final IAST function) {
+	private IExpr convertN(final IASTMutable function) {
 		try {
 			int precision = Validate.checkIntType(function.arg2());
 			if (EvalEngine.isApfloat(precision)) {
@@ -287,7 +288,7 @@ public class ExprParser extends ExprScanner {
 	private IExpr createInfixFunction(InfixExprOperator infixOperator, IExpr lhs, IExpr rhs) {
 		IExpr temp = infixOperator.createFunction(fFactory, this, lhs, rhs);
 		if (temp.isAST()) {
-			return convert((IAST) temp);
+			return convert((IASTMutable) temp);
 		}
 		return temp;
 		// if (infixOperator.getOperatorString().equals("//")) {
@@ -618,8 +619,8 @@ public class ExprParser extends ExprScanner {
 	 * Get a function f[...][...]
 	 * 
 	 */
-	IAST getFunction(final IExpr head) throws SyntaxError {
-		final IAST function = F.ast(head, 10, false);
+	IASTMutable getFunction(final IExpr head) throws SyntaxError {
+		final IASTMutable function = F.ast(head, 10, false);
 
 		getNextToken();
 
@@ -683,9 +684,9 @@ public class ExprParser extends ExprScanner {
 	 * Get a function f[...][...]
 	 * 
 	 */
-	IAST getFunctionArguments(final IExpr head) throws SyntaxError {
+	IASTMutable getFunctionArguments(final IExpr head) throws SyntaxError {
 
-		final IAST function = F.ast(head);
+		final IASTMutable function = (IASTMutable)F.ast(head);
 		fRecursionDepth++;
 		try {
 			getNextToken();
@@ -978,15 +979,15 @@ public class ExprParser extends ExprScanner {
 							throwSyntaxError("'(' expected after symbol or pattern instead of '['.");
 						}
 					}
-					IAST ast = getFunctionArguments(head);
+					IASTMutable ast = getFunctionArguments(head);
 					return convert(ast);
 				} else if (fToken == TT_PRECEDENCE_OPEN) {
-					IAST ast = getFunction(head);
+					IASTMutable ast = getFunction(head);
 					return convert(ast);
 				}
 			} else {
 				if (fToken == TT_ARGUMENTS_OPEN) {
-					IAST ast = getFunctionArguments(head);
+					IASTMutable ast = getFunctionArguments(head);
 					return convert(ast);
 				}
 			}
@@ -1280,7 +1281,7 @@ public class ExprParser extends ExprScanner {
 	 * @param compareHead
 	 * @return
 	 */
-	private IExpr rewriteLessGreaterAST(final IAST ast, ISymbol compareHead) {
+	private IExpr rewriteLessGreaterAST(final IASTMutable ast, ISymbol compareHead) {
 		IExpr temp;
 		boolean evaled = false;
 		IAST andAST = F.ast(F.And);

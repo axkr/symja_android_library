@@ -2,3 +2,5 @@ proguard.map
 /bin
 /build
 /dump/
+/.classpath
+  

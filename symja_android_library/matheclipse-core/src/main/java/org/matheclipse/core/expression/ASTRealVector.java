@@ -17,6 +17,7 @@ import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 import jdk.nashorn.internal.runtime.regexp.joni.Config;
@@ -289,7 +290,7 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	 * @see java.lang.Cloneable
 	 */
 	@Override
-	public IAST clone() {
+	public IASTMutable clone() {
 		return new ASTRealVector(vector.copy(), false);
 	}
 
@@ -309,7 +310,7 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST copy() {
+	public IASTMutable copy() {
 		return new ASTRealVector(vector.copy(), false);
 	}
 

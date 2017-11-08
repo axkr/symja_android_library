@@ -3,6 +3,7 @@ package org.matheclipse.core.visit;
 import java.util.function.Function;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -21,7 +22,7 @@ public class VisitorPlusTimesPowerReplaceAll extends VisitorReplaceAll {
 	}
 
 	@Override
-	public IExpr visit(IAST ast) {
+	public IExpr visit(IASTMutable ast) {
 		if (ast.isPlusTimesPower()) {
 			return visitAST(ast);
 		}
@@ -38,14 +39,12 @@ public class VisitorPlusTimesPowerReplaceAll extends VisitorReplaceAll {
 
 		}
 		IExpr temp;
-		IAST result = F.NIL;
+		IASTMutable result = F.NIL;
 		if (ast.isPower()) {
 			temp = ast.get(1).accept(this);
 			if (temp.isPresent()) {
 				// something was evaluated - return a new IAST:
-				result = ast.copy();
-				result.set(1, temp);
-				return result;
+				return ast.setAtCopy(1, temp);
 			}
 			return F.NIL;
 		}
@@ -55,8 +54,7 @@ public class VisitorPlusTimesPowerReplaceAll extends VisitorReplaceAll {
 			temp = ast.get(i).accept(this);
 			if (temp.isPresent()) {
 				// something was evaluated - return a new IAST:
-				result = ast.copy();
-				result.set(i++, temp);
+				result= ast.setAtCopy(i++, temp);
 				break;
 			}
 			i++;

@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -22,9 +23,8 @@ import org.matheclipse.core.visit.AbstractVisitor;
 import org.matheclipse.core.visit.VisitorExpr;
 
 /**
- * Try to share common sub-<code>IASTs</code> expressions with the same
- * object-id internally to minimize memory consumption. Returns the number f
- * shared sub-expressions
+ * Try to share common sub-<code>IASTs</code> expressions with the same object-id internally to minimize memory
+ * consumption. Returns the number f shared sub-expressions
  *
  */
 public class Share extends AbstractFunctionEvaluator {
@@ -50,10 +50,9 @@ public class Share extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Replace all occurrences of expressions where the given
-	 * <code>function.apply()</code> method returns a non <code>F.NIL</code>
-	 * value. The visitors <code>visit()</code> methods return
-	 * <code>F.NIL</code> if no substitution occurred.
+	 * Replace all occurrences of expressions where the given <code>function.apply()</code> method returns a non
+	 * <code>F.NIL</code> value. The visitors <code>visit()</code> methods return <code>F.NIL</code> if no substitution
+	 * occurred.
 	 */
 	static class ShareReplaceAll extends VisitorExpr {
 		final Function<IExpr, IExpr> fFunction;
@@ -149,7 +148,7 @@ public class Share extends AbstractFunctionEvaluator {
 		}
 
 		@Override
-		public IExpr visit(IAST ast) {
+		public IExpr visit(IASTMutable ast) {
 			IExpr temp = fFunction.apply(ast);
 			if (temp != null) {
 				return temp;
@@ -168,7 +167,7 @@ public class Share extends AbstractFunctionEvaluator {
 					temp = temp.accept(this);
 					if (temp != null) {
 						// share the object with the same id:
-						ast.set(i, temp);
+						((IASTMutable) ast).set(i, temp);
 						evaled = true;
 						fCounter++;
 					}
@@ -193,9 +192,8 @@ public class Share extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Try to share common sub-<code>IASTs</code> expressions with the same
-	 * object-id internally to minimize memory consumption and return the number
-	 * of shared sub-expressions
+	 * Try to share common sub-<code>IASTs</code> expressions with the same object-id internally to minimize memory
+	 * consumption and return the number of shared sub-expressions
 	 *
 	 * @param ast
 	 *            the ast whose internal memory consumption should be minimized

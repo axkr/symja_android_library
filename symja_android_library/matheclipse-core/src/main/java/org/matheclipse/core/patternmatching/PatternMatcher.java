@@ -14,6 +14,7 @@ import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPattern;
@@ -71,7 +72,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			}
 		}
 
-		public void filterResult(IAST result) {
+		public void filterResult(IASTMutable result) {
 			for (int i = 0; i < fUsedIndex.length; i++) {
 				result.set(fUsedIndex[i], null);
 			}
@@ -476,7 +477,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				final OrderlessMatcher foMatcher = new OrderlessMatcher(lhsPatternAST, lhsEvalAST);
 				boolean matched = foMatcher.matchOrderlessAST(1, null, engine);
 				if (matched) {
-					IAST lhsResultAST = (lhsEvalAST).clone();
+					IASTMutable lhsResultAST = (lhsEvalAST).clone();
 					foMatcher.filterResult(lhsResultAST);
 					IExpr result = fPatternMap.substituteSymbols(rhsExpr);
 					try {

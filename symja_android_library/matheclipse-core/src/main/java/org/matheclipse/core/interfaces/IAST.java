@@ -203,17 +203,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * 
-	 * @param ast
-	 * @return
-	 * @deprecated use appendArgs();
-	 */
-	@Deprecated
-	default boolean addArgs(IAST ast) {
-		return appendArgs(ast);
-	}
-
-	/**
-	 * 
 	 * @param expr
 	 * @return
 	 * @deprecated use appendClone();
@@ -337,16 +326,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition);
 
 	/**
-	 * Appends all of the arguments (starting from offset <code>1</code>) in the specified AST to the end of this AST.
-	 * 
-	 * @param ast
-	 *            AST containing elements to be added to this AST
-	 * @return <tt>true</tt> if this AST changed as a result of the call
-	 * 
-	 */
-	public boolean appendArgs(IAST ast);
-
-	/**
 	 * Appends all of the arguments (starting from offset <code>1</code>) in the specified AST up to position
 	 * <code>untilPosition</code> exclusive.
 	 * 
@@ -388,20 +367,13 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	public IAST appendOneIdentity(IAST subAST);
 
-	default boolean appendPlus(IExpr expr) {
-		if (head().equals(F.Plus) && expr.head().equals(F.Plus)) {
-			return appendArgs((IAST) expr);
-		}
-		return append(expr);
-	}
-
 	/**
 	 * Apply the given head to this expression (i.e. create a list clone and replace the old head with the given one)
 	 * 
 	 * @param head
 	 * @return
 	 */
-	public IAST apply(IExpr head);
+	public IASTMutable apply(IExpr head);
 
 	/**
 	 * Apply the given head to this expression (i.e. create a sublist clone starting from index start and replacing the
@@ -515,7 +487,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @return a clone of this <code>IAST</code> instance.
 	 */
-	public IAST clone();
+	public IASTMutable clone();
 
 	/**
 	 * Tests whether this {@code List} contains the specified object.
@@ -561,7 +533,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return a copy of this <code>IAST</code> instance.
 	 */
 	@Override
-	default public IAST copy() {
+	default public IASTMutable copy() {
 		return clone();
 	}
 
@@ -580,7 +552,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @return
 	 */
-	public IAST copyHead();
+	public IASTMutable copyHead();
 
 	/**
 	 * Create a copy of this <code>AST</code>, which only contains the head element of the list (i.e. the element with
@@ -590,7 +562,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *            the initial number of arguments
 	 * @return
 	 */
-	public IAST copyHead(final int intialCapacity);
+	public IASTMutable copyHead(final int intialCapacity);
 
 	/**
 	 * Create a copy of this <code>AST</code>, which contains the same head and all elements up to the given
@@ -1007,7 +979,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *            a unary function
 	 * @return
 	 */
-	public IAST map(final IAST clonedResultAST, final Function<IExpr, IExpr> functor);
+	public IAST map(final IASTMutable clonedResultAST, final Function<IExpr, IExpr> functor);
 
 	/**
 	 * Maps the elements of this IAST with the elements of the <code>secondAST</code>.
@@ -1049,11 +1021,11 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <code>appendAST</code>
 	 */
 	@Deprecated
-	default IAST mapAt(IAST appendAST, final IAST replacement, int position) {
+	default IAST mapAt(IASTMutable appendAST, final IAST replacement, int position) {
 		return mapThread(appendAST, replacement, position);
 	}
 
-	default IAST mapAt(final IAST replacement, int position) {
+	default IAST mapAt(final IASTMutable replacement, int position) {
 		return mapThread(replacement, position);
 	}
 
@@ -1086,7 +1058,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <code>appendAST</code>
 	 * @see IAST#map(Function, int)
 	 */
-	public IAST mapThread(IAST appendAST, final IAST replacement, int position);
+	public IAST mapThread(IASTMutable appendAST, final IAST replacement, int position);
 
 	/**
 	 * Maps the elements of this IAST with the unary functor <code>Functors.replaceArg(replacement, position)</code>,
@@ -1174,27 +1146,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @param i
 	 * @return a clone with removed element at the given position.
 	 */
-	public IAST removeAtClone(int i);
-
-	/**
-	 * Replaces the element at the specified location in this {@code IAST} with the specified object. This operation
-	 * does not change the size of the {@code IAST}.
-	 * 
-	 * @param i
-	 *            the index at which to put the specified object.
-	 * @param object
-	 *            the object to insert.
-	 * @return the previous element at the index.
-	 * @throws UnsupportedOperationException
-	 *             if replacing elements in this {@code IAST} is not supported.
-	 * @throws ClassCastException
-	 *             if the class of an object is inappropriate for this {@code IAST}.
-	 * @throws IllegalArgumentException
-	 *             if an object cannot be added to this {@code IAST}.
-	 * @throws IndexOutOfBoundsException
-	 *             if {@code location < 0 || >= size()}
-	 */
-	public IExpr set(int i, IExpr object);
+	public IASTMutable removeAtClone(int i);
 
 	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and set the
@@ -1204,7 +1156,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @param expr
 	 * @return a clone with element set to <code>expr</code> at the given <code>position</code>.
 	 */
-	public IAST setAtClone(int i, IExpr expr);
+	public IASTMutable setAtClone(int i, IExpr expr);
 
 	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and set the
@@ -1215,12 +1167,12 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @param expr
 	 * @return a copy with element set to <code>expr</code> at the given <code>position</code>.
 	 */
-	default public IAST setAtCopy(int i, IExpr expr) {
-		IAST ast = copy();
+	default public IASTMutable setAtCopy(int i, IExpr expr) {
+		IASTMutable ast = (IASTMutable) copy();
 		ast.set(i, expr);
 		return ast;
 	}
-
+	
 	/**
 	 * Set the evaluation flags for this list.
 	 * 

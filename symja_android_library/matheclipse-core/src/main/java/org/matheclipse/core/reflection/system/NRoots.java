@@ -15,6 +15,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -142,13 +143,15 @@ public class NRoots extends AbstractFunctionEvaluator {
 	}
 
 	protected static IAST rootsOfVariable(final IExpr expr, final IExpr denom) {
-		IAST result = List();
-		IAST resultList = RootIntervals.croots(expr, true);
+
+		IASTMutable resultList = RootIntervals.croots(expr, true);
 		if (resultList.isPresent()) {
-			if (resultList.size() > 0) {
-				result.appendArgs(resultList);
-			}
-			return result;
+			// IAST result = F.List();
+			// if (resultList.size() > 0) {
+			// result.appendArgs(resultList);
+			// }
+			// return result;
+			return resultList;
 		}
 		return F.NIL;
 	}

@@ -61,7 +61,7 @@ public class FromPolarCoordinates extends AbstractEvaluator {
 						F.Times(r, F.Sin(theta), F.Sin(phi)));
 			}
 		} else if (ast.arg1().isList()) {
-			return ((IAST) ast.arg1()).mapThread(F.List(), ast, 1);
+			return ((IAST) ast.arg1()).mapThread(F.ListAlloc(ast.size()), ast, 1);
 		}
 		return F.NIL;
 	}

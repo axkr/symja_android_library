@@ -3,6 +3,7 @@ package org.matheclipse.core.visit;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.IntegerSym;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -42,7 +43,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
 	}
 
 	@Override
-	public IExpr visit(IAST ast) {
+	public IExpr visit(IASTMutable ast) {
 		if (ast.isSlot() && ast.arg1() instanceof IntegerSym) {
 			return getSlot((IntegerSym) ast.arg1());
 		}
@@ -52,7 +53,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
 	@Override
 	protected IExpr visitAST(IAST ast) {
 		IExpr temp;
-		IAST result = F.NIL;
+		IASTMutable result = F.NIL;
 		int i = 0;
 		int j = 0;
 		int size = ast.size();
@@ -70,8 +71,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
 			temp = ast.get(i).accept(this);
 			if (temp.isPresent()) {
 				// something was evaluated - return a new IAST:
-				result = ast.clone();
-				result.set(i++, temp);
+				result= ast.setAtClone(i++, temp);
 				j++;
 				break;
 			}

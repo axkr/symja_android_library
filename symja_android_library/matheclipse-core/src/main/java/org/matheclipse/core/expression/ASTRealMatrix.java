@@ -17,6 +17,7 @@ import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 import jdk.nashorn.internal.runtime.regexp.joni.Config;
@@ -288,7 +289,7 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	 * @see java.lang.Cloneable
 	 */
 	@Override
-	public IAST clone() {
+	public IASTMutable clone() {
 		return new ASTRealMatrix(matrix.copy(), false);
 	}
 
@@ -308,7 +309,7 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST copy() {
+	public IASTMutable copy() {
 		return new ASTRealMatrix(matrix.copy(), false);
 	}
 

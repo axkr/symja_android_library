@@ -1,6 +1,6 @@
 package org.matheclipse.core.polynomials;
 
-import static org.matheclipse.core.expression.F.*;
+import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.C1D3;
@@ -12,6 +12,7 @@ import static org.matheclipse.core.expression.F.CI;
 import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.CN1D4;
 import static org.matheclipse.core.expression.F.CN3;
+import static org.matheclipse.core.expression.F.CN4;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.QQ;
@@ -30,6 +31,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -150,13 +152,12 @@ public class QuarticSolver {
 	 * @return
 	 */
 	@Nonnull
-	public static IAST quarticSolve(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e) {
+	public static IASTMutable quarticSolve(IExpr a, IExpr b, IExpr c, IExpr d, IExpr e) {
 		if (a.isZero()) {
 			return cubicSolve(b, c, d, e, null);
 		} else {
 			if (e.isZero()) {
-				IAST result = cubicSolve(a, b, c, d, C0);
-				return result;
+				return cubicSolve(a, b, c, d, C0);
 			}
 			if (b.isZero() && d.isZero()) {
 				return biQuadraticSolve(a, c, e, null);
@@ -181,7 +182,7 @@ public class QuarticSolver {
 			}
 
 			// return depressedQuarticSolve(a, b, alpha, beta, gamma);
-			IAST result = F.List();
+			IASTMutable result = F.ListAlloc(6);
 
 			// 256*a^3*e^3 - 192*a^2*b*d*e^2 - 128*a^2*c^2*e^2 +144*a^2*c*d^2*e
 			// - 27*a^2*d^4 + 144*a*b^2*c*e^2 - 6*a*b^2*d^2*e -
@@ -345,7 +346,7 @@ public class QuarticSolver {
 	 * @return
 	 */
 	public static IAST depressedQuarticSolve(IExpr A, IExpr B, IExpr a, IExpr b, IExpr c) {
-		IAST result = F.List();
+		IASTMutable result = F.ListAlloc(5);
 		// -(a^2/12+c)
 		IExpr P = F.eval(Times(CN1, Plus(Times(QQ(1L, 12L), Power(a, C2)), c)));
 		// -a^3/108 + (a*c)/3 - (b^2)/8
@@ -396,14 +397,14 @@ public class QuarticSolver {
 	 *            TODO
 	 * @return
 	 */
-	public static IAST cubicSolve(IExpr a, IExpr b, IExpr c, IExpr d, IExpr additionalSulution) {
+	public static IASTMutable cubicSolve(IExpr a, IExpr b, IExpr c, IExpr d, IExpr additionalSulution) {
 		if (a.isZero()) {
 			return quadraticSolve(b, c, d, additionalSulution, null);
 		} else {
 			if (d.isZero()) {
 				return quadraticSolve(a, b, c, additionalSulution, C0);
 			}
-			IAST result = F.List();
+			IASTMutable result = F.ListAlloc(4);
 			if (additionalSulution != null) {
 				result.append(additionalSulution);
 			}
@@ -463,7 +464,7 @@ public class QuarticSolver {
 		}
 	}
 
-	public static IAST createSet(IAST result) {
+	public static IASTMutable createSet(IASTMutable result) {
 		Set<IExpr> set1 = new TreeSet<IExpr>();
 		for (int i = 1; i < result.size(); i++) {
 			IExpr temp = result.get(i);
@@ -485,7 +486,7 @@ public class QuarticSolver {
 				set1.add(temp);
 			}
 		}
-		result = F.List();
+		result = F.ListAlloc(set1.size());
 		for (IExpr e : set1) {
 			result.append(e);
 		}
@@ -505,8 +506,8 @@ public class QuarticSolver {
 	 *            TODO
 	 * @return
 	 */
-	public static IAST quadraticSolve(IExpr a, IExpr b, IExpr c, IExpr solution1, IExpr solution2) {
-		IAST result = F.List();
+	public static IASTMutable quadraticSolve(IExpr a, IExpr b, IExpr c, IExpr solution1, IExpr solution2) {
+		IASTMutable result = F.ListAlloc(5);
 		if (solution1 != null) {
 			result.append(solution1);
 		}
@@ -570,8 +571,8 @@ public class QuarticSolver {
 	 *            TODO
 	 * @return
 	 */
-	public static IAST biQuadraticSolve(IExpr a, IExpr c, IExpr e, IExpr sum) {
-		IAST result = F.List();
+	public static IASTMutable biQuadraticSolve(IExpr a, IExpr c, IExpr e, IExpr sum) {
+		IASTMutable result = F.ListAlloc(4);
 		// Sqrt[c^2-4*a*e]
 		IExpr sqrt = F.eval(Sqrt(Plus(Power(c, C2), Times(CN1, C4, a, e))));
 
@@ -603,8 +604,8 @@ public class QuarticSolver {
 	 * @param e
 	 * @return
 	 */
-	public static IAST quasiSymmetricQuarticSolve(IExpr a, IExpr b, IExpr c) {
-		IAST result = F.List();
+	public static IASTMutable quasiSymmetricQuarticSolve(IExpr a, IExpr b, IExpr c) {
+		IASTMutable result = F.ListAlloc(4);
 		// Sqrt[b^2-4*a*c+8*a^2]
 		IExpr sqrt = F.eval(Sqrt(Plus(Power(b, C2), Times(CN1, C4, a, c), Times(ZZ(8L), Power(a, C2)))));
 

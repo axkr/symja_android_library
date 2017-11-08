@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -299,7 +300,7 @@ public class AST extends HMArrayList implements Externalizable {
 	 * @return a clone of this <tt>AST</tt> instance.
 	 */
 	@Override
-	public AST clone() {
+	public IASTMutable clone() {
 		AST ast = (AST) super.clone();
 		ast.fProperties = null;
 		return ast;

@@ -13,6 +13,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -334,11 +335,11 @@ public abstract class AbstractFractionSym implements IFraction {
 	public IAST factorInteger() {
 		IInteger num = getNumerator();
 		IInteger den = getDenominator();
-		IAST result = den.factorInteger();
+		IASTMutable result = (IASTMutable)den.factorInteger();
 
 		// negate the exponents of the denominator part
 		for (int i = 1; i < result.size(); i++) {
-			IAST list = (IAST) result.get(i);
+			IASTMutable list = (IASTMutable) result.get(i);
 			list.set(2, ((ISignedNumber) list.arg2()).negate());
 		}
 

@@ -769,14 +769,14 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	 * 
 	 * @deprecated use EvalAttributes#sort(ast, comparator)
 	 */
-	@Override
-	public void sort(Comparator<? super IExpr> comparator) {
-		final IExpr[] a = fList.toArray();// new IExpr[fList.size()]);
-		Arrays.sort(a, fStart, fEnd, comparator);
-		for (int j = fStart; j < fEnd; j++) {
-			fList.set(j, a[j]);
-		}
-	}
+//	@Override
+//	public void sort(Comparator<? super IExpr> comparator) {
+//		final IExpr[] a = fList.toArray();// new IExpr[fList.size()]);
+//		Arrays.sort(a, fStart, fEnd, comparator);
+//		for (int j = fStart; j < fEnd; j++) {
+//			fList.set(j, a[j]);
+//		}
+//	}
 
 	public IExpr[] toArray(IExpr[] array) {
 		int j = fStart;

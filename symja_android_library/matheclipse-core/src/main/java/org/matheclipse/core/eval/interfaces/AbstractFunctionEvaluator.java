@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.AST2;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
@@ -98,7 +99,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	 *         negative expression couldn't be extracted.
 	 */
 	public static IExpr getNormalizedNegativeExpression(final IExpr expression, boolean checkTimesPlus) {
-		IAST result = F.NIL;
+		IASTMutable result = F.NIL;
 		if (expression.isNumber()) {
 			if (((INumber) expression).complexSign() < 0) {
 				return ((INumber) expression).negate();

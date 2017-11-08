@@ -16,6 +16,7 @@ import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -1071,7 +1072,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 			throw new IllegalArgumentException("vn and vars may not be null");
 		}
 		int i = vn.size() - 1;
-		IAST v = vars.clone();
+		IASTMutable v = vars.clone();
 		v.appendArgs(vn);
 		// for (int k = 0; k < vars.length; k++) {
 		// v[k] = vars[k];
@@ -1080,44 +1081,6 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 		// v[vars.length + k] = vn[k];
 		// }
 		ExprTermOrder to = tord.extend(nvar, i);
-		ExprPolynomialRing pfac = new ExprPolynomialRing(coFac, v, nvar + i, to);
-		return pfac;
-	}
-
-	/**
-	 * Extend lower variables. Extend number of variables by i.
-	 * 
-	 * @param i
-	 *            number of variables to extend.
-	 * @return extended polynomial ring factory.
-	 */
-	// public ExprPolynomialRing extendLower(int i) {
-	// IAST v = newVars("e", i);
-	// return extendLower(v);
-	// }
-
-	/**
-	 * Extend lower variables. Extend number of variables by length(vn).
-	 * 
-	 * @param vn
-	 *            names for extended lower variables.
-	 * @return extended polynomial ring factory.
-	 */
-	public ExprPolynomialRing extendLower(IAST vn) {
-		if (vn == null || vars == null) {
-			throw new IllegalArgumentException("vn and vars may not be null");
-		}
-		int i = vn.size() - 1;
-		IAST v = vn.clone();
-		vn.appendArgs(vars);
-		// String[] v = new String[vars.length + i];
-		// for (int k = 0; k < vn.length; k++) {
-		// v[k] = vn[k];
-		// }
-		// for (int k = 0; k < vars.length; k++) {
-		// v[vn.length + k] = vars[k];
-		// }
-		ExprTermOrder to = tord.extendLower(nvar, i);
 		ExprPolynomialRing pfac = new ExprPolynomialRing(coFac, v, nvar + i, to);
 		return pfac;
 	}

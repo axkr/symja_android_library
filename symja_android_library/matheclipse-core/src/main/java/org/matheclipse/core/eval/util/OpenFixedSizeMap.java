@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
+import org.matheclipse.core.interfaces.IASTMutable;
+
 /**
  * Open addressed map from K to V. The map can contain up to <code>tableSize</code> key/value entries. Otherwise a // *
  * <code>java.lang.IllegalStateException</code> exception will be thrown. The <code>entrySet()</code> method is not
@@ -43,7 +45,7 @@ public class OpenFixedSizeMap<K, V> extends AbstractMap<K, V> implements Map<K, 
 	}
 
 	@Override
-	public Object clone() {
+	public OpenFixedSizeMap<K, V> clone() {
 		OpenFixedSizeMap<K, V> result = null;
 		try {
 			result = (OpenFixedSizeMap<K, V>) super.clone();

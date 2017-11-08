@@ -67,6 +67,7 @@ import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Symbol;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -2964,7 +2965,7 @@ public final class LinearAlgebra {
 			final int[] dim = ast.arg1().isMatrix();
 			if (dim != null) {
 				final IAST mat = (IAST) ast.arg1();
-				IAST tr;
+				IASTMutable tr;
 				int len = dim[0] < dim[1] ? dim[0] : dim[1];
 				if (ast.size() > 2) {
 					tr = F.ast(ast.arg2(), len, true);
@@ -3115,17 +3116,17 @@ public final class LinearAlgebra {
 		 * @return
 		 */
 		public IAST transpose(final IAST matrix, int rows, int cols) {
-			final IAST transposedMatrix = F.ast(F.List, cols, true);
+			final IASTMutable transposedMatrix = F.ast(F.List, cols, true);
 			for (int i = 1; i <= cols; i++) {
 				transposedMatrix.set(i, F.ast(F.List, rows, true));
 			}
 
 			IAST originalRow;
-			IAST transposedResultRow;
+			IASTMutable transposedResultRow;
 			for (int i = 1; i <= rows; i++) {
 				originalRow = (IAST) matrix.get(i);
 				for (int j = 1; j <= cols; j++) {
-					transposedResultRow = (IAST) transposedMatrix.get(j);
+					transposedResultRow = (IASTMutable) transposedMatrix.get(j);
 					transposedResultRow.set(i, transform(originalRow.get(j)));
 				}
 			}
@@ -3180,7 +3181,7 @@ public final class LinearAlgebra {
 				int n = Validate.checkIntType(ast, 1);
 				int k = Validate.checkIntType(ast, 2);
 				if (k <= n) {
-					IAST vector = F.ListAlloc(n);
+					IASTMutable vector = F.ListAlloc(n);
 					for (int i = 0; i < n; i++) {
 						vector.append(F.C0);
 					}

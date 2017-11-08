@@ -13,6 +13,7 @@ import org.matheclipse.core.eval.interfaces.ICreatePatternMatcher;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternObject;
@@ -199,7 +200,7 @@ public final class PatternMatching {
 					} catch (final ReturnException e) {
 						rightHandSide = e.getValue();
 					}
-					IExpr temp = engine.threadASTListArgs(F.Set(leftHandSideAST, rightHandSide));
+					IExpr temp = engine.threadASTListArgs((IASTMutable) F.Set(leftHandSideAST, rightHandSide));
 					if (temp.isPresent()) {
 						return engine.evaluate(temp);
 					}
@@ -323,7 +324,7 @@ public final class PatternMatching {
 			final IExpr leftHandSide = ast.arg1();
 			if (leftHandSide.isList()) {
 				// thread over lists
-				IExpr temp = engine.threadASTListArgs(F.Unset(leftHandSide));
+				IExpr temp = engine.threadASTListArgs((IASTMutable) F.Unset(leftHandSide));
 				if (temp.isPresent()) {
 					return engine.evaluate(temp);
 				}
@@ -386,7 +387,7 @@ public final class PatternMatching {
 				} catch (final ReturnException e) {
 					rightHandSide = e.getValue();
 				}
-				IExpr temp = engine.threadASTListArgs(F.UpSet(leftHandSide, rightHandSide));
+				IExpr temp = engine.threadASTListArgs((IASTMutable) F.UpSet(leftHandSide, rightHandSide));
 				if (temp.isPresent()) {
 					return engine.evaluate(temp);
 				}

@@ -26,6 +26,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -65,7 +66,7 @@ public class TrigReduce extends AbstractEvaluator {
 		}
 
 		@Override
-		public IExpr visit(IAST ast) {
+		public IExpr visit(IASTMutable ast) {
 			if (ast.isTimes()) {
 				IAST result = ORDERLESS_MATCHER.evaluate(ast, fEngine);
 				if (result.isPresent()) {

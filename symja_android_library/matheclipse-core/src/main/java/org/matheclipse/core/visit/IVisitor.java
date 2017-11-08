@@ -1,6 +1,6 @@
 package org.matheclipse.core.visit;
 
-import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IFraction;
@@ -39,6 +39,6 @@ public interface IVisitor<T> {
 	
 	public abstract T visit(IStringX element);
 
-	public abstract T visit(IAST ast);
+	public abstract T visit(IASTMutable ast);
 
 }

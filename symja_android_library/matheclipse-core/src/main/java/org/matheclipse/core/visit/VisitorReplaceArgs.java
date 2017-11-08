@@ -2,6 +2,7 @@ package org.matheclipse.core.visit;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -29,9 +30,9 @@ public class VisitorReplaceArgs extends VisitorExpr {
 	}
 
 	@Override
-	public IExpr visit(IAST ast) {
+	public IExpr visit(IASTMutable ast) {
 		IExpr temp;
-		IAST result = F.NIL;
+		IASTMutable result = F.NIL;
 		int size = ast.size();
 		boolean evaled = false;
 		for (int i = 1; i < size; i++) {

@@ -24,6 +24,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
@@ -129,7 +130,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
 	@Override
 	public IAST getRuleAST() {
-		IAST rules = F.ListAlloc(RULES1.size() + RULES2.size());
+		IASTMutable rules = F.ListAlloc(RULES1.size() + RULES2.size());
 		rules.appendArgs(RULES1);
 		rules.appendArgs(RULES2);
 		return rules;
@@ -200,8 +201,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 				if (ast.isAST2()) {
 					return temp;
 				} else {
-					IAST result = ast.clone();
-					result.remove(ast.size() - 1);
+					IASTMutable result = ast.removeAtClone(ast.size() - 1);
 					result.set(1, temp);
 					return result;
 				}
@@ -218,8 +218,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 						if (ast.isAST2()) {
 							return temp;
 						}
-						IAST result = ast.clone();
-						result.remove(ast.size() - 1);
+						IASTMutable result = ast.removeAtClone(ast.size() - 1);
 						result.set(1, temp);
 						return result;
 					}
@@ -233,8 +232,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 				if (ast.isAST2()) {
 					return temp;
 				} else {
-					IAST result = ast.clone();
-					result.remove(ast.size() - 1);
+					IASTMutable result = ast.removeAtClone(ast.size() - 1);
 					result.set(1, temp);
 					return result;
 				}
@@ -249,8 +247,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 		IAST restAST = F.Times();
 		prod.filter(filterAST, restAST, VariablesSet.isFree(variablesSet));
 		if (filterAST.size() > 1) {
-			IAST reducedSum = ast.copy();
-			reducedSum.set(1, restAST.getOneIdentity(F.C1));
+			IASTMutable reducedSum = ast.setAtCopy(1, restAST.getOneIdentity(F.C1));
 			return F.Times(filterAST.getOneIdentity(F.C0), reducedSum);
 		}
 		return F.NIL;
@@ -456,15 +453,11 @@ public class Sum extends ListFunctions.Table implements SumRules {
 			if (p.isOne()) {
 				term1 = Times(C1D2, fromMinusOne, Plus(C1, fromMinusOne));
 			} else {
-				term1 = F
-						.eval(ExpandAll(
-								Plus(Times(Power(Plus(fromMinusOne, C1), Plus(p, C1)),
-										Power(Plus(p, C1), CN1)), Sum(
-												Times(Times(
-														Times(Power(Plus(fromMinusOne, C1),
-																Plus(Plus(p, Times(CN1, k)), C1)), Binomial(p, k)),
-														BernoulliB(k)), Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)),
-												List(k, C1, p)))));
+				term1 = F.eval(
+						ExpandAll(Plus(Times(Power(Plus(fromMinusOne, C1), Plus(p, C1)), Power(Plus(p, C1), CN1)), Sum(
+								Times(Times(Times(Power(Plus(fromMinusOne, C1), Plus(Plus(p, Times(CN1, k)), C1)),
+										Binomial(p, k)), BernoulliB(k)), Power(Plus(Plus(p, Times(CN1, k)), C1), CN1)),
+								List(k, C1, p)))));
 			}
 		}
 		IExpr term2;

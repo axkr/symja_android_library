@@ -71,6 +71,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -262,8 +263,8 @@ public final class Arithmetic {
 	 */
 	private static class AddTo extends AbstractFunctionEvaluator {
 
-		protected IAST getAST(final IExpr value) {
-			return F.Plus(null, value);
+		protected IASTMutable getAST(final IExpr value) {
+			return (IASTMutable) F.Plus(null, value);
 		}
 
 		protected ISymbol getFunctionSymbol() {
@@ -493,7 +494,7 @@ public final class Arithmetic {
 				}
 			}
 			if (arg1.isPlus()) {
-				return ((IAST) arg1).mapThread(F.Conjugate(F.Null), 1);
+				return ((IAST) arg1).mapThread((IASTMutable) F.Conjugate(F.Null), 1);
 			}
 			if (arg1.isTimes()) {
 				IAST result = F.NIL;
@@ -547,8 +548,8 @@ public final class Arithmetic {
 
 	private static class Decrement extends AbstractFunctionEvaluator {
 
-		protected IAST getAST() {
-			return F.Plus(null, F.CN1);
+		protected IASTMutable getAST() {
+			return (IASTMutable) F.Plus(null, F.CN1);
 		}
 
 		public Decrement() {
@@ -589,8 +590,8 @@ public final class Arithmetic {
 	private static class DivideBy extends AddTo {
 
 		@Override
-		protected IAST getAST(final IExpr value) {
-			return F.Times(null, F.Power(value, F.CN1));
+		protected IASTMutable getAST(final IExpr value) {
+			return (IASTMutable) F.Times(null, F.Power(value, F.CN1));
 		}
 
 		@Override
@@ -1007,8 +1008,8 @@ public final class Arithmetic {
 	private static class Increment extends Decrement {
 
 		@Override
-		protected IAST getAST() {
-			return F.Plus(null, F.C1);
+		protected IASTMutable getAST() {
+			return (IASTMutable) F.Plus(null, F.C1);
 		}
 
 		@Override
@@ -1935,7 +1936,7 @@ public final class Arithmetic {
 		 * @return <code>F.NIL</code> if the transformation isn't possible.
 		 */
 		private static IExpr powerTimesInverse(IAST timesAST, final IExpr arg2) {
-			IAST resultAST = F.NIL;
+			IASTMutable resultAST = F.NIL;
 			for (int i = 1; i < timesAST.size(); i++) {
 				IExpr temp = timesAST.get(i);
 				if (temp.isPower() && temp.getAt(2).isMinusOne()) {
@@ -2168,8 +2169,8 @@ public final class Arithmetic {
 		}
 
 		@Override
-		protected IAST getAST() {
-			return F.Plus(null, F.CN1);
+		protected IASTMutable getAST() {
+			return (IASTMutable) F.Plus(null, F.CN1);
 		}
 
 		@Override
@@ -2186,8 +2187,8 @@ public final class Arithmetic {
 	private static class PreIncrement extends PreDecrement {
 
 		@Override
-		protected IAST getAST() {
-			return F.Plus(null, F.C1);
+		protected IASTMutable getAST() {
+			return (IASTMutable) F.Plus(null, F.C1);
 		}
 
 		@Override
@@ -2401,8 +2402,8 @@ public final class Arithmetic {
 	private static class SubtractFrom extends AddTo {
 
 		@Override
-		protected IAST getAST(final IExpr value) {
-			return F.Plus(null, F.Negate(value));
+		protected IASTMutable getAST(final IExpr value) {
+			return (IASTMutable) F.Plus(null, F.Negate(value));
 		}
 
 		@Override
@@ -2507,11 +2508,11 @@ public final class Arithmetic {
 				IInteger leadingFactor = (IInteger) times.arg1();
 
 				if (!leadingFactor.isMinusOne()) {
-					IAST result = F.NIL;
+					IASTMutable result = F.NIL;
 					for (int i = 2; i < times.size(); i++) {
 						IExpr temp = times.get(i);
 						if (temp.isPower() && temp.getAt(1).isInteger() && !temp.getAt(2).isNumber()) {
-							IAST power = (IAST) temp;
+							IASTMutable power = (IASTMutable) temp;
 							IInteger powArg1 = (IInteger) power.arg1();
 							if (powArg1.isPositive()) {
 								IInteger mod = F.C0;
@@ -2999,8 +3000,8 @@ public final class Arithmetic {
 	private static class TimesBy extends AddTo {
 
 		@Override
-		protected IAST getAST(final IExpr value) {
-			return F.Times(null, value);
+		protected IASTMutable getAST(final IExpr value) {
+			return (IASTMutable) F.Times(null, value);
 		}
 
 		@Override

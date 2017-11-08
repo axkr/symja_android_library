@@ -73,7 +73,7 @@ public interface IEvalStepListener {
 	 * @return <code>F.NIL</code> if no evaluation was possible, or if this
 	 *         method isn't interesting for listening
 	 */
-	default IAST rootsOfQuadraticPolynomial(ExprPolynomial polynomial) {
+	default IASTMutable rootsOfQuadraticPolynomial(ExprPolynomial polynomial) {
 		return F.NIL;
 	}
 }

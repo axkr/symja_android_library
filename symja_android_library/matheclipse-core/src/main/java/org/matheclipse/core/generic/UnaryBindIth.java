@@ -35,9 +35,7 @@ public class UnaryBindIth implements IUnaryIndexFunction<IExpr, IExpr> {
 	 */
 	@Override
 	public IExpr apply(int index, final IExpr arg) {
-		final IAST ast = fConstant.copy();
-		ast.set(index, arg);
-		return ast;
+		return fConstant.setAtCopy(index, arg);
 	}
 
 }

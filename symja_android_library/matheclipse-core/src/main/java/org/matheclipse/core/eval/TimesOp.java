@@ -6,6 +6,7 @@ import java.util.Map;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -74,7 +75,7 @@ public class TimesOp {
 	 */
 	public IExpr getProduct() {
 
-		IAST result = F.Times();
+		IASTMutable result = F.TimesAlloc(timesMap.size());
 		// if (numberValue != null && !numberValue.isZero()) {
 		// if (numberValue.isComplexInfinity()) {
 		// return numberValue;

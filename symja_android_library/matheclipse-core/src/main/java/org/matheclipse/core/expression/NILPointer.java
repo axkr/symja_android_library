@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -119,7 +120,7 @@ public class NILPointer extends AbstractAST {
 	}
 
 	@Override
-	public IAST clone() {
+	public IASTMutable clone() {
 		throw new UnsupportedOperationException();
 	}
 

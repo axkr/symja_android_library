@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IStringX;
@@ -484,7 +485,7 @@ public class PredicateQ {
 
 			if (ast.isAST2()) {
 				final IExpr arg2 = engine.evaluate(ast.arg2());
-				IAST temp = F.ast(arg2);
+				IASTMutable temp = F.ast(arg2);
 				temp.append(F.Slot1);
 				IAST matrix = (IAST) arg1;
 				for (int i = 1; i < dims[0]; i++) {
@@ -931,7 +932,7 @@ public class PredicateQ {
 
 			if (ast.isAST2()) {
 				final IExpr arg2 = engine.evaluate(ast.arg2());
-				IAST temp = F.ast(arg2);
+				IASTMutable temp = F.ast(arg2);
 				temp.append(F.Slot1);
 
 				IAST vector = (IAST) arg1;

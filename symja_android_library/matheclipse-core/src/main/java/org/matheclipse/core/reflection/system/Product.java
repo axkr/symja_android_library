@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
@@ -110,7 +111,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 			}
 		}
 		if (arg1.isTimes()) {
-			IAST prod = ast.setAtCopy(1, null);
+			IASTMutable prod = ast.setAtCopy(1, null);
 			return ((IAST) arg1).mapThread(prod, 1);
 		}
 
@@ -135,7 +136,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 				break;
 			}
 			if (flag) {
-				IAST prod = ast.copy();
+				IASTMutable prod = ast.copy();
 				prod.set(1, arg1.getAt(1));
 				return F.Power(prod, exponent);
 			}
@@ -159,7 +160,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 									if (ast.isAST2()) {
 										return F.Power(powArg1, Times(C1D2, to, Plus(C1, to)));
 									}
-									IAST result = ast.clone();
+									IASTMutable result = ast.clone();
 									result.remove(ast.size() - 1);
 									result.set(1, F.Power(powArg1, Times(C1D2, to, Plus(C1, to))));
 									return result;
@@ -176,7 +177,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 								return F.Power(ast.arg1(), Plus(to, C1));
 							}
 						} else {
-							IAST result = ast.clone();
+							IASTMutable result = ast.clone();
 							result.remove(ast.size() - 1);
 							if (from.isOne()) {
 								result.set(1, F.Power(ast.arg1(), to));
@@ -200,7 +201,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 			if (ast.isAST2()) {
 				return temp;
 			} else {
-				IAST result = ast.clone();
+				IASTMutable result = ast.clone();
 				result.remove(ast.size() - 1);
 				result.set(1, temp);
 				return result;
