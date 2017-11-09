@@ -18,6 +18,7 @@ import org.matheclipse.core.expression.ASTRealVector;
 //import org.matheclipse.commons.math.linear.FieldVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -211,8 +212,8 @@ public class Convert {
 		final int rowSize = matrix.getRowDimension();
 		final int colSize = matrix.getColumnDimension();
 
-		final IAST out = F.ListAlloc(rowSize);
-		IAST currOutRow;
+		final IASTMutable out = F.ListAlloc(rowSize);
+		IASTMutable currOutRow;
 		for (int i = 0; i < rowSize; i++) {
 			currOutRow = F.ListAlloc(colSize);
 			out.append(currOutRow);
@@ -249,7 +250,7 @@ public class Convert {
 				return F.C0;
 			}
 		}
-		IAST sum = F.Plus();
+		IASTMutable sum = F.PlusAlloc(coefficients.length);
 		sum.append(F.num(coefficients[0]));
 		for (int i = 1; i < coefficients.length; ++i) {
 			if (coefficients[i] != 0) {
@@ -300,7 +301,7 @@ public class Convert {
 		}
 		final int rowSize = vector.getDimension();
 
-		final IAST out = F.ast(F.List);
+		final IASTMutable out = F.ListAlloc(rowSize);
 		for (int i = 0; i < rowSize; i++) {
 			out.append(F.num(vector.getEntry(i)));
 		}
@@ -337,9 +338,9 @@ public class Convert {
 		try {
 			int columnLength = dd[0].length;
 			int rowLength = dd.length;
-			final IAST list = F.ListAlloc(columnLength);
+			final IASTMutable list = F.ListAlloc(columnLength);
 			for (int i = 0; i < columnLength; i++) {
-				final IAST row = F.ListAlloc(rowLength);
+				final IASTMutable row = F.ListAlloc(rowLength);
 				for (int j = 0; j < rowLength; j++) {
 					row.append(F.num(dd[j][i]));
 				}
@@ -364,7 +365,7 @@ public class Convert {
 		}
 		final int rowSize = vector.getDimension();
 
-		final IAST out = F.ListAlloc(rowSize);
+		final IASTMutable out = F.ListAlloc(rowSize);
 		for (int i = 0; i < rowSize; i++) {
 			out.append(vector.getEntry(i));
 		}

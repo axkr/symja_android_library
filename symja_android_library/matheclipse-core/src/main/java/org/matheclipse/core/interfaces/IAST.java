@@ -151,6 +151,43 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public final int IS_DERIVATIVE_EVALED = 0x8000;
 
 	/**
+	 * Adds the specified expression at the end of this {@code List}.
+	 * 
+	 * @param expr
+	 *            the object to add.
+	 * @return always true.
+	 * @throws UnsupportedOperationException
+	 *             if adding to this {@code List} is not supported.
+	 * @throws ClassCastException
+	 *             if the class of the object is inappropriate for this {@code List}.
+	 * @throws IllegalArgumentException
+	 *             if the object cannot be added to this {@code List}.
+	 */
+	public boolean append(IExpr expr);
+	
+	
+	/**
+	 * Inserts the specified object into this {@code List} at the specified location. The object is inserted before the
+	 * current element at the specified location. If the location is equal to the size of this {@code List}, the object
+	 * is added at the end. If the location is smaller than the size of this {@code List}, then all elements beyond the
+	 * specified location are moved by one position towards the end of the {@code List}.
+	 * 
+	 * @param location
+	 *            the index at which to insert.
+	 * @param object
+	 *            the object to add.
+	 * @throws UnsupportedOperationException
+	 *             if adding to this {@code List} is not supported.
+	 * @throws ClassCastException
+	 *             if the class of the object is inappropriate for this {@code List}.
+	 * @throws IllegalArgumentException
+	 *             if the object cannot be added to this {@code List}.
+	 * @throws IndexOutOfBoundsException
+	 *             if {@code location < 0 || location > size()}
+	 */
+	public void append(int location, IExpr object);
+	
+	/**
 	 * 
 	 * @param collection
 	 * @return
@@ -238,41 +275,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 		return appendOneIdentity(subAST);
 	}
 
-	/**
-	 * Adds the specified expression at the end of this {@code List}.
-	 * 
-	 * @param expr
-	 *            the object to add.
-	 * @return always true.
-	 * @throws UnsupportedOperationException
-	 *             if adding to this {@code List} is not supported.
-	 * @throws ClassCastException
-	 *             if the class of the object is inappropriate for this {@code List}.
-	 * @throws IllegalArgumentException
-	 *             if the object cannot be added to this {@code List}.
-	 */
-	public boolean append(IExpr expr);
 	
-	/**
-	 * Inserts the specified object into this {@code List} at the specified location. The object is inserted before the
-	 * current element at the specified location. If the location is equal to the size of this {@code List}, the object
-	 * is added at the end. If the location is smaller than the size of this {@code List}, then all elements beyond the
-	 * specified location are moved by one position towards the end of the {@code List}.
-	 * 
-	 * @param location
-	 *            the index at which to insert.
-	 * @param object
-	 *            the object to add.
-	 * @throws UnsupportedOperationException
-	 *             if adding to this {@code List} is not supported.
-	 * @throws ClassCastException
-	 *             if the class of the object is inappropriate for this {@code List}.
-	 * @throws IllegalArgumentException
-	 *             if the object cannot be added to this {@code List}.
-	 * @throws IndexOutOfBoundsException
-	 *             if {@code location < 0 || location > size()}
-	 */
-	public void append(int location, IExpr object);
 
 	/**
 	 * Adds the objects in the specified collection to the end of this {@code List}. The objects are added in the order

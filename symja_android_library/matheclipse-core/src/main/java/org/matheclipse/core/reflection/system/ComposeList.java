@@ -1,12 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.List;
-
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -24,10 +23,10 @@ public class ComposeList extends AbstractEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		return evaluateComposeList(ast, List());
+		return evaluateComposeList(ast, F.ListAlloc(8));
 	}
 
-	public static IExpr evaluateComposeList(final IAST ast, final IAST resultList) {
+	public static IExpr evaluateComposeList(final IAST ast, final IASTMutable resultList) {
 		try {
 			if ((ast.isAST2()) && (ast.arg1().isAST())) {
 				// final EvalEngine engine = EvalEngine.get();

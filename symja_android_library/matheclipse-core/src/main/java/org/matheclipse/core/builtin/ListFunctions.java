@@ -348,7 +348,7 @@ public final class ListFunctions {
 
 			if (ast.arg1().isAST()) {
 				IAST list = (IAST) ast.arg1();
-				IAST resultList = F.ast(list.head(), list.size(), false);
+				IASTMutable resultList = F.ast(list.head(), list.size(), false);
 				return foldLeft(null, list, 1, list.size(), (x, y) -> F.binaryAST2(F.Plus, x, y), resultList);
 
 			}
@@ -453,7 +453,7 @@ public final class ListFunctions {
 
 			@Override
 			public IExpr evaluate(final IExpr[] index) {
-				final IAST ast = fHeadAST.clone();
+				final IASTMutable ast = fHeadAST.clone();
 				for (int i = 0; i < index.length; i++) {
 					ast.append(index[i]);
 				}
@@ -607,7 +607,7 @@ public final class ListFunctions {
 
 		private static IExpr arrayPadMatrixAtom(IAST matrix, int[] dim, int m, int n, IExpr atom) {
 			int columnDim = dim[1] + m + n;
-			IAST result = matrix.copyHead(dim[0] + m + n);
+			IASTMutable result = matrix.copyHead(dim[0] + m + n);
 			IAST row;
 			// prepend m rows
 			for (int i = 0; i < m; i++) {
@@ -660,7 +660,7 @@ public final class ListFunctions {
 
 		private static class CasesPatternMatcherFunctor implements Function<IExpr, IExpr> {
 			protected final PatternMatcher matcher;
-			protected IAST resultCollection;
+			protected IASTMutable resultCollection;
 			final int maximumResults;
 			private int resultsCounter;
 
@@ -672,7 +672,8 @@ public final class ListFunctions {
 			 * @param maximumResults
 			 *            maximum number of results. -1 for for no limitation
 			 */
-			public CasesPatternMatcherFunctor(final PatternMatcher matcher, IAST resultCollection, int maximumResults) {
+			public CasesPatternMatcherFunctor(final PatternMatcher matcher, IASTMutable resultCollection,
+					int maximumResults) {
 				this.matcher = matcher;
 				this.resultCollection = resultCollection;
 				this.maximumResults = maximumResults;
@@ -697,7 +698,7 @@ public final class ListFunctions {
 
 		private static class CasesRulesFunctor implements Function<IExpr, IExpr> {
 			protected final Function<IExpr, IExpr> function;
-			protected IAST resultCollection;
+			protected IASTMutable resultCollection;
 			final int maximumResults;
 			private int resultsCounter;
 
@@ -709,7 +710,8 @@ public final class ListFunctions {
 			 * @param maximumResults
 			 *            maximum number of results. -1 for for no limitation
 			 */
-			public CasesRulesFunctor(final Function<IExpr, IExpr> function, IAST resultCollection, int maximumResults) {
+			public CasesRulesFunctor(final Function<IExpr, IExpr> function, IASTMutable resultCollection,
+					int maximumResults) {
 				this.function = function;
 				this.resultCollection = resultCollection;
 				this.maximumResults = maximumResults;
@@ -748,7 +750,7 @@ public final class ListFunctions {
 					if (ast.size() == 5) {
 						maximumResults = Validate.checkIntType(ast, 4);
 					}
-					IAST result = F.List();
+					IASTMutable result = F.ListAlloc(8);
 					if (arg2.isRuleAST()) {
 						try {
 							Function<IExpr, IExpr> function = Functors.rules((IAST) arg2, engine);
@@ -846,7 +848,7 @@ public final class ListFunctions {
 			if (size > 1) {
 				if (n == -1) {
 					IInteger max = (IInteger) ((IAST) tallyResult.arg1()).arg2();
-					IAST result = F.ListAlloc(size);
+					IASTMutable result = F.ListAlloc(size);
 					result.append(((IAST) tallyResult.arg1()).arg1());
 					for (int i = 2; i < size; i++) {
 						if (max.equals(((IAST) tallyResult.get(i)).arg2())) {
@@ -858,7 +860,7 @@ public final class ListFunctions {
 					return result;
 				} else {
 					int counter = 0;
-					IAST result = F.ListAlloc(size);
+					IASTMutable result = F.ListAlloc(size);
 					for (int i = 1; i < size; i++) {
 						if (counter < n) {
 							result.append(((IAST) tallyResult.get(i)).arg1());
@@ -1213,7 +1215,7 @@ public final class ListFunctions {
 				boolean evaledTrue;
 				BiPredicate<IExpr, IExpr> biPredicate = Predicates.isBinaryTrue(test);
 				int size = list.size();
-				final IAST result = F.ListAlloc(size);
+				final IASTMutable result = F.ListAlloc(size);
 				for (int i = 1; i < size; i++) {
 					temp = list.get(i);
 					evaledTrue = false;
@@ -1336,7 +1338,7 @@ public final class ListFunctions {
 				IAST arg2 = (IAST) ast.arg2();
 				if (arg2.isListOfLists()) {
 					final int arg2Size = arg2.size();
-					IAST result = F.ListAlloc(arg2Size);
+					IASTMutable result = F.ListAlloc(arg2Size);
 					for (int i = 1; i < arg2Size; i++) {
 						IExpr temp = extract(arg1, arg2.getAST(i));
 						if (!temp.isPresent()) {
@@ -1460,10 +1462,10 @@ public final class ListFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 4);
 
-			return evaluateNestList(ast, List(), engine);
+			return evaluateNestList(ast, F.ListAlloc(8), engine);
 		}
 
-		private static IAST evaluateNestList(final IAST ast, final IAST resultList, EvalEngine engine) {
+		private static IAST evaluateNestList(final IAST ast, final IASTMutable resultList, EvalEngine engine) {
 
 			try {
 				IExpr temp = engine.evaluate(ast.arg3());
@@ -1495,24 +1497,24 @@ public final class ListFunctions {
 			int size = ast.size();
 			if (ast.arg1().isAST()) {
 				IAST arg1 = (IAST) ast.arg1();
-				java.util.Map<IExpr, IAST> map;
+				java.util.Map<IExpr, IASTMutable> map;
 				if (size > 2) {
 					IExpr arg2 = ast.arg2();
-					map = new TreeMap<IExpr, IAST>(new Comparators.BinaryHeadComparator(arg2));
+					map = new TreeMap<IExpr, IASTMutable>(new Comparators.BinaryHeadComparator(arg2));
 				} else {
-					map = new TreeMap<IExpr, IAST>();
+					map = new TreeMap<IExpr, IASTMutable>();
 				}
 				for (int i = 1; i < arg1.size(); i++) {
-					IAST list = map.get(arg1.get(i));
+					IASTMutable list = map.get(arg1.get(i));
 					if (list == null) {
-						map.put(arg1.get(i), F.List(arg1.get(i)));
+						map.put(arg1.get(i), (IASTMutable) F.List(arg1.get(i)));
 					} else {
 						list.append(arg1.get(i));
 					}
 				}
 
-				IAST result = F.ListAlloc(map.size());
-				for (Map.Entry<IExpr, IAST> entry : map.entrySet()) {
+				IASTMutable result = F.ListAlloc(map.size());
+				for (Map.Entry<IExpr, IASTMutable> entry : map.entrySet()) {
 					result.append(entry.getValue());
 				}
 				return result;
@@ -1551,7 +1553,7 @@ public final class ListFunctions {
 			if (ast.arg1().isAST() && ast.arg2().isAST()) {
 				IAST arg1AST = ((IAST) ast.arg1());
 				IAST arg2AST = ((IAST) ast.arg2());
-				final IAST result = F.List();
+				final IASTMutable result = F.ListAlloc((arg1AST.size() + arg2AST.size()) / 2);
 				return intersection(arg1AST, arg2AST, result);
 			}
 
@@ -1569,7 +1571,7 @@ public final class ListFunctions {
 		 *            the AST where the elements of the union should be appended
 		 * @return
 		 */
-		public static IExpr intersection(IAST ast1, IAST ast2, final IAST result) {
+		public static IExpr intersection(IAST ast1, IAST ast2, final IASTMutable result) {
 			Set<IExpr> set1 = new HashSet<IExpr>(ast1.size() + ast1.size() / 10);
 			Set<IExpr> set2 = new HashSet<IExpr>(ast2.size() + ast1.size() / 10);
 			Set<IExpr> resultSet = new TreeSet<IExpr>();
@@ -1690,9 +1692,9 @@ public final class ListFunctions {
 
 			if (!ast.arg1().isAtom()) {
 				final IAST arg1 = (IAST) ast.arg1();
-				IAST resultList;
+				IASTMutable resultList;
 				if (lastIndex != 3) {
-					resultList = List();
+					resultList = F.ListAlloc(8);
 				} else {
 					resultList = F.ast(ast.get(lastIndex));
 				}
@@ -1777,21 +1779,21 @@ public final class ListFunctions {
 		 */
 		private static IAST numericalNearest(IAST inputList, INumber x, IExpr distanceFunction, EvalEngine engine) {
 			try {
-				IAST nearest = null;
+				IASTMutable nearest = null;
 				IExpr distance = F.NIL;
-				IAST temp;
+				IASTMutable temp;
 				for (int i = 1; i < inputList.size(); i++) {
 					temp = F.ast(distanceFunction);
 					temp.append(x);
 					temp.append(inputList.get(i));
 					if (nearest == null) {
-						nearest = F.List();
+						nearest = F.ListAlloc(8);
 						nearest.append(inputList.get(i));
 						distance = temp;
 					} else {
 						IExpr comparisonResult = engine.evaluate(F.Greater(distance, temp));
 						if (comparisonResult.isTrue()) {
-							nearest = F.List();
+							nearest = F.ListAlloc(8);
 							nearest.append(inputList.get(i));
 							distance = temp;
 						} else if (comparisonResult.isFalse()) {
@@ -1830,7 +1832,7 @@ public final class ListFunctions {
 						}
 					}
 					if (maxSize > 0) {
-						IAST result = F.ListAlloc(list.size());
+						IASTMutable result = F.ListAlloc(list.size());
 						for (int i = 1; i < list.size(); i++) {
 							result.append(padLeftAtom(list.getAST(i), maxSize - 1, F.C0));
 						}
@@ -1917,7 +1919,7 @@ public final class ListFunctions {
 						}
 					}
 					if (maxSize > 0) {
-						IAST result = F.ListAlloc(list.size());
+						IASTMutable result = F.ListAlloc(list.size());
 						for (int i = 1; i < list.size(); i++) {
 							result.append(padRightAtom(list.getAST(i), maxSize - 1, F.C0));
 						}
@@ -2003,12 +2005,12 @@ public final class ListFunctions {
 		 * @param headOffset
 		 * @return
 		 */
-		public static IAST position(final IAST list, final IAST prototypeList, final IAST resultCollection,
+		public static IAST position(final IAST list, final IAST prototypeList, final IASTMutable resultCollection,
 				final LevelSpec level, final Predicate<? super IExpr> matcher,
 				final IPositionConverter<? extends IExpr> positionConverter, int headOffset) {
 			int minDepth = 0;
 			level.incCurrentLevel();
-			IAST clone = null;
+			IASTMutable clone = null;
 			final int size = list.size();
 			for (int i = headOffset; i < size; i++) {
 				if (list.get(i).isAST()) {
@@ -2040,7 +2042,7 @@ public final class ListFunctions {
 			final PositionConverter pos = new PositionConverter();
 
 			final IAST cloneList = List();
-			final IAST resultList = List();
+			final IASTMutable resultList = F.ListAlloc(8);
 			int headOffset = 1;
 			if (level.isIncludeHeads()) {
 				headOffset = 0;
@@ -2167,7 +2169,7 @@ public final class ListFunctions {
 				try {
 					int size = ((IInteger) ast.arg1()).toInt();
 					if (size >= 0) {
-						IAST result = F.ListAlloc(size);
+						IASTMutable result = F.ListAlloc(size);
 						for (int i = 1; i <= size; i++) {
 							result.append(F.integer(i));
 						}
@@ -2330,7 +2332,7 @@ public final class ListFunctions {
 			if (arg1.size() < 2) {
 				return arg1;
 			}
-			IAST result = arg1.copyHead();
+			IASTMutable result = arg1.copyHead();
 			for (int i = 1; i < arg1.size() - 1; i++) {
 				result.append(arg1.get(i));
 				result.append(arg2);
@@ -2343,7 +2345,7 @@ public final class ListFunctions {
 			if (arg1.size() < 2) {
 				return arg1;
 			}
-			IAST result = arg1.copyHead();
+			IASTMutable result = arg1.copyHead();
 			if (arg2.size() < 2) {
 				return arg1;
 			}
@@ -2468,16 +2470,16 @@ public final class ListFunctions {
 				BiPredicate<IExpr, IExpr> pred = Predicates.isBinaryTrue(predicateHead);
 				IAST list = (IAST) ast.arg1();
 
-				IAST result = F.List();
+				IASTMutable result = F.ListAlloc(8);
 				if (list.size() > 1) {
 					IExpr current = list.get(1);
-					IAST temp = F.List();
+					IASTMutable temp = F.ListAlloc(8);
 					result.append(temp);
 					temp.append(current);
 					for (int i = 2; i < list.size(); i++) {
 						if (pred.test(current, list.get(i))) {
 						} else {
-							temp = F.List();
+							temp = F.ListAlloc(8);
 							result.append(temp);
 						}
 						temp.append(list.get(i));
@@ -2520,11 +2522,11 @@ public final class ListFunctions {
 			IExpr functorHead = functorList.get(pos);
 			final Function<IExpr, IExpr> function = x -> engine.evaluate(F.unaryAST1(functorHead, x));
 
-			IAST result = F.List();
+			IASTMutable result = F.ListAlloc(8);
 			if (list.size() > 1) {
 				IExpr last = function.apply(list.get(1));
 				IExpr current;
-				IAST temp = F.List();
+				IASTMutable temp = F.ListAlloc(8);
 
 				temp.append(list.get(1));
 				for (int i = 2; i < list.size(); i++) {
@@ -2537,7 +2539,7 @@ public final class ListFunctions {
 						} else {
 							result.append(temp);
 						}
-						temp = F.List();
+						temp = F.ListAlloc(8);
 					}
 					temp.append(list.get(i));
 					last = current;
@@ -2690,7 +2692,7 @@ public final class ListFunctions {
 		 */
 		public IAST determineIteratorVariables(final IAST ast) {
 			int size = ast.size();
-			IAST variableList = F.ListAlloc(size);
+			IASTMutable variableList = F.ListAlloc(size);
 			for (int i = 2; i < size; i++) {
 				if (ast.get(i).isVariable()) {
 					variableList.append(ast.get(i));
@@ -2873,7 +2875,7 @@ public final class ListFunctions {
 			ISequence sequ = sequenceSpecifications[level];
 			int size = list.size();
 			sequ.setListSize(size);
-			final IAST resultList = list.copyHead(10 > size ? size : 10);
+			final IASTMutable resultList = list.copyHead(10 > size ? size : 10);
 			final int newLevel = level + 1;
 			int start = sequ.getStart();
 			int end = sequ.getEnd();
@@ -3017,7 +3019,7 @@ public final class ListFunctions {
 			if (ast.arg1().isAST() && ast.arg2().isAST()) {
 				IAST arg1AST = ((IAST) ast.arg1());
 				IAST arg2AST = ((IAST) ast.arg2());
-				final IAST result = F.List();
+				final IASTMutable result = F.ListAlloc(8);
 				return union(arg1AST, arg2AST, result);
 			}
 			return F.NIL;
@@ -3034,7 +3036,7 @@ public final class ListFunctions {
 		 *            the AST where the elements of the union should be appended
 		 * @return
 		 */
-		public static IExpr union(IAST ast1, IAST ast2, final IAST result) {
+		public static IExpr union(IAST ast1, IAST ast2, final IASTMutable result) {
 			Set<IExpr> resultSet = new TreeSet<IExpr>();
 			int size = ast1.size();
 			for (int i = 1; i < size; i++) {
@@ -3066,7 +3068,7 @@ public final class ListFunctions {
 	 * @param resultCollection
 	 */
 	public static IAST foldLeft(final IExpr expr, final IAST list, final int start, final int end,
-			final BiFunction<IExpr, IExpr, ? extends IExpr> binaryFunction, final IAST resultCollection) {
+			final BiFunction<IExpr, IExpr, ? extends IExpr> binaryFunction, final IASTMutable resultCollection) {
 		if (start < end) {
 			IExpr elem;
 			int from = start;
