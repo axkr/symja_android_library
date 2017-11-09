@@ -61,8 +61,8 @@ public class Lambda {
 	 * @return the cloned ast with removed elements or <code>F.NIL</code> if the <code>predicate</code> never gives
 	 *         <code>true</code>.
 	 */
-	public static IAST remove(IAST ast, Predicate<IExpr> predicate) {
-		IAST result = F.NIL;
+	public static IASTMutable remove(IAST ast, Predicate<IExpr> predicate) {
+		IASTMutable result = F.NIL;
 		int size = ast.size();
 		int j = 1;
 		for (int i = 1; i < size; i++) {
@@ -116,7 +116,7 @@ public class Lambda {
 	 * @param function
 	 * @return
 	 */
-	public static IAST forEachAppend(IAST ast, IAST result, Function<IExpr, IExpr> function) {
+	public static IAST forEachAppend(IAST ast, IASTMutable result, Function<IExpr, IExpr> function) {
 		int size = ast.size();
 		for (int i = 1; i < size; i++) {
 			result.append(function.apply(ast.get(i)));

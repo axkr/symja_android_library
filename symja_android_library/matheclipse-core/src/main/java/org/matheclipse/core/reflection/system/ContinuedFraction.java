@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -69,9 +70,10 @@ public class ContinuedFraction extends AbstractEvaluator {
 		if (arg1.isRational()) {
 			IRational rat = (IRational) arg1;
 
-			IAST continuedFractionList;
+			IASTMutable continuedFractionList;
 			if (rat.getDenominator().isOne()) {
-				continuedFractionList = F.List(rat.getNumerator());
+				continuedFractionList = F.ListAlloc(1);
+				continuedFractionList.append(rat.getNumerator());
 			} else if (rat.getNumerator().isOne()) {
 				continuedFractionList = F.ListAlloc(2);
 				continuedFractionList.append(F.C0);

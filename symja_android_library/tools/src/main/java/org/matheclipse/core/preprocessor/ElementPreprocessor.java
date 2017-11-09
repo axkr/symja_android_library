@@ -9,6 +9,7 @@ import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -28,9 +29,9 @@ public class ElementPreprocessor {
 
 			CSVFormat csvFormat = CSVFormat.RFC4180.withDelimiter('\t');
 			Iterable<CSVRecord> records = csvFormat.parse(reader);
-			IAST rowList = F.List();
+			IASTMutable rowList = F.ListAlloc(130);
 			for (CSVRecord record : records) {
-				IAST columnList = F.List();
+				IASTMutable columnList = F.ListAlloc(record.size());
 				for (String str : record) {
 					str = str.trim();
 					if (str.length() == 0) {

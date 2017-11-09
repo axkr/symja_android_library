@@ -7,13 +7,11 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.ASTRange;
-import org.matheclipse.core.expression.F;
 
 /**
  * 
@@ -254,7 +252,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *             if the object cannot be added to this {@code List}.
 	 */
 	public boolean append(IExpr expr);
-
+	
 	/**
 	 * Inserts the specified object into this {@code List} at the specified location. The object is inserted before the
 	 * current element at the specified location. If the location is equal to the size of this {@code List}, the object
@@ -571,7 +569,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @param position
 	 * @return
 	 */
-	public IAST copyUntil(int position);
+	public IASTMutable copyUntil(int position);
 
 	/**
 	 * Create a copy of this <code>AST</code>, which contains the same head and all elements up to the given
@@ -582,7 +580,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @param position
 	 * @return
 	 */
-	public IAST copyUntil(final int intialCapacity, int position);
+	public IASTMutable copyUntil(final int intialCapacity, int position);
 
 	/**
 	 * Calls <code>get(position).equals(expr)</code>.
@@ -616,7 +614,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *            the function which filters each argument in this AST by returning a non-null result.
 	 * @return the resulting ASTs in the 0-th and 1-st element of the array
 	 */
-	public IAST[] filter(final Function<IExpr, IExpr> function);
+	public IASTMutable[] filter(final Function<IExpr, IExpr> function);
 
 	/**
 	 * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and append
@@ -1058,7 +1056,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <code>appendAST</code>
 	 * @see IAST#map(Function, int)
 	 */
-	public IAST mapThread(IASTMutable appendAST, final IAST replacement, int position);
+	public IASTMutable mapThread(IASTMutable appendAST, final IAST replacement, int position);
 
 	/**
 	 * Maps the elements of this IAST with the unary functor <code>Functors.replaceArg(replacement, position)</code>,
@@ -1081,7 +1079,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 * @see IAST#map(Function, int)
 	 */
-	public IAST mapThread(final IAST replacement, int position);
+	public IASTMutable mapThread(final IAST replacement, int position);
 
 	/**
 	 * Calculate a special hash value for pattern matching

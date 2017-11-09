@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -116,7 +117,7 @@ public class ElementData extends AbstractFunctionEvaluator {
 			}
 			if (ast.arg1() instanceof IStringX) {
 				if (ast.arg1().toString().equals("Properties")) {
-					IAST list = F.ListAlloc(PROPERTIES_DATA.length);
+					IASTMutable list = F.ListAlloc(PROPERTIES_DATA.length);
 					for (int i = 0; i < PROPERTIES_DATA.length; i++) {
 						list.append(F.$str(PROPERTIES_DATA[i]));
 					}
@@ -293,7 +294,7 @@ public class ElementData extends AbstractFunctionEvaluator {
 		IAST[] list = ElementData1.ELEMENTS;
 		for (int i = 0; i < list.length; i++) {
 			MAP_NUMBER_NAME.put(list[i].arg1(), list[i].arg3());
-			IAST subList = F.ListAlloc(list[i].size());
+			IASTMutable subList = F.ListAlloc(list[i].size());
 			for (int j = 1; j < list[i].size(); j++) {
 				subList.append(list[i].get(j));
 			}
@@ -304,7 +305,7 @@ public class ElementData extends AbstractFunctionEvaluator {
 		list = ElementData2.ELEMENTS;
 		for (int i = 0; i < list.length; i++) {
 			MAP_NUMBER_NAME.put(list[i].arg1(), list[i].arg3());
-			IAST subList = F.ListAlloc(list[i].size());
+			IASTMutable subList = F.ListAlloc(list[i].size());
 			for (int j = 1; j < list[i].size(); j++) {
 				subList.append(list[i].get(j));
 			}

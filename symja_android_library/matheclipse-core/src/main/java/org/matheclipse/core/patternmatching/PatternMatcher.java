@@ -787,7 +787,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 *         be matched or contains no pattern with default value.
 	 */
 	private IExpr matchDefaultArgumentsAST(ISymbol symbolWithDefaultValue, IAST lhsPatternAST) {
-		IAST cloned = F.ast(lhsPatternAST.head(), lhsPatternAST.size(), false);
+		IASTMutable cloned = F.ast(lhsPatternAST.head(), lhsPatternAST.size(), false);
 		boolean defaultValueMatched = false;
 		for (int i = 1; i < lhsPatternAST.size(); i++) {
 			if (lhsPatternAST.get(i).isPatternDefault()) {
@@ -988,7 +988,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 */
 	private IExpr matchOptionalArgumentsAST(ISymbol symbolWithDefaultValue, IAST lhsPatternAST, IAST lhsEvalAST) {
 		int lhsSize = lhsEvalAST.size();
-		IAST cloned = F.ast(lhsPatternAST.head(), lhsPatternAST.size(), false);
+		IASTMutable cloned = F.ast(lhsPatternAST.head(), lhsPatternAST.size(), false);
 		boolean defaultValueMatched = false;
 		for (int i = 1; i < lhsPatternAST.size(); i++) {
 			if (lhsPatternAST.get(i).isPatternDefault()) {

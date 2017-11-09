@@ -2,6 +2,7 @@ package org.matheclipse.core.parser;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 class InfixExprOperator extends AbstractExprOperator {
@@ -28,14 +29,14 @@ class InfixExprOperator extends AbstractExprOperator {
 		return fGrouping;
 	}
 
-	public IExpr createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs, final IExpr rhs) {
+	public IASTMutable createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs, final IExpr rhs) {
 		if (fOperatorString.equals("//")) {
 			// lhs // rhs ==> rhs[lhs]
-			IAST function = F.ast(rhs);
+			IASTMutable function = F.ast(rhs);
 			function.append(lhs);
 			return function;
 		}
-		IAST function = F.ast(F.$s(getFunctionName()), 10, false);
+		IASTMutable function = F.ast(F.$s(getFunctionName()), 10, false);
 		function.append(lhs);
 		function.append(rhs);
 		return function;

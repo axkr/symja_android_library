@@ -3,6 +3,7 @@ package org.matheclipse.core.eval;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -37,7 +38,7 @@ public class CoreCallbackFunction implements IDoubleCallbackFunction {
 		} else if (node instanceof FunctionNode) {
 			AST2Expr ast2Expr = new AST2Expr();
 			IExpr head = ast2Expr.convert(node);
-			IAST fun = F.ast(head);
+			IASTMutable fun = F.ast(head);
 			for (int i = 0; i < args.length; i++) {
 				fun.append(F.num(args[i]));
 			}

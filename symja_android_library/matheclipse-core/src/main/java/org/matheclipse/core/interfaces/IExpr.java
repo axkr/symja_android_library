@@ -238,11 +238,11 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return an IExpr instance with the current expression as head(), and leaves as leaves().
 	 */
 	default IExpr apply(IExpr... leaves) {
-		final IAST ast = F.ast(head());
-		for (int i = 0; i < leaves.length; i++) {
-			ast.append(leaves[i]);
-		}
-		return ast;
+		return F.ast(leaves, head());
+		// for (int i = 0; i < leaves.length; i++) {
+		// ast.append(leaves[i]);
+		// }
+		// return ast;
 	}
 
 	/**
@@ -250,11 +250,12 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return an IExpr instance with the current expression as head(), and leaves as leaves().
 	 */
 	default IExpr apply(List<? extends IExpr> leaves) {
-		final IAST ast = F.ast(head());
-		for (int i = 0; i < leaves.size(); i++) {
-			ast.append(leaves.get(i));
-		}
-		return ast;
+		return F.ast(leaves.toArray(new IExpr[leaves.size()]), head());
+		// final IASTMutable ast = F.ast(head() );
+		// for (int i = 0; i < leaves.size(); i++) {
+		// ast.append(leaves.get(i));
+		// }
+		// return ast;
 	}
 
 	default Object asType(Class<?> clazz) {

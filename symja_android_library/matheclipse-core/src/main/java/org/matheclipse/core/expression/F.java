@@ -2574,7 +2574,7 @@ public class F {
 		return And(integer(i), b);
 	}
 
-	public static IAST And() {
+	public static IASTMutable And() {
 		return ast(And);
 	}
 
@@ -3487,7 +3487,7 @@ public class F {
 	 */
 	@Deprecated
 	private static IExpr eval(final ISymbol head, final IExpr a0) {
-		final IAST ast = ast(head);
+		final IASTMutable ast = ast(head);
 		ast.append(a0);
 		return EvalEngine.get().evaluate(ast);
 	}
@@ -4191,7 +4191,7 @@ public class F {
 
 	public static IAST intIterator(ISymbol head, final Function<IExpr, IExpr> function, final int from, final int to,
 			final int step) {
-		IAST result = F.ast(head, to - from + 1, false);
+		IASTMutable result = F.ast(head, to - from + 1, false);
 		for (int i = from; i <= to; i += step) {
 			result.append(function.apply(F.ZZ(i)));
 		}
@@ -4914,7 +4914,7 @@ public class F {
 		return Or(integer(i), b);
 	}
 
-	public static IAST Or() {
+	public static IASTMutable Or() {
 		return ast(Or);
 	}
 
@@ -4938,8 +4938,8 @@ public class F {
 		return ast(Part);
 	}
 
-	public static IAST Part(final IExpr... a) {
-		IAST part = F.ast(Part, a.length + 1, false);
+	public static IASTMutable Part(final IExpr... a) {
+		IASTMutable part = F.ast(Part, a.length + 1, false);
 		for (int i = 0; i < a.length; i++) {
 			part.append(a[i]);
 		}
@@ -5984,9 +5984,9 @@ public class F {
 	 * @return
 	 */
 	public static IAST matrix(BiFunction<Integer, Integer, ? extends IExpr> biFunction, int n, int m) {
-		IAST matrix = F.ListAlloc(n);
+		IASTMutable matrix = F.ListAlloc(n);
 		for (int i = 0; i < n; i++) {
-			IAST row = F.ListAlloc(m);
+			IASTMutable row = F.ListAlloc(m);
 			for (int j = 0; j < m; j++) {
 				row.append(biFunction.apply(i, j));
 			}
@@ -6005,7 +6005,7 @@ public class F {
 	 * @return
 	 */
 	public static IAST vector(IntFunction<? extends IExpr> iFunction, int n) {
-		IAST matrix = F.ListAlloc(n);
+		IASTMutable matrix = F.ListAlloc(n);
 		for (int i = 0; i < n; i++) {
 			matrix.append(iFunction.apply(i));
 		}

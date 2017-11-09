@@ -2,16 +2,15 @@ package org.matheclipse.core.convert;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 
 public class Lists {
 	/**
-	 * Returns the size of a array, returning zero if the array is
-	 * <code>null</code>.
+	 * Returns the size of a array, returning zero if the array is <code>null</code>.
 	 * 
 	 * @param p_array
-	 *          the array for which to return the size.
-	 * @return the size of the array, or <code>0</code> if the array is
-	 *         <code>null</code>.
+	 *            the array for which to return the size.
+	 * @return the size of the array, or <code>0</code> if the array is <code>null</code>.
 	 */
 	public static <T> int sizeOf(T... p_array) {
 		if (p_array == null) {
@@ -22,20 +21,18 @@ public class Lists {
 
 	/**
 	 * Returns a {@link org.matheclipse.core.interfaces.IAST} of boolean
-	 * {@link org.matheclipse.core.interfaces.ISymbol}s from an array of
-	 * <code>boolean</code>s.
+	 * {@link org.matheclipse.core.interfaces.ISymbol}s from an array of <code>boolean</code>s.
 	 * 
 	 * @param p_booleans
-	 *          the array of <code>boolean</code> values to be converted to a
-	 *          {@link org.matheclipse.core.interfaces.IAST}.
+	 *            the array of <code>boolean</code> values to be converted to a
+	 *            {@link org.matheclipse.core.interfaces.IAST}.
 	 * 
-	 * @return a {@link org.matheclipse.core.interfaces.IAST} of
-	 *                 {@org.matheclipse.core.interfaces.ISymbol
+	 * @return a {@link org.matheclipse.core.interfaces.IAST} of {@org.matheclipse.core.interfaces.ISymbol
 	 * 
-	 * } objects.
+	 * 		} objects.
 	 */
 	public static IAST asAST(boolean... p_booleans) {
-		IAST ast = F.ast(F.List);
+		IASTMutable ast = F.ListAlloc(p_booleans.length);
 		if (p_booleans != null) {
 			for (int i = 0, t = p_booleans.length; i < t; i++) {
 				if (p_booleans[i]) {
@@ -49,19 +46,17 @@ public class Lists {
 	}
 
 	/**
-	 * Returns a {@link org.matheclipse.core.interfaces.IAST} of
-	 * {@link org.matheclipse.core.interfaces.INum}s from an array of
-	 * <code>double</code>s.
+	 * Returns a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.INum}s from an
+	 * array of <code>double</code>s.
 	 * 
 	 * @param p_doubles
-	 *          the array of <code>double</code> values to be converted to a
-	 *          {@link org.matheclipse.core.interfaces.IAST}.
+	 *            the array of <code>double</code> values to be converted to a
+	 *            {@link org.matheclipse.core.interfaces.IAST}.
 	 * 
-	 * @return a {@link org.matheclipse.core.interfaces.IAST} of
-	 *         {@link org.matheclipse.core.interfaces.INum} objects.
+	 * @return a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.INum} objects.
 	 */
 	public static IAST asList(double... p_doubles) {
-		IAST ast = F.ast(F.List);
+		IASTMutable ast = F.ListAlloc(p_doubles.length);
 		if (p_doubles != null) {
 			for (int i = 0, t = p_doubles.length; i < t; i++) {
 				ast.append(F.num(p_doubles[i]));
@@ -71,19 +66,17 @@ public class Lists {
 	}
 
 	/**
-	 * Returns a {@link org.matheclipse.core.interfaces.IAST} of
-	 * {@link org.matheclipse.core.interfaces.INum}s from an array of
-	 * <code>float</code>s.
+	 * Returns a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.INum}s from an
+	 * array of <code>float</code>s.
 	 * 
 	 * @param p_doubles
-	 *          the array of <code>float</code> values to be converted to a
-	 *          {@link org.matheclipse.core.interfaces.IAST}.
+	 *            the array of <code>float</code> values to be converted to a
+	 *            {@link org.matheclipse.core.interfaces.IAST}.
 	 * 
-	 * @return a {@link org.matheclipse.core.interfaces.IAST} of
-	 *         {@link org.matheclipse.core.interfaces.INum} objects.
+	 * @return a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.INum} objects.
 	 */
 	public static IAST asList(float... p_doubles) {
-		IAST ast = F.ast(F.List);
+		IASTMutable ast = F.ListAlloc(p_doubles.length);
 		if (p_doubles != null) {
 			for (int i = 0, t = p_doubles.length; i < t; i++) {
 				ast.append(F.num(p_doubles[i]));
@@ -93,19 +86,18 @@ public class Lists {
 	}
 
 	/**
-	 * Returns a {@link org.matheclipse.core.interfaces.IAST} of
-	 * {@link org.matheclipse.core.interfaces.IStringX}s from an array of
-	 * <code>String</code>s.
+	 * Returns a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.IStringX}s from
+	 * an array of <code>String</code>s.
 	 * 
 	 * @param p_strings
-	 *          the array of <code>String</code> values to be converted to a
-	 *          {@link org.matheclipse.core.interfaces.IAST}.
+	 *            the array of <code>String</code> values to be converted to a
+	 *            {@link org.matheclipse.core.interfaces.IAST}.
 	 * 
-	 * @return a {@link org.matheclipse.core.interfaces.IAST} of
-	 *         {@link org.matheclipse.core.interfaces.IStringX} objects.
+	 * @return a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.IStringX}
+	 *         objects.
 	 */
 	public static IAST asList(String... p_strings) {
-		IAST ast = F.ast(F.List);
+		IASTMutable ast = F.ListAlloc(p_strings.length);
 		if (p_strings != null) {
 			for (int i = 0, t = p_strings.length; i < t; i++) {
 				ast.append(F.$str(p_strings[i]));
@@ -115,42 +107,40 @@ public class Lists {
 	}
 
 	/**
-	 * Returns a {@link org.matheclipse.core.interfaces.IAST} of
-	 * {@link org.matheclipse.core.interfaces.ISymbol}s from an array of
-	 * <code>String</code>s.
+	 * Returns a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.ISymbol}s from
+	 * an array of <code>String</code>s.
 	 * 
 	 * @param p_symbols
-	 *          the array of <code>String</code> values to be converted to a
-	 *          {@link org.matheclipse.core.interfaces.IAST}.
+	 *            the array of <code>String</code> values to be converted to a
+	 *            {@link org.matheclipse.core.interfaces.IAST}.
 	 * 
-	 * @return a {@link org.matheclipse.core.interfaces.IAST} of
-	 *         {@link org.matheclipse.core.interfaces.ISymbol} objects.
+	 * @return a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.ISymbol}
+	 *         objects.
 	 */
 	public static IAST asListSymbols(String... p_symbols) {
-		IAST ast = F.ast(F.List);
 		if (p_symbols != null) {
+			IASTMutable ast = F.ListAlloc(p_symbols.length);
 			for (int i = 0, t = p_symbols.length; i < t; i++) {
 
 				ast.append(F.userSymbol(p_symbols[i]));
 			}
 		}
-		return ast;
+		return F.List();
 	}
 
 	/**
-	 * Returns a {@link org.matheclipse.core.interfaces.IAST} of
-	 * {@link org.matheclipse.core.interfaces.IInteger}s from an array of
-	 * <code>short</code>s.
+	 * Returns a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.IInteger}s from
+	 * an array of <code>short</code>s.
 	 * 
 	 * @param p_shorts
-	 *          the array of <code>short</code> values to be converted to a
-	 *          {@link org.matheclipse.core.interfaces.IAST}.
+	 *            the array of <code>short</code> values to be converted to a
+	 *            {@link org.matheclipse.core.interfaces.IAST}.
 	 * 
-	 * @return a {@link org.matheclipse.core.interfaces.IAST} of
-	 *         {@link org.matheclipse.core.interfaces.IInteger} objects.
+	 * @return a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.IInteger}
+	 *         objects.
 	 */
 	public static IAST asList(short... p_shorts) {
-		IAST ast = F.ast(F.List);
+		IASTMutable ast = F.ListAlloc(p_shorts.length);
 		if (p_shorts != null) {
 			for (int i = 0, t = p_shorts.length; i < t; i++) {
 				ast.append(F.integer(p_shorts[i]));
@@ -160,19 +150,18 @@ public class Lists {
 	}
 
 	/**
-	 * Returns a {@link org.matheclipse.core.interfaces.IAST} of
-	 * {@link org.matheclipse.core.interfaces.IInteger}s from an array of
-	 * <code>int</code>s.
+	 * Returns a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.IInteger}s from
+	 * an array of <code>int</code>s.
 	 * 
 	 * @param p_ints
-	 *          the array of <code>int</code> values to be converted to a
-	 *          {@link org.matheclipse.core.interfaces.IAST}.
+	 *            the array of <code>int</code> values to be converted to a
+	 *            {@link org.matheclipse.core.interfaces.IAST}.
 	 * 
-	 * @return a {@link org.matheclipse.core.interfaces.IAST} of
-	 *         {@link org.matheclipse.core.interfaces.IInteger} objects.
+	 * @return a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.IInteger}
+	 *         objects.
 	 */
 	public static IAST asList(int... p_ints) {
-		IAST ast = F.ast(F.List);
+		IASTMutable ast = F.ListAlloc(p_ints.length);
 		if (p_ints != null) {
 			for (int i = 0, t = p_ints.length; i < t; i++) {
 				ast.append(F.integer(p_ints[i]));
@@ -182,19 +171,18 @@ public class Lists {
 	}
 
 	/**
-	 * Returns a {@link org.matheclipse.core.interfaces.IAST} of
-	 * {@link org.matheclipse.core.interfaces.IInteger}s from an array of
-	 * <code>long</code>s.
+	 * Returns a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.IInteger}s from
+	 * an array of <code>long</code>s.
 	 * 
 	 * @param p_longs
-	 *          the array of <code>long</code> values to be converted to a
-	 *          {@link org.matheclipse.core.interfaces.IAST}.
+	 *            the array of <code>long</code> values to be converted to a
+	 *            {@link org.matheclipse.core.interfaces.IAST}.
 	 * 
-	 * @return a {@link org.matheclipse.core.interfaces.IAST} of
-	 *         {@link org.matheclipse.core.interfaces.IInteger} objects.
+	 * @return a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.IInteger}
+	 *         objects.
 	 */
 	public static IAST asList(long... p_longs) {
-		IAST ast = F.ast(F.List);
+		IASTMutable ast = F.ListAlloc(p_longs.length);
 		if (p_longs != null) {
 			for (int i = 0, t = p_longs.length; i < t; i++) {
 				ast.append(F.integer(p_longs[i]));
@@ -204,19 +192,17 @@ public class Lists {
 	}
 
 	/**
-	 * Returns a {@link org.matheclipse.core.interfaces.IAST} of
-	 * {@link org.matheclipse.core.interfaces.IExpr}s from an array of
-	 * <code>Object</code>s.
+	 * Returns a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.IExpr}s from an
+	 * array of <code>Object</code>s.
 	 * 
 	 * @param p_objects
-	 *          the array of <code>Object</code> values to be converted to a
-	 *          {@link org.matheclipse.core.interfaces.IAST}.
+	 *            the array of <code>Object</code> values to be converted to a
+	 *            {@link org.matheclipse.core.interfaces.IAST}.
 	 * 
-	 * @return a {@link org.matheclipse.core.interfaces.IAST} of
-	 *         {@link org.matheclipse.core.interfaces.IExpr} objects.
+	 * @return a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.IExpr} objects.
 	 */
 	public static IAST asList(Object... p_objects) {
-		IAST ast = F.ast(F.List);
+		IASTMutable ast = F.ListAlloc(p_objects.length);
 		if (p_objects != null) {
 			for (int i = 0, t = p_objects.length; i < t; i++) {
 				ast.append(Object2Expr.convert(p_objects[i]));

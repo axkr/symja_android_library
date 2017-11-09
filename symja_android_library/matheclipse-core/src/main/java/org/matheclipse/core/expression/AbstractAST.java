@@ -510,13 +510,13 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST copyUntil(int index) {
+	public final IASTMutable copyUntil(int index) {
 		return AST.newInstance(index, this, index);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST copyUntil(final int intialCapacity, int index) {
+	public final IASTMutable copyUntil(final int intialCapacity, int index) {
 		return AST.newInstance(intialCapacity, this, index);
 	}
 
@@ -629,8 +629,8 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST[] filter(final Function<IExpr, IExpr> function) {
-		IAST[] result = new IAST[2];
+	public final IASTMutable[] filter(final Function<IExpr, IExpr> function) {
+		IASTMutable[] result = new IASTMutable[2];
 		result[0] = copyHead();
 		result[1] = copyHead();
 		filterFunction(result[0], result[1], function);
@@ -2506,7 +2506,7 @@ public abstract class AbstractAST implements IASTMutable {
 			temp = function.apply(get(i));
 			if (temp.isPresent()) {
 				// something was evaluated - return a new IAST:
-				result = (IASTMutable)copy();
+				result = (IASTMutable) copy();
 				result.set(i++, temp);
 				break;
 			}
@@ -2576,7 +2576,7 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST mapThread(IASTMutable appendAST, final IAST replacement, int position) {
+	public IASTMutable mapThread(IASTMutable appendAST, final IAST replacement, int position) {
 		EvalEngine engine = EvalEngine.get();
 		final Function<IExpr, IExpr> function = x -> engine.evaluate(replacement.setAtCopy(position, x));
 
@@ -2592,10 +2592,10 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST mapThread(final IAST replacement, int position) {
+	public final IASTMutable mapThread(final IAST replacement, int position) {
 		EvalEngine engine = EvalEngine.get();
 		final Function<IExpr, IExpr> function = x -> engine.evaluate(replacement.setAtCopy(position, x));
-		return map(function, 1);
+		return (IASTMutable) map(function, 1);
 	}
 
 	/**

@@ -290,7 +290,7 @@ public class Algebra {
 				// A0 + sum( sum ( Aij/di^j ) ) with deg(Aij) < deg(di).
 
 				if (Ai.size() > 0) {
-					IAST result = F.Plus();
+					IASTMutable result = F.PlusAlloc(Ai.size()+2);
 					IExpr temp;
 					if (!Ai.get(0).get(0).isZERO()) {
 						temp = F.eval(jas.integerPoly2Expr(Ai.get(0).get(0)));
@@ -461,7 +461,7 @@ public class Algebra {
 		 */
 		private static IExpr[] cancelPlusIntegerGCD(IAST numeratorPlus, IInteger denominatorInt) {
 			IASTMutable plus = numeratorPlus.clone();
-			IAST gcd = F.ast(F.GCD, plus.size() + 1, false);
+			IASTMutable gcd = F.ast(F.GCD, plus.size() + 1, false);
 			gcd.append(denominatorInt);
 			boolean evaled = true;
 			for (int i = 1; i < plus.size(); i++) {
@@ -624,7 +624,7 @@ public class Algebra {
 		private IExpr collectSingleVariable(IExpr expr, IExpr x, final IAST listOfVariables, final int listPosition,
 				IExpr head, EvalEngine engine) {
 			if (expr.isAST()) {
-				Map<IExpr, IAST> map = new HashMap<IExpr, IAST>();
+				Map<IExpr, IASTMutable> map = new HashMap<IExpr, IASTMutable>();
 				IAST poly = (IAST) expr;
 				IASTMutable rest = F.PlusAlloc(poly.size());
 
@@ -632,12 +632,12 @@ public class Algebra {
 				collectToMap(poly, matcher, map, rest);
 				if (listOfVariables != null && listPosition < listOfVariables.size()) {
 					// collect next pattern in sub-expressions
-					IAST result = F.PlusAlloc(map.size() + 1);
+					IASTMutable result = F.PlusAlloc(map.size() + 1);
 					if (rest.size() > 1) {
 						result.append(collectSingleVariable(rest, listOfVariables.get(listPosition), listOfVariables,
 								listPosition + 1, head, engine));
 					}
-					for (Entry<IExpr, IAST> entry : map.entrySet()) {
+					for (Entry<IExpr, IASTMutable> entry : map.entrySet()) {
 						IExpr temp = collectSingleVariable(entry.getValue().getOneIdentity(F.C0),
 								listOfVariables.get(listPosition), listOfVariables, listPosition + 1, head, engine);
 						result.append(F.Times(entry.getKey(), temp));
@@ -653,7 +653,7 @@ public class Algebra {
 						coefficient = engine.evaluate(simplifyAST);
 						rest.set(i, coefficient);
 					}
-					for (Map.Entry<IExpr, IAST> entry : map.entrySet()) {
+					for (Map.Entry<IExpr, IASTMutable> entry : map.entrySet()) {
 						simplifyAST.set(1, entry.getValue());
 						coefficient = engine.evaluate(simplifyAST);
 						if (coefficient.isPlus()) {
@@ -666,7 +666,7 @@ public class Algebra {
 					IAST coefficient;
 					for (IExpr key : map.keySet()) {
 						coefficient = map.get(key);
-						IAST times = F.TimesAlloc(2);
+						IASTMutable times = F.TimesAlloc(2);
 						times.append(key);
 						times.appendOneIdentity(coefficient);
 						rest.append(times);
@@ -677,7 +677,7 @@ public class Algebra {
 			return expr;
 		}
 
-		public void collectToMap(IExpr expr, IPatternMatcher matcher, Map<IExpr, IAST> map, IAST rest) {
+		public void collectToMap(IExpr expr, IPatternMatcher matcher, Map<IExpr, IASTMutable> map, IASTMutable rest) {
 			if (expr.isFree(matcher, false)) {
 				rest.append(expr);
 				return;
@@ -719,7 +719,7 @@ public class Algebra {
 			return;
 		}
 
-		public boolean collectToMapPlus(IExpr expr, IPatternMatcher matcher, Map<IExpr, IAST> map) {
+		public boolean collectToMapPlus(IExpr expr, IPatternMatcher matcher, Map<IExpr, IASTMutable> map) {
 			if (expr.isFree(matcher, false)) {
 				return false;
 			} else if (matcher.test(expr)) {
@@ -742,19 +742,19 @@ public class Algebra {
 			return false;
 		}
 
-		public void addOneIdentityPowerFactor(IExpr key, IAST subAST, Map<IExpr, IAST> map) {
-			IAST resultList = map.get(key);
+		public void addOneIdentityPowerFactor(IExpr key, IAST subAST, Map<IExpr, IASTMutable> map) {
+			IASTMutable resultList = map.get(key);
 			if (resultList == null) {
-				resultList = F.Plus();
+				resultList = F.PlusAlloc(8);
 				map.put(key, resultList);
 			}
 			resultList.appendOneIdentity(subAST);
 		}
 
-		public void addPowerFactor(IExpr key, IExpr value, Map<IExpr, IAST> map) {
-			IAST resultList = map.get(key);
+		public void addPowerFactor(IExpr key, IExpr value, Map<IExpr, IASTMutable> map) {
+			IASTMutable resultList = map.get(key);
 			if (resultList == null) {
-				resultList = F.Plus();
+				resultList = F.PlusAlloc(8);
 				map.put(key, resultList);
 			}
 			resultList.append(value);
@@ -1051,7 +1051,7 @@ public class Algebra {
 			 * @return <code>F.NIL</code> if no evaluation is possible
 			 */
 			public IExpr expandPlus(final IAST ast) {
-				IAST result = F.NIL;
+				IASTMutable result = F.NIL;
 				for (int i = 1; i < ast.size(); i++) {
 					final IExpr arg = ast.get(i);
 					if (arg.isAST()) {
@@ -1147,7 +1147,7 @@ public class Algebra {
 				if (numberOfTerms > Integer.MAX_VALUE) {
 					throw new ArithmeticException("");
 				}
-				final IAST expandedResult = F.ast(F.Plus, (int) numberOfTerms, false);
+				final IASTMutable expandedResult = F.ast(F.Plus, (int) numberOfTerms, false);
 				Expand.NumberPartititon part = new Expand.NumberPartititon(plusAST, n, expandedResult);
 				part.partition();
 				return PlusOp.plus(expandedResult);
@@ -1259,23 +1259,22 @@ public class Algebra {
 		}
 
 		private static class NumberPartititon {
-			IAST expandedResult;
+			IASTMutable expandedResult;
 			int m;
 			int n;
 			int[] parts;
 			IAST precalculatedPowerASTs;
 
-			public NumberPartititon(IAST plusAST, int n, IAST expandedResult) {
+			public NumberPartititon(IAST plusAST, int n, IASTMutable expandedResult) {
 
 				this.expandedResult = expandedResult;
 				this.n = n;
 				this.m = plusAST.size() - 1;
 				this.parts = new int[m];
 				// precalculate all Power[] ASTs:
-				this.precalculatedPowerASTs = F.ListAlloc(plusAST.size());
-				for (IExpr expr : plusAST) {
-					precalculatedPowerASTs.append(expr);
-				}
+				IASTMutable temp=F.ListAlloc(plusAST.size());
+				temp.appendArgs(plusAST);
+				this.precalculatedPowerASTs = temp;
 			}
 
 			private void addFactor(int[] j) {
@@ -1284,7 +1283,7 @@ public class Algebra {
 				final IAST times = F.Times();
 				IExpr temp;
 				for (int[] indices : perm) {
-					final IAST timesAST = times.clone();
+					final IASTMutable timesAST = times.clone();
 					if (!multinomial.isOne()) {
 						timesAST.append(multinomial);
 					}
@@ -1506,7 +1505,7 @@ public class Algebra {
 			} else {
 				map = factorAbstract.factors(poly);
 			}
-			IAST result = F.Times();
+			IASTMutable result = F.TimesAlloc(map.size()+1);
 			java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
 			java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
 			if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
@@ -1541,7 +1540,7 @@ public class Algebra {
 			} else {
 				map = factorAbstract.factors(poly);
 			}
-			IAST result = F.ListAlloc(map.size() + 1);
+			IASTMutable result = F.ListAlloc(map.size() + 1);
 			if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
 				result.append(F.List(F.fraction(gcd, lcm), F.C1));
 			}
@@ -1743,7 +1742,7 @@ public class Algebra {
 					return expr;
 				}
 				GenPolynomial<edu.jas.arith.BigInteger> iPoly = (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
-				IAST result = F.Times();
+				IASTMutable result = F.TimesAlloc(2);
 				result.append(F.fraction(gcd, lcm));
 				result.append(jas.integerPoly2Expr(iPoly));
 				return result;
@@ -1934,9 +1933,9 @@ public class Algebra {
 						GenPolynomial<ModLong> poly1 = jas.expr2JAS(expr1);
 						GenPolynomial<ModLong> poly2 = jas.expr2JAS(expr2);
 						GenPolynomial<ModLong>[] result = poly1.egcd(poly2);
-						IAST list = F.List();
+						IASTMutable list = F.ListAlloc(2);
 						list.append(jas.modLongPoly2Expr(result[0]));
-						IAST subList = F.List();
+						IASTMutable subList = F.ListAlloc(2);
 						subList.append(jas.modLongPoly2Expr(result[1]));
 						subList.append(jas.modLongPoly2Expr(result[2]));
 						list.append(subList);
@@ -1955,9 +1954,9 @@ public class Algebra {
 				GenPolynomial<BigRational> poly1 = jas.expr2JAS(expr1, false);
 				GenPolynomial<BigRational> poly2 = jas.expr2JAS(expr2, false);
 				GenPolynomial<BigRational>[] result = poly1.egcd(poly2);
-				IAST list = F.List();
+				IASTMutable list = F.ListAlloc(2);
 				list.append(jas.rationalPoly2Expr(result[0]));
-				IAST subList = F.List();
+				IASTMutable subList = F.ListAlloc(2);
 				subList.append(jas.rationalPoly2Expr(result[1]));
 				subList.append(jas.rationalPoly2Expr(result[2]));
 				list.append(subList);
@@ -1968,9 +1967,9 @@ public class Algebra {
 					GenPolynomial<IExpr> poly1 = jas.expr2IExprJAS(expr1);
 					GenPolynomial<IExpr> poly2 = jas.expr2IExprJAS(expr2);
 					GenPolynomial<IExpr>[] result = poly1.egcd(poly2);
-					IAST list = F.List();
+					IASTMutable list = F.ListAlloc(2);
 					list.append(jas.exprPoly2Expr(result[0], x));
-					IAST subList = F.List();
+					IASTMutable subList = F.ListAlloc(2);
 					subList.append(engine.evaluate(F.Together(jas.exprPoly2Expr(result[1], x))));
 					subList.append(engine.evaluate(F.Together(jas.exprPoly2Expr(result[2], x))));
 					list.append(subList);
@@ -2622,9 +2621,10 @@ public class Algebra {
 					if (x1.isTimes()) {
 						// Power[x_ * y_, z_] :> x^z * y^z
 						IAST timesAST = (IAST) x1;
-						IAST timesResult = timesAST.mapThread(Power(Null, x2), 1);
+						IASTMutable timesResult = timesAST.mapThread(Power(Null, x2), 1);
 						if (assumptions) {
-							IAST plusResult = Plus(C1D2);
+							IASTMutable plusResult = F.PlusAlloc(timesAST.size()+1);
+							plusResult.append(C1D2);
 							for (int i = 1; i < timesAST.size(); i++) {
 								plusResult.append(Negate(Divide(Arg(timesAST.get(i)), Times(C2, Pi))));
 							}
@@ -3190,8 +3190,8 @@ public class Algebra {
 				}
 
 				if (ast.isPlus()) {
-					IAST basicPlus = F.Plus();
-					IAST restPlus = F.Plus();
+					IASTMutable  basicPlus = F.PlusAlloc(ast.size());
+					IASTMutable  restPlus = F.PlusAlloc(ast.size());
 
 					for (int i = 1; i < ast.size(); i++) {
 						temp = ast.get(i);
@@ -3218,8 +3218,8 @@ public class Algebra {
 					return result;
 
 				} else if (ast.isTimes()) {
-					IAST basicTimes = F.Times();
-					IAST restTimes = F.Times();
+					IASTMutable basicTimes = F.TimesAlloc(ast.size());
+					IASTMutable restTimes = F.TimesAlloc(ast.size());
 					INumber number = null;
 					if (ast.arg1().isNumber()) {
 						number = (INumber) ast.arg1();
@@ -3511,9 +3511,8 @@ public class Algebra {
 			if (!evaled) {
 				return F.NIL;
 			}
-			IAST ni;
 			for (int i = 1; i < plusAST.size(); i++) {
-				ni = F.TimesAlloc(plusAST.size() - 1);
+				IASTMutable ni = F.TimesAlloc(plusAST.size() - 1);
 				ni.append(numerator.get(i));
 				for (int j = 1; j < plusAST.size(); j++) {
 					if (i == j) {
@@ -3900,7 +3899,7 @@ public class Algebra {
 		FactorComplex<BigRational> factorAbstract = new FactorComplex<BigRational>(cfac);
 		SortedMap<GenPolynomial<Complex<BigRational>>, Long> map = factorAbstract.factors(a);
 
-		IAST result = F.ast(head);
+		IASTMutable result = F.ast(head);
 		if (!noGCDLCM) {
 			if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
 				result.append(F.fraction(gcd, lcm));
@@ -3944,7 +3943,7 @@ public class Algebra {
 		} else {
 			map = factorAbstract.factors(poly);
 		}
-		IAST result = F.Times();
+		IASTMutable result = F.TimesAlloc(map.size());
 		for (SortedMap.Entry<GenPolynomial<ModLong>, Long> entry : map.entrySet()) {
 			GenPolynomial<ModLong> singleFactor = entry.getKey();
 			Long val = entry.getValue();
@@ -3961,7 +3960,7 @@ public class Algebra {
 				.getImplementation(edu.jas.arith.BigInteger.ONE);
 		SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
 		map = factorAbstract.factors(poly);
-		IAST result = F.ast(head);
+		IASTMutable result = F.ast(head);
 		java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
 		java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
 		if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
@@ -4037,8 +4036,8 @@ public class Algebra {
 		IAST timesAST = timesPower;
 		IExpr[] result = new IExpr[3];
 		result[2] = null;
-		IAST numerator = F.TimesAlloc(timesAST.size());
-		IAST denominator = F.TimesAlloc(timesAST.size());
+		IASTMutable numerator = F.TimesAlloc(timesAST.size());
+		IASTMutable denominator = F.TimesAlloc(timesAST.size());
 
 		IExpr arg;
 		IAST argAST;

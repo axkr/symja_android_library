@@ -4,6 +4,20 @@ import org.matheclipse.core.expression.F;
 
 public interface IASTMutable extends IAST {
 
+	/**
+	 * Adds the specified expression at the end of this {@code List}.
+	 * 
+	 * @param expr
+	 *            the object to add.
+	 * @return always true.
+	 * @throws UnsupportedOperationException
+	 *             if adding to this {@code List} is not supported.
+	 * @throws ClassCastException
+	 *             if the class of the object is inappropriate for this {@code List}.
+	 * @throws IllegalArgumentException
+	 *             if the object cannot be added to this {@code List}.
+	 */
+	public boolean append(IExpr expr);
 
 	/**
 	 * Appends all of the arguments (starting from offset <code>1</code>) in the specified AST to the end of this AST.

@@ -103,7 +103,7 @@ public final class BooleanFunctions {
 		 * @return
 		 */
 		public IExpr allTrue(IAST list, IExpr head, EvalEngine engine) {
-			IAST logicalAnd = F.And();
+			IASTMutable logicalAnd = (IASTMutable)F.And();
 
 			if (!Lambda.forAll(list, x -> {
 				IExpr temp = engine.evaluate(F.unary(head, x));
@@ -260,14 +260,14 @@ public final class BooleanFunctions {
 		 * @return
 		 */
 		public IExpr anyTrue(IAST list, IExpr head, EvalEngine engine) {
-			IAST logicalOr = F.Or();
+			IASTMutable logicalOr = (IASTMutable)F.Or();
 			if (list.exists(x -> anyTrueArgument(x, head, logicalOr, engine), 1)) {
 				return F.True;
 			}
 			return logicalOr.isAST0() ? F.False : logicalOr;
 		}
 
-		private static boolean anyTrueArgument(IExpr x, IExpr head, IAST resultCollector, EvalEngine engine) {
+		private static boolean anyTrueArgument(IExpr x, IExpr head, IASTMutable resultCollector, EvalEngine engine) {
 			IExpr temp = engine.evaluate(F.unary(head, x));
 			if (temp.isTrue()) {
 				return true;
@@ -428,7 +428,7 @@ public final class BooleanFunctions {
 
 		private static class BooleanTableParameter {
 			public IAST variables;
-			public IAST resultList;
+			public IASTMutable resultList;
 			public EvalEngine engine;
 
 			public BooleanTableParameter(IAST variables, EvalEngine engine) {
@@ -710,7 +710,7 @@ public final class BooleanFunctions {
 			if (ast.isAST0() || ast.isAST1()) {
 				return F.True;
 			}
-			IAST result = ast.copyHead();
+			IASTMutable result = ast.copyHead();
 			IExpr last = F.NIL;
 			IExpr boole = F.NIL;
 			boolean evaled = false;
@@ -1371,7 +1371,7 @@ public final class BooleanFunctions {
 		private IExpr maximum(IAST list, boolean flattenedList) {
 			boolean evaled = false;
 			int j = 1;
-			IAST f = Lambda.remove(list, x -> x.isNegativeInfinity());
+			IASTMutable f = Lambda.remove(list, x -> x.isNegativeInfinity());
 			if (f.isPresent()) {
 				if (f.isAST0()) {
 					return F.CNInfinity;
@@ -1507,7 +1507,7 @@ public final class BooleanFunctions {
 
 		private IExpr minimum(IAST list, final boolean flattenedList) {
 			boolean evaled = false;
-			IAST f = Lambda.remove(list, x -> x.isInfinity());
+			IASTMutable f = Lambda.remove(list, x -> x.isInfinity());
 			if (f.isPresent()) {
 				if (f.isAST0()) {
 					return F.CNInfinity;
@@ -1580,7 +1580,7 @@ public final class BooleanFunctions {
 			if (ast.isAST1()) {
 				return F.Not(ast.arg1());
 			}
-			IAST result = ast.copyHead();
+			IASTMutable result = ast.copyHead();
 			boolean evaled = false;
 
 			for (int i = 1; i < ast.size(); i++) {
@@ -1666,14 +1666,14 @@ public final class BooleanFunctions {
 		 * @return
 		 */
 		public IExpr noneTrue(IAST list, IExpr head, EvalEngine engine) {
-			IAST logicalNor = F.ast(F.Nor);
+			IASTMutable logicalNor = F.ast(F.Nor);
 			if (list.exists(x -> noneTrueArgument(x, head, logicalNor, engine), 1)) {
 				return F.False;
 			}
 			return logicalNor.isAST0() ? F.True : logicalNor;
 		}
 
-		private static boolean noneTrueArgument(IExpr x, IExpr head, IAST resultCollector, EvalEngine engine) {
+		private static boolean noneTrueArgument(IExpr x, IExpr head, IASTMutable resultCollector, EvalEngine engine) {
 			IExpr temp = engine.evaluate(F.unary(head, x));
 			if (temp.isTrue()) {
 				return true;
@@ -1753,7 +1753,7 @@ public final class BooleanFunctions {
 			if (ast.isAST1()) {
 				return F.Not(ast.arg1());
 			}
-			IAST result = ast.copyHead();
+			IASTMutable result = ast.copyHead();
 			boolean evaled = false;
 
 			for (int i = 1; i < ast.size(); i++) {
@@ -2188,7 +2188,7 @@ public final class BooleanFunctions {
 			IExpr temp;
 			IExpr result = ast.arg1();
 			int size = ast.size();
-			IAST xor = F.ast(F.Xor, size - 1, false);
+			IASTMutable xor = F.ast(F.Xor, size - 1, false);
 			boolean evaled = false;
 			for (int i = 2; i < size; i++) {
 				temp = ast.get(i);

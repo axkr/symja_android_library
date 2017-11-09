@@ -6,6 +6,7 @@ import org.matheclipse.combinatoric.AbstractListStepVisitor;
 import org.matheclipse.combinatoric.NumberPartitionsIterator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher.StackMatcher;
@@ -65,7 +66,7 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 	 * @return
 	 */
 	protected boolean matchSinglePartition(int[][] result, @Nonnull StackMatcher stackMatcher) {
-		IAST partitionElement;
+		IASTMutable partitionElement;
 		// if (Config.SHOW_STACKTRACE == true) {
 		// }
 		int lastStackSize = stackMatcher.size();

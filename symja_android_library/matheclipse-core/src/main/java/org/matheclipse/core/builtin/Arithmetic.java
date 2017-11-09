@@ -230,7 +230,7 @@ public final class Arithmetic {
 			}
 
 			if (arg1.isTimes()) {
-				IAST[] result = ((IAST) arg1).filter(new AbsTimesFunction());
+				IASTMutable[] result = ((IAST) arg1).filter(new AbsTimesFunction());
 				if (result[0].size() > 1) {
 					if (result[1].size() > 1) {
 						result[0].append(F.Abs(result[1]));
@@ -497,7 +497,7 @@ public final class Arithmetic {
 				return ((IAST) arg1).mapThread((IASTMutable) F.Conjugate(F.Null), 1);
 			}
 			if (arg1.isTimes()) {
-				IAST result = F.NIL;
+				IASTMutable result = F.NIL;
 				IAST clone = ((IAST) arg1).clone();
 				int i = 1;
 				while (i < clone.size()) {
@@ -841,7 +841,7 @@ public final class Arithmetic {
 						if (n == 0) {
 							return C0;
 						}
-						IAST result = F.PlusAlloc(n);
+						IASTMutable result = F.PlusAlloc(n);
 						for (int i = 1; i <= n; i++) {
 							result.append(Power(integer(i), Negate(arg2)));
 						}
@@ -850,7 +850,7 @@ public final class Arithmetic {
 					return F.NIL;
 				}
 			}
-			if (arg1.isInteger()) {
+			if (arg1.isInteger()) { 
 
 				int n = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);
 				if (n < 0) {
@@ -1058,8 +1058,8 @@ public final class Arithmetic {
 			IExpr cond;
 			IAST row;
 			int matrixSize = matrix.size();
-			IAST result = F.ListAlloc(matrixSize);
-			IAST pw = F.ast(F.Piecewise);
+			IASTMutable result = F.ListAlloc(matrixSize);
+			IASTMutable pw = F.ast(F.Piecewise);
 			pw.append(result);
 			boolean evaluated = false;
 			boolean noBoolean = false;
@@ -2014,12 +2014,12 @@ public final class Arithmetic {
 		 * @return
 		 */
 		private IAST powerEPlus(IAST plus) {
-			IAST multiplicationFactors = F.NIL;
+			IASTMutable multiplicationFactors = F.NIL;
 			IAST plusClone = F.NIL;
 			for (int i = plus.size() - 1; i > 0; i--) {
 				if (plus.get(i).isLog()) {
 					if (!multiplicationFactors.isPresent()) {
-						multiplicationFactors = F.Times();
+						multiplicationFactors = F.TimesAlloc(8);
 						plusClone = plus.clone();
 					}
 					multiplicationFactors.append(plus.get(i).getAt(1));
@@ -2030,7 +2030,7 @@ public final class Arithmetic {
 						if (times.get(j).isLog()) {
 							IExpr innerFunc = times.get(j).getAt(1);
 							if (!multiplicationFactors.isPresent()) {
-								multiplicationFactors = F.Times();
+								multiplicationFactors = F.TimesAlloc(8);
 								plusClone = plus.clone();
 							}
 							multiplicationFactors.append(F.Power(innerFunc, F.ast(times, F.Times, false, j, j + 1)));
@@ -2774,7 +2774,7 @@ public final class Arithmetic {
 
 			if (size > 3) {
 				final ISymbol sym = astTimes.topHead();
-				IAST result = null;
+				IASTMutable result = null;
 				IExpr tres;
 				IExpr temp = astTimes.arg1();
 				boolean evaled = false;

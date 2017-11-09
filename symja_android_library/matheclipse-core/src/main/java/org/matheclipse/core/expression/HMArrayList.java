@@ -519,7 +519,7 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST mapThread(IASTMutable appendAST, final IAST replacement, int position) {
+	public final IASTMutable mapThread(IASTMutable appendAST, final IAST replacement, int position) {
 		// final Function<IExpr, IExpr> function = Functors.replaceArg(replacement,
 		// position);
 		EvalEngine engine = EvalEngine.get();

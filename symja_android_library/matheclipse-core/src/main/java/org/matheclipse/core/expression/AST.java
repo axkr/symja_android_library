@@ -146,7 +146,7 @@ public class AST extends HMArrayList implements Externalizable {
 	public static IAST parse(final String inputString) {
 		final StringTokenizer tokenizer = new StringTokenizer(inputString, "[],", true);
 		String token = tokenizer.nextToken();
-		final IAST list = newInstance(StringX.valueOf(token));
+		final IASTMutable list = newInstance(StringX.valueOf(token));
 		token = tokenizer.nextToken();
 		if ("[".equals(token)) {
 			parseList(tokenizer, list);
@@ -157,7 +157,7 @@ public class AST extends HMArrayList implements Externalizable {
 
 	}
 
-	private static void parseList(final StringTokenizer tokenizer, final IAST list) {
+	private static void parseList(final StringTokenizer tokenizer, final IASTMutable list) {
 		String token = tokenizer.nextToken();
 		do {
 			if ("]".equals(token)) {
@@ -173,7 +173,7 @@ public class AST extends HMArrayList implements Externalizable {
 				}
 				token = tokenizer.nextToken();
 				if ("[".equals(token)) {
-					IAST argList = newInstance(StringX.valueOf(arg));
+					IASTMutable argList = newInstance(StringX.valueOf(arg));
 					parseList(tokenizer, argList);
 					list.append(argList);
 				} else {

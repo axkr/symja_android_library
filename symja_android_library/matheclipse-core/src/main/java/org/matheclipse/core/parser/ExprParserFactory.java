@@ -24,6 +24,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 
@@ -39,9 +40,9 @@ public class ExprParserFactory implements IExprParserFactory {
 		}
 
 		@Override
-		public IExpr createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs,
+		public IASTMutable createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs,
 				final IExpr rhs) {
-			IAST fn = F.ast(F.Apply);
+			IASTMutable fn = F.ast(F.Apply);
 			fn.append(lhs);
 			fn.append(rhs);
 			if (fOperatorString.equals("@@")) {
@@ -60,25 +61,25 @@ public class ExprParserFactory implements IExprParserFactory {
 		}
 
 		@Override
-		public IExpr createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs,
+		public IASTMutable createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs,
 				final IExpr rhs) {
 
 			if (rhs.isInteger() && !rhs.isZero()) {
 				if (lhs.isInteger()) {
 					if (!parser.isHoldOrHoldFormOrDefer()) {
-						return F.fraction((IInteger) lhs, (IInteger) rhs);
+						return (IASTMutable) F.Rational((IInteger) lhs, (IInteger) rhs);
 					}
 				}
-				return F.Times(F.fraction(F.C1, (IInteger) rhs), lhs);
+				return (IASTMutable) F.Times(F.fraction(F.C1, (IInteger) rhs), lhs);
 			}
 
 			if (lhs.equals(F.C1)) {
-				return F.Power(rhs, F.CN1);
+				return (IASTMutable) F.Power(rhs, F.CN1);
 			}
 			if (rhs.isPower() && ((IAST) rhs).arg2().isNumber()) {
-				return F.Times(lhs, F.Power(((IAST) rhs).arg1(), ((IAST) rhs).arg2().negate()));
+				return (IASTMutable) F.Times(lhs, F.Power(((IAST) rhs).arg1(), ((IAST) rhs).arg2().negate()));
 			}
-			return F.Times(lhs, F.Power(rhs, F.CN1));
+			return (IASTMutable) F.Times(lhs, F.Power(rhs, F.CN1));
 		}
 	}
 
@@ -113,15 +114,15 @@ public class ExprParserFactory implements IExprParserFactory {
 		}
 
 		@Override
-		public IExpr createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs,
+		public IASTMutable createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs,
 				final IExpr rhs) {
 			if (rhs.isNumber()) {
-				return F.Plus(lhs, rhs.negate());
+				return (IASTMutable) F.Plus(lhs, rhs.negate());
 			}
 			if (rhs.isTimes() && ((IAST) rhs).arg1().isNumber()) {
-				return F.Plus(lhs, ((IAST) rhs).setAtClone(1, ((IAST) rhs).arg1().negate()));
+				return (IASTMutable) F.Plus(lhs, ((IAST) rhs).setAtClone(1, ((IAST) rhs).arg1().negate()));
 			}
-			return F.Plus(lhs, F.Times(F.CN1, rhs));
+			return (IASTMutable) F.Plus(lhs, F.Times(F.CN1, rhs));
 		}
 	}
 

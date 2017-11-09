@@ -1597,6 +1597,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDivide() {
+		check("1/2/3/5", "1/30");
 		check("30 / 5", "6");
 		check("1 / 8", "1/8");
 		check("Pi / 4", "Pi/4");

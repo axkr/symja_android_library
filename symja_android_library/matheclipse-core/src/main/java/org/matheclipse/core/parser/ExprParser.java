@@ -352,7 +352,7 @@ public class ExprParser extends ExprScanner {
 	 * construct the arguments for an expression
 	 * 
 	 */
-	private void getArguments(final IAST function) throws SyntaxError {
+	private void getArguments(final IASTMutable function) throws SyntaxError {
 		do {
 			function.append(parseExpression());
 
@@ -547,7 +547,7 @@ public class ExprParser extends ExprScanner {
 			return getString();
 		} else if (fToken == TT_PERCENT) {
 
-			final IAST out = F.ast(F.Out);
+			final IASTMutable out = F.ast(F.Out);
 
 			int countPercent = 1;
 			getNextToken();
@@ -568,8 +568,14 @@ public class ExprParser extends ExprScanner {
 
 			getNextToken();
 			if (fToken == TT_DIGIT) {
-				final IAST slot = F.ast(F.Slot);
-				slot.append(getNumber(false));
+				IExpr slotNumber = getNumber(false);
+				if (slotNumber.equals(F.C1)) {
+					return parseArguments(F.Slot1);
+				} else if (slotNumber.equals(F.C2)) {
+					return parseArguments(F.Slot2);
+				}
+				final IASTMutable slot = F.ast(F.Slot);
+				slot.append(slotNumber);
 				return parseArguments(slot);
 			} else {
 				return parseArguments(F.Slot1);
@@ -578,7 +584,7 @@ public class ExprParser extends ExprScanner {
 		} else if (fToken == TT_SLOTSEQUENCE) {
 
 			getNextToken();
-			final IAST slotSequencce = F.ast(F.SlotSequence);
+			final IASTMutable slotSequencce = F.ast(F.SlotSequence);
 			if (fToken == TT_DIGIT) {
 				slotSequencce.append(getNumber(false));
 			} else {
@@ -686,7 +692,7 @@ public class ExprParser extends ExprScanner {
 	 */
 	IASTMutable getFunctionArguments(final IExpr head) throws SyntaxError {
 
-		final IASTMutable function = (IASTMutable)F.ast(head);
+		final IASTMutable function = (IASTMutable) F.ast(head);
 		fRecursionDepth++;
 		try {
 			getNextToken();
@@ -735,16 +741,14 @@ public class ExprParser extends ExprScanner {
 	 * 
 	 */
 	private IExpr getList() throws SyntaxError {
-		final IAST function = F.ListAlloc(10); // fFactory.createFunction(fFactory.createSymbol(IConstantOperators.List));
-
 		getNextToken();
 
 		if (fToken == TT_LIST_CLOSE) {
 			getNextToken();
-
-			return function;
+			return F.List();
 		}
 
+		final IASTMutable function = F.ListAlloc(10); // fFactory.createFunction(fFactory.createSymbol(IConstantOperators.List));
 		fRecursionDepth++;
 		try {
 			getArguments(function);
@@ -829,7 +833,7 @@ public class ExprParser extends ExprScanner {
 			return temp;
 		}
 
-		IAST function = null;
+		IASTMutable function = null;
 		do {
 			if (function == null) {
 				function = F.Part(temp);
@@ -915,7 +919,7 @@ public class ExprParser extends ExprScanner {
 
 	private IExpr getTimes(IExpr temp) throws SyntaxError {
 		// FunctionNode func = fFactory.createAST(new SymbolNode("Times"));
-		IAST func = F.Times();
+		IASTMutable func = F.TimesAlloc(8);
 		func.append(temp);
 		do {
 			getNextToken();
@@ -1083,7 +1087,7 @@ public class ExprParser extends ExprScanner {
 							if (infixOperator.getOperatorString().equals(";")) {
 								if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
 										|| fToken == TT_PRECEDENCE_CLOSE) {
-									((IAST) lhs).append(F.Null);
+									((IASTMutable) lhs).append(F.Null);
 									break;
 								}
 							}
@@ -1091,7 +1095,7 @@ public class ExprParser extends ExprScanner {
 								getNextToken();
 							}
 							rhs = parseLookaheadOperator(infixOperator.getPrecedence());
-							((IAST) lhs).append(rhs);
+							((IASTMutable) lhs).append(rhs);
 						}
 
 						continue;
@@ -1235,7 +1239,7 @@ public class ExprParser extends ExprScanner {
 	private IExpr parsePrimary() {
 		if (fToken == TT_OPERATOR) {
 			if (";;".equals(fOperatorString)) {
-				IAST span = F.ast(F.Span);
+				IASTMutable span = F.ast(F.Span);
 				span.append(F.C1);
 				getNextToken();
 				if (fToken == TT_COMMA || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_PRECEDENCE_CLOSE) {
@@ -1284,7 +1288,7 @@ public class ExprParser extends ExprScanner {
 	private IExpr rewriteLessGreaterAST(final IASTMutable ast, ISymbol compareHead) {
 		IExpr temp;
 		boolean evaled = false;
-		IAST andAST = F.ast(F.And);
+		IASTMutable andAST = F.ast(F.And);
 		for (int i = 1; i < ast.size(); i++) {
 			temp = ast.get(i);
 			if (temp.isASTSizeGE(compareHead, 3)) {
