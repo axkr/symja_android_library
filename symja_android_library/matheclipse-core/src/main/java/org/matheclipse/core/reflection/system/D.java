@@ -182,12 +182,6 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 	private IExpr getDerivativeArg1(IExpr x, final IExpr a1, final IExpr head, EvalEngine engine) {
 		if (head.isSymbol()) {
 			ISymbol header = (ISymbol) head;
-			// IExpr der = Derivative.derivative(1, header, engine);
-			// if (der.isPresent()) {
-			// // we've found a derivative for a function of the form f[x_]
-			// IExpr derivative = F.eval(F.unaryAST1(der, a1));
-			// return F.Times(F.D(a1, x), derivative);
-			// }
 			IAST fDerivParam = Derivative.createDerivative(1, header, a1);
 			if (x.equals(a1)) {
 				// return F.NIL;
@@ -263,9 +257,10 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 		IASTAppendable derivativeHead2 = F.ast(derivativeHead1);
 		derivativeHead2.append(header);
 		IASTAppendable derivativeAST = F.ast(derivativeHead2, args.size(), false);
-		for (int i = 1; i < args.size(); i++) {
-			derivativeAST.append(args.get(i));
-		}
+		derivativeAST.appendArgs(  args.size(), i -> args.get(i));
+		// for (int i = 1; i < args.size(); i++) {
+		// derivativeAST.append(args.get(i));
+		// }
 		return derivativeAST;
 	}
 
@@ -275,7 +270,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 			return F.NIL;
 		}
 
-		IExpr fx = ast.arg1();
+		final IExpr fx = ast.arg1();
 		if (fx.isIndeterminate()) {
 			return F.Indeterminate;
 		}
@@ -297,9 +292,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 			if (xList.isAST1() && xList.arg1().isListOfLists()) {
 				IAST subList = (IAST) xList.arg1();
 				IASTAppendable result = F.ListAlloc(subList.size());
-				for (int i = 1; i < subList.size(); i++) {
-					result.append(F.D(fx, F.List(subList.get(i))));
-				}
+				result.appendArgs( subList.size(), i -> F.D(fx, F.List(subList.get(i))));
 				return result;
 			} else if (xList.isAST1() && xList.arg1().isList()) {
 				IAST subList = (IAST) xList.arg1();
@@ -315,10 +308,11 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 					} else {
 						x = xList.arg1();
 					}
+					IExpr temp = fx;
 					for (int i = 0; i < n; i++) {
-						fx = engine.evaluate(F.D(fx, x));
+						temp = engine.evaluate(F.D(temp, x));
 					}
-					return fx;
+					return temp;
 				}
 			}
 			return F.NIL;
