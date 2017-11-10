@@ -9,7 +9,6 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -57,8 +56,9 @@ public class RootIntervals extends AbstractFunctionEvaluator {
 				return F.NIL;
 			}
 			IExpr expr = F.evalExpandAll(arg);
-			ASTRange r = new ASTRange(eVar.getVarList(), 1);
-			List<IExpr> varList = r;
+			// ASTRange r = new ASTRange(eVar.getVarList(), 1);
+			// List<IExpr> varList = r;
+			List<IExpr> varList = eVar.getVarList().copyTo();
 
 			ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(new BigRational(1));
 			ComplexRootsAbstract<BigRational> cr = new ComplexRootsSturm<BigRational>(cfac);

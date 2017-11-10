@@ -37,7 +37,6 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.Options;
-import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
@@ -2725,8 +2724,9 @@ public final class NumberTheory {
 			}
 			try {
 				IExpr expr = F.evalExpandAll(ast.arg1(), engine);
-				ASTRange r = new ASTRange(eVar.getVarList(), 1);
-				List<IExpr> varList = r;
+				// ASTRange r = new ASTRange(eVar.getVarList(), 1);
+				// List<IExpr> varList = r;
+				List<IExpr> varList = eVar.getVarList().copyTo();
 
 				if (ast.isAST2()) {
 					return F.bool(isSquarefreeWithOption(ast, expr, varList, engine));

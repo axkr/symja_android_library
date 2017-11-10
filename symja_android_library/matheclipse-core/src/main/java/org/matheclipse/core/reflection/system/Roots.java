@@ -21,7 +21,6 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -178,8 +177,9 @@ public class Roots extends AbstractFunctionEvaluator {
 	protected static IAST rootsOfVariable(final IExpr expr, final IExpr denominator, final IAST variables,
 			boolean numericSolutions, EvalEngine engine) {
 		IASTAppendable result = F.NIL;
-		ASTRange r = new ASTRange(variables, 1);
-		List<IExpr> varList = r;
+		// ASTRange r = new ASTRange(variables, 1);
+		// List<IExpr> varList = r;
+		List<IExpr> varList = variables.copyTo();
 		try {
 			IExpr temp;
 			IAST list = rootsOfQuadraticExprPolynomial(expr, variables);

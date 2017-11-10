@@ -84,10 +84,10 @@ public class NILPointer extends AbstractAST implements IASTAppendable {
 		throw new UnsupportedOperationException();
 	}
 
-//	@Override
-//	public ASTRange args() {
-//		throw new UnsupportedOperationException();
-//	}
+	// @Override
+	// public ASTRange args() {
+	// throw new UnsupportedOperationException();
+	// }
 
 	@Override
 	public IExpr arg1() {
@@ -253,17 +253,17 @@ public class NILPointer extends AbstractAST implements IASTAppendable {
 		throw exceptionSupplier.get();
 	}
 
-	public ASTRange range() {
-		throw new UnsupportedOperationException();
-	}
-
-	public ASTRange range(int start) {
-		throw new UnsupportedOperationException();
-	}
-
-	public ASTRange range(int start, int end) {
-		throw new UnsupportedOperationException();
-	}
+	// public ASTRange range() {
+	// throw new UnsupportedOperationException();
+	// }
+	//
+	// public ASTRange range(int start) {
+	// throw new UnsupportedOperationException();
+	// }
+	//
+	// public ASTRange range(int start, int end) {
+	// throw new UnsupportedOperationException();
+	// }
 
 	private Object readResolve() throws ObjectStreamException {
 		return F.NIL;

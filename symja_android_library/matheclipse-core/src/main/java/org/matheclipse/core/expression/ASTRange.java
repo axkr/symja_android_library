@@ -19,8 +19,9 @@ import org.matheclipse.core.interfaces.IUnaryIndexFunction;
  * Create a range for a given <code>List</code> instance, with the exception of the <code>sort()</code> method which may
  * sort the internal elements range.
  * 
+ * @deprecated use the methods in IAST instead
  */
-public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
+final public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 
 	static class ASTRangeIterator implements Iterator<IExpr> {
 		private int fCurrrent;

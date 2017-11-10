@@ -51,7 +51,6 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Options;
-import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -166,8 +165,7 @@ public class Algebra {
 	 * </code>
 	 * </pre>
 	 * <p>
-	 * When several variables are involved, the results can be different depending
-	 * on the main variable:
+	 * When several variables are involved, the results can be different depending on the main variable:
 	 * </p>
 	 * 
 	 * <pre>
@@ -199,8 +197,7 @@ public class Algebra {
 	private static class Apart extends AbstractFunctionEvaluator {
 
 		/**
-		 * Return the denominator for the given <code>Power[...]</code> AST, by
-		 * separating positive and negative powers.
+		 * Return the denominator for the given <code>Power[...]</code> AST, by separating positive and negative powers.
 		 * 
 		 * @param powerAST
 		 *            a power expression (a^b)
@@ -256,22 +253,22 @@ public class Algebra {
 		}
 
 		/**
-		 * Returns an AST with head <code>Plus</code>, which contains the partial
-		 * fraction decomposition of the numerator and denominator parts.
+		 * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition of the
+		 * numerator and denominator parts.
 		 * 
 		 * @deprecated untested at the moment
 		 * @param parts
 		 * @param variableList
-		 * @return <code>null</code> if the partial fraction decomposition wasn't
-		 *         constructed
+		 * @return <code>null</code> if the partial fraction decomposition wasn't constructed
 		 */
 		@Deprecated
 		private static IAST partialFractionDecompositionInteger(IExpr[] parts, IAST variableList) {
 			try {
 				IExpr exprNumerator = F.evalExpandAll(parts[0]);
 				IExpr exprDenominator = F.evalExpandAll(parts[1]);
-				ASTRange r = new ASTRange(variableList, 1);
-				List<IExpr> varList = r;
+				// ASTRange r = new ASTRange(variableList, 1);
+				// List<IExpr> varList = r;
+				List<IExpr> varList = variableList.copyTo();
 
 				String[] varListStr = new String[1];
 				varListStr[0] = variableList.arg1().toString();
@@ -291,7 +288,7 @@ public class Algebra {
 				// A0 + sum( sum ( Aij/di^j ) ) with deg(Aij) < deg(di).
 
 				if (Ai.size() > 0) {
-					IASTAppendable result = F.PlusAlloc(Ai.size()+2);
+					IASTAppendable result = F.PlusAlloc(Ai.size() + 2);
 					IExpr temp;
 					if (!Ai.get(0).get(0).isZERO()) {
 						temp = F.eval(jas.integerPoly2Expr(Ai.get(0).get(0)));
@@ -407,9 +404,8 @@ public class Algebra {
 	private static class Cancel extends AbstractFunctionEvaluator {
 
 		/**
-		 * This predicate identifies polynomial expressions. It requires that the given
-		 * expression is already expanded for <code>Plus,Power and Times</code>
-		 * operations.
+		 * This predicate identifies polynomial expressions. It requires that the given expression is already expanded
+		 * for <code>Plus,Power and Times</code> operations.
 		 */
 		private static final class PolynomialPredicate implements Predicate<IExpr> {
 
@@ -430,7 +426,8 @@ public class Algebra {
 		 *            the integer gcd value
 		 * @return
 		 */
-		private static IExpr[] calculatePlusIntegerGCD(IASTAppendable numeratorPlus, IInteger denominatorInt, IInteger gcd) {
+		private static IExpr[] calculatePlusIntegerGCD(IASTAppendable numeratorPlus, IInteger denominatorInt,
+				IInteger gcd) {
 			for (int i = 1; i < numeratorPlus.size(); i++) {
 				if (numeratorPlus.get(i).isInteger()) {
 					numeratorPlus.set(i, ((IInteger) numeratorPlus.get(i)).div(gcd));
@@ -450,9 +447,8 @@ public class Algebra {
 		}
 
 		/**
-		 * Calculate the GCD[] of the integer factors in each element of the
-		 * <code>numeratorPlus</code> expression with the <code>denominatorInt</code>.
-		 * After that return the result divided by the gcd value, if possible.
+		 * Calculate the GCD[] of the integer factors in each element of the <code>numeratorPlus</code> expression with
+		 * the <code>denominatorInt</code>. After that return the result divided by the gcd value, if possible.
 		 * 
 		 * @param numeratorPlus
 		 *            a <code>Plus[...]</code> expression as the numerator
@@ -493,8 +489,7 @@ public class Algebra {
 		/**
 		 * 
 		 * @param powerTimesAST
-		 *            an <code>Times[...] or Power[...]</code> AST, where common factors
-		 *            should be canceled out.
+		 *            an <code>Times[...] or Power[...]</code> AST, where common factors should be canceled out.
 		 * @return <code>F.NIL</code> is no evaluation was possible
 		 * @throws JASConversionException
 		 */
@@ -565,8 +560,7 @@ public class Algebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * collect subexpressions in <code>expr</code> which belong to the same
-	 * <code>variable</code>.
+	 * collect subexpressions in <code>expr</code> which belong to the same <code>variable</code>.
 	 * </p>
 	 * </blockquote>
 	 */
@@ -602,22 +596,19 @@ public class Algebra {
 		}
 
 		/**
-		 * Collect terms in <code>expr</code> containing the same power expressions of
-		 * <code>x</code>.
+		 * Collect terms in <code>expr</code> containing the same power expressions of <code>x</code>.
 		 * 
 		 * @param expr
 		 * @param x
-		 *            the current variable from the list of variables which should be
-		 *            collected
+		 *            the current variable from the list of variables which should be collected
 		 * @param listOfVariables
-		 *            list of variables which should be collected or <code>null</code>
-		 *            if no list is available
+		 *            list of variables which should be collected or <code>null</code> if no list is available
 		 * @param listPosition
-		 *            position of the next variable in the list after <code>x</code>
-		 *            which should be collected recursively
+		 *            position of the next variable in the list after <code>x</code> which should be collected
+		 *            recursively
 		 * @param head
-		 *            the head which should be applied to each coefficient or
-		 *            <code>null</code> if no head should be applied
+		 *            the head which should be applied to each coefficient or <code>null</code> if no head should be
+		 *            applied
 		 * @param engine
 		 *            the evaluation engine
 		 * @return
@@ -647,7 +638,7 @@ public class Algebra {
 				}
 
 				if (head != null) {
-					IASTMutable simplifyAST = (IASTMutable)F.unaryAST1(head, null);
+					IASTMutable simplifyAST = (IASTMutable) F.unaryAST1(head, null);
 					IExpr coefficient;
 					for (int i = 1; i < rest.size(); i++) {
 						simplifyAST.set(1, rest.get(i));
@@ -678,7 +669,8 @@ public class Algebra {
 			return expr;
 		}
 
-		public void collectToMap(IExpr expr, IPatternMatcher matcher, Map<IExpr, IASTAppendable> map, IASTAppendable rest) {
+		public void collectToMap(IExpr expr, IPatternMatcher matcher, Map<IExpr, IASTAppendable> map,
+				IASTAppendable rest) {
 			if (expr.isFree(matcher, false)) {
 				rest.append(expr);
 				return;
@@ -831,17 +823,15 @@ public class Algebra {
 		}
 
 		/**
-		 * Get the &quot;denominator form&quot; of the given function. Example:
-		 * <code>Csc[x]</code> gives <code>Sin[x]</code>.
+		 * Get the &quot;denominator form&quot; of the given function. Example: <code>Csc[x]</code> gives
+		 * <code>Sin[x]</code>.
 		 * 
 		 * @param function
-		 *            the function which should be transformed to &quot;denominator
-		 *            form&quot; determine the denominator by splitting up functions
-		 *            like <code>Tan[],Cot[], Csc[],...</code>
+		 *            the function which should be transformed to &quot;denominator form&quot; determine the denominator
+		 *            by splitting up functions like <code>Tan[],Cot[], Csc[],...</code>
 		 * @param trig
-		 * @return <code>F.NIL</code> if <code>trig</code> is false or no form is found;
-		 *         may return <code>1</code> if no denominator form is available
-		 *         (Example Cos[]).
+		 * @return <code>F.NIL</code> if <code>trig</code> is false or no form is found; may return <code>1</code> if no
+		 *         denominator form is available (Example Cos[]).
 		 */
 		public static IExpr getTrigForm(IAST function, boolean trig) {
 			if (trig) {
@@ -870,8 +860,7 @@ public class Algebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * expands out positive rational powers and products of sums in
-	 * <code>expr</code>.
+	 * expands out positive rational powers and products of sums in <code>expr</code>.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -896,8 +885,8 @@ public class Algebra {
 	 * a^2*c^2+2*a*b*c^2+b^2*c^2+2*a^2*c*d+4*a*b*c*d+2*b^2*c*d+a^2*d^2+2*a*b*d^2+b^2*d^2+b(1+a)
 	 * </pre>
 	 * <p>
-	 * <code>Expand</code> expands out rational powers by expanding the
-	 * <code>Floor()</code> part of the rational powers number:
+	 * <code>Expand</code> expands out rational powers by expanding the <code>Floor()</code> part of the rational powers
+	 * number:
 	 * </p>
 	 * 
 	 * <pre>
@@ -1077,8 +1066,8 @@ public class Algebra {
 			}
 
 			/**
-			 * Expand <code>(a+b)^i</code> with <code>i</code> an integer number in the
-			 * range Integer.MIN_VALUE to Integer.MAX_VALUE.
+			 * Expand <code>(a+b)^i</code> with <code>i</code> an integer number in the range Integer.MIN_VALUE to
+			 * Integer.MAX_VALUE.
 			 * 
 			 * @param powerAST
 			 * @return
@@ -1122,8 +1111,7 @@ public class Algebra {
 
 			/**
 			 * Expand a polynomial power with the multinomial theorem. See
-			 * <a href= "http://en.wikipedia.org/wiki/Multinomial_theorem">Wikipedia -
-			 * Multinomial theorem</a>
+			 * <a href= "http://en.wikipedia.org/wiki/Multinomial_theorem">Wikipedia - Multinomial theorem</a>
 			 * 
 			 * @param plusAST
 			 * @param n
@@ -1241,9 +1229,8 @@ public class Algebra {
 			}
 
 			/**
-			 * Evaluate <code>expr1 * expr2</code> and expand the resulting expression, if
-			 * it's an <code>IAST</code>. After that add the resulting expression to the
-			 * <code>PlusOp</code>
+			 * Evaluate <code>expr1 * expr2</code> and expand the resulting expression, if it's an <code>IAST</code>.
+			 * After that add the resulting expression to the <code>PlusOp</code>
 			 * 
 			 * @param result
 			 * @param expr
@@ -1273,7 +1260,7 @@ public class Algebra {
 				this.m = plusAST.size() - 1;
 				this.parts = new int[m];
 				// precalculate all Power[] ASTs:
-				IASTAppendable temp=F.ListAlloc(plusAST.size());
+				IASTAppendable temp = F.ListAlloc(plusAST.size());
 				temp.appendArgs(plusAST);
 				this.precalculatedPowerASTs = temp;
 			}
@@ -1364,8 +1351,7 @@ public class Algebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * expands out all positive integer powers and products of sums in
-	 * <code>expr</code>.
+	 * expands out all positive integer powers and products of sums in <code>expr</code>.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -1471,9 +1457,10 @@ public class Algebra {
 				}
 			}
 
-			ASTRange r = new ASTRange(eVar.getVarList(), 1);
+			// ASTRange r = new ASTRange(eVar.getVarList(), 1);
 			try {
-				List<IExpr> varList = r;
+				// List<IExpr> varList = r;
+				List<IExpr> varList = eVar.getVarList().copyTo();
 
 				if (ast.isAST2()) {
 					return factorWithOption(ast, expr, varList, false, engine);
@@ -1506,7 +1493,7 @@ public class Algebra {
 			} else {
 				map = factorAbstract.factors(poly);
 			}
-			IASTAppendable result = F.TimesAlloc(map.size()+1);
+			IASTAppendable result = F.TimesAlloc(map.size() + 1);
 			java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
 			java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
 			if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
@@ -1611,8 +1598,9 @@ public class Algebra {
 			}
 			try {
 				IExpr expr = F.evalExpandAll(ast.arg1(), engine);
-				ASTRange r = new ASTRange(eVar.getVarList(), 1);
-				List<IExpr> varList = r;
+				// ASTRange r = new ASTRange(eVar.getVarList(), 1);
+				// List<IExpr> varList = r;
+				List<IExpr> varList = eVar.getVarList().copyTo();
 
 				if (ast.isAST2()) {
 					return factorWithOption(ast, expr, varList, true, engine);
@@ -1640,8 +1628,7 @@ public class Algebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * get the square free factors of the polynomial expression
-	 * <code>polynomial</code>.
+	 * get the square free factors of the polynomial expression <code>polynomial</code>.
 	 * </p>
 	 * </blockquote>
 	 */
@@ -1658,8 +1645,9 @@ public class Algebra {
 			}
 			try {
 				IExpr expr = F.evalExpandAll(ast.arg1(), engine);
-				ASTRange r = new ASTRange(eVar.getVarList(), 1);
-				List<IExpr> varList = r;
+				// ASTRange r = new ASTRange(eVar.getVarList(), 1);
+				// List<IExpr> varList = r;
+				List<IExpr> varList = eVar.getVarList().copyTo();
 
 				// if (ast.isAST2()) {
 				// return factorWithOption(ast, expr, varList, true);
@@ -1729,11 +1717,12 @@ public class Algebra {
 				// FactorTerms only possible for univariate polynomials
 				return F.NIL;
 			}
-			ASTRange r = new ASTRange(variableList, 1);
+			// ASTRange r = new ASTRange(variableList, 1);
+			List<IExpr> varList = variableList.copyTo();
 			IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 			try {
 
-				JASConvert<BigRational> jas = new JASConvert<BigRational>(r, BigRational.ZERO);
+				JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 				GenPolynomial<BigRational> poly = jas.expr2JAS(expr, false);
 				Object[] objects = jas.factorTerms(poly);
 				java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
@@ -1837,13 +1826,12 @@ public class Algebra {
 		}
 
 		/**
-		 * Get the &quot;numerator form&quot; of the given function. Example:
-		 * <code>Csc[x]</code> gives <code>Sin[x]</code>.
+		 * Get the &quot;numerator form&quot; of the given function. Example: <code>Csc[x]</code> gives
+		 * <code>Sin[x]</code>.
 		 * 
 		 * @param function
-		 *            the function which should be transformed to &quot;denominator
-		 *            form&quot; determine the denominator by splitting up functions
-		 *            like <code>Tan[9,Cot[], Csc[],...</code>
+		 *            the function which should be transformed to &quot;denominator form&quot; determine the denominator
+		 *            by splitting up functions like <code>Tan[9,Cot[], Csc[],...</code>
 		 * @param trig
 		 * @return
 		 */
@@ -1876,8 +1864,8 @@ public class Algebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns the extended GCD ('greatest common divisor') of the univariate
-	 * polynomials <code>p</code> and <code>q</code>.
+	 * returns the extended GCD ('greatest common divisor') of the univariate polynomials <code>p</code> and
+	 * <code>q</code>.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -1888,9 +1876,8 @@ public class Algebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns the extended GCD ('greatest common divisor') of the univariate
-	 * polynomials <code>p</code> and <code>q</code> modulus the <code>prime</code>
-	 * integer.
+	 * returns the extended GCD ('greatest common divisor') of the univariate polynomials <code>p</code> and
+	 * <code>q</code> modulus the <code>prime</code> integer.
 	 * </p>
 	 * </blockquote>
 	 * <p>
@@ -1921,9 +1908,10 @@ public class Algebra {
 			VariablesSet eVar = new VariablesSet();
 			eVar.add(x);
 
-			ASTRange r = new ASTRange(eVar.getVarList(), 1);
+			// ASTRange r = new ASTRange(eVar.getVarList(), 1);
 			if (ast.size() == 5) {
-				List<IExpr> varList = r;
+				// List<IExpr> varList = r;
+				List<IExpr> varList = eVar.getVarList().copyTo();
 				final Options options = new Options(ast.topHead(), ast, 4, engine);
 				IExpr option = options.getOption("Modulus");
 				if (option.isSignedNumber()) {
@@ -1951,7 +1939,8 @@ public class Algebra {
 			}
 
 			try {
-				JASConvert<BigRational> jas = new JASConvert<BigRational>(r, BigRational.ZERO);
+				List<IExpr> varList = eVar.getVarList().copyTo();
+				JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
 				GenPolynomial<BigRational> poly1 = jas.expr2JAS(expr1, false);
 				GenPolynomial<BigRational> poly2 = jas.expr2JAS(expr2, false);
 				GenPolynomial<BigRational>[] result = poly1.egcd(poly2);
@@ -1964,7 +1953,8 @@ public class Algebra {
 				return list;
 			} catch (JASConversionException e0) {
 				try {
-					JASIExpr jas = new JASIExpr(r, ExprRingFactory.CONST);
+					List<IExpr> varList = eVar.getVarList().copyTo();
+					JASIExpr jas = new JASIExpr(varList, ExprRingFactory.CONST);
 					GenPolynomial<IExpr> poly1 = jas.expr2IExprJAS(expr1);
 					GenPolynomial<IExpr> poly2 = jas.expr2IExprJAS(expr2);
 					GenPolynomial<IExpr>[] result = poly1.egcd(poly2);
@@ -2000,8 +1990,7 @@ public class Algebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns the GCD ('greatest common divisor') of the polynomials <code>p</code>
-	 * and <code>q</code>.
+	 * returns the GCD ('greatest common divisor') of the polynomials <code>p</code> and <code>q</code>.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -2012,8 +2001,8 @@ public class Algebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns the GCD ('greatest common divisor') of the polynomials <code>p</code>
-	 * and <code>q</code> modulus the <code>prime</code> integer.
+	 * returns the GCD ('greatest common divisor') of the polynomials <code>p</code> and <code>q</code> modulus the
+	 * <code>prime</code> integer.
 	 * </p>
 	 * </blockquote>
 	 */
@@ -2031,8 +2020,9 @@ public class Algebra {
 				return gcdWithOption(ast, expr, eVar, engine);
 			}
 			try {
-				ASTRange r = new ASTRange(eVar.getVarList(), 1);
-				JASConvert<BigInteger> jas = new JASConvert<BigInteger>(r, BigInteger.ZERO);
+//				ASTRange r = new ASTRange(eVar.getVarList(), 1);
+				List<IExpr> varList = eVar.getVarList().copyTo();
+				JASConvert<BigInteger> jas = new JASConvert<BigInteger>(varList, BigInteger.ZERO);
 				GenPolynomial<BigInteger> poly = jas.expr2JAS(expr, false);
 				GenPolynomial<BigInteger> temp;
 				GreatestCommonDivisorAbstract<BigInteger> factory = GCDFactory.getImplementation(BigInteger.ZERO);
@@ -2108,8 +2098,7 @@ public class Algebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns the LCM ('least common multiple') of the polynomials <code>p</code>
-	 * and <code>q</code>.
+	 * returns the LCM ('least common multiple') of the polynomials <code>p</code> and <code>q</code>.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -2120,8 +2109,8 @@ public class Algebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns the LCM ('least common multiple') of the polynomials <code>p</code>
-	 * and <code>q</code> modulus the <code>prime</code> integer.
+	 * returns the LCM ('least common multiple') of the polynomials <code>p</code> and <code>q</code> modulus the
+	 * <code>prime</code> integer.
 	 * </p>
 	 * </blockquote>
 	 */
@@ -2134,7 +2123,7 @@ public class Algebra {
 			VariablesSet eVar = new VariablesSet();
 			eVar.addVarList(ast, 1);
 
-			ASTRange r = new ASTRange(eVar.getVarList(), 1);
+//			ASTRange r = new ASTRange(eVar.getVarList(), 1);
 			IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 			if (ast.size() > 3) {
 				final Options options = new Options(ast.topHead(), ast, ast.size() - 1, engine);
@@ -2142,8 +2131,9 @@ public class Algebra {
 				if (option.isSignedNumber()) {
 					try {
 						// found "Modulus" option => use ModIntegerRing
+						List<IExpr> varList = eVar.getVarList().copyTo();
 						ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
-						JASModInteger jas = new JASModInteger(r, modIntegerRing);
+						JASModInteger jas = new JASModInteger(varList, modIntegerRing);
 						GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
 						GenPolynomial<ModLong> temp;
 						GreatestCommonDivisorAbstract<ModLong> factory = GCDFactory.getImplementation(modIntegerRing);
@@ -2164,7 +2154,8 @@ public class Algebra {
 				}
 			}
 			try {
-				JASConvert<BigInteger> jas = new JASConvert<BigInteger>(r, BigInteger.ZERO);
+				List<IExpr> varList = eVar.getVarList().copyTo();
+				JASConvert<BigInteger> jas = new JASConvert<BigInteger>(varList, BigInteger.ZERO);
 				GenPolynomial<BigInteger> poly = jas.expr2JAS(expr, false);
 				GenPolynomial<BigInteger> temp;
 				GreatestCommonDivisorAbstract<BigInteger> factory = GCDFactory.getImplementation(BigInteger.ZERO);
@@ -2198,8 +2189,8 @@ public class Algebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * return <code>True</code> if <code>p</code> is a polynomial for the variable
-	 * <code>x</code>. Return <code>False</code> in all other cases.
+	 * return <code>True</code> if <code>p</code> is a polynomial for the variable <code>x</code>. Return
+	 * <code>False</code> in all other cases.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -2210,17 +2201,15 @@ public class Algebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * return <code>True</code> if <code>p</code> is a polynomial for the variables
-	 * <code>x, y, ...</code> defined in the list. Return <code>False</code> in all
-	 * other cases.
+	 * return <code>True</code> if <code>p</code> is a polynomial for the variables <code>x, y, ...</code> defined in
+	 * the list. Return <code>False</code> in all other cases.
 	 * </p>
 	 * </blockquote>
 	 */
 	private static class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicate<IExpr, IExpr> {
 
 		/**
-		 * Returns <code>True</code> if the given expression is a polynoomial object;
-		 * <code>False</code> otherwise
+		 * Returns <code>True</code> if the given expression is a polynoomial object; <code>False</code> otherwise
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2308,8 +2297,8 @@ public class Algebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns the polynomial quotient of the polynomials <code>p</code> and
-	 * <code>q</code> for the variable <code>x</code>.
+	 * returns the polynomial quotient of the polynomials <code>p</code> and <code>q</code> for the variable
+	 * <code>x</code>.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -2320,9 +2309,8 @@ public class Algebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns the polynomial quotient of the polynomials <code>p</code> and
-	 * <code>q</code> for the variable <code>x</code> modulus the <code>prime</code>
-	 * integer.
+	 * returns the polynomial quotient of the polynomials <code>p</code> and <code>q</code> for the variable
+	 * <code>x</code> modulus the <code>prime</code> integer.
 	 * </p>
 	 * </blockquote>
 	 */
@@ -2366,8 +2354,8 @@ public class Algebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns a list with the polynomial quotient and remainder of the polynomials
-	 * <code>p</code> and <code>q</code> for the variable <code>x</code>.
+	 * returns a list with the polynomial quotient and remainder of the polynomials <code>p</code> and <code>q</code>
+	 * for the variable <code>x</code>.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -2378,9 +2366,8 @@ public class Algebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns list with the polynomial quotient and remainder of the polynomials
-	 * <code>p</code> and <code>q</code> for the variable <code>x</code> modulus the
-	 * <code>prime</code> integer.
+	 * returns list with the polynomial quotient and remainder of the polynomials <code>p</code> and <code>q</code> for
+	 * the variable <code>x</code> modulus the <code>prime</code> integer.
 	 * </p>
 	 * </blockquote>
 	 */
@@ -2474,8 +2461,8 @@ public class Algebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns the polynomial remainder of the polynomials <code>p</code> and
-	 * <code>q</code> for the variable <code>x</code>.
+	 * returns the polynomial remainder of the polynomials <code>p</code> and <code>q</code> for the variable
+	 * <code>x</code>.
 	 * </p>
 	 * </blockquote>
 	 * 
@@ -2486,9 +2473,8 @@ public class Algebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns the polynomial remainder of the polynomials <code>p</code> and
-	 * <code>q</code> for the variable <code>x</code> modulus the <code>prime</code>
-	 * integer.
+	 * returns the polynomial remainder of the polynomials <code>p</code> and <code>q</code> for the variable
+	 * <code>x</code> modulus the <code>prime</code> integer.
 	 * </p>
 	 * </blockquote>
 	 */
@@ -2532,8 +2518,7 @@ public class Algebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * expands out powers of the form <code>(x^y)^z</code> and <code>(x*y)^z</code>
-	 * in <code>expr</code>.
+	 * expands out powers of the form <code>(x^y)^z</code> and <code>(x*y)^z</code> in <code>expr</code>.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -2624,7 +2609,7 @@ public class Algebra {
 						IAST timesAST = (IAST) x1;
 						IASTMutable timesResult = timesAST.mapThread(Power(Null, x2), 1);
 						if (assumptions) {
-							IASTAppendable plusResult = F.PlusAlloc(timesAST.size()+1);
+							IASTAppendable plusResult = F.PlusAlloc(timesAST.size() + 1);
 							plusResult.append(C1D2);
 							for (int i = 1; i < timesAST.size(); i++) {
 								plusResult.append(Negate(Divide(Arg(timesAST.get(i)), Times(C2, Pi))));
@@ -2769,8 +2754,7 @@ public class Algebra {
 		}
 
 		/**
-		 * Root of a polynomial
-		 * <code>a + b*Slot1 + c*Slot1^2 + d*Slot1^3 + e*Slot1^4</code>
+		 * Root of a polynomial <code>a + b*Slot1 + c*Slot1^2 + d*Slot1^3 + e*Slot1^4</code>
 		 * 
 		 * @param a
 		 * @param b
@@ -2975,8 +2959,7 @@ public class Algebra {
 	 * </blockquote>
 	 * <ul>
 	 * <li>Assumptions - use assumptions to simplify the expression</li>
-	 * <li>ComplexFunction - use this function to determine the &ldquo;weight&rdquo;
-	 * of an expression.</li>
+	 * <li>ComplexFunction - use this function to determine the &ldquo;weight&rdquo; of an expression.</li>
 	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
@@ -3005,8 +2988,7 @@ public class Algebra {
 	 * x
 	 * </pre>
 	 * <p>
-	 * For <code>Assumptions</code> you can define the assumption directly as second
-	 * argument:
+	 * For <code>Assumptions</code> you can define the assumption directly as second argument:
 	 * </p>
 	 * 
 	 * <pre>
@@ -3020,8 +3002,7 @@ public class Algebra {
 	 * Abs(x)
 	 * </pre>
 	 * <p>
-	 * With this &ldquo;complexity function&rdquo; the <code>Abs</code> expression
-	 * gets a &ldquo;heavier weight&rdquo;.
+	 * With this &ldquo;complexity function&rdquo; the <code>Abs</code> expression gets a &ldquo;heavier weight&rdquo;.
 	 * </p>
 	 * 
 	 * <pre>
@@ -3085,9 +3066,8 @@ public class Algebra {
 		private static class SimplifyVisitor extends VisitorExpr {
 			final IsBasicExpressionVisitor isBasicAST = new IsBasicExpressionVisitor();
 			/**
-			 * This function is used to determine the “weight” of an expression. For example
-			 * by counting the leafs of an expression with the
-			 * <code>IExpr#leafCountSimplify()</code> method.
+			 * This function is used to determine the “weight” of an expression. For example by counting the leafs of an
+			 * expression with the <code>IExpr#leafCountSimplify()</code> method.
 			 */
 			final Function<IExpr, Long> fComplexityFunction;
 
@@ -3191,8 +3171,8 @@ public class Algebra {
 				}
 
 				if (ast.isPlus()) {
-					IASTAppendable  basicPlus = F.PlusAlloc(ast.size());
-					IASTAppendable  restPlus = F.PlusAlloc(ast.size());
+					IASTAppendable basicPlus = F.PlusAlloc(ast.size());
+					IASTAppendable restPlus = F.PlusAlloc(ast.size());
 
 					for (int i = 1; i < ast.size(); i++) {
 						temp = ast.get(i);
@@ -3359,8 +3339,7 @@ public class Algebra {
 		}
 
 		/**
-		 * Creata the complexity function which determines the &quot;more
-		 * simplified&quot; expression.
+		 * Creata the complexity function which determines the &quot;more simplified&quot; expression.
 		 * 
 		 * @param complexityFunctionHead
 		 * @param engine
@@ -3452,12 +3431,10 @@ public class Algebra {
 		}
 
 		/**
-		 * Do a <code>ExpandAll(ast)</code> and call <code>togetherAST</code> afterwards
-		 * with the result..
+		 * Do a <code>ExpandAll(ast)</code> and call <code>togetherAST</code> afterwards with the result..
 		 * 
 		 * @param ast
-		 * @return <code>null</code> couldn't be transformed by
-		 *         <code>ExpandAll(()</code> od <code>togetherAST()</code>
+		 * @return <code>null</code> couldn't be transformed by <code>ExpandAll(()</code> od <code>togetherAST()</code>
 		 */
 		private static IExpr togetherNull(IAST ast, EvalEngine engine) {
 			boolean evaled = false;
@@ -3483,8 +3460,7 @@ public class Algebra {
 		 * 
 		 * @param plusAST
 		 *            a <code>Plus[...]</code> expresion
-		 * @return <code>null</code> couldn't be transformed by
-		 *         <code>ExpandAll(()</code> od <code>togetherAST()</code>
+		 * @return <code>null</code> couldn't be transformed by <code>ExpandAll(()</code> od <code>togetherAST()</code>
 		 */
 		private static IExpr togetherPlus(IAST plusAST) {
 			if (plusAST.size() <= 2) {
@@ -3657,8 +3633,7 @@ public class Algebra {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * gives a list of the variables that appear in the polynomial
-	 * <code>expr</code>.
+	 * gives a list of the variables that appear in the polynomial <code>expr</code>.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -3702,18 +3677,14 @@ public class Algebra {
 	 * ]
 	 * </pre>
 	 * 
-	 * for the given expressions <code>numeratorPolynomial</code> and
-	 * <code>denominatorPolynomial</code>.
+	 * for the given expressions <code>numeratorPolynomial</code> and <code>denominatorPolynomial</code>.
 	 * 
 	 * 
 	 * @param numeratorPolynomial
-	 *            a <code>BigRational</code> polynomial which could be converted to
-	 *            JAS polynomial
+	 *            a <code>BigRational</code> polynomial which could be converted to JAS polynomial
 	 * @param denominatorPolynomial
-	 *            a <code>BigRational</code> polynomial which could be converted to
-	 *            JAS polynomial
-	 * @return <code>null</code> if the expressions couldn't be converted to JAS
-	 *         polynomials or gcd equals 1
+	 *            a <code>BigRational</code> polynomial which could be converted to JAS polynomial
+	 * @return <code>null</code> if the expressions couldn't be converted to JAS polynomials or gcd equals 1
 	 * @throws JASConversionException
 	 */
 	public static IExpr[] cancelGCD(IExpr numeratorPolynomial, IExpr denominatorPolynomial)
@@ -3738,8 +3709,9 @@ public class Algebra {
 			ExprPolynomialRing ring = new ExprPolynomialRing(vars);
 			ExprPolynomial pol1 = ring.create(numeratorPolynomial);
 			ExprPolynomial pol2 = ring.create(denominatorPolynomial);
-			ASTRange r = new ASTRange(eVar.getVarList(), 1);
-			JASIExpr jas = new JASIExpr(r, true);
+//			ASTRange r = new ASTRange(eVar.getVarList(), 1);
+			List<IExpr> varList = eVar.getVarList().copyTo();
+			JASIExpr jas = new JASIExpr(varList, true);
 			GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
 			GenPolynomial<IExpr> p2 = jas.expr2IExprJAS(pol2);
 
@@ -3981,12 +3953,11 @@ public class Algebra {
 	}
 
 	/**
-	 * Split the expression into numerator and denominator parts, by calling the
-	 * <code>Numerator[]</code> and <code>Denominator[]</code> functions
+	 * Split the expression into numerator and denominator parts, by calling the <code>Numerator[]</code> and
+	 * <code>Denominator[]</code> functions
 	 * 
 	 * @param ast
-	 * @return an array with the numerator, denominator and the evaluated
-	 *         <code>Together[expr]</code>.
+	 * @return an array with the numerator, denominator and the evaluated <code>Together[expr]</code>.
 	 */
 	public static IExpr[] getNumeratorDenominator(IAST ast, EvalEngine engine) {
 		IExpr[] result = new IExpr[3];
@@ -4003,25 +3974,22 @@ public class Algebra {
 	}
 
 	/**
-	 * Return the numerator and denominator for the given <code>Times[...]</code> or
-	 * <code>Power[a, b]</code> AST, by separating positive and negative powers.
+	 * Return the numerator and denominator for the given <code>Times[...]</code> or <code>Power[a, b]</code> AST, by
+	 * separating positive and negative powers.
 	 * 
 	 * @param timesPower
 	 *            a Times[] or Power[] expression (a*b*c....) or a^b
 	 * @param splitNumeratorOne
-	 *            split a fractional number into numerator and denominator, only if
-	 *            the numerator is 1, if <code>true</code>, ignore
-	 *            <code>splitFractionalNumbers</code> parameter.
+	 *            split a fractional number into numerator and denominator, only if the numerator is 1, if
+	 *            <code>true</code>, ignore <code>splitFractionalNumbers</code> parameter.
 	 * @param splitFractionalNumbers
 	 *            split a fractional number into numerator and denominator
 	 * @param trig
-	 *            try to find a trigonometric numerator/denominator form (Example:
-	 *            Csc[x] gives 1 / Sin[x])
+	 *            try to find a trigonometric numerator/denominator form (Example: Csc[x] gives 1 / Sin[x])
 	 * @param evalParts
 	 *            evaluate the determined parts
-	 * @return the numerator and denominator expression and an optional fractional
-	 *         number (maybe <code>null</code>), if splitNumeratorOne is
-	 *         <code>true</code>.
+	 * @return the numerator and denominator expression and an optional fractional number (maybe <code>null</code>), if
+	 *         splitNumeratorOne is <code>true</code>.
 	 */
 	public static IExpr[] fractionalPartsTimesPower(final IAST timesPower, boolean splitNumeratorOne,
 			boolean splitFractionalNumbers, boolean trig, boolean evalParts) {
@@ -4134,15 +4102,12 @@ public class Algebra {
 	}
 
 	/**
-	 * Split the expression into numerator and denominator parts, by separating
-	 * positive and negative powers.
+	 * Split the expression into numerator and denominator parts, by separating positive and negative powers.
 	 * 
 	 * @param arg
 	 * @param trig
-	 *            determine the denominator by splitting up functions like
-	 *            <code>Tan[],Cot[], Csc[],...</code>
-	 * @return the numerator and denominator expression or <code>null</code> if no
-	 *         denominator was found.
+	 *            determine the denominator by splitting up functions like <code>Tan[],Cot[], Csc[],...</code>
+	 * @return the numerator and denominator expression or <code>null</code> if no denominator was found.
 	 */
 	public static IExpr[] fractionalParts(final IExpr arg, boolean trig) {
 		IExpr[] parts = null;
@@ -4173,16 +4138,15 @@ public class Algebra {
 	}
 
 	/**
-	 * Returns an AST with head <code>Plus</code>, which contains the partial
-	 * fraction decomposition of the numerator and denominator parts.
+	 * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition of the numerator
+	 * and denominator parts.
 	 * 
 	 * @param pf
 	 *            partial fraction generator
 	 * @param parts
 	 * @param variable
 	 *            a variable
-	 * @return <code>F.NIL</code> if the partial fraction decomposition wasn't
-	 *         constructed
+	 * @return <code>F.NIL</code> if the partial fraction decomposition wasn't constructed
 	 */
 	public static IExpr partialFractionDecompositionRational(IPartialFractionGenerator pf, IExpr[] parts,
 			IExpr variable) {
@@ -4190,9 +4154,10 @@ public class Algebra {
 			IAST variableList = F.List(variable);
 			IExpr exprNumerator = F.evalExpandAll(parts[0]);
 			IExpr exprDenominator = F.evalExpandAll(parts[1]);
-			ASTRange r = new ASTRange(variableList, 1);
-			List<IExpr> varList = r;
-
+//			ASTRange r = new ASTRange(variableList, 1);
+//			List<IExpr> varList = r;
+			List<IExpr> varList = variableList.copyTo();
+			
 			String[] varListStr = new String[1];
 			varListStr[0] = variableList.arg1().toString();
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
@@ -4240,8 +4205,7 @@ public class Algebra {
 	}
 
 	/**
-	 * Split the expression into numerator and denominator parts, by separating
-	 * positive and negative powers.
+	 * Split the expression into numerator and denominator parts, by separating positive and negative powers.
 	 * 
 	 * @param arg
 	 * @return the numerator and denominator expression

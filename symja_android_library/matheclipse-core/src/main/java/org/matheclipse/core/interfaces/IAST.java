@@ -1,5 +1,6 @@
 package org.matheclipse.core.interfaces;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -12,7 +13,6 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.expression.ASTRange;
 
 /**
  * 
@@ -489,7 +489,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 */
 	public boolean compareAdjacent(BiPredicate<IExpr, IExpr> predicate);
-		
+
 	/**
 	 * Tests whether this {@code List} contains the specified object.
 	 * 
@@ -585,7 +585,22 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	public IASTAppendable copyUntil(final int intialCapacity, int position);
 
-	default Collection<IExpr>  copyTo(Collection<IExpr> collection) {
+	default List<IExpr> copyTo() {
+		List<IExpr> list = new ArrayList<IExpr>(size());
+		for (int i = 1; i < size(); i++) {
+			list.add(get(i));
+		}
+		return list;
+	}
+
+	default List<IExpr> copyTo(List<IExpr> list) {
+		for (int i = 1; i < size(); i++) {
+			list.add(get(i));
+		}
+		return list;
+	}
+
+	default Collection<IExpr> copyTo(Collection<IExpr> collection) {
 		for (int i = 1; i < size(); i++) {
 			collection.add(get(i));
 		}
@@ -1046,7 +1061,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 */
 	public IAST map(IAST astResult, IUnaryIndexFunction<IExpr, IExpr> function);
-	
+
 	/**
 	 * Append the mapped elements directly to the given <code>list</code>
 	 * 

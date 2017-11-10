@@ -34,7 +34,6 @@ import org.matheclipse.core.eval.util.LevelSpec;
 import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.eval.util.Sequence;
-import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Functors;
