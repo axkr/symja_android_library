@@ -110,16 +110,16 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	 *            the collection of objects.
 	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
 	 */
-	@Override
-	public boolean appendAll(Collection<? extends IExpr> collection) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
+	// @Override
+	// public boolean appendAll(Collection<? extends IExpr> collection) {
+	// hashValue = 0;
+	// throw new UnsupportedOperationException();
+	// }
 
-	@Override
-	public boolean appendAll(IAST ast, int startPosition, int endPosition) {
-		throw new UnsupportedOperationException();
-	}
+	// @Override
+	// public boolean appendAll(IAST ast, int startPosition, int endPosition) {
+	// throw new UnsupportedOperationException();
+	// }
 
 	/**
 	 * Inserts the objects in the specified collection at the specified location in this List. The objects are added in
@@ -133,31 +133,31 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	 * @throws IndexOutOfBoundsException
 	 *             when {@code location < 0 || > size()}
 	 */
-	@Override
-	public boolean appendAll(int location, Collection<? extends IExpr> collection) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
+	// @Override
+	// public boolean appendAll(int location, Collection<? extends IExpr> collection) {
+	// hashValue = 0;
+	// throw new UnsupportedOperationException();
+	// }
 
 	// @Override
 	// public boolean addAll(List<? extends IExpr> list) {
 	// throw new UnsupportedOperationException();
 	// }
 
-	@Override
-	public boolean appendAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
-		throw new UnsupportedOperationException();
-	}
+	// @Override
+	// public boolean appendAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
+	// throw new UnsupportedOperationException();
+	// }
 
 	// @Override
 	// public boolean appendArgs(IAST ast) {
 	// throw new UnsupportedOperationException();
 	// }
 
-	@Override
-	public final boolean appendArgs(IAST ast, int untilPosition) {
-		throw new UnsupportedOperationException();
-	}
+	// @Override
+	// public final boolean appendArgs(IAST ast, int untilPosition) {
+	// throw new UnsupportedOperationException();
+	// }
 
 	@Override
 	public IAST appendOneIdentity(IAST subAST) {
@@ -189,11 +189,11 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	 * @throws IndexOutOfBoundsException
 	 *             when {@code location < 0 || > size()}
 	 */
-//	@Override
-//	public void append(int location, IExpr object) {
-//		hashValue = 0;
-//		throw new UnsupportedOperationException();
-//	}
+	// @Override
+	// public void append(int location, IExpr object) {
+	// hashValue = 0;
+	// throw new UnsupportedOperationException();
+	// }
 
 	/**
 	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code>

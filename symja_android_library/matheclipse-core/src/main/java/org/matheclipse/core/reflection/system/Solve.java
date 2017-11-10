@@ -1121,7 +1121,7 @@ public class Solve extends AbstractFunctionEvaluator {
 					}
 
 					if (subSolutionSet.size() > 0) {
-						IAST list = F.List();
+						IASTAppendable list = F.ListAlloc(subSolutionSet.size());
 						list.appendAll(subSolutionSet);
 						return list;
 					}

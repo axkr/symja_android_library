@@ -18,6 +18,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.UnaryNumerical;
 import org.matheclipse.core.graphics.Dimensions2D;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -68,7 +69,7 @@ public class Plot extends AbstractEvaluator {
 							}
 						}
 					}
-					final IAST graphics = Graphics();
+					final IASTAppendable graphics = Graphics();
 					IAST line = Line();
 					IExpr temp;
 					Dimensions2D dim = new Dimensions2D();

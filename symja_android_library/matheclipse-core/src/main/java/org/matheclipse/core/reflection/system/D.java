@@ -353,7 +353,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 				}
 
 				// D[f_^g_,y_]:= f^g*(((g*D[f,y])/f)+Log[f]*D[g,y])
-				final IAST resultList = F.Times();
+				final IASTAppendable resultList = F.TimesAlloc(2);
 				resultList.append(F.Power(f, g));
 				resultList.append(F.Plus(F.Times(g, F.D(f, y), F.Power(f, F.CN1)), F.Times(F.Log(f), F.D(g, y))));
 				return resultList;

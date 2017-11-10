@@ -193,10 +193,10 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 * @deprecated use #appendAll()
 	 */
-	@Deprecated
-	default boolean addAll(Collection<? extends IExpr> collection) {
-		return appendAll(collection);
-	}
+	// @Deprecated
+	// default boolean addAll(Collection<? extends IExpr> collection) {
+	// return appendAll(collection);
+	// }
 
 	/**
 	 * 
@@ -206,10 +206,10 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 * @deprecated use appendAll()
 	 */
-	@Deprecated
-	default boolean addAll(IAST ast, int startPosition, int endPosition) {
-		return appendAll(ast, startPosition, endPosition);
-	}
+	// @Deprecated
+	// default boolean addAll(IAST ast, int startPosition, int endPosition) {
+	// return appendAll(ast, startPosition, endPosition);
+	// }
 
 	/**
 	 * 
@@ -218,10 +218,10 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 * @deprecated use appendAll()
 	 */
-	@Deprecated
-	default boolean addAll(int location, Collection<? extends IExpr> collection) {
-		return appendAll(location, collection);
-	}
+	// @Deprecated
+	// default boolean addAll(int location, Collection<? extends IExpr> collection) {
+	// return appendAll(location, collection);
+	// }
 
 	/**
 	 * 
@@ -231,10 +231,10 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 * @deprecated use appendAll()
 	 */
-	@Deprecated
-	default boolean addAll(List<? extends IExpr> list, int startPosition, int endPosition) {
-		return appendAll(list, startPosition, endPosition);
-	}
+	// @Deprecated
+	// default boolean addAll(List<? extends IExpr> list, int startPosition, int endPosition) {
+	// return appendAll(list, startPosition, endPosition);
+	// }
 
 	/**
 	 * 
@@ -242,10 +242,10 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 * @deprecated use appendClone();
 	 */
-	@Deprecated
-	default IAST addClone(IExpr expr) {
-		return appendClone(expr);
-	}
+	// @Deprecated
+	// default IAST addClone(IExpr expr) {
+	// return appendClone(expr);
+	// }
 
 	/**
 	 * Add an evaluation flag to the existing ones.
@@ -280,7 +280,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @throws IllegalArgumentException
 	 *             if an object cannot be added to this {@code List}.
 	 */
-	public boolean appendAll(Collection<? extends IExpr> collection);
+	// public boolean appendAll(Collection<? extends IExpr> collection);
 
 	/**
 	 * Appends all elements from offset <code>startPosition</code> to <code>endPosition</code> in the specified AST to
@@ -295,9 +295,9 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <tt>true</tt> if this AST changed as a result of the call
 	 * 
 	 */
-	public boolean appendAll(IAST ast, int startPosition, int endPosition);
+//	public boolean appendAll(IAST ast, int startPosition, int endPosition);
 
-	public boolean appendAll(int location, Collection<? extends IExpr> collection);
+//	public boolean appendAll(int location, Collection<? extends IExpr> collection);
 
 	/**
 	 * Appends all elements from offset <code>startPosition</code> to <code>endPosition</code> in the specified list to
@@ -312,7 +312,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <tt>true</tt> if this AST changed as a result of the call
 	 * 
 	 */
-	public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition);
+//	public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition);
 
 	/**
 	 * Appends all of the arguments (starting from offset <code>1</code>) in the specified AST up to position
@@ -326,7 +326,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <tt>true</tt> if this AST changed as a result of the call
 	 * 
 	 */
-	public boolean appendArgs(IAST ast, int untilPosition);
+	// public boolean appendArgs(IAST ast, int untilPosition);
 
 	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and add the

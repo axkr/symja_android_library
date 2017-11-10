@@ -3867,8 +3867,7 @@ public class F {
 		return binaryAST2(GegenbauerC, a0, a1);
 	}
 
-	public static IAST Graphics() {
-
+	public static IASTAppendable Graphics() {
 		return ast(Graphics);
 	}
 
@@ -5414,7 +5413,7 @@ public class F {
 		return new AST(new IExpr[] { head, a0, a1, a2, a3, a4, a5 });
 	}
 
-	public static IAST Sequence() {
+	public static IASTAppendable Sequence() {
 		return ast(Sequence);
 	}
 
@@ -5706,7 +5705,7 @@ public class F {
 		return intIterator(F.Plus, function, iMin, iMax, iStep);
 	}
 
-	public static IAST SurfaceGraphics() {
+	public static IASTAppendable SurfaceGraphics() {
 
 		return ast(SurfaceGraphics);
 	}

@@ -89,16 +89,16 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
 	 *         otherwise.
 	 */
-	@Override
-	public boolean appendAll(Collection<? extends IExpr> collection) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
+//	@Override
+//	public boolean appendAll(Collection<? extends IExpr> collection) {
+//		hashValue = 0;
+//		throw new UnsupportedOperationException();
+//	}
 
-	@Override
-	public boolean appendAll(IAST ast, int startPosition, int endPosition) {
-		throw new UnsupportedOperationException();
-	}
+	// @Override
+	// public boolean appendAll(IAST ast, int startPosition, int endPosition) {
+	// throw new UnsupportedOperationException();
+	// }
 
 	/**
 	 * Inserts the objects in the specified collection at the specified location
@@ -114,26 +114,26 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 * @throws IndexOutOfBoundsException
 	 *             when {@code location < 0 || > size()}
 	 */
-	@Override
-	public boolean appendAll(int location, Collection<? extends IExpr> collection) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
+//	@Override
+//	public boolean appendAll(int location, Collection<? extends IExpr> collection) {
+//		hashValue = 0;
+//		throw new UnsupportedOperationException();
+//	}
 
 	// @Override
 	// public boolean addAll(List<? extends IExpr> ast) {
 	// throw new UnsupportedOperationException();
 	// }
 
-	@Override
-	public boolean appendAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
-		throw new UnsupportedOperationException();
-	}
+//	@Override
+//	public boolean appendAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
+//		throw new UnsupportedOperationException();
+//	}
 	
-	@Override
-	public final boolean appendArgs(IAST ast, int untilPosition) {
-		throw new UnsupportedOperationException();
-	}
+//	@Override
+//	public final boolean appendArgs(IAST ast, int untilPosition) {
+//		throw new UnsupportedOperationException();
+//	}
 	
 	@Override
 	public IAST appendOneIdentity(IAST subAST) {

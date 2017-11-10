@@ -14,6 +14,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.BinaryNumerical;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -39,7 +40,7 @@ public class Plot3D extends AbstractEvaluator {
 		// ISymbol optionsArray[] = new ISymbol[] { f.BoxRatios, f.PlotRange };
 		if ((ast.size() >= 4) && ast.get(2).isList() && ast.get(3).isList()) {
 			try {
-				final IAST graphics = SurfaceGraphics();
+				final IASTAppendable graphics = SurfaceGraphics();
 				IExpr temp;
 				final IAST lst1 = (IAST) ast.arg2(); // x-Range
 				final IAST lst2 = (IAST) ast.arg3(); // y-Range
