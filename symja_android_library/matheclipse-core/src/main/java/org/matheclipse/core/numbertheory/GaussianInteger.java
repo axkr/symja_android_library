@@ -18,6 +18,7 @@ import java.util.TreeMap;
 import org.matheclipse.core.expression.ComplexSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 
@@ -32,9 +33,9 @@ public final class GaussianInteger {
 		GaussianInteger g = new GaussianInteger();
 		SortedMap<ComplexSym, Integer> complexMap = new TreeMap<ComplexSym, Integer>();
 		g.gaussianFactorization2(re, im, complexMap);
-		IAST list = F.ListAlloc(complexMap.size() + 1);
+		IASTAppendable list = F.ListAlloc(complexMap.size() + 1);
 		IExpr factor = F.C1;
-		IAST ast = F.Times();
+		IASTAppendable ast = F.TimesAlloc(complexMap.size());
 		for (Map.Entry<ComplexSym, Integer> entry : complexMap.entrySet()) {
 			ComplexSym key = entry.getKey();
 			int i = entry.getValue();

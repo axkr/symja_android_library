@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -43,7 +44,7 @@ public class Curl extends AbstractFunctionEvaluator {
 			if (ast.arg2().isVector() == 3) {
 				IAST variables = (IAST) ast.arg2();
 				IAST vector = (IAST) ast.arg1();
-				IAST curlVector = F.List();
+				IASTAppendable curlVector = F.ListAlloc(vector.size());
 				curlVector
 						.append(F.Subtract(F.D(vector.arg3(), variables.arg2()), F.D(vector.arg2(), variables.arg3())));
 				curlVector

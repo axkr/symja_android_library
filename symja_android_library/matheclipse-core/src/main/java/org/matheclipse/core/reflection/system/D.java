@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.BinaryBindIth1st;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -209,14 +210,14 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 	private IExpr getDerivativeArgN(IExpr x, final IAST ast, final IExpr head) {
 		IAST[] deriv = ast.isDerivative();
 		if (deriv != null) {
-			IAST plus = F.PlusAlloc(ast.size());
+			IASTAppendable plus = F.PlusAlloc(ast.size());
 			for (int i = 1; i < ast.size(); i++) {
 				plus.append(F.Times(F.D(ast.get(i), x), addDerivative(i, deriv[0], deriv[1].arg1(), ast)));
 			}
 			return plus;
 		}
 		if (head.isSymbol()) {
-			IAST plus = F.PlusAlloc(ast.size());
+			IASTAppendable plus = F.PlusAlloc(ast.size());
 			for (int i = 1; i < ast.size(); i++) {
 				plus.append(F.Times(F.D(ast.get(i), x), createDerivative(i, head, ast)));
 			}
@@ -235,7 +236,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 	 * @return
 	 */
 	private IAST createDerivative(final int pos, final IExpr header, final IAST args) {
-		IAST derivativeHead1 = F.ast(F.Derivative, args.size(), false);
+		IASTAppendable derivativeHead1 = F.ast(F.Derivative, args.size(), false);
 		for (int i = 1; i < args.size(); i++) {
 			if (i == pos) {
 				derivativeHead1.append(F.C1);
@@ -243,9 +244,9 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 				derivativeHead1.append(F.C0);
 			}
 		}
-		IAST derivativeHead2 = F.ast(derivativeHead1);
+		IASTAppendable derivativeHead2 = F.ast(derivativeHead1);
 		derivativeHead2.append(header);
-		IAST derivativeAST = F.ast(derivativeHead2, args.size(), false);
+		IASTAppendable derivativeAST = F.ast(derivativeHead2, args.size(), false);
 		for (int i = 1; i < args.size(); i++) {
 			derivativeAST.append(args.get(i));
 		}
@@ -259,9 +260,9 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 				derivativeHead1.set(i, derivativeHead1.get(i).inc());
 			}
 		}
-		IAST derivativeHead2 = F.ast(derivativeHead1);
+		IASTAppendable derivativeHead2 = F.ast(derivativeHead1);
 		derivativeHead2.append(header);
-		IAST derivativeAST = F.ast(derivativeHead2, args.size(), false);
+		IASTAppendable derivativeAST = F.ast(derivativeHead2, args.size(), false);
 		for (int i = 1; i < args.size(); i++) {
 			derivativeAST.append(args.get(i));
 		}
@@ -295,7 +296,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 			IAST xList = (IAST) x;
 			if (xList.isAST1() && xList.arg1().isListOfLists()) {
 				IAST subList = (IAST) xList.arg1();
-				IAST result = F.ListAlloc(subList.size());
+				IASTAppendable result = F.ListAlloc(subList.size());
 				for (int i = 1; i < subList.size(); i++) {
 					result.append(F.D(fx, F.List(subList.get(i))));
 				}

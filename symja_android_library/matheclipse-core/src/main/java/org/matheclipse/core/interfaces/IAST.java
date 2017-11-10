@@ -248,16 +248,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	}
 
 	/**
-	 * Appends all of the arguments (starting from offset <code>0</code>) in the specified list to the end of this AST.
-	 * 
-	 * @param list
-	 *            list containing elements to be added to this AST
-	 * @return <tt>true</tt> if this AST changed as a result of the call
-	 * 
-	 */
-	// public boolean addAll(List<? extends IExpr> list);
-
-	/**
 	 * Add an evaluation flag to the existing ones.
 	 * 
 	 * @param i

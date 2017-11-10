@@ -285,7 +285,7 @@ public class AST2Expr {
 			default:
 				ast = F.ast(convertNode(functionNode.get(0)), functionNode.size(), false);
 				for (int i = 1; i < functionNode.size(); i++) {
-					ast.append(convertNode(functionNode.get(i)));
+					((IASTAppendable)ast).append(convertNode(functionNode.get(i)));
 				}
 			}
 
@@ -498,7 +498,7 @@ public class AST2Expr {
 	private IExpr rewriteLessGreaterAST(final IASTMutable ast, ISymbol compareHead) {
 		IExpr temp;
 		boolean evaled = false;
-		IAST andAST = F.ast(F.And);
+		IASTAppendable andAST =  F.And();
 		for (int i = 1; i < ast.size(); i++) {
 			temp = ast.get(i);
 			if (temp.isASTSizeGE(compareHead, 3)) {

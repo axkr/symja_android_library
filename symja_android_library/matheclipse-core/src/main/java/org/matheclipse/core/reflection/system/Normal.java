@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
@@ -34,8 +35,8 @@ public class Normal extends AbstractFunctionEvaluator {
 						long den = ((IInteger) seriesData.get(6)).toLong();
 						int size = list.size();
 
-						IAST result = F.Plus();
-						for (int i = 1; i < list.size(); i++) {
+						IASTAppendable result = F.PlusAlloc(size);
+						for (int i = 1; i < size; i++) {
 							// INumber exp = F.fraction(nmin, den).normalize();
 							// IExpr pow = x.subtract(x0).power(exp);
 							INumber exp = F.fraction(nmin + i - 1L, den).normalize();

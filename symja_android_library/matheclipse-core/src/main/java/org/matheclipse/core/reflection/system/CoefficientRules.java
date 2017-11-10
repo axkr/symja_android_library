@@ -15,10 +15,10 @@ import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
-import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.ExprTermOrder;
@@ -32,8 +32,7 @@ import edu.jas.poly.TermOrder;
 import edu.jas.poly.TermOrderByName;
 
 /**
- * Get exponent vectors and coefficients of monomials of a polynomial
- * expression.
+ * Get exponent vectors and coefficients of monomials of a polynomial expression.
  * 
  * See <a href="http://en.wikipedia.org/wiki/Monomial">Wikipedia - Monomial<a/>
  */
@@ -93,8 +92,7 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Get exponent vectors and coefficients of monomials of a polynomial
-	 * expression.
+	 * Get exponent vectors and coefficients of monomials of a polynomial expression.
 	 * 
 	 * @param polynomial
 	 * @param variable
@@ -106,12 +104,13 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 			throws JASConversionException {
 		JASIExpr jas = new JASIExpr(variablesList, ExprRingFactory.CONST, termOrder, false);
 		GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
-		IAST resultList = F.List();
+		IASTAppendable resultList = F.ListAlloc(polyExpr.length());
 		for (Monomial<IExpr> monomial : polyExpr) {
-			IAST ruleList = F.List();
+
 			IExpr coeff = monomial.coefficient();
 			ExpVector exp = monomial.exponent();
 			int len = exp.length();
+			IASTAppendable ruleList = F.ListAlloc(len);
 			for (int i = 0; i < len; i++) {
 				ruleList.append(F.integer(exp.getVal(len - i - 1)));
 			}
@@ -121,8 +120,7 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Get exponent vectors and coefficients of monomials of a polynomial
-	 * expression.
+	 * Get exponent vectors and coefficients of monomials of a polynomial expression.
 	 * 
 	 * @param polynomial
 	 * @param variable
@@ -132,19 +130,19 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 	 *            the &quot;Modulus&quot; option
 	 * @return the list of monomials of the univariate polynomial.
 	 */
-	private static IAST coefficientRulesModulus(IExpr polynomial, List<IExpr> variablesList,
-			final TermOrder termOrder, IExpr option) throws JASConversionException {
+	private static IAST coefficientRulesModulus(IExpr polynomial, List<IExpr> variablesList, final TermOrder termOrder,
+			IExpr option) throws JASConversionException {
 		try {
 			// found "Modulus" option => use ModIntegerRing
 			ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
 			JASModInteger jas = new JASModInteger(variablesList, modIntegerRing);
 			GenPolynomial<ModLong> polyExpr = jas.expr2JAS(polynomial);
-			IAST resultList = F.List();
+			IASTAppendable resultList = F.ListAlloc(polyExpr.length());
 			for (Monomial<ModLong> monomial : polyExpr) {
 				ModLong coeff = monomial.coefficient();
 				ExpVector exp = monomial.exponent();
-				IAST ruleList = F.List();
 				int len = exp.length();
+				IASTAppendable ruleList = F.ListAlloc(len);
 				for (int i = 0; i < len; i++) {
 					ruleList.append(F.integer(exp.getVal(len - i - 1)));
 				}
