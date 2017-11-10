@@ -13,10 +13,13 @@ import org.matheclipse.core.expression.AST0;
 import org.matheclipse.core.expression.AST1;
 import org.matheclipse.core.expression.AST2;
 import org.matheclipse.core.expression.AST3;
+import org.matheclipse.core.expression.ASTRealMatrix;
+import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.BigFractionSym;
 import org.matheclipse.core.expression.BigIntegerSym;
+import org.matheclipse.core.expression.BuiltInSymbol;
 import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.ComplexSym;
 import org.matheclipse.core.expression.FractionSym;
@@ -25,8 +28,9 @@ import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.Pattern;
 import org.matheclipse.core.expression.PatternSequence;
 import org.matheclipse.core.expression.StringX;
-import org.matheclipse.core.expression.BuiltInSymbol;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 
 public class PrintClassHierarchy {
 	private static final String PADDING = "        ";
@@ -37,10 +41,11 @@ public class PrintClassHierarchy {
 	private final Map<String, List<String>> subClazzEntries = new HashMap<String, List<String>>();
 
 	public static void main(final String[] args) {
-		new PrintClassHierarchy(IAST.class, AST0.class, AST1.class, AST2.class, AST3.class, AST.class, ComplexSym.class,
+		new PrintClassHierarchy(IAST.class, IASTMutable.class, AST0.class, AST1.class, AST2.class, AST3.class,
+				AST.class, ASTRealMatrix.class, ASTRealVector.class, IASTAppendable.class, ComplexSym.class,
 				IntegerSym.class, BigIntegerSym.class, FractionSym.class, BigFractionSym.class, ComplexNum.class,
-				Num.class, ApcomplexNum.class, ApfloatNum.class, Pattern.class, PatternSequence.class, BuiltInSymbol.class,
-				StringX.class).printHierarchy();
+				Num.class, ApcomplexNum.class, ApfloatNum.class, Pattern.class, PatternSequence.class,
+				BuiltInSymbol.class, StringX.class).printHierarchy();
 	}
 
 	public PrintClassHierarchy(final Class<?>... clazzes) {
