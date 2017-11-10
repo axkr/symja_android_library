@@ -18,6 +18,7 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.util.SuggestTree;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -238,7 +239,7 @@ public class AST2Expr {
 	 * @return the <code>ast</code>with the added elements
 	 * @throws ConversionException
 	 */
-	public IAST convert(FunctionNode functionNode, IASTMutable ast) throws ConversionException {
+	public IAST convert(FunctionNode functionNode, IASTAppendable ast) throws ConversionException {
 		ast.set(0, convertNode(functionNode.get(0)));
 		for (int i = 1; i < functionNode.size(); i++) {
 			ast.append(convertNode(functionNode.get(i)));

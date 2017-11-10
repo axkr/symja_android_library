@@ -50,7 +50,7 @@ import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -2574,7 +2574,7 @@ public class F {
 		return And(integer(i), b);
 	}
 
-	public static IASTMutable And() {
+	public static IASTAppendable And() {
 		return ast(And);
 	}
 
@@ -2702,7 +2702,7 @@ public class F {
 	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
 	 * 
 	 */
-	public final static IASTMutable ast(final IExpr head) {
+	public final static IASTAppendable ast(final IExpr head) {
 		return AST.newInstance(head);
 	}
 
@@ -2718,7 +2718,7 @@ public class F {
 	 *            initialize all elements with <code>null</code>.
 	 * @return
 	 */
-	public static IASTMutable ast(final IExpr head, final int initialCapacity, final boolean initNull) {
+	public static IASTAppendable ast(final IExpr head, final int initialCapacity, final boolean initNull) {
 		final AST ast = AST.newInstance(initialCapacity, head);
 		if (initNull) {
 			for (int i = 0; i < initialCapacity; i++) {
@@ -2774,7 +2774,7 @@ public class F {
 	 *            <code>f[x,y], Sin[x],...</code>, the <code>head</code> will be an instance of type ISymbol.
 	 * @return
 	 */
-	public static IAST ast(final IExpr[] arr, final IExpr head) {
+	public static IASTAppendable ast(final IExpr[] arr, final IExpr head) {
 		return new AST(head, arr);
 	}
 
@@ -3487,7 +3487,7 @@ public class F {
 	 */
 	@Deprecated
 	private static IExpr eval(final ISymbol head, final IExpr a0) {
-		final IASTMutable ast = ast(head);
+		final IASTAppendable ast = ast(head);
 		ast.append(a0);
 		return EvalEngine.get().evaluate(ast);
 	}
@@ -4191,7 +4191,7 @@ public class F {
 
 	public static IAST intIterator(ISymbol head, final Function<IExpr, IExpr> function, final int from, final int to,
 			final int step) {
-		IASTMutable result = F.ast(head, to - from + 1, false);
+		IASTAppendable result = F.ast(head, to - from + 1, false);
 		for (int i = from; i <= to; i += step) {
 			result.append(function.apply(F.ZZ(i)));
 		}
@@ -4503,7 +4503,7 @@ public class F {
 	 *            the assumed number of arguments (+ 1 for the header expression is added internally).
 	 * @return
 	 */
-	public static IASTMutable ListAlloc(int capacity) {
+	public static IASTAppendable ListAlloc(int capacity) {
 		return ast(List, capacity, false);
 	}
 
@@ -4554,7 +4554,7 @@ public class F {
 		return ast(a, List);
 	}
 
-	public static IAST List(final IExpr... a) {// 0, final IExpr a1, final IExpr
+	public static IASTAppendable List(final IExpr... a) {// 0, final IExpr a1, final IExpr
 		// a2) {
 		return ast(a, List);
 		// return ternary(List, a0, a1, a2);
@@ -4914,7 +4914,7 @@ public class F {
 		return Or(integer(i), b);
 	}
 
-	public static IASTMutable Or() {
+	public static IASTAppendable Or() {
 		return ast(Or);
 	}
 
@@ -4938,8 +4938,8 @@ public class F {
 		return ast(Part);
 	}
 
-	public static IASTMutable Part(final IExpr... a) {
-		IASTMutable part = F.ast(Part, a.length + 1, false);
+	public static IASTAppendable Part(final IExpr... a) {
+		IASTAppendable part = F.ast(Part, a.length + 1, false);
 		for (int i = 0; i < a.length; i++) {
 			part.append(a[i]);
 		}
@@ -4997,7 +4997,7 @@ public class F {
 	 * @param size
 	 * @return
 	 */
-	public static IASTMutable PlusAlloc(int size) {
+	public static IASTAppendable PlusAlloc(int size) {
 		return ast(Plus, size, false);
 	}
 
@@ -5023,7 +5023,7 @@ public class F {
 				} else {
 					size++;
 				}
-				IASTMutable result = PlusAlloc(size);
+				IASTAppendable result = PlusAlloc(size);
 				if (a0.isPlus()) {
 					result.appendArgs((IAST) a0);
 				} else {
@@ -5665,7 +5665,7 @@ public class F {
 			if (a1.isZero()) {
 				return (IAST) a0;
 			}
-			IASTMutable clone = F.PlusAlloc(((IAST) a0).size() + 1);
+			IASTAppendable clone = F.PlusAlloc(((IAST) a0).size() + 1);
 			clone.appendArgs((IAST) a0);
 			clone.append(binary(Times, CN1, a1));
 			return clone;
@@ -5788,7 +5788,7 @@ public class F {
 	 * @param size
 	 * @return
 	 */
-	public static IASTMutable TimesAlloc(int size) {
+	public static IASTAppendable TimesAlloc(int size) {
 		return ast(Times, size, false);
 	}
 
@@ -5814,7 +5814,7 @@ public class F {
 				} else {
 					size++;
 				}
-				IASTMutable result = TimesAlloc(size);
+				IASTAppendable result = TimesAlloc(size);
 				if (a0.isTimes()) {
 					result.appendArgs((IAST) a0);
 				} else {
@@ -5984,9 +5984,9 @@ public class F {
 	 * @return
 	 */
 	public static IAST matrix(BiFunction<Integer, Integer, ? extends IExpr> biFunction, int n, int m) {
-		IASTMutable matrix = F.ListAlloc(n);
+		IASTAppendable matrix = F.ListAlloc(n);
 		for (int i = 0; i < n; i++) {
-			IASTMutable row = F.ListAlloc(m);
+			IASTAppendable row = F.ListAlloc(m);
 			for (int j = 0; j < m; j++) {
 				row.append(biFunction.apply(i, j));
 			}
@@ -6005,7 +6005,7 @@ public class F {
 	 * @return
 	 */
 	public static IAST vector(IntFunction<? extends IExpr> iFunction, int n) {
-		IASTMutable matrix = F.ListAlloc(n);
+		IASTAppendable matrix = F.ListAlloc(n);
 		for (int i = 0; i < n; i++) {
 			matrix.append(iFunction.apply(i));
 		}

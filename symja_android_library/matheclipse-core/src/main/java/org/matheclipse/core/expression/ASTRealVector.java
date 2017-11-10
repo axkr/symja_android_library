@@ -15,8 +15,10 @@ import java.util.function.Predicate;
 
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.RealVector;
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -147,10 +149,10 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 		throw new UnsupportedOperationException();
 	}
 
-	@Override
-	public boolean appendArgs(IAST ast) {
-		throw new UnsupportedOperationException();
-	}
+	// @Override
+	// public boolean appendArgs(IAST ast) {
+	// throw new UnsupportedOperationException();
+	// }
 
 	@Override
 	public final boolean appendArgs(IAST ast, int untilPosition) {
@@ -290,8 +292,9 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	 * @see java.lang.Cloneable
 	 */
 	@Override
-	public IASTMutable clone() {
-		return new ASTRealVector(vector.copy(), false);
+	public IASTAppendable clone() {
+		return Convert.vector2List(vector);
+		// return new ASTRealVector(vector.copy(), false);
 	}
 
 	/** {@inheritDoc} */

@@ -14,7 +14,7 @@ import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPattern;
@@ -72,7 +72,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			}
 		}
 
-		public void filterResult(IASTMutable result) {
+		public void filterResult(IASTAppendable result) {
 			for (int i = 0; i < fUsedIndex.length; i++) {
 				result.set(fUsedIndex[i], null);
 			}
@@ -477,7 +477,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				final OrderlessMatcher foMatcher = new OrderlessMatcher(lhsPatternAST, lhsEvalAST);
 				boolean matched = foMatcher.matchOrderlessAST(1, null, engine);
 				if (matched) {
-					IASTMutable lhsResultAST = (lhsEvalAST).clone();
+					IASTAppendable lhsResultAST = (lhsEvalAST).clone();
 					foMatcher.filterResult(lhsResultAST);
 					IExpr result = fPatternMap.substituteSymbols(rhsExpr);
 					try {
@@ -787,7 +787,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 *         be matched or contains no pattern with default value.
 	 */
 	private IExpr matchDefaultArgumentsAST(ISymbol symbolWithDefaultValue, IAST lhsPatternAST) {
-		IASTMutable cloned = F.ast(lhsPatternAST.head(), lhsPatternAST.size(), false);
+		IASTAppendable cloned = F.ast(lhsPatternAST.head(), lhsPatternAST.size(), false);
 		boolean defaultValueMatched = false;
 		for (int i = 1; i < lhsPatternAST.size(); i++) {
 			if (lhsPatternAST.get(i).isPatternDefault()) {
@@ -988,7 +988,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 */
 	private IExpr matchOptionalArgumentsAST(ISymbol symbolWithDefaultValue, IAST lhsPatternAST, IAST lhsEvalAST) {
 		int lhsSize = lhsEvalAST.size();
-		IASTMutable cloned = F.ast(lhsPatternAST.head(), lhsPatternAST.size(), false);
+		IASTAppendable cloned = F.ast(lhsPatternAST.head(), lhsPatternAST.size(), false);
 		boolean defaultValueMatched = false;
 		for (int i = 1; i < lhsPatternAST.size(); i++) {
 			if (lhsPatternAST.get(i).isPatternDefault()) {

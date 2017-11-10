@@ -5,7 +5,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -26,7 +26,7 @@ public class ComposeList extends AbstractEvaluator {
 		return evaluateComposeList(ast, F.ListAlloc(8));
 	}
 
-	public static IExpr evaluateComposeList(final IAST ast, final IASTMutable resultList) {
+	public static IExpr evaluateComposeList(final IAST ast, final IASTAppendable resultList) {
 		try {
 			if ((ast.isAST2()) && (ast.arg1().isAST())) {
 				// final EvalEngine engine = EvalEngine.get();

@@ -24,6 +24,7 @@ import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
@@ -90,10 +91,9 @@ public final class BooleanFunctions {
 		}
 
 		/**
-		 * If all expressions evaluates to <code>true</code> for a given unary predicate
-		 * function return <code>True</code>, if any expression evaluates to
-		 * <code>false</code> return <code>False</code>, else return an
-		 * <code>And(...)</code> expression of the result expressions.
+		 * If all expressions evaluates to <code>true</code> for a given unary predicate function return
+		 * <code>True</code>, if any expression evaluates to <code>false</code> return <code>False</code>, else return
+		 * an <code>And(...)</code> expression of the result expressions.
 		 * 
 		 * @param list
 		 *            list of expressions
@@ -103,7 +103,7 @@ public final class BooleanFunctions {
 		 * @return
 		 */
 		public IExpr allTrue(IAST list, IExpr head, EvalEngine engine) {
-			IASTMutable logicalAnd = (IASTMutable)F.And();
+			IASTAppendable logicalAnd = F.And();
 
 			if (!Lambda.forAll(list, x -> {
 				IExpr temp = engine.evaluate(F.unary(head, x));
@@ -133,13 +133,11 @@ public final class BooleanFunctions {
 	/**
 	 * 
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Logical_conjunction">Logical
-	 * conjunction</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Logical_conjunction">Logical conjunction</a>
 	 * 
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/And">And
-	 * </a>
+	 * See the online Symja function reference:
+	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/And">And </a>
 	 * </p>
 	 */
 	private static class And extends AbstractCoreFunctionEvaluator {
@@ -163,7 +161,7 @@ public final class BooleanFunctions {
 				flattenedAST = ast;
 			}
 
-			IASTMutable result = flattenedAST.clone();
+			IASTAppendable result = flattenedAST.clone();
 			int[] symbols = new int[flattenedAST.size()];
 			int[] notSymbols = new int[flattenedAST.size()];
 			for (int i = 1; i < flattenedAST.size(); i++) {
@@ -247,10 +245,9 @@ public final class BooleanFunctions {
 		}
 
 		/**
-		 * If any expression evaluates to <code>true</code> for a given unary predicate
-		 * function return <code>True</code>, if all are <code>false</code> return
-		 * <code>False</code>, else return an <code>Or(...)</code> expression of the
-		 * result expressions.
+		 * If any expression evaluates to <code>true</code> for a given unary predicate function return
+		 * <code>True</code>, if all are <code>false</code> return <code>False</code>, else return an
+		 * <code>Or(...)</code> expression of the result expressions.
 		 * 
 		 * @param list
 		 *            list of expressions
@@ -260,14 +257,14 @@ public final class BooleanFunctions {
 		 * @return
 		 */
 		public IExpr anyTrue(IAST list, IExpr head, EvalEngine engine) {
-			IASTMutable logicalOr = (IASTMutable)F.Or();
+			IASTAppendable logicalOr = F.Or();
 			if (list.exists(x -> anyTrueArgument(x, head, logicalOr, engine), 1)) {
 				return F.True;
 			}
 			return logicalOr.isAST0() ? F.False : logicalOr;
 		}
 
-		private static boolean anyTrueArgument(IExpr x, IExpr head, IASTMutable resultCollector, EvalEngine engine) {
+		private static boolean anyTrueArgument(IExpr x, IExpr head, IASTAppendable resultCollector, EvalEngine engine) {
 			IExpr temp = engine.evaluate(F.unary(head, x));
 			if (temp.isTrue()) {
 				return true;
@@ -286,9 +283,8 @@ public final class BooleanFunctions {
 	/**
 	 * Predicate function
 	 * 
-	 * Returns <code>1</code> if the 1st argument evaluates to <code>True</code> ;
-	 * returns <code>0</code> if the 1st argument evaluates to <code>False</code>;
-	 * and <code>null</code> otherwise.
+	 * Returns <code>1</code> if the 1st argument evaluates to <code>True</code> ; returns <code>0</code> if the 1st
+	 * argument evaluates to <code>False</code>; and <code>null</code> otherwise.
 	 */
 	private static class Boole extends AbstractFunctionEvaluator {
 
@@ -391,8 +387,7 @@ public final class BooleanFunctions {
 	}
 
 	/**
-	 * Minimize a boolean function with the
-	 * <a href="http://en.wikipedia.org/wiki/Quine%E2%80%93McCluskey_algorithm">
+	 * Minimize a boolean function with the <a href="http://en.wikipedia.org/wiki/Quine%E2%80%93McCluskey_algorithm">
 	 * Quine McCluskey algorithm</a>.
 	 */
 	private static class BooleanMinimize extends AbstractFunctionEvaluator {
@@ -420,15 +415,14 @@ public final class BooleanFunctions {
 	}
 
 	/**
-	 * See <a href="https://en.wikipedia.org/wiki/Truth_table">Wikipedia: Truth
-	 * table</a>
+	 * See <a href="https://en.wikipedia.org/wiki/Truth_table">Wikipedia: Truth table</a>
 	 * 
 	 */
 	private static class BooleanTable extends AbstractFunctionEvaluator {
 
 		private static class BooleanTableParameter {
 			public IAST variables;
-			public IASTMutable resultList;
+			public IASTAppendable resultList;
 			public EvalEngine engine;
 
 			public BooleanTableParameter(IAST variables, EvalEngine engine) {
@@ -527,8 +521,8 @@ public final class BooleanFunctions {
 		}
 
 		/**
-		 * Try to simplify a comparator expression. Example: <code>3*x > 6</code> wll be
-		 * simplified to <code>x> 2</code>.
+		 * Try to simplify a comparator expression. Example: <code>3*x > 6</code> wll be simplified to
+		 * <code>x> 2</code>.
 		 * 
 		 * @param a1
 		 *            left-hand-side of the comparator expression
@@ -536,8 +530,7 @@ public final class BooleanFunctions {
 		 *            right-hand-side of the comparator expression
 		 * @param originalHead
 		 *            symbol for which the simplification was started
-		 * @return the simplified comparator expression or <code>null</code> if no
-		 *         simplification was found
+		 * @return the simplified comparator expression or <code>null</code> if no simplification was found
 		 */
 		protected IExpr simplifyCompare(IExpr a1, IExpr a2, ISymbol originalHead) {
 			IExpr lhs, rhs;
@@ -575,7 +568,7 @@ public final class BooleanFunctions {
 					return equalNull(ast.arg1(), ast.arg2(), engine);
 				}
 				boolean evaled = false;
-				IASTMutable result = ast.clone();
+				IASTAppendable result = ast.clone();
 				int i = 2;
 				IExpr arg1 = F.expandAll(result.get(1), true, true);
 				while (i < result.size()) {
@@ -818,8 +811,7 @@ public final class BooleanFunctions {
 		 * <ul>
 		 * <li>Return TRUE if the comparison is <code>true</code></li>
 		 * <li>Return FALSE if the comparison is <code>false</code></li>
-		 * <li>Return UNDEFINED if the comparison is undetermined (i.e. could not be
-		 * evaluated)</li>
+		 * <li>Return UNDEFINED if the comparison is undetermined (i.e. could not be evaluated)</li>
 		 * </ul>
 		 * 
 		 * @param lower0
@@ -900,11 +892,9 @@ public final class BooleanFunctions {
 		 * @param useOppositeHeader
 		 *            use the opposite header to create the result
 		 * @param originalHead
-		 *            symbol of the comparator operator for which the simplification was
-		 *            started
+		 *            symbol of the comparator operator for which the simplification was started
 		 * @param oppositeHead
-		 *            opposite of the symbol of the comparator operator for which the
-		 *            comparison was started
+		 *            opposite of the symbol of the comparator operator for which the comparison was started
 		 * @return
 		 */
 		private IAST createComparatorResult(IExpr lhs, IExpr rhs, boolean useOppositeHeader, ISymbol originalHead,
@@ -1004,38 +994,34 @@ public final class BooleanFunctions {
 		}
 
 		/**
-		 * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code>
-		 * will be simplified to <code>x &gt; 2</code>.
+		 * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code> will be simplified to
+		 * <code>x &gt; 2</code>.
 		 * 
 		 * @param a1
 		 *            left-hand-side of the comparator expression
 		 * @param a2
 		 *            right-hand-side of the comparator expression
-		 * @return the simplified comparator expression or <code>null</code> if no
-		 *         simplification was found
+		 * @return the simplified comparator expression or <code>null</code> if no simplification was found
 		 */
 		protected IExpr simplifyCompare(IExpr a1, IExpr a2) {
 			return simplifyCompare(a1, a2, F.Greater, F.Less, true);
 		}
 
 		/**
-		 * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code> wll
-		 * be simplified to <code>x &gt; 2</code>.
+		 * Try to simplify a comparator expression. Example: <code>3*x &gt; 6</code> wll be simplified to
+		 * <code>x &gt; 2</code>.
 		 * 
 		 * @param a1
 		 *            left-hand-side of the comparator expression
 		 * @param a2
 		 *            right-hand-side of the comparator expression
 		 * @param originalHead
-		 *            symbol of the comparator operator for which the simplification was
-		 *            started
+		 *            symbol of the comparator operator for which the simplification was started
 		 * @param oppositeHead
-		 *            opposite of the symbol of the comparator operator for which the
-		 *            comparison was started
+		 *            opposite of the symbol of the comparator operator for which the comparison was started
 		 * @param setTrue
 		 *            if <code>true</code> return F.True otherwise F.False
-		 * @return the simplified comparator expression or <code>F.NIL</code> if no
-		 *         simplification was found
+		 * @return the simplified comparator expression or <code>F.NIL</code> if no simplification was found
 		 */
 		final protected IExpr simplifyCompare(IExpr a1, IExpr a2, ISymbol originalHead, ISymbol oppositeHead,
 				boolean setTrue) {
@@ -1371,7 +1357,7 @@ public final class BooleanFunctions {
 		private IExpr maximum(IAST list, boolean flattenedList) {
 			boolean evaled = false;
 			int j = 1;
-			IASTMutable f = Lambda.remove(list, x -> x.isNegativeInfinity());
+			IASTAppendable f = Lambda.remove(list, x -> x.isNegativeInfinity());
 			if (f.isPresent()) {
 				if (f.isAST0()) {
 					return F.CNInfinity;
@@ -1507,7 +1493,7 @@ public final class BooleanFunctions {
 
 		private IExpr minimum(IAST list, final boolean flattenedList) {
 			boolean evaled = false;
-			IASTMutable f = Lambda.remove(list, x -> x.isInfinity());
+			IASTAppendable f = Lambda.remove(list, x -> x.isInfinity());
 			if (f.isPresent()) {
 				if (f.isAST0()) {
 					return F.CNInfinity;
@@ -1580,7 +1566,7 @@ public final class BooleanFunctions {
 			if (ast.isAST1()) {
 				return F.Not(ast.arg1());
 			}
-			IASTMutable result = ast.copyHead();
+			IASTAppendable result = ast.copyHead();
 			boolean evaled = false;
 
 			for (int i = 1; i < ast.size(); i++) {
@@ -1653,10 +1639,9 @@ public final class BooleanFunctions {
 		}
 
 		/**
-		 * If any expression evaluates to <code>true</code> for a given unary predicate
-		 * function return <code>False</code>, if all are <code>false</code> return
-		 * <code>True</code>, else return an <code>Nor(...)</code> expression of the
-		 * result expressions.
+		 * If any expression evaluates to <code>true</code> for a given unary predicate function return
+		 * <code>False</code>, if all are <code>false</code> return <code>True</code>, else return an
+		 * <code>Nor(...)</code> expression of the result expressions.
 		 * 
 		 * @param list
 		 *            list of expressions
@@ -1666,14 +1651,15 @@ public final class BooleanFunctions {
 		 * @return
 		 */
 		public IExpr noneTrue(IAST list, IExpr head, EvalEngine engine) {
-			IASTMutable logicalNor = F.ast(F.Nor);
+			IASTAppendable logicalNor = F.ast(F.Nor);
 			if (list.exists(x -> noneTrueArgument(x, head, logicalNor, engine), 1)) {
 				return F.False;
 			}
 			return logicalNor.isAST0() ? F.True : logicalNor;
 		}
 
-		private static boolean noneTrueArgument(IExpr x, IExpr head, IASTMutable resultCollector, EvalEngine engine) {
+		private static boolean noneTrueArgument(IExpr x, IExpr head, IASTAppendable resultCollector,
+				EvalEngine engine) {
 			IExpr temp = engine.evaluate(F.unary(head, x));
 			if (temp.isTrue()) {
 				return true;
@@ -1753,7 +1739,7 @@ public final class BooleanFunctions {
 			if (ast.isAST1()) {
 				return F.Not(ast.arg1());
 			}
-			IASTMutable result = ast.copyHead();
+			IASTAppendable result = ast.copyHead();
 			boolean evaled = false;
 
 			for (int i = 1; i < ast.size(); i++) {
@@ -1823,8 +1809,7 @@ public final class BooleanFunctions {
 
 	/**
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Logical_disjunction">Logical
-	 * disjunction</a>
+	 * See <a href="http://en.wikipedia.org/wiki/Logical_disjunction">Logical disjunction</a>
 	 * 
 	 */
 	private static class Or extends AbstractCoreFunctionEvaluator {
@@ -1843,7 +1828,7 @@ public final class BooleanFunctions {
 				flattenedAST = ast;
 			}
 
-			IASTMutable result = flattenedAST.clone();
+			IASTAppendable result = flattenedAST.clone();
 			IExpr temp;
 			IExpr sym;
 			int[] symbols = new int[flattenedAST.size()];
@@ -2011,8 +1996,7 @@ public final class BooleanFunctions {
 	}
 
 	/**
-	 * See <a href="https://en.wikipedia.org/wiki/Tautology_%28logic%29">Wikipedia:
-	 * Tautology_</a>
+	 * See <a href="https://en.wikipedia.org/wiki/Tautology_%28logic%29">Wikipedia: Tautology_</a>
 	 * 
 	 */
 	private static class TautologyQ extends AbstractFunctionEvaluator {
@@ -2065,8 +2049,7 @@ public final class BooleanFunctions {
 	}
 
 	/**
-	 * Returns <code>True</code> if the 1st argument evaluates to <code>True</code>;
-	 * <code>False</code> otherwise
+	 * Returns <code>True</code> if the 1st argument evaluates to <code>True</code>; <code>False</code> otherwise
 	 */
 	private static class TrueQ extends AbstractFunctionEvaluator {
 
@@ -2170,8 +2153,7 @@ public final class BooleanFunctions {
 
 	/**
 	 * 
-	 * See <a href="https://en.wikipedia.org/wiki/Exclusive_or">Wikipedia: Exclusive
-	 * or</a>
+	 * See <a href="https://en.wikipedia.org/wiki/Exclusive_or">Wikipedia: Exclusive or</a>
 	 * 
 	 */
 	private static class Xor extends AbstractFunctionEvaluator {
@@ -2188,7 +2170,7 @@ public final class BooleanFunctions {
 			IExpr temp;
 			IExpr result = ast.arg1();
 			int size = ast.size();
-			IASTMutable xor = F.ast(F.Xor, size - 1, false);
+			IASTAppendable xor = F.ast(F.Xor, size - 1, false);
 			boolean evaled = false;
 			for (int i = 2; i < size; i++) {
 				temp = ast.get(i);
@@ -2245,8 +2227,7 @@ public final class BooleanFunctions {
 	 *            first argument
 	 * @param a2
 	 *            second argument
-	 * @return <code>F.NIL</code> or the simplified expression, if equality couldn't
-	 *         be determined.
+	 * @return <code>F.NIL</code> or the simplified expression, if equality couldn't be determined.
 	 */
 	public static IExpr equalNull(final IExpr a1, final IExpr a2, EvalEngine engine) {
 		IExpr.COMPARE_TERNARY b;

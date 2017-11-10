@@ -67,6 +67,7 @@ import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Symbol;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
@@ -1222,7 +1223,7 @@ public final class LinearAlgebra {
 				IAST list = F.ListAlloc(size);
 				for (int i = 0; i < size; i++) {
 					RealVector rv = ed.getEigenvector(i);
-					list.append(Convert.realVector2List(rv));
+					list.append(Convert.vector2List(rv));
 				}
 				return list;
 			} catch (Exception ime) {
@@ -2965,7 +2966,7 @@ public final class LinearAlgebra {
 			final int[] dim = ast.arg1().isMatrix();
 			if (dim != null) {
 				final IAST mat = (IAST) ast.arg1();
-				IASTMutable tr;
+				IASTAppendable tr;
 				int len = dim[0] < dim[1] ? dim[0] : dim[1];
 				if (ast.size() > 2) {
 					tr = F.ast(ast.arg2(), len, true);
@@ -3116,7 +3117,7 @@ public final class LinearAlgebra {
 		 * @return
 		 */
 		public IAST transpose(final IAST matrix, int rows, int cols) {
-			final IASTMutable transposedMatrix = F.ast(F.List, cols, true);
+			final IASTAppendable transposedMatrix = F.ast(F.List, cols, true);
 			for (int i = 1; i <= cols; i++) {
 				transposedMatrix.set(i, F.ast(F.List, rows, true));
 			}
@@ -3181,7 +3182,7 @@ public final class LinearAlgebra {
 				int n = Validate.checkIntType(ast, 1);
 				int k = Validate.checkIntType(ast, 2);
 				if (k <= n) {
-					IASTMutable vector = F.ListAlloc(n);
+					IASTAppendable vector = F.ListAlloc(n);
 					for (int i = 0; i < n; i++) {
 						vector.append(F.C0);
 					}

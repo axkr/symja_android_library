@@ -12,7 +12,7 @@ import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -332,10 +332,10 @@ public abstract class AbstractFractionSym implements IFraction {
 
 	@Override
 	/** {@inheritDoc} */
-	public IAST factorInteger() {
+	public IASTAppendable factorInteger() {
 		IInteger num = getNumerator();
 		IInteger den = getDenominator();
-		IASTMutable result = (IASTMutable)den.factorInteger();
+		IASTAppendable result =  den.factorInteger();
 
 		// negate the exponents of the denominator part
 		for (int i = 1; i < result.size(); i++) {

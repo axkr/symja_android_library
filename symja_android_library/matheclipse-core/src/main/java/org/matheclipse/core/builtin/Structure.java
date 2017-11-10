@@ -16,6 +16,7 @@ import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -60,7 +61,7 @@ public class Structure {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 3, 5);
 
-			IASTMutable evaledAST = ast.clone();
+			IASTAppendable evaledAST = ast.clone();
 			for (int i = 1; i < evaledAST.size(); i++) {
 				evaledAST.set(i, engine.evaluate(evaledAST.get(i)));
 			}
@@ -491,9 +492,9 @@ public class Structure {
 				}
 			}
 
-			IASTMutable result = ((IAST) arg2).clone();
-			IASTMutable last = result;
-			IASTMutable head = result;
+			IASTAppendable result = ((IAST) arg2).clone();
+			IASTAppendable last = result;
+			IASTAppendable head = result;
 
 			for (int i = 1; i < headDepth; i++) {
 				head = ((IAST) head.head()).clone();
@@ -739,8 +740,8 @@ public class Structure {
 						F.Equal, F.Unequal, F.Less, F.Greater, F.LessEqual, F.GreaterEqual };
 				for (int i = 0; i < logicEquationHeads.length; i++) {
 					if (ast.isAST(logicEquationHeads[i])) {
-						IASTMutable cloned = replacement.setAtCopy(position, null);
-						return ast.mapThread(cloned, position);
+						IASTMutable copy = replacement.setAtCopy(position, null);
+						return ast.mapThread(copy, position);
 					}
 				}
 
@@ -769,8 +770,8 @@ public class Structure {
 						F.Equivalent, F.Equal, F.Unequal, F.Less, F.Greater, F.LessEqual, F.GreaterEqual };
 				for (int i = 0; i < plusLogicEquationHeads.length; i++) {
 					if (ast.isAST(plusLogicEquationHeads[i])) {
-						IASTMutable cloned = replacement.setAtCopy(position, null);
-						return ast.mapThread(cloned, position);
+						IASTMutable copy = replacement.setAtCopy(position, null);
+						return ast.mapThread(copy, position);
 					}
 				}
 

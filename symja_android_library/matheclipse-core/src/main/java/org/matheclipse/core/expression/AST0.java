@@ -15,6 +15,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -126,11 +127,6 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 
 	@Override
 	public boolean appendAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public boolean appendArgs(IAST ast) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -279,7 +275,7 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 * @see java.lang.Cloneable
 	 */
 	@Override
-	public IASTMutable clone() {
+	public IASTAppendable clone() {
 		return new AST(arg0);
 	}
 

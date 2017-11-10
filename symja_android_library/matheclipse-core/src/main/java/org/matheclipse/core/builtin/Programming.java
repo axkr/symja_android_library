@@ -26,6 +26,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IIterator;
@@ -1265,7 +1266,7 @@ public final class Programming {
 			int start = span[0];
 			int last = span[1];
 			int step = span[2];
-			IASTMutable result = F.NIL;
+			IASTAppendable result = F.NIL;
 			IExpr element;
 
 			if (step < 0 && start >= last) {
@@ -1294,7 +1295,7 @@ public final class Programming {
 				throw new WrappedException(new IndexOutOfBoundsException(
 						"Part[] index " + indx + " of " + part.toString() + " is out of bounds."));
 			}
-			IASTMutable result = F.NIL;
+			IASTAppendable result = F.NIL;
 			IExpr temp = assignPart(assignedAST.get(indx), part, partPositionPlus1, value, engine);
 			if (temp.isPresent()) {
 				if (!result.isPresent()) {
@@ -1350,7 +1351,7 @@ public final class Programming {
 			int start = span[0];
 			int last = span[1];
 			int step = span[2];
-			IASTMutable result = F.NIL;
+			IASTAppendable result = F.NIL;
 
 			if (step < 0 && start >= last) {
 				int rhsIndx = 1;
@@ -1476,7 +1477,7 @@ public final class Programming {
 	 *            the evaluation engineF
 	 * @return the (cloned and value assigned) result AST from input
 	 */
-	private static IASTMutable assignPartSpanValue(IAST expr, IExpr element, final IAST part, int partPosition, IASTMutable result,
+	private static IASTAppendable assignPartSpanValue(IAST expr, IExpr element, final IAST part, int partPosition, IASTAppendable result,
 			int position, IExpr value, EvalEngine engine) {
 		IExpr resultValue = assignPart(element, part, partPosition, value, engine);
 		if (resultValue.isPresent()) {

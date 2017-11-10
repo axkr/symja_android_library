@@ -11,7 +11,7 @@ import org.apfloat.Apfloat;
 import org.hipparchus.util.ArithmeticUtils;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -360,15 +360,15 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST factorInteger() {
+	public IASTAppendable factorInteger() {
 		IInteger factor;
 		IInteger last = F.CN2;
 		int count = 0;
 		final IAST iFactors = factorize();
 
-		IASTMutable subList = null;
+		IASTAppendable subList = null;
 		int size = iFactors.size();
-		final IASTMutable list = F.ListAlloc(size);
+		final IASTAppendable list = F.ListAlloc(size);
 		for (int i = 1; i < size; i++) {
 			factor = (IInteger) iFactors.get(i);
 			if (!last.equals(factor)) {
@@ -427,7 +427,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		SortedMap<Integer, Integer> map = new TreeMap<Integer, Integer>();
 		BigInteger rest = Primality.countPrimes32749(b.toBigNumerator(), map);
 
-		IASTMutable result = F.ListAlloc(map.size() + 10);
+		IASTAppendable result = F.ListAlloc(map.size() + 10);
 		if (sign() < 0) {
 			result.append(F.CN1);
 		}

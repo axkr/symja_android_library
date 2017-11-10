@@ -33,6 +33,7 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.NumStr;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
@@ -352,7 +353,7 @@ public class ExprParser extends ExprScanner {
 	 * construct the arguments for an expression
 	 * 
 	 */
-	private void getArguments(final IASTMutable function) throws SyntaxError {
+	private void getArguments(final IASTAppendable function) throws SyntaxError {
 		do {
 			function.append(parseExpression());
 
@@ -547,7 +548,7 @@ public class ExprParser extends ExprScanner {
 			return getString();
 		} else if (fToken == TT_PERCENT) {
 
-			final IASTMutable out = F.ast(F.Out);
+			final IASTAppendable out = F.ast(F.Out);
 
 			int countPercent = 1;
 			getNextToken();
@@ -574,7 +575,7 @@ public class ExprParser extends ExprScanner {
 				} else if (slotNumber.equals(F.C2)) {
 					return parseArguments(F.Slot2);
 				}
-				final IASTMutable slot = F.ast(F.Slot);
+				final IASTAppendable slot = F.ast(F.Slot);
 				slot.append(slotNumber);
 				return parseArguments(slot);
 			} else {
@@ -584,7 +585,7 @@ public class ExprParser extends ExprScanner {
 		} else if (fToken == TT_SLOTSEQUENCE) {
 
 			getNextToken();
-			final IASTMutable slotSequencce = F.ast(F.SlotSequence);
+			final IASTAppendable slotSequencce = F.ast(F.SlotSequence);
 			if (fToken == TT_DIGIT) {
 				slotSequencce.append(getNumber(false));
 			} else {
@@ -625,8 +626,8 @@ public class ExprParser extends ExprScanner {
 	 * Get a function f[...][...]
 	 * 
 	 */
-	IASTMutable getFunction(final IExpr head) throws SyntaxError {
-		final IASTMutable function = F.ast(head, 10, false);
+	IASTAppendable getFunction(final IExpr head) throws SyntaxError {
+		final IASTAppendable function = F.ast(head, 10, false);
 
 		getNextToken();
 
@@ -690,9 +691,9 @@ public class ExprParser extends ExprScanner {
 	 * Get a function f[...][...]
 	 * 
 	 */
-	IASTMutable getFunctionArguments(final IExpr head) throws SyntaxError {
+	IASTAppendable getFunctionArguments(final IExpr head) throws SyntaxError {
 
-		final IASTMutable function = (IASTMutable) F.ast(head);
+		final IASTAppendable function = F.ast(head);
 		fRecursionDepth++;
 		try {
 			getNextToken();
@@ -748,7 +749,7 @@ public class ExprParser extends ExprScanner {
 			return F.List();
 		}
 
-		final IASTMutable function = F.ListAlloc(10); // fFactory.createFunction(fFactory.createSymbol(IConstantOperators.List));
+		final IASTAppendable function = F.ListAlloc(10); // fFactory.createFunction(fFactory.createSymbol(IConstantOperators.List));
 		fRecursionDepth++;
 		try {
 			getArguments(function);
@@ -833,7 +834,7 @@ public class ExprParser extends ExprScanner {
 			return temp;
 		}
 
-		IASTMutable function = null;
+		IASTAppendable function = null;
 		do {
 			if (function == null) {
 				function = F.Part(temp);
@@ -919,7 +920,7 @@ public class ExprParser extends ExprScanner {
 
 	private IExpr getTimes(IExpr temp) throws SyntaxError {
 		// FunctionNode func = fFactory.createAST(new SymbolNode("Times"));
-		IASTMutable func = F.TimesAlloc(8);
+		IASTAppendable func = F.TimesAlloc(8);
 		func.append(temp);
 		do {
 			getNextToken();
@@ -1087,7 +1088,7 @@ public class ExprParser extends ExprScanner {
 							if (infixOperator.getOperatorString().equals(";")) {
 								if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
 										|| fToken == TT_PRECEDENCE_CLOSE) {
-									((IASTMutable) lhs).append(F.Null);
+									((IASTAppendable) lhs).append(F.Null);
 									break;
 								}
 							}
@@ -1095,7 +1096,7 @@ public class ExprParser extends ExprScanner {
 								getNextToken();
 							}
 							rhs = parseLookaheadOperator(infixOperator.getPrecedence());
-							((IASTMutable) lhs).append(rhs);
+							((IASTAppendable) lhs).append(rhs);
 						}
 
 						continue;
@@ -1239,7 +1240,7 @@ public class ExprParser extends ExprScanner {
 	private IExpr parsePrimary() {
 		if (fToken == TT_OPERATOR) {
 			if (";;".equals(fOperatorString)) {
-				IASTMutable span = F.ast(F.Span);
+				IASTAppendable span = F.ast(F.Span);
 				span.append(F.C1);
 				getNextToken();
 				if (fToken == TT_COMMA || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_PRECEDENCE_CLOSE) {
@@ -1288,7 +1289,7 @@ public class ExprParser extends ExprScanner {
 	private IExpr rewriteLessGreaterAST(final IASTMutable ast, ISymbol compareHead) {
 		IExpr temp;
 		boolean evaled = false;
-		IASTMutable andAST = F.ast(F.And);
+		IASTAppendable andAST = F.ast(F.And);
 		for (int i = 1; i < ast.size(); i++) {
 			temp = ast.get(i);
 			if (temp.isASTSizeGE(compareHead, 3)) {

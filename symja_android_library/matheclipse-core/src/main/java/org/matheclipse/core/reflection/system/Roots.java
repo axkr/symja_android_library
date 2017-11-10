@@ -25,7 +25,7 @@ import org.matheclipse.core.expression.ASTRange;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -177,7 +177,7 @@ public class Roots extends AbstractFunctionEvaluator {
 	 */
 	protected static IAST rootsOfVariable(final IExpr expr, final IExpr denominator, final IAST variables,
 			boolean numericSolutions, EvalEngine engine) {
-		IASTMutable result = F.NIL;
+		IASTAppendable result = F.NIL;
 		ASTRange r = new ASTRange(variables, 1);
 		List<IExpr> varList = r;
 		try {
@@ -262,8 +262,8 @@ public class Roots extends AbstractFunctionEvaluator {
 		return F.NIL;
 	}
 
-	private static IASTMutable rootsOfExprPolynomial(final IExpr expr, IAST varList, boolean rootsOfQuartic) {
-		IASTMutable result = F.NIL;
+	private static IASTAppendable rootsOfExprPolynomial(final IExpr expr, IAST varList, boolean rootsOfQuartic) {
+		IASTAppendable result = F.NIL;
 		try {
 			// try to generate a common expression polynomial
 			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, varList);
@@ -307,7 +307,7 @@ public class Roots extends AbstractFunctionEvaluator {
 	 * @return <code>F.NIL</code> if no evaluation was possible.
 	 */
 	private static IAST rootsOfQuadraticExprPolynomial(final IExpr expr, IAST varList) {
-		IASTMutable result = F.NIL;
+		IASTAppendable result = F.NIL;
 		try {
 			// try to generate a common expression polynomial
 			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, varList);
@@ -334,7 +334,7 @@ public class Roots extends AbstractFunctionEvaluator {
 	 *            the polynomial
 	 * @return <code>F.NIL</code> if no evaluation was possible.
 	 */
-	private static IASTMutable rootsOfQuarticPolynomial(ExprPolynomial polynomial) {
+	private static IASTAppendable rootsOfQuarticPolynomial(ExprPolynomial polynomial) {
 		long varDegree = polynomial.degree(0);
 
 		if (polynomial.isConstant()) {
@@ -370,7 +370,7 @@ public class Roots extends AbstractFunctionEvaluator {
 					return F.NIL;
 				}
 			}
-			IASTMutable result = QuarticSolver.quarticSolve(a, b, c, d, e);
+			IASTAppendable result = QuarticSolver.quarticSolve(a, b, c, d, e);
 			if (result.isPresent()) {
 				return QuarticSolver.createSet(result);
 			}
@@ -386,7 +386,7 @@ public class Roots extends AbstractFunctionEvaluator {
 	 * @param polynomial
 	 * @return
 	 */
-	private static IASTMutable unitPolynomial(int varDegree, ExprPolynomial polynomial) {
+	private static IASTAppendable unitPolynomial(int varDegree, ExprPolynomial polynomial) {
 		IExpr a;
 		IExpr b;
 		a = C0;
@@ -412,14 +412,14 @@ public class Roots extends AbstractFunctionEvaluator {
 		}
 		if ((varDegree & 0x0001) == 0x0001) {
 			// odd
-			IASTMutable result = F.ListAlloc(varDegree);
+			IASTAppendable result = F.ListAlloc(varDegree);
 			for (int i = 1; i <= varDegree; i++) {
 				result.append(F.Times(F.Power(F.CN1, i - 1), F.Power(F.CN1, F.fraction(i, varDegree)), b, a));
 			}
 			return result;
 		} else {
 			// even
-			IASTMutable result = F.ListAlloc(varDegree);
+			IASTAppendable result = F.ListAlloc(varDegree);
 			long size = varDegree / 2;
 			int k = 1;
 			for (int i = 1; i <= size; i++) {
@@ -439,7 +439,7 @@ public class Roots extends AbstractFunctionEvaluator {
 	 *            the polynomial
 	 * @return <code>F.NIL</code> if no evaluation was possible.
 	 */
-	private static IASTMutable rootsOfQuadraticPolynomial(ExprPolynomial polynomial) {
+	private static IASTAppendable rootsOfQuadraticPolynomial(ExprPolynomial polynomial) {
 		long varDegree = polynomial.degree(0);
 
 		if (polynomial.isConstant()) {
@@ -453,7 +453,7 @@ public class Roots extends AbstractFunctionEvaluator {
 		if (varDegree <= 2) {
 			IEvalStepListener listener = EvalEngine.get().getStepListener();
 			if (listener != null) {
-				IASTMutable temp = listener.rootsOfQuadraticPolynomial(polynomial);
+				IASTAppendable temp = listener.rootsOfQuadraticPolynomial(polynomial);
 				if (temp.isPresent()) {
 					return temp;
 				}
@@ -481,7 +481,7 @@ public class Roots extends AbstractFunctionEvaluator {
 					throw new ArithmeticException("Roots::Unexpected exponent value: " + lExp);
 				}
 			}
-			IASTMutable result = QuarticSolver.quarticSolve(a, b, c, d, e);
+			IASTAppendable result = QuarticSolver.quarticSolve(a, b, c, d, e);
 			if (result.isPresent()) {
 				result = QuarticSolver.createSet(result);
 				return result;

@@ -24,6 +24,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -130,7 +131,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
 	@Override
 	public IAST getRuleAST() {
-		IASTMutable rules = F.ListAlloc(RULES1.size() + RULES2.size());
+		IASTAppendable rules = F.ListAlloc(RULES1.size() + RULES2.size());
 		rules.appendArgs(RULES1);
 		rules.appendArgs(RULES2);
 		return rules;
@@ -201,7 +202,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 				if (ast.isAST2()) {
 					return temp;
 				} else {
-					IASTMutable result = ast.removeAtClone(ast.size() - 1);
+					IASTAppendable result = ast.removeAtClone(ast.size() - 1);
 					result.set(1, temp);
 					return result;
 				}
@@ -218,7 +219,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 						if (ast.isAST2()) {
 							return temp;
 						}
-						IASTMutable result = ast.removeAtClone(ast.size() - 1);
+						IASTAppendable result = ast.removeAtClone(ast.size() - 1);
 						result.set(1, temp);
 						return result;
 					}
@@ -232,7 +233,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 				if (ast.isAST2()) {
 					return temp;
 				} else {
-					IASTMutable result = ast.removeAtClone(ast.size() - 1);
+					IASTAppendable result = ast.removeAtClone(ast.size() - 1);
 					result.set(1, temp);
 					return result;
 				}

@@ -12,7 +12,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -58,7 +58,7 @@ public final class Combinatoric {
 
 			final List<Iterator<IExpr>> compit;
 
-			IASTMutable current;
+			IASTAppendable current;
 
 			boolean empty;
 
@@ -68,7 +68,7 @@ public final class Combinatoric {
 			 * @param comps
 			 *            components of the cartesian product.
 			 */
-			public CartesianProductIterator(List<IAST> comps, IASTMutable emptyResultList) {
+			public CartesianProductIterator(List<IAST> comps, IASTAppendable emptyResultList) {
 				if (comps == null) {
 					throw new IllegalArgumentException("null comps not allowed");
 				}
@@ -164,7 +164,7 @@ public final class Combinatoric {
 			 */
 			public final List<IAST> comps;
 
-			private final IASTMutable fEmptyResultList;
+			private final IASTAppendable fEmptyResultList;
 
 			/**
 			 * CartesianProduct constructor.
@@ -172,7 +172,7 @@ public final class Combinatoric {
 			 * @param comps
 			 *            components of the cartesian product.
 			 */
-			public CartesianProductList(List<IAST> comps, IASTMutable emptyResultList) {
+			public CartesianProductList(List<IAST> comps, IASTAppendable emptyResultList) {
 				if (comps == null) {
 					throw new IllegalArgumentException("null components not allowed");
 				}
@@ -207,7 +207,7 @@ public final class Combinatoric {
 				}
 			}
 			CartesianProductList cpi = new CartesianProductList(la, F.ListAlloc(la.size()));
-			IASTMutable result = F.ListAlloc(cpi.size());
+			IASTAppendable result = F.ListAlloc(cpi.size());
 			for (IAST iast : cpi) {
 				result.append(iast);
 			}
@@ -400,9 +400,9 @@ public final class Combinatoric {
 			if (ast.arg1().isInteger()) {
 				final int n = ((IInteger) ast.arg1()).toBigNumerator().intValue();
 
-				IASTMutable temp;
+				IASTAppendable temp;
 				final NumberPartitionsIterable comb = new NumberPartitionsIterable(n);
-				IASTMutable result = F.ListAlloc(16);
+				IASTAppendable result = F.ListAlloc(16);
 				for (int j[] : comb) {
 					temp = F.ListAlloc(j.length);
 					for (int i = 0; i < j.length; i++) {
@@ -479,7 +479,7 @@ public final class Combinatoric {
 				final ISymbol sym = listArg0.topHead();
 				final int n = listArg0.size() - 1;
 				final int k = ((IInteger) ast.arg2()).toBigNumerator().intValue();
-				final IASTMutable result = F.ast(F.List);
+				final IASTAppendable result = F.ast(F.List);
 				final Permutations.KPermutationsIterable permutationIterator = new Permutations.KPermutationsIterable(
 						listArg0, n, 1);
 				final KPartitions.KPartitionsIterable partitionIterator = new KPartitions.KPartitionsIterable(n, k);
@@ -503,9 +503,9 @@ public final class Combinatoric {
 
 		private IAST createSinglePartition(final IAST listArg0, final ISymbol sym, final int[] permutationsIndex,
 				final int[] partitionsIndex) {
-			IASTMutable partitionElement;
+			IASTAppendable partitionElement;
 			int partitionStartIndex;
-			IASTMutable partition = F.ListAlloc(partitionsIndex.length + 1);
+			IASTAppendable partition = F.ListAlloc(partitionsIndex.length + 1);
 
 			final int n = listArg0.size() - 1;
 			// 0 is always the first index of a partition
@@ -712,8 +712,8 @@ public final class Combinatoric {
 				if (partitionsIndex == null) {
 					return null;
 				}
-				IASTMutable part = fResultList.clone();
-				IASTMutable temp;
+				IASTAppendable part = fResultList.clone();
+				IASTAppendable temp;
 				int j = 0;
 				for (int i = 1; i < partitionsIndex.length; i++) {
 					temp = fResultList.clone();
@@ -760,7 +760,7 @@ public final class Combinatoric {
 				final IAST listArg0 = (IAST) ast.arg1();
 				final int k = Validate.checkIntType(ast, 2);
 				final KPartitionsList iter = new KPartitionsList(listArg0, k, F.ast(F.List), 1);
-				final IASTMutable result = F.ListAlloc(16);
+				final IASTAppendable result = F.ListAlloc(16);
 				for (IAST part : iter) {
 					result.append(part);
 				}
@@ -835,8 +835,8 @@ public final class Combinatoric {
 				if (ast.arg2().isInteger()) {
 					final IAST f = (IAST) ast.arg1();
 					final int n = ((IInteger) ast.arg2()).toBigNumerator().intValue();
-					final IASTMutable result = F.ast(f.head());
-					IASTMutable temp;
+					final IASTAppendable result = F.ast(f.head());
+					IASTAppendable temp;
 					int i = n;
 					int v = n;
 					if ((ast.isAST3()) && ast.arg3().isInteger()) {
@@ -1073,7 +1073,7 @@ public final class Combinatoric {
 				if (permutationsIndex == null) {
 					return null;
 				}
-				IASTMutable temp = fResultList.clone();
+				IASTAppendable temp = fResultList.clone();
 				// parts <= permutationsIndex.length
 				for (int i = 0; i < fParts; i++) {
 					temp.append(fList.get(permutationsIndex[i] + fOffset));
@@ -1103,7 +1103,7 @@ public final class Combinatoric {
 						int maxPart = ((IInteger) ast.arg2()).toIntDefault(-1);
 						if (maxPart >= 0) {
 							maxPart = maxPart < parts ? maxPart : parts;
-							final IASTMutable result = F.ListAlloc(100);
+							final IASTAppendable result = F.ListAlloc(100);
 							for (int i = 0; i <= maxPart; i++) {
 								createPermutationsWithNParts(list, i, result);
 							}
@@ -1124,13 +1124,13 @@ public final class Combinatoric {
 					}
 				}
 
-				final IASTMutable result = F.ListAlloc(100);
+				final IASTAppendable result = F.ListAlloc(100);
 				return createPermutationsWithNParts(list, parts, result);
 			}
 			return F.NIL;
 		}
 
-		private IAST createPermutationsWithNParts(final IAST list, int parts, final IASTMutable result) {
+		private IAST createPermutationsWithNParts(final IAST list, int parts, final IASTAppendable result) {
 			if (parts == 0) {
 				result.append(F.List());
 				return result;
@@ -1363,7 +1363,7 @@ public final class Combinatoric {
 					return null;
 				}
 
-				IASTMutable temp = fResultList.clone();
+				IASTAppendable temp = fResultList.clone();
 				for (int i = 0; i < fK; i++) {
 					temp.append(fList.get(j[i] + fOffset));
 				}
@@ -1417,7 +1417,7 @@ public final class Combinatoric {
 				}
 
 				int k;
-				final IASTMutable result = F.ast(f.head());
+				final IASTAppendable result = F.ast(f.head());
 				level.setFromLevelAsCurrent();
 				while (level.isInRange()) {
 					k = level.getCurrentLevel();
@@ -1460,7 +1460,7 @@ public final class Combinatoric {
 							return F.NIL;
 						}
 					}
-					IASTMutable result = F.ListAlloc(16);
+					IASTAppendable result = F.ListAlloc(16);
 					IAST temp = F.List();
 					tuplesOfLists(list, 1, result, temp);
 					return result;
@@ -1475,7 +1475,7 @@ public final class Combinatoric {
 
 				int k = ((IInteger) arg2).toIntDefault(Integer.MIN_VALUE);
 				if (k > Integer.MIN_VALUE) {
-					IASTMutable result = F.ListAlloc(16);
+					IASTAppendable result = F.ListAlloc(16);
 					IAST temp = F.ast(arg1.head());
 					tuples((IAST) arg1, k, result, temp);
 					return result;
@@ -1492,12 +1492,12 @@ public final class Combinatoric {
 		 * @param result
 		 * @param subResult
 		 */
-		private void tuples(final IAST originalList, final int n, IASTMutable result, IAST subResult) {
+		private void tuples(final IAST originalList, final int n, IASTAppendable result, IAST subResult) {
 			if (n == 0) {
 				result.append(subResult);
 				return;
 			}
-			IASTMutable temp;
+			IASTAppendable temp;
 			for (int j = 1; j < originalList.size(); j++) {
 				temp = subResult.clone();
 				temp.append(originalList.get(j));
@@ -1517,12 +1517,12 @@ public final class Combinatoric {
 		 * @param subResult
 		 *            the current subList which should be inserted in the result list
 		 */
-		private void tuplesOfLists(final IAST originalList, final int k, IASTMutable result, IAST subResult) {
+		private void tuplesOfLists(final IAST originalList, final int k, IASTAppendable result, IAST subResult) {
 			if (k == originalList.size()) {
 				result.append(subResult);
 				return;
 			}
-			IASTMutable temp;
+			IASTAppendable temp;
 			IAST subAST = (IAST) originalList.get(k);
 			for (int j = 1; j < subAST.size(); j++) {
 				temp = subResult.clone();

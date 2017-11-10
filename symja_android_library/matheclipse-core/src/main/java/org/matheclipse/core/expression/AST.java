@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -146,7 +146,7 @@ public class AST extends HMArrayList implements Externalizable {
 	public static IAST parse(final String inputString) {
 		final StringTokenizer tokenizer = new StringTokenizer(inputString, "[],", true);
 		String token = tokenizer.nextToken();
-		final IASTMutable list = newInstance(StringX.valueOf(token));
+		final IASTAppendable list = newInstance(StringX.valueOf(token));
 		token = tokenizer.nextToken();
 		if ("[".equals(token)) {
 			parseList(tokenizer, list);
@@ -157,7 +157,7 @@ public class AST extends HMArrayList implements Externalizable {
 
 	}
 
-	private static void parseList(final StringTokenizer tokenizer, final IASTMutable list) {
+	private static void parseList(final StringTokenizer tokenizer, final IASTAppendable list) {
 		String token = tokenizer.nextToken();
 		do {
 			if ("]".equals(token)) {
@@ -173,7 +173,7 @@ public class AST extends HMArrayList implements Externalizable {
 				}
 				token = tokenizer.nextToken();
 				if ("[".equals(token)) {
-					IASTMutable argList = newInstance(StringX.valueOf(arg));
+					IASTAppendable argList = newInstance(StringX.valueOf(arg));
 					parseList(tokenizer, argList);
 					list.append(argList);
 				} else {
@@ -300,9 +300,13 @@ public class AST extends HMArrayList implements Externalizable {
 	 * @return a clone of this <tt>AST</tt> instance.
 	 */
 	@Override
-	public IASTMutable clone() {
-		AST ast = (AST) super.clone();
+	public IASTAppendable clone() {
+		AST ast = new AST();
 		ast.fProperties = null;
+		ast.array = array.clone();
+		ast.hashValue = 0;
+		ast.firstIndex = firstIndex;
+		ast.lastIndex = lastIndex;
 		return ast;
 	}
 	

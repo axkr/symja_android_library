@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -51,7 +52,7 @@ public class VisitorReplacePart extends AbstractVisitor {
 
 	private IExpr visitIndex(IAST ast, final int index) {
 		int[] fPositions;
-		IASTMutable result = ast.clone();
+		IASTAppendable result = ast.clone();
 		for (int i = 0; i < fList.size(); i++) {
 			fPositions = fList.get(i);
 			if (index >= fPositions.length) {

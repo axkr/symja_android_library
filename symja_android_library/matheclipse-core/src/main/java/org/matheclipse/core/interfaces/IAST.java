@@ -348,7 +348,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @param expr
 	 * @return a clone with added <code>expr</code> element at the given <code>position</code>.
 	 */
-	public IAST appendAtClone(int position, IExpr expr);
+	public IASTAppendable appendAtClone(int position, IExpr expr);
 
 	/**
 	 * Append an expression to this list.
@@ -357,7 +357,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *            the expression which should be appended
 	 * @return <code>this</code> after appending the given expression.
 	 */
-	public IAST appendClone(IExpr expr);
+	public IASTAppendable appendClone(IExpr expr);
 
 	/**
 	 * Add an <code>subAST</code> with attribute <code>OneIdentity</code> for example Plus[] or Times[].
@@ -488,7 +488,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @return a clone of this <code>IAST</code> instance.
 	 */
-	public IASTMutable clone();
+	public IASTAppendable clone();
 
 	/**
 	 * Tests whether this {@code List} contains the specified object.
@@ -553,7 +553,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @return
 	 */
-	public IASTMutable copyHead();
+	public IASTAppendable copyHead();
 
 	/**
 	 * Create a copy of this <code>AST</code>, which only contains the head element of the list (i.e. the element with
@@ -563,7 +563,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *            the initial number of arguments
 	 * @return
 	 */
-	public IASTMutable copyHead(final int intialCapacity);
+	public IASTAppendable copyHead(final int intialCapacity);
 
 	/**
 	 * Create a copy of this <code>AST</code>, which contains the same head and all elements up to the given
@@ -572,7 +572,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @param position
 	 * @return
 	 */
-	public IASTMutable copyUntil(int position);
+	public IASTAppendable copyUntil(int position);
 
 	/**
 	 * Create a copy of this <code>AST</code>, which contains the same head and all elements up to the given
@@ -583,7 +583,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @param position
 	 * @return
 	 */
-	public IASTMutable copyUntil(final int intialCapacity, int position);
+	public IASTAppendable copyUntil(final int intialCapacity, int position);
 
 	/**
 	 * Calls <code>get(position).equals(expr)</code>.
@@ -617,7 +617,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *            the function which filters each argument in this AST by returning a non-null result.
 	 * @return the resulting ASTs in the 0-th and 1-st element of the array
 	 */
-	public IASTMutable[] filter(final Function<IExpr, IExpr> function);
+	public IASTAppendable[] filter(final Function<IExpr, IExpr> function);
 
 	/**
 	 * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and append
@@ -1022,11 +1022,11 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <code>appendAST</code>
 	 */
 	@Deprecated
-	default IAST mapAt(IASTMutable appendAST, final IAST replacement, int position) {
+	default IAST mapAt(IASTAppendable appendAST, final IAST replacement, int position) {
 		return mapThread(appendAST, replacement, position);
 	}
 
-	default IAST mapAt(final IASTMutable replacement, int position) {
+	default IAST mapAt(final IASTAppendable replacement, int position) {
 		return mapThread(replacement, position);
 	}
 
@@ -1059,7 +1059,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <code>appendAST</code>
 	 * @see IAST#map(Function, int)
 	 */
-	public IASTMutable mapThread(IASTMutable appendAST, final IAST replacement, int position);
+	public IASTAppendable mapThread(IASTAppendable appendAST, final IAST replacement, int position);
 
 	/**
 	 * Maps the elements of this IAST with the unary functor <code>Functors.replaceArg(replacement, position)</code>,
@@ -1097,7 +1097,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @param expr
 	 * @return <code>this</code> after prepending the given expression.
 	 */
-	public IAST prependClone(IExpr expr);
+	public IASTAppendable prependClone(IExpr expr);
 
 	/**
 	 * Get the range of elements [0..ast.size()[ of the AST. This range elements are the head of the function prepended
@@ -1147,7 +1147,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @param i
 	 * @return a clone with removed element at the given position.
 	 */
-	public IASTMutable removeAtClone(int i);
+	public IASTAppendable removeAtClone(int i);
 
 	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and set the
@@ -1157,7 +1157,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @param expr
 	 * @return a clone with element set to <code>expr</code> at the given <code>position</code>.
 	 */
-	public IASTMutable setAtClone(int i, IExpr expr);
+	public IASTAppendable setAtClone(int i, IExpr expr);
 
 	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and set the

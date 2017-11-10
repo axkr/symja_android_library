@@ -16,7 +16,7 @@ import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -1072,7 +1072,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 			throw new IllegalArgumentException("vn and vars may not be null");
 		}
 		int i = vn.size() - 1;
-		IASTMutable v = vars.clone();
+		IASTAppendable v = vars.clone();
 		v.appendArgs(vn);
 		// for (int k = 0; k < vars.length; k++) {
 		// v[k] = vars[k];

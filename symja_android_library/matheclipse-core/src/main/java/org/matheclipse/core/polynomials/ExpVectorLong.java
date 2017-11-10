@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -236,7 +236,7 @@ public final class ExpVectorLong {
 	 * @return vatiable names.
 	 */
 	public static IAST STDVARS(String prefix, int n) {
-		IASTMutable vars = F.ListAlloc(n);  
+		IASTAppendable vars = F.ListAlloc(n);  
 		if (prefix == null || prefix.length() == 0) {
 			prefix = "x";
 		}

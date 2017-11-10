@@ -19,7 +19,7 @@ import static org.matheclipse.core.expression.F.x;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -103,7 +103,7 @@ public class CompareToTestCase extends AbstractTestCase {
 	}
 	
 	public void testCT004() {
-		IASTMutable ast1, ast2;
+		IASTAppendable ast1, ast2;
 		ast1 = F.ast(F.f);
 		ast2 = F.ast(F.f);
 		ast1.append(F.a);

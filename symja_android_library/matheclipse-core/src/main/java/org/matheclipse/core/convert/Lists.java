@@ -2,7 +2,7 @@ package org.matheclipse.core.convert;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IASTAppendable;
 
 public class Lists {
 	/**
@@ -32,7 +32,7 @@ public class Lists {
 	 * 		} objects.
 	 */
 	public static IAST asAST(boolean... p_booleans) {
-		IASTMutable ast = F.ListAlloc(p_booleans.length);
+		IASTAppendable ast = F.ListAlloc(p_booleans.length);
 		if (p_booleans != null) {
 			for (int i = 0, t = p_booleans.length; i < t; i++) {
 				if (p_booleans[i]) {
@@ -56,7 +56,7 @@ public class Lists {
 	 * @return a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.INum} objects.
 	 */
 	public static IAST asList(double... p_doubles) {
-		IASTMutable ast = F.ListAlloc(p_doubles.length);
+		IASTAppendable ast = F.ListAlloc(p_doubles.length);
 		if (p_doubles != null) {
 			for (int i = 0, t = p_doubles.length; i < t; i++) {
 				ast.append(F.num(p_doubles[i]));
@@ -76,7 +76,7 @@ public class Lists {
 	 * @return a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.INum} objects.
 	 */
 	public static IAST asList(float... p_doubles) {
-		IASTMutable ast = F.ListAlloc(p_doubles.length);
+		IASTAppendable ast = F.ListAlloc(p_doubles.length);
 		if (p_doubles != null) {
 			for (int i = 0, t = p_doubles.length; i < t; i++) {
 				ast.append(F.num(p_doubles[i]));
@@ -97,7 +97,7 @@ public class Lists {
 	 *         objects.
 	 */
 	public static IAST asList(String... p_strings) {
-		IASTMutable ast = F.ListAlloc(p_strings.length);
+		IASTAppendable ast = F.ListAlloc(p_strings.length);
 		if (p_strings != null) {
 			for (int i = 0, t = p_strings.length; i < t; i++) {
 				ast.append(F.$str(p_strings[i]));
@@ -119,7 +119,7 @@ public class Lists {
 	 */
 	public static IAST asListSymbols(String... p_symbols) {
 		if (p_symbols != null) {
-			IASTMutable ast = F.ListAlloc(p_symbols.length);
+			IASTAppendable ast = F.ListAlloc(p_symbols.length);
 			for (int i = 0, t = p_symbols.length; i < t; i++) {
 
 				ast.append(F.userSymbol(p_symbols[i]));
@@ -140,7 +140,7 @@ public class Lists {
 	 *         objects.
 	 */
 	public static IAST asList(short... p_shorts) {
-		IASTMutable ast = F.ListAlloc(p_shorts.length);
+		IASTAppendable ast = F.ListAlloc(p_shorts.length);
 		if (p_shorts != null) {
 			for (int i = 0, t = p_shorts.length; i < t; i++) {
 				ast.append(F.integer(p_shorts[i]));
@@ -161,7 +161,7 @@ public class Lists {
 	 *         objects.
 	 */
 	public static IAST asList(int... p_ints) {
-		IASTMutable ast = F.ListAlloc(p_ints.length);
+		IASTAppendable ast = F.ListAlloc(p_ints.length);
 		if (p_ints != null) {
 			for (int i = 0, t = p_ints.length; i < t; i++) {
 				ast.append(F.integer(p_ints[i]));
@@ -182,7 +182,7 @@ public class Lists {
 	 *         objects.
 	 */
 	public static IAST asList(long... p_longs) {
-		IASTMutable ast = F.ListAlloc(p_longs.length);
+		IASTAppendable ast = F.ListAlloc(p_longs.length);
 		if (p_longs != null) {
 			for (int i = 0, t = p_longs.length; i < t; i++) {
 				ast.append(F.integer(p_longs[i]));
@@ -202,7 +202,7 @@ public class Lists {
 	 * @return a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.IExpr} objects.
 	 */
 	public static IAST asList(Object... p_objects) {
-		IASTMutable ast = F.ListAlloc(p_objects.length);
+		IASTAppendable ast = F.ListAlloc(p_objects.length);
 		if (p_objects != null) {
 			for (int i = 0, t = p_objects.length; i < t; i++) {
 				ast.append(Object2Expr.convert(p_objects[i]));

@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
-import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IASTAppendable;
 
 /**
  * Open addressed map from K to V. The map can contain up to <code>tableSize</code> key/value entries. Otherwise a // *

@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -47,7 +48,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 					return temp;
 				}
 			}
-			IASTMutable result = F.NIL;
+			IASTAppendable result = F.NIL;
 			int i = 1;
 			while (i < list.size()) {
 				temp = list.get(i).accept(this);

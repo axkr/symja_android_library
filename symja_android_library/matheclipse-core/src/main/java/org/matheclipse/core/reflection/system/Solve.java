@@ -23,6 +23,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
@@ -108,7 +109,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		private long fLeafCount;
 
 		private HashSet<ISymbol> fSymbolSet;
-		private IASTMutable fMatrixRow;
+		private IASTAppendable fMatrixRow;
 		private IAST fPlusAST;
 
 		final IAST fListOfVariables;
@@ -1122,7 +1123,7 @@ public class Solve extends AbstractFunctionEvaluator {
 					Set<IExpr> subSolutionSet = new HashSet<IExpr>();
 					for (int j = 1; j < times.size(); j++) {
 						if (!times.get(j).isFree(Predicates.in(variables), true)) {
-							IASTMutable clonedEqualZeroList = termsEqualZeroList.clone();
+							IASTAppendable clonedEqualZeroList = termsEqualZeroList.clone();
 							clonedEqualZeroList.set(i, times.get(j));
 							IAST temp = solveEquations(clonedEqualZeroList, variables, 0, engine);
 							if (temp.size() > 1) {

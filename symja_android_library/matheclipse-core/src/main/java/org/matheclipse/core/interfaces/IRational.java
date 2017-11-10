@@ -46,7 +46,7 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 * 
 	 * @return the list of prime factors paired with their exponents
 	 */
-	public IAST factorInteger();
+	public IASTAppendable factorInteger();
 
 	public IInteger floor();
 

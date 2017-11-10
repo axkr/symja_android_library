@@ -31,6 +31,7 @@ import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvalStepListener;
@@ -646,7 +647,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 			if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 				// associative symbol
-				IASTMutable flattened;
+				IASTAppendable flattened;
 				if ((flattened = EvalAttributes.flatten(tempAST)).isPresent()) {
 					returnResult = flattened;
 					tempAST = returnResult;
@@ -817,7 +818,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			if (resultList.size() > 2) {
 				if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 					// associative
-					IASTMutable result;
+					IASTAppendable result;
 					if ((result = EvalAttributes.flatten(resultList)).isPresent()) {
 						resultList = result;
 						if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
@@ -837,7 +838,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 		if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 			// associative
-			IASTMutable result;
+			IASTAppendable result;
 			if ((result = EvalAttributes.flatten(ast)).isPresent()) {
 				resultList = result;
 				if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
@@ -1178,7 +1179,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			if (resultList.size() > 2) {
 				if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 					// associative
-					IASTMutable result;
+					IASTAppendable result;
 					if ((result = EvalAttributes.flatten(resultList)).isPresent()) {
 						return evalSetOrderless(result, attr, noEvaluation, level);
 					}
@@ -1193,7 +1194,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 		if ((ISymbol.FLAT & attr) == ISymbol.FLAT) {
 			// associative
-			IASTMutable result;
+			IASTAppendable result;
 			if ((result = EvalAttributes.flatten(ast)).isPresent()) {
 				return evalSetOrderless(result, attr, noEvaluation, level);
 			}
@@ -1344,7 +1345,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	private IAST flattenSequences(final IAST ast) {
-		IASTMutable seqResult = F.NIL;
+		IASTAppendable seqResult = F.NIL;
 		final int astSize = ast.size();
 		for (int i = 1; i < astSize; i++) {
 			if (ast.get(i).isSequence()) {
@@ -1851,7 +1852,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			}
 		}
 		if (listLength != 0) {
-			IASTMutable result = EvalAttributes.threadList(ast, F.List, ast.head(), listLength);
+			IASTAppendable result = EvalAttributes.threadList(ast, F.List, ast.head(), listLength);
 			result.addEvalFlags(IAST.IS_LISTABLE_THREADED);
 			return result;
 		}

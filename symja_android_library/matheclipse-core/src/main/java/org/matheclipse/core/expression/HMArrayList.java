@@ -34,6 +34,7 @@ import java.util.stream.Stream;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -45,7 +46,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * Copied and modified from the Apache Harmony project.
  * 
  */
-public abstract class HMArrayList extends AbstractAST implements Cloneable, Serializable, RandomAccess {
+public abstract class HMArrayList extends AbstractAST implements IASTAppendable, Cloneable, Serializable, RandomAccess {
 
 	private static final long serialVersionUID = 8683452581122892189L;
 
@@ -361,13 +362,13 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 	 * @return a shallow copy of this {@code ArrayList}
 	 * @see java.lang.Cloneable
 	 */
-	@Override
-	public IASTMutable clone() {
-		HMArrayList newList = (HMArrayList) super.clone();
-		newList.array = array.clone();
-		newList.hashValue = 0;
-		return newList;
-	}
+//	@Override
+//	public IASTAppendable clone() {
+//		HMArrayList newList = (HMArrayList) super.clone();
+//		newList.array = array.clone();
+//		newList.hashValue = 0;
+//		return newList;
+//	}
 
 	/**
 	 * Ensures that after this operation the {@code ArrayList} can hold the
@@ -519,7 +520,7 @@ public abstract class HMArrayList extends AbstractAST implements Cloneable, Seri
 
 	/** {@inheritDoc} */
 	@Override
-	public final IASTMutable mapThread(IASTMutable appendAST, final IAST replacement, int position) {
+	public final IASTAppendable mapThread(IASTAppendable appendAST, final IAST replacement, int position) {
 		// final Function<IExpr, IExpr> function = Functors.replaceArg(replacement,
 		// position);
 		EvalEngine engine = EvalEngine.get();

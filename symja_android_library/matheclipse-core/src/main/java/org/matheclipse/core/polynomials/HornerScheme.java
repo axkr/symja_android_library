@@ -6,7 +6,7 @@ import java.util.TreeMap;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -16,7 +16,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class HornerScheme {
 
-	private TreeMap<ISignedNumber, IASTMutable> map;
+	private TreeMap<ISignedNumber, IASTAppendable> map;
 
 	public HornerScheme() {
 		Comparator<ISignedNumber> comp = new Comparator<ISignedNumber>() {
@@ -33,7 +33,7 @@ public class HornerScheme {
 			}
 
 		};
-		map = new TreeMap<ISignedNumber, IASTMutable>(comp);
+		map = new TreeMap<ISignedNumber, IASTAppendable>(comp);
 	}
 
 	public IAST generate(boolean numericMode, IAST poly, ISymbol sym) {
@@ -41,9 +41,9 @@ public class HornerScheme {
 			for (int i = 1; i < poly.size(); i++) {
 				collectTermN(sym, poly.get(i));
 			}
-			IASTMutable result = F.PlusAlloc(16);
+			IASTAppendable result = F.PlusAlloc(16);
 			IAST startResult = result;
-			IASTMutable temp;
+			IASTAppendable temp;
 			ISignedNumber start = F.CD0;
 			for (Iterator<ISignedNumber> iter = map.keySet().iterator(); iter.hasNext();) {
 				ISignedNumber exponent = iter.next();
@@ -74,9 +74,9 @@ public class HornerScheme {
 			for (int i = 1; i < poly.size(); i++) {
 				collectTerm(sym, poly.get(i));
 			}
-			IASTMutable result = F.PlusAlloc(16);
+			IASTAppendable result = F.PlusAlloc(16);
 			IAST startResult = result;
-			IASTMutable temp;
+			IASTAppendable temp;
 			ISignedNumber start = F.C0;
 			for (Iterator<ISignedNumber> iter = map.keySet().iterator(); iter.hasNext();) {
 				ISignedNumber exponent = iter.next();
@@ -183,7 +183,7 @@ public class HornerScheme {
 	}
 
 	public IAST addToMap(final ISignedNumber key, final IExpr value) {
-		IASTMutable temp = map.get(key);
+		IASTAppendable temp = map.get(key);
 		if (temp == null) {
 			temp = F.PlusAlloc(8);
 			temp.append(value);

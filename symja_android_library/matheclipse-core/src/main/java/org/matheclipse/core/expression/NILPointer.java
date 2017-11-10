@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -18,7 +18,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * 
  * @see F#NIL
  */
-public class NILPointer extends AbstractAST {
+public class NILPointer extends AbstractAST implements IASTAppendable {
 
 	private static final long serialVersionUID = -3552302876858011292L;
 
@@ -120,7 +120,7 @@ public class NILPointer extends AbstractAST {
 	}
 
 	@Override
-	public IASTMutable clone() {
+	public IASTAppendable clone() {
 		throw new UnsupportedOperationException();
 	}
 
@@ -206,7 +206,7 @@ public class NILPointer extends AbstractAST {
 	public final boolean isPresent() {
 		return false;
 	}
- 
+
 	@Override
 	public boolean isSameHead(IExpr head) {
 		return head().equals(head);

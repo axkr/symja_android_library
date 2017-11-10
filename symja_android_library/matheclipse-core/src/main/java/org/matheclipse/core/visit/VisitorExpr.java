@@ -2,6 +2,7 @@ package org.matheclipse.core.visit;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -165,7 +166,7 @@ public class VisitorExpr extends AbstractVisitor {
 	 */
 	protected IExpr visitAST(IAST ast) {
 		IExpr temp;
-		IASTMutable result = F.NIL;
+		IASTAppendable result = F.NIL;
 		int i = 1;
 		int size = ast.size();
 		while (i < size) {

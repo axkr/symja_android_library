@@ -12,7 +12,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -299,18 +299,18 @@ public class JASConvert<C extends RingElem<C>> {
 		if (poly.length() == 0) {
 			return F.C0;
 		}
-		IASTMutable result = F.PlusAlloc(poly.length());
+		IASTAppendable result = F.PlusAlloc(poly.length());
 		for (Monomial<edu.jas.arith.BigInteger> monomial : poly) {
 			edu.jas.arith.BigInteger coeff = monomial.coefficient();
 			ExpVector exp = monomial.exponent();
-			IASTMutable monomTimes = F.TimesAlloc(exp.length()+1);
+			IASTAppendable monomTimes = F.TimesAlloc(exp.length()+1);
 			monomialToExpr(coeff, exp, monomTimes);
 			result.append(monomTimes.getOneIdentity(F.C1));
 		}
 		return result.getOneIdentity(F.C0);
 	}
 
-	public boolean monomialToExpr(edu.jas.arith.BigInteger coeff, ExpVector exp, IASTMutable monomTimes) {
+	public boolean monomialToExpr(edu.jas.arith.BigInteger coeff, ExpVector exp, IASTAppendable monomTimes) {
 		if (!coeff.isONE()) {
 			IInteger coeffValue = F.integer(coeff.getVal());
 			monomTimes.append(coeffValue);
@@ -318,7 +318,7 @@ public class JASConvert<C extends RingElem<C>> {
 		return expVectorToExpr(exp, monomTimes);
 	}
 
-	private boolean expVectorToExpr(ExpVector exp, IASTMutable monomTimes) {
+	private boolean expVectorToExpr(ExpVector exp, IASTAppendable monomTimes) {
 		long lExp;
 		ExpVector leer = fPolyFactory.evzero;
 		for (int i = 0; i < exp.length(); i++) {
@@ -352,18 +352,18 @@ public class JASConvert<C extends RingElem<C>> {
 		if (poly.length() == 0) {
 			return F.C0;
 		}
-		IASTMutable result = F.PlusAlloc(poly.length());
+		IASTAppendable result = F.PlusAlloc(poly.length());
 		for (Monomial<Complex<BigRational>> monomial : poly) {
 			Complex<BigRational> coeff = monomial.coefficient();
 			ExpVector exp = monomial.exponent();
-			IASTMutable monomTimes = F.TimesAlloc(exp.length()+1);
+			IASTAppendable monomTimes = F.TimesAlloc(exp.length()+1);
 			monomialToExpr(coeff, exp, monomTimes);
 			result.append(monomTimes.getOneIdentity(F.C1));
 		}
 		return result.getOneIdentity(F.C0);
 	}
 
-	public boolean monomialToExpr(Complex<BigRational> coeff, ExpVector exp, IASTMutable monomTimes) {
+	public boolean monomialToExpr(Complex<BigRational> coeff, ExpVector exp, IASTAppendable monomTimes) {
 		BigRational re = coeff.getRe();
 		BigRational im = coeff.getIm();
 		monomTimes.append(
@@ -384,7 +384,7 @@ public class JASConvert<C extends RingElem<C>> {
 		List<GenPolynomial<BigRational>> rational = integral.rational;
 		List<LogIntegral<BigRational>> logarithm = integral.logarithm;
 
-		IASTMutable sum = F.PlusAlloc(rational.size()+logarithm.size());
+		IASTAppendable sum = F.PlusAlloc(rational.size()+logarithm.size());
 		if (!pol.isZERO()) {
 			sum.append(rationalPoly2Expr(pol));
 		}
@@ -420,7 +420,7 @@ public class JASConvert<C extends RingElem<C>> {
 
 		List<GenPolynomial<AlgebraicNumber<BigRational>>> adenom = logIntegral.adenom;
 
-		IASTMutable plus = F.PlusAlloc(cfactors.size()+afactors.size());
+		IASTAppendable plus = F.PlusAlloc(cfactors.size()+afactors.size());
 		if (cfactors.size() > 0) {
 			for (int i = 0; i < cfactors.size(); i++) {
 				BigRational cp = cfactors.get(i);
@@ -440,10 +440,10 @@ public class JASConvert<C extends RingElem<C>> {
 
 				}
 				GenPolynomial<BigRational> v = ap.getVal();
-				IASTMutable times = F.TimesAlloc(2);
+				IASTAppendable times = F.TimesAlloc(2);
 
 				if (p.degree(0) < ar.modul.degree(0) && ar.modul.degree(0) > 2) {
-					IASTMutable rootOf = F.ast(F.RootOf);
+					IASTAppendable rootOf = F.ast(F.RootOf);
 					rootOf.append(rationalPoly2Expr(ar.modul));
 					times.append(rootOf);
 
@@ -476,18 +476,18 @@ public class JASConvert<C extends RingElem<C>> {
 			return F.Plus(F.C0);
 		}
 
-		IASTMutable result = F.PlusAlloc(poly.length());
+		IASTAppendable result = F.PlusAlloc(poly.length());
 		for (Monomial<BigRational> monomial : poly) {
 			BigRational coeff = monomial.coefficient();
 			ExpVector exp = monomial.exponent();
-			IASTMutable monomTimes = F.TimesAlloc(exp.length()+1);
+			IASTAppendable monomTimes = F.TimesAlloc(exp.length()+1);
 			monomialToExpr(coeff, exp, monomTimes);
 			result.append(monomTimes.getOneIdentity(F.C1));
 		}
 		return result;
 	}
 
-	public boolean monomialToExpr(BigRational coeff, ExpVector exp, IASTMutable monomTimes) {
+	public boolean monomialToExpr(BigRational coeff, ExpVector exp, IASTAppendable monomTimes) {
 		if (!coeff.isONE()) {
 			IFraction coeffValue = F.fraction(coeff.numerator(), coeff.denominator());
 			monomTimes.append(coeffValue);
@@ -505,11 +505,11 @@ public class JASConvert<C extends RingElem<C>> {
 		if (val.size() == 0) {
 			return F.Plus(F.C0);
 		} else {
-			IASTMutable result = F.PlusAlloc(val.size());
+			IASTAppendable result = F.PlusAlloc(val.size());
 			for (Map.Entry<ExpVector, AlgebraicNumber<BigRational>> m : val.entrySet()) {
 				AlgebraicNumber<BigRational> coeff = m.getValue();
 				ExpVector exp = m.getKey();
-				IASTMutable monomTimes = F.TimesAlloc(exp.length()+1);
+				IASTAppendable monomTimes = F.TimesAlloc(exp.length()+1);
 				monomialToExpr(coeff, exp, monomTimes);
 				result.append(monomTimes.getOneIdentity(F.C1));
 			}
@@ -518,7 +518,7 @@ public class JASConvert<C extends RingElem<C>> {
 
 	}
 
-	public boolean monomialToExpr(AlgebraicNumber<BigRational> coeff, ExpVector exp, IASTMutable monomTimes) {
+	public boolean monomialToExpr(AlgebraicNumber<BigRational> coeff, ExpVector exp, IASTAppendable monomTimes) {
 		if (!coeff.isONE()) {
 			monomTimes.append(algebraicNumber2Expr(coeff));
 		}
@@ -547,7 +547,7 @@ public class JASConvert<C extends RingElem<C>> {
 			Quotient<BigRational> qTemp;
 			GenPolynomial<BigRational> qNum;
 			GenPolynomial<BigRational> qDen;
-			IASTMutable sum = F.PlusAlloc(rational.size());
+			IASTAppendable sum = F.PlusAlloc(rational.size());
 			for (int i = 0; i < rational.size(); i++) {
 				qTemp = rational.get(i);
 				qNum = qTemp.num;
@@ -557,7 +557,7 @@ public class JASConvert<C extends RingElem<C>> {
 			return sum;
 		}
 		if (logarithm.size() != 0) {
-			IASTMutable sum = F.PlusAlloc(logarithm.size());
+			IASTAppendable sum = F.PlusAlloc(logarithm.size());
 			for (LogIntegral<BigRational> pf : logarithm) {
 				sum.append(logIntegral2Expr(pf));
 			}

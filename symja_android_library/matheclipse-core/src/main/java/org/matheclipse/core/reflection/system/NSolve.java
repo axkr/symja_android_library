@@ -12,7 +12,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -36,7 +36,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 		private IExpr denom;
 		private int leafCount;
 
-		IASTMutable row;
+		IASTAppendable row;
 		HashSet<ISymbol> symbolSet;
 		IAST value;
 

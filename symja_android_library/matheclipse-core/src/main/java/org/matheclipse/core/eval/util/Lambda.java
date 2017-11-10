@@ -7,7 +7,7 @@ import java.util.function.Predicate;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.visit.VisitorReplaceArgs;
 import org.matheclipse.core.visit.VisitorReplaceSlots;
@@ -61,8 +61,8 @@ public class Lambda {
 	 * @return the cloned ast with removed elements or <code>F.NIL</code> if the <code>predicate</code> never gives
 	 *         <code>true</code>.
 	 */
-	public static IASTMutable remove(IAST ast, Predicate<IExpr> predicate) {
-		IASTMutable result = F.NIL;
+	public static IASTAppendable remove(IAST ast, Predicate<IExpr> predicate) {
+		IASTAppendable result = F.NIL;
 		int size = ast.size();
 		int j = 1;
 		for (int i = 1; i < size; i++) {
@@ -116,7 +116,7 @@ public class Lambda {
 	 * @param function
 	 * @return
 	 */
-	public static IAST forEachAppend(IAST ast, IASTMutable result, Function<IExpr, IExpr> function) {
+	public static IAST forEachAppend(IAST ast, IASTAppendable result, Function<IExpr, IExpr> function) {
 		int size = ast.size();
 		for (int i = 1; i < size; i++) {
 			result.append(function.apply(ast.get(i)));
@@ -206,7 +206,7 @@ public class Lambda {
 	}
 
 	private static IExpr testMap(IAST ast, Predicate<IExpr> predicate, Function<IExpr, IExpr> function) {
-		IASTMutable result = F.NIL;
+		IASTAppendable result = F.NIL;
 		int size = ast.size();
 		for (int i = 1; i < size; i++) {
 			IExpr temp = ast.get(i);
@@ -227,7 +227,7 @@ public class Lambda {
 
 	private static IExpr testMap2(IAST list, Predicate<IExpr> predicate, Function<IExpr, IExpr> function1,
 			Function<IExpr, IExpr> function2) {
-		IASTMutable result = F.NIL;
+		IASTAppendable result = F.NIL;
 		int size = list.size();
 		for (int i = 1; i < size; i++) {
 			IExpr temp = list.get(i);

@@ -71,6 +71,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.NumberUtil;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -230,7 +231,7 @@ public final class Arithmetic {
 			}
 
 			if (arg1.isTimes()) {
-				IASTMutable[] result = ((IAST) arg1).filter(new AbsTimesFunction());
+				IASTAppendable[] result = ((IAST) arg1).filter(new AbsTimesFunction());
 				if (result[0].size() > 1) {
 					if (result[1].size() > 1) {
 						result[0].append(F.Abs(result[1]));
@@ -497,7 +498,7 @@ public final class Arithmetic {
 				return ((IAST) arg1).mapThread((IASTMutable) F.Conjugate(F.Null), 1);
 			}
 			if (arg1.isTimes()) {
-				IASTMutable result = F.NIL;
+				IASTAppendable result = F.NIL;
 				IAST clone = ((IAST) arg1).clone();
 				int i = 1;
 				while (i < clone.size()) {
@@ -841,7 +842,7 @@ public final class Arithmetic {
 						if (n == 0) {
 							return C0;
 						}
-						IASTMutable result = F.PlusAlloc(n);
+						IASTAppendable result = F.PlusAlloc(n);
 						for (int i = 1; i <= n; i++) {
 							result.append(Power(integer(i), Negate(arg2)));
 						}
@@ -1058,8 +1059,8 @@ public final class Arithmetic {
 			IExpr cond;
 			IAST row;
 			int matrixSize = matrix.size();
-			IASTMutable result = F.ListAlloc(matrixSize);
-			IASTMutable pw = F.ast(F.Piecewise);
+			IASTAppendable result = F.ListAlloc(matrixSize);
+			IASTAppendable pw = F.ast(F.Piecewise);
 			pw.append(result);
 			boolean evaluated = false;
 			boolean noBoolean = false;
@@ -1936,7 +1937,7 @@ public final class Arithmetic {
 		 * @return <code>F.NIL</code> if the transformation isn't possible.
 		 */
 		private static IExpr powerTimesInverse(IAST timesAST, final IExpr arg2) {
-			IASTMutable resultAST = F.NIL;
+			IASTAppendable resultAST = F.NIL;
 			for (int i = 1; i < timesAST.size(); i++) {
 				IExpr temp = timesAST.get(i);
 				if (temp.isPower() && temp.getAt(2).isMinusOne()) {
@@ -2014,7 +2015,7 @@ public final class Arithmetic {
 		 * @return
 		 */
 		private IAST powerEPlus(IAST plus) {
-			IASTMutable multiplicationFactors = F.NIL;
+			IASTAppendable multiplicationFactors = F.NIL;
 			IAST plusClone = F.NIL;
 			for (int i = plus.size() - 1; i > 0; i--) {
 				if (plus.get(i).isLog()) {
@@ -2508,7 +2509,7 @@ public final class Arithmetic {
 				IInteger leadingFactor = (IInteger) times.arg1();
 
 				if (!leadingFactor.isMinusOne()) {
-					IASTMutable result = F.NIL;
+					IASTAppendable result = F.NIL;
 					for (int i = 2; i < times.size(); i++) {
 						IExpr temp = times.get(i);
 						if (temp.isPower() && temp.getAt(1).isInteger() && !temp.getAt(2).isNumber()) {
@@ -2774,7 +2775,7 @@ public final class Arithmetic {
 
 			if (size > 3) {
 				final ISymbol sym = astTimes.topHead();
-				IASTMutable result = null;
+				IASTAppendable result = null;
 				IExpr tres;
 				IExpr temp = astTimes.arg1();
 				boolean evaled = false;

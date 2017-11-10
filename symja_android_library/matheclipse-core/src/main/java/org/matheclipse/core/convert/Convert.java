@@ -18,6 +18,7 @@ import org.matheclipse.core.expression.ASTRealVector;
 //import org.matheclipse.commons.math.linear.FieldVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -205,20 +206,56 @@ public class Convert {
 	 * @param matrix
 	 * @return <code>F.NIL</code> if no conversion was possible
 	 */
-	public static IAST matrix2List(final FieldMatrix<IExpr> matrix) {
+	public static IASTAppendable matrix2List(final FieldMatrix<IExpr> matrix) {
 		if (matrix == null) {
 			return F.NIL;
 		}
 		final int rowSize = matrix.getRowDimension();
 		final int colSize = matrix.getColumnDimension();
 
-		final IASTMutable out = F.ListAlloc(rowSize);
-		IASTMutable currOutRow;
+		final IASTAppendable out = F.ListAlloc(rowSize);
+		IASTAppendable currOutRow;
 		for (int i = 0; i < rowSize; i++) {
 			currOutRow = F.ListAlloc(colSize);
 			out.append(currOutRow);
 			for (int j = 0; j < colSize; j++) {
 				IExpr expr = matrix.getEntry(i, j);
+				if (expr.isNumber()) {
+					currOutRow.append(expr);
+				} else {
+					// if (expr.isPlusTimesPower()) {
+					// // TODO Performance hotspot
+					// currOutRow.append(F.eval(F.Together(expr)));
+					// } else {
+					currOutRow.append(expr);
+					// }
+				}
+			}
+		}
+		out.addEvalFlags(IAST.IS_MATRIX);
+		return out;
+	}
+
+	/**
+	 * Converts a FieldMatrix to the list expression representation.
+	 * 
+	 * @param matrix
+	 * @return <code>F.NIL</code> if no conversion was possible
+	 */
+	public static IASTAppendable matrix2List(final RealMatrix matrix) {
+		if (matrix == null) {
+			return F.NIL;
+		}
+		final int rowSize = matrix.getRowDimension();
+		final int colSize = matrix.getColumnDimension();
+
+		final IASTAppendable out = F.ListAlloc(rowSize);
+		IASTAppendable currOutRow;
+		for (int i = 0; i < rowSize; i++) {
+			currOutRow = F.ListAlloc(colSize);
+			out.append(currOutRow);
+			for (int j = 0; j < colSize; j++) {
+				IExpr expr = F.num(matrix.getEntry(i, j));
 				if (expr.isNumber()) {
 					currOutRow.append(expr);
 				} else {
@@ -250,7 +287,7 @@ public class Convert {
 				return F.C0;
 			}
 		}
-		IASTMutable sum = F.PlusAlloc(coefficients.length);
+		IASTAppendable sum = F.PlusAlloc(coefficients.length);
 		sum.append(F.num(coefficients[0]));
 		for (int i = 1; i < coefficients.length; ++i) {
 			if (coefficients[i] != 0) {
@@ -282,11 +319,24 @@ public class Convert {
 	 * @param matrix
 	 * @return <code>F.NIL</code> if no conversion was possible
 	 */
-	public static IAST realMatrix2List(final RealMatrix matrix) {
+	public static IASTMutable realMatrix2List(final RealMatrix matrix) {
 		if (matrix == null) {
 			return F.NIL;
 		}
 		return new ASTRealMatrix(matrix, false);
+	}
+	
+	/**
+	 * Converts a RealMatrix to the list expression representation.
+	 * 
+	 * @param matrix
+	 * @return <code>F.NIL</code> if no conversion was possible
+	 */
+	public static IASTMutable realVectors2List(final RealVector matrix) {
+		if (matrix == null) {
+			return F.NIL;
+		}
+		return new ASTRealVector(matrix, false);
 	}
 
 	/**
@@ -295,13 +345,13 @@ public class Convert {
 	 * @param vector
 	 * @return <code>F.NIL</code> if no conversion was possible
 	 */
-	public static IAST realVector2List(final RealVector vector) {
+	public static IASTAppendable vector2List(final RealVector vector) {
 		if (vector == null) {
 			return F.NIL;
 		}
 		final int rowSize = vector.getDimension();
 
-		final IASTMutable out = F.ListAlloc(rowSize);
+		final IASTAppendable out = F.ListAlloc(rowSize);
 		for (int i = 0; i < rowSize; i++) {
 			out.append(F.num(vector.getEntry(i)));
 		}
@@ -338,9 +388,9 @@ public class Convert {
 		try {
 			int columnLength = dd[0].length;
 			int rowLength = dd.length;
-			final IASTMutable list = F.ListAlloc(columnLength);
+			final IASTAppendable list = F.ListAlloc(columnLength);
 			for (int i = 0; i < columnLength; i++) {
-				final IASTMutable row = F.ListAlloc(rowLength);
+				final IASTAppendable row = F.ListAlloc(rowLength);
 				for (int j = 0; j < rowLength; j++) {
 					row.append(F.num(dd[j][i]));
 				}
@@ -365,7 +415,7 @@ public class Convert {
 		}
 		final int rowSize = vector.getDimension();
 
-		final IASTMutable out = F.ListAlloc(rowSize);
+		final IASTAppendable out = F.ListAlloc(rowSize);
 		for (int i = 0; i < rowSize; i++) {
 			out.append(vector.getEntry(i));
 		}

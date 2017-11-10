@@ -10,6 +10,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Comparators;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -48,14 +49,14 @@ public class EvalAttributes {
 	 * 
 	 * @return returns the flattened list or <code>F.NIL</code>
 	 */
-	public static IASTMutable flatten(@Nonnull final IAST ast) {
+	public static IASTAppendable flatten(@Nonnull final IAST ast) {
 		if ((ast.getEvalFlags() & IAST.IS_FLATTENED) == IAST.IS_FLATTENED) {
 			// already flattened
 			return F.NIL;
 		}
 		final ISymbol sym = ast.topHead();
 		if (ast.isAST(sym)) {
-			IASTMutable result = flatten(sym, ast);
+			IASTAppendable result = flatten(sym, ast);
 			if (result.isPresent()) {
 				result.addEvalFlags(IAST.IS_FLATTENED);
 				return result;
@@ -76,7 +77,7 @@ public class EvalAttributes {
 	 *            the <code>sublist</code> which should be added to the <code>result</code> list.
 	 * @return the flattened ast expression if a sublist was flattened out, otherwise return <code>F#NIL</code>..
 	 */
-	public static IASTMutable flatten(final ISymbol head, final IAST ast) {
+	public static IASTAppendable flatten(final ISymbol head, final IAST ast) {
 		IExpr expr;
 		final int astSize = ast.size();
 		int newSize = 0;
@@ -92,7 +93,7 @@ public class EvalAttributes {
 			}
 		}
 		if (flattened) {
-			IASTMutable result = F.ast(ast.head(), newSize, false);
+			IASTAppendable result = F.ast(ast.head(), newSize, false);
 			for (int i = 1; i < astSize; i++) {
 				expr = ast.get(i);
 				if (expr.isAST(head)) {
@@ -332,12 +333,12 @@ public class EvalAttributes {
 	 *            the length of the list
 	 * @return the resulting ast with the <code>argHead</code> threaded into each ast argument.
 	 */
-	public static IASTMutable threadList(final IAST ast, final IExpr listHead, final IExpr argHead, final int listLength) {
+	public static IASTAppendable threadList(final IAST ast, final IExpr listHead, final IExpr argHead, final int listLength) {
 
-		final IASTMutable result = F.ast(listHead, listLength, true);
+		final IASTAppendable result = F.ast(listHead, listLength, true);
 		final int listSize = ast.size();
 		for (int j = 1; j < listLength + 1; j++) {
-			final IASTMutable subResult = F.ast(argHead, listSize - 1, true);
+			final IASTAppendable subResult = F.ast(argHead, listSize - 1, true);
 
 			for (int i = 1; i < listSize; i++) {
 				if (ast.get(i).isAST(listHead)) {

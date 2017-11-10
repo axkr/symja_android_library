@@ -5,7 +5,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -105,7 +105,7 @@ public class Outer extends AbstractFunctionEvaluator {
 					current.remove(current.size() - 1);
 				}
 			} else {
-				IASTMutable result = F.ast(f);
+				IASTAppendable result = F.ast(f);
 				result.appendArgs(current);
 				result.append(expr);
 				return result;

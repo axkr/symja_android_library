@@ -2,6 +2,7 @@ package org.matheclipse.core.parser;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
@@ -32,11 +33,11 @@ class InfixExprOperator extends AbstractExprOperator {
 	public IASTMutable createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs, final IExpr rhs) {
 		if (fOperatorString.equals("//")) {
 			// lhs // rhs ==> rhs[lhs]
-			IASTMutable function = F.ast(rhs);
+			IASTAppendable function = F.ast(rhs);
 			function.append(lhs);
 			return function;
 		}
-		IASTMutable function = F.ast(F.$s(getFunctionName()), 10, false);
+		IASTAppendable function = F.ast(F.$s(getFunctionName()), 10, false);
 		function.append(lhs);
 		function.append(rhs);
 		return function;

@@ -6,7 +6,7 @@ import java.util.Map;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -74,7 +74,7 @@ public class PlusOp {
 	 */
 	public IExpr getSum() {
 
-		IASTMutable result = F.PlusAlloc(plusMap.size());
+		IASTAppendable result = F.PlusAlloc(plusMap.size());
 		if (numberValue != null && !numberValue.isZero()) {
 			if (numberValue.isComplexInfinity()) {
 				return numberValue;
