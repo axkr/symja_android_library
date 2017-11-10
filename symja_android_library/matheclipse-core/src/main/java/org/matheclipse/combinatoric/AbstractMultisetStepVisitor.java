@@ -2,6 +2,8 @@ package org.matheclipse.combinatoric;
 
 import java.util.List;
 
+import org.matheclipse.core.interfaces.IAST;
+
 /**
  * Abstract step visitor for multisets of type <code>T</code>.
  * 
@@ -9,22 +11,27 @@ import java.util.List;
 public abstract class AbstractMultisetStepVisitor<T> extends AbstractListStepVisitor<T> {
 	protected int[] multiset;
 
-	public AbstractMultisetStepVisitor(List<? extends T> sortedList) {
-		this(sortedList, 0, sortedList.size());
-	}
+	// public AbstractMultisetStepVisitor(List<? extends T> sortedList) {
+	// this(sortedList, 0, sortedList.size());
+	// }
+	//
+	// public AbstractMultisetStepVisitor(List<? extends T> sortedList, int start) {
+	// this(sortedList, start, sortedList.size());
+	// }
+	//
+	// public AbstractMultisetStepVisitor(List<? extends T> sortedList, int start, int end) {
+	// super(sortedList,start,end);
+	// toIntArray(sortedList, start, end);
+	// }
 
-	public AbstractMultisetStepVisitor(List<? extends T> sortedList, int start) {
-		this(sortedList, start, sortedList.size());
-	}
-
-	public AbstractMultisetStepVisitor(List<? extends T> sortedList, int start, int end) {
-		super(sortedList,start,end);
-		toIntArray(sortedList, start, end);
+	public AbstractMultisetStepVisitor(IAST sortedList) {
+		super(sortedList);
+		// this(sortedList, 0, sortedList.size());
 	}
 
 	/**
-	 * Convert the <code>sortedList</code> to an <code>int[]</code> array. Equal
-	 * elements get the same index in the resulting <code>int[]</code> array.
+	 * Convert the <code>sortedList</code> to an <code>int[]</code> array. Equal elements get the same index in the
+	 * resulting <code>int[]</code> array.
 	 * 
 	 * @param <T>
 	 * @param sortedList

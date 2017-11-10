@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -164,8 +165,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *             if the object cannot be added to this {@code List}.
 	 */
 	public boolean append(IExpr expr);
-	
-	
+
 	/**
 	 * Inserts the specified object into this {@code List} at the specified location. The object is inserted before the
 	 * current element at the specified location. If the location is equal to the size of this {@code List}, the object
@@ -185,8 +185,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @throws IndexOutOfBoundsException
 	 *             if {@code location < 0 || location > size()}
 	 */
-	public void append(int location, IExpr object);
-	
+	// public void append(int location, IExpr object);
+
 	/**
 	 * 
 	 * @param collection
@@ -274,8 +274,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	default IAST addOneIdentity(IAST subAST) {
 		return appendOneIdentity(subAST);
 	}
-
-	
 
 	/**
 	 * Adds the objects in the specified collection to the end of this {@code List}. The objects are added in the order
@@ -456,14 +454,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IExpr arg5();
 
 	/**
-	 * Get the range of elements [1..ast.size()[. These range elements are the arguments of a function (represented as
-	 * an AST).
-	 * 
-	 * @return
-	 */
-	public ASTRange args();
-
-	/**
 	 * Collect all arguments of this AST in a new set.
 	 * 
 	 * @return
@@ -490,6 +480,16 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	public IASTAppendable clone();
 
+	/**
+	 * Compare all adjacent elements from lowest to highest index and return true, if the binary predicate gives true in
+	 * each step. If the size is &lt; 2 the method returns false;
+	 * 
+	 * @param predicate
+	 *            the binary predicate
+	 * @return
+	 */
+	public boolean compareAdjacent(BiPredicate<IExpr, IExpr> predicate);
+		
 	/**
 	 * Tests whether this {@code List} contains the specified object.
 	 * 
@@ -584,6 +584,13 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 */
 	public IASTAppendable copyUntil(final int intialCapacity, int position);
+
+	default Collection<IExpr>  copyTo(Collection<IExpr> collection) {
+		for (int i = 1; i < size(); i++) {
+			collection.add(get(i));
+		}
+		return collection;
+	}
 
 	/**
 	 * Calls <code>get(position).equals(expr)</code>.
@@ -691,6 +698,30 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <code>-1</code> if no position was found
 	 */
 	public int findFirstEquals(final IExpr expr);
+
+	/**
+	 * Apply the functor to the elements of the range from left to right and return the final result. Results do
+	 * accumulate from one invocation to the next: each time this method is called, the accumulation starts over with
+	 * value from the previous function call.
+	 * 
+	 * @param function
+	 *            a binary function that accumulate the elements
+	 * @param startValue
+	 * @return the accumulated elements
+	 */
+	public IExpr foldLeft(final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue, int start);
+
+	/**
+	 * Apply the functor to the elements of the range from right to left and return the final result. Results do
+	 * accumulate from one invocation to the next: each time this method is called, the accumulation starts over with
+	 * value from the previous function call.
+	 * 
+	 * @param function
+	 *            a binary function that accumulate the elements
+	 * @param startValue
+	 * @return the accumulated elements
+	 */
+	public IExpr foldRight(final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue, int start);
 
 	/**
 	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return if
@@ -1008,6 +1039,40 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IAST map(final IExpr head, final Function<IExpr, IExpr> functor);
 
 	/**
+	 * Append the mapped ranges elements directly to the given <code>list</code>
+	 * 
+	 * @param astResult
+	 * @param function
+	 * @return
+	 */
+	public IAST map(IAST astResult, IUnaryIndexFunction<IExpr, IExpr> function);
+	
+	/**
+	 * Append the mapped elements directly to the given <code>list</code>
+	 * 
+	 * @param list
+	 * @param binaryFunction
+	 *            binary function
+	 * @param leftArg
+	 *            left argument of the binary functions <code>apply()</code> method.
+	 * @return
+	 */
+	public IAST mapLeft(IAST list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr leftArg);
+
+	/**
+	 * Append the mapped elements directly to the given <code>list</code>
+	 * 
+	 * @param list
+	 * @param binaryFunction
+	 *            a binary function
+	 * @param rightArg
+	 *            right argument of the binary functions <code>apply()</code> method.
+	 * @return the given list
+	 */
+	public Collection<IExpr> mapRight(Collection<IExpr> list, BiFunction<IExpr, IExpr, IExpr> binaryFunction,
+			IExpr rightArg);
+
+	/**
 	 * Maps the elements of this IAST with the unary functor <code>Functors.replaceArg(replacement, position)</code>,
 	 * there <code>replacement</code> is an IAST at which the argument at the given position will be replaced by the
 	 * currently mapped element and appends the element to <code>appendAST</code>.
@@ -1100,34 +1165,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IASTAppendable prependClone(IExpr expr);
 
 	/**
-	 * Get the range of elements [0..ast.size()[ of the AST. This range elements are the head of the function prepended
-	 * by the arguments of a function.
-	 * 
-	 * @return
-	 */
-	public ASTRange range();
-
-	/**
-	 * Get the range of elements [start..sizeOfAST[ of the AST
-	 * 
-	 * @param start
-	 *            the ranges start position (inclusive)
-	 * @return
-	 */
-	public ASTRange range(int start);
-
-	/**
-	 * Get the range of elements [start..end[ of the AST
-	 * 
-	 * @param start
-	 *            the ranges start position ((inclusive)
-	 * @param end
-	 *            the ranges end position (exclusive)
-	 * @return
-	 */
-	public ASTRange range(int start, int end);
-
-	/**
 	 * Removes the object at the specified location from this {@code IAST}.
 	 * 
 	 * @param location
@@ -1148,6 +1185,32 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return a clone with removed element at the given position.
 	 */
 	public IASTAppendable removeAtClone(int i);
+
+	/**
+	 * Append the elements in reversed order to the given <code>list</code>
+	 * 
+	 * @param list
+	 * @return
+	 */
+	public IASTAppendable reverse(IASTAppendable list);
+
+	/**
+	 * Rotate the elements to the left by n places and append the resulting elements to the <code>list</code>
+	 * 
+	 * @param list
+	 * @param n
+	 * @return the given list
+	 */
+	public IAST rotateLeft(IASTAppendable list, final int n);
+
+	/**
+	 * Rotate the elements to the right by n places and append the resulting elements to the <code>list</code>
+	 * 
+	 * @param list
+	 * @param n
+	 * @return the given list
+	 */
+	public IAST rotateRight(IASTAppendable list, final int n);
 
 	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and set the
@@ -1173,7 +1236,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 		ast.set(i, expr);
 		return ast;
 	}
-	
+
 	/**
 	 * Set the evaluation flags for this list.
 	 * 
@@ -1237,4 +1300,5 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	@Override
 	public ISymbol topHead();
+
 }

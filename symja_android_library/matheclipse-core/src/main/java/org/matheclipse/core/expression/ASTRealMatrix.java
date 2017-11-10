@@ -188,11 +188,11 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	 * @throws IndexOutOfBoundsException
 	 *             when {@code location < 0 || > size()}
 	 */
-	@Override
-	public void append(int location, IExpr object) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
+//	@Override
+//	public void append(int location, IExpr object) {
+//		hashValue = 0;
+//		throw new UnsupportedOperationException();
+//	}
 
 	/**
 	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code>

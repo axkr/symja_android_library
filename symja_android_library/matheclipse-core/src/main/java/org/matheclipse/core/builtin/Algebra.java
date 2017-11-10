@@ -3491,7 +3491,7 @@ public class Algebra {
 				return F.NIL;
 			}
 			IASTAppendable numerator = F.ast(F.Plus, plusAST.size(), false);
-			IAST denominator = F.ast(F.Times, plusAST.size(), false);
+			IASTAppendable denominator = F.ast(F.Times, plusAST.size(), false);
 			boolean evaled = false;
 			IExpr temp;
 			IExpr[] fractionalParts;

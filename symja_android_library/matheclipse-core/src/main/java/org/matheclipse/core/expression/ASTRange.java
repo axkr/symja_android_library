@@ -1,7 +1,6 @@
 package org.matheclipse.core.expression;
 
 import java.util.AbstractList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -12,10 +11,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IUnaryIndexFunction;
 
-/**
+/** 
  * Create a range for a given <code>List</code> instance, with the exception of the <code>sort()</code> method which may
  * sort the internal elements range.
  * 
@@ -51,7 +51,7 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 		}
 	}
 
-	final/* package private */IAST fList;
+	final/* package private */IASTMutable fList;
 
 	final/* package private */int fStart;
 
@@ -63,7 +63,7 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	 * @param list
 	 */
 	public ASTRange(IAST list) {
-		this(list, 0, list.size());
+		this((IASTMutable)list, 0, list.size());
 	}
 
 	/**
@@ -75,7 +75,7 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	 * @param start
 	 */
 	public ASTRange(IAST list, int start) {
-		this(list, start, list.size());
+		this((IASTMutable)list, start, list.size());
 	}
 
 	/**
@@ -88,7 +88,7 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	 * @param end
 	 */
 	public ASTRange(IAST list, int start, int end) {
-		fList = list;
+		fList =(IASTMutable)list;
 		fStart = start;
 		fEnd = end;
 		if (fStart < 0 || fStart > fList.size()) {
@@ -104,18 +104,20 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 
 	@Override
 	public boolean add(IExpr element) {
-		fList.append(fEnd++, element);
-		return true;
+		throw new UnsupportedOperationException( );
+//		fList.append(fEnd++, element);
+//		return true;
 	}
 
 	@Override
 	public void add(int location, IExpr element) {
-		if (location < fStart && location > fEnd) {
-			throw new IndexOutOfBoundsException(
-					"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(fEnd));
-		}
-		fList.append(location, element);
-		fEnd++;
+		throw new UnsupportedOperationException( );
+//		if (location < fStart && location > fEnd) {
+//			throw new IndexOutOfBoundsException(
+//					"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(fEnd));
+//		}
+//		fList.append(location, element);
+//		fEnd++;
 	}
 
 	/**
@@ -609,10 +611,10 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	 * @param leftArg
 	 *            left argument of the binary functions <code>apply()</code> method.
 	 * @return
+	 * @deprecated use IAST#mapLeft
 	 */
 	public IAST mapLeft(IAST list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr leftArg) {
 		for (int i = fStart; i < fEnd; i++) {
-
 			list.append(binaryFunction.apply(leftArg, fList.get(i)));
 		}
 		return list;
@@ -627,6 +629,7 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	 * @param rightArg
 	 *            right argument of the binary functions <code>apply()</code> method.
 	 * @return the given list
+	 * @deprecated use IAST#mapRight
 	 */
 	public Collection<IExpr> mapRight(Collection<IExpr> list, BiFunction<IExpr, IExpr, IExpr> binaryFunction,
 			IExpr rightArg) {
@@ -769,14 +772,14 @@ public class ASTRange extends AbstractList<IExpr> implements Iterable<IExpr> {
 	 * 
 	 * @deprecated use EvalAttributes#sort(ast, comparator)
 	 */
-//	@Override
-//	public void sort(Comparator<? super IExpr> comparator) {
-//		final IExpr[] a = fList.toArray();// new IExpr[fList.size()]);
-//		Arrays.sort(a, fStart, fEnd, comparator);
-//		for (int j = fStart; j < fEnd; j++) {
-//			fList.set(j, a[j]);
-//		}
-//	}
+	// @Override
+	// public void sort(Comparator<? super IExpr> comparator) {
+	// final IExpr[] a = fList.toArray();// new IExpr[fList.size()]);
+	// Arrays.sort(a, fStart, fEnd, comparator);
+	// for (int j = fStart; j < fEnd; j++) {
+	// fList.set(j, a[j]);
+	// }
+	// }
 
 	public IExpr[] toArray(IExpr[] array) {
 		int j = fStart;

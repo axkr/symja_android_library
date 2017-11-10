@@ -29,6 +29,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.ISequence;
 import org.matheclipse.core.eval.util.Iterator;
+import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.LevelSpec;
 import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.eval.util.Options;
@@ -1443,7 +1444,7 @@ public final class ListFunctions {
 					final IAST list = (IAST) temp;
 					IExpr arg1 = engine.evaluate(ast.arg1());
 					IExpr arg2 = engine.evaluate(ast.arg2());
-					return list.args().foldLeft((x, y) -> F.binaryAST2(arg1, x, y), arg2);
+					return list.foldLeft((x, y) -> F.binaryAST2(arg1, x, y), arg2, 1);
 				}
 			} catch (final ArithmeticException e) {
 
@@ -1605,7 +1606,8 @@ public final class ListFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 3);
-			if (ast.args().any(PredicateQ.ATOMQ)) {
+			
+			if (Lambda.exists(ast, PredicateQ.ATOMQ, 1)) {
 				return F.NIL;
 			}
 
@@ -2376,10 +2378,10 @@ public final class ListFunctions {
 
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isAST()) {
-				final IAST result = F.ast(arg1.head());
+				final IASTAppendable result = F.ast(arg1.head());
 				if (ast.isAST1()) {
-					ASTRange range = ((IAST) arg1).args();
-					range.rotateLeft(result, 1);
+					// ASTRange range = ((IAST) arg1).args();
+					((IAST) arg1).rotateLeft(result, 1);
 					// Rotating.rotateLeft((IAST) list.arg1(), result, 2, 1);
 					return result;
 				} else {
@@ -2387,8 +2389,8 @@ public final class ListFunctions {
 					if (arg2.isInteger()) {
 						int n = Validate.checkIntType(arg2);
 
-						ASTRange range = ((IAST) arg1).args();
-						range.rotateLeft(result, n);
+						// ASTRange range = ((IAST) arg1).args();
+						((IAST) arg1).rotateLeft(result, n);
 						return result;
 					}
 				}
@@ -2407,18 +2409,18 @@ public final class ListFunctions {
 
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isAST()) {
-				final IAST result = F.ast(arg1.head());
+				final IASTAppendable result = F.ast(arg1.head());
 				if (ast.isAST1()) {
-					ASTRange range = ((IAST) arg1).args();
-					range.rotateRight(result, 1);
+					// ASTRange range = ((IAST) arg1).args();
+					((IAST) arg1).rotateRight(result, 1);
 					// Rotating.rotateRight((IAST) list.arg1(), result, 1, 1);
 					return result;
 				} else {
 					IExpr arg2 = engine.evaluate(ast.arg2());
 					if (arg2.isInteger()) {
 						int n = Validate.checkIntType(arg2);
-						ASTRange range = ((IAST) arg1).args();
-						range.rotateRight(result, n);
+						// ASTRange range = ((IAST) arg1).args();
+						((IAST) arg1).rotateRight(result, n);
 						return result;
 					}
 				}
@@ -3095,9 +3097,7 @@ public final class ListFunctions {
 	 * @return
 	 */
 	public static IAST reverse(IAST list) {
-		final IAST result = F.ast(list.head());
-		list.args().reverse(result.args());
-		return result;
+		return list.reverse(F.ast(list.head(), list.size(), false));
 	}
 
 	private final static ListFunctions CONST = new ListFunctions();

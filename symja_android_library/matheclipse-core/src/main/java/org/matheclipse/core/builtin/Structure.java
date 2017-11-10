@@ -442,7 +442,7 @@ public class Structure {
 
 		@Override
 		public boolean test(IAST ast) {
-			return ast.args().compareAdjacent((x, y) -> x.isLEOrdered(y));
+			return ast.compareAdjacent((x, y) -> x.isLEOrdered(y));
 		}
 
 	}

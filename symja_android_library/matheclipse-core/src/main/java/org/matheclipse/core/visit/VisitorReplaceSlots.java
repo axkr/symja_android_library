@@ -32,7 +32,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
 		return F.NIL;
 	}
 
-	private int getSlotSequence(IAST ast, int pos, IntegerSym ii) {
+	private int getSlotSequence(IASTAppendable ast, int pos, IntegerSym ii) {
 		int i = ii.toInt();
 		if (i > 0 && i < astSlots.size()) {
 			ast.remove(pos);

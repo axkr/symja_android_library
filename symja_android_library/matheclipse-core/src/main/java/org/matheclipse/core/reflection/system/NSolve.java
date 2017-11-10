@@ -428,7 +428,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 									evaled = true;
 									for (IExpr expr : subResultList) {
 										if (expr.isList()) {
-											IAST list = (IAST) expr;
+											IASTAppendable list = (IASTAppendable) expr;
 											list.append(1, listOfRules.getAST(k));
 											resultList.append(list);
 										} else {

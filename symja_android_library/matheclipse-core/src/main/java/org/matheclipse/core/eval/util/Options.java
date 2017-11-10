@@ -7,6 +7,7 @@ import static org.matheclipse.core.expression.F.ReplaceAll;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -23,7 +24,7 @@ import edu.jas.poly.TermOrderByName;
 public class Options {
 	private IAST fDefaultOptionsList;
 
-	private IAST fCurrentOptionsList;
+	private IASTAppendable fCurrentOptionsList;
 
 	private final EvalEngine fEngine;
 

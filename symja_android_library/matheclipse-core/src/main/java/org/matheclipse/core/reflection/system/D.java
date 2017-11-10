@@ -280,7 +280,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 		}
 		if (ast.size() > 3) {
 			// reduce arguments by folding D[fxy, x, y] to D[ D[fxy, x], y] ...
-			return ast.range(2).foldLeft((x, y) -> engine.evaluate(F.D(x, y)), fx);
+			return ast.foldLeft((x, y) -> engine.evaluate(F.D(x, y)), fx, 2);
 		}
 
 		if (fx.isList()) {
@@ -302,7 +302,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 				return result;
 			} else if (xList.isAST1() && xList.arg1().isList()) {
 				IAST subList = (IAST) xList.arg1();
-				return subList.args().mapLeft(F.List(), (a, b) -> engine.evaluate(F.D(a, b)), fx);
+				return subList.mapLeft(F.List(), (a, b) -> engine.evaluate(F.D(a, b)), fx);
 			} else if (xList.isAST2() && xList.arg2().isInteger()) {
 				if (ast.isEvalFlagOn(IAST.IS_DERIVATIVE_EVALED)) {
 					return F.NIL;
@@ -343,7 +343,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 				// D[a_+b_+c_,x_] -> D[a,x]+D[b,x]+D[c,x]
 				return listArg1.mapThread(F.D(F.Null, x), 1);
 			} else if (listArg1.isTimes()) {
-				return listArg1.args().map(F.Plus(), new BinaryBindIth1st(listArg1, F.D(F.Null, x)));
+				return listArg1.map(F.Plus(), new BinaryBindIth1st(listArg1, F.D(F.Null, x)));
 			} else if (listArg1.isPower()) {// && !listArg1.isFreeAt(1, x) && !listArg1.isFreeAt(2, x)) {
 				final IExpr f = listArg1.arg1();
 				final IExpr g = listArg1.arg2();

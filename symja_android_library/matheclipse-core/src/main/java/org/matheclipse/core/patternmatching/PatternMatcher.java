@@ -501,7 +501,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				int len = lhsEvalAST.size() - lhsPatternAST.size();
 				for (int i = 0; i < len; i++) {
 					if (matchASTSequence(lhsPatternAST, lhsEvalAST, i, engine, null)) {
-						IAST lhsResultAST = (lhsEvalAST).clone();
+						IASTAppendable lhsResultAST = lhsEvalAST.clone();
 						for (int j = 1; j < lhsPatternAST.size(); j++) {
 							lhsResultAST.remove(i + 1);
 						}
@@ -666,7 +666,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 							// element is
 							// a pattern sequence, is handled here
 							IAST seq = F.Sequence();
-							seq.appendAll(lhsEvalAST.range(), lastPosition, lhsEvalAST.size());
+							seq.appendAll(lhsEvalAST, lastPosition, lhsEvalAST.size());
 							if (((IPatternSequence) lhsPatternAST.get(lastPosition)).matchPatternSequence(seq,
 									fPatternMap)) {
 								return matchAST(lhsPatternAST.copyUntil(lastPosition),

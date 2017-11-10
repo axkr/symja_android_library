@@ -4492,7 +4492,7 @@ public class F {
 	 * 
 	 * @return
 	 */
-	public static IAST List() {
+	public static IASTAppendable List() {
 		return ast(List);
 	}
 

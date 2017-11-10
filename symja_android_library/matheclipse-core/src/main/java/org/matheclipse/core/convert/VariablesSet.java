@@ -37,7 +37,7 @@ public class VariablesSet {
 					F.Unequal };
 			for (int i = 0; i < logicEquationHeads.length; i++) {
 				if (ast.isAST(logicEquationHeads[i])) {
-					ast.forEach(x->x.accept(this));
+					ast.forEach(x -> x.accept(this));
 					break;
 				}
 			}
@@ -246,6 +246,19 @@ public class VariablesSet {
 		final Iterator<IExpr> iter = fVariablesSet.iterator();
 		while (iter.hasNext()) {
 			list.add(iter.next());
+		}
+		return list;
+	}
+
+	/**
+	 * Append the set of variables to a <code>List&lt;IExpr&gt;</code> list of variables.
+	 * 
+	 * @return the list of variables.
+	 */
+	public List<IExpr> appendToList(final IAST ast) {
+		List<IExpr> list = new ArrayList<IExpr>();
+		for (int i = 1; i < ast.size(); i++) {
+			list.add(ast.get(i));
 		}
 		return list;
 	}

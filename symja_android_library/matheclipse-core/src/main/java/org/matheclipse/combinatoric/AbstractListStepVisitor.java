@@ -2,30 +2,55 @@ package org.matheclipse.combinatoric;
 
 import java.util.List;
 
+import org.matheclipse.core.interfaces.IAST;
+
 /**
  * Abstract step visitor for <code>java.util.List</code>s.
  * 
  */
 public abstract class AbstractListStepVisitor<T> implements IStepVisitor {
-	protected final List<? extends T> list;
+	protected final IAST list;
 	protected Object[] array;
 
-	public AbstractListStepVisitor(List<? extends T> list) {
-		this(list, 0, list.size());
+	// public AbstractListStepVisitor(List<? extends T> list) {
+	// this(list, 0, list.size());
+	// }
+	//
+	// public AbstractListStepVisitor(List<? extends T> list, int start) {
+	// this(list, start, list.size());
+	// }
+
+	public AbstractListStepVisitor(IAST ast) {
+		this.list = ast;
+		toIntArray(ast);
 	}
 
-	public AbstractListStepVisitor(List<? extends T> list, int start) {
-		this(list, start, list.size());
-	}
+	// public AbstractListStepVisitor(List<? extends T> list, int start, int end) {
+	//// this.list = list;
+	// toIntArray(list, start, end);
+	// }
 
-	public AbstractListStepVisitor(List<? extends T> list, int start, int end) {
-		this.list = list;
-		toIntArray(list, start, end);
+	/**
+	 * Convert the <code>sortedList</code> to an <code>int[]</code> array. Equal elements get the same index in the
+	 * resulting <code>int[]</code> array.
+	 * 
+	 * @param <T>
+	 * @param sortedList
+	 * @param start
+	 * @param end
+	 * @return
+	 */
+	final private void toIntArray(IAST sortedList) {
+		array = new Object[sortedList.size() - 1];
+		int index = 0;
+		for (int i = 1; i < sortedList.size(); i++) {
+			array[index++] = sortedList.get(i);
+		}
 	}
 
 	/**
-	 * Convert the <code>sortedList</code> to an <code>int[]</code> array. Equal
-	 * elements get the same index in the resulting <code>int[]</code> array.
+	 * Convert the <code>sortedList</code> to an <code>int[]</code> array. Equal elements get the same index in the
+	 * resulting <code>int[]</code> array.
 	 * 
 	 * @param <T>
 	 * @param sortedList
@@ -47,20 +72,20 @@ public abstract class AbstractListStepVisitor<T> implements IStepVisitor {
 	 * @see org.matheclipse.combinatoric.IStepVisitor#visit(int[][])
 	 */
 	@Override
-	public boolean visit(int[][] result)	{
+	public boolean visit(int[][] result) {
 		return true;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * 
 	 * @see org.matheclipse.combinatoric.IStepVisitor#visit(int[][])
 	 */
 	@Override
-	public boolean visit(int[] result)	{
+	public boolean visit(int[] result) {
 		return true;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 * 

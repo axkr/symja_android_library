@@ -84,6 +84,11 @@ public class NILPointer extends AbstractAST implements IASTAppendable {
 		throw new UnsupportedOperationException();
 	}
 
+//	@Override
+//	public ASTRange args() {
+//		throw new UnsupportedOperationException();
+//	}
+
 	@Override
 	public IExpr arg1() {
 		throw new UnsupportedOperationException();
@@ -246,6 +251,18 @@ public class NILPointer extends AbstractAST implements IASTAppendable {
 	@Override
 	public final <X extends Throwable> IExpr orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
 		throw exceptionSupplier.get();
+	}
+
+	public ASTRange range() {
+		throw new UnsupportedOperationException();
+	}
+
+	public ASTRange range(int start) {
+		throw new UnsupportedOperationException();
+	}
+
+	public ASTRange range(int start, int end) {
+		throw new UnsupportedOperationException();
 	}
 
 	private Object readResolve() throws ObjectStreamException {

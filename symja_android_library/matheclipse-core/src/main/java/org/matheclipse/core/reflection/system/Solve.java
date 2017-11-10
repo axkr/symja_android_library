@@ -56,8 +56,7 @@ import jp.ac.kobe_u.cs.cream.Solver;
  * 
  * <h3>Related terms</h3>
  * <p>
- * <a href="DSolve.md">DSolve</a>, <a href="Eliminate.md">Eliminate</a>,
- * <a href="GroebnerBasis.md">GroebnerBasis</a>,
+ * <a href="DSolve.md">DSolve</a>, <a href="Eliminate.md">Eliminate</a>, <a href="GroebnerBasis.md">GroebnerBasis</a>,
  * <a href="FindRoot.md">FindRoot</a>, <a href="NRoots.md">NRoots</a>
  * </p>
  */
@@ -103,8 +102,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		private IExpr fDenominator;
 
 		/**
-		 * The number of leaves in an expression, used as an indicator for the
-		 * complexity of the expression.
+		 * The number of leaves in an expression, used as an indicator for the complexity of the expression.
 		 */
 		private long fLeafCount;
 
@@ -397,8 +395,8 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 
 		/**
-		 * Check for an applicable inverse function at the given <code>position</code>
-		 * in the <code>Plus(..., ,...)</code> expression.
+		 * Check for an applicable inverse function at the given <code>position</code> in the
+		 * <code>Plus(..., ,...)</code> expression.
 		 * 
 		 * @param ast
 		 * @param arg1
@@ -430,14 +428,13 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 
 		/**
-		 * Check for an applicable inverse function at the given <code>position</code>
-		 * in the <code>Plus(..., ,...)</code> expression.
+		 * Check for an applicable inverse function at the given <code>position</code> in the
+		 * <code>Plus(..., ,...)</code> expression.
 		 * 
 		 * @param plusAST
 		 *            the <code>Plus(..., ,...)</code> expression
 		 * @param position
-		 * @return <code>F.NIL</code> if no inverse function was found, otherwise return
-		 *         the rewritten expression
+		 * @return <code>F.NIL</code> if no inverse function was found, otherwise return the rewritten expression
 		 */
 		private IExpr rewriteInverseFunction(IAST plusAST, int position) {
 			IAST ast = (IAST) plusAST.get(position);
@@ -449,8 +446,8 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 
 		/**
-		 * Try to rewrite a <code>Plus(...,f(x), ...)</code> function which contains an
-		 * invertable function argument <code>f(x)</code>.
+		 * Try to rewrite a <code>Plus(...,f(x), ...)</code> function which contains an invertable function argument
+		 * <code>f(x)</code>.
 		 */
 		private IExpr rewritePlusWithInverseFunctions(IAST plusAST) {
 			IExpr expr;
@@ -489,8 +486,8 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 
 		/**
-		 * Try to rewrite a <code>Times(...,f(x), ...)</code> expression which may
-		 * contain an invertable function argument <code>f(x)</code> as subexpression.
+		 * Try to rewrite a <code>Times(...,f(x), ...)</code> expression which may contain an invertable function
+		 * argument <code>f(x)</code> as subexpression.
 		 */
 		private IExpr rewriteTimesWithInverseFunctions(IAST times) {
 			IAST result = F.NIL;
@@ -517,8 +514,8 @@ public class Solve extends AbstractFunctionEvaluator {
 		}
 
 		/**
-		 * If possible simplify the numerator expression. After that analyze the
-		 * numerator expression, if it has linear, polynomial or other form.
+		 * If possible simplify the numerator expression. After that analyze the numerator expression, if it has linear,
+		 * polynomial or other form.
 		 */
 		protected void simplifyAndAnalyze() {
 			IExpr temp = F.NIL;
@@ -601,8 +598,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Use <code>-1</code> as an equation expression for which we get no solution
-	 * (i.e. <code>(-1)==0  =>  False</code>)
+	 * Use <code>-1</code> as an equation expression for which we get no solution (i.e. <code>(-1)==0  =>  False</code>)
 	 */
 	private static IExpr NO_EQUATION_SOLUTION = F.CN1;
 
@@ -610,15 +606,13 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * Recursively solve the list of analyzers.
 	 * 
 	 * @param analyzerList
-	 *            list of analyzers, which determine, if an expression has linear,
-	 *            polynomial or other form
+	 *            list of analyzers, which determine, if an expression has linear, polynomial or other form
 	 * @param variables
 	 *            the list of variables
 	 * @param resultList
 	 *            the list of result values as rules assigned to each variable
 	 * @param maximumNumberOfResults
-	 *            the maximum number of results in <code>resultList</code>:
-	 *            <code>0</code> gives all results.
+	 *            the maximum number of results in <code>resultList</code>: <code>0</code> gives all results.
 	 * @param matrix
 	 * @param vector
 	 * @param engine
@@ -695,22 +689,21 @@ public class Solve extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Add the sub-results to the results list. If
-	 * <code>maximumNumberOfResults</code> is reached return the resultList,
+	 * Add the sub-results to the results list. If <code>maximumNumberOfResults</code> is reached return the resultList,
 	 * otherwise return <code>F#NIL</code>.
 	 * 
 	 * @param resultList
 	 * @param subResultList
 	 * @param kListOfSolveRules
 	 * @param maximumNumberOfResults
-	 * @return if <code>maximumNumberOfResults</code> is reached return the
-	 *         resultList, otherwiaw return <code>F#NIL</code>.
+	 * @return if <code>maximumNumberOfResults</code> is reached return the resultList, otherwiaw return
+	 *         <code>F#NIL</code>.
 	 */
 	private static IAST addSubResultsToResultsList(IAST resultList, IAST subResultList, IAST kListOfSolveRules,
 			int maximumNumberOfResults) {
 		for (IExpr expr : subResultList) {
 			if (expr.isList()) {
-				IAST list = (IAST) expr;
+				IASTAppendable list = (IASTAppendable) expr;
 				list.append(1, kListOfSolveRules);
 				resultList.append(list);
 				if (maximumNumberOfResults > 0 && maximumNumberOfResults <= resultList.size()) {
@@ -727,9 +720,8 @@ public class Solve extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * For all analyzers in <code>analyzerList</code> from position to the last
-	 * element substitute the variables by the rules in
-	 * <code>kListOfSolveRules</code> and create a new (sub-)analyzer list.
+	 * For all analyzers in <code>analyzerList</code> from position to the last element substitute the variables by the
+	 * rules in <code>kListOfSolveRules</code> and create a new (sub-)analyzer list.
 	 * 
 	 * @param kListOfSolveRules
 	 * @param analyzerList
@@ -853,14 +845,13 @@ public class Solve extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Return an immutable <code>List[numerator, denominator]</code> of the given
-	 * expression. Uses <code>Numerator[] and Denominator[]</code> functions.
+	 * Return an immutable <code>List[numerator, denominator]</code> of the given expression. Uses
+	 * <code>Numerator[] and Denominator[]</code> functions.
 	 * 
 	 * @param expr
 	 * @param engine
 	 * @param evalTogether
-	 *            evaluate <code>Together[expr]</code> before determining numerator
-	 *            and denominator of the expression.
+	 *            evaluate <code>Together[expr]</code> before determining numerator and denominator of the expression.
 	 * @return <code>List[numerator, denominator]</code>
 	 */
 	private static IAST splitNumeratorDenominator(IAST expr, EvalEngine engine, boolean evalTogether) {
@@ -900,7 +891,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
 				try {
 					IAST resultList = Solve.integerSolve(equationsAndInequations, variables);
-					EvalAttributes.sort((IASTMutable)resultList);
+					EvalAttributes.sort((IASTMutable) resultList);
 					return resultList;
 				} catch (RuntimeException rex) {
 					if (Config.SHOW_STACKTRACE) {
@@ -1037,17 +1028,15 @@ public class Solve extends AbstractFunctionEvaluator {
 	/**
 	 * 
 	 * @param termsEqualZeroList
-	 *            the list of expressions extracted form the given equations, which
-	 *            should equal <code>0</code>
+	 *            the list of expressions extracted form the given equations, which should equal <code>0</code>
 	 * @param variables
 	 *            the variables for which the equations should be solved
 	 * @param maximumNumberOfResults
 	 *            the maximum number of results which should be returned
 	 * @param engine
 	 *            the evaluation engine
-	 * @return a &quot;list of rules list&quot; which solves the equations, or an
-	 *         empty list if no solution exists, or <code>F.NIL</code> if the
-	 *         equations are not solvable by this algorithm.
+	 * @return a &quot;list of rules list&quot; which solves the equations, or an empty list if no solution exists, or
+	 *         <code>F.NIL</code> if the equations are not solvable by this algorithm.
 	 */
 	protected IAST solveEquations(IAST termsEqualZeroList, IAST variables, int maximumNumberOfResults,
 			EvalEngine engine) {
@@ -1101,13 +1090,11 @@ public class Solve extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Analyze the <code>termsEqualZeroList</code> if it contains a
-	 * <code>Times[..., ,...]</code> expression. If true, set the factors equal to
-	 * <code>0</code> and solve the equations recursively.
+	 * Analyze the <code>termsEqualZeroList</code> if it contains a <code>Times[..., ,...]</code> expression. If true,
+	 * set the factors equal to <code>0</code> and solve the equations recursively.
 	 * 
 	 * @param termsEqualZeroList
-	 *            the list of expressions extracted form the given equations, which
-	 *            should equal <code>0</code>
+	 *            the list of expressions extracted form the given equations, which should equal <code>0</code>
 	 * @param variables
 	 *            the variables for which the equations should be solved
 	 * @param engine
@@ -1127,7 +1114,8 @@ public class Solve extends AbstractFunctionEvaluator {
 							clonedEqualZeroList.set(i, times.get(j));
 							IAST temp = solveEquations(clonedEqualZeroList, variables, 0, engine);
 							if (temp.size() > 1) {
-								subSolutionSet.addAll(temp.args());
+								// subSolutionSet.addAll(temp.args());
+								temp.copyTo(subSolutionSet);
 							}
 						}
 					}

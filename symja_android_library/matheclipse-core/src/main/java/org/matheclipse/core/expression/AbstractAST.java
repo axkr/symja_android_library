@@ -10,6 +10,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -45,6 +46,7 @@ import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.IUnaryIndexFunction;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherEvalEngine;
 import org.matheclipse.core.polynomials.ExprPolynomial;
@@ -66,13 +68,14 @@ public abstract class AbstractAST implements IASTMutable {
 
 		private int _start; // Inclusive.
 
-		private AbstractAST _table;
+		private IASTMutable _table;
 
 		@Override
 		public void add(IExpr o) {
-			_table.append(_nextIndex++, o);
-			_end++;
-			_currentIndex = -1;
+			throw new UnsupportedOperationException();
+			// _table.append(_nextIndex++, o);
+			// _end++;
+			// _currentIndex = -1;
 		}
 
 		@Override
@@ -136,6 +139,29 @@ public abstract class AbstractAST implements IASTMutable {
 	}
 
 	private static final long serialVersionUID = -8682706994448890660L;
+
+	/**
+	 * Compare all adjacent elements from lowest to highest index and return true, if the binary predicate gives true in
+	 * each step. If the size is &lt; 2 the method returns false;
+	 * 
+	 * @param predicate
+	 *            the binary predicate
+	 * @return
+	 */
+	public boolean compareAdjacent(BiPredicate<IExpr, IExpr> predicate) {
+		if (size() < 2) {
+			return false;
+		}
+		IExpr elem = get(1);
+		for (int i = 2; i < size(); i++) {
+
+			if (!predicate.test(elem, get(i))) {
+				return false;
+			}
+			elem = get(i);
+		}
+		return true;
+	}
 
 	private static int compareToASTDecreasing(final IAST lhsAST, final IAST rhsAST) {
 		int lhsSize = lhsAST.size();
@@ -350,12 +376,6 @@ public abstract class AbstractAST implements IASTMutable {
 			ast.append(get(i));
 		}
 		return ast;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final ASTRange args() {
-		return new ASTRange(this, 1);
 	}
 
 	@Override
@@ -699,6 +719,43 @@ public abstract class AbstractAST implements IASTMutable {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Apply the functor to the elements of the range from left to right and return the final result. Results do
+	 * accumulate from one invocation to the next: each time this method is called, the accumulation starts over with
+	 * value from the previous function call.
+	 * 
+	 * @param function
+	 *            a binary function that accumulate the elements
+	 * @param startValue
+	 * @return the accumulated elements
+	 */
+	public IExpr foldLeft(final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue, int start) {
+		IExpr value = startValue;
+		for (int i = start; i < size(); i++) {
+			value = function.apply(value, get(i));
+		}
+		return value;
+	}
+
+	/**
+	 * Apply the functor to the elements of the range from right to left and return the final result. Results do
+	 * accumulate from one invocation to the next: each time this method is called, the accumulation starts over with
+	 * value from the previous function call.
+	 * 
+	 * @param function
+	 *            a binary function that accumulate the elements
+	 * @param startValue
+	 * @return the accumulated elements
+	 */
+	public IExpr foldRight(final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue, int start) {
+		IExpr value = startValue;
+		int end = size() - 1;
+		for (int i = end; i >= start; i--) {
+			value = function.apply(value, get(i));
+		}
+		return value;
 	}
 
 	/** {@inheritDoc} */
@@ -2558,6 +2615,55 @@ public abstract class AbstractAST implements IASTMutable {
 		return map(setAtCopy(0, head), function);
 	}
 
+	/**
+	 * Append the mapped ranges elements directly to the given <code>list</code>
+	 * 
+	 * @param astResult
+	 * @param function
+	 * @return
+	 */
+	public IAST map(IAST astResult, IUnaryIndexFunction<IExpr, IExpr> function) {
+		for (int i = 1; i < size(); i++) {
+			astResult.append(function.apply(i, get(i)));
+		}
+		return astResult;
+	}
+
+	/**
+	 * Append the mapped ranges elements directly to the given <code>list</code>
+	 * 
+	 * @param list
+	 * @param binaryFunction
+	 *            binary function
+	 * @param leftArg
+	 *            left argument of the binary functions <code>apply()</code> method.
+	 * @return
+	 */
+	public IAST mapLeft(IAST list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr leftArg) {
+		for (int i = 1; i < size(); i++) {
+			list.append(binaryFunction.apply(leftArg, get(i)));
+		}
+		return list;
+	}
+
+	/**
+	 * Append the mapped ranges elements directly to the given <code>list</code>
+	 * 
+	 * @param list
+	 * @param binaryFunction
+	 *            a binary function
+	 * @param rightArg
+	 *            right argument of the binary functions <code>apply()</code> method.
+	 * @return the given list
+	 */
+	public Collection<IExpr> mapRight(Collection<IExpr> list, BiFunction<IExpr, IExpr, IExpr> binaryFunction,
+			IExpr rightArg) {
+		for (int i = 1; i < size(); i++) {
+			list.add(binaryFunction.apply(get(i), rightArg));
+		}
+		return list;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public IExpr mapMatrixColumns(int[] dim, Function<IExpr, IExpr> f) {
@@ -2622,7 +2728,7 @@ public abstract class AbstractAST implements IASTMutable {
 				}
 				return setAtCopy(1, ((INumber) arg1).negate());
 			}
-			IAST timesAST = clone();
+			IASTAppendable timesAST = clone();
 			timesAST.append(1, F.CN1);
 			return timesAST;
 		}
@@ -2677,42 +2783,65 @@ public abstract class AbstractAST implements IASTMutable {
 		return appendAtClone(1, expr);
 	}
 
-	/**
-	 * Get the range of elements [0..sizeOfAST[ of the AST
-	 * 
-	 * @return
-	 */
-	@Override
-	public final ASTRange range() {
-		return new ASTRange(this, 0, size());
-	}
-
-	/**
-	 * Get the range of elements [start..sizeOfAST[ of the AST
-	 * 
-	 * @return
-	 */
-	@Override
-	public final ASTRange range(final int start) {
-		return new ASTRange(this, start, size());
-	}
-
-	/**
-	 * Get the range of elements [start..end[ of the AST
-	 * 
-	 * @return
-	 */
-	@Override
-	public final ASTRange range(final int start, final int end) {
-		return new ASTRange(this, start, end);
-	}
-
 	/** {@inheritDoc} */
 	@Override
 	public final IASTAppendable removeAtClone(int position) {
 		IASTAppendable ast = clone();
 		ast.remove(position);
 		return ast;
+	}
+
+	/**
+	 * Append the elements in reversed order to the given <code>list</code>
+	 * 
+	 * @param list
+	 * @return
+	 */
+	public IASTAppendable reverse(IASTAppendable list) {
+		for (int i = size() - 1; i >= 1; i--) {
+			list.append(get(i));
+		}
+		return list;
+	}
+
+	/**
+	 * Rotate the ranges elements to the left by n places and append the resulting elements to the <code>list</code>
+	 * 
+	 * @param list
+	 * @param n
+	 * @return the given list
+	 */
+	public IAST rotateLeft(IASTAppendable list, final int n) {
+		int size = size();
+		int n1 = n + 1;
+		for (int i = n1; i < size; i++) {
+			list.append(get(i));
+		}
+		if (n <= size) {
+			for (int i = 1; i < n1; i++) {
+				list.append(get(i));
+			}
+		}
+		return list;
+	}
+
+	/**
+	 * Rotate the ranges elements to the right by n places and append the resulting elements to the <code>list</code>
+	 * 
+	 * @param list
+	 * @param n
+	 * @return the given list
+	 */
+	public IAST rotateRight(IASTAppendable list, final int n) {
+		if (n <= size()) {
+			for (int i = size() - n; i < size(); i++) {
+				list.append(get(i));
+			}
+			for (int i = 1; i < size() - n; i++) {
+				list.append(get(i));
+			}
+		}
+		return list;
 	}
 
 	/** {@inheritDoc} */
