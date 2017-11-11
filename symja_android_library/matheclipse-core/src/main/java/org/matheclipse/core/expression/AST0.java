@@ -441,11 +441,11 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 * @throws IndexOutOfBoundsException
 	 *             when {@code location < 0 || >= size()}
 	 */
-	@Override
-	public IExpr remove(int location) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
+//	@Override
+//	public IExpr remove(int location) {
+//		hashValue = 0;
+//		throw new UnsupportedOperationException();
+//	}
 
 	/**
 	 * Removes the objects in the specified range from the start to the end, but

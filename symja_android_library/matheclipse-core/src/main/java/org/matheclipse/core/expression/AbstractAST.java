@@ -116,16 +116,17 @@ public abstract class AbstractAST implements IASTMutable {
 
 		@Override
 		public void remove() {
-			if (_currentIndex >= 0) {
-				_table.remove(_currentIndex);
-				_end--;
-				if (_currentIndex < _nextIndex) {
-					_nextIndex--;
-				}
-				_currentIndex = -1;
-			} else {
-				throw new IllegalStateException();
-			}
+			throw new UnsupportedOperationException();
+			// if (_currentIndex >= 0) {
+			// _table.remove(_currentIndex);
+			// _end--;
+			// if (_currentIndex < _nextIndex) {
+			// _nextIndex--;
+			// }
+			// _currentIndex = -1;
+			// } else {
+			// throw new IllegalStateException();
+			// }
 		}
 
 		@Override

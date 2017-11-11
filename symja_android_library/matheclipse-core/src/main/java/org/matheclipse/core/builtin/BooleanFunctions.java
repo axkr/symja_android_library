@@ -368,7 +368,7 @@ public final class BooleanFunctions {
 			public IAST convertXor(IAST ast) {
 				IExpr temp = ast.arg2();
 				if (ast.size() > 3) {
-					IAST clone = ast.clone();
+					IASTAppendable clone = ast.clone();
 					clone.remove(1);
 					temp = convertXor(clone);
 				}
@@ -930,7 +930,7 @@ public final class BooleanFunctions {
 			}
 			IExpr.COMPARE_TERNARY b;
 			boolean evaled = false;
-			IAST result = ast.clone();
+			IASTAppendable result = ast.clone();
 			IExpr.COMPARE_TERNARY[] cResult = new IExpr.COMPARE_TERNARY[ast.size()];
 			cResult[0] = IExpr.COMPARE_TERNARY.TRUE;
 			for (int i = 1; i < ast.size() - 1; i++) {

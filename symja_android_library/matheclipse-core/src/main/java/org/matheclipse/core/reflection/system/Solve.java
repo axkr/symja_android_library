@@ -490,7 +490,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		 * argument <code>f(x)</code> as subexpression.
 		 */
 		private IExpr rewriteTimesWithInverseFunctions(IAST times) {
-			IAST result = F.NIL;
+			IASTAppendable result = F.NIL;
 			int j = 1;
 			// remove constant sub-expressions from Times() expression
 			for (int i = 1; i < times.size(); i++) {

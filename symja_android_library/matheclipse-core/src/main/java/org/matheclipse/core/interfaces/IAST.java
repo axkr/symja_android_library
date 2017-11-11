@@ -185,7 +185,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @throws IndexOutOfBoundsException
 	 *             if {@code location < 0 || location > size()}
 	 */
-//	 public void append(int location, IExpr object); 
+	// public void append(int location, IExpr object);
 
 	/**
 	 * 
@@ -295,9 +295,9 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <tt>true</tt> if this AST changed as a result of the call
 	 * 
 	 */
-//	public boolean appendAll(IAST ast, int startPosition, int endPosition);
+	// public boolean appendAll(IAST ast, int startPosition, int endPosition);
 
-//	public boolean appendAll(int location, Collection<? extends IExpr> collection);
+	// public boolean appendAll(int location, Collection<? extends IExpr> collection);
 
 	/**
 	 * Appends all elements from offset <code>startPosition</code> to <code>endPosition</code> in the specified list to
@@ -312,7 +312,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <tt>true</tt> if this AST changed as a result of the call
 	 * 
 	 */
-//	public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition);
+	// public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition);
 
 	/**
 	 * Appends all of the arguments (starting from offset <code>1</code>) in the specified AST up to position
@@ -1180,7 +1180,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @throws IndexOutOfBoundsException
 	 *             if {@code location < 0 || >= size()}
 	 */
-	public IExpr remove(int location);
+	// public IExpr remove(int location);
 
 	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and remove the

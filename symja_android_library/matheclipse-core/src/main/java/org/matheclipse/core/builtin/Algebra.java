@@ -682,7 +682,7 @@ public class Algebra {
 				return;
 			} else if (expr.isPlus()) {
 				IAST plusAST = (IAST) expr;
-				IAST clone = plusAST.clone();
+				IASTAppendable clone = plusAST.clone();
 				int i = 1;
 				while (i < clone.size()) {
 					if (collectToMapPlus(clone.get(i), matcher, map)) {
@@ -699,7 +699,7 @@ public class Algebra {
 				IAST timesAST = (IAST) expr;
 				for (int i = 1; i < timesAST.size(); i++) {
 					if (matcher.test(timesAST.get(i)) || isPowerMatched(timesAST.get(i), matcher)) {
-						IAST clone = timesAST.clone();
+						IASTAppendable clone = timesAST.clone();
 						clone.remove(i);
 						addOneIdentityPowerFactor(timesAST.get(i), clone, map);
 						return;

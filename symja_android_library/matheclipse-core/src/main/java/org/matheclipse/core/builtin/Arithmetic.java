@@ -499,7 +499,7 @@ public final class Arithmetic {
 			}
 			if (arg1.isTimes()) {
 				IASTAppendable result = F.NIL;
-				IAST clone = ((IAST) arg1).clone();
+				IASTAppendable clone = ((IAST) arg1).clone();
 				int i = 1;
 				while (i < clone.size()) {
 					temp = conjugate(clone.get(i));
@@ -2016,7 +2016,7 @@ public final class Arithmetic {
 		 */
 		private IAST powerEPlus(IAST plus) {
 			IASTAppendable multiplicationFactors = F.NIL;
-			IAST plusClone = F.NIL;
+			IASTAppendable plusClone = F.NIL;
 			for (int i = plus.size() - 1; i > 0; i--) {
 				if (plus.get(i).isLog()) {
 					if (!multiplicationFactors.isPresent()) {

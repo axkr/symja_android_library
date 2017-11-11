@@ -5,6 +5,7 @@ import java.util.function.Function;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -19,17 +20,15 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.math.MathException;
 
 /**
- * A level specification visitor for levels in abstract syntax trees (AST),
- * which removes elements from a (cloned) AST in the
- * <code>visit(IAST clonedAST)</code> method.
+ * A level specification visitor for levels in abstract syntax trees (AST), which removes elements from a (cloned) AST
+ * in the <code>visit(IAST clonedAST)</code> method.
  * 
  * Example: the nested list <code>{x,{y}}</code> has depth <code>3</code>
  * 
  */
 public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 	/**
-	 * StopException will be thrown, if maximum number of Cases results are
-	 * reached
+	 * StopException will be thrown, if maximum number of Cases results are reached
 	 *
 	 */
 	@SuppressWarnings("serial")
@@ -46,14 +45,10 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 	 * Create a LevelSpecification from an IInteger or IAST list-object.<br>
 	 * <br>
 	 * 
-	 * An <code>expr</code> is interpreted as a <i>level specification</i> for
-	 * the allowed levels in an AST.<br>
-	 * If <code>expr</code> is a non-negative IInteger iValue set Level
-	 * {1,iValue};<br>
-	 * If <code>expr</code> is a negative IInteger iValue set Level {iValue, 0};
-	 * <br>
-	 * If <code>expr</code> is a List {i0Value, i1Value} set Level {i0Value,
-	 * i1Value};<br>
+	 * An <code>expr</code> is interpreted as a <i>level specification</i> for the allowed levels in an AST.<br>
+	 * If <code>expr</code> is a non-negative IInteger iValue set Level {1,iValue};<br>
+	 * If <code>expr</code> is a negative IInteger iValue set Level {iValue, 0}; <br>
+	 * If <code>expr</code> is a List {i0Value, i1Value} set Level {i0Value, i1Value};<br>
 	 * 
 	 * @param function
 	 *            the function which should be applied for an element
@@ -62,8 +57,7 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 	 * @param maximumRemoved
 	 *            maximum number of elements, which are allowed to remove
 	 * @param includeHeads
-	 *            set to <code>true</code>, if the header of an AST expression
-	 *            should be included
+	 *            set to <code>true</code>, if the header of an AST expression should be included
 	 * @throws MathException
 	 *             if the <code>expr</code> is not a <i>level specification</i>
 	 * @see
@@ -76,8 +70,7 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 	}
 
 	/**
-	 * Define a level specification for all elements on level <code>level</code>
-	 * .
+	 * Define a level specification for all elements on level <code>level</code> .
 	 * 
 	 * @param level
 	 */
@@ -235,6 +228,9 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 		IExpr arg;
 		IExpr temp;
 		try {
+			if (!(clonedAST instanceof IASTAppendable)) {
+				clonedAST=clonedAST.clone();
+			}
 			fCurrentLevel++;
 			if (fIncludeHeads) {
 				arg = clonedAST.get(0);
@@ -243,7 +239,7 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 				}
 				temp = arg.accept(this);
 				if (temp.isPresent()) {
-					clonedAST.remove(0);
+					((IASTAppendable)clonedAST).remove(0);
 					removedCounter++;
 					if (maximumRemoved >= 0) {
 						if (removedCounter >= maximumRemoved) {
@@ -266,7 +262,7 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 				}
 				temp = arg.accept(this);
 				if (temp.isPresent()) {
-					clonedAST.remove(i);
+					((IASTAppendable)clonedAST).remove(i);
 					removedCounter++;
 					if (maximumRemoved >= 0) {
 						if (removedCounter >= maximumRemoved) {

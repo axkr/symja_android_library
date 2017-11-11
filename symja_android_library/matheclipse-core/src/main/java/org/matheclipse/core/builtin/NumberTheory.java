@@ -41,6 +41,7 @@ import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
@@ -754,7 +755,7 @@ public final class NumberTheory {
 		}
 
 		private static IExpr removeEval(final IAST ast) {
-			IAST result = F.NIL;
+			IASTAppendable result = F.NIL;
 			int size = ast.size();
 			int j = 1;
 			for (int i = 1; i < size; i++) {

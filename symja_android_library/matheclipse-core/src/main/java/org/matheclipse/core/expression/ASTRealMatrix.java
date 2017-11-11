@@ -504,11 +504,11 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	 * @throws IndexOutOfBoundsException
 	 *             when {@code location < 0 || >= size()}
 	 */
-	@Override
-	public IExpr remove(int location) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
+	// @Override
+	// public IExpr remove(int location) {
+	// hashValue = 0;
+	// throw new UnsupportedOperationException();
+	// }
 
 	/**
 	 * Removes the objects in the specified range from the start to the end, but not including the end index.

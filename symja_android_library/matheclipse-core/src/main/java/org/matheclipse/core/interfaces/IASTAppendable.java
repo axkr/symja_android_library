@@ -197,4 +197,17 @@ public interface IASTAppendable extends IASTMutable {
 	 * @return
 	 */
 	// public ASTRange range(int start, int end);
+	
+	/**
+	 * Removes the object at the specified location from this {@code IAST}.
+	 * 
+	 * @param location
+	 *            the index of the object to remove.
+	 * @return the removed object.
+	 * @throws UnsupportedOperationException
+	 *             if removing from this {@code IAST} is not supported.
+	 * @throws IndexOutOfBoundsException
+	 *             if {@code location < 0 || >= size()}
+	 */
+	public IExpr remove(int location);
 }

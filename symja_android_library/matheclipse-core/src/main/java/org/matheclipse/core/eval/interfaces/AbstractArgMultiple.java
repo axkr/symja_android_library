@@ -4,6 +4,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -31,7 +32,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 		}
 
 		if (ast.size() > 3) {
-			IAST tempAST = ast.clone();
+			IASTAppendable tempAST = ast.clone();
 			final ISymbol sym = tempAST.topHead();
 			final IAST result = F.ast(sym);
 			IExpr tres;

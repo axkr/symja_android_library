@@ -5000,7 +5000,7 @@ public class F {
 		return ast(Plus, size, false);
 	}
 
-	public static IAST Plus(final IExpr a0) {
+	public static IASTAppendable Plus(final IExpr a0) {
 		return unary(Plus, a0);
 	}
 

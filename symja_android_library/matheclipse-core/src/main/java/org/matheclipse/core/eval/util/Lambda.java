@@ -83,7 +83,7 @@ public class Lambda {
 	}
 
 	private static IExpr removeStop(IAST ast, Predicate<IExpr> predicate, Function<IExpr, IExpr> function) {
-		IAST result = F.NIL;
+		IASTAppendable result = F.NIL;
 		int size = ast.size();
 		int j = 1;
 		for (int i = 1; i < size; i++) {

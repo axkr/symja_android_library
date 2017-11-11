@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.polynomials.ExprPolynomial;
@@ -62,7 +63,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 		if (ast.arg2().isAST()) {
 			IAST uFunction1Arg = (IAST) ast.arg2();
 			IExpr xVar = ast.arg3();
-			IAST listOfEquations = Validate.checkEquations(ast, 1).clone();
+			IASTAppendable listOfEquations = Validate.checkEquations(ast, 1).clone();
 			IExpr[] boundaryCondition = null;
 			int i = 1;
 			while (i < listOfEquations.size()) {
@@ -109,7 +110,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 				listOfVariables.size() - 1);
 
 		if (equation.isAST()) {
-			IAST eq = ((IAST) equation).clone();
+			IASTAppendable eq = ((IAST) equation).clone();
 			if (!eq.isPlus()) {
 				// create artificial Plus(...) expression
 				eq = F.Plus(eq);
@@ -191,7 +192,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 	 */
 	private IExpr[] solveSingleBoundary(IExpr equation, IAST uFunction1Arg, IExpr xVar, EvalEngine engine) {
 		if (equation.isAST()) {
-			IAST eq = ((IAST) equation).clone();
+			IASTAppendable eq = ((IAST) equation).clone();
 			if (!eq.isPlus()) {
 				// create artificial Plus(...) expression
 				eq = F.Plus(eq);
