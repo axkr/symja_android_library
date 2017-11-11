@@ -16,6 +16,7 @@ import static org.matheclipse.core.expression.F.Times;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -31,7 +32,7 @@ import edu.jas.poly.Monomial;
  * 
  */
 public class PartialFractionIntegrateGenerator implements IPartialFractionGenerator {
-	IAST result;
+	IASTAppendable result;
 	JASConvert<BigRational> jas;
 	IExpr x;
 

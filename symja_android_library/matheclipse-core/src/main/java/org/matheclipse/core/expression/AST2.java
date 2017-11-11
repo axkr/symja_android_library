@@ -140,7 +140,7 @@ public class AST2 extends AST1 {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST filter(IAST filterAST, IAST restAST, Predicate<? super IExpr> predicate) {
+	public IAST filter(IASTAppendable filterAST, IASTAppendable restAST, Predicate<? super IExpr> predicate) {
 		if (predicate.test(arg1)) {
 			filterAST.append(arg1);
 		} else {
@@ -156,7 +156,7 @@ public class AST2 extends AST1 {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST filter(IAST filterAST, Predicate<? super IExpr> predicate) {
+	public IAST filter(IASTAppendable filterAST, Predicate<? super IExpr> predicate) {
 		if (predicate.test(arg1)) {
 			filterAST.append(arg1);
 		}

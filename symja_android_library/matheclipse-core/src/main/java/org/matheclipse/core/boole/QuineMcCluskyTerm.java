@@ -34,6 +34,7 @@ import java.util.Arrays;
 import org.matheclipse.core.eval.exception.BooleanFunctionConversionException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -70,7 +71,8 @@ class QuineMcCluskyTerm {
 	}
 
 	public IExpr toExpr(IAST variables) throws BooleanFunctionConversionException {
-		if (varVals.length == 1) {
+		int length = varVals.length;
+		if (length == 1) {
 			if (varVals[0] == NIL) {
 				// nothing to do
 			} else if (varVals[0] == (byte) 0) {
@@ -81,8 +83,8 @@ class QuineMcCluskyTerm {
 				throw new BooleanFunctionConversionException();
 			}
 		}
-		IAST result = F.ast(F.And);
-		for (int i = 0; i < varVals.length; i++) {
+		IASTAppendable result = F.ast(F.And, length, false);
+		for (int i = 0; i < length; i++) {
 			if (varVals[i] == NIL) {
 				// nothing to do
 			} else if (varVals[i] == (byte) 0) {

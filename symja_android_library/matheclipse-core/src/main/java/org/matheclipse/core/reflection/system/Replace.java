@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
@@ -20,8 +21,7 @@ import org.matheclipse.core.visit.VisitorLevelSpecification;
  * 
  * <blockquote>
  * <p>
- * convert numerical real or imaginary parts in (sub-)expressions into rational
- * numbers.
+ * convert numerical real or imaginary parts in (sub-)expressions into rational numbers.
  * </p>
  * </blockquote>
  * <h3>Examples</h3>
@@ -52,8 +52,7 @@ public class Replace extends AbstractEvaluator {
 		 * 
 		 * @param input
 		 *            the expression which should be replaced by the given rules
-		 * @return the expression created by the replacements or <code>null</code> if no
-		 *         replacement occurs
+		 * @return the expression created by the replacements or <code>null</code> if no replacement occurs
 		 */
 		@Override
 		public IExpr apply(IExpr input) {
@@ -93,7 +92,7 @@ public class Replace extends AbstractEvaluator {
 	private static IExpr replaceExpr(final IAST ast, IExpr arg1, IExpr rules, final EvalEngine engine) {
 		if (rules.isListOfLists()) {
 			IAST rulesList = (IAST) rules;
-			IAST result = F.ListAlloc(rulesList.size());
+			IASTAppendable result = F.ListAlloc(rulesList.size());
 
 			for (IExpr list : rulesList) {
 				IAST subList = (IAST) list;
@@ -119,7 +118,7 @@ public class Replace extends AbstractEvaluator {
 			for (IExpr element : (IAST) rules) {
 				if (element.isRuleAST()) {
 					IAST rule = (IAST) element;
-					Function<IExpr, IExpr> function = Functors.rules(rule,engine);
+					Function<IExpr, IExpr> function = Functors.rules(rule, engine);
 					IExpr temp = function.apply(arg1);
 					if (temp.isPresent()) {
 						return temp;
@@ -151,7 +150,7 @@ public class Replace extends AbstractEvaluator {
 
 		if (rules.isListOfLists()) {
 			IAST rulesList = (IAST) rules;
-			IAST result = F.ListAlloc(rulesList.size());
+			IASTAppendable result = F.ListAlloc(rulesList.size());
 			for (IExpr list : rulesList) {
 				IExpr temp = F.NIL;
 				IAST subList = (IAST) list;

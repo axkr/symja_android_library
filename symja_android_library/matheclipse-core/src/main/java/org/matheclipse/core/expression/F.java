@@ -3332,7 +3332,7 @@ public class F {
 		return unaryAST1(Depth, a0);
 	}
 
-	public static IAST Derivative(final IExpr... a) {
+	public static IASTAppendable Derivative(final IExpr... a) {
 		return ast(a, Derivative);
 	}
 

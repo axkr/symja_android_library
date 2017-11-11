@@ -259,7 +259,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 					if (arg1AST.isTimes()) {
 						// Integrate[a_*y_,x_Symbol] -> a*Integrate[y,x] /; FreeQ[a,x]
 						IASTAppendable filterCollector = F.TimesAlloc(arg1AST.size());
-						IAST restCollector = F.Times();
+						IASTAppendable restCollector = F.TimesAlloc(arg1AST.size());
 						arg1AST.filter(filterCollector, restCollector, new Predicate<IExpr>() {
 							@Override
 							public boolean test(IExpr input) {

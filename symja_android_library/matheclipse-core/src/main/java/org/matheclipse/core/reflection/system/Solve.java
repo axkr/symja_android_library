@@ -108,7 +108,7 @@ public class Solve extends AbstractFunctionEvaluator {
 
 		private HashSet<ISymbol> fSymbolSet;
 		private IASTAppendable fMatrixRow;
-		private IAST fPlusAST;
+		private IASTAppendable fPlusAST;
 
 		final IAST fListOfVariables;
 		final EvalEngine fEngine;
@@ -390,7 +390,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			for (int i = 1; i < size; i++) {
 				fMatrixRow.append(F.C0);
 			}
-			this.fPlusAST = F.Plus();
+			this.fPlusAST = F.PlusAlloc(8);
 			this.fEquationType = LINEAR;
 		}
 
@@ -407,7 +407,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				return fEngine.evaluate(
 						F.Expand(F.Times(F.Subtract(ast.arg1(), F.Times(F.CN1, arg1)), F.Subtract(ast.arg1(), arg1))));
 			} else if (ast.isAST1()) {
-				IAST inverseFunction = InverseFunction.getUnaryInverseFunction(ast);
+				IASTAppendable inverseFunction = InverseFunction.getUnaryInverseFunction(ast);
 				if (inverseFunction.isPresent()) {
 					fEngine.printMessage("Solve: using of inverse functions may omit some solutions.");
 					// rewrite fNumer
@@ -619,7 +619,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @return throws NoSolution
 	 */
 	protected static IASTAppendable analyzeSublist(ArrayList<ExprAnalyzer> analyzerList, IAST variables, IASTAppendable resultList,
-			int maximumNumberOfResults, IAST matrix, IAST vector, EvalEngine engine) throws NoSolution {
+			int maximumNumberOfResults, IASTAppendable matrix, IASTAppendable vector, EvalEngine engine) throws NoSolution {
 		ExprAnalyzer exprAnalyzer;
 		Collections.sort(analyzerList);
 		int currEquation = 0;
@@ -761,14 +761,14 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @param resultList
 	 */
 	protected static void booleansSolve(IExpr expr, IAST variables, int maximumNumberOfResults, int position,
-			IAST resultList) {
+			IASTAppendable resultList) {
 		if (maximumNumberOfResults > 0 && maximumNumberOfResults < resultList.size()) {
 			return;
 		}
 		int size = variables.size();
 		if (size <= position) {
 			if (EvalEngine.get().evalTrue(expr)) {
-				IAST list = F.ListAlloc(size);
+				IASTAppendable list = F.ListAlloc(size);
 				for (int i = 1; i < size; i++) {
 					ISymbol sym = (ISymbol) variables.get(i);
 					list.append(F.Rule(sym, sym.get()));
@@ -816,7 +816,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			if (temp.isPresent()) {
 				if (temp.isASTSizeGE(F.List, 2)) {
 					IAST rootsList = (IAST) temp;
-					IAST resultList = F.ListAlloc(rootsList.size());
+					IASTAppendable resultList = F.ListAlloc(rootsList.size());
 					for (IExpr root : rootsList) {
 						resultList.append(F.Rule(sym, root));
 					}
@@ -883,7 +883,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		if (ast.isAST3()) {
 			domain = ast.arg3();
 			if (domain.equals(F.Booleans)) {
-				IAST resultList = F.List();
+				IASTAppendable resultList = F.List();
 				booleansSolve(ast.arg1(), variables, 0, 1, resultList);
 				return resultList;
 			}
@@ -1065,8 +1065,8 @@ public class Solve extends AbstractFunctionEvaluator {
 			exprAnalyzer.simplifyAndAnalyze();
 			analyzerList.add(exprAnalyzer);
 		}
-		IAST matrix = F.List();
-		IAST vector = F.List();
+		IASTAppendable matrix = F.List();
+		IASTAppendable vector = F.List();
 		try {
 			IASTAppendable resultList = F.List();
 			resultList = analyzeSublist(analyzerList, variables, resultList, maximumNumberOfResults, matrix, vector,
@@ -1132,7 +1132,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	}
 
 	public static IAST integerSolve(final IAST list, final IAST variables) {
-		IAST result = F.List();
+		IASTAppendable result = F.List();
 		TreeMap<ISymbol, IntVariable> map = new TreeMap<ISymbol, IntVariable>();
 		// Create a constraint network
 		Network net = new Network();
@@ -1174,8 +1174,9 @@ public class Solve extends AbstractFunctionEvaluator {
 			@Override
 			public void solved(Solver solver, Solution solution) {
 				if (solution != null) {
-					IAST temp = F.List();
-					for (Entry<ISymbol, IntVariable> entry : map.entrySet()) {
+					Set<Entry<ISymbol, IntVariable>> set=map.entrySet();
+					IASTAppendable temp = F.ListAlloc(set.size());
+					for (Entry<ISymbol, IntVariable> entry : set) {
 						temp.append(F.Rule(entry.getKey(), F.integer(solution.getIntValue(entry.getValue()))));
 					}
 					result.append(temp);

@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -36,7 +37,7 @@ public class FindInstance extends Solve {
 		IAST vars = Validate.checkSymbolOrSymbolList(ast, 2);
 		if (ast.isAST3()) {
 			if (ast.arg3().equals(F.Booleans)) {
-				IAST resultList = F.List();
+				IASTAppendable resultList = F.List();
 				booleansSolve(ast.arg1(), vars, 1, 1, resultList);
 				return resultList;
 			}

@@ -644,7 +644,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *            the predicate which filters each argument in this <code>AST</code>
 	 * @return the <code>filterAST</code>
 	 */
-	public IAST filter(IAST filterAST, IAST restAST, Predicate<? super IExpr> predicate);
+	public IAST filter(IASTAppendable filterAST, IASTAppendable restAST, Predicate<? super IExpr> predicate);
 
 	/**
 	 * Select all elements by applying the <code>Predicates.isTrue(expr)</code> predicate to each argument in this
@@ -657,7 +657,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *            create a <code>Predicates.isTrue(expr)</code> predicate which filters each element in this AST.
 	 * @return the <code>filterAST</code>
 	 */
-	public IAST filter(IAST filterAST, IExpr expr);
+	public IAST filter(IASTAppendable filterAST, IExpr expr);
 
 	/**
 	 * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and append
@@ -669,7 +669,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *            the predicate which filters each argument in this <code>AST</code>
 	 * @return the <code>filterAST</code>
 	 */
-	public IAST filter(IAST filterAST, Predicate<? super IExpr> predicate);
+	public IAST filter(IASTAppendable filterAST, Predicate<? super IExpr> predicate);
 
 	/**
 	 * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and append
@@ -683,7 +683,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *            the maximum number of matches
 	 * @return the <code>filterAST</code>
 	 */
-	public IAST filter(IAST filterAST, Predicate<? super IExpr> predicate, int maxMatches);
+	public IAST filter(IASTAppendable filterAST, Predicate<? super IExpr> predicate, int maxMatches);
 
 	/**
 	 * Select all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and append
@@ -1029,7 +1029,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @throws IndexOutOfBoundsException
 	 *             if the secondAST size is lesser than this AST size
 	 */
-	public IAST map(IAST resultAST, IAST secondAST, BiFunction<IExpr, IExpr, IExpr> function);
+	public IAST map(IASTAppendable resultAST, IAST secondAST, BiFunction<IExpr, IExpr, IExpr> function);
 
 	/**
 	 * Maps the elements of this IAST with the unary functor. If the function returns <code>null</code> the original
@@ -1050,7 +1050,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @param function
 	 * @return
 	 */
-	public IAST map(IAST astResult, IUnaryIndexFunction<IExpr, IExpr> function);
+	public IAST map(IASTAppendable astResult, IUnaryIndexFunction<IExpr, IExpr> function);
 
 	/**
 	 * Append the mapped elements directly to the given <code>list</code>
@@ -1062,7 +1062,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *            left argument of the binary functions <code>apply()</code> method.
 	 * @return
 	 */
-	public IAST mapLeft(IAST list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr leftArg);
+	public IAST mapLeft(IASTAppendable list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr leftArg);
 
 	/**
 	 * Append the mapped elements directly to the given <code>list</code>

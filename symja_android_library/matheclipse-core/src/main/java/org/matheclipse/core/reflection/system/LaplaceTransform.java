@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.reflection.system.rules.LaplaceTransformRules;
 
@@ -52,8 +53,8 @@ public class LaplaceTransform extends AbstractFunctionEvaluator implements Lapla
 			if (ast.arg1().isAST()) {
 				IAST arg1 = (IAST) ast.arg1();
 				if (arg1.isTimes()) {
-					IAST result = F.Times();
-					IAST rest = F.TimesAlloc(arg1.size());
+					IASTAppendable result = F.TimesAlloc(arg1.size());
+					IASTAppendable rest = F.TimesAlloc(arg1.size());
 					arg1.filter(result, rest, x -> x.isFree(t));
 					if (result.size() > 1) {
 						return F.Times(result.getOneIdentity(F.C1), F.LaplaceTransform(rest, t, s));

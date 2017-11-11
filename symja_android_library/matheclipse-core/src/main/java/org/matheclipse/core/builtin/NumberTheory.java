@@ -317,7 +317,7 @@ public final class NumberTheory {
 				}
 				if (ki.compareInt(6) < 0 && ki.compareInt(1) > 0) {
 					int kInt = ki.intValue();
-					IAST ast = F.TimesAlloc(kInt);
+					IASTAppendable ast = F.TimesAlloc(kInt);
 					IAST temp;
 					IExpr nTemp = n;
 					for (int i = 1; i <= kInt; i++) {
@@ -661,7 +661,7 @@ public final class NumberTheory {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			int size = ast.size();
-			IAST result = F.NIL;
+			IASTAppendable result = F.NIL;
 			if (size > 1) {
 				for (int i = 1; i < size; i++) {
 					IExpr expr = ast.get(i);
@@ -955,9 +955,10 @@ public final class NumberTheory {
 		private static IExpr divisorSigma(IExpr arg1, IInteger n) {
 			IAST list = n.divisors();
 			if (list.isList()) {
+				int size = list.size();
 				if (arg1.isOne()) {
 					IInteger sum = F.C0;
-					for (int i = 1; i < list.size(); i++) {
+					for (int i = 1; i < size; i++) {
 						sum = sum.add(((IInteger) list.get(i)));
 					}
 					return sum;
@@ -969,7 +970,7 @@ public final class NumberTheory {
 						long kl = k.toLong();
 
 						IInteger sum = F.C0;
-						for (int i = 1; i < list.size(); i++) {
+						for (int i = 1; i < size; i++) {
 							sum = sum.add(((IInteger) list.get(i)).pow(kl));
 						}
 						return sum;
@@ -978,11 +979,12 @@ public final class NumberTheory {
 					}
 				}
 				// general formula
-				IAST sum = F.PlusAlloc(list.size());
-				for (int i = 1; i < list.size(); i++) {
-					sum.append(F.Power(list.get(i), arg1));
-				}
-				return sum;
+				IASTAppendable sum = F.PlusAlloc(size);
+				return sum.appendArgs(size, i -> F.Power(list.get(i), arg1));
+				// for (int i = 1; i < size; i++) {
+				// sum.append(F.Power(list.get(i), arg1));
+				// }
+				// return sum;
 			}
 			return F.NIL;
 		}
@@ -1218,19 +1220,17 @@ public final class NumberTheory {
 
 			try {
 
-				BigInteger factor = BigInteger.ONE;
+				// BigInteger factor = BigInteger.ONE;
 				BigInteger[] subBezouts = new BigInteger[ast.size() - 1];
 				BigInteger gcd = extendedGCD(ast, subBezouts);
 				// convert the Bezout numbers to sublists
-				IAST subList = F.List();
-				for (int i = 0; i < subBezouts.length; i++) {
-					subList.append(F.integer(subBezouts[i]));
-				}
+				IASTAppendable subList = F.ListAlloc(subBezouts.length);
+				subList.appendArgs(0, subBezouts.length, i -> F.integer(subBezouts[i]));
+				// for (int i = 0; i < subBezouts.length; i++) {
+				// subList.append(F.integer(subBezouts[i]));
+				// }
 				// create the output list
-				IAST list = F.List();
-				list.append(F.integer(gcd));
-				list.append(subList);
-				return list;
+				return F.List(F.integer(gcd), subList);
 			} catch (ArithmeticException ae) {
 				if (Config.SHOW_STACKTRACE) {
 					ae.printStackTrace();
@@ -2661,11 +2661,12 @@ public final class NumberTheory {
 					IInteger[] roots = ((IInteger) arg1).primitiveRootList();
 					if (roots != null) {
 						int size = roots.length;
-						IAST list = F.ListAlloc(size);
-						for (int i = 0; i < size; i++) {
-							list.append(roots[i]);
-						}
-						return list;
+						IASTAppendable list = F.ListAlloc(size);
+						return list.appendArgs(0, size, i -> roots[i]);
+						// for (int i = 0; i < size; i++) {
+						// list.append(roots[i]);
+						// }
+						// return list;
 					}
 				} catch (ArithmeticException e) {
 					// integer to large?
@@ -2862,7 +2863,7 @@ public final class NumberTheory {
 			if (counter > Integer.MIN_VALUE) {
 				counter++;
 				IInteger k;
-				IAST temp = F.PlusAlloc(counter >= 0 ? counter : 0);
+				IASTAppendable temp = F.PlusAlloc(counter >= 0 ? counter : 0);
 				for (int i = 0; i < counter; i++) {
 					k = F.integer(i);
 					if ((i & 1) == 1) { // isOdd(i) ?
@@ -2952,7 +2953,7 @@ public final class NumberTheory {
 					mre.printStackTrace();
 				}
 			}
-			IAST temp = F.PlusAlloc(ki >= 0 ? ki : 0);
+			IASTAppendable temp = F.PlusAlloc(ki >= 0 ? ki : 0);
 			for (int i = 0; i < ki; i++) {
 				if ((i & 1) == 1) { // isOdd(i) ?
 					temp.append(Times(Negate(Binomial(k, integer(i))), Power(Plus(k, integer(-i)), n)));

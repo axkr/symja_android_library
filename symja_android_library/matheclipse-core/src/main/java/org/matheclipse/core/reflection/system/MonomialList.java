@@ -3,6 +3,8 @@ package org.matheclipse.core.reflection.system;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASIExpr;
@@ -127,9 +129,10 @@ public class MonomialList extends AbstractFunctionEvaluator {
 			throws JASConversionException {
 		JASIExpr jas = new JASIExpr(variablesList, ExprRingFactory.CONST, termOrder, false);
 		GenPolynomial<IExpr> polyExpr = jas.expr2IExprJAS(polynomial);
-		IAST list = F.List();
 
-		for (Map.Entry<ExpVector, IExpr> monomial : polyExpr.getMap().entrySet()) {
+		Set<Entry<ExpVector, IExpr>> set = polyExpr.getMap().entrySet();
+		IASTAppendable list = F.ListAlloc(set.size());
+		for (Map.Entry<ExpVector, IExpr> monomial : set) {
 			IExpr coeff = monomial.getValue();
 			ExpVector exp = monomial.getKey();
 			IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
@@ -158,11 +161,11 @@ public class MonomialList extends AbstractFunctionEvaluator {
 			ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
 			JASModInteger jas = new JASModInteger(variablesList, modIntegerRing);
 			GenPolynomial<ModLong> polyExpr = jas.expr2JAS(polynomial);
-			IAST list = F.List();
+			IASTAppendable list = F.ListAlloc(polyExpr.length());
 			for (Monomial<ModLong> monomial : polyExpr) {
 				ModLong coeff = monomial.coefficient();
 				ExpVector exp = monomial.exponent();
-				IASTAppendable monomTimes = F.TimesAlloc(exp.length()+1);
+				IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
 				jas.monomialToExpr(F.integer(coeff.getVal()), exp, monomTimes);
 				list.append(monomTimes);
 			}

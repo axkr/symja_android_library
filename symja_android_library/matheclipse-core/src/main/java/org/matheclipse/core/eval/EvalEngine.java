@@ -201,7 +201,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	/**
 	 * List for results in <code>Reap[]</code> function.
 	 */
-	transient IAST reapList = null;
+	transient IASTAppendable reapList = null;
 
 	protected Set<ISymbol> fModifiedVariablesList;
 
@@ -1423,7 +1423,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	/**
 	 * @return the reapList
 	 */
-	public IAST getReapList() {
+	public IASTAppendable getReapList() {
 		return reapList;
 	}
 
@@ -1763,7 +1763,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @param reapList
 	 *            the reapList to set
 	 */
-	public void setReapList(IAST reapList) {
+	public void setReapList(IASTAppendable reapList) {
 		this.reapList = reapList;
 	}
 

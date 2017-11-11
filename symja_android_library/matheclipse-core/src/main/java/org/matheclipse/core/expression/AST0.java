@@ -308,7 +308,7 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST filterFunction(IAST filterAST, IAST restAST, final Function<IExpr, IExpr> function) {
+	public final IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST, final Function<IExpr, IExpr> function) {
 		final int size = size();
 		for (int i = 1; i < size; i++) {
 			IExpr expr = function.apply(get(i));
@@ -323,13 +323,13 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST filter(IAST filterAST, IAST restAST, Predicate<? super IExpr> predicate) {
+	public IAST filter(IASTAppendable filterAST, IASTAppendable restAST, Predicate<? super IExpr> predicate) {
 		return filterAST;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST filter(IAST filterAST, Predicate<? super IExpr> predicate) {
+	public IAST filter(IASTAppendable filterAST, Predicate<? super IExpr> predicate) {
 		return filterAST;
 	}
 

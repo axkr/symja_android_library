@@ -18,6 +18,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -178,7 +179,7 @@ public class TrigExpand extends AbstractEvaluator {
 		 * @return
 		 */
 		private static IExpr expandSinPlus(IAST plusAST, int startPosition) {
-			IAST result = Plus();
+			IASTAppendable result = F.PlusAlloc(2);
 			IExpr lhs = plusAST.get(startPosition);
 			if (startPosition == plusAST.size() - 2) {
 				IExpr rhs = plusAST.get(startPosition + 1);
@@ -199,7 +200,7 @@ public class TrigExpand extends AbstractEvaluator {
 		 * @return
 		 */
 		private static IExpr expandSinhPlus(IAST plusAST, int startPosition) {
-			IAST result = Plus();
+			IASTAppendable result = F.PlusAlloc(2);
 			IExpr lhs = plusAST.get(startPosition);
 			if (startPosition == plusAST.size() - 2) {
 				// Sinh(x)*Cosh(y) + Cosh(x)*Sinh(y)
@@ -221,7 +222,7 @@ public class TrigExpand extends AbstractEvaluator {
 		 * @return
 		 */
 		private static IExpr expandCosPlus(IAST plusAST, int startPosition) {
-			IAST result = Plus();
+			IASTAppendable result = F.PlusAlloc(2);
 			IExpr lhs = plusAST.get(startPosition);
 			if (startPosition == plusAST.size() - 2) {
 				IExpr rhs = plusAST.get(startPosition + 1);
@@ -242,7 +243,7 @@ public class TrigExpand extends AbstractEvaluator {
 		 * @return
 		 */
 		private static IExpr expandCoshPlus(IAST plusAST, int startPosition) {
-			IAST result = Plus();
+			IASTAppendable result = F.PlusAlloc(2);
 			IExpr lhs = plusAST.get(startPosition);
 			if (startPosition == plusAST.size() - 2) {
 				// Cosh(x)*Cosh(y) + Sinh(x)*Sinh(y)
@@ -264,7 +265,7 @@ public class TrigExpand extends AbstractEvaluator {
 		 * @return
 		 */
 		private static IExpr expandTanhPlus(IAST plusAST, int startPosition) {
-			IAST result = Times();
+			IASTAppendable result = F.TimesAlloc(2);
 			IExpr lhs = plusAST.get(startPosition);
 			if (startPosition == plusAST.size() - 2) {
 				// (Tanh(x)+Tanh(y)) / (1+Tanh(x)*Tanh(y))

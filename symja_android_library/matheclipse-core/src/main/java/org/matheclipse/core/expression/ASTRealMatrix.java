@@ -335,7 +335,8 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST filterFunction(IAST filterAST, IAST restAST, final Function<IExpr, IExpr> function) {
+	public final IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
+			final Function<IExpr, IExpr> function) {
 		final int size = size();
 		for (int i = 1; i < size; i++) {
 			IExpr expr = function.apply(get(i));
@@ -350,13 +351,13 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST filter(IAST filterAST, IAST restAST, Predicate<? super IExpr> predicate) {
+	public IAST filter(IASTAppendable filterAST, IASTAppendable restAST, Predicate<? super IExpr> predicate) {
 		return filterAST;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST filter(IAST filterAST, Predicate<? super IExpr> predicate) {
+	public IAST filter(IASTAppendable filterAST, Predicate<? super IExpr> predicate) {
 		return filterAST;
 	}
 
@@ -464,11 +465,12 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	@Override
 	public IExpr mapMatrixColumns(int[] dim, Function<IExpr, IExpr> f) {
 		final int columnSize = dim[1];
-		IAST result = F.ListAlloc(columnSize);
-		for (int j = 0; j < columnSize; j++) {
-			result.append(f.apply(new ASTRealVector(matrix.getColumnVector(j), false)));
-		}
-		return result;
+		IASTAppendable result = F.ListAlloc(columnSize);
+		return result.appendArgs(0, columnSize, j -> f.apply(new ASTRealVector(matrix.getColumnVector(j), false)));
+		// for (int j = 0; j < columnSize; j++) {
+		// result.append(f.apply(new ASTRealVector(matrix.getColumnVector(j), false)));
+		// }
+		// return result;
 	}
 
 	@Override

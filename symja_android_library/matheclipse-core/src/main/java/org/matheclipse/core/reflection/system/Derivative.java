@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -359,10 +360,10 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 	 * @return
 	 */
 	public static IAST createDerivative(final int n, final IExpr header, final IExpr arg1) {
-		IAST deriv = F.Derivative(F.integer(n));
-		IAST fDeriv = F.ast(deriv);
+		IASTAppendable deriv = F.Derivative(F.integer(n));
+		IASTAppendable fDeriv = F.ast(deriv);
 		fDeriv.append(header);
-		IAST fDerivParam = F.ast(fDeriv);
+		IASTAppendable fDerivParam = F.ast(fDeriv);
 		fDerivParam.append(arg1);
 		return fDerivParam;
 	}
@@ -377,7 +378,7 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 	 */
 	public static IAST createDerivative(final int n, final IExpr header) {
 		IAST deriv = F.Derivative(F.integer(n));
-		IAST fDeriv = F.ast(deriv);
+		IASTAppendable fDeriv = F.ast(deriv);
 		fDeriv.append(header);
 		return fDeriv;
 	}

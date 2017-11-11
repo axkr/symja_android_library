@@ -530,9 +530,10 @@ public class QuarticSolver {
 					if (temp.isPower()) {
 						discriminantSqrt = F.Power(temp.getAt(1), F.Times(C1D2, temp.getAt(2)));
 					} else if (temp.isTimes()) {
-						IAST tmpResult = Times();
 						IAST times = (IAST) temp;
-						for (int i = 1; i < times.size(); i++) {
+						int size = times.size();
+						IASTAppendable tmpResult = F.TimesAlloc(size);
+						for (int i = 1; i < size; i++) {
 							if (times.get(i).isPower()) {
 								tmpResult.append(F.Power(times.get(i).getAt(1), F.Times(C1D2, times.get(i).getAt(2))));
 							} else {

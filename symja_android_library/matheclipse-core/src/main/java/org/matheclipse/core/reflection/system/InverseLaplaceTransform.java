@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.reflection.system.rules.InverseLaplaceTransformRules;
@@ -56,8 +57,8 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator implement
 			if (ast.arg1().isAST()) {
 				IAST arg1 = (IAST) ast.arg1();
 				if (arg1.isTimes()) {
-					IAST result = F.Times();
-					IAST rest = F.TimesAlloc(arg1.size());
+					IASTAppendable result = F.TimesAlloc(arg1.size());
+					IASTAppendable rest = F.TimesAlloc(arg1.size());
 					arg1.filter(result, rest, x -> x.isFree(s));
 					if (result.size() > 1) {
 						return F.Times(result.getOneIdentity(F.C1), F.InverseLaplaceTransform(rest, s, t));

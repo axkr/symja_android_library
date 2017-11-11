@@ -474,7 +474,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST filterFunction(IAST filterAST, IAST restAST, final Function<IExpr, IExpr> function) {
+	public final IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST, final Function<IExpr, IExpr> function) {
 		for (int i = firstIndex + 1; i < lastIndex; i++) {
 			IExpr temp = array[i];
 			IExpr expr = function.apply(temp);
@@ -489,7 +489,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST filter(IAST filterAST, IAST restAST, Predicate<? super IExpr> predicate) {
+	public final IAST filter(IASTAppendable filterAST, IASTAppendable restAST, Predicate<? super IExpr> predicate) {
 		for (int i = firstIndex + 1; i < lastIndex; i++) {
 			IExpr temp = array[i];
 			if (predicate.test(temp)) {

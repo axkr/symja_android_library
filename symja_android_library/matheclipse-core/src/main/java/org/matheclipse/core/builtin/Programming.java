@@ -87,13 +87,11 @@ public final class Programming {
 
 	/**
 	 * <p>
-	 * <code>Break()</code> leaves a <code>Do</code>, <code>For</code> or
-	 * <code>While</code> loop.
+	 * <code>Break()</code> leaves a <code>Do</code>, <code>For</code> or <code>While</code> loop.
 	 * </p>
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Break">
-	 * Break</a>
+	 * See the online Symja function reference:
+	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Break"> Break</a>
 	 * </p>
 	 *
 	 */
@@ -119,9 +117,8 @@ public final class Programming {
 	/**
 	 * 
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Block">
-	 * Block</a>
+	 * See the online Symja function reference:
+	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Block"> Block</a>
 	 * </p>
 	 *
 	 */
@@ -147,9 +144,8 @@ public final class Programming {
 
 	/**
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Catch">
-	 * Catch</a>
+	 * See the online Symja function reference:
+	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Catch"> Catch</a>
 	 * </p>
 	 */
 	private final static class Catch extends AbstractCoreFunctionEvaluator {
@@ -367,7 +363,7 @@ public final class Programming {
 				// int iterationCounter = 1;
 
 				IExpr f = ast.arg1();
-				IAST list = F.List();
+				IASTAppendable list = F.ListAlloc(32);
 				IExpr current = ast.arg2();
 				list.append(current);
 				int iterations = Integer.MAX_VALUE;
@@ -595,7 +591,7 @@ public final class Programming {
 			return evaluateNestList(ast, List(), engine);
 		}
 
-		public static IExpr evaluateNestList(final IAST ast, final IAST resultList, EvalEngine engine) {
+		public static IExpr evaluateNestList(final IAST ast, final IASTAppendable resultList, EvalEngine engine) {
 			IExpr arg3 = engine.evaluate(ast.arg3());
 			if (arg3.isInteger()) {
 				final int n = Validate.checkIntType(arg3);
@@ -607,7 +603,7 @@ public final class Programming {
 		}
 
 		public static void nestList(final IExpr expr, final int n, final Function<IExpr, IExpr> fn,
-				final IAST resultList, EvalEngine engine) {
+				final IASTAppendable resultList, EvalEngine engine) {
 			IExpr temp = expr;
 			resultList.append(temp);
 			for (int i = 0; i < n; i++) {
@@ -655,7 +651,7 @@ public final class Programming {
 		}
 
 		public static IAST nestList(final IExpr expr, final IExpr test, final Function<IExpr, IExpr> fn,
-				final IAST resultList, EvalEngine engine) {
+				final IASTAppendable resultList, EvalEngine engine) {
 			IExpr temp = expr;
 			while (engine.evalTrue(F.unaryAST1(test, temp))) {
 				resultList.append(temp);
@@ -732,9 +728,9 @@ public final class Programming {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
 
-			IAST oldList = engine.getReapList();
+			IASTAppendable oldList = engine.getReapList();
 			try {
-				IAST reapList = F.ListAlloc(10);
+				IASTAppendable reapList = F.ListAlloc(10);
 				engine.setReapList(reapList);
 				IExpr expr = engine.evaluate(ast.arg1());
 				if (reapList.isAST0()) {
@@ -789,7 +785,7 @@ public final class Programming {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
 
-			IAST reapList = engine.getReapList();
+			IASTAppendable reapList = engine.getReapList();
 			IExpr expr = engine.evaluate(ast.arg1());
 			if (reapList != null) {
 				reapList.append(expr);
@@ -983,8 +979,8 @@ public final class Programming {
 	}
 
 	/**
-	 * Remember which local variable names (appended with the module counter) we use
-	 * in the given <code>variablesMap</code>.
+	 * Remember which local variable names (appended with the module counter) we use in the given
+	 * <code>variablesMap</code>.
 	 * 
 	 * @param variablesList
 	 *            initializer variables list from the <code>Module</code> function
@@ -1024,14 +1020,13 @@ public final class Programming {
 	}
 
 	/**
-	 * Remember which local variable names (appended with the module counter) we use
-	 * in the given <code>variablesMap</code>.
+	 * Remember which local variable names (appended with the module counter) we use in the given
+	 * <code>variablesMap</code>.
 	 * 
 	 * @param variablesList
 	 *            initializer variables list from the <code>Module</code> function
 	 * @param varAppend
-	 *            the module counter string which aer appended to the variable
-	 *            names.
+	 *            the module counter string which aer appended to the variable names.
 	 * @param variablesMap
 	 *            the resulting module variables map
 	 * @param engine
@@ -1092,8 +1087,7 @@ public final class Programming {
 	}
 
 	/**
-	 * Check the (possible nested) module condition in pattern matcher without
-	 * evaluating a result.
+	 * Check the (possible nested) module condition in pattern matcher without evaluating a result.
 	 * 
 	 * @param arg1
 	 * @param arg2
@@ -1126,8 +1120,7 @@ public final class Programming {
 	}
 
 	/**
-	 * Check the (possible nested) condition in pattern matcher without evaluating a
-	 * result.
+	 * Check the (possible nested) condition in pattern matcher without evaluating a result.
 	 * 
 	 * @param arg1
 	 * @param arg2
@@ -1165,16 +1158,14 @@ public final class Programming {
 	}
 
 	/**
-	 * Get the <code>Part[...]</code> of an expression. If the expression is no
-	 * <code>IAST</code> return the expression.
+	 * Get the <code>Part[...]</code> of an expression. If the expression is no <code>IAST</code> return the expression.
 	 * 
 	 * @param expr
 	 *            the expression from which parts should be extracted
 	 * @param ast
 	 *            the <code>Part[...]</code> expression
 	 * @param pos
-	 *            the index position from which the sub-expressions should be
-	 *            extracted
+	 *            the index position from which the sub-expressions should be extracted
 	 * @param engine
 	 *            the evaluation engine
 	 * @return
@@ -1191,7 +1182,7 @@ public final class Programming {
 			int start = span[0];
 			int last = span[1];
 			int step = span[2];
-			IAST result = arg1.copyHead();
+			IASTAppendable result = arg1.copyHead();
 
 			if (step < 0 && start >= last) {
 				for (int i = start; i >= last; i += step) {
@@ -1222,7 +1213,7 @@ public final class Programming {
 		} else if (arg2.isList()) {
 			IExpr temp = null;
 			final IAST list = (IAST) arg2;
-			final IAST result = F.ListAlloc(list.size());
+			final IASTAppendable result = F.ListAlloc(list.size());
 
 			for (int i = 1; i < list.size(); i++) {
 				final IExpr listArg = list.get(i);
@@ -1307,7 +1298,7 @@ public final class Programming {
 		} else if (arg2.isList()) {
 			IExpr temp = null;
 			final IAST list = (IAST) arg2;
-			final IAST result = F.ListAlloc(list.size());
+			final IASTAppendable result = F.ListAlloc(list.size());
 
 			for (int i = 1; i < list.size(); i++) {
 				final IExpr listArg = list.get(i);
@@ -1408,7 +1399,7 @@ public final class Programming {
 		} else if (arg2.isList()) {
 			IExpr temp = null;
 			final IAST list = (IAST) arg2;
-			final IAST result = F.ListAlloc(list.size());
+			final IASTAppendable result = F.ListAlloc(list.size());
 
 			for (int i = 1; i < list.size(); i++) {
 				final IExpr listArg = list.get(i);
@@ -1440,8 +1431,7 @@ public final class Programming {
 	}
 
 	/**
-	 * Assign the <code>value</code> to the given position in the left-hand-side.
-	 * <code>lhs[[position]] = value</code>
+	 * Assign the <code>value</code> to the given position in the left-hand-side. <code>lhs[[position]] = value</code>
 	 * 
 	 * @param lhs
 	 *            left-hand-side
@@ -1461,9 +1451,8 @@ public final class Programming {
 	}
 
 	/**
-	 * Call <code>assignPart(element, ast, pos, value, engine)</code> recursively
-	 * and assign the result to the given position in the result.
-	 * <code>result[[position]] = resultValue</code>
+	 * Call <code>assignPart(element, ast, pos, value, engine)</code> recursively and assign the result to the given
+	 * position in the result. <code>result[[position]] = resultValue</code>
 	 * 
 	 * @param expr
 	 * @param element
@@ -1477,8 +1466,8 @@ public final class Programming {
 	 *            the evaluation engineF
 	 * @return the (cloned and value assigned) result AST from input
 	 */
-	private static IASTAppendable assignPartSpanValue(IAST expr, IExpr element, final IAST part, int partPosition, IASTAppendable result,
-			int position, IExpr value, EvalEngine engine) {
+	private static IASTAppendable assignPartSpanValue(IAST expr, IExpr element, final IAST part, int partPosition,
+			IASTAppendable result, int position, IExpr value, EvalEngine engine) {
 		IExpr resultValue = assignPart(element, part, partPosition, value, engine);
 		if (resultValue.isPresent()) {
 			if (!result.isPresent()) {

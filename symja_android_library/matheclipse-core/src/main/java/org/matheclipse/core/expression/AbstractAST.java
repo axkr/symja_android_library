@@ -372,10 +372,11 @@ public abstract class AbstractAST implements IASTMutable {
 
 	@Override
 	public IAST apply(final IExpr head, final int start, final int end) {
-		final IAST ast = F.ast(head);
-		for (int i = start; i < end; i++) {
-			ast.append(get(i));
-		}
+		final IASTAppendable ast = F.ast(head, end - start, false);
+		ast.appendArgs(start, end, i -> get(i));
+		// for (int i = start; i < end; i++) {
+		// ast.append(get(i));
+		// }
 		return ast;
 	}
 
@@ -674,7 +675,7 @@ public abstract class AbstractAST implements IASTMutable {
 	 *            the function which filters each argument by returning a value which unequals <code>F.NIL</code>
 	 * @return the given <code>filterAST</code>
 	 */
-	protected IAST filterFunction(IAST filterAST, IAST restAST, final Function<IExpr, IExpr> function) {
+	protected IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST, final Function<IExpr, IExpr> function) {
 		final int size = size();
 		for (int i = 1; i < size; i++) {
 			IExpr temp = get(i);
@@ -690,7 +691,7 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST filter(IAST filterAST, IAST restAST, Predicate<? super IExpr> predicate) {
+	public IAST filter(IASTAppendable filterAST, IASTAppendable restAST, Predicate<? super IExpr> predicate) {
 		final int size = size();
 		for (int i = 1; i < size; i++) {
 			IExpr temp = get(i);
@@ -705,7 +706,7 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST filter(IAST filterAST, IExpr expr) {
+	public final IAST filter(IASTAppendable filterAST, IExpr expr) {
 		EvalEngine engine = EvalEngine.get();
 		return filter(filterAST, x -> engine.evalTrue(F.unaryAST1(expr, x)));
 	}
@@ -773,7 +774,7 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST filter(IAST filterAST, Predicate<? super IExpr> predicate) {
+	public IAST filter(IASTAppendable filterAST, Predicate<? super IExpr> predicate) {
 		final int size = size();
 		for (int i = 1; i < size; i++) {
 			if (predicate.test(get(i))) {
@@ -785,7 +786,7 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public IAST filter(IAST filterAST, Predicate<? super IExpr> predicate, int maxMatches) {
+	public IAST filter(IASTAppendable filterAST, Predicate<? super IExpr> predicate, int maxMatches) {
 		int count = 0;
 		if (count >= maxMatches) {
 			return filterAST;
@@ -806,7 +807,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public final IAST[] filter(Predicate<? super IExpr> predicate) {
-		IAST[] result = new IAST[2];
+		IASTAppendable[] result = new IASTAppendable[2];
 		result[0] = copyHead();
 		result[1] = copyHead();
 		filter(result[0], result[1], predicate);
@@ -818,7 +819,7 @@ public abstract class AbstractAST implements IASTMutable {
 	public final IAST partition(ISymbol operator, Predicate<? super IExpr> predicate, IExpr init1, IExpr init2,
 			ISymbol combiner, ISymbol action) {
 		if (head().equals(operator)) {
-			IAST result = F.ast(action, 3, false);
+			IASTAppendable result = F.ast(action, 3, false);
 			final int size = size();
 			int newSize = size / 2;
 			if (newSize <= 4) {
@@ -826,8 +827,8 @@ public abstract class AbstractAST implements IASTMutable {
 			} else {
 				newSize += 4;
 			}
-			IAST yesAST = F.ast(combiner, newSize, false);
-			IAST noAST = F.ast(combiner, newSize, false);
+			IASTAppendable yesAST = F.ast(combiner, newSize, false);
+			IASTAppendable noAST = F.ast(combiner, newSize, false);
 			for (int i = 1; i < size; i++) {
 				if (predicate.test(get(i))) {
 					yesAST.append(get(i));
@@ -2602,7 +2603,7 @@ public abstract class AbstractAST implements IASTMutable {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final IAST map(IAST resultAST, IAST secondAST, BiFunction<IExpr, IExpr, IExpr> function) {
+	public final IAST map(IASTAppendable resultAST, IAST secondAST, BiFunction<IExpr, IExpr, IExpr> function) {
 		int size = size();
 		for (int i = 1; i < size; i++) {
 			resultAST.append(function.apply(get(i), secondAST.get(i)));
@@ -2623,7 +2624,7 @@ public abstract class AbstractAST implements IASTMutable {
 	 * @param function
 	 * @return
 	 */
-	public IAST map(IAST astResult, IUnaryIndexFunction<IExpr, IExpr> function) {
+	public IAST map(IASTAppendable astResult, IUnaryIndexFunction<IExpr, IExpr> function) {
 		for (int i = 1; i < size(); i++) {
 			astResult.append(function.apply(i, get(i)));
 		}
@@ -2640,7 +2641,7 @@ public abstract class AbstractAST implements IASTMutable {
 	 *            left argument of the binary functions <code>apply()</code> method.
 	 * @return
 	 */
-	public IAST mapLeft(IAST list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr leftArg) {
+	public IAST mapLeft(IASTAppendable list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr leftArg) {
 		for (int i = 1; i < size(); i++) {
 			list.append(binaryFunction.apply(leftArg, get(i)));
 		}
@@ -2670,9 +2671,9 @@ public abstract class AbstractAST implements IASTMutable {
 	public IExpr mapMatrixColumns(int[] dim, Function<IExpr, IExpr> f) {
 		final int rowSize = size();
 		int columnSize = dim[1];
-		IAST result = F.ListAlloc(columnSize++);
+		IASTAppendable result = F.ListAlloc(columnSize++);
 		for (int j = 1; j < columnSize; j++) {
-			IAST row = F.ListAlloc(rowSize);
+			IASTAppendable row = F.ListAlloc(rowSize);
 			for (int i = 1; i < rowSize; i++) {
 				row.append(getPart(i, j));
 			}

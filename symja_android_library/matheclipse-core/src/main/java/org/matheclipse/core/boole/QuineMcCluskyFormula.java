@@ -36,12 +36,12 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.exception.BooleanFunctionConversionException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * Implementation of the <a
- * href="http://en.wikipedia.org/wiki/Quine%E2%80%93McCluskey_algorithm">Quine
- * McCluskey algorithm</a>.
+ * Implementation of the <a href="http://en.wikipedia.org/wiki/Quine%E2%80%93McCluskey_algorithm">Quine McCluskey
+ * algorithm</a>.
  */
 public class QuineMcCluskyFormula {
 
@@ -65,8 +65,9 @@ public class QuineMcCluskyFormula {
 	}
 
 	public IExpr toExpr() throws BooleanFunctionConversionException {
-		IAST result = F.ast(F.Or);
-		for (int i = 0; i < termList.size(); i++) {
+		int size = termList.size();
+		IASTAppendable result = F.ast(F.Or, size, false);
+		for (int i = 0; i < size; i++) {
 			result.append(termList.get(i).toExpr(variables));
 		}
 		if (result.isAST0()) {

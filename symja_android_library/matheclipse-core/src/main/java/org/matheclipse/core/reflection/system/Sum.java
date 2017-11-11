@@ -244,8 +244,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
 	}
 
 	private IExpr collectConstantFactors(final IAST ast, IAST prod, VariablesSet variablesSet) {
-		IAST filterAST = F.Times();
-		IAST restAST = F.Times();
+		IASTAppendable filterAST = F.TimesAlloc(16);
+		IASTAppendable restAST = F.TimesAlloc(16);
 		prod.filter(filterAST, restAST, VariablesSet.isFree(variablesSet));
 		if (filterAST.size() > 1) {
 			IASTMutable reducedSum = ast.setAtCopy(1, restAST.getOneIdentity(F.C1));
@@ -282,8 +282,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
 		} else {
 			if (arg1.isTimes()) {
 				// Sum[ Times[a,b,c,...], {var, from, to} ]
-				IAST filterCollector = F.Times();
-				IAST restCollector = F.Times();
+				IASTAppendable filterCollector = F.TimesAlloc(16);
+				IASTAppendable restCollector = F.TimesAlloc(16);
 				((IAST) arg1).filter(filterCollector, restCollector, new Predicate<IExpr>() {
 					@Override
 					public boolean test(IExpr input) {
@@ -385,8 +385,8 @@ public class Sum extends ListFunctions.Table implements SumRules {
 	private IExpr indefiniteSum(IExpr arg1, final ISymbol var) {
 		if (arg1.isTimes()) {
 			// Sum[ Times[a,b,c,...], var ]
-			IAST filterCollector = F.Times();
-			IAST restCollector = F.Times();
+			IASTAppendable filterCollector = F.TimesAlloc(16);
+			IASTAppendable restCollector = F.TimesAlloc(16);
 			((IAST) arg1).filter(filterCollector, restCollector, new Predicate<IExpr>() {
 				@Override
 				public boolean test(IExpr input) {

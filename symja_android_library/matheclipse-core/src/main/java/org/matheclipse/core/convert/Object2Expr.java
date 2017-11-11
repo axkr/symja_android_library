@@ -1,11 +1,14 @@
 package org.matheclipse.core.convert;
 
+import static org.matheclipse.core.expression.F.List;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
+
 import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
-import static org.matheclipse.core.expression.F.List;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -75,27 +78,29 @@ public class Object2Expr {
 		}
 		if (obj instanceof java.util.List) {
 			final java.util.List<?> lst = (java.util.List<?>) obj;
-			IAST list = F.NIL;
+			// IASTAppendable list = F.NIL;
 			if (lst.size() == 0) {
-				list = List();
+				return List();
 			} else {
 				final ISymbol head = F.userSymbol(lst.get(0).toString());
 				int size = lst.size();
-				list = F.ast(head, size, false);
-
-				for (int i = 1; i < size; i++) {
-					list.append(convert(lst.get(i)));
-				}
+				IASTAppendable list = F.ast(head, size, false);
+				return list.appendArgs(size, i -> convert(lst.get(i)));
+				// for (int i = 1; i < size; i++) {
+				// list.append(convert(lst.get(i)));
+				// }
 			}
-			return list;
+			// return list;
 		}
 		if (obj instanceof Object[]) {
 			final Object[] array = (Object[]) obj;
-			final IAST list = F.ListAlloc(array.length);
-			for (int i = 0; i < array.length; i++) {
-				list.append(convert(array[i]));
-			}
-			return list;
+			int length = array.length;
+			final IASTAppendable list = F.ListAlloc(length);
+			return list.appendArgs(0, length, i -> convert(array[i]));
+			// for (int i = 0; i < array.length; i++) {
+			// list.append(convert(array[i]));
+			// }
+			// return list;
 		}
 		if (obj instanceof int[]) {
 			return AST.newInstance(F.List, (int[]) obj);
@@ -105,9 +110,9 @@ public class Object2Expr {
 		}
 		if (obj instanceof double[][]) {
 			final double[][] dd = (double[][]) obj;
-			final IAST list = F.ListAlloc(dd.length);
+			final IASTAppendable list = F.ListAlloc(dd.length);
 			for (int i = 0; i < dd.length; i++) {
-				final IAST row = F.ListAlloc(dd[i].length);
+				final IASTAppendable row = F.ListAlloc(dd[i].length);
 				for (int j = 0; j < dd[i].length; j++) {
 					row.append(F.num(dd[i][j]));
 				}
@@ -120,7 +125,7 @@ public class Object2Expr {
 		}
 		if (obj instanceof boolean[]) {
 			final boolean[] array = (boolean[]) obj;
-			final IAST list = F.ListAlloc(array.length);
+			final IASTAppendable list = F.ListAlloc(array.length);
 			for (int i = 0; i < array.length; i++) {
 				if (array[i]) {
 					list.append(F.True);
@@ -133,7 +138,8 @@ public class Object2Expr {
 		return F.$str(obj.toString());
 	}
 
-	public static IAST convertComplex(boolean evalComplex, org.hipparchus.complex.Complex[] array) throws ConversionException {
+	public static IAST convertComplex(boolean evalComplex, org.hipparchus.complex.Complex[] array)
+			throws ConversionException {
 		return AST.newInstance(F.List, evalComplex, array);
 	}
 }

@@ -7,6 +7,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -366,7 +367,7 @@ public class AttributeFunctions {
 	 * @return
 	 */
 	public static IAST attributesList(final ISymbol symbol) {
-		IAST result = F.List();
+		IASTAppendable result = F.ListAlloc(4);
 		int attributea = symbol.getAttributes();
 
 		if ((attributea & ISymbol.CONSTANT) != ISymbol.NOATTRIBUTE) {

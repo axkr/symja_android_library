@@ -47,7 +47,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
 		public double[] computeDerivatives(double t, double[] xyz) {
 			double[] xyzDot = new double[fDimension];
 			IExpr[] replacements = new IExpr[fDimension];
-			IAST rules = F.List();
+			IASTAppendable rules = F.ListAlloc(fDimension+1);
 			for (int i = 0; i < fDimension; i++) {
 				replacements[i] = F.$(fVariables.get(i + 1), fT);
 				rules.append(F.Rule(replacements[i], F.num(xyz[i])));
@@ -122,11 +122,11 @@ public class NDSolve extends AbstractFunctionEvaluator {
 
 						OrdinaryDifferentialEquation ode = new FirstODE(engine, dotEquations, uFunctionSymbols, xVar);
 
-						IAST resultList = F.List();
+						IASTAppendable resultList = F.ListAlloc(16);
 						
 						IAST result = F.Interpolation(resultList);
 
-						IAST list;
+						IASTAppendable list;
 						for (double tDouble = xMin; tDouble < xMax; tDouble += xStep) {
 							list = F.List(F.num(tDouble));
 							dp853.integrate(ode, tDouble, xyz, tDouble + xStep, xyz);
@@ -172,7 +172,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
 
 			int j = 1;
 			IExpr uArg1 = null;
-			IAST rest = F.Plus();
+			IASTAppendable rest = F.PlusAlloc(16);
 			boolean negate;
 			while (j < eq.size()) {
 				IExpr temp = eq.get(j);
@@ -216,7 +216,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
 			}
 
 			int j = 1;
-			IAST rest = F.Plus();
+			IASTAppendable rest = F.PlusAlloc(16);
 			boolean negate;
 			while (j < eq.size()) {
 				negate = true;  

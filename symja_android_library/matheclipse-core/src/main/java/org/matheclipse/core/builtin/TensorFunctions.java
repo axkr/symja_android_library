@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.interfaces.AbstractNonOrderlessArgMultiple;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -88,12 +89,15 @@ public class TensorFunctions {
 			ISymbol fFunction = F.Plus;
 			ISymbol gFunction = F.Times;
 			int diff = tensorSize - kernelSize;
-			IAST resultList = F.ListAlloc(tensorSize - 1);
+			IASTAppendable resultList = F.ListAlloc(tensorSize - 1);
+			final int[] fi = new int[1];
 			for (int i = 0; i <= diff; i++) {
-				IAST plus = F.ast(fFunction, kernelSize, false);
-				for (int k = 1; k < kernelSize; k++) {
-					plus.append(F.binaryAST2(gFunction, kernel.get(k), tensor.get(k + i)));
-				}
+				IASTAppendable plus = F.ast(fFunction, kernelSize, false);
+				fi[0]=i;
+				plus.appendArgs(kernelSize, k -> F.binaryAST2(gFunction, kernel.get(k), tensor.get(k + fi[0])));
+				// for (int k = 1; k < kernelSize; k++) {
+				// plus.append(F.binaryAST2(gFunction, kernel.get(k), tensor.get(k + i)));
+				// }
 				resultList.append(plus);
 			}
 			return resultList;

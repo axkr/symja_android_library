@@ -11,6 +11,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IUnaryIndexFunction;
@@ -299,7 +300,7 @@ final public class ASTRange extends AbstractList<IExpr> implements Iterable<IExp
 	 *            the predicate which filters each element in the range
 	 * @return the <code>filterList</code>
 	 */
-	public IAST filter(IAST filterList, Collection<IExpr> restList, Predicate<IExpr> predicate) {
+	public IAST filter(IASTAppendable filterList, Collection<IExpr> restList, Predicate<IExpr> predicate) {
 		for (int i = fStart; i < fEnd; i++) {
 			if (predicate.test(fList.get(i))) {
 				filterList.append(fList.get(i));
@@ -318,7 +319,7 @@ final public class ASTRange extends AbstractList<IExpr> implements Iterable<IExp
 	 * @param predicate
 	 * @return
 	 */
-	public IAST filter(IAST astResult, Predicate<IExpr> predicate) {
+	public IAST filter(IASTAppendable astResult, Predicate<IExpr> predicate) {
 		for (int i = fStart; i < fEnd; i++) {
 			if (predicate.test(fList.get(i))) {
 				astResult.append(fList.get(i));
@@ -335,7 +336,7 @@ final public class ASTRange extends AbstractList<IExpr> implements Iterable<IExp
 	 * @param maxMatches
 	 * @return
 	 */
-	public IAST filter(IAST astResult, Predicate<IExpr> predicate, int maxMatches) {
+	public IAST filter(IASTAppendable astResult, Predicate<IExpr> predicate, int maxMatches) {
 		int count = 0;
 		if (count == maxMatches) {
 			return astResult;
@@ -596,7 +597,7 @@ final public class ASTRange extends AbstractList<IExpr> implements Iterable<IExp
 	 * @param function
 	 * @return
 	 */
-	public IAST map(IAST astResult, IUnaryIndexFunction<IExpr, IExpr> function) {
+	public IAST map(IASTAppendable astResult, IUnaryIndexFunction<IExpr, IExpr> function) {
 		for (int i = fStart; i < fEnd; i++) {
 			astResult.append(function.apply(i, fList.get(i)));
 		}
@@ -614,7 +615,7 @@ final public class ASTRange extends AbstractList<IExpr> implements Iterable<IExp
 	 * @return
 	 * @deprecated use IAST#mapLeft
 	 */
-	public IAST mapLeft(IAST list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr leftArg) {
+	public IAST mapLeft(IASTAppendable list, BiFunction<IExpr, IExpr, IExpr> binaryFunction, IExpr leftArg) {
 		for (int i = fStart; i < fEnd; i++) {
 			list.append(binaryFunction.apply(leftArg, fList.get(i)));
 		}
@@ -726,7 +727,7 @@ final public class ASTRange extends AbstractList<IExpr> implements Iterable<IExp
 	 * @param n
 	 * @return the given list
 	 */
-	public IAST rotateLeft(IAST list, final int n) {
+	public IAST rotateLeft(IASTAppendable list, final int n) {
 		for (int i = fStart + n; i < fEnd; i++) {
 			list.append(fList.get(i));
 		}
@@ -745,7 +746,7 @@ final public class ASTRange extends AbstractList<IExpr> implements Iterable<IExp
 	 * @param n
 	 * @return the given list
 	 */
-	public IAST rotateRight(IAST list, final int n) {
+	public IAST rotateRight(IASTAppendable list, final int n) {
 		if (n <= size()) {
 			for (int i = fEnd - n; i < fEnd; i++) {
 				list.append(fList.get(i));
