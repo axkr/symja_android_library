@@ -81,9 +81,9 @@ public class RootIntervals extends AbstractFunctionEvaluator {
 					resultList.append(JASConvert.jas2Numeric(refine.getCenter(), Config.DEFAULT_ROOTS_CHOP_DELTA));
 				}
 			} else {
-				IAST rectangleList;
+				IASTAppendable rectangleList;
 				for (Rectangle<BigRational> root : roots) {
-					rectangleList = F.List();
+					rectangleList = F.ListAlloc(4);
 
 					Rectangle<BigRational> refine = cr.complexRootRefinement(root, poly, len);
 					rectangleList.append(JASConvert.jas2Complex(refine.getNW()));

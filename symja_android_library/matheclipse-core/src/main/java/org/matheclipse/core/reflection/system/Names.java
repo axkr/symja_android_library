@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.util.SuggestTree;
 import org.matheclipse.core.eval.util.SuggestTree.Node;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 
@@ -34,9 +35,9 @@ public class Names extends AbstractFunctionEvaluator {
 	}
 
 	public static IAST getNamesByPrefix(String name) {
-		IAST list = F.List();
+
 		if (name.length() == 0) {
-			return list;
+			return F.List();
 		}
 		boolean exact = true;
 		if (name.charAt(name.length() - 1) == '*') {
@@ -49,6 +50,7 @@ public class Names extends AbstractFunctionEvaluator {
 		SuggestTree suggestTree = AST2Expr.getSuggestTree();
 		Node n = suggestTree.getAutocompleteSuggestions(name);
 		if (n != null) {
+			IASTAppendable list = F.ListAlloc(n.listLength());
 			for (int i = 0; i < n.listLength(); i++) {
 				if (exact) {
 					if (name.equals(n.getSuggestion(i).getTerm())) {
@@ -58,8 +60,9 @@ public class Names extends AbstractFunctionEvaluator {
 					list.append(F.$s(n.getSuggestion(i).getTerm()));
 				}
 			}
+			return list;
 		}
-		return list;
+		return F.List();
 	}
 
 	public static List<String> getAutoCompletionList(String namePrefix) {
@@ -79,10 +82,11 @@ public class Names extends AbstractFunctionEvaluator {
 
 	public static IAST getAllNames() {
 		int size = AST2Expr.FUNCTION_STRINGS.length;
-		IAST list = F.List();
-		for (int i = 0; i < size; i++) {
-			list.append(F.$s(AST2Expr.FUNCTION_STRINGS[i]));
-		}
-		return list;
+		IASTAppendable list = F.ListAlloc(size);
+		return list.appendArgs(0, size, i -> F.$s(AST2Expr.FUNCTION_STRINGS[i]));
+		// for (int i = 0; i < size; i++) {
+		// list.append(F.$s(AST2Expr.FUNCTION_STRINGS[i]));
+		// }
+		// return list;
 	}
 }

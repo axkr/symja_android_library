@@ -164,7 +164,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @throws IllegalArgumentException
 	 *             if the object cannot be added to this {@code List}.
 	 */
-	public boolean append(IExpr expr);
+//	public boolean append(IExpr expr);
 
 	/**
 	 * Inserts the specified object into this {@code List} at the specified location. The object is inserted before the
@@ -362,7 +362,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @param head
 	 * @return
 	 */
-	public IASTMutable apply(IExpr head);
+	public IASTAppendable apply(IExpr head);
 
 	/**
 	 * Apply the given head to this expression (i.e. create a sublist clone starting from index start and replacing the

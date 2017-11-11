@@ -3,6 +3,7 @@ package org.matheclipse.core.eval.interfaces;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -32,7 +33,7 @@ public class AbstractNonOrderlessArgMultiple extends AbstractArg2 {
 
 		if (size > 3) {
 			final ISymbol sym = ast.topHead();
-			final IAST result = F.ast(sym);
+			final IASTAppendable result = F.ast(sym);
 			IExpr tres;
 			IExpr temp = ast.arg1();
 			boolean evaled = false;

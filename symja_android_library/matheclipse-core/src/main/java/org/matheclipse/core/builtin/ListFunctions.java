@@ -1506,7 +1506,7 @@ public final class ListFunctions {
 					map = new TreeMap<IExpr, IASTAppendable>();
 				}
 				for (int i = 1; i < arg1.size(); i++) {
-					IASTMutable list = map.get(arg1.get(i));
+					IASTAppendable list = map.get(arg1.get(i));
 					if (list == null) {
 						map.put(arg1.get(i), F.List(arg1.get(i)));
 					} else {

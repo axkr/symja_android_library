@@ -2020,7 +2020,7 @@ public class Algebra {
 				return gcdWithOption(ast, expr, eVar, engine);
 			}
 			try {
-//				ASTRange r = new ASTRange(eVar.getVarList(), 1);
+				// ASTRange r = new ASTRange(eVar.getVarList(), 1);
 				List<IExpr> varList = eVar.getVarList().copyTo();
 				JASConvert<BigInteger> jas = new JASConvert<BigInteger>(varList, BigInteger.ZERO);
 				GenPolynomial<BigInteger> poly = jas.expr2JAS(expr, false);
@@ -2123,7 +2123,7 @@ public class Algebra {
 			VariablesSet eVar = new VariablesSet();
 			eVar.addVarList(ast, 1);
 
-//			ASTRange r = new ASTRange(eVar.getVarList(), 1);
+			// ASTRange r = new ASTRange(eVar.getVarList(), 1);
 			IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 			if (ast.size() > 3) {
 				final Options options = new Options(ast.topHead(), ast, ast.size() - 1, engine);
@@ -2615,7 +2615,10 @@ public class Algebra {
 								plusResult.append(Negate(Divide(Arg(timesAST.get(i)), Times(C2, Pi))));
 							}
 							IAST expResult = Power(E, Times(C2, I, Pi, x2, Floor(plusResult)));
-							timesResult.append(expResult);
+							if (!(timesResult instanceof IASTAppendable)) {
+								timesResult = timesResult.clone();
+							}
+							((IASTAppendable) timesResult).append(expResult);
 							return timesResult;
 						}
 						return timesResult;
@@ -3709,7 +3712,7 @@ public class Algebra {
 			ExprPolynomialRing ring = new ExprPolynomialRing(vars);
 			ExprPolynomial pol1 = ring.create(numeratorPolynomial);
 			ExprPolynomial pol2 = ring.create(denominatorPolynomial);
-//			ASTRange r = new ASTRange(eVar.getVarList(), 1);
+			// ASTRange r = new ASTRange(eVar.getVarList(), 1);
 			List<IExpr> varList = eVar.getVarList().copyTo();
 			JASIExpr jas = new JASIExpr(varList, true);
 			GenPolynomial<IExpr> p1 = jas.expr2IExprJAS(pol1);
@@ -4154,10 +4157,10 @@ public class Algebra {
 			IAST variableList = F.List(variable);
 			IExpr exprNumerator = F.evalExpandAll(parts[0]);
 			IExpr exprDenominator = F.evalExpandAll(parts[1]);
-//			ASTRange r = new ASTRange(variableList, 1);
-//			List<IExpr> varList = r;
+			// ASTRange r = new ASTRange(variableList, 1);
+			// List<IExpr> varList = r;
 			List<IExpr> varList = variableList.copyTo();
-			
+
 			String[] varListStr = new String[1];
 			varListStr[0] = variableList.arg1().toString();
 			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);

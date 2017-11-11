@@ -33,7 +33,7 @@ public class ComposeList extends AbstractEvaluator {
 				final IAST list = (IAST) ast.arg1();
 				final IAST constant = F.ast(ast.arg1());
 				ListFunctions.foldLeft(ast.arg2(), list, 1, list.size(), (x, y) -> {
-					final IAST a = constant.apply(y);
+					final IASTAppendable a = constant.apply(y);
 					a.append(x);
 					return a;
 				}, resultList);

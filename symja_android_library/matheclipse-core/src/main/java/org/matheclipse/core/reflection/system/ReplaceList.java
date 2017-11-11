@@ -10,13 +10,14 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class ReplaceList extends AbstractEvaluator {
 
-	private static IAST replaceExpr(final IAST ast, IExpr arg1, IExpr rules, IAST result, int maxNumberOfResults,
+	private static IAST replaceExpr(final IAST ast, IExpr arg1, IExpr rules, IASTAppendable result, int maxNumberOfResults,
 			final EvalEngine engine) {
 		if (rules.isList()) {
 			for (IExpr element : (IAST) rules) {
@@ -64,7 +65,7 @@ public class ReplaceList extends AbstractEvaluator {
 		}
 
 		Validate.checkRange(ast, 3, 4);
-		IAST result = F.List();
+		
 		try {
 			int maxNumberOfResults = Integer.MAX_VALUE;
 			IExpr arg1 = ast.arg1();
@@ -75,13 +76,14 @@ public class ReplaceList extends AbstractEvaluator {
 					maxNumberOfResults = ((ISignedNumber) arg3).toInt();
 				}
 			}
+			IASTAppendable result = F.List();
 			return replaceExpr(ast, arg1, rules, result, maxNumberOfResults, engine);
 		} catch (ArithmeticException ae) {
 			engine.printMessage(ae.getMessage());
 		} catch (WrongArgumentType wat) {
 			engine.printMessage(wat.getMessage());
 		}
-		return result;
+		return F.List();
 	}
 
 	@Override

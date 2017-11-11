@@ -38,7 +38,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 
 		IASTAppendable row;
 		HashSet<ISymbol> symbolSet;
-		IAST value;
+		IASTAppendable value;
 
 		final IAST vars;
 
@@ -336,7 +336,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 			for (int i = 1; i < vars.size(); i++) {
 				row.append(F.C0);
 			}
-			this.value = F.Plus();
+			this.value = F.PlusAlloc(16);
 			this.equationType = LINEAR;
 		}
 
@@ -375,8 +375,9 @@ public class NSolve extends AbstractFunctionEvaluator {
 	 * @param vector
 	 * @return <code>null</code> if the solution couldn't be found
 	 */
-	private static IAST analyzeSublist(ArrayList<ExprAnalyzer> analyzerList, IAST vars, IAST resultList, IAST matrix,
-			IAST vector, EvalEngine engine) throws NoSolution {
+	private static IASTAppendable analyzeSublist(ArrayList<ExprAnalyzer> analyzerList, IAST vars,
+			IASTAppendable resultList, IASTAppendable matrix, IASTAppendable vector, EvalEngine engine)
+			throws NoSolution {
 		ExprAnalyzer exprAnalyzer;
 		Collections.sort(analyzerList);
 		int currEquation = 0;
@@ -473,7 +474,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 		for (ISymbol sym : exprAnalyzer.getSymbolSet()) {
 			IExpr temp = Roots.rootsOfVariable(expr, denom, F.List(sym), true, engine);
 			if (temp.isPresent()) {
-				IAST resultList = F.List();
+				IASTAppendable resultList = F.List();
 				if (temp.isASTSizeGE(F.List, 2)) {
 					IAST rootsList = (IAST) temp;
 					for (IExpr root : rootsList) {
@@ -505,10 +506,10 @@ public class NSolve extends AbstractFunctionEvaluator {
 			exprAnalyzer.analyze();
 			analyzerList.add(exprAnalyzer);
 		}
-		IAST matrix = F.List();
-		IAST vector = F.List();
+		IASTAppendable matrix = F.List();
+		IASTAppendable vector = F.List();
 		try {
-			IAST resultList = F.List();
+			IASTAppendable resultList = F.List();
 			resultList = analyzeSublist(analyzerList, vars, resultList, matrix, vector, engine);
 
 			if (vector.size() > 1) {
@@ -516,11 +517,13 @@ public class NSolve extends AbstractFunctionEvaluator {
 				IExpr temp = engine.evaluate(F.LinearSolve(matrix, vector));
 				if (temp.isASTSizeGE(F.List, 2)) {
 					IAST rootsList = (IAST) temp;
-					IAST list = F.List();
-					for (int j = 1; j < vars.size(); j++) {
-						IAST rule = F.Rule(vars.get(j), rootsList.get(j));
-						list.append(rule);
-					}
+					int size = vars.size();
+					IASTAppendable list = F.ListAlloc(size);
+					list.appendArgs(size, j -> F.Rule(vars.get(j), rootsList.get(j)));
+					// for (int j = 1; j < size; j++) {
+					// IAST rule = F.Rule(vars.get(j), rootsList.get(j));
+					// list.append(rule);
+					// }
 					resultList.append(list);
 				} else {
 					return F.NIL;

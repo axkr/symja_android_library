@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -20,7 +21,7 @@ public class ReplaceRepeated extends AbstractEvaluator {
 			Validate.checkSize(ast, 3);
 			if (ast.arg2().isListOfLists()) {
 				IAST list = (IAST) ast.arg2();
-				IAST result = F.ListAlloc(list.size());
+				IASTAppendable result = F.ListAlloc(list.size());
 				for (IExpr subList : list) {
 					IExpr temp = engine.evaluate(subList);
 					if (temp.isAST()) {

@@ -361,8 +361,8 @@ public abstract class AbstractAST implements IASTMutable {
 	}
 
 	@Override
-	public IASTMutable apply(final IExpr head) {
-		return setAtCopy(0, head);
+	public IASTAppendable apply(final IExpr head) {
+		return setAtClone(0, head);
 	}
 
 	@Override

@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -43,7 +44,7 @@ public class IndexTableGenerator {
 			final int iter = fIndexArray[fIndex];
 			final int index = fIndex++;
 			try {
-				final IAST result = F.ast(fHead, iter, false);
+				final IASTAppendable result = F.ast(fHead, iter, false);
 				for (int i = 0; i < iter; i++) {
 					fCurrentIndex[index] = i;
 					result.append(table());

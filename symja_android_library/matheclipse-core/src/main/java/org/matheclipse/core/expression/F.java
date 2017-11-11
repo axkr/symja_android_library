@@ -4458,7 +4458,7 @@ public class F {
 		return ternaryAST3(Limit, a0, a1, a2);
 	}
 
-	public static IAST Line() {
+	public static IASTAppendable Line() {
 		return ast(Line);
 	}
 

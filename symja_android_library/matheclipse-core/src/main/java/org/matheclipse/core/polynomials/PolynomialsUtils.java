@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -86,8 +87,8 @@ public class PolynomialsUtils {
 	/**
 	 * Create a Chebyshev polynomial of the first kind.
 	 * <p>
-	 * <a href="http://mathworld.wolfram.com/ChebyshevPolynomialoftheFirstKind.html">Chebyshev polynomials of the first kind</a> are
-	 * orthogonal polynomials. They can be defined by the following recurrence relations:
+	 * <a href="http://mathworld.wolfram.com/ChebyshevPolynomialoftheFirstKind.html">Chebyshev polynomials of the first
+	 * kind</a> are orthogonal polynomials. They can be defined by the following recurrence relations:
 	 * 
 	 * <pre>
 	 *  T<sub>0</sub>(X)   = 1
@@ -116,8 +117,8 @@ public class PolynomialsUtils {
 	/**
 	 * Create a Hermite polynomial.
 	 * <p>
-	 * <a href="http://mathworld.wolfram.com/HermitePolynomial.html">Hermite polynomials</a> are orthogonal polynomials. They can be
-	 * defined by the following recurrence relations:
+	 * <a href="http://mathworld.wolfram.com/HermitePolynomial.html">Hermite polynomials</a> are orthogonal polynomials.
+	 * They can be defined by the following recurrence relations:
 	 * 
 	 * <pre>
 	 *  H<sub>0</sub>(X)   = 1
@@ -144,8 +145,8 @@ public class PolynomialsUtils {
 	/**
 	 * Create a Laguerre polynomial.
 	 * <p>
-	 * <a href="http://mathworld.wolfram.com/LaguerrePolynomial.html">Laguerre polynomials</a> are orthogonal polynomials. They can
-	 * be defined by the following recurrence relations:
+	 * <a href="http://mathworld.wolfram.com/LaguerrePolynomial.html">Laguerre polynomials</a> are orthogonal
+	 * polynomials. They can be defined by the following recurrence relations:
 	 * 
 	 * <pre>
 	 *        L<sub>0</sub>(X)   = 1
@@ -165,7 +166,8 @@ public class PolynomialsUtils {
 			@Override
 			public BigFraction[] generate(int k) {
 				final int kP1 = k + 1;
-				return new BigFraction[] { new BigFraction(2 * k + 1, kP1), new BigFraction(-1, kP1), new BigFraction(k, kP1) };
+				return new BigFraction[] { new BigFraction(2 * k + 1, kP1), new BigFraction(-1, kP1),
+						new BigFraction(k, kP1) };
 			}
 		});
 	}
@@ -173,8 +175,8 @@ public class PolynomialsUtils {
 	/**
 	 * Create a Legendre polynomial.
 	 * <p>
-	 * <a href="http://mathworld.wolfram.com/LegendrePolynomial.html">Legendre polynomials</a> are orthogonal polynomials. They can
-	 * be defined by the following recurrence relations:
+	 * <a href="http://mathworld.wolfram.com/LegendrePolynomial.html">Legendre polynomials</a> are orthogonal
+	 * polynomials. They can be defined by the following recurrence relations:
 	 * 
 	 * <pre>
 	 *        P<sub>0</sub>(X)   = 1
@@ -230,13 +232,15 @@ public class PolynomialsUtils {
 		// ...
 		final int start = degree * (degree + 1) / 2;
 
-		IAST result = F.Plus();
-		for (int i = 0; i <= degree; ++i) {
-			result.append(F.Times(F.fraction(coefficients.get(start + i)), F.Power(x, F.integer(i))));
-		}
-
-		// build the polynomial
-		return result;
+		IASTAppendable result = F.PlusAlloc(degree + 1);
+		return result.appendArgs(0, degree + 1,
+				i -> F.Times(F.fraction(coefficients.get(start + i)), F.Power(x, F.integer(i))));
+		// for (int i = 0; i <= degree; ++i) {
+		// result.append(F.Times(F.fraction(coefficients.get(start + i)), F.Power(x, F.integer(i))));
+		// }
+		//
+		// // build the polynomial
+		// return result;
 
 	}
 
@@ -252,8 +256,8 @@ public class PolynomialsUtils {
 	 * @param coefficients
 	 *            list where the computed coefficients should be appended
 	 */
-	private static void computeUpToDegree(final int degree, final int maxDegree, final RecurrenceCoefficientsGenerator generator,
-			final List<BigFraction> coefficients) {
+	private static void computeUpToDegree(final int degree, final int maxDegree,
+			final RecurrenceCoefficientsGenerator generator, final List<BigFraction> coefficients) {
 
 		int startK = (maxDegree - 1) * maxDegree / 2;
 		for (int k = maxDegree; k < degree; ++k) {

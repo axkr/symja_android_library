@@ -663,12 +663,13 @@ public final class Validate {
 	public static IAST checkEquationsAndInequations(final IAST ast, int position) {
 		IExpr expr = ast.get(position);
 		IAST eqns = null;
-		IAST termsEqualZeroList = F.List();
+		IASTAppendable termsEqualZeroList;
 		if (expr.isList() || expr.isAnd()) {
 
 			// a list of equations or inequations or a boolean AND expression of
 			// equations
 			eqns = (IAST) expr;
+			termsEqualZeroList = F.ListAlloc(eqns.size());
 			for (int i = 1; i < eqns.size(); i++) {
 				if (eqns.get(i).isAST2()) {
 					IAST eq = (IAST) eqns.get(i);
@@ -678,13 +679,16 @@ public final class Validate {
 					throw new WrongArgumentType(eqns, eqns.get(i), i, "Equation or inequation expression expected");
 				}
 			}
-
+			return termsEqualZeroList;
 		} else {
 			if (expr.isAST()) {
+				termsEqualZeroList = F.ListAlloc(1);
 				termsEqualZeroList.append(checkEquationAndInequation((IAST) expr));
+				return termsEqualZeroList;
 			}
+
 		}
-		return termsEqualZeroList;
+		return F.List();
 	}
 
 	private static IAST checkEquationAndInequation(IAST eq) {

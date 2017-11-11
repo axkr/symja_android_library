@@ -144,7 +144,7 @@ public class EvalAttributes {
 	 *            the recursion level up to which the list should be flattened
 	 * @return <code>true</code> if a sublist was flattened out into the <code>result</code> list.
 	 */
-	public static boolean flatten(final ISymbol head, final IAST sublist, final IAST result, final int recursionCounter,
+	public static boolean flatten(final ISymbol head, final IAST sublist, final IASTAppendable result, final int recursionCounter,
 			final int level) {
 		boolean isEvaled = false;
 		IExpr expr;

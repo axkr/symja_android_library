@@ -3,13 +3,14 @@ package org.matheclipse.core.polynomials;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 import edu.jas.arith.BigRational;
 import edu.jas.poly.GenPolynomial;
 
 public class PartialFractionGenerator implements IPartialFractionGenerator {
-	IAST result;
+	IASTAppendable result;
 	JASConvert<BigRational> jas;
 
 	public PartialFractionGenerator() {

@@ -80,11 +80,13 @@ public class NRoots extends AbstractFunctionEvaluator {
 			return F.NIL;
 		}
 		IAST list = (IAST) temp;
-		IAST result = F.List();
-		for (int i = 1; i < list.size(); i++) {
-			result.append(engine.evalN(list.get(i)));
-		}
-		return result;
+		int size = list.size();
+		IASTAppendable result = F.ListAlloc(size);
+		return result.appendArgs(size, i -> engine.evalN(list.get(i)));
+		// for (int i = 1; i < size; i++) {
+		// result.append(engine.evalN(list.get(i)));
+		// }
+		// return result;
 	}
 
 	public static IAST roots(final IExpr arg1, IAST variables, EvalEngine engine) {
@@ -157,7 +159,7 @@ public class NRoots extends AbstractFunctionEvaluator {
 	}
 
 	private static IAST quadratic(double a, double b, double c) {
-		IAST result = F.List();
+		IASTAppendable result = F.ListAlloc(2);
 		double discriminant = (b * b - (4 * a * c));
 		if (F.isZero(discriminant)) {
 			double bothEqual = ((-b / (2.0 * a)));
@@ -195,7 +197,7 @@ public class NRoots extends AbstractFunctionEvaluator {
 		if (F.isZero(d)) {
 			return F.NIL;
 		}
-		IAST result = F.List();
+		IASTAppendable result = F.ListAlloc(3);
 		b /= a;
 		c /= a;
 		d /= a;

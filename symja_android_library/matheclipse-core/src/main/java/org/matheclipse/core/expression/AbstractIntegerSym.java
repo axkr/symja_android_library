@@ -410,7 +410,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
 		if (b instanceof IntegerSym) {
 			Map<Long, Integer> map = PrimeInteger.factors(b.longValue());
-			IAST result = F.ListAlloc(map.size() + 1);
+			IASTAppendable result = F.ListAlloc(map.size() + 1);
 			if (sign() < 0) {
 				result.append(F.CN1);
 			}

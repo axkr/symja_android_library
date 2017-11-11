@@ -10,6 +10,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -123,7 +124,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 		GroebnerBasePartial<BigRational> gbp = new GroebnerBasePartial<BigRational>();
 		OptimizedPolynomialList<BigRational> opl = gbp.partialGB(polyList, pvars);
 		List<GenPolynomial<BigRational>> list = OrderedPolynomialList.sort(opl.list);
-		IAST resultList = F.List();
+		IASTAppendable resultList = F.ListAlloc(list.size());
 		for (GenPolynomial<BigRational> p : list) {
 			// convert rational to integer coefficients and add
 			// polynomial to result list
@@ -152,11 +153,12 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 			varList.add((ISymbol) listOfVariables.get(i));
 		}
 
-		IAST rest = F.List();
+		
 		List<GenPolynomial<BigRational>> polyList = new ArrayList<GenPolynomial<BigRational>>(
 				listOfPolynomials.size() - 1);
 		TermOrder termOrder = TermOrderByName.IGRLEX;
 		JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO, termOrder);
+		IASTAppendable rest = F.ListAlloc(8);
 		for (int i = 1; i < listOfPolynomials.size(); i++) {
 			IExpr expr = F.evalExpandAll(listOfPolynomials.get(i));
 			try {
@@ -174,7 +176,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 		GroebnerBaseAbstract<BigRational> engine = GBAlgorithmBuilder
 				.<BigRational>polynomialRing(jas.getPolynomialRingFactory()).fractionFree().syzygyPairlist().build();
 		List<GenPolynomial<BigRational>> opl = engine.GB(polyList);
-		IAST resultList = F.List();
+		IASTAppendable resultList = F.ListAlloc(opl.size()+rest.size());
 		// convert rational to integer coefficients and add
 		// polynomial to result list
 		for (GenPolynomial<BigRational> p : opl) {

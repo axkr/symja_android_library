@@ -14,6 +14,7 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.util.OpenFixedSizeMap;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
@@ -105,7 +106,7 @@ public class Functors {
 	 * @throws WrongArgumentType
 	 */
 	public static Function<IExpr, IExpr> rules(@Nonnull String[] strRules) throws WrongArgumentType {
-		IAST astRules = F.ListAlloc(strRules.length);
+		IASTAppendable astRules = F.ListAlloc(strRules.length);
 		ExprParser parser = new ExprParser(EvalEngine.get());
 		// final Parser parser = new Parser();
 		final EvalEngine engine = EvalEngine.get();

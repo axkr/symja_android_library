@@ -14,8 +14,7 @@ import org.matheclipse.parser.client.eval.IDoubleCallbackFunction;
 import org.matheclipse.parser.client.math.MathException;
 
 /**
- * A call back function which could be used in <code>DoubleEvaluator</code>, for
- * evaluating Symja numerical functions.
+ * A call back function which could be used in <code>DoubleEvaluator</code>, for evaluating Symja numerical functions.
  * 
  */
 public class CoreCallbackFunction implements IDoubleCallbackFunction {
@@ -27,10 +26,11 @@ public class CoreCallbackFunction implements IDoubleCallbackFunction {
 		if (node instanceof SymbolNode) {
 			AST2Expr ast2Expr = new AST2Expr();
 			IExpr head = ast2Expr.convert(node);
-			IAST fun = F.ast(head);
-			for (int i = 0; i < args.length; i++) {
-				fun.append(F.num(args[i]));
-			}
+			IASTAppendable fun = F.ast(head, args.length, false);
+			fun.appendArgs(0, args.length, i -> F.num(args[i]));
+			// for (int i = 0; i < args.length; i++) {
+			// fun.append(F.num(args[i]));
+			// }
 			final IExpr result = F.evaln(fun);
 			if (result.isSignedNumber()) {
 				return ((ISignedNumber) result).doubleValue();

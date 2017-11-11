@@ -180,7 +180,7 @@ public class Structure {
 
 					int level = Validate.checkIntLevelType(arg2);
 					if (level > 0) {
-						IAST resultList = F.ast(arg1AST.topHead());
+						IASTAppendable resultList = F.ast(arg1AST.topHead());
 						if (EvalAttributes.flatten(arg1AST.topHead(), (IAST) arg1, resultList, 0, level)) {
 							return resultList;
 						}
@@ -191,7 +191,7 @@ public class Structure {
 
 					int level = Validate.checkIntLevelType(arg2);
 					if (level > 0) {
-						IAST resultList = F.ast(arg1AST.topHead());
+						IASTAppendable resultList = F.ast(arg1AST.topHead());
 						if (EvalAttributes.flatten((ISymbol) ast.arg3(), (IAST) arg1, resultList, 0, level)) {
 							return resultList;
 						}
@@ -542,7 +542,7 @@ public class Structure {
 				IExpr arg1 = ast.arg1();
 				IExpr arg2 = ast.arg2();
 				if (lastIndex == 3) {
-					IAST result = F.ListAlloc(10);
+					IASTAppendable result = F.ListAlloc(10);
 					java.util.function.Function<IExpr, IExpr> sf = x -> {
 						IAST a = F.unaryAST1(arg1, x);
 						result.append(a);
@@ -707,7 +707,7 @@ public class Structure {
 					if (ast.isAST2() && !arg1HeadAST.head().equals(ast.arg2())) {
 						return arg1AST;
 					}
-					IAST result = F.ast(arg1HeadAST.head());
+					IASTAppendable result = F.ast(arg1HeadAST.head());
 					for (int i = 1; i < arg1HeadAST.size(); i++) {
 						clonedList = arg1AST.apply(arg1HeadAST.get(i));
 						result.append(clonedList);

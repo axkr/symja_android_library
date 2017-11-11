@@ -703,7 +703,7 @@ public final class BooleanFunctions {
 			if (ast.isAST0() || ast.isAST1()) {
 				return F.True;
 			}
-			IASTMutable result = ast.copyHead();
+			IASTAppendable result = ast.copyHead();
 			IExpr last = F.NIL;
 			IExpr boole = F.NIL;
 			boolean evaled = false;

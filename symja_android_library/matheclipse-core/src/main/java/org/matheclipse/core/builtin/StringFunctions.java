@@ -17,6 +17,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -245,7 +246,7 @@ public final class StringFunctions {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
 		}
 
-		public static IAST toCharacterCode(final String unicodeInput, final String inputEncoding, final IAST list) {
+		public static IAST toCharacterCode(final String unicodeInput, final String inputEncoding, final IASTAppendable list) {
 			try {
 				final String utf8String = new String(unicodeInput.getBytes(inputEncoding), "UTF-8");
 				int characterCode;

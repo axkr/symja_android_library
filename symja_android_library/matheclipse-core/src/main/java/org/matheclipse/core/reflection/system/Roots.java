@@ -95,7 +95,7 @@ public class Roots extends AbstractFunctionEvaluator {
 		IExpr variable = variables.arg1();
 		IAST list = roots(arg1, false, variables, engine);
 		if (list.isPresent()) {
-			IAST or = F.Or();
+			IASTAppendable or = F.Or();
 			for (int i = 1; i < list.size(); i++) {
 				or.append(F.Equal(variable, list.get(i)));
 			}
@@ -149,16 +149,19 @@ public class Roots extends AbstractFunctionEvaluator {
 		}
 
 		try {
-			IAST roots = F.List();
+
 			EigenDecomposition ed = new EigenDecomposition(c);
 
 			double[] realValues = ed.getRealEigenvalues();
 			double[] imagValues = ed.getImagEigenvalues();
 
-			for (int i = 0; i < N; i++) {
-				roots.append(F.chopExpr(F.complexNum(realValues[i], imagValues[i]), Config.DEFAULT_ROOTS_CHOP_DELTA));
-			}
-			return roots;
+			IASTAppendable roots = F.ListAlloc(N);
+			return roots.appendArgs(0, N,
+					i -> F.chopExpr(F.complexNum(realValues[i], imagValues[i]), Config.DEFAULT_ROOTS_CHOP_DELTA));
+			// for (int i = 0; i < N; i++) {
+			// roots.append(F.chopExpr(F.complexNum(realValues[i], imagValues[i]), Config.DEFAULT_ROOTS_CHOP_DELTA));
+			// }
+			// return roots;
 		} catch (Exception ime) {
 			throw new WrappedException(ime);
 		}
@@ -273,7 +276,7 @@ public class Roots extends AbstractFunctionEvaluator {
 				return F.NIL;
 			}
 			if (ePoly.degree(0) >= 3) {
-				result = unitPolynomial((int)ePoly.degree(0), ePoly);
+				result = unitPolynomial((int) ePoly.degree(0), ePoly);
 				if (result.isPresent()) {
 					result = QuarticSolver.createSet(result);
 					return result;
@@ -402,7 +405,7 @@ public class Roots extends AbstractFunctionEvaluator {
 				return F.NIL;
 			}
 		}
-		
+
 		// a * x^varDegree + b
 		if (!a.isOne()) {
 			a = F.Power(a, F.fraction(-1, varDegree));
@@ -429,7 +432,7 @@ public class Roots extends AbstractFunctionEvaluator {
 			}
 			return result;
 		}
-		
+
 	}
 
 	/**

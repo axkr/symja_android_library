@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -70,7 +71,7 @@ public class Series extends AbstractFunctionEvaluator {
 	 */
 	private IExpr createSeriesData(final IExpr function, IExpr x, IExpr x0, final int n, IExpr step) {
 		IInteger nExpr = F.integer(n);
-		IAST result = F.ListAlloc(n);
+		IASTAppendable result = F.ListAlloc(n);
 		IAST seriesData = F.SeriesData(x, x0, result, F.C0, F.Plus(nExpr, step), step);
 		IExpr derivedFunction = function;
 		for (int i = 0; i <= n; i++) {

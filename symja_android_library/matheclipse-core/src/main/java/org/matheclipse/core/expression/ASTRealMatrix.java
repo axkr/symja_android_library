@@ -170,11 +170,11 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	 *            the object to add.
 	 * @return always true
 	 */
-	@Override
-	public boolean append(IExpr object) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
+//	@Override
+//	public boolean append(IExpr object) {
+//		hashValue = 0;
+//		throw new UnsupportedOperationException();
+//	}
 
 	/**
 	 * Inserts the specified object into this {@code ArrayList} at the specified location. The object is inserted before

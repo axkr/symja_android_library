@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -21,8 +22,7 @@ import org.matheclipse.core.patternmatching.PatternMatcherEvalEngine;
  * 
  * <blockquote>
  * <p>
- * gives the maximum power with which <code>x</code> appears in the expanded
- * form of <code>polynomial</code>.
+ * gives the maximum power with which <code>x</code> appears in the expanded form of <code>polynomial</code>.
  * </p>
  * </blockquote>
  * <h3>Examples</h3>
@@ -106,13 +106,15 @@ public class Exponent extends AbstractCoreFunctionEvaluator {
 		} else {
 			collector.add(F.C0);
 		}
-		IAST result = F.ast(sym);
+
 		if (collector.size() == 0) {
 			collector.add(F.C0);
 		}
-		for (IExpr exponent : collector) {
-			result.append(exponent);
-		}
+		IASTAppendable result = F.ast(sym, collector.size(), false);
+		result.appendAll(collector);
+		// for (IExpr exponent : collector) {
+		// result.append(exponent);
+		// }
 		return result;
 	}
 

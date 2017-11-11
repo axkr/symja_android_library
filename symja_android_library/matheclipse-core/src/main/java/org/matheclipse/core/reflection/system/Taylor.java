@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -23,7 +24,7 @@ public class Taylor extends AbstractFunctionEvaluator {
 			if (upperLimit < 0) {
 				return F.NIL;
 			}
-			IAST fadd = F.Plus();
+			IASTAppendable fadd = F.PlusAlloc(upperLimit+2);
 			fadd.append(F.ReplaceAll(ast.arg1(), F.Rule(list.arg1(), list.arg2())));
 			IExpr temp = ast.arg1();
 			IExpr factor = null;
@@ -34,7 +35,7 @@ public class Taylor extends AbstractFunctionEvaluator {
 				fadd.append(F.Times(F.ReplaceAll(temp, F.Rule(list.arg1(), list.arg2())), factor));
 			}
 			return fadd;
-
+ 
 		}
 		return F.NIL;
 	}

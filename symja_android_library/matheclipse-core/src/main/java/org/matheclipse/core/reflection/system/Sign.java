@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -79,7 +80,7 @@ public class Sign extends AbstractEvaluator {
 			}
 		}
 		if (arg1.isTimes()) {
-			IAST[] result = ((IAST) arg1).filter(new SignTimesFunction());
+			IASTAppendable[] result = ((IAST) arg1).filter(new SignTimesFunction());
 			if (result[0].size() > 1) {
 				if (result[1].size() > 1) {
 					result[0].append(F.Sign(result[1]));

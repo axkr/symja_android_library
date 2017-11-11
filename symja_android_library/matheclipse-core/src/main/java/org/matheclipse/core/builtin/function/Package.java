@@ -68,17 +68,19 @@ public class Package extends AbstractCoreFunctionEvaluator {
 		}
 
 		// determine "private package rule headers" in convertedSymbolMap
-		for (int i = 1; i < list.size(); i++) {
+		int size = list.size();
+		for (int i = 1; i < size; i++) {
 			if (list.get(i).isAST()) {
 				determineRuleHead((IAST) list.get(i), publicSymbolSet, convertedSymbolMap);
 			}
 		}
 
 		// convert the rules into a new list:
-		IAST resultList = F.List();
-		for (int i = 1; i < list.size(); i++) {
-			resultList.append(convertSymbolsInExpr(list.get(i), convertedSymbolMap));
-		}
+		IASTAppendable resultList = F.ListAlloc(size);
+		resultList.appendArgs(size, i -> convertSymbolsInExpr(list.get(i), convertedSymbolMap));
+		// for (int i = 1; i < size; i++) {
+		// resultList.append(convertSymbolsInExpr(list.get(i), convertedSymbolMap));
+		// }
 		try {
 			engine.setPackageMode(true);
 			// evaluate the new converted rules
@@ -100,9 +102,8 @@ public class Package extends AbstractCoreFunctionEvaluator {
 	private static void determineRuleHead(IAST rule, HashSet<ISymbol> unprotectedSymbolSet,
 			HashMap<String, ISymbol> convertedSymbolMap) {
 		ISymbol lhsHead;
-		if (rule.size() > 1
-				&& (rule.head().equals(F.Set) || rule.head().equals(F.SetDelayed) || rule.head().equals(F.UpSet) || rule.head()
-						.equals(F.UpSetDelayed))) {
+		if (rule.size() > 1 && (rule.head().equals(F.Set) || rule.head().equals(F.SetDelayed)
+				|| rule.head().equals(F.UpSet) || rule.head().equals(F.UpSetDelayed))) {
 			// determine the head to which this rule is associated
 			lhsHead = null;
 			if (rule.arg1().isAST()) {
@@ -124,8 +125,8 @@ public class Package extends AbstractCoreFunctionEvaluator {
 	}
 
 	/**
-	 * Convert all symbols which are keys in <code>convertedSymbols</code> in the given <code>expr</code> and return the resulting
-	 * expression.
+	 * Convert all symbols which are keys in <code>convertedSymbols</code> in the given <code>expr</code> and return the
+	 * resulting expression.
 	 * 
 	 * @param expr
 	 * @param convertedSymbols
@@ -146,8 +147,8 @@ public class Package extends AbstractCoreFunctionEvaluator {
 	}
 
 	/**
-	 * Convert all symbols which are keys in <code>convertedSymbols</code> in the given <code>ast</code> list and return the
-	 * resulting list.
+	 * Convert all symbols which are keys in <code>convertedSymbols</code> in the given <code>ast</code> list and return
+	 * the resulting list.
 	 * 
 	 * @param ast
 	 * @param convertedSymbols
@@ -198,12 +199,13 @@ public class Package extends AbstractCoreFunctionEvaluator {
 			IExpr parsedExpression = engine.parse(builder.toString());
 			if (parsedExpression != null && parsedExpression.isAST()) {
 				IAST ast = (IAST) parsedExpression;
-				if (ast.size() != 4 || !(ast.arg1() instanceof IStringX) || !ast.arg2().isList() || !ast.arg3().isList()) {
+				if (ast.size() != 4 || !(ast.arg1() instanceof IStringX) || !ast.arg2().isList()
+						|| !ast.arg3().isList()) {
 					throw new WrongNumberOfArguments(ast, 3, ast.size() - 1);
 				}
 				IAST symbols = (IAST) ast.arg2();
 				IAST list = (IAST) ast.arg3();
-				evalPackage(symbols, list,engine);
+				evalPackage(symbols, list, engine);
 			}
 
 		} catch (final Exception e) {

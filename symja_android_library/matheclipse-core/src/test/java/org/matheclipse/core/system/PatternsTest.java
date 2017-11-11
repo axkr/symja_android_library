@@ -3,6 +3,7 @@ package org.matheclipse.core.system;
 import static org.matheclipse.core.expression.F.*;
 
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 
 /**
@@ -22,9 +23,9 @@ public class PatternsTest extends AbstractTestCase {
 
 	public void testPriority001() {
 
-		IAST ast1 = ast(f);
+		IASTAppendable ast1 = ast(f);
 		ast1.append(a_);
-		IAST ast2 = ast(f);
+		IASTAppendable ast2 = ast(f);
 		ast2.append(Times(a_, x_));
 		PatternMatcher pm1 = new PatternMatcher(ast1);
 		PatternMatcher pm2 = new PatternMatcher(ast2);
@@ -35,9 +36,9 @@ public class PatternsTest extends AbstractTestCase {
 
 	public void testPriority002() {
 
-		IAST ast1 =  ast(f);
+		IASTAppendable ast1 =  ast(f);
 		ast1.append(Times(a, x)); 
-		IAST ast2 = ast(f);
+		IASTAppendable ast2 = ast(f);
 		ast2.append(Times(a_, x_));
 		PatternMatcher pm1 = new PatternMatcher(ast1);
 		PatternMatcher pm2 = new PatternMatcher(ast2);

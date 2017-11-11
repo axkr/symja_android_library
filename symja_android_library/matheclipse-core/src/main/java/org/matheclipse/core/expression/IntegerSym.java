@@ -15,6 +15,7 @@ import org.matheclipse.core.builtin.Combinatoric.Subsets;
 import org.matheclipse.core.builtin.Combinatoric.Subsets.KSubsetsList;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
@@ -246,7 +247,7 @@ public class IntegerSym extends AbstractIntegerSym {
 		}
 
 		// build the final divisors list from the tree set
-		final IAST resultList = F.ListAlloc(set.size() + 1);
+		final IASTAppendable resultList = F.ListAlloc(set.size() + 1);
 		resultList.append(F.C1);
 		for (IInteger entry : set) {
 			resultList.append(entry);

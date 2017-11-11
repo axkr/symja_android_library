@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -48,7 +49,7 @@ public class FromCharacterCode extends AbstractFunctionEvaluator {
 	public void setUp(final ISymbol newSymbol) {
 	}
 
-	public static IAST fromCharcterCode(final String unicodeInput, final String inputEncoding, final IAST list) {
+	public static IAST fromCharcterCode(final String unicodeInput, final String inputEncoding, final IASTAppendable list) {
 		try {
 			final String utf8String = new String(unicodeInput.getBytes(inputEncoding), "UTF-8");
 			int characterCode;

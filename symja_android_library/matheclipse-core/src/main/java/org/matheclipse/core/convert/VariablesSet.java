@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
@@ -304,9 +305,9 @@ public class VariablesSet {
 	 * 
 	 * @return the ordered list of variables.
 	 */
-	public IAST getVarList() {
+	public IASTAppendable getVarList() {
 		final Iterator<IExpr> iter = fVariablesSet.iterator();
-		final IAST list = F.ListAlloc(fVariablesSet.size());
+		final IASTAppendable list = F.ListAlloc(fVariablesSet.size());
 		while (iter.hasNext()) {
 			list.append(iter.next());
 		}
@@ -327,7 +328,7 @@ public class VariablesSet {
 	public static IAST addVariables(Set<IExpr> fVariablesSet, IExpr expr) {
 		expr.accept(new AlgebraVariablesVisitor(fVariablesSet));
 		final Iterator<IExpr> iter = fVariablesSet.iterator();
-		final IAST list = F.ListAlloc(fVariablesSet.size());
+		final IASTAppendable list = F.ListAlloc(fVariablesSet.size());
 		while (iter.hasNext()) {
 			list.append(iter.next());
 		}

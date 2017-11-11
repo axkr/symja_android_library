@@ -58,7 +58,10 @@ public class TimesOp {
 				return true;
 			}
 		} else if (temp.head().equals(F.Plus)) {
-			((IAST) temp).append(value);
+			if (!(temp instanceof IASTAppendable)) {
+				temp = ((IAST) temp).clone();
+			}
+			((IASTAppendable) temp).append(value);
 		} else {
 			temp = F.Plus(temp, value);
 		}

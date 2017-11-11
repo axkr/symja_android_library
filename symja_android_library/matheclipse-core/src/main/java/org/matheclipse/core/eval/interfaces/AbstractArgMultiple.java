@@ -34,7 +34,7 @@ public abstract class AbstractArgMultiple extends AbstractArg2 {
 		if (ast.size() > 3) {
 			IASTAppendable tempAST = ast.clone();
 			final ISymbol sym = tempAST.topHead();
-			final IAST result = F.ast(sym);
+			final IASTAppendable result = F.ast(sym);
 			IExpr tres;
 			IExpr temp = tempAST.arg1();
 			boolean evaled = false;

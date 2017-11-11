@@ -5,16 +5,17 @@ import java.util.Stack;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.AbstractEvalStepListener;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 import java.util.function.Predicate;
 
 final public class TraceStack extends AbstractEvalStepListener {
 
-	final Stack<IAST> fStack = new Stack<IAST>();
+	final Stack<IASTAppendable> fStack = new Stack<IASTAppendable>();
 	final Predicate<IExpr> fMatcher;
 	final IAST fList;
-	IAST fTraceList;
+	IASTAppendable fTraceList;
 
 	public TraceStack(Predicate<IExpr> matcher, IAST list) {
 		super();

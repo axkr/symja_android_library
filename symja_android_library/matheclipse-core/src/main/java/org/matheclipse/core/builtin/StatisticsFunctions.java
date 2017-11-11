@@ -19,6 +19,7 @@ import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
@@ -599,7 +600,7 @@ public class StatisticsFunctions {
 			}
 			IAST num1 = arg1.apply(F.Plus);
 			IExpr factor = F.integer(-1 * (arg1.size() - 2));
-			IAST v1 = F.Plus();
+			IASTAppendable v1 = F.PlusAlloc(arg1.size());
 			for (int i = 1; i < arg1.size(); i++) {
 				v1.append(F.Times(F.CN1, num1.setAtClone(i, F.Times(factor, arg1.get(i))), F.Conjugate(arg2.get(i))));
 			}
@@ -1315,9 +1316,9 @@ public class StatisticsFunctions {
 						}
 						return new ASTRealVector(result, false);
 					}
-					IAST result = F.ListAlloc(matrixDimensions[0]);
+					IASTAppendable result = F.ListAlloc(matrixDimensions[0]);
 					for (int i = 1; i < matrixDimensions[1] + 1; i++) {
-						IAST list = F.ListAlloc(matrixDimensions[1]);
+						IASTAppendable list = F.ListAlloc(matrixDimensions[1]);
 						IAST variance = F.Variance(list);
 						for (int j = 1; j < matrixDimensions[0] + 1; j++) {
 							list.append(arg1.getPart(j, i));

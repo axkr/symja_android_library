@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -21,14 +22,14 @@ public class Java8TestCase extends AbstractTestCase {
 
 	public void testForeach() {
 		IAST ast = List(C10, a, b, c, d, e);
-		IAST result = F.List();
+		IASTAppendable result = F.List();
 		ast.forEach(x -> result.append(x));
 		assertEquals("{10,a,b,c,d,e}", result.toString());
 	}
 
 	public void testStream001() {
 		IAST ast = List(C10, a, b, c, d, e);
-		IAST result = F.List();
+		IASTAppendable result = F.ListAlloc(2);
 		// Consumer<IExpr> action = (IExpr x) -> System.out.println(x);
 		ast.stream().forEach(x -> result.append(x));
 		ast.stream(0, 7).forEach(x -> result.append(x));

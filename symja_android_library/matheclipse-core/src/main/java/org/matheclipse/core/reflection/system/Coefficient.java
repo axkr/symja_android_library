@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -60,7 +61,7 @@ public class Coefficient extends AbstractFunctionEvaluator {
 
 		IExpr arg2 = ast.arg2();
 		// list of variable expressions extracted from the second argument
-		IAST listOfVariables = null;
+		IASTAppendable listOfVariables = null;
 		// array of corresponding exponents for the list of variables
 		long[] exponents = null;
 
