@@ -159,10 +159,10 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	// throw new UnsupportedOperationException();
 	// }
 
-	@Override
-	public IAST appendOneIdentity(IAST subAST) {
-		throw new UnsupportedOperationException();
-	}
+	// @Override
+	// public IAST appendOneIdentity(IAST subAST) {
+	// throw new UnsupportedOperationException();
+	// }
 
 	/**
 	 * Adds the specified object at the end of this {@code ArrayList}.
@@ -171,11 +171,11 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	 *            the object to add.
 	 * @return always true
 	 */
-//	@Override
-//	public boolean append(IExpr object) {
-//		hashValue = 0;
-//		throw new UnsupportedOperationException();
-//	}
+	// @Override
+	// public boolean append(IExpr object) {
+	// hashValue = 0;
+	// throw new UnsupportedOperationException();
+	// }
 
 	/**
 	 * Inserts the specified object into this {@code ArrayList} at the specified location. The object is inserted before
@@ -278,11 +278,11 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	 * @see #isEmpty
 	 * @see #size
 	 */
-	@Override
-	public void clear() {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
+	// @Override
+	// public void clear() {
+	// hashValue = 0;
+	// throw new UnsupportedOperationException();
+	// }
 
 	/**
 	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this
@@ -336,7 +336,8 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST, final Function<IExpr, IExpr> function) {
+	public final IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
+			final Function<IExpr, IExpr> function) {
 		final int size = size();
 		for (int i = 1; i < size; i++) {
 			IExpr expr = function.apply(get(i));
@@ -500,10 +501,10 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	 * @throws IndexOutOfBoundsException
 	 *             when {@code start < 0, start > end} or {@code end > size()}
 	 */
-	protected void removeRange(int start, int end) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
+	// protected void removeRange(int start, int end) {
+	// hashValue = 0;
+	// throw new UnsupportedOperationException();
+	// }
 
 	/**
 	 * Replaces the element at the specified location in this {@code ArrayList} with the specified object.

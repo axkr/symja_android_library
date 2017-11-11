@@ -260,10 +260,10 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 * @deprecated - use appendOneIdentity()
 	 */
-	@Deprecated
-	default IAST addOneIdentity(IAST subAST) {
-		return appendOneIdentity(subAST);
-	}
+//	@Deprecated
+//	default IAST addOneIdentity(IAST subAST) {
+//		return appendOneIdentity(subAST);
+//	}
 
 	/**
 	 * Adds the objects in the specified collection to the end of this {@code List}. The objects are added in the order
@@ -346,15 +346,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return <code>this</code> after appending the given expression.
 	 */
 	public IASTAppendable appendClone(IExpr expr);
-
-	/**
-	 * Add an <code>subAST</code> with attribute <code>OneIdentity</code> for example Plus[] or Times[].
-	 * 
-	 * @param subAST
-	 *            an ast with attribute <code>OneIdentity</code>.
-	 * @return <code>this</code> ast after adding the subAST
-	 */
-	public IAST appendOneIdentity(IAST subAST);
 
 	/**
 	 * Apply the given head to this expression (i.e. create a list clone and replace the old head with the given one)
@@ -449,14 +440,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return
 	 */
 	public Set<IExpr> asSet();
-
-	/**
-	 * Removes all elements from this {@code IAST}, leaving it empty (optional).
-	 * 
-	 * @throws UnsupportedOperationException
-	 *             if removing from this {@code Collection} is not supported.
-	 */
-	public void clear();
 
 	/**
 	 * Set the cached hash value to zero.

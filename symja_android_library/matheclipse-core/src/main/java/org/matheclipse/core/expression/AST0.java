@@ -5,9 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.RandomAccess;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -21,32 +19,25 @@ import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * <p>
- * Immutable (A)bstract (S)yntax (T)ree of a given function with <b>no
- * argument</b>.
+ * Immutable (A)bstract (S)yntax (T)ree of a given function with <b>no argument</b>.
  * </p>
  * 
  * <p>
- * In Symja, an abstract syntax tree (AST), is a tree representation of the
- * abstract syntactic structure of the Symja source code. Each node of the tree
- * denotes a construct occurring in the source code. The syntax is 'abstract' in
- * the sense that it does not represent every detail that appears in the real
- * syntax. For instance, grouping parentheses are implicit in the tree
- * structure, and a syntactic construct such as a <code>Sin[x]</code> expression
- * will be denoted by an AST with 2 nodes. One node for the header
- * <code>Sin</code> and one node for the argument <code>x</code>.
+ * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic structure of the Symja
+ * source code. Each node of the tree denotes a construct occurring in the source code. The syntax is 'abstract' in the
+ * sense that it does not represent every detail that appears in the real syntax. For instance, grouping parentheses are
+ * implicit in the tree structure, and a syntactic construct such as a <code>Sin[x]</code> expression will be denoted by
+ * an AST with 2 nodes. One node for the header <code>Sin</code> and one node for the argument <code>x</code>.
  * </p>
  * 
- * Internally an AST is represented as a <code>java.util.List</code> which
- * contains
+ * Internally an AST is represented as a <code>java.util.List</code> which contains
  * <ul>
- * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos,
- * Inverse, Plus, Times,...) at index <code>0</code> and</li>
- * <li>the <code>n</code> arguments of a function in the index
- * <code>1 to n</code></li>
+ * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus, Times,...) at index
+ * <code>0</code> and</li>
+ * <li>the <code>n</code> arguments of a function in the index <code>1 to n</code></li>
  * </ul>
  * 
- * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract
- * syntax tree</a>.
+ * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>.
  * 
  * @see AST
  */
@@ -86,14 +77,13 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 * 
 	 * @param collection
 	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
-	 *         otherwise.
+	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
 	 */
-//	@Override
-//	public boolean appendAll(Collection<? extends IExpr> collection) {
-//		hashValue = 0;
-//		throw new UnsupportedOperationException();
-//	}
+	// @Override
+	// public boolean appendAll(Collection<? extends IExpr> collection) {
+	// hashValue = 0;
+	// throw new UnsupportedOperationException();
+	// }
 
 	// @Override
 	// public boolean appendAll(IAST ast, int startPosition, int endPosition) {
@@ -101,44 +91,42 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	// }
 
 	/**
-	 * Inserts the objects in the specified collection at the specified location
-	 * in this List. The objects are added in the order they are returned from
-	 * the collection's iterator.
+	 * Inserts the objects in the specified collection at the specified location in this List. The objects are added in
+	 * the order they are returned from the collection's iterator.
 	 * 
 	 * @param location
 	 *            the index at which to insert.
 	 * @param collection
 	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false}
-	 *         otherwise.
+	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
 	 * @throws IndexOutOfBoundsException
 	 *             when {@code location < 0 || > size()}
 	 */
-//	@Override
-//	public boolean appendAll(int location, Collection<? extends IExpr> collection) {
-//		hashValue = 0;
-//		throw new UnsupportedOperationException();
-//	}
+	// @Override
+	// public boolean appendAll(int location, Collection<? extends IExpr> collection) {
+	// hashValue = 0;
+	// throw new UnsupportedOperationException();
+	// }
 
 	// @Override
 	// public boolean addAll(List<? extends IExpr> ast) {
 	// throw new UnsupportedOperationException();
 	// }
 
-//	@Override
-//	public boolean appendAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
-//		throw new UnsupportedOperationException();
-//	}
-	
-//	@Override
-//	public final boolean appendArgs(IAST ast, int untilPosition) {
-//		throw new UnsupportedOperationException();
-//	}
-	
-	@Override
-	public IAST appendOneIdentity(IAST subAST) {
-		throw new UnsupportedOperationException();
-	}
+	// @Override
+	// public boolean appendAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
+	// throw new UnsupportedOperationException();
+	// }
+
+	// @Override
+	// public final boolean appendArgs(IAST ast, int untilPosition) {
+	// throw new UnsupportedOperationException();
+	// }
+
+	// @Override
+	// public IAST appendOneIdentity(IAST subAST) {
+	// throw new UnsupportedOperationException();
+	// }
 
 	/**
 	 * Adds the specified object at the end of this {@code ArrayList}.
@@ -147,17 +135,16 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 *            the object to add.
 	 * @return always true
 	 */
-//	@Override
-//	public boolean append(IExpr object) {
-//		hashValue = 0;
-//		throw new UnsupportedOperationException();
-//	}
+	// @Override
+	// public boolean append(IExpr object) {
+	// hashValue = 0;
+	// throw new UnsupportedOperationException();
+	// }
 
 	/**
-	 * Inserts the specified object into this {@code ArrayList} at the specified
-	 * location. The object is inserted before any previous element at the
-	 * specified location. If the location is equal to the size of this
-	 * {@code ArrayList}, the object is added at the end.
+	 * Inserts the specified object into this {@code ArrayList} at the specified location. The object is inserted before
+	 * any previous element at the specified location. If the location is equal to the size of this {@code ArrayList},
+	 * the object is added at the end.
 	 * 
 	 * @param location
 	 *            the index at which to insert the object.
@@ -166,20 +153,19 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 * @throws IndexOutOfBoundsException
 	 *             when {@code location < 0 || > size()}
 	 */
-//	@Override
-//	public void append(int location, IExpr object) {
-//		hashValue = 0;
-//		throw new UnsupportedOperationException();
-//	}
+	// @Override
+	// public void append(int location, IExpr object) {
+	// hashValue = 0;
+	// throw new UnsupportedOperationException();
+	// }
 
 	/**
-	 * Get the first argument (i.e. the second element of the underlying list
-	 * structure) of the <code>AST</code> function (i.e. get(1) ). <br />
-	 * <b>Example:</b> for the AST representing the expression
-	 * <code>Sin(x)</code>, <code>arg1()</code> returns <code>x</code>.
+	 * Get the first argument (i.e. the second element of the underlying list structure) of the <code>AST</code>
+	 * function (i.e. get(1) ). <br />
+	 * <b>Example:</b> for the AST representing the expression <code>Sin(x)</code>, <code>arg1()</code> returns
+	 * <code>x</code>.
 	 * 
-	 * @return the first argument of the function represented by this
-	 *         <code>AST</code>.
+	 * @return the first argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
 	 */
 	@Override
@@ -188,14 +174,12 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	}
 
 	/**
-	 * Get the second argument (i.e. the third element of the underlying list
-	 * structure) of the <code>AST</code> function (i.e. get(2) ). <br />
-	 * <b>Example:</b> for the AST representing the expression <code>x^y</code>
-	 * (i.e. <code>Power(x, y)</code>), <code>arg2()</code> returns
-	 * <code>y</code>.
+	 * Get the second argument (i.e. the third element of the underlying list structure) of the <code>AST</code>
+	 * function (i.e. get(2) ). <br />
+	 * <b>Example:</b> for the AST representing the expression <code>x^y</code> (i.e. <code>Power(x, y)</code>),
+	 * <code>arg2()</code> returns <code>y</code>.
 	 * 
-	 * @return the second argument of the function represented by this
-	 *         <code>AST</code>.
+	 * @return the second argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
 	 */
 	@Override
@@ -204,13 +188,12 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	}
 
 	/**
-	 * Get the third argument (i.e. the fourth element of the underlying list
-	 * structure) of the <code>AST</code> function (i.e. get(3) ).<br />
-	 * <b>Example:</b> for the AST representing the expression
-	 * <code>f(a, b, c)</code>, <code>arg3()</code> returns <code>c</code>.
+	 * Get the third argument (i.e. the fourth element of the underlying list structure) of the <code>AST</code>
+	 * function (i.e. get(3) ).<br />
+	 * <b>Example:</b> for the AST representing the expression <code>f(a, b, c)</code>, <code>arg3()</code> returns
+	 * <code>c</code>.
 	 * 
-	 * @return the third argument of the function represented by this
-	 *         <code>AST</code>.
+	 * @return the third argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
 	 */
 	@Override
@@ -219,13 +202,12 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	}
 
 	/**
-	 * Get the fourth argument (i.e. the fifth element of the underlying list
-	 * structure) of the <code>AST</code> function (i.e. get(4) ).<br />
-	 * <b>Example:</b> for the AST representing the expression
-	 * <code>f(a, b ,c, d)</code>, <code>arg4()</code> returns <code>d</code>.
+	 * Get the fourth argument (i.e. the fifth element of the underlying list structure) of the <code>AST</code>
+	 * function (i.e. get(4) ).<br />
+	 * <b>Example:</b> for the AST representing the expression <code>f(a, b ,c, d)</code>, <code>arg4()</code> returns
+	 * <code>d</code>.
 	 * 
-	 * @return the fourth argument of the function represented by this
-	 *         <code>AST</code>.
+	 * @return the fourth argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
 	 */
 	@Override
@@ -234,14 +216,12 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	}
 
 	/**
-	 * Get the fifth argument (i.e. the sixth element of the underlying list
-	 * structure) of the <code>AST</code> function (i.e. get(5) ).<br />
-	 * <b>Example:</b> for the AST representing the expression
-	 * <code>f(a, b ,c, d, e)</code>, <code>arg5()</code> returns <code>e</code>
-	 * .
+	 * Get the fifth argument (i.e. the sixth element of the underlying list structure) of the <code>AST</code> function
+	 * (i.e. get(5) ).<br />
+	 * <b>Example:</b> for the AST representing the expression <code>f(a, b ,c, d, e)</code>, <code>arg5()</code>
+	 * returns <code>e</code> .
 	 * 
-	 * @return the fifth argument of the function represented by this
-	 *         <code>AST</code>.
+	 * @return the fifth argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
 	 */
 	@Override
@@ -261,15 +241,15 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 * @see #isEmpty
 	 * @see #size
 	 */
-	@Override
-	public void clear() {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
+//	@Override
+//	public void clear() {
+//		hashValue = 0;
+//		throw new UnsupportedOperationException();
+//	}
 
 	/**
-	 * Returns a new {@code HMArrayList} with the same elements, the same size
-	 * and the same capacity as this {@code HMArrayList}.
+	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this
+	 * {@code HMArrayList}.
 	 * 
 	 * @return a shallow copy of this {@code ArrayList}
 	 * @see java.lang.Cloneable
@@ -308,7 +288,8 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST, final Function<IExpr, IExpr> function) {
+	public final IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
+			final Function<IExpr, IExpr> function) {
 		final int size = size();
 		for (int i = 1; i < size; i++) {
 			IExpr expr = function.apply(get(i));
@@ -441,15 +422,14 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 * @throws IndexOutOfBoundsException
 	 *             when {@code location < 0 || >= size()}
 	 */
-//	@Override
-//	public IExpr remove(int location) {
-//		hashValue = 0;
-//		throw new UnsupportedOperationException();
-//	}
+	// @Override
+	// public IExpr remove(int location) {
+	// hashValue = 0;
+	// throw new UnsupportedOperationException();
+	// }
 
 	/**
-	 * Removes the objects in the specified range from the start to the end, but
-	 * not including the end index.
+	 * Removes the objects in the specified range from the start to the end, but not including the end index.
 	 * 
 	 * @param start
 	 *            the index at which to start removing.
@@ -458,14 +438,13 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 * @throws IndexOutOfBoundsException
 	 *             when {@code start < 0, start > end} or {@code end > size()}
 	 */
-	protected void removeRange(int start, int end) {
-		hashValue = 0;
-		throw new UnsupportedOperationException();
-	}
+//	protected void removeRange(int start, int end) {
+//		hashValue = 0;
+//		throw new UnsupportedOperationException();
+//	}
 
 	/**
-	 * Replaces the element at the specified location in this {@code ArrayList}
-	 * with the specified object.
+	 * Replaces the element at the specified location in this {@code ArrayList} with the specified object.
 	 * 
 	 * @param location
 	 *            the index at which to put the specified object.
@@ -498,8 +477,7 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	}
 
 	/**
-	 * Returns a new array containing all elements contained in this
-	 * {@code ArrayList}.
+	 * Returns a new array containing all elements contained in this {@code ArrayList}.
 	 * 
 	 * @return an array of the elements from this {@code ArrayList}
 	 */

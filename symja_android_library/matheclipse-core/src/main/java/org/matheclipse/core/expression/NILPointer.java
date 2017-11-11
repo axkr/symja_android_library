@@ -289,7 +289,7 @@ public class NILPointer extends AbstractAST implements IASTAppendable {
 	 * @throws IndexOutOfBoundsException
 	 *             when {@code start < 0, start > end} or {@code end > size()}
 	 */
-	protected void removeRange(int start, int end) {
+	public void removeRange(int start, int end) {
 		throw new UnsupportedOperationException();
 	}
 

@@ -759,7 +759,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	 * @throws IndexOutOfBoundsException
 	 *             when {@code start < 0, start > end} or {@code end > size()}
 	 */
-	protected void removeRange(int start, int end) {
+	public void removeRange(int start, int end) {
 		hashValue = 0;
 		if (start >= 0 && start <= end && end <= (lastIndex - firstIndex)) {
 			if (start == end) {
