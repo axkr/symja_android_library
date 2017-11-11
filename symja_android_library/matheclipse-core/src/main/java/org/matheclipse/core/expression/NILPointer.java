@@ -4,6 +4,7 @@ import java.io.ObjectStreamException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
 import org.matheclipse.core.eval.EvalEngine;
@@ -76,6 +77,11 @@ public class NILPointer extends AbstractAST implements IASTAppendable {
 
 	@Override
 	public final boolean appendArgs(IAST ast, int untilPosition) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public IASTAppendable appendArgs(int end, IntFunction<IExpr> function) {
 		throw new UnsupportedOperationException();
 	}
 

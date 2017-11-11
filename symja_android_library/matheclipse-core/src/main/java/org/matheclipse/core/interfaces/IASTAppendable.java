@@ -122,12 +122,7 @@ public interface IASTAppendable extends IASTMutable {
 	 * @return <tt>this</tt>
 	 * 
 	 */
-	default IASTAppendable appendArgs(int end, IntFunction<IExpr> function) {
-		for (int i = 1; i < end; i++) {
-			append(function.apply(i));
-		}
-		return this;
-	}
+	public IASTAppendable appendArgs(int end, IntFunction<IExpr> function);
 
 	/**
 	 * Appends all of the arguments (starting from offset <code>1</code>) in the specified AST up to position

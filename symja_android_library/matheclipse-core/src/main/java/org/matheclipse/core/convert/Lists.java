@@ -32,8 +32,8 @@ public class Lists {
 	 * 		} objects.
 	 */
 	public static IAST asAST(boolean... p_booleans) {
-		IASTAppendable ast = F.ListAlloc(p_booleans.length);
 		if (p_booleans != null) {
+			IASTAppendable ast = F.ListAlloc(p_booleans.length);
 			for (int i = 0, t = p_booleans.length; i < t; i++) {
 				if (p_booleans[i]) {
 					ast.append(F.True);
@@ -41,8 +41,9 @@ public class Lists {
 					ast.append(F.False);
 				}
 			}
+			return ast;
 		}
-		return ast;
+		return F.List();
 	}
 
 	/**
@@ -56,13 +57,15 @@ public class Lists {
 	 * @return a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.INum} objects.
 	 */
 	public static IAST asList(double... p_doubles) {
-		IASTAppendable ast = F.ListAlloc(p_doubles.length);
+
 		if (p_doubles != null) {
+			IASTAppendable ast = F.ListAlloc(p_doubles.length);
 			for (int i = 0, t = p_doubles.length; i < t; i++) {
 				ast.append(F.num(p_doubles[i]));
 			}
+			return ast;
 		}
-		return ast;
+		return F.List();
 	}
 
 	/**
@@ -76,13 +79,14 @@ public class Lists {
 	 * @return a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.INum} objects.
 	 */
 	public static IAST asList(float... p_doubles) {
-		IASTAppendable ast = F.ListAlloc(p_doubles.length);
 		if (p_doubles != null) {
+			IASTAppendable ast = F.ListAlloc(p_doubles.length);
 			for (int i = 0, t = p_doubles.length; i < t; i++) {
 				ast.append(F.num(p_doubles[i]));
 			}
+			return ast;
 		}
-		return ast;
+		return F.List();
 	}
 
 	/**
@@ -97,13 +101,15 @@ public class Lists {
 	 *         objects.
 	 */
 	public static IAST asList(String... p_strings) {
-		IASTAppendable ast = F.ListAlloc(p_strings.length);
+		
 		if (p_strings != null) {
+			IASTAppendable ast = F.ListAlloc(p_strings.length);
 			for (int i = 0, t = p_strings.length; i < t; i++) {
 				ast.append(F.$str(p_strings[i]));
 			}
+			return ast;
 		}
-		return ast;
+		return F.List();
 	}
 
 	/**
@@ -140,13 +146,14 @@ public class Lists {
 	 *         objects.
 	 */
 	public static IAST asList(short... p_shorts) {
-		IASTAppendable ast = F.ListAlloc(p_shorts.length);
 		if (p_shorts != null) {
+			IASTAppendable ast = F.ListAlloc(p_shorts.length);
 			for (int i = 0, t = p_shorts.length; i < t; i++) {
 				ast.append(F.integer(p_shorts[i]));
 			}
+			return ast;
 		}
-		return ast;
+		return F.List();
 	}
 
 	/**
@@ -161,13 +168,14 @@ public class Lists {
 	 *         objects.
 	 */
 	public static IAST asList(int... p_ints) {
-		IASTAppendable ast = F.ListAlloc(p_ints.length);
 		if (p_ints != null) {
+			IASTAppendable ast = F.ListAlloc(p_ints.length);
 			for (int i = 0, t = p_ints.length; i < t; i++) {
 				ast.append(F.integer(p_ints[i]));
 			}
+			return ast;
 		}
-		return ast;
+		return F.List();
 	}
 
 	/**
@@ -182,13 +190,14 @@ public class Lists {
 	 *         objects.
 	 */
 	public static IAST asList(long... p_longs) {
-		IASTAppendable ast = F.ListAlloc(p_longs.length);
 		if (p_longs != null) {
+			IASTAppendable ast = F.ListAlloc(p_longs.length);
 			for (int i = 0, t = p_longs.length; i < t; i++) {
 				ast.append(F.integer(p_longs[i]));
 			}
+			return ast;
 		}
-		return ast;
+		return F.List();
 	}
 
 	/**
@@ -202,12 +211,13 @@ public class Lists {
 	 * @return a {@link org.matheclipse.core.interfaces.IAST} of {@link org.matheclipse.core.interfaces.IExpr} objects.
 	 */
 	public static IAST asList(Object... p_objects) {
-		IASTAppendable ast = F.ListAlloc(p_objects.length);
 		if (p_objects != null) {
+			IASTAppendable ast = F.ListAlloc(p_objects.length);
 			for (int i = 0, t = p_objects.length; i < t; i++) {
 				ast.append(Object2Expr.convert(p_objects[i]));
 			}
+			return ast;
 		}
-		return ast;
+		return F.List();
 	}
 }

@@ -8,6 +8,7 @@ import java.io.ObjectStreamException;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.function.IntFunction;
 
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -270,6 +271,15 @@ public class AST extends HMArrayList implements Externalizable {
 		return appendArgs(ast, ast.size());
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public  IASTAppendable appendArgs(int end, IntFunction<IExpr> function) {
+		for (int i = 1; i < end; i++) {
+			append(function.apply(i));
+		}
+		return this;
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public final boolean appendArgs(IAST ast, int untilPosition) {
