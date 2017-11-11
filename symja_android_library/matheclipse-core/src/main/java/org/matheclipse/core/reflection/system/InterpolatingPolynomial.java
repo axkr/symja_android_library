@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -115,13 +116,13 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 				}
 				IExpr[] c = computeDividedDifference(xv, yv);
 
-				IAST polynomial = F.Plus();
-				IAST times, plus;
-				IAST tempPlus = polynomial;
+				IASTAppendable polynomial = F.PlusAlloc(16);
+				IASTAppendable times, plus;
+				IASTAppendable tempPlus = polynomial;
 				polynomial.append(c[0]);// c[0]
 				for (int i = 2; i < list.size(); i++) {
-					times = F.Times();
-					plus = F.Plus();
+					times = F.TimesAlloc(2);
+					plus = F.PlusAlloc(8);
 					times.append(plus);
 					times.append(F.Subtract(x, xv[i - 2]));
 					tempPlus.append(times);

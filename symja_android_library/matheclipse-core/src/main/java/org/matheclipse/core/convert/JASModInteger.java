@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -26,8 +27,7 @@ import edu.jas.poly.TermOrder;
 import edu.jas.poly.TermOrderByName;
 
 /**
- * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from
- * and to MathEclipse objects
+ * Convert <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> objects from and to MathEclipse objects
  * 
  * 
  * @param <C>
@@ -77,10 +77,9 @@ public class JASModInteger {
 	}
 
 	/**
-	 * Convert the given expression into a
-	 * <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial.
-	 * <code>INum</code> double values are internally converted to IFractions
-	 * and converte into the pokynomial structure.
+	 * Convert the given expression into a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial.
+	 * <code>INum</code> double values are internally converted to IFractions and converte into the pokynomial
+	 * structure.
 	 * 
 	 * @param exprPoly
 	 * @return
@@ -96,11 +95,9 @@ public class JASModInteger {
 	}
 
 	/**
-	 * Convert the given expression into a
-	 * <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial. Only
-	 * symbolic numbers are converted (i.e. no <code>INum</code> or
-	 * <code>IComplexNum</code> values are converted into the polynomial
-	 * structure)
+	 * Convert the given expression into a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial. Only
+	 * symbolic numbers are converted (i.e. no <code>INum</code> or <code>IComplexNum</code> values are converted into
+	 * the polynomial structure)
 	 * 
 	 * @param exprPoly
 	 * @return
@@ -116,10 +113,9 @@ public class JASModInteger {
 	}
 
 	/**
-	 * Convert the given expression into a
-	 * <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial.
-	 * <code>INum</code> values are internally converted to IFractions and
-	 * <code>expr2Poly</code> was called for the expression
+	 * Convert the given expression into a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial.
+	 * <code>INum</code> values are internally converted to IFractions and <code>expr2Poly</code> was called for the
+	 * expression
 	 * 
 	 * @param exprPoly
 	 * @return
@@ -132,13 +128,12 @@ public class JASModInteger {
 	}
 
 	/**
-	 * Convert the given expression into a
-	 * <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial
+	 * Convert the given expression into a <a href="http://krum.rz.uni-mannheim.de/jas/">JAS</a> polynomial
 	 * 
 	 * @param exprPoly
 	 * @param numeric2Rational
-	 *            if <code>true</code>, <code>INum</code> double values are
-	 *            converted to <code>BigRational</code> internally
+	 *            if <code>true</code>, <code>INum</code> double values are converted to <code>BigRational</code>
+	 *            internally
 	 * 
 	 * @return
 	 * @throws ArithmeticException
@@ -290,19 +285,19 @@ public class JASModInteger {
 		if (poly.length() == 0) {
 			return F.Plus(F.C0);
 		}
-		IAST result = F.Plus();
+		IASTAppendable result = F.PlusAlloc(poly.length());
 		for (Monomial<ModLong> monomial : poly) {
 			ModLong coeff = monomial.coefficient();
 			ExpVector exp = monomial.exponent();
 			IInteger coeffValue = F.integer(coeff.getVal());
-			IAST monomTimes = F.Times();
-			monomialToExpr(coeffValue, exp, monomTimes); 
+			IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
+			monomialToExpr(coeffValue, exp, monomTimes);
 			result.append(monomTimes.getOneIdentity(F.C1));
 		}
 		return result.getOneIdentity(F.C0);
 	}
 
-	public boolean monomialToExpr(IInteger coeff, ExpVector exp, IAST monomTimes) {
+	public boolean monomialToExpr(IInteger coeff, ExpVector exp, IASTAppendable monomTimes) {
 		long lExp;
 		ExpVector leer = fPolyFactory.evzero;
 		if (!coeff.isOne()) {

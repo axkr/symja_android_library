@@ -354,7 +354,7 @@ public final class LinearAlgebra {
 					}
 					IAST a1 = ((IAST) arg1);
 					IAST a2 = ((IAST) arg2);
-					IAST maxAST = F.Max();
+					IASTAppendable maxAST = F.Max();
 					for (int i = 1; i < a1.size(); i++) {
 						maxAST.append(F.Abs(F.Subtract(a1.get(i), a2.get(i))));
 					}
@@ -672,10 +672,11 @@ public final class LinearAlgebra {
 					}
 				}
 				final IAST matrix = (IAST) ast.arg1();
-				IAST result = F.List();
+
 				int rowLength = dim[0];
 				int columnLength = dim[1];
 				IAST row;
+				IASTAppendable result = F.ListAlloc(rowLength);
 				for (int i = 1; i <= rowLength; i++) {
 					row = (IAST) matrix.get(i);
 					int indx = i + diff;
@@ -796,7 +797,7 @@ public final class LinearAlgebra {
 			IExpr header = list.head();
 			ArrayList<Integer> dims = getDimensions(list, header, maximumLevel - 1);
 			int dimsSize = dims.size();
-			IAST res = F.ListAlloc(dimsSize);
+			IASTAppendable res = F.ListAlloc(dimsSize);
 			for (int i = 0; i < dimsSize; i++) {
 				res.append(F.integer(dims.get(i).intValue()));
 			}
@@ -1105,7 +1106,7 @@ public final class LinearAlgebra {
 				double[] realValues = ed.getRealEigenvalues();
 				double[] imagValues = ed.getImagEigenvalues();
 				int size = realValues.length;
-				IAST list = F.ListAlloc(size);
+				IASTAppendable list = F.ListAlloc(size);
 				for (int i = 0; i < size; i++) {
 					if (F.isZero(imagValues[i])) {
 						list.append(F.num(realValues[i]));
@@ -1220,7 +1221,7 @@ public final class LinearAlgebra {
 			try {
 				EigenDecomposition ed = new EigenDecomposition(matrix);
 				int size = matrix.getColumnDimension();
-				IAST list = F.ListAlloc(size);
+				IASTAppendable list = F.ListAlloc(size);
 				for (int i = 0; i < size; i++) {
 					RealVector rv = ed.getEigenvector(i);
 					list.append(Convert.vector2List(rv));
@@ -1269,8 +1270,9 @@ public final class LinearAlgebra {
 					}
 					IAST a1 = ((IAST) arg1);
 					IAST a2 = ((IAST) arg2);
-					IAST plusAST = F.Plus();
-					for (int i = 1; i < a1.size(); i++) {
+					int size = a1.size();
+					IASTAppendable plusAST = F.PlusAlloc(size);
+					for (int i = 1; i < size; i++) {
 						plusAST.append(F.Sqr(F.Abs(F.Subtract(a1.get(i), a2.get(i)))));
 					}
 					return F.Sqrt(plusAST);
@@ -1454,8 +1456,9 @@ public final class LinearAlgebra {
 			private IAST recursion(ArrayList<Integer> list1Cur, ArrayList<Integer> list2Cur,
 					List<Integer> list1RestDimensions, List<Integer> list2RestDimensions) {
 				if (list1RestDimensions.size() > 0) {
-					IAST newResult = F.ast(head);
-					for (int i = 1; i < list1RestDimensions.get(0) + 1; i++) {
+					int size = list1RestDimensions.get(0) + 1;
+					IASTAppendable newResult = F.ast(head, size, false);
+					for (int i = 1; i < size; i++) {
 						ArrayList<Integer> list1CurClone = (ArrayList<Integer>) list1Cur.clone();
 						list1CurClone.add(i);
 						newResult.append(recursion(list1CurClone, list2Cur,
@@ -1463,8 +1466,9 @@ public final class LinearAlgebra {
 					}
 					return newResult;
 				} else if (list2RestDimensions.size() > 0) {
-					IAST newResult = F.ast(head);
-					for (int i = 1; i < list2RestDimensions.get(0) + 1; i++) {
+					int size = list2RestDimensions.get(0) + 1;
+					IASTAppendable newResult = F.ast(head, size, false);
+					for (int i = 1; i < size; i++) {
 						ArrayList<Integer> list2CurClone = (ArrayList<Integer>) list2Cur.clone();
 						list2CurClone.add(i);
 						newResult.append(recursion(list1Cur, list2CurClone, list1RestDimensions,
@@ -1472,8 +1476,9 @@ public final class LinearAlgebra {
 					}
 					return newResult;
 				} else {
-					IAST part = F.ast(g);
-					for (int i = 1; i < list2Dim0 + 1; i++) {
+					int size = list2Dim0 + 1;
+					IASTAppendable part = F.ast(g, size, false);
+					for (int i = 1; i < size; i++) {
 						part.append(summand(list1Cur, list2Cur, i));
 					}
 					return part;
@@ -1482,7 +1487,7 @@ public final class LinearAlgebra {
 
 			@SuppressWarnings("unchecked")
 			private IAST summand(ArrayList<Integer> list1Cur, ArrayList<Integer> list2Cur, final int i) {
-				IAST result = F.ast(f);
+				IASTAppendable result = F.ast(f, 2, false);
 				ArrayList<Integer> list1CurClone = (ArrayList<Integer>) list1Cur.clone();
 				list1CurClone.add(i);
 				result.append(list1.getPart(list1CurClone));
@@ -1619,8 +1624,8 @@ public final class LinearAlgebra {
 					int variablesSize = variables.size();
 					IAST vector = (IAST) ast.arg1();
 					int vectorSize = vector.size();
-					IAST jacobiMatrix = F.ListAlloc(vectorSize);
-					IAST jacobiRow = null;
+					IASTAppendable jacobiMatrix = F.ListAlloc(vectorSize);
+					IASTAppendable jacobiRow = null;
 					for (int i = 1; i < vectorSize; i++) {
 						jacobiRow = F.ListAlloc(variablesSize);
 						for (int j = 1; j < variablesSize; j++) {
@@ -1853,7 +1858,7 @@ public final class LinearAlgebra {
 					final int[] iArr = lu.getPivot();
 					// final int permutationCount = lu.getPermutationCount();
 					int size = iArr.length;
-					final IAST iList = F.ListAlloc(size);
+					final IASTAppendable iList = F.ListAlloc(size);
 					for (int i = 0; i < size; i++) {
 						// +1 because in Symja the offset is +1 compared to java arrays
 						iList.append(F.integer(iArr[i] + 1));
@@ -1921,8 +1926,9 @@ public final class LinearAlgebra {
 					}
 					IAST a1 = ((IAST) arg1);
 					IAST a2 = ((IAST) arg2);
-					IAST plusAST = F.Plus();
-					for (int i = 1; i < a1.size(); i++) {
+					int size = a1.size();
+					IASTAppendable plusAST = F.PlusAlloc(size);
+					for (int i = 1; i < size; i++) {
 						plusAST.append(F.Abs(F.Subtract(a1.get(i), a2.get(i))));
 					}
 					return plusAST;
@@ -1981,8 +1987,11 @@ public final class LinearAlgebra {
 				IAST qu = F.List();
 				IAST mnm = (IAST) engine
 						.evaluate(F.List(F.Flatten(diagonalMatrix(new IExpr[] { F.C0, F.C1 }, dimensions[0]))));
+				if (!(mnm instanceof IASTAppendable)) {
+					mnm = mnm.clone();
+				}
 				while (qu.size() == 1) {
-					mnm.append(engine.evaluate(F.Flatten(F.MatrixPower(matrix, F.integer(n)))));
+					((IASTAppendable) mnm).append(engine.evaluate(F.Flatten(F.MatrixPower(matrix, F.integer(n)))));
 					qu = (IAST) engine.evaluate(F.NullSpace(F.Transpose(mnm)));
 					n++;
 				}
@@ -2889,8 +2898,9 @@ public final class LinearAlgebra {
 					}
 					IAST a1 = ((IAST) arg1);
 					IAST a2 = ((IAST) arg2);
-					IAST plusAST = F.Plus();
-					for (int i = 1; i < a1.size(); i++) {
+					int size = a1.size();
+					IASTAppendable plusAST = F.PlusAlloc(size);
+					for (int i = 1; i < size; i++) {
 						plusAST.append(F.Sqr(F.Abs(F.Subtract(a1.get(i), a2.get(i)))));
 					}
 					return plusAST;
@@ -3061,12 +3071,12 @@ public final class LinearAlgebra {
 			 *            the parent list or <code>null</code> if the root-list should be created.
 			 * @return
 			 */
-			private IAST recursiveTranspose(int permutationIndex, IAST resultList) {
+			private IAST recursiveTranspose(int permutationIndex, IASTAppendable resultList) {
 				if (permutationIndex >= permutation.length) {
 					resultList.append(tensor.getPart(positions));
 				} else {
 					int size = dimensions[permutation[permutationIndex] - 1];
-					IAST list = F.ListAlloc(size);
+					IASTAppendable list = F.ListAlloc(size);
 					if (resultList != null) {
 						resultList.append(list);
 					}
@@ -3348,7 +3358,7 @@ public final class LinearAlgebra {
 	 * @return a list of values which solve the equations or <code>F#NIL</code>, if the equations have no solution.
 	 */
 	public static IAST cramersRule2x3(FieldMatrix<IExpr> matrix, boolean quiet, EvalEngine engine) {
-		IAST list = F.ListAlloc(2);
+		IASTAppendable list = F.ListAlloc(2);
 		// a1 * b2 - b1 * a2
 		IExpr denominator = determinant2x2(matrix);
 		if (denominator.isZero()) {
@@ -3386,7 +3396,7 @@ public final class LinearAlgebra {
 	 * @return a list of values which solve the equations or <code>F#NIL</code>, if the equations have no solution.
 	 */
 	public static IAST cramersRule3x4(FieldMatrix<IExpr> matrix, boolean quiet, EvalEngine engine) {
-		IAST list = F.ListAlloc(3);
+		IASTAppendable list = F.ListAlloc(3);
 		FieldMatrix<IExpr> denominatorMatrix = matrix.getSubMatrix(0, 2, 0, 2);
 		IExpr denominator = determinant3x3(denominatorMatrix);
 		if (denominator.isZero()) {
@@ -3540,7 +3550,7 @@ public final class LinearAlgebra {
 				return F.NIL;
 			}
 		}
-		IAST list = F.ListAlloc(rows < cols - 1 ? cols - 1 : rows);
+		IASTAppendable list = F.ListAlloc(rows < cols - 1 ? cols - 1 : rows);
 		for (int j = 0; j < rows; j++) {
 			list.append(engine.evaluate(F.Together(rowReduced.getEntry(j, cols - 1))));
 		}
@@ -3566,7 +3576,7 @@ public final class LinearAlgebra {
 	 *            the evaluation engine
 	 * @return resultList with the appended results as list of rules
 	 */
-	public static IAST rowReduced2RulesList(FieldMatrix<IExpr> matrix, IAST listOfVariables, IAST resultList,
+	public static IAST rowReduced2RulesList(FieldMatrix<IExpr> matrix, IAST listOfVariables, IASTAppendable resultList,
 			EvalEngine engine) {
 		int rows = matrix.getRowDimension();
 		int cols = matrix.getColumnDimension();
@@ -3582,7 +3592,7 @@ public final class LinearAlgebra {
 				return F.List();
 			}
 			int size = smallList.size();
-			IAST list = F.ListAlloc(size);
+			IASTAppendable list = F.ListAlloc(size);
 			for (int j = 1; j < size; j++) {
 				IAST rule = F.Rule(listOfVariables.get(j), engine.evaluate(smallList.get(j)));
 				list.append(rule);
@@ -3596,7 +3606,7 @@ public final class LinearAlgebra {
 		int size = listOfVariables.size() - 1;
 
 		IExpr lastVarCoefficient = rowReduced.getEntry(rows - 1, cols - 2);
-		IAST list = F.List();
+
 		if (lastVarCoefficient.isZero()) {
 			if (!rowReduced.getEntry(rows - 1, cols - 1).isZero()) {
 				// no solution
@@ -3604,11 +3614,12 @@ public final class LinearAlgebra {
 			}
 		}
 		IAST rule;
+		IASTAppendable list = F.ListAlloc(rows);
 		for (int j = 1; j < rows + 1; j++) {
 			if (j < size + 1) {
 				IExpr diagonal = rowReduced.getEntry(j - 1, j - 1);
 				if (!diagonal.isZero()) {
-					IAST plus = F.Plus();
+					IASTAppendable plus = F.PlusAlloc(cols);
 					plus.append(rowReduced.getEntry(j - 1, cols - 1));
 					for (int i = j; i < cols - 1; i++) {
 						if (!rowReduced.getEntry(j - 1, i).isZero()) {

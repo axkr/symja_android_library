@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -60,7 +61,7 @@ public class InverseFunction extends AbstractFunctionEvaluator {
 	 *            the AST which represents a function (i.e. <code>Cos(x), Sin(x), ArcSin(x),...</code>)
 	 * @return <code>null</code> if there is no inverse function defined.
 	 */
-	public static IAST getUnaryInverseFunction(IAST ast) {
+	public static IASTAppendable getUnaryInverseFunction(IAST ast) {
 		IExpr expr = ast.head();
 		if (expr.isSymbol()) {
 			IExpr inverseSymbol = F.UNARY_INVERSE_FUNCTIONS.get(expr);

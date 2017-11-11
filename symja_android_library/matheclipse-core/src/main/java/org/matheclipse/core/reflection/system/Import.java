@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.parser.client.Parser;
@@ -47,9 +48,9 @@ public class Import extends AbstractEvaluator {
 
 				CSVFormat csvFormat = CSVFormat.RFC4180.withDelimiter(' ');
 				Iterable<CSVRecord> records = csvFormat.parse(reader);
-				IAST rowList = F.List();
+				IASTAppendable rowList = F.ListAlloc(256);
 				for (CSVRecord record : records) {
-					IAST columnList = F.List();
+					IASTAppendable columnList = F.ListAlloc(record.size());
 					for (String string : record) {
 						final ASTNode node = parser.parse(string);
 						IExpr temp = ast2Expr.convert(node);

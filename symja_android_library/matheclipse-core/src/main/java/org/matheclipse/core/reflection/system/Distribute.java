@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -51,7 +52,7 @@ public class Distribute extends AbstractFunctionEvaluator {
 		}
 
 		if (arg1.isAST()) {
-			IAST resultCollector;
+			IASTAppendable resultCollector;
 			if (ast.size() >= 5) {
 				resultCollector = F.ast(ast.arg4());
 			} else {
@@ -69,7 +70,7 @@ public class Distribute extends AbstractFunctionEvaluator {
 		return arg1;
 	}
 
-	private void distributePosition(IAST resultCollector, IAST stepResult, IExpr head, IAST arg1, int position) {
+	private void distributePosition(IASTAppendable resultCollector, IAST stepResult, IExpr head, IAST arg1, int position) {
 		if (arg1.size() == position) {
 			resultCollector.append(stepResult);
 			return;
@@ -80,12 +81,12 @@ public class Distribute extends AbstractFunctionEvaluator {
 		if (arg1.get(position).head().equals(head) && arg1.get(position).isAST()) {
 			IAST temp = (IAST) arg1.get(position);
 			for (int i = 1; i < temp.size(); i++) {
-				IAST res2 = stepResult.clone();
+				IASTAppendable res2 = stepResult.clone();
 				res2.append(temp.get(i));
 				distributePosition(resultCollector, res2, head, arg1, position + 1);
 			}
 		} else {
-			IAST res2 = stepResult.clone();
+			IASTAppendable res2 = stepResult.clone();
 			res2.append(arg1.get(position));
 			distributePosition(resultCollector, res2, head, arg1, position + 1);
 		}

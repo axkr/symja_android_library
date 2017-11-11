@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -121,13 +122,13 @@ public class JASIExpr {
 		if (poly.length() == 0) {
 			return F.C0;
 		}
-		IAST result = F.Plus();
+		IASTAppendable result = F.PlusAlloc(poly.length());
 		for (Monomial<Complex<BigRational>> monomial : poly) {
 			Complex<BigRational> coeff = monomial.coefficient();
 			ExpVector exp = monomial.exponent();
 			BigRational re = coeff.getRe();
 			BigRational im = coeff.getIm();
-			IAST monomTimes = F.Times(F.complex(F.fraction(re.numerator(), re.denominator()),
+			IASTAppendable monomTimes = F.Times(F.complex(F.fraction(re.numerator(), re.denominator()),
 					F.fraction(im.numerator(), im.denominator())));
 			long lExp;
 			for (int i = 0; i < exp.length(); i++) {
@@ -292,18 +293,18 @@ public class JASIExpr {
 			return F.C0;
 		}
 
-		IAST result = F.Plus();
+		IASTAppendable result = F.PlusAlloc(poly.length());
 		for (Monomial<IExpr> monomial : poly) {
 			IExpr coeff = monomial.coefficient();
 			ExpVector exp = monomial.exponent();
-			IAST monomTimes = F.Times();
+			IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
 			monomialToExpr(coeff, exp, monomTimes);
 			result.append(monomTimes.getOneIdentity(F.C1));
 		}
 		return result.getOneIdentity(F.C0);
 	}
 
-	public boolean monomialToExpr(IExpr coeff, ExpVector exp, IAST monomTimes) {
+	public boolean monomialToExpr(IExpr coeff, ExpVector exp, IASTAppendable monomTimes) {
 		long lExp;
 		if (!coeff.isOne()) {
 			monomTimes.append(coeff);
@@ -371,12 +372,13 @@ public class JASIExpr {
 		if (poly.length() == 0) {
 			return F.C0;
 		}
-		IAST result = F.Plus();
+		IASTAppendable result = F.PlusAlloc(poly.length());
 		for (Monomial<edu.jas.arith.BigInteger> monomial : poly) {
 			edu.jas.arith.BigInteger coeff = monomial.coefficient();
 			ExpVector exp = monomial.exponent();
 			IInteger coeffValue = F.integer(coeff.getVal());
-			IAST monomTimes = F.Times(coeffValue);
+			IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
+			monomTimes.append(coeffValue);
 			long lExp;
 			for (int i = 0; i < exp.length(); i++) {
 				lExp = exp.getVal(i);

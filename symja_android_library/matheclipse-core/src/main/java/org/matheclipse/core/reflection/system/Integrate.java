@@ -257,9 +257,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 					// }
 
 					if (arg1AST.isTimes()) {
-						// Integrate[a_*y_,x_Symbol] -> a*Integrate[y,x] /;
-						// FreeQ[a,x]
-						IAST filterCollector = F.Times();
+						// Integrate[a_*y_,x_Symbol] -> a*Integrate[y,x] /; FreeQ[a,x]
+						IASTAppendable filterCollector = F.TimesAlloc(arg1AST.size());
 						IAST restCollector = F.Times();
 						arg1AST.filter(filterCollector, restCollector, new Predicate<IExpr>() {
 							@Override
@@ -784,8 +783,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * @return
 	 */
 	private static IExpr integratePolynomialByParts(IAST ast, final IAST arg1, IExpr symbol) {
-		IAST fTimes = F.Times();
-		IAST gTimes = F.Times();
+		IASTAppendable fTimes = F.TimesAlloc(arg1.size());
+		IASTAppendable gTimes = F.TimesAlloc(arg1.size());
 		collectPolynomialTerms(arg1, symbol, gTimes, fTimes);
 		IExpr g = gTimes.getOneIdentity(F.C1);
 		IExpr f = fTimes.getOneIdentity(F.C1);
@@ -875,7 +874,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * @param restTimes
 	 *            the non-polynomil terms part
 	 */
-	private static void collectPolynomialTerms(final IAST timesAST, IExpr symbol, IAST polyTimes, IAST restTimes) {
+	private static void collectPolynomialTerms(final IAST timesAST, IExpr symbol, IASTAppendable polyTimes, IASTAppendable restTimes) {
 		IExpr temp;
 		for (int i = 1; i < timesAST.size(); i++) {
 			temp = timesAST.get(i);
@@ -905,7 +904,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * @param restTimes
 	 *            the non-polynomil terms part
 	 */
-	private static void collectFreeTerms(final IAST timesAST, ISymbol x, IAST freeTimes, IAST restTimes) {
+	private static void collectFreeTerms(final IAST timesAST, ISymbol x, IASTAppendable freeTimes, IASTAppendable restTimes) {
 		IExpr temp;
 		for (int i = 1; i < timesAST.size(); i++) {
 			temp = timesAST.get(i);

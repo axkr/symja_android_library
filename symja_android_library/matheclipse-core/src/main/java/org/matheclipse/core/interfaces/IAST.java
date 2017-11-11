@@ -185,7 +185,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @throws IndexOutOfBoundsException
 	 *             if {@code location < 0 || location > size()}
 	 */
-	// public void append(int location, IExpr object);
+//	 public void append(int location, IExpr object); 
 
 	/**
 	 * 

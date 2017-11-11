@@ -5,6 +5,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -40,11 +41,13 @@ public class Divergence extends AbstractFunctionEvaluator {
 		if ((ast.arg1().isVector() == ast.arg2().isVector()) && (ast.arg1().isVector() >= 0)) {
 			IAST vector = (IAST) ast.arg1();
 			IAST variables = (IAST) ast.arg2();
-			IAST divergenceValue = F.Plus();
-			for (int i = 1; i < vector.size(); i++) {
-				divergenceValue.append(F.D(vector.get(i), variables.get(i)));
-			}
-			return divergenceValue;
+			int size = vector.size();
+			IASTAppendable divergenceValue = F.PlusAlloc(size);
+			return divergenceValue.appendArgs(size, i -> F.D(vector.get(i), variables.get(i)));
+			// for (int i = 1; i < size; i++) {
+			// divergenceValue.append(F.D(vector.get(i), variables.get(i)));
+			// }
+			// return divergenceValue;
 		}
 
 		return F.NIL;

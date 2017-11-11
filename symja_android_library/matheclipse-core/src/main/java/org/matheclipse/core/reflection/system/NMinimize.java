@@ -1,5 +1,8 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.optim.OptimizationData;
 import org.hipparchus.optim.PointValuePair;
@@ -10,9 +13,6 @@ import org.hipparchus.optim.linear.NonNegativeConstraint;
 import org.hipparchus.optim.linear.PivotSelectionRule;
 import org.hipparchus.optim.linear.SimplexSolver;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.matheclipse.core.convert.Expr2LP;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
@@ -21,6 +21,7 @@ import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
@@ -125,7 +126,7 @@ public class NMinimize extends AbstractFunctionEvaluator {
 			SimplexSolver solver = new SimplexSolver();
 			PointValuePair solution = solver.optimize(optData);
 			double[] values = solution.getPointRef();
-			IAST list = F.ListAlloc(values.length);
+			IASTAppendable list = F.ListAlloc(values.length);
 			List<IExpr> varList = vars.getArrayList();
 			for (int i = 0; i < values.length; i++) {
 				list.append(F.Rule(varList.get(i), F.num(values[i])));

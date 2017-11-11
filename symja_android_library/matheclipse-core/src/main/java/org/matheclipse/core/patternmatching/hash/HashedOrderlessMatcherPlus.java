@@ -3,6 +3,7 @@ package org.matheclipse.core.patternmatching.hash;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -44,7 +45,7 @@ public class HashedOrderlessMatcherPlus extends HashedOrderlessMatcher {
 	}
 
 	@Override
-	protected boolean updateHashValues(IAST result, final IAST orderlessAST, AbstractHashedPatternRules hashRule,
+	protected boolean updateHashValues(IASTAppendable result, final IAST orderlessAST, AbstractHashedPatternRules hashRule,
 			int[] hashValues, int i, int j, EvalEngine engine) {
 		IExpr temp;
 		IExpr arg1 = orderlessAST.get(i + 1);

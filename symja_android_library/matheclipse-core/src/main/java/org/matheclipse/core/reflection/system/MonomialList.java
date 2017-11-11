@@ -16,6 +16,7 @@ import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
@@ -131,7 +132,7 @@ public class MonomialList extends AbstractFunctionEvaluator {
 		for (Map.Entry<ExpVector, IExpr> monomial : polyExpr.getMap().entrySet()) {
 			IExpr coeff = monomial.getValue();
 			ExpVector exp = monomial.getKey();
-			IAST monomTimes = F.Times();
+			IASTAppendable monomTimes = F.TimesAlloc(exp.length() + 1);
 			jas.monomialToExpr(coeff, exp, monomTimes);
 			list.append(monomTimes);
 		}
@@ -161,7 +162,7 @@ public class MonomialList extends AbstractFunctionEvaluator {
 			for (Monomial<ModLong> monomial : polyExpr) {
 				ModLong coeff = monomial.coefficient();
 				ExpVector exp = monomial.exponent();
-				IAST monomTimes = F.Times();
+				IASTAppendable monomTimes = F.TimesAlloc(exp.length()+1);
 				jas.monomialToExpr(F.integer(coeff.getVal()), exp, monomTimes);
 				list.append(monomTimes);
 			}

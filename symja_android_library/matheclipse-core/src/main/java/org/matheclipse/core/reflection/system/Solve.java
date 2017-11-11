@@ -618,7 +618,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @param engine
 	 * @return throws NoSolution
 	 */
-	protected static IAST analyzeSublist(ArrayList<ExprAnalyzer> analyzerList, IAST variables, IAST resultList,
+	protected static IASTAppendable analyzeSublist(ArrayList<ExprAnalyzer> analyzerList, IAST variables, IASTAppendable resultList,
 			int maximumNumberOfResults, IAST matrix, IAST vector, EvalEngine engine) throws NoSolution {
 		ExprAnalyzer exprAnalyzer;
 		Collections.sort(analyzerList);
@@ -659,7 +659,7 @@ public class Solve extends AbstractFunctionEvaluator {
 										maximumNumberOfResults, matrix, vector, engine);
 								if (subResultList.isPresent()) {
 									evaled = true;
-									IAST tempResult = addSubResultsToResultsList(resultList, subResultList,
+									IASTAppendable tempResult = addSubResultsToResultsList(resultList, subResultList,
 											kListOfSolveRules, maximumNumberOfResults);
 									if (tempResult.isPresent()) {
 										return tempResult;
@@ -699,7 +699,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @return if <code>maximumNumberOfResults</code> is reached return the resultList, otherwiaw return
 	 *         <code>F#NIL</code>.
 	 */
-	private static IAST addSubResultsToResultsList(IAST resultList, IAST subResultList, IAST kListOfSolveRules,
+	private static IASTAppendable addSubResultsToResultsList(IASTAppendable resultList, IAST subResultList, IAST kListOfSolveRules,
 			int maximumNumberOfResults) {
 		for (IExpr expr : subResultList) {
 			if (expr.isList()) {
@@ -1068,7 +1068,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		IAST matrix = F.List();
 		IAST vector = F.List();
 		try {
-			IAST resultList = F.List();
+			IASTAppendable resultList = F.List();
 			resultList = analyzeSublist(analyzerList, variables, resultList, maximumNumberOfResults, matrix, vector,
 					engine);
 			if (vector.size() > 1) {

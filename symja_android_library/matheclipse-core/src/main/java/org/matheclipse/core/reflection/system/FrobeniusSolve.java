@@ -8,6 +8,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.frobenius.FrobeniusSolver;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -60,7 +61,7 @@ public class FrobeniusSolve extends AbstractEvaluator {
 				FrobeniusSolver solver = new FrobeniusSolver(equations);
 				IInteger[] solution;
 
-				IAST result = F.List();
+				IASTAppendable result = F.ListAlloc(8);
 				if (numberOfSolutions < 0) {
 					while ((solution = solver.take()) != null) {
 						result.append(Lists.asList(solution));

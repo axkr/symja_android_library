@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToList;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.visit.HashValueVisitor;
 
@@ -200,7 +201,7 @@ public class HashedOrderlessMatcher {
 	protected IAST evaluateHashedValues(final IAST orderlessAST, OpenIntToList<AbstractHashedPatternRules> hashRuleMap,
 			int[] hashValues, EvalEngine engine) {
 		boolean evaled = false;
-		IAST result = orderlessAST.copyHead();
+		IASTAppendable result = orderlessAST.copyHead();
 		for (int i = 0; i < hashValues.length - 1; i++) {
 			if (hashValues[i] == 0) {
 				// already used entry
@@ -274,7 +275,7 @@ public class HashedOrderlessMatcher {
 		return F.NIL;
 	}
 
-	protected boolean updateHashValues(IAST result, final IAST orderlessAST, AbstractHashedPatternRules hashRule,
+	protected boolean updateHashValues(IASTAppendable result, final IAST orderlessAST, AbstractHashedPatternRules hashRule,
 			int[] hashValues, int i, int j, EvalEngine engine) {
 		IExpr temp;
 		if ((temp = hashRule.evalDownRule(orderlessAST.get(i + 1), null, orderlessAST.get(j + 1), null, engine))

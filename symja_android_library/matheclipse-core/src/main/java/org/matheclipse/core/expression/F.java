@@ -2794,7 +2794,7 @@ public class F {
 	 * @param a1
 	 * @return
 	 */
-	public final static IAST binary(final IExpr head, final IExpr a0, final IExpr a1) {
+	public final static IASTAppendable binary(final IExpr head, final IExpr a0, final IExpr a1) {
 		return new AST(new IExpr[] { head, a0, a1 });
 	}
 
@@ -4634,7 +4634,7 @@ public class F {
 		return binaryAST2(MatrixPower, a0, a1);
 	}
 
-	public static IAST Max() {
+	public static IASTAppendable Max() {
 		return ast(Max);
 	}
 
@@ -4670,7 +4670,7 @@ public class F {
 		return binaryAST2(MessageName, a0, a1);
 	}
 
-	public static IAST Min() {
+	public static IASTAppendable Min() {
 		return ast(Min);
 	}
 
@@ -5791,7 +5791,7 @@ public class F {
 		return ast(Times, size, false);
 	}
 
-	public static IAST Times(final IExpr a0) {
+	public static IASTAppendable Times(final IExpr a0) {
 		return unary(Times, a0);
 	}
 
@@ -5878,7 +5878,7 @@ public class F {
 	 * @param a0
 	 * @return
 	 */
-	public final static IAST unary(final IExpr head, final IExpr a0) {
+	public final static IASTAppendable unary(final IExpr head, final IExpr a0) {
 		return new AST(new IExpr[] { head, a0 });
 	}
 

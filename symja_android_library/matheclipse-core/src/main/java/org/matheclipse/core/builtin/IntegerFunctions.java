@@ -18,6 +18,7 @@ import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -198,7 +199,7 @@ public class IntegerFunctions {
 			}
 
 			if (arg1.isPlus()) {
-				IAST[] splittedPlus = ((IAST) arg1).filter(new CeilingPlusFunction());
+				IASTAppendable[] splittedPlus = ((IAST) arg1).filter(new CeilingPlusFunction());
 				if (splittedPlus[0].size() > 1) {
 					if (splittedPlus[1].size() > 1) {
 						splittedPlus[0].append(F.Ceiling(splittedPlus[1].getOneIdentity(F.C0)));
@@ -394,7 +395,7 @@ public class IntegerFunctions {
 				return arg1;
 			}
 			if (arg1.isPlus()) {
-				IAST[] splittedPlus = ((IAST) arg1).filter(new FloorPlusFunction());
+				IASTAppendable[] splittedPlus = ((IAST) arg1).filter(new FloorPlusFunction());
 				if (splittedPlus[0].size() > 1) {
 					if (splittedPlus[1].size() > 1) {
 						splittedPlus[0].append(F.Floor(splittedPlus[1].getOneIdentity(F.C0)));
@@ -882,7 +883,7 @@ public class IntegerFunctions {
 				}
 
 				if (arg1.isPlus()) {
-					IAST[] result = ((IAST) arg1).filter(new RoundPlusFunction());
+					IASTAppendable[] result = ((IAST) arg1).filter(new RoundPlusFunction());
 					if (result[0].size() > 1) {
 						if (result[1].size() > 1) {
 							result[0].append(F.Round(result[1]));
