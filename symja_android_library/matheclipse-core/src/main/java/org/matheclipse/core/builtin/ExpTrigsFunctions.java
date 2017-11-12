@@ -60,7 +60,6 @@ import org.matheclipse.core.expression.ComplexUtils;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.NumberUtil;
-import org.matheclipse.core.generic.BinaryFunctorImpl;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -2021,20 +2020,20 @@ public class ExpTrigsFunctions {
 		}
 	}
 
-	public static BinaryFunctorImpl<IExpr> integerLogFunction() {
-		return new BinaryFunctorImpl<IExpr>() {
-			/**
-			 * Evaluate if Log(arg2)/Log(arg1) has an integer number result
-			 */
-			@Override
-			public IExpr apply(IExpr arg1, IExpr arg2) {
-				if (arg1.isInteger() && arg2.isInteger()) {
-					return baseBLog((IInteger) arg2, (IInteger) arg1);
-				}
-				return F.NIL;
-			}
-		};
-	}
+//	public static BinaryFunctorImpl<IExpr> integerLogFunction() {
+//		return new BinaryFunctorImpl<IExpr>() {
+//			/**
+//			 * Evaluate if Log(arg2)/Log(arg1) has an integer number result
+//			 */
+//			@Override
+//			public IExpr apply(IExpr arg1, IExpr arg2) {
+//				if (arg1.isInteger() && arg2.isInteger()) {
+//					return baseBLog((IInteger) arg2, (IInteger) arg1);
+//				}
+//				return F.NIL;
+//			}
+//		};
+//	}
 
 	/**
 	 * Hyperbolic sine

@@ -4,9 +4,10 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
- * A function object that takes two arguments and returns a result. The two
- * arguments are both of type <code>T</code> and the result is also of type
- * <code>T</code>
+ * A function object that takes two arguments and returns a result. The two arguments are both of type <code>T</code>
+ * and the result is also of type <code>T</code>
+ * 
+ * @deprecated
  */
 public abstract class BinaryFunctorImpl<T> implements BiFunction<T, T, T> {
 	/**

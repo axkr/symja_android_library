@@ -1,6 +1,7 @@
 package org.matheclipse.core.generic;
 
 import java.util.Deque;
+import java.util.function.BiFunction;
 
 import org.matheclipse.core.eval.DoubleStackEvaluator;
 import org.matheclipse.core.eval.EvalEngine;
@@ -15,7 +16,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  * @see org.matheclipse.core.reflection.system.Plot3D
  */
-public class BinaryNumerical extends BinaryFunctorImpl<IExpr> {
+public class BinaryNumerical implements BiFunction<IExpr, IExpr, IExpr> {
 	final IExpr fun;
 
 	final ISymbol variable1;
@@ -39,18 +40,14 @@ public class BinaryNumerical extends BinaryFunctorImpl<IExpr> {
 	public double value(double x, double y) {
 		double result = 0.0;
 		try {
-			// variable1.pushLocalVariable(Num.valueOf(x));
-			// variable2.pushLocalVariable(Num.valueOf(y));
 			fEngine.localStackCreate(variable1).push(Num.valueOf(x));
 			fEngine.localStackCreate(variable2).push(Num.valueOf(y));
 			final double[] stack = new double[10];
 			result = DoubleStackEvaluator.eval(stack, 0, fun);
 		} finally {
-			// variable2.popLocalVariable();
-			// variable1.popLocalVariable();
-			Deque<IExpr> localVariableStack = fEngine.localStack(variable2);
+			// Deque<IExpr> localVariableStack = fEngine.localStack(variable2);
 			fEngine.localStack(variable2).pop();
-			localVariableStack = fEngine.localStack(variable1);
+			// localVariableStack = fEngine.localStack(variable1);
 			fEngine.localStack(variable1).pop();
 		}
 		return result;
