@@ -676,11 +676,14 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 			if ((ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION) {
 				if (!((ISymbol.HOLDALL & attr) == ISymbol.HOLDALL)) {
-					for (int i = 1; i < tempAST.size(); i++) {
-						if (tempAST.get(i).isIndeterminate()) {
-							return F.Indeterminate;
-						}
+					if (tempAST.exists(x -> x.isIndeterminate(), 1)) {
+						return F.Indeterminate;
 					}
+					// for (int i = 1; i < tempAST.size(); i++) {
+					// if (tempAST.get(i).isIndeterminate()) {
+					// return F.Indeterminate;
+					// }
+					// }
 				}
 			}
 
@@ -1164,8 +1167,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					for (int i = 2; i < astSize; i++) {
 						IExpr expr = ast.get(i);
 						if (expr.isAST()) {
-							resultList = evalSetAttributeArg(ast, i, (IAST) ast.get(i), resultList, noEvaluation,
-									level);
+							resultList = evalSetAttributeArg(ast, i, (IAST) expr, resultList, noEvaluation, level);
 						}
 					}
 				}

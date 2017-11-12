@@ -29,7 +29,6 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.ISequence;
 import org.matheclipse.core.eval.util.Iterator;
-import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.LevelSpec;
 import org.matheclipse.core.eval.util.LevelSpecification;
 import org.matheclipse.core.eval.util.Options;
@@ -40,7 +39,6 @@ import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
@@ -813,14 +811,23 @@ public final class ListFunctions {
 
 			if (ast.arg1().isList()) {
 				IAST list = (IAST) ast.arg1();
-				int size = 1;
-				for (int i = 1; i < list.size(); i++) {
-					if (!list.get(i).isList()) {
-						return F.NIL;
+				int[] size = { 1 };
+				if (list.exists(x -> {
+					if (!x.isList()) {
+						return true;
 					}
-					size += list.size() - 1;
+					size[0] += list.size() - 1;
+					return false;
+				}, 1)) {
+					return F.NIL;
 				}
-				IASTAppendable resultList = F.ast(F.List, size, false);
+				// for (int i = 1; i < list.size(); i++) {
+				// if (!list.get(i).isList()) {
+				// return F.NIL;
+				// }
+				// size += list.size() - 1;
+				// }
+				IASTAppendable resultList = F.ast(F.List, size[0], false);
 				for (int i = 1; i < list.size(); i++) {
 					resultList.appendArgs((IAST) list.get(i));
 				}
@@ -1614,7 +1621,7 @@ public final class ListFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 3);
 
-			if (Lambda.exists(ast, PredicateQ.ATOMQ, 1)) {
+			if (ast.exists(PredicateQ.ATOMQ, 1)) {
 				return F.NIL;
 			}
 

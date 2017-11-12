@@ -62,7 +62,7 @@ public class RulesData implements Serializable {
 						return true;
 					}
 					if (neededSymbols != null && arg1.isOrderlessAST()) {
-						boolean lambda = !Lambda.exists(lhsAST, x -> x.isPatternDefault() || x.isOrderlessAST(), 1);
+						boolean lambda = !lhsAST.exists(x -> x.isPatternDefault() || x.isOrderlessAST(), 1);
 						boolean[] isComplicated = { false };
 						arg1.forEach(t -> {
 							if (t.isPatternDefault()) {
@@ -76,9 +76,9 @@ public class RulesData implements Serializable {
 					// the left hand side is associated with the first argument
 					// see if one of the arguments contain a pattern with default
 					// value
-					return Lambda.exists(arg1, x -> x.isPatternDefault(), 1);
+					return arg1.exists(x -> x.isPatternDefault(), 1);
 				}
-				return Lambda.exists(lhsAST, x -> x.isPatternDefault(), 2);
+				return lhsAST.exists(x -> x.isPatternDefault(), 2);
 			}
 		} else if (lhsExpr.isPattern()) {
 			return true;

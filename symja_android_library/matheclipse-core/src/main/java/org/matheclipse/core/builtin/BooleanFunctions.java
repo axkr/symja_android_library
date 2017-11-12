@@ -105,7 +105,7 @@ public final class BooleanFunctions {
 		public IExpr allTrue(IAST list, IExpr head, EvalEngine engine) {
 			IASTAppendable logicalAnd = F.And();
 
-			if (!Lambda.forAll(list, x -> {
+			if (!list.forAll(  x -> {
 				IExpr temp = engine.evaluate(F.unary(head, x));
 				if (temp.isTrue()) {
 					return true;
@@ -1936,7 +1936,7 @@ public final class BooleanFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() > 1) {
-				return Lambda.existsLeft(ast, (x, y) -> !x.isSame(y), F.False, F.True);
+				return F.bool(!ast.existsLeft((x, y) -> !x.isSame(y)));
 			}
 			return F.False;
 		}

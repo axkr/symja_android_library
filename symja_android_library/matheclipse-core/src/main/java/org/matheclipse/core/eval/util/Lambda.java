@@ -152,6 +152,8 @@ public class Lambda {
 	 * @param stopExpr
 	 * @param resultExpr
 	 * @return
+	 * 
+	 * @deprecated use IAST#existsLeft()
 	 */
 	public static IExpr existsLeft(IAST ast, BiPredicate<IExpr, IExpr> stopPredicate, IExpr stopExpr,
 			IExpr resultExpr) {
@@ -174,6 +176,7 @@ public class Lambda {
 	 * @param offset
 	 *            the offset where to start testing the predicate
 	 * @return
+	 * @deprecated use IAST#exists()
 	 */
 	public static boolean exists(IAST ast, Predicate<IExpr> stopPredicate, int offset) {
 		int size = ast.size();
@@ -194,6 +197,7 @@ public class Lambda {
 	 * @param offset
 	 *            the offset where to start testing the predicate
 	 * @return
+	 * @deprecated use IAST#forAll()
 	 */
 	public static boolean forAll(IAST ast, Predicate<IExpr> predicate, int offset) {
 		int size = ast.size();

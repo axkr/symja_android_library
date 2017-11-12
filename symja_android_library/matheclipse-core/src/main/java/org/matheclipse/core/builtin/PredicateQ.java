@@ -489,7 +489,7 @@ public class PredicateQ {
 				temp.append(F.Slot1);
 				IAST matrix = (IAST) arg1;
 				for (int i = 1; i < dims[0]; i++) {
-					if (!Lambda.forAll((IAST) matrix.get(i), x -> {
+					if (!((IAST) matrix.get(i)).forAll(x -> {
 						temp.set(1, x);
 						return engine.evalTrue(temp);
 					}, 1)) {
@@ -936,7 +936,7 @@ public class PredicateQ {
 				temp.append(F.Slot1);
 
 				IAST vector = (IAST) arg1;
-				if (!Lambda.forAll(vector, x -> {
+				if (!vector.forAll(x -> {
 					temp.set(1, x);
 					return engine.evalTrue(temp);
 				}, 1)) {

@@ -436,6 +436,27 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public boolean exists(Predicate<? super IExpr> predicate, int startOffset);
 
 	/**
+	 * Compare the arguments pairwise with the <code>stopPredicate</code>. If the predicate gives <code>true</code>
+	 * return <code>true</code>. If the <code>stopPredicate</code> gives false for each pairwise comparison return the
+	 * <code>false</code> at the end.
+	 * 
+	 * @param ast
+	 * @param stopPredicate
+	 * @param stopExpr
+	 * @param resultExpr
+	 * @return
+	 */
+	default boolean existsLeft(BiPredicate<IExpr, IExpr> stopPredicate) {
+		int size = size();
+		for (int i = 2; i < size; i++) {
+			if (stopPredicate.test(get(i - 1), get(i))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Select all elements by applying the <code>function</code> to each argument in this <code>AST</code> and append
 	 * the result elements for which the function returns non-null elements to the <code>0th element</code> of the
 	 * result array, or otherwise append it to the <code>1st element</code> of the result array.
