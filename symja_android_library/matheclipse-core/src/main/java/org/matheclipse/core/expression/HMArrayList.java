@@ -25,10 +25,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.RandomAccess;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -106,125 +108,6 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	}
 
 	/**
-	 * Adds the objects in the specified collection to this {@code ArrayList}.
-	 * 
-	 * @param collection
-	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
-	 */
-	@Override
-	public boolean appendAll(Collection<? extends IExpr> collection) {
-		hashValue = 0;
-		Object[] dumpArray = collection.toArray();
-		if (dumpArray.length == 0) {
-			return false;
-		}
-		if (dumpArray.length > array.length - lastIndex) {
-			growAtEnd(dumpArray.length);
-		}
-		System.arraycopy(dumpArray, 0, this.array, lastIndex, dumpArray.length);
-		lastIndex += dumpArray.length;
-		return true;
-	}
-
-	/**
-	 * Inserts the objects in the specified collection at the specified location in this List. The objects are added in
-	 * the order they are returned from the collection's iterator.
-	 * 
-	 * @param location
-	 *            the index at which to insert.
-	 * @param collection
-	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
-	 * @throws IndexOutOfBoundsException
-	 *             when {@code location < 0 || > size()}
-	 */
-	@Override
-	public boolean appendAll(int location, Collection<? extends IExpr> collection) {
-		hashValue = 0;
-		int size = lastIndex - firstIndex;
-		if (location < 0 || location > size) {
-			throw new IndexOutOfBoundsException(
-					"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
-		}
-		// if (this == collection) {
-		// collection = clone().args();
-		// }
-		Object[] dumparray = collection.toArray();
-		int growSize = dumparray.length;
-		if (growSize == 0) {
-			return false;
-		}
-
-		if (0 < location && location < size) {
-			if (array.length - size < growSize) {
-				growForInsert(location, growSize);
-			} else if ((location < size / 2 && firstIndex > 0) || lastIndex > array.length - growSize) {
-				int newFirst = firstIndex - growSize;
-				if (newFirst < 0) {
-					int index = location + firstIndex;
-					System.arraycopy(array, index, array, index - newFirst, size - location);
-					lastIndex -= newFirst;
-					newFirst = 0;
-				}
-				System.arraycopy(array, firstIndex, array, newFirst, location);
-				firstIndex = newFirst;
-			} else {
-				int index = location + firstIndex;
-				System.arraycopy(array, index, array, index + growSize, size - location);
-				lastIndex += growSize;
-			}
-		} else if (location == 0) {
-			growAtFront(growSize);
-			firstIndex -= growSize;
-		} else if (location == size) {
-			if (lastIndex > array.length - growSize) {
-				growAtEnd(growSize);
-			}
-			lastIndex += growSize;
-		}
-
-		System.arraycopy(dumparray, 0, this.array, location + firstIndex, growSize);
-		return true;
-	}
-
-	/**
-	 * Get the range of elements [0..sizeOfAST[ of the AST
-	 * 
-	 * @return
-	 */
-//	@Override
-//	public final ASTRange range() {
-//		return new ASTRange(this, 0, size());
-//	}
-
-	/**
-	 * Get the range of elements [start..sizeOfAST[ of the AST
-	 * 
-	 * @return
-	 */
-//	@Override
-//	public final ASTRange range(final int start) {
-//		return new ASTRange(this, start, size());
-//	}
-
-	/**
-	 * Get the range of elements [start..end[ of the AST
-	 * 
-	 * @return
-	 */
-//	@Override
-//	public final ASTRange range(final int start, final int end) {
-//		return new ASTRange(this, start, end);
-//	}
-
-	/** {@inheritDoc} */
-//	@Override
-//	public final ASTRange args() {
-//		return new ASTRange(this, 1);
-//	}
-
-	/**
 	 * Adds the specified object at the end of this {@code ArrayList}.
 	 * 
 	 * @param object
@@ -283,6 +166,177 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 					"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
 		}
 
+	}
+
+	/**
+	 * Adds the objects in the specified collection to this {@code ArrayList}.
+	 * 
+	 * @param collection
+	 *            the collection of objects.
+	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
+	 */
+	@Override
+	public boolean appendAll(Collection<? extends IExpr> collection) {
+		hashValue = 0;
+		Object[] dumpArray = collection.toArray();
+		if (dumpArray.length == 0) {
+			return false;
+		}
+		if (dumpArray.length > array.length - lastIndex) {
+			growAtEnd(dumpArray.length);
+		}
+		System.arraycopy(dumpArray, 0, this.array, lastIndex, dumpArray.length);
+		lastIndex += dumpArray.length;
+		return true;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean appendAll(IAST ast, int startPosition, int endPosition) {
+		if (ast.size() > 0 && startPosition < endPosition) {
+			hashValue = 0;
+			int length = endPosition - startPosition;
+			if (length > array.length - lastIndex) {
+				growAtEnd(length);
+			}
+			for (int i = startPosition; i < endPosition; i++) {
+				array[lastIndex++] = ast.get(i);
+			}
+			return true;
+
+			// ensureCapacity(size() + (endPosition - startPosition));
+			// for (int i = startPosition; i < endPosition; i++) {
+			// append(ast.get(i));
+			// }
+			// return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Inserts the objects in the specified collection at the specified location in this List. The objects are added in
+	 * the order they are returned from the collection's iterator.
+	 * 
+	 * @param location
+	 *            the index at which to insert.
+	 * @param collection
+	 *            the collection of objects.
+	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
+	 * @throws IndexOutOfBoundsException
+	 *             when {@code location < 0 || > size()}
+	 */
+	@Override
+	public boolean appendAll(int location, Collection<? extends IExpr> collection) {
+		hashValue = 0;
+		int size = lastIndex - firstIndex;
+		if (location < 0 || location > size) {
+			throw new IndexOutOfBoundsException(
+					"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
+		}
+		Object[] dumparray = collection.toArray();
+		int growSize = dumparray.length;
+		if (growSize == 0) {
+			return false;
+		}
+
+		if (0 < location && location < size) {
+			if (array.length - size < growSize) {
+				growForInsert(location, growSize);
+			} else if ((location < size / 2 && firstIndex > 0) || lastIndex > array.length - growSize) {
+				int newFirst = firstIndex - growSize;
+				if (newFirst < 0) {
+					int index = location + firstIndex;
+					System.arraycopy(array, index, array, index - newFirst, size - location);
+					lastIndex -= newFirst;
+					newFirst = 0;
+				}
+				System.arraycopy(array, firstIndex, array, newFirst, location);
+				firstIndex = newFirst;
+			} else {
+				int index = location + firstIndex;
+				System.arraycopy(array, index, array, index + growSize, size - location);
+				lastIndex += growSize;
+			}
+		} else if (location == 0) {
+			growAtFront(growSize);
+			firstIndex -= growSize;
+		} else if (location == size) {
+			if (lastIndex > array.length - growSize) {
+				growAtEnd(growSize);
+			}
+			lastIndex += growSize;
+		}
+
+		System.arraycopy(dumparray, 0, this.array, location + firstIndex, growSize);
+		return true;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition) {
+		if (list.size() > 0 && startPosition < endPosition) {
+			hashValue = 0;
+			int length = endPosition - startPosition;
+			if (length > array.length - lastIndex) {
+				growAtEnd(length);
+			}
+			for (int i = startPosition; i < endPosition; i++) {
+				array[lastIndex++] = list.get(i);
+			}
+			return true;
+
+			// ensureCapacity(size() + (endPosition - startPosition));
+			// for (int i = startPosition; i < endPosition; i++) {
+			// append(ast.get(i));
+			// }
+			// return true;
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final boolean appendArgs(IAST ast) {
+		return appendArgs(ast, ast.size());
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final boolean appendArgs(IAST ast, int untilPosition) {
+		if (untilPosition > 1) {
+			hashValue = 0;
+			int length = untilPosition - 1;
+			if (length > array.length - lastIndex) {
+				growAtEnd(length);
+			}
+			for (int i = 1; i < untilPosition; i++) {
+				array[lastIndex++] = ast.get(i);
+			}
+			return true;
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	public IASTAppendable appendArgs(int start, int end, IntFunction<IExpr> function) {
+		if (start >= end) {
+			return this;
+		}
+		hashValue = 0;
+		int length = end - start;
+		if (length > array.length - lastIndex) {
+			growAtEnd(length);
+		}
+		for (int i = start; i < end; i++) {
+			array[lastIndex++] = function.apply(i);
+		}
+		return this;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IASTAppendable appendArgs(int end, IntFunction<IExpr> function) {
+		return appendArgs(1, end, function);
 	}
 
 	/**
@@ -453,11 +507,32 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 
 	/** {@inheritDoc} */
 	@Override
-	public void forEach(Consumer<? super IExpr> action, int startOffset) {
-		int start = firstIndex + startOffset;
-		for (int i = start; i < lastIndex; i++) {
-			action.accept(array[i]);
+	public final IAST filter(IASTAppendable filterAST, IASTAppendable restAST, Predicate<? super IExpr> predicate) {
+		for (int i = firstIndex + 1; i < lastIndex; i++) {
+			IExpr temp = array[i];
+			if (predicate.test(temp)) {
+				filterAST.append(temp);
+			} else {
+				restAST.append(temp);
+			}
 		}
+		return filterAST;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
+			final Function<IExpr, IExpr> function) {
+		for (int i = firstIndex + 1; i < lastIndex; i++) {
+			IExpr temp = array[i];
+			IExpr expr = function.apply(temp);
+			if (expr.isPresent()) {
+				filterAST.append(expr);
+			} else {
+				restAST.append(temp);
+			}
+		}
+		return filterAST;
 	}
 
 	/** {@inheritDoc} */
@@ -474,93 +549,11 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST, final Function<IExpr, IExpr> function) {
-		for (int i = firstIndex + 1; i < lastIndex; i++) {
-			IExpr temp = array[i];
-			IExpr expr = function.apply(temp);
-			if (expr.isPresent()) {
-				filterAST.append(expr);
-			} else {
-				restAST.append(temp);
-			}
+	public void forEach(Consumer<? super IExpr> action, int startOffset) {
+		int start = firstIndex + startOffset;
+		for (int i = start; i < lastIndex; i++) {
+			action.accept(array[i]);
 		}
-		return filterAST;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IAST filter(IASTAppendable filterAST, IASTAppendable restAST, Predicate<? super IExpr> predicate) {
-		for (int i = firstIndex + 1; i < lastIndex; i++) {
-			IExpr temp = array[i];
-			if (predicate.test(temp)) {
-				filterAST.append(temp);
-			} else {
-				restAST.append(temp);
-			}
-		}
-		return filterAST;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IAST map(final Function<IExpr, IExpr> function, final int startOffset) {
-		IASTMutable result = F.NIL;
-		int i = firstIndex + startOffset;
-		int j = startOffset;
-		while (i < lastIndex) {
-			IExpr temp = function.apply(array[i++]);
-			if (temp.isPresent()) {
-				// something was evaluated - return a new IAST:
-				result = copy();
-				result.set(j++, temp);
-				break;
-			}
-			j++;
-		}
-		if (result.isPresent()) {
-			while (i < lastIndex) {
-				IExpr temp = function.apply(array[i++]);
-				if (temp.isPresent()) {
-					result.set(j, temp);
-				}
-				j++;
-			}
-		}
-		return (IAST) result.orElse(this);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IAST map(final IASTMutable clonedResultAST, final Function<IExpr, IExpr> function) {
-		int j = 1;
-		for (int i = firstIndex + 1; i < lastIndex; i++) {
-			IExpr temp = function.apply(array[i]);
-			if (temp != null) {
-				clonedResultAST.set(j, temp);
-			}
-			j++;
-		}
-		return clonedResultAST;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final IASTAppendable mapThread(IASTAppendable appendAST, final IAST replacement, int position) {
-		// final Function<IExpr, IExpr> function = Functors.replaceArg(replacement,
-		// position);
-		EvalEngine engine = EvalEngine.get();
-		final Function<IExpr, IExpr> function = x -> {
-			IAST a = replacement.setAtCopy(position, x);
-			return engine.evaluate(a);
-		};
-		IExpr temp;
-		for (int i = firstIndex + 1; i < lastIndex; i++) {
-			temp = function.apply(array[i]);
-			if (temp != null) {
-				appendAST.append(temp);
-			}
-		}
-		return appendAST;
 	}
 
 	@Override
@@ -691,6 +684,68 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 		this.array = array;
 		firstIndex = hashValue = 0;
 		lastIndex = array.length;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IAST map(final Function<IExpr, IExpr> function, final int startOffset) {
+		IASTMutable result = F.NIL;
+		int i = firstIndex + startOffset;
+		int j = startOffset;
+		while (i < lastIndex) {
+			IExpr temp = function.apply(array[i++]);
+			if (temp.isPresent()) {
+				// something was evaluated - return a new IAST:
+				result = copy();
+				result.set(j++, temp);
+				break;
+			}
+			j++;
+		}
+		if (result.isPresent()) {
+			while (i < lastIndex) {
+				IExpr temp = function.apply(array[i++]);
+				if (temp.isPresent()) {
+					result.set(j, temp);
+				}
+				j++;
+			}
+		}
+		return (IAST) result.orElse(this);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IAST map(final IASTMutable clonedResultAST, final Function<IExpr, IExpr> function) {
+		int j = 1;
+		for (int i = firstIndex + 1; i < lastIndex; i++) {
+			IExpr temp = function.apply(array[i]);
+			if (temp != null) {
+				clonedResultAST.set(j, temp);
+			}
+			j++;
+		}
+		return clonedResultAST;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public final IASTAppendable mapThread(IASTAppendable appendAST, final IAST replacement, int position) {
+		// final Function<IExpr, IExpr> function = Functors.replaceArg(replacement,
+		// position);
+		EvalEngine engine = EvalEngine.get();
+		final Function<IExpr, IExpr> function = x -> {
+			IAST a = replacement.setAtCopy(position, x);
+			return engine.evaluate(a);
+		};
+		IExpr temp;
+		for (int i = firstIndex + 1; i < lastIndex; i++) {
+			temp = function.apply(array[i]);
+			if (temp != null) {
+				appendAST.append(temp);
+			}
+		}
+		return appendAST;
 	}
 
 	private IExpr[] newElementArray(int size) {

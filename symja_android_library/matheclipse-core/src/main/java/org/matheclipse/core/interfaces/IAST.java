@@ -152,181 +152,11 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public final int IS_DERIVATIVE_EVALED = 0x8000;
 
 	/**
-	 * Adds the specified expression at the end of this {@code List}.
-	 * 
-	 * @param expr
-	 *            the object to add.
-	 * @return always true.
-	 * @throws UnsupportedOperationException
-	 *             if adding to this {@code List} is not supported.
-	 * @throws ClassCastException
-	 *             if the class of the object is inappropriate for this {@code List}.
-	 * @throws IllegalArgumentException
-	 *             if the object cannot be added to this {@code List}.
-	 */
-//	public boolean append(IExpr expr);
-
-	/**
-	 * Inserts the specified object into this {@code List} at the specified location. The object is inserted before the
-	 * current element at the specified location. If the location is equal to the size of this {@code List}, the object
-	 * is added at the end. If the location is smaller than the size of this {@code List}, then all elements beyond the
-	 * specified location are moved by one position towards the end of the {@code List}.
-	 * 
-	 * @param location
-	 *            the index at which to insert.
-	 * @param object
-	 *            the object to add.
-	 * @throws UnsupportedOperationException
-	 *             if adding to this {@code List} is not supported.
-	 * @throws ClassCastException
-	 *             if the class of the object is inappropriate for this {@code List}.
-	 * @throws IllegalArgumentException
-	 *             if the object cannot be added to this {@code List}.
-	 * @throws IndexOutOfBoundsException
-	 *             if {@code location < 0 || location > size()}
-	 */
-	// public void append(int location, IExpr object);
-
-	/**
-	 * 
-	 * @param collection
-	 * @return
-	 * @deprecated use #appendAll()
-	 */
-	// @Deprecated
-	// default boolean addAll(Collection<? extends IExpr> collection) {
-	// return appendAll(collection);
-	// }
-
-	/**
-	 * 
-	 * @param ast
-	 * @param startPosition
-	 * @param endPosition
-	 * @return
-	 * @deprecated use appendAll()
-	 */
-	// @Deprecated
-	// default boolean addAll(IAST ast, int startPosition, int endPosition) {
-	// return appendAll(ast, startPosition, endPosition);
-	// }
-
-	/**
-	 * 
-	 * @param location
-	 * @param collection
-	 * @return
-	 * @deprecated use appendAll()
-	 */
-	// @Deprecated
-	// default boolean addAll(int location, Collection<? extends IExpr> collection) {
-	// return appendAll(location, collection);
-	// }
-
-	/**
-	 * 
-	 * @param list
-	 * @param startPosition
-	 * @param endPosition
-	 * @return
-	 * @deprecated use appendAll()
-	 */
-	// @Deprecated
-	// default boolean addAll(List<? extends IExpr> list, int startPosition, int endPosition) {
-	// return appendAll(list, startPosition, endPosition);
-	// }
-
-	/**
-	 * 
-	 * @param expr
-	 * @return
-	 * @deprecated use appendClone();
-	 */
-	// @Deprecated
-	// default IAST addClone(IExpr expr) {
-	// return appendClone(expr);
-	// }
-
-	/**
 	 * Add an evaluation flag to the existing ones.
 	 * 
 	 * @param i
 	 */
 	public void addEvalFlags(int i);
-
-	/**
-	 * 
-	 * @param subAST
-	 * @return
-	 * @deprecated - use appendOneIdentity()
-	 */
-//	@Deprecated
-//	default IAST addOneIdentity(IAST subAST) {
-//		return appendOneIdentity(subAST);
-//	}
-
-	/**
-	 * Adds the objects in the specified collection to the end of this {@code List}. The objects are added in the order
-	 * in which they are returned from the collection's iterator.
-	 * 
-	 * @param collection
-	 *            the collection of objects.
-	 * @return {@code true} if this {@code List} is modified, {@code false} otherwise (i.e. if the passed collection was
-	 *         empty).
-	 * @throws UnsupportedOperationException
-	 *             if adding to this {@code List} is not supported.
-	 * @throws ClassCastException
-	 *             if the class of an object is inappropriate for this {@code List}.
-	 * @throws IllegalArgumentException
-	 *             if an object cannot be added to this {@code List}.
-	 */
-	// public boolean appendAll(Collection<? extends IExpr> collection);
-
-	/**
-	 * Appends all elements from offset <code>startPosition</code> to <code>endPosition</code> in the specified AST to
-	 * the end of this AST.
-	 * 
-	 * @param ast
-	 *            AST containing elements to be added to this AST
-	 * @param startPosition
-	 *            the start position, inclusive.
-	 * @param endPosition
-	 *            the ending position, exclusive.
-	 * @return <tt>true</tt> if this AST changed as a result of the call
-	 * 
-	 */
-	// public boolean appendAll(IAST ast, int startPosition, int endPosition);
-
-	// public boolean appendAll(int location, Collection<? extends IExpr> collection);
-
-	/**
-	 * Appends all elements from offset <code>startPosition</code> to <code>endPosition</code> in the specified list to
-	 * the end of this AST.
-	 * 
-	 * @param list
-	 *            list containing elements to be added to this AST
-	 * @param startPosition
-	 *            the start position, inclusive.
-	 * @param endPosition
-	 *            the ending position, exclusive.
-	 * @return <tt>true</tt> if this AST changed as a result of the call
-	 * 
-	 */
-	// public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition);
-
-	/**
-	 * Appends all of the arguments (starting from offset <code>1</code>) in the specified AST up to position
-	 * <code>untilPosition</code> exclusive.
-	 * 
-	 * @param ast
-	 *            AST containing elements to be added to this AST
-	 * @param untilPosition
-	 *            append all argumments of ast up to position <code>untilPosition</code> exclusive.
-	 * 
-	 * @return <tt>true</tt> if this AST changed as a result of the call
-	 * 
-	 */
-	// public boolean appendArgs(IAST ast, int untilPosition);
 
 	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and add the
@@ -558,21 +388,21 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	public IASTAppendable copyUntil(final int intialCapacity, int position);
 
+	/**
+	 * Copy the arguments of this AST to a list.
+	 * 
+	 * @return
+	 */
 	default List<IExpr> copyTo() {
-		List<IExpr> list = new ArrayList<IExpr>(size());
-		for (int i = 1; i < size(); i++) {
-			list.add(get(i));
-		}
-		return list;
+		return (List<IExpr>) copyTo(new ArrayList<IExpr>(size()));
 	}
 
-	default List<IExpr> copyTo(List<IExpr> list) {
-		for (int i = 1; i < size(); i++) {
-			list.add(get(i));
-		}
-		return list;
-	}
-
+	/**
+	 * Copy the arguments of this AST to a given collection object.
+	 * 
+	 * @param collection
+	 * @return
+	 */
 	default Collection<IExpr> copyTo(Collection<IExpr> collection) {
 		for (int i = 1; i < size(); i++) {
 			collection.add(get(i));
@@ -1266,20 +1096,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return an array of the elements from this {@code List}.
 	 */
 	public IExpr[] toArray();
-
-	/**
-	 * Returns an array containing all elements contained in this {@code List}. If the specified array is large enough
-	 * to hold the elements, the specified array is used, otherwise an array of the same type is created. If the
-	 * specified array is used and is larger than this {@code List}, the array element following the collection elements
-	 * is set to null.
-	 * 
-	 * @param array
-	 *            the array.
-	 * @return an array of the elements from this {@code List}.
-	 * @throws ArrayStoreException
-	 *             if the type of an element in this {@code List} cannot be stored in the type of the specified array.
-	 */
-	// public IExpr[] toArray(IExpr[] array);
 
 	/**
 	 * Returns the header. If the header itself is an ISymbol it will return the symbol object. If the header itself is

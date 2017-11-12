@@ -1238,7 +1238,7 @@ public class Algebra {
 			public void evalAndExpandAST(IExpr expr1, IExpr expr2, final IASTAppendable result) {
 				IExpr arg = TimesOp.times(expr1, expr2);
 				if (arg.isAST()) {
-					result.appendPlus(expandAST((IAST) arg).orElse(arg));
+					appendPlus(result, expandAST((IAST) arg).orElse(arg));
 					return;
 				}
 				result.append(arg);
@@ -3669,6 +3669,13 @@ public class Algebra {
 
 	}
 
+	private static boolean appendPlus(IASTAppendable ast, IExpr expr) {
+		if (ast.head().equals(F.Plus) && expr.head().equals(F.Plus)) {
+			return ast.appendArgs((IAST) expr);
+		}
+		return ast.append(expr);
+	}
+
 	/**
 	 * Calculate the 3 elements result array
 	 * 
@@ -3807,7 +3814,7 @@ public class Algebra {
 						result = F.ast(localAST.head(), size, false);
 						result.appendArgs(localAST, i);
 					}
-					result.appendPlus(temp);
+					appendPlus(result, temp);
 					continue;
 				}
 			}

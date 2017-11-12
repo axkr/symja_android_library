@@ -6,9 +6,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.util.EnumMap;
-import java.util.List;
 import java.util.StringTokenizer;
-import java.util.function.IntFunction;
 
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -71,6 +69,28 @@ public class AST extends HMArrayList implements Externalizable {
 		return ast;
 	}
 
+	public static AST newInstance(final ISymbol symbol, boolean evalComplex,
+			final org.hipparchus.complex.Complex... arr) {
+		IExpr[] eArr = new IExpr[arr.length + 1];
+		eArr[0] = symbol;
+		if (evalComplex) {
+			double im;
+			for (int i = 1; i <= arr.length; i++) {
+				im = arr[i - 1].getImaginary();
+				if (F.isZero(im)) {
+					eArr[i] = Num.valueOf(arr[i - 1].getReal());
+				} else {
+					eArr[i] = ComplexNum.valueOf(arr[i - 1].getReal(), arr[i - 1].getImaginary());
+				}
+			}
+		} else {
+			for (int i = 1; i <= arr.length; i++) {
+				eArr[i] = ComplexNum.valueOf(arr[i - 1].getReal(), arr[i - 1].getImaginary());
+			}
+		}
+		return new AST(eArr);
+	}
+
 	/**
 	 * Constructs a list with header <i>symbol</i> and the arguments containing the given DoubleImpl values.
 	 * 
@@ -110,28 +130,6 @@ public class AST extends HMArrayList implements Externalizable {
 		eArr[0] = symbol;
 		for (int i = 1; i <= arr.length; i++) {
 			eArr[i] = AbstractIntegerSym.valueOf(arr[i - 1]);
-		}
-		return new AST(eArr);
-	}
-
-	public static AST newInstance(final ISymbol symbol, boolean evalComplex,
-			final org.hipparchus.complex.Complex... arr) {
-		IExpr[] eArr = new IExpr[arr.length + 1];
-		eArr[0] = symbol;
-		if (evalComplex) {
-			double im;
-			for (int i = 1; i <= arr.length; i++) {
-				im = arr[i - 1].getImaginary();
-				if (F.isZero(im)) {
-					eArr[i] = Num.valueOf(arr[i - 1].getReal());
-				} else {
-					eArr[i] = ComplexNum.valueOf(arr[i - 1].getReal(), arr[i - 1].getImaginary());
-				}
-			}
-		} else {
-			for (int i = 1; i <= arr.length; i++) {
-				eArr[i] = ComplexNum.valueOf(arr[i - 1].getReal(), arr[i - 1].getImaginary());
-			}
 		}
 		return new AST(eArr);
 	}
@@ -227,72 +225,6 @@ public class AST extends HMArrayList implements Externalizable {
 		lastIndex += (setLength ? initialCapacity + 1 : 0);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean appendAll(IAST ast, int startPosition, int endPosition) {
-		if (ast.size() > 0 && startPosition < endPosition) {
-			ensureCapacity(size() + (endPosition - startPosition));
-			for (int i = startPosition; i < endPosition; i++) {
-				append(ast.get(i));
-			}
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	// @Override
-	// public final boolean addAll(List<? extends IExpr> list) {
-	// return addAll(list, 0, list.size());
-	// }
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean appendAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
-		if (ast.size() > 0 && startPosition < endPosition) {
-			ensureCapacity(size() + (endPosition - startPosition));
-			for (int i = startPosition; i < endPosition; i++) {
-				append(ast.get(i));
-			}
-			return true;
-		}
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean appendArgs(IAST ast) {
-		return appendArgs(ast, ast.size());
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public  IASTAppendable appendArgs(int end, IntFunction<IExpr> function) {
-		for (int i = 1; i < end; i++) {
-			append(function.apply(i));
-		}
-		return this;
-	}
-	
-	/** {@inheritDoc} */
-	@Override
-	public final boolean appendArgs(IAST ast, int untilPosition) {
-		if (untilPosition > 1) {
-			ensureCapacity(size() + untilPosition - 1);
-			for (int i = 1; i < untilPosition; i++) {
-				append(ast.get(i));
-			}
-			return true;
-		}
-		return false;
-	}
-
 	/** {@inheritDoc} */
 	@Override
 	public IAST appendOneIdentity(IAST value) {
@@ -319,7 +251,7 @@ public class AST extends HMArrayList implements Externalizable {
 		ast.lastIndex = lastIndex;
 		return ast;
 	}
-	
+
 	/**
 	 * Returns the value to which the specified property is mapped, or <code>null</code> if this map contains no mapping
 	 * for the property.

@@ -50,11 +50,6 @@ public class NILPointer extends AbstractAST implements IASTAppendable {
 		throw new UnsupportedOperationException();
 	}
 
-	// @Override
-	// public boolean addAll(List<? extends IExpr> ast) {
-	// throw new UnsupportedOperationException();
-	// }
-
 	@Override
 	public boolean appendAll(IAST ast, int startPosition, int endPosition) {
 		throw new UnsupportedOperationException();
@@ -81,6 +76,11 @@ public class NILPointer extends AbstractAST implements IASTAppendable {
 	}
 
 	@Override
+	public IASTAppendable appendArgs(int start, int end, IntFunction<IExpr> function) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public IASTAppendable appendArgs(int end, IntFunction<IExpr> function) {
 		throw new UnsupportedOperationException();
 	}
@@ -89,11 +89,6 @@ public class NILPointer extends AbstractAST implements IASTAppendable {
 	public IAST appendOneIdentity(IAST subAST) {
 		throw new UnsupportedOperationException();
 	}
-
-	// @Override
-	// public ASTRange args() {
-	// throw new UnsupportedOperationException();
-	// }
 
 	@Override
 	public IExpr arg1() {
@@ -259,18 +254,6 @@ public class NILPointer extends AbstractAST implements IASTAppendable {
 		throw exceptionSupplier.get();
 	}
 
-	// public ASTRange range() {
-	// throw new UnsupportedOperationException();
-	// }
-	//
-	// public ASTRange range(int start) {
-	// throw new UnsupportedOperationException();
-	// }
-	//
-	// public ASTRange range(int start, int end) {
-	// throw new UnsupportedOperationException();
-	// }
-
 	private Object readResolve() throws ObjectStreamException {
 		return F.NIL;
 	}
@@ -279,11 +262,6 @@ public class NILPointer extends AbstractAST implements IASTAppendable {
 	public IExpr remove(int location) {
 		throw new UnsupportedOperationException();
 	}
-
-	// @Override
-	// public boolean remove(Object object) {
-	// throw new UnsupportedOperationException();
-	// }
 
 	/**
 	 * Removes the objects in the specified range from the start to the end, but not including the end index.
