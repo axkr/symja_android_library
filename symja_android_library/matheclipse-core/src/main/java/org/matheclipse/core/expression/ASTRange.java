@@ -63,6 +63,7 @@ final public class ASTRange extends AbstractList<IExpr> implements Iterable<IExp
 	 * Construct a range for a List
 	 * 
 	 * @param list
+	 * @deprecated use the methods in IAST instead
 	 */
 	public ASTRange(IAST list) {
 		this((IASTMutable)list, 0, list.size());
@@ -75,6 +76,7 @@ final public class ASTRange extends AbstractList<IExpr> implements Iterable<IExp
 	 * 
 	 * @param list
 	 * @param start
+	 * @deprecated use the methods in IAST instead
 	 */
 	public ASTRange(IAST list, int start) {
 		this((IASTMutable)list, start, list.size());
@@ -88,6 +90,7 @@ final public class ASTRange extends AbstractList<IExpr> implements Iterable<IExp
 	 * @param list
 	 * @param start
 	 * @param end
+	 * @deprecated use the methods in IAST instead
 	 */
 	public ASTRange(IAST list, int start, int end) {
 		fList =(IASTMutable)list;
