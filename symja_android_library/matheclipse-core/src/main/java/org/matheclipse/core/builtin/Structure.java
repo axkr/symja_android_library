@@ -62,9 +62,10 @@ public class Structure {
 			Validate.checkRange(ast, 3, 5);
 
 			IASTAppendable evaledAST = ast.clone();
-			for (int i = 1; i < evaledAST.size(); i++) {
-				evaledAST.set(i, engine.evaluate(evaledAST.get(i)));
-			}
+			evaledAST.setArgs(evaledAST.size(), i -> engine.evaluate(evaledAST.get(i)));
+			// for (int i = 1; i < evaledAST.size(); i++) {
+			// evaledAST.set(i, engine.evaluate(evaledAST.get(i)));
+			// }
 			int lastIndex = evaledAST.size() - 1;
 			boolean heads = false;
 			final Options options = new Options(evaledAST.topHead(), evaledAST, lastIndex, engine);
@@ -553,9 +554,10 @@ public class Structure {
 							engine);
 
 					arg2.accept(level);
-					for (int i = 1; i < result.size(); i++) {
-						engine.evaluate(result.get(i));
-					}
+					result.forEach(result.size(), x -> engine.evaluate(x));
+					// for (int i = 1; i < result.size(); i++) {
+					// engine.evaluate(result.get(i));
+					// }
 
 				} else {
 					if (arg2.isAST()) {
@@ -708,11 +710,12 @@ public class Structure {
 						return arg1AST;
 					}
 					IASTAppendable result = F.ast(arg1HeadAST.head());
-					for (int i = 1; i < arg1HeadAST.size(); i++) {
-						clonedList = arg1AST.apply(arg1HeadAST.get(i));
-						result.append(clonedList);
-					}
-					return result;
+					return result.appendArgs(arg1HeadAST.size(), i -> arg1AST.apply(arg1HeadAST.get(i)));
+					// for (int i = 1; i < arg1HeadAST.size(); i++) {
+					// clonedList = arg1AST.apply(arg1HeadAST.get(i));
+					// result.append(clonedList);
+					// }
+					// return result;
 				}
 				return arg1AST;
 			}

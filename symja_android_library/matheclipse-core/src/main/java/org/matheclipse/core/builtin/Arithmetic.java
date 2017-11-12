@@ -843,15 +843,16 @@ public final class Arithmetic {
 							return C0;
 						}
 						IASTAppendable result = F.PlusAlloc(n);
-						for (int i = 1; i <= n; i++) {
-							result.append(Power(integer(i), Negate(arg2)));
-						}
-						return result;
+						return result.appendArgs(n + 1, i -> Power(integer(i), Negate(arg2)));
+						// for (int i = 1; i <= n; i++) {
+						// result.append(Power(integer(i), Negate(arg2)));
+						// }
+						// return result;
 					}
 					return F.NIL;
 				}
 			}
-			if (arg1.isInteger()) { 
+			if (arg1.isInteger()) {
 
 				int n = Validate.checkIntType(ast, 1, Integer.MIN_VALUE);
 				if (n < 0) {

@@ -675,7 +675,8 @@ public abstract class AbstractAST implements IASTMutable {
 	 *            the function which filters each argument by returning a value which unequals <code>F.NIL</code>
 	 * @return the given <code>filterAST</code>
 	 */
-	protected IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST, final Function<IExpr, IExpr> function) {
+	protected IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
+			final Function<IExpr, IExpr> function) {
 		final int size = size();
 		for (int i = 1; i < size; i++) {
 			IExpr temp = get(i);
@@ -734,11 +735,13 @@ public abstract class AbstractAST implements IASTMutable {
 	 * @return the accumulated elements
 	 */
 	public IExpr foldLeft(final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue, int start) {
-		IExpr value = startValue;
-		for (int i = start; i < size(); i++) {
-			value = function.apply(value, get(i));
-		}
-		return value;
+		final IExpr[] value = { startValue };
+		forEach(start, size(), x -> value[0] = function.apply(value[0], x));
+		return value[0];
+		// for (int i = start; i < size(); i++) {
+		// value = function.apply(value, get(i));
+		// }
+		// return value;
 	}
 
 	/**
@@ -775,12 +778,16 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public IAST filter(IASTAppendable filterAST, Predicate<? super IExpr> predicate) {
-		final int size = size();
-		for (int i = 1; i < size; i++) {
-			if (predicate.test(get(i))) {
-				filterAST.append(get(i));
+		forEach(size(), x -> {
+			if (predicate.test(x)) {
+				filterAST.append(x);
 			}
-		}
+		});
+		// for (int i = 1; i < size; i++) {
+		// if (predicate.test(get(i))) {
+		// filterAST.append(get(i));
+		// }
+		// }
 		return filterAST;
 	}
 
@@ -829,13 +836,20 @@ public abstract class AbstractAST implements IASTMutable {
 			}
 			IASTAppendable yesAST = F.ast(combiner, newSize, false);
 			IASTAppendable noAST = F.ast(combiner, newSize, false);
-			for (int i = 1; i < size; i++) {
-				if (predicate.test(get(i))) {
-					yesAST.append(get(i));
+			forEach(size, x -> {
+				if (predicate.test(x)) {
+					yesAST.append(x);
 				} else {
-					noAST.append(get(i));
+					noAST.append(x);
 				}
-			}
+			});
+			// for (int i = 1; i < size; i++) {
+			// if (predicate.test(get(i))) {
+			// yesAST.append(get(i));
+			// } else {
+			// noAST.append(get(i));
+			// }
+			// }
 			if (yesAST.size() > 1) {
 				result.append(F.eval(yesAST));
 			} else {
@@ -882,9 +896,10 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public void forEach(Consumer<? super IExpr> action, int startOffset) {
 		final int size = size();
-		for (int i = startOffset; i < size; i++) {
-			action.accept(get(i));
-		}
+		forEach(startOffset, size, action);
+//		for (int i = startOffset; i < size; i++) {
+//			action.accept(get(i));
+//		}
 	}
 
 	/** {@inheritDoc} */

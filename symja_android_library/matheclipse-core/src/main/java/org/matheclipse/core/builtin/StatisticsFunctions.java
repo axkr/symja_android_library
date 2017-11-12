@@ -601,9 +601,11 @@ public class StatisticsFunctions {
 			IAST num1 = arg1.apply(F.Plus);
 			IExpr factor = F.integer(-1 * (arg1.size() - 2));
 			IASTAppendable v1 = F.PlusAlloc(arg1.size());
-			for (int i = 1; i < arg1.size(); i++) {
-				v1.append(F.Times(F.CN1, num1.setAtClone(i, F.Times(factor, arg1.get(i))), F.Conjugate(arg2.get(i))));
-			}
+			v1.appendArgs(arg1.size(),
+					i -> F.Times(F.CN1, num1.setAtClone(i, F.Times(factor, arg1.get(i))), F.Conjugate(arg2.get(i))));
+			// for (int i = 1; i < arg1.size(); i++) {
+			// v1.append(F.Times(F.CN1, num1.setAtClone(i, F.Times(factor, arg1.get(i))), F.Conjugate(arg2.get(i))));
+			// }
 			return F.Divide(v1, F.integer((arg1.size() - 1) * (arg1.size() - 2)));
 		}
 
@@ -1209,24 +1211,6 @@ public class StatisticsFunctions {
 					IAST matrix = (IAST) arg1;
 					return matrix.mapMatrixColumns(dim, x -> F.StandardDeviation(x));
 				}
-
-				// if (matrixDimensions != null) {
-				// IAST result = F.ListAlloc(matrixDimensions[0]);
-				// for (int i = 1; i < matrixDimensions[1] + 1; i++) {
-				// IAST list = F.ListAlloc(matrixDimensions[1]);
-				// IAST standardDeviation = F.StandardDeviation(list);
-				// for (int j = 1; j < matrixDimensions[0] + 1; j++) {
-				// list.append(arg1.getPart(j, i));
-				// }
-				// result.append(standardDeviation);
-				// }
-				// return result;
-				// }
-				//
-				// int vectorDim = arg1.isVector();
-				// if (vectorDim >= 0) {
-				// return F.Sqrt(F.Variance(arg1));
-				// }
 			}
 			return F.Sqrt(F.Variance(ast.arg1()));
 		}
@@ -1318,11 +1302,13 @@ public class StatisticsFunctions {
 					}
 					IASTAppendable result = F.ListAlloc(matrixDimensions[0]);
 					for (int i = 1; i < matrixDimensions[1] + 1; i++) {
+						final int ii = i;
 						IASTAppendable list = F.ListAlloc(matrixDimensions[1]);
 						IAST variance = F.Variance(list);
-						for (int j = 1; j < matrixDimensions[0] + 1; j++) {
-							list.append(arg1.getPart(j, i));
-						}
+						list.appendArgs(matrixDimensions[0] + 1, j -> arg1.getPart(j, ii));
+						// for (int j = 1; j < matrixDimensions[0] + 1; j++) {
+						// list.append(arg1.getPart(j, i));
+						// }
 						result.append(variance);
 					}
 					return result;

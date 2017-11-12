@@ -1283,9 +1283,12 @@ public class Algebra {
 							} else {
 								if (temp.isTimes()) {
 									IAST ast = (IAST) temp;
-									for (int i = 1; i < ast.size(); i++) {
-										timesAST.append(PowerOp.power(ast.get(i), F.integer(indices[k])));
-									}
+									final int ki = k;
+									timesAST.appendArgs(ast.size(),
+											i -> PowerOp.power(ast.get(i), F.integer(indices[ki])));
+									// for (int i = 1; i < ast.size(); i++) {
+									// timesAST.append(PowerOp.power(ast.get(i), F.integer(indices[k])));
+									// }
 								} else {
 									timesAST.append(PowerOp.power(temp, F.integer(indices[k])));
 								}
@@ -2611,9 +2614,11 @@ public class Algebra {
 						if (assumptions) {
 							IASTAppendable plusResult = F.PlusAlloc(timesAST.size() + 1);
 							plusResult.append(C1D2);
-							for (int i = 1; i < timesAST.size(); i++) {
-								plusResult.append(Negate(Divide(Arg(timesAST.get(i)), Times(C2, Pi))));
-							}
+							plusResult.appendArgs(timesAST.size(),
+									i -> Negate(Divide(Arg(timesAST.get(i)), Times(C2, Pi))));
+							// for (int i = 1; i < timesAST.size(); i++) {
+							// plusResult.append(Negate(Divide(Arg(timesAST.get(i)), Times(C2, Pi))));
+							// }
 							IAST expResult = Power(E, Times(C2, I, Pi, x2, Floor(plusResult)));
 							if (!(timesResult instanceof IASTAppendable)) {
 								timesResult = timesResult.clone();

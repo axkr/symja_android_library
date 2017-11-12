@@ -355,10 +355,11 @@ public final class LinearAlgebra {
 					IAST a1 = ((IAST) arg1);
 					IAST a2 = ((IAST) arg2);
 					IASTAppendable maxAST = F.Max();
-					for (int i = 1; i < a1.size(); i++) {
-						maxAST.append(F.Abs(F.Subtract(a1.get(i), a2.get(i))));
-					}
-					return maxAST;
+					return maxAST.appendArgs(a1.size(), i -> F.Abs(F.Subtract(a1.get(i), a2.get(i))));
+					// for (int i = 1; i < a1.size(); i++) {
+					// maxAST.append(F.Abs(F.Subtract(a1.get(i), a2.get(i))));
+					// }
+					// return maxAST;
 				}
 			}
 			return F.NIL;
@@ -798,10 +799,11 @@ public final class LinearAlgebra {
 			ArrayList<Integer> dims = getDimensions(list, header, maximumLevel - 1);
 			int dimsSize = dims.size();
 			IASTAppendable res = F.ListAlloc(dimsSize);
-			for (int i = 0; i < dimsSize; i++) {
-				res.append(F.integer(dims.get(i).intValue()));
-			}
-			return res;
+			return res.appendArgs(0, dimsSize, i -> F.integer(dims.get(i).intValue()));
+			// for (int i = 0; i < dimsSize; i++) {
+			// res.append(F.integer(dims.get(i).intValue()));
+			// }
+			// return res;
 		}
 
 		@Override
@@ -1107,14 +1109,20 @@ public final class LinearAlgebra {
 				double[] imagValues = ed.getImagEigenvalues();
 				int size = realValues.length;
 				IASTAppendable list = F.ListAlloc(size);
-				for (int i = 0; i < size; i++) {
+				return list.appendArgs(0, size, (int i) -> {
 					if (F.isZero(imagValues[i])) {
-						list.append(F.num(realValues[i]));
-					} else {
-						list.append(F.complexNum(realValues[i], imagValues[i]));
+						return F.num(realValues[i]);
 					}
-				}
-				return list;
+					return F.complexNum(realValues[i], imagValues[i]);
+				});
+				// for (int i = 0; i < size; i++) {
+				// if (F.isZero(imagValues[i])) {
+				// list.append(F.num(realValues[i]));
+				// } else {
+				// list.append(F.complexNum(realValues[i], imagValues[i]));
+				// }
+				// }
+				// return list;
 			} catch (Exception ime) {
 				throw new WrappedException(ime);
 			}
@@ -1222,11 +1230,15 @@ public final class LinearAlgebra {
 				EigenDecomposition ed = new EigenDecomposition(matrix);
 				int size = matrix.getColumnDimension();
 				IASTAppendable list = F.ListAlloc(size);
-				for (int i = 0; i < size; i++) {
+				return list.appendArgs(0, size, i -> {
 					RealVector rv = ed.getEigenvector(i);
-					list.append(Convert.vector2List(rv));
-				}
-				return list;
+					return Convert.vector2List(rv);
+				});
+				// for (int i = 0; i < size; i++) {
+				// RealVector rv = ed.getEigenvector(i);
+				// list.append(Convert.vector2List(rv));
+				// }
+				// return list;
 			} catch (Exception ime) {
 				throw new WrappedException(ime);
 			}
@@ -1272,9 +1284,10 @@ public final class LinearAlgebra {
 					IAST a2 = ((IAST) arg2);
 					int size = a1.size();
 					IASTAppendable plusAST = F.PlusAlloc(size);
-					for (int i = 1; i < size; i++) {
-						plusAST.append(F.Sqr(F.Abs(F.Subtract(a1.get(i), a2.get(i)))));
-					}
+					plusAST.appendArgs(size, i -> F.Sqr(F.Abs(F.Subtract(a1.get(i), a2.get(i)))));
+					// for (int i = 1; i < size; i++) {
+					// plusAST.append(F.Sqr(F.Abs(F.Subtract(a1.get(i), a2.get(i)))));
+					// }
 					return F.Sqrt(plusAST);
 				}
 			}
@@ -1478,10 +1491,11 @@ public final class LinearAlgebra {
 				} else {
 					int size = list2Dim0 + 1;
 					IASTAppendable part = F.ast(g, size, false);
-					for (int i = 1; i < size; i++) {
-						part.append(summand(list1Cur, list2Cur, i));
-					}
-					return part;
+					return part.appendArgs(size, i -> summand(list1Cur, list2Cur, i));
+					// for (int i = 1; i < size; i++) {
+					// part.append(summand(list1Cur, list2Cur, i));
+					// }
+					// return part;
 				}
 			}
 
@@ -1625,15 +1639,22 @@ public final class LinearAlgebra {
 					IAST vector = (IAST) ast.arg1();
 					int vectorSize = vector.size();
 					IASTAppendable jacobiMatrix = F.ListAlloc(vectorSize);
-					IASTAppendable jacobiRow = null;
-					for (int i = 1; i < vectorSize; i++) {
-						jacobiRow = F.ListAlloc(variablesSize);
-						for (int j = 1; j < variablesSize; j++) {
-							jacobiRow.append(F.D(vector.get(i), variables.get(j)));
-						}
-						jacobiMatrix.append(jacobiRow);
-					}
-					return jacobiMatrix;
+					final IAST vars = variables;
+					return jacobiMatrix.appendArgs(vectorSize, i -> {
+						IASTAppendable jacobiRow = F.ListAlloc(variablesSize);
+						return jacobiRow.appendArgs(variablesSize, j -> F.D(vector.get(i), vars.get(j)));
+					});
+					// IASTAppendable jacobiRow = null;
+					// for (int i = 1; i < vectorSize; i++) {
+					// jacobiRow = F.ListAlloc(variablesSize);
+					// final int ii = i;
+					// jacobiRow.appendArgs(variablesSize, j -> F.D(vector.get(ii), vars.get(j)));
+					// // for (int j = 1; j < variablesSize; j++) {
+					// // jacobiRow.append(F.D(vector.get(i), variables.get(j)));
+					// // }
+					// jacobiMatrix.append(jacobiRow);
+					// }
+					// return jacobiMatrix;
 				}
 			}
 
@@ -1859,10 +1880,12 @@ public final class LinearAlgebra {
 					// final int permutationCount = lu.getPermutationCount();
 					int size = iArr.length;
 					final IASTAppendable iList = F.ListAlloc(size);
-					for (int i = 0; i < size; i++) {
-						// +1 because in Symja the offset is +1 compared to java arrays
-						iList.append(F.integer(iArr[i] + 1));
-					}
+					// +1 because in Symja the offset is +1 compared to java arrays
+					iList.appendArgs(0, size, i -> F.integer(iArr[i] + 1));
+					// for (int i = 0; i < size; i++) {
+					// // +1 because in Symja the offset is +1 compared to java arrays
+					// iList.append(F.integer(iArr[i] + 1));
+					// }
 					return F.List(Convert.matrix2List(lMatrix), Convert.matrix2List(uMatrix), iList);
 				}
 
@@ -1928,10 +1951,11 @@ public final class LinearAlgebra {
 					IAST a2 = ((IAST) arg2);
 					int size = a1.size();
 					IASTAppendable plusAST = F.PlusAlloc(size);
-					for (int i = 1; i < size; i++) {
-						plusAST.append(F.Abs(F.Subtract(a1.get(i), a2.get(i))));
-					}
-					return plusAST;
+					return plusAST.appendArgs(size, i -> F.Abs(F.Subtract(a1.get(i), a2.get(i))));
+					// for (int i = 1; i < size; i++) {
+					// plusAST.append(F.Abs(F.Subtract(a1.get(i), a2.get(i))));
+					// }
+					// return plusAST;
 				}
 			}
 			return F.NIL;
@@ -2900,10 +2924,12 @@ public final class LinearAlgebra {
 					IAST a2 = ((IAST) arg2);
 					int size = a1.size();
 					IASTAppendable plusAST = F.PlusAlloc(size);
-					for (int i = 1; i < size; i++) {
-						plusAST.append(F.Sqr(F.Abs(F.Subtract(a1.get(i), a2.get(i)))));
-					}
-					return plusAST;
+
+					return plusAST.appendArgs(size, i -> F.Sqr(F.Abs(F.Subtract(a1.get(i), a2.get(i)))));
+					// for (int i = 1; i < size; i++) {
+					// plusAST.append(F.Sqr(F.Abs(F.Subtract(a1.get(i), a2.get(i)))));
+					// }
+					// return plusAST;
 				}
 			}
 			return F.NIL;
@@ -3128,9 +3154,10 @@ public final class LinearAlgebra {
 		 */
 		public IAST transpose(final IAST matrix, int rows, int cols) {
 			final IASTAppendable transposedMatrix = F.ast(F.List, cols, true);
-			for (int i = 1; i <= cols; i++) {
-				transposedMatrix.set(i, F.ast(F.List, rows, true));
-			}
+			transposedMatrix.setArgs(cols + 1, i -> F.ast(F.List, rows, true));
+			// for (int i = 1; i <= cols; i++) {
+			// transposedMatrix.set(i, F.ast(F.List, rows, true));
+			// }
 
 			IAST originalRow;
 			IASTMutable transposedResultRow;
@@ -3193,9 +3220,7 @@ public final class LinearAlgebra {
 				int k = Validate.checkIntType(ast, 2);
 				if (k <= n) {
 					IASTAppendable vector = F.ListAlloc(n);
-					for (int i = 0; i < n; i++) {
-						vector.append(F.C0);
-					}
+					vector.appendArgs(0, n, i -> F.C0);
 					vector.set(k, F.C1);
 					return vector;
 				}
@@ -3551,13 +3576,15 @@ public final class LinearAlgebra {
 			}
 		}
 		IASTAppendable list = F.ListAlloc(rows < cols - 1 ? cols - 1 : rows);
-		for (int j = 0; j < rows; j++) {
-			list.append(engine.evaluate(F.Together(rowReduced.getEntry(j, cols - 1))));
-		}
+		list.appendArgs(0, rows, j -> engine.evaluate(F.Together(rowReduced.getEntry(j, cols - 1))));
+		// for (int j = 0; j < rows; j++) {
+		// list.append(engine.evaluate(F.Together(rowReduced.getEntry(j, cols - 1))));
+		// }
 		if (rows < cols - 1) {
-			for (int i = rows; i < cols - 1; i++) {
-				list.append(F.C0);
-			}
+			list.appendArgs(rows, cols - 1, i -> F.C0);
+			// for (int i = rows; i < cols - 1; i++) {
+			// list.append(F.C0);
+			// }
 		}
 		return list;
 	}
@@ -3591,12 +3618,14 @@ public final class LinearAlgebra {
 				// no solution
 				return F.List();
 			}
+			final IAST sList = smallList;
 			int size = smallList.size();
 			IASTAppendable list = F.ListAlloc(size);
-			for (int j = 1; j < size; j++) {
-				IAST rule = F.Rule(listOfVariables.get(j), engine.evaluate(smallList.get(j)));
-				list.append(rule);
-			}
+			list.appendArgs(size, j -> F.Rule(listOfVariables.get(j), engine.evaluate(sList.get(j))));
+			// for (int j = 1; j < size; j++) {
+			// IAST rule = F.Rule(listOfVariables.get(j), engine.evaluate(smallList.get(j)));
+			// list.append(rule);
+			// }
 
 			resultList.append(list);
 			return resultList;

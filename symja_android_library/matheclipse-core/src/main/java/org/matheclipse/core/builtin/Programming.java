@@ -282,7 +282,7 @@ public final class Programming {
 			Validate.checkRange(ast, 3);
 			try {
 				final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
-				ast.forEach(x -> iterList.add(Iterator.create((IAST) x, engine)), 2);
+				ast.forEach(2, ast.size(), x -> iterList.add(Iterator.create((IAST) x, engine)));
 				final DoIterator generator = new DoIterator(iterList, engine);
 				return generator.doIt(ast.arg1());
 			} catch (final ClassCastException e) {
@@ -990,7 +990,6 @@ public final class Programming {
 	private static void rememberWithVariables(IAST variablesList, final java.util.Map<ISymbol, IExpr> variablesMap,
 			final java.util.Set<IExpr> renamedVars, EvalEngine engine) {
 		ISymbol oldSymbol;
-		IExpr newExpr;
 		for (int i = 1; i < variablesList.size(); i++) {
 			// if (variablesList.get(i).isSymbol()) {
 			// oldSymbol = (ISymbol) variablesList.get(i);

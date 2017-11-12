@@ -1364,11 +1364,12 @@ public final class Combinatoric {
 				}
 
 				IASTAppendable temp = fResultList.clone();
-				for (int i = 0; i < fK; i++) {
-					temp.append(fList.get(j[i] + fOffset));
-				}
-
-				return temp;
+				return temp.appendArgs(0, fK, i -> fList.get(j[i] + fOffset));
+				// for (int i = 0; i < fK; i++) {
+				// temp.append(fList.get(j[i] + fOffset));
+				// }
+				//
+				// return temp;
 			}
 
 			@Override

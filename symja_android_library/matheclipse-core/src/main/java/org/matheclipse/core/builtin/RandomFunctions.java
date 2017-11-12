@@ -102,11 +102,11 @@ public final class RandomFunctions {
 			MathArrays.shuffle(indexList);
 
 			// Create shuffled list.
-			final IASTMutable out = list.copy();
-			for (int i = 0; i < len; i++) {
-				out.set(i + 1, list.get(indexList[i] + 1));
-			}
-			return out;
+			return list.copy().setArgs(1, len + 1, i -> list.get(indexList[i - 1] + 1));
+			// for (int i = 0; i < len; i++) {
+			// out.set(i + 1, list.get(indexList[i] + 1));
+			// }
+			// return out;
 		}
 	}
 

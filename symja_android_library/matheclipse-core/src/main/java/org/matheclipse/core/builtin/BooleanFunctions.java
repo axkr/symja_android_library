@@ -2095,9 +2095,10 @@ public final class BooleanFunctions {
 				}
 
 				IASTMutable result = ast.copy();
-				for (int i = 1; i < result.size(); i++) {
-					result.set(i, F.expandAll(result.get(i), true, true));
-				}
+				result.setArgs(result.size(), i -> F.expandAll(result.get(i), true, true));
+				// for (int i = 1; i < result.size(); i++) {
+				// result.set(i, F.expandAll(result.get(i), true, true));
+				// }
 				int i = 2;
 				int j;
 				while (i < result.size()) {

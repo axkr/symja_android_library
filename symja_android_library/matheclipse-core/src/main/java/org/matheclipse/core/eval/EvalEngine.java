@@ -340,12 +340,19 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			// setPackageMode(true);
 			setTraceMode(false);
 			final int ruleSize = ruleList.size();
-			for (int i = 1; i < ruleSize; i++) {
-				if (ruleList.get(i) != null) {
-					evaluate(ruleList.get(i));
+			ruleList.forEach(ruleSize, x -> {
+				if (x != null) {
+					evaluate(x);
 				}
-			}
-		} finally {
+			});
+			// for (int i = 1; i < ruleSize; i++) {
+			// if (ruleList.get(i) != null) {
+			// evaluate(ruleList.get(i));
+			// }
+			// }
+		} finally
+
+		{
 			// setPackageMode(oldPackageMode);
 			setTraceMode(oldTraceMode);
 		}
@@ -424,13 +431,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						}
 						for (int i = 2; i < astSize; i++) {
 							if ((evaledExpr = evalLoop(ast.get(i))).isPresent()) {
-								if (resultList.isPresent()) {
-									resultList.set(i, evaledExpr);
-								} else {
+								if (!resultList.isPresent()) {
 									resultList = ast.copy();
 									resultList.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
-									resultList.set(i, evaledExpr);
 								}
+								resultList.set(i, evaledExpr);
 							}
 						}
 					} finally {
@@ -849,7 +854,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			}
 		}
 		if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
-			if (EvalAttributes.sort((IASTMutable)ast)) {
+			if (EvalAttributes.sort((IASTMutable) ast)) {
 				ast.addEvalFlags(IAST.IS_FLAT_ORDERLESS_EVALED);
 				return ast;
 			}
@@ -1139,7 +1144,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		}
 
 		final int attr = symbol.getAttributes();
-		IASTMutable resultList=F.NIL;
+		IASTMutable resultList = F.NIL;
 
 		if ((ISymbol.HOLDALL & attr) != ISymbol.HOLDALL) {
 			final int astSize = ast.size();
@@ -1212,7 +1217,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 */
 	private IExpr evalSetOrderless(IAST ast, final int attr, boolean noEvaluation, int level) {
 		if ((ISymbol.ORDERLESS & attr) == ISymbol.ORDERLESS) {
-			EvalAttributes.sort((IASTMutable)ast);
+			EvalAttributes.sort((IASTMutable) ast);
 			if (level > 0 && !noEvaluation && ast.isFreeOfPatterns()) {
 				if (ast.isPlus()) {
 					return Arithmetic.CONST_PLUS.evaluate(ast, this);
@@ -1635,44 +1640,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		fEvalLHSMode = false;
 		fRecursionCounter = 0;
 	}
-
-	/**
-	 * Parse the given <code>expression String</code> into an IExpr without evaluation.
-	 * 
-	 * @param astString
-	 *            an expression in math formula notation
-	 * 
-	 * @return
-	 * @throws org.matheclipse.parser.client.SyntaxError
-	 *             if a parsing error occurs
-	 */
-	// final public IAST parsePackage(String expression) {
-	// final Parser parser = new Parser(fRelaxedSyntax);
-	// final List<ASTNode> node = parser.parsePackage(expression);
-	// IAST list = F.List();
-	// for (int i = 0; i < node.size(); i++) {
-	// list.add(AST2Expr.CONST_LC.convert(node.get(i), this));
-	// }
-	// return list;
-	// }
-	/**
-	 * Parse the given <code>expression String</code> into an <code>ASTNode</code> without evaluation.
-	 * 
-	 * @param astString
-	 *            an expression in math formula notation
-	 * @return
-	 * @throws org.matheclipse.parser.client.SyntaxError
-	 *             if a parsing error occurs
-	 */
-	// final public ASTNode parseNode(String expression) {
-	// if (fRelaxedSyntax) {
-	// final Parser parser = new Parser(fRelaxedSyntax);
-	// return parser.parse(expression);
-	// } else {
-	// final Parser parser = new Parser();
-	// return parser.parse(expression);
-	// }
-	// }
 
 	/**
 	 * Set the assumptions for this evaluation engine
