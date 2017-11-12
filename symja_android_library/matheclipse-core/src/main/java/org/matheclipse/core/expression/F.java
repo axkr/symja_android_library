@@ -128,8 +128,17 @@ public class F {
 	};
 
 	/**
+	 * <p>
 	 * The constant object <code>NIL</code> (not in list) indicates in the evaluation process that no evaluation was
 	 * possible (i.e. no further definition was found to create a new expression from the existing one).
+	 * </p>
+	 * <p>
+	 * Almost every modifying method in this class throws an <tt>UnsupportedOperationException</tt>, almost every
+	 * predicate returns <code>false</code>. The main method to check if the object is valid is the
+	 * <code>isPresent()</code> method. The method is similar to <code>java.util.Optional#isPresent()</code>.
+	 * </p>
+	 * 
+	 * @see java.util.Optional#isPresent
 	 */
 	public final static NILPointer NIL = new NILPointer();
 
