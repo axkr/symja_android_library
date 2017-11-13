@@ -1,6 +1,7 @@
 package org.matheclipse.core.eval.exception;
 
 import java.io.IOException;
+import java.math.BigInteger;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -116,6 +117,36 @@ public final class Validate {
 						throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
 								+ startValue + " - " + Long.MAX_VALUE);
 					}
+					result[i - 1] = longValue;
+				}
+				return result;
+			} catch (ArithmeticException ae) {
+				//
+			}
+		}
+		throw new WrongArgumentType(arg, "Trying to convert the given list into a list of long numbers: " + arg);
+	}
+
+	public static BigInteger[] checkListOfBigIntegers(IExpr arg) {
+		if (arg.isList()) {
+			IAST list = (IAST) arg;
+			BigInteger[] result = new BigInteger[list.size() - 1];
+			
+			try {
+				IExpr expr;
+				BigInteger longValue = BigInteger.ZERO;
+				for (int i = 1; i < list.size(); i++) {
+					expr = list.get(i);
+					// the following may throw an ArithmeticException
+					if (expr instanceof IInteger) {
+						longValue = ((IInteger) expr).toBigNumerator();
+					} else if (expr instanceof INum) {
+						longValue = BigInteger.valueOf(((INum) expr).toLong());
+					}
+//					if (startValue > longValue) {
+//						throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
+//								+ startValue + " - " + Long.MAX_VALUE);
+//					}
 					result[i - 1] = longValue;
 				}
 				return result;

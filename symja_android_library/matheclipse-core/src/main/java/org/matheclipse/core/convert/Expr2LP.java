@@ -13,7 +13,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Convert a given Symja expression into linear programming objects from the <code>org.apache.commons.math3.optim.linear</code>
+ * Convert a given Symja expression into linear programming objects from the <code>org.hipparchus.optim.linear</code>
  * package.
  * 
  */
@@ -77,8 +77,8 @@ public class Expr2LP {
 		return new LinearObjectiveFunction(coefficients, num.doubleValue());
 	}
 
-	private ISignedNumber expr2ObjectiveFunction(final IExpr expr, double[] coefficients) throws ArithmeticException,
-			ClassCastException {
+	private ISignedNumber expr2ObjectiveFunction(final IExpr expr, double[] coefficients)
+			throws ArithmeticException, ClassCastException {
 		if (expr instanceof IAST) {
 			final IAST ast = (IAST) expr;
 			if (ast.isPlus()) {
@@ -98,7 +98,8 @@ public class Expr2LP {
 					IExpr temp = ast.get(i);
 					if (temp.isVariable()) {
 						if (variable != null) {
-							throw new WrongArgumentType(temp, "Conversion from expression to linear programming expression failed");
+							throw new WrongArgumentType(temp,
+									"Conversion from expression to linear programming expression failed");
 						}
 						variable = (ISymbol) temp;
 						continue;
@@ -108,7 +109,8 @@ public class Expr2LP {
 						value *= num.doubleValue();
 						continue;
 					}
-					throw new WrongArgumentType(temp, "Conversion from expression to linear programming expression failed");
+					throw new WrongArgumentType(temp,
+							"Conversion from expression to linear programming expression failed");
 				}
 				if (variable != null) {
 					for (int i = 0; i < coefficients.length; i++) {
@@ -117,7 +119,8 @@ public class Expr2LP {
 							return null;
 						}
 					}
-					throw new WrongArgumentType(ast, "Conversion from expression to linear programming expression failed");
+					throw new WrongArgumentType(ast,
+							"Conversion from expression to linear programming expression failed");
 				}
 				return F.num(value);
 			}
@@ -131,7 +134,7 @@ public class Expr2LP {
 			}
 			throw new WrongArgumentType(expr, "Conversion from expression to linear programming expression failed");
 		}
-		
+
 		ISignedNumber num = expr.evalSignedNumber();
 		if (num != null) {
 			return num;

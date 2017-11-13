@@ -723,6 +723,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testChineseRemainder() {
+		check("ChineseRemainder({1,-15}, {284407855036305,47})", "8532235651089151");
+		check("ChineseRemainder({-2,-17}, {284407855036305,47})", "9669867071234368");
+		check("ChineseRemainder({2,17}, {284407855036305,47})", "3697302115471967");
+		check("ChineseRemainder({2123, 7213},{11,13})", "11");
 		// wikipedia example
 		check("ChineseRemainder({0,3,4},{3,4,5})", "39");
 

@@ -1,5 +1,9 @@
 package org.matheclipse.core.builtin;
 
+import static java.lang.Math.addExact;
+import static java.lang.Math.floorMod;
+import static java.lang.Math.multiplyExact;
+import static java.lang.Math.subtractExact;
 import static org.matheclipse.core.expression.F.Binomial;
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
@@ -481,42 +485,111 @@ public final class NumberTheory {
 	 * </pre>
 	 */
 	private static class ChineseRemainder extends AbstractFunctionEvaluator {
-		private static long chineseRemainder(long[] n, long[] a) {
-			long prod = 1;
-			for (int k = 0; k < n.length; k++) {
-				prod = prod * n[k];
-			}
+		private static long bezout0(long a, long b) {
+			long s = 0, old_s = 1;
+			long r = b, old_r = a;
 
-			long p, sm = 0;
-			for (int i = 0; i < n.length; i++) {
-				p = prod / n[i];
-				sm += a[i] * mulInv(p, n[i]) * p;
+			long q;
+			long tmp;
+			while (r != 0) {
+				q = old_r / r;
+
+				tmp = old_r;
+				old_r = r;
+				r = subtractExact(tmp, multiplyExact(q, r));
+
+				tmp = old_s;
+				old_s = s;
+				s = subtractExact(tmp, multiplyExact(q, s));
 			}
-			return sm % prod;
+			if (old_r != 1) {
+				throw new ArithmeticException();
+			}
+			// assert old_r == 1 : "a = " + a + " b = " + b;
+			return old_s;
 		}
 
-		private static long mulInv(long a, long b) {
-			long b0 = b;
-			long x0 = 0;
-			long x1 = 1;
+		private static BigInteger bezout0(BigInteger a, BigInteger b) {
+			BigInteger s = BigInteger.ZERO, old_s = BigInteger.ONE;
+			BigInteger r = b, old_r = a;
 
-			if (b == 1)
-				return 1;
+			BigInteger q;
+			BigInteger tmp;
+			while (!r.equals(BigInteger.ZERO)) {
+				q = old_r.divide(r);
 
-			while (a > 1) {
-				long q = a / b;
-				long amb = a % b;
-				a = b;
-				b = amb;
-				long xqx = x1 - q * x0;
-				x1 = x0;
-				x0 = xqx;
+				tmp = old_r;
+				old_r = r;
+				r = tmp.subtract(q.multiply(r));
+
+				tmp = old_s;
+				old_s = s;
+				s = tmp.subtract(q.multiply(s));
+			}
+			if (!old_r.equals(BigInteger.ONE)) {
+				throw new ArithmeticException();
+			}
+			// assert old_r.isOne();
+			return old_s;
+		}
+
+		/**
+		 * Runs Chinese Remainders algorithm
+		 *
+		 * @param primes
+		 *            list of coprime numbers
+		 * @param remainders
+		 *            remainder
+		 * @return the result
+		 */
+		public static long chineseRemainders(final long[] primes, final long[] remainders) {
+			if (primes.length != remainders.length)
+				throw new IllegalArgumentException();
+
+			long modulus = primes[0];
+			for (int i = 1; i < primes.length; ++i) {
+				if (primes[i] <= 0)
+					throw new RuntimeException("Negative CRT input: " + primes[i]);
+				modulus = multiplyExact(primes[i], modulus);
 			}
 
-			if (x1 < 0)
-				x1 += b0;
+			long result = 0;
+			for (int i = 0; i < primes.length; ++i) {
+				long iModulus = modulus / primes[i];
+				long bezout = bezout0(iModulus, primes[i]);
+				result = floorMod(addExact(result, floorMod(
+						multiplyExact(iModulus, floorMod(multiplyExact(bezout, remainders[i]), primes[i])), modulus)),
+						modulus);
+			}
+			return result;
+		}
 
-			return x1;
+		/**
+		 * Runs Chinese Remainders algorithm
+		 *
+		 * @param primes
+		 *            list of coprime numbers
+		 * @param remainders
+		 *            remainder
+		 * @return the result
+		 */
+		private static BigInteger chineseRemainders(final BigInteger[] primes, final BigInteger[] remainders) {
+			if (primes.length != remainders.length)
+				throw new IllegalArgumentException();
+			BigInteger m = primes[0];
+			for (int i = 1; i < primes.length; i++) {
+				if (primes[i].signum() <= 0)
+					throw new RuntimeException("Negative CRT input: " + primes[i]);
+				m = primes[i].multiply(m);
+			}
+
+			BigInteger result = BigInteger.ZERO;
+			for (int i = 0; i < primes.length; i++) {
+				BigInteger mi = m.divide(primes[i]);
+				BigInteger eea = bezout0(mi, primes[i]);
+				result = result.add(mi.multiply(eea.multiply(remainders[i]).mod(primes[i]))).mod(m);
+			}
+			return result;
 		}
 
 		/**
@@ -525,24 +598,48 @@ public final class NumberTheory {
 		 * </p>
 		 * <p>
 		 * See <a href="https://rosettacode.org/wiki/Chinese_remainder_theorem"> Rosetta Code: Chinese remainder
-		 * theorem</a>
+		 * theorem</a><br/>
+		 * <a href=
+		 * "https://github.com/PoslavskySV/rings/blob/master/rings/src/main/java/cc/redberry/rings/bigint/ChineseRemainders.java">cc/redberry/rings/bigint/ChineseRemainders.java</a>
 		 * </p>
 		 *
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
-			long[] a = Validate.checkListOfLongs(ast.arg1(), 0L);
-			long[] n = Validate.checkListOfLongs(ast.arg2(), 0L);
-			if (a.length != n.length) {
-				return F.NIL;
+			if (ast.arg1().isList() && ast.arg2().isList()) {
+				try {
+					long[] a = Validate.checkListOfLongs(ast.arg1(), Long.MIN_VALUE);
+					long[] n = Validate.checkListOfLongs(ast.arg2(), Long.MIN_VALUE);
+					if (a.length != n.length) {
+						return F.NIL;
+					}
+					try {
+						return F.integer(chineseRemainders(n, a));
+					} catch (ArithmeticException ae) {
+						if (Config.SHOW_STACKTRACE) {
+							ae.printStackTrace();
+						}
+					}
+					return F.NIL;
+				} catch (WrongArgumentType wat) {
+					// try with BigIntegers
+					BigInteger[] aBig = Validate.checkListOfBigIntegers(ast.arg1());
+					BigInteger[] nBig = Validate.checkListOfBigIntegers(ast.arg2());
+					if (aBig.length != nBig.length) {
+						return F.NIL;
+					}
+					try {
+						return F.integer(chineseRemainders(nBig, aBig));
+					} catch (ArithmeticException ae) {
+						if (Config.SHOW_STACKTRACE) {
+							ae.printStackTrace();
+						}
+					}
+					return F.NIL;
+				}
 			}
-			try {
-				return F.integer(chineseRemainder(n, a));
-			} catch (ArithmeticException ae) {
-				// mulInv may throw a division by zero ArithmeticException
-				return F.NIL;
-			}
+			return F.NIL;
 		}
 
 	}
@@ -1952,7 +2049,7 @@ public final class NumberTheory {
 			if (ast.isAST2()) {
 				return F.Binomial(F.Plus(ast.arg1(), ast.arg2()), ast.arg1());
 			}
-			if (ast.exists( x -> (!x.isInteger()) || ((IInteger) x).isNegative(), 1)) {
+			if (ast.exists(x -> (!x.isInteger()) || ((IInteger) x).isNegative(), 1)) {
 				return F.NIL;
 			}
 			// for (int i = 1; i < ast.size(); i++) {
