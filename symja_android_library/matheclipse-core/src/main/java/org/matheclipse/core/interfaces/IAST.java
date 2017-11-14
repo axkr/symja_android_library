@@ -283,7 +283,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @return a clone of this <code>IAST</code> instance.
 	 */
-	public IASTAppendable clone();
+	public IAST clone() throws CloneNotSupportedException;
 
 	/**
 	 * Compare all adjacent elements from lowest to highest index and return true, if the binary predicate gives true in
@@ -340,8 +340,17 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	@Override
 	default public IASTMutable copy() {
-		return clone();
+		return copyAppendable();
 	}
+
+	/**
+	 * Returns a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied). In contrast
+	 * to the <code>clone()</code> method, this method returns exactly the same type for
+	 * <code>AST0, AST1, AST2,AST3</code>.
+	 * 
+	 * @return a copy of this <code>IAST</code> instance.
+	 */
+	public IASTAppendable copyAppendable();
 
 	/**
 	 * Create a copy of this <code>AST</code>, which contains the same head and all elements from the given

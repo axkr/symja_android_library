@@ -216,7 +216,7 @@ public class Lambda {
 			IExpr temp = ast.get(i);
 			if (predicate.test(temp)) {
 				if (!result.isPresent()) {
-					result = ast.clone();
+					result = ast.copyAppendable();
 				}
 				temp = function.apply(temp);
 				if (temp != null) {
@@ -237,7 +237,7 @@ public class Lambda {
 			IExpr temp = list.get(i);
 			if (predicate.test(temp)) {
 				if (!result.isPresent()) {
-					result = list.clone();
+					result = list.copyAppendable();
 					for (int j = 0; j < i; j++) {
 						result.set(j, function2.apply(temp));
 					}

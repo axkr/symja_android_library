@@ -61,7 +61,7 @@ public class Structure {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 3, 5);
 
-			IASTAppendable evaledAST = ast.clone();
+			IASTAppendable evaledAST = ast.copyAppendable();
 			evaledAST.setArgs(evaledAST.size(), i -> engine.evaluate(evaledAST.get(i)));
 			// for (int i = 1; i < evaledAST.size(); i++) {
 			// evaledAST.set(i, engine.evaluate(evaledAST.get(i)));
@@ -493,12 +493,12 @@ public class Structure {
 				}
 			}
 
-			IASTAppendable result = ((IAST) arg2).clone();
+			IASTAppendable result = ((IAST) arg2).copyAppendable();
 			IASTAppendable last = result;
 			IASTAppendable head = result;
 
 			for (int i = 1; i < headDepth; i++) {
-				head = ((IAST) head.head()).clone();
+				head = ((IAST) head.head()).copyAppendable();
 				last.set(0, head);
 				last = head;
 			}

@@ -109,7 +109,7 @@ public final class Combinatoric {
 					throw new RuntimeException("invalid call of next()");
 				}
 				// IAST res = (IAST) current.clone();
-				IAST res = current.clone();
+				IAST res = current.copyAppendable();
 				// search iterator which hasNext
 				int i = compit.size() - 1;
 				for (; i >= 0; i--) {
@@ -712,11 +712,11 @@ public final class Combinatoric {
 				if (partitionsIndex == null) {
 					return null;
 				}
-				IASTAppendable part = fResultList.clone();
+				IASTAppendable part = fResultList.copyAppendable();
 				IASTAppendable temp;
 				int j = 0;
 				for (int i = 1; i < partitionsIndex.length; i++) {
-					temp = fResultList.clone();
+					temp = fResultList.copyAppendable();
 					for (int m = j; m < partitionsIndex[i]; m++) {
 						temp.append(fList.get(m + fOffset));
 					}
@@ -724,7 +724,7 @@ public final class Combinatoric {
 					part.append(temp);
 				}
 
-				temp = fResultList.clone();
+				temp = fResultList.copyAppendable();
 				int n = fList.size() - fOffset;
 				for (int m = j; m < n; m++) {
 					temp.append(fList.get(m + fOffset));
@@ -1073,7 +1073,7 @@ public final class Combinatoric {
 				if (permutationsIndex == null) {
 					return null;
 				}
-				IASTAppendable temp = fResultList.clone();
+				IASTAppendable temp = fResultList.copyAppendable();
 				// parts <= permutationsIndex.length
 				for (int i = 0; i < fParts; i++) {
 					temp.append(fList.get(permutationsIndex[i] + fOffset));
@@ -1363,7 +1363,7 @@ public final class Combinatoric {
 					return null;
 				}
 
-				IASTAppendable temp = fResultList.clone();
+				IASTAppendable temp = fResultList.copyAppendable();
 				return temp.appendArgs(0, fK, i -> fList.get(j[i] + fOffset));
 				// for (int i = 0; i < fK; i++) {
 				// temp.append(fList.get(j[i] + fOffset));
@@ -1500,7 +1500,7 @@ public final class Combinatoric {
 			}
 			IASTAppendable temp;
 			for (int j = 1; j < originalList.size(); j++) {
-				temp = subResult.clone();
+				temp = subResult.copyAppendable();
 				temp.append(originalList.get(j));
 				tuples(originalList, n - 1, result, temp);
 			}
@@ -1526,7 +1526,7 @@ public final class Combinatoric {
 			IASTAppendable temp;
 			IAST subAST = (IAST) originalList.get(k);
 			for (int j = 1; j < subAST.size(); j++) {
-				temp = subResult.clone();
+				temp = subResult.copyAppendable();
 				temp.append(subAST.get(j));
 				tuplesOfLists(originalList, k + 1, result, temp);
 			}

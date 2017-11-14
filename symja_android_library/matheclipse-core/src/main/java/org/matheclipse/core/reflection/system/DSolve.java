@@ -63,7 +63,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 		if (ast.arg2().isAST()) {
 			IAST uFunction1Arg = (IAST) ast.arg2();
 			IExpr xVar = ast.arg3();
-			IASTAppendable listOfEquations = Validate.checkEquations(ast, 1).clone();
+			IASTAppendable listOfEquations = Validate.checkEquations(ast, 1).copyAppendable();
 			IExpr[] boundaryCondition = null;
 			int i = 1;
 			while (i < listOfEquations.size()) {
@@ -110,7 +110,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 				listOfVariables.size() - 1);
 
 		if (equation.isAST()) {
-			IASTAppendable eq = ((IAST) equation).clone();
+			IASTAppendable eq = ((IAST) equation).copyAppendable();
 			if (!eq.isPlus()) {
 				// create artificial Plus(...) expression
 				eq = F.Plus(eq);
@@ -192,7 +192,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 	 */
 	private IExpr[] solveSingleBoundary(IExpr equation, IAST uFunction1Arg, IExpr xVar, EvalEngine engine) {
 		if (equation.isAST()) {
-			IASTAppendable eq = ((IAST) equation).clone();
+			IASTAppendable eq = ((IAST) equation).copyAppendable();
 			if (!eq.isPlus()) {
 				// create artificial Plus(...) expression
 				eq = F.Plus(eq);

@@ -52,7 +52,7 @@ public class VisitorReplacePart extends AbstractVisitor {
 
 	private IExpr visitIndex(IAST ast, final int index) {
 		int[] fPositions;
-		IASTAppendable result = ast.clone();
+		IASTAppendable result = ast.copyAppendable();
 		for (int i = 0; i < fList.size(); i++) {
 			fPositions = fList.get(i);
 			if (index >= fPositions.length) {

@@ -255,7 +255,7 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 * @see java.lang.Cloneable
 	 */
 	@Override
-	public IASTAppendable clone() {
+	public IAST clone() {
 		return new AST(arg0);
 	}
 
@@ -271,6 +271,11 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 		return new AST0(arg0);
 	}
 
+	@Override
+	public IASTAppendable copyAppendable() {
+		return new AST(arg0);
+	}
+	
 	@Override
 	public boolean equals(final Object obj) {
 		if (obj instanceof AbstractAST) {

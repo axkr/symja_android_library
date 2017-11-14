@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
+import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -18,8 +19,8 @@ import org.matheclipse.core.interfaces.IExpr;
  * expression from the existing one).
  * <p>
  * Almost every modifying method in this class throws an <tt>UnsupportedOperationException</tt>, almost every predicate
- * returns <code>false</code>. The main method to check if the object is valid is the <code>isPresent()</code>
- * method. The method is similar to <code>java.util.Optional#isPresent()</code>.
+ * returns <code>false</code>. The main method to check if the object is valid is the <code>isPresent()</code> method.
+ * The method is similar to <code>java.util.Optional#isPresent()</code>.
  * </p>
  * 
  * @see F#NIL
@@ -132,7 +133,17 @@ public class NILPointer extends AbstractAST implements IASTAppendable {
 	}
 
 	@Override
-	public IASTAppendable clone() {
+	public IAST clone() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public IASTAppendable copy() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public IASTAppendable copyAppendable() {
 		throw new UnsupportedOperationException();
 	}
 

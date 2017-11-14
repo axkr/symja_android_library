@@ -1289,7 +1289,7 @@ public final class Programming {
 			IExpr temp = assignPart(assignedAST.get(indx), part, partPositionPlus1, value, engine);
 			if (temp.isPresent()) {
 				if (!result.isPresent()) {
-					result = assignedAST.clone();
+					result = assignedAST.copyAppendable();
 				}
 				result.set(indx, temp);
 			}
@@ -1355,7 +1355,7 @@ public final class Programming {
 
 					if (temp.isPresent()) {
 						if (!result.isPresent()) {
-							result = assignedAST.clone();
+							result = assignedAST.copyAppendable();
 						}
 						result.set(i, temp);
 					}
@@ -1372,7 +1372,7 @@ public final class Programming {
 
 					if (temp.isPresent()) {
 						if (!result.isPresent()) {
-							result = assignedAST.clone();
+							result = assignedAST.copyAppendable();
 						}
 						result.set(i, temp);
 					}
@@ -1470,7 +1470,7 @@ public final class Programming {
 		IExpr resultValue = assignPart(element, part, partPosition, value, engine);
 		if (resultValue.isPresent()) {
 			if (!result.isPresent()) {
-				result = expr.clone();
+				result = expr.copyAppendable();
 			}
 			result.set(position, resultValue);
 		}

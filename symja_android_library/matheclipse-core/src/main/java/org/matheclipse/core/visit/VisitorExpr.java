@@ -173,7 +173,7 @@ public class VisitorExpr extends AbstractVisitor {
 			temp = ast.get(i).accept(this);
 			if (temp.isPresent()) {
 				// something was evaluated - return a new IAST:
-				result = ast.clone();
+				result = ast.copyAppendable();
 				for (int j = 1; j < i; j++) {
 					result.set(j, ast.get(j));
 				}

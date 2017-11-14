@@ -88,7 +88,7 @@ public class QuarticSolver {
 			IAST ast = (IAST) exprPoly;
 			if (ast.isTimes()) {
 				int exponent = -1;
-				IASTAppendable coeff = ast.clone();
+				IASTAppendable coeff = ast.copyAppendable();
 				for (int i = 1; i < ast.size(); i++) {
 					if (ast.get(i).isPower()) {
 						final IExpr temp = ast.get(i).getAt(1);

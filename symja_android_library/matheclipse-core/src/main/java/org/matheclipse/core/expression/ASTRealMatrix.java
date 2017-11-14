@@ -291,7 +291,7 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	 * @see java.lang.Cloneable
 	 */
 	@Override
-	public IASTAppendable clone() {
+	public IAST clone() {
 		return Convert.matrix2List(matrix);
 		// return new ASTRealMatrix(matrix.copy(), false);
 	}
@@ -316,6 +316,11 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 		return new ASTRealMatrix(matrix.copy(), false);
 	}
 
+	@Override
+	public IASTAppendable copyAppendable() {
+		return Convert.matrix2List(matrix);
+	}
+	
 	@Override
 	public boolean equals(final Object obj) {
 		if (obj instanceof ASTRealMatrix) {

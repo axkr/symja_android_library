@@ -496,7 +496,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			for (int i = 1; i < times.size(); i++) {
 				if (times.get(i).isFree(Predicates.in(fListOfVariables), true) && times.get(i).isNumericFunction()) {
 					if (!result.isPresent()) {
-						result = times.clone();
+						result = times.copyAppendable();
 					}
 					result.remove(j);
 					continue;
@@ -1110,7 +1110,7 @@ public class Solve extends AbstractFunctionEvaluator {
 					Set<IExpr> subSolutionSet = new HashSet<IExpr>();
 					for (int j = 1; j < times.size(); j++) {
 						if (!times.get(j).isFree(Predicates.in(variables), true)) {
-							IASTAppendable clonedEqualZeroList = termsEqualZeroList.clone();
+							IASTAppendable clonedEqualZeroList = termsEqualZeroList.copyAppendable();
 							clonedEqualZeroList.set(i, times.get(j));
 							IAST temp = solveEquations(clonedEqualZeroList, variables, 0, engine);
 							if (temp.size() > 1) {

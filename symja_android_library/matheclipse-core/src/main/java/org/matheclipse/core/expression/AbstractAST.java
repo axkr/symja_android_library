@@ -347,7 +347,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public IASTAppendable appendAtClone(int position, IExpr expr) {
-		IASTAppendable ast = clone();
+		IASTAppendable ast = copyAppendable();
 		ast.append(position, expr);
 		return ast;
 	}
@@ -355,7 +355,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public IASTAppendable appendClone(IExpr expr) {
-		IASTAppendable ast = clone();
+		IASTAppendable ast = copyAppendable();
 		ast.append(expr);
 		return ast;
 	}
@@ -414,8 +414,8 @@ public abstract class AbstractAST implements IASTMutable {
 		this.hashValue = 0;
 	}
 
-	@Override
-	public abstract IASTAppendable clone();
+	 @Override
+	 public abstract IAST clone() throws CloneNotSupportedException;
 	// {
 	// AbstractAST ast = null;
 	// try {
@@ -500,11 +500,6 @@ public abstract class AbstractAST implements IASTMutable {
 			}
 		}
 		return false;
-	}
-
-	@Override
-	public IASTMutable copy() {
-		return clone();
 	}
 
 	public IAST copyAlloc(int capacity) {
@@ -2745,7 +2740,7 @@ public abstract class AbstractAST implements IASTMutable {
 				}
 				return setAtCopy(1, ((INumber) arg1).negate());
 			}
-			IASTAppendable timesAST = clone();
+			IASTAppendable timesAST = copyAppendable();
 			timesAST.append(1, F.CN1);
 			return timesAST;
 		}
@@ -2803,7 +2798,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public final IASTAppendable removeAtClone(int position) {
-		IASTAppendable ast = clone();
+		IASTAppendable ast = copyAppendable();
 		ast.remove(position);
 		return ast;
 	}
@@ -2864,7 +2859,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public final IASTAppendable setAtClone(int position, IExpr expr) {
-		IASTAppendable ast = clone();
+		IASTAppendable ast = copyAppendable();
 		ast.set(position, expr);
 		return ast;
 	}

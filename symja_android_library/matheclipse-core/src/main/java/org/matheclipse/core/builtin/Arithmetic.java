@@ -499,7 +499,7 @@ public final class Arithmetic {
 			}
 			if (arg1.isTimes()) {
 				IASTAppendable result = F.NIL;
-				IASTAppendable clone = ((IAST) arg1).clone();
+				IASTAppendable clone = ((IAST) arg1).copyAppendable();
 				int i = 1;
 				while (i < clone.size()) {
 					temp = conjugate(clone.get(i));
@@ -1943,7 +1943,7 @@ public final class Arithmetic {
 				IExpr temp = timesAST.get(i);
 				if (temp.isPower() && temp.getAt(2).isMinusOne()) {
 					if (!resultAST.isPresent()) {
-						resultAST = timesAST.clone();
+						resultAST = timesAST.copyAppendable();
 						for (int j = 1; j < i; j++) {
 							resultAST.set(j, F.Power(timesAST.get(j), arg2));
 						}
@@ -2022,7 +2022,7 @@ public final class Arithmetic {
 				if (plus.get(i).isLog()) {
 					if (!multiplicationFactors.isPresent()) {
 						multiplicationFactors = F.TimesAlloc(8);
-						plusClone = plus.clone();
+						plusClone = plus.copyAppendable();
 					}
 					multiplicationFactors.append(plus.get(i).getAt(1));
 					plusClone.remove(i);
@@ -2033,7 +2033,7 @@ public final class Arithmetic {
 							IExpr innerFunc = times.get(j).getAt(1);
 							if (!multiplicationFactors.isPresent()) {
 								multiplicationFactors = F.TimesAlloc(8);
-								plusClone = plus.clone();
+								plusClone = plus.copyAppendable();
 							}
 							multiplicationFactors.append(F.Power(innerFunc, F.ast(times, F.Times, false, j, j + 1)));
 							plusClone.remove(i);
@@ -2530,9 +2530,9 @@ public final class Arithmetic {
 								}
 								if (count > 0) {
 									if (!result.isPresent()) {
-										result = times.clone();
+										result = times.copyAppendable();
 									}
-									power = power.clone();
+									power = power.copyAppendable();
 									power.set(2, F.Plus(F.integer(count), power.arg2()));
 									result.set(i, power);
 								}

@@ -106,7 +106,7 @@ public class AST3 extends AST2 {
 	 * @see java.lang.Cloneable
 	 */
 	@Override
-	public IASTAppendable clone() {
+	public IAST clone() {
 		return new AST(arg0, arg1, arg2, arg3);
 	}
 
@@ -114,6 +114,11 @@ public class AST3 extends AST2 {
 	@Override
 	public IASTMutable copy() {
 		return new AST3(arg0, arg1, arg2, arg3);
+	}
+	
+	@Override
+	public IASTAppendable copyAppendable() {
+		return new AST(arg0, arg1, arg2, arg3);
 	}
 
 	/** {@inheritDoc} */

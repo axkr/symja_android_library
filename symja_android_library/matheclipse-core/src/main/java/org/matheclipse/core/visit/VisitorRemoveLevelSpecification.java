@@ -216,8 +216,7 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 	}
 
 	/**
-	 * <b>Note:</b> the given AST will be modified, i.e. some elements may be
-	 * removed!
+	 * <b>Note:</b> the given AST will be modified, i.e. some elements may be removed!
 	 * 
 	 * @param clonedAST
 	 *            an AST where arguments could be removed.
@@ -229,17 +228,17 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 		IExpr temp;
 		try {
 			if (!(clonedAST instanceof IASTAppendable)) {
-				clonedAST=clonedAST.clone();
+				clonedAST = clonedAST.copyAppendable();
 			}
 			fCurrentLevel++;
 			if (fIncludeHeads) {
 				arg = clonedAST.get(0);
 				if (arg.isAST()) {
-					arg = ((IAST) arg).clone();
+					arg = ((IAST) arg).copyAppendable();
 				}
 				temp = arg.accept(this);
 				if (temp.isPresent()) {
-					((IASTAppendable)clonedAST).remove(0);
+					((IASTAppendable) clonedAST).remove(0);
 					removedCounter++;
 					if (maximumRemoved >= 0) {
 						if (removedCounter >= maximumRemoved) {
@@ -258,11 +257,11 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 			while (i < clonedAST.size()) {
 				arg = clonedAST.get(i);
 				if (arg.isAST()) {
-					arg = ((IAST) arg).clone();
+					arg = ((IAST) arg).copyAppendable();
 				}
 				temp = arg.accept(this);
 				if (temp.isPresent()) {
-					((IASTAppendable)clonedAST).remove(i);
+					((IASTAppendable) clonedAST).remove(i);
 					removedCounter++;
 					if (maximumRemoved >= 0) {
 						if (removedCounter >= maximumRemoved) {

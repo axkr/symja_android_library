@@ -86,7 +86,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
 					double xMin = ((ISignedNumber) xMinExpr).doubleValue();
 					double xMax = ((ISignedNumber) xMaxExpr).doubleValue();
 					double xStep = 0.1;
-					IASTAppendable listOfEquations = Validate.checkEquations(ast, 1).clone();
+					IASTAppendable listOfEquations = Validate.checkEquations(ast, 1).copyAppendable();
 					IExpr[][] boundaryCondition = new IExpr[2][dimension];
 					int i = 1;
 					while (i < listOfEquations.size()) {
@@ -164,7 +164,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
 	private boolean determineSingleBoundary(IExpr equation, IAST uFunctionSymbols, IExpr xVar,
 			IExpr boundaryCondition[][], EvalEngine engine) {
 		if (equation.isAST()) {
-			IASTAppendable eq = ((IAST) equation).clone();
+			IASTAppendable eq = ((IAST) equation).copyAppendable();
 			if (!eq.isPlus()) {
 				// create artificial Plus(...) expression
 				eq = F.Plus(eq);
@@ -209,7 +209,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
 	private boolean determineSingleDotEquation(IExpr equation, IAST uFunctionSymbols, IExpr xVar, IExpr dotEquations[],
 			EvalEngine engine) {
 		if (equation.isAST()) {
-			IASTAppendable eq = ((IAST) equation).clone();
+			IASTAppendable eq = ((IAST) equation).copyAppendable();
 			if (!eq.isPlus()) {
 				// create artificial Plus(...) expression
 				eq = F.Plus(eq);

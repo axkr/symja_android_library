@@ -452,7 +452,7 @@ public final class ListFunctions {
 
 			@Override
 			public IExpr evaluate(final IExpr[] index) {
-				final IASTAppendable ast = fHeadAST.clone();
+				final IASTAppendable ast = fHeadAST.copyAppendable();
 				return fEngine.evaluate(ast.appendArgs(0, index.length, i -> index[i]));
 				// for (int i = 0; i < index.length; i++) {
 				// ast.append(index[i]);
@@ -1173,7 +1173,7 @@ public final class ListFunctions {
 					if (ast.size() == 5) {
 						maximumRemoveOperations = Validate.checkIntType(ast, 4);
 					}
-					IASTAppendable arg1RemoveClone = ((IAST) arg1).clone();
+					IASTAppendable arg1RemoveClone = ((IAST) arg1).copyAppendable();
 
 					try {
 						DeleteCasesPatternMatcherFunctor cpmf = new DeleteCasesPatternMatcherFunctor(matcher);
@@ -1271,7 +1271,7 @@ public final class ListFunctions {
 					final ISequence[] sequ = Sequence.createSequences(evaledAST, 2);
 					final IAST list = (IAST) arg1;
 					if (sequ != null) {
-						final IASTAppendable resultList = list.clone();
+						final IASTAppendable resultList = list.copyAppendable();
 						drop(resultList, 0, sequ);
 						return resultList;
 					}
@@ -1330,7 +1330,7 @@ public final class ListFunctions {
 			for (int j2 = 1; j2 < list.size(); j2++) {
 				if (sequenceSpecifications.length > newLevel) {
 					if (list.get(j2).isAST()) {
-						final IASTAppendable tempList = ((IAST) list.get(j2)).clone();
+						final IASTAppendable tempList = ((IAST) list.get(j2)).copyAppendable();
 						list.set(j2, drop(tempList, newLevel, sequenceSpecifications));
 					} else {
 						throw new IllegalArgument("Cannot execute drop for argument: " + list.get(j2).toString());
@@ -2037,7 +2037,7 @@ public final class ListFunctions {
 			for (int i = headOffset; i < size; i++) {
 				if (list.get(i).isAST()) {
 					// clone = (INestedList<IExpr>) prototypeList.clone();
-					clone = prototypeList.clone();
+					clone = prototypeList.copyAppendable();
 					clone.append(positionConverter.toObject(i));
 					position((IAST) list.get(i), clone, resultCollection, level, matcher, positionConverter,
 							headOffset);
@@ -2047,7 +2047,7 @@ public final class ListFunctions {
 				}
 				if (matcher.test(list.get(i))) {
 					if (level.isInRange()) {
-						clone = prototypeList.clone();
+						clone = prototypeList.copyAppendable();
 						IExpr IExpr = positionConverter.toObject(i);
 						clone.append(IExpr);
 						resultCollection.append(clone);

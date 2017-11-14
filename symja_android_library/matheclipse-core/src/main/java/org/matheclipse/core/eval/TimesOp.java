@@ -59,7 +59,7 @@ public class TimesOp {
 			}
 		} else if (temp.head().equals(F.Plus)) {
 			if (!(temp instanceof IASTAppendable)) {
-				temp = ((IAST) temp).clone();
+				temp = ((IAST) temp).copyAppendable();
 			}
 			((IASTAppendable) temp).append(value);
 		} else {

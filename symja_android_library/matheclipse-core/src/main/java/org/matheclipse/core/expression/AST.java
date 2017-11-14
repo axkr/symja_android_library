@@ -196,7 +196,6 @@ public class AST extends HMArrayList implements Externalizable {
 	 */
 	public AST() {
 		super(0);
-		lastIndex++;
 	}
 
 	public AST(IExpr head, IExpr... es) {
@@ -242,7 +241,18 @@ public class AST extends HMArrayList implements Externalizable {
 	 * @return a clone of this <tt>AST</tt> instance.
 	 */
 	@Override
-	public IASTAppendable clone() {
+	public IAST clone() {
+		AST ast = new AST();
+		ast.fProperties = null;
+		ast.array = array.clone();
+		ast.hashValue = 0;
+		ast.firstIndex = firstIndex;
+		ast.lastIndex = lastIndex;
+		return ast;
+	}
+
+	@Override
+	public IASTAppendable copyAppendable() {
 		AST ast = new AST();
 		ast.fProperties = null;
 		ast.array = array.clone();

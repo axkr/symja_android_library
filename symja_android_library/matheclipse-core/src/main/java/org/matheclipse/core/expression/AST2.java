@@ -104,7 +104,7 @@ public class AST2 extends AST1 {
 	 * @see java.lang.Cloneable
 	 */
 	@Override
-	public IASTAppendable clone() {
+	public IAST clone() {
 		return new AST(arg0, arg1, arg2);
 	}
 
@@ -114,6 +114,11 @@ public class AST2 extends AST1 {
 		return new AST2(arg0, arg1, arg2);
 	}
 
+	@Override
+	public IASTAppendable copyAppendable() {
+		return new AST(arg0, arg1, arg2);
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public boolean contains(Object object) {

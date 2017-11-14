@@ -239,7 +239,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 		// if (v == null) {
 		// vars = null;
 		// } else {
-		vars = listOfVariables.clone();// Arrays.copyOf(v, v.length); // >
+		vars = listOfVariables.copyAppendable();// Arrays.copyOf(v, v.length); // >
 										// Java-5
 		// }
 		ZERO = new ExprPolynomial(this);
@@ -705,7 +705,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * @return vars.
 	 */
 	public IAST getVars() {
-		return vars.clone();
+		return vars; //.copyAppendable();
 	}
 
 	/**
@@ -719,7 +719,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 					"v not matching number of variables: " + v.toString() + ", nvar " + nvar);
 		}
 		IAST t = vars;
-		vars = v.clone();// Arrays.copyOf(v, v.length); // > Java-5
+		vars = v.copyAppendable();// Arrays.copyOf(v, v.length); // > Java-5
 		return t;
 	}
 
@@ -1072,7 +1072,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 			throw new IllegalArgumentException("vn and vars may not be null");
 		}
 		int i = vn.size() - 1;
-		IASTAppendable v = vars.clone();
+		IASTAppendable v = vars.copyAppendable();
 		v.appendArgs(vn);
 		// for (int k = 0; k < vars.length; k++) {
 		// v[k] = vars[k];

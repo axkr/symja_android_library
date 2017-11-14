@@ -432,7 +432,7 @@ public class Algebra {
 				if (numeratorPlus.get(i).isInteger()) {
 					numeratorPlus.set(i, ((IInteger) numeratorPlus.get(i)).div(gcd));
 				} else if (numeratorPlus.get(i).isTimes() && numeratorPlus.get(i).getAt(1).isInteger()) {
-					IASTAppendable times = ((IAST) numeratorPlus.get(i)).clone();
+					IASTAppendable times = ((IAST) numeratorPlus.get(i)).copyAppendable();
 					times.set(1, ((IInteger) times.arg1()).div(gcd));
 					numeratorPlus.set(i, times);
 				} else {
@@ -457,7 +457,7 @@ public class Algebra {
 		 * @return <code>null</code> if no gcd value was found
 		 */
 		private static IExpr[] cancelPlusIntegerGCD(IAST numeratorPlus, IInteger denominatorInt) {
-			IASTAppendable plus = numeratorPlus.clone();
+			IASTAppendable plus = numeratorPlus.copyAppendable();
 			IASTAppendable gcd = F.ast(F.GCD, plus.size() + 1, false);
 			gcd.append(denominatorInt);
 			boolean evaled = true;
@@ -682,7 +682,7 @@ public class Algebra {
 				return;
 			} else if (expr.isPlus()) {
 				IAST plusAST = (IAST) expr;
-				IASTAppendable clone = plusAST.clone();
+				IASTAppendable clone = plusAST.copyAppendable();
 				int i = 1;
 				while (i < clone.size()) {
 					if (collectToMapPlus(clone.get(i), matcher, map)) {
@@ -699,7 +699,7 @@ public class Algebra {
 				IAST timesAST = (IAST) expr;
 				for (int i = 1; i < timesAST.size(); i++) {
 					if (matcher.test(timesAST.get(i)) || isPowerMatched(timesAST.get(i), matcher)) {
-						IASTAppendable clone = timesAST.clone();
+						IASTAppendable clone = timesAST.copyAppendable();
 						clone.remove(i);
 						addOneIdentityPowerFactor(timesAST.get(i), clone, map);
 						return;
@@ -1271,7 +1271,7 @@ public class Algebra {
 				final IAST times = F.Times();
 				IExpr temp;
 				for (int[] indices : perm) {
-					final IASTAppendable timesAST = times.clone();
+					final IASTAppendable timesAST = times.copyAppendable();
 					if (!multinomial.isOne()) {
 						timesAST.append(multinomial);
 					}
@@ -2621,7 +2621,7 @@ public class Algebra {
 							// }
 							IAST expResult = Power(E, Times(C2, I, Pi, x2, Floor(plusResult)));
 							if (!(timesResult instanceof IASTAppendable)) {
-								timesResult = timesResult.clone();
+								timesResult = timesResult.copyAppendable();
 							}
 							((IASTAppendable) timesResult).append(expResult);
 							return timesResult;

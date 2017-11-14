@@ -100,7 +100,7 @@ public class AST1 extends AST0 {
 	 * @see java.lang.Cloneable
 	 */
 	@Override
-	public IASTAppendable clone() {
+	public IAST clone() {
 		return new AST(arg0, arg1);
 	}
 
@@ -108,6 +108,11 @@ public class AST1 extends AST0 {
 	@Override
 	public IASTMutable copy() {
 		return new AST1(arg0, arg1);
+	}
+	
+	@Override
+	public IASTAppendable copyAppendable() {
+		return new AST(arg0, arg1);
 	}
 
 	/** {@inheritDoc} */

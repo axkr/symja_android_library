@@ -63,7 +63,7 @@ public class VisitorReplaceSlots extends VisitorExpr {
 				IAST slotSequence = (IAST) ast.get(i);
 				if (slotSequence.arg1() instanceof IntegerSym) {
 					// something may be evaluated - return a new IAST:
-					result = ast.clone();
+					result = ast.copyAppendable();
 					j = getSlotSequence(result, i, (IntegerSym) slotSequence.arg1());
 					i++;
 				}

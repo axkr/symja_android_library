@@ -2012,7 +2012,7 @@ public final class LinearAlgebra {
 				IAST mnm = (IAST) engine
 						.evaluate(F.List(F.Flatten(diagonalMatrix(new IExpr[] { F.C0, F.C1 }, dimensions[0]))));
 				if (!(mnm instanceof IASTAppendable)) {
-					mnm = mnm.clone();
+					mnm = mnm.copyAppendable();
 				}
 				while (qu.size() == 1) {
 					((IASTAppendable) mnm).append(engine.evaluate(F.Flatten(F.MatrixPower(matrix, F.integer(n)))));

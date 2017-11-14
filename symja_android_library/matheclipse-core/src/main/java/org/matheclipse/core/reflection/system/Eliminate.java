@@ -351,7 +351,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 				if (ast.isPlus()) {
 					// a + b + c....
 					IASTAppendable rest = F.PlusAlloc(size);
-					IASTAppendable plusClone = ast.clone();
+					IASTAppendable plusClone = ast.copyAppendable();
 					int j = 1;
 					for (int i = 1; i < size; i++) {
 						if (ast.get(i).isFree(predicate, true)) {
@@ -370,7 +370,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 				} else if (ast.isTimes()) {
 					// a * b * c....
 					IASTAppendable rest = F.TimesAlloc(size);
-					IASTAppendable timesClone = ast.clone();
+					IASTAppendable timesClone = ast.copyAppendable();
 					int j = 1;
 					for (int i = 1; i < size; i++) {
 						if (ast.get(i).isFree(predicate, true)) {

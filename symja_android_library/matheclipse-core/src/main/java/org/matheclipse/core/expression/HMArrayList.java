@@ -104,7 +104,9 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 			throw new IllegalArgumentException();
 		}
 		firstIndex = lastIndex = hashValue = 0;
-		array = newElementArray(capacity);
+		if (capacity > 0) {
+			array = newElementArray(capacity);
+		}
 	}
 
 	/**
@@ -458,6 +460,27 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 		}
 		hashValue = 0;
 	}
+
+	/**
+	 * Returns a shallow copy of this <tt>AST</tt> instance. (The elements themselves are not copied.)
+	 * 
+	 * @return a clone of this <tt>AST</tt> instance.
+	 */
+	// @Override
+	// public IAST clone() {
+	// HMArrayList ast;
+	// try {
+	// ast = (HMArrayList) super.clone();
+	// ast.array = array.clone();
+	// ast.hashValue = 0;
+	// ast.firstIndex = firstIndex;
+	// ast.lastIndex = lastIndex;
+	// return ast;
+	// } catch (CloneNotSupportedException e) {
+	// e.printStackTrace();
+	// }
+	// return null;
+	// }
 
 	/**
 	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this

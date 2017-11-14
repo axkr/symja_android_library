@@ -292,7 +292,7 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	 * @see java.lang.Cloneable
 	 */
 	@Override
-	public IASTAppendable clone() {
+	public IAST clone() {
 		return Convert.vector2List(vector);
 		// return new ASTRealVector(vector.copy(), false);
 	}
@@ -317,6 +317,11 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 		return new ASTRealVector(vector.copy(), false);
 	}
 
+	@Override
+	public IASTAppendable copyAppendable() {
+		return Convert.vector2List(vector);
+	}
+	
 	@Override
 	public boolean equals(final Object obj) {
 		if (obj instanceof ASTRealVector) {

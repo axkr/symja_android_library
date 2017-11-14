@@ -155,7 +155,7 @@ public class Package extends AbstractCoreFunctionEvaluator {
 	 * @return
 	 */
 	private static IAST convertSymbolsInList(IAST ast, HashMap<String, ISymbol> convertedSymbols) {
-		IASTAppendable result = ast.clone();
+		IASTAppendable result = ast.copyAppendable();
 		for (int i = 0; i < result.size(); i++) {
 			IExpr expr = result.get(i);
 			if (expr.isAST()) {

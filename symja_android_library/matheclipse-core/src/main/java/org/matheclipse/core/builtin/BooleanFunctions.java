@@ -161,7 +161,7 @@ public final class BooleanFunctions {
 				flattenedAST = ast;
 			}
 
-			IASTAppendable result = flattenedAST.clone();
+			IASTAppendable result = flattenedAST.copyAppendable();
 			int[] symbols = new int[flattenedAST.size()];
 			int[] notSymbols = new int[flattenedAST.size()];
 			for (int i = 1; i < flattenedAST.size(); i++) {
@@ -368,7 +368,7 @@ public final class BooleanFunctions {
 			public IAST convertXor(IAST ast) {
 				IExpr temp = ast.arg2();
 				if (ast.size() > 3) {
-					IASTAppendable clone = ast.clone();
+					IASTAppendable clone = ast.copyAppendable();
 					clone.remove(1);
 					temp = convertXor(clone);
 				}
@@ -568,7 +568,7 @@ public final class BooleanFunctions {
 					return equalNull(ast.arg1(), ast.arg2(), engine);
 				}
 				boolean evaled = false;
-				IASTAppendable result = ast.clone();
+				IASTAppendable result = ast.copyAppendable();
 				int i = 2;
 				IExpr arg1 = F.expandAll(result.get(1), true, true);
 				while (i < result.size()) {
@@ -930,7 +930,7 @@ public final class BooleanFunctions {
 			}
 			IExpr.COMPARE_TERNARY b;
 			boolean evaled = false;
-			IASTAppendable result = ast.clone();
+			IASTAppendable result = ast.copyAppendable();
 			IExpr.COMPARE_TERNARY[] cResult = new IExpr.COMPARE_TERNARY[ast.size()];
 			cResult[0] = IExpr.COMPARE_TERNARY.TRUE;
 			for (int i = 1; i < ast.size() - 1; i++) {
@@ -1828,7 +1828,7 @@ public final class BooleanFunctions {
 				flattenedAST = ast;
 			}
 
-			IASTAppendable result = flattenedAST.clone();
+			IASTAppendable result = flattenedAST.copyAppendable();
 			IExpr temp;
 			IExpr sym;
 			int[] symbols = new int[flattenedAST.size()];

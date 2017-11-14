@@ -477,7 +477,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				final OrderlessMatcher foMatcher = new OrderlessMatcher(lhsPatternAST, lhsEvalAST);
 				boolean matched = foMatcher.matchOrderlessAST(1, null, engine);
 				if (matched) {
-					IASTAppendable lhsResultAST = (lhsEvalAST).clone();
+					IASTAppendable lhsResultAST = (lhsEvalAST).copyAppendable();
 					foMatcher.filterResult(lhsResultAST);
 					IExpr result = fPatternMap.substituteSymbols(rhsExpr);
 					try {
@@ -501,7 +501,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				int len = lhsEvalAST.size() - lhsPatternAST.size();
 				for (int i = 0; i < len; i++) {
 					if (matchASTSequence(lhsPatternAST, lhsEvalAST, i, engine, null)) {
-						IASTAppendable lhsResultAST = lhsEvalAST.clone();
+						IASTAppendable lhsResultAST = lhsEvalAST.copyAppendable();
 						for (int j = 1; j < lhsPatternAST.size(); j++) {
 							lhsResultAST.remove(i + 1);
 						}
