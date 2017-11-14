@@ -6307,6 +6307,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSinc() {
+		check("Sinc(3.5)", "-0.10022");
+		check("Sinc(1.0+3.5*I)", "3.41348+I*(-3.00916)");
 		check("(2*Sqrt(2))/Pi", "(2*Sqrt(2))/Pi");
 		check("2+(-Sqrt(5))/8", "2-Sqrt(5)/8");
 		check("Sinc(0)", "1");
