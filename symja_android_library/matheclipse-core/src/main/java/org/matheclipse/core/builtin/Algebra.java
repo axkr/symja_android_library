@@ -432,7 +432,7 @@ public class Algebra {
 				if (numeratorPlus.get(i).isInteger()) {
 					numeratorPlus.set(i, ((IInteger) numeratorPlus.get(i)).div(gcd));
 				} else if (numeratorPlus.get(i).isTimes() && numeratorPlus.get(i).getAt(1).isInteger()) {
-					IASTAppendable times = ((IAST) numeratorPlus.get(i)).copyAppendable();
+					IASTMutable times = ((IAST) numeratorPlus.get(i)).copy();
 					times.set(1, ((IInteger) times.arg1()).div(gcd));
 					numeratorPlus.set(i, times);
 				} else {
