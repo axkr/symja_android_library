@@ -405,9 +405,6 @@ public class ExpTrigsFunctions {
 	 */
 	private final static class ArcCoth extends AbstractTrigArg1 implements ArcCothRules, DoubleUnaryOperator {
 
-		public ArcCoth() {
-		}
-
 		@Override
 		public double applyAsDouble(double operand) {
 			if (F.isZero(operand)) {
@@ -494,15 +491,28 @@ public class ExpTrigsFunctions {
 	/**
 	 * Inverse hyperbolic tangent
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Inverse_hyperbolic_function"> Inverse hyperbolic functions</a>
+	 * See <a href="https://en.wikipedia.org/wiki/Inverse_trigonometric_functions">Inverse trigonometric functions</a>
 	 */
 	private final static class ArcCsc extends AbstractTrigArg1 implements ArcCscRules {
 		@Override
-		public IAST getRuleAST() {
-			return RULES;
+		public IExpr e1ComplexArg(final Complex arg1) {
+			if (arg1.equals(Complex.ZERO)) {
+				return F.CComplexInfinity;
+			}
+			return F.complexNum(Complex.ONE.divide(arg1).asin());
 		}
 
-		public ArcCsc() {
+		@Override
+		public IExpr e1DblArg(final double arg1) {
+			if (F.isZero(arg1)) {
+				return F.CComplexInfinity;
+			}
+			return F.num(Math.asin(1 / arg1));
+		}
+
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
 		}
 
 		@Override
@@ -597,6 +607,21 @@ public class ExpTrigsFunctions {
 	}
 
 	private final static class ArcSec extends AbstractTrigArg1 implements ArcSecRules {
+		@Override
+		public IExpr e1ComplexArg(final Complex arg1) {
+			if (arg1.equals(Complex.ZERO)) {
+				return F.CComplexInfinity;
+			}
+			return F.complexNum(Complex.ONE.divide(arg1).acos());
+		}
+
+		@Override
+		public IExpr e1DblArg(final double arg1) {
+			if (F.isZero(arg1)) {
+				return F.CComplexInfinity;
+			}
+			return F.num(Math.acos(1 / arg1));
+		}
 
 		@Override
 		public IAST getRuleAST() {
@@ -1951,7 +1976,7 @@ public class ExpTrigsFunctions {
 			}
 			return F.num(ApfloatMath.sin(arg1).divide(arg1));
 		}
-		
+
 		@Override
 		public IExpr e1ComplexArg(Complex arg1) {
 			if (arg1.equals(Complex.ZERO)) {

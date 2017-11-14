@@ -244,6 +244,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArcCsc() {
+		check("ArcCsc(3.5)", "0.28975");
+		check("ArcCsc(1.0+3.5*I)", "0.07302+I*(-0.26185)");
 		check("ArcCsc(1)", "Pi/2");
 		check("ArcCsc(-1)", "-Pi/2");
 		check("arccsc(0)", "ComplexInfinity");
@@ -261,6 +263,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArcSec() {
+		check("ArcSec(3.5)", "1.28104");
+		check("ArcSec(1.0+3.5*I)", "1.49778+I*0.26185");
 		check("ArcSec(1)", "0");
 		check("ArcSec(-1)", "Pi");
 		check("ArcSec(0)", "ComplexInfinity");
@@ -1141,6 +1145,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCsc() {
+		check("Csc(3.5)", "-2.85076");
+		check("Csc(1.0+3.5*I)", "0.05083+I*(-0.03258)");
 		check("Csc(0)", "ComplexInfinity");
 		check("Csc(1)", "Csc(1)");
 		check("Csc(1.)", "1.1884");
