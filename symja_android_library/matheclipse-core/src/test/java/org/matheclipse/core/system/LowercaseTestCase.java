@@ -6973,6 +6973,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSurd() {
 		checkNumeric("Surd(-2.,5)", "-1.148698354997035");
 		check("Surd(-3,2)", "Indeterminate");
+		check("Surd(-3,-2)", "Indeterminate");
+		check("Surd(I,2)", "Surd(I,2)");
 		check("Surd({-3, -2, -1, 0, 1, 2, 3}, 7)", "{(-3)^(1/7),(-2)^(1/7),-1,0,1,2^(1/7),3^(1/7)}");
 		checkNumeric("N(Surd({-3, -2, -1, 0, 1, 2, 3}, 7))",
 				"{-1.169930812758687,-1.1040895136738123,-1.0,0.0,1.0,1.1040895136738123,1.169930812758687}");

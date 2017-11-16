@@ -603,6 +603,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Subtract](functions/Subtract.md)
 * [SubtractFrom](functions/SubtractFrom.md)
 * [Sum](functions/Sum.md)
+* [Surd](functions/Surd.md)
 * [Switch](functions/Switch.md)
 * [Symbol](functions/Symbol.md)
 * [SymbolName](functions/SymbolName.md)
@@ -650,4 +651,5 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Xor](functions/Xor.md)
 * [YuleDissimilarity](functions/YuleDissimilarity.md)
 * [Zeta](functions/Zeta.md)
+
 
