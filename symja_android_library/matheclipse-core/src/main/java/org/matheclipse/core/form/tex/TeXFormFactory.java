@@ -82,11 +82,16 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 
 	@Override
 	public void convertDouble(final StringBuilder buf, final INum d, final int precedence) {
-		if (d.isNegative() && (precedence > plusPrec)) {
+		if (d.isZero()) {
+			buf.append(convertDoubleToFormattedString(0.0));
+			return;
+		}
+		final boolean isNegative = d.isNegative();
+		if (isNegative && (precedence > plusPrec)) {
 			buf.append("\\left( ");
 		}
 		buf.append(convertDoubleToFormattedString(d.getRealPart()));
-		if (d.isNegative() && (precedence > plusPrec)) {
+		if (isNegative && (precedence > plusPrec)) {
 			buf.append("\\right) ");
 		}
 	}

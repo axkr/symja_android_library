@@ -107,7 +107,14 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 	@Override
 	public void convertDouble(final StringBuilder buf, final INum d, final int precedence) {
-		if (d.isNegative() && (precedence > plusPrec)) {
+		if (d.isZero()) {
+			tagStart(buf, "mn");
+			buf.append(convertDoubleToFormattedString(0.0));
+			tagEnd(buf, "mn");
+			return;
+		}
+		final boolean isNegative = d.isNegative();
+		if (isNegative && (precedence > plusPrec)) {
 			tagStart(buf, "mrow");
 			tag(buf, "mo", "(");
 		}
@@ -118,7 +125,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			buf.append(convertDoubleToFormattedString(d.getRealPart()));
 		}
 		tagEnd(buf, "mn");
-		if (d.isNegative() && (precedence > plusPrec)) {
+		if (isNegative && (precedence > plusPrec)) {
 			tag(buf, "mo", ")");
 			tagEnd(buf, "mrow");
 		}

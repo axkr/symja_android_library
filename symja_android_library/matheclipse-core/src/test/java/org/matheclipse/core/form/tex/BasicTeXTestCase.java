@@ -22,6 +22,8 @@ public class BasicTeXTestCase extends TestCase {
 	 * Test mathml function
 	 */
 	public void testTeX001() {
+		check("-0.0", "0.0");
+		check("0.0", "0.0");
 		check("a*b", "a\\,b");
 
 	}

@@ -147,6 +147,8 @@ public class MathMLPresentationTestCase extends TestCase {
 	}
 
 	public void testMathML001() {
+		check("-0.0", "<mn>0.0</mn>");
+		check("0.0", "<mn>0.0</mn>");
 		check("Catalan", "<mi>C</mi>");
 		check("Pi", "<mi>&#x03C0;</mi>");
 		check("Infinity", "<mi>&#x221E;</mi>");

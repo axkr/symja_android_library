@@ -1757,6 +1757,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEigenvalues() {
+		check("Eigenvalues({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", "{16.11684,-1.11684,0.0}");
 		check("Eigenvalues({{a}})", "{a}");
 		check("Eigenvalues({{a, b}, {0, a}})", "{a,a}");
 		check("Eigenvalues({{a, b}, {0, d}})", "{1/2*(a+d-Sqrt(a^2-2*a*d+d^2)),1/2*(a+d+Sqrt(a^2-2*a*d+d^2))}");
