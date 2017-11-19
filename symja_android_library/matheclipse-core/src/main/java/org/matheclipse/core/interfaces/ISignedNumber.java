@@ -116,7 +116,7 @@ public interface ISignedNumber extends INumber {
 	 * 
 	 * @return
 	 */
-	public Num numValue();
+	public INum numValue();
 
 	@Override
 	public ISignedNumber opposite();

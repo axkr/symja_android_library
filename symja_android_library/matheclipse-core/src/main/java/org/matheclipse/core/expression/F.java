@@ -1609,17 +1609,17 @@ public class F {
 	/**
 	 * Constant double &quot;1.0&quot;
 	 */
-	public final static INum CND1 = Num.valueOf(-1.0);
+	public final static Num CND1 = new Num(-1.0);
 
 	/**
 	 * Constant double &quot;0.0&quot;
 	 */
-	public final static INum CD0 = Num.valueOf(0.0);
+	public final static Num CD0 = new Num(0.0);
 
 	/**
 	 * Constant double &quot;1.0&quot;
 	 */
-	public final static INum CD1 = Num.valueOf(1.0);
+	public final static Num CD1 = new Num(1.0);
 
 	/**
 	 * Represents <code>List()</code> (i.e. the constant empty list)

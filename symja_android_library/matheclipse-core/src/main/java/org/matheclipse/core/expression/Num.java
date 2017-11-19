@@ -29,24 +29,36 @@ public class Num implements INum {
 	private static final long serialVersionUID = 188084692735007429L;
 
 	/**
-	 * Be cautious with this method, no new internal rational is created
-	 * 
-	 * @param value
-	 *            a Java double value
-	 * @return
+	 * Returns a {@code Num} instance representing the specified {@code double} value. If a new {@code Num} instance is
+	 * not required, this method should generally be used in preference to the constructor {@link #Num(double)}, as this
+	 * method is likely to yield significantly better space and time performance by caching frequently requested values.
+	 *
+	 * @param d
+	 *            a double value.
+	 * @return a {@code Double} instance representing {@code d}.
 	 */
-	protected static Num newInstance(final double value) {
-		Num d = new Num(0.0);
-		d.fDouble = value;
-		return d;
-	}
-
-	/**
-	 * @param doubleValue
-	 * @return
-	 */
-	public static Num valueOf(final double doubleValue) {
-		return newInstance(doubleValue);
+	public static Num valueOf(final double d) {
+		int i = (int) d;
+		if (i > (-2) && i < 2) {
+			switch (i) {
+			case -1:
+				if (d == (-1.0)) {
+					return F.CND1;
+				}
+				break;
+			case 0:
+				if (d == 0.0) {
+					return F.CD0;
+				}
+				break;
+			case 1:
+				if (d == 1.0) {
+					return F.CD1;
+				}
+				break;
+			}
+		}
+		return new Num(d);
 	}
 
 	/**
@@ -59,7 +71,7 @@ public class Num implements INum {
 
 	double fDouble;
 
-	Num() {
+	protected Num() {
 		fDouble = 0.0;
 	}
 
@@ -213,7 +225,7 @@ public class Num implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public Num abs() {
-		return newInstance(Math.abs(fDouble));
+		return valueOf(Math.abs(fDouble));
 	}
 
 	@Override
@@ -345,7 +357,7 @@ public class Num implements INum {
 		if (isOne()) {
 			return this;
 		}
-		return newInstance(1 / fDouble);
+		return valueOf(1 / fDouble);
 	}
 
 	/** {@inheritDoc} */
@@ -481,7 +493,7 @@ public class Num implements INum {
 	 */
 	@Override
 	public ISignedNumber negate() {
-		return newInstance(-fDouble);
+		return valueOf(-fDouble);
 	}
 
 	@Override
@@ -494,7 +506,7 @@ public class Num implements INum {
 	 */
 	@Override
 	public ISignedNumber opposite() {
-		return newInstance(-fDouble);
+		return valueOf(-fDouble);
 	}
 
 	/**
@@ -511,7 +523,7 @@ public class Num implements INum {
 			return add(ApfloatNum.valueOf(fDouble, ((ApfloatNum) that).fApfloat.precision()));
 		}
 		if (that instanceof Num) {
-			return newInstance(fDouble + ((Num) that).fDouble);
+			return valueOf(fDouble + ((Num) that).fDouble);
 		}
 		if (that instanceof ApcomplexNum) {
 			return ApcomplexNum.valueOf(fDouble, ((ApcomplexNum) that).fApcomplex.precision()).add((ApcomplexNum) that);
@@ -589,7 +601,7 @@ public class Num implements INum {
 			return multiply(ApfloatNum.valueOf(fDouble, ((ApfloatNum) that).fApfloat.precision()));
 		}
 		if (that instanceof Num) {
-			return newInstance(fDouble * ((Num) that).fDouble);
+			return valueOf(fDouble * ((Num) that).fDouble);
 		}
 		if (that instanceof ApcomplexNum) {
 			return ApcomplexNum.valueOf(fDouble, ((ApcomplexNum) that).fApcomplex.precision())
