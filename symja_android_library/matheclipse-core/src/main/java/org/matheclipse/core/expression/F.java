@@ -447,6 +447,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fixedpointlist" : "FixedPointList");
 	public final static IBuiltInSymbol Flatten = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "flatten" : "Flatten");
+	public final static IBuiltInSymbol FlattenAt = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "flattenat" : "FlattenAt");
 	public final static IBuiltInSymbol Fold = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fold" : "Fold");
 	public final static IBuiltInSymbol FoldList = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "foldlist" : "FoldList");

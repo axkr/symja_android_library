@@ -105,7 +105,7 @@ public final class BooleanFunctions {
 		public IExpr allTrue(IAST list, IExpr head, EvalEngine engine) {
 			IASTAppendable logicalAnd = F.And();
 
-			if (!list.forAll(  x -> {
+			if (!list.forAll(x -> {
 				IExpr temp = engine.evaluate(F.unary(head, x));
 				if (temp.isTrue()) {
 					return true;

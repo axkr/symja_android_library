@@ -30,6 +30,7 @@ public class Structure {
 		F.Apply.setEvaluator(new Apply());
 		F.Depth.setEvaluator(new Depth());
 		F.Flatten.setEvaluator(new Flatten());
+		F.FlattenAt.setEvaluator(new FlattenAt());
 		F.Function.setEvaluator(new Function());
 		F.Map.setEvaluator(new Map());
 		F.MapAll.setEvaluator(new MapAll());
@@ -198,6 +199,47 @@ public class Structure {
 						}
 					}
 					return arg1;
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	private final static class FlattenAt extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 3);
+
+			IExpr arg1 = engine.evaluate(ast.arg1());
+			IExpr arg2 = engine.evaluate(ast.arg2());
+			if (arg1.isAST()) {
+				IAST arg1AST = (IAST) arg1;
+				int[] positions = null;
+				if (arg2.isInteger()) {
+					positions = new int[1];
+					positions[0] = ((IInteger) arg2).toIntDefault(Integer.MIN_VALUE);
+					if (positions[0] == Integer.MIN_VALUE) {
+						return F.NIL;
+					}
+				}
+				if (positions != null) {
+					int size = arg1AST.size();
+					for (int i = 0; i < positions.length; i++) {
+						if (positions[i] < 0) {
+							positions[i] = size + positions[i];
+						}
+					}
+					IAST resultList = EvalAttributes.flattenAt(arg1AST.topHead(), arg1AST, positions);
+					if (resultList.isPresent()) {
+						return resultList;
+					}
+					return arg1AST;
 				}
 			}
 			return F.NIL;

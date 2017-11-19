@@ -112,6 +112,63 @@ public class EvalAttributes {
 		return F.NIL;
 	}
 
+	/**
+	 * Flatten all positions in the given list (i.e. the ASTs head element has the same head) example: suppose the head
+	 * f should be flattened out:<br>
+	 * <code>f[a,b,f[x,y,f[u,v]],z] ==> f[a,b,x,y,u,v,z]</code>
+	 * 
+	 * @param head
+	 *            the head of the expression, which should be flattened.
+	 * @param ast
+	 *            the <code>sublist</code> which should be added to the <code>result</code> list.
+	 * @param positions
+	 *            the positions which should be flattened
+	 * @return the flattened ast expression if a sublist was flattened out, otherwise return <code>F#NIL</code>..
+	 */
+	public static IASTAppendable flattenAt(final ISymbol head, final IAST ast, int[] positions) {
+		IExpr expr;
+		final int astSize = ast.size();
+		int newSize = 0;
+		boolean flattened = false;
+		for (int i = 1; i < astSize; i++) {
+			expr = ast.get(i);
+			if (expr.isAST() && containsPosition(i, positions)) {
+				flattened = true;
+				int temp = flattenAlloc(head, (IAST) expr);
+				newSize += temp;
+			} else {
+				newSize++;
+			}
+		}
+		if (flattened) {
+			IASTAppendable result = F.ast(ast.head(), newSize, false);
+			for (int i = 1; i < astSize; i++) {
+				expr = ast.get(i);
+				if (expr.isAST() && containsPosition(i, positions)) {
+					IAST temp = flattenAt(head, (IAST) expr, positions);
+					if (temp.isPresent()) {
+						result.appendArgs(temp);
+					} else {
+						result.appendArgs((IAST) expr);
+					}
+				} else {
+					result.append(expr);
+				}
+			}
+			return result;
+		}
+		return F.NIL;
+	}
+
+	private static boolean containsPosition(int position, int[] positions) {
+		for (int i = 0; i < positions.length; i++) {
+			if (positions[i] == position) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private static int flattenAlloc(final ISymbol head, final IAST ast) {
 		IExpr expr;
 		final int astSize = ast.size();
@@ -144,8 +201,8 @@ public class EvalAttributes {
 	 *            the recursion level up to which the list should be flattened
 	 * @return <code>true</code> if a sublist was flattened out into the <code>result</code> list.
 	 */
-	public static boolean flatten(final ISymbol head, final IAST sublist, final IASTAppendable result, final int recursionCounter,
-			final int level) {
+	public static boolean flatten(final ISymbol head, final IAST sublist, final IASTAppendable result,
+			final int recursionCounter, final int level) {
 		boolean isEvaled = false;
 		IExpr expr;
 		final int astSize = sublist.size();
@@ -333,7 +390,8 @@ public class EvalAttributes {
 	 *            the length of the list
 	 * @return the resulting ast with the <code>argHead</code> threaded into each ast argument.
 	 */
-	public static IASTAppendable threadList(final IAST ast, final IExpr listHead, final IExpr argHead, final int listLength) {
+	public static IASTAppendable threadList(final IAST ast, final IExpr listHead, final IExpr argHead,
+			final int listLength) {
 
 		final IASTAppendable result = F.ast(listHead, listLength, true);
 		final int listSize = ast.size();

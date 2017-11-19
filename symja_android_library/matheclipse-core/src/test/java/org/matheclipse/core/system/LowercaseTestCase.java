@@ -2437,6 +2437,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("m = {{{1, 2}, {3}}, {{4}, {5, 6}}}", "");
 	}
 
+	public void testFlattenAt() {
+		check("FlattenAt({a, {b, c}, {d, e}, {f}}, 2)", "{a,b,c,{d,e},{f}}");
+		check("FlattenAt({a, g(b,c), {d, e}, {f}}, 2)", "{a,b,c,{d,e},{f}}");
+		check("FlattenAt(f(a, g(b,c), {d, e}, {f}), -2)", "f(a,g(b,c),d,e,{f})");
+		check("FlattenAt(f(a, g(b,c), {d, e}, {f}), 4)", "f(a,g(b,c),{d,e},f)");
+	}
+	
 	public void testFloor() {
 		check("Floor(-9/4)", "-3");
 		check("Floor(1/3)", "0");

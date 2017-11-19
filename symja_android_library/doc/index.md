@@ -345,6 +345,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [FixedPointList](functions/FixedPointList.md)
 * [Flat](functions/Flat.md)
 * [Flatten](functions/Flatten.md)
+* [FlattenAt](functions/FlattenAt.md)
 * [Floor](functions/Floor.md)
 * [For](functions/For.md)
 * [FourierMatrix](functions/FourierMatrix.md)
@@ -651,5 +652,3 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Xor](functions/Xor.md)
 * [YuleDissimilarity](functions/YuleDissimilarity.md)
 * [Zeta](functions/Zeta.md)
-
-

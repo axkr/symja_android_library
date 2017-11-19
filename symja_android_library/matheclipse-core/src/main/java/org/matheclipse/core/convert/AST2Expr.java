@@ -77,17 +77,17 @@ public class AST2Expr {
 			"EuclideanDistance", "EulerE", "EulerPhi", "EvenQ", "ExactNumberQ", "Except", "Exists", "Exp", "Expand",
 			"ExpandAll", "ExpIntegralE", "ExpIntegralEi", "Exponent", "Export", "ExtendedGCD", "Extract", "Factor",
 			"Factorial", "Factorial2", "FactorInteger", "FactorSquareFree", "FactorSquareFreeList", "FactorTerms",
-			"Flatten", "Fibonacci", "FindInstance", "FindRoot", "First", "Fit", "FixedPoint", "FixedPointList", "Floor",
-			"Fold", "FoldList", "For", "ForAll", "FourierMatrix", "FractionalPart", "FrechetDistribution", "FreeQ",
-			"FresnelC", "FresnelS", "FrobeniusSolve", "FromCharacterCode", "FromContinuedFraction",
-			"FromPolarCoordinates", "FullForm", "FullSimplify", "Function", "Gamma", "GammaDistribution", "Gather",
-			"GCD", "GegenbauerC", "GeometricDistribution", "GeometricMean", "Get", "Graphics", "Graphics3D",
-			"Graphics3D", "Greater", "GreaterEqual", "GroebnerBasis", "GumbelDistribution", "Haversine",
-			"HarmonicNumber", "Head", "HeavisideTheta", "HermiteH", "HilbertMatrix", "Hold", "HoldForm", "Horner",
-			"HornerForm", "HurwitzZeta", "HypergeometricDistribution", "HypergeometricPFQ", "Hypergeometric1F1",
-			"Hypergeometric2F1", "Identity", "IdentityMatrix", "If", "Im", "Implies", "Import", "Increment", "Inner",
-			"Insert", "InexactNumberQ", "Interval", "IntegerExponent", "IntegerLength", "IntegerPart",
-			"IntegerPartitions", "IntegerQ", "Integrate", "Interpolation", "InterpolatingFunction",
+			"Flatten", "FlattenAt", "Fibonacci", "FindInstance", "FindRoot", "First", "Fit", "FixedPoint",
+			"FixedPointList", "Floor", "Fold", "FoldList", "For", "ForAll", "FourierMatrix", "FractionalPart",
+			"FrechetDistribution", "FreeQ", "FresnelC", "FresnelS", "FrobeniusSolve", "FromCharacterCode",
+			"FromContinuedFraction", "FromPolarCoordinates", "FullForm", "FullSimplify", "Function", "Gamma",
+			"GammaDistribution", "Gather", "GCD", "GegenbauerC", "GeometricDistribution", "GeometricMean", "Get",
+			"Graphics", "Graphics3D", "Graphics3D", "Greater", "GreaterEqual", "GroebnerBasis", "GumbelDistribution",
+			"Haversine", "HarmonicNumber", "Head", "HeavisideTheta", "HermiteH", "HilbertMatrix", "Hold", "HoldForm",
+			"Horner", "HornerForm", "HurwitzZeta", "HypergeometricDistribution", "HypergeometricPFQ",
+			"Hypergeometric1F1", "Hypergeometric2F1", "Identity", "IdentityMatrix", "If", "Im", "Implies", "Import",
+			"Increment", "Inner", "Insert", "InexactNumberQ", "Interval", "IntegerExponent", "IntegerLength",
+			"IntegerPart", "IntegerPartitions", "IntegerQ", "Integrate", "Interpolation", "InterpolatingFunction",
 			"InterpolatingPolynomial", "Intersection", "Inverse", "InverseErf", "InverseErfc", "InverseFunction",
 			"InverseHaversine", "InverseLaplaceTransform", "JaccardDissimilarity", "JacobiMatrix", "JacobiSymbol",
 			"JavaForm", "Join", "KOrderlessPartitions", "KPartitions", "KroneckerDelta", "Kurtosis", "Last", "LCM",
@@ -269,23 +269,23 @@ public class AST2Expr {
 			IASTMutable ast;
 			switch (size) {
 			case 1:
-				ast = (IASTMutable)F.headAST0(convertNode(functionNode.get(0)));
+				ast = (IASTMutable) F.headAST0(convertNode(functionNode.get(0)));
 				break;
 			case 2:
-				ast = (IASTMutable)F.unaryAST1(convertNode(functionNode.get(0)), convertNode(functionNode.get(1)));
+				ast = (IASTMutable) F.unaryAST1(convertNode(functionNode.get(0)), convertNode(functionNode.get(1)));
 				break;
 			case 3:
-				ast = (IASTMutable)F.binaryAST2(convertNode(functionNode.get(0)), convertNode(functionNode.get(1)),
+				ast = (IASTMutable) F.binaryAST2(convertNode(functionNode.get(0)), convertNode(functionNode.get(1)),
 						convertNode(functionNode.get(2)));
 				break;
 			case 4:
-				ast = (IASTMutable)F.ternaryAST3(convertNode(functionNode.get(0)), convertNode(functionNode.get(1)),
+				ast = (IASTMutable) F.ternaryAST3(convertNode(functionNode.get(0)), convertNode(functionNode.get(1)),
 						convertNode(functionNode.get(2)), convertNode(functionNode.get(3)));
 				break;
 			default:
 				ast = F.ast(convertNode(functionNode.get(0)), functionNode.size(), false);
 				for (int i = 1; i < functionNode.size(); i++) {
-					((IASTAppendable)ast).append(convertNode(functionNode.get(i)));
+					((IASTAppendable) ast).append(convertNode(functionNode.get(i)));
 				}
 			}
 
@@ -498,7 +498,7 @@ public class AST2Expr {
 	private IExpr rewriteLessGreaterAST(final IASTMutable ast, ISymbol compareHead) {
 		IExpr temp;
 		boolean evaled = false;
-		IASTAppendable andAST =  F.And();
+		IASTAppendable andAST = F.And();
 		for (int i = 1; i < ast.size(); i++) {
 			temp = ast.get(i);
 			if (temp.isASTSizeGE(compareHead, 3)) {
