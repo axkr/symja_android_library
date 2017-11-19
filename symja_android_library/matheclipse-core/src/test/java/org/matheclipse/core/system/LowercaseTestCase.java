@@ -6971,9 +6971,30 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSurd() {
+		checkNumeric("1/9 * 3^(4/3)", "1/3^(2/3)");
+//		checkNumeric("1/9 * 3^(7/4)", "1/3^(1/4)");
+		checkNumeric("1/9 * 3^(3/4)", "1/(3*3^(1/4))");
+		checkNumeric("1/9 * 3^(-1/2)", "1/(9*Sqrt(3))");
+		checkNumeric("1/9 * 3^(1/2)", "1/(3*Sqrt(3))");
+		checkNumeric(" 2^(1/4)*2^(-3) ", "1/(4*2^(3/4))");
+		checkNumeric("2^(-3)", "1/8");
+		checkNumeric("2^(-3/4)", "1/2^(3/4)");
+		
+//		checkNumeric("Trace((2^(1/4))/8)", "");
+		checkNumeric("Surd(2,4)/8-(1/(4*2^(1/4.0)))", "-0.061573214438088525");
+		checkNumeric("1/(4*2^(1/4.0))", "0.21022410381342865");
+		checkNumeric("Surd(2,4)", "2^(1/4)");
+		checkNumeric("Surd(2,4)/8", "1/(4*2^(3/4))");
+		
+		
+		checkNumeric("Surd(-2.,5)", "-1.148698354997035");
+//		checkNumeric("(-2.0)^(1/5)", "-1.148698354997035");
+
+		check("Surd(-16.0,2)", "Indeterminate");
 		checkNumeric("Surd(-2.,5)", "-1.148698354997035");
 		check("Surd(-3,2)", "Indeterminate");
 		check("Surd(-3,-2)", "Indeterminate");
+
 		check("Surd(I,2)", "Surd(I,2)");
 		check("Surd({-3, -2, -1, 0, 1, 2, 3}, 7)", "{(-3)^(1/7),(-2)^(1/7),-1,0,1,2^(1/7),3^(1/7)}");
 		checkNumeric("N(Surd({-3, -2, -1, 0, 1, 2, 3}, 7))",

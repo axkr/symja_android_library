@@ -1319,6 +1319,25 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
+	 * Store the current numeric mode and evaluate the expression <code>expr</code>. After evaluation reset the numeric
+	 * mode to the value stored before the evaluation starts. If evaluation is not possible return the input object.
+	 * 
+	 * @param expr
+	 *            the object which should be evaluated
+	 * @return the evaluated object
+	 */
+	public final IExpr evaluateNonNumeric(final IExpr expr) {
+		boolean numericMode = fNumericMode;
+		try {
+			fNumericMode = false;
+			return evalWithoutNumericReset(expr);
+
+		} finally {
+			fNumericMode = numericMode;
+		}
+	}
+
+	/**
 	 * 
 	 * Evaluate an object and reset the numeric mode to the value before the evaluation step. If evaluation is not
 	 * possible return <code>F.NIL</code>.

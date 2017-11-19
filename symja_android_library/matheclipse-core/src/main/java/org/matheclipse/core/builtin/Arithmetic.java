@@ -2407,7 +2407,7 @@ public final class Arithmetic {
 				return F.Indeterminate;
 			}
 			if (af0.isNegative()) {
-				return af0.negate().pow(af1.inverse()).negate();
+				return af0.abs().pow(af1.inverse()).negate();
 			}
 			return af0.pow(af1.inverse());
 		}
@@ -2416,15 +2416,11 @@ public final class Arithmetic {
 		public IExpr e2DblArg(INum d0, INum d1) {
 			double val = d0.doubleValue();
 			double r = d1.doubleValue();
-			if (r == 0.0d) {
-				EvalEngine ee = EvalEngine.get();
-				ee.printMessage("Surd(a,b) division by zero");
+			double result = doubleSurd(val, r);
+			if (result == Double.NaN) {
 				return F.Indeterminate;
 			}
-			if (val < 0.0d) {
-				return F.num(-Math.pow(-val, 1.0d / r));
-			}
-			return F.num(Math.pow(val, 1.0d / r));
+			return F.num(result);
 		}
 
 		@Override
@@ -2453,7 +2449,7 @@ public final class Arithmetic {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NHOLDREST | ISymbol.NUMERICFUNCTION);
 			super.setUp(newSymbol);
 		}
 
@@ -2472,9 +2468,33 @@ public final class Arithmetic {
 				return Double.NaN;
 			}
 			if (val < 0.0d) {
-				return -Math.pow(-val, 1.0d / r);
+				return -Math.pow(Math.abs(val), 1.0d / r);
 			}
 			return Math.pow(val, 1.0d / r);
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			IExpr arg1 = ast.arg1();
+			IExpr arg2 = engine.evaluateNonNumeric(ast.arg2());
+			if (arg2.isNumber()) {
+				if (arg2.isInteger()) {
+					IInteger iArg2 = (IInteger) arg2;
+					if (arg1.isNegative()) {
+						if (arg1.isNegative() && iArg2.isEven()) {
+							engine.printMessage("Surd(a,b) - undefined for negative \"a\" and even \"b\" values");
+							return F.Indeterminate;
+						}
+						// return F.Power(arg1, F.QQ(F.C1, iArg2));
+					}
+				} else {
+					engine.printMessage("Surd(a,b) - b should be an integer");
+					return F.NIL;
+				}
+			}
+
+			return binaryOperator(ast.arg1(), ast.arg2());
 		}
 	}
 
@@ -3016,7 +3036,8 @@ public final class Arithmetic {
 							IInteger denominatorF0 = f0.getDenominator();
 							IInteger[] res = denominatorF0.divideAndRemainder(pArg1);
 							if (res[1].isZero()) {
-								return F.Times(F.fraction(f0.getNumerator(), res[0]), F.Power(pArg1, pArg2.negate()));
+								return F.Times(F.fraction(f0.getNumerator(), res[0]),
+										F.Power(pArg1, F.Subtract(F.C1, pArg2).negate()));
 							}
 						} else {
 							IInteger numeratorF0 = f0.getNumerator();
