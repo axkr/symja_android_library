@@ -158,6 +158,8 @@ public class MainTestCase extends AbstractTestCase {
 		check("\\[Alpha]+\\[Phi]\\[Pi]", "α+ϕπ");
 
 		check("(a+b)[x]", "(a+b)[x]");
+		check("f[x,y,]", "f(x,y,Null)");
+		check("f(x,y,)", "f(x,y,Null)");
 	}
 
 	public void testOut() {

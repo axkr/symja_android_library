@@ -412,4 +412,15 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
+	
+	public void testParse30() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("f[x,y,]");
+			assertEquals(obj.toString(), "f(x, y, Null)");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
 }

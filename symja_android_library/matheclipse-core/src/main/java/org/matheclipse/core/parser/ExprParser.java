@@ -362,6 +362,10 @@ public class ExprParser extends ExprScanner {
 			}
 
 			getNextToken();
+			if (fToken == TT_PRECEDENCE_CLOSE || fToken == TT_ARGUMENTS_CLOSE) {
+				function.append(F.Null);
+				break;
+			}
 		} while (true);
 	}
 
