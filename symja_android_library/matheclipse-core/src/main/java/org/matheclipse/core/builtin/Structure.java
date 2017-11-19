@@ -49,12 +49,80 @@ public class Structure {
 	}
 
 	/**
+	 * <pre>
+	 * Apply(f, expr)
 	 * 
+	 * f @@ expr
+	 * </pre>
+	 * 
+	 * <blockquote>
 	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Apply"> Apply</a>
+	 * replaces the head of <code>expr</code> with <code>f</code>.
 	 * </p>
-	 *
+	 * 
+	 * <pre>
+	 * Apply(f, expr, levelspec)
+	 * </pre>
+	 * <p>
+	 * applies <code>f</code> on the parts specified by <code>levelspec</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; f @@ {1, 2, 3}
+	 * f(1, 2, 3)
+	 * &gt;&gt; Plus @@ {1, 2, 3}
+	 * 6
+	 * </pre>
+	 * <p>
+	 * The head of $expr$ need not be 'List':
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; f @@ (a + b + c)
+	 * f(a, b, c)
+	 * </pre>
+	 * <p>
+	 * Apply on level 1:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Apply(f, {a + b, g(c, d, e * f), 3}, {1})
+	 * {f(a, b), f(c, d, e*f), 3}
+	 * </pre>
+	 * <p>
+	 * The default level is 0:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Apply(f, {a, b, c}, {0})
+	 * f(a, b, c)
+	 * </pre>
+	 * <p>
+	 * Range of levels, including negative level (counting from bottom):
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Apply(f, {{{{{a}}}}}, {2, -3})
+	 * {{f(f({a}))}}
+	 * </pre>
+	 * <p>
+	 * Convert all operations to lists:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Apply(List, a + b * c ^ e * f(g), {0, Infinity})
+	 * {a,{b,{c,e},{g}}}
+	 * </pre>
+	 * <p>
+	 * Level specification x + y is not of the form n, {n}, or {m, n}.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Apply(f, {a, b, c}, x+y) 
+	 * Apply(f, {a, b, c}, x + y)
+	 * </pre>
 	 */
 	private final static class Apply extends AbstractCoreFunctionEvaluator {
 
@@ -120,7 +188,47 @@ public class Structure {
 	}
 
 	/**
-	 * Calculates the depth of an expression (i.e. <code>{x,{y}} --> 3</code>
+	 * <pre>
+	 * Depth(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * gives the depth of <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * The depth of an expression is defined as one plus the maximum number of <code>Part</code> indices required to
+	 * reach any part of <code>expr</code>, except for heads.
+	 * </p>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Depth(x)
+	 * 1
+	 * 
+	 * &gt;&gt; Depth(x + y)
+	 * 2
+	 * 
+	 * &gt;&gt; Depth({{{{x}}}})
+	 * 5
+	 * </pre>
+	 * <p>
+	 * Complex numbers are atomic, and hence have depth 1:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Depth(1 + 2*I)
+	 * 1
+	 * </pre>
+	 * <p>
+	 * <code>Depth</code> ignores heads:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Depth(f(a, b)[c])
+	 * 2
+	 * </pre>
 	 */
 	private final static class Depth extends AbstractCoreFunctionEvaluator {
 
@@ -159,8 +267,138 @@ public class Structure {
 	}
 
 	/**
-	 * TODO implement &quot;Flatten&quot; function (especially Flatten(list, 1) )
+	 * <pre>
+	 * Flatten(expr)
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * flattens out nested lists in <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Flatten(expr, n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * stops flattening at level <code>n</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Flatten(expr, n, h)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * flattens expressions with head <code>h</code> instead of 'List'.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Flatten({{a, b}, {c, {d}, e}, {f, {g, h}}})
+	 * {a, b, c, d, e, f, g, h}
+	 * &gt;&gt; Flatten({{a, b}, {c, {e}, e}, {f, {g, h}}}, 1)
+	 * {a, b, c, {e}, e, f, {g, h}}
+	 * &gt;&gt; Flatten(f(a, f(b, f(c, d)), e), Infinity, f)
+	 * f(a, b, c, d, e)
+	 * &gt;&gt; Flatten({{a, b}, {c, d}}, {{2}, {1}})
+	 * {{a, c}, {b, d}}
+	 * &gt;&gt; Flatten({{a, b}, {c, d}}, {{1, 2}})
+	 * {a, b, c, d}
+	 * </pre>
+	 * <p>
+	 * Flatten also works in irregularly shaped arrays
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Flatten({{1, 2, 3}, {4}, {6, 7}, {8, 9, 10}}, {{2}, {1}})
+	 * {{1, 4, 6, 8}, {2, 7, 9}, {3, 10}}
+	 * 
+	 * &gt;&gt; Flatten({{{111, 112, 113}, {121, 122}}, {{211, 212}, {221, 222, 223}}}, {{3}, {1}, {2}})
+	 * {{{111, 121}, {211, 221}}, {{112, 122}, {212, 222}}, {{113}, {223}}}
+	 * 
+	 * &gt;&gt; Flatten({{{1, 2, 3}, {4, 5}}, {{6, 7}, {8, 9,  10}}}, {{3}, {1}, {2}})
+	 * {{{1, 4}, {6, 8}}, {{2, 5}, {7, 9}}, {{3}, {10}}}
+	 * 
+	 * &gt;&gt; Flatten({{{1, 2, 3}, {4, 5}}, {{6, 7}, {8, 9, 10}}}, {{2}, {1, 3}})
+	 * {{1, 2, 3, 6, 7}, {4, 5, 8, 9, 10}}
+	 * 
+	 * &gt;&gt; Flatten({{1, 2}, {3,4}}, {1, 2})
+	 * {1, 2, 3, 4}
+	 * </pre>
+	 * <p>
+	 * Levels to be flattened together in {{-1, 2}} should be lists of positive integers.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Flatten({{1, 2}, {3, 4}}, {{-1, 2}})
+	 * Flatten({{1, 2}, {3, 4}}, {{-1, 2}}, List)
+	 * </pre>
+	 * <p>
+	 * Level 2 specified in {{1}, {2}} exceeds the levels, 1, which can be flattened together in {a, b}.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Flatten({a, b}, {{1}, {2}})
+	 * Flatten({a, b}, {{1}, {2}}, List)
+	 * </pre>
+	 * <p>
+	 * Check <code>n</code> completion
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; m = {{{1, 2}, {3}}, {{4}, {5, 6}}}
+	 * &gt;&gt; Flatten(m, {2})
+	 * {{{1, 2}, {4}}, {{3}, {5, 6}}}
+	 * &gt;&gt; Flatten(m, {{2}})
+	 * {{{1, 2}, {4}}, {{3}, {5, 6}}}
+	 * &gt;&gt; Flatten(m, {{2}, {1}})
+	 * {{{1, 2}, {4}}, {{3}, {5, 6}}}
+	 * &gt;&gt; Flatten(m, {{2}, {1}, {3}})
+	 * {{{1, 2}, {4}}, {{3}, {5, 6}}}
+	 * </pre>
+	 * <p>
+	 * Level 4 specified in {{2}, {1}, {3}, {4}} exceeds the levels, 3, which can be flattened together in {{{1, 2},
+	 * {3}}, {{4}, {5, 6}}}.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Flatten(m, {{2}, {1}, {3}, {4}})
+	 * Flatten({{{1, 2}, {3}}, {{4}, {5, 6}}}, {{2}, {1}, {3}, {4}}, List)
+	 * </pre>
+	 * 
+	 * <pre>
+	 * &gt;&gt; m{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+	 * &gt;&gt; Flatten(m, {1})
+	 * {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}
+	 * &gt;&gt; Flatten(m, {2})
+	 * {{1, 4, 7}, {2, 5, 8}, {3, 6, 9}}
+	 * &gt;&gt; Flatten(m, {3})
+	 *  : Level 3 specified in {3} exceeds the levels, 2, which can be flattened together in {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}.
+	 * Flatten({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, {3}, List)
+	 * &gt;&gt; Flatten(m, {2, 1})
+	 * {1, 4, 7, 2, 5, 8, 3, 6, 9}
+	 * Reproduce strange head behaviour
+	 * &gt;&gt; Flatten({{1}, 2}, {1, 2})
+	 *  : Level 2 specified in {1, 2} exceeds the levels, 1, which can be flattened together in {{1}, 2}.
+	 * Flatten({{1}, 2}, {1, 2}, List)
+	 * &gt;&gt; Flatten(a(b(1, 2), b(3)), {1, 2}, b)     (* MMA BUG: {{1, 2}} not {1, 2}  *)
+	 *  : Level 1 specified in {1, 2} exceeds the levels, 0, which can be flattened together in a(b(1, 2), b(3)).
+	 * Flatten(a(b(1, 2), b(3)), {1, 2}, b)
+	 * &gt;&gt; Flatten({{1, 2}, {3, {4}}}, {{1, 2}})
+	 * {1, 2, 3, {4}}
+	 * &gt;&gt; Flatten({{1, 2}, {3, {4}}}, {{1, 2, 3}})
+	 *  : Level 3 specified in {{1, 2, 3}} exceeds the levels, 2, which can be flattened together in {{1, 2}, {3, {4}}}.
+	 * Flatten({{1, 2}, {3, {4}}}, {{1, 2, 3}}, List)
+	 * &gt;&gt; Flatten(p(1, p(2), p(3)))
+	 * p(1, 2, 3)
+	 * &gt;&gt; Flatten(p(1, p(2), p(3)), 2)
+	 * p(1, 2, 3)
+	 * </pre>
 	 */
 	private final static class Flatten extends AbstractCoreFunctionEvaluator {
 
@@ -210,6 +448,26 @@ public class Structure {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * FlattenAt(expr, position)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * flattens out nested lists at the given <code>position</code> in <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; FlattenAt(f(a, g(b,c), {d, e}, {f}), -2)
+	 * f(a,g(b,c),d,e,{f})
+	 * 
+	 * &gt;&gt; FlattenAt(f(a, g(b,c), {d, e}, {f}), 4)
+	 * f(a,g(b,c),{d,e},f)
+	 * </pre>
+	 */
 	private final static class FlattenAt extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -312,8 +570,57 @@ public class Structure {
 	}
 
 	/**
+	 * <pre>
+	 * Map(f, expr)  or  f /@ expr
+	 * </pre>
 	 * 
-	 * @see Scan
+	 * <blockquote>
+	 * <p>
+	 * applies <code>f</code> to each part on the first level of <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Map(f, expr, levelspec)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * applies f to each level specified by <code>levelspec</code> of <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; f /@ {1, 2, 3}
+	 * {f(1),f(2),f(3)}
+	 * &gt;&gt; #^2&amp; /@ {1, 2, 3, 4}
+	 * {1,4,9,16}
+	 * </pre>
+	 * <p>
+	 * Map <code>f</code> on the second level:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Map(f, {{a, b}, {c, d, e}}, {2})
+	 * {{f(a),f(b)},{f(c),f(d),f(e)}}
+	 * </pre>
+	 * <p>
+	 * Include heads:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Map(f, a + b + c, Heads-&gt;True) 
+	 * f(Plus)[f(a),f(b),f(c)]
+	 * </pre>
+	 * <p>
+	 * Level specification a + b is not of the form n, {n}, or {m, n}.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Map(f, expr, a+b, Heads-&gt;True) 
+	 * Map(f, expr, a + b, Heads -&gt; True)
+	 * </pre>
 	 */
 	private static class Map extends AbstractFunctionEvaluator {
 		@Override
@@ -391,6 +698,76 @@ public class Structure {
 
 	}
 
+	/**
+	 * <pre>
+	 * MapThread(`f`, {{`a1`, `a2`, ...}, {`b1`, `b2`, ...}, ...})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns '{<code>f</code>(<code>a1</code>, <code>b1</code>, &hellip;), <code>f</code>(<code>a2</code>,
+	 * <code>b2</code>, &hellip;), &hellip;}'.<br />
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * MapThread(`f`, {`expr1`, `expr2`, ...}, `n`)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * applies <code>f</code> at level <code>n</code>.<br />
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; MapThread(f, {{a, b, c}, {1, 2, 3}})       
+	 * {f(a,1),f(b,2),f(c,3)}
+	 * 
+	 * &gt;&gt; MapThread(f, {{{a, b}, {c, d}}, {{e, f}, {g, h}}}, 2)    
+	 * {{f(a, e), f(b, f)}, {f(c, g), f(d, h)}}
+	 * </pre>
+	 * <p>
+	 * Non-negative machine-sized integer expected at position 3 in MapThread(f, {{a, b}, {c, d}}, {1}).<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; MapThread(f, {{a, b}, {c, d}}, {1})    
+	 * MapThread(f, {{a, b}, {c, d}}, {1})
+	 * </pre>
+	 * <p>
+	 * Object {a, b} at position {2, 1} in MapThread(f, {{a, b}, {c, d}}, 2) has only 1 of required 2 dimensions.<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; MapThread(f, {{a, b}, {c, d}}, 2)   
+	 * MapThread(f, {{a, b}, {c, d}}, 2)
+	 * </pre>
+	 * <p>
+	 * Incompatible dimensions of objects at positions {2, 1} and {2, 2} of MapThread(f, {{a}, {b, c}}); dimensions are
+	 * 1 and 2.<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; MapThread(f, {{a}, {b, c}})    
+	 * MapThread(f, {{a}, {b, c}})    
+	 * 
+	 * &gt;&gt; MapThread(f, {})    
+	 * {}    
+	 * 
+	 * &gt;&gt; MapThread(f, {a, b}, 0)    
+	 * f(a, b)
+	 * </pre>
+	 * <p>
+	 * Object a at position {2, 1} in MapThread(f, {a, b}, 1) has only 0 of required 1 dimensions.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; MapThread(f, {a, b}, 1)    
+	 * MapThread(f, {a, b}, 1)
+	 * </pre>
+	 */
 	private final static class MapThread extends AbstractFunctionEvaluator {
 
 		private static class UnaryMapThread implements java.util.function.Function<IExpr, IExpr> {
@@ -476,6 +853,26 @@ public class Structure {
 
 	}
 
+	/**
+	 * <pre>
+	 * OrderedQ({a, b})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * is <code>True</code> if <code>a</code> sorts before <code>b</code> according to canonical ordering.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; OrderedQ({a, b})
+	 * True
+	 * 
+	 * &gt;&gt; OrderedQ({b, a})
+	 * False
+	 * </pre>
+	 */
 	private final static class OrderedQ extends AbstractFunctionEvaluator implements Predicate<IAST> {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -490,6 +887,78 @@ public class Structure {
 
 	}
 
+	/**
+	 * <pre>
+	 * Operate(p, expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * applies <code>p</code> to the head of <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Operate(p, expr, n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * applies <code>p</code> to the <code>n</code>th head of <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Operate(p, f(a, b))
+	 * p(f)[a,b]
+	 * </pre>
+	 * <p>
+	 * The default value of <code>n</code> is <code>1</code>:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Operate(p, f(a, b), 1)
+	 * p(f)[a,b]
+	 * </pre>
+	 * <p>
+	 * With <code>n = 0</code>, <code>Operate</code> acts like <code>Apply</code>:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Operate(p, f(a)[b][c], 0)
+	 * p(f(a)[b][c])
+	 * 
+	 * &gt;&gt; Operate(p, f(a)[b][c])
+	 * p(f(a)[b])[c] 
+	 * 
+	 * &gt;&gt; Operate(p, f(a)[b][c], 1)
+	 * p(f(a)[b])[c]
+	 * 
+	 * &gt;&gt; Operate(p, f(a)[b][c], 2)
+	 * p(f(a))[b][c] 
+	 * 
+	 * &gt;&gt; Operate(p, f(a)[b][c], 3)
+	 * p(f)[a][b][c]
+	 * 
+	 * &gt;&gt; Operate(p, f(a)[b][c], 4)
+	 * f(a)[b][c]
+	 * 
+	 * &gt;&gt; Operate(p, f)
+	 * f
+	 * 
+	 * &gt;&gt; Operate(p, f, 0)
+	 * p(f)
+	 * </pre>
+	 * <p>
+	 * Non-negative integer expected at position <code>3</code> in <code>Operate(p, f, -1)</code>.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Operate(p, f, -1)
+	 * Operate(p, f, -1)
+	 * </pre>
+	 */
 	private final static class Operate extends AbstractFunctionEvaluator {
 
 		@Override
@@ -560,7 +1029,41 @@ public class Structure {
 	}
 
 	/**
-	 * @see Map
+	 * <pre>
+	 * Scan(f, expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * applies <code>f</code> to each element of <code>expr</code> and returns 'Null'.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Scan(f, expr, levelspec)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * applies <code>f</code> to each level specified by <code>levelspec</code> of <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Scan(Print, {1, 2, 3})
+	 *  1
+	 *  2
+	 *  3
+	 * &gt;&gt; Scan(Print, f(g(h(x))), 2)
+	 *  h(x)
+	 *  g(h(x))
+	 * &gt;&gt; Scan(Print)({1, 2})
+	 *  1
+	 *  2
+	 * &gt;&gt; Scan(Return, {1, 2})
+	 * 1
+	 * </pre>
 	 */
 	private final static class Scan extends Map {
 
@@ -617,6 +1120,33 @@ public class Structure {
 
 	}
 
+	/**
+	 * <pre>
+	 * Sort(list)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * sorts $list$ (or the leaves of any other expression) according to canonical ordering.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Sort(list, p)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * sorts using <code>p</code> to determine the order of two elements.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Sort({4, 1.0, a, 3+I})
+	 * {1.0,4,3+I,a}
+	 * </pre>
+	 */
 	private static class Sort extends AbstractFunctionEvaluator {
 
 		@Override
@@ -649,6 +1179,33 @@ public class Structure {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Symbol
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * is the head of symbols.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Head(x)
+	 * Symbol
+	 * </pre>
+	 * <p>
+	 * You can use <code>Symbol</code> to create symbols from strings:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Symbol("x") + Symbol("x")
+	 * 2*x
+	 * &gt;&gt; {\[Eta], \[CapitalGamma]\[Beta], Z\[Infinity], \[Angle]XYZ, \[FilledSquare]r, i\[Ellipsis]j}
+	 * {\u03b7, \u0393\u03b2, Z\u221e, \u2220XYZ, \u25a0r, i\u2026j}
+	 * </pre>
+	 */
 	private static class Symbol extends AbstractFunctionEvaluator {
 
 		@Override
@@ -662,6 +1219,25 @@ public class Structure {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * SymbolName(s)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the name of the symbol <code>s</code> (without any leading context name).
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; SymbolName(x)  // InputForm
+	 * "x"
+	 * &gt;&gt; SymbolName(a`b`x)  // InputForm
+	 * "x"
+	 * </pre>
+	 */
 	private static class SymbolName extends AbstractFunctionEvaluator {
 
 		@Override
@@ -675,6 +1251,47 @@ public class Structure {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Thread(f(args)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * threads <code>f</code> over any lists that appear in <code>args</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Thread(f(args), h)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * threads over any parts with head <code>h</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Thread(f({a, b, c}))
+	 * {f(a),f(b),f(c)}
+	 * 
+	 * &gt;&gt; Thread(f({a, b, c}, t))
+	 * {f(a,t),f(b,t),f(c,t)}
+	 * 
+	 * &gt;&gt; Thread(f(a + b + c), Plus)
+	 * f(a)+f(b)+f(c)
+	 * </pre>
+	 * <p>
+	 * Functions with attribute <code>Listable</code> are automatically threaded over lists:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; {a, b, c} + {d, e, f} + g
+	 * {a+d+g,b+e+g,c+f+g}
+	 * </pre>
+	 */
 	private final static class Thread extends AbstractFunctionEvaluator {
 
 		@Override
@@ -735,6 +1352,38 @@ public class Structure {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Through(p(f)[x])
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * gives <code>p(f(x))</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Through(f(g)[x])
+	 * f(g(x))
+	 * 
+	 * &gt;&gt; Through(p(f, g)[x])
+	 * p(f(x), g(x))
+	 * 
+	 * &gt;&gt; Through(p(f, g)[x, y])
+	 * p(f(x, y), g(x, y))
+	 * 
+	 * &gt;&gt; Through(p(f, g)[])
+	 * p(f(), g())
+	 * 
+	 * &gt;&gt; Through(p(f, g))
+	 * Through(p(f, g))
+	 * 
+	 * &gt;&gt; Through(f()[x])
+	 * f()
+	 * </pre>
+	 */
 	private static class Through extends AbstractFunctionEvaluator {
 
 		@Override
