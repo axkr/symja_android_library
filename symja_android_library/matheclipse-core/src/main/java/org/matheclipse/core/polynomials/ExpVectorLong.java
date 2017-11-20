@@ -11,9 +11,8 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
 /**
- * ExpVectorLong implements exponent vectors for polynomials using arrays of
- * long as storage unit. This class is used by ExpVectorLong internally, there
- * is no need to use this class directly.
+ * ExpVectorLong implements exponent vectors for polynomials using arrays of long as storage unit. This class is used by
+ * ExpVectorLong internally, there is no need to use this class directly.
  * 
  */
 public final class ExpVectorLong {
@@ -66,8 +65,8 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Constructor for ExpVectorLong. Converts a String representation to an
-	 * ExpVectorLong. Accepted format = (1,2,3,4,5,6,7).
+	 * Constructor for ExpVectorLong. Converts a String representation to an ExpVectorLong. Accepted format =
+	 * (1,2,3,4,5,6,7).
 	 * 
 	 * @param s
 	 *            String representation.
@@ -184,16 +183,15 @@ public final class ExpVectorLong {
 	 * Is this structure finite or infinite.
 	 * 
 	 * @return true if this structure is finite, else false.
-	 * @see edu.jas.structure.ElemFactory#isFinite() <b>Note: </b> returns true
-	 *      because of finite set of values in each index.
+	 * @see edu.jas.structure.ElemFactory#isFinite() <b>Note: </b> returns true because of finite set of values in each
+	 *      index.
 	 */
 	public boolean isFinite() {
 		return true;
 	}
 
 	/**
-	 * Standard variable names. Generate standard names for variables, i.e. x0
-	 * to x(n-1).
+	 * Standard variable names. Generate standard names for variables, i.e. x0 to x(n-1).
 	 * 
 	 * @return standard names.
 	 */
@@ -202,8 +200,7 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Generate variable names. Generate names for variables, i.e. prefix0 to
-	 * prefix(n-1).
+	 * Generate variable names. Generate names for variables, i.e. prefix0 to prefix(n-1).
 	 * 
 	 * @param prefix
 	 *            name prefix.
@@ -214,8 +211,7 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Standard variable names. Generate standard names for variables, i.e. x0
-	 * to x(n-1).
+	 * Standard variable names. Generate standard names for variables, i.e. x0 to x(n-1).
 	 * 
 	 * @param n
 	 *            size of names array
@@ -226,8 +222,7 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Generate variable names. Generate names for variables from given prefix.
-	 * i.e. prefix0 to prefix(n-1).
+	 * Generate variable names. Generate names for variables from given prefix. i.e. prefix0 to prefix(n-1).
 	 * 
 	 * @param n
 	 *            size of names array.
@@ -236,7 +231,7 @@ public final class ExpVectorLong {
 	 * @return vatiable names.
 	 */
 	public static IAST STDVARS(String prefix, int n) {
-		IASTAppendable vars = F.ListAlloc(n);  
+		IASTAppendable vars = F.ListAlloc(n);
 		if (prefix == null || prefix.length() == 0) {
 			prefix = "x";
 		}
@@ -257,8 +252,7 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Extend variables. Used e.g. in module embedding. Extend this by i
-	 * elements and set val[j] to e.
+	 * Extend variables. Used e.g. in module embedding. Extend this by i elements and set val[j] to e.
 	 * 
 	 * @param i
 	 *            number of elements to extend.
@@ -281,8 +275,7 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Extend lower variables. Extend this by i lower elements and set val[j] to
-	 * e.
+	 * Extend lower variables. Extend this by i lower elements and set val[j] to e.
 	 * 
 	 * @param i
 	 *            number of elements to extend.
@@ -305,8 +298,7 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Contract variables. Used e.g. in module embedding. Contract this to len
-	 * elements.
+	 * Contract variables. Used e.g. in module embedding. Contract this to len elements.
 	 * 
 	 * @param i
 	 *            position of first element to be copied.
@@ -341,8 +333,7 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Reverse lower j variables. Used e.g. in opposite rings. Reverses the
-	 * first j-1 variables, the rest is unchanged.
+	 * Reverse lower j variables. Used e.g. in opposite rings. Reverses the first j-1 variables, the rest is unchanged.
 	 * 
 	 * @param j
 	 *            index of first variable reversed.
@@ -367,8 +358,7 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Reverse upper j variables. Reverses the last j-1 variables, the rest is
-	 * unchanged.
+	 * Reverse upper j variables. Reverses the last j-1 variables, the rest is unchanged.
 	 * 
 	 * @param j
 	 *            index of first variable not reversed.
@@ -509,12 +499,12 @@ public final class ExpVectorLong {
 			return "null";
 		}
 		StringBuilder s = new StringBuilder();
-		for (int i = 1; i < vars.size(); i++) {
-			s.append(vars.get(i));
+		vars.forEach(vars.size(), (x, i) -> {
+			s.append(x);
 			if (i < vars.size() - 1) {
 				s.append(",");
 			}
-		}
+		}); 
 		return s.toString();
 	}
 
@@ -588,8 +578,7 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * hashCode. Optimized for small exponents, i.e. &le; 2<sup>4</sup> and
-	 * small number of variables, i.e. &le; 8.
+	 * hashCode. Optimized for small exponents, i.e. &le; 2<sup>4</sup> and small number of variables, i.e. &le; 8.
 	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -623,7 +612,7 @@ public final class ExpVectorLong {
 				w[i] = -u[i];
 			}
 		}
-		return result; 
+		return result;
 	}
 
 	/**
@@ -699,8 +688,8 @@ public final class ExpVectorLong {
 	/**
 	 * ExpVectorLong signum.
 	 * 
-	 * @return 0 if this is zero, -1 if some entry is negative, 1 if no entry is
-	 *         negative and at least one entry is positive.
+	 * @return 0 if this is zero, -1 if some entry is negative, 1 if no entry is negative and at least one entry is
+	 *         positive.
 	 */
 
 	public int signum() {
@@ -841,8 +830,7 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * ExpVectorLong multiple test. Test if this is component wise greater or
-	 * equal to V.
+	 * ExpVectorLong multiple test. Test if this is component wise greater or equal to V.
 	 * 
 	 * @param V
 	 * @return true if this is a multiple of V, else false.
@@ -884,8 +872,7 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Inverse lexicographical compare part. Compare entries between begin and
-	 * end (-1).
+	 * Inverse lexicographical compare part. Compare entries between begin and end (-1).
 	 * 
 	 * @param U
 	 * @param V
@@ -909,8 +896,7 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Inverse graded lexicographical compare part. Compare entries between
-	 * begin and end (-1).
+	 * Inverse graded lexicographical compare part. Compare entries between begin and end (-1).
 	 * 
 	 * @param U
 	 * @param V
@@ -934,8 +920,7 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Reverse inverse lexicographical compare part. Compare entries between
-	 * begin and end (-1).
+	 * Reverse inverse lexicographical compare part. Compare entries between begin and end (-1).
 	 * 
 	 * @param U
 	 * @param V
@@ -959,8 +944,7 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Reverse inverse graded lexicographical compare part. Compare entries
-	 * between begin and end (-1).
+	 * Reverse inverse graded lexicographical compare part. Compare entries between begin and end (-1).
 	 * 
 	 * @param U
 	 * @param V
@@ -972,26 +956,28 @@ public final class ExpVectorLong {
 		return U.revInvGradCompareTo(V, begin, end);
 	}
 
-	 /**
-     * Inverse total degree lexicographical compare.
-     * @param U
-     * @param V
-     * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
-     */
-    public static int EVITDEGLC(ExpVectorLong U, ExpVectorLong V) {
-        return U.invTdegCompareTo(V);
-    }
+	/**
+	 * Inverse total degree lexicographical compare.
+	 * 
+	 * @param U
+	 * @param V
+	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
+	 */
+	public static int EVITDEGLC(ExpVectorLong U, ExpVectorLong V) {
+		return U.invTdegCompareTo(V);
+	}
 
-    /**
-     * Reverse lexicographical inverse total degree compare.
-     * @param U
-     * @param V
-     * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
-     */
-    public static int EVRLITDEGC(ExpVectorLong U, ExpVectorLong V) {
-        return U.revLexInvTdegCompareTo(V);
-    }
-    
+	/**
+	 * Reverse lexicographical inverse total degree compare.
+	 * 
+	 * @param U
+	 * @param V
+	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
+	 */
+	public static int EVRLITDEGC(ExpVectorLong U, ExpVectorLong V) {
+		return U.revLexInvTdegCompareTo(V);
+	}
+
 	/**
 	 * Inverse weighted lexicographical compare.
 	 * 
@@ -1006,8 +992,7 @@ public final class ExpVectorLong {
 	}
 
 	/**
-	 * Inverse weighted lexicographical compare part. Compare entries between
-	 * begin and end (-1).
+	 * Inverse weighted lexicographical compare part. Compare entries between begin and end (-1).
 	 * 
 	 * @param w
 	 *            weight array.
@@ -1282,84 +1267,85 @@ public final class ExpVectorLong {
 	}
 
 	/**
-     * ExpVector inverse total degree lexicographical compareTo.
-     * @param V
-     * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
-     */
-    public int invTdegCompareTo(ExpVectorLong V) {
-        long[] u = val;
-        long[] v = V.val;
-        int t = 0;
-        int i;
-        for (i = 0; i < u.length; i++) {
-            if (u[i] < v[i]) {
-                t = 1;
-                break;
-            }
-            if (u[i] > v[i]) {
-                t = -1;
-                break;
-            }
-        }
-        if (t == 0) {
-            return t;
-        }
-        long up = 0;
-        long vp = 0;
-        for (int j = i; j < u.length; j++) {
-            up += u[j];
-            vp += v[j];
-        }
-        if (up > vp) {
-            t = 1;
-        } else {
-            if (up < vp) {
-                t = -1;
-            }
-        }
-        return t;
-    }
+	 * ExpVector inverse total degree lexicographical compareTo.
+	 * 
+	 * @param V
+	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
+	 */
+	public int invTdegCompareTo(ExpVectorLong V) {
+		long[] u = val;
+		long[] v = V.val;
+		int t = 0;
+		int i;
+		for (i = 0; i < u.length; i++) {
+			if (u[i] < v[i]) {
+				t = 1;
+				break;
+			}
+			if (u[i] > v[i]) {
+				t = -1;
+				break;
+			}
+		}
+		if (t == 0) {
+			return t;
+		}
+		long up = 0;
+		long vp = 0;
+		for (int j = i; j < u.length; j++) {
+			up += u[j];
+			vp += v[j];
+		}
+		if (up > vp) {
+			t = 1;
+		} else {
+			if (up < vp) {
+				t = -1;
+			}
+		}
+		return t;
+	}
 
+	/**
+	 * ExpVector reverse lexicographical inverse total degree compareTo.
+	 * 
+	 * @param V
+	 * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
+	 */
+	public int revLexInvTdegCompareTo(ExpVectorLong V) {
+		long[] u = val;
+		long[] v = V.val;
+		int t = 0;
+		int i;
+		for (i = u.length - 1; i >= 0; i--) {
+			if (u[i] < v[i]) {
+				t = 1;
+				break;
+			}
+			if (u[i] > v[i]) {
+				t = -1;
+				break;
+			}
+		}
+		if (t == 0) {
+			return t;
+		}
+		long up = 0;
+		long vp = 0;
+		for (int j = i; j >= 0; j--) {
+			up += u[j];
+			vp += v[j];
+		}
+		if (up > vp) {
+			t = 1;
+		} else {
+			if (up < vp) {
+				t = -1;
+			}
+		}
+		return t;
+	}
 
-    /**
-     * ExpVector reverse lexicographical inverse total degree compareTo.
-     * @param V
-     * @return 0 if U == V, -1 if U &lt; V, 1 if U &gt; V.
-     */
-    public int revLexInvTdegCompareTo(ExpVectorLong V) {
-        long[] u = val;
-        long[] v = V.val;
-        int t = 0;
-        int i;
-        for (i = u.length - 1; i >= 0; i--) {
-            if (u[i] < v[i]) {
-                t = 1;
-                break;
-            }
-            if (u[i] > v[i]) {
-                t = -1;
-                break;
-            }
-        }
-        if (t == 0) {
-            return t;
-        }
-        long up = 0;
-        long vp = 0;
-        for (int j = i; j >= 0; j--) {
-            up += u[j];
-            vp += v[j];
-        }
-        if (up > vp) {
-            t = 1; 
-        } else {
-            if (up < vp) {
-                t = -1;
-            }
-        }
-        return t;
-    }
-    
 	/**
 	 * ExpVectorLong inverse weighted lexicographical compareTo.
 	 * 
@@ -1460,30 +1446,33 @@ public final class ExpVectorLong {
 		return new ExpVectorLong(n);
 	}
 
+	/**
+	 * Get the array index of a variable at index.
+	 * 
+	 * @param idx
+	 *            index of the variable
+	 * @return array index of the variable.
+	 */
+	public int varIndex(int idx) {
+		return length() - idx - 1;
+	}
 
-    /**
-     * Get the array index of a variable at index.
-     * @param idx index of the variable
-     * @return array index of the variable.
-     */
-    public int varIndex(int idx) {
-        return length() - idx - 1;
-    }
-
-
-    /**
-     * Get the index of a variable.
-     * @param x variable name to be searched.
-     * @param vars array of names of variables
-     * @return index of x in vars.
-     */
-    public static int indexVar(IExpr x, IAST vars) {
-    	int len = vars.size();
-        for (int i = 1; i < len; i++) {
-            if (x.equals(vars.get(i))) {
-                return len - i - 1;
-            }
-        }
-        return -1; // not found
-    }
+	/**
+	 * Get the index of a variable.
+	 * 
+	 * @param x
+	 *            variable name to be searched.
+	 * @param vars
+	 *            array of names of variables
+	 * @return index of x in vars.
+	 */
+	public static int indexVar(IExpr x, IAST vars) {
+		int len = vars.size();
+		for (int i = 1; i < len; i++) {
+			if (x.equals(vars.get(i))) {
+				return len - i - 1;
+			}
+		}
+		return -1; // not found
+	}
 }

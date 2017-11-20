@@ -87,7 +87,8 @@ public class Assumptions extends AbstractAssumptions {
 	}
 
 	/**
-	 * Create <code>Assumptions</code> from the given expression. If the creation is not possible return <code>null</code>
+	 * Create <code>Assumptions</code> from the given expression. If the creation is not possible return
+	 * <code>null</code>
 	 * 
 	 * @param expr
 	 * @return <code>null</code> if <code>Assumptions</code> could not be created from the given expression.
@@ -157,14 +158,15 @@ public class Assumptions extends AbstractAssumptions {
 	private static boolean addElement(IAST element, Assumptions assumptions) {
 		if (element.arg2().isSymbol()) {
 			ISymbol domain = (ISymbol) element.arg2();
-			if (domain.equals(F.Algebraics) || domain.equals(F.Booleans) || domain.equals(F.Complexes) || domain.equals(F.Integers)
-					|| domain.equals(F.Primes) || domain.equals(F.Rationals) || domain.equals(F.Reals)) {
+			if (domain.equals(F.Algebraics) || domain.equals(F.Booleans) || domain.equals(F.Complexes)
+					|| domain.equals(F.Integers) || domain.equals(F.Primes) || domain.equals(F.Rationals)
+					|| domain.equals(F.Reals)) {
 				IExpr arg1 = element.arg1();
 				if (arg1.isAST(F.Alternatives)) {
-					IAST alternatives = (IAST) arg1;
-					for (int i = 1; i < alternatives.size(); i++) {
-						assumptions.elementsMap.put(alternatives.get(i), domain);
-					}
+					((IAST) arg1).forEach(x -> assumptions.elementsMap.put(x, domain));
+					// for (int i = 1; i < alternatives.size(); i++) {
+					// assumptions.elementsMap.put(alternatives.get(i), domain);
+					// }
 				} else {
 					assumptions.elementsMap.put(arg1, domain);
 				}

@@ -95,7 +95,7 @@ public class NMinimize extends AbstractFunctionEvaluator {
 				if (listOfconstraints.isAnd()) {
 					// lc1 && lc2 && lc3...
 					LinearObjectiveFunction objectiveFunction = getObjectiveFunction(vars, function);
-					List<LinearConstraint> constraints = getConstraints(vars, listOfconstraints);
+					List<LinearConstraint> constraints = getConstraints(vars, (IAST) listOfconstraints);
 					return simplexSolver(vars, objectiveFunction, objectiveFunction,
 							new LinearConstraintSet(constraints), GoalType.MINIMIZE, new NonNegativeConstraint(true),
 							PivotSelectionRule.BLAND);
@@ -110,14 +110,12 @@ public class NMinimize extends AbstractFunctionEvaluator {
 		return x2LP.expr2ObjectiveFunction();
 	}
 
-	protected static List<LinearConstraint> getConstraints(VariablesSet vars, IExpr listOfconstraints) {
-		Expr2LP x2LP;
-		List<LinearConstraint> constraints = new ArrayList<LinearConstraint>();
-		IAST andAST = (IAST) listOfconstraints;
-		for (int i = 1; i < andAST.size(); i++) {
-			x2LP = new Expr2LP(andAST.get(i), vars);
+	protected static List<LinearConstraint> getConstraints(VariablesSet vars, IAST listOfconstraints) {
+		List<LinearConstraint> constraints = new ArrayList<LinearConstraint>(listOfconstraints.size());
+		listOfconstraints.forEach(x -> {
+			Expr2LP x2LP = new Expr2LP(x, vars);
 			constraints.add(x2LP.expr2Constraint());
-		}
+		});
 		return constraints;
 	}
 

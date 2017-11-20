@@ -9,8 +9,7 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.IntConsumer;
-import java.util.function.IntFunction;
+import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -639,6 +638,20 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 		for (int i = start; i < end; i++) {
 			action.accept(get(i));
 		}
+	}
+
+	default void forEach(int start, int end, ObjIntConsumer<? super IExpr> action) {
+		for (int i = start; i < end; i++) {
+			action.accept(get(i), i);
+		}
+	}
+
+	default void forEach(int end, ObjIntConsumer<? super IExpr> action) {
+		forEach(1, end, action);
+	}
+
+	default void forEach(ObjIntConsumer<? super IExpr> action) {
+		forEach(1, size(), action);
 	}
 
 	/**

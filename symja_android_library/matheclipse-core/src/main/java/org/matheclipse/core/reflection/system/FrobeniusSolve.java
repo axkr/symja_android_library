@@ -49,9 +49,7 @@ public class FrobeniusSolve extends AbstractEvaluator {
 			try {
 				IInteger[][] equations = new IInteger[1][list.size()];
 				// format looks like: { { 12, 16, 20, 27, 123 } };
-				for (int i = 1; i < list.size(); i++) {
-					equations[0][i - 1] = (IInteger) list.get(i);
-				}
+				list.forEach((x, i) -> equations[0][i - 1] = (IInteger) x);
 				equations[0][list.size() - 1] = (IInteger) ast.arg2();
 				int numberOfSolutions = -1; // all solutions
 				if (ast.size() == 4) {

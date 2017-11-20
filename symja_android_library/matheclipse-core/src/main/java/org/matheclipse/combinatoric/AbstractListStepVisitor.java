@@ -12,23 +12,10 @@ public abstract class AbstractListStepVisitor<T> implements IStepVisitor {
 	protected final IAST list;
 	protected Object[] array;
 
-	// public AbstractListStepVisitor(List<? extends T> list) {
-	// this(list, 0, list.size());
-	// }
-	//
-	// public AbstractListStepVisitor(List<? extends T> list, int start) {
-	// this(list, start, list.size());
-	// }
-
 	public AbstractListStepVisitor(IAST ast) {
 		this.list = ast;
 		toIntArray(ast);
-	}
-
-	// public AbstractListStepVisitor(List<? extends T> list, int start, int end) {
-	//// this.list = list;
-	// toIntArray(list, start, end);
-	// }
+	} 
 
 	/**
 	 * Convert the <code>sortedList</code> to an <code>int[]</code> array. Equal elements get the same index in the

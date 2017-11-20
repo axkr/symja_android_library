@@ -203,18 +203,19 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 	 */
 	private IExpr getDerivativeArgN(IExpr x, final IAST ast, final IExpr head) {
 		IAST[] deriv = ast.isDerivative();
+		int size = ast.size();
 		if (deriv != null) {
-			IASTAppendable plus = F.PlusAlloc(ast.size());
-			for (int i = 1; i < ast.size(); i++) {
-				plus.append(F.Times(F.D(ast.get(i), x), addDerivative(i, deriv[0], deriv[1].arg1(), ast)));
-			}
+			IASTAppendable plus = F.PlusAlloc(size);
+			ast.forEach(size, (expr, i) -> {
+				plus.append(F.Times(F.D(expr, x), addDerivative(i, deriv[0], deriv[1].arg1(), ast)));
+			});
 			return plus;
 		}
 		if (head.isSymbol()) {
-			IASTAppendable plus = F.PlusAlloc(ast.size());
-			for (int i = 1; i < ast.size(); i++) {
-				plus.append(F.Times(F.D(ast.get(i), x), createDerivative(i, head, ast)));
-			}
+			IASTAppendable plus = F.PlusAlloc(size);
+			ast.forEach(size, (expr, i) -> {
+				plus.append(F.Times(F.D(expr, x), createDerivative(i, head, ast)));
+			});
 			return plus;
 		}
 		return F.NIL;

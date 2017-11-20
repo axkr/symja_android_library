@@ -280,13 +280,13 @@ public class DSolve extends AbstractFunctionEvaluator {
 				IAST timesAST = (IAST) m;
 				IASTAppendable fx = F.TimesAlloc(timesAST.size());
 				IASTAppendable gy = F.TimesAlloc(timesAST.size());
-				for (int i = 1; i < timesAST.size(); i++) {
-					if (timesAST.get(i).isFree(y)) {
-						fx.append(timesAST.get(i));
+				timesAST.forEach(expr -> {
+					if (expr.isFree(y)) {
+						fx.append(expr);
 					} else {
-						gy.append(timesAST.get(i));
+						gy.append(expr);
 					}
-				}
+				}); 
 				fxExpr = engine.evaluate(fx);
 				gyExpr = engine.evaluate(gy);
 			}

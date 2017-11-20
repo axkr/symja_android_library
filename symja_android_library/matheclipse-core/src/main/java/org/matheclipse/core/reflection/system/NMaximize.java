@@ -80,7 +80,7 @@ public class NMaximize extends NMinimize {
 				if (listOfconstraints.isAnd()) {
 					// lc1 && lc2 && lc3...
 					LinearObjectiveFunction objectiveFunction = getObjectiveFunction(vars, function);
-					List<LinearConstraint> constraints = getConstraints(vars, listOfconstraints);
+					List<LinearConstraint> constraints = getConstraints(vars, (IAST) listOfconstraints);
 					return simplexSolver(vars, objectiveFunction, objectiveFunction,
 							new LinearConstraintSet(constraints), GoalType.MAXIMIZE, new NonNegativeConstraint(true),
 							PivotSelectionRule.BLAND);

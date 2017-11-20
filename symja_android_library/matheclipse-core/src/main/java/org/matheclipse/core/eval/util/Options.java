@@ -15,10 +15,8 @@ import edu.jas.poly.TermOrder;
 import edu.jas.poly.TermOrderByName;
 
 /**
- * Managing <i>Options</i> used in evaluation of function symbols (i.e.
- * <code>Modulus-&gt;n</code> is an option which could be used for an integer
- * <code>n</code> in a function like
- * <code>Factor(polynomial, Modulus-&gt;2)</code>.
+ * Managing <i>Options</i> used in evaluation of function symbols (i.e. <code>Modulus-&gt;n</code> is an option which
+ * could be used for an integer <code>n</code> in a function like <code>Factor(polynomial, Modulus-&gt;2)</code>.
  * 
  */
 public class Options {
@@ -29,20 +27,16 @@ public class Options {
 	private final EvalEngine fEngine;
 
 	/**
-	 * Construct special <i>Options</i> used in evaluation of function symbols
-	 * (i.e. <code>Modulus-&gt;n</code> is an option which could be used for an
-	 * integer <code>n</code> in a function like
+	 * Construct special <i>Options</i> used in evaluation of function symbols (i.e. <code>Modulus-&gt;n</code> is an
+	 * option which could be used for an integer <code>n</code> in a function like
 	 * <code>Factor(polynomial, Modulus-&gt;2)</code>.
 	 * 
 	 * @param symbol
-	 *            the options symbol for determining &quot;default option
-	 *            values&quot;
+	 *            the options symbol for determining &quot;default option values&quot;
 	 * @param currentOptionsList
-	 *            the AST where the option could be defined starting at position
-	 *            <code>startIndex</code>
+	 *            the AST where the option could be defined starting at position <code>startIndex</code>
 	 * @param startIndex
-	 *            the index from which tolook for options defined in
-	 *            <code>currentOptionsList</code>
+	 *            the index from which tolook for options defined in <code>currentOptionsList</code>
 	 */
 	public Options(final ISymbol symbol, final IAST currentOptionsList, final int startIndex, final EvalEngine engine) {
 		fEngine = engine;
@@ -54,7 +48,7 @@ public class Options {
 			fDefaultOptionsList = null;
 		}
 		this.fCurrentOptionsList = null;
-		
+
 		if (currentOptionsList != null && startIndex < currentOptionsList.size()) {
 			int size = currentOptionsList.size();
 			this.fCurrentOptionsList = F.ListAlloc(size);
@@ -65,14 +59,12 @@ public class Options {
 	}
 
 	/**
-	 * Construct <i>Options</i> used in evaluation of function symbols (i.e.
-	 * <code>Modulus-&gt;n</code> is an option which could be used for an
-	 * integer <code>n</code> in a function like
+	 * Construct <i>Options</i> used in evaluation of function symbols (i.e. <code>Modulus-&gt;n</code> is an option
+	 * which could be used for an integer <code>n</code> in a function like
 	 * <code>Factor(polynomial, Modulus-&gt;2)</code>.
 	 * 
 	 * @param symbol
-	 *            the options symbol for determining &quot;default option
-	 *            values&quot;
+	 *            the options symbol for determining &quot;default option values&quot;
 	 * @param optionExpr
 	 *            the value which should be defined for the option
 	 */
@@ -90,16 +82,14 @@ public class Options {
 	}
 
 	/**
-	 * Get the option from the internal options list and check if it's
-	 * <code>true</code> or <code>false</code>.
+	 * Get the option from the internal options list and check if it's <code>true</code> or <code>false</code>.
 	 * 
 	 * @param optionString
 	 *            the option string
-	 * @return <code>true</code> if the option is set to <code>True</code> or
-	 *         <code>false</code> otherwise.
+	 * @return <code>true</code> if the option is set to <code>True</code> or <code>false</code> otherwise.
 	 */
 	public boolean isOption(final String optionString) {
-		return getOption(optionString).isTrue(); 
+		return getOption(optionString).isTrue();
 	}
 
 	/**
@@ -107,20 +97,23 @@ public class Options {
 	 * 
 	 * @param optionString
 	 *            the option string
-	 * @return the found option value or <code>F.NIL</code> if the option is not
-	 *         available
+	 * @return the found option value or <code>F.NIL</code> if the option is not available
 	 */
 	public IExpr getOption(final String optionString) {
-		IAST rule = null;
+		IAST[] rule = new IAST[1];
 		if (fCurrentOptionsList != null) {
 			try {
-				for (int i = 1; i < fCurrentOptionsList.size(); i++) {
-					if (fCurrentOptionsList.get(i).isAST()) {
-						rule = (IAST) fCurrentOptionsList.get(i);
-						if (rule.isRuleAST() && rule.arg1().toString().equalsIgnoreCase(optionString)) {
-							return rule.arg2();
+				if (fCurrentOptionsList.exists(x -> {
+					if (x.isAST()) {
+						IAST temp = (IAST) x;
+						if (temp.isRuleAST() && temp.arg1().toString().equalsIgnoreCase(optionString)) {
+							rule[0] = temp;
+							return true;
 						}
 					}
+					return false;
+				}, 1)) {
+					return rule[0].arg2();
 				}
 			} catch (Exception e) {
 
@@ -128,13 +121,17 @@ public class Options {
 		}
 		if (fDefaultOptionsList != null) {
 			try {
-				for (int i = 1; i < fDefaultOptionsList.size(); i++) {
-					if (fDefaultOptionsList.get(i).isAST()) {
-						rule = (IAST) fDefaultOptionsList.get(i);
-						if (rule.isRuleAST() && rule.arg1().toString().equalsIgnoreCase(optionString)) {
-							return rule.arg2();
+				if (fCurrentOptionsList.exists(x -> {
+					if (x.isAST()) {
+						IAST temp = (IAST) x;
+						if (temp.isRuleAST() && temp.arg1().toString().equalsIgnoreCase(optionString)) {
+							rule[0] = temp;
+							return true;
 						}
 					}
+					return false;
+				}, 1)) {
+					return rule[0].arg2();
 				}
 			} catch (Exception e) {
 
@@ -144,16 +141,20 @@ public class Options {
 	}
 
 	public IExpr getOption(final ISymbol option) {
-		IAST rule = null;
+		IAST[] rule = new IAST[1];
 		if (fCurrentOptionsList != null) {
 			try {
-				for (int i = 1; i < fCurrentOptionsList.size(); i++) {
-					if (fCurrentOptionsList.get(i).isAST()) {
-						rule = (IAST) fCurrentOptionsList.get(i);
-						if (rule.isRuleAST() && rule.arg1().equals(option)) {
-							return rule.arg2();
+				if (fCurrentOptionsList.exists(x -> {
+					if (x.isAST()) {
+						IAST temp = (IAST) x;
+						if (temp.isRuleAST() && temp.arg1().equals(option)) {
+							rule[0] = temp;
+							return true;
 						}
 					}
+					return false;
+				}, 1)) {
+					return rule[0].arg2();
 				}
 			} catch (Exception e) {
 
@@ -161,13 +162,17 @@ public class Options {
 		}
 		if (fDefaultOptionsList != null) {
 			try {
-				for (int i = 1; i < fDefaultOptionsList.size(); i++) {
-					if (fDefaultOptionsList.get(i).isAST()) {
-						rule = (IAST) fDefaultOptionsList.get(i);
-						if (rule.isRuleAST() && rule.arg1().equals(option)) {
-							return rule.arg2();
+				if (fCurrentOptionsList.exists(x -> {
+					if (x.isAST()) {
+						IAST temp = (IAST) x;
+						if (temp.isRuleAST() && temp.arg1().equals(option)) {
+							rule[0] = temp;
+							return true;
 						}
 					}
+					return false;
+				}, 1)) {
+					return rule[0].arg2();
 				}
 			} catch (Exception e) {
 

@@ -36,13 +36,11 @@ public class Normal extends AbstractFunctionEvaluator {
 						int size = list.size();
 
 						IASTAppendable result = F.PlusAlloc(size);
-						for (int i = 1; i < size; i++) {
-							// INumber exp = F.fraction(nmin, den).normalize();
-							// IExpr pow = x.subtract(x0).power(exp);
+						list.forEach((expr, i) -> {
 							INumber exp = F.fraction(nmin + i - 1L, den).normalize();
 							IExpr pow = x.subtract(x0).power(exp);
-							result.append(F.Times(list.get(i), pow));
-						}
+							result.append(F.Times(expr, pow));
+						}); 
 						return result;
 					} catch (ArithmeticException ex) {
 					}

@@ -77,16 +77,14 @@ public class NSolve extends AbstractFunctionEvaluator {
 			} else if (eqExpr.isPlus()) {
 				leafCount++;
 				IAST arg = (IAST) eqExpr;
-				IExpr expr;
-				for (int i = 1; i < arg.size(); i++) {
-					expr = arg.get(i);
+				arg.forEach(expr -> {
 					if (expr.isFree(Predicates.in(vars), true)) {
 						leafCount++;
 						value.append(expr);
 					} else {
 						getPlusEquationType(expr);
 					}
-				}
+				});
 			} else {
 				getPlusEquationType(eqExpr);
 			}
@@ -255,14 +253,14 @@ public class NSolve extends AbstractFunctionEvaluator {
 		private void getTimesEquationType(IExpr expr) {
 			if (expr.isSymbol()) {
 				leafCount++;
-				for (int i = 1; i < vars.size(); i++) {
+				vars.forEach((x, i) -> {
 					if (vars.equalsAt(i, expr)) {
 						symbolSet.add((ISymbol) expr);
 						if (equationType == LINEAR) {
 							row.set(i, F.Plus(row.get(i), F.C1));
 						}
 					}
-				}
+				});
 				return;
 			}
 			if (expr.isFree(Predicates.in(vars), true)) {
