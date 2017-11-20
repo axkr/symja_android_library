@@ -19,29 +19,31 @@ public class Print extends AbstractCoreFunctionEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		PrintStream stream = engine.getOutPrintStream();
-		if (stream == null) {
+		final PrintStream s = engine.getOutPrintStream();
+		final PrintStream stream;// = engine.getOutPrintStream();
+		if (s == null) {
 			stream = System.out;
+		} else {
+			stream = s;
 		}
-		try {
-			final StringBuilder buf = new StringBuilder();
-			IExpr temp;
-			for (int i = 1; i < ast.size(); i++) {
-				temp = engine.evaluate(ast.get(i));
-				if (temp instanceof IStringX) {
-					buf.append(temp.toString());
-				} else {
-					OutputFormFactory.get().convert(buf, temp);
+		final StringBuilder buf = new StringBuilder();
+		OutputFormFactory out = OutputFormFactory.get();
+		ast.forEach(x -> {
+			IExpr temp = engine.evaluate(x);
+			if (temp instanceof IStringX) {
+				buf.append(temp.toString());
+			} else {
+				try {
+					out.convert(buf, temp);
+				} catch (IOException e) {
+					stream.println(e.getMessage());
+					if (Config.DEBUG) {
+						e.printStackTrace();
+					}
 				}
 			}
-			stream.println(buf.toString());
-		} catch (IOException e) {
-			stream.println(e.getMessage());
-			if (Config.DEBUG) {
-				e.printStackTrace();
-			}
-		}
-
+		});
+		stream.println(buf.toString());
 		return F.Null;
 	}
 
