@@ -2444,7 +2444,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("FlattenAt(f(a, g(b,c), {d, e}, {f}), -2)", "f(a,g(b,c),d,e,{f})");
 		check("FlattenAt(f(a, g(b,c), {d, e}, {f}), 4)", "f(a,g(b,c),{d,e},f)");
 	}
-	
+
 	public void testFloor() {
 		check("Floor(-9/4)", "-3");
 		check("Floor(1/3)", "0");
@@ -5721,12 +5721,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testRefine() {
 		// TODO
 		// check("Refine((a^b)^c, -1<b&&b<(-1))", "a^(b*c)");
+		check("Refine(x^4<0,x<0)", "False");
+		check("Refine(x^(1/2)>=0, x>=0)", "Sqrt(x)>=0");
 		check("Refine(x^4>=0,Element(x, Reals))", "True");
+		check("Refine(x^4>0,Element(x, Reals))", "x^4>0");
 		check("Refine(x^3>=0,Element(x, Reals))", "x^3>=0");
 		check("Refine(x^4<0,Element(x, Reals))", "x^4<0");
+		check("Refine(x^4<0,x<0)", "False");
 		check("Refine(-x^4<=0,Element(x, Reals))", "True");
+		check("Refine(-x^4<0,Element(x, Reals))", "x^4>0");
 		check("Refine(E^x>0,Element(x, Reals))", "True");
-		
+
 		check("Refine(DiscreteDelta(x),x>0)", "0");
 		check("Refine(DiscreteDelta(x),x<-1)", "0");
 		check("Refine(DiracDelta(x),x>0)", "0");
@@ -5737,7 +5742,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Refine(Re(a+I*b), Element(a, Reals)&&Element(b, Reals))", "a");
 
-		check("Refine(Log(x), x<0)", "I*Pi+Log(-x)");
+		check("Refine(Log(x), x<0)", "Log(x)");
 
 		check("(x^3)^(1/3)", "(x^3)^(1/3)");
 		check("Refine((x^3)^(1/3), x>=0)", "x");
@@ -5749,7 +5754,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Refine((x^3)^(1/3), x >= 0)", "x");
 
-		check("Refine(Log(x), x<0)", "I*Pi+Log(-x)");
+		check("Refine(Log(x), x<0)", "Log(x)");
 
 		check("Refine(Abs(x), x>0)", "x");
 		check("Refine(Abs(x), Assumptions -> x>0)", "x");
@@ -6986,23 +6991,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testSurd() {
 		checkNumeric("1/9 * 3^(4/3)", "1/3^(2/3)");
-//		checkNumeric("1/9 * 3^(7/4)", "1/3^(1/4)");
+		// checkNumeric("1/9 * 3^(7/4)", "1/3^(1/4)");
 		checkNumeric("1/9 * 3^(3/4)", "1/(3*3^(1/4))");
 		checkNumeric("1/9 * 3^(-1/2)", "1/(9*Sqrt(3))");
 		checkNumeric("1/9 * 3^(1/2)", "1/(3*Sqrt(3))");
 		checkNumeric(" 2^(1/4)*2^(-3) ", "1/(4*2^(3/4))");
 		checkNumeric("2^(-3)", "1/8");
 		checkNumeric("2^(-3/4)", "1/2^(3/4)");
-		
-//		checkNumeric("Trace((2^(1/4))/8)", "");
+
+		// checkNumeric("Trace((2^(1/4))/8)", "");
 		checkNumeric("Surd(2,4)/8-(1/(4*2^(1/4.0)))", "-0.061573214438088525");
 		checkNumeric("1/(4*2^(1/4.0))", "0.21022410381342865");
 		checkNumeric("Surd(2,4)", "2^(1/4)");
 		checkNumeric("Surd(2,4)/8", "1/(4*2^(3/4))");
-		
-		
+
 		checkNumeric("Surd(-2.,5)", "-1.148698354997035");
-//		checkNumeric("(-2.0)^(1/5)", "-1.148698354997035");
+		// checkNumeric("(-2.0)^(1/5)", "-1.148698354997035");
 
 		check("Surd(-16.0,2)", "Indeterminate");
 		checkNumeric("Surd(-2.,5)", "-1.148698354997035");

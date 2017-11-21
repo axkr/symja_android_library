@@ -140,7 +140,18 @@ public abstract class AbstractAssumptions implements IAssumptions {
 				}
 			}
 			return flag;
-		} 
+		}
+		if (ast.isPower()) {
+			IExpr arg1 = ast.arg1();
+			IExpr arg2 = ast.arg2();
+			if (arg1.isNegativeResult() && arg2.isInteger()) {
+				IInteger iArg2 = (IInteger) arg2;
+				if (iArg2.isOdd()) {
+					return true;
+				}
+			}
+			return false;
+		}
 		return false;
 	}
 
@@ -175,11 +186,24 @@ public abstract class AbstractAssumptions implements IAssumptions {
 		if (ast.isPower()) {
 			IExpr arg1 = ast.arg1();
 			IExpr arg2 = ast.arg2();
+			if (arg2.isInteger()) {
+				IInteger iArg2 = (IInteger) arg2;
+				if (arg1.isNegativeResult()) {
+					if (iArg2.isEven()) {
+						return true;
+					}
+				}
+				if (arg1.isPositiveResult() && arg2.isInteger()) {
+					if (iArg2.isEven()) {
+						return true;
+					}
+				}
+			}
 			if (arg1.isE()) {
 				if (arg2.isRealResult()) {
 					return true;
 				}
-			} 
+			}
 			return false;
 		}
 		return false;

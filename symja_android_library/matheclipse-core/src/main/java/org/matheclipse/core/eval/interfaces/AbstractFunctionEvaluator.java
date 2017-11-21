@@ -20,8 +20,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcherAndInvoker;
 
 /**
- * Abstract interface for built-in Symja functions. The
- * <code>numericEval()</code> method delegates to the <code>evaluate()</code>
+ * Abstract interface for built-in Symja functions. The <code>numericEval()</code> method delegates to the
+ * <code>evaluate()</code>
  * 
  */
 public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
@@ -81,8 +81,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	 * Check if the expression is canonical negative.
 	 * 
 	 * @param expression
-	 * @return the negated negative expression or  <code>F.NIL</code> if a
-	 *         negative expression couldn't be extracted.
+	 * @return the negated negative expression or <code>F.NIL</code> if a negative expression couldn't be extracted.
 	 */
 	public static IExpr getNormalizedNegativeExpression(final IExpr expression) {
 		return getNormalizedNegativeExpression(expression, true);
@@ -93,10 +92,8 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	 * 
 	 * @param expression
 	 * @param checkTimesPlus
-	 *            check <code>Times(...)</code> and <code>Plus(...)</code>
-	 *            expressions
-	 * @return the negated negative expression or <code>F.NIL</code> if a
-	 *         negative expression couldn't be extracted.
+	 *            check <code>Times(...)</code> and <code>Plus(...)</code> expressions
+	 * @return the negated negative expression or <code>F.NIL</code> if a negative expression couldn't be extracted.
 	 */
 	public static IExpr getNormalizedNegativeExpression(final IExpr expression, boolean checkTimesPlus) {
 		IASTMutable result = F.NIL;
@@ -171,9 +168,9 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 				return F.CInfinity;
 			}
 		}
-		if (expression.isNegativeResult()) {
-			return F.eval(F.Negate(expression));
-		}
+		// if (expression.isNegativeResult()) {
+		// return F.eval(F.Negate(expression));
+		// }
 		return F.NIL;
 	}
 
@@ -182,8 +179,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	 * 
 	 * @param expression
 	 * @param factor
-	 * @return the negated negative expression or <code>null</code> if a
-	 *         negative expression couldn't be extracted.
+	 * @return the negated negative expression or <code>null</code> if a negative expression couldn't be extracted.
 	 */
 	public static IExpr extractFactorFromExpression(final IExpr expression, INumber factor) {
 		return extractFactorFromExpression(expression, factor, true);
@@ -196,8 +192,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	 * @param factor
 	 * @param checkTimes
 	 *            check <code>Times(...)</code> expressions
-	 * @return the negated negative expression or <code>F.NIL</code> if a
-	 *         negative expression couldn't be extracted.
+	 * @return the negated negative expression or <code>F.NIL</code> if a negative expression couldn't be extracted.
 	 */
 	public static IExpr extractFactorFromExpression(final IExpr expression, INumber factor, boolean checkTimes) {
 		if (expression.isNumber()) {
@@ -221,13 +216,12 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	}
 
 	/**
-	 * Try to split a periodic part from the expression:
-	 * <code>expr == part[0] + part[1] * period</code>
+	 * Try to split a periodic part from the expression: <code>expr == part[0] + part[1] * period</code>
 	 * 
 	 * @param expr
 	 * @param period
-	 * @return <code>F.NIL</code> if no periodicity was found or the rest at
-	 *         argument 1 and the factor of the period at argument 2
+	 * @return <code>F.NIL</code> if no periodicity was found or the rest at argument 1 and the factor of the period at
+	 *         argument 2
 	 */
 	public static IAST getPeriodicParts(final IExpr expr, final IExpr period) {
 		// IExpr[] result = new IExpr[2];
@@ -263,12 +257,10 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	}
 
 	/**
-	 * Check if <code>expr</code> is a pure imaginary number without a real
-	 * part.
+	 * Check if <code>expr</code> is a pure imaginary number without a real part.
 	 * 
 	 * @param expr
-	 * @return <code>null</code>, if <code>expr</code> is not a pure imaginary
-	 *         number.
+	 * @return <code>null</code>, if <code>expr</code> is not a pure imaginary number.
 	 */
 	public static IExpr getPureImaginaryPart(final IExpr expr) {
 		if (expr.isComplex() && ((IComplex) expr).re().isZero()) {
@@ -286,8 +278,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	}
 
 	/**
-	 * Initialize the serialized Rubi integration rules from ressource
-	 * <code>/ser/integrate.ser</code>.
+	 * Initialize the serialized Rubi integration rules from ressource <code>/ser/integrate.ser</code>.
 	 * 
 	 * @param symbol
 	 */
