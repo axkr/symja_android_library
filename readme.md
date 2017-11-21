@@ -176,7 +176,7 @@ Pay careful attention to anything about setting up your `PATH` or `CLASSPATH`.
 
 Install and open the latest version of the Eclipse development IDE:
 
-* http://www.eclipse.org/downloads/packages/eclipse-ide-java-developers/mars1
+* http://www.eclipse.org/downloads/packages/
 
 ### Github GIT
 
