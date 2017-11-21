@@ -7,6 +7,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 
 public abstract class AbstractAssumptions implements IAssumptions {
@@ -58,6 +59,129 @@ public abstract class AbstractAssumptions implements IAssumptions {
 
 	@Override
 	public boolean isReal(IExpr expr) {
+		return false;
+	}
+
+	public static boolean isNonNegativeResult(IAST ast) {
+		ISymbol symbol = ast.topHead();
+		int size = ast.size();
+		if (symbol.equals(F.Abs) && size == 2) {
+			return true;
+		}
+		if (ast.isPlus()) {
+			for (int i = 1; i < size; i++) {
+				IExpr x = ast.get(i);
+				if (x.isNonNegativeResult() || assumeNonNegative(x)) {
+					continue;
+				}
+				return false;
+			}
+			return true;
+		}
+		if (ast.isTimes()) {
+			boolean flag = true;
+			for (int i = 1; i < size; i++) {
+				IExpr x = ast.get(i);
+				if (x.isNonNegativeResult()) {
+				} else if (assumeNonNegative(x)) {
+				} else if (x.isNegativeResult()) {
+					flag = !flag;
+				} else if (assumeNegative(x)) {
+					flag = !flag;
+				} else {
+					return false;
+				}
+			}
+			return flag;
+		}
+		if (ast.isPower()) {
+			IExpr arg1 = ast.arg1();
+			IExpr arg2 = ast.arg2();
+			if (arg1.isRealResult() && arg2.isInteger()) {
+				IInteger iArg2 = (IInteger) arg2;
+				if (iArg2.isEven()) {
+					return true;
+				}
+			}
+			if (arg1.isE()) {
+				if (arg2.isRealResult()) {
+					return true;
+				}
+			}
+			return false;
+		}
+		return false;
+	}
+
+	public static boolean isNegativeResult(IAST ast) {
+		int size = ast.size();
+		if (ast.isPlus()) {
+			for (int i = 1; i < size; i++) {
+				IExpr x = ast.get(i);
+				if (x.isNegativeResult() || assumeNegative(x)) {
+					continue;
+				}
+				return false;
+			}
+			return true;
+		}
+		if (ast.isTimes()) {
+			boolean flag = false;
+			for (int i = 1; i < size; i++) {
+				IExpr x = ast.get(i);
+				if (x.isNonNegativeResult()) {
+				} else if (assumeNonNegative(x)) {
+				} else if (x.isNegativeResult()) {
+					flag = !flag;
+				} else if (assumeNegative(x)) {
+					flag = !flag;
+				} else {
+					return false;
+				}
+			}
+			return flag;
+		} 
+		return false;
+	}
+
+	public static boolean isPositiveResult(IAST ast) {
+		int size = ast.size();
+		if (ast.isPlus()) {
+			for (int i = 1; i < size; i++) {
+				IExpr x = ast.get(i);
+				if (x.isPositiveResult() || assumePositive(x)) {
+					continue;
+				}
+				return false;
+			}
+			return true;
+		}
+		if (ast.isTimes()) {
+			boolean flag = true;
+			for (int i = 1; i < size; i++) {
+				IExpr x = ast.get(i);
+				if (x.isPositiveResult()) {
+				} else if (assumePositive(x)) {
+				} else if (x.isNegativeResult()) {
+					flag = !flag;
+				} else if (assumeNegative(x)) {
+					flag = !flag;
+				} else {
+					return false;
+				}
+			}
+			return flag;
+		}
+		if (ast.isPower()) {
+			IExpr arg1 = ast.arg1();
+			IExpr arg2 = ast.arg2();
+			if (arg1.isE()) {
+				if (arg2.isRealResult()) {
+					return true;
+				}
+			} 
+			return false;
+		}
 		return false;
 	}
 

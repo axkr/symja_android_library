@@ -2997,6 +2997,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegrate() {
+
 		// check("Integrate(x/(1+x+x^7),x)", "");
 		check("Integrate(1/y(x)^2,y(x))", "-1/y(x)");
 		check("Integrate(f(x,y),x)", "Integrate(f(x,y),x)");
@@ -5720,7 +5721,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testRefine() {
 		// TODO
 		// check("Refine((a^b)^c, -1<b&&b<(-1))", "a^(b*c)");
-
+		check("Refine(x^4>=0,Element(x, Reals))", "True");
+		check("Refine(x^3>=0,Element(x, Reals))", "x^3>=0");
+		check("Refine(x^4<0,Element(x, Reals))", "x^4<0");
+		check("Refine(-x^4<=0,Element(x, Reals))", "True");
+		check("Refine(E^x>0,Element(x, Reals))", "True");
+		
 		check("Refine(DiscreteDelta(x),x>0)", "0");
 		check("Refine(DiscreteDelta(x),x<-1)", "0");
 		check("Refine(DiracDelta(x),x>0)", "0");

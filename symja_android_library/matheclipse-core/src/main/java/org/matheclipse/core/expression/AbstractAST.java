@@ -1910,65 +1910,13 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isNegativeResult() {
-		if (isPlus()) {
-			for (int i = 1; i < size(); i++) {
-				if (get(i).isNegativeResult() || AbstractAssumptions.assumeNegative(get(i))) {
-					continue;
-				}
-				return false;
-			}
-			return true;
-		}
-		if (isTimes()) {
-			boolean flag = false;
-			for (int i = 1; i < size(); i++) {
-				if (get(i).isNonNegativeResult()) {
-				} else if (AbstractAssumptions.assumeNonNegative(get(i))) {
-				} else if (get(i).isNegativeResult()) {
-					flag = !flag;
-				} else if (AbstractAssumptions.assumeNegative(get(i))) {
-					flag = !flag;
-				} else {
-					return false;
-				}
-			}
-			return flag;
-		}
-		return false;
+		return AbstractAssumptions.isNegativeResult(this);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isNonNegativeResult() {
-		ISymbol symbol = topHead();
-		if (symbol.equals(F.Abs)) {
-			return true;
-		}
-		if (isPlus()) {
-			for (int i = 1; i < size(); i++) {
-				if (get(i).isNonNegativeResult() || AbstractAssumptions.assumeNonNegative(get(i))) {
-					continue;
-				}
-				return false;
-			}
-			return true;
-		}
-		if (isTimes()) {
-			boolean flag = true;
-			for (int i = 1; i < size(); i++) {
-				if (get(i).isNonNegativeResult()) {
-				} else if (AbstractAssumptions.assumeNonNegative(get(i))) {
-				} else if (get(i).isNegativeResult()) {
-					flag = !flag;
-				} else if (AbstractAssumptions.assumeNegative(get(i))) {
-					flag = !flag;
-				} else {
-					return false;
-				}
-			}
-			return flag;
-		}
-		return false;
+		return AbstractAssumptions.isNonNegativeResult(this);
 	}
 
 	/** {@inheritDoc} */
@@ -2113,31 +2061,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isPositiveResult() {
-		if (isPlus()) {
-			for (int i = 1; i < size(); i++) {
-				if (get(i).isPositiveResult() || AbstractAssumptions.assumePositive(get(i))) {
-					continue;
-				}
-				return false;
-			}
-			return true;
-		}
-		if (isTimes()) {
-			boolean flag = true;
-			for (int i = 1; i < size(); i++) {
-				if (get(i).isPositiveResult()) {
-				} else if (AbstractAssumptions.assumePositive(get(i))) {
-				} else if (get(i).isNegativeResult()) {
-					flag = !flag;
-				} else if (AbstractAssumptions.assumeNegative(get(i))) {
-					flag = !flag;
-				} else {
-					return false;
-				}
-			}
-			return flag;
-		}
-		return false;
+		return AbstractAssumptions.isPositiveResult(this); 
 	}
 
 	/** {@inheritDoc} */
