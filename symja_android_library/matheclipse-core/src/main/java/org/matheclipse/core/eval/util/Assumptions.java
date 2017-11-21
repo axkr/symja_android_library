@@ -25,13 +25,8 @@ public class Assumptions extends AbstractAssumptions {
 			this.values = new ISignedNumber[5];
 		}
 
-		final public boolean isLessOrGreaterRelation() {
-			for (int i = 0; i <= LESSEQUAL_ID; i++) {
-				if (values != null) {
-					return true;
-				}
-			}
-			return false;
+		final public void addEquals(ISignedNumber expr) {
+			values[EQUALS_ID] = expr;
 		}
 
 		final public void addGreater(ISignedNumber expr) {
@@ -50,8 +45,8 @@ public class Assumptions extends AbstractAssumptions {
 			values[LESSEQUAL_ID] = expr;
 		}
 
-		final public void addEquals(ISignedNumber expr) {
-			values[EQUALS_ID] = expr;
+		final public ISignedNumber getEquals() {
+			return values[EQUALS_ID];
 		}
 
 		final public ISignedNumber getGreater() {
@@ -70,89 +65,14 @@ public class Assumptions extends AbstractAssumptions {
 			return values[LESSEQUAL_ID];
 		}
 
-		final public ISignedNumber getEquals() {
-			return values[EQUALS_ID];
-		}
-	}
-
-	/**
-	 * Map for storing the domain of an expression
-	 */
-	private Map<IExpr, ISymbol> elementsMap = new HashMap<IExpr, ISymbol>();
-
-	private Map<IExpr, SignedNumberRelations> valueMap = new HashMap<IExpr, SignedNumberRelations>();
-
-	private Assumptions() {
-
-	}
-
-	/**
-	 * Create <code>Assumptions</code> from the given expression. If the creation is not possible return
-	 * <code>null</code>
-	 * 
-	 * @param expr
-	 * @return <code>null</code> if <code>Assumptions</code> could not be created from the given expression.
-	 */
-	public static IAssumptions getInstance(IExpr expr) {
-		if (expr.isAST()) {
-			IAST ast = (IAST) expr;
-			Assumptions assumptions = new Assumptions();
-			if (ast.isAST(F.Element, 3)) {
-				if (addElement(ast, assumptions)) {
-					return assumptions;
-				}
-			} else if (ast.isAST(F.Greater, 3, 4)) {
-				if (addGreater(ast, assumptions)) {
-					return assumptions;
-				}
-			} else if (ast.isAST(F.GreaterEqual, 3, 4)) {
-				if (addGreaterEqual(ast, assumptions)) {
-					return assumptions;
-				}
-			} else if (ast.isAST(F.Less, 3, 4)) {
-				if (addLess(ast, assumptions)) {
-					return assumptions;
-				}
-			} else if (ast.isAST(F.LessEqual, 3, 4)) {
-				if (addLessEqual(ast, assumptions)) {
-					return assumptions;
-				}
-			} else if (ast.isASTSizeGE(F.And, 2) || ast.isASTSizeGE(F.List, 2)) {
-				return addList(ast, assumptions);
-			}
-		}
-
-		return null;
-	}
-
-	private static IAssumptions addList(IAST ast, Assumptions assumptions) {
-		for (int i = 1; i < ast.size(); i++) {
-			if (ast.get(i).isAST()) {
-				IAST temp = (IAST) ast.get(i);
-				if (temp.isAST(F.Element, 3)) {
-					if (!addElement(temp, assumptions)) {
-						return null;
-					}
-				} else if (temp.isAST(F.Greater, 3)) {
-					if (!addGreater(temp, assumptions)) {
-						return null;
-					}
-				} else if (temp.isAST(F.GreaterEqual, 3)) {
-					if (!addGreaterEqual(temp, assumptions)) {
-						return null;
-					}
-				} else if (temp.isAST(F.Less, 3)) {
-					if (!addLess(temp, assumptions)) {
-						return null;
-					}
-				} else if (temp.isAST(F.LessEqual, 3)) {
-					if (!addLessEqual(temp, assumptions)) {
-						return null;
-					}
+		final public boolean isLessOrGreaterRelation() {
+			for (int i = 0; i <= LESSEQUAL_ID; i++) {
+				if (values != null) {
+					return true;
 				}
 			}
+			return false;
 		}
-		return assumptions;
 	}
 
 	private static boolean addElement(IAST element, Assumptions assumptions) {
@@ -374,95 +294,84 @@ public class Assumptions extends AbstractAssumptions {
 		return false;
 	}
 
-	@Override
-	public boolean isNegative(IExpr expr) {
-		ISignedNumber num;
-		SignedNumberRelations gla = valueMap.get(expr);
-		if (gla != null) {
-			boolean result = false;
-			num = gla.getLess();
-			if (num != null) {
-				if (!num.isZero()) {
-					if (!num.isLessThan(F.C0)) {
-						return false;
+	private static IAssumptions addList(IAST ast, Assumptions assumptions) {
+		for (int i = 1; i < ast.size(); i++) {
+			if (ast.get(i).isAST()) {
+				IAST temp = (IAST) ast.get(i);
+				if (temp.isAST(F.Element, 3)) {
+					if (!addElement(temp, assumptions)) {
+						return null;
+					}
+				} else if (temp.isAST(F.Greater, 3)) {
+					if (!addGreater(temp, assumptions)) {
+						return null;
+					}
+				} else if (temp.isAST(F.GreaterEqual, 3)) {
+					if (!addGreaterEqual(temp, assumptions)) {
+						return null;
+					}
+				} else if (temp.isAST(F.Less, 3)) {
+					if (!addLess(temp, assumptions)) {
+						return null;
+					}
+				} else if (temp.isAST(F.LessEqual, 3)) {
+					if (!addLessEqual(temp, assumptions)) {
+						return null;
 					}
 				}
-				result = true;
 			}
-			if (!result) {
-				num = gla.getLessEqual();
-				if (num != null) {
-					if (!num.isLessThan(F.C0)) {
-						return false;
-					}
-					result = true;
-				}
-			}
-			return result;
 		}
-		return false;
+		return assumptions;
 	}
 
-	@Override
-	public boolean isPositive(IExpr expr) {
-		ISignedNumber num;
-		SignedNumberRelations gla = valueMap.get(expr);
-		if (gla != null) {
-			boolean result = false;
-			num = gla.getGreater();
-			if (num != null) {
-				if (!num.isZero()) {
-					if (!num.isGreaterThan(F.C0)) {
-						return false;
-					}
+	/**
+	 * Create <code>Assumptions</code> from the given expression. If the creation is not possible return
+	 * <code>null</code>
+	 * 
+	 * @param expr
+	 * @return <code>null</code> if <code>Assumptions</code> could not be created from the given expression.
+	 */
+	public static IAssumptions getInstance(IExpr expr) {
+		if (expr.isAST()) {
+			IAST ast = (IAST) expr;
+			Assumptions assumptions = new Assumptions();
+			if (ast.isAST(F.Element, 3)) {
+				if (addElement(ast, assumptions)) {
+					return assumptions;
 				}
-				result = true;
-			}
-			if (!result) {
-				num = gla.getGreaterEqual();
-				if (num != null) {
-					if (!num.isGreaterThan(F.C0)) {
-						return false;
-					}
-					result = true;
+			} else if (ast.isAST(F.Greater, 3, 4)) {
+				if (addGreater(ast, assumptions)) {
+					return assumptions;
 				}
+			} else if (ast.isAST(F.GreaterEqual, 3, 4)) {
+				if (addGreaterEqual(ast, assumptions)) {
+					return assumptions;
+				}
+			} else if (ast.isAST(F.Less, 3, 4)) {
+				if (addLess(ast, assumptions)) {
+					return assumptions;
+				}
+			} else if (ast.isAST(F.LessEqual, 3, 4)) {
+				if (addLessEqual(ast, assumptions)) {
+					return assumptions;
+				}
+			} else if (ast.isASTSizeGE(F.And, 2) || ast.isASTSizeGE(F.List, 2)) {
+				return addList(ast, assumptions);
 			}
-			return result;
 		}
-		return false;
+
+		return null;
 	}
 
-	@Override
-	public boolean isNonNegative(IExpr expr) {
-		ISignedNumber num;
-		SignedNumberRelations gla = valueMap.get(expr);
-		if (gla != null) {
-			boolean result = false;
-			num = gla.getGreater();
-			if (num != null) {
-				if (num.isZero()) {
-					result = true;
-				}
-			}
-			if (!result) {
-				num = gla.getGreaterEqual();
-				if (num != null) {
-					if (num.isZero()) {
-						result = true;
-					}
-				}
-			}
-			if (result) {
-				return true;
-			}
-			return isPositive(expr);
-		}
-		return false;
-	}
+	/**
+	 * Map for storing the domain of an expression
+	 */
+	private Map<IExpr, ISymbol> elementsMap = new HashMap<IExpr, ISymbol>();
 
-	final private boolean isDomain(IExpr expr, ISymbol domain) {
-		ISymbol mappedDomain = elementsMap.get(expr);
-		return mappedDomain != null && mappedDomain.equals(domain);
+	private Map<IExpr, SignedNumberRelations> valueMap = new HashMap<IExpr, SignedNumberRelations>();
+
+	private Assumptions() {
+
 	}
 
 	@Override
@@ -480,9 +389,115 @@ public class Assumptions extends AbstractAssumptions {
 		return isDomain(expr, F.Complexes);
 	}
 
+	final private boolean isDomain(IExpr expr, ISymbol domain) {
+		ISymbol mappedDomain = elementsMap.get(expr);
+		return mappedDomain != null && mappedDomain.equals(domain);
+	}
+
+	@Override
+	public boolean isGreaterEqual(IExpr expr, ISignedNumber number) {
+		ISignedNumber num;
+		SignedNumberRelations gla = valueMap.get(expr);
+		if (gla != null) {
+			boolean result = false;
+			num = gla.getGreater();
+			if (num != null) {
+				if (num.equals(number)) {
+					result = true;
+				}
+			}
+			if (!result) {
+				num = gla.getGreaterEqual();
+				if (num != null) {
+					if (num.equals(number)) {
+						result = true;
+					}
+				}
+			}
+			if (result) {
+				return true;
+			}
+			return isGreaterThan(expr, number);
+		}
+		return false;
+	}
+
+	@Override
+	public boolean isGreaterThan(IExpr expr, ISignedNumber number) {
+		ISignedNumber num;
+		SignedNumberRelations gla = valueMap.get(expr);
+		if (gla != null) {
+			boolean result = false;
+			num = gla.getGreater();
+			if (num != null) {
+				if (!num.equals(number)) {
+					if (!num.isGreaterThan(number)) {
+						return false;
+					}
+				}
+				result = true;
+			}
+			if (!result) {
+				num = gla.getGreaterEqual();
+				if (num != null) {
+					if (!num.isGreaterThan(number)) {
+						return false;
+					}
+					result = true;
+				}
+			}
+			return result;
+		}
+		return false;
+	}
+
 	@Override
 	public boolean isInteger(IExpr expr) {
 		return isDomain(expr, F.Integers);
+	}
+
+	@Override
+	public boolean isLessThan(IExpr expr, ISignedNumber number) {
+		ISignedNumber num;
+		SignedNumberRelations gla = valueMap.get(expr);
+		if (gla != null) {
+			boolean result = false;
+			num = gla.getLess();
+			if (num != null) {
+				if (!num.equals(number)) {
+					if (!num.isLessThan(number)) {
+						return false;
+					}
+				}
+				result = true;
+			}
+			if (!result) {
+				num = gla.getLessEqual();
+				if (num != null) {
+					if (!num.isLessThan(number)) {
+						return false;
+					}
+					result = true;
+				}
+			}
+			return result;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean isNegative(IExpr expr) {
+		return isLessThan(expr, F.C0);
+	}
+
+	@Override
+	public boolean isNonNegative(IExpr expr) {
+		return isGreaterEqual(expr, F.C0);
+	}
+
+	@Override
+	public boolean isPositive(IExpr expr) {
+		return isGreaterThan(expr, F.C0);
 	}
 
 	@Override

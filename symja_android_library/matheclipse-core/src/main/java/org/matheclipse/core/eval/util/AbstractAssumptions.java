@@ -12,281 +12,6 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 
 public abstract class AbstractAssumptions implements IAssumptions {
 
-	@Override
-	public boolean isNegative(IExpr expr) {
-		return false;
-	}
-
-	@Override
-	public boolean isPositive(IExpr expr) {
-		return false;
-	}
-
-	@Override
-	public boolean isNonNegative(IExpr expr) {
-		return false;
-	}
-
-	@Override
-	public boolean isAlgebraic(IExpr expr) {
-		return false;
-	}
-
-	@Override
-	public boolean isBoolean(IExpr expr) {
-		return false;
-	}
-
-	@Override
-	public boolean isComplex(IExpr expr) {
-		return false;
-	}
-
-	@Override
-	public boolean isInteger(IExpr expr) {
-		return false;
-	}
-
-	@Override
-	public boolean isPrime(IExpr expr) {
-		return false;
-	}
-
-	@Override
-	public boolean isRational(IExpr expr) {
-		return false;
-	}
-
-	@Override
-	public boolean isReal(IExpr expr) {
-		return false;
-	}
-
-	public static boolean isNonNegativeResult(IAST ast) {
-		ISymbol symbol = ast.topHead();
-		int size = ast.size();
-		if (symbol.equals(F.Abs) && size == 2) {
-			return true;
-		}
-		if (ast.isPlus()) {
-			for (int i = 1; i < size; i++) {
-				IExpr x = ast.get(i);
-				if (x.isNonNegativeResult() || assumeNonNegative(x)) {
-					continue;
-				}
-				return false;
-			}
-			return true;
-		}
-		if (ast.isTimes()) {
-			boolean flag = true;
-			for (int i = 1; i < size; i++) {
-				IExpr x = ast.get(i);
-				if (x.isNonNegativeResult()) {
-				} else if (assumeNonNegative(x)) {
-				} else if (x.isNegativeResult()) {
-					flag = !flag;
-				} else if (assumeNegative(x)) {
-					flag = !flag;
-				} else {
-					return false;
-				}
-			}
-			return flag;
-		}
-		if (ast.isPower()) {
-			IExpr arg1 = ast.arg1();
-			IExpr arg2 = ast.arg2();
-			if (arg1.isRealResult() && arg2.isInteger()) {
-				IInteger iArg2 = (IInteger) arg2;
-				if (iArg2.isEven()) {
-					return true;
-				}
-			}
-			if (arg1.isE()) {
-				if (arg2.isRealResult()) {
-					return true;
-				}
-			}
-			return false;
-		}
-		return false;
-	}
-
-	public static boolean isNegativeResult(IAST ast) {
-		int size = ast.size();
-		if (ast.isPlus()) {
-			for (int i = 1; i < size; i++) {
-				IExpr x = ast.get(i);
-				if (x.isNegativeResult() || assumeNegative(x)) {
-					continue;
-				}
-				return false;
-			}
-			return true;
-		}
-		if (ast.isTimes()) {
-			boolean flag = false;
-			for (int i = 1; i < size; i++) {
-				IExpr x = ast.get(i);
-				if (x.isNonNegativeResult()) {
-				} else if (assumeNonNegative(x)) {
-				} else if (x.isNegativeResult()) {
-					flag = !flag;
-				} else if (assumeNegative(x)) {
-					flag = !flag;
-				} else {
-					return false;
-				}
-			}
-			return flag;
-		}
-		if (ast.isPower()) {
-			IExpr arg1 = ast.arg1();
-			IExpr arg2 = ast.arg2();
-			if (arg1.isNegativeResult() && arg2.isInteger()) {
-				IInteger iArg2 = (IInteger) arg2;
-				if (iArg2.isOdd()) {
-					return true;
-				}
-			}
-			return false;
-		}
-		return false;
-	}
-
-	public static boolean isPositiveResult(IAST ast) {
-		int size = ast.size();
-		if (ast.isPlus()) {
-			for (int i = 1; i < size; i++) {
-				IExpr x = ast.get(i);
-				if (x.isPositiveResult() || assumePositive(x)) {
-					continue;
-				}
-				return false;
-			}
-			return true;
-		}
-		if (ast.isTimes()) {
-			boolean flag = true;
-			for (int i = 1; i < size; i++) {
-				IExpr x = ast.get(i);
-				if (x.isPositiveResult()) {
-				} else if (assumePositive(x)) {
-				} else if (x.isNegativeResult()) {
-					flag = !flag;
-				} else if (assumeNegative(x)) {
-					flag = !flag;
-				} else {
-					return false;
-				}
-			}
-			return flag;
-		}
-		if (ast.isPower()) {
-			IExpr arg1 = ast.arg1();
-			IExpr arg2 = ast.arg2();
-			if (arg2.isInteger()) {
-				IInteger iArg2 = (IInteger) arg2;
-				if (arg1.isNegativeResult()) {
-					if (iArg2.isEven()) {
-						return true;
-					}
-				}
-				if (arg1.isPositiveResult() && arg2.isInteger()) {
-					if (iArg2.isEven()) {
-						return true;
-					}
-				}
-			}
-			if (arg1.isE()) {
-				if (arg2.isRealResult()) {
-					return true;
-				}
-			}
-			return false;
-		}
-		return false;
-	}
-
-	/**
-	 * Test if <code>expr</code> is assumed to be an negative number.
-	 * 
-	 * @param expr
-	 * @return <code>true</code> if <code>expr</code> is assumed to be a negative number. Return <code>false</code> in
-	 *         all other cases.
-	 */
-	public static boolean assumeNegative(final IExpr expr) {
-		if (expr.isSignedNumber()) {
-			return ((ISignedNumber) expr).isNegative();
-		}
-		if (expr.isNumber()) {
-			return false;
-		}
-		if (expr.isSignedNumberConstant()) {
-			return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() < 0.0;
-		}
-		IAssumptions assumptions = EvalEngine.get().getAssumptions();
-		if (assumptions != null) {
-			if (assumptions.isNegative(expr)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Test if <code>expr</code> is assumed to be an positive number.
-	 * 
-	 * @param expr
-	 * @return <code>true</code> if <code>expr</code> is assumed to be a positive number. Return <code>false</code> in
-	 *         all other cases.
-	 */
-	public static boolean assumePositive(final IExpr expr) {
-		if (expr.isSignedNumber()) {
-			return ((ISignedNumber) expr).isPositive();
-		}
-		if (expr.isNumber()) {
-			return false;
-		}
-		if (expr.isSignedNumberConstant()) {
-			return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() > 0.0;
-		}
-		IAssumptions assumptions = EvalEngine.get().getAssumptions();
-		if (assumptions != null) {
-			if (assumptions.isPositive(expr)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Test if <code>expr</code> is assumed to be an non negative number.
-	 * 
-	 * @param expr
-	 * @return <code>true</code> if <code>expr</code> is assumed to be a non negative number. Return <code>false</code>
-	 *         in all other cases.
-	 */
-	public static boolean assumeNonNegative(final IExpr expr) {
-		if (expr.isSignedNumber()) {
-			return !((ISignedNumber) expr).isNegative();
-		}
-		if (expr.isNumber()) {
-			return false;
-		}
-		if (expr.isSignedNumberConstant()) {
-			return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() >= 0.0;
-		}
-		IAssumptions assumptions = EvalEngine.get().getAssumptions();
-		if (assumptions != null) {
-			if (assumptions.isNonNegative(expr)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	/**
 	 * TODO implement algebraic number conditions.
 	 * 
@@ -425,6 +150,141 @@ public abstract class AbstractAssumptions implements IAssumptions {
 	}
 
 	/**
+	 * Test if <code>expr</code> is assumed to be an negative number.
+	 * 
+	 * @param expr
+	 * @return <code>true</code> if <code>expr</code> is assumed to be a negative number. Return <code>false</code> in
+	 *         all other cases.
+	 */
+	public static boolean assumeNegative(final IExpr expr) {
+		if (expr.isSignedNumber()) {
+			return ((ISignedNumber) expr).isNegative();
+		}
+		if (expr.isNumber()) {
+			return false;
+		}
+		if (expr.isSignedNumberConstant()) {
+			return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() < 0.0;
+		}
+		IAssumptions assumptions = EvalEngine.get().getAssumptions();
+		if (assumptions != null) {
+			if (assumptions.isNegative(expr)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean assumeLessThan(final IExpr expr, ISignedNumber number) {
+		if (expr.isSignedNumber()) {
+			return ((ISignedNumber) expr).isLessThan(number);
+		}
+		if (expr.isNumber()) {
+			return false;
+		}
+		if (expr.isSignedNumberConstant()) {
+			return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() < number.doubleValue();
+		}
+		IAssumptions assumptions = EvalEngine.get().getAssumptions();
+		if (assumptions != null) {
+			if (assumptions.isLessThan(expr, number)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Test if <code>expr</code> is assumed to be an non negative number.
+	 * 
+	 * @param expr
+	 * @return <code>true</code> if <code>expr</code> is assumed to be a non negative number. Return <code>false</code>
+	 *         in all other cases.
+	 */
+	public static boolean assumeNonNegative(final IExpr expr) {
+		if (expr.isSignedNumber()) {
+			return !((ISignedNumber) expr).isNegative();
+		}
+		if (expr.isNumber()) {
+			return false;
+		}
+		if (expr.isSignedNumberConstant()) {
+			return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() >= 0.0;
+		}
+		IAssumptions assumptions = EvalEngine.get().getAssumptions();
+		if (assumptions != null) {
+			if (assumptions.isNonNegative(expr)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean assumeGreaterEqual(final IExpr expr, final ISignedNumber number) {
+		if (expr.isSignedNumber()) {
+			return !((ISignedNumber) expr).isLessThan(number);
+		}
+		if (expr.isNumber()) {
+			return false;
+		}
+		if (expr.isSignedNumberConstant()) {
+			return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() >= number.doubleValue();
+		}
+		IAssumptions assumptions = EvalEngine.get().getAssumptions();
+		if (assumptions != null) {
+			if (assumptions.isGreaterEqual(expr, number)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Test if <code>expr</code> is assumed to be an positive number.
+	 * 
+	 * @param expr
+	 * @return <code>true</code> if <code>expr</code> is assumed to be a positive number. Return <code>false</code> in
+	 *         all other cases.
+	 */
+	public static boolean assumePositive(final IExpr expr) {
+		if (expr.isSignedNumber()) {
+			return ((ISignedNumber) expr).isPositive();
+		}
+		if (expr.isNumber()) {
+			return false;
+		}
+		if (expr.isSignedNumberConstant()) {
+			return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() > 0.0;
+		}
+		IAssumptions assumptions = EvalEngine.get().getAssumptions();
+		if (assumptions != null) {
+			if (assumptions.isPositive(expr)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean assumeGreaterThan(final IExpr expr, ISignedNumber number) {
+		if (expr.isSignedNumber()) {
+			return ((ISignedNumber) expr).isGreaterThan(number);
+		}
+		if (expr.isNumber()) {
+			return false;
+		}
+		if (expr.isSignedNumberConstant()) {
+			return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() > number.doubleValue();
+		}
+		IAssumptions assumptions = EvalEngine.get().getAssumptions();
+		if (assumptions != null) {
+			if (assumptions.isGreaterThan(expr, number)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Test if <code>expr</code> is assumed to be an prime number.
 	 * 
 	 * @param expr
@@ -509,5 +369,249 @@ public abstract class AbstractAssumptions implements IAssumptions {
 			}
 		}
 		return null;
+	}
+
+	public static boolean isNegativeResult(IAST ast) {
+		IExpr head = ast.head();
+		if (head.isSymbol()) {
+			ISymbol symbol = (ISymbol) head;
+			int size = ast.size();
+			if (size == 2) {
+				IExpr arg1 = ast.arg1();
+				if (symbol.equals(F.Log) &&  assumePositive(arg1)&& assumeLessThan(arg1, F.C1)) {
+					return true;
+				}
+			}
+			if (ast.isPlus()) {
+				for (int i = 1; i < size; i++) {
+					IExpr x = ast.get(i);
+					if (x.isNegativeResult() || assumeNegative(x)) {
+						continue;
+					}
+					return false;
+				}
+				return true;
+			}
+			if (ast.isTimes()) {
+				boolean flag = false;
+				for (int i = 1; i < size; i++) {
+					IExpr x = ast.get(i);
+					if (x.isNonNegativeResult()) {
+					} else if (assumeNonNegative(x)) {
+					} else if (x.isNegativeResult()) {
+						flag = !flag;
+					} else if (assumeNegative(x)) {
+						flag = !flag;
+					} else {
+						return false;
+					}
+				}
+				return flag;
+			}
+			if (ast.isPower()) {
+				IExpr arg1 = ast.arg1();
+				IExpr arg2 = ast.arg2();
+				if (arg1.isNegativeResult() && arg2.isInteger()) {
+					IInteger iArg2 = (IInteger) arg2;
+					if (iArg2.isOdd()) {
+						return true;
+					}
+				}
+				return false;
+			}
+		}
+		return false;
+	}
+
+	public static boolean isNonNegativeResult(IAST ast) {
+		IExpr head = ast.head();
+		if (head.isSymbol()) {
+			ISymbol symbol = (ISymbol) head;
+			int size = ast.size();
+			if (size == 2) {
+				IExpr arg1 = ast.arg1();
+				if (symbol.equals(F.Abs)) {
+					return true;
+				}
+				if (symbol.equals(F.Log) && assumeGreaterEqual(arg1, F.C1)) {
+					return true;
+				}
+			}
+			if (ast.isPlus()) {
+				for (int i = 1; i < size; i++) {
+					IExpr x = ast.get(i);
+					if (x.isNonNegativeResult() || assumeNonNegative(x)) {
+						continue;
+					}
+					return false;
+				}
+				return true;
+			}
+			if (ast.isTimes()) {
+				boolean flag = true;
+				for (int i = 1; i < size; i++) {
+					IExpr x = ast.get(i);
+					if (x.isNonNegativeResult()) {
+					} else if (assumeNonNegative(x)) {
+					} else if (x.isNegativeResult()) {
+						flag = !flag;
+					} else if (assumeNegative(x)) {
+						flag = !flag;
+					} else {
+						return false;
+					}
+				}
+				return flag;
+			}
+			if (ast.isPower()) {
+				IExpr arg1 = ast.arg1();
+				IExpr arg2 = ast.arg2();
+				if (arg1.isRealResult() && arg2.isInteger()) {
+					IInteger iArg2 = (IInteger) arg2;
+					if (iArg2.isEven()) {
+						return true;
+					}
+				}
+				if (arg1.isE()) {
+					if (arg2.isRealResult()) {
+						return true;
+					}
+				}
+				return false;
+			}
+		}
+		return false;
+	}
+
+	public static boolean isPositiveResult(IAST ast) {
+		IExpr head = ast.head();
+		if (head.isSymbol()) {
+			ISymbol symbol = (ISymbol) head;
+			int size = ast.size();
+			if (size == 2) {
+				IExpr arg1 = ast.arg1();
+				if (symbol.equals(F.Abs) && (assumeNegative(arg1) || assumePositive(arg1))) {
+					return true;
+				}
+				if (symbol.equals(F.Log) && assumeGreaterThan(arg1, F.C1)) {
+					return true;
+				}
+			}
+			if (ast.isPlus()) {
+				for (int i = 1; i < size; i++) {
+					IExpr x = ast.get(i);
+					if (x.isPositiveResult() || assumePositive(x)) {
+						continue;
+					}
+					return false;
+				}
+				return true;
+			}
+			if (ast.isTimes()) {
+				boolean flag = true;
+				for (int i = 1; i < size; i++) {
+					IExpr x = ast.get(i);
+					if (x.isPositiveResult()) {
+					} else if (assumePositive(x)) {
+					} else if (x.isNegativeResult()) {
+						flag = !flag;
+					} else if (assumeNegative(x)) {
+						flag = !flag;
+					} else {
+						return false;
+					}
+				}
+				return flag;
+			}
+			if (ast.isPower()) {
+				IExpr arg1 = ast.arg1();
+				IExpr arg2 = ast.arg2();
+				if (arg2.isInteger()) {
+					IInteger iArg2 = (IInteger) arg2;
+					if (arg1.isNegativeResult()) {
+						if (iArg2.isEven()) {
+							return true;
+						}
+					}
+					if (arg1.isPositiveResult() && arg2.isInteger()) {
+						if (iArg2.isEven()) {
+							return true;
+						}
+					}
+				}
+				if (arg1.isE()) {
+					if (arg2.isRealResult()) {
+						return true;
+					}
+				}
+				return false;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public boolean isAlgebraic(IExpr expr) {
+		return false;
+	}
+
+	@Override
+	public boolean isBoolean(IExpr expr) {
+		return false;
+	}
+
+	@Override
+	public boolean isComplex(IExpr expr) {
+		return false;
+	}
+
+	@Override
+	public boolean isGreaterEqual(IExpr expr, ISignedNumber number) {
+		return false;
+	}
+
+	@Override
+	public boolean isGreaterThan(IExpr expr, ISignedNumber number) {
+		return false;
+	}
+
+	@Override
+	public boolean isInteger(IExpr expr) {
+		return false;
+	}
+
+	@Override
+	public boolean isLessThan(IExpr expr, ISignedNumber number) {
+		return false;
+	}
+
+	@Override
+	public boolean isNegative(IExpr expr) {
+		return false;
+	}
+
+	@Override
+	public boolean isNonNegative(IExpr expr) {
+		return false;
+	}
+
+	@Override
+	public boolean isPositive(IExpr expr) {
+		return false;
+	}
+
+	@Override
+	public boolean isPrime(IExpr expr) {
+		return false;
+	}
+
+	@Override
+	public boolean isRational(IExpr expr) {
+		return false;
+	}
+
+	@Override
+	public boolean isReal(IExpr expr) {
+		return false;
 	}
 }

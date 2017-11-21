@@ -3454,6 +3454,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// check("JacobianMatrix({Rr, Ttheta, Zz}, Cylindrical)", "");
 	// }
 
+
 	public void testLimit() {
 		// issue #184
 		check("N(Limit(tan(x),x->pi/2))", "-Infinity");
@@ -3487,9 +3488,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Limit(1/x, x -> 0, Direction->-1)", "Infinity");
 		check("1/0", "ComplexInfinity");
 		// check("Limit((4 - x), x -> 4)", "0");
-		check("Limit(1/(4 - x), x -> 4)", "-Infinity");
+		check("Limit(1/(4 - x), x -> 4)", "Infinity");
 		check("Limit(1/(x - 4), x -> 4)", "Infinity");
-		check("Limit(1/(4 - x), x -> 4)", "-Infinity");
 
 		check("Infinity-1", "Infinity");
 		check("Limit(a+b+2*x,x->-Infinity)", "-Infinity");
@@ -5719,8 +5719,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRefine() {
+		
 		// TODO
 		// check("Refine((a^b)^c, -1<b&&b<(-1))", "a^(b*c)");
+		check("Refine(Log(x)>0, x>1)", "True");
+		check("Refine(Log(x)<0, x<1&&x>0)", "True");
+		check("Refine(Log(x)<0, x<1&&x>0)", "True");
+		check("Refine(Log(x)<0, x<1&&x>=0)", "Log(x)<0");
+		
 		check("Refine(x^4<0,x<0)", "False");
 		check("Refine(x^(1/2)>=0, x>=0)", "Sqrt(x)>=0");
 		check("Refine(x^4>=0,Element(x, Reals))", "True");
@@ -5741,8 +5747,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Refine(UnitStep(y,x), x>0&&y>0)", "1");
 
 		check("Refine(Re(a+I*b), Element(a, Reals)&&Element(b, Reals))", "a");
-
-		check("Refine(Log(x), x<0)", "Log(x)");
 
 		check("(x^3)^(1/3)", "(x^3)^(1/3)");
 		check("Refine((x^3)^(1/3), x>=0)", "x");
