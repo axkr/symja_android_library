@@ -174,7 +174,7 @@ all operating systems here:
 
 Pay careful attention to anything about setting up your `PATH` or `CLASSPATH`.
 
-Install and open the latest version of the Eclipse development IDE:
+Install and open the latest version of the Eclipse development IDE for Java Developers:
 
 * http://www.eclipse.org/downloads/packages/
 
