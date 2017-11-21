@@ -8,7 +8,7 @@
 - [Examples](#examples)
 - [Maven Usage](#maven-usage)
 - [Getting started](#getting-started)
-- [BitBucket GIT](#bitbucket-git)
+- [Github GIT](#github-git)
 - [Contact](#contact)
 - [License](#license)
  
@@ -135,22 +135,26 @@ mvn clean install
 ```
 
 With the following command you can run the Symja console from the command line
+
 ```
 mvn exec:java -pl matheclipse-core
-``` 
+```
  
 With the following command you can run a symja console with a Mathematica-compatible syntax and functions
+
 ```
 mvn exec:java@mma -pl matheclipse-core 
 ```
 
 With the following command you can build a fat jar which contains all needed classes
+
 ```
 mvn assembly:single -pl matheclipse-core
 ```
 
 The *Excelsior JET Maven Plugin* provides Maven users with an easy way to compile their applications
 down to optimized native Windows, OS X, or Linux executables with [Excelsior JET](http://excelsiorjet.com).
+
 ```
 mvn jet:build -pl matheclipse-core
 ```
@@ -174,36 +178,32 @@ Install and open the latest version of the Eclipse development IDE:
 
 * http://www.eclipse.org/downloads/packages/eclipse-ide-java-developers/mars1
 
-### BitBucket GIT
+### Github GIT
 
 a) Fork the Symja repository to use as a starting point.
 
-* Navigate to https://bitbucket.org/axelclk/symja_android_library/fork in your browser.
+* Navigate to [github.com/axkr/symja_android_library](https://github.com/axkr/symja_android_library)  in your browser.
 * Click the "Fork" button in the top-right of the page.
 * Once your fork is ready, open the new repository's "Settings" by clicking the link in the menu bar on the left.
 * Change the repository name to the name of your Library and save your changes.
   
 b) Clone your new repository to your Eclipse workspace.
 
-* Open Eclipse and select the File → Import... menu item.
-* Select Git → Projects from Git, and click "Next >".
+* Open Eclipse and select the "File -> Import..." menu item.
+* Select "Git -> Projects from Git", and click "Next >".
 * Select "URI" and click "Next >". 
 * Enter your repository's clone URL in the "URI" field. The remaining fields in the "Location" and "Connection" groups will get automatically filled in.
-* Enter your BitBucket credentials in the "Authentication" group, and click "Next >".
+* Enter your Github credentials in the "Authentication" group, and click "Next >".
 * Select the `master` branch on the next screen, and click "Next >".
 * The default settings on the "Local Configuration" screen should work fine, click "Next >".
 * Make sure "Import existing projects" is selected, and click "Next >".
 * Eclipse should find and select the `symja_android_library` automatically, click "Finish".
-  
 
-See also the "Getting started with Symja" document on the BitBucket Wiki pages:
-
-* [Symja wiki pages](https://bitbucket.org/axelclk/symja_android_library/wiki)
+See this [Git version control with Eclipse (EGit) - Tutorial](http://www.vogella.com/tutorials/EclipseGit/article.html) for a general overview.
 
 ### Contact
 
-If you have any questions about using or developing for this project, shoot me
-an [email][1]!
+If you have any questions about using or developing for this project, send me an [email][1]!
 
 ### License
 
