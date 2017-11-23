@@ -13,7 +13,7 @@ public interface LimitRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 4, 12 };
+  final public static int[] SIZES = { 17, 14 };
 
   final public static IAST RULES = List(
     IInit(Limit, SIZES),
@@ -38,6 +38,9 @@ public interface LimitRules {
     // Limit(Log(x_),x_Symbol->Infinity)=Infinity
     ISet(Limit(Log(x_),Rule($p(x,Symbol),oo)),
       oo),
+    // Limit(Log(x_),x_Symbol->-Infinity)=Infinity
+    ISet(Limit(Log(x_),Rule($p(x,Symbol),Negate(oo))),
+      oo),
     // Limit((1+1/x_)^x_,x_Symbol->Infinity)=E
     ISet(Limit(Power(Plus(C1,Power(x_,-1)),x_),Rule($p(x,Symbol),oo)),
       E),
@@ -47,6 +50,48 @@ public interface LimitRules {
     // Limit(HarmonicNumber(y_Symbol,s_IntegerQ),x_Symbol->Infinity):=Module({v=s/2},((-1)^(v+1)*(2*Pi)^(2*v)*BernoulliB(2*v))/(2*(2*v)!))/;EvenQ(s)&&Positive(s)
     ISetDelayed(Limit(HarmonicNumber($p(y,Symbol),$p(s,IntegerQ)),Rule($p(x,Symbol),oo)),
       Condition(Module(List(Set(v,Times(C1D2,s))),Times(Power(CN1,Plus(v,C1)),Power(Times(C2,Pi),Times(C2,v)),BernoulliB(Times(C2,v)),Power(Times(C2,Factorial(Times(C2,v))),-1))),And(EvenQ(s),Positive(s)))),
+    // Limit(Tan(x_),x_Symbol->Pi/2):=Indeterminate
+    ISetDelayed(Limit(Tan(x_),Rule($p(x,Symbol),Times(C1D2,Pi))),
+      Indeterminate),
+    // Limit(Cot(x_),x_Symbol->0):=Indeterminate
+    ISetDelayed(Limit(Cot(x_),Rule($p(x,Symbol),C0)),
+      Indeterminate),
+    // Limit(Cosh(x_),x_Symbol->Infinity)=Infinity
+    ISet(Limit(Cosh(x_),Rule($p(x,Symbol),oo)),
+      oo),
+    // Limit(Cosh(x_),x_Symbol->-Infinity)=Infinity
+    ISet(Limit(Cosh(x_),Rule($p(x,Symbol),Negate(oo))),
+      oo),
+    // Limit(Coth(x_),x_Symbol->Infinity)=1
+    ISet(Limit(Coth(x_),Rule($p(x,Symbol),oo)),
+      C1),
+    // Limit(Coth(x_),x_Symbol->-Infinity)=-1
+    ISet(Limit(Coth(x_),Rule($p(x,Symbol),Negate(oo))),
+      CN1),
+    // Limit(Csch(x_),x_Symbol->Infinity)=0
+    ISet(Limit(Csch(x_),Rule($p(x,Symbol),oo)),
+      C0),
+    // Limit(Csch(x_),x_Symbol->-Infinity)=0
+    ISet(Limit(Csch(x_),Rule($p(x,Symbol),Negate(oo))),
+      C0),
+    // Limit(Sech(x_),x_Symbol->Infinity)=0
+    ISet(Limit(Sech(x_),Rule($p(x,Symbol),oo)),
+      C0),
+    // Limit(Sech(x_),x_Symbol->-Infinity)=0
+    ISet(Limit(Sech(x_),Rule($p(x,Symbol),Negate(oo))),
+      C0),
+    // Limit(Sinh(x_),x_Symbol->Infinity)=Infinity
+    ISet(Limit(Sinh(x_),Rule($p(x,Symbol),oo)),
+      oo),
+    // Limit(Sinh(x_),x_Symbol->-Infinity)=-Infinity
+    ISet(Limit(Sinh(x_),Rule($p(x,Symbol),Negate(oo))),
+      Noo),
+    // Limit(Tanh(x_),x_Symbol->Infinity)=1
+    ISet(Limit(Tanh(x_),Rule($p(x,Symbol),oo)),
+      C1),
+    // Limit(Tanh(x_),x_Symbol->-Infinity)=-1
+    ISet(Limit(Tanh(x_),Rule($p(x,Symbol),Negate(oo))),
+      CN1),
     // Limit(x_/Abs(x_),x_Symbol->0,Direction->1):=-1
     ISetDelayed(Limit(Times(x_,Power(Abs(x_),-1)),Rule($p(x,Symbol),C0),Rule(Direction,C1)),
       CN1),

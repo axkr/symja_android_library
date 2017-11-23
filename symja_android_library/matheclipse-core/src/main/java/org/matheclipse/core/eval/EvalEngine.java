@@ -1456,6 +1456,14 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	public int getRecursionCounter() {
 		return fRecursionCounter;
 	}
+	
+	public int incRecursionCounter() {
+		return ++fRecursionCounter;
+	}
+	
+	public int decRecursionCounter() {
+		return --fRecursionCounter;
+	}
 
 	/**
 	 * @return

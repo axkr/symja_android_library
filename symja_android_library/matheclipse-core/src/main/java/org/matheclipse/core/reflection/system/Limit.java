@@ -50,7 +50,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		int direction;
 
 		public LimitData(ISymbol symbol, IExpr limitValue, IAST rule) {
-			this(symbol, limitValue, rule, DIRECTION_AUTOMATIC);
+			this(symbol, limitValue, rule, DIRECTION_TWO_SIDED);
 		}
 
 		public LimitData(ISymbol symbol, IExpr limitValue, IAST rule, int direction) {
@@ -97,7 +97,7 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			// return F.Limit(arg1, rule, F.Rule(F.Direction, F.CN1));
 			// }
 
-			if (direction == DIRECTION_FROM_SMALLER_VALUES) {
+			if (direction == DIRECTION_FROM_BELOW) {
 				return F.Limit(arg1, rule, F.Rule(F.Direction, F.C1));
 			}
 			return F.Limit(arg1, rule);
@@ -166,16 +166,14 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 								if (assumptions != null) {
 									int direction = data.getDirection();
 									if (assumptions.isNegative(data.getSymbol())) {
-										if (direction == DIRECTION_AUTOMATIC
-												|| direction == DIRECTION_FROM_SMALLER_VALUES) {
-											data.setDirection(DIRECTION_FROM_SMALLER_VALUES);
+										if (direction == DIRECTION_TWO_SIDED || direction == DIRECTION_FROM_BELOW) {
+											data.setDirection(DIRECTION_FROM_BELOW);
 										} else {
 											return F.NIL;
 										}
 									} else if (assumptions.isNonNegative(data.getSymbol())) {
-										if (direction == DIRECTION_AUTOMATIC
-												|| direction == DIRECTION_FROM_LARGER_VALUES) {
-											data.setDirection(DIRECTION_FROM_LARGER_VALUES);
+										if (direction == DIRECTION_TWO_SIDED || direction == DIRECTION_FROM_ABOVE) {
+											data.setDirection(DIRECTION_FROM_ABOVE);
 										} else {
 											return F.NIL;
 										}
@@ -221,22 +219,31 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	private static IExpr lHospitalesRule(IExpr numerator, IExpr denominator, LimitData data) {
 		EvalEngine engine = EvalEngine.get();
 		ISymbol x = data.getSymbol();
-		int recursionLimit = engine.getRecursionLimit();
-		if (recursionLimit > 0) {
-			IExpr expr = F.evalQuiet(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
-			return evalLimit(expr, data, false);
-		}
 		try {
-			if (recursionLimit <= 0) {
-				// set recursion limit for using l'Hospitales rule
-				engine.setRecursionLimit(128);
+			int recursionCounter = engine.incRecursionCounter();
+			int recursionLimit = engine.getRecursionLimit();
+			if (recursionLimit > 0) {
+				if (recursionCounter>recursionLimit) {
+					return F.NIL;
+				}
+				IExpr expr = F.evalQuiet(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
+				System.out.println(expr.toString());
+				return evalLimit(expr, data, false);
 			}
-			IExpr expr = F.evalQuiet(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
-			return evalLimit(expr, data, false);
-		} catch (RecursionLimitExceeded rle) {
-			engine.setRecursionLimit(recursionLimit);
+			try {
+				if (recursionLimit <= 0) {
+					// set recursion limit for using l'Hospitales rule
+					engine.setRecursionLimit(128);
+				}
+				IExpr expr = F.evalQuiet(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
+				return evalLimit(expr, data, false);
+			} catch (RecursionLimitExceeded rle) {
+				engine.setRecursionLimit(recursionLimit);
+			} finally {
+				engine.setRecursionLimit(recursionLimit);
+			}
 		} finally {
-			engine.setRecursionLimit(recursionLimit);
+			engine.decRecursionCounter();
 		}
 		return F.NIL;
 	}
@@ -451,15 +458,15 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 							if (n.isEven()) {
 								return F.CInfinity;
 							}
-							if (data.getDirection() == DIRECTION_FROM_SMALLER_VALUES) {
+							if (data.getDirection() == DIRECTION_FROM_BELOW) {
 								return F.CNInfinity;
 							} else {
-								data.setDirection(DIRECTION_FROM_LARGER_VALUES);
+								data.setDirection(DIRECTION_FROM_ABOVE);
 								return F.CInfinity;
 							}
 						} else if (exp.isFraction()) {
-							if (data.getDirection() != DIRECTION_FROM_SMALLER_VALUES) {
-								data.setDirection(DIRECTION_FROM_LARGER_VALUES);
+							if (data.getDirection() != DIRECTION_FROM_BELOW) {
+								data.setDirection(DIRECTION_FROM_ABOVE);
 								return F.CInfinity;
 							}
 						}
@@ -602,19 +609,19 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	}
 
 	/**
-	 * Compute the limit approaching from larger values.
+	 * Compute the limit approaching from larger real values.
 	 */
-	public final static int DIRECTION_FROM_LARGER_VALUES = -1;
+	public final static int DIRECTION_FROM_ABOVE = -1;
 
 	/**
-	 * Compute the limit approaching from larger or smaller values automatically.
+	 * Compute the limit approaching from larger or smaller real values automatically.
 	 */
-	public final static int DIRECTION_AUTOMATIC = 0;
+	public final static int DIRECTION_TWO_SIDED = 0;
 
 	/**
-	 * Compute the limit approaching from smaller values.
+	 * Compute the limit approaching from smaller real values.
 	 */
-	public final static int DIRECTION_FROM_SMALLER_VALUES = 1;
+	public final static int DIRECTION_FROM_BELOW = 1;
 
 	public Limit() {
 	}
@@ -636,22 +643,28 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		boolean numericMode = engine.isNumericMode();
 		try {
 			engine.setNumericMode(false);
-			int direction = DIRECTION_AUTOMATIC; // no direction as default
+			int direction = DIRECTION_TWO_SIDED; // no direction as default
 			if (ast.isAST3()) {
 				final Options options = new Options(ast.topHead(), ast, 2, engine);
 				IExpr option = options.getOption("Direction");
 				if (option.isPresent()) {
 					if (option.isOne()) {
-						direction = DIRECTION_FROM_SMALLER_VALUES;
+						direction = DIRECTION_FROM_BELOW;
 					} else if (option.isMinusOne()) {
-						direction = DIRECTION_FROM_LARGER_VALUES;
+						direction = DIRECTION_FROM_ABOVE;
 					} else if (option.equals(F.Automatic)) {
-						direction = DIRECTION_AUTOMATIC;
+						direction = DIRECTION_TWO_SIDED;
 					} else {
 						throw new WrongArgumentType(ast, ast.arg2(), 2, "Limit: direction option expected!");
 					}
 				} else {
 					throw new WrongArgumentType(ast, ast.arg2(), 2, "Limit: direction option expected!");
+				}
+				if (direction == DIRECTION_TWO_SIDED) {
+					IExpr temp = F.Limit.evalDownRule(engine, F.Limit(ast.arg1(), ast.arg2()));
+					if (temp.isPresent()) {
+						return temp;
+					}
 				}
 			}
 			ISymbol symbol = (ISymbol) rule.arg1();
@@ -661,13 +674,6 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			} else {
 				throw new WrongArgumentType(ast, ast.arg2(), 2,
 						"Limit: limit value contains variable symbol for rule definition!");
-			}
-			if (ast.isAST2() && direction == DIRECTION_AUTOMATIC) {
-				// check if there's a direction specific rule available in the rule database
-				IExpr temp = engine.evalLoop(F.Limit(ast.arg1(), ast.arg2(), F.Rule(F.Direction, F.CN1)));
-				if (temp.isPresent()) {
-					return temp;
-				}
 			}
 			LimitData data = new LimitData(symbol, limit, rule, direction);
 			return evalLimit(ast.arg1(), data, true);

@@ -3454,30 +3454,32 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// check("JacobianMatrix({Rr, Ttheta, Zz}, Cylindrical)", "");
 	// }
 
-
 	public void testLimit() {
-		// issue #184
-		check("N(Limit(tan(x),x->pi/2))", "-Infinity");
+//		check("Limit((1 + Sinh(x))/E^x, x ->Infinity)", "Infinity*Limit(E^(-x),x->Infinity)");
 
-		check("Limit(Tan(x), x->Pi/2)", "-Infinity");
+		// issue #184
+		check("N(Limit(tan(x),x->pi/2))", "Indeterminate");
+
+		check("Limit(Tan(x), x->Pi/2)", "Indeterminate");
 		check("Limit(Tan(x), x->Pi/2, Direction->1)", "Infinity");
 		check("Limit(Tan(x), x->Pi/2, Direction->-1)", "-Infinity");
-		check("Limit(Tan(x+3*Pi), x->Pi/2)", "-Infinity");
+		check("Limit(Tan(x+3*Pi), x->Pi/2)", "Indeterminate");
 		check("Limit(Tan(x+3*Pi), x->Pi/2, Direction->1)", "Infinity");
 		check("Limit(Tan(x+3*Pi), x->Pi/2, Direction->-1)", "-Infinity");
-		check("Limit(Cot(x), x->0)", "Infinity");
+		check("Limit(Cot(x), x->0)", "Indeterminate");
 		check("Limit(Cot(x), x->0, Direction->1)", "-Infinity");
 		check("Limit(Cot(x), x->0, Direction->-1)", "Infinity");
-		check("Limit(Cot(x+Pi), x->0)", "Infinity");
+		check("Limit(Cot(x+Pi), x->0)", "Indeterminate");
 		check("Limit(Cot(x+Pi), x->0, Direction->1)", "-Infinity");
 		check("Limit(Cot(x+Pi), x->0, Direction->-1)", "Infinity");
 
 		check("Limit(Log(x^y), x->0)", "DirectedInfinity(-y)");
 		check("Limit(Log(y*x, b), x->1)", "Limit(1/Log(x*y),x->1)*Log(b)");
 		check("Limit(Log(y*x), x->0)", "-Infinity+Log(y)");
-		check("Limit((y*x)/Abs(x), x->0)", "y");
+		check("Limit(Log(x), x->-Infinity)", "Infinity");
+		check("Limit((y*x)/Abs(x), x->0)", "Indeterminate");
 		check("Limit((y*x)/Abs(x), x->0, Direction->1)", "-y");
-		check("Limit(x/Abs(x), x->0)", "1");
+		check("Limit(x/Abs(x), x->0)", "Indeterminate");
 		check("Limit(x/Abs(x), x->0, Direction->-1)", "1");
 		check("Limit(x/Abs(x), x->0, Direction->1)", "-1");
 		check("Limit(Log(x), x -> 0)", "-Infinity");
@@ -5719,14 +5721,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRefine() {
-		
+
 		// TODO
 		// check("Refine((a^b)^c, -1<b&&b<(-1))", "a^(b*c)");
 		check("Refine(Log(x)>0, x>1)", "True");
 		check("Refine(Log(x)<0, x<1&&x>0)", "True");
 		check("Refine(Log(x)<0, x<1&&x>0)", "True");
 		check("Refine(Log(x)<0, x<1&&x>=0)", "Log(x)<0");
-		
+
 		check("Refine(x^4<0,x<0)", "False");
 		check("Refine(x^(1/2)>=0, x>=0)", "Sqrt(x)>=0");
 		check("Refine(x^4>=0,Element(x, Reals))", "True");
