@@ -13,7 +13,7 @@ public interface LimitRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 17, 14 };
+  final public static int[] SIZES = { 41, 14 };
 
   final public static IAST RULES = List(
     IInit(Limit, SIZES),
@@ -56,6 +56,78 @@ public interface LimitRules {
     // Limit(Cot(x_),x_Symbol->0):=Indeterminate
     ISetDelayed(Limit(Cot(x_),Rule($p(x,Symbol),C0)),
       Indeterminate),
+    // Limit(ArcCos(x_),x_Symbol->Infinity)=I*Infinity
+    ISet(Limit(ArcCos(x_),Rule($p(x,Symbol),oo)),
+      DirectedInfinity(CI)),
+    // Limit(ArcCos(x_),x_Symbol->-Infinity)=-I*Infinity
+    ISet(Limit(ArcCos(x_),Rule($p(x,Symbol),Negate(oo))),
+      DirectedInfinity(CNI)),
+    // Limit(ArcCot(x_),x_Symbol->Infinity)=0
+    ISet(Limit(ArcCot(x_),Rule($p(x,Symbol),oo)),
+      C0),
+    // Limit(ArcCot(x_),x_Symbol->-Infinity)=0
+    ISet(Limit(ArcCot(x_),Rule($p(x,Symbol),Negate(oo))),
+      C0),
+    // Limit(ArcCsc(x_),x_Symbol->Infinity)=0
+    ISet(Limit(ArcCsc(x_),Rule($p(x,Symbol),oo)),
+      C0),
+    // Limit(ArcCsc(x_),x_Symbol->-Infinity)=0
+    ISet(Limit(ArcCsc(x_),Rule($p(x,Symbol),Negate(oo))),
+      C0),
+    // Limit(ArcSec(x_),x_Symbol->Infinity)=Pi/2
+    ISet(Limit(ArcSec(x_),Rule($p(x,Symbol),oo)),
+      Times(C1D2,Pi)),
+    // Limit(ArcSec(x_),x_Symbol->-Infinity)=Pi/2
+    ISet(Limit(ArcSec(x_),Rule($p(x,Symbol),Negate(oo))),
+      Times(C1D2,Pi)),
+    // Limit(ArcSin(x_),x_Symbol->Infinity)=-I*Infinity
+    ISet(Limit(ArcSin(x_),Rule($p(x,Symbol),oo)),
+      DirectedInfinity(CNI)),
+    // Limit(ArcSin(x_),x_Symbol->-Infinity)=I*Infinity
+    ISet(Limit(ArcSin(x_),Rule($p(x,Symbol),Negate(oo))),
+      DirectedInfinity(CI)),
+    // Limit(ArcTan(x_),x_Symbol->Infinity)=Pi/2
+    ISet(Limit(ArcTan(x_),Rule($p(x,Symbol),oo)),
+      Times(C1D2,Pi)),
+    // Limit(ArcTan(x_),x_Symbol->-Infinity)=(-1)*1/2*Pi
+    ISet(Limit(ArcTan(x_),Rule($p(x,Symbol),Negate(oo))),
+      Times(CN1D2,Pi)),
+    // Limit(ArcCosh(x_),x_Symbol->Infinity)=Infinity
+    ISet(Limit(ArcCosh(x_),Rule($p(x,Symbol),oo)),
+      oo),
+    // Limit(ArcCosh(x_),x_Symbol->-Infinity)=Infinity
+    ISet(Limit(ArcCosh(x_),Rule($p(x,Symbol),Negate(oo))),
+      oo),
+    // Limit(ArcCoth(x_),x_Symbol->Infinity)=0
+    ISet(Limit(ArcCoth(x_),Rule($p(x,Symbol),oo)),
+      C0),
+    // Limit(ArcCoth(x_),x_Symbol->-Infinity)=0
+    ISet(Limit(ArcCoth(x_),Rule($p(x,Symbol),Negate(oo))),
+      C0),
+    // Limit(ArcCsch(x_),x_Symbol->Infinity)=0
+    ISet(Limit(ArcCsch(x_),Rule($p(x,Symbol),oo)),
+      C0),
+    // Limit(ArcCsch(x_),x_Symbol->-Infinity)=0
+    ISet(Limit(ArcCsch(x_),Rule($p(x,Symbol),Negate(oo))),
+      C0),
+    // Limit(ArcSech(x_),x_Symbol->Infinity)=I*Pi/2
+    ISet(Limit(ArcSech(x_),Rule($p(x,Symbol),oo)),
+      Times(CC(0L,1L,1L,2L),Pi)),
+    // Limit(ArcSech(x_),x_Symbol->-Infinity)=I*Pi/2
+    ISet(Limit(ArcSech(x_),Rule($p(x,Symbol),Negate(oo))),
+      Times(CC(0L,1L,1L,2L),Pi)),
+    // Limit(ArcSinh(x_),x_Symbol->Infinity)=Infinity
+    ISet(Limit(ArcSinh(x_),Rule($p(x,Symbol),oo)),
+      oo),
+    // Limit(ArcSinh(x_),x_Symbol->-Infinity)=-Infinity
+    ISet(Limit(ArcSinh(x_),Rule($p(x,Symbol),Negate(oo))),
+      Noo),
+    // Limit(ArcTanh(x_),x_Symbol->Infinity)=-I*Pi/2
+    ISet(Limit(ArcTanh(x_),Rule($p(x,Symbol),oo)),
+      Times(CC(0L,1L,-1L,2L),Pi)),
+    // Limit(ArcTanh(x_),x_Symbol->-Infinity)=I*Pi/2
+    ISet(Limit(ArcTanh(x_),Rule($p(x,Symbol),Negate(oo))),
+      Times(CC(0L,1L,1L,2L),Pi)),
     // Limit(Cosh(x_),x_Symbol->Infinity)=Infinity
     ISet(Limit(Cosh(x_),Rule($p(x,Symbol),oo)),
       oo),

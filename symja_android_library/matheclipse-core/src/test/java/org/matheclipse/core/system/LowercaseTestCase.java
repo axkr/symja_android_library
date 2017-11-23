@@ -3037,6 +3037,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testInterval() {
 		// https://de.wikipedia.org/wiki/Intervallarithmetik
+		
+		check("Interval({-1,1})/Infinity", "0");
+		check("Interval[{1,1}]","Interval({1,1})");
+		
 		check("Interval({1, 6}) * Interval({0, 2})", "Interval({0,12})");
 		check("Interval({1, 6}) + Interval({0, 2})", "Interval({1,8})");
 		check("Interval({-2, 5})^2", "Interval({0,25})");

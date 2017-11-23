@@ -223,11 +223,11 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			int recursionCounter = engine.incRecursionCounter();
 			int recursionLimit = engine.getRecursionLimit();
 			if (recursionLimit > 0) {
-				if (recursionCounter>recursionLimit) {
+				if (recursionCounter > recursionLimit) {
 					return F.NIL;
 				}
 				IExpr expr = F.evalQuiet(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
-				System.out.println(expr.toString());
+				// System.out.println(expr.toString());
 				return evalLimit(expr, data, false);
 			}
 			try {
