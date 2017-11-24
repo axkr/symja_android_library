@@ -1,6 +1,7 @@
 package org.matheclipse.core.system;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
@@ -896,6 +897,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testComplex() {
+		check("a*((- 1/3 )*I)", "-I*1/3*a");
 		check("Head(2 + 3*I)", "Complex");
 		check("Complex(1, 2/3)", "1+I*2/3");
 		check("Abs(Complex(3, 4))", "5");
@@ -3038,10 +3040,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testInterval() {
 		// https://de.wikipedia.org/wiki/Intervallarithmetik
-		
+
 		check("Interval({-1,1})/Infinity", "0");
-		check("Interval({1,1})","Interval({1,1})");
-		
+		check("Interval({1,1})", "Interval({1,1})");
+
 		check("Interval({1, 6}) * Interval({0, 2})", "Interval({0,12})");
 		check("Interval({1, 6}) + Interval({0, 2})", "Interval({1,8})");
 		check("Interval({-2, 5})^2", "Interval({0,25})");
@@ -3460,7 +3462,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testLimit() {
-//		check("Limit((1 + Sinh(x))/E^x, x ->Infinity)", "Infinity*Limit(E^(-x),x->Infinity)");
+		// check("Limit((1 + Sinh(x))/E^x, x ->Infinity)", "Infinity*Limit(E^(-x),x->Infinity)");
 
 		// issue #184
 		check("N(Limit(tan(x),x->pi/2))", "Indeterminate");

@@ -25,7 +25,8 @@ public class MathMLPresentationTestCase extends TestCase {
 	 * Test mathml function
 	 */
 	public void testMathMLPresentation() {
-		check("\"hello\nworld\"", "<mtext>hello</mtext><mspace linebreak='newline' /><mtext>world</mtext><mspace linebreak='newline' />");
+		check("\"hello\nworld\"",
+				"<mtext>hello</mtext><mspace linebreak='newline' /><mtext>world</mtext><mspace linebreak='newline' />");
 		check("x /.y", "<mrow><mi>x</mi><mo>/.</mo><mi>y</mi></mrow>");
 		check("f(x_,y_):={x,y}/;x>y",
 				"<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mtext>x_</mtext><mspace linebreak='newline' /><mo>,</mo><mtext>y_</mtext><mspace linebreak='newline' /></mrow><mo>)</mo></mrow></mrow><mo>:=</mo><mrow><mrow><mo>{</mo><mrow><mi>x</mi><mo>,</mo><mi>y</mi></mrow><mo>}</mo></mrow><mo>/;</mo><mrow><mi>x</mi><mo>&gt;</mo><mi>y</mi></mrow></mrow></mrow>");
@@ -154,22 +155,47 @@ public class MathMLPresentationTestCase extends TestCase {
 		check("Infinity", "<mi>&#x221E;</mi>");
 		check("-Infinity", "<mrow><mo>-</mo><mi>&#x221E;</mi></mrow>");
 	}
-	
+
 	public void testMathML002() {
-		IExpr expr=EvalEngine.get().evaluate("ArcTanh(Infinity)");
-		check(expr, "<mrow><mrow><mrow><mo>-</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>&#0183;</mo><mi>&#x2148;</mi></mrow></mrow><mo>&#0183;</mo><mi>&#x03C0;</mi></mrow>");
+		IExpr expr = EvalEngine.get().evaluate("a*((- 1/3 )+x)");
+		check(expr, "<mrow><mi>a</mi><mo>&#0183;</mo><mrow><mrow><mo>(</mo><mi>x</mi><mo>-</mo><mfrac><mn>1</mn><mn>3</mn></mfrac><mo>)</mo></mrow></mrow></mrow>");
+		expr = EvalEngine.get().evaluate("a*((- 1/3 )*I)");
+		check(expr, "<mrow><mrow><mo>-</mo><mrow><mfrac><mn>1</mn><mn>3</mn></mfrac><mo>&#0183;</mo><mi>&#x2148;</mi></mrow></mrow><mo>&#0183;</mo><mi>a</mi></mrow>");
+		
+//		expr = EvalEngine.get().evaluate("a*((- 1/3 )+I)");
+//		System.out.println(expr.toString());
+//		check(expr, "<mrow><mrow><mo>-</mo><mrow><mfrac><mn>1</mn><mn>3</mn></mfrac><mo>&#0183;</mo><mi>&#x2148;</mi></mrow></mrow><mo>&#0183;</mo><mi>a</mi></mrow>");
+		
+		
+		expr = EvalEngine.get().evaluate("ArcTanh(Infinity)");
+		check(expr,
+				"<mrow><mrow><mo>-</mo><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>&#0183;</mo><mi>&#x2148;</mi></mrow></mrow><mo>&#0183;</mo><mi>&#x03C0;</mi></mrow>");
+		expr = EvalEngine.get().evaluate("1-I");
+		check(expr, "<mrow><mn>1</mn><mo>-</mo><mi>&#x2148;</mi></mrow>");
+		expr = EvalEngine.get().evaluate("-(1/3)+I");
+		check(expr, "<mrow><mo>-</mo><mfrac><mn>1</mn><mn>3</mn></mfrac><mo>+</mo><mi>&#x2148;</mi></mrow>");
+		expr = EvalEngine.get().evaluate("1-4*I");
+		check(expr, "<mrow><mn>1</mn><mo>-</mo><mrow><mn>4</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow></mrow>");
+		expr = EvalEngine.get().evaluate("1-(1/2)*I");
+		check(expr,
+				"<mrow><mn>1</mn><mo>-</mo><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>&#0183;</mo><mi>&#x2148;</mi></mrow></mrow>");
+		expr = EvalEngine.get().evaluate("1.0-0.5*I");
+		check(expr, "<mrow><mn>1.0</mn><mo>-</mo><mn>0.5</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
+
 	}
-	
+
 	public void testDerivatve001() {
-		IExpr expr=EvalEngine.get().evaluate("1/f''(x)");
-		check(expr, "<mfrac><mn>1</mn><mrow><mi>f</mi><mo>''</mo><mrow><mo>(</mo><mi>x</mi><mo>)</mo></mrow></mrow></mfrac>");
-		
+		IExpr expr = EvalEngine.get().evaluate("1/f''(x)");
+		check(expr,
+				"<mfrac><mn>1</mn><mrow><mi>f</mi><mo>''</mo><mrow><mo>(</mo><mi>x</mi><mo>)</mo></mrow></mrow></mfrac>");
+
 	}
-	
+
 	public void testSeries001() {
-		IExpr expr=EvalEngine.get().evaluate("Series(f(x),{x,a,3})");
-		check(expr, "<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>a</mi></mrow><mo>)</mo></mrow></mrow><mo>+</mo><mrow><mrow><mi>f</mi><mo>'</mo><mrow><mo>(</mo><mi>a</mi><mo>)</mo></mrow></mrow><mo>&#0183;</mo><mrow><mrow><mo>(</mo><mi>x</mi><mo>-</mo><mi>a</mi><mo>)</mo></mrow></mrow></mrow><mo>+</mo><mfrac><mrow><mrow><mi>f</mi><mo>''</mo><mrow><mo>(</mo><mi>a</mi><mo>)</mo></mrow></mrow><mo>&#0183;</mo><msup><mrow><mrow><mo>(</mo><mi>x</mi><mo>-</mo><mi>a</mi><mo>)</mo></mrow></mrow><mn>2</mn></msup></mrow><mn>2</mn></mfrac><mo>+</mo><mfrac><mrow><mrow><msup><mi>f</mi><mrow><mo>(</mo><mn>3</mn><mo>)</mo></mrow></msup><mrow><mo>(</mo><mi>a</mi><mo>)</mo></mrow></mrow><mo>&#0183;</mo><msup><mrow><mrow><mo>(</mo><mi>x</mi><mo>-</mo><mi>a</mi><mo>)</mo></mrow></mrow><mn>3</mn></msup></mrow><mn>6</mn></mfrac><mo>+</mo><msup><mrow><mi>O</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mrow><mi>x</mi><mo>-</mo><mi>a</mi></mrow></mrow><mo>)</mo></mrow></mrow><mn>4</mn></msup></mrow>");
-		
+		IExpr expr = EvalEngine.get().evaluate("Series(f(x),{x,a,3})");
+		check(expr,
+				"<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>a</mi></mrow><mo>)</mo></mrow></mrow><mo>+</mo><mrow><mrow><mi>f</mi><mo>'</mo><mrow><mo>(</mo><mi>a</mi><mo>)</mo></mrow></mrow><mo>&#0183;</mo><mrow><mrow><mo>(</mo><mi>x</mi><mo>-</mo><mi>a</mi><mo>)</mo></mrow></mrow></mrow><mo>+</mo><mfrac><mrow><mrow><mi>f</mi><mo>''</mo><mrow><mo>(</mo><mi>a</mi><mo>)</mo></mrow></mrow><mo>&#0183;</mo><msup><mrow><mrow><mo>(</mo><mi>x</mi><mo>-</mo><mi>a</mi><mo>)</mo></mrow></mrow><mn>2</mn></msup></mrow><mn>2</mn></mfrac><mo>+</mo><mfrac><mrow><mrow><msup><mi>f</mi><mrow><mo>(</mo><mn>3</mn><mo>)</mo></mrow></msup><mrow><mo>(</mo><mi>a</mi><mo>)</mo></mrow></mrow><mo>&#0183;</mo><msup><mrow><mrow><mo>(</mo><mi>x</mi><mo>-</mo><mi>a</mi><mo>)</mo></mrow></mrow><mn>3</mn></msup></mrow><mn>6</mn></mfrac><mo>+</mo><msup><mrow><mi>O</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mrow><mi>x</mi><mo>-</mo><mi>a</mi></mrow></mrow><mo>)</mo></mrow></mrow><mn>4</mn></msup></mrow>");
+
 	}
 
 	public void check(String strEval, String strResult) {

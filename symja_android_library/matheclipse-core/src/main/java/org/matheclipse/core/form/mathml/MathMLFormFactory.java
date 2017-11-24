@@ -236,10 +236,16 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	}
 
 	@Override
-	public void convertFraction(final StringBuilder buf, final IRational f, final int precedence) {
-		if (f.isNegative() && (precedence > plusPrec)) {
+	public void convertFraction(final StringBuilder buf, final IRational frac, final int precedence) {
+		IRational f = frac;
+		boolean isNegative=f.isNegative();
+		if (isNegative && (precedence > plusPrec)) {
 			tagStart(buf, "mrow");
 			tag(buf, "mo", "(");
+		}
+		if (isNegative) {
+			tag(buf, "mo", "-");
+			f = frac.negate();
 		}
 		if (f.getDenominator().isOne() || f.getNumerator().isZero()) {
 			tagStart(buf, "mn");
@@ -255,7 +261,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tagEnd(buf, "mn");
 			tagEnd(buf, "mfrac");
 		}
-		if (f.isNegative() && (precedence > plusPrec)) {
+		if (isNegative && (precedence > plusPrec)) {
 			tag(buf, "mo", ")");
 			tagEnd(buf, "mrow");
 		}
@@ -277,7 +283,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 				tag(buf, "mo", "+");
 			}
 		} else {
-			if (isImMinusOne) {
+			if (isImNegative) {
 				tag(buf, "mo", "-");
 			}
 		}
@@ -285,7 +291,6 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tagStart(buf, "mrow");
 			if (isImNegative) {
 				imaginaryPart = imaginaryPart.negate();
-				tag(buf, "mo", "-");
 			}
 			convertFraction(buf, imaginaryPart, ASTNodeFactory.TIMES_PRECEDENCE);
 			// <!ENTITY InvisibleTimes "&#x2062;" >
