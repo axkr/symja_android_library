@@ -348,6 +348,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("ArcTanh(I)", "I*1/4*Pi");
 		check("ArcTanh(Infinity)", "-I*1/2*Pi");
+		check("ArcTanh(-Infinity)", "I*1/2*Pi");
 		check("ArcTanh(I*Infinity)", "I*1/2*Pi");
 		check("ArcTanh(ComplexInfinity)", "Pi/2");
 
@@ -3039,7 +3040,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// https://de.wikipedia.org/wiki/Intervallarithmetik
 		
 		check("Interval({-1,1})/Infinity", "0");
-		check("Interval[{1,1}]","Interval({1,1})");
+		check("Interval({1,1})","Interval({1,1})");
 		
 		check("Interval({1, 6}) * Interval({0, 2})", "Interval({0,12})");
 		check("Interval({1, 6}) + Interval({0, 2})", "Interval({1,8})");

@@ -155,6 +155,11 @@ public class MathMLPresentationTestCase extends TestCase {
 		check("-Infinity", "<mrow><mo>-</mo><mi>&#x221E;</mi></mrow>");
 	}
 	
+	public void testMathML002() {
+		IExpr expr=EvalEngine.get().evaluate("ArcTanh(Infinity)");
+		check(expr, "<mrow><mrow><mrow><mo>-</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>&#0183;</mo><mi>&#x2148;</mi></mrow></mrow><mo>&#0183;</mo><mi>&#x03C0;</mi></mrow>");
+	}
+	
 	public void testDerivatve001() {
 		IExpr expr=EvalEngine.get().evaluate("1/f''(x)");
 		check(expr, "<mfrac><mn>1</mn><mrow><mi>f</mi><mo>''</mo><mrow><mo>(</mo><mi>x</mi><mo>)</mo></mrow></mrow></mfrac>");

@@ -285,6 +285,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			tagStart(buf, "mrow");
 			if (isImNegative) {
 				imaginaryPart = imaginaryPart.negate();
+				tag(buf, "mo", "-");
 			}
 			convertFraction(buf, imaginaryPart, ASTNodeFactory.TIMES_PRECEDENCE);
 			// <!ENTITY InvisibleTimes "&#x2062;" >
