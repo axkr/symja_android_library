@@ -36,6 +36,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -296,7 +297,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 		}
 		return false;
 	}
- 
+
 	/** {@inheritDoc} */
 	@Override
 	public void forEach(int startOffset, int endOffset, Consumer<? super IExpr> action) {
@@ -308,7 +309,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 			}
 		}
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public void forEach(int startOffset, int endOffset, ObjIntConsumer<? super IExpr> action) {
@@ -316,10 +317,10 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 		int start = firstIndex + startOffset;
 		if ((index = start) < lastIndex) {
 			for (int i = startOffset; i < endOffset; i++) {
-				action.accept(array[index++],i);
+				action.accept(array[index++], i);
 			}
 		}
-	} 
+	}
 
 	/** {@inheritDoc} */
 	@Override
@@ -555,6 +556,18 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
+		int start = firstIndex + startOffset;
+		for (int i = start; i < lastIndex; i++) {
+			if (predicate.test(array[i], i)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public final IAST filter(IASTAppendable filterAST, IASTAppendable restAST, Predicate<? super IExpr> predicate) {
 		for (int i = firstIndex + 1; i < lastIndex; i++) {
 			IExpr temp = array[i];
@@ -586,9 +599,21 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	/** {@inheritDoc} */
 	@Override
 	public boolean forAll(Predicate<? super IExpr> predicate, int startOffset) {
-		int start = firstIndex + startOffset;
+		final int start = firstIndex + startOffset;
 		for (int i = start; i < lastIndex; i++) {
 			if (!predicate.test(array[i])) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
+		final int start = firstIndex + startOffset;
+		for (int i = start; i < lastIndex; i++) {
+			if (!predicate.test(array[i], i)) {
 				return false;
 			}
 		}

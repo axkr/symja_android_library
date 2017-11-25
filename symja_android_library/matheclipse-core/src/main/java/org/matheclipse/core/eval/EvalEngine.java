@@ -345,11 +345,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					evaluate(x);
 				}
 			});
-			// for (int i = 1; i < ruleSize; i++) {
-			// if (ruleList.get(i) != null) {
-			// evaluate(ruleList.get(i));
-			// }
-			// }
 		} finally
 
 		{
@@ -679,11 +674,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					if (tempAST.exists(x -> x.isIndeterminate(), 1)) {
 						return F.Indeterminate;
 					}
-					// for (int i = 1; i < tempAST.size(); i++) {
-					// if (tempAST.get(i).isIndeterminate()) {
-					// return F.Indeterminate;
-					// }
-					// }
 				}
 			}
 
@@ -1163,7 +1153,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			}
 			if (astSize > 2) {
 				if ((ISymbol.HOLDREST & attr) == ISymbol.NOATTRIBUTE) {
-					// the HoldRest attribute isn't set here
+					// the HoldRest attribute isn't set here 
 					for (int i = 2; i < astSize; i++) {
 						IExpr expr = ast.get(i);
 						if (expr.isAST()) {
@@ -1456,11 +1446,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	public int getRecursionCounter() {
 		return fRecursionCounter;
 	}
-	
+
 	public int incRecursionCounter() {
 		return ++fRecursionCounter;
 	}
-	
+
 	public int decRecursionCounter() {
 		return --fRecursionCounter;
 	}

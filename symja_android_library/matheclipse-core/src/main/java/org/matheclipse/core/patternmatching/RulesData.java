@@ -16,7 +16,6 @@ import javax.annotation.Nonnull;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.eval.util.OpenIntToSet;
 import org.matheclipse.core.expression.Context;
@@ -792,14 +791,7 @@ public class RulesData implements Serializable {
 
 			fPatternDownRules = getPatternDownRules();
 			if (F.isSystemInitialized) {
-				fPatternDownRules.remove(pmEvaluator);
-				// for (int i = 0; i < fPatternDownRules.size(); i++) {
-				// if (pmEvaluator.equals(fPatternDownRules.get(i))) {
-				// fPatternDownRules.set(i, pmEvaluator);
-				//
-				// return pmEvaluator;
-				// }
-				// }
+				fPatternDownRules.remove(pmEvaluator); 
 			}
 			fPatternDownRules.add(pmEvaluator);
 			return pmEvaluator;

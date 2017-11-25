@@ -29,6 +29,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.form.output.OutputFormFactory;
+import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.interfaces.IAST;
@@ -414,8 +415,8 @@ public abstract class AbstractAST implements IASTMutable {
 		this.hashValue = 0;
 	}
 
-	 @Override
-	 public abstract IAST clone() throws CloneNotSupportedException;
+	@Override
+	public abstract IAST clone() throws CloneNotSupportedException;
 	// {
 	// AbstractAST ast = null;
 	// try {
@@ -493,13 +494,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean contains(Object object) {
-		int size = size();
-		for (int i = 0; i < size; i++) {
-			if (object.equals(get(i))) {
-				return true;
-			}
-		}
-		return false;
+		return exists(x -> object.equals(x), 0);
 	}
 
 	public IAST copyAlloc(int capacity) {
@@ -548,17 +543,11 @@ public abstract class AbstractAST implements IASTMutable {
 			if (obj == this) {
 				return true;
 			}
-			IAST list = (IAST) obj;
+			final IAST list = (IAST) obj;
 			if (size() != list.size()) {
 				return false;
 			}
-			int size = size();
-			for (int i = 0; i < size; i++) {
-				if (!get(i).equals(list.get(i))) {
-					return false;
-				}
-			}
-			return true;
+			return forAll((x, i) -> x.equals(list.get(i)), 0);
 		}
 		return false;
 	}
@@ -575,7 +564,6 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 
 		int j = from1;
-
 		for (int i = from0; i < size() - 1; i++) {
 			if (!get(i + 1).equals(f1.get(1 + j++))) {
 				return false;
@@ -672,31 +660,27 @@ public abstract class AbstractAST implements IASTMutable {
 	 */
 	protected IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
 			final Function<IExpr, IExpr> function) {
-		final int size = size();
-		for (int i = 1; i < size; i++) {
-			IExpr temp = get(i);
-			IExpr expr = function.apply(temp);
+		forEach(x -> {
+			IExpr expr = function.apply(x);
 			if (expr.isPresent()) {
 				filterAST.append(expr);
 			} else {
-				restAST.append(temp);
+				restAST.append(x);
 			}
-		}
+		});
 		return filterAST;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public IAST filter(IASTAppendable filterAST, IASTAppendable restAST, Predicate<? super IExpr> predicate) {
-		final int size = size();
-		for (int i = 1; i < size; i++) {
-			IExpr temp = get(i);
-			if (predicate.test(temp)) {
-				filterAST.append(temp);
+		forEach(x -> {
+			if (predicate.test(x)) {
+				filterAST.append(x);
 			} else {
-				restAST.append(temp);
+				restAST.append(x);
 			}
-		}
+		});
 		return filterAST;
 	}
 
@@ -719,6 +703,18 @@ public abstract class AbstractAST implements IASTMutable {
 		return false;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
+		final int size = size();
+		for (int i = startOffset; i < size; i++) {
+			if (predicate.test(get(i), i)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Apply the functor to the elements of the range from left to right and return the final result. Results do
 	 * accumulate from one invocation to the next: each time this method is called, the accumulation starts over with
@@ -733,10 +729,6 @@ public abstract class AbstractAST implements IASTMutable {
 		final IExpr[] value = { startValue };
 		forEach(start, size(), x -> value[0] = function.apply(value[0], x));
 		return value[0];
-		// for (int i = start; i < size(); i++) {
-		// value = function.apply(value, get(i));
-		// }
-		// return value;
 	}
 
 	/**
@@ -772,37 +764,44 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
+		final int size = size();
+		for (int i = startOffset; i < size; i++) {
+			if (!predicate.test(get(i), i)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public IAST filter(IASTAppendable filterAST, Predicate<? super IExpr> predicate) {
 		forEach(size(), x -> {
 			if (predicate.test(x)) {
 				filterAST.append(x);
 			}
 		});
-		// for (int i = 1; i < size; i++) {
-		// if (predicate.test(get(i))) {
-		// filterAST.append(get(i));
-		// }
-		// }
 		return filterAST;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public IAST filter(IASTAppendable filterAST, Predicate<? super IExpr> predicate, int maxMatches) {
-		int count = 0;
-		if (count >= maxMatches) {
+		int[] count = new int[1];
+		if (count[0] >= maxMatches) {
 			return filterAST;
 		}
-		final int size = size();
-		for (int i = 1; i < size; i++) {
-			if (predicate.test(get(i))) {
-				if (++count == maxMatches) {
-					filterAST.append(get(i));
-					break;
+		exists(x -> {
+			if (predicate.test(x)) {
+				if (++count[0] == maxMatches) {
+					filterAST.append(x);
+					return true;
 				}
-				filterAST.append(get(i));
+				filterAST.append(x);
 			}
-		}
+			return false;
+		}, 1);
 		return filterAST;
 	}
 
@@ -838,13 +837,6 @@ public abstract class AbstractAST implements IASTMutable {
 					noAST.append(x);
 				}
 			});
-			// for (int i = 1; i < size; i++) {
-			// if (predicate.test(get(i))) {
-			// yesAST.append(get(i));
-			// } else {
-			// noAST.append(get(i));
-			// }
-			// }
 			if (yesAST.size() > 1) {
 				result.append(F.eval(yesAST));
 			} else {
@@ -892,9 +884,6 @@ public abstract class AbstractAST implements IASTMutable {
 	public void forEach(Consumer<? super IExpr> action, int startOffset) {
 		final int size = size();
 		forEach(startOffset, size, action);
-//		for (int i = startOffset; i < size; i++) {
-//			action.accept(get(i));
-//		}
 	}
 
 	/** {@inheritDoc} */
@@ -2061,7 +2050,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isPositiveResult() {
-		return AbstractAssumptions.isPositiveResult(this); 
+		return AbstractAssumptions.isPositiveResult(this);
 	}
 
 	/** {@inheritDoc} */

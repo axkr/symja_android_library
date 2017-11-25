@@ -652,15 +652,10 @@ public class Symbol implements ISymbol, Serializable {
 		if (variables.isAST0()) {
 			return true;
 		}
-		for (int i = 1; i < variables.size(); i++) {
-			if (this.equals(variables.get(i))) {
-				return true;
-			}
-		}
 		if (isConstant()) {
 			return true;
 		}
-		return false;
+		return variables.exists(x -> this.equals(x), 1); 
 	}
 
 	/** {@inheritDoc} */
