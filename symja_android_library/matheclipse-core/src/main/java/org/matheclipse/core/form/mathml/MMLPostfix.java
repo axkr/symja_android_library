@@ -20,7 +20,7 @@ public class MMLPostfix extends AbstractConverter {
 public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
     if (f.isAST1()) {
       fFactory.tagStart(buf, "mrow");
-      fFactory.convert(buf, f.arg1(), 0);
+      fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
       fFactory.tag(buf, "mo", fOperator);
       fFactory.tagEnd(buf, "mrow");
       return true;

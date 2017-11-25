@@ -41,7 +41,7 @@ public class MatrixForm extends AbstractConverter {
 					temp = vector.get(i);
 					fFactory.tagStart(buf, "mtr");
 					fFactory.tagStart(buf, "mtd", "columnalign=\"center\"");
-					fFactory.convert(buf, temp, 0);
+					fFactory.convert(buf, temp, Integer.MIN_VALUE, false);
 					fFactory.tagEnd(buf, "mtd");
 					fFactory.tagEnd(buf, "mtr");
 				}
@@ -64,7 +64,7 @@ public class MatrixForm extends AbstractConverter {
 				for (int j = 1; j < temp.size(); j++) {
 
 					fFactory.tagStart(buf, "mtd", "columnalign=\"center\"");
-					fFactory.convert(buf, temp.get(j), 0);
+					fFactory.convert(buf, temp.get(j), Integer.MIN_VALUE, false);
 					fFactory.tagEnd(buf, "mtd");
 				}
 				fFactory.tagEnd(buf, "mtr");

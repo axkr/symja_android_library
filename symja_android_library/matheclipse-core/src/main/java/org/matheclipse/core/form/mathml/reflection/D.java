@@ -24,12 +24,12 @@ public class D extends AbstractConverter {
 			// &PartialD; &x02202;
 			fFactory.tag(buf, "mo", "&#x2202;");
 
-			fFactory.convert(buf, f.arg1(), 0);
+			fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
 			fFactory.tagEnd(buf, "mrow");
 			fFactory.tagStart(buf, "mrow");
 			// &PartialD; &x02202
 			fFactory.tag(buf, "mo", "&#x2202;");
-			fFactory.convert(buf, f.arg2(), 0);
+			fFactory.convert(buf, f.arg2(), Integer.MIN_VALUE, false);
 
 			fFactory.tagEnd(buf, "mrow");
 			fFactory.tagEnd(buf, "mfrac");

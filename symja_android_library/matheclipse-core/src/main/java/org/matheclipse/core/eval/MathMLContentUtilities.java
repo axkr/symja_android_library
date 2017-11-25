@@ -29,8 +29,8 @@ public class MathMLContentUtilities {
 	}
 
 	/**
-	 * Converts the inputExpression string into a MathML expression and writes
-	 * the result to the given <code>Writer</code>
+	 * Converts the inputExpression string into a MathML expression and writes the result to the given
+	 * <code>Writer</code>
 	 * 
 	 * @param inputExpression
 	 * @param out
@@ -49,8 +49,7 @@ public class MathMLContentUtilities {
 	}
 
 	/**
-	 * Converts the objectExpression into a MathML expression and writes the
-	 * result to the given <code>Writer</code>
+	 * Converts the objectExpression into a MathML expression and writes the result to the given <code>Writer</code>
 	 * 
 	 * @param objectExpression
 	 * @param out
@@ -59,7 +58,7 @@ public class MathMLContentUtilities {
 		final StringBuilder buf = new StringBuilder();
 
 		if (objectExpression != null) {
-			fMathMLFactory.convert(buf, objectExpression, 0);
+			fMathMLFactory.convert(buf, objectExpression, Integer.MIN_VALUE, false);
 			try {
 
 				out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -91,8 +90,8 @@ public class MathMLContentUtilities {
 	// }
 
 	/**
-	 * Assign the associated EvalEngine to the current thread. Every subsequent
-	 * action evaluation in this thread affects the EvalEngine in this class.
+	 * Assign the associated EvalEngine to the current thread. Every subsequent action evaluation in this thread affects
+	 * the EvalEngine in this class.
 	 */
 	public void startRequest() {
 		EvalEngine.set(fEvalEngine);

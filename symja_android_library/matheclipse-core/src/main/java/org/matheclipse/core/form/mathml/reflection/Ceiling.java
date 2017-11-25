@@ -23,7 +23,7 @@ public boolean convert(final StringBuilder buf, final IAST f, final int preceden
     fFactory.tagStart(buf, "mrow");
     // LeftCeiling &#002308;
     fFactory.tag(buf, "mo", "&#x2308;");
-    fFactory.convert(buf, f.arg1(), 0);
+    fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
     // RightCeiling &#x02309;
     fFactory.tag(buf, "mo", "&#x2309;");
     fFactory.tagEnd(buf, "mrow");

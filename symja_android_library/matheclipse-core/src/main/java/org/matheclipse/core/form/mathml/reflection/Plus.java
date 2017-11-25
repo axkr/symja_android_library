@@ -2,6 +2,7 @@ package org.matheclipse.core.form.mathml.reflection;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.mathml.MMLOperator;
+import org.matheclipse.core.form.mathml.MathMLFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -11,8 +12,8 @@ import org.matheclipse.parser.client.operator.ASTNodeFactory;
  * Operator function conversions
  */
 public class Plus extends MMLOperator {
-    public final static Plus CONST = new Plus();
-    
+	public final static Plus CONST = new Plus();
+
 	public Plus() {
 		super(ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence(), "mrow", "+");
 	}
@@ -28,7 +29,7 @@ public class Plus extends MMLOperator {
 		for (int i = size; i > 0; i--) {
 			expr = f.get(i);
 			if ((i < size) && (expr instanceof IAST) && ((IAST) expr).head().equals(F.Times)) {
-				timesConverter.convertTimesFraction(buf, (IAST) expr, fPrecedence, Times.PLUS_CALL);
+				timesConverter.convertTimesFraction(buf, (IAST) expr, fPrecedence, MathMLFormFactory.PLUS_CALL);
 			} else {
 				if (i < size) {
 					if ((expr instanceof ISignedNumber) && (((ISignedNumber) expr).isNegative())) {
@@ -38,7 +39,7 @@ public class Plus extends MMLOperator {
 						fFactory.tag(buf, "mo", "+");
 					}
 				}
-				fFactory.convert(buf, expr, fPrecedence);
+				fFactory.convert(buf, expr, fPrecedence, false);
 			}
 		}
 		precedenceClose(buf, precedence);

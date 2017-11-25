@@ -22,7 +22,7 @@ public boolean convert(final StringBuilder buf, final IAST f, final int preceden
       return false;
     }
     fFactory.tagStart(buf, "mrow");
-    fFactory.convert(buf, f.arg1(), 0);
+    fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
     fFactory.tag(buf, "mo", "&amp;");
     fFactory.tagEnd(buf, "mrow");
     return true;

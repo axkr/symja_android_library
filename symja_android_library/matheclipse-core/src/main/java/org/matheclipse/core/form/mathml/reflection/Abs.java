@@ -26,7 +26,7 @@ public class Abs extends AbstractConverter {
 		fFactory.tagStart(buf, "mrow");
 		// fFactory.tag(buf, "mo", "&LeftBracketingBar;");
 		fFactory.tag(buf, "mo", "&#10072;");
-		fFactory.convert(buf, f.arg1(), 0);
+		fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
 		// fFactory.tag(buf, "mo", "&RightBracketingBar;");
 		fFactory.tag(buf, "mo", "&#10072;");
 		fFactory.tagEnd(buf, "mrow");

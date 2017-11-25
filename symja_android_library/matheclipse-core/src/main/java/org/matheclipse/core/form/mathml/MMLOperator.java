@@ -47,7 +47,7 @@ public class MMLOperator extends AbstractConverter {
 		fFactory.tagStart(buf, fFirstTag);
 		precedenceOpen(buf, precedence);
 		for (int i = 1; i < f.size(); i++) {
-			fFactory.convert(buf, f.get(i), fPrecedence);
+			fFactory.convert(buf, f.get(i), fPrecedence, false);
 			if (i < f.size() - 1) {
 				if (fOperator.compareTo("") != 0) {
 					fFactory.tag(buf, "mo", fOperator);

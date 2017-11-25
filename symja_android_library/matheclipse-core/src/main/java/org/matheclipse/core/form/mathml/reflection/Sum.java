@@ -25,7 +25,7 @@ public class Sum extends AbstractConverter {
 
 	public boolean iteratorStep(final StringBuilder buf, final String mathSymbol, final IAST f, int i) {
 		if (i >= f.size()) {
-			fFactory.convert(buf, f.arg1(), 0);
+			fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
 			return true;
 		}
 		fFactory.tagStart(buf, "mrow");
@@ -38,9 +38,9 @@ public class Sum extends AbstractConverter {
 				fFactory.tagStart(buf, "mrow");
 				fFactory.convertSymbol(buf, iterator.getVariable());
 				fFactory.tag(buf, "mo", "=");
-				fFactory.convert(buf, iterator.getLowerLimit(), 0);
+				fFactory.convert(buf, iterator.getLowerLimit(), Integer.MIN_VALUE, false);
 				fFactory.tagEnd(buf, "mrow");
-				fFactory.convert(buf, iterator.getUpperLimit(), 0);
+				fFactory.convert(buf, iterator.getUpperLimit(), Integer.MIN_VALUE, false);
 				fFactory.tagEnd(buf, "munderover");
 				if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
 					return false;

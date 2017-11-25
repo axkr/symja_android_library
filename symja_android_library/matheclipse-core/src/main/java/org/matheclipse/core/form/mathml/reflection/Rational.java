@@ -23,8 +23,8 @@ public boolean convert(final StringBuilder buf, final IAST f, final int preceden
     
 //  <mfrac><mi>k</mi><mn>2</mn></mfrac>
     fFactory.tagStart(buf, "mfrac");
-    fFactory.convert(buf, f.arg1(), 0);
-    fFactory.convert(buf, f.arg2(), 0);
+    fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
+    fFactory.convert(buf, f.arg2(), Integer.MIN_VALUE, false);
     fFactory.tagEnd(buf, "mfrac");
      
     return true;

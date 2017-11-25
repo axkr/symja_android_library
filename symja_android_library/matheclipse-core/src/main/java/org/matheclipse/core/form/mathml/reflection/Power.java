@@ -47,23 +47,23 @@ public class Power extends MMLOperator {
 			}
 		}
 		if (useMROOT > 0 && exp.isOne()) {
-			fFactory.convert(buf, arg1, 0);
+			fFactory.convert(buf, arg1, Integer.MIN_VALUE, false);
 		} else {
 			if (exp.isNegative()) {
 				exp = exp.negate();
 				fFactory.tagStart(buf, "mfrac");
-				fFactory.convert(buf, F.C1, 0);
+				fFactory.convert(buf, F.C1, Integer.MIN_VALUE, false);
 				if (exp.isOne()) {
-					fFactory.convert(buf, arg1, 0);
+					fFactory.convert(buf, arg1, Integer.MIN_VALUE, false);
 				} else {
-					convert(buf, F.Power(arg1, exp), 0);
+					convert(buf, F.Power(arg1, exp), Integer.MIN_VALUE);
 				}
 				fFactory.tagEnd(buf, "mfrac");
 			} else {
 				precedenceOpen(buf, precedence);
 				fFactory.tagStart(buf, "msup");
-				fFactory.convert(buf, arg1, fPrecedence);
-				fFactory.convert(buf, exp, fPrecedence);
+				fFactory.convert(buf, arg1, fPrecedence, false);
+				fFactory.convert(buf, exp, fPrecedence, false);
 				fFactory.tagEnd(buf, "msup");
 				precedenceClose(buf, precedence);
 			}
@@ -71,7 +71,7 @@ public class Power extends MMLOperator {
 		if (useMROOT == 1) {
 			fFactory.tagEnd(buf, "msqrt");
 		} else if (useMROOT == 2) {
-			fFactory.convert(buf, den, fPrecedence);
+			fFactory.convert(buf, den, fPrecedence, false);
 			fFactory.tagEnd(buf, "mroot");
 		}
 		return true;

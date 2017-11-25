@@ -27,7 +27,7 @@ public boolean convert(final StringBuilder buf, final IAST f, final int preceden
 
     fFactory.tag(buf, "mo", "(");
     for (int i = 1; i < f.size(); i++) {
-			fFactory.convert(buf, f.get(i), 0);
+			fFactory.convert(buf, f.get(i), Integer.MIN_VALUE, false);
       if (i < f.size() - 1) {
         fFactory.tag(buf, "mo", ",");
       }

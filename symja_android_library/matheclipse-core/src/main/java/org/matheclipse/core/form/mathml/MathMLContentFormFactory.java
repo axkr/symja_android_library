@@ -25,6 +25,16 @@ import org.matheclipse.parser.client.operator.ASTNodeFactory;
  */
 public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 
+	/**
+	 * The conversion wasn't called with an operator preceding the <code>IExpr</code> object.
+	 */
+	public final static boolean NO_PLUS_CALL = false;
+
+	/**
+	 * The conversion was called with a &quot;+&quot; operator preceding the <code>IExpr</code> object.
+	 */
+	public final static boolean PLUS_CALL = true;
+
 	class Operator {
 		String fOperator;
 
@@ -65,21 +75,21 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 	public MathMLContentFormFactory(final String tagPrefix) {
 		this(tagPrefix, null);
 	}
-	
+
 	public MathMLContentFormFactory(final String tagPrefix, NumberFormat numberFormat) {
 		super(tagPrefix, numberFormat);
 		init();
 	}
 
 	@Override
-	public void convertDouble(final StringBuilder buf, final INum d, final int precedence) {
+	public void convertDouble(final StringBuilder buf, final INum d, final int precedence, boolean caller) {
 		tagStart(buf, "cn", "type=\"real\"");
 		buf.append(convertDoubleToFormattedString(d.getRealPart()));
 		tagEnd(buf, "cn");
 	}
 
 	@Override
-	public void convertDoubleComplex(final StringBuilder buf, final IComplexNum dc, final int precedence) {
+	public void convertDoubleComplex(final StringBuilder buf, final IComplexNum dc, final int precedence, boolean caller) {
 		// <cn type="complex-cartesian">3<sep/>4</cn>
 		tagStart(buf, "cn", "type=\"complex-cartesian\"");
 		buf.append(convertDoubleToFormattedString(dc.getRealPart()));
@@ -89,14 +99,14 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 	}
 
 	@Override
-	public void convertInteger(final StringBuilder buf, final IInteger i, final int precedence) {
+	public void convertInteger(final StringBuilder buf, final IInteger i, final int precedence, boolean caller) {
 		tagStart(buf, "cn", "type=\"integer\"");
 		buf.append(i.toString());
 		tagEnd(buf, "cn");
 	}
 
 	@Override
-	public void convertFraction(final StringBuilder buf, final IRational f, final int precedence) {
+	public void convertFraction(final StringBuilder buf, final IRational f, final int precedence, boolean caller) {
 		// <cn type="rational">3<sep/>4</cn>
 		tagStart(buf, "cn", "type=\"rational\"");
 		buf.append(String.valueOf(f.toBigNumerator().toString()));
@@ -105,21 +115,21 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 		tagEnd(buf, "cn");
 	}
 
-//	public void convertFraction(final StringBuilder buf, final BigFraction f, final int precedence) {
-//		tagStart(buf, "cn", "type=\"rational\"");
-//		buf.append(String.valueOf(f.getNumerator().toString()));
-//		tagStartEnd(buf, "sep");
-//		buf.append(String.valueOf(f.getDenominator().toString()));
-//		tagEnd(buf, "cn");
-//	}
+	// public void convertFraction(final StringBuilder buf, final BigFraction f, final int precedence) {
+	// tagStart(buf, "cn", "type=\"rational\"");
+	// buf.append(String.valueOf(f.getNumerator().toString()));
+	// tagStartEnd(buf, "sep");
+	// buf.append(String.valueOf(f.getDenominator().toString()));
+	// tagEnd(buf, "cn");
+	// }
 
 	@Override
-	public void convertComplex(final StringBuilder buf, final IComplex c, final int precedence) {
+	public void convertComplex(final StringBuilder buf, final IComplex c, final int precedence, boolean caller) {
 		// <cn type="complex-cartesian">3<sep/>4</cn>
 		tagStart(buf, "cn", "type=\"complex-cartesian\"");
-		convertFraction(buf, c.getRealPart(), precedence);
+		convertFraction(buf, c.getRealPart(), precedence, caller);
 		tagStartEnd(buf, "sep");
-		convertFraction(buf, c.getImaginaryPart(), ASTNodeFactory.TIMES_PRECEDENCE);
+		convertFraction(buf, c.getImaginaryPart(), ASTNodeFactory.TIMES_PRECEDENCE, caller);
 		tagEnd(buf, "cn");
 	}
 
@@ -188,11 +198,11 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 			tag(buf, "mo", "&#x2061;");
 			return;
 		}
-		convert(buf, obj, 0);
+		convert(buf, obj, Integer.MIN_VALUE, false);
 	}
 
 	@Override
-	public void convert(final StringBuilder buf, final IExpr o, final int precedence) {
+	public void convert(final StringBuilder buf, final IExpr o, final int precedence,boolean caller) {
 		if (o instanceof IAST) {
 			final IAST f = ((IAST) o);
 			// System.out.println(f.getHeader().toString());
@@ -233,23 +243,23 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 			return;
 		}
 		if (o instanceof INum) {
-			convertDouble(buf, (INum) o, precedence);
+			convertDouble(buf, (INum) o, precedence, NO_PLUS_CALL);
 			return;
 		}
 		if (o instanceof IComplexNum) {
-			convertDoubleComplex(buf, (IComplexNum) o, precedence);
+			convertDoubleComplex(buf, (IComplexNum) o, precedence, NO_PLUS_CALL);
 			return;
 		}
 		if (o instanceof IInteger) {
-			convertInteger(buf, (IInteger) o, precedence);
+			convertInteger(buf, (IInteger) o, precedence, NO_PLUS_CALL);
 			return;
 		}
 		if (o instanceof IFraction) {
-			convertFraction(buf, (IFraction) o, precedence);
+			convertFraction(buf, (IFraction) o, precedence, NO_PLUS_CALL);
 			return;
 		}
 		if (o instanceof IComplex) {
-			convertComplex(buf, (IComplex) o, precedence);
+			convertComplex(buf, (IComplex) o, precedence, NO_PLUS_CALL);
 			return;
 		}
 		if (o instanceof ISymbol) {
@@ -268,7 +278,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 		tag(buf, "mo", "(");
 		tagStart(buf, "mrow");
 		for (int i = 1; i < ast.size(); i++) {
-			convert(buf, ast.get(i), 0);
+			convert(buf, ast.get(i), Integer.MIN_VALUE, false);
 			if (i < ast.size() - 1) {
 				tag(buf, "mo", ",");
 			}

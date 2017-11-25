@@ -21,7 +21,7 @@ public class Integrate extends AbstractConverter {
 
 	public boolean iteratorStep(final StringBuilder buf, final String mathSymbol, final IAST f, int i) {
 		if (i >= f.size()) {
-			fFactory.convert(buf, f.arg1(), 0);
+			fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
 			return true;
 		}
 		if (f.get(i).isList()) {
@@ -31,8 +31,8 @@ public class Integrate extends AbstractConverter {
 				fFactory.tagStart(buf, "msubsup");
 				// &Integral; &#x222B;
 				fFactory.tag(buf, "mo", mathSymbol);
-				fFactory.convert(buf, list.arg2(), 0);
-				fFactory.convert(buf, list.arg3(), 0);
+				fFactory.convert(buf, list.arg2(), Integer.MIN_VALUE, false);
+				fFactory.convert(buf, list.arg3(), Integer.MIN_VALUE, false);
 				fFactory.tagEnd(buf, "msubsup");
 				if (!iteratorStep(buf, mathSymbol, f, i + 1)) {
 					return false;

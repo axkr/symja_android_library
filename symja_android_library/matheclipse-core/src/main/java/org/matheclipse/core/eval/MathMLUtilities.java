@@ -123,7 +123,7 @@ public class MathMLUtilities {
 		final StringBuilder buf = new StringBuilder();
 
 		if (objectExpression != null) {
-			fMathMLFactory.convert(buf, objectExpression, 0);
+			fMathMLFactory.convert(buf, objectExpression, Integer.MIN_VALUE, false);
 			try {
 				if (fMSIE) {
 					out.write("<m:math>");

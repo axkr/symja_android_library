@@ -23,7 +23,7 @@ public boolean convert(final StringBuilder buf, final IAST f, final int preceden
     fFactory.tagStart(buf, "apply");
     fFactory.tagStartEnd(buf, fFunctionName);
     for (int i = 1; i < f.size(); i++) {
-			fFactory.convert(buf, f.get(i), 0);
+			fFactory.convert(buf, f.get(i), Integer.MIN_VALUE, false);
     }
     fFactory.tagEnd(buf, "apply");
     return true;
