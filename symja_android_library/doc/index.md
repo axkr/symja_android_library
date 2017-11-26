@@ -239,6 +239,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [ChineseRemainder](functions/ChineseRemainder.md)
 * [CholeskyDecomposition](functions/CholeskyDecomposition.md)
 * [Chop](functions/Chop.md)
+* [CirclePoints](functions/CirclePoints.md)
 * [Clear](functions/Clear.md)
 * [ClearAll](functions/ClearAll.md)
 * [ClearAttributes](functions/ClearAttributes.md)
@@ -652,3 +653,4 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Xor](functions/Xor.md)
 * [YuleDissimilarity](functions/YuleDissimilarity.md)
 * [Zeta](functions/Zeta.md)
+

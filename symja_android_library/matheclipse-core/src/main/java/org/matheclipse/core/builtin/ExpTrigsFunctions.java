@@ -964,13 +964,16 @@ public class ExpTrigsFunctions {
 			if (ast.arg1().isSignedNumber()) {
 
 				if (ast.arg1().isInteger()) {
-					int n = ((IInteger) ast.arg1()).toIntDefault(Integer.MIN_VALUE);
-					if (n > 0) {
-						final IExpr start = engine.evaluate(F.Plus(F.Times(F.QQ(1, n), F.Pi), F.Times(F.CN1D2, F.Pi)));
-						final IExpr angle = engine.evaluate(F.Times(F.QQ(2, n), F.Pi));
+					int i = ((IInteger) ast.arg1()).toIntDefault(Integer.MIN_VALUE);
+					if (i > 0) {
+						// Pi/i - Pi/2
+						final IExpr start = engine.evaluate(F.Plus(F.Times(F.QQ(1, i), F.Pi), F.Times(F.CN1D2, F.Pi)));
+						// (2/i)*Pi
+						final IExpr angle = engine.evaluate(F.Times(F.QQ(2, i), F.Pi));
+						
 						IASTAppendable result = F.ListAlloc(10);
-						ast.forEach(0, n, (x, i) -> {
-							result.append(F.AngleVector(F.Plus(start, F.ZZ(i).multiply(angle))));
+						ast.forEach(0, i, (x, j) -> {
+							result.append(F.AngleVector(F.Plus(start, F.ZZ(j).multiply(angle))));
 						});
 						return result;
 					}
@@ -984,7 +987,7 @@ public class ExpTrigsFunctions {
 		}
 
 	}
-	
+
 	/**
 	 * Cosine function
 	 * 
