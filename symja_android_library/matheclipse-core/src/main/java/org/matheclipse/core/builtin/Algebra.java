@@ -1090,9 +1090,7 @@ public class Algebra {
 							continue;
 						}
 					}
-					if (result.isPresent()) {
-						result.append(arg);
-					}
+					result.ifAppendable(r->r.append(arg)); 
 				}
 				if (result.isPresent()) {
 					return PlusOp.plus(result);
@@ -3289,10 +3287,7 @@ public class Algebra {
 					}
 
 					temp = tryTransformations(ast);
-					if (temp.isPresent()) {
-						return temp;
-					}
-					return result;
+					return temp.orElse(result);
 				}
 
 				temp = F.evalExpandAll(ast);

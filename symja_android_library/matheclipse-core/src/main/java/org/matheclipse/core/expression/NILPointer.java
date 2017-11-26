@@ -8,7 +8,6 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
-import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -21,13 +20,13 @@ import org.matheclipse.core.interfaces.IExpr;
  * <p>
  * Almost every modifying method in this class throws an <tt>UnsupportedOperationException</tt>, almost every predicate
  * returns <code>false</code>. The main method to check if the object is valid is the <code>isPresent()</code> method.
- * The method is similar to <code>java.util.Optional#isPresent()</code>.
+ * The method is designed similar to <code>java.util.Optional#isPresent()</code>.
  * </p>
  * 
- * @see F#NIL
+ * @see org.matheclipse.core.expression.F#NIL
  * @see java.util.Optional#isPresent
  */
-public class NILPointer extends AbstractAST implements IASTAppendable {
+public final class NILPointer extends AbstractAST implements IASTAppendable {
 
 	private static final long serialVersionUID = -3552302876858011292L;
 
@@ -171,11 +170,11 @@ public class NILPointer extends AbstractAST implements IASTAppendable {
 	@Override
 	public void ifPresent(Consumer<? super IExpr> consumer) {
 	}
-	
+
 	@Override
 	public void ifAppendable(Consumer<? super IASTAppendable> consumer) {
 	}
-	
+
 	@Override
 	public final boolean isAST() {
 		return false;
