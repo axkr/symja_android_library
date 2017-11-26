@@ -428,17 +428,28 @@ public class Algebra {
 		 */
 		private static IExpr[] calculatePlusIntegerGCD(IASTAppendable numeratorPlus, IInteger denominatorInt,
 				IInteger gcd) {
-			for (int i = 1; i < numeratorPlus.size(); i++) {
-				if (numeratorPlus.get(i).isInteger()) {
-					numeratorPlus.set(i, ((IInteger) numeratorPlus.get(i)).div(gcd));
-				} else if (numeratorPlus.get(i).isTimes() && numeratorPlus.get(i).getAt(1).isInteger()) {
-					IASTMutable times = ((IAST) numeratorPlus.get(i)).copy();
+			numeratorPlus.forEach((x, i) -> {
+				if (x.isInteger()) {
+					numeratorPlus.set(i, ((IInteger) x).div(gcd));
+				} else if (x.isTimes() && x.getAt(1).isInteger()) {
+					IASTMutable times = ((IAST) x).copy();
 					times.set(1, ((IInteger) times.arg1()).div(gcd));
 					numeratorPlus.set(i, times);
 				} else {
-					throw new WrongArgumentType(numeratorPlus, numeratorPlus.get(i), i, "unexpected argument");
+					throw new WrongArgumentType(numeratorPlus, x, i, "unexpected argument");
 				}
-			}
+			});
+			// for (int i = 1; i < numeratorPlus.size(); i++) {
+			// if (numeratorPlus.get(i).isInteger()) {
+			// numeratorPlus.set(i, ((IInteger) numeratorPlus.get(i)).div(gcd));
+			// } else if (numeratorPlus.get(i).isTimes() && numeratorPlus.get(i).getAt(1).isInteger()) {
+			// IASTMutable times = ((IAST) numeratorPlus.get(i)).copy();
+			// times.set(1, ((IInteger) times.arg1()).div(gcd));
+			// numeratorPlus.set(i, times);
+			// } else {
+			// throw new WrongArgumentType(numeratorPlus, numeratorPlus.get(i), i, "unexpected argument");
+			// }
+			// }
 			IExpr[] result = new IExpr[3];
 			result[0] = F.C1;
 			result[1] = numeratorPlus;
@@ -460,20 +471,31 @@ public class Algebra {
 			IASTAppendable plus = numeratorPlus.copyAppendable();
 			IASTAppendable gcd = F.ast(F.GCD, plus.size() + 1, false);
 			gcd.append(denominatorInt);
-			boolean evaled = true;
-			for (int i = 1; i < plus.size(); i++) {
-				IExpr temp = plus.get(i);
-				if (temp.isInteger()) {
-					gcd.append(temp);
+			boolean evaled = !plus.exists(x -> {
+				if (x.isInteger()) {
+					gcd.append(x);
 				} else {
-					if (temp.isTimes() && temp.getAt(1).isInteger()) {
-						gcd.append(temp.getAt(1));
+					if (x.isTimes() && x.getAt(1).isInteger()) {
+						gcd.append(x.getAt(1));
 					} else {
-						evaled = false;
-						break;
+						return true;
 					}
 				}
-			}
+				return false;
+			}, 1);
+			// for (int i = 1; i < plus.size(); i++) {
+			// IExpr temp = plus.get(i);
+			// if (temp.isInteger()) {
+			// gcd.append(temp);
+			// } else {
+			// if (temp.isTimes() && temp.getAt(1).isInteger()) {
+			// gcd.append(temp.getAt(1));
+			// } else {
+			// evaled = false;
+			// break;
+			// }
+			// }
+			// }
 			if (evaled) {
 				// GCD() has attribute Orderless, so the arguments will
 				// be sorted by evaluation!
@@ -640,11 +662,15 @@ public class Algebra {
 				if (head != null) {
 					IASTMutable simplifyAST = (IASTMutable) F.unaryAST1(head, null);
 					IExpr coefficient;
-					for (int i = 1; i < rest.size(); i++) {
-						simplifyAST.set(1, rest.get(i));
-						coefficient = engine.evaluate(simplifyAST);
-						rest.set(i, coefficient);
-					}
+					rest.forEach((arg, i) -> {
+						simplifyAST.set(1, arg);
+						rest.set(i, engine.evaluate(simplifyAST));
+					});
+					// for (int i = 1; i < rest.size(); i++) {
+					// simplifyAST.set(1, rest.get(i));
+					// coefficient = engine.evaluate(simplifyAST);
+					// rest.set(i, coefficient);
+					// }
 					for (Map.Entry<IExpr, IASTAppendable> entry : map.entrySet()) {
 						simplifyAST.set(1, entry.getValue());
 						coefficient = engine.evaluate(simplifyAST);
@@ -697,14 +723,23 @@ public class Algebra {
 				return;
 			} else if (expr.isTimes()) {
 				IAST timesAST = (IAST) expr;
-				for (int i = 1; i < timesAST.size(); i++) {
-					if (matcher.test(timesAST.get(i)) || isPowerMatched(timesAST.get(i), matcher)) {
+				timesAST.exists((x, i) -> {
+					if (matcher.test(x) || isPowerMatched(x, matcher)) {
 						IASTAppendable clone = timesAST.copyAppendable();
 						clone.remove(i);
-						addOneIdentityPowerFactor(timesAST.get(i), clone, map);
-						return;
+						addOneIdentityPowerFactor(x, clone, map);
+						return true;
 					}
-				}
+					return false;
+				}, 1);
+				// for (int i = 1; i < timesAST.size(); i++) {
+				// if (matcher.test(timesAST.get(i)) || isPowerMatched(timesAST.get(i), matcher)) {
+				// IASTAppendable clone = timesAST.copyAppendable();
+				// clone.remove(i);
+				// addOneIdentityPowerFactor(timesAST.get(i), clone, map);
+				// return;
+				// }
+				// }
 				rest.append(expr);
 				return;
 			}
@@ -723,13 +758,14 @@ public class Algebra {
 				return true;
 			} else if (expr.isTimes()) {
 				IAST timesAST = (IAST) expr;
-				for (int i = 1; i < timesAST.size(); i++) {
-					if (matcher.test(timesAST.get(i)) || isPowerMatched(timesAST.get(i), matcher)) {
+				return timesAST.exists((x, i) -> {
+					if (matcher.test(x) || isPowerMatched(x, matcher)) {
 						IAST clone = timesAST.removeAtClone(i);
-						addOneIdentityPowerFactor(timesAST.get(i), clone, map);
+						addOneIdentityPowerFactor(x, clone, map);
 						return true;
 					}
-				}
+					return false;
+				}, 1);
 			}
 
 			return false;
@@ -1203,12 +1239,18 @@ public class Algebra {
 					throw new ArithmeticException("");
 				}
 				final IASTAppendable result = F.ast(F.Plus, (int) numberOfTerms, false);
-				for (int i = 1; i < plusAST0.size(); i++) {
-					for (int j = 1; j < plusAST1.size(); j++) {
+				plusAST0.forEach(x -> {
+					plusAST1.forEach(y -> {
 						// evaluate to flatten out Times() exprs
-						evalAndExpandAST(plusAST0.get(i), plusAST1.get(j), result);
-					}
-				}
+						evalAndExpandAST(x, y, result);
+					});
+				});
+				// for (int i = 1; i < plusAST0.size(); i++) {
+				// for (int j = 1; j < plusAST1.size(); j++) {
+				// // evaluate to flatten out Times() exprs
+				// evalAndExpandAST(plusAST0.get(i), plusAST1.get(j), result);
+				// }
+				// }
 				return PlusOp.plus(result);
 			}
 
@@ -1221,10 +1263,14 @@ public class Algebra {
 			 */
 			private IExpr expandExprTimesPlus(final IExpr expr1, final IAST plusAST) {
 				final IASTAppendable result = F.ast(F.Plus, plusAST.size() - 1, false);
-				for (int i = 1; i < plusAST.size(); i++) {
+				plusAST.forEach(x -> {
 					// evaluate to flatten out Times() exprs
-					evalAndExpandAST(expr1, plusAST.get(i), result);
-				}
+					evalAndExpandAST(expr1, x, result);
+				});
+				// for (int i = 1; i < plusAST.size(); i++) {
+				// // evaluate to flatten out Times() exprs
+				// evalAndExpandAST(expr1, plusAST.get(i), result);
+				// }
 				return PlusOp.plus(result);
 			}
 
@@ -1286,9 +1332,6 @@ public class Algebra {
 									final int ki = k;
 									timesAST.appendArgs(ast.size(),
 											i -> PowerOp.power(ast.get(i), F.integer(indices[ki])));
-									// for (int i = 1; i < ast.size(); i++) {
-									// timesAST.append(PowerOp.power(ast.get(i), F.integer(indices[k])));
-									// }
 								} else {
 									timesAST.append(PowerOp.power(temp, F.integer(indices[k])));
 								}
@@ -2616,9 +2659,6 @@ public class Algebra {
 							plusResult.append(C1D2);
 							plusResult.appendArgs(timesAST.size(),
 									i -> Negate(Divide(Arg(timesAST.get(i)), Times(C2, Pi))));
-							// for (int i = 1; i < timesAST.size(); i++) {
-							// plusResult.append(Negate(Divide(Arg(timesAST.get(i)), Times(C2, Pi))));
-							// }
 							IAST expResult = Power(E, Times(C2, I, Pi, x2, Floor(plusResult)));
 							if (!(timesResult instanceof IASTAppendable)) {
 								timesResult = timesResult.copyAppendable();
@@ -3182,14 +3222,13 @@ public class Algebra {
 					IASTAppendable basicPlus = F.PlusAlloc(ast.size());
 					IASTAppendable restPlus = F.PlusAlloc(ast.size());
 
-					for (int i = 1; i < ast.size(); i++) {
-						temp = ast.get(i);
-						if (temp.accept(isBasicAST)) {
-							basicPlus.append(temp);
+					ast.forEach(x -> {
+						if (x.accept(isBasicAST)) {
+							basicPlus.append(x);
 						} else {
-							restPlus.append(temp);
+							restPlus.append(x);
 						}
-					}
+					});
 					if (basicPlus.size() > 1) {
 						temp = tryTransformations(basicPlus.getOneIdentity(F.C0));
 						if (temp.isPresent()) {
@@ -3476,40 +3515,38 @@ public class Algebra {
 			}
 			IASTAppendable numerator = F.ast(F.Plus, plusAST.size(), false);
 			IASTAppendable denominator = F.ast(F.Times, plusAST.size(), false);
-			boolean evaled = false;
-			IExpr temp;
-			IExpr[] fractionalParts;
-			for (int i = 1; i < plusAST.size(); i++) {
-				fractionalParts = fractionalParts(plusAST.get(i), false);
+			boolean[] evaled = new boolean[1];
+			plusAST.forEach((x, i) -> {
+				IExpr[] fractionalParts = fractionalParts(x, false);
 				if (fractionalParts != null) {
 					numerator.append(i, fractionalParts[0]);
-					temp = fractionalParts[1];
+					IExpr temp = fractionalParts[1];
 					if (!temp.isOne()) {
-						evaled = true;
+						evaled[0] = true;
 					}
 					denominator.append(i, temp);
 				} else {
-					numerator.append(i, plusAST.get(i));
+					numerator.append(i, x);
 					denominator.append(i, F.C1);
 				}
-			}
-			if (!evaled) {
+			});
+			if (!evaled[0]) {
 				return F.NIL;
 			}
-			for (int i = 1; i < plusAST.size(); i++) {
+			numerator.forEach((x, i) -> {
 				IASTAppendable ni = F.TimesAlloc(plusAST.size() - 1);
-				ni.append(numerator.get(i));
+				ni.append(x);
 				for (int j = 1; j < plusAST.size(); j++) {
 					if (i == j) {
 						continue;
 					}
-					temp = denominator.get(j);
+					IExpr temp = denominator.get(j);
 					if (!temp.isOne()) {
 						ni.append(temp);
 					}
 				}
 				numerator.set(i, ni.getOneIdentity(F.C1));
-			}
+			});
 			int i = 1;
 			while (denominator.size() > i) {
 				if (denominator.get(i).isOne()) {
@@ -3798,36 +3835,37 @@ public class Algebra {
 			}
 			return F.NIL;
 		}
-		IASTAppendable result = F.NIL;
+		IASTAppendable[] result = new IASTAppendable[1];
+		result[0] = F.NIL;
 		IExpr temp = F.NIL;
-		int size = localAST.size();
-		if (localAST.head().isAST()) {
-			temp = expandAll((IAST) localAST.head(), patt, expandNegativePowers, distributePlus, engine);
-			if (temp.isPresent()) {
-				result = F.ast(temp, size, false);
-			}
-		}
-		for (int i = 1; i < localAST.size(); i++) {
-			if (localAST.get(i).isAST()) {
-				temp = expandAll((IAST) localAST.get(i), patt, expandNegativePowers, distributePlus, engine);
-				if (temp.isPresent()) {
-					if (!result.isPresent()) {
 
-						if (temp.isAST()) {
-							size += ((IAST) temp).size();
+		int localASTSize = localAST.size();
+		IExpr head = localAST.head();
+		if (head.isAST()) {
+			temp = expandAll((IAST) head, patt, expandNegativePowers, distributePlus, engine);
+			temp.ifPresent(x -> result[0] = F.ast(x, localASTSize, false));
+		}
+		final IAST localASTFinal = localAST;
+		localAST.forEach((x, i) -> {
+			if (x.isAST()) {
+				IExpr t = expandAll((IAST) x, patt, expandNegativePowers, distributePlus, engine);
+				if (t.isPresent()) {
+					if (!result[0].isPresent()) {
+						int size = localASTSize;
+						if (t.isAST()) {
+							size += ((IAST) t).size();
 						}
-						result = F.ast(localAST.head(), size, false);
-						result.appendArgs(localAST, i);
+						result[0] = F.ast(head, size, false);
+						result[0].appendArgs(localASTFinal, i);
 					}
-					appendPlus(result, temp);
-					continue;
+					appendPlus(result[0], t);
+					return;
 				}
 			}
-			if (result.isPresent()) {
-				result.append(localAST.get(i));
-			}
-		}
-		if (!result.isPresent()) {
+			result[0].ifAppendable(r -> r.append(x));
+		});
+
+		if (!result[0].isPresent()) {
 			temp = expand(localAST, patt, expandNegativePowers, distributePlus);
 			if (temp.isPresent()) {
 				ExpandAll.setAllExpanded(temp, expandNegativePowers, distributePlus);
@@ -3841,11 +3879,11 @@ public class Algebra {
 			ExpandAll.setAllExpanded(ast, expandNegativePowers, distributePlus);
 			return F.NIL;
 		}
-		temp = expand(result, patt, expandNegativePowers, distributePlus);
+		temp = expand(result[0], patt, expandNegativePowers, distributePlus);
 		if (temp.isPresent()) {
 			return ExpandAll.setAllExpanded(temp, expandNegativePowers, distributePlus);
 		}
-		return ExpandAll.setAllExpanded(result, expandNegativePowers, distributePlus);
+		return ExpandAll.setAllExpanded(result[0], expandNegativePowers, distributePlus);
 	}
 
 	/**

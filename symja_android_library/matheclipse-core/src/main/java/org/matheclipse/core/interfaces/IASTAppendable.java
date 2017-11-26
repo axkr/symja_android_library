@@ -2,6 +2,7 @@ package org.matheclipse.core.interfaces;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.IntFunction;
 
 import org.matheclipse.core.expression.F;
@@ -198,6 +199,18 @@ public interface IASTAppendable extends IASTMutable {
 	 * 
 	 */
 	public void clear();
+
+	/**
+	 * If this expression unequals <code>F.NIL</code>, invoke the specified consumer with this
+	 * <code>IASTAppendable</code> object, otherwise do nothing.
+	 *
+	 * @param consumer
+	 *            block to be executed if this expression unequals <code>F.NIL</code>
+	 * @see java.util.Optional#ifPresent(Consumer)
+	 */
+	default void ifAppendable(Consumer<? super IASTAppendable> consumer) {
+		consumer.accept(this);
+	}
 
 	/**
 	 * Removes the object at the specified location from this {@code IAST}.
