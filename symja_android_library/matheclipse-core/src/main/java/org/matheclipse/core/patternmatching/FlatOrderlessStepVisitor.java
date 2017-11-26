@@ -8,8 +8,8 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.PatternMatcher.StackMatcher;
 
 /**
- * This visitor is used in an <code>MultisetPartitionsIterator</code> to match
- * flat and orderless expressions in pattern matching.
+ * This visitor is used in an <code>MultisetPartitionsIterator</code> to match flat and orderless expressions in pattern
+ * matching.
  * 
  * @see PatternMatcher
  * @see MultisetPartitionsIterator
@@ -28,10 +28,10 @@ public class FlatOrderlessStepVisitor extends FlatStepVisitor implements IStepVi
 		super(sym, lhsPatternAST, lhsEvalAST, stackMatcher, patternMap, oneIdentity);
 		toIntArray(lhsEvalAST, 1, lhsEvalAST.size());
 	}
-	
+
 	/**
-	 * Convert the <code>sortedList</code> to an <code>int[]</code> array. Equal
-	 * elements get the same index in the resulting <code>int[]</code> array.
+	 * Convert the <code>sortedList</code> to an <code>int[]</code> array. Equal elements get the same index in the
+	 * resulting <code>int[]</code> array.
 	 * 
 	 * @param <T>
 	 * @param sortedList
@@ -42,22 +42,23 @@ public class FlatOrderlessStepVisitor extends FlatStepVisitor implements IStepVi
 	final private void toIntArray(IAST sortedList, int start, int end) {
 		multiset = new int[end - start];
 		array = new Object[end - start];
-		IExpr lastT = sortedList.get(start);
-		IExpr currentT;
-		int index = 0;
-		int j = 0;
-		multiset[j++] = index;
-		array[index] = lastT;
-		for (int i = start + 1; i < end; i++) {
-			currentT = sortedList.get(i);
-			if (currentT.equals(lastT)) {
-				multiset[j++] = index;
+		IExpr[] lastT = new IExpr[1];
+		lastT[0] = sortedList.get(start);
+
+		int[] index = new int[1];
+		int[] j = new int[1];
+		multiset[j[0]++] = index[0];
+		array[index[0]] = lastT[0];
+		sortedList.forEach(start + 1, end, x -> {
+			IExpr currentT = x;
+			if (currentT.equals(lastT[0])) {
+				multiset[j[0]++] = index[0];
 			} else {
-				multiset[j++] = ++index;
-				array[index] = currentT;
+				multiset[j[0]++] = ++index[0];
+				array[index[0]] = currentT;
+				lastT[0] = currentT;
 			}
-			lastT = currentT;
-		}
+		}); 
 	}
 
 	@Override

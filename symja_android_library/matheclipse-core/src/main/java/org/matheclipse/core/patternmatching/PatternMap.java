@@ -25,7 +25,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	private final static IExpr[] EMPTY_ARRAY = {};
-	
+
 	/**
 	 * 
 	 */
@@ -193,24 +193,24 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 		if (lhsPatternExpr.isAlternatives() || lhsPatternExpr.isExcept()) {
 			fRuleWithoutPattern = false;
 		}
-		int listEvalFlags = IAST.NO_FLAG;
-		for (int i = 0; i < ast.size(); i++) {
-			IExpr temp = ast.get(i);
-			if (temp.isAST()) {
-				listEvalFlags |= determinePatternsRecursive(patternIndexMap, (IAST) temp, treeLevel + 1);
+		int[] listEvalFlags = new int[1];
+		listEvalFlags[0] = IAST.NO_FLAG;
+		ast.forEach(x -> {
+			if (x.isAST()) {
+				listEvalFlags[0] |= determinePatternsRecursive(patternIndexMap, (IAST) x, treeLevel + 1);
 				fPriority -= 11;
-			} else if (temp instanceof IPatternObject) {
-				int[] result = ((IPatternObject) temp).addPattern(this, patternIndexMap);
-				listEvalFlags |= result[0];
+			} else if (x instanceof IPatternObject) {
+				int[] result = ((IPatternObject) x).addPattern(this, patternIndexMap);
+				listEvalFlags[0] |= result[0];
 				fPriority -= result[1];
 			} else {
 				fPriority -= (50 - treeLevel);
 			}
-		}
-		ast.setEvalFlags(listEvalFlags);
+		}, 0);
+		ast.setEvalFlags(listEvalFlags[0]);
 		// disable flag "pattern with default value"
 		// listEvalFlags &= IAST.CONTAINS_NO_DEFAULT_PATTERN_MASK;
-		return listEvalFlags;
+		return listEvalFlags[0];
 	}
 
 	/** {@inheritDoc} */
@@ -351,13 +351,10 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 		}
 		IASTMutable test = (IASTMutable) F.unaryAST1(patternTest, null);
 		if (temp.isSequence()) {
-			for (int i = 1; i < ((IAST) temp).size(); i++) {
-				test.set(1, ((IAST) temp).get(i));
-				if (!engine.evalTrue(test)) {
-					return false;
-				}
-			}
-			return true;
+			return ((IAST) temp).forAll((x, i) -> {
+				test.set(1, x);
+				return engine.evalTrue(test);
+			}, 1);
 		}
 		test.set(1, temp);
 		if (!engine.evalTrue(test)) {
