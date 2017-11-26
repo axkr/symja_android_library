@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -12,32 +13,25 @@ import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * <p>
- * Immutable (A)bstract (S)yntax (T)ree of a given function with <b>exactly 2
- * arguments</b>.
+ * Immutable (A)bstract (S)yntax (T)ree of a given function with <b>exactly 2 arguments</b>.
  * </p>
  * 
  * <p>
- * In Symja, an abstract syntax tree (AST), is a tree representation of the
- * abstract syntactic structure of the Symja source code. Each node of the tree
- * denotes a construct occurring in the source code. The syntax is 'abstract' in
- * the sense that it does not represent every detail that appears in the real
- * syntax. For instance, grouping parentheses are implicit in the tree
- * structure, and a syntactic construct such as a <code>Sin[x]</code> expression
- * will be denoted by an AST with 2 nodes. One node for the header
- * <code>Sin</code> and one node for the argument <code>x</code>.
+ * In Symja, an abstract syntax tree (AST), is a tree representation of the abstract syntactic structure of the Symja
+ * source code. Each node of the tree denotes a construct occurring in the source code. The syntax is 'abstract' in the
+ * sense that it does not represent every detail that appears in the real syntax. For instance, grouping parentheses are
+ * implicit in the tree structure, and a syntactic construct such as a <code>Sin[x]</code> expression will be denoted by
+ * an AST with 2 nodes. One node for the header <code>Sin</code> and one node for the argument <code>x</code>.
  * </p>
  * 
- * Internally an AST is represented as a <code>java.util.List</code> which
- * contains
+ * Internally an AST is represented as a <code>java.util.List</code> which contains
  * <ul>
- * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos,
- * Inverse, Plus, Times,...) at index <code>0</code> and</li>
- * <li>the <code>n</code> arguments of a function in the index
- * <code>1 to n</code></li>
+ * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus, Times,...) at index
+ * <code>0</code> and</li>
+ * <li>the <code>n</code> arguments of a function in the index <code>1 to n</code></li>
  * </ul>
  * 
- * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract
- * syntax tree</a>.
+ * See <a href="http://en.wikipedia.org/wiki/Abstract_syntax_tree">Abstract syntax tree</a>.
  * 
  * @see AST
  */
@@ -57,8 +51,7 @@ public class AST2 extends AST1 {
 	}
 
 	/**
-	 * Create a function with two arguments (i.e. <code>head[arg1, arg2]</code>
-	 * ).
+	 * Create a function with two arguments (i.e. <code>head[arg1, arg2]</code> ).
 	 * 
 	 * @param head
 	 *            the head of the function
@@ -73,14 +66,12 @@ public class AST2 extends AST1 {
 	}
 
 	/**
-	 * Get the second argument (i.e. the third element of the underlying list
-	 * structure) of the <code>AST</code> function (i.e. get(2) ). <br />
-	 * <b>Example:</b> for the AST representing the expression <code>x^y</code>
-	 * (i.e. <code>Power(x, y)</code>), <code>arg2()</code> returns
-	 * <code>y</code>.
+	 * Get the second argument (i.e. the third element of the underlying list structure) of the <code>AST</code>
+	 * function (i.e. get(2) ). <br />
+	 * <b>Example:</b> for the AST representing the expression <code>x^y</code> (i.e. <code>Power(x, y)</code>),
+	 * <code>arg2()</code> returns <code>y</code>.
 	 * 
-	 * @return the second argument of the function represented by this
-	 *         <code>AST</code>.
+	 * @return the second argument of the function represented by this <code>AST</code>.
 	 * @see IExpr#head()
 	 */
 	@Override
@@ -97,8 +88,8 @@ public class AST2 extends AST1 {
 	}
 
 	/**
-	 * Returns a new {@code HMArrayList} with the same elements, the same size
-	 * and the same capacity as this {@code HMArrayList}.
+	 * Returns a new {@code HMArrayList} with the same elements, the same size and the same capacity as this
+	 * {@code HMArrayList}.
 	 * 
 	 * @return a shallow copy of this {@code ArrayList}
 	 * @see java.lang.Cloneable
@@ -118,7 +109,7 @@ public class AST2 extends AST1 {
 	public IASTAppendable copyAppendable() {
 		return new AST(arg0, arg1, arg2);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean contains(Object object) {
@@ -139,6 +130,34 @@ public class AST2 extends AST1 {
 				return false;
 			}
 			return arg0.equals(list.head()) && arg1.equals(list.arg1()) && arg2.equals(list.arg2());
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
+		switch (startOffset) {
+		case 0:
+			return predicate.test(arg0) || predicate.test(arg1) || predicate.test(arg2);
+		case 1:
+			return predicate.test(arg1) || predicate.test(arg2);
+		case 2:
+			return predicate.test(arg2);
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
+		switch (startOffset) {
+		case 0:
+			return predicate.test(arg0, 0) || predicate.test(arg1, 1) || predicate.test(arg2, 2);
+		case 1:
+			return predicate.test(arg1, 1) || predicate.test(arg2, 2);
+		case 2:
+			return predicate.test(arg2, 2);
 		}
 		return false;
 	}
@@ -169,6 +188,34 @@ public class AST2 extends AST1 {
 			filterAST.append(arg2);
 		}
 		return filterAST;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean forAll(Predicate<? super IExpr> predicate, int startOffset) {
+		switch (startOffset) {
+		case 0:
+			return predicate.test(arg0) && predicate.test(arg1) && predicate.test(arg2);
+		case 1:
+			return predicate.test(arg1) && predicate.test(arg2);
+		case 2:
+			return predicate.test(arg2);
+		}
+		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
+		switch (startOffset) {
+		case 0:
+			return predicate.test(arg0, 0) && predicate.test(arg1, 1) && predicate.test(arg2, 2);
+		case 1:
+			return predicate.test(arg1, 1) && predicate.test(arg2, 2);
+		case 2:
+			return predicate.test(arg2, 2);
+		}
+		return false;
 	}
 
 	/** {@inheritDoc} */
@@ -246,8 +293,7 @@ public class AST2 extends AST1 {
 	}
 
 	/**
-	 * Replaces the element at the specified location in this {@code ArrayList}
-	 * with the specified object.
+	 * Replaces the element at the specified location in this {@code ArrayList} with the specified object.
 	 * 
 	 * @param location
 	 *            the index at which to put the specified object.
@@ -290,8 +336,7 @@ public class AST2 extends AST1 {
 	}
 
 	/**
-	 * Returns a new array containing all elements contained in this
-	 * {@code ArrayList}.
+	 * Returns a new array containing all elements contained in this {@code ArrayList}.
 	 * 
 	 * @return an array of the elements from this {@code ArrayList}
 	 */
