@@ -725,6 +725,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "choleskydecomposition" : "CholeskyDecomposition");
 	public final static IBuiltInSymbol ChineseRemainder = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "chineseremainder" : "ChineseRemainder");
+	public final static IBuiltInSymbol CirclePoints = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "circlepoints" : "CirclePoints");
 	public final static IBuiltInSymbol Coefficient = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "coefficient" : "Coefficient");
 	public final static IBuiltInSymbol CoefficientList = initFinalSymbol(
@@ -2593,6 +2595,10 @@ public class F {
 		return ast(a, And);
 	}
 
+	public static IAST AngleVector(final IExpr a0) {
+		return unaryAST1(AngleVector, a0);
+	}
+	
 	public static IAST And(final IExpr a0, final IExpr a1) {
 		return binary(And, a0, a1);
 	}

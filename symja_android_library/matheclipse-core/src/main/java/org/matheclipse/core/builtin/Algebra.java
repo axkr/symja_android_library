@@ -1090,7 +1090,7 @@ public class Algebra {
 							continue;
 						}
 					}
-					result.ifAppendable(r->r.append(arg)); 
+					result.ifAppendable(r -> r.append(arg));
 				}
 				if (result.isPresent()) {
 					return PlusOp.plus(result);

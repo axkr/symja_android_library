@@ -112,6 +112,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAngleVector() {
+		check("AngleVector(x)", "{Cos(x),Sin(x)}");
+		check("AngleVector(Pi/6)", "{Sqrt(3)/2,1/2}");
 		check("AngleVector(90*Degree)", "{0,1}");
 		check("AngleVector({1, 10}, a)", "{1+Cos(a),10+Sin(a)}");
 	}
@@ -752,6 +754,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testChop() {
 		check("Chop(0.00000000001)", "0");
+	}
+
+	public void testCirclePoints() {
+		check("CirclePoints(2)", "{{1,0},{-1,0}}");
+		check("CirclePoints(3)", "{{Sqrt(3)/2,-1/2},{0,1},{-Sqrt(3)/2,-1/2}}");
+		check("CirclePoints(4)", 
+				"{{1/Sqrt(2),-1/Sqrt(2)},{1/Sqrt(2),1/Sqrt(2)},{-1/Sqrt(2),1/Sqrt(2)},{-1/Sqrt(2),\n" + 
+				"-1/Sqrt(2)}}");
 	}
 
 	public void testClearAttributes() {
