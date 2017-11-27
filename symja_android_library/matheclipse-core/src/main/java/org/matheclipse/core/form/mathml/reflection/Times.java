@@ -109,8 +109,8 @@ public class Times extends MMLOperator {
 							fFactory.tagEnd(buf, fFirstTag);
 							return true;
 						}
-						fFactory.tagEnd(buf, fFirstTag);
-						fFactory.tagStart(buf, fFirstTag);
+						// fFactory.tagEnd(buf, fFirstTag);
+						// fFactory.tagStart(buf, fFirstTag);
 					} else {
 						fFactory.tagStart(buf, fFirstTag);
 						precedenceOpen(buf, precedence);

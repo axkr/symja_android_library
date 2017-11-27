@@ -169,8 +169,11 @@ public class MathMLPresentationTestCase extends TestCase {
 	}
 
 	public void testMathML002() {
+		IExpr expr = EvalEngine.get().evaluate("-1/2*Sqrt(1/2)*Sqrt(5+Sqrt(5))");
+		check(expr, "<mfrac><mrow><mo>-</mo><msqrt><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow></msqrt><mo>&#0183;</mo><msqrt><mrow><msqrt><mn>5</mn></msqrt><mo>+</mo><mn>5</mn></mrow></msqrt></mrow><mn>2</mn></mfrac>");
+
 		// (-1/3+I)*a
-		IExpr expr = EvalEngine.get().evaluate("a*((- 1/3 )+x)");
+		expr = EvalEngine.get().evaluate("a*((- 1/3 )+x)");
 		check(expr,
 				"<mrow><mi>a</mi><mo>&#0183;</mo><mrow><mrow><mo>(</mo><mi>x</mi><mo>-</mo><mrow><mfrac><mn>1</mn><mn>3</mn></mfrac></mrow><mo>)</mo></mrow></mrow></mrow>");
 		expr = EvalEngine.get().evaluate("a*((- 1/3 )*I)");
@@ -193,10 +196,10 @@ public class MathMLPresentationTestCase extends TestCase {
 		System.out.println(expr.toString());
 		check(expr,
 				"<mrow><mrow><mrow><mo>-</mo><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow><mo>&#0183;</mo><mi>&#x2148;</mi></mrow></mrow><mo>&#0183;</mo><mi>&#x03C0;</mi></mrow>");
-		
+
 		expr = EvalEngine.get().evaluate("1-I");
 		check(expr, "<mrow><mrow><mn>1</mn></mrow><mrow><mo>-</mo><mi>&#x2148;</mi></mrow></mrow>");
-		
+
 		expr = EvalEngine.get().evaluate("-(1/3)+I");
 		check(expr,
 				"<mrow><mrow><mo>-</mo><mfrac><mn>1</mn><mn>3</mn></mfrac></mrow><mrow><mo>+</mo><mi>&#x2148;</mi></mrow></mrow>");
@@ -208,9 +211,10 @@ public class MathMLPresentationTestCase extends TestCase {
 				"<mrow><mrow><mn>1</mn></mrow><mrow><mo>-</mo><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow><mo>&#0183;</mo><mi>&#x2148;</mi></mrow></mrow>");
 		expr = EvalEngine.get().evaluate("1.0-0.5*I");
 		check(expr, "<mrow><mn>1.0</mn><mo>-</mo><mn>0.5</mn><mo>&#0183;</mo><mi>&#x2148;</mi></mrow>");
-		
+
 		expr = EvalEngine.get().evaluate("(1.0-0.5*I)*a");
-		check(expr, "<mrow><mrow><mo>(</mo><mn>1.0</mn><mo>-</mo><mn>0.5</mn><mo>&#0183;</mo><mi>&#x2148;</mi><mo>)</mo></mrow><mo>&#0183;</mo><mi>a</mi></mrow>");
+		check(expr,
+				"<mrow><mrow><mo>(</mo><mn>1.0</mn><mo>-</mo><mn>0.5</mn><mo>&#0183;</mo><mi>&#x2148;</mi><mo>)</mo></mrow><mo>&#0183;</mo><mi>a</mi></mrow>");
 
 	}
 

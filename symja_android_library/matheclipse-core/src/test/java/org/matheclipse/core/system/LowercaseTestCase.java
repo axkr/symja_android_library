@@ -541,7 +541,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBooleanMinimize() {
+		check("(a||b)&&(c||d)", "(a||b)&&(c||d)");
 		check("BooleanMinimize(a && b || ! a && b)", "b");
+//		check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c))", "");
 	}
 
 	public void testBooleanQ() {
@@ -759,9 +761,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testCirclePoints() {
 		check("CirclePoints(2)", "{{1,0},{-1,0}}");
 		check("CirclePoints(3)", "{{Sqrt(3)/2,-1/2},{0,1},{-Sqrt(3)/2,-1/2}}");
-		check("CirclePoints(4)", 
-				"{{1/Sqrt(2),-1/Sqrt(2)},{1/Sqrt(2),1/Sqrt(2)},{-1/Sqrt(2),1/Sqrt(2)},{-1/Sqrt(2),\n" + 
-				"-1/Sqrt(2)}}");
+		check("CirclePoints(4)",
+				"{{1/Sqrt(2),-1/Sqrt(2)},{1/Sqrt(2),1/Sqrt(2)},{-1/Sqrt(2),1/Sqrt(2)},{-1/Sqrt(2),\n" + "-1/Sqrt(2)}}");
+		// check("CirclePoints(10)", "");
 	}
 
 	public void testClearAttributes() {
