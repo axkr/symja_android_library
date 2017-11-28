@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -33,6 +34,7 @@ import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IAST.PROPERTY;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
@@ -57,7 +59,16 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
 public abstract class AbstractAST implements IASTMutable {
+	/**
+	 * The enumeration map which possibly maps the properties (keys) to a user defined object.
+	 * 
+	 */
+	private static Cache<IAST, EnumMap<PROPERTY, Object>> IAST_CACHE = CacheBuilder.newBuilder().maximumSize(500)
+			.build();
 
 	protected static final class ASTIterator implements ListIterator<IExpr> {
 
@@ -1060,6 +1071,22 @@ public abstract class AbstractAST implements IASTMutable {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Returns the value to which the specified property is mapped, or <code>null</code> if this map contains no mapping
+	 * for the property.
+	 * 
+	 * @param key
+	 * @return
+	 * @see #putProperty(PROPERTY, Object)
+	 */
+	public Object getProperty(PROPERTY key) {
+		EnumMap<PROPERTY, Object> map = IAST_CACHE.getIfPresent(this);
+		if (map == null) {
+			return null;
+		}
+		return map.get(key);
 	}
 
 	/**
@@ -2706,6 +2733,25 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public final IASTAppendable prependClone(IExpr expr) {
 		return appendAtClone(1, expr);
+	}
+
+	/**
+	 * Associates the specified value with the specified property in the associated
+	 * <code>EnumMap<PROPERTY, Object></code> map. If the map previously contained a mapping for this key, the old value
+	 * is replaced.
+	 * 
+	 * @param key
+	 * @param value
+	 * @return
+	 * @see #getProperty(PROPERTY)
+	 */
+	public Object putProperty(PROPERTY key, Object value) {
+		EnumMap<PROPERTY, Object> map = IAST_CACHE.getIfPresent(this);
+		if (map == null) {
+			map = new EnumMap<PROPERTY, Object>(PROPERTY.class);
+			IAST_CACHE.put(this, map);
+		}
+		return map.put(key, value);
 	}
 
 	/** {@inheritDoc} */

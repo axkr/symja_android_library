@@ -13,6 +13,9 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
 /**
  * <p>
  * (A)bstract (S)yntax (T)ree of a given function.
@@ -185,12 +188,6 @@ public class AST extends HMArrayList implements Externalizable {
 	}
 
 	/**
-	 * The enumeration map which possibly maps the properties (keys) to a user defined object.
-	 * 
-	 */
-	protected transient EnumMap<PROPERTY, Object> fProperties = null;
-
-	/**
 	 * Public no-arg constructor only needed for serialization
 	 * 
 	 */
@@ -243,7 +240,7 @@ public class AST extends HMArrayList implements Externalizable {
 	@Override
 	public IAST clone() {
 		AST ast = new AST();
-		ast.fProperties = null;
+		// ast.fProperties = null;
 		ast.array = array.clone();
 		ast.hashValue = 0;
 		ast.firstIndex = firstIndex;
@@ -254,27 +251,12 @@ public class AST extends HMArrayList implements Externalizable {
 	@Override
 	public IASTAppendable copyAppendable() {
 		AST ast = new AST();
-		ast.fProperties = null;
+		// ast.fProperties = null;
 		ast.array = array.clone();
 		ast.hashValue = 0;
 		ast.firstIndex = firstIndex;
 		ast.lastIndex = lastIndex;
 		return ast;
-	}
-
-	/**
-	 * Returns the value to which the specified property is mapped, or <code>null</code> if this map contains no mapping
-	 * for the property.
-	 * 
-	 * @param key
-	 * @return
-	 * @see #putProperty(PROPERTY, Object)
-	 */
-	public Object getProperty(PROPERTY key) {
-		if (fProperties == null) {
-			return null;
-		}
-		return fProperties.get(key);
 	}
 
 	@Override
@@ -286,23 +268,6 @@ public class AST extends HMArrayList implements Externalizable {
 			}
 		}
 		return hashValue;
-	}
-
-	/**
-	 * Associates the specified value with the specified property in the associated
-	 * <code>EnumMap<PROPERTY, Object></code> map. If the map previously contained a mapping for this key, the old value
-	 * is replaced.
-	 * 
-	 * @param key
-	 * @param value
-	 * @return
-	 * @see #getProperty(PROPERTY)
-	 */
-	public Object putProperty(PROPERTY key, Object value) {
-		if (fProperties == null) {
-			fProperties = new EnumMap<PROPERTY, Object>(PROPERTY.class);
-		}
-		return fProperties.put(key, value);
 	}
 
 	@Override
