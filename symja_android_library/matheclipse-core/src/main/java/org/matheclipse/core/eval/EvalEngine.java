@@ -671,7 +671,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 			if ((ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION) {
 				if (!((ISymbol.HOLDALL & attr) == ISymbol.HOLDALL)) {
-					if (tempAST.exists(x -> x.isIndeterminate(), 1)) {
+					if (tempAST.exists(x -> x.isIndeterminate())) {
 						return F.Indeterminate;
 					}
 				}

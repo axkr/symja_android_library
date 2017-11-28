@@ -114,7 +114,7 @@ public final class BooleanFunctions {
 				}
 				logicalAnd.append(temp);
 				return true;
-			}, 1)) {
+			})) {
 				return F.False;
 			}
 
@@ -258,7 +258,7 @@ public final class BooleanFunctions {
 		 */
 		public IExpr anyTrue(IAST list, IExpr head, EvalEngine engine) {
 			IASTAppendable logicalOr = F.Or();
-			if (list.exists(x -> anyTrueArgument(x, head, logicalOr, engine), 1)) {
+			if (list.exists(x -> anyTrueArgument(x, head, logicalOr, engine))) {
 				return F.True;
 			}
 			return logicalOr.isAST0() ? F.False : logicalOr;
@@ -1652,7 +1652,7 @@ public final class BooleanFunctions {
 		 */
 		public IExpr noneTrue(IAST list, IExpr head, EvalEngine engine) {
 			IASTAppendable logicalNor = F.ast(F.Nor);
-			if (list.exists(x -> noneTrueArgument(x, head, logicalNor, engine), 1)) {
+			if (list.exists(x -> noneTrueArgument(x, head, logicalNor, engine))) {
 				return F.False;
 			}
 			return logicalNor.isAST0() ? F.True : logicalNor;

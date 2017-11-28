@@ -61,7 +61,7 @@ public class RulesData implements Serializable {
 						return true;
 					}
 					if (neededSymbols != null && arg1.isOrderlessAST()) {
-						boolean lambda = !lhsAST.exists(x -> x.isPatternDefault() || x.isOrderlessAST(), 1);
+						boolean lambda = !lhsAST.exists(x -> x.isPatternDefault() || x.isOrderlessAST());
 						boolean[] isComplicated = { false };
 						arg1.forEach(t -> {
 							if (t.isPatternDefault()) {

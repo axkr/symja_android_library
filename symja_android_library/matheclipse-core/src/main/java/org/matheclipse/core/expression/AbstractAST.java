@@ -812,7 +812,7 @@ public abstract class AbstractAST implements IASTMutable {
 				filterAST.append(x);
 			}
 			return false;
-		}, 1);
+		});
 		return filterAST;
 	}
 

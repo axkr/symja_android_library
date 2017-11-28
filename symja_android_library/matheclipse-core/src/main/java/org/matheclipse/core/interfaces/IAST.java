@@ -438,11 +438,11 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>
-	 * @param startOffset
-	 *            start offset from which the element have to be tested
 	 * @return the <code>true</code> if the predicate is true the first time or <code>false</code> otherwise
 	 */
-	public boolean exists(Predicate<? super IExpr> predicate, int startOffset);
+	default boolean exists(ObjIntPredicate<? super IExpr> predicate) {
+		return exists(predicate, 1);
+	}
 
 	/**
 	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return if
@@ -455,7 +455,31 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return the <code>true</code> if the predicate is true the first time or <code>false</code> otherwise
 	 */
 	public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset);
-	
+
+	/**
+	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return if
+	 * one of the arguments satisfy the predicate.
+	 * 
+	 * @param predicate
+	 *            the predicate which filters each argument in this <code>AST</code>
+	 * @return the <code>true</code> if the predicate is true the first time or <code>false</code> otherwise
+	 */
+	default boolean exists(Predicate<? super IExpr> predicate) {
+		return exists(predicate, 1);
+	}
+
+	/**
+	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return if
+	 * one of the arguments satisfy the predicate.
+	 * 
+	 * @param predicate
+	 *            the predicate which filters each argument in this <code>AST</code>
+	 * @param startOffset
+	 *            start offset from which the element have to be tested
+	 * @return the <code>true</code> if the predicate is true the first time or <code>false</code> otherwise
+	 */
+	public boolean exists(Predicate<? super IExpr> predicate, int startOffset);
+
 	/**
 	 * Compare the arguments pairwise with the <code>stopPredicate</code>. If the predicate gives <code>true</code>
 	 * return <code>true</code>. If the <code>stopPredicate</code> gives false for each pairwise comparison return the
@@ -591,11 +615,11 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>
-	 * @param startOffset
-	 *            start offset from which the element have to be tested
 	 * @return the <code>true</code> if the predicate is true for all elements or <code>false</code> otherwise
 	 */
-	public boolean forAll(Predicate<? super IExpr> predicate, int startOffset);
+	default boolean forAll(ObjIntPredicate<? super IExpr> predicate) {
+		return forAll(predicate);
+	}
 
 	/**
 	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return if
@@ -608,7 +632,31 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return the <code>true</code> if the predicate is true for all elements or <code>false</code> otherwise
 	 */
 	public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset);
+
+	/**
+	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return if
+	 * all of the arguments satisfy the predicate.
+	 * 
+	 * @param predicate
+	 *            the predicate which filters each argument in this <code>AST</code>
+	 * @return the <code>true</code> if the predicate is true for all elements or <code>false</code> otherwise
+	 */
+	default boolean forAll(Predicate<? super IExpr> predicate) {
+		return forAll(predicate, 1);
+	}
 	
+	/**
+	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return if
+	 * all of the arguments satisfy the predicate.
+	 * 
+	 * @param predicate
+	 *            the predicate which filters each argument in this <code>AST</code>
+	 * @param startOffset
+	 *            start offset from which the element have to be tested
+	 * @return the <code>true</code> if the predicate is true for all elements or <code>false</code> otherwise
+	 */
+	public boolean forAll(Predicate<? super IExpr> predicate, int startOffset);
+
 	/**
 	 * <p>
 	 * Iterate over all elements from index <code>1</code> to <code>size()-1</code> and call the method

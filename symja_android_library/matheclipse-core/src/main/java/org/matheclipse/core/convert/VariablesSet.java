@@ -69,7 +69,7 @@ public class VariablesSet {
 
 		@Override
 		public boolean visit(IAST list) {
-			return list.exists(x -> x.accept(this), 1);
+			return list.exists(x -> x.accept(this));
 		}
 
 		@Override

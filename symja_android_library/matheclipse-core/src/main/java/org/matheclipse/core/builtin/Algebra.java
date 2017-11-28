@@ -482,7 +482,7 @@ public class Algebra {
 					}
 				}
 				return false;
-			}, 1);
+			});
 			// for (int i = 1; i < plus.size(); i++) {
 			// IExpr temp = plus.get(i);
 			// if (temp.isInteger()) {
@@ -3069,7 +3069,7 @@ public class Algebra {
 			public boolean visit(IAST ast) {
 				if (ast.isTimes() || ast.isPlus()) {
 					// check the arguments
-					return ast.forAll(x -> x.accept(this), 1);
+					return ast.forAll(x -> x.accept(this));
 				}
 				if (ast.isPower() && (ast.arg2().isInteger())) {
 					// check the arguments

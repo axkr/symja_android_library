@@ -655,7 +655,7 @@ public class Symbol implements ISymbol, Serializable {
 		if (isConstant()) {
 			return true;
 		}
-		return variables.exists(x -> this.equals(x), 1); 
+		return variables.exists(x -> this.equals(x));
 	}
 
 	/** {@inheritDoc} */

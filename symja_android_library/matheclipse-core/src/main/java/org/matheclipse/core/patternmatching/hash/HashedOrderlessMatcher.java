@@ -155,7 +155,7 @@ public class HashedOrderlessMatcher {
 	 */
 	protected static boolean exists2ASTArguments(IAST ast) {
 		final int[] counter = { 0 };
-		return ast.exists(x -> x.isAST() && ++counter[0] == 2, 1);
+		return ast.exists(x -> x.isAST() && ++counter[0] == 2);
 	}
 
 	/**

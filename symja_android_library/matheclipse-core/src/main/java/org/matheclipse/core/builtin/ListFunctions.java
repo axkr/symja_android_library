@@ -818,19 +818,11 @@ public final class ListFunctions {
 					}
 					size[0] += list.size() - 1;
 					return false;
-				}, 1)) {
+				})) {
 					return F.NIL;
 				}
-				// for (int i = 1; i < list.size(); i++) {
-				// if (!list.get(i).isList()) {
-				// return F.NIL;
-				// }
-				// size += list.size() - 1;
-				// }
 				IASTAppendable resultList = F.ast(F.List, size[0], false);
-				for (int i = 1; i < list.size(); i++) {
-					resultList.appendArgs((IAST) list.get(i));
-				}
+				list.forEach(x -> resultList.appendArgs((IAST) x));
 				return resultList;
 			}
 			return F.NIL;
@@ -864,13 +856,13 @@ public final class ListFunctions {
 					IInteger max = (IInteger) ((IAST) tallyResult.arg1()).arg2();
 					IASTAppendable result = F.ListAlloc(size);
 					result.append(((IAST) tallyResult.arg1()).arg1());
-					for (int i = 2; i < size; i++) {
-						if (max.equals(((IAST) tallyResult.get(i)).arg2())) {
-							result.append(((IAST) tallyResult.get(i)).arg1());
-						} else {
-							break;
+					tallyResult.exists(x -> {
+						if (max.equals(((IAST) x).arg2())) {
+							result.append(((IAST) x).arg1());
+							return false;
 						}
-					}
+						return true;
+					}, 2);
 					return result;
 				} else {
 					int counter = 0;
@@ -917,12 +909,11 @@ public final class ListFunctions {
 
 			Set<IExpr> set2 = arg2.asSet();
 			Set<IExpr> set3 = new HashSet<IExpr>();
-			for (int i = 1; i < arg1.size(); i++) {
-				IExpr temp = arg1.get(i);
-				if (!set2.contains(temp)) {
-					set3.add(temp);
+			arg1.forEach(x -> {
+				if (!set2.contains(x)) {
+					set3.add(x);
 				}
-			}
+			});
 			IASTAppendable result = F.ListAlloc(set3.size());
 			for (IExpr expr : set3) {
 				result.append(expr);
@@ -1621,7 +1612,7 @@ public final class ListFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 3);
 
-			if (ast.exists(PredicateQ.ATOMQ, 1)) {
+			if (ast.exists(PredicateQ.ATOMQ)) {
 				return F.NIL;
 			}
 

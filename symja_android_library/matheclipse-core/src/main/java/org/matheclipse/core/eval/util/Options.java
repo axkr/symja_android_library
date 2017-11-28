@@ -112,7 +112,7 @@ public class Options {
 						}
 					}
 					return false;
-				}, 1)) {
+				})) {
 					return rule[0].arg2();
 				}
 			} catch (Exception e) {
@@ -153,7 +153,7 @@ public class Options {
 						}
 					}
 					return false;
-				}, 1)) {
+				})) {
 					return rule[0].arg2();
 				}
 			} catch (Exception e) {
