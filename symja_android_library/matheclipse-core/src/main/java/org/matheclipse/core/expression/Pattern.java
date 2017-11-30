@@ -174,7 +174,8 @@ public class Pattern extends Blank {
 		if (value != null) {
 			return expr.equals(value);
 		}
-		return patternMap.setValue(this, expr);
+		patternMap.setValue(this, expr);
+		return  true;
 	}
 
 	@Override

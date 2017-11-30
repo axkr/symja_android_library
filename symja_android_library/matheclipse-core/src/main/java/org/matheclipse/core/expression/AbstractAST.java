@@ -34,7 +34,6 @@ import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IAST.PROPERTY;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IComplex;
@@ -67,8 +66,7 @@ public abstract class AbstractAST implements IASTMutable {
 	 * The enumeration map which possibly maps the properties (keys) to a user defined object.
 	 * 
 	 */
-	private static Cache<IAST, EnumMap<PROPERTY, Object>> IAST_CACHE = CacheBuilder.newBuilder().maximumSize(500)
-			.build();
+	private static Cache<IAST, EnumMap<PROPERTY, Object>> IAST_CACHE = null;
 
 	protected static final class ASTIterator implements ListIterator<IExpr> {
 
@@ -1082,11 +1080,14 @@ public abstract class AbstractAST implements IASTMutable {
 	 * @see #putProperty(PROPERTY, Object)
 	 */
 	public Object getProperty(PROPERTY key) {
-		EnumMap<PROPERTY, Object> map = IAST_CACHE.getIfPresent(this);
-		if (map == null) {
-			return null;
+		if (IAST_CACHE != null) {
+			EnumMap<PROPERTY, Object> map = IAST_CACHE.getIfPresent(this);
+			if (map == null) {
+				return null;
+			}
+			return map.get(key);
 		}
-		return map.get(key);
+		return null;
 	}
 
 	/**
@@ -2746,6 +2747,9 @@ public abstract class AbstractAST implements IASTMutable {
 	 * @see #getProperty(PROPERTY)
 	 */
 	public Object putProperty(PROPERTY key, Object value) {
+		if (IAST_CACHE == null) {
+			IAST_CACHE = CacheBuilder.newBuilder().maximumSize(500).build();
+		}
 		EnumMap<PROPERTY, Object> map = IAST_CACHE.getIfPresent(this);
 		if (map == null) {
 			map = new EnumMap<PROPERTY, Object>(PROPERTY.class);

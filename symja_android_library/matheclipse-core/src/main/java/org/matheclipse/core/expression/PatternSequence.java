@@ -156,7 +156,8 @@ public class PatternSequence implements IPatternSequence {
 		if (value != null) {
 			return sequence.equals(value);
 		}
-		return patternMap.setValue(this, sequence);
+		patternMap.setValue(this, sequence);
+		return  true;
 	}
 
 	@Override
