@@ -6,9 +6,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.generic.ObjIntPredicate;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -138,6 +140,11 @@ public final class NILPointer extends AbstractAST implements IASTAppendable {
 	}
 
 	@Override
+	public boolean contains(Object object) {
+		return false;
+	}
+
+	@Override
 	public IASTAppendable copy() {
 		throw new UnsupportedOperationException();
 	}
@@ -158,6 +165,26 @@ public final class NILPointer extends AbstractAST implements IASTAppendable {
 	}
 
 	@Override
+	public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
+		return false;
+	}
+
+	@Override
+	public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
+		return false;
+	}
+
+	@Override
+	public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
+		return false;
+	}
+
+	@Override
+	public boolean forAll(Predicate<? super IExpr> predicate, int startOffset) {
+		return false;
+	}
+
+	@Override
 	public int hashCode() {
 		return -1;
 	}
@@ -168,11 +195,21 @@ public final class NILPointer extends AbstractAST implements IASTAppendable {
 	}
 
 	@Override
+	public void ifAppendable(Consumer<? super IASTAppendable> consumer) {
+	}
+
+	@Override
 	public void ifPresent(Consumer<? super IExpr> consumer) {
 	}
 
 	@Override
-	public void ifAppendable(Consumer<? super IASTAppendable> consumer) {
+	public boolean isAbs() {
+		return false;
+	}
+
+	@Override
+	public boolean isAllExpanded() {
+		return false;
 	}
 
 	@Override
@@ -182,6 +219,31 @@ public final class NILPointer extends AbstractAST implements IASTAppendable {
 
 	@Override
 	public final boolean isAST(final IExpr header) {
+		return false;
+	}
+
+	@Override
+	public boolean isAST(IExpr header, int length, IExpr... args) {
+		return false;
+	}
+
+	@Override
+	public boolean isAST0() {
+		return false;
+	}
+
+	@Override
+	public boolean isAST1() {
+		return false;
+	}
+
+	@Override
+	public boolean isAST2() {
+		return false;
+	}
+
+	@Override
+	public boolean isAST3() {
 		return false;
 	}
 
@@ -227,6 +289,11 @@ public final class NILPointer extends AbstractAST implements IASTAppendable {
 		return false;
 	}
 
+	@Override
+	public boolean isPlusTimesPower() {
+		return false;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isPower() {
@@ -235,6 +302,16 @@ public final class NILPointer extends AbstractAST implements IASTAppendable {
 
 	@Override
 	public final boolean isPresent() {
+		return false;
+	}
+
+	@Override
+	public boolean isRealMatrix() {
+		return false;
+	}
+
+	@Override
+	public boolean isRealVector() {
 		return false;
 	}
 
@@ -261,6 +338,16 @@ public final class NILPointer extends AbstractAST implements IASTAppendable {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isTimes() {
+		return false;
+	}
+
+	@Override
+	public int isVector() {
+		return -1;
+	}
+
+	@Override
+	public boolean isZERO() {
 		return false;
 	}
 
@@ -298,6 +385,7 @@ public final class NILPointer extends AbstractAST implements IASTAppendable {
 	 * @throws IndexOutOfBoundsException
 	 *             when {@code start < 0, start > end} or {@code end > size()}
 	 */
+	@Override
 	public void removeRange(int start, int end) {
 		throw new UnsupportedOperationException();
 	}

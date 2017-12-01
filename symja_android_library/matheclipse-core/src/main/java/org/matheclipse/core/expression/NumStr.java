@@ -1,6 +1,6 @@
 package org.matheclipse.core.expression;
 
-public class NumStr extends Num {
+public final class NumStr extends Num {
 	/**
 	 * 
 	 */
