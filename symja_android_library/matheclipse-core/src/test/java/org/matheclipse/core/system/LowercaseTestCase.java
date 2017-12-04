@@ -2,6 +2,7 @@ package org.matheclipse.core.system;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
@@ -543,7 +544,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testBooleanMinimize() {
 		check("(a||b)&&(c||d)", "(a||b)&&(c||d)");
 		check("BooleanMinimize(a && b || ! a && b)", "b");
-//		check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c))", "");
+		// check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c))", "");
 	}
 
 	public void testBooleanQ() {
@@ -2692,6 +2693,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 			check("Get(\"" + pathToVectorAnalysis + "\")", "");
 			check("DotProduct({a,b,c},{d,e,f}, Spherical)",
 					"a*d*Cos(b)*Cos(e)+a*d*Cos(c)*Cos(f)*Sin(b)*Sin(e)+a*d*Sin(b)*Sin(c)*Sin(e)*Sin(f)");
+			// check("Information(Sin)", "");
+			// check("Information(DotProduct)", "");
 		}
 	}
 
@@ -2950,6 +2953,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("(2 + 3.5*I) / Infinity", "0.0");
 		check("Infinity + Infinity", "Infinity");
 		check("Infinity / Infinity", "Indeterminate");
+	}
+
+	public void testInformation() {
+		// print documentation in console
+		check("Information(Sin)", "");
 	}
 
 	public void testInner() {
@@ -5617,7 +5625,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		if (Config.TEST_FILESYSTEM) {
 			check("Put(x + y, \"c:/temp/example_file1.m\"); Get(\"c:/temp/example_file1.m\")", "x+y");
 			check("Put(x + y, 2x^2 + 4z!, Cos(x) + I Sin(x), \"c:/temp/example_file2.m\");"
-					+ "Get(\"c:/temp/example_file2.m\")", "I*Sin(x)+Cos(x)");
+					+ "Get(\"c:/temp/example_file2.m\")", "Cos(x)+I*Sin(x)");
 			check("Put(47!, \"c:/temp/test.m\"); Get(\"c:/temp/test.m\")",
 					"258623241511168180642964355153611979969197632389120000000000");
 		}

@@ -460,8 +460,7 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fullform" : "FullForm");
 	public final static IBuiltInSymbol Function = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "function" : "Function");
-	public final static IBuiltInSymbol Get = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "get" : "Get",
-			new org.matheclipse.core.builtin.function.Get());
+	public final static IBuiltInSymbol Get = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "get" : "Get");
 	public final static IBuiltInSymbol Head = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "head" : "Head",
 			new org.matheclipse.core.builtin.function.Head());
 	public final static IBuiltInSymbol HermitianMatrixQ = initFinalSymbol(
@@ -478,6 +477,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "implies" : "Implies");
 	public final static IBuiltInSymbol InexactNumberQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inexactnumberq" : "InexactNumberQ");
+	public final static IBuiltInSymbol Information = initFinalSymbol(
+					Config.PARSER_USE_LOWERCASE_SYMBOLS ? "information" : "Information");
 	public final static IBuiltInSymbol Insert = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "insert" : "Insert",
 			new org.matheclipse.core.builtin.function.Insert());
@@ -511,8 +512,7 @@ public class F {
 	public final static IBuiltInSymbol MemberQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "memberq" : "MemberQ");
 	public final static IBuiltInSymbol MessageName = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "messagename" : "MessageName",
-			new org.matheclipse.core.builtin.function.MessageName());
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "messagename" : "MessageName");
 	public final static IBuiltInSymbol MissingQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "missingq" : "MissingQ");
 	public final static IBuiltInSymbol Module = initFinalSymbol(
@@ -1361,6 +1361,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "yuledissimilarity" : "YuleDissimilarity");
 	public final static IBuiltInSymbol Zeta = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "zeta" : "Zeta");
 
+	public final static IBuiltInSymbol usage = initFinalSymbol("usage");
+	
 	public final static ISymbol a = initFinalHiddenSymbol("a");
 	public final static ISymbol b = initFinalHiddenSymbol("b");
 	public final static ISymbol c = initFinalHiddenSymbol("c");
@@ -2598,7 +2600,7 @@ public class F {
 	public static IAST AngleVector(final IExpr a0) {
 		return unaryAST1(AngleVector, a0);
 	}
-	
+
 	public static IAST And(final IExpr a0, final IExpr a1) {
 		return binary(And, a0, a1);
 	}
