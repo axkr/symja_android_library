@@ -99,8 +99,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("FullForm( And(x, And(y, z)) )", "\"And(x, y, z)\"");
 		check("And(x, True, z)", "x&&z");
 		check("And(x, False, z)", "False");
-		check("BooleanConvert(! (a && b))", "!a||!b");
-		check("BooleanConvert(! (a || b || c))", "!a&&!b&&!c");
 	}
 
 	public void testAntihermitianMatrixQ() {
@@ -537,8 +535,42 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBooleanConvert() {
-		check("BooleanConvert(Xor(x,y))", "x&&!y||!x&&y");
-		check("BooleanConvert(Equivalent(a, b, c))", "a&&b&&c||!a&&!b&&!c");
+		check("BooleanConvert(Implies(x, y), \"CNF\")", "y||!x");
+		check("BooleanConvert(! (a && b), \"CNF\")", "!a||!b");
+		check("BooleanConvert(! (a || b || c), \"CNF\")", "!a&&!b&&!c");
+		check("BooleanConvert(Xor(x,y), \"CNF\")", "(x||y)&&(!x||!y)");
+		check("BooleanConvert(Nand(p, q, r), \"CNF\")", "!p||!q||!r");
+		check("BooleanConvert(!Nand(p, q, r), \"CNF\")", "p&&q&&r");
+		check("BooleanConvert(Nor(p, q, r), \"CNF\")", "!p&&!q&&!r");
+		check("BooleanConvert(!Nor(p, q, r), \"CNF\")", "p||q||r");
+		check("BooleanConvert(! (a && b), \"CNF\")", "!a||!b");
+		check("BooleanConvert(! (a || b || c), \"CNF\")", "!a&&!b&&!c");
+		check("BooleanConvert(Equivalent(x, y, z), \"CNF\")", "(x||!y)&&(x||!z)&&(y||!x)&&(y||!z)&&(z||!x)&&(z||!y)");
+		
+		check("BooleanConvert(Implies(x, y))", "y||!x");
+		check("BooleanConvert(! (a && b))", "!a||!b");
+		check("BooleanConvert(! (a || b || c))", "!a&&!b&&!c");
+		check("BooleanConvert(Xor(x,y))", "x&&!y||y&&!x");
+		check("BooleanConvert(Nand(p, q, r))", "!p||!q||!r");
+		check("BooleanConvert(!Nand(p, q, r))", "p&&q&&r");
+		check("BooleanConvert(Nor(p, q, r))", "!p&&!q&&!r");
+		check("BooleanConvert(!Nor(p, q, r))", "p||q||r");
+		check("BooleanConvert(! (a && b))", "!a||!b");
+		check("BooleanConvert(! (a || b || c))", "!a&&!b&&!c");
+		check("BooleanConvert(Equivalent(x, y, z))", "x&&y&&z||!x&&!y&&!z");
+		
+		check("BooleanConvert(Implies(x, y), \"DNF\")", "y||!x");
+		check("BooleanConvert(! (a && b), \"DNF\")", "!a||!b");
+		check("BooleanConvert(! (a || b || c), \"DNF\")", "!a&&!b&&!c");
+		check("BooleanConvert(Xor(x,y), \"DNF\")", "x&&!y||y&&!x");
+		check("BooleanConvert(Nand(p, q, r), \"DNF\")", "!p||!q||!r");
+		check("BooleanConvert(!Nand(p, q, r), \"DNF\")", "p&&q&&r");
+		check("BooleanConvert(Nor(p, q, r), \"DNF\")", "!p&&!q&&!r");
+		check("BooleanConvert(!Nor(p, q, r), \"DNF\")", "p||q||r");
+		check("BooleanConvert(! (a && b), \"DNF\")", "!a||!b");
+		check("BooleanConvert(! (a || b || c), \"DNF\")", "!a&&!b&&!c");
+		check("BooleanConvert(Equivalent(x, y, z), \"DNF\")", "x&&y&&z||!x&&!y&&!z");
+		
 	}
 
 	public void testBooleanMinimize() {
@@ -1924,7 +1956,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Equivalent(a,b,c,True,False)", "False");
 		check("Equivalent(a,b,c,True)", "a&&b&&c");
 		check("Equivalent(a,b,c,False)", "!a&&!b&&!c");
-		check("BooleanConvert(Equivalent(x, y, z))", "x&&y&&z||!x&&!y&&!z");
 		check("Equivalent(a && (b || c), a && b || a && c) // TautologyQ", "True");
 	}
 
@@ -2906,7 +2937,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Implies(a,True)", "True");
 		check("Implies(a,False)", "!a");
 		check("Implies(a,a)", "True");
-		check("BooleanConvert(Implies(x, y))", "!x||y");
 	}
 
 	public void testImportExport() {
@@ -4103,8 +4133,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Nand(True,False)", "True");
 		check("Nand(Print(1); False, Print(2); True)", "True");
 		check("Nand(Print(1); True, Print(2); True)", "False");
-		check("BooleanConvert(Nand(p, q, r))", "!p||!q||!r");
-		check("BooleanConvert(!Nand(p, q, r))", "p&&q&&r");
 	}
 
 	public void testNDSolve() {
@@ -4500,8 +4528,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Nor(x,y,z)", "Nor(x,y,z)");
 		check("Nor(x,True,z)", "False");
 		check("Nor(x,False,z)", "Nor(x,z)");
-		check("BooleanConvert(Nor(p, q, r))", "!p&&!q&&!r");
-		check("BooleanConvert(!Nor(p, q, r))", "p||q||r");
 	}
 
 	public void testNorm() {
@@ -4694,8 +4720,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("FullForm( Or(x, Or(y, z)) )", "\"Or(x, y, z)\"");
 		check("Or(x, False, z)", "x||z");
 		check("Or(x, True, z)", "True");
-		check("BooleanConvert(! (a && b))", "!a||!b");
-		check("BooleanConvert(! (a || b || c))", "!a&&!b&&!c");
 	}
 
 	public void testOrder() {

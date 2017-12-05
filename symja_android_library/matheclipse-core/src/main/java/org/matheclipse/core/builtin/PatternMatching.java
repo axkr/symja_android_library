@@ -286,8 +286,10 @@ public final class PatternMatching {
 			} else {
 				stream = s;
 			}
-			IExpr temp = engine.evaluate(F.MessageName(symbol, F.usage));
-			System.out.println(temp.toString());
+//			IExpr temp = engine.evaluate(F.MessageName(symbol, F.usage));
+//			if (temp.isPresent()) {
+//				stream.println(temp.toString());
+//			}
 			if (!Documentation.printDocumentation(stream, symbol.getSymbolName())) {
 
 			}

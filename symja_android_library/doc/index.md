@@ -173,7 +173,6 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Expression types](expression-types.md)
 
 ## Reference of built-in symbols
-
 * [Abort](functions/Abort.md)
 * [Abs](functions/Abs.md)
 * [AbsArg](functions/AbsArg.md)
@@ -217,6 +216,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [BitLength](functions/BitLength.md)
 * [Block](functions/Block.md)
 * [Boole](functions/Boole.md)
+* [BooleanConvert](functions/BooleanConvert.md)
 * [BooleanMinimize](functions/BooleanMinimize.md)
 * [BooleanQ](functions/BooleanQ.md)
 * [Booleans](functions/Booleans.md)
@@ -653,4 +653,5 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Xor](functions/Xor.md)
 * [YuleDissimilarity](functions/YuleDissimilarity.md)
 * [Zeta](functions/Zeta.md)
+
 

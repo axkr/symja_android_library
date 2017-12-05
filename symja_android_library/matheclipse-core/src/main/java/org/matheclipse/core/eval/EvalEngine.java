@@ -184,7 +184,15 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	transient IEvalStepListener fTraceStack = null;
 
+	/**
+	 * The stream for printing information messages
+	 */
 	transient PrintStream fOutPrintStream = null;
+
+	/**
+	 * The stream for printing error messages
+	 */
+	transient PrintStream fErrorPrintStream = null;
 
 	transient ContextPath fContextPath;
 
@@ -259,18 +267,25 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 *            the maximum allowed recursion limit (if set to zero, no limit will be checked)
 	 * @param iterationLimit
 	 *            the maximum allowed iteration limit (if set to zero, no limit will be checked)
-	 * @param out
+	 * @param outStream
 	 *            the output print stream
+	 * @param errorStream
+	 *            the print stream for error messages
 	 * @param relaxedSyntax
 	 *            if <code>true</code>, the parser doesn't distinguidh between upper and lower case identifiers
 	 */
-	public EvalEngine(final String sessionID, final int recursionLimit, final int iterationLimit, final PrintStream out,
-			boolean relaxedSyntax) {
+	public EvalEngine(final String sessionID, final int recursionLimit, final int iterationLimit,
+			final PrintStream outStream, PrintStream errorStream, boolean relaxedSyntax) {
 		fSessionID = sessionID;
 		// fExpressionFactory = f;
 		fRecursionLimit = recursionLimit;
 		fIterationLimit = iterationLimit;
-		fOutPrintStream = out;
+		fOutPrintStream = outStream;
+		if (errorStream == null) {
+			fErrorPrintStream = outStream;
+		}else {
+			fErrorPrintStream = errorStream;
+		}
 		fRelaxedSyntax = relaxedSyntax;
 		fOutListDisabled = true;
 		// fNamespace = fExpressionFactory.getNamespace();
@@ -295,11 +310,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 *            if <code>true</code>, the parser doesn't distinguidh between upper and lower case identifiers
 	 */
 	public EvalEngine(final String sessionID, final int recursionLimit, final PrintStream out, boolean relaxedSyntax) {
-		this(sessionID, recursionLimit, 1000, out, relaxedSyntax);
+		this(sessionID, recursionLimit, 1000, out, null, relaxedSyntax);
 	}
 
 	public EvalEngine(final String sessionID, final PrintStream out) {
-		this(sessionID, -1, -1, out, false);
+		this(sessionID, -1, -1, out, null, false);
 	}
 
 	/**
@@ -1153,7 +1168,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			}
 			if (astSize > 2) {
 				if ((ISymbol.HOLDREST & attr) == ISymbol.NOATTRIBUTE) {
-					// the HoldRest attribute isn't set here 
+					// the HoldRest attribute isn't set here
 					for (int i = 2; i < astSize; i++) {
 						IExpr expr = ast.get(i);
 						if (expr.isAST()) {
@@ -1432,6 +1447,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		return fOutList;
 	}
 
+	public PrintStream getErrorPrintStream() {
+		return fErrorPrintStream;
+	}
+
 	public PrintStream getOutPrintStream() {
 		return fOutPrintStream;
 	}
@@ -1642,9 +1661,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 */
 	public void printMessage(String str) {
 		if (!isQuietMode()) {
-			PrintStream stream = getOutPrintStream();
+			PrintStream stream = getErrorPrintStream();
 			if (stream == null) {
-				stream = System.out;
+				stream = System.err;
 			}
 			stream.println(str);
 		}
@@ -1699,6 +1718,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		fNumericPrecision = precision;
 	}
 
+	public void setErrorPrintStream(final PrintStream errorPrintStream) {
+		fErrorPrintStream = errorPrintStream;
+	}
+	
 	/**
 	 * 
 	 * @param outListDisabled

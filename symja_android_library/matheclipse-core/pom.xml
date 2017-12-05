@@ -67,7 +67,6 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
-			<version>1.4</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
@@ -80,7 +79,14 @@
 		<dependency>
 			<groupId>com.github.rjeschke</groupId>
 			<artifactId>txtmark</artifactId>
-			<version>0.13</version>
+		</dependency>
+		<dependency>
+			<groupId>org.logicng</groupId>
+			<artifactId>logicng</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.antlr</groupId>
+			<artifactId>antlr4-runtime</artifactId>
 		</dependency>
 	</dependencies>
 

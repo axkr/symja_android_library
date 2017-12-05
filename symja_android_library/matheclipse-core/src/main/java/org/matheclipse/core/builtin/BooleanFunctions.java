@@ -9,8 +9,10 @@ import static org.matheclipse.core.expression.F.Nor;
 import static org.matheclipse.core.expression.F.Or;
 import static org.matheclipse.core.expression.F.Xor;
 
+import org.logicng.formulas.Formula;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.boole.QuineMcCluskyFormula;
+import org.matheclipse.core.convert.LogicFormula;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -29,6 +31,7 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITernaryComparator;
 import org.matheclipse.core.visit.VisitorExpr;
@@ -378,11 +381,25 @@ public final class BooleanFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
+			Validate.checkRange(ast, 2, 3);
 
 			BooleanConvertVisitor bcVisitor = new BooleanConvertVisitor();
 			IExpr result = ast.arg1().accept(bcVisitor);
-			return result.isPresent() ? result : ast.arg1();
+			LogicFormula lf = new LogicFormula();
+			final Formula formula = lf.expr2BooleanFunction(result);
+			if (ast.size() == 3 && ast.arg2().isString()) {
+				IStringX arg2 = (IStringX) ast.arg2();
+				String method = arg2.toString();
+				if (method.equals("DNF") || method.equals("SOP")) {
+					return lf.booleanFunction2Expr(formula.nnf());
+				}
+				if (method.equals("CNF") || method.equals("POS")) {
+					return lf.booleanFunction2Expr(formula.cnf());
+				}
+			} else {
+				return lf.booleanFunction2Expr(formula.nnf());
+			}
+			return F.NIL;
 		}
 	}
 

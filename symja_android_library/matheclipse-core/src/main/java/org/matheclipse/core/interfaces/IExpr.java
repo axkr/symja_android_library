@@ -684,7 +684,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is the function <code>And[&lt;arg&gt;,...]</code>
+	 * Test if this expression is the function <code>And[&lt;arg&gt;,...]</code> and has at least 2 arguments.
 	 * 
 	 * @return
 	 */
@@ -1673,7 +1673,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is the function <code>Not[&lt;arg&gt;]</code>
+	 * Test if this expression is the function <code>Not[&lt;arg&gt;]</code>.
 	 * 
 	 * @return
 	 */
@@ -1802,7 +1802,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is the function <code>Or[&lt;arg&gt;,...]</code>
+	 * Test if this expression is the function <code>Or[&lt;arg&gt;,...]</code> and has at least 2 arguments.
 	 * 
 	 * @return
 	 */
