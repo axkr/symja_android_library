@@ -21,7 +21,7 @@
 	<classpathentry kind="lib" path="lib/hipparchus-ode-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-optim-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-stat-1.2.jar"/>
-	<classpathentry kind="lib" path="lib/logicng-1.3.jar" sourcepath="C:/Users/khart/.m2/repository/org/logicng/logicng/1.3/logicng-1.3-sources.jar"/>
+	<classpathentry kind="lib" path="lib/logicng-1.3.jar" />
 	<classpathentry kind="lib" path="lib/antlr4-runtime-4.7.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
