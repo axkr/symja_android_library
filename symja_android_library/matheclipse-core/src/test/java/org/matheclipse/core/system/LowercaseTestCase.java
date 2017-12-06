@@ -536,16 +536,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Boole({a, False, b, True, f()})", "{Boole(a),0,Boole(b),1,Boole(f())}");
 	}
 
-	public void testLogicNGCNF() {
-		final FormulaFactory f = new FormulaFactory();
-		final Variable x = f.variable("x");
-		final Variable y = f.variable("y");
-		final Literal notX = f.literal("x", false);
-		final Literal notY = f.literal("y", false);
-		// x & ~y | y & ~x
-		final Formula formula = f.or(f.and(x, notY), f.and(notX, y)).cnf();
-		assertEquals("(x | y) & (~x | ~y)", formula.toString());
-	}
+	// public void testLogicNGCNF() {
+	// final FormulaFactory f = new FormulaFactory();
+	// final Variable x = f.variable("x");
+	// final Variable y = f.variable("y");
+	// final Literal notX = f.literal("x", false);
+	// final Literal notY = f.literal("y", false);
+	// // x & ~y | y & ~x
+	// final Formula formula = f.or(f.and(x, notY), f.and(notX, y)).cnf();
+	// assertEquals("(x | y) & (~x | ~y)", formula.toString());
+	// }
 
 	public void testBooleanConvert() {
 		check("BooleanConvert(Implies(x, y), \"CNF\")", "!x||y");
