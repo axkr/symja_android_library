@@ -290,7 +290,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	@Override
 	default int compareTo(IExpr expr) {
 		if (expr.isAST()) {
-			if (!expr.isDirectedInfinity() && !expr.isNot()) {
+			if (!expr.isDirectedInfinity()) {
 				return -1 * expr.compareTo(this);
 			}
 		}

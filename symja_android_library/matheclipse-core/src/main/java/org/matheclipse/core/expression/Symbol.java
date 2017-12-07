@@ -178,9 +178,7 @@ public class Symbol implements ISymbol, Serializable {
 		}
 		if (expr.isNot() && ((IAST) expr).arg1().isSymbol()) {
 			int cp = compareTo(((IAST) expr).arg1());
-			if (cp != 0) {
-				return cp;
-			}
+			return cp != 0 ? cp : -1;
 		}
 		return ISymbol.super.compareTo(expr);
 	}
@@ -258,7 +256,6 @@ public class Symbol implements ISymbol, Serializable {
 			if (fSymbolName.equals(symbol.fSymbolName)) {
 				// #172
 				return fContext.equals(symbol.fContext);
-				// return true;
 			}
 		}
 		return false;

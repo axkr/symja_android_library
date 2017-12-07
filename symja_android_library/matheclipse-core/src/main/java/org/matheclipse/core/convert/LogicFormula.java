@@ -20,12 +20,12 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class LogicFormula {
-	FormulaFactory f;
+	FormulaFactory factory;
 	Map<ISymbol, Variable> symbol2variableMap = new HashMap<ISymbol, Variable>();
 	Map<Variable, ISymbol> variable2symbolMap = new HashMap<Variable, ISymbol>();
 
 	public LogicFormula() {
-		f = new FormulaFactory();
+		factory = new FormulaFactory();
 	}
 
 	public IExpr booleanFunction2Expr(final Formula formula) throws ClassCastException {
@@ -77,7 +77,7 @@ public class LogicFormula {
 				for (int i = 2; i < ast.size(); i++) {
 					result[i - 1] = expr2BooleanFunction(ast.get(i));
 				}
-				return f.and(result);
+				return factory.and(result);
 			} else if (ast.isOr()) {
 				IExpr expr = ast.arg1();
 				Formula[] result = new Formula[ast.size() - 1];
@@ -85,22 +85,22 @@ public class LogicFormula {
 				for (int i = 2; i < ast.size(); i++) {
 					result[i - 1] = expr2BooleanFunction(ast.get(i));
 				}
-				return f.or(result);
+				return factory.or(result);
 			} else if (ast.isNot()) {
 				IExpr expr = ast.arg1();
-				return f.not(expr2BooleanFunction(expr));
+				return factory.not(expr2BooleanFunction(expr));
 			}
 		} else if (logicExpr instanceof ISymbol) {
 			ISymbol symbol = (ISymbol) logicExpr;
 			if (symbol.isFalse()) {
-				return f.falsum();
+				return factory.falsum();
 			}
 			if (symbol.isTrue()) {
-				return f.verum();
+				return factory.verum();
 			}
 			Variable v = symbol2variableMap.get(symbol);
 			if (v == null) {
-				final Variable value = f.variable(symbol.getSymbolName());
+				final Variable value = factory.variable(symbol.getSymbolName());
 				symbol2variableMap.put(symbol, value);
 				variable2symbolMap.put(value, symbol);
 				return value;

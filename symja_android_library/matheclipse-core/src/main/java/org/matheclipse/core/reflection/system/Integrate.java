@@ -774,11 +774,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 	/**
 	 * See <a href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia- Integration by parts</a>
 	 * 
-	 * @param ast
-	 *            TODO
-	 * @param symbol
-	 * @param f
-	 * @param g
+	 * @param ast 
+	 * @param symbol 
 	 * 
 	 * @return
 	 */
