@@ -176,6 +176,12 @@ public class Symbol implements ISymbol, Serializable {
 			// sort lexicographically
 			return US_COLLATOR.compare(fSymbolName, ((Symbol) expr).fSymbolName);
 		}
+		if (expr.isNot() && ((IAST) expr).arg1().isSymbol()) {
+			int cp = compareTo(((IAST) expr).arg1());
+			if (cp != 0) {
+				return cp;
+			}
+		}
 		return ISymbol.super.compareTo(expr);
 	}
 

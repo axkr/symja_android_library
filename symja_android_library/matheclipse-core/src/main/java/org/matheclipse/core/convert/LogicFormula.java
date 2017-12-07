@@ -36,6 +36,7 @@ public class LogicFormula {
 			for (Formula f : a) {
 				result[i++] = booleanFunction2Expr(f);
 			}
+			Arrays.sort(result, ExprComparator.CONS);
 			return F.And(result);
 		} else if (formula instanceof Or) {
 			Or a = (Or) formula;
@@ -44,6 +45,7 @@ public class LogicFormula {
 			for (Formula f : a) {
 				result[i++] = booleanFunction2Expr(f);
 			}
+			Arrays.sort(result, ExprComparator.CONS);
 			return F.Or(result);
 		} else if (formula instanceof Not) {
 			Not a = (Not) formula;

@@ -453,6 +453,9 @@ public abstract class AbstractAST implements IASTMutable {
 				return 1;
 			}
 		}
+		if (rhsExpr.isSymbol() && isNot() && arg1().isSymbol()) {
+			return -1 * rhsExpr.compareTo(this);
+		}
 		if (rhsExpr.isNumber()) {
 			// O-7
 			return 1;

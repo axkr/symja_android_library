@@ -1,9 +1,5 @@
 package org.matheclipse.core.system;
 
-import org.logicng.formulas.Formula;
-import org.logicng.formulas.FormulaFactory;
-import org.logicng.formulas.Literal;
-import org.logicng.formulas.Variable;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -534,31 +530,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("{Boole(False), Boole(True)}", "{0,1}");
 		check("Boole({True, False, True, True, False})", "{1,0,1,1,0}");
 		check("Boole({a, False, b, True, f()})", "{Boole(a),0,Boole(b),1,Boole(f())}");
-	}
-
-	// public void testLogicNGCNF() {
-	// final FormulaFactory f = new FormulaFactory();
-	// final Variable x = f.variable("x");
-	// final Variable y = f.variable("y");
-	// final Literal notX = f.literal("x", false);
-	// final Literal notY = f.literal("y", false);
-	// // x & ~y | y & ~x
-	// final Formula formula = f.or(f.and(x, notY), f.and(notX, y)).cnf();
-	// assertEquals("(x | y) & (~x | ~y)", formula.toString());
-	// }
+	} 
 
 	public void testBooleanConvert() {
 		check("BooleanConvert(Implies(x, y), \"CNF\")", "!x||y");
 		check("BooleanConvert(! (a && b), \"CNF\")", "!a||!b");
 		check("BooleanConvert(! (a || b || c), \"CNF\")", "!a&&!b&&!c");
-		check("BooleanConvert(Xor(x,y), \"CNF\")", "(y||x)&&(!x||!y)");
+		check("BooleanConvert(Xor(x,y), \"CNF\")", "(x||y)&&(!x||!y)");
 		check("BooleanConvert(Nand(p, q, r), \"CNF\")", "!p||!q||!r");
 		check("BooleanConvert(!Nand(p, q, r), \"CNF\")", "p&&q&&r");
 		check("BooleanConvert(Nor(p, q, r), \"CNF\")", "!p&&!q&&!r");
 		check("BooleanConvert(!Nor(p, q, r), \"CNF\")", "p||q||r");
 		check("BooleanConvert(! (a && b), \"CNF\")", "!a||!b");
 		check("BooleanConvert(! (a || b || c), \"CNF\")", "!a&&!b&&!c");
-		check("BooleanConvert(Equivalent(x, y, z), \"CNF\")", "(!y||x)&&(!z||x)&&(!x||y)&&(!z||y)&&(!x||z)&&(!y||z)");
+		check("BooleanConvert(Equivalent(x, y, z), \"CNF\")", "(x||!y)&&(x||!z)&&(!x||y)&&(!x||z)&&(y||!z)&&(!y||z)");
 
 		check("BooleanConvert(Implies(x, y))", "!x||y");
 		check("BooleanConvert(! (a && b))", "!a||!b");

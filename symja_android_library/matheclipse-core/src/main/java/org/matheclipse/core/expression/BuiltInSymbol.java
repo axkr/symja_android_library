@@ -55,7 +55,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 		super(symbolName, Context.SYSTEM);
 		fEvaluator = evaluator;
 	}
-
+	
 	/** {@inheritDoc} */
 	@Override
 	public String definitionToString() throws IOException {
