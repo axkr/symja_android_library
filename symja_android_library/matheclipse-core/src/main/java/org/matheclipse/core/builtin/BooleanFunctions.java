@@ -27,6 +27,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
+import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.interfaces.IAST;
@@ -1977,12 +1978,23 @@ public final class BooleanFunctions {
 			IAST variables;
 			IExpr arg1 = ast.arg1();
 			try {
+				// currently only SAT is available
+				String method = "SAT";
 				if (ast.size() > 2) {
 					if (ast.arg2().isList()) {
 						variables = (IAST) ast.arg2();
 					} else {
 						variables = List(ast.arg2());
 					}
+					if (ast.size() > 3) {
+						final Options options = new Options(ast.topHead(), ast, 3, engine);
+						// "BDD" (binary decision diagram), "SAT", "TREE" ?
+						IExpr optionMethod = options.getOption("Method");
+						if (optionMethod.isString()) {
+							method = optionMethod.toString();
+						}  
+					}
+
 				} else {
 					VariablesSet vSet = new VariablesSet(arg1);
 					variables = vSet.getVarList();
