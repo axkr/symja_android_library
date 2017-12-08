@@ -20,12 +20,16 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class LogicFormula {
-	FormulaFactory factory;
+	final FormulaFactory factory;
 	Map<ISymbol, Variable> symbol2variableMap = new HashMap<ISymbol, Variable>();
 	Map<Variable, ISymbol> variable2symbolMap = new HashMap<Variable, ISymbol>();
 
 	public LogicFormula() {
-		factory = new FormulaFactory();
+		this(new FormulaFactory());
+	}
+
+	public LogicFormula(FormulaFactory factory) {
+		this.factory = factory;
 	}
 
 	public IExpr booleanFunction2Expr(final Formula formula) throws ClassCastException {
@@ -86,6 +90,15 @@ public class LogicFormula {
 					result[i - 1] = expr2BooleanFunction(ast.get(i));
 				}
 				return factory.or(result);
+			} else if (ast.isASTSizeGE(F.Equivalent, 3)) {
+				Formula result = factory.equivalence(expr2BooleanFunction(ast.arg1()),
+						expr2BooleanFunction(ast.arg2()));
+				for (int i = 3; i < ast.size(); i++) {
+					result = factory.equivalence(result, expr2BooleanFunction(ast.get(i)));
+				}
+				return result;
+			} else if (ast.isAST(F.Implies, 3)) {
+				return factory.implication(expr2BooleanFunction(ast.arg1()), expr2BooleanFunction(ast.arg2()));
 			} else if (ast.isNot()) {
 				IExpr expr = ast.arg1();
 				return factory.not(expr2BooleanFunction(expr));

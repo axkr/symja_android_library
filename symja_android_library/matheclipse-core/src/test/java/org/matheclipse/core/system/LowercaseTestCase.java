@@ -530,7 +530,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("{Boole(False), Boole(True)}", "{0,1}");
 		check("Boole({True, False, True, True, False})", "{1,0,1,1,0}");
 		check("Boole({a, False, b, True, f()})", "{Boole(a),0,Boole(b),1,Boole(f())}");
-	} 
+	}
 
 	public void testBooleanConvert() {
 		check("BooleanConvert(Implies(x, y), \"CNF\")", "!x||y");
@@ -6144,8 +6144,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSatisfiableQ() {
+		check("SatisfiableQ(!Implies(Implies(a, b) && ! b, ! a))", "False");
+		check("SatisfiableQ(a&&!(b||!c) )", "True");
+		
+		check("SatisfiableQ((a || b) && (! a || ! b) )", "True");
+		check("SatisfiableQ((a && b) && (! a || ! b) )", "False");
 		check("SatisfiableQ((a || b) && (! a || ! b), {a, b})", "True");
 		check("SatisfiableQ((a && b) && (! a || ! b), {a, b})", "False");
+		
+		
 	}
 
 	public void testScan() {

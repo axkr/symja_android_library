@@ -9,7 +9,11 @@ import static org.matheclipse.core.expression.F.Nor;
 import static org.matheclipse.core.expression.F.Or;
 import static org.matheclipse.core.expression.F.Xor;
 
+import org.logicng.datastructures.Tristate;
 import org.logicng.formulas.Formula;
+import org.logicng.formulas.FormulaFactory;
+import org.logicng.solvers.MiniSat;
+import org.logicng.solvers.SATSolver;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.boole.QuineMcCluskyFormula;
 import org.matheclipse.core.convert.LogicFormula;
@@ -1968,21 +1972,39 @@ public final class BooleanFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
+			Validate.checkRange(ast, 2, 4);
 
 			IAST variables;
-			if (ast.isAST2()) {
-				if (ast.arg2().isList()) {
-					variables = (IAST) ast.arg2();
+			IExpr arg1 = ast.arg1();
+			try {
+				if (ast.size() > 2) {
+					if (ast.arg2().isList()) {
+						variables = (IAST) ast.arg2();
+					} else {
+						variables = List(ast.arg2());
+					}
 				} else {
-					variables = List(ast.arg2());
+					VariablesSet vSet = new VariablesSet(arg1);
+					variables = vSet.getVarList();
+					FormulaFactory factory = new FormulaFactory();
+					LogicFormula lf = new LogicFormula(factory);
+					final Formula formula = lf.expr2BooleanFunction(arg1);
+					final SATSolver miniSat = MiniSat.miniSat(factory);
+					miniSat.add(formula);
+					final Tristate result = miniSat.sat();
+					if (result == Tristate.TRUE) {
+						return F.True;
+					}
+					if (result == Tristate.FALSE) {
+						return F.False;
+					}
+					return F.NIL;
 				}
-			} else {
-				VariablesSet vSet = new VariablesSet(ast.arg1());
-				variables = vSet.getVarList();
-			}
+				return satisfiableQ(arg1, variables, 1) ? F.True : F.False;
+			} catch (ClassCastException cce) {
 
-			return satisfiableQ(ast.arg1(), variables, 1) ? F.True : F.False;
+			}
+			return F.NIL;
 		}
 
 		private static boolean satisfiableQ(IExpr expr, IAST variables, int position) {
