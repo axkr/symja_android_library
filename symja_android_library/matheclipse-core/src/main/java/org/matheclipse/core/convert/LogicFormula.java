@@ -1,6 +1,8 @@
 package org.matheclipse.core.convert;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -121,6 +123,28 @@ public class LogicFormula {
 			return v;
 		}
 		throw new ClassCastException(logicExpr.toString());
+	}
+
+	public Collection<Literal> list2LiteralCollection(final IAST list) throws ClassCastException {
+		Collection<Literal> arr = new ArrayList(list.size() - 1);
+		for (int i = 1; i < list.size(); i++) {
+			IExpr temp = list.get(i);
+			if (!temp.isSymbol()) {
+				throw new ClassCastException(temp.toString());
+			}
+
+			ISymbol symbol = (ISymbol) temp;
+
+			Variable v = symbol2variableMap.get(symbol);
+			if (v == null) {
+				final Variable value = factory.variable(symbol.getSymbolName());
+				symbol2variableMap.put(symbol, value);
+				variable2symbolMap.put(value, symbol);
+			}
+			arr.add(v);
+
+		}
+		return arr;
 	}
 
 }

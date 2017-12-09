@@ -1975,16 +1975,17 @@ public final class BooleanFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 4);
 
-			IAST variables;
+			IASTMutable userDefinedVariables;
 			IExpr arg1 = ast.arg1();
 			try {
 				// currently only SAT is available
 				String method = "SAT";
 				if (ast.size() > 2) {
 					if (ast.arg2().isList()) {
-						variables = (IAST) ast.arg2();
+						userDefinedVariables = ((IAST) ast.arg2()).copy();
+						EvalAttributes.sort(userDefinedVariables);
 					} else {
-						variables = List(ast.arg2());
+						userDefinedVariables = List(ast.arg2());
 					}
 					if (ast.size() > 3) {
 						final Options options = new Options(ast.topHead(), ast, 3, engine);
@@ -1992,34 +1993,55 @@ public final class BooleanFunctions {
 						IExpr optionMethod = options.getOption("Method");
 						if (optionMethod.isString()) {
 							method = optionMethod.toString();
-						}  
+						}
+					}
+					VariablesSet vSet = new VariablesSet(arg1);
+					IAST variables = vSet.getVarList();
+					if (variables.equals(userDefinedVariables)) {
+						return logicNGSatisfiableQ(arg1);
 					}
 
 				} else {
-					VariablesSet vSet = new VariablesSet(arg1);
-					variables = vSet.getVarList();
-					FormulaFactory factory = new FormulaFactory();
-					LogicFormula lf = new LogicFormula(factory);
-					final Formula formula = lf.expr2BooleanFunction(arg1);
-					final SATSolver miniSat = MiniSat.miniSat(factory);
-					miniSat.add(formula);
-					final Tristate result = miniSat.sat();
-					if (result == Tristate.TRUE) {
-						return F.True;
-					}
-					if (result == Tristate.FALSE) {
-						return F.False;
-					}
-					return F.NIL;
+					return logicNGSatisfiableQ(arg1);
 				}
-				return satisfiableQ(arg1, variables, 1) ? F.True : F.False;
+				return bruteForceSatisfiableQ(arg1, userDefinedVariables, 1) ? F.True : F.False;
 			} catch (ClassCastException cce) {
 
 			}
 			return F.NIL;
 		}
 
-		private static boolean satisfiableQ(IExpr expr, IAST variables, int position) {
+		/**
+		 * Use LogicNG MiniSAT method.
+		 * 
+		 * @param arg1
+		 * @return
+		 */
+		private static IExpr logicNGSatisfiableQ(IExpr arg1) {
+			FormulaFactory factory = new FormulaFactory();
+			LogicFormula lf = new LogicFormula(factory);
+			final Formula formula = lf.expr2BooleanFunction(arg1);
+			final SATSolver miniSat = MiniSat.miniSat(factory);
+			miniSat.add(formula);
+			final Tristate result = miniSat.sat();
+			if (result == Tristate.TRUE) {
+				return F.True;
+			}
+			if (result == Tristate.FALSE) {
+				return F.False;
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * Use brute force method.
+		 * 
+		 * @param expr
+		 * @param variables
+		 * @param position
+		 * @return
+		 */
+		private static boolean bruteForceSatisfiableQ(IExpr expr, IAST variables, int position) {
 			if (variables.size() <= position) {
 				return EvalEngine.get().evalTrue(expr);
 			}
@@ -2027,7 +2049,7 @@ public final class BooleanFunctions {
 			if (sym.isSymbol()) {
 				try {
 					((ISymbol) sym).pushLocalVariable(F.True);
-					if (satisfiableQ(expr, variables, position + 1)) {
+					if (bruteForceSatisfiableQ(expr, variables, position + 1)) {
 						return true;
 					}
 				} finally {
@@ -2035,7 +2057,7 @@ public final class BooleanFunctions {
 				}
 				try {
 					((ISymbol) sym).pushLocalVariable(F.False);
-					if (satisfiableQ(expr, variables, position + 1)) {
+					if (bruteForceSatisfiableQ(expr, variables, position + 1)) {
 						return true;
 					}
 				} finally {
@@ -2056,23 +2078,55 @@ public final class BooleanFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
 
-			IAST variables;
+			IASTMutable userDefinedVariables;
+			IExpr arg1 = ast.arg1();
 			if (ast.isAST2()) {
 				if (ast.arg2().isList()) {
-					variables = (IAST) ast.arg2();
+					userDefinedVariables = ((IAST) ast.arg2()).copy();
+					EvalAttributes.sort(userDefinedVariables);
 				} else {
-					variables = List(ast.arg2());
+					userDefinedVariables = List(ast.arg2());
+				}
+				VariablesSet vSet = new VariablesSet(arg1);
+				IAST variables = vSet.getVarList();
+				if (variables.equals(userDefinedVariables)) {
+					return logicNGTautologyQ(arg1);
 				}
 			} else {
-				VariablesSet vSet = new VariablesSet(ast.arg1());
-				variables = vSet.getVarList();
-
+				return logicNGTautologyQ(arg1);
 			}
 
-			return tautologyQ(ast.arg1(), variables, 1) ? F.True : F.False;
+			return bruteForceTautologyQ(arg1, userDefinedVariables, 1) ? F.True : F.False;
 		}
 
-		private static boolean tautologyQ(IExpr expr, IAST variables, int position) {
+		/**
+		 * <p>
+		 * Use LogicNG MiniSAT method.
+		 * </p>
+		 * <p>
+		 * <b>Note:</b> <code>TautologyQ(formula)</code> is equivalent to <code>!SatisfiableQ(!formula)</code>.
+		 * </p>
+		 * 
+		 * @param arg1
+		 * @return
+		 */
+		private static IExpr logicNGTautologyQ(IExpr arg1) {
+			IExpr temp = SatisfiableQ.logicNGSatisfiableQ(F.Not(arg1));
+			if (temp.isPresent()) {
+				return temp.isTrue() ? F.False : F.True;
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * Use brute force method.
+		 * 
+		 * @param expr
+		 * @param variables
+		 * @param position
+		 * @return
+		 */
+		private static boolean bruteForceTautologyQ(IExpr expr, IAST variables, int position) {
 			if (variables.size() <= position) {
 				return EvalEngine.get().evalTrue(expr);
 			}
@@ -2080,7 +2134,7 @@ public final class BooleanFunctions {
 			if (sym.isSymbol()) {
 				try {
 					((ISymbol) sym).pushLocalVariable(F.True);
-					if (!tautologyQ(expr, variables, position + 1)) {
+					if (!bruteForceTautologyQ(expr, variables, position + 1)) {
 						return false;
 					}
 				} finally {
@@ -2088,7 +2142,7 @@ public final class BooleanFunctions {
 				}
 				try {
 					((ISymbol) sym).pushLocalVariable(F.False);
-					if (!tautologyQ(expr, variables, position + 1)) {
+					if (!bruteForceTautologyQ(expr, variables, position + 1)) {
 						return false;
 					}
 				} finally {
