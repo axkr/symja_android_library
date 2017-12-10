@@ -1,8 +1,11 @@
 package org.matheclipse.core.reflection.system;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
+import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
@@ -11,6 +14,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
+import org.matheclipse.parser.client.Parser;
+import org.matheclipse.parser.client.ast.ASTNode;
 
 /**
  * Export some data from file system.
@@ -28,7 +33,7 @@ public class Export extends AbstractEvaluator {
 		if (!(ast.arg1() instanceof IStringX)) {
 			throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);
 		}
-		String format = "Table";
+		String format = "Data";
 		if (ast.size() == 4) {
 			if (!(ast.arg3() instanceof IStringX)) {
 				throw new WrongNumberOfArguments(ast, 3, ast.size() - 1);
@@ -65,6 +70,10 @@ public class Export extends AbstractEvaluator {
 
 					}
 				}
+			} else if (format.equals("Data")) {
+				File file = new File(arg1.toString());
+				com.google.common.io.Files.write(arg2.toString(), file, Charset.defaultCharset());
+				return arg1;
 			}
 
 		} catch (IOException ioe) {
