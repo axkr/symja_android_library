@@ -6,11 +6,13 @@ import static org.matheclipse.core.expression.F.RuleDelayed;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Reader;
 import java.util.List;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
@@ -27,6 +29,7 @@ import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -50,6 +53,7 @@ public final class PatternMatching {
 		F.Information.setEvaluator(new Information());
 		F.MessageName.setEvaluator(new MessageName());
 		F.Optional.setEvaluator(new Optional());
+		F.Put.setEvaluator(new Put());
 		F.Rule.setEvaluator(new Rule());
 		F.RuleDelayed.setEvaluator(new RuleDelayed());
 		F.Set.setEvaluator(new Set());
@@ -241,20 +245,23 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
+			if (Config.FILESYSTEM_ENABLED) {
+				Validate.checkSize(ast, 2);
 
-			if (!(ast.arg1() instanceof IStringX)) {
-				throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);
+				if (!(ast.arg1() instanceof IStringX)) {
+					throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);
+				}
+				IStringX arg1 = (IStringX) ast.arg1();
+				FileReader reader;
+				try {
+					reader = new FileReader(arg1.toString());
+					return loadPackage(engine, reader);
+				} catch (FileNotFoundException e) {
+					engine.printMessage("Get: file " + arg1.toString() + " not found!");
+				}
+				return F.Null;
 			}
-			IStringX arg1 = (IStringX) ast.arg1();
-			FileReader reader;
-			try {
-				reader = new FileReader(arg1.toString());
-				return loadPackage(engine, reader);
-			} catch (FileNotFoundException e) {
-				engine.printMessage("Get: file " + arg1.toString() + " not found!");
-			}
-			return F.Null;
+			return F.NIL;
 		}
 
 		@Override
@@ -286,10 +293,10 @@ public final class PatternMatching {
 			} else {
 				stream = s;
 			}
-//			IExpr temp = engine.evaluate(F.MessageName(symbol, F.usage));
-//			if (temp.isPresent()) {
-//				stream.println(temp.toString());
-//			}
+			// IExpr temp = engine.evaluate(F.MessageName(symbol, F.usage));
+			// if (temp.isPresent()) {
+			// stream.println(temp.toString());
+			// }
 			if (!Documentation.printDocumentation(stream, symbol.getSymbolName())) {
 
 			}
@@ -342,6 +349,47 @@ public final class PatternMatching {
 			if (ast.arg1().isPattern()) {
 				IPattern patt = (IPattern) ast.arg1();
 				return F.$p(patt.getSymbol(), patt.getCondition(), ast.arg2());
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	/**
+	 * Put[{&lt;file name&gt;}}
+	 * 
+	 */
+	private static final class Put extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (Config.FILESYSTEM_ENABLED) {
+				Validate.checkRange(ast, 3);
+
+				int len = ast.size() - 1;
+				IStringX fileName = Validate.checkStringType(ast, len);
+				FileWriter writer;
+				try {
+					writer = new FileWriter(fileName.toString());
+					final StringBuilder buf = new StringBuilder();
+					for (int i = 1; i < len; i++) {
+						IExpr temp = engine.evaluate(ast.get(i));
+						OutputFormFactory.get().convert(buf, temp);
+						buf.append('\n');
+						if (i < len - 1) {
+							buf.append('\n');
+						}
+					}
+					writer.write(buf.toString());
+					writer.close();
+				} catch (IOException e) {
+					engine.printMessage("Put: file " + fileName.toString() + " I/O exception !");
+				}
+				return F.Null;
 			}
 			return F.NIL;
 		}

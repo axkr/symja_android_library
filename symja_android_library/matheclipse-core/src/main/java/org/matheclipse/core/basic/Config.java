@@ -154,7 +154,8 @@ public class Config {
 	public static final int MACHINE_PRECISION = 15;
 
 	/**
-	 * Enable tests with local files.
+	 * Enable tests and functions which use the local files.
 	 */
-	public static final boolean TEST_FILESYSTEM = false;
+	public static boolean FILESYSTEM_ENABLED = false;
+
 }

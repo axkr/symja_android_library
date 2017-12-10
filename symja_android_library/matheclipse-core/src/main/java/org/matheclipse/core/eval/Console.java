@@ -15,6 +15,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
@@ -54,6 +55,7 @@ public class Console {
 	private static int COUNTER = 1;
 
 	public static void main(final String args[]) {
+		Config.FILESYSTEM_ENABLED=true;
 		F.initSymbols(null, null, true); // console.getDefaultSystemRulesFilename(),
 											// null, false);
 

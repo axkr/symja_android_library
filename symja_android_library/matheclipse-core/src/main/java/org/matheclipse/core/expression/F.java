@@ -558,8 +558,7 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primeq" : "PrimeQ");
 	public final static IBuiltInSymbol Print = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "print" : "Print",
 			new org.matheclipse.core.builtin.function.Print());
-	public final static IBuiltInSymbol Put = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "put" : "Put",
-			new org.matheclipse.core.builtin.function.Put());
+	public final static IBuiltInSymbol Put = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "put" : "Put");
 	public final static IBuiltInSymbol Quantile = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "quantile" : "Quantile");
 	public final static IBuiltInSymbol Quiet = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "quiet" : "Quiet",

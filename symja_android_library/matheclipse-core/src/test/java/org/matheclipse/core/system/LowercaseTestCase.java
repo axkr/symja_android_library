@@ -2714,7 +2714,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGet() {
-		if (Config.TEST_FILESYSTEM) {
+		if (Config.FILESYSTEM_ENABLED) {
 			String pathToVectorAnalysis;
 			pathToVectorAnalysis = getClass().getResource("/VectorAnalysis.m").toString();
 			// remove 'file:/'
@@ -2939,14 +2939,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testImportExport() {
-		// check("Export(\"c:\\\\temp\\\\out.dat\", {{5.7, 4.3}, {-1.2, 7.8}, {a, f(x)}}, \"Table\")",
-		// "\"c:\\temp\\out.dat\"");
-		// check("Import(\"c:\\\\temp\\\\out.dat\", \"Table\")",
-		// "{{5.7,4.3},{-1.2,7.8},{a,f(x)}}");
-		// check("Export(\"c:\\\\temp\\\\data.txt\", Integrate(sin(x)^10,x), \"Data\")", "\"c:\\temp\\data.txt\"");
-		// check("Import(\"c:\\\\temp\\\\data.txt\", \"String\")",
-		// "9/10*(7/8*(5/6*(3/4*(x/2-1/2*Cos(x)*Sin(x))-1/4*Cos(x)*Sin(x)^3)-1/6*Cos(x)*Sin(x)^\n" +
-		// "5)-1/8*Cos(x)*Sin(x)^7)-1/10*Cos(x)*Sin(x)^9");
+		if (Config.FILESYSTEM_ENABLED) {
+			check("Export(\"c:\\\\temp\\\\out.dat\", {{5.7, 4.3}, {-1.2, 7.8}, {a, f(x)}}, \"Table\")",
+					"\"c:\\temp\\out.dat\"");
+			check("Import(\"c:\\\\temp\\\\out.dat\", \"Table\")", "{{5.7,4.3},{-1.2,7.8},{a,f(x)}}");
+			check("Export(\"c:\\\\temp\\\\data.txt\", Integrate(sin(x)^10,x), \"Data\")", "\"c:\\temp\\data.txt\"");
+			check("Import(\"c:\\\\temp\\\\data.txt\", \"String\")",
+					"9/10*(7/8*(5/6*(3/4*(x/2-1/2*Cos(x)*Sin(x))-1/4*Cos(x)*Sin(x)^3)-1/6*Cos(x)*Sin(x)^\n"
+							+ "5)-1/8*Cos(x)*Sin(x)^7)-1/10*Cos(x)*Sin(x)^9");
+		}
 	}
 
 	public void testIncrement() {
@@ -5649,7 +5650,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPutGet() {
-		if (Config.TEST_FILESYSTEM) {
+		if (Config.FILESYSTEM_ENABLED) {
 			check("Put(x + y, \"c:/temp/example_file1.m\"); Get(\"c:/temp/example_file1.m\")", "x+y");
 			check("Put(x + y, 2x^2 + 4z!, Cos(x) + I Sin(x), \"c:/temp/example_file2.m\");"
 					+ "Get(\"c:/temp/example_file2.m\")", "Cos(x)+I*Sin(x)");

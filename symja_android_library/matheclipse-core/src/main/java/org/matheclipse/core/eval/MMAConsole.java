@@ -40,6 +40,7 @@ public class MMAConsole {
 	private static int COUNTER = 1;
 
 	public static void main(final String args[]) {
+		Config.FILESYSTEM_ENABLED=true;
 		// distinguish between lower- and uppercase identifiers
 		Config.PARSER_USE_LOWERCASE_SYMBOLS = false;
 		F.initSymbols(null, null, true); // console.getDefaultSystemRulesFilename(),
