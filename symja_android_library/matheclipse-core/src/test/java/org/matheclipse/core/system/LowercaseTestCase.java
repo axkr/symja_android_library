@@ -549,6 +549,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BooleanConvert(! (a && b))", "!a||!b");
 		check("BooleanConvert(! (a || b || c))", "!a&&!b&&!c");
 		check("BooleanConvert(Xor(x,y))", "x&&!y||!x&&y");
+		check("BooleanConvert(Xor(p,q,r))", "p&&(q||!r)&&(!q||r)||!p&&(q&&!r||!q&&r)");
 		check("BooleanConvert(Nand(p, q, r))", "!p||!q||!r");
 		check("BooleanConvert(!Nand(p, q, r))", "p&&q&&r");
 		check("BooleanConvert(Nor(p, q, r))", "!p&&!q&&!r");
@@ -574,7 +575,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testBooleanMinimize() {
 		check("(a||b)&&(c||d)", "(a||b)&&(c||d)");
 		check("BooleanMinimize(a && b || ! a && b)", "b");
-		// check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c))", "");
+		// check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c))", "a&&!b||a&&!c||!a&&b||!b&&c");
 	}
 
 	public void testBooleanQ() {

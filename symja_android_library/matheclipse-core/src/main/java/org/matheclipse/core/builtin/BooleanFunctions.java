@@ -320,89 +320,95 @@ public final class BooleanFunctions {
 
 	private static class BooleanConvert extends AbstractFunctionEvaluator {
 
-		static class BooleanConvertVisitor extends VisitorExpr {
-			public BooleanConvertVisitor() {
-				super();
-			}
-
-			@Override
-			protected IExpr visitAST(IAST ast) {
-				if (ast.isNot()) {
-					if (ast.arg1().isAST()) {
-						IAST notArg1 = (IAST) ast.arg1();
-						if (notArg1.isASTSizeGE(Nand, 1)) {
-							return notArg1.apply(And);
-						} else if (notArg1.isASTSizeGE(Nor, 1)) {
-							return notArg1.apply(Or);
-						} else if (notArg1.isASTSizeGE(And, 1)) {
-							return convertNand(notArg1);
-						} else if (notArg1.isASTSizeGE(Or, 1)) {
-							return convertNor(notArg1);
-						}
-
-					}
-				} else if (ast.isASTSizeGE(Equivalent, 1)) {
-					return convertEquivalent(ast);
-				} else if (ast.isAST(Implies, 3)) {
-					return convertImplies(ast);
-				} else if (ast.isASTSizeGE(Nand, 1)) {
-					return convertNand(ast);
-				} else if (ast.isASTSizeGE(Nor, 1)) {
-					return convertNor(ast);
-				} else if (ast.isASTSizeGE(Xor, 3)) {
-					return convertXor(ast);
-				}
-				return super.visitAST(ast);
-			}
-
-			public IAST convertEquivalent(IAST ast) {
-				IAST term1 = ast.apply(F.And);
-				IAST term2 = term1.mapThread(F.Not(null), 1);
-				return F.Or(term1, term2);
-			}
-
-			public IAST convertImplies(IAST ast) {
-				return F.Or(F.Not(ast.arg1()), ast.arg2());
-			}
-
-			public IAST convertNand(IAST ast) {
-				return Lambda.forEachAppend(ast, F.Or(), x -> F.Not(x));
-			}
-
-			public IAST convertNor(IAST ast) {
-				return Lambda.forEachAppend(ast, F.And(), x -> F.Not(x));
-			}
-
-			public IAST convertXor(IAST ast) {
-				IExpr temp = ast.arg2();
-				if (ast.size() > 3) {
-					IASTAppendable clone = ast.copyAppendable();
-					clone.remove(1);
-					temp = convertXor(clone);
-				}
-				return F.Or(F.And(ast.arg1(), F.Not(temp)), F.And(F.Not(ast.arg1()), temp));
-			}
-		}
+		// static class BooleanConvertVisitor extends VisitorExpr {
+		// public BooleanConvertVisitor() {
+		// super();
+		// }
+		//
+		// @Override
+		// protected IExpr visitAST(IAST ast) {
+		// if (ast.isNot()) {
+		// if (ast.arg1().isAST()) {
+		// IAST notArg1 = (IAST) ast.arg1();
+		// if (notArg1.isASTSizeGE(Nand, 1)) {
+		// return notArg1.apply(And);
+		// } else if (notArg1.isASTSizeGE(Nor, 1)) {
+		// return notArg1.apply(Or);
+		// } else if (notArg1.isASTSizeGE(And, 1)) {
+		// return convertNand(notArg1);
+		// } else if (notArg1.isASTSizeGE(Or, 1)) {
+		// return convertNor(notArg1);
+		// }
+		//
+		// }
+		// } else if (ast.isASTSizeGE(Equivalent, 1)) {
+		// return convertEquivalent(ast);
+		// } else if (ast.isAST(Implies, 3)) {
+		// return convertImplies(ast);
+		// } else if (ast.isASTSizeGE(Nand, 1)) {
+		// return convertNand(ast);
+		// } else if (ast.isASTSizeGE(Nor, 1)) {
+		// return convertNor(ast);
+		// } else if (ast.isASTSizeGE(Xor, 3)) {
+		// return convertXor(ast);
+		// }
+		// return super.visitAST(ast);
+		// }
+		//
+		// public IAST convertEquivalent(IAST ast) {
+		// IAST term1 = ast.apply(F.And);
+		// IAST term2 = term1.mapThread(F.Not(null), 1);
+		// return F.Or(term1, term2);
+		// }
+		//
+		// public IAST convertImplies(IAST ast) {
+		// return F.Or(F.Not(ast.arg1()), ast.arg2());
+		// }
+		//
+		// public IAST convertNand(IAST ast) {
+		// return Lambda.forEachAppend(ast, F.Or(), x -> F.Not(x));
+		// }
+		//
+		// public IAST convertNor(IAST ast) {
+		// return Lambda.forEachAppend(ast, F.And(), x -> F.Not(x));
+		// }
+		//
+		// public IAST convertXor(IAST ast) {
+		// IExpr temp = ast.arg2();
+		// if (ast.size() > 3) {
+		// IASTAppendable clone = ast.copyAppendable();
+		// clone.remove(1);
+		// temp = convertXor(clone);
+		// }
+		// return F.Or(F.And(ast.arg1(), F.Not(temp)), F.And(F.Not(ast.arg1()), temp));
+		// }
+		// }
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
 
-			BooleanConvertVisitor bcVisitor = new BooleanConvertVisitor();
-			IExpr result = ast.arg1().accept(bcVisitor);
-			LogicFormula lf = new LogicFormula();
-			final Formula formula = lf.expr2BooleanFunction(result);
-			if (ast.size() == 3 && ast.arg2().isString()) {
-				IStringX arg2 = (IStringX) ast.arg2();
-				String method = arg2.toString();
-				if (method.equals("DNF") || method.equals("SOP")) {
+			// BooleanConvertVisitor bcVisitor = new BooleanConvertVisitor();
+			// IExpr result = ast.arg1().accept(bcVisitor);
+			try {
+				LogicFormula lf = new LogicFormula();
+				final Formula formula = lf.expr2BooleanFunction(ast.arg1());
+				if (ast.size() == 3 && ast.arg2().isString()) {
+					IStringX arg2 = (IStringX) ast.arg2();
+					String method = arg2.toString();
+					if (method.equals("DNF") || method.equals("SOP")) {
+						return lf.booleanFunction2Expr(formula.nnf());
+					}
+					if (method.equals("CNF") || method.equals("POS")) {
+						return lf.booleanFunction2Expr(formula.cnf());
+					}
+				} else {
 					return lf.booleanFunction2Expr(formula.nnf());
 				}
-				if (method.equals("CNF") || method.equals("POS")) {
-					return lf.booleanFunction2Expr(formula.cnf());
+			} catch (ClassCastException cce) {
+				if (Config.DEBUG) {
+					cce.printStackTrace();
 				}
-			} else {
-				return lf.booleanFunction2Expr(formula.nnf());
 			}
 			return F.NIL;
 		}
@@ -416,19 +422,38 @@ public final class BooleanFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
+			Validate.checkRange(ast, 2, 3);
 
 			if (ast.arg1().isASTSizeGE(F.Or, 3)) {
 				try {
 					QuineMcCluskyFormula f = QuineMcCluskyFormula.read((IAST) ast.arg1());
 					f.reduceToPrimeImplicants();
 					f.reducePrimeImplicantsToSubset();
-					return f.toExpr();
+					IExpr arg1 = f.toExpr();
+
+					LogicFormula lf = new LogicFormula();
+					final Formula formula = lf.expr2BooleanFunction(arg1);
+					if (ast.size() == 3 && ast.arg2().isString()) {
+						IStringX arg2 = (IStringX) ast.arg2();
+						String method = arg2.toString();
+						if (method.equals("DNF") || method.equals("SOP")) {
+							return lf.booleanFunction2Expr(formula.nnf());
+						}
+						if (method.equals("CNF") || method.equals("POS")) {
+							return lf.booleanFunction2Expr(formula.cnf());
+						}
+					} else {
+						return lf.booleanFunction2Expr(formula.nnf());
+					}
+
 				} catch (BooleanFunctionConversionException bfc) {
 					if (Config.DEBUG) {
 						bfc.printStackTrace();
 					}
-					return F.NIL;
+				} catch (ClassCastException cce) {
+					if (Config.DEBUG) {
+						cce.printStackTrace();
+					}
 				}
 			}
 
@@ -2006,7 +2031,9 @@ public final class BooleanFunctions {
 				}
 				return bruteForceSatisfiableQ(arg1, userDefinedVariables, 1) ? F.True : F.False;
 			} catch (ClassCastException cce) {
-
+				if (Config.DEBUG) {
+					cce.printStackTrace();
+				}
 			}
 			return F.NIL;
 		}
@@ -2080,23 +2107,30 @@ public final class BooleanFunctions {
 
 			IASTMutable userDefinedVariables;
 			IExpr arg1 = ast.arg1();
-			if (ast.isAST2()) {
-				if (ast.arg2().isList()) {
-					userDefinedVariables = ((IAST) ast.arg2()).copy();
-					EvalAttributes.sort(userDefinedVariables);
+			try {
+				if (ast.isAST2()) {
+					if (ast.arg2().isList()) {
+						userDefinedVariables = ((IAST) ast.arg2()).copy();
+						EvalAttributes.sort(userDefinedVariables);
+					} else {
+						userDefinedVariables = List(ast.arg2());
+					}
+					VariablesSet vSet = new VariablesSet(arg1);
+					IAST variables = vSet.getVarList();
+					if (variables.equals(userDefinedVariables)) {
+						return logicNGTautologyQ(arg1);
+					}
 				} else {
-					userDefinedVariables = List(ast.arg2());
-				}
-				VariablesSet vSet = new VariablesSet(arg1);
-				IAST variables = vSet.getVarList();
-				if (variables.equals(userDefinedVariables)) {
 					return logicNGTautologyQ(arg1);
 				}
-			} else {
-				return logicNGTautologyQ(arg1);
-			}
 
-			return bruteForceTautologyQ(arg1, userDefinedVariables, 1) ? F.True : F.False;
+				return bruteForceTautologyQ(arg1, userDefinedVariables, 1) ? F.True : F.False;
+			} catch (ClassCastException cce) {
+				if (Config.DEBUG) {
+					cce.printStackTrace();
+				}
+			}
+			return F.NIL;
 		}
 
 		/**
