@@ -5717,7 +5717,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Range(5)", "{1,2,3,4,5}");
 		check("Range(-3, 2)", "{-3,-2,-1,0,1,2}");
 		check("Range(0, 2, 1/3)", "{0,1/3,2/3,1,4/3,5/3,2}");
-
+		check("Range(1.2, 2.2, 0.15)", "{1.2,1.35,1.5,1.65,1.8,1.95,2.1}");
+		
 		check("Range(0)", "{}");
 		check("Range(1)", "{1}");
 		check("Range(-1)", "{}");

@@ -2181,21 +2181,33 @@ public final class ListFunctions {
 			if (ast.isAST1() && ast.arg1().isInteger()) {
 				try {
 					int size = ((IInteger) ast.arg1()).toInt();
-					if (size >= 0) {
-						IASTAppendable result = F.ListAlloc(size);
-						return result.appendArgs(size + 1, i -> F.integer(i));
-						// for (int i = 1; i <= size; i++) {
-						// result.append(F.integer(i));
-						// }
-						// return result;
-					}
-					return F.List();
+					return range(size);
 				} catch (final ArithmeticException ae) {
 				}
 
 				return F.NIL;
 			}
 			return evaluateTable(ast, List(), engine);
+		}
+
+		public static IExpr range(int size) {
+			return range(1, size + 1);
+		}
+
+		/**
+		 * Range.of(2, 7) gives {2, 3, 4, 5, 6}
+		 * 
+		 * @param startInclusive
+		 * @param endExclusive
+		 * @return
+		 */
+		public static IExpr range(int startInclusive, int endExclusive) {
+			int size = endExclusive - startInclusive;
+			if (size >= 0) {
+				IASTAppendable result = F.ListAlloc(size + 1);
+				return result.appendArgs(startInclusive, endExclusive, i -> F.integer(i));
+			}
+			return F.List();
 		}
 
 		public IExpr evaluateTable(final IAST ast, final IAST resultList, EvalEngine engine) {
