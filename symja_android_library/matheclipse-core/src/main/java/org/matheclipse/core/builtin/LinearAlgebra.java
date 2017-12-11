@@ -2999,21 +2999,25 @@ public final class LinearAlgebra {
 			Validate.checkRange(ast, 2, 3);
 
 			// TODO generalize for tensors
-			final int[] dim = ast.arg1().isMatrix();
+			IExpr arg1 = ast.arg1();
+			IExpr header = F.Plus;
+			if (ast.size() > 2) {
+				header = ast.arg2();
+			}
+
+			final int[] dim = arg1.isMatrix();
 			if (dim != null) {
-				final IAST mat = (IAST) ast.arg1();
-				IASTAppendable tr;
+				final IAST mat = (IAST) arg1;
 				int len = dim[0] < dim[1] ? dim[0] : dim[1];
-				if (ast.size() > 2) {
-					tr = F.ast(ast.arg2(), len, true);
-				} else {
-					tr = F.ast(F.Plus, len, true);
-				}
-				IAST row;
-				for (int i = 1; i <= len; i++) {
-					row = (IAST) mat.get(i);
-					tr.set(i, row.get(i));
-				}
+				IASTAppendable tr = F.ast(header, len, true);
+				mat.forEach(1, len + 1, (x, i) -> tr.set(i, ((IAST) x).get(i)));
+				return tr;
+			}
+
+			final int len = arg1.isVector();
+			if (len >= 0) {
+				IASTAppendable tr = F.ast(header, len, true);
+				((IAST) arg1).forEach(1, len + 1, (x, i) -> tr.set(i, x));
 				return tr;
 			}
 			return F.NIL;

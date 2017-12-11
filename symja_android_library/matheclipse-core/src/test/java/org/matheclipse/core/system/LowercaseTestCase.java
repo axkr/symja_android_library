@@ -7749,6 +7749,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTr() {
+		check("Tr({1,2,3})", "6");
+		check("Tr({{}})", "0");
 		check("Tr({{1, 2}, {4, 5}, {7, 8}})", "6");
 		check("Tr({{1, 2, 3}, {4, 5, 6} })", "6");
 		check("Tr({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", "15");
