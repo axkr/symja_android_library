@@ -218,31 +218,15 @@ class QuineMcCluskyTerm {
 			for (int j = 1; j < vars.size(); j++) {
 				t.add(NIL);
 			}
-			if (temp.isAST(F.And)) {
+			if (temp.isNot()) {
+				addAndElement(vars, temp, t);
+			} else if (temp.isSymbol()) {
+				addAndElement(vars, temp, t);
+			} else if (temp.isAST(F.And)) {
 				IAST andAST = (IAST) temp;
 				for (int j = 1; j < andAST.size(); j++) {
 					a = andAST.get(j);
-					if (a.isAST(F.Not, 2)) {
-						IExpr arg1 = a.getAt(1);
-						if (!arg1.isSymbol()) {
-							throw new BooleanFunctionConversionException();
-						}
-						for (int j2 = 1; j2 < vars.size(); j2++) {
-							if (arg1.equals(vars.get(j2))) {
-								t.set(j2 - 1, (byte) 0);
-								break;
-							}
-						}
-					} else if (a.isSymbol()) {
-						for (int j2 = 1; j2 < vars.size(); j2++) {
-							if (a.equals(vars.get(j2))) {
-								t.set(j2 - 1, (byte) 1);
-								break;
-							}
-						}
-					} else {
-						throw new BooleanFunctionConversionException();
-					}
+					addAndElement(vars, a, t);
 				}
 			} else {
 				throw new BooleanFunctionConversionException();
@@ -252,6 +236,30 @@ class QuineMcCluskyTerm {
 			}
 		}
 		return terms;
+	}
+
+	public static void addAndElement(final IAST vars, IExpr a, ArrayList<Byte> t)
+			throws BooleanFunctionConversionException {
+		if (a.isNot()) {
+			IExpr arg1 = a.getAt(1);
+			if (!arg1.isSymbol()) {
+				throw new BooleanFunctionConversionException();
+			}
+			for (int j2 = 1; j2 < vars.size(); j2++) {
+				if (arg1.equals(vars.get(j2))) {
+					t.set(j2 - 1, (byte) 0);
+					return;
+				}
+			}
+		} else if (a.isSymbol()) {
+			for (int j2 = 1; j2 < vars.size(); j2++) {
+				if (a.equals(vars.get(j2))) {
+					t.set(j2 - 1, (byte) 1);
+					return;
+				}
+			}
+		}
+		throw new BooleanFunctionConversionException();
 	}
 
 	private static void addBytes(ArrayList<QuineMcCluskyTerm> terms, final ArrayList<Byte> t) {
