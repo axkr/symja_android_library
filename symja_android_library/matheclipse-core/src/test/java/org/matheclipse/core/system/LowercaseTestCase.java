@@ -537,6 +537,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BooleanConvert(! (a && b), \"CNF\")", "!a||!b");
 		check("BooleanConvert(! (a || b || c), \"CNF\")", "!a&&!b&&!c");
 		check("BooleanConvert(Xor(x,y), \"CNF\")", "(x||y)&&(!x||!y)");
+		check("BooleanConvert(Xor(p,q,r),\"CNF\")", "(p||q||r)&&(p||!q||!r)&&(!p||q||!r)&&(!p||!q||r)");
 		check("BooleanConvert(Nand(p, q, r), \"CNF\")", "!p||!q||!r");
 		check("BooleanConvert(!Nand(p, q, r), \"CNF\")", "p&&q&&r");
 		check("BooleanConvert(Nor(p, q, r), \"CNF\")", "!p&&!q&&!r");
@@ -549,7 +550,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BooleanConvert(! (a && b))", "!a||!b");
 		check("BooleanConvert(! (a || b || c))", "!a&&!b&&!c");
 		check("BooleanConvert(Xor(x,y))", "x&&!y||!x&&y");
-		check("BooleanConvert(Xor(p,q,r))", "p&&(q||!r)&&(!q||r)||!p&&(q&&!r||!q&&r)");
+		check("BooleanConvert(Xor(p,q,r))", "p&&q&&r||p&&!q&&!r||!p&&q&&!r||!p&&!q&&r");
 		check("BooleanConvert(Nand(p, q, r))", "!p||!q||!r");
 		check("BooleanConvert(!Nand(p, q, r))", "p&&q&&r");
 		check("BooleanConvert(Nor(p, q, r))", "!p&&!q&&!r");
@@ -573,8 +574,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBooleanMinimize() {
-		check("(a||b)&&(c||d)", "(a||b)&&(c||d)");
-		check("BooleanMinimize(a && b || ! a && b)", "b");
+
+		// check("BooleanMinimize((a||b)&&(c||d))", "a&&c||a&&d||b&&c||b&&d");
+		// check("BooleanMinimize((a||b)&&(c||d), \"CNF\")", "(a||b)&&(c||d)");
+		// check("BooleanMinimize(a && b || ! a && b)", "b");
+		// check("BooleanMinimize(a && b || ! a && b, \"CNF\")", "b");
 		// check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c))", "a&&!b||a&&!c||!a&&b||!b&&c");
 	}
 
@@ -5718,7 +5722,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Range(-3, 2)", "{-3,-2,-1,0,1,2}");
 		check("Range(0, 2, 1/3)", "{0,1/3,2/3,1,4/3,5/3,2}");
 		check("Range(1.2, 2.2, 0.15)", "{1.2,1.35,1.5,1.65,1.8,1.95,2.1}");
-		
+
 		check("Range(0)", "{}");
 		check("Range(1)", "{1}");
 		check("Range(-1)", "{}");

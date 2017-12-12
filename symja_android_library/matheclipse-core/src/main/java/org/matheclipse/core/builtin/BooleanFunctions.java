@@ -1,19 +1,15 @@
 package org.matheclipse.core.builtin;
 
-import static org.matheclipse.core.expression.F.And;
-import static org.matheclipse.core.expression.F.Equivalent;
-import static org.matheclipse.core.expression.F.Implies;
 import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Nand;
-import static org.matheclipse.core.expression.F.Nor;
-import static org.matheclipse.core.expression.F.Or;
-import static org.matheclipse.core.expression.F.Xor;
 
 import org.logicng.datastructures.Tristate;
 import org.logicng.formulas.Formula;
 import org.logicng.formulas.FormulaFactory;
+import org.logicng.formulas.FormulaTransformation;
 import org.logicng.solvers.MiniSat;
 import org.logicng.solvers.SATSolver;
+import org.logicng.transformations.cnf.CNFFactorization;
+import org.logicng.transformations.dnf.DNFFactorization;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.boole.QuineMcCluskyFormula;
 import org.matheclipse.core.convert.LogicFormula;
@@ -39,7 +35,6 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITernaryComparator;
-import org.matheclipse.core.visit.VisitorExpr;
 
 public final class BooleanFunctions {
 	public final static Equal CONST_EQUAL = new Equal();
@@ -391,26 +386,45 @@ public final class BooleanFunctions {
 			// BooleanConvertVisitor bcVisitor = new BooleanConvertVisitor();
 			// IExpr result = ast.arg1().accept(bcVisitor);
 			try {
-				LogicFormula lf = new LogicFormula();
-				final Formula formula = lf.expr2BooleanFunction(ast.arg1());
-				if (ast.size() == 3 && ast.arg2().isString()) {
-					IStringX arg2 = (IStringX) ast.arg2();
-					String method = arg2.toString();
-					if (method.equals("DNF") || method.equals("SOP")) {
-						return lf.booleanFunction2Expr(formula.nnf());
-					}
-					if (method.equals("CNF") || method.equals("POS")) {
-						return lf.booleanFunction2Expr(formula.cnf());
-					}
-				} else {
-					return lf.booleanFunction2Expr(formula.nnf());
+
+				FormulaTransformation transformation = transformation(ast, engine);
+				if (transformation != null) {
+					LogicFormula lf = new LogicFormula();
+					final Formula formula = lf.expr2BooleanFunction(ast.arg1());
+					return lf.booleanFunction2Expr(formula.transform(transformation));
 				}
+
 			} catch (ClassCastException cce) {
 				if (Config.DEBUG) {
 					cce.printStackTrace();
 				}
 			}
 			return F.NIL;
+		}
+
+		/**
+		 * Get the transformation from the ast options. Default is DNF.
+		 * 
+		 * @param ast
+		 * @param engine
+		 * @return <code>null</code> if no or wrong method is defined as option
+		 */
+		private static FormulaTransformation transformation(final IAST ast, EvalEngine engine) {
+			int size = ast.size() - 1;
+			FormulaTransformation transformation = new DNFFactorization();
+			if (size > 1 && ast.get(size).isString()) {
+				IStringX arg2 = (IStringX) ast.arg2();
+				String method = arg2.toString();
+				if (method.equals("DNF") || method.equals("SOP")) {
+					return transformation;
+				} else if (method.equals("CNF") || method.equals("POS")) {
+					transformation = new CNFFactorization();
+					return transformation;
+				}
+				engine.printMessage("Unknown method: " + method);
+				return null;
+			}
+			return transformation;
 		}
 	}
 
@@ -424,38 +438,33 @@ public final class BooleanFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
 
-			if (ast.arg1().isASTSizeGE(F.Or, 3)) {
-				try {
-					QuineMcCluskyFormula f = QuineMcCluskyFormula.read((IAST) ast.arg1());
-					f.reduceToPrimeImplicants();
-					f.reducePrimeImplicantsToSubset();
-					IExpr arg1 = f.toExpr();
-
-					LogicFormula lf = new LogicFormula();
-					final Formula formula = lf.expr2BooleanFunction(arg1);
-					if (ast.size() == 3 && ast.arg2().isString()) {
-						IStringX arg2 = (IStringX) ast.arg2();
-						String method = arg2.toString();
-						if (method.equals("DNF") || method.equals("SOP")) {
-							return lf.booleanFunction2Expr(formula.nnf());
-						}
-						if (method.equals("CNF") || method.equals("POS")) {
-							return lf.booleanFunction2Expr(formula.cnf());
-						}
-					} else {
-						return lf.booleanFunction2Expr(formula.nnf());
-					}
-
-				} catch (BooleanFunctionConversionException bfc) {
-					if (Config.DEBUG) {
-						bfc.printStackTrace();
-					}
-				} catch (ClassCastException cce) {
-					if (Config.DEBUG) {
-						cce.printStackTrace();
-					}
-				}
-			}
+			// QuineMcClusky contains bugs
+			
+			// if (ast.arg1().isASTSizeGE(F.Or, 3)) {
+			// try {
+			// QuineMcCluskyFormula f = Formula.read((IAST) ast.arg1());
+			// f.reduceToPrimeImplicants();
+			// f.reducePrimeImplicantsToSubset();
+			// IExpr arg1 = f.toExpr();
+			//
+			// FormulaTransformation transformation = BooleanConvert.transformation(ast, engine);
+			// if (transformation != null) {
+			// LogicFormula lf = new LogicFormula();
+			// final Formula formula = lf.expr2BooleanFunction(arg1);
+			// return lf.booleanFunction2Expr(formula.transform(transformation));
+			// }
+			//
+			//
+			// } catch (BooleanFunctionConversionException bfc) {
+			// if (Config.DEBUG) {
+			// bfc.printStackTrace();
+			// }
+			// } catch (ClassCastException cce) {
+			// if (Config.DEBUG) {
+			// cce.printStackTrace();
+			// }
+			// }
+			// }
 
 			return F.NIL;
 		}
