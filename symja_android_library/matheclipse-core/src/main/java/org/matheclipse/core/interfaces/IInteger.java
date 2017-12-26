@@ -23,7 +23,7 @@ public interface IInteger extends IRational {
 	 * @return
 	 */
 	public IInteger add(IInteger val);
-	
+
 	/**
 	 * Returns the number of bits in the minimal two's-complement representation of this IInteger, <i>excluding</i> a
 	 * sign bit. For positive IIntegers, this is equivalent to the number of bits in the ordinary binary representation.
@@ -111,8 +111,16 @@ public interface IInteger extends IRational {
 	public long integerLength(IInteger radix);
 
 	/**
-	 * Converts this large integer to <code>int</code>; unlike {@link #toInt} this method raises no exception, if this
-	 * integer cannot be represented by an <code>int</code> type.
+	 * Converts this integer to <code>byte</code>; this method raises no exception, if this integer cannot be
+	 * represented by an <code>byte</code> type.
+	 * 
+	 * @return the numeric value represented by this integer after conversion to type <code>byte</code>.
+	 */
+	public byte byteValue();
+
+	/**
+	 * Converts this integer to <code>int</code>; unlike {@link #toInt} this method raises no exception, if this integer
+	 * cannot be represented by an <code>int</code> type.
 	 * 
 	 * @return the numeric value represented by this integer after conversion to type <code>int</code>.
 	 */

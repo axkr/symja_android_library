@@ -245,7 +245,7 @@ public class TensorFunctions {
 			Validate.checkSize(ast, 2);
 			if (ast.arg1().isList()) {
 				IAST list = (IAST) ast.arg1();
-				List<Integer> intList = LinearAlgebra.getDimensions((IAST) ast.arg1(), list.head(), Integer.MAX_VALUE);
+				List<Integer> intList = LinearAlgebra.dimensions((IAST) ast.arg1(), list.head(), Integer.MAX_VALUE);
 				return F.ZZ(intList.size());
 			}
 			return F.NIL;

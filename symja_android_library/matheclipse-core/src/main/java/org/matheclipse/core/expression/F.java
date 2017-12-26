@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
-
+  
 import javax.annotation.Nonnull;
 
 import org.apfloat.Apcomplex;
@@ -478,7 +478,7 @@ public class F {
 	public final static IBuiltInSymbol InexactNumberQ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inexactnumberq" : "InexactNumberQ");
 	public final static IBuiltInSymbol Information = initFinalSymbol(
-					Config.PARSER_USE_LOWERCASE_SYMBOLS ? "information" : "Information");
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "information" : "Information");
 	public final static IBuiltInSymbol Insert = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "insert" : "Insert",
 			new org.matheclipse.core.builtin.function.Insert());
@@ -680,6 +680,8 @@ public class F {
 	public final static IBuiltInSymbol BesselJ = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "besselj" : "BesselJ");
 	public final static IBuiltInSymbol Beta = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "beta" : "Beta");
+	public final static IBuiltInSymbol BetaRegularized = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "betaregularized" : "BetaRegularized");
 	public final static IBuiltInSymbol Binomial = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "binomial" : "Binomial");
 	public final static IBuiltInSymbol BitLength = initFinalSymbol(
@@ -844,6 +846,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "expand" : "Expand");
 	public final static IBuiltInSymbol ExpandAll = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "expandall" : "ExpandAll");
+	public final static IBuiltInSymbol Expectation = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "expectation" : "Expectation");
 	public final static IBuiltInSymbol Export = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "export" : "Export");
 	public final static IBuiltInSymbol ExtendedGCD = initFinalSymbol(
@@ -889,6 +893,8 @@ public class F {
 	public final static IBuiltInSymbol FullSimplify = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fullsimplify" : "FullSimplify");
 	public final static IBuiltInSymbol Gamma = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "gamma" : "Gamma");
+	public final static IBuiltInSymbol GammaRegularized = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "gammaregularized" : "GammaRegularized");
 	public final static IBuiltInSymbol Gather = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "gather" : "Gather");
 	public final static IBuiltInSymbol GCD = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "gcd" : "GCD");
@@ -920,6 +926,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hypergeometric1f1" : "Hypergeometric1F1");
 	public final static IBuiltInSymbol Hypergeometric2F1 = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hypergeometric2f1" : "Hypergeometric2F1");
+	public final static IBuiltInSymbol HypergeometricPFQRegularized = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hypergeometricpfqregularized" : "HypergeometricPFQRegularized");
 	public final static IBuiltInSymbol IdentityMatrix = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "identitymatrix" : "IdentityMatrix");
 	public final static IBuiltInSymbol Im = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "im" : "Im");
@@ -927,6 +935,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "import" : "Import");
 	public final static IBuiltInSymbol Increment = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "increment" : "Increment");
+	public final static IBuiltInSymbol Inequality = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inequality" : "Inequality");
 	public final static IBuiltInSymbol Inner = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inner" : "Inner");
 	public final static IBuiltInSymbol IntegerExponent = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerexponent" : "IntegerExponent");
@@ -1186,6 +1196,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "randomreal" : "RandomReal");
 	public final static IBuiltInSymbol RandomSample = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "randomsample" : "RandomSample");
+	public final static IBuiltInSymbol RandomVariate = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "randomvariate" : "RandomVariate");
 	public final static IBuiltInSymbol Range = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "range" : "Range");
 	public final static IBuiltInSymbol Rationalize = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rationalize" : "Rationalize");
@@ -1361,7 +1373,7 @@ public class F {
 	public final static IBuiltInSymbol Zeta = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "zeta" : "Zeta");
 
 	public final static IBuiltInSymbol usage = initFinalSymbol("usage");
-	
+
 	public final static ISymbol a = initFinalHiddenSymbol("a");
 	public final static ISymbol b = initFinalHiddenSymbol("b");
 	public final static ISymbol c = initFinalHiddenSymbol("c");
@@ -2867,6 +2879,10 @@ public class F {
 		return binaryAST2(Beta, a0, a1);
 	}
 
+	public static IAST BetaRegularized(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(BetaRegularized, a0, a1, a2);
+	}
+
 	public static IAST Break() {
 		return headAST0(Break);
 	}
@@ -3873,6 +3889,14 @@ public class F {
 		return binaryAST2(Gamma, a0, a1);
 	}
 
+	public static IAST GammaRegularized(final IExpr a0, final IExpr a1) {
+		return binaryAST2(GammaRegularized, a0, a1);
+	}
+
+	public static IAST GammaRegularized(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(GammaRegularized, a0, a1, a2);
+	}
+
 	public static IAST GCD(final IExpr a0) {
 		return unaryAST1(GCD, a0);
 	}
@@ -3944,7 +3968,11 @@ public class F {
 	public static IAST HypergeometricPFQ(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(HypergeometricPFQ, a0, a1, a2);
 	}
-
+	
+	public static IAST HypergeometricPFQRegularized(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(HypergeometricPFQRegularized, a0, a1, a2);
+	}
+	
 	public static IAST Identity(final IExpr a0) {
 		return unaryAST1(Identity, a0);
 	}
@@ -3979,6 +4007,10 @@ public class F {
 
 	public static IAST Increment(final IExpr a) {
 		return unaryAST1(Increment, a);
+	}
+
+	public static IASTAppendable Inequality(final IExpr... a) {
+		return ast(a, Inequality);
 	}
 
 	/**
@@ -4461,11 +4493,11 @@ public class F {
 	}
 
 	public static IAST LessEqual(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST3(Less, a0, a1, a2);
+		return ternaryAST3(LessEqual, a0, a1, a2);
 	}
 
 	public static IAST LessEqual(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
-		return quaternary(Less, a0, a1, a2, a3);
+		return quaternary(LessEqual, a0, a1, a2, a3);
 	}
 
 	public static IAST Limit(final IExpr a0, final IExpr a1) {
@@ -4571,10 +4603,8 @@ public class F {
 		return ast(a, List);
 	}
 
-	public static IASTAppendable List(final IExpr... a) {// 0, final IExpr a1, final IExpr
-		// a2) {
+	public static IASTAppendable List(final IExpr... a) {
 		return ast(a, List);
-		// return ternary(List, a0, a1, a2);
 	}
 
 	public static IAST List(final long... numbers) {

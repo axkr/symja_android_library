@@ -11,12 +11,10 @@ import org.logicng.solvers.SATSolver;
 import org.logicng.transformations.cnf.CNFFactorization;
 import org.logicng.transformations.dnf.DNFFactorization;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.boole.QuineMcCluskyFormula;
 import org.matheclipse.core.convert.LogicFormula;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.BooleanFunctionConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -29,6 +27,7 @@ import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -57,6 +56,7 @@ public final class BooleanFunctions {
 		F.Greater.setEvaluator(CONST_GREATER);
 		F.GreaterEqual.setEvaluator(new GreaterEqual());
 		F.Implies.setEvaluator(new Implies());
+		F.Inequality.setEvaluator(new Inequality());
 		F.Less.setEvaluator(CONST_LESS);
 		F.LessEqual.setEvaluator(new LessEqual());
 		F.Max.setEvaluator(new Max());
@@ -439,7 +439,7 @@ public final class BooleanFunctions {
 			Validate.checkRange(ast, 2, 3);
 
 			// QuineMcClusky contains bugs
-			
+
 			// if (ast.arg1().isASTSizeGE(F.Or, 3)) {
 			// try {
 			// QuineMcCluskyFormula f = Formula.read((IAST) ast.arg1());
@@ -1237,6 +1237,58 @@ public final class BooleanFunctions {
 		}
 	}
 
+	private final static class Inequality extends AbstractEvaluator {
+		final static IBuiltInSymbol[] COMPARATOR_SYMBOLS = { F.Greater, F.GreaterEqual, F.Less, F.LessEqual };
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 4, Integer.MAX_VALUE);
+
+			if (ast.size() == 4) {
+				for (IBuiltInSymbol sym : COMPARATOR_SYMBOLS) {
+					if (sym.equals(ast.arg2())) {
+						return F.binary(ast.arg2(), ast.arg1(), ast.arg3());
+					}
+				}
+				return F.NIL;
+			}
+			return inequality(ast, engine);
+		}
+
+		/**
+		 * 
+		 * @param ast
+		 *            an Inequality AST with <code>size()>=4</code>.
+		 * @param engine
+		 * @return
+		 */
+		public IExpr inequality(final IAST ast, EvalEngine engine) {
+			for (int i = 3; i < ast.size(); i += 2) {
+				IExpr temp = F.NIL;
+				for (IBuiltInSymbol sym : COMPARATOR_SYMBOLS) {
+					if (sym.equals(ast.get(i - 1))) {
+						temp = engine.evaluate(F.binary(ast.get(i - 1), ast.get(i - 2), ast.get(i)));
+					}
+				}
+
+				if (temp.isFalse()) {
+					return F.False;
+				} else if (temp.isTrue()) {
+					continue;
+				}
+
+				return temp;
+			}
+			return F.True;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+
+	}
+
 	/**
 	 * <code>&lt;</code> operator implementation.
 	 * 
@@ -1412,7 +1464,7 @@ public final class BooleanFunctions {
 
 		private IExpr maximum(IAST list, boolean flattenedList) {
 			boolean evaled = false;
-			int j = 1;
+			// int j = 1;
 			IASTAppendable f = Lambda.remove(list, x -> x.isNegativeInfinity());
 			if (f.isPresent()) {
 				if (f.isAST0()) {
@@ -2392,6 +2444,21 @@ public final class BooleanFunctions {
 		}
 
 		return CONST_EQUAL.simplifyCompare(arg1, arg2, F.Equal);
+	}
+
+	/**
+	 * Transform <code>Inequality()</code> AST to <code>And()</code> expression.
+	 * 
+	 * @param ast
+	 *            an Inequality AST with <code>size()>=4</code>.
+	 * @return
+	 */
+	public static IAST inequality2And(final IAST ast) {
+		IASTAppendable result = F.And();
+		for (int i = 3; i < ast.size(); i += 2) {
+			result.append(F.binary(ast.get(i - 1), ast.get(i - 2), ast.get(i)));
+		}
+		return result;
 	}
 
 	public static IExpr equals(final IAST ast) {

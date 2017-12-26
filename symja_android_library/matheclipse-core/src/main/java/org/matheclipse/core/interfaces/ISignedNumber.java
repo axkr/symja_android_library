@@ -2,7 +2,7 @@ package org.matheclipse.core.interfaces;
 
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.expression.Num; 
 
 /**
  * interface for "ractional" numbers (i.e. IInteger or IFraction)
@@ -13,7 +13,7 @@ public interface ISignedNumber extends INumber {
 	/** {@inheritDoc} */
 	@Override
 	public ISignedNumber abs();
-
+	
 	/**
 	 * Get a <code>Apfloat</code> number wrapped into an <code>ApfloatNum</code> object.
 	 * 

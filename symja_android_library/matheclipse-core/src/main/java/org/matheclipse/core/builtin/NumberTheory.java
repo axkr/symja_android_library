@@ -39,7 +39,6 @@ import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
-import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.AbstractIntegerSym;
@@ -50,6 +49,7 @@ import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -307,6 +307,9 @@ public final class NumberTheory {
 
 		@Override
 		public IExpr e2ObjArg(final IExpr n, final IExpr k) {
+			if (k.isOne()) {
+				return n;
+			}
 			if (k.isInteger()) {
 				if (n.isInteger()) {
 					// use e2IntArg() method
@@ -334,6 +337,11 @@ public final class NumberTheory {
 			}
 			if (n.equals(k)) {
 				return F.C1;
+			}
+			if (n instanceof INum && k instanceof INum) {
+				// Gamma(n+1)/(Gamma(k+1)*Gamma(n-k+1))
+				return F.Times(F.Power(F.Gamma(F.Plus(F.C1, k)), -1), F.Gamma(F.Plus(F.C1, n)),
+						F.Power(F.Gamma(F.Plus(F.C1, F.Negate(k), n)), -1));
 			}
 			IExpr difference = F.eval(F.Subtract(n, F.C1));
 			if (difference.equals(k)) {

@@ -1,5 +1,5 @@
-package org.matheclipse.core.expression;
-
+﻿package org.matheclipse.core.expression;
+ 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,6 +23,7 @@ import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.function.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -1155,6 +1156,9 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 		if (this.equals(F.Slot2)) {
 			return prefix + "Slot2";
+		}
+		if (temp.equals(F.Inequality) && size() >= 4) {
+			return BooleanFunctions.inequality2And(this).internalJavaString(symbolsAsFactoryMethod, depth, useOperators, usePrefix);
 		}
 		if (temp.equals(F.Rational) && size() == 3) {
 			if (arg1().isInteger() && arg2().isInteger()) {

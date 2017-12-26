@@ -445,6 +445,11 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
+	public byte byteValue() {
+		return fBigIntValue.byteValue();
+	}
+	
+	@Override
 	public int intValue() {
 		return fBigIntValue.intValue();
 	}

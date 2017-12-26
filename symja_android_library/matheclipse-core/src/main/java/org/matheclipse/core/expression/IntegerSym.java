@@ -427,6 +427,11 @@ public class IntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
+	public byte byteValue() {
+		return (byte)fIntValue;
+	}
+	
+	@Override
 	public int intValue() {
 		return fIntValue;
 	}
