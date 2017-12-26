@@ -3,7 +3,9 @@ package org.matheclipse.core.reflection.system;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.Charset; 
+
+import javax.imageio.ImageIO;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
@@ -18,6 +20,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
+import org.matheclipse.core.io.Filename;
+import org.matheclipse.core.io.ImageFormat;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -41,6 +45,7 @@ public class Import extends AbstractEvaluator {
 			}
 
 			IStringX arg1 = (IStringX) ast.arg1();
+			String fileName = arg1.toString();
 			String format = "String";
 			if (ast.size() > 2) {
 				if (!(ast.arg2() instanceof IStringX)) {
@@ -48,12 +53,12 @@ public class Import extends AbstractEvaluator {
 				}
 				format = ((IStringX) ast.arg2()).toString();
 			}
-
 			FileReader reader = null;
+
 			try {
 
 				if (format.equals("Table")) {
-					reader = new FileReader(arg1.toString());
+					reader = new FileReader(fileName);
 					AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
 					final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
 
@@ -71,7 +76,11 @@ public class Import extends AbstractEvaluator {
 					}
 					return rowList;
 				} else if (format.equals("String")) {
-					File file = new File(arg1.toString());
+					File file = new File(fileName);
+					Filename filename = new Filename(file);
+					if (filename.hasExtension("jpg") || filename.hasExtension("png")) {
+						return ImageFormat.from(ImageIO.read(file));
+					}
 					AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
 					final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
 					String str = com.google.common.io.Files.toString(file, Charset.defaultCharset());
@@ -80,9 +89,9 @@ public class Import extends AbstractEvaluator {
 				}
 
 			} catch (IOException ioe) {
-				engine.printMessage("Import: file " + arg1.toString() + " not found!");
+				engine.printMessage("Import: file " + fileName + " not found!");
 			} catch (SyntaxError se) {
-				engine.printMessage("Import: file " + arg1.toString() + " syntax error!");
+				engine.printMessage("Import: file " + fileName + " syntax error!");
 			} finally {
 				if (reader != null) {
 					try {
