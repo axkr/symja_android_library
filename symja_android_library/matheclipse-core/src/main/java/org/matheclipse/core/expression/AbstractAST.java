@@ -1,5 +1,5 @@
-﻿package org.matheclipse.core.expression;
- 
+package org.matheclipse.core.expression;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1158,7 +1158,8 @@ public abstract class AbstractAST implements IASTMutable {
 			return prefix + "Slot2";
 		}
 		if (temp.equals(F.Inequality) && size() >= 4) {
-			return BooleanFunctions.inequality2And(this).internalJavaString(symbolsAsFactoryMethod, depth, useOperators, usePrefix);
+			return BooleanFunctions.inequality2And(this).internalJavaString(symbolsAsFactoryMethod, depth, useOperators,
+					usePrefix);
 		}
 		if (temp.equals(F.Rational) && size() == 3) {
 			if (arg1().isInteger() && arg2().isInteger()) {
