@@ -458,7 +458,7 @@ public class StatisticsFunctions {
 				IExpr m = dist.arg2();
 				// Piecewise({{((k/m)^(-1 - n)*n)/(E^(k/m)^(-n)*m), k > 0}}, 0)
 				return F.Piecewise(
-						F.List(F.List(F.Times(F.Power(F.Times(k, F.Power(F.m, -1)), F.Plus(F.CN1, F.Negate(n))),
+						F.List(F.List(F.Times(F.Power(F.Times(k, F.Power(m, -1)), F.Plus(F.CN1, F.Negate(n))),
 								F.Power(F.Times(F.Power(F.E, F.Power(F.Times(k, F.Power(m, -1)), F.Negate(n))), m), -1),
 								n), F.Greater(k, F.C0))),
 						F.C0);
@@ -724,10 +724,10 @@ public class StatisticsFunctions {
 														F.List(F.C1, F.Plus(F.C1, F.Negate(n), F.Floor(k)),
 																F.Plus(F.C1, F.Negate(ns), F.Floor(k))),
 														F.List(F.Plus(F.C2, F.Floor(k)),
-																F.Plus(F.C2, F.Negate(F.n), F.Negate(ns), nt,
+																F.Plus(F.C2, F.Negate(n), F.Negate(ns), nt,
 																		F.Floor(k))),
 														F.C1))),
-								F.And(F.LessEqual(F.C0, F.k), F.LessEqual(F.Plus(n, ns, F.Negate(nt)), k), F.Less(k, n),
+								F.And(F.LessEqual(F.C0, k), F.LessEqual(F.Plus(n, ns, F.Negate(nt)), k), F.Less(k, n),
 										F.Less(k, ns))),
 								F.List(F.C1, F.Or(F.GreaterEqual(k, n), F.GreaterEqual(k, ns)))),
 						F.C0);
