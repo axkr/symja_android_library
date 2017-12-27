@@ -93,9 +93,10 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 
 		if (ast.arg1().isList() && ast.arg2().isSymbol()) {
 			final IAST list = (IAST) ast.arg1();
-			final ISymbol x = (ISymbol) ast.arg2();
-			if (list.size() > 1) {
-				int n = list.size() - 1;
+			final ISymbol symbol = (ISymbol) ast.arg2();
+			int size = list.size();
+			if (size > 1) {
+				int n = size - 1;
 				IExpr[] xv = new IExpr[n];
 				IExpr[] yv = new IExpr[n];
 				int[] dim = list.isMatrix();
@@ -117,18 +118,18 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 				IExpr[] c = computeDividedDifference(xv, yv);
 
 				IASTAppendable polynomial = F.PlusAlloc(16);
-				IASTAppendable times, plus;
-				IASTAppendable tempPlus = polynomial;
-				polynomial.append(c[0]);// c[0]
-				for (int i = 2; i < list.size(); i++) {
-					times = F.TimesAlloc(2);
-					plus = F.PlusAlloc(8);
+				IASTAppendable[] tempPlus = new IASTAppendable[1];
+				tempPlus[0] = polynomial;
+				polynomial.append(c[0]); 
+				list.forEach(2, size, (x, i) -> {
+					IASTAppendable times = F.TimesAlloc(2);
+					IASTAppendable plus = F.PlusAlloc(8);
 					times.append(plus);
-					times.append(F.Subtract(x, xv[i - 2]));
-					tempPlus.append(times);
-					tempPlus = plus;
-					tempPlus.append(c[i - 1]);
-				}
+					times.append(F.Subtract(symbol, xv[i - 2]));
+					tempPlus[0].append(times);
+					tempPlus[0] = plus;
+					tempPlus[0].append(c[i - 1]);
+				});
 				return polynomial;
 			}
 		}
