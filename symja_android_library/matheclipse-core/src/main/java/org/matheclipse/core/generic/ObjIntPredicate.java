@@ -4,9 +4,12 @@ import java.util.Objects;
 import java.util.function.BiPredicate;
 
 /**
+ * <p>
  * A predicate of two arguments - one object and one {@code int}.
+ * </p>
  * <p>
  * This takes two arguments and returns a {@code boolean} result.
+ * </p>
  *
  * @param <T>
  *            the type of the object parameter

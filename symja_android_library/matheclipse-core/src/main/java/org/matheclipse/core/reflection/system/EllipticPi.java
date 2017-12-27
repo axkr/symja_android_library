@@ -29,6 +29,7 @@ public class EllipticPi extends AbstractFunctionEvaluator {
 					engine.printMessage("EllipticPi: " + rex.getMessage());
 				}
 			}
+			return F.NIL;
 		}
 		if (ast.arg1().isSignedNumber() && ast.arg2().isSignedNumber()) {
 			double a = ((ISignedNumber) ast.arg1()).doubleValue();

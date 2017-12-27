@@ -481,13 +481,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Beta(-n-4, n+1)", "0");
 	}
-	
+
 	public void testBetaRegularized() {
 		check("BetaRegularized(2 , 2 , 3)", "8");
 		check("BetaRegularized(2 , 7 , 17)", "5512320");
 		check("BetaRegularized(2 , 7 , -17)", "0");
 	}
-	
+
 	public void testBinomial() {
 		check("Binomial(40.0,1.0)", "40.0");
 		check("Binomial(40.3,1.2)", "76.37683");
@@ -725,10 +725,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testCDF() {
 		check("CDF(BernoulliDistribution(p),k)", "Piecewise({{0,k<0},{1-p,0<=k&&k<1}},1)");
-		check("CDF(BinomialDistribution(n, m),k)", "Piecewise({{BetaRegularized(1-m,n-Floor(k),1+Floor(k)),0<=k&&k<n},{1,k>=n}},0)");
+		check("CDF(BinomialDistribution(n, m),k)",
+				"Piecewise({{BetaRegularized(1-m,n-Floor(k),1+Floor(k)),0<=k&&k<n},{1,k>=n}},0)");
 		check("CDF(ExponentialDistribution(n),k)", "Piecewise({{1-1/E^(k*n),k>=0}},0)");
 		check("CDF(PoissonDistribution(p),k)", "Piecewise({{GammaRegularized(1+Floor(k),p),k>=0}},0)");
-		check("CDF(DiscreteUniformDistribution({a, b}), k)", "Piecewise({{(1-a+Floor(k))/(1-a+b),a<=k&&k<b},{1,k>=b}},0)");
+		check("CDF(DiscreteUniformDistribution({a, b}), k)",
+				"Piecewise({{(1-a+Floor(k))/(1-a+b),a<=k&&k<b},{1,k>=b}},0)");
 		check("CDF(ErlangDistribution(n, m),k)", "Piecewise({{GammaRegularized(n,0,k*m),k>0}},0)");
 		check("CDF(LogNormalDistribution(n,m),k)", "Piecewise({{Erfc((n-Log(k))/(Sqrt(2)*m))/2,k>0}},0)");
 		check("CDF(NakagamiDistribution(n, m),k)", "Piecewise({{GammaRegularized(n,0,(k^2*n)/m),k>0}},0)");
@@ -737,14 +739,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("CDF(GammaDistribution(n, m),k)", "Piecewise({{GammaRegularized(n,0,k/m),k>0}},0)");
 		check("CDF(GeometricDistribution(n),k)", "Piecewise({{1-(1-n)^(1+Floor(k)),k>=0}},0)");
 		check("CDF(GumbelDistribution(n, m),k)", "1-1/E^E^((k-n)/m)");
-		check("CDF(HypergeometricDistribution(n, ns, nt),k)", "Piecewise({{1+(-ns!*(-ns+nt)!*HypergeometricPFQRegularized({1,1-n+Floor(k),1-ns+Floor(k)},{\n" + 
-				"2+Floor(k),2-n-ns+nt+Floor(k)},1))/(Binomial(nt,n)*(-1+n-Floor(k))!*(-1+ns-Floor(k))!),\n" + 
-				"0<=k&&n+ns-nt<=k&&k<n&&k<ns},{1,k>=n||k>=ns}},0)");
-		check("CDF(StudentTDistribution(n),k)", "Piecewise({{BetaRegularized(n/(k^2+n),n/2,1/2)/2,k<=0}},1/2*(1+BetaRegularized(k^\n" + 
-				"2/(k^2+n),1/2,n/2)))");
+		check("CDF(HypergeometricDistribution(n, ns, nt),k)",
+				"Piecewise({{1+(-ns!*(-ns+nt)!*HypergeometricPFQRegularized({1,1-n+Floor(k),1-ns+Floor(k)},{\n"
+						+ "2+Floor(k),2-n-ns+nt+Floor(k)},1))/(Binomial(nt,n)*(-1+n-Floor(k))!*(-1+ns-Floor(k))!),\n"
+						+ "0<=k&&n+ns-nt<=k&&k<n&&k<ns},{1,k>=n||k>=ns}},0)");
+		check("CDF(StudentTDistribution(n),k)",
+				"Piecewise({{BetaRegularized(n/(k^2+n),n/2,1/2)/2,k<=0}},1/2*(1+BetaRegularized(k^\n"
+						+ "2/(k^2+n),1/2,n/2)))");
 		check("CDF(WeibullDistribution(n, m),k)", "Piecewise({{1-1/E^(k/m)^n,k>0}},0)");
 		check("CDF(BernoulliDistribution(4),k)", "Piecewise({{0,k<0},{-4+1,0<=k&&k<1}},1)");
-		
+
 		check("CDF(DiscreteUniformDistribution({1, 5}), 3)", "3/5");
 	}
 
@@ -2696,12 +2700,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGammaRegularized() {
-		check("GammaRegularized(1/2, z)", "Erfc(Sqrt(z))"); 
-		check("GammaRegularized(-4, z)", "0"); 
+		check("GammaRegularized(1/2, z)", "Erfc(Sqrt(z))");
+		check("GammaRegularized(-4, z)", "0");
 		check("GammaRegularized(12, 0)", "1");
 		check("GammaRegularized(-42, 0)", "0");
 	}
-	
+
 	public void testGather() {
 		check("Gather({{a, 1}, {b, 1}, {a, 2}, {d, 1}, {b, 3}}, (First(#1) == First(#2)) &)",
 				"{{{a,1},{a,2}},{{b,1},{b,3}},{{d,1}}}");
@@ -5068,18 +5072,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PDF(DiscreteUniformDistribution({a, b}), k)", "Piecewise({{1/(1-a+b),a<=k<=b}},0)");
 		check("PDF(ErlangDistribution(n, m),k)", "Piecewise({{m^n/(k^(1-n)*E^(k*m)*Gamma(n)),k>0}},0)");
 		check("PDF(LogNormalDistribution(n,m),k)", "Piecewise({{1/(E^((-n+Log(k))^2/(2*m^2))*k*m*Sqrt(2*Pi)),k>0}},0)");
-		check("PDF(NakagamiDistribution(n, m),k)", "Piecewise({{(2*(n/m)^n)/(k^(1-2*n)*E^((k^2*n)/m)*Gamma(n)),k>0}},0)");
+		check("PDF(NakagamiDistribution(n, m),k)",
+				"Piecewise({{(2*(n/m)^n)/(k^(1-2*n)*E^((k^2*n)/m)*Gamma(n)),k>0}},0)");
 		check("PDF(NormalDistribution(n, m),k)", "1/(Sqrt(2)*E^((k-n)^2/(2*m^2))*m*Sqrt(Pi))");
 		check("PDF(FrechetDistribution(n, m),k)", "Piecewise({{n/((k/m)^(1+n)*E^(k/m)^(-n)*m),k>0}},0)");
 		check("PDF(GammaDistribution(n, m),k)", "Piecewise({{1/(k^(1-n)*E^(k/m)*m^n*Gamma(n)),k>0}},0)");
 		check("PDF(GeometricDistribution(n),k)", "Piecewise({{(1-n)^k*n,k>=0}},0)");
 		check("PDF(GumbelDistribution(n, m),k)", "E^(-E^((k-n)/m)+(k-n)/m)/m");
-		check("PDF(HypergeometricDistribution(n, ns, nt),k)", "Piecewise({{(Binomial(ns,k)*Binomial(-ns+nt,-k+n))/Binomial(nt,n),0<=k<=n&&n+ns-nt<=k<=n&&\n" + 
-				"0<=k<=ns&&n+ns-nt<=k<=ns}},0)");
+		check("PDF(HypergeometricDistribution(n, ns, nt),k)",
+				"Piecewise({{(Binomial(ns,k)*Binomial(-ns+nt,-k+n))/Binomial(nt,n),0<=k<=n&&n+ns-nt<=k<=n&&\n"
+						+ "0<=k<=ns&&n+ns-nt<=k<=ns}},0)");
 		check("PDF(StudentTDistribution(n),k)", "(n/(k^2+n))^(1/2*(1+n))/(Sqrt(n)*Beta(1/2,n/2))");
 		check("PDF(WeibullDistribution(n, m),k)", "Piecewise({{n/((k/m)^(1-n)*E^(k/m)^n*m),k>0}},0)");
 		check("PDF(StudentTDistribution(4),k)", "12*((1/(4+k^2)))^(5/2)");
-		
+
 		check("PDF(DiscreteUniformDistribution({1, 5}), 3)", "1/5");
 		check("N(PDF(NormalDistribution(0, 1), 0))", "0.39894");
 		checkNumeric("N(PDF(BinomialDistribution(40, 0.5), 1))", "3.637978807091713E-11");
@@ -5776,6 +5782,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExpectation() {
+		// check("Expectation(x^2+7*x+8,PoissonDistribution(m))", "");
+
 		check("Expectation(x,DiscreteUniformDistribution({4, 9}))", "13/2");
 		check("Expectation(x,DiscreteUniformDistribution({4, 10}))", "7");
 
@@ -5785,7 +5793,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRandomVariate() {
-		// check("RandomVariate(DiscreteUniformDistribution({1, 5}) )", "");
+		// check("RandomVariate(DiscreteUniformDistribution({1, 5}) )", "3");
 	}
 
 	public void testRange() {

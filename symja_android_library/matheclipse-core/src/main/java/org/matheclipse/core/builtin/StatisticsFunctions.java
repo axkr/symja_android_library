@@ -548,7 +548,8 @@ public class StatisticsFunctions {
 
 	}
 
-	private final static class GeometricDistribution extends AbstractEvaluator implements ICDF, IMean, IPDF, IVariance {
+	private final static class GeometricDistribution extends AbstractDiscreteDistribution
+			implements ICDF, IDiscreteDistribution, IMean, IPDF, IVariance {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -601,6 +602,32 @@ public class StatisticsFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
+		}
+
+		@Override
+		public IExpr lowerBound(IAST dist) {
+			return F.C0;
+		}
+
+		@Override
+		protected IExpr protected_quantile(IAST dist, IExpr arg) {
+			if (dist.isAST1()) {
+				IExpr n = dist.arg1();
+				IExpr num = F.Log(F.C1.subtract(arg));
+				IExpr den = F.Log(F.C1.subtract(n));
+				return F.Floor(num.divide(den));
+			}
+			return F.NIL;
+		}
+
+		@Override
+		protected IExpr protected_p_equals(IAST dist, IExpr arg) {
+			if (dist.isAST1()) {
+				// n * Power(1-n, arg)
+				IExpr n = dist.arg1();
+				return n.multiply(F.Power(F.C1.subtract(n), arg));
+			}
+			return F.NIL;
 		}
 
 	}
@@ -1069,7 +1096,8 @@ public class StatisticsFunctions {
 			return F.NIL;
 		}
 
-		private static IExpr of(IAST dist, Function<IExpr, IExpr> function, IDiscreteDistribution discreteDistribution) {
+		private static IExpr of(IAST dist, Function<IExpr, IExpr> function,
+				IDiscreteDistribution discreteDistribution) {
 			IExpr value = F.NIL;
 			IExpr p_equals = F.C0;
 			IExpr cumprob = F.C0;
@@ -1465,7 +1493,9 @@ public class StatisticsFunctions {
 
 	}
 
-	private final static class PoissonDistribution extends AbstractEvaluator implements ICDF, IMean, IPDF, IVariance {
+	private final static class PoissonDistribution extends AbstractEvaluator
+			implements ICDF, IMean, IPDF, IVariance {
+		private static final int P_EQUALS_MAX = 1950; // probabilities are zero beyond that point
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1513,6 +1543,39 @@ public class StatisticsFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
+		}
+
+//		@Override
+		public IExpr lowerBound(IAST dist) {
+			return F.C0;
+		}
+
+
+//		@Override
+		protected IExpr protected_p_equals(IAST dist, IExpr nExpr) {
+			if (dist.isAST1() && nExpr.isInteger()) {
+				int n = nExpr.toIntDefault(Integer.MIN_VALUE);
+				if (n != Integer.MIN_VALUE) {
+					if (P_EQUALS_MAX < n) {
+						return F.C0;
+					}
+					IExpr lambda = dist.arg1();
+					IASTAppendable values = F.List();
+					values.append(F.Exp(lambda.negate()));
+					while (values.size() - 1 <= n) {
+						IExpr factor = lambda.times(F.fraction(1, values.size() - 1));
+						values.append(values.last().times(factor));
+					}
+					return values.last();
+				}
+			}
+			return F.NIL;
+		}
+
+//		@Override
+		protected IExpr protected_quantile(IAST dist, IExpr p) {
+			// TODO Auto-generated method stub
+			return F.NIL;
 		}
 
 	}
