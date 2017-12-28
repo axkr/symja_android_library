@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.IntFunction;
-  
+
 import javax.annotation.Nonnull;
 
 import org.apfloat.Apcomplex;
@@ -1868,13 +1868,19 @@ public class F {
 				@Override
 				public void run() {
 					final EvalEngine engine = EvalEngine.get();
-					IAST ruleList = org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
-					if (ruleList != null) {
-						engine.addRules(ruleList);
-					}
-					ruleList = org.matheclipse.core.reflection.system.Integrate.getRuleASTStatic();
-					if (ruleList != null) {
-						engine.addRules(ruleList);
+					ContextPath path = engine.getContextPath();
+					try {
+						engine.setContextPath(new ContextPath("§Int§"));
+						IAST ruleList = org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
+						if (ruleList != null) {
+							engine.addRules(ruleList);
+						}
+						ruleList = org.matheclipse.core.reflection.system.Integrate.getRuleASTStatic();
+						if (ruleList != null) {
+							engine.addRules(ruleList);
+						}
+					} finally {
+						engine.setContextPath(path);
 					}
 					Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
 					engine.setPackageMode(false);
@@ -3389,11 +3395,11 @@ public class F {
 	public static IAST DirectedInfinity(final IExpr a0) {
 		return unaryAST1(DirectedInfinity, a0);
 	}
-	
+
 	public static IAST DiscreteUniformDistribution(final IExpr a) {
 		return unaryAST1(DiscreteUniformDistribution, a);
 	}
-	
+
 	public static IAST Discriminant(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Discriminant, a0, a1);
 	}
@@ -3972,11 +3978,11 @@ public class F {
 	public static IAST HypergeometricPFQ(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(HypergeometricPFQ, a0, a1, a2);
 	}
-	
+
 	public static IAST HypergeometricPFQRegularized(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(HypergeometricPFQRegularized, a0, a1, a2);
 	}
-	
+
 	public static IAST Identity(final IExpr a0) {
 		return unaryAST1(Identity, a0);
 	}
@@ -5308,15 +5314,15 @@ public class F {
 	public static IAST Quotient(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Quotient, a0, a1);
 	}
- 
+
 	public static IAST RandomVariate(final IExpr a0) {
 		return unaryAST1(RandomVariate, a0);
 	}
-	
+
 	public static IAST RandomVariate(final IExpr a0, final IExpr a1) {
 		return binaryAST2(RandomVariate, a0, a1);
 	}
-	
+
 	public static IAST Rational(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Rational, a0, a1);
 	}
