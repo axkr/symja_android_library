@@ -64,7 +64,7 @@ public class Config {
 	 * Show the stack trace, if an exception is thrown in evaluation
 	 * 
 	 */
-	public final static boolean SHOW_STACKTRACE = false;
+	public final static boolean SHOW_STACKTRACE = true;
 
 	/**
 	 * Show the console output, if an expression has a head symbol with attribute <code>ISymbol.CONSOLE_OUTPUT</code>.
@@ -146,7 +146,7 @@ public class Config {
 	 * 
 	 * @see edu.jas.ufd.GCDFactory#getProxy(edu.jas.structure.RingFactory)
 	 */
-	public static boolean JAS_NO_THREADS = true;
+	public static boolean JAS_NO_THREADS = false;
 
 	/**
 	 * Use <code>Num</code> objects for numeric calculations up to 15 digits precision.
