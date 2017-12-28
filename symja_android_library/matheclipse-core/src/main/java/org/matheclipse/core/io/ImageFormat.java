@@ -5,7 +5,7 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.stream.IntStream; 
+import java.util.stream.IntStream;
 
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.expression.F;
@@ -38,11 +38,11 @@ public enum ImageFormat {
 	}
 
 	/**
-	 * encode image as tensor. {@link Dimensions} of output are [height x width] for grayscale images of type
+	 * encode image as AST. {@link Dimensions} of output are [height x width] for grayscale images of type
 	 * BufferedImage.TYPE_BYTE_GRAY [height x width x 4] for color images
 	 * 
 	 * @param bufferedImage
-	 * @return tensor encoding the color values of given bufferedImage
+	 * @return AST encoding the color values of given bufferedImage
 	 */
 	public static IAST from(BufferedImage bufferedImage) {
 		switch (bufferedImage.getType()) {
@@ -55,14 +55,14 @@ public enum ImageFormat {
 	}
 
 	/**
-	 * @param tensor
+	 * @param ast
 	 * @return image of type BufferedImage.TYPE_BYTE_GRAY or BufferedImage.TYPE_INT_ARGB
 	 */
-	public static BufferedImage of(IAST tensor) {
-		List<Integer> dims = LinearAlgebra.dimensions(tensor);
+	public static BufferedImage of(IAST ast) {
+		List<Integer> dims = LinearAlgebra.dimensions(ast);
 		if (dims.size() == 2)
-			return toTYPE_BYTE_GRAY(tensor, dims.get(1), dims.get(0));
-		return toTYPE_INT(tensor, dims.get(1), dims.get(0), BufferedImage.TYPE_INT_ARGB);
+			return toTYPE_BYTE_GRAY(ast, dims.get(1), dims.get(0));
+		return toTYPE_INT(ast, dims.get(1), dims.get(0), BufferedImage.TYPE_INT_ARGB);
 	}
 
 	/**
@@ -94,11 +94,11 @@ public enum ImageFormat {
 	}
 
 	// fast extraction of color information to buffered image
-	private static BufferedImage toTYPE_INT(IAST tensor, int width, int height, int imageType) {
+	private static BufferedImage toTYPE_INT(IAST ast, int width, int height, int imageType) {
 		BufferedImage bufferedImage = new BufferedImage(width, height, imageType);
 		int[] array = new int[width * height];
 		int[] i = new int[1];
-		tensor.forEach(row -> {
+		ast.forEach(row -> {
 			((IAST) row).forEach(number -> {
 				array[i[0]++] = ((IInteger) number).intValue();
 			});
@@ -108,16 +108,16 @@ public enum ImageFormat {
 	}
 
 	/**
-	 * functionality for export to jpg image format
+	 * Functionality for export to jpg image format
 	 * 
-	 * @param tensor
+	 * @param ast
 	 * @return image of type BufferedImage.TYPE_BYTE_GRAY or BufferedImage.TYPE_INT_BGR
 	 */
-	/* package */ static BufferedImage jpg(IAST tensor) {
-		List<Integer> dims = LinearAlgebra.dimensions(tensor);
+	public static BufferedImage jpg(IAST ast) {
+		List<Integer> dims = LinearAlgebra.dimensions(ast);
 		if (dims.size() == 2) {
-			return toTYPE_BYTE_GRAY(tensor, dims.get(1), dims.get(0));
+			return toTYPE_BYTE_GRAY(ast, dims.get(1), dims.get(0));
 		}
-		return toTYPE_INT(tensor, dims.get(1), dims.get(0), BufferedImage.TYPE_INT_BGR);
+		return toTYPE_INT(ast, dims.get(1), dims.get(0), BufferedImage.TYPE_INT_BGR);
 	}
 }

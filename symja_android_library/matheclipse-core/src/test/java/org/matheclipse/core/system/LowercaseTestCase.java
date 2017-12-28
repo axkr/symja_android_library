@@ -5793,6 +5793,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRandomVariate() {
+		// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2})", "");
+		// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3})", "");
+		// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3,4})", "");
+		// check("RandomVariate(DiscreteUniformDistribution({3,7}), 10)", "");
 		// check("RandomVariate(DiscreteUniformDistribution({1, 5}) )", "3");
 	}
 

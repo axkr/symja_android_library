@@ -3389,7 +3389,11 @@ public class F {
 	public static IAST DirectedInfinity(final IExpr a0) {
 		return unaryAST1(DirectedInfinity, a0);
 	}
-
+	
+	public static IAST DiscreteUniformDistribution(final IExpr a) {
+		return unaryAST1(DiscreteUniformDistribution, a);
+	}
+	
 	public static IAST Discriminant(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Discriminant, a0, a1);
 	}
@@ -5304,7 +5308,15 @@ public class F {
 	public static IAST Quotient(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Quotient, a0, a1);
 	}
-
+ 
+	public static IAST RandomVariate(final IExpr a0) {
+		return unaryAST1(RandomVariate, a0);
+	}
+	
+	public static IAST RandomVariate(final IExpr a0, final IExpr a1) {
+		return binaryAST2(RandomVariate, a0, a1);
+	}
+	
 	public static IAST Rational(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Rational, a0, a1);
 	}

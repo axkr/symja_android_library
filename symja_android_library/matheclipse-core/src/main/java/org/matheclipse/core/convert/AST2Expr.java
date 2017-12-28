@@ -35,7 +35,7 @@ import org.matheclipse.parser.client.ast.PatternNode;
 import org.matheclipse.parser.client.ast.StringNode;
 import org.matheclipse.parser.client.ast.SymbolNode;
 import org.matheclipse.parser.client.eval.DoubleNode;
-  
+
 /**
  * Converts a parsed <code>org.matheclipse.parser.client.ast.ASTNode</code> expression into an IExpr expression
  * 
@@ -398,9 +398,11 @@ public class AST2Expr {
 			if (denominator.isZero()) {
 				return F.Rational(fr.isSign() ? numerator.negate() : numerator, denominator);
 			}
-			return F.Rational(fr.isSign() ? numerator.negate() : numerator, denominator);
-			// return F.fraction(numerator, fr.isSign() ? (IInteger) denominator.negate() :
-			// denominator);
+			if (denominator.isOne()) {
+				return fr.isSign() ? numerator.negate() : numerator;
+			}
+			// return F.Rational(fr.isSign() ? numerator.negate() : numerator, denominator);
+			return F.fraction(fr.isSign() ? numerator.negate() : numerator, denominator);
 		}
 		if (node instanceof StringNode) {
 			return F.$str(node.getString());

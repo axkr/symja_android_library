@@ -77,15 +77,7 @@ public class Import extends AbstractEvaluator {
 					return rowList;
 				} else if (format.equals("String")) {
 					File file = new File(fileName);
-					Filename filename = new Filename(file);
-					if (filename.hasExtension("jpg") || filename.hasExtension("png")) {
-						return ImageFormat.from(ImageIO.read(file));
-					}
-					AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
-					final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
-					String str = com.google.common.io.Files.toString(file, Charset.defaultCharset());
-					final ASTNode node = parser.parse(str);
-					return ast2Expr.convert(node);
+					return of(file, engine);
 				}
 
 			} catch (IOException ioe) {
@@ -102,6 +94,18 @@ public class Import extends AbstractEvaluator {
 			}
 		}
 		return F.NIL;
+	}
+
+	public static IExpr of(File file, EvalEngine engine) throws IOException {
+		Filename filename = new Filename(file);
+		if (filename.hasExtension("jpg") || filename.hasExtension("png")) {
+			return ImageFormat.from(ImageIO.read(file));
+		}
+		AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
+		final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
+		String str = com.google.common.io.Files.toString(file, Charset.defaultCharset());
+		final ASTNode node = parser.parse(str);
+		return ast2Expr.convert(node);
 	}
 
 }

@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import java.util.Random;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
@@ -983,7 +984,7 @@ public class StatisticsFunctions {
 			IExpr[] minMax = minmax(dist);
 			if (minMax != null) {
 				IExpr min = minMax[0];
-				IExpr max = minMax[1];
+				IExpr max = minMax[1].inc();
 				IExpr p = F.Power(F.Subtract(max, min), F.CN1);
 				return min.add(F.Floor(q.multiply(p.inverse())));
 			}
@@ -1493,7 +1494,7 @@ public class StatisticsFunctions {
 
 	}
 
-	private final static class PoissonDistribution extends AbstractEvaluator
+	private final static class PoissonDistribution extends AbstractDiscreteDistribution
 			implements ICDF, IMean, IPDF, IVariance {
 		private static final int P_EQUALS_MAX = 1950; // probabilities are zero beyond that point
 
@@ -1545,13 +1546,12 @@ public class StatisticsFunctions {
 		public void setUp(final ISymbol newSymbol) {
 		}
 
-//		@Override
+		// @Override
 		public IExpr lowerBound(IAST dist) {
 			return F.C0;
 		}
 
-
-//		@Override
+		// @Override
 		protected IExpr protected_p_equals(IAST dist, IExpr nExpr) {
 			if (dist.isAST1() && nExpr.isInteger()) {
 				int n = nExpr.toIntDefault(Integer.MIN_VALUE);
@@ -1572,7 +1572,7 @@ public class StatisticsFunctions {
 			return F.NIL;
 		}
 
-//		@Override
+		// @Override
 		protected IExpr protected_quantile(IAST dist, IExpr p) {
 			// TODO Auto-generated method stub
 			return F.NIL;
@@ -1658,7 +1658,7 @@ public class StatisticsFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
+			Validate.checkRange(ast, 2, 3);
 
 			if (ast.arg1().isAST()) {
 				IAST dist = (IAST) ast.arg1();
@@ -1668,6 +1668,24 @@ public class StatisticsFunctions {
 						IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
 						if (evaluator instanceof IRandomVariate) {
 							IRandomVariate variate = (IRandomVariate) evaluator;
+							if (ast.size() == 3) {
+								IExpr arg2 = ast.arg2();
+								if (arg2.isList()) {
+									int[] indx = Validate.checkListOfInts(arg2, 0, Integer.MAX_VALUE);
+									IASTAppendable list = F.ListAlloc(indx[0]);
+									return createArray(indx, 0, list, () -> variate.randomVariate(dist, RANDOM));
+								} else if (arg2.isInteger()) {
+									int n = arg2.toIntDefault(Integer.MIN_VALUE);
+									if (n >= 0) {
+										IASTAppendable result = F.ListAlloc(n);
+										for (int i = 0; i < n; i++) {
+											result.append(variate.randomVariate(dist, RANDOM));
+										}
+										return result;
+									}
+								}
+								return F.NIL;
+							}
 							return variate.randomVariate(dist, RANDOM);
 						}
 					}
@@ -1677,6 +1695,18 @@ public class StatisticsFunctions {
 			return F.NIL;
 		}
 
+		private static IAST createArray(int[] indx, int offset, IASTAppendable list, Supplier<IExpr> s) {
+			if (indx.length <= offset) {
+				list.append(s.get());
+				return list;
+			}
+			IASTAppendable subList = F.ListAlloc(indx[offset]);
+			for (int i = 1; i <= indx[offset]; i++) {
+				createArray(indx, offset + 1, subList, s);
+			}
+			list.append(subList);
+			return subList;
+		}
 	}
 
 	/**
