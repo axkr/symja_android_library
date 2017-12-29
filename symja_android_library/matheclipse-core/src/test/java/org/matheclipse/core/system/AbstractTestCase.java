@@ -135,6 +135,7 @@ public abstract class AbstractTestCase extends TestCase {
 
 				fNumericScriptEngine = new MathScriptEngine();// fScriptManager.getEngineByExtension("m");
 				fNumericScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
+				F.join();
 
 				EvalEngine engine = EvalEngine.get();
 				engine.setRecursionLimit(256);

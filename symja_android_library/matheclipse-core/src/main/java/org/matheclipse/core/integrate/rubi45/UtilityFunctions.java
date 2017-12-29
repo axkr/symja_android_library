@@ -57,8 +57,6 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class UtilityFunctions {
 
-	public final static String INTEGRATE_PREFIX = "Integrate::";
-
 	public final static ISymbol pa = F.initFinalSymbol("§a");
 	public final static ISymbol pb = F.initFinalSymbol("§b");
 	public final static ISymbol pc = F.initFinalSymbol("§c");

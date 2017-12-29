@@ -1870,7 +1870,7 @@ public class F {
 					final EvalEngine engine = EvalEngine.get();
 					ContextPath path = engine.getContextPath();
 					try {
-						engine.setContextPath(new ContextPath("§Int§"));
+						engine.setContextPath(new ContextPath("integrate`"));
 						IAST ruleList = org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
 						if (ruleList != null) {
 							engine.addRules(ruleList);
@@ -2519,12 +2519,11 @@ public class F {
 		if (symbol != null) {
 			return symbol;
 		}
+		symbol = HIDDEN_SYMBOLS_MAP.get(name);
+		if (symbol != null) {
+			return symbol;
+		}
 		if (Config.SERVER_MODE) {
-			symbol = HIDDEN_SYMBOLS_MAP.get(name);
-			// symbol = engine.getUserVariable(name);
-			if (symbol != null) {
-				return symbol;
-			}
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				if (SYMBOL_OBSERVER.createPredefinedSymbol(name)) {
 					// second try, because the symbol may now be added to
@@ -2546,26 +2545,24 @@ public class F {
 					}
 				}
 			}
-			symbol = new BuiltInSymbol(name);
+			// symbol = new BuiltInSymbol(name);
+			symbol = userSymbol(name, EvalEngine.get());
 			// engine.putUserVariable(name, symbol);
 			HIDDEN_SYMBOLS_MAP.put(name, symbol);
 			if (name.charAt(0) == '$') {
 				SYMBOL_OBSERVER.createUserSymbol(symbol);
 			}
 		} else {
-			symbol = HIDDEN_SYMBOLS_MAP.get(name);
-			if (symbol != null) {
-				return symbol;
-			}
-			symbol = new BuiltInSymbol(name);
+			// symbol = new BuiltInSymbol(name);
+			symbol = userSymbol(name, EvalEngine.get());
 			HIDDEN_SYMBOLS_MAP.put(name, symbol);
-			if (symbol.isBuiltInSymbol()) {
-				if (!setEval) {
-					((IBuiltInSymbol) symbol).setEvaluator(BuiltInSymbol.DUMMY_EVALUATOR);
-				} else {
-					((IBuiltInSymbol) symbol).getEvaluator();
-				}
-			}
+			// if (symbol.isBuiltInSymbol()) {
+			// if (!setEval) {
+			// ((IBuiltInSymbol) symbol).setEvaluator(BuiltInSymbol.DUMMY_EVALUATOR);
+			// } else {
+			// ((IBuiltInSymbol) symbol).getEvaluator();
+			// }
+			// }
 		}
 
 		return symbol;

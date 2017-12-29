@@ -44,7 +44,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class UtilityFunctionCtors {
 
-	public final static String INTEGRATE_PREFIX = "integrate::";
+	public final static String INTEGRATE_PREFIX = "Integrate::";
 	public static ISymbol INTEGRATE_TRIG_SIMPLIFY = null;
 	public static ISymbol INTEGRATE_SMARTLEAFCOUNT = null;
 	public static ISymbol INTEGRATE_SMARTNUMERATOR = null;

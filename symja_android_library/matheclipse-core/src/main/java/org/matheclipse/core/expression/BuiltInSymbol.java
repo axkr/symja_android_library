@@ -42,8 +42,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
 	/**
 	 * The evaluation class of this built-in-function. See packages: package
-	 * <code>org.matheclipse.core.builtin.function</code> and
-	 * <code>org.matheclipse.core.reflection.system</code>.
+	 * <code>org.matheclipse.core.builtin.function</code> and <code>org.matheclipse.core.reflection.system</code>.
 	 */
 	private transient IEvaluator fEvaluator;
 
@@ -52,10 +51,14 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	}
 
 	public BuiltInSymbol(final String symbolName, final IEvaluator evaluator) {
-		super(symbolName, Context.SYSTEM);
+		this(symbolName, Context.SYSTEM, evaluator);
+	}
+
+	public BuiltInSymbol(final String symbolName, Context context, final IEvaluator evaluator) {
+		super(symbolName, context);
 		fEvaluator = evaluator;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public String definitionToString() throws IOException {
