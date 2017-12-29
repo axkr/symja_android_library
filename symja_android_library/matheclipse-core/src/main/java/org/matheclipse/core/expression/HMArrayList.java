@@ -46,7 +46,6 @@ import org.matheclipse.core.interfaces.IExpr;
  * HMArrayList is an implementation of a list, backed by an array. All optional operations adding, removing, and
  * replacing are supported. The elements can be any objects.
  * 
- * Copied and modified from the Apache Harmony project.
  * 
  */
 public abstract class HMArrayList extends AbstractAST implements IASTAppendable, Cloneable, Serializable, RandomAccess {
@@ -60,14 +59,14 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	protected transient int lastIndex;
 
 	/**
-	 * Constructs a new instance of list with ten capacity.
+	 * Constructs a new instance of list with capacity <code>10</code>.
 	 */
 	public HMArrayList() {
 		this(10);
 	}
 
 	/**
-	 * Constructs a newlist containing the elements of the specified collection. The initial size of the
+	 * Constructs a new list containing the elements of the specified collection. The initial size of the
 	 * {@code ArrayList} will be 10% higher than the size of the specified collection.
 	 * 
 	 * @param collection
@@ -82,21 +81,61 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 		lastIndex = size;
 	}
 
-	public HMArrayList(IExpr ex, IExpr... es) {
-		int len = es.length + 1;
+	/**
+	 * Constructs a new list by allocating <code>1 + arguments.length</code> new elements for the list. The list
+	 * contains the <code>headExpr</code> as element at offset <code>0</code> and the arguments at offset
+	 * <code>1 .. arguments.length</code> in the list.
+	 * 
+	 * @param headExpr
+	 *            the header expression
+	 * @param arguments
+	 *            the argument expressions
+	 */
+	public HMArrayList(IExpr headExpr, IExpr... arguments) {
 		firstIndex = hashValue = 0;
-		array = newElementArray(len);
-		array[0] = ex;
-		System.arraycopy(es, 0, array, 1, es.length);
-		lastIndex = len;
+		lastIndex = arguments.length + 1;
+		array = newElementArray(lastIndex);
+		array[0] = headExpr;
+		switch (lastIndex) {
+		case 1:
+			break;
+		case 2:
+			array[1] = arguments[0];
+			break;
+		case 3:
+			array[1] = arguments[0];
+			array[2] = arguments[1];
+			break;
+		case 4:
+			array[1] = arguments[0];
+			array[2] = arguments[1];
+			array[3] = arguments[2];
+			break;
+		case 5:
+			array[1] = arguments[0];
+			array[2] = arguments[1];
+			array[3] = arguments[2];
+			array[4] = arguments[3];
+			break;
+		default:
+			System.arraycopy(arguments, 0, array, 1, lastIndex - 1);
+		}
 	}
 
+	/**
+	 * Constructs a new list assigning the given <code>array</code> to this lists array. No new memory is allocated for
+	 * the list. The list contains the arrays elements form offset <code>0</code> to offset <code>array.length-1</code>
+	 * in the list.
+	 * 
+	 * @param array
+	 *            the array which will be used to store this lists elements.
+	 */
 	protected HMArrayList(IExpr[] array) {
 		init(array);
 	}
 
 	/**
-	 * Constructs a new instance of {@code ArrayList} with the specified capacity.
+	 * Constructs a new instance of {@code HMArrayList} with the specified capacity.
 	 * 
 	 * @param capacity
 	 *            the initial capacity of this {@code ArrayList}.
@@ -753,10 +792,18 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 		return -1;
 	}
 
+	/**
+	 * Constructs a new list assigning the given <code>array</code> to this lists array. No new memory is allocated for
+	 * the list. The list contains the arrays elements form offset <code>0</code> to offset <code>array.length-1</code>
+	 * in the list.
+	 * 
+	 * @param array
+	 *            the array which will be used to store this lists elements.
+	 */
 	protected final void init(IExpr[] array) {
 		this.array = array;
-		firstIndex = hashValue = 0;
-		lastIndex = array.length;
+		this.firstIndex = this.hashValue = 0;
+		this.lastIndex = array.length;
 	}
 
 	/** {@inheritDoc} */
