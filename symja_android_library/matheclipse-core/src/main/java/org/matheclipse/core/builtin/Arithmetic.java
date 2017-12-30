@@ -113,6 +113,7 @@ public final class Arithmetic {
 		F.Abs.setEvaluator(new Abs());
 		F.AddTo.setEvaluator(new AddTo());
 		F.Arg.setEvaluator(new Arg());
+		F.Chop.setEvaluator(new Chop());
 		F.Complex.setEvaluator(CONST_COMPLEX);
 		F.Conjugate.setEvaluator(new Conjugate());
 		F.Decrement.setEvaluator(new Decrement());
@@ -122,6 +123,7 @@ public final class Arithmetic {
 		F.HarmonicNumber.setEvaluator(new HarmonicNumber());
 		F.Im.setEvaluator(new Im());
 		F.Increment.setEvaluator(new Increment());
+		F.N.setEvaluator(new N());
 		F.Piecewise.setEvaluator(new Piecewise());
 		F.Pochhammer.setEvaluator(new Pochhammer());
 		F.Precision.setEvaluator(new Precision());
@@ -366,6 +368,61 @@ public final class Arithmetic {
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION | ISymbol.NHOLDFIRST);
 			super.setUp(newSymbol);
+		}
+	}
+
+	/**
+	 * <pre>
+	 * Chop(numerical - expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * replaces numerical values in the <code>numerical-expr</code> which are close to zero with symbolic value
+	 * <code>0</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Chop(0.00000000001)
+	 * 0
+	 * </pre>
+	 */
+	private static class Chop extends AbstractCoreFunctionEvaluator {
+		public final static double DEFAULT_CHOP_DELTA = 1.0e-10;
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			IExpr arg1 = ast.arg1();
+			double delta = DEFAULT_CHOP_DELTA;
+			if (ast.isAST2() && ast.arg2() instanceof INum) {
+				delta = ((INum) ast.arg2()).getRealPart();
+			}
+			try {
+				arg1 = engine.evaluate(arg1);
+				if (arg1.isAST()) {
+					IAST list = (IAST) arg1;
+					// Chop[{a,b,c}] -> {Chop[a],Chop[b],Chop[c]}
+					return list.mapThread(F.Chop(F.Null), 1);
+				}
+				if (arg1.isNumber()) {
+					return F.chopNumber((INumber) arg1, delta);
+				}
+			} catch (Exception e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			}
+
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE);
 		}
 	}
 
@@ -1031,6 +1088,79 @@ public final class Arithmetic {
 			}
 			engine.printMessage("Minus: exactly 1 argument expected");
 			return F.NIL;
+		}
+
+	}
+
+	/**
+	 * <pre>
+	 * N(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * gives the numerical value of <code>expr</code>.<br />
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * N(expr, precision)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * evaluates <code>expr</code> numerically with a precision of <code>prec</code> digits.<br />
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * <strong>Note</strong>: the upper case identifier <code>N</code> is different from the lower case identifier
+	 * <code>n</code>.
+	 * </p>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; N(Pi)
+	 * 3.141592653589793
+	 * 
+	 * &gt;&gt; N(Pi, 50)
+	 * 3.1415926535897932384626433832795028841971693993751
+	 * 
+	 * &gt;&gt; N(1/7)
+	 * 0.14285714285714285
+	 * 
+	 * &gt;&gt; N(1/7, 5)
+	 * 1.4285714285714285714e-1
+	 * </pre>
+	 */
+	private static class N extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			return numericEval(ast, engine);
+		}
+
+		@Override
+		public IExpr numericEval(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			final boolean numericMode = engine.isNumericMode();
+			final int oldPrecision = engine.getNumericPrecision();
+			try {
+				int numericPrecision = Config.MACHINE_PRECISION;
+				if (ast.isAST2()) {
+					numericPrecision = Validate.checkIntType(ast.arg2());
+				}
+				engine.setNumericMode(true, numericPrecision);
+				return engine.evalWithoutNumericReset(ast.arg1());
+			} finally {
+				engine.setNumericMode(numericMode);
+				engine.setNumericPrecision(oldPrecision);
+			}
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 
 	}

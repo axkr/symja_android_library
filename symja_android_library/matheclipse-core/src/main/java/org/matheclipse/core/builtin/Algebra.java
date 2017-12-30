@@ -34,7 +34,6 @@ import javax.annotation.Nonnull;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Combinatoric.Permutations;
-import org.matheclipse.core.builtin.function.Refine;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
@@ -3344,9 +3343,10 @@ public class Algebra {
 				IExpr result = arg1;
 				long count = 0L;
 				if (assumptionExpr.isPresent()) {
-					IAssumptions assumptions = Refine.determineAssumptions(ast.topHead(), assumptionExpr, engine);
+					IAssumptions assumptions = AssumptionFunctions.determineAssumptions(ast.topHead(), assumptionExpr,
+							engine);
 					if (assumptions != null) {
-						arg1 = Refine.refineAssumptions(arg1, assumptions, engine);
+						arg1 = AssumptionFunctions.refineAssumptions(arg1, assumptions, engine);
 						count = complexityFunction.apply(arg1);
 						if (count < minCounter) {
 							minCounter = count;

@@ -68,6 +68,7 @@ public final class ListFunctions {
 		F.Composition.setEvaluator(new Composition());
 		F.ConstantArray.setEvaluator(new ConstantArray());
 		F.Count.setEvaluator(new Count());
+		F.Delete.setEvaluator(new Delete());
 		F.DeleteDuplicates.setEvaluator(new DeleteDuplicates());
 		F.DeleteCases.setEvaluator(new DeleteCases());
 		F.Drop.setEvaluator(new Drop());
@@ -76,6 +77,7 @@ public final class ListFunctions {
 		F.Fold.setEvaluator(new Fold());
 		F.FoldList.setEvaluator(new FoldList());
 		F.Gather.setEvaluator(new Gather());
+		F.Insert.setEvaluator(new Insert());
 		F.Intersection.setEvaluator(new Intersection());
 		F.Join.setEvaluator(new Join());
 		F.Last.setEvaluator(new Last());
@@ -1127,6 +1129,40 @@ public final class ListFunctions {
 
 	}
 
+	/**
+	 * Delete(list,n) - delete the n-th argument from the list. Negative n counts from the end.
+	 * 
+	 */
+	private static class Delete extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			final IExpr arg1 = engine.evaluate(ast.arg1());
+			final IExpr arg2 = engine.evaluate(ast.arg2());
+			if (arg1.isAST() && arg2.isInteger()) {
+				final IAST list1 = (IAST) arg1;
+
+				try {
+					int indx = Validate.checkIntType(ast, 2, Integer.MIN_VALUE);
+					if (indx < 0) {
+						// negative n counts from the end
+						indx = list1.size() + indx;
+					}
+					return list1.removeAtClone(indx);
+				} catch (final IndexOutOfBoundsException e) {
+					if (Config.DEBUG) {
+						e.printStackTrace();
+					}
+					return F.NIL;
+				}
+
+			}
+			return F.NIL;
+		}
+
+	}
+
 	private final static class DeleteCases extends AbstractCoreFunctionEvaluator {
 
 		private static class DeleteCasesPatternMatcherFunctor implements Function<IExpr, IExpr> {
@@ -1602,6 +1638,90 @@ public final class ListFunctions {
 		}
 	}
 
+	private static class Insert extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 4);
+
+			IExpr arg1 = engine.evaluate(ast.arg1());
+			IAST arg1AST = Validate.checkASTType(arg1, engine);
+			if (arg1AST == null) {
+				return F.NIL;
+			}
+			IExpr arg2 = engine.evaluate(ast.arg2());
+			IExpr arg3 = engine.evaluate(ast.arg3());
+			if (arg3.isInteger()) {
+				try {
+					int i = Validate.checkIntType(arg3, Integer.MIN_VALUE);
+					if (i < 0) {
+						i = 1 + arg1AST.size() + i;
+					}
+					if (i > 0 && i < arg1AST.size()) {
+						return arg1AST.appendAtClone(i, arg2);
+					}
+				} catch (final IndexOutOfBoundsException e) {
+					if (Config.DEBUG) {
+						e.printStackTrace();
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+	}
+
+	/**
+	 * <pre>
+	 * Join(l1, l2)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * concatenates the lists <code>l1</code> and <code>l2</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * <code>Join</code> concatenates lists:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Join({a, b}, {c, d, e})
+	 * {a,b,c,d,e}
+	 * 
+	 * &gt;&gt; Join({{a, b}, {c, d}}, {{1, 2}, {3, 4}})
+	 * {{a,b},{c,d},{1,2},{3,4}}
+	 * </pre>
+	 * <p>
+	 * The concatenated expressions may have any head:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Join(a + b, c + d, e + f)
+	 * a+b+c+d+e+f
+	 * </pre>
+	 * <p>
+	 * However, it must be the same for all expressions:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Join(a + b, c * d)
+	 * Join(a+b,c*d)
+	 * 
+	 * &gt;&gt; Join(x, y)
+	 * Join(x,y)
+	 * 
+	 * &gt;&gt; Join(x + y, z)
+	 * Join(x+y,z)
+	 * 
+	 * &gt;&gt; Join(x + y, y * z, a)
+	 * Join(x + y, y z, a)
+	 * 
+	 * &gt;&gt; Join(x, y + z, y * z)
+	 * Join(x,y+z,y*z)
+	 * </pre>
+	 */
 	private final static class Join extends AbstractFunctionEvaluator {
 
 		public Join() {

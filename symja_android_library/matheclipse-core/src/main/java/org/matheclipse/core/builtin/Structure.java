@@ -18,9 +18,14 @@ import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IComplex;
+import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.ISymbol2IntMap;
+import org.matheclipse.core.visit.AbstractVisitorLong;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.parser.client.math.MathException;
 
@@ -32,6 +37,8 @@ public class Structure {
 		F.Flatten.setEvaluator(new Flatten());
 		F.FlattenAt.setEvaluator(new FlattenAt());
 		F.Function.setEvaluator(new Function());
+		F.Head.setEvaluator(new Head());
+		F.LeafCount.setEvaluator(new LeafCount());
 		F.Map.setEvaluator(new Map());
 		F.MapAll.setEvaluator(new MapAll());
 		F.MapAt.setEvaluator(new MapAt());
@@ -567,6 +574,187 @@ public class Structure {
 			// don't set HOLDALL - the arguments are evaluated before applying the 'function
 			// head'
 		}
+	}
+
+	/**
+	 * <pre>
+	 * Head(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the head of the expression or atom <code>expr</code>.
+	 * </p>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt; Head(a * b)
+	 * Times
+	 * &gt; Head(6)
+	 * Integer
+	 * &gt; Head(x)
+	 * Symbol
+	 * </pre>
+	 * 
+	 * </blockquote>
+	 */
+	private static class Head extends AbstractCoreFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				return engine.evaluate(ast.arg1()).head();
+			}
+			return F.SymbolHead;
+		}
+
+	}
+
+	/**
+	 * Count the number of leaves of an expression.
+	 * 
+	 */
+	public static class LeafCount extends AbstractCoreFunctionEvaluator {
+
+		/**
+		 * Calculate the number of leaves in an AST
+		 */
+		public static class LeafCountVisitor extends AbstractVisitorLong {
+			int fHeadOffset;
+
+			public LeafCountVisitor() {
+				this(1);
+			}
+
+			public LeafCountVisitor(int hOffset) {
+				fHeadOffset = hOffset;
+			}
+
+			@Override
+			public long visit(IAST list) {
+				long sum = 0;
+				for (int i = fHeadOffset; i < list.size(); i++) {
+					sum += list.get(i).accept(this);
+				}
+				return sum;
+			}
+
+			@Override
+			public long visit(IComplex element) {
+				return element.leafCount();
+			}
+
+			@Override
+			public long visit(IComplexNum element) {
+				return element.leafCount();
+			}
+
+			@Override
+			public long visit(IFraction element) {
+				return element.leafCount();
+			}
+		}
+
+		/**
+		 * Calculate the number of leaves in an AST
+		 */
+		public static class SimplifyLeafCountVisitor extends AbstractVisitorLong {
+			int fHeadOffset;
+
+			public SimplifyLeafCountVisitor() {
+				this(1);
+			}
+
+			public SimplifyLeafCountVisitor(int hOffset) {
+				fHeadOffset = hOffset;
+			}
+
+			@Override
+			public long visit(IAST list) {
+				long sum = 0;
+				for (int i = fHeadOffset; i < list.size(); i++) {
+					sum += list.get(i).accept(this);
+				}
+				return sum;
+			}
+
+			@Override
+			public long visit(IComplex element) {
+				return element.leafCountSimplify();
+			}
+
+			@Override
+			public long visit(IComplexNum element) {
+				return 3;
+			}
+
+			@Override
+			public long visit(IFraction element) {
+				return element.leafCountSimplify();
+			}
+
+			@Override
+			public long visit(IInteger element) {
+				return element.leafCountSimplify();
+			}
+		}
+
+		public static class SimplifyLeafCountPatternMapVisitor extends AbstractVisitorLong {
+
+			int fHeadOffset;
+
+			ISymbol2IntMap fPatternMap;
+
+			public SimplifyLeafCountPatternMapVisitor(ISymbol2IntMap patternMap, int hOffset) {
+				fHeadOffset = hOffset;
+				fPatternMap = patternMap;
+			}
+
+			@Override
+			public long visit(IAST list) {
+				long sum = 0L;
+				// if (list.isAnd()) {
+				// sum = 1L;
+				// }
+				for (int i = fHeadOffset; i < list.size(); i++) {
+					sum += list.get(i).accept(this);
+				}
+				return sum;
+			}
+
+			@Override
+			public long visit(IComplex element) {
+				return element.leafCountSimplify();
+			}
+
+			@Override
+			public long visit(IComplexNum element) {
+				return 3;
+			}
+
+			@Override
+			public long visit(IFraction element) {
+				return element.leafCountSimplify();
+			}
+
+			@Override
+			public long visit(IInteger element) {
+				return element.leafCountSimplify();
+			}
+
+			@Override
+			public long visit(ISymbol element) {
+				return element.leafCountSimplify();
+			}
+
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			return F.integer(engine.evaluate(ast.arg1()).leafCount());
+		}
+
 	}
 
 	/**

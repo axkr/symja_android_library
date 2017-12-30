@@ -10,8 +10,7 @@ import org.apfloat.ApfloatMath;
 import org.apfloat.Apint;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
-import org.matheclipse.core.builtin.function.Blank;
-import org.matheclipse.core.builtin.function.Pattern;
+import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -330,12 +329,12 @@ public class AST2Expr {
 				ISymbol compareHead = F.LessEqual;
 				return rewriteLessGreaterAST(ast, compareHead);
 			} else if (head.equals(F.PatternHead)) {
-				final IExpr expr = Pattern.CONST.evaluate(ast, fEngine);
+				final IExpr expr = PatternMatching.Pattern.CONST.evaluate(ast, fEngine);
 				if (expr.isPresent()) {
 					return expr;
 				}
 			} else if (head.equals(F.BlankHead)) {
-				final IExpr expr = Blank.CONST.evaluate(ast, fEngine);
+				final IExpr expr = PatternMatching.Blank.CONST.evaluate(ast, fEngine);
 				if (expr.isPresent()) {
 					return expr;
 				}

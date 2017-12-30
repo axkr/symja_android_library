@@ -6,9 +6,6 @@ public final class FunctionDefinitions {
 	static {
 		AbsArg.setEvaluator(new org.matheclipse.core.reflection.system.AbsArg());
 		BesselJ.setEvaluator(new org.matheclipse.core.reflection.system.BesselJ());
-		Coefficient.setEvaluator(new org.matheclipse.core.reflection.system.Coefficient());
-		CoefficientList.setEvaluator(new org.matheclipse.core.reflection.system.CoefficientList());
-		CoefficientRules.setEvaluator(new org.matheclipse.core.reflection.system.CoefficientRules());
 		ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
 		ComposeList.setEvaluator(new org.matheclipse.core.reflection.system.ComposeList());
 		ContinuedFraction.setEvaluator(new org.matheclipse.core.reflection.system.ContinuedFraction());
@@ -17,7 +14,6 @@ public final class FunctionDefinitions {
 		D.setEvaluator(new org.matheclipse.core.reflection.system.D());
 		Default.setEvaluator(new org.matheclipse.core.reflection.system.Default());
 		Derivative.setEvaluator(new org.matheclipse.core.reflection.system.Derivative());
-		Discriminant.setEvaluator(new org.matheclipse.core.reflection.system.Discriminant());
 		Distribute.setEvaluator(new org.matheclipse.core.reflection.system.Distribute());
 		Divergence.setEvaluator(new org.matheclipse.core.reflection.system.Divergence());
 		DSolve.setEvaluator(new org.matheclipse.core.reflection.system.DSolve());
@@ -33,7 +29,6 @@ public final class FunctionDefinitions {
 		FresnelC.setEvaluator(new org.matheclipse.core.reflection.system.FresnelC());
 		FresnelS.setEvaluator(new org.matheclipse.core.reflection.system.FresnelS());
 		FrobeniusSolve.setEvaluator(new org.matheclipse.core.reflection.system.FrobeniusSolve());
-		FromCharacterCode.setEvaluator(new org.matheclipse.core.reflection.system.FromCharacterCode());
 		FromContinuedFraction.setEvaluator(new org.matheclipse.core.reflection.system.FromContinuedFraction());
 		FromPolarCoordinates.setEvaluator(new org.matheclipse.core.reflection.system.FromPolarCoordinates());
 		GCD.setEvaluator(new org.matheclipse.core.reflection.system.GCD());

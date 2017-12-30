@@ -46,28 +46,83 @@ import org.matheclipse.parser.client.ast.ASTNode;
 public final class PatternMatching {
 
 	static {
-
+		F.Blank.setEvaluator(Blank.CONST);
 		F.Clear.setEvaluator(new Clear());
 		F.ClearAll.setEvaluator(new ClearAll());
+		F.Definition.setEvaluator(new Definition());
 		F.Get.setEvaluator(new Get());
+		F.Hold.setEvaluator(new Hold());
+		F.Identity.setEvaluator(new Identity());
 		F.Information.setEvaluator(new Information());
 		F.MessageName.setEvaluator(new MessageName());
 		F.Optional.setEvaluator(new Optional());
+		F.Pattern.setEvaluator(Pattern.CONST);
 		F.Put.setEvaluator(new Put());
 		F.Rule.setEvaluator(new Rule());
 		F.RuleDelayed.setEvaluator(new RuleDelayed());
 		F.Set.setEvaluator(new Set());
 		F.SetDelayed.setEvaluator(new SetDelayed());
+		F.Unique.setEvaluator(new Unique());
 		F.Unset.setEvaluator(new Unset());
 		F.UpSet.setEvaluator(new UpSet());
 		F.UpSetDelayed.setEvaluator(new UpSetDelayed());
 	}
 
 	/**
+	 * 
 	 * <p>
 	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Clear">Clear</a>
+	 * <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Blank">Blank</a>
 	 * </p>
+	 *
+	 */
+	public static class Blank extends AbstractCoreFunctionEvaluator {
+		public final static Blank CONST = new Blank();
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST0()) {
+				return F.$b();
+			}
+			if (ast.isAST1()) {
+				return F.$b(ast.arg1());
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	/**
+	 * <pre>
+	 * Clear(symbol1, symbol2,...)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * clears all values of the given symbols.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * <code>Clear</code> does not remove attributes, options, and default values associated with the symbols. Use
+	 * <code>ClearAll</code> to do so.
+	 * </p>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a=2
+	 * 2
+	 * 
+	 * &gt;&gt; Definition(a)
+	 * {a=2}
+	 * 
+	 * &gt;&gt; Clear(a)
+	 * &gt;&gt; a
+	 * a
+	 * </pre>
 	 */
 	private static class Clear extends AbstractCoreFunctionEvaluator {
 
@@ -85,10 +140,15 @@ public final class PatternMatching {
 	}
 
 	/**
+	 * <pre>
+	 * ClearAll(symbol1, symbol2,...)
+	 * </pre>
+	 * 
+	 * <blockquote>
 	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/ClearAll">ClearAll</a>
+	 * clears all values and attributes associated with the given symbols.
 	 * </p>
+	 * </blockquote>
 	 */
 	private final static class ClearAll extends AbstractCoreFunctionEvaluator {
 
@@ -105,6 +165,68 @@ public final class PatternMatching {
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
+	}
+
+	/**
+	 * <pre>
+	 * Definition(symbol)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * prints user-defined values and rules associated with <code>symbol</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Definition(ArcSinh)
+	 * {ArcSinh(0)=0,
+	 *  ArcSinh(I*1/2)=I*1/6*Pi,
+	 *  ArcSinh(I)=I*1/2*Pi,
+	 *  ArcSinh(1)=Log(1+Sqrt(2)),
+	 *  ArcSinh(I*1/2*Sqrt(2))=I*1/4*Pi,
+	 *  ArcSinh(I*1/2*Sqrt(3))=I*1/3*Pi,
+	 *  ArcSinh(Infinity)=Infinity,
+	 *  ArcSinh(I*Infinity)=Infinity,
+	 *  ArcSinh(ComplexInfinity)=ComplexInfinity}
+	 * 
+	 * &gt;&gt; a=2
+	 * 2
+	 * 
+	 * &gt;&gt; Definition(a)
+	 * {a=2}
+	 * </pre>
+	 */
+	private static class Definition extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+			ISymbol symbol = Validate.checkSymbolType(ast, 1);
+
+			PrintStream stream;
+			stream = engine.getOutPrintStream();
+			if (stream == null) {
+				stream = System.out;
+			}
+			try {
+				return F.stringx(symbol.definitionToString());
+			} catch (IOException e) {
+				stream.println(e.getMessage());
+				if (Config.DEBUG) {
+					e.printStackTrace();
+				}
+			}
+
+			return F.Null;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
 	}
 
 	/**
@@ -270,6 +392,53 @@ public final class PatternMatching {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Hold(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * <code>Hold</code> doesn't evaluate <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Hold(3*2)
+	 * Hold(3*2)
+	 * </pre>
+	 */
+	private static class Hold extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
+	}
+
+	private static class Identity extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2);
+
+			return ast.arg1();
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	
 	private static class Information extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -341,6 +510,34 @@ public final class PatternMatching {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Optional(patt, default)
+	 * </pre>
+	 * <p>
+	 * or
+	 * </p>
+	 * 
+	 * <pre>
+	 * patt : default
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * is a pattern which matches <code>patt</code>, which if omitted should be replaced by <code>default</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; f(x_, y_:1) := {x, y}
+	 * &gt;&gt; f(1, 2)
+	 * {1,2}
+	 * 
+	 * &gt;&gt; f(a)
+	 * {a,1}
+	 * </pre>
+	 */
 	private static class Optional extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -349,6 +546,37 @@ public final class PatternMatching {
 			if (ast.arg1().isPattern()) {
 				IPattern patt = (IPattern) ast.arg1();
 				return F.$p(patt.getSymbol(), patt.getCondition(), ast.arg2());
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	public static class Pattern extends AbstractCoreFunctionEvaluator {
+		public final static Pattern CONST = new Pattern();
+
+		public Pattern() {
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			if (ast.arg1().isSymbol()) {
+				if (ast.arg2().isBlank()) {
+					IPatternObject blank = (IPatternObject) ast.arg2();
+					return F.$p((ISymbol) ast.arg1(), blank.getCondition());
+				}
+				// if (ast.arg2().isPattern()) {
+				// IPattern blank = (IPattern) ast.arg2();
+				// // if (blank.isBlank()) {
+				// return F.$p((ISymbol) ast.arg1(), blank.getCondition());
+				// // }
+				// }
 			}
 			return F.NIL;
 		}
@@ -400,6 +628,36 @@ public final class PatternMatching {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Rule(x, y)
+	 * 
+	 * x -&gt; y
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * represents a rule replacing <code>x</code> with <code>y</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a+b+c /. c-&gt;d
+	 * a+b+d
+	 * 
+	 * &gt;&gt; {x,x^2,y} /. x-&gt;3
+	 * {3,9,y}
+	 * </pre>
+	 * <p>
+	 * Rule called with 3 arguments; 2 arguments are expected.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a /. Rule(1, 2, 3) -&gt; t 
+	 * a
+	 * </pre>
+	 */
 	private final static class Rule extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -427,6 +685,19 @@ public final class PatternMatching {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * RuleDelayed(x, y)
+	 * 
+	 * x :&gt; y
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * represents a rule replacing <code>x</code> with <code>y</code>, with <code>y</code> held unevaluated.
+	 * </p>
+	 * </blockquote>
+	 */
 	private final static class RuleDelayed extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -451,6 +722,109 @@ public final class PatternMatching {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Set(expr, value)
+	 * 
+	 * expr = value
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * evaluates <code>value</code> and assigns it to <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * {s1, s2, s3} = {v1, v2, v3}
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * sets multiple symbols <code>(s1, s2, ...)</code> to the corresponding values <code>(v1, v2, ...)</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * <code>Set</code> can be used to give a symbol a value:<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a = 3    
+	 * 3  
+	 * 
+	 * &gt;&gt; a      
+	 * 3
+	 * </pre>
+	 * <p>
+	 * You can set multiple values at once using lists:<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; {a, b, c} = {10, 2, 3}    
+	 * {10,2,3}    
+	 * 
+	 * &gt;&gt; {a, b, {c, {d}}} = {1, 2, {{c1, c2}, {a}}} 
+	 * {1,2,{{c1,c2},{10}}}
+	 * 
+	 * &gt;&gt; d    
+	 * 10
+	 * </pre>
+	 * <p>
+	 * <code>Set</code> evaluates its right-hand side immediately and assigns it to the left-hand side:<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a    
+	 * 1    
+	 * 
+	 * &gt;&gt; x = a    
+	 * 1    
+	 * 
+	 * &gt;&gt; a = 2    
+	 * 2    
+	 * 
+	 * &gt;&gt; x    
+	 * 1
+	 * </pre>
+	 * <p>
+	 * 'Set' always returns the right-hand side, which you can again use in an assignment:<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a = b = c = 2    
+	 * &gt;&gt; a == b == c == 2    
+	 * True
+	 * </pre>
+	 * <p>
+	 * 'Set' supports assignments to parts:<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; A = {{1, 2}, {3, 4}}    
+	 * &gt;&gt; A[[1, 2]] = 5    
+	 * 5    
+	 * 
+	 * &gt;&gt; A    
+	 * {{1,5}, {3,4}}    
+	 * 
+	 * &gt;&gt; A[[;;, 2]] = {6, 7}    
+	 * {6,7}    
+	 * 
+	 * &gt;&gt; A    
+	 * {{1,6},{3,7}}
+	 * </pre>
+	 * <p>
+	 * Set a submatrix:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; B = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}    
+	 * &gt;&gt; B[[1;;2, 2;;-1]] = {{t, u}, {y, z}}   
+	 * &gt;&gt; B    
+	 * {{1, t, u}, {4, y, z}, {7, 8, 9}}
+	 * </pre>
+	 */
 	private final static class Set extends AbstractCoreFunctionEvaluator implements ICreatePatternMatcher {
 
 		@Override
@@ -541,6 +915,60 @@ public final class PatternMatching {
 
 	}
 
+	/**
+	 * <pre>
+	 * SetDelayed(expr, value)
+	 * 
+	 * expr := value
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * assigns <code>value</code> to <code>expr</code>, without evaluating <code>value</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * <code>SetDelayed</code> is like <code>Set</code>, except it has attribute <code>HoldAll</code>, thus it does not
+	 * evaluate the right-hand side immediately, but evaluates it when needed.<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Attributes(SetDelayed)    
+	 * {HoldAll}    
+	 * 
+	 * &gt;&gt; a = 1    
+	 * 1    
+	 * 
+	 * &gt;&gt; x := a
+	 * &gt;&gt; x    
+	 * 1
+	 * </pre>
+	 * <p>
+	 * Changing the value of <code>a</code> affects <code>x</code>:<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a = 2    
+	 * 2    
+	 * 
+	 * &gt;&gt; x    
+	 * 2
+	 * </pre>
+	 * <p>
+	 * <code>Condition</code> (<code>/;</code>) can be used with <code>SetDelayed</code> to make an assignment that only
+	 * holds if a condition is satisfied:<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; f(x_) := p(x) /; x&gt;0    
+	 * &gt;&gt; f(3)    
+	 * p(3)    
+	 * 
+	 * &gt;&gt; f(-3)    
+	 * f(-3)
+	 * </pre>
+	 */
 	private final static class SetDelayed extends AbstractCoreFunctionEvaluator implements ICreatePatternMatcher {
 
 		// public final static SetDelayed CONST = new SetDelayed();
@@ -616,6 +1044,90 @@ public final class PatternMatching {
 		throw new RuleCreationError(leftHandSide);
 	}
 
+	private static class Unique extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 1, 2);
+
+			final int moduleCounter = engine.incModuleCounter();
+			if (ast.isAST1()) {
+				if (ast.arg1().isSymbol()) {
+					final String varAppend = ast.arg1().toString() + "$" + moduleCounter;
+					return F.userSymbol(varAppend, engine);
+				} else if (ast.arg1() instanceof IStringX) {
+					// TODO start counter by 1....
+					final String varAppend = ast.arg1().toString() + moduleCounter;
+					return F.userSymbol(varAppend, engine);
+				}
+			}
+			final String varAppend = "$" + moduleCounter;
+			return F.userSymbol(varAppend, engine);
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	/**
+	 * <pre>
+	 * Unset(expr)
+	 * </pre>
+	 * <p>
+	 * or
+	 * </p>
+	 * 
+	 * <pre>
+	 * expr =.
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * removes any definitions belonging to the left-hand-side <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a = 2
+	 * 2
+	 * 
+	 * &gt;&gt; a =.
+	 * 
+	 * &gt;&gt; a
+	 * a
+	 * </pre>
+	 * <p>
+	 * Unsetting an already unset or never defined variable will not change anything:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a =.
+	 * 
+	 * &gt;&gt; b =.
+	 * </pre>
+	 * <p>
+	 * <code>Unset</code> can unset particular function values. It will print a message if no corresponding rule is
+	 * found.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; f[x_) =.
+	 * Assignment not found for: f(x_)
+	 * 
+	 * &gt;&gt; f(x_) := x ^ 2
+	 * 
+	 * &gt;&gt; f(3)
+	 * 9
+	 * 
+	 * &gt;&gt; f(x_) =.
+	 * 
+	 * &gt;&gt; f(3)
+	 * f(3)
+	 * </pre>
+	 */
 	private final static class Unset extends AbstractCoreFunctionEvaluator {
 
 		@Override

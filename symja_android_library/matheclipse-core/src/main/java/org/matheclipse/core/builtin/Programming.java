@@ -1,15 +1,21 @@
 package org.matheclipse.core.builtin;
 
+import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.List;
 
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
@@ -25,15 +31,21 @@ import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.Iterator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IIterator;
+import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.visit.ModuleReplaceAll;
 import org.matheclipse.parser.client.math.MathException;
+
+import com.google.common.util.concurrent.SimpleTimeLimiter;
+import com.google.common.util.concurrent.TimeLimiter;
 
 public final class Programming {
 	private final static Programming CONST = new Programming();
@@ -43,9 +55,11 @@ public final class Programming {
 		F.Break.setEvaluator(new Break());
 		F.Block.setEvaluator(new Block());
 		F.Catch.setEvaluator(new Catch());
+		F.Compile.setEvaluator(new Compile());
 		F.CompoundExpression.setEvaluator(new CompoundExpression());
 		F.Condition.setEvaluator(new Condition());
 		F.Continue.setEvaluator(new Continue());
+		F.Defer.setEvaluator(new Defer());
 		F.Do.setEvaluator(new Do());
 		F.FixedPoint.setEvaluator(new FixedPoint());
 		F.FixedPointList.setEvaluator(new FixedPointList());
@@ -57,11 +71,17 @@ public final class Programming {
 		F.NestWhile.setEvaluator(new NestWhile());
 		F.NestWhileList.setEvaluator(new NestWhileList());
 		F.Part.setEvaluator(new Part());
+		F.Print.setEvaluator(new Print());
+		F.Quiet.setEvaluator(new Quiet());
 		F.Reap.setEvaluator(new Reap());
 		F.Return.setEvaluator(new Return());
 		F.Sow.setEvaluator(new Sow());
 		F.Switch.setEvaluator(new Switch());
+		F.TimeConstrained.setEvaluator(new TimeConstrained());
+		F.Timing.setEvaluator(new Timing());
 		F.Throw.setEvaluator(new Throw());
+		F.Trace.setEvaluator(new Trace());
+		F.Unevaluated.setEvaluator(new Unevaluated());
 		F.Which.setEvaluator(new Which());
 		F.While.setEvaluator(new While());
 		F.With.setEvaluator(new With());
@@ -167,6 +187,18 @@ public final class Programming {
 
 	}
 
+	private static class Compile extends AbstractCoreFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (!ToggleFeature.COMPILE) {
+				return F.NIL;
+			}
+			engine.printMessage("Compile: Compile() function not implemented! ");
+			return F.Null;
+		}
+
+	}
+
 	private final static class CompoundExpression extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -229,7 +261,121 @@ public final class Programming {
 	}
 
 	/**
+	 * TODO implement &quot;Defer&quot; mode
 	 * 
+	 */
+	private static class Defer extends AbstractCoreFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (!ToggleFeature.DEFER) {
+				return F.NIL;
+			}
+			// Validate.checkSize(ast, 2);
+			// IExpr arg1 = engine.evaluate(ast.arg1());
+
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			if (!ToggleFeature.DEFER) {
+				return;
+			}
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	/**
+	 * <pre>
+	 * Do(expr, {max})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * evaluates <code>expr</code> <code>max</code> times.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Do(expr, {i, max})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * evaluates <code>expr</code> <code>max</code> times, substituting <code>i</code> in <code>expr</code> with values
+	 * from <code>1</code> to <code>max</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Do(expr, {i, min, max})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * starts with <code>i = max</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Do(expr, {i, min, max, step})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * uses a step size of <code>step</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Do(expr, {i, {i1, i2, ...}})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * uses values <code>i1, i2, ... for i</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Do(expr, {i, imin, imax}, {j, jmin, jmax}, ...)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * evaluates expr for each j from jmin to jmax, for each i from imin to imax, etc.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Do(Print(i), {i, 2, 4})
+	 *  | 2
+	 *  | 3
+	 *  | 4
+	 * 
+	 * &gt;&gt; Do(Print({i, j}), {i,1,2}, {j,3,5})
+	 *  | {1, 3}
+	 *  | {1, 4}
+	 *  | {1, 5}
+	 *  | {2, 3}
+	 *  | {2, 4}
+	 *  | {2, 5}
+	 * </pre>
+	 * <p>
+	 * You can use 'Break()' and 'Continue()' inside 'Do':
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Do(If(i &gt; 10, Break(), If(Mod(i, 2) == 0, Continue()); Print(i)), {i, 5, 20})
+	 *  | 5
+	 *  | 7
+	 *  | 9
+	 * 
+	 * &gt;&gt; Do(Print("hi"),{1+1})
+	 *  | hi
+	 *  | hi
+	 * </pre>
 	 */
 	private final static class Do extends AbstractCoreFunctionEvaluator {
 
@@ -722,6 +868,64 @@ public final class Programming {
 
 	}
 
+	private static class Print extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			final PrintStream s = engine.getOutPrintStream();
+			final PrintStream stream;
+			if (s == null) {
+				stream = System.out;
+			} else {
+				stream = s;
+			}
+			final StringBuilder buf = new StringBuilder();
+			OutputFormFactory out = OutputFormFactory.get();
+			ast.forEach(x -> {
+				IExpr temp = engine.evaluate(x);
+				if (temp instanceof IStringX) {
+					buf.append(temp.toString());
+				} else {
+					try {
+						out.convert(buf, temp);
+					} catch (IOException e) {
+						stream.println(e.getMessage());
+						if (Config.DEBUG) {
+							e.printStackTrace();
+						}
+					}
+				}
+			});
+			stream.println(buf.toString());
+			return F.Null;
+		}
+
+	}
+
+	/**
+	 * The call <code>Quiet( expr )</code> evaluates <code>expr</code> in &quot;quiet&quot; mode (i.e. no warning
+	 * messages are shown during evaluation).
+	 * 
+	 */
+	private static class Quiet extends AbstractCoreFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+			boolean quietMode = engine.isQuietMode();
+			try {
+				engine.setQuietMode(true);
+				return engine.evaluate(ast.arg1());
+			} finally {
+				engine.setQuietMode(quietMode);
+			}
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
 	private final static class Reap extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -828,6 +1032,117 @@ public final class Programming {
 
 	}
 
+	/**
+	 * TODO implement &quot;TimeConstrained&quot; mode
+	 * 
+	 */
+	private static class TimeConstrained extends AbstractCoreFunctionEvaluator {
+
+		private static class EvalCallable implements Callable<IExpr> {
+			private final EvalEngine fEngine;
+			private final IExpr fExpr;
+
+			public EvalCallable(IExpr expr, EvalEngine engine) {
+				fExpr = expr;
+				fEngine = engine;
+			}
+
+			@Override
+			public IExpr call() throws Exception {
+				// TODO Auto-generated method stub
+				return fEngine.evaluate(fExpr);
+			}
+
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 3, 4);
+
+			if (Config.JAS_NO_THREADS) {
+				// no thread can be spawned
+				try {
+					return engine.evaluate(ast.arg1());
+				} catch (final MathException e) {
+					throw e;
+				} catch (final Throwable th) {
+					if (ast.isAST3()) {
+						return ast.arg3();
+					}
+				}
+				return F.Aborted;
+			}
+
+			IExpr arg2 = engine.evaluate(ast.arg2());
+			long seconds = 0L;
+			try {
+				// if (ast.arg2().toString().equals("§timelimit")){
+				// arg2=F.num(5.0);
+				// }
+				if (arg2.isSignedNumber()) {
+					arg2 = ((ISignedNumber) arg2).ceilFraction();
+					seconds = ((ISignedNumber) arg2).toLong();
+				} else {
+					engine.printMessage("TimeConstrained: " + ast.arg2().toString() + " is not a Java long value.");
+					return F.NIL;
+				}
+
+			} catch (ArithmeticException ae) {
+				engine.printMessage("TimeConstrained: " + ast.arg2().toString() + " is not a Java long value.");
+				return F.NIL;
+			}
+
+			TimeLimiter timeLimiter = new SimpleTimeLimiter();
+			Callable<IExpr> work = new EvalCallable(ast.arg1(), engine);
+
+			try {
+				return timeLimiter.callWithTimeout(work, seconds, TimeUnit.SECONDS, true);
+			} catch (java.util.concurrent.TimeoutException e) {
+				if (ast.isAST3()) {
+					return ast.arg3();
+				}
+				return F.Aborted;
+			} catch (com.google.common.util.concurrent.UncheckedTimeoutException e) {
+				if (ast.isAST3()) {
+					return ast.arg3();
+				}
+				return F.Aborted;
+			} catch (Exception e) {
+				if (Config.DEBUG) {
+					e.printStackTrace();
+				}
+				return F.Null;
+			}
+
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	/**
+	 * Calculate the time needed for evaluating an expression
+	 * 
+	 */
+	private static class Timing extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			final long begin = System.currentTimeMillis();
+			final IExpr result = engine.evaluate(ast.arg1());
+			return List(Divide(F.num(System.currentTimeMillis() - begin), F.integer(1000L)), F.Hold(result));
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
 	private final static class Throw extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -845,6 +1160,71 @@ public final class Programming {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 
+	}
+
+	/**
+	 * <pre>
+	 * Trace(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * return the evaluation steps which are used to get the result.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Trace(D(Sin(x),x))
+	 * {{Cos(#1)&amp;[x],Cos(x)},D(x,x)*Cos(x),{D(x,x),1},1*Cos(x),Cos(x)}
+	 * </pre>
+	 */
+	private static class Trace extends AbstractCoreFunctionEvaluator {
+		/**
+		 * Trace the evaluation steps for a given expression. The resulting trace expression list is wrapped by Hold
+		 * (i.e. <code>Hold[{...}]</code>.
+		 * 
+		 */
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			final IExpr temp = ast.arg1();
+			IPatternMatcher matcher = null;
+			if (ast.isAST2()) {
+				matcher = engine.evalPatternMatcher(ast.arg2());
+			}
+
+			return engine.evalTrace(temp, matcher, F.List());
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
+	}
+
+	private static class Unevaluated extends AbstractCoreFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (!ToggleFeature.UNEVALUATED) {
+				return F.NIL;
+			}
+
+			Validate.checkSize(ast, 2);
+			IExpr arg1 = engine.evaluate(ast.arg1());
+
+			return arg1;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			if (!ToggleFeature.UNEVALUATED) {
+				return;
+			}
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
 	}
 
 	private final static class Which extends AbstractCoreFunctionEvaluator {

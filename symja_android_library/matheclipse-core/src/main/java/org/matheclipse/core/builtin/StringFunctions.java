@@ -26,6 +26,7 @@ import org.matheclipse.core.parser.ExprParser;
 public final class StringFunctions {
 
 	static {
+		F.FromCharacterCode.setEvaluator(new FromCharacterCode());
 		F.LetterQ.setEvaluator(new LetterQ());
 		F.LowerCaseQ.setEvaluator(new LowerCaseQ());
 		F.StringDrop.setEvaluator(new StringDrop());
@@ -36,6 +37,57 @@ public final class StringFunctions {
 		F.ToCharacterCode.setEvaluator(new ToCharacterCode());
 		F.ToString.setEvaluator(new ToString());
 		F.ToUnicode.setEvaluator(new ToUnicode());
+	}
+
+	private static class FromCharacterCode extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.size() != 2) {
+				return F.NIL;
+			}
+
+			if (ast.arg1().isList()) {
+				final IAST list = (IAST) ast.arg1();
+				final StringBuilder buffer = new StringBuilder();
+				char ch;
+				for (int i = 1; i < list.size(); i++) {
+					if (list.get(i).isInteger()) {
+						ch = (char) Validate.checkIntType(list, i);
+						buffer.append(ch);
+					} else {
+						return F.NIL;
+					}
+				}
+				return StringX.valueOf(buffer);
+			}
+			if (ast.arg1().isInteger()) {
+				final char ch = (char) Validate.checkIntType(ast, 1);
+				return StringX.valueOf(ch);
+			}
+
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+		public static IAST fromCharcterCode(final String unicodeInput, final String inputEncoding,
+				final IASTAppendable list) {
+			try {
+				final String utf8String = new String(unicodeInput.getBytes(inputEncoding), "UTF-8");
+				int characterCode;
+				for (int i = 0; i < utf8String.length(); i++) {
+					characterCode = utf8String.charAt(i);
+					list.append(F.integer(characterCode));
+				}
+				return list;
+			} catch (final UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+			return F.NIL;
+		}
 	}
 
 	/**
@@ -49,9 +101,8 @@ public final class StringFunctions {
 	 * </p>
 	 * </blockquote>
 	 * <p>
-	 * A character is considered to be a letter if its general category type,
-	 * provided by the Java method <code>Character#getType()</code> is any of the
-	 * following:
+	 * A character is considered to be a letter if its general category type, provided by the Java method
+	 * <code>Character#getType()</code> is any of the following:
 	 * </p>
 	 * <ul>
 	 * <li><code>UPPERCASE_LETTER</code></li>
@@ -61,8 +112,7 @@ public final class StringFunctions {
 	 * <li><code>OTHER_LETTER</code></li>
 	 * </ul>
 	 * <p>
-	 * Not all letters have case. Many characters are letters but are neither
-	 * uppercase nor lowercase nor titlecase.
+	 * Not all letters have case. Many characters are letters but are neither uppercase nor lowercase nor titlecase.
 	 * </p>
 	 */
 	private static class LetterQ extends AbstractFunctionEvaluator implements Predicate<IExpr> {
@@ -97,8 +147,7 @@ public final class StringFunctions {
 	}
 
 	/**
-	 * Returns <code>True</code>, if the given expression is a string which only
-	 * contains lower case characters
+	 * Returns <code>True</code>, if the given expression is a string which only contains lower case characters
 	 * 
 	 */
 	private static class LowerCaseQ extends AbstractFunctionEvaluator implements Predicate<IExpr> {
@@ -246,7 +295,8 @@ public final class StringFunctions {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
 		}
 
-		public static IAST toCharacterCode(final String unicodeInput, final String inputEncoding, final IASTAppendable list) {
+		public static IAST toCharacterCode(final String unicodeInput, final String inputEncoding,
+				final IASTAppendable list) {
 			try {
 				final String utf8String = new String(unicodeInput.getBytes(inputEncoding), "UTF-8");
 				int characterCode;

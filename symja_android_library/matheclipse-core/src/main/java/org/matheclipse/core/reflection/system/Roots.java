@@ -13,6 +13,7 @@ import org.hipparchus.linear.EigenDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
+import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
@@ -227,7 +228,7 @@ public class Roots extends AbstractFunctionEvaluator {
 								}
 							}
 						} else {
-							double[] coefficients = CoefficientList.coefficientList(temp, (ISymbol) variables.arg1());
+							double[] coefficients = PolynomialFunctions.coefficientList(temp, (ISymbol) variables.arg1());
 							if (coefficients == null) {
 								return F.NIL;
 							}

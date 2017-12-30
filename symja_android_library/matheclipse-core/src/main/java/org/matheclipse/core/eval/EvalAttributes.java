@@ -78,24 +78,24 @@ public class EvalAttributes {
 	 * @return the flattened ast expression if a sublist was flattened out, otherwise return <code>F#NIL</code>..
 	 */
 	public static IASTAppendable flatten(final ISymbol head, final IAST ast) {
-		IExpr expr;
-		final int astSize = ast.size();
-		int newSize = 0;
-		boolean flattened = false;
-		for (int i = 1; i < astSize; i++) {
-			expr = ast.get(i);
+		int[] newSize = new int[1];
+		newSize[0] = 0;
+		boolean[] flattened = new boolean[1];
+		flattened[0] = false;
+		
+		ast.forEach(expr -> {
 			if (expr.isAST(head)) {
-				flattened = true;
+				flattened[0] = true;
 				int temp = flattenAlloc(head, (IAST) expr);
-				newSize += temp;
+				newSize[0] += temp;
 			} else {
-				newSize++;
+				newSize[0]++;
 			}
-		}
-		if (flattened) {
-			IASTAppendable result = F.ast(ast.head(), newSize, false);
-			for (int i = 1; i < astSize; i++) {
-				expr = ast.get(i);
+		});
+		
+		if (flattened[0]) {
+			IASTAppendable result = F.ast(ast.head(), newSize[0], false);
+			ast.forEach(expr -> {
 				if (expr.isAST(head)) {
 					IAST temp = flatten(head, (IAST) expr);
 					if (temp.isPresent()) {
@@ -106,7 +106,7 @@ public class EvalAttributes {
 				} else {
 					result.append(expr);
 				}
-			}
+			});
 			return result;
 		}
 		return F.NIL;
@@ -170,18 +170,15 @@ public class EvalAttributes {
 	}
 
 	private static int flattenAlloc(final ISymbol head, final IAST ast) {
-		IExpr expr;
-		final int astSize = ast.size();
-		int newSize = 0;
-		for (int i = 1; i < astSize; i++) {
-			expr = ast.get(i);
+		int[] newSize = new int[1];
+		ast.forEach(expr->{
 			if (expr.isAST(head)) {
-				newSize += flattenAlloc(head, (IAST) expr);
+				newSize[0] += flattenAlloc(head, (IAST) expr);
 			} else {
-				newSize++;
+				newSize[0]++;
 			}
-		}
-		return newSize;
+		});
+		return newSize[0];
 	}
 
 	/**
@@ -203,19 +200,17 @@ public class EvalAttributes {
 	 */
 	public static boolean flatten(final ISymbol head, final IAST sublist, final IASTAppendable result,
 			final int recursionCounter, final int level) {
-		boolean isEvaled = false;
-		IExpr expr;
-		final int astSize = sublist.size();
-		for (int i = 1; i < astSize; i++) {
-			expr = sublist.get(i);
+		boolean[] flattened = new boolean[1];
+		flattened[0] = false;
+		sublist.forEach(1, sublist.size(), expr -> {
 			if (expr.isAST(head) && recursionCounter < level) {
-				isEvaled = true;
+				flattened[0] = true;
 				flatten(head, (IAST) expr, result, recursionCounter + 1, level);
 			} else {
 				result.append(expr);
 			}
-		}
-		return isEvaled;
+		});
+		return flattened[0];
 	}
 
 	/**
@@ -397,7 +392,6 @@ public class EvalAttributes {
 		final int listSize = ast.size();
 		for (int j = 1; j < listLength + 1; j++) {
 			final IASTAppendable subResult = F.ast(argHead, listSize - 1, true);
-
 			for (int i = 1; i < listSize; i++) {
 				if (ast.get(i).isAST(listHead)) {
 					final IAST arg = (IAST) ast.get(i);
