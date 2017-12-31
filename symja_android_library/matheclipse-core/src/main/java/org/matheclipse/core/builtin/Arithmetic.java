@@ -262,8 +262,27 @@ public final class Arithmetic {
 	}
 
 	/**
-	 * Operator +=
+	 * <pre>
+	 * AddTo(x, dx)
 	 * 
+	 * x += dx
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * is equivalent to <code>x = x + dx</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a = 10
+	 * &gt;&gt; a += 2   
+	 * 12    
+	 * 
+	 * &gt;&gt; a    
+	 * 12
+	 * </pre>
 	 */
 	private static class AddTo extends AbstractFunctionEvaluator {
 
@@ -294,10 +313,28 @@ public final class Arithmetic {
 	}
 
 	/**
+	 * <pre>
+	 * Arg(expr)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Argument_%28complex_analysis%29"> Wikipedia - Argument
-	 * (complex_analysis)</a>
+	 * <blockquote>
+	 * <p>
+	 * returns the argument of the complex number <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Argument_%28complex_analysis%29">Wikipedia - Argument
+	 * (complex_analysis)</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
 	 * 
+	 * <pre>
+	 * &gt;&gt; Arg(1+I)   
+	 * Pi/4
+	 * </pre>
 	 */
 	private static class Arg extends AbstractFunctionEvaluator implements INumeric, DoubleUnaryOperator {
 
@@ -490,9 +527,36 @@ public final class Arithmetic {
 	}
 
 	/**
-	 * Conjugate the given argument.
+	 * <pre>
+	 * Conjugate(z)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Complex_conjugation">Wikipedia:Complex conjugation</a>
+	 * <blockquote>
+	 * <p>
+	 * returns the complex conjugate of the complex number <code>z</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Conjugate(3 + 4*I)
+	 * 3 - 4 I
+	 * 
+	 * &gt;&gt; Conjugate(3)
+	 * 3
+	 * 
+	 * &gt;&gt; Conjugate(a + b * I)
+	 * -I*Conjugate(b)+Conjugate(a)
+	 * 
+	 * &gt;&gt; Conjugate({{1, 2 + I*4, a + I*b}, {I}})
+	 * {{1,2-I*4,-I*Conjugate(b)+Conjugate(a)},{-I}}
+	 * 
+	 * &gt;&gt; {Conjugate(Pi), Conjugate(E)}
+	 * {Pi,E}
+	 * 
+	 * &gt;&gt; Conjugate(1.5 + 2.5*I)
+	 * 1.5+I*(-2.5)
+	 * </pre>
 	 */
 	private final static class Conjugate extends AbstractTrigArg1 implements INumeric, ConjugateRules {
 
@@ -605,6 +669,29 @@ public final class Arithmetic {
 
 	}
 
+	/**
+	 * <pre>
+	 * Decrement(x)
+	 * 
+	 * x--
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * decrements <code>x</code> by <code>1</code>, returning the original value of <code>x</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a = 5   
+	 * &gt;&gt; a--   
+	 * 5    
+	 * 
+	 * &gt;&gt; a    
+	 * 4
+	 * </pre>
+	 */
 	private static class Decrement extends AbstractFunctionEvaluator {
 
 		protected IASTMutable getAST() {
@@ -643,8 +730,27 @@ public final class Arithmetic {
 	}
 
 	/**
-	 * Operator /=
+	 * <pre>
+	 * DivideBy(x, dx)
 	 * 
+	 * x /= dx
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * is equivalent to <code>x = x / dx</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a = 10
+	 * &gt;&gt; a /= 2   
+	 * 5
+	 * 
+	 * &gt;&gt; a    
+	 * 5
+	 * </pre>
 	 */
 	private static class DivideBy extends AddTo {
 
@@ -781,14 +887,27 @@ public final class Arithmetic {
 	}
 
 	/**
+	 * <pre>
+	 * Gamma(z)
+	 * </pre>
+	 * 
+	 * <blockquote>
 	 * <p>
-	 * Returns the Gamma function value.
+	 * is the gamma function on the complex number <code>z</code>.
 	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Gamma_function">Gamma function</a> and
-	 * <a href= "https://en.wikipedia.org/wiki/Particular_values_of_the_Gamma_function"> Particular values of the Gamma
-	 * function</a>
+	 * <pre>
+	 * &gt;&gt; Gamma(8)
+	 * 5040
 	 * 
+	 * &gt;&gt; Gamma(1/2)
+	 * Sqrt(Pi)
+	 * 
+	 * &gt;&gt; Gamma(2.2)
+	 * 1.1018024908797128
+	 * </pre>
 	 */
 	private final static class Gamma extends AbstractTrigArg1 implements DoubleUnaryOperator {
 
@@ -861,9 +980,21 @@ public final class Arithmetic {
 	}
 
 	/**
-	 * Harmonic number of a given integer value
+	 * <pre>
+	 * HarmonicNumber(n)
+	 * </pre>
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Harmonic_number">Harmonic number</a>
+	 * <blockquote>
+	 * <p>
+	 * returns the <code>n</code>th harmonic number.<br />
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Table(HarmonicNumber(n), {n, 8})
+	 * {1,3/2,11/6,25/12,137/60,49/20,363/140,761/280}
+	 * </pre>
 	 */
 	private final static class HarmonicNumber extends AbstractEvaluator {
 
@@ -963,9 +1094,24 @@ public final class Arithmetic {
 	}
 
 	/**
-	 * Get the imaginary part of an expression
+	 * <pre>
+	 * Im(z)
+	 * </pre>
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Imaginary_part">Imaginary part</a>
+	 * <blockquote>
+	 * <p>
+	 * returns the imaginary component of the complex number <code>z</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Im(3+4I)
+	 * 4
+	 * 
+	 * &gt;&gt; Im(0.5 + 2.3*I)
+	 * 2.3
+	 * </pre>
 	 */
 	private final static class Im extends AbstractEvaluator {
 
@@ -1065,6 +1211,37 @@ public final class Arithmetic {
 
 	}
 
+	/**
+	 * <pre>
+	 * Increment(x)
+	 * 
+	 * x++
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * increments <code>x</code> by <code>1</code>, returning the original value of <code>x</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a = 2;   
+	 * &gt;&gt; a++    
+	 * 2    
+	 * 
+	 * &gt;&gt; a    
+	 * 3
+	 * </pre>
+	 * <p>
+	 * Grouping of 'Increment', 'PreIncrement' and 'Plus':<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ++++a+++++2//Hold//FullForm    
+	 * Hold(Plus(PreIncrement(PreIncrement(Increment(Increment(a)))), 2))
+	 * </pre>
+	 */
 	private static class Increment extends Decrement {
 
 		@Override
@@ -1166,11 +1343,56 @@ public final class Arithmetic {
 	}
 
 	/**
-	 * A piecewise-defined function (also called a piecewise function or a hybrid function) is a function which is
-	 * defined by multiple subfunctions, each subfunction applying to a certain interval of the main function's domain.
+	 * <pre>
+	 * Piecewise({{expr1, cond1}, ...})
+	 * </pre>
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Piecewise">Wikipedia:Piecewise</a>
+	 * <blockquote>
+	 * <p>
+	 * represents a piecewise function.
+	 * </p>
+	 * </blockquote>
 	 * 
+	 * <pre>
+	 * Piecewise({{expr1, cond1}, ...}, expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * represents a piecewise function with default <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Piecewise">Wikipedia - Piecewise</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Piecewise({{-x, x&lt;0}, {x, x&gt;=0}})/.{{x-&gt;-3}, {x-&gt;-1/3}, {x-&gt;0}, {x-&gt;1/2}, {x-&gt;5}}
+	 * {3,1/3,0,1/2,5}
+	 * </pre>
+	 * <p>
+	 * Heaviside function
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Piecewise({{0, x &lt;= 0}}, 1)    
+	 * Piecewise({{0, x &lt;= 0}}, 1)
+	 * </pre>
+	 * <p>
+	 * Piecewise defaults to <code>0</code>, if no other case is matching.<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Piecewise({{1, False}})    
+	 * 0    
+	 * 
+	 * &gt;&gt; Piecewise({{0 ^ 0, False}}, -1)    
+	 * -1
+	 * </pre>
 	 */
 	private final static class Piecewise extends AbstractFunctionEvaluator {
 
@@ -1254,6 +1476,81 @@ public final class Arithmetic {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Plus(a, b, ...)
+	 * 
+	 * a + b + ...
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * represents the sum of the terms <code>a, b, ...</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; 1 + 2
+	 * 3
+	 * </pre>
+	 * <p>
+	 * <code>Plus</code> performs basic simplification of terms:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a + b + a
+	 * 2*a+b
+	 * 
+	 * &gt;&gt; a + a + 3 * a
+	 * 5*a
+	 * 
+	 * &gt;&gt; a + b + 4.5 + a + b + a + 2 + 1.5 * b
+	 * 6.5+3.0*a+3.5*b
+	 * </pre>
+	 * <p>
+	 * Apply <code>Plus</code> on a list to sum up its elements:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Plus @@ {2, 4, 6}
+	 * 12
+	 * </pre>
+	 * <p>
+	 * The sum of the first <code>1000</code> integers:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Plus @@ Range(1000)
+	 * 500500
+	 * </pre>
+	 * <p>
+	 * <code>Plus</code> has default value <code>0</code>:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a /. n_. + x_ :&gt; {n, x}
+	 * {0,a}
+	 * 
+	 * &gt;&gt; -2*a - 2*b
+	 * -2*a-2*b
+	 * 
+	 * &gt;&gt; -4+2*x+2*Sqrt(3)
+	 * -4+2*x+2*Sqrt(3)
+	 * 
+	 * &gt;&gt; 1 - I * Sqrt(3)
+	 * 1-I*Sqrt(3)
+	 * 
+	 * &gt;&gt; Head(3 + 2 I)
+	 * Complex
+	 * 
+	 * &gt;&gt; N(Pi, 30) + N(E, 30)
+	 * 5.85987448204883847382293085463
+	 * 
+	 * &gt;&gt; N(Pi, 30) + N(E, 30) // Precision
+	 * 30
+	 * </pre>
+	 */
 	public static class Plus extends AbstractArgMultiple implements INumeric {
 
 		private static HashedOrderlessMatcherPlus ORDERLESS_MATCHER = new HashedOrderlessMatcherPlus();
@@ -1447,11 +1744,27 @@ public final class Arithmetic {
 	}
 
 	/**
-	 * Compute Pochhammer's symbol (this)_n.
+	 * <pre>
+	 * Pochhammer(a, n)
+	 * </pre>
 	 * 
-	 * @param n
-	 *            The number of product terms in the evaluation.
-	 * @return Gamma(this+n)/Gamma(this) = this*(this+1)*...*(this+n-1).
+	 * <blockquote>
+	 * <p>
+	 * returns the pochhammer symbol for a rational number <code>a</code> and an integer number <code>n</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Pochhammer_symbol">Wikipedia - Pochhammer symbol</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Pochhammer(4, 8)
+	 * 6652800
+	 * </pre>
 	 */
 	private final static class Pochhammer extends AbstractArg2 {// implements PochhammerRules {
 
@@ -1540,6 +1853,120 @@ public final class Arithmetic {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Power(a, b)  
+	 * 
+	 * a ^ b
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * represents <code>a</code> raised to the power of <code>b</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; 4 ^ (1/2)
+	 * 2
+	 * 
+	 * &gt;&gt; 4 ^ (1/3)
+	 * 4^(1/3)
+	 * 
+	 * &gt;&gt; 3^123
+	 * 48519278097689642681155855396759336072749841943521979872827
+	 * 
+	 * &gt;&gt; (y ^ 2) ^ (1/2)
+	 * Sqrt(y^2)
+	 * 
+	 * &gt;&gt; (y ^ 2) ^ 3
+	 * y^6
+	 * </pre>
+	 * <p>
+	 * Use a decimal point to force numeric evaluation:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; 4.0 ^ (1/3)
+	 * 1.5874010519681994
+	 * </pre>
+	 * <p>
+	 * <code>Power</code> has default value <code>1</code> for its second argument:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a /. x_ ^ n_. :&gt; {x, n}
+	 * {a,1}
+	 * </pre>
+	 * <p>
+	 * <code>Power</code> can be used with complex numbers:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; (1.5 + 1.0*I) ^ 3.5
+	 * -3.682940057821917+I*6.951392664028508
+	 * 
+	 * &gt;&gt; (1.5 + 1.0*I) ^ (3.5 + 1.5*I)
+	 * -3.1918162904562815+I*0.6456585094161581
+	 * </pre>
+	 * <p>
+	 * Infinite expression 0^(negative number)
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; 1/0 
+	 * ComplexInfinity
+	 * 
+	 * &gt;&gt; 0 ^ -2
+	 * ComplexInfinity
+	 * 
+	 * &gt;&gt; 0 ^ (-1/2)
+	 * ComplexInfinity
+	 * 
+	 * &gt;&gt; 0 ^ -Pi
+	 * ComplexInfinity
+	 * </pre>
+	 * <p>
+	 * Indeterminate expression 0 ^ (complex number) encountered.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; 0 ^ (2*I*E)
+	 * Indeterminate
+	 * 
+	 * &gt;&gt; 0 ^ - (Pi + 2*E*I)
+	 * ComplexInfinity
+	 * </pre>
+	 * <p>
+	 * Indeterminate expression 0 ^ 0 encountered.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; 0 ^ 0
+	 * 
+	 * &gt;&gt; Sqrt(-3+2.*I)
+	 * 0.5502505227003375+I*1.8173540210239707
+	 * 
+	 * &gt;&gt; Sqrt(-3+2*I)
+	 * Sqrt(-3+I*2) 
+	 * 
+	 * &gt;&gt; (3/2+1/2I)^2
+	 * 2+I*3/2
+	 * 
+	 * &gt;&gt; I ^ I
+	 * I^I
+	 * 
+	 * &gt;&gt; 2 ^ 2.0
+	 * 4.0
+	 * 
+	 * &gt;&gt; Pi ^ 4.
+	 * 97.40909103400242
+	 * 
+	 * &gt;&gt; a ^ b
+	 * a^b
+	 * </pre>
+	 */
 	public static class Power extends AbstractArg2 implements INumeric, PowerRules {
 
 		/**
@@ -2298,11 +2725,33 @@ public final class Arithmetic {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * PreDecrement(x)
+	 * 
+	 * --x
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * decrements <code>x</code> by <code>1</code>, returning the new value of <code>x</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * <code>--a</code> is equivalent to <code>a = a - 1</code>:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a = 2   
+	 * &gt;&gt; --a    
+	 * 1
+	 * 
+	 * &gt;&gt; a    
+	 * 1
+	 * </pre>
+	 */
 	private static class PreDecrement extends Decrement {
-
-		public PreDecrement() {
-			super();
-		}
 
 		@Override
 		protected IASTMutable getAST() {
@@ -2320,6 +2769,32 @@ public final class Arithmetic {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * PreIncrement(x)
+	 * 
+	 * ++x
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * increments <code>x</code> by <code>1</code>, returning the new value of <code>x</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * <code>++a</code> is equivalent to <code>a = a + 1</code>:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a = 2   
+	 * &gt;&gt; ++a    
+	 * 3    
+	 * 
+	 * &gt;&gt; a    
+	 * 3
+	 * </pre>
+	 */
 	private static class PreIncrement extends PreDecrement {
 
 		@Override
@@ -2403,9 +2878,24 @@ public final class Arithmetic {
 	}
 
 	/**
-	 * Get the real part of an expression
+	 * <pre>
+	 * Re(z)
+	 * </pre>
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Real_part">Real part</a>
+	 * <blockquote>
+	 * <p>
+	 * returns the real component of the complex number <code>z</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Re(3+4I)
+	 * 3
+	 * 
+	 * &gt;&gt; Im(0.5 + 2.3*I)
+	 * 2.3
+	 * </pre>
 	 */
 	private final static class Re extends AbstractEvaluator {
 
@@ -2504,10 +2994,47 @@ public final class Arithmetic {
 
 	}
 
+	/**
+	 * <pre>
+	 * Sqrt(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the square root of <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Sqrt(4)
+	 * 2
+	 * 
+	 * &gt;&gt; Sqrt(5)
+	 * Sqrt(5)
+	 * 
+	 * &gt;&gt; Sqrt(5) // N
+	 * 2.23606797749979
+	 * 
+	 * &gt;&gt; Sqrt(a)^2
+	 * a
+	 * </pre>
+	 * <p>
+	 * Complex numbers:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Sqrt(-4)
+	 * I*2
+	 * 
+	 * &gt;&gt; I == Sqrt(-1)
+	 * True
+	 * 
+	 * &gt;&gt; N(Sqrt(2), 50)
+	 * 1.41421356237309504880168872420969807856967187537694
+	 * </pre>
+	 */
 	private static class Sqrt extends AbstractArg1 implements INumeric {
-
-		public Sqrt() {
-		}
 
 		@Override
 		public IExpr e1ObjArg(final IExpr o) {
@@ -2531,6 +3058,23 @@ public final class Arithmetic {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Surd(expr, n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the <code>n</code>-th root of <code>expr</code>. If the result is defined, it's a real value.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Surd(16.0,3)
+	 * 2.51984
+	 * </pre>
+	 */
 	private static class Surd extends AbstractArg2 implements INumeric {
 		@Override
 		public IExpr e2ApfloatArg(final ApfloatNum af0, final ApfloatNum af1) {
@@ -2632,8 +3176,27 @@ public final class Arithmetic {
 	}
 
 	/**
-	 * Operator -=
-	 *
+	 * <pre>
+	 * SubtractFrom(x, dx)
+	 * 
+	 * x -= dx
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * is equivalent to <code>x = x - dx</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a = 10
+	 * &gt;&gt; a -= 2   
+	 * 8    
+	 * 
+	 * &gt;&gt; a    
+	 * 8
+	 * </pre>
 	 */
 	private static class SubtractFrom extends AddTo {
 
@@ -2648,6 +3211,102 @@ public final class Arithmetic {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Times(a, b, ...)
+	 * 
+	 * a * b * ...
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * represents the product of the terms <code>a, b, ...</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; 10*2   
+	 * 20     
+	 * 
+	 * &gt;&gt; a * a   
+	 * a^2 
+	 * 
+	 * &gt;&gt; x ^ 10 * x ^ -2   
+	 * x^8
+	 * 
+	 * &gt;&gt; {1, 2, 3} * 4   
+	 * {4,8,12}  
+	 * 
+	 * &gt;&gt; Times @@ {1, 2, 3, 4}   
+	 * 24   
+	 * 
+	 * &gt;&gt; IntegerLength(Times@@Range(100))  
+	 * 158
+	 * </pre>
+	 * <p>
+	 * <code>Times</code> has default value <code>1</code>:<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a /. n_. * x_ :&gt; {n, x}   
+	 * {1,a}   
+	 * 
+	 * &gt;&gt; -a*b // FullForm   
+	 * "Times(-1, a, b)" 
+	 * 
+	 * &gt;&gt; -(x - 2/3)   
+	 * 2/3-x   
+	 * 
+	 * &gt;&gt; -x*2   
+	 * -2 x  
+	 * 
+	 * &gt;&gt; -(h/2) // FullForm   
+	 * "Times(Rational(-1,2), h)"  
+	 * 
+	 * &gt;&gt; x / x   
+	 * 1   
+	 * 
+	 * &gt;&gt; 2*x^2 / x^2   
+	 * 2   
+	 * 
+	 * &gt;&gt; 3.*Pi   
+	 * 9.42477796076938
+	 * 
+	 * &gt;&gt; Head(3 * I)   
+	 * Complex   
+	 * 
+	 * &gt;&gt; Head(Times(I, 1/2))   
+	 * Complex   
+	 * 
+	 * &gt;&gt; Head(Pi * I)   
+	 * Times   
+	 * 
+	 * &gt;&gt; -2.123456789 * x   
+	 * -2.123456789*x
+	 * 
+	 * &gt;&gt; -2.123456789 * I   
+	 * I*(-2.123456789)
+	 * 
+	 * &gt;&gt; N(Pi, 30) * I   
+	 * I*3.14159265358979323846264338327  
+	 * 
+	 * &gt;&gt; N(I*Pi, 30)   
+	 * I*3.14159265358979323846264338327 
+	 * 
+	 * &gt;&gt; N(Pi * E, 30)   
+	 * 8.53973422267356706546355086954   
+	 * 
+	 * &gt;&gt; N(Pi, 30) * N(E, 30)   
+	 * 8.53973422267356706546355086954   
+	 * 
+	 * &gt;&gt; N(Pi, 30) * E   
+	 * 8.53973422267356649108017774746   
+	 * 
+	 * &gt;&gt; N(Pi, 30) * E // Precision   
+	 * 30
+	 * </pre>
+	 */
 	public static class Times extends AbstractArgMultiple implements INumeric {
 		/**
 		 * Constructor for the singleton
@@ -3233,8 +3892,27 @@ public final class Arithmetic {
 	}
 
 	/**
-	 * Operator *=
+	 * <pre>
+	 * TimesBy(x, dx)
 	 * 
+	 * x *= dx
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * is equivalent to <code>x = x * dx</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a = 10
+	 * &gt;&gt; a *= 2   
+	 * 20    
+	 * 
+	 * &gt;&gt; a    
+	 * 20
+	 * </pre>
 	 */
 	private static class TimesBy extends AddTo {
 

@@ -4,7 +4,7 @@
 Surd(expr, n)
 ```
 
-> returns the `n`-th root of `expr`. If the result is defined it's a real value. 
+> returns the `n`-th root of `expr`. If the result is defined, it's a real value. 
  
 ### Examples
 

@@ -40,12 +40,11 @@ The sum of the first `1000` integers:
 ``` 
 
 `Plus` has default value `0`:
+
 ``` 
 >> a /. n_. + x_ :> {n, x}
 {0,a}
-``` 
- 
-``` 
+
 >> -2*a - 2*b
 -2*a-2*b
  
