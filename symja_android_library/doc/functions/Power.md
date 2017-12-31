@@ -8,6 +8,23 @@ a ^ b
 
 > represents `a` raised to the power of `b`.
 	
+	
+**Note:** `Power` has the `Listable` attribute.
+
+You can't do matrix calculations with the `^operator`:
+
+```
+{{2,1},{1,1}} ^ 2
+```
+
+is computed as:
+
+```
+{{2^2,1^2},{1^2,1^2}}
+```
+
+Use `Inverse({{2,1},{1,1}})` or `MatrixPower({{2,1},{1,1}},2)` to calculate matrix inverses and powers.
+
 ### Examples
  
 ```
@@ -28,18 +45,21 @@ y^6
 ```
 
 Use a decimal point to force numeric evaluation:
+
 ```
 >> 4.0 ^ (1/3)
 1.5874010519681994
 ```
 
 `Power` has default value `1` for its second argument:
+
 ```
 >> a /. x_ ^ n_. :> {x, n}
 {a,1}
 ```
 
 `Power` can be used with complex numbers:
+
 ```
 >> (1.5 + 1.0*I) ^ 3.5
 -3.682940057821917+I*6.951392664028508
@@ -49,6 +69,7 @@ Use a decimal point to force numeric evaluation:
 ```
 
 Infinite expression 0^(negative number)
+
 ```
 >> 1/0 
 ComplexInfinity
@@ -64,6 +85,7 @@ ComplexInfinity
 ```
 
 Indeterminate expression 0 ^ (complex number) encountered.
+
 ```
 >> 0 ^ (2*I*E)
 Indeterminate
@@ -73,12 +95,11 @@ ComplexInfinity
 ```
 
 Indeterminate expression 0 ^ 0 encountered.
+
 ```
 >> 0 ^ 0
 Indeterminate
-```
 
-```
 >> Sqrt(-3+2.*I)
 0.5502505227003375+I*1.8173540210239707
  
