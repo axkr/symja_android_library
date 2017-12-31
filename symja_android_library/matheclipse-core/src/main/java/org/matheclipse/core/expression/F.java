@@ -2068,6 +2068,7 @@ public class F {
 			// engine.addRules(ruleList);
 			// }
 			if (Config.JAS_NO_THREADS) {
+				// explicitly invoke run() because no threads should be spawned
 				INIT_THREAD.run();
 			} else {
 				INIT_THREAD.start();
@@ -4114,25 +4115,25 @@ public class F {
 					SYMBOL_OBSERVER = symbolObserver;
 				}
 
-				if (!noPackageLoading) {
-					Reader reader = null;
-					if (fileName != null) {
-						try {
-							reader = new InputStreamReader(new FileInputStream(fileName), "UTF-8");
-						} catch (FileNotFoundException e) {
-							e.printStackTrace();
-						}
-					}
-					// if (reader == null) {
-					// InputStream systemPackage = F.class.getResourceAsStream("/System.mep");
-					// if (systemPackage != null) {
-					// reader = new InputStreamReader(systemPackage, "UTF-8");
-					// }
-					// }
-					// if (reader != null) {
-					// org.matheclipse.core.builtin.function.Package.loadPackage(EvalEngine.get(), reader);
-					// }
-				}
+				// if (!noPackageLoading) {
+				// Reader reader = null;
+				// if (fileName != null) {
+				// try {
+				// reader = new InputStreamReader(new FileInputStream(fileName), "UTF-8");
+				// } catch (FileNotFoundException e) {
+				// e.printStackTrace();
+				// }
+				// }
+				// if (reader == null) {
+				// InputStream systemPackage = F.class.getResourceAsStream("/System.mep");
+				// if (systemPackage != null) {
+				// reader = new InputStreamReader(systemPackage, "UTF-8");
+				// }
+				// }
+				// if (reader != null) {
+				// org.matheclipse.core.builtin.function.Package.loadPackage(EvalEngine.get(), reader);
+				// }
+				// }
 
 				isSystemInitialized = true;
 			} catch (Throwable th) {

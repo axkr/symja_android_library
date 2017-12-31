@@ -4,7 +4,6 @@ import java.util.function.Function;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 

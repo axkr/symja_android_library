@@ -1,6 +1,6 @@
 package org.matheclipse.combinatoric;
 
-import org.matheclipse.combinatoric.util.ReadOnlyIterator;
+import java.util.Iterator;
 
 /**
  * <p>
@@ -31,7 +31,7 @@ import org.matheclipse.combinatoric.util.ReadOnlyIterator;
  * </p>
  *
  */
-public class RosenNumberPartitionIterator extends ReadOnlyIterator<int[]> {
+public class RosenNumberPartitionIterator implements Iterator<int[]> { 
 
 	/**
 	 * Computes the number of unique combinations of <code>n</code> elements

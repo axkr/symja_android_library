@@ -3094,7 +3094,7 @@ public final class Arithmetic {
 			double val = d0.doubleValue();
 			double r = d1.doubleValue();
 			double result = doubleSurd(val, r);
-			if (result == Double.NaN) {
+			if (Double.isNaN(result)) {
 				return F.Indeterminate;
 			}
 			return F.num(result);

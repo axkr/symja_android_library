@@ -618,7 +618,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return the <code>true</code> if the predicate is true for all elements or <code>false</code> otherwise
 	 */
 	default boolean forAll(ObjIntPredicate<? super IExpr> predicate) {
-		return forAll(predicate);
+		return forAll(predicate, 1);
 	}
 
 	/**
