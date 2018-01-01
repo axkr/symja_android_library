@@ -82,7 +82,7 @@ public class EvalAttributes {
 		newSize[0] = 0;
 		boolean[] flattened = new boolean[1];
 		flattened[0] = false;
-		
+
 		ast.forEach(expr -> {
 			if (expr.isAST(head)) {
 				flattened[0] = true;
@@ -92,7 +92,7 @@ public class EvalAttributes {
 				newSize[0]++;
 			}
 		});
-		
+
 		if (flattened[0]) {
 			IASTAppendable result = F.ast(ast.head(), newSize[0], false);
 			ast.forEach(expr -> {
@@ -171,7 +171,7 @@ public class EvalAttributes {
 
 	private static int flattenAlloc(final ISymbol head, final IAST ast) {
 		int[] newSize = new int[1];
-		ast.forEach(expr->{
+		ast.forEach(expr -> {
 			if (expr.isAST(head)) {
 				newSize[0] += flattenAlloc(head, (IAST) expr);
 			} else {
@@ -229,7 +229,7 @@ public class EvalAttributes {
 
 	/**
 	 * <p>
-	 * Copy the <code>ast</code> and return the sorted copy using function <code>>Less(a, b)</code>.
+	 * Copy the <code>ast</code> and return the sorted copy using function <code>Less(a, b)</code>.
 	 * </p>
 	 * 
 	 * @param ast
@@ -243,12 +243,11 @@ public class EvalAttributes {
 
 	/**
 	 * <p>
-	 * Sort the <code>ast</code> in place using function <code>Less</code>.
+	 * Sort the <code>ast</code> in place using function <code>Less(a, b)</code>.
 	 * </p>
 	 * 
 	 * @param ast
 	 *            the AST will be sorted in place.
-	 * @return <code>true</code> if the sort algorithm was used; <code>false</code> otherwise
 	 */
 	public static final void sortLess(IASTMutable ast) {
 		sort(ast, new Predicates.IsBinaryFalse(F.Less));

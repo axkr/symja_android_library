@@ -113,17 +113,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
-	 * Get the local variable stack for a given symbol. If the local variable stack doesn't exist, create a new one for
-	 * the symbol.
-	 * 
-	 * @param symbol
-	 * @return
-	 */
-	// public static List<IExpr> localStackCreate(final ISymbol symbol) {
-	// return get().localStackCreate(symbol);
-	// }
-
-	/**
 	 * Set the thread local evaluation engine instance
 	 * 
 	 * @param engine
@@ -145,13 +134,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	transient volatile boolean fStopRequested;
 
 	transient int fRecursionCounter;
-
-	/**
-	 * Associate a symbol name in this ThreadLocal with the symbol created in this thread
-	 * 
-	 * @see ExprFactory.fSymbolMap for global symbol names
-	 */
-	// private Map<String, ISymbol> fUserVariableMap;
 
 	/**
 	 * if <code>true</code> the engine evaluates in &quot;numeric&quot; mode, otherwise the engine evaluates in
@@ -283,7 +265,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		fOutPrintStream = outStream;
 		if (errorStream == null) {
 			fErrorPrintStream = outStream;
-		}else {
+		} else {
 			fErrorPrintStream = errorStream;
 		}
 		fRelaxedSyntax = relaxedSyntax;
@@ -349,21 +331,15 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	public void addRules(IAST ruleList) {
-		// boolean oldPackageMode = isPackageMode();
 		boolean oldTraceMode = isTraceMode();
 		try {
-			// setPackageMode(true);
 			setTraceMode(false);
-			final int ruleSize = ruleList.size();
-			ruleList.forEach(ruleSize, x -> {
+			ruleList.forEach(x -> {
 				if (x != null) {
 					evaluate(x);
 				}
 			});
-		} finally
-
-		{
-			// setPackageMode(oldPackageMode);
+		} finally {
 			setTraceMode(oldTraceMode);
 		}
 	}
@@ -404,8 +380,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				}
 			}
 
-			IASTMutable resultList = F.NIL;
-			IExpr evaledExpr;
+			IASTMutable[] rlist = new IASTMutable[1];
+			rlist[0] = F.NIL;
 			if ((ISymbol.HOLDFIRST & attr) == ISymbol.NOATTRIBUTE) {
 				// the HoldFirst attribute isn't set here
 				try {
@@ -414,13 +390,13 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					} else {
 						fNumericMode = localNumericMode;
 					}
-					if ((evaledExpr = evalLoop(ast.arg1())).isPresent()) {
-						// resultList = ast.setAtClone(1, evaledExpr);
-						resultList = ast.copy();
-						resultList.set(1, evaledExpr);
-						resultList.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+					IExpr temp = evalLoop(ast.arg1());
+					if (temp.isPresent()) {
+						rlist[0] = ast.copy();
+						rlist[0].set(1, temp);
+						rlist[0].addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
 						if (astSize == 2) {
-							return resultList;
+							return rlist[0];
 						}
 					}
 				} finally {
@@ -439,15 +415,16 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						} else {
 							fNumericMode = localNumericMode;
 						}
-						for (int i = 2; i < astSize; i++) {
-							if ((evaledExpr = evalLoop(ast.get(i))).isPresent()) {
-								if (!resultList.isPresent()) {
-									resultList = ast.copy();
-									resultList.addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+						ast.forEach(2, astSize, (x, i) -> {
+							IExpr temp = evalLoop(x);
+							if (temp.isPresent()) {
+								if (!rlist[0].isPresent()) {
+									rlist[0] = ast.copy();
+									rlist[0].addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
 								}
-								resultList.set(i, evaledExpr);
+								rlist[0].set(i, temp);
 							}
-						}
+						});
 					} finally {
 						if ((ISymbol.NHOLDREST & attr) == ISymbol.NHOLDREST) {
 							fNumericMode = numericMode;
@@ -455,7 +432,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					}
 				}
 			}
-			return resultList;
+			return rlist[0];
 		}
 		return F.NIL;
 	}
@@ -609,11 +586,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				} else {
 					result = ((IFunctionEvaluator) module).evaluate(ast, this);
 				}
-				// if (result == null) {
-				// System.out.println(ast);
-				// throw new NullPointerException();
-				// }
-				if (result != null && result.isPresent()) {
+				if (result.isPresent()) {
 					return result;
 				}
 				if (((ISymbol.DELAYED_RULE_EVALUATION & attr) == ISymbol.DELAYED_RULE_EVALUATION)) {
@@ -718,34 +691,33 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 		try {
 			// remember which local variables we use:
-			ISymbol blockVariableSymbol;
-
-			for (int i = 1; i < localVariablesList.size(); i++) {
-				if (localVariablesList.get(i).isSymbol()) {
-					blockVariableSymbol = (ISymbol) localVariablesList.get(i);
-					// blockVariableSymbol.pushLocalVariable();
+			if (localVariablesList.exists(x -> {
+				ISymbol blockVariableSymbol;
+				if (x.isSymbol()) {
+					blockVariableSymbol = (ISymbol) x;
 					localStackCreate(blockVariableSymbol).push(F.NIL);
 					variables.add(blockVariableSymbol);
 				} else {
-					if (localVariablesList.get(i).isAST(F.Set, 3)) {
+					if (x.isAST(F.Set, 3)) {
 						// lhs = rhs
-						final IAST setFun = (IAST) localVariablesList.get(i);
+						final IAST setFun = (IAST) x;
 						if (setFun.arg1().isSymbol()) {
 							blockVariableSymbol = (ISymbol) setFun.arg1();
-							// blockVariableSymbol.pushLocalVariable();
 							final Deque<IExpr> localVariableStack = localStackCreate(blockVariableSymbol);
 							localVariableStack.push(F.NIL);
 							// this evaluation step may throw an exception
 							IExpr temp = evaluate(setFun.arg2());
-							// blockVariableSymbol.set(temp);
 							localVariableStack.remove();
 							localVariableStack.push(temp);
 							variables.add(blockVariableSymbol);
 						}
 					} else {
-						return expr;
+						return true;
 					}
 				}
+				return false;
+			})) {
+				return expr;
 			}
 
 			return evaluate(expr);
@@ -1052,20 +1024,18 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		if (symbol instanceof BuiltInSymbol) {
 			((BuiltInSymbol) symbol).getEvaluator().join();
 		}
-		IExpr result;
-		for (int i = 1; i < ast.size(); i++) {
-			if (!(ast.get(i) instanceof IPatternObject)) {
-				final IExpr arg = ast.get(i);
-				ISymbol lhsSymbol = null;
-				if (arg.isSymbol()) {
-					lhsSymbol = (ISymbol) arg;
-				} else {
-					lhsSymbol = arg.topHead();
-				}
-				if ((result = lhsSymbol.evalUpRule(this, ast)).isPresent()) {
-					return result;
+		IExpr[] result = new IExpr[1];
+		result[0] = F.NIL;
+		if (ast.exists(x -> {
+			if (!(x instanceof IPatternObject)) {
+				result[0] = x.topHead().evalUpRule(this, ast);
+				if (result[0].isPresent()) {
+					return true;
 				}
 			}
+			return false;
+		})) {
+			return result[0];
 		}
 
 		return evalASTBuiltinFunction(symbol, ast);
@@ -1371,26 +1341,25 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 */
 	@Override
 	public final IExpr evalWithoutNumericReset(final IExpr expr) {
-		IExpr temp = evalLoop(expr);
-		return temp.isPresent() ? temp : expr;
+		return evalLoop(expr).orElse(expr);
 	}
 
 	private IAST flattenSequences(final IAST ast) {
-		IASTAppendable seqResult = F.NIL;
-		final int astSize = ast.size();
-		for (int i = 1; i < astSize; i++) {
-			if (ast.get(i).isSequence()) {
-				IAST seq = (IAST) ast.get(i);
-				if (!seqResult.isPresent()) {
-					seqResult = F.ast(ast.head(), astSize + seq.size(), false);
-					seqResult.appendArgs(ast, i);
+		IASTAppendable[] seqResult = new IASTAppendable[1];
+		seqResult[0] = F.NIL;
+		ast.forEach((x, i) -> {
+			if (x.isSequence()) {
+				IAST seq = (IAST) x;
+				if (!seqResult[0].isPresent()) {
+					seqResult[0] = F.ast(ast.head(), ast.size() + seq.size(), false);
+					seqResult[0].appendArgs(ast, i);
 				}
-				seqResult.appendArgs(seq);
-			} else if (seqResult.isPresent()) {
-				seqResult.append(ast.get(i));
+				seqResult[0].appendArgs(seq);
+			} else if (seqResult[0].isPresent()) {
+				seqResult[0].append(x);
 			}
-		}
-		return seqResult;
+		});
+		return seqResult[0];
 	}
 
 	/**
@@ -1645,12 +1614,6 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	final public IExpr parse(String expression) {
 		final ExprParser parser = new ExprParser(this, fRelaxedSyntax);
 		return parser.parse(expression);
-		// final Parser parser = new Parser(fRelaxedSyntax);
-		// final ASTNode node = parser.parse(expression);
-		// if (fRelaxedSyntax) {
-		// return AST2Expr.CONST_LC.convert(node, this);
-		// }
-		// return AST2Expr.CONST.convert(node, this);
 	}
 
 	/**
@@ -1721,7 +1684,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	public void setErrorPrintStream(final PrintStream errorPrintStream) {
 		fErrorPrintStream = errorPrintStream;
 	}
-	
+
 	/**
 	 * 
 	 * @param outListDisabled
@@ -1845,23 +1808,25 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	public IASTMutable threadASTListArgs(final IASTMutable ast) {
 
-		int listLength = 0;
-		final int astSize = ast.size();
-		for (int i = 1; i < astSize; i++) {
-			if (ast.get(i).isList()) {
-				if (listLength == 0) {
-					listLength = ((IAST) ast.get(i)).size() - 1;
+		int[] listLength = new int[] { 0 };
+		if (ast.exists(x -> {
+			if (x.isList()) {
+				if (listLength[0] == 0) {
+					listLength[0] = ((IAST) x).size() - 1;
 				} else {
-					if (listLength != ((IAST) ast.get(i)).size() - 1) {
-						printMessage("Lists of unequal length cannot be combined: " + ast.toString());
+					if (listLength[0] != ((IAST) x).size() - 1) {
+						printMessage("Lists of unequal lengths cannot be combined: " + ast.toString());
 						ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
-						return F.NIL;
+						return true;
 					}
 				}
 			}
+			return false;
+		})) {
+			return F.NIL;
 		}
-		if (listLength != 0) {
-			IASTAppendable result = EvalAttributes.threadList(ast, F.List, ast.head(), listLength);
+		if (listLength[0] != 0) {
+			IASTAppendable result = EvalAttributes.threadList(ast, F.List, ast.head(), listLength[0]);
 			result.addEvalFlags(IAST.IS_LISTABLE_THREADED);
 			return result;
 		}
