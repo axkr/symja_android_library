@@ -1052,45 +1052,48 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			FieldMatrix<IExpr> matrix;
-			try {
+			if (ast.size() == 2) {
+				FieldMatrix<IExpr> matrix;
+				try {
 
-				int[] dim = ast.arg1().isMatrix();
-				if (dim != null) {
-					if (dim[0] == 1 && dim[1] == 1) {
-						// Eigenvalues({{a}})
-						return List(ast.arg1().getAt(1).getAt(1));
-					}
-					if (dim[0] == 2 && dim[1] == 2) {
-						matrix = Convert.list2Matrix((IAST) ast.arg1());
-						if (matrix != null) {
-							// Eigenvalues({{a, b}, {c, d}}) =>
-							// {
-							// 1/2 (a + d - Sqrt[a^2 + 4 b c - 2 a d + d^2]),
-							// 1/2 (a + d + Sqrt[a^2 + 4 b c - 2 a d + d^2])
-							// }
-							IExpr sqrtExpr = Sqrt(Plus(Sqr(matrix.getEntry(0, 0)),
-									Times(C4, matrix.getEntry(0, 1), matrix.getEntry(1, 0)),
-									Times(CN2, matrix.getEntry(0, 0), matrix.getEntry(1, 1)),
-									Sqr(matrix.getEntry(1, 1))));
-							return List(
-									Times(C1D2, Plus(Negate(sqrtExpr), matrix.getEntry(0, 0), matrix.getEntry(1, 1))),
-									Times(C1D2, Plus(sqrtExpr, matrix.getEntry(0, 0), matrix.getEntry(1, 1))));
+					IExpr arg1 = ast.arg1();
+					int[] dim = arg1.isMatrix();
+					if (dim != null) {
+						if (dim[0] == 1 && dim[1] == 1) {
+							// Eigenvalues({{a}})
+							return List(((IAST) arg1).getPart(1, 1));
 						}
+						if (dim[0] == 2 && dim[1] == 2) {
+							matrix = Convert.list2Matrix((IAST) arg1);
+							if (matrix != null) {
+								// Eigenvalues({{a, b}, {c, d}}) =>
+								// {
+								// 1/2*(a + d - Sqrt(a^2 + 4*b*c - 2*a*d + d^2)),
+								// 1/2*(a + d + Sqrt(a^2 + 4*b*c - 2*a*d + d^2))
+								// }
+								IExpr sqrtExpr = Sqrt(Plus(Sqr(matrix.getEntry(0, 0)),
+										Times(C4, matrix.getEntry(0, 1), matrix.getEntry(1, 0)),
+										Times(CN2, matrix.getEntry(0, 0), matrix.getEntry(1, 1)),
+										Sqr(matrix.getEntry(1, 1))));
+								return List(
+										Times(C1D2,
+												Plus(Negate(sqrtExpr), matrix.getEntry(0, 0), matrix.getEntry(1, 1))),
+										Times(C1D2, Plus(sqrtExpr, matrix.getEntry(0, 0), matrix.getEntry(1, 1))));
+							}
+						}
+
 					}
 
-				}
-
-			} catch (final ClassCastException e) {
-				if (Config.SHOW_STACKTRACE) {
-					e.printStackTrace();
-				}
-			} catch (final IndexOutOfBoundsException e) {
-				if (Config.SHOW_STACKTRACE) {
-					e.printStackTrace();
+				} catch (final ClassCastException e) {
+					if (Config.SHOW_STACKTRACE) {
+						e.printStackTrace();
+					}
+				} catch (final IndexOutOfBoundsException e) {
+					if (Config.SHOW_STACKTRACE) {
+						e.printStackTrace();
+					}
 				}
 			}
-
 			// switch to numeric calculation
 			return numericEval(ast, engine);
 		}
@@ -1156,62 +1159,59 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			FieldMatrix<IExpr> matrix;
-			try {
+			if (ast.size() == 2) {
+				FieldMatrix<IExpr> matrix;
+				try {
 
-				int[] dim = ast.arg1().isMatrix();
-				if (dim != null) {
-					if (dim[0] == 1 && dim[1] == 1) {
-						// Eigenvectors({{a}})
-						return C1;
-					}
-					if (dim[0] == 2 && dim[1] == 2) {
-						matrix = Convert.list2Matrix((IAST) ast.arg1());
-						if (matrix != null) {
-							if (matrix.getEntry(1, 0).isZero()) {
-								if (matrix.getEntry(0, 0).equals(matrix.getEntry(1, 1))) {
-									// Eigenvectors({{a, b}, {0, a}})
-									return List(List(C1, C0), List(C0, C0));
+					int[] dim = ast.arg1().isMatrix();
+					if (dim != null) {
+						if (dim[0] == 1 && dim[1] == 1) {
+							// Eigenvectors({{a}})
+							return C1;
+						}
+						if (dim[0] == 2 && dim[1] == 2) {
+							matrix = Convert.list2Matrix((IAST) ast.arg1());
+							if (matrix != null) {
+								if (matrix.getEntry(1, 0).isZero()) {
+									if (matrix.getEntry(0, 0).equals(matrix.getEntry(1, 1))) {
+										// Eigenvectors({{a, b}, {0, a}})
+										return List(List(C1, C0), List(C0, C0));
+									} else {
+										// Eigenvectors({{a, b}, {0, d}})
+										return List(List(C1, C0), List(Divide(Negate(matrix.getEntry(0, 1)),
+												Subtract(matrix.getEntry(0, 0), matrix.getEntry(1, 1))), C1));
+									}
 								} else {
-									// Eigenvectors({{a, b}, {0, d}})
-									return List(List(C1, C0), List(Divide(Negate(matrix.getEntry(0, 1)),
-											Subtract(matrix.getEntry(0, 0), matrix.getEntry(1, 1))), C1));
+									// Eigenvectors({{a, b}, {c, d}}) =>
+									// {
+									// { - (1/(2*c)) * (-a + d + Sqrt(a^2 + 4*b*c - 2*a*d + d^2)), 1},
+									// { - (1/(2*c)) * (-a + d - Sqrt(a^2 + 4*b*c - 2*a*d + d^2)), 1}
+									// }
+									IExpr sqrtExpr = Sqrt(Plus(Sqr(matrix.getEntry(0, 0)),
+											Times(C4, matrix.getEntry(0, 1), matrix.getEntry(1, 0)),
+											Times(CN2, matrix.getEntry(0, 0), matrix.getEntry(1, 1)),
+											Sqr(matrix.getEntry(1, 1))));
+									return List(
+											List(Times(CN1D2, Power(matrix.getEntry(1, 0), CN1),
+													Plus(sqrtExpr, Negate(matrix.getEntry(0, 0)),
+															matrix.getEntry(1, 1))),
+													C1),
+											List(Times(CN1D2, Power(matrix.getEntry(1, 0), CN1), Plus(Negate(sqrtExpr),
+													Negate(matrix.getEntry(0, 0)), matrix.getEntry(1, 1))), C1));
 								}
-							} else {
-								// Eigenvectors({{a, b}, {c, d}}) =>
-								// {
-								// { - (1/(2*c)) * (-a + d + Sqrt[a^2 + 4 b c -
-								// 2 a
-								// d +
-								// d^2]), 1},
-								// { - (1/(2*c)) * (-a + d - Sqrt[a^2 + 4 b c -
-								// 2 a
-								// d +
-								// d^2]), 1}
-								// }
-								IExpr sqrtExpr = Sqrt(Plus(Sqr(matrix.getEntry(0, 0)),
-										Times(C4, matrix.getEntry(0, 1), matrix.getEntry(1, 0)),
-										Times(CN2, matrix.getEntry(0, 0), matrix.getEntry(1, 1)),
-										Sqr(matrix.getEntry(1, 1))));
-								return List(
-										List(Times(CN1D2, Power(matrix.getEntry(1, 0), CN1),
-												Plus(sqrtExpr, Negate(matrix.getEntry(0, 0)), matrix.getEntry(1, 1))),
-												C1),
-										List(Times(CN1D2, Power(matrix.getEntry(1, 0), CN1), Plus(Negate(sqrtExpr),
-												Negate(matrix.getEntry(0, 0)), matrix.getEntry(1, 1))), C1));
 							}
 						}
+
 					}
 
-				}
-
-			} catch (final ClassCastException e) {
-				if (Config.SHOW_STACKTRACE) {
-					e.printStackTrace();
-				}
-			} catch (final IndexOutOfBoundsException e) {
-				if (Config.SHOW_STACKTRACE) {
-					e.printStackTrace();
+				} catch (final ClassCastException e) {
+					if (Config.SHOW_STACKTRACE) {
+						e.printStackTrace();
+					}
+				} catch (final IndexOutOfBoundsException e) {
+					if (Config.SHOW_STACKTRACE) {
+						e.printStackTrace();
+					}
 				}
 			}
 
@@ -2288,27 +2288,27 @@ public final class LinearAlgebra {
 				if (dim == 0) {
 					return F.NIL;
 				}
-				IAST arg1AST = (IAST) arg1;
+				IAST vector = (IAST) arg1;
 				if (ast.isAST2()) {
-					IExpr arg2 = ast.arg2();
-					if (arg2.isInfinity()) {
-						return arg1AST.map(F.Max, x -> F.Abs(x));
+					IExpr p = ast.arg2();
+					if (p.isInfinity()) {
+						return vector.map(F.Max, x -> F.Abs(x));
 					} else {
-						if (arg2.isSymbol() || arg2.isSignedNumber()) {
-							if (arg2.isZero()) {
+						if (p.isSymbol() || p.isSignedNumber()) {
+							if (p.isZero()) {
 								engine.printMessage("Norm: 0 not allowed as second argument!");
 								return F.NIL;
 							}
-							if (arg2.isSignedNumber() && arg2.lessThan(F.C1).isTrue()) {
+							if (p.isSignedNumber() && p.lessThan(F.C1).isTrue()) {
 								engine.printMessage("Norm: Second argument is < 1!");
 								return F.NIL;
 							}
-							return F.Power(arg1AST.map(F.Plus, x -> F.Power(F.Abs(x), arg2)), arg2.inverse());
+							return F.Power(vector.map(F.Plus, x -> F.Power(F.Abs(x), p)), p.inverse());
 						}
 					}
 					return F.NIL;
 				}
-				return F.Sqrt(arg1AST.map(F.Plus, x -> F.Sqr(F.Abs(x))));
+				return F.Sqrt(vector.map(F.Plus, x -> F.Sqr(F.Abs(x))));
 			}
 			if (arg1.isNumber()) {
 				if (ast.isAST2()) {
