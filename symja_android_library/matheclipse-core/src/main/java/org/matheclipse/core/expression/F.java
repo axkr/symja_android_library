@@ -1018,6 +1018,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matrixrank" : "MatrixRank");
 	public final static IBuiltInSymbol Max = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "max" : "Max");
 	public final static IBuiltInSymbol Mean = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mean" : "Mean");
+	public final static IBuiltInSymbol MeanDeviation = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "meandeviation" : "MeanDeviation");
 	public final static IBuiltInSymbol MersennePrimeExponent = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mersenneprimeexponent" : "MersennePrimeExponent");
 	public final static IBuiltInSymbol MersennePrimeExponentQ = initFinalSymbol(
@@ -4686,7 +4688,11 @@ public class F {
 	public static IAST Mean(final IExpr a0) {
 		return unaryAST1(Mean, a0);
 	}
-
+	
+	public static IAST MeanDeviation(final IExpr a0) {
+		return unaryAST1(MeanDeviation, a0);
+	}
+	
 	public static IAST Median(final IExpr a0) {
 		return unaryAST1(Median, a0);
 	}

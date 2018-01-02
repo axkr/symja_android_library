@@ -55,6 +55,7 @@ public class StatisticsFunctions {
 		F.Kurtosis.setEvaluator(new Kurtosis());
 		F.LogNormalDistribution.setEvaluator(new LogNormalDistribution());
 		F.Mean.setEvaluator(new Mean());
+		F.MeanDeviation.setEvaluator(new MeanDeviation());
 		F.Median.setEvaluator(new Median());
 		F.NakagamiDistribution.setEvaluator(new NakagamiDistribution());
 		F.NormalDistribution.setEvaluator(new NormalDistribution());
@@ -1291,6 +1292,41 @@ public class StatisticsFunctions {
 					}
 				}
 			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.NOATTRIBUTE);
+		}
+
+	}
+
+	private final static class MeanDeviation extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			int[] dim = ast.arg1().isMatrix();
+			if (dim == null && ast.arg1().isListOfLists()) {
+				return F.NIL;
+			}
+			if (dim != null) {
+				IAST matrix = (IAST) ast.arg1();
+				return matrix.mapMatrixColumns(dim, x -> F.MeanDeviation(x));
+			}
+
+			int length = ast.arg1().isVector();
+			if (length > 0) {
+				IAST vector = (IAST) ast.arg1();
+				int size = vector.size();
+				IASTAppendable sum = F.PlusAlloc(size);
+				final IExpr mean = F.eval(F.Mean(F.Negate(vector)));
+				vector.forEach(x -> sum.append(F.Abs(F.Plus(x, mean))));
+				return F.Times(F.Power(F.ZZ(size - 1), -1), sum);
+			}
+
 			return F.NIL;
 		}
 

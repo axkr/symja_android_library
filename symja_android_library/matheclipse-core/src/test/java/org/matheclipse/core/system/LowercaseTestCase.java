@@ -3959,6 +3959,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Mean(WeibullDistribution(n, m))", "m*Gamma(1+1/n)");
 	}
 
+	public void testMeanDeviation() {
+		check("MeanDeviation({a, b, c})", "1/3*(Abs(a+1/3*(-a-b-c))+Abs(b+1/3*(-a-b-c))+Abs(1/3*(-a-b-c)+c))");
+		check("MeanDeviation({{1, 2}, {4, 8}, {5, 3}, {2, 15}})", "{3/2,9/2}");
+		check("MeanDeviation({1, 2, 3, 7})", "15/8");
+		check("MeanDeviation({Pi, E, 2})//Together", "1/9*(-8+2*E+2*Pi)");
+	}
+	
 	public void testMedian() {
 		check("Median({{100, 1, 10, 50}, {-1, 1, -2, 2}})", "{99/2,1,4,26}");
 
