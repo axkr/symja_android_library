@@ -1223,6 +1223,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCross() {
+		check("Cross({a,b}, {c,d})", "-b*c+a*d");
 		check("Cross({a, b, c}, {x, y, z})", "{-c*y+b*z,c*x-a*z,-b*x+a*y}");
 		check("Cross({x, y})", "{-y,x}");
 		check("Cross({x1, y1, z1}, {x2, y2, z2})", "{-y2*z1+y1*z2,x2*z1-x1*z2,-x2*y1+x1*y2}");
@@ -3965,7 +3966,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("MeanDeviation({1, 2, 3, 7})", "15/8");
 		check("MeanDeviation({Pi, E, 2})//Together", "1/9*(-8+2*E+2*Pi)");
 	}
-	
+
 	public void testMedian() {
 		check("Median({{100, 1, 10, 50}, {-1, 1, -2, 2}})", "{99/2,1,4,26}");
 

@@ -521,13 +521,21 @@ public final class LinearAlgebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
+			Validate.checkRange(ast, 2, Integer.MAX_VALUE);
+
 			IExpr arg1 = ast.arg1();
 			if (ast.isAST2()) {
 				IExpr arg2 = ast.arg2();
 				int dim1 = arg1.isVector();
 				int dim2 = arg2.isVector();
-				if (dim1 == 3 && dim2 == 3) {
+				if (dim1 == 2 && dim2 == 2) {
+					final IAST v1 = (IAST) arg1;
+					final IAST v2 = (IAST) arg2;
+					if ((v1.isAST2()) || (v2.isAST2())) {
+						// Cross({a,b}, {c,d})", "a*d-b*c
+						return F.Subtract(Times(v1.arg1(), v2.arg2()), Times(v1.arg2(), v2.arg1()));
+					}
+				} else if (dim1 == 3 && dim2 == 3) {
 					final IAST v1 = (IAST) arg1;
 					final IAST v2 = (IAST) arg2;
 					if ((v1.isAST3()) || (v2.isAST3())) {
@@ -541,6 +549,16 @@ public final class LinearAlgebra {
 				if (dim1 == 2) {
 					final IAST v1 = (IAST) arg1;
 					return List(Negate(v1.arg2()), v1.arg1());
+				}
+			} else if (ast.size() > 3) {
+				int dim1 = arg1.isVector();
+				if (dim1 == ast.size()) {
+					for (int i = 2; i < ast.size(); i++) {
+						if (ast.get(i).isVector() != dim1) {
+							return F.NIL;
+						}
+					}
+					// TODO implement for more than 2 vector arguments
 				}
 			}
 			return F.NIL;
