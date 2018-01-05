@@ -358,7 +358,8 @@ public class Symbol implements ISymbol, Serializable {
 		}
 		return F.NIL;
 	}
-
+	
+	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluateHead(IAST ast, EvalEngine engine) {
 		IExpr result = evaluate(engine);
@@ -722,6 +723,26 @@ public class Symbol implements ISymbol, Serializable {
 		return (fAttributes & CONSTANT) != CONSTANT;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public IExpr of(EvalEngine engine, IExpr... args) {
+		IAST ast = F.ast(args, this);
+		return engine.evaluate(ast);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr of(IExpr... args) {
+		return of(EvalEngine.get(), args);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean ofQ(EvalEngine engine, IExpr... args) {
+		IAST ast = F.ast(args, this);
+		return engine.evalTrue(ast);
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public final void popLocalVariable() {

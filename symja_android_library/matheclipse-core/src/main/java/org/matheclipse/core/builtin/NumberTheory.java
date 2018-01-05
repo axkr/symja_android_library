@@ -700,7 +700,7 @@ public final class NumberTheory {
 			for (int i = 1; i < size - 1; i++) {
 				expr = ast.get(i);
 				for (int j = i + 1; j < size; j++) {
-					if (!engine.evaluate(F.GCD(expr, ast.get(j))).isOne()) {
+					if (!F.GCD.of(engine, expr, ast.get(j)).isOne()) {
 						return F.False;
 					}
 				}
@@ -1834,7 +1834,7 @@ public final class NumberTheory {
 				return F.C1;
 			}
 			if (arg1.isInteger() && arg1.isPositive()) {
-				IExpr expr = engine.evaluate(F.FactorInteger(arg1));
+				IExpr expr = F.FactorInteger.of(engine, arg1);
 				if (expr.isList()) {
 					IAST list = (IAST) expr;
 					int result = 1;
@@ -2763,10 +2763,6 @@ public final class NumberTheory {
 						int size = roots.length;
 						IASTAppendable list = F.ListAlloc(size);
 						return list.appendArgs(0, size, i -> roots[i]);
-						// for (int i = 0; i < size; i++) {
-						// list.append(roots[i]);
-						// }
-						// return list;
 					}
 				} catch (ArithmeticException e) {
 					// integer to large?
@@ -2826,8 +2822,6 @@ public final class NumberTheory {
 			}
 			try {
 				IExpr expr = F.evalExpandAll(ast.arg1(), engine);
-				// ASTRange r = new ASTRange(eVar.getVarList(), 1);
-				// List<IExpr> varList = r;
 				List<IExpr> varList = eVar.getVarList().copyTo();
 
 				if (ast.isAST2()) {

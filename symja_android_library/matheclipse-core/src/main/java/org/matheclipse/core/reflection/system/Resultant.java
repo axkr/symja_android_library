@@ -67,20 +67,20 @@ public class Resultant extends AbstractFunctionEvaluator {
 	}
 
 	public IExpr resultant(IExpr a, IExpr b, ISymbol x, EvalEngine engine) {
-		IExpr aExp = engine.evaluate(F.Exponent(a, x));
-		IExpr bExp = engine.evaluate(F.Exponent(b, x));
+		IExpr aExp =  F.Exponent.of(engine, a, x);
+		IExpr bExp =  F.Exponent.of(engine,b, x);
 		if (b.isFree(x)) {
 			return F.Power(b, aExp);
 		}
 		IExpr abExp = aExp.times(bExp);
-		if (engine.evalTrue(F.Less(aExp, bExp))) {
+		if (F.Less.ofQ(engine, aExp, bExp)) {
 			return F.Times(F.Power(F.CN1, abExp), resultant(b, a, x, engine));
 		}
 
-		IExpr r = engine.evaluate(F.PolynomialRemainder(a, b, x));
+		IExpr r =  F.PolynomialRemainder.of(engine,a, b, x);
 		IExpr rExp = r;
 		if (!r.isZero()) {
-			rExp = engine.evaluate(F.Exponent(r, x));
+			rExp =  F.Exponent.of(engine,r, x);
 		}
 		return F.Times(F.Power(F.CN1, abExp), F.Power(F.Coefficient(b, x, bExp), F.Subtract(aExp, rExp)),
 				resultant(b, r, x, engine));

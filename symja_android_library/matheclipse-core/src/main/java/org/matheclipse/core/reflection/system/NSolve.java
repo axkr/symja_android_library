@@ -388,7 +388,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 					if (expr.isNumber()) {
 						throw new NoSolution(NoSolution.WRONG_SOLUTION);
 					}
-					if (!PredicateQ.possibleZeroQ(expr, engine)) {
+					if (!F.PossibleZeroQ.ofQ(engine, expr)) {
 						throw new NoSolution(NoSolution.NO_SOLUTION_FOUND);
 					}
 				}

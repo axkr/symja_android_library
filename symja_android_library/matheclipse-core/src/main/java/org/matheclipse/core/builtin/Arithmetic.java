@@ -1129,7 +1129,7 @@ public final class Arithmetic {
 					if (directedInfininty.isInfinity()) {
 						return F.C0;
 					}
-					IExpr im = engine.evaluate(F.Im(directedInfininty.arg1()));
+					IExpr im = F.Im.of(engine, directedInfininty.arg1());
 					if (im.isNumber()) {
 						if (im.isZero()) {
 							return F.C0;

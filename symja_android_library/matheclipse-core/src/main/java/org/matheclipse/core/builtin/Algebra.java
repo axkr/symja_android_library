@@ -1491,7 +1491,7 @@ public class Algebra {
 			}
 			IExpr expr = ast.arg1();
 			if (ast.isAST1()) {
-				expr = engine.evaluate(F.Together(ast.arg1()));
+				expr = F.Together.of(engine, ast.arg1());
 				if (expr.isAST()) {
 					IExpr[] parts = Algebra.getNumeratorDenominator((IAST) expr, engine);
 					if (!parts[1].isOne()) {
@@ -2004,8 +2004,8 @@ public class Algebra {
 					IASTAppendable list = F.ListAlloc(2);
 					list.append(jas.exprPoly2Expr(result[0], x));
 					IASTAppendable subList = F.ListAlloc(2);
-					subList.append(engine.evaluate(F.Together(jas.exprPoly2Expr(result[1], x))));
-					subList.append(engine.evaluate(F.Together(jas.exprPoly2Expr(result[2], x))));
+					subList.append(F.Together.of(engine, jas.exprPoly2Expr(result[1], x)));
+					subList.append(F.Together.of(engine, jas.exprPoly2Expr(result[2], x)));
 					list.append(subList);
 					return list;
 				} catch (JASConversionException e) {

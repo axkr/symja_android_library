@@ -114,10 +114,10 @@ public class Roots extends AbstractFunctionEvaluator {
 			expr = Algebra.together((IAST) expr, engine);
 
 			// split expr into numerator and denominator
-			denom = engine.evaluate(F.Denominator(expr));
+			denom = F.Denominator.of(engine, expr);
 			if (!denom.isOne()) {
 				// search roots for the numerator expression
-				expr = engine.evaluate(F.Numerator(expr));
+				expr = F.Numerator.of(expr);
 			}
 		}
 		return rootsOfVariable(expr, denom, variables, numericSolutions, engine);
@@ -228,7 +228,8 @@ public class Roots extends AbstractFunctionEvaluator {
 								}
 							}
 						} else {
-							double[] coefficients = PolynomialFunctions.coefficientList(temp, (ISymbol) variables.arg1());
+							double[] coefficients = PolynomialFunctions.coefficientList(temp,
+									(ISymbol) variables.arg1());
 							if (coefficients == null) {
 								return F.NIL;
 							}

@@ -2381,7 +2381,7 @@ public final class BooleanFunctions {
 					} else if (result.isFalse()) {
 						result = F.True;
 					} else {
-						result = engine.evaluate(F.Not(result));
+						result = F.Not.of(engine, result);
 					}
 					evaled = true;
 				} else if (temp.isFalse()) {
@@ -2397,7 +2397,7 @@ public final class BooleanFunctions {
 						evaled = true;
 					} else {
 						if (result.isTrue()) {
-							result = engine.evaluate(F.Not(temp));
+							result = F.Not.of(engine, temp);
 							evaled = true;
 						} else if (result.isFalse()) {
 							result = temp;

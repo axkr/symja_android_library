@@ -19,8 +19,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * Create iterators for functions like <code>Table()</code>, <code>Sum()</code>
- * or <code>Product()</code>
+ * Create iterators for functions like <code>Table()</code>, <code>Sum()</code> or <code>Product()</code>
  * 
  * @see org.matheclipse.core.reflection.system.Product
  * @see org.matheclipse.core.reflection.system.Sum
@@ -40,9 +39,8 @@ public class Iterator {
 		IExpr maxCounterOrList;
 
 		/**
-		 * If <code>maxCounterOrList</code> is a list the
-		 * <code>maxCounterOrListIndex</code> attribute points to the current
-		 * element.
+		 * If <code>maxCounterOrList</code> is a list the <code>maxCounterOrListIndex</code> attribute points to the
+		 * current element.
 		 */
 		int maxCounterOrListIndex;
 
@@ -94,8 +92,7 @@ public class Iterator {
 		/**
 		 * Tests if this enumeration contains more elements.
 		 * 
-		 * @return <code>true</code> if this enumeration contains more elements;
-		 *         <code>false</code> otherwise.
+		 * @return <code>true</code> if this enumeration contains more elements; <code>false</code> otherwise.
 		 */
 		@Override
 		public boolean hasNext() {
@@ -119,24 +116,24 @@ public class Iterator {
 				}
 				if (step.isSignedNumber()) {
 					if (((ISignedNumber) step).isNegative()) {
-						if (evalEngine.evalTrue(LessEqual(maxCounterOrList, count))) {
+						if (F.LessEqual.ofQ(evalEngine, maxCounterOrList, count)) {
 							return true;
 						}
 					} else {
-						if (evalEngine.evalTrue(LessEqual(count, maxCounterOrList))) {
+						if (F.LessEqual.ofQ(evalEngine, count, maxCounterOrList)) {
 							return true;
 						}
 					}
 				}
-				//else {
-					IExpr sub = evalEngine.evaluate(Divide(Subtract(maxCounterOrList, count), step));
-					if (sub.isSignedNumber()) {
-						return !((ISignedNumber) sub).isNegative();
-					}
-					return false;
-				//}
+				// else {
+				IExpr sub = evalEngine.evaluate(Divide(Subtract(maxCounterOrList, count), step));
+				if (sub.isSignedNumber()) {
+					return !((ISignedNumber) sub).isNegative();
+				}
+				return false;
+				// }
 			}
-//			return false;
+			// return false;
 		}
 
 		@Override
@@ -228,7 +225,7 @@ public class Iterator {
 				variable.set(count);
 			}
 			return true;
-		} 
+		}
 
 		/**
 		 * Method Declaration.
@@ -302,8 +299,7 @@ public class Iterator {
 		/**
 		 * Tests if this enumeration contains more elements.
 		 * 
-		 * @return <code>true</code> if this enumeration contains more elements;
-		 *         <code>false</code> otherwise.
+		 * @return <code>true</code> if this enumeration contains more elements; <code>false</code> otherwise.
 		 */
 		@Override
 		public boolean hasNext() {
@@ -448,8 +444,7 @@ public class Iterator {
 		/**
 		 * Tests if this enumeration contains more elements.
 		 * 
-		 * @return <code>true</code> if this enumeration contains more elements;
-		 *         <code>false</code> otherwise.
+		 * @return <code>true</code> if this enumeration contains more elements; <code>false</code> otherwise.
 		 */
 		@Override
 		public boolean hasNext() {
@@ -585,8 +580,7 @@ public class Iterator {
 		/**
 		 * Tests if this enumeration contains more elements.
 		 * 
-		 * @return <code>true</code> if this enumeration contains more elements;
-		 *         <code>false</code> otherwise.
+		 * @return <code>true</code> if this enumeration contains more elements; <code>false</code> otherwise.
 		 */
 		@Override
 		public boolean hasNext() {
@@ -739,8 +733,7 @@ public class Iterator {
 		/**
 		 * Tests if this enumeration contains more elements.
 		 * 
-		 * @return <code>true</code> if this enumeration contains more elements;
-		 *         <code>false</code> otherwise.
+		 * @return <code>true</code> if this enumeration contains more elements; <code>false</code> otherwise.
 		 */
 		@Override
 		public boolean hasNext() {
@@ -824,8 +817,7 @@ public class Iterator {
 	}
 
 	/**
-	 * Iterator specification for functions like <code>Table()</code> or
-	 * <code>Sum()</code> or <code>Product()</code>
+	 * Iterator specification for functions like <code>Table()</code> or <code>Sum()</code> or <code>Product()</code>
 	 * 
 	 * @param list
 	 *            a list representing an iterator specification
@@ -992,8 +984,7 @@ public class Iterator {
 	}
 
 	/**
-	 * Iterator specification for functions like <code>Table()</code> or
-	 * <code>Sum()</code> or <code>Product()</code>
+	 * Iterator specification for functions like <code>Table()</code> or <code>Sum()</code> or <code>Product()</code>
 	 * 
 	 * @param list
 	 *            a list representing an iterator specification

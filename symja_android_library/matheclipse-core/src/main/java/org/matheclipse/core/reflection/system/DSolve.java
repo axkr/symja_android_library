@@ -90,7 +90,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 					if (temp.isPresent()) {
 						if (boundaryCondition != null) {
 							IExpr res = F.subst(temp, F.List(F.Rule(xVar, boundaryCondition[0])));
-							IExpr C1 = engine.evaluate(F.Roots(F.Equal(res, boundaryCondition[1]), C_1));
+							IExpr C1 = F.Roots.of(engine, F.Equal(res, boundaryCondition[1]), C_1);
 							if (C1.isAST(F.Equal, 3, C_1)) {
 								res = F.subst(temp, F.List(F.Rule(C_1, ((IAST) C1).arg2())));
 								return F.List(F.List(F.Rule(uFunction1Arg, res)));
@@ -286,7 +286,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 					} else {
 						gy.append(expr);
 					}
-				}); 
+				});
 				fxExpr = engine.evaluate(fx);
 				gyExpr = engine.evaluate(gy);
 			}

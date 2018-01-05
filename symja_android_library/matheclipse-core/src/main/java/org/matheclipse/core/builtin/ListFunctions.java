@@ -456,10 +456,6 @@ public final class ListFunctions {
 			public IExpr evaluate(final IExpr[] index) {
 				final IASTAppendable ast = fHeadAST.copyAppendable();
 				return fEngine.evaluate(ast.appendArgs(0, index.length, i -> index[i]));
-				// for (int i = 0; i < index.length; i++) {
-				// ast.append(index[i]);
-				// }
-				// return fEngine.evaluate(ast);
 			}
 		}
 
@@ -1925,7 +1921,7 @@ public final class ListFunctions {
 							nearest.append(inputList.get(i));
 							distance = temp;
 						} else if (comparisonResult.isFalse()) {
-							if (engine.evalTrue(F.Equal(distance, temp))) {
+							if (F.Equal.ofQ(engine, distance, temp)) {
 								nearest.append(inputList.get(i));
 							}
 							continue;

@@ -101,6 +101,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testAntihermitianMatrixQ() {
 		check("AntihermitianMatrixQ({{I, 3 + 4*I}, {-3 + 4*I, 0}})", "True");
+		check("AntihermitianMatrixQ({{I, 3 + 4*I}, {3 + 4*I, 0}})", "False");
 		check("AntihermitianMatrixQ(({{I, a, b},  {-Conjugate[a], 0, c}, {-Conjugate[b],-Conjugate[c],-I} }))", "True");
 	}
 
@@ -1223,6 +1224,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCross() {
+		// check("Cross({a1, b1, c1, d1}, {a2, b2, c2, d2}, {a3, b3, c3, d3})",
+		// "{b3 c2 d1-b2 c3 d1-b3 c1 d2+b1 c3 d2+b2 c1 d3-b1 c2 d3,"
+		// + "-a3 c2 d1+a2 c3 d1+a3 c1 d2-a1 c3 d2-a2 c1 d3+a1 c2 d3,"
+		// + "a3 b2 d1-a2 b3 d1-a3 b1 d2+a1 b3 d2+a2 b1 d3-a1 b2 d3,"
+		// + "-a3 b2 c1+a2 b3 c1+a3 b1 c2-a1 b3 c2-a2 b1 c3+a1 b2 c3}");
 		check("Cross({a,b}, {c,d})", "-b*c+a*d");
 		check("Cross({a, b, c}, {x, y, z})", "{-c*y+b*z,c*x-a*z,-b*x+a*y}");
 		check("Cross({x, y})", "{-y,x}");
@@ -4692,6 +4698,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNumericQ() {
+		check("NumericQ(Glaisher)", "True");
+		check("1<Glaisher<2<E<3", "True");
 		check("NumericQ(Sqrt(sin(2)))", "True");
 		check("NumericQ(E+Pi)", "True");
 		check("NumericQ(Pi)", "True");

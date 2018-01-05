@@ -5,6 +5,7 @@ import java.io.ObjectStreamException;
 import java.util.function.DoubleFunction;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.eval.interfaces.ISymbolEvaluator;
@@ -173,6 +174,32 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	@Override
 	final public boolean isTrue() {
 		return this == F.True;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr of(EvalEngine engine, IExpr... args) {
+		if (fEvaluator instanceof ICoreFunctionEvaluator) {
+			// evaluate a core function (without no rule definitions)
+			final ICoreFunctionEvaluator coreFunction = (ICoreFunctionEvaluator) getEvaluator();
+			IAST ast = F.ast(args, this);
+			return coreFunction.evaluate(ast, engine);
+		}
+
+		return engine.evaluate(F.ast(args, this));
+	} 
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean ofQ(EvalEngine engine, IExpr... args) {
+		if (fEvaluator instanceof AbstractCorePredicateEvaluator) {
+			// evaluate a core function (without no rule definitions)
+			final AbstractCorePredicateEvaluator coreFunction = (AbstractCorePredicateEvaluator) getEvaluator();
+			IAST ast = F.ast(args, this);
+			return coreFunction.evalArg1Boole(ast, engine);
+		}
+		IAST ast = F.ast(args, this);
+		return engine.evalTrue(ast);
 	}
 
 	/** {@inheritDoc} */

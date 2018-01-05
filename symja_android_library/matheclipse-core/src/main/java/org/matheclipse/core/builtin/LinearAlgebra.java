@@ -1729,7 +1729,7 @@ public final class LinearAlgebra {
 					}
 				}
 				try {
-					IAST matrixTransposed = (IAST) engine.evaluate(F.ConjugateTranspose(matrix));
+					IAST matrixTransposed = (IAST) F.ConjugateTranspose.of(engine, matrix);
 					return F.Expand(F.LinearSolve(F.ConjugateTranspose(F.Dot(matrixTransposed, matrix)),
 							F.Dot(matrixTransposed, vector)));
 				} catch (final ClassCastException e) {
@@ -2034,11 +2034,10 @@ public final class LinearAlgebra {
 				}
 				while (qu.size() == 1) {
 					((IASTAppendable) mnm).append(engine.evaluate(F.Flatten(F.MatrixPower(matrix, F.integer(n)))));
-					qu = (IAST) engine.evaluate(F.NullSpace(F.Transpose(mnm)));
+					qu = (IAST) F.NullSpace.of(engine, F.Transpose(mnm));
 					n++;
 				}
-				return engine
-						.evaluate(F.Dot(qu.arg1(), F.Table(F.Power(variable, i), F.List(i, F.C0, F.integer(--n)))));
+				return F.Dot.of(engine, qu.arg1(), F.Table(F.Power(variable, i), F.List(i, F.C0, F.integer(--n))));
 			}
 
 			return F.NIL;
@@ -3602,15 +3601,9 @@ public final class LinearAlgebra {
 			}
 		}
 		IASTAppendable list = F.ListAlloc(rows < cols - 1 ? cols - 1 : rows);
-		list.appendArgs(0, rows, j -> engine.evaluate(F.Together(rowReduced.getEntry(j, cols - 1))));
-		// for (int j = 0; j < rows; j++) {
-		// list.append(engine.evaluate(F.Together(rowReduced.getEntry(j, cols - 1))));
-		// }
+		list.appendArgs(0, rows, j -> F.Together.of(engine, rowReduced.getEntry(j, cols - 1)));
 		if (rows < cols - 1) {
 			list.appendArgs(rows, cols - 1, i -> F.C0);
-			// for (int i = rows; i < cols - 1; i++) {
-			// list.append(F.C0);
-			// }
 		}
 		return list;
 	}
@@ -3648,10 +3641,6 @@ public final class LinearAlgebra {
 			int size = smallList.size();
 			IASTAppendable list = F.ListAlloc(size);
 			list.appendArgs(size, j -> F.Rule(listOfVariables.get(j), engine.evaluate(sList.get(j))));
-			// for (int j = 1; j < size; j++) {
-			// IAST rule = F.Rule(listOfVariables.get(j), engine.evaluate(smallList.get(j)));
-			// list.append(rule);
-			// }
 
 			resultList.append(list);
 			return resultList;

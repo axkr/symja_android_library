@@ -618,8 +618,9 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @param engine
 	 * @return throws NoSolution
 	 */
-	protected static IASTAppendable analyzeSublist(ArrayList<ExprAnalyzer> analyzerList, IAST variables, IASTAppendable resultList,
-			int maximumNumberOfResults, IASTAppendable matrix, IASTAppendable vector, EvalEngine engine) throws NoSolution {
+	protected static IASTAppendable analyzeSublist(ArrayList<ExprAnalyzer> analyzerList, IAST variables,
+			IASTAppendable resultList, int maximumNumberOfResults, IASTAppendable matrix, IASTAppendable vector,
+			EvalEngine engine) throws NoSolution {
 		ExprAnalyzer exprAnalyzer;
 		Collections.sort(analyzerList);
 		int currEquation = 0;
@@ -632,7 +633,7 @@ public class Solve extends AbstractFunctionEvaluator {
 					if (expr.isNumber()) {
 						throw new NoSolution(NoSolution.WRONG_SOLUTION);
 					}
-					if (!PredicateQ.possibleZeroQ(expr, engine)) {
+					if (!F.PossibleZeroQ.ofQ(engine, expr)) {
 						throw new NoSolution(NoSolution.NO_SOLUTION_FOUND);
 					}
 				}
@@ -699,8 +700,8 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @return if <code>maximumNumberOfResults</code> is reached return the resultList, otherwiaw return
 	 *         <code>F#NIL</code>.
 	 */
-	private static IASTAppendable addSubResultsToResultsList(IASTAppendable resultList, IAST subResultList, IAST kListOfSolveRules,
-			int maximumNumberOfResults) {
+	private static IASTAppendable addSubResultsToResultsList(IASTAppendable resultList, IAST subResultList,
+			IAST kListOfSolveRules, int maximumNumberOfResults) {
 		for (IExpr expr : subResultList) {
 			if (expr.isList()) {
 				IASTAppendable list = (IASTAppendable) expr;
@@ -1174,7 +1175,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			@Override
 			public void solved(Solver solver, Solution solution) {
 				if (solution != null) {
-					Set<Entry<ISymbol, IntVariable>> set=map.entrySet();
+					Set<Entry<ISymbol, IntVariable>> set = map.entrySet();
 					IASTAppendable temp = F.ListAlloc(set.size());
 					for (Entry<ISymbol, IntVariable> entry : set) {
 						temp.append(F.Rule(entry.getKey(), F.integer(solution.getIntValue(entry.getValue()))));

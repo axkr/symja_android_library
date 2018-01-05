@@ -1819,7 +1819,7 @@ public class StatisticsFunctions {
 				return F.Transpose(matrix.mapMatrixColumns(dim, v -> F.Standardize(v)));
 			}
 
-			IExpr sd = engine.evaluate(F.StandardDeviation(arg1));
+			IExpr sd = F.StandardDeviation.of(engine, arg1);
 			if (!sd.isZero()) {
 				return engine.evaluate(F.Divide(F.Subtract(arg1, F.Mean(arg1)), sd));
 			}

@@ -47,9 +47,6 @@ public class ConstantDefinitions {
 	private static class Catalan extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 		final static public double CATALAN = 0.91596559417721901505460351493238411077414937428167;
 
-		public Catalan() {
-		}
-
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.CONSTANT);
@@ -71,8 +68,6 @@ public class ConstantDefinitions {
 	 * 
 	 */
 	private static class ComplexInfinity extends AbstractSymbolEvaluator {
-		public ComplexInfinity() {
-		}
 
 		@Override
 		public IExpr evaluate(final ISymbol symbol) {
@@ -93,9 +88,6 @@ public class ConstantDefinitions {
 	 */
 	private static class Degree extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 		final static public double DEGREE = 0.017453292519943295769236907684886127134428718885417;
-
-		public Degree() {
-		}
 
 		/**
 		 * Constant Degree converted to Pi/180
@@ -127,8 +119,6 @@ public class ConstantDefinitions {
 	 * See: <a href="http://en.wikipedia.org/wiki/Exponential_function">Wikipedia - Exponential function</a>
 	 */
 	private static class E extends AbstractSymbolEvaluator implements ISignedNumberConstant {
-		public E() {
-		}
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
@@ -160,9 +150,6 @@ public class ConstantDefinitions {
 	private static class EulerGamma extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 		final static public double EULER_GAMMA = 0.57721566490153286060651209008240243104215933593992;
 
-		public EulerGamma() {
-		}
-
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.CONSTANT);
@@ -189,9 +176,6 @@ public class ConstantDefinitions {
 	private static class Glaisher extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 		final static public double GLAISHER = 1.2824271291006226368753425688697917277676889273250;
 
-		public Glaisher() {
-		}
-
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.CONSTANT);
@@ -216,9 +200,6 @@ public class ConstantDefinitions {
 	 */
 	private static class GoldenRatio extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 		final static public double GOLDEN_RATIO = 1.6180339887498948482045868343656381177203091798058;
-
-		public GoldenRatio() {
-		}
 
 		@Override
 		public IExpr evaluate(final ISymbol symbol) {
@@ -249,8 +230,6 @@ public class ConstantDefinitions {
 	 *
 	 */
 	private static class I extends AbstractSymbolEvaluator {
-		public I() {
-		}
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
@@ -272,8 +251,6 @@ public class ConstantDefinitions {
 	 * See <a href="http://en.wikipedia.org/wiki/Infinity">Infinity</a>
 	 */
 	private static class Infinity extends AbstractSymbolEvaluator {
-		public Infinity() {
-		}
 
 		@Override
 		public IExpr evaluate(final ISymbol symbol) {
@@ -294,9 +271,6 @@ public class ConstantDefinitions {
 	 */
 	private static class Khinchin extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 		final static public double KHINCHIN = 2.6854520010653064453097148354817956938203822939945;
-
-		public Khinchin() {
-		}
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
@@ -320,8 +294,6 @@ public class ConstantDefinitions {
 	 * 
 	 */
 	private static class Pi extends AbstractSymbolEvaluator implements ISignedNumberConstant {
-		public Pi() {
-		}
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {

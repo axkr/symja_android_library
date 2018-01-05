@@ -311,7 +311,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 					}
 					IExpr temp = fx;
 					for (int i = 0; i < n; i++) {
-						temp = engine.evaluate(F.D(temp, x));
+						temp = F.D.of(engine, temp, x);
 					}
 					return temp;
 				}
