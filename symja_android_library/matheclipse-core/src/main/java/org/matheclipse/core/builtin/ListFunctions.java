@@ -39,6 +39,7 @@ import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
@@ -347,10 +348,12 @@ public final class ListFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
 
-			if (ast.arg1().isAST()) {
-				IAST list = (IAST) ast.arg1();
-				IASTAppendable resultList = F.ast(list.head(), list.size(), false);
-				return foldLeft(null, list, 1, list.size(), (x, y) -> F.binaryAST2(F.Plus, x, y), resultList);
+			IExpr arg1 = ast.arg1();
+			if (arg1.isAST()) {
+				IAST list = (IAST) arg1;
+				int size = list.size();
+				IASTAppendable resultList = F.ast(list.head(), size, false);
+				return foldLeft(null, list, 1, size, (x, y) -> F.binaryAST2(F.Plus, x, y), resultList);
 
 			}
 			return F.NIL;
@@ -3113,24 +3116,54 @@ public final class ListFunctions {
 	 */
 	private final static class Total extends AbstractFunctionEvaluator {
 
+		private static class TotalLevelSpecification extends VisitorLevelSpecification {
+			public TotalLevelSpecification(final Function<IExpr, IExpr> function, final IExpr unevaledLevelExpr,
+					boolean includeHeads, final EvalEngine engine) {
+				super(function, unevaledLevelExpr, includeHeads, engine);
+			}
+
+			public TotalLevelSpecification(final Function<IExpr, IExpr> function, final int level,
+					final boolean includeHeads) {
+				super(function, level, includeHeads);
+			}
+
+			public IASTMutable createResult(IASTMutable ast, final IExpr x) {
+				if (x.isAST()) {
+					return ast.copy();
+				}
+				return ast.setAtCopy(0, F.Plus);
+			}
+		}
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
 
 			VisitorLevelSpecification level = null;
-			Function<IExpr, IExpr> tf = x -> x.isAST() ? ((IAST) x).setAtCopy(0, F.Plus) : F.NIL;
+			Function<IExpr, IExpr> tf = x -> x.isAST() ? ((IAST) x).setAtCopy(0, F.Plus) : x;
 
 			if (ast.isAST2()) {
-				level = new VisitorLevelSpecification(tf, ast.arg2(), false, engine);
+				level = new TotalLevelSpecification(tf, ast.arg2(), false, engine);
 				// increment level because we select only subexpressions
 			} else {
-				level = new VisitorLevelSpecification(tf, 1, false);
+				level = new TotalLevelSpecification(tf, 1, false);
 			}
 
 			if (ast.arg1().isAST()) {
 				// increment level because we select only subexpressions
 				level.incCurrentLevel();
-				return ast.arg1().accept(level);
+				IExpr temp = ast.arg1().accept(level);
+				if (temp.isPresent()) {
+					boolean te = engine.isThrowError();
+					try {
+						engine.setThrowError(true);
+						return engine.evaluate(temp);
+					} catch (MathException mex) {
+						return F.NIL;
+					} finally {
+						engine.setThrowError(te);
+					}
+				}
 			}
 
 			return F.NIL;

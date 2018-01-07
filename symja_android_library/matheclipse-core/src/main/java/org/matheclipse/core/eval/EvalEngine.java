@@ -17,6 +17,7 @@ import javax.annotation.Nonnull;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
+import org.matheclipse.core.eval.exception.IllegalArgument;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
@@ -221,6 +222,12 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @see org.matheclipse.core.builtin.function.Quiet
 	 */
 	transient boolean fQuietMode = false;
+
+	/**
+	 * If <code>true</code> the engine throws an error if an error message is printed during evaluation.
+	 * 
+	 */
+	transient boolean fThrowError = false;
 
 	/**
 	 * 
@@ -1544,6 +1551,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		return fQuietMode;
 	}
 
+	public boolean isThrowError() {
+		return fThrowError;
+	}
+
 	/**
 	 * @return the fRelaxedSyntax
 	 */
@@ -1629,6 +1640,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				stream = System.err;
 			}
 			stream.println(str);
+		}
+		if (fThrowError) {
+			throw new IllegalArgument(str);
 		}
 	}
 
@@ -1732,6 +1746,16 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	}
 
 	/**
+	 * Throw an <code>IllegalArgument</code> exception if an error message is printed in method
+	 * <code>printMessage()</code>.
+	 * 
+	 * @param throwError
+	 */
+	public void setThrowError(boolean throwError) {
+		this.fThrowError = throwError;
+	}
+
+	/**
 	 * @param reapList
 	 *            the reapList to set
 	 */
@@ -1816,7 +1840,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 				} else {
 					if (listLength[0] != ((IAST) x).size() - 1) {
 						printMessage("Lists of unequal lengths cannot be combined: " + ast.toString());
-						ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
+						// ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
 						return true;
 					}
 				}

@@ -59,6 +59,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAccumulate() {
+		check("Accumulate({{a, b}, {c, d}, {e, f}})", "{{a,b},{a+c,b+d},{a+c+e,b+d+f}}");
 		check("Accumulate({})", "{}");
 		check("Accumulate({a})", "{a}");
 		check("Accumulate({a, b})", "{a,a+b}");
@@ -3518,6 +3519,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLevel() {
+		check("Level(a + f(x, y^n), {-1})", "{a,x,y,n}");
 		check("Level(a + b ^ 3 * f(2 x ^ 2), {-1}, g)", "g(a,b,3,2,x,2)");
 		check("Level(a + b ^ 3 * f(2 x ^ 2), {-1})", "{a,b,3,2,x,2}");
 		check("Level({{{{a}}}}, 3)", "{{a},{{a}},{{{a}}}}");
@@ -6721,6 +6723,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sin(ArcCos(x))", "Sqrt(1-x^2)");
 		check("Sin(ArcTan(x))", "x/Sqrt(1+x^2)");
 
+		check("Sin(Pi/4)", "1/Sqrt(2)");
 		check("Sin(0)", "0");
 		checkNumeric("Sin(0.5)", "0.479425538604203");
 		check("Sin(3*Pi)", "0");
@@ -7820,6 +7823,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTotal() {
+		check("Total({x^2, 3 x^3, 1})", "1+x^2+3*x^3");
+		
+		check("Total(f(1,2,1))", "4");
+		check("Total(Derivative(1, 2, 1))", "4");
+		
+		check("Total( {{1, 2, 3}, {4, 5}, {6}})", "Total({{1,2,3},{4,5},{6}})");
+		check("Total( {{1, 2, 3}, {4, 5}, {6}}, Infinity)", "21");
+		check("Total( {{1, 2, 3}, {4, 5}, {6}}, {-1})", "{6,9,6}");
+
 		check("Total({1, 2, 3})", "6");
 		check("Total({{1, 2, 3}, {4, 5, 6}, {7, 8 ,9}})", "{12,15,18}");
 		check("Total({{1, 2, 3}, {4, 5, 6}, {7, 8 ,9}}, 2)", "45");
