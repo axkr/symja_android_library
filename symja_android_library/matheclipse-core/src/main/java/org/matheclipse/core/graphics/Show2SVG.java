@@ -13,12 +13,15 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 
+import com.google.common.escape.Escaper;
+import com.google.common.html.HtmlEscapers;
+
 public class Show2SVG {
-//
-//	private static class Dimensions2D {
-//
-//		
-//	}
+	//
+	// private static class Dimensions2D {
+	//
+	//
+	// }
 
 	private static final DecimalFormatSymbols US_SYNBOLS = new DecimalFormatSymbols(Locale.US);
 	private static final DecimalFormat FORMATTER = new DecimalFormat("0.0####", US_SYNBOLS);
@@ -57,15 +60,30 @@ public class Show2SVG {
 		int width = 400;
 		int height = 200;
 		Dimensions2D dim = new Dimensions2D(width, height);
-		buf.append("<graphics3d data=\"");
+		buf.append("<graphics3d data=\"{");
+
+		StringBuilder builder = new StringBuilder(1024);
+		builder.append("\"viewpoint\": [1.3, -2.4, 2.0], ");
 		try {
 			for (int i = 1; i < numericAST.size(); i++) {
-				if (numericAST.get(i).isASTSizeGE(F.Line, 2)) {
-					lineToSVG(numericAST.getAST(i), buf, dim);
+				// if (numericAST.get(i).isASTSizeGE(F.Line, 2)) {
+				// lineToSVG(numericAST.getAST(i), buf, dim);
+				// } else
+				if (numericAST.get(i).isASTSizeGE(F.Polygon, 2)) {
+					polygonToSVG(numericAST.getAST(i), builder, dim);
 				}
 			}
 		} finally {
-			buf.append("\" />");
+			builder.append("\"lighting\": [{\"color\": [0.3, 0.2, 0.4], \"type\": \"Ambient\"}, "
+					+ "{\"color\": [0.8, 0.0, 0.0], \"position\": [2.0, 0.0, 2.0], \"type\": \"Directional\"}, "
+					+ "{\"color\": [0.0, 0.8, 0.0], \"position\": [2.0, 2.0, 2.0], \"type\": \"Directional\"}, "
+					+ "{\"color\": [0.0, 0.0, 0.8], \"position\": [0.0, 2.0, 2.0], \"type\": \"Directional\"}], "
+					+ "\"axes\": {\"hasaxes\": [false, false, false], "
+					+ "\"ticks\": [[[0.0, 0.2, 0.4, 0.6000000000000001, 0.8, 1.0], [0.05, 0.1, 0.15000000000000002, 0.25, 0.30000000000000004, 0.35000000000000003, 0.45, 0.5, 0.55, 0.65, 0.7000000000000001, 0.75, 0.8500000000000001, 0.9, 0.9500000000000001], [\"0.0\", \"0.2\", \"0.4\", \"0.6\", \"0.8\", \"1.0\"]], [[0.0, 0.2, 0.4, 0.6000000000000001, 0.8, 1.0], [0.05, 0.1, 0.15000000000000002, 0.25, 0.30000000000000004, 0.35000000000000003, 0.45, 0.5, 0.55, 0.65, 0.7000000000000001, 0.75, 0.8500000000000001, 0.9, 0.9500000000000001], [\"0.0\", \"0.2\", \"0.4\", \"0.6\", \"0.8\", \"1.0\"]], [[0.0, 0.2, 0.4, 0.6000000000000001, 0.8, 1.0], [0.05, 0.1, 0.15000000000000002, 0.25, 0.30000000000000004, 0.35000000000000003, 0.45, 0.5, 0.55, 0.65, 0.7000000000000001, 0.75, 0.8500000000000001, 0.9, 0.9500000000000001], [\"0.0\", \"0.2\", \"0.4\", \"0.6\", \"0.8\", \"1.0\"]]]}, "
+					+ "\"extent\": {\"zmax\": 1.0, \"ymax\": 1.0, \"zmin\": 0.0, \"xmax\": 1.0, \"xmin\": 0.0, \"ymin\": 0.0}");
+			Escaper escaper = HtmlEscapers.htmlEscaper();
+			buf.append(escaper.escape(builder.toString()));
+			buf.append("}\" />");
 		}
 	}
 
@@ -224,6 +242,41 @@ public class Show2SVG {
 		} finally {
 			buf.append(
 					"\" \n          style=\"stroke: rgb(0.000000%, 0.000000%, 0.000000%); stroke-opacity: 1; stroke-width: 0.666667px; fill: none\" />");
+		}
+	}
+
+	private static void polygonToSVG(IAST ast, Appendable buf, Dimensions2D dim) throws IOException {
+		try {
+			if (ast.arg1().isListOfLists()) {
+				IAST list = (IAST) ast.arg1();
+				if (list.size() > 1) {
+					buf.append("\"elements\": [{\"coords\": [");
+					for (int i = 1; i < list.size(); i++) {
+						IAST point = list.getAST(i);
+						if (point.isList() && ((IAST) point).isAST3()) {
+							// [{"coords": [[[0.0, 0.0, 0.0], null], [[0.0, 1.0, 1.0], null], [[1.0, 0.0, 0.0], null]]
+							buf.append("[[");
+							for (int j = 1; j < point.size(); j++) {
+								buf.append(FORMATTER.format(((ISignedNumber) ((IAST) point).get(j)).doubleValue()));
+								if (j < point.size() - 1) {
+									buf.append(", ");
+								}
+							}
+							buf.append("], null]");
+							if (i < point.size() - 1) {
+								buf.append(", ");
+							}
+						}
+
+					}
+					buf.append("], \"type\": \"polygon\", \"faceColor\": [1, 1, 1, 1]");
+				}
+			}
+		} catch (RuntimeException ex) {
+			// catch cast exceptions for example
+			ex.printStackTrace();
+		} finally {
+			buf.append("}], ");
 		}
 	}
 
