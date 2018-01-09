@@ -1,7 +1,6 @@
 package org.matheclipse.core.graphics;
 
 import java.awt.Color;
-import java.io.IOException;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -37,7 +36,7 @@ public class Dimensions2D {
 		this.axes = false;
 	}
 
-	public void getColorRGB(Appendable buf) throws IOException {
+	public void getColorRGB(StringBuilder buf) {
 		float[] rgb = color.getRGBColorComponents(null);
 		buf.append(Float.toString(rgb[0] * 100));
 		buf.append("%, ");

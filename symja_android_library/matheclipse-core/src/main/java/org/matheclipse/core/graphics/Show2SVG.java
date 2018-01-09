@@ -1,6 +1,5 @@
 package org.matheclipse.core.graphics;
 
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -26,7 +25,7 @@ public class Show2SVG {
 	private static final DecimalFormatSymbols US_SYNBOLS = new DecimalFormatSymbols(Locale.US);
 	private static final DecimalFormat FORMATTER = new DecimalFormat("0.0####", US_SYNBOLS);
 
-	private static void elementDimension(IAST ast, Dimensions2D dim) throws IOException {
+	private static void elementDimension(IAST ast, Dimensions2D dim) {
 		for (int i = 1; i < ast.size(); i++) {
 			if (ast.get(i).isSymbol()) {
 				//
@@ -40,7 +39,7 @@ public class Show2SVG {
 		}
 	}
 
-	private static void elementToSVG(IAST ast, Appendable buf, Dimensions2D dim) throws IOException {
+	private static void elementToSVG(IAST ast, StringBuilder buf, Dimensions2D dim) {
 		for (int i = 1; i < ast.size(); i++) {
 			if (ast.get(i).isSymbol()) {
 				dim.setColorRGB(ast.get(i).toString());
@@ -54,7 +53,32 @@ public class Show2SVG {
 		}
 	}
 
-	private static void graphics3dToSVG(IAST ast, Appendable buf) throws IOException {
+	/**
+	 * <p>
+	 * A 3D Graphics command like
+	 * 
+	 * <pre>
+	 *     Graphics3D(Polygon({{0,0,0}, {0,1,1}, {1,0,0}}))
+	 * </pre>
+	 * 
+	 * will be converted to:
+	 * 
+	 * <pre>
+	 * &lt;graphics3d data="{&quot;viewpoint&quot;: [1.3, -2.4, 2.0], &quot;elements&quot;: [{&quot;coords&quot;:......
+	 * </pre>
+	 * </p>
+	 * 
+	 * <p>
+	 * It's a bit messy because of all the HTML escaping. What we are interested in is the data field. It's a JSON dict
+	 * describing the 3D graphics in terms of graphics primitives. This JSON can be used in
+	 * <a href="http://threejs.org/">threejs.org</a> to construct a 3D div.
+	 * </p>
+	 * 
+	 * @param ast
+	 * @param buf
+	 * @throws IOException
+	 */
+	private static void graphics3dToSVG(IAST ast, StringBuilder buf) {
 		EvalEngine engine = EvalEngine.get();
 		IAST numericAST = (IAST) engine.evalN(ast);
 		int width = 400;
@@ -87,7 +111,7 @@ public class Show2SVG {
 		}
 	}
 
-	private static void graphicsToSVG(IAST ast, Appendable buf) throws IOException {
+	private static void graphicsToSVG(IAST ast, StringBuilder buf) {
 		EvalEngine engine = EvalEngine.get();
 		IAST numericAST = (IAST) engine.evalN(ast);
 		Dimensions2D dim = new Dimensions2D(350, 350);
@@ -200,7 +224,7 @@ public class Show2SVG {
 		}
 	}
 
-	private static void lineToSVG(IAST ast, Appendable buf, Dimensions2D dim) throws IOException {
+	private static void lineToSVG(IAST ast, StringBuilder buf, Dimensions2D dim) {
 		try {
 			if (ast.arg1().isList()) {
 				buf.append("<polyline points=\"");
@@ -245,7 +269,7 @@ public class Show2SVG {
 		}
 	}
 
-	private static void polygonToSVG(IAST ast, Appendable buf, Dimensions2D dim) throws IOException {
+	private static void polygonToSVG(IAST ast, StringBuilder buf, Dimensions2D dim) {
 		try {
 			if (ast.arg1().isListOfLists()) {
 				IAST list = (IAST) ast.arg1();
@@ -280,7 +304,7 @@ public class Show2SVG {
 		}
 	}
 
-	private static void pointDimension(IAST ast, Dimensions2D dim) throws IOException {
+	private static void pointDimension(IAST ast, Dimensions2D dim) {
 		if (ast.size() == 2) {
 			IExpr arg1 = ast.arg1();
 			if (arg1.isListOfLists()) {
@@ -307,7 +331,7 @@ public class Show2SVG {
 				y1 + Config.DOUBLE_EPSILON);
 	}
 
-	private static void pointToSVG(IAST ast, Appendable buf, Dimensions2D dim) throws IOException {
+	private static void pointToSVG(IAST ast, StringBuilder buf, Dimensions2D dim) {
 
 		if (ast.size() == 2) {
 			IExpr arg1 = ast.arg1();
@@ -327,7 +351,7 @@ public class Show2SVG {
 
 	}
 
-	private static void singlePointToSVG(IAST point, Appendable buf, Dimensions2D dim) throws IOException {
+	private static void singlePointToSVG(IAST point, StringBuilder buf, Dimensions2D dim) {
 		try {
 			double xMin = dim.xMin;
 			double yMax = dim.yMax;
@@ -365,7 +389,7 @@ public class Show2SVG {
 		}
 	}
 
-	private static void rectangleDimension(IAST ast, Dimensions2D dim) throws IOException {
+	private static void rectangleDimension(IAST ast, Dimensions2D dim) {
 		if (ast.size() == 2) {
 			if (ast.arg1().isAST(F.List, 3)) {
 				IAST list1 = (IAST) ast.arg1();
@@ -390,7 +414,7 @@ public class Show2SVG {
 		}
 	}
 
-	private static void rectangleToSVG(IAST ast, Appendable buf, Dimensions2D dim) throws IOException {
+	private static void rectangleToSVG(IAST ast, StringBuilder buf, Dimensions2D dim) {
 		try {
 			int width = dim.width;
 			int height = dim.height;
@@ -454,7 +478,7 @@ public class Show2SVG {
 		}
 	}
 
-	public static void toSVG(IAST ast, Appendable buf) throws IOException {
+	public static void toSVG(IAST ast, StringBuilder buf) {
 
 		if (ast.size() > 1 && ast.get(1).isASTSizeGE(F.Graphics, 2)) {
 			graphicsToSVG(ast.getAST(1), buf);
