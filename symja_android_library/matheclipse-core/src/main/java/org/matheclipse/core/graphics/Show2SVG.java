@@ -81,13 +81,18 @@ public class Show2SVG {
 	private static void graphics3dToSVG(IAST ast, StringBuilder buf) {
 		EvalEngine engine = EvalEngine.get();
 		IAST numericAST = (IAST) engine.evalN(ast);
+		double[] viewpoints = new double[] { 1.3, -2.4, 2.0 };
+		if (numericAST.size() > 2) {
+			final Options options = new Options(numericAST.topHead(), numericAST, 2, engine);
+			optionViewPoint(options, viewpoints);
+		}
 		int width = 400;
 		int height = 200;
 		Dimensions2D dim = new Dimensions2D(width, height);
 		buf.append("<graphics3d data=\"{");
 
 		StringBuilder builder = new StringBuilder(1024);
-		builder.append("\"viewpoint\": [1.3, -2.4, 2.0], ");
+		appendDoubleArray(builder, "viewpoint", viewpoints);
 		try {
 			for (int i = 1; i < numericAST.size(); i++) {
 				// if (numericAST.get(i).isASTSizeGE(F.Line, 2)) {
@@ -108,6 +113,64 @@ public class Show2SVG {
 			Escaper escaper = HtmlEscapers.htmlEscaper();
 			buf.append(escaper.escape(builder.toString()));
 			buf.append("}\" />");
+		}
+	}
+
+	private static void appendDoubleArray(StringBuilder builder, String tag, double[] viewpoints) {
+		builder.append("\"");
+		builder.append(tag);
+		builder.append("\": [");
+		for (int i = 0; i < viewpoints.length; i++) {
+			builder.append(FORMATTER.format(viewpoints[i]));
+			if (i < viewpoints.length - 1) {
+				builder.append(", ");
+			}
+		}
+		builder.append("], ");
+	}
+
+	/**
+	 * Determine the viewpoint in space from which a three‐dimensional object can be viewed.
+	 * 
+	 * @param options
+	 * @param viewpoints
+	 */
+	private static void optionViewPoint(final Options options, double[] viewpoints) {
+		IExpr option = options.getOption("ViewPoint");
+		if (option.isPresent()) {
+			if (option.isSymbol()) {
+				String viewpoint = option.toString().toLowerCase();
+				if (viewpoint.equals("above")) {
+					viewpoints[0] = 0.0;
+					viewpoints[1] = 0.0;
+					viewpoints[2] = 2.0;
+				} else if (viewpoint.equals("below")) {
+					viewpoints[0] = 0.0;
+					viewpoints[1] = 0.0;
+					viewpoints[2] = -2.0;
+				} else if (viewpoint.equals("front")) {
+					viewpoints[0] = 0.0;
+					viewpoints[1] = -2.0;
+					viewpoints[2] = 0.0;
+				} else if (viewpoint.equals("back")) {
+					viewpoints[0] = 0.0;
+					viewpoints[1] = 2.0;
+					viewpoints[2] = 0.0;
+				} else if (viewpoint.equals("left")) {
+					viewpoints[0] = -2.0;
+					viewpoints[1] = 0.0;
+					viewpoints[2] = 0.0;
+				} else if (viewpoint.equals("right")) {
+					viewpoints[0] = 2.0;
+					viewpoints[1] = 0.0;
+					viewpoints[2] = 0.0;
+				}
+			} else if (option.isList() && option.isAST3()) {
+				IAST list = (IAST) option;
+				for (int i = 1; i < list.size(); i++) {
+					viewpoints[i - 1] = ((ISignedNumber) ((IAST) list).get(i)).doubleValue();
+				}
+			}
 		}
 	}
 
