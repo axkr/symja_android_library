@@ -120,9 +120,11 @@ public final class Arithmetic {
 		F.DirectedInfinity.setEvaluator(new DirectedInfinity());
 		F.DivideBy.setEvaluator(new DivideBy());
 		F.Gamma.setEvaluator(new Gamma());
+		F.GCD.setEvaluator(new GCD());
 		F.HarmonicNumber.setEvaluator(new HarmonicNumber());
 		F.Im.setEvaluator(new Im());
 		F.Increment.setEvaluator(new Increment());
+		F.LCM.setEvaluator(new LCM());
 		F.N.setEvaluator(new N());
 		F.Piecewise.setEvaluator(new Piecewise());
 		F.Pochhammer.setEvaluator(new Pochhammer());
@@ -980,6 +982,46 @@ public final class Arithmetic {
 	}
 
 	/**
+	 * Greatest common divisor
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Greatest_common_divisor">Wikipedia: Greatest common divisor</a>
+	 */
+	private final static class GCD extends AbstractArgMultiple {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST0()) {
+				return F.C0;
+			} else if (ast.isAST1()) {
+				if (ast.arg1().isExactNumber()) {
+					return ast.arg1().abs();
+				}
+			}
+			return super.evaluate(ast, engine);
+		}
+
+		@Override
+		public IExpr e2FraArg(IFraction f0, IFraction f1) {
+			return f0.gcd(f1);
+		}
+
+		/**
+		 * Compute gcd of 2 integer numbers
+		 * 
+		 */
+		@Override
+		public IExpr e2IntArg(final IInteger i0, final IInteger i1) {
+			return i0.gcd(i1);
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE);
+		}
+
+	}
+
+	/**
 	 * <pre>
 	 * HarmonicNumber(n)
 	 * </pre>
@@ -1253,6 +1295,49 @@ public final class Arithmetic {
 		protected ISymbol getFunctionSymbol() {
 			return F.Increment;
 		}
+	}
+
+	/**
+	 * Least common multiple
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Least_common_multiple">Wikipedia:Least common multiple</a>
+	 */
+	private final static class LCM extends AbstractArgMultiple {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2);
+
+			if (ast.isAST1()) {
+				if (ast.arg1().isExactNumber()) {
+					return ast.arg1().abs();
+				}
+			}
+			return super.evaluate(ast, engine);
+		}
+
+		/**
+		 * Compute lcm of 2 integer numbers
+		 * 
+		 */
+		@Override
+		public IExpr e2IntArg(final IInteger i0, final IInteger i1) {
+			return i0.lcm(i1);
+		}
+
+		@Override
+		public IExpr e2ObjArg(final IExpr o0, final IExpr o1) {
+			if (o0.isZero()) {
+				return o0;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE);
+		}
+
 	}
 
 	private final static class Minus extends AbstractCoreFunctionEvaluator {

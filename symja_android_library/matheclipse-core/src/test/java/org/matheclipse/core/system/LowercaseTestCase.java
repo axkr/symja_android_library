@@ -2739,6 +2739,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGCD() {
+		check("GCD(x,x)", "GCD(x,x)");
 		check("GCD(-2147483648)", "2147483648");
 		check("GCD(-2147483648, -2147483648/2)", "1073741824");
 		check("GCD(I)", "1");
@@ -5243,6 +5244,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialGCD() {
+		check("PolynomialGCD(x,x)", "x");
+		
 		check("PolynomialGCD((x + 1)^3, x^3 + x, Modulus -> 2)", "(1+x)^2");
 		check("PolynomialGCD((x - a)*(b x - c)^2, (x - a)*(x^2 - b*c))", "a-x");
 		check("PolynomialGCD((1 + x)^2*(2 + x)*(4 + x), (1 + x)*(2 + x)*(3 + x))", "2+3*x+x^2");
@@ -5256,6 +5259,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolynomialLCM() {
+		check("PolynomialLCM(x,x)", "x");
+		
 		check("Expand((-1+x)*(1+x)*(1+x^2)*(1-x+x^2)*(1+x+x^2)*(1+x+x^2+x^3+x^4)*(1+x+x^2+x^3+x^4+x^5+x^6))",
 				"-1-2*x-4*x^2-6*x^3-8*x^4-9*x^5-9*x^6-7*x^7-4*x^8+4*x^10+7*x^11+9*x^12+9*x^13+8*x^\n"
 						+ "14+6*x^15+4*x^16+2*x^17+x^18");

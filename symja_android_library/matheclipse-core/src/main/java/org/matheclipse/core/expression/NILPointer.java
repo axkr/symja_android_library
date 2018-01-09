@@ -203,6 +203,11 @@ public final class NILPointer extends AbstractAST implements IASTAppendable {
 	}
 
 	@Override
+	public void ifPresentOrElse​(Consumer<? super IExpr> consumer, Runnable emptyAction) {
+		emptyAction.run();
+	}
+
+	@Override
 	public boolean isAbs() {
 		return false;
 	}

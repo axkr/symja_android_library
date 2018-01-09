@@ -468,10 +468,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	@Override
 	default IExpr gcd(IExpr that) {
-		if (equals(that)) {
-			return that;
-		}
-		return F.C1;
+		return F.GCD.of(this, that); 
 	}
 
 	/**
@@ -578,12 +575,25 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * If a value is present, performs the given <code>consumer</code> with the value, otherwise performs the given
+	 * empty-based action.
+	 * 
+	 * @param consumer
+	 *            the action to be performed, if a value is present
+	 * @param emptyAction
+	 *            the empty-based action to be performed, if no value is present
+	 */
+	default void ifPresentOrElse​(Consumer<? super IExpr> consumer, Runnable emptyAction) {
+		consumer.accept(this);
+	}
+
+	/**
 	 * Return the imaginary part of this expression if possible. Otherwise return <code>Im(this)</code>.
 	 * 
 	 * @return real part
 	 */
 	default public IExpr im() {
-		return F.eval(F.Im(this));
+		return F.Im.of(this);
 	}
 
 	/**
@@ -2446,7 +2456,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	default IExpr mod(final IExpr that) {
-		return F.Mod(this, that);
+		return F.Mod.of(this, that);
 	}
 
 	/**
@@ -2741,7 +2751,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return real part
 	 */
 	default public IExpr re() {
-		return F.eval(F.Re(this));
+		return F.Re.of(this);
 	}
 
 	@Override

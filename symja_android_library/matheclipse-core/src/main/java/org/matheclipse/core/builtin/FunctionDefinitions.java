@@ -31,7 +31,6 @@ public final class FunctionDefinitions {
 		FrobeniusSolve.setEvaluator(new org.matheclipse.core.reflection.system.FrobeniusSolve());
 		FromContinuedFraction.setEvaluator(new org.matheclipse.core.reflection.system.FromContinuedFraction());
 		FromPolarCoordinates.setEvaluator(new org.matheclipse.core.reflection.system.FromPolarCoordinates());
-		GCD.setEvaluator(new org.matheclipse.core.reflection.system.GCD());
 		GeometricMean.setEvaluator(new org.matheclipse.core.reflection.system.GeometricMean());
 		GroebnerBasis.setEvaluator(new org.matheclipse.core.reflection.system.GroebnerBasis());
 		HeavisideTheta.setEvaluator(new org.matheclipse.core.reflection.system.HeavisideTheta());
@@ -44,7 +43,6 @@ public final class FunctionDefinitions {
 		InverseFunction.setEvaluator(new org.matheclipse.core.reflection.system.InverseFunction());
 		InverseLaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.InverseLaplaceTransform());
 		LaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.LaplaceTransform());
-		LCM.setEvaluator(new org.matheclipse.core.reflection.system.LCM());
 		Limit.setEvaluator(new org.matheclipse.core.reflection.system.Limit());
 		LinearProgramming.setEvaluator(new org.matheclipse.core.reflection.system.LinearProgramming());
 		MonomialList.setEvaluator(new org.matheclipse.core.reflection.system.MonomialList());

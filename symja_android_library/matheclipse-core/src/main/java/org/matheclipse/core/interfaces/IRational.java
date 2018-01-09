@@ -49,7 +49,7 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	public IASTAppendable factorInteger();
 
 	public IInteger floor();
-
+	
 	/**
 	 * Returns the denominator of this fraction.
 	 * 
