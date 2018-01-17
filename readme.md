@@ -1,6 +1,6 @@
 ## Symja Library - Java Symbolic Math System
 
-**Note**: this repository contains the **Java 8** version of the project. The [NCalc project](https://github.com/tranleduy2000/ncalc) maintains a [Java 7 branch based on Retrolambda](https://github.com/tranleduy2000/symja_java7).
+**Note**: this repository contains the **Java 8** version of the project. The [NCalc](https://github.com/tranleduy2000/ncalc) and [Natural Calc](https://github.com/tranleduy2000/naturalcalc)  projects maintains a [Java 7 branch based on Retrolambda](https://github.com/tranleduy2000/symja_java7).
 
 - [Quick start](#quick-start)
 - [Features](#features)
@@ -28,7 +28,7 @@ Features of the Symja language:
 * differentiation, integration, equation solving, polynomial and linear algebra functions...
 * a general purpose [Term Rewriting System and Pattern Matching engine](symja_android_library/doc/functions-and-patterns.md)
 * use human readable math expression strings or the internal abstract syntax tree (AST) representation to code in Java. See the [Unit test examples](symja_android_library/matheclipse-core/src/test/java/org/matheclipse/core/system/LowercaseTestCase.java)
-     
+      
 ### Demos
 
 * [Appengine web interface symjaweb.appspot.com](http://symjaweb.appspot.com/) - available as open source in this [Github repository](https://github.com/axkr/symja_web) 
