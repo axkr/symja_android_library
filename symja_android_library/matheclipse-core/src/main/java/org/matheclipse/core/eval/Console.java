@@ -56,8 +56,7 @@ public class Console {
 
 	public static void main(final String args[]) {
 		Config.FILESYSTEM_ENABLED=true;
-		F.initSymbols(null, null, true); // console.getDefaultSystemRulesFilename(),
-											// null, false);
+		F.initSymbols(null, null, true);  
 
 		Console console;
 		try {

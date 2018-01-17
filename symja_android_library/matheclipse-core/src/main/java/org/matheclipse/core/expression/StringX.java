@@ -24,64 +24,6 @@ public class StringX implements IStringX {
 	 */
 	private static final long serialVersionUID = -68464824682534930L;
 
-	// protected static final XmlFormat<StringImpl> SYMBOL_XML = new
-	// XmlFormat<StringImpl>(StringImpl.class) {
-	// @Override
-	// public void format(StringImpl obj, XmlElement xml) {
-	// StringImpl expr = obj;
-	// xml.setAttribute("name", expr.fString);
-	// }
-	//
-	// @Override
-	// public StringImpl parse(XmlElement xml) {
-	// StringImpl expr = (StringImpl) xml.object();
-	// expr.fString = xml.getAttribute("name", "");
-	// return expr;
-	// }
-	// };
-
-	// private static final ObjectFactory<StringX> FACTORY = new
-	// ObjectFactory<StringX>() {
-	// @Override
-	// protected StringX create() {
-	// if (Config.SERVER_MODE && currentQueue().getSize() >=
-	// Config.STRING_MAX_POOL_SIZE) {
-	// throw new PoolMemoryExceededException("StringX",
-	// currentQueue().getSize());
-	// }
-	// return new StringX(null);
-	// }
-	// };
-
-	/**
-	 * Be cautious with this method, no new internal String object is created
-	 * 
-	 * @param value
-	 * @return
-	 */
-	protected static StringX newInstance(final String value) {
-		// IntegerImpl z = new IntegerImpl();
-		StringX d;
-		// if (Config.SERVER_MODE) {
-		// if (Config.STRING_MAX_SIZE < value.length()) {
-		// throw new ObjectMemoryExceededException("StringX", value.length());
-		// }
-		// d = FACTORY.object();
-		// } else {
-		d = new StringX(null);
-		// }
-		d.fString = value;
-		return d;
-	}
-
-	public static StringX newInstance(final byte[] bytes, Charset charset) {
-		StringX d = new StringX(null);
-		d.fString = new String(bytes, charset);
-		return d;
-	}
-
-	private String fString;
-
 	/**
 	 * @param data
 	 * @return
@@ -98,6 +40,25 @@ public class StringX implements IStringX {
 	 */
 	public static StringX copyValueOf(final char[] data, final int offset, final int count) {
 		return newInstance(String.copyValueOf(data, offset, count));
+	}
+
+	public static StringX newInstance(final byte[] bytes, Charset charset) {
+		StringX d = new StringX(null);
+		d.fString = new String(bytes, charset);
+		return d;
+	}
+
+	/**
+	 * Be cautious with this method, no new internal String object is created
+	 * 
+	 * @param value
+	 * @return
+	 */
+	protected static StringX newInstance(final String value) {
+		StringX d;
+		d = new StringX(null);
+		d.fString = value;
+		return d;
 	}
 
 	/**
@@ -178,8 +139,44 @@ public class StringX implements IStringX {
 		return newInstance(builder.toString());
 	}
 
+	private String fString;
+
 	private StringX(final String str) {
 		fString = str;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public <T> T accept(IVisitor<T> visitor) {
+		return visitor.visit(this);
+	}
+
+	// public int compareTo(Object o) {
+	// return fString.compareTo(((StringImpl) o).fString);
+	// }
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean accept(IVisitorBoolean visitor) {
+		return visitor.visit(this);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int accept(IVisitorInt visitor) {
+		return visitor.visit(this);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public long accept(IVisitorLong visitor) {
+		return visitor.visit(this);
 	}
 
 	/**
@@ -189,10 +186,6 @@ public class StringX implements IStringX {
 	public char charAt(final int index) {
 		return fString.charAt(index);
 	}
-
-	// public int compareTo(Object o) {
-	// return fString.compareTo(((StringImpl) o).fString);
-	// }
 
 	/**
 	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
@@ -314,6 +307,11 @@ public class StringX implements IStringX {
 	}
 
 	@Override
+	public ISymbol head() {
+		return F.StringHead;
+	}
+
+	@Override
 	public int hierarchy() {
 		return STRINGID;
 	}
@@ -373,10 +371,11 @@ public class StringX implements IStringX {
 
 	/** {@inheritDoc} */
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
+			boolean usePrefix) {
 		final StringBuilder buffer = new StringBuilder();
 		String prefix = usePrefix ? "F." : "";
-		buffer.append(prefix+"$str(\"");
+		buffer.append(prefix + "$str(\"");
 		buffer.append(fString);
 		buffer.append("\")");
 		return buffer.toString();
@@ -514,14 +513,11 @@ public class StringX implements IStringX {
 		return fString.toLowerCase(locale);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	// public String toString() {
-	// return fString.toString();
-	// }
+	@Override
+	public String toString() {
+		return fString;
+	}
+
 	/**
 	 * @return
 	 */
@@ -542,70 +538,5 @@ public class StringX implements IStringX {
 	 */
 	public String trim() {
 		return fString.trim();
-	}
-
-	// @Override
-	// public boolean move(final ObjectSpace os) {
-	// return super.move(os);
-	// }
-	// public StringX copy() {
-	// StringX r = FACTORY.object();
-	// r.fString = fString;
-	// return r;
-	// }
-	//
-	// public StringX copyNew() {
-	// StringX r = new StringX(null);
-	// r.fString = fString;
-	// return r;
-	// }
-	//
-	// public void recycle() {
-	// FACTORY.recycle(this);
-	// }
-
-	// public Text toText() {
-	// final TextBuilder tb = TextBuilder.newInstance();
-	// tb.append(fString);
-	// return tb.toText();
-	// }
-	@Override
-	public ISymbol head() {
-		return F.StringHead;
-	}
-
-	@Override
-	public String toString() {
-		return fString;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public <T> T accept(IVisitor<T> visitor) {
-		return visitor.visit(this);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean accept(IVisitorBoolean visitor) {
-		return visitor.visit(this);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public int accept(IVisitorInt visitor) {
-		return visitor.visit(this);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public long accept(IVisitorLong visitor) {
-		return visitor.visit(this);
 	}
 }
