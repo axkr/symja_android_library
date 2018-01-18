@@ -87,6 +87,23 @@ public final class Programming {
 		F.With.setEvaluator(new With());
 	}
 
+	/**
+	 * <pre>
+	 * Abort()
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * aborts an evaluation completely and returns <code>$Aborted</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Print("a"); Abort(); Print("b")
+	 * $Aborted
+	 * </pre>
+	 */
 	private final static class Abort extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -211,6 +228,24 @@ public final class Programming {
 
 	}
 
+	/**
+	 * <pre>
+	 * CompoundExpression(expr1, expr2, ...)
+	 * </pre>
+	 * <p>
+	 * or
+	 * </p>
+	 * 
+	 * <pre>
+	 * expr1; expr2; ...
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * evaluates its arguments in turn, returning the last result.
+	 * </p>
+	 * </blockquote>
+	 */
 	private final static class CompoundExpression extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -230,6 +265,49 @@ public final class Programming {
 
 	}
 
+	/**
+	 * <pre>
+	 * Condition(pattern, expr)
+	 * </pre>
+	 * <p>
+	 * or
+	 * </p>
+	 * 
+	 * <pre>
+	 * pattern /; expr
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * places an additional constraint on <code>pattern</code> that only allows it to match if <code>expr</code>
+	 * evaluates to <code>True</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * The controlling expression of a <code>Condition</code> can use variables from the pattern:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt; f(3) /. f(x_) /; x&gt;0 -&gt; t
+	 * t
+	 * 
+	 * &gt;&gt; f(-3) /. f(x_) /; x&gt;0 -&gt; t
+	 * f(-3)
+	 * </pre>
+	 * <p>
+	 * <code>Condition</code> can be used in an assignment:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; f(x_) := p(x) /; x&gt;0
+	 * &gt;&gt; f(3)
+	 * p(3)
+	 * 
+	 * &gt;&gt; f(-3)
+	 * f(-3)
+	 * </pre>
+	 */
 	private final static class Condition extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -254,6 +332,26 @@ public final class Programming {
 
 	}
 
+	/**
+	 * <pre>
+	 * Continue()
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * continues with the next iteration in a <code>For</code>, <code>While</code>, or <code>Do</code> loop.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; For(i=1, i&lt;=8, i=i+1, If(Mod(i,2) == 0, Continue()); Print(i))
+	 *  | 1
+	 *  | 3
+	 *  | 5
+	 *  | 7
+	 * </pre>
+	 */
 	private final static class Continue extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -456,6 +554,50 @@ public final class Programming {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * FixedPoint(f, expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * starting with <code>expr</code>, iteratively applies <code>f</code> until the result no longer changes.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * FixedPoint(f, expr, n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * performs at most <code>n</code> iterations.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; FixedPoint(Cos, 1.0)
+	 * 0.7390851332151607
+	 * 
+	 * &gt;&gt; FixedPoint(#+1 &amp;, 1, 20)
+	 * 21
+	 * 
+	 * &gt;&gt; FixedPoint(f, x, 0)
+	 * x
+	 * </pre>
+	 * <p>
+	 * Non-negative integer expected.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; FixedPoint(f, x, -1)
+	 * FixedPoint(f, x, -1)
+	 * 
+	 * &gt;&gt; FixedPoint(Cos, 1.0, Infinity)
+	 * 0.739085
+	 * </pre>
+	 */
 	private final static class FixedPoint extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -509,6 +651,71 @@ public final class Programming {
 
 	}
 
+	/**
+	 * <pre>
+	 * FixedPointList(f, expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * starting with <code>expr</code>, iteratively applies <code>f</code> until the result no longer changes, and
+	 * returns a list of all intermediate results.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * FixedPointList(f, expr, n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * performs at most <code>n</code> iterations.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; FixedPointList(Cos, 1.0, 4)   
+	 * {1.0,0.5403023058681398,0.8575532158463934,0.6542897904977791,0.7934803587425656}
+	 * </pre>
+	 * <p>
+	 * Observe the convergence of Newton's method for approximating square roots:<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; newton(n_) := FixedPointList(.5(# + n/#) &amp;, 1.);   
+	 * &gt;&gt; newton(9)   
+	 * {1.0,5.0,3.4,3.023529411764706,3.00009155413138,3.000000001396984,3.0,3.0}
+	 * </pre>
+	 * <p>
+	 * Get the &ldquo;hailstone&rdquo; sequence of a number:<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; collatz(1) := 1;   
+	 * &gt;&gt; collatz(x_ ? EvenQ) := x / 2;   
+	 * &gt;&gt; collatz(x_) := 3*x + 1;   
+	 * &gt;&gt; FixedPointList(collatz, 14)   
+	 * {14,7,22,11,34,17,52,26,13,40,20,10,5,16,8,4,2,1,1}
+	 * </pre>
+	 * 
+	 * <pre>
+	 * ``` 
+	 * &gt;&gt; FixedPointList(f, x, 0)   
+	 * {x}
+	 * </pre>
+	 * <p>
+	 * Non-negative integer expected.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; FixedPointList(f, x, -1)      
+	 * FixedPointList(f,x,-1)   
+	 * 
+	 * &gt;&gt; Last(FixedPointList(Cos, 1.0, Infinity))   
+	 * 0.7390851332151607
+	 * </pre>
+	 */
 	private final static class FixedPointList extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -565,10 +772,57 @@ public final class Programming {
 	}
 
 	/**
-	 * For[] loop
+	 * <pre>
+	 * For(start, test, incr, body)
+	 * </pre>
 	 * 
-	 * Example: For[$j = 1, $j <= 10, $j++, Print[$j]]
+	 * <blockquote>
+	 * <p>
+	 * evaluates <code>start</code>, and then iteratively <code>body</code> and <code>incr</code> as long as test
+	 * evaluates to <code>True</code>.
+	 * </p>
+	 * </blockquote>
 	 * 
+	 * <pre>
+	 * For(start, test, incr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * evaluates only <code>incr</code> and no <code>body</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * For(start, test)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * runs the loop without any body.<br />
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * Compute the factorial of 10 using 'For':
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; n := 1
+	 * &gt;&gt; For(i=1, i&lt;=10, i=i+1, n = n * i)
+	 * &gt;&gt; n
+	 * 3628800
+	 * 
+	 * &gt;&gt; n == 10!
+	 * True
+	 * 
+	 * &gt;&gt; n := 1
+	 * &gt;&gt; For(i=1, i&lt;=10, i=i+1, If(i &gt; 5, Return(i)); n = n * i)
+	 * 6
+	 * 
+	 * &gt;&gt; n
+	 * 120
+	 * </pre>
 	 */
 	private final static class For extends AbstractCoreFunctionEvaluator {
 
@@ -625,6 +879,63 @@ public final class Programming {
 
 	}
 
+	/**
+	 * <pre>
+	 * If(cond, pos, neg)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>pos</code> if <code>cond</code> evaluates to <code>True</code>, and <code>neg</code> if it
+	 * evaluates to <code>False</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * If(cond, pos, neg, other)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>other</code> if <code>cond</code> evaluates to neither <code>True</code> nor <code>False</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * If(cond, pos)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>Null</code> if <code>cond</code> evaluates to <code>False</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; If(1&lt;2, a, b)
+	 * a
+	 * </pre>
+	 * <p>
+	 * If the second branch is not specified, <code>Null</code> is taken:
+	 * </p>
+	 * <blockquote><blockquote>
+	 * <p>
+	 * If(1&lt;2, a) a
+	 * </p>
+	 * <p>
+	 * If(False, a) //FullForm Null
+	 * </p>
+	 * </blockquote> </blockquote>
+	 * <p>
+	 * You might use comments (inside <code>(*</code> and <code>*)</code>) to make the branches of <code>If</code> more
+	 * readable:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; If(a, (*then*) b, (*else*) c);
+	 * </pre>
+	 */
 	private final static class If extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -659,6 +970,17 @@ public final class Programming {
 
 	}
 
+	/**
+	 * <pre>
+	 * Module({list_of_local_variables}, expr )
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * evaluates <code>expr</code> for the <code>list_of_local_variables</code> by renaming local variables.
+	 * </p>
+	 * </blockquote>
+	 */
 	private final static class Module extends AbstractCoreFunctionEvaluator {
 		/**
 		 *
@@ -708,6 +1030,27 @@ public final class Programming {
 
 	}
 
+	/**
+	 * <pre>
+	 * Nest(f, expr, n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * starting with <code>expr</code>, iteratively applies <code>f</code> <code>n</code> times and returns the final
+	 * result.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Nest(f, x, 3)
+	 * f(f(f(x)))
+	 * 
+	 * &gt;&gt; Nest((1+#) ^ 2 &amp;, x, 2)
+	 * (1+(1+x)^2)^2
+	 * </pre>
+	 */
 	private final static class Nest extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -740,6 +1083,27 @@ public final class Programming {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * NestList(f, expr, n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * starting with <code>expr</code>, iteratively applies <code>f</code> <code>n</code> times and returns a list of
+	 * all intermediate results.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; NestList(f, x, 3)
+	 * {x,f(x),f(f(x)),f(f(f(x)))}
+	 * 
+	 * &gt;&gt; NestList(2 # &amp;, 1, 8)
+	 * {1,2,4,8,16,32,64,128,256}
+	 * </pre>
+	 */
 	private final static class NestList extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -776,6 +1140,47 @@ public final class Programming {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * NestWhile(f, expr, test)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * applies a function <code>f</code> repeatedly on an expression <code>expr</code>, until applying <code>test</code>
+	 * on the result no longer yields <code>True</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * NestWhile(f, expr, test, m)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * supplies the last <code>m</code> results to <code>test</code> (default value: <code>1</code>).
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * NestWhile(f, expr, test, All)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * supplies all results gained so far to <code>test</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * Divide by 2 until the result is no longer an integer:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; NestWhile(#/2&amp;, 10000, IntegerQ)
+	 * 625/2
+	 * </pre>
+	 */
 	private final static class NestWhile extends NestWhileList {
 
 		@Override
@@ -825,6 +1230,196 @@ public final class Programming {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Part(expr, i)
+	 * </pre>
+	 * <p>
+	 * or
+	 * </p>
+	 * 
+	 * <pre>
+	 * expr[[i]]
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns part <code>i</code> of <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * Extract an element from a list:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; A = {a, b, c, d}
+	 * &gt;&gt; A[[3]]
+	 * c
+	 * </pre>
+	 * <p>
+	 * Negative indices count from the end:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; {a, b, c}[[-2]]
+	 * b
+	 * </pre>
+	 * <p>
+	 * <code>Part</code> can be applied on any expression, not necessarily lists.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; (a + b + c)[[2]]
+	 * b
+	 * </pre>
+	 * <p>
+	 * <code>expr[[0]]</code> gives the head of <code>expr</code>:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; (a + b + c)[[0]]
+	 * Plus
+	 * </pre>
+	 * <p>
+	 * Parts of nested lists:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; M = {{a, b}, {c, d}}
+	 * &gt;&gt; M[[1, 2]]
+	 * b
+	 * </pre>
+	 * <p>
+	 * You can use <code>Span</code> to specify a range of parts:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; {1, 2, 3, 4}[[2;;4]]
+	 * {2,3,4}
+	 * 
+	 * &gt;&gt; {1, 2, 3, 4}[[2;;-1]]
+	 * {2,3,4}
+	 * </pre>
+	 * <p>
+	 * A list of parts extracts elements at certain indices:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; {a, b, c, d}[[{1, 3, 3}]]
+	 * {a,c,c}
+	 * </pre>
+	 * <p>
+	 * Get a certain column of a matrix:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; B = {{a, b, c}, {d, e, f}, {g, h, i}}
+	 * &gt;&gt; B[[;;, 2]]
+	 * {b, e, h}
+	 * </pre>
+	 * <p>
+	 * Extract a submatrix of 1st and 3rd row and the two last columns:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; B = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}
+	 * &gt;&gt; B[[{1, 3}, -2;;-1]]
+	 * {{2,3},{8,9}}
+	 * </pre>
+	 * <p>
+	 * Further examples:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; (a+b+c+d)[[-1;;-2]]
+	 * 0
+	 * </pre>
+	 * <p>
+	 * Part specification is longer than depth of object.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; x[[2]] 
+	 * x[[2]]
+	 * </pre>
+	 * <p>
+	 * Assignments to parts are possible:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; B[[;;, 2]] = {10, 11, 12}
+	 * {10, 11, 12}
+	 * 
+	 * &gt;&gt; B
+	 * {{1, 10, 3}, {4, 11, 6}, {7, 12, 9}}
+	 * 
+	 * &gt;&gt; B[[;;, 3]] = 13
+	 * 13
+	 * 
+	 * &gt;&gt; B
+	 * {{1, 10, 13}, {4, 11, 13}, {7, 12, 13}}
+	 * 
+	 * &gt;&gt; B[[1;;-2]] = t
+	 * &gt;&gt; B
+	 * {t,t,{7,12,13}}
+	 * 
+	 * &gt;&gt; F = Table(i*j*k, {i, 1, 3}, {j, 1, 3}, {k, 1, 3})
+	 * &gt;&gt; F[[;; All, 2 ;; 3, 2]] = t
+	 * &gt;&gt; F
+	 * {{{1,2,3},{2,t,6},{3,t,9}},{{2,4,6},{4,t,12},{6,t,18}},{{3,6,9},{6,t,18},{9,t,27}}} 
+	 * 
+	 * &gt;&gt; F[[;; All, 1 ;; 2, 3 ;; 3]] = k
+	 * &gt;&gt; F
+	 * {{{1,2,k},{2,t,k},{3,t,9}},{{2,4,k},{4,t,k},{6,t,18}},{{3,6,k},{6,t,k},{9,t,27}}}
+	 * </pre>
+	 * <p>
+	 * Of course, part specifications have precedence over most arithmetic operations:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; A[[1]] + B[[2]] + C[[3]] // Hold // FullForm
+	 * "Hold(Plus(Plus(Part(A, 1), Part(B, 2)), Part(C, 3)))"
+	 * 
+	 * &gt;&gt; a = {2,3,4}; i = 1; a[[i]] = 0; a
+	 * {0, 3, 4}
+	 * </pre>
+	 * <p>
+	 * Negative step
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; {1,2,3,4,5}[[3;;1;;-1]]
+	 * {3,2,1}
+	 * 
+	 * &gt;&gt; {1, 2, 3, 4, 5}[[;; ;; -1]]       
+	 * {5, 4, 3, 2, 1}
+	 * 
+	 * &gt;&gt; Range(11)[[-3 ;; 2 ;; -2]]
+	 * {9,7,5,3}
+	 * 
+	 * &gt;&gt; Range(11)[[-3 ;; -7 ;; -3]]
+	 * {9,6}
+	 * 
+	 * &gt;&gt; Range(11)[[7 ;; -7;; -2]]
+	 * {7,5}
+	 * </pre>
+	 * <p>
+	 * Cannot take positions <code>1</code> through <code>3</code> in <code>{1, 2, 3, 4}</code>.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; {1, 2, 3, 4}[[1;;3;;-1]]
+	 * {1,2,3,4}[[1;;3;;-1]]
+	 * </pre>
+	 * <p>
+	 * Cannot take positions <code>3</code> through <code>1</code> in <code>{1, 2, 3, 4}</code>.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; {1, 2, 3, 4}[[3;;1]]
+	 * {1,2,3,4}[[3;;1]]
+	 * </pre>
+	 */
 	private final static class Part extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -938,6 +1533,24 @@ public final class Programming {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Reap(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * gives the result of evaluating <code>expr</code>, together with all values sown during this evaluation. Values
+	 * sown with different tags are given in different lists.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Reap(Sow(3); Sow(1))
+	 * {1,{{3,1}}}
+	 * </pre>
+	 */
 	private final static class Reap extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -966,6 +1579,50 @@ public final class Programming {
 
 	}
 
+	/**
+	 * <pre>
+	 * Return(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * aborts a function call and returns <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; f(x_) := (If(x &lt; 0, Return(0)); x)
+	 * &gt;&gt; f(-1)
+	 * 0
+	 * 
+	 * &gt;&gt; Do(If(i &gt; 3, Return()); Print(i), {i, 10})
+	 *  | 1
+	 *  | 2
+	 *  | 3
+	 * </pre>
+	 * <p>
+	 * <code>Return</code> only exits from the innermost control flow construct.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; g(x_) := (Do(If(x &lt; 0, Return(0)), {i, {2, 1, 0, -1}}); x)
+	 * &gt;&gt; g(-1)
+	 * -1
+	 * 
+	 * &gt;&gt; h(x_) := (If(x &lt; 0, Return()); x)
+	 * &gt;&gt; h(1)
+	 * 1
+	 * 
+	 * &gt;&gt; h(-1) // FullForm
+	 * "Null"
+	 * 
+	 * &gt;&gt; f(x_) := Return(x)
+	 * &gt;&gt; g(y_) := Module({}, z = f(y); 2)
+	 * &gt;&gt; g(1)  
+	 * 2
+	 * </pre>
+	 */
 	private final static class Return extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -993,9 +1650,24 @@ public final class Programming {
 
 	}
 
+	/**
+	 * <pre>
+	 * Sow(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * sends the value <code>expr</code> to the innermost <code>Reap</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Reap(Sow(3); Sow(1))
+	 * {1,{{3,1}}}
+	 * </pre>
+	 */
 	private final static class Sow extends AbstractCoreFunctionEvaluator {
-
-		// public final static double DEFAULT_CHOP_DELTA = 10E-10;
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1016,6 +1688,55 @@ public final class Programming {
 
 	}
 
+	/**
+	 * <pre>
+	 * Switch(expr, pattern1, value1, pattern2, value2, ...)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * yields the first <code>value</code> for which <code>expr</code> matches the corresponding pattern.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Switch(2, 1, x, 2, y, 3, z)
+	 * y
+	 * 
+	 * &gt;&gt; Switch(5, 1, x, 2, y)
+	 * Switch(5, 1, x, 2, y)
+	 * 
+	 * &gt;&gt; Switch(5, 1, x, 2, y, _, z)
+	 * z
+	 * </pre>
+	 * <p>
+	 * Switch called with 2 arguments. Switch must be called with an odd number of arguments.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Switch(2, 1)
+	 * Switch(2, 1)
+	 * </pre>
+	 * <p>
+	 * Switch called with 2 arguments. Switch must be called with an odd number of arguments.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a; Switch(b, b)
+	 * Switch(b, b)
+	 * </pre>
+	 * <p>
+	 * Switch called with 2 arguments. Switch must be called with an odd number of arguments.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; z = Switch(b, b);
+	 * &gt;&gt; z
+	 * 
+	 * Switch(b, b)
+	 * </pre>
+	 */
 	private final static class Switch extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -1239,6 +1960,53 @@ public final class Programming {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Which(cond1, expr1, cond2, expr2, ...)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * yields <code>expr1</code> if <code>cond1</code> evaluates to <code>True</code>, <code>expr2</code> if
+	 * <code>cond2</code> evaluates to <code>True</code>, etc.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; n=5;
+	 * &gt;&gt; Which(n == 3, x, n == 5, y)
+	 * y
+	 * 
+	 * &gt;&gt; f(x_) := Which(x &lt; 0, -x, x == 0, 0, x &gt; 0, x)
+	 * &gt;&gt; f(-3)
+	 * 3
+	 * </pre>
+	 * <p>
+	 * If no test yields <code>True</code>, <code>Which</code> returns <code>Null</code>:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Which(False, a)
+	 * </pre>
+	 * <p>
+	 * If a test does not evaluate to <code>True</code> or <code>False</code>, evaluation stops and a <code>Which</code>
+	 * expression containing the remaining cases is returned:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Which(False, a, x, b, True, c)
+	 * Which(x,b,True,c)
+	 * </pre>
+	 * <p>
+	 * <code>Which</code> must be called with an even number of arguments:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Which(a, b, c)
+	 * Which(a, b, c)
+	 * </pre>
+	 */
 	private final static class Which extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -1273,6 +2041,41 @@ public final class Programming {
 
 	}
 
+	/**
+	 * <pre>
+	 * While(test, body)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * evaluates <code>body</code> as long as test evaluates to <code>True</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * While(test)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * runs the loop without any body.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * Compute the GCD of two numbers:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; {a, b} = {27, 6};
+	 * &gt;&gt; While(b != 0, {a, b} = {b, Mod(a, b)});
+	 * &gt;&gt; a
+	 * 3
+	 * 
+	 * &gt;&gt; i = 1; While(True, If(i^2 &gt; 100, Return(i + 1), i++))
+	 * 12
+	 * </pre>
+	 */
 	private final static class While extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -1317,6 +2120,18 @@ public final class Programming {
 
 	}
 
+	/**
+	 * <pre>
+	 * With({list_of_local_variables}, expr )
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * evaluates <code>expr</code> for the <code>list_of_local_variables</code> by replacing the local variables in
+	 * <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 */
 	private final static class With extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1467,13 +2282,8 @@ public final class Programming {
 	 */
 	public static void removeUserVariables(final Map<ISymbol, ISymbol> moduleVariables) {
 		// remove all module variables from eval engine
-		ISymbol temp;
 		for (ISymbol symbol : moduleVariables.values()) {
-			temp = F.removeUserSymbol(symbol.toString());
-			// if (Config.DEBUG && temp == null) {
-			// throw new NullPointerException("Remove user-defined variabe: " +
-			// symbol.toString());
-			// }
+			F.removeUserSymbol(symbol.toString());
 		}
 	}
 
