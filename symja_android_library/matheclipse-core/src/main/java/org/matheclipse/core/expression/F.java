@@ -1166,6 +1166,8 @@ public class F {
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "qrdecomposition" : "QRDecomposition");
 	public final static IBuiltInSymbol Quotient = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "quotient" : "Quotient");
+	public final static IBuiltInSymbol QuotientRemainder = initFinalSymbol(
+			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "quotientremainder" : "QuotientRemainder");
 	public final static IBuiltInSymbol RandomChoice = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "randomchoice" : "RandomChoice");
 	public final static IBuiltInSymbol RandomInteger = initFinalSymbol(

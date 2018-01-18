@@ -539,6 +539,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [QRDecomposition](functions/QRDecomposition.md)
 * [Quantile](functions/Quantile.md)
 * [Quotient](functions/Quotient.md)
+* [QuotientRemainder](functions/QuotientRemainder.md)
 * [RandomChoice](functions/RandomChoice.md)
 * [RandomInteger](functions/RandomInteger.md)
 * [RandomReal](functions/RandomReal.md)
