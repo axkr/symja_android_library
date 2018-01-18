@@ -68,14 +68,6 @@ public final class PatternMatching {
 		F.UpSetDelayed.setEvaluator(new UpSetDelayed());
 	}
 
-	/**
-	 * 
-	 * <p>
-	 * See the online Symja function reference:
-	 * <a href="https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Blank">Blank</a>
-	 * </p>
-	 *
-	 */
 	public static class Blank extends AbstractCoreFunctionEvaluator {
 		public final static Blank CONST = new Blank();
 

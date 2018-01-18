@@ -134,14 +134,18 @@ public final class BooleanFunctions {
 	}
 
 	/**
-	 * 
-	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Logical_conjunction">Logical conjunction</a>
-	 * 
-	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/And">And </a>
-	 * </p>
+	 * <pre>And(expr1, expr2, ...) 
+	 * </pre>
+	 * <blockquote><p><code>expr1 &amp;&amp; expr2 &amp;&amp; ...</code> evaluates each expression in turn, returning <code>False</code> as soon as an expression evaluates to <code>False</code>. If all expressions evaluate to <code>True</code>, <code>And</code> returns <code>True</code>.</p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <pre>&gt;&gt; True &amp;&amp; True &amp;&amp; False
+	 * False
+	 * </pre>
+	 * <p>If an expression does not evaluate to <code>True</code> or <code>False</code>, <code>And</code> returns a result in symbolic form:</p>
+	 * <pre>&gt;&gt; a &amp;&amp; b &amp;&amp; True &amp;&amp; c
+	 * a &amp;&amp; b &amp;&amp; c
+	 * </pre>
 	 */
 	private static class And extends AbstractCoreFunctionEvaluator {
 

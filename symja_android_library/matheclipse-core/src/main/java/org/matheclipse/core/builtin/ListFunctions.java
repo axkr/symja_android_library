@@ -362,12 +362,45 @@ public final class ListFunctions {
 	}
 
 	/**
+	 * <pre>
+	 * Append(expr, item)
+	 * </pre>
 	 * 
+	 * <blockquote>
 	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Append">Append</a>
+	 * returns <code>expr</code> with <code>item</code> appended to its leaves.
 	 * </p>
-	 *
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Append({1, 2, 3}, 4)    
+	 * {1,2,3,4}
+	 * </pre>
+	 * <p>
+	 * <code>Append</code> works on expressions with heads other than <code>List</code>:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Append(f(a, b), c)    
+	 * f(a,b,c)
+	 * </pre>
+	 * <p>
+	 * Unlike <code>Join</code>, <code>Append</code> does not flatten lists in <code>item</code>:<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Append({a, b}, {c, d})    
+	 * {a,b,{c,d}}
+	 * </pre>
+	 * <p>
+	 * Nonatomic expression expected.<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Append(a, b)     
+	 * Append(a,b)
+	 * </pre>
 	 */
 	private final static class Append extends AbstractCoreFunctionEvaluator {
 
@@ -386,12 +419,53 @@ public final class ListFunctions {
 	}
 
 	/**
+	 * <pre>
+	 * AppendTo(s, item)
+	 * </pre>
 	 * 
+	 * <blockquote>
 	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/AppendTo">AppendTo</a>
+	 * append <code>item</code> to value of <code>s</code> and sets <code>s</code> to the result.
 	 * </p>
-	 *
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; s = {}    
+	 * &gt;&gt; AppendTo(s, 1)    
+	 * {1}    
+	 * 
+	 * &gt;&gt; s    
+	 * {1}
+	 * </pre>
+	 * <p>
+	 * 'Append' works on expressions with heads other than 'List':<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; y = f()  
+	 * &gt;&gt; AppendTo(y, x)    
+	 * f(x)    
+	 * 
+	 * &gt;&gt; y    
+	 * f(x)
+	 * </pre>
+	 * <p>
+	 * {} is not a variable with a value, so its value cannot be changed.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; AppendTo({}, 1)     
+	 * AppendTo({}, 1)
+	 * </pre>
+	 * <p>
+	 * a is not a variable with a value, so its value cannot be changed.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; AppendTo(a, b)    
+	 * AppendTo(a, b)
+	 * </pre>
 	 */
 	private final static class AppendTo extends AbstractCoreFunctionEvaluator {
 
@@ -435,13 +509,98 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Array structure generator
+	 * <pre>
+	 * Array(f, n)
+	 * </pre>
 	 * 
+	 * <blockquote>
 	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Array">Array</a>
+	 * returns the <code>n</code>-element list <code>{f(1), ..., f(n)}</code>.
 	 * </p>
-	 *
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Array(f, n, a)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the n-element list <code>{f(a), ..., f(a + n)}</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Array(f, {n, m}, {a, b})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns an <code>n</code>-by-<code>m</code> matrix created by applying <code>f</code> to indices ranging from
+	 * <code>(a, b)</code> to <code>(a + n, b + m)</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Array(f, dims, origins, h)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns an expression with the specified dimensions and index origins, with head <code>h</code> (instead of
+	 * <code>List</code>).
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Array(f, 4)
+	 * {f(1),f(2),f(3),f(4)}
+	 * 
+	 * &gt;&gt; Array(f, {2, 3})
+	 * {{f(1,1),f(1,2),f(1,3)},{f(2,1),f(2,2),f(2,3)}} 
+	 * 
+	 * &gt;&gt; Array(f, {2, 3}, {4, 6})
+	 * {{f(4,6),f(4,7),f(4,8)},{f(5,6),f(5,7),f(5,8)}}
+	 * 
+	 * &gt;&gt; Array(f, 4)
+	 * {f(1), f(2), f(3), f(4)}
+	 * 
+	 * &gt;&gt; Array(f, {2, 3})
+	 * {{f(1, 1), f(1, 2), f(1, 3)}, {f(2, 1), f(2, 2), f(2, 3)}}
+	 * 
+	 * &gt;&gt; Array(f, {2, 3}, 3)
+	 * {{f(3, 3), f(3, 4), f(3, 5)}, {f(4, 3), f(4, 4), f(4, 5)}}
+	 * 
+	 * &gt;&gt; Array(f, {2, 3}, {4, 6})
+	 * {{f(4,6),f(4,7),f(4,8)},{f(5,6),f(5,7),f(5,8)}}
+	 * 
+	 * &gt;&gt; Array(f, {2, 3}, 1, Plus)
+	 * f(1,1)+f(1,2)+f(1,3)+f(2,1)+f(2,2)+f(2,3)
+	 * </pre>
+	 * <p>
+	 * {2, 3} and {1, 2, 3} should have the same length.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Array(f, {2, 3}, {1, 2, 3})
+	 * Array(f, {2, 3}, {1, 2, 3})
+	 * </pre>
+	 * <p>
+	 * Single or list of non-negative integers expected at position 2.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Array(f, a)
+	 * Array(f, a)
+	 * </pre>
+	 * <p>
+	 * Single or list of non-negative integers expected at position 3.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Array(f, 2, b)
+	 * Array(f, 2, b)
+	 * </pre>
 	 */
 	private final static class Array extends AbstractCoreFunctionEvaluator {
 
@@ -647,10 +806,55 @@ public final class ListFunctions {
 	}
 
 	/**
+	 * <pre>
+	 * Cases(list, pattern)
+	 * </pre>
+	 * 
+	 * <blockquote>
 	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Cases"> Cases</a>
+	 * returns the elements of <code>list</code> that match <code>pattern</code>.
 	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Cases(list, pattern, ls)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the elements matching at levelspec <code>ls</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Cases({a, 1, 2.5, \"string\"}, _Integer|_Real)
+	 * {1,2.5}
+	 * 
+	 * &gt;&gt; Cases(_Complex)[{1, 2I, 3, 4-I, 5}]
+	 * {I*2,4-I}
+	 * 
+	 * &gt;&gt; Cases(1, 2)
+	 * {}
+	 * 
+	 * &gt;&gt; Cases(f(1, 2), 2)
+	 * {2}
+	 * 
+	 * &gt;&gt; Cases(f(f(1, 2), f(2)), 2)
+	 * {}
+	 * 
+	 * &gt;&gt; Cases(f(f(1, 2), f(2)), 2, 2)
+	 * {2,2}
+	 * 
+	 * &gt;&gt; Cases(f(f(1, 2), f(2), 2), 2, Infinity)
+	 * {2,2,2}
+	 * 
+	 * &gt;&gt; Cases({1, f(2), f(3, 3, 3), 4, f(5, 5)}, f(x__) :&gt; Plus(x))
+	 * {2,9,10}
+	 * 
+	 * &gt;&gt; Cases({1, f(2), f(3, 3, 3), 4, f(5, 5)}, f(x__) -&gt; Plus(x))
+	 * {2, 3, 3, 3, 5, 5}
+	 * </pre>
 	 */
 	private final static class Cases extends AbstractCoreFunctionEvaluator {
 		/**

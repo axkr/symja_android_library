@@ -106,14 +106,23 @@ public final class Programming {
 	}
 
 	/**
+	 * <pre>
+	 * Break()
+	 * </pre>
+	 * 
+	 * <blockquote>
 	 * <p>
-	 * <code>Break()</code> leaves a <code>Do</code>, <code>For</code> or <code>While</code> loop.
+	 * exits a <code>For</code>, <code>While</code>, or <code>Do</code> loop.
 	 * </p>
-	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Break"> Break</a>
-	 * </p>
-	 *
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; n = 0
+	 * &gt;&gt; While(True, If(n&gt;10, Break()); n=n+1)
+	 * &gt;&gt; n
+	 * 11
+	 * </pre>
 	 */
 	private final static class Break extends AbstractCoreFunctionEvaluator {
 
@@ -135,12 +144,21 @@ public final class Programming {
 	}
 
 	/**
+	 * <pre>
+	 * Block({list_of_local_variables}, expr )
+	 * </pre>
 	 * 
+	 * <blockquote>
 	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Block"> Block</a>
+	 * evaluates <code>expr</code> for the <code>list_of_local_variables</code>
 	 * </p>
-	 *
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; $blck=Block({$i=10}, $i=$i+1; Return($i))
+	 * 11
+	 * </pre>
 	 */
 	private final static class Block extends AbstractCoreFunctionEvaluator {
 		@Override
@@ -162,12 +180,6 @@ public final class Programming {
 
 	}
 
-	/**
-	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Catch"> Catch</a>
-	 * </p>
-	 */
 	private final static class Catch extends AbstractCoreFunctionEvaluator {
 
 		@Override

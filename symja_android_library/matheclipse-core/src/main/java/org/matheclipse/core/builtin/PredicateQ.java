@@ -100,10 +100,6 @@ public class PredicateQ {
 
 	/**
 	 * ArrayQ tests whether an expression is a full array.
-	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/ArrayQ"> ArrayQ</a>
-	 * </p>
 	 *
 	 */
 	private static class ArrayQ extends AbstractCoreFunctionEvaluator {
@@ -197,10 +193,6 @@ public class PredicateQ {
 
 	/**
 	 * Returns <code>True</code>, if the given expression is an atomic object (i.e. no AST instance)
-	 * <p>
-	 * See the online Symja function reference:
-	 * <a href= "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/AtomQ"> AtomQ</a>
-	 * </p>
 	 *
 	 */
 	private static class AtomQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {

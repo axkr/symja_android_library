@@ -19,12 +19,21 @@ public class AttributeFunctions {
 	}
 
 	/**
-	 * Get the list of attributes of a given symbol.
+	 * <pre>
+	 * Attributes(symbol)
+	 * </pre>
+	 * 
+	 * <blockquote>
 	 * <p>
-	 * See the online Symja function reference: <a href=
-	 * "https://bitbucket.org/axelclk/symja_android_library/wiki/Symbols/Attributes">Attributes</a>
+	 * returns the list of attributes which are assigned to <code>symbol</code>
 	 * </p>
-	 *
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Attributes(Plus)
+	 * {Flat,Listable,OneIdentity,Orderless,NumericFunction}
+	 * </pre>
 	 */
 	private final static class Attributes extends AbstractCoreFunctionEvaluator {
 
@@ -359,10 +368,9 @@ public class AttributeFunctions {
 	}
 
 	/**
-	 * Get the attrbutes of this <code>symbol</code> as symbolic constants in a
-	 * list.
+	 * Get the attrbutes of this <code>symbol</code> as symbolic constants in a list.
 	 * 
-	 *  
+	 * 
 	 * @param symbol
 	 * @return
 	 */

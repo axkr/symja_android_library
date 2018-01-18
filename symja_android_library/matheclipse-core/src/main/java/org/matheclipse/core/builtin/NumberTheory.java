@@ -2536,14 +2536,7 @@ public final class NumberTheory {
 	 * </pre>
 	 */
 	private static class Prime extends AbstractFunctionEvaluator {
-		/**
-		 * <code>Prime(i)</code> gives the i-th prime number for <code>i</code> less equal 103000000.
-		 * 
-		 * See: <a href="https://bitbucket.org/dafis/javaprimes">https://bitbucket.org/ dafis/ javaprimes</a><br />
-		 * <a href=
-		 * "http://stackoverflow.com/questions/9625663/calculating-and-printing-the-nth-prime-number/9704912#9704912">
-		 * stackoverflow. com - Calculating and printing the nth prime number</a>
-		 */
+	 
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
