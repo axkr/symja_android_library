@@ -719,7 +719,7 @@ public enum SymbolEnumeration {
 		this.symbolID = symbolID;
 	}
 
-	public final IBuiltInSymbol symbol(int id) {
+	public static IBuiltInSymbol symbol(int id) {
 		return builtInSymbols[id];
 	}
 
