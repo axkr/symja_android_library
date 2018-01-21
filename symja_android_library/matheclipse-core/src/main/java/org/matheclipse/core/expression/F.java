@@ -1,9 +1,5 @@
 package org.matheclipse.core.expression;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -144,1213 +140,730 @@ public class F {
 	 */
 	public final static NILPointer NIL = new NILPointer();
 
-	public final static IBuiltInSymbol Catalan = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "catalan" : "Catalan");
-	public final static IBuiltInSymbol ComplexInfinity = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complexinfinity" : "ComplexInfinity");
-	public final static IBuiltInSymbol Degree = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "degree" : "Degree");
-	public final static IBuiltInSymbol E = initFinalSymbol("E");
-	public final static IBuiltInSymbol EulerGamma = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "eulergamma" : "EulerGamma");
-	public final static IBuiltInSymbol Glaisher = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "glaisher" : "Glaisher");
-	public final static IBuiltInSymbol GoldenRatio = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "goldenratio" : "GoldenRatio");
-	public final static IBuiltInSymbol I = initFinalSymbol("I");
-	public final static IBuiltInSymbol Infinity = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "infinity" : "Infinity");
-	public final static IBuiltInSymbol Khinchin = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "khinchin" : "Khinchin");
-	public final static IBuiltInSymbol Pi = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "pi" : "Pi");
+	public final static IBuiltInSymbol Abort = SymbolEnumeration.valueOf(SymbolEnumeration.Abort);
+	public final static IBuiltInSymbol Abs = SymbolEnumeration.valueOf(SymbolEnumeration.Abs);
+	public final static IBuiltInSymbol AbsArg = SymbolEnumeration.valueOf(SymbolEnumeration.AbsArg);
+	public final static IBuiltInSymbol Accumulate = SymbolEnumeration.valueOf(SymbolEnumeration.Accumulate);
+	public final static IBuiltInSymbol AddTo = SymbolEnumeration.valueOf(SymbolEnumeration.AddTo);
+	public final static IBuiltInSymbol AlgebraicNumber = SymbolEnumeration.valueOf(SymbolEnumeration.AlgebraicNumber);
+	public final static IBuiltInSymbol Algebraics = SymbolEnumeration.valueOf(SymbolEnumeration.Algebraics);
+	public final static IBuiltInSymbol All = SymbolEnumeration.valueOf(SymbolEnumeration.All);
+	public final static IBuiltInSymbol AllTrue = SymbolEnumeration.valueOf(SymbolEnumeration.AllTrue);
+	public final static IBuiltInSymbol Alternatives = SymbolEnumeration.valueOf(SymbolEnumeration.Alternatives);
+	public final static IBuiltInSymbol And = SymbolEnumeration.valueOf(SymbolEnumeration.And);
+	public final static IBuiltInSymbol AngleVector = SymbolEnumeration.valueOf(SymbolEnumeration.AngleVector);
+	public final static IBuiltInSymbol AntihermitianMatrixQ = SymbolEnumeration.valueOf(SymbolEnumeration.AntihermitianMatrixQ);
+	public final static IBuiltInSymbol AntisymmetricMatrixQ = SymbolEnumeration.valueOf(SymbolEnumeration.AntisymmetricMatrixQ);
+	public final static IBuiltInSymbol AnyTrue = SymbolEnumeration.valueOf(SymbolEnumeration.AnyTrue);
+	public final static IBuiltInSymbol Apart = SymbolEnumeration.valueOf(SymbolEnumeration.Apart);
+	public final static IBuiltInSymbol AppellF1 = SymbolEnumeration.valueOf(SymbolEnumeration.AppellF1);
+	public final static IBuiltInSymbol Append = SymbolEnumeration.valueOf(SymbolEnumeration.Append);
+	public final static IBuiltInSymbol AppendTo = SymbolEnumeration.valueOf(SymbolEnumeration.AppendTo);
+	public final static IBuiltInSymbol Apply = SymbolEnumeration.valueOf(SymbolEnumeration.Apply);
+	public final static IBuiltInSymbol ArcCos = SymbolEnumeration.valueOf(SymbolEnumeration.ArcCos);
+	public final static IBuiltInSymbol ArcCosh = SymbolEnumeration.valueOf(SymbolEnumeration.ArcCosh);
+	public final static IBuiltInSymbol ArcCot = SymbolEnumeration.valueOf(SymbolEnumeration.ArcCot);
+	public final static IBuiltInSymbol ArcCoth = SymbolEnumeration.valueOf(SymbolEnumeration.ArcCoth);
+	public final static IBuiltInSymbol ArcCsc = SymbolEnumeration.valueOf(SymbolEnumeration.ArcCsc);
+	public final static IBuiltInSymbol ArcCsch = SymbolEnumeration.valueOf(SymbolEnumeration.ArcCsch);
+	public final static IBuiltInSymbol ArcSec = SymbolEnumeration.valueOf(SymbolEnumeration.ArcSec);
+	public final static IBuiltInSymbol ArcSech = SymbolEnumeration.valueOf(SymbolEnumeration.ArcSech);
+	public final static IBuiltInSymbol ArcSin = SymbolEnumeration.valueOf(SymbolEnumeration.ArcSin);
+	public final static IBuiltInSymbol ArcSinh = SymbolEnumeration.valueOf(SymbolEnumeration.ArcSinh);
+	public final static IBuiltInSymbol ArcTan = SymbolEnumeration.valueOf(SymbolEnumeration.ArcTan);
+	public final static IBuiltInSymbol ArcTanh = SymbolEnumeration.valueOf(SymbolEnumeration.ArcTanh);
+	public final static IBuiltInSymbol Arg = SymbolEnumeration.valueOf(SymbolEnumeration.Arg);
+	public final static IBuiltInSymbol Array = SymbolEnumeration.valueOf(SymbolEnumeration.Array);
+	public final static IBuiltInSymbol ArrayDepth = SymbolEnumeration.valueOf(SymbolEnumeration.ArrayDepth);
+	public final static IBuiltInSymbol ArrayPad = SymbolEnumeration.valueOf(SymbolEnumeration.ArrayPad);
+	public final static IBuiltInSymbol ArrayQ = SymbolEnumeration.valueOf(SymbolEnumeration.ArrayQ);
+	public final static IBuiltInSymbol Assumptions = SymbolEnumeration.valueOf(SymbolEnumeration.Assumptions);
+	public final static IBuiltInSymbol AtomQ = SymbolEnumeration.valueOf(SymbolEnumeration.AtomQ);
+	public final static IBuiltInSymbol Attributes = SymbolEnumeration.valueOf(SymbolEnumeration.Attributes);
+	public final static IBuiltInSymbol Automatic = SymbolEnumeration.valueOf(SymbolEnumeration.Automatic);
+	public final static IBuiltInSymbol Axes = SymbolEnumeration.valueOf(SymbolEnumeration.Axes);
+	public final static IBuiltInSymbol AxesOrigin = SymbolEnumeration.valueOf(SymbolEnumeration.AxesOrigin);
+	public final static IBuiltInSymbol AxesStyle = SymbolEnumeration.valueOf(SymbolEnumeration.AxesStyle);
+	public final static IBuiltInSymbol Background = SymbolEnumeration.valueOf(SymbolEnumeration.Background);
+	public final static IBuiltInSymbol Begin = SymbolEnumeration.valueOf(SymbolEnumeration.Begin);
+	public final static IBuiltInSymbol BeginPackage = SymbolEnumeration.valueOf(SymbolEnumeration.BeginPackage);
+	public final static IBuiltInSymbol BellB = SymbolEnumeration.valueOf(SymbolEnumeration.BellB);
+	public final static IBuiltInSymbol BellY = SymbolEnumeration.valueOf(SymbolEnumeration.BellY);
+	public final static IBuiltInSymbol BernoulliB = SymbolEnumeration.valueOf(SymbolEnumeration.BernoulliB);
+	public final static IBuiltInSymbol BernoulliDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.BernoulliDistribution);
+	public final static IBuiltInSymbol BesselI = SymbolEnumeration.valueOf(SymbolEnumeration.BesselI);
+	public final static IBuiltInSymbol BesselJ = SymbolEnumeration.valueOf(SymbolEnumeration.BesselJ);
+	public final static IBuiltInSymbol BesselK = SymbolEnumeration.valueOf(SymbolEnumeration.BesselK);
+	public final static IBuiltInSymbol BesselY = SymbolEnumeration.valueOf(SymbolEnumeration.BesselY);
+	public final static IBuiltInSymbol Beta = SymbolEnumeration.valueOf(SymbolEnumeration.Beta);
+	public final static IBuiltInSymbol BetaRegularized = SymbolEnumeration.valueOf(SymbolEnumeration.BetaRegularized);
+	public final static IBuiltInSymbol BinCounts = SymbolEnumeration.valueOf(SymbolEnumeration.BinCounts);
+	public final static IBuiltInSymbol Binomial = SymbolEnumeration.valueOf(SymbolEnumeration.Binomial);
+	public final static IBuiltInSymbol BinomialDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.BinomialDistribution);
+	public final static IBuiltInSymbol BitLength = SymbolEnumeration.valueOf(SymbolEnumeration.BitLength);
+	public final static IBuiltInSymbol Blank = SymbolEnumeration.valueOf(SymbolEnumeration.Blank);
+	public final static IBuiltInSymbol Block = SymbolEnumeration.valueOf(SymbolEnumeration.Block);
+	public final static IBuiltInSymbol Boole = SymbolEnumeration.valueOf(SymbolEnumeration.Boole);
+	public final static IBuiltInSymbol BooleanConvert = SymbolEnumeration.valueOf(SymbolEnumeration.BooleanConvert);
+	public final static IBuiltInSymbol BooleanMinimize = SymbolEnumeration.valueOf(SymbolEnumeration.BooleanMinimize);
+	public final static IBuiltInSymbol BooleanQ = SymbolEnumeration.valueOf(SymbolEnumeration.BooleanQ);
+	public final static IBuiltInSymbol BooleanTable = SymbolEnumeration.valueOf(SymbolEnumeration.BooleanTable);
+	public final static IBuiltInSymbol BooleanVariables = SymbolEnumeration.valueOf(SymbolEnumeration.BooleanVariables);
+	public final static IBuiltInSymbol Booleans = SymbolEnumeration.valueOf(SymbolEnumeration.Booleans);
+	public final static IBuiltInSymbol BrayCurtisDistance = SymbolEnumeration.valueOf(SymbolEnumeration.BrayCurtisDistance);
+	public final static IBuiltInSymbol Break = SymbolEnumeration.valueOf(SymbolEnumeration.Break);
+	public final static IBuiltInSymbol CDF = SymbolEnumeration.valueOf(SymbolEnumeration.CDF);
+	public final static IBuiltInSymbol CanberraDistance = SymbolEnumeration.valueOf(SymbolEnumeration.CanberraDistance);
+	public final static IBuiltInSymbol Cancel = SymbolEnumeration.valueOf(SymbolEnumeration.Cancel);
+	public final static IBuiltInSymbol CarmichaelLambda = SymbolEnumeration.valueOf(SymbolEnumeration.CarmichaelLambda);
+	public final static IBuiltInSymbol CartesianProduct = SymbolEnumeration.valueOf(SymbolEnumeration.CartesianProduct);
+	public final static IBuiltInSymbol Cases = SymbolEnumeration.valueOf(SymbolEnumeration.Cases);
+	public final static IBuiltInSymbol Catalan = SymbolEnumeration.valueOf(SymbolEnumeration.Catalan);
+	public final static IBuiltInSymbol CatalanNumber = SymbolEnumeration.valueOf(SymbolEnumeration.CatalanNumber);
+	public final static IBuiltInSymbol Catch = SymbolEnumeration.valueOf(SymbolEnumeration.Catch);
+	public final static IBuiltInSymbol Catenate = SymbolEnumeration.valueOf(SymbolEnumeration.Catenate);
+	public final static IBuiltInSymbol Ceiling = SymbolEnumeration.valueOf(SymbolEnumeration.Ceiling);
+	public final static IBuiltInSymbol CentralMoment = SymbolEnumeration.valueOf(SymbolEnumeration.CentralMoment);
+	public final static IBuiltInSymbol CharacterEncoding = SymbolEnumeration.valueOf(SymbolEnumeration.CharacterEncoding);
+	public final static IBuiltInSymbol CharacteristicPolynomial = SymbolEnumeration.valueOf(
+			SymbolEnumeration.CharacteristicPolynomial);
+	public final static IBuiltInSymbol ChebyshevT = SymbolEnumeration.valueOf(SymbolEnumeration.ChebyshevT);
+	public final static IBuiltInSymbol ChebyshevU = SymbolEnumeration.valueOf(SymbolEnumeration.ChebyshevU);
+	public final static IBuiltInSymbol ChessboardDistance = SymbolEnumeration.valueOf(SymbolEnumeration.ChessboardDistance);
+	public final static IBuiltInSymbol ChineseRemainder = SymbolEnumeration.valueOf(SymbolEnumeration.ChineseRemainder);
+	public final static IBuiltInSymbol CholeskyDecomposition = SymbolEnumeration.valueOf(SymbolEnumeration.CholeskyDecomposition);
+	public final static IBuiltInSymbol Chop = SymbolEnumeration.valueOf(SymbolEnumeration.Chop);
+	public final static IBuiltInSymbol CirclePoints = SymbolEnumeration.valueOf(SymbolEnumeration.CirclePoints);
+	public final static IBuiltInSymbol Clear = SymbolEnumeration.valueOf(SymbolEnumeration.Clear);
+	public final static IBuiltInSymbol ClearAll = SymbolEnumeration.valueOf(SymbolEnumeration.ClearAll);
+	public final static IBuiltInSymbol ClearAttributes = SymbolEnumeration.valueOf(SymbolEnumeration.ClearAttributes);
+	public final static IBuiltInSymbol Coefficient = SymbolEnumeration.valueOf(SymbolEnumeration.Coefficient);
+	public final static IBuiltInSymbol CoefficientList = SymbolEnumeration.valueOf(SymbolEnumeration.CoefficientList);
+	public final static IBuiltInSymbol CoefficientRules = SymbolEnumeration.valueOf(SymbolEnumeration.CoefficientRules);
+	public final static IBuiltInSymbol Collect = SymbolEnumeration.valueOf(SymbolEnumeration.Collect);
+	public final static IBuiltInSymbol Colon = SymbolEnumeration.valueOf(SymbolEnumeration.Colon);
+	public final static IBuiltInSymbol Commonest = SymbolEnumeration.valueOf(SymbolEnumeration.Commonest);
+	public final static IBuiltInSymbol Compile = SymbolEnumeration.valueOf(SymbolEnumeration.Compile);
+	public final static IBuiltInSymbol Complement = SymbolEnumeration.valueOf(SymbolEnumeration.Complement);
+	public final static IBuiltInSymbol Complex = SymbolEnumeration.valueOf(SymbolEnumeration.Complex);
+	public final static IBuiltInSymbol ComplexExpand = SymbolEnumeration.valueOf(SymbolEnumeration.ComplexExpand);
+	public final static IBuiltInSymbol ComplexInfinity = SymbolEnumeration.valueOf(SymbolEnumeration.ComplexInfinity);
+	public final static IBuiltInSymbol Complexes = SymbolEnumeration.valueOf(SymbolEnumeration.Complexes);
+	public final static IBuiltInSymbol ComplexityFunction = SymbolEnumeration.valueOf(SymbolEnumeration.ComplexityFunction);
+	public final static IBuiltInSymbol ComposeList = SymbolEnumeration.valueOf(SymbolEnumeration.ComposeList);
+	public final static IBuiltInSymbol Composition = SymbolEnumeration.valueOf(SymbolEnumeration.Composition);
+	public final static IBuiltInSymbol CompoundExpression = SymbolEnumeration.valueOf(SymbolEnumeration.CompoundExpression);
+	public final static IBuiltInSymbol Condition = SymbolEnumeration.valueOf(SymbolEnumeration.Condition);
+	public final static IBuiltInSymbol Conjugate = SymbolEnumeration.valueOf(SymbolEnumeration.Conjugate);
+	public final static IBuiltInSymbol ConjugateTranspose = SymbolEnumeration.valueOf(SymbolEnumeration.ConjugateTranspose);
+	public final static IBuiltInSymbol Constant = SymbolEnumeration.valueOf(SymbolEnumeration.Constant);
+	public final static IBuiltInSymbol ConstantArray = SymbolEnumeration.valueOf(SymbolEnumeration.ConstantArray);
+	public final static IBuiltInSymbol Continue = SymbolEnumeration.valueOf(SymbolEnumeration.Continue);
+	public final static IBuiltInSymbol ContinuedFraction = SymbolEnumeration.valueOf(SymbolEnumeration.ContinuedFraction);
+	public final static IBuiltInSymbol ConvexHullMesh = SymbolEnumeration.valueOf(SymbolEnumeration.ConvexHullMesh);
+	public final static IBuiltInSymbol CoprimeQ = SymbolEnumeration.valueOf(SymbolEnumeration.CoprimeQ);
+	public final static IBuiltInSymbol Correlation = SymbolEnumeration.valueOf(SymbolEnumeration.Correlation);
+	public final static IBuiltInSymbol Cos = SymbolEnumeration.valueOf(SymbolEnumeration.Cos);
+	public final static IBuiltInSymbol CosIntegral = SymbolEnumeration.valueOf(SymbolEnumeration.CosIntegral);
+	public final static IBuiltInSymbol Cosh = SymbolEnumeration.valueOf(SymbolEnumeration.Cosh);
+	public final static IBuiltInSymbol CoshIntegral = SymbolEnumeration.valueOf(SymbolEnumeration.CoshIntegral);
+	public final static IBuiltInSymbol CosineDistance = SymbolEnumeration.valueOf(SymbolEnumeration.CosineDistance);
+	public final static IBuiltInSymbol Cot = SymbolEnumeration.valueOf(SymbolEnumeration.Cot);
+	public final static IBuiltInSymbol Coth = SymbolEnumeration.valueOf(SymbolEnumeration.Coth);
+	public final static IBuiltInSymbol Count = SymbolEnumeration.valueOf(SymbolEnumeration.Count);
+	public final static IBuiltInSymbol Covariance = SymbolEnumeration.valueOf(SymbolEnumeration.Covariance);
+	public final static IBuiltInSymbol Cross = SymbolEnumeration.valueOf(SymbolEnumeration.Cross);
+	public final static IBuiltInSymbol Csc = SymbolEnumeration.valueOf(SymbolEnumeration.Csc);
+	public final static IBuiltInSymbol Csch = SymbolEnumeration.valueOf(SymbolEnumeration.Csch);
+	public final static IBuiltInSymbol CubeRoot = SymbolEnumeration.valueOf(SymbolEnumeration.CubeRoot);
+	public final static IBuiltInSymbol Curl = SymbolEnumeration.valueOf(SymbolEnumeration.Curl);
+	public final static IBuiltInSymbol D = SymbolEnumeration.valueOf(SymbolEnumeration.D);
+	public final static IBuiltInSymbol DSolve = SymbolEnumeration.valueOf(SymbolEnumeration.DSolve);
+	public final static IBuiltInSymbol Decrement = SymbolEnumeration.valueOf(SymbolEnumeration.Decrement);
+	public final static IBuiltInSymbol Default = SymbolEnumeration.valueOf(SymbolEnumeration.Default);
+	public final static IBuiltInSymbol Defer = SymbolEnumeration.valueOf(SymbolEnumeration.Defer);
+	public final static IBuiltInSymbol Definition = SymbolEnumeration.valueOf(SymbolEnumeration.Definition);
+	public final static IBuiltInSymbol Degree = SymbolEnumeration.valueOf(SymbolEnumeration.Degree);
+	public final static IBuiltInSymbol Delete = SymbolEnumeration.valueOf(SymbolEnumeration.Delete);
+	public final static IBuiltInSymbol DeleteCases = SymbolEnumeration.valueOf(SymbolEnumeration.DeleteCases);
+	public final static IBuiltInSymbol DeleteDuplicates = SymbolEnumeration.valueOf(SymbolEnumeration.DeleteDuplicates);
+	public final static IBuiltInSymbol Denominator = SymbolEnumeration.valueOf(SymbolEnumeration.Denominator);
+	public final static IBuiltInSymbol Depth = SymbolEnumeration.valueOf(SymbolEnumeration.Depth);
+	public final static IBuiltInSymbol Derivative = SymbolEnumeration.valueOf(SymbolEnumeration.Derivative);
+	public final static IBuiltInSymbol DesignMatrix = SymbolEnumeration.valueOf(SymbolEnumeration.DesignMatrix);
+	public final static IBuiltInSymbol Det = SymbolEnumeration.valueOf(SymbolEnumeration.Det);
+	public final static IBuiltInSymbol Diagonal = SymbolEnumeration.valueOf(SymbolEnumeration.Diagonal);
+	public final static IBuiltInSymbol DiagonalMatrix = SymbolEnumeration.valueOf(SymbolEnumeration.DiagonalMatrix);
+	public final static IBuiltInSymbol DiceDissimilarity = SymbolEnumeration.valueOf(SymbolEnumeration.DiceDissimilarity);
+	public final static IBuiltInSymbol DigitQ = SymbolEnumeration.valueOf(SymbolEnumeration.DigitQ);
+	public final static IBuiltInSymbol Dimensions = SymbolEnumeration.valueOf(SymbolEnumeration.Dimensions);
+	public final static IBuiltInSymbol DiracDelta = SymbolEnumeration.valueOf(SymbolEnumeration.DiracDelta);
+	public final static IBuiltInSymbol DirectedInfinity = SymbolEnumeration.valueOf(SymbolEnumeration.DirectedInfinity);
+	public final static IBuiltInSymbol Direction = SymbolEnumeration.valueOf(SymbolEnumeration.Direction);
+	public final static IBuiltInSymbol DiscreteDelta = SymbolEnumeration.valueOf(SymbolEnumeration.DiscreteDelta);
+	public final static IBuiltInSymbol DiscreteUniformDistribution = SymbolEnumeration.valueOf(
+			SymbolEnumeration.DiscreteUniformDistribution);
+	public final static IBuiltInSymbol Discriminant = SymbolEnumeration.valueOf(SymbolEnumeration.Discriminant);
+	public final static IBuiltInSymbol Disputed = SymbolEnumeration.valueOf(SymbolEnumeration.Disputed);
+	public final static IBuiltInSymbol Distribute = SymbolEnumeration.valueOf(SymbolEnumeration.Distribute);
+	public final static IBuiltInSymbol Divergence = SymbolEnumeration.valueOf(SymbolEnumeration.Divergence);
+	public final static IBuiltInSymbol DivideBy = SymbolEnumeration.valueOf(SymbolEnumeration.DivideBy);
+	public final static IBuiltInSymbol Divisible = SymbolEnumeration.valueOf(SymbolEnumeration.Divisible);
+	public final static IBuiltInSymbol DivisorSigma = SymbolEnumeration.valueOf(SymbolEnumeration.DivisorSigma);
+	public final static IBuiltInSymbol Divisors = SymbolEnumeration.valueOf(SymbolEnumeration.Divisors);
+	public final static IBuiltInSymbol Do = SymbolEnumeration.valueOf(SymbolEnumeration.Do);
+	public final static IBuiltInSymbol Dot = SymbolEnumeration.valueOf(SymbolEnumeration.Dot);
+	public final static IBuiltInSymbol Drop = SymbolEnumeration.valueOf(SymbolEnumeration.Drop);
+	public final static IBuiltInSymbol E = SymbolEnumeration.valueOf(SymbolEnumeration.E);
+	public final static IBuiltInSymbol EasterSunday = SymbolEnumeration.valueOf(SymbolEnumeration.EasterSunday);
+	public final static IBuiltInSymbol Eigenvalues = SymbolEnumeration.valueOf(SymbolEnumeration.Eigenvalues);
+	public final static IBuiltInSymbol Eigenvectors = SymbolEnumeration.valueOf(SymbolEnumeration.Eigenvectors);
+	public final static IBuiltInSymbol Element = SymbolEnumeration.valueOf(SymbolEnumeration.Element);
+	public final static IBuiltInSymbol ElementData = SymbolEnumeration.valueOf(SymbolEnumeration.ElementData);
+	public final static IBuiltInSymbol Eliminate = SymbolEnumeration.valueOf(SymbolEnumeration.Eliminate);
+	public final static IBuiltInSymbol EllipticE = SymbolEnumeration.valueOf(SymbolEnumeration.EllipticE);
+	public final static IBuiltInSymbol EllipticF = SymbolEnumeration.valueOf(SymbolEnumeration.EllipticF);
+	public final static IBuiltInSymbol EllipticPi = SymbolEnumeration.valueOf(SymbolEnumeration.EllipticPi);
+	public final static IBuiltInSymbol End = SymbolEnumeration.valueOf(SymbolEnumeration.End);
+	public final static IBuiltInSymbol EndPackage = SymbolEnumeration.valueOf(SymbolEnumeration.EndPackage);
+	public final static IBuiltInSymbol Equal = SymbolEnumeration.valueOf(SymbolEnumeration.Equal);
+	public final static IBuiltInSymbol Equivalent = SymbolEnumeration.valueOf(SymbolEnumeration.Equivalent);
+	public final static IBuiltInSymbol Erf = SymbolEnumeration.valueOf(SymbolEnumeration.Erf);
+	public final static IBuiltInSymbol Erfc = SymbolEnumeration.valueOf(SymbolEnumeration.Erfc);
+	public final static IBuiltInSymbol Erfi = SymbolEnumeration.valueOf(SymbolEnumeration.Erfi);
+	public final static IBuiltInSymbol ErlangDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.ErlangDistribution);
+	public final static IBuiltInSymbol EuclideanDistance = SymbolEnumeration.valueOf(SymbolEnumeration.EuclideanDistance);
+	public final static IBuiltInSymbol EulerE = SymbolEnumeration.valueOf(SymbolEnumeration.EulerE);
+	public final static IBuiltInSymbol EulerGamma = SymbolEnumeration.valueOf(SymbolEnumeration.EulerGamma);
+	public final static IBuiltInSymbol EulerPhi = SymbolEnumeration.valueOf(SymbolEnumeration.EulerPhi);
+	public final static IBuiltInSymbol EvenQ = SymbolEnumeration.valueOf(SymbolEnumeration.EvenQ);
+	public final static IBuiltInSymbol ExactNumberQ = SymbolEnumeration.valueOf(SymbolEnumeration.ExactNumberQ);
+	public final static IBuiltInSymbol Except = SymbolEnumeration.valueOf(SymbolEnumeration.Except);
+	public final static IBuiltInSymbol Exists = SymbolEnumeration.valueOf(SymbolEnumeration.Exists);
+	public final static IBuiltInSymbol Exp = SymbolEnumeration.valueOf(SymbolEnumeration.Exp);
+	public final static IBuiltInSymbol ExpIntegralE = SymbolEnumeration.valueOf(SymbolEnumeration.ExpIntegralE);
+	public final static IBuiltInSymbol ExpIntegralEi = SymbolEnumeration.valueOf(SymbolEnumeration.ExpIntegralEi);
+	public final static IBuiltInSymbol Expand = SymbolEnumeration.valueOf(SymbolEnumeration.Expand);
+	public final static IBuiltInSymbol ExpandAll = SymbolEnumeration.valueOf(SymbolEnumeration.ExpandAll);
+	public final static IBuiltInSymbol Expectation = SymbolEnumeration.valueOf(SymbolEnumeration.Expectation);
+	public final static IBuiltInSymbol Exponent = SymbolEnumeration.valueOf(SymbolEnumeration.Exponent);
+	public final static IBuiltInSymbol ExponentialDistribution = SymbolEnumeration.valueOf(
+			SymbolEnumeration.ExponentialDistribution);
+	public final static IBuiltInSymbol Export = SymbolEnumeration.valueOf(SymbolEnumeration.Export);
+	public final static IBuiltInSymbol ExtendedGCD = SymbolEnumeration.valueOf(SymbolEnumeration.ExtendedGCD);
+	public final static IBuiltInSymbol Extract = SymbolEnumeration.valueOf(SymbolEnumeration.Extract);
+	public final static IBuiltInSymbol Factor = SymbolEnumeration.valueOf(SymbolEnumeration.Factor);
+	public final static IBuiltInSymbol FactorInteger = SymbolEnumeration.valueOf(SymbolEnumeration.FactorInteger);
+	public final static IBuiltInSymbol FactorSquareFree = SymbolEnumeration.valueOf(SymbolEnumeration.FactorSquareFree);
+	public final static IBuiltInSymbol FactorSquareFreeList = SymbolEnumeration.valueOf(SymbolEnumeration.FactorSquareFreeList);
+	public final static IBuiltInSymbol FactorTerms = SymbolEnumeration.valueOf(SymbolEnumeration.FactorTerms);
+	public final static IBuiltInSymbol Factorial = SymbolEnumeration.valueOf(SymbolEnumeration.Factorial);
+	public final static IBuiltInSymbol Factorial2 = SymbolEnumeration.valueOf(SymbolEnumeration.Factorial2);
+	public final static IBuiltInSymbol False = SymbolEnumeration.valueOf(SymbolEnumeration.False);
+	public final static IBuiltInSymbol Fibonacci = SymbolEnumeration.valueOf(SymbolEnumeration.Fibonacci);
+	public final static IBuiltInSymbol FindInstance = SymbolEnumeration.valueOf(SymbolEnumeration.FindInstance);
+	public final static IBuiltInSymbol FindRoot = SymbolEnumeration.valueOf(SymbolEnumeration.FindRoot);
+	public final static IBuiltInSymbol First = SymbolEnumeration.valueOf(SymbolEnumeration.First);
+	public final static IBuiltInSymbol Fit = SymbolEnumeration.valueOf(SymbolEnumeration.Fit);
+	public final static IBuiltInSymbol FixedPoint = SymbolEnumeration.valueOf(SymbolEnumeration.FixedPoint);
+	public final static IBuiltInSymbol FixedPointList = SymbolEnumeration.valueOf(SymbolEnumeration.FixedPointList);
+	public final static IBuiltInSymbol Flat = SymbolEnumeration.valueOf(SymbolEnumeration.Flat);
+	public final static IBuiltInSymbol Flatten = SymbolEnumeration.valueOf(SymbolEnumeration.Flatten);
+	public final static IBuiltInSymbol FlattenAt = SymbolEnumeration.valueOf(SymbolEnumeration.FlattenAt);
+	public final static IBuiltInSymbol Floor = SymbolEnumeration.valueOf(SymbolEnumeration.Floor);
+	public final static IBuiltInSymbol Fold = SymbolEnumeration.valueOf(SymbolEnumeration.Fold);
+	public final static IBuiltInSymbol FoldList = SymbolEnumeration.valueOf(SymbolEnumeration.FoldList);
+	public final static IBuiltInSymbol For = SymbolEnumeration.valueOf(SymbolEnumeration.For);
+	public final static IBuiltInSymbol ForAll = SymbolEnumeration.valueOf(SymbolEnumeration.ForAll);
+	public final static IBuiltInSymbol FourierMatrix = SymbolEnumeration.valueOf(SymbolEnumeration.FourierMatrix);
+	public final static IBuiltInSymbol FractionalPart = SymbolEnumeration.valueOf(SymbolEnumeration.FractionalPart);
+	public final static IBuiltInSymbol FrechetDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.FrechetDistribution);
+	public final static IBuiltInSymbol FreeQ = SymbolEnumeration.valueOf(SymbolEnumeration.FreeQ);
+	public final static IBuiltInSymbol FresnelC = SymbolEnumeration.valueOf(SymbolEnumeration.FresnelC);
+	public final static IBuiltInSymbol FresnelS = SymbolEnumeration.valueOf(SymbolEnumeration.FresnelS);
+	public final static IBuiltInSymbol FrobeniusSolve = SymbolEnumeration.valueOf(SymbolEnumeration.FrobeniusSolve);
+	public final static IBuiltInSymbol FromCharacterCode = SymbolEnumeration.valueOf(SymbolEnumeration.FromCharacterCode);
+	public final static IBuiltInSymbol FromContinuedFraction = SymbolEnumeration.valueOf(SymbolEnumeration.FromContinuedFraction);
+	public final static IBuiltInSymbol FromPolarCoordinates = SymbolEnumeration.valueOf(SymbolEnumeration.FromPolarCoordinates);
+	public final static IBuiltInSymbol FullForm = SymbolEnumeration.valueOf(SymbolEnumeration.FullForm);
+	public final static IBuiltInSymbol FullSimplify = SymbolEnumeration.valueOf(SymbolEnumeration.FullSimplify);
+	public final static IBuiltInSymbol Function = SymbolEnumeration.valueOf(SymbolEnumeration.Function);
+	public final static IBuiltInSymbol GCD = SymbolEnumeration.valueOf(SymbolEnumeration.GCD);
+	public final static IBuiltInSymbol Gamma = SymbolEnumeration.valueOf(SymbolEnumeration.Gamma);
+	public final static IBuiltInSymbol GammaDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.GammaDistribution);
+	public final static IBuiltInSymbol GammaRegularized = SymbolEnumeration.valueOf(SymbolEnumeration.GammaRegularized);
+	public final static IBuiltInSymbol Gather = SymbolEnumeration.valueOf(SymbolEnumeration.Gather);
+	public final static IBuiltInSymbol GegenbauerC = SymbolEnumeration.valueOf(SymbolEnumeration.GegenbauerC);
+	public final static IBuiltInSymbol GeometricDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.GeometricDistribution);
+	public final static IBuiltInSymbol GeometricMean = SymbolEnumeration.valueOf(SymbolEnumeration.GeometricMean);
+	public final static IBuiltInSymbol Get = SymbolEnumeration.valueOf(SymbolEnumeration.Get);
+	public final static IBuiltInSymbol Glaisher = SymbolEnumeration.valueOf(SymbolEnumeration.Glaisher);
+	public final static IBuiltInSymbol GoldenRatio = SymbolEnumeration.valueOf(SymbolEnumeration.GoldenRatio);
+	public final static IBuiltInSymbol Graphics = SymbolEnumeration.valueOf(SymbolEnumeration.Graphics);
+	public final static IBuiltInSymbol Graphics3D = SymbolEnumeration.valueOf(SymbolEnumeration.Graphics3D);
+	public final static IBuiltInSymbol Greater = SymbolEnumeration.valueOf(SymbolEnumeration.Greater);
+	public final static IBuiltInSymbol GreaterEqual = SymbolEnumeration.valueOf(SymbolEnumeration.GreaterEqual);
+	public final static IBuiltInSymbol GroebnerBasis = SymbolEnumeration.valueOf(SymbolEnumeration.GroebnerBasis);
+	public final static IBuiltInSymbol GumbelDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.GumbelDistribution);
+	public final static IBuiltInSymbol HarmonicNumber = SymbolEnumeration.valueOf(SymbolEnumeration.HarmonicNumber);
+	public final static IBuiltInSymbol Haversine = SymbolEnumeration.valueOf(SymbolEnumeration.Haversine);
+	public final static IBuiltInSymbol Head = SymbolEnumeration.valueOf(SymbolEnumeration.Head);
+	public final static IBuiltInSymbol HeavisideTheta = SymbolEnumeration.valueOf(SymbolEnumeration.HeavisideTheta);
+	public final static IBuiltInSymbol HermiteH = SymbolEnumeration.valueOf(SymbolEnumeration.HermiteH);
+	public final static IBuiltInSymbol HermitianMatrixQ = SymbolEnumeration.valueOf(SymbolEnumeration.HermitianMatrixQ);
+	public final static IBuiltInSymbol HilbertMatrix = SymbolEnumeration.valueOf(SymbolEnumeration.HilbertMatrix);
+	public final static IBuiltInSymbol Hold = SymbolEnumeration.valueOf(SymbolEnumeration.Hold);
+	public final static IBuiltInSymbol HoldAll = SymbolEnumeration.valueOf(SymbolEnumeration.HoldAll);
+	public final static IBuiltInSymbol HoldFirst = SymbolEnumeration.valueOf(SymbolEnumeration.HoldFirst);
+	public final static IBuiltInSymbol HoldForm = SymbolEnumeration.valueOf(SymbolEnumeration.HoldForm);
+	public final static IBuiltInSymbol HoldRest = SymbolEnumeration.valueOf(SymbolEnumeration.HoldRest);
+	public final static IBuiltInSymbol Horner = SymbolEnumeration.valueOf(SymbolEnumeration.Horner);
+	public final static IBuiltInSymbol HornerForm = SymbolEnumeration.valueOf(SymbolEnumeration.HornerForm);
+	public final static IBuiltInSymbol HurwitzZeta = SymbolEnumeration.valueOf(SymbolEnumeration.HurwitzZeta);
+	public final static IBuiltInSymbol Hypergeometric1F1 = SymbolEnumeration.valueOf(SymbolEnumeration.Hypergeometric1F1);
+	public final static IBuiltInSymbol Hypergeometric2F1 = SymbolEnumeration.valueOf(SymbolEnumeration.Hypergeometric2F1);
+	public final static IBuiltInSymbol HypergeometricDistribution = SymbolEnumeration.valueOf(
+			SymbolEnumeration.HypergeometricDistribution);
+	public final static IBuiltInSymbol HypergeometricPFQ = SymbolEnumeration.valueOf(SymbolEnumeration.HypergeometricPFQ);
+	public final static IBuiltInSymbol HypergeometricPFQRegularized = SymbolEnumeration.valueOf(
+			SymbolEnumeration.HypergeometricPFQRegularized);
+	public final static IBuiltInSymbol I = SymbolEnumeration.valueOf(SymbolEnumeration.I);
+	public final static IBuiltInSymbol Identity = SymbolEnumeration.valueOf(SymbolEnumeration.Identity);
+	public final static IBuiltInSymbol IdentityMatrix = SymbolEnumeration.valueOf(SymbolEnumeration.IdentityMatrix);
+	public final static IBuiltInSymbol If = SymbolEnumeration.valueOf(SymbolEnumeration.If);
+	public final static IBuiltInSymbol Im = SymbolEnumeration.valueOf(SymbolEnumeration.Im);
+	public final static IBuiltInSymbol Implies = SymbolEnumeration.valueOf(SymbolEnumeration.Implies);
+	public final static IBuiltInSymbol Import = SymbolEnumeration.valueOf(SymbolEnumeration.Import);
+	public final static IBuiltInSymbol Increment = SymbolEnumeration.valueOf(SymbolEnumeration.Increment);
+	public final static IBuiltInSymbol Indeterminate = SymbolEnumeration.valueOf(SymbolEnumeration.Indeterminate);
+	public final static IBuiltInSymbol Inequality = SymbolEnumeration.valueOf(SymbolEnumeration.Inequality);
+	public final static IBuiltInSymbol InexactNumberQ = SymbolEnumeration.valueOf(SymbolEnumeration.InexactNumberQ);
+	public final static IBuiltInSymbol Infinity = SymbolEnumeration.valueOf(SymbolEnumeration.Infinity);
+	public final static IBuiltInSymbol Information = SymbolEnumeration.valueOf(SymbolEnumeration.Information);
+	public final static IBuiltInSymbol Inner = SymbolEnumeration.valueOf(SymbolEnumeration.Inner);
+	public final static IBuiltInSymbol Insert = SymbolEnumeration.valueOf(SymbolEnumeration.Insert);
+	public final static IBuiltInSymbol Integer = SymbolEnumeration.valueOf(SymbolEnumeration.Integer);
+	public final static IBuiltInSymbol IntegerExponent = SymbolEnumeration.valueOf(SymbolEnumeration.IntegerExponent);
+	public final static IBuiltInSymbol IntegerLength = SymbolEnumeration.valueOf(SymbolEnumeration.IntegerLength);
+	public final static IBuiltInSymbol IntegerPart = SymbolEnumeration.valueOf(SymbolEnumeration.IntegerPart);
+	public final static IBuiltInSymbol IntegerPartitions = SymbolEnumeration.valueOf(SymbolEnumeration.IntegerPartitions);
+	public final static IBuiltInSymbol IntegerQ = SymbolEnumeration.valueOf(SymbolEnumeration.IntegerQ);
+	public final static IBuiltInSymbol Integers = SymbolEnumeration.valueOf(SymbolEnumeration.Integers);
+	public final static IBuiltInSymbol Integrate = SymbolEnumeration.valueOf(SymbolEnumeration.Integrate);
+	public final static IBuiltInSymbol InterpolatingFunction = SymbolEnumeration.valueOf(SymbolEnumeration.InterpolatingFunction);
+	public final static IBuiltInSymbol InterpolatingPolynomial = SymbolEnumeration.valueOf(
+			SymbolEnumeration.InterpolatingPolynomial);
+	public final static IBuiltInSymbol Interpolation = SymbolEnumeration.valueOf(SymbolEnumeration.Interpolation);
+	public final static IBuiltInSymbol Intersection = SymbolEnumeration.valueOf(SymbolEnumeration.Intersection);
+	public final static IBuiltInSymbol Interval = SymbolEnumeration.valueOf(SymbolEnumeration.Interval);
+	public final static IBuiltInSymbol Inverse = SymbolEnumeration.valueOf(SymbolEnumeration.Inverse);
+	public final static IBuiltInSymbol InverseErf = SymbolEnumeration.valueOf(SymbolEnumeration.InverseErf);
+	public final static IBuiltInSymbol InverseErfc = SymbolEnumeration.valueOf(SymbolEnumeration.InverseErfc);
+	public final static IBuiltInSymbol InverseFunction = SymbolEnumeration.valueOf(SymbolEnumeration.InverseFunction);
+	public final static IBuiltInSymbol InverseHaversine = SymbolEnumeration.valueOf(SymbolEnumeration.InverseHaversine);
+	public final static IBuiltInSymbol InverseLaplaceTransform = SymbolEnumeration.valueOf(
+			SymbolEnumeration.InverseLaplaceTransform);
+	public final static IBuiltInSymbol JaccardDissimilarity = SymbolEnumeration.valueOf(SymbolEnumeration.JaccardDissimilarity);
+	public final static IBuiltInSymbol JacobiMatrix = SymbolEnumeration.valueOf(SymbolEnumeration.JacobiMatrix);
+	public final static IBuiltInSymbol JacobiSymbol = SymbolEnumeration.valueOf(SymbolEnumeration.JacobiSymbol);
+	public final static IBuiltInSymbol JavaForm = SymbolEnumeration.valueOf(SymbolEnumeration.JavaForm);
+	public final static IBuiltInSymbol Join = SymbolEnumeration.valueOf(SymbolEnumeration.Join);
+	public final static IBuiltInSymbol KOrderlessPartitions = SymbolEnumeration.valueOf(SymbolEnumeration.KOrderlessPartitions);
+	public final static IBuiltInSymbol KPartitions = SymbolEnumeration.valueOf(SymbolEnumeration.KPartitions);
+	public final static IBuiltInSymbol Khinchin = SymbolEnumeration.valueOf(SymbolEnumeration.Khinchin);
+	public final static IBuiltInSymbol KroneckerDelta = SymbolEnumeration.valueOf(SymbolEnumeration.KroneckerDelta);
+	public final static IBuiltInSymbol Kurtosis = SymbolEnumeration.valueOf(SymbolEnumeration.Kurtosis);
+	public final static IBuiltInSymbol LCM = SymbolEnumeration.valueOf(SymbolEnumeration.LCM);
+	public final static IBuiltInSymbol LUDecomposition = SymbolEnumeration.valueOf(SymbolEnumeration.LUDecomposition);
+	public final static IBuiltInSymbol LaguerreL = SymbolEnumeration.valueOf(SymbolEnumeration.LaguerreL);
+	public final static IBuiltInSymbol LaplaceTransform = SymbolEnumeration.valueOf(SymbolEnumeration.LaplaceTransform);
+	public final static IBuiltInSymbol Last = SymbolEnumeration.valueOf(SymbolEnumeration.Last);
+	public final static IBuiltInSymbol LeafCount = SymbolEnumeration.valueOf(SymbolEnumeration.LeafCount);
+	public final static IBuiltInSymbol LeastSquares = SymbolEnumeration.valueOf(SymbolEnumeration.LeastSquares);
+	public final static IBuiltInSymbol LegendreP = SymbolEnumeration.valueOf(SymbolEnumeration.LegendreP);
+	public final static IBuiltInSymbol LegendreQ = SymbolEnumeration.valueOf(SymbolEnumeration.LegendreQ);
+	public final static IBuiltInSymbol Length = SymbolEnumeration.valueOf(SymbolEnumeration.Length);
+	public final static IBuiltInSymbol Less = SymbolEnumeration.valueOf(SymbolEnumeration.Less);
+	public final static IBuiltInSymbol LessEqual = SymbolEnumeration.valueOf(SymbolEnumeration.LessEqual);
+	public final static IBuiltInSymbol LetterQ = SymbolEnumeration.valueOf(SymbolEnumeration.LetterQ);
+	public final static IBuiltInSymbol Level = SymbolEnumeration.valueOf(SymbolEnumeration.Level);
+	public final static IBuiltInSymbol LevelQ = SymbolEnumeration.valueOf(SymbolEnumeration.LevelQ);
+	public final static IBuiltInSymbol Limit = SymbolEnumeration.valueOf(SymbolEnumeration.Limit);
+	public final static IBuiltInSymbol Line = SymbolEnumeration.valueOf(SymbolEnumeration.Line);
+	public final static IBuiltInSymbol LinearModelFit = SymbolEnumeration.valueOf(SymbolEnumeration.LinearModelFit);
+	public final static IBuiltInSymbol LinearProgramming = SymbolEnumeration.valueOf(SymbolEnumeration.LinearProgramming);
+	public final static IBuiltInSymbol LinearSolve = SymbolEnumeration.valueOf(SymbolEnumeration.LinearSolve);
+	public final static IBuiltInSymbol LiouvilleLambda = SymbolEnumeration.valueOf(SymbolEnumeration.LiouvilleLambda);
+	public final static IBuiltInSymbol List = SymbolEnumeration.valueOf(SymbolEnumeration.List);
+	public final static IBuiltInSymbol ListConvolve = SymbolEnumeration.valueOf(SymbolEnumeration.ListConvolve);
+	public final static IBuiltInSymbol ListCorrelate = SymbolEnumeration.valueOf(SymbolEnumeration.ListCorrelate);
+	public final static IBuiltInSymbol ListQ = SymbolEnumeration.valueOf(SymbolEnumeration.ListQ);
+	public final static IBuiltInSymbol Listable = SymbolEnumeration.valueOf(SymbolEnumeration.Listable);
+	public final static IBuiltInSymbol Literal = SymbolEnumeration.valueOf(SymbolEnumeration.Literal);
+	public final static IBuiltInSymbol Log = SymbolEnumeration.valueOf(SymbolEnumeration.Log);
+	public final static IBuiltInSymbol Log10 = SymbolEnumeration.valueOf(SymbolEnumeration.Log10);
+	public final static IBuiltInSymbol Log2 = SymbolEnumeration.valueOf(SymbolEnumeration.Log2);
+	public final static IBuiltInSymbol LogGamma = SymbolEnumeration.valueOf(SymbolEnumeration.LogGamma);
+	public final static IBuiltInSymbol LogIntegral = SymbolEnumeration.valueOf(SymbolEnumeration.LogIntegral);
+	public final static IBuiltInSymbol LogNormalDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.LogNormalDistribution);
+	public final static IBuiltInSymbol LogicalExpand = SymbolEnumeration.valueOf(SymbolEnumeration.LogicalExpand);
+	public final static IBuiltInSymbol LogisticSigmoid = SymbolEnumeration.valueOf(SymbolEnumeration.LogisticSigmoid);
+	public final static IBuiltInSymbol LowerCaseQ = SymbolEnumeration.valueOf(SymbolEnumeration.LowerCaseQ);
+	public final static IBuiltInSymbol LowerTriangularize = SymbolEnumeration.valueOf(SymbolEnumeration.LowerTriangularize);
+	public final static IBuiltInSymbol LucasL = SymbolEnumeration.valueOf(SymbolEnumeration.LucasL);
+	public final static IBuiltInSymbol MachineNumberQ = SymbolEnumeration.valueOf(SymbolEnumeration.MachineNumberQ);
+	public final static IBuiltInSymbol ManhattanDistance = SymbolEnumeration.valueOf(SymbolEnumeration.ManhattanDistance);
+	public final static IBuiltInSymbol MantissaExponent = SymbolEnumeration.valueOf(SymbolEnumeration.MantissaExponent);
+	public final static IBuiltInSymbol Map = SymbolEnumeration.valueOf(SymbolEnumeration.Map);
+	public final static IBuiltInSymbol MapAll = SymbolEnumeration.valueOf(SymbolEnumeration.MapAll);
+	public final static IBuiltInSymbol MapAt = SymbolEnumeration.valueOf(SymbolEnumeration.MapAt);
+	public final static IBuiltInSymbol MapThread = SymbolEnumeration.valueOf(SymbolEnumeration.MapThread);
+	public final static IBuiltInSymbol MatchQ = SymbolEnumeration.valueOf(SymbolEnumeration.MatchQ);
+	public final static IBuiltInSymbol MatchingDissimilarity = SymbolEnumeration.valueOf(SymbolEnumeration.MatchingDissimilarity);
+	public final static IBuiltInSymbol MathMLForm = SymbolEnumeration.valueOf(SymbolEnumeration.MathMLForm);
+	public final static IBuiltInSymbol MatrixForm = SymbolEnumeration.valueOf(SymbolEnumeration.MatrixForm);
+	public final static IBuiltInSymbol MatrixMinimalPolynomial = SymbolEnumeration.valueOf(
+			SymbolEnumeration.MatrixMinimalPolynomial);
+	public final static IBuiltInSymbol MatrixPower = SymbolEnumeration.valueOf(SymbolEnumeration.MatrixPower);
+	public final static IBuiltInSymbol MatrixQ = SymbolEnumeration.valueOf(SymbolEnumeration.MatrixQ);
+	public final static IBuiltInSymbol MatrixRank = SymbolEnumeration.valueOf(SymbolEnumeration.MatrixRank);
+	public final static IBuiltInSymbol Max = SymbolEnumeration.valueOf(SymbolEnumeration.Max);
+	public final static IBuiltInSymbol MaxIterations = SymbolEnumeration.valueOf(SymbolEnumeration.MaxIterations);
+	public final static IBuiltInSymbol MaxPoints = SymbolEnumeration.valueOf(SymbolEnumeration.MaxPoints);
+	public final static IBuiltInSymbol Mean = SymbolEnumeration.valueOf(SymbolEnumeration.Mean);
+	public final static IBuiltInSymbol MeanDeviation = SymbolEnumeration.valueOf(SymbolEnumeration.MeanDeviation);
+	public final static IBuiltInSymbol Median = SymbolEnumeration.valueOf(SymbolEnumeration.Median);
+	public final static IBuiltInSymbol MeijerG = SymbolEnumeration.valueOf(SymbolEnumeration.MeijerG);
+	public final static IBuiltInSymbol MemberQ = SymbolEnumeration.valueOf(SymbolEnumeration.MemberQ);
+	public final static IBuiltInSymbol MersennePrimeExponent = SymbolEnumeration.valueOf(SymbolEnumeration.MersennePrimeExponent);
+	public final static IBuiltInSymbol MersennePrimeExponentQ = SymbolEnumeration.valueOf(
+			SymbolEnumeration.MersennePrimeExponentQ);
+	public final static IBuiltInSymbol MeshRange = SymbolEnumeration.valueOf(SymbolEnumeration.MeshRange);
+	public final static IBuiltInSymbol MessageName = SymbolEnumeration.valueOf(SymbolEnumeration.MessageName);
+	public final static IBuiltInSymbol Method = SymbolEnumeration.valueOf(SymbolEnumeration.Method);
+	public final static IBuiltInSymbol Min = SymbolEnumeration.valueOf(SymbolEnumeration.Min);
+	public final static IBuiltInSymbol MinimalPolynomial = SymbolEnumeration.valueOf(SymbolEnumeration.MinimalPolynomial);
+	public final static IBuiltInSymbol Minus = SymbolEnumeration.valueOf(SymbolEnumeration.Minus);
+	public final static IBuiltInSymbol Missing = SymbolEnumeration.valueOf(SymbolEnumeration.Missing);
+	public final static IBuiltInSymbol MissingQ = SymbolEnumeration.valueOf(SymbolEnumeration.MissingQ);
+	public final static IBuiltInSymbol Mod = SymbolEnumeration.valueOf(SymbolEnumeration.Mod);
+	public final static IBuiltInSymbol Module = SymbolEnumeration.valueOf(SymbolEnumeration.Module);
+	public final static IBuiltInSymbol Modulus = SymbolEnumeration.valueOf(SymbolEnumeration.Modulus);
+	public final static IBuiltInSymbol MoebiusMu = SymbolEnumeration.valueOf(SymbolEnumeration.MoebiusMu);
+	public final static IBuiltInSymbol MonomialList = SymbolEnumeration.valueOf(SymbolEnumeration.MonomialList);
+	public final static IBuiltInSymbol Most = SymbolEnumeration.valueOf(SymbolEnumeration.Most);
+	public final static IBuiltInSymbol Multinomial = SymbolEnumeration.valueOf(SymbolEnumeration.Multinomial);
+	public final static IBuiltInSymbol MultiplicativeOrder = SymbolEnumeration.valueOf(SymbolEnumeration.MultiplicativeOrder);
+	public final static IBuiltInSymbol N = SymbolEnumeration.valueOf(SymbolEnumeration.N);
+	public final static IBuiltInSymbol NDSolve = SymbolEnumeration.valueOf(SymbolEnumeration.NDSolve);
+	public final static IBuiltInSymbol NFourierTransform = SymbolEnumeration.valueOf(SymbolEnumeration.NFourierTransform);
+	public final static IBuiltInSymbol NHoldAll = SymbolEnumeration.valueOf(SymbolEnumeration.NHoldAll);
+	public final static IBuiltInSymbol NHoldFirst = SymbolEnumeration.valueOf(SymbolEnumeration.NHoldFirst);
+	public final static IBuiltInSymbol NHoldRest = SymbolEnumeration.valueOf(SymbolEnumeration.NHoldRest);
+	public final static IBuiltInSymbol NIntegrate = SymbolEnumeration.valueOf(SymbolEnumeration.NIntegrate);
+	public final static IBuiltInSymbol NMaximize = SymbolEnumeration.valueOf(SymbolEnumeration.NMaximize);
+	public final static IBuiltInSymbol NMinimize = SymbolEnumeration.valueOf(SymbolEnumeration.NMinimize);
+	public final static IBuiltInSymbol NRoots = SymbolEnumeration.valueOf(SymbolEnumeration.NRoots);
+	public final static IBuiltInSymbol NSolve = SymbolEnumeration.valueOf(SymbolEnumeration.NSolve);
+	public final static IBuiltInSymbol NakagamiDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.NakagamiDistribution);
+	public final static IBuiltInSymbol Names = SymbolEnumeration.valueOf(SymbolEnumeration.Names);
+	public final static IBuiltInSymbol Nand = SymbolEnumeration.valueOf(SymbolEnumeration.Nand);
+	public final static IBuiltInSymbol Nearest = SymbolEnumeration.valueOf(SymbolEnumeration.Nearest);
+	public final static IBuiltInSymbol Negative = SymbolEnumeration.valueOf(SymbolEnumeration.Negative);
+	public final static IBuiltInSymbol Nest = SymbolEnumeration.valueOf(SymbolEnumeration.Nest);
+	public final static IBuiltInSymbol NestList = SymbolEnumeration.valueOf(SymbolEnumeration.NestList);
+	public final static IBuiltInSymbol NestWhile = SymbolEnumeration.valueOf(SymbolEnumeration.NestWhile);
+	public final static IBuiltInSymbol NestWhileList = SymbolEnumeration.valueOf(SymbolEnumeration.NestWhileList);
+	public final static IBuiltInSymbol NextPrime = SymbolEnumeration.valueOf(SymbolEnumeration.NextPrime);
+	public final static IBuiltInSymbol NonCommutativeMultiply = SymbolEnumeration.valueOf(
+			SymbolEnumeration.NonCommutativeMultiply);
+	public final static IBuiltInSymbol NonNegative = SymbolEnumeration.valueOf(SymbolEnumeration.NonNegative);
+	public final static IBuiltInSymbol NonPositive = SymbolEnumeration.valueOf(SymbolEnumeration.NonPositive);
+	public final static IBuiltInSymbol None = SymbolEnumeration.valueOf(SymbolEnumeration.None);
+	public final static IBuiltInSymbol NoneTrue = SymbolEnumeration.valueOf(SymbolEnumeration.NoneTrue);
+	public final static IBuiltInSymbol Nonexistent = SymbolEnumeration.valueOf(SymbolEnumeration.Nonexistent);
+	public final static IBuiltInSymbol Nor = SymbolEnumeration.valueOf(SymbolEnumeration.Nor);
+	public final static IBuiltInSymbol Norm = SymbolEnumeration.valueOf(SymbolEnumeration.Norm);
+	public final static IBuiltInSymbol Normal = SymbolEnumeration.valueOf(SymbolEnumeration.Normal);
+	public final static IBuiltInSymbol NormalDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.NormalDistribution);
+	public final static IBuiltInSymbol Normalize = SymbolEnumeration.valueOf(SymbolEnumeration.Normalize);
+	public final static IBuiltInSymbol Not = SymbolEnumeration.valueOf(SymbolEnumeration.Not);
+	public final static IBuiltInSymbol NotApplicable = SymbolEnumeration.valueOf(SymbolEnumeration.NotApplicable);
+	public final static IBuiltInSymbol NotAvailable = SymbolEnumeration.valueOf(SymbolEnumeration.NotAvailable);
+	public final static IBuiltInSymbol NotListQ = SymbolEnumeration.valueOf(SymbolEnumeration.NotListQ);
+	public final static IBuiltInSymbol Null = SymbolEnumeration.valueOf(SymbolEnumeration.Null);
+	public final static IBuiltInSymbol NullSpace = SymbolEnumeration.valueOf(SymbolEnumeration.NullSpace);
+	public final static IBuiltInSymbol NumberFieldRootsOfUnity = SymbolEnumeration.valueOf(
+			SymbolEnumeration.NumberFieldRootsOfUnity);
+	public final static IBuiltInSymbol NumberQ = SymbolEnumeration.valueOf(SymbolEnumeration.NumberQ);
+	public final static IBuiltInSymbol Numerator = SymbolEnumeration.valueOf(SymbolEnumeration.Numerator);
+	public final static IBuiltInSymbol NumericFunction = SymbolEnumeration.valueOf(SymbolEnumeration.NumericFunction);
+	public final static IBuiltInSymbol NumericQ = SymbolEnumeration.valueOf(SymbolEnumeration.NumericQ);
+	public final static IBuiltInSymbol O = SymbolEnumeration.valueOf(SymbolEnumeration.O);
+	public final static IBuiltInSymbol OddQ = SymbolEnumeration.valueOf(SymbolEnumeration.OddQ);
+	public final static IBuiltInSymbol OneIdentity = SymbolEnumeration.valueOf(SymbolEnumeration.OneIdentity);
+	public final static IBuiltInSymbol Operate = SymbolEnumeration.valueOf(SymbolEnumeration.Operate);
+	public final static IBuiltInSymbol Optional = SymbolEnumeration.valueOf(SymbolEnumeration.Optional);
+	public final static IBuiltInSymbol Options = SymbolEnumeration.valueOf(SymbolEnumeration.Options);
+	public final static IBuiltInSymbol Or = SymbolEnumeration.valueOf(SymbolEnumeration.Or);
+	public final static IBuiltInSymbol Order = SymbolEnumeration.valueOf(SymbolEnumeration.Order);
+	public final static IBuiltInSymbol OrderedQ = SymbolEnumeration.valueOf(SymbolEnumeration.OrderedQ);
+	public final static IBuiltInSymbol Ordering = SymbolEnumeration.valueOf(SymbolEnumeration.Ordering);
+	public final static IBuiltInSymbol Orderless = SymbolEnumeration.valueOf(SymbolEnumeration.Orderless);
+	public final static IBuiltInSymbol OrthogonalMatrixQ = SymbolEnumeration.valueOf(SymbolEnumeration.OrthogonalMatrixQ);
+	public final static IBuiltInSymbol Orthogonalize = SymbolEnumeration.valueOf(SymbolEnumeration.Orthogonalize);
+	public final static IBuiltInSymbol Out = SymbolEnumeration.valueOf(SymbolEnumeration.Out);
+	public final static IBuiltInSymbol Outer = SymbolEnumeration.valueOf(SymbolEnumeration.Outer);
+	public final static IBuiltInSymbol PDF = SymbolEnumeration.valueOf(SymbolEnumeration.PDF);
+	public final static IBuiltInSymbol Package = SymbolEnumeration.valueOf(SymbolEnumeration.Package);
+	public final static IBuiltInSymbol PadLeft = SymbolEnumeration.valueOf(SymbolEnumeration.PadLeft);
+	public final static IBuiltInSymbol PadRight = SymbolEnumeration.valueOf(SymbolEnumeration.PadRight);
+	public final static IBuiltInSymbol ParametricPlot = SymbolEnumeration.valueOf(SymbolEnumeration.ParametricPlot);
+	public final static IBuiltInSymbol Part = SymbolEnumeration.valueOf(SymbolEnumeration.Part);
+	public final static IBuiltInSymbol Partition = SymbolEnumeration.valueOf(SymbolEnumeration.Partition);
+	public final static IBuiltInSymbol PartitionsP = SymbolEnumeration.valueOf(SymbolEnumeration.PartitionsP);
+	public final static IBuiltInSymbol PartitionsQ = SymbolEnumeration.valueOf(SymbolEnumeration.PartitionsQ);
+	public final static IBuiltInSymbol Pattern = SymbolEnumeration.valueOf(SymbolEnumeration.Pattern);
+	public final static IBuiltInSymbol PatternTest = SymbolEnumeration.valueOf(SymbolEnumeration.PatternTest);
+	public final static IBuiltInSymbol PerfectNumber = SymbolEnumeration.valueOf(SymbolEnumeration.PerfectNumber);
+	public final static IBuiltInSymbol PerfectNumberQ = SymbolEnumeration.valueOf(SymbolEnumeration.PerfectNumberQ);
+	public final static IBuiltInSymbol Permutations = SymbolEnumeration.valueOf(SymbolEnumeration.Permutations);
+	public final static IBuiltInSymbol Pi = SymbolEnumeration.valueOf(SymbolEnumeration.Pi);
+	public final static IBuiltInSymbol Piecewise = SymbolEnumeration.valueOf(SymbolEnumeration.Piecewise);
+	public final static IBuiltInSymbol Plot = SymbolEnumeration.valueOf(SymbolEnumeration.Plot);
+	public final static IBuiltInSymbol Plot3D = SymbolEnumeration.valueOf(SymbolEnumeration.Plot3D);
+	public final static IBuiltInSymbol PlotRange = SymbolEnumeration.valueOf(SymbolEnumeration.PlotRange);
+	public final static IBuiltInSymbol Plus = SymbolEnumeration.valueOf(SymbolEnumeration.Plus);
+	public final static IBuiltInSymbol Pochhammer = SymbolEnumeration.valueOf(SymbolEnumeration.Pochhammer);
+	public final static IBuiltInSymbol Point = SymbolEnumeration.valueOf(SymbolEnumeration.Point);
+	public final static IBuiltInSymbol PoissonDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.PoissonDistribution);
+	public final static IBuiltInSymbol PolyGamma = SymbolEnumeration.valueOf(SymbolEnumeration.PolyGamma);
+	public final static IBuiltInSymbol PolyLog = SymbolEnumeration.valueOf(SymbolEnumeration.PolyLog);
+	public final static IBuiltInSymbol Polygon = SymbolEnumeration.valueOf(SymbolEnumeration.Polygon);
+	public final static IBuiltInSymbol PolynomialExtendedGCD = SymbolEnumeration.valueOf(SymbolEnumeration.PolynomialExtendedGCD);
+	public final static IBuiltInSymbol PolynomialGCD = SymbolEnumeration.valueOf(SymbolEnumeration.PolynomialGCD);
+	public final static IBuiltInSymbol PolynomialLCM = SymbolEnumeration.valueOf(SymbolEnumeration.PolynomialLCM);
+	public final static IBuiltInSymbol PolynomialQ = SymbolEnumeration.valueOf(SymbolEnumeration.PolynomialQ);
+	public final static IBuiltInSymbol PolynomialQuotient = SymbolEnumeration.valueOf(SymbolEnumeration.PolynomialQuotient);
+	public final static IBuiltInSymbol PolynomialQuotientRemainder = SymbolEnumeration.valueOf(
+			SymbolEnumeration.PolynomialQuotientRemainder);
+	public final static IBuiltInSymbol PolynomialRemainder = SymbolEnumeration.valueOf(SymbolEnumeration.PolynomialRemainder);
+	public final static IBuiltInSymbol Position = SymbolEnumeration.valueOf(SymbolEnumeration.Position);
+	public final static IBuiltInSymbol Positive = SymbolEnumeration.valueOf(SymbolEnumeration.Positive);
+	public final static IBuiltInSymbol PossibleZeroQ = SymbolEnumeration.valueOf(SymbolEnumeration.PossibleZeroQ);
+	public final static IBuiltInSymbol Power = SymbolEnumeration.valueOf(SymbolEnumeration.Power);
+	public final static IBuiltInSymbol PowerExpand = SymbolEnumeration.valueOf(SymbolEnumeration.PowerExpand);
+	public final static IBuiltInSymbol PowerMod = SymbolEnumeration.valueOf(SymbolEnumeration.PowerMod);
+	public final static IBuiltInSymbol PreDecrement = SymbolEnumeration.valueOf(SymbolEnumeration.PreDecrement);
+	public final static IBuiltInSymbol PreIncrement = SymbolEnumeration.valueOf(SymbolEnumeration.PreIncrement);
+	public final static IBuiltInSymbol Precision = SymbolEnumeration.valueOf(SymbolEnumeration.Precision);
+	public final static IBuiltInSymbol PrecisionGoal = SymbolEnumeration.valueOf(SymbolEnumeration.PrecisionGoal);
+	public final static IBuiltInSymbol Prepend = SymbolEnumeration.valueOf(SymbolEnumeration.Prepend);
+	public final static IBuiltInSymbol PrependTo = SymbolEnumeration.valueOf(SymbolEnumeration.PrependTo);
+	public final static IBuiltInSymbol Prime = SymbolEnumeration.valueOf(SymbolEnumeration.Prime);
+	public final static IBuiltInSymbol PrimeOmega = SymbolEnumeration.valueOf(SymbolEnumeration.PrimeOmega);
+	public final static IBuiltInSymbol PrimePi = SymbolEnumeration.valueOf(SymbolEnumeration.PrimePi);
+	public final static IBuiltInSymbol PrimePowerQ = SymbolEnumeration.valueOf(SymbolEnumeration.PrimePowerQ);
+	public final static IBuiltInSymbol PrimeQ = SymbolEnumeration.valueOf(SymbolEnumeration.PrimeQ);
+	public final static IBuiltInSymbol Primes = SymbolEnumeration.valueOf(SymbolEnumeration.Primes);
+	public final static IBuiltInSymbol PrimitiveRootList = SymbolEnumeration.valueOf(SymbolEnumeration.PrimitiveRootList);
+	public final static IBuiltInSymbol Print = SymbolEnumeration.valueOf(SymbolEnumeration.Print);
+	public final static IBuiltInSymbol Product = SymbolEnumeration.valueOf(SymbolEnumeration.Product);
+	public final static IBuiltInSymbol ProductLog = SymbolEnumeration.valueOf(SymbolEnumeration.ProductLog);
+	public final static IBuiltInSymbol Projection = SymbolEnumeration.valueOf(SymbolEnumeration.Projection);
+	public final static IBuiltInSymbol PseudoInverse = SymbolEnumeration.valueOf(SymbolEnumeration.PseudoInverse);
+	public final static IBuiltInSymbol Put = SymbolEnumeration.valueOf(SymbolEnumeration.Put);
+	public final static IBuiltInSymbol QRDecomposition = SymbolEnumeration.valueOf(SymbolEnumeration.QRDecomposition);
+	public final static IBuiltInSymbol Quantile = SymbolEnumeration.valueOf(SymbolEnumeration.Quantile);
+	public final static IBuiltInSymbol Quiet = SymbolEnumeration.valueOf(SymbolEnumeration.Quiet);
+	public final static IBuiltInSymbol Quit = SymbolEnumeration.valueOf(SymbolEnumeration.Quit);
+	public final static IBuiltInSymbol Quotient = SymbolEnumeration.valueOf(SymbolEnumeration.Quotient);
+	public final static IBuiltInSymbol QuotientRemainder = SymbolEnumeration.valueOf(SymbolEnumeration.QuotientRemainder);
+	public final static IBuiltInSymbol RandomChoice = SymbolEnumeration.valueOf(SymbolEnumeration.RandomChoice);
+	public final static IBuiltInSymbol RandomInteger = SymbolEnumeration.valueOf(SymbolEnumeration.RandomInteger);
+	public final static IBuiltInSymbol RandomReal = SymbolEnumeration.valueOf(SymbolEnumeration.RandomReal);
+	public final static IBuiltInSymbol RandomSample = SymbolEnumeration.valueOf(SymbolEnumeration.RandomSample);
+	public final static IBuiltInSymbol RandomVariate = SymbolEnumeration.valueOf(SymbolEnumeration.RandomVariate);
+	public final static IBuiltInSymbol Range = SymbolEnumeration.valueOf(SymbolEnumeration.Range);
+	public final static IBuiltInSymbol Rational = SymbolEnumeration.valueOf(SymbolEnumeration.Rational);
+	public final static IBuiltInSymbol Rationalize = SymbolEnumeration.valueOf(SymbolEnumeration.Rationalize);
+	public final static IBuiltInSymbol Rationals = SymbolEnumeration.valueOf(SymbolEnumeration.Rationals);
+	public final static IBuiltInSymbol Re = SymbolEnumeration.valueOf(SymbolEnumeration.Re);
+	public final static IBuiltInSymbol Real = SymbolEnumeration.valueOf(SymbolEnumeration.Real);
+	public final static IBuiltInSymbol RealNumberQ = SymbolEnumeration.valueOf(SymbolEnumeration.RealNumberQ);
+	public final static IBuiltInSymbol Reals = SymbolEnumeration.valueOf(SymbolEnumeration.Reals);
+	public final static IBuiltInSymbol Reap = SymbolEnumeration.valueOf(SymbolEnumeration.Reap);
+	public final static IBuiltInSymbol Rectangle = SymbolEnumeration.valueOf(SymbolEnumeration.Rectangle);
+	public final static IBuiltInSymbol Reduce = SymbolEnumeration.valueOf(SymbolEnumeration.Reduce);
+	public final static IBuiltInSymbol Refine = SymbolEnumeration.valueOf(SymbolEnumeration.Refine);
+	public final static IBuiltInSymbol Repeated = SymbolEnumeration.valueOf(SymbolEnumeration.Repeated);
+	public final static IBuiltInSymbol RepeatedNull = SymbolEnumeration.valueOf(SymbolEnumeration.RepeatedNull);
+	public final static IBuiltInSymbol Replace = SymbolEnumeration.valueOf(SymbolEnumeration.Replace);
+	public final static IBuiltInSymbol ReplaceAll = SymbolEnumeration.valueOf(SymbolEnumeration.ReplaceAll);
+	public final static IBuiltInSymbol ReplaceList = SymbolEnumeration.valueOf(SymbolEnumeration.ReplaceList);
+	public final static IBuiltInSymbol ReplacePart = SymbolEnumeration.valueOf(SymbolEnumeration.ReplacePart);
+	public final static IBuiltInSymbol ReplaceRepeated = SymbolEnumeration.valueOf(SymbolEnumeration.ReplaceRepeated);
+	public final static IBuiltInSymbol Rest = SymbolEnumeration.valueOf(SymbolEnumeration.Rest);
+	public final static IBuiltInSymbol Resultant = SymbolEnumeration.valueOf(SymbolEnumeration.Resultant);
+	public final static IBuiltInSymbol Return = SymbolEnumeration.valueOf(SymbolEnumeration.Return);
+	public final static IBuiltInSymbol Reverse = SymbolEnumeration.valueOf(SymbolEnumeration.Reverse);
+	public final static IBuiltInSymbol Riffle = SymbolEnumeration.valueOf(SymbolEnumeration.Riffle);
+	public final static IBuiltInSymbol RogersTanimotoDissimilarity = SymbolEnumeration.valueOf(
+			SymbolEnumeration.RogersTanimotoDissimilarity);
+	public final static IBuiltInSymbol Root = SymbolEnumeration.valueOf(SymbolEnumeration.Root);
+	public final static IBuiltInSymbol RootIntervals = SymbolEnumeration.valueOf(SymbolEnumeration.RootIntervals);
+	public final static IBuiltInSymbol RootOf = SymbolEnumeration.valueOf(SymbolEnumeration.RootOf);
+	public final static IBuiltInSymbol Roots = SymbolEnumeration.valueOf(SymbolEnumeration.Roots);
+	public final static IBuiltInSymbol RotateLeft = SymbolEnumeration.valueOf(SymbolEnumeration.RotateLeft);
+	public final static IBuiltInSymbol RotateRight = SymbolEnumeration.valueOf(SymbolEnumeration.RotateRight);
+	public final static IBuiltInSymbol Round = SymbolEnumeration.valueOf(SymbolEnumeration.Round);
+	public final static IBuiltInSymbol RowReduce = SymbolEnumeration.valueOf(SymbolEnumeration.RowReduce);
+	public final static IBuiltInSymbol Rule = SymbolEnumeration.valueOf(SymbolEnumeration.Rule);
+	public final static IBuiltInSymbol RuleDelayed = SymbolEnumeration.valueOf(SymbolEnumeration.RuleDelayed);
+	public final static IBuiltInSymbol RussellRaoDissimilarity = SymbolEnumeration.valueOf(
+			SymbolEnumeration.RussellRaoDissimilarity);
+	public final static IBuiltInSymbol SameQ = SymbolEnumeration.valueOf(SymbolEnumeration.SameQ);
+	public final static IBuiltInSymbol SatisfiableQ = SymbolEnumeration.valueOf(SymbolEnumeration.SatisfiableQ);
+	public final static IBuiltInSymbol Scan = SymbolEnumeration.valueOf(SymbolEnumeration.Scan);
+	public final static IBuiltInSymbol Sec = SymbolEnumeration.valueOf(SymbolEnumeration.Sec);
+	public final static IBuiltInSymbol Sech = SymbolEnumeration.valueOf(SymbolEnumeration.Sech);
+	public final static IBuiltInSymbol Second = SymbolEnumeration.valueOf(SymbolEnumeration.Second);
+	public final static IBuiltInSymbol Select = SymbolEnumeration.valueOf(SymbolEnumeration.Select);
+	public final static IBuiltInSymbol Sequence = SymbolEnumeration.valueOf(SymbolEnumeration.Sequence);
+	public final static IBuiltInSymbol Series = SymbolEnumeration.valueOf(SymbolEnumeration.Series);
+	public final static IBuiltInSymbol SeriesData = SymbolEnumeration.valueOf(SymbolEnumeration.SeriesData);
+	public final static IBuiltInSymbol Set = SymbolEnumeration.valueOf(SymbolEnumeration.Set);
+	public final static IBuiltInSymbol SetAttributes = SymbolEnumeration.valueOf(SymbolEnumeration.SetAttributes);
+	public final static IBuiltInSymbol SetDelayed = SymbolEnumeration.valueOf(SymbolEnumeration.SetDelayed);
+	public final static IBuiltInSymbol Share = SymbolEnumeration.valueOf(SymbolEnumeration.Share);
+	public final static IBuiltInSymbol Show = SymbolEnumeration.valueOf(SymbolEnumeration.Show);
+	public final static IBuiltInSymbol Sign = SymbolEnumeration.valueOf(SymbolEnumeration.Sign);
+	public final static IBuiltInSymbol SignCmp = SymbolEnumeration.valueOf(SymbolEnumeration.SignCmp);
+	public final static IBuiltInSymbol Simplify = SymbolEnumeration.valueOf(SymbolEnumeration.Simplify);
+	public final static IBuiltInSymbol Sin = SymbolEnumeration.valueOf(SymbolEnumeration.Sin);
+	public final static IBuiltInSymbol SinIntegral = SymbolEnumeration.valueOf(SymbolEnumeration.SinIntegral);
+	public final static IBuiltInSymbol Sinc = SymbolEnumeration.valueOf(SymbolEnumeration.Sinc);
+	public final static IBuiltInSymbol SingularValueDecomposition = SymbolEnumeration.valueOf(
+			SymbolEnumeration.SingularValueDecomposition);
+	public final static IBuiltInSymbol Sinh = SymbolEnumeration.valueOf(SymbolEnumeration.Sinh);
+	public final static IBuiltInSymbol SinhIntegral = SymbolEnumeration.valueOf(SymbolEnumeration.SinhIntegral);
+	public final static IBuiltInSymbol Skewness = SymbolEnumeration.valueOf(SymbolEnumeration.Skewness);
+	public final static IBuiltInSymbol Slot = SymbolEnumeration.valueOf(SymbolEnumeration.Slot);
+	public final static IBuiltInSymbol SlotSequence = SymbolEnumeration.valueOf(SymbolEnumeration.SlotSequence);
+	public final static IBuiltInSymbol SokalSneathDissimilarity = SymbolEnumeration.valueOf(
+			SymbolEnumeration.SokalSneathDissimilarity);
+	public final static IBuiltInSymbol Solve = SymbolEnumeration.valueOf(SymbolEnumeration.Solve);
+	public final static IBuiltInSymbol Sort = SymbolEnumeration.valueOf(SymbolEnumeration.Sort);
+	public final static IBuiltInSymbol Sow = SymbolEnumeration.valueOf(SymbolEnumeration.Sow);
+	public final static IBuiltInSymbol Span = SymbolEnumeration.valueOf(SymbolEnumeration.Span);
+	public final static IBuiltInSymbol Split = SymbolEnumeration.valueOf(SymbolEnumeration.Split);
+	public final static IBuiltInSymbol SplitBy = SymbolEnumeration.valueOf(SymbolEnumeration.SplitBy);
+	public final static IBuiltInSymbol Sqrt = SymbolEnumeration.valueOf(SymbolEnumeration.Sqrt);
+	public final static IBuiltInSymbol SquareFreeQ = SymbolEnumeration.valueOf(SymbolEnumeration.SquareFreeQ);
+	public final static IBuiltInSymbol SquaredEuclideanDistance = SymbolEnumeration.valueOf(
+			SymbolEnumeration.SquaredEuclideanDistance);
+	public final static IBuiltInSymbol StandardDeviation = SymbolEnumeration.valueOf(SymbolEnumeration.StandardDeviation);
+	public final static IBuiltInSymbol Standardize = SymbolEnumeration.valueOf(SymbolEnumeration.Standardize);
+	public final static IBuiltInSymbol StieltjesGamma = SymbolEnumeration.valueOf(SymbolEnumeration.StieltjesGamma);
+	public final static IBuiltInSymbol StirlingS1 = SymbolEnumeration.valueOf(SymbolEnumeration.StirlingS1);
+	public final static IBuiltInSymbol StirlingS2 = SymbolEnumeration.valueOf(SymbolEnumeration.StirlingS2);
+	public final static IBuiltInSymbol String = SymbolEnumeration.valueOf(SymbolEnumeration.String);
+	public final static IBuiltInSymbol StringDrop = SymbolEnumeration.valueOf(SymbolEnumeration.StringDrop);
+	public final static IBuiltInSymbol StringJoin = SymbolEnumeration.valueOf(SymbolEnumeration.StringJoin);
+	public final static IBuiltInSymbol StringLength = SymbolEnumeration.valueOf(SymbolEnumeration.StringLength);
+	public final static IBuiltInSymbol StringTake = SymbolEnumeration.valueOf(SymbolEnumeration.StringTake);
+	public final static IBuiltInSymbol StruveH = SymbolEnumeration.valueOf(SymbolEnumeration.StruveH);
+	public final static IBuiltInSymbol StruveL = SymbolEnumeration.valueOf(SymbolEnumeration.StruveL);
+	public final static IBuiltInSymbol StudentTDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.StudentTDistribution);
+	public final static IBuiltInSymbol Subfactorial = SymbolEnumeration.valueOf(SymbolEnumeration.Subfactorial);
+	public final static IBuiltInSymbol Subscript = SymbolEnumeration.valueOf(SymbolEnumeration.Subscript);
+	public final static IBuiltInSymbol Subsets = SymbolEnumeration.valueOf(SymbolEnumeration.Subsets);
+	public final static IBuiltInSymbol Subsuperscript = SymbolEnumeration.valueOf(SymbolEnumeration.Subsuperscript);
+	public final static IBuiltInSymbol SubtractFrom = SymbolEnumeration.valueOf(SymbolEnumeration.SubtractFrom);
+	public final static IBuiltInSymbol Sum = SymbolEnumeration.valueOf(SymbolEnumeration.Sum);
+	public final static IBuiltInSymbol Superscript = SymbolEnumeration.valueOf(SymbolEnumeration.Superscript);
+	public final static IBuiltInSymbol Surd = SymbolEnumeration.valueOf(SymbolEnumeration.Surd);
+	public final static IBuiltInSymbol SurfaceGraphics = SymbolEnumeration.valueOf(SymbolEnumeration.SurfaceGraphics);
+	public final static IBuiltInSymbol Switch = SymbolEnumeration.valueOf(SymbolEnumeration.Switch);
+	public final static IBuiltInSymbol Symbol = SymbolEnumeration.valueOf(SymbolEnumeration.Symbol);
+	public final static IBuiltInSymbol SymbolName = SymbolEnumeration.valueOf(SymbolEnumeration.SymbolName);
+	public final static IBuiltInSymbol SymbolQ = SymbolEnumeration.valueOf(SymbolEnumeration.SymbolQ);
+	public final static IBuiltInSymbol SymmetricMatrixQ = SymbolEnumeration.valueOf(SymbolEnumeration.SymmetricMatrixQ);
+	public final static IBuiltInSymbol SyntaxLength = SymbolEnumeration.valueOf(SymbolEnumeration.SyntaxLength);
+	public final static IBuiltInSymbol SyntaxQ = SymbolEnumeration.valueOf(SymbolEnumeration.SyntaxQ);
+	public final static IBuiltInSymbol Table = SymbolEnumeration.valueOf(SymbolEnumeration.Table);
+	public final static IBuiltInSymbol Take = SymbolEnumeration.valueOf(SymbolEnumeration.Take);
+	public final static IBuiltInSymbol Tally = SymbolEnumeration.valueOf(SymbolEnumeration.Tally);
+	public final static IBuiltInSymbol Tan = SymbolEnumeration.valueOf(SymbolEnumeration.Tan);
+	public final static IBuiltInSymbol Tanh = SymbolEnumeration.valueOf(SymbolEnumeration.Tanh);
+	public final static IBuiltInSymbol TautologyQ = SymbolEnumeration.valueOf(SymbolEnumeration.TautologyQ);
+	public final static IBuiltInSymbol Taylor = SymbolEnumeration.valueOf(SymbolEnumeration.Taylor);
+	public final static IBuiltInSymbol TeXForm = SymbolEnumeration.valueOf(SymbolEnumeration.TeXForm);
+	public final static IBuiltInSymbol TensorDimensions = SymbolEnumeration.valueOf(SymbolEnumeration.TensorDimensions);
+	public final static IBuiltInSymbol TensorProduct = SymbolEnumeration.valueOf(SymbolEnumeration.TensorProduct);
+	public final static IBuiltInSymbol TensorRank = SymbolEnumeration.valueOf(SymbolEnumeration.TensorRank);
+	public final static IBuiltInSymbol Thread = SymbolEnumeration.valueOf(SymbolEnumeration.Thread);
+	public final static IBuiltInSymbol Through = SymbolEnumeration.valueOf(SymbolEnumeration.Through);
+	public final static IBuiltInSymbol Throw = SymbolEnumeration.valueOf(SymbolEnumeration.Throw);
+	public final static IBuiltInSymbol TimeConstrained = SymbolEnumeration.valueOf(SymbolEnumeration.TimeConstrained);
+	public final static IBuiltInSymbol Times = SymbolEnumeration.valueOf(SymbolEnumeration.Times);
+	public final static IBuiltInSymbol TimesBy = SymbolEnumeration.valueOf(SymbolEnumeration.TimesBy);
+	public final static IBuiltInSymbol Timing = SymbolEnumeration.valueOf(SymbolEnumeration.Timing);
+	public final static IBuiltInSymbol ToCharacterCode = SymbolEnumeration.valueOf(SymbolEnumeration.ToCharacterCode);
+	public final static IBuiltInSymbol ToPolarCoordinates = SymbolEnumeration.valueOf(SymbolEnumeration.ToPolarCoordinates);
+	public final static IBuiltInSymbol ToRadicals = SymbolEnumeration.valueOf(SymbolEnumeration.ToRadicals);
+	public final static IBuiltInSymbol ToString = SymbolEnumeration.valueOf(SymbolEnumeration.ToString);
+	public final static IBuiltInSymbol ToUnicode = SymbolEnumeration.valueOf(SymbolEnumeration.ToUnicode);
+	public final static IBuiltInSymbol ToeplitzMatrix = SymbolEnumeration.valueOf(SymbolEnumeration.ToeplitzMatrix);
+	public final static IBuiltInSymbol Together = SymbolEnumeration.valueOf(SymbolEnumeration.Together);
+	public final static IBuiltInSymbol TooLarge = SymbolEnumeration.valueOf(SymbolEnumeration.TooLarge);
+	public final static IBuiltInSymbol Total = SymbolEnumeration.valueOf(SymbolEnumeration.Total);
+	public final static IBuiltInSymbol Tr = SymbolEnumeration.valueOf(SymbolEnumeration.Tr);
+	public final static IBuiltInSymbol Trace = SymbolEnumeration.valueOf(SymbolEnumeration.Trace);
+	public final static IBuiltInSymbol Transpose = SymbolEnumeration.valueOf(SymbolEnumeration.Transpose);
+	public final static IBuiltInSymbol Trig = SymbolEnumeration.valueOf(SymbolEnumeration.Trig);
+	public final static IBuiltInSymbol TrigExpand = SymbolEnumeration.valueOf(SymbolEnumeration.TrigExpand);
+	public final static IBuiltInSymbol TrigReduce = SymbolEnumeration.valueOf(SymbolEnumeration.TrigReduce);
+	public final static IBuiltInSymbol TrigToExp = SymbolEnumeration.valueOf(SymbolEnumeration.TrigToExp);
+	public final static IBuiltInSymbol True = SymbolEnumeration.valueOf(SymbolEnumeration.True);
+	public final static IBuiltInSymbol TrueQ = SymbolEnumeration.valueOf(SymbolEnumeration.TrueQ);
+	public final static IBuiltInSymbol Tuples = SymbolEnumeration.valueOf(SymbolEnumeration.Tuples);
+	public final static IBuiltInSymbol Unequal = SymbolEnumeration.valueOf(SymbolEnumeration.Unequal);
+	public final static IBuiltInSymbol Unevaluated = SymbolEnumeration.valueOf(SymbolEnumeration.Unevaluated);
+	public final static IBuiltInSymbol Union = SymbolEnumeration.valueOf(SymbolEnumeration.Union);
+	public final static IBuiltInSymbol Unique = SymbolEnumeration.valueOf(SymbolEnumeration.Unique);
+	public final static IBuiltInSymbol UnitStep = SymbolEnumeration.valueOf(SymbolEnumeration.UnitStep);
+	public final static IBuiltInSymbol UnitVector = SymbolEnumeration.valueOf(SymbolEnumeration.UnitVector);
+	public final static IBuiltInSymbol UnitaryMatrixQ = SymbolEnumeration.valueOf(SymbolEnumeration.UnitaryMatrixQ);
+	public final static IBuiltInSymbol Unknown = SymbolEnumeration.valueOf(SymbolEnumeration.Unknown);
+	public final static IBuiltInSymbol UnsameQ = SymbolEnumeration.valueOf(SymbolEnumeration.UnsameQ);
+	public final static IBuiltInSymbol Unset = SymbolEnumeration.valueOf(SymbolEnumeration.Unset);
+	public final static IBuiltInSymbol UpSet = SymbolEnumeration.valueOf(SymbolEnumeration.UpSet);
+	public final static IBuiltInSymbol UpSetDelayed = SymbolEnumeration.valueOf(SymbolEnumeration.UpSetDelayed);
+	public final static IBuiltInSymbol UpperCaseQ = SymbolEnumeration.valueOf(SymbolEnumeration.UpperCaseQ);
+	public final static IBuiltInSymbol UpperTriangularize = SymbolEnumeration.valueOf(SymbolEnumeration.UpperTriangularize);
+	public final static IBuiltInSymbol ValueQ = SymbolEnumeration.valueOf(SymbolEnumeration.ValueQ);
+	public final static IBuiltInSymbol VandermondeMatrix = SymbolEnumeration.valueOf(SymbolEnumeration.VandermondeMatrix);
+	public final static IBuiltInSymbol Variable = SymbolEnumeration.valueOf(SymbolEnumeration.Variable);
+	public final static IBuiltInSymbol Variables = SymbolEnumeration.valueOf(SymbolEnumeration.Variables);
+	public final static IBuiltInSymbol Variance = SymbolEnumeration.valueOf(SymbolEnumeration.Variance);
+	public final static IBuiltInSymbol VectorAngle = SymbolEnumeration.valueOf(SymbolEnumeration.VectorAngle);
+	public final static IBuiltInSymbol VectorQ = SymbolEnumeration.valueOf(SymbolEnumeration.VectorQ);
+	public final static IBuiltInSymbol WeibullDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.WeibullDistribution);
+	public final static IBuiltInSymbol Which = SymbolEnumeration.valueOf(SymbolEnumeration.Which);
+	public final static IBuiltInSymbol While = SymbolEnumeration.valueOf(SymbolEnumeration.While);
+	public final static IBuiltInSymbol White = SymbolEnumeration.valueOf(SymbolEnumeration.White);
+	public final static IBuiltInSymbol With = SymbolEnumeration.valueOf(SymbolEnumeration.With);
+	public final static IBuiltInSymbol Xor = SymbolEnumeration.valueOf(SymbolEnumeration.Xor);
+	public final static IBuiltInSymbol YuleDissimilarity = SymbolEnumeration.valueOf(SymbolEnumeration.YuleDissimilarity);
+	public final static IBuiltInSymbol Zeta = SymbolEnumeration.valueOf(SymbolEnumeration.Zeta);
 
-	public final static IBuiltInSymbol Aborted = initFinalSymbol(
+	public final static IBuiltInSymbol $Aborted = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$aborted" : "$Aborted");
-	public final static IBuiltInSymbol Assumptions = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "assumptions" : "Assumptions");
-	public final static IBuiltInSymbol Begin = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "begin" : "Begin");
-	public final static IBuiltInSymbol BeginPackage = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "beginpackage" : "BeginPackage");
-	public final static IBuiltInSymbol End = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "end" : "End");
-	public final static IBuiltInSymbol EndPackage = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "endpackage" : "EndPackage");
-	public final static IBuiltInSymbol Except = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "except" : "Except");
-	public final static IBuiltInSymbol IntegerHead = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integer" : "Integer");
-	public final static IBuiltInSymbol SymbolHead = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "symbol" : "Symbol");
-	public final static IBuiltInSymbol RealHead = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "real" : "Real");
-	public final static IBuiltInSymbol PatternHead = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "pattern" : "Pattern");
-	public final static IBuiltInSymbol BlankHead = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "blank" : "Blank");
-	public final static IBuiltInSymbol StringHead = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "string" : "String");
-	public final static IBuiltInSymbol MethodHead = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "methodhead" : "MethodHead");
-	public final static IBuiltInSymbol PatternTest = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "patterntest" : "PatternTest");
-	public final static IBuiltInSymbol Colon = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "colon" : "Colon");
-	public final static IBuiltInSymbol ComplexityFunction = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complexityfunction" : "ComplexityFunction");
-	public final static IBuiltInSymbol Repeated = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "repeated" : "Repeated");
-	public final static IBuiltInSymbol RepeatedNull = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "repeatednull" : "RepeatedNull");
-
-	public final static IBuiltInSymbol All = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "all" : "All");
-	public final static IBuiltInSymbol None = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "none" : "None");
-
-	public final static IBuiltInSymbol Algebraics = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "algebraics" : "Algebraics");
-	public final static IBuiltInSymbol Booleans = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "booleans" : "Booleans");
-	public final static IBuiltInSymbol Complexes = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complexes" : "Complexes");
-	public final static IBuiltInSymbol Integers = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integers" : "Integers");
-	public final static IBuiltInSymbol Primes = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primes" : "Primes");
-	public final static IBuiltInSymbol Rationals = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rationals" : "Rationals");
-	public final static IBuiltInSymbol Reals = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "reals" : "Reals");
-
-	public final static IBuiltInSymbol False = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "false" : "False");
-	public final static IBuiltInSymbol Alternatives = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "alternatives" : "Alternatives");
-
-	public final static IBuiltInSymbol Direction = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "direction" : "Direction");
-	public final static IBuiltInSymbol List = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "list" : "List");
 	public final static IBuiltInSymbol $RealVector = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$realvector" : "$RealVector");
 	public final static IBuiltInSymbol $RealMatrix = initFinalSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$realmatrix" : "$RealMatrix");
-
-	public final static IBuiltInSymbol True = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "true" : "True");
-	public final static IBuiltInSymbol Null = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "null" : "Null");
-	public final static IBuiltInSymbol Second = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "second" : "Second");
-	public final static IBuiltInSymbol Indeterminate = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "indeterminate" : "Indeterminate");
-	public final static IBuiltInSymbol Listable = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "listable" : "Listable");
-	public final static IBuiltInSymbol Constant = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "constant" : "Constant");
-	public final static IBuiltInSymbol NumericFunction = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "numericfunction" : "NumericFunction");
-
-	public final static IBuiltInSymbol Orderless = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "orderless" : "Orderless");
-	public final static IBuiltInSymbol OneIdentity = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "oneidentity" : "OneIdentity");
-	public final static IBuiltInSymbol Flat = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "flat" : "Flat");
-	public final static IBuiltInSymbol HoldFirst = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "holdfirst" : "HoldFirst");
-	public final static IBuiltInSymbol HoldRest = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "holdrest" : "HoldRest");
-	public final static IBuiltInSymbol HoldAll = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "holdall" : "HoldAll");
-	public final static IBuiltInSymbol NHoldFirst = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nholdfirst" : "NHoldFirst");
-	public final static IBuiltInSymbol NHoldRest = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nholdrest" : "NHoldRest");
-	public final static IBuiltInSymbol NHoldAll = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nholdall" : "NHoldAll");
-	public final static IBuiltInSymbol Line = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "line" : "Line");
-	public final static IBuiltInSymbol Point = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "point" : "Point");
-
-	public final static IBuiltInSymbol Rectangle = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rectangle" : "Rectangle");
-
-	public final static IBuiltInSymbol Polygon = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polygon" : "Polygon");
-
-	public final static IBuiltInSymbol BoxRatios = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "boxratios" : "BoxRatios");
-	public final static IBuiltInSymbol Modulus = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "modulus" : "Modulus");
-	public final static IBuiltInSymbol MeshRange = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "meshrange" : "MeshRange");
-	public final static IBuiltInSymbol PlotRange = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "plotrange" : "PlotRange");
-	public final static IBuiltInSymbol AxesStyle = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "axesstyle" : "AxesStyle");
-	public final static IBuiltInSymbol Automatic = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "automatic" : "Automatic");
-	public final static IBuiltInSymbol AxesOrigin = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "axesorigin" : "AxesOrigin");
-	public final static IBuiltInSymbol Axes = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "axes" : "Axes");
-	public final static IBuiltInSymbol Background = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "background" : "Background");
-	public final static IBuiltInSymbol White = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "white" : "White");
-	public final static IBuiltInSymbol Slot = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "slot" : "Slot");
-	public final static IBuiltInSymbol SlotSequence = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "slotsequence" : "SlotSequence");
-	public final static IBuiltInSymbol Span = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "span" : "Span");
-	public final static IBuiltInSymbol Options = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "options" : "Options");
-	public final static IBuiltInSymbol Graphics = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "graphics" : "Graphics");
-	public final static IBuiltInSymbol Graphics3D = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "graphics3d" : "Graphics3D");
-
-	public final static IBuiltInSymbol Show = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "show" : "Show");
-	public final static IBuiltInSymbol SurfaceGraphics = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "surfacegraphics" : "SurfaceGraphics");
-	public final static IBuiltInSymbol RootOf = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rootof" : "RootOf");
-	public final static IBuiltInSymbol Sequence = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sequence" : "Sequence");
-	public final static IBuiltInSymbol Missing = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "missing" : "Missing");
-	public final static IBuiltInSymbol NotApplicable = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "notapplicable" : "NotApplicable");
-	public final static IBuiltInSymbol NotAvailable = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "notavailable" : "NotAvailable");
-	public final static IBuiltInSymbol Unknown = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unknown" : "Unknown");
-
-	public final static IBuiltInSymbol Erfc = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "erfc" : "Erfc");
-	public final static IBuiltInSymbol Erfi = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "erfi" : "Erfi");
-	public final static IBuiltInSymbol HurwitzZeta = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hurwitzzeta" : "HurwitzZeta");
-	public final static IBuiltInSymbol Literal = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "literal" : "Literal");
-	public final static IBuiltInSymbol O = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "O" : "O");
-
-	public final static IBuiltInSymbol BesselI = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "besseli" : "BesselI");
-	public final static IBuiltInSymbol BesselK = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "besselk" : "BesselK");
-	public final static IBuiltInSymbol BesselY = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "bessely" : "BesselY");
-
-	public final static IBuiltInSymbol Subscript = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subscript" : "Subscript");
-	public final static IBuiltInSymbol Subsuperscript = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subsuperscript" : "Subsuperscript");
-	public final static IBuiltInSymbol Superscript = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subscript" : "Superscript");
-
-	public final static IBuiltInSymbol BinCounts = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "bincounts" : "BinCounts");
-	public final static IBuiltInSymbol BinomialDistribution = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "binomialdistribution" : "BinomialDistribution");
-	public final static IBuiltInSymbol BernoulliDistribution = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "bernoullidistribution" : "BernoulliDistribution");
-	public final static IBuiltInSymbol ErlangDistribution = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "erlangdistribution" : "ErlangDistribution");
-	public final static IBuiltInSymbol DiscreteUniformDistribution = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "discreteuniformdistribution" : "DiscreteUniformDistribution");
-	public final static IBuiltInSymbol ExponentialDistribution = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "exponentialdistribution" : "ExponentialDistribution");
-	public final static IBuiltInSymbol FrechetDistribution = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "frechetdistribution" : "FrechetDistribution");
-	public final static IBuiltInSymbol GammaDistribution = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "gammadistribution" : "GammaDistribution");
-	public final static IBuiltInSymbol GeometricDistribution = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "geometricdistribution" : "GeometricDistribution");
-	public final static IBuiltInSymbol GumbelDistribution = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "gumbeldistribution" : "GumbelDistribution");
-	public final static IBuiltInSymbol HypergeometricDistribution = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hypergeometricdistribution" : "HypergeometricDistribution");
-	public final static IBuiltInSymbol LogNormalDistribution = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "lognormaldistribution" : "LogNormalDistribution");
-	public final static IBuiltInSymbol NakagamiDistribution = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nakagamidistribution" : "NakagamiDistribution");
-	public final static IBuiltInSymbol NormalDistribution = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "normaldistribution" : "NormalDistribution");
-	public final static IBuiltInSymbol PoissonDistribution = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "poissondistribution" : "PoissonDistribution");
-
-	public final static IBuiltInSymbol Abort = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "abort" : "Abort");
-	public final static IBuiltInSymbol Accumulate = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "accumulate" : "Accumulate");
-	public final static IBuiltInSymbol And = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "and" : "And");
-	public final static IBuiltInSymbol AntihermitianMatrixQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "antihermitianmatrixq" : "AntihermitianMatrixQ");
-	public final static IBuiltInSymbol AntisymmetricMatrixQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "antisymmetricmatrixq" : "AntisymmetricMatrixQ");
-	public final static IBuiltInSymbol Append = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "append" : "Append");
-	public final static IBuiltInSymbol AppendTo = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "appendto" : "AppendTo");
-	public final static IBuiltInSymbol Apply = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "apply" : "Apply");
-	public final static IBuiltInSymbol Array = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "array" : "Array");
-	public final static IBuiltInSymbol ArrayPad = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arraypad" : "ArrayPad");
-	public final static IBuiltInSymbol ArrayQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arrayq" : "ArrayQ");
-	public final static IBuiltInSymbol AtomQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "atomq" : "AtomQ");
-	public final static IBuiltInSymbol Attributes = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "attributes" : "Attributes");
-	public final static IBuiltInSymbol Blank = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "blank" : "Blank");
-	public final static IBuiltInSymbol Block = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "block" : "Block");
-	public final static IBuiltInSymbol Break = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "break" : "Break");
-	public final static IBuiltInSymbol BooleanQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "booleanq" : "BooleanQ");
-	public final static IBuiltInSymbol Cases = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cases" : "Cases");
-	public final static IBuiltInSymbol Catch = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "catch" : "Catch");
-	public final static IBuiltInSymbol Chop = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "chop" : "Chop");
-	public final static IBuiltInSymbol Clear = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "clear" : "Clear");
-	public final static IBuiltInSymbol ClearAll = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "clearall" : "ClearAll");
-	public final static IBuiltInSymbol ClearAttributes = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "clearattributes" : "ClearAttributes");
-	public final static IBuiltInSymbol Collect = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "collect" : "Collect");
-	public final static IBuiltInSymbol Compile = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "compile" : "Compile");
-	public final static IBuiltInSymbol Complex = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complex" : "Complex");
-	public final static IBuiltInSymbol CompoundExpression = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "compoundexpression" : "CompoundExpression");
-	public final static IBuiltInSymbol Condition = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "condition" : "Condition");
-	public final static IBuiltInSymbol Continue = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "continue" : "Continue");
-	public final static IBuiltInSymbol Count = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "count" : "Count");
-	public final static IBuiltInSymbol Defer = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "defer" : "Defer");
-	public final static IBuiltInSymbol Definition = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "definition" : "Definition");
-	public final static IBuiltInSymbol Delete = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "delete" : "Delete");
-	public final static IBuiltInSymbol DeleteCases = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "deletecases" : "DeleteCases");
-	public final static IBuiltInSymbol Depth = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "depth" : "Depth");
-	public final static IBuiltInSymbol DigitQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "digitq" : "DigitQ");
-	public final static IBuiltInSymbol DirectedInfinity = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "directedinfinity" : "DirectedInfinity");
-	public final static IBuiltInSymbol Do = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "do" : "Do");
-	public final static IBuiltInSymbol Drop = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "drop" : "Drop");
-	public final static IBuiltInSymbol Element = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "element" : "Element");
-	public final static IBuiltInSymbol EvenQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "evenq" : "EvenQ");
-	public final static IBuiltInSymbol ExactNumberQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "exactnumberq" : "ExactNumberQ");
-	public final static IBuiltInSymbol Exponent = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "exponent" : "Exponent");
-	public final static IBuiltInSymbol First = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "first" : "First");
-	public final static IBuiltInSymbol FixedPoint = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fixedpoint" : "FixedPoint");
-	public final static IBuiltInSymbol FixedPointList = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fixedpointlist" : "FixedPointList");
-	public final static IBuiltInSymbol Flatten = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "flatten" : "Flatten");
-	public final static IBuiltInSymbol FlattenAt = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "flattenat" : "FlattenAt");
-	public final static IBuiltInSymbol Fold = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fold" : "Fold");
-	public final static IBuiltInSymbol FoldList = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "foldlist" : "FoldList");
-	public final static IBuiltInSymbol For = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "for" : "For");
-	public final static IBuiltInSymbol FourierMatrix = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fouriermatrix" : "FourierMatrix");
-	public final static IBuiltInSymbol FreeQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "freeq" : "FreeQ");
-	public final static IBuiltInSymbol FullForm = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fullform" : "FullForm");
-	public final static IBuiltInSymbol Function = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "function" : "Function");
-	public final static IBuiltInSymbol Get = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "get" : "Get");
-	public final static IBuiltInSymbol Head = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "head" : "Head");
-	public final static IBuiltInSymbol HermitianMatrixQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hermitianmatrixq" : "HermitianMatrixQ");
-	public final static IBuiltInSymbol Hold = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hold" : "Hold");
-	public final static IBuiltInSymbol HoldForm = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "holdform" : "HoldForm");
-	public final static IBuiltInSymbol Identity = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "identity" : "Identity");
-	public final static IBuiltInSymbol If = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "if" : "If");
-	public final static IBuiltInSymbol Implies = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "implies" : "Implies");
-	public final static IBuiltInSymbol InexactNumberQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inexactnumberq" : "InexactNumberQ");
-	public final static IBuiltInSymbol Information = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "information" : "Information");
-	public final static IBuiltInSymbol Insert = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "insert" : "Insert");
-	public final static IBuiltInSymbol IntegerQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerq" : "IntegerQ");
-	public final static IBuiltInSymbol JavaForm = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "javaform" : "JavaForm");
-	public final static IBuiltInSymbol Last = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "last" : "Last");
-	public final static IBuiltInSymbol LeafCount = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "leafcount" : "LeafCount");
-	public final static IBuiltInSymbol Length = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "length" : "Length");
-	public final static IBuiltInSymbol LevelQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "levelq" : "LevelQ");
-	public final static IBuiltInSymbol ListQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "listq" : "ListQ");
-	public final static IBuiltInSymbol LowerTriangularize = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "lowertriangularize" : "LowerTriangularize");
-	public final static IBuiltInSymbol MachineNumberQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "machinenumberq" : "MachineNumberQ");
-	public final static IBuiltInSymbol MatchQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matchq" : "MatchQ");
-	public final static IBuiltInSymbol MathMLForm = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mathmlform" : "MathMLForm");
-	public final static IBuiltInSymbol MatrixForm = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matrixform" : "MatrixForm");
-	public final static IBuiltInSymbol MatrixQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matrixq" : "MatrixQ");
-	public final static IBuiltInSymbol MeijerG = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "meijerg" : "MeijerG");
-	public final static IBuiltInSymbol MemberQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "memberq" : "MemberQ");
-	public final static IBuiltInSymbol MessageName = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "messagename" : "MessageName");
-	public final static IBuiltInSymbol MissingQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "missingq" : "MissingQ");
-	public final static IBuiltInSymbol Module = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "module" : "Module");
-	public final static IBuiltInSymbol N = initFinalSymbol("N");
-	public final static IBuiltInSymbol Nand = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nand" : "Nand");
-	public final static IBuiltInSymbol Nest = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nest" : "Nest");
-	public final static IBuiltInSymbol NestList = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nestlist" : "NestList");
-	public final static IBuiltInSymbol NestWhile = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nestwhile" : "NestWhile");
-	public final static IBuiltInSymbol NestWhileList = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nestwhilelist" : "NestWhileList");
-	public final static IBuiltInSymbol NotListQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "notlistq" : "NotListQ");
-
-	public final static IBuiltInSymbol Nor = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nor" : "Nor");
-	public final static IBuiltInSymbol NumberQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "numberq" : "NumberQ");
-	public final static IBuiltInSymbol NumericQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "numericq" : "NumericQ");
-	public final static IBuiltInSymbol OddQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "oddq" : "OddQ");
-	public final static IBuiltInSymbol Optional = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "optional" : "Optional");
-	public final static IBuiltInSymbol Or = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "or" : "Or");
-	public final static IBuiltInSymbol Part = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "part" : "Part");
-	public final static IBuiltInSymbol Pattern = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "pattern" : "Pattern");
-	public final static IBuiltInSymbol Position = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "position" : "Position");
-	public final static IBuiltInSymbol PossibleZeroQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "possiblezeroq" : "PossibleZeroQ");
-	public final static IBuiltInSymbol Prepend = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "prepend" : "Prepend");
-	public final static IBuiltInSymbol PrependTo = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "prependto" : "PrependTo");
-	public final static IBuiltInSymbol PrimeQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primeq" : "PrimeQ");
-	public final static IBuiltInSymbol Print = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "print" : "Print");
-	public final static IBuiltInSymbol Put = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "put" : "Put");
-	public final static IBuiltInSymbol Quantile = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "quantile" : "Quantile");
-	public final static IBuiltInSymbol Quiet = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "quiet" : "Quiet");
-	public final static IBuiltInSymbol Rational = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rational" : "Rational");
-	public final static IBuiltInSymbol RealNumberQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "realnumberq" : "RealNumberQ");
-	public final static IBuiltInSymbol Reap = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "reap" : "Reap");
-	public final static IBuiltInSymbol Refine = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "refine" : "Refine");
-	public final static IBuiltInSymbol Rest = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rest" : "Rest");
-	public final static IBuiltInSymbol Return = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "return" : "Return");
-	public final static IBuiltInSymbol Riffle = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "riffle" : "Riffle");
-	public final static IBuiltInSymbol RotateLeft = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rotateleft" : "RotateLeft");
-	public final static IBuiltInSymbol RotateRight = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rotateright" : "RotateRight");
-	public final static IBuiltInSymbol Rule = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rule" : "Rule");
-	public final static IBuiltInSymbol RuleDelayed = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ruledelayed" : "RuleDelayed");
-	public final static IBuiltInSymbol Set = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "set" : "Set");
-	public final static IBuiltInSymbol SetAttributes = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "setattributes" : "SetAttributes");
-	public final static IBuiltInSymbol SetDelayed = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "setdelayed" : "SetDelayed");
-	public final static IBuiltInSymbol StudentTDistribution = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "studenttdistribution" : "StudentTDistribution");
-	public final static IBuiltInSymbol Sow = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sow" : "Sow");
-	public final static IBuiltInSymbol Switch = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "switch" : "Switch");
-	public final static IBuiltInSymbol SymbolQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "symbolq" : "SymbolQ");
-	public final static IBuiltInSymbol SymmetricMatrixQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "symmetricmatrixq" : "SymmetricMatrixQ");
-	public final static IBuiltInSymbol SyntaxQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "syntaxq" : "SyntaxQ");
-	public final static IBuiltInSymbol Take = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "take" : "Take");
-	public final static IBuiltInSymbol TeXForm = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "texform" : "TeXForm");
-	public final static IBuiltInSymbol Throw = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "throw" : "Throw");
-	public final static IBuiltInSymbol TimeConstrained = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "timeconstrained" : "TimeConstrained");
-	public final static IBuiltInSymbol Timing = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "timing" : "Timing");
-	public final static IBuiltInSymbol Trace = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "trace" : "Trace");
-	public final static IBuiltInSymbol Unevaluated = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unevaluated" : "Unevaluated");
-	public final static IBuiltInSymbol Unique = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unique" : "Unique");
-	public final static IBuiltInSymbol Unset = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unset" : "Unset");
-	public final static IBuiltInSymbol UpperCaseQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "uppercaseq" : "UpperCaseQ");
-	public final static IBuiltInSymbol UpperTriangularize = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "uppertriangularize" : "UpperTriangularize");
-	public final static IBuiltInSymbol UpSet = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "upset" : "UpSet");
-	public final static IBuiltInSymbol UpSetDelayed = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "upsetdelayed" : "UpSetDelayed");
-	public final static IBuiltInSymbol ValueQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "valueq" : "ValueQ");
-	public final static IBuiltInSymbol VectorQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "vectorq" : "VectorQ");
-	public final static IBuiltInSymbol WeibullDistribution = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "weibulldistribution" : "WeibullDistribution");
-
-	public final static IBuiltInSymbol Which = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "which" : "Which");
-	public final static IBuiltInSymbol While = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "while" : "While");
-	public final static IBuiltInSymbol With = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "with" : "With");
-
-	public final static IBuiltInSymbol Abs = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "abs" : "Abs");
-	public final static IBuiltInSymbol AbsArg = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "absarg" : "AbsArg");
-	public final static IBuiltInSymbol AddTo = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "addto" : "AddTo");
-	public final static IBuiltInSymbol AllTrue = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "alltrue" : "AllTrue");
-	public final static IBuiltInSymbol AngleVector = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "anglevector" : "AngleVector");
-	public final static IBuiltInSymbol AnyTrue = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "anytrue" : "AnyTrue");
-	public final static IBuiltInSymbol Apart = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "apart" : "Apart");
-	public final static IBuiltInSymbol ArcCos = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arccos" : "ArcCos");
-	public final static IBuiltInSymbol ArcCosh = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arccosh" : "ArcCosh");
-	public final static IBuiltInSymbol ArcCot = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arccot" : "ArcCot");
-	public final static IBuiltInSymbol ArcCoth = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arccoth" : "ArcCoth");
-	public final static IBuiltInSymbol ArcCsc = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arccsc" : "ArcCsc");
-	public final static IBuiltInSymbol ArcCsch = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arccsch" : "ArcCsch");
-	public final static IBuiltInSymbol ArcSec = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arcsec" : "ArcSec");
-	public final static IBuiltInSymbol ArcSech = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arcsech" : "ArcSech");
-	public final static IBuiltInSymbol ArcSin = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arcsin" : "ArcSin");
-	public final static IBuiltInSymbol ArcSinh = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arcsinh" : "ArcSinh");
-	public final static IBuiltInSymbol ArcTan = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arctan" : "ArcTan");
-	public final static IBuiltInSymbol ArcTanh = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arctanh" : "ArcTanh");
-	public final static IBuiltInSymbol Arg = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arg" : "Arg");
-	public final static IBuiltInSymbol ArrayDepth = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "arraydepth" : "ArrayDepth");
-	public final static IBuiltInSymbol BellB = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "bellb" : "BellB");
-	public final static IBuiltInSymbol BernoulliB = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "bernoullib" : "BernoulliB");
-	public final static IBuiltInSymbol BesselJ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "besselj" : "BesselJ");
-	public final static IBuiltInSymbol Beta = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "beta" : "Beta");
-	public final static IBuiltInSymbol BetaRegularized = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "betaregularized" : "BetaRegularized");
-	public final static IBuiltInSymbol Binomial = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "binomial" : "Binomial");
-	public final static IBuiltInSymbol BitLength = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "bitlength" : "BitLength");
-	public final static IBuiltInSymbol Boole = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "boole" : "Boole");
-	public final static IBuiltInSymbol BooleanConvert = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "booleanconvert" : "BooleanConvert");
-	public final static IBuiltInSymbol BooleanMinimize = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "booleanminimize" : "BooleanMinimize");
-	public final static IBuiltInSymbol BooleanTable = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "booleantable" : "BooleanTable");
-	public final static IBuiltInSymbol BooleanVariables = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "booleanvariables" : "BooleanVariables");
-	public final static IBuiltInSymbol BrayCurtisDistance = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "braycurtisdistance" : "BrayCurtisDistance");
-	public final static IBuiltInSymbol CanberraDistance = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "canberradistance" : "CanberraDistance");
-	public final static IBuiltInSymbol Cancel = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cancel" : "Cancel");
-	public final static IBuiltInSymbol CarmichaelLambda = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "carmichaellambda" : "CarmichaelLambda");
-	public final static IBuiltInSymbol CartesianProduct = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cartesianproduct" : "CartesianProduct");
-	public final static IBuiltInSymbol CatalanNumber = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "catalannumber" : "CatalanNumber");
-	public final static IBuiltInSymbol Catenate = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "catenate" : "Catenate");
-	public final static IBuiltInSymbol CDF = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cdf" : "CDF");
-	public final static IBuiltInSymbol Ceiling = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ceiling" : "Ceiling");
-	public final static IBuiltInSymbol CentralMoment = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "centralmoment" : "CentralMoment");
-	public final static IBuiltInSymbol CharacteristicPolynomial = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "characteristicpolynomial" : "CharacteristicPolynomial");
-	public final static IBuiltInSymbol ChebyshevT = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "chebyshevt" : "ChebyshevT");
-	public final static IBuiltInSymbol ChebyshevU = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "chebyshevu" : "ChebyshevU");
-	public final static IBuiltInSymbol ChessboardDistance = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "chessboarddistance" : "ChessboardDistance");
-	public final static IBuiltInSymbol CholeskyDecomposition = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "choleskydecomposition" : "CholeskyDecomposition");
-	public final static IBuiltInSymbol ChineseRemainder = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "chineseremainder" : "ChineseRemainder");
-	public final static IBuiltInSymbol CirclePoints = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "circlepoints" : "CirclePoints");
-	public final static IBuiltInSymbol Coefficient = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "coefficient" : "Coefficient");
-	public final static IBuiltInSymbol CoefficientList = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "coefficientlist" : "CoefficientList");
-	public final static IBuiltInSymbol CoefficientRules = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "coefficientrules" : "CoefficientRules");
-	public final static IBuiltInSymbol Commonest = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "commonest" : "Commonest");
-	public final static IBuiltInSymbol Complement = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complement" : "Complement");
-	public final static IBuiltInSymbol ComplexExpand = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "complexexpand" : "ComplexExpand");
-	public final static IBuiltInSymbol ComposeList = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "composelist" : "ComposeList");
-	public final static IBuiltInSymbol Composition = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "composition" : "Composition");
-	public final static IBuiltInSymbol Conjugate = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "conjugate" : "Conjugate");
-	public final static IBuiltInSymbol ConjugateTranspose = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "conjugatetranspose" : "ConjugateTranspose");
-	public final static IBuiltInSymbol ConstantArray = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "constantarray" : "ConstantArray");
-	public final static IBuiltInSymbol ContinuedFraction = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "continuedfraction" : "ContinuedFraction");
-	public final static IBuiltInSymbol ConvexHullMesh = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "convexhullmesh" : "ConvexHullMesh");
-	public final static IBuiltInSymbol CoprimeQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "coprimeq" : "CoprimeQ");
-	public final static IBuiltInSymbol Correlation = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "correlation" : "Correlation");
-	public final static IBuiltInSymbol Cos = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cos" : "Cos");
-	public final static IBuiltInSymbol Cosh = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cosh" : "Cosh");
-	public final static IBuiltInSymbol CosineDistance = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cosinedistance" : "CosineDistance");
-	public final static IBuiltInSymbol CosIntegral = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cosintegral" : "CosIntegral");
-	public final static IBuiltInSymbol Cot = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cot" : "Cot");
-	public final static IBuiltInSymbol Coth = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "coth" : "Coth");
-	public final static IBuiltInSymbol Covariance = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "covariance" : "Covariance");
-	public final static IBuiltInSymbol Cross = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cross" : "Cross");
-	public final static IBuiltInSymbol Csc = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "csc" : "Csc");
-	public final static IBuiltInSymbol Csch = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "csch" : "Csch");
-	public final static IBuiltInSymbol CubeRoot = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "cuberoot" : "CubeRoot");
-	public final static IBuiltInSymbol Curl = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "curl" : "Curl");
-	public final static IBuiltInSymbol D = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "D" : "D");
-	public final static IBuiltInSymbol Decrement = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "decrement" : "Decrement");
-	public final static IBuiltInSymbol Default = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "default" : "Default");
-	public final static IBuiltInSymbol DeleteDuplicates = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "deleteduplicates" : "DeleteDuplicates");
-	public final static IBuiltInSymbol Denominator = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "denominator" : "Denominator");
-	public final static IBuiltInSymbol Derivative = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "derivative" : "Derivative");
-	public final static IBuiltInSymbol DesignMatrix = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "designmatrix" : "DesignMatrix");
-	public final static IBuiltInSymbol Det = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "det" : "Det");
-	public final static IBuiltInSymbol Diagonal = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "diagonal" : "Diagonal");
-	public final static IBuiltInSymbol DiagonalMatrix = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "diagonalmatrix" : "DiagonalMatrix");
-	public final static IBuiltInSymbol DiceDissimilarity = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "dicedissimilarity" : "DiceDissimilarity");
-	public final static IBuiltInSymbol Dimensions = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "dimensions" : "Dimensions");
-	public final static IBuiltInSymbol DiracDelta = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "diracdelta" : "DiracDelta");
-	public final static IBuiltInSymbol DiscreteDelta = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "discretedelta" : "DiscreteDelta");
-	public final static IBuiltInSymbol Discriminant = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "discriminant" : "Discriminant");
-	public final static IBuiltInSymbol Distribute = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "distribute" : "Distribute");
-	public final static IBuiltInSymbol Divergence = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "divergence" : "Divergence");
-	public final static IBuiltInSymbol DivideBy = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "divideby" : "DivideBy");
-	public final static IBuiltInSymbol Divisible = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "divisible" : "Divisible");
-	public final static IBuiltInSymbol Divisors = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "divisors" : "Divisors");
-	public final static IBuiltInSymbol DivisorSigma = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "divisorsigma" : "DivisorSigma");
-	public final static IBuiltInSymbol Dot = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "dot" : "Dot");
-	public final static IBuiltInSymbol DSolve = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "dsolve" : "DSolve");
-	public final static IBuiltInSymbol EasterSunday = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "eastersunday" : "EasterSunday");
-	public final static IBuiltInSymbol Eigenvalues = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "eigenvalues" : "Eigenvalues");
-	public final static IBuiltInSymbol Eigenvectors = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "eigenvectors" : "Eigenvectors");
-	public final static IBuiltInSymbol ElementData = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "elementdata" : "ElementData");
-	public final static IBuiltInSymbol Eliminate = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "eliminate" : "Eliminate");
-	public final static IBuiltInSymbol EllipticE = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "elliptice" : "EllipticE");
-	public final static IBuiltInSymbol EllipticPi = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ellipticpi" : "EllipticPi");
-	public final static IBuiltInSymbol Equal = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "equal" : "Equal");
-	public final static IBuiltInSymbol Equivalent = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "equivalent" : "Equivalent");
-	public final static IBuiltInSymbol Erf = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "erf" : "Erf");
-	public final static IBuiltInSymbol EuclideanDistance = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "euclideandistance" : "EuclideanDistance");
-	public final static IBuiltInSymbol EulerE = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "eulere" : "EulerE");
-	public final static IBuiltInSymbol EulerPhi = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "eulerphi" : "EulerPhi");
-	public final static IBuiltInSymbol Exp = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "exp" : "Exp");
-	public final static IBuiltInSymbol Expand = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "expand" : "Expand");
-	public final static IBuiltInSymbol ExpandAll = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "expandall" : "ExpandAll");
-	public final static IBuiltInSymbol Expectation = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "expectation" : "Expectation");
-	public final static IBuiltInSymbol Export = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "export" : "Export");
-	public final static IBuiltInSymbol ExtendedGCD = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "extendedgcd" : "ExtendedGCD");
-	public final static IBuiltInSymbol Extract = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "extract" : "Extract");
-	public final static IBuiltInSymbol Factor = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "factor" : "Factor");
-	public final static IBuiltInSymbol Factorial = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "factorial" : "Factorial");
-	public final static IBuiltInSymbol Factorial2 = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "factorial2" : "Factorial2");
-	public final static IBuiltInSymbol FactorInteger = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "factorinteger" : "FactorInteger");
-	public final static IBuiltInSymbol FactorSquareFree = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "factorsquarefree" : "FactorSquareFree");
-	public final static IBuiltInSymbol FactorSquareFreeList = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "factorsquarefreelist" : "FactorSquareFreeList");
-	public final static IBuiltInSymbol FactorTerms = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "factorterms" : "FactorTerms");
-	public final static IBuiltInSymbol Fibonacci = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fibonacci" : "Fibonacci");
-	public final static IBuiltInSymbol FindInstance = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "findinstance" : "FindInstance");
-	public final static IBuiltInSymbol FindRoot = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "findroot" : "FindRoot");
-	public final static IBuiltInSymbol Fit = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fit" : "Fit");
-	public final static IBuiltInSymbol Floor = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "floor" : "Floor");
-	public final static IBuiltInSymbol FractionalPart = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fractionalpart" : "FractionalPart");
-	public final static IBuiltInSymbol FresnelC = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fresnelc" : "FresnelC");
-	public final static IBuiltInSymbol FresnelS = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fresnels" : "FresnelS");
-	public final static IBuiltInSymbol FrobeniusSolve = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "frobeniussolve" : "FrobeniusSolve");
-	public final static IBuiltInSymbol FromCharacterCode = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fromcharactercode" : "FromCharacterCode");
-	public final static IBuiltInSymbol FromContinuedFraction = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fromcontinuedfraction" : "FromContinuedFraction");
-	public final static IBuiltInSymbol FromPolarCoordinates = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "frompolarcoordinates" : "FromPolarCoordinates");
-	public final static IBuiltInSymbol FullSimplify = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "fullsimplify" : "FullSimplify");
-	public final static IBuiltInSymbol Gamma = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "gamma" : "Gamma");
-	public final static IBuiltInSymbol GammaRegularized = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "gammaregularized" : "GammaRegularized");
-	public final static IBuiltInSymbol Gather = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "gather" : "Gather");
-	public final static IBuiltInSymbol GCD = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "gcd" : "GCD");
-	public final static IBuiltInSymbol GegenbauerC = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "gegenbauerc" : "GegenbauerC");
-	public final static IBuiltInSymbol GeometricMean = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "geometricmean" : "GeometricMean");
-	public final static IBuiltInSymbol Greater = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "greater" : "Greater");
-	public final static IBuiltInSymbol GreaterEqual = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "greaterequal" : "GreaterEqual");
-	public final static IBuiltInSymbol GroebnerBasis = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "groebnerbasis" : "GroebnerBasis");
-	public final static IBuiltInSymbol HarmonicNumber = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "harmonicnumber" : "HarmonicNumber");
-	public final static IBuiltInSymbol Haversine = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "haversine" : "Haversine");
-	public final static IBuiltInSymbol HeavisideTheta = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "heavisidetheta" : "HeavisideTheta");
-	public final static IBuiltInSymbol HermiteH = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hermiteh" : "HermiteH");
-	public final static IBuiltInSymbol HilbertMatrix = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hilbertmatrix" : "HilbertMatrix");
-	public final static IBuiltInSymbol Horner = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "horner" : "Horner");
-	public final static IBuiltInSymbol HornerForm = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hornerform" : "HornerForm");
-	public final static IBuiltInSymbol Hypergeometric1F1 = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hypergeometric1f1" : "Hypergeometric1F1");
-	public final static IBuiltInSymbol Hypergeometric2F1 = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hypergeometric2f1" : "Hypergeometric2F1");
-	public final static IBuiltInSymbol HypergeometricPFQRegularized = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hypergeometricpfqregularized" : "HypergeometricPFQRegularized");
-	public final static IBuiltInSymbol IdentityMatrix = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "identitymatrix" : "IdentityMatrix");
-	public final static IBuiltInSymbol Im = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "im" : "Im");
-	public final static IBuiltInSymbol Import = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "import" : "Import");
-	public final static IBuiltInSymbol Increment = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "increment" : "Increment");
-	public final static IBuiltInSymbol Inequality = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inequality" : "Inequality");
-	public final static IBuiltInSymbol Inner = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inner" : "Inner");
-	public final static IBuiltInSymbol IntegerExponent = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerexponent" : "IntegerExponent");
-	public final static IBuiltInSymbol IntegerLength = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerlength" : "IntegerLength");
-	public final static IBuiltInSymbol IntegerPart = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerpart" : "IntegerPart");
-	public final static IBuiltInSymbol IntegerPartitions = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integerpartitions" : "IntegerPartitions");
-	public final static IBuiltInSymbol Integrate = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "integrate" : "Integrate");
-	public final static IBuiltInSymbol InterpolatingFunction = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "interpolatingfunction" : "InterpolatingFunction");
-	public final static IBuiltInSymbol InterpolatingPolynomial = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "interpolatingpolynomial" : "InterpolatingPolynomial");
-	public final static IBuiltInSymbol Interpolation = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "interpolation" : "Interpolation");
-	public final static IBuiltInSymbol Intersection = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "intersection" : "Intersection");
-	public final static IBuiltInSymbol Interval = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "interval" : "Interval");
-	public final static IBuiltInSymbol Inverse = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inverse" : "Inverse");
-	public final static IBuiltInSymbol InverseErf = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inverseerf" : "InverseErf");
-	public final static IBuiltInSymbol InverseErfc = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inverseerfc" : "InverseErfc");
-	public final static IBuiltInSymbol InverseFunction = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inversefunction" : "InverseFunction");
-	public final static IBuiltInSymbol InverseLaplaceTransform = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inverselaplacetransform" : "InverseLaplaceTransform");
-	public final static IBuiltInSymbol InverseHaversine = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "inversehaversine" : "InverseHaversine");
-	public final static IBuiltInSymbol JaccardDissimilarity = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "jaccarddissimilarity" : "JaccardDissimilarity");
-	public final static IBuiltInSymbol JacobiMatrix = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "jacobimatrix" : "JacobiMatrix");
-	public final static IBuiltInSymbol JacobiSymbol = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "jacobisymbol" : "JacobiSymbol");
-	public final static IBuiltInSymbol Join = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "join" : "Join");
-	public final static IBuiltInSymbol KOrderlessPartitions = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "korderlesspartitions" : "KOrderlessPartitions");
-	public final static IBuiltInSymbol KPartitions = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "kpartitions" : "KPartitions");
-	public final static IBuiltInSymbol KroneckerDelta = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "kroneckerdelta" : "KroneckerDelta");
-	public final static IBuiltInSymbol Kurtosis = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "kurtosis" : "Kurtosis");
-	public final static IBuiltInSymbol LaguerreL = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "laguerrel" : "LaguerreL");
-	public final static IBuiltInSymbol LaplaceTransform = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "laplacetransform" : "LaplaceTransform");
-	public final static IBuiltInSymbol LCM = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "lcm" : "LCM");
-	public final static IBuiltInSymbol LegendreP = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "legendrep" : "LegendreP");
-	public final static IBuiltInSymbol LegendreQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "legendreq" : "LegendreQ");
-	public final static IBuiltInSymbol Less = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "less" : "Less");
-	public final static IBuiltInSymbol LessEqual = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "lessequal" : "LessEqual");
-	public final static IBuiltInSymbol LetterQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "letterq" : "LetterQ");
-	public final static IBuiltInSymbol LeastSquares = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "leastsquares" : "LeastSquares");
-	public final static IBuiltInSymbol Level = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "level" : "Level");
-	public final static IBuiltInSymbol Limit = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "limit" : "Limit");
-	public final static IBuiltInSymbol LinearProgramming = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "linearprogramming" : "LinearProgramming");
-	public final static IBuiltInSymbol LinearSolve = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "linearsolve" : "LinearSolve");
-	public final static IBuiltInSymbol ListCorrelate = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "listcorrelate" : "ListCorrelate");
-	public final static IBuiltInSymbol ListConvolve = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "listconvolve" : "ListConvolve");
-	public final static IBuiltInSymbol LiouvilleLambda = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "liouvillelambda" : "LiouvilleLambda");
-	public final static IBuiltInSymbol Log = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "log" : "Log");
-	public final static IBuiltInSymbol Log10 = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "log10" : "Log10");
-	public final static IBuiltInSymbol Log2 = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "log2" : "Log2");
-	public final static IBuiltInSymbol LogisticSigmoid = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "logisticsigmoid" : "LogisticSigmoid");
-	public final static IBuiltInSymbol LowerCaseQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "lowercaseq" : "LowerCaseQ");
-	public final static IBuiltInSymbol LucasL = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "lucasl" : "LucasL");
-	public final static IBuiltInSymbol LUDecomposition = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ludecomposition" : "LUDecomposition");
-	public final static IBuiltInSymbol ManhattanDistance = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "manhattandistance" : "ManhattanDistance");
-	public final static IBuiltInSymbol Map = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "map" : "Map");
-	public final static IBuiltInSymbol MapAll = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mapall" : "MapAll");
-	public final static IBuiltInSymbol MapAt = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mapat" : "MapAt");
-	public final static IBuiltInSymbol MapThread = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mapthread" : "MapThread");
-	public final static IBuiltInSymbol MatchingDissimilarity = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matchingdissimilarity" : "MatchingDissimilarity");
-	public final static IBuiltInSymbol MatrixMinimalPolynomial = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matrixminimalpolynomial" : "MatrixMinimalPolynomial");
-	public final static IBuiltInSymbol MatrixPower = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matrixpower" : "MatrixPower");
-	public final static IBuiltInSymbol MatrixRank = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "matrixrank" : "MatrixRank");
-	public final static IBuiltInSymbol Max = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "max" : "Max");
-	public final static IBuiltInSymbol Mean = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mean" : "Mean");
-	public final static IBuiltInSymbol MeanDeviation = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "meandeviation" : "MeanDeviation");
-	public final static IBuiltInSymbol MersennePrimeExponent = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mersenneprimeexponent" : "MersennePrimeExponent");
-	public final static IBuiltInSymbol MersennePrimeExponentQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mersenneprimeexponentq" : "MersennePrimeExponentQ");
-	public final static IBuiltInSymbol Median = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "median" : "Median");
-	public final static IBuiltInSymbol Min = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "min" : "Min");
-	public final static IBuiltInSymbol Minus = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "minus" : "Minus");
-	public final static IBuiltInSymbol Mod = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "mod" : "Mod");
-	public final static IBuiltInSymbol MoebiusMu = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "moebiusmu" : "MoebiusMu");
-	public final static IBuiltInSymbol MonomialList = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "monomiallist" : "MonomialList");
-	public final static IBuiltInSymbol Most = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "most" : "Most");
-	public final static IBuiltInSymbol Multinomial = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "multinomial" : "Multinomial");
-	public final static IBuiltInSymbol MultiplicativeOrder = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "multiplicativeorder" : "MultiplicativeOrder");
-	public final static IBuiltInSymbol Names = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "names" : "Names");
-	public final static IBuiltInSymbol NDSolve = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ndsolve" : "NDSolve");
-	public final static IBuiltInSymbol Nearest = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nearest" : "Nearest");
-	public final static IBuiltInSymbol Negative = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "negative" : "Negative");
-	public final static IBuiltInSymbol NextPrime = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nextprime" : "NextPrime");
-	public final static IBuiltInSymbol NFourierTransform = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nfouriertransform" : "NFourierTransform");
-	public final static IBuiltInSymbol NIntegrate = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nintegrate" : "NIntegrate");
-	public final static IBuiltInSymbol NMaximize = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nmaximize" : "NMaximize");
-	public final static IBuiltInSymbol NMinimize = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nminimize" : "NMinimize");
-	public final static IBuiltInSymbol NonCommutativeMultiply = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "noncommutativemultiply" : "NonCommutativeMultiply");
-	public final static IBuiltInSymbol NoneTrue = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nonetrue" : "NoneTrue");
-	public final static IBuiltInSymbol NonNegative = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nonnegative" : "NonNegative");
-	public final static IBuiltInSymbol NonPositive = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nonpositive" : "NonPositive");
-	public final static IBuiltInSymbol Norm = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "norm" : "Norm");
-	public final static IBuiltInSymbol Normal = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "normal" : "Normal");
-	public final static IBuiltInSymbol Normalize = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "normalize" : "Normalize");
-	public final static IBuiltInSymbol Not = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "not" : "Not");
-	public final static IBuiltInSymbol NRoots = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nroots" : "NRoots");
-	public final static IBuiltInSymbol NSolve = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nsolve" : "NSolve");
-	public final static IBuiltInSymbol NullSpace = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "nullspace" : "NullSpace");
-	public final static IBuiltInSymbol Numerator = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "numerator" : "Numerator");
-	public final static IBuiltInSymbol Operate = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "operate" : "Operate");
-	public final static IBuiltInSymbol Order = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "order" : "Order");
-	public final static IBuiltInSymbol Ordering = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ordering" : "Ordering");
-	public final static IBuiltInSymbol OrderedQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "orderedq" : "OrderedQ");
-	public final static IBuiltInSymbol Orthogonalize = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "orthogonalize" : "Orthogonalize");
-	public final static IBuiltInSymbol Out = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "out" : "Out");
-	public final static IBuiltInSymbol Outer = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "outer" : "Outer");
-	public final static IBuiltInSymbol PadLeft = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "padleft" : "PadLeft");
-	public final static IBuiltInSymbol PadRight = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "padright" : "PadRight");
-	public final static IBuiltInSymbol Partition = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "partition" : "Partition");
-	public final static IBuiltInSymbol PartitionsP = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "partitionsp" : "PartitionsP");
-	public final static IBuiltInSymbol PartitionsQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "partitionsq" : "PartitionsQ");
-	public final static IBuiltInSymbol PerfectNumber = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "perfectnumber" : "PerfectNumber");
-	public final static IBuiltInSymbol PerfectNumberQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "perfectnumberq" : "PerfectNumberQ");
-	public final static IBuiltInSymbol PDF = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "pdf" : "PDF");
-	public final static IBuiltInSymbol Permutations = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "permutations" : "Permutations");
-	public final static IBuiltInSymbol Piecewise = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "piecewise" : "Piecewise");
-	public final static IBuiltInSymbol Plot = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "plot" : "Plot");
-	public final static IBuiltInSymbol Plot3D = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "plot3d" : "Plot3D");
-	public final static IBuiltInSymbol Plus = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "plus" : "Plus");
-	public final static IBuiltInSymbol Pochhammer = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "pochhammer" : "Pochhammer");
-	public final static IBuiltInSymbol PolyGamma = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polygamma" : "PolyGamma");
-	public final static IBuiltInSymbol PolyLog = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polylog" : "PolyLog");
-	public final static IBuiltInSymbol PolynomialExtendedGCD = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polynomialextendedgcd" : "PolynomialExtendedGCD");
-	public final static IBuiltInSymbol PolynomialGCD = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polynomialgcd" : "PolynomialGCD");
-	public final static IBuiltInSymbol PolynomialLCM = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polynomiallcm" : "PolynomialLCM");
-	public final static IBuiltInSymbol PolynomialQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polynomialq" : "PolynomialQ");
-	public final static IBuiltInSymbol PolynomialQuotient = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polynomialquotient" : "PolynomialQuotient");
-	public final static IBuiltInSymbol PolynomialQuotientRemainder = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polynomialquotientremainder" : "PolynomialQuotientRemainder");
-	public final static IBuiltInSymbol PolynomialRemainder = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "polynomialremainder" : "PolynomialRemainder");
-	public final static IBuiltInSymbol Positive = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "positive" : "Positive");
-	public final static IBuiltInSymbol Power = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "power" : "Power");
-	public final static IBuiltInSymbol PowerExpand = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "powerexpand" : "PowerExpand");
-	public final static IBuiltInSymbol PowerMod = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "powermod" : "PowerMod");
-	public final static IBuiltInSymbol Precision = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "precision" : "Precision");
-	public final static IBuiltInSymbol PreDecrement = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "predecrement" : "PreDecrement");
-	public final static IBuiltInSymbol PreIncrement = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "preincrement" : "PreIncrement");
-	public final static IBuiltInSymbol Prime = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "prime" : "Prime");
-	public final static IBuiltInSymbol PrimeOmega = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primeomega" : "PrimeOmega");
-	public final static IBuiltInSymbol PrimePi = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primepi" : "PrimePi");
-	public final static IBuiltInSymbol PrimePowerQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primepowerq" : "PrimePowerQ");
-	public final static IBuiltInSymbol PrimitiveRootList = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "primitiverootlist" : "PrimitiveRootList");
-	public final static IBuiltInSymbol Product = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "product" : "Product");
-	public final static IBuiltInSymbol ProductLog = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "productlog" : "ProductLog");
-	public final static IBuiltInSymbol Projection = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "projection" : "Projection");
-	public final static IBuiltInSymbol PseudoInverse = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "pseudoinverse" : "PseudoInverse");
-	public final static IBuiltInSymbol Quit = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "quit" : "Quit");
-	public final static IBuiltInSymbol QRDecomposition = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "qrdecomposition" : "QRDecomposition");
-	public final static IBuiltInSymbol Quotient = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "quotient" : "Quotient");
-	public final static IBuiltInSymbol QuotientRemainder = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "quotientremainder" : "QuotientRemainder");
-	public final static IBuiltInSymbol RandomChoice = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "randomchoice" : "RandomChoice");
-	public final static IBuiltInSymbol RandomInteger = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "randominteger" : "RandomInteger");
-	public final static IBuiltInSymbol RandomReal = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "randomreal" : "RandomReal");
-	public final static IBuiltInSymbol RandomSample = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "randomsample" : "RandomSample");
-	public final static IBuiltInSymbol RandomVariate = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "randomvariate" : "RandomVariate");
-	public final static IBuiltInSymbol Range = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "range" : "Range");
-	public final static IBuiltInSymbol Rationalize = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rationalize" : "Rationalize");
-	public final static IBuiltInSymbol Re = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "re" : "Re");
-	public final static IBuiltInSymbol Replace = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "replace" : "Replace");
-	public final static IBuiltInSymbol ReplaceAll = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "replaceall" : "ReplaceAll");
-	public final static IBuiltInSymbol ReplaceList = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "replacelist" : "ReplaceList");
-	public final static IBuiltInSymbol ReplacePart = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "replacepart" : "ReplacePart");
-	public final static IBuiltInSymbol ReplaceRepeated = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "replacerepeated" : "ReplaceRepeated");
-	public final static IBuiltInSymbol Resultant = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "resultant" : "Resultant");
-	public final static IBuiltInSymbol Reverse = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "reverse" : "Reverse");
-	public final static IBuiltInSymbol RogersTanimotoDissimilarity = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rogerstanimotodissimilarity" : "RogersTanimotoDissimilarity");
-	public final static IBuiltInSymbol Root = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "root" : "Root");
-	public final static IBuiltInSymbol RootIntervals = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rootintervals" : "RootIntervals");
-	public final static IBuiltInSymbol Roots = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "roots" : "Roots");
-	public final static IBuiltInSymbol Round = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "round" : "Round");
-	public final static IBuiltInSymbol RowReduce = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "rowreduce" : "RowReduce");
-	public final static IBuiltInSymbol RussellRaoDissimilarity = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "russellraodissimilarity" : "RussellRaoDissimilarity");
-	public final static IBuiltInSymbol SameQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sameq" : "SameQ");
-	public final static IBuiltInSymbol SatisfiableQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "satisfiableq" : "SatisfiableQ");
-	public final static IBuiltInSymbol Scan = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "scan" : "Scan");
-	public final static IBuiltInSymbol Sec = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sec" : "Sec");
-	public final static IBuiltInSymbol Sech = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sech" : "Sech");
-	public final static IBuiltInSymbol Select = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "select" : "Select");
-	public final static IBuiltInSymbol Series = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "series" : "Series");
-	public final static IBuiltInSymbol SeriesData = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "seriesdata" : "SeriesData");
-	public final static IBuiltInSymbol Share = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "share" : "Share");
-	public final static IBuiltInSymbol Sign = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sign" : "Sign");
-	public final static IBuiltInSymbol SignCmp = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "signcmp" : "SignCmp");
-	public final static IBuiltInSymbol Simplify = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "simplify" : "Simplify");
-	public final static IBuiltInSymbol Sin = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sin" : "Sin");
-	public final static IBuiltInSymbol Sinc = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sinc" : "Sinc");
-	public final static IBuiltInSymbol SingularValueDecomposition = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "singularvaluedecomposition" : "SingularValueDecomposition");
-	public final static IBuiltInSymbol Sinh = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sinh" : "Sinh");
-	public final static IBuiltInSymbol SinIntegral = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sinintegral" : "SinIntegral");
-	public final static IBuiltInSymbol Skewness = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "skewness" : "Skewness");
-	public final static IBuiltInSymbol SokalSneathDissimilarity = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sokalsneathdissimilarity" : "SokalSneathDissimilarity");
-	public final static IBuiltInSymbol Solve = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "solve" : "Solve");
-	public final static IBuiltInSymbol Sort = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sort" : "Sort");
-	public final static IBuiltInSymbol Split = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "split" : "Split");
-	public final static IBuiltInSymbol SplitBy = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "splitby" : "SplitBy");
-	public final static IBuiltInSymbol Sqrt = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sqrt" : "Sqrt");
-	public final static IBuiltInSymbol SquaredEuclideanDistance = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "squaredeuclideandistance" : "SquaredEuclideanDistance");
-	public final static IBuiltInSymbol SquareFreeQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "squarefreeq" : "SquareFreeQ");
-	public final static IBuiltInSymbol Standardize = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "standardize" : "Standardize");
-	public final static IBuiltInSymbol StandardDeviation = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "standarddeviation" : "StandardDeviation");
-	public final static IBuiltInSymbol StieltjesGamma = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "stieltjesgamma" : "StieltjesGamma");
-	public final static IBuiltInSymbol StirlingS1 = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "stirlings1" : "StirlingS1");
-	public final static IBuiltInSymbol StirlingS2 = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "stirlings2" : "StirlingS2");
-	public final static IBuiltInSymbol StringDrop = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "stringdrop" : "StringDrop");
-	public final static IBuiltInSymbol StringJoin = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "stringjoin" : "StringJoin");
-	public final static IBuiltInSymbol StringLength = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "stringlength" : "StringLength");
-	public final static IBuiltInSymbol StringTake = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "stringtake" : "StringTake");
-	public final static IBuiltInSymbol StruveH = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "struveh" : "StruveH");
-	public final static IBuiltInSymbol StruveL = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "struvel" : "StruveL");
-	public final static IBuiltInSymbol Subfactorial = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subfactorial" : "Subfactorial");
-	public final static IBuiltInSymbol Subsets = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subsets" : "Subsets");
-	public final static IBuiltInSymbol SubtractFrom = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "subtractfrom" : "SubtractFrom");
-	public final static IBuiltInSymbol Sum = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sum" : "Sum");
-	public final static IBuiltInSymbol Surd = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "surd" : "Surd");
-	public final static IBuiltInSymbol Symbol = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "symbol" : "Symbol");
-	public final static IBuiltInSymbol SymbolName = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "symbolname" : "SymbolName");
-	public final static IBuiltInSymbol SyntaxLength = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "syntaxlength" : "SyntaxLength");
-	public final static IBuiltInSymbol Table = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "table" : "Table");
-	public final static IBuiltInSymbol Tally = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tally" : "Tally");
-	public final static IBuiltInSymbol Tan = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tan" : "Tan");
-	public final static IBuiltInSymbol Tanh = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tanh" : "Tanh");
-	public final static IBuiltInSymbol TautologyQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tautologyq" : "TautologyQ");
-	public final static IBuiltInSymbol Taylor = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "taylor" : "Taylor");
-	public final static IBuiltInSymbol Thread = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "thread" : "Thread");
-	public final static IBuiltInSymbol Through = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "through" : "Through");
-	public final static IBuiltInSymbol Times = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "times" : "Times");
-	public final static IBuiltInSymbol TimesBy = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "timesby" : "TimesBy");
-	public final static IBuiltInSymbol ToCharacterCode = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tocharactercode" : "ToCharacterCode");
-	public final static IBuiltInSymbol ToeplitzMatrix = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "toeplitzmatrix" : "ToeplitzMatrix");
-	public final static IBuiltInSymbol Together = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "together" : "Together");
-	public final static IBuiltInSymbol ToPolarCoordinates = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "topolarcoordinates" : "ToPolarCoordinates");
-	public final static IBuiltInSymbol ToRadicals = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "toradicals" : "ToRadicals");
-	public final static IBuiltInSymbol ToString = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tostring" : "ToString");
-	public final static IBuiltInSymbol Total = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "total" : "Total");
-	public final static IBuiltInSymbol ToUnicode = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tounicode" : "ToUnicode");
-	public final static IBuiltInSymbol Tr = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tr" : "Tr");
-	public final static IBuiltInSymbol TensorDimensions = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tensordimensions" : "TensorDimensions");
-	public final static IBuiltInSymbol TensorProduct = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tensorproduct" : "TensorProduct");
-	public final static IBuiltInSymbol TensorRank = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tensorrank" : "TensorRank");
-	public final static IBuiltInSymbol Transpose = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "transpose" : "Transpose");
-	public final static IBuiltInSymbol TrigExpand = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "trigexpand" : "TrigExpand");
-	public final static IBuiltInSymbol TrigReduce = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "trigreduce" : "TrigReduce");
-	public final static IBuiltInSymbol TrigToExp = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "trigtoexp" : "TrigToExp");
-	public final static IBuiltInSymbol TrueQ = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "trueq" : "TrueQ");
-	public final static IBuiltInSymbol Tuples = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "tuples" : "Tuples");
-	public final static IBuiltInSymbol Unequal = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unequal" : "Unequal");
-	public final static IBuiltInSymbol Union = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "union" : "Union");
-	public final static IBuiltInSymbol UnitStep = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unitstep" : "UnitStep");
-	public final static IBuiltInSymbol UnitVector = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unitvector" : "UnitVector");
-	public final static IBuiltInSymbol UnsameQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "unsameq" : "UnsameQ");
-	public final static IBuiltInSymbol VandermondeMatrix = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "vandermondematrix" : "VandermondeMatrix");
-	public final static IBuiltInSymbol Variables = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "variables" : "Variables");
-	public final static IBuiltInSymbol Variance = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "variance" : "Variance");
-	public final static IBuiltInSymbol VectorAngle = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "vectorangle" : "VectorAngle");
-	public final static IBuiltInSymbol Xor = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "xor" : "Xor");
-	public final static IBuiltInSymbol YuleDissimilarity = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "yuledissimilarity" : "YuleDissimilarity");
-	public final static IBuiltInSymbol Zeta = initFinalSymbol(Config.PARSER_USE_LOWERCASE_SYMBOLS ? "zeta" : "Zeta");
 
 	public final static IBuiltInSymbol usage = initFinalSymbol("usage");
 
@@ -1424,35 +937,35 @@ public class F {
 	public final static IPattern F_ = initPredefinedPattern(FSymbol);
 	public final static IPattern G_ = initPredefinedPattern(GSymbol);
 
-	public final static IPattern m_Integer = new Pattern(m, IntegerHead);
-	public final static IPattern n_Integer = new Pattern(n, IntegerHead);
+	public final static IPattern m_Integer = new Pattern(m, F.Integer);
+	public final static IPattern n_Integer = new Pattern(n, F.Integer);
 
-	public final static IPattern a_Symbol = new Pattern(a, SymbolHead);
-	public final static IPattern b_Symbol = new Pattern(b, SymbolHead);
-	public final static IPattern c_Symbol = new Pattern(c, SymbolHead);
-	public final static IPattern d_Symbol = new Pattern(d, SymbolHead);
-	public final static IPattern e_Symbol = new Pattern(e, SymbolHead);
-	public final static IPattern f_Symbol = new Pattern(f, SymbolHead);
-	public final static IPattern g_Symbol = new Pattern(g, SymbolHead);
-	public final static IPattern h_Symbol = new Pattern(h, SymbolHead);
-	public final static IPattern i_Symbol = new Pattern(i, SymbolHead);
-	public final static IPattern j_Symbol = new Pattern(j, SymbolHead);
-	public final static IPattern k_Symbol = new Pattern(k, SymbolHead);
-	public final static IPattern l_Symbol = new Pattern(l, SymbolHead);
-	public final static IPattern m_Symbol = new Pattern(m, SymbolHead);
-	public final static IPattern n_Symbol = new Pattern(n, SymbolHead);
-	public final static IPattern o_Symbol = new Pattern(o, SymbolHead);
-	public final static IPattern p_Symbol = new Pattern(p, SymbolHead);
-	public final static IPattern q_Symbol = new Pattern(q, SymbolHead);
-	public final static IPattern r_Symbol = new Pattern(r, SymbolHead);
-	public final static IPattern s_Symbol = new Pattern(s, SymbolHead);
-	public final static IPattern t_Symbol = new Pattern(t, SymbolHead);
-	public final static IPattern u_Symbol = new Pattern(u, SymbolHead);
-	public final static IPattern v_Symbol = new Pattern(v, SymbolHead);
-	public final static IPattern w_Symbol = new Pattern(w, SymbolHead);
-	public final static IPattern x_Symbol = new Pattern(x, SymbolHead);
-	public final static IPattern y_Symbol = new Pattern(y, SymbolHead);
-	public final static IPattern z_Symbol = new Pattern(z, SymbolHead);
+	public final static IPattern a_Symbol = new Pattern(a, F.Symbol);
+	public final static IPattern b_Symbol = new Pattern(b, F.Symbol);
+	public final static IPattern c_Symbol = new Pattern(c, F.Symbol);
+	public final static IPattern d_Symbol = new Pattern(d, F.Symbol);
+	public final static IPattern e_Symbol = new Pattern(e, F.Symbol);
+	public final static IPattern f_Symbol = new Pattern(f, F.Symbol);
+	public final static IPattern g_Symbol = new Pattern(g, F.Symbol);
+	public final static IPattern h_Symbol = new Pattern(h, F.Symbol);
+	public final static IPattern i_Symbol = new Pattern(i, F.Symbol);
+	public final static IPattern j_Symbol = new Pattern(j, F.Symbol);
+	public final static IPattern k_Symbol = new Pattern(k, F.Symbol);
+	public final static IPattern l_Symbol = new Pattern(l, F.Symbol);
+	public final static IPattern m_Symbol = new Pattern(m, F.Symbol);
+	public final static IPattern n_Symbol = new Pattern(n, F.Symbol);
+	public final static IPattern o_Symbol = new Pattern(o, F.Symbol);
+	public final static IPattern p_Symbol = new Pattern(p, F.Symbol);
+	public final static IPattern q_Symbol = new Pattern(q, F.Symbol);
+	public final static IPattern r_Symbol = new Pattern(r, F.Symbol);
+	public final static IPattern s_Symbol = new Pattern(s, F.Symbol);
+	public final static IPattern t_Symbol = new Pattern(t, F.Symbol);
+	public final static IPattern u_Symbol = new Pattern(u, F.Symbol);
+	public final static IPattern v_Symbol = new Pattern(v, F.Symbol);
+	public final static IPattern w_Symbol = new Pattern(w, F.Symbol);
+	public final static IPattern x_Symbol = new Pattern(x, F.Symbol);
+	public final static IPattern y_Symbol = new Pattern(y, F.Symbol);
+	public final static IPattern z_Symbol = new Pattern(z, F.Symbol);
 
 	public final static IPattern a_DEFAULT = new Pattern(a, null, true);
 	public final static IPattern b_DEFAULT = new Pattern(b, null, true);
@@ -1776,35 +1289,6 @@ public class F {
 	 */
 	public final static IntegerSym CN10 = new IntegerSym(-10);
 
-	public final static IBuiltInSymbol AppellF1 = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "appellf1" : "AppellF1");
-
-	public final static IBuiltInSymbol EllipticF = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "ellipticf" : "EllipticF");
-
-	public final static IBuiltInSymbol HypergeometricPFQ = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "hypergeometricpfq" : "HypergeometricPFQ");
-
-	public final static IBuiltInSymbol LinearModelFit = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "linearmodelfit" : "LinearModelFit");
-	public final static IBuiltInSymbol CoshIntegral = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "coshintegral" : "CoshIntegral");
-
-	public final static IBuiltInSymbol SinhIntegral = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "sinhintegral" : "SinhIntegral");
-
-	public final static IBuiltInSymbol ExpIntegralEi = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "expintegralei" : "ExpIntegralEi");
-
-	public final static IBuiltInSymbol LogIntegral = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "logintegral" : "LogIntegral");
-
-	public final static IBuiltInSymbol LogGamma = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "loggamma" : "LogGamma");
-
-	public final static IBuiltInSymbol ExpIntegralE = initFinalSymbol(
-			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "expintegrale" : "ExpIntegralE");
-
 	/**
 	 * Global map of predefined constant expressions.
 	 */
@@ -1926,9 +1410,9 @@ public class F {
 					C_DEFAULT, F_DEFAULT, G_DEFAULT,
 					// start symbol strings
 					Algebraics, Booleans, ComplexInfinity, Catalan, Complexes, Degree, EulerGamma, False, Flat,
-					Glaisher, GoldenRatio, HoldAll, HoldFirst, HoldForm, HoldRest, Indeterminate, Infinity, IntegerHead,
+					Glaisher, GoldenRatio, HoldAll, HoldFirst, HoldForm, HoldRest, Indeterminate, Infinity, Integer,
 					Integers, Khinchin, Listable, Modulus, Null, NumericFunction, OneIdentity, Orderless, Pi, Primes,
-					Rationals, RealHead, Reals, Slot, SlotSequence, StringHead, SymbolHead, True,
+					Rationals, Real, Reals, Slot, SlotSequence, String, F.Symbol, True,
 					// start function strings
 					Abs, AddTo, And, Alternatives, Apart, AppellF1, Append, AppendTo, Apply, ArcCos, ArcCosh, ArcCot,
 					ArcCoth, ArcCsc, ArcCsch, ArcSec, ArcSech, ArcSin, ArcSinh, ArcTan, ArcTanh, Arg, Array,
@@ -4032,6 +3516,18 @@ public class F {
 		return temp;
 	}
 
+	public static IBuiltInSymbol initFinalSymbol(final SymbolEnumeration symbolName) {
+		String str = symbolName.name();
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			if (str.length() != 1) {
+				str = symbolName.str();
+			}
+		}
+		IBuiltInSymbol temp = new BuiltInSymbol(str);
+		Context.SYSTEM.put(str, temp);
+		return temp;
+	}
+
 	/**
 	 * Insert a new Symbol in the <code>SYSTEM</code> context.
 	 * 
@@ -4067,31 +3563,6 @@ public class F {
 	public synchronized static void initSymbols() {
 		initSymbols(null, null, false);
 	}
-
-	// public synchronized static void initSymbols(Reader reader, ISymbolObserver
-	// symbolObserver) {
-	// if (!isSystemStarted) {
-	// try {
-	// isSystemStarted = true;
-	//
-	// if (Config.SHOW_PATTERN_EVAL_STEPS) {
-	// // watch the rules which are used in pattern matching in
-	// // system.out
-	// Config.SHOW_PATTERN_SYMBOL_STEPS.add(Integrate);
-	// }
-	// if (symbolObserver != null) {
-	// SYMBOL_OBSERVER = symbolObserver;
-	// }
-	//
-	// org.matheclipse.core.builtin.function.Package.loadPackage(EvalEngine.get(),
-	// reader);
-	//
-	// isSystemInitialized = true;
-	// } catch (Throwable th) {
-	// th.printStackTrace();
-	// }
-	// }
-	// }
 
 	/**
 	 * Initialize the complete System
@@ -4253,17 +3724,6 @@ public class F {
 		return ternaryAST3(InverseLaplaceTransform, a0, a1, a2);
 	}
 
-	// public static ISymbol method(final String symbolName, final String
-	// className, final String methodName) {
-	// return new MethodSymbol(symbolName, className, methodName);
-	// }
-	//
-	// public static ISymbol method(final String symbolName, final String
-	// packageName, final String className,
-	// final String methodName) {
-	// return new MethodSymbol(symbolName, packageName, className, methodName);
-	// }
-
 	/**
 	 * Assign the evaluated <code>rhs</code> to the <code>lhs</code>.<br/>
 	 * 
@@ -4301,41 +3761,6 @@ public class F {
 		PatternMatching.setDelayedDownRule(lhs, rhs, true);
 		return null;
 	}
-
-	/**
-	 * After a successful <code>isCase()</code> the symbols associated with the patterns contain the matched values on
-	 * the local stack.
-	 * 
-	 * @param a
-	 * @param b
-	 * @return
-	 */
-	// public static boolean isCase(IExpr a, IExpr b) {
-	// if (a instanceof IAST) {
-	// final PatternMatcher matcher = new PatternMatcher(a);
-	// if (matcher.apply(b)) {
-	// matcher.setPatternValue2Local(a);
-	// return true;
-	// }
-	// }
-	// return equals(a, b);
-	// }
-	//
-	// public static boolean isCase(IExpr a, Integer i) {
-	// return isCase(a, integer(i.longValue()));
-	// }
-	//
-	// public static boolean isCase(Integer i, IExpr b) {
-	// return equals(i, b);
-	// }
-	//
-	// public static boolean isCase(IExpr a, java.math.BigInteger i) {
-	// return isCase(a, integer(i));
-	// }
-	//
-	// public static boolean isCase(java.math.BigInteger i, IExpr b) {
-	// return equals(i, b);
-	// }
 
 	public static boolean isNumEqualInteger(double value, IInteger ii) throws ArithmeticException {
 		long l = ii.toLong();
@@ -4438,21 +3863,6 @@ public class F {
 		return binaryAST2(LegendreQ, a0, a1);
 	}
 
-	// public static IAST KOrderlessPartitions(final IExpr a0) {
-	//
-	// return unaryAST2(KOrderlessPartitions, a0);
-	// }
-	//
-	// public static IAST KPartitions(final IExpr a0) {
-	//
-	// return unaryAST2(KPartitions, a0);
-	// }
-	//
-	// public static IAST KSubsets(final IExpr a0) {
-	//
-	// return unaryAST2(KSubsets, a0);
-	// }
-	//
 	public static IAST LeafCount(final IExpr a0) {
 		return unaryAST1(LeafCount, a0);
 	}
@@ -4690,11 +4100,11 @@ public class F {
 	public static IAST Mean(final IExpr a0) {
 		return unaryAST1(Mean, a0);
 	}
-	
+
 	public static IAST MeanDeviation(final IExpr a0) {
 		return unaryAST1(MeanDeviation, a0);
 	}
-	
+
 	public static IAST Median(final IExpr a0) {
 		return unaryAST1(Median, a0);
 	}
@@ -6060,4 +5470,5 @@ public class F {
 		matrix.addEvalFlags(IAST.IS_VECTOR);
 		return matrix;
 	}
+
 }

@@ -349,7 +349,7 @@ public class PatternSequence implements IPatternSequence {
 
 	@Override
 	public ISymbol head() {
-		return F.PatternHead;
+		return F.Pattern;
 	}
 
 	@Override

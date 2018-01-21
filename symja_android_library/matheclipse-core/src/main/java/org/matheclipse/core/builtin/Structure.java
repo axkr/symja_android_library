@@ -604,7 +604,7 @@ public class Structure {
 			if (ast.isAST1()) {
 				return engine.evaluate(ast.arg1()).head();
 			}
-			return F.SymbolHead;
+			return F.Symbol;
 		}
 
 	}

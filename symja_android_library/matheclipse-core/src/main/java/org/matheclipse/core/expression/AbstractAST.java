@@ -2970,10 +2970,10 @@ public abstract class AbstractAST implements IASTMutable {
 		// * "DoubleComplex", "Double", "Integer", "Fraction", "Complex"
 		if (header.isSignedNumber()) {
 			if (header instanceof INum) {
-				return F.RealHead;
+				return F.Real;
 			}
 			if (header instanceof IInteger) {
-				return F.IntegerHead;
+				return F.Integer;
 			}
 			if (header instanceof IFraction) {
 				return F.Rational;
@@ -2986,10 +2986,10 @@ public abstract class AbstractAST implements IASTMutable {
 			return F.Complex;
 		}
 		if (header instanceof IPattern) {
-			return F.PatternHead;
+			return F.Pattern;
 		}
 		if (head() instanceof IStringX) {
-			return F.StringHead;
+			return F.String;
 		}
 		return null;
 	}

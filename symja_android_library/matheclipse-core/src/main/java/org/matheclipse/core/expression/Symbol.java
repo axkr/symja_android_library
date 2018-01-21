@@ -43,6 +43,7 @@ public class Symbol implements ISymbol, Serializable {
 	protected transient Context fContext;
 
 	private final static Collator US_COLLATOR = Collator.getInstance(Locale.US);
+	
 	/**
 	 * The attribute values of the symbol represented by single bits.
 	 */
@@ -57,38 +58,37 @@ public class Symbol implements ISymbol, Serializable {
 	 * and upper-case function names.
 	 */
 	protected String fSymbolName;
+
 	/**
 	 * The hash value of this object computed in the constructor.
 	 * 
 	 */
 	protected int fHashValue;
 
-	public Symbol(final String symbolName, Context context) {
+	// public static ISymbol valueOf(final String symbolName, final Context context) {
+	// return new Symbol(symbolName, context);
+	// }
+
+	public Symbol(final String symbolName, final Context context) {
 		super();
 		fContext = context;
 		fHashValue = symbolName.hashCode();
 		fSymbolName = symbolName;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public <T> T accept(IVisitor<T> visitor) {
 		return visitor.visit(this);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean accept(IVisitorBoolean visitor) {
 		return visitor.visit(this);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public int accept(IVisitorInt visitor) {
 		return visitor.visit(this);
@@ -358,7 +358,7 @@ public class Symbol implements ISymbol, Serializable {
 		}
 		return F.NIL;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluateHead(IAST ast, EvalEngine engine) {
@@ -517,7 +517,7 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public ISymbol head() {
-		return F.SymbolHead;
+		return F.Symbol;
 	}
 
 	/** {@inheritDoc} */
@@ -735,14 +735,14 @@ public class Symbol implements ISymbol, Serializable {
 	public IExpr of(IExpr... args) {
 		return of(EvalEngine.get(), args);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean ofQ(EvalEngine engine, IExpr... args) {
 		IAST ast = F.ast(args, this);
 		return engine.evalTrue(ast);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final void popLocalVariable() {

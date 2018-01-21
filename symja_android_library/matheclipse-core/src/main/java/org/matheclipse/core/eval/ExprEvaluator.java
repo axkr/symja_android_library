@@ -363,9 +363,9 @@ public class ExprEvaluator {
 				try {
 					return timeLimiter.callWithTimeout(work, timeoutDuration, timeUnit, interruptible);
 				} catch (java.util.concurrent.TimeoutException e) {
-					return F.Aborted;
+					return F.$Aborted;
 				} catch (com.google.common.util.concurrent.UncheckedTimeoutException e) {
-					return F.Aborted;
+					return F.$Aborted;
 				} catch (Exception e) {
 					if (Config.DEBUG) {
 						e.printStackTrace();

@@ -277,7 +277,7 @@ public class Blank implements IPattern {
 
 	@Override
 	public ISymbol head() {
-		return F.BlankHead;
+		return F.Blank;
 	}
 
 	@Override

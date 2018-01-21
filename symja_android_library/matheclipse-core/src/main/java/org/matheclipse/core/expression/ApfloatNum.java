@@ -483,7 +483,7 @@ public class ApfloatNum implements INum {
 
 	@Override
 	public ISymbol head() {
-		return F.RealHead;
+		return F.Real;
 	}
 
 	/**

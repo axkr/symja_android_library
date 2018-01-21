@@ -43,47 +43,51 @@ public class AST2Expr {
 
 	public final static String[] UPPERCASE_SYMBOL_STRINGS = { "D", "E", "I", "N", "O" };
 
-	public final static String[] SYMBOL_STRINGS = { "$Aborted", "All", "Algebraics", "Automatic", "Booleans",
-			"CharacterEncoding", "ComplexInfinity", "Catalan", "Complexes", "ComplexityFunction", "Constant", "Degree",
-			"Disputed", "EulerGamma", "False", "Flat", "Glaisher", "GoldenRatio", "HoldAll", "HoldFirst", "HoldRest",
-			"Indeterminate", "Infinity", "Integer", "Integers", "Khinchin", "Listable", "MaxIterations", "MaxPoints",
-			"Method", "Modulus", "None", "Nonexistent", "NotApplicable", "NotAvailable", "Null", "NumericFunction",
+	public final static String[] DOLLAR_STRINGS = { "$Aborted" };
+
+	public final static String[] SYMBOL_STRINGS = { "All", "Algebraics", "Automatic", "Axes", "AxesOrigin", "AxesStyle",
+			"Background", "Booleans", "CharacterEncoding", "ComplexInfinity", "Catalan", "Complexes",
+			"ComplexityFunction", "Constant", "Degree", "Disputed", "EulerGamma", "False", "Flat", "Glaisher",
+			"GoldenRatio", "HoldAll", "HoldFirst", "HoldRest", "Indeterminate", "Infinity", "Integer", "Integers",
+			"Khinchin", "Listable", "MaxIterations", "MaxPoints", "Method", "Modulus", "NHoldAll", "NHoldFirst",
+			"NHoldRest", "None", "Nonexistent", "NotApplicable", "NotAvailable", "Null", "NumericFunction",
 			"OneIdentity", "Orderless", "Pi", "PrecisionGoal", "Primes", "Rationals", "Real", "Reals", "Second", "Slot",
-			"SlotSequence", "String", "Symbol", "TooLarge", "Trig", "True", "Variable", "Unknown" };
+			"SlotSequence", "String", "Symbol", "TooLarge", "Trig", "True", "Variable", "White", "Unknown" };
 
 	public final static String[] FUNCTION_STRINGS = { "Abort", "Abs", "AbsArg", "Accumulate", "AddTo", "AllTrue", "And",
-			"AngleVector", "AnyTrue", "AntihermitianMatrixQ ", "AntisymmetricMatrixQ", "AlgebraicNumber",
-			"Alternatives", "Apart", "AppellF1", "Append", "AppendTo", "Apply", "ArcCos", "ArcCosh", "ArcCot",
-			"ArcCoth", "ArcCsc", "ArcCsch", "ArcSec", "ArcSech", "ArcSin", "ArcSinh", "ArcTan", "ArcTanh", "Arg",
-			"Array", "ArrayDepth", "ArrayPad", "ArrayQ", "Assumptions", "AtomQ", "Attributes", "Begin", "BeginPackage",
-			"BellB", "BellY", "BernoulliB", "BernoulliDistribution", "BesselI", "BesselJ", "BesselK", "BesselY", "Beta",
-			"BetaRegularized", "BinCounts", "Binomial", "BinomialDistribution", "Blank", "Block", "Boole", "BooleanQ",
-			"BooleanConvert", "BooleanMinimize", "BooleanTable", "BooleanVariables", "BrayCurtisDistance", "Break",
-			"CanberraDistance", "Cancel", "CarmichaelLambda", "CartesianProduct", "Cases", "CatalanNumber", "Catch",
-			"Catenate", "CDF", "Ceiling", "CentralMoment", "CharacteristicPolynomial", "ChebyshevT", "ChebyshevU",
-			"ChessboardDistance", "ChineseRemainder", "CholeskyDecomposition", "Chop", "CirclePoints", "Clear",
-			"ClearAll", "ClearAttributes", "Coefficient", "CoefficientList", "CoefficientRules", "Colon", "Collect",
-			"Commonest", "Complement", "Compile", "Complex", "ComplexExpand", "ComplexInfinity", "ComposeList",
-			"Composition", "CompoundExpression", "Condition", "Conjugate", "ConjugateTranspose", "ConstantArray",
-			"Continue", "ContinuedFraction", "CoprimeQ", "Correlation", "Cos", "Cosh", "CosineDistance", "CosIntegral",
-			"CoshIntegral", "Cot", "Coth", "Count", "Covariance", "Cross", "Csc", "Csch", "CubeRoot", "Curl",
-			"Decrement", "Default", "Defer", "Definition", "Delete", "DeleteCases", "DeleteDuplicates", "Denominator",
-			"Depth", "Derivative", "DesignMatrix", "Det", "DiagonalMatrix", "DiceDissimilarity", "DigitQ", "Dimensions",
-			"DiracDelta", "DiscreteDelta", "DiscreteUniformDistribution", "DirectedInfinity", "Direction",
-			"Discriminant", "Distribute", "Divergence", "DivideBy", "Divisible", "Divisors", "DivisorSigma", "Do",
-			"Dot", "Drop", "DSolve", "EasterSunday", "Eigenvalues", "Eigenvectors", "Element", "ElementData",
-			"Eliminate", "EllipticE", "EllipticF", "EllipticPi", "End", "EndPackage", "Equal", "Equivalent", "Erf",
-			"Erfc", "Erfi", "ErlangDistribution", "EuclideanDistance", "EulerE", "EulerPhi", "EvenQ", "ExactNumberQ",
-			"Except", "Exists", "Exp", "Expand", "ExpandAll", "Expectation", "ExpIntegralE", "ExpIntegralEi",
-			"Exponent", "Export", "ExtendedGCD", "Extract", "Factor", "Factorial", "Factorial2", "FactorInteger",
-			"FactorSquareFree", "FactorSquareFreeList", "FactorTerms", "Flatten", "FlattenAt", "Fibonacci",
-			"FindInstance", "FindRoot", "First", "Fit", "FixedPoint", "FixedPointList", "Floor", "Fold", "FoldList",
-			"For", "ForAll", "FourierMatrix", "FractionalPart", "FrechetDistribution", "FreeQ", "FresnelC", "FresnelS",
-			"FrobeniusSolve", "FromCharacterCode", "FromContinuedFraction", "FromPolarCoordinates", "FullForm",
-			"FullSimplify", "Function", "Gamma", "GammaDistribution", "GammaRegularized", "Gather", "GCD",
-			"GegenbauerC", "GeometricDistribution", "GeometricMean", "Get", "Graphics", "Graphics3D", "Graphics3D",
-			"Greater", "GreaterEqual", "GroebnerBasis", "GumbelDistribution", "Haversine", "HarmonicNumber", "Head",
-			"HeavisideTheta", "HermiteH", "HilbertMatrix", "Hold", "HoldForm", "Horner", "HornerForm", "HurwitzZeta",
+			"AngleVector", "AnyTrue", "AntihermitianMatrixQ", "AntisymmetricMatrixQ", "AlgebraicNumber", "Alternatives",
+			"Apart", "AppellF1", "Append", "AppendTo", "Apply", "ArcCos", "ArcCosh", "ArcCot", "ArcCoth", "ArcCsc",
+			"ArcCsch", "ArcSec", "ArcSech", "ArcSin", "ArcSinh", "ArcTan", "ArcTanh", "Arg", "Array", "ArrayDepth",
+			"ArrayPad", "ArrayQ", "Assumptions", "AtomQ", "Attributes", "Begin", "BeginPackage", "BellB", "BellY",
+			"BernoulliB", "BernoulliDistribution", "BesselI", "BesselJ", "BesselK", "BesselY", "Beta",
+			"BetaRegularized", "BinCounts", "Binomial", "BinomialDistribution", "BitLength", "Blank", "Block", "Boole",
+			"BooleanQ", "BooleanConvert", "BooleanMinimize", "BooleanTable", "BooleanVariables", "BrayCurtisDistance",
+			"Break", "CanberraDistance", "Cancel", "CarmichaelLambda", "CartesianProduct", "Cases", "CatalanNumber",
+			"Catch", "Catenate", "CDF", "Ceiling", "CentralMoment", "CharacteristicPolynomial", "ChebyshevT",
+			"ChebyshevU", "ChessboardDistance", "ChineseRemainder", "CholeskyDecomposition", "Chop", "CirclePoints",
+			"Clear", "ClearAll", "ClearAttributes", "Coefficient", "CoefficientList", "CoefficientRules", "Colon",
+			"Collect", "Commonest", "Complement", "Compile", "Complex", "ComplexExpand", "ComposeList", "Composition",
+			"CompoundExpression", "Condition", "Conjugate", "ConjugateTranspose", "ConstantArray", "Continue",
+			"ContinuedFraction", "ConvexHullMesh", "CoprimeQ", "Correlation", "Cos", "Cosh", "CosineDistance",
+			"CosIntegral", "CoshIntegral", "Cot", "Coth", "Count", "Covariance", "Cross", "Csc", "Csch", "CubeRoot",
+			"Curl", "Decrement", "Default", "Defer", "Definition", "Delete", "DeleteCases", "DeleteDuplicates",
+			"Denominator", "Depth", "Derivative", "DesignMatrix", "Det", "Diagonal", "DiagonalMatrix",
+			"DiceDissimilarity", "DigitQ", "Dimensions", "DiracDelta", "DiscreteDelta", "DiscreteUniformDistribution",
+			"DirectedInfinity", "Direction", "Discriminant", "Distribute", "Divergence", "DivideBy", "Divisible",
+			"Divisors", "DivisorSigma", "Do", "Dot", "Drop", "DSolve", "EasterSunday", "Eigenvalues", "Eigenvectors",
+			"Element", "ElementData", "Eliminate", "EllipticE", "EllipticF", "EllipticPi", "End", "EndPackage", "Equal",
+			"Equivalent", "Erf", "Erfc", "Erfi", "ErlangDistribution", "EuclideanDistance", "EulerE", "EulerPhi",
+			"EvenQ", "ExactNumberQ", "Except", "Exists", "Exp", "Expand", "ExpandAll", "Expectation",
+			"ExponentialDistribution", "ExpIntegralE", "ExpIntegralEi", "Exponent", "Export", "ExtendedGCD", "Extract",
+			"Factor", "Factorial", "Factorial2", "FactorInteger", "FactorSquareFree", "FactorSquareFreeList",
+			"FactorTerms", "Flatten", "FlattenAt", "Fibonacci", "FindInstance", "FindRoot", "First", "Fit",
+			"FixedPoint", "FixedPointList", "Floor", "Fold", "FoldList", "For", "ForAll", "FourierMatrix",
+			"FractionalPart", "FrechetDistribution", "FreeQ", "FresnelC", "FresnelS", "FrobeniusSolve",
+			"FromCharacterCode", "FromContinuedFraction", "FromPolarCoordinates", "FullForm", "FullSimplify",
+			"Function", "Gamma", "GammaDistribution", "GammaRegularized", "Gather", "GCD", "GegenbauerC",
+			"GeometricDistribution", "GeometricMean", "Get", "Graphics", "Graphics3D", "Greater", "GreaterEqual",
+			"GroebnerBasis", "GumbelDistribution", "Haversine", "HarmonicNumber", "Head", "HeavisideTheta", "HermiteH",
+			"HermitianMatrixQ", "HilbertMatrix", "Hold", "HoldForm", "Horner", "HornerForm", "HurwitzZeta",
 			"HypergeometricDistribution", "HypergeometricPFQ", "Hypergeometric1F1", "Hypergeometric2F1",
 			"HypergeometricPFQRegularized", "Identity", "IdentityMatrix", "If", "Im", "Implies", "Import", "Increment",
 			"Inequality", "InexactNumberQ", "Inner", "Insert", "Information", "Interval", "IntegerExponent",
@@ -94,7 +98,7 @@ public class AST2Expr {
 			"Last", "LCM", "LeafCount", "LaguerreL", "LaplaceTransform", "LeastSquares", "LegendreP", "LegendreQ",
 			"Length", "Less", "LessEqual", "LetterQ", "Level", "LevelQ", "Limit", "Line", "LinearModelFit",
 			"LinearProgramming", "LinearSolve", "LiouvilleLambda", "List", "ListConvolve", "ListCorrelate", "ListQ",
-			"Log", "Log2", "Log10", "LogGamma", "LogNormalDistribution", "LogicalExpand", "LogisticSigmoid",
+			"Literal", "Log", "Log2", "Log10", "LogGamma", "LogNormalDistribution", "LogicalExpand", "LogisticSigmoid",
 			"LogIntegral", "LowerCaseQ", "LowerTriangularize", "LucasL", "LUDecomposition", "MachineNumberQ",
 			"ManhattanDistance", "MantissaExponent", "Map", "MapAt", "MapAll", "MapThread", "MatchingDissimilarity",
 			"MatchQ", "MathMLForm", "MatrixForm", "MatrixMinimalPolynomial", "MatrixPower", "MatrixQ", "MatrixRank",
@@ -167,6 +171,9 @@ public class AST2Expr {
 					for (String str : SYMBOL_STRINGS) {
 						SUGGEST_TREE.put(str, 1);
 					}
+					for (String str : DOLLAR_STRINGS) {
+						SUGGEST_TREE.put(str, 1);
+					}
 				}
 			}
 		}
@@ -177,6 +184,9 @@ public class AST2Expr {
 		for (String str : UPPERCASE_SYMBOL_STRINGS) {
 			// these constants must be written in upper case characters
 			PREDEFINED_SYMBOLS_MAP.put(str, str);
+		}
+		for (String str : DOLLAR_STRINGS) {
+			PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(Locale.ENGLISH), str);
 		}
 		for (String str : SYMBOL_STRINGS) {
 			PREDEFINED_SYMBOLS_MAP.put(str.toLowerCase(Locale.ENGLISH), str);
@@ -329,12 +339,12 @@ public class AST2Expr {
 			} else if (ast.isASTSizeGE(F.Less, 3)) {
 				ISymbol compareHead = F.LessEqual;
 				return rewriteLessGreaterAST(ast, compareHead);
-			} else if (head.equals(F.PatternHead)) {
+			} else if (head.equals(F.Pattern)) {
 				final IExpr expr = PatternMatching.Pattern.CONST.evaluate(ast, fEngine);
 				if (expr.isPresent()) {
 					return expr;
 				}
-			} else if (head.equals(F.BlankHead)) {
+			} else if (head.equals(F.Blank)) {
 				final IExpr expr = PatternMatching.Blank.CONST.evaluate(ast, fEngine);
 				if (expr.isPresent()) {
 					return expr;

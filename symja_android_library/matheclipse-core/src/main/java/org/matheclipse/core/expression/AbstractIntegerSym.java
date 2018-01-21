@@ -492,7 +492,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
 	@Override
 	public ISymbol head() {
-		return F.IntegerHead;
+		return F.Integer;
 	}
 
 	@Override

@@ -308,7 +308,7 @@ public class StringX implements IStringX {
 
 	@Override
 	public ISymbol head() {
-		return F.StringHead;
+		return F.String;
 	}
 
 	@Override

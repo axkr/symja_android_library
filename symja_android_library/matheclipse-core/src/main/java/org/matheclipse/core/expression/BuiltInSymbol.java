@@ -21,7 +21,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
-	static class DummyEvaluator implements IEvaluator {
+	private static class DummyEvaluator implements IEvaluator {
 
 		@Override
 		public void join() {
@@ -187,8 +187,8 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 		}
 
 		return engine.evaluate(F.ast(args, this));
-	} 
-	
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean ofQ(EvalEngine engine, IExpr... args) {
