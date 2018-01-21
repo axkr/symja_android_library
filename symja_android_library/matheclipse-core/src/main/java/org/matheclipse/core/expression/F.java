@@ -152,8 +152,10 @@ public class F {
 	public final static IBuiltInSymbol Alternatives = SymbolEnumeration.valueOf(SymbolEnumeration.Alternatives);
 	public final static IBuiltInSymbol And = SymbolEnumeration.valueOf(SymbolEnumeration.And);
 	public final static IBuiltInSymbol AngleVector = SymbolEnumeration.valueOf(SymbolEnumeration.AngleVector);
-	public final static IBuiltInSymbol AntihermitianMatrixQ = SymbolEnumeration.valueOf(SymbolEnumeration.AntihermitianMatrixQ);
-	public final static IBuiltInSymbol AntisymmetricMatrixQ = SymbolEnumeration.valueOf(SymbolEnumeration.AntisymmetricMatrixQ);
+	public final static IBuiltInSymbol AntihermitianMatrixQ = SymbolEnumeration
+			.valueOf(SymbolEnumeration.AntihermitianMatrixQ);
+	public final static IBuiltInSymbol AntisymmetricMatrixQ = SymbolEnumeration
+			.valueOf(SymbolEnumeration.AntisymmetricMatrixQ);
 	public final static IBuiltInSymbol AnyTrue = SymbolEnumeration.valueOf(SymbolEnumeration.AnyTrue);
 	public final static IBuiltInSymbol Apart = SymbolEnumeration.valueOf(SymbolEnumeration.Apart);
 	public final static IBuiltInSymbol AppellF1 = SymbolEnumeration.valueOf(SymbolEnumeration.AppellF1);
@@ -190,7 +192,8 @@ public class F {
 	public final static IBuiltInSymbol BellB = SymbolEnumeration.valueOf(SymbolEnumeration.BellB);
 	public final static IBuiltInSymbol BellY = SymbolEnumeration.valueOf(SymbolEnumeration.BellY);
 	public final static IBuiltInSymbol BernoulliB = SymbolEnumeration.valueOf(SymbolEnumeration.BernoulliB);
-	public final static IBuiltInSymbol BernoulliDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.BernoulliDistribution);
+	public final static IBuiltInSymbol BernoulliDistribution = SymbolEnumeration
+			.valueOf(SymbolEnumeration.BernoulliDistribution);
 	public final static IBuiltInSymbol BesselI = SymbolEnumeration.valueOf(SymbolEnumeration.BesselI);
 	public final static IBuiltInSymbol BesselJ = SymbolEnumeration.valueOf(SymbolEnumeration.BesselJ);
 	public final static IBuiltInSymbol BesselK = SymbolEnumeration.valueOf(SymbolEnumeration.BesselK);
@@ -199,7 +202,8 @@ public class F {
 	public final static IBuiltInSymbol BetaRegularized = SymbolEnumeration.valueOf(SymbolEnumeration.BetaRegularized);
 	public final static IBuiltInSymbol BinCounts = SymbolEnumeration.valueOf(SymbolEnumeration.BinCounts);
 	public final static IBuiltInSymbol Binomial = SymbolEnumeration.valueOf(SymbolEnumeration.Binomial);
-	public final static IBuiltInSymbol BinomialDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.BinomialDistribution);
+	public final static IBuiltInSymbol BinomialDistribution = SymbolEnumeration
+			.valueOf(SymbolEnumeration.BinomialDistribution);
 	public final static IBuiltInSymbol BitLength = SymbolEnumeration.valueOf(SymbolEnumeration.BitLength);
 	public final static IBuiltInSymbol Blank = SymbolEnumeration.valueOf(SymbolEnumeration.Blank);
 	public final static IBuiltInSymbol Block = SymbolEnumeration.valueOf(SymbolEnumeration.Block);
@@ -210,7 +214,8 @@ public class F {
 	public final static IBuiltInSymbol BooleanTable = SymbolEnumeration.valueOf(SymbolEnumeration.BooleanTable);
 	public final static IBuiltInSymbol BooleanVariables = SymbolEnumeration.valueOf(SymbolEnumeration.BooleanVariables);
 	public final static IBuiltInSymbol Booleans = SymbolEnumeration.valueOf(SymbolEnumeration.Booleans);
-	public final static IBuiltInSymbol BrayCurtisDistance = SymbolEnumeration.valueOf(SymbolEnumeration.BrayCurtisDistance);
+	public final static IBuiltInSymbol BrayCurtisDistance = SymbolEnumeration
+			.valueOf(SymbolEnumeration.BrayCurtisDistance);
 	public final static IBuiltInSymbol Break = SymbolEnumeration.valueOf(SymbolEnumeration.Break);
 	public final static IBuiltInSymbol CDF = SymbolEnumeration.valueOf(SymbolEnumeration.CDF);
 	public final static IBuiltInSymbol CanberraDistance = SymbolEnumeration.valueOf(SymbolEnumeration.CanberraDistance);
@@ -224,14 +229,17 @@ public class F {
 	public final static IBuiltInSymbol Catenate = SymbolEnumeration.valueOf(SymbolEnumeration.Catenate);
 	public final static IBuiltInSymbol Ceiling = SymbolEnumeration.valueOf(SymbolEnumeration.Ceiling);
 	public final static IBuiltInSymbol CentralMoment = SymbolEnumeration.valueOf(SymbolEnumeration.CentralMoment);
-	public final static IBuiltInSymbol CharacterEncoding = SymbolEnumeration.valueOf(SymbolEnumeration.CharacterEncoding);
-	public final static IBuiltInSymbol CharacteristicPolynomial = SymbolEnumeration.valueOf(
-			SymbolEnumeration.CharacteristicPolynomial);
+	public final static IBuiltInSymbol CharacterEncoding = SymbolEnumeration
+			.valueOf(SymbolEnumeration.CharacterEncoding);
+	public final static IBuiltInSymbol CharacteristicPolynomial = SymbolEnumeration
+			.valueOf(SymbolEnumeration.CharacteristicPolynomial);
 	public final static IBuiltInSymbol ChebyshevT = SymbolEnumeration.valueOf(SymbolEnumeration.ChebyshevT);
 	public final static IBuiltInSymbol ChebyshevU = SymbolEnumeration.valueOf(SymbolEnumeration.ChebyshevU);
-	public final static IBuiltInSymbol ChessboardDistance = SymbolEnumeration.valueOf(SymbolEnumeration.ChessboardDistance);
+	public final static IBuiltInSymbol ChessboardDistance = SymbolEnumeration
+			.valueOf(SymbolEnumeration.ChessboardDistance);
 	public final static IBuiltInSymbol ChineseRemainder = SymbolEnumeration.valueOf(SymbolEnumeration.ChineseRemainder);
-	public final static IBuiltInSymbol CholeskyDecomposition = SymbolEnumeration.valueOf(SymbolEnumeration.CholeskyDecomposition);
+	public final static IBuiltInSymbol CholeskyDecomposition = SymbolEnumeration
+			.valueOf(SymbolEnumeration.CholeskyDecomposition);
 	public final static IBuiltInSymbol Chop = SymbolEnumeration.valueOf(SymbolEnumeration.Chop);
 	public final static IBuiltInSymbol CirclePoints = SymbolEnumeration.valueOf(SymbolEnumeration.CirclePoints);
 	public final static IBuiltInSymbol Clear = SymbolEnumeration.valueOf(SymbolEnumeration.Clear);
@@ -249,17 +257,21 @@ public class F {
 	public final static IBuiltInSymbol ComplexExpand = SymbolEnumeration.valueOf(SymbolEnumeration.ComplexExpand);
 	public final static IBuiltInSymbol ComplexInfinity = SymbolEnumeration.valueOf(SymbolEnumeration.ComplexInfinity);
 	public final static IBuiltInSymbol Complexes = SymbolEnumeration.valueOf(SymbolEnumeration.Complexes);
-	public final static IBuiltInSymbol ComplexityFunction = SymbolEnumeration.valueOf(SymbolEnumeration.ComplexityFunction);
+	public final static IBuiltInSymbol ComplexityFunction = SymbolEnumeration
+			.valueOf(SymbolEnumeration.ComplexityFunction);
 	public final static IBuiltInSymbol ComposeList = SymbolEnumeration.valueOf(SymbolEnumeration.ComposeList);
 	public final static IBuiltInSymbol Composition = SymbolEnumeration.valueOf(SymbolEnumeration.Composition);
-	public final static IBuiltInSymbol CompoundExpression = SymbolEnumeration.valueOf(SymbolEnumeration.CompoundExpression);
+	public final static IBuiltInSymbol CompoundExpression = SymbolEnumeration
+			.valueOf(SymbolEnumeration.CompoundExpression);
 	public final static IBuiltInSymbol Condition = SymbolEnumeration.valueOf(SymbolEnumeration.Condition);
 	public final static IBuiltInSymbol Conjugate = SymbolEnumeration.valueOf(SymbolEnumeration.Conjugate);
-	public final static IBuiltInSymbol ConjugateTranspose = SymbolEnumeration.valueOf(SymbolEnumeration.ConjugateTranspose);
+	public final static IBuiltInSymbol ConjugateTranspose = SymbolEnumeration
+			.valueOf(SymbolEnumeration.ConjugateTranspose);
 	public final static IBuiltInSymbol Constant = SymbolEnumeration.valueOf(SymbolEnumeration.Constant);
 	public final static IBuiltInSymbol ConstantArray = SymbolEnumeration.valueOf(SymbolEnumeration.ConstantArray);
 	public final static IBuiltInSymbol Continue = SymbolEnumeration.valueOf(SymbolEnumeration.Continue);
-	public final static IBuiltInSymbol ContinuedFraction = SymbolEnumeration.valueOf(SymbolEnumeration.ContinuedFraction);
+	public final static IBuiltInSymbol ContinuedFraction = SymbolEnumeration
+			.valueOf(SymbolEnumeration.ContinuedFraction);
 	public final static IBuiltInSymbol ConvexHullMesh = SymbolEnumeration.valueOf(SymbolEnumeration.ConvexHullMesh);
 	public final static IBuiltInSymbol CoprimeQ = SymbolEnumeration.valueOf(SymbolEnumeration.CoprimeQ);
 	public final static IBuiltInSymbol Correlation = SymbolEnumeration.valueOf(SymbolEnumeration.Correlation);
@@ -294,15 +306,16 @@ public class F {
 	public final static IBuiltInSymbol Det = SymbolEnumeration.valueOf(SymbolEnumeration.Det);
 	public final static IBuiltInSymbol Diagonal = SymbolEnumeration.valueOf(SymbolEnumeration.Diagonal);
 	public final static IBuiltInSymbol DiagonalMatrix = SymbolEnumeration.valueOf(SymbolEnumeration.DiagonalMatrix);
-	public final static IBuiltInSymbol DiceDissimilarity = SymbolEnumeration.valueOf(SymbolEnumeration.DiceDissimilarity);
+	public final static IBuiltInSymbol DiceDissimilarity = SymbolEnumeration
+			.valueOf(SymbolEnumeration.DiceDissimilarity);
 	public final static IBuiltInSymbol DigitQ = SymbolEnumeration.valueOf(SymbolEnumeration.DigitQ);
 	public final static IBuiltInSymbol Dimensions = SymbolEnumeration.valueOf(SymbolEnumeration.Dimensions);
 	public final static IBuiltInSymbol DiracDelta = SymbolEnumeration.valueOf(SymbolEnumeration.DiracDelta);
 	public final static IBuiltInSymbol DirectedInfinity = SymbolEnumeration.valueOf(SymbolEnumeration.DirectedInfinity);
 	public final static IBuiltInSymbol Direction = SymbolEnumeration.valueOf(SymbolEnumeration.Direction);
 	public final static IBuiltInSymbol DiscreteDelta = SymbolEnumeration.valueOf(SymbolEnumeration.DiscreteDelta);
-	public final static IBuiltInSymbol DiscreteUniformDistribution = SymbolEnumeration.valueOf(
-			SymbolEnumeration.DiscreteUniformDistribution);
+	public final static IBuiltInSymbol DiscreteUniformDistribution = SymbolEnumeration
+			.valueOf(SymbolEnumeration.DiscreteUniformDistribution);
 	public final static IBuiltInSymbol Discriminant = SymbolEnumeration.valueOf(SymbolEnumeration.Discriminant);
 	public final static IBuiltInSymbol Disputed = SymbolEnumeration.valueOf(SymbolEnumeration.Disputed);
 	public final static IBuiltInSymbol Distribute = SymbolEnumeration.valueOf(SymbolEnumeration.Distribute);
@@ -331,8 +344,10 @@ public class F {
 	public final static IBuiltInSymbol Erf = SymbolEnumeration.valueOf(SymbolEnumeration.Erf);
 	public final static IBuiltInSymbol Erfc = SymbolEnumeration.valueOf(SymbolEnumeration.Erfc);
 	public final static IBuiltInSymbol Erfi = SymbolEnumeration.valueOf(SymbolEnumeration.Erfi);
-	public final static IBuiltInSymbol ErlangDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.ErlangDistribution);
-	public final static IBuiltInSymbol EuclideanDistance = SymbolEnumeration.valueOf(SymbolEnumeration.EuclideanDistance);
+	public final static IBuiltInSymbol ErlangDistribution = SymbolEnumeration
+			.valueOf(SymbolEnumeration.ErlangDistribution);
+	public final static IBuiltInSymbol EuclideanDistance = SymbolEnumeration
+			.valueOf(SymbolEnumeration.EuclideanDistance);
 	public final static IBuiltInSymbol EulerE = SymbolEnumeration.valueOf(SymbolEnumeration.EulerE);
 	public final static IBuiltInSymbol EulerGamma = SymbolEnumeration.valueOf(SymbolEnumeration.EulerGamma);
 	public final static IBuiltInSymbol EulerPhi = SymbolEnumeration.valueOf(SymbolEnumeration.EulerPhi);
@@ -347,15 +362,16 @@ public class F {
 	public final static IBuiltInSymbol ExpandAll = SymbolEnumeration.valueOf(SymbolEnumeration.ExpandAll);
 	public final static IBuiltInSymbol Expectation = SymbolEnumeration.valueOf(SymbolEnumeration.Expectation);
 	public final static IBuiltInSymbol Exponent = SymbolEnumeration.valueOf(SymbolEnumeration.Exponent);
-	public final static IBuiltInSymbol ExponentialDistribution = SymbolEnumeration.valueOf(
-			SymbolEnumeration.ExponentialDistribution);
+	public final static IBuiltInSymbol ExponentialDistribution = SymbolEnumeration
+			.valueOf(SymbolEnumeration.ExponentialDistribution);
 	public final static IBuiltInSymbol Export = SymbolEnumeration.valueOf(SymbolEnumeration.Export);
 	public final static IBuiltInSymbol ExtendedGCD = SymbolEnumeration.valueOf(SymbolEnumeration.ExtendedGCD);
 	public final static IBuiltInSymbol Extract = SymbolEnumeration.valueOf(SymbolEnumeration.Extract);
 	public final static IBuiltInSymbol Factor = SymbolEnumeration.valueOf(SymbolEnumeration.Factor);
 	public final static IBuiltInSymbol FactorInteger = SymbolEnumeration.valueOf(SymbolEnumeration.FactorInteger);
 	public final static IBuiltInSymbol FactorSquareFree = SymbolEnumeration.valueOf(SymbolEnumeration.FactorSquareFree);
-	public final static IBuiltInSymbol FactorSquareFreeList = SymbolEnumeration.valueOf(SymbolEnumeration.FactorSquareFreeList);
+	public final static IBuiltInSymbol FactorSquareFreeList = SymbolEnumeration
+			.valueOf(SymbolEnumeration.FactorSquareFreeList);
 	public final static IBuiltInSymbol FactorTerms = SymbolEnumeration.valueOf(SymbolEnumeration.FactorTerms);
 	public final static IBuiltInSymbol Factorial = SymbolEnumeration.valueOf(SymbolEnumeration.Factorial);
 	public final static IBuiltInSymbol Factorial2 = SymbolEnumeration.valueOf(SymbolEnumeration.Factorial2);
@@ -377,24 +393,30 @@ public class F {
 	public final static IBuiltInSymbol ForAll = SymbolEnumeration.valueOf(SymbolEnumeration.ForAll);
 	public final static IBuiltInSymbol FourierMatrix = SymbolEnumeration.valueOf(SymbolEnumeration.FourierMatrix);
 	public final static IBuiltInSymbol FractionalPart = SymbolEnumeration.valueOf(SymbolEnumeration.FractionalPart);
-	public final static IBuiltInSymbol FrechetDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.FrechetDistribution);
+	public final static IBuiltInSymbol FrechetDistribution = SymbolEnumeration
+			.valueOf(SymbolEnumeration.FrechetDistribution);
 	public final static IBuiltInSymbol FreeQ = SymbolEnumeration.valueOf(SymbolEnumeration.FreeQ);
 	public final static IBuiltInSymbol FresnelC = SymbolEnumeration.valueOf(SymbolEnumeration.FresnelC);
 	public final static IBuiltInSymbol FresnelS = SymbolEnumeration.valueOf(SymbolEnumeration.FresnelS);
 	public final static IBuiltInSymbol FrobeniusSolve = SymbolEnumeration.valueOf(SymbolEnumeration.FrobeniusSolve);
-	public final static IBuiltInSymbol FromCharacterCode = SymbolEnumeration.valueOf(SymbolEnumeration.FromCharacterCode);
-	public final static IBuiltInSymbol FromContinuedFraction = SymbolEnumeration.valueOf(SymbolEnumeration.FromContinuedFraction);
-	public final static IBuiltInSymbol FromPolarCoordinates = SymbolEnumeration.valueOf(SymbolEnumeration.FromPolarCoordinates);
+	public final static IBuiltInSymbol FromCharacterCode = SymbolEnumeration
+			.valueOf(SymbolEnumeration.FromCharacterCode);
+	public final static IBuiltInSymbol FromContinuedFraction = SymbolEnumeration
+			.valueOf(SymbolEnumeration.FromContinuedFraction);
+	public final static IBuiltInSymbol FromPolarCoordinates = SymbolEnumeration
+			.valueOf(SymbolEnumeration.FromPolarCoordinates);
 	public final static IBuiltInSymbol FullForm = SymbolEnumeration.valueOf(SymbolEnumeration.FullForm);
 	public final static IBuiltInSymbol FullSimplify = SymbolEnumeration.valueOf(SymbolEnumeration.FullSimplify);
 	public final static IBuiltInSymbol Function = SymbolEnumeration.valueOf(SymbolEnumeration.Function);
 	public final static IBuiltInSymbol GCD = SymbolEnumeration.valueOf(SymbolEnumeration.GCD);
 	public final static IBuiltInSymbol Gamma = SymbolEnumeration.valueOf(SymbolEnumeration.Gamma);
-	public final static IBuiltInSymbol GammaDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.GammaDistribution);
+	public final static IBuiltInSymbol GammaDistribution = SymbolEnumeration
+			.valueOf(SymbolEnumeration.GammaDistribution);
 	public final static IBuiltInSymbol GammaRegularized = SymbolEnumeration.valueOf(SymbolEnumeration.GammaRegularized);
 	public final static IBuiltInSymbol Gather = SymbolEnumeration.valueOf(SymbolEnumeration.Gather);
 	public final static IBuiltInSymbol GegenbauerC = SymbolEnumeration.valueOf(SymbolEnumeration.GegenbauerC);
-	public final static IBuiltInSymbol GeometricDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.GeometricDistribution);
+	public final static IBuiltInSymbol GeometricDistribution = SymbolEnumeration
+			.valueOf(SymbolEnumeration.GeometricDistribution);
 	public final static IBuiltInSymbol GeometricMean = SymbolEnumeration.valueOf(SymbolEnumeration.GeometricMean);
 	public final static IBuiltInSymbol Get = SymbolEnumeration.valueOf(SymbolEnumeration.Get);
 	public final static IBuiltInSymbol Glaisher = SymbolEnumeration.valueOf(SymbolEnumeration.Glaisher);
@@ -404,7 +426,8 @@ public class F {
 	public final static IBuiltInSymbol Greater = SymbolEnumeration.valueOf(SymbolEnumeration.Greater);
 	public final static IBuiltInSymbol GreaterEqual = SymbolEnumeration.valueOf(SymbolEnumeration.GreaterEqual);
 	public final static IBuiltInSymbol GroebnerBasis = SymbolEnumeration.valueOf(SymbolEnumeration.GroebnerBasis);
-	public final static IBuiltInSymbol GumbelDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.GumbelDistribution);
+	public final static IBuiltInSymbol GumbelDistribution = SymbolEnumeration
+			.valueOf(SymbolEnumeration.GumbelDistribution);
 	public final static IBuiltInSymbol HarmonicNumber = SymbolEnumeration.valueOf(SymbolEnumeration.HarmonicNumber);
 	public final static IBuiltInSymbol Haversine = SymbolEnumeration.valueOf(SymbolEnumeration.Haversine);
 	public final static IBuiltInSymbol Head = SymbolEnumeration.valueOf(SymbolEnumeration.Head);
@@ -420,13 +443,16 @@ public class F {
 	public final static IBuiltInSymbol Horner = SymbolEnumeration.valueOf(SymbolEnumeration.Horner);
 	public final static IBuiltInSymbol HornerForm = SymbolEnumeration.valueOf(SymbolEnumeration.HornerForm);
 	public final static IBuiltInSymbol HurwitzZeta = SymbolEnumeration.valueOf(SymbolEnumeration.HurwitzZeta);
-	public final static IBuiltInSymbol Hypergeometric1F1 = SymbolEnumeration.valueOf(SymbolEnumeration.Hypergeometric1F1);
-	public final static IBuiltInSymbol Hypergeometric2F1 = SymbolEnumeration.valueOf(SymbolEnumeration.Hypergeometric2F1);
-	public final static IBuiltInSymbol HypergeometricDistribution = SymbolEnumeration.valueOf(
-			SymbolEnumeration.HypergeometricDistribution);
-	public final static IBuiltInSymbol HypergeometricPFQ = SymbolEnumeration.valueOf(SymbolEnumeration.HypergeometricPFQ);
-	public final static IBuiltInSymbol HypergeometricPFQRegularized = SymbolEnumeration.valueOf(
-			SymbolEnumeration.HypergeometricPFQRegularized);
+	public final static IBuiltInSymbol Hypergeometric1F1 = SymbolEnumeration
+			.valueOf(SymbolEnumeration.Hypergeometric1F1);
+	public final static IBuiltInSymbol Hypergeometric2F1 = SymbolEnumeration
+			.valueOf(SymbolEnumeration.Hypergeometric2F1);
+	public final static IBuiltInSymbol HypergeometricDistribution = SymbolEnumeration
+			.valueOf(SymbolEnumeration.HypergeometricDistribution);
+	public final static IBuiltInSymbol HypergeometricPFQ = SymbolEnumeration
+			.valueOf(SymbolEnumeration.HypergeometricPFQ);
+	public final static IBuiltInSymbol HypergeometricPFQRegularized = SymbolEnumeration
+			.valueOf(SymbolEnumeration.HypergeometricPFQRegularized);
 	public final static IBuiltInSymbol I = SymbolEnumeration.valueOf(SymbolEnumeration.I);
 	public final static IBuiltInSymbol Identity = SymbolEnumeration.valueOf(SymbolEnumeration.Identity);
 	public final static IBuiltInSymbol IdentityMatrix = SymbolEnumeration.valueOf(SymbolEnumeration.IdentityMatrix);
@@ -446,13 +472,15 @@ public class F {
 	public final static IBuiltInSymbol IntegerExponent = SymbolEnumeration.valueOf(SymbolEnumeration.IntegerExponent);
 	public final static IBuiltInSymbol IntegerLength = SymbolEnumeration.valueOf(SymbolEnumeration.IntegerLength);
 	public final static IBuiltInSymbol IntegerPart = SymbolEnumeration.valueOf(SymbolEnumeration.IntegerPart);
-	public final static IBuiltInSymbol IntegerPartitions = SymbolEnumeration.valueOf(SymbolEnumeration.IntegerPartitions);
+	public final static IBuiltInSymbol IntegerPartitions = SymbolEnumeration
+			.valueOf(SymbolEnumeration.IntegerPartitions);
 	public final static IBuiltInSymbol IntegerQ = SymbolEnumeration.valueOf(SymbolEnumeration.IntegerQ);
 	public final static IBuiltInSymbol Integers = SymbolEnumeration.valueOf(SymbolEnumeration.Integers);
 	public final static IBuiltInSymbol Integrate = SymbolEnumeration.valueOf(SymbolEnumeration.Integrate);
-	public final static IBuiltInSymbol InterpolatingFunction = SymbolEnumeration.valueOf(SymbolEnumeration.InterpolatingFunction);
-	public final static IBuiltInSymbol InterpolatingPolynomial = SymbolEnumeration.valueOf(
-			SymbolEnumeration.InterpolatingPolynomial);
+	public final static IBuiltInSymbol InterpolatingFunction = SymbolEnumeration
+			.valueOf(SymbolEnumeration.InterpolatingFunction);
+	public final static IBuiltInSymbol InterpolatingPolynomial = SymbolEnumeration
+			.valueOf(SymbolEnumeration.InterpolatingPolynomial);
 	public final static IBuiltInSymbol Interpolation = SymbolEnumeration.valueOf(SymbolEnumeration.Interpolation);
 	public final static IBuiltInSymbol Intersection = SymbolEnumeration.valueOf(SymbolEnumeration.Intersection);
 	public final static IBuiltInSymbol Interval = SymbolEnumeration.valueOf(SymbolEnumeration.Interval);
@@ -461,14 +489,16 @@ public class F {
 	public final static IBuiltInSymbol InverseErfc = SymbolEnumeration.valueOf(SymbolEnumeration.InverseErfc);
 	public final static IBuiltInSymbol InverseFunction = SymbolEnumeration.valueOf(SymbolEnumeration.InverseFunction);
 	public final static IBuiltInSymbol InverseHaversine = SymbolEnumeration.valueOf(SymbolEnumeration.InverseHaversine);
-	public final static IBuiltInSymbol InverseLaplaceTransform = SymbolEnumeration.valueOf(
-			SymbolEnumeration.InverseLaplaceTransform);
-	public final static IBuiltInSymbol JaccardDissimilarity = SymbolEnumeration.valueOf(SymbolEnumeration.JaccardDissimilarity);
+	public final static IBuiltInSymbol InverseLaplaceTransform = SymbolEnumeration
+			.valueOf(SymbolEnumeration.InverseLaplaceTransform);
+	public final static IBuiltInSymbol JaccardDissimilarity = SymbolEnumeration
+			.valueOf(SymbolEnumeration.JaccardDissimilarity);
 	public final static IBuiltInSymbol JacobiMatrix = SymbolEnumeration.valueOf(SymbolEnumeration.JacobiMatrix);
 	public final static IBuiltInSymbol JacobiSymbol = SymbolEnumeration.valueOf(SymbolEnumeration.JacobiSymbol);
 	public final static IBuiltInSymbol JavaForm = SymbolEnumeration.valueOf(SymbolEnumeration.JavaForm);
 	public final static IBuiltInSymbol Join = SymbolEnumeration.valueOf(SymbolEnumeration.Join);
-	public final static IBuiltInSymbol KOrderlessPartitions = SymbolEnumeration.valueOf(SymbolEnumeration.KOrderlessPartitions);
+	public final static IBuiltInSymbol KOrderlessPartitions = SymbolEnumeration
+			.valueOf(SymbolEnumeration.KOrderlessPartitions);
 	public final static IBuiltInSymbol KPartitions = SymbolEnumeration.valueOf(SymbolEnumeration.KPartitions);
 	public final static IBuiltInSymbol Khinchin = SymbolEnumeration.valueOf(SymbolEnumeration.Khinchin);
 	public final static IBuiltInSymbol KroneckerDelta = SymbolEnumeration.valueOf(SymbolEnumeration.KroneckerDelta);
@@ -491,7 +521,8 @@ public class F {
 	public final static IBuiltInSymbol Limit = SymbolEnumeration.valueOf(SymbolEnumeration.Limit);
 	public final static IBuiltInSymbol Line = SymbolEnumeration.valueOf(SymbolEnumeration.Line);
 	public final static IBuiltInSymbol LinearModelFit = SymbolEnumeration.valueOf(SymbolEnumeration.LinearModelFit);
-	public final static IBuiltInSymbol LinearProgramming = SymbolEnumeration.valueOf(SymbolEnumeration.LinearProgramming);
+	public final static IBuiltInSymbol LinearProgramming = SymbolEnumeration
+			.valueOf(SymbolEnumeration.LinearProgramming);
 	public final static IBuiltInSymbol LinearSolve = SymbolEnumeration.valueOf(SymbolEnumeration.LinearSolve);
 	public final static IBuiltInSymbol LiouvilleLambda = SymbolEnumeration.valueOf(SymbolEnumeration.LiouvilleLambda);
 	public final static IBuiltInSymbol List = SymbolEnumeration.valueOf(SymbolEnumeration.List);
@@ -505,25 +536,29 @@ public class F {
 	public final static IBuiltInSymbol Log2 = SymbolEnumeration.valueOf(SymbolEnumeration.Log2);
 	public final static IBuiltInSymbol LogGamma = SymbolEnumeration.valueOf(SymbolEnumeration.LogGamma);
 	public final static IBuiltInSymbol LogIntegral = SymbolEnumeration.valueOf(SymbolEnumeration.LogIntegral);
-	public final static IBuiltInSymbol LogNormalDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.LogNormalDistribution);
+	public final static IBuiltInSymbol LogNormalDistribution = SymbolEnumeration
+			.valueOf(SymbolEnumeration.LogNormalDistribution);
 	public final static IBuiltInSymbol LogicalExpand = SymbolEnumeration.valueOf(SymbolEnumeration.LogicalExpand);
 	public final static IBuiltInSymbol LogisticSigmoid = SymbolEnumeration.valueOf(SymbolEnumeration.LogisticSigmoid);
 	public final static IBuiltInSymbol LowerCaseQ = SymbolEnumeration.valueOf(SymbolEnumeration.LowerCaseQ);
-	public final static IBuiltInSymbol LowerTriangularize = SymbolEnumeration.valueOf(SymbolEnumeration.LowerTriangularize);
+	public final static IBuiltInSymbol LowerTriangularize = SymbolEnumeration
+			.valueOf(SymbolEnumeration.LowerTriangularize);
 	public final static IBuiltInSymbol LucasL = SymbolEnumeration.valueOf(SymbolEnumeration.LucasL);
 	public final static IBuiltInSymbol MachineNumberQ = SymbolEnumeration.valueOf(SymbolEnumeration.MachineNumberQ);
-	public final static IBuiltInSymbol ManhattanDistance = SymbolEnumeration.valueOf(SymbolEnumeration.ManhattanDistance);
+	public final static IBuiltInSymbol ManhattanDistance = SymbolEnumeration
+			.valueOf(SymbolEnumeration.ManhattanDistance);
 	public final static IBuiltInSymbol MantissaExponent = SymbolEnumeration.valueOf(SymbolEnumeration.MantissaExponent);
 	public final static IBuiltInSymbol Map = SymbolEnumeration.valueOf(SymbolEnumeration.Map);
 	public final static IBuiltInSymbol MapAll = SymbolEnumeration.valueOf(SymbolEnumeration.MapAll);
 	public final static IBuiltInSymbol MapAt = SymbolEnumeration.valueOf(SymbolEnumeration.MapAt);
 	public final static IBuiltInSymbol MapThread = SymbolEnumeration.valueOf(SymbolEnumeration.MapThread);
 	public final static IBuiltInSymbol MatchQ = SymbolEnumeration.valueOf(SymbolEnumeration.MatchQ);
-	public final static IBuiltInSymbol MatchingDissimilarity = SymbolEnumeration.valueOf(SymbolEnumeration.MatchingDissimilarity);
+	public final static IBuiltInSymbol MatchingDissimilarity = SymbolEnumeration
+			.valueOf(SymbolEnumeration.MatchingDissimilarity);
 	public final static IBuiltInSymbol MathMLForm = SymbolEnumeration.valueOf(SymbolEnumeration.MathMLForm);
 	public final static IBuiltInSymbol MatrixForm = SymbolEnumeration.valueOf(SymbolEnumeration.MatrixForm);
-	public final static IBuiltInSymbol MatrixMinimalPolynomial = SymbolEnumeration.valueOf(
-			SymbolEnumeration.MatrixMinimalPolynomial);
+	public final static IBuiltInSymbol MatrixMinimalPolynomial = SymbolEnumeration
+			.valueOf(SymbolEnumeration.MatrixMinimalPolynomial);
 	public final static IBuiltInSymbol MatrixPower = SymbolEnumeration.valueOf(SymbolEnumeration.MatrixPower);
 	public final static IBuiltInSymbol MatrixQ = SymbolEnumeration.valueOf(SymbolEnumeration.MatrixQ);
 	public final static IBuiltInSymbol MatrixRank = SymbolEnumeration.valueOf(SymbolEnumeration.MatrixRank);
@@ -535,14 +570,16 @@ public class F {
 	public final static IBuiltInSymbol Median = SymbolEnumeration.valueOf(SymbolEnumeration.Median);
 	public final static IBuiltInSymbol MeijerG = SymbolEnumeration.valueOf(SymbolEnumeration.MeijerG);
 	public final static IBuiltInSymbol MemberQ = SymbolEnumeration.valueOf(SymbolEnumeration.MemberQ);
-	public final static IBuiltInSymbol MersennePrimeExponent = SymbolEnumeration.valueOf(SymbolEnumeration.MersennePrimeExponent);
-	public final static IBuiltInSymbol MersennePrimeExponentQ = SymbolEnumeration.valueOf(
-			SymbolEnumeration.MersennePrimeExponentQ);
+	public final static IBuiltInSymbol MersennePrimeExponent = SymbolEnumeration
+			.valueOf(SymbolEnumeration.MersennePrimeExponent);
+	public final static IBuiltInSymbol MersennePrimeExponentQ = SymbolEnumeration
+			.valueOf(SymbolEnumeration.MersennePrimeExponentQ);
 	public final static IBuiltInSymbol MeshRange = SymbolEnumeration.valueOf(SymbolEnumeration.MeshRange);
 	public final static IBuiltInSymbol MessageName = SymbolEnumeration.valueOf(SymbolEnumeration.MessageName);
 	public final static IBuiltInSymbol Method = SymbolEnumeration.valueOf(SymbolEnumeration.Method);
 	public final static IBuiltInSymbol Min = SymbolEnumeration.valueOf(SymbolEnumeration.Min);
-	public final static IBuiltInSymbol MinimalPolynomial = SymbolEnumeration.valueOf(SymbolEnumeration.MinimalPolynomial);
+	public final static IBuiltInSymbol MinimalPolynomial = SymbolEnumeration
+			.valueOf(SymbolEnumeration.MinimalPolynomial);
 	public final static IBuiltInSymbol Minus = SymbolEnumeration.valueOf(SymbolEnumeration.Minus);
 	public final static IBuiltInSymbol Missing = SymbolEnumeration.valueOf(SymbolEnumeration.Missing);
 	public final static IBuiltInSymbol MissingQ = SymbolEnumeration.valueOf(SymbolEnumeration.MissingQ);
@@ -553,10 +590,12 @@ public class F {
 	public final static IBuiltInSymbol MonomialList = SymbolEnumeration.valueOf(SymbolEnumeration.MonomialList);
 	public final static IBuiltInSymbol Most = SymbolEnumeration.valueOf(SymbolEnumeration.Most);
 	public final static IBuiltInSymbol Multinomial = SymbolEnumeration.valueOf(SymbolEnumeration.Multinomial);
-	public final static IBuiltInSymbol MultiplicativeOrder = SymbolEnumeration.valueOf(SymbolEnumeration.MultiplicativeOrder);
+	public final static IBuiltInSymbol MultiplicativeOrder = SymbolEnumeration
+			.valueOf(SymbolEnumeration.MultiplicativeOrder);
 	public final static IBuiltInSymbol N = SymbolEnumeration.valueOf(SymbolEnumeration.N);
 	public final static IBuiltInSymbol NDSolve = SymbolEnumeration.valueOf(SymbolEnumeration.NDSolve);
-	public final static IBuiltInSymbol NFourierTransform = SymbolEnumeration.valueOf(SymbolEnumeration.NFourierTransform);
+	public final static IBuiltInSymbol NFourierTransform = SymbolEnumeration
+			.valueOf(SymbolEnumeration.NFourierTransform);
 	public final static IBuiltInSymbol NHoldAll = SymbolEnumeration.valueOf(SymbolEnumeration.NHoldAll);
 	public final static IBuiltInSymbol NHoldFirst = SymbolEnumeration.valueOf(SymbolEnumeration.NHoldFirst);
 	public final static IBuiltInSymbol NHoldRest = SymbolEnumeration.valueOf(SymbolEnumeration.NHoldRest);
@@ -565,7 +604,8 @@ public class F {
 	public final static IBuiltInSymbol NMinimize = SymbolEnumeration.valueOf(SymbolEnumeration.NMinimize);
 	public final static IBuiltInSymbol NRoots = SymbolEnumeration.valueOf(SymbolEnumeration.NRoots);
 	public final static IBuiltInSymbol NSolve = SymbolEnumeration.valueOf(SymbolEnumeration.NSolve);
-	public final static IBuiltInSymbol NakagamiDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.NakagamiDistribution);
+	public final static IBuiltInSymbol NakagamiDistribution = SymbolEnumeration
+			.valueOf(SymbolEnumeration.NakagamiDistribution);
 	public final static IBuiltInSymbol Names = SymbolEnumeration.valueOf(SymbolEnumeration.Names);
 	public final static IBuiltInSymbol Nand = SymbolEnumeration.valueOf(SymbolEnumeration.Nand);
 	public final static IBuiltInSymbol Nearest = SymbolEnumeration.valueOf(SymbolEnumeration.Nearest);
@@ -575,8 +615,8 @@ public class F {
 	public final static IBuiltInSymbol NestWhile = SymbolEnumeration.valueOf(SymbolEnumeration.NestWhile);
 	public final static IBuiltInSymbol NestWhileList = SymbolEnumeration.valueOf(SymbolEnumeration.NestWhileList);
 	public final static IBuiltInSymbol NextPrime = SymbolEnumeration.valueOf(SymbolEnumeration.NextPrime);
-	public final static IBuiltInSymbol NonCommutativeMultiply = SymbolEnumeration.valueOf(
-			SymbolEnumeration.NonCommutativeMultiply);
+	public final static IBuiltInSymbol NonCommutativeMultiply = SymbolEnumeration
+			.valueOf(SymbolEnumeration.NonCommutativeMultiply);
 	public final static IBuiltInSymbol NonNegative = SymbolEnumeration.valueOf(SymbolEnumeration.NonNegative);
 	public final static IBuiltInSymbol NonPositive = SymbolEnumeration.valueOf(SymbolEnumeration.NonPositive);
 	public final static IBuiltInSymbol None = SymbolEnumeration.valueOf(SymbolEnumeration.None);
@@ -585,7 +625,8 @@ public class F {
 	public final static IBuiltInSymbol Nor = SymbolEnumeration.valueOf(SymbolEnumeration.Nor);
 	public final static IBuiltInSymbol Norm = SymbolEnumeration.valueOf(SymbolEnumeration.Norm);
 	public final static IBuiltInSymbol Normal = SymbolEnumeration.valueOf(SymbolEnumeration.Normal);
-	public final static IBuiltInSymbol NormalDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.NormalDistribution);
+	public final static IBuiltInSymbol NormalDistribution = SymbolEnumeration
+			.valueOf(SymbolEnumeration.NormalDistribution);
 	public final static IBuiltInSymbol Normalize = SymbolEnumeration.valueOf(SymbolEnumeration.Normalize);
 	public final static IBuiltInSymbol Not = SymbolEnumeration.valueOf(SymbolEnumeration.Not);
 	public final static IBuiltInSymbol NotApplicable = SymbolEnumeration.valueOf(SymbolEnumeration.NotApplicable);
@@ -593,8 +634,8 @@ public class F {
 	public final static IBuiltInSymbol NotListQ = SymbolEnumeration.valueOf(SymbolEnumeration.NotListQ);
 	public final static IBuiltInSymbol Null = SymbolEnumeration.valueOf(SymbolEnumeration.Null);
 	public final static IBuiltInSymbol NullSpace = SymbolEnumeration.valueOf(SymbolEnumeration.NullSpace);
-	public final static IBuiltInSymbol NumberFieldRootsOfUnity = SymbolEnumeration.valueOf(
-			SymbolEnumeration.NumberFieldRootsOfUnity);
+	public final static IBuiltInSymbol NumberFieldRootsOfUnity = SymbolEnumeration
+			.valueOf(SymbolEnumeration.NumberFieldRootsOfUnity);
 	public final static IBuiltInSymbol NumberQ = SymbolEnumeration.valueOf(SymbolEnumeration.NumberQ);
 	public final static IBuiltInSymbol Numerator = SymbolEnumeration.valueOf(SymbolEnumeration.Numerator);
 	public final static IBuiltInSymbol NumericFunction = SymbolEnumeration.valueOf(SymbolEnumeration.NumericFunction);
@@ -610,7 +651,8 @@ public class F {
 	public final static IBuiltInSymbol OrderedQ = SymbolEnumeration.valueOf(SymbolEnumeration.OrderedQ);
 	public final static IBuiltInSymbol Ordering = SymbolEnumeration.valueOf(SymbolEnumeration.Ordering);
 	public final static IBuiltInSymbol Orderless = SymbolEnumeration.valueOf(SymbolEnumeration.Orderless);
-	public final static IBuiltInSymbol OrthogonalMatrixQ = SymbolEnumeration.valueOf(SymbolEnumeration.OrthogonalMatrixQ);
+	public final static IBuiltInSymbol OrthogonalMatrixQ = SymbolEnumeration
+			.valueOf(SymbolEnumeration.OrthogonalMatrixQ);
 	public final static IBuiltInSymbol Orthogonalize = SymbolEnumeration.valueOf(SymbolEnumeration.Orthogonalize);
 	public final static IBuiltInSymbol Out = SymbolEnumeration.valueOf(SymbolEnumeration.Out);
 	public final static IBuiltInSymbol Outer = SymbolEnumeration.valueOf(SymbolEnumeration.Outer);
@@ -636,18 +678,22 @@ public class F {
 	public final static IBuiltInSymbol Plus = SymbolEnumeration.valueOf(SymbolEnumeration.Plus);
 	public final static IBuiltInSymbol Pochhammer = SymbolEnumeration.valueOf(SymbolEnumeration.Pochhammer);
 	public final static IBuiltInSymbol Point = SymbolEnumeration.valueOf(SymbolEnumeration.Point);
-	public final static IBuiltInSymbol PoissonDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.PoissonDistribution);
+	public final static IBuiltInSymbol PoissonDistribution = SymbolEnumeration
+			.valueOf(SymbolEnumeration.PoissonDistribution);
 	public final static IBuiltInSymbol PolyGamma = SymbolEnumeration.valueOf(SymbolEnumeration.PolyGamma);
 	public final static IBuiltInSymbol PolyLog = SymbolEnumeration.valueOf(SymbolEnumeration.PolyLog);
 	public final static IBuiltInSymbol Polygon = SymbolEnumeration.valueOf(SymbolEnumeration.Polygon);
-	public final static IBuiltInSymbol PolynomialExtendedGCD = SymbolEnumeration.valueOf(SymbolEnumeration.PolynomialExtendedGCD);
+	public final static IBuiltInSymbol PolynomialExtendedGCD = SymbolEnumeration
+			.valueOf(SymbolEnumeration.PolynomialExtendedGCD);
 	public final static IBuiltInSymbol PolynomialGCD = SymbolEnumeration.valueOf(SymbolEnumeration.PolynomialGCD);
 	public final static IBuiltInSymbol PolynomialLCM = SymbolEnumeration.valueOf(SymbolEnumeration.PolynomialLCM);
 	public final static IBuiltInSymbol PolynomialQ = SymbolEnumeration.valueOf(SymbolEnumeration.PolynomialQ);
-	public final static IBuiltInSymbol PolynomialQuotient = SymbolEnumeration.valueOf(SymbolEnumeration.PolynomialQuotient);
-	public final static IBuiltInSymbol PolynomialQuotientRemainder = SymbolEnumeration.valueOf(
-			SymbolEnumeration.PolynomialQuotientRemainder);
-	public final static IBuiltInSymbol PolynomialRemainder = SymbolEnumeration.valueOf(SymbolEnumeration.PolynomialRemainder);
+	public final static IBuiltInSymbol PolynomialQuotient = SymbolEnumeration
+			.valueOf(SymbolEnumeration.PolynomialQuotient);
+	public final static IBuiltInSymbol PolynomialQuotientRemainder = SymbolEnumeration
+			.valueOf(SymbolEnumeration.PolynomialQuotientRemainder);
+	public final static IBuiltInSymbol PolynomialRemainder = SymbolEnumeration
+			.valueOf(SymbolEnumeration.PolynomialRemainder);
 	public final static IBuiltInSymbol Position = SymbolEnumeration.valueOf(SymbolEnumeration.Position);
 	public final static IBuiltInSymbol Positive = SymbolEnumeration.valueOf(SymbolEnumeration.Positive);
 	public final static IBuiltInSymbol PossibleZeroQ = SymbolEnumeration.valueOf(SymbolEnumeration.PossibleZeroQ);
@@ -666,7 +712,8 @@ public class F {
 	public final static IBuiltInSymbol PrimePowerQ = SymbolEnumeration.valueOf(SymbolEnumeration.PrimePowerQ);
 	public final static IBuiltInSymbol PrimeQ = SymbolEnumeration.valueOf(SymbolEnumeration.PrimeQ);
 	public final static IBuiltInSymbol Primes = SymbolEnumeration.valueOf(SymbolEnumeration.Primes);
-	public final static IBuiltInSymbol PrimitiveRootList = SymbolEnumeration.valueOf(SymbolEnumeration.PrimitiveRootList);
+	public final static IBuiltInSymbol PrimitiveRootList = SymbolEnumeration
+			.valueOf(SymbolEnumeration.PrimitiveRootList);
 	public final static IBuiltInSymbol Print = SymbolEnumeration.valueOf(SymbolEnumeration.Print);
 	public final static IBuiltInSymbol Product = SymbolEnumeration.valueOf(SymbolEnumeration.Product);
 	public final static IBuiltInSymbol ProductLog = SymbolEnumeration.valueOf(SymbolEnumeration.ProductLog);
@@ -678,7 +725,8 @@ public class F {
 	public final static IBuiltInSymbol Quiet = SymbolEnumeration.valueOf(SymbolEnumeration.Quiet);
 	public final static IBuiltInSymbol Quit = SymbolEnumeration.valueOf(SymbolEnumeration.Quit);
 	public final static IBuiltInSymbol Quotient = SymbolEnumeration.valueOf(SymbolEnumeration.Quotient);
-	public final static IBuiltInSymbol QuotientRemainder = SymbolEnumeration.valueOf(SymbolEnumeration.QuotientRemainder);
+	public final static IBuiltInSymbol QuotientRemainder = SymbolEnumeration
+			.valueOf(SymbolEnumeration.QuotientRemainder);
 	public final static IBuiltInSymbol RandomChoice = SymbolEnumeration.valueOf(SymbolEnumeration.RandomChoice);
 	public final static IBuiltInSymbol RandomInteger = SymbolEnumeration.valueOf(SymbolEnumeration.RandomInteger);
 	public final static IBuiltInSymbol RandomReal = SymbolEnumeration.valueOf(SymbolEnumeration.RandomReal);
@@ -708,8 +756,8 @@ public class F {
 	public final static IBuiltInSymbol Return = SymbolEnumeration.valueOf(SymbolEnumeration.Return);
 	public final static IBuiltInSymbol Reverse = SymbolEnumeration.valueOf(SymbolEnumeration.Reverse);
 	public final static IBuiltInSymbol Riffle = SymbolEnumeration.valueOf(SymbolEnumeration.Riffle);
-	public final static IBuiltInSymbol RogersTanimotoDissimilarity = SymbolEnumeration.valueOf(
-			SymbolEnumeration.RogersTanimotoDissimilarity);
+	public final static IBuiltInSymbol RogersTanimotoDissimilarity = SymbolEnumeration
+			.valueOf(SymbolEnumeration.RogersTanimotoDissimilarity);
 	public final static IBuiltInSymbol Root = SymbolEnumeration.valueOf(SymbolEnumeration.Root);
 	public final static IBuiltInSymbol RootIntervals = SymbolEnumeration.valueOf(SymbolEnumeration.RootIntervals);
 	public final static IBuiltInSymbol RootOf = SymbolEnumeration.valueOf(SymbolEnumeration.RootOf);
@@ -720,8 +768,8 @@ public class F {
 	public final static IBuiltInSymbol RowReduce = SymbolEnumeration.valueOf(SymbolEnumeration.RowReduce);
 	public final static IBuiltInSymbol Rule = SymbolEnumeration.valueOf(SymbolEnumeration.Rule);
 	public final static IBuiltInSymbol RuleDelayed = SymbolEnumeration.valueOf(SymbolEnumeration.RuleDelayed);
-	public final static IBuiltInSymbol RussellRaoDissimilarity = SymbolEnumeration.valueOf(
-			SymbolEnumeration.RussellRaoDissimilarity);
+	public final static IBuiltInSymbol RussellRaoDissimilarity = SymbolEnumeration
+			.valueOf(SymbolEnumeration.RussellRaoDissimilarity);
 	public final static IBuiltInSymbol SameQ = SymbolEnumeration.valueOf(SymbolEnumeration.SameQ);
 	public final static IBuiltInSymbol SatisfiableQ = SymbolEnumeration.valueOf(SymbolEnumeration.SatisfiableQ);
 	public final static IBuiltInSymbol Scan = SymbolEnumeration.valueOf(SymbolEnumeration.Scan);
@@ -743,15 +791,15 @@ public class F {
 	public final static IBuiltInSymbol Sin = SymbolEnumeration.valueOf(SymbolEnumeration.Sin);
 	public final static IBuiltInSymbol SinIntegral = SymbolEnumeration.valueOf(SymbolEnumeration.SinIntegral);
 	public final static IBuiltInSymbol Sinc = SymbolEnumeration.valueOf(SymbolEnumeration.Sinc);
-	public final static IBuiltInSymbol SingularValueDecomposition = SymbolEnumeration.valueOf(
-			SymbolEnumeration.SingularValueDecomposition);
+	public final static IBuiltInSymbol SingularValueDecomposition = SymbolEnumeration
+			.valueOf(SymbolEnumeration.SingularValueDecomposition);
 	public final static IBuiltInSymbol Sinh = SymbolEnumeration.valueOf(SymbolEnumeration.Sinh);
 	public final static IBuiltInSymbol SinhIntegral = SymbolEnumeration.valueOf(SymbolEnumeration.SinhIntegral);
 	public final static IBuiltInSymbol Skewness = SymbolEnumeration.valueOf(SymbolEnumeration.Skewness);
 	public final static IBuiltInSymbol Slot = SymbolEnumeration.valueOf(SymbolEnumeration.Slot);
 	public final static IBuiltInSymbol SlotSequence = SymbolEnumeration.valueOf(SymbolEnumeration.SlotSequence);
-	public final static IBuiltInSymbol SokalSneathDissimilarity = SymbolEnumeration.valueOf(
-			SymbolEnumeration.SokalSneathDissimilarity);
+	public final static IBuiltInSymbol SokalSneathDissimilarity = SymbolEnumeration
+			.valueOf(SymbolEnumeration.SokalSneathDissimilarity);
 	public final static IBuiltInSymbol Solve = SymbolEnumeration.valueOf(SymbolEnumeration.Solve);
 	public final static IBuiltInSymbol Sort = SymbolEnumeration.valueOf(SymbolEnumeration.Sort);
 	public final static IBuiltInSymbol Sow = SymbolEnumeration.valueOf(SymbolEnumeration.Sow);
@@ -760,9 +808,10 @@ public class F {
 	public final static IBuiltInSymbol SplitBy = SymbolEnumeration.valueOf(SymbolEnumeration.SplitBy);
 	public final static IBuiltInSymbol Sqrt = SymbolEnumeration.valueOf(SymbolEnumeration.Sqrt);
 	public final static IBuiltInSymbol SquareFreeQ = SymbolEnumeration.valueOf(SymbolEnumeration.SquareFreeQ);
-	public final static IBuiltInSymbol SquaredEuclideanDistance = SymbolEnumeration.valueOf(
-			SymbolEnumeration.SquaredEuclideanDistance);
-	public final static IBuiltInSymbol StandardDeviation = SymbolEnumeration.valueOf(SymbolEnumeration.StandardDeviation);
+	public final static IBuiltInSymbol SquaredEuclideanDistance = SymbolEnumeration
+			.valueOf(SymbolEnumeration.SquaredEuclideanDistance);
+	public final static IBuiltInSymbol StandardDeviation = SymbolEnumeration
+			.valueOf(SymbolEnumeration.StandardDeviation);
 	public final static IBuiltInSymbol Standardize = SymbolEnumeration.valueOf(SymbolEnumeration.Standardize);
 	public final static IBuiltInSymbol StieltjesGamma = SymbolEnumeration.valueOf(SymbolEnumeration.StieltjesGamma);
 	public final static IBuiltInSymbol StirlingS1 = SymbolEnumeration.valueOf(SymbolEnumeration.StirlingS1);
@@ -774,7 +823,8 @@ public class F {
 	public final static IBuiltInSymbol StringTake = SymbolEnumeration.valueOf(SymbolEnumeration.StringTake);
 	public final static IBuiltInSymbol StruveH = SymbolEnumeration.valueOf(SymbolEnumeration.StruveH);
 	public final static IBuiltInSymbol StruveL = SymbolEnumeration.valueOf(SymbolEnumeration.StruveL);
-	public final static IBuiltInSymbol StudentTDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.StudentTDistribution);
+	public final static IBuiltInSymbol StudentTDistribution = SymbolEnumeration
+			.valueOf(SymbolEnumeration.StudentTDistribution);
 	public final static IBuiltInSymbol Subfactorial = SymbolEnumeration.valueOf(SymbolEnumeration.Subfactorial);
 	public final static IBuiltInSymbol Subscript = SymbolEnumeration.valueOf(SymbolEnumeration.Subscript);
 	public final static IBuiltInSymbol Subsets = SymbolEnumeration.valueOf(SymbolEnumeration.Subsets);
@@ -810,7 +860,8 @@ public class F {
 	public final static IBuiltInSymbol TimesBy = SymbolEnumeration.valueOf(SymbolEnumeration.TimesBy);
 	public final static IBuiltInSymbol Timing = SymbolEnumeration.valueOf(SymbolEnumeration.Timing);
 	public final static IBuiltInSymbol ToCharacterCode = SymbolEnumeration.valueOf(SymbolEnumeration.ToCharacterCode);
-	public final static IBuiltInSymbol ToPolarCoordinates = SymbolEnumeration.valueOf(SymbolEnumeration.ToPolarCoordinates);
+	public final static IBuiltInSymbol ToPolarCoordinates = SymbolEnumeration
+			.valueOf(SymbolEnumeration.ToPolarCoordinates);
 	public final static IBuiltInSymbol ToRadicals = SymbolEnumeration.valueOf(SymbolEnumeration.ToRadicals);
 	public final static IBuiltInSymbol ToString = SymbolEnumeration.valueOf(SymbolEnumeration.ToString);
 	public final static IBuiltInSymbol ToUnicode = SymbolEnumeration.valueOf(SymbolEnumeration.ToUnicode);
@@ -841,21 +892,25 @@ public class F {
 	public final static IBuiltInSymbol UpSet = SymbolEnumeration.valueOf(SymbolEnumeration.UpSet);
 	public final static IBuiltInSymbol UpSetDelayed = SymbolEnumeration.valueOf(SymbolEnumeration.UpSetDelayed);
 	public final static IBuiltInSymbol UpperCaseQ = SymbolEnumeration.valueOf(SymbolEnumeration.UpperCaseQ);
-	public final static IBuiltInSymbol UpperTriangularize = SymbolEnumeration.valueOf(SymbolEnumeration.UpperTriangularize);
+	public final static IBuiltInSymbol UpperTriangularize = SymbolEnumeration
+			.valueOf(SymbolEnumeration.UpperTriangularize);
 	public final static IBuiltInSymbol ValueQ = SymbolEnumeration.valueOf(SymbolEnumeration.ValueQ);
-	public final static IBuiltInSymbol VandermondeMatrix = SymbolEnumeration.valueOf(SymbolEnumeration.VandermondeMatrix);
+	public final static IBuiltInSymbol VandermondeMatrix = SymbolEnumeration
+			.valueOf(SymbolEnumeration.VandermondeMatrix);
 	public final static IBuiltInSymbol Variable = SymbolEnumeration.valueOf(SymbolEnumeration.Variable);
 	public final static IBuiltInSymbol Variables = SymbolEnumeration.valueOf(SymbolEnumeration.Variables);
 	public final static IBuiltInSymbol Variance = SymbolEnumeration.valueOf(SymbolEnumeration.Variance);
 	public final static IBuiltInSymbol VectorAngle = SymbolEnumeration.valueOf(SymbolEnumeration.VectorAngle);
 	public final static IBuiltInSymbol VectorQ = SymbolEnumeration.valueOf(SymbolEnumeration.VectorQ);
-	public final static IBuiltInSymbol WeibullDistribution = SymbolEnumeration.valueOf(SymbolEnumeration.WeibullDistribution);
+	public final static IBuiltInSymbol WeibullDistribution = SymbolEnumeration
+			.valueOf(SymbolEnumeration.WeibullDistribution);
 	public final static IBuiltInSymbol Which = SymbolEnumeration.valueOf(SymbolEnumeration.Which);
 	public final static IBuiltInSymbol While = SymbolEnumeration.valueOf(SymbolEnumeration.While);
 	public final static IBuiltInSymbol White = SymbolEnumeration.valueOf(SymbolEnumeration.White);
 	public final static IBuiltInSymbol With = SymbolEnumeration.valueOf(SymbolEnumeration.With);
 	public final static IBuiltInSymbol Xor = SymbolEnumeration.valueOf(SymbolEnumeration.Xor);
-	public final static IBuiltInSymbol YuleDissimilarity = SymbolEnumeration.valueOf(SymbolEnumeration.YuleDissimilarity);
+	public final static IBuiltInSymbol YuleDissimilarity = SymbolEnumeration
+			.valueOf(SymbolEnumeration.YuleDissimilarity);
 	public final static IBuiltInSymbol Zeta = SymbolEnumeration.valueOf(SymbolEnumeration.Zeta);
 
 	public final static IBuiltInSymbol $Aborted = initFinalSymbol(
@@ -3523,7 +3578,7 @@ public class F {
 				str = symbolName.str();
 			}
 		}
-		IBuiltInSymbol temp = new BuiltInSymbol(str);
+		IBuiltInSymbol temp = new BuiltInSymbol(str, symbolName.id());
 		Context.SYSTEM.put(str, temp);
 		return temp;
 	}

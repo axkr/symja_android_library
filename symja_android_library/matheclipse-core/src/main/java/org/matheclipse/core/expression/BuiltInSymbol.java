@@ -47,8 +47,15 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	 */
 	private transient IEvaluator fEvaluator;
 
+	private transient int fOrdinal;
+
 	public BuiltInSymbol(final String symbolName) {
 		this(symbolName, null);
+	}
+
+	public BuiltInSymbol(final String symbolName, int ordinal) {
+		this(symbolName, null);
+		fOrdinal = ordinal;
 	}
 
 	public BuiltInSymbol(final String symbolName, final IEvaluator evaluator) {
@@ -121,6 +128,12 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 			}
 		}
 		return fEvaluator;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public int ordinal() {
+		return fOrdinal;
 	}
 
 	@Override
