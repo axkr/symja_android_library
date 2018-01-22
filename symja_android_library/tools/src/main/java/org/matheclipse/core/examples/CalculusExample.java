@@ -12,13 +12,13 @@ import org.matheclipse.parser.client.math.MathException;
 public class CalculusExample {
 	public static void main(String[] args) {
 		try {
-			// don't distinguish between lower- and uppercase identifiers
+			// don't distinguish between lower and upper case identifiers
 			Config.PARSER_USE_LOWERCASE_SYMBOLS = true;
 
 			ExprEvaluator util = new ExprEvaluator(false, 100);
 
-			// Show an expression in the Java form:
-			// Note: single character identifiers are case sensistive
+			// Convert an expression to the internal Java form:
+			// Note: single character identifiers are case sensitive
 			// (the "D()" function input must be written as upper case
 			// character)
 			String javaForm = util.toJavaForm("D(sin(x)*cos(x),x)");
