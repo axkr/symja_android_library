@@ -49,6 +49,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
@@ -2360,7 +2361,7 @@ public class F {
 	 * @param a1
 	 * @return
 	 */
-	public final static IAST binaryAST2(final IExpr head, final IExpr a0, final IExpr a1) {
+	public final static IASTMutable binaryAST2(final IExpr head, final IExpr a0, final IExpr a1) {
 		return new AST2(head, a0, a1);
 	}
 
@@ -4741,7 +4742,7 @@ public class F {
 		return unaryAST1(QRDecomposition, a0);
 	}
 
-	public final static IAST quaternary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2,
+	public final static IASTMutable quaternary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2,
 			final IExpr a3) {
 		return new AST(new IExpr[] { head, a0, a1, a2, a3 });
 	}
@@ -4754,7 +4755,7 @@ public class F {
 		return unaryAST1(Quiet, a0);
 	}
 
-	public final static IAST quinary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3,
+	public final static IASTMutable quinary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3,
 			final IExpr a4) {
 		return new AST(new IExpr[] { head, a0, a1, a2, a3, a4 });
 	}
@@ -5266,7 +5267,7 @@ public class F {
 	 * @param a2
 	 * @return
 	 */
-	public final static IAST ternaryAST3(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2) {
+	public final static IASTMutable ternaryAST3(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2) {
 		return new AST3(head, a0, a1, a2);
 	}
 
@@ -5403,7 +5404,7 @@ public class F {
 	 * @param a0
 	 * @return
 	 */
-	public final static IAST unaryAST1(final IExpr head, final IExpr a0) {
+	public final static IASTMutable unaryAST1(final IExpr head, final IExpr a0) {
 		return new AST1(head, a0);
 	}
 
