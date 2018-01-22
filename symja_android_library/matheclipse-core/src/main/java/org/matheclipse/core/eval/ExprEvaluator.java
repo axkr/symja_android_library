@@ -36,16 +36,16 @@ public class ExprEvaluator {
 		@Override
 		public IExpr call() throws Exception {
 			EvalEngine.set(fEngine);
-			try {
+//			try {
 				fEngine.reset();
 				IExpr temp = fEngine.evaluate(fExpr);
 				if (!fEngine.isOutListDisabled()) {
 					fEngine.addOut(temp);
 				}
 				return temp;
-			} finally {
-				EvalEngine.remove();
-			}
+			// } finally {
+			// EvalEngine.remove();
+			// }
 		}
 
 	}
@@ -152,9 +152,7 @@ public class ExprEvaluator {
 	public ISymbol defineVariable(ISymbol variable, IExpr value) {
 		variable.pushLocalVariable();
 		if (value != null) {
-//			F.join();
 			// this evaluation step may throw an exception
-			EvalEngine.set(engine);
 			IExpr temp = engine.evaluate(value);
 			variable.set(temp);
 		}
@@ -255,7 +253,7 @@ public class ExprEvaluator {
 	 */
 	public IExpr eval(final IExpr expr) {
 		fExpr = expr;
-//		F.join();
+		// F.join();
 		EvalEngine.set(engine);
 		engine.reset();
 		IExpr temp = engine.evaluate(expr);
@@ -295,18 +293,18 @@ public class ExprEvaluator {
 	 * @throws SyntaxError
 	 */
 	public IExpr eval(final String inputExpression) {
-		try {
-			if (inputExpression != null) {
-				EvalEngine.set(engine);
-				engine.reset();
-				fExpr = engine.parse(inputExpression);
-				if (fExpr != null) {
-					return eval(fExpr);
-				}
+		// try {
+		if (inputExpression != null) {
+			EvalEngine.set(engine);
+			engine.reset();
+			fExpr = engine.parse(inputExpression);
+			if (fExpr != null) {
+				return eval(fExpr);
 			}
-		} finally {
-			EvalEngine.remove();
 		}
+		// } finally {
+		// EvalEngine.remove();
+		// }
 		return null;
 	}
 
@@ -318,15 +316,15 @@ public class ExprEvaluator {
 	 * @throws SyntaxError
 	 */
 	public IExpr parse(final String inputExpression) {
-		try {
-			if (inputExpression != null) {
-				EvalEngine.set(engine);
-				engine.reset();
-				return engine.parse(inputExpression);
-			}
-		} finally {
-			EvalEngine.remove();
+		// try {
+		if (inputExpression != null) {
+			EvalEngine.set(engine);
+			engine.reset();
+			return engine.parse(inputExpression);
 		}
+		// } finally {
+		// EvalEngine.remove();
+		// }
 		return null;
 	}
 
@@ -351,7 +349,7 @@ public class ExprEvaluator {
 	public IExpr evaluateWithTimeout(final String inputExpression, long timeoutDuration, TimeUnit timeUnit,
 			boolean interruptible) {
 		if (inputExpression != null) {
-//			F.join();
+			// F.join();
 			EvalEngine.set(engine);
 			engine.reset();
 			fExpr = engine.parse(inputExpression);

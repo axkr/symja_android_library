@@ -53,6 +53,7 @@ public class CompleteTestSuite extends TestCase {
 		suite.addTestSuite(RelaxedParserTestCase.class);
 		suite.addTestSuite(BracketBalancerTestCase.class);
 		suite.addTestSuite(EvalDoubleTestCase.class);
+		suite.addTestSuite(ExprEvaluatorTest.class);
 		
 		suite.addTestSuite(NumberTheoryTestCase.class);
 		suite.addTestSuite(ASCIIPrintTest.class);
