@@ -19,7 +19,7 @@ public class PolynomialExample {
 			IExpr expr = util.eval("x^2+y+a*x+b*y+c");
 			System.out.println(expr.toString());
 
-			final IAST variables = F.List(F.x, F.y);
+			final IAST variables = F.List(F.userSymbol("x"), F.userSymbol("y"));
 			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables, variables.size() - 1,
 					ExprTermOrderByName.Lexicographic, false);
 

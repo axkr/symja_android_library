@@ -119,20 +119,21 @@ public class ExprEvaluatorTest extends TestCase {
 			IExpr expr = util.eval("x^2+y+a*x+b*y+c");
 			assertEquals("c+a*x+x^2+y+b*y", expr.toString());
 
-			final IAST variables = F.List(F.x, F.y);
+			final IAST variables = F.List(F.userSymbol("x"), F.userSymbol("y"));
 			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables, variables.size() - 1,
 					ExprTermOrderByName.Lexicographic, false);
 
 			ExprPolynomial poly = ring.create(expr);
-			assertEquals("( c+a*x+x^2+y+b*y ) ", poly.toString());
+			assertEquals("x^2 + a x + ( 1+b ) y + c ", poly.toString());
 
 			// x degree
-			// assertEquals("0", poly.degree(0));
+			assertEquals(2, poly.degree(0));
 			// y degree
-			// assertEquals("0", poly.degree(1));
+			assertEquals(1, poly.degree(1));
 
 			// show internal structure:
-			// assertEquals("{{0,0}->c+a*x+x^2+y+b*y}", poly.coefficientRules());
+			assertEquals("{{2,0}->1,{1,0}->a,{0,1}->1+b,{0,0}->c}", poly.coefficientRules().toString());
+
 			System.out.println(poly.coefficientRules());
 			for (ExprMonomial monomial : poly) {
 				System.out.println(monomial.toString());
