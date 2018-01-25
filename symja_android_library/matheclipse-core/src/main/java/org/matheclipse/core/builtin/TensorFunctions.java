@@ -93,7 +93,7 @@ public class TensorFunctions {
 			final int[] fi = new int[1];
 			for (int i = 0; i <= diff; i++) {
 				IASTAppendable plus = F.ast(fFunction, kernelSize, false);
-				fi[0]=i;
+				fi[0] = i;
 				plus.appendArgs(kernelSize, k -> F.binaryAST2(gFunction, kernel.get(k), tensor.get(k + fi[0])));
 				// for (int k = 1; k < kernelSize; k++) {
 				// plus.append(F.binaryAST2(gFunction, kernel.get(k), tensor.get(k + i)));
@@ -166,18 +166,13 @@ public class TensorFunctions {
 				if (ast.size() >= 3) {
 					IExpr arg2 = ast.arg2();
 					if (arg2.equals(F.All)) {
-						n = indexes.length;
 					} else if (arg2.isSignedNumber()) {
 						ISignedNumber sn = (ISignedNumber) arg2;
-						try {
-							n = sn.toInt();
-							// if (n < 0) {
-							// return F.NIL;
-							// }
-						} catch (ArithmeticException ae) {
-							return F.NIL;
-						}
+						n = sn.toIntDefault(Integer.MIN_VALUE);
 					}
+				}
+				if (n == Integer.MIN_VALUE) {
+					return F.NIL;
 				}
 				return F.List(n, indexes);
 			}
