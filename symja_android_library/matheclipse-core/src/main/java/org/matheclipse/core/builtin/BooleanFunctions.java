@@ -2,6 +2,9 @@ package org.matheclipse.core.builtin;
 
 import static org.matheclipse.core.expression.F.List;
 
+import java.util.List;
+
+import org.logicng.datastructures.Assignment;
 import org.logicng.datastructures.Tristate;
 import org.logicng.formulas.Formula;
 import org.logicng.formulas.FormulaFactory;
@@ -29,6 +32,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
@@ -71,6 +75,8 @@ public final class BooleanFunctions {
 		F.Or.setEvaluator(new Or());
 		F.Positive.setEvaluator(new Positive());
 		F.SameQ.setEvaluator(new SameQ());
+		F.SatisfiabilityCount.setEvaluator(new SatisfiabilityCount());
+		F.SatisfiabilityInstances.setEvaluator(new SatisfiabilityInstances());
 		F.SatisfiableQ.setEvaluator(new SatisfiableQ());
 		F.TautologyQ.setEvaluator(new TautologyQ());
 		F.TrueQ.setEvaluator(new TrueQ());
@@ -134,16 +140,30 @@ public final class BooleanFunctions {
 	}
 
 	/**
-	 * <pre>And(expr1, expr2, ...) 
+	 * <pre>
+	 * And(expr1, expr2, ...)
 	 * </pre>
-	 * <blockquote><p><code>expr1 &amp;&amp; expr2 &amp;&amp; ...</code> evaluates each expression in turn, returning <code>False</code> as soon as an expression evaluates to <code>False</code>. If all expressions evaluate to <code>True</code>, <code>And</code> returns <code>True</code>.</p>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * <code>expr1 &amp;&amp; expr2 &amp;&amp; ...</code> evaluates each expression in turn, returning
+	 * <code>False</code> as soon as an expression evaluates to <code>False</code>. If all expressions evaluate to
+	 * <code>True</code>, <code>And</code> returns <code>True</code>.
+	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
-	 * <pre>&gt;&gt; True &amp;&amp; True &amp;&amp; False
+	 * 
+	 * <pre>
+	 * &gt;&gt; True &amp;&amp; True &amp;&amp; False
 	 * False
 	 * </pre>
-	 * <p>If an expression does not evaluate to <code>True</code> or <code>False</code>, <code>And</code> returns a result in symbolic form:</p>
-	 * <pre>&gt;&gt; a &amp;&amp; b &amp;&amp; True &amp;&amp; c
+	 * <p>
+	 * If an expression does not evaluate to <code>True</code> or <code>False</code>, <code>And</code> returns a result
+	 * in symbolic form:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a &amp;&amp; b &amp;&amp; True &amp;&amp; c
 	 * a &amp;&amp; b &amp;&amp; c
 	 * </pre>
 	 */
@@ -2059,6 +2079,227 @@ public final class BooleanFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * SatisfiabilityCount(boolean-expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * test whether the <code>boolean-expr</code> is satisfiable by a combination of boolean <code>False</code> and
+	 * <code>True</code> values for the variables of the boolean expression and return the number of possible
+	 * combinations.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * SatisfiabilityCount(boolean-expr, list-of-variables)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * test whether the <code>boolean-expr</code> is satisfiable by a combination of boolean <code>False</code> and
+	 * <code>True</code> values for the <code>list-of-variables</code> and return the number of possible combinations.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; SatisfiabilityCount((a || b) &amp;&amp; (! a || ! b), {a, b})
+	 * 2
+	 * </pre>
+	 */
+	private final static class SatisfiabilityCount extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 4);
+
+			IASTMutable userDefinedVariables;
+			IExpr arg1 = ast.arg1();
+			try {
+				// currently only SAT is available
+				String method = "SAT";
+				if (ast.size() > 2) {
+					if (ast.arg2().isList()) {
+						userDefinedVariables = ((IAST) ast.arg2()).copy();
+						EvalAttributes.sort(userDefinedVariables);
+					} else {
+						userDefinedVariables = List(ast.arg2());
+					}
+					if (ast.size() > 3) {
+						final Options options = new Options(ast.topHead(), ast, 3, engine);
+						// "BDD" (binary decision diagram), "SAT", "TREE" ?
+						IExpr optionMethod = options.getOption("Method");
+						if (optionMethod.isString()) {
+							method = optionMethod.toString();
+						}
+					}
+					VariablesSet vSet = new VariablesSet(arg1);
+					IAST variables = vSet.getVarList();
+					if (variables.equals(userDefinedVariables)) {
+						return logicNGSatisfiabilityCount(arg1);
+					}
+
+				} else {
+					return logicNGSatisfiabilityCount(arg1);
+				}
+			} catch (ClassCastException cce) {
+				if (Config.DEBUG) {
+					cce.printStackTrace();
+				}
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * Use LogicNG MiniSAT method.
+		 * 
+		 * @param booleanExpression
+		 * @param maxChoices
+		 *            maximum number of choices, which satisfy the given boolean expression
+		 * @return
+		 */
+		private static IInteger logicNGSatisfiabilityCount(IExpr booleanExpression) {
+			FormulaFactory factory = new FormulaFactory();
+			LogicFormula lf = new LogicFormula(factory);
+			final Formula formula = lf.expr2BooleanFunction(booleanExpression);
+			final SATSolver miniSat = MiniSat.miniSat(factory);
+			miniSat.add(formula);
+			List<Assignment> assignments = miniSat.enumerateAllModels();
+			return F.integer(assignments.size());
+		}
+	}
+
+	/**
+	 * <pre>
+	 * SatisfiabilityInstances(boolean-expr, list-of-variables)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * test whether the <code>boolean-expr</code> is satisfiable by a combination of boolean <code>False</code> and
+	 * <code>True</code> values for the <code>list-of-variables</code> and return exactly one instance of
+	 * <code>True, False</code> combinations if possible.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * SatisfiabilityInstances(boolean-expr, list-of-variables, combinations)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * test whether the <code>boolean-expr</code> is satisfiable by a combination of boolean <code>False</code> and
+	 * <code>True</code> values for the <code>list-of-variables</code> and return up to <code>combinations</code>
+	 * instances of <code>True, False</code> combinations if possible.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; SatisfiabilityInstances((a || b) &amp;&amp; (! a || ! b), {a, b}, All)
+	 * {{False,True},{True,False}}
+	 * </pre>
+	 */
+	private final static class SatisfiabilityInstances extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 4);
+
+			IASTMutable userDefinedVariables;
+			IExpr arg1 = ast.arg1();
+			try {
+				// currently only SAT is available
+				String method = "SAT";
+				int maxChoices = 1;
+				if (ast.size() > 2) {
+					if (ast.arg2().isList()) {
+						userDefinedVariables = ((IAST) ast.arg2()).copy();
+						EvalAttributes.sort(userDefinedVariables);
+					} else {
+						userDefinedVariables = List(ast.arg2());
+					}
+					if (ast.size() > 3) {
+						final Options options = new Options(ast.topHead(), ast, 3, engine);
+						// "BDD" (binary decision diagram), "SAT", "TREE" ?
+						IExpr optionMethod = options.getOption("Method");
+						if (optionMethod.isString()) {
+							method = optionMethod.toString();
+						}
+					}
+
+					IExpr argN = ast.last();
+					if (argN.equals(F.All)) {
+						maxChoices = Integer.MAX_VALUE;
+					} else if (argN.isSignedNumber()) {
+						ISignedNumber sn = (ISignedNumber) argN;
+						maxChoices = sn.toIntDefault(0);
+					}
+
+					VariablesSet vSet = new VariablesSet(arg1);
+					IAST variables = vSet.getVarList();
+					if (variables.equals(userDefinedVariables)) {
+						return logicNGSatisfiabilityInstances(arg1, maxChoices);
+					}
+
+				} else {
+					return logicNGSatisfiabilityInstances(arg1, maxChoices);
+				}
+			} catch (ClassCastException cce) {
+				if (Config.DEBUG) {
+					cce.printStackTrace();
+				}
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * Use LogicNG MiniSAT method.
+		 * 
+		 * @param booleanExpression
+		 * @param maxChoices
+		 *            maximum number of choices, which satisfy the given boolean expression
+		 * @return
+		 */
+		private static IAST logicNGSatisfiabilityInstances(IExpr booleanExpression, int maxChoices) {
+			FormulaFactory factory = new FormulaFactory();
+			LogicFormula lf = new LogicFormula(factory);
+			final Formula formula = lf.expr2BooleanFunction(booleanExpression);
+			final SATSolver miniSat = MiniSat.miniSat(factory);
+			miniSat.add(formula);
+			List<Assignment> assignments = miniSat.enumerateAllModels();
+			IASTAppendable list = F.ListAlloc(assignments.size());
+			for (int i = 0; i < assignments.size(); i++) {
+				if (i >= maxChoices) {
+					break;
+				}
+				IAST temp = lf.literals2BooleanList(assignments.get(i).literals());
+				list.append(temp);
+			}
+			return list;
+		}
+	}
+
+	/**
+	 * <pre>
+	 * SatisfiableQ(boolean-expr, list-of-variables)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * test whether the <code>boolean-expr</code> is satisfiable by a combination of boolean <code>False</code> and
+	 * <code>True</code> values for the <code>list-of-variables</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; SatisfiableQ((a || b) &amp;&amp; (! a || ! b), {a, b})
+	 * True
+	 * </pre>
+	 */
 	private final static class SatisfiableQ extends AbstractFunctionEvaluator {
 
 		@Override
@@ -2161,8 +2402,22 @@ public final class BooleanFunctions {
 	}
 
 	/**
-	 * See <a href="https://en.wikipedia.org/wiki/Tautology_%28logic%29">Wikipedia: Tautology_</a>
+	 * <pre>
+	 * TautologyQ(boolean-expr, list-of-variables)
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * test whether the <code>boolean-expr</code> is satisfiable by all combinations of boolean <code>False</code> and
+	 * <code>True</code> values for the <code>list-of-variables</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Tautology_(logic)">Wikipedia - Tautology (logic)</a></li>
+	 * </ul>
 	 */
 	private static class TautologyQ extends AbstractFunctionEvaluator {
 

@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedSet;
 
 import org.logicng.formulas.And;
 import org.logicng.formulas.CFalse;
@@ -129,6 +130,53 @@ public class LogicFormula {
 			return v;
 		}
 		throw new ClassCastException(logicExpr.toString());
+	}
+
+	public IAST literals2BooleanList(final SortedSet<Literal> literals) {
+		IASTAppendable list = F.ListAlloc(literals.size());
+		for (Literal a : literals) {
+			if (a.phase()) {
+				list.append(F.True);
+			} else {
+				list.append(F.False);
+			}
+		}
+		return list;
+
+		// IExpr[] result = new IExpr[a.numberOfOperands()];
+		// int i = 0;
+		// for (Formula f : a) {
+		// result[i++] = booleanFunction2Expr(f);
+		// }
+		// Arrays.sort(result, ExprComparator.CONS);
+		// return F.And(result);
+		// if (formula instanceof Or) {
+		// Or a = (Or) formula;
+		// IExpr[] result = new IExpr[a.numberOfOperands()];
+		// int i = 0;
+		// for (Formula f : a) {
+		// result[i++] = booleanFunction2Expr(f);
+		// }
+		// Arrays.sort(result, ExprComparator.CONS);
+		// return F.Or(result);
+		// } else if (formula instanceof Not) {
+		// Not a = (Not) formula;
+		// return F.Not(booleanFunction2Expr(a.operand()));
+		// } else if (formula instanceof CFalse) {
+		// return F.False;
+		// } else if (formula instanceof CTrue) {
+		// return F.True;
+		// } else if (formula instanceof Literal) {
+		// Literal a = (Literal) formula;
+		// if (a.phase()) {
+		// return variable2symbolMap.get(a.variable());
+		// }
+		// return F.Not(variable2symbolMap.get(a.variable()));
+		// } else if (formula instanceof Variable) {
+		// Variable a = (Variable) formula;
+		// return variable2symbolMap.get(a);
+		// }
+		// throw new ClassCastException(formula.toString());
 	}
 
 	private Formula convertEquivalent(IAST ast) {

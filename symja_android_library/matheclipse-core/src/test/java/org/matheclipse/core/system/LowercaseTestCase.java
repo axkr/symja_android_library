@@ -5245,7 +5245,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testPolynomialGCD() {
 		check("PolynomialGCD(x,x)", "x");
-		
+
 		check("PolynomialGCD((x + 1)^3, x^3 + x, Modulus -> 2)", "(1+x)^2");
 		check("PolynomialGCD((x - a)*(b x - c)^2, (x - a)*(x^2 - b*c))", "a-x");
 		check("PolynomialGCD((1 + x)^2*(2 + x)*(4 + x), (1 + x)*(2 + x)*(3 + x))", "2+3*x+x^2");
@@ -5260,7 +5260,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testPolynomialLCM() {
 		check("PolynomialLCM(x,x)", "x");
-		
+
 		check("Expand((-1+x)*(1+x)*(1+x^2)*(1-x+x^2)*(1+x+x^2)*(1+x+x^2+x^3+x^4)*(1+x+x^2+x^3+x^4+x^5+x^6))",
 				"-1-2*x-4*x^2-6*x^3-8*x^4-9*x^5-9*x^6-7*x^7-4*x^8+4*x^10+7*x^11+9*x^12+9*x^13+8*x^\n"
 						+ "14+6*x^15+4*x^16+2*x^17+x^18");
@@ -5794,7 +5794,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Quotient(-14, 7)", "-2");
 		check("Quotient(19, -4)", "-5");
 	}
-	
+
 	public void testQuotientRemainder() {
 		check("QuotientRemainder(13, 0)", "QuotientRemainder(13,0)");
 		check("QuotientRemainder(-17, 7)", "{-3,4}");
@@ -5803,8 +5803,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("QuotientRemainder(-17, -4)", "{4,-1}");
 		check("QuotientRemainder(-14, 7)", "{-2,0}");
 		check("QuotientRemainder(19, -4)", "{-5,-1}");
-	} 
-	
+	}
+
 	public void testRandom() {
 		//
 		// check("RandomInteger(100)", "");
@@ -6271,7 +6271,58 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{{0,0,0},{0,0,1},{0,1,0}},{{0,0,1},{0,0,0},{1,0,0}},{{0,1,0},{1,0,0},{0,0,0}}}");
 	}
 
+	public void testSatisfiabilityCount() {
+		check("SatisfiabilityCount(Equivalent(a, b), {a, b})", //
+				"2");
+		check("SatisfiabilityCount(a || b, {a, b})", //
+				"3");
+		check("SatisfiabilityCount(a || b)", //
+				"3");
+		check("SatisfiabilityCount(Xor(a, b, c), {a, b, c} )", //
+				"4");
+
+		check("SatisfiabilityCount(a&&!(b||!c) )", //
+				"1");
+		check("SatisfiabilityCount((a || b) && (! a || ! b) )", //
+				"2");
+		check("SatisfiabilityCount((a || b) && (! a || ! b), {a, b})", //
+				"2");
+
+		check("SatisfiabilityCount(!Implies(Implies(a, b) && ! b, ! a))", //
+				"0");
+		check("SatisfiabilityCount((a && b) && (! a || ! b) )", //
+				"0");
+		check("SatisfiabilityCount((a && b) && (! a || ! b), {a, b})", //
+				"0");
+	}
+
+	public void testSatisfiabilityInstances() {
+		check("SatisfiabilityInstances(a || b, {a, b}, All)", //
+				"{{False,True},{True,True},{True,False}}");
+		check("SatisfiabilityInstances(Equivalent(a, b), {a, b}, 4)", //
+				"{{False,False},{True,True}}");
+		check("SatisfiabilityInstances(Equivalent(a, b), {a, b})", //
+				"{{False,False}}");
+		check("SatisfiabilityInstances(Xor(a, b, c), {a, b, c}, 2^3)", //
+				"{{False,True,False},{True,True,True},{False,False,True},{True,False,False}}");
+
+		check("SatisfiabilityInstances(a&&!(b||!c) )", "{{True,False,True}}");
+		check("SatisfiabilityInstances((a || b) && (! a || ! b) )", "{{False,True}}");
+		check("SatisfiabilityInstances((a || b) && (! a || ! b), {a, b}, All)", "{{False,True},{True,False}}");
+
+		check("SatisfiabilityInstances(!Implies(Implies(a, b) && ! b, ! a))", "{}");
+		check("SatisfiabilityInstances((a && b) && (! a || ! b) )", "{}");
+		check("SatisfiabilityInstances((a && b) && (! a || ! b), {a, b})", "{}");
+	}
+
 	public void testSatisfiableQ() {
+		check("SatisfiableQ(a&&!(b||!c) )", "True");
+		check("SatisfiableQ((a || b) && (! a || ! b) )", "True");
+		check("SatisfiableQ((a || b) && (! a || ! b), {a, b})", "True");
+
+		check("SatisfiableQ(!Implies(Implies(a, b) && ! b, ! a))", "False");
+		check("SatisfiableQ((a && b) && (! a || ! b) )", "False");
+		check("SatisfiableQ((a && b) && (! a || ! b), {a, b})", "False");
 		check("SatisfiableQ((Equivalent(b11D, b21U)) && (Equivalent(b12D, b22U)) && \n"
 				+ " (Equivalent(b13D, b23U)) && (Equivalent(b14D, b24U)) && \n"
 				+ " (Equivalent(b15D, b25U)) && (Equivalent(b21D, b31U)) && \n"
@@ -6510,13 +6561,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 				+ " Implies(b51R, c51a &&  !c51b &&  !c51c &&  !c51d &&  !c51e) &&  !b52R && \n"
 				+ " Implies(b53R,  !c54a &&  !c54b && c54c &&  !c54d &&  !c54e) && \n"
 				+ " Implies(b54R,  !c54a &&  !c54b &&  !c54c &&  !c54d && c54e))", "False");
-		check("SatisfiableQ(!Implies(Implies(a, b) && ! b, ! a))", "False");
-		check("SatisfiableQ(a&&!(b||!c) )", "True");
-
-		check("SatisfiableQ((a || b) && (! a || ! b) )", "True");
-		check("SatisfiableQ((a && b) && (! a || ! b) )", "False");
-		check("SatisfiableQ((a || b) && (! a || ! b), {a, b})", "True");
-		check("SatisfiableQ((a && b) && (! a || ! b), {a, b})", "False");
 
 	}
 
@@ -7839,10 +7883,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testTotal() {
 		check("Total({x^2, 3 x^3, 1})", "1+x^2+3*x^3");
-		
+
 		check("Total(f(1,2,1))", "4");
 		check("Total(Derivative(1, 2, 1))", "4");
-		
+
 		check("Total( {{1, 2, 3}, {4, 5}, {6}})", "Total({{1,2,3},{4,5},{6}})");
 		check("Total( {{1, 2, 3}, {4, 5}, {6}}, Infinity)", "21");
 		check("Total( {{1, 2, 3}, {4, 5}, {6}}, {-1})", "{6,9,6}");

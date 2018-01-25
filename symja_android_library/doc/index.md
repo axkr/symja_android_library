@@ -173,6 +173,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Expression types](expression-types.md)
 
 ## Reference of built-in symbols
+
 * [Abort](functions/Abort.md)
 * [Abs](functions/Abs.md)
 * [AbsArg](functions/AbsArg.md)
@@ -569,6 +570,8 @@ for a full description of their possible arguments, options, etc., see their ent
 * [RuleDelayed](functions/RuleDelayed.md)
 * [RussellRaoDissimilarity](functions/RussellRaoDissimilarity.md)
 * [SameQ](functions/SameQ.md)
+* [SatisfiabilityCount](functions/SatisfiabilityCount.md)
+* [SatisfiabilityInstances](functions/SatisfiabilityInstances.md)
 * [SatisfiableQ](functions/SatisfiableQ.md)
 * [Scan](functions/Scan.md)
 * [Sec](functions/Sec.md)
