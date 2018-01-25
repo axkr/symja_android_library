@@ -8,9 +8,14 @@ import static org.matheclipse.core.expression.F.x;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.polynomials.ExprMonomial;
+import org.matheclipse.core.polynomials.ExprPolynomial;
+import org.matheclipse.core.polynomials.ExprPolynomialRing;
+import org.matheclipse.core.polynomials.ExprTermOrderByName;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
@@ -63,7 +68,7 @@ public class ExprEvaluatorTest extends TestCase {
 
 			// evaluate the last result ($ans contains "last answer")
 			result = util.eval("$ans+cos(x)^2");
-			assertEquals("2*Cos(x)^2-Sin(x)^2", result.toString()); 
+			assertEquals("2*Cos(x)^2-Sin(x)^2", result.toString());
 
 			// evaluate an Integrate[] expression
 			result = util.eval("integrate(sin(x)^5,x)");
@@ -73,25 +78,25 @@ public class ExprEvaluatorTest extends TestCase {
 			// Note: in server mode the variable name must have a preceding '$'
 			// character
 			result = util.eval("a=10");
-			assertEquals("10", result.toString()); 
+			assertEquals("10", result.toString());
 
 			// do a calculation with variable "a"
 			result = util.eval("a*3+b");
-			assertEquals("30+b", result.toString());  
+			assertEquals("30+b", result.toString());
 
 			// Do a calculation in "numeric mode" with the N() function
 			// Note: single character identifiers are case sensistive
 			// (the "N()" function input must be written as upper case
 			// character)
 			result = util.eval("N(sinh(5))");
-			assertEquals("74.20321057778875", result.toString());  
+			assertEquals("74.20321057778875", result.toString());
 
 			// define a function with a recursive factorial function definition.
 			// Note: fac(0) is the stop condition.
 			result = util.eval("fac(x_IntegerQ):=x*fac(x-1);fac(0)=1");
 			// now calculate factorial of 10:
 			result = util.eval("fac(10)");
-			assertEquals("3628800", result.toString());  
+			assertEquals("3628800", result.toString());
 
 		} catch (SyntaxError e) {
 			// catch Symja parser errors here
@@ -105,6 +110,45 @@ public class ExprEvaluatorTest extends TestCase {
 			assertTrue(false);
 		} catch (final OutOfMemoryError oome) {
 			assertTrue(false);
+		}
+	}
+
+	public void testStringEval003() {
+		try {
+			ExprEvaluator util = new ExprEvaluator();
+			IExpr expr = util.eval("x^2+y+a*x+b*y+c");
+			assertEquals("c+a*x+x^2+y+b*y", expr.toString());
+
+			final IAST variables = F.List(F.x, F.y);
+			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables, variables.size() - 1,
+					ExprTermOrderByName.Lexicographic, false);
+
+			ExprPolynomial poly = ring.create(expr);
+			assertEquals("( c+a*x+x^2+y+b*y ) ", poly.toString());
+
+			// x degree
+			// assertEquals("0", poly.degree(0));
+			// y degree
+			// assertEquals("0", poly.degree(1));
+
+			// show internal structure:
+			// assertEquals("{{0,0}->c+a*x+x^2+y+b*y}", poly.coefficientRules());
+			System.out.println(poly.coefficientRules());
+			for (ExprMonomial monomial : poly) {
+				System.out.println(monomial.toString());
+			}
+		} catch (SyntaxError e) {
+			// catch Symja parser errors here
+			System.out.println(e.getMessage());
+		} catch (MathException me) {
+			// catch Symja math errors here
+			System.out.println(me.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+		} catch (final StackOverflowError soe) {
+			System.out.println(soe.getMessage());
+		} catch (final OutOfMemoryError oome) {
+			System.out.println(oome.getMessage());
 		}
 	}
 }
