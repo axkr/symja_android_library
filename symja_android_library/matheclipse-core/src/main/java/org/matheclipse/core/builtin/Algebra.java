@@ -38,6 +38,7 @@ import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.convert.VariablesSet;
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.PowerOp;
@@ -647,8 +648,8 @@ public class Algebra {
 					// collect next pattern in sub-expressions
 					IASTAppendable result = F.PlusAlloc(map.size() + 1);
 					if (rest.size() > 1) {
-						result.append(collectSingleVariable(rest, listOfVariables.get(listPosition), listOfVariables,
-								listPosition + 1, head, engine));
+						result.append(collectSingleVariable(rest.getOneIdentity(F.C0),
+								listOfVariables.get(listPosition), listOfVariables, listPosition + 1, head, engine));
 					}
 					for (Entry<IExpr, IASTAppendable> entry : map.entrySet()) {
 						IExpr temp = collectSingleVariable(entry.getValue().getOneIdentity(F.C0),
@@ -665,11 +666,6 @@ public class Algebra {
 						simplifyAST.set(1, arg);
 						rest.set(i, engine.evaluate(simplifyAST));
 					});
-					// for (int i = 1; i < rest.size(); i++) {
-					// simplifyAST.set(1, rest.get(i));
-					// coefficient = engine.evaluate(simplifyAST);
-					// rest.set(i, coefficient);
-					// }
 					for (Map.Entry<IExpr, IASTAppendable> entry : map.entrySet()) {
 						simplifyAST.set(1, entry.getValue());
 						coefficient = engine.evaluate(simplifyAST);
@@ -722,7 +718,7 @@ public class Algebra {
 				return;
 			} else if (expr.isTimes()) {
 				IAST timesAST = (IAST) expr;
-				timesAST.exists((x, i) -> {
+				if(timesAST.exists((x, i) -> {
 					if (matcher.test(x) || isPowerMatched(x, matcher)) {
 						IASTAppendable clone = timesAST.copyAppendable();
 						clone.remove(i);
@@ -730,15 +726,9 @@ public class Algebra {
 						return true;
 					}
 					return false;
-				}, 1);
-				// for (int i = 1; i < timesAST.size(); i++) {
-				// if (matcher.test(timesAST.get(i)) || isPowerMatched(timesAST.get(i), matcher)) {
-				// IASTAppendable clone = timesAST.copyAppendable();
-				// clone.remove(i);
-				// addOneIdentityPowerFactor(timesAST.get(i), clone, map);
-				// return;
-				// }
-				// }
+				}, 1)) {
+					return;
+				}
 				rest.append(expr);
 				return;
 			}

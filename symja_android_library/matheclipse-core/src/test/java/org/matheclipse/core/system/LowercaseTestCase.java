@@ -954,6 +954,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCollect() {
+		check("Collect(x^2 + y*x^2 + x*y + y + a*y, {x, y})", "(1+a)*y+x*y+x^2*(1+y)");
+		check("Collect(a*x^2 + b*x^2 + a*x - b*x + c, x)", "c+(a-b)*x+(a+b)*x^2");
+		check("Collect(a*Exp(2*x) + b*Exp(2*x), Exp(2*x))", "(a+b)*E^(2*x)");
+		check("a*Exp(2*x) + b*Exp(2*x)", "a*E^(2*x)+b*E^(2*x)");
 		// check("Collect(D(f(Sqrt(x^2 + 1)), {x, 3}), Derivative(_)[f][_],
 		// Together)", "");
 		check("x*(4*a^3+12*a^2+12*a+4)+x^4+(4*a+4)*x^3+(6*a^2+12*a+6)*x^2+a^4+4*a^3+6*a^2+4*a+1",
@@ -972,9 +976,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Collect(a x + b y + c x, x)", "(a+c)*x+b*y");
 		check("Collect((x + y + z + 1)^4, {x, y})",
-				"1+x^4+4*y+6*y^2+4*y^3+y^4+4*z+12*y*z+12*y^2*z+4*y^3*z+x^3*(4+4*y+4*z)+6*z^2+12*y*z^\n"
-						+ "2+6*y^2*z^2+x^2*(6+6*y^2+12*z+y*(12+12*z)+6*z^2)+4*z^3+4*y*z^3+x*(4+4*y^3+12*z+y^\n"
-						+ "2*(12+12*z)+12*z^2+y*(12+24*z+12*z^2)+4*z^3)+z^4");
+				"1+x^4+y^4+4*z+y^3*(4+4*z)+x^3*(4+4*y+4*z)+6*z^2+y^2*(6+12*z+6*z^2)+x^2*(6+6*y^2+\n"
+						+ "12*z+y*(12+12*z)+6*z^2)+4*z^3+y*(4+12*z+12*z^2+4*z^3)+x*(4+4*y^3+12*z+y^2*(12+12*z)+\n"
+						+ "12*z^2+y*(12+24*z+12*z^2)+4*z^3)+z^4");
 	}
 
 	public void testCommonest() {
@@ -2066,6 +2070,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExp() {
+		check("Exp(42+Log(a)+Log(b))", "a*b*E^42");
 		check("Exp(1)", "E");
 		checkNumeric("Exp(10.0)", "22026.465794806703");
 		check("Exp(x) //FullForm", "\"Power(E, x)\"");
@@ -6136,11 +6141,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PolynomialRemainder(-2+x^2-2*x*y+y^2,-5+4*x-2*x^3+2*y+3*x^2*y,y)",
 				"-2+x^2+(-(-5+4*x-2*x^3)*(-2*x-(-5+4*x-2*x^3)/(2+3*x^2)))/(2+3*x^2)");
 		check("Resultant((x-y)^2-2 , y^3-5, y)", "17-60*x+12*x^2-10*x^3-6*x^4+x^6");
-		check("Resultant(x^2 - 2 x + 7, x^3 - x + 5, x)", "265");
+		check("Resultant(x^2 - 2*x + 7, x^3 - x + 5, x)", "265");
 		check("Resultant(x^2 + 2*x , x-c, x)", "2*c+c^2");
 
 		check("Resultant(x^2 - 4, x^2 + 4*x + 4, x)", "0");
-		check("Resultant(3 x + 9, 6 x^3 - 3 x + 12, x)", "-3807");
+		check("Resultant(3*x + 9, 6*x^3 - 3*x + 12, x)", "-3807");
 
 		// check("Resultant[a x^3 + b x^2 + c x + f, f x^3 + c x^2 + b x + a,
 		// x]", "");
@@ -6306,8 +6311,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{False,True,True}}");
 		check("SatisfiabilityInstances(a&&!(b||!c), {a,b,c}, All )", //
 				"{{True,False,True}}");
-		
-		
+
 		check("SatisfiabilityInstances(a || b, {a, b}, All)", //
 				"{{False,True},{True,True},{True,False}}");
 		check("SatisfiabilityInstances(Equivalent(a, b), {a, b}, 4)", //
@@ -6319,9 +6323,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("SatisfiabilityInstances(a&&!(b||!c) )", //
 				"{{True,False,True}}");
-		
+
 		check("SatisfiabilityInstances((a || b) && (! a || ! b) )", //
-				"{{False,True}}"); 
+				"{{False,True}}");
 		check("SatisfiabilityInstances((a || b) && (! a || ! b), {a, b}, All)", //
 				"{{False,True},{True,False}}");
 
