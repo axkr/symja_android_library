@@ -1,11 +1,13 @@
 ## ArcTan
 
 ```
-ArcTan(z)
+ArcTan(expr)
 ```
 
-> returns the inverse tangent of `z`.
+> returns the arc tangent (inverse tangent) of `expr` (measured in radians).
  
+`ArcTan(expr)` will evaluate automatically in the cases `Infinity, -Infinity, 0, 1, -1`.
+
 ### Examples
 ``` 
 >> ArcTan(1)    

@@ -1,11 +1,13 @@
 ## ArcCos
 
 ```
-ArcCos(z)
+ArcCos(expr)
 ```
 
-> returns the inverse cosine of `z`.
+> returns the arc cosine (inverse cosine) of `expr` (measured in radians).
  
+`ArcCos(expr)` will evaluate automatically in the cases `Infinity, -Infinity, 0, 1, -1`.
+
 ### Examples
 ```
 >> ArcCos(0)
