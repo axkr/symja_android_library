@@ -2,7 +2,8 @@
 package org.matheclipse.core.builtin;
 
 import java.math.BigInteger;
-import java.util.Random;
+//import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.hipparchus.util.MathArrays;
 import org.matheclipse.core.eval.EvalEngine;
@@ -10,7 +11,6 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 
@@ -29,7 +29,7 @@ public final class RandomFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() > 0 && ast.arg1().isAST()) {
 				IAST list = (IAST) ast.arg1();
-				Random random = new Random();
+				ThreadLocalRandom random = ThreadLocalRandom.current();
 				int listSize = list.size() - 1;
 				int randomIndex = random.nextInt(listSize);
 				return list.get(randomIndex + 1);
@@ -41,7 +41,6 @@ public final class RandomFunctions {
 	}
 
 	private static class RandomInteger extends AbstractFunctionEvaluator {
-		private final static Random RANDOM = new Random();
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -52,7 +51,7 @@ public final class RandomFunctions {
 				BigInteger n = ((IInteger) ast.arg1()).toBigNumerator();
 				BigInteger r;
 				do {
-					r = new BigInteger(n.bitLength(), RANDOM);
+					r = new BigInteger(n.bitLength(), ThreadLocalRandom.current());
 				} while (r.compareTo(n) >= 0);
 				return F.integer(r);
 			}

@@ -1,6 +1,6 @@
 package org.matheclipse.core.builtin;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -75,10 +75,11 @@ public class StatisticsFunctions {
 	 */
 	interface IRandomVariate {
 		/**
-		 * @param random
+		 * @param distribution
+		 *            the distribution
 		 * @return sample generated using the given random generator
 		 */
-		IExpr randomVariate(IAST dist, Random random);
+		IExpr randomVariate(IAST distribution);
 	}
 
 	/**
@@ -164,8 +165,8 @@ public class StatisticsFunctions {
 	private static abstract class AbstractDiscreteDistribution extends AbstractEvaluator
 			implements IDiscreteDistribution, IMean, IPDF, IRandomVariate {
 		@Override
-		public final IExpr randomVariate(IAST dist, Random random) {
-			return protected_quantile(dist, F.num(random.nextDouble()));
+		public final IExpr randomVariate(IAST dist) {
+			return protected_quantile(dist, F.num(ThreadLocalRandom.current().nextDouble()));
 		}
 
 		/**
@@ -1685,12 +1686,6 @@ public class StatisticsFunctions {
 	}
 
 	private final static class RandomVariate extends AbstractEvaluator {
-		/**
-		 * The default constructor of {@link Random} determines the seed at time of creation using
-		 * {@link System#nanoTime()}. Typically, the implementation will produce a different random sequence for two
-		 * successive program executions.
-		 */
-		private static final Random RANDOM = new Random();
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1709,20 +1704,20 @@ public class StatisticsFunctions {
 								if (arg2.isList()) {
 									int[] indx = Validate.checkListOfInts(arg2, 0, Integer.MAX_VALUE);
 									IASTAppendable list = F.ListAlloc(indx[0]);
-									return createArray(indx, 0, list, () -> variate.randomVariate(dist, RANDOM));
+									return createArray(indx, 0, list, () -> variate.randomVariate(dist));
 								} else if (arg2.isInteger()) {
 									int n = arg2.toIntDefault(Integer.MIN_VALUE);
 									if (n >= 0) {
 										IASTAppendable result = F.ListAlloc(n);
 										for (int i = 0; i < n; i++) {
-											result.append(variate.randomVariate(dist, RANDOM));
+											result.append(variate.randomVariate(dist));
 										}
 										return result;
 									}
 								}
 								return F.NIL;
 							}
-							return variate.randomVariate(dist, RANDOM);
+							return variate.randomVariate(dist);
 						}
 					}
 				}

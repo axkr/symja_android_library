@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.DoubleBinaryOperator;
 import java.util.function.DoubleSupplier;
 import java.util.function.DoubleUnaryOperator;
@@ -303,7 +304,7 @@ public class DoubleEvaluator {
 		FUNCTION_DOUBLE_MAP.put("Random", new DoubleSupplier() {
 			@Override
 			public double getAsDouble() {
-				return Math.random();
+				return ThreadLocalRandom.current().nextDouble();
 			}
 		});
 		//
@@ -455,8 +456,7 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Parse the given <code>expression String</code> and store the resulting
-	 * ASTNode in this DoubleEvaluator
+	 * Parse the given <code>expression String</code> and store the resulting ASTNode in this DoubleEvaluator
 	 * 
 	 * @param expression
 	 * @return
@@ -477,8 +477,7 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Parse the given <code>expression String</code> and return the resulting
-	 * ASTNode
+	 * Parse the given <code>expression String</code> and return the resulting ASTNode
 	 * 
 	 * @param expression
 	 * @return
@@ -490,8 +489,7 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Parse the given <code>expression String</code> and evaluate it to a
-	 * double value
+	 * Parse the given <code>expression String</code> and evaluate it to a double value
 	 * 
 	 * @param expression
 	 * @return
@@ -512,8 +510,7 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Reevaluate the <code>expression</code> (possibly after a new Variable
-	 * assignment)
+	 * Reevaluate the <code>expression</code> (possibly after a new Variable assignment)
 	 * 
 	 * @param Expression
 	 * @return
@@ -527,8 +524,7 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Evaluate an already parsed in abstract syntax tree node into a
-	 * <code>double</code> number value.
+	 * Evaluate an already parsed in abstract syntax tree node into a <code>double</code> number value.
 	 * 
 	 * @param node
 	 *            abstract syntax tree node
@@ -562,8 +558,7 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Evaluate an already parsed in <code>FunctionNode</code> into a
-	 * <code>souble</code> number value.
+	 * Evaluate an already parsed in <code>FunctionNode</code> into a <code>souble</code> number value.
 	 * 
 	 * @param functionNode
 	 * @return
@@ -630,8 +625,7 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Check if the given symbol is a <code>SymbolNode</code> and test if the
-	 * names are equal.
+	 * Check if the given symbol is a <code>SymbolNode</code> and test if the names are equal.
 	 * 
 	 * @param symbol1
 	 * @param symbol2Name
@@ -645,8 +639,7 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Check if the given symbol is a <code>SymbolNode</code> and test if the
-	 * names are equal.
+	 * Check if the given symbol is a <code>SymbolNode</code> and test if the names are equal.
 	 * 
 	 * @param symbol1
 	 * @param symbol2
@@ -841,8 +834,7 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Optimize an already parsed in <code>functionNode</code> into an
-	 * <code>ASTNode</code>.
+	 * Optimize an already parsed in <code>functionNode</code> into an <code>ASTNode</code>.
 	 * 
 	 * @param functionNode
 	 * @return
@@ -927,9 +919,8 @@ public class DoubleEvaluator {
 	}
 
 	/**
-	 * Returns the double variable value to which the specified variableName is
-	 * mapped, or {@code null} if this map contains no mapping for the
-	 * variableName.
+	 * Returns the double variable value to which the specified variableName is mapped, or {@code null} if this map
+	 * contains no mapping for the variableName.
 	 * 
 	 * @param variableName
 	 * @return
@@ -983,8 +974,7 @@ public class DoubleEvaluator {
 	 * @param result
 	 *            a set which contains the variable names
 	 * @param relaxedSyntax
-	 *            if <code>true</code> us e function syntax like
-	 *            <code>sin(x)</code> otherwise use <code>Sin[x]</code>.
+	 *            if <code>true</code> us e function syntax like <code>sin(x)</code> otherwise use <code>Sin[x]</code>.
 	 */
 	public static void getVariables(String expression, Set<String> result, boolean relaxedSyntax) {
 		Parser p = new Parser(relaxedSyntax ? ASTNodeFactory.RELAXED_STYLE_FACTORY : ASTNodeFactory.MMA_STYLE_FACTORY,
@@ -1021,5 +1011,5 @@ public class DoubleEvaluator {
 
 		}
 	}
-	
+
 }

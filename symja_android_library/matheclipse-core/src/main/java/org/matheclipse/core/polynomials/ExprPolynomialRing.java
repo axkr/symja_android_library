@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.log4j.Logger;
 import org.matheclipse.core.eval.exception.Validate;
@@ -94,7 +95,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	/**
 	 * A default random sequence generator.
 	 */
-	protected final static Random random = new Random();
+	protected final static ThreadLocalRandom random = ThreadLocalRandom.current();
 
 	/**
 	 * Indicator if this ring is a field.

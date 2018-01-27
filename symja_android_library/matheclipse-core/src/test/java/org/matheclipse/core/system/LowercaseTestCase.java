@@ -5805,15 +5805,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("QuotientRemainder(19, -4)", "{-5,-1}");
 	}
 
-	public void testRandom() {
-		//
-		// check("RandomInteger(100)", "");
-		// check("RandomReal()", "0.53275");
-		//
-		// check("{Exp[x], x^2, 1/x, 2}", "{E^x,x^2,1/x,2}");
-		// check("RandomChoice({1,2,3,4,5,6,7})", "3");
-	}
-
 	public void testExpectation() {
 		// check("Expectation(x^2+7*x+8,PoissonDistribution(m))", "");
 
@@ -5825,11 +5816,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	}
 
+	public void testRandom() {
+		//
+		// check("RandomInteger(100)", "");
+		// check("RandomReal()", "0.53275");
+		//
+		// check("{Exp[x], x^2, 1/x, 2}", "{E^x,x^2,1/x,2}");
+	}
+
+	public void testRandomChoice() {
+		// check("RandomChoice({False, True})", "True");
+		// check("RandomChoice({1,2,3,4,5,6,7})", "3");
+	}
+
 	public void testRandomVariate() {
-		// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2})", "");
-		// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3})", "");
-		// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3,4})", "");
-		// check("RandomVariate(DiscreteUniformDistribution({3,7}), 10)", "");
+		// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2})", "{3,7}");
+		// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3})", "{{5,4,7},{5,7,3}}");
+		// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3,4})",
+		// "{{{4,5,5,3},{5,4,4,6},{6,3,4,7}},{{6,6,7,3},{4,6,5,6},{7,7,6,5}}}");
+		// check("RandomVariate(DiscreteUniformDistribution({3,7}), 10)", "{6,5,7,7,7,7,4,5,6,3}");
 		// check("RandomVariate(DiscreteUniformDistribution({1, 5}) )", "3");
 	}
 
