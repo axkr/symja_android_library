@@ -3,12 +3,14 @@ package org.matheclipse.core.builtin;
 import static org.matheclipse.core.expression.F.List;
 
 import java.util.List;
+import java.util.Map;
 
 import org.logicng.datastructures.Assignment;
 import org.logicng.datastructures.Tristate;
 import org.logicng.formulas.Formula;
 import org.logicng.formulas.FormulaFactory;
 import org.logicng.formulas.FormulaTransformation;
+import org.logicng.formulas.Variable;
 import org.logicng.solvers.MiniSat;
 import org.logicng.solvers.SATSolver;
 import org.logicng.transformations.cnf.CNFFactorization;
@@ -2115,15 +2117,14 @@ public final class BooleanFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 4);
 
-			IASTMutable userDefinedVariables;
+			IAST userDefinedVariables;
 			IExpr arg1 = ast.arg1();
 			try {
 				// currently only SAT is available
 				String method = "SAT";
 				if (ast.size() > 2) {
 					if (ast.arg2().isList()) {
-						userDefinedVariables = ((IAST) ast.arg2()).copy();
-						EvalAttributes.sort(userDefinedVariables);
+						userDefinedVariables = (IAST) ast.arg2();
 					} else {
 						userDefinedVariables = List(ast.arg2());
 					}
@@ -2135,15 +2136,11 @@ public final class BooleanFunctions {
 							method = optionMethod.toString();
 						}
 					}
-					VariablesSet vSet = new VariablesSet(arg1);
-					IAST variables = vSet.getVarList();
-					if (variables.equals(userDefinedVariables)) {
-						return logicNGSatisfiabilityCount(arg1);
-					}
-
 				} else {
-					return logicNGSatisfiabilityCount(arg1);
+					VariablesSet vSet = new VariablesSet(arg1);
+					userDefinedVariables = vSet.getVarList();
 				}
+				return logicNGSatisfiabilityCount(arg1, userDefinedVariables);
 			} catch (ClassCastException cce) {
 				if (Config.DEBUG) {
 					cce.printStackTrace();
@@ -2156,17 +2153,20 @@ public final class BooleanFunctions {
 		 * Use LogicNG MiniSAT method.
 		 * 
 		 * @param booleanExpression
+		 * @param variables
+		 *            a list of variables
 		 * @param maxChoices
 		 *            maximum number of choices, which satisfy the given boolean expression
 		 * @return
 		 */
-		private static IInteger logicNGSatisfiabilityCount(IExpr booleanExpression) {
+		private static IInteger logicNGSatisfiabilityCount(IExpr booleanExpression, IAST variables) {
 			FormulaFactory factory = new FormulaFactory();
 			LogicFormula lf = new LogicFormula(factory);
 			final Formula formula = lf.expr2BooleanFunction(booleanExpression);
 			final SATSolver miniSat = MiniSat.miniSat(factory);
 			miniSat.add(formula);
-			List<Assignment> assignments = miniSat.enumerateAllModels();
+			Variable[] vars = lf.ast2Variable(variables);
+			List<Assignment> assignments = miniSat.enumerateAllModels(vars);
 			return F.integer(assignments.size());
 		}
 	}
@@ -2208,7 +2208,7 @@ public final class BooleanFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 4);
 
-			IASTMutable userDefinedVariables;
+			IAST userDefinedVariables;
 			IExpr arg1 = ast.arg1();
 			try {
 				// currently only SAT is available
@@ -2216,8 +2216,7 @@ public final class BooleanFunctions {
 				int maxChoices = 1;
 				if (ast.size() > 2) {
 					if (ast.arg2().isList()) {
-						userDefinedVariables = ((IAST) ast.arg2()).copy();
-						EvalAttributes.sort(userDefinedVariables);
+						userDefinedVariables = (IAST) ast.arg2();
 					} else {
 						userDefinedVariables = List(ast.arg2());
 					}
@@ -2237,16 +2236,11 @@ public final class BooleanFunctions {
 						ISignedNumber sn = (ISignedNumber) argN;
 						maxChoices = sn.toIntDefault(0);
 					}
-
-					VariablesSet vSet = new VariablesSet(arg1);
-					IAST variables = vSet.getVarList();
-					if (variables.equals(userDefinedVariables)) {
-						return logicNGSatisfiabilityInstances(arg1, maxChoices);
-					}
-
 				} else {
-					return logicNGSatisfiabilityInstances(arg1, maxChoices);
+					VariablesSet vSet = new VariablesSet(arg1);
+					userDefinedVariables = vSet.getVarList();
 				}
+				return logicNGSatisfiabilityInstances(arg1, userDefinedVariables, maxChoices);
 			} catch (ClassCastException cce) {
 				if (Config.DEBUG) {
 					cce.printStackTrace();
@@ -2259,24 +2253,29 @@ public final class BooleanFunctions {
 		 * Use LogicNG MiniSAT method.
 		 * 
 		 * @param booleanExpression
+		 * @param variables
+		 *            a list of variables
 		 * @param maxChoices
 		 *            maximum number of choices, which satisfy the given boolean expression
 		 * @return
 		 */
-		private static IAST logicNGSatisfiabilityInstances(IExpr booleanExpression, int maxChoices) {
+		private static IAST logicNGSatisfiabilityInstances(IExpr booleanExpression, IAST variables, int maxChoices) {
 			FormulaFactory factory = new FormulaFactory();
 			LogicFormula lf = new LogicFormula(factory);
 			final Formula formula = lf.expr2BooleanFunction(booleanExpression);
 			final SATSolver miniSat = MiniSat.miniSat(factory);
 			miniSat.add(formula);
-			List<Assignment> assignments = miniSat.enumerateAllModels();
+			Variable[] vars = lf.ast2Variable(variables);
+			Map<String, Integer> map = LogicFormula.name2Position(vars);
+			List<Assignment> assignments = miniSat.enumerateAllModels(vars);
 			IASTAppendable list = F.ListAlloc(assignments.size());
 			for (int i = 0; i < assignments.size(); i++) {
 				if (i >= maxChoices) {
 					break;
 				}
-				IAST temp = lf.literals2BooleanList(assignments.get(i).literals());
-				list.append(temp);
+				list.append( //
+						lf.literals2BooleanList(assignments.get(i).literals(), map) //
+				);
 			}
 			return list;
 		}

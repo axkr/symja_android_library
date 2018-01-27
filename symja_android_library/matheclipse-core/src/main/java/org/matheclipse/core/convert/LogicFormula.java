@@ -132,51 +132,66 @@ public class LogicFormula {
 		throw new ClassCastException(logicExpr.toString());
 	}
 
-	public IAST literals2BooleanList(final SortedSet<Literal> literals) {
-		IASTAppendable list = F.ListAlloc(literals.size());
+	public Variable[] ast2Variable(final IAST listOfSymbols) throws ClassCastException {
+		if (listOfSymbols instanceof IAST) {
+			Variable[] result = new Variable[listOfSymbols.size() - 1];
+			for (int i = 1; i < listOfSymbols.size(); i++) {
+				IExpr temp = listOfSymbols.get(i);
+				if (temp instanceof ISymbol) {
+					ISymbol symbol = (ISymbol) temp;
+					if (symbol.isFalse()) {
+						throw new ClassCastException(F.False.toString());
+					}
+					if (symbol.isTrue()) {
+						throw new ClassCastException(F.True.toString());
+					}
+					Variable v = symbol2variableMap.get(symbol);
+					if (v == null) {
+						final Variable value = factory.variable(symbol.getSymbolName());
+						symbol2variableMap.put(symbol, value);
+						variable2symbolMap.put(value, symbol);
+						result[i - 1] = value;
+					} else {
+						result[i - 1] = v;
+					}
+				} else {
+					throw new ClassCastException(temp.toString());
+				}
+			}
+			return result;
+		}
+		throw new ClassCastException(listOfSymbols.toString());
+	}
+
+	/**
+	 * Convert the literals into a <code>List()</code> of <code>False, True</code> values according to the assigned
+	 * position for the variable name in the given <code>map</code>.
+	 * 
+	 * @param literals
+	 *            a set of literals which could be converted to False and True values
+	 * @param map
+	 *            a map which maps a variable name to the position in the resulting list
+	 * @return
+	 */
+	public IAST literals2BooleanList(final SortedSet<Literal> literals, Map<String, Integer> map) {
+		IASTAppendable list = F.ast(F.List, map.size(), true);
+
+		// initialize all list elements with Null
+		for (int i = 0; i < map.size(); i++) {
+			list.set(i + 1, F.Null);
+		}
+
 		for (Literal a : literals) {
-			if (a.phase()) {
-				list.append(F.True);
-			} else {
-				list.append(F.False);
+			Integer val = map.get(a.name());
+			if (val != null) {
+				if (a.phase()) {
+					list.set(val + 1, F.True);
+				} else {
+					list.set(val + 1, F.False);
+				}
 			}
 		}
 		return list;
-
-		// IExpr[] result = new IExpr[a.numberOfOperands()];
-		// int i = 0;
-		// for (Formula f : a) {
-		// result[i++] = booleanFunction2Expr(f);
-		// }
-		// Arrays.sort(result, ExprComparator.CONS);
-		// return F.And(result);
-		// if (formula instanceof Or) {
-		// Or a = (Or) formula;
-		// IExpr[] result = new IExpr[a.numberOfOperands()];
-		// int i = 0;
-		// for (Formula f : a) {
-		// result[i++] = booleanFunction2Expr(f);
-		// }
-		// Arrays.sort(result, ExprComparator.CONS);
-		// return F.Or(result);
-		// } else if (formula instanceof Not) {
-		// Not a = (Not) formula;
-		// return F.Not(booleanFunction2Expr(a.operand()));
-		// } else if (formula instanceof CFalse) {
-		// return F.False;
-		// } else if (formula instanceof CTrue) {
-		// return F.True;
-		// } else if (formula instanceof Literal) {
-		// Literal a = (Literal) formula;
-		// if (a.phase()) {
-		// return variable2symbolMap.get(a.variable());
-		// }
-		// return F.Not(variable2symbolMap.get(a.variable()));
-		// } else if (formula instanceof Variable) {
-		// Variable a = (Variable) formula;
-		// return variable2symbolMap.get(a);
-		// }
-		// throw new ClassCastException(formula.toString());
 	}
 
 	private Formula convertEquivalent(IAST ast) {
@@ -200,8 +215,8 @@ public class LogicFormula {
 		return factory.or(factory.and(arg1, factory.not(arg2)), factory.and(factory.not(arg1), arg2));
 	}
 
-	public Collection<Literal> list2LiteralCollection(final IAST list) throws ClassCastException {
-		Collection<Literal> arr = new ArrayList<Literal>(list.size() - 1);
+	public Collection<Variable> list2LiteralCollection(final IAST list) throws ClassCastException {
+		Collection<Variable> arr = new ArrayList<Variable>(list.size() - 1);
 		for (int i = 1; i < list.size(); i++) {
 			IExpr temp = list.get(i);
 			if (!temp.isSymbol()) {
@@ -220,6 +235,22 @@ public class LogicFormula {
 
 		}
 		return arr;
+	}
+
+	/**
+	 * Create a map which assigns the position of each variable name in the given <code>vars</code> array to the
+	 * corresponding variable name.
+	 * 
+	 * @param vars
+	 *            an array of variables
+	 * @return
+	 */
+	public static Map<String, Integer> name2Position(Variable[] vars) {
+		Map<String, Integer> map = new HashMap<String, Integer>();
+		for (int i = 0; i < vars.length; i++) {
+			map.put(vars[i].name(), i);
+		}
+		return map;
 	}
 
 }

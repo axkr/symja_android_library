@@ -6302,6 +6302,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSatisfiabilityInstances() {
+		check("SatisfiabilityInstances(a&&!(b||!c), {b,a,c}, All )", //
+				"{{False,True,True}}");
+		check("SatisfiabilityInstances(a&&!(b||!c), {a,b,c}, All )", //
+				"{{True,False,True}}");
+		
+		
 		check("SatisfiabilityInstances(a || b, {a, b}, All)", //
 				"{{False,True},{True,True},{True,False}}");
 		check("SatisfiabilityInstances(Equivalent(a, b), {a, b}, 4)", //
@@ -6311,13 +6317,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("SatisfiabilityInstances(Xor(a, b, c), {a, b, c}, 2^3)", //
 				"{{False,True,False},{True,True,True},{False,False,True},{True,False,False}}");
 
-		check("SatisfiabilityInstances(a&&!(b||!c) )", "{{True,False,True}}");
-		check("SatisfiabilityInstances((a || b) && (! a || ! b) )", "{{False,True}}");
-		check("SatisfiabilityInstances((a || b) && (! a || ! b), {a, b}, All)", "{{False,True},{True,False}}");
+		check("SatisfiabilityInstances(a&&!(b||!c) )", //
+				"{{True,False,True}}");
+		
+		check("SatisfiabilityInstances((a || b) && (! a || ! b) )", //
+				"{{False,True}}"); 
+		check("SatisfiabilityInstances((a || b) && (! a || ! b), {a, b}, All)", //
+				"{{False,True},{True,False}}");
 
-		check("SatisfiabilityInstances(!Implies(Implies(a, b) && ! b, ! a))", "{}");
-		check("SatisfiabilityInstances((a && b) && (! a || ! b) )", "{}");
-		check("SatisfiabilityInstances((a && b) && (! a || ! b), {a, b})", "{}");
+		check("SatisfiabilityInstances(!Implies(Implies(a, b) && ! b, ! a))", //
+				"{}");
+		check("SatisfiabilityInstances((a && b) && (! a || ! b) )", //
+				"{}");
+		check("SatisfiabilityInstances((a && b) && (! a || ! b), {a, b})", //
+				"{}");
 	}
 
 	public void testSatisfiableQ() {
