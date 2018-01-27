@@ -12,7 +12,7 @@ import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.LinearAlgebra;
-import org.matheclipse.core.builtin.PredicateQ;
+import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
@@ -809,10 +809,10 @@ public class Solve extends AbstractFunctionEvaluator {
 		for (ISymbol sym : exprAnalyzer.getSymbolSet()) {
 			IExpr temp = F.NIL;
 			if (numerator.isNumericMode() && denominator.isOne()) {
-				temp = NRoots.roots(numerator, F.List(sym), engine);
+				temp = PolynomialFunctions.roots(numerator, F.List(sym), engine);
 			}
 			if (!temp.isPresent()) {
-				temp = Roots.rootsOfVariable(numerator, denominator, F.List(sym), numerator.isNumericMode(), engine);
+				temp = PolynomialFunctions.rootsOfVariable(numerator, denominator, F.List(sym), numerator.isNumericMode(), engine);
 			}
 			if (temp.isPresent()) {
 				if (temp.isASTSizeGE(F.List, 2)) {

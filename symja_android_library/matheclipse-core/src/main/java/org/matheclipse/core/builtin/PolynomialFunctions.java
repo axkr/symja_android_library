@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.C3;
 import static org.matheclipse.core.expression.F.C4;
@@ -8,6 +9,7 @@ import static org.matheclipse.core.expression.F.CN1;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.evalExpandAll;
 import static org.matheclipse.core.expression.F.integer;
 
 import java.util.ArrayList;
@@ -15,13 +17,23 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.annotation.Nonnull;
+
+import org.hipparchus.analysis.solvers.LaguerreSolver;
+import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.EigenDecomposition;
+import org.hipparchus.linear.RealMatrix;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.Expr2Object;
+import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
+import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.WrappedException;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -30,6 +42,7 @@ import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IEvalStepListener;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -39,18 +52,29 @@ import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherEvalEngine;
 import org.matheclipse.core.polynomials.ExpVectorLong;
+import org.matheclipse.core.polynomials.ExprMonomial;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.ExprTermOrder;
+import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.reflection.system.MonomialList;
 
+import edu.jas.arith.BigRational;
 import edu.jas.arith.ModLong;
 import edu.jas.arith.ModLongRing;
+import edu.jas.poly.Complex;
+import edu.jas.poly.ComplexRing;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.Monomial;
 import edu.jas.poly.TermOrder;
 import edu.jas.poly.TermOrderByName;
+import edu.jas.root.ComplexRootsAbstract;
+import edu.jas.root.ComplexRootsSturm;
+import edu.jas.root.InvalidBoundaryException;
+import edu.jas.root.Rectangle;
+import edu.jas.ufd.Squarefree;
+import edu.jas.ufd.SquarefreeFactory;
 
 public class PolynomialFunctions {
 	static {
@@ -59,6 +83,10 @@ public class PolynomialFunctions {
 		F.CoefficientRules.setEvaluator(new CoefficientRules());
 		F.Discriminant.setEvaluator(new Discriminant());
 		F.Exponent.setEvaluator(new Exponent());
+		F.NRoots.setEvaluator(new NRoots());
+		F.Resultant.setEvaluator(new Resultant());
+		F.RootIntervals.setEvaluator(new RootIntervals());
+		F.Roots.setEvaluator(new Roots());
 	}
 
 	/**
@@ -191,15 +219,11 @@ public class PolynomialFunctions {
 			}
 		}
 
-		public static long univariateCoefficientList(IExpr polynomial, final ISymbol variable, List<IExpr> resultList)
+		private static long univariateCoefficientList(IExpr polynomial, final ISymbol variable, List<IExpr> resultList)
 				throws JASConversionException {
 			try {
 				ExprPolynomialRing ring = new ExprPolynomialRing(F.List(variable));
 				ExprPolynomial poly = ring.create(polynomial);
-				// PolynomialOld poly = new PolynomialOld(polynomial, (ISymbol) variable);
-				// if (!poly.isPolynomial()) {
-				// throw new WrongArgumentType(polynomial, "Polynomial expected!");
-				// }
 				IAST list = poly.coefficientList();
 				int degree = list.size() - 2;
 				if (degree >= Short.MAX_VALUE) {
@@ -226,15 +250,11 @@ public class PolynomialFunctions {
 		 * @return the degree of the univariate polynomial; if <code>degree >= Short.MAX_VALUE</code>, the result list
 		 *         will be empty.
 		 */
-		public static long univariateCoefficientList(IExpr polynomial, ISymbol variable, List<IExpr> resultList,
+		private static long univariateCoefficientList(IExpr polynomial, ISymbol variable, List<IExpr> resultList,
 				List<IExpr> resultListDiff) throws JASConversionException {
 			try {
 				ExprPolynomialRing ring = new ExprPolynomialRing(F.List(variable));
 				ExprPolynomial poly = ring.create(polynomial);
-				// PolynomialOld poly = new PolynomialOld(polynomial, (ISymbol) variable);
-				// if (!poly.isPolynomial()) {
-				// throw new WrongArgumentType(polynomial, "Polynomial expected!");
-				// }
 				IAST polyExpr = poly.coefficientList();
 
 				int degree = polyExpr.size() - 2;
@@ -898,6 +918,481 @@ public class PolynomialFunctions {
 	}
 
 	/**
+	 * <pre>
+	 * Resultant(polynomial1, polynomial2, var)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * computes the resultant of the polynomials <code>polynomial1</code> and <code>polynomial2</code> with respect to
+	 * the variable <code>var</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Resultant">Wikipedia - Resultant</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Resultant((x-y)^2-2 , y^3-5, y)
+	 * 17-60*x+12*x^2-10*x^3-6*x^4+x^6
+	 * </pre>
+	 */
+	private static class Resultant extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 4);
+			// TODO allow multinomials
+			IExpr arg3 = Validate.checkSymbolType(ast, 3);
+			ISymbol x = (ISymbol) arg3;
+			IExpr a = F.evalExpandAll(ast.arg1(), engine);
+			IExpr b = F.evalExpandAll(ast.arg2(), engine);
+			ExprPolynomialRing ring = new ExprPolynomialRing(F.List(x));
+			try {
+				// check if a is a polynomial otherwise check ArithmeticException, ClassCastException
+				ring.create(a);
+			} catch (RuntimeException ex) {
+				throw new WrongArgumentType(ast, a, 1, "Polynomial expected!");
+			}
+			try {
+				// check if b is a polynomial otherwise check ArithmeticException, ClassCastException
+				ring.create(b);
+				return F.Together(resultant(a, b, x, engine));
+			} catch (RuntimeException ex) {
+				throw new WrongArgumentType(ast, b, 2, "Polynomial expected!");
+			}
+		}
+
+		public IExpr resultant(IExpr a, IExpr b, ISymbol x, EvalEngine engine) {
+			IExpr aExp = F.Exponent.of(engine, a, x);
+			IExpr bExp = F.Exponent.of(engine, b, x);
+			if (b.isFree(x)) {
+				return F.Power(b, aExp);
+			}
+			IExpr abExp = aExp.times(bExp);
+			if (F.Less.ofQ(engine, aExp, bExp)) {
+				return F.Times(F.Power(F.CN1, abExp), resultant(b, a, x, engine));
+			}
+
+			IExpr r = F.PolynomialRemainder.of(engine, a, b, x);
+			IExpr rExp = r;
+			if (!r.isZero()) {
+				rExp = F.Exponent.of(engine, r, x);
+			}
+			return F.Times(F.Power(F.CN1, abExp), F.Power(F.Coefficient(b, x, bExp), F.Subtract(aExp, rExp)),
+					resultant(b, r, x, engine));
+		}
+
+		// public static IExpr resultant(IAST result, IAST resultListDiff) {
+		// // create sylvester matrix
+		// IAST sylvester = F.List();
+		// IAST row = F.List();
+		// IAST srow;
+		// final int n = resultListDiff.size() - 2;
+		// final int m = result.size() - 2;
+		// final int n2 = m + n;
+		//
+		// for (int i = result.size() - 1; i > 0; i--) {
+		// row.add(result.get(i));
+		// }
+		// for (int i = 0; i < n; i++) {
+		// // for each row
+		// srow = F.List();
+		// int j = 0;
+		// while (j < n2) {
+		// if (j < i) {
+		// srow.add(F.C0);
+		// j++;
+		// } else if (i == j) {
+		// for (int j2 = 1; j2 < row.size(); j2++) {
+		// srow.add(row.get(j2));
+		// j++;
+		// }
+		// } else {
+		// srow.add(F.C0);
+		// j++;
+		// }
+		// }
+		// sylvester.add(srow);
+		// }
+		//
+		// row = F.List();
+		// for (int i = resultListDiff.size() - 1; i > 0; i--) {
+		// row.add(resultListDiff.get(i));
+		// }
+		// for (int i = n; i < n2; i++) {
+		// // for each row
+		// srow = F.List();
+		// int j = 0;
+		// int k = n;
+		// while (j < n2) {
+		// if (k < i) {
+		// srow.add(F.C0);
+		// j++;
+		// k++;
+		// } else if (i == k) {
+		// for (int j2 = 1; j2 < row.size(); j2++) {
+		// srow.add(row.get(j2));
+		// j++;
+		// k++;
+		// }
+		// } else {
+		// srow.add(F.C0);
+		// j++;
+		// k++;
+		// }
+		// }
+		// sylvester.add(srow);
+		// }
+		//
+		// if (sylvester.isAST0()) {
+		// return null;
+		// }
+		// // System.out.println(sylvester);
+		// return F.eval(F.Det(sylvester));
+		// }
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+	}
+
+	/**
+	 * <pre>
+	 * NRoots(poly)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * gives the numerical roots of polynomial <code>poly</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; NRoots(x^3-4*x^2+x+6)
+	 * {2.9999999999999996,-1.0000000000000002,1.9999999999999998}
+	 * </pre>
+	 * 
+	 * <h3>Related terms</h3>
+	 * <p>
+	 * <a href="DSolve.md">DSolve</a>, <a href="Eliminate.md">Eliminate</a>,
+	 * <a href="GroebnerBasis.md">GroebnerBasis</a>, <a href="FindRoot.md">FindRoot</a>, <a href="Solve.md">Solve</a>
+	 * </p>
+	 */
+	private static class NRoots extends AbstractFunctionEvaluator {
+		/**
+		 * Determine the numerical roots of a univariate polynomial
+		 * 
+		 * See Wikipedia entries for: <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic equation </a>,
+		 * <a href="http://en.wikipedia.org/wiki/Cubic_function">Cubic function</a> and
+		 * <a href="http://en.wikipedia.org/wiki/Quartic_function">Quartic function</a>
+		 * 
+		 * @see Roots
+		 */
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+			IAST variables;
+			if (ast.size() == 2) {
+				VariablesSet eVar = new VariablesSet(ast.arg1());
+				if (!eVar.isSize(1)) {
+					// factor only possible for univariate polynomials
+					engine.printMessage("NRoots: factorization only possible for univariate polynomials");
+					return F.NIL;
+				}
+				variables = eVar.getVarList();
+			} else {
+				if (ast.arg2().isList()) {
+					variables = (IAST) ast.arg2();
+				} else {
+					variables = F.List(ast.arg2());
+				}
+			}
+			IExpr temp = roots(ast.arg1(), variables, engine);
+			if (!temp.isList()) {
+				return F.NIL;
+			}
+			IAST list = (IAST) temp;
+			int size = list.size();
+			IASTAppendable result = F.ListAlloc(size);
+			return result.appendArgs(size, i -> engine.evalN(list.get(i)));
+			// for (int i = 1; i < size; i++) {
+			// result.append(engine.evalN(list.get(i)));
+			// }
+			// return result;
+		}
+
+		/**
+		 * 
+		 * @param coefficients
+		 * @return <code>F.NIL</code> if the result couldn't be evaluated
+		 */
+		private static IAST rootsUp2Degree3(double[] coefficients) {
+			if (coefficients.length == 0) {
+				return F.NIL;
+			}
+			if (coefficients.length == 1) {
+				return quadratic(0.0, 0.0, coefficients[0]);
+			}
+			if (coefficients.length == 2) {
+				return quadratic(0.0, coefficients[1], coefficients[0]);
+			}
+			if (coefficients.length == 3) {
+				return quadratic(coefficients[2], coefficients[1], coefficients[0]);
+			}
+			IAST result = F.NIL;
+			if (coefficients.length == 4) {
+				result = cubic(coefficients[3], coefficients[2], coefficients[1], coefficients[0]);
+			}
+			return result;
+		}
+
+		private static IAST quadratic(double a, double b, double c) {
+			IASTAppendable result = F.ListAlloc(2);
+			double discriminant = (b * b - (4 * a * c));
+			if (F.isZero(discriminant)) {
+				double bothEqual = ((-b / (2.0 * a)));
+				result.append(F.num(bothEqual));
+				result.append(F.num(bothEqual));
+			} else if (discriminant < 0.0) {
+				// two complex roots
+				double imaginaryPart = Math.sqrt(-discriminant) / (2 * a);
+				double realPart = (-b / (2.0 * a));
+				result.append(F.complex(realPart, imaginaryPart));
+				result.append(F.complex(realPart, -imaginaryPart));
+			} else {
+				// two real roots
+				double real1 = ((-b + Math.sqrt(discriminant)) / (2.0 * a));
+				double real2 = ((-b - Math.sqrt(discriminant)) / (2.0 * a));
+				result.append(F.num(real1));
+				result.append(F.num(real2));
+			}
+			return result;
+		}
+
+		/**
+		 * See <a href= "http://stackoverflow.com/questions/13328676/c-solving-cubic-equations" > http
+		 * ://stackoverflow.com/questions/13328676/c-solving-cubic-equations</a>
+		 * 
+		 * @param a
+		 * @param b
+		 * @param c
+		 * @param d
+		 */
+		private static IAST cubic(double a, double b, double c, double d) {
+			if (F.isZero(a)) {
+				return F.NIL;
+			}
+			if (F.isZero(d)) {
+				return F.NIL;
+			}
+			IASTAppendable result = F.ListAlloc(3);
+			b /= a;
+			c /= a;
+			d /= a;
+
+			double q = (3.0 * c - (b * b)) / 9.0;
+			double r = -(27.0 * d) + b * (9.0 * c - 2.0 * (b * b));
+			r /= 54.0;
+			double discriminant = q * q * q + r * r;
+
+			double term1 = (b / 3.0);
+			if (discriminant > 0) {
+				// one root real, two are complex
+				double s = r + Math.sqrt(discriminant);
+				s = ((s < 0) ? -Math.pow(-s, (1.0 / 3.0)) : Math.pow(s, (1.0 / 3.0)));
+				double t = r - Math.sqrt(discriminant);
+				t = ((t < 0) ? -Math.pow(-t, (1.0 / 3.0)) : Math.pow(t, (1.0 / 3.0)));
+				result.append(F.num(-term1 + s + t));
+				term1 += (s + t) / 2.0;
+				double realPart = -term1;
+				term1 = Math.sqrt(3.0) * (-t + s) / 2;
+				result.append(F.complex(realPart, term1));
+				result.append(F.complex(realPart, -term1));
+				return result;
+			}
+
+			// The remaining options are all real
+			double r13;
+			if (F.isZero(discriminant)) {
+				// All roots real, at least two are equal.
+				r13 = ((r < 0) ? -Math.pow(-r, (1.0 / 3.0)) : Math.pow(r, (1.0 / 3.0)));
+				result.append(F.num(-term1 + 2.0 * r13));
+				result.append(F.num(-(r13 + term1)));
+				result.append(F.num(-(r13 + term1)));
+				return result;
+			}
+
+			// Only option left is that all roots are real and unequal (to get here,
+			// q < 0)
+			q = -q;
+			double dum1 = q * q * q;
+			dum1 = Math.acos(r / Math.sqrt(dum1));
+			r13 = 2.0 * Math.sqrt(q);
+			result.append(F.num(-term1 + r13 * Math.cos(dum1 / 3.0)));
+			result.append(F.num(-term1 + r13 * Math.cos((dum1 + 2.0 * Math.PI) / 3.0)));
+			result.append(F.num(-term1 + r13 * Math.cos((dum1 + 4.0 * Math.PI) / 3.0)));
+			return result;
+		}
+	}
+
+	/**
+	 * Determine complex root intervals of a univariate polynomial
+	 * 
+	 */
+	private static class RootIntervals extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			return croots(ast.arg1(), false);
+		}
+
+		/**
+		 * Complex numeric roots intervals.
+		 * 
+		 * @param ast
+		 * @return
+		 */
+		public static IASTAppendable croots(final IExpr arg, boolean numeric) {
+
+			try {
+				VariablesSet eVar = new VariablesSet(arg);
+				if (!eVar.isSize(1)) {
+					// only possible for univariate polynomials
+					return F.NIL;
+				}
+				IExpr expr = F.evalExpandAll(arg);
+				// ASTRange r = new ASTRange(eVar.getVarList(), 1);
+				// List<IExpr> varList = r;
+				List<IExpr> varList = eVar.getVarList().copyTo();
+
+				ComplexRing<BigRational> cfac = new ComplexRing<BigRational>(new BigRational(1));
+				ComplexRootsAbstract<BigRational> cr = new ComplexRootsSturm<BigRational>(cfac);
+
+				JASConvert<Complex<BigRational>> jas = new JASConvert<Complex<BigRational>>(varList, cfac);
+				GenPolynomial<Complex<BigRational>> poly = jas.numericExpr2JAS(expr);
+
+				Squarefree<Complex<BigRational>> engine = SquarefreeFactory
+						.<Complex<BigRational>>getImplementation(cfac);
+				poly = engine.squarefreePart(poly);
+
+				List<Rectangle<BigRational>> roots = cr.complexRoots(poly);
+
+				BigRational len = new BigRational(1, 100000L);
+
+				IASTAppendable resultList = F.ListAlloc(roots.size());
+
+				if (numeric) {
+					for (Rectangle<BigRational> root : roots) {
+						Rectangle<BigRational> refine = cr.complexRootRefinement(root, poly, len);
+						resultList.append(JASConvert.jas2Numeric(refine.getCenter(), Config.DEFAULT_ROOTS_CHOP_DELTA));
+					}
+				} else {
+					IASTAppendable rectangleList;
+					for (Rectangle<BigRational> root : roots) {
+						rectangleList = F.ListAlloc(4);
+
+						Rectangle<BigRational> refine = cr.complexRootRefinement(root, poly, len);
+						rectangleList.append(JASConvert.jas2Complex(refine.getNW()));
+						rectangleList.append(JASConvert.jas2Complex(refine.getSW()));
+						rectangleList.append(JASConvert.jas2Complex(refine.getSE()));
+						rectangleList.append(JASConvert.jas2Complex(refine.getNE()));
+						resultList.append(rectangleList);
+						// System.out.println("refine = " + refine);
+
+					}
+				}
+				return resultList;
+			} catch (InvalidBoundaryException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			} catch (JASConversionException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
+			}
+			return F.NIL;
+		}
+
+	}
+
+	/**
+	 * <pre>
+	 * Roots(polynomial - equation, var)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * determine the roots of a univariate polynomial equation with respect to the variable <code>var</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Roots(3*x^3-5*x^2+5*x-2==0,x)
+	 * x==2/3||x==1/2-I*1/2*Sqrt(3)||x==1/2+I*1/2*Sqrt(3)
+	 * </pre>
+	 */
+	private static class Roots extends AbstractFunctionEvaluator {
+
+		/**
+		 * Determine the roots of a univariate polynomial
+		 * 
+		 * See Wikipedia entries for: <a href="http://en.wikipedia.org/wiki/Quadratic_equation">Quadratic equation </a>,
+		 * <a href="http://en.wikipedia.org/wiki/Cubic_function">Cubic function</a> and
+		 * <a href="http://en.wikipedia.org/wiki/Quartic_function">Quartic function</a>
+		 */
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			IExpr arg1 = ast.arg1();
+			if (arg1.isEqual()) {
+				IAST equalAST = (IAST) arg1;
+				if (equalAST.arg2().isZero()) {
+					arg1 = equalAST.arg1();
+				} else {
+					arg1 = engine.evaluate(F.Subtract(equalAST.arg1(), equalAST.arg2()));
+				}
+			} else {
+				throw new WrongArgumentType(ast, ast.arg1(), 1, "Equal() expression expected!");
+			}
+			VariablesSet eVar = null;
+			if (ast.arg2().isList()) {
+				eVar = new VariablesSet(ast.arg2());
+			} else {
+				eVar = new VariablesSet();
+				eVar.add(ast.arg2());
+			}
+			if (!eVar.isSize(1)) {
+				// factorization only possible for univariate polynomials
+				throw new WrongArgumentType(ast, ast.arg2(), 2, "Only one variable expected");
+			}
+			IAST variables = eVar.getVarList();
+			IExpr variable = variables.arg1();
+			IAST list = roots(arg1, false, variables, engine);
+			if (list.isPresent()) {
+				IASTAppendable or = F.Or();
+				for (int i = 1; i < list.size(); i++) {
+					or.append(F.Equal(variable, list.get(i)));
+				}
+				return or;
+			}
+			return F.NIL;
+		}
+
+	}
+
+	/**
 	 * Get the coefficient list of a univariate polynomial.
 	 * 
 	 * @param polynomial
@@ -928,6 +1423,443 @@ public class PolynomialFunctions {
 		} catch (RuntimeException ex) {
 			throw new WrongArgumentType(polynomial, "Polynomial expected!");
 		}
+	}
+
+	public static IAST roots(final IExpr arg1, IAST variables, EvalEngine engine) {
+		if (variables.size() != 2) {
+			// factor only possible for univariate polynomials
+			engine.printMessage("NRoots: factorization only possible for univariate polynomials");
+			return F.NIL;
+		}
+		IExpr expr = evalExpandAll(arg1, engine);
+
+		ISymbol sym = (ISymbol) variables.arg1();
+		double[] coefficients = Expr2Object.toPolynomial(expr, sym);
+
+		if (coefficients != null) {
+			LaguerreSolver solver = new LaguerreSolver(Config.DEFAULT_ROOTS_CHOP_DELTA);
+			org.hipparchus.complex.Complex[] roots = solver.solveAllComplex(coefficients, 0);
+			return Object2Expr.convertComplex(true, roots);
+		}
+		IExpr denom = F.C1;
+		if (expr.isAST()) {
+			expr = Algebra.together((IAST) expr, engine);
+
+			// split expr into numerator and denominator
+			denom = engine.evaluate(F.Denominator(expr));
+			if (!denom.isOne()) {
+				// search roots for the numerator expression
+				expr = engine.evaluate(F.Numerator(expr));
+			}
+		}
+		return rootsOfVariable(expr, denom);
+	}
+
+	private static IAST rootsOfVariable(final IExpr expr, final IExpr denom) {
+
+		IASTAppendable resultList = RootIntervals.croots(expr, true);
+		if (resultList.isPresent()) {
+			// IAST result = F.List();
+			// if (resultList.size() > 0) {
+			// result.appendArgs(resultList);
+			// }
+			// return result;
+			return resultList;
+		}
+		return F.NIL;
+	}
+
+	protected static IAST roots(final IExpr arg1, boolean numericSolutions, IAST variables, EvalEngine engine) {
+
+		IExpr expr = evalExpandAll(arg1, engine);
+
+		IExpr denom = F.C1;
+		if (expr.isAST()) {
+			expr = Algebra.together((IAST) expr, engine);
+
+			// split expr into numerator and denominator
+			denom = F.Denominator.of(engine, expr);
+			if (!denom.isOne()) {
+				// search roots for the numerator expression
+				expr = F.Numerator.of(expr);
+			}
+		}
+		return rootsOfVariable(expr, denom, variables, numericSolutions, engine);
+	}
+
+	/**
+	 * <p>
+	 * Given a set of polynomial coefficients, compute the roots of the polynomial. Depending on the polynomial being
+	 * considered the roots may contain complex number. When complex numbers are present they will come in pairs of
+	 * complex conjugates.
+	 * </p>
+	 * 
+	 * @param coefficients
+	 *            coefficients of the polynomial.
+	 * @return the roots of the polynomial
+	 */
+	@Nonnull
+	public static IAST findRoots(double... coefficients) {
+		int N = coefficients.length - 1;
+
+		// Construct the companion matrix
+		RealMatrix c = new Array2DRowRealMatrix(N, N);
+
+		double a = coefficients[N];
+		for (int i = 0; i < N; i++) {
+			c.setEntry(i, N - 1, -coefficients[i] / a);
+		}
+		for (int i = 1; i < N; i++) {
+			c.setEntry(i, i - 1, 1);
+		}
+
+		try {
+
+			EigenDecomposition ed = new EigenDecomposition(c);
+
+			double[] realValues = ed.getRealEigenvalues();
+			double[] imagValues = ed.getImagEigenvalues();
+
+			IASTAppendable roots = F.ListAlloc(N);
+			return roots.appendArgs(0, N,
+					i -> F.chopExpr(F.complexNum(realValues[i], imagValues[i]), Config.DEFAULT_ROOTS_CHOP_DELTA));
+			// for (int i = 0; i < N; i++) {
+			// roots.append(F.chopExpr(F.complexNum(realValues[i], imagValues[i]),
+			// Config.DEFAULT_ROOTS_CHOP_DELTA));
+			// }
+			// return roots;
+		} catch (Exception ime) {
+			throw new WrappedException(ime);
+		}
+
+	}
+
+	private static IASTAppendable rootsOfExprPolynomial(final IExpr expr, IAST varList, boolean rootsOfQuartic) {
+		IASTAppendable result = F.NIL;
+		try {
+			// try to generate a common expression polynomial
+			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, varList);
+			ExprPolynomial ePoly = ring.create(expr, false, false);
+			ePoly = ePoly.multiplyByMinimumNegativeExponents();
+			if (ePoly.degree(0) >= Integer.MAX_VALUE) {
+				return F.NIL;
+			}
+			if (ePoly.degree(0) >= 3) {
+				result = unitPolynomial((int) ePoly.degree(0), ePoly);
+				if (result.isPresent()) {
+					result = QuarticSolver.createSet(result);
+					return result;
+				}
+			}
+			if (!rootsOfQuartic && ePoly.degree(0) > 2) {
+				return F.NIL;
+			}
+			result = rootsOfQuarticPolynomial(ePoly);
+			if (result.isPresent()) {
+				if (expr.isNumericMode()) {
+					for (int i = 1; i < result.size(); i++) {
+						result.set(i, F.chopExpr(result.get(i), Config.DEFAULT_ROOTS_CHOP_DELTA));
+					}
+				}
+				return result;
+			}
+		} catch (JASConversionException e2) {
+			if (Config.SHOW_STACKTRACE) {
+				e2.printStackTrace();
+			}
+		}
+		return F.NIL;
+	}
+
+	/**
+	 * Solve a polynomial with degree &lt;= 2.
+	 * 
+	 * @param expr
+	 * @param varList
+	 * @return <code>F.NIL</code> if no evaluation was possible.
+	 */
+	private static IAST rootsOfQuadraticExprPolynomial(final IExpr expr, IAST varList) {
+		IASTAppendable result = F.NIL;
+		try {
+			// try to generate a common expression polynomial
+			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, varList);
+			ExprPolynomial ePoly = ring.create(expr, false, false);
+			ePoly = ePoly.multiplyByMinimumNegativeExponents();
+			result = rootsOfQuadraticPolynomial(ePoly);
+			if (result.isPresent() && expr.isNumericMode()) {
+				for (int i = 1; i < result.size(); i++) {
+					result.set(i, F.chopExpr(result.get(i), Config.DEFAULT_ROOTS_CHOP_DELTA));
+				}
+			}
+		} catch (JASConversionException e2) {
+			if (Config.SHOW_STACKTRACE) {
+				e2.printStackTrace();
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Solve a polynomial with degree &lt;= 4.
+	 * 
+	 * @param polynomial
+	 *            the polynomial
+	 * @return <code>F.NIL</code> if no evaluation was possible.
+	 */
+	private static IASTAppendable rootsOfQuarticPolynomial(ExprPolynomial polynomial) {
+		long varDegree = polynomial.degree(0);
+
+		if (polynomial.isConstant()) {
+			return F.ListAlloc(0);
+		}
+
+		IExpr a;
+		IExpr b;
+		IExpr c;
+		IExpr d;
+		IExpr e;
+		if (varDegree <= 4) {
+			// solve quartic equation:
+			a = C0;
+			b = C0;
+			c = C0;
+			d = C0;
+			e = C0;
+			for (ExprMonomial monomial : polynomial) {
+				IExpr coeff = monomial.coefficient();
+				long lExp = monomial.exponent().getVal(0);
+				if (lExp == 4) {
+					a = coeff;
+				} else if (lExp == 3) {
+					b = coeff;
+				} else if (lExp == 2) {
+					c = coeff;
+				} else if (lExp == 1) {
+					d = coeff;
+				} else if (lExp == 0) {
+					e = coeff;
+				} else {
+					return F.NIL;
+				}
+			}
+			IASTAppendable result = QuarticSolver.quarticSolve(a, b, c, d, e);
+			if (result.isPresent()) {
+				return QuarticSolver.createSet(result);
+			}
+		}
+
+		return F.NIL;
+	}
+
+	/**
+	 * Solve polynomials of the form <code>a * x^varDegree + b == 0</code>
+	 * 
+	 * @param varDegree
+	 * @param polynomial
+	 * @return
+	 */
+	private static IASTAppendable unitPolynomial(int varDegree, ExprPolynomial polynomial) {
+		IExpr a;
+		IExpr b;
+		a = C0;
+		b = C0;
+		for (ExprMonomial monomial : polynomial) {
+			IExpr coeff = monomial.coefficient();
+			long lExp = monomial.exponent().getVal(0);
+			if (lExp == varDegree) {
+				a = coeff;
+			} else if (lExp == 0) {
+				b = coeff;
+			} else {
+				return F.NIL;
+			}
+		}
+
+		// a * x^varDegree + b
+		if (!a.isOne()) {
+			a = F.Power(a, F.fraction(-1, varDegree));
+		}
+		if (!b.isOne()) {
+			b = F.Power(b, F.fraction(1, varDegree));
+		}
+		if ((varDegree & 0x0001) == 0x0001) {
+			// odd
+			IASTAppendable result = F.ListAlloc(varDegree);
+			for (int i = 1; i <= varDegree; i++) {
+				result.append(F.Times(F.Power(F.CN1, i - 1), F.Power(F.CN1, F.fraction(i, varDegree)), b, a));
+			}
+			return result;
+		} else {
+			// even
+			IASTAppendable result = F.ListAlloc(varDegree);
+			long size = varDegree / 2;
+			int k = 1;
+			for (int i = 1; i <= size; i++) {
+				result.append(F.Times(F.CN1, F.Power(F.CN1, F.fraction(k, varDegree)), b, a));
+				result.append(F.Times(F.Power(F.CN1, F.fraction(k, varDegree)), b, a));
+				k += 2;
+			}
+			return result;
+		}
+
+	}
+
+	/**
+	 * Solve a polynomial with degree &lt;= 2.
+	 * 
+	 * @param polynomial
+	 *            the polynomial
+	 * @return <code>F.NIL</code> if no evaluation was possible.
+	 */
+	private static IASTAppendable rootsOfQuadraticPolynomial(ExprPolynomial polynomial) {
+		long varDegree = polynomial.degree(0);
+
+		if (polynomial.isConstant()) {
+			return F.ListAlloc(1);
+		}
+		IExpr a;
+		IExpr b;
+		IExpr c;
+		IExpr d;
+		IExpr e;
+		if (varDegree <= 2) {
+			IEvalStepListener listener = EvalEngine.get().getStepListener();
+			if (listener != null) {
+				IASTAppendable temp = listener.rootsOfQuadraticPolynomial(polynomial);
+				if (temp.isPresent()) {
+					return temp;
+				}
+			}
+			// solve quadratic equation:
+			a = C0;
+			b = C0;
+			c = C0;
+			d = C0;
+			e = C0;
+			for (ExprMonomial monomial : polynomial) {
+				IExpr coeff = monomial.coefficient();
+				long lExp = monomial.exponent().getVal(0);
+				if (lExp == 4) {
+					a = coeff;
+				} else if (lExp == 3) {
+					b = coeff;
+				} else if (lExp == 2) {
+					c = coeff;
+				} else if (lExp == 1) {
+					d = coeff;
+				} else if (lExp == 0) {
+					e = coeff;
+				} else {
+					throw new ArithmeticException("Roots::Unexpected exponent value: " + lExp);
+				}
+			}
+			IASTAppendable result = QuarticSolver.quarticSolve(a, b, c, d, e);
+			if (result.isPresent()) {
+				result = QuarticSolver.createSet(result);
+				return result;
+			}
+
+		}
+
+		return F.NIL;
+	}
+
+	/**
+	 * 
+	 * @param expr
+	 * @param denominator
+	 * @param variables
+	 * @param numericSolutions
+	 * @param engine
+	 * @return <code>F.NIL</code> if no evaluation was possible.
+	 */
+	public static IAST rootsOfVariable(final IExpr expr, final IExpr denominator, final IAST variables,
+			boolean numericSolutions, EvalEngine engine) {
+		IASTAppendable result = F.NIL;
+		// ASTRange r = new ASTRange(variables, 1);
+		// List<IExpr> varList = r;
+		List<IExpr> varList = variables.copyTo();
+		try {
+			IExpr temp;
+			IAST list = rootsOfQuadraticExprPolynomial(expr, variables);
+			if (list.isPresent()) {
+				return list;
+			}
+			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+			GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, numericSolutions);
+			// if (polyRat.degree(0) <= 2) {
+			result = rootsOfExprPolynomial(expr, variables, false);
+			if (result.isPresent()) {
+				return result;
+			}
+			// }
+			result = F.ListAlloc(8);
+			IAST factorRational = Algebra.factorRational(polyRat, jas, varList, F.List);
+			for (int i = 1; i < factorRational.size(); i++) {
+				temp = F.evalExpand(factorRational.get(i));
+				IAST quarticResultList = QuarticSolver.solve(temp, variables.arg1());
+				if (quarticResultList.isPresent()) {
+					for (int j = 1; j < quarticResultList.size(); j++) {
+						if (numericSolutions) {
+							result.append(F.chopExpr(engine.evalN(quarticResultList.get(j)),
+									Config.DEFAULT_ROOTS_CHOP_DELTA));
+						} else {
+							result.append(quarticResultList.get(j));
+						}
+					}
+				} else {
+					polyRat = jas.expr2JAS(temp, numericSolutions);
+					IAST factorComplex = Algebra.factorComplex(polyRat, jas, varList, F.List, true);
+					for (int k = 1; k < factorComplex.size(); k++) {
+						temp = F.evalExpand(factorComplex.get(k));
+						quarticResultList = QuarticSolver.solve(temp, variables.arg1());
+						if (quarticResultList.isPresent()) {
+							for (int j = 1; j < quarticResultList.size(); j++) {
+								if (numericSolutions) {
+									result.append(F.chopExpr(engine.evalN(quarticResultList.get(j)),
+											Config.DEFAULT_ROOTS_CHOP_DELTA));
+								} else {
+									result.append(quarticResultList.get(j));
+								}
+							}
+						} else {
+							double[] coefficients = PolynomialFunctions.coefficientList(temp,
+									(ISymbol) variables.arg1());
+							if (coefficients == null) {
+								return F.NIL;
+							}
+							IAST resultList = findRoots(coefficients);
+							// IAST resultList = RootIntervals.croots(temp,
+							// true);
+							if (resultList.size() > 0) {
+								result.appendArgs(resultList);
+							}
+						}
+					}
+				}
+			}
+			result = QuarticSolver.createSet(result);
+			return result;
+		} catch (JASConversionException e) {
+			result = rootsOfExprPolynomial(expr, variables, true);
+		}
+		if (result.isPresent()) {
+			if (!denominator.isNumber()) {
+				// eliminate roots from the result list, which occur in the
+				// denominator
+				int i = 1;
+				while (i < result.size()) {
+					IExpr temp = denominator.replaceAll(F.Rule(variables.arg1(), result.get(i)));
+					if (temp.isPresent() && engine.evaluate(temp).isZero()) {
+						result.remove(i);
+						continue;
+					}
+					i++;
+				}
+			}
+			return result;
+		}
+		return F.NIL;
 	}
 
 	private final static PolynomialFunctions CONST = new PolynomialFunctions();

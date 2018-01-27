@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 
 import org.matheclipse.core.builtin.Algebra;
-import org.matheclipse.core.builtin.PredicateQ;
+import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
@@ -470,7 +470,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 		IExpr denom = exprAnalyzer.getDenominator();
 		// try to solve the expr for a symbol in the symbol set
 		for (ISymbol sym : exprAnalyzer.getSymbolSet()) {
-			IExpr temp = Roots.rootsOfVariable(expr, denom, F.List(sym), true, engine);
+			IExpr temp = PolynomialFunctions.rootsOfVariable(expr, denom, F.List(sym), true, engine);
 			if (temp.isPresent()) {
 				IASTAppendable resultList = F.List();
 				if (temp.isASTSizeGE(F.List, 2)) {
