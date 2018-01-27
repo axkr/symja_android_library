@@ -38,7 +38,6 @@ import org.matheclipse.core.convert.JASConvert;
 import org.matheclipse.core.convert.JASIExpr;
 import org.matheclipse.core.convert.JASModInteger;
 import org.matheclipse.core.convert.VariablesSet;
-import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.PowerOp;
@@ -330,9 +329,9 @@ public class Algebra {
 			Validate.checkRange(ast, 2, 3);
 
 			final IExpr arg1 = ast.arg1();
-			IAST temp = Structure.threadLogicEquationOperators(arg1, ast, 1);
-			if (temp.isPresent()) {
-				return temp;
+			IAST tempAST = Structure.threadLogicEquationOperators(arg1, ast, 1);
+			if (tempAST.isPresent()) {
+				return tempAST;
 			}
 
 			IAST variableList = null;
@@ -353,8 +352,15 @@ public class Algebra {
 			if (arg1.isTimes() || arg1.isPower()) {
 				IExpr[] parts = fractionalParts(arg1, false);
 				if (parts != null) {
-					return partialFractionDecompositionRational(new PartialFractionGenerator(), parts,
+					IExpr temp = partialFractionDecompositionRational(new PartialFractionGenerator(), parts,
 							variableList.arg1());
+					if (temp.isPresent()) {
+						return temp;
+					}
+//					temp = F.Factor.of(parts[1]);
+//					if (temp.isTimes()) {
+//System.out.println(temp.toString());
+//					}
 				}
 			}
 			return arg1;
@@ -718,7 +724,7 @@ public class Algebra {
 				return;
 			} else if (expr.isTimes()) {
 				IAST timesAST = (IAST) expr;
-				if(timesAST.exists((x, i) -> {
+				if (timesAST.exists((x, i) -> {
 					if (matcher.test(x) || isPowerMatched(x, matcher)) {
 						IASTAppendable clone = timesAST.copyAppendable();
 						clone.remove(i);
@@ -4174,6 +4180,65 @@ public class Algebra {
 		}
 		return parts;
 	}
+
+	// public static IExpr partialFractionDecomposition(IExprPartialFractionGenerator pf, IExpr[] parts, IExpr variable)
+	// {
+	// try {
+	// IAST variableList = F.List(variable);
+	// IExpr exprNumerator = F.evalExpandAll(parts[0]);
+	// IExpr exprDenominator = F.evalExpandAll(parts[1]);
+	// // ASTRange r = new ASTRange(variableList, 1);
+	// // List<IExpr> varList = r;
+	// List<IExpr> varList = variableList.copyTo();
+	//
+	// String[] varListStr = new String[1];
+	// varListStr[0] = variableList.arg1().toString();
+	// // JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+	// // GenPolynomial<BigRational> numerator = jas.expr2JAS(exprNumerator, false);
+	// // GenPolynomial<BigRational> denominator = jas.expr2JAS(exprDenominator, false);
+	// JASIExpr jas = new JASIExpr(varList, ExprRingFactory.CONST);
+	// GenPolynomial<IExpr> numerator = jas.expr2IExprJAS(exprNumerator);
+	// GenPolynomial<IExpr> denominator = jas.expr2IExprJAS(exprDenominator);
+	//
+	// // get factors
+	// FactorAbstract<IExpr> factorAbstract = FactorFactory.getImplementation(ExprRingFactory.CONST);
+	// SortedMap<GenPolynomial<IExpr>, Long> sfactors = factorAbstract.baseFactors(denominator);
+	//
+	// List<GenPolynomial<IExpr>> D = new ArrayList<GenPolynomial<IExpr>>(sfactors.keySet());
+	//
+	// SquarefreeAbstract<IExpr> sqf = SquarefreeFactory.getImplementation(ExprRingFactory.CONST);
+	// List<List<GenPolynomial<IExpr>>> Ai = sqf.basePartialFraction(numerator, sfactors);
+	// // returns [ [Ai0, Ai1,..., Aie_i], i=0,...,k ] with A/prod(D) =
+	// // A0 + sum( sum ( Aij/di^j ) ) with deg(Aij) < deg(di).
+	//
+	// if (Ai.size() > 0) {
+	// // IAST result = F.Plus();
+	// pf.allocPlus(Ai.size() * 2);
+	// pf.setJAS(jas);
+	// if (!Ai.get(0).get(0).isZERO()) {
+	// pf.addNonFractionalPart(Ai.get(0).get(0));
+	// }
+	// for (int i = 1; i < Ai.size(); i++) {
+	// List<GenPolynomial<IExpr>> list = Ai.get(i);
+	// int j = 0;
+	// for (GenPolynomial<IExpr> genPolynomial : list) {
+	// if (!genPolynomial.isZERO()) {
+	// GenPolynomial<IExpr> Di_1 = D.get(i - 1);
+	// pf.addSinglePartialFraction(genPolynomial, Di_1, j);
+	// }
+	// j++;
+	// }
+	//
+	// }
+	// return pf.getResult();
+	// }
+	// } catch (JASConversionException e) {
+	// if (Config.DEBUG) {
+	// e.printStackTrace();
+	// }
+	// }
+	// return F.NIL;
+	// }
 
 	/**
 	 * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition of the numerator

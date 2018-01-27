@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -96,7 +97,9 @@ public class JASConvert<C extends RingElem<C>> {
 		try {
 			return expr2Poly(exprPoly, numeric2Rational);
 		} catch (Exception ae) {
-			// ae.printStackTrace();
+			if (Config.SHOW_STACKTRACE) {
+				ae.printStackTrace();
+			}
 			throw new JASConversionException();
 		}
 	}

@@ -127,13 +127,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testApart() {
+//		check("Apart(1 / (x^2 - y^2), y)", " 1/(x^2-y^2)");
+
+		check("Apart(y/(x + 2)/(x + 1),x)", "y/((1+x)*(2+x))");
+
 		check("Sin(1 / (x ^ 2 - y ^ 2)) // Apart", "Sin(1/(x^2-y^2))");
 
 		check("Apart(1 / (x^2 + 5x + 6))", "1/(2+x)+1/(-3-x)");
 		// TODO return -1 / (2 y (x + y)) + 1 / (2 y (x - y))
-		check("Apart(1 / (x^2 - y^2), x)", "Apart(1/(x^2-y^2),x)");
+		check("Apart(1 / (x^2 - y^2), x)", "1/(x^2-y^2)");
 		// TODO return 1 / (2 x (x + y)) + 1 / (2 x (x - y))
-		check("Apart(1 / (x^2 - y^2), y)", "Apart(1/(x^2-y^2),y)");
+		check("Apart(1 / (x^2 - y^2), y)", "1/(x^2-y^2)");
 
 		check("Apart({1 / (x^2 + 5x + 6)})", "{1/(2+x)+1/(-3-x)}");
 
@@ -2210,6 +2214,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testFactor() {
 		// TODO return (2 + 2 x + 3 x ^ 2 + x ^ 4) / ((1 + x) ^ 2 (1 + x ^ 2) ^
 		// 2)
+		check("Factor(x^2 - y^2)", "(x-y)*(x+y)");
 		check("Factor(1 / (x^2+2x+1) + 1 / (x^4+2x^2+1))", "(2+2*x+3*x^2+x^4)/((1+x)^2*(1+x^2)^2)");
 
 		check("Factor({x+x^2})", "{x*(1+x)}");

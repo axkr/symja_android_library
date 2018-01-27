@@ -73,7 +73,7 @@ public class ExprRingFactory implements RingFactory<IExpr> {
 	public IExpr getZERO() {
 		return F.C0;
 	}
-
+	
 	@Override
 	public IExpr copy(IExpr c) {
 		return null;
