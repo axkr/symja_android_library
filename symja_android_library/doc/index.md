@@ -173,7 +173,6 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Expression types](expression-types.md)
 
 ## Reference of built-in symbols
-
 * [Abort](functions/Abort.md)
 * [Abs](functions/Abs.md)
 * [AbsArg](functions/AbsArg.md)
@@ -464,6 +463,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Most](functions/Most.md)
 * [Multinomial](functions/Multinomial.md)
 * [N](functions/N.md)
+* [Nand](functions/Nand.md)
 * [Negative](functions/Negative.md)
 * [Nest](functions/Nest.md)
 * [NestList](functions/NestList.md)
@@ -479,6 +479,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [NoneTrue](functions/NoneTrue.md)
 * [NonNegative](functions/NonNegative.md)
 * [NonPositive](functions/NonPositive.md)
+* [Nor](functions/Nor.md)
 * [Norm](functions/Norm.md)
 * [Normalize](functions/Normalize.md)
 * [Not](functions/Not.md)
@@ -657,5 +658,3 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Xor](functions/Xor.md)
 * [YuleDissimilarity](functions/YuleDissimilarity.md)
 * [Zeta](functions/Zeta.md)
-
-

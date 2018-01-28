@@ -1,10 +1,12 @@
 ## CubeRoot
+
 ```
 CubeRoot(n)
 ```
 > finds the real-valued cube root of the given `n`.
 
 ### Examples
+
 ```
 >> CubeRoot(16)
 2*2^(1/3)
