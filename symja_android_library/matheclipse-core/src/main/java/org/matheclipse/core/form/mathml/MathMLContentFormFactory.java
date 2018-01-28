@@ -279,7 +279,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 		tagStart(buf, "mrow");
 		for (int i = 1; i < ast.size(); i++) {
 			convert(buf, ast.get(i), Integer.MIN_VALUE, false);
-			if (i < ast.size() - 1) {
+			if (i < ast.argSize()) {
 				tag(buf, "mo", ",");
 			}
 		}

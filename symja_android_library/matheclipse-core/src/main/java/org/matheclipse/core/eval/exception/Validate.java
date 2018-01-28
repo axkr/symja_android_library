@@ -101,7 +101,7 @@ public final class Validate {
 	public static long[] checkListOfLongs(IExpr arg, long startValue) {
 		if (arg.isList()) {
 			IAST list = (IAST) arg;
-			long[] result = new long[list.size() - 1];
+			long[] result = new long[list.argSize()];
 			long longValue = 0;
 			try {
 				IExpr expr;
@@ -130,7 +130,7 @@ public final class Validate {
 	public static BigInteger[] checkListOfBigIntegers(IExpr arg) {
 		if (arg.isList()) {
 			IAST list = (IAST) arg;
-			BigInteger[] result = new BigInteger[list.size() - 1];
+			BigInteger[] result = new BigInteger[list.argSize()];
 			
 			try {
 				IExpr expr;
@@ -166,7 +166,7 @@ public final class Validate {
 	public static int[] checkListOfInts(IExpr arg, int minValue, int maxValue) {
 		if (arg.isList()) {
 			IAST list = (IAST) arg;
-			int[] result = new int[list.size() - 1];
+			int[] result = new int[list.argSize()];
 			int intValue = 0;
 			try {
 				IExpr expr;
@@ -364,10 +364,10 @@ public final class Validate {
 	 */
 	public static IAST checkRange(IAST ast, int from, int to) {
 		if (ast.size() < from) {
-			throw new WrongNumberOfArguments(ast, from - 1, ast.size() - 1);
+			throw new WrongNumberOfArguments(ast, from - 1, ast.argSize());
 		}
 		if (ast.size() > to) {
-			throw new WrongNumberOfArguments(ast, to - 1, ast.size() - 1);
+			throw new WrongNumberOfArguments(ast, to - 1, ast.argSize());
 		}
 		return ast;
 	}
@@ -380,7 +380,7 @@ public final class Validate {
 	 */
 	public static IAST checkSize(IAST ast, int size) {
 		if (ast.size() != size) {
-			throw new WrongNumberOfArguments(ast, size - 1, ast.size() - 1);
+			throw new WrongNumberOfArguments(ast, size - 1, ast.argSize());
 		}
 		return ast;
 	}
@@ -392,8 +392,8 @@ public final class Validate {
 	 *             if {@code ast.size()-1} is not even
 	 */
 	public static IAST checkEven(IAST ast) {
-		if (((ast.size() - 1) & 0x0001) == 0x0001) {
-			throw new WrongNumberOfArguments(1, ast, ast.size() - 1);
+		if (((ast.argSize()) & 0x0001) == 0x0001) {
+			throw new WrongNumberOfArguments(1, ast, ast.argSize());
 		}
 		return ast;
 	}
@@ -405,8 +405,8 @@ public final class Validate {
 	 *             if {@code ast.size()-1} is not odd
 	 */
 	public static IAST checkOdd(IAST ast) {
-		if (((ast.size() - 1) & 0x0001) == 0x0000) {
-			throw new WrongNumberOfArguments(2, ast, ast.size() - 1);
+		if (((ast.argSize()) & 0x0001) == 0x0000) {
+			throw new WrongNumberOfArguments(2, ast, ast.argSize());
 		}
 		return ast;
 	}

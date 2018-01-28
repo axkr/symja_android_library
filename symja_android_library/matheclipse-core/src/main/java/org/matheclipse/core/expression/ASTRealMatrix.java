@@ -264,6 +264,11 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 		return new ASTRealVector(matrix.getRowVector(4), false);
 	}
 
+	/** {@inheritDoc} */
+	public int argSize() {
+		return matrix.getRowDimension();
+	}
+	
 	@Override
 	public Set<IExpr> asSet() {
 		throw new UnsupportedOperationException();

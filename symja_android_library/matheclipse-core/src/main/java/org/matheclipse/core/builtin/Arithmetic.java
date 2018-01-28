@@ -2663,7 +2663,7 @@ public final class Arithmetic {
 		private IAST powerEPlus(IAST plus) {
 			IASTAppendable multiplicationFactors = F.NIL;
 			IASTAppendable plusClone = F.NIL;
-			for (int i = plus.size() - 1; i > 0; i--) {
+			for (int i = plus.argSize(); i > 0; i--) {
 				IExpr temp = plus.get(i);
 				if (temp.isLog()) {
 					if (!multiplicationFactors.isPresent()) {
@@ -2674,7 +2674,7 @@ public final class Arithmetic {
 					plusClone.remove(i);
 				} else if (temp.isTimes()) {
 					IAST times = (IAST) temp;
-					for (int j = times.size() - 1; j > 0; j--) {
+					for (int j = times.argSize(); j > 0; j--) {
 						if (times.get(j).isLog()) {
 							IExpr innerFunc = times.get(j).getAt(1);
 							if (!multiplicationFactors.isPresent()) {
@@ -3786,7 +3786,7 @@ public final class Arithmetic {
 								result = F.ast(sym, astTimes.size() - i + 1, false);
 							}
 							result.append(temp);
-							if (i == astTimes.size() - 1) {
+							if (i == astTimes.argSize()) {
 								result.append(astTimes.get(i));
 							} else {
 								temp = astTimes.get(i);
@@ -3798,7 +3798,7 @@ public final class Arithmetic {
 						evaled = true;
 						temp = tres;
 
-						if (i == (astTimes.size() - 1)) {
+						if (i == astTimes.argSize()) {
 							if (result == null) {
 								result = F.ast(sym, astTimes.size() - i + 1, false);
 							}

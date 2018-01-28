@@ -198,7 +198,7 @@ public final class Combinatoric {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 3);
-			List<IAST> la = new ArrayList<IAST>(ast.size() - 1);
+			List<IAST> la = new ArrayList<IAST>(ast.argSize());
 			for (int i = 1; i < ast.size(); i++) {
 				if (ast.get(i).isList()) {
 					la.add((IAST) ast.get(i));
@@ -477,7 +477,7 @@ public final class Combinatoric {
 			if (ast.arg1().isAST() && ast.arg2().isInteger()) {
 				final IAST listArg0 = (IAST) ast.arg1();
 				final ISymbol sym = listArg0.topHead();
-				final int n = listArg0.size() - 1;
+				final int n = listArg0.argSize();
 				final int k = ((IInteger) ast.arg2()).toBigNumerator().intValue();
 				final IASTAppendable result = F.ast(F.List);
 				final Permutations.KPermutationsIterable permutationIterator = new Permutations.KPermutationsIterable(
@@ -507,7 +507,7 @@ public final class Combinatoric {
 			int partitionStartIndex;
 			IASTAppendable partition = F.ListAlloc(partitionsIndex.length + 1);
 
-			final int n = listArg0.size() - 1;
+			final int n = listArg0.argSize();
 			// 0 is always the first index of a partition
 			partitionStartIndex = 0;
 			for (int i = 1; i < partitionsIndex.length; i++) {
@@ -842,7 +842,7 @@ public final class Combinatoric {
 					if ((ast.isAST3()) && ast.arg3().isInteger()) {
 						v = ((IInteger) ast.arg3()).toBigNumerator().intValue();
 					}
-					while (i <= f.size() - 1) {
+					while (i <= f.argSize()) {
 						temp = F.ast(f.head());
 						for (int j = i - n; j < i; j++) {
 							temp.append(f.get(j + 1));
@@ -1097,7 +1097,7 @@ public final class Combinatoric {
 
 			if (ast.arg1().isAST()) {
 				final IAST list = (IAST) ast.arg1();
-				int parts = list.size() - 1;
+				int parts = list.argSize();
 				if (ast.isAST2()) {
 					if (ast.arg2().isInteger()) {
 						int maxPart = ((IInteger) ast.arg2()).toIntDefault(-1);
@@ -1118,7 +1118,7 @@ public final class Combinatoric {
 							return F.NIL;
 						}
 						parts = Validate.checkIntType(sequence.arg1());
-						if (parts < 0 && parts > list.size() - 1) {
+						if (parts < 0 && parts > list.argSize()) {
 							return F.NIL;
 						}
 					}
@@ -1400,7 +1400,7 @@ public final class Combinatoric {
 			}
 			if (ast.arg1().isAST()) {
 				final IAST f = (IAST) ast.arg1();
-				int n = f.size() - 1;
+				int n = f.argSize();
 				final LevelSpecification level;
 				if (ast.isAST2()) {
 					if (ast.arg2().isInteger()) {

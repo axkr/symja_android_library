@@ -50,7 +50,7 @@ public class EvalComplex {
 					stack.push(result[0]);
 					stack.push(result[1]);
 				}
-				return ((INumericComplex) module).evalComplex(stack, ast.size() - 1);
+				return ((INumericComplex) module).evalComplex(stack, ast.argSize());
 			}
 		}
 		// slow evaluation path

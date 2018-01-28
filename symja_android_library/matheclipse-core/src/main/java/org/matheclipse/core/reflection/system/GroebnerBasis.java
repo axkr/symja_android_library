@@ -66,7 +66,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 			}
 			TermOrder termOrder = TermOrderByName.Lexicographic;
 			if (ast.size() > 3) {
-				final Options options = new Options(ast.topHead(), ast, ast.size() - 1, engine);
+				final Options options = new Options(ast.topHead(), ast, ast.argSize(), engine);
 				termOrder = options.getMonomialOrder(ast, termOrder);
 			}
 
@@ -93,8 +93,8 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 	 *         polynomials in <code>listOfPolynomials</code> are not convertible to JAS polynomials
 	 */
 	private static IAST computeGroebnerBasis(IAST listOfPolynomials, IAST listOfVariables, TermOrder termOrder) {
-		List<ISymbol> varList = new ArrayList<ISymbol>(listOfVariables.size() - 1);
-		String[] pvars = new String[listOfVariables.size() - 1];
+		List<ISymbol> varList = new ArrayList<ISymbol>(listOfVariables.argSize());
+		String[] pvars = new String[listOfVariables.argSize()];
 
 		for (int i = 1; i < listOfVariables.size(); i++) {
 			if (!listOfVariables.get(i).isSymbol()) {
@@ -105,7 +105,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 		}
 
 		List<GenPolynomial<BigRational>> polyList = new ArrayList<GenPolynomial<BigRational>>(
-				listOfPolynomials.size() - 1);
+				listOfPolynomials.argSize());
 		JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO, termOrder);
 		for (int i = 1; i < listOfPolynomials.size(); i++) {
 			IExpr expr = F.evalExpandAll(listOfPolynomials.get(i));
@@ -145,7 +145,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 	 *         polynomials in <code>listOfPolynomials</code> are not convertible to JAS polynomials
 	 */
 	public static IAST solveGroebnerBasis(IAST listOfPolynomials, IAST listOfVariables) {
-		List<ISymbol> varList = new ArrayList<ISymbol>(listOfVariables.size() - 1);
+		List<ISymbol> varList = new ArrayList<ISymbol>(listOfVariables.argSize());
 		for (int i = 1; i < listOfVariables.size(); i++) {
 			if (!listOfVariables.get(i).isSymbol()) {
 				return F.NIL;
@@ -155,7 +155,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 
 		
 		List<GenPolynomial<BigRational>> polyList = new ArrayList<GenPolynomial<BigRational>>(
-				listOfPolynomials.size() - 1);
+				listOfPolynomials.argSize());
 		TermOrder termOrder = TermOrderByName.IGRLEX;
 		JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO, termOrder);
 		IASTAppendable rest = F.ListAlloc(8);

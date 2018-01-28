@@ -1326,7 +1326,7 @@ public final class NumberTheory {
 			try {
 
 				// BigInteger factor = BigInteger.ONE;
-				BigInteger[] subBezouts = new BigInteger[ast.size() - 1];
+				BigInteger[] subBezouts = new BigInteger[ast.argSize()];
 				BigInteger gcd = extendedGCD(ast, subBezouts);
 				// convert the Bezout numbers to sublists
 				IASTAppendable subList = F.ListAlloc(subBezouts.length);
@@ -2033,7 +2033,7 @@ public final class NumberTheory {
 	 */
 	private static class Multinomial extends AbstractFunctionEvaluator {
 		public static IInteger multinomial(final IAST ast) {
-			IInteger[] k = new IInteger[ast.size() - 1];
+			IInteger[] k = new IInteger[ast.argSize()];
 			IInteger n = F.C0;
 			for (int i = 1; i < ast.size(); i++) {
 				k[i - 1] = (IInteger) ast.get(i);
@@ -2501,7 +2501,7 @@ public final class NumberTheory {
 			IAST list = n.divisors();
 			if (list.isList()) {
 				IInteger sum = F.C0;
-				int size = list.size() - 1;
+				int size = list.argSize();
 				for (int i = 1; i < size; i++) {
 					sum = sum.add((IInteger) list.get(i));
 				}

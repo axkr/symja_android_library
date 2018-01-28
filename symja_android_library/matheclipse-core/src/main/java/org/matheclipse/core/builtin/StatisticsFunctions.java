@@ -875,7 +875,7 @@ public class StatisticsFunctions {
 			IASTAppendable v1 = F.PlusAlloc(arg1.size());
 			v1.appendArgs(arg1.size(),
 					i -> F.Times(F.CN1, num1.setAtClone(i, F.Times(factor, arg1.get(i))), F.Conjugate(arg2.get(i))));
-			return F.Divide(v1, F.integer((arg1.size() - 1) * (arg1.size() - 2)));
+			return F.Divide(v1, F.integer((arg1.argSize()) * (arg1.size() - 2)));
 		}
 
 		@Override
@@ -1277,7 +1277,7 @@ public class StatisticsFunctions {
 			}
 			if (arg1.isList()) {
 				final IAST list = (IAST) arg1;
-				return F.Times(list.apply(F.Plus), F.Power(F.integer(list.size() - 1), F.CN1));
+				return F.Times(list.apply(F.Plus), F.Power(F.integer(list.argSize()), F.CN1));
 			}
 
 			if (arg1.isAST()) {
@@ -1599,8 +1599,8 @@ public class StatisticsFunctions {
 					IExpr lambda = dist.arg1();
 					IASTAppendable values = F.List();
 					values.append(F.Exp(lambda.negate()));
-					while (values.size() - 1 <= n) {
-						IExpr factor = lambda.times(F.fraction(1, values.size() - 1));
+					while (values.argSize() <= n) {
+						IExpr factor = lambda.times(F.fraction(1, values.argSize()));
 						values.append(values.last().times(factor));
 					}
 					return values.last();
@@ -1638,12 +1638,12 @@ public class StatisticsFunctions {
 
 			if (ast.arg1().isList()) {
 				IAST arg1 = (IAST) ast.arg1();
-				int dim1 = arg1.size() - 1;
+				int dim1 = arg1.argSize();
 				try {
 					if (dim1 >= 0) {
 
 						final IAST sorted = EvalAttributes.copySortLess(arg1);
-						final IInteger length = F.ZZ(sorted.size() - 1);
+						final IInteger length = F.ZZ(sorted.argSize());
 
 						int dim2 = ast.arg2().isVector();
 						if (dim2 >= 0) {

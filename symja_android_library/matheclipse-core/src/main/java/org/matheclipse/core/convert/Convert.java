@@ -51,13 +51,13 @@ public class Convert {
 			IExpr[][] array = new IExpr[0][0];
 			return new Array2DRowFieldMatrix<IExpr>(array, false);
 		}
-		final int rowSize = listMatrix.size() - 1;
-		final int colSize = currInRow.size() - 1;
+		final int rowSize = listMatrix.argSize();
+		final int colSize = currInRow.argSize();
 
 		final IExpr[][] elements = new IExpr[rowSize][colSize];
 		for (int i = 1; i < rowSize + 1; i++) {
 			currInRow = (IAST) listMatrix.get(i);
-			if (currInRow.isVector() < 0 || colSize != currInRow.size() - 1) {
+			if (currInRow.isVector() < 0 || colSize != currInRow.argSize()) {
 				return null;
 			}
 			for (int j = 1; j < colSize + 1; j++) {
@@ -94,13 +94,13 @@ public class Convert {
 			IExpr[][] array = new IExpr[0][0];
 			return new Array2DRowFieldMatrix<IExpr>(array, false);
 		}
-		final int rowSize = listMatrix.size() - 1;
-		final int colSize = currInRow.size() - 1;
+		final int rowSize = listMatrix.argSize();
+		final int colSize = currInRow.argSize();
 
 		final IExpr[][] elements = new IExpr[rowSize][colSize + 1];
 		for (int i = 1; i < rowSize + 1; i++) {
 			currInRow = (IAST) listMatrix.get(i);
-			if (currInRow.head() != F.List || colSize != currInRow.size() - 1) {
+			if (currInRow.head() != F.List || colSize != currInRow.argSize()) {
 				return null;
 			}
 			for (int j = 1; j < colSize + 1; j++) {
@@ -191,7 +191,7 @@ public class Convert {
 			return null;
 		}
 
-		final int rowSize = listVector.size() - 1;
+		final int rowSize = listVector.argSize();
 
 		final IExpr[] elements = new IExpr[rowSize];
 		for (int i = 0; i < rowSize; i++) {

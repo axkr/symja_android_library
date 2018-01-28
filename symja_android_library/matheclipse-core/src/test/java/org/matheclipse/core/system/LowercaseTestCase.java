@@ -127,7 +127,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testApart() {
-//		check("Apart(1 / (x^2 - y^2), y)", " 1/(x^2-y^2)");
+		// check("Apart(1 / (x^2 - y^2), y)", " 1/(x^2-y^2)");
 
 		check("Apart(y/(x + 2)/(x + 1),x)", "y/((1+x)*(2+x))");
 
@@ -2364,7 +2364,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactorTerms() {
-		check("factorterms(3 + 6 x + 3 x^2)", "3*(1+2*x+x^2)");
+//		check("FactorTerms(2*a*x^2*y + 2*x^2*y + 4*a*x^2 + 4*x^2 + 4*a^2*y^2 + 4*a*y^2 + 8*a^2*y + 2*a*y - 6*y - 12*a - 12, x)", //
+//				"");
+		check("FactorTerms(x^2 - y^2, x)", //
+				"(x-y)*(x+y)");
+		check("factorterms(3 + 6 x + 3 x^2)", //
+				"3*(1+2*x+x^2)");
 	}
 
 	public void testFibonacci() {

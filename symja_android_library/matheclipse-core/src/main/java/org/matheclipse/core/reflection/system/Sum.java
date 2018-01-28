@@ -160,7 +160,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 
 		VariablesSet variablesSet = determineIteratorExprVariables(ast);
 		IAST varList = variablesSet.getVarList();
-		IExpr argN = ast.get(ast.size() - 1);
+		IExpr argN = ast.last();
 		IIterator<IExpr> iterator = null;
 
 		if (argN.isList()) {
@@ -174,7 +174,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 			// return temp;
 			// } else {
 			// IAST result = ast.clone();
-			// result.remove(ast.size() - 1);
+			// result.remove(ast.argSize());
 			// result.set(1, temp);
 			// return result;
 			// }
@@ -202,7 +202,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 				if (ast.isAST2()) {
 					return temp;
 				} else {
-					IASTAppendable result = ast.removeAtClone(ast.size() - 1);
+					IASTAppendable result = ast.removeAtClone(ast.argSize());
 					result.set(1, temp);
 					return result;
 				}
@@ -219,7 +219,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 						if (ast.isAST2()) {
 							return temp;
 						}
-						IASTAppendable result = ast.removeAtClone(ast.size() - 1);
+						IASTAppendable result = ast.removeAtClone(ast.argSize());
 						result.set(1, temp);
 						return result;
 					}
@@ -233,7 +233,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 				if (ast.isAST2()) {
 					return temp;
 				} else {
-					IASTAppendable result = ast.removeAtClone(ast.size() - 1);
+					IASTAppendable result = ast.removeAtClone(ast.argSize());
 					result.set(1, temp);
 					return result;
 				}

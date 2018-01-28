@@ -120,7 +120,7 @@ public class ExprEvaluatorTest extends TestCase {
 			assertEquals("c+a*x+x^2+y+b*y", expr.toString());
 
 			final IAST variables = F.List(F.userSymbol("x"), F.userSymbol("y"));
-			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables, variables.size() - 1,
+			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables, variables.argSize(),
 					ExprTermOrderByName.Lexicographic, false);
 
 			ExprPolynomial poly = ring.create(expr);

@@ -104,7 +104,7 @@ public class Outer extends AbstractFunctionEvaluator {
 					current.append(expr);
 					return outer(astPosition + 1, ast.get(astPosition), current);
 				} finally {
-					current.remove(current.size() - 1);
+					current.remove(current.argSize());
 				}
 			} else {
 				IASTAppendable result = F.ast(f);
@@ -135,6 +135,6 @@ public class Outer extends AbstractFunctionEvaluator {
 			}
 		}
 		OuterAlgorithm algorithm = new OuterAlgorithm(ast, head);
-		return algorithm.outer(3, ast.arg2(), F.ast(F.List, ast.size() - 1, false));
+		return algorithm.outer(3, ast.arg2(), F.ast(F.List, ast.argSize(), false));
 	}
 }

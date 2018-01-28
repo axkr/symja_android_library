@@ -44,13 +44,13 @@ public class FromContinuedFraction extends AbstractEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
 		if (!ast.arg1().isList()) {
-			throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);
+			throw new WrongNumberOfArguments(ast, 1, ast.argSize());
 		}
 		IAST list = (IAST) ast.arg1();
 		if (list.size() < 2) {
 			return F.NIL;
 		}
-		int size = list.size() - 1;
+		int size = list.argSize();
 		IExpr result = list.get(size--);
 		for (int i = size; i >= 1; i--) {
 			result = F.Plus(list.get(i), F.Power(result, F.CN1));

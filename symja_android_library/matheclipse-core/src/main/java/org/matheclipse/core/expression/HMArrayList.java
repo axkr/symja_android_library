@@ -476,6 +476,11 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 		return array[firstIndex + 5];
 	}
 
+	/** {@inheritDoc} */
+	public int argSize() {
+		return lastIndex - firstIndex - 1;
+	}
+
 	@Override
 	public Set<IExpr> asSet() {
 		int size = size();
@@ -981,11 +986,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 				"Index: " + Integer.valueOf(location) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
 	}
 
-	/**
-	 * Returns the number of elements in this {@code ArrayList}.
-	 * 
-	 * @return the number of elements in this {@code ArrayList}.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public int size() {
 		return lastIndex - firstIndex;

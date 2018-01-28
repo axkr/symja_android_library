@@ -146,7 +146,7 @@ public class Show3D2ThreeJS {
 						for (int i = 1; i < list.size(); i++) {
 							IAST point = list.getAST(i);
 							addCoordsToElements(buf, point);
-							if (i < list.size() - 1) {
+							if (i < list.argSize()) {
 								buf.append(", ");
 							}
 						}
@@ -182,7 +182,7 @@ public class Show3D2ThreeJS {
 			buf.append("[[");
 			for (int j = 1; j < point.size(); j++) {
 				buf.append(Show2SVG.FORMATTER.format(((ISignedNumber) ((IAST) point).get(j)).doubleValue()));
-				if (j < point.size() - 1) {
+				if (j < point.argSize()) {
 					buf.append(", ");
 				}
 			}

@@ -121,7 +121,7 @@ public final class StringFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
 			if (!(ast.arg1() instanceof IStringX)) {
-				throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);
+				throw new WrongNumberOfArguments(ast, 1, ast.argSize());
 			}
 
 			return F.bool(test(ast.arg1()));

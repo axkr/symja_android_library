@@ -1021,7 +1021,7 @@ public final class ListFunctions {
 					if (!x.isList()) {
 						return true;
 					}
-					size[0] += list.size() - 1;
+					size[0] += list.argSize();
 					return false;
 				})) {
 					return F.NIL;
@@ -1630,7 +1630,7 @@ public final class ListFunctions {
 				final IPositionConverter<? super IExpr> positionConverter, int headOffset) {
 			int p = 0;
 			IAST temp = list;
-			int posSize = positions.size() - 1;
+			int posSize = positions.argSize();
 			IExpr expr = list;
 			for (int i = headOffset; i <= posSize; i++) {
 				p = positionConverter.toInt(positions.get(i));
@@ -1945,7 +1945,7 @@ public final class ListFunctions {
 			IAST temp;
 			for (int i = 1; i < astSize; i++) {
 				temp = (IAST) ast.get(i);
-				size += temp.size() - 1;
+				size += temp.argSize();
 				if (head == null) {
 					head = temp.head();
 				} else {
@@ -1995,7 +1995,7 @@ public final class ListFunctions {
 
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isAST()) {
-				return F.integer(((IAST) arg1).size() - 1);
+				return F.integer(((IAST) arg1).argSize());
 			}
 			return F.C0;
 		}
@@ -2008,7 +2008,7 @@ public final class ListFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 3, 5);
 
-			int lastIndex = ast.size() - 1;
+			int lastIndex = ast.argSize();
 			boolean heads = false;
 			final Options options = new Options(ast.topHead(), ast, lastIndex, engine);
 			IExpr option = options.getOption("Heads");
@@ -2070,7 +2070,7 @@ public final class ListFunctions {
 			Validate.checkSize(ast, 2);
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isAST() && ((IAST) arg1).size() > 1) {
-				return ((IAST) arg1).removeAtClone(((IAST) arg1).size() - 1);
+				return ((IAST) arg1).removeAtClone(((IAST) arg1).argSize());
 			}
 			engine.printMessage("Most: Nonatomic expression expected");
 			return F.NIL;
@@ -2216,8 +2216,8 @@ public final class ListFunctions {
 					return ast;
 				}
 				int j = 1;
-				if ((arg2.size() - 1) < n) {
-					int temp = n % (arg2.size() - 1);
+				if ((arg2.argSize()) < n) {
+					int temp = n % (arg2.argSize());
 					j = arg2.size() - temp;
 				}
 				for (int i = 0; i < length; i++) {
@@ -2682,11 +2682,11 @@ public final class ListFunctions {
 				return arg1;
 			}
 			IASTAppendable result = arg1.copyHead();
-			for (int i = 1; i < arg1.size() - 1; i++) {
+			for (int i = 1; i < arg1.argSize(); i++) {
 				result.append(arg1.get(i));
 				result.append(arg2);
 			}
-			result.append(arg1.get(arg1.size() - 1));
+			result.append(arg1.last());
 			return result;
 		}
 
@@ -2699,7 +2699,7 @@ public final class ListFunctions {
 				return arg1;
 			}
 			int j = 1;
-			for (int i = 1; i < arg1.size() - 1; i++) {
+			for (int i = 1; i < arg1.argSize(); i++) {
 				result.append(arg1.get(i));
 				if (j < arg2.size()) {
 					result.append(arg2.get(j++));
@@ -2708,7 +2708,7 @@ public final class ListFunctions {
 					result.append(arg2.get(j++));
 				}
 			}
-			result.append(arg1.get(arg1.size() - 1));
+			result.append(arg1.last());
 			if (j < arg2.size()) {
 				result.append(arg2.get(j++));
 			}
@@ -2998,8 +2998,8 @@ public final class ListFunctions {
 		}
 
 		/**
-		 * Evaluate only the last iterator in <code>ast</code> (i.e. <code>ast.get(ast.size() - 1)</code>) for
-		 * <code>Sum()</code> or <code>Product()</code> function calls.
+		 * Evaluate only the last iterator in <code>iter</code> for <code>Sum()</code> or <code>Product()</code>
+		 * function calls.
 		 * 
 		 * @param expr
 		 * @param iter

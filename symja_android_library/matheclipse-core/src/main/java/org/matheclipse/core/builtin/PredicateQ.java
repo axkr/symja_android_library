@@ -536,7 +536,7 @@ public class PredicateQ {
 
 			boolean heads = false;
 			if (ast.size() > 3) {
-				final Options options = new Options(ast.topHead(), ast, ast.size() - 1, engine);
+				final Options options = new Options(ast.topHead(), ast, ast.argSize(), engine);
 				// IExpr option = options.getOption("Heads");
 				if (options.isOption("Heads")) {
 					heads = true;

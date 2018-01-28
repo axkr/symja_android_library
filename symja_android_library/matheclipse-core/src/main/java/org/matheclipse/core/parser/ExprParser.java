@@ -183,16 +183,16 @@ public class ExprParser extends ExprScanner {
 			}
 		} else if (ast.isASTSizeGE(F.GreaterEqual, 3)) {
 			ISymbol compareHead = F.Greater;
-			return rewriteLessGreaterAST(ast, compareHead);
+			return AST2Expr.rewriteLessGreaterAST(ast, compareHead);
 		} else if (ast.isASTSizeGE(F.Greater, 3)) {
 			ISymbol compareHead = F.GreaterEqual;
-			return rewriteLessGreaterAST(ast, compareHead);
+			return AST2Expr.rewriteLessGreaterAST(ast, compareHead);
 		} else if (ast.isASTSizeGE(F.LessEqual, 3)) {
 			ISymbol compareHead = F.Less;
-			return rewriteLessGreaterAST(ast, compareHead);
+			return AST2Expr.rewriteLessGreaterAST(ast, compareHead);
 		} else if (ast.isASTSizeGE(F.Less, 3)) {
 			ISymbol compareHead = F.LessEqual;
-			return rewriteLessGreaterAST(ast, compareHead);
+			return AST2Expr.rewriteLessGreaterAST(ast, compareHead);
 		} else if (head.equals(F.Pattern)) {
 			final IExpr expr = PatternMatching.Pattern.CONST.evaluate(ast, fEngine);
 			if (expr.isPresent()) {
@@ -1289,26 +1289,26 @@ public class ExprParser extends ExprScanner {
 	 * @param compareHead
 	 * @return
 	 */
-	private IExpr rewriteLessGreaterAST(final IASTMutable ast, ISymbol compareHead) {
-		IExpr temp;
-		boolean evaled = false;
-		IASTAppendable andAST = F.ast(F.And);
-		for (int i = 1; i < ast.size(); i++) {
-			temp = ast.get(i);
-			if (temp.isASTSizeGE(compareHead, 3)) {
-				IAST lt = (IAST) temp;
-				andAST.append(lt);
-				ast.set(i, lt.get(lt.size() - 1));
-				evaled = true;
-			}
-		}
-		if (evaled) {
-			andAST.append(ast);
-			return andAST;
-		} else {
-			return ast;
-		}
-	}
+//	private IExpr rewriteLessGreaterAST(final IASTMutable ast, ISymbol compareHead) {
+//		IExpr temp;
+//		boolean evaled = false;
+//		IASTAppendable andAST = F.ast(F.And);
+//		for (int i = 1; i < ast.size(); i++) {
+//			temp = ast.get(i);
+//			if (temp.isASTSizeGE(compareHead, 3)) {
+//				IAST lt = (IAST) temp;
+//				andAST.append(lt);
+//				ast.set(i, lt.last());
+//				evaled = true;
+//			}
+//		}
+//		if (evaled) {
+//			andAST.append(ast);
+//			return andAST;
+//		} else {
+//			return ast;
+//		}
+//	}
 
 	public void setFactory(final IExprParserFactory factory) {
 		this.fFactory = factory;

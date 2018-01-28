@@ -320,7 +320,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		buf.append("(");
 		for (int i = 1; i < f.size(); i++) {
 			convert(buf, f.get(i), 0);
-			if (i < f.size() - 1) {
+			if (i < f.argSize()) {
 				buf.append(',');
 			}
 		}
@@ -334,7 +334,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		buf.append("(");
 		for (int i = 1; i < f.size(); i++) {
 			convert(buf, f.get(i), 0);
-			if (i < f.size() - 1) {
+			if (i < f.argSize()) {
 				buf.append(',');
 			}
 		}

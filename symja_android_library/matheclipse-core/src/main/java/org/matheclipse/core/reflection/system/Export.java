@@ -34,12 +34,12 @@ public class Export extends AbstractEvaluator {
 			Validate.checkRange(ast, 3, 4);
 
 			if (!(ast.arg1() instanceof IStringX)) {
-				throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);
+				throw new WrongNumberOfArguments(ast, 1, ast.argSize());
 			}
 			String format = "Data";
 			if (ast.size() == 4) {
 				if (!(ast.arg3() instanceof IStringX)) {
-					throw new WrongNumberOfArguments(ast, 3, ast.size() - 1);
+					throw new WrongNumberOfArguments(ast, 3, ast.argSize());
 				}
 				format = ((IStringX) ast.arg3()).toString();
 			}

@@ -28,7 +28,7 @@ public abstract class AbstractListStepVisitor<T> implements IStepVisitor {
 	 * @return
 	 */
 	final private void toIntArray(IAST sortedList) {
-		array = new Object[sortedList.size() - 1];
+		array = new Object[sortedList.argSize()];
 		int index = 0;
 		for (int i = 1; i < sortedList.size(); i++) {
 			array[index++] = sortedList.get(i);

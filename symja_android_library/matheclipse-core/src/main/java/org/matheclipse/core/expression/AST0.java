@@ -230,6 +230,11 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 		throw new UnsupportedOperationException();
 	}
 
+	/** {@inheritDoc} */
+	public int argSize() {
+		return SIZE - 1;
+	}
+	
 	@Override
 	public Set<IExpr> asSet() {
 		// empty set:
@@ -334,7 +339,7 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
 		return (startOffset == 0) && predicate.test(arg0, 0);
 	}
-	
+
 	@Override
 	public void forEach(Consumer<? super IExpr> action) {
 		// do nothing
@@ -408,6 +413,12 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	@Override
 	public boolean isSameHeadSizeGE(IExpr head, int length) {
 		return arg0.equals(head) && length <= SIZE;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr last() {
+		return arg0;
 	}
 
 	@Override

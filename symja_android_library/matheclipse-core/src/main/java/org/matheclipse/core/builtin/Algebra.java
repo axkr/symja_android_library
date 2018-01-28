@@ -357,10 +357,10 @@ public class Algebra {
 					if (temp.isPresent()) {
 						return temp;
 					}
-//					temp = F.Factor.of(parts[1]);
-//					if (temp.isTimes()) {
-//System.out.println(temp.toString());
-//					}
+					// temp = F.Factor.of(parts[1]);
+					// if (temp.isTimes()) {
+					// System.out.println(temp.toString());
+					// }
 				}
 			}
 			return arg1;
@@ -1160,7 +1160,7 @@ public class Algebra {
 					return F.C1;
 				}
 
-				int k = plusAST.size() - 1;
+				int k = plusAST.argSize();
 				long numberOfTerms = LongMath.binomial(n + k - 1, n);
 				if (numberOfTerms > Integer.MAX_VALUE) {
 					throw new ArithmeticException("");
@@ -1227,7 +1227,7 @@ public class Algebra {
 			 * @return
 			 */
 			private IExpr expandPlusTimesPlus(final IAST plusAST0, final IAST plusAST1) {
-				long numberOfTerms = (long) (plusAST0.size() - 1) * (long) (plusAST1.size() - 1);
+				long numberOfTerms = (long) (plusAST0.argSize()) * (long) (plusAST1.argSize());
 				if (numberOfTerms > Integer.MAX_VALUE) {
 					throw new ArithmeticException("");
 				}
@@ -1238,12 +1238,6 @@ public class Algebra {
 						evalAndExpandAST(x, y, result);
 					});
 				});
-				// for (int i = 1; i < plusAST0.size(); i++) {
-				// for (int j = 1; j < plusAST1.size(); j++) {
-				// // evaluate to flatten out Times() exprs
-				// evalAndExpandAST(plusAST0.get(i), plusAST1.get(j), result);
-				// }
-				// }
 				return PlusOp.plus(result);
 			}
 
@@ -1255,15 +1249,11 @@ public class Algebra {
 			 * @return
 			 */
 			private IExpr expandExprTimesPlus(final IExpr expr1, final IAST plusAST) {
-				final IASTAppendable result = F.ast(F.Plus, plusAST.size() - 1, false);
+				final IASTAppendable result = F.ast(F.Plus, plusAST.argSize(), false);
 				plusAST.forEach(x -> {
 					// evaluate to flatten out Times() exprs
 					evalAndExpandAST(expr1, x, result);
 				});
-				// for (int i = 1; i < plusAST.size(); i++) {
-				// // evaluate to flatten out Times() exprs
-				// evalAndExpandAST(expr1, plusAST.get(i), result);
-				// }
 				return PlusOp.plus(result);
 			}
 
@@ -1296,7 +1286,7 @@ public class Algebra {
 
 				this.expandedResult = expandedResult;
 				this.n = n;
-				this.m = plusAST.size() - 1;
+				this.m = plusAST.argSize();
 				this.parts = new int[m];
 				// precalculate all Power[] ASTs:
 				IASTAppendable temp = F.ListAlloc(plusAST.size());
@@ -1775,12 +1765,27 @@ public class Algebra {
 				result.append(F.fraction(gcd, lcm));
 				result.append(jas.integerPoly2Expr(iPoly));
 				return result;
-			} catch (JASConversionException e) {
-				// if (Config.DEBUG) {
-				// e.printStackTrace();
-				// }
+			} catch (JASConversionException e1) {
+				try {
+					if (variableList.isAST1()) {
+						IAST list = PolynomialFunctions.rootsOfExprPolynomial(expr, variableList, true);
+						if (list.isList()) {
+							IExpr x = variableList.arg1();
+							IASTAppendable result = F.TimesAlloc(list.size());
+							for (int i = 1; i < list.size(); i++) {
+								result.append(F.Plus(x, list.get(i)));
+							}
+							return result;
+						}
+					}
+				} catch (JASConversionException e2) {
+					if (Config.SHOW_STACKTRACE) {
+						e2.printStackTrace();
+					}
+				}
+
 			}
-			return F.NIL;
+			return ast.arg1();
 		}
 
 		@Override
@@ -2005,9 +2010,9 @@ public class Algebra {
 					list.append(subList);
 					return list;
 				} catch (JASConversionException e) {
-					// if (Config.DEBUG) {
-					e.printStackTrace();
-					// }
+					if (Config.SHOW_STACKTRACE) {
+						e.printStackTrace();
+					}
 				}
 			}
 			return F.NIL;
@@ -2080,7 +2085,7 @@ public class Algebra {
 		}
 
 		private IExpr gcdWithOption(final IAST ast, IExpr expr, VariablesSet eVar, final EvalEngine engine) {
-			final Options options = new Options(ast.topHead(), ast, ast.size() - 1, engine);
+			final Options options = new Options(ast.topHead(), ast, ast.argSize(), engine);
 			IExpr option = options.getOption("Modulus");
 			if (option.isSignedNumber()) {
 				return modulusGCD(ast, expr, eVar, option);
@@ -2102,7 +2107,7 @@ public class Algebra {
 				GenPolynomial<ModLong> temp;
 				GreatestCommonDivisorAbstract<ModLong> factory = GCDFactory.getImplementation(modIntegerRing);
 
-				for (int i = 2; i < ast.size() - 1; i++) {
+				for (int i = 2; i < ast.argSize(); i++) {
 					eVar = new VariablesSet(ast.get(i));
 					if (!eVar.isSize(1)) {
 						// gcd only possible for univariate polynomials
@@ -2165,7 +2170,7 @@ public class Algebra {
 			// ASTRange r = new ASTRange(eVar.getVarList(), 1);
 			IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 			if (ast.size() > 3) {
-				final Options options = new Options(ast.topHead(), ast, ast.size() - 1, engine);
+				final Options options = new Options(ast.topHead(), ast, ast.argSize(), engine);
 				IExpr option = options.getOption("Modulus");
 				if (option.isSignedNumber()) {
 					try {
@@ -2176,7 +2181,7 @@ public class Algebra {
 						GenPolynomial<ModLong> poly = jas.expr2JAS(expr);
 						GenPolynomial<ModLong> temp;
 						GreatestCommonDivisorAbstract<ModLong> factory = GCDFactory.getImplementation(modIntegerRing);
-						for (int i = 2; i < ast.size() - 1; i++) {
+						for (int i = 2; i < ast.argSize(); i++) {
 							expr = F.evalExpandAll(ast.get(i), engine);
 							temp = jas.expr2JAS(expr);
 							poly = factory.lcm(poly, temp);
@@ -2280,7 +2285,7 @@ public class Algebra {
 		// IExpr expr = F.evalExpandAll(polnomialExpr, engine);
 		// int termOrder = ExprTermOrder.INVLEX;
 		// ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST,
-		// variables, variables.size() - 1,
+		// variables, variables.argSize(),
 		// new ExprTermOrder(termOrder), true);
 		// try {
 		// ExprPolynomial poly = ring.create(expr);
@@ -2460,7 +2465,7 @@ public class Algebra {
 					result[1] = jas.exprPoly2Expr(divRem[1], variable);
 					return result;
 				} catch (JASConversionException e) {
-					if (Config.DEBUG) {
+					if (Config.SHOW_STACKTRACE) {
 						e.printStackTrace();
 					}
 				}
@@ -2691,7 +2696,7 @@ public class Algebra {
 			if (ast.arg1().isAST()) {
 				boolean assumptions = false;
 				if (ast.isAST2()) {
-					final Options options = new Options(ast.topHead(), ast, ast.size() - 1, engine);
+					final Options options = new Options(ast.topHead(), ast, ast.argSize(), engine);
 					IExpr option = options.getOption(Assumptions);
 					if (option.isTrue()) {
 						// found "Assumptions -> True"
@@ -3525,7 +3530,7 @@ public class Algebra {
 				return F.NIL;
 			}
 			numerator.forEach((x, i) -> {
-				IASTAppendable ni = F.TimesAlloc(plusAST.size() - 1);
+				IASTAppendable ni = F.TimesAlloc(plusAST.argSize());
 				ni.append(x);
 				for (int j = 1; j < plusAST.size(); j++) {
 					if (i == j) {

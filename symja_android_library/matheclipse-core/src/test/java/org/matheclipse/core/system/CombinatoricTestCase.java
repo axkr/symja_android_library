@@ -61,7 +61,7 @@ public class CombinatoricTestCase extends AbstractTestCase {
 		StackMatcher stackMatcher = patternMatcher.new StackMatcher(EvalEngine.get());
 		FlatOrderlessStepVisitor visitor = new FlatOrderlessStepVisitor(F.Plus, lhsPatternAST, lhsEvalAST, stackMatcher,
 				patternMap);
-		MultisetPartitionsIterator iter = new MultisetPartitionsIterator(visitor, lhsPatternAST.size() - 1);
+		MultisetPartitionsIterator iter = new MultisetPartitionsIterator(visitor, lhsPatternAST.argSize());
 		boolean b = iter.execute();
 		assertEquals(true, !b);
 	}

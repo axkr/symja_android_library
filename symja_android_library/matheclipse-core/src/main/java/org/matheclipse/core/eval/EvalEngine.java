@@ -527,7 +527,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			}
 			if (arg1.isList()) {
 				// thread over the list
-				return EvalAttributes.threadList(ast, F.List, ast.head(), ((IAST) arg1).size() - 1);
+				return EvalAttributes.threadList(ast, F.List, ast.head(), ((IAST) arg1).argSize());
 			}
 		}
 
@@ -1836,9 +1836,9 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		if (ast.exists(x -> {
 			if (x.isList()) {
 				if (listLength[0] == 0) {
-					listLength[0] = ((IAST) x).size() - 1;
+					listLength[0] = ((IAST) x).argSize();
 				} else {
-					if (listLength[0] != ((IAST) x).size() - 1) {
+					if (listLength[0] != ((IAST) x).argSize()) {
 						printMessage("Lists of unequal lengths cannot be combined: " + ast.toString());
 						// ast.addEvalFlags(IAST.IS_LISTABLE_THREADED);
 						return true;

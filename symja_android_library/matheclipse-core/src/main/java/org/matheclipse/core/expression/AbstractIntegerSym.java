@@ -755,7 +755,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		}
 
 		IAST ast = phi.factorInteger();
-		IInteger d[] = new IInteger[ast.size() - 1];
+		IInteger d[] = new IInteger[ast.argSize()];
 		for (int i = 1; i < ast.size(); i++) {
 			IAST element = (IAST) ast.get(i);
 			IInteger q = (IInteger) element.arg1();

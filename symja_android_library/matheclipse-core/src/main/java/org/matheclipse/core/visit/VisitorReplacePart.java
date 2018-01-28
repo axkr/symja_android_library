@@ -27,14 +27,14 @@ public class VisitorReplacePart extends AbstractVisitor {
 				fList = new ArrayList<int[]>(list.size());
 				for (int j = 1; j < list.size(); j++) {
 					IAST subList = list.getAST(j);
-					int[] fPositions = new int[subList.size() - 1];
+					int[] fPositions = new int[subList.argSize()];
 					for (int k = 1; k < subList.size(); k++) {
 						fPositions[k - 1] = Validate.checkIntType(subList, k, Integer.MIN_VALUE);
 					}
 					fList.add(fPositions);
 				}
 			} else {
-				int[] fPositions = new int[list.size() - 1];
+				int[] fPositions = new int[list.argSize()];
 				fList = new ArrayList<int[]>(1);
 				for (int j = 1; j < list.size(); j++) {
 					fPositions[j - 1] = Validate.checkIntType(list, j, Integer.MIN_VALUE);

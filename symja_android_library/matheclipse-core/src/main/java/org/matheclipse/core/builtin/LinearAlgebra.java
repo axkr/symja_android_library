@@ -191,7 +191,7 @@ public final class LinearAlgebra {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() != 3) {
-				throw new WrongNumberOfArguments(ast, 2, ast.size() - 1);
+				throw new WrongNumberOfArguments(ast, 2, ast.argSize());
 			}
 			IExpr u = ast.arg1();
 			IExpr v = ast.arg2();
@@ -236,7 +236,7 @@ public final class LinearAlgebra {
 		@Override
 		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
 			if (functionList.size() != 3) {
-				throw new WrongNumberOfArguments(functionList, 2, functionList.size() - 1);
+				throw new WrongNumberOfArguments(functionList, 2, functionList.argSize());
 			}
 			IExpr arg1 = functionList.arg1();
 			IExpr arg2 = functionList.arg2();
@@ -340,7 +340,7 @@ public final class LinearAlgebra {
 		@Override
 		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
 			if (functionList.size() != 3) {
-				throw new WrongNumberOfArguments(functionList, 2, functionList.size() - 1);
+				throw new WrongNumberOfArguments(functionList, 2, functionList.argSize());
 			}
 			IExpr arg1 = functionList.arg1();
 			IExpr arg2 = functionList.arg2();
@@ -460,7 +460,7 @@ public final class LinearAlgebra {
 		@Override
 		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
 			if (functionList.size() != 3) {
-				throw new WrongNumberOfArguments(functionList, 2, functionList.size() - 1);
+				throw new WrongNumberOfArguments(functionList, 2, functionList.argSize());
 			}
 			IExpr arg1 = functionList.arg1();
 			IExpr arg2 = functionList.arg2();
@@ -1953,7 +1953,7 @@ public final class LinearAlgebra {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() != 3) {
-				throw new WrongNumberOfArguments(ast, 2, ast.size() - 1);
+				throw new WrongNumberOfArguments(ast, 2, ast.argSize());
 			}
 			IExpr arg1 = ast.arg1();
 			IExpr arg2 = ast.arg2();
@@ -2925,7 +2925,7 @@ public final class LinearAlgebra {
 		@Override
 		public IExpr evaluate(final IAST functionList, EvalEngine engine) {
 			if (functionList.size() != 3) {
-				throw new WrongNumberOfArguments(functionList, 2, functionList.size() - 1);
+				throw new WrongNumberOfArguments(functionList, 2, functionList.argSize());
 			}
 			IExpr arg1 = functionList.arg1();
 			IExpr arg2 = functionList.arg2();
@@ -2962,7 +2962,7 @@ public final class LinearAlgebra {
 
 			if (ast.arg1().isAST()) {
 				IAST vector = (IAST) ast.arg1();
-				int m = vector.size() - 1;
+				int m = vector.argSize();
 				return F.matrix((i, j) -> i <= j ? vector.get(j - i + 1) : vector.get(i - j + 1), m, m);
 			}
 
@@ -3317,7 +3317,7 @@ public final class LinearAlgebra {
 			Validate.checkSize(ast, 2);
 			if (ast.arg1().isList()) {
 				final IAST lst = (IAST) ast.arg1();
-				final int len0 = lst.size() - 1;
+				final int len0 = lst.argSize();
 
 				final int[] indexArray = new int[2];
 				indexArray[0] = len0;
@@ -3647,7 +3647,7 @@ public final class LinearAlgebra {
 		}
 		FieldReducedRowEchelonForm ref = new FieldReducedRowEchelonForm(matrix);
 		FieldMatrix<IExpr> rowReduced = ref.getRowReducedMatrix();
-		int size = listOfVariables.size() - 1;
+		int size = listOfVariables.argSize();
 
 		IExpr lastVarCoefficient = rowReduced.getEntry(rows - 1, cols - 2);
 

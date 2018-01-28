@@ -267,6 +267,15 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IExpr arg5();
 
 	/**
+	 * Returns the <b>number of arguments</b> in this {@code IAST}. The <b>number of arguments</b> equals
+	 * <code>size() - 1</code> (i.e. the <b>number of elements</b> minus 1)
+	 * 
+	 * @return the number of arguments in this {@code IAST}.
+	 * @see #size()
+	 */
+	public int argSize();
+
+	/**
 	 * Collect all arguments of this AST in a new set.
 	 * 
 	 * @return
@@ -644,7 +653,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	default boolean forAll(Predicate<? super IExpr> predicate) {
 		return forAll(predicate, 1);
 	}
-	
+
 	/**
 	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return if
 	 * all of the arguments satisfy the predicate.
@@ -831,7 +840,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	default boolean hasDefaultArgument() {
 		if (size() > 1) {
-			return get(size() - 1).isPatternDefault();
+			return last().isPatternDefault();
 		}
 		return false;
 	}
@@ -859,7 +868,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	default boolean hasOptionalArgument() {
 		if (size() > 1) {
-			return get(size() - 1).isPatternDefault();
+			return last().isPatternDefault();
 		}
 		return false;
 	}
@@ -918,14 +927,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public boolean isTimes();
 
 	/**
-	 * Returns an iterator over the elements in this list starting with offset <b>1</b>.
-	 * 
-	 * @return an iterator over this list values.
-	 */
-	@Override
-	public Iterator<IExpr> iterator();
-
-	/**
 	 * Set the head element of this list
 	 */
 	// public void setHeader(IExpr expr);
@@ -937,6 +938,14 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return an iterator over this list values.
 	 */
 	// public Iterator<IExpr> iterator0();
+
+	/**
+	 * Returns an iterator over the elements in this list starting with offset <b>1</b>.
+	 * 
+	 * @return an iterator over this list values.
+	 */
+	@Override
+	public Iterator<IExpr> iterator();
 
 	/**
 	 * Get the last element of the <code>AST</code> list (i.e. get(size()-1).
@@ -1126,14 +1135,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public int patternHashCode();
 
 	/**
-	 * Prepend an expression to this list.
-	 * 
-	 * @param expr
-	 * @return <code>this</code> after prepending the given expression.
-	 */
-	public IASTAppendable prependClone(IExpr expr);
-
-	/**
 	 * Removes the object at the specified location from this {@code IAST}.
 	 * 
 	 * @param location
@@ -1145,6 +1146,14 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 *             if {@code location < 0 || >= size()}
 	 */
 	// public IExpr remove(int location);
+
+	/**
+	 * Prepend an expression to this list.
+	 * 
+	 * @param expr
+	 * @return <code>this</code> after prepending the given expression.
+	 */
+	public IASTAppendable prependClone(IExpr expr);
 
 	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and remove the
@@ -1201,7 +1210,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return a copy with element set to <code>expr</code> at the given <code>position</code>.
 	 */
 	default public IASTMutable setAtCopy(int i, IExpr expr) {
-		IASTMutable ast = (IASTMutable) copy();
+		IASTMutable ast = copy();
 		ast.set(i, expr);
 		return ast;
 	}
@@ -1214,9 +1223,11 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public void setEvalFlags(int i);
 
 	/**
-	 * Returns the number of elements in this {@code IAST}.
+	 * Returns the <b>number of elements</b> in this {@code IAST}.The <b>number of elements</b> equals
+	 * <code>argSize() + 1</code> (i.e. the <b>number of arguments</b> plus 1).
 	 * 
-	 * @return the number of elements in this {@code IAST}.
+	 * @return the <b>number of elements</b> in this {@code IAST}.
+	 * @see #argSize()
 	 */
 	public int size();
 

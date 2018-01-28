@@ -38,7 +38,7 @@ public class AbstractOperator extends AbstractConverter {
 		precedenceOpen(buf, precedence);
 		for (int i = 1; i < f.size(); i++) {
 			fFactory.convert(buf, f.get(i), fPrecedence);
-			if (i < f.size() - 1) {
+			if (i < f.argSize()) {
 				if (fOperator.compareTo("") != 0) {
 					buf.append(fOperator);
 				}

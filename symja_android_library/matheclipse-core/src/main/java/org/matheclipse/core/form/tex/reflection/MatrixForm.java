@@ -31,7 +31,7 @@ public class MatrixForm extends AbstractConverter {
 					buf.append(' ');
 					fFactory.convert(buf, element, 0);
 					buf.append(' ');
-					if (i < vector.size() - 1) {
+					if (i < vector.argSize()) {
 						buf.append('&');
 					}
 				}
@@ -47,7 +47,7 @@ public class MatrixForm extends AbstractConverter {
 					buf.append(' ');
 					fFactory.convert(buf, row.get(j), 0);
 					buf.append(' ');
-					if (j < row.size() - 1) {
+					if (j < row.argSize()) {
 						buf.append('&');
 					}
 				}

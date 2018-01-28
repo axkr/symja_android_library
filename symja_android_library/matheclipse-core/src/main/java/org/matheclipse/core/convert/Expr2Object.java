@@ -23,7 +23,7 @@ public class Expr2Object {
 	 */
 	@Deprecated
 	public static double[] toDoubleVector(IAST ast) throws WrongArgumentType {
-		double[] result = new double[ast.size() - 1];
+		double[] result = new double[ast.argSize()];
 		ISignedNumber signedNumber;
 		for (int i = 1; i < ast.size(); i++) {
 			signedNumber = ast.get(i).evalSignedNumber();

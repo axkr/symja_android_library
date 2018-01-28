@@ -25,7 +25,7 @@ public class Plus extends MMLOperator {
 		precedenceOpen(buf, precedence);
 		final Times timesConverter = new org.matheclipse.core.form.mathml.reflection.Times();
 		timesConverter.setFactory(fFactory);
-		int size = f.size() - 1;
+		int size = f.argSize();
 		for (int i = size; i > 0; i--) {
 			expr = f.get(i);
 			if ((i < size) && (expr instanceof IAST) && ((IAST) expr).head().equals(F.Times)) {

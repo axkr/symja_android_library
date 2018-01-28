@@ -166,7 +166,7 @@ public class Times extends AbstractOperator {
 
 		for (int i = 2; i < size; i++) {
 			fFactory.convert(buf, timesAST.get(i), fPrecedence);
-			if ((i < timesAST.size() - 1) && (fOperator.compareTo("") != 0)) {
+			if ((i < timesAST.argSize()) && (fOperator.compareTo("") != 0)) {
 				if (timesAST.get(1).isNumber() && isTeXNumberDigit(timesAST.get(i + 1))) {
 					// Issue #67, #117: if we have 2 TeX number expressions we
 					// use

@@ -81,6 +81,11 @@ public class AST3 extends AST2 {
 		return arg3;
 	}
 
+	/** {@inheritDoc} */
+	public int argSize() {
+		return SIZE - 1;
+	}
+	
 	@Override
 	public Set<IExpr> asSet() {
 		Set<IExpr> set = new HashSet<IExpr>();
@@ -239,7 +244,7 @@ public class AST3 extends AST2 {
 		}
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public void forEach(Consumer<? super IExpr> action) {
@@ -316,6 +321,12 @@ public class AST3 extends AST2 {
 	@Override
 	public boolean isSameHeadSizeGE(IExpr head, int length) {
 		return arg0.equals(head) && length <= SIZE;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr last() {
+		return arg3;
 	}
 
 	/**

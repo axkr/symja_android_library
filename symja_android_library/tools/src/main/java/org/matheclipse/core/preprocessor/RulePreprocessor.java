@@ -90,7 +90,7 @@ public class RulePreprocessor {
 				int equalsRuleCounter = 0;
 				int simpleRuleCounter = 0;
 				for (int i = 1; i < list.size(); i++) {
-					last = i == (list.size() - 1);
+					last = i == (list.argSize());
 					expr = list.get(i);
 					if (expr.isAST(F.SetDelayed, 3)) {
 						IAST ast = (IAST) expr;
@@ -114,7 +114,7 @@ public class RulePreprocessor {
 			}
 
 			for (int i = 1; i < list.size(); i++) {
-				last = i == (list.size() - 1);
+				last = i == (list.argSize());
 				expr = list.get(i);
 				if (expr.isAST(F.SetDelayed, 3)) {
 					IAST ast = (IAST) expr;

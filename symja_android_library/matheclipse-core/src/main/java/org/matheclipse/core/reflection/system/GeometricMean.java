@@ -21,7 +21,7 @@ public class GeometricMean extends AbstractFunctionEvaluator {
 			return F.num(StatUtils.geometricMean(arg1.toDoubleVector()));
 		}
 		if (arg1.size() > 1) {
-			return F.Power(arg1.setAtClone(0, F.Times), F.fraction(1, arg1.size() - 1));
+			return F.Power(arg1.setAtClone(0, F.Times), F.fraction(1, arg1.argSize()));
 		}
 		return F.NIL;
 	}

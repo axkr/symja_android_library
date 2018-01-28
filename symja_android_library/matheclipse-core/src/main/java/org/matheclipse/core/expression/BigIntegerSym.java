@@ -242,7 +242,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		}
 		Set<IInteger> set = new TreeSet<IInteger>();
 		final IAST primeFactorsList = factorize();
-		int len = primeFactorsList.size() - 1;
+		int len = primeFactorsList.argSize();
 
 		// build the k-subsets from the primeFactorsList
 		for (int k = 1; k < len; k++) {

@@ -128,7 +128,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 *            names for the variables.
 	 */
 	public ExprPolynomialRing(ExprRingFactory cf, IAST v) {
-		this(cf, v, v.size() - 1);
+		this(cf, v, v.argSize());
 	}
 
 	/**
@@ -138,7 +138,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 *            names for the variables.
 	 */
 	public ExprPolynomialRing(IAST listOfVariables) {
-		this(ExprRingFactory.CONST, listOfVariables, listOfVariables.size() - 1, ExprTermOrderByName.Lexicographic);
+		this(ExprRingFactory.CONST, listOfVariables, listOfVariables.argSize(), ExprTermOrderByName.Lexicographic);
 	}
 
 	/**
@@ -150,7 +150,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 *            a term order.
 	 */
 	public ExprPolynomialRing(IAST listOfVariables, ExprTermOrder t) {
-		this(ExprRingFactory.CONST, listOfVariables, listOfVariables.size() - 1, t);
+		this(ExprRingFactory.CONST, listOfVariables, listOfVariables.argSize(), t);
 	}
 
 	/**
@@ -200,7 +200,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 *            a term order.
 	 */
 	public ExprPolynomialRing(ExprRingFactory cf, IAST listOfVariables, ExprTermOrder t) {
-		this(cf, listOfVariables, listOfVariables.size() - 1, t);
+		this(cf, listOfVariables, listOfVariables.argSize(), t);
 	}
 
 	/**
@@ -253,7 +253,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 		// vars = newVars("x", nvar);
 		// }
 		// } else {
-		if (vars.size() - 1 != nvar) {
+		if (vars.argSize() != nvar) {
 			throw new IllegalArgumentException("incompatible variable size " + vars.size() + ", " + nvar);
 		}
 		addVars(vars);
@@ -324,7 +324,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 			throws ArithmeticException, ClassCastException {
 		int ix = ExpVectorLong.indexVar(exprPoly, getVars());
 		if (ix >= 0) {
-			ExpVectorLong e = new ExpVectorLong(vars.size() - 1, ix, 1L);
+			ExpVectorLong e = new ExpVectorLong(vars.argSize(), ix, 1L);
 			return getOne().multiply(e);
 		}
 		if (exprPoly instanceof IAST) {
@@ -363,7 +363,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 						throw new ArithmeticException(
 								"JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
 					}
-					ExpVectorLong e = new ExpVectorLong(vars.size() - 1, ix, exponent);
+					ExpVectorLong e = new ExpVectorLong(vars.argSize(), ix, exponent);
 					return getOne().multiply(e);
 				}
 
@@ -379,7 +379,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 				// throw new ArithmeticException("JASConvert:expr2Poly - invalid
 				// exponent: " + ast.arg2().toString());
 				// }
-				// ExpVectorLong e = new ExpVectorLong(vars.size() - 1, i - 1,
+				// ExpVectorLong e = new ExpVectorLong(vars.argSize(), i - 1,
 				// exponent);
 				// return getOne().multiply(e);
 				// }
@@ -715,7 +715,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * @return old vars.
 	 */
 	public IAST setVars(IAST v) {
-		if (v.size() - 1 != nvar) {
+		if (v.argSize() != nvar) {
 			throw new IllegalArgumentException(
 					"v not matching number of variables: " + v.toString() + ", nvar " + nvar);
 		}
@@ -1072,7 +1072,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 		if (vn == null || vars == null) {
 			throw new IllegalArgumentException("vn and vars may not be null");
 		}
-		int i = vn.size() - 1;
+		int i = vn.argSize();
 		IASTAppendable v = vars.copyAppendable();
 		v.appendArgs(vn);
 		// for (int k = 0; k < vars.length; k++) {
@@ -1310,7 +1310,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	// if (vars == null) {
 	// return new GenPolynomialRing(coFac, nvar, tp);
 	// }
-	// IExpr[] v1 = new IExpr[vars.size() - 1];
+	// IExpr[] v1 = new IExpr[vars.argSize()];
 	// for (int i = 0; i < v1.length; i++) {
 	// v1[i] = vars.get(v1.length - i);
 	// }

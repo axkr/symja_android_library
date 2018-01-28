@@ -139,7 +139,7 @@ public class PolynomialFunctions {
 				IAST arg2AST = (IAST) arg2;
 				VariablesSet eVar = new VariablesSet(arg2AST);
 				listOfVariables = eVar.getVarList();
-				exponents = new long[listOfVariables.size() - 1];
+				exponents = new long[listOfVariables.argSize()];
 				for (int i = 0; i < exponents.length; i++) {
 					exponents[i] = 0L;
 				}
@@ -181,7 +181,7 @@ public class PolynomialFunctions {
 				ExpVectorLong expArr = new ExpVectorLong(exponents);
 				IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 				ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, listOfVariables,
-						listOfVariables.size() - 1);
+						listOfVariables.argSize());
 				ExprPolynomial poly = ring.create(expr, true, true);
 				return poly.coefficient(expArr);
 			} catch (RuntimeException ae) {
@@ -299,7 +299,7 @@ public class PolynomialFunctions {
 				varList = eVar.getArrayList();
 			} else {
 				symbolList = Validate.checkSymbolOrSymbolList(ast, 2);
-				varList = new ArrayList<IExpr>(symbolList.size() - 1);
+				varList = new ArrayList<IExpr>(symbolList.argSize());
 				symbolList.forEach(x -> varList.add(x));
 				// for (int i = 1; i < symbolList.size(); i++) {
 				// varList.add(symbolList.get(i));
@@ -996,7 +996,7 @@ public class PolynomialFunctions {
 		// final int m = result.size() - 2;
 		// final int n2 = m + n;
 		//
-		// for (int i = result.size() - 1; i > 0; i--) {
+		// for (int i = result.argSize(); i > 0; i--) {
 		// row.add(result.get(i));
 		// }
 		// for (int i = 0; i < n; i++) {
@@ -1021,7 +1021,7 @@ public class PolynomialFunctions {
 		// }
 		//
 		// row = F.List();
-		// for (int i = resultListDiff.size() - 1; i > 0; i--) {
+		// for (int i = resultListDiff.argSize(); i > 0; i--) {
 		// row.add(resultListDiff.get(i));
 		// }
 		// for (int i = n; i < n2; i++) {
@@ -1534,7 +1534,7 @@ public class PolynomialFunctions {
 
 	}
 
-	private static IASTAppendable rootsOfExprPolynomial(final IExpr expr, IAST varList, boolean rootsOfQuartic) {
+	public static IASTAppendable rootsOfExprPolynomial(final IExpr expr, IAST varList, boolean rootsOfQuartic) {
 		IASTAppendable result = F.NIL;
 		try {
 			// try to generate a common expression polynomial

@@ -453,7 +453,7 @@ public class OutputFormFactory {
 		String operatorStr = oper.getOperatorString();
 
 		IExpr plusArg;
-		int size = plusAST.size() - 1;
+		int size = plusAST.argSize();
 		// print Plus[] in reverse order (i.e. numbers at last)
 		for (int i = size; i > 0; i--) {
 			plusArg = plusAST.get(i);
@@ -1050,7 +1050,7 @@ public class OutputFormFactory {
 
 		for (int i = 2; i < list.size(); i++) {
 			convert(buf, list.get(i));
-			if (i < list.size() - 1) {
+			if (i < list.argSize()) {
 				append(buf, ",");
 			}
 		}
@@ -1157,7 +1157,7 @@ public class OutputFormFactory {
 		append(buf, "[");
 		for (int i = 1; i < list.size(); i++) {
 			convert(buf, list.get(i));
-			if (i < list.size() - 1) {
+			if (i < list.argSize()) {
 				append(buf, ",");
 			}
 		}

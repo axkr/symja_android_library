@@ -137,9 +137,9 @@ public class Functors {
 		if (astRules.isList()) {
 			// assuming multiple rules in a list
 			IAST rule;
-			int size = astRules.size() - 1;
-			if (size <= 5) {
-				equalRules = new OpenFixedSizeMap<IExpr, IExpr>(size * 3 - 1);
+			int argsSize = astRules.argSize();
+			if (argsSize <= 5) {
+				equalRules = new OpenFixedSizeMap<IExpr, IExpr>(argsSize * 3 - 1);
 			} else {
 				equalRules = new HashMap<IExpr, IExpr>();
 			}

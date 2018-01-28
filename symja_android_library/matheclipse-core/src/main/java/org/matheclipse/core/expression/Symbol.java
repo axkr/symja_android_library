@@ -43,7 +43,7 @@ public class Symbol implements ISymbol, Serializable {
 	protected transient Context fContext;
 
 	private final static Collator US_COLLATOR = Collator.getInstance(Locale.US);
-	
+
 	/**
 	 * The attribute values of the symbol represented by single bits.
 	 */

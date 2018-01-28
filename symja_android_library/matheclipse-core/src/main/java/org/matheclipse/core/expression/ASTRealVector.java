@@ -265,6 +265,11 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 		return F.num(vector.getEntry(4));
 	}
 
+	/** {@inheritDoc} */
+	public int argSize() {
+		return vector.getDimension();
+	}
+
 	@Override
 	public Set<IExpr> asSet() {
 		throw new UnsupportedOperationException();
@@ -321,7 +326,7 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	public IASTAppendable copyAppendable() {
 		return Convert.vector2List(vector);
 	}
-	
+
 	@Override
 	public boolean equals(final Object obj) {
 		if (obj instanceof ASTRealVector) {

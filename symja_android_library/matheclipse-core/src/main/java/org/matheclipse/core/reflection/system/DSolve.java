@@ -107,7 +107,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 	private IExpr solveSingleODE(IExpr equation, IAST uFunction1Arg, IExpr xVar, IAST listOfVariables, IExpr C_1,
 			EvalEngine engine) {
 		ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, listOfVariables,
-				listOfVariables.size() - 1);
+				listOfVariables.argSize());
 
 		if (equation.isAST()) {
 			IASTAppendable eq = ((IAST) equation).copyAppendable();

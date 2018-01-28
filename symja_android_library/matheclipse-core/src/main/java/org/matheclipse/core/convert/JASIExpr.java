@@ -336,9 +336,9 @@ public class JASIExpr {
 	 *            polynomial with BigRational coefficients to be converted.
 	 * @return Object[] with 3 entries: [0]->gcd [1]->lcm and [2]->polynomial with BigInteger coefficients.
 	 */
-	public Object[] factorTerms(GenPolynomial<BigRational> A) {
-		return PolyUtil.integerFromRationalCoefficientsFactor(fBigIntegerPolyFactory, A);
-	}
+//	public Object[] factorTerms(GenPolynomial<BigRational> A) {
+//		return PolyUtil.integerFromRationalCoefficientsFactor(fBigIntegerPolyFactory, A);
+//	}
 
 	/**
 	 * @return the fPolyFactory

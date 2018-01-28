@@ -897,9 +897,10 @@ public class RulesData implements Serializable {
 	public String toString() {
 		StringWriter buf = new StringWriter();
 		List<IAST> list = definition();
-		for (int i = 0; i < list.size(); i++) {
+		final int size = list.size();
+		for (int i = 0; i < size; i++) {
 			buf.append(list.get(i).toString());
-			if (i < list.size() - 1) {
+			if (i < size - 1) {
 				buf.append(",\n ");
 			}
 		}

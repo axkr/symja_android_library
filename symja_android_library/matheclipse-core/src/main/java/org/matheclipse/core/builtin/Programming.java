@@ -2012,7 +2012,7 @@ public final class Programming {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			// Validate.checkEven(ast);
-			if (((ast.size() - 1) & 0x0001) == 0x0001) {
+			if (((ast.argSize()) & 0x0001) == 0x0001) {
 				engine.printMessage("Which: number of arguments must be evaen");
 			}
 			for (int i = 1; i < ast.size(); i += 2) {

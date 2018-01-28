@@ -26,11 +26,11 @@ public class List extends AbstractConverter {
 					IAST row = ast.getAST(i);
 					for (int j = 1; j < row.size(); j++) {
 						fFactory.convert(buf, row.get(j), 0);
-						if (j < row.size() - 1) {
+						if (j < row.argSize()) {
 							buf.append(" & ");
 						}
 					}
-					if (i < ast.size() - 1) {
+					if (i < ast.argSize()) {
 						buf.append(" \\\\\n");
 					} else {
 
@@ -47,11 +47,11 @@ public class List extends AbstractConverter {
 			// IAST row = ast.getAST(i);
 			// for (int j = 1; j < row.size(); j++) {
 			// fFactory.convert(buf, row.get(j), 0);
-			// if (j < row.size() - 1) {
+			// if (j < row.argSize()) {
 			// buf.append(" & ");
 			// }
 			// }
-			// if (i < ast.size() - 1) {
+			// if (i < ast.argSize()) {
 			// buf.append(" \\\\ ");
 			// }
 			// }
@@ -64,7 +64,7 @@ public class List extends AbstractConverter {
 			if (ast.size() > 1) {
 				for (int j = 1; j < ast.size(); j++) {
 					fFactory.convert(buf, ast.get(j), 0);
-					if (j < ast.size() - 1) {
+					if (j < ast.argSize()) {
 						buf.append(" & ");
 					}
 				}

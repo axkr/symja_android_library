@@ -681,7 +681,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		tagStart(buf, "mrow");
 		for (int i = 1; i < ast.size(); i++) {
 			convert(buf, ast.get(i), Integer.MIN_VALUE, false);
-			if (i < ast.size() - 1) {
+			if (i < ast.argSize()) {
 				tag(buf, "mo", ",");
 			}
 		}
@@ -897,7 +897,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 
 		for (int i = 2; i < list.size(); i++) {
 			convert(buf, list.get(i), Integer.MIN_VALUE, false);
-			if (i < list.size() - 1) {
+			if (i < list.argSize()) {
 				tag(buf, "mo", ",");
 			}
 		}
@@ -1059,7 +1059,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		tag(buf, "mo", "[");
 		for (int i = 1; i < list.size(); i++) {
 			convert(buf, list.get(i), Integer.MIN_VALUE, false);
-			if (i < list.size() - 1) {
+			if (i < list.argSize()) {
 				tag(buf, "mo", ",");
 			}
 		}

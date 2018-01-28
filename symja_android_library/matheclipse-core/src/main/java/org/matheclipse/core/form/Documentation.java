@@ -18,7 +18,7 @@ public class Documentation {
 				for (int i = 1; i < list.size(); i++) {
 
 					out.append(list.get(i).toString());
-					if (i != list.size() - 1) {
+					if (i != list.argSize()) {
 						out.append(", ");
 					}
 				}

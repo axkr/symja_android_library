@@ -50,7 +50,7 @@ public class FrobeniusSolve extends AbstractEvaluator {
 				IInteger[][] equations = new IInteger[1][list.size()];
 				// format looks like: { { 12, 16, 20, 27, 123 } };
 				list.forEach((x, i) -> equations[0][i - 1] = (IInteger) x);
-				equations[0][list.size() - 1] = (IInteger) ast.arg2();
+				equations[0][list.argSize()] = (IInteger) ast.arg2();
 				int numberOfSolutions = -1; // all solutions
 				if (ast.size() == 4) {
 					numberOfSolutions = ((ISignedNumber) ast.arg3()).toInt();

@@ -48,7 +48,7 @@ public class ExprField implements Field<IExpr> {
 //			return null;
 //		}
 //
-//		final int rowSize = listVector.size() - 1;
+//		final int rowSize = listVector.argSize();
 //
 //		final ExprFieldElement[] elements = new ExprFieldElement[rowSize];
 //		for (int i = 0; i < rowSize; i++) {
@@ -80,8 +80,8 @@ public class ExprField implements Field<IExpr> {
 //			ExprFieldElement[][] array = new ExprFieldElement[0][0];
 //			return new BlockFieldMatrix<ExprFieldElement>(array);
 //		}
-//		final int rowSize = listMatrix.size() - 1;
-//		final int colSize = currInRow.size() - 1;
+//		final int rowSize = listMatrix.argSize();
+//		final int colSize = currInRow.argSize();
 //
 //		final ExprFieldElement[][] elements = new ExprFieldElement[rowSize][colSize];
 //		for (int i = 1; i < rowSize + 1; i++) {

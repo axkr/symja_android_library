@@ -79,6 +79,11 @@ public class AST2 extends AST1 {
 		return arg2;
 	}
 
+	/** {@inheritDoc} */
+	public int argSize() {
+		return SIZE - 1;
+	}
+	
 	@Override
 	public Set<IExpr> asSet() {
 		Set<IExpr> set = new HashSet<IExpr>();
@@ -292,6 +297,12 @@ public class AST2 extends AST1 {
 		return arg0.equals(head) && length <= SIZE;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public IExpr last() {
+		return arg2;
+	}
+	
 	/**
 	 * Replaces the element at the specified location in this {@code ArrayList} with the specified object.
 	 * 

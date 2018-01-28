@@ -436,7 +436,7 @@ public final class BooleanFunctions {
 		 * @return <code>null</code> if no or wrong method is defined as option
 		 */
 		private static FormulaTransformation transformation(final IAST ast, EvalEngine engine) {
-			int size = ast.size() - 1;
+			int size = ast.argSize();
 			FormulaTransformation transformation = new DNFFactorization();
 			if (size > 1 && ast.get(size).isString()) {
 				IStringX arg2 = (IStringX) ast.arg2();
@@ -1015,7 +1015,7 @@ public final class BooleanFunctions {
 			IASTAppendable result = ast.copyAppendable();
 			IExpr.COMPARE_TERNARY[] cResult = new IExpr.COMPARE_TERNARY[ast.size()];
 			cResult[0] = IExpr.COMPARE_TERNARY.TRUE;
-			for (int i = 1; i < ast.size() - 1; i++) {
+			for (int i = 1; i < ast.argSize(); i++) {
 				b = prepareCompare(result.get(i), result.get(i + 1), engine);
 				if (b == IExpr.COMPARE_TERNARY.FALSE) {
 					return F.False;
@@ -1025,7 +1025,7 @@ public final class BooleanFunctions {
 				}
 				cResult[i] = b;
 			}
-			cResult[ast.size() - 1] = IExpr.COMPARE_TERNARY.TRUE;
+			cResult[ast.argSize()] = IExpr.COMPARE_TERNARY.TRUE;
 			if (!evaled) {
 				// expression doesn't change
 				return F.NIL;

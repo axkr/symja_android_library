@@ -30,7 +30,7 @@ public final class RandomFunctions {
 			if (ast.size() > 0 && ast.arg1().isAST()) {
 				IAST list = (IAST) ast.arg1();
 				ThreadLocalRandom random = ThreadLocalRandom.current();
-				int listSize = list.size() - 1;
+				int listSize = list.argSize();
 				int randomIndex = random.nextInt(listSize);
 				return list.get(randomIndex + 1);
 			}
@@ -94,7 +94,7 @@ public final class RandomFunctions {
 		}
 
 		public static IAST shuffle(IAST list) {
-			final int len = list.size() - 1;
+			final int len = list.argSize();
 
 			// Shuffle indices.
 			final int[] indexList = MathArrays.natural(len);
@@ -102,10 +102,6 @@ public final class RandomFunctions {
 
 			// Create shuffled list.
 			return list.copy().setArgs(1, len + 1, i -> list.get(indexList[i - 1] + 1));
-			// for (int i = 0; i < len; i++) {
-			// out.set(i + 1, list.get(indexList[i] + 1));
-			// }
-			// return out;
 		}
 	}
 

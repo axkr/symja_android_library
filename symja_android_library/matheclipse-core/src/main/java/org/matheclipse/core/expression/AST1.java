@@ -78,6 +78,11 @@ public class AST1 extends AST0 {
 		return arg1;
 	}
 
+	/** {@inheritDoc} */
+	public int argSize() {
+		return SIZE - 1;
+	}
+	
 	@Override
 	public Set<IExpr> asSet() {
 		Set<IExpr> set = new HashSet<IExpr>();
@@ -266,6 +271,12 @@ public class AST1 extends AST0 {
 	@Override
 	public boolean isSameHeadSizeGE(IExpr head, int length) {
 		return arg0.equals(head) && length <= SIZE;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IExpr last() {
+		return arg1;
 	}
 
 	/**

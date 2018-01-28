@@ -363,7 +363,7 @@ public final class PatternMatching {
 				Validate.checkSize(ast, 2);
 
 				if (!(ast.arg1() instanceof IStringX)) {
-					throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);
+					throw new WrongNumberOfArguments(ast, 1, ast.argSize());
 				}
 				IStringX arg1 = (IStringX) ast.arg1();
 				FileReader reader;
@@ -430,7 +430,6 @@ public final class PatternMatching {
 		}
 	}
 
-	
 	private static class Information extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -590,17 +589,17 @@ public final class PatternMatching {
 			if (Config.FILESYSTEM_ENABLED) {
 				Validate.checkRange(ast, 3);
 
-				int len = ast.size() - 1;
-				IStringX fileName = Validate.checkStringType(ast, len);
+				final int argSize = ast.argSize();
+				IStringX fileName = Validate.checkStringType(ast, argSize);
 				FileWriter writer;
 				try {
 					writer = new FileWriter(fileName.toString());
 					final StringBuilder buf = new StringBuilder();
-					for (int i = 1; i < len; i++) {
+					for (int i = 1; i < argSize; i++) {
 						IExpr temp = engine.evaluate(ast.get(i));
 						OutputFormFactory.get().convert(buf, temp);
 						buf.append('\n');
-						if (i < len - 1) {
+						if (i < argSize - 1) {
 							buf.append('\n');
 						}
 					}

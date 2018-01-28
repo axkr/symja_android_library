@@ -142,7 +142,7 @@ public class Structure {
 			// for (int i = 1; i < evaledAST.size(); i++) {
 			// evaledAST.set(i, engine.evaluate(evaledAST.get(i)));
 			// }
-			int lastIndex = evaledAST.size() - 1;
+			int lastIndex = evaledAST.argSize();
 			boolean heads = false;
 			final Options options = new Options(evaledAST.topHead(), evaledAST, lastIndex, engine);
 			IExpr option = options.getOption("Heads");
@@ -543,7 +543,7 @@ public class Structure {
 							symbolSlots = F.List(arg1);
 						}
 						if (symbolSlots.size() > ast.size()) {
-							throw new WrongNumberOfArguments(ast, symbolSlots.size() - 1, ast.size() - 1);
+							throw new WrongNumberOfArguments(ast, symbolSlots.argSize(), ast.argSize());
 						}
 						return arg2.replaceAll(x -> {
 							IExpr temp = getRulesMap(symbolSlots, ast).get(x);
@@ -556,7 +556,7 @@ public class Structure {
 		}
 
 		private static java.util.Map<IExpr, IExpr> getRulesMap(final IAST symbolSlots, final IAST ast) {
-			int size = symbolSlots.size() - 1;
+			int size = symbolSlots.argSize();
 			final java.util.Map<IExpr, IExpr> rulesMap;
 			if (size <= 5) {
 				rulesMap = new OpenFixedSizeMap<IExpr, IExpr>(size * 3 - 1);
@@ -815,7 +815,7 @@ public class Structure {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 3, 5);
 
-			int lastIndex = ast.size() - 1;
+			int lastIndex = ast.argSize();
 			boolean heads = false;
 			final Options options = new Options(ast.topHead(), ast, lastIndex, engine);
 			IExpr option = options.getOption("Heads");
@@ -1259,7 +1259,7 @@ public class Structure {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 3, 5);
 
-			int lastIndex = ast.size() - 1;
+			int lastIndex = ast.argSize();
 			boolean heads = false;
 			final Options options = new Options(ast.topHead(), ast, lastIndex, engine);
 			IExpr option = options.getOption("Heads");
@@ -1524,9 +1524,9 @@ public class Structure {
 			for (int i = 1; i < list.size(); i++) {
 				if ((list.get(i).isAST()) && (((IAST) list.get(i)).head().equals(head))) {
 					if (listLength == 0) {
-						listLength = ((IAST) list.get(i)).size() - 1;
+						listLength = ((IAST) list.get(i)).argSize();
 					} else {
-						if (listLength != ((IAST) list.get(i)).size() - 1) {
+						if (listLength != ((IAST) list.get(i)).argSize()) {
 							listLength = 0;
 							return F.NIL;
 							// for loop

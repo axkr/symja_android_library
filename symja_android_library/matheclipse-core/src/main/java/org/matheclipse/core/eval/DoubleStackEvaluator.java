@@ -43,7 +43,7 @@ public class DoubleStackEvaluator {
 					++newTop;
 					stack[newTop] = DoubleStackEvaluator.eval(stack, newTop, ast.get(i));
 				}
-				return ((INumeric) module).evalReal(stack, newTop, ast.size() - 1);
+				return ((INumeric) module).evalReal(stack, newTop, ast.argSize());
 			}
 		}
 		// slow evaluation path

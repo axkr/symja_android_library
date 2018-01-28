@@ -978,7 +978,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	// IAST plus = (IAST) temp;
 	// IExpr[] fractionalParts;
 	// boolean evaled = false;
-	// IAST[] factors = new IAST[plus.size() - 1];
+	// IAST[] factors = new IAST[plus.argSize()];
 	// for (int j = 0; j < factors.length; j++) {
 	// factors[j] = F.Times();
 	// }

@@ -41,7 +41,7 @@ public class Import extends AbstractEvaluator {
 			Validate.checkRange(ast, 2, 3);
 
 			if (!(ast.arg1() instanceof IStringX)) {
-				throw new WrongNumberOfArguments(ast, 1, ast.size() - 1);
+				throw new WrongNumberOfArguments(ast, 1, ast.argSize());
 			}
 
 			IStringX arg1 = (IStringX) ast.arg1();
@@ -49,7 +49,7 @@ public class Import extends AbstractEvaluator {
 			String format = "String";
 			if (ast.size() > 2) {
 				if (!(ast.arg2() instanceof IStringX)) {
-					throw new WrongNumberOfArguments(ast, 2, ast.size() - 1);
+					throw new WrongNumberOfArguments(ast, 2, ast.argSize());
 				}
 				format = ((IStringX) ast.arg2()).toString();
 			}

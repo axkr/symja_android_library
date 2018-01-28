@@ -20,7 +20,7 @@ public class PolynomialExample {
 			System.out.println(expr.toString());
 
 			final IAST variables = F.List(F.userSymbol("x"), F.userSymbol("y"));
-			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables, variables.size() - 1,
+			ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, variables, variables.argSize(),
 					ExprTermOrderByName.Lexicographic, false);
 
 			ExprPolynomial poly = ring.create(expr);

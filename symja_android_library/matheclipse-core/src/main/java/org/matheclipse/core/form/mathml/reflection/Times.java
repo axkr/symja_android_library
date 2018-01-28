@@ -157,7 +157,7 @@ public class Times extends MMLOperator {
 
 		for (int i = 2; i < size; i++) {
 			fFactory.convert(buf, timesAST.get(i), fPrecedence, false);
-			if ((i < timesAST.size() - 1) && (fOperator.length() > 0)) {
+			if ((i < timesAST.argSize()) && (fOperator.length() > 0)) {
 				fFactory.tag(buf, "mo", fOperator);
 			}
 		}

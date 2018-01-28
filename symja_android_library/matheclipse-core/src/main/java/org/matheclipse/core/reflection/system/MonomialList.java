@@ -82,7 +82,7 @@ public class MonomialList extends AbstractFunctionEvaluator {
 			varList = eVar.getArrayList();
 		} else {
 			symbolList = Validate.checkSymbolOrSymbolList(ast, 2);
-			varList = new ArrayList<IExpr>(symbolList.size() - 1);
+			varList = new ArrayList<IExpr>(symbolList.argSize());
 			symbolList.forEach(x -> varList.add(x));
 		}
 		TermOrder termOrder = TermOrderByName.Lexicographic;

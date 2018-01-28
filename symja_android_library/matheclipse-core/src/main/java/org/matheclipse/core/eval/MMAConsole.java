@@ -106,7 +106,7 @@ public class MMAConsole {
 						IAST list = Names.getNamesByPrefix(trimmedInput.substring(1));
 						for (int i = 1; i < list.size(); i++) {
 							System.out.print(list.get(i).toString());
-							if (i != list.size() - 1) {
+							if (i != list.argSize()) {
 								System.out.print(", ");
 							}
 						}

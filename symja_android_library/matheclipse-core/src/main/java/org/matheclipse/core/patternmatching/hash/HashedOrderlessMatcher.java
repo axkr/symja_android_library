@@ -100,7 +100,7 @@ public class HashedOrderlessMatcher {
 				IExpr head = orderlessAST.head();
 				IAST result = F.NIL;
 				while (temp.isPresent()) {
-					int size = temp.size() - 1;
+					int size = temp.argSize();
 					hashValues = new int[size];
 					createSpecialHashValues(temp, hashValues);
 					// for (int i = 0; i < size; i++) {
@@ -120,7 +120,7 @@ public class HashedOrderlessMatcher {
 				}
 			}
 			if (!fHashRuleMap.isEmpty()) {
-				int size = temp.size() - 1;
+				int size = temp.argSize();
 				hashValues = new int[size];
 				createHashValues(temp, hashValues);
 				IAST result = evaluateHashedValues(temp, fHashRuleMap, hashValues, engine);
@@ -171,7 +171,7 @@ public class HashedOrderlessMatcher {
 		// Compute hash values for each argument of the orderlessAST
 		// if hashValues[i]==0 then the corresponding argument is evaluated and not
 		// available anymore
-		int[] hashValues = new int[(orderlessAST.size() - 1)];
+		int[] hashValues = new int[(orderlessAST.argSize())];
 		if (!fPatternHashRuleMap.isEmpty()) {
 			createSpecialHashValues(orderlessAST, hashValues);
 			IAST result = evaluateHashedValues(orderlessAST, fPatternHashRuleMap, hashValues, engine);

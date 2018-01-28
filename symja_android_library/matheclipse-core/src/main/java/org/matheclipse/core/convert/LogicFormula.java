@@ -79,25 +79,25 @@ public class LogicFormula {
 		if (logicExpr instanceof IAST) {
 			final IAST ast = (IAST) logicExpr;
 			if (ast.isAnd()) {
-				Formula[] result = new Formula[ast.size() - 1];
+				Formula[] result = new Formula[ast.argSize()];
 				for (int i = 1; i < ast.size(); i++) {
 					result[i - 1] = expr2BooleanFunction(ast.get(i));
 				}
 				return factory.and(result);
 			} else if (ast.isOr()) {
-				Formula[] result = new Formula[ast.size() - 1];
+				Formula[] result = new Formula[ast.argSize()];
 				for (int i = 1; i < ast.size(); i++) {
 					result[i - 1] = expr2BooleanFunction(ast.get(i));
 				}
 				return factory.or(result);
 			} else if (ast.isASTSizeGE(F.Nand, 3)) {
-				Formula[] result = new Formula[ast.size() - 1];
+				Formula[] result = new Formula[ast.argSize()];
 				for (int i = 1; i < ast.size(); i++) {
 					result[i - 1] = factory.not(expr2BooleanFunction(ast.get(i)));
 				}
 				return factory.or(result);
 			} else if (ast.isASTSizeGE(F.Nor, 3)) {
-				Formula[] result = new Formula[ast.size() - 1];
+				Formula[] result = new Formula[ast.argSize()];
 				for (int i = 1; i < ast.size(); i++) {
 					result[i - 1] = factory.not(expr2BooleanFunction(ast.get(i)));
 				}
@@ -134,7 +134,7 @@ public class LogicFormula {
 
 	public Variable[] ast2Variable(final IAST listOfSymbols) throws ClassCastException {
 		if (listOfSymbols instanceof IAST) {
-			Variable[] result = new Variable[listOfSymbols.size() - 1];
+			Variable[] result = new Variable[listOfSymbols.argSize()];
 			for (int i = 1; i < listOfSymbols.size(); i++) {
 				IExpr temp = listOfSymbols.get(i);
 				if (temp instanceof ISymbol) {
@@ -195,8 +195,8 @@ public class LogicFormula {
 	}
 
 	private Formula convertEquivalent(IAST ast) {
-		Formula[] result1 = new Formula[ast.size() - 1];
-		Formula[] result2 = new Formula[ast.size() - 1];
+		Formula[] result1 = new Formula[ast.argSize()];
+		Formula[] result2 = new Formula[ast.argSize()];
 		for (int i = 1; i < ast.size(); i++) {
 			result1[i - 1] = factory.not(expr2BooleanFunction(ast.get(i)));
 			result2[i - 1] = factory.not(result1[i - 1]);
@@ -216,7 +216,7 @@ public class LogicFormula {
 	}
 
 	public Collection<Variable> list2LiteralCollection(final IAST list) throws ClassCastException {
-		Collection<Variable> arr = new ArrayList<Variable>(list.size() - 1);
+		Collection<Variable> arr = new ArrayList<Variable>(list.argSize());
 		for (int i = 1; i < list.size(); i++) {
 			IExpr temp = list.get(i);
 			if (!temp.isSymbol()) {

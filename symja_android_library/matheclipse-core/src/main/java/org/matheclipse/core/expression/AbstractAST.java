@@ -24,7 +24,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
-import org.matheclipse.core.builtin.Structure;
 import org.matheclipse.core.builtin.Structure.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
@@ -268,7 +267,7 @@ public abstract class AbstractAST implements IASTMutable {
 			} else {
 				text.append(ast.get(i).internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix));
 			}
-			if (i < ast.size() - 1) {
+			if (i < ast.argSize()) {
 				text.append(sep);
 			}
 		}
@@ -578,7 +577,7 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 
 		int j = from1;
-		for (int i = from0; i < size() - 1; i++) {
+		for (int i = from0; i < argSize(); i++) {
 			if (!get(i + 1).equals(f1.get(1 + j++))) {
 				return false;
 			}
@@ -757,7 +756,7 @@ public abstract class AbstractAST implements IASTMutable {
 	 */
 	public IExpr foldRight(final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue, int start) {
 		IExpr value = startValue;
-		int end = size() - 1;
+		int end = argSize();
 		for (int i = end; i >= start; i--) {
 			value = function.apply(value, get(i));
 		}
@@ -923,7 +922,7 @@ public abstract class AbstractAST implements IASTMutable {
 				text.append("<null-arg>");
 			} else {
 				text.append(get(i).fullFormString());
-				if (i < size() - 1) {
+				if (i < argSize()) {
 					text.append(sep);
 				}
 			}
@@ -1241,7 +1240,7 @@ public abstract class AbstractAST implements IASTMutable {
 				text.append(prefix + "$(");
 				for (int i = 0; i < size(); i++) {
 					text.append(get(i).internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix));
-					if (i < size() - 1) {
+					if (i < argSize()) {
 						text.append(sep);
 					}
 				}
@@ -1252,7 +1251,7 @@ public abstract class AbstractAST implements IASTMutable {
 			text.append(prefix + "$(");
 			for (int i = 0; i < size(); i++) {
 				text.append(get(i).internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix));
-				if (i < size() - 1) {
+				if (i < argSize()) {
 					text.append(sep);
 				}
 			}
@@ -1314,7 +1313,7 @@ public abstract class AbstractAST implements IASTMutable {
 			}
 			for (int i = 1; i < size(); i++) {
 				text.append(get(i).internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix));
-				if (i < size() - 1) {
+				if (i < argSize()) {
 					text.append(sep);
 					if (depth == 0 && isList()) {
 						text.append('\n');
@@ -1862,23 +1861,23 @@ public abstract class AbstractAST implements IASTMutable {
 	public int[] isMatrix(boolean setMatrixFormat) {
 		if (isEvalFlagOn(IAST.IS_MATRIX)) {
 			final int[] dim = new int[2];
-			dim[0] = size() - 1;
-			dim[1] = ((IAST) arg1()).size() - 1;
+			dim[0] = argSize();
+			dim[1] = ((IAST) arg1()).argSize();
 			return dim;
 		}
 		if (isList()) {
 			final int[] dim = new int[2];
-			dim[0] = size() - 1;
+			dim[0] = argSize();
 			if (dim[0] > 0) {
 				dim[1] = 0;
 				if (arg1().isList()) {
-					dim[1] = ((IAST) arg1()).size() - 1;
+					dim[1] = ((IAST) arg1()).argSize();
 					for (int i = 2; i < size(); i++) {
 						if (!get(i).isList()) {
 							// this row is not a list
 							return null;
 						}
-						if (dim[1] != ((IAST) get(i)).size() - 1) {
+						if (dim[1] != ((IAST) get(i)).argSize()) {
 							// this row has another dimension
 							return null;
 						}
@@ -2128,12 +2127,12 @@ public abstract class AbstractAST implements IASTMutable {
 	public boolean isRealMatrix() {
 		if (isList()) {
 			final int[] dim = new int[2];
-			dim[0] = size() - 1;
+			dim[0] = argSize();
 			if (dim[0] > 0) {
 				dim[1] = 0;
 				if (arg1().isList()) {
 					IAST row = (IAST) arg1();
-					dim[1] = row.size() - 1;
+					dim[1] = row.argSize();
 					boolean containsNum = false;
 					for (int j = 1; j < row.size(); j++) {
 						if (row.get(j).isSignedNumber()) {
@@ -2155,7 +2154,7 @@ public abstract class AbstractAST implements IASTMutable {
 							return false;
 						}
 						row = (IAST) get(i);
-						if (dim[1] != row.size() - 1) {
+						if (dim[1] != row.argSize()) {
 							// this row has another dimension
 							return false;
 						}
@@ -2436,10 +2435,10 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public int isVector() {
 		if (isEvalFlagOn(IAST.IS_VECTOR)) {
-			return size() - 1;
+			return argSize();
 		}
 		if (isList()) {
-			final int dim = size() - 1;
+			final int dim = argSize();
 			if (dim > 0) {
 				if (arg1().isList()) {
 					return -1;
@@ -2481,8 +2480,8 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final IExpr last() {
-		return get(size() - 1);
+	public IExpr last() {
+		return get(argSize());
 	}
 
 	@Override
@@ -2782,7 +2781,7 @@ public abstract class AbstractAST implements IASTMutable {
 	 * @return
 	 */
 	public IASTAppendable reverse(IASTAppendable list) {
-		for (int i = size() - 1; i >= 1; i--) {
+		for (int i = argSize(); i >= 1; i--) {
 			list.append(get(i));
 		}
 		return list;
@@ -2907,7 +2906,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public double[] toDoubleVector() {
-		double[] result = new double[size() - 1];
+		double[] result = new double[argSize()];
 		ISignedNumber signedNumber;
 		for (int i = 1; i < size(); i++) {
 			signedNumber = get(i).evalSignedNumber();
@@ -2940,7 +2939,7 @@ public abstract class AbstractAST implements IASTMutable {
 		for (int i = 1; i < size(); i++) {
 			final IExpr o = get(i);
 			text = text.append(o == this ? "(this AST)" : o.toString());
-			if (i < size() - 1) {
+			if (i < argSize()) {
 				text.append(sep);
 			}
 		}
@@ -3035,7 +3034,7 @@ public abstract class AbstractAST implements IASTMutable {
 				buf.append('{');
 				for (int i = 1; i < size(); i++) {
 					buf.append(get(i) == this ? "(this AST)" : String.valueOf(get(i)));
-					if (i < size() - 1) {
+					if (i < argSize()) {
 						buf.append(", ");
 					}
 				}

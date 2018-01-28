@@ -153,7 +153,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 								result.set(i, arg1Negated);
 							} else {
 								positiveElementsCounter++;
-								if (positiveElementsCounter * 2 >= plusAST.size() - 1) {
+								if (positiveElementsCounter * 2 >= plusAST.argSize()) {
 									// number of positive elements is greater
 									// than number of negative elements
 									return F.NIL;
