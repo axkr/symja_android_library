@@ -161,8 +161,8 @@ public class Product extends ListFunctions.Table implements ProductRules {
 									if (ast.isAST2()) {
 										return F.Power(powArg1, Times(C1D2, to, Plus(C1, to)));
 									}
-									IASTAppendable result = ast.copyAppendable();
-									result.remove(ast.argSize());
+									IASTAppendable result = ast.removeAtClone(ast.argSize());
+									// result.remove(ast.argSize());
 									result.set(1, F.Power(powArg1, Times(C1D2, to, Plus(C1, to))));
 									return result;
 								}
@@ -178,8 +178,8 @@ public class Product extends ListFunctions.Table implements ProductRules {
 								return F.Power(ast.arg1(), Plus(to, C1));
 							}
 						} else {
-							IASTAppendable result = ast.copyAppendable();
-							result.remove(ast.argSize());
+							IASTAppendable result = ast.removeAtClone(ast.argSize());
+							// result.remove(ast.argSize());
 							if (from.isOne()) {
 								result.set(1, F.Power(ast.arg1(), to));
 								return result;
@@ -202,8 +202,8 @@ public class Product extends ListFunctions.Table implements ProductRules {
 			if (ast.isAST2()) {
 				return temp;
 			} else {
-				IASTAppendable result = ast.copyAppendable();
-				result.remove(ast.argSize());
+				IASTAppendable result = ast.removeAtClone(ast.argSize());
+				// result.remove(ast.argSize());
 				result.set(1, temp);
 				return result;
 			}
