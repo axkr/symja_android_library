@@ -24,6 +24,7 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.numbertheory.Primality;
 
 import com.google.common.math.IntMath;
+import com.google.common.math.LongMath;
 
 /**
  * IInteger implementation which uses an internal <code>int</code> value
@@ -32,15 +33,6 @@ import com.google.common.math.IntMath;
  * @see BigIntegerSym
  */
 public class IntegerSym extends AbstractIntegerSym {
-	// All primes smaller than 210
-	public static long[] Primes_210 = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73,
-			79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191,
-			193, 197, 199 };
-
-	// All numbers coprime to 210 (and 1)
-	public static long[] CoPrimes_210 = { 1, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83,
-			89, 97, 101, 103, 107, 109, 113, 121, 127, 131, 137, 139, 143, 149, 151, 157, 163, 167, 169, 173, 179, 181,
-			187, 191, 193, 197, 199, 209 };
 
 	/**
 	 * 
@@ -428,9 +420,9 @@ public class IntegerSym extends AbstractIntegerSym {
 
 	@Override
 	public byte byteValue() {
-		return (byte)fIntValue;
+		return (byte) fIntValue;
 	}
-	
+
 	@Override
 	public int intValue() {
 		return fIntValue;
@@ -521,41 +513,15 @@ public class IntegerSym extends AbstractIntegerSym {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isProbablePrime() {
-		// int n = fIntValue;
-		// if (n < 0) {
-		// n *= (-1);
-		// }
-		// if (n <= 210) {
-		// for (int i = 0; i < Primes_210.length; i++) {
-		// if (Primes_210[i] == n) {
-		// return true;
-		// }
-		// }
-		// return false;
-		// }
-		// for (int i = 0; i < Primes_210.length; i++) {
-		// if (n % Primes_210[i] == 0)
-		// return false;
-		// }
-		//
-		// long relativeSqrt = (new Double(Math.sqrt(n))).longValue() + 1;
-		// int step = 210;
-		//
-		// for (long i = step; i <= relativeSqrt; i += step) {
-		// for (int j = 0; j < CoPrimes_210.length && (i + CoPrimes_210[j]) <= relativeSqrt; j++) {
-		// if (n % (i + CoPrimes_210[j]) == 0)
-		// return false;
-		// }
-		// }
-		//
-		// return true;
-		return isProbablePrime(PRIME_CERTAINTY);
+		return LongMath.isPrime(fIntValue);
+		// return isProbablePrime(PRIME_CERTAINTY);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public boolean isProbablePrime(int certainty) {
-		return toBigNumerator().isProbablePrime(certainty);
+		return LongMath.isPrime(fIntValue);
+		// return toBigNumerator().isProbablePrime(certainty);
 	}
 
 	/** {@inheritDoc} */

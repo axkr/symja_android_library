@@ -413,7 +413,7 @@ public class ApfloatNum implements INum {
 
 	@Override
 	public IInteger round() {
-		Apfloat f = ApfloatMath.round(fApfloat, 1, RoundingMode.HALF_UP);
+		Apfloat f = ApfloatMath.round(fApfloat, 1, RoundingMode.HALF_EVEN);
 		return F.integer(ApfloatMath.floor(f).toBigInteger());
 	}
 

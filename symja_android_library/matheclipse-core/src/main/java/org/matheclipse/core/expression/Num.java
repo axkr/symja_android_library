@@ -1,6 +1,7 @@
 package org.matheclipse.core.expression;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -17,6 +18,8 @@ import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
+
+import com.google.common.math.DoubleMath;
 
 /**
  * <code>INum</code> implementation which wraps a <code>double</code> value to represent a numeric floating-point
@@ -567,7 +570,8 @@ public class Num implements INum {
 
 	@Override
 	public IInteger round() {
-		return F.integer(NumberUtil.toLong(Math.rint(fDouble)));
+		return F.integer(DoubleMath.roundToBigInteger(fDouble, RoundingMode.HALF_EVEN));
+		// return F.integer(NumberUtil.toLong(Math.rint(fDouble)));
 	}
 
 	@Override

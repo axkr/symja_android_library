@@ -1893,6 +1893,31 @@ public final class NumberTheory {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * MersennePrimeExponent(n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the <code>n</code>th mersenne prime exponent. <code>2^n - 1</code> must be a prime number. Currently
+	 * <code>0 &lt;= n &lt;= 45</code> can be computed, otherwise the function returns unevaluated.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Mersenne_prime">Wikipedia - Mersenne prime</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/List_of_perfect_numbers">Wikipedia - List of perfect numbers</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Table(MersennePrimeExponent(i), {i,20})
+	 * {2,3,5,7,13,17,19,31,61,89,107,127,521,607,1279,2203,2281,3217,4253,4423}
+	 * </pre>
+	 */
 	private static class MersennePrimeExponent extends AbstractTrigArg1 {
 
 		@Override
@@ -1916,6 +1941,31 @@ public final class NumberTheory {
 
 	}
 
+	/**
+	 * <pre>
+	 * MersennePrimeExponentQ(n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>2^n - 1</code> is a prime number. Currently <code>0 &lt;= n &lt;= 45</code>
+	 * can be computed in reasonable time.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Mersenne_prime">Wikipedia - Mersenne prime</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/List_of_perfect_numbers">Wikipedia - List of perfect numbers</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Select(Range(10000), MersennePrimeExponentQ)
+	 * {2,3,5,7,13,17,19,31,61,89,107,127,521,607,1279,2203,2281,3217,4253,4423,9689,9941}
+	 * </pre>
+	 */
 	private static class MersennePrimeExponentQ extends AbstractFunctionEvaluator {
 
 		@Override
@@ -2536,7 +2586,7 @@ public final class NumberTheory {
 	 * </pre>
 	 */
 	private static class Prime extends AbstractFunctionEvaluator {
-	 
+
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
