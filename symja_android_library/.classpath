@@ -10,7 +10,6 @@
 	<classpathentry kind="lib" path="lib/Lab4Math-2.0.5.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
 	<classpathentry kind="lib" path="lib/commons-csv-1.4.jar"/>
-	<classpathentry kind="lib" path="lib/guava-20.0.jar"/>
 	<classpathentry kind="lib" path="lib/apfloat-1.8.3.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/txtmark-0.13.jar"/>
@@ -23,5 +22,6 @@
 	<classpathentry kind="lib" path="lib/antlr4-runtime-4.7.jar"/>
 	<classpathentry kind="lib" path="lib/jas-2.6.5786.jar"/>
 	<classpathentry kind="lib" path="lib/logicng-1.3.1.jar"/>
+	<classpathentry kind="lib" path="lib/guava-23.6-android.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

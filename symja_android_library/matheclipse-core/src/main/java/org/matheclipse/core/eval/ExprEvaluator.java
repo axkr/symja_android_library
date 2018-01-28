@@ -5,6 +5,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.matheclipse.core.basic.Config;
@@ -457,11 +458,11 @@ public class ExprEvaluator {
 			fExpr = engine.parse(inputExpression);
 			if (fExpr != null) {
 				F.join();
-				TimeLimiter timeLimiter = new SimpleTimeLimiter();
+				TimeLimiter timeLimiter = SimpleTimeLimiter.create(Executors.newSingleThreadExecutor());
 				Callable<IExpr> work = new EvalCallable(fExpr, engine);
 
 				try {
-					return timeLimiter.callWithTimeout(work, timeoutDuration, timeUnit, interruptible);
+					return timeLimiter.callWithTimeout(work, timeoutDuration, timeUnit);
 				} catch (java.util.concurrent.TimeoutException e) {
 					return F.$Aborted;
 				} catch (com.google.common.util.concurrent.UncheckedTimeoutException e) {
@@ -549,7 +550,8 @@ public class ExprEvaluator {
 	/**
 	 * Converts the <code>inputExpression</code> string into a Java Symja expression string.
 	 * 
-	 * @param inputExpression an input expression
+	 * @param inputExpression
+	 *            an input expression
 	 */
 	public String toJavaForm(final String inputExpression) throws MathException {
 		IExpr parsedExpression;
@@ -565,7 +567,8 @@ public class ExprEvaluator {
 	 * Converts the inputExpression string into a Scala expression and writes the result to the given
 	 * <code>Writer</code>string.
 	 * 
-	 * @param inputExpression an input expression
+	 * @param inputExpression
+	 *            an input expression
 	 */
 	public String toScalaForm(final String inputExpression) throws MathException {
 		IExpr parsedExpression;

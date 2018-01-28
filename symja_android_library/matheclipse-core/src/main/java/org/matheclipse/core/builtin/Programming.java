@@ -11,6 +11,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -1825,11 +1826,11 @@ public final class Programming {
 				return F.NIL;
 			}
 
-			TimeLimiter timeLimiter = new SimpleTimeLimiter();
+			TimeLimiter timeLimiter = SimpleTimeLimiter.create(Executors.newSingleThreadExecutor());
 			Callable<IExpr> work = new EvalCallable(ast.arg1(), engine);
 
 			try {
-				return timeLimiter.callWithTimeout(work, seconds, TimeUnit.SECONDS, true);
+				return timeLimiter.callWithTimeout(work, seconds, TimeUnit.SECONDS);
 			} catch (java.util.concurrent.TimeoutException e) {
 				if (ast.isAST3()) {
 					return ast.arg3();
