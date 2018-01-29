@@ -272,7 +272,7 @@ public final class NumberTheory {
 
 		public static IInteger binomial(final IInteger n, final IInteger k) {
 			// k>n : by definition --> 0
-			if (k.compareTo(n) > 0) {
+			if (k.isNegative() || k.compareTo(n) > 0) {
 				return F.C0;
 			}
 			if (k.isZero() || k.equals(n)) {
@@ -311,6 +311,9 @@ public final class NumberTheory {
 				return n;
 			}
 			if (k.isInteger()) {
+				if (k.isNegative()) {
+					return F.C0;
+				}
 				if (n.isInteger()) {
 					// use e2IntArg() method
 					return F.NIL;
@@ -1490,6 +1493,12 @@ public final class NumberTheory {
 			if (arg1.isInteger()) {
 				return factorial((IInteger) arg1);
 			}
+			if (arg1.isInfinity()) {
+				return F.CInfinity;
+			}
+			if (arg1.isNegativeInfinity()) {
+				return F.Indeterminate;
+			}
 			return F.NIL;
 		}
 
@@ -1579,6 +1588,12 @@ public final class NumberTheory {
 						return F.fraction(-1L, 15L);
 					}
 				}
+			}
+			if (arg1.isInfinity()) {
+				return F.CInfinity;
+			}
+			if (arg1.isNegativeInfinity()) {
+				return F.Indeterminate;
 			}
 			return F.NIL;
 		}

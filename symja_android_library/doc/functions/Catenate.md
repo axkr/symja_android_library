@@ -1,8 +1,8 @@
 ## Catenate
 
-``` 
+```
 Catenate({l1, l2, ...})
-``` 
+```
 
 > concatenates the lists `l1, l2, ...`
 

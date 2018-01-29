@@ -10,6 +10,7 @@ See:
 * [Wikipedia - Bell number](https://en.wikipedia.org/wiki/Bell_number)
 
 ## Examples
+
 ```
 >> BellB(15)
 1382958545

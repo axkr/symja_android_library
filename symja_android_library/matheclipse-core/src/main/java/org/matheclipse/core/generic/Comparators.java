@@ -1,6 +1,5 @@
 package org.matheclipse.core.generic;
 
-import java.io.Serializable;
 import java.util.Comparator;
 import java.util.function.BiPredicate;
 
@@ -38,7 +37,7 @@ public class Comparators {
 	/**
 	 * Comparator for ExpVectors.
 	 */
-	public static class BinaryHeadComparator implements Comparator<IExpr>, Serializable {
+	public static class BinaryHeadComparator implements Comparator<IExpr> {
 		BiPredicate<IExpr, IExpr> predicate;
 
 		public BinaryHeadComparator(IExpr test) {

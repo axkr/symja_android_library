@@ -2,13 +2,13 @@
 
 ```
 Fibonacci(n)
-``` 
+```
 
-> returns the Fibonacci number of the integer `n`
+> returns the Fibonacci number of the integer `n` 
 
 ### Examples
 
-```   
+```
 >> Fibonacci(0)
 0
  
@@ -20,4 +20,4 @@ Fibonacci(n)
  
 >> Fibonacci(200)
 280571172992510140037611932413038677189525
-``` 
+```

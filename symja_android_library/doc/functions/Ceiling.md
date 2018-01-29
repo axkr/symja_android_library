@@ -28,8 +28,9 @@ Ceiling(expr, a)
 2    
 ```
 
-For complex `expr`, take the ceiling of real and imaginary parts.   
-``` 
+For complex `expr`, take the ceiling of real and imaginary parts.  
+ 
+```
 >> Ceiling(1.3 + 0.7*I)    
 2+I    
 

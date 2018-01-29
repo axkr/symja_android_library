@@ -7,7 +7,6 @@ public final class FunctionDefinitions {
 		AbsArg.setEvaluator(new org.matheclipse.core.reflection.system.AbsArg());
 		BesselJ.setEvaluator(new org.matheclipse.core.reflection.system.BesselJ());
 		ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
-		ComposeList.setEvaluator(new org.matheclipse.core.reflection.system.ComposeList());
 		ContinuedFraction.setEvaluator(new org.matheclipse.core.reflection.system.ContinuedFraction());
 		CosIntegral.setEvaluator(new org.matheclipse.core.reflection.system.CosIntegral());
 		Curl.setEvaluator(new org.matheclipse.core.reflection.system.Curl());
@@ -63,7 +62,6 @@ public final class FunctionDefinitions {
 		
 		Rationalize.setEvaluator(new org.matheclipse.core.reflection.system.Rationalize());
 		Replace.setEvaluator(new org.matheclipse.core.reflection.system.Replace());
-		ReplaceAll.setEvaluator(new org.matheclipse.core.reflection.system.ReplaceAll());
 		ReplaceList.setEvaluator(new org.matheclipse.core.reflection.system.ReplaceList());
 		ReplaceRepeated.setEvaluator(new org.matheclipse.core.reflection.system.ReplaceRepeated());
 		Series.setEvaluator(new org.matheclipse.core.reflection.system.Series());

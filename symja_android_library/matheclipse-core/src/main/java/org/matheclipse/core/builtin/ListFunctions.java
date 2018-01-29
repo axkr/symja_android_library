@@ -67,6 +67,7 @@ public final class ListFunctions {
 		F.Commonest.setEvaluator(new Commonest());
 		F.Complement.setEvaluator(new Complement());
 		F.Composition.setEvaluator(new Composition());
+		F.ComposeList.setEvaluator(new ComposeList());
 		F.ConstantArray.setEvaluator(new ConstantArray());
 		F.Count.setEvaluator(new Count());
 		F.Delete.setEvaluator(new Delete());
@@ -95,6 +96,7 @@ public final class ListFunctions {
 		F.Range.setEvaluator(new Range());
 		F.Rest.setEvaluator(new Rest());
 		F.Reverse.setEvaluator(new Reverse());
+		F.ReplaceAll.setEvaluator(new ReplaceAll());
 		F.ReplacePart.setEvaluator(new ReplacePart());
 		F.Riffle.setEvaluator(new Riffle());
 		F.RotateLeft.setEvaluator(new RotateLeft());
@@ -342,6 +344,23 @@ public final class ListFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Accumulate(list)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * accumulate the values of <code>list</code> returning a new list.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Accumulate({1, 2, 3})
+	 * {1,3,6}
+	 * </pre>
+	 */
 	private final static class Accumulate extends AbstractEvaluator {
 
 		@Override
@@ -736,6 +755,43 @@ public final class ListFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * ArrayPad(list, n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * adds <code>n</code> times <code>0</code> on the left and right of the <code>list</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * ArrayPad(list, {m,n})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * adds <code>m</code> times <code>0</code> on the left and <code>n</code> times <code>0</code> on the right.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * ArrayPad(list, {m, n}, x)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * adds <code>m</code> times <code>x</code> on the left and <code>n</code> times <code>x</code> on the right.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ArrayPad({a, b, c}, 1, x)
+	 * {x,a,b,c,x}
+	 * </pre>
+	 */
 	private final static class ArrayPad extends AbstractFunctionEvaluator {
 
 		@Override
@@ -1008,6 +1064,23 @@ public final class ListFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * Catenate({l1, l2, ...})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * concatenates the lists <code>l1, l2, ...</code>
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Catenate({{1, 2, 3}, {4, 5}})
+	 * {1, 2, 3, 4, 5}
+	 * </pre>
+	 */
 	private final static class Catenate extends AbstractEvaluator {
 
 		@Override
@@ -1092,6 +1165,32 @@ public final class ListFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * Complement(set1, set2)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * get the complement set from <code>set1</code> and <code>set2</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Complement_(set_theory)">Wikipedia - Complement (set theory)</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Complement({1,2,3},{2,3,4})
+	 * {1}
+	 * 
+	 * &gt;&gt; Complement({2,3,4},{1,2,3})
+	 * {4}
+	 * </pre>
+	 */
 	private final static class Complement extends AbstractFunctionEvaluator {
 
 		public Complement() {
@@ -1128,6 +1227,23 @@ public final class ListFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Composition(sym1, sym2,...)[arg1, arg2,...]
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * creates a composition of the symbols applied at the arguments.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Composition(u, v, w)[x, y]
+	 * u(v(w(x,y)))
+	 * </pre>
+	 */
 	private final static class Composition extends AbstractFunctionEvaluator {
 
 		@Override
@@ -1148,9 +1264,6 @@ public final class ListFunctions {
 						inner = temp;
 					}
 					inner.appendArgs(ast);
-					// for (int i = 1; i < ast.size(); i++) {
-					// inner.append(ast.get(i));
-					// }
 					return result;
 				}
 
@@ -1161,7 +1274,72 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Array structure generator for constant (i,j) value.
+	 * <pre>
+	 * ComposeList(list - of - symbols, variable)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * creates a list of compositions of the symbols applied at the argument <code>x</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ComposeList({f,g,h}, x)
+	 * {x,f(x),g(f(x)),h(g(f(x)))}
+	 * </pre>
+	 */
+	private static class ComposeList extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			return evaluateComposeList(ast, F.ListAlloc(8));
+		}
+
+		public static IExpr evaluateComposeList(final IAST ast, final IASTAppendable resultList) {
+			try {
+				if ((ast.isAST2()) && (ast.arg1().isAST())) {
+					// final EvalEngine engine = EvalEngine.get();
+					final IAST list = (IAST) ast.arg1();
+					final IAST constant = F.ast(ast.arg1());
+					ListFunctions.foldLeft(ast.arg2(), list, 1, list.size(), (x, y) -> {
+						final IASTAppendable a = constant.apply(y);
+						a.append(x);
+						return a;
+					}, resultList);
+					return resultList;
+				}
+			} catch (final ArithmeticException e) {
+
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+	}
+
+	/**
+	 * <pre>
+	 * ConstantArray(expr, n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a list of <code>n</code> copies of <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ConstantArray(a, 3)
+	 * {a, a, a}
+	 * 
+	 * &gt;&gt; ConstantArray(a, {2, 3})
+	 * {{a, a, a}, {a, a, a}}
+	 * </pre>
 	 */
 	private final static class ConstantArray extends AbstractEvaluator {
 		private static class MultipleConstArrayFunction implements IArrayFunction {
@@ -1282,8 +1460,34 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Count the number of elements in an expression which match the given pattern.
+	 * <pre>
+	 * Count(list, pattern)
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the number of times <code>pattern</code> appears in <code>list</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Count(list, pattern, ls)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * counts the elements matching at levelspec <code>ls</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Count({3, 7, 10, 7, 5, 3, 7, 10}, 3)
+	 * 2
+	 * 
+	 * &gt;&gt; Count({{a, a}, {a, a, a}, a}, a, {2})
+	 * 5
+	 * </pre>
 	 */
 	private final static class Count extends AbstractCoreFunctionEvaluator {
 		private static class CountFunctor implements Function<IExpr, IExpr> {
@@ -1366,6 +1570,26 @@ public final class ListFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * DeleteCases(list, pattern)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the elements of <code>list</code> that do not match <code>pattern</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; DeleteCases({a, 1, 2.5, "string"}, _Integer|_Real)
+	 * {a,"string"}
+	 * 
+	 * &gt;&gt; DeleteCases({a, b, 1, c, 2, 3}, _Symbol)
+	 * {1,2,3}
+	 * </pre>
+	 */
 	private final static class DeleteCases extends AbstractCoreFunctionEvaluator {
 
 		private static class DeleteCasesPatternMatcherFunctor implements Function<IExpr, IExpr> {
@@ -1482,8 +1706,52 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Drop(list,n) - delete the first n arguments from the list. Negative n counts from the end.
+	 * <pre>
+	 * Drop(expr, n)
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>expr</code> with the first <code>n</code> leaves removed.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Drop({a, b, c, d}, 3)
+	 * {d}
+	 * 
+	 * &gt;&gt; Drop({a, b, c, d}, -2)
+	 * {a,b}
+	 * 
+	 * &gt;&gt; Drop({a, b, c, d, e}, {2, -2})
+	 * {a,e}
+	 * </pre>
+	 * <p>
+	 * Drop a submatrix:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; A = Table(i*10 + j, {i, 4}, {j, 4})
+	 * {{11,12,13,14},{21,22,23,24},{31,32,33,34},{41,42,43,44}}
+	 * 
+	 * &gt;&gt; Drop(A, {2, 3}, {2, 3})
+	 * {{11,14},{41,44}}
+	 * 
+	 * &gt;&gt; Drop(Range(10), {-2, -6, -3})
+	 * {1,2,3,4,5,7,8,10}
+	 * 
+	 * &gt;&gt; Drop(Range(10), {10, 1, -3})
+	 * {2, 3, 5, 6, 8, 9}
+	 * </pre>
+	 * <p>
+	 * Cannot drop positions -5 through -2 in {1, 2, 3, 4, 5, 6}.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Drop(Range(6), {-5, -2, -2}) 
+	 * Drop({1, 2, 3, 4, 5, 6}, {-5, -2, -2})
+	 * </pre>
 	 */
 	private final static class Drop extends AbstractCoreFunctionEvaluator {
 
@@ -1571,6 +1839,39 @@ public final class ListFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Extract(expr, list)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * extracts parts of <code>expr</code> specified by <code>list</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Extract(expr, {list1, list2, ...})'
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * extracts a list of parts.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * <code>Extract(expr, i, j, ...)</code> is equivalent to <code>Part(expr, {i, j, ...})</code>.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Extract(a + b + c, {2})
+	 * b
+	 * 
+	 * &gt;&gt; Extract({{a, b}, {c, d}}, {{1}, {2, 2}})
+	 * {{a,b},d}
+	 * </pre>
+	 */
 	private final static class Extract extends AbstractFunctionEvaluator {
 
 		@Override
@@ -1650,6 +1951,37 @@ public final class ListFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * First(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the first element in <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * <code>First(expr)</code> is equivalent to <code>expr[[1]]</code>.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; First({a, b, c})
+	 * a
+	 * 
+	 * &gt;&gt; First(a + b + c)
+	 * a
+	 * </pre>
+	 * <p>
+	 * Nonatomic expression expected.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; First(x)
+	 * First(x)
+	 * </pre>
+	 */
 	private final static class First extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -1773,9 +2105,22 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Intersection of 2 sets
+	 * <pre>
+	 * Intersection(set1, set2)
+	 * </pre>
 	 * 
-	 * See: <a href= "http://en.wikipedia.org/wiki/Intersection_(set_theory)">Intersection (set theory)</a>
+	 * <blockquote>
+	 * <p>
+	 * get the intersection set from <code>set1</code> and <code>set2</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Intersection_(set_theory)">Wikipedia - Intersection (set
+	 * theory)</a></li>
+	 * </ul>
 	 */
 	private final static class Intersection extends AbstractFunctionEvaluator {
 
@@ -1966,7 +2311,32 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Last(list) - get the last element of a list.
+	 * <pre>
+	 * Last(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the last element in <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * <code>Last(expr)</code> is equivalent to <code>expr[[-1]]</code>.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Last({a, b, c})
+	 * c
+	 * </pre>
+	 * <p>
+	 * Nonatomic expression expected.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Last(x)
+	 * Last(x)
+	 * </pre>
 	 */
 	private final static class Last extends AbstractCoreFunctionEvaluator {
 
@@ -1987,6 +2357,56 @@ public final class ListFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Length(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the number of leaves in <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * Length of a list:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Length({1, 2, 3})
+	 * 3
+	 * </pre>
+	 * <p>
+	 * 'Length' operates on the 'FullForm' of expressions:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Length(Exp(x))
+	 * 2
+	 * 
+	 * &gt;&gt; FullForm(Exp(x))
+	 * Power(E, x)
+	 * </pre>
+	 * <p>
+	 * The length of atoms is 0:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Length(a)
+	 * 0
+	 * </pre>
+	 * <p>
+	 * Note that rational and complex numbers are atoms, although their 'FullForm' might suggest the opposite:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Length(1/3)
+	 * 0
+	 * 
+	 * &gt;&gt; FullForm(1/3)
+	 * Rational(1, 3)
+	 * </pre>
+	 */
 	private final static class Length extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -2002,6 +2422,105 @@ public final class ListFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * Level(expr, levelspec)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * gives a list of all sub-expressions of <code>expr</code> at the level(s) specified by <code>levelspec</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * Level uses standard level specifications:
+	 * </p>
+	 * 
+	 * <pre>
+	 * n
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * levels <code>1</code> through <code>n</code>
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Infinity
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * all levels from level <code>1</code>
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * { n }
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * level <code>n</code> only
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * { m, n }
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * levels <code>m</code> through <code>n</code>
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * Level 0 corresponds to the whole expression. A negative level <code>-n</code> consists of parts with depth
+	 * <code>n</code>.
+	 * </p>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * Level <code>-1</code> is the set of atoms in an expression:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Level(a + b ^ 3 * f(2 x ^ 2), {-1})
+	 * {a,b,3,2,x,2}
+	 * 
+	 * &gt;&gt; Level({{{{a}}}}, 3)
+	 * {{a},{{a}},{{{a}}}} 
+	 * 
+	 * &gt;&gt; Level({{{{a}}}}, -4)
+	 * {{{{a}}}}
+	 * 
+	 * &gt;&gt; Level({{{{a}}}}, -5)
+	 * {}
+	 * 
+	 * &gt;&gt; Level(h0(h1(h2(h3(a)))), {0, -1})
+	 * {a,h3(a),h2(h3(a)),h1(h2(h3(a))),h0(h1(h2(h3(a))))}
+	 * </pre>
+	 * <p>
+	 * Use the option <code>Heads -&gt; True</code> to include heads:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Level({{{{a}}}}, 3, Heads -&gt; True)
+	 * {List,List,List,{a},{{a}},{{{a}}}} 
+	 * 
+	 * &gt;&gt; Level(x^2 + y^3, 3, Heads -&gt; True)
+	 * {Plus,Power,x,2,x^2,Power,y,3,y^3} 
+	 * 
+	 * &gt;&gt; Level(a ^ 2 + 2 * b, {-1}, Heads -&gt; True)
+	 * {Plus,Power,a,2,Times,2,b} 
+	 * 
+	 * &gt;&gt; Level(f(g(h))[x], {-1}, Heads -&gt; True)
+	 * {f,g,h,x}
+	 * 
+	 * &gt;&gt; Level(f(g(h))[x], {-2, -1}, Heads -&gt; True)
+	 * {f,g,h,g(h),x,f(g(h))[x]}
+	 * </pre>
+	 */
 	private final static class Level extends AbstractFunctionEvaluator {
 
 		@Override
@@ -2044,6 +2563,32 @@ public final class ListFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * LevelQ(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * tests whether <code>expr</code> is a valid level specification.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; LevelQ(2)
+	 * True
+	 * 
+	 * &gt;&gt; LevelQ({2, 4})
+	 * True
+	 * 
+	 * &gt;&gt; LevelQ(Infinity)
+	 * True
+	 * 
+	 * &gt;&gt; LevelQ(a + b)
+	 * False
+	 * </pre>
+	 */
 	private final static class LevelQ extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -2063,6 +2608,37 @@ public final class ListFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * Most(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>expr</code> with the last element removed.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * <code>Most(expr)</code> is equivalent to <code>expr[[;;-2]]</code>.
+	 * </p>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Most({a, b, c})
+	 * {a,b}
+	 * 
+	 * &gt;&gt; Most(a + b + c)
+	 * a+b
+	 * </pre>
+	 * <p>
+	 * Nonatomic expression expected.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Most(x) 
+	 * Most(x)
+	 * </pre>
+	 */
 	private final static class Most extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -2146,6 +2722,52 @@ public final class ListFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * PadLeft(list, n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * pads <code>list</code> to length <code>n</code> by adding <code>0</code> on the left.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * PadLeft(list, n, x)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * pads <code>list</code> to length <code>n</code> by adding <code>x</code> on the left.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * PadLeft(list)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * turns the ragged list <code>list</code> into a regular list by adding '0' on the left.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PadLeft({1, 2, 3}, 5)    
+	 * {0,0,1,2,3}   
+	 * 
+	 * &gt;&gt; PadLeft(x(a, b, c), 5)    
+	 * x(0,0,a,b,c)    
+	 * 
+	 * &gt;&gt; PadLeft({1, 2, 3}, 2)    
+	 * {2, 3}    
+	 * 
+	 * &gt;&gt; PadLeft({{}, {1, 2}, {1, 2, 3}})    
+	 * {{0,0,0},{0,1,2},{1,2,3}}
+	 * </pre>
+	 */
 	private final static class PadLeft extends AbstractFunctionEvaluator {
 
 		@Override
@@ -2235,6 +2857,52 @@ public final class ListFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * PadRight(list, n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * pads <code>list</code> to length <code>n</code> by adding <code>0</code> on the right.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * PadRight(list, n, x)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * pads <code>list</code> to length <code>n</code> by adding <code>x</code> on the right.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * PadRight(list)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * turns the ragged list <code>list</code> into a regular list by adding '0' on the right.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PadRight({1, 2, 3}, 5)    
+	 * {1,2,3,0,0}    
+	 * 
+	 * &gt;&gt; PadRight(x(a, b, c), 5)    
+	 * x(a,b,c,0,0)  
+	 * 
+	 * &gt;&gt; PadRight({1, 2, 3}, 2)    
+	 * {1,2}   
+	 * 
+	 * &gt;&gt; PadRight({{}, {1, 2}, {1, 2, 3}})    
+	 * {{0,0,0},{1,2,0},{1,2,3}}
+	 * </pre>
+	 */
 	private final static class PadRight extends AbstractFunctionEvaluator {
 
 		@Override
@@ -2322,8 +2990,52 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Position(list, pattern) - return the positions where the pattern occurs in list.
-	 *
+	 * <pre>
+	 * Position(expr, patt)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the list of positions for which <code>expr</code> matches <code>patt</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Position(expr, patt, ls) 
+	 * &gt; returns the positions on levels specified by levelspec `ls`.
+	 * 
+	 * ### Examples
+	 * </pre>
+	 * 
+	 * <blockquote><blockquote>
+	 * <p>
+	 * Position({1, 2, 2, 1, 2, 3, 2}, 2) {{2},{3},{5},{7}}
+	 * </p>
+	 * </blockquote> </blockquote>
+	 * <p>
+	 * Find positions upto 3 levels deep
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Position({1 + Sin(x), x, (Tan(x) - y)^2}, x, 3)
+	 * {{1,2,1},{2}}
+	 * </pre>
+	 * <p>
+	 * Find all powers of x
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Position({1 + x^2, x y ^ 2,  4 y,  x ^ z}, x^_)
+	 * {{1,2},{4}}
+	 * </pre>
+	 * <p>
+	 * Use Position as an operator
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Position(_Integer)({1.5, 2, 2.5})
+	 * {{2}}
+	 * </pre>
 	 */
 	private final static class Position extends AbstractCoreFunctionEvaluator {
 
@@ -2429,6 +3141,51 @@ public final class ListFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Prepend(expr, item)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>expr</code> with <code>item</code> prepended to its leaves.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * <code>Prepend</code> is similar to <code>Append</code>, but adds <code>item</code> to the beginning of
+	 * <code>expr</code>:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Prepend({2, 3, 4}, 1)    
+	 * {1,2,3,4}
+	 * </pre>
+	 * <p>
+	 * <code>Prepend</code> works on expressions with heads other than 'List':<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Prepend(f(b, c), a)    
+	 * f(a,b,c)
+	 * </pre>
+	 * <p>
+	 * Unlike <code>Join</code>, <code>Prepend</code> does not flatten lists in <code>item</code>:<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Prepend({c, d}, {a, b})  
+	 * {{a,b},c,d}
+	 * </pre>
+	 * <p>
+	 * Nonatomic expression expected.<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Prepend(a, b)       
+	 * Prepend(a,b)
+	 * </pre>
+	 */
 	private final static class Prepend extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -2445,6 +3202,82 @@ public final class ListFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * PrependTo(s, item)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * prepend <code>item</code> to value of <code>s</code> and sets <code>s</code> to the result.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * Assign s to a list    
+	 * &gt;&gt; s = {1, 2, 4, 9}    
+	 * {1,2,4,9}
+	 * </pre>
+	 * <p>
+	 * Add a new value at the beginning of the list:<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PrependTo(s, 0)    
+	 * {0,1,2,4,9}
+	 * </pre>
+	 * <p>
+	 * The value assigned to s has changed:<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; s    
+	 * {0,1,2,4,9}
+	 * </pre>
+	 * <p>
+	 * 'PrependTo' works with a head other than 'List':
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; y = f(a, b, c)    
+	 * &gt;&gt; PrependTo(y, x)    
+	 * f(x,a,b,c)  
+	 * 
+	 * &gt;&gt; y    
+	 * f(x,a,b,c)
+	 * </pre>
+	 * <p>
+	 * {a, b} is not a variable with a value, so its value cannot be changed.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PrependTo({a, b}, 1)    
+	 * PrependTo({a,b},1)
+	 * </pre>
+	 * <p>
+	 * a is not a variable with a value, so its value cannot be changed.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PrependTo(a, b)     
+	 * PrependTo(a,b)
+	 * </pre>
+	 * 
+	 * <pre>
+	 * ```
+	 * &gt;&gt; x = 1 + 2    
+	 * 3
+	 * </pre>
+	 * <p>
+	 * Nonatomic expression expected at position 1 in PrependTo
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PrependTo(x, {3, 4})      
+	 * PrependTo(x,{3,4})
+	 * </pre>
+	 */
 	private final static class PrependTo extends AbstractCoreFunctionEvaluator {
 
 		private static class PrependToFunction implements Function<IExpr, IExpr> {
@@ -2487,6 +3320,39 @@ public final class ListFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Range(n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a list of integers from <code>1</code> to <code>n</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Range(a, b)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a list of integers from <code>a</code> to <code>b</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Range(5)
+	 * {1,2,3,4,5}
+	 * 
+	 * &gt;&gt; Range(-3, 2)
+	 * {-3,-2,-1,0,1,2} 
+	 * 
+	 * &gt;&gt; Range(0, 2, 1/3)
+	 * {0,1/3,2/3,1,4/3,5/3,2}
+	 * </pre>
+	 */
 	private final static class Range extends AbstractEvaluator {
 		private static class UnaryRangeFunction implements IArrayFunction {
 
@@ -2555,6 +3421,157 @@ public final class ListFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * ReplaceAll(expr, i -&gt; new)
+	 * </pre>
+	 * <p>
+	 * or
+	 * </p>
+	 * 
+	 * <pre>
+	 * expr /. i -&gt; new
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * replaces all <code>i</code> in <code>expr</code> with <code>new</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * ReplaceAll(expr, {i1 -&gt; new1, i2 -&gt; new2, ... } )
+	 * </pre>
+	 * <p>
+	 * or
+	 * </p>
+	 * 
+	 * <pre>
+	 * expr /. {i1 -&gt; new1, i2 -&gt; new2, ... }
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * replaces all <code>i</code>s in <code>expr</code> with <code>new</code>s.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * &gt;&gt; f(a) + f(b) /. f(x_) -&gt; x^2
+	 * a^2+b^2
+	 * </pre>
+	 */
+	private static class ReplaceAll extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				return F.operatorFormAST1(ast);
+			}
+			Validate.checkSize(ast, 3);
+			try {
+				if (ast.arg2().isListOfLists()) {
+					IAST list = (IAST) ast.arg2();
+					IASTAppendable result = F.ListAlloc(list.size());
+					for (IExpr subList : list) {
+						IExpr temp = engine.evaluate(subList);
+						if (temp.isAST()) {
+							result.append(F.subst(ast.arg1(), (IAST) temp));
+						}
+					}
+					return result;
+				}
+				if (ast.arg2().isAST()) {
+					IExpr temp = engine.evaluate(ast.arg2());
+					if (temp.isAST()) {
+						return F.subst(ast.arg1(), (IAST) temp);
+					}
+				} else {
+					WrongArgumentType wat = new WrongArgumentType(ast, ast, -1, "Rule expression (x->y) expected: ");
+					engine.printMessage(wat.getMessage());
+				}
+			} catch (WrongArgumentType wat) {
+				engine.printMessage(wat.getMessage());
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDREST);
+		}
+	}
+
+	/**
+	 * <pre>
+	 * ReplacePart(expr, i -&gt; new)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * replaces part <code>i</code> in <code>expr</code> with <code>new</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * ReplacePart(expr, {{i, j} -&gt; e1, {k, l} -&gt; e2})'
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * replaces parts <code>i</code> and <code>j</code> with <code>e1</code>, and parts <code>k</code> and
+	 * <code>l</code> with <code>e2</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ReplacePart({a, b, c}, 1 -&gt; t)
+	 * {t,b,c}
+	 * 
+	 * &gt;&gt; ReplacePart({{a, b}, {c, d}}, {2, 1} -&gt; t)
+	 * {{a,b},{t,d}}
+	 * 
+	 * &gt;&gt; ReplacePart({{a, b}, {c, d}}, {{2, 1} -&gt; t, {1, 1} -&gt; t})
+	 * {{t,b},{t,d}}
+	 * 
+	 * &gt;&gt; ReplacePart({a, b, c}, {{1}, {2}} -&gt; t)
+	 * {t,t,c}
+	 * </pre>
+	 * <p>
+	 * Delayed rules are evaluated once for each replacement:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; n = 1
+	 * &gt;&gt; ReplacePart({a, b, c, d}, {{1}, {3}} :&gt; n++)
+	 * {1,b,2,d}
+	 * </pre>
+	 * <p>
+	 * Non-existing parts are simply ignored:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ReplacePart({a, b, c}, 4 -&gt; t)
+	 * {a,b,c}
+	 * </pre>
+	 * <p>
+	 * You can replace heads by replacing part <code>0</code>:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ReplacePart({a, b, c}, 0 -&gt; Times)
+	 * a*b*c
+	 * </pre>
+	 * <p>
+	 * Negative part numbers count from the end:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ReplacePart({a, b, c}, -1 -&gt; t)
+	 * {a,b,t}
+	 * </pre>
+	 */
 	private final static class ReplacePart extends AbstractEvaluator {
 
 		@Override
@@ -2604,7 +3621,35 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Return the <i>rest</i> of a given list, i.e. a sublist with all elements from list[[2]]...list[[n]]
+	 * <pre>
+	 * Rest(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>expr</code> with the first element removed.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * <code>Rest(expr)</code> is equivalent to <code>expr[[2;;]]</code>.
+	 * </p>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Rest({a, b, c})
+	 * {b,c}
+	 * 
+	 * &gt;&gt; Rest(a + b + c)
+	 * b+c
+	 * </pre>
+	 * <p>
+	 * Nonatomic expression expected.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Rest(x)
+	 * Rest(x)
+	 * </pre>
 	 */
 	private final static class Rest extends AbstractCoreFunctionEvaluator {
 
@@ -2658,6 +3703,26 @@ public final class ListFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * Riffle(list1, list2)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * insert elements of <code>list2</code> between the elements of <code>list1</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Riffle({a, b, c}, x)
+	 * {a,x,b,x,c}
+	 * 
+	 * &gt;&gt; Riffle({a, b, c}, {x, y, z})
+	 * {a,x,b,y,c,z}
+	 * </pre>
+	 */
 	private final static class Riffle extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -2716,6 +3781,39 @@ public final class ListFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * RotateLeft(list)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * rotates the items of <code>list</code> by one item to the left.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * RotateLeft(list, n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * rotates the items of <code>list</code> by <code>n</code> items to the left.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; RotateLeft({1, 2, 3})
+	 * {2,3,1}
+	 * 
+	 * &gt;&gt; RotateLeft(Range(10), 3)
+	 * {4,5,6,7,8,9,10,1,2,3}
+	 * 
+	 * &gt;&gt; RotateLeft(x(a, b, c), 2)
+	 * x(c,a,b)
+	 * </pre>
+	 */
 	private final static class RotateLeft extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -2747,6 +3845,39 @@ public final class ListFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * RotateRight(list)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * rotates the items of <code>list</code> by one item to the right.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * RotateRight(list, n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * rotates the items of <code>list</code> by <code>n</code> items to the right.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; RotateRight({1, 2, 3})
+	 * {3,1,2}
+	 * 
+	 * &gt;&gt; RotateRight(Range(10), 3)
+	 * {8,9,10,1,2,3,4,5,6,7}
+	 * 
+	 * &gt;&gt; RotateRight(x(a, b, c), 2)
+	 * x(b,c,a)
+	 * </pre>
+	 */
 	private final static class RotateRight extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -2777,6 +3908,42 @@ public final class ListFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * Select({e1, e2, ...}, f)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a list of the elements <code>ei</code> for which <code>f(ei)</code> returns <code>True</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * Find numbers greater than zero:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Select({-3, 0, 1, 3, a}, #&gt;0&amp;)
+	 * {1,3}
+	 * </pre>
+	 * <p>
+	 * <code>Select</code> works on an expression with any head:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Select(f(a, 2, 3), NumberQ)
+	 * f(2,3)
+	 * </pre>
+	 * <p>
+	 * Nonatomic expression expected.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Select(a, True) 
+	 * Select(a,True)
+	 * </pre>
+	 */
 	private final static class Select extends AbstractEvaluator {
 
 		@Override
@@ -2805,6 +3972,58 @@ public final class ListFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * Split(list)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * splits <code>list</code> into collections of consecutive identical elements.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Split(list, test)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * splits <code>list</code> based on whether the function <code>test</code> yields 'True' on consecutive elements.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Split({x, x, x, y, x, y, y, z})
+	 * {{x,x,x},{y},{x},{y,y},{z}} 
+	 * 
+	 * &gt;&gt; Split({x, x, x, y, x, y, y, z}, x)
+	 * {{x},{x},{x},{y},{x},{y},{y},{z}}
+	 * </pre>
+	 * <p>
+	 * Split into increasing or decreasing runs of elements
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Split({1, 5, 6, 3, 6, 1, 6, 3, 4, 5, 4}, Less)
+	 * {{1,5,6},{3,6},{1,6},{3,4,5},{4}} 
+	 * 
+	 * &gt;&gt; Split({1, 5, 6, 3, 6, 1, 6, 3, 4, 5, 4}, Greater)
+	 * {{1},{5},{6,3},{6,1},{6,3},{4},{5,4}}
+	 * </pre>
+	 * <p>
+	 * Split based on first element
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Split({x -&gt; a, x -&gt; y, 2 -&gt; a, z -&gt; c, z -&gt; a}, First(#1) === First(#2) &amp;)
+	 * {{x-&gt;a,x-&gt;y},{2-&gt;a},{z-&gt;c,z-&gt;a}} 
+	 * 
+	 * &gt;&gt; Split({})
+	 * {}
+	 * </pre>
+	 */
 	private final static class Split extends AbstractEvaluator {
 
 		@Override
@@ -2846,6 +4065,31 @@ public final class ListFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * SplitBy(list, f)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * splits <code>list</code> into collections of consecutive elements that give the same result when <code>f</code>
+	 * is applied.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; SplitBy(Range(1, 3, 1/3), Round) 
+	 * {{1,4/3},{5/3,2,7/3},{8/3,3}}
+	 * {{1, 4 / 3}, {5 / 3, 2, 7 / 3}, {8 / 3, 3}}
+	 * 
+	 * &gt;&gt; SplitBy({1, 2, 1, 1.2}, {Round, Identity})
+	 * {{{1}},{{2}},{{1},{1.2}}} 
+	 * 
+	 * &gt;&gt; SplitBy(Tuples({1, 2}, 3), First)
+	 * {{{1,1,1},{1,1,2},{1,2,1},{1,2,2}},{{2,1,1},{2,1,2},{2,2,1},{2,2,2}}}
+	 * </pre>
+	 */
 	private final static class SplitBy extends AbstractEvaluator {
 
 		@Override
@@ -2910,7 +4154,79 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Table structure generator (i.e. lists, vectors, matrices, tensors)
+	 * <pre>
+	 * Table(expr, {i, n})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * evaluates <code>expr</code> with <code>i</code> ranging from <code>1</code> to <code>n</code>, returning a list
+	 * of the results.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Table(expr, {i, start, stop, step})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * evaluates <code>expr</code> with <code>i</code> ranging from <code>start</code> to <code>stop</code>,
+	 * incrementing by <code>step</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Table(expr, {i, {e1, e2, ..., ei}})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * evaluates <code>expr</code> with <code>i</code> taking on the values <code>e1, e2, ..., ei</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Table(x!, {x, 8})
+	 * {1,2,6,24,120,720,5040,40320}
+	 * 
+	 * &gt;&gt; Table(x, {4})
+	 * {x,x,x,x}
+	 * 
+	 * &gt;&gt; n=0
+	 * &gt;&gt; Table(n= n + 1, {5})
+	 * {1,2,3,4,5}
+	 * 
+	 * &gt;&gt; Table(i, {i, 4})
+	 * {1,2,3,4}
+	 * 
+	 * &gt;&gt; Table(i, {i, 2, 5})
+	 * {2,3,4,5}
+	 * 
+	 * &gt;&gt; Table(i, {i, 2, 6, 2})
+	 * {2,4,6}
+	 * 
+	 * &gt;&gt; Table(i, {i, Pi, 2*Pi, Pi / 2})
+	 * {Pi,3/2*Pi,2*Pi} 
+	 * 
+	 * &gt;&gt; Table(x^2, {x, {a, b, c}})
+	 * {a^2,b^2,c^2}
+	 * </pre>
+	 * <p>
+	 * <code>Table</code> supports multi-dimensional tables:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Table({i, j}, {i, {a, b}}, {j, 1, 2})
+	 * {{{a,1},{a,2}},{{b,1},{b,2}}} 
+	 * 
+	 * &gt;&gt; Table(x, {x,0,1/3})
+	 * {0}
+	 * 
+	 * &gt;&gt; Table(x, {x, -0.2, 3.9})
+	 * {-0.2,0.8,1.8,2.8,3.8}
+	 * </pre>
 	 */
 	public static class Table extends AbstractFunctionEvaluator {
 
@@ -3178,6 +4494,96 @@ public final class ListFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * Take(expr, n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>expr</code> with all but the first <code>n</code> leaves removed.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Take({a, b, c, d}, 3)
+	 * {a,b,c}
+	 * 
+	 * &gt;&gt; Take({a, b, c, d}, -2)
+	 * {c,d}
+	 * 
+	 * &gt;&gt; Take({a, b, c, d, e}, {2, -2})
+	 * {b,c,d}
+	 * </pre>
+	 * <p>
+	 * Take a submatrix:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; A = {{a, b, c}, {d, e, f}}
+	 * &gt;&gt; Take(A, 2, 2)
+	 * {{a,b},{d,e}}
+	 * </pre>
+	 * <p>
+	 * Take a single column:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Take(A, All, {2})
+	 * {{b},{e}}
+	 * 
+	 * &gt;&gt; Take(Range(10), {8, 2, -1})
+	 * {8,7,6,5,4,3,2}
+	 * 
+	 * &gt;&gt; Take(Range(10), {-3, -7, -2})
+	 * {8,6,4}
+	 * </pre>
+	 * <p>
+	 * Cannot take positions <code>-5</code> through <code>-2</code> in <code>{1, 2, 3, 4, 5, 6}</code>.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Take(Range(6), {-5, -2, -2})
+	 * Take({1, 2, 3, 4, 5, 6}, {-5, -2, -2})
+	 * </pre>
+	 * <p>
+	 * Nonatomic expression expected at position <code>1</code> in <code>Take(l, {-1})</code>.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Take(l, {-1})
+	 * Take(l,{-1})
+	 * </pre>
+	 * <p>
+	 * Empty case
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Take({1, 2, 3, 4, 5}, {-1, -2})
+	 * {}
+	 * 
+	 * &gt;&gt; Take({1, 2, 3, 4, 5}, {0, -1})
+	 * {}
+	 * 
+	 * &gt;&gt; Take({1, 2, 3, 4, 5}, {1, 0})
+	 * {}
+	 * 
+	 * &gt;&gt; Take({1, 2, 3, 4, 5}, {2, 1})
+	 * {}
+	 * 
+	 * &gt;&gt; Take({1, 2, 3, 4, 5}, {1, 0, 2})
+	 * {}
+	 * </pre>
+	 * <p>
+	 * Cannot take positions <code>1</code> through <code>0</code> in <code>{1, 2, 3, 4, 5}</code>.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Take({1, 2, 3, 4, 5}, {1, 0, -1})
+	 * Take({1, 2, 3, 4, 5}, {1, 0, -1})
+	 * </pre>
+	 */
 	private final static class Take extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -3376,7 +4782,28 @@ public final class ListFunctions {
 	}
 
 	/**
-	 * Union of two sets. See <a href="http://en.wikipedia.org/wiki/Union_(set_theory)">Union (set theory)</a>
+	 * <pre>
+	 * Union(set1, set2)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * get the union set from <code>set1</code> and <code>set2</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Union_(set_theory)">Wikipedia - Union (set theory)</a><br />
+	 * </li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Union({1,2,3},{2,3,4})
+	 * {1,2,3,4}
+	 * </pre>
 	 */
 	private final static class Union extends AbstractFunctionEvaluator {
 

@@ -3,6 +3,7 @@
 ```
 Clear(symbol1, symbol2,...)
 ```
+
 > clears all values of the given symbols.
 
 `Clear` does not remove attributes, options, and default values associated with the symbols. Use `ClearAll` to do so.

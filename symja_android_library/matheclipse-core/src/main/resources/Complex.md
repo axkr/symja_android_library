@@ -14,6 +14,7 @@ Complex(a, b)
 
 
 ### Examples
+
 ```
 >> Head(2 + 3*I)
 Complex
@@ -55,7 +56,8 @@ Integer
 I*1.0
 ```
 
-Check Nesting Complex
+Check nesting Complex
+
 ```
 >> Complex(1, Complex(0, 1))
 0

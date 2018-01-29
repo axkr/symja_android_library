@@ -495,6 +495,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBinomial() {
+		check("Binomial(k, -1)", "0");
+		check("Binomial(k, -1.4)", "Binomial(k,-1.4)");
+		check("Binomial(k, 0)", "1");
 		check("Binomial(40.0,1.0)", "40.0");
 		check("Binomial(40.3,1.2)", "76.37683");
 		check("Binomial(n, n+1)", "0");
@@ -1037,8 +1040,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("FullForm(ComplexInfinity)", "\"DirectedInfinity()\"");
 	}
 
+	public void testComposeList() {
+		check("ComposeList({f,g,h}, x)", //
+				"{x,f(x),g(f(x)),h(g(f(x)))}");
+		check("ComposeList({1 - # &, 1/# &}[[{2, 2, 1, 2, 2, 1}]], x)", //
+				"{x,1/x,x,1-x,1/(1-x),1-x,x}");
+		check("ComposeList({f, g}[[{1, 2, 1, 1, 2}]], x)", //
+				"{x,f(x),g(f(x)),f(g(f(x))),f(f(g(f(x)))),g(f(f(g(f(x)))))}");
+		check("ComposeList({a, b, c, d}, x)", //
+				"{x,a(x),b(a(x)),c(b(a(x))),d(c(b(a(x))))}");
+
+	}
+
 	public void testComposition() {
-		check("Composition(f, g, h)[x, y]", "f(g(h(x,y)))");
+		check("Composition(u, v, w)[x, y]", "u(v(w(x,y)))");
 		check("Composition(1 + #^# &, a # &, #/(# + 1) &)[x]", "1+((a*x)/(1+x))^((a*x)/(1+x))");
 		check("Composition(f, g, h) @@ {x, y, z}", "f(g(h(x,y,z)))");
 	}
@@ -2261,6 +2276,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactorial() {
+		check("Factorial(Infinity)", "Infinity");
+		check("Factorial2(Infinity)", "Infinity");
+		check("Factorial(-Infinity)", "Indeterminate");
+		check("Factorial2(-Infinity)", "Indeterminate");
 		check("3!", "6");
 		check("3!!", "3");
 		check("Factorial(0)", "1");
@@ -2364,8 +2383,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactorTerms() {
-//		check("FactorTerms(2*a*x^2*y + 2*x^2*y + 4*a*x^2 + 4*x^2 + 4*a^2*y^2 + 4*a*y^2 + 8*a^2*y + 2*a*y - 6*y - 12*a - 12, x)", //
-//				"");
+		// check("FactorTerms(2*a*x^2*y + 2*x^2*y + 4*a*x^2 + 4*x^2 + 4*a^2*y^2 + 4*a*y^2 + 8*a^2*y + 2*a*y - 6*y - 12*a
+		// - 12, x)", //
+		// "");
 		check("FactorTerms(x^2 - y^2, x)", //
 				"(x-y)*(x+y)");
 		check("factorterms(3 + 6 x + 3 x^2)", //

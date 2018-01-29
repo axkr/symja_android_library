@@ -173,6 +173,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Expression types](expression-types.md)
 
 ## Reference of built-in symbols
+
 * [Abort](functions/Abort.md)
 * [Abs](functions/Abs.md)
 * [AbsArg](functions/AbsArg.md)
@@ -252,6 +253,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [ComplexExpand](functions/ComplexExpand.md)
 * [ComplexInfinity](functions/ComplexInfinity.md)
 * [ComposeList](functions/ComposeList.md)
+* [Composition](functions/Composition.md)
 * [CompoundExpression](functions/CompoundExpression.md)
 * [Condition](functions/Condition.md)
 * [Conjugate](functions/Conjugate.md)
@@ -436,6 +438,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Log2](functions/Log2.md)
 * [LogisticSigmoid](functions/LogisticSigmoid.md)
 * [LowerTriangularize](functions/LowerTriangularize.md)
+* [LucasL](functions/LucasL.md)
 * [LUDecomposition](functions/LUDecomposition.md)
 * [MachineNumberQ](functions/MachineNumberQ.md)
 * [ManhattanDistance](functions/ManhattanDistance.md)
@@ -658,3 +661,4 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Xor](functions/Xor.md)
 * [YuleDissimilarity](functions/YuleDissimilarity.md)
 * [Zeta](functions/Zeta.md)
+

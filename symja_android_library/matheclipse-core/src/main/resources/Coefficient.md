@@ -10,7 +10,8 @@ Coefficient(polynomial, variable, exponent)
 See:  
 * [Wikipedia - Coefficient Coefficient](http://en.wikipedia.org/wiki/Coefficient)
   
-### Examples 
+### Examples
+
 ```
 >> Coefficient(10(x^2)+2(y^2)+2*x, x, 2)
 10

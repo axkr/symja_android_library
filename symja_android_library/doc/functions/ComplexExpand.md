@@ -10,6 +10,7 @@ See:
 * [Wikipedia - List of trigonometric identities](http://en.wikipedia.org/wiki/List_of_trigonometric_identities)
 
 ### Examples
+
 ```
 >> ComplexExpand(Sin(x+I*y))
 Cosh(y)*Sin(x)+I*Cos(x)*Sinh(y)
