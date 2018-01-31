@@ -1,5 +1,8 @@
 package org.matheclipse.core.interfaces;
 
+import static org.matheclipse.core.expression.F.C1D2;
+import static org.matheclipse.core.expression.F.Sqrt;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
@@ -2900,6 +2903,38 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 			return ((ISignedNumber) this).sign();
 		}
 		return 1;
+	}
+
+	/**
+	 * Generate <code>Sqrt(discriminant)</code>.
+	 * 
+	 * @param discriminant
+	 * @return <code>Sqrt(discriminant)</code>
+	 */
+	default IExpr sqrt() {
+		if (isPower()) {
+			return F.Power(getAt(1), F.Times(C1D2, getAt(2)));
+		} else {
+			if (isTimes()) {
+				// see github issue #2: Get only real results
+				IAST times = (IAST) this;
+				int size = times.size();
+				IASTAppendable timesSqrt = F.TimesAlloc(size);
+				IASTAppendable timesRest = F.TimesAlloc(size);
+				for (int i = 1; i < size; i++) {
+					if (times.get(i).isPower()) {
+						timesRest.append( //
+								F.Power(times.get(i).getAt(1), //
+										F.Times(C1D2, times.get(i).getAt(2))) //
+						);
+					} else {
+						timesSqrt.append(times.get(i));
+					}
+				}
+				return F.Times(timesRest, Sqrt(timesSqrt));
+			}
+		}
+		return Sqrt(this);
 	}
 
 	@Override

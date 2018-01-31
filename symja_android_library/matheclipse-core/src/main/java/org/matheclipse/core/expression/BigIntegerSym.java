@@ -448,7 +448,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	public byte byteValue() {
 		return fBigIntValue.byteValue();
 	}
-	
+
 	@Override
 	public int intValue() {
 		return fBigIntValue.intValue();
@@ -661,7 +661,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	 *             if this integer is negative and n is even.
 	 */
 	@Override
-	public IInteger nthRoot(int n) throws ArithmeticException {
+	public IExpr nthRoot(int n) throws ArithmeticException {
 		if (n < 0) {
 			throw new IllegalArgumentException("nthRoot(" + n + ") n must be >= 0");
 		}
@@ -775,12 +775,15 @@ public class BigIntegerSym extends AbstractIntegerSym {
 	/**
 	 * Returns the integer square root of this integer.
 	 * 
-	 * @return <code>k<code> such as <code>k^2 <= this < (k + 1)^2</code>
-	 * @throws ArithmeticException
-	 *             if this integer is negative.
+	 * @return <code>k<code> such as <code>k^2 <= this < (k + 1)^2</code>. If this integer is negative or it's
+	 *         impossible to find a square root return <code>F.Sqrt(this)</code>.
 	 */
-	public IInteger sqrt() throws ArithmeticException {
-		return valueOf(BigIntegerMath.sqrt(fBigIntValue, RoundingMode.UNNECESSARY));
+	public IExpr sqrt() {
+		try {
+			return valueOf(BigIntegerMath.sqrt(fBigIntValue, RoundingMode.UNNECESSARY));
+		} catch (RuntimeException ex) {
+			return F.Sqrt(this);
+		}
 	}
 
 	@Override

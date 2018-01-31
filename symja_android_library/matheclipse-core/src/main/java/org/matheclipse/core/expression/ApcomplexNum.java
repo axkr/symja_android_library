@@ -508,6 +508,10 @@ public class ApcomplexNum implements IComplexNum {
 		return F.num(getRealPart());
 	}
 
+	public IExpr sqrt() {
+		return valueOf(ApcomplexMath.sqrt(fApcomplex));
+	}
+	
 	@Override
 	public INumber ceilFraction() throws ArithmeticException {
 		return F.complex(F.integer(ApfloatMath.ceil(fApcomplex.real()).toBigInteger()),

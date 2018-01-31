@@ -357,12 +357,9 @@ public class ApfloatNum implements INum {
 		}
 		return valueOf(ApfloatMath.inverseRoot(fApfloat, 1));
 	}
-
-	/**
-	 * @return
-	 */
-	public Apfloat sqrt() {
-		return ApfloatMath.sqrt(fApfloat);
+ 
+	public IExpr sqrt() {
+		return valueOf(ApfloatMath.sqrt(fApfloat));
 	}
 
 	@Override

@@ -582,13 +582,17 @@ public class Num implements INum {
 	/**
 	 * @return
 	 */
-	public double sqrt() {
-		return Math.sqrt(fDouble);
+	// public double sqrt() {
+	// return Math.sqrt(fDouble);
+	// }
+
+	public IExpr sqrt() {
+		return valueOf(Math.sqrt(fDouble));
 	}
 
 	@Override
 	public ISignedNumber subtractFrom(ISignedNumber that) {
-		return Num.valueOf(doubleValue() - that.doubleValue());
+		return valueOf(doubleValue() - that.doubleValue());
 	}
 
 	/**

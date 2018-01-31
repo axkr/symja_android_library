@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 import org.apfloat.ApfloatRuntimeException;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
@@ -377,6 +378,10 @@ public class ComplexNum implements IComplexNum {
 		return F.num(getRealPart());
 	}
 
+	public IExpr sqrt() {
+		return valueOf(fComplex.sqrt());
+	}
+
 	@Override
 	public double getReal() {
 		return fComplex.getReal();
@@ -420,9 +425,10 @@ public class ComplexNum implements IComplexNum {
 	}
 
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
+			boolean usePrefix) {
 		String prefix = usePrefix ? "F." : "";
-		return prefix+"complexNum(" + fComplex.getReal() + "," + fComplex.getImaginary() + ")";
+		return prefix + "complexNum(" + fComplex.getReal() + "," + fComplex.getImaginary() + ")";
 	}
 
 	@Override

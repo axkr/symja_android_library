@@ -231,7 +231,7 @@ public interface IInteger extends IRational {
 	 * @return
 	 * @throws ArithmeticException
 	 */
-	public IInteger nthRoot(int n) throws ArithmeticException;
+	public IExpr nthRoot(int n);
 
 	/**
 	 * Split this integer into the nth-root (with prime factors less equal 1021) and the &quot;rest factor&quot;

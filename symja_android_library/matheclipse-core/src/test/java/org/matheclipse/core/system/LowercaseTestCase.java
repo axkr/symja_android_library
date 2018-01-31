@@ -1580,6 +1580,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDet() {
+		check("Det({{42}})", "42");
+		check("Det({{x}})", "x");
 		check("Det({{1, 1, 0}, {1, 0, 1}, {0, 1, 1}})", "-2");
 		check("Det({{a11, a12},{a21,a22}})", "-a12*a21+a11*a22");
 		check("Det({{a,b,c},{d,e,f},{g,h,i}})", "-c*e*g+b*f*g+c*d*h-a*f*h-b*d*i+a*e*i");
@@ -2383,9 +2385,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactorTerms() {
-		// check("FactorTerms(2*a*x^2*y + 2*x^2*y + 4*a*x^2 + 4*x^2 + 4*a^2*y^2 + 4*a*y^2 + 8*a^2*y + 2*a*y - 6*y - 12*a
-		// - 12, x)", //
-		// "");
+		check("FactorTerms(2*a*x^2*y + 2*x^2*y + 4*a*x^2 + 4*x^2 + 4*a^2*y^2 + 4*a*y^2 + 8*a^2*y + 2*a*y - 6*y - 12*a- 12, x)", //
+				"(x+Sqrt(48+96*a+48*a^2+48*y+64*a*y-16*a^2*y-32*a^3*y+12*y^2-8*a*y^2-52*a^2*y^2\n" + 
+				"-32*a^3*y^2-8*a*y^3-16*a^2*y^3-8*a^3*y^3)/(4+4*a+2*y+2*a*y))*(x-Sqrt(48+96*a+48*a^\n" + 
+				"2+48*y+64*a*y-16*a^2*y-32*a^3*y+12*y^2-8*a*y^2-52*a^2*y^2-32*a^3*y^2-8*a*y^3-16*a^\n" + 
+				"2*y^3-8*a^3*y^3)/(4+4*a+2*y+2*a*y))");
 		check("FactorTerms(x^2 - y^2, x)", //
 				"(x-y)*(x+y)");
 		check("factorterms(3 + 6 x + 3 x^2)", //
@@ -6929,6 +6933,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		check("Solve((5.0*x)/y==(0.8*y)/x,x)", "{{x->-0.4*y},{x->0.4*y}}");
+
 		// gh issue #2
 		check("Solve(x^2+y^2==5,x)", "{{x->-Sqrt(5-y^2)},{x->Sqrt(5-y^2)}}");
 
@@ -6999,12 +7005,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Solve(Sqrt(x)==-1, x)", "{}");
 		check("Solve(x^2+1==0, x)", "{{x->-I},{x->I}}");
 		check("Solve((k*Q*q)/r^2==E,r)",
-				"{{r->(Sqrt(k)*Sqrt(q)*Sqrt(Q))/Sqrt(E)},{r->(-Sqrt(k)*Sqrt(q)*Sqrt(Q))/Sqrt(E)}}");
+				"{{r->Sqrt(E*k*q*Q)/E},{r->-Sqrt(E*k*q*Q)/E}}");
 		check("Solve((k*Q*q)/r^2+1/r^4==E,r)",
 				"{{r->Sqrt(1/2)*Sqrt((k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))/E)},{r->-Sqrt(1/2)*Sqrt((k*q*Q+Sqrt(\n"
 						+ "4*E+k^2*q^2*Q^2))/E)},{r->-I*Sqrt(1/2)*Sqrt((-k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))/E)},{r->I*Sqrt(\n"
 						+ "1/2)*Sqrt((-k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))/E)}}");
-		check("Solve((k*Q*q)/r^2+1/r^4==0,r)", "{{r->-I/(Sqrt(k)*Sqrt(q)*Sqrt(Q))},{r->I/(Sqrt(k)*Sqrt(q)*Sqrt(Q))}}");
+		check("Solve((k*Q*q)/r^2+1/r^4==0,r)", "{{r->(-I*Sqrt(k*q*Q))/(k*q*Q)},{r->(I*Sqrt(k*q*Q))/(k*q*Q)}}");
 		check("Solve(Abs(x-1) ==1,{x})", "{{x->0},{x->2}}");
 		check("Solve(Abs(x^2-1) ==0,{x})", "{{x->-1},{x->1}}");
 		check("Solve(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)",
