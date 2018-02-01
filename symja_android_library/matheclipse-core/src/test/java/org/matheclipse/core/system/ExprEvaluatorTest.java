@@ -6,6 +6,8 @@ import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.x;
 
+import java.math.BigInteger;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.ExprRingFactory;
@@ -97,6 +99,34 @@ public class ExprEvaluatorTest extends TestCase {
 			// now calculate factorial of 10:
 			result = util.eval("fac(10)");
 			assertEquals("3628800", result.toString());
+
+		} catch (SyntaxError e) {
+			// catch Symja parser errors here
+			assertTrue(false);
+		} catch (MathException me) {
+			// catch Symja math errors here
+			assertTrue(false);
+		} catch (final Exception ex) {
+			assertTrue(false);
+		} catch (final StackOverflowError soe) {
+			assertTrue(false);
+		} catch (final OutOfMemoryError oome) {
+			assertTrue(false);
+		}
+	}
+
+	/**
+	 * Test the <a href=
+	 * "https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/FactorInteger.md">FactorInteger</a>
+	 * function.
+	 */
+	public void testFactorInteger() {
+		try {
+			ExprEvaluator util = new ExprEvaluator(false, 100);
+
+			IAST function = F.FactorInteger(F.ZZ(new BigInteger("44343535354351600000003434353")));
+			IExpr result = util.eval(function);
+			assertEquals("{{149,1},{329569479697,1},{903019357561501,1}}", result.toString());
 
 		} catch (SyntaxError e) {
 			// catch Symja parser errors here
