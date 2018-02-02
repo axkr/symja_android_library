@@ -47,6 +47,7 @@ import org.hipparchus.linear.RealVector;
 import org.matheclipse.commons.math.linear.FieldReducedRowEchelonForm;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.NonNegativeIntegerExpected;
 import org.matheclipse.core.eval.exception.Validate;
@@ -66,6 +67,7 @@ import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Symbol;
+import org.matheclipse.core.generic.Comparators.ExprReverseComparator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -2473,7 +2475,11 @@ public final class LinearAlgebra {
 					if (nullspace == null) {
 						return F.List();
 					}
-					return Convert.matrix2List(nullspace);
+
+					IASTMutable list2 = Convert.matrix2List(nullspace);
+					// rows in descending orders
+					EvalAttributes.sort(list2, ExprReverseComparator.CONS);
+					return list2;
 				}
 			} catch (final ClassCastException e) {
 				if (Config.SHOW_STACKTRACE) {

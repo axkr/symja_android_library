@@ -2386,10 +2386,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testFactorTerms() {
 		check("FactorTerms(2*a*x^2*y + 2*x^2*y + 4*a*x^2 + 4*x^2 + 4*a^2*y^2 + 4*a*y^2 + 8*a^2*y + 2*a*y - 6*y - 12*a- 12, x)", //
-				"(x+Sqrt(48+96*a+48*a^2+48*y+64*a*y-16*a^2*y-32*a^3*y+12*y^2-8*a*y^2-52*a^2*y^2\n" + 
-				"-32*a^3*y^2-8*a*y^3-16*a^2*y^3-8*a^3*y^3)/(4+4*a+2*y+2*a*y))*(x-Sqrt(48+96*a+48*a^\n" + 
-				"2+48*y+64*a*y-16*a^2*y-32*a^3*y+12*y^2-8*a*y^2-52*a^2*y^2-32*a^3*y^2-8*a*y^3-16*a^\n" + 
-				"2*y^3-8*a^3*y^3)/(4+4*a+2*y+2*a*y))");
+				"(x+Sqrt(48+96*a+48*a^2+48*y+64*a*y-16*a^2*y-32*a^3*y+12*y^2-8*a*y^2-52*a^2*y^2\n"
+						+ "-32*a^3*y^2-8*a*y^3-16*a^2*y^3-8*a^3*y^3)/(4+4*a+2*y+2*a*y))*(x-Sqrt(48+96*a+48*a^\n"
+						+ "2+48*y+64*a*y-16*a^2*y-32*a^3*y+12*y^2-8*a*y^2-52*a^2*y^2-32*a^3*y^2-8*a*y^3-16*a^\n"
+						+ "2*y^3-8*a^3*y^3)/(4+4*a+2*y+2*a*y))");
 		check("FactorTerms(x^2 - y^2, x)", //
 				"(x-y)*(x+y)");
 		check("factorterms(3 + 6 x + 3 x^2)", //
@@ -4714,6 +4714,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNullSpace() {
+		check("NullSpace({{-1/3, 0, I}})", "{{I*3,0,1},\n" + " {0,1,0}}");
 		check("NullSpace({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", "{{1,-2,1}}");
 		check("A = {{1, 1, 0}, {1, 0, 1}, {0, 1, 1}}", "{{1,1,0},{1,0,1},{0,1,1}}");
 		check("NullSpace(A)", "{}");
@@ -4726,7 +4727,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("NullSpace({{1,1,0,1,5},{1,0,0,2,2},{0,0,1,4,-1},{0,0,0,0,0}})", "{{-2,1,-4,1,0},\n" + " {-2,-3,1,0,1}}");
 		check("NullSpace({{a,b,c}," + "{c,b,a}})", "{{1,(-a-c)/b,1}}");
 		check("NullSpace({{1,2,3}," + "{5,6,7}," + "{9,10,11}})", "{{1,-2,1}}");
-		check("NullSpace({{1,2,3,4}," + "{5,6,7,8}," + "{9,10,11,12}})", "{{1,-2,1,0},\n" + " {2,-3,0,1}}");
+		check("NullSpace({{1,2,3,4}," //
+				+ "{5,6,7,8}," //
+				+ "{9,10,11,12}})", //
+				"{{2,-3,0,1},\n" //
+						+ " {1,-2,1,0}}");
 		check("(-1/2+I*1/2)*(-I)", "1/2+I*1/2");
 		check("NullSpace({{1+I,1-I}, {-1+I,1+I}})", "{{I,1}}");
 		check("NullSpace({{1,1,1,1,1},{1,0,0,0,0},{0,0,0,0,1},{0,1,1,1,0},{1,0,0,0,1}})",
@@ -7004,8 +7009,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// issue #121
 		check("Solve(Sqrt(x)==-1, x)", "{}");
 		check("Solve(x^2+1==0, x)", "{{x->-I},{x->I}}");
-		check("Solve((k*Q*q)/r^2==E,r)",
-				"{{r->Sqrt(E*k*q*Q)/E},{r->-Sqrt(E*k*q*Q)/E}}");
+		check("Solve((k*Q*q)/r^2==E,r)", "{{r->Sqrt(E*k*q*Q)/E},{r->-Sqrt(E*k*q*Q)/E}}");
 		check("Solve((k*Q*q)/r^2+1/r^4==E,r)",
 				"{{r->Sqrt(1/2)*Sqrt((k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))/E)},{r->-Sqrt(1/2)*Sqrt((k*q*Q+Sqrt(\n"
 						+ "4*E+k^2*q^2*Q^2))/E)},{r->-I*Sqrt(1/2)*Sqrt((-k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))/E)},{r->I*Sqrt(\n"

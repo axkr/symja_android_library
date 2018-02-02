@@ -23,7 +23,7 @@ public class Comparators {
 	/**
 	 * Compares an expression with another expression for order. Returns a
 	 * negative integer, zero, or a positive integer if this expression is
-	 * canonical less than, equal to, or greater than the specified expression.
+	 * canonical greater than, equal to, or less than the specified expression.
 	 */
 	public static class ExprReverseComparator implements Comparator<IExpr> {
 		public final static ExprReverseComparator CONS = new ExprReverseComparator();
