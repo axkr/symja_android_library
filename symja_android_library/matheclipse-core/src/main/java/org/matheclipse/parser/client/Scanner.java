@@ -145,12 +145,6 @@ public class Scanner {
 			var_n = "$n", var_o = "$o", var_p = "$p", var_q = "$q", var_r = "$r", var_s = "$s", var_t = "$t",
 			var_u = "$u", var_v = "$v", var_w = "$w", var_x = "$x", var_y = "$y", var_z = "$z";
 
-	private static HashMap<String, String> CHAR_MAP = new HashMap<>(1024);
-
-	static {
-		CHAR_MAP.put("CenterEllipsis", "\u22EF");
-	}
-
 	/**
 	 * <p>
 	 * Simple bracket balancer for pairs of &quot;( )&quot;, &quot;[ ]&quot;, &quot;{ }&quot; brackets.

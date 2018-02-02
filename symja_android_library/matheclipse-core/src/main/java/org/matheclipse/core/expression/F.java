@@ -322,6 +322,7 @@ public class F {
 	public final static IBuiltInSymbol Disputed = SymbolEnumeration.valueOf(SymbolEnumeration.Disputed);
 	public final static IBuiltInSymbol Distribute = SymbolEnumeration.valueOf(SymbolEnumeration.Distribute);
 	public final static IBuiltInSymbol Divergence = SymbolEnumeration.valueOf(SymbolEnumeration.Divergence);
+	public final static IBuiltInSymbol Divide = SymbolEnumeration.valueOf(SymbolEnumeration.Divide);
 	public final static IBuiltInSymbol DivideBy = SymbolEnumeration.valueOf(SymbolEnumeration.DivideBy);
 	public final static IBuiltInSymbol Divisible = SymbolEnumeration.valueOf(SymbolEnumeration.Divisible);
 	public final static IBuiltInSymbol DivisorSigma = SymbolEnumeration.valueOf(SymbolEnumeration.DivisorSigma);
@@ -835,6 +836,7 @@ public class F {
 	public final static IBuiltInSymbol Subscript = SymbolEnumeration.valueOf(SymbolEnumeration.Subscript);
 	public final static IBuiltInSymbol Subsets = SymbolEnumeration.valueOf(SymbolEnumeration.Subsets);
 	public final static IBuiltInSymbol Subsuperscript = SymbolEnumeration.valueOf(SymbolEnumeration.Subsuperscript);
+	public final static IBuiltInSymbol Subtract = SymbolEnumeration.valueOf(SymbolEnumeration.Subtract);
 	public final static IBuiltInSymbol SubtractFrom = SymbolEnumeration.valueOf(SymbolEnumeration.SubtractFrom);
 	public final static IBuiltInSymbol Sum = SymbolEnumeration.valueOf(SymbolEnumeration.Sum);
 	public final static IBuiltInSymbol Superscript = SymbolEnumeration.valueOf(SymbolEnumeration.Superscript);
@@ -2957,16 +2959,16 @@ public class F {
 	}
 
 	/**
-	 * The division <code>a0 / a1</code> will be represented by <code>Times(a0, Power(a1, -1))</code>.
+	 * The division <code>arg1 / arg2</code> will be represented by <code>arg1 * arg2^(-1)</code>.
 	 * 
-	 * @param a0
+	 * @param arg1
 	 *            numerator
-	 * @param a1
+	 * @param arg2
 	 *            denominator
 	 * @return
 	 */
-	public static IAST Divide(final IExpr a0, final IExpr a1) {
-		return binary(Times, a0, binaryAST2(Power, a1, CN1));
+	public static IAST Divide(final IExpr arg1, final IExpr arg2) {
+		return binary(Times, arg1, binaryAST2(Power, arg2, CN1));
 	}
 
 	public static IAST Divisible(final IExpr a0, final IExpr a1) {
@@ -5175,17 +5177,24 @@ public class F {
 		return expr.replaceAll(Functors.rules(Rule(subExpr, replacementExpr), EvalEngine.get())).orElse(expr);
 	}
 
-	public static IAST Subtract(final IExpr a0, final IExpr a1) {
-		if (a0.isPlus()) {
-			if (a1.isZero()) {
-				return (IAST) a0;
+	/**
+	 * Return <code>arg1 + (-1)*arg2</code>
+	 * 
+	 * @param arg1
+	 * @param arg2
+	 * @return
+	 */
+	public static IAST Subtract(final IExpr arg1, final IExpr arg2) {
+		if (arg1.isPlus()) {
+			if (arg2.isZero()) {
+				return (IAST) arg1;
 			}
-			IASTAppendable clone = F.PlusAlloc(((IAST) a0).size() + 1);
-			clone.appendArgs((IAST) a0);
-			clone.append(binary(Times, CN1, a1));
+			IASTAppendable clone = F.PlusAlloc(((IAST) arg1).size() + 1);
+			clone.appendArgs((IAST) arg1);
+			clone.append(binary(Times, CN1, arg2));
 			return clone;
 		}
-		return binary(Plus, a0, binary(Times, CN1, a1));
+		return binary(Plus, arg1, binary(Times, CN1, arg2));
 	}
 
 	public static IAST Sum(final IExpr a0, final IExpr a1) {

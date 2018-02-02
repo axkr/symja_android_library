@@ -118,6 +118,7 @@ public final class Arithmetic {
 		F.Conjugate.setEvaluator(new Conjugate());
 		F.Decrement.setEvaluator(new Decrement());
 		F.DirectedInfinity.setEvaluator(new DirectedInfinity());
+		F.Divide.setEvaluator(new Divide());
 		F.DivideBy.setEvaluator(new DivideBy());
 		F.Gamma.setEvaluator(new Gamma());
 		F.GCD.setEvaluator(new GCD());
@@ -133,6 +134,7 @@ public final class Arithmetic {
 		F.PreIncrement.setEvaluator(new PreIncrement());
 		F.Rational.setEvaluator(CONST_RATIONAL);
 		F.Re.setEvaluator(new Re());
+		F.Subtract.setEvaluator(new Subtract());
 		F.SubtractFrom.setEvaluator(new SubtractFrom());
 		F.TimesBy.setEvaluator(new TimesBy());
 
@@ -731,6 +733,21 @@ public final class Arithmetic {
 		}
 	}
 
+	private static class Divide extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			// arg1 * arg2^(-1)
+			return F.Divide(ast.arg1(), ast.arg2());
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+	
 	/**
 	 * <pre>
 	 * DivideBy(x, dx)
@@ -3293,6 +3310,21 @@ public final class Arithmetic {
 		@Override
 		protected ISymbol getFunctionSymbol() {
 			return F.SubtractFrom;
+		}
+	}
+
+	private static class Subtract extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			// arg1 + (-1)*arg2
+			return F.Subtract(ast.arg1(), ast.arg2());
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 	}
 
