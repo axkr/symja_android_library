@@ -1,35 +1,15 @@
 package org.matheclipse.core.integrate.rubi45;
 
-import static org.matheclipse.core.expression.F.$;
 import static org.matheclipse.core.expression.F.$s;
-import static org.matheclipse.core.expression.F.And;
-import static org.matheclipse.core.expression.F.C3;
-import static org.matheclipse.core.expression.F.Catch;
-import static org.matheclipse.core.expression.F.CompoundExpression;
-import static org.matheclipse.core.expression.F.False;
-import static org.matheclipse.core.expression.F.Function;
-import static org.matheclipse.core.expression.F.If;
 import static org.matheclipse.core.expression.F.Integrate;
-import static org.matheclipse.core.expression.F.ListQ;
-import static org.matheclipse.core.expression.F.Not;
-import static org.matheclipse.core.expression.F.Part;
-import static org.matheclipse.core.expression.F.SameQ;
-import static org.matheclipse.core.expression.F.Scan;
-import static org.matheclipse.core.expression.F.Slot1;
-import static org.matheclipse.core.expression.F.Throw;
-import static org.matheclipse.core.expression.F.True;
 import static org.matheclipse.core.expression.F.ast;
 import static org.matheclipse.core.expression.F.binaryAST2;
 import static org.matheclipse.core.expression.F.initFinalHiddenSymbol;
-import static org.matheclipse.core.expression.F.n;
 import static org.matheclipse.core.expression.F.quaternary;
 import static org.matheclipse.core.expression.F.quinary;
 import static org.matheclipse.core.expression.F.senary;
 import static org.matheclipse.core.expression.F.ternaryAST3;
-import static org.matheclipse.core.expression.F.u;
 import static org.matheclipse.core.expression.F.unaryAST1;
-import static org.matheclipse.core.expression.F.x;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.BinomialQ;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -70,11 +50,11 @@ public class UtilityFunctionCtors {
 	public final static ISymbol Y = initFinalHiddenSymbol("Y");
 	public final static ISymbol Z = initFinalHiddenSymbol("Z");
 
-	public static ISymbol AbortRubi = org.matheclipse.core.expression.F.initFinalSymbol(INTEGRATE_PREFIX + "AbortRubi",
-			new AbortRubi());
+	public static ISymbol AbortRubi = org.matheclipse.core.expression.F
+			.initFinalHiddenSymbol(INTEGRATE_PREFIX + "AbortRubi");
 
 	public static IAST AbortRubi(final IExpr a0) {
-		return unaryAST1(AbortRubi, a0);
+		return F.headAST0(F.Abort);
 	}
 
 	public static IAST F(final IExpr a0) {
@@ -124,15 +104,14 @@ public class UtilityFunctionCtors {
 	public static IAST IntHide(final IExpr a0, final IExpr a1) {
 		return binaryAST2($s(INTEGRATE_PREFIX + "IntHide"), a0, a1);
 	}
-	
+
 	public static IAST IntLinearcQ(final IExpr... a) {
 		return ast(a, $s(INTEGRATE_PREFIX + "IntLinearcQ"));
 	}
-	
+
 	public static IAST IntQuadraticQ(final IExpr... a) {
 		return ast(a, $s(INTEGRATE_PREFIX + "IntQuadraticQ"));
 	}
-
 
 	public static IAST Dist(final IExpr a0, final IExpr a1) {
 		return binaryAST2($s(INTEGRATE_PREFIX + "Dist"), a0, a1);

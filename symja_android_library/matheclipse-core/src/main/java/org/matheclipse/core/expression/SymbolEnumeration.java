@@ -139,7 +139,7 @@ public enum SymbolEnumeration {
  Csch( "csch", 133 ), //
  CubeRoot( "cuberoot", 134 ), //
  Curl( "curl", 135 ), //
- D( "d", 136 ), //
+ D( "D", 136 ), //
  DSolve( "dsolve", 137 ), //
  Decrement( "decrement", 138 ), //
  Default( "default", 139 ), //
@@ -176,7 +176,7 @@ public enum SymbolEnumeration {
  Do( "do", 170 ), //
  Dot( "dot", 171 ), //
  Drop( "drop", 172 ), //
- E( "e", 173 ), //
+ E( "E", 173 ), //
  EasterSunday( "eastersunday", 174 ), //
  Eigenvalues( "eigenvalues", 175 ), //
  Eigenvectors( "eigenvectors", 176 ), //
@@ -286,7 +286,7 @@ public enum SymbolEnumeration {
  HypergeometricDistribution( "hypergeometricdistribution", 280 ), //
  HypergeometricPFQ( "hypergeometricpfq", 281 ), //
  HypergeometricPFQRegularized( "hypergeometricpfqregularized", 282 ), //
- I( "i", 283 ), //
+ I( "I", 283 ), //
  Identity( "identity", 284 ), //
  IdentityMatrix( "identitymatrix", 285 ), //
  If( "if", 286 ), //
@@ -409,7 +409,7 @@ public enum SymbolEnumeration {
  Most( "most", 403 ), //
  Multinomial( "multinomial", 404 ), //
  MultiplicativeOrder( "multiplicativeorder", 405 ), //
- N( "n", 406 ), //
+ N( "N", 406 ), //
  NDSolve( "ndsolve", 407 ), //
  NFourierTransform( "nfouriertransform", 408 ), //
  NHoldAll( "nholdall", 409 ), //
@@ -452,7 +452,7 @@ public enum SymbolEnumeration {
  Numerator( "numerator", 446 ), //
  NumericFunction( "numericfunction", 447 ), //
  NumericQ( "numericq", 448 ), //
- O( "o", 449 ), //
+ O( "O", 449 ), //
  OddQ( "oddq", 450 ), //
  OneIdentity( "oneidentity", 451 ), //
  Operate( "operate", 452 ), //

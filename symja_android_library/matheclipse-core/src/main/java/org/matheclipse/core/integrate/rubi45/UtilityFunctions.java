@@ -49,40 +49,39 @@ import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * UtilityFunctions from the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi -
- * rule-based integrator</a>.
+ * UtilityFunctions from the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based integrator</a>.
  * 
  * TODO a lot of functions are only placeholders at the moment.
  * 
  */
 public class UtilityFunctions {
 
-	public final static ISymbol pa = F.initFinalSymbol("§a");
-	public final static ISymbol pb = F.initFinalSymbol("§b");
-	public final static ISymbol pc = F.initFinalSymbol("§c");
-	public final static ISymbol pd = F.initFinalSymbol("§dv");
-	public final static ISymbol pe = F.initFinalSymbol("§ev");
-	public final static ISymbol pf = F.initFinalSymbol("§f");
-	public final static ISymbol pg = F.initFinalSymbol("§g");
-	public final static ISymbol ph = F.initFinalSymbol("§h");
-	public final static ISymbol pi = F.initFinalSymbol("§i");
-	public final static ISymbol pj = F.initFinalSymbol("§j");
-	public final static ISymbol pk = F.initFinalSymbol("§k");
-	public final static ISymbol pl = F.initFinalSymbol("§l");
-	public final static ISymbol pm = F.initFinalSymbol("§m");
-	public final static ISymbol pn = F.initFinalSymbol("§n");
-	public final static ISymbol po = F.initFinalSymbol("§o");
-	public final static ISymbol pp = F.initFinalSymbol("§p");
-	public final static ISymbol pq = F.initFinalSymbol("§q");
-	public final static ISymbol pr = F.initFinalSymbol("§r");
-	public final static ISymbol ps = F.initFinalSymbol("§s");
-	public final static ISymbol pt = F.initFinalSymbol("§t");
-	public final static ISymbol pu = F.initFinalSymbol("§u");
-	public final static ISymbol pv = F.initFinalSymbol("§v");
-	public final static ISymbol pw = F.initFinalSymbol("§w");
-	public final static ISymbol px = F.initFinalSymbol("§x");
-	public final static ISymbol py = F.initFinalSymbol("§y");
-	public final static ISymbol pz = F.initFinalSymbol("§z");
+	public final static ISymbol pa = F.initFinalHiddenSymbol("§a");
+	public final static ISymbol pb = F.initFinalHiddenSymbol("§b");
+	public final static ISymbol pc = F.initFinalHiddenSymbol("§c");
+	public final static ISymbol pd = F.initFinalHiddenSymbol("§dv");
+	public final static ISymbol pe = F.initFinalHiddenSymbol("§ev");
+	public final static ISymbol pf = F.initFinalHiddenSymbol("§f");
+	public final static ISymbol pg = F.initFinalHiddenSymbol("§g");
+	public final static ISymbol ph = F.initFinalHiddenSymbol("§h");
+	public final static ISymbol pi = F.initFinalHiddenSymbol("§i");
+	public final static ISymbol pj = F.initFinalHiddenSymbol("§j");
+	public final static ISymbol pk = F.initFinalHiddenSymbol("§k");
+	public final static ISymbol pl = F.initFinalHiddenSymbol("§l");
+	public final static ISymbol pm = F.initFinalHiddenSymbol("§m");
+	public final static ISymbol pn = F.initFinalHiddenSymbol("§n");
+	public final static ISymbol po = F.initFinalHiddenSymbol("§o");
+	public final static ISymbol pp = F.initFinalHiddenSymbol("§p");
+	public final static ISymbol pq = F.initFinalHiddenSymbol("§q");
+	public final static ISymbol pr = F.initFinalHiddenSymbol("§r");
+	public final static ISymbol ps = F.initFinalHiddenSymbol("§s");
+	public final static ISymbol pt = F.initFinalHiddenSymbol("§t");
+	public final static ISymbol pu = F.initFinalHiddenSymbol("§u");
+	public final static ISymbol pv = F.initFinalHiddenSymbol("§v");
+	public final static ISymbol pw = F.initFinalHiddenSymbol("§w");
+	public final static ISymbol px = F.initFinalHiddenSymbol("§x");
+	public final static ISymbol py = F.initFinalHiddenSymbol("§y");
+	public final static ISymbol pz = F.initFinalHiddenSymbol("§z");
 	public final static IPattern pa_ = F.initPredefinedPattern(pa);
 	public final static IPattern pb_ = F.initPredefinedPattern(pb);
 	public final static IPattern pc_ = F.initPredefinedPattern(pc);
@@ -152,32 +151,17 @@ public class UtilityFunctions {
 	// return unary($s("DownValues"), a);
 	// }
 
-	public static IAST RULES = List(
-			ISetDelayed(Dist(u_, Dist(v_, w_, x_), x_),
-					Dist(Times(u, v), w, x)),
-			ISetDelayed(
-					Dist(u_, v_,
-							x_),
-					If(SameQ(u, C1), v,
-							If(SameQ(u, C0),
-									CompoundExpression(
-											Print($str("*** Warning ***:  Dist[0,"), v, $str(" "), x, $str("]")), C0),
-									If(And(Less(NumericFactor(u), C0), Greater(NumericFactor(Times(CN1, u)), C0)),
-											Times(CN1,
-													Dist(Times(CN1, u), v,
-															x)),
-											If(SumQ(v),
-													Map(Function(
-															Dist(u, Slot1,
-																	x)),
-															v),
-													If(FreeQ(v, $s("Int")), Simp(Times(u, v), x), Module(
-															List(Set(w,
-																	Times(Simp(Times(u, Sqr(x)), x),
-																			Power(Sqr(x), CN1)))),
-															If(And(And(UnsameQ(w, u), FreeQ(w, x)),
-																	SameQ(w, Simp(w, x))), Dist(w, v, x),
-																	$(Defer($s("Integrate::Dist")), u, v, x))))))))));
+	public static IAST RULES = List(ISetDelayed(Dist(u_, Dist(v_, w_, x_), x_), Dist(Times(u, v), w, x)),
+			ISetDelayed(Dist(u_, v_, x_), If(SameQ(u, C1), v, If(SameQ(u, C0),
+					CompoundExpression(Print($str("*** Warning ***:  Dist[0,"), v, $str(" "), x, $str("]")), C0),
+					If(And(Less(NumericFactor(u), C0), Greater(NumericFactor(Times(CN1, u)), C0)),
+							Times(CN1, Dist(Times(CN1, u), v, x)),
+							If(SumQ(v), Map(Function(Dist(u, Slot1, x)), v),
+									If(FreeQ(v, $s("Int")), Simp(Times(u, v), x),
+											Module(List(Set(w, Times(Simp(Times(u, Sqr(x)), x), Power(Sqr(x), CN1)))),
+													If(And(And(UnsameQ(w, u), FreeQ(w, x)), SameQ(w, Simp(w, x))),
+															Dist(w, v, x),
+															$(Defer($s("Integrate::Dist")), u, v, x))))))))));
 
 	public static void init() {
 		// Dist[u_,v_,x_]+Dist[w_,v_,x_] := If[ZeroQ[u+w], 0, Dist[u+w,v,x]]

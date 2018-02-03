@@ -53,7 +53,6 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
-import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
@@ -921,14 +920,14 @@ public class F {
 			.valueOf(SymbolEnumeration.YuleDissimilarity);
 	public final static IBuiltInSymbol Zeta = SymbolEnumeration.valueOf(SymbolEnumeration.Zeta);
 
-	public final static IBuiltInSymbol $Aborted = initFinalSymbol(
+	public final static ISymbol $Aborted = initFinalHiddenSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$aborted" : "$Aborted");
-	public final static IBuiltInSymbol $RealVector = initFinalSymbol(
+	public final static ISymbol $RealVector = initFinalHiddenSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$realvector" : "$RealVector");
-	public final static IBuiltInSymbol $RealMatrix = initFinalSymbol(
+	public final static ISymbol $RealMatrix = initFinalHiddenSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$realmatrix" : "$RealMatrix");
 
-	public final static IBuiltInSymbol usage = initFinalSymbol("usage");
+	public final static ISymbol usage = initFinalHiddenSymbol("usage");
 
 	public final static ISymbol a = initFinalHiddenSymbol("a");
 	public final static ISymbol b = initFinalHiddenSymbol("b");
@@ -3573,11 +3572,11 @@ public class F {
 	 *            the predefined symbol name in upper-case form
 	 * @return
 	 */
-	public static IBuiltInSymbol initFinalSymbol(final String symbolName) {
-		IBuiltInSymbol temp = new BuiltInSymbol(symbolName);
-		Context.SYSTEM.put(symbolName, temp);
-		return temp;
-	}
+	// public static IBuiltInSymbol initFinalSymbol(final String symbolName) {
+	// IBuiltInSymbol temp = new BuiltInSymbol(symbolName);
+	// Context.SYSTEM.put(symbolName, temp);
+	// return temp;
+	// }
 
 	public static IBuiltInSymbol initFinalSymbol(final SymbolEnumeration symbolName) {
 		String str = symbolName.name();
@@ -3600,12 +3599,12 @@ public class F {
 	 *            defines the evaluation behaviour of the symbol
 	 * @return
 	 */
-	public static IBuiltInSymbol initFinalSymbol(final String symbolName, IEvaluator evaluator) {
-		IBuiltInSymbol temp = new BuiltInSymbol(symbolName, evaluator);
-		evaluator.setUp(temp);
-		Context.SYSTEM.put(symbolName, temp);
-		return temp;
-	}
+	// public static IBuiltInSymbol initFinalSymbol(final String symbolName, IEvaluator evaluator) {
+	// IBuiltInSymbol temp = new BuiltInSymbol(symbolName, evaluator);
+	// evaluator.setUp(temp);
+	// Context.SYSTEM.put(symbolName, temp);
+	// return temp;
+	// }
 
 	public static IPattern initPredefinedPattern(@Nonnull final ISymbol symbol) {
 		IPattern temp = new Pattern(symbol);

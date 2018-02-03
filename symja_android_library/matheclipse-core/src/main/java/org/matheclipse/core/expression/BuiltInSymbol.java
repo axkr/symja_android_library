@@ -49,23 +49,24 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
 	private transient int fOrdinal;
 
-	public BuiltInSymbol(final String symbolName) {
-		this(symbolName, null);
-	}
+	// private BuiltInSymbol(final String symbolName) {
+	// this(symbolName, null);
+	// }
 
 	public BuiltInSymbol(final String symbolName, int ordinal) {
-		this(symbolName, null);
+		super(symbolName, Context.SYSTEM);
+		// this(symbolName, null);
 		fOrdinal = ordinal;
 	}
 
-	public BuiltInSymbol(final String symbolName, final IEvaluator evaluator) {
-		this(symbolName, Context.SYSTEM, evaluator);
-	}
+	// private BuiltInSymbol(final String symbolName, final IEvaluator evaluator) {
+	// this(symbolName, Context.SYSTEM, evaluator);
+	// }
 
-	public BuiltInSymbol(final String symbolName, Context context, final IEvaluator evaluator) {
-		super(symbolName, context);
-		fEvaluator = evaluator;
-	}
+	// private BuiltInSymbol(final String symbolName, Context context, final IEvaluator evaluator) {
+	// super(symbolName, context);
+	// fEvaluator = evaluator;
+	// }
 
 	/** {@inheritDoc} */
 	@Override
@@ -73,6 +74,12 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 		// dummy call to ensure, that the associated rules are loaded:
 		getEvaluator();
 		return super.definitionToString();
+	}
+	 
+	/** {@inheritDoc} */
+	@Override
+	public boolean equals(final Object obj) {
+		return this == obj;
 	}
 
 	/** {@inheritDoc} */
@@ -130,6 +137,12 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 		return fEvaluator;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public int hashCode() {
+		return fOrdinal;
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public int ordinal() {
@@ -227,21 +240,23 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 		return F.NIL;
 	}
 
-	public Object readResolve() throws ObjectStreamException {
-		ISymbol sym = fContext.get(fSymbolName);
-		if (sym != null) {
-			return sym;
-		}
-		BuiltInSymbol symbol = new BuiltInSymbol(fSymbolName);
-		fContext.put(fSymbolName, symbol);
-		symbol.fAttributes = fAttributes;
-		return symbol;
-	}
-
 	/** {@inheritDoc} */
 	@Override
 	public final void setEvaluator(final IEvaluator evaluator) {
 		evaluator.setUp(this);
 		fEvaluator = evaluator;
 	}
+
+	private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
+		fOrdinal = stream.readInt();
+	}
+
+	public Object readResolve() throws ObjectStreamException {
+		return SymbolEnumeration.symbol(fOrdinal);
+	}
+
+	private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
+		stream.writeInt(fOrdinal);
+	}
+
 }

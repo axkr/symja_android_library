@@ -24,6 +24,7 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -51,7 +52,7 @@ public class Symbol implements ISymbol, Serializable {
 	/**
 	 * The pattern matching &quot;down value&quot; rules associated with this symbol.
 	 */
-	private transient RulesData fRulesData;
+	protected transient RulesData fRulesData;
 
 	/**
 	 * The name of this symbol. The characters may be all lower-cases if the system doesn't distinguish between lower-
@@ -166,7 +167,7 @@ public class Symbol implements ISymbol, Serializable {
 	 */
 	@Override
 	public int compareTo(final IExpr expr) {
-		if (expr instanceof Symbol) {
+		if (expr instanceof ISymbol) {
 			// O-2
 			if (this == expr) {
 				// Symbols are unique objects
@@ -174,7 +175,7 @@ public class Symbol implements ISymbol, Serializable {
 				return 0;
 			}
 			// sort lexicographically
-			return US_COLLATOR.compare(fSymbolName, ((Symbol) expr).fSymbolName);
+			return US_COLLATOR.compare(fSymbolName, ((ISymbol) expr).getSymbolName());//fSymbolName);
 		}
 		if (expr.isNot() && ((IAST) expr).arg1().isSymbol()) {
 			int cp = compareTo(((IAST) expr).arg1());
@@ -247,6 +248,9 @@ public class Symbol implements ISymbol, Serializable {
 	public boolean equals(final Object obj) {
 		if (this == obj) {
 			return true;
+		}
+		if (obj instanceof IBuiltInSymbol) {
+			return false;
 		}
 		if (obj instanceof Symbol) {
 			Symbol symbol = (Symbol) obj;
@@ -824,7 +828,7 @@ public class Symbol implements ISymbol, Serializable {
 
 	private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		fSymbolName = stream.readUTF();
-		fHashValue = fSymbolName.hashCode();
+		fHashValue = fSymbolName.hashCode(); 
 		fAttributes = stream.read();
 		fContext = (Context) stream.readObject();
 		if (fContext == null) {
@@ -854,6 +858,7 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public void readRules(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		fSymbolName = stream.readUTF();
+		fHashValue = fSymbolName.hashCode(); 
 		fAttributes = stream.read();
 		boolean hasDownRulesData = stream.readBoolean();
 		if (hasDownRulesData) {
@@ -1015,7 +1020,7 @@ public class Symbol implements ISymbol, Serializable {
 	}
 
 	private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
-		stream.writeUTF(fSymbolName);
+		stream.writeUTF(fSymbolName); 
 		stream.write(fAttributes);
 		if (fContext.equals(Context.SYSTEM)) {
 			stream.writeObject(null);
@@ -1037,7 +1042,7 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean writeRules(java.io.ObjectOutputStream stream) throws java.io.IOException {
-		stream.writeUTF(fSymbolName);
+		stream.writeUTF(fSymbolName); 
 		stream.write(fAttributes);
 		// if (!containsRules()) {
 		// return false;

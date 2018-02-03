@@ -83,6 +83,8 @@ public class SerializableTest extends TestCase {
 	}
 
 	public void testFunction() {
+		equalsCopy(F.ast(F.userSymbol("fun1")));
+		
 		equalsCopy(F.Sin(F.Times(F.C1D2, F.Pi)));
 		equalsCopy(F.Continue());
 		equalsCopy(F.If(F.True, F.Plus(F.Infinity, F.Pi), F.False));
