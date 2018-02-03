@@ -873,6 +873,11 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 		return false;
 	}
 
+	/**
+	 * Test if this AST contains no argument
+	 * 
+	 * @return
+	 */
 	public boolean isEmpty();
 
 	/**

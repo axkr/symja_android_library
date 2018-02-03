@@ -20,6 +20,7 @@ import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.SolveUtils;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
@@ -869,63 +870,62 @@ public class Solve extends AbstractFunctionEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkRange(ast, 3, 4);
-		IAST variables = Validate.checkIsVariableOrVariableList(ast, 2, engine);
-		if (variables == null) {
-			return F.NIL;
-		}
-		IExpr domain = F.Complexes;
-		if (ast.isAST3()) {
-			domain = ast.arg3();
-			if (domain.equals(F.Booleans)) {
-				IASTAppendable resultList = F.List();
-				booleansSolve(ast.arg1(), variables, 0, 1, resultList);
-				return resultList;
-			}
-			if (domain.equals(F.Integers)) {
-				IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
-				try {
-					// call cream solver
-					CreamConvert converter = new CreamConvert();
-					IAST resultList = converter.integerSolve(equationsAndInequations, variables);
-					EvalAttributes.sort((IASTMutable) resultList);
-					return resultList;
-				} catch (RuntimeException rex) {
-					if (Config.SHOW_STACKTRACE) {
-						rex.printStackTrace();
-					}
-					engine.printMessage("Integer solution not found: " + rex.getMessage());
-				}
+
+		try {
+			IAST variables = Validate.checkIsVariableOrVariableList(ast, 2, engine);
+			if (variables == null) {
 				return F.NIL;
 			}
-			if (!domain.equals(F.Reals) && !domain.equals(F.Complexes)) {
-				throw new WrongArgumentType(ast, ast.arg3(), 3, "Booleans or Integers expected!");
+			IExpr domain = F.Complexes;
+			if (ast.isAST3()) {
+				domain = ast.arg3();
+				if (domain.equals(F.Booleans)) {
+					IASTAppendable resultList = F.List();
+					booleansSolve(ast.arg1(), variables, 0, 1, resultList);
+					return resultList;
+				}
+				if (domain.equals(F.Integers)) {
+					IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
+					try {
+						// call cream solver
+						CreamConvert converter = new CreamConvert();
+						IAST resultList = converter.integerSolve(equationsAndInequations, variables);
+						EvalAttributes.sort((IASTMutable) resultList);
+						return resultList;
+					} catch (RuntimeException rex) {
+						if (Config.SHOW_STACKTRACE) {
+							rex.printStackTrace();
+						}
+						engine.printMessage("Integer solution not found: " + rex.getMessage());
+					}
+					return F.NIL;
+				}
+				if (!domain.equals(F.Reals) && !domain.equals(F.Complexes)) {
+					throw new WrongArgumentType(ast, ast.arg3(), 3, "Booleans or Integers expected!");
+				}
 			}
-		}
-		IAST termsEqualZeroList = Validate.checkEquations(ast, 1);
+			// IAST termsEqualZeroList = Validate.checkEquationsAndInequations(ast, 1);
+			IAST termsList = Validate.checkEquationsAndInequations(ast, 1);
+			IAST[] lists = SolveUtils.filterSolveLists(termsList);
+			if (lists[2].isPresent()) {
+				return lists[2];
+			}
 
-		IAST temp = solveTimesEquationsRecursively(termsEqualZeroList, variables, engine);
-		if (temp.isPresent()) {
-			return temp;
-		}
-		temp = solveEquations(termsEqualZeroList, variables, 0, engine);
-		if (temp.isPresent()) {
-			// TODO check type of result in Solve()
-			// if (domain.equals(F.Reals)) {
-			// // filter real solutions
-			// int i = 1;
-			// while (i < temp.size()) {
-			// if (temp.isComplexNumeric()) {
-			// temp.remove(i);
-			// continue;
-			// }
-			// i++;
-			// }
-			// }
-			return temp;
-		}
+			IAST termsEqualZeroList = lists[0];
+			IAST temp = solveTimesEquationsRecursively(termsEqualZeroList, lists[1], variables, engine);
+			if (temp.isPresent()) {
+				if (lists[1].isEmpty()) {
+					return temp;
+				}
+			}
 
-		if (termsEqualZeroList.size() == 2 && variables.size() == 2) {
-			return eliminateOneVariable(termsEqualZeroList, variables.arg1());
+			if (lists[1].isEmpty() && termsEqualZeroList.size() == 2 && variables.size() == 2) {
+				return eliminateOneVariable(termsEqualZeroList, variables.arg1());
+			}
+		} catch (RuntimeException rex) {
+			if (Config.SHOW_STACKTRACE) {
+				rex.printStackTrace();
+			}
 		}
 
 		return F.NIL;
@@ -1034,8 +1034,8 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @return a &quot;list of rules list&quot; which solves the equations, or an empty list if no solution exists, or
 	 *         <code>F.NIL</code> if the equations are not solvable by this algorithm.
 	 */
-	protected IAST solveEquations(IAST termsEqualZeroList, IAST variables, int maximumNumberOfResults,
-			EvalEngine engine) {
+	protected IAST solveEquations(IAST termsEqualZeroList, IAST inequationsList, IAST variables,
+			int maximumNumberOfResults, EvalEngine engine) {
 		try {
 			IAST list = GroebnerBasis.solveGroebnerBasis(termsEqualZeroList, variables);
 			if (list.isPresent()) {
@@ -1071,18 +1071,40 @@ public class Solve extends AbstractFunctionEvaluator {
 				// solve a linear equation <code>matrix.x == vector</code>
 				FieldMatrix<IExpr> augmentedMatrix = Convert.list2Matrix(matrix, vector);
 				if (augmentedMatrix != null) {
-					return LinearAlgebra.rowReduced2RulesList(augmentedMatrix, variables, resultList, engine);
+					IAST subSolutionList = LinearAlgebra.rowReduced2RulesList(augmentedMatrix, variables, resultList,
+							engine);
+					return solveInequations(subSolutionList, inequationsList, variables, maximumNumberOfResults,
+							engine);
 				}
 				return F.NIL;
 			}
-
-			return sortASTArguments(resultList);
+			return solveInequations(resultList, inequationsList, variables, maximumNumberOfResults, engine);
+			// return sortASTArguments(resultList);
 		} catch (NoSolution e) {
 			if (e.getType() == NoSolution.WRONG_SOLUTION) {
 				return F.List();
 			}
 			return F.NIL;
 		}
+	}
+
+	protected IAST solveInequations(IAST subSolutionList, IAST inequationsList, IAST variables,
+			int maximumNumberOfResults, EvalEngine engine) {
+		if (inequationsList.isEmpty()) {
+			return sortASTArguments(subSolutionList);
+		}
+		try {
+			// TODO solve the inequations here
+
+			// } catch (NoSolution e) {
+			// if (e.getType() == NoSolution.WRONG_SOLUTION) {
+			// return F.List();
+			// }
+			// return F.NIL;
+		} finally {
+
+		}
+		return F.NIL;
 	}
 
 	/**
@@ -1097,18 +1119,20 @@ public class Solve extends AbstractFunctionEvaluator {
 	 *            the evaluation engine
 	 * @return
 	 */
-	private IAST solveTimesEquationsRecursively(IAST termsEqualZeroList, IAST variables, EvalEngine engine) {
+	private IAST solveTimesEquationsRecursively(IAST termsEqualZeroList, IAST inequationsList, IAST variables,
+			EvalEngine engine) {
+		Set<IExpr> subSolutionSet = new TreeSet<IExpr>();
 		for (int i = 1; i < termsEqualZeroList.size(); i++) {
 			if (termsEqualZeroList.get(i).isTimes()) {
 				IAST times = (IAST) termsEqualZeroList.get(i);
 				IAST splittedList = splitNumeratorDenominator(times, engine, false);
 				if (splittedList.arg2().isFree(Predicates.in(variables), true)) {
-					Set<IExpr> subSolutionSet = new TreeSet<IExpr>();
+
 					for (int j = 1; j < times.size(); j++) {
 						if (!times.get(j).isFree(Predicates.in(variables), true)) {
-							IASTAppendable clonedEqualZeroList = termsEqualZeroList.copyAppendable();
-							clonedEqualZeroList.set(i, times.get(j));
-							IAST temp = solveEquations(clonedEqualZeroList, variables, 0, engine);
+							// try to get a solution from this Times() factor
+							IASTAppendable clonedEqualZeroList = termsEqualZeroList.setAtClone(i, times.get(j));
+							IAST temp = solveEquations(clonedEqualZeroList, inequationsList, variables, 0, engine);
 							if (temp.size() > 1) {
 								// subSolutionSet.addAll(temp.args());
 								temp.copyTo(subSolutionSet);
@@ -1124,7 +1148,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				}
 			}
 		}
-		return F.NIL;
+		return solveEquations(termsEqualZeroList, inequationsList, variables, 0, engine);
 	}
 
 }

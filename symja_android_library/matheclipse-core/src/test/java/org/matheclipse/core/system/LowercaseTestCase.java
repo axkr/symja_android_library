@@ -6938,8 +6938,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		check("Solve({Cos(x)*x==0, x ==0}, x)", "{{x->0}}");
+//		check("Solve({Cos(x)*x==0, x < 10}, x)", "{{x->0},{x->Pi/2}}");
+		
+//		check("Solve((x^4 - 1)*(x^4 - 4) == 0, x, Integers)", "");
+		check("Solve(x == x, x)", "{{}}");
+		check("Solve(x == 1 && x == 2, x)", "{}");
+	 
 		check("Solve((5.0*x)/y==(0.8*y)/x,x)", "{{x->-0.4*y},{x->0.4*y}}");
-
+ 
 		// gh issue #2
 		check("Solve(x^2+y^2==5,x)", "{{x->-Sqrt(5-y^2)},{x->Sqrt(5-y^2)}}");
 

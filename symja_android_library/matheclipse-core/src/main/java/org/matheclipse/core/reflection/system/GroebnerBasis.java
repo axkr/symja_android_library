@@ -144,7 +144,7 @@ public class GroebnerBasis extends AbstractFunctionEvaluator {
 	 * @return <code>F.NIL</code> if <code>stopUnevaluatedOnPolynomialConversionError==true</code> and one of the
 	 *         polynomials in <code>listOfPolynomials</code> are not convertible to JAS polynomials
 	 */
-	public static IAST solveGroebnerBasis(IAST listOfPolynomials, IAST listOfVariables) {
+	public static IASTAppendable solveGroebnerBasis(IAST listOfPolynomials, IAST listOfVariables) {
 		List<ISymbol> varList = new ArrayList<ISymbol>(listOfVariables.argSize());
 		for (int i = 1; i < listOfVariables.size(); i++) {
 			if (!listOfVariables.get(i).isSymbol()) {
