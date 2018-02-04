@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.patternmatching.RulesData;
@@ -74,7 +76,7 @@ public class SerializableTest extends TestCase {
 	}
 
 	public void testSymbol() {
-//		equalsCopy(F.Pi);
+		// equalsCopy(F.Pi);
 		equalsCopy(F.userSymbol("testme"));
 	}
 
@@ -84,7 +86,7 @@ public class SerializableTest extends TestCase {
 
 	public void testFunction() {
 		equalsCopy(F.ast(F.userSymbol("fun1")));
-		
+
 		equalsCopy(F.Sin(F.Times(F.C1D2, F.Pi)));
 		equalsCopy(F.Continue());
 		equalsCopy(F.If(F.True, F.Plus(F.Infinity, F.Pi), F.False));
@@ -130,6 +132,35 @@ public class SerializableTest extends TestCase {
 		equalsCopy(F.NIL);
 	}
 
+	public void testEvalEngine() {
+		try {
+			EvalEngine engine = EvalEngine.get();
+			engine.evaluate("x=10");
+			Context context = engine.getContextPath().getGlobalContext();
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			oos.writeObject(context);
+			byte[] bArray = baos.toByteArray();
+			baos.close();
+			oos.close();
+			ByteArrayInputStream bais = new ByteArrayInputStream(bArray);
+			ObjectInputStream ois = new ObjectInputStream(bais);
+			Context copy = (Context) ois.readObject();
+			bais.close();
+			ois.close();
+			engine.getContextPath().setGlobalContext(copy);
+			IExpr result = engine.evaluate("x");
+			assertEquals("10", result.toString());
+
+		} catch (ClassNotFoundException cnfe) {
+			cnfe.printStackTrace();
+			assertEquals("", cnfe.toString());
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+			assertEquals("", ioe.toString());
+		}
+	}
+
 	private void equalsCopy(Object original) {
 		try {
 
@@ -160,13 +191,13 @@ public class SerializableTest extends TestCase {
 
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			ObjectOutputStream oos = new ObjectOutputStream(baos);
-			
+
 			long start0 = System.currentTimeMillis();
 			oos.writeObject(original);
 			byte[] bArray = baos.toByteArray();
 			baos.close();
 			oos.close();
-			
+
 			long start1 = System.currentTimeMillis();
 			ByteArrayInputStream bais = new ByteArrayInputStream(bArray);
 			ObjectInputStream ois = new ObjectInputStream(bais);
@@ -174,9 +205,9 @@ public class SerializableTest extends TestCase {
 			bais.close();
 			ois.close();
 			long end = System.currentTimeMillis();
-			long temp = start1-start0;
+			long temp = start1 - start0;
 			System.out.println(Long.valueOf(temp).toString());
-			temp = end-start1;
+			temp = end - start1;
 			System.out.println(Long.valueOf(temp).toString());
 			assertEquals(original.toString(), copy.toString());
 
