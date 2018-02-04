@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -46,9 +47,7 @@ public class FindInstance extends Solve {
 		IAST vars = Validate.checkSymbolOrSymbolList(ast, 2);
 		if (ast.isAST3()) {
 			if (ast.arg3().equals(F.Booleans)) {
-				IASTAppendable resultList = F.List();
-				booleansSolve(ast.arg1(), vars, 1, 1, resultList);
-				return resultList;
+				return BooleanFunctions.solveInstances(ast.arg1(), vars, 1);
 			}
 			throw new WrongArgumentType(ast, ast.arg3(), 3, "Booleans expected!");
 		}

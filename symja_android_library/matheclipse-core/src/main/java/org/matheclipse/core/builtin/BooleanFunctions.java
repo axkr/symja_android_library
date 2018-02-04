@@ -2240,7 +2240,7 @@ public final class BooleanFunctions {
 					VariablesSet vSet = new VariablesSet(arg1);
 					userDefinedVariables = vSet.getVarList();
 				}
-				return logicNGSatisfiabilityInstances(arg1, userDefinedVariables, maxChoices);
+				return satisfiabilityInstances(arg1, userDefinedVariables, maxChoices);
 			} catch (ClassCastException cce) {
 				if (Config.DEBUG) {
 					cce.printStackTrace();
@@ -2249,36 +2249,6 @@ public final class BooleanFunctions {
 			return F.NIL;
 		}
 
-		/**
-		 * Use LogicNG MiniSAT method.
-		 * 
-		 * @param booleanExpression
-		 * @param variables
-		 *            a list of variables
-		 * @param maxChoices
-		 *            maximum number of choices, which satisfy the given boolean expression
-		 * @return
-		 */
-		private static IAST logicNGSatisfiabilityInstances(IExpr booleanExpression, IAST variables, int maxChoices) {
-			FormulaFactory factory = new FormulaFactory();
-			LogicFormula lf = new LogicFormula(factory);
-			final Formula formula = lf.expr2BooleanFunction(booleanExpression);
-			final SATSolver miniSat = MiniSat.miniSat(factory);
-			miniSat.add(formula);
-			Variable[] vars = lf.ast2Variable(variables);
-			Map<String, Integer> map = LogicFormula.name2Position(vars);
-			List<Assignment> assignments = miniSat.enumerateAllModels(vars);
-			IASTAppendable list = F.ListAlloc(assignments.size());
-			for (int i = 0; i < assignments.size(); i++) {
-				if (i >= maxChoices) {
-					break;
-				}
-				list.append( //
-						lf.literals2BooleanList(assignments.get(i).literals(), map) //
-				);
-			}
-			return list;
-		}
 	}
 
 	/**
@@ -2721,6 +2691,77 @@ public final class BooleanFunctions {
 
 	public static IExpr equals(final IAST ast) {
 		return equalNull(ast.arg1(), ast.arg2(), EvalEngine.get()).orElse(ast);
+	}
+
+	/**
+	 * Use LogicNG MiniSAT method.
+	 * 
+	 * Example: Create a list of rules in the form <code>{{False,True,False,False},{True,False,False,False},...}</code>
+	 * for the variables <code>{a,b,c,d}</code>
+	 * 
+	 * @param booleanExpression
+	 *            an expression build from symbols and boolean operators like
+	 *            <code>And, Or, Not, Xor, Nand, Nor, Implies, Equivalent,...</code>
+	 * @param variables
+	 *            the possible variables. Example: <code>{a,b,c,d}</code>
+	 * @param maxChoices
+	 *            maximum number of choices, which satisfy the given boolean expression
+	 * @return
+	 */
+	public static IAST satisfiabilityInstances(IExpr booleanExpression, IAST variables, int maxChoices) {
+		LogicFormula lf = new LogicFormula();
+		Variable[] vars = lf.ast2Variable(variables);
+		List<Assignment> assignments = logicNGSatisfiabilityInstances(booleanExpression, vars, lf, maxChoices);
+		Map<String, Integer> map = LogicFormula.name2Position(vars);
+		IASTAppendable list = F.ListAlloc(assignments.size());
+		for (int i = 0; i < assignments.size(); i++) {
+			if (i >= maxChoices) {
+				break;
+			}
+			list.append( //
+					lf.literals2BooleanList(assignments.get(i).literals(), map) //
+			);
+		}
+		return list;
+	}
+
+	/**
+	 * Example: Create a list of rules in the form
+	 * <code>{{a->False,b->True,c->False,d->False},{a->True,b->False,c->False,d->False},...}</code> for the variables
+	 * <code>{a,b,c,d}</code>
+	 * 
+	 * @param booleanExpression
+	 *            an expression build from symbols and boolean operators like
+	 *            <code>And, Or, Not, Xor, Nand, Nor, Implies, Equivalent,...</code>
+	 * @param variables
+	 *            the possible variables. Example: <code>{a,b,c,d}</code>
+	 * @param maxChoices
+	 * @return
+	 */
+	public static IAST solveInstances(IExpr booleanExpression, IAST variables, int maxChoices) {
+		LogicFormula lf = new LogicFormula();
+		Variable[] vars = lf.ast2Variable(variables);
+		List<Assignment> assignments = logicNGSatisfiabilityInstances(booleanExpression, vars, lf, maxChoices);
+		Map<String, Integer> map = LogicFormula.name2Position(vars);
+		IASTAppendable list = F.ListAlloc(assignments.size());
+		for (int i = 0; i < assignments.size(); i++) {
+			if (i >= maxChoices) {
+				break;
+			}
+			list.append( //
+					lf.literals2VariableList(assignments.get(i).literals(), map) //
+			);
+		}
+		return list;
+	}
+
+	public static List<Assignment> logicNGSatisfiabilityInstances(IExpr booleanExpression, Variable[] vars,
+			LogicFormula lf, int maxChoices) {
+
+		final Formula formula = lf.expr2BooleanFunction(booleanExpression);
+		final SATSolver miniSat = MiniSat.miniSat(lf.getFactory());
+		miniSat.add(formula);
+		return miniSat.enumerateAllModels(vars);
 	}
 
 	private final static BooleanFunctions CONST = new BooleanFunctions();

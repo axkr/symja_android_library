@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 import org.hipparchus.linear.FieldMatrix;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
+import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.LinearAlgebra;
 import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.convert.Convert;
@@ -746,50 +747,7 @@ public class Solve extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Solve boolean expressions recursivel.y
-	 * 
-	 * @param expr
-	 * @param variables
-	 * @param maximumNumberOfResults
-	 * @param position
-	 * @param resultList
-	 */
-	protected static void booleansSolve(IExpr expr, IAST variables, int maximumNumberOfResults, int position,
-			IASTAppendable resultList) {
-		if (maximumNumberOfResults > 0 && maximumNumberOfResults < resultList.size()) {
-			return;
-		}
-		int size = variables.size();
-		if (size <= position) {
-			if (EvalEngine.get().evalTrue(expr)) {
-				IASTAppendable list = F.ListAlloc(size);
-				for (int i = 1; i < size; i++) {
-					ISymbol sym = (ISymbol) variables.get(i);
-					list.append(F.Rule(sym, sym.get()));
-				}
-				resultList.append(list);
-			}
-			return;
-		}
-		IExpr sym = variables.get(position);
-		if (sym.isSymbol()) {
-			try {
-				((ISymbol) sym).pushLocalVariable(F.False);
-				booleansSolve(expr, variables, maximumNumberOfResults, position + 1, resultList);
-			} finally {
-				((ISymbol) sym).popLocalVariable();
-			}
-			try {
-				((ISymbol) sym).pushLocalVariable(F.True);
-				booleansSolve(expr, variables, maximumNumberOfResults, position + 1, resultList);
-			} finally {
-				((ISymbol) sym).popLocalVariable();
-			}
-		}
-	}
-
-	/**
-	 * Evaluate the roots of a univariate polynomial with the Roots[] function.
+	 * Evaluate the roots of a univariate polynomial with the Roots() function.
 	 * 
 	 * @param exprAnalyzer
 	 * @param fListOfVariables
@@ -880,9 +838,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			if (ast.isAST3()) {
 				domain = ast.arg3();
 				if (domain.equals(F.Booleans)) {
-					IASTAppendable resultList = F.List();
-					booleansSolve(ast.arg1(), variables, 0, 1, resultList);
-					return resultList;
+					return BooleanFunctions.solveInstances(ast.arg1(), variables, Integer.MAX_VALUE);
 				}
 				if (domain.equals(F.Integers)) {
 					IAST equationsAndInequations = Validate.checkEquationsAndInequations(ast, 1);
@@ -914,7 +870,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			IAST termsEqualZeroList = lists[0];
 			IAST temp = solveTimesEquationsRecursively(termsEqualZeroList, lists[1], variables, engine);
 			if (temp.isPresent()) {
-					return temp;
+				return temp;
 			}
 
 			if (lists[1].isEmpty() && termsEqualZeroList.size() == 2 && variables.size() == 2) {
