@@ -1790,6 +1790,27 @@ public final class NumberTheory {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * KroneckerDelta(arg1, arg2, ... argN)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * if all arguments <code>arg1</code> to <code>argN</code> are equal return <code>1</code>, otherwise return
+	 * <code>0</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; KroneckerDelta(42)
+	 * 0
+	 * 
+	 * &gt;&gt; KroneckerDelta(42, 42.0, 42)
+	 * 1
+	 * </pre>
+	 */
 	private static class KroneckerDelta extends AbstractEvaluator {
 
 		@Override
@@ -3251,13 +3272,30 @@ public final class NumberTheory {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Unitize(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * maps a non-zero <code>expr</code> to <code>1</code>, and a zero <code>expr</code> to <code>0</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Unitize((E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi)
+	 * 0
+	 * </pre>
+	 */
 	private static class Unitize extends AbstractEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			int size = ast.size();
 			if (size == 2) {
-				IExpr arg1 = ast.arg1(); 
+				IExpr arg1 = ast.arg1();
 				if (arg1.isNumber()) {
 					return arg1.isZero() ? F.C0 : F.C1;
 				}
