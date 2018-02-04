@@ -41,11 +41,27 @@ import org.matheclipse.core.interfaces.ISymbol;
  * attempts to solve <code>equations</code> for the variables <code>vars</code>.
  * </p>
  * </blockquote>
+ * 
+ * <pre>
+ * Solve(equations, vars, domain)
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * attempts to solve <code>equations</code> for the variables <code>vars</code> in the given <code>domain</code>.
+ * </p>
+ * </blockquote>
  * <h3>Examples</h3>
  * 
  * <pre>
  * &gt;&gt; Solve({x^2==4,x+y^2==6}, {x,y})
  * {{x-&gt;2,y-&gt;2},{x-&gt;2,y-&gt;-2},{x-&gt;-2,y-&gt;2*2^(1/2)},{x-&gt;-2,y-&gt;(-2)*2^(1/2)}}
+ * 
+ * &gt;&gt; Solve({2 x + 3*y == 4, 3*x - 4*y &lt;= 5,x - 2*y &gt; -21}, {x,  y}, Integers)
+ * {{x-&gt;-7,y-&gt;6},{x-&gt;-4,y-&gt;4},{x-&gt;-1,y-&gt;2}}
+ * 
+ * &gt;&gt; Solve(Xor(a, b, c, d) &amp;&amp; (a || b) &amp;&amp; ! (c || d), {a, b, c, d}, Booleans)
+ * {{a-&gt;False,b-&gt;True,c-&gt;False,d-&gt;False},{a-&gt;True,b-&gt;False,c-&gt;False,d-&gt;False}}
  * </pre>
  * 
  * <h3>Related terms</h3>

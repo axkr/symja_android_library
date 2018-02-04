@@ -6995,11 +6995,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Solve(x^3==-2,x)", "{{x->-2^(1/3)},{x->(-1)^(1/3)*2^(1/3)},{x->-(-1)^(2/3)*2^(1/3)}}");
 
 		check("Solve(1 - (i*1)/10 == 0, i, Integers)", "{{i->10}}");
-		check("Solve({x^2 + 2 y^3 == 3681, x > 0, y > 0}, {x, y}, Integers)",
+		check("Solve({x^2 + 2*y^3 == 3681, x > 0, y > 0}, {x, y}, Integers)",
 				"{{x->15,y->12},{x->41,y->10},{x->57,y->6}}");
 		check("Solve({x>=0,y>=0,x+y==7,2*x+4*y==20},{x,y}, Integers)", "{{x->4,y->3}}");
 		check("Solve(x>=0 && y>=0 && x+y==7 && 2*x+4*y==20,{x,y}, Integers)", "{{x->4,y->3}}");
-		check("Solve({2 x + 3 y == 4, 3 x - 4 y <= 5,x - 2 y > -21}, {x,  y}, Integers)",
+		check("Solve({2 x + 3*y == 4, 3*x - 4*y <= 5,x - 2*y > -21}, {x,  y}, Integers)",
 				"{{x->-7,y->6},{x->-4,y->4},{x->-1,y->2}}");
 
 		// timeouts in Cream engine
