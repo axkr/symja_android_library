@@ -218,11 +218,10 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	/** {@inheritDoc} */
 	@Override
 	public boolean ofQ(EvalEngine engine, IExpr... args) {
-		if (fEvaluator instanceof AbstractCorePredicateEvaluator) {
+		if (fEvaluator instanceof AbstractCorePredicateEvaluator&&args.length==1) {
 			// evaluate a core function (without no rule definitions)
 			final AbstractCorePredicateEvaluator coreFunction = (AbstractCorePredicateEvaluator) getEvaluator();
-			IAST ast = F.ast(args, this);
-			return coreFunction.evalArg1Boole(ast, engine);
+			return coreFunction.evalArg1Boole(args[0], engine);
 		}
 		IAST ast = F.ast(args, this);
 		return engine.evalTrue(ast);
@@ -252,7 +251,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	}
 
 	public Object readResolve() throws ObjectStreamException {
-		return SymbolEnumeration.symbol(fOrdinal);
+		return BuiltIns.symbol(fOrdinal);
 	}
 
 	private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {

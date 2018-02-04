@@ -3357,8 +3357,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("KroneckerDelta(n,0)", "KroneckerDelta(0,n)");
 		check("KroneckerDelta(2 - I, 2. - I)", "1");
 
+		check("KroneckerDelta( )", "1");
 		check("KroneckerDelta(0)", "1");
+		check("KroneckerDelta(1)", "0");
 		check("KroneckerDelta(42)", "0");
+		check("KroneckerDelta(42, 42.0, 42)", "1");
 		check("KroneckerDelta(0,1)", "0");
 		check("KroneckerDelta(2,2)", "1");
 		check("KroneckerDelta(2,2.0)", "1");
@@ -4645,6 +4648,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Norm({})", "Norm({})");
 		check("Norm({1, 2, 3, 4}, 2)", "Sqrt(30)");
 		check("Norm({10, 100, 200}, 1)", "310");
+		check("Norm({0,0,a,0,0})", "Abs(a)");
 		check("Norm({a,b,c})", "Sqrt(Abs(a)^2+Abs(b)^2+Abs(c)^2)");
 
 		check("Norm({x, y, z}, Infinity)", "Max(Abs(x),Abs(y),Abs(z))");
@@ -4665,7 +4669,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Norm({x, y}, 0)", "Norm({x,y},0)");
 		check("Norm({x, y}, 0.5)", "Norm({x,y},0.5)");
 		check("Norm({})", "Norm({})");
-		check("Norm(0)", "0");
 	}
 
 	public void testNormal() {
@@ -5398,7 +5401,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPossibleZeroQ() {
-
 		check("PossibleZeroQ(2^(2*I) - 2^(-2*I) - 2*I*Sin(Log(4)))", "True");
 		check("PossibleZeroQ(E^Pi - Pi^E)", "False");
 		check("PossibleZeroQ((E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi)", "True");
@@ -8142,6 +8144,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Unique(\"x\")", "x3");
 	}
 
+	public void testUnitize() {
+		check("Unitize({0, -1})", "{0,1}");
+		check("Unitize((E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi)", "0");
+		check("Unitize(2^(2*I) - 2^(-2*I) - 2*I*Sin(Log(4)))", "0");
+		check("Unitize(Sqrt(2) + Sqrt(3) - Sqrt(5 + 2*Sqrt(6)))", "0");
+		check("Unitize(0)", "0");
+		check("Unitize(0.0)", "0");
+		check("Unitize(x)", "Unitize(x)");
+		check("Unitize(3/4)", "1");
+		check("Unitize(3*I)", "1");
+		check("Unitize(Pi)", "1");
+	}
+	
 	public void testUnitStep() {
 		check("UnitStep(Interval({0,42}))", "Interval({1,1})");
 		check("UnitStep(Interval({-3,-1}))", "Interval({0,0})");

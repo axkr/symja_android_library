@@ -1795,6 +1795,9 @@ public final class NumberTheory {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			int size = ast.size();
+			if (size == 1) {
+				return F.C1;
+			}
 			if (size > 1) {
 				IExpr arg1 = ast.arg1();
 				IExpr temp = arg1.evalNumber();
@@ -3229,9 +3232,6 @@ public final class NumberTheory {
 			return result;
 		}
 
-		public Subfactorial() {
-		}
-
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
 			if (arg1.isInteger() && arg1.isPositive()) {
@@ -3248,6 +3248,36 @@ public final class NumberTheory {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+	}
+
+	private static class Unitize extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			int size = ast.size();
+			if (size == 2) {
+				IExpr arg1 = ast.arg1(); 
+				if (arg1.isNumber()) {
+					return arg1.isZero() ? F.C0 : F.C1;
+				}
+				if (F.PossibleZeroQ.ofQ(engine, arg1)) {
+					return F.C0;
+				}
+				IExpr temp = arg1.evalNumber();
+				if (temp == null) {
+					temp = arg1;
+				}
+				if (temp.isNumber()) {
+					return temp.isZero() ? F.C0 : F.C1;
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		}
 	}
 
@@ -3296,6 +3326,7 @@ public final class NumberTheory {
 		F.StirlingS1.setEvaluator(new StirlingS1());
 		F.StirlingS2.setEvaluator(new StirlingS2());
 		F.Subfactorial.setEvaluator(new Subfactorial());
+		F.Unitize.setEvaluator(new Unitize());
 	}
 
 	private final static NumberTheory CONST = new NumberTheory();

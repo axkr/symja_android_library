@@ -137,9 +137,10 @@ public class AST2Expr {
 			"TimeConstrained", "Times", "TimesBy", "Timing", "ToCharacterCode", "ToeplitzMatrix", "Together",
 			"ToPolarCoordinates", "ToRadicals", "ToString", "Total", "ToUnicode", "Tr", "Trace", "Transpose",
 			"TrigExpand", "TrigReduce", "TrigToExp", "TrueQ", "Tuples", "Unequal", "Unevaluated", "Union", "Unique",
-			"UnitaryMatrixQ", "UnitStep", "UnitVector", "UnsameQ", "Unset", "UpperCaseQ", "UpperTriangularize", "UpSet",
-			"UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables", "Variance", "VectorAngle", "VectorQ",
-			"WeibullDistribution", "Which", "While", "With", "Xor", "YuleDissimilarity", "Zeta" };
+			"UnitaryMatrixQ", "Unitize", "UnitStep", "UnitVector", "UnsameQ", "Unset", "UpperCaseQ",
+			"UpperTriangularize", "UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables", "Variance",
+			"VectorAngle", "VectorQ", "WeibullDistribution", "Which", "While", "With", "Xor", "YuleDissimilarity",
+			"Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 

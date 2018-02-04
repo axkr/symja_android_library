@@ -2,7 +2,7 @@ package org.matheclipse.core.expression;
 
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 
-public enum SymbolEnumeration {
+public enum BuiltIns {
  Abort( "abort", 0 ), //
  Abs( "abs", 1 ), //
  AbsArg( "absarg", 2 ), //
@@ -686,40 +686,41 @@ public enum SymbolEnumeration {
  UnitStep( "unitstep", 680 ), //
  UnitVector( "unitvector", 681 ), //
  UnitaryMatrixQ( "unitarymatrixq", 682 ), //
- Unknown( "unknown", 683 ), //
- UnsameQ( "unsameq", 684 ), //
- Unset( "unset", 685 ), //
- UpSet( "upset", 686 ), //
- UpSetDelayed( "upsetdelayed", 687 ), //
- UpperCaseQ( "uppercaseq", 688 ), //
- UpperTriangularize( "uppertriangularize", 689 ), //
- ValueQ( "valueq", 690 ), //
- VandermondeMatrix( "vandermondematrix", 691 ), //
- Variable( "variable", 692 ), //
- Variables( "variables", 693 ), //
- Variance( "variance", 694 ), //
- VectorAngle( "vectorangle", 695 ), //
- VectorQ( "vectorq", 696 ), //
- WeibullDistribution( "weibulldistribution", 697 ), //
- Which( "which", 698 ), //
- While( "while", 699 ), //
- White( "white", 700 ), //
- With( "with", 701 ), //
- Xor( "xor", 702 ), //
- YuleDissimilarity( "yuledissimilarity", 703 ), //
- Zeta( "zeta", 704 );
+ Unitize( "unitize", 683 ), //
+ Unknown( "unknown", 684 ), //
+ UnsameQ( "unsameq", 685 ), //
+ Unset( "unset", 686 ), //
+ UpSet( "upset", 687 ), //
+ UpSetDelayed( "upsetdelayed", 688 ), //
+ UpperCaseQ( "uppercaseq", 689 ), //
+ UpperTriangularize( "uppertriangularize", 690 ), //
+ ValueQ( "valueq", 691 ), //
+ VandermondeMatrix( "vandermondematrix", 692 ), //
+ Variable( "variable", 693 ), //
+ Variables( "variables", 694 ), //
+ Variance( "variance", 695 ), //
+ VectorAngle( "vectorangle", 696 ), //
+ VectorQ( "vectorq", 697 ), //
+ WeibullDistribution( "weibulldistribution", 698 ), //
+ Which( "which", 699 ), //
+ While( "while", 700 ), //
+ White( "white", 701 ), //
+ With( "with", 702 ), //
+ Xor( "xor", 703 ), //
+ YuleDissimilarity( "yuledissimilarity", 704 ), //
+ Zeta( "zeta", 705 );
 
 	private final String name;
 	private final int symbolID;
 	private final static IBuiltInSymbol[] builtInSymbols = new IBuiltInSymbol[values().length];
 
-	public static IBuiltInSymbol valueOf(SymbolEnumeration sEnum) {
+	public static IBuiltInSymbol valueOf(BuiltIns sEnum) {
 		IBuiltInSymbol symbol = F.initFinalSymbol(sEnum);
 		builtInSymbols[sEnum.symbolID] = symbol;
 		return symbol;
 	}
 
-	SymbolEnumeration(String name, int symbolID) {
+	BuiltIns(String name, int symbolID) {
 		this.name = name;
 		this.symbolID = symbolID;
 	}

@@ -692,21 +692,21 @@ public class PredicateQ {
 				if (expr.isZero()) {
 					return true;
 				}
-				if (expr.isPlus() || expr.isPower() || expr.isTimes()) {
+				if (expr.isPlusTimesPower()) {
 					expr = engine.evaluate(expr);
-					if (expr.isZero()) {
-						return true;
+					if (expr.isNumber()) {
+						return expr.isZero();
 					}
-					if (expr.isPlus() || expr.isPower() || expr.isTimes()) {
+					if (expr.isPlusTimesPower()) {
 						expr = F.Together.of(engine, expr);
-						if (expr.isZero()) {
-							return true;
+						if (expr.isNumber()) {
+							return expr.isZero();
 						}
 					}
 				}
 			}
-			if (expr.isNumericFunction()) {
-				IExpr temp = engine.evalN(expr);
+			IExpr temp = arg1.evalNumber();
+			if (temp != null) {
 				return temp.isZero();
 			}
 
