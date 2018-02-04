@@ -6938,8 +6938,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		check("Solve({Cos(x)*x==0, x > 10}, x)", "{}");
 		check("Solve({Cos(x)*x==0, x ==0}, x)", "{{x->0}}");
-//		check("Solve({Cos(x)*x==0, x < 10}, x)", "{{x->0},{x->Pi/2}}");
+		check("Solve({Cos(x)*x==0, x < 10}, x)", "{{x->0},{x->Pi/2}}");
+		
 		
 //		check("Solve((x^4 - 1)*(x^4 - 4) == 0, x, Integers)", "");
 		check("Solve(x == x, x)", "{{}}");

@@ -5158,8 +5158,15 @@ public class F {
 	 * @return the input <code>expr</code> if no substitution of a (sub-)expression was possible or the substituted
 	 *         expression.
 	 */
-	public static IExpr subst(IExpr expr, final IAST astRules) {
-		return expr.replaceAll(astRules).orElse(expr);
+	public static IExpr subst(IExpr expr, final IAST list) {
+		if (list.isListOfLists()) {
+			IExpr result =expr;
+			for (IExpr subList : list) {
+				result = F.subst(result, (IAST) subList);
+			}
+			return result;
+		}
+		return expr.replaceAll(list).orElse(expr);
 	}
 
 	/**

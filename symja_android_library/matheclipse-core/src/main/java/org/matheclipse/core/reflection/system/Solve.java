@@ -906,7 +906,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			}
 			// IAST termsEqualZeroList = Validate.checkEquationsAndInequations(ast, 1);
 			IAST termsList = Validate.checkEquationsAndInequations(ast, 1);
-			IAST[] lists = SolveUtils.filterSolveLists(termsList);
+			IAST[] lists = SolveUtils.filterSolveLists(termsList, F.NIL);
 			if (lists[2].isPresent()) {
 				return lists[2];
 			}
@@ -914,9 +914,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			IAST termsEqualZeroList = lists[0];
 			IAST temp = solveTimesEquationsRecursively(termsEqualZeroList, lists[1], variables, engine);
 			if (temp.isPresent()) {
-				if (lists[1].isEmpty()) {
 					return temp;
-				}
 			}
 
 			if (lists[1].isEmpty() && termsEqualZeroList.size() == 2 && variables.size() == 2) {
@@ -1094,6 +1092,14 @@ public class Solve extends AbstractFunctionEvaluator {
 			return sortASTArguments(subSolutionList);
 		}
 		try {
+			IExpr temp = F.subst(inequationsList, subSolutionList);
+			temp = engine.evaluate(temp);
+			if (temp.isAST()) {
+				IAST[] lists = SolveUtils.filterSolveLists((IAST) temp, subSolutionList);
+				if (lists[2].isPresent()) {
+					return lists[2];
+				}
+			}
 			// TODO solve the inequations here
 
 			// } catch (NoSolution e) {
@@ -1145,6 +1151,7 @@ public class Solve extends AbstractFunctionEvaluator {
 						list.appendAll(subSolutionSet);
 						return list;
 					}
+					return F.List();
 				}
 			}
 		}
