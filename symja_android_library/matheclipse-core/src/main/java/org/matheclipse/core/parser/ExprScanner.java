@@ -139,30 +139,30 @@ public class ExprScanner {
 	final static public int TT_STRING = 136;
 
 	/**
-	 * Token type: pattern placeholder '_'
-	 */
-	final static public int TT_BLANK = 137;
-
-	/**
 	 * Token type: identifier name
 	 */
-	final static public int TT_IDENTIFIER = 138;
+	final static public int TT_IDENTIFIER = 137;
 
 	/**
 	 * Token type: digit 0,1,2,3,4,5,6,7,8,9
 	 */
-	final static public int TT_DIGIT = 139;
+	final static public int TT_DIGIT = 138;
 
 	/**
 	 * Token type: slot #
 	 */
-	final static public int TT_SLOT = 141;
+	final static public int TT_SLOT = 140;
 
 	/**
 	 * Token type: slot sequence ##
 	 */
-	final static public int TT_SLOTSEQUENCE = 142;
+	final static public int TT_SLOTSEQUENCE = 141;
 
+	/**
+	 * Token type: pattern placeholder '_'
+	 */
+	final static public int TT_BLANK = 142;
+	
 	final static public int TT_BLANK_BLANK = 143;
 
 	final static public int TT_BLANK_BLANK_BLANK = 144;

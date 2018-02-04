@@ -369,9 +369,15 @@ public class ExprParser extends ExprScanner {
 	}
 
 	private IExpr getFactor() throws SyntaxError {
-		IExpr temp;
+		IExpr temp = null;
 
-		if (fToken == TT_PRECEDENCE_OPEN) {
+		if (fToken == TT_IDENTIFIER) {
+			temp = getSymbol();
+			if (temp.isSymbol() && fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
+				temp = getBlankPatterns(temp);
+			}
+			return parseArguments(temp);
+		} else if (fToken == TT_PRECEDENCE_OPEN) {
 			fRecursionDepth++;
 			try {
 				getNextToken();
@@ -395,158 +401,10 @@ public class ExprParser extends ExprScanner {
 
 		} else if (fToken == TT_LIST_OPEN) {
 			return getList();
-		} else if (fToken == TT_IDENTIFIER) {
-			final IExpr head = getSymbol();
-			if (head.isSymbol()) {
-				final ISymbol symbol = (ISymbol) head;
-				temp = symbol;
-				if (fToken == TT_BLANK) {
-					// read '_'
-					if (isWhitespace()) {
-						temp = F.$p(symbol, null);
-						getNextToken();
-					} else {
-						getNextToken();
-						if (fToken == TT_IDENTIFIER) {
-							final IExpr check = getSymbol();
-							temp = F.$p(symbol, check);
-						} else {
-							temp = F.$p(symbol, null);
-						}
-					}
-				} else if (fToken == TT_BLANK_BLANK) {
-					// read '__'
-					if (isWhitespace()) {
-						temp = F.$ps(symbol, null);
-						getNextToken();
-					} else {
-						getNextToken();
-						if (fToken == TT_IDENTIFIER) {
-							final IExpr check = getSymbol();
-							temp = F.$ps(symbol, check);
-						} else {
-							temp = F.$ps(symbol, null);
-						}
-					}
-				} else if (fToken == TT_BLANK_BLANK_BLANK) {
-					// read '___'
-					if (isWhitespace()) {
-						temp = F.$ps(symbol, null, false, true);
-						getNextToken();
-					} else {
-						getNextToken();
-						if (fToken == TT_IDENTIFIER) {
-							final IExpr check = getSymbol();
-							temp = F.$ps(symbol, check, false, true);
-						} else {
-							temp = F.$ps(symbol, null, false, true);
-						}
-					}
-				} else if (fToken == TT_BLANK_OPTIONAL) {
-					// read '_.'
-					if (isWhitespace()) {
-						temp = F.$p(symbol, null, true);
-						getNextToken();
-					} else {
-						getNextToken();
-						if (fToken == TT_IDENTIFIER) {
-							final IExpr check = getSymbol();
-							temp = F.$p(symbol, check, true);
-						} else {
-							temp = F.$p(symbol, null, true);
-						}
-					}
-				} else if (fToken == TT_BLANK_COLON) {
-					// read '_:'
-					getNextToken();
-					IExpr defaultValue = parseExpression();
-					temp = F.$p(symbol, null, defaultValue);
-				}
-			} else {
-				temp = head;
-			}
-
-			return parseArguments(temp);
-		} else if (fToken == TT_BLANK) {
-			if (isWhitespace()) {
-				getNextToken();
-				temp = F.$b();
-				// temp = fFactory.createPattern(null, null);
-			} else {
-				getNextToken();
-				if (fToken == TT_IDENTIFIER) {
-					final IExpr check = getSymbol();
-					temp = F.$b(check);
-					// temp = fFactory.createPattern(null, check);
-				} else {
-					temp = F.$b();
-					// temp = fFactory.createPattern(null, null);
-				}
-			}
-			return parseArguments(temp);
-		} else if (fToken == TT_BLANK_BLANK) {
-			// read '__'
-			if (isWhitespace()) {
-				getNextToken();
-				temp = F.$ps(null, null);
-				// temp = fFactory.createPattern2(null, null);
-			} else {
-				getNextToken();
-				if (fToken == TT_IDENTIFIER) {
-					final IExpr check = getSymbol();
-					temp = F.$ps(null, check);
-					// temp = fFactory.createPattern2(null, check);
-				} else {
-					temp = F.$ps(null, null);
-					// temp = fFactory.createPattern2(null, null);
-				}
-			}
-			return parseArguments(temp);
-		} else if (fToken == TT_BLANK_BLANK_BLANK) {
-			// read '___'
-			if (isWhitespace()) {
-				getNextToken();
-				temp = F.$ps(null, null, false, true);
-				// temp = fFactory.createPattern3(null, null);
-			} else {
-				getNextToken();
-				if (fToken == TT_IDENTIFIER) {
-					final IExpr check = getSymbol();
-					temp = F.$ps(null, check, false, true);
-					// temp = fFactory.createPattern3(null, check);
-				} else {
-					temp = F.$ps(null, null, false, true);
-					// temp = fFactory.createPattern3(null, null);
-				}
-			}
-			return parseArguments(temp);
-		} else if (fToken == TT_BLANK_OPTIONAL) {
-			// read '_.'
-			if (isWhitespace()) {
-				getNextToken();
-				temp = F.$b(null, true);
-				// temp = fFactory.createPattern(null, null, true);
-			} else {
-				getNextToken();
-				if (fToken == TT_IDENTIFIER) {
-					final IExpr check = getSymbol();
-					temp = F.$b(check, true);
-					// temp = fFactory.createPattern(null, check, true);
-				} else {
-					temp = F.$b(null, true);
-					// temp = fFactory.createPattern(null, null, true);
-				}
-			}
-			return parseArguments(temp);
-		} else if (fToken == TT_BLANK_COLON) {
-			// read '_:'
-			getNextToken();
-			IExpr defaultValue = parseExpression();
-			temp = F.$b(null, defaultValue);
-			return parseArguments(temp);
+		} else if (fToken >= TT_BLANK && fToken <= TT_BLANK_COLON) {
+			return getBlanks(temp);
 		} else if (fToken == TT_DIGIT) {
 			return getNumber(false);
-
 		} else if (fToken == TT_STRING) {
 			return getString();
 		} else if (fToken == TT_PERCENT) {
@@ -619,6 +477,164 @@ public class ExprParser extends ExprScanner {
 
 		throwSyntaxError("Error in factor at character: '" + fCurrentChar + "' (" + fToken + ")");
 		return null;
+	}
+
+	/**
+	 * Parse '_' expressions.
+	 * 
+	 * @param temp
+	 * @return
+	 */
+	private IExpr getBlanks(IExpr temp) {
+		if (fToken == TT_BLANK) {
+			if (isWhitespace()) {
+				getNextToken();
+				temp = F.$b();
+				// temp = fFactory.createPattern(null, null);
+			} else {
+				getNextToken();
+				if (fToken == TT_IDENTIFIER) {
+					final IExpr check = getSymbol();
+					temp = F.$b(check);
+					// temp = fFactory.createPattern(null, check);
+				} else {
+					temp = F.$b();
+					// temp = fFactory.createPattern(null, null);
+				}
+			}
+
+		} else if (fToken == TT_BLANK_BLANK) {
+			// read '__'
+			if (isWhitespace()) {
+				getNextToken();
+				temp = F.$ps(null, null);
+				// temp = fFactory.createPattern2(null, null);
+			} else {
+				getNextToken();
+				if (fToken == TT_IDENTIFIER) {
+					final IExpr check = getSymbol();
+					temp = F.$ps(null, check);
+					// temp = fFactory.createPattern2(null, check);
+				} else {
+					temp = F.$ps(null, null);
+					// temp = fFactory.createPattern2(null, null);
+				}
+			}
+		} else if (fToken == TT_BLANK_BLANK_BLANK) {
+			// read '___'
+			if (isWhitespace()) {
+				getNextToken();
+				temp = F.$ps(null, null, false, true);
+				// temp = fFactory.createPattern3(null, null);
+			} else {
+				getNextToken();
+				if (fToken == TT_IDENTIFIER) {
+					final IExpr check = getSymbol();
+					temp = F.$ps(null, check, false, true);
+					// temp = fFactory.createPattern3(null, check);
+				} else {
+					temp = F.$ps(null, null, false, true);
+					// temp = fFactory.createPattern3(null, null);
+				}
+			}
+		} else if (fToken == TT_BLANK_OPTIONAL) {
+			// read '_.'
+			if (isWhitespace()) {
+				getNextToken();
+				temp = F.$b(null, true);
+				// temp = fFactory.createPattern(null, null, true);
+			} else {
+				getNextToken();
+				if (fToken == TT_IDENTIFIER) {
+					final IExpr check = getSymbol();
+					temp = F.$b(check, true);
+					// temp = fFactory.createPattern(null, check, true);
+				} else {
+					temp = F.$b(null, true);
+					// temp = fFactory.createPattern(null, null, true);
+				}
+			}
+		} else if (fToken == TT_BLANK_COLON) {
+			// read '_:'
+			getNextToken();
+			IExpr defaultValue = parseExpression();
+			temp = F.$b(null, defaultValue);
+		}
+		return parseArguments(temp);
+	}
+
+	/**
+	 * Parse 'symbol_' pattern expressions.
+	 * 
+	 * @param head
+	 * @return
+	 */
+	private IExpr getBlankPatterns(final IExpr head) {
+		IExpr temp = head;
+		final ISymbol symbol = (ISymbol) head;
+		if (fToken == TT_BLANK) {
+			// read '_'
+			if (isWhitespace()) {
+				temp = F.$p(symbol, null);
+				getNextToken();
+			} else {
+				getNextToken();
+				if (fToken == TT_IDENTIFIER) {
+					final IExpr check = getSymbol();
+					temp = F.$p(symbol, check);
+				} else {
+					temp = F.$p(symbol, null);
+				}
+			}
+		} else if (fToken == TT_BLANK_BLANK) {
+			// read '__'
+			if (isWhitespace()) {
+				temp = F.$ps(symbol, null);
+				getNextToken();
+			} else {
+				getNextToken();
+				if (fToken == TT_IDENTIFIER) {
+					final IExpr check = getSymbol();
+					temp = F.$ps(symbol, check);
+				} else {
+					temp = F.$ps(symbol, null);
+				}
+			}
+		} else if (fToken == TT_BLANK_BLANK_BLANK) {
+			// read '___'
+			if (isWhitespace()) {
+				temp = F.$ps(symbol, null, false, true);
+				getNextToken();
+			} else {
+				getNextToken();
+				if (fToken == TT_IDENTIFIER) {
+					final IExpr check = getSymbol();
+					temp = F.$ps(symbol, check, false, true);
+				} else {
+					temp = F.$ps(symbol, null, false, true);
+				}
+			}
+		} else if (fToken == TT_BLANK_OPTIONAL) {
+			// read '_.'
+			if (isWhitespace()) {
+				temp = F.$p(symbol, null, true);
+				getNextToken();
+			} else {
+				getNextToken();
+				if (fToken == TT_IDENTIFIER) {
+					final IExpr check = getSymbol();
+					temp = F.$p(symbol, check, true);
+				} else {
+					temp = F.$p(symbol, null, true);
+				}
+			}
+		} else if (fToken == TT_BLANK_COLON) {
+			// read '_:'
+			getNextToken();
+			IExpr defaultValue = parseExpression();
+			temp = F.$p(symbol, null, defaultValue);
+		}
+		return temp;
 	}
 
 	public IExprParserFactory getFactory() {
@@ -1289,26 +1305,26 @@ public class ExprParser extends ExprScanner {
 	 * @param compareHead
 	 * @return
 	 */
-//	private IExpr rewriteLessGreaterAST(final IASTMutable ast, ISymbol compareHead) {
-//		IExpr temp;
-//		boolean evaled = false;
-//		IASTAppendable andAST = F.ast(F.And);
-//		for (int i = 1; i < ast.size(); i++) {
-//			temp = ast.get(i);
-//			if (temp.isASTSizeGE(compareHead, 3)) {
-//				IAST lt = (IAST) temp;
-//				andAST.append(lt);
-//				ast.set(i, lt.last());
-//				evaled = true;
-//			}
-//		}
-//		if (evaled) {
-//			andAST.append(ast);
-//			return andAST;
-//		} else {
-//			return ast;
-//		}
-//	}
+	// private IExpr rewriteLessGreaterAST(final IASTMutable ast, ISymbol compareHead) {
+	// IExpr temp;
+	// boolean evaled = false;
+	// IASTAppendable andAST = F.ast(F.And);
+	// for (int i = 1; i < ast.size(); i++) {
+	// temp = ast.get(i);
+	// if (temp.isASTSizeGE(compareHead, 3)) {
+	// IAST lt = (IAST) temp;
+	// andAST.append(lt);
+	// ast.set(i, lt.last());
+	// evaled = true;
+	// }
+	// }
+	// if (evaled) {
+	// andAST.append(ast);
+	// return andAST;
+	// } else {
+	// return ast;
+	// }
+	// }
 
 	public void setFactory(final IExprParserFactory factory) {
 		this.fFactory = factory;

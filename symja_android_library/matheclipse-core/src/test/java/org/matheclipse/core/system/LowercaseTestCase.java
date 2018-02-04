@@ -2313,6 +2313,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testFactorInteger() {
+		check("FactorInteger(308119573764812073923)", //
+				"{{19,2},{367,1},{132491,1},{17553335119,1}}");
+		check("19^2*367*132491*17553335119", //
+				"308119573764812073923");
+		
+		check("FactorInteger(132296607982211351148)", //
+				"{{2,2},{3,4},{331,1},{107251,1},{11502026267,1}}");
+		check("2^2*3^4*331*107251*11502026267", //
+				"132296607982211351148");
+		
 		check("FactorInteger(10+30*I,GaussianIntegers->True)", "{{-1,1},{1+I,3},{1+I*2,1},{2+I,2}}");
 		check("FactorInteger(11+14*I,GaussianIntegers->True)", "{{11+I*14,1}}");
 		check("FactorInteger(8+21*I,GaussianIntegers->True)", "{{1+I*2,1},{10+I,1}}");
@@ -6943,14 +6953,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Solve({Cos(x)*x==0, x > 10}, x)", "{}");
 		check("Solve({Cos(x)*x==0, x ==0}, x)", "{{x->0}}");
 		check("Solve({Cos(x)*x==0, x < 10}, x)", "{{x->0},{x->Pi/2}}");
-		
-		
-//		check("Solve((x^4 - 1)*(x^4 - 4) == 0, x, Integers)", "");
+
+		// check("Solve((x^4 - 1)*(x^4 - 4) == 0, x, Integers)", "");
 		check("Solve(x == x, x)", "{{}}");
 		check("Solve(x == 1 && x == 2, x)", "{}");
-	 
+
 		check("Solve((5.0*x)/y==(0.8*y)/x,x)", "{{x->-0.4*y},{x->0.4*y}}");
- 
+
 		// gh issue #2
 		check("Solve(x^2+y^2==5,x)", "{{x->-Sqrt(5-y^2)},{x->Sqrt(5-y^2)}}");
 
@@ -8156,7 +8165,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Unitize(3*I)", "1");
 		check("Unitize(Pi)", "1");
 	}
-	
+
 	public void testUnitStep() {
 		check("UnitStep(Interval({0,42}))", "Interval({1,1})");
 		check("UnitStep(Interval({-3,-1}))", "Interval({0,0})");
