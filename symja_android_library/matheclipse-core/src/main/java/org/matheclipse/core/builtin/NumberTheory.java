@@ -1932,6 +1932,37 @@ public final class NumberTheory {
 		}
 	}
 
+	private static class MangoldtLambda extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			IExpr arg1 = ast.arg1();
+			if (arg1.isInteger()) {
+				if (arg1.isZero() || arg1.isOne() || arg1.isNegative()) {
+					return F.C0;
+				}
+				IExpr expr = F.FactorInteger.of(engine, arg1);
+				if (expr.isList()) {
+					IAST list = (IAST) expr;
+					if (list.size() == 2) {
+						int result = 1;
+						IInteger temp=(IInteger) list.get(1).getAt(1); 
+						return F.Log(temp);
+					}
+					return F.C0;
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+	}
+
 	/**
 	 * <pre>
 	 * MersennePrimeExponent(n)
@@ -3345,6 +3376,7 @@ public final class NumberTheory {
 		F.KroneckerDelta.setEvaluator(new KroneckerDelta());
 		F.LiouvilleLambda.setEvaluator(new LiouvilleLambda());
 		F.LucasL.setEvaluator(new LucasL());
+		F.MangoldtLambda.setEvaluator(new MangoldtLambda());
 		F.MersennePrimeExponent.setEvaluator(new MersennePrimeExponent());
 		F.MersennePrimeExponentQ.setEvaluator(new MersennePrimeExponentQ());
 		F.MoebiusMu.setEvaluator(new MoebiusMu());

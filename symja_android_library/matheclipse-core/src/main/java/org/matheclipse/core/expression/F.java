@@ -153,10 +153,8 @@ public class F {
 	public final static IBuiltInSymbol Alternatives = BuiltIns.valueOf(BuiltIns.Alternatives);
 	public final static IBuiltInSymbol And = BuiltIns.valueOf(BuiltIns.And);
 	public final static IBuiltInSymbol AngleVector = BuiltIns.valueOf(BuiltIns.AngleVector);
-	public final static IBuiltInSymbol AntihermitianMatrixQ = BuiltIns
-			.valueOf(BuiltIns.AntihermitianMatrixQ);
-	public final static IBuiltInSymbol AntisymmetricMatrixQ = BuiltIns
-			.valueOf(BuiltIns.AntisymmetricMatrixQ);
+	public final static IBuiltInSymbol AntihermitianMatrixQ = BuiltIns.valueOf(BuiltIns.AntihermitianMatrixQ);
+	public final static IBuiltInSymbol AntisymmetricMatrixQ = BuiltIns.valueOf(BuiltIns.AntisymmetricMatrixQ);
 	public final static IBuiltInSymbol AnyTrue = BuiltIns.valueOf(BuiltIns.AnyTrue);
 	public final static IBuiltInSymbol Apart = BuiltIns.valueOf(BuiltIns.Apart);
 	public final static IBuiltInSymbol AppellF1 = BuiltIns.valueOf(BuiltIns.AppellF1);
@@ -193,8 +191,7 @@ public class F {
 	public final static IBuiltInSymbol BellB = BuiltIns.valueOf(BuiltIns.BellB);
 	public final static IBuiltInSymbol BellY = BuiltIns.valueOf(BuiltIns.BellY);
 	public final static IBuiltInSymbol BernoulliB = BuiltIns.valueOf(BuiltIns.BernoulliB);
-	public final static IBuiltInSymbol BernoulliDistribution = BuiltIns
-			.valueOf(BuiltIns.BernoulliDistribution);
+	public final static IBuiltInSymbol BernoulliDistribution = BuiltIns.valueOf(BuiltIns.BernoulliDistribution);
 	public final static IBuiltInSymbol BesselI = BuiltIns.valueOf(BuiltIns.BesselI);
 	public final static IBuiltInSymbol BesselJ = BuiltIns.valueOf(BuiltIns.BesselJ);
 	public final static IBuiltInSymbol BesselK = BuiltIns.valueOf(BuiltIns.BesselK);
@@ -203,8 +200,7 @@ public class F {
 	public final static IBuiltInSymbol BetaRegularized = BuiltIns.valueOf(BuiltIns.BetaRegularized);
 	public final static IBuiltInSymbol BinCounts = BuiltIns.valueOf(BuiltIns.BinCounts);
 	public final static IBuiltInSymbol Binomial = BuiltIns.valueOf(BuiltIns.Binomial);
-	public final static IBuiltInSymbol BinomialDistribution = BuiltIns
-			.valueOf(BuiltIns.BinomialDistribution);
+	public final static IBuiltInSymbol BinomialDistribution = BuiltIns.valueOf(BuiltIns.BinomialDistribution);
 	public final static IBuiltInSymbol BitLength = BuiltIns.valueOf(BuiltIns.BitLength);
 	public final static IBuiltInSymbol Blank = BuiltIns.valueOf(BuiltIns.Blank);
 	public final static IBuiltInSymbol Block = BuiltIns.valueOf(BuiltIns.Block);
@@ -215,8 +211,7 @@ public class F {
 	public final static IBuiltInSymbol BooleanTable = BuiltIns.valueOf(BuiltIns.BooleanTable);
 	public final static IBuiltInSymbol BooleanVariables = BuiltIns.valueOf(BuiltIns.BooleanVariables);
 	public final static IBuiltInSymbol Booleans = BuiltIns.valueOf(BuiltIns.Booleans);
-	public final static IBuiltInSymbol BrayCurtisDistance = BuiltIns
-			.valueOf(BuiltIns.BrayCurtisDistance);
+	public final static IBuiltInSymbol BrayCurtisDistance = BuiltIns.valueOf(BuiltIns.BrayCurtisDistance);
 	public final static IBuiltInSymbol Break = BuiltIns.valueOf(BuiltIns.Break);
 	public final static IBuiltInSymbol CDF = BuiltIns.valueOf(BuiltIns.CDF);
 	public final static IBuiltInSymbol CanberraDistance = BuiltIns.valueOf(BuiltIns.CanberraDistance);
@@ -230,17 +225,13 @@ public class F {
 	public final static IBuiltInSymbol Catenate = BuiltIns.valueOf(BuiltIns.Catenate);
 	public final static IBuiltInSymbol Ceiling = BuiltIns.valueOf(BuiltIns.Ceiling);
 	public final static IBuiltInSymbol CentralMoment = BuiltIns.valueOf(BuiltIns.CentralMoment);
-	public final static IBuiltInSymbol CharacterEncoding = BuiltIns
-			.valueOf(BuiltIns.CharacterEncoding);
-	public final static IBuiltInSymbol CharacteristicPolynomial = BuiltIns
-			.valueOf(BuiltIns.CharacteristicPolynomial);
+	public final static IBuiltInSymbol CharacterEncoding = BuiltIns.valueOf(BuiltIns.CharacterEncoding);
+	public final static IBuiltInSymbol CharacteristicPolynomial = BuiltIns.valueOf(BuiltIns.CharacteristicPolynomial);
 	public final static IBuiltInSymbol ChebyshevT = BuiltIns.valueOf(BuiltIns.ChebyshevT);
 	public final static IBuiltInSymbol ChebyshevU = BuiltIns.valueOf(BuiltIns.ChebyshevU);
-	public final static IBuiltInSymbol ChessboardDistance = BuiltIns
-			.valueOf(BuiltIns.ChessboardDistance);
+	public final static IBuiltInSymbol ChessboardDistance = BuiltIns.valueOf(BuiltIns.ChessboardDistance);
 	public final static IBuiltInSymbol ChineseRemainder = BuiltIns.valueOf(BuiltIns.ChineseRemainder);
-	public final static IBuiltInSymbol CholeskyDecomposition = BuiltIns
-			.valueOf(BuiltIns.CholeskyDecomposition);
+	public final static IBuiltInSymbol CholeskyDecomposition = BuiltIns.valueOf(BuiltIns.CholeskyDecomposition);
 	public final static IBuiltInSymbol Chop = BuiltIns.valueOf(BuiltIns.Chop);
 	public final static IBuiltInSymbol CirclePoints = BuiltIns.valueOf(BuiltIns.CirclePoints);
 	public final static IBuiltInSymbol Clear = BuiltIns.valueOf(BuiltIns.Clear);
@@ -258,21 +249,17 @@ public class F {
 	public final static IBuiltInSymbol ComplexExpand = BuiltIns.valueOf(BuiltIns.ComplexExpand);
 	public final static IBuiltInSymbol ComplexInfinity = BuiltIns.valueOf(BuiltIns.ComplexInfinity);
 	public final static IBuiltInSymbol Complexes = BuiltIns.valueOf(BuiltIns.Complexes);
-	public final static IBuiltInSymbol ComplexityFunction = BuiltIns
-			.valueOf(BuiltIns.ComplexityFunction);
+	public final static IBuiltInSymbol ComplexityFunction = BuiltIns.valueOf(BuiltIns.ComplexityFunction);
 	public final static IBuiltInSymbol ComposeList = BuiltIns.valueOf(BuiltIns.ComposeList);
 	public final static IBuiltInSymbol Composition = BuiltIns.valueOf(BuiltIns.Composition);
-	public final static IBuiltInSymbol CompoundExpression = BuiltIns
-			.valueOf(BuiltIns.CompoundExpression);
+	public final static IBuiltInSymbol CompoundExpression = BuiltIns.valueOf(BuiltIns.CompoundExpression);
 	public final static IBuiltInSymbol Condition = BuiltIns.valueOf(BuiltIns.Condition);
 	public final static IBuiltInSymbol Conjugate = BuiltIns.valueOf(BuiltIns.Conjugate);
-	public final static IBuiltInSymbol ConjugateTranspose = BuiltIns
-			.valueOf(BuiltIns.ConjugateTranspose);
+	public final static IBuiltInSymbol ConjugateTranspose = BuiltIns.valueOf(BuiltIns.ConjugateTranspose);
 	public final static IBuiltInSymbol Constant = BuiltIns.valueOf(BuiltIns.Constant);
 	public final static IBuiltInSymbol ConstantArray = BuiltIns.valueOf(BuiltIns.ConstantArray);
 	public final static IBuiltInSymbol Continue = BuiltIns.valueOf(BuiltIns.Continue);
-	public final static IBuiltInSymbol ContinuedFraction = BuiltIns
-			.valueOf(BuiltIns.ContinuedFraction);
+	public final static IBuiltInSymbol ContinuedFraction = BuiltIns.valueOf(BuiltIns.ContinuedFraction);
 	public final static IBuiltInSymbol ConvexHullMesh = BuiltIns.valueOf(BuiltIns.ConvexHullMesh);
 	public final static IBuiltInSymbol CoprimeQ = BuiltIns.valueOf(BuiltIns.CoprimeQ);
 	public final static IBuiltInSymbol Correlation = BuiltIns.valueOf(BuiltIns.Correlation);
@@ -307,8 +294,7 @@ public class F {
 	public final static IBuiltInSymbol Det = BuiltIns.valueOf(BuiltIns.Det);
 	public final static IBuiltInSymbol Diagonal = BuiltIns.valueOf(BuiltIns.Diagonal);
 	public final static IBuiltInSymbol DiagonalMatrix = BuiltIns.valueOf(BuiltIns.DiagonalMatrix);
-	public final static IBuiltInSymbol DiceDissimilarity = BuiltIns
-			.valueOf(BuiltIns.DiceDissimilarity);
+	public final static IBuiltInSymbol DiceDissimilarity = BuiltIns.valueOf(BuiltIns.DiceDissimilarity);
 	public final static IBuiltInSymbol DigitQ = BuiltIns.valueOf(BuiltIns.DigitQ);
 	public final static IBuiltInSymbol Dimensions = BuiltIns.valueOf(BuiltIns.Dimensions);
 	public final static IBuiltInSymbol DiracDelta = BuiltIns.valueOf(BuiltIns.DiracDelta);
@@ -346,10 +332,8 @@ public class F {
 	public final static IBuiltInSymbol Erf = BuiltIns.valueOf(BuiltIns.Erf);
 	public final static IBuiltInSymbol Erfc = BuiltIns.valueOf(BuiltIns.Erfc);
 	public final static IBuiltInSymbol Erfi = BuiltIns.valueOf(BuiltIns.Erfi);
-	public final static IBuiltInSymbol ErlangDistribution = BuiltIns
-			.valueOf(BuiltIns.ErlangDistribution);
-	public final static IBuiltInSymbol EuclideanDistance = BuiltIns
-			.valueOf(BuiltIns.EuclideanDistance);
+	public final static IBuiltInSymbol ErlangDistribution = BuiltIns.valueOf(BuiltIns.ErlangDistribution);
+	public final static IBuiltInSymbol EuclideanDistance = BuiltIns.valueOf(BuiltIns.EuclideanDistance);
 	public final static IBuiltInSymbol EulerE = BuiltIns.valueOf(BuiltIns.EulerE);
 	public final static IBuiltInSymbol EulerGamma = BuiltIns.valueOf(BuiltIns.EulerGamma);
 	public final static IBuiltInSymbol EulerPhi = BuiltIns.valueOf(BuiltIns.EulerPhi);
@@ -364,16 +348,14 @@ public class F {
 	public final static IBuiltInSymbol ExpandAll = BuiltIns.valueOf(BuiltIns.ExpandAll);
 	public final static IBuiltInSymbol Expectation = BuiltIns.valueOf(BuiltIns.Expectation);
 	public final static IBuiltInSymbol Exponent = BuiltIns.valueOf(BuiltIns.Exponent);
-	public final static IBuiltInSymbol ExponentialDistribution = BuiltIns
-			.valueOf(BuiltIns.ExponentialDistribution);
+	public final static IBuiltInSymbol ExponentialDistribution = BuiltIns.valueOf(BuiltIns.ExponentialDistribution);
 	public final static IBuiltInSymbol Export = BuiltIns.valueOf(BuiltIns.Export);
 	public final static IBuiltInSymbol ExtendedGCD = BuiltIns.valueOf(BuiltIns.ExtendedGCD);
 	public final static IBuiltInSymbol Extract = BuiltIns.valueOf(BuiltIns.Extract);
 	public final static IBuiltInSymbol Factor = BuiltIns.valueOf(BuiltIns.Factor);
 	public final static IBuiltInSymbol FactorInteger = BuiltIns.valueOf(BuiltIns.FactorInteger);
 	public final static IBuiltInSymbol FactorSquareFree = BuiltIns.valueOf(BuiltIns.FactorSquareFree);
-	public final static IBuiltInSymbol FactorSquareFreeList = BuiltIns
-			.valueOf(BuiltIns.FactorSquareFreeList);
+	public final static IBuiltInSymbol FactorSquareFreeList = BuiltIns.valueOf(BuiltIns.FactorSquareFreeList);
 	public final static IBuiltInSymbol FactorTerms = BuiltIns.valueOf(BuiltIns.FactorTerms);
 	public final static IBuiltInSymbol Factorial = BuiltIns.valueOf(BuiltIns.Factorial);
 	public final static IBuiltInSymbol Factorial2 = BuiltIns.valueOf(BuiltIns.Factorial2);
@@ -395,30 +377,24 @@ public class F {
 	public final static IBuiltInSymbol ForAll = BuiltIns.valueOf(BuiltIns.ForAll);
 	public final static IBuiltInSymbol FourierMatrix = BuiltIns.valueOf(BuiltIns.FourierMatrix);
 	public final static IBuiltInSymbol FractionalPart = BuiltIns.valueOf(BuiltIns.FractionalPart);
-	public final static IBuiltInSymbol FrechetDistribution = BuiltIns
-			.valueOf(BuiltIns.FrechetDistribution);
+	public final static IBuiltInSymbol FrechetDistribution = BuiltIns.valueOf(BuiltIns.FrechetDistribution);
 	public final static IBuiltInSymbol FreeQ = BuiltIns.valueOf(BuiltIns.FreeQ);
 	public final static IBuiltInSymbol FresnelC = BuiltIns.valueOf(BuiltIns.FresnelC);
 	public final static IBuiltInSymbol FresnelS = BuiltIns.valueOf(BuiltIns.FresnelS);
 	public final static IBuiltInSymbol FrobeniusSolve = BuiltIns.valueOf(BuiltIns.FrobeniusSolve);
-	public final static IBuiltInSymbol FromCharacterCode = BuiltIns
-			.valueOf(BuiltIns.FromCharacterCode);
-	public final static IBuiltInSymbol FromContinuedFraction = BuiltIns
-			.valueOf(BuiltIns.FromContinuedFraction);
-	public final static IBuiltInSymbol FromPolarCoordinates = BuiltIns
-			.valueOf(BuiltIns.FromPolarCoordinates);
+	public final static IBuiltInSymbol FromCharacterCode = BuiltIns.valueOf(BuiltIns.FromCharacterCode);
+	public final static IBuiltInSymbol FromContinuedFraction = BuiltIns.valueOf(BuiltIns.FromContinuedFraction);
+	public final static IBuiltInSymbol FromPolarCoordinates = BuiltIns.valueOf(BuiltIns.FromPolarCoordinates);
 	public final static IBuiltInSymbol FullForm = BuiltIns.valueOf(BuiltIns.FullForm);
 	public final static IBuiltInSymbol FullSimplify = BuiltIns.valueOf(BuiltIns.FullSimplify);
 	public final static IBuiltInSymbol Function = BuiltIns.valueOf(BuiltIns.Function);
 	public final static IBuiltInSymbol GCD = BuiltIns.valueOf(BuiltIns.GCD);
 	public final static IBuiltInSymbol Gamma = BuiltIns.valueOf(BuiltIns.Gamma);
-	public final static IBuiltInSymbol GammaDistribution = BuiltIns
-			.valueOf(BuiltIns.GammaDistribution);
+	public final static IBuiltInSymbol GammaDistribution = BuiltIns.valueOf(BuiltIns.GammaDistribution);
 	public final static IBuiltInSymbol GammaRegularized = BuiltIns.valueOf(BuiltIns.GammaRegularized);
 	public final static IBuiltInSymbol Gather = BuiltIns.valueOf(BuiltIns.Gather);
 	public final static IBuiltInSymbol GegenbauerC = BuiltIns.valueOf(BuiltIns.GegenbauerC);
-	public final static IBuiltInSymbol GeometricDistribution = BuiltIns
-			.valueOf(BuiltIns.GeometricDistribution);
+	public final static IBuiltInSymbol GeometricDistribution = BuiltIns.valueOf(BuiltIns.GeometricDistribution);
 	public final static IBuiltInSymbol GeometricMean = BuiltIns.valueOf(BuiltIns.GeometricMean);
 	public final static IBuiltInSymbol Get = BuiltIns.valueOf(BuiltIns.Get);
 	public final static IBuiltInSymbol Glaisher = BuiltIns.valueOf(BuiltIns.Glaisher);
@@ -428,8 +404,7 @@ public class F {
 	public final static IBuiltInSymbol Greater = BuiltIns.valueOf(BuiltIns.Greater);
 	public final static IBuiltInSymbol GreaterEqual = BuiltIns.valueOf(BuiltIns.GreaterEqual);
 	public final static IBuiltInSymbol GroebnerBasis = BuiltIns.valueOf(BuiltIns.GroebnerBasis);
-	public final static IBuiltInSymbol GumbelDistribution = BuiltIns
-			.valueOf(BuiltIns.GumbelDistribution);
+	public final static IBuiltInSymbol GumbelDistribution = BuiltIns.valueOf(BuiltIns.GumbelDistribution);
 	public final static IBuiltInSymbol HarmonicNumber = BuiltIns.valueOf(BuiltIns.HarmonicNumber);
 	public final static IBuiltInSymbol Haversine = BuiltIns.valueOf(BuiltIns.Haversine);
 	public final static IBuiltInSymbol Head = BuiltIns.valueOf(BuiltIns.Head);
@@ -445,14 +420,11 @@ public class F {
 	public final static IBuiltInSymbol Horner = BuiltIns.valueOf(BuiltIns.Horner);
 	public final static IBuiltInSymbol HornerForm = BuiltIns.valueOf(BuiltIns.HornerForm);
 	public final static IBuiltInSymbol HurwitzZeta = BuiltIns.valueOf(BuiltIns.HurwitzZeta);
-	public final static IBuiltInSymbol Hypergeometric1F1 = BuiltIns
-			.valueOf(BuiltIns.Hypergeometric1F1);
-	public final static IBuiltInSymbol Hypergeometric2F1 = BuiltIns
-			.valueOf(BuiltIns.Hypergeometric2F1);
+	public final static IBuiltInSymbol Hypergeometric1F1 = BuiltIns.valueOf(BuiltIns.Hypergeometric1F1);
+	public final static IBuiltInSymbol Hypergeometric2F1 = BuiltIns.valueOf(BuiltIns.Hypergeometric2F1);
 	public final static IBuiltInSymbol HypergeometricDistribution = BuiltIns
 			.valueOf(BuiltIns.HypergeometricDistribution);
-	public final static IBuiltInSymbol HypergeometricPFQ = BuiltIns
-			.valueOf(BuiltIns.HypergeometricPFQ);
+	public final static IBuiltInSymbol HypergeometricPFQ = BuiltIns.valueOf(BuiltIns.HypergeometricPFQ);
 	public final static IBuiltInSymbol HypergeometricPFQRegularized = BuiltIns
 			.valueOf(BuiltIns.HypergeometricPFQRegularized);
 	public final static IBuiltInSymbol I = BuiltIns.valueOf(BuiltIns.I);
@@ -474,15 +446,12 @@ public class F {
 	public final static IBuiltInSymbol IntegerExponent = BuiltIns.valueOf(BuiltIns.IntegerExponent);
 	public final static IBuiltInSymbol IntegerLength = BuiltIns.valueOf(BuiltIns.IntegerLength);
 	public final static IBuiltInSymbol IntegerPart = BuiltIns.valueOf(BuiltIns.IntegerPart);
-	public final static IBuiltInSymbol IntegerPartitions = BuiltIns
-			.valueOf(BuiltIns.IntegerPartitions);
+	public final static IBuiltInSymbol IntegerPartitions = BuiltIns.valueOf(BuiltIns.IntegerPartitions);
 	public final static IBuiltInSymbol IntegerQ = BuiltIns.valueOf(BuiltIns.IntegerQ);
 	public final static IBuiltInSymbol Integers = BuiltIns.valueOf(BuiltIns.Integers);
 	public final static IBuiltInSymbol Integrate = BuiltIns.valueOf(BuiltIns.Integrate);
-	public final static IBuiltInSymbol InterpolatingFunction = BuiltIns
-			.valueOf(BuiltIns.InterpolatingFunction);
-	public final static IBuiltInSymbol InterpolatingPolynomial = BuiltIns
-			.valueOf(BuiltIns.InterpolatingPolynomial);
+	public final static IBuiltInSymbol InterpolatingFunction = BuiltIns.valueOf(BuiltIns.InterpolatingFunction);
+	public final static IBuiltInSymbol InterpolatingPolynomial = BuiltIns.valueOf(BuiltIns.InterpolatingPolynomial);
 	public final static IBuiltInSymbol Interpolation = BuiltIns.valueOf(BuiltIns.Interpolation);
 	public final static IBuiltInSymbol Intersection = BuiltIns.valueOf(BuiltIns.Intersection);
 	public final static IBuiltInSymbol Interval = BuiltIns.valueOf(BuiltIns.Interval);
@@ -491,16 +460,13 @@ public class F {
 	public final static IBuiltInSymbol InverseErfc = BuiltIns.valueOf(BuiltIns.InverseErfc);
 	public final static IBuiltInSymbol InverseFunction = BuiltIns.valueOf(BuiltIns.InverseFunction);
 	public final static IBuiltInSymbol InverseHaversine = BuiltIns.valueOf(BuiltIns.InverseHaversine);
-	public final static IBuiltInSymbol InverseLaplaceTransform = BuiltIns
-			.valueOf(BuiltIns.InverseLaplaceTransform);
-	public final static IBuiltInSymbol JaccardDissimilarity = BuiltIns
-			.valueOf(BuiltIns.JaccardDissimilarity);
+	public final static IBuiltInSymbol InverseLaplaceTransform = BuiltIns.valueOf(BuiltIns.InverseLaplaceTransform);
+	public final static IBuiltInSymbol JaccardDissimilarity = BuiltIns.valueOf(BuiltIns.JaccardDissimilarity);
 	public final static IBuiltInSymbol JacobiMatrix = BuiltIns.valueOf(BuiltIns.JacobiMatrix);
 	public final static IBuiltInSymbol JacobiSymbol = BuiltIns.valueOf(BuiltIns.JacobiSymbol);
 	public final static IBuiltInSymbol JavaForm = BuiltIns.valueOf(BuiltIns.JavaForm);
 	public final static IBuiltInSymbol Join = BuiltIns.valueOf(BuiltIns.Join);
-	public final static IBuiltInSymbol KOrderlessPartitions = BuiltIns
-			.valueOf(BuiltIns.KOrderlessPartitions);
+	public final static IBuiltInSymbol KOrderlessPartitions = BuiltIns.valueOf(BuiltIns.KOrderlessPartitions);
 	public final static IBuiltInSymbol KPartitions = BuiltIns.valueOf(BuiltIns.KPartitions);
 	public final static IBuiltInSymbol Khinchin = BuiltIns.valueOf(BuiltIns.Khinchin);
 	public final static IBuiltInSymbol KroneckerDelta = BuiltIns.valueOf(BuiltIns.KroneckerDelta);
@@ -523,8 +489,7 @@ public class F {
 	public final static IBuiltInSymbol Limit = BuiltIns.valueOf(BuiltIns.Limit);
 	public final static IBuiltInSymbol Line = BuiltIns.valueOf(BuiltIns.Line);
 	public final static IBuiltInSymbol LinearModelFit = BuiltIns.valueOf(BuiltIns.LinearModelFit);
-	public final static IBuiltInSymbol LinearProgramming = BuiltIns
-			.valueOf(BuiltIns.LinearProgramming);
+	public final static IBuiltInSymbol LinearProgramming = BuiltIns.valueOf(BuiltIns.LinearProgramming);
 	public final static IBuiltInSymbol LinearSolve = BuiltIns.valueOf(BuiltIns.LinearSolve);
 	public final static IBuiltInSymbol LiouvilleLambda = BuiltIns.valueOf(BuiltIns.LiouvilleLambda);
 	public final static IBuiltInSymbol List = BuiltIns.valueOf(BuiltIns.List);
@@ -538,29 +503,25 @@ public class F {
 	public final static IBuiltInSymbol Log2 = BuiltIns.valueOf(BuiltIns.Log2);
 	public final static IBuiltInSymbol LogGamma = BuiltIns.valueOf(BuiltIns.LogGamma);
 	public final static IBuiltInSymbol LogIntegral = BuiltIns.valueOf(BuiltIns.LogIntegral);
-	public final static IBuiltInSymbol LogNormalDistribution = BuiltIns
-			.valueOf(BuiltIns.LogNormalDistribution);
+	public final static IBuiltInSymbol LogNormalDistribution = BuiltIns.valueOf(BuiltIns.LogNormalDistribution);
 	public final static IBuiltInSymbol LogicalExpand = BuiltIns.valueOf(BuiltIns.LogicalExpand);
 	public final static IBuiltInSymbol LogisticSigmoid = BuiltIns.valueOf(BuiltIns.LogisticSigmoid);
 	public final static IBuiltInSymbol LowerCaseQ = BuiltIns.valueOf(BuiltIns.LowerCaseQ);
-	public final static IBuiltInSymbol LowerTriangularize = BuiltIns
-			.valueOf(BuiltIns.LowerTriangularize);
+	public final static IBuiltInSymbol LowerTriangularize = BuiltIns.valueOf(BuiltIns.LowerTriangularize);
 	public final static IBuiltInSymbol LucasL = BuiltIns.valueOf(BuiltIns.LucasL);
 	public final static IBuiltInSymbol MachineNumberQ = BuiltIns.valueOf(BuiltIns.MachineNumberQ);
-	public final static IBuiltInSymbol ManhattanDistance = BuiltIns
-			.valueOf(BuiltIns.ManhattanDistance);
+	public final static IBuiltInSymbol MangoldtLambda = BuiltIns.valueOf(BuiltIns.MangoldtLambda);
+	public final static IBuiltInSymbol ManhattanDistance = BuiltIns.valueOf(BuiltIns.ManhattanDistance);
 	public final static IBuiltInSymbol MantissaExponent = BuiltIns.valueOf(BuiltIns.MantissaExponent);
 	public final static IBuiltInSymbol Map = BuiltIns.valueOf(BuiltIns.Map);
 	public final static IBuiltInSymbol MapAll = BuiltIns.valueOf(BuiltIns.MapAll);
 	public final static IBuiltInSymbol MapAt = BuiltIns.valueOf(BuiltIns.MapAt);
 	public final static IBuiltInSymbol MapThread = BuiltIns.valueOf(BuiltIns.MapThread);
 	public final static IBuiltInSymbol MatchQ = BuiltIns.valueOf(BuiltIns.MatchQ);
-	public final static IBuiltInSymbol MatchingDissimilarity = BuiltIns
-			.valueOf(BuiltIns.MatchingDissimilarity);
+	public final static IBuiltInSymbol MatchingDissimilarity = BuiltIns.valueOf(BuiltIns.MatchingDissimilarity);
 	public final static IBuiltInSymbol MathMLForm = BuiltIns.valueOf(BuiltIns.MathMLForm);
 	public final static IBuiltInSymbol MatrixForm = BuiltIns.valueOf(BuiltIns.MatrixForm);
-	public final static IBuiltInSymbol MatrixMinimalPolynomial = BuiltIns
-			.valueOf(BuiltIns.MatrixMinimalPolynomial);
+	public final static IBuiltInSymbol MatrixMinimalPolynomial = BuiltIns.valueOf(BuiltIns.MatrixMinimalPolynomial);
 	public final static IBuiltInSymbol MatrixPower = BuiltIns.valueOf(BuiltIns.MatrixPower);
 	public final static IBuiltInSymbol MatrixQ = BuiltIns.valueOf(BuiltIns.MatrixQ);
 	public final static IBuiltInSymbol MatrixRank = BuiltIns.valueOf(BuiltIns.MatrixRank);
@@ -572,16 +533,13 @@ public class F {
 	public final static IBuiltInSymbol Median = BuiltIns.valueOf(BuiltIns.Median);
 	public final static IBuiltInSymbol MeijerG = BuiltIns.valueOf(BuiltIns.MeijerG);
 	public final static IBuiltInSymbol MemberQ = BuiltIns.valueOf(BuiltIns.MemberQ);
-	public final static IBuiltInSymbol MersennePrimeExponent = BuiltIns
-			.valueOf(BuiltIns.MersennePrimeExponent);
-	public final static IBuiltInSymbol MersennePrimeExponentQ = BuiltIns
-			.valueOf(BuiltIns.MersennePrimeExponentQ);
+	public final static IBuiltInSymbol MersennePrimeExponent = BuiltIns.valueOf(BuiltIns.MersennePrimeExponent);
+	public final static IBuiltInSymbol MersennePrimeExponentQ = BuiltIns.valueOf(BuiltIns.MersennePrimeExponentQ);
 	public final static IBuiltInSymbol MeshRange = BuiltIns.valueOf(BuiltIns.MeshRange);
 	public final static IBuiltInSymbol MessageName = BuiltIns.valueOf(BuiltIns.MessageName);
 	public final static IBuiltInSymbol Method = BuiltIns.valueOf(BuiltIns.Method);
 	public final static IBuiltInSymbol Min = BuiltIns.valueOf(BuiltIns.Min);
-	public final static IBuiltInSymbol MinimalPolynomial = BuiltIns
-			.valueOf(BuiltIns.MinimalPolynomial);
+	public final static IBuiltInSymbol MinimalPolynomial = BuiltIns.valueOf(BuiltIns.MinimalPolynomial);
 	public final static IBuiltInSymbol Minus = BuiltIns.valueOf(BuiltIns.Minus);
 	public final static IBuiltInSymbol Missing = BuiltIns.valueOf(BuiltIns.Missing);
 	public final static IBuiltInSymbol MissingQ = BuiltIns.valueOf(BuiltIns.MissingQ);
@@ -592,12 +550,10 @@ public class F {
 	public final static IBuiltInSymbol MonomialList = BuiltIns.valueOf(BuiltIns.MonomialList);
 	public final static IBuiltInSymbol Most = BuiltIns.valueOf(BuiltIns.Most);
 	public final static IBuiltInSymbol Multinomial = BuiltIns.valueOf(BuiltIns.Multinomial);
-	public final static IBuiltInSymbol MultiplicativeOrder = BuiltIns
-			.valueOf(BuiltIns.MultiplicativeOrder);
+	public final static IBuiltInSymbol MultiplicativeOrder = BuiltIns.valueOf(BuiltIns.MultiplicativeOrder);
 	public final static IBuiltInSymbol N = BuiltIns.valueOf(BuiltIns.N);
 	public final static IBuiltInSymbol NDSolve = BuiltIns.valueOf(BuiltIns.NDSolve);
-	public final static IBuiltInSymbol NFourierTransform = BuiltIns
-			.valueOf(BuiltIns.NFourierTransform);
+	public final static IBuiltInSymbol NFourierTransform = BuiltIns.valueOf(BuiltIns.NFourierTransform);
 	public final static IBuiltInSymbol NHoldAll = BuiltIns.valueOf(BuiltIns.NHoldAll);
 	public final static IBuiltInSymbol NHoldFirst = BuiltIns.valueOf(BuiltIns.NHoldFirst);
 	public final static IBuiltInSymbol NHoldRest = BuiltIns.valueOf(BuiltIns.NHoldRest);
@@ -606,8 +562,7 @@ public class F {
 	public final static IBuiltInSymbol NMinimize = BuiltIns.valueOf(BuiltIns.NMinimize);
 	public final static IBuiltInSymbol NRoots = BuiltIns.valueOf(BuiltIns.NRoots);
 	public final static IBuiltInSymbol NSolve = BuiltIns.valueOf(BuiltIns.NSolve);
-	public final static IBuiltInSymbol NakagamiDistribution = BuiltIns
-			.valueOf(BuiltIns.NakagamiDistribution);
+	public final static IBuiltInSymbol NakagamiDistribution = BuiltIns.valueOf(BuiltIns.NakagamiDistribution);
 	public final static IBuiltInSymbol Names = BuiltIns.valueOf(BuiltIns.Names);
 	public final static IBuiltInSymbol Nand = BuiltIns.valueOf(BuiltIns.Nand);
 	public final static IBuiltInSymbol Nearest = BuiltIns.valueOf(BuiltIns.Nearest);
@@ -617,8 +572,7 @@ public class F {
 	public final static IBuiltInSymbol NestWhile = BuiltIns.valueOf(BuiltIns.NestWhile);
 	public final static IBuiltInSymbol NestWhileList = BuiltIns.valueOf(BuiltIns.NestWhileList);
 	public final static IBuiltInSymbol NextPrime = BuiltIns.valueOf(BuiltIns.NextPrime);
-	public final static IBuiltInSymbol NonCommutativeMultiply = BuiltIns
-			.valueOf(BuiltIns.NonCommutativeMultiply);
+	public final static IBuiltInSymbol NonCommutativeMultiply = BuiltIns.valueOf(BuiltIns.NonCommutativeMultiply);
 	public final static IBuiltInSymbol NonNegative = BuiltIns.valueOf(BuiltIns.NonNegative);
 	public final static IBuiltInSymbol NonPositive = BuiltIns.valueOf(BuiltIns.NonPositive);
 	public final static IBuiltInSymbol None = BuiltIns.valueOf(BuiltIns.None);
@@ -627,8 +581,7 @@ public class F {
 	public final static IBuiltInSymbol Nor = BuiltIns.valueOf(BuiltIns.Nor);
 	public final static IBuiltInSymbol Norm = BuiltIns.valueOf(BuiltIns.Norm);
 	public final static IBuiltInSymbol Normal = BuiltIns.valueOf(BuiltIns.Normal);
-	public final static IBuiltInSymbol NormalDistribution = BuiltIns
-			.valueOf(BuiltIns.NormalDistribution);
+	public final static IBuiltInSymbol NormalDistribution = BuiltIns.valueOf(BuiltIns.NormalDistribution);
 	public final static IBuiltInSymbol Normalize = BuiltIns.valueOf(BuiltIns.Normalize);
 	public final static IBuiltInSymbol Not = BuiltIns.valueOf(BuiltIns.Not);
 	public final static IBuiltInSymbol NotApplicable = BuiltIns.valueOf(BuiltIns.NotApplicable);
@@ -636,8 +589,7 @@ public class F {
 	public final static IBuiltInSymbol NotListQ = BuiltIns.valueOf(BuiltIns.NotListQ);
 	public final static IBuiltInSymbol Null = BuiltIns.valueOf(BuiltIns.Null);
 	public final static IBuiltInSymbol NullSpace = BuiltIns.valueOf(BuiltIns.NullSpace);
-	public final static IBuiltInSymbol NumberFieldRootsOfUnity = BuiltIns
-			.valueOf(BuiltIns.NumberFieldRootsOfUnity);
+	public final static IBuiltInSymbol NumberFieldRootsOfUnity = BuiltIns.valueOf(BuiltIns.NumberFieldRootsOfUnity);
 	public final static IBuiltInSymbol NumberQ = BuiltIns.valueOf(BuiltIns.NumberQ);
 	public final static IBuiltInSymbol Numerator = BuiltIns.valueOf(BuiltIns.Numerator);
 	public final static IBuiltInSymbol NumericFunction = BuiltIns.valueOf(BuiltIns.NumericFunction);
@@ -653,8 +605,7 @@ public class F {
 	public final static IBuiltInSymbol OrderedQ = BuiltIns.valueOf(BuiltIns.OrderedQ);
 	public final static IBuiltInSymbol Ordering = BuiltIns.valueOf(BuiltIns.Ordering);
 	public final static IBuiltInSymbol Orderless = BuiltIns.valueOf(BuiltIns.Orderless);
-	public final static IBuiltInSymbol OrthogonalMatrixQ = BuiltIns
-			.valueOf(BuiltIns.OrthogonalMatrixQ);
+	public final static IBuiltInSymbol OrthogonalMatrixQ = BuiltIns.valueOf(BuiltIns.OrthogonalMatrixQ);
 	public final static IBuiltInSymbol Orthogonalize = BuiltIns.valueOf(BuiltIns.Orthogonalize);
 	public final static IBuiltInSymbol Out = BuiltIns.valueOf(BuiltIns.Out);
 	public final static IBuiltInSymbol Outer = BuiltIns.valueOf(BuiltIns.Outer);
@@ -680,22 +631,18 @@ public class F {
 	public final static IBuiltInSymbol Plus = BuiltIns.valueOf(BuiltIns.Plus);
 	public final static IBuiltInSymbol Pochhammer = BuiltIns.valueOf(BuiltIns.Pochhammer);
 	public final static IBuiltInSymbol Point = BuiltIns.valueOf(BuiltIns.Point);
-	public final static IBuiltInSymbol PoissonDistribution = BuiltIns
-			.valueOf(BuiltIns.PoissonDistribution);
+	public final static IBuiltInSymbol PoissonDistribution = BuiltIns.valueOf(BuiltIns.PoissonDistribution);
 	public final static IBuiltInSymbol PolyGamma = BuiltIns.valueOf(BuiltIns.PolyGamma);
 	public final static IBuiltInSymbol PolyLog = BuiltIns.valueOf(BuiltIns.PolyLog);
 	public final static IBuiltInSymbol Polygon = BuiltIns.valueOf(BuiltIns.Polygon);
-	public final static IBuiltInSymbol PolynomialExtendedGCD = BuiltIns
-			.valueOf(BuiltIns.PolynomialExtendedGCD);
+	public final static IBuiltInSymbol PolynomialExtendedGCD = BuiltIns.valueOf(BuiltIns.PolynomialExtendedGCD);
 	public final static IBuiltInSymbol PolynomialGCD = BuiltIns.valueOf(BuiltIns.PolynomialGCD);
 	public final static IBuiltInSymbol PolynomialLCM = BuiltIns.valueOf(BuiltIns.PolynomialLCM);
 	public final static IBuiltInSymbol PolynomialQ = BuiltIns.valueOf(BuiltIns.PolynomialQ);
-	public final static IBuiltInSymbol PolynomialQuotient = BuiltIns
-			.valueOf(BuiltIns.PolynomialQuotient);
+	public final static IBuiltInSymbol PolynomialQuotient = BuiltIns.valueOf(BuiltIns.PolynomialQuotient);
 	public final static IBuiltInSymbol PolynomialQuotientRemainder = BuiltIns
 			.valueOf(BuiltIns.PolynomialQuotientRemainder);
-	public final static IBuiltInSymbol PolynomialRemainder = BuiltIns
-			.valueOf(BuiltIns.PolynomialRemainder);
+	public final static IBuiltInSymbol PolynomialRemainder = BuiltIns.valueOf(BuiltIns.PolynomialRemainder);
 	public final static IBuiltInSymbol Position = BuiltIns.valueOf(BuiltIns.Position);
 	public final static IBuiltInSymbol Positive = BuiltIns.valueOf(BuiltIns.Positive);
 	public final static IBuiltInSymbol PossibleZeroQ = BuiltIns.valueOf(BuiltIns.PossibleZeroQ);
@@ -715,8 +662,7 @@ public class F {
 	public final static IBuiltInSymbol PrimePowerQ = BuiltIns.valueOf(BuiltIns.PrimePowerQ);
 	public final static IBuiltInSymbol PrimeQ = BuiltIns.valueOf(BuiltIns.PrimeQ);
 	public final static IBuiltInSymbol Primes = BuiltIns.valueOf(BuiltIns.Primes);
-	public final static IBuiltInSymbol PrimitiveRootList = BuiltIns
-			.valueOf(BuiltIns.PrimitiveRootList);
+	public final static IBuiltInSymbol PrimitiveRootList = BuiltIns.valueOf(BuiltIns.PrimitiveRootList);
 	public final static IBuiltInSymbol Print = BuiltIns.valueOf(BuiltIns.Print);
 	public final static IBuiltInSymbol Product = BuiltIns.valueOf(BuiltIns.Product);
 	public final static IBuiltInSymbol ProductLog = BuiltIns.valueOf(BuiltIns.ProductLog);
@@ -728,8 +674,7 @@ public class F {
 	public final static IBuiltInSymbol Quiet = BuiltIns.valueOf(BuiltIns.Quiet);
 	public final static IBuiltInSymbol Quit = BuiltIns.valueOf(BuiltIns.Quit);
 	public final static IBuiltInSymbol Quotient = BuiltIns.valueOf(BuiltIns.Quotient);
-	public final static IBuiltInSymbol QuotientRemainder = BuiltIns
-			.valueOf(BuiltIns.QuotientRemainder);
+	public final static IBuiltInSymbol QuotientRemainder = BuiltIns.valueOf(BuiltIns.QuotientRemainder);
 	public final static IBuiltInSymbol RandomChoice = BuiltIns.valueOf(BuiltIns.RandomChoice);
 	public final static IBuiltInSymbol RandomInteger = BuiltIns.valueOf(BuiltIns.RandomInteger);
 	public final static IBuiltInSymbol RandomReal = BuiltIns.valueOf(BuiltIns.RandomReal);
@@ -771,13 +716,10 @@ public class F {
 	public final static IBuiltInSymbol RowReduce = BuiltIns.valueOf(BuiltIns.RowReduce);
 	public final static IBuiltInSymbol Rule = BuiltIns.valueOf(BuiltIns.Rule);
 	public final static IBuiltInSymbol RuleDelayed = BuiltIns.valueOf(BuiltIns.RuleDelayed);
-	public final static IBuiltInSymbol RussellRaoDissimilarity = BuiltIns
-			.valueOf(BuiltIns.RussellRaoDissimilarity);
+	public final static IBuiltInSymbol RussellRaoDissimilarity = BuiltIns.valueOf(BuiltIns.RussellRaoDissimilarity);
 	public final static IBuiltInSymbol SameQ = BuiltIns.valueOf(BuiltIns.SameQ);
-	public final static IBuiltInSymbol SatisfiabilityCount = BuiltIns
-			.valueOf(BuiltIns.SatisfiabilityCount);
-	public final static IBuiltInSymbol SatisfiabilityInstances = BuiltIns
-			.valueOf(BuiltIns.SatisfiabilityInstances);
+	public final static IBuiltInSymbol SatisfiabilityCount = BuiltIns.valueOf(BuiltIns.SatisfiabilityCount);
+	public final static IBuiltInSymbol SatisfiabilityInstances = BuiltIns.valueOf(BuiltIns.SatisfiabilityInstances);
 	public final static IBuiltInSymbol SatisfiableQ = BuiltIns.valueOf(BuiltIns.SatisfiableQ);
 	public final static IBuiltInSymbol Scan = BuiltIns.valueOf(BuiltIns.Scan);
 	public final static IBuiltInSymbol Sec = BuiltIns.valueOf(BuiltIns.Sec);
@@ -805,8 +747,7 @@ public class F {
 	public final static IBuiltInSymbol Skewness = BuiltIns.valueOf(BuiltIns.Skewness);
 	public final static IBuiltInSymbol Slot = BuiltIns.valueOf(BuiltIns.Slot);
 	public final static IBuiltInSymbol SlotSequence = BuiltIns.valueOf(BuiltIns.SlotSequence);
-	public final static IBuiltInSymbol SokalSneathDissimilarity = BuiltIns
-			.valueOf(BuiltIns.SokalSneathDissimilarity);
+	public final static IBuiltInSymbol SokalSneathDissimilarity = BuiltIns.valueOf(BuiltIns.SokalSneathDissimilarity);
 	public final static IBuiltInSymbol Solve = BuiltIns.valueOf(BuiltIns.Solve);
 	public final static IBuiltInSymbol Sort = BuiltIns.valueOf(BuiltIns.Sort);
 	public final static IBuiltInSymbol Sow = BuiltIns.valueOf(BuiltIns.Sow);
@@ -815,10 +756,8 @@ public class F {
 	public final static IBuiltInSymbol SplitBy = BuiltIns.valueOf(BuiltIns.SplitBy);
 	public final static IBuiltInSymbol Sqrt = BuiltIns.valueOf(BuiltIns.Sqrt);
 	public final static IBuiltInSymbol SquareFreeQ = BuiltIns.valueOf(BuiltIns.SquareFreeQ);
-	public final static IBuiltInSymbol SquaredEuclideanDistance = BuiltIns
-			.valueOf(BuiltIns.SquaredEuclideanDistance);
-	public final static IBuiltInSymbol StandardDeviation = BuiltIns
-			.valueOf(BuiltIns.StandardDeviation);
+	public final static IBuiltInSymbol SquaredEuclideanDistance = BuiltIns.valueOf(BuiltIns.SquaredEuclideanDistance);
+	public final static IBuiltInSymbol StandardDeviation = BuiltIns.valueOf(BuiltIns.StandardDeviation);
 	public final static IBuiltInSymbol Standardize = BuiltIns.valueOf(BuiltIns.Standardize);
 	public final static IBuiltInSymbol StieltjesGamma = BuiltIns.valueOf(BuiltIns.StieltjesGamma);
 	public final static IBuiltInSymbol StirlingS1 = BuiltIns.valueOf(BuiltIns.StirlingS1);
@@ -830,8 +769,7 @@ public class F {
 	public final static IBuiltInSymbol StringTake = BuiltIns.valueOf(BuiltIns.StringTake);
 	public final static IBuiltInSymbol StruveH = BuiltIns.valueOf(BuiltIns.StruveH);
 	public final static IBuiltInSymbol StruveL = BuiltIns.valueOf(BuiltIns.StruveL);
-	public final static IBuiltInSymbol StudentTDistribution = BuiltIns
-			.valueOf(BuiltIns.StudentTDistribution);
+	public final static IBuiltInSymbol StudentTDistribution = BuiltIns.valueOf(BuiltIns.StudentTDistribution);
 	public final static IBuiltInSymbol Subfactorial = BuiltIns.valueOf(BuiltIns.Subfactorial);
 	public final static IBuiltInSymbol Subscript = BuiltIns.valueOf(BuiltIns.Subscript);
 	public final static IBuiltInSymbol Subsets = BuiltIns.valueOf(BuiltIns.Subsets);
@@ -868,8 +806,7 @@ public class F {
 	public final static IBuiltInSymbol TimesBy = BuiltIns.valueOf(BuiltIns.TimesBy);
 	public final static IBuiltInSymbol Timing = BuiltIns.valueOf(BuiltIns.Timing);
 	public final static IBuiltInSymbol ToCharacterCode = BuiltIns.valueOf(BuiltIns.ToCharacterCode);
-	public final static IBuiltInSymbol ToPolarCoordinates = BuiltIns
-			.valueOf(BuiltIns.ToPolarCoordinates);
+	public final static IBuiltInSymbol ToPolarCoordinates = BuiltIns.valueOf(BuiltIns.ToPolarCoordinates);
 	public final static IBuiltInSymbol ToRadicals = BuiltIns.valueOf(BuiltIns.ToRadicals);
 	public final static IBuiltInSymbol ToString = BuiltIns.valueOf(BuiltIns.ToString);
 	public final static IBuiltInSymbol ToUnicode = BuiltIns.valueOf(BuiltIns.ToUnicode);
@@ -901,25 +838,21 @@ public class F {
 	public final static IBuiltInSymbol UpSet = BuiltIns.valueOf(BuiltIns.UpSet);
 	public final static IBuiltInSymbol UpSetDelayed = BuiltIns.valueOf(BuiltIns.UpSetDelayed);
 	public final static IBuiltInSymbol UpperCaseQ = BuiltIns.valueOf(BuiltIns.UpperCaseQ);
-	public final static IBuiltInSymbol UpperTriangularize = BuiltIns
-			.valueOf(BuiltIns.UpperTriangularize);
+	public final static IBuiltInSymbol UpperTriangularize = BuiltIns.valueOf(BuiltIns.UpperTriangularize);
 	public final static IBuiltInSymbol ValueQ = BuiltIns.valueOf(BuiltIns.ValueQ);
-	public final static IBuiltInSymbol VandermondeMatrix = BuiltIns
-			.valueOf(BuiltIns.VandermondeMatrix);
+	public final static IBuiltInSymbol VandermondeMatrix = BuiltIns.valueOf(BuiltIns.VandermondeMatrix);
 	public final static IBuiltInSymbol Variable = BuiltIns.valueOf(BuiltIns.Variable);
 	public final static IBuiltInSymbol Variables = BuiltIns.valueOf(BuiltIns.Variables);
 	public final static IBuiltInSymbol Variance = BuiltIns.valueOf(BuiltIns.Variance);
 	public final static IBuiltInSymbol VectorAngle = BuiltIns.valueOf(BuiltIns.VectorAngle);
 	public final static IBuiltInSymbol VectorQ = BuiltIns.valueOf(BuiltIns.VectorQ);
-	public final static IBuiltInSymbol WeibullDistribution = BuiltIns
-			.valueOf(BuiltIns.WeibullDistribution);
+	public final static IBuiltInSymbol WeibullDistribution = BuiltIns.valueOf(BuiltIns.WeibullDistribution);
 	public final static IBuiltInSymbol Which = BuiltIns.valueOf(BuiltIns.Which);
 	public final static IBuiltInSymbol While = BuiltIns.valueOf(BuiltIns.While);
 	public final static IBuiltInSymbol White = BuiltIns.valueOf(BuiltIns.White);
 	public final static IBuiltInSymbol With = BuiltIns.valueOf(BuiltIns.With);
 	public final static IBuiltInSymbol Xor = BuiltIns.valueOf(BuiltIns.Xor);
-	public final static IBuiltInSymbol YuleDissimilarity = BuiltIns
-			.valueOf(BuiltIns.YuleDissimilarity);
+	public final static IBuiltInSymbol YuleDissimilarity = BuiltIns.valueOf(BuiltIns.YuleDissimilarity);
 	public final static IBuiltInSymbol Zeta = BuiltIns.valueOf(BuiltIns.Zeta);
 
 	public final static ISymbol $Aborted = initFinalHiddenSymbol(

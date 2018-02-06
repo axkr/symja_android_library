@@ -3841,7 +3841,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("MachineNumberQ(1.5 + 2.3*I)", "True");
 		check("MachineNumberQ(1.5 + 5 *I)", "True");
 	}
-
+	
+	public void testMangoldtLambda() {
+		check("MangoldtLambda(3^5)", "Log(3)");
+		check("MangoldtLambda({1,2,6})", "{0,Log(2),0}");
+		check("{MangoldtLambda(Prime(10^5)^10), MangoldtLambda(2*Prime(10^5)^10)}", "{Log(1299709),0}");
+	}
+	
 	public void testManhattanDistance() {
 		check("ManhattanDistance({-1, -1}, {1, 1})", "4");
 	}
