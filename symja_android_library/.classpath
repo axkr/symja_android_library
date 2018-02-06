@@ -13,7 +13,7 @@
 	<classpathentry kind="lib" path="lib/apfloat-1.8.3.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/txtmark-0.13.jar"/>
-	<classpathentry kind="lib" path="lib/hipparchus-core-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/hipparchus-core-1.2.jar" sourcepath="C:/Users/khart/.m2/repository/org/hipparchus/hipparchus-core/1.2/hipparchus-core-1.2-sources.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-fft-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-fitting-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-ode-1.2.jar"/>

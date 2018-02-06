@@ -1955,6 +1955,20 @@ public class F {
 	}
 
 	/**
+	 * Converts an arbitrary expression to a type that can be used inside Symja.
+	 * 
+	 * For example, it will convert Java <code>Integer</code> into instance of <code>IntegerSym</code>,
+	 * <code>Double</code> into instances of <code>Num</code>, etc.
+	 * 
+	 * 
+	 * @param object
+	 * @return
+	 */
+	public static IExpr symjify(final Object object) {
+		return Object2Expr.convert(object);
+	}
+
+	/**
 	 * <p>
 	 * Get or create a global predefined symbol which is retrieved from the SYSTEM context map or created or retrieved
 	 * from the SYSTEM context variables map.
