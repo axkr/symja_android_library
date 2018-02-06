@@ -2806,9 +2806,9 @@ public class MainTestCase extends AbstractTestCase {
 	public void testSystem407() {
 		check("ContinuedFraction(45/16)", "{2,1,4,3}");
 		check("FromContinuedFraction({2,1,4,3})", "45/16");
-		check("ContinuedFraction(0.753)", "{0,1,3,20,1,1,2,2}");
-		check("FromContinuedFraction({0.0,1.0,3.0,20.0,1.0,1.0,2.0,2.0})", "0.753");
-		check("FromContinuedFraction({0,1,3,20,1,1,2,2})", "753/1000");
+		check("ContinuedFraction(0.753)", "{0,1,3,20,1,1,2,1,1}");
+		check("FromContinuedFraction({0.0,1.0,3.0,20.0,1.0,1.0,2.0,1.0,1.0})", "0.753");
+		check("FromContinuedFraction({0,1,3,20,1,1,2,1,1})", "753/1000");
 		check("FromContinuedFraction({3})", "3");
 		check("FromContinuedFraction({2,3})", "7/3");
 		check("FromContinuedFraction({1,2,3})", "10/7");

@@ -1142,7 +1142,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testContinuedFraction() {
-		check("ContinuedFraction(Pi,10)", "{3,7,15,1,292,1,1,1,2,1}");
+		check("ContinuedFraction(0.753)", "{0,1,3,20,1,1,2,1,1}");
+		check("ContinuedFraction(0.55)", "{0,1,1,4,2}");
+		check("ContinuedFraction(Pi,30)", "{3,7,15,1,292,1,1,1,2,1,3,1,14,3,3,23,1,1,7,4,35,1,1,1,2,3,3,3,3,1}");
 		check("ContinuedFraction(47/17)", "{2,1,3,4}");
 		check("ContinuedFraction(Sqrt(13),20)", "{3,1,1,1,1,6,1,1,1,1,6,1,1,1,1,6,1,1,1,1}");
 	}
