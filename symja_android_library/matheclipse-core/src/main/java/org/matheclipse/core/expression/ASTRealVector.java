@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
-import java.util.Collection;
-import java.util.List;
 import java.util.RandomAccess;
 import java.util.Set;
 import java.util.function.DoubleUnaryOperator;
@@ -360,6 +358,12 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 		return filterAST;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public final String fullFormString() {
+		return fullFormString(F.List);
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public IAST filter(IASTAppendable filterAST, IASTAppendable restAST, Predicate<? super IExpr> predicate) {

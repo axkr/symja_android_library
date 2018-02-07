@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.List;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
@@ -12,6 +13,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.parser.ExprParser;
 
 import com.google.common.util.concurrent.AtomicDouble;
 
@@ -73,6 +75,10 @@ public class Object2Expr {
 				return F.num(((Float) obj).doubleValue());
 			}
 			return F.integer(((Number) obj).longValue());
+		}
+		if (obj instanceof String) {
+			final ExprParser parser = new ExprParser(EvalEngine.get());
+			return parser.parse((String) obj);
 		}
 		if (obj instanceof java.util.Collection) {
 			final java.util.Collection<?> lst = (java.util.Collection<?>) obj;

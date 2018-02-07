@@ -59,7 +59,7 @@ public class CompleteTestSuite extends TestCase {
 		suite.addTestSuite(ASCIIPrintTest.class);
 		suite.addTestSuite(SVGGraphicsTestCase.class);
 		suite.addTestSuite(Graphics3DTestCase.class);
-		
+		suite.addTestSuite(SymjifyTestCase.class);
 		return suite;
 
 	}

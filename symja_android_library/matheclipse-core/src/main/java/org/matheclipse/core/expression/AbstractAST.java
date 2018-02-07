@@ -901,9 +901,12 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final String fullFormString() {
+	public String fullFormString() {
+		return fullFormString(head());
+	}
+
+	protected String fullFormString(IExpr head) {
 		final String sep = ", ";
-		IExpr head = head();
 		StringBuilder text = new StringBuilder();
 		if (head == null) {
 			text.append("<null-head>");
