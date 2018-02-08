@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.AbortException;
+import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.Documentation;
@@ -55,8 +56,8 @@ public class Console {
 	private static int COUNTER = 1;
 
 	public static void main(final String args[]) {
-		Config.FILESYSTEM_ENABLED=true;
-		F.initSymbols(null, null, true);  
+		Config.FILESYSTEM_ENABLED = true;
+		F.initSymbols(null, null, true);
 
 		Console console;
 		try {
@@ -67,7 +68,11 @@ public class Console {
 		}
 		String inputExpression = null;
 		String trimmedInput = null;
-		console.setArgs(args);
+		try {
+			console.setArgs(args);
+		} catch (ReturnException re) {
+			return;
+		}
 
 		final File file = console.getFile();
 		if (file != null) {
@@ -235,14 +240,13 @@ public class Console {
 				try {
 					String outputExpression = interpreter(args[i + 1]);
 					if (outputExpression.length() > 0) {
-						System.out.println(outputExpression);
+						System.out.print(outputExpression);
 					}
-					System.exit(1);
+					throw ReturnException.RETURN_TRUE;
 				} catch (final ArrayIndexOutOfBoundsException aioobe) {
 					final String msg = "You must specify a command when " + "using the -code argument";
 					System.out.println(msg);
-					System.exit(-1);
-					return;
+					throw ReturnException.RETURN_FALSE;
 				}
 			} else if (arg.equals("-function") || arg.equals("-f")) {
 				try {
@@ -251,8 +255,7 @@ public class Console {
 				} catch (final ArrayIndexOutOfBoundsException aioobe) {
 					final String msg = "You must specify a function when " + "using the -function argument";
 					System.out.println(msg);
-					System.exit(-1);
-					return;
+					throw ReturnException.RETURN_FALSE;
 				}
 			} else if (arg.equals("-args") || arg.equals("-a")) {
 				try {
@@ -269,16 +272,15 @@ public class Console {
 						inputExpression.append(")");
 						String outputExpression = interpreter(inputExpression.toString());
 						if (outputExpression.length() > 0) {
-							System.out.println(outputExpression);
+							System.out.print(outputExpression);
 						}
-						System.exit(1);
+						throw ReturnException.RETURN_TRUE;
 					}
 					return;
 				} catch (final ArrayIndexOutOfBoundsException aioobe) {
 					final String msg = "You must specify a function when " + "using the -function argument";
 					System.out.println(msg);
-					System.exit(-1);
-					return;
+					throw ReturnException.RETURN_FALSE;
 				}
 			} else if (arg.equals("-help") || arg.equals("-h")) {
 				printUsageCompletely();
