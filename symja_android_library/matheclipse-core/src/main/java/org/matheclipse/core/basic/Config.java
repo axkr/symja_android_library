@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.hipparchus.util.Precision;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -156,6 +157,9 @@ public class Config {
 	/**
 	 * Enable tests and functions which use the local files.
 	 */
-	public static boolean FILESYSTEM_ENABLED = false;
+	public final static boolean FILESYSTEM_ENABLED = false;
 
+	public static boolean isFileSystemEnabled(EvalEngine engine) {
+		return FILESYSTEM_ENABLED || engine.isFileSystemEnabled();
+	}
 }

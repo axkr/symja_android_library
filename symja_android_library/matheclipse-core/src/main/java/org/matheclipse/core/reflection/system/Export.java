@@ -30,7 +30,7 @@ public class Export extends AbstractEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (Config.FILESYSTEM_ENABLED) {
+		if (Config.isFileSystemEnabled(engine)) {
 			Validate.checkRange(ast, 3, 4);
 
 			if (!(ast.arg1() instanceof IStringX)) {

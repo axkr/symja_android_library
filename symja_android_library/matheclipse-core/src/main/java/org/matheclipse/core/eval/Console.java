@@ -56,7 +56,6 @@ public class Console {
 	private static int COUNTER = 1;
 
 	public static void main(final String args[]) {
-		Config.FILESYSTEM_ENABLED = true;
 		F.initSymbols(null, null, true);
 		Console console;
 		try {
@@ -222,6 +221,7 @@ public class Console {
 		DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
 		DecimalFormat decimalFormat = new DecimalFormat("0.0####", usSymbols);
 		fOutputFactory = OutputFormFactory.get(true, false, decimalFormat);
+		fEvaluator.getEvalEngine().setFileSystemEnabled(true);
 	}
 
 	/**

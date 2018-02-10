@@ -154,6 +154,19 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 	transient boolean fEvalLHSMode;
 
+	/**
+	 * @see Config#isFileSystemEnabled();
+	 */
+	transient boolean fFileSystemEnabled;
+	
+	public boolean isFileSystemEnabled() {
+		return fFileSystemEnabled;
+	}
+
+	public void setFileSystemEnabled(boolean fFileSystemEnabled) {
+		this.fFileSystemEnabled = fFileSystemEnabled;
+	}
+
 	transient String fSessionID;
 
 	/**

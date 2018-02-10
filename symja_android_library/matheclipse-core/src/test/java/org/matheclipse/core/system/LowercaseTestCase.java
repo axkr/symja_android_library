@@ -2322,12 +2322,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{19,2},{367,1},{132491,1},{17553335119,1}}");
 		check("19^2*367*132491*17553335119", //
 				"308119573764812073923");
-		
+
 		check("FactorInteger(132296607982211351148)", //
 				"{{2,2},{3,4},{331,1},{107251,1},{11502026267,1}}");
 		check("2^2*3^4*331*107251*11502026267", //
 				"132296607982211351148");
-		
+
 		check("FactorInteger(10+30*I,GaussianIntegers->True)", "{{-1,1},{1+I,3},{1+I*2,1},{2+I,2}}");
 		check("FactorInteger(11+14*I,GaussianIntegers->True)", "{{11+I*14,1}}");
 		check("FactorInteger(8+21*I,GaussianIntegers->True)", "{{1+I*2,1},{10+I,1}}");
@@ -2825,18 +2825,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGet() {
-//		if (Config.FILESYSTEM_ENABLED) {
-			String pathToVectorAnalysis  = getClass().getResource("/VectorAnalysis.m").getFile();
+		if (Config.FILESYSTEM_ENABLED) {
+			String pathToVectorAnalysis = getClass().getResource("/VectorAnalysis.m").getFile();
 			// remove 'file:/'
-//			pathToVectorAnalysis = pathToVectorAnalysis.substring(6);
+			// pathToVectorAnalysis = pathToVectorAnalysis.substring(6);
 			System.out.println(pathToVectorAnalysis);
-//			PatternMatching.getFile(pathToVectorAnalysis, engine)
-			evalString("Get(\"" + pathToVectorAnalysis + "\")" );
+			// PatternMatching.getFile(pathToVectorAnalysis, engine)
+			evalString("Get(\"" + pathToVectorAnalysis + "\")");
 			check("DotProduct({a,b,c},{d,e,f}, Spherical)",
 					"a*d*Cos(b)*Cos(e)+a*d*Cos(c)*Cos(f)*Sin(b)*Sin(e)+a*d*Sin(b)*Sin(c)*Sin(e)*Sin(f)");
 			// check("Information(Sin)", "");
-//			 check("Information(DotProduct)", "");
-//		}
+			// check("Information(DotProduct)", "");
+		}
 	}
 
 	public void testGoldenRatio() {
@@ -3846,13 +3846,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("MachineNumberQ(1.5 + 2.3*I)", "True");
 		check("MachineNumberQ(1.5 + 5 *I)", "True");
 	}
-	
+
 	public void testMangoldtLambda() {
 		check("MangoldtLambda(3^5)", "Log(3)");
 		check("MangoldtLambda({1,2,6})", "{0,Log(2),0}");
 		check("{MangoldtLambda(Prime(10^5)^10), MangoldtLambda(2*Prime(10^5)^10)}", "{Log(1299709),0}");
 	}
-	
+
 	public void testManhattanDistance() {
 		check("ManhattanDistance({-1, -1}, {1, 1})", "4");
 	}

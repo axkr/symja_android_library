@@ -44,17 +44,15 @@ public class MMAConsole {
 	private String fDefaultSystemRulesFilename;
 
 	private static int COUNTER = 1;
-	
-	static  {
-		Config.FILESYSTEM_ENABLED = true;
+
+	static {
 		// distinguish between lower- and uppercase identifiers
 		Config.PARSER_USE_LOWERCASE_SYMBOLS = false;
-		F.initSymbols(null, null, true); 	
+		F.initSymbols(null, null, true);
 	}
-	
+
 	public static void main(final String args[]) {
-		 
-		
+
 		MMAConsole console;
 		try {
 			console = new MMAConsole();
@@ -306,6 +304,7 @@ public class MMAConsole {
 	public MMAConsole() {
 		EvalEngine engine = new EvalEngine(false);
 		fEvaluator = new ExprEvaluator(engine, false, 100);
+		fEvaluator.getEvalEngine().setFileSystemEnabled(true);
 	}
 
 	/**

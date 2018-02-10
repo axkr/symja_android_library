@@ -360,15 +360,17 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			// if (Config.FILESYSTEM_ENABLED) {
-			Validate.checkSize(ast, 2);
+			if (Config.isFileSystemEnabled(engine)) {
+				Validate.checkSize(ast, 2);
 
-			if (!(ast.arg1() instanceof IStringX)) {
-				throw new WrongNumberOfArguments(ast, 1, ast.argSize());
+				if (!(ast.arg1() instanceof IStringX)) {
+					throw new WrongNumberOfArguments(ast, 1, ast.argSize());
+				}
+				IStringX arg1 = (IStringX) ast.arg1();
+				File file = new File(arg1.toString());
+				return getFile(file, engine);
 			}
-			IStringX arg1 = (IStringX) ast.arg1();
-			File file = new File(arg1.toString());
-			return getFile(file, engine);
+			return F.NIL;
 		}
 
 		@Override
@@ -579,7 +581,7 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (Config.FILESYSTEM_ENABLED) {
+			if (Config.isFileSystemEnabled(engine)) {
 				Validate.checkRange(ast, 3);
 
 				final int argSize = ast.argSize();

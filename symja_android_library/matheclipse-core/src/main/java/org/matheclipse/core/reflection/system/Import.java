@@ -37,7 +37,7 @@ public class Import extends AbstractEvaluator {
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
-		if (Config.FILESYSTEM_ENABLED) {
+		if (Config.isFileSystemEnabled(engine)) {
 			Validate.checkRange(ast, 2, 3);
 
 			if (!(ast.arg1() instanceof IStringX)) {
