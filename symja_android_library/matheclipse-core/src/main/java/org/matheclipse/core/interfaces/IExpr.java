@@ -42,6 +42,7 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 import org.matheclipse.core.visit.VisitorReplaceAll;
+import org.matheclipse.core.visit.VisitorReplaceAllLambda;
 import org.matheclipse.core.visit.VisitorReplacePart;
 import org.matheclipse.core.visit.VisitorReplaceSlots;
 
@@ -1237,6 +1238,18 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default boolean isFree(IExpr pattern) {
+		return isFree(pattern, true);
+	}
+
+	/**
+	 * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the expression itself, did not
+	 * match the given pattern. Calls <code>isFree(pattern, true)</code>.
+	 * 
+	 * @param pattern
+	 *            a pattern-matching expression
+	 * @return
+	 */
+	default boolean has(IExpr pattern) {
 		return isFree(pattern, true);
 	}
 
@@ -2779,6 +2792,21 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 			return F.C0;
 		}
 		return this;
+	}
+
+	/**
+	 * Replace all (sub-) expressions with the given unary function, if the given predicate yields <code>true</code>. If
+	 * no substitution matches, the method returns <code>this</code>.
+	 * 
+	 * @param predicate
+	 * @param function
+	 *            if the unary functions <code>apply()</code> method returns <code>F.NIL</code> the expression isn't
+	 *            substituted.
+	 * @return <code>this</code> if no substitution of a (sub-)expression was possible.
+	 */
+	@Nullable
+	default IExpr replace(final Predicate<IExpr> predicate, final Function<IExpr, IExpr> function) {
+		return accept(new VisitorReplaceAllLambda(predicate, function)).orElse(this);
 	}
 
 	/**

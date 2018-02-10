@@ -11,6 +11,8 @@ import java.util.Set;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.ISymbol;
 
+import com.google.common.collect.Maps;
+
 public class Context implements Serializable {
 
 	private static final long serialVersionUID = 8656114325955206899L;
@@ -19,6 +21,8 @@ public class Context implements Serializable {
 	 * The map for predefined (context &quot;System&quot;) symbols
 	 */
 	public final static Map<String, ISymbol> PREDEFINED_SYMBOLS_MAP = new HashMap<String, ISymbol>(997);
+
+	public final static Context DUMMY = new Context("DUMMY");
 
 	public final static Context SYSTEM = new Context("System", PREDEFINED_SYMBOLS_MAP);
 

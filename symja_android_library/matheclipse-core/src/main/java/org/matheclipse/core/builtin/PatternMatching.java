@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.F.Rule;
 import static org.matheclipse.core.expression.F.RuleDelayed;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -266,7 +267,7 @@ public final class PatternMatching {
 		 * @param is
 		 * @return the last evaluated expression result
 		 */
-		public static IExpr loadPackage(final EvalEngine engine, final Reader is) {
+		protected static IExpr loadPackage(final EvalEngine engine, final Reader is) {
 			final BufferedReader r = new BufferedReader(is);
 			Context packageContext = null;
 			try {
@@ -359,23 +360,15 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (Config.FILESYSTEM_ENABLED) {
-				Validate.checkSize(ast, 2);
+			// if (Config.FILESYSTEM_ENABLED) {
+			Validate.checkSize(ast, 2);
 
-				if (!(ast.arg1() instanceof IStringX)) {
-					throw new WrongNumberOfArguments(ast, 1, ast.argSize());
-				}
-				IStringX arg1 = (IStringX) ast.arg1();
-				FileReader reader;
-				try {
-					reader = new FileReader(arg1.toString());
-					return loadPackage(engine, reader);
-				} catch (FileNotFoundException e) {
-					engine.printMessage("Get: file " + arg1.toString() + " not found!");
-				}
-				return F.Null;
+			if (!(ast.arg1() instanceof IStringX)) {
+				throw new WrongNumberOfArguments(ast, 1, ast.argSize());
 			}
-			return F.NIL;
+			IStringX arg1 = (IStringX) ast.arg1();
+			File file = new File(arg1.toString());
+			return getFile(file, engine);
 		}
 
 		@Override
@@ -1290,6 +1283,21 @@ public final class PatternMatching {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 
+	}
+
+	public static IExpr getFile(File file, EvalEngine engine) {
+		boolean packageMode = engine.isPackageMode();
+		try {
+			engine.setPackageMode(true);
+			FileReader reader = new FileReader(file);
+			return Get.loadPackage(engine, reader);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			engine.printMessage("Get exception: " + e.getMessage());
+		} finally {
+			engine.setPackageMode(packageMode);
+		}
+		return F.Null;
 	}
 
 	private final static PatternMatching CONST = new PatternMatching();

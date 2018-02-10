@@ -594,6 +594,10 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	public int findFirstEquals(final IExpr expr);
 
+	default IExpr first() {
+		return arg1();
+	}
+
 	/**
 	 * Apply the functor to the elements of the range from left to right and return the final result. Results do
 	 * accumulate from one invocation to the next: each time this method is called, the accumulation starts over with
@@ -1169,6 +1173,9 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	public IASTAppendable removeAtClone(int i);
 
+	default IASTAppendable rest() {
+		return removeAtClone(1);
+	}
 	/**
 	 * Append the elements in reversed order to the given <code>list</code>
 	 * 

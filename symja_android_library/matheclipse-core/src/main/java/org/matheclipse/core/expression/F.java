@@ -862,7 +862,7 @@ public class F {
 	public final static ISymbol $RealMatrix = initFinalHiddenSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$realmatrix" : "$RealMatrix");
 
-	public final static ISymbol usage = initFinalHiddenSymbol("usage");
+//	public final static ISymbol usage = initFinalHiddenSymbol("usage");
 
 	public final static ISymbol a = initFinalHiddenSymbol("a");
 	public final static ISymbol b = initFinalHiddenSymbol("b");
@@ -4799,6 +4799,27 @@ public class F {
 	 */
 	public static ISymbol userSymbol(final String symbolName, EvalEngine engine) {
 		return engine.getContextPath().getSymbol(symbolName);
+	}
+
+	/**
+	 * Create a unique dummy symbol which is retrieved from the evaluation engines context path.
+	 * 
+	 * @param symbolName
+	 *            the name of the symbol
+	 * @param engine
+	 *            the evaluation engine
+	 * @return the symbol object from the context path
+	 */
+	public static ISymbol Dummy(final String symbolName ) {
+		String name = symbolName;
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			if (symbolName.length() == 1) {
+				name = symbolName;
+			} else {
+				name = symbolName.toLowerCase(Locale.ENGLISH);
+			}
+		}
+		return new Symbol(name, Context.DUMMY);
 	}
 
 	/**

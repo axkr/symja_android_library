@@ -13,8 +13,10 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.form.output.ASCIIPrettyPrinter3;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.reflection.system.Names;
@@ -26,26 +28,33 @@ import org.matheclipse.parser.client.math.MathException;
  */
 public class MMAConsole {
 	/**
-	 * 60 seconds timeout limit as the default value for Symja expression
-	 * evaluation.
+	 * 60 seconds timeout limit as the default value for Symja expression evaluation.
 	 */
 	private long fSeconds = 60;
 
 	private ExprEvaluator fEvaluator;
+
+	/**
+	 * Use pretty printer for expression output n print stream
+	 */
+	private boolean fPrettyPrinter;
 
 	private File fFile;
 
 	private String fDefaultSystemRulesFilename;
 
 	private static int COUNTER = 1;
-
-	public static void main(final String args[]) {
-		Config.FILESYSTEM_ENABLED=true;
+	
+	static  {
+		Config.FILESYSTEM_ENABLED = true;
 		// distinguish between lower- and uppercase identifiers
 		Config.PARSER_USE_LOWERCASE_SYMBOLS = false;
-		F.initSymbols(null, null, true); // console.getDefaultSystemRulesFilename(),
-											// null, false);
-		printUsage();
+		F.initSymbols(null, null, true); 	
+	}
+	
+	public static void main(final String args[]) {
+		 
+		
 		MMAConsole console;
 		try {
 			console = new MMAConsole();
@@ -56,7 +65,12 @@ public class MMAConsole {
 		String inputExpression = null;
 		String trimmedInput = null;
 		String outputExpression = null;
-		console.setArgs(args);
+		try {
+			console.setArgs(args);
+		} catch (ReturnException re) {
+			return;
+		}
+
 		final File file = console.getFile();
 		if (file != null) {
 			try {
@@ -118,8 +132,13 @@ public class MMAConsole {
 					}
 					outputExpression = console.interpreter(inputExpression);
 					System.out.println("In [" + COUNTER + "]: " + inputExpression);
-					if (outputExpression.length() > 0) {
-						System.out.println("Out[" + COUNTER + "]: " + outputExpression);
+					// if (outputExpression.length() > 0) {
+					// System.out.println("Out[" + COUNTER + "]: " + outputExpression);
+					// }
+					if (console.fPrettyPrinter) {
+						console.prettyPrinter(inputExpression);
+					} else {
+						console.resultPrinter(inputExpression);
 					}
 					COUNTER++;
 				}
@@ -133,8 +152,7 @@ public class MMAConsole {
 	}
 
 	/**
-	 * Load the documentation fro ressources folder if available ad print to
-	 * output.
+	 * Load the documentation fro ressources folder if available ad print to output.
 	 * 
 	 * @param symbolName
 	 */
@@ -144,7 +162,7 @@ public class MMAConsole {
 
 		// Get file from resources folder
 		ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-		
+
 		try {
 			InputStream is = classloader.getResourceAsStream(fileName);
 			final BufferedReader f = new BufferedReader(new InputStreamReader(is, "UTF-8"));
@@ -170,7 +188,21 @@ public class MMAConsole {
 			e.printStackTrace();
 		}
 	}
-	
+
+	private String resultPrinter(String inputExpression) {
+		String outputExpression = interpreter(inputExpression);
+		if (outputExpression.length() > 0) {
+			System.out.println("Out[" + COUNTER + "]: " + outputExpression);
+		}
+		return outputExpression;
+	}
+
+	private void prettyPrinter(String inputExpression) {
+		System.out.println();
+		String[] outputExpression = prettyPrinter3Lines(inputExpression);
+		ASCIIPrettyPrinter3.prettyPrinter(System.out, outputExpression, "Out[" + COUNTER + "]: ");
+	}
+
 	/**
 	 * Prints the usage of how to use this class to System.out
 	 */
@@ -195,6 +227,80 @@ public class MMAConsole {
 	}
 
 	/**
+	 * Prints the usage of how to use this class to System.out
+	 */
+	private static void printUsageCompletely() {
+		final String lineSeparator = System.getProperty("line.separator");
+		final StringBuilder msg = new StringBuilder();
+		msg.append("org.matheclipse.core.eval.MMAConsole [options]" + lineSeparator);
+		msg.append(lineSeparator);
+		msg.append("Program arguments: " + lineSeparator);
+		msg.append("  -h or -help                                 print usage messages" + lineSeparator);
+		msg.append("  -c or -code <command>                       run the command" + lineSeparator);
+		msg.append("  -f or -function <function> -args arg1 arg2  run the function" + lineSeparator);
+		msg.append("        -file <filename>                      use given file as input script" + lineSeparator);
+		msg.append("  -d or -default <filename>                   use given textfile for system rules" + lineSeparator);
+		msg.append("  -pp                                         enable pretty printer" + lineSeparator);
+
+		msg.append("To stop the program type: exit<RETURN>" + lineSeparator);
+		msg.append("To continue an input line type: \\<RETURN>" + lineSeparator);
+		msg.append("at the end of the line." + lineSeparator);
+		msg.append("To disable the evaluation timeout type: timeoutoff<RETURN>" + lineSeparator);
+		msg.append("To enable the evaluation timeout type: timeouton<RETURN>" + lineSeparator);
+		msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
+
+		System.out.println(msg.toString());
+	}
+
+	private String[] prettyPrinter3Lines(final String inputExpression) {
+		IExpr result;
+
+		final StringWriter buf = new StringWriter();
+		try {
+			if (fSeconds <= 0) {
+				result = fEvaluator.eval(inputExpression);
+			} else {
+				result = fEvaluator.evaluateWithTimeout(inputExpression, fSeconds, TimeUnit.SECONDS, true);
+			}
+			if (result != null) {
+				if (result.equals(F.Null)) {
+					return null;
+				}
+				ASCIIPrettyPrinter3 strBuffer = new ASCIIPrettyPrinter3();
+				strBuffer.convert(result);
+				return strBuffer.toStringBuilder();
+			}
+		} catch (final SyntaxError se) {
+			String msg = se.getMessage();
+			System.err.println();
+			System.err.println(msg);
+			return null;
+		} catch (final RuntimeException re) {
+			Throwable me = re.getCause();
+			if (me instanceof MathException) {
+				Validate.printException(buf, me);
+			} else {
+				Validate.printException(buf, re);
+			}
+			return null;
+		} catch (final Exception e) {
+			Validate.printException(buf, e);
+			return null;
+		} catch (final OutOfMemoryError e) {
+			Validate.printException(buf, e);
+			return null;
+		} catch (final StackOverflowError e) {
+			Validate.printException(buf, e);
+			return null;
+		}
+		String[] strArray = new String[3];
+		strArray[0] = "";
+		strArray[1] = buf.toString();
+		strArray[2] = "";
+		return strArray;
+	}
+
+	/**
 	 * Create a console which appends each evaluation output in a history list.
 	 */
 	public MMAConsole() {
@@ -206,18 +312,65 @@ public class MMAConsole {
 	 * Sets the arguments for the <code>main</code> method
 	 * 
 	 * @param args
-	 *            the aruments of the program
+	 *            the arguments of the program
 	 */
 	private void setArgs(final String args[]) {
+		String function = null;
 		for (int i = 0; i < args.length; i++) {
 			final String arg = args[i];
 
-			if (arg.equals("-help") || arg.equals("-h")) {
-				printUsage();
+			if (arg.equals("-code") || arg.equals("-c")) {
+				try {
+					String outputExpression = interpreter(args[i + 1]);
+					if (outputExpression.length() > 0) {
+						System.out.print(outputExpression);
+					}
+					throw ReturnException.RETURN_TRUE;
+				} catch (final ArrayIndexOutOfBoundsException aioobe) {
+					final String msg = "You must specify a command when " + "using the -code argument";
+					System.out.println(msg);
+					throw ReturnException.RETURN_FALSE;
+				}
+			} else if (arg.equals("-function") || arg.equals("-f")) {
+				try {
+					function = args[i + 1];
+					i++;
+				} catch (final ArrayIndexOutOfBoundsException aioobe) {
+					final String msg = "You must specify a function when " + "using the -function argument";
+					System.out.println(msg);
+					throw ReturnException.RETURN_FALSE;
+				}
+			} else if (arg.equals("-args") || arg.equals("-a")) {
+				try {
+					if (function != null) {
+						StringBuilder inputExpression = new StringBuilder(1024);
+						inputExpression.append(function);
+						inputExpression.append("[");
+						for (int j = i + 1; j < args.length; j++) {
+							if (j != i + 1) {
+								inputExpression.append(", ");
+							}
+							inputExpression.append(args[j]);
+						}
+						inputExpression.append("]");
+						String outputExpression = interpreter(inputExpression.toString());
+						if (outputExpression.length() > 0) {
+							System.out.print(outputExpression);
+						}
+						throw ReturnException.RETURN_TRUE;
+					}
+					return;
+				} catch (final ArrayIndexOutOfBoundsException aioobe) {
+					final String msg = "You must specify a function when " + "using the -function argument";
+					System.out.println(msg);
+					throw ReturnException.RETURN_FALSE;
+				}
+			} else if (arg.equals("-help") || arg.equals("-h")) {
+				printUsageCompletely();
 				return;
 				// } else if (arg.equals("-debug")) {
 				// Config.DEBUG = true;
-			} else if (arg.equals("-file") || arg.equals("-f")) {
+			} else if (arg.equals("-file")) {
 				try {
 					fFile = new File(args[i + 1]);
 					i++;
@@ -235,6 +388,8 @@ public class MMAConsole {
 					System.out.println(msg);
 					return;
 				}
+			} else if (arg.equals("-pp")) {
+				fPrettyPrinter = true;
 			} else if (arg.charAt(0) == '-') {
 				// we don't have any more args to recognize!
 				final String msg = "Unknown arg: " + arg;
@@ -244,12 +399,11 @@ public class MMAConsole {
 			}
 
 		}
-
+		printUsage();
 	}
 
 	/**
-	 * Evaluates the given string-expression and returns the result in
-	 * <code>OutputForm</code>
+	 * Evaluates the given string-expression and returns the result in <code>OutputForm</code>
 	 * 
 	 * @param inputExpression
 	 * @return
@@ -368,8 +522,8 @@ public class MMAConsole {
 	}
 
 	/**
-	 * Get the default rules textfile name, which should be loaded at startup.
-	 * This file replaces the default built-in System.mep resource stream.
+	 * Get the default rules textfile name, which should be loaded at startup. This file replaces the default built-in
+	 * System.mep resource stream.
 	 * 
 	 * @return default rules textfile name
 	 */

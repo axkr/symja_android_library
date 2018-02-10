@@ -59,6 +59,16 @@ public abstract class AbstractTestCase extends TestCase {
 		}
 	}
 
+	public void evalString(String evalString) {
+		try {
+			// scriptEngine.put("STEPWISE",Boolean.TRUE);
+			String evaledResult = (String) fScriptEngine.eval(evalString);
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", "1");
+		}
+	}
+
 	public void checkNumeric(String evalString, String expectedResult) {
 		check(fNumericScriptEngine, evalString, expectedResult, -1);
 	}

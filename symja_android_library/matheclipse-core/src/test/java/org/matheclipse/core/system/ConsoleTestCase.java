@@ -5,12 +5,28 @@ import java.io.PrintStream;
 
 import org.matheclipse.core.eval.Console;
 
+import junit.framework.TestCase;
+
 /**
- * 
+ * Test <code>org.matheclipse.core.eval.Console</code> app.
  */
-public class ConsoleTestCase extends AbstractTestCase {
+public class ConsoleTestCase extends TestCase {
 	public ConsoleTestCase(String name) {
 		super(name);
+	}
+
+	private void check(String[] args, String result) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream ps = new PrintStream(baos);
+		PrintStream old = System.out;
+		System.setOut(ps);
+
+		Console.main(args);
+
+		System.out.flush();
+		System.setOut(old);
+		assertEquals(baos.toString(), //
+				result);
 	}
 
 	public void test001() {
@@ -26,19 +42,5 @@ public class ConsoleTestCase extends AbstractTestCase {
 	public void test003() {
 		String[] args = new String[] { "-c", "f(x_,y_):={x,y}; f(a,b)" };
 		check(args, "{a,b}");
-	}
-
-	private void check(String[] args, String result) {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		PrintStream ps = new PrintStream(baos);
-		PrintStream old = System.out;
-		System.setOut(ps);
-
-		Console.main(args);
-
-		System.out.flush();
-		System.setOut(old);
-		assertEquals(baos.toString(), //
-				result);
 	}
 }

@@ -60,7 +60,9 @@ public class CompleteTestSuite extends TestCase {
 		suite.addTestSuite(SVGGraphicsTestCase.class);
 		suite.addTestSuite(Graphics3DTestCase.class);
 		suite.addTestSuite(SymjifyTestCase.class);
+		
 		suite.addTestSuite(ConsoleTestCase.class);
+		
 		return suite;
 
 	}

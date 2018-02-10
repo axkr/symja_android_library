@@ -58,7 +58,6 @@ public class Console {
 	public static void main(final String args[]) {
 		Config.FILESYSTEM_ENABLED = true;
 		F.initSymbols(null, null, true);
-
 		Console console;
 		try {
 			console = new Console();
@@ -229,7 +228,7 @@ public class Console {
 	 * Sets the arguments for the <code>main</code> method
 	 * 
 	 * @param args
-	 *            the aruments of the program
+	 *            the arguments of the program
 	 */
 	private void setArgs(final String args[]) {
 		String function = null;
