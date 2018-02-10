@@ -223,7 +223,7 @@ public final class BooleanFunctions {
 				if (temp.isSymbol()) {
 					symbols[i] = flattenedAST.get(i).hashCode();
 				} else if (temp.isNot()) {
-					sym = ((IAST) temp).getAt(1);
+					sym = temp.first();
 					if (sym.isSymbol()) {
 						notSymbols[i] = sym.hashCode();
 					}
@@ -233,7 +233,7 @@ public final class BooleanFunctions {
 			for (int i = 1; i < symbols.length; i++) {
 				if (symbols[i] != 0) {
 					for (int j = 1; j < notSymbols.length; j++) {
-						if (i != j && symbols[i] == notSymbols[j] && (result.equalsAt(i, result.get(j).getAt(1)))) {
+						if (i != j && symbols[i] == notSymbols[j] && (result.equalsAt(i, result.get(j).first()))) {
 							// And[a, Not[a]] => True
 							return F.False;
 						}
@@ -598,8 +598,7 @@ public final class BooleanFunctions {
 		 * @return
 		 */
 		private IExpr createComparatorResult(IAST lhsAST, IExpr rhs, ISymbol originalHead) {
-			IAST lhsClone = lhsAST.removeAtClone(1);
-			return F.binary(originalHead, lhsClone, rhs);
+			return F.binary(originalHead, lhsAST.rest(), rhs);
 		}
 
 		/**
@@ -1472,7 +1471,7 @@ public final class BooleanFunctions {
 			}
 
 			if (ast.arg1().isInterval1()) {
-				IAST list = (IAST) ast.arg1().getAt(1);
+				IAST list = (IAST) ast.arg1().first();
 				try {
 					return list.arg2();
 				} catch (ClassCastException cca) {
@@ -1609,7 +1608,7 @@ public final class BooleanFunctions {
 			}
 
 			if (ast.arg1().isInterval1()) {
-				IAST list = (IAST) ast.arg1().getAt(1);
+				IAST list = (IAST) ast.arg1().first();
 				try {
 					return list.arg1();
 				} catch (ClassCastException cca) {
@@ -1999,7 +1998,7 @@ public final class BooleanFunctions {
 				if (temp.isSymbol()) {
 					symbols[i] = flattenedAST.get(i).hashCode();
 				} else if (temp.isNot()) {
-					sym = ((IAST) temp).getAt(1);
+					sym = temp.first();
 					if (sym.isSymbol()) {
 						notSymbols[i] = sym.hashCode();
 					}
@@ -2009,7 +2008,7 @@ public final class BooleanFunctions {
 			for (int i = 1; i < symbols.length; i++) {
 				if (symbols[i] != 0) {
 					for (int j = 1; j < notSymbols.length; j++) {
-						if (i != j && symbols[i] == notSymbols[j] && (result.equalsAt(i, result.get(j).getAt(1)))) {
+						if (i != j && symbols[i] == notSymbols[j] && (result.equalsAt(i, result.get(j).first()))) {
 							// Or[a, Not[a]] => True
 							return F.True;
 						}

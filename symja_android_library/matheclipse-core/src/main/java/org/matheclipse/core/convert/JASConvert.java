@@ -182,8 +182,8 @@ public class JASConvert<C extends RingElem<C>> {
 						result = result.multiply(p);
 					}
 					return result;
-				} else if (ast.isPower() && ast.arg1().isSymbol()) {
-					final ISymbol base = (ISymbol) ast.arg1();
+				} else if (ast.isPower() && ast.base().isSymbol()) {
+					final ISymbol base = (ISymbol) ast.base();
 					int exponent = -1;
 					try {
 						exponent = Validate.checkPowerExponent(ast);

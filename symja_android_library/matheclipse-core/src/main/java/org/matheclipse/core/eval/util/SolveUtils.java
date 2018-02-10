@@ -32,7 +32,7 @@ public class SolveUtils {
 				return result;
 			} else if (arg.isEqual()) {
 				// arg must be Equal(_, 0)
-				termsEqualZero.append(arg.getAt(1));
+				termsEqualZero.append(arg.first());
 			} else {
 				inequalityTerms.append(arg);
 			}

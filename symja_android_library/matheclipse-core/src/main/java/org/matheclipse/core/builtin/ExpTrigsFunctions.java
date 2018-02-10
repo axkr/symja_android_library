@@ -1602,8 +1602,8 @@ public class ExpTrigsFunctions {
 		@Override
 		public IExpr e1ObjArg(IExpr expr) {
 			if (expr.isPower()) {
-				IExpr base = expr.getAt(1);
-				IExpr exponent = expr.getAt(2);
+				IExpr base = expr.base();
+				IExpr exponent = expr.exponent();
 				// arg2*Log(arg1)
 				IExpr temp = F.eval(Times(exponent, F.Log(base)));
 				IExpr imTemp = F.eval(F.Im(temp));

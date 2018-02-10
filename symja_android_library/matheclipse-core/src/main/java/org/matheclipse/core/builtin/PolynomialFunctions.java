@@ -146,9 +146,9 @@ public class PolynomialFunctions {
 				for (int i = 1; i < arg2AST.size(); i++) {
 					long value = 1L;
 					IExpr a1 = arg2AST.get(i);
-					if (a1.isPower() && a1.getAt(2).isInteger()) {
-						a1 = arg2AST.get(i).getAt(1);
-						IInteger ii = (IInteger) arg2AST.get(i).getAt(2);
+					if (a1.isPower() && a1.exponent().isInteger()) {
+						a1 = arg2AST.get(i).base();
+						IInteger ii = (IInteger) arg2AST.get(i).exponent();
 						try {
 							value = ii.toLong();
 						} catch (ArithmeticException ae) {
@@ -833,8 +833,8 @@ public class PolynomialFunctions {
 				final IPatternMatcher matcher = new PatternMatcherEvalEngine(form, engine);
 
 				if (arg1.isPower()) {
-					if (matcher.test(arg1.arg1(), engine)) {
-						collector.add(arg1.arg2());
+					if (matcher.test(arg1.base(), engine)) {
+						collector.add(arg1.exponent());
 					} else {
 						collector.add(F.C0);
 					}
@@ -852,8 +852,8 @@ public class PolynomialFunctions {
 							}
 						} else if (arg1.get(i).isPower()) {
 							IAST pow = (IAST) arg1.get(i);
-							if (matcher.test(pow.arg1(), engine)) {
-								collector.add(pow.arg2());
+							if (matcher.test(pow.base(), engine)) {
+								collector.add(pow.exponent());
 							} else {
 								collector.add(F.C0);
 							}
@@ -896,9 +896,8 @@ public class PolynomialFunctions {
 			for (int i = 1; i < timesAST.size(); i++) {
 				argi = timesAST.get(i);
 				if (argi.isPower()) {
-					IAST pow = (IAST) argi;
-					if (matcher.test(pow.arg1(), engine)) {
-						collector.add(pow.arg2());
+					if (matcher.test(argi.base(), engine)) {
+						collector.add(argi.exponent());
 						evaled = true;
 						break;
 					}

@@ -3659,7 +3659,7 @@ public final class ListFunctions {
 
 			IExpr arg1 = engine.evaluate(ast.arg1());
 			if (arg1.isAST() && ((IAST) arg1).size() > 1) {
-				return ((IAST) arg1).removeAtClone(1);
+				return arg1.rest();
 			}
 			engine.printMessage("Rest: Nonatomic expression expected");
 			return F.NIL;

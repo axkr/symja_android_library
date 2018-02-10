@@ -206,7 +206,7 @@ public class JASIExpr {
 				}
 				return result;
 			} else if (ast.isPower()) {
-				final IExpr base = ast.arg1();
+				final IExpr base = ast.base();
 				if (base instanceof ISymbol) {
 					ExpVector leer = fPolyFactory.evzero;
 					int ix = leer.indexVar(base.toString(), fPolyFactory.getVars());
@@ -219,7 +219,7 @@ public class JASIExpr {
 						}
 						if (exponent < 0) {
 							throw new ArithmeticException(
-									"JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
+									"JASConvert:expr2Poly - invalid exponent: " + ast.exponent().toString());
 						}
 						ExpVector e = ExpVector.create(fVariables.size(), ix, exponent);
 						return fPolyFactory.getONE().multiply(e);

@@ -96,12 +96,14 @@ public class CreamConvert {
 				}
 				return result;
 			} else if (ast.isPower()) {
-				if (ast.arg2().isInteger()) {
-					int value = ((IInteger) ast.arg2()).toInt();
+				IExpr exponent = ast.exponent();
+				if (exponent.isInteger()) {
+					int value = ((IInteger) exponent).toInt();
 					if (value > 0) {
-						IntVariable result = integerVariable(net, ast.arg1());
+						IExpr base = ast.base();
+						IntVariable result = integerVariable(net, base);
 						for (int i = 1; i < value; i++) {
-							result = result.multiply(integerVariable(net, ast.arg1()));
+							result = result.multiply(integerVariable(net, base));
 						}
 						return result;
 					}

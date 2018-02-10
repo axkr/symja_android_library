@@ -178,8 +178,8 @@ public class NDSolve extends AbstractFunctionEvaluator {
 				IExpr temp = eq.get(j);
 				for (int i = 1; i < uFunctionSymbols.size(); i++) {
 					negate = true;
-					if (temp.isAST2() && temp.getAt(1).isMinusOne()) {
-						temp = temp.getAt(2);
+					if (temp.isAST2() && temp.first().isMinusOne()) {
+						temp = temp.second();
 						negate = false;
 					}
 					if (temp.isAST(uFunctionSymbols.get(i))) {
@@ -221,8 +221,8 @@ public class NDSolve extends AbstractFunctionEvaluator {
 			while (j < eq.size()) {
 				negate = true;  
 				IExpr temp=eq.get(j);
-				if (temp.isAST2() && temp.getAt(1).isMinusOne()) {
-					temp = temp.getAt(2);
+				if (temp.isAST2() && temp.first().isMinusOne()) {
+					temp = temp.second();
 					negate = false;
 				}
 				IAST[] deriveExpr = temp.isDerivativeAST1();

@@ -212,12 +212,12 @@ public class NSolve extends AbstractFunctionEvaluator {
 								}
 							}
 						}
-					} else if (expr.isPower() && (expr.getAt(2).isInteger() || expr.getAt(2).isNumIntValue())) {
+					} else if (expr.isPower() && (expr.base().isInteger() || expr.exponent().isNumIntValue())) {
 						// (JASConvert.getExponent((IAST) expr) > 0)) {
 						if (equationType == LINEAR) {
 							equationType = POLYNOMIAL;
 						}
-						getTimesEquationType(((IAST) expr).arg1());
+						getTimesEquationType(expr.base());
 					} else {
 						leafCount += eqExpr.leafCount();
 						if (equationType <= POLYNOMIAL) {
@@ -269,8 +269,8 @@ public class NSolve extends AbstractFunctionEvaluator {
 				return;
 			}
 			if (expr.isPower()) {
-				IExpr base = ((IAST) expr).arg1();
-				IExpr exponent = ((IAST) expr).arg2();
+				IExpr base = expr.base();
+				IExpr exponent = expr.exponent();
 				if (exponent.isInteger()) {
 					if (equationType == LINEAR) {
 						equationType = POLYNOMIAL;

@@ -1879,7 +1879,7 @@ public final class NumberTheory {
 					int result = 1;
 					IInteger temp;
 					for (int i = 1; i < list.size(); i++) {
-						temp = (IInteger) list.get(i).getAt(2);
+						temp = (IInteger) list.get(i).second();
 						if (temp.isOdd()) {
 							if (result == -1) {
 								result = 1;
@@ -1948,7 +1948,7 @@ public final class NumberTheory {
 					IAST list = (IAST) expr;
 					if (list.size() == 2) {
 						int result = 1;
-						IInteger temp=(IInteger) list.get(1).getAt(1); 
+						IInteger temp=(IInteger) list.get(1).first(); 
 						return F.Log(temp);
 					}
 					return F.C0;

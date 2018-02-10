@@ -241,7 +241,7 @@ class QuineMcCluskyTerm {
 	public static void addAndElement(final IAST vars, IExpr a, ArrayList<Byte> t)
 			throws BooleanFunctionConversionException {
 		if (a.isNot()) {
-			IExpr arg1 = a.getAt(1);
+			IExpr arg1 = a.first();
 			if (!arg1.isSymbol()) {
 				throw new BooleanFunctionConversionException();
 			}

@@ -475,9 +475,9 @@ public abstract class AbstractAST implements IASTMutable {
 
 			if (isPower() && rhs.isPower()) {
 				// O-4
-				int baseCompare = arg1().compareTo(rhs.arg1());
+				int baseCompare = base().compareTo(rhs.base());
 				if (baseCompare == 0) {
-					return arg2().compareTo(rhs.arg2());
+					return exponent().compareTo(rhs.exponent());
 				}
 				return baseCompare;
 			}
@@ -1173,9 +1173,9 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 		if (isPower()) {
 			if (equalsAt(2, F.C1D2)) {
-				if (arg1().isInteger()) {
+				if (base().isInteger()) {
 					// square root of an integer number
-					IInteger i = (IInteger) arg1();
+					IInteger i = (IInteger) base();
 					if (i.equals(F.C2)) {
 						return prefix + "CSqrt2";
 					} else if (i.equals(F.C3)) {
@@ -1792,8 +1792,8 @@ public abstract class AbstractAST implements IASTMutable {
 		if (symbol.equals(F.Floor) || symbol.equals(F.Ceiling) || symbol.equals(F.IntegerPart)) {
 			return true;
 		}
-		if (isPower() && arg2().isInteger() && arg2().isPositive()) {
-			if (arg1().isIntegerResult()) {
+		if (isPower() && exponent().isInteger() && base().isPositive()) {
+			if (base().isIntegerResult()) {
 				return true;
 			}
 			return false;
@@ -2202,7 +2202,7 @@ public abstract class AbstractAST implements IASTMutable {
 			}
 			return true;
 		}
-		if (isPower() && (!arg2().isZero() || !arg1().isZero())) {
+		if (isPower() && (!exponent().isZero() || !base().isZero())) {
 			if (!arg1().isRealResult()) {
 				return false;
 			}
@@ -2688,7 +2688,7 @@ public abstract class AbstractAST implements IASTMutable {
 					if (size() == 3) {
 						return arg2();
 					}
-					return removeAtClone(1);
+					return rest();
 				}
 				return setAtCopy(1, ((INumber) arg1).negate());
 			}

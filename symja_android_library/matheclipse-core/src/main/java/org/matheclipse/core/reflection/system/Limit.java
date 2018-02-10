@@ -593,12 +593,12 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 		if (logAST.isAST2() && !logAST.isFree(data.getSymbol())) {
 			return F.NIL;
 		}
-		if (logAST.arg1().isPower() && logAST.arg1().getAt(2).isFree(data.getSymbol())) {
-			IAST powerAST = (IAST) logAST.arg1();
-			IAST arg1 = logAST.setAtClone(1, powerAST.arg1());
-			return F.Times(powerAST.arg2(), data.limit(arg1));
-		} else if (logAST.arg1().isTimes()) {
-			IAST isFreeResult = logAST.arg1().partitionTimes(x -> x.isFree(data.getSymbol(), true), F.C1, F.C1, F.List);
+		IExpr firstArg = logAST.arg1();
+		if (firstArg.isPower() && firstArg.exponent().isFree(data.getSymbol())) {
+			IAST arg1 = logAST.setAtClone(1, firstArg.base());
+			return F.Times(firstArg.exponent(), data.limit(arg1));
+		} else if (firstArg.isTimes()) {
+			IAST isFreeResult = firstArg.partitionTimes(x -> x.isFree(data.getSymbol(), true), F.C1, F.C1, F.List);
 			if (!isFreeResult.get(1).isOne()) {
 				IAST arg1 = logAST.setAtClone(1, isFreeResult.get(1));
 				IAST arg2 = logAST.setAtClone(1, isFreeResult.get(2));

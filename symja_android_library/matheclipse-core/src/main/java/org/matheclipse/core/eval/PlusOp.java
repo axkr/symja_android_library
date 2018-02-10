@@ -240,7 +240,7 @@ public class PlusOp {
 		} else if (arg.isTimes()) {
 			IAST timesAST = (IAST) arg;
 			if (timesAST.arg1().isNumber()) {
-				if (addMerge(timesAST.removeAtClone(1).getOneIdentity(F.C1), timesAST.arg1())) {
+				if (addMerge(timesAST.rest().getOneIdentity(F.C1), timesAST.arg1())) {
 					evaled = true;
 				}
 				return F.NIL;

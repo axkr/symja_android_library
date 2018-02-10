@@ -288,6 +288,17 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Get the first element of this <code>AST</code> list (i.e. get(1)). Return <code>F.NIL</code> if this object isn't
+	 * an <code>AST</code>. Use this method if the AST gives <code>true</code> for the <code>isPower()</code> method.
+	 * 
+	 * @return the first argument of the function represented by this <code>AST</code> or <code>F.NIL</code> if this
+	 *         object isn't an AST.
+	 */
+	default IExpr base() {
+		return first();
+	}
+
+	/**
 	 * Compares this expression with the specified expression for order. Returns a negative integer, zero, or a positive
 	 * integer as this expression is canonical less than, equal to, or greater than the specified expression.
 	 */
@@ -387,6 +398,20 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Calls <code>get(position).equals(expr)</code> if <code>this</code> is an <code>IAST</code>. Returns
+	 * <code>false</code> otherwise.
+	 * 
+	 * @param position
+	 *            the position in the <code>IAST</code> which should be tested for equality
+	 * @param expr
+	 *            the expression which should be tested for equality
+	 * @return
+	 */
+	default public boolean equalsAt(int position, final IExpr expr) {
+		return false;
+	}
+
+	/**
 	 * Evaluate the expression to a <code>INumber</code> value.
 	 * 
 	 * @return <code>null</code> if the conversion is not possible.
@@ -456,9 +481,32 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return F.NIL;
 	}
 
+	/**
+	 * Get the second element of this <code>AST</code> list (i.e. get(2)). Return <code>F.NIL</code> if this object
+	 * isn't an <code>AST</code>. Use this method if the AST gives <code>true</code> for the <code>isPower()</code>
+	 * method.
+	 * 
+	 * @return the second argument of the function represented by this <code>AST</code> or <code>F.NIL</code> if this
+	 *         object isn't an AST.
+	 */
+	default IExpr exponent() {
+		return second();
+	}
+
 	@Override
 	default ElemFactory<IExpr> factory() {
 		return ExprRingFactory.CONST;
+	}
+
+	/**
+	 * Get the first element of this <code>AST</code> list (i.e. get(1)). Return <code>F.NIL</code> if this object isn't
+	 * an <code>AST</code>.
+	 * 
+	 * @return the second argument of the function represented by this <code>AST</code> or <code>F.NIL</code> if this
+	 *         object isn't an AST.
+	 */
+	default IExpr first() {
+		return F.NIL;
 	}
 
 	/**
@@ -483,7 +531,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default IExpr getAt(final int index) {
-		return F.Part(this, F.integer(index));
+		return F.Part.of(this, F.integer(index));
 	}
 
 	@Override
@@ -549,6 +597,18 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default public IExpr greaterThan(IExpr that) {
 		COMPARE_TERNARY temp = BooleanFunctions.CONST_GREATER.prepareCompare(this, that);
 		return ITernaryComparator.convertToExpr(temp);
+	}
+
+	/**
+	 * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the expression itself, did not
+	 * match the given pattern. Calls <code>isFree(pattern, true)</code>.
+	 * 
+	 * @param pattern
+	 *            a pattern-matching expression
+	 * @return
+	 */
+	default boolean has(IExpr pattern) {
+		return isFree(pattern, true);
 	}
 
 	/**
@@ -1238,18 +1298,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default boolean isFree(IExpr pattern) {
-		return isFree(pattern, true);
-	}
-
-	/**
-	 * Returns <code>true</code>, if <b>all of the elements</b> in the subexpressions or the expression itself, did not
-	 * match the given pattern. Calls <code>isFree(pattern, true)</code>.
-	 * 
-	 * @param pattern
-	 *            a pattern-matching expression
-	 * @return
-	 */
-	default boolean has(IExpr pattern) {
 		return isFree(pattern, true);
 	}
 
@@ -2381,6 +2429,17 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Get the last element of the <code>AST</code> list (i.e. get(size()-1). Return <code>F.NIL</code> if this object
+	 * isn't an <code>AST</code>.
+	 * 
+	 * @return the last argument of the function represented by this <code>AST</code>.
+	 * @see IExpr#head()
+	 */
+	default IExpr last() {
+		return F.NIL;
+	}
+
+	/**
 	 * Count the number of leaves of this expression.
 	 * 
 	 * @return
@@ -2917,6 +2976,28 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Get the rest of the elements of this <code>AST</code> list. Return <code>F.NIL</code> if this object isn't an
+	 * <code>AST</code>.
+	 * 
+	 * @return the rest arguments of the function represented by this <code>AST</code> with the first argument removed.
+	 * @see IExpr#head()
+	 */
+	default IASTAppendable rest() {
+		return F.NIL;
+	}
+
+	/**
+	 * Get the second element of this <code>AST</code> list (i.e. get(2)). Return <code>F.NIL</code> if this object
+	 * isn't an <code>AST</code>.
+	 * 
+	 * @return the second argument of the function represented by this <code>AST</code> or <code>F.NIL</code> if this
+	 *         object isn't an AST.
+	 */
+	default IExpr second() {
+		return F.NIL;
+	}
+
+	/**
 	 * Signum functionality is used in JAS toString() method, don't use it as math signum function.
 	 * 
 	 * @deprecated
@@ -2941,7 +3022,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default IExpr sqrt() {
 		if (isPower()) {
-			return F.Power(getAt(1), F.Times(C1D2, getAt(2)));
+			return F.Power(base(), F.Times(C1D2, exponent()));
 		} else {
 			if (isTimes()) {
 				// see github issue #2: Get only real results
@@ -2950,13 +3031,14 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 				IASTAppendable timesSqrt = F.TimesAlloc(size);
 				IASTAppendable timesRest = F.TimesAlloc(size);
 				for (int i = 1; i < size; i++) {
-					if (times.get(i).isPower()) {
+					final IExpr arg = times.get(i);
+					if (arg.isPower()) {
 						timesRest.append( //
-								F.Power(times.get(i).getAt(1), //
-										F.Times(C1D2, times.get(i).getAt(2))) //
+								F.Power(arg.base(), //
+										F.Times(C1D2, arg.exponent())) //
 						);
 					} else {
-						timesSqrt.append(times.get(i));
+						timesSqrt.append(arg);
 					}
 				}
 				return F.Times(timesRest, Sqrt(timesSqrt));

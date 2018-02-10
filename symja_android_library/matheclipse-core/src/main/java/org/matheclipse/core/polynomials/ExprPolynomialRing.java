@@ -350,8 +350,8 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 				}
 				return result;
 			} else if (ast.isPower()) {
-				final IExpr expr = ast.arg1();
-				ix = ExpVectorLong.indexVar(expr, getVars());
+				final IExpr base = ast.base();
+				ix = ExpVectorLong.indexVar(base, getVars());
 				if (ix >= 0) {
 					int exponent = -1;
 					try {
@@ -365,25 +365,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 					}
 					ExpVectorLong e = new ExpVectorLong(vars.argSize(), ix, exponent);
 					return getOne().multiply(e);
-				}
-
-				// for (int i = 1; i < vars.size(); i++) {
-				// if (vars.get(i).equals(expr)) {
-				// int exponent = -1;
-				// try {
-				// exponent = Validate.checkPowerExponent(ast);
-				// } catch (WrongArgumentType e) {
-				// //
-				// }
-				// if (exponent < 0) {
-				// throw new ArithmeticException("JASConvert:expr2Poly - invalid
-				// exponent: " + ast.arg2().toString());
-				// }
-				// ExpVectorLong e = new ExpVectorLong(vars.argSize(), i - 1,
-				// exponent);
-				// return getOne().multiply(e);
-				// }
-				// }
+				} 
 			}
 			if (coefficient) {
 				return new ExprPolynomial(this, ast);
@@ -462,8 +444,9 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 				}
 				return true;
 			} else if (ast.isPower()) {
+				IExpr base = ast.base();
 				for (int i = 1; i < vars.size(); i++) {
-					if (vars.get(i).equals(ast.arg1())) {
+					if (vars.get(i).equals(base)) {
 						int exponent = -1;
 						try {
 							exponent = Validate.checkPowerExponent(ast);

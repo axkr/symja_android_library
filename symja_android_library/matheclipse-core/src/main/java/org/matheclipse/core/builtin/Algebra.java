@@ -437,7 +437,7 @@ public class Algebra {
 			numeratorPlus.forEach((x, i) -> {
 				if (x.isInteger()) {
 					numeratorPlus.set(i, ((IInteger) x).div(gcd));
-				} else if (x.isTimes() && x.getAt(1).isInteger()) {
+				} else if (x.isTimes() && x.first().isInteger()) {
 					IASTMutable times = ((IAST) x).copy();
 					times.set(1, ((IInteger) times.arg1()).div(gcd));
 					numeratorPlus.set(i, times);
@@ -448,7 +448,7 @@ public class Algebra {
 			// for (int i = 1; i < numeratorPlus.size(); i++) {
 			// if (numeratorPlus.get(i).isInteger()) {
 			// numeratorPlus.set(i, ((IInteger) numeratorPlus.get(i)).div(gcd));
-			// } else if (numeratorPlus.get(i).isTimes() && numeratorPlus.get(i).getAt(1).isInteger()) {
+			// } else if (numeratorPlus.get(i).isTimes() && numeratorPlus.get(i).first().isInteger()) {
 			// IASTMutable times = ((IAST) numeratorPlus.get(i)).copy();
 			// times.set(1, ((IInteger) times.arg1()).div(gcd));
 			// numeratorPlus.set(i, times);
@@ -481,8 +481,8 @@ public class Algebra {
 				if (x.isInteger()) {
 					gcd.append(x);
 				} else {
-					if (x.isTimes() && x.getAt(1).isInteger()) {
-						gcd.append(x.getAt(1));
+					if (x.isTimes() && x.first().isInteger()) {
+						gcd.append(x.first());
 					} else {
 						return true;
 					}
@@ -494,8 +494,8 @@ public class Algebra {
 			// if (temp.isInteger()) {
 			// gcd.append(temp);
 			// } else {
-			// if (temp.isTimes() && temp.getAt(1).isInteger()) {
-			// gcd.append(temp.getAt(1));
+			// if (temp.isTimes() && temp.first().isInteger()) {
+			// gcd.append(temp.first());
 			// } else {
 			// evaled = false;
 			// break;
@@ -785,7 +785,7 @@ public class Algebra {
 		}
 
 		public boolean isPowerMatched(IExpr poly, IPatternMatcher matcher) {
-			return poly.isPower() && ((IAST) poly).arg2().isNumber() && matcher.test(((IAST) poly).arg1());
+			return poly.isPower() && poly.exponent().isNumber() && matcher.test(poly.base());
 		}
 
 		@Override
@@ -2607,9 +2607,8 @@ public class Algebra {
 				}
 				if (head.equals(Log)) {
 					if (x1.isPower()) {
-						IAST powerAST = (IAST) x1;
 						// Log[x_ ^ y_] :> y * Log(x)
-						IAST logResult = Times(powerAST.arg2(), powerExpand(Log(powerAST.arg1()), assumptions));
+						IAST logResult = Times(x1.exponent(), powerExpand(Log(x1.base()), assumptions));
 						if (assumptions) {
 							IAST floorResult = Floor(Divide(Subtract(Pi, Im(logResult)), Times(C2, Pi)));
 							IAST timesResult = Times(C2, I, Pi, floorResult);
@@ -2668,9 +2667,8 @@ public class Algebra {
 					}
 					if (x1.isPower()) {
 						// Power[x_ ^ y_, z_] :> x ^(y*z)
-						IAST powerAST = (IAST) x1;
-						IExpr base = powerAST.arg1();
-						IExpr exponent = powerAST.arg2();
+						IExpr base = x1.base();
+						IExpr exponent = x1.exponent();
 						IAST powerResult = Power(base, Times(exponent, x2));
 						if (assumptions) {
 							IAST floorResult = Floor(
@@ -3071,9 +3069,9 @@ public class Algebra {
 					// check the arguments
 					return ast.forAll(x -> x.accept(this));
 				}
-				if (ast.isPower() && (ast.arg2().isInteger())) {
+				if (ast.isPower() && (ast.exponent().isInteger())) {
 					// check the arguments
-					return ast.arg1().accept(this);
+					return ast.base().accept(this);
 				}
 				return false;
 			}
@@ -3261,10 +3259,9 @@ public class Algebra {
 									if (reduced.isPresent()) {
 										return reduced;
 									}
-								} else if (temp.isPower() && ((IAST) temp).arg1().isPlus()
-										&& ((IAST) temp).arg2().isMinusOne()) {
+								} else if (temp.isPower() && temp.base().isPlus() && temp.exponent().isMinusOne()) {
 									// <number> * Power[Plus[...], -1 ]
-									reduced = tryExpandAll(ast, ((IAST) temp).arg1(), number.inverse(), i);
+									reduced = tryExpandAll(ast, temp.base(), number.inverse(), i);
 									if (reduced.isPresent()) {
 										return F.Power(reduced, F.CN1);
 									}
@@ -4043,8 +4040,7 @@ public class Algebra {
 	public static IExpr[] fractionalPartsTimesPower(final IAST timesPower, boolean splitNumeratorOne,
 			boolean splitFractionalNumbers, boolean trig, boolean evalParts) {
 		if (timesPower.isPower()) {
-			IAST powerAST = timesPower;
-			IExpr[] parts = Apart.fractionalPartsPower(powerAST, trig);
+			IExpr[] parts = Apart.fractionalPartsPower(timesPower, trig);
 			if (parts != null) {
 				return parts;
 			}

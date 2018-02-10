@@ -73,17 +73,17 @@ public class TrigReduce extends AbstractEvaluator {
 					return result;
 				}
 			} else if (ast.isPower()) {
-				if (ast.arg1().isAST() && ast.arg2().isInteger()) {
-					IInteger n = (IInteger) ast.arg2();
+				if (ast.base().isAST() && ast.exponent().isInteger()) {
+					IInteger n = (IInteger) ast.exponent();
 					if (n.isPositive()) {
-						IAST powerArg1 = (IAST) ast.arg1();
+						IAST base = (IAST) ast.base();
 						IExpr x;
-						if (powerArg1.isSin()) {
-							x = powerArg1.arg1();
+						if (base.isSin()) {
+							x = base.arg1();
 							// (1/2-Cos[2*x]/2)*Sin[x]^(n-2)
 							return Times(Subtract(C1D2, Times(C1D2, Cos(Times(C2, x)))), Power(Sin(x), n.subtract(C2)));
-						} else if (powerArg1.isCos()) {
-							x = powerArg1.arg1();
+						} else if (base.isCos()) {
+							x = base.arg1();
 							// (1/2+Cos[2*x]/2)*Cos[x]^(n-2)
 							return Times(Plus(C1D2, Times(C1D2, Cos(Times(C2, x)))), Power(Cos(x), n.subtract(C2)));
 						}

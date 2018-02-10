@@ -173,14 +173,17 @@ public class Integrate extends AbstractFunctionEvaluator {
 				// }
 
 				if (fx.isPower()) {
-					if (fx.equalsAt(1, x) && fx.isFreeAt(2, x)) {
-						if (fx.arg2().isMinusOne()) {
+					// base ^ exponent
+					IExpr base = fx.base();
+					IExpr exponent = fx.exponent();
+					if (base.equals(x) && exponent.isFree(x)) {
+						if (exponent.isMinusOne()) {
 							// Integrate[ 1 / x_ , x_ ] -> Log[x]
 							return Log(x);
 						}
 						// Integrate[ x_ ^n_ , x_ ] -> x^(n+1)/(n+1) /;
 						// FreeQ[n, x]
-						IExpr temp = Plus(F.C1, fx.arg2());
+						IExpr temp = Plus(F.C1, exponent);
 						return Divide(Power(x, temp), temp);
 					}
 					if (fx.equalsAt(2, x) && fx.isFreeAt(1, x)) {
@@ -874,7 +877,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * @param restTimes
 	 *            the non-polynomil terms part
 	 */
-	private static void collectPolynomialTerms(final IAST timesAST, IExpr symbol, IASTAppendable polyTimes, IASTAppendable restTimes) {
+	private static void collectPolynomialTerms(final IAST timesAST, IExpr symbol, IASTAppendable polyTimes,
+			IASTAppendable restTimes) {
 		IExpr temp;
 		for (int i = 1; i < timesAST.size(); i++) {
 			temp = timesAST.get(i);
@@ -904,7 +908,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * @param restTimes
 	 *            the non-polynomil terms part
 	 */
-	private static void collectFreeTerms(final IAST timesAST, ISymbol x, IASTAppendable freeTimes, IASTAppendable restTimes) {
+	private static void collectFreeTerms(final IAST timesAST, ISymbol x, IASTAppendable freeTimes,
+			IASTAppendable restTimes) {
 		IExpr temp;
 		for (int i = 1; i < timesAST.size(); i++) {
 			temp = timesAST.get(i);

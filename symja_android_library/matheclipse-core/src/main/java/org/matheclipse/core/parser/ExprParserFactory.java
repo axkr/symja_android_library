@@ -77,10 +77,10 @@ public class ExprParserFactory implements IExprParserFactory {
 			if (lhs.equals(F.C1)) {
 				return (IASTMutable) F.Power(rhs, F.CN1);
 			}
-			if (rhs.isPower() && ((IAST) rhs).arg2().isNumber()) {
-				return (IASTMutable) F.Times(lhs, F.Power(((IAST) rhs).arg1(), ((IAST) rhs).arg2().negate()));
+			if (rhs.isPower() && rhs.exponent().isNumber()) {
+				return F.Times(lhs, F.Power(rhs.base(), rhs.exponent().negate()));
 			}
-			return (IASTMutable) F.Times(lhs, F.Power(rhs, F.CN1));
+			return F.Times(lhs, F.Power(rhs, F.CN1));
 		}
 	}
 

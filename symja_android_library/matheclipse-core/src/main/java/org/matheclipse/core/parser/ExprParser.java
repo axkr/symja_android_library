@@ -173,13 +173,13 @@ public class ExprParser extends ExprScanner {
 		} else if (ast.isAST(F.Exp, 2)) {
 			// rewrite from input: Exp(x) => E^x
 			return F.Power(F.E, ast.arg1());
-		} else if (ast.isPower() && ast.arg1().isPower() && ast.arg2().isMinusOne()) {
-			IAST arg1 = (IAST) ast.arg1();
-			if (arg1.arg2().isNumber()) {
+		} else if (ast.isPower() && ast.base().isPower() && ast.exponent().isMinusOne()) {
+			IAST arg1Power = (IAST) ast.base();
+			if (arg1Power.exponent().isNumber()) {
 				// Division operator
 				// rewrite from input: Power(Power(x, <number>),-1) => Power(x,
 				// - <number>)
-				return F.Power(arg1.arg1(), ((INumber) arg1.arg2()).negate());
+				return F.Power(arg1Power.base(), arg1Power.exponent().negate());
 			}
 		} else if (ast.isASTSizeGE(F.GreaterEqual, 3)) {
 			ISymbol compareHead = F.Greater;

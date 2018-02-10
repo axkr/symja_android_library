@@ -88,8 +88,8 @@ public class Sign extends AbstractEvaluator {
 				return result[0];
 			}
 		}
-		if (arg1.isPower() && arg1.getAt(2).isSignedNumber()) {
-			return F.Power(F.Sign(arg1.getAt(1)), arg1.getAt(2));
+		if (arg1.isPower() && arg1.exponent().isSignedNumber()) {
+			return F.Power(F.Sign(arg1.base()), arg1.exponent());
 		}
 		if (AbstractAssumptions.assumeNegative(arg1)) {
 			return F.CN1;

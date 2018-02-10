@@ -281,11 +281,11 @@ public class Solve extends AbstractFunctionEvaluator {
 								}
 							}
 						}
-					} else if (expr.isPower() && (expr.getAt(2).isInteger() || expr.getAt(2).isNumIntValue())) {
+					} else if (expr.isPower() && (expr.base().isInteger() || expr.exponent().isNumIntValue())) {
 						if (fEquationType == LINEAR) {
 							fEquationType = POLYNOMIAL;
 						}
-						getTimesArgumentEquationType(((IAST) expr).arg1());
+						getTimesArgumentEquationType(expr.base());
 					} else {
 						fLeafCount += eqExpr.leafCount();
 						if (fEquationType <= POLYNOMIAL) {
@@ -334,20 +334,20 @@ public class Solve extends AbstractFunctionEvaluator {
 				return;
 			}
 			if (expr.isPower()) {
-				IExpr arg1 = ((IAST) expr).arg1();
-				IExpr exponent = ((IAST) expr).arg2();
+				IExpr base = expr.base();
+				IExpr exponent = expr.exponent();
 				if (exponent.isInteger()) {
 					if (fEquationType == LINEAR) {
 						fEquationType = POLYNOMIAL;
 					}
-					getTimesArgumentEquationType(arg1);
+					getTimesArgumentEquationType(base);
 					return;
 				}
 				if (exponent.isNumIntValue()) {
 					if (fEquationType == LINEAR) {
 						fEquationType = POLYNOMIAL;
 					}
-					getTimesArgumentEquationType(arg1);
+					getTimesArgumentEquationType(base);
 					return;
 				}
 			}
@@ -425,12 +425,12 @@ public class Solve extends AbstractFunctionEvaluator {
 					return fEngine.evaluate(F.Subtract(ast.arg1(), inverseFunction));
 				}
 
-			} else if (ast.isPower() && ast.arg1().isSymbol() && ast.arg2().isNumber()) {
-				int position = fListOfVariables.findFirstEquals(ast.arg1());
+			} else if (ast.isPower() && ast.base().isSymbol() && ast.exponent().isNumber()) {
+				int position = fListOfVariables.findFirstEquals(ast.base());
 				if (position > 0) {
 					fEngine.printMessage("Solve: using of inverse functions may omit some solutions.");
-					IAST inverseFunction = F.Power(arg1, ast.arg2().inverse());
-					return fEngine.evaluate(F.Subtract(ast.arg1(), inverseFunction));
+					IAST inverseFunction = F.Power(arg1, ast.exponent().inverse());
+					return fEngine.evaluate(F.Subtract(ast.base(), inverseFunction));
 				}
 
 			}
@@ -476,16 +476,16 @@ public class Solve extends AbstractFunctionEvaluator {
 							return temp;
 						}
 					} else if (function.isPower()) {
-						if (function.arg2().isFraction()
-								|| (function.arg2().isRealNumber() && !function.arg2().isNumIntValue())) {
-							ISignedNumber arg2 = (ISignedNumber) function.arg2();
+						IExpr exponent = function.exponent();
+						if (exponent.isFraction() || (exponent.isRealNumber() && !exponent.isNumIntValue())) {
+							ISignedNumber arg2 = (ISignedNumber) exponent;
 							IExpr plus = plusAST.removeAtClone(i).getOneIdentity(F.C0);
 							if (plus.isPositiveResult()) {
 								// no solution possible
 								return NO_EQUATION_SOLUTION;
 							}
 							return fEngine.evaluate(
-									F.Subtract(F.Expand(F.Power(F.Negate(plus), arg2.inverse())), function.arg1()));
+									F.Subtract(F.Expand(F.Power(F.Negate(plus), arg2.inverse())), function.base()));
 						}
 
 					}

@@ -125,7 +125,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 		// determineIteratorVariables(ast));
 
 		if (arg1.isPower()) {
-			IExpr exponent = arg1.getAt(2);
+			IExpr exponent = arg1.exponent();
 			boolean flag = true;
 			// Prod( i^a, {i,from,to},... )
 			for (int i = 2; i < ast.size(); i++) {
@@ -138,7 +138,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 			}
 			if (flag) {
 				IASTMutable prod = ast.copy();
-				prod.set(1, arg1.getAt(1));
+				prod.set(1, arg1.base());
 				return F.Power(prod, exponent);
 			}
 		}
@@ -152,18 +152,18 @@ public class Product extends ListFunctions.Table implements ProductRules {
 					final IInteger from = (IInteger) iterator.getLowerLimit();
 					final ISymbol to = (ISymbol) iterator.getUpperLimit();
 					if (arg1.isPower()) {
-						IExpr powArg1 = arg1.getAt(1);
-						IExpr powArg2 = arg1.getAt(2);
-						if (powArg1.isFree(var)) {
+						IExpr base = arg1.base();
+						if (base.isFree(var)) {
 							if (iterator.getLowerLimit().isOne()) {
-								if (powArg2.equals(var)) {
+								IExpr exponent = arg1.exponent();
+								if (exponent.equals(var)) {
 									// Prod( a^i, ..., {i,from,to} )
 									if (ast.isAST2()) {
-										return F.Power(powArg1, Times(C1D2, to, Plus(C1, to)));
+										return F.Power(base, Times(C1D2, to, Plus(C1, to)));
 									}
 									IASTAppendable result = ast.removeAtClone(ast.argSize());
 									// result.remove(ast.argSize());
-									result.set(1, F.Power(powArg1, Times(C1D2, to, Plus(C1, to))));
+									result.set(1, F.Power(base, Times(C1D2, to, Plus(C1, to))));
 									return result;
 								}
 							}

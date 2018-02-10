@@ -50,12 +50,11 @@ public class TrigExpand extends AbstractEvaluator {
 		@Override
 		public IExpr apply(IExpr ast) {
 			if (ast.isAST1()) {
-				if (ast.getAt(1).isPlus()) {
-					IAST plusAST = (IAST) ast.getAt(1);
-					return expandPlus((IAST) ast, plusAST);
-				} else if (ast.getAt(1).isTimes()) {
-					IAST timesAST = (IAST) ast.getAt(1);
-					return expandTimes((IAST) ast, timesAST);
+				IExpr first = ast.first();
+				if (first.isPlus()) {
+					return expandPlus((IAST) ast, (IAST) first);
+				} else if (first.isTimes()) {
+					return expandTimes((IAST) ast, (IAST) first);
 				}
 			}
 			return F.NIL;
@@ -107,7 +106,7 @@ public class TrigExpand extends AbstractEvaluator {
 				IInteger n = (IInteger) timesAST.arg1();
 				if (n.compareInt(0) > 0) {
 					try {
-						IExpr theta = timesAST.removeAtClone(1).getOneIdentity(F.C1);
+						IExpr theta = timesAST.rest().getOneIdentity(F.C1);
 						if (ast.isSin()) {
 							return expandSinTimes(n, theta);
 						} else if (ast.isCos()) {
@@ -287,8 +286,7 @@ public class TrigExpand extends AbstractEvaluator {
 	/**
 	 * Expands the argument of sine and cosine functions.
 	 * 
-	 * <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities" >List
-	 * of trigonometric identities</a>
+	 * <a href="http://en.wikipedia.org/wiki/List_of_trigonometric_identities" >List of trigonometric identities</a>
 	 */
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {

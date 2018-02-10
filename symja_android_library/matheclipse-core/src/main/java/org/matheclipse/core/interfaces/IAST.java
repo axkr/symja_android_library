@@ -594,6 +594,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	public int findFirstEquals(final IExpr expr);
 
+	/** {@inheritDoc} */
+	@Override
 	default IExpr first() {
 		return arg1();
 	}
@@ -936,6 +938,14 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public boolean isTimes();
 
 	/**
+	 * Returns an iterator over the elements in this list starting with offset <b>1</b>.
+	 * 
+	 * @return an iterator over this list values.
+	 */
+	@Override
+	public Iterator<IExpr> iterator();
+
+	/**
 	 * Set the head element of this list
 	 */
 	// public void setHeader(IExpr expr);
@@ -948,20 +958,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	// public Iterator<IExpr> iterator0();
 
-	/**
-	 * Returns an iterator over the elements in this list starting with offset <b>1</b>.
-	 * 
-	 * @return an iterator over this list values.
-	 */
+	/** {@inheritDoc} */
 	@Override
-	public Iterator<IExpr> iterator();
-
-	/**
-	 * Get the last element of the <code>AST</code> list (i.e. get(size()-1).
-	 * 
-	 * @return the last argument of the function represented by this <code>AST</code>.
-	 * @see IExpr#head()
-	 */
 	public IExpr last();
 
 	public int lastIndexOf(IExpr object);
@@ -1144,6 +1142,14 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public int patternHashCode();
 
 	/**
+	 * Prepend an expression to this list.
+	 * 
+	 * @param expr
+	 * @return <code>this</code> after prepending the given expression.
+	 */
+	public IASTAppendable prependClone(IExpr expr);
+
+	/**
 	 * Removes the object at the specified location from this {@code IAST}.
 	 * 
 	 * @param location
@@ -1157,14 +1163,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	// public IExpr remove(int location);
 
 	/**
-	 * Prepend an expression to this list.
-	 * 
-	 * @param expr
-	 * @return <code>this</code> after prepending the given expression.
-	 */
-	public IASTAppendable prependClone(IExpr expr);
-
-	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and remove the
 	 * element at the given <code>position</code>.
 	 * 
@@ -1173,9 +1171,12 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	public IASTAppendable removeAtClone(int i);
 
+	/** {@inheritDoc} */
+	@Override
 	default IASTAppendable rest() {
 		return removeAtClone(1);
 	}
+
 	/**
 	 * Append the elements in reversed order to the given <code>list</code>
 	 * 
@@ -1201,6 +1202,12 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return the given list
 	 */
 	public IAST rotateRight(IASTAppendable list, final int n);
+
+	/** {@inheritDoc} */
+	@Override
+	default IExpr second() {
+		return arg2();
+	}
 
 	/**
 	 * Create a shallow copy of this <code>IAST</code> instance (the elements themselves are not copied) and set the

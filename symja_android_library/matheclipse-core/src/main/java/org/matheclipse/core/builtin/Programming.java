@@ -2310,9 +2310,9 @@ public final class Programming {
 					return temp != null ? temp : F.NIL;
 				});
 				if (result.isCondition()) {
-					return checkCondition(result.getAt(1), result.getAt(2), engine);
+					return checkCondition(result.first(), result.second(), engine);
 				} else if (result.isModuleOrWith()) {
-					return checkModuleOrWithCondition(result.getAt(1), result.getAt(2), engine);
+					return checkModuleOrWithCondition(result.first(), result.second(), engine);
 				}
 			} finally {
 				// removeUserVariables(moduleVariables);
@@ -2332,9 +2332,9 @@ public final class Programming {
 	public static boolean checkCondition(IExpr arg1, IExpr arg2, final EvalEngine engine) {
 		if (engine.evalTrue(arg2)) {
 			if (arg1.isCondition()) {
-				return checkCondition(arg1.getAt(1), arg1.getAt(2), engine);
+				return checkCondition(arg1.first(), arg1.second(), engine);
 			} else if (arg2.isModuleOrWith()) {
-				return checkModuleOrWithCondition(arg2.getAt(1), arg2.getAt(2), engine);
+				return checkModuleOrWithCondition(arg2.first(), arg2.second(), engine);
 			}
 			return true;
 		}

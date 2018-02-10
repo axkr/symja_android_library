@@ -111,7 +111,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 					if (((INumber) arg1).complexSign() < 0) {
 						IExpr negNum = ((INumber) arg1).negate();
 						if (negNum.isOne()) {
-							return timesAST.removeAtClone(1).getOneIdentity(F.C1);
+							return timesAST.rest().getOneIdentity(F.C1);
 						}
 						return timesAST.setAtClone(1, negNum);
 					}
@@ -206,7 +206,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 					IExpr arg1 = timesAST.arg1();
 					if (arg1.isNumber()) {
 						if (((INumber) arg1).isImaginaryUnit()) {
-							return timesAST.removeAtClone(1).getOneIdentity(factor);
+							return timesAST.rest().getOneIdentity(factor);
 						}
 					}
 				}

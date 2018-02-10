@@ -32,8 +32,8 @@ public class Times extends AbstractOperator {
 	}
 
 	/**
-	 * Try to split a given <code>Times[...]</code> function into nominator and
-	 * denominator and add the corresponding TeX output
+	 * Try to split a given <code>Times[...]</code> function into nominator and denominator and add the corresponding
+	 * TeX output
 	 * 
 	 * @param buf
 	 *            StringBuilder for TeX output
@@ -90,11 +90,8 @@ public class Times extends AbstractOperator {
 		if (expr.isNumber()) {
 			return true;
 		}
-		if (expr.isPower() && ((IAST) expr).arg1().isNumber()) {
-			IAST power = (IAST) expr;
-			if (power.arg1().isNumber() && !power.arg2().isFraction()) {
-				return true;
-			}
+		if (expr.isPower() && expr.base().isNumber() && !expr.exponent().isFraction()) {
+			return true;
 		}
 		return false;
 	}

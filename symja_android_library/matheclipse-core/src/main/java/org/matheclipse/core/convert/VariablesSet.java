@@ -106,8 +106,8 @@ public class VariablesSet {
 				list.forEach(x -> x.accept(this));
 				return false;
 			} else if (list.isPower()) {
-				IExpr base = list.arg1();
-				IExpr exponent = list.arg2();
+				IExpr base = list.base();
+				IExpr exponent = list.exponent();
 
 				if (exponent.isRational()) {
 					list.forEach(x -> x.accept(this));

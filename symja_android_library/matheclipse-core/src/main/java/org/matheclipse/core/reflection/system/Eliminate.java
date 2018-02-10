@@ -387,13 +387,13 @@ public class Eliminate extends AbstractFunctionEvaluator {
 					IExpr value = F.Divide(exprWithoutVariable, timesClone);
 					return extractVariable(rest.getOneIdentity(F.C1), value, predicate, variable);
 				} else if (ast.isPower()) {
-					IExpr base = ast.arg1();
-					IExpr exponent = ast.arg2();
+					IExpr base = ast.base();
+					IExpr exponent = ast.exponent();
 					if (exponent.isFree(predicate, true)) {
 						// f(x) ^ a
 						IExpr value = F.Power(exprWithoutVariable, F.Divide(F.C1, exponent));
 						return extractVariable(base, value, predicate, variable);
-					} else if (ast.arg1().isFree(predicate, true)) {
+					} else if (base.isFree(predicate, true)) {
 						// a ^ f(x)
 						IExpr value = F.Divide(F.Log(exprWithoutVariable), F.Log(base));
 						return extractVariable(exponent, value, predicate, variable);
@@ -401,9 +401,6 @@ public class Eliminate extends AbstractFunctionEvaluator {
 				}
 			}
 		}
-		// else if (exprWithVariable.equals(variable)) {
-		// return exprWithoutVariable;
-		// }
 		return F.NIL;
 	}
 

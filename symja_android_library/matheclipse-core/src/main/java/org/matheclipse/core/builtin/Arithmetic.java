@@ -246,8 +246,8 @@ public final class Arithmetic {
 					return result[0];
 				}
 			}
-			if (arg1.isPower() && arg1.getAt(2).isSignedNumber()) {
-				return F.Power(F.Abs(arg1.getAt(1)), arg1.getAt(2));
+			if (arg1.isPower() && arg1.exponent().isSignedNumber()) {
+				return F.Power(F.Abs(arg1.base()), arg1.exponent());
 			}
 			return F.NIL;
 		}
@@ -615,9 +615,9 @@ public final class Arithmetic {
 				return temp;
 			}
 			if (arg1.isPower()) {
-				IExpr base = ((IAST) arg1).arg1();
+				IExpr base = arg1.base();
 				if (base.isPositiveResult()) {
-					return F.Power(base, F.Conjugate(((IAST) arg1).arg2()));
+					return F.Power(base, F.Conjugate(arg1.exponent()));
 				}
 			}
 			if (arg1.isPlus()) {
@@ -651,11 +651,11 @@ public final class Arithmetic {
 					return result;
 				}
 			} else if (arg1.isConjugate()) {
-				return arg1.getAt(1);
+				return arg1.first();
 			} else if (arg1.isAST(F.Zeta, 2)) {
-				return F.Zeta(F.Conjugate(arg1.getAt(1)));
-			} else if (arg1.isAST(F.Zeta, 3) && arg1.getAt(1).isSignedNumber() && arg1.getAt(2).isSignedNumber()) {
-				return F.Zeta(F.Conjugate(arg1.getAt(1)), F.Conjugate(arg1.getAt(2)));
+				return F.Zeta(F.Conjugate(arg1.first()));
+			} else if (arg1.isAST(F.Zeta, 3) && arg1.first().isSignedNumber() && arg1.second().isSignedNumber()) {
+				return F.Zeta(F.Conjugate(arg1.first()), F.Conjugate(arg1.second()));
 			}
 			return F.NIL;
 		}
@@ -747,7 +747,7 @@ public final class Arithmetic {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 	}
-	
+
 	/**
 	 * <pre>
 	 * DivideBy(x, dx)
@@ -1208,29 +1208,27 @@ public final class Arithmetic {
 				return Negate(Im(negExpr));
 			}
 			if (arg1.isTimes()) {
-				if (arg1.getAt(1).isSignedNumber()) {
-					IAST temp = ((IAST) arg1).removeAtClone(1);
-					return F.Times(arg1.getAt(1), F.Im(temp));
+				IExpr first = arg1.first();
+				if (first.isSignedNumber()) {
+					return F.Times(first, F.Im(arg1.rest()));
 				}
-				if (arg1.getAt(1).isImaginaryUnit()) {
+				if (first.isImaginaryUnit()) {
 					// Im(I*temp) -> Re(temp)
-					return ((IAST) arg1).removeAtClone(1).re();
+					return arg1.rest().re();
 				}
 			}
 			if (arg1.isPlus()) {
 				return ((IAST) arg1).mapThread((IAST) F.Im(null), 1);
 			}
 			if (arg1.isPower()) {
-				IAST astPower = (IAST) arg1;
-				IExpr base = astPower.arg1();
-				if (base.isRealResult()) {
+				IExpr x = arg1.base();
+				if (x.isRealResult()) {
 					// test for x^(a+I*b)
-					IExpr x = base;
-					IExpr exponent = astPower.arg2();
+					IExpr exponent = arg1.exponent();
 					if (exponent.isNumber()) {
 						// (x^2)^(a/2)*E^(-b*Arg[x])*Sin[a*Arg[x]+1/2*b*Log[x^2]]
-						IExpr a = ((INumber) exponent).re();
-						IExpr b = ((INumber) exponent).im();
+						IExpr a = exponent.re();
+						IExpr b = exponent.im();
 						return imPowerComplex(x, a, b);
 					}
 					if (exponent.isNumericFunction()) {
@@ -2485,10 +2483,10 @@ public final class Arithmetic {
 						return F.CInfinity;
 					}
 				} else if (arg1.isPower() && is1.isNumIntValue() && is1.isPositive()) {
-					IAST a0 = (IAST) arg1;
-					if (a0.arg2().isNumIntValue() && a0.arg2().isPositive()) {
+					IExpr exponent = arg1.exponent();
+					if (exponent.isNumIntValue() && exponent.isPositive()) {
 						// (x*n)^m => x ^(n*m)
-						return Power(a0.arg1(), is1.times(a0.arg2()));
+						return Power(arg1.base(), is1.times(exponent));
 					}
 				} else if (arg1.isNegativeInfinity() && arg2.isInteger()) {
 					IInteger ii = (IInteger) arg2;
@@ -2603,14 +2601,14 @@ public final class Arithmetic {
 			IASTAppendable resultAST = F.NIL;
 			for (int i = 1; i < timesAST.size(); i++) {
 				IExpr temp = timesAST.get(i);
-				if (temp.isPower() && temp.getAt(2).isMinusOne()) {
+				if (temp.isPower() && temp.exponent().isMinusOne()) {
 					if (!resultAST.isPresent()) {
 						resultAST = timesAST.copyAppendable();
 						for (int j = 1; j < i; j++) {
 							resultAST.set(j, F.Power(timesAST.get(j), arg2));
 						}
 					}
-					resultAST.set(i, temp.getAt(1));
+					resultAST.set(i, temp.base());
 				} else {
 					if (resultAST.isPresent()) {
 						resultAST.set(i, F.Power(temp, arg2));
@@ -2687,13 +2685,13 @@ public final class Arithmetic {
 						multiplicationFactors = F.TimesAlloc(8);
 						plusClone = plus.copyAppendable();
 					}
-					multiplicationFactors.append(temp.getAt(1));
+					multiplicationFactors.append(temp.first());
 					plusClone.remove(i);
 				} else if (temp.isTimes()) {
 					IAST times = (IAST) temp;
 					for (int j = times.argSize(); j > 0; j--) {
 						if (times.get(j).isLog()) {
-							IExpr innerFunc = times.get(j).getAt(1);
+							IExpr innerFunc = times.get(j).first();
 							if (!multiplicationFactors.isPresent()) {
 								multiplicationFactors = F.TimesAlloc(8);
 								plusClone = plus.copyAppendable();
@@ -3032,29 +3030,27 @@ public final class Arithmetic {
 				return Negate(Re(negExpr));
 			}
 			if (expr.isTimes()) {
-				if (expr.getAt(1).isSignedNumber()) {
-					IAST temp = ((IAST) expr).removeAtClone(1);
-					return F.Times(expr.getAt(1), F.Re(temp));
+				IExpr first = expr.first();
+				if (first.isSignedNumber()) {
+					return F.Times(first, F.Re(expr.rest()));
 				}
-				if (expr.getAt(1).isImaginaryUnit()) {
+				if (first.isImaginaryUnit()) {
 					// Re(I*temp) -> -Im(temp)
-					IAST temp = ((IAST) expr).removeAtClone(1);
-					return F.Times(F.CN1, F.Im(temp));
+					return F.Times(F.CN1, F.Im(expr.rest()));
 				}
 			}
 			if (expr.isPlus()) {
 				return ((IAST) expr).mapThread((IAST) F.Re(null), 1);
 			}
 			if (expr.isPower()) {
-				IAST astPower = (IAST) expr;
-				IExpr base = astPower.arg1();
+				IExpr base = expr.base();
 				if (base.isRealResult()) {
 					// test for x^(a+I*b)
-					IExpr exponent = astPower.arg2();
-					if (exponent.isNumber()) {
-						// (x^2)^(a/2)*E^(-b*Arg[x])*Cos[a*Arg[x]+1/2*b*Log[x^2]]
-						return rePowerComplex(x, ((INumber) exponent).re(), ((INumber) exponent).im());
-					}
+					IExpr exponent = expr.exponent();
+					// if (exponent.isNumber()) {
+					// // (x^2)^(a/2)*E^(-b*Arg[x])*Cos[a*Arg[x]+1/2*b*Log[x^2]]
+					// return rePowerComplex(x, ((INumber) exponent).re(), ((INumber) exponent).im());
+					// }
 					// (x^2)^(a/2)*E^(-b*Arg[x])*Cos[a*Arg[x]+1/2*b*Log[x^2]]
 					return rePowerComplex(x, exponent.re(), exponent.im());
 				}
@@ -3515,7 +3511,7 @@ public final class Arithmetic {
 			if (!expr.isPresent()) {
 				expr = originalExpr;
 			}
-			if (expr.isTimes() && expr.getAt(1).isInteger()) {
+			if (expr.isTimes() && expr.first().isInteger()) {
 				IAST times = (IAST) expr;
 				IInteger leadingFactor = (IInteger) times.arg1();
 
@@ -3523,9 +3519,9 @@ public final class Arithmetic {
 					IASTAppendable result = F.NIL;
 					for (int i = 2; i < times.size(); i++) {
 						IExpr temp = times.get(i);
-						if (temp.isPower() && temp.getAt(1).isInteger() && !temp.getAt(2).isNumber()) {
-							IASTMutable power = (IASTMutable) temp;
-							IInteger powArg1 = (IInteger) power.arg1();
+						if (temp.isPower() && temp.base().isInteger() && !temp.exponent().isNumber()) {
+							// IASTMutable power = (IASTMutable) temp;
+							IInteger powArg1 = (IInteger) temp.base();
 							if (powArg1.isPositive()) {
 								IInteger mod = F.C0;
 								int count = 0;
@@ -3542,8 +3538,8 @@ public final class Arithmetic {
 									if (!result.isPresent()) {
 										result = times.copyAppendable();
 									}
-									power = power.copyAppendable();
-									power.set(2, F.Plus(F.integer(count), power.arg2()));
+									IASTMutable power = ((IASTMutable) temp).copyAppendable();
+									power.set(2, F.Plus(F.integer(count), power.exponent()));
 									result.set(i, power);
 								}
 							}
@@ -3628,24 +3624,22 @@ public final class Arithmetic {
 
 			if (o0.isPower()) {
 				// (x^a) * b
-				final IAST power0 = (IAST) o0;
-				IExpr power0Arg1 = power0.arg1();
-				IExpr power0Arg2 = power0.arg2();
-				if (power0.equalsAt(1, o1)) {
+				IExpr power0Base = o0.base();
+				IExpr power0Exponent = o0.exponent(); 
+				if (o0.equalsAt(1, o1)) {
 					// (x^a) * x
-					if (power0Arg2.isNumber() && !o1.isRational()) {
+					if (power0Exponent.isNumber() && !o1.isRational()) {
 						// avoid reevaluation of a root of a rational number (example: 2*Sqrt(2) )
-						return o1.power(power0Arg2.inc());
-					} else if (!power0Arg2.isNumber()) {
-						return o1.power(power0Arg2.inc());
+						return o1.power(power0Exponent.inc());
+					} else if (!power0Exponent.isNumber()) {
+						return o1.power(power0Exponent.inc());
 					}
 				}
 
 				if (o1.isPower()) {
-					final IAST power1 = (IAST) o1;
-					IExpr power1Arg1 = power1.arg1();
-					IExpr power1Arg2 = power1.arg2();
-					temp = timesPowerPower(power0Arg1, power0Arg2, power1Arg1, power1Arg2);
+					IExpr power1Base = o1.base();
+					IExpr power1Exponent = o1.exponent();
+					temp = timesPowerPower(power0Base, power0Exponent, power1Base, power1Exponent);
 					if (temp.isPresent()) {
 						return temp;
 					}
@@ -3653,10 +3647,9 @@ public final class Arithmetic {
 			}
 
 			if (o1.isPower()) {
-				final IAST power1 = (IAST) o1;
-				IExpr power1Arg1 = power1.arg1();
-				IExpr power1Arg2 = power1.arg2();
-				temp = timesArgPower(o0, power1Arg1, power1Arg2);
+				IExpr power1Base = o1.base();
+				IExpr power1Exponent = o1.exponent();
+				temp = timesArgPower(o0, power1Base, power1Exponent);
 				if (temp.isPresent()) {
 					return temp;
 				}

@@ -90,11 +90,12 @@ public class QuarticSolver {
 				int exponent = -1;
 				IASTAppendable coeff = ast.copyAppendable();
 				for (int i = 1; i < ast.size(); i++) {
-					if (ast.get(i).isPower()) {
-						final IExpr temp = ast.get(i).getAt(1);
-						if (x.equals(temp)) {
+					IExpr arg = ast.get(i);
+					if (arg.isPower()) {
+						final IExpr base = arg.base();
+						if (x.equals(base)) {
 							try {
-								exponent = Validate.checkPowerExponent((IAST) ast.get(i));
+								exponent = Validate.checkPowerExponent((IAST) arg);
 							} catch (WrongArgumentType e) {
 							}
 							if (exponent < 0 || exponent > 4) {
@@ -104,7 +105,7 @@ public class QuarticSolver {
 							coefficients[exponent] = F.eval(F.Plus(coefficients[exponent], coeff));
 							return true;
 						}
-					} else if (x.equals(ast.get(i))) {
+					} else if (x.equals(arg)) {
 						coeff.remove(i);
 						coefficients[1] = F.eval(F.Plus(coefficients[1], coeff));
 						return true;

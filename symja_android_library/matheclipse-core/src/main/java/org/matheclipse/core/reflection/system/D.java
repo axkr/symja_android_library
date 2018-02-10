@@ -340,15 +340,16 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 				return listArg1.mapThread(F.D(F.Null, x), 1);
 			} else if (listArg1.isTimes()) {
 				return listArg1.map(F.PlusAlloc(16), new BinaryBindIth1st(listArg1, F.D(F.Null, x)));
-			} else if (listArg1.isPower()) {// && !listArg1.isFreeAt(1, x) && !listArg1.isFreeAt(2, x)) {
-				final IExpr f = listArg1.arg1();
-				final IExpr g = listArg1.arg2();
+			} else if (listArg1.isPower()) {
+				// f ^ g
+				final IExpr f = listArg1.base();
+				final IExpr g = listArg1.exponent();
 				final IExpr y = ast.arg2();
-				if (listArg1.isFreeAt(2, x)) {
+				if (g.isFree(x)) {
 					// g*D(f,y)*f^(g-1)
 					return F.Times(g, F.D(f, y), F.Power(f, g.dec()));
 				}
-				if (listArg1.isFreeAt(1, x)) {
+				if (f.isFree(x)) {
 					// D(g,y)*Log(f)*f^g
 					return F.Times(F.D(g, y), F.Log(f), F.Power(f, g));
 				}

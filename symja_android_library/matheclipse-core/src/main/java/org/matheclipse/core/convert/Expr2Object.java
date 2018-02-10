@@ -126,11 +126,11 @@ public class Expr2Object {
 						for (int j = 1; j < times.size(); j++) {
 							if (times.get(j).isPower()) {
 								IAST power = (IAST) times.get(j);
-								if (power.arg1().equals(sym)) {
+								if (power.base().equals(sym)) {
 									if (exp != (-1)) {
 										return null;
 									}
-									IExpr res = F.evaln(power.arg2());
+									IExpr res = F.evaln(power.exponent());
 									if (!(res instanceof INum)) {
 										return null;
 									}

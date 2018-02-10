@@ -312,10 +312,10 @@ public class Derivative extends AbstractFunctionEvaluator implements DerivativeR
 				// Derivative[1][(...)&]
 				IExpr arg1 = function.arg1();
 				if (arg1.isPower()) {
-					IAST power = (IAST) arg1;
-					if (power.arg1().equals(F.Slot1) && power.arg2().isFree(F.Slot1)) {
-						return F.Times(power.arg2(), createDerivative(n - 1,
-								F.unaryAST1(F.Function, engine.evaluate(F.Power(F.Slot1, power.arg2().dec())))));
+					IExpr exponent = arg1.exponent();
+					if (arg1.base().equals(F.Slot1) && exponent.isFree(F.Slot1)) {
+						return F.Times(exponent, createDerivative(n - 1,
+								F.unaryAST1(F.Function, engine.evaluate(F.Power(F.Slot1, exponent.dec())))));
 
 					}
 				}

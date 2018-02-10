@@ -5300,7 +5300,7 @@ public class F {
 		return ast(a, Times);
 	}
 
-	public static IAST Times(final IExpr a0, final IExpr a1) {
+	public static IASTMutable Times(final IExpr a0, final IExpr a1) {
 		if (a0 != null && a1 != null) {
 			if (a0.isTimes() || a1.isTimes()) {
 				int size = 0;
