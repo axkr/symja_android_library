@@ -860,6 +860,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Attributes(f)", "{Orderless}");
 	}
 
+	public void testClip() {
+		check("Clip(x)", "Clip(x)");
+		check("Clip(1)", "1");
+		check("Clip(-1)", "-1");
+		check("Clip(Sin(Pi/7))", "Sin(Pi/7)");
+		check("Clip(Tan(E))", "Tan(E)");
+		check("Clip(Tan(2*E))", "-1");
+		check("Clip(Tan(-2*E))", "1");
+	}
+	
 	public void testCoefficient() {
 		// check("Apply(Plus,((Coefficient(x*(b+a),x,#1)*x^#1)&))", "");
 		check("Coefficient(x*y,y,1)", "x");

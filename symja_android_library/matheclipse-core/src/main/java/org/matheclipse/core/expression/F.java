@@ -237,6 +237,7 @@ public class F {
 	public final static IBuiltInSymbol Clear = BuiltIns.valueOf(BuiltIns.Clear);
 	public final static IBuiltInSymbol ClearAll = BuiltIns.valueOf(BuiltIns.ClearAll);
 	public final static IBuiltInSymbol ClearAttributes = BuiltIns.valueOf(BuiltIns.ClearAttributes);
+	public final static IBuiltInSymbol Clip = BuiltIns.valueOf(BuiltIns.Clip);
 	public final static IBuiltInSymbol Coefficient = BuiltIns.valueOf(BuiltIns.Coefficient);
 	public final static IBuiltInSymbol CoefficientList = BuiltIns.valueOf(BuiltIns.CoefficientList);
 	public final static IBuiltInSymbol CoefficientRules = BuiltIns.valueOf(BuiltIns.CoefficientRules);

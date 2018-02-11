@@ -114,6 +114,7 @@ public final class Arithmetic {
 		F.AddTo.setEvaluator(new AddTo());
 		F.Arg.setEvaluator(new Arg());
 		F.Chop.setEvaluator(new Chop());
+		F.Clip.setEvaluator(new Clip());
 		F.Complex.setEvaluator(CONST_COMPLEX);
 		F.Conjugate.setEvaluator(new Conjugate());
 		F.Decrement.setEvaluator(new Decrement());
@@ -464,6 +465,77 @@ public final class Arithmetic {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE);
+		}
+	}
+
+	/**
+	 * <pre>
+	 * Clip(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>expr</code> in the range <code>-1</code> to <code>1</code>. Returns <code>-1</code> if
+	 * <code>expr</code> is less than <code>-1</code>.Returns <code>1</code> if <code>expr</code> is greater than
+	 * <code>1</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Clip(Sin(Pi/7))
+	 * Sin(Pi/7)
+	 * 
+	 * &gt;&gt; Clip(Tan(E))
+	 * Tan(E)
+	 * 
+	 * &gt;&gt; Clip(Tan(2*E)
+	 * -1
+	 * 
+	 * &gt;&gt; Clip(Tan(-2*E))
+	 * 1
+	 * 
+	 * &gt;&gt; Clip(x)
+	 * Clip(x)
+	 * </pre>
+	 */
+	private final static class Clip extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			if (ast.size() == 2) {
+				IExpr x = ast.first();
+
+				if (x.isSignedNumber()) {
+					ISignedNumber real = (ISignedNumber) x;
+					if (real.isGreaterThan(F.C1)) {
+						return F.C1;
+					}
+					if (real.isLessThan(F.CN1)) {
+						return F.CN1;
+					}
+					return x;
+				}
+				ISignedNumber real = x.evalSignedNumber();
+				if (real != null) {
+					if (real.isGreaterThan(F.C1)) {
+						return F.C1;
+					}
+					if (real.isLessThan(F.CN1)) {
+						return F.CN1;
+					}
+					return x;
+				}
+			}
+
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.NUMERICFUNCTION);
 		}
 	}
 
