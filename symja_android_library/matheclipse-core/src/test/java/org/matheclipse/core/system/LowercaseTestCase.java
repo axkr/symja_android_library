@@ -861,6 +861,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testClip() {
+		check("Clip(Tan(E),{-1/2,1/2})", "Tan(E)");
+		check("Clip(Tan(2*E),{-1/2,1/2})", "-1/2");
+		check("Clip(Tan(-2*E),{-1/2,1/2})", "1/2");
+		
+		check("Clip(Tan(E), {-1/2,1/2}, {a,b})", "Tan(E)");
+		check("Clip(Tan(2*E), {-1/2,1/2}, {a,b})", "a");
+		check("Clip(Tan(-2*E), {-1/2,1/2}, {a,b})", "b");
+		
 		check("Clip(x)", "Clip(x)");
 		check("Clip(1)", "1");
 		check("Clip(-1)", "-1");
@@ -868,6 +876,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Clip(Tan(E))", "Tan(E)");
 		check("Clip(Tan(2*E))", "-1");
 		check("Clip(Tan(-2*E))", "1");
+		
+
 	}
 	
 	public void testCoefficient() {

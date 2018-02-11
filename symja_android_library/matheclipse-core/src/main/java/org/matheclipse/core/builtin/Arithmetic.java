@@ -503,33 +503,111 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
-
+			Validate.checkRange(ast, 2, 4);
+			
+			IExpr x = ast.first();
 			if (ast.size() == 2) {
-				IExpr x = ast.first();
-
-				if (x.isSignedNumber()) {
-					ISignedNumber real = (ISignedNumber) x;
-					if (real.isGreaterThan(F.C1)) {
-						return F.C1;
-					}
-					if (real.isLessThan(F.CN1)) {
-						return F.CN1;
-					}
-					return x;
-				}
-				ISignedNumber real = x.evalSignedNumber();
-				if (real != null) {
-					if (real.isGreaterThan(F.C1)) {
-						return F.C1;
-					}
-					if (real.isLessThan(F.CN1)) {
-						return F.CN1;
-					}
-					return x;
-				}
+				return clip(x);
 			}
 
+			IExpr vMin = null;
+			IExpr vMax = null;
+			if (ast.size() == 4) {
+				IExpr arg3 = ast.arg3();
+				if (arg3.isAST(F.List, 3)) {
+					// { vMin, vMax } as 3rd argument expected
+					vMin = arg3.first();
+					vMax = arg3.second();
+				} else {
+					return F.NIL;
+				}
+			}
+			if (ast.size() >= 3) {
+				IExpr arg2 = ast.arg2();
+				if (arg2.isAST(F.List, 3)) {
+					// { min, max } as 2nd argument expected
+					IExpr min = arg2.first();
+					IExpr max = arg2.second();
+					if (ast.size() == 3) {
+						vMin = min;
+						vMax = max;
+					}
+					if (min.isSignedNumber() && max.isSignedNumber()) {
+						return clip(x, (ISignedNumber) min, (ISignedNumber) max, vMin, vMax);
+					}
+					ISignedNumber minEvaled = min.evalSignedNumber();
+					if (minEvaled != null) {
+						ISignedNumber maxEvaled = max.evalSignedNumber();
+						if (maxEvaled != null) {
+							return clip(x, (ISignedNumber) minEvaled, (ISignedNumber) maxEvaled, vMin, vMax);
+						}
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+		private IExpr clip(IExpr x) {
+			if (x.isSignedNumber()) {
+				ISignedNumber real = (ISignedNumber) x;
+				if (real.isGreaterThan(F.C1)) {
+					return F.C1;
+				}
+				if (real.isLessThan(F.CN1)) {
+					return F.CN1;
+				}
+				return x;
+			}
+			ISignedNumber real = x.evalSignedNumber();
+			if (real != null) {
+				if (real.isGreaterThan(F.C1)) {
+					return F.C1;
+				}
+				if (real.isLessThan(F.CN1)) {
+					return F.CN1;
+				}
+				return x;
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * gives <code>vMin</code> for <code>x<min</code> and <code>vMax</code> for <code>x>max</code>.
+		 * 
+		 * @param x
+		 *            the expreesion value
+		 * @param min
+		 *            minimum value
+		 * @param max
+		 *            maximum value
+		 * @param vMin
+		 *            value for x less than minimum
+		 * @param vMax
+		 *            value for x greater than minimum
+		 * @return x if x is in the range min to max. Return vMin if x is less than min.Return vMax if x is greater than
+		 *         max.
+		 */
+		private IExpr clip(IExpr x, ISignedNumber min, ISignedNumber max, IExpr vMin, IExpr vMax) {
+			if (x.isSignedNumber()) {
+				ISignedNumber real = (ISignedNumber) x;
+				if (real.isGreaterThan(max)) {
+					return vMax;
+				}
+				if (real.isLessThan(min)) {
+					return vMin;
+				}
+				return x;
+			}
+			ISignedNumber real = x.evalSignedNumber();
+			if (real != null) {
+				if (real.isGreaterThan(max)) {
+					return vMax;
+				}
+				if (real.isLessThan(min)) {
+					return vMin;
+				}
+				return x;
+			}
 			return F.NIL;
 		}
 
