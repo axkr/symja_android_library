@@ -175,10 +175,10 @@ public class Symbol implements ISymbol, Serializable {
 				return 0;
 			}
 			// sort lexicographically
-			return US_COLLATOR.compare(fSymbolName, ((ISymbol) expr).getSymbolName());//fSymbolName);
+			return US_COLLATOR.compare(fSymbolName, ((ISymbol) expr).getSymbolName());// fSymbolName);
 		}
-		if (expr.isNot() && ((IAST) expr).arg1().isSymbol()) {
-			int cp = compareTo(((IAST) expr).arg1());
+		if (expr.isNot() && expr.first().isSymbol()) {
+			int cp = compareTo(expr.first());
 			return cp != 0 ? cp : -1;
 		}
 		return ISymbol.super.compareTo(expr);
@@ -828,7 +828,7 @@ public class Symbol implements ISymbol, Serializable {
 
 	private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		fSymbolName = stream.readUTF();
-		fHashValue = fSymbolName.hashCode(); 
+		fHashValue = fSymbolName.hashCode();
 		fAttributes = stream.read();
 		fContext = (Context) stream.readObject();
 		if (fContext == null) {
@@ -858,7 +858,7 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public void readRules(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		fSymbolName = stream.readUTF();
-		fHashValue = fSymbolName.hashCode(); 
+		fHashValue = fSymbolName.hashCode();
 		fAttributes = stream.read();
 		boolean hasDownRulesData = stream.readBoolean();
 		if (hasDownRulesData) {
@@ -1020,7 +1020,7 @@ public class Symbol implements ISymbol, Serializable {
 	}
 
 	private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
-		stream.writeUTF(fSymbolName); 
+		stream.writeUTF(fSymbolName);
 		stream.write(fAttributes);
 		if (fContext.equals(Context.SYSTEM)) {
 			stream.writeObject(null);
@@ -1042,7 +1042,7 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean writeRules(java.io.ObjectOutputStream stream) throws java.io.IOException {
-		stream.writeUTF(fSymbolName); 
+		stream.writeUTF(fSymbolName);
 		stream.write(fAttributes);
 		// if (!containsRules()) {
 		// return false;

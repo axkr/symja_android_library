@@ -304,8 +304,8 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		this.fLHSPriority = PatternMap.DEFAULT_RULE_PRIORITY;
 		this.fPatternCondition = null;
 		if (patternExpr.isCondition()) {
-			this.fLhsPatternExpr = ((IAST) patternExpr).arg1();
-			this.fPatternCondition = ((IAST) patternExpr).arg2();
+			this.fLhsPatternExpr = patternExpr.first();
+			this.fPatternCondition = patternExpr.second();
 		}
 		this.fPatternMap = new PatternMap();
 		init(fLhsPatternExpr);

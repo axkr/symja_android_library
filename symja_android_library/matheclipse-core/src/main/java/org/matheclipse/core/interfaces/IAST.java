@@ -1243,7 +1243,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * Returns the <b>number of elements</b> in this {@code IAST}.The <b>number of elements</b> equals
-	 * <code>argSize() + 1</code> (i.e. the <b>number of arguments</b> plus 1).
+	 * <code>argSize() + 1</code> (i.e. the <b>number of arguments</b> plus 1). If this is an atom return size
+	 * <code>0</code>.
 	 * 
 	 * @return the <b>number of elements</b> in this {@code IAST}.
 	 * @see #argSize()

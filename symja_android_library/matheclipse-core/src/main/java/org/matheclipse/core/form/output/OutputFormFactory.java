@@ -540,9 +540,9 @@ public class OutputFormFactory {
 			} else if (numerator.isComplex() || numerator.isComplexNumeric()) {
 				convertNumber(buf, (INumber) numerator, ASTNodeFactory.DIVIDE_PRECEDENCE, caller);
 			} else {
-				if (numerator.isTimes() && numerator.isAST2() && ((IAST) numerator).arg1().isMinusOne()) {
+				if (numerator.isTimes() && numerator.isAST2() && numerator.first().isMinusOne()) {
 					append(buf, "-");
-					convert(buf, ((IAST) numerator).arg2(), ASTNodeFactory.TIMES_PRECEDENCE, false);
+					convert(buf, numerator.second(), ASTNodeFactory.TIMES_PRECEDENCE, false);
 				} else {
 					if (caller == PLUS_CALL) {
 						append(buf, "+");

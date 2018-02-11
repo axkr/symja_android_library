@@ -28,7 +28,7 @@ public class Plus extends MMLOperator {
 		int size = f.argSize();
 		for (int i = size; i > 0; i--) {
 			expr = f.get(i);
-			if ((i < size) && (expr instanceof IAST) && ((IAST) expr).head().equals(F.Times)) {
+			if ((i < size) && expr.isAST(F.Times)) {
 				timesConverter.convertTimesFraction(buf, (IAST) expr, fPrecedence, MathMLFormFactory.PLUS_CALL);
 			} else {
 				if (i < size) {

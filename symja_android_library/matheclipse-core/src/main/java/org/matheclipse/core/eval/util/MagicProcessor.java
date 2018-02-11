@@ -32,9 +32,8 @@ public class MagicProcessor {
 			// Just Remove outermost braces for single equation. Issues for
 			// multiple eqn
 			/*
-			 * if(processedQ.split(",").length == 2) { if (ans.charAt(0) == '{'
-			 * && ans.charAt(ans.length() - 1) == '}') ans = ans.substring(1,
-			 * ans.length() - 1); }
+			 * if(processedQ.split(",").length == 2) { if (ans.charAt(0) == '{' && ans.charAt(ans.length() - 1) == '}')
+			 * ans = ans.substring(1, ans.length() - 1); }
 			 */
 		}
 
@@ -43,9 +42,8 @@ public class MagicProcessor {
 
 	String preProcessQues() {
 		/*
-		 * For q = Solve({x^2==4,y^2+x==6},{x,y}) ques = AST =
-		 * Solve[{x^2==4,y^2+x==6},{x,y}] | |----array |0 = Symbol = solve |1 =
-		 * AST = {x^2==4,y^2+x==6} |2 = AST = {x,y} |3 = null |4 = null
+		 * For q = Solve({x^2==4,y^2+x==6},{x,y}) ques = AST = Solve[{x^2==4,y^2+x==6},{x,y}] | |----array |0 = Symbol =
+		 * solve |1 = AST = {x^2==4,y^2+x==6} |2 = AST = {x,y} |3 = null |4 = null
 		 */
 
 		// Convert expression like "2*x+7=10" to Solve(2*x+7 - 10 == 0, x)
@@ -57,12 +55,10 @@ public class MagicProcessor {
 			}
 
 			/*
-			 * String [] list = outPut.split("="); if(list.length == 2) { String
-			 * eq = list[1] + "- (" + list[0] + ")"; IExpr eqn =
-			 * MathUtils.parse(eq, null); if(eqn.isAST() && isPolynomial((IAST)
-			 * eqn)) { String vars = solve_get_arg_if_missing(eqn); isSysOfEq =
-			 * true; outPut = ((Symbol) F.Solve).toString() + "(" + eq + " == 0"
-			 * + "," + vars + ")"; } }
+			 * String [] list = outPut.split("="); if(list.length == 2) { String eq = list[1] + "- (" + list[0] + ")";
+			 * IExpr eqn = MathUtils.parse(eq, null); if(eqn.isAST() && isPolynomial((IAST) eqn)) { String vars =
+			 * solve_get_arg_if_missing(eqn); isSysOfEq = true; outPut = ((Symbol) F.Solve).toString() + "(" + eq +
+			 * " == 0" + "," + vars + ")"; } }
 			 */
 		}
 
@@ -109,8 +105,9 @@ public class MagicProcessor {
 	}
 
 	private IExpr getArg1(IExpr ques) {
-		if (ques.isAST())
-			return ((IAST) ques).arg1();
+		if (ques.isAST()) {
+			return ques.first();
+		}
 		return null;
 	}
 
@@ -144,7 +141,7 @@ public class MagicProcessor {
 			}
 		}
 		return null;
-	} 
+	}
 
 	// w.r.t arg missing for D(f(x)) , Solve({eq1, eq2}), Integrate(f(x))
 	private boolean wrtArgumentMising(IExpr expr, ISymbol fun) {
@@ -156,7 +153,7 @@ public class MagicProcessor {
 				IAST ast = (IAST) expr;
 				if (ast.isAST1()) {
 					return true;
-				}  
+				}
 			}
 		}
 
@@ -199,9 +196,8 @@ public class MagicProcessor {
 
 	/**
 	 * <p>
-	 * For input <code>F() = G()</code> return <code>F() - G() == 0</code> if
-	 * its a equation of return null (i.e for <code>x+y=7</code> return
-	 * <code>x+y - 7 == 0</code> )
+	 * For input <code>F() = G()</code> return <code>F() - G() == 0</code> if its a equation of return null (i.e for
+	 * <code>x+y=7</code> return <code>x+y - 7 == 0</code> )
 	 * </p>
 	 *
 	 * @param possibleEq

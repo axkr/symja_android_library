@@ -1786,7 +1786,7 @@ public final class Arithmetic {
 			if (size > 2) {
 				IExpr temp = evaluateHashsRepeated(ast, engine);
 				if (temp.isAST(F.Plus, 2)) {
-					return ((IAST) temp).arg1();
+					return temp.first();
 				}
 				return temp;
 			}
@@ -3465,7 +3465,7 @@ public final class Arithmetic {
 
 				}
 				if (o1.isDirectedInfinity() && o1.isAST1()) {
-					return F.eval(F.DirectedInfinity(F.Times(inf.arg1(), ((IAST) o1).arg1())));
+					return F.eval(F.DirectedInfinity(F.Times(inf.first(), o1.first())));
 				}
 			}
 			return F.NIL;
@@ -3625,7 +3625,7 @@ public final class Arithmetic {
 			if (o0.isPower()) {
 				// (x^a) * b
 				IExpr power0Base = o0.base();
-				IExpr power0Exponent = o0.exponent(); 
+				IExpr power0Exponent = o0.exponent();
 				if (o0.equalsAt(1, o1)) {
 					// (x^a) * x
 					if (power0Exponent.isNumber() && !o1.isRational()) {

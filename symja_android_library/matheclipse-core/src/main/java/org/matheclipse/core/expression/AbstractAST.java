@@ -1865,7 +1865,7 @@ public abstract class AbstractAST implements IASTMutable {
 		if (isEvalFlagOn(IAST.IS_MATRIX)) {
 			final int[] dim = new int[2];
 			dim[0] = argSize();
-			dim[1] = ((IAST) arg1()).argSize();
+			dim[1] = ((IAST) first()).argSize();
 			return dim;
 		}
 		if (isList()) {
@@ -3075,7 +3075,7 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public IExpr upper() {
 		if (isInterval1()) {
-			return ((IAST) arg1()).arg2();
+			return first().second();
 		}
 		return F.NIL;
 	}

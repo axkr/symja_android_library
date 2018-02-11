@@ -116,14 +116,14 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 				}
 				return p1.compareTo(p2);
 			} else if (patternExpr2.isModuleOrWithCondition()) {
-				p2 = ((IAST) patternExpr2.second()).second();
+				p2 =patternExpr2.second().second();
 				if (equivalent(p1, p2, pm1, pm2)) {
 					return 0;
 				}
 				return p1.compareTo(p2);
 			}
 		} else if (patternExpr1.isModuleOrWithCondition()) {
-			p1 = ((IAST) patternExpr1.second()).second();
+			p1 =  patternExpr1.second().second();
 			if (patternExpr2.isCondition()) {
 				p2 = patternExpr2.second();
 				if (equivalent(p1, p2, pm1, pm2)) {
@@ -131,7 +131,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 				}
 				return p1.compareTo(p2);
 			} else if (patternExpr2.isModuleOrWithCondition()) {
-				p2 = ((IAST) patternExpr2.second()).second();
+				p2 =   patternExpr2.second() .second();
 				if (equivalent(p1, p2, pm1, pm2)) {
 					return 0;
 				}

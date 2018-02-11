@@ -116,7 +116,7 @@ public class Show3D2ThreeJS {
 			} else if (option.isList() && option.isAST3()) {
 				IAST list = (IAST) option;
 				for (int i = 1; i < list.size(); i++) {
-					viewpoints[i - 1] = ((ISignedNumber) ((IAST) list).get(i)).doubleValue();
+					viewpoints[i - 1] = ((ISignedNumber) list.getAt(i)).doubleValue();
 				}
 			}
 		}
@@ -167,7 +167,7 @@ public class Show3D2ThreeJS {
 				} finally {
 					buf.append("}], ");
 				}
-				
+
 			}
 		} catch (RuntimeException ex) {
 			// catch cast exceptions for example
@@ -176,12 +176,12 @@ public class Show3D2ThreeJS {
 	}
 
 	private static void addCoordsToElements(StringBuilder buf, IAST point) {
-		if (point.isList() && ((IAST) point).isAST3()) {
+		if (point.isList() && point.isAST3()) {
 			// [{"coords": [[[0.0, 0.0, 0.0], null], [[0.0, 1.0, 1.0], null], [[1.0, 0.0, 0.0],
 			// null]]
 			buf.append("[[");
 			for (int j = 1; j < point.size(); j++) {
-				buf.append(Show2SVG.FORMATTER.format(((ISignedNumber) ((IAST) point).get(j)).doubleValue()));
+				buf.append(Show2SVG.FORMATTER.format(((ISignedNumber) point.getAt(j)).doubleValue()));
 				if (j < point.argSize()) {
 					buf.append(", ");
 				}

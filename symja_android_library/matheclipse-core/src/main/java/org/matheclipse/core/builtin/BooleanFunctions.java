@@ -1916,7 +1916,7 @@ public final class BooleanFunctions {
 			if (o.isAST()) {
 				IAST temp = (IAST) o;
 				if (o.isNot()) {
-					return ((IAST) o).arg1();
+					return o.first();
 				}
 				if (temp.isAST2()) {
 					IExpr head = temp.head();

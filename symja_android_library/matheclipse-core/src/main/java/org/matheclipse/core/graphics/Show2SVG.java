@@ -50,7 +50,6 @@ public class Show2SVG {
 		}
 	}
 
-
 	private static void graphicsToSVG(IAST ast, StringBuilder buf) {
 		EvalEngine engine = EvalEngine.get();
 		IAST numericAST = (IAST) engine.evalN(ast);
@@ -58,7 +57,7 @@ public class Show2SVG {
 		if (numericAST.size() > 2) {
 			final Options options = new Options(numericAST.topHead(), numericAST, 2, engine);
 			IExpr option = options.getOption("PlotRange");
-			if (option.isListOfLists() && ((IAST) option).size() == 3) {
+			if (option.isListOfLists() && option.size() == 3) {
 				IAST list = (IAST) option;
 				dim.setPlotRange(list.getAST(1), list.getAST(2));
 			}
@@ -143,15 +142,15 @@ public class Show2SVG {
 			IExpr point;
 			for (int i = 0; i < numberOfPoints; i++) {
 				point = pointList.get(i + 1);
-				if (point.isList() && ((IAST) point).isAST2()) {
-					x[i] = ((ISignedNumber) ((IAST) point).arg1()).doubleValue();
+				if (point.isList() && point.isAST2()) {
+					x[i] = ((ISignedNumber) point.first()).doubleValue();
 					if (x[i] < xMin) {
 						xMin = x[i];
 					}
 					if (x[i] > xMax) {
 						xMax = x[i];
 					}
-					y[i] = ((ISignedNumber) ((IAST) point).arg2()).doubleValue();
+					y[i] = ((ISignedNumber) point.second()).doubleValue();
 					if (y[i] < yMin) {
 						yMin = y[i];
 					}
@@ -184,8 +183,8 @@ public class Show2SVG {
 				for (int i = 0; i < numberOfPoints; i++) {
 					point = pointList.get(i + 1);
 					if (point.isList() && ((IAST) point).isAST2()) {
-						x[i] = ((ISignedNumber) ((IAST) point).arg1()).doubleValue();
-						y[i] = ((ISignedNumber) ((IAST) point).arg2()).doubleValue();
+						x[i] = ((ISignedNumber) point.first()).doubleValue();
+						y[i] = ((ISignedNumber) point.second()).doubleValue();
 					}
 				}
 				double xAxisScalingFactor = width / (xMax - xMin);

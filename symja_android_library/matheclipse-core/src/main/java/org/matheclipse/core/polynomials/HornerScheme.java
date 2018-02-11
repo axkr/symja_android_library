@@ -38,10 +38,10 @@ public class HornerScheme {
 
 	public IAST generate(boolean numericMode, IAST poly, ISymbol sym) {
 		if (numericMode) {
-			poly.forEach(x->collectTermN(sym, x));
-//			for (int i = 1; i < poly.size(); i++) {
-//				collectTermN(sym, poly.get(i));
-//			}
+			poly.forEach(x -> collectTermN(sym, x));
+			// for (int i = 1; i < poly.size(); i++) {
+			// collectTermN(sym, poly.get(i));
+			// }
 			IASTAppendable result = F.PlusAlloc(16);
 			IAST startResult = result;
 			IASTAppendable temp;
@@ -72,7 +72,7 @@ public class HornerScheme {
 			}
 			return startResult;
 		} else {
-			poly.forEach(x->collectTerm(sym, x));
+			poly.forEach(x -> collectTerm(sym, x));
 			// for (int i = 1; i < poly.size(); i++) {
 			// collectTerm(sym, poly.get(i));
 			// }
@@ -114,7 +114,7 @@ public class HornerScheme {
 		if (value.isAST(F.Plus, 2)) {
 			coefficient = value.arg1();
 			if (coefficient.isAST(F.Times, 2)) {
-				coefficient = ((IAST) coefficient).arg1();
+				coefficient = coefficient.first();
 			}
 		} else {
 			coefficient = value;

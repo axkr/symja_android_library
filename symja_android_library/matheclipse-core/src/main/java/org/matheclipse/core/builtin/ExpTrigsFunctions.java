@@ -143,18 +143,18 @@ public class ExpTrigsFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
 
-			IExpr arg1 = ast.arg1();
+			IExpr arg1 = ast.first();
 			IExpr phi;
 			if (ast.isAST2()) {
-				IExpr arg2 = ast.arg2();
+				IExpr arg2 = ast.second();
 
 				if (arg1.isAST(F.List, 3)) {
-					IExpr x = ((IAST) arg1).arg1();
-					IExpr y = ((IAST) arg1).arg2();
+					IExpr x = arg1.first();
+					IExpr y = arg1.second();
 					if (arg2.isAST(F.List, 3)) {
 						// 'AngleVector[{x_, y_}, {r_, phi_}]': '{x + r * Cos[phi], y + r * Sin[phi]}'
-						IExpr r = ((IAST) arg2).arg1();
-						phi = ((IAST) arg2).arg2();
+						IExpr r = arg2.first();
+						phi = arg2.second();
 						return F.List(F.Plus(x, F.Times(r, F.Cos(phi))), F.Plus(y, F.Times(r, F.Sin(phi))));
 					} else {
 						phi = arg2;
@@ -970,7 +970,7 @@ public class ExpTrigsFunctions {
 						final IExpr start = engine.evaluate(F.Plus(F.Times(F.QQ(1, i), F.Pi), F.Times(F.CN1D2, F.Pi)));
 						// (2/i)*Pi
 						final IExpr angle = engine.evaluate(F.Times(F.QQ(2, i), F.Pi));
-						
+
 						IASTAppendable result = F.ListAlloc(10);
 						ast.forEach(0, i, (x, j) -> {
 							result.append(F.AngleVector(F.Plus(start, F.ZZ(j).multiply(angle))));

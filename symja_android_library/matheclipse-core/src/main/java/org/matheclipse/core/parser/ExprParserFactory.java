@@ -120,8 +120,8 @@ public class ExprParserFactory implements IExprParserFactory {
 			if (rhs.isNumber()) {
 				return (IASTMutable) F.Plus(lhs, rhs.negate());
 			}
-			if (rhs.isTimes() && ((IAST) rhs).arg1().isNumber()) {
-				return (IASTMutable) F.Plus(lhs, ((IAST) rhs).setAtClone(1, ((IAST) rhs).arg1().negate()));
+			if (rhs.isTimes() && rhs.first().isNumber()) {
+				return (IASTMutable) F.Plus(lhs, ((IAST) rhs).setAtClone(1, rhs.first().negate()));
 			}
 			return (IASTMutable) F.Plus(lhs, F.Times(F.CN1, rhs));
 		}

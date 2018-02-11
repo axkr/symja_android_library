@@ -22,8 +22,8 @@ public class HashedPatternRulesLog extends HashedPatternRules {
 		if (num1.isOne() && num2.isMinusOne()) {
 			IExpr temp = getRulesData().evalDownRule(F.List(e1, e2), engine);
 			if (temp.isPresent()) {
-				IExpr i1=((IAST)e1).arg1();
-				IExpr i2=((IAST)e2).arg1();
+				IExpr i1 = e1.first();
+				IExpr i2 = e2.first();
 				if (i1.isInteger() && i2.isInteger()) {
 					return ExpTrigsFunctions.baseBLog((IInteger) i2, (IInteger) i1);
 				}

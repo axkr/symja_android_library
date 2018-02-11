@@ -2911,7 +2911,7 @@ public class Algebra {
 			if (ast.size() == 3 && ast.arg2().isInteger()) {
 				IExpr expr = ast.arg1();
 				if (expr.isFunction()) {
-					expr = ((IAST) expr).arg1();
+					expr = expr.first();
 					try {
 						int k = ((IInteger) ast.arg2()).toInt();
 						final IAST variables = F.List(F.Slot1);

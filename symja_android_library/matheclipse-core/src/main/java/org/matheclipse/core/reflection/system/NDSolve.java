@@ -17,8 +17,8 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
- * See: <a href="https://en.wikipedia.org/wiki/Ordinary_differential_equation">
- * Wikipedia:Ordinary differential equation</a>
+ * See: <a href="https://en.wikipedia.org/wiki/Ordinary_differential_equation"> Wikipedia:Ordinary differential
+ * equation</a>
  * 
  */
 public class NDSolve extends AbstractFunctionEvaluator {
@@ -47,7 +47,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
 		public double[] computeDerivatives(double t, double[] xyz) {
 			double[] xyzDot = new double[fDimension];
 			IExpr[] replacements = new IExpr[fDimension];
-			IASTAppendable rules = F.ListAlloc(fDimension+1);
+			IASTAppendable rules = F.ListAlloc(fDimension + 1);
 			for (int i = 0; i < fDimension; i++) {
 				replacements[i] = F.$(fVariables.get(i + 1), fT);
 				rules.append(F.Rule(replacements[i], F.num(xyz[i])));
@@ -123,7 +123,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
 						OrdinaryDifferentialEquation ode = new FirstODE(engine, dotEquations, uFunctionSymbols, xVar);
 
 						IASTAppendable resultList = F.ListAlloc(16);
-						
+
 						IAST result = F.Interpolation(resultList);
 
 						IASTAppendable list;
@@ -151,8 +151,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
 	}
 
 	/**
-	 * Equation <code>-1+y(0)</code> gives <code>[0, 1]</code> (representing the
-	 * boundary equation y(0)==1)
+	 * Equation <code>-1+y(0)</code> gives <code>[0, 1]</code> (representing the boundary equation y(0)==1)
 	 * 
 	 * @param equation
 	 *            the equation
@@ -183,7 +182,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
 						negate = false;
 					}
 					if (temp.isAST(uFunctionSymbols.get(i))) {
-						uArg1 = ((IAST) temp).arg1();
+						uArg1 = temp.first();
 						if (boundaryCondition[0][i - 1] != null) {
 							return false;
 						}
@@ -219,8 +218,8 @@ public class NDSolve extends AbstractFunctionEvaluator {
 			IASTAppendable rest = F.PlusAlloc(16);
 			boolean negate;
 			while (j < eq.size()) {
-				negate = true;  
-				IExpr temp=eq.get(j);
+				negate = true;
+				IExpr temp = eq.get(j);
 				if (temp.isAST2() && temp.first().isMinusOne()) {
 					temp = temp.second();
 					negate = false;

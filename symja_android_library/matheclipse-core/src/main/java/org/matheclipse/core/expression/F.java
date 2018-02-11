@@ -862,7 +862,7 @@ public class F {
 	public final static ISymbol $RealMatrix = initFinalHiddenSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$realmatrix" : "$RealMatrix");
 
-//	public final static ISymbol usage = initFinalHiddenSymbol("usage");
+	// public final static ISymbol usage = initFinalHiddenSymbol("usage");
 
 	public final static ISymbol a = initFinalHiddenSymbol("a");
 	public final static ISymbol b = initFinalHiddenSymbol("b");
@@ -4810,7 +4810,7 @@ public class F {
 	 *            the evaluation engine
 	 * @return the symbol object from the context path
 	 */
-	public static ISymbol Dummy(final String symbolName ) {
+	public static ISymbol Dummy(final String symbolName) {
 		String name = symbolName;
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			if (symbolName.length() == 1) {
@@ -5165,7 +5165,7 @@ public class F {
 			if (arg2.isZero()) {
 				return (IAST) arg1;
 			}
-			IASTAppendable clone = F.PlusAlloc(((IAST) arg1).size() + 1);
+			IASTAppendable clone = F.PlusAlloc(arg1.size() + 1);
 			clone.appendArgs((IAST) arg1);
 			clone.append(binary(Times, CN1, arg2));
 			return clone;
@@ -5305,12 +5305,12 @@ public class F {
 			if (a0.isTimes() || a1.isTimes()) {
 				int size = 0;
 				if (a0.isTimes()) {
-					size += ((IAST) a0).size();
+					size += a0.size();
 				} else {
 					size++;
 				}
 				if (a1.isTimes()) {
-					size += ((IAST) a1).size();
+					size += a1.size();
 				} else {
 					size++;
 				}

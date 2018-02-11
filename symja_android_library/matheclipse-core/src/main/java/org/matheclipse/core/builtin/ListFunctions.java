@@ -1124,7 +1124,7 @@ public final class ListFunctions {
 			EvalAttributes.sort(tallyResult, new Comparator<IExpr>() {
 				@Override
 				public int compare(IExpr o1, IExpr o2) {
-					return ((IAST) o2).arg2().compareTo(((IAST) o1).arg2());
+					return o2.second().compareTo(o1.second());
 				}
 			});
 
@@ -1135,8 +1135,8 @@ public final class ListFunctions {
 					IASTAppendable result = F.ListAlloc(size);
 					result.append(((IAST) tallyResult.arg1()).arg1());
 					tallyResult.exists(x -> {
-						if (max.equals(((IAST) x).arg2())) {
-							result.append(((IAST) x).arg1());
+						if (max.equals(x.second())) {
+							result.append(x.first());
 							return false;
 						}
 						return true;
@@ -1202,8 +1202,8 @@ public final class ListFunctions {
 
 			if (!ast.arg1().isAtom() && !ast.arg2().isAtom()) {
 
-				final IAST arg1 = ((IAST) ast.arg1());
-				final IAST arg2 = ((IAST) ast.arg2());
+				final IAST arg1 = (IAST) ast.arg1();
+				final IAST arg2 = (IAST) ast.arg2();
 				return complement(arg1, arg2);
 			}
 			return F.NIL;
@@ -4823,8 +4823,8 @@ public final class ListFunctions {
 			}
 
 			if (ast.arg1().isAST() && ast.arg2().isAST()) {
-				IAST arg1AST = ((IAST) ast.arg1());
-				IAST arg2AST = ((IAST) ast.arg2());
+				IAST arg1AST = (IAST) ast.arg1();
+				IAST arg2AST = (IAST) ast.arg2();
 				final IASTAppendable result = F.ListAlloc(8);
 				return union(arg1AST, arg2AST, result);
 			}

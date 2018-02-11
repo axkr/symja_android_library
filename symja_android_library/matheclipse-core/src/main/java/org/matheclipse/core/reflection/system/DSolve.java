@@ -92,7 +92,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 							IExpr res = F.subst(temp, F.List(F.Rule(xVar, boundaryCondition[0])));
 							IExpr C1 = F.Roots.of(engine, F.Equal(res, boundaryCondition[1]), C_1);
 							if (C1.isAST(F.Equal, 3, C_1)) {
-								res = F.subst(temp, F.List(F.Rule(C_1, ((IAST) C1).arg2())));
+								res = F.subst(temp, F.List(F.Rule(C_1, C1.second())));
 								return F.List(F.List(F.Rule(uFunction1Arg, res)));
 							}
 						}
@@ -204,7 +204,7 @@ public class DSolve extends AbstractFunctionEvaluator {
 			while (j < eq.size()) {
 				// TODO check for negative expression (i.e. Times[-1, eq.get(j)]
 				if (eq.get(j).isAST(head, uFunction1Arg.size())) {
-					uArg1 = ((IAST) eq.get(j)).arg1();
+					uArg1 = eq.get(j).first();
 					eq.remove(j);
 					continue;
 				}
