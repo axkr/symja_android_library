@@ -864,11 +864,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Clip(Tan(E),{-1/2,1/2})", "Tan(E)");
 		check("Clip(Tan(2*E),{-1/2,1/2})", "-1/2");
 		check("Clip(Tan(-2*E),{-1/2,1/2})", "1/2");
-		
+
 		check("Clip(Tan(E), {-1/2,1/2}, {a,b})", "Tan(E)");
 		check("Clip(Tan(2*E), {-1/2,1/2}, {a,b})", "a");
 		check("Clip(Tan(-2*E), {-1/2,1/2}, {a,b})", "b");
-		
+
 		check("Clip(x)", "Clip(x)");
 		check("Clip(1)", "1");
 		check("Clip(-1)", "-1");
@@ -876,10 +876,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Clip(Tan(E))", "Tan(E)");
 		check("Clip(Tan(2*E))", "-1");
 		check("Clip(Tan(-2*E))", "1");
-		
 
 	}
-	
+
 	public void testCoefficient() {
 		// check("Apply(Plus,((Coefficient(x*(b+a),x,#1)*x^#1)&))", "");
 		check("Coefficient(x*y,y,1)", "x");
@@ -2338,6 +2337,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testFactorInteger() {
+		// 10^79+5923 - very slow test > 17 min
+
+		// check("FactorInteger(10^79+5923)", //
+		// "{{1333322076518899001350381760807974795003,1},{\n" +
+		// "7500063320115780212377802894180923803641,1}}");
+		// check("1333322076518899001350381760807974795003*7500063320115780212377802894180923803641==10^79+5923", //
+		// "True");
+
+		// 10^71-1 - slow test
+
+		// check("FactorInteger(10^71-1)", //
+		// "{{3,2},{241573142393627673576957439049,1},{\n" +
+		// "45994811347886846310221728895223034301839,1}}");
+		// check("3^2*241573142393627673576957439049*45994811347886846310221728895223034301839==10^71-1", //
+		// "True");
+
+		// 10^59+213 - slow test
+
+		// check("FactorInteger(10^59+213)", //
+		// "{{213916881789829278910570173437,1},{467471286806848547076331371449,1}}");
+		// check("213916881789829278910570173437*467471286806848547076331371449== 10^59+213", //
+		// "True");
+
 		check("FactorInteger(308119573764812073923)", //
 				"{{19,2},{367,1},{132491,1},{17553335119,1}}");
 		check("19^2*367*132491*17553335119", //
@@ -2393,24 +2415,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("FactorInteger(2010 / 2011)", "{{2,1},{3,1},{5,1},{67,1},{2011,-1}}");
 	}
-
-	// public void testExpandAll() {
-	// // IExpr[] temp=
-	// Apart.getFractionalPartsTimes(F.Times(F.Plus(F.c,F.b),F.Power(F.a,F.CN1),F.b),
-	// true);
-	// check("ExpandAll(2*x*(x^2-x+1)^(-1))", "2*x*(x^2-x+1)^(-1)");
-	// check("ExpandAll((2+x)*(x^2-x+1)^(-1))", "(x+2)*(x^2-x+1)^(-1)");
-	// check("ExpandAll(2*(2*x^3-4*x+5)*x^3*(3*x^2+2)^(-1))",
-	// "(4*x^6-8*x^4+10*x^3)*(3*x^2+2)^(-1)");
-	// check("ExpandAll((b+c)*((b+c)*(a)^(-1)+1))",
-	// "c+b+(c^2+b*c)*a^(-1)+(b*c+b^2)*a^(-1)");
-	// check("ExpandAll((-2*x^3+4*x-5)*((-2*x^3+4*x-5)*(a)^(-1)-2*x))",
-	// "4*x^4-8*x^2+10*x+(4*x^6-8*x^4+10*x^3)*a^(-1)+(-8*x^4+16*x^2-20*x)*a^(-1)+(10*x^3\n"
-	// + "-20*x+25)*a^(-1)");
-	// check("ExpandAll((-(-2*x^3+4*x-5)*(-(-2*x^3+4*x-5)*(3*x^2+2)^(-1)-2*x)*(3*x^2+2)^(-1)+x^2-2))",
-	// "x^2+(-4*x^4+8*x^2+(4*x^6-8*x^4+10*x^3)*(3*x^2+2)^(-1)+(-8*x^4+16*x^2-20*x)*(3*x^\n"
-	// + "2+2)^(-1)+(10*x^3-20*x+25)*(3*x^2+2)^(-1)-10*x)*(3*x^2+2)^(-1)-2");
-	// }
 
 	public void testFactorSquareFreeList() {
 		check("FactorSquareFreeList(x^5 - x^3 - x^2 + 1)", "{{-1+x,2},{1+2*x+2*x^2+x^3,1}}");
