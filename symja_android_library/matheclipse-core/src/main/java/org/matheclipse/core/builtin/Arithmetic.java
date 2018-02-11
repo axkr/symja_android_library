@@ -142,8 +142,27 @@ public final class Arithmetic {
 	}
 
 	/**
-	 * Absolute value of a number. See <a href="http://en.wikipedia.org/wiki/Absolute_value">Wikipedia:Absolute
-	 * value</a>
+	 * <pre>
+	 * Abs(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the absolute value of the real or complex number <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Absolute_value">Wikipedia - Absolute value</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Abs(-3)
+	 * 3
+	 * </pre>
 	 */
 	private final static class Abs extends AbstractTrigArg1 implements INumeric, AbsRules, DoubleUnaryOperator {
 
@@ -476,8 +495,32 @@ public final class Arithmetic {
 	 * <blockquote>
 	 * <p>
 	 * returns <code>expr</code> in the range <code>-1</code> to <code>1</code>. Returns <code>-1</code> if
-	 * <code>expr</code> is less than <code>-1</code>.Returns <code>1</code> if <code>expr</code> is greater than
+	 * <code>expr</code> is less than <code>-1</code>. Returns <code>1</code> if <code>expr</code> is greater than
 	 * <code>1</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Clip(expr, {min, max})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>expr</code> in the range <code>min</code> to <code>max</code>. Returns <code>min</code> if
+	 * <code>expr</code> is less than <code>min</code>. Returns <code>max</code> if <code>expr</code> is greater than
+	 * <code>max</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Clip(expr, {min, max}, {vMin, vMax})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>expr</code> in the range <code>min</code> to <code>max</code>. Returns <code>vMin</code> if
+	 * <code>expr</code> is less than <code>min</code>. Returns <code>vMax</code> if <code>expr</code> is greater than
+	 * <code>max</code>.
 	 * </p>
 	 * </blockquote>
 	 * <h3>Examples</h3>
@@ -497,6 +540,21 @@ public final class Arithmetic {
 	 * 
 	 * &gt;&gt; Clip(x)
 	 * Clip(x)
+	 * 
+	 * &gt;&gt; Clip(Tan(2*E), {-1/2,1/2})
+	 * -1/2
+	 * 
+	 * &gt;&gt; Clip(Tan(-2*E), {-1/2,1/2})
+	 * 1/2
+	 * 
+	 * &gt;&gt; Clip(Tan(E), {-1/2,1/2}, {a,b})
+	 * Tan(E)
+	 * 
+	 * &gt;&gt; Clip(Tan(2*E), {-1/2,1/2}, {a,b})
+	 * a
+	 * 
+	 * &gt;&gt; Clip(Tan(-2*E), {-1/2,1/2}, {a,b})
+	 * b
 	 * </pre>
 	 */
 	private final static class Clip extends AbstractFunctionEvaluator {
@@ -504,7 +562,7 @@ public final class Arithmetic {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 4);
-			
+
 			IExpr x = ast.first();
 			if (ast.size() == 2) {
 				return clip(x);
@@ -617,6 +675,83 @@ public final class Arithmetic {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Complex
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * is the head of complex numbers.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Complex(a, b)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * constructs the complex number <code>a + I * b</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Head(2 + 3*I)
+	 * Complex
+	 * 
+	 * &gt;&gt; Complex(1, 2/3)
+	 * 1+I*2/3
+	 * 
+	 * &gt;&gt; Abs(Complex(3, 4))
+	 * 5
+	 * 
+	 * &gt;&gt; -2 / 3 - I
+	 * -2/3-I
+	 * 
+	 * &gt;&gt; Complex(10, 0)
+	 * 10
+	 * 
+	 * &gt;&gt; 0. + I
+	 * I*1.0
+	 * 
+	 * &gt;&gt; 1 + 0*I
+	 * 1
+	 * 
+	 * &gt;&gt; Head(1 + 0*I)
+	 * Integer
+	 * 
+	 * &gt;&gt; Complex(0.0, 0.0)
+	 * 0.0
+	 * 
+	 * &gt;&gt; 0.*I
+	 * 0.0
+	 * 
+	 * &gt;&gt; 0. + 0.*I
+	 * 0.0
+	 * 
+	 * &gt;&gt; 1. + 0.*I
+	 * 1.0
+	 * 
+	 * &gt;&gt; 0. + 1.*I
+	 * I*1.0
+	 * </pre>
+	 * <p>
+	 * Check nesting Complex
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Complex(1, Complex(0, 1))
+	 * 0
+	 * 
+	 * &gt;&gt; Complex(1, Complex(1, 0))
+	 * 1+I 
+	 * 
+	 * &gt;&gt; Complex(1, Complex(1, 1))
+	 * I
+	 * </pre>
+	 */
 	private final static class Complex extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -883,6 +1018,68 @@ public final class Arithmetic {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Divide(a, b)
+	 * 
+	 * a / b
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * represents the division of <code>a</code> by <code>b</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; 30 / 5
+	 * 6
+	 * 
+	 * &gt;&gt; 1 / 8
+	 * 1/8
+	 * 
+	 * &gt;&gt; Pi / 4
+	 * Pi / 4
+	 * </pre>
+	 * <p>
+	 * Use <code>N</code> or a decimal point to force numeric evaluation:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Pi / 4.0
+	 * 0.7853981633974483
+	 * 
+	 * &gt;&gt; N(1 / 8)
+	 * 0.125
+	 * </pre>
+	 * <p>
+	 * Nested divisions:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; a / b / c
+	 * a/(b*c)
+	 * 
+	 * &gt;&gt; a / (b / c)
+	 * (a*c)/b
+	 * 
+	 * &gt;&gt; a / b / (c / (d / e))
+	 * (a*d)/(b*c*e)
+	 * 
+	 * &gt;&gt; a / (b ^ 2 * c ^ 3 / e)
+	 * (a*e)/(b^2*c^3) 
+	 * 
+	 * &gt;&gt; 1 / 4.0
+	 * 0.25
+	 * 
+	 * &gt;&gt; 10 / 3 // FullForm
+	 * "Rational(10,3)"
+	 * 
+	 * &gt;&gt; a / b // FullForm
+	 * "Times(a, Power(b, -1))"
+	 * </pre>
+	 */
 	private static class Divide extends AbstractFunctionEvaluator {
 
 		@Override
@@ -1149,9 +1346,31 @@ public final class Arithmetic {
 	}
 
 	/**
-	 * Greatest common divisor
+	 * <pre>
+	 * GCD(n1, n2, ...)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Greatest_common_divisor">Wikipedia: Greatest common divisor</a>
+	 * <blockquote>
+	 * <p>
+	 * computes the greatest common divisor of the given integers.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; GCD(20, 30)
+	 * 10
+	 * &gt;&gt; GCD(10, y)
+	 * GCD(10, y)
+	 * </pre>
+	 * <p>
+	 * 'GCD' is 'Listable':
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; GCD(4, {10, 11, 12, 13, 14})
+	 * {2, 1, 4, 1, 2}
+	 * </pre>
 	 */
 	private final static class GCD extends AbstractArgMultiple {
 
@@ -1463,9 +1682,23 @@ public final class Arithmetic {
 	}
 
 	/**
-	 * Least common multiple
+	 * <pre>
+	 * LCM(n1, n2, ...)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Least_common_multiple">Wikipedia:Least common multiple</a>
+	 * <blockquote>
+	 * <p>
+	 * computes the least common multiple of the given integers.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; LCM(15, 20)
+	 * 60
+	 * &gt;&gt; LCM(20, 30, 40, 50)
+	 * 600
+	 * </pre>
 	 */
 	private final static class LCM extends AbstractArgMultiple {
 
@@ -1505,6 +1738,41 @@ public final class Arithmetic {
 
 	}
 
+	/**
+	 * <pre>
+	 * Minus(expr)
+	 * 
+	 * 		- expr
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * is the negation of <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; -a //FullForm
+	 * "Times(-1, a)"
+	 * </pre>
+	 * <p>
+	 * <code>Minus</code> automatically distributes:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; -(x - 2/3)
+	 * 2/3-x
+	 * </pre>
+	 * <p>
+	 * <code>Minus</code> threads over lists:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; -Range(10)
+	 * {-1,-2,-3,-4,-5,-6,-7,-8,-9,-10}
+	 * </pre>
+	 */
 	private final static class Minus extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -3060,9 +3328,39 @@ public final class Arithmetic {
 	}
 
 	/**
-	 * Representation for a rational number
+	 * <pre>
+	 * Rational
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * is the head of rational numbers.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Rational(a, b)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * constructs the rational number <code>a / b</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Head(1/2)
+	 * Rational
+	 * 
+	 * &gt;&gt; Rational(1, 2)
+	 * 1/2
+	 * 
+	 * &gt;&gt; -2/3
+	 * -2/3
+	 * </pre>
 	 */
+
 	private final static class Rational extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -3459,6 +3757,34 @@ public final class Arithmetic {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Subtract(a, b)
+	 * 
+	 * a - b
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * represents the subtraction of <code>b</code> from <code>a</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; 5 - 3
+	 * 2
+	 * 
+	 * &gt;&gt; a - b // FullForm
+	 * "Plus(a, Times(-1, b))"
+	 * 
+	 * &gt;&gt; a - b - c
+	 * a-b-c
+	 * 
+	 * &gt;&gt; a - (b - c)
+	 * a-b+c
+	 * </pre>
+	 */
 	private static class Subtract extends AbstractFunctionEvaluator {
 
 		@Override
