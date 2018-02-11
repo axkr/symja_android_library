@@ -1030,6 +1030,36 @@ public final class PatternMatching {
 		throw new RuleCreationError(leftHandSide);
 	}
 
+	/**
+	 * <pre>
+	 * Unique(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * create a unique symbol of the form <code>expr$...</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Unique("expr")
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * create a unique symbol of the form <code>expr...</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Unique(xy)
+	 * xy$1
+	 * 
+	 * &gt;&gt; Unique("a")
+	 * a1
+	 * </pre>
+	 */
 	private static class Unique extends AbstractCoreFunctionEvaluator {
 
 		@Override
