@@ -18,10 +18,10 @@ public class PartialFractionGenerator implements IPartialFractionGenerator {
 	}
 
 	@Override
-	public void allocPlus(int size){
+	public void allocPlus(int size) {
 		this.result = F.PlusAlloc(size);
 	}
-	
+
 	@Override
 	public void setJAS(JASConvert<BigRational> jas) {
 		this.jas = jas;
@@ -42,7 +42,8 @@ public class PartialFractionGenerator implements IPartialFractionGenerator {
 	}
 
 	@Override
-	public void addSinglePartialFraction(GenPolynomial<BigRational> genPolynomial, GenPolynomial<BigRational> Di_1, int j) {
+	public void addSinglePartialFraction(GenPolynomial<BigRational> genPolynomial, GenPolynomial<BigRational> Di_1,
+			int j) {
 		IExpr temp;
 		Object[] objects = jas.factorTerms(genPolynomial);
 		java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
@@ -62,4 +63,35 @@ public class PartialFractionGenerator implements IPartialFractionGenerator {
 			result.append(temp);
 		}
 	}
+
+	// public void addNonFractionalPartInteger(GenPolynomial<edu.jas.arith.BigInteger> genPolynomial) {
+	// IExpr temp = F.eval(jas.integerPoly2Expr(genPolynomial));
+	// if (temp.isAST()) {
+	// ((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
+	// }
+	// result.append(temp);
+	// }
+	//
+	// public void addSinglePartialFractionInteger(GenPolynomial<edu.jas.arith.BigInteger> genPolynomial,
+	// GenPolynomial<edu.jas.arith.BigInteger> Di_1, int j) {
+	// IExpr temp;
+	// // Object[] objects = jas.factorTerms(genPolynomial);
+	// // java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
+	// // java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
+	// // GenPolynomial<edu.jas.arith.BigInteger> poly = (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
+	//
+	// GenPolynomial<edu.jas.arith.BigInteger> poly = genPolynomial;
+	// if (j == 1) {
+	// temp = F.eval(F.Times(jas.integerPoly2Expr(poly), F.Power(jas.integerPoly2Expr(Di_1), F.CN1)));
+	// } else {
+	// temp = F.eval(
+	// F.Times(jas.integerPoly2Expr(poly), F.Power(jas.integerPoly2Expr(Di_1), F.integer(j * (-1L)))));
+	// }
+	// if (!temp.isZero()) {
+	// if (temp.isAST()) {
+	// ((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
+	// }
+	// result.append(temp);
+	// }
+	// }
 }

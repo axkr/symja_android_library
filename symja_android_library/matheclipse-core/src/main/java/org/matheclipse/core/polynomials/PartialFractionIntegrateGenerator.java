@@ -148,28 +148,19 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 				if (A.isZero()) {
 					// JavaForm[B*((2*a*x+b)/((k-1)*(4*a*c-b^2)*(a*x^2+b*x+c)^(k-1))+
 					// (4*k*a-6*a)/((k-1)*(4*a*c-b^2))*Integrate[(a*x^2+b*x+c)^(-k+1),x])]
-					temp = Times(B,
-							Plus(Times(
-									Integrate(Power(Plus(c, Times(b, x), Times(a, Power(x, C2))),
-											Plus(C1, Times(CN1, k))), x),
-									Plus(Times(F.integer(-6L), a), Times(C4, a, k)),
-									Power(Plus(CN1, k),
-											CN1),
+					temp = Times(B, Plus(
+							Times(Integrate(
+									Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Plus(C1, Times(CN1, k))), x),
+									Plus(Times(F.integer(-6L), a), Times(C4, a, k)), Power(Plus(CN1, k), CN1),
 									Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1)),
-									Times(Plus(b, Times(C2, a, x)), Power(Plus(CN1, k), CN1),
-											Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1),
-											Power(Plus(c, Times(b, x), Times(a, Power(x, C2))),
-													Times(CN1, Plus(CN1, k))))));
+							Times(Plus(b, Times(C2, a, x)), Power(Plus(CN1, k), CN1),
+									Power(Plus(Times(CN1, Power(b, C2)), Times(C4, a, c)), CN1),
+									Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, Plus(CN1, k))))));
 				} else {
 					// JavaForm[(-A)/(2*a*(k-1)*(a*x^2+b*x+c)^(k-1))+(B-A*b/(2*a))*Integrate[(a*x^2+b*x+c)^(-k),x]]
 					temp = Plus(
-							Times(Integrate(Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, k)),
-									x),
-									Plus(B,
-											Times(CN1D2,
-													A, Power(a,
-															CN1),
-													b))),
+							Times(Integrate(Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, k)), x),
+									Plus(B, Times(CN1D2, A, Power(a, CN1), b))),
 							Times(CN1D2, A, Power(a, CN1), Power(Plus(CN1, k), CN1),
 									Power(Plus(c, Times(b, x), Times(a, Power(x, C2))), Times(CN1, Plus(CN1, k)))));
 				}
@@ -192,12 +183,10 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 	}
 
 	/**
-	 * Check if the polynomial has maximum degree 2 in 1 variable and return the
-	 * coefficients.
+	 * Check if the polynomial has maximum degree 2 in 1 variable and return the coefficients.
 	 * 
 	 * @param poly
-	 * @return <code>null</code> if the polynomials degree > 2 and number of
-	 *         variables <> 1
+	 * @return <code>null</code> if the polynomials degree > 2 and number of variables <> 1
 	 */
 	public static boolean isQuadratic(GenPolynomial<BigRational> poly, BigRational[] result) {
 		if (poly.degree() <= 2 && poly.numberOfVariables() == 1) {
@@ -217,12 +206,10 @@ public class PartialFractionIntegrateGenerator implements IPartialFractionGenera
 	}
 
 	/**
-	 * Check if the polynomial has maximum degree 2 in 1 variable and return the
-	 * coefficients.
+	 * Check if the polynomial has maximum degree 2 in 1 variable and return the coefficients.
 	 * 
 	 * @param poly
-	 * @return <code>null</code> if the polynomials degree > 2 and number of
-	 *         variables <> 1
+	 * @return <code>null</code> if the polynomials degree > 2 and number of variables <> 1
 	 */
 	public static boolean isQuadratic(GenPolynomial<BigInteger> poly, BigInteger[] result) {
 		if (poly.degree() <= 2 && poly.numberOfVariables() == 1) {

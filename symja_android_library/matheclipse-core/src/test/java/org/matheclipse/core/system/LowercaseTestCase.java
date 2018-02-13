@@ -130,7 +130,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testApart() {
-		// check("Apart(1 / (x^2 - y^2), y)", " 1/(x^2-y^2)");
+//		check("Factor(x^2 - y^2 )", "(x-y)*(x+y)");
+//		check("Solve(x^2 - y^2==0, y)", "{{y->-x},{y->x}}");
+		check("Apart(1 / (x^2 - y^2))", "1/(x^2-y^2)");
+
+		check("Apart(x/(2 x + a^2))", "x/(a^2+2*x)");
 
 		check("Apart(y/(x + 2)/(x + 1),x)", "y/((1+x)*(2+x))");
 
@@ -141,8 +145,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Apart(1 / (x^2 - y^2), x)", "1/(x^2-y^2)");
 		// TODO return 1 / (2 x (x + y)) + 1 / (2 x (x - y))
 		check("Apart(1 / (x^2 - y^2), y)", "1/(x^2-y^2)");
-
-		check("Apart({1 / (x^2 + 5x + 6)})", "{1/(2+x)+1/(-3-x)}");
 
 		check("Apart(1/((1 + x)*(5 + x)))", "1/(4+4*x)+1/(-20-4*x)");
 		check("Apart(1 < (x + 1)/(x - 1) < 2)", "1<1+2/(-1+x)<2");

@@ -251,79 +251,6 @@ public class Algebra {
 			return null;
 		}
 
-		/**
-		 * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition of the
-		 * numerator and denominator parts.
-		 * 
-		 * @deprecated untested at the moment
-		 * @param parts
-		 * @param variableList
-		 * @return <code>null</code> if the partial fraction decomposition wasn't constructed
-		 */
-		@Deprecated
-		private static IAST partialFractionDecompositionInteger(IExpr[] parts, IAST variableList) {
-			try {
-				IExpr exprNumerator = F.evalExpandAll(parts[0]);
-				IExpr exprDenominator = F.evalExpandAll(parts[1]);
-				// ASTRange r = new ASTRange(variableList, 1);
-				// List<IExpr> varList = r;
-				List<IExpr> varList = variableList.copyTo();
-
-				String[] varListStr = new String[1];
-				varListStr[0] = variableList.arg1().toString();
-				JASConvert<BigInteger> jas = new JASConvert<BigInteger>(varList, BigInteger.ZERO);
-				GenPolynomial<BigInteger> numerator = jas.expr2JAS(exprNumerator, false);
-				GenPolynomial<BigInteger> denominator = jas.expr2JAS(exprDenominator, false);
-
-				// get factors
-				FactorAbstract<BigInteger> factorAbstract = FactorFactory.getImplementation(BigInteger.ZERO);
-				SortedMap<GenPolynomial<BigInteger>, Long> sfactors = factorAbstract.baseFactors(denominator);
-
-				List<GenPolynomial<BigInteger>> D = new ArrayList<GenPolynomial<BigInteger>>(sfactors.keySet());
-
-				SquarefreeAbstract<BigInteger> sqf = SquarefreeFactory.getImplementation(BigInteger.ZERO);
-				List<List<GenPolynomial<BigInteger>>> Ai = sqf.basePartialFraction(numerator, sfactors);
-				// returns [ [Ai0, Ai1,..., Aie_i], i=0,...,k ] with A/prod(D) =
-				// A0 + sum( sum ( Aij/di^j ) ) with deg(Aij) < deg(di).
-
-				if (Ai.size() > 0) {
-					IASTAppendable result = F.PlusAlloc(Ai.size() + 2);
-					IExpr temp;
-					if (!Ai.get(0).get(0).isZERO()) {
-						temp = F.eval(jas.integerPoly2Expr(Ai.get(0).get(0)));
-						if (temp.isAST()) {
-							((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
-						}
-						result.append(temp);
-					}
-					for (int i = 1; i < Ai.size(); i++) {
-						List<GenPolynomial<BigInteger>> list = Ai.get(i);
-						long j = 0L;
-						for (GenPolynomial<BigInteger> genPolynomial : list) {
-							if (!genPolynomial.isZERO()) {
-								temp = F.eval(F.Times(jas.integerPoly2Expr(genPolynomial),
-										F.Power(jas.integerPoly2Expr(D.get(i - 1)), F.integer(j * (-1L)))));
-								if (!temp.isZero()) {
-									if (temp.isAST()) {
-										((IAST) temp).addEvalFlags(IAST.IS_DECOMPOSED_PARTIAL_FRACTION);
-									}
-									result.append(temp);
-								}
-							}
-							j++;
-						}
-
-					}
-					return result;
-				}
-			} catch (JASConversionException e) {
-				if (Config.DEBUG) {
-					e.printStackTrace();
-				}
-			}
-			return null;
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
@@ -353,7 +280,7 @@ public class Algebra {
 				IExpr[] parts = fractionalParts(arg1, false);
 				if (parts != null) {
 					IExpr temp = partialFractionDecompositionRational(new PartialFractionGenerator(), parts,
-							variableList.arg1());
+							variableList);
 					if (temp.isPresent()) {
 						return temp;
 					}
@@ -4241,6 +4168,11 @@ public class Algebra {
 	// return F.NIL;
 	// }
 
+	public static IExpr partialFractionDecompositionRational(IPartialFractionGenerator pf, IExpr[] parts,
+			IExpr variable) {
+		return partialFractionDecompositionRational(pf, parts, F.List(variable));
+	}
+
 	/**
 	 * Returns an AST with head <code>Plus</code>, which contains the partial fraction decomposition of the numerator
 	 * and denominator parts.
@@ -4248,14 +4180,13 @@ public class Algebra {
 	 * @param pf
 	 *            partial fraction generator
 	 * @param parts
-	 * @param variable
-	 *            a variable
+	 * @param variableList
+	 *            a list of variable
 	 * @return <code>F.NIL</code> if the partial fraction decomposition wasn't constructed
 	 */
 	public static IExpr partialFractionDecompositionRational(IPartialFractionGenerator pf, IExpr[] parts,
-			IExpr variable) {
+			IAST variableList) {
 		try {
-			IAST variableList = F.List(variable);
 			IExpr exprNumerator = F.evalExpandAll(parts[0]);
 			IExpr exprDenominator = F.evalExpandAll(parts[1]);
 			// ASTRange r = new ASTRange(variableList, 1);
