@@ -54,7 +54,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	// }
 
 	public BuiltInSymbol(final String symbolName, int ordinal) {
-		super(symbolName, Context.SYSTEM);
+		super(symbolName, Context.SYSTEM);  
 		// this(symbolName, null);
 		fOrdinal = ordinal;
 	}

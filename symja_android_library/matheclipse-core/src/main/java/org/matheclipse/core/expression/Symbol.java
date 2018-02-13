@@ -60,12 +60,6 @@ public class Symbol implements ISymbol, Serializable {
 	 */
 	protected String fSymbolName;
 
-	/**
-	 * The hash value of this object computed in the constructor.
-	 * 
-	 */
-	protected int fHashValue;
-
 	// public static ISymbol valueOf(final String symbolName, final Context context) {
 	// return new Symbol(symbolName, context);
 	// }
@@ -73,7 +67,6 @@ public class Symbol implements ISymbol, Serializable {
 	public Symbol(final String symbolName, final Context context) {
 		super();
 		fContext = context;
-		fHashValue = symbolName.hashCode();
 		fSymbolName = symbolName;
 	}
 
@@ -254,7 +247,7 @@ public class Symbol implements ISymbol, Serializable {
 		}
 		if (obj instanceof Symbol) {
 			Symbol symbol = (Symbol) obj;
-			if (fHashValue != symbol.fHashValue) {
+			if (hashCode() != symbol.hashCode()) {
 				return false;
 			}
 			if (fSymbolName.equals(symbol.fSymbolName)) {
@@ -493,7 +486,7 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public int hashCode() {
-		return fHashValue;
+		return fSymbolName.hashCode();
 	}
 
 	/** {@inheritDoc} */
@@ -828,7 +821,6 @@ public class Symbol implements ISymbol, Serializable {
 
 	private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		fSymbolName = stream.readUTF();
-		fHashValue = fSymbolName.hashCode();
 		fAttributes = stream.read();
 		fContext = (Context) stream.readObject();
 		if (fContext == null) {
@@ -858,7 +850,6 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public void readRules(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		fSymbolName = stream.readUTF();
-		fHashValue = fSymbolName.hashCode();
 		fAttributes = stream.read();
 		boolean hasDownRulesData = stream.readBoolean();
 		if (hasDownRulesData) {
