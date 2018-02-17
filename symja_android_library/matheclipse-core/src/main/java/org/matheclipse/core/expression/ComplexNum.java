@@ -339,6 +339,12 @@ public class ComplexNum implements IComplexNum {
 		return this;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public INumber fractionalPart() {
+		return F.complexNum(getRealPart() % 1, getImaginaryPart() % 1);
+	}
+
 	@Override
 	public INumber floorFraction() throws ArithmeticException {
 		return F.complex(NumberUtil.toLong(Math.floor(fComplex.getReal())),

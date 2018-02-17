@@ -511,11 +511,17 @@ public class ApcomplexNum implements IComplexNum {
 	public IExpr sqrt() {
 		return valueOf(ApcomplexMath.sqrt(fApcomplex));
 	}
-	
+
 	@Override
 	public INumber ceilFraction() throws ArithmeticException {
 		return F.complex(F.integer(ApfloatMath.ceil(fApcomplex.real()).toBigInteger()),
 				F.integer(ApfloatMath.ceil(fApcomplex.imag()).toBigInteger()));
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public INumber fractionalPart() {
+		return F.complexNum(fApcomplex.real().frac(), fApcomplex.imag().frac());
 	}
 
 	@Override

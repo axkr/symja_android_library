@@ -513,6 +513,12 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		return result;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public IRational fractionalPart() {
+		return F.C0;
+	}
+	
 	@Override
 	public IInteger floor() {
 		return this;

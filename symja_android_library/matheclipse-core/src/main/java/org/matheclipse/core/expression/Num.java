@@ -280,6 +280,12 @@ public class Num implements INum {
 
 	/** {@inheritDoc} */
 	@Override
+	public ISignedNumber fractionalPart() {
+		return F.num(getRealPart() % 1);
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public IInteger floorFraction() {
 		return F.integer(NumberUtil.toLong(Math.floor(fDouble)));
 	}

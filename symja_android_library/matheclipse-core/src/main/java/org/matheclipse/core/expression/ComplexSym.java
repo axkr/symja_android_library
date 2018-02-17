@@ -311,6 +311,12 @@ public class ComplexSym implements IComplex {
 		return (cTemp == this) ? F.NIL : cTemp;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public INumber fractionalPart() {
+		return valueOf(fReal.fractionalPart(), fImaginary.fractionalPart());
+	}
+	
 	@Override
 	public INumber floorFraction() {
 		return valueOf((IRational) fReal.floorFraction(), (IRational) fImaginary.floorFraction());

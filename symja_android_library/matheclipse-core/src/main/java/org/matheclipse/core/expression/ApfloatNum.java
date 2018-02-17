@@ -443,6 +443,12 @@ public class ApfloatNum implements INum {
 
 	/** {@inheritDoc} */
 	@Override
+	public ISignedNumber fractionalPart() {
+		return F.num(fApfloat.frac());
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public IInteger floorFraction() {
 		return F.integer(ApfloatMath.floor(fApfloat).toBigInteger());
 	}

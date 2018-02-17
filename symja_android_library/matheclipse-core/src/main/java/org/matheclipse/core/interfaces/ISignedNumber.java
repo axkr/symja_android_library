@@ -2,10 +2,9 @@ package org.matheclipse.core.interfaces;
 
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.Num; 
 
 /**
- * interface for "ractional" numbers (i.e. IInteger or IFraction)
+ * Interface for "rational" numbers (i.e. IInteger, IFraction or INum)
  * 
  */
 public interface ISignedNumber extends INumber {
@@ -13,7 +12,7 @@ public interface ISignedNumber extends INumber {
 	/** {@inheritDoc} */
 	@Override
 	public ISignedNumber abs();
-	
+
 	/**
 	 * Get a <code>Apfloat</code> number wrapped into an <code>ApfloatNum</code> object.
 	 * 
@@ -53,6 +52,13 @@ public interface ISignedNumber extends INumber {
 	 * @return the numeric value represented by this object after conversion to type {@code double}.
 	 */
 	public double doubleValue();
+
+	/**
+	 * Return the fractional part of this fraction
+	 * 
+	 * @return
+	 */
+	public ISignedNumber fractionalPart();
 
 	/** {@inheritDoc} */
 	@Override

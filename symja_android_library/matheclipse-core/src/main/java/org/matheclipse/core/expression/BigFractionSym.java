@@ -555,6 +555,18 @@ public class BigFractionSym extends AbstractFractionSym {
 
 	/** {@inheritDoc} */
 	@Override
+	public int toIntDefault(int defaultValue) {
+		if (toBigDenominator().equals(BigInteger.ONE)) {
+			return NumberUtil.toInt(toBigNumerator());
+		}
+		if (toBigNumerator().equals(BigInteger.ZERO)) {
+			return 0;
+		}
+		return defaultValue;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public long toLong() throws ArithmeticException {
 		if (toBigDenominator().equals(BigInteger.ONE)) {
 			return NumberUtil.toLong(toBigNumerator());

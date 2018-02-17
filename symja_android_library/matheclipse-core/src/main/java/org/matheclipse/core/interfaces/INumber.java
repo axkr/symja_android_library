@@ -102,6 +102,12 @@ public interface INumber extends IExpr {
 	public boolean equalsInt(int i);
 
 	/**
+	 * Return the fractional part of this fraction
+	 * @return
+	 */
+	public INumber fractionalPart();
+	
+	/**
 	 * Returns the largest (closest to positive infinity) <code>IInteger</code>
 	 * value that is not greater than <code>this</code> and is equal to a
 	 * mathematical integer. <br/>

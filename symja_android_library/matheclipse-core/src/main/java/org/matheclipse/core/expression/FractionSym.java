@@ -640,6 +640,18 @@ public class FractionSym extends AbstractFractionSym {
 
 	/** {@inheritDoc} */
 	@Override
+	public int toIntDefault(int defaultValue) {
+		if (fDenominator == 1) {
+			return fNumerator;
+		}
+		if (fNumerator == 0) {
+			return 0;
+		}
+		return defaultValue;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public long toLong() throws ArithmeticException {
 		if (fDenominator == 1) {
 			return fNumerator;

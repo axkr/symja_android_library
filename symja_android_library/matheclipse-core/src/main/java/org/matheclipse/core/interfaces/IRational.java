@@ -48,6 +48,12 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 */
 	public IASTAppendable factorInteger();
 
+	/**
+	 * Return the fractional part of this fraction
+	 * @return
+	 */
+	public IRational fractionalPart();
+	
 	public IInteger floor();
 	
 	/**
