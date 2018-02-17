@@ -39,10 +39,26 @@ public class ConstantDefinitions {
 	}
 
 	/**
-	 * Catalan constant
+	 * <blockquote>
+	 * <p>
+	 * Catalan's constant
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Catalan%27s_constant">Wikipedia - Catalan's constant</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Catalan%27s_constant">Wikipedia: Catalan 's constant</a>
+	 * <pre>
+	 * &gt;&gt; N(Catalan)
+	 * 0.915965594177219
 	 * 
+	 * &gt;&gt; PolyGamma(1,1/4)
+	 * 8*Catalan+Pi^2
+	 * </pre>
 	 */
 	private static class Catalan extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 		final static public double CATALAN = 0.91596559417721901505460351493238411077414937428167;
@@ -65,7 +81,30 @@ public class ConstantDefinitions {
 	}
 
 	/**
+	 * <pre>
+	 * ComplexInfinity
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * represents an infinite complex quantity of undetermined direction.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; 1 / ComplexInfinity
+	 * 0
+	 * 
+	 * &gt;&gt; ComplexInfinity + ComplexInfinity
+	 * ComplexInfinity
+	 * 
+	 * &gt;&gt; ComplexInfinity * Infinity
+	 * ComplexInfinity
+	 * 
+	 * &gt;&gt; FullForm(ComplexInfinity)
+	 * DirectedInfinity()
+	 * </pre>
 	 */
 	private static class ComplexInfinity extends AbstractSymbolEvaluator {
 
@@ -81,10 +120,41 @@ public class ConstantDefinitions {
 	}
 
 	/**
-	 * The constant Degree converts to Pi/180 radians
+	 * <pre>
+	 * Degree
+	 * </pre>
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Degree_(angle)">Degree (angle)</a>
+	 * <blockquote>
+	 * <p>
+	 * the constant <code>Degree</code> converts angles from degree to <code>Pi/180</code> radians.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Degree_(angle)">Wikipedia - Degree (angle)</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
 	 * 
+	 * <pre>
+	 * &gt;&gt; Sin(30*Degree)
+	 * 1/2
+	 * </pre>
+	 * <p>
+	 * Degree has the value of Pi / 180
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Degree == Pi / 180
+	 * True
+	 * 
+	 * &gt;&gt; Cos(Degree(x))
+	 * Cos(Degree(x))
+	 * 
+	 * &gt;&gt; N(Degree)    
+	 * 0.017453292519943295
+	 * </pre>
 	 */
 	private static class Degree extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 		final static public double DEGREE = 0.017453292519943295769236907684886127134428718885417;
@@ -114,9 +184,24 @@ public class ConstantDefinitions {
 	}
 
 	/**
+	 * <blockquote>
+	 * <p>
 	 * Euler's constant E
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * <strong>Note</strong>: the upper case identifier <code>E</code> is different from the lower case identifier
+	 * <code>e</code>.
+	 * </p>
+	 * <h3>Examples</h3>
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Exponential_function">Wikipedia - Exponential function</a>
+	 * <pre>
+	 * &gt;&gt; Exp(1)
+	 * E
+	 * 
+	 * &gt;&gt; N(E)
+	 * 2.718281828459045
+	 * </pre>
 	 */
 	private static class E extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 
@@ -168,10 +253,22 @@ public class ConstantDefinitions {
 	}
 
 	/**
-	 * Glaisher constant
-	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Glaisher-Kinkelin_constant"> Wikipedia: Glaisher-Kinkelin constant</a>
-	 * 
+	 * <blockquote>
+	 * <p>
+	 * Glaisher constant.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * The <code>Glaisher</code> constant is named after mathematicians James Whitbread Lee Glaisher and Hermann
+	 * Kinkelin. Its approximate value is: <code>1.2824271291...</code>
+	 * </p>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Glaisher-Kinkelin_constant">Wikipedia - Glaisher-Kinkelin
+	 * constant</a></li>
+	 * </ul>
 	 */
 	private static class Glaisher extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 		final static public double GLAISHER = 1.2824271291006226368753425688697917277676889273250;
@@ -194,9 +291,27 @@ public class ConstantDefinitions {
 	}
 
 	/**
-	 * Golden ratio
+	 * <pre>
+	 * GoldenRatio
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Golden_ratio">Wikipedia:Golden ratio</a>
+	 * <blockquote>
+	 * <p>
+	 * is the golden ratio.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Golden_ratio">Wikipedia: Golden ratio</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; N(GoldenRatio)
+	 * 1.618033988749895
+	 * </pre>
 	 */
 	private static class GoldenRatio extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 		final static public double GOLDEN_RATIO = 1.6180339887498948482045868343656381177203091798058;
@@ -226,8 +341,29 @@ public class ConstantDefinitions {
 	}
 
 	/**
-	 * Constant <i>I</i> converted to the complex unit ( 0+1*I )
-	 *
+	 * <pre>
+	 * I
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * Imaginary unit - internally converted to the complex number <code>0+1*i</code>. <code>I</code> represents the
+	 * imaginary number <code>Sqrt(-1)</code>. <code>I^2</code> will be evaluated to <code>-1</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * <strong>Note</strong>: the upper case identifier <code>I</code> is different from the lower case identifier
+	 * <code>i</code>.
+	 * </p>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; I^2
+	 * -1
+	 * 
+	 * &gt;&gt; (3+I)*(3-I)
+	 * 10
+	 * </pre>
 	 */
 	private static class I extends AbstractSymbolEvaluator {
 
@@ -248,7 +384,49 @@ public class ConstantDefinitions {
 	}
 
 	/**
-	 * See <a href="http://en.wikipedia.org/wiki/Infinity">Infinity</a>
+	 * <pre>
+	 * Infinity
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * represents an infinite real quantity.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; 1 / Infinity
+	 * 0
+	 * 
+	 * &gt;&gt; Infinity + 100
+	 * Infinity
+	 * </pre>
+	 * <p>
+	 * Use <code>Infinity</code> in sum and limit calculations:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Sum(1/x^2, {x, 1, Infinity})
+	 * Pi ^ 2 / 6
+	 * 
+	 * &gt;&gt; FullForm(Infinity)
+	 * DirectedInfinity(1)
+	 * 
+	 * &gt;&gt; (2 + 3.5*I) / Infinity
+	 * 0.0"
+	 * 
+	 * &gt;&gt; Infinity + Infinity
+	 * Infinity
+	 * </pre>
+	 * <p>
+	 * Indeterminate expression <code>0</code> Infinity encountered.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Infinity / Infinity
+	 * Indeterminate
+	 * </pre>
 	 */
 	private static class Infinity extends AbstractSymbolEvaluator {
 
@@ -264,10 +442,27 @@ public class ConstantDefinitions {
 	}
 
 	/**
-	 * Khinchin constant
+	 * <pre>
+	 * Khinchin
+	 * </pre>
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Khinchin%27s_constant">Wikipedia: Khinchin's constant</a>
+	 * <blockquote>
+	 * <p>
+	 * Khinchin's constant
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="http://en.wikipedia.org/wiki/Khinchin%27s_constant">Wikipedia:Khinchin's constant</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
 	 * 
+	 * <pre>
+	 * &gt;&gt; N(Khinchin)
+	 * 2.6854520010653062
+	 * </pre>
 	 */
 	private static class Khinchin extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 		final static public double KHINCHIN = 2.6854520010653064453097148354817956938203822939945;
@@ -290,8 +485,21 @@ public class ConstantDefinitions {
 	}
 
 	/**
-	 * Constant Pi
+	 * <pre>
+	 * Pi
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * is the constant <code>Pi</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; N(Pi)
+	 * 3.141592653589793
+	 * </pre>
 	 */
 	private static class Pi extends AbstractSymbolEvaluator implements ISignedNumberConstant {
 
