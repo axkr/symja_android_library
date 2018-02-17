@@ -77,7 +77,6 @@ public final class FunctionDefinitions {
 		TrigExpand.setEvaluator(new org.matheclipse.core.reflection.system.TrigExpand());
 		TrigReduce.setEvaluator(new org.matheclipse.core.reflection.system.TrigReduce());
 		TrigToExp.setEvaluator(new org.matheclipse.core.reflection.system.TrigToExp());
-		UnitStep.setEvaluator(new org.matheclipse.core.reflection.system.UnitStep());
 	}
 
 	private final static FunctionDefinitions CONST = new FunctionDefinitions();

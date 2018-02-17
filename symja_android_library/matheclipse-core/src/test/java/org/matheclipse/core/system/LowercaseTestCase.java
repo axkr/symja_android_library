@@ -130,8 +130,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testApart() {
-//		check("Factor(x^2 - y^2 )", "(x-y)*(x+y)");
-//		check("Solve(x^2 - y^2==0, y)", "{{y->-x},{y->x}}");
+		// check("Factor(x^2 - y^2 )", "(x-y)*(x+y)");
+		// check("Solve(x^2 - y^2==0, y)", "{{y->-x},{y->x}}");
 		check("Apart(1 / (x^2 - y^2))", "1/(x^2-y^2)");
 
 		check("Apart(x/(2 x + a^2))", "x/(a^2+2*x)");
@@ -2678,12 +2678,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFractionalPart() {
+		check("FractionalPart(I*Infinity)", "I*Interval({0,1})");
+		check("FractionalPart(-I*Infinity)", "-I*Interval({0,1})");
+		check("FractionalPart(ComplexInfinity)", "Interval({0,1})");
+		
+		check("FractionalPart(2.4+3.1*I)", "0.4+I*0.1");
+		check("FractionalPart(-5/3-(7/3)*I)", "-2/3-I*1/3");
+		check("FractionalPart(Cos(Pi/2))", "0");
+		check("FractionalPart(Sin(7/17))", "Sin(7/17)");
+		check("FractionalPart(Sin(-7/17))", "-Sin(7/17)");
 
+		check("FractionalPart(-Pi)", "3-Pi");
+		check("FractionalPart(GoldenRatio)", "-1+GoldenRatio");
 		check("FractionalPart(-9/4)", "-1/4");
 		check("FractionalPart(-9/4)+IntegerPart(-9/4)", "-9/4");
 		check("FractionalPart(-2.25)+IntegerPart(-2.25)", "-2.25");
 		check("FractionalPart(9/4)+IntegerPart(9/4)", "9/4");
 		check("FractionalPart(2.25)+IntegerPart(2.25)", "2.25");
+		check("FractionalPart(-2.25)+IntegerPart(-2.25)", "-2.25");
 		check("FractionalPart(0)+IntegerPart(0)", "0");
 		check("FractionalPart(0.0)+IntegerPart(0.0)", "0.0");
 		check("FractionalPart(1)+IntegerPart(1)", "1");
@@ -5860,6 +5872,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testQuantile() {
+		check("Quantile({1, 2, 3, 4, 5, 6, 7}, 1/2)", "4");
+
 		check("Quantile({1,2}, 0.5)", "1");
 		check("Quantile({Sqrt(2), E, Pi, Sqrt(3)}, 1/4)", "Sqrt(2)");
 		check("Quantile({Sqrt(2), E, Pi, Sqrt(3)}, 3/4)", "E");
@@ -7916,10 +7930,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTogether() {
+		check("Together(-(a^2-c^2)/(a*b-b*c))", "-(a+c)/b");
+
+		check("Together(1/Sqrt(1+1/x) )", "Sqrt(x/(1+x))");
+		check("Together(1/Sqrt(1+1/x)+(1+1/x)^(3/2))", //
+				"(Sqrt((1+x)/x)+x*Sqrt((1+x)/x)+x*Sqrt(x/(1+x)))/x");
+
 		check("Together(1/(2*Sqrt(3))+Sqrt(3)/2)", "2/Sqrt(3)");
 		check("Together(1/2-Sqrt(5)/2+2/(1+Sqrt(5)))", "0");
 		// check("Together(1/Sqrt(1+1/x) + (1+1/x)^(3/2) )", " ");
-		check("Together(1/Sqrt(1+1/x)  )", "Sqrt(x/(1+x))");
+
 		check("Together(1+1/(1+1/x))", "(1+2*x)/(1+x)");
 
 		check("Together(a/b+c/d)", "(b*c+a*d)/(b*d)");
@@ -8204,10 +8224,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testUnitStep() {
+		check("UnitStep(-Infinity)", "0");
+		check("UnitStep(Infinity)", "1");
+
+		check("UnitStep(0)", "1");
+		check("UnitStep(1)", "1");
+		check("UnitStep(-1)", "0");
+
 		check("UnitStep(Interval({0,42}))", "Interval({1,1})");
 		check("UnitStep(Interval({-3,-1}))", "Interval({0,0})");
 		check("UnitStep(Interval({-1,2}))", "Interval({0,1})");
-		check("UnitStep(0)", "1");
+
 		check("UnitStep(42)", "1");
 		check("UnitStep(-1)", "0");
 		check("UnitStep(-42)", "0");

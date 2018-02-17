@@ -23,6 +23,7 @@ import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
@@ -1618,14 +1619,43 @@ public class StatisticsFunctions {
 	}
 
 	/**
+	 * <pre>
+	 * Quantile(list, q)
+	 * </pre>
 	 * 
-	 * See <a href="https://en.wikipedia.org/wiki/Quantile">Wikipedia - Quantile</a>
+	 * <blockquote>
+	 * <p>
+	 * returns the <code>q</code>-Quantile of <code>list</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Quantile(list, {q1, q2, ...})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a list of the <code>q</code>-Quantiles of <code>list</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Quantile">Wikipedia - Quantile</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Quantile({1,2}, 0.5)
+	 * 1
+	 * </pre>
 	 */
 	private final static class Quantile extends AbstractFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
+			Validate.checkRange(ast, 3, 4);
 
 			int[] dim = ast.arg1().isMatrix();
 			if (dim == null && ast.arg1().isListOfLists()) {
@@ -1633,25 +1663,76 @@ public class StatisticsFunctions {
 			}
 			if (dim != null) {
 				IAST matrix = (IAST) ast.arg1();
-				return matrix.mapMatrixColumns(dim, x -> F.Quantile(x, ast.arg2()));
+				return matrix.mapMatrixColumns(dim, (IExpr x) -> ast.setAtClone(1, x));
 			}
 
 			if (ast.arg1().isList()) {
+				IExpr a = F.C0;
+				IExpr b = F.C0;
+				IExpr c = F.C1;
+				IExpr d = F.C0;
+				if (ast.size() == 4) {
+					IExpr arg3 = ast.arg3();
+					int[] dimParameters = arg3.isMatrix();
+					if (dimParameters == null || dimParameters[0] != 2 || dimParameters[1] != 2) {
+						return F.NIL;
+					}
+					a = arg3.first().first();
+					b = arg3.first().second();
+					c = arg3.second().first();
+					d = arg3.second().second();
+				}
+
 				IAST arg1 = (IAST) ast.arg1();
 				int dim1 = arg1.argSize();
 				try {
 					if (dim1 >= 0) {
 
-						final IAST sorted = EvalAttributes.copySortLess(arg1);
-						final IInteger length = F.ZZ(sorted.argSize());
+						final IAST s = EvalAttributes.copySortLess(arg1);
+						final IInteger length = F.ZZ(s.argSize());
 
-						int dim2 = ast.arg2().isVector();
+						IExpr q = ast.arg2();
+						int dim2 = q.isVector();
 						if (dim2 >= 0) {
-							final IAST param = ((IAST) ast.arg2());
-							return param.map(scalar -> of(sorted, length, scalar), 1);
+							final IAST vector = ((IAST) q);
+							if (vector.forAll(x -> x.isSignedNumber())) {
+								return vector.map(scalar -> of(s, length, (ISignedNumber) scalar), 1);
+							}
 						} else {
-							if (ast.arg2().isSignedNumber()) {
-								return of(sorted, length, ast.arg2());
+							if (q.isSignedNumber()) {
+								// x = a + (length + b) * q
+								IExpr x = q.isZero() ? a : F.Plus.of(a, F.Times(F.Plus(length, b), q));
+								if (x.isNumIntValue()) {
+									int index = x.toIntDefault(Integer.MIN_VALUE);
+									if (index != Integer.MIN_VALUE) {
+										if (index < 1) {
+											index = 1;
+										} else if (index > s.argSize()) {
+											index = s.argSize();
+										}
+										return s.get(index);
+									}
+								}
+								if (x.isSignedNumber()) {
+									ISignedNumber xi = (ISignedNumber) x;
+									int xFloor = xi.floorFraction().toIntDefault(Integer.MIN_VALUE);
+									int xCeiling = xi.ceilFraction().toIntDefault(Integer.MIN_VALUE);
+									if (xFloor != Integer.MIN_VALUE && xCeiling != Integer.MIN_VALUE) {
+										if (xFloor < 1) {
+											xFloor = 1;
+										}
+										if (xCeiling > s.argSize()) {
+											xCeiling = s.argSize();
+										}
+										// factor = c + d * FractionalPart(x);
+										IExpr factor = d.isZero() || xi.isZero() ? c
+												: F.Plus.of(c, F.Times(d, xi.fractionalPart()));
+										// s[[Floor(x)]]+(s[[Ceiling(x)]]-s[[Floor(x)]]) * (c + d * FractionalPart(x))
+										return F.Plus(s.get(xFloor), //
+												F.Times(F.Subtract(s.get(xCeiling), s.get(xFloor)), factor));
+									}
+								}
+								// return of(s, length, q);
 							}
 						}
 					}
@@ -1664,7 +1745,7 @@ public class StatisticsFunctions {
 			return F.NIL;
 		}
 
-		private IExpr of(IAST sorted, IInteger length, IExpr scalar) {
+		private IExpr of(IAST sorted, IInteger length, ISignedNumber scalar) {
 			if (scalar.isSignedNumber()) {
 				int index = 0;
 				if (scalar instanceof INum) {
