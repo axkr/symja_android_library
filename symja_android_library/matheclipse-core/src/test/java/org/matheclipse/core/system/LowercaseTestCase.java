@@ -3196,6 +3196,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegerPart() {
+		check("IntegerPart(Infinity)", "Infinity");
+		check("IntegerPart(-Infinity)", "-Infinity");
+		check("IntegerPart(I*Infinity)", "I*Infinity");
+		check("IntegerPart(-I*Infinity)", "-I*Infinity");
+		
+		check("IntegerPart(Pi)", "3");
+		check("IntegerPart(-Pi)", "-3");
+		check("IntegerPart(IntegerPart(Pi))", "3");
+		
 		check("IntegerPart(-9/4)", "-2");
 		check("IntegerPart(2.4)", "2");
 		check("IntegerPart(-2.4)", "-2");

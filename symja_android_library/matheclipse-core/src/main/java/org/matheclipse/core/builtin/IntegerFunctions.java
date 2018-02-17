@@ -641,6 +641,10 @@ public class IntegerFunctions {
 				if (arg1.isIntegerResult()) {
 					return arg1;
 				}
+				if (arg1.isInfinity() || arg1.isNegativeInfinity() || arg1.isDirectedInfinity(F.CI)
+						|| arg1.isDirectedInfinity(F.CNI) || arg1.isAST(F.IntegerPart, 2)) {
+					return arg1;
+				}
 				IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 				if (negExpr.isPresent()) {
 					return Negate(IntegerPart(negExpr));
