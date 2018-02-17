@@ -16,6 +16,7 @@ import javax.annotation.Nonnull;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.util.ArraySet;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.eval.util.OpenIntToSet;
 import org.matheclipse.core.expression.Context;
@@ -38,7 +39,7 @@ public class RulesData implements Serializable {
 	 */
 	public static final int DEFAULT_VALUE_INDEX = Integer.MIN_VALUE;
 
-	public static boolean isComplicatedPatternRule(final IExpr lhsExpr, Set<ISymbol> neededSymbols) {
+	public static boolean isComplicatedPatternRule(final IExpr lhsExpr, ArraySet neededSymbols) {
 		if (lhsExpr.isAST()) {
 			final IAST lhsAST = ((IAST) lhsExpr);
 			if (lhsAST.size() > 1) {
@@ -261,7 +262,7 @@ public class RulesData implements Serializable {
 		return null;
 	}
 
-	private PatternMatcher addSimpleOrderlessPatternDownRule(final Set<ISymbol> headerSymbols, final IExpr leftHandSide,
+	private PatternMatcher addSimpleOrderlessPatternDownRule(final ArraySet<ISymbol> headerSymbols, final IExpr leftHandSide,
 			final PatternMatcher pmEvaluator) {
 		for (ISymbol head : headerSymbols) {
 			final int hash = head.hashCode();
@@ -540,7 +541,7 @@ public class RulesData implements Serializable {
 						return false;
 					})) {
 						return temp[0];
-					} 
+					}
 				}
 			}
 
@@ -725,7 +726,7 @@ public class RulesData implements Serializable {
 	}
 
 	public IPatternMatcher putDownRule(final IExpr leftHandSide, final AbstractPatternMatcherMethod pmEvaluator) {
-		Set<ISymbol> headerSymbols = new HashSet<ISymbol>();
+		ArraySet<ISymbol> headerSymbols = new ArraySet<ISymbol>();
 		if (!isComplicatedPatternRule(leftHandSide, headerSymbols)) {
 			fSimplePatternDownRules = getSimplePatternDownRules();
 			return addSimplePatternDownRule(leftHandSide, pmEvaluator);
@@ -770,7 +771,7 @@ public class RulesData implements Serializable {
 			return pmEquals;
 		}
 
-		Set<ISymbol> headerSymbols = new HashSet<ISymbol>();
+		ArraySet<ISymbol> headerSymbols = new ArraySet<ISymbol>();
 		if (!isComplicatedPatternRule(leftHandSide, headerSymbols)) {
 			fSimplePatternDownRules = getSimplePatternDownRules();
 			return addSimplePatternDownRule(leftHandSide, pmEvaluator);
@@ -794,7 +795,7 @@ public class RulesData implements Serializable {
 
 	public PatternMatcher putDownRule(final PatternMatcherAndInvoker pmEvaluator) {
 		final IExpr leftHandSide = pmEvaluator.getLHS();
-		Set<ISymbol> headerSymbols = new HashSet<ISymbol>();
+		ArraySet<ISymbol> headerSymbols = new ArraySet<ISymbol>();
 		if (!isComplicatedPatternRule(leftHandSide, headerSymbols)) {
 			fSimplePatternDownRules = getSimplePatternDownRules();
 			return addSimplePatternDownRule(leftHandSide, pmEvaluator);
@@ -859,7 +860,7 @@ public class RulesData implements Serializable {
 			}
 		}
 
-		Set<ISymbol> headerSymbols = new HashSet<ISymbol>();
+		ArraySet<ISymbol> headerSymbols = new ArraySet<ISymbol>();
 		boolean removed = false;
 		if (!isComplicatedPatternRule(leftHandSide, headerSymbols)) {
 			if (fSimplePatternDownRules != null) {

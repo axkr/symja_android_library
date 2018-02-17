@@ -5,14 +5,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.util.ArraySet;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
@@ -83,7 +81,7 @@ public class RulePreprocessor {
 	private static void convertExpr(IExpr expr, String rulePostfix, final PrintWriter out, String symbolName) {
 		boolean last;
 		StringBuilder buffer = new StringBuilder();
-		Set<ISymbol> headerSymbols = new HashSet<ISymbol>();
+		ArraySet headerSymbols = new ArraySet();
 		if (expr.isAST()) {
 			IAST list = (IAST) expr;
 			if (symbolName != null) {
@@ -182,8 +180,8 @@ public class RulePreprocessor {
 	 * @param targetLocation
 	 *            target directory for the generated Java files
 	 * @param ignoreTimestamp
-	 *            if <code>false</code> only change the target file (*.java), if the
-	 *            source file (*.m) has a newer time stamp than the target file.
+	 *            if <code>false</code> only change the target file (*.java), if the source file (*.m) has a newer time
+	 *            stamp than the target file.
 	 */
 	public static void generateFunctionStrings(final File sourceLocation, File targetLocation,
 			boolean ignoreTimestamp) {

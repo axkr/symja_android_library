@@ -771,16 +771,14 @@ public class Symbol implements ISymbol, Serializable {
 	@Override
 	public final IPatternMatcher putDownRule(final ISymbol.RuleType setSymbol, final boolean equalRule,
 			final IExpr leftHandSide, final IExpr rightHandSide, final int priority, boolean packageMode) {
-		EvalEngine evalEngine = EvalEngine.get();
 		if (!packageMode) {
 			if (isLocked(packageMode)) {
 				throw new RuleCreationError(leftHandSide);
 			}
-
 			EvalEngine.get().addModifiedVariable(this);
 		}
 		if (fRulesData == null) {
-			fRulesData = new RulesData(evalEngine.getContext());
+			fRulesData = new RulesData(EvalEngine.get().getContext());
 		}
 		return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide);
 	}
