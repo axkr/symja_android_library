@@ -190,13 +190,11 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 	 */
 	private int determinePatternsRecursive(Map<IExpr, Integer> patternIndexMap, final IAST lhsPatternExpr,
 			int treeLevel) {
-		final IAST ast = lhsPatternExpr;
 		if (lhsPatternExpr.isAlternatives() || lhsPatternExpr.isExcept()) {
 			fRuleWithoutPattern = false;
 		}
-		int[] listEvalFlags = new int[1];
-		listEvalFlags[0] = IAST.NO_FLAG;
-		ast.forEach(x -> {
+		int[] listEvalFlags = new int[] { IAST.NO_FLAG };
+		lhsPatternExpr.forEach(x -> {
 			if (x.isAST()) {
 				listEvalFlags[0] |= determinePatternsRecursive(patternIndexMap, (IAST) x, treeLevel + 1);
 				fPriority -= 11;
@@ -208,7 +206,7 @@ public final class PatternMap implements ISymbol2IntMap, Cloneable, Serializable
 				fPriority -= (50 - treeLevel);
 			}
 		}, 0);
-		ast.setEvalFlags(listEvalFlags[0]);
+		lhsPatternExpr.setEvalFlags(listEvalFlags[0]);
 		// disable flag "pattern with default value"
 		// listEvalFlags &= IAST.CONTAINS_NO_DEFAULT_PATTERN_MASK;
 		return listEvalFlags[0];
