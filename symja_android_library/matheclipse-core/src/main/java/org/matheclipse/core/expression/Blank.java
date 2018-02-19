@@ -1,8 +1,5 @@
 package org.matheclipse.core.expression;
 
-import java.io.ObjectStreamException;
-import java.util.Collection;
-import java.util.Map;
 import com.duy.lambda.Predicate;
 
 import org.matheclipse.core.basic.Config;
@@ -11,6 +8,7 @@ import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
+import org.matheclipse.core.interfaces.IPatternImpl;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -21,14 +19,18 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
+import java.io.ObjectStreamException;
+import java.util.Collection;
+import java.util.Map;
+
 /**
  * A &quot;blank pattern&quot; with no assigned &quot;pattern name&quot; (i.e. &quot;<code>_</code>&quot;)
- * 
+ *
  */
-public class Blank implements IPattern {
+public class Blank extends IPatternImpl implements IPattern {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1306007999071682207L;
 
@@ -193,7 +195,7 @@ public class Blank implements IPattern {
 	/**
 	 * Check if the two left-hand-side pattern expressions are equivalent. (i.e. <code>f[x_,y_]</code> is equivalent to
 	 * <code>f[a_,b_]</code> )
-	 * 
+	 *
 	 * @param patternObject
 	 * @param pm1
 	 * @param pm2
@@ -305,7 +307,7 @@ public class Blank implements IPattern {
 
 	/**
 	 * Groovy operator overloading
-	 * 
+	 *
 	 * @param that
 	 * @return
 	 */
