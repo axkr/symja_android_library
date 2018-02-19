@@ -7,6 +7,7 @@ import java.util.Locale;
 
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
+import org.matheclipse.core.interfaces.IStringXImpl;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -18,7 +19,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * 
  * @see org.matheclipse.core.interfaces.IStringX
  */
-public class StringX implements IStringX {
+public class StringX extends IStringXImpl implements IStringX {
 	/**
 	 * 
 	 */
