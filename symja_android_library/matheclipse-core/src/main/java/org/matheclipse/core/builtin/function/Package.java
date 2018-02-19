@@ -19,7 +19,7 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
-import java.util.function.IntFunction;
+import com.duy.lambda.IntFunction;
 
 /**
  * Package[{&lt;list of public package rule headers&gt;}, {&lt;list of rules in this package&gt;}}

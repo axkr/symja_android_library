@@ -40,9 +40,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.DoubleUnaryOperator;
-import java.util.function.Predicate;
+import com.duy.lambda.Consumer;
+import com.duy.lambda.DoubleUnaryOperator;
+import com.duy.lambda.Predicate;
 
 import javax.annotation.Nonnull;
 
@@ -755,12 +755,15 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			return evaluate(expr);
 		} finally {
 			// pop all local variables from local variable stack
-			variables.forEach(new Consumer<ISymbol>() {
+			Consumer<ISymbol> consumer = new Consumer<ISymbol>() {
 				@Override
 				public void accept(ISymbol x) {
 					EvalEngine.this.localStack(x).pop();
 				}
-			});
+			};
+			for (ISymbol variable : variables) {
+				consumer.accept(variable);
+			}
 		}
 	}
 

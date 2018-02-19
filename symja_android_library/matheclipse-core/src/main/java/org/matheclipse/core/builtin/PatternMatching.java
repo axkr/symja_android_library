@@ -13,7 +13,6 @@ import org.matheclipse.core.eval.interfaces.ICreatePatternMatcher;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
@@ -23,8 +22,8 @@ import org.matheclipse.core.interfaces.ISymbol.RuleType;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 
-import java.util.function.Consumer;
-import java.util.function.Predicate;
+import com.duy.lambda.Consumer;
+import com.duy.lambda.Predicate;
 
 public final class PatternMatching {
 

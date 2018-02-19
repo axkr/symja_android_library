@@ -2,9 +2,7 @@ package org.matheclipse.core.interfaces;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.function.IntFunction;
-
-import org.matheclipse.core.expression.F;
+import com.duy.lambda.IntFunction;
 
 /**
  * 

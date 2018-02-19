@@ -23,7 +23,7 @@ import org.matheclipse.core.interfaces.IExpr;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
+import com.duy.lambda.Consumer;
 
 /**
  * <pre>

@@ -15,7 +15,7 @@ import static org.matheclipse.core.expression.F.Sum;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.k;
 
-import java.util.function.Predicate;
+import com.duy.lambda.Predicate;
 
 import org.matheclipse.core.builtin.ListFunctions;
 import org.matheclipse.core.convert.VariablesSet;

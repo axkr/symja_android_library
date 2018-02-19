@@ -2,7 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
+import com.duy.lambda.Consumer;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASIExpr;

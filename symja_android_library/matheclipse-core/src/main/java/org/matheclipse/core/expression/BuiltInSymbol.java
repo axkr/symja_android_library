@@ -2,7 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.io.IOException;
 import java.io.ObjectStreamException;
-import java.util.function.DoubleFunction;
+import com.duy.lambda.DoubleFunction;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;

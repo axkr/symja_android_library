@@ -22,7 +22,7 @@ import org.matheclipse.core.polynomials.PolynomialsUtils;
 import org.matheclipse.core.reflection.system.rules.LegendrePRules;
 import org.matheclipse.core.reflection.system.rules.LegendreQRules;
 
-import java.util.function.Function;
+import com.duy.lambda.Function;
 
 public class HypergeometricFunctions {
 	static {

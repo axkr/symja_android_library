@@ -17,6 +17,17 @@
 
 package org.matheclipse.core.expression;
 
+import com.duy.lambda.Consumer;
+import com.duy.lambda.Function;
+import com.duy.lambda.IntFunction;
+import com.duy.lambda.Predicate;
+
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IExpr;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -28,18 +39,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.RandomAccess;
 import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.IntFunction;
-import java.util.function.ObjIntConsumer;
-import java.util.function.Predicate;
+import com.duy.lambda.ObjIntConsumer;
 import java.util.stream.Stream;
-
-import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IASTMutable;
-import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * HMArrayList is an implementation of a list, backed by an array. All optional operations adding, removing, and

@@ -9,12 +9,12 @@ import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.IntFunction;
-import java.util.function.Predicate;
+import com.duy.lambda.BiFunction;
+import com.duy.lambda.BiPredicate;
+import com.duy.lambda.Consumer;
+import com.duy.lambda.Function;
+import com.duy.lambda.IntFunction;
+import com.duy.lambda.Predicate;
 import java.util.stream.Stream;
 
 import org.hipparchus.complex.Complex;

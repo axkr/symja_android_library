@@ -42,8 +42,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.function.IntFunction;
-import java.util.function.Predicate;
+import com.duy.lambda.IntFunction;
+import com.duy.lambda.Predicate;
 
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModInteger;

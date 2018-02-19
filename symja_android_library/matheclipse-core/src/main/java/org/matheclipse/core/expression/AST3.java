@@ -2,8 +2,8 @@ package org.matheclipse.core.expression;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
+import com.duy.lambda.Consumer;
+import com.duy.lambda.Predicate;
 
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;

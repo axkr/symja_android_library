@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.IStringX;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.IntFunction;
+import com.duy.lambda.IntFunction;
 
 public class Names extends AbstractFunctionEvaluator {
 

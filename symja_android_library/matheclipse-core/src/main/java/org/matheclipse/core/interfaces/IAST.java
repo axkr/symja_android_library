@@ -5,12 +5,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.ObjIntConsumer;
-import java.util.function.Predicate;
+import com.duy.lambda.BiFunction;
+import com.duy.lambda.BiPredicate;
+import com.duy.lambda.Consumer;
+import com.duy.lambda.Function;
+import com.duy.lambda.ObjIntConsumer;
+import com.duy.lambda.Predicate;
 import java.util.stream.Stream;
 
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -591,7 +591,6 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * </p>
 	 * <b>Note:</b> the 0-th element (i.e. the head of the AST) will not be selected.
 	 */
-	@Override
 	public void forEach(Consumer<? super IExpr> action);
 
 	/**

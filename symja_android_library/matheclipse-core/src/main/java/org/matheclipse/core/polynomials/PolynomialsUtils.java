@@ -25,7 +25,7 @@ import org.matheclipse.core.interfaces.IExpr;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.IntFunction;
+import com.duy.lambda.IntFunction;
 
 /**
  * A collection of static methods that operate on or return polynomials.

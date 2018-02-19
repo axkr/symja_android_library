@@ -2,7 +2,7 @@ package org.matheclipse.core.expression;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.function.Predicate;
+import com.duy.lambda.Predicate;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.generic.Predicates;

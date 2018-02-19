@@ -11,7 +11,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.function.Function;
+import com.duy.lambda.Function;
 
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;

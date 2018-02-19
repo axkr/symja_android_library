@@ -16,7 +16,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import java.util.function.IntFunction;
+import com.duy.lambda.IntFunction;
 
 import static org.matheclipse.core.expression.F.evalExpandAll;
 

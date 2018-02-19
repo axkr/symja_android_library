@@ -1,6 +1,6 @@
 package org.matheclipse.core.interfaces;
 
-import java.util.function.IntFunction;
+import com.duy.lambda.IntFunction;
 
 /**
  * 

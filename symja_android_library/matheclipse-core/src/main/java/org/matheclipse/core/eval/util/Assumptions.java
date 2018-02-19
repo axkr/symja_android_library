@@ -1,5 +1,7 @@
 package org.matheclipse.core.eval.util;
 
+import com.duy.lambda.Consumer;
+
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -8,7 +10,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 
 public class Assumptions extends AbstractAssumptions {
 

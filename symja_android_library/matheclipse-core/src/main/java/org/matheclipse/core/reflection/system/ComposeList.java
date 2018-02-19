@@ -9,7 +9,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import java.util.function.BiFunction;
+import com.duy.lambda.BiFunction;
 
 /**
  * <pre>

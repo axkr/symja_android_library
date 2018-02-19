@@ -1,5 +1,8 @@
 package org.matheclipse.core.patternmatching;
 
+import com.duy.lambda.Consumer;
+import com.duy.lambda.Predicate;
+
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
@@ -22,8 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
 
@@ -922,12 +923,21 @@ public class RulesData implements Serializable {
 			}
 
 			if (fPatternDownRules != null) {
-				return fPatternDownRules.removeIf(new Predicate<IPatternMatcher>() {
-                    @Override
-                    public boolean test(IPatternMatcher x) {
-                        return x.equivalentLHS(pmEvaluator) == 0;
-                    }
-                });
+				Predicate<IPatternMatcher> filter = new Predicate<IPatternMatcher>() {
+					@Override
+					public boolean test(IPatternMatcher x) {
+						return x.equivalentLHS(pmEvaluator) == 0;
+					}
+				};
+				boolean isRemoved = false;
+				Iterator<IPatternMatcher> each = fPatternDownRules.iterator();
+				while (each.hasNext()) {
+					if (filter.test(each.next())) {
+						each.remove();
+						isRemoved = true;
+					}
+				}
+				return isRemoved;
 			}
 		}
 		return false;

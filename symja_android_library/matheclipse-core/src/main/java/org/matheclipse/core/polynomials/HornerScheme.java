@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeMap;
-import java.util.function.Consumer;
+import com.duy.lambda.Consumer;
 
 /**
  * Generate the horner scheme for univariate polynomials

@@ -12,7 +12,7 @@ import org.matheclipse.parser.client.eval.DoubleEvaluator;
 import org.matheclipse.parser.client.eval.IDoubleCallbackFunction;
 import org.matheclipse.parser.client.math.MathException;
 
-import java.util.function.IntFunction;
+import com.duy.lambda.IntFunction;
 
 /**
  * A call back function which could be used in <code>DoubleEvaluator</code>, for evaluating Symja numerical functions.

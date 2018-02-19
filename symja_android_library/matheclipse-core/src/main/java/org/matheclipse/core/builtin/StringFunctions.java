@@ -5,7 +5,7 @@ import static org.matheclipse.core.expression.F.List;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.function.Predicate;
+import com.duy.lambda.Predicate;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;

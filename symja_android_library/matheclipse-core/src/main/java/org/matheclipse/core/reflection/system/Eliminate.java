@@ -23,8 +23,8 @@ import org.matheclipse.core.visit.AbstractVisitorBoolean;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
+import com.duy.lambda.Consumer;
+import com.duy.lambda.Predicate;
 
 /**
  * <pre>

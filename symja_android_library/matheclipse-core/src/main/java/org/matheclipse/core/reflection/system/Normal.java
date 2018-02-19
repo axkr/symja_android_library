@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 
-import java.util.function.ObjIntConsumer;
+import com.duy.lambda.ObjIntConsumer;
 
 /**
  * Power series expansion
