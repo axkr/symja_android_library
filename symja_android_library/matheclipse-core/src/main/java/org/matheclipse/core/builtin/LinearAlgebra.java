@@ -33,9 +33,9 @@ import static org.matheclipse.core.expression.F.y;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.IntFunction;
+import com.duy.lambda.BiFunction;
+import com.duy.lambda.Function;
+import com.duy.lambda.IntFunction;
 
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.linear.BlockFieldMatrix;

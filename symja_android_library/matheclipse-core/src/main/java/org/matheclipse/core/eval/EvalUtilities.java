@@ -1,7 +1,7 @@
 package org.matheclipse.core.eval;
 
 import java.io.Writer;
-import java.util.function.Predicate;
+import com.duy.lambda.Predicate;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.expression.F;

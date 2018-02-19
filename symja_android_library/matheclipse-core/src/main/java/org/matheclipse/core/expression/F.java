@@ -9,9 +9,9 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.IntFunction;
+import com.duy.lambda.BiFunction;
+import com.duy.lambda.Function;
+import com.duy.lambda.IntFunction;
 
 import javax.annotation.Nonnull;
 

@@ -9,7 +9,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.visit.HashValueVisitor;
 
 import java.util.List;
-import java.util.function.Predicate;
+import com.duy.lambda.Predicate;
 
 /**
  * Match two arguments of an <code>Orderless</code> AST into a new resulting expression.

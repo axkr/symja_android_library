@@ -41,10 +41,10 @@ import static org.matheclipse.core.expression.F.y;
 import static org.matheclipse.core.expression.F.y_;
 
 import java.math.BigInteger;
-import java.util.function.DoubleFunction;
-import java.util.function.DoubleUnaryOperator;
-import java.util.function.Function;
-import java.util.function.IntFunction;
+import com.duy.lambda.DoubleFunction;
+import com.duy.lambda.DoubleUnaryOperator;
+import com.duy.lambda.Function;
+import com.duy.lambda.IntFunction;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;

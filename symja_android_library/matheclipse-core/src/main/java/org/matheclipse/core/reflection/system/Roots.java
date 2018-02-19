@@ -5,7 +5,7 @@ import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.evalExpandAll;
 
 import java.util.List;
-import java.util.function.IntFunction;
+import com.duy.lambda.IntFunction;
 
 import javax.annotation.Nonnull;
 

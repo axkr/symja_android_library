@@ -1,17 +1,17 @@
 package org.matheclipse.core.expression;
 
-import java.io.ObjectStreamException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.function.IntFunction;
-import java.util.function.Supplier;
+import com.duy.lambda.IntFunction;
+import com.duy.lambda.Supplier;
 
-import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+
+import java.io.ObjectStreamException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * The class <code>NILPointer</code> implements the constant object <code>F.NIL</code> (not in list), which indicates in

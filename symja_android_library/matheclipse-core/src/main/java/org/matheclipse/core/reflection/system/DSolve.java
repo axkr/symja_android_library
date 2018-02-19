@@ -14,7 +14,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
 
-import java.util.function.Consumer;
+import com.duy.lambda.Consumer;
 
 /**
  * <pre>

@@ -7,7 +7,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import java.util.function.Predicate;
+import com.duy.lambda.Predicate;
 
 import edu.jas.poly.TermOrder;
 import edu.jas.poly.TermOrderByName;

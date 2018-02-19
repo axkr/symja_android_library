@@ -11,7 +11,7 @@ import org.matheclipse.core.interfaces.IStringX;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.function.Consumer;
+import com.duy.lambda.Consumer;
 
 public class Print extends AbstractCoreFunctionEvaluator {
 

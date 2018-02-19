@@ -3,9 +3,9 @@ package org.matheclipse.core.reflection.system;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.function.Consumer;
-import java.util.function.IntFunction;
-import java.util.function.ObjIntConsumer;
+import com.duy.lambda.Consumer;
+import com.duy.lambda.IntFunction;
+import com.duy.lambda.ObjIntConsumer;
 
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.PredicateQ;

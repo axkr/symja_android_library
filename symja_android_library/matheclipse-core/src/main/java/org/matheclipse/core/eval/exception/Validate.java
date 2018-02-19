@@ -2,7 +2,7 @@ package org.matheclipse.core.eval.exception;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.function.IntFunction;
+import com.duy.lambda.IntFunction;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;

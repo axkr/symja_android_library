@@ -2,7 +2,7 @@ package org.matheclipse.core.generic;
 
 import java.io.Serializable;
 import java.util.Comparator;
-import java.util.function.BiPredicate;
+import com.duy.lambda.BiPredicate;
 
 import org.matheclipse.core.interfaces.IExpr;
 

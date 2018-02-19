@@ -1,5 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
+import com.duy.lambda.ObjIntConsumer;
+
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Lists;
 import org.matheclipse.core.eval.EvalEngine;
@@ -13,8 +15,6 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-
-import java.util.function.ObjIntConsumer;
 
 /**
  * <pre>
@@ -51,12 +51,13 @@ public class FrobeniusSolve extends AbstractEvaluator {
 			try {
 				IInteger[][] equations = new IInteger[1][list.size()];
 				// format looks like: { { 12, 16, 20, 27, 123 } };
-				list.forEach(new ObjIntConsumer<IExpr>() {
-                    @Override
-                    public void accept(IExpr x, int i) {
-                        equations[0][i - 1] = (IInteger) x;
-                    }
-                });
+				ObjIntConsumer<IExpr> action = new ObjIntConsumer<IExpr>() {
+					@Override
+					public void accept(IExpr x, int i) {
+						equations[0][i - 1] = (IInteger) x;
+					}
+				};
+				list.forEach(action);
 				equations[0][list.size() - 1] = (IInteger) ast.arg2();
 				int numberOfSolutions = -1; // all solutions
 				if (ast.size() == 4) {
@@ -69,14 +70,14 @@ public class FrobeniusSolve extends AbstractEvaluator {
 				IASTAppendable result = F.ListAlloc(8);
 				if (numberOfSolutions < 0) {
 					while ((solution = solver.take()) != null) {
-						result.append(Lists.asList(solution));
+						result.append(Lists.asList((Object[]) solution));
 					}
 				} else {
 					while ((solution = solver.take()) != null) {
 						if (--numberOfSolutions < 0) {
 							break;
 						}
-						result.append(Lists.asList(solution));
+						result.append(Lists.asList((Object[]) solution));
 					}
 				}
 

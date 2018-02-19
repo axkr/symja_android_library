@@ -12,7 +12,7 @@ import org.matheclipse.core.interfaces.IInteger;
 
 import java.math.BigInteger;
 import java.util.Random;
-import java.util.function.IntFunction;
+import com.duy.lambda.IntFunction;
 
 public final class RandomFunctions {
 

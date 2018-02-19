@@ -12,7 +12,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
 
-import java.util.function.IntFunction;
+import com.duy.lambda.IntFunction;
 
 import static org.matheclipse.core.expression.F.$s;
 import static org.matheclipse.core.expression.F.C2;

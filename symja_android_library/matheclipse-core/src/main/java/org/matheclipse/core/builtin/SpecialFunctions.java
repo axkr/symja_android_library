@@ -30,8 +30,8 @@ import org.matheclipse.core.reflection.system.rules.StruveHRules;
 import org.matheclipse.core.reflection.system.rules.StruveLRules;
 
 import java.math.BigDecimal;
-import java.util.function.DoubleUnaryOperator;
-import java.util.function.Function;
+import com.duy.lambda.DoubleUnaryOperator;
+import com.duy.lambda.Function;
 
 import static org.matheclipse.core.expression.F.BernoulliB;
 import static org.matheclipse.core.expression.F.C1;

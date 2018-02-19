@@ -1,5 +1,7 @@
 package org.matheclipse.core.convert;
 
+import com.duy.lambda.IntFunction;
+
 import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -9,7 +11,6 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.function.IntFunction;
 
 import static org.matheclipse.core.expression.F.List;
 

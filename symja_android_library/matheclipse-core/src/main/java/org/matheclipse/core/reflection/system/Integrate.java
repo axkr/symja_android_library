@@ -19,8 +19,8 @@ import org.matheclipse.core.polynomials.PartialFractionIntegrateGenerator;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Predicate;
+import com.duy.lambda.BiFunction;
+import com.duy.lambda.Predicate;
 
 import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;

@@ -3,7 +3,7 @@ package org.matheclipse.core.builtin;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.IntFunction;
+import com.duy.lambda.IntFunction;
 
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.matheclipse.core.eval.EvalEngine;

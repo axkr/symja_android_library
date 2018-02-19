@@ -30,8 +30,8 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import java.util.function.Function;
-import java.util.function.IntFunction;
+import com.duy.lambda.Function;
+import com.duy.lambda.IntFunction;
 
 public class StatisticsFunctions {
 	static {

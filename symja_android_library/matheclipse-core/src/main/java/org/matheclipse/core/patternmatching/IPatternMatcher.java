@@ -3,7 +3,7 @@ package org.matheclipse.core.patternmatching;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Predicate;
+import com.duy.lambda.Predicate;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;

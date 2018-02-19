@@ -1,7 +1,7 @@
 package org.matheclipse.core.generic;
 
 import java.util.Deque;
-import java.util.function.Function;
+import com.duy.lambda.Function;
 
 import org.hipparchus.analysis.UnivariateFunction;
 import org.matheclipse.commons.math.analysis.solvers.DifferentiableUnivariateFunction;

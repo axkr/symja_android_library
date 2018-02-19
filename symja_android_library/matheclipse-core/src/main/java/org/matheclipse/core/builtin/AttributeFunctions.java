@@ -230,6 +230,7 @@ public class AttributeFunctions {
 		}
 
 		private static IExpr addAttributes(final ISymbol sym, final IAST ast, IExpr arg2, EvalEngine engine) {
+			System.out.println("SetAttributes.addAttributes");
 			if (!engine.isPackageMode()) {
 				if (Config.SERVER_MODE && (sym.toString().charAt(0) != '$')) {
 					throw new RuleCreationError(sym);
@@ -421,6 +422,7 @@ public class AttributeFunctions {
 	}
 
 	static IExpr setSymbolsAttributes(final IAST ast, EvalEngine engine, IAST list) {
+		System.out.println("AttributeFunctions.setSymbolsAttributes");
 		IExpr arg2 = engine.evaluate(ast.arg2());
 		for (int i = 1; i < list.size(); i++) {
 			if (list.get(i).isSymbol()) {

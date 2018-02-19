@@ -3,8 +3,8 @@ package org.matheclipse.core.interfaces;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.function.DoubleFunction;
-import java.util.function.Function;
+import com.duy.lambda.DoubleFunction;
+import com.duy.lambda.Function;
 
 import javax.annotation.Nonnull;
 

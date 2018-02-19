@@ -1,6 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
-import java.util.function.DoubleUnaryOperator;
+import com.duy.lambda.DoubleUnaryOperator;
 
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.INumeric;

@@ -37,7 +37,7 @@ import static org.matheclipse.core.expression.F.Tanh;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.num;
 
-import java.util.function.DoubleUnaryOperator;
+import com.duy.lambda.DoubleUnaryOperator;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;

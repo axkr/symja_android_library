@@ -9,7 +9,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.reflection.system.rules.LaplaceTransformRules;
 
-import java.util.function.Predicate;
+import com.duy.lambda.Predicate;
 
 /**
  * <pre>
