@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.expression.F;
@@ -38,7 +39,12 @@ public class VariablesSet {
 					F.Unequal };
 			for (int i = 0; i < logicEquationHeads.length; i++) {
 				if (ast.isAST(logicEquationHeads[i])) {
-					ast.forEach(x -> x.accept(this));
+					ast.forEach(new Consumer<IExpr>() {
+                        @Override
+                        public void accept(IExpr x) {
+                            x.accept(BooleanVariablesVisitor.this);
+                        }
+                    });
 					break;
 				}
 			}
@@ -69,7 +75,12 @@ public class VariablesSet {
 
 		@Override
 		public boolean visit(IAST list) {
-			return list.exists(x -> x.accept(this), 1);
+			return list.exists(new Predicate<IExpr>() {
+				@Override
+				public boolean test(IExpr x) {
+					return x.accept(IsMemberVisitor.this);
+				}
+			}, 1);
 		}
 
 		@Override
@@ -103,14 +114,24 @@ public class VariablesSet {
 		@Override
 		public boolean visit(IAST list) {
 			if (list.isList() || list.isPlus() || list.isTimes()) {
-				list.forEach(x -> x.accept(this));
+				list.forEach(new Consumer<IExpr>() {
+					@Override
+					public void accept(IExpr x) {
+						x.accept(AlgebraVariablesVisitor.this);
+					}
+				});
 				return false;
 			} else if (list.isPower()) {
 				IExpr base = list.arg1();
 				IExpr exponent = list.arg2();
 
 				if (exponent.isRational()) {
-					list.forEach(x -> x.accept(this));
+					list.forEach(new Consumer<IExpr>() {
+						@Override
+						public void accept(IExpr x) {
+							x.accept(AlgebraVariablesVisitor.this);
+						}
+					});
 					return false;
 				} else if (exponent.isNumber()) {
 					fCollection.add(list);

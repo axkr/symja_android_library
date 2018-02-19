@@ -2,7 +2,6 @@ package org.matheclipse.core.eval;
 
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -12,6 +11,8 @@ import org.matheclipse.parser.client.ast.SymbolNode;
 import org.matheclipse.parser.client.eval.DoubleEvaluator;
 import org.matheclipse.parser.client.eval.IDoubleCallbackFunction;
 import org.matheclipse.parser.client.math.MathException;
+
+import java.util.function.IntFunction;
 
 /**
  * A call back function which could be used in <code>DoubleEvaluator</code>, for evaluating Symja numerical functions.
@@ -27,7 +28,12 @@ public class CoreCallbackFunction implements IDoubleCallbackFunction {
 			AST2Expr ast2Expr = new AST2Expr();
 			IExpr head = ast2Expr.convert(node);
 			IASTAppendable fun = F.ast(head, args.length, false);
-			fun.appendArgs(0, args.length, i -> F.num(args[i]));
+			fun.appendArgs(0, args.length, new IntFunction<IExpr>() {
+                @Override
+                public IExpr apply(int i) {
+                    return F.num(args[i]);
+                }
+            });
 			// for (int i = 0; i < args.length; i++) {
 			// fun.append(F.num(args[i]));
 			// }

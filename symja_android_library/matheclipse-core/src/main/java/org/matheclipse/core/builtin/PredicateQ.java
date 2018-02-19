@@ -122,7 +122,12 @@ public class PredicateQ {
 			Predicate<IExpr> pred = null;
 			if ((ast.size() >= 4)) {
 				final IExpr arg3 = engine.evaluate(ast.arg3());
-				pred = x -> engine.evalTrue(F.unaryAST1(arg3, x));
+				pred = new Predicate<IExpr>() {
+                    @Override
+                    public boolean test(IExpr x) {
+                        return engine.evalTrue(F.unaryAST1(arg3, x));
+                    }
+                };
 			}
 			int depth = determineDepth(arg1, 0, pred);
 			if (depth >= 0) {
@@ -489,9 +494,12 @@ public class PredicateQ {
 				temp.append(F.Slot1);
 				IAST matrix = (IAST) arg1;
 				for (int i = 1; i < dims[0]; i++) {
-					if (!((IAST) matrix.get(i)).forAll(x -> {
-						temp.set(1, x);
-						return engine.evalTrue(temp);
+					if (!((IAST) matrix.get(i)).forAll(new Predicate<IExpr>() {
+						@Override
+						public boolean test(IExpr x) {
+							temp.set(1, x);
+							return engine.evalTrue(temp);
+						}
 					}, 1)) {
 						return F.False;
 					}
@@ -936,9 +944,12 @@ public class PredicateQ {
 				temp.append(F.Slot1);
 
 				IAST vector = (IAST) arg1;
-				if (!vector.forAll(x -> {
-					temp.set(1, x);
-					return engine.evalTrue(temp);
+				if (!vector.forAll(new Predicate<IExpr>() {
+					@Override
+					public boolean test(IExpr x) {
+						temp.set(1, x);
+						return engine.evalTrue(temp);
+					}
 				}, 1)) {
 					return F.False;
 				}

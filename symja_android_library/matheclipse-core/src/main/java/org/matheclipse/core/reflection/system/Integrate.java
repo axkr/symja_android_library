@@ -1,25 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.ArcTan;
-import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.C2;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.CN2;
-import static org.matheclipse.core.expression.F.Divide;
-import static org.matheclipse.core.expression.F.Integrate;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Log;
-import static org.matheclipse.core.expression.F.Negate;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Sqrt;
-import static org.matheclipse.core.expression.F.Times;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.Predicate;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.eval.EvalEngine;
@@ -37,11 +17,32 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.PartialFractionIntegrateGenerator;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Predicate;
+
 import edu.jas.arith.BigInteger;
 import edu.jas.arith.BigRational;
 import edu.jas.poly.ExpVector;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.Monomial;
+
+import static org.matheclipse.core.expression.F.ArcTan;
+import static org.matheclipse.core.expression.F.C1;
+import static org.matheclipse.core.expression.F.C1D2;
+import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.CN2;
+import static org.matheclipse.core.expression.F.Divide;
+import static org.matheclipse.core.expression.F.Integrate;
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.Log;
+import static org.matheclipse.core.expression.F.Negate;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Sqrt;
+import static org.matheclipse.core.expression.F.Times;
 
 /**
  * Integration of a function. See <a href="http://en.wikipedia.org/wiki/Integral">Integral</a>
@@ -88,7 +89,12 @@ public class Integrate extends AbstractFunctionEvaluator {
 			if (holdallAST.size() > 3) {
 				// reduce arguments by folding Integrate[fxy, x, y] to
 				// Integrate[Integrate[fxy, y], x] ...
-				return holdallAST.foldRight((x, y) -> engine.evaluate(F.Integrate(x, y)), arg1, 2);
+				return holdallAST.foldRight(new BiFunction<IExpr, IExpr, IExpr>() {
+                    @Override
+                    public IExpr apply(IExpr x, IExpr y) {
+                        return engine.evaluate(F.Integrate(x, y));
+                    }
+                }, arg1, 2);
 			}
 
 			IExpr arg2 = engine.evaluateNull(holdallAST.arg2());

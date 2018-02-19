@@ -1,20 +1,5 @@
 package org.matheclipse.core.eval;
 
-import java.io.PrintStream;
-import java.io.Serializable;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.DoubleUnaryOperator;
-import java.util.function.Predicate;
-
-import javax.annotation.Nonnull;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
@@ -44,6 +29,22 @@ import org.matheclipse.core.parser.ExprParser;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.parser.client.math.MathException;
+
+import java.io.PrintStream;
+import java.io.Serializable;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.DoubleUnaryOperator;
+import java.util.function.Predicate;
+
+import javax.annotation.Nonnull;
 
 /**
  * The main evaluation algorithms for the .Symja computer algebra system
@@ -340,11 +341,14 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			// setPackageMode(true);
 			setTraceMode(false);
 			final int ruleSize = ruleList.size();
-			ruleList.forEach(ruleSize, x -> {
-				if (x != null) {
-					evaluate(x);
-				}
-			});
+			ruleList.forEach(ruleSize, new Consumer<IExpr>() {
+                @Override
+                public void accept(IExpr x) {
+                    if (x != null) {
+                        evaluate(x);
+                    }
+                }
+            });
 			// for (int i = 1; i < ruleSize; i++) {
 			// if (ruleList.get(i) != null) {
 			// evaluate(ruleList.get(i));
@@ -676,7 +680,12 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 
 			if ((ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION) {
 				if (!((ISymbol.HOLDALL & attr) == ISymbol.HOLDALL)) {
-					if (tempAST.exists(x -> x.isIndeterminate(), 1)) {
+					if (tempAST.exists(new Predicate<IExpr>() {
+						@Override
+						public boolean test(IExpr x) {
+							return x.isIndeterminate();
+						}
+					}, 1)) {
 						return F.Indeterminate;
 					}
 					// for (int i = 1; i < tempAST.size(); i++) {
@@ -746,7 +755,12 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			return evaluate(expr);
 		} finally {
 			// pop all local variables from local variable stack
-			variables.forEach(x -> localStack(x).pop());
+			variables.forEach(new Consumer<ISymbol>() {
+				@Override
+				public void accept(ISymbol x) {
+					EvalEngine.this.localStack(x).pop();
+				}
+			});
 		}
 	}
 

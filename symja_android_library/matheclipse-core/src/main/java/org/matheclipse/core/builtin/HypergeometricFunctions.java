@@ -22,6 +22,8 @@ import org.matheclipse.core.polynomials.PolynomialsUtils;
 import org.matheclipse.core.reflection.system.rules.LegendrePRules;
 import org.matheclipse.core.reflection.system.rules.LegendreQRules;
 
+import java.util.function.Function;
+
 public class HypergeometricFunctions {
 	static {
 		F.ChebyshevT.setEvaluator(new ChebyshevT());
@@ -129,9 +131,14 @@ public class HypergeometricFunctions {
 					// 2*k)!), {k, 1, Floor(n/2)})
 					int floorND2 = nInt / 2;
 					return Plus(Times(Power(C2, n), Power(n, -1), Power(z, n)),
-							F.sum(k -> Times(Power(CN1, k), Power(Times(C2, z), Plus(Times(F.CN2, k), n)),
-									Power(Times(Factorial(k), Factorial(Plus(Times(F.CN2, k), n))), -1),
-									Factorial(Plus(CN1, Negate(k), n))), 1, floorND2));
+							F.sum(new Function<IExpr, IExpr>() {
+                                @Override
+                                public IExpr apply(IExpr k) {
+                                    return Times(Power(CN1, k), Power(Times(C2, z), Plus(Times(F.CN2, k), n)),
+                                            Power(Times(Factorial(k), Factorial(Plus(Times(F.CN2, k), n))), -1),
+                                            Factorial(Plus(CN1, Negate(k), n)));
+                                }
+                            }, 1, floorND2));
 				}
 			}
 

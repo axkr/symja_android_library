@@ -1,7 +1,5 @@
 package org.matheclipse.core.patternmatching.hash;
 
-import java.util.List;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToList;
 import org.matheclipse.core.expression.F;
@@ -9,6 +7,9 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.visit.HashValueVisitor;
+
+import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Match two arguments of an <code>Orderless</code> AST into a new resulting expression.
@@ -155,7 +156,12 @@ public class HashedOrderlessMatcher {
 	 */
 	protected static boolean exists2ASTArguments(IAST ast) {
 		final int[] counter = { 0 };
-		return ast.exists(x -> x.isAST() && ++counter[0] == 2, 1);
+		return ast.exists(new Predicate<IExpr>() {
+            @Override
+            public boolean test(IExpr x) {
+                return x.isAST() && ++counter[0] == 2;
+            }
+        }, 1);
 	}
 
 	/**

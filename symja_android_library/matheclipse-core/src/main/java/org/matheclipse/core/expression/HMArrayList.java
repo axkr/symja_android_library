@@ -782,10 +782,13 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 		// final Function<IExpr, IExpr> function = Functors.replaceArg(replacement,
 		// position);
 		EvalEngine engine = EvalEngine.get();
-		final Function<IExpr, IExpr> function = x -> {
-			IAST a = replacement.setAtCopy(position, x);
-			return engine.evaluate(a);
-		};
+		final Function<IExpr, IExpr> function = new Function<IExpr, IExpr>() {
+            @Override
+            public IExpr apply(IExpr x) {
+                IAST a = replacement.setAtCopy(position, x);
+                return engine.evaluate(a);
+            }
+        };
 		IExpr temp;
 		for (int i = firstIndex + 1; i < lastIndex; i++) {
 			temp = function.apply(array[i]);

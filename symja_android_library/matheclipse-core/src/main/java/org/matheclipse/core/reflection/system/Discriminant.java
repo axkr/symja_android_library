@@ -1,16 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.$s;
-import static org.matheclipse.core.expression.F.C2;
-import static org.matheclipse.core.expression.F.C3;
-import static org.matheclipse.core.expression.F.C4;
-import static org.matheclipse.core.expression.F.C5;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.integer;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -22,6 +11,19 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
+
+import java.util.function.IntFunction;
+
+import static org.matheclipse.core.expression.F.$s;
+import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.C3;
+import static org.matheclipse.core.expression.F.C4;
+import static org.matheclipse.core.expression.F.C5;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.integer;
 
 /**
  * <pre>
@@ -347,7 +349,12 @@ public class Discriminant extends AbstractFunctionEvaluator {
 			if (n >= 2L && n <= 5L) {
 				IAST result = poly.coefficientList();
 				IASTAppendable rules = F.ListAlloc(result.size());
-				rules.appendArgs(result.size(), i -> F.Rule(vars[i - 1], result.get(i))); 
+				rules.appendArgs(result.size(), new IntFunction<IExpr>() {
+                    @Override
+                    public IExpr apply(int i) {
+                        return F.Rule(vars[i - 1], result.get(i));
+                    }
+                });
 				switch ((int) n) {
 				case 2:
 					return QUADRATIC.replaceAll(rules);

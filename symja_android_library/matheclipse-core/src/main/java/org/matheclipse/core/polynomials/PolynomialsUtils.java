@@ -18,13 +18,14 @@ package org.matheclipse.core.polynomials;
 
 import org.hipparchus.fraction.BigFraction;
 import org.hipparchus.util.FastMath;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.IntFunction;
 
 /**
  * A collection of static methods that operate on or return polynomials.
@@ -234,7 +235,12 @@ public class PolynomialsUtils {
 
 		IASTAppendable result = F.PlusAlloc(degree + 1);
 		return result.appendArgs(0, degree + 1,
-				i -> F.Times(F.fraction(coefficients.get(start + i)), F.Power(x, F.integer(i))));
+                new IntFunction<IExpr>() {
+                    @Override
+                    public IExpr apply(int i) {
+                        return F.Times(F.fraction(coefficients.get(start + i)), F.Power(x, F.integer(i)));
+                    }
+                });
 		// for (int i = 0; i <= degree; ++i) {
 		// result.append(F.Times(F.fraction(coefficients.get(start + i)), F.Power(x, F.integer(i))));
 		// }

@@ -14,6 +14,8 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
+import java.util.function.ObjIntConsumer;
+
 /**
  * <pre>
  * FrobeniusSolve(listOfIntegers, nonNegativeInteger)
@@ -49,7 +51,12 @@ public class FrobeniusSolve extends AbstractEvaluator {
 			try {
 				IInteger[][] equations = new IInteger[1][list.size()];
 				// format looks like: { { 12, 16, 20, 27, 123 } };
-				list.forEach((x, i) -> equations[0][i - 1] = (IInteger) x);
+				list.forEach(new ObjIntConsumer<IExpr>() {
+                    @Override
+                    public void accept(IExpr x, int i) {
+                        equations[0][i - 1] = (IInteger) x;
+                    }
+                });
 				equations[0][list.size() - 1] = (IInteger) ast.arg2();
 				int numberOfSolutions = -1; // all solutions
 				if (ast.size() == 4) {

@@ -23,6 +23,9 @@ import org.matheclipse.core.interfaces.ISymbol.RuleType;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.RulesData;
 
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+
 public final class PatternMatching {
 
 	static {
@@ -50,7 +53,17 @@ public final class PatternMatching {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2);
-			Lambda.forEach(ast, x -> x.isSymbol(), x -> ((ISymbol) x).clear(engine));
+			Lambda.forEach(ast, new Predicate<IExpr>() {
+                @Override
+                public boolean test(IExpr x) {
+                    return x.isSymbol();
+                }
+            }, new Consumer<IExpr>() {
+				@Override
+				public void accept(IExpr x) {
+					((ISymbol) x).clear(engine);
+				}
+			});
 			return F.Null;
 		}
 
@@ -208,7 +221,12 @@ public final class PatternMatching {
 					return F.NIL;
 				} else if (leftHandSideAST.isAST(F.Attributes, 2)) {
 					IAST symbolList = Validate.checkSymbolOrSymbolList(leftHandSideAST, 1);
-					symbolList.forEach(x -> ((ISymbol) x).setAttributes(ISymbol.NOATTRIBUTE));
+					symbolList.forEach(new Consumer<IExpr>() {
+						@Override
+						public void accept(IExpr x) {
+							((ISymbol) x).setAttributes(ISymbol.NOATTRIBUTE);
+						}
+					});
 					return AttributeFunctions.setSymbolsAttributes(ast, engine, symbolList);
 				}
 			}

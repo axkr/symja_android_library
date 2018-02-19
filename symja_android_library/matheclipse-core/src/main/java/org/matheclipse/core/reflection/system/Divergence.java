@@ -8,6 +8,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
+import java.util.function.IntFunction;
+
 /**
  * <pre>
  * Divergence({f1, f2, f3,...},{x1, x2, x3,...})
@@ -43,7 +45,12 @@ public class Divergence extends AbstractFunctionEvaluator {
 			IAST variables = (IAST) ast.arg2();
 			int size = vector.size();
 			IASTAppendable divergenceValue = F.PlusAlloc(size);
-			return divergenceValue.appendArgs(size, i -> F.D(vector.get(i), variables.get(i)));
+			return divergenceValue.appendArgs(size, new IntFunction<IExpr>() {
+                @Override
+                public IExpr apply(int i) {
+                    return F.D(vector.get(i), variables.get(i));
+                }
+            });
 			// for (int i = 1; i < size; i++) {
 			// divergenceValue.append(F.D(vector.get(i), variables.get(i)));
 			// }

@@ -1,9 +1,5 @@
 package org.matheclipse.core.builtin;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import org.matheclipse.combinatoric.KSubsets;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -16,6 +12,11 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.IntFunction;
 
 public final class Combinatoric {
 
@@ -1364,7 +1365,12 @@ public final class Combinatoric {
 				}
 
 				IASTAppendable temp = fResultList.copyAppendable();
-				return temp.appendArgs(0, fK, i -> fList.get(j[i] + fOffset));
+				return temp.appendArgs(0, fK, new IntFunction<IExpr>() {
+                    @Override
+                    public IExpr apply(int i) {
+                        return fList.get(j[i] + fOffset);
+                    }
+                });
 				// for (int i = 0; i < fK; i++) {
 				// temp.append(fList.get(j[i] + fOffset));
 				// }

@@ -381,7 +381,12 @@ public class Predicates {
 				return (Predicate<IExpr>) eval;
 			}
 		}
-		return x -> engine.evalTrue(F.unaryAST1(head, x));
+		return new Predicate<IExpr>() {
+            @Override
+            public boolean test(IExpr x) {
+                return engine.evalTrue(F.unaryAST1(head, x));
+            }
+        };
 	}
 
 	/**

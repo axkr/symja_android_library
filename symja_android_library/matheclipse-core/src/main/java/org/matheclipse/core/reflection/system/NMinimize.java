@@ -1,8 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.optim.OptimizationData;
 import org.hipparchus.optim.PointValuePair;
@@ -23,6 +20,10 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * <pre>
@@ -112,10 +113,13 @@ public class NMinimize extends AbstractFunctionEvaluator {
 
 	protected static List<LinearConstraint> getConstraints(VariablesSet vars, IAST listOfconstraints) {
 		List<LinearConstraint> constraints = new ArrayList<LinearConstraint>(listOfconstraints.size());
-		listOfconstraints.forEach(x -> {
-			Expr2LP x2LP = new Expr2LP(x, vars);
-			constraints.add(x2LP.expr2Constraint());
-		});
+		listOfconstraints.forEach(new Consumer<IExpr>() {
+            @Override
+            public void accept(IExpr x) {
+                Expr2LP x2LP = new Expr2LP(x, vars);
+                constraints.add(x2LP.expr2Constraint());
+            }
+        });
 		return constraints;
 	}
 

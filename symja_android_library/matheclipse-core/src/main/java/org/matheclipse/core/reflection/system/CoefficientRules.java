@@ -2,6 +2,7 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASIExpr;
@@ -57,7 +58,12 @@ public class CoefficientRules extends AbstractFunctionEvaluator {
 		} else {
 			symbolList = Validate.checkSymbolOrSymbolList(ast, 2);
 			varList = new ArrayList<IExpr>(symbolList.size() - 1);
-			symbolList.forEach(x->varList.add(x));
+			symbolList.forEach(new Consumer<IExpr>() {
+                @Override
+                public void accept(IExpr x) {
+                    varList.add(x);
+                }
+            });
 			// for (int i = 1; i < symbolList.size(); i++) {
 			// varList.add(symbolList.get(i));
 			// }

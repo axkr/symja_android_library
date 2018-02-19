@@ -1,8 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.evalExpandAll;
-
 import org.hipparchus.analysis.solvers.LaguerreSolver;
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
@@ -18,6 +15,10 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+
+import java.util.function.IntFunction;
+
+import static org.matheclipse.core.expression.F.evalExpandAll;
 
 /**
  * <pre>
@@ -82,7 +83,12 @@ public class NRoots extends AbstractFunctionEvaluator {
 		IAST list = (IAST) temp;
 		int size = list.size();
 		IASTAppendable result = F.ListAlloc(size);
-		return result.appendArgs(size, i -> engine.evalN(list.get(i)));
+		return result.appendArgs(size, new IntFunction<IExpr>() {
+            @Override
+            public IExpr apply(int i) {
+                return engine.evalN(list.get(i));
+            }
+        });
 		// for (int i = 1; i < size; i++) {
 		// result.append(engine.evalN(list.get(i)));
 		// }

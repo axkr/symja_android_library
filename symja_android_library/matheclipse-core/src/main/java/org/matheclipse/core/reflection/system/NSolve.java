@@ -3,6 +3,9 @@ package org.matheclipse.core.reflection.system;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.function.Consumer;
+import java.util.function.IntFunction;
+import java.util.function.ObjIntConsumer;
 
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.PredicateQ;
@@ -77,14 +80,17 @@ public class NSolve extends AbstractFunctionEvaluator {
 			} else if (eqExpr.isPlus()) {
 				leafCount++;
 				IAST arg = (IAST) eqExpr;
-				arg.forEach(expr -> {
-					if (expr.isFree(Predicates.in(vars), true)) {
-						leafCount++;
-						value.append(expr);
-					} else {
-						getPlusEquationType(expr);
-					}
-				});
+				arg.forEach(new Consumer<IExpr>() {
+                    @Override
+                    public void accept(IExpr expr) {
+                        if (expr.isFree(Predicates.in(vars), true)) {
+                            leafCount++;
+                            value.append(expr);
+                        } else {
+                            ExprAnalyzer.this.getPlusEquationType(expr);
+                        }
+                    }
+                });
 			} else {
 				getPlusEquationType(eqExpr);
 			}
@@ -253,11 +259,14 @@ public class NSolve extends AbstractFunctionEvaluator {
 		private void getTimesEquationType(IExpr expr) {
 			if (expr.isSymbol()) {
 				leafCount++;
-				vars.forEach((x, i) -> {
-					if (vars.equalsAt(i, expr)) {
-						symbolSet.add((ISymbol) expr);
-						if (equationType == LINEAR) {
-							row.set(i, F.Plus(row.get(i), F.C1));
+				vars.forEach(new ObjIntConsumer<IExpr>() {
+					@Override
+					public void accept(IExpr x, int i) {
+						if (vars.equalsAt(i, expr)) {
+							symbolSet.add((ISymbol) expr);
+							if (equationType == LINEAR) {
+								row.set(i, F.Plus(row.get(i), F.C1));
+							}
 						}
 					}
 				});
@@ -517,7 +526,12 @@ public class NSolve extends AbstractFunctionEvaluator {
 					IAST rootsList = (IAST) temp;
 					int size = vars.size();
 					IASTAppendable list = F.ListAlloc(size);
-					list.appendArgs(size, j -> F.Rule(vars.get(j), rootsList.get(j)));
+					list.appendArgs(size, new IntFunction<IExpr>() {
+						@Override
+						public IExpr apply(int j) {
+							return F.Rule(vars.get(j), rootsList.get(j));
+						}
+					});
 					// for (int j = 1; j < size; j++) {
 					// IAST rule = F.Rule(vars.get(j), rootsList.get(j));
 					// list.append(rule);

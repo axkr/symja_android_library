@@ -2,6 +2,7 @@ package org.matheclipse.core.eval.exception;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.function.IntFunction;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
@@ -672,7 +673,12 @@ public final class Validate {
 			IAST listOrAndAST = (IAST) expr;
 			int size = listOrAndAST.size();
 			IASTAppendable termsEqualZeroList = F.ListAlloc(size);
-			return termsEqualZeroList.appendArgs(size, i -> checkEquation(listOrAndAST.get(i)));
+			return termsEqualZeroList.appendArgs(size, new IntFunction<IExpr>() {
+                @Override
+                public IExpr apply(int i) {
+                    return checkEquation(listOrAndAST.get(i));
+                }
+            });
 			// for (int i = 1; i < size; i++) {
 			// termsEqualZeroList.append(checkEquation(listOrAndAST.get(i)));
 			// }

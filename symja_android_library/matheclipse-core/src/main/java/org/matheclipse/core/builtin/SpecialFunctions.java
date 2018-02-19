@@ -1,5 +1,38 @@
 package org.matheclipse.core.builtin;
 
+import org.apfloat.Apcomplex;
+import org.apfloat.ApcomplexMath;
+import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
+import org.hipparchus.exception.MathIllegalStateException;
+import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.interfaces.AbstractArg12;
+import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.eval.interfaces.INumeric;
+import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.Num;
+import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.ISignedNumber;
+import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.BetaRules;
+import org.matheclipse.core.reflection.system.rules.PolyGammaRules;
+import org.matheclipse.core.reflection.system.rules.PolyLogRules;
+import org.matheclipse.core.reflection.system.rules.ProductLogRules;
+import org.matheclipse.core.reflection.system.rules.StieltjesGammaRules;
+import org.matheclipse.core.reflection.system.rules.StruveHRules;
+import org.matheclipse.core.reflection.system.rules.StruveLRules;
+
+import java.math.BigDecimal;
+import java.util.function.DoubleUnaryOperator;
+import java.util.function.Function;
+
 import static org.matheclipse.core.expression.F.BernoulliB;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
@@ -22,40 +55,6 @@ import static org.matheclipse.core.expression.F.QQ;
 import static org.matheclipse.core.expression.F.Sqr;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.Zeta;
-
-import java.math.BigDecimal;
-import java.util.function.DoubleUnaryOperator;
-
-import org.apfloat.Apcomplex;
-import org.apfloat.ApcomplexMath;
-import org.apfloat.Apfloat;
-import org.apfloat.ApfloatMath;
-import org.hipparchus.exception.MathIllegalStateException;
-import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.Validate;
-import org.matheclipse.core.eval.interfaces.AbstractArg12;
-import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
-import org.matheclipse.core.eval.interfaces.INumeric;
-import org.matheclipse.core.expression.F;
-import org.matheclipse.core.expression.Num;
-import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IComplexNum;
-import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.INum;
-import org.matheclipse.core.interfaces.ISignedNumber;
-import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.polynomials.PolynomialsUtils;
-import org.matheclipse.core.reflection.system.rules.BetaRules;
-import org.matheclipse.core.reflection.system.rules.LegendrePRules;
-import org.matheclipse.core.reflection.system.rules.PolyGammaRules;
-import org.matheclipse.core.reflection.system.rules.PolyLogRules;
-import org.matheclipse.core.reflection.system.rules.ProductLogRules;
-import org.matheclipse.core.reflection.system.rules.StieltjesGammaRules;
-import org.matheclipse.core.reflection.system.rules.StruveHRules;
-import org.matheclipse.core.reflection.system.rules.StruveLRules;
 
 public class SpecialFunctions {
 	static {
@@ -767,7 +766,12 @@ public class SpecialFunctions {
 					if (nInt < 0) {
 						nInt *= -1;
 						// Zeta(s, -n) := Zeta(s) + Sum(1/k^s, {k, 1, n})
-						return Plus(F.sum(k -> Power(Power(k, s), -1), 1, nInt), Zeta(s));
+						return Plus(F.sum(new Function<IExpr, IExpr>() {
+                            @Override
+                            public IExpr apply(IExpr k) {
+                                return Power(Power(k, s), -1);
+                            }
+                        }, 1, nInt), Zeta(s));
 					}
 				}
 			}

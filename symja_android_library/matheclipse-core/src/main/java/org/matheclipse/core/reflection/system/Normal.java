@@ -10,6 +10,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 
+import java.util.function.ObjIntConsumer;
+
 /**
  * Power series expansion
  */
@@ -36,11 +38,14 @@ public class Normal extends AbstractFunctionEvaluator {
 						int size = list.size();
 
 						IASTAppendable result = F.PlusAlloc(size);
-						list.forEach((expr, i) -> {
-							INumber exp = F.fraction(nmin + i - 1L, den).normalize();
-							IExpr pow = x.subtract(x0).power(exp);
-							result.append(F.Times(expr, pow));
-						}); 
+						list.forEach(new ObjIntConsumer<IExpr>() {
+                            @Override
+                            public void accept(IExpr expr, int i) {
+                                INumber exp = F.fraction(nmin + i - 1L, den).normalize();
+                                IExpr pow = x.subtract(x0).power(exp);
+                                result.append(F.Times(expr, pow));
+                            }
+                        });
 						return result;
 					} catch (ArithmeticException ex) {
 					}

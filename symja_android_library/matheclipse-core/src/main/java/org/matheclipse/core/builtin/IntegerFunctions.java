@@ -9,6 +9,7 @@ import static org.matheclipse.core.expression.F.Round;
 
 import java.math.BigInteger;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -739,7 +740,12 @@ public class IntegerFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 4);
 
-			if (ast.exists(x -> !x.isInteger(), 1)) {
+			if (ast.exists(new Predicate<IExpr>() {
+                @Override
+                public boolean test(IExpr x) {
+                    return !x.isInteger();
+                }
+            }, 1)) {
 				return F.NIL;
 			}
 			IInteger arg1 = (IInteger) ast.get(1);

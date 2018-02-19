@@ -1,15 +1,16 @@
 package org.matheclipse.core.polynomials;
 
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.TreeMap;
-
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.TreeMap;
+import java.util.function.Consumer;
 
 /**
  * Generate the horner scheme for univariate polynomials
@@ -38,7 +39,9 @@ public class HornerScheme {
 
 	public IAST generate(boolean numericMode, IAST poly, ISymbol sym) {
 		if (numericMode) {
-			poly.forEach(x->collectTermN(sym, x));
+			for (IExpr x : poly) {
+				collectTermN(sym, x);
+			}
 //			for (int i = 1; i < poly.size(); i++) {
 //				collectTermN(sym, poly.get(i));
 //			}
@@ -72,7 +75,12 @@ public class HornerScheme {
 			}
 			return startResult;
 		} else {
-			poly.forEach(x->collectTerm(sym, x));
+			poly.forEach(new Consumer<IExpr>() {
+                @Override
+                public void accept(IExpr x) {
+                    HornerScheme.this.collectTerm(sym, x);
+                }
+            });
 			// for (int i = 1; i < poly.size(); i++) {
 			// collectTerm(sym, poly.get(i));
 			// }

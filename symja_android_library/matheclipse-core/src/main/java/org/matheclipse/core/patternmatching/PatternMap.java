@@ -7,6 +7,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 
@@ -411,26 +412,29 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	 */
 	protected IExpr substitutePatternOrSymbols(final IExpr lhsPatternExpr) {
 		if (fPatternValuesArray != null) {
-			IExpr result = lhsPatternExpr.replaceAll((IExpr input) -> {
-				if (input instanceof IPatternObject) {
-					IPatternObject patternObject = (IPatternObject) input;
-					ISymbol sym = patternObject.getSymbol();
-					if (sym != null) {
-						for (int i = 0; i < fSymbolsArray.length; i++) {
-							if (sym == fSymbolsArray[i]) {
-								return fPatternValuesArray[i] != null ? fPatternValuesArray[i] : F.NIL;
-							}
-						}
-					} else {
-						for (int i = 0; i < fSymbolsArray.length; i++) {
-							if (patternObject == fSymbolsArray[i]) {
-								return fPatternValuesArray[i] != null ? fPatternValuesArray[i] : F.NIL;
-							}
-						}
-					}
-				}
-				return F.NIL;
-			}
+			IExpr result = lhsPatternExpr.replaceAll(new Function<IExpr, IExpr>() {
+                                                         @Override
+                                                         public IExpr apply(IExpr input) {
+                                                             if (input instanceof IPatternObject) {
+                                                                 IPatternObject patternObject = (IPatternObject) input;
+                                                                 ISymbol sym = patternObject.getSymbol();
+                                                                 if (sym != null) {
+                                                                     for (int i = 0; i < fSymbolsArray.length; i++) {
+                                                                         if (sym == fSymbolsArray[i]) {
+                                                                             return fPatternValuesArray[i] != null ? fPatternValuesArray[i] : F.NIL;
+                                                                         }
+                                                                     }
+                                                                 } else {
+                                                                     for (int i = 0; i < fSymbolsArray.length; i++) {
+                                                                         if (patternObject == fSymbolsArray[i]) {
+                                                                             return fPatternValuesArray[i] != null ? fPatternValuesArray[i] : F.NIL;
+                                                                         }
+                                                                     }
+                                                                 }
+                                                             }
+                                                             return F.NIL;
+                                                         }
+                                                     }
 
 			);
 
@@ -452,17 +456,20 @@ public class PatternMap implements ISymbol2IntMap, Cloneable, Serializable {
 	 */
 	protected IExpr substituteSymbols(final IExpr rhsExpr) {
 		if (fPatternValuesArray != null) {
-			IExpr result = rhsExpr.replaceAll((IExpr input) -> {
-				if (input instanceof ISymbol) {
-					ISymbol sym = (ISymbol) input;
-					for (int i = 0; i < fSymbolsArray.length; i++) {
-						if (sym == fSymbolsArray[i]) {
-							return fPatternValuesArray[i] != null ? fPatternValuesArray[i] : F.NIL;
-						}
-					}
-				}
-				return F.NIL;
-			}
+			IExpr result = rhsExpr.replaceAll(new Function<IExpr, IExpr>() {
+												  @Override
+												  public IExpr apply(IExpr input) {
+													  if (input instanceof ISymbol) {
+														  ISymbol sym = (ISymbol) input;
+														  for (int i = 0; i < fSymbolsArray.length; i++) {
+															  if (sym == fSymbolsArray[i]) {
+																  return fPatternValuesArray[i] != null ? fPatternValuesArray[i] : F.NIL;
+															  }
+														  }
+													  }
+													  return F.NIL;
+												  }
+											  }
 
 			);
 

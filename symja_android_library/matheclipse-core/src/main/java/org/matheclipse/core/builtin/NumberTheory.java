@@ -1,30 +1,7 @@
 package org.matheclipse.core.builtin;
 
-import static java.lang.Math.addExact;
-import static java.lang.Math.floorMod;
-import static java.lang.Math.multiplyExact;
-import static java.lang.Math.subtractExact;
-import static org.matheclipse.core.expression.F.Binomial;
-import static org.matheclipse.core.expression.F.C0;
-import static org.matheclipse.core.expression.F.C1;
-import static org.matheclipse.core.expression.F.C2;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Factorial;
-import static org.matheclipse.core.expression.F.Negate;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Subtract;
-import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.integer;
-
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
+import com.google.common.math.BigIntegerMath;
+import com.google.common.math.LongMath;
 
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.CombinatoricsUtils;
@@ -39,7 +16,6 @@ import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
-import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.AbstractIntegerSym;
@@ -58,8 +34,16 @@ import org.matheclipse.core.numbertheory.GaussianInteger;
 import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.parser.client.math.MathException;
 
-import com.google.common.math.BigIntegerMath;
-import com.google.common.math.LongMath;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.function.IntFunction;
+import java.util.function.Predicate;
 
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModInteger;
@@ -67,6 +51,23 @@ import edu.jas.arith.ModIntegerRing;
 import edu.jas.poly.GenPolynomial;
 import edu.jas.ufd.FactorAbstract;
 import edu.jas.ufd.FactorFactory;
+
+import static java.lang.Math.addExact;
+import static java.lang.Math.floorMod;
+import static java.lang.Math.multiplyExact;
+import static java.lang.Math.subtractExact;
+import static org.matheclipse.core.expression.F.Binomial;
+import static org.matheclipse.core.expression.F.C0;
+import static org.matheclipse.core.expression.F.C1;
+import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.Factorial;
+import static org.matheclipse.core.expression.F.Negate;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Power;
+import static org.matheclipse.core.expression.F.Subtract;
+import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.integer;
 
 public final class NumberTheory {
 
@@ -1077,7 +1078,12 @@ public final class NumberTheory {
 				}
 				// general formula
 				IASTAppendable sum = F.PlusAlloc(size);
-				return sum.appendArgs(size, i -> F.Power(list.get(i), arg1));
+				return sum.appendArgs(size, new IntFunction<IExpr>() {
+                    @Override
+                    public IExpr apply(int i) {
+                        return F.Power(list.get(i), arg1);
+                    }
+                });
 				// for (int i = 1; i < size; i++) {
 				// sum.append(F.Power(list.get(i), arg1));
 				// }
@@ -1322,7 +1328,12 @@ public final class NumberTheory {
 				BigInteger gcd = extendedGCD(ast, subBezouts);
 				// convert the Bezout numbers to sublists
 				IASTAppendable subList = F.ListAlloc(subBezouts.length);
-				subList.appendArgs(0, subBezouts.length, i -> F.integer(subBezouts[i]));
+				subList.appendArgs(0, subBezouts.length, new IntFunction<IExpr>() {
+					@Override
+					public IExpr apply(int i) {
+						return F.integer(subBezouts[i]);
+					}
+				});
 				// for (int i = 0; i < subBezouts.length; i++) {
 				// subList.append(F.integer(subBezouts[i]));
 				// }
@@ -2049,7 +2060,12 @@ public final class NumberTheory {
 			if (ast.isAST2()) {
 				return F.Binomial(F.Plus(ast.arg1(), ast.arg2()), ast.arg1());
 			}
-			if (ast.exists(x -> (!x.isInteger()) || ((IInteger) x).isNegative(), 1)) {
+			if (ast.exists(new Predicate<IExpr>() {
+				@Override
+				public boolean test(IExpr x) {
+					return (!x.isInteger()) || ((IInteger) x).isNegative();
+				}
+			}, 1)) {
 				return F.NIL;
 			}
 			// for (int i = 1; i < ast.size(); i++) {
@@ -2759,7 +2775,12 @@ public final class NumberTheory {
 					if (roots != null) {
 						int size = roots.length;
 						IASTAppendable list = F.ListAlloc(size);
-						return list.appendArgs(0, size, i -> roots[i]);
+						return list.appendArgs(0, size, new IntFunction<IExpr>() {
+							@Override
+							public IExpr apply(int i) {
+								return roots[i];
+							}
+						});
 						// for (int i = 0; i < size; i++) {
 						// list.append(roots[i]);
 						// }

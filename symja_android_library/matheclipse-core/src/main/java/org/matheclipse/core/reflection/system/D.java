@@ -13,6 +13,10 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.reflection.system.rules.DRules;
 
+import java.util.function.BiFunction;
+import java.util.function.IntFunction;
+import java.util.function.ObjIntConsumer;
+
 /**
  * <pre>
  * D(f, x)
@@ -206,15 +210,21 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 		int size = ast.size();
 		if (deriv != null) {
 			IASTAppendable plus = F.PlusAlloc(size);
-			ast.forEach(size, (expr, i) -> {
-				plus.append(F.Times(F.D(expr, x), addDerivative(i, deriv[0], deriv[1].arg1(), ast)));
-			});
+			ast.forEach(size, new ObjIntConsumer<IExpr>() {
+                @Override
+                public void accept(IExpr expr, int i) {
+                    plus.append(F.Times(F.D(expr, x), D.this.addDerivative(i, deriv[0], deriv[1].arg1(), ast)));
+                }
+            });
 			return plus;
 		}
 		if (head.isSymbol()) {
 			IASTAppendable plus = F.PlusAlloc(size);
-			ast.forEach(size, (expr, i) -> {
-				plus.append(F.Times(F.D(expr, x), createDerivative(i, head, ast)));
+			ast.forEach(size, new ObjIntConsumer<IExpr>() {
+				@Override
+				public void accept(IExpr expr, int i) {
+					plus.append(F.Times(F.D(expr, x), D.this.createDerivative(i, head, ast)));
+				}
 			});
 			return plus;
 		}
@@ -258,7 +268,12 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 		IASTAppendable derivativeHead2 = F.ast(derivativeHead1);
 		derivativeHead2.append(header);
 		IASTAppendable derivativeAST = F.ast(derivativeHead2, args.size(), false);
-		derivativeAST.appendArgs(args.size(), i -> args.get(i));
+		derivativeAST.appendArgs(args.size(), new IntFunction<IExpr>() {
+			@Override
+			public IExpr apply(int i) {
+				return args.get(i);
+			}
+		});
 		// for (int i = 1; i < args.size(); i++) {
 		// derivativeAST.append(args.get(i));
 		// }
@@ -277,7 +292,12 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 		}
 		if (ast.size() > 3) {
 			// reduce arguments by folding D[fxy, x, y] to D[ D[fxy, x], y] ...
-			return ast.foldLeft((x, y) -> engine.evaluate(F.D(x, y)), fx, 2);
+			return ast.foldLeft(new BiFunction<IExpr, IExpr, IExpr>() {
+				@Override
+				public IExpr apply(IExpr x, IExpr y) {
+					return engine.evaluate(F.D(x, y));
+				}
+			}, fx, 2);
 		}
 
 		if (fx.isList()) {
@@ -293,11 +313,21 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 			if (xList.isAST1() && xList.arg1().isListOfLists()) {
 				IAST subList = (IAST) xList.arg1();
 				IASTAppendable result = F.ListAlloc(subList.size());
-				result.appendArgs(subList.size(), i -> F.D(fx, F.List(subList.get(i))));
+				result.appendArgs(subList.size(), new IntFunction<IExpr>() {
+					@Override
+					public IExpr apply(int i) {
+						return F.D(fx, F.List(subList.get(i)));
+					}
+				});
 				return result;
 			} else if (xList.isAST1() && xList.arg1().isList()) {
 				IAST subList = (IAST) xList.arg1();
-				return subList.mapLeft(F.List(), (a, b) -> engine.evaluate(F.D(a, b)), fx);
+				return subList.mapLeft(F.List(), new BiFunction<IExpr, IExpr, IExpr>() {
+					@Override
+					public IExpr apply(IExpr a, IExpr b) {
+						return engine.evaluate(F.D(a, b));
+					}
+				}, fx);
 			} else if (xList.isAST2() && xList.arg2().isInteger()) {
 				if (ast.isEvalFlagOn(IAST.IS_DERIVATIVE_EVALED)) {
 					return F.NIL;

@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
@@ -1285,7 +1286,12 @@ public class Algebra {
 									IAST ast = (IAST) temp;
 									final int ki = k;
 									timesAST.appendArgs(ast.size(),
-											i -> PowerOp.power(ast.get(i), F.integer(indices[ki])));
+											new IntFunction<IExpr>() {
+												@Override
+												public IExpr apply(int i) {
+													return PowerOp.power(ast.get(i), F.integer(indices[ki]));
+												}
+											});
 									// for (int i = 1; i < ast.size(); i++) {
 									// timesAST.append(PowerOp.power(ast.get(i), F.integer(indices[k])));
 									// }
@@ -2615,7 +2621,12 @@ public class Algebra {
 							IASTAppendable plusResult = F.PlusAlloc(timesAST.size() + 1);
 							plusResult.append(C1D2);
 							plusResult.appendArgs(timesAST.size(),
-									i -> Negate(Divide(Arg(timesAST.get(i)), Times(C2, Pi))));
+                                    new IntFunction<IExpr>() {
+                                        @Override
+                                        public IExpr apply(int i) {
+                                            return Negate(Divide(Arg(timesAST.get(i)), Times(C2, Pi)));
+                                        }
+                                    });
 							// for (int i = 1; i < timesAST.size(); i++) {
 							// plusResult.append(Negate(Divide(Arg(timesAST.get(i)), Times(C2, Pi))));
 							// }
@@ -3031,7 +3042,12 @@ public class Algebra {
 			public boolean visit(IAST ast) {
 				if (ast.isTimes() || ast.isPlus()) {
 					// check the arguments
-					return ast.forAll(x -> x.accept(this), 1);
+					return ast.forAll(new Predicate<IExpr>() {
+						@Override
+						public boolean test(IExpr x) {
+							return x.accept(IsBasicExpressionVisitor.this);
+						}
+					}, 1);
 				}
 				if (ast.isPower() && (ast.arg2().isInteger())) {
 					// check the arguments
@@ -3354,15 +3370,23 @@ public class Algebra {
 		 * @return
 		 */
 		private static Function<IExpr, Long> createComplexityFunction(IExpr complexityFunctionHead, EvalEngine engine) {
-			Function<IExpr, Long> complexityFunction = x -> x.leafCountSimplify();
+			Function<IExpr, Long> complexityFunction = new Function<IExpr, Long>() {
+				@Override
+				public Long apply(IExpr x) {
+					return x.leafCountSimplify();
+				}
+			};
 			if (complexityFunctionHead.isPresent()) {
 				final IExpr head = complexityFunctionHead;
-				complexityFunction = x -> {
-					IExpr temp = engine.evaluate(F.unaryAST1(head, x));
-					if (temp.isInteger() && !temp.isNegative()) {
-						return ((IInteger) temp).toLong();
+				complexityFunction = new Function<IExpr, Long>() {
+					@Override
+					public Long apply(IExpr x) {
+						IExpr temp = engine.evaluate(F.unaryAST1(head, x));
+						if (temp.isInteger() && !temp.isNegative()) {
+							return ((IInteger) temp).toLong();
+						}
+						return Long.MAX_VALUE;
 					}
-					return Long.MAX_VALUE;
 				};
 			}
 			return complexityFunction;

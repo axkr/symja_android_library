@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.IntFunction;
 
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.matheclipse.core.eval.EvalEngine;
@@ -94,7 +95,12 @@ public class TensorFunctions {
 			for (int i = 0; i <= diff; i++) {
 				IASTAppendable plus = F.ast(fFunction, kernelSize, false);
 				fi[0]=i;
-				plus.appendArgs(kernelSize, k -> F.binaryAST2(gFunction, kernel.get(k), tensor.get(k + fi[0])));
+				plus.appendArgs(kernelSize, new IntFunction<IExpr>() {
+                    @Override
+                    public IExpr apply(int k) {
+                        return F.binaryAST2(gFunction, kernel.get(k), tensor.get(k + fi[0]));
+                    }
+                });
 				// for (int k = 1; k < kernelSize; k++) {
 				// plus.append(F.binaryAST2(gFunction, kernel.get(k), tensor.get(k + i)));
 				// }

@@ -13,6 +13,7 @@ import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -373,7 +374,12 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public IAST apply(final IExpr head, final int start, final int end) {
 		final IASTAppendable ast = F.ast(head, end - start, false);
-		ast.appendArgs(start, end, i -> get(i));
+		ast.appendArgs(start, end, new IntFunction<IExpr>() {
+			@Override
+			public IExpr apply(int i) {
+				return AbstractAST.this.get(i);
+			}
+		});
 		// for (int i = start; i < end; i++) {
 		// ast.append(get(i));
 		// }
@@ -704,7 +710,12 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public final IAST filter(IASTAppendable filterAST, IExpr expr) {
 		EvalEngine engine = EvalEngine.get();
-		return filter(filterAST, x -> engine.evalTrue(F.unaryAST1(expr, x)));
+		return filter(filterAST, new Predicate<IExpr>() {
+			@Override
+			public boolean test(IExpr x) {
+				return engine.evalTrue(F.unaryAST1(expr, x));
+			}
+		});
 	}
 
 	/** {@inheritDoc} */
@@ -731,7 +742,12 @@ public abstract class AbstractAST implements IASTMutable {
 	 */
 	public IExpr foldLeft(final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue, int start) {
 		final IExpr[] value = { startValue };
-		forEach(start, size(), x -> value[0] = function.apply(value[0], x));
+		forEach(start, size(), new Consumer<IExpr>() {
+            @Override
+            public void accept(IExpr x) {
+                value[0] = function.apply(value[0], x);
+            }
+        });
 		return value[0];
 		// for (int i = start; i < size(); i++) {
 		// value = function.apply(value, get(i));
@@ -773,9 +789,12 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public IAST filter(IASTAppendable filterAST, Predicate<? super IExpr> predicate) {
-		forEach(size(), x -> {
-			if (predicate.test(x)) {
-				filterAST.append(x);
+		forEach(size(), new Consumer<IExpr>() {
+			@Override
+			public void accept(IExpr x) {
+				if (predicate.test(x)) {
+					filterAST.append(x);
+				}
 			}
 		});
 		// for (int i = 1; i < size; i++) {
@@ -831,11 +850,14 @@ public abstract class AbstractAST implements IASTMutable {
 			}
 			IASTAppendable yesAST = F.ast(combiner, newSize, false);
 			IASTAppendable noAST = F.ast(combiner, newSize, false);
-			forEach(size, x -> {
-				if (predicate.test(x)) {
-					yesAST.append(x);
-				} else {
-					noAST.append(x);
+			forEach(size, new Consumer<IExpr>() {
+				@Override
+				public void accept(IExpr x) {
+					if (predicate.test(x)) {
+						yesAST.append(x);
+					} else {
+						noAST.append(x);
+					}
 				}
 			});
 			// for (int i = 1; i < size; i++) {
@@ -1874,7 +1896,12 @@ public abstract class AbstractAST implements IASTMutable {
 		if (predicate.test(this)) {
 			return true;
 		}
-		return exists(x -> x.isMember(predicate, heads), heads ? 0 : 1);
+		return exists(new Predicate<IExpr>() {
+			@Override
+			public boolean test(IExpr x) {
+				return x.isMember(predicate, heads);
+			}
+		}, heads ? 0 : 1);
 	}
 
 	/** {@inheritDoc} */
@@ -2620,7 +2647,12 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public IASTAppendable mapThread(IASTAppendable appendAST, final IAST replacement, int position) {
 		EvalEngine engine = EvalEngine.get();
-		final Function<IExpr, IExpr> function = x -> engine.evaluate(replacement.setAtCopy(position, x));
+		final Function<IExpr, IExpr> function = new Function<IExpr, IExpr>() {
+			@Override
+			public IExpr apply(IExpr x) {
+				return engine.evaluate(replacement.setAtCopy(position, x));
+			}
+		};
 
 		IExpr temp;
 		for (int i = 1; i < size(); i++) {
@@ -2636,7 +2668,12 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public final IASTMutable mapThread(final IAST replacement, int position) {
 		EvalEngine engine = EvalEngine.get();
-		final Function<IExpr, IExpr> function = x -> engine.evaluate(replacement.setAtCopy(position, x));
+		final Function<IExpr, IExpr> function = new Function<IExpr, IExpr>() {
+			@Override
+			public IExpr apply(IExpr x) {
+				return engine.evaluate(replacement.setAtCopy(position, x));
+			}
+		};
 		return (IASTMutable) map(function, 1);
 	}
 
@@ -2827,7 +2864,12 @@ public abstract class AbstractAST implements IASTMutable {
 			return F.C0;
 		}
 		if (this.isPlus()) {
-			IAST plus = this.map(x -> x.times(that), 1);
+			IAST plus = this.map(new Function<IExpr, IExpr>() {
+				@Override
+				public IExpr apply(IExpr x) {
+					return x.times(that);
+				}
+			}, 1);
 			return F.eval(plus);
 		}
 		return F.eval(F.Times(this, that));

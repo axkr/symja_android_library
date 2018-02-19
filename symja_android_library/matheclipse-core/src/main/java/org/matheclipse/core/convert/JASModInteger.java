@@ -3,6 +3,7 @@ package org.matheclipse.core.convert;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -261,7 +262,12 @@ public class JASModInteger {
 		} else if (exprPoly instanceof IFraction) {
 			return fraction2Poly((IFraction) exprPoly);
 		}
-		if (exprPoly.isFree(t -> fVariables.contains(t), true)) {
+		if (exprPoly.isFree(new Predicate<IExpr>() {
+            @Override
+            public boolean test(IExpr t) {
+                return fVariables.contains(t);
+            }
+        }, true)) {
 			return new GenPolynomial(fPolyFactory, exprPoly);
 		} else {
 			for (int i = 0; i < fVariables.size(); i++) {

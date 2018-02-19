@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.matheclipse.core.basic.Config;
@@ -173,7 +174,12 @@ public final class Programming {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() > 1) {
 				IExpr[] result = { F.Null };
-				ast.forEach(x -> result[0] = engine.evaluate(x));
+				ast.forEach(new Consumer<IExpr>() {
+                    @Override
+                    public void accept(IExpr x) {
+                        result[0] = engine.evaluate(x);
+                    }
+                });
 				return result[0];
 			}
 			return F.Null;
@@ -282,7 +288,12 @@ public final class Programming {
 			Validate.checkRange(ast, 3);
 			try {
 				final List<IIterator<IExpr>> iterList = new ArrayList<IIterator<IExpr>>();
-				ast.forEach(2, ast.size(), x -> iterList.add(Iterator.create((IAST) x, engine)));
+				ast.forEach(2, ast.size(), new Consumer<IExpr>() {
+					@Override
+					public void accept(IExpr x) {
+						iterList.add(Iterator.create((IAST) x, engine));
+					}
+				});
 				final DoIterator generator = new DoIterator(iterList, engine);
 				return generator.doIt(ast.arg1());
 			} catch (final ClassCastException e) {
@@ -563,7 +574,12 @@ public final class Programming {
 			IExpr arg3 = engine.evaluate(ast.arg3());
 			if (arg3.isInteger()) {
 				final int n = Validate.checkIntType(arg3);
-				return nest(ast.arg2(), n, x -> F.unaryAST1(ast.arg1(), x), engine);
+				return nest(ast.arg2(), n, new Function<IExpr, IExpr>() {
+					@Override
+					public IExpr apply(IExpr x) {
+						return F.unaryAST1(ast.arg1(), x);
+					}
+				}, engine);
 			}
 			return F.NIL;
 		}
@@ -596,7 +612,12 @@ public final class Programming {
 			if (arg3.isInteger()) {
 				final int n = Validate.checkIntType(arg3);
 				IExpr arg1 = ast.arg1();
-				nestList(ast.arg2(), n, x -> F.unaryAST1(arg1, x), resultList, engine);
+				nestList(ast.arg2(), n, new Function<IExpr, IExpr>() {
+					@Override
+					public IExpr apply(IExpr x) {
+						return F.unaryAST1(arg1, x);
+					}
+				}, resultList, engine);
 				return resultList;
 			}
 			return F.NIL;
@@ -624,7 +645,12 @@ public final class Programming {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 4);
 
-			return nestWhile(ast.arg2(), engine.evaluate(ast.arg3()), x -> F.unaryAST1(ast.arg1(), x), engine);
+			return nestWhile(ast.arg2(), engine.evaluate(ast.arg3()), new Function<IExpr, IExpr>() {
+				@Override
+				public IExpr apply(IExpr x) {
+					return F.unaryAST1(ast.arg1(), x);
+				}
+			}, engine);
 		}
 
 		public static IExpr nestWhile(final IExpr expr, final IExpr test, final Function<IExpr, IExpr> fn,
@@ -646,7 +672,12 @@ public final class Programming {
 			Validate.checkSize(ast, 4);
 
 			IExpr arg1 = ast.arg1();
-			return nestList(ast.arg2(), engine.evaluate(ast.arg3()), x -> F.unaryAST1(arg1, x), List(), engine);
+			return nestList(ast.arg2(), engine.evaluate(ast.arg3()), new Function<IExpr, IExpr>() {
+				@Override
+				public IExpr apply(IExpr x) {
+					return F.unaryAST1(arg1, x);
+				}
+			}, List(), engine);
 			// Functors.append(F.ast(ast.arg1())), List(), engine);
 		}
 
@@ -1102,9 +1133,12 @@ public final class Programming {
 
 			try {
 				rememberModuleVariables(intializerList, varAppend, moduleVariables, engine);
-				IExpr result = F.subst(arg2, x -> {
-					IExpr temp = moduleVariables.get(x);
-					return temp != null ? temp : F.NIL;
+				IExpr result = F.subst(arg2, new Function<IExpr, IExpr>() {
+					@Override
+					public IExpr apply(IExpr x) {
+						IExpr temp = moduleVariables.get(x);
+						return temp != null ? temp : F.NIL;
+					}
 				});
 				if (result.isCondition()) {
 					return checkCondition(result.getAt(1), result.getAt(2), engine);

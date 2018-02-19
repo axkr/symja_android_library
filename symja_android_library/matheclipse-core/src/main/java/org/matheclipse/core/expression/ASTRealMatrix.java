@@ -11,6 +11,7 @@ import java.util.RandomAccess;
 import java.util.Set;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 
 import org.hipparchus.linear.Array2DRowRealMatrix;
@@ -471,7 +472,12 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	public IExpr mapMatrixColumns(int[] dim, Function<IExpr, IExpr> f) {
 		final int columnSize = dim[1];
 		IASTAppendable result = F.ListAlloc(columnSize);
-		return result.appendArgs(0, columnSize, j -> f.apply(new ASTRealVector(matrix.getColumnVector(j), false)));
+		return result.appendArgs(0, columnSize, new IntFunction<IExpr>() {
+            @Override
+            public IExpr apply(int j) {
+                return f.apply(new ASTRealVector(matrix.getColumnVector(j), false));
+            }
+        });
 		// for (int j = 0; j < columnSize; j++) {
 		// result.append(f.apply(new ASTRealVector(matrix.getColumnVector(j), false)));
 		// }

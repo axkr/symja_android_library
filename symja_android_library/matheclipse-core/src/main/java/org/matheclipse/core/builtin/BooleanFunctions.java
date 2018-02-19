@@ -1,14 +1,5 @@
 package org.matheclipse.core.builtin;
 
-import static org.matheclipse.core.expression.F.And;
-import static org.matheclipse.core.expression.F.Equivalent;
-import static org.matheclipse.core.expression.F.Implies;
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Nand;
-import static org.matheclipse.core.expression.F.Nor;
-import static org.matheclipse.core.expression.F.Or;
-import static org.matheclipse.core.expression.F.Xor;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.boole.QuineMcCluskyFormula;
 import org.matheclipse.core.convert.VariablesSet;
@@ -32,6 +23,20 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.interfaces.ITernaryComparator;
 import org.matheclipse.core.visit.VisitorExpr;
+
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Predicate;
+
+import static org.matheclipse.core.expression.F.And;
+import static org.matheclipse.core.expression.F.Equivalent;
+import static org.matheclipse.core.expression.F.Implies;
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.Nand;
+import static org.matheclipse.core.expression.F.Nor;
+import static org.matheclipse.core.expression.F.Or;
+import static org.matheclipse.core.expression.F.Xor;
 
 public final class BooleanFunctions {
 	public final static Equal CONST_EQUAL = new Equal();
@@ -105,16 +110,19 @@ public final class BooleanFunctions {
 		public IExpr allTrue(IAST list, IExpr head, EvalEngine engine) {
 			IASTAppendable logicalAnd = F.And();
 
-			if (!list.forAll(x -> {
-				IExpr temp = engine.evaluate(F.unary(head, x));
-				if (temp.isTrue()) {
-					return true;
-				} else if (temp.isFalse()) {
-					return false;
-				}
-				logicalAnd.append(temp);
-				return true;
-			}, 1)) {
+			if (!list.forAll(new Predicate<IExpr>() {
+                @Override
+                public boolean test(IExpr x) {
+                    IExpr temp = engine.evaluate(F.unary(head, x));
+                    if (temp.isTrue()) {
+                        return true;
+                    } else if (temp.isFalse()) {
+                        return false;
+                    }
+                    logicalAnd.append(temp);
+                    return true;
+                }
+            }, 1)) {
 				return F.False;
 			}
 
@@ -258,7 +266,12 @@ public final class BooleanFunctions {
 		 */
 		public IExpr anyTrue(IAST list, IExpr head, EvalEngine engine) {
 			IASTAppendable logicalOr = F.Or();
-			if (list.exists(x -> anyTrueArgument(x, head, logicalOr, engine), 1)) {
+			if (list.exists(new Predicate<IExpr>() {
+				@Override
+				public boolean test(IExpr x) {
+					return anyTrueArgument(x, head, logicalOr, engine);
+				}
+			}, 1)) {
 				return F.True;
 			}
 			return logicalOr.isAST0() ? F.False : logicalOr;
@@ -358,11 +371,21 @@ public final class BooleanFunctions {
 			}
 
 			public IAST convertNand(IAST ast) {
-				return Lambda.forEachAppend(ast, F.Or(), x -> F.Not(x));
+				return Lambda.forEachAppend(ast, F.Or(), new Function<IExpr, IExpr>() {
+					@Override
+					public IExpr apply(IExpr x) {
+						return F.Not(x);
+					}
+				});
 			}
 
 			public IAST convertNor(IAST ast) {
-				return Lambda.forEachAppend(ast, F.And(), x -> F.Not(x));
+				return Lambda.forEachAppend(ast, F.And(), new Function<IExpr, IExpr>() {
+					@Override
+					public IExpr apply(IExpr x) {
+						return F.Not(x);
+					}
+				});
 			}
 
 			public IAST convertXor(IAST ast) {
@@ -1063,7 +1086,12 @@ public final class BooleanFunctions {
 					return setTrue ? F.True : F.False;
 				}
 				if (lhsAST.isTimes()) {
-					IAST result = lhsAST.partitionTimes(x -> x.isNumericFunction(), F.C0, F.C1, F.List);
+					IAST result = lhsAST.partitionTimes(new Predicate<IExpr>() {
+						@Override
+						public boolean test(IExpr x) {
+							return x.isNumericFunction();
+						}
+					}, F.C0, F.C1, F.List);
 					if (!result.get(1).isZero()) {
 						if (result.get(1).isNegative()) {
 							useOppositeHeader = !useOppositeHeader;
@@ -1073,7 +1101,12 @@ public final class BooleanFunctions {
 								oppositeHead);
 					}
 				} else if (lhsAST.isPlus()) {
-					IAST result = lhsAST.partitionPlus(x -> x.isNumericFunction(), F.C0, F.C0, F.List);
+					IAST result = lhsAST.partitionPlus(new Predicate<IExpr>() {
+						@Override
+						public boolean test(IExpr x) {
+							return x.isNumericFunction();
+						}
+					}, F.C0, F.C0, F.List);
 					if (!result.get(1).isZero()) {
 						rhs = rhs.subtract(result.get(1));
 						return createComparatorResult(result.get(2), rhs, useOppositeHeader, originalHead,
@@ -1357,7 +1390,12 @@ public final class BooleanFunctions {
 		private IExpr maximum(IAST list, boolean flattenedList) {
 			boolean evaled = false;
 			int j = 1;
-			IASTAppendable f = Lambda.remove(list, x -> x.isNegativeInfinity());
+			IASTAppendable f = Lambda.remove(list, new Predicate<IExpr>() {
+				@Override
+				public boolean test(IExpr x) {
+					return x.isNegativeInfinity();
+				}
+			});
 			if (f.isPresent()) {
 				if (f.isAST0()) {
 					return F.CNInfinity;
@@ -1493,7 +1531,12 @@ public final class BooleanFunctions {
 
 		private IExpr minimum(IAST list, final boolean flattenedList) {
 			boolean evaled = false;
-			IASTAppendable f = Lambda.remove(list, x -> x.isInfinity());
+			IASTAppendable f = Lambda.remove(list, new Predicate<IExpr>() {
+				@Override
+				public boolean test(IExpr x) {
+					return x.isInfinity();
+				}
+			});
 			if (f.isPresent()) {
 				if (f.isAST0()) {
 					return F.CNInfinity;
@@ -1652,7 +1695,12 @@ public final class BooleanFunctions {
 		 */
 		public IExpr noneTrue(IAST list, IExpr head, EvalEngine engine) {
 			IASTAppendable logicalNor = F.ast(F.Nor);
-			if (list.exists(x -> noneTrueArgument(x, head, logicalNor, engine), 1)) {
+			if (list.exists(new Predicate<IExpr>() {
+				@Override
+				public boolean test(IExpr x) {
+					return noneTrueArgument(x, head, logicalNor, engine);
+				}
+			}, 1)) {
 				return F.False;
 			}
 			return logicalNor.isAST0() ? F.True : logicalNor;
@@ -1936,7 +1984,12 @@ public final class BooleanFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() > 1) {
-				return F.bool(!ast.existsLeft((x, y) -> !x.isSame(y)));
+				return F.bool(!ast.existsLeft(new BiPredicate<IExpr, IExpr>() {
+					@Override
+					public boolean test(IExpr x, IExpr y) {
+						return !x.isSame(y);
+					}
+				}));
 			}
 			return F.False;
 		}
@@ -2095,7 +2148,12 @@ public final class BooleanFunctions {
 				}
 
 				IASTMutable result = ast.copy();
-				result.setArgs(result.size(), i -> F.expandAll(result.get(i), true, true));
+				result.setArgs(result.size(), new IntFunction<IExpr>() {
+					@Override
+					public IExpr apply(int i) {
+						return F.expandAll(result.get(i), true, true);
+					}
+				});
 				// for (int i = 1; i < result.size(); i++) {
 				// result.set(i, F.expandAll(result.get(i), true, true));
 				// }

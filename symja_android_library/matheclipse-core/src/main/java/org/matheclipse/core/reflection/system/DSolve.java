@@ -14,6 +14,8 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
 
+import java.util.function.Consumer;
+
 /**
  * <pre>
  * DSolve(equation, f(var), var)
@@ -280,13 +282,16 @@ public class DSolve extends AbstractFunctionEvaluator {
 				IAST timesAST = (IAST) m;
 				IASTAppendable fx = F.TimesAlloc(timesAST.size());
 				IASTAppendable gy = F.TimesAlloc(timesAST.size());
-				timesAST.forEach(expr -> {
-					if (expr.isFree(y)) {
-						fx.append(expr);
-					} else {
-						gy.append(expr);
-					}
-				}); 
+				timesAST.forEach(new Consumer<IExpr>() {
+                    @Override
+                    public void accept(IExpr expr) {
+                        if (expr.isFree(y)) {
+                            fx.append(expr);
+                        } else {
+                            gy.append(expr);
+                        }
+                    }
+                });
 				fxExpr = engine.evaluate(fx);
 				gyExpr = engine.evaluate(gy);
 			}

@@ -149,8 +149,13 @@ public class TrigExpand extends AbstractEvaluator {
 		private static IExpr expandCosTimes(IInteger n, IExpr theta) {
 			int ni = n.toIntDefault(Integer.MIN_VALUE);
 			if (ni > Integer.MIN_VALUE) {
-				return F.sum(i -> Times(Times(Times(Power(CN1, Times(i, C1D2)), Binomial(n, i)),
-						Power(Cos(theta), Plus(n, Times(CN1, i)))), Power(Sin(theta), i)), 0, ni, 2);
+				return F.sum(new Function<IExpr, IExpr>() {
+					@Override
+					public IExpr apply(IExpr i) {
+						return Times(Times(Times(Power(CN1, Times(i, C1D2)), Binomial(n, i)),
+								Power(Cos(theta), Plus(n, Times(CN1, i)))), Power(Sin(theta), i));
+					}
+				}, 0, ni, 2);
 			}
 			return F.NIL;
 		}
@@ -165,8 +170,13 @@ public class TrigExpand extends AbstractEvaluator {
 		private static IExpr expandSinTimes(IInteger n, IExpr theta) {
 			int ni = n.toIntDefault(Integer.MIN_VALUE);
 			if (ni > Integer.MIN_VALUE) {
-				return F.sum(i -> Times(Times(Times(Power(CN1, Times(Plus(i, CN1), C1D2)), Binomial(n, i)),
-						Power(Cos(theta), Plus(n, Times(CN1, i)))), Power(Sin(theta), i)), 1, ni, 2);
+				return F.sum(new Function<IExpr, IExpr>() {
+                    @Override
+                    public IExpr apply(IExpr i) {
+                        return Times(Times(Times(Power(CN1, Times(Plus(i, CN1), C1D2)), Binomial(n, i)),
+                                Power(Cos(theta), Plus(n, Times(CN1, i)))), Power(Sin(theta), i));
+                    }
+                }, 1, ni, 2);
 			}
 			return F.NIL;
 		}

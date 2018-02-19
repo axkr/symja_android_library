@@ -1,14 +1,19 @@
 package org.matheclipse.core.system;
 
-import static org.matheclipse.core.expression.F.*;
-
-import java.util.Arrays;
-import java.util.function.Consumer;
-
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+
+import java.util.function.Consumer;
+
+import static org.matheclipse.core.expression.F.C10;
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.a;
+import static org.matheclipse.core.expression.F.b;
+import static org.matheclipse.core.expression.F.c;
+import static org.matheclipse.core.expression.F.d;
+import static org.matheclipse.core.expression.F.e;
 
 /**
  * Tests for the Java port of the
@@ -23,7 +28,12 @@ public class Java8TestCase extends AbstractTestCase {
 	public void testForeach() {
 		IAST ast = List(C10, a, b, c, d, e);
 		IASTAppendable result = F.List();
-		ast.forEach(x -> result.append(x));
+		ast.forEach(new Consumer<IExpr>() {
+            @Override
+            public void accept(IExpr x) {
+                result.append(x);
+            }
+        });
 		assertEquals("{10,a,b,c,d,e}", result.toString());
 	}
 
@@ -31,8 +41,18 @@ public class Java8TestCase extends AbstractTestCase {
 		IAST ast = List(C10, a, b, c, d, e);
 		IASTAppendable result = F.ListAlloc(2);
 		// Consumer<IExpr> action = (IExpr x) -> System.out.println(x);
-		ast.stream().forEach(x -> result.append(x));
-		ast.stream(0, 7).forEach(x -> result.append(x));
+		ast.stream().forEach(new Consumer<IExpr>() {
+			@Override
+			public void accept(IExpr x) {
+				result.append(x);
+			}
+		});
+		ast.stream(0, 7).forEach(new Consumer<IExpr>() {
+			@Override
+			public void accept(IExpr x) {
+				result.append(x);
+			}
+		});
 		assertEquals("{10,a,b,c,d,e,List,10,a,b,c,d,e}", result.toString());
 	}
 

@@ -1,8 +1,5 @@
 package org.matheclipse.core.reflection.system;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -14,6 +11,10 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.IntFunction;
 
 public class Names extends AbstractFunctionEvaluator {
 
@@ -83,7 +84,12 @@ public class Names extends AbstractFunctionEvaluator {
 	public static IAST getAllNames() {
 		int size = AST2Expr.FUNCTION_STRINGS.length;
 		IASTAppendable list = F.ListAlloc(size);
-		return list.appendArgs(0, size, i -> F.$s(AST2Expr.FUNCTION_STRINGS[i]));
+		return list.appendArgs(0, size, new IntFunction<IExpr>() {
+            @Override
+            public IExpr apply(int i) {
+                return F.$s(AST2Expr.FUNCTION_STRINGS[i]);
+            }
+        });
 		// for (int i = 0; i < size; i++) {
 		// list.append(F.$s(AST2Expr.FUNCTION_STRINGS[i]));
 		// }

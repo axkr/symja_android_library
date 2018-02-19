@@ -5,6 +5,7 @@ import static org.matheclipse.core.expression.F.List;
 import static org.matheclipse.core.expression.F.evalExpandAll;
 
 import java.util.List;
+import java.util.function.IntFunction;
 
 import javax.annotation.Nonnull;
 
@@ -157,7 +158,12 @@ public class Roots extends AbstractFunctionEvaluator {
 
 			IASTAppendable roots = F.ListAlloc(N);
 			return roots.appendArgs(0, N,
-					i -> F.chopExpr(F.complexNum(realValues[i], imagValues[i]), Config.DEFAULT_ROOTS_CHOP_DELTA));
+                    new IntFunction<IExpr>() {
+                        @Override
+                        public IExpr apply(int i) {
+                            return F.chopExpr(F.complexNum(realValues[i], imagValues[i]), Config.DEFAULT_ROOTS_CHOP_DELTA);
+                        }
+                    });
 			// for (int i = 0; i < N; i++) {
 			// roots.append(F.chopExpr(F.complexNum(realValues[i], imagValues[i]), Config.DEFAULT_ROOTS_CHOP_DELTA));
 			// }

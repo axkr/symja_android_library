@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.SortedMap;
+import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -250,7 +251,12 @@ public class JASIExpr {
 		} else if (exprPoly instanceof IFraction) {
 			return new GenPolynomial<IExpr>(fPolyFactory, exprPoly);
 		}
-		if (exprPoly.isFree(t -> fVariables.contains(t), true)) {
+		if (exprPoly.isFree(new Predicate<IExpr>() {
+            @Override
+            public boolean test(IExpr t) {
+                return fVariables.contains(t);
+            }
+        }, true)) {
 			return new GenPolynomial<IExpr>(fPolyFactory, exprPoly);
 		} else {
 			for (int i = 0; i < fVariables.size(); i++) {

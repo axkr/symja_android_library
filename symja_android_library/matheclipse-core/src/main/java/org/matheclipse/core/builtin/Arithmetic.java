@@ -44,6 +44,7 @@ import java.math.BigInteger;
 import java.util.function.DoubleFunction;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
@@ -844,7 +845,12 @@ public final class Arithmetic {
 							return C0;
 						}
 						IASTAppendable result = F.PlusAlloc(n);
-						return result.appendArgs(n + 1, i -> Power(integer(i), Negate(arg2)));
+						return result.appendArgs(n + 1, new IntFunction<IExpr>() {
+                            @Override
+                            public IExpr apply(int i) {
+                                return Power(integer(i), Negate(arg2));
+                            }
+                        });
 						// for (int i = 1; i <= n; i++) {
 						// result.append(Power(integer(i), Negate(arg2)));
 						// }
@@ -1350,11 +1356,21 @@ public final class Arithmetic {
 				if (ni > Integer.MIN_VALUE) {
 					if (ni > 0) {
 						// Product(a + k, {k, 0, n - 1})
-						return F.product(x -> F.Plus(a, x), 0, ni - 1);
+						return F.product(new Function<IExpr, IExpr>() {
+							@Override
+							public IExpr apply(IExpr x) {
+								return F.Plus(a, x);
+							}
+						}, 0, ni - 1);
 					}
 					if (ni < 0) {
 						// Product(1/(a - k), {k, 1, -n})
-						return Power(F.product(x -> F.Plus(a, x.negate()), 1, -ni), -1);
+						return Power(F.product(new Function<IExpr, IExpr>() {
+							@Override
+							public IExpr apply(IExpr x) {
+								return F.Plus(a, x.negate());
+							}
+						}, 1, -ni), -1);
 					}
 				}
 			}

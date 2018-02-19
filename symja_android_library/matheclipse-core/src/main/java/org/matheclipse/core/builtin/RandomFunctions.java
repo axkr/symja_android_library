@@ -1,18 +1,18 @@
 
 package org.matheclipse.core.builtin;
 
-import java.math.BigInteger;
-import java.util.Random;
-
 import org.hipparchus.util.MathArrays;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
-import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+
+import java.math.BigInteger;
+import java.util.Random;
+import java.util.function.IntFunction;
 
 public final class RandomFunctions {
 
@@ -102,7 +102,12 @@ public final class RandomFunctions {
 			MathArrays.shuffle(indexList);
 
 			// Create shuffled list.
-			return list.copy().setArgs(1, len + 1, i -> list.get(indexList[i - 1] + 1));
+			return list.copy().setArgs(1, len + 1, new IntFunction<IExpr>() {
+                @Override
+                public IExpr apply(int i) {
+                    return list.get(indexList[i - 1] + 1);
+                }
+            });
 			// for (int i = 0; i < len; i++) {
 			// out.set(i + 1, list.get(indexList[i] + 1));
 			// }

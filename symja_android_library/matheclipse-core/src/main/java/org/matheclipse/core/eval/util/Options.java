@@ -1,9 +1,5 @@
 package org.matheclipse.core.eval.util;
 
-import static org.matheclipse.core.expression.F.List;
-import static org.matheclipse.core.expression.F.Options;
-import static org.matheclipse.core.expression.F.ReplaceAll;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -11,8 +7,14 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
+import java.util.function.Predicate;
+
 import edu.jas.poly.TermOrder;
 import edu.jas.poly.TermOrderByName;
+
+import static org.matheclipse.core.expression.F.List;
+import static org.matheclipse.core.expression.F.Options;
+import static org.matheclipse.core.expression.F.ReplaceAll;
 
 /**
  * Managing <i>Options</i> used in evaluation of function symbols (i.e. <code>Modulus-&gt;n</code> is an option which
@@ -103,16 +105,19 @@ public class Options {
 		IAST[] rule = new IAST[1];
 		if (fCurrentOptionsList != null) {
 			try {
-				if (fCurrentOptionsList.exists(x -> {
-					if (x.isAST()) {
-						IAST temp = (IAST) x;
-						if (temp.isRuleAST() && temp.arg1().toString().equalsIgnoreCase(optionString)) {
-							rule[0] = temp;
-							return true;
-						}
-					}
-					return false;
-				}, 1)) {
+				if (fCurrentOptionsList.exists(new Predicate<IExpr>() {
+                    @Override
+                    public boolean test(IExpr x) {
+                        if (x.isAST()) {
+                            IAST temp = (IAST) x;
+                            if (temp.isRuleAST() && temp.arg1().toString().equalsIgnoreCase(optionString)) {
+                                rule[0] = temp;
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+                }, 1)) {
 					return rule[0].arg2();
 				}
 			} catch (Exception e) {
@@ -121,15 +126,18 @@ public class Options {
 		}
 		if (fDefaultOptionsList != null) {
 			try {
-				if (fCurrentOptionsList.exists(x -> {
-					if (x.isAST()) {
-						IAST temp = (IAST) x;
-						if (temp.isRuleAST() && temp.arg1().toString().equalsIgnoreCase(optionString)) {
-							rule[0] = temp;
-							return true;
+				if (fCurrentOptionsList.exists(new Predicate<IExpr>() {
+					@Override
+					public boolean test(IExpr x) {
+						if (x.isAST()) {
+							IAST temp = (IAST) x;
+							if (temp.isRuleAST() && temp.arg1().toString().equalsIgnoreCase(optionString)) {
+								rule[0] = temp;
+								return true;
+							}
 						}
+						return false;
 					}
-					return false;
 				}, 1)) {
 					return rule[0].arg2();
 				}
@@ -144,15 +152,18 @@ public class Options {
 		IAST[] rule = new IAST[1];
 		if (fCurrentOptionsList != null) {
 			try {
-				if (fCurrentOptionsList.exists(x -> {
-					if (x.isAST()) {
-						IAST temp = (IAST) x;
-						if (temp.isRuleAST() && temp.arg1().equals(option)) {
-							rule[0] = temp;
-							return true;
+				if (fCurrentOptionsList.exists(new Predicate<IExpr>() {
+					@Override
+					public boolean test(IExpr x) {
+						if (x.isAST()) {
+							IAST temp = (IAST) x;
+							if (temp.isRuleAST() && temp.arg1().equals(option)) {
+								rule[0] = temp;
+								return true;
+							}
 						}
+						return false;
 					}
-					return false;
 				}, 1)) {
 					return rule[0].arg2();
 				}
@@ -162,15 +173,18 @@ public class Options {
 		}
 		if (fDefaultOptionsList != null) {
 			try {
-				if (fCurrentOptionsList.exists(x -> {
-					if (x.isAST()) {
-						IAST temp = (IAST) x;
-						if (temp.isRuleAST() && temp.arg1().equals(option)) {
-							rule[0] = temp;
-							return true;
+				if (fCurrentOptionsList.exists(new Predicate<IExpr>() {
+					@Override
+					public boolean test(IExpr x) {
+						if (x.isAST()) {
+							IAST temp = (IAST) x;
+							if (temp.isRuleAST() && temp.arg1().equals(option)) {
+								rule[0] = temp;
+								return true;
+							}
 						}
+						return false;
 					}
-					return false;
 				}, 1)) {
 					return rule[0].arg2();
 				}

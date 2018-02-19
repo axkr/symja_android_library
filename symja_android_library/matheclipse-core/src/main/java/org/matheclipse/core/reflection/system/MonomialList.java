@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.JASIExpr;
@@ -83,7 +84,12 @@ public class MonomialList extends AbstractFunctionEvaluator {
 		} else {
 			symbolList = Validate.checkSymbolOrSymbolList(ast, 2);
 			varList = new ArrayList<IExpr>(symbolList.size() - 1);
-			symbolList.forEach(x -> varList.add(x));
+			symbolList.forEach(new Consumer<IExpr>() {
+                @Override
+                public void accept(IExpr x) {
+                    varList.add(x);
+                }
+            });
 		}
 		TermOrder termOrder = TermOrderByName.Lexicographic;
 		try {

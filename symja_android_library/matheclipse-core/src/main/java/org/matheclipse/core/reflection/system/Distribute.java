@@ -8,6 +8,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
+import java.util.function.Consumer;
+
 /**
  * <pre>
  * Distribute(f(x1, x2, x3,...))
@@ -81,11 +83,14 @@ public class Distribute extends AbstractFunctionEvaluator {
 		}
 		if (arg1.get(position).head().equals(head) && arg1.get(position).isAST()) {
 			IAST temp = (IAST) arg1.get(position);
-			temp.forEach(x -> {
-				IASTAppendable res2 = stepResult.copyAppendable();
-				res2.append(x);
-				distributePosition(resultCollector, res2, head, arg1, position + 1);
-			});
+			temp.forEach(new Consumer<IExpr>() {
+                @Override
+                public void accept(IExpr x) {
+                    IASTAppendable res2 = stepResult.copyAppendable();
+                    res2.append(x);
+                    Distribute.this.distributePosition(resultCollector, res2, head, arg1, position + 1);
+                }
+            });
 		} else {
 			IASTAppendable res2 = stepResult.copyAppendable();
 			res2.append(arg1.get(position));

@@ -1,14 +1,15 @@
 package org.matheclipse.core.polynomials;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.ObjIntConsumer;
 
 /**
  * ExpVectorLong implements exponent vectors for polynomials using arrays of long as storage unit. This class is used by
@@ -499,12 +500,15 @@ public final class ExpVectorLong {
 			return "null";
 		}
 		StringBuilder s = new StringBuilder();
-		vars.forEach(vars.size(), (x, i) -> {
-			s.append(x);
-			if (i < vars.size() - 1) {
-				s.append(",");
-			}
-		}); 
+		vars.forEach(vars.size(), new ObjIntConsumer<IExpr>() {
+            @Override
+            public void accept(IExpr x, int i) {
+                s.append(x);
+                if (i < vars.size() - 1) {
+                    s.append(",");
+                }
+            }
+        });
 		return s.toString();
 	}
 

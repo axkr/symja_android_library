@@ -1,13 +1,14 @@
 package org.matheclipse.core.eval.util;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
 public class Assumptions extends AbstractAssumptions {
 
@@ -83,7 +84,12 @@ public class Assumptions extends AbstractAssumptions {
 					|| domain.equals(F.Reals)) {
 				IExpr arg1 = element.arg1();
 				if (arg1.isAST(F.Alternatives)) {
-					((IAST) arg1).forEach(x -> assumptions.elementsMap.put(x, domain));
+					((IAST) arg1).forEach(new Consumer<IExpr>() {
+                        @Override
+                        public void accept(IExpr x) {
+                            assumptions.elementsMap.put(x, domain);
+                        }
+                    });
 					// for (int i = 1; i < alternatives.size(); i++) {
 					// assumptions.elementsMap.put(alternatives.get(i), domain);
 					// }

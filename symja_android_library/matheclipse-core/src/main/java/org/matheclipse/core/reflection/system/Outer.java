@@ -8,6 +8,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
+import java.util.function.IntFunction;
+
 /**
  * <pre>
  * Outer(f, x, y)
@@ -91,7 +93,12 @@ public class Outer extends AbstractFunctionEvaluator {
 				IAST list = (IAST) expr;
 				int size = list.size();
 				IASTAppendable result = F.ast(head, size, false);
-				return result.appendArgs(size, i -> outer(astPosition, list.get(i), current));
+				return result.appendArgs(size, new IntFunction<IExpr>() {
+                    @Override
+                    public IExpr apply(int i) {
+                        return OuterAlgorithm.this.outer(astPosition, list.get(i), current);
+                    }
+                });
 				// for (int i = 1; i < size; i++) {
 				// IExpr temp = list.get(i);
 				// result.append(outer(astPosition, temp, current));

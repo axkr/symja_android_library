@@ -9,6 +9,8 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
+import java.util.function.BiFunction;
+
 /**
  * <pre>
  * ComposeList(list - of - symbols, variable)
@@ -32,11 +34,14 @@ public class ComposeList extends AbstractEvaluator {
 				// final EvalEngine engine = EvalEngine.get();
 				final IAST list = (IAST) ast.arg1();
 				final IAST constant = F.ast(ast.arg1());
-				ListFunctions.foldLeft(ast.arg2(), list, 1, list.size(), (x, y) -> {
-					final IASTAppendable a = constant.apply(y);
-					a.append(x);
-					return a;
-				}, resultList);
+				ListFunctions.foldLeft(ast.arg2(), list, 1, list.size(), new BiFunction<IExpr, IExpr, IExpr>() {
+                    @Override
+                    public IExpr apply(IExpr x, IExpr y) {
+                        final IASTAppendable a = constant.apply(y);
+                        a.append(x);
+                        return a;
+                    }
+                }, resultList);
 				return resultList;
 			}
 		} catch (final ArithmeticException e) {

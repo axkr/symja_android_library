@@ -1,12 +1,5 @@
 package org.matheclipse.core.builtin.function;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Locale;
-
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.RuleCreationError;
@@ -19,6 +12,14 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.function.IntFunction;
 
 /**
  * Package[{&lt;list of public package rule headers&gt;}, {&lt;list of rules in this package&gt;}}
@@ -77,7 +78,12 @@ public class Package extends AbstractCoreFunctionEvaluator {
 
 		// convert the rules into a new list:
 		IASTAppendable resultList = F.ListAlloc(size);
-		resultList.appendArgs(size, i -> convertSymbolsInExpr(list.get(i), convertedSymbolMap));
+		resultList.appendArgs(size, new IntFunction<IExpr>() {
+            @Override
+            public IExpr apply(int i) {
+                return convertSymbolsInExpr(list.get(i), convertedSymbolMap);
+            }
+        });
 		// for (int i = 1; i < size; i++) {
 		// resultList.append(convertSymbolsInExpr(list.get(i), convertedSymbolMap));
 		// }

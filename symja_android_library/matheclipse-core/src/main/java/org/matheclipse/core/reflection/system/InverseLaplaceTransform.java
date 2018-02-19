@@ -11,6 +11,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.reflection.system.rules.InverseLaplaceTransformRules;
 
+import java.util.function.Predicate;
+
 /**
  * <pre>
  * InverseLaplaceTransform(f, s, t)
@@ -59,7 +61,12 @@ public class InverseLaplaceTransform extends AbstractFunctionEvaluator implement
 				if (arg1.isTimes()) {
 					IASTAppendable result = F.TimesAlloc(arg1.size());
 					IASTAppendable rest = F.TimesAlloc(arg1.size());
-					arg1.filter(result, rest, x -> x.isFree(s));
+					arg1.filter(result, rest, new Predicate<IExpr>() {
+                        @Override
+                        public boolean test(IExpr x) {
+                            return x.isFree(s);
+                        }
+                    });
 					if (result.size() > 1) {
 						return F.Times(result.getOneIdentity(F.C1), F.InverseLaplaceTransform(rest, s, t));
 					}

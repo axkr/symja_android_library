@@ -21,6 +21,8 @@ import org.matheclipse.core.polynomials.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.reflection.system.rules.LimitRules;
 
+import java.util.function.Predicate;
+
 /**
  * <pre>
  * Limit(expr, x -&gt; x0)
@@ -434,7 +436,12 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			return F.C1;
 		}
 		if (base.isTimes() && exponent.isFree(data.getSymbol())) {
-			IAST isFreeResult = ((IAST) base).partitionTimes(x -> x.isFree(data.getSymbol(), true), F.C1, F.C1, F.List);
+			IAST isFreeResult = ((IAST) base).partitionTimes(new Predicate<IExpr>() {
+                @Override
+                public boolean test(IExpr x) {
+                    return x.isFree(data.getSymbol(), true);
+                }
+            }, F.C1, F.C1, F.List);
 			if (!isFreeResult.get(2).isOne()) {
 				return F.Times(F.Power(isFreeResult.get(1), exponent),
 						data.limit(F.Power(isFreeResult.get(2), exponent)));
@@ -539,7 +546,12 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 	}
 
 	private static IExpr timesLimit(final IAST timesAST, LimitData data) {
-		IAST isFreeResult = timesAST.partitionTimes(x -> x.isFree(data.getSymbol(), true), F.C1, F.C1, F.List);
+		IAST isFreeResult = timesAST.partitionTimes(new Predicate<IExpr>() {
+			@Override
+			public boolean test(IExpr x) {
+				return x.isFree(data.getSymbol(), true);
+			}
+		}, F.C1, F.C1, F.List);
 		if (!isFreeResult.get(1).isOne()) {
 			return F.Times(isFreeResult.get(1), data.limit(isFreeResult.get(2)));
 		}
@@ -598,7 +610,12 @@ public class Limit extends AbstractFunctionEvaluator implements LimitRules {
 			IAST arg1 = logAST.setAtClone(1, powerAST.arg1());
 			return F.Times(powerAST.arg2(), data.limit(arg1));
 		} else if (logAST.arg1().isTimes()) {
-			IAST isFreeResult = logAST.arg1().partitionTimes(x -> x.isFree(data.getSymbol(), true), F.C1, F.C1, F.List);
+			IAST isFreeResult = logAST.arg1().partitionTimes(new Predicate<IExpr>() {
+				@Override
+				public boolean test(IExpr x) {
+					return x.isFree(data.getSymbol(), true);
+				}
+			}, F.C1, F.C1, F.List);
 			if (!isFreeResult.get(1).isOne()) {
 				IAST arg1 = logAST.setAtClone(1, isFreeResult.get(1));
 				IAST arg2 = logAST.setAtClone(1, isFreeResult.get(2));

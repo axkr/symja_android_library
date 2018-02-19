@@ -78,6 +78,11 @@ public class VisitorPredicate implements IVisitorBoolean {
 		if (fMatcher.test(list)) {
 			return true;
 		}
-		return list.exists(x->x.accept(this), fHeadOffset);
+		return list.exists(new Predicate<IExpr>() {
+            @Override
+            public boolean test(IExpr x) {
+                return x.accept(VisitorPredicate.this);
+            }
+        }, fHeadOffset);
 	}
 }

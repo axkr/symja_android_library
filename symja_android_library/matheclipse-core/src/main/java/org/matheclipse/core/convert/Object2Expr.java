@@ -1,16 +1,17 @@
 package org.matheclipse.core.convert;
 
-import static org.matheclipse.core.expression.F.List;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
-
 import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.function.IntFunction;
+
+import static org.matheclipse.core.expression.F.List;
 
 /**
  * Converts objects into an IExpr expression
@@ -85,7 +86,12 @@ public class Object2Expr {
 				final ISymbol head = F.userSymbol(lst.get(0).toString());
 				int size = lst.size();
 				IASTAppendable list = F.ast(head, size, false);
-				return list.appendArgs(size, i -> convert(lst.get(i)));
+				return list.appendArgs(size, new IntFunction<IExpr>() {
+                    @Override
+                    public IExpr apply(int i) {
+                        return convert(lst.get(i));
+                    }
+                });
 				// for (int i = 1; i < size; i++) {
 				// list.append(convert(lst.get(i)));
 				// }
@@ -96,7 +102,12 @@ public class Object2Expr {
 			final Object[] array = (Object[]) obj;
 			int length = array.length;
 			final IASTAppendable list = F.ListAlloc(length);
-			return list.appendArgs(0, length, i -> convert(array[i]));
+			return list.appendArgs(0, length, new IntFunction<IExpr>() {
+				@Override
+				public IExpr apply(int i) {
+					return convert(array[i]);
+				}
+			});
 			// for (int i = 0; i < array.length; i++) {
 			// list.append(convert(array[i]));
 			// }

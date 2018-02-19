@@ -30,6 +30,9 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
+import java.util.function.Function;
+import java.util.function.IntFunction;
+
 public class StatisticsFunctions {
 	static {
 		F.CDF.setEvaluator(new CDF());
@@ -602,7 +605,12 @@ public class StatisticsFunctions {
 			IExpr factor = F.integer(-1 * (arg1.size() - 2));
 			IASTAppendable v1 = F.PlusAlloc(arg1.size());
 			v1.appendArgs(arg1.size(),
-					i -> F.Times(F.CN1, num1.setAtClone(i, F.Times(factor, arg1.get(i))), F.Conjugate(arg2.get(i))));
+                    new IntFunction<IExpr>() {
+                        @Override
+                        public IExpr apply(int i) {
+                            return F.Times(F.CN1, num1.setAtClone(i, F.Times(factor, arg1.get(i))), F.Conjugate(arg2.get(i)));
+                        }
+                    });
 			// for (int i = 1; i < arg1.size(); i++) {
 			// v1.append(F.Times(F.CN1, num1.setAtClone(i, F.Times(factor, arg1.get(i))), F.Conjugate(arg2.get(i))));
 			// }
@@ -875,7 +883,12 @@ public class StatisticsFunctions {
 			}
 			if (dim != null) {
 				IAST matrix = (IAST) arg1;
-				return matrix.mapMatrixColumns(dim, x -> F.Median(x));
+				return matrix.mapMatrixColumns(dim, new Function<IExpr, IExpr>() {
+					@Override
+					public IExpr apply(IExpr x) {
+						return F.Median(x);
+					}
+				});
 			}
 			if (arg1.isList()) {
 				final IAST list = (IAST) arg1;
@@ -1105,7 +1118,12 @@ public class StatisticsFunctions {
 			}
 			if (dim != null) {
 				IAST matrix = (IAST) ast.arg1();
-				return matrix.mapMatrixColumns(dim, x -> F.Quantile(x, ast.arg2()));
+				return matrix.mapMatrixColumns(dim, new Function<IExpr, IExpr>() {
+					@Override
+					public IExpr apply(IExpr x) {
+						return F.Quantile(x, ast.arg2());
+					}
+				});
 			}
 
 			if (ast.arg1().isList()) {
@@ -1120,7 +1138,12 @@ public class StatisticsFunctions {
 						int dim2 = ast.arg2().isVector();
 						if (dim2 >= 0) {
 							final IAST param = ((IAST) ast.arg2());
-							return param.map(scalar -> of(sorted, length, scalar), 1);
+							return param.map(new Function<IExpr, IExpr>() {
+								@Override
+								public IExpr apply(IExpr scalar) {
+									return Quantile.this.of(sorted, length, scalar);
+								}
+							}, 1);
 						} else {
 							if (ast.arg2().isSignedNumber()) {
 								return of(sorted, length, ast.arg2());
@@ -1209,7 +1232,12 @@ public class StatisticsFunctions {
 				}
 				if (dim != null) {
 					IAST matrix = (IAST) arg1;
-					return matrix.mapMatrixColumns(dim, x -> F.StandardDeviation(x));
+					return matrix.mapMatrixColumns(dim, new Function<IExpr, IExpr>() {
+						@Override
+						public IExpr apply(IExpr x) {
+							return F.StandardDeviation(x);
+						}
+					});
 				}
 			}
 			return F.Sqrt(F.Variance(ast.arg1()));
@@ -1230,7 +1258,12 @@ public class StatisticsFunctions {
 			}
 			if (dim != null) {
 				IAST matrix = (IAST) arg1;
-				return F.Transpose(matrix.mapMatrixColumns(dim, v -> F.Standardize(v)));
+				return F.Transpose(matrix.mapMatrixColumns(dim, new Function<IExpr, IExpr>() {
+					@Override
+					public IExpr apply(IExpr v) {
+						return F.Standardize(v);
+					}
+				}));
 			}
 
 			IExpr sd = engine.evaluate(F.StandardDeviation(arg1));
@@ -1305,7 +1338,12 @@ public class StatisticsFunctions {
 						final int ii = i;
 						IASTAppendable list = F.ListAlloc(matrixDimensions[1]);
 						IAST variance = F.Variance(list);
-						list.appendArgs(matrixDimensions[0] + 1, j -> arg1.getPart(j, ii));
+						list.appendArgs(matrixDimensions[0] + 1, new IntFunction<IExpr>() {
+							@Override
+							public IExpr apply(int j) {
+								return arg1.getPart(j, ii);
+							}
+						});
 						// for (int j = 1; j < matrixDimensions[0] + 1; j++) {
 						// list.append(arg1.getPart(j, i));
 						// }

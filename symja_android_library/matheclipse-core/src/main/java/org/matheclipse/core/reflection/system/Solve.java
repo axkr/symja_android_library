@@ -946,7 +946,12 @@ public class Solve extends AbstractFunctionEvaluator {
 	 * @return
 	 */
 	private static IExpr eliminateOneVariable(IAST termsEqualZeroList, IExpr variable) {
-		if (!termsEqualZeroList.arg1().isFree(t -> t.isIndeterminate() || t.isDirectedInfinity(), true)) {
+		if (!termsEqualZeroList.arg1().isFree(new Predicate<IExpr>() {
+            @Override
+            public boolean test(IExpr t) {
+                return t.isIndeterminate() || t.isDirectedInfinity();
+            }
+        }, true)) {
 			return F.NIL;
 		}
 		// copy the termsEqualZeroList back to a list of F.Equal(...) expressions
