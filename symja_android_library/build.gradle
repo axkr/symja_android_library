@@ -61,7 +61,7 @@ dependencies {
     compile files('lib/hipparchus-ode-1.2.jar')
     compile files('lib/hipparchus-optim-1.2.jar')
     compile files('lib/hipparchus-stat-1.2.jar')
-    compile files('lib/jas-2.6.5765.jar')
+    //compile files('lib/jas-2.6.5765.jar')
     compile files('lib/jsr223.jar')
     compile files('lib/jsr305.jar')
     compile files('lib/junit-4.6.jar')
