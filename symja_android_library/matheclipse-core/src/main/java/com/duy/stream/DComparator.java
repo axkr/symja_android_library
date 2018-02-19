@@ -4,11 +4,6 @@ import com.duy.lambda.Function;
 import com.duy.lambda.ToLongFunction;
 
 import java.util.Comparator;
-import java.util.Set;
-import com.duy.lambda.BiConsumer;
-import java.util.function.BinaryOperator;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
 
 /**
  * Created by Duy on 10/3/2017.
