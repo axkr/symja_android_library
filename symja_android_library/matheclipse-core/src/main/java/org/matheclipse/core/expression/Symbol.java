@@ -1,16 +1,5 @@
 package org.matheclipse.core.expression;
 
-import java.io.IOException;
-import java.io.ObjectStreamException;
-import java.io.Serializable;
-import java.io.StringWriter;
-import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import com.duy.lambda.Function;
 
 import org.hipparchus.complex.Complex;
@@ -28,6 +17,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.interfaces.ISymbolImpl;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMap;
 import org.matheclipse.core.patternmatching.PatternMatcher;
@@ -39,7 +29,19 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
-public class Symbol implements ISymbol, Serializable {
+import java.io.IOException;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+import java.io.StringWriter;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+public class Symbol extends ISymbolImpl implements ISymbol, Serializable {
 	protected transient Context fContext;
 
 	private final static Collator US_COLLATOR = Collator.getInstance(Locale.US);
@@ -59,7 +61,7 @@ public class Symbol implements ISymbol, Serializable {
 	protected String fSymbolName;
 	/**
 	 * The hash value of this object computed in the constructor.
-	 * 
+	 *
 	 */
 	protected int fHashValue;
 
@@ -445,7 +447,7 @@ public class Symbol implements ISymbol, Serializable {
 
 	/**
 	 * Get the rules for initializing the pattern matching rules of this symbol.
-	 * 
+	 *
 	 * @return <code>null</code> if no rule is defined
 	 */
 	@Override
@@ -562,7 +564,7 @@ public class Symbol implements ISymbol, Serializable {
 
 	/**
 	 * Used to generate special Symja Java code
-	 * 
+	 *
 	 * @return
 	 */
 	private String internalJavaStringAsFactoryMethod() {
