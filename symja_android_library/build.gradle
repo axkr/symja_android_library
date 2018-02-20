@@ -76,7 +76,6 @@ dependencies {
     androidTestCompile 'com.android.support.test:runner:1.0.1'
     testCompile files('lib/junit-4.6.jar')
 
-    compile files('lib/apfloat-1.8.1.jar')
     compile files('lib/jsr223.jar')
     compile files('lib/jsr305.jar')
     compile files('lib/Lab4Math-2.0.5.jar')

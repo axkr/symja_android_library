@@ -1,0 +1,4 @@
+org.apfloat.internal.IntBuilderFactory
+org.apfloat.internal.LongBuilderFactory
+org.apfloat.internal.FloatBuilderFactory
+org.apfloat.internal.DoubleBuilderFactory
