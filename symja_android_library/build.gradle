@@ -74,22 +74,12 @@ repositories {
 dependencies {
     androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.1'
     androidTestCompile 'com.android.support.test:runner:1.0.1'
+    testCompile files('lib/junit-4.6.jar')
 
     compile files('lib/apfloat-1.8.1.jar')
-//    compile files('lib/commons-csv-1.4.jar')
-    compile files('lib/guava-20.0.jar')
-    //compile files('lib/hipparchus-core-1.2.jar')
-    //compile files('lib/hipparchus-fft-1.2.jar')
-    //compile files('lib/hipparchus-fitting-1.2.jar')
-    //compile files('lib/hipparchus-ode-1.2.jar')
-    //compile files('lib/hipparchus-optim-1.2.jar')
-    //compile files('lib/hipparchus-stat-1.2.jar')
-    //compile files('lib/jas-2.6.5765.jar')
     compile files('lib/jsr223.jar')
     compile files('lib/jsr305.jar')
-    compile files('lib/junit-4.6.jar')
     compile files('lib/Lab4Math-2.0.5.jar')
-//    compile files('lib/txtmark-0.13.jar')
 
     debugCompile files('lib/log4j-1.2.17.jar')
     releaseCompile files('lib/log4j-over-slf4j-1.7.2.jar')
