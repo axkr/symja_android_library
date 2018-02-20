@@ -15,6 +15,7 @@
  */
 
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 apply plugin: 'me.tatarka.retrolambda'
 
 android {
@@ -93,6 +94,7 @@ dependencies {
 
     debugCompile files('lib/log4j-1.2.17.jar')
     releaseCompile files('lib/log4j-over-slf4j-1.7.2.jar')
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 
 
