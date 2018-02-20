@@ -26,4 +26,15 @@ public abstract class INumberImpl extends IExprImpl implements INumber {
      */
     @Override
     public abstract ISignedNumber re();
+
+    /**
+     * Get the absolute value for a given number
+     *
+     * @return
+     * @deprecated use abs()
+     */
+    @Deprecated
+    public IExpr eabs() {
+        return abs();
+    }
 }
