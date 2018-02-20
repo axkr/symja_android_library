@@ -1,9 +1,5 @@
 package org.matheclipse.core.expression;
 
-import static org.matheclipse.core.expression.F.num;
-
-import java.math.BigDecimal;
-
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatRuntimeException;
@@ -12,6 +8,7 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IComplexNumImpl;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
@@ -22,11 +19,15 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
+import java.math.BigDecimal;
+
+import static org.matheclipse.core.expression.F.num;
+
 /**
  * <code>IComplexNum</code> implementation which wraps a <code>org.apache.commons.math3.complex.Complex</code> value to
  * represent a numeric complex floating-point number.
  */
-public class ComplexNum implements IComplexNum {
+public class ComplexNum extends IComplexNumImpl implements IComplexNum {
 
 	/**
 	 * 
@@ -222,7 +223,7 @@ public class ComplexNum implements IComplexNum {
 		if (expr instanceof ComplexNum) {
 			return compareTo(((ComplexNum) expr).fComplex);
 		}
-		return IComplexNum.super.compareTo(expr);
+		return super.compareTo(expr);
 	}
 
 	@Override
@@ -529,7 +530,7 @@ public class ComplexNum implements IComplexNum {
 		if (that instanceof Num) {
 			return add(ComplexNum.valueOf(((Num) that).getRealPart()));
 		}
-		return IComplexNum.super.plus(that);
+		return super.plus(that);
 	}
 
 	@Override
@@ -587,7 +588,7 @@ public class ComplexNum implements IComplexNum {
 		if (that instanceof Num) {
 			return multiply(ComplexNum.valueOf(((Num) that).getRealPart()));
 		}
-		return IComplexNum.super.times(that);
+		return super.times(that);
 	}
 
 	@Override

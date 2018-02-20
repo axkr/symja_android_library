@@ -1,7 +1,5 @@
 package org.matheclipse.core.expression;
 
-import java.math.BigInteger;
-
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -16,6 +14,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IFractionImpl;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
@@ -26,6 +25,8 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
+import java.math.BigInteger;
+
 /**
  * Abstract base class for FractionSym and BigFractionSym
  * 
@@ -33,7 +34,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * @see BigFractionSym
  *
  */
-public abstract class AbstractFractionSym implements IFraction {
+public abstract class AbstractFractionSym extends IFractionImpl implements IFraction {
 
 	public final static FractionSym ZERO = new FractionSym(0, 1);
 
@@ -513,7 +514,7 @@ public abstract class AbstractFractionSym implements IFraction {
 		if (that instanceof ComplexSym) {
 			return ((ComplexSym) that).add(ComplexSym.valueOf(this)).normalize();
 		}
-		return IFraction.super.plus(that);
+		return super.plus(that);
 	}
 
 	/** {@inheritDoc} */
@@ -622,6 +623,6 @@ public abstract class AbstractFractionSym implements IFraction {
 		if (that instanceof ComplexSym) {
 			return ((ComplexSym) that).multiply(ComplexSym.valueOf(this)).normalize();
 		}
-		return IFraction.super.times(that);
+		return super.times(that);
 	}
 }

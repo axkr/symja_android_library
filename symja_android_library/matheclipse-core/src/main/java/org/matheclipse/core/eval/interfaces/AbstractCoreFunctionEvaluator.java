@@ -10,7 +10,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * <code>numericEval()</code> method delegates to the <code>evaluate()</code>
  * 
  */
-public abstract class AbstractCoreFunctionEvaluator implements ICoreFunctionEvaluator {
+public abstract class AbstractCoreFunctionEvaluator extends  ICoreFunctionEvaluatorImpl implements ICoreFunctionEvaluator {
 
 	/** {@inheritDoc} */
 	@Override

@@ -1,8 +1,5 @@
 package org.matheclipse.core.expression;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-
 import org.apfloat.Apcomplex;
 import org.apfloat.ApcomplexMath;
 import org.apfloat.Apfloat;
@@ -12,6 +9,7 @@ import org.hipparchus.complex.Complex;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IComplexNumImpl;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -21,11 +19,14 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 /**
  * <code>IComplexNum</code> implementation which wraps a <code>org.apache.commons.math3.complex.Apcomplex</code> value
  * to represent a numeric complex floating-point number.
  */
-public class ApcomplexNum implements IComplexNum {
+public class ApcomplexNum extends IComplexNumImpl implements IComplexNum {
 
 	public static ApcomplexNum valueOf(final Apcomplex value) {
 		return new ApcomplexNum(value);
@@ -368,7 +369,7 @@ public class ApcomplexNum implements IComplexNum {
 			ComplexNum cn = (ComplexNum) that;
 			return add(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApcomplex.precision()));
 		}
-		return IComplexNum.super.plus(that);
+		return super.plus(that);
 	}
 
 	@Override
@@ -407,7 +408,7 @@ public class ApcomplexNum implements IComplexNum {
 			ComplexNum cn = (ComplexNum) that;
 			return multiply(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApcomplex.precision()));
 		}
-		return IComplexNum.super.times(that);
+		return super.times(that);
 	}
 
 	@Override
@@ -451,7 +452,7 @@ public class ApcomplexNum implements IComplexNum {
 		if (expr instanceof ApcomplexNum) {
 			return compareTo(((ApcomplexNum) expr).fApcomplex);
 		}
-		return IComplexNum.super.compareTo(expr);
+		return super.compareTo(expr);
 	}
 
 	@Override

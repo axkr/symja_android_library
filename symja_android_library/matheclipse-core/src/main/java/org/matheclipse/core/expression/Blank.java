@@ -161,7 +161,7 @@ public class Blank extends IPatternImpl implements IPattern {
 			}
 			return 0;
 		}
-		return IPattern.super.compareTo(expr);
+		return super.compareTo(expr);
 	}
 
 	@Override

@@ -494,7 +494,7 @@ public abstract class AbstractAST extends IASTMutableImpl implements IASTMutable
 			}
 		}
 
-		return IASTMutable.super.compareTo(rhsExpr);
+		return super.compareTo(rhsExpr);
 	}
 
 	/** {@inheritDoc} */

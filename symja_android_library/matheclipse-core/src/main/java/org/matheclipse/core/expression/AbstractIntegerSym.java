@@ -28,15 +28,15 @@ import edu.jas.arith.PrimeInteger;
 
 /**
  * Abstract base class for IntegerSym and BigIntegerSym
- * 
+ *
  * @see IntegerSym
  * @see BigIntegerSym
  *
  */
-public abstract class AbstractIntegerSym implements IInteger, Externalizable {
+public abstract class AbstractIntegerSym extends IIntegerImpl implements IInteger, Externalizable {
 	/**
 	 * The BigInteger constant minus one.
-	 * 
+	 *
 	 */
 	public static final BigInteger BI_MINUS_ONE = BigInteger.valueOf(-1L);
 	public static final BigInteger BI_TWO = BigInteger.valueOf(2L);
@@ -187,7 +187,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	 * specified radix. The characters must all be digits of the specified radix,
 	 * except the first character which may be a plus sign <code>'+'</code> or a
 	 * minus sign <code>'-'</code> .
-	 * 
+	 *
 	 * @param integerString
 	 *            the character sequence to parse.
 	 * @param radix
@@ -287,11 +287,11 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
 	/**
 	 * IntegerSym extended greatest common divisor.
-	 * 
+	 *
 	 * @param that
 	 *            if that is of type IntegerSym calculate the extended GCD otherwise
 	 *            call <code>super#egcd(IExpr)</code>
-	 * 
+	 *
 	 * @return [ gcd(this,S), a, b ] with a*this + b*S = gcd(this,S).
 	 */
 	@Override
@@ -341,7 +341,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 			result[2] = valueOf(c2);
 			return result;
 		}
-		return IInteger.super.egcd(that);
+		return super.egcd(that);
 	}
 
 	/** {@inheritDoc} */
@@ -392,7 +392,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
 	/**
 	 * Get all prime factors of this integer
-	 * 
+	 *
 	 * @param result
 	 *            add the prime factors to this result list
 	 * @return
@@ -534,7 +534,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	 * See: <a href="http://en.wikipedia.org/wiki/Jacobi_symbol">Wikipedia - Jacobi
 	 * symbol</a><br/>
 	 * Book: Algorithmen Arbeitsbuch - D.Herrmann page 160
-	 * 
+	 *
 	 * @param b
 	 * @return
 	 */
@@ -589,7 +589,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	/**
 	 * Returns the least common multiple of this large integer and the one
 	 * specified.
-	 * 
+	 *
 	 */
 	@Override
 	public IInteger lcm(final IInteger that) {
@@ -632,7 +632,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	 * Split this integer into the nth-root (with prime factors less equal 1021) and
 	 * the &quot;rest-factor&quot;, so that
 	 * <code>this== (nth-root ^ n) + rest</code>
-	 * 
+	 *
 	 * @return <code>{nth-root, rest}</code>
 	 */
 	@Override
@@ -680,7 +680,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		if (that instanceof ComplexSym) {
 			return ((ComplexSym) that).add(ComplexSym.valueOf(this)).normalize();
 		}
-		return IInteger.super.plus(that);
+		return super.plus(that);
 	}
 
 	/** {@inheritDoc} */
@@ -742,7 +742,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
 	/**
 	 * The primitive roots of this integer number
-	 * 
+	 *
 	 * @return the primitive roots
 	 * @throws ArithmeticException
 	 */
@@ -829,7 +829,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		if (that instanceof ComplexSym) {
 			return ((ComplexSym) that).multiply(ComplexSym.valueOf(this)).normalize();
 		}
-		return IInteger.super.times(that);
+		return super.times(that);
 	}
 
 	@Override

@@ -10,6 +10,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPatternObject;
 import org.matheclipse.core.interfaces.IPatternSequence;
+import org.matheclipse.core.interfaces.IPatternSequenceImpl;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMap;
@@ -23,7 +24,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  * A concrete pattern sequence implementation (i.e. x__)
  * 
  */
-public class PatternSequence implements IPatternSequence {
+public class PatternSequence extends IPatternSequenceImpl implements IPatternSequence {
 
 	/**
 	 * 
@@ -333,7 +334,7 @@ public class PatternSequence implements IPatternSequence {
 			}
 			return 0;
 		}
-		return IPatternSequence.super.compareTo(expr);
+		return super.compareTo(expr);
 	}
 
 	@Override

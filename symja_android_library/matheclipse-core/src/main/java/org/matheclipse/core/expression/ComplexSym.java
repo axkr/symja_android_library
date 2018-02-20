@@ -1,16 +1,5 @@
 package org.matheclipse.core.expression;
 
-import static org.matheclipse.core.expression.F.ArcTan;
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.CN1D2;
-import static org.matheclipse.core.expression.F.Divide;
-import static org.matheclipse.core.expression.F.Negate;
-import static org.matheclipse.core.expression.F.Pi;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Times;
-
-import java.math.BigInteger;
-
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.hipparchus.fraction.BigFraction;
@@ -30,11 +19,22 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
+import java.math.BigInteger;
+
+import static org.matheclipse.core.expression.F.ArcTan;
+import static org.matheclipse.core.expression.F.C1D2;
+import static org.matheclipse.core.expression.F.CN1D2;
+import static org.matheclipse.core.expression.F.Divide;
+import static org.matheclipse.core.expression.F.Negate;
+import static org.matheclipse.core.expression.F.Pi;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Times;
+
 /**
  * A symbolic complex number implementation
  * 
  */
-public class ComplexSym implements IComplex {
+public class ComplexSym extends IComplexImpl implements IComplex {
 
 	/**
 	 * 
@@ -230,7 +230,7 @@ public class ComplexSym implements IComplex {
 			}
 			return fImaginary.compareTo(((ComplexSym) expr).fImaginary);
 		}
-		return IComplex.super.compareTo(expr);
+		return super.compareTo(expr);
 	}
 
 	@Override
@@ -553,7 +553,7 @@ public class ComplexSym implements IComplex {
 		if (that instanceof IFraction) {
 			return this.add(valueOf((IFraction) that));
 		}
-		return IComplex.super.plus(that);
+		return super.plus(that);
 	}
 
 	@Override
@@ -606,7 +606,7 @@ public class ComplexSym implements IComplex {
 		if (that instanceof IFraction) {
 			return this.multiply(valueOf((IFraction) that));
 		}
-		return IComplex.super.times(that);
+		return super.times(that);
 	}
 
 	@Override

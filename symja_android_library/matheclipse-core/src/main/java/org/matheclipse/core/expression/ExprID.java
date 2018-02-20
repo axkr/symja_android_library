@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import java.io.ObjectStreamException;
 
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IExprImpl;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.IVisitor;
 import org.matheclipse.core.visit.IVisitorBoolean;
@@ -16,7 +17,7 @@ import org.matheclipse.core.visit.IVisitorLong;
  *
  * @see F#GLOBAL_IDS
  */
-public class ExprID implements IExpr {
+public class ExprID extends IExprImpl implements IExpr {
 	@Override
 	public int hashCode() {
 		final int prime = 31;

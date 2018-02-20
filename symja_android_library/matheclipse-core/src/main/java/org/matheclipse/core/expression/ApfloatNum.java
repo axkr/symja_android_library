@@ -1,9 +1,5 @@
 package org.matheclipse.core.expression;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.math.RoundingMode;
-
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.apfloat.ApfloatMath;
@@ -13,6 +9,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.INumImpl;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -22,11 +19,15 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.RoundingMode;
+
 /**
  * <code>INum</code> implementation which wraps a <code>Apfloat</code> value to represent a numeric floating-point
  * number.
  */
-public class ApfloatNum implements INum {
+public class ApfloatNum extends INumImpl implements INum {
 
 	/**
 	 * 
@@ -204,7 +205,7 @@ public class ApfloatNum implements INum {
 			return ApcomplexNum.valueOf(fApfloat, Apcomplex.ZERO)
 					.add(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApfloat.precision()));
 		}
-		return INum.super.plus(that);
+		return super.plus(that);
 	}
 
 	@Override
@@ -331,7 +332,7 @@ public class ApfloatNum implements INum {
 			return ApcomplexNum.valueOf(fApfloat, Apcomplex.ZERO)
 					.multiply(ApcomplexNum.valueOf(cn.getRealPart(), cn.getImaginaryPart(), fApfloat.precision()));
 		}
-		return INum.super.times(that);
+		return super.times(that);
 	}
 
 	/**
@@ -462,7 +463,7 @@ public class ApfloatNum implements INum {
 		if (expr.isSignedNumber()) {
 			return Double.compare(fApfloat.doubleValue(), ((ISignedNumber) expr).doubleValue());
 		}
-		return INum.super.compareTo(expr);
+		return super.compareTo(expr);
 	}
 
 	@Override

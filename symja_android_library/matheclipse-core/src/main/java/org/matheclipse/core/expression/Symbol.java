@@ -178,7 +178,7 @@ public class Symbol extends ISymbolImpl implements ISymbol, Serializable {
 			// sort lexicographically
 			return US_COLLATOR.compare(fSymbolName, ((Symbol) expr).fSymbolName);
 		}
-		return ISymbol.super.compareTo(expr);
+		return super.compareTo(expr);
 	}
 
 	/** {@inheritDoc} */

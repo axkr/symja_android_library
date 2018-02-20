@@ -1,6 +1,6 @@
 package org.matheclipse.core.expression;
 
-import java.math.BigDecimal;
+import com.duy.lang.DDouble;
 
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
@@ -9,6 +9,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.INumImpl;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -18,11 +19,13 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
+import java.math.BigDecimal;
+
 /**
  * <code>INum</code> implementation which wraps a <code>double</code> value to represent a numeric floating-point
  * number.
  */
-public class Num implements INum {
+public class Num extends INumImpl implements INum {
 	/**
 	 * 
 	 */
@@ -164,7 +167,7 @@ public class Num implements INum {
 		if (expr.isSignedNumber()) {
 			return Double.compare(fDouble, ((ISignedNumber) expr).doubleValue());
 		}
-		return INum.super.compareTo(expr);
+		return super.compareTo(expr);
 	}
 
 	@Override
@@ -314,7 +317,7 @@ public class Num implements INum {
 
 	@Override
 	public final int hashCode() {
-		return Double.hashCode(fDouble);
+		return DDouble.hashCode(fDouble);
 	}
 
 	@Override
@@ -531,7 +534,7 @@ public class Num implements INum {
 		if (that instanceof ComplexNum) {
 			return ComplexNum.valueOf(fDouble).add((ComplexNum) that);
 		}
-		return INum.super.plus(that);
+		return super.plus(that);
 	}
 
 	/**
@@ -610,7 +613,7 @@ public class Num implements INum {
 		if (that instanceof ComplexNum) {
 			return ComplexNum.valueOf(fDouble).multiply((ComplexNum) that);
 		}
-		return INum.super.times(that);
+		return super.times(that);
 	}
 
 	/**
