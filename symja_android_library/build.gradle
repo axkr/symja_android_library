@@ -29,6 +29,10 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -64,6 +68,9 @@ repositories {
 }
 
 dependencies {
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.1'
+    androidTestCompile 'com.android.support.test:runner:1.0.1'
+
     compile files('lib/apfloat-1.8.1.jar')
     compile files('lib/commons-csv-1.4.jar')
     compile files('lib/guava-20.0.jar')
