@@ -43,6 +43,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
+import org.matheclipse.core.interfaces.IIteratorImpl;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -472,7 +473,7 @@ public final class ListFunctions {
 			}
 		}
 
-		private static class ArrayIterator implements IIterator<IExpr> {
+		private static class ArrayIterator extends IIteratorImpl<IExpr> implements IIterator<IExpr> {
 			int fCurrent;
 
 			final int fFrom;
@@ -1020,7 +1021,7 @@ public final class ListFunctions {
 			}
 		}
 
-		private static class ArrayIterator implements IIterator<IExpr> {
+		private static class ArrayIterator extends IIteratorImpl<IExpr> implements IIterator<IExpr> {
 			int fCurrent;
 
 			final int fFrom;

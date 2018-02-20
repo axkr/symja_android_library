@@ -1,10 +1,5 @@
 package org.matheclipse.core.eval.util;
 
-import static org.matheclipse.core.expression.F.Divide;
-import static org.matheclipse.core.expression.F.Less;
-import static org.matheclipse.core.expression.F.LessEqual;
-import static org.matheclipse.core.expression.F.Subtract;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.NoEvalException;
 import org.matheclipse.core.expression.F;
@@ -13,10 +8,16 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.IIterator;
+import org.matheclipse.core.interfaces.IIteratorImpl;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+
+import static org.matheclipse.core.expression.F.Divide;
+import static org.matheclipse.core.expression.F.Less;
+import static org.matheclipse.core.expression.F.LessEqual;
+import static org.matheclipse.core.expression.F.Subtract;
 
 /**
  * Create iterators for functions like <code>Table()</code>, <code>Sum()</code>
@@ -24,10 +25,10 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  * @see org.matheclipse.core.reflection.system.Product
  * @see org.matheclipse.core.reflection.system.Sum
- * @see org.matheclipse.core.reflection.system.Table
+ * @see org.matheclipse.core.builtin.ListFunctions.Table
  */
 public class Iterator {
-	public static class ExprIterator implements IIterator<IExpr> {
+	public static class ExprIterator extends IIteratorImpl<IExpr> implements IIterator<IExpr> {
 
 		IExpr count;
 
@@ -243,7 +244,7 @@ public class Iterator {
 		}
 	}
 
-	public static class DoubleIterator implements IIterator<IExpr> {
+	public static class DoubleIterator extends IIteratorImpl<IExpr> implements IIterator<IExpr> {
 		double count;
 
 		double lowerLimit;
@@ -386,7 +387,7 @@ public class Iterator {
 		}
 	}
 
-	public static class RationalIterator implements IIterator<IExpr> {
+	public static class RationalIterator extends IIteratorImpl<IExpr> implements IIterator<IExpr> {
 		IRational count;
 
 		IRational lowerLimit;
@@ -529,7 +530,7 @@ public class Iterator {
 		}
 	}
 
-	public static class ISignedNumberIterator implements IIterator<IExpr> {
+	public static class ISignedNumberIterator extends IIteratorImpl<IExpr> implements IIterator<IExpr> {
 		ISignedNumber count;
 
 		ISignedNumber lowerLimit;
@@ -669,7 +670,7 @@ public class Iterator {
 		}
 	}
 
-	public static class IntIterator implements IIterator<IExpr> {
+	public static class IntIterator extends IIteratorImpl<IExpr> implements IIterator<IExpr> {
 		int count;
 
 		int lowerLimit;
