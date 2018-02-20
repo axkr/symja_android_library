@@ -1,6 +1,10 @@
 package org.matheclipse.core.system;
 
-import junit.framework.TestCase;
+import java.io.StringWriter;
+
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -11,11 +15,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.script.engine.MathScriptEngine;
 
-import java.io.StringWriter;
-
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
+import junit.framework.TestCase;
 
 /**
  * Tests system.reflection classes
