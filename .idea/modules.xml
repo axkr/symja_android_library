@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/sample_app/sample_app.iml" filepath="$PROJECT_DIR$/sample_app/sample_app.iml" />
       <module fileurl="file://$PROJECT_DIR$/symja_android_library/symja_android_library.iml" filepath="$PROJECT_DIR$/symja_android_library/symja_android_library.iml" />
-      <module fileurl="file://$PROJECT_DIR$/symja_android_library-release/symja_android_library-release.iml" filepath="$PROJECT_DIR$/symja_android_library-release/symja_android_library-release.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/symja_android_library_contri.iml" filepath="$PROJECT_DIR$/.idea/modules/symja_android_library_contri.iml" />
     </modules>
   </component>

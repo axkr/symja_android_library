@@ -13,4 +13,4 @@
  * limitations under the License.
  */
 
-include ':symja_android_library', ':sample_app', ':symja_android_library-release'
+include ':symja_android_library'
