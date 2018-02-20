@@ -14,16 +14,15 @@
 
 package com.google.common.util.concurrent;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static java.lang.Thread.currentThread;
-import static java.util.Arrays.asList;
-
 import com.google.common.annotations.GwtIncompatible;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.Ordering;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.j2objc.annotations.J2ObjCIncompatible;
+
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
+
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -35,8 +34,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
 import javax.annotation.Nullable;
-import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static java.lang.Thread.currentThread;
+import static java.util.Arrays.asList;
 
 /**
  * Static methods used to implement {@link Futures#getChecked(Future, Class)}.
@@ -126,22 +129,22 @@ final class FuturesGetChecked {
     enum ClassValueValidator implements GetCheckedTypeValidator {
       INSTANCE;
 
-      /*
-       * Static final fields are presumed to be fastest, based on our experience with
-       * UnsignedBytesBenchmark. TODO(cpovirk): benchmark this
-       */
-      private static final ClassValue<Boolean> isValidClass =
-          new ClassValue<Boolean>() {
-            @Override
-            protected Boolean computeValue(Class<?> type) {
-              checkExceptionClassValidity(type.asSubclass(Exception.class));
-              return true;
-            }
-          };
+//      /*
+//       * Static final fields are presumed to be fastest, based on our experience with
+//       * UnsignedBytesBenchmark. TODO(cpovirk): benchmark this
+//       */
+//      private static final ClassValue<Boolean> isValidClass =
+//          new ClassValue<Boolean>() {
+//            @Override
+//            protected Boolean computeValue(Class<?> type) {
+//              checkExceptionClassValidity(type.asSubclass(Exception.class));
+//              return true;
+//            }
+//          };
 
       @Override
       public void validateClass(Class<? extends Exception> exceptionClass) {
-        isValidClass.get(exceptionClass); // throws if invalid; returns safely (and caches) if valid
+//        isValidClass.get(exceptionClass); // throws if invalid; returns safely (and caches) if valid
       }
     }
 
