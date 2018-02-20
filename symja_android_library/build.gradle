@@ -48,6 +48,9 @@ android {
         test {
             java.srcDirs = ['matheclipse-core/src/test/java/']
         }
+        androidTest {
+            java.srcDirs = ['matheclipse-core/src/androidTest/java/']
+        }
     }
 
     compileOptions {
