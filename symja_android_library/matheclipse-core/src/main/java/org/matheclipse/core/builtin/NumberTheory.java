@@ -52,10 +52,10 @@ import edu.jas.poly.GenPolynomial;
 import edu.jas.ufd.FactorAbstract;
 import edu.jas.ufd.FactorFactory;
 
-import static java.lang.Math.addExact;
-import static java.lang.Math.floorMod;
-import static java.lang.Math.multiplyExact;
-import static java.lang.Math.subtractExact;
+import static com.duy.lang.DMath.addExact;
+import static com.duy.lang.DMath.floorMod;
+import static com.duy.lang.DMath.multiplyExact;
+import static com.duy.lang.DMath.subtractExact;
 import static org.matheclipse.core.expression.F.Binomial;
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
