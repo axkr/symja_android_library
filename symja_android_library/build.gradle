@@ -77,6 +77,7 @@ dependencies {
     testCompile files('lib/junit-4.6.jar')
 
     compile files('lib/Lab4Math-2.0.5.jar')
+
 }
 
 

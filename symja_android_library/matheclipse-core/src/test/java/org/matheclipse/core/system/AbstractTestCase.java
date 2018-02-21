@@ -1,10 +1,6 @@
 package org.matheclipse.core.system;
 
-import java.io.StringWriter;
-
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
+import junit.framework.TestCase;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
@@ -15,7 +11,10 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.script.engine.MathScriptEngine;
 
-import junit.framework.TestCase;
+import java.io.StringWriter;
+
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
 
 /**
  * Tests system.reflection classes
@@ -23,7 +22,7 @@ import junit.framework.TestCase;
 public abstract class AbstractTestCase extends TestCase {
 	protected ScriptEngine fScriptEngine;
 	protected ScriptEngine fNumericScriptEngine;
-	protected static ScriptEngineManager fScriptManager = new ScriptEngineManager();
+	protected final Object mLocker = new Object();
 
 	public AbstractTestCase(String name) {
 		super(name);
@@ -127,12 +126,12 @@ public abstract class AbstractTestCase extends TestCase {
 	@Override
 	protected void setUp() {
 		try {
-			synchronized (fScriptManager) {
-				fScriptEngine = new MathScriptEngine();// fScriptManager.getEngineByExtension("m");
+			synchronized (mLocker) {
+				fScriptEngine = new MathScriptEngine();// mLocker.getEngineByExtension("m");
 				fScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
 				fScriptEngine.put("DECIMAL_FORMAT", "0.0####");
 
-				fNumericScriptEngine = new MathScriptEngine();// fScriptManager.getEngineByExtension("m");
+				fNumericScriptEngine = new MathScriptEngine();// mLocker.getEngineByExtension("m");
 				fNumericScriptEngine.put("RELAXED_SYNTAX", Boolean.TRUE);
 
 				EvalEngine engine = EvalEngine.get();
