@@ -60,11 +60,6 @@
 				<version>2.6.5786</version>
 			</dependency>
 			<dependency>
-				<groupId>de.lab4inf</groupId>
-				<artifactId>Lab4Math</artifactId>
-				<version>2.0.5</version>
-			</dependency>
-			<dependency>
 				<groupId>org.apfloat</groupId>
 				<artifactId>apfloat</artifactId>
 				<version>1.8.3</version>
@@ -322,11 +317,7 @@
 		<repository>
 			<id>jas-repository</id>
 			<url>http://krum.rz.uni-mannheim.de/maven-repository</url>
-		</repository>
-		<repository>
-			<id>Lab4Inf</id>
-			<url>http://www.lab4inf.fh-muenster.de/lab4inf/maven-repository</url>
-		</repository>
+		</repository> 
 		<repository>
 			<id>sonatype</id>
 			<url>https://oss.sonatype.org/content/groups/public/</url>
