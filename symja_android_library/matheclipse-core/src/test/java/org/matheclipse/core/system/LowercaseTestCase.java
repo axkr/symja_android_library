@@ -1,9 +1,6 @@
 package org.matheclipse.core.system;
-
-import java.io.File;
-
+	
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.PatternMatching;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
@@ -3251,8 +3248,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInterval() {
-		// https://de.wikipedia.org/wiki/Intervallarithmetik
-
+		// https://en.wikipedia.org/wiki/Interval_arithmetic
+//		check("Sin(Interval({2, 8}))", "Interval({-1,1})");
+		
+//		check("Sin(Interval({3, 4}))", "Interval({Sin(4),Sin(3)})");
+//		check("Sin(Interval({3, 5}))", "Interval({-1,Sin(3)})");
+//		check("Sin(Interval({4, 7}))", "Interval({-1,Sin(7)})");
+//		check("Sin(Interval({2, 7}))", "Interval({-1,Sin(2)})");
+//		check("Sin(Interval({2, 8}))", "Interval({-1,1})");
+		
 		check("Interval({-1,1})/Infinity", "0");
 		check("Interval({1,1})", "Interval({1,1})");
 
@@ -3298,6 +3302,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Limit(Sin(1/x),x->0)", "Interval({-1,1})");
 		check("Max(Interval({2,4}))", "4");
 		check("Min(Interval({2,4}))", "2");
+		check("u=Interval({-1,1});u+u^2", "Interval({-1,2})");
 	}
 
 	public void testInverse() {
@@ -4029,6 +4034,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMax() {
+		check("Max(Interval({1,2}))", "2");
+		
 		check("Refine(Max(Infinity,x), x>0)", "Infinity");
 		check("Refine(Max(Infinity,x,y), x>0&&y>0)", "Infinity");
 		check("Refine(Max(Infinity,x,y), x>0)", "Max(Infinity,y)");
@@ -4131,6 +4138,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMin() {
+		check("Min(Interval({1,2}))", "1");
+		
 		check("Refine(Min(-Infinity,x), x>0)", "-Infinity");
 		check("Refine(Min(-Infinity,x,y), x>0&&y>0)", "-Infinity");
 		check("Refine(Min(-Infinity,x,y), x>0)", "Min(y,-Infinity)");
@@ -6313,6 +6322,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testRoots() {
 		// check("Roots(a*x^3+b*x^2+c^2+d, x)",
 		// "{(-b/2-Sqrt(b^2-4*a*c)/2)/a,(-b/2+Sqrt(b^2-4*a*c)/2)/a}");
+		check("Roots(x^2-2*x-3==0,x)", "x==-1||x==3");
 		check("Roots(a*x^2+b*x+c==0, x)", "x==(-b/2-Sqrt(b^2-4*a*c)/2)/a||x==(-b/2+Sqrt(b^2-4*a*c)/2)/a");
 		check("Roots(3*x^3-8*x^2+-11*x+10==0,x)", "x==2/3||x==1-Sqrt(6)||x==1+Sqrt(6)");
 		check("Roots(3*x^3-5*x^2+5*x-2==0,x)", "x==2/3||x==1/2-I*1/2*Sqrt(3)||x==1/2+I*1/2*Sqrt(3)");

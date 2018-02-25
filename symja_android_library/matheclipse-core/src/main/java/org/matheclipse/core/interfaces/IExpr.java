@@ -130,18 +130,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public final static int SYMBOLID = 128;
 
 	/**
-	 * Returns an {@code IExpr} describing the specified value, if non-null, otherwise returns {@code F.NIL} .
-	 * 
-	 * @param value
-	 *            the possibly-null value to describe
-	 * @return an {@code IExpr} with a present value if the specified value is non-null, otherwise an empty
-	 *         {@code Optional}
-	 */
-	public static IExpr ofNullable(@Nonnull IExpr value) {
-		return value == null ? F.NIL : value;
-	}
-
-	/**
 	 * Operator overloading for Scala operator <code>/</code>. Calls <code>divide(that)</code>.
 	 * 
 	 * @param that
@@ -394,7 +382,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default public IExpr equalTo(IExpr that) {
 		COMPARE_TERNARY temp = BooleanFunctions.CONST_EQUAL.compareTernary(this, that);
-		return ITernaryComparator.convertToExpr(temp);
+		return ExprUtil.convertToExpr(temp);
 	}
 
 	/**
@@ -580,7 +568,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default public IExpr greaterEqualThan(IExpr that) {
 		COMPARE_TERNARY temp = BooleanFunctions.CONST_GREATER_EQUAL.prepareCompare(this, that);
-		return ITernaryComparator.convertToExpr(temp);
+		return ExprUtil.convertToExpr(temp);
 	}
 
 	/**
@@ -596,7 +584,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default public IExpr greaterThan(IExpr that) {
 		COMPARE_TERNARY temp = BooleanFunctions.CONST_GREATER.prepareCompare(this, that);
-		return ITernaryComparator.convertToExpr(temp);
+		return ExprUtil.convertToExpr(temp);
 	}
 
 	/**
@@ -2500,7 +2488,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default public IExpr lessEqualThan(IExpr that) {
 		COMPARE_TERNARY temp = BooleanFunctions.CONST_LESS_EQUAL.prepareCompare(this, that);
-		return ITernaryComparator.convertToExpr(temp);
+		return ExprUtil.convertToExpr(temp);
 	}
 
 	/**
@@ -2516,7 +2504,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default public IExpr lessThan(IExpr that) {
 		COMPARE_TERNARY temp = BooleanFunctions.CONST_LESS.prepareCompare(this, that);
-		return ITernaryComparator.convertToExpr(temp);
+		return ExprUtil.convertToExpr(temp);
 	}
 
 	/**
@@ -3194,7 +3182,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default public IExpr unequalTo(IExpr that) {
 		COMPARE_TERNARY temp = BooleanFunctions.CONST_EQUAL.compareTernary(this, that);
-		return ITernaryComparator.convertToExpr(temp);
+		return ExprUtil.convertToExpr(temp);
 	}
 
 	/**
