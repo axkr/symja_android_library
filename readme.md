@@ -1,8 +1,8 @@
 ## Symja Library - Java Symbolic Math System
 
-**Note**: this repository contains the **Java 8** version of the project. The [NCalc](https://github.com/tranleduy2000/ncalc) and [Natural Calc](https://github.com/tranleduy2000/naturalcalc)  projects maintains a [Java 7 branch based on Retrolambda](https://github.com/tranleduy2000/symja_java7).
+**Note**: this repository contains the **Java 8** version of the project. The [NCalc](https://github.com/tranleduy2000/ncalc) and [Natural Calc](https://github.com/tranleduy2000/naturalcalc)  projects maintains a [Java 7 branch based on Retrolambda](https://github.com/tranleduy2000/symja_android_library).
 
-- [Quick start](#quick-start)
+- [Quick start](#quick-start) 
 - [Features](#features)
 - [Demos](#demos)
 - [Examples](#examples)
@@ -17,8 +17,6 @@
 Read the [Symja Manual](symja_android_library/doc/index.md) for the description of the Symja language.
 
 [![Join the chat at https://gitter.im/symja_android_library/Lobby](https://badges.gitter.im/symja_android_library/Lobby.svg)](https://gitter.im/symja_android_library/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-Hosted on Algorithmia.com @[![Algorithmia.com](https://algorithmia.com/algorithms/axelclk/Computeralgebra/badge)](https://algorithmia.com/algorithms/axelclk/Computeralgebra)
 
 ### Features
 
