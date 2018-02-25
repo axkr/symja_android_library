@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
-import java.util.Collection;
-import java.util.List;
 import java.util.RandomAccess;
 import java.util.Set;
 import java.util.function.DoubleUnaryOperator;
@@ -15,6 +13,7 @@ import java.util.function.Predicate;
 
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.RealMatrix;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
@@ -22,7 +21,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
-import jdk.nashorn.internal.runtime.regexp.joni.Config;
 
 /**
  * <p>

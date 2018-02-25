@@ -3706,7 +3706,7 @@ public class F {
 	 *            maximum value of the interval
 	 * @return
 	 */
-	public static IAST Interval(final ISignedNumber min, ISignedNumber max) {
+	public static IAST Interval(final IExpr min, final IExpr max) {
 		return unaryAST1(Interval, binaryAST2(List, min, max));
 	}
 
