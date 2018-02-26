@@ -1523,12 +1523,12 @@ public class F {
 			createNumeratorFunctionMap();
 
 			ConstantDefinitions.initialize();
+			FunctionDefinitions.initialize();
 			Programming.initialize();
 			PatternMatching.initialize();
 			Algebra.initialize();
 			Structure.initialize();
 			ExpTrigsFunctions.initialize();
-			FunctionDefinitions.initialize();
 			NumberTheory.initialize();
 			BooleanFunctions.initialize();
 			LinearAlgebra.initialize();

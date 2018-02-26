@@ -8,7 +8,6 @@ public final class FunctionDefinitions {
 		BesselJ.setEvaluator(new org.matheclipse.core.reflection.system.BesselJ());
 		ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
 		ContinuedFraction.setEvaluator(new org.matheclipse.core.reflection.system.ContinuedFraction());
-		CosIntegral.setEvaluator(new org.matheclipse.core.reflection.system.CosIntegral());
 		Curl.setEvaluator(new org.matheclipse.core.reflection.system.Curl());
 		D.setEvaluator(new org.matheclipse.core.reflection.system.D());
 		Default.setEvaluator(new org.matheclipse.core.reflection.system.Default());
@@ -19,14 +18,10 @@ public final class FunctionDefinitions {
 		EasterSunday.setEvaluator(new org.matheclipse.core.reflection.system.EasterSunday());
 		ElementData.setEvaluator(new org.matheclipse.core.data.ElementData());
 		Eliminate.setEvaluator(new org.matheclipse.core.reflection.system.Eliminate());
-		EllipticE.setEvaluator(new org.matheclipse.core.reflection.system.EllipticE());
-		EllipticPi.setEvaluator(new org.matheclipse.core.reflection.system.EllipticPi());
 		Export.setEvaluator(new org.matheclipse.core.reflection.system.Export());
 		FindInstance.setEvaluator(new org.matheclipse.core.reflection.system.FindInstance());
 		FindRoot.setEvaluator(new org.matheclipse.core.reflection.system.FindRoot());
 		Fit.setEvaluator(new org.matheclipse.core.reflection.system.Fit());
-		FresnelC.setEvaluator(new org.matheclipse.core.reflection.system.FresnelC());
-		FresnelS.setEvaluator(new org.matheclipse.core.reflection.system.FresnelS());
 		FrobeniusSolve.setEvaluator(new org.matheclipse.core.reflection.system.FrobeniusSolve());
 		FromContinuedFraction.setEvaluator(new org.matheclipse.core.reflection.system.FromContinuedFraction());
 		FromPolarCoordinates.setEvaluator(new org.matheclipse.core.reflection.system.FromPolarCoordinates());
@@ -69,7 +64,6 @@ public final class FunctionDefinitions {
 		Share.setEvaluator(new org.matheclipse.core.reflection.system.Share());
 		Sign.setEvaluator(new org.matheclipse.core.reflection.system.Sign());
 		SignCmp.setEvaluator(new org.matheclipse.core.reflection.system.SignCmp());
-		SinIntegral.setEvaluator(new org.matheclipse.core.reflection.system.SinIntegral());
 		Solve.setEvaluator(new org.matheclipse.core.reflection.system.Solve());
 		Sum.setEvaluator(new org.matheclipse.core.reflection.system.Sum());
 		Taylor.setEvaluator(new org.matheclipse.core.reflection.system.Taylor());

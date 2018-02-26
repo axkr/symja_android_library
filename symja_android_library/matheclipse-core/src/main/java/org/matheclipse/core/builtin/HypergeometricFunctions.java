@@ -9,9 +9,13 @@ import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Times;
 
+import java.util.function.DoubleUnaryOperator;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -26,6 +30,11 @@ public class HypergeometricFunctions {
 	static {
 		F.ChebyshevT.setEvaluator(new ChebyshevT());
 		F.ChebyshevU.setEvaluator(new ChebyshevU());
+		F.CosIntegral.setEvaluator(new CosIntegral());
+		F.EllipticE.setEvaluator(new EllipticE());
+		F.EllipticPi.setEvaluator(new EllipticPi());
+		F.FresnelC.setEvaluator(new FresnelC());
+		F.FresnelS.setEvaluator(new FresnelS());
 		F.GegenbauerC.setEvaluator(new GegenbauerC());
 		F.HermiteH.setEvaluator(new HermiteH());
 		F.Hypergeometric1F1.setEvaluator(new Hypergeometric1F1());
@@ -33,6 +42,8 @@ public class HypergeometricFunctions {
 		F.LaguerreL.setEvaluator(new LaguerreL());
 		F.LegendreP.setEvaluator(new LegendreP());
 		F.LegendreQ.setEvaluator(new LegendreQ());
+		F.SinIntegral.setEvaluator(new SinIntegral());
+		
 	}
 
 	private final static class ChebyshevT extends AbstractFunctionEvaluator {
@@ -93,6 +104,232 @@ public class HypergeometricFunctions {
 			if (arg2.isOne()) {
 				return F.Plus(F.C1, arg1);
 			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
+	private static class CosIntegral extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
+		@Override
+		public double applyAsDouble(double operand) {
+			return de.lab4inf.math.functions.CosineIntegral.ci(operand);
+		}
+
+		@Override
+		public IExpr e1DblArg(final double arg1) {
+			return F.num(de.lab4inf.math.functions.CosineIntegral.ci(arg1));
+		}
+
+		@Override
+		public double evalReal(final double[] stack, final int top, final int size) {
+			if (size != 1) {
+				throw new UnsupportedOperationException();
+			}
+			return de.lab4inf.math.functions.CosineIntegral.ci(stack[top]);
+		}
+
+		@Override
+		public IExpr evaluateArg1(final IExpr arg1) {
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
+	private static class EllipticE extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			if (ast.isAST3()) {
+				if (ast.arg1().isSignedNumber() && ast.arg2().isSignedNumber()) {
+					double a = ((ISignedNumber) ast.arg1()).doubleValue();
+					double b = ((ISignedNumber) ast.arg2()).doubleValue();
+					try {
+						return F.num(de.lab4inf.math.functions.IncompleteSecondEllipticIntegral.icseint(a, b));
+					} catch (RuntimeException rex) {
+						engine.printMessage("EllipticE: " + rex.getMessage());
+					}
+				}
+			}
+			if (ast.arg1().isSignedNumber()) {
+				double a = ((ISignedNumber) ast.arg1()).doubleValue();
+				try {
+					return F.num(de.lab4inf.math.functions.CompleteSecondEllipticIntegral.cseint(a));
+				} catch (RuntimeException rex) {
+					engine.printMessage("EllipticE: " + rex.getMessage());
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
+	private static class EllipticPi extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 3, 4);
+
+			if (ast.isAST3()) {
+				if (ast.arg1().isSignedNumber() && ast.arg2().isSignedNumber() && ast.arg3().isSignedNumber()) {
+					double a = ((ISignedNumber) ast.arg1()).doubleValue();
+					double b = ((ISignedNumber) ast.arg2()).doubleValue();
+					double c = ((ISignedNumber) ast.arg3()).doubleValue();
+					try {
+						return F.num(de.lab4inf.math.functions.IncompleteThirdEllipticIntegral.icteint(a, b, c));
+					} catch (RuntimeException rex) {
+						engine.printMessage("EllipticPi: " + rex.getMessage());
+					}
+				}
+				return F.NIL;
+			}
+			if (ast.arg1().isSignedNumber() && ast.arg2().isSignedNumber()) {
+				double a = ((ISignedNumber) ast.arg1()).doubleValue();
+				double b = ((ISignedNumber) ast.arg2()).doubleValue();
+				try {
+					return F.num(de.lab4inf.math.functions.CompleteThirdEllipticIntegral.cteint(a, b));
+				} catch (RuntimeException rex) {
+					engine.printMessage("EllipticPi: " + rex.getMessage());
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
+	private static class FresnelC extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
+
+		@Override
+		public double applyAsDouble(double operand) {
+			return de.lab4inf.math.functions.FresnelC.fresnelC(operand);
+		}
+
+		@Override
+		public IExpr e1DblArg(final double arg1) {
+			return F.num(de.lab4inf.math.functions.FresnelC.fresnelC(arg1));
+		}
+
+		@Override
+		public double evalReal(final double[] stack, final int top, final int size) {
+			if (size != 1) {
+				throw new UnsupportedOperationException();
+			}
+			return de.lab4inf.math.functions.FresnelC.fresnelC(stack[top]);
+		}
+
+		@Override
+		public IExpr evaluateArg1(final IExpr arg1) {
+			if (arg1.isNumber()) {
+				if (arg1.isZero()) {
+					return F.C0;
+				}
+			}
+			if (arg1.isInfinity()) {
+				return F.C1D2;
+			}
+			if (arg1.isNegativeInfinity()) {
+				return F.CN1D2;
+			}
+			if (arg1.equals(F.CIInfinity)) {
+				return F.Divide(F.CI, F.C2);
+			}
+			if (arg1.equals(F.CNIInfinity)) {
+				return F.Divide(F.CNI, F.C2);
+			}
+			if (arg1.equals(F.CComplexInfinity)) {
+				return F.Indeterminate;
+			}
+			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+			if (negExpr.isPresent()) {
+				return F.Negate(F.FresnelC(negExpr));
+			}
+			IExpr restExpr = AbstractFunctionEvaluator.extractFactorFromExpression(arg1, F.CI);
+			if (restExpr.isPresent()) {
+				return F.Times(F.CI, F.FresnelC(restExpr));
+			}
+
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
+	private static class FresnelS extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
+
+		@Override
+		public double applyAsDouble(double operand) {
+			return de.lab4inf.math.functions.FresnelS.fresnelS(operand);
+		}
+
+		@Override
+		public IExpr e1DblArg(final double arg1) {
+			return F.num(de.lab4inf.math.functions.FresnelS.fresnelS(arg1));
+		}
+
+		@Override
+		public double evalReal(final double[] stack, final int top, final int size) {
+			if (size != 1) {
+				throw new UnsupportedOperationException();
+			}
+			return de.lab4inf.math.functions.FresnelS.fresnelS(stack[top]);
+		}
+
+		@Override
+		public IExpr evaluateArg1(final IExpr arg1) {
+			if (arg1.isNumber()) {
+				if (arg1.isZero()) {
+					return F.C0;
+				}
+			}
+			if (arg1.isInfinity()) {
+				return F.C1D2;
+			}
+			if (arg1.isNegativeInfinity()) {
+				return F.CN1D2;
+			}
+			if (arg1.equals(F.CIInfinity)) {
+				return F.Divide(F.CNI, F.C2);
+			}
+			if (arg1.equals(F.CNIInfinity)) {
+				return F.Divide(F.CI, F.C2);
+			}
+			if (arg1.equals(F.CComplexInfinity)) {
+				return F.Indeterminate;
+			}
+			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+			if (negExpr.isPresent()) {
+				return F.Negate(F.FresnelS(negExpr));
+			}
+			IExpr restExpr = AbstractFunctionEvaluator.extractFactorFromExpression(arg1, F.CI);
+			if (restExpr.isPresent()) {
+				return F.Times(F.CNI, F.FresnelS(restExpr));
+			}
+
 			return F.NIL;
 		}
 
@@ -358,6 +595,38 @@ public class HypergeometricFunctions {
 			return RULES;
 		}
 
+	}
+
+	private static class SinIntegral extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
+
+		@Override
+		public double applyAsDouble(double operand) {
+			return de.lab4inf.math.functions.SineIntegral.si(operand);
+		}
+
+		@Override
+		public IExpr e1DblArg(final double arg1) {
+			return F.num(de.lab4inf.math.functions.SineIntegral.si(arg1));
+		}
+
+		@Override
+		public double evalReal(final double[] stack, final int top, final int size) {
+			if (size != 1) {
+				throw new UnsupportedOperationException();
+			}
+			return de.lab4inf.math.functions.SineIntegral.si(stack[top]);
+		}
+
+		@Override
+		public IExpr evaluateArg1(final IExpr arg1) {
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
 	}
 
 	private final static HypergeometricFunctions CONST = new HypergeometricFunctions();
