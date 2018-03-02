@@ -23,7 +23,7 @@ public class SVGGraphicsTestCase extends AbstractTestCase {
 
 	public void testPoint002() {
 
-		checkSVGGraphics("Show(Graphics(Point(Table({t, Sin(t)}, {t, 0, 2 Pi, 2 Pi/10}))))",
+		checkSVGGraphics("Show(Graphics(Point(Table({t, Sin(t)}, {t, 0, 2*Pi, 2*Pi/10}))))",
 				"<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\" viewBox=\"-1.666667 -1.666667 353.333333 353.333333\" width=\"350px\" height=\"350px\">\n" + 
 				"<circle cx=\"0.0\" cy=\"175.0\" r=\"1.0\" \n" + 
 				"      style=\"stroke: none; stroke-width: 0.000000px; fill: rgb(0.0%, 0.0%, 0.0%); fill-opacity: 1\" />\n" + 

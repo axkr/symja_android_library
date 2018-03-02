@@ -87,7 +87,7 @@ public class BasicTeXTestCase extends TestCase {
 
 	public void testTeX014() {
 		check("Sin(x)^2", "{\\sin(x)}^{2}");
-		check("Sin(2x)^2", "{\\sin(2\\,x)}^{2}");
+		check("Sin(2*x)^2", "{\\sin(2\\,x)}^{2}");
 	}
 
 	public void testTeX015() {
@@ -133,7 +133,7 @@ public class BasicTeXTestCase extends TestCase {
 		check("Hold(1 * 5 * x + 1 * 63)", "\\text{Hold}(5\\,x+63)");
 		check("10*f(x)", "10\\,f(x)");
 		check("Hold((5*3)/2)", "\\text{Hold}(\\frac{3\\cdot 5}{2})");
-		check("Integrate(8+5x, {x, 5, 10})", "\\int_{5}^{10} 8+5\\,x\\,\\mathrm{d}x");
+		check("Integrate(8+5*x, {x, 5, 10})", "\\int_{5}^{10} 8+5\\,x\\,\\mathrm{d}x");
 	}
 	
 	public void testTeX021() {

@@ -72,19 +72,19 @@ public class MathScriptEngine extends AbstractScriptEngine {
 
 	@Override
 	public Object eval(final String script, final ScriptContext context) throws ScriptException {
-		final ArrayList<ISymbol> list = new ArrayList<ISymbol>();
+		// final ArrayList<ISymbol> list = new ArrayList<ISymbol>();
 		boolean relaxedSyntax = false;
 		try {
 			// first assign the EvalEngine to the current thread:
 			fUtility.startRequest();
 
-			final Bindings bindings = context.getBindings(ScriptContext.ENGINE_SCOPE);
-			ISymbol symbol;
-			for (Map.Entry<String, Object> currEntry : bindings.entrySet()) {
-				symbol = F.userSymbol(currEntry.getKey(), fEngine);
-				symbol.pushLocalVariable(Object2Expr.convert(currEntry.getValue()));
-				list.add(symbol);
-			}
+			// final Bindings bindings = context.getBindings(ScriptContext.ENGINE_SCOPE);
+			// ISymbol symbol;
+			// for (Map.Entry<String, Object> currEntry : bindings.entrySet()) {
+			// symbol = F.userSymbol(currEntry.getKey(), fEngine);
+			// symbol.pushLocalVariable(Object2Expr.convert(currEntry.getValue()));
+			// list.add(symbol);
+			// }
 
 			final Object decimalFormat = get("DECIMAL_FORMAT");
 			if (decimalFormat instanceof String) {
@@ -167,11 +167,11 @@ public class MathScriptEngine extends AbstractScriptEngine {
 			}
 			return "StackOverflowError";
 		} finally {
-			if (list.size() > 0) {
-				for (int i = 0; i < list.size(); i++) {
-					list.get(i).popLocalVariable();
-				}
-			}
+			// if (list.size() > 0) {
+			// for (int i = 0; i < list.size(); i++) {
+			// list.get(i).popLocalVariable();
+			// }
+			// }
 			EvalEngine.remove();
 		}
 

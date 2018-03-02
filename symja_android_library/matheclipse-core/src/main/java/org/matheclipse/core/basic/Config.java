@@ -162,4 +162,9 @@ public class Config {
 	public static boolean isFileSystemEnabled(EvalEngine engine) {
 		return FILESYSTEM_ENABLED || engine.isFileSystemEnabled();
 	}
+
+	/**
+	 * If <code>true</code> the <code>*</code> operator must be written for a <code>Times()</code> expression.
+	 */
+	public static boolean EXPLICIT_TIMES_OPERATOR = false;
 }

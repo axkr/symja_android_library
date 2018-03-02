@@ -18,6 +18,7 @@ package org.matheclipse.core.parser;
 import java.util.HashMap;
 import java.util.List;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.parser.client.Characters;
 import org.matheclipse.parser.client.SyntaxError;
 
@@ -162,7 +163,7 @@ public class ExprScanner {
 	 * Token type: pattern placeholder '_'
 	 */
 	final static public int TT_BLANK = 142;
-	
+
 	final static public int TT_BLANK_BLANK = 143;
 
 	final static public int TT_BLANK_BLANK_BLANK = 144;
@@ -689,38 +690,40 @@ public class ExprScanner {
 			dFlag = fCurrentChar;
 		}
 		getChar();
-		if (firstCh == '0') {
-			switch (fCurrentChar) {
-			case 'b': // binary format
-				numFormat = 2;
-				startPosition = fCurrentPosition;
-				getChar();
-				break;
-			case 'B': // binary format
-				numFormat = 2;
-				startPosition = fCurrentPosition;
-				getChar();
-				break;
-			case 'o': // octal format
-				numFormat = 8;
-				startPosition = fCurrentPosition;
-				getChar();
-				break;
-			case 'O': // octal format
-				numFormat = 8;
-				startPosition = fCurrentPosition;
-				getChar();
-				break;
-			case 'x': // hexadecimal format
-				numFormat = 16;
-				startPosition = fCurrentPosition;
-				getChar();
-				break;
-			case 'X': // hexadecimal format
-				numFormat = 16;
-				startPosition = fCurrentPosition;
-				getChar();
-				break;
+		if (Config.EXPLICIT_TIMES_OPERATOR) {
+			if (firstCh == '0') {
+				switch (fCurrentChar) {
+				case 'b': // binary format
+					numFormat = 2;
+					startPosition = fCurrentPosition;
+					getChar();
+					break;
+				case 'B': // binary format
+					numFormat = 2;
+					startPosition = fCurrentPosition;
+					getChar();
+					break;
+				case 'o': // octal format
+					numFormat = 8;
+					startPosition = fCurrentPosition;
+					getChar();
+					break;
+				case 'O': // octal format
+					numFormat = 8;
+					startPosition = fCurrentPosition;
+					getChar();
+					break;
+				case 'x': // hexadecimal format
+					numFormat = 16;
+					startPosition = fCurrentPosition;
+					getChar();
+					break;
+				case 'X': // hexadecimal format
+					numFormat = 16;
+					startPosition = fCurrentPosition;
+					getChar();
+					break;
+				}
 			}
 		}
 
@@ -744,14 +747,8 @@ public class ExprScanner {
 					if ((fCurrentChar == '.') && (dFlag != ' ')) {
 						break;
 					}
-					// if ((dFlag == 'E') || (dFlag == 'e')) {
-					// break;
-					// }
 					dFlag = fCurrentChar;
 					getChar();
-					// if ((ch == '-') || (ch == '+')) {
-					// getChar();
-					// }
 				} else {
 					getChar();
 				}
@@ -760,8 +757,10 @@ public class ExprScanner {
 				numFormat = -1;
 			}
 		}
-		if (numFormat < 0) {
-			if ((fCurrentChar == 'E') || (fCurrentChar == 'e')) {
+
+		if ((fCurrentChar == 'E') || (fCurrentChar == 'e')) {
+			if (Config.EXPLICIT_TIMES_OPERATOR) {
+				numFormat = -1;
 				getChar();
 				if ((fCurrentChar == '+') || (fCurrentChar == '-')) {
 					getChar();
@@ -769,7 +768,9 @@ public class ExprScanner {
 				while (((fCurrentChar >= '0') && (fCurrentChar <= '9'))) {
 					getChar();
 				}
-			} else {
+			}
+		} else {
+			if (numFormat < 0) {
 				if (fCurrentChar == '*') {
 					int lastPosition = fCurrentPosition;
 					getChar();
@@ -791,6 +792,7 @@ public class ExprScanner {
 				}
 			}
 		}
+
 		// }
 		int endPosition = fCurrentPosition--;
 		result[0] = fInputString.substring(startPosition, --endPosition);

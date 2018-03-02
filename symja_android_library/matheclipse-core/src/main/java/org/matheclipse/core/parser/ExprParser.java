@@ -392,7 +392,9 @@ public class ExprParser extends ExprScanner {
 			}
 			getNextToken();
 			if (fToken == TT_PRECEDENCE_OPEN) {
-				return getTimes(temp);
+				if (!Config.EXPLICIT_TIMES_OPERATOR) {
+					return getTimes(temp);
+				}
 			}
 			if (fToken == TT_ARGUMENTS_OPEN) {
 				return getFunctionArguments(temp);
@@ -1068,15 +1070,15 @@ public class ExprParser extends ExprScanner {
 				// '\n') {
 				// return lhs;
 				// }
-				// lazy evaluation of multiplication
-				oper = fFactory.get("Times");
-				if (oper.getPrecedence() >= min_precedence) {
-					rhs = parseLookaheadOperator(oper.getPrecedence());
-					lhs = F.$(F.$s(oper.getFunctionName()), lhs, rhs);
-					// lhs =
-					// fFactory.createFunction(fFactory.createSymbol(oper.getFunctionName()),
-					// lhs, rhs);
-					continue;
+
+				if (!Config.EXPLICIT_TIMES_OPERATOR) {
+					// lazy evaluation of multiplication
+					oper = fFactory.get("Times");
+					if (oper.getPrecedence() >= min_precedence) {
+						rhs = parseLookaheadOperator(oper.getPrecedence());
+						lhs = F.$(F.$s(oper.getFunctionName()), lhs, rhs);
+						continue;
+					}
 				}
 			} else {
 				if (fToken == TT_DERIVATIVE) {
@@ -1150,18 +1152,17 @@ public class ExprParser extends ExprScanner {
 			}
 			if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN) || (fToken == TT_IDENTIFIER)
 					|| (fToken == TT_STRING) || (fToken == TT_DIGIT) || (fToken == TT_SLOT)) {
-				// if (fPackageMode && fRecursionDepth < 1) {
-				// return rhs;
-				// }
-				// lazy evaluation of multiplication
-				InfixExprOperator timesOperator = (InfixExprOperator) fFactory.get("Times");
-				if (timesOperator.getPrecedence() > min_precedence) {
-					rhs = parseExpression(rhs, timesOperator.getPrecedence());
-					continue;
-				} else if ((timesOperator.getPrecedence() == min_precedence)
-						&& (timesOperator.getGrouping() == InfixExprOperator.RIGHT_ASSOCIATIVE)) {
-					rhs = parseExpression(rhs, timesOperator.getPrecedence());
-					continue;
+				if (!Config.EXPLICIT_TIMES_OPERATOR) {
+					// lazy evaluation of multiplication
+					InfixExprOperator timesOperator = (InfixExprOperator) fFactory.get("Times");
+					if (timesOperator.getPrecedence() > min_precedence) {
+						rhs = parseExpression(rhs, timesOperator.getPrecedence());
+						continue;
+					} else if ((timesOperator.getPrecedence() == min_precedence)
+							&& (timesOperator.getGrouping() == InfixExprOperator.RIGHT_ASSOCIATIVE)) {
+						rhs = parseExpression(rhs, timesOperator.getPrecedence());
+						continue;
+					}
 				}
 			} else {
 				if (fToken == TT_DERIVATIVE) {

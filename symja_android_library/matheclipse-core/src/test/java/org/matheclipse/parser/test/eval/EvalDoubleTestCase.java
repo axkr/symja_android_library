@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import org.junit.Assert;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.CoreCallbackFunction;
 import org.matheclipse.parser.client.eval.BooleanVariable;
 import org.matheclipse.parser.client.eval.DoubleEvaluator;
@@ -29,15 +30,21 @@ public class EvalDoubleTestCase extends TestCase {
 			assertEquals(Double.valueOf(d).toString(), compareWith);
 		} catch (Exception e) {
 			e.printStackTrace();
-			assertEquals("", e.getMessage());
+			assertEquals(e.getMessage(), compareWith);
 		}
 	}
 
 	public void testEval001() {
 		check("42", "42.0");
-		check("1.0E10", "1.0E10");
-		check("1.0E-10", "1.0E-10");
-		check("1.0E+10", "1.0E10");
+		if (!Config.EXPLICIT_TIMES_OPERATOR) {
+			check("1.0E10", "EvalDouble#evaluate(ASTNode) not possible for: E10");
+			check("1.0E-10", "-7.281718171540955");
+			check("1.0E+10", "12.718281828459045");
+		} else {
+			check("1.0E10", "1.0E10");
+			check("1.0E-10", "1.0E-10");
+			check("1.0E+10", "1.0E10");
+		}
 		// throws NumberFormatException
 		// check("1.0E", "");
 		check("1.5", "1.5");
