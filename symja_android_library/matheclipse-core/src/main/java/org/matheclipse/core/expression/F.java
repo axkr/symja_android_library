@@ -46,6 +46,8 @@ import org.matheclipse.core.builtin.TensorFunctions;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.util.IAssumptions;
+import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -1939,23 +1941,6 @@ public class F {
 	}
 
 	/**
-	 * <p>
-	 * Get or create a global predefined symbol which is retrieved from the SYSTEM context map or created or retrieved
-	 * from the SYSTEM context variables map.
-	 * </p>
-	 * <p>
-	 * <b>Note:</b> user defined variables on the context path are defined with method <code>userSymbol()</code>
-	 * </p>
-	 * 
-	 * @param symbolName
-	 *            the name of the symbol
-	 * @return
-	 */
-	public static ISymbol symbol(final String symbolName) {
-		return $s(symbolName, true);
-	}
-
-	/**
 	 * Converts an arbitrary expression to a type that can be used inside Symja.
 	 * 
 	 * For example, it will convert Java <code>Integer</code> into instance of <code>IntegerSym</code>,
@@ -2024,7 +2009,7 @@ public class F {
 				}
 			}
 			// symbol = new BuiltInSymbol(name);
-			symbol = userSymbol(name, EvalEngine.get());
+			symbol = symbol(name, EvalEngine.get());
 			// engine.putUserVariable(name, symbol);
 			HIDDEN_SYMBOLS_MAP.put(name, symbol);
 			if (name.charAt(0) == '$') {
@@ -2032,7 +2017,7 @@ public class F {
 			}
 		} else {
 			// symbol = new BuiltInSymbol(name);
-			symbol = userSymbol(name, EvalEngine.get());
+			symbol = symbol(name);
 			HIDDEN_SYMBOLS_MAP.put(name, symbol);
 			// if (symbol.isBuiltInSymbol()) {
 			// if (!setEval) {
@@ -3398,11 +3383,11 @@ public class F {
 		return ast(Graphics);
 	}
 
-	public static IExpr Greater(final IExpr a0, final IExpr a1) {
+	public static IAST Greater(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Greater, a0, a1);
 	}
 
-	public static IExpr GreaterEqual(final IExpr a0, final IExpr a1) {
+	public static IAST GreaterEqual(final IExpr a0, final IExpr a1) {
 		return binaryAST2(GreaterEqual, a0, a1);
 	}
 
@@ -3879,7 +3864,7 @@ public class F {
 		return unaryAST1(Length, a);
 	}
 
-	public static IExpr Less(final IExpr a0, final IExpr a1) {
+	public static IAST Less(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Less, a0, a1);
 	}
 
@@ -3895,7 +3880,7 @@ public class F {
 		return quinary(Less, a0, a1, a2, a3, a4);
 	}
 
-	public static IExpr LessEqual(final IExpr a0, final IExpr a1) {
+	public static IAST LessEqual(final IExpr a0, final IExpr a1) {
 		return binaryAST2(LessEqual, a0, a1);
 	}
 
@@ -4785,8 +4770,8 @@ public class F {
 	 *            the name of the symbol
 	 * @return the symbol object from the context path
 	 */
-	public static ISymbol userSymbol(final String symbolName) {
-		return userSymbol(symbolName, EvalEngine.get());
+	public static ISymbol symbol(final String symbolName) {
+		return symbol(symbolName, null, EvalEngine.get());
 	}
 
 	/**
@@ -4798,8 +4783,84 @@ public class F {
 	 *            the evaluation engine
 	 * @return the symbol object from the context path
 	 */
+	public static ISymbol symbol(final String symbolName, EvalEngine engine) {
+		return symbol(symbolName, null, engine);
+	}
+
+	/**
+	 * Get or create a user defined symbol which is retrieved from the evaluation engines context path. Additional set
+	 * assumptions to the engines global assumptions. Use <code>#1</code> or {@link F#Slot1} in the
+	 * <code>assumptionAST</code> expression for this symbol.
+	 * 
+	 * @param symbolName
+	 *            the name of the symbol
+	 * @param assumptionAST
+	 *            the assumptions which should be set for the symbol. Use <code>#1</code> or {@link F#Slot1} in the
+	 *            <code>assumptionAST</code> expression for this symbol.
+	 * @return the symbol object from the context path
+	 */
+	public static ISymbol symbol(final String symbolName, IAST assumptionAST) {
+		return symbol(symbolName, assumptionAST, EvalEngine.get());
+	}
+
+	/**
+	 * Get or create a user defined symbol which is retrieved from the evaluation engines context path. Additional set
+	 * assumptions to the engines global assumptions. Use <code>#1</code> or {@link F#Slot1} in the
+	 * <code>assumptionAST</code> expression for this symbol.
+	 * 
+	 * @param symbolName
+	 *            the name of the symbol
+	 * @param assumptionAST
+	 *            the assumptions which should be set for the symbol. Use <code>#1</code> or {@link F#Slot1} in the
+	 *            <code>assumptionAST</code> expression for this symbol.
+	 * @param engine
+	 *            the evaluation engine
+	 * @return the symbol object from the context path
+	 */
+	public static ISymbol symbol(final String symbolName, IAST assumptionAST, EvalEngine engine) {
+		ISymbol symbol = engine.getContextPath().getSymbol(symbolName);
+		if (assumptionAST != null) {
+			IExpr temp = Lambda.replaceSlots(assumptionAST, F.List(symbol));
+			if (!temp.isPresent()) {
+				temp = assumptionAST;
+			}
+			if (temp.isAST()) {
+				IAssumptions assumptions = engine.getAssumptions();
+				if (assumptions == null) {
+					assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(temp);
+					engine.setAssumptions(assumptions);
+				} else {
+					assumptions.addAssumption((IAST) temp);
+				}
+			}
+		}
+		return symbol;
+	}
+
+	/**
+	 * Get or create a user defined symbol which is retrieved from the evaluation engines context path.
+	 * 
+	 * @param symbolName
+	 *            the name of the symbol
+	 * @return the symbol object from the context path
+	 * @deprecated use {@link #symbol(String)}
+	 */
+	public static ISymbol userSymbol(final String symbolName) {
+		return symbol(symbolName, null, EvalEngine.get());
+	}
+
+	/**
+	 * Get or create a user defined symbol which is retrieved from the evaluation engines context path.
+	 * 
+	 * @param symbolName
+	 *            the name of the symbol
+	 * @param engine
+	 *            the evaluation engine
+	 * @return the symbol object from the context path
+	 * @deprecated use {@link #symbol(String, EvalEngine)}
+	 */
 	public static ISymbol userSymbol(final String symbolName, EvalEngine engine) {
-		return engine.getContextPath().getSymbol(symbolName);
+		return symbol(symbolName, null, engine);
 	}
 
 	/**

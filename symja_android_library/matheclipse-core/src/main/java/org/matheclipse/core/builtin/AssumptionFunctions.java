@@ -150,12 +150,13 @@ public class AssumptionFunctions {
 	}
 	
 	public static IExpr refineAssumptions(final IExpr expr, IAssumptions assumptions, EvalEngine engine) {
+		IAssumptions oldAssumptions=engine.getAssumptions();
 		try {
 			engine.setAssumptions(assumptions);
 			// System.out.println(expr.toString());
 			return engine.evalWithoutNumericReset(expr);
 		} finally {
-			engine.setAssumptions(null);
+			engine.setAssumptions(oldAssumptions);
 		}
 	}
 

@@ -325,7 +325,7 @@ public class Assumptions extends AbstractAssumptions {
 	}
 
 	/**
-	 * Create <code>Assumptions</code> from the given expression. If the creation is not possible return
+	 * Create a new <code>IAssumptions</code> from the given expression. If the creation is not possible return
 	 * <code>null</code>
 	 * 
 	 * @param expr
@@ -335,31 +335,44 @@ public class Assumptions extends AbstractAssumptions {
 		if (expr.isAST()) {
 			IAST ast = (IAST) expr;
 			Assumptions assumptions = new Assumptions();
-			if (ast.isAST(F.Element, 3)) {
-				if (addElement(ast, assumptions)) {
-					return assumptions;
-				}
-			} else if (ast.isAST(F.Greater, 3, 4)) {
-				if (addGreater(ast, assumptions)) {
-					return assumptions;
-				}
-			} else if (ast.isAST(F.GreaterEqual, 3, 4)) {
-				if (addGreaterEqual(ast, assumptions)) {
-					return assumptions;
-				}
-			} else if (ast.isAST(F.Less, 3, 4)) {
-				if (addLess(ast, assumptions)) {
-					return assumptions;
-				}
-			} else if (ast.isAST(F.LessEqual, 3, 4)) {
-				if (addLessEqual(ast, assumptions)) {
-					return assumptions;
-				}
-			} else if (ast.isASTSizeGE(F.And, 2) || ast.isASTSizeGE(F.List, 2)) {
-				return addList(ast, assumptions);
-			}
+			return assumptions.addAssumption(ast);
 		}
 
+		return null;
+	}
+
+	/**
+	 * Add more assumptions from the given ast. If the creation is not possible return <code>null</code>
+	 * 
+	 * @param ast
+	 *            the assumptions which should be added to the <code>assumptions</code> instance.
+	 * @param assumptions
+	 * @return <code>null</code> if <code>assumptions</code> could not be added from the given expression.
+	 */
+	public IAssumptions addAssumption(IAST ast) {
+		if (ast.isAST(F.Element, 3)) {
+			if (addElement(ast, this)) {
+				return this;
+			}
+		} else if (ast.isAST(F.Greater, 3, 4)) {
+			if (addGreater(ast, this)) {
+				return this;
+			}
+		} else if (ast.isAST(F.GreaterEqual, 3, 4)) {
+			if (addGreaterEqual(ast, this)) {
+				return this;
+			}
+		} else if (ast.isAST(F.Less, 3, 4)) {
+			if (addLess(ast, this)) {
+				return this;
+			}
+		} else if (ast.isAST(F.LessEqual, 3, 4)) {
+			if (addLessEqual(ast, this)) {
+				return this;
+			}
+		} else if (ast.isASTSizeGE(F.And, 2) || ast.isASTSizeGE(F.List, 2)) {
+			return addList(ast, this);
+		}
 		return null;
 	}
 

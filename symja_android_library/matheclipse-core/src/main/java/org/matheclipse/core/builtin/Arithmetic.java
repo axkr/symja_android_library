@@ -2763,105 +2763,19 @@ public final class Arithmetic {
 		@Override
 		public IExpr e2ObjArg(final IExpr arg1, final IExpr arg2) {
 			if (arg2.isDirectedInfinity()) {
-				if (arg2.isComplexInfinity()) {
-					return F.Indeterminate;
-				}
-
-				if (arg1.isOne() || arg1.isMinusOne() || arg1.isImaginaryUnit() || arg1.isNegativeImaginaryUnit()) {
-					return F.Indeterminate;
-				}
-				IAST directedInfinity = (IAST) arg2;
-				if (arg1.isZero()) {
-					if (directedInfinity.isInfinity()) {
-						// 0 ^ Inf
-						return F.C0;
-					}
-					if (directedInfinity.isNegativeInfinity()) {
-						// 0 ^ (-Inf)
-						return F.CComplexInfinity;
-					}
-					return F.Indeterminate;
-				}
-				if (arg1.isInfinity()) {
-					if (directedInfinity.isInfinity()) {
-						// Inf ^ Inf
-						return F.CComplexInfinity;
-					}
-					if (directedInfinity.isNegativeInfinity()) {
-						// Inf ^ (-Inf)
-						return F.C0;
-					}
-					return F.Indeterminate;
-				}
-				if (arg1.isNegativeInfinity()) {
-					if (directedInfinity.isInfinity()) {
-						// (-Inf) ^ Inf
-						return F.CComplexInfinity;
-					}
-					if (directedInfinity.isNegativeInfinity()) {
-						// (-Inf) ^ (-Inf)
-						return F.C0;
-					}
-					return F.Indeterminate;
-				}
-				if (arg1.isComplexInfinity()) {
-					if (directedInfinity.isInfinity()) {
-						// ComplexInfinity ^ Inf
-						return F.CComplexInfinity;
-					}
-					if (directedInfinity.isNegativeInfinity()) {
-						// ComplexInfinity ^ (-Inf)
-						return F.C0;
-					}
-					return F.Indeterminate;
-				}
-				if (arg1.isDirectedInfinity()) {
-					if (directedInfinity.isInfinity()) {
-						return F.CComplexInfinity;
-					}
-					if (directedInfinity.isNegativeInfinity()) {
-						return F.C0;
-					}
-					return F.Indeterminate;
-				}
-
-				if (arg1.isNumber()) {
-					IExpr temp = e2NumberDirectedInfinity((INumber) arg1, directedInfinity);
-					if (temp.isPresent()) {
-						return temp;
-					}
-				} else {
-					IExpr a1 = F.evaln(arg1);
-					if (a1.isNumber()) {
-						IExpr temp = e2NumberDirectedInfinity((INumber) a1, directedInfinity);
-						if (temp.isPresent()) {
-							return temp;
-						}
-					}
+				IExpr temp = evalDirectedInfinityArg2(arg1, (IAST) arg2);
+				if (temp.isPresent()) {
+					return temp;
 				}
 			}
 			if (arg1.isDirectedInfinity()) {
-				if (arg2.isZero()) {
-					return F.Indeterminate;
-				}
-				if (arg1.isComplexInfinity()) {
-					if (arg2.isSignedNumber()) {
-						if (arg2.isNegative()) {
-							return F.C0;
-						}
-						return F.CComplexInfinity;
-					}
-					return F.Indeterminate;
-				}
-				if (arg2.isOne()) {
-					return arg1;
-				}
-				if (arg2.isMinusOne()) {
-					return F.C0;
+				IExpr temp = evalDirectedInfinityArg1((IAST) arg1, arg2);
+				if (temp.isPresent()) {
+					return temp;
 				}
 			}
 			if (arg1.isZero()) {
-				return powerZero(arg2);
+				return powerZeroArg1(arg2);
 			}
 			if (arg1.isInterval1()) {
 				if (arg2.isInteger()) {
@@ -2887,6 +2801,14 @@ public final class Arithmetic {
 			}
 
 			if (arg2.isSignedNumber()) {
+				if (arg1.isPower()) {
+					final IExpr base = arg1.base();
+					final IExpr exponent = arg1.exponent();
+					if (exponent.isSignedNumber() && base.isNonNegativeResult()) {
+						// (base ^ exponent) ^ arg2  ==> base ^ (exponent * arg2)
+						return F.Power(base, exponent.times(arg2));
+					}
+				}
 				if (arg1.isComplex() && arg2.isFraction() && arg2.isPositive()) {
 					IExpr temp = powerComplexFraction((IComplex) arg1, (IFraction) arg2);
 					if (temp.isPresent()) {
@@ -2901,7 +2823,7 @@ public final class Arithmetic {
 						return F.CInfinity;
 					}
 				} else if (arg1.isPower() && is1.isNumIntValue() && is1.isPositive()) {
-					IExpr exponent = arg1.exponent();
+					final IExpr exponent = arg1.exponent();
 					if (exponent.isNumIntValue() && exponent.isPositive()) {
 						// (x*n)^m => x ^(n*m)
 						return Power(arg1.base(), is1.times(exponent));
@@ -3007,6 +2929,108 @@ public final class Arithmetic {
 			return F.NIL;
 		}
 
+		public IExpr evalDirectedInfinityArg1(final IAST arg1, final IExpr arg2) {
+			if (arg2.isZero()) {
+				return F.Indeterminate;
+			}
+			if (arg1.isComplexInfinity()) {
+				if (arg2.isSignedNumber()) {
+					if (arg2.isNegative()) {
+						return F.C0;
+					}
+					return F.CComplexInfinity;
+				}
+				return F.Indeterminate;
+			}
+			if (arg2.isOne()) {
+				return arg1;
+			}
+			if (arg2.isMinusOne()) {
+				return F.C0;
+			}
+			return F.NIL;
+		}
+
+		public IExpr evalDirectedInfinityArg2(final IExpr arg1, final IAST arg2) {
+			if (arg2.isComplexInfinity()) {
+				return F.Indeterminate;
+			}
+
+			if (arg1.isOne() || arg1.isMinusOne() || arg1.isImaginaryUnit() || arg1.isNegativeImaginaryUnit()) {
+				return F.Indeterminate;
+			}
+			IAST directedInfinity = (IAST) arg2;
+			if (arg1.isZero()) {
+				if (directedInfinity.isInfinity()) {
+					// 0 ^ Inf
+					return F.C0;
+				}
+				if (directedInfinity.isNegativeInfinity()) {
+					// 0 ^ (-Inf)
+					return F.CComplexInfinity;
+				}
+				return F.Indeterminate;
+			}
+			if (arg1.isInfinity()) {
+				if (directedInfinity.isInfinity()) {
+					// Inf ^ Inf
+					return F.CComplexInfinity;
+				}
+				if (directedInfinity.isNegativeInfinity()) {
+					// Inf ^ (-Inf)
+					return F.C0;
+				}
+				return F.Indeterminate;
+			}
+			if (arg1.isNegativeInfinity()) {
+				if (directedInfinity.isInfinity()) {
+					// (-Inf) ^ Inf
+					return F.CComplexInfinity;
+				}
+				if (directedInfinity.isNegativeInfinity()) {
+					// (-Inf) ^ (-Inf)
+					return F.C0;
+				}
+				return F.Indeterminate;
+			}
+			if (arg1.isComplexInfinity()) {
+				if (directedInfinity.isInfinity()) {
+					// ComplexInfinity ^ Inf
+					return F.CComplexInfinity;
+				}
+				if (directedInfinity.isNegativeInfinity()) {
+					// ComplexInfinity ^ (-Inf)
+					return F.C0;
+				}
+				return F.Indeterminate;
+			}
+			if (arg1.isDirectedInfinity()) {
+				if (directedInfinity.isInfinity()) {
+					return F.CComplexInfinity;
+				}
+				if (directedInfinity.isNegativeInfinity()) {
+					return F.C0;
+				}
+				return F.Indeterminate;
+			}
+
+			if (arg1.isNumber()) {
+				IExpr temp = e2NumberDirectedInfinity((INumber) arg1, directedInfinity);
+				if (temp.isPresent()) {
+					return temp;
+				}
+			} else {
+				IExpr a1 = F.evaln(arg1);
+				if (a1.isNumber()) {
+					IExpr temp = e2NumberDirectedInfinity((INumber) a1, directedInfinity);
+					if (temp.isPresent()) {
+						return temp;
+					}
+				}
+			}
+			return F.NIL;
+		}
+
 		/**
 		 * Transform <code>Power(Times(a,b,c,Power(d,-1.0)....), -1.0)</code> to
 		 * <code>Times(a^(-1.0),b^(-1.0),c^(-1.0),d,....)</code>
@@ -3043,7 +3067,7 @@ public final class Arithmetic {
 		 *            the exponent of the 0-Power expression
 		 * @return
 		 */
-		private IExpr powerZero(final IExpr exponent) {
+		private IExpr powerZeroArg1(final IExpr exponent) {
 			EvalEngine engine = EvalEngine.get();
 			if (exponent.isZero()) {
 				// 0^0

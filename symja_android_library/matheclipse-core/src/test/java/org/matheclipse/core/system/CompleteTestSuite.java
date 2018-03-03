@@ -62,6 +62,8 @@ public class CompleteTestSuite extends TestCase {
 		suite.addTestSuite(SymjifyTestCase.class);
 		
 		suite.addTestSuite(ConsoleTestCase.class);
+		suite.addTestSuite(AssumptionTestCase.class);
+		
 		
 		return suite;
 

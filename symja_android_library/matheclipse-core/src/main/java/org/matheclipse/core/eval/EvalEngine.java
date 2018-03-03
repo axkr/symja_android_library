@@ -342,7 +342,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		} else {
 			fAnswer = F.Null;
 		}
-		ISymbol ans = F.userSymbol("$ans", this);
+		ISymbol ans = F.symbol("$ans", this);
 		ans.putDownRule(ISymbol.RuleType.SET, true, ans, fAnswer, false);
 		if (fOutListDisabled) {
 			return;

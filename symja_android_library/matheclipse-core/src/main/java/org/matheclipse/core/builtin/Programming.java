@@ -2249,7 +2249,7 @@ public final class Programming {
 				// if (oldSymbol.toString().equals("num")){
 				// System.out.println(variablesList.toString());
 				// }
-				newSymbol = F.userSymbol(oldSymbol.toString() + varAppend, engine);
+				newSymbol = F.symbol(oldSymbol.toString() + varAppend, engine);
 				variablesMap.put(oldSymbol, newSymbol);
 				// newSymbol.pushLocalVariable();
 				engine.localStackCreate(newSymbol).push(F.NIL);
@@ -2258,7 +2258,7 @@ public final class Programming {
 					final IAST setFun = (IAST) variablesList.get(i);
 					if (setFun.arg1().isSymbol()) {
 						oldSymbol = (ISymbol) setFun.arg1();
-						newSymbol = F.userSymbol(oldSymbol.toString() + varAppend, engine);
+						newSymbol = F.symbol(oldSymbol.toString() + varAppend, engine);
 						variablesMap.put(oldSymbol, newSymbol);
 						IExpr rightHandSide = setFun.arg2();
 						try {

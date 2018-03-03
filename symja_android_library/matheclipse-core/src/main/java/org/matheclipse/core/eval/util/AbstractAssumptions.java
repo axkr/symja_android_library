@@ -12,6 +12,10 @@ import org.matheclipse.core.interfaces.IBuiltInSymbol;
 
 public abstract class AbstractAssumptions implements IAssumptions {
 
+	public IAssumptions addAssumption(IAST ast) {
+		return null;
+	}
+	
 	/**
 	 * TODO implement algebraic number conditions.
 	 * 

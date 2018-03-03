@@ -1,9 +1,13 @@
 package org.matheclipse.core.eval.util;
 
+import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 
 public interface IAssumptions {
+	
+	public IAssumptions addAssumption(IAST ast);
+	
 	/**
 	 * Gives <code>true</code>, if the expression is assumed to be an algebraic value (i.e. an element of the
 	 * <code>Algebraics</code> domain), <code>false</code> in all other cases.

@@ -128,7 +128,7 @@ public class Lists {
 			IASTAppendable ast = F.ListAlloc(p_symbols.length);
 			for (int i = 0, t = p_symbols.length; i < t; i++) {
 
-				ast.append(F.userSymbol(p_symbols[i]));
+				ast.append(F.symbol(p_symbols[i]));
 			}
 		}
 		return F.List();
