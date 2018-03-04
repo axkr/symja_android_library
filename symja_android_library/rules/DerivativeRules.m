@@ -21,6 +21,7 @@
   FresnelC->Cos((Pi*#^2)/2),
   FresnelS->Sin((Pi*#^2)/2),
   Gamma->Gamma(#)*PolyGamma(#),
+  HarmonicNumber->(Pi^2)/6 - HarmonicNumber(#, 2),
   HeavisideTheta->DiracDelta(#),
   IntegerPart->0,
   InverseErf->(1/2*Sqrt(Pi)*E^(InverseErf(x)^2)),

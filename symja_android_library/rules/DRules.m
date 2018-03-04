@@ -20,6 +20,7 @@
   D(FresnelC(f_),x_NotListQ):=D(f,x)*Cos((Pi*f^2)/2),
   D(FresnelS(f_),x_NotListQ):=D(f,x)*Sin((Pi*f^2)/2),
   D(Gamma(f_),x_NotListQ):=D(f,x)*Gamma(f)*PolyGamma(f),
+  D(HarmonicNumber(f_),x_NotListQ):=D(f,x)*(Pi^2)/6 - HarmonicNumber(f, 2),
   D(HeavisideTheta(f_),x_NotListQ):=D(f,x)*DiracDelta(f),
   D(IntegerPart(f_),x_NotListQ):=0,
   D(InverseErf(f_),x_NotListQ):=D(f,x)*(1/2*Sqrt(Pi)*E^(InverseErf(f)^2)),

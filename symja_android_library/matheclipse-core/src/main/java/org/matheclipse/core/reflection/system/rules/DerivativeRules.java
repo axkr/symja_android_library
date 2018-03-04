@@ -72,6 +72,9 @@ public interface DerivativeRules {
     // Gamma->Gamma(#1)*PolyGamma(#1)
     Rule(Gamma,
       Times(Gamma(Slot1),PolyGamma(Slot1))),
+    // HarmonicNumber->Pi^2/6-HarmonicNumber(#1,2)
+    Rule(HarmonicNumber,
+      Plus(Times(QQ(1L,6L),Sqr(Pi)),Negate(HarmonicNumber(Slot1,C2)))),
     // HeavisideTheta->DiracDelta(#1)
     Rule(HeavisideTheta,
       DiracDelta(Slot1)),

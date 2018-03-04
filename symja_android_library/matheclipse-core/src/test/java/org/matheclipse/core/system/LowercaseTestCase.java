@@ -1330,6 +1330,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testD() {
 
+		check("D(HarmonicNumber(x), x)", "Pi^2/6-HarmonicNumber(x,2)");
+		
 		check("D(ArcCsc(x),{x,2})", "(-1+2*x^2)/(Sqrt(1-1/x^2)*x^3*(-1+x^2))");
 		check("D(ArcSec(x),{x,2})", "(1-2*x^2)/(Sqrt(1-1/x^2)*x^3*(-1+x^2))");
 
@@ -2938,6 +2940,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHarmonicNumber() {
+		check("HarmonicNumber(-Infinity)", "ComplexInfinity");
+		check("HarmonicNumber(Infinity)", "Infinity");
+		check("HarmonicNumber(-42)", "ComplexInfinity");
 		check("HarmonicNumber(2,-3/2)", "1+2*Sqrt(2)");
 		check("Table(HarmonicNumber(n), {n, 8})", "{1,3/2,11/6,25/12,137/60,49/20,363/140,761/280}");
 		check("HarmonicNumber(4,r)", "1+2^(-r)+3^(-r)+4^(-r)");

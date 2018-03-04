@@ -10,13 +10,13 @@ import org.matheclipse.core.interfaces.IAST;
 public interface ProductRules {
   final public static IAST RULES = List(
     // Product(x_Symbol,{x_,0,m_}):=0
-    ISetDelayed(Product($p(x,Symbol),List(x_,C0,m_)),
+    ISetDelayed(Product(x_Symbol,List(x_,C0,m_)),
       C0),
     // Product(x_Symbol,{x_,0,m_,s_}):=0
-    ISetDelayed(Product($p(x,Symbol),List(x_,C0,m_,s_)),
+    ISetDelayed(Product(x_Symbol,List(x_,C0,m_,s_)),
       C0),
     // Product(x_Symbol,{x_,Min_,Max_}):=Pochhammer(Min,1+Max-Min)/;FreeQ(x,Min)&&FreeQ(x,Max)
-    ISetDelayed(Product($p(x,Symbol),List(x_,$p("Min"),$p("Max"))),
+    ISetDelayed(Product(x_Symbol,List(x_,$p("Min"),$p("Max"))),
       Condition(Pochhammer(Min,Plus(C1,Max,Negate(Min))),And(FreeQ(x,Min),FreeQ(x,Max))))
   );
 }
