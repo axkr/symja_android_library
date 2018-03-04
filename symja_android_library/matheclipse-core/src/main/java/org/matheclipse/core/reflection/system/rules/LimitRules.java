@@ -18,7 +18,7 @@ public interface LimitRules {
   final public static IAST RULES = List(
     IInit(Limit, SIZES),
     // Limit(x_^m_RealNumberQ,x_Symbol->Infinity):=If(m<0,0,Infinity)
-iNu    ISetDelayed(Limit(Power(x_,$p(m,RealNumberQ)),Rule(x_Symbol,oo)),
+    ISetDelayed(Limit(Power(x_,$p(m,RealNumberQ)),Rule(x_Symbol,oo)),
       If(Less(m,C0),C0,oo)),
     // Limit(m_NumberQ^x_,x_Symbol->Infinity):=If(m>1,Infinity,If(m==1,1,0))/;Positive(m)
     ISetDelayed(Limit(Power($p(m,NumberQ),x_),Rule(x_Symbol,oo)),
