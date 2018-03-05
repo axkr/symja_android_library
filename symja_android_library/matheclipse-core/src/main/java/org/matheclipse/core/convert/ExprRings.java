@@ -3,7 +3,6 @@ package org.matheclipse.core.convert;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import org.junit.Assert;
 import org.matheclipse.core.expression.BigIntegerSym;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
