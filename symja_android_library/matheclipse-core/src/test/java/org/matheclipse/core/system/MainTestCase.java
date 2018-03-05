@@ -3599,6 +3599,7 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testGithub18() {
+		// github issue #18
 		boolean old = Config.EXPLICIT_TIMES_OPERATOR;
 		try {
 			Config.EXPLICIT_TIMES_OPERATOR = false;
@@ -3612,9 +3613,9 @@ public class MainTestCase extends AbstractTestCase {
 				checkNumeric("1x-2 // FullForm", //
 						"\"Plus(-2, x)\"");
 				check("N(1E-2)", "0.71828");
-				check("0x1", "0");
-				check("0xf", "0");
-				check("0y1", "0");
+				check("0x1  // FullForm", "\"0\"");
+				check("0xf  // FullForm", "\"0\"");
+				check("0y1  // FullForm ", "\"0\"");
 			}
 			Config.EXPLICIT_TIMES_OPERATOR = true;
 			if (Config.EXPLICIT_TIMES_OPERATOR) {
@@ -3642,6 +3643,7 @@ public class MainTestCase extends AbstractTestCase {
 						"Syntax error in line: 1 - End-of-file not reached.\n" + //
 								"0y1\n" + //
 								" ^");
+				checkNumeric("-3.1434555694057773E-11", "-3.143455569405777E-11");
 			}
 		} finally {
 			Config.EXPLICIT_TIMES_OPERATOR = old;

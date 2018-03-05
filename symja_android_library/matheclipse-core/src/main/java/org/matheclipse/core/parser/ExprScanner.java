@@ -792,8 +792,6 @@ public class ExprScanner {
 				}
 			}
 		}
-
-		// }
 		int endPosition = fCurrentPosition--;
 		result[0] = fInputString.substring(startPosition, --endPosition);
 		result[1] = Integer.valueOf(numFormat);
@@ -845,9 +843,6 @@ public class ExprScanner {
 					throwSyntaxError("string - end of string not reached.");
 				}
 			} else {
-				// if ((fCurrentChar != '"') && ((fCurrentChar == '\n') ||
-				// (fToken ==
-				// TT_EOF))) {
 				if ((fCurrentChar != '"') && (fToken == TT_EOF)) {
 					throwSyntaxError("string -" + ident.toString() + "- not closed.");
 				}
