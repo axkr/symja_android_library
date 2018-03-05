@@ -26,6 +26,10 @@ public class ConstantDefinitions {
 		F.Infinity.setEvaluator(new Infinity());
 		F.Khinchin.setEvaluator(new Khinchin());
 		F.Pi.setEvaluator(new Pi());
+		
+		F.False.setEvaluator(NILEvaluator.CONST);
+		F.True.setEvaluator(NILEvaluator.CONST);
+		F.Null.setEvaluator(NILEvaluator.CONST);
 	}
 
 	private final static ConstantDefinitions CONST = new ConstantDefinitions();
@@ -36,6 +40,25 @@ public class ConstantDefinitions {
 
 	private ConstantDefinitions() {
 
+	}
+	
+	private static class NILEvaluator extends AbstractSymbolEvaluator {
+		final static NILEvaluator CONST = new NILEvaluator();
+		
+		@Override
+		public IExpr numericEval(final ISymbol symbol) {
+			return F.NIL;
+		}
+
+		@Override
+		public IExpr apfloatEval(ISymbol symbol, EvalEngine engine) {
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			// don't set CONSTANT attribute !
+		}
 	}
 
 	/**

@@ -55,7 +55,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	// }
 
 	public BuiltInSymbol(final String symbolName, int ordinal) {
-		super(symbolName, Context.SYSTEM);  
+		super(symbolName, Context.SYSTEM);
 		// this(symbolName, null);
 		fOrdinal = ordinal;
 	}
@@ -76,7 +76,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 		getEvaluator();
 		return super.definitionToString();
 	}
-	 
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean equals(final Object obj) {
@@ -86,26 +86,23 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
+		// final IEvaluator module = getEvaluator();
+		if (fEvaluator instanceof ISymbolEvaluator) {
+			if (engine.isNumericMode()) {
+				if (engine.isApfloat()) {
+					return ((ISymbolEvaluator) fEvaluator).apfloatEval(this, engine);
+				} else {
+					return ((ISymbolEvaluator) fEvaluator).numericEval(this);
+				}
+			}
+			return ((ISymbolEvaluator) fEvaluator).evaluate(this);
+		}
 		if (hasLocalVariableStack()) {
 			return ExprUtil.ofNullable(get());
 		}
 		IExpr result;
 		if ((result = evalDownRule(engine, this)).isPresent()) {
 			return result;
-		}
-		final IEvaluator module = getEvaluator();
-		if (module instanceof ISymbolEvaluator) {
-			IExpr temp;
-			if (engine.isNumericMode()) {
-				if (engine.isApfloat()) {
-					temp = ((ISymbolEvaluator) module).apfloatEval(this, engine);
-				} else {
-					temp = ((ISymbolEvaluator) module).numericEval(this);
-				}
-			} else {
-				temp = ((ISymbolEvaluator) module).evaluate(this);
-			}
-			return temp;
 		}
 		return F.NIL;
 	}
@@ -143,7 +140,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	public int hashCode() {
 		return fOrdinal;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public int ordinal() {
@@ -219,7 +216,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	/** {@inheritDoc} */
 	@Override
 	public boolean ofQ(EvalEngine engine, IExpr... args) {
-		if (fEvaluator instanceof AbstractCorePredicateEvaluator&&args.length==1) {
+		if (fEvaluator instanceof AbstractCorePredicateEvaluator && args.length == 1) {
 			// evaluate a core function (without no rule definitions)
 			final AbstractCorePredicateEvaluator coreFunction = (AbstractCorePredicateEvaluator) getEvaluator();
 			return coreFunction.evalArg1Boole(args[0], engine);

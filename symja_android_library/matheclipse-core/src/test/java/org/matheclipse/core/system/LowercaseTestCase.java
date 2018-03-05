@@ -1331,7 +1331,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testD() {
 
 		check("D(HarmonicNumber(x), x)", "Pi^2/6-HarmonicNumber(x,2)");
-		
+
 		check("D(ArcCsc(x),{x,2})", "(-1+2*x^2)/(Sqrt(1-1/x^2)*x^3*(-1+x^2))");
 		check("D(ArcSec(x),{x,2})", "(1-2*x^2)/(Sqrt(1-1/x^2)*x^3*(-1+x^2))");
 
@@ -2503,7 +2503,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		} else {
 			check("Exp(1.2436240901689538E-16) - 1", "0.0");
 		}
-		
+
 		checkNumeric("FindRoot(Exp(x)==Pi^3,{x,-1,10})", "{x->3.4341896575482007}");
 		checkNumeric("$K=10000;\n" + "$g=0.0;\n" + "$n=10*12;\n" + "$Z=12;\n" + "$AA=0.0526;\n" + "$R=100;\n"
 				+ "$d=0.00;\n" + "$vn=0;\n" + "$EAj=0;\n" + "$zj=0;\n" + "$sz=1;\n"
