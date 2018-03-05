@@ -182,4 +182,11 @@ public class ExprEvaluatorTest extends TestCase {
 			System.out.println(oome.getMessage());
 		}
 	}
+
+	public void testX2() {
+		ExprEvaluator evaluator = new ExprEvaluator();
+		evaluator.defineVariable("X", evaluator.parse("2"));
+		IExpr evaluate = evaluator.evaluate("2+X");
+		assertEquals(evaluate.toString(), "4");
+	}
 }
