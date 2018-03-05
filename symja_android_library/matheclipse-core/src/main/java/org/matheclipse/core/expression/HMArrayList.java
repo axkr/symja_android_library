@@ -355,8 +355,9 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 		int index;
 		int start = firstIndex + startOffset;
 		if ((index = start) < lastIndex) {
+			int j = startOffset;
 			for (int i = startOffset; i < endOffset; i++) {
-				action.accept(array[index++], i);
+				action.accept(array[index++], j++);
 			}
 		}
 	}
@@ -602,8 +603,9 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	@Override
 	public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
 		int start = firstIndex + startOffset;
+		int j = startOffset;
 		for (int i = start; i < lastIndex; i++) {
-			if (predicate.test(array[i], i)) {
+			if (predicate.test(array[i], j++)) {
 				return true;
 			}
 		}
@@ -656,8 +658,9 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	@Override
 	public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
 		final int start = firstIndex + startOffset;
+		int j = startOffset;
 		for (int i = start; i < lastIndex; i++) {
-			if (!predicate.test(array[i], i)) {
+			if (!predicate.test(array[i], j++)) {
 				return false;
 			}
 		}
