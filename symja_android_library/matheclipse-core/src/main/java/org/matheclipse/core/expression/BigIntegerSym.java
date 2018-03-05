@@ -101,6 +101,10 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		fBigIntValue = value;
 	}
 
+	public BigIntegerSym(byte[] bytes) {
+		fBigIntValue = new BigInteger(bytes);
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public IInteger abs() {
