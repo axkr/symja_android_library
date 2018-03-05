@@ -1502,7 +1502,6 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem171a() {
-
 		check("Integrate((x-2)^(-3),x)", "-1/(2*(2-x)^2)");
 		check("D(-1/(2*(2-x)^2),x)", "-1/(2-x)^3");
 		check("Integrate(Log(x)*x^2,x)", "-Gamma(2,-3*Log(x))/9");
@@ -1563,7 +1562,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("Integrate(Sin(Pi+10*x),x)", "Cos(10*x)/10");
 		check("Integrate(E^(a*x),x)", "E^(a*x)/a");
 		check("Integrate(x*E^(a*x),x)", "-Gamma(2,-a*x)/a^2");
-		check("Integrate(x*E^x,x)", "-Gamma(2,-x)");
+		check("Integrate(x*E^x,x)", "-E^x+E^x*x");
 		check("Integrate(x^2*E^x,x)", "Gamma(3,-x)");
 		check("Integrate(x^2*E^(a*x),x)", "Gamma(3,-a*x)/a^3");
 		check("Integrate(x^3*E^(a*x),x)", "-Gamma(4,-a*x)/a^4");

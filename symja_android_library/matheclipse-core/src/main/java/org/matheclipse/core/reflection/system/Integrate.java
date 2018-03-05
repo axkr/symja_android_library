@@ -194,6 +194,16 @@ public class Integrate extends AbstractFunctionEvaluator {
 						// a^x / Log(a)
 						return F.Divide(fx, F.Log(fx.arg1()));
 					}
+				} else if (fx.isAST(F.Times, 3)) {
+					IExpr temp = F.NIL;
+					if (fx.first().equals(x)) {
+						temp = integrateByParts(fx.second(), x, x, 4);
+					} else if (fx.second().equals(x)) {
+						temp = integrateByParts(fx.first(), x, x, 4);
+					}
+					if (temp.isPresent()) {
+						return temp;
+					}
 				}
 				if (INT_FUNCTIONS.contains(fx.head())) {
 					if (fx.isAST1() && x.equals(fx.arg1())) {
@@ -778,10 +788,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * See <a href="http://en.wikipedia.org/wiki/Integration_by_parts">Wikipedia- Integration by parts</a>
 	 * 
 	 * @param ast
-	 *            TODO
+	 *            TODO - not used
+	 * @param arg1
 	 * @param symbol
-	 * @param factory
-	 * @param g
 	 * 
 	 * @return
 	 */
@@ -796,7 +805,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		if (f.isOne() || g.isOne()) {
 			return F.NIL;
 		}
-		return integrateByParts(f, g, symbol);
+		return integrateByParts(f, g, symbol, 128);
 	}
 
 	/**
@@ -838,15 +847,17 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * @param g
 	 *            <code>g(x)</code>
 	 * @param x
+	 * @param recursioLimit
+	 *            TODO
 	 * @return <code>f(x) * g(x) - Integrate(f(x) * g'(x),x )</code>
 	 */
-	private static IExpr integrateByParts(IExpr f, IExpr g, IExpr x) {
+	private static IExpr integrateByParts(IExpr f, IExpr g, IExpr x, int recursionLimit) {
 		EvalEngine engine = EvalEngine.get();
 		int limit = engine.getRecursionLimit();
 		try {
 			if (limit <= 0) {
 				// set recursion limit
-				engine.setRecursionLimit(128);
+				engine.setRecursionLimit(recursionLimit);
 			}
 			IExpr firstIntegrate = F.eval(F.Integrate(f, x));
 			if (!firstIntegrate.isFreeAST(Integrate)) {
