@@ -3603,6 +3603,10 @@ public class MainTestCase extends AbstractTestCase {
 		try {
 			Config.EXPLICIT_TIMES_OPERATOR = false;
 			if (!Config.EXPLICIT_TIMES_OPERATOR) {
+				check("2(b+c) // FullForm", "\"Times(2, Plus(b, c))\"");
+				check("2(b+c)3 // FullForm", "\"Times(6, Plus(b, c))\"");
+				check("a(b+c) // FullForm", "\"a(Plus(b, c))\"");
+				check("a*(b+c) // FullForm", "\"Times(a, Plus(b, c))\"");
 				check("1E-2 // FullForm", "\"Plus(-2, E)\"");
 				checkNumeric("1.0E-2 // FullForm", "\"0.7182818284590451\"");
 				checkNumeric("1x-2 // FullForm", //
@@ -3614,6 +3618,16 @@ public class MainTestCase extends AbstractTestCase {
 			}
 			Config.EXPLICIT_TIMES_OPERATOR = true;
 			if (Config.EXPLICIT_TIMES_OPERATOR) {
+				check("2(b+c)", "Syntax error in line: 1 - End-of-file not reached.\n" + 
+						"2(b+c)\n" + 
+						" ^");
+				check("2(b+c)3 // FullForm", "Syntax error in line: 1 - End-of-file not reached.\n" + 
+						"2(b+c)3 // FullForm\n" + 
+						" ^");
+				check("2*(b+c) // FullForm", "\"Times(2, Plus(b, c))\"");
+				check("2*(b+c)*3 // FullForm", "\"Times(6, Plus(b, c))\"");
+				check("a(b+c) // FullForm", "\"a(Plus(b, c))\"");
+				check("a*(b+c) // FullForm", "\"Times(a, Plus(b, c))\"");
 				check("1E-2 // FullForm", //
 						"\"0.01\"");
 				checkNumeric("1.0E-2 // FullForm", "\"0.01\"");
