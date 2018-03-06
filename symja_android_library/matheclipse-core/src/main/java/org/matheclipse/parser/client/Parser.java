@@ -806,7 +806,7 @@ public class Parser extends Scanner {
 				if (!Config.EXPLICIT_TIMES_OPERATOR) {
 					// lazy evaluation of multiplication
 					oper = fFactory.get("Times");
-					if (oper.getPrecedence() >= min_precedence) {
+					if (Config.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
 						rhs = parseLookaheadOperator(oper.getPrecedence());
 						lhs = fFactory.createFunction(fFactory.createSymbol(oper.getFunctionName()), lhs, rhs);
 						continue;
@@ -888,7 +888,7 @@ public class Parser extends Scanner {
 				if (!Config.EXPLICIT_TIMES_OPERATOR) {
 					// lazy evaluation of multiplication
 					InfixOperator timesOperator = (InfixOperator) fFactory.get("Times");
-					if (timesOperator.getPrecedence() > min_precedence) {
+					if (Config.DOMINANT_IMPLICIT_TIMES || timesOperator.getPrecedence() > min_precedence) {
 						rhs = parseExpression(rhs, timesOperator.getPrecedence());
 						continue;
 					} else if ((timesOperator.getPrecedence() == min_precedence)

@@ -1074,7 +1074,7 @@ public class ExprParser extends ExprScanner {
 				if (!Config.EXPLICIT_TIMES_OPERATOR) {
 					// lazy evaluation of multiplication
 					oper = fFactory.get("Times");
-					if (oper.getPrecedence() >= min_precedence) {
+					if (Config.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
 						rhs = parseLookaheadOperator(oper.getPrecedence());
 						lhs = F.$(F.$s(oper.getFunctionName()), lhs, rhs);
 						continue;
@@ -1155,7 +1155,7 @@ public class ExprParser extends ExprScanner {
 				if (!Config.EXPLICIT_TIMES_OPERATOR) {
 					// lazy evaluation of multiplication
 					InfixExprOperator timesOperator = (InfixExprOperator) fFactory.get("Times");
-					if (timesOperator.getPrecedence() > min_precedence) {
+					if (Config.DOMINANT_IMPLICIT_TIMES || timesOperator.getPrecedence() > min_precedence) {
 						rhs = parseExpression(rhs, timesOperator.getPrecedence());
 						continue;
 					} else if ((timesOperator.getPrecedence() == min_precedence)

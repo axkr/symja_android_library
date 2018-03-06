@@ -189,4 +189,14 @@ public class Config {
 	 * <p>
 	 */
 	public static boolean EXPLICIT_TIMES_OPERATOR = false;
+
+	/**
+	 * <p>
+	 * If <code>true</code> the implicit <code>*</code> operator has a higher precedence than all other operators. I.e.
+	 * <code>1/2Pi</code> is parsed as <code>Power(Times(2, Pi), -1)</code>. If <code>false</code> the implicit
+	 * <code>*</code> operator has a normal precedence as in all other cases. I.e. <code>1/2Pi</code> is parsed as
+	 * <code>Times(Rational(1,2), Pi)</code>.
+	 * </p>
+	 */
+	public static boolean DOMINANT_IMPLICIT_TIMES = false;
 }

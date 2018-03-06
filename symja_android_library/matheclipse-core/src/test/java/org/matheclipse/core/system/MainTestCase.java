@@ -3604,6 +3604,21 @@ public class MainTestCase extends AbstractTestCase {
 		try {
 			Config.EXPLICIT_TIMES_OPERATOR = false;
 			if (!Config.EXPLICIT_TIMES_OPERATOR) {
+				Config.DOMINANT_IMPLICIT_TIMES = true;
+				if (Config.DOMINANT_IMPLICIT_TIMES) {
+					check("Hold(1/2Pi) // FullForm", "\"Hold(Power(Times(2, Pi), -1))\"");
+					check("1/2Pi // FullForm", "\"Times(Rational(1,2), Power(Pi, -1))\"");
+					check("1/2(a+b) // FullForm", "\"Times(Rational(1,2), Power(Plus(a, b), -1))\"");
+					check("1/(a+b)2 // FullForm", "\"Times(Rational(1,2), Power(Plus(a, b), -1))\"");
+				}
+				Config.DOMINANT_IMPLICIT_TIMES = false;
+				if (!Config.DOMINANT_IMPLICIT_TIMES) {
+					check("Hold(1/2Pi) // FullForm", "\"Hold(Times(Times(Rational(1,2), 1), Pi))\"");
+					check("1/2Pi // FullForm", "\"Times(Rational(1,2), Pi)\"");
+					check("1/2(a+b) // FullForm", "\"Times(Rational(1,2), Plus(a, b))\"");
+					check("1/(a+b)2 // FullForm", "\"Times(2, Power(Plus(a, b), -1))\"");
+				}
+
 				check("2(b+c) // FullForm", //
 						"\"Times(2, Plus(b, c))\"");
 				check("2(b+c)3 // FullForm", //

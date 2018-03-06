@@ -217,7 +217,11 @@ public class MathMLPresentationTestCase extends TestCase {
 				"<mrow><mrow><mo>(</mo><mn>1.0</mn><mo>-</mo><mn>0.5</mn><mo>&#0183;</mo><mi>&#x2148;</mi><mo>)</mo></mrow><mo>&#0183;</mo><mi>a</mi></mrow>");
 
 	}
-
+	
+	// public void testMathML003() {
+	// check("I*1/2*y-I*1/2*x", "");
+	// }
+	
 	public void testDerivatve001() {
 		IExpr expr = EvalEngine.get().evaluate("1/f''(x)");
 		check(expr,
