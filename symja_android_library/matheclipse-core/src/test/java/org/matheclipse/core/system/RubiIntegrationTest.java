@@ -496,6 +496,8 @@ public class RubiIntegrationTest extends AbstractTestCase {
 				"-5*x+x^(3/2)/3-4/3*Log(1/3-x)");
 		check("Simplify(D(-5*x+x^(3/2)/3-4/3*Log(1/3-x),x))", //
 				"-5+4/(1-3*x)+Sqrt(x)/2");
+		check("PowerExpand(ln(3*(1/3-x)))", //
+				"Log(3)+Log(1/3-x)");
 	}
 
 	public void testGithub22() {
@@ -503,10 +505,10 @@ public class RubiIntegrationTest extends AbstractTestCase {
 				"-Cos(2*x)/8+Cos(4*x)/32");
 		check("D(-Cos(2*x)/8+Cos(4*x)/32,x)", //
 				"Sin(2*x)/4-Sin(4*x)/8");
-		
+
 		// unfortunately Simplify is not sophisticated enough to show this:
 		// check("Simplify(Sin(2*x)/4-Sin(4*x)/8)", //
-		//    "Sin(x)^3*Cos(x)");
+		// "Sin(x)^3*Cos(x)");
 
 		check("Expand(TrigToExp(Sin(x)^3*Cos(x)))", //
 				"(-I*1/16)/E^(I*4*x)+(I*1/8)/E^(I*2*x)-I*1/8*E^(I*2*x)+I*1/16*E^(I*4*x)");
