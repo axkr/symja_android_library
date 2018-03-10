@@ -1188,8 +1188,9 @@ public class Algebra {
 			 * Evaluate <code>expr1 * expr2</code> and expand the resulting expression, if it's an <code>IAST</code>.
 			 * After that add the resulting expression to the <code>PlusOp</code>
 			 * 
+			 * @param expr1
+			 * @param expr2
 			 * @param result
-			 * @param expr
 			 */
 			public void evalAndExpandAST(IExpr expr1, IExpr expr2, final IASTAppendable result) {
 				IExpr arg = TimesOp.times(expr1, expr2);
@@ -2196,52 +2197,6 @@ public class Algebra {
 
 		}
 
-		/**
-		 * 
-		 * @param polnomialExpr
-		 * @param variables
-		 * @param numericFunction
-		 * @return
-		 * @deprecated use
-		 *             <code>ExprPolynomialRing ring = new ExprPolynomialRing(variables); ExprPolynomial poly = ring.create(polnomialExpr);</code>
-		 *             if possible.
-		 */
-		// private static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr,
-		// final IAST variables,
-		// boolean numericFunction) {
-		// IExpr expr = F.evalExpandAll(polnomialExpr, engine);
-		// int termOrder = ExprTermOrder.INVLEX;
-		// ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST,
-		// variables, variables.argSize(),
-		// new ExprTermOrder(termOrder), true);
-		// try {
-		// ExprPolynomial poly = ring.create(expr);
-		// ASTRange r = new ASTRange(variables, 1);
-		// JASIExpr jas = new JASIExpr(r, numericFunction);
-		// return jas.expr2IExprJAS(poly);
-		// } catch (RuntimeException ex) {
-		//
-		// }
-		// return null;
-		// }
-
-		/**
-		 * 
-		 * @param polnomialExpr
-		 * @param symbol
-		 * @param numericFunction
-		 * @return
-		 * @deprecated use
-		 *             <code>ExprPolynomialRing ring = new ExprPolynomialRing(symbol); ExprPolynomial poly = ring.create(polnomialExpr);</code>
-		 *             if possible
-		 */
-		// private static GenPolynomial<IExpr> polynomial(final IExpr polnomialExpr,
-		// final ISymbol symbol,
-		// boolean numericFunction) {
-		// return polynomial(polnomialExpr, List(symbol), numericFunction);
-		// }
-
-		@Deprecated
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 		}

@@ -2333,42 +2333,32 @@ public final class Arithmetic {
 		}
 
 		/**
-		 * Compute Pochhammer's symbol (this)_n.
+		 * Compute Pochhammer's symbol (that)_n.
 		 * 
+		 * @param that
 		 * @param n
 		 *            The number of product terms in the evaluation.
-		 * @return Gamma(this+n)/Gamma(this) = this*(this+1)*...*(this+n-1).
+		 * @return Gamma(that+n)/Gamma(that) = that*(that+1)*...*(that+n-1).
 		 */
-		public static BigFraction pochhammer(BigFraction th, final BigInteger n) {
+		public static BigFraction pochhammer(BigFraction that, final BigInteger n) {
 			if (n.compareTo(BigInteger.ZERO) < 0) {
 				BigFraction res = BigFraction.ONE;
 				BigInteger i = BigInteger.valueOf(-1);
 				for (; i.compareTo(n) >= 0; i = i.subtract(BigInteger.ONE)) {
-					res = res.multiply(th.add(i));
+					res = res.multiply(that.add(i));
 				}
 				return res.reciprocal();
 			} else if (n.equals(BigInteger.ZERO)) {
 				return BigFraction.ONE;
 			} else {
-				BigFraction res = new BigFraction(th.getNumerator(), th.getDenominator());
+				BigFraction res = new BigFraction(that.getNumerator(), that.getDenominator());
 				BigInteger i = BigInteger.ONE;
 				for (; i.compareTo(n) < 0; i = i.add(BigInteger.ONE)) {
-					res = res.multiply(th.add(i));
+					res = res.multiply(that.add(i));
 				}
 				return res;
 			}
 		}
-
-		/**
-		 * Compute pochhammer's symbol (this)_n.
-		 * 
-		 * @param n
-		 *            The number of product terms in the evaluation.
-		 * @return Gamma(this+n)/GAMMA(this).
-		 */
-		// public static BigFraction pochhammer(BigFraction th, int n) {
-		// return pochhammer(th, BigInteger.valueOf(n));
-		// }
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {

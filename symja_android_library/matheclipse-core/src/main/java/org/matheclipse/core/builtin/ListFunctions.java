@@ -1925,7 +1925,7 @@ public final class ListFunctions {
 		 * @param positionConverter
 		 *            the <code>positionConverter</code> creates an <code>int</code> value from the given position
 		 *            objects in <code>positions</code>.
-		 * @param headOffsez
+		 * @param headOffset
 		 */
 		private static IExpr extract(final IAST list, final IAST positions,
 				final IPositionConverter<? super IExpr> positionConverter, int headOffset) {
