@@ -14,6 +14,7 @@ import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -349,11 +350,14 @@ public class OutputFormFactory {
 		} else if (isImMinusOne) {
 			append(buf, "-I");
 		} else {
-			if (isReZero && (ASTNodeFactory.TIMES_PRECEDENCE < precedence)) {
-				append(buf, "(");
-			}
+//			if (isReZero && (ASTNodeFactory.TIMES_PRECEDENCE < precedence)) {
+//				append(buf, "(");
+//			}
 			final IRational im = c.getImaginaryPart();
 			if (im.isNegative()) {
+				if (isReZero && (ASTNodeFactory.TIMES_PRECEDENCE < precedence)) {
+					append(buf, "(");
+				}
 				append(buf, "-I*");
 				convertFraction(buf, c.getImaginaryPart().negate(), ASTNodeFactory.TIMES_PRECEDENCE, NO_PLUS_CALL);
 			} else {
@@ -361,9 +365,16 @@ public class OutputFormFactory {
 					if (caller == PLUS_CALL) {
 						append(buf, "+");
 					}
+					if (isReZero && (ASTNodeFactory.TIMES_PRECEDENCE < precedence)) {
+						append(buf, "(");
+					}
 					append(buf, "I*");
 				} else {
-					append(buf, "+I*");
+					append(buf, "+");
+					if (isReZero && (ASTNodeFactory.TIMES_PRECEDENCE < precedence)) {
+						append(buf, "(");
+					}
+					append(buf, "I*");
 				}
 				convertFraction(buf, c.getImaginaryPart(), ASTNodeFactory.TIMES_PRECEDENCE, NO_PLUS_CALL);
 			}
@@ -1099,7 +1110,7 @@ public class OutputFormFactory {
 					exp = F.fraction(nmin + i - 1L, den).normalize();
 					pow = x.subtract(x0).power(exp);
 					call = convertSeriesDataArg(tempBuffer, list.get(i), pow, call);
-				} 
+				}
 				plusArg = F.Power(F.O(x.subtract(x0)), F.fraction(nmax, den).normalize());
 				if (!plusArg.isZero()) {
 					convertPlusArgument(tempBuffer, plusArg, call);

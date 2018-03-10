@@ -230,6 +230,9 @@ public class MainTestCase extends AbstractTestCase {
 		check("Sqrt(I*(1/3))", "Sqrt(I*1/3)");
 		check("Sqrt(-I*(7/3))", "Sqrt(-I*7/3)");
 		check("Sqrt(I*(7/3))", "Sqrt(I*7/3)");
+
+		check("(-I*1/16)/E^(I*4*x)+I*1/8/E^(I*2*x)", //
+				"(-I*1/16)/E^(I*4*x)+(I*1/8)/E^(I*2*x)");
 	}
 
 	public void testSystem000c() {
@@ -3008,7 +3011,7 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem419() {
-		check("TrigToExp(a+b+Sin(c+d))", "a+b(+I*1/2)/E^(I*(c+d))-I*1/2*E^(I*(c+d))");
+		check("TrigToExp(a+b+Sin(c+d))", "a+b+(I*1/2)/E^(I*(c+d))-I*1/2*E^(I*(c+d))");
 		check("TrigToExp(Cos(x)+f(a))", "1/(2*E^(I*x))+E^(I*x)/2+f(a)");
 		check("TrigToExp(Tan(x))", "(I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))");
 		check("TrigToExp(ArcSin(x))", "-I*Log(I*x+Sqrt(1-x^2))");
