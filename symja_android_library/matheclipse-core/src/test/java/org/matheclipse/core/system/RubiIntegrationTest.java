@@ -490,4 +490,9 @@ public class RubiIntegrationTest extends AbstractTestCase {
 
 		check("D(-Log(-1+x),x)", "1/(1-x)");
 	}
+
+	public void testGithub21() {
+		check("Integrate(4/(1-3*(x)) + 1/2*Sqrt((x)) - 5,x)", "-5*x+x^(3/2)/3-4/3*Log(1/3-x)");
+		check("Simplify(D(-5*x+x^(3/2)/3-4/3*Log(1/3-x),x))", "-5+4/(1-3*x)+Sqrt(x)/2");
+	}
 }
