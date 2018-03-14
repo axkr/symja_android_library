@@ -5,7 +5,12 @@
   Gamma(1/2) = Sqrt(Pi),
   Gamma(3/2) = Sqrt(Pi)/2,
   Gamma(5/2) = (3*Sqrt(Pi))/4,
-  
+  Gamma(Infinity) = Infinity,
+  Gamma(-Infinity) = Indeterminate,
+  Gamma(I*Infinity) = 0,
+  Gamma(-I*Infinity) = 0, 
+  Gamma(ComplexInfinity) = Indeterminate, 
+   
   Gamma(a_, 0):=ComplexInfinity
    /; Re(a)<0,
   Gamma(a_, 0):=Gamma(a)
