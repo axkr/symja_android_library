@@ -70,6 +70,15 @@ public interface GammaRules {
       Plus(Times(C2,Power(Times(Power(E,z),Sqrt(z)),-1)),Times(CN2,Sqrt(Pi),Erfc(Sqrt(z))))),
     // Gamma(1,z_):=E^(-z)
     ISetDelayed(Gamma(C1,z_),
-      Power(E,Negate(z)))
+      Power(E,Negate(z))),
+    // Gamma(a_,z_,0):=-Gamma(a)+Gamma(a,z)/;Re(a)>0
+    ISetDelayed(Gamma(a_,z_,C0),
+      Condition(Plus(Negate(Gamma(a)),Gamma(a,z)),Greater(Re(a),C0))),
+    // Gamma(a_,z_,Infinity):=Gamma(a,z)
+    ISetDelayed(Gamma(a_,z_,oo),
+      Gamma(a,z)),
+    // Gamma(a_,0,z_):=Gamma(a)-Gamma(a,z)/;Re(a)>0
+    ISetDelayed(Gamma(a_,C0,z_),
+      Condition(Plus(Gamma(a),Negate(Gamma(a,z))),Greater(Re(a),C0)))
   );
 }

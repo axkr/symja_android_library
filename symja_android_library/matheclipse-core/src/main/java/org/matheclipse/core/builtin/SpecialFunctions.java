@@ -292,10 +292,14 @@ public class SpecialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-			
+			Validate.checkRange(ast, 3, 4);
+
 			IExpr a = ast.arg1();
 			IExpr z = ast.arg2();
+			if (ast.isAST3()) {
+				return F.Subtract(F.GammaRegularized(a, z), F.GammaRegularized(a, ast.arg3()));
+			}
+			
 			if (a.isZero()) {
 				return F.C0;
 			} else if (a.equals(F.C1D2)) {
