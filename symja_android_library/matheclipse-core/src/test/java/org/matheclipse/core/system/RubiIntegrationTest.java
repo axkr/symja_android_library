@@ -300,9 +300,9 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		check("Integrate(Sin(a + b*x)^3,x)", "-(Cos(a+b*x)-Cos(a+b*x)^3/3)/b");
 
 		check("Integrate(Sin(a+x),x)", "-Cos(a+x)");
-		check("Integrate(x*Sin(a+x),x)", "-I*1/2*E^(I*a)*Gamma(2,-I*x)+(I*1/2*Gamma(2,I*x))/E^(I*a)");
+		check("Integrate(x*Sin(a+x),x)", "-I*1/2*E^(I*a+I*x)*(1-I*x)+(I*1/2*(1+I*x))/E^(I*a+I*x)");
 		check("Integrate(x*Sin(a + b*x),x)",
-				"(-I*1/2*E^(I*a)*Gamma(2,-I*b*x))/b^2+(I*1/2*Gamma(2,I*b*x))/(b^2*E^(I*a))");
+				"(-I*1/2*E^(I*a+I*b*x)*(1-I*b*x))/b^2+(I*1/2*(1+I*b*x))/(b^2*E^(I*a+I*b*x))");
 		check("$f(a_.+b_.*c_):={a,b,c};$f(x)", "{0,1,x}");
 		check("$h($g(a_.+b_.*c_)):={a,b,c};$h($g(x))", "{0,1,x}");
 
@@ -324,18 +324,21 @@ public class RubiIntegrationTest extends AbstractTestCase {
 				"-6/5*EllipticE(Pi/4-(a+b*x)/2,2)/b-2/5*(Cos(a+b*x)*Sin(a+b*x)^(3/2))/b");
 
 		check("Integrate(x*Sin(a + b*x),x)",
-				"(-I*1/2*E^(I*a)*Gamma(2,-I*b*x))/b^2+(I*1/2*Gamma(2,I*b*x))/(b^2*E^(I*a))");
+				"(-I*1/2*E^(I*a+I*b*x)*(1-I*b*x))/b^2+(I*1/2*(1+I*b*x))/(b^2*E^(I*a+I*b*x))");
 		check("D(b^(-2)*Sin(b*x+a)-Cos(b*x+a)*b^(-1)*x,x)", "x*Sin(a+b*x)");
 		check("Integrate(x*Sin(a + b*x)^2,x)",
-				"x^2/4-((E^(I*2*a)*Gamma(2,-I*2*b*x))/(8*b^2)+Gamma(2,I*2*b*x)/(8*b^2*E^(I*2*a)))/\n" + "2");
+				"-((E^(I*2*a+I*2*b*x)*(1-I*2*b*x))/(8*b^2)+(1+I*2*b*x)/(8*b^2*E^(I*2*a+I*2*b*x)))/\n" + 
+				"2+x^2/4");
 		check("Integrate(x*Sin(a + b*x)^3,x)",
-				"-((I*1/2*E^(I*a)*Gamma(2,-I*b*x))/b^2+(-I*1/2*Gamma(2,I*b*x))/(b^2*E^(I*a)))/4+1/\n"
-						+ "2*((-I*1/2*E^(I*a)*Gamma(2,-I*b*x))/b^2+(I*1/2*Gamma(2,I*b*x))/(b^2*E^(I*a)))-((-I*\n"
-						+ "1/18*E^(I*3*a)*Gamma(2,-I*3*b*x))/b^2+(I*1/18*Gamma(2,I*3*b*x))/(b^2*E^(I*3*a)))/\n" + "4");
+				"-((I*1/2*E^(I*a+I*b*x)*(1-I*b*x))/b^2+(-I*1/2*(1+I*b*x))/(b^2*E^(I*a+I*b*x)))/4+\n" + 
+				"1/2*((-I*1/2*E^(I*a+I*b*x)*(1-I*b*x))/b^2+(I*1/2*(1+I*b*x))/(b^2*E^(I*a+I*b*x)))-((-I*\n" + 
+				"1/18*E^(I*3*a+I*3*b*x)*(1-I*3*b*x))/b^2+(I*1/18*(1+I*3*b*x))/(b^2*E^(I*3*a+I*3*b*x)))/\n" + 
+				"4");
 
-		check("Integrate(x^2*Sin(a + b*x),x)", "(E^(I*a)*Gamma(3,-I*b*x))/(2*b^3)+Gamma(3,I*b*x)/(2*b^3*E^(I*a))");
+		check("Integrate(x^2*Sin(a + b*x),x)", "(E^(I*a+I*b*x)*(1-I*b*x-1/2*b^2*x^2))/b^3+(1+I*b*x-1/2*b^2*x^2)/(b^3*E^(I*a+I*b*x))");
 		check("Integrate(x^2*Sin(a + b*x)^2,x)",
-				"x^3/6-((I*1/16*E^(I*2*a)*Gamma(3,-I*2*b*x))/b^3+(-I*1/16*Gamma(3,I*2*b*x))/(b^3*E^(I*\n" + "2*a)))/2");
+				"-((I*1/8*E^(I*2*a+I*2*b*x)*(1-I*2*b*x-2*b^2*x^2))/b^3+(-I*1/8*(1+I*2*b*x-2*b^2*x^\n" + 
+				"2))/(b^3*E^(I*2*a+I*2*b*x)))/2+x^3/6");
 
 		check("Integrate((a + b*Sin(c + g*x)),x)", "a*x+(-b*Cos(c+g*x))/g");
 		check("Integrate((a + b*Sin(c + g*x))^2,x)",
@@ -432,7 +435,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 	}
 
 	public void testSqrtLn() {
-		check("integrate(Sqrt(x)*Log(x), x)", "-4/9*Gamma(2,-3/2*Log(x))");
+		check("integrate(Sqrt(x)*Log(x), x)", "-4/9*x^(3/2)*(1-3/2*Log(x))");
 		check("D(2/3*Log(x)*x^(3/2)-4/9*x^(3/2),x)", "Sqrt(x)*Log(x)");
 	}
 

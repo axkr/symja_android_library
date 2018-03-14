@@ -55,6 +55,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.PlusOp;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
+import org.matheclipse.core.eval.interfaces.AbstractArg12;
 import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
@@ -90,6 +91,7 @@ import org.matheclipse.core.patternmatching.hash.HashedPatternRulesLog;
 import org.matheclipse.core.patternmatching.hash.HashedPatternRulesTimes;
 import org.matheclipse.core.reflection.system.rules.AbsRules;
 import org.matheclipse.core.reflection.system.rules.ConjugateRules;
+import org.matheclipse.core.reflection.system.rules.GammaRules;
 import org.matheclipse.core.reflection.system.rules.PowerRules;
 
 public final class Arithmetic {
@@ -1275,43 +1277,55 @@ public final class Arithmetic {
 	 * 1.1018024908797128
 	 * </pre>
 	 */
-	private final static class Gamma extends AbstractTrigArg1 implements DoubleUnaryOperator {
+	private final static class Gamma extends AbstractArg12 implements GammaRules {
+ 
 
-		/**
-		 * Implement: <code>Gamma(x_Integer) := (x-1)!</code>
-		 * 
-		 * @param x
-		 * @return
-		 */
-		public static IInteger gamma(final IInteger x) {
-			return NumberTheory.factorial(x.subtract(C1));
-		}
+		// @Override
+		// public double applyAsDouble(double operand) {
+		// return org.hipparchus.special.Gamma.gamma(operand);
+		// }
 
 		@Override
-		public double applyAsDouble(double operand) {
-			return org.hipparchus.special.Gamma.gamma(operand);
-		}
-
-		@Override
-		public IExpr e1DblArg(final double arg1) {
-			double gamma = org.hipparchus.special.Gamma.gamma(arg1);
+		public IExpr e1DblArg(final INum arg1) {
+			double gamma = org.hipparchus.special.Gamma.gamma(arg1.doubleValue());
 			return num(gamma);
+		}
+
+		public IExpr e2DblArg(final INum d0, final INum d1) {
+			return F.num(de.lab4inf.math.functions.IncompleteGamma.incGammaP(d0.doubleValue(), d1.doubleValue()));
+		}
+
+		public IExpr e2ObjArg(final IExpr o0, final IExpr z) {
+			int n = o0.toIntDefault(Integer.MIN_VALUE);
+			if (n > 0) {
+				//
+				// Gamma(n,z) = ((n - 1)! * Sum(z^k/k!, {k, 0, n - 1}))/E^z
+				//
+				IASTAppendable sum = F.PlusAlloc(n);
+				for (int k = 0; k < n; k++) {
+					sum.append(F.Divide(F.Power(z, k), F.Factorial(F.ZZ(k))));
+				}
+				return F.Times(F.Factorial(F.ZZ(n - 1)), sum, F.Power(E, z.negate()));
+			}
+			return F.NIL;
 		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 4);
-
-			if (ast.isAST1()) {
-				return evaluateArg1(ast.arg1());
+			Validate.checkRange(ast, 2, 3);
+			if (ast.size() != 3) {
+				return unaryOperator(ast.arg1());
 			}
-			return NIL;
+			return binaryOperator(ast.arg1(), ast.arg2());
 		}
 
 		@Override
-		public IExpr evaluateArg1(final IExpr arg1) {
+		public IExpr e1ObjArg(final IExpr arg1) {
 			if (arg1.isInteger()) {
-				return gamma((IInteger) arg1);
+				if (arg1.isNegative()) {
+					return F.CComplexInfinity;
+				}
+				return NumberTheory.factorial(((IInteger) arg1).subtract(C1));
 			}
 			if (arg1.isFraction()) {
 				IFraction frac = (IFraction) arg1;
@@ -1336,6 +1350,11 @@ public final class Arithmetic {
 
 			}
 			return NIL;
+		}
+
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
 		}
 
 		@Override
@@ -1933,18 +1952,17 @@ public final class Arithmetic {
 			if (ast.isAST2()) {
 				defaultValue = ast.arg2();
 			}
-			IExpr cond;
+			IExpr condition;
 			IAST row;
 			int matrixSize = matrix.size();
-			IASTAppendable result = F.ListAlloc(matrixSize);
-			IASTAppendable pw = F.ast(F.Piecewise);
-			pw.append(result);
+			IASTAppendable result = F.NIL;
+			IASTAppendable piecewiseAST = F.NIL;
 			boolean evaluated = false;
 			boolean noBoolean = false;
 			for (int i = 1; i < matrixSize; i++) {
 				row = matrix.getAST(i);
-				cond = row.arg2();
-				if (cond.isTrue()) {
+				condition = row.arg2();
+				if (condition.isTrue()) {
 					if (!evaluated && i == matrixSize - 1) {
 						if (!row.arg1().isSymbol()) {
 							return row.arg1();
@@ -1952,31 +1970,28 @@ public final class Arithmetic {
 						return F.NIL;
 					}
 					if (noBoolean) {
-						result.append(F.List(row.arg1(), F.True));
-						return pw;
+						result = appendPiecewise(result, row.arg1(), F.True, matrixSize);
+						return createPiecewise(piecewiseAST, result);
 					}
 					return row.arg1();
-				} else if (cond.isFalse()) {
+				} else if (condition.isFalse()) {
 					evaluated = true;
 					continue;
 				}
-				cond = engine.evaluateNull(cond);
-				if (!cond.isPresent()) {
-					noBoolean = true;
-					result.append(F.List(row.arg1(), row.arg2()));
-					continue;
-				} else if (cond.isTrue()) {
+				condition = engine.evaluateNull(condition);
+				if (condition.isTrue()) {
 					evaluated = true;
 					if (noBoolean) {
-						result.append(F.List(row.arg1(), F.True));
-						return pw;
+						result = appendPiecewise(result, row.arg1(), F.True, matrixSize);
+						return createPiecewise(piecewiseAST, result);
 					}
 					return row.arg1();
-				} else if (cond.isFalse()) {
+				} else if (condition.isFalse()) {
 					evaluated = true;
 					continue;
 				} else {
-					result.append(F.List(row.arg1(), cond));
+					result = appendPiecewise(result, row.arg1(), condition.orElse(row.arg2()), matrixSize);
+					piecewiseAST = createPiecewise(piecewiseAST, result);
 					noBoolean = true;
 					continue;
 				}
@@ -1985,12 +2000,30 @@ public final class Arithmetic {
 				return defaultValue;
 			} else {
 				if (evaluated) {
-					pw.append(defaultValue);
-					return pw;
+					piecewiseAST = createPiecewise(piecewiseAST, F.List());
+					piecewiseAST.append(defaultValue);
+					return piecewiseAST;
 				}
 			}
 
 			return F.NIL;
+		}
+
+		private static IASTAppendable createPiecewise(IASTAppendable piecewiseAST, IAST resultList) {
+			if (!piecewiseAST.isPresent()) {
+				piecewiseAST = F.ast(F.Piecewise);
+				piecewiseAST.append(resultList);
+			}
+			return piecewiseAST;
+		}
+
+		private static IASTAppendable appendPiecewise(IASTAppendable list, IExpr function, IExpr predicate,
+				int matrixSize) {
+			if (!list.isPresent()) {
+				list = F.ListAlloc(matrixSize);
+			}
+			list.append(F.List(function, predicate));
+			return list;
 		}
 
 		@Override
