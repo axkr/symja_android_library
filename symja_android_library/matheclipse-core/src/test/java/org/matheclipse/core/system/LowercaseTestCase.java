@@ -2801,13 +2801,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGamma() {
+		check("Gamma(-1)", "ComplexInfinity");
+		check("Gamma(Infinity)", "Infinity");
+		check("Gamma(-Infinity)", "Indeterminate");
+		check("Gamma(I*Infinity)", "0");
+		check("Gamma(-I*Infinity)", "0");
+		check("Gamma(ComplexInfinity)", "Indeterminate");
+		
+		checkNumeric("Gamma(1.5,7.5)", "0.0016099632282723212");
+		check("Gamma(-3/4, 0)", "ComplexInfinity");
+		check("Gamma(10, -1)", "133496*E");
+		check("Gamma(1/2, x)", "Sqrt(Pi)*Erfc(Sqrt(x))");
 		check("Gamma(8)", "5040");
 		check("Gamma(1/2)", "Sqrt(Pi)");
 		// check("Gamma(1.0+I)", "");
 		checkNumeric("Gamma(2.2)", "1.1018024908797128");
 	}
-
+ 
 	public void testGammaRegularized() {
+		check("GammaRegularized(a,z1,z2)", "GammaRegularized(a,z1)-GammaRegularized(a,z2)");
+		
 		check("GammaRegularized(1/2, z)", "Erfc(Sqrt(z))");
 		check("GammaRegularized(-4, z)", "0");
 		check("GammaRegularized(12, 0)", "1");
@@ -3223,7 +3236,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegrate() {
-
+		check("Integrate(x*Sin(x),{x,1.0,2*Pi})", "-6.58435");
+		
 		// check("Integrate(x/(1+x+x^7),x)", "");
 		check("Integrate(1/y(x)^2,y(x))", "-1/y(x)");
 		check("Integrate(f(x,y),x)", "Integrate(f(x,y),x)");
@@ -3485,6 +3499,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("InverseLaplaceTransform(3/(s-1)+(2*s)/(s^2+4),s,t)", "3*E^t+2*Cos(2*t)");
 	}
 
+	public void testInverseSeries() {
+		check("InverseSeries(Series(Sin(x), {x, 0, 7}))", //
+				"x+x^3/6+3/40*x^5+5/112*x^7+O(x)^8");
+		check("InverseSeries(Series(ArcSin(x), {x, 0, 5}))", //
+				"x-x^3/6+x^5/120+O(x)^6");
+	}
 	public void testLaplaceTransform() {
 		check("LaplaceTransform(E^2,t,-3+s)", "E^2/(-3+s)");
 		check("LaplaceTransform(c*t^2, t, s)", "(2*c)/s^3");
@@ -6783,6 +6803,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSeries() {
 		// check("FullForm(Series(Exp(x),{x,0,10}))", "");
 		// check("Series(Sin(Sqrt(x)), {x, 0, 5})", "");
+
+		check("Series(x*4+x^2-y*x^10, {x, 0, 10})", "4*x+x^2-y*x^10+O(x)^11");
+		check("Series(x*4+x^2-y*x^11, {x, 0, 10})", "4*x+x^2+O(x)^11");
+
 		check("D(Csc(x),{x,2})", "Cot(x)^2*Csc(x)+Csc(x)^3");
 		check("D(Tan(x)/Sin(x),x)", "Sec(x)*Tan(x)");
 		check("D(Tan(x)/Sin(x),{x,2})", "Sec(x)^3+Sec(x)*Tan(x)^2");
@@ -6796,11 +6820,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Sin(f(0))+Cos(f(0))*f'(0)*x+1/2*(-Sin(f(0))*f'(0)^2+Cos(f(0))*f''(0))*x^2+O(x)^3");
 		check("Series(Sin(x),{x,0,2})", "x+O(x)^3");
 
-		check("Series(f(x),{x,a,3})", "f(a)+f'(a)*(-a+x)+f''(a)/2*(-a+x)^2+Derivative(3)[f][a]/6*(-a+x)^3+O(-a+x)^4");
+		check("Series(f(x),{x,a,3})",
+				"f(a)+f'(a)*(-a+x)+1/2*f''(a)*(-a+x)^2+1/6*Derivative(3)[f][a]*(-a+x)^3+O(-a+x)^4");
 		check("Series(Exp(x),{x,0,2})", "1+x+x^2/2+O(x)^3");
 		check("Series(Exp(f(x)),{x,0,2})", "E^f(0)+E^f(0)*f'(0)*x+1/2*(E^f(0)*f'(0)^2+E^f(0)*f''(0))*x^2+O(x)^3");
 		check("Series(Exp(x),{x,0,5})", "1+x+x^2/2+x^3/6+x^4/24+x^5/120+O(x)^6");
 		check("Series(100,{x,a,5})", "100");
+		check("Series(y,{x,a,5})", "y");
 	}
 
 	public void testSeriesData() {
@@ -6809,6 +6835,59 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "1+4*x+9*x^2+16*x^3+25*x^4+36*x^5+49*x^6+64*x^7+81*x^8+100*x^9+O(x)^10");
 		check("SeriesData(x, 0,{1,0,-1/6,0,1/120,0,-1/5040,0,1/362880}, 1, 11, 2)",
 				"Sqrt(x)-x^(3/2)/6+x^(5/2)/120-x^(7/2)/5040+x^(9/2)/362880+O(x)^(11/2)");
+	}
+
+	public void testSeriesCoefficient() {
+
+		check("SeriesCoefficient(d+4*x^e+7*x^f,{x, a, n})", //
+				"Piecewise({{(4*a^e*Binomial(e,n)+7*a^f*Binomial(f,n))/a^n,n>0},{4*a^e+7*a^f+d,n==\n" + "0}},0)");
+		check("SeriesCoefficient(x^42,{x, a, n})", //
+				"Piecewise({{a^(42-n)*Binomial(42,n),n>0},{a^42,n==0}},0)");
+
+		check("SeriesCoefficient(f(x),{x, a, n})", //
+				"SeriesCoefficient(f(x),{x,a,n})");
+		check("SeriesCoefficient(b^x,{x, a, n})", //
+				"Piecewise({{(b^a*Log(b)^n)/n!,n>=0}},0)");
+
+		check("SeriesCoefficient(Sin(b),{x,a,2})", //
+				"0");
+		check("SeriesCoefficient(f(42),{x,a,n})", //
+				"Piecewise({{f(42),n==0}},0)");
+		check("SeriesCoefficient(f(x),{x,a,2})", //
+				"f''(a)/2");
+
+		check("SeriesCoefficient(Cos(x),{x,0,n})", //
+				"Piecewise({{((1+(-1)^n)*I^n)/(2*n!),n>=0}},0)");
+		check("SeriesCoefficient(Cos(x),{x,Pi/2,n})", //
+				"Piecewise({{((-1)*I*(-1+(-1)^n)*I^n)/(2*n!),n>=0}},0)");
+		check("SeriesCoefficient(Cos(x),{x,f+g,n})", //
+				"Piecewise({{Cos(f+g+1/2*n*Pi)/n!,n>=0}},0)");
+
+		check("SeriesCoefficient(Sin(x),{x,0,n})", //
+				"Piecewise({{(I*(-1+(-1)^n)*I^n)/(2*n!),n>=0}},0)");
+		check("SeriesCoefficient(Sin(x),{x,Pi/2,n})", //
+				"Piecewise({{((1+(-1)^n)*I^n)/(2*n!),n>=0}},0)");
+		check("SeriesCoefficient(Sin(x),{x,f+g,n})", //
+				"Piecewise({{Sin(f+g+1/2*n*Pi)/n!,n>=0}},0)");
+
+		check("SeriesCoefficient(Tan(x),{x,0,n})", //
+				"Piecewise({{((-1+(-1)^n)*2^n*(-1+2^(1+n))*I^(1+n)*BernoulliB(1+n))/(1+n)!,n>=1}},\n" + //
+						"0)");
+		check("SeriesCoefficient(Tan(x),{x,0,3})", //
+				"1/3");
+		check("SeriesCoefficient(Tan(x),{x,Pi/2,n})", //
+				"Piecewise({{-1,n==-1},{((-1+(-1)^n)*2^n*I^(1+n)*BernoulliB(1+n))/(1+n)!,n>=0}},0)");
+
+		check("SeriesCoefficient(Cot(x),{x,0,n})", //
+				"Piecewise({{1,n==-1},{((-1)*I*(-1+(-1)^n)*(2*I)^n*BernoulliB(1+n))/(1+n)!,n>=0}},\n" + //
+						"0)");
+		check("SeriesCoefficient(Cot(x),{x,0,3})", //
+				"-1/45");
+		check("SeriesCoefficient(Cot(x),{x,Pi/2,n})", //
+				"Piecewise({{((-1)*I*(-1+(-1)^n)*(-1+2^(1+n))*(2*I)^n*BernoulliB(1+n))/(1+n)!,n>=\n" + //
+						"1}},0)");
+		check("SeriesCoefficient(Cot(x),{x,Pi/2,3})", //
+				"-1/3");
 	}
 
 	public void testSet() {

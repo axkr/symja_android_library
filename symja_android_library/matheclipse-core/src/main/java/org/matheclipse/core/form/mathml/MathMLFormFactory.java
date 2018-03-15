@@ -10,6 +10,7 @@ import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.AST2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
+import org.matheclipse.core.expression.ASTPowerSeries;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ApcomplexNum;
@@ -612,6 +613,11 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 				}
 			}
 		}
+		if (list instanceof ASTPowerSeries) {
+			if (convertSeriesData(buf, (ASTPowerSeries) list, precedence)) {
+				return;
+			}
+		}
 		if (list.isList() || list instanceof ASTRealVector || list instanceof ASTRealMatrix) {
 			convertList(buf, list);
 			return;
@@ -620,11 +626,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			convertPart(buf, list);
 			return;
 		}
-		if (head.equals(F.SeriesData) && (list.size() == 7)) {
-			if (convertSeriesData(buf, list, precedence)) {
-				return;
-			}
-		}
+		 
 		if (head.equals(F.Slot) && (list.isAST1()) && (list.arg1() instanceof IInteger)) {
 			convertSlot(buf, list);
 			return;
@@ -920,7 +922,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	 * @return <code>true</code> if the conversion was successful
 	 * @throws IOException
 	 */
-	public boolean convertSeriesData(final StringBuilder buf, final IAST seriesData, final int precedence) {
+	public boolean convertSeriesData(final StringBuilder buf, final ASTPowerSeries seriesData, final int precedence) {
 		int operPrecedence = ASTNodeFactory.PLUS_PRECEDENCE;
 		StringBuilder tempBuffer = new StringBuilder();
 		tagStart(tempBuffer, "mrow");
@@ -930,23 +932,22 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		try {
 			IExpr plusArg;
 			// SeriesData[x, x0, list, nmin, nmax, den]
-			IExpr x = seriesData.arg1();
-			IExpr x0 = seriesData.arg2();
-			IAST list = (IAST) seriesData.arg3();
-			long nmin = ((IInteger) seriesData.arg4()).toLong();
-			long nmax = ((IInteger) seriesData.arg5()).toLong();
-			long den = ((IInteger) seriesData.get(6)).toLong();
-			int size = list.size();
+			IExpr x = seriesData.getX();
+			IExpr x0 = seriesData.getX0();
+			long nmin = seriesData.getNMin();
+			long nmax = seriesData.getNMax();
+			long den = seriesData.getDenominator();
+			int size = seriesData.size();
 			boolean call = NO_PLUS_CALL;
 			if (size > 0) {
 				INumber exp = F.fraction(nmin, den).normalize();
 				IExpr pow = x.subtract(x0).power(exp);
-				call = convertSeriesDataArg(tempBuffer, list.arg1(), pow, call);
+				call = convertSeriesDataArg(tempBuffer, seriesData.arg1(), pow, call);
 				for (int i = 2; i < size; i++) {
 					tag(tempBuffer, "mo", "+");
 					exp = F.fraction(nmin + i - 1L, den).normalize();
 					pow = x.subtract(x0).power(exp);
-					call = convertSeriesDataArg(tempBuffer, list.get(i), pow, call);
+					call = convertSeriesDataArg(tempBuffer, seriesData.get(i), pow, call);
 				}
 				plusArg = F.Power(F.O(x.subtract(x0)), F.fraction(nmax, den).normalize());
 				if (!plusArg.isZero()) {

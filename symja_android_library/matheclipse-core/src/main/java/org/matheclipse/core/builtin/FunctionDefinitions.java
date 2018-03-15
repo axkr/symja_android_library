@@ -37,7 +37,6 @@ public final class FunctionDefinitions {
 		InverseFunction.setEvaluator(new org.matheclipse.core.reflection.system.InverseFunction());
 		InverseLaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.InverseLaplaceTransform());
 		LaplaceTransform.setEvaluator(new org.matheclipse.core.reflection.system.LaplaceTransform());
-		Limit.setEvaluator(new org.matheclipse.core.reflection.system.Limit());
 		LinearProgramming.setEvaluator(new org.matheclipse.core.reflection.system.LinearProgramming());
 		MonomialList.setEvaluator(new org.matheclipse.core.reflection.system.MonomialList());
 		Names.setEvaluator(new org.matheclipse.core.reflection.system.Names());
@@ -59,8 +58,6 @@ public final class FunctionDefinitions {
 		Replace.setEvaluator(new org.matheclipse.core.reflection.system.Replace());
 		ReplaceList.setEvaluator(new org.matheclipse.core.reflection.system.ReplaceList());
 		ReplaceRepeated.setEvaluator(new org.matheclipse.core.reflection.system.ReplaceRepeated());
-		Series.setEvaluator(new org.matheclipse.core.reflection.system.Series());
-		SeriesData.setEvaluator(new org.matheclipse.core.reflection.system.SeriesData());
 		Share.setEvaluator(new org.matheclipse.core.reflection.system.Share());
 		Sign.setEvaluator(new org.matheclipse.core.reflection.system.Sign());
 		SignCmp.setEvaluator(new org.matheclipse.core.reflection.system.SignCmp());

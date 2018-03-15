@@ -38,6 +38,7 @@ import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.builtin.PredicateQ;
 import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.builtin.RandomFunctions;
+import org.matheclipse.core.builtin.SeriesFunctions;
 import org.matheclipse.core.builtin.SpecialFunctions;
 import org.matheclipse.core.builtin.StatisticsFunctions;
 import org.matheclipse.core.builtin.StringFunctions;
@@ -254,6 +255,7 @@ public class F {
 	public final static IBuiltInSymbol Complexes = BuiltIns.valueOf(BuiltIns.Complexes);
 	public final static IBuiltInSymbol ComplexityFunction = BuiltIns.valueOf(BuiltIns.ComplexityFunction);
 	public final static IBuiltInSymbol ComposeList = BuiltIns.valueOf(BuiltIns.ComposeList);
+	public final static IBuiltInSymbol ComposeSeries = BuiltIns.valueOf(BuiltIns.ComposeSeries);
 	public final static IBuiltInSymbol Composition = BuiltIns.valueOf(BuiltIns.Composition);
 	public final static IBuiltInSymbol CompoundExpression = BuiltIns.valueOf(BuiltIns.CompoundExpression);
 	public final static IBuiltInSymbol Condition = BuiltIns.valueOf(BuiltIns.Condition);
@@ -464,6 +466,7 @@ public class F {
 	public final static IBuiltInSymbol InverseFunction = BuiltIns.valueOf(BuiltIns.InverseFunction);
 	public final static IBuiltInSymbol InverseHaversine = BuiltIns.valueOf(BuiltIns.InverseHaversine);
 	public final static IBuiltInSymbol InverseLaplaceTransform = BuiltIns.valueOf(BuiltIns.InverseLaplaceTransform);
+	public final static IBuiltInSymbol InverseSeries = BuiltIns.valueOf(BuiltIns.InverseSeries);
 	public final static IBuiltInSymbol JaccardDissimilarity = BuiltIns.valueOf(BuiltIns.JaccardDissimilarity);
 	public final static IBuiltInSymbol JacobiMatrix = BuiltIns.valueOf(BuiltIns.JacobiMatrix);
 	public final static IBuiltInSymbol JacobiSymbol = BuiltIns.valueOf(BuiltIns.JacobiSymbol);
@@ -731,6 +734,7 @@ public class F {
 	public final static IBuiltInSymbol Select = BuiltIns.valueOf(BuiltIns.Select);
 	public final static IBuiltInSymbol Sequence = BuiltIns.valueOf(BuiltIns.Sequence);
 	public final static IBuiltInSymbol Series = BuiltIns.valueOf(BuiltIns.Series);
+	public final static IBuiltInSymbol SeriesCoefficient = BuiltIns.valueOf(BuiltIns.SeriesCoefficient);
 	public final static IBuiltInSymbol SeriesData = BuiltIns.valueOf(BuiltIns.SeriesData);
 	public final static IBuiltInSymbol Set = BuiltIns.valueOf(BuiltIns.Set);
 	public final static IBuiltInSymbol SetAttributes = BuiltIns.valueOf(BuiltIns.SetAttributes);
@@ -860,6 +864,8 @@ public class F {
 
 	public final static ISymbol $Aborted = initFinalHiddenSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$aborted" : "$Aborted");
+	// public final static ISymbol $PowerSeries = initFinalHiddenSymbol(
+	// Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$powerseries" : "$PowerSeries");
 	public final static ISymbol $RealVector = initFinalHiddenSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$realvector" : "$RealVector");
 	public final static ISymbol $RealMatrix = initFinalHiddenSymbol(
@@ -1545,6 +1551,7 @@ public class F {
 			StatisticsFunctions.initialize();
 			HypergeometricFunctions.initialize();
 			PolynomialFunctions.initialize();
+			SeriesFunctions.initialize();
 			AssumptionFunctions.initialize();
 			ComputationalGeometryFunctions.initialize();
 
@@ -3108,6 +3115,10 @@ public class F {
 		return unaryAST1(EvenQ, a);
 	}
 
+	public static IAST EulerE(final IExpr a0) {
+		return unaryAST1(EulerE, a0);
+	}
+
 	public static IAST EulerPhi(final IExpr a0) {
 		return unaryAST1(EulerPhi, a0);
 	}
@@ -3357,6 +3368,10 @@ public class F {
 
 	public static IAST Gamma(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Gamma, a0, a1);
+	}
+
+	public static IAST Gamma(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(Gamma, a0, a1, a2);
 	}
 
 	public static IAST GammaRegularized(final IExpr a0, final IExpr a1) {
@@ -4976,6 +4991,10 @@ public class F {
 
 	public static IAST Series(final IExpr... a) {
 		return ast(a, Series);
+	}
+
+	public static IAST SeriesCoefficient(final IExpr a0, final IExpr a1) {
+		return binaryAST2(SeriesCoefficient, a0, a1);
 	}
 
 	public static IAST SeriesData(final IExpr... a) {

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
@@ -30,9 +31,8 @@ import edu.jas.util.CartesianProductInfinite;
 import edu.jas.util.LongIterable;
 
 /**
- * GenPolynomialRing generic polynomial factory implementing ExprRingFactory;
- * Factory for n-variate ordered polynomials over C. Almost immutable object,
- * except variable names.
+ * GenPolynomialRing generic polynomial factory implementing ExprRingFactory; Factory for n-variate ordered polynomials
+ * over C. Almost immutable object, except variable names.
  * 
  * @param <C>
  *            coefficient type
@@ -241,7 +241,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 		// vars = null;
 		// } else {
 		vars = listOfVariables.copyAppendable();// Arrays.copyOf(v, v.length); // >
-										// Java-5
+		// Java-5
 		// }
 		ZERO = new ExprPolynomial(this);
 		IExpr coeff = coFac.getONE();
@@ -261,9 +261,8 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	}
 
 	/**
-	 * The constructor creates a polynomial factory object with the the same
-	 * term order, number of variables and variable names as the given
-	 * polynomial factory, only the coefficient factories differ.
+	 * The constructor creates a polynomial factory object with the the same term order, number of variables and
+	 * variable names as the given polynomial factory, only the coefficient factories differ.
 	 * 
 	 * @param cf
 	 *            factory for coefficients of type C.
@@ -275,9 +274,8 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	}
 
 	/**
-	 * The constructor creates a polynomial factory object with the the same
-	 * coefficient factory, number of variables and variable names as the given
-	 * polynomial factory, only the term order differs.
+	 * The constructor creates a polynomial factory object with the the same coefficient factory, number of variables
+	 * and variable names as the given polynomial factory, only the term order differs.
 	 * 
 	 * @param to
 	 *            term order.
@@ -314,8 +312,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * @param exprPoly
 	 *            the polynomial expression
 	 * @param coefficient
-	 *            set to <code>true</code> if called by the
-	 *            <code>Coefficient()</code> function
+	 *            set to <code>true</code> if called by the <code>Coefficient()</code> function
 	 * @param checkNegativeExponents
 	 *            if <code>true</code> don't allow negative exponents
 	 * @return
@@ -365,7 +362,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 					}
 					ExpVectorLong e = new ExpVectorLong(vars.argSize(), ix, exponent);
 					return getOne().multiply(e);
-				} 
+				}
 			}
 			if (coefficient) {
 				return new ExprPolynomial(this, ast);
@@ -389,11 +386,78 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 			}
 		} else if (exprPoly.isNumber()) {
 			return new ExprPolynomial(this, exprPoly);
-		} 
+		}
 		if (exprPoly.isFree(Predicates.in(vars), true)) {
 			return new ExprPolynomial(this, exprPoly);
 		}
 		throw new ClassCastException(exprPoly.toString());
+	}
+
+	public static Map<IExpr, IExpr> create(final IExpr exprPoly, IExpr x, Map<IExpr, IExpr> coefficientMap 
+			 ) throws ArithmeticException, ClassCastException {
+		if (exprPoly instanceof IAST) {
+			final IAST ast = (IAST) exprPoly;
+			if (ast.isPlus()) {
+				IExpr expr;
+				for (int i = 1; i < ast.size(); i++) {
+					expr = ast.get(i);
+					coefficientMap = create(expr, x, coefficientMap);
+				}
+				return coefficientMap;
+			} else if (ast.isTimes()) {
+				IExpr mainExponent = F.NIL;
+				IExpr expr;
+				IASTAppendable times = F.TimesAlloc(ast.size());
+				for (int i = 1; i < ast.size(); i++) {
+					expr = ast.get(i);
+
+					if (expr.isFree(x, true)) {
+						times.append(expr);
+					} else if (expr.isPower()) {
+						final IExpr base = expr.base();
+						final IExpr exponent = expr.exponent();
+						if (exponent.isFree(x)) {
+							if (base.equals(x)) {
+								if (mainExponent.isPresent()) {
+									throw new ClassCastException(exprPoly.toString());
+								} else {
+									mainExponent = exponent;
+								}
+							}
+						} else {
+							throw new ClassCastException(exprPoly.toString());
+						}
+					}
+				}
+				return addCoefficient(coefficientMap, mainExponent, times.getOneIdentity(F.C1));
+			} else if (ast.isPower()) {
+				final IExpr base = ast.base();
+				final IExpr exponent = ast.exponent();
+				if (exponent.isFree(x)) {
+					if (base.equals(x)) {
+						return addCoefficient(coefficientMap, exponent, F.C1);
+					}
+					if (base.isFree(x)) { 
+						return addCoefficient(coefficientMap, F.C0, ast);
+					}
+				}
+			}
+
+		} else if (exprPoly.equals(x)) {
+			return addCoefficient(coefficientMap, F.C1, F.C1);
+		} else if (exprPoly.isNumber()) {
+			return addCoefficient(coefficientMap, F.C0, exprPoly);
+		}
+		if (exprPoly.isFree(x, true)) {
+			return addCoefficient(coefficientMap, F.C0, exprPoly);
+		}
+		throw new ClassCastException(exprPoly.toString());
+	}
+
+	private static Map<IExpr, IExpr> addCoefficient(Map<IExpr, IExpr> coefficientMap, final IExpr exponent,
+			IExpr coefficient) {
+		coefficientMap.put(exponent, coefficient);
+		return coefficientMap;
 	}
 
 	/**
@@ -402,8 +466,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * @param expression
 	 *            the expression which should be checked if it's a polynomial
 	 * @param coefficient
-	 *            set to <code>true</code> if called by the
-	 *            <code>Coefficient()</code> function
+	 *            set to <code>true</code> if called by the <code>Coefficient()</code> function
 	 * @return <code>true</code> if the given expression is a polynomial
 	 */
 	public boolean isPolynomial(final IExpr expression) throws ArithmeticException, ClassCastException {
@@ -416,8 +479,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * @param expression
 	 *            the expression which should be checked if it's a polynomial
 	 * @param coefficient
-	 *            set to <code>true</code> if called by the
-	 *            <code>Coefficient()</code> function
+	 *            set to <code>true</code> if called by the <code>Coefficient()</code> function
 	 * @return <code>true</code> if the given expression is a polynomial
 	 */
 	public boolean isPolynomial(final IExpr expression, boolean coefficient)
@@ -493,8 +555,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * Get the position of the <code>expr</code> in the variables list.
 	 * 
 	 * @param expr
-	 * @return <code>-1</code> if the expression isn't found in the variable
-	 *         list.
+	 * @return <code>-1</code> if the expression isn't found in the variable list.
 	 */
 	private int isVariable(final IExpr expr) {
 		for (int i = 1; i < vars.size(); i++) {
@@ -616,8 +677,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	}
 
 	/**
-	 * Get a scripting compatible string representation of an ExpVectorLong of
-	 * this ring.
+	 * Get a scripting compatible string representation of an ExpVectorLong of this ring.
 	 * 
 	 * @param e
 	 *            exponent vector
@@ -689,7 +749,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * @return vars.
 	 */
 	public IAST getVars() {
-		return vars; //.copyAppendable();
+		return vars; // .copyAppendable();
 	}
 
 	/**
@@ -830,8 +890,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	}
 
 	/**
-	 * Get a GenPolynomial&lt;C&gt; element from a coeffcient and an exponent
-	 * vector.
+	 * Get a GenPolynomial&lt;C&gt; element from a coeffcient and an exponent vector.
 	 * 
 	 * @param a
 	 *            coefficient.
@@ -929,8 +988,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	}
 
 	/**
-	 * Get the generating elements excluding the generators for the coefficient
-	 * ring.
+	 * Get the generating elements excluding the generators for the coefficient ring.
 	 * 
 	 * @return a list of generating elements for this ring.
 	 */
@@ -1010,8 +1068,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	}
 
 	/**
-	 * Generate list of univariate polynomials in all variables with given
-	 * exponent.
+	 * Generate list of univariate polynomials in all variables with given exponent.
 	 * 
 	 * @param modv
 	 *            number of module variables.
@@ -1030,8 +1087,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	}
 
 	/**
-	 * Extend variables. Used e.g. in module embedding. Extend number of
-	 * variables by i.
+	 * Extend variables. Used e.g. in module embedding. Extend number of variables by i.
 	 * 
 	 * @param i
 	 *            number of variables to extend.
@@ -1044,8 +1100,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	// }
 
 	/**
-	 * Extend variables. Used e.g. in module embedding. Extend number of
-	 * variables by length(vn).
+	 * Extend variables. Used e.g. in module embedding. Extend number of variables by length(vn).
 	 * 
 	 * @param vn
 	 *            names for extended variables.
@@ -1070,8 +1125,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	}
 
 	/**
-	 * Contract variables. Used e.g. in module embedding. Contract number of
-	 * variables by i.
+	 * Contract variables. Used e.g. in module embedding. Contract number of variables by i.
 	 * 
 	 * @param i
 	 *            number of variables to remove.

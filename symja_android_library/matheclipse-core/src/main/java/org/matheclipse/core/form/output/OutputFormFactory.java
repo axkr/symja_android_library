@@ -3,11 +3,13 @@ package org.matheclipse.core.form.output;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.text.NumberFormat;
+
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.expression.ASTPowerSeries;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ApcomplexNum;
@@ -350,9 +352,6 @@ public class OutputFormFactory {
 		} else if (isImMinusOne) {
 			append(buf, "-I");
 		} else {
-//			if (isReZero && (ASTNodeFactory.TIMES_PRECEDENCE < precedence)) {
-//				append(buf, "(");
-//			}
 			final IRational im = c.getImaginaryPart();
 			if (im.isNegative()) {
 				if (isReZero && (ASTNodeFactory.TIMES_PRECEDENCE < precedence)) {
@@ -365,16 +364,12 @@ public class OutputFormFactory {
 					if (caller == PLUS_CALL) {
 						append(buf, "+");
 					}
-					if (isReZero && (ASTNodeFactory.TIMES_PRECEDENCE < precedence)) {
+					if (ASTNodeFactory.TIMES_PRECEDENCE < precedence) {
 						append(buf, "(");
 					}
 					append(buf, "I*");
 				} else {
-					append(buf, "+");
-					if (isReZero && (ASTNodeFactory.TIMES_PRECEDENCE < precedence)) {
-						append(buf, "(");
-					}
-					append(buf, "I*");
+					append(buf, "+I*");
 				}
 				convertFraction(buf, c.getImaginaryPart(), ASTNodeFactory.TIMES_PRECEDENCE, NO_PLUS_CALL);
 			}
@@ -858,6 +853,13 @@ public class OutputFormFactory {
 					}
 				}
 			}
+			// if (head.equals(F.SeriesData) && (list.size() == 7)) {
+			if (list instanceof ASTPowerSeries) {
+				if (convertSeriesData(buf, (ASTPowerSeries) list, precedence)) {
+					return;
+				}
+			}
+			// }
 			if (list.isList() || list instanceof ASTRealVector || list instanceof ASTRealMatrix) {
 				convertList(buf, list);
 				return;
@@ -877,11 +879,6 @@ public class OutputFormFactory {
 			if ((head.equals(F.HoldForm) || head.equals(F.Defer)) && (list.isAST1())) {
 				convert(buf, list.arg1());
 				return;
-			}
-			if (head.equals(F.SeriesData) && (list.size() == 7)) {
-				if (convertSeriesData(buf, list, precedence)) {
-					return;
-				}
 			}
 			if (list.isDirectedInfinity()) { // head.equals(F.DirectedInfinity))
 												// {
@@ -1083,7 +1080,7 @@ public class OutputFormFactory {
 	 * @return <code>true</code> if the conversion was successful
 	 * @throws IOException
 	 */
-	public boolean convertSeriesData(final Appendable buf, final IAST seriesData, final int precedence)
+	public boolean convertSeriesData(final Appendable buf, final ASTPowerSeries seriesData, final int precedence)
 			throws IOException {
 		int operPrecedence = ASTNodeFactory.PLUS_PRECEDENCE;
 		StringBuilder tempBuffer = new StringBuilder();
@@ -1094,22 +1091,21 @@ public class OutputFormFactory {
 		try {
 			IExpr plusArg;
 			// SeriesData[x, x0, list, nmin, nmax, den]
-			IExpr x = seriesData.arg1();
-			IExpr x0 = seriesData.arg2();
-			IAST list = (IAST) seriesData.arg3();
-			long nmin = ((IInteger) seriesData.arg4()).toLong();
-			long nmax = ((IInteger) seriesData.arg5()).toLong();
-			long den = ((IInteger) seriesData.get(6)).toLong();
-			int size = list.size();
+			IExpr x = seriesData.getX();
+			IExpr x0 = seriesData.getX0();
+			long nmin = seriesData.getNMin();
+			long nmax = seriesData.getNMax();
+			long den = seriesData.getDenominator();
+			int size = seriesData.size();
 			boolean call = NO_PLUS_CALL;
 			if (size > 0) {
 				INumber exp = F.fraction(nmin, den).normalize();
 				IExpr pow = x.subtract(x0).power(exp);
-				call = convertSeriesDataArg(tempBuffer, list.arg1(), pow, call);
+				call = convertSeriesDataArg(tempBuffer, seriesData.arg1(), pow, call);
 				for (int i = 2; i < size; i++) {
 					exp = F.fraction(nmin + i - 1L, den).normalize();
 					pow = x.subtract(x0).power(exp);
-					call = convertSeriesDataArg(tempBuffer, list.get(i), pow, call);
+					call = convertSeriesDataArg(tempBuffer, seriesData.get(i), pow, call);
 				}
 				plusArg = F.Power(F.O(x.subtract(x0)), F.fraction(nmax, den).normalize());
 				if (!plusArg.isZero()) {
@@ -1154,7 +1150,14 @@ public class OutputFormFactory {
 			if (pow.isOne()) {
 				plusArg = coefficient;
 			} else {
-				plusArg = F.binary(F.Times, coefficient, pow);
+				IASTAppendable times = F.TimesAlloc(3);
+				if (coefficient.isTimes()) {
+					times.appendArgs((IAST) coefficient);
+				} else {
+					times.append(coefficient);
+				}
+				times.append(pow);
+				plusArg = times;
 			}
 		}
 		if (!plusArg.isZero()) {
