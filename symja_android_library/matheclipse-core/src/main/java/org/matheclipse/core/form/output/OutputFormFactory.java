@@ -353,26 +353,46 @@ public class OutputFormFactory {
 			append(buf, "-I");
 		} else {
 			final IRational im = c.getImaginaryPart();
-			if (im.isNegative()) {
-				if (isReZero && (ASTNodeFactory.TIMES_PRECEDENCE < precedence)) {
-					append(buf, "(");
-				}
-				append(buf, "-I*");
-				convertFraction(buf, c.getImaginaryPart().negate(), ASTNodeFactory.TIMES_PRECEDENCE, NO_PLUS_CALL);
-			} else {
-				if (isReZero) {
-					if (caller == PLUS_CALL) {
-						append(buf, "+");
-					}
-					if (ASTNodeFactory.TIMES_PRECEDENCE < precedence) {
+			int oldColumnCounter = fColumnCounter;
+			StringBuilder imagBuf = new StringBuilder();
+			try {
+				if (im.isNegative()) {
+					if (isReZero && (ASTNodeFactory.TIMES_PRECEDENCE < precedence)) {
 						append(buf, "(");
 					}
-					append(buf, "I*");
+					append(buf, "-");
+					oldColumnCounter = fColumnCounter;
+					fColumnCounter = 0;
+					append(imagBuf, "I*");
+					convertFraction(imagBuf, im.negate(), ASTNodeFactory.TIMES_PRECEDENCE, NO_PLUS_CALL);
 				} else {
-					append(buf, "+I*");
+					if (isReZero) {
+						if (caller == PLUS_CALL) {
+							append(buf, "+");
+						}
+						if (ASTNodeFactory.TIMES_PRECEDENCE < precedence) {
+							append(buf, "(");
+						}
+						oldColumnCounter = fColumnCounter;
+						fColumnCounter = 0;
+						append(imagBuf, "I*");
+					} else {
+						append(buf, "+");
+						oldColumnCounter = fColumnCounter;
+						fColumnCounter = 0;
+						append(imagBuf, "I*");
+					}
+					convertFraction(imagBuf, im, ASTNodeFactory.TIMES_PRECEDENCE, NO_PLUS_CALL);
 				}
-				convertFraction(buf, c.getImaginaryPart(), ASTNodeFactory.TIMES_PRECEDENCE, NO_PLUS_CALL);
+
+			} finally {
+				fColumnCounter = oldColumnCounter;
 			}
+			String str = imagBuf.toString();
+			if ((str.length() + getColumnCounter() > 80)) {
+				newLine(buf);
+			}
+			append(buf, str);
 			if (isReZero && (ASTNodeFactory.TIMES_PRECEDENCE < precedence)) {
 				append(buf, ")");
 			}
