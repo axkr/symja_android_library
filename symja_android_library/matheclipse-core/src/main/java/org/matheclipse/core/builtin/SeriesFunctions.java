@@ -32,6 +32,7 @@ public class SeriesFunctions {
 	static {
 		F.Limit.setEvaluator(new Limit());
 		if (ToggleFeature.SERIES) {
+			F.ComposeSeries.setEvaluator(new ComposeSeries());
 			F.InverseSeries.setEvaluator(new InverseSeries());
 			F.Series.setEvaluator(new Series());
 			F.SeriesCoefficient.setEvaluator(new SeriesCoefficient());
@@ -713,8 +714,68 @@ public class SeriesFunctions {
 
 	}
 
+	private final static class ComposeSeries extends AbstractFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.size() > 2) {
+				for (int i = 1; i < ast.size(); i++) {
+
+				}
+			}
+			return F.NIL;
+		}
+
+	}
+
 	/**
-	 * Power series expansion
+	 * <pre>
+	 * InverseSeries(series)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * return the inverse series.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; InverseSeries(Series(Sin(x), {x, 0, 7}))
+	 * x+x^3/6+3/40*x^5+5/112*x^7+O(x)^8
+	 * </pre>
+	 */
+	private final static class InverseSeries extends AbstractFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1() && (ast.arg1() instanceof ASTSeriesData)) {
+
+				ASTSeriesData ps = (ASTSeriesData) ast.arg1();
+				ps = ps.inverse();
+				if (ps != null) {
+					return ps;
+				}
+			}
+			return F.NIL;
+		}
+
+	}
+
+	/**
+	 * <pre>
+	 * Series(expr, {x, x0, n})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * create a power series of <code>expr</code> up to order <code>(x- x0)^n</code> at the point <code>x = x0</code>
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Series(f(x),{x,a,3})  
+	 * f(a)+f'(a)*(-a+x)+1/2*f''(a)*(-a+x)^2+1/6*Derivative(3)[f][a]*(-a+x)^3+O(-a+x)^4
+	 * </pre>
 	 */
 	private final static class Series extends AbstractFunctionEvaluator {
 
@@ -781,7 +842,21 @@ public class SeriesFunctions {
 	}
 
 	/**
-	 * Power series expansion
+	 * <pre>
+	 * SeriesCoefficient(expr, {x, x0, n})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * get the coefficient of <code>(x- x0)^n</code> at the point <code>x = x0</code>
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; SeriesCoefficient(Sin(x),{x,f+g,n}) 
+	 * Piecewise({{Sin(f+g+1/2*n*Pi)/n!,n&gt;=0}},0)
+	 * </pre>
 	 */
 	private final static class SeriesCoefficient extends AbstractFunctionEvaluator implements SeriesCoefficientRules {
 
@@ -877,8 +952,8 @@ public class SeriesFunctions {
 		 * @param engine
 		 * @return
 		 */
-		public IExpr polynomialSeriesCoefficient(IExpr univariatePolynomial, IExpr x, IExpr x0, IExpr n, final IAST seriesTemplate,
-				EvalEngine engine) {
+		public IExpr polynomialSeriesCoefficient(IExpr univariatePolynomial, IExpr x, IExpr x0, IExpr n,
+				final IAST seriesTemplate, EvalEngine engine) {
 			try {
 				Map<IExpr, IExpr> coefficientMap = new HashMap<IExpr, IExpr>();
 				IASTAppendable rest = F.ListAlloc(4);
@@ -944,7 +1019,22 @@ public class SeriesFunctions {
 	}
 
 	/**
-	 * Power series expansion
+	 * <pre>
+	 * SeriesData(x, x0, {coeff0, coeff1, coeff2,...}, nMin, nMax, denominator})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * internal structure of a power series at the point <code>x = x0</code> the <code>coeff</code>-i are coefficients
+	 * of the power series.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; SeriesData(x, 0,{1,0,-1/6,0,1/120,0,-1/5040,0,1/362880}, 1, 11, 2) 
+	 * Sqrt(x)-x^(3/2)/6+x^(5/2)/120-x^(7/2)/5040+x^(9/2)/362880+O(x)^(11/2)
+	 * </pre>
 	 */
 	private final static class SeriesData extends AbstractFunctionEvaluator {
 
@@ -978,22 +1068,6 @@ public class SeriesFunctions {
 			}
 			return F.NIL;
 		}
-	}
-
-	private final static class InverseSeries extends AbstractFunctionEvaluator {
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST1() && (ast.arg1() instanceof ASTSeriesData)) {
-
-				ASTSeriesData ps = (ASTSeriesData) ast.arg1();
-				ps = ps.inverse();
-				if (ps != null) {
-					return ps;
-				}
-			}
-			return F.NIL;
-		}
-
 	}
 
 	private final static SeriesFunctions CONST = new SeriesFunctions();

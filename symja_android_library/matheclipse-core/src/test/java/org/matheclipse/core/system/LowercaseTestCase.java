@@ -3500,10 +3500,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInverseSeries() {
-		check("InverseSeries(Series(Sin(x), {x, 0, 7}))", //
-				"x+x^3/6+3/40*x^5+5/112*x^7+O(x)^8");
-		check("InverseSeries(Series(ArcSin(x), {x, 0, 5}))", //
-				"x-x^3/6+x^5/120+O(x)^6");
+		check("InverseSeries(Series(Sin(x), {x, 0, 9}))", //
+				"x+x^3/6+3/40*x^5+5/112*x^7+35/1152*x^9+O(x)^10");
+		check("InverseSeries(Series(ArcSin(x), {x, 0, 9}))", //
+				"x-x^3/6+x^5/120-x^7/5040+x^9/362880+O(x)^10");
+		check("InverseSeries(Series(Log(x+1), {x, 0, 9}))", //
+				"x+x^2/2+x^3/6+x^4/24+x^5/120+x^6/720+x^7/5040+x^8/40320+x^9/362880+O(x)^10");
 	}
 
 	public void testLaplaceTransform() {
