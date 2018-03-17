@@ -393,15 +393,30 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 		throw new ClassCastException(exprPoly.toString());
 	}
 
-	public static Map<IExpr, IExpr> create(final IExpr exprPoly, IExpr x, Map<IExpr, IExpr> coefficientMap 
-			 ) throws ArithmeticException, ClassCastException {
+	/**
+	 * Create the coefficients of the (univariate) polynomial in <code>coefficientMap</code> and append non-polynomial
+	 * terms to <code>restList</code>
+	 * 
+	 * @param exprPoly
+	 *            the polynomial expression
+	 * @param x
+	 *            the variable x
+	 * @param coefficientMap
+	 *            the map of exponents to the associated coefficients
+	 * @param restList
+	 *            the terms which are non-polynomial
+	 * @return
+	 * @throws ArithmeticException
+	 */
+	public static Map<IExpr, IExpr> create(final IExpr exprPoly, IExpr x, Map<IExpr, IExpr> coefficientMap,
+			IASTAppendable restList) throws ArithmeticException {
 		if (exprPoly instanceof IAST) {
 			final IAST ast = (IAST) exprPoly;
 			if (ast.isPlus()) {
 				IExpr expr;
 				for (int i = 1; i < ast.size(); i++) {
 					expr = ast.get(i);
-					coefficientMap = create(expr, x, coefficientMap);
+					coefficientMap = create(expr, x, coefficientMap, restList);
 				}
 				return coefficientMap;
 			} else if (ast.isTimes()) {
@@ -419,13 +434,15 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 						if (exponent.isFree(x)) {
 							if (base.equals(x)) {
 								if (mainExponent.isPresent()) {
-									throw new ClassCastException(exprPoly.toString());
+									restList.append(ast);
+									return coefficientMap;
 								} else {
 									mainExponent = exponent;
 								}
 							}
 						} else {
-							throw new ClassCastException(exprPoly.toString());
+							restList.append(ast);
+							return coefficientMap;
 						}
 					}
 				}
@@ -437,10 +454,12 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 					if (base.equals(x)) {
 						return addCoefficient(coefficientMap, exponent, F.C1);
 					}
-					if (base.isFree(x)) { 
+					if (base.isFree(x)) {
 						return addCoefficient(coefficientMap, F.C0, ast);
 					}
 				}
+				restList.append(ast);
+				return coefficientMap;
 			}
 
 		} else if (exprPoly.equals(x)) {
@@ -451,12 +470,25 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 		if (exprPoly.isFree(x, true)) {
 			return addCoefficient(coefficientMap, F.C0, exprPoly);
 		}
-		throw new ClassCastException(exprPoly.toString());
+		restList.append(exprPoly);
+		return coefficientMap;
 	}
 
 	private static Map<IExpr, IExpr> addCoefficient(Map<IExpr, IExpr> coefficientMap, final IExpr exponent,
 			IExpr coefficient) {
-		coefficientMap.put(exponent, coefficient);
+		IExpr oldCoefficient = coefficientMap.get(exponent);
+		if (oldCoefficient != null) {
+			if (oldCoefficient.isTimes()) {
+				((IASTAppendable) oldCoefficient).append(coefficient);
+			} else {
+				IASTAppendable times = F.TimesAlloc(4);
+				times.append(oldCoefficient);
+				times.append(coefficient);
+				coefficientMap.put(exponent, times);
+			}
+		} else {
+			coefficientMap.put(exponent, coefficient);
+		}
 		return coefficientMap;
 	}
 

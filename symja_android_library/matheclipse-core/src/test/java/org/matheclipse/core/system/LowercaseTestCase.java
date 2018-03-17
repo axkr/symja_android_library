@@ -2807,7 +2807,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Gamma(I*Infinity)", "0");
 		check("Gamma(-I*Infinity)", "0");
 		check("Gamma(ComplexInfinity)", "Indeterminate");
-		
+
 		checkNumeric("Gamma(1.5,7.5)", "0.0016099632282723212");
 		check("Gamma(-3/4, 0)", "ComplexInfinity");
 		check("Gamma(10, -1)", "133496*E");
@@ -2817,10 +2817,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Gamma(1.0+I)", "");
 		checkNumeric("Gamma(2.2)", "1.1018024908797128");
 	}
- 
+
 	public void testGammaRegularized() {
 		check("GammaRegularized(a,z1,z2)", "GammaRegularized(a,z1)-GammaRegularized(a,z2)");
-		
+
 		check("GammaRegularized(1/2, z)", "Erfc(Sqrt(z))");
 		check("GammaRegularized(-4, z)", "0");
 		check("GammaRegularized(12, 0)", "1");
@@ -3237,7 +3237,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testIntegrate() {
 		check("Integrate(x*Sin(x),{x,1.0,2*Pi})", "-6.58435");
-		
+
 		// check("Integrate(x/(1+x+x^7),x)", "");
 		check("Integrate(1/y(x)^2,y(x))", "-1/y(x)");
 		check("Integrate(f(x,y),x)", "Integrate(f(x,y),x)");
@@ -3505,6 +3505,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("InverseSeries(Series(ArcSin(x), {x, 0, 5}))", //
 				"x-x^3/6+x^5/120+O(x)^6");
 	}
+
 	public void testLaplaceTransform() {
 		check("LaplaceTransform(E^2,t,-3+s)", "E^2/(-3+s)");
 		check("LaplaceTransform(c*t^2, t, s)", "(2*c)/s^3");
@@ -6830,15 +6831,39 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSeriesData() {
-		check("SeriesData(100, 0, Table(i^2, {i, 10}), 0, 10, 1)", "Indeterminate");
-		// check("SeriesData(x, 0, Table(i^2, {i, 10}), 0, 10, 1)",
-		// "1+4*x+9*x^2+16*x^3+25*x^4+36*x^5+49*x^6+64*x^7+81*x^8+100*x^9+O(x)^10");
+//		check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)^12", //
+//				"x^12-2*x^14+29/15*x^16-649/540*x^18+3883/7200*x^20+O(x)^22");
+		check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)^2", //
+				"x^2-x^4/3+2/45*x^6-x^8/360+x^10/14400+O(x)^12");
+		check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)^3", //
+				"x^3-x^5/2+13/120*x^7-7/540*x^9+13/14400*x^11+O(x)^13");
+		check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)*SeriesData(x, 0,{1,0,-1/5,0,1/110}, 1, 11, 1) // FullForm", //
+				"\"SeriesData(x,0,{0,1,0,-11/30,0,67/1320,0,-7/2200,0,1/13200,0,0},1,12,1)\"");
+		check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)*SeriesData(x, 0,{1,0,-1/5,0,1/110}, 1, 11, 1)", //
+				"x^2-11/30*x^4+67/1320*x^6-7/2200*x^8+x^10/13200+O(x)^12");
+		check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)-SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)", //
+				"O(x)^11");
+		check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)+SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)", //
+				"2*x-x^3/3+x^5/60+O(x)^11");
+		check("SeriesData(x, 0,{1,0,-1/6,0,1/120,0,-1/5040,0,1/362880}, 1, 11, 2)*7",
+				"7*Sqrt(x)-7/6*x^(3/2)+7/120*x^(5/2)-x^(7/2)/720+x^(9/2)/51840+O(x)^(11/2)");
+		check("SeriesData(x, 0,{1,0,-1/6,0,1/120,0,-1/5040,0,1/362880}, 1, 11, 2)+4",
+				"4+Sqrt(x)-x^(3/2)/6+x^(5/2)/120-x^(7/2)/5040+x^(9/2)/362880+O(x)^(11/2)");
 		check("SeriesData(x, 0,{1,0,-1/6,0,1/120,0,-1/5040,0,1/362880}, 1, 11, 2)",
 				"Sqrt(x)-x^(3/2)/6+x^(5/2)/120-x^(7/2)/5040+x^(9/2)/362880+O(x)^(11/2)");
+
+		check("SeriesData(100, 0, Table(i^2, {i, 10}), 0, 10, 1)", //
+				"Indeterminate");
+		check("SeriesData(x, 0, Table(i^2, {i, 10}), 0, 10, 1)", //
+				"1+4*x+9*x^2+16*x^3+25*x^4+36*x^5+49*x^6+64*x^7+81*x^8+100*x^9+O(x)^10");
 	}
 
 	public void testSeriesCoefficient() {
-
+		check("SeriesCoefficient(d+4*x^e+7*x^f+Sin(x),{x, a, n})", //
+				"Piecewise({{(4*a^e*Binomial(e,n)+7*a^f*Binomial(f,n))/a^n,n>0},{4*a^e+7*a^f+d,n==\n"
+						+ "0}},0)+Piecewise({{Sin(a+1/2*n*Pi)/n!,n>=0}},0)");
+		check("SeriesCoefficient(d+4*x^e+7*x^f+Sin(x),{x, a, 10})", //
+				"(4*a^e*Binomial(e,10)+7*a^f*Binomial(f,10))/a^10-Sin(a)/3628800");
 		check("SeriesCoefficient(d+4*x^e+7*x^f,{x, a, n})", //
 				"Piecewise({{(4*a^e*Binomial(e,n)+7*a^f*Binomial(f,n))/a^n,n>0},{4*a^e+7*a^f+d,n==\n" + "0}},0)");
 		check("SeriesCoefficient(x^42,{x, a, n})", //

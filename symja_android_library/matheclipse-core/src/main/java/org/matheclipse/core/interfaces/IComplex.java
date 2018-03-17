@@ -22,9 +22,11 @@ public interface IComplex extends IBigNumber {
 	 */
 	public IRational getRealPart();
 
+	public IComplex inverse();
+	
 	public IComplex multiply(IComplex val);
 
-	public IComplex pow(int parm1);
+	public IComplex pow(long n);
 
 	/**
 	 * Return the normalized form of this number (i.e. if the imaginary part equals zero, return the real part as a fractional or

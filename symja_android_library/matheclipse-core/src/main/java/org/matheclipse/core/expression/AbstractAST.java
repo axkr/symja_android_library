@@ -3029,9 +3029,7 @@ public abstract class AbstractAST implements IASTMutable {
 		} catch (RuntimeException e1) {
 		}
 
-		try
-
-		{
+		try {
 			final StringBuilder buf = new StringBuilder();
 			if (size() > 0 && isList()) {
 				buf.append('{');

@@ -9,7 +9,7 @@ import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
-import org.matheclipse.core.expression.ASTPowerSeries;
+import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ApcomplexNum;
@@ -854,8 +854,8 @@ public class OutputFormFactory {
 				}
 			}
 			// if (head.equals(F.SeriesData) && (list.size() == 7)) {
-			if (list instanceof ASTPowerSeries) {
-				if (convertSeriesData(buf, (ASTPowerSeries) list, precedence)) {
+			if (list instanceof ASTSeriesData) {
+				if (convertSeriesData(buf, (ASTSeriesData) list, precedence)) {
 					return;
 				}
 			}
@@ -1080,7 +1080,7 @@ public class OutputFormFactory {
 	 * @return <code>true</code> if the conversion was successful
 	 * @throws IOException
 	 */
-	public boolean convertSeriesData(final Appendable buf, final ASTPowerSeries seriesData, final int precedence)
+	public boolean convertSeriesData(final Appendable buf, final ASTSeriesData seriesData, final int precedence)
 			throws IOException {
 		int operPrecedence = ASTNodeFactory.PLUS_PRECEDENCE;
 		StringBuilder tempBuffer = new StringBuilder();

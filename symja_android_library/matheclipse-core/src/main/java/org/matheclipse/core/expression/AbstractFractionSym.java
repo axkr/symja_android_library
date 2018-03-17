@@ -528,9 +528,12 @@ public abstract class AbstractFractionSym implements IFraction {
 			return this;
 		} else if (n == -1L) {
 			return inverse();
-		}
+		}  
 		long exp = n;
 		if (n < 0) {
+			if (n == Long.MIN_VALUE) {
+				throw new java.lang.ArithmeticException();
+			}
 			exp *= -1;
 		}
 		int b2pow = 0;

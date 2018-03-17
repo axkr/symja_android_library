@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.matheclipse.core.builtin.Arithmetic;
+import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -235,6 +236,14 @@ public class PlusOp {
 				return F.NIL;
 			}
 			numberValue = plusInterval(numberValue, arg);
+			evaled = true;
+			return F.NIL;
+		} else if (arg instanceof ASTSeriesData) {
+			if (numberValue == null) {
+				numberValue = arg;
+				return F.NIL;
+			}
+			numberValue = ((ASTSeriesData) arg).plus(numberValue);
 			evaled = true;
 			return F.NIL;
 		} else if (arg.isTimes()) {
