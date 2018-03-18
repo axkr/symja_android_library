@@ -229,6 +229,9 @@ public class HypergeometricFunctions {
 						return F.Sin(z);
 					}
 				}
+				if (m.isInfinity() || m.isNegativeInfinity()) {
+					return F.CComplexInfinity;
+				}
 				if (z.equals(F.Times(F.C1D2, F.Pi))) {
 					return F.EllipticE(m);
 				}
@@ -256,7 +259,6 @@ public class HypergeometricFunctions {
 				return F.Times(F.C1D4, F.Power(F.Pi, F.CN1D2), F.Power(F.Gamma(F.QQ(3L, 4L)), -2),
 						F.Plus(F.Sqr(F.Pi), F.Times(F.C2, F.Power(F.Gamma(F.QQ(3L, 4L)), 4))));
 			}
-
 			if (z instanceof INum) {
 				double a = ((ISignedNumber) z).doubleValue();
 				try {
@@ -264,6 +266,9 @@ public class HypergeometricFunctions {
 				} catch (RuntimeException rex) {
 					engine.printMessage("EllipticE: " + rex.getMessage());
 				}
+			}
+			if (z.isInfinity() || z.isNegativeInfinity() || z.isComplexInfinity()) {
+				return F.CComplexInfinity;
 			}
 			return F.NIL;
 		}
@@ -283,7 +288,7 @@ public class HypergeometricFunctions {
 
 			IExpr z = ast.arg1();
 			IExpr m = ast.arg2();
-			if (z.isZero()) {
+			if (z.isZero() || m.isInfinity() || m.isNegativeInfinity()) {
 				return F.C0;
 			}
 			if (m.isZero()) {
