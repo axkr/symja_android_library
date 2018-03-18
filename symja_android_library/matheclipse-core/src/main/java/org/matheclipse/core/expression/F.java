@@ -2285,6 +2285,27 @@ public class F {
 		return unaryAST1(AtomQ, a);
 	}
 
+	/**
+	 * Bell number.
+	 * 
+	 * @param a0
+	 * @return
+	 */
+	public static IAST BellB(final IExpr a0) {
+		return unaryAST1(F.BellB, a0);
+	}
+
+	/**
+	 * Bell polynomial.
+	 * 
+	 * @param a0
+	 * @param a1
+	 * @return
+	 */
+	public static IAST BellB(final IExpr a0, final IExpr a1) {
+		return binaryAST2(F.BellB, a0, a1);
+	}
+
 	public static IAST BernoulliB(final IExpr a0) {
 		return unaryAST1(F.BernoulliB, a0);
 	}

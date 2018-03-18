@@ -8,6 +8,7 @@ import java.io.ObjectStreamException;
 import java.util.HashMap;
 import java.util.RandomAccess;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 
@@ -185,6 +186,46 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 	// }
 	// return series;
 	// }
+
+	@Override
+	public int compareTo(final IExpr rhsExpr) {
+		if (rhsExpr instanceof ASTSeriesData) {
+			ASTSeriesData rhs = (ASTSeriesData) rhsExpr;
+			int cp = x.compareTo(rhs.x);
+			if (cp != 0) {
+				return cp;
+			}
+			cp = x0.compareTo(rhs.x0);
+			if (cp != 0) {
+				return cp;
+			}
+			cp = nMax - rhs.nMax;
+			if (cp != 0) {
+				if (cp < 0) {
+					return -1;
+				}
+				return 1;
+			}
+			cp = nMin - rhs.nMin;
+			if (cp != 0) {
+				if (cp < 0) {
+					return -1;
+				}
+				return 1;
+			}
+			cp = denominator - rhs.denominator;
+			if (cp != 0) {
+				if (cp < 0) {
+					return -1;
+				}
+				return 1;
+			}
+			return super.compareTo(rhsExpr);
+		}
+		int x = hierarchy();
+		int y = rhsExpr.hierarchy();
+		return (x < y) ? -1 : ((x == y) ? 0 : 1);
+	}
 
 	/** {@inheritDoc} */
 	@Override
@@ -378,7 +419,7 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 	public int hierarchy() {
 		return SERIESID;
 	}
- 
+
 	@Override
 	public ASTSeriesData inverse() {
 		if (!isInvertible()) {
@@ -947,6 +988,14 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 		}
 		return series;
 	}
+
+//	public ASTSeriesData map(BiFunction<Integer, IExpr, IExpr> f) {
+//		ASTSeriesData series = copy();
+//		for (int i = 1; i < size(); i++) {
+//			series.set(i, f.apply(i+nMin-1, this.get(i)));
+//		}
+//		return series;
+//	}
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
