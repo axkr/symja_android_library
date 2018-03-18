@@ -823,13 +823,27 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 		if (b instanceof ASTSeriesData) {
 			return plusPS((ASTSeriesData) b);
 		}
-		ASTSeriesData series = copy();
-		if (size() > 1) {
-			series.setCoeff(0, coeff(0).plus(b));
-		} else {
-			series.append(b);
+		if (b.isZero()) {
+			return this;
 		}
-		return series;
+		if (size() > 1) {
+			IExpr value = F.eval(coeff(0).plus(b));
+			if (value.isZero() && nMin > 0) {
+				return this;
+			}
+			ASTSeriesData series = copy();
+			if (nMin > 0) {
+				series.shift(nMin);
+				series.nMin = 0;
+			}
+			series.setCoeff(0, value);
+			return series;
+		} else {
+			ASTSeriesData series = copy();
+			series.append(b);
+			series.nMin = 0;
+			return series;
+		}
 	}
 
 	@Override
@@ -857,15 +871,19 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 		// }
 	}
 
-	public IExpr setCoeff(int k, IExpr value) {
+	public void setCoeff(int k, IExpr value) {
 		// if (vals.containsKey(k))
 		// return vals.get(k);
 		// IExpr c = f.apply(k);
 		// vals.put(k, c);
-		if (k < nMin) {
-			shift(nMin - k);
-		}
-		return set(k + 1, value);
+
+		// if (k < nMin) {
+		// if (value.isZero()) {
+		// return;
+		// }
+		// shift(nMin - k);
+		// }
+		set(k + 1, value);
 	}
 
 	public void setDenominator(int denominator) {
@@ -921,13 +939,27 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 		if (b instanceof ASTSeriesData) {
 			return subtractPS((ASTSeriesData) b);
 		}
-		ASTSeriesData series = copy();
-		if (size() > 1) {
-			series.setCoeff(0, coeff(0).subtract(b));
-		} else {
-			series.append(b);
+		if (b.isZero()) {
+			return this;
 		}
-		return series;
+		if (size() > 1) {
+			IExpr value = F.eval(coeff(0).subtract(b));
+			if (value.isZero() && nMin > 0) {
+				return this;
+			}
+			ASTSeriesData series = copy();
+			if (nMin > 0) {
+				series.shift(nMin);
+				series.nMin = 0;
+			}
+			series.setCoeff(0, value);
+			return series;
+		} else {
+			ASTSeriesData series = copy();
+			series.append(b);
+			series.nMin = 0;
+			return series;
+		}
 	}
 
 	/**
@@ -948,30 +980,23 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 		if (nMax < b.nMax) {
 			maxSize = b.nMax;
 		}
-		int size = size();
-		if (size > b.size()) {
-			size = b.size();
-		}
-		ASTSeriesData series = new ASTSeriesData(x, x0, minSize, maxSize + 1, denominator);
-		for (int i = 0; i < 2 * size; i++) {
+		ASTSeriesData series = new ASTSeriesData(x, x0, nMin + b.nMin, maxSize + minSize, denominator);
+		int size = series.nMax - series.nMin;
+		for (int i = 0; i < size; i++) {
 			series.append(F.C0);
 		}
-		for (int n = 0; n < 2 * size - 1; n++) {
+		for (int n = series.nMin; n < series.nMax; n++) {
 			IASTAppendable sum = F.PlusAlloc(n + 1);
 			for (int i = 0; i <= n; i++) {
-				sum.append(this.coeff(minSize + i).times(b.coeff(minSize + n - i)));
+				sum.append(this.coeff(i).times(b.coeff(n - i)));
 			}
-			series.setCoeff(n + 1, F.eval(sum));
+			IExpr value = F.eval(sum);
+			if (value.isZero()) {
+				continue;
+			}
+			series.setCoeff(n - series.nMin, value);
 		}
 		return series;
-		// Function<Integer, IExpr> g = k -> {
-		// IExpr sum = F.C0;
-		// for (Integer i = 0; i <= k; i++) {
-		// sum = sum.plus(this.getCoeff(i).times(b.getCoeff(k - i)));
-		// }
-		// return sum;
-		// };
-		// return new ASTPowerSeries(g, ring);
 	}
 
 	/**
@@ -989,13 +1014,13 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 		return series;
 	}
 
-//	public ASTSeriesData map(BiFunction<Integer, IExpr, IExpr> f) {
-//		ASTSeriesData series = copy();
-//		for (int i = 1; i < size(); i++) {
-//			series.set(i, f.apply(i+nMin-1, this.get(i)));
-//		}
-//		return series;
-//	}
+	// public ASTSeriesData map(BiFunction<Integer, IExpr, IExpr> f) {
+	// ASTSeriesData series = copy();
+	// for (int i = 1; i < size(); i++) {
+	// series.set(i, f.apply(i+nMin-1, this.get(i)));
+	// }
+	// return series;
+	// }
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {

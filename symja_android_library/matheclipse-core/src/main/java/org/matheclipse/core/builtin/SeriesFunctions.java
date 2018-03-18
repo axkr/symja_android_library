@@ -807,7 +807,7 @@ public class SeriesFunctions {
 				if (function.isFree(x)) {
 					return function;
 				}
-				return createSeriesData(function, x, x0, n, 1);
+				return createSeriesData(function, x, x0, n, 1, engine);
 
 			}
 			return F.NIL;
@@ -826,11 +826,18 @@ public class SeriesFunctions {
 		 * @param denominator
 		 * @return
 		 */
-		private IExpr createSeriesData(final IExpr function, IExpr x, IExpr x0, final int n, int denominator) {
-			// IInteger nExpr = F.integer(n);
-			// IASTAppendable result = F.ListAlloc(n);
+		private IExpr createSeriesData(final IExpr function, IExpr x, IExpr x0, final int n, int denominator,
+				EvalEngine engine) {
+			ISymbol order = F.Dummy("$$$n");
+			IExpr temp = engine.evaluate(F.SeriesCoefficient(function, F.List(x, x0, order)));
+			if (temp.isFree(F.SeriesCoefficient)) {
+				ASTSeriesData ps = new ASTSeriesData(x, x0, 0, n + denominator, denominator);
+				for (int i = 0; i <= n; i++) {
+					ps.append(engine.evaluate(temp.replaceAll(F.Rule(order, F.ZZ(i)))));
+				}
+				return ps;
+			}
 			ASTSeriesData ps = new ASTSeriesData(x, x0, 0, n + denominator, denominator);
-			// IAST seriesData = F.SeriesData(x, x0, result, F.C0, F.Plus(nExpr, denominator), denominator);
 			IExpr derivedFunction = function;
 			for (int i = 0; i <= n; i++) {
 				ps.append(F.Times.of(F.Power(F.Factorial(F.integer(i)), F.CN1),
