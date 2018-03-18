@@ -3,7 +3,6 @@ package org.matheclipse.core.interfaces;
 import org.hipparchus.fraction.BigFraction;
 import java.math.BigInteger;
 
-
 /**
  * interface for "fractional" numbers
  * 
@@ -14,23 +13,22 @@ public interface IFraction extends IRational {
 	@Override
 	public IFraction abs();
 
-	
 	@Override
 	public abstract IFraction floorFraction();
-	
+
 	/**
 	 * Return the fractional part of this fraction
+	 * 
 	 * @return
 	 */
 	public IFraction fractionalPart();
-	
+
 	public IFraction add(IFraction parm1);
 
 	public IFraction div(IFraction other);
 
 	/**
-	 * Returns an array of two BigIntegers containing (numerator / denominator)
-	 * followed by (numerator % denominator).
+	 * Returns an array of two BigIntegers containing (numerator / denominator) followed by (numerator % denominator).
 	 * 
 	 * @return
 	 */
@@ -43,6 +41,8 @@ public interface IFraction extends IRational {
 	 */
 	@Override
 	public IFraction inverse();
+
+	public IFraction gcd(IFraction other);
 
 	public IFraction mul(IFraction other);
 
@@ -80,8 +80,7 @@ public interface IFraction extends IRational {
 	public BigInteger toBigDenominator();
 
 	/**
-	 * Return the <code>org.apache.commons.math3.fraction.BigFraction</code>
-	 * representation.
+	 * Return the <code>org.apache.commons.math3.fraction.BigFraction</code> representation.
 	 * 
 	 * @return
 	 */
@@ -94,6 +93,5 @@ public interface IFraction extends IRational {
 	 */
 	@Override
 	public BigInteger toBigNumerator();
-	
-	 
+
 }

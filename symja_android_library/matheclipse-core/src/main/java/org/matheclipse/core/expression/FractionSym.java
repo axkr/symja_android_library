@@ -352,7 +352,7 @@ public class FractionSym extends AbstractFractionSym {
 		if (that instanceof FractionSym) {
 			return gcd((FractionSym) that);
 		}
-		return F.GCD(this, that);
+		return super.gcd(that);
 	}
 
 	/**

@@ -2599,7 +2599,7 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr e2DblArg(final INum d0, final INum d1) {
- 			if (d0.isZero()) {
+			if (d0.isZero()) {
 				if (d1.isNegative()) {
 					EvalEngine.get().printMessage("Infinite expression 0^(negative number)");
 					return F.CComplexInfinity;
