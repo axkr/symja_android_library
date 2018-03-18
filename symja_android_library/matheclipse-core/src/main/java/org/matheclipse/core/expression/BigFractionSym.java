@@ -312,7 +312,7 @@ public class BigFractionSym extends AbstractFractionSym {
 			return valueOf(fFraction.getNumerator().gcd(arg2.getNumerator()),
 					AbstractIntegerSym.lcm(fFraction.getDenominator(), arg2.getDenominator()));
 		}
-		return super.gcd(that);
+		return F.GCD(this, that);
 	}
 
 	/**
