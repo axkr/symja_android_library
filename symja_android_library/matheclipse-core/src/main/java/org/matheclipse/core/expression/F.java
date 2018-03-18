@@ -2965,6 +2965,10 @@ public class F {
 		return binaryAST2(Element, a0, a1);
 	}
 
+	public static IAST EllipticE(final IExpr a0) {
+		return unaryAST1(EllipticE, a0);
+	}
+
 	public static IAST EllipticE(final IExpr a0, final IExpr a1) {
 		return binaryAST2(EllipticE, a0, a1);
 	}

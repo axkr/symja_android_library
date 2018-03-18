@@ -1999,13 +1999,37 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEllipticE() {
+		check("EllipticE(0, m)", "0");
+		check("EllipticE(z,0)", "z");
+		check("EllipticE(Pi/2, m)", "EllipticE(m)");
+		check("EllipticE(5/4,1)", "Sin(5/4)");
 		check("EllipticE(0.4)", "1.39939");
-		check("EllipticE(2,0.999999)", "1.0");
+		check("EllipticE(2,0.999999)", "0.98923");
+		check("EllipticE(-Pi/2,0.5)", "-1.47622");
+		// TODO - use better approx:
+		check("Table(EllipticE(x,0.5), {x,-2.0, 2.0, 1/4})", //
+				"{-1.09625,-1.3187,-1.41407,-1.19329,-0.96779,-0.73531,-0.49541,-0.24941,0.0,0.24941,0.49541,0.73531,0.96779,1.19329,1.41407,1.3187,1.09625}");
+
+	}
+
+	public void testEllipticF() {
+		check("EllipticF(0, m)", "0");
+		check("EllipticF(z,0)", "z");
+		check("EllipticF(5/4, 1)", "Log(Sec(5/4)+Tan(5/4))");
+		// TODO - use better approx:
+		check("Table(EllipticF(x,0.5), {x,-2.0, 2.0, 1/4})", //
+				"{-2.15985,-1.87887,-1.59434,-1.31126,-1.03407,-0.76521,-0.50467,-0.25059,0.0,0.25059,0.50467,0.76521,1.03407,1.31126,1.59434,1.87887,2.15985}");
 	}
 
 	public void testEllipticPi() {
+		check("EllipticPi(n,0)", "Pi/(2*Sqrt(1-n))");
+		check("EllipticPi(n,1)", "Infinity/Sign(1-n)");
+		check("EllipticPi(n,n)", "EllipticE(n)/(1-n)");
 		check("EllipticPi(0.4,0.6)", "2.59092");
 		check("EllipticPi(1/3, Pi/5, 0.3)", "0.6594");
+		check("Table(EllipticPi(x,0.5), {x,-2.0, 2.0, 1/4})", //
+				"{1.0227,1.07184,1.12843,1.19454,1.27313,1.36859,1.48785,1.64253,1.85407,2.16762,2.70129,3.93061,ComplexInfinity,-0.59276,-0.45672,-0.37175,-0.31354}");
+
 	}
 
 	public void testEqual() {
@@ -2251,9 +2275,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Plus @@ ($numbers * $factors)", "2");
 	}
 
+	public void testExpIntegralEi() {
+		check("ExpIntegralEi(I*Infinity)", "I*Pi");
+		check("ExpIntegralEi(-I*Infinity)", "-I*Pi");
+		check("Table(ExpIntegralEi(x), {x, 0.0, 3.0, 0.25})", //
+				"{-Infinity,-0.54254,0.45422,1.20733,1.89512,2.58105,3.30129,4.08365,4.95423,5.94057,7.07377,8.3903,9.93383}");
+		check("ExpIntegralEi(1.8)", "4.24987");
+	}
+
 	public void testExtract() {
-		check("Extract(a + b + c, {2})", "b");
-		check("Extract({{a, b}, {c, d}}, {{1}, {2, 2}})", "{{a,b},d}");
+		check("Extract(a + b + c, {2})", //
+				"b");
+		check("Extract({{a, b}, {c, d}}, {{1}, {2, 2}})", //
+				"{{a,b},d}");
 	}
 
 	public void testFactor() {
@@ -3892,6 +3926,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("Log2(5.6)", "2.4854268271702415");
 		check("Log2(E ^ 2) ", "2/Log(2)");
 		check("Log2(x)", "Log(x)/Log(2)");
+	}
+
+	public void testLogIntegral() {
+		check("LogIntegral(20.0)", "9.9053");
+		check("LogIntegral(Infinity)", "Infinity");
+		check("LogIntegral(ComplexInfinity)", "ComplexInfinity");
+		check("Table(LogIntegral(x), {x,1.0, 20.0, 2/3})", //
+				"{-Infinity,0.48973,1.47827,2.16359,2.71938,3.20126,3.63459,4.03318,4.40548,4.75705,5.09177,5.41245,5.72124,6.01976,6.30934,6.59101,6.86564,7.13395,7.39655,7.65394,7.90657,8.15482,8.39903,8.63949,8.87646,9.11018,9.34083,9.56863,9.79372}");
+
 	}
 
 	public void testLogisticSigmoid() {
@@ -7522,6 +7565,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStirlingS2() {
+		check("StirlingS2(-1,-3)", "StirlingS2(-1,-3)");
+
 		check("StirlingS2(6,10)", "0");
 		check("StirlingS2(10,6)", "22827");
 		check("StirlingS2(0,0)", "1");
@@ -7803,17 +7848,32 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTable() {
-		check("Table(x, {4})", "{x,x,x,x}");
+		check("Table(0.0^x, {x, -1.0, 1.0, 0.25})", //
+				"{ComplexInfinity,ComplexInfinity,ComplexInfinity,ComplexInfinity,Indeterminate,0.0,0.0,0.0,0.0}");
+		check("Table(0^x, {x,-1, 1,1/4})", //
+				"{ComplexInfinity,ComplexInfinity,ComplexInfinity,ComplexInfinity,Indeterminate,0,\n" + //
+						"0,0,0}");
+		check("Table(x, {4})", //
+				"{x,x,x,x}");
 		check("n=0", "0");
-		check("Table(n= n + 1, {5})", "{1,2,3,4,5}");
-		check("Table(i, {i, 4})", "{1,2,3,4}");
-		check("Table(i, {i, 2, 5})", "{2,3,4,5}");
-		check("Table(i, {i, 2, 6, 2})", "{2,4,6}");
-		check("Table(i, {i, Pi, 2*Pi, Pi / 2})", "{Pi,3/2*Pi,2*Pi}");
-		check("Table(x^2, {x, {a, b, c}})", "{a^2,b^2,c^2}");
-		check("Table({i, j}, {i, {a, b}}, {j, 1, 2})", "{{{a,1},{a,2}},{{b,1},{b,2}}}");
-		check("Table(x, {x,0,1/3})", "{0}");
-		check("Table(x, {x, -0.2, 3.9})", "{-0.2,0.8,1.8,2.8,3.8}");
+		check("Table(n= n + 1, {5})", //
+				"{1,2,3,4,5}");
+		check("Table(i, {i, 4})", //
+				"{1,2,3,4}");
+		check("Table(i, {i, 2, 5})", //
+				"{2,3,4,5}");
+		check("Table(i, {i, 2, 6, 2})", //
+				"{2,4,6}");
+		check("Table(i, {i, Pi, 2*Pi, Pi / 2})", //
+				"{Pi,3/2*Pi,2*Pi}");
+		check("Table(x^2, {x, {a, b, c}})", //
+				"{a^2,b^2,c^2}");
+		check("Table({i, j}, {i, {a, b}}, {j, 1, 2})", //
+				"{{{a,1},{a,2}},{{b,1},{b,2}}}");
+		check("Table(x, {x,0,1/3})", //
+				"{0}");
+		check("Table(x, {x, -0.2, 3.9})", //
+				"{-0.2,0.8,1.8,2.8,3.8}");
 
 		// check("Timing(Length(Table(i, {i, 1, 10000})))", "{0.159,10000}");
 		check("Table(x,10)", "{x,x,x,x,x,x,x,x,x,x}");

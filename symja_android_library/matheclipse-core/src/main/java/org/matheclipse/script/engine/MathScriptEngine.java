@@ -155,7 +155,7 @@ public class MathScriptEngine extends AbstractScriptEngine {
 			if (Config.SHOW_STACKTRACE) {
 				e.printStackTrace();
 			}
-			return e.getMessage();
+			return "Exception: " + e.getMessage();
 		} catch (final OutOfMemoryError e) {
 			if (Config.DEBUG) {
 				e.printStackTrace();
