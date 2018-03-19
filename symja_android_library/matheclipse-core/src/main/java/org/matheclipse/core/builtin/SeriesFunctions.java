@@ -1070,7 +1070,17 @@ public class SeriesFunctions {
 					return F.NIL;
 				}
 				ASTSeriesData ps = new ASTSeriesData(x, x0, nMin, nMax, denominator);
-				ps.appendArgs((IAST) coefficients);
+				int size = coefficients.size();
+				int minSize = nMax - nMin + 1;
+				if (minSize > size) {
+					ps.appendArgs((IAST) coefficients, size);
+					for (int i = size; i < minSize; i++) {
+						ps.append(F.C0);
+					}
+				} else {
+					ps.appendArgs((IAST) coefficients, minSize);
+				}
+
 				return ps;
 			}
 			return F.NIL;

@@ -6851,6 +6851,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSeries() {
 		// check("FullForm(Series(Exp(x),{x,0,10}))", "");
 		// check("Series(Sin(Sqrt(x)), {x, 0, 5})", "");
+		check("s1=SeriesData(x, 0, {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, 2, 9, 1)", //
+				"x^2+x^3+x^4+x^5+x^6+x^7+x^8+O(x)^9");
+		check("s2=SeriesData(x, 0, {1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800}, 3, 11, 1)", //
+				"x^3+x^4+2*x^5+6*x^6+24*x^7+120*x^8+720*x^9+5040*x^10+O(x)^11");
+		check("s1+s2", "x^2+2*x^3+2*x^4+3*x^5+7*x^6+25*x^7+121*x^8+O(x)^9");
+		// check("s1/s2",
+		// "x^2+2*x^3+2*x^4+3*x^5+7*x^6+25*x^7+121*x^8+O(x)^9");
 
 		check("s1=SeriesData(x, 0, {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}, 0, 11, 1)", //
 				"1+x+x^2+x^3+x^4+x^5+x^6+x^7+x^8+x^9+x^10+O(x)^11");
@@ -6859,6 +6866,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "10+O(x)^11");
 		check("s1*s2",
 				"1+2*x+4*x^2+10*x^3+34*x^4+154*x^5+874*x^6+5914*x^7+46234*x^8+409114*x^9+4037914*x^\n" + "10+O(x)^11");
+
 		check("Series(x*4+x^2-y*x^10, {x, 0, 10})", "4*x+x^2-y*x^10+O(x)^11");
 		check("Series(x*4+x^2-y*x^11, {x, 0, 10})", "4*x+x^2+O(x)^11");
 
@@ -6885,7 +6893,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSeriesData() {
-
+		check("SeriesData(x, 0, {1, 0, -1, -4, -17, -88, -549}, -1, 6, 1)", //
+				"1/x-x-4*x^2-17*x^3-88*x^4-549*x^5+O(x)^6");
 		check("s1=SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)^2", //
 				"x^2-x^4/3+2/45*x^6-x^8/360+x^10/14400+O(x)^12");
 		check("s1 // FullForm", //
