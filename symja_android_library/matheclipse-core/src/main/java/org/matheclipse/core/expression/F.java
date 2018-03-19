@@ -472,6 +472,7 @@ public class F {
 	public final static IBuiltInSymbol JaccardDissimilarity = BuiltIns.valueOf(BuiltIns.JaccardDissimilarity);
 	public final static IBuiltInSymbol JacobiMatrix = BuiltIns.valueOf(BuiltIns.JacobiMatrix);
 	public final static IBuiltInSymbol JacobiSymbol = BuiltIns.valueOf(BuiltIns.JacobiSymbol);
+	public final static IBuiltInSymbol JacobiZeta = BuiltIns.valueOf(BuiltIns.JacobiZeta);
 	public final static IBuiltInSymbol JavaForm = BuiltIns.valueOf(BuiltIns.JavaForm);
 	public final static IBuiltInSymbol Join = BuiltIns.valueOf(BuiltIns.Join);
 	public final static IBuiltInSymbol KOrderlessPartitions = BuiltIns.valueOf(BuiltIns.KOrderlessPartitions);

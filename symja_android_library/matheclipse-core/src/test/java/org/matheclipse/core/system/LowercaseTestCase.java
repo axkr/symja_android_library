@@ -2038,7 +2038,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{1.0227,1.07184,1.12843,1.19454,1.27313,1.36859,1.48785,1.64253,1.85407,2.16762,2.70129,3.93061,ComplexInfinity,-0.59276,-0.45672,-0.37175,-0.31354}");
 
 	}
-
+	
+	public void testJacobiZeta() {
+		check("JacobiZeta(z, 0)", "0");
+		check("JacobiZeta(-5/4, 1)", "-Sin(5/4)");
+		check("JacobiZeta(0, m)", "0");
+		check("JacobiZeta(Pi/2, m)", "0");
+		check("JacobiZeta(z, Infinity)", "ComplexInfinity");
+		check("JacobiZeta(z, -Infinity)", "ComplexInfinity");
+	}
+	
 	public void testEqual() {
 		// Issue #174
 		check("x/(y*x)==0.25", "1/y==0.25");

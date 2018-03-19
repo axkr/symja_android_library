@@ -94,7 +94,7 @@ public class AST2Expr {
 			"IntegerExponent", "IntegerLength", "IntegerPart", "IntegerPartitions", "IntegerQ", "Integrate",
 			"Interpolation", "InterpolatingFunction", "InterpolatingPolynomial", "Intersection", "Inverse",
 			"InverseErf", "InverseErfc", "InverseFunction", "InverseHaversine", "InverseLaplaceTransform",
-			"InverseSeries", "JaccardDissimilarity", "JacobiMatrix", "JacobiSymbol", "JavaForm", "Join",
+			"InverseSeries", "JaccardDissimilarity", "JacobiMatrix", "JacobiSymbol", "JacobiZeta", "JavaForm", "Join",
 			"KOrderlessPartitions", "KPartitions", "KroneckerDelta", "Kurtosis", "Last", "LCM", "LeafCount",
 			"LaguerreL", "LaplaceTransform", "LeastSquares", "LegendreP", "LegendreQ", "Length", "Less", "LessEqual",
 			"LetterQ", "Level", "LevelQ", "Limit", "Line", "LinearModelFit", "LinearProgramming", "LinearSolve",

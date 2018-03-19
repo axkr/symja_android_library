@@ -1,38 +1,22 @@
 package org.matheclipse.core.builtin;
 
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.C2;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Factorial;
-import static org.matheclipse.core.expression.F.Negate;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Power;
-import static org.matheclipse.core.expression.F.Times;
-
-import java.util.function.DoubleUnaryOperator;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
-import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.polynomials.PolynomialsUtils;
-import org.matheclipse.core.reflection.system.rules.LegendrePRules;
-import org.matheclipse.core.reflection.system.rules.LegendreQRules;
 
 public class EllipticIntegrals {
-	static { 
+	static {
 		F.EllipticE.setEvaluator(new EllipticE());
 		F.EllipticF.setEvaluator(new EllipticF());
 		F.EllipticK.setEvaluator(new EllipticK());
-		F.EllipticPi.setEvaluator(new EllipticPi()); 
+		F.EllipticPi.setEvaluator(new EllipticPi());
+		F.JacobiZeta.setEvaluator(new JacobiZeta());
 	}
 
 	private static class EllipticE extends AbstractFunctionEvaluator {
@@ -242,6 +226,41 @@ public class EllipticIntegrals {
 					engine.printMessage("EllipticPi: " + rex.getMessage());
 				}
 			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
+	private static class JacobiZeta extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			IExpr z = ast.arg1();
+			IExpr m = ast.arg2();
+			if (m.isZero()) {
+				return F.C0;
+			}
+			if (z.isZero()) {
+				return F.C0;
+			}
+			if (z.equals(F.CPiHalf)) {
+				return F.C0;
+			}
+			if (m.isOne()) {
+				// Abs(Re(z)) <= Pi/2
+				if (engine.evalTrue(F.LessEqual(F.Abs(F.Re(z)), F.CPiHalf))) {
+					return F.Sin(z);
+				}
+			}
+			if (m.isInfinity() || m.isNegativeInfinity()) {
+				return F.CComplexInfinity;
+			}
+
 			return F.NIL;
 		}
 
