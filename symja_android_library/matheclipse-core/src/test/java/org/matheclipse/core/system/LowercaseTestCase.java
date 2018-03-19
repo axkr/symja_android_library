@@ -2021,6 +2021,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{-2.15985,-1.87887,-1.59434,-1.31126,-1.03407,-0.76521,-0.50467,-0.25059,0.0,0.25059,0.50467,0.76521,1.03407,1.31126,1.59434,1.87887,2.15985}");
 	}
 
+	public void testEllipticK() {
+		check("EllipticK(0.5)", "1.85407");
+		check("Table(EllipticK(x), {x,-1.0, 1.0, 1/4})", //
+				"{1.31103,2.15652,1.85407,1.68575,1.5708,1.68575,1.85407,2.15652,ComplexInfinity}");
+
+	}
+
 	public void testEllipticPi() {
 		check("EllipticPi(n,0)", "Pi/(2*Sqrt(1-n))");
 		check("EllipticPi(n,1)", "Infinity/Sign(1-n)");

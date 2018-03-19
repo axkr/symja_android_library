@@ -76,7 +76,7 @@ public class AST2Expr {
 			"DiscreteUniformDistribution", "DirectedInfinity", "Direction", "Discriminant", "Distribute", "Divergence",
 			"Divide", "DivideBy", "Divisible", "Divisors", "DivisorSigma", "Do", "Dot", "Drop", "DSolve",
 			"EasterSunday", "Eigenvalues", "Eigenvectors", "Element", "ElementData", "Eliminate", "EllipticE",
-			"EllipticF", "EllipticPi", "End", "EndPackage", "Equal", "Equivalent", "Erf", "Erfc", "Erfi",
+			"EllipticF", "EllipticK", "EllipticPi", "End", "EndPackage", "Equal", "Equivalent", "Erf", "Erfc", "Erfi",
 			"ErlangDistribution", "EuclideanDistance", "EulerE", "EulerPhi", "EvenQ", "ExactNumberQ", "Except",
 			"Exists", "Exp", "Expand", "ExpandAll", "Expectation", "ExponentialDistribution", "ExpIntegralE",
 			"ExpIntegralEi", "Exponent", "Export", "ExtendedGCD", "Extract", "Factor", "Factorial", "Factorial2",
