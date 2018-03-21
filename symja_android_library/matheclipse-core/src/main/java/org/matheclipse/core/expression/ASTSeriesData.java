@@ -776,8 +776,11 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 
 	public ASTSeriesData pow(final long n) {
 		if ((n == 0L)) {
-			ASTSeriesData series = new ASTSeriesData(x, x0, 0, 1, denominator);
+			ASTSeriesData series = new ASTSeriesData(x, x0, 0, nMax, denominator);
 			series.append(F.C1);
+			for (int i = 1; i < nMax; i++) {
+				series.append(F.C0);
+			}
 			return series;
 		}
 
@@ -979,6 +982,36 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 		}
 	}
 
+	public ASTSeriesData compose(ASTSeriesData b) {
+		IExpr coeff0 = b.coeff(0);
+		if (!coeff0.equals(x0)) {
+			EvalEngine.get().printMessage("Constant " + coeff0.toString() + " of series " + this.toString() + //
+					" unequals point " + x0.toString() + " of series " + b.toString());
+			return null;
+		}
+		ASTSeriesData series = new ASTSeriesData(b.x, b.x0, 0, b.nMax, b.denominator);
+		int size = b.nMax;
+		for (int i = 0; i < size; i++) {
+			series.append(F.C0);
+		}
+		ASTSeriesData s;
+		ASTSeriesData x0Term;
+		if (x0.isZero()) {
+			x0Term = b;
+		} else {
+			x0Term = b.subtract(x0);
+		}
+		for (int n = nMin; n < nMax; n++) {
+			IExpr temp = coeff(n);
+			if (!temp.isZero()) {
+				s = x0Term.pow(n);
+				s = s.times(temp);
+				series = series.plusPS(s);
+			}
+		}
+		return series;
+	}
+
 	/**
 	 * Multiply two power series.
 	 * 
@@ -1023,6 +1056,9 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 	public ASTSeriesData times(IExpr b) {
 		if (b instanceof ASTSeriesData) {
 			return timesPS((ASTSeriesData) b);
+		}
+		if (b.isOne()) {
+			return this;
 		}
 		ASTSeriesData series = copy();
 		for (int i = 1; i < size(); i++) {

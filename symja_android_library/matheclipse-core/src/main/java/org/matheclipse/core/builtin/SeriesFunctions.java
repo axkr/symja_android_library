@@ -718,8 +718,18 @@ public class SeriesFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() > 2) {
-				for (int i = 1; i < ast.size(); i++) {
-
+				if (ast.arg1() instanceof ASTSeriesData) {
+					ASTSeriesData result = (ASTSeriesData) ast.arg1();
+					for (int i = 2; i < ast.size(); i++) {
+						if (ast.get(i) instanceof ASTSeriesData) {
+							ASTSeriesData s2 = (ASTSeriesData) ast.get(i);
+							result = result.compose(s2);
+							if (result == null) {
+								return F.NIL;
+							}
+						}
+					}
+					return result;
 				}
 			}
 			return F.NIL;
@@ -791,10 +801,10 @@ public class SeriesFunctions {
 
 				try {
 					final int lowerLimit = ((ISignedNumber) x0).toInt();
-					if (lowerLimit != 0) {
-						// TODO support other cases than 0
-						return F.NIL;
-					}
+					// if (lowerLimit != 0) {
+					// // TODO support other cases than 0
+					// return F.NIL;
+					// }
 					x0 = F.integer(lowerLimit);
 				} catch (ClassCastException cce) {
 				} catch (ArithmeticException ae) {
