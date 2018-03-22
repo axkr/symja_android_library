@@ -851,7 +851,6 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
-		throw new UnsupportedOperationException();
 		// this.fEvalFlags = objectInput.readShort();
 		//
 		// int size;
@@ -1077,7 +1076,6 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
-		throw new UnsupportedOperationException();
 		// objectOutput.writeShort(fEvalFlags);
 		//
 		// int size = size();
