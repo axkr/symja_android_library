@@ -282,8 +282,70 @@ public class ASTSeriesData extends AST0 implements Cloneable, Externalizable {
 	}
 
 	@Override
+	public int size() {
+		return 7;
+	}
+
+	@Override
+	final public IExpr arg1() {
+		return x;
+	}
+
+	@Override
+	final public IExpr arg2() {
+		return x0;
+	}
+
+	@Override
+	final public IExpr arg3() {
+		int capacity = nMax - nMin;
+		if (capacity <= 0) {
+			capacity = 4;
+		}
+		IASTAppendable list = F.ListAlloc(capacity);
+		for (int i = nMin; i < nMax; i++) {
+			list.append(coeff(i));
+		}
+		return list;
+	}
+
+	@Override
+	final public IExpr arg4() {
+		return F.ZZ(nMin);
+	}
+
+	@Override
+	final public IExpr arg5() {
+		return F.ZZ(power);
+	}
+
+	@Override
 	public IExpr get(int location) {
-		return coefficientValues.get(location - 1);
+		if (location >= 0 && location <= 7) {
+			switch (location) {
+			case 0:
+				return arg0;
+			case 1:
+				// x
+				return arg1();
+			case 2:
+				// x0
+				return arg2();
+			case 3:
+				// Coefficients
+				return arg3();
+			case 4:
+				// nMin
+				return arg4();
+			case 5:
+				// power
+				return arg5();
+			case 6:
+				// denominator
+				return F.ZZ(denominator);
+			}
+		}
+		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location) + ", Size: 1");
 	}
 
 	public int getDenominator() {

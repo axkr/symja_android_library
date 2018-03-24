@@ -126,8 +126,20 @@ public class SeriesTest extends AbstractTestCase {
 	}
 
 	public void testSeriesData() {
-		check("SeriesData(x, 0, {1, 0, -1, -4, -17, -88, -549}, -1, 6, 1)", //
+		check("s1=SeriesData(x, 0, {1, 0, -1, -4, -17, -88, -549}, -1, 6, 1)", //
 				"1/x-x-4*x^2-17*x^3-88*x^4-549*x^5+O(x)^6");
+		check("s1[[1]]", //
+				"x");
+		check("s1[[2]]", //
+				"0");
+		check("s1[[3]]", //
+				"{1,0,-1,-4,-17,-88,-549}");
+		check("s1[[4]]", //
+				"-1");
+		check("s1[[5]]", //
+				"6");
+		check("s1[[6]]", //
+				"1");
 		check("s1=SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)", //
 				"x-x^3/6+x^5/120+O(x)^11");
 		check("s1=SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)^2", //
