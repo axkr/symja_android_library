@@ -559,7 +559,7 @@ public class ASTSeriesData extends AST0 implements Cloneable, Externalizable {
 
 	@Override
 	public int hashCode() {
-		if (hashValue == 0) {
+		if (hashValue == 0 && x0 != null) {
 			if (coefficientValues != null) {
 				hashValue = x0.hashCode() + power * coefficientValues.hashCode();
 			} else {
