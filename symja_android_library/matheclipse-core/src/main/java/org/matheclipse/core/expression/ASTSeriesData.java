@@ -53,8 +53,8 @@ public class ASTSeriesData extends AST0 implements Cloneable, Externalizable {
 
 	public ASTSeriesData() {
 		super(F.SeriesData);
-		power=0;
-		denominator=1;
+		power = 0;
+		denominator = 1;
 		// When Externalizable objects are deserialized, they first need to be constructed by invoking the void
 		// constructor. Since this class does not have one, serialization and deserialization will fail at runtime.
 	}
@@ -560,7 +560,11 @@ public class ASTSeriesData extends AST0 implements Cloneable, Externalizable {
 	@Override
 	public int hashCode() {
 		if (hashValue == 0) {
-			hashValue = power * coefficientValues.hashCode();
+			if (coefficientValues != null) {
+				hashValue = x0.hashCode() + power * coefficientValues.hashCode();
+			} else {
+				hashValue = x0.hashCode() + power;
+			}
 		}
 		return hashValue;
 	}
