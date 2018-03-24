@@ -174,8 +174,27 @@ public class SeriesTest extends AbstractTestCase {
 				"Indeterminate");
 		check("SeriesData(x, 0, Table(i^2, {i, 10}), 0, 10, 1)", //
 				"1+4*x+9*x^2+16*x^3+25*x^4+36*x^5+49*x^6+64*x^7+81*x^8+100*x^9+O(x)^10");
+		check("D(SeriesData(x, 0, Table(i^2, {i, 10}), 0, 10, 1), x)", //
+				"4+18*x+48*x^2+100*x^3+180*x^4+294*x^5+448*x^6+648*x^7+900*x^8+O(x)^9");
+		check("Integrate(SeriesData(x, 0, Table(i^2, {i, 10}), 0, 10, 1), x)", //
+				"x+2*x^2+3*x^3+4*x^4+5*x^5+6*x^6+7*x^7+8*x^8+9*x^9+10*x^10+O(x)^11");
 	}
 
+	public void testDSeriesData() { 
+		check("D(SeriesData(x, 0, Table(i^2, {i, 10}), 0, 10, 1), x)", //
+				"4+18*x+48*x^2+100*x^3+180*x^4+294*x^5+448*x^6+648*x^7+900*x^8+O(x)^9");
+		check("D(Series(Log(x),{x,a,5}), x)", //
+				"1/a-(-a+x)/a^2+(-a+x)^2/a^3-(-a+x)^3/a^4+(-a+x)^4/a^5+O(-a+x)^5");
+	}
+	
+	public void testIntegrateSeriesData() { 
+		check("Integrate(SeriesData(x, 0, Table(i^2, {i, 10}), 0, 10, 1), x)", //
+				"x+2*x^2+3*x^3+4*x^4+5*x^5+6*x^6+7*x^7+8*x^8+9*x^9+10*x^10+O(x)^11");
+		check("Integrate(Series(Log(x),{x,a,5}), x)", //
+				"Log(a)*(-a+x)+(-a+x)^2/(2*a)-(-a+x)^3/(6*a^2)+(-a+x)^4/(12*a^3)-(-a+x)^5/(20*a^4)+(-a+x)^\n" + 
+				"6/(30*a^5)+O(-a+x)^7");
+	}
+	
 	public void testSeriesCoefficient() {
 		check("SeriesCoefficient(d+4*x^e+7*x^f+Sin(x),{x, a, n})", //
 				"Piecewise({{(4*a^e*Binomial(e,n)+7*a^f*Binomial(f,n))/a^n,n>0},{4*a^e+7*a^f+d,n==\n"

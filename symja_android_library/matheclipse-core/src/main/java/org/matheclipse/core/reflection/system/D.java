@@ -3,6 +3,7 @@ package org.matheclipse.core.reflection.system;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.BinaryBindIth1st;
 import org.matheclipse.core.interfaces.IAST;
@@ -320,8 +321,21 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 
 		}
 
-		if (!(x.isList()) && fx.isFree(x, true)) {
-			return F.C0;
+		if (!(x.isList())) {
+			if (fx instanceof ASTSeriesData) {
+				ASTSeriesData series = ((ASTSeriesData) fx);
+				if (series.getX().equals(x)) {
+					final IExpr temp = ((ASTSeriesData) fx).derive(x);
+					if (temp != null) {
+						return temp;
+					}
+					return F.NIL;
+				}
+				return F.C0;
+			}
+			if (!(x.isList()) && fx.isFree(x, true)) {
+				return F.C0;
+			}
 		}
 		if (fx.isNumber()) {
 			// D[x_NumberQ,y_] -> 0

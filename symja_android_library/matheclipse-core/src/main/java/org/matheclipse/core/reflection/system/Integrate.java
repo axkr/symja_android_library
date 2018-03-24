@@ -26,6 +26,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Symbol;
@@ -131,6 +132,16 @@ public class Integrate extends AbstractFunctionEvaluator {
 			if (arg1.isNumber()) {
 				// Integrate[x_NumberQ,y_Symbol] -> x*y
 				return Times(arg1, x);
+			}
+			if (arg1 instanceof ASTSeriesData) {
+				ASTSeriesData series = ((ASTSeriesData) arg1);
+				if (series.getX().equals(x)) {
+					final IExpr temp = ((ASTSeriesData) arg1).integrate(x);
+					if (temp != null) {
+						return temp;
+					}
+				}
+				return F.NIL;
 			}
 			if (arg1.isFree(x, true)) {
 				// Integrate[x_,y_Symbol] -> x*y /; FreeQ[x,y]

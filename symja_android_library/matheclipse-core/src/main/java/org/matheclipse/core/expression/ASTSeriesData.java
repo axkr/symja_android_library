@@ -202,9 +202,50 @@ public class ASTSeriesData extends AST0 implements Cloneable, Externalizable {
 		return new ASTSeriesData(x, x0, nMin, nMax, power, denominator, new OpenIntToIExprHashMap(coefficientValues));
 	}
 
+	public ASTSeriesData derive(IExpr x) {
+		if (this.x.equals(x)) {
+			if (isProbableZero()) {
+				return this;
+			}
+			if (power > 0) {
+				ASTSeriesData series = new ASTSeriesData(x, x0, nMin, nMax, power - 1, denominator,
+						new OpenIntToIExprHashMap());
+				if (nMin >= 0) {
+					if (nMin > 0) {
+						series.setCoeff(nMin - 1, this.coeff(nMin + 1).times(F.ZZ(nMin + 1)));
+					}
+					for (int i = nMin; i < nMax - 1; i++) {
+						series.setCoeff(i, this.coeff(i + 1).times(F.ZZ(i + 1)));
+					}
+					return series;
+				}
+			}
+		}
+		return null;
+	}
+
+	public ASTSeriesData integrate(IExpr x) {
+		if (this.x.equals(x)) {
+			if (isProbableZero()) {
+				return this;
+			}
+			if (power > 0) {
+				ASTSeriesData series = new ASTSeriesData(x, x0, nMin, nMax, power + 1, denominator,
+						new OpenIntToIExprHashMap());
+				if (nMin + 1 > 0) {
+					for (int i = nMin + 1; i <= nMax; i++) {
+						series.setCoeff(i, this.coeff(i - 1).times(F.QQ(1, i)));
+					}
+					return series;
+				}
+			}
+		}
+		return null;
+	}
+
 	@Override
 	public IASTAppendable copyAppendable() {
-		return null;// Convert.vector2List(vector);
+		return F.NIL;
 	}
 
 	@Override
