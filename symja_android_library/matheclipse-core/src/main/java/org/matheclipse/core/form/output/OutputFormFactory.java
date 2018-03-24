@@ -1113,27 +1113,25 @@ public class OutputFormFactory {
 			// SeriesData[x, x0, list, nmin, nmax, den]
 			IExpr x = seriesData.getX();
 			IExpr x0 = seriesData.getX0();
-			long nmin = seriesData.getNMin();
-			long nmax = seriesData.getNMax();
+			int nmin = seriesData.getNMin();
+			int nmax = seriesData.getNMax();
+			int power = seriesData.getPower();
 			long den = seriesData.getDenominator();
-			int size = seriesData.size();
 			boolean call = NO_PLUS_CALL;
-			if (size > 0) {
+			if (nmax > nmin) {
 				INumber exp = F.fraction(nmin, den).normalize();
 				IExpr pow = x.subtract(x0).power(exp);
-				call = convertSeriesDataArg(tempBuffer, seriesData.arg1(), pow, call);
-				for (int i = 2; i < size; i++) {
-					exp = F.fraction(nmin + i - 1L, den).normalize();
+				call = convertSeriesDataArg(tempBuffer, seriesData.coeff(nmin), pow, call);
+				for (int i = nmin + 1; i < nmax; i++) {
+					exp = F.fraction(i, den).normalize();
 					pow = x.subtract(x0).power(exp);
-					call = convertSeriesDataArg(tempBuffer, seriesData.get(i), pow, call);
+					call = convertSeriesDataArg(tempBuffer, seriesData.coeff(i), pow, call);
 				}
-				plusArg = F.Power(F.O(x.subtract(x0)), F.fraction(nmax, den).normalize());
-				if (!plusArg.isZero()) {
-					convertPlusArgument(tempBuffer, plusArg, call);
-					call = PLUS_CALL;
-				}
-			} else {
-				return false;
+			}
+			plusArg = F.Power(F.O(x.subtract(x0)), F.fraction(power, den).normalize());
+			if (!plusArg.isZero()) {
+				convertPlusArgument(tempBuffer, plusArg, call);
+				call = PLUS_CALL;
 			}
 		} catch (Exception ex) {
 			return false;

@@ -626,7 +626,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			convertPart(buf, list);
 			return;
 		}
-		 
+
 		if (head.equals(F.Slot) && (list.isAST1()) && (list.arg1() instanceof IInteger)) {
 			convertSlot(buf, list);
 			return;
@@ -934,31 +934,40 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			// SeriesData[x, x0, list, nmin, nmax, den]
 			IExpr x = seriesData.getX();
 			IExpr x0 = seriesData.getX0();
-			long nmin = seriesData.getNMin();
-			long nmax = seriesData.getNMax();
-			long den = seriesData.getDenominator();
-			int size = seriesData.size();
+			int nMin = seriesData.getNMin();
+			int nMax = seriesData.getNMax();
+			int power = seriesData.getPower();
+			int den = seriesData.getDenominator();
 			boolean call = NO_PLUS_CALL;
-			if (size > 0) {
-				INumber exp = F.fraction(nmin, den).normalize();
-				IExpr pow = x.subtract(x0).power(exp);
-				call = convertSeriesDataArg(tempBuffer, seriesData.arg1(), pow, call);
-				for (int i = 2; i < size; i++) {
-					tag(tempBuffer, "mo", "+");
-					exp = F.fraction(nmin + i - 1L, den).normalize();
-					pow = x.subtract(x0).power(exp);
-					call = convertSeriesDataArg(tempBuffer, seriesData.get(i), pow, call);
+			INumber exp;
+			IExpr pow;
+			boolean first = true;
+			IExpr x0Term = x.subtract(x0);
+			for (int i = nMin; i < nMax; i++) {
+				IExpr coefficient = seriesData.coeff(i);
+				if (!coefficient.isZero()) {
+					if (!first) {
+						tag(tempBuffer, "mo", "+");
+					}
+					exp = F.fraction(i, den).normalize();
+					pow = x0Term.power(exp);
+
+					call = convertSeriesDataArg(tempBuffer, coefficient, pow, call);
+
+					first = false;
 				}
-				plusArg = F.Power(F.O(x.subtract(x0)), F.fraction(nmax, den).normalize());
-				if (!plusArg.isZero()) {
-					tag(tempBuffer, "mo", "+");
-					convert(tempBuffer, plusArg, Integer.MIN_VALUE, false);
-					call = PLUS_CALL;
-				}
-			} else {
-				return false;
 			}
+			plusArg = F.Power(F.O(x.subtract(x0)), F.fraction(power, den).normalize());
+			if (!plusArg.isZero()) {
+				tag(tempBuffer, "mo", "+");
+				convert(tempBuffer, plusArg, Integer.MIN_VALUE, false);
+				call = PLUS_CALL;
+			}
+
 		} catch (Exception ex) {
+			if (Config.SHOW_STACKTRACE) {
+				ex.printStackTrace();
+			}
 			return false;
 		}
 		if (operPrecedence < precedence) {

@@ -5,153 +5,79 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
-import java.util.HashMap;
-import java.util.RandomAccess;
 import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.DoubleUnaryOperator;
-import java.util.function.Function;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.INumber;
 
-public class ASTSeriesData extends AST implements Cloneable, Externalizable, RandomAccess {
-
-	/**
-	 * 
-	 * Returns a new ASTPowerSeries where each element is mapped by the given function.
-	 *
-	 * @param astVector
-	 *            an AST which could be converted into <code>double[]</code>
-	 * @param function
-	 *            Function to apply to each entry.
-	 * @return a new vector.
-	 */
-	public static ASTSeriesData map(final IAST astVector, DoubleUnaryOperator function) {
-		HashMap<Integer, IExpr> vector = new HashMap<Integer, IExpr>();
-		ASTSeriesData series = new ASTSeriesData(vector, false);
-		for (int i = 1; i < astVector.size(); i++) {
-			vector.put(i, astVector.get(i));
-		}
-		return series;
-	}
+public class ASTSeriesData extends AST0 implements Cloneable, Externalizable {
 
 	/**
-	 * The underlying matrix
+	 * A map of the truncated power series coefficients <code>value != 0</code>
 	 */
-	// private Function<Integer, IExpr> f;
+	OpenIntToIExprHashMap coefficientValues;
 
-	// private HashMap<Integer, IExpr> vals;
-	// -1 => undetermined
-	private int power = -1;
+	/**
+	 * The power of this series.
+	 */
+	private final int power;
+
+	/**
+	 * The variable symbol of this series.
+	 */
 	private IExpr x;
 
+	/**
+	 * The point <code>x = x0</code> of this series.
+	 */
 	private IExpr x0;
 
+	/**
+	 * The minimum exponent used in <code>coefficientValues</code>, where the coefficient is not 0.
+	 */
 	private int nMin;
 
+	/**
+	 * The maximum exponent used in <code>coefficientValues</code>, where the coefficient is not 0.
+	 */
 	private int nMax;
 
-	private int denominator;
-
 	/**
-	 * 
-	 * @param vals
-	 * @param deepCopy
+	 * The denominator of this series
 	 */
-	// public ASTPowerSeries(double[] vector, boolean deepCopy) {
-	// this.vector = new ArrayRealVector(vector, deepCopy);
-	// }
-
-	IExpr ring;
+	private final int denominator;
 
 	public ASTSeriesData() {
 		super(F.SeriesData);
+		power=0;
+		denominator=1;
 		// When Externalizable objects are deserialized, they first need to be constructed by invoking the void
 		// constructor. Since this class does not have one, serialization and deserialization will fail at runtime.
 	}
 
-	// public ASTSeriesData(Function<Integer, IExpr> f, HashMap<Integer, IExpr> map, IExpr ring) {
-	// super(F.SeriesData);
-	// this.f = f;
-	// // this.vals = map;
-	// this.ring = ring;
-	// }
-
-	// public ASTSeriesData(Function<Integer, IExpr> f, HashMap<Integer, IExpr> map, int order, IExpr ring) {
-	// super(F.SeriesData);
-	// this.power = order;
-	// this.f = f;
-	// // this.vals = map;
-	// this.ring = ring;
-	// }
-
-	// public ASTSeriesData(Function<Integer, IExpr> f, IExpr ring) {
-	// super(F.SeriesData);
-	// this.f = f;
-	// // this.vals = new HashMap<Integer, IExpr>();
-	// this.ring = ring;
-	// }
-
-	// public ASTSeriesData(Function<Integer, IExpr> f, int order, IExpr ring) {
-	// super(F.SeriesData);
-	// this.power = order;
-	// this.f = f;
-	// // this.vals = new HashMap<Integer, IExpr>();
-	// this.ring = ring;
-	// }
-
-	/**
-	 * 
-	 * 
-	 * @param vector
-	 *            the vector which should be wrapped in this object.
-	 * @param deepCopy
-	 *            TODO
-	 */
-	public ASTSeriesData(HashMap<Integer, IExpr> vector, boolean deepCopy) {
-		super(F.SeriesData);
-		// if (deepCopy) {
-		// this.vals = (HashMap<Integer, IExpr>) vector.clone();
-		// } else {
-		// this.vals = vector;
-		// }
+	public ASTSeriesData(IExpr x, IExpr x0, int nMin, int power, int denominator) {
+		this(x, x0, nMin, nMin, power, denominator, new OpenIntToIExprHashMap());
 	}
 
-	public ASTSeriesData(IExpr x, IExpr x0, int nMin, int nMax, int denominator) {
+	public ASTSeriesData(IExpr x, IExpr x0, int nMin, int nMax, int power, int denominator,
+			OpenIntToIExprHashMap vals) {
 		super(F.SeriesData);
+		this.coefficientValues = vals;
 		this.x = x;
 		this.x0 = x0;
 		this.nMin = nMin;
 		this.nMax = nMax;
+		this.power = power;
 		this.denominator = denominator;
 	}
-
-	/**
-	 * Inserts the specified object into this {@code ArrayList} at the specified location. The object is inserted before
-	 * any previous element at the specified location. If the location is equal to the size of this {@code ArrayList},
-	 * the object is added at the end.
-	 * 
-	 * @param location
-	 *            the index at which to insert the object.
-	 * @param object
-	 *            the object to add.
-	 * @throws IndexOutOfBoundsException
-	 *             when {@code location < 0 || > size()}
-	 */
-	// @Override
-	// public void append(int location, IExpr object) {
-	// hashValue = 0;
-	// throw new UnsupportedOperationException();
-	// }
 
 	@Override
 	public Set<IExpr> asSet() {
 		throw new UnsupportedOperationException();
-		// empty set:
-		// return new HashSet<IExpr>();
 	}
 
 	/**
@@ -163,29 +89,25 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 	 */
 	@Override
 	public IAST clone() {
-		IASTAppendable series = new ASTSeriesData(x, x0, nMin, nMax, denominator);
-		series.appendArgs(this);
-		return series;
+		return new ASTSeriesData(x, x0, nMin, nMax, power, denominator, new OpenIntToIExprHashMap(coefficientValues));
 	}
-	//
-	// public ASTSeriesData composePS(ASTSeriesData b) {
-	// int minSize = nMin;
-	// if (nMin > b.nMin) {
-	// minSize = b.nMin;
-	// }
-	// int maxSize = nMax;
-	// if (nMax > b.nMax) {
-	// maxSize = b.nMax;
-	// }
-	// int size = size();
-	// ASTSeriesData series = new ASTSeriesData(x, x0, minSize, maxSize, denominator);
-	// int j = 1;
-	// IASTAppendable list = F.ListAlloc(size);
-	// for (int i = 0; i < size - 1; i++) {
-	// list.append(j++, this.getCoeff(minSize + i).plus(b.getCoeff(minSize + i)));
-	// }
-	// return series;
-	// }
+
+	/**
+	 * Get the coefficient for <code>(x-x0)^k</code>.
+	 * 
+	 * @param k
+	 * @return
+	 */
+	public IExpr coeff(int k) {
+		if (k < nMin || k >= nMax) {
+			return F.C0;
+		}
+		IExpr temp = coefficientValues.get(k);
+		if (temp == null) {
+			return F.C0;
+		}
+		return temp;
+	}
 
 	@Override
 	public int compareTo(final IExpr rhsExpr) {
@@ -227,12 +149,57 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 		return (x < y) ? -1 : ((x == y) ? 0 : 1);
 	}
 
+	/**
+	 * <pre>
+	 * series1.compose(series2)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * substitute <code>series2</code> into <code>series1</code>
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ComposeSeries(SeriesData(x, 0, {1, 3}, 2, 4, 1), SeriesData(x, 0, {1, 1,0,0}, 0, 4, 1) - 1)
+	 * x^2+3*x^3+O(x)^4
+	 * </pre>
+	 * 
+	 * @param series2
+	 * @return the composed series
+	 */
+	public ASTSeriesData compose(ASTSeriesData series2) {
+		IExpr coeff0 = series2.coeff(0);
+		if (!coeff0.equals(x0)) {
+			EvalEngine.get().printMessage("Constant " + coeff0.toString() + " of series " + this.toString() + //
+					" unequals point " + x0.toString() + " of series " + series2.toString());
+			return null;
+		}
+		ASTSeriesData series = new ASTSeriesData(series2.x, series2.x0, 0, series2.power, series2.denominator);
+		ASTSeriesData s;
+		ASTSeriesData x0Term;
+		if (x0.isZero()) {
+			x0Term = series2;
+		} else {
+			x0Term = series2.subtract(x0);
+		}
+		for (int n = nMin; n < nMax; n++) {
+			IExpr temp = coeff(n);
+			if (!temp.isZero()) {
+				s = x0Term.pow(n);
+				s = s.times(temp);
+				series = series.plusPS(s);
+			}
+		}
+		return series;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public ASTSeriesData copy() {
-		ASTSeriesData series = new ASTSeriesData(x, x0, nMin, nMax, denominator);
-		series.appendArgs(this);
-		return series;
+		return new ASTSeriesData(x, x0, nMin, nMax, power, denominator, new OpenIntToIExprHashMap(coefficientValues));
 	}
 
 	@Override
@@ -262,9 +229,15 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 			if (power != that.power) {
 				return false;
 			}
-			if (super.equals(obj)) {
+			if (coefficientValues.equals(that.coefficientValues)) {
 				return true;
 			}
+			for (int i = nMin; i < nMax; i++) {
+				if (!coeff(i).equals(that.coeff(i))) {
+					return false;
+				}
+			}
+			return true;
 		}
 		return false;
 	}
@@ -287,61 +260,45 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 
 		// list of coefficients
 		buf.append("{");
-		final int listSize = size();
-		if (listSize > 1) {
-			buf.append(arg1().toString());
-		}
-		for (int i = 2; i < listSize; i++) {
-			buf.append(",");
-			buf.append(get(i).toString());
+		boolean first = true;
+		for (int i = nMin; i < nMax; i++) {
+			IExpr temp = coeff(i);
+			if (!first) {
+				buf.append(",");
+			}
+			buf.append(temp.toString());
+			first = false;
 		}
 		buf.append("}");
 
 		buf.append(',');
 		buf.append(nMin);
 		buf.append(',');
-		buf.append(nMax);
+		buf.append(power);
 		buf.append(',');
 		buf.append(denominator);
 		buf.append(")");
 		return buf.toString();
 	}
 
-	/**
-	 * Get the coefficient for <code>(x-x0)^k</code>.
-	 * 
-	 * @param k
-	 * @return
-	 */
-	public IExpr coeff(int k) {
-		// if (vals.containsKey(k))
-		// return vals.get(k);
-		// IExpr c = f.apply(k);
-		// vals.put(k, c);
-		if (k < nMin) {
-			return F.C0;
-		}
-		int index = k - nMin + 1;
-		if (index >= size()) {
-			return F.C0;
-		}
-
-		return get(index);
+	@Override
+	public IExpr get(int location) {
+		return coefficientValues.get(location - 1);
 	}
 
-	public long getDenominator() {
+	public int getDenominator() {
 		return denominator;
 	}
 
-	public long getNMax() {
+	public int getNMax() {
 		return nMax;
 	}
 
-	public long getNMin() {
+	public int getNMin() {
 		return nMin;
 	}
 
-	public Integer getOrder() {
+	public Integer getPower() {
 		return power;
 	}
 
@@ -353,107 +310,65 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 		return x0;
 	}
 
-	// @Override
-	// public boolean appendAll(IAST ast, int startPosition, int endPosition) {
-	// throw new UnsupportedOperationException();
-	// }
-
-	/**
-	 * Inserts the objects in the specified collection at the specified location in this List. The objects are added in
-	 * the order they are returned from the collection's iterator.
-	 * 
-	 * @param location
-	 *            the index at which to insert.
-	 * @param collection
-	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
-	 * @throws IndexOutOfBoundsException
-	 *             when {@code location < 0 || > size()}
-	 */
-	// @Override
-	// public boolean appendAll(int location, Collection<? extends IExpr> collection) {
-	// hashValue = 0;
-	// throw new UnsupportedOperationException();
-	// }
-
-	// @Override
-	// public boolean addAll(List<? extends IExpr> list) {
-	// throw new UnsupportedOperationException();
-	// }
-
-	// @Override
-	// public boolean appendAll(List<? extends IExpr> ast, int startPosition, int endPosition) {
-	// throw new UnsupportedOperationException();
-	// }
-
-	// @Override
-	// public boolean appendArgs(IAST ast) {
-	// throw new UnsupportedOperationException();
-	// }
-
-	// @Override
-	// public final boolean appendArgs(IAST ast, int untilPosition) {
-	// throw new UnsupportedOperationException();
-	// }
-
-	// @Override
-	// public IAST appendOneIdentity(IAST subAST) {
-	// throw new UnsupportedOperationException();
-	// }
-
-	/**
-	 * Adds the specified object at the end of this {@code ArrayList}.
-	 * 
-	 * @param object
-	 *            the object to add.
-	 * @return always true
-	 */
-	// @Override
-	// public boolean append(IExpr object) {
-	// hashValue = 0;
-	// throw new UnsupportedOperationException();
-	// }
-
 	/** {@inheritDoc} */
 	@Override
 	public int hierarchy() {
 		return SERIESID;
 	}
 
+	/**
+	 * <pre>
+	 * series.inverse()
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * return the inverse series.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; InverseSeries(Series(Sin(x), {x, 0, 7}))
+	 * x+x^3/6+3/40*x^5+5/112*x^7+O(x)^8
+	 * </pre>
+	 * 
+	 * @return the inverse series if possible
+	 */
 	@Override
 	public ASTSeriesData inverse() {
 		if (!isInvertible()) {
-			int coefficientLength = argSize();
+			int coefficientLength = power;
 			if (coefficientLength > 10) {
 				return null;
 			}
 			if (coefficientLength > 1 && !this.coeff(1).isZero()) {
 
 				ASTSeriesData ps = new ASTSeriesData(x, x0, nMin, nMax, denominator);
-				ps.append(F.C0);
+				// ps.setCoeff(0,F.C0);
 
 				IExpr a1 = coeff(1);
 				// a1^(-1)
-				ps.append(a1.inverse());
+				ps.setCoeff(1, a1.inverse());
 				if (coefficientLength > 2) {
 					// -a1^(-3) * a2
 					IExpr a2 = coeff(2);
-					ps.append(a1.power(-3).times(a2).negate());
+					ps.setCoeff(2, a1.power(-3).times(a2).negate());
 					if (coefficientLength > 3) {
 						// a1^(-5) * (2*a2^2-a1*a3)
 						IExpr a3 = coeff(3);
-						ps.append(F.Times.of(F.Power(a1, -5), //
+						ps.setCoeff(3, F.Times.of(F.Power(a1, -5), //
 								F.Subtract(F.Times(F.C2, F.Sqr(a2)), F.Times(a1, a3))));
 						if (coefficientLength > 4) {
 							// a1^(-7) * (5*a1*a2*a3-a1*a4-5*a2^3)
 							IExpr a4 = coeff(4);
-							ps.append(F.Times.of(F.Power(a1, -7), //
+							ps.setCoeff(4, F.Times.of(F.Power(a1, -7), //
 									F.Plus(F.Times(F.CN5, F.Power(a2, 3)), F.Times(F.C5, a1, a2, a3),
 											F.Times(F.CN1, a1, a4))));
 							if (coefficientLength > 5) {
 								// a1^(-9) * (6*a1^2*a2*a4+3*a1^2*a3^2+14*a2^4-a1^3*a5-21*a1*a2^2*a3)
 								IExpr a5 = coeff(5);
-								ps.append(F.Times.of(F.Power(a1, -9), //
+								ps.setCoeff(5, F.Times.of(F.Power(a1, -9), //
 										F.Plus(F.Times(F.ZZ(14L), F.Power(a2, 4)),
 												F.Times(F.ZZ(-21L), a1, F.Sqr(a2), a3),
 												F.Times(F.C3, F.Sqr(a1), F.Sqr(a3)), F.Times(F.C6, F.Sqr(a1), a2, a4),
@@ -462,7 +377,7 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 									// a1^(-11) *
 									// (7*a1^3*a2*a5+7*a1^3*a3*a4+84*a1*a2^3*a3-a1^4*a6-28*a1^2*a2*a3^2-42*a2^5-28*a1^2*a2^2*a4)
 									IExpr a6 = coeff(6);
-									ps.append(F.Times.of(F.Power(a1, -11), //
+									ps.setCoeff(6, F.Times.of(F.Power(a1, -11), //
 											F.Plus(F.Times(F.ZZ(-42L), F.Power(a2, 5)),
 													F.Times(F.ZZ(84L), a1, F.Power(a2, 3), a3),
 													F.Times(F.ZZ(-28L), F.Sqr(a1), a2, F.Sqr(a3)),
@@ -475,8 +390,8 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 										// (132*a2^6 - 330*a1*a2^4*a3 + 120*a1^2*a2^3*a4 - 36*a1^2*a2^2*(-5*a3^2 +
 										// a1*a5) + 8*a1^3*a2*(-9*a3*a4 + a1*a6) + a1^3*(-12*a3^3 + 8*a1*a3*a5 +
 										// a1*(4*a4^2 - a1*a7))) / a1^13
-										ps.append(F.Times.of(F.Power(a1, -13),
-												F.Plus(F.Times(F.ZZ(132L), F.Power(a2, 6)),
+										ps.setCoeff(7,
+												F.Times.of(F.Power(a1, -13), F.Plus(F.Times(F.ZZ(132L), F.Power(a2, 6)),
 														F.Times(F.ZZ(-330L), a1, F.Power(a2, 4), a3),
 														F.Times(F.ZZ(120L), F.Sqr(a1), F.Power(a2, 3), a4),
 														F.Times(F.ZZ(-36L), F.Sqr(a1), F.Sqr(a2),
@@ -489,7 +404,7 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 																		F.Times(a1,
 																				F.Plus(F.Times(F.C4, F.Sqr(a4)),
 																						F.Times(F.CN1, a1, a7)))))),
-												F.Power(a1, 13)));
+														F.Power(a1, 13)));
 										if (coefficientLength > 8) {
 											// (-429*a2^7 + 1287*a1*a2^5*a3 - 495*a1^2*a2^4*a4 +
 											// 165*a1^2*a2^3*(-6*a3^2
@@ -498,23 +413,25 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 											// 9*a1*a3*a6 +
 											// a1*(9*a4*a5 - a1*a8)))/a1^15
 											IExpr a8 = coeff(8);
-											ps.append(F.Times.of(F.Power(a1, -15),
-													F.Plus(F.Times(F.ZZ(-429L), F.Power(a2, 7)),
-															F.Times(F.ZZ(1287L), a1, F.Power(a2, 5), a3),
-															F.Times(F.ZZ(-495L), F.Sqr(a1), F.Power(a2, 4), a4),
-															F.Times(F.ZZ(165L), F.Sqr(a1), F.Power(a2, 3),
-																	F.Plus(F.Times(F.CN6, F.Sqr(a3)), F.Times(a1, a5))),
-															F.Times(F.ZZ(-45L), F.Power(a1, 3), F.Sqr(a2),
-																	F.Plus(F.Times(F.ZZ(-11L), a3, a4),
-																			F.Times(a1, a6))),
-															F.Times(F.C3, F.Power(a1, 3), a2,
-																	F.Plus(F.Times(F.ZZ(55L), F.Power(a3, 3)),
+											ps.setCoeff(8,
+													F.Times.of(F.Power(a1, -15),
+															F.Plus(F.Times(F.ZZ(-429L), F.Power(a2, 7)),
+																	F.Times(F.ZZ(1287L), a1, F.Power(a2, 5), a3),
+																	F.Times(F.ZZ(-495L), F.Sqr(a1), F.Power(a2, 4), a4),
+																	F.Times(F.ZZ(165L), F.Sqr(a1), F.Power(a2, 3),
+																			F.Plus(F.Times(F.CN6, F.Sqr(a3)),
+																					F.Times(a1, a5))),
+																	F.Times(F.ZZ(-45L), F.Power(a1, 3), F.Sqr(a2),
+																			F.Plus(F.Times(F.ZZ(-11L), a3, a4),
+																					F.Times(a1, a6))),
+																	F.Times(F.C3, F.Power(a1, 3), a2, F.Plus(
+																			F.Times(F.ZZ(55L), F.Power(a3, 3)),
 																			F.Times(F.ZZ(-30L), a1, a3, a5),
 																			F.Times(F.C3, a1,
 																					F.Plus(F.Times(F.CN5, F.Sqr(a4)),
 																							F.Times(a1, a7))))),
-															F.Times(F.Power(a1, 4),
-																	F.Plus(F.Times(F.ZZ(-45L), F.Sqr(a3), a4),
+																	F.Times(F.Power(a1, 4), F.Plus(
+																			F.Times(F.ZZ(-45L), F.Sqr(a3), a4),
 																			F.Times(F.C9, a1, a3, a6),
 																			F.Times(a1, F.Plus(F.Times(F.C9, a4, a5),
 																					F.Times(F.CN1, a1, a8))))))));
@@ -527,7 +444,7 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 												// a1^4*(55*a3^4 - 55*a1*a3^2*a5 + 5*a1*a3*(-11*a4^2 + 2*a1*a7) +
 												// a1^2*(5*a5^2 + 10*a4*a6 - a1*a9)))/a1^17
 												IExpr a9 = coeff(9);
-												ps.append(F.Times.of(F.Power(a1, -17),
+												ps.setCoeff(9, F.Times.of(F.Power(a1, -17),
 														F.Plus(F.Times(F.ZZ(1430L), F.Power(a2, 8)),
 																F.Times(F.ZZ(-5005L), a1, F.Power(a2, 6), a3),
 																F.Times(F.ZZ(2002L), F.Sqr(a1), F.Power(a2, 5), a4),
@@ -574,49 +491,18 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 		IExpr d = this.coeff(0).power(-1L);
 		// HashMap<Integer, IExpr> bTable = new HashMap<>();
 		// bTable.put(0, a);
-		ASTSeriesData ps = new ASTSeriesData(x, x0, nMin, nMax, denominator);
-		ps.append(d);
-		for (int i = 1; i < size(); i++) {
+		ASTSeriesData ps = new ASTSeriesData(x, x0, nMin, power, denominator);
+		ps.setCoeff(nMin, d);
+		for (int i = nMin + 1; i < nMax; i++) {
 			IExpr c = F.C0;
 			for (int k = 0; k < i; k++) {
 				IExpr m = this.coeff(k).times(this.coeff(i - k));
 				c = c.plus(m);
 			}
 			IExpr b = c.times(d.times(F.CN1));
-			ps.append(b);
+			ps.setCoeff(i, b);
 		}
 		return ps;
-
-		// C d = leadingCoefficient().inverse(); // may fail
-		// if (i == 0) {
-		// return d;
-		// }
-		// C c = null; //fac.getZERO();
-		// for (int k = 0; k < i; k++) {
-		// C m = get(k).multiply(coefficient(i - k));
-		// if (c == null) {
-		// c = m;
-		// } else {
-		// c = c.sum(m);
-		// }
-		// }
-		// c = c.multiply(d.negate());
-		// return c;
-
-		// BiFunction<BiFunction, Integer, IExpr> g = (s, k) -> {
-		// if (bTable.containsKey(k)) {
-		// return bTable.get(k);
-		// }
-		// IExpr sum = F.C0;
-		// for (Integer n = 0; n < k; n++) {
-		// sum = sum.plus(this.getCoef(k - n).times((IExpr) s.apply(s, n)));
-		// }
-		// IExpr b = sum.times(a.times(F.CN1));
-		// bTable.put(k, b);
-		// return b;
-		// };
-		// Function<Integer, IExpr> h = k -> g.apply(g, k);
-		// return new ASTPowerSeries(h, bTable, -power, ring);
 	}
 
 	/** {@inheritDoc} */
@@ -644,90 +530,95 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 	}
 
 	public boolean isInvertible() {
-		return size() > 1 && !coeff(0).isZero();
+		return !coeff(0).isZero();
 	}
 
 	public boolean isProbableOne() {
-		if (size() > 1) {
-			if (!get(1).isOne()) {
+		if (!coeff(0).isOne()) {
+			return false;
+		}
+		for (int i = nMin; i < nMax; i++) {
+			if (!coeff(i).isZero()) {
 				return false;
 			}
-			for (int i = 2; i < size(); i++) {
-				if (!get(i).isZero()) {
-					return false;
-				}
-			}
-			// for (Map.Entry<Integer, IExpr> element : vals.entrySet()) {
-			// Integer key = element.getKey();
-			// if (key != 0) {
-			// if (!getCoef(key).isZero()) {
-			// return false;
-			// }
-			// }
-			// }
-			return true;
 		}
-		return false;
+		return true;
 	}
 
-	// @Override
-	// public IExpr get(int location) {
-	// IExpr val = vals.get(location);
-	// return val;
-	// }
-
 	public boolean isProbableZero() {
-		for (int i = 1; i < size(); i++) {
-			if (!get(i).isZero()) {
+		if (coefficientValues.size() == 0) {
+			return true;
+		}
+		for (int i = nMin; i < nMax; i++) {
+			if (!coeff(i).isZero()) {
 				return false;
 			}
 		}
-		// for (Map.Entry<Integer, IExpr> element : vals.entrySet()) {
-		// if (!getCoef(element.getKey()).isZero()) {
-		// return false;
-		// }
-		// }
 		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		if (hashValue == 0) {
+			hashValue = power * coefficientValues.hashCode();
+		}
+		return hashValue;
 	}
 
 	@Override
 	public ASTSeriesData negate() {
 		ASTSeriesData series = copy();
-		for (int i = 1; i < size(); i++) {
-			series.set(i, get(i).negate());
+		for (int i = nMin; i < nMax; i++) {
+			series.setCoeff(i, coeff(i).negate());
 		}
 		return series;
 	}
 
-	// @Override
-	// public int hashCode() {
-	// if (hashValue == 0) {
-	// hashValue = vals.hashCode();
-	// }
-	// return hashValue;
-	// }
-
-	private void normalize() {
-		int ord = order();
-		if (ord == Integer.MIN_VALUE) {
-			power = 0;
-		} else {
-			shift(-ord);
-			power = power - ord;
-		}
-	}
 	/**
-	 * Adds the objects in the specified collection to this {@code ArrayList}.
+	 * <pre>
+	 * series.normal()
+	 * </pre>
 	 * 
-	 * @param collection
-	 *            the collection of objects.
-	 * @return {@code true} if this {@code ArrayList} is modified, {@code false} otherwise.
+	 * <blockquote>
+	 * <p>
+	 * converts a <code>series</code> expression into a standard expression.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Normal(SeriesData(x, 0, {1, 0, -1, -4, -17, -88, -549}, -1, 6, 1))
+	 * 1/x-x-4*x^2-17*x^3-88*x^4-549*x^5
+	 * </pre>
+	 * 
+	 * @return the standard expression generated from this series <code>Plus(....)</code>.
 	 */
-	// @Override
-	// public boolean appendAll(Collection<? extends IExpr> collection) {
-	// hashValue = 0;
-	// throw new UnsupportedOperationException();
-	// }
+	public IExpr normal() {
+		IExpr x = getX();
+		IExpr x0 = getX0();
+		int nMin = getNMin();
+		int nMax = getNMax();
+		int denominator = getDenominator();
+		int size = nMax - nMin;
+		if (size < 4) {
+			size = 4;
+		}
+		IASTAppendable result = F.PlusAlloc(size);
+		for (int i = nMin; i < nMax; i++) {
+			IExpr expr = coeff(i);
+			if (!expr.isZero()) {
+				INumber exp;
+				if (denominator == 1) {
+					exp = F.ZZ(i);
+				} else {
+					exp = F.fraction(i, denominator).normalize();
+				}
+				IExpr pow = x.subtract(x0).power(exp);
+				result.append(F.Times(expr, pow));
+			}
+		}
+		return result;
+	}
 
 	/**
 	 * Order of a power series
@@ -736,12 +627,30 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 	 *         power series
 	 */
 	public int order() {
-		for (int i = 0; i < size(); i++) {
-			if (!get(i).isZero()) {
-				return nMin + i;
+		for (int i = nMin; i < nMax; i++) {
+			if (!coeff(i).isZero()) {
+				return i;
 			}
 		}
 		return Integer.MIN_VALUE;
+	}
+
+	@Override
+	public ASTSeriesData plus(IExpr b) {
+		if (b instanceof ASTSeriesData) {
+			return plusPS((ASTSeriesData) b);
+		}
+		if (b.isZero()) {
+			return this;
+		}
+		IExpr value = F.eval(coeff(0).plus(b));
+		ASTSeriesData series = copy();
+		if (value.isZero()) {
+			series.setZero(0);
+		} else {
+			series.setCoeff(0, value);
+		}
+		return series;
 	}
 
 	/**
@@ -759,28 +668,24 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 			minSize = b.nMin;
 		}
 		int maxSize = nMax;
-		if (nMax > b.nMax) {
+		if (nMax < b.nMax) {
 			maxSize = b.nMax;
 		}
-		int size = size();
-		if (size > b.size()) {
-			size = b.size();
+		int maxPower = power;
+		if (power > b.power) {
+			maxPower = b.power;
 		}
-		ASTSeriesData series = new ASTSeriesData(x, x0, minSize, maxSize, denominator);
-		int j = 1;
-		for (int i = 0; i < size - 1; i++) {
-			series.append(j++, this.coeff(minSize + i).plus(b.coeff(minSize + i)));
+		ASTSeriesData series = new ASTSeriesData(x, x0, minSize, maxPower, denominator);
+		for (int i = minSize; i < maxSize; i++) {
+			series.setCoeff(i, this.coeff(i).plus(b.coeff(i)));
 		}
 		return series;
 	}
 
 	public ASTSeriesData pow(final long n) {
 		if ((n == 0L)) {
-			ASTSeriesData series = new ASTSeriesData(x, x0, 0, nMax, denominator);
-			series.append(F.C1);
-			for (int i = 1; i < nMax; i++) {
-				series.append(F.C0);
-			}
+			ASTSeriesData series = new ASTSeriesData(x, x0, 0, power, denominator);
+			series.setCoeff(0, F.C1);
 			return series;
 		}
 
@@ -806,47 +711,19 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 		ASTSeriesData x = r;
 
 		while ((exp >>= 1) > 0L) {
-			x = x.times(x);
+			x = x.timesPS(x);
 			if ((exp & 1) != 0) {
-				r = r.times(x);
+				r = r.timesPS(x);
 			}
 		}
 
 		while (b2pow-- > 0L) {
-			r = r.times(r);
+			r = r.timesPS(r);
 		}
 		if (n < 0) {
 			return r.inverse();
 		}
 		return r;
-	}
-
-	@Override
-	public ASTSeriesData plus(IExpr b) {
-		if (b instanceof ASTSeriesData) {
-			return plusPS((ASTSeriesData) b);
-		}
-		if (b.isZero()) {
-			return this;
-		}
-		if (size() > 1) {
-			IExpr value = F.eval(coeff(0).plus(b));
-			if (value.isZero() && nMin > 0) {
-				return this;
-			}
-			ASTSeriesData series = copy();
-			if (nMin > 0) {
-				series.shift(nMin);
-				series.nMin = 0;
-			}
-			series.setCoeff(0, value);
-			return series;
-		} else {
-			ASTSeriesData series = copy();
-			series.append(b);
-			series.nMin = 0;
-			return series;
-		}
 	}
 
 	@Override
@@ -873,54 +750,51 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 		// }
 	}
 
+	@Override
+	public IExpr set(int location, IExpr object) {
+		throw new UnsupportedOperationException();
+	}
+
 	public void setCoeff(int k, IExpr value) {
-		// if (vals.containsKey(k))
-		// return vals.get(k);
-		// IExpr c = f.apply(k);
-		// vals.put(k, c);
-
-		// if (k < nMin) {
-		// if (value.isZero()) {
-		// return;
-		// }
-		// shift(nMin - k);
-		// }
-		set(k + 1, value);
-	}
-
-	public void setDenominator(int denominator) {
-		this.denominator = denominator;
-	}
-
-	public void setNMax(int nMax) {
-		this.nMax = nMax;
-	}
-
-	public void setNMin(int nMin) {
-		this.nMin = nMin;
-	}
-
-	public void setX(IExpr x) {
-		this.x = x;
-	}
-
-	public void setX0(IExpr x0) {
-		this.x0 = x0;
-	}
-
-	/**
-	 * Shifts the power series
-	 * 
-	 * @param s
-	 *            an integer
-	 * @return shifted series (to the right)
-	 */
-	private void shift(int s) {
-		nMin -= s;
-		ensureCapacity(size() + s);
-		for (int i = 0; i < s; i++) {
-			append(1, F.C0);
+		if (value.isZero() || k >= power) {
+			return;
 		}
+		coefficientValues.put(k, value);
+		if (k < nMin) {
+			nMin = k;
+		} else if (k >= nMax) {
+			nMax = k + 1;
+		}
+	}
+
+	public void setZero(int k) {
+		if (coefficientValues.containsKey(k)) {
+			coefficientValues.remove(k);
+			if (k == nMin) {
+				nMin = k + 1;
+			}
+			if (k == nMax) {
+				nMax = k - 1;
+			}
+		}
+	}
+
+	@Override
+	public ASTSeriesData subtract(IExpr b) {
+		if (b instanceof ASTSeriesData) {
+			return subtractPS((ASTSeriesData) b);
+		}
+		if (b.isZero()) {
+			return this;
+		}
+		IExpr value = F.eval(coeff(0).subtract(b));
+		ASTSeriesData series = copy();
+		if (value.isZero()) {
+			series.setZero(0);
+		} else {
+			series.setCoeff(0, value);
+		}
+		return series;
 	}
 
 	/**
@@ -938,75 +812,34 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 			minSize = b.nMin;
 		}
 		int maxSize = nMax;
-		if (nMax > b.nMax) {
+		if (nMax < b.nMax) {
 			maxSize = b.nMax;
 		}
-		int size = size();
-		if (size > b.size()) {
-			size = b.size();
+		int maxPower = power;
+		if (power > b.power) {
+			maxPower = b.power;
 		}
-		ASTSeriesData series = new ASTSeriesData(x, x0, minSize, maxSize, denominator);
-		int j = 1;
-		for (int i = 0; i < size - 1; i++) {
-			series.append(j++, this.coeff(minSize + i).subtract(b.coeff(minSize + i)));
+		ASTSeriesData series = new ASTSeriesData(x, x0, minSize, maxPower, denominator);
+		for (int i = minSize; i < maxSize; i++) {
+			series.setCoeff(i, this.coeff(i).subtract(b.coeff(i)));
 		}
 		return series;
 	}
 
+	/**
+	 * Multiply a power series with a scalar
+	 */
 	@Override
-	public ASTSeriesData subtract(IExpr b) {
+	public ASTSeriesData times(IExpr b) {
 		if (b instanceof ASTSeriesData) {
-			return subtractPS((ASTSeriesData) b);
+			return timesPS((ASTSeriesData) b);
 		}
-		if (b.isZero()) {
+		if (b.isOne()) {
 			return this;
 		}
-		if (size() > 1) {
-			IExpr value = F.eval(coeff(0).subtract(b));
-			if (value.isZero() && nMin > 0) {
-				return this;
-			}
-			ASTSeriesData series = copy();
-			if (nMin > 0) {
-				series.shift(nMin);
-				series.nMin = 0;
-			}
-			series.setCoeff(0, value);
-			return series;
-		} else {
-			ASTSeriesData series = copy();
-			series.append(b);
-			series.nMin = 0;
-			return series;
-		}
-	}
-
-	public ASTSeriesData compose(ASTSeriesData b) {
-		IExpr coeff0 = b.coeff(0);
-		if (!coeff0.equals(x0)) {
-			EvalEngine.get().printMessage("Constant " + coeff0.toString() + " of series " + this.toString() + //
-					" unequals point " + x0.toString() + " of series " + b.toString());
-			return null;
-		}
-		ASTSeriesData series = new ASTSeriesData(b.x, b.x0, 0, b.nMax, b.denominator);
-		int size = b.nMax;
-		for (int i = 0; i < size; i++) {
-			series.append(F.C0);
-		}
-		ASTSeriesData s;
-		ASTSeriesData x0Term;
-		if (x0.isZero()) {
-			x0Term = b;
-		} else {
-			x0Term = b.subtract(x0);
-		}
-		for (int n = nMin; n < nMax; n++) {
-			IExpr temp = coeff(n);
-			if (!temp.isZero()) {
-				s = x0Term.pow(n);
-				s = s.times(temp);
-				series = series.plusPS(s);
-			}
+		ASTSeriesData series = copy();
+		for (int i = nMin; i < nMax; i++) {
+			series.setCoeff(i, this.coeff(i).times(b));
 		}
 		return series;
 	}
@@ -1025,16 +858,19 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 		if (nMin > b.nMin) {
 			minSize = b.nMin;
 		}
-		int maxSize = nMax;
-		if (nMax < b.nMax) {
-			maxSize = b.nMax;
+		int newPower = power;
+		if (b.power < power) {
+			newPower = b.power;
 		}
-		ASTSeriesData series = new ASTSeriesData(x, x0, nMin + b.nMin, maxSize + minSize, denominator);
-		int size = series.nMax - series.nMin;
-		for (int i = 0; i < size; i++) {
-			series.append(F.C0);
+		if (b.power != power) {
+			newPower++;
 		}
-		for (int n = series.nMin; n < series.nMax; n++) {
+		ASTSeriesData series = new ASTSeriesData(x, x0, nMin + b.nMin, newPower + minSize, denominator);
+		int start = series.nMin;
+		for (int n = start; n <= nMax + b.nMax; n++) {
+			if (n - start >= series.power) {
+				continue;
+			}
 			IASTAppendable sum = F.PlusAlloc(n + 1);
 			for (int i = 0; i <= n; i++) {
 				sum.append(this.coeff(i).times(b.coeff(n - i)));
@@ -1043,36 +879,10 @@ public class ASTSeriesData extends AST implements Cloneable, Externalizable, Ran
 			if (value.isZero()) {
 				continue;
 			}
-			series.setCoeff(n - series.nMin, value);
+			series.setCoeff(n, value);
 		}
 		return series;
 	}
-
-	/**
-	 * Multiply a power series with a scalar
-	 */
-	@Override
-	public ASTSeriesData times(IExpr b) {
-		if (b instanceof ASTSeriesData) {
-			return timesPS((ASTSeriesData) b);
-		}
-		if (b.isOne()) {
-			return this;
-		}
-		ASTSeriesData series = copy();
-		for (int i = 1; i < size(); i++) {
-			series.set(i, this.get(i).times(b));
-		}
-		return series;
-	}
-
-	// public ASTSeriesData map(BiFunction<Integer, IExpr, IExpr> f) {
-	// ASTSeriesData series = copy();
-	// for (int i = 1; i < size(); i++) {
-	// series.set(i, f.apply(i+nMin-1, this.get(i)));
-	// }
-	// return series;
-	// }
 
 	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {

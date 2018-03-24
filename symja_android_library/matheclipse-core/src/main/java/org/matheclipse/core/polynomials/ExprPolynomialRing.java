@@ -428,6 +428,14 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 
 					if (expr.isFree(x, true)) {
 						times.append(expr);
+					} else if (expr.equals(x)) {
+						final IExpr exponent = F.C1;
+						if (mainExponent.isPresent()) {
+							restList.append(ast);
+							return coefficientMap;
+						} else {
+							mainExponent = exponent;
+						}
 					} else if (expr.isPower()) {
 						final IExpr base = expr.base();
 						final IExpr exponent = expr.exponent();
