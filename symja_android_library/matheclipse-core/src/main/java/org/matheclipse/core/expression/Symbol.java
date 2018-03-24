@@ -487,7 +487,7 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public int hashCode() {
-		return fSymbolName.hashCode();
+		return (fSymbolName == null) ? 31 : fSymbolName.hashCode();
 	}
 
 	/** {@inheritDoc} */

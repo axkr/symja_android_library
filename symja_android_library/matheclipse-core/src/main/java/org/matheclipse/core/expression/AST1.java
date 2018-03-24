@@ -223,7 +223,7 @@ public class AST1 extends AST0 {
 
 	@Override
 	public int hashCode() {
-		if (hashValue == 0) {
+		if (hashValue == 0 && arg1 != null) {
 			hashValue = 0x811c9dc5;// decimal 2166136261;
 			hashValue = (hashValue * 16777619) ^ (arg0.hashCode() & 0xff);
 			hashValue = (hashValue * 16777619) ^ (arg1.hashCode() & 0xff);

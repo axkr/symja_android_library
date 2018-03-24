@@ -222,7 +222,7 @@ public class Pattern extends Blank {
 
 	@Override
 	public int hashCode() {
-		return 19 + fSymbol.hashCode();
+		return (fSymbol == null) ? 19 : 19 + fSymbol.hashCode();
 	}
 
 	@Override

@@ -64,7 +64,10 @@ public class Context implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return contextName.hashCode();
+		if (contextName != null) {
+			return contextName.hashCode();
+		}
+		return 47;
 	}
 
 	public ISymbol put(String key, ISymbol value) {

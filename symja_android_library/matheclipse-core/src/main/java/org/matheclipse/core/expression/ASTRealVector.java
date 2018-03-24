@@ -362,7 +362,7 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 	public final String fullFormString() {
 		return fullFormString(F.List);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public IAST filter(IASTAppendable filterAST, IASTAppendable restAST, Predicate<? super IExpr> predicate) {
@@ -387,7 +387,7 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 
 	@Override
 	public int hashCode() {
-		if (hashValue == 0) {
+		if (hashValue == 0 && vector != null) {
 			hashValue = vector.hashCode();
 		}
 		return hashValue;

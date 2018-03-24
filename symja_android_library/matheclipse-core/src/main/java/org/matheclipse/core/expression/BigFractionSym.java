@@ -359,7 +359,7 @@ public class BigFractionSym extends AbstractFractionSym {
 
 	@Override
 	public int hashCode() {
-		if (fHashValue == 0) {
+		if (fHashValue == 0 && fFraction != null) {
 			fHashValue = fFraction.hashCode();
 		}
 		return fHashValue;
@@ -564,7 +564,7 @@ public class BigFractionSym extends AbstractFractionSym {
 		}
 		return defaultValue;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public long toLong() throws ArithmeticException {
