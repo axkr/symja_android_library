@@ -7,6 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
@@ -126,6 +127,13 @@ public class SerializableTest extends TestCase {
 		AbstractVisitor visitor = Share.createVisitor();
 		rulesData.accept(visitor);
 		equalsCopy(rulesData);
+	}
+
+	public void testPowerSeries() {
+		equalsCopy(new ASTSeriesData(F.x, F.a, F.List(F.C0, F.C1, F.C3), 0, 10, 1));
+		EvalEngine engine = EvalEngine.get();
+		IExpr result = engine.evaluate("Series(Log(x),{x,a,4})");
+		equalsCopy(result);
 	}
 
 	public void testNIL() {

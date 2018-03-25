@@ -12,9 +12,10 @@ import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
 
-public class ASTSeriesData extends AST0 implements Cloneable, Externalizable {
+public class ASTSeriesData extends AbstractAST implements Cloneable, Externalizable {
 
 	/**
 	 * A map of the truncated power series coefficients <code>value != 0</code>
@@ -24,7 +25,7 @@ public class ASTSeriesData extends AST0 implements Cloneable, Externalizable {
 	/**
 	 * The power of this series.
 	 */
-	private final int power;
+	private int power;
 
 	/**
 	 * The variable symbol of this series.
@@ -49,14 +50,28 @@ public class ASTSeriesData extends AST0 implements Cloneable, Externalizable {
 	/**
 	 * The denominator of this series
 	 */
-	private final int denominator;
+	private int denominator;
 
 	public ASTSeriesData() {
-		super(F.SeriesData);
+		super();
 		power = 0;
 		denominator = 1;
 		// When Externalizable objects are deserialized, they first need to be constructed by invoking the void
 		// constructor. Since this class does not have one, serialization and deserialization will fail at runtime.
+	}
+
+	public ASTSeriesData(IExpr x, IExpr x0, IAST coefficients, final int nMin, final int power, final int denominator) {
+		this(x, x0, nMin, nMin, power, denominator, new OpenIntToIExprHashMap());
+		int size = coefficients.size();
+		int order = power - 1;
+		int coeff;
+		for (int i = 0; i < size - 1; i++) {
+			coeff = nMin + i;
+			if (coeff > order) {
+				break;
+			}
+			setCoeff(coeff, coefficients.getAt(i + 1));
+		}
 	}
 
 	public ASTSeriesData(IExpr x, IExpr x0, int nMin, int power, int denominator) {
@@ -65,7 +80,7 @@ public class ASTSeriesData extends AST0 implements Cloneable, Externalizable {
 
 	private ASTSeriesData(IExpr x, IExpr x0, int nMin, int nMax, int power, int denominator,
 			OpenIntToIExprHashMap vals) {
-		super(F.SeriesData);
+		super();
 		this.coefficientValues = vals;
 		this.x = x;
 		this.x0 = x0;
@@ -86,7 +101,7 @@ public class ASTSeriesData extends AST0 implements Cloneable, Externalizable {
 	}
 
 	@Override
-	final public IExpr arg3() {
+	final public IAST arg3() {
 		int capacity = nMax - nMin;
 		if (capacity <= 0) {
 			capacity = 4;
@@ -99,13 +114,18 @@ public class ASTSeriesData extends AST0 implements Cloneable, Externalizable {
 	}
 
 	@Override
-	final public IExpr arg4() {
+	final public IInteger arg4() {
 		return F.ZZ(nMin);
 	}
 
 	@Override
-	final public IExpr arg5() {
+	final public IInteger arg5() {
 		return F.ZZ(power);
+	}
+
+	@Override
+	public int argSize() {
+		return 6;
 	}
 
 	@Override
@@ -350,7 +370,7 @@ public class ASTSeriesData extends AST0 implements Cloneable, Externalizable {
 		if (location >= 0 && location <= 7) {
 			switch (location) {
 			case 0:
-				return arg0;
+				return head();
 			case 1:
 				// x
 				return arg1();
@@ -408,6 +428,11 @@ public class ASTSeriesData extends AST0 implements Cloneable, Externalizable {
 			}
 		}
 		return hashValue;
+	}
+
+	@Override
+	public IExpr head() {
+		return F.SeriesData;
 	}
 
 	/** {@inheritDoc} */
@@ -834,26 +859,24 @@ public class ASTSeriesData extends AST0 implements Cloneable, Externalizable {
 
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
-		// this.fEvalFlags = objectInput.readShort();
-		//
-		// int size;
-		// byte attributeFlags = objectInput.readByte();
-		// if (attributeFlags != 0) {
-		// size = attributeFlags;
-		// int exprIDSize = objectInput.readByte();
-		// for (int i = 0; i < exprIDSize; i++) {
-		// set(i, F.GLOBAL_IDS[objectInput.readShort()]);
-		// }
-		// for (int i = exprIDSize; i < size; i++) {
-		// set(i, (IExpr) objectInput.readObject());
-		// }
-		// return;
-		// }
-		//
-		// size = objectInput.readInt();
-		// for (int i = 0; i < size; i++) {
-		// set(i, (IExpr) objectInput.readObject());
-		// }
+		this.fEvalFlags = objectInput.readShort();
+
+		int size = objectInput.readInt();
+		IExpr[] array = new IExpr[size];
+		for (int i = 0; i < size; i++) {
+			array[i] = (IExpr) objectInput.readObject();
+		}
+		x = array[1];
+		x0 = array[2];
+		nMin = array[4].toIntDefault(0);
+		power = array[5].toIntDefault(0);
+		denominator = array[6].toIntDefault(0);
+		coefficientValues = new OpenIntToIExprHashMap();
+		IAST list = (IAST) array[3];
+		int listSize = list.size();
+		for (int i = 1; i < listSize; i++) {
+			setCoeff(i+nMin-1, list.get(i));
+		}
 	}
 
 	@Override
@@ -996,54 +1019,30 @@ public class ASTSeriesData extends AST0 implements Cloneable, Externalizable {
 	}
 
 	@Override
+	public IExpr[] toArray() {
+		IExpr[] result = new IExpr[7];
+		result[0] = head();
+		result[1] = arg1();
+		result[2] = arg2();
+		result[3] = arg3();
+		result[4] = arg4();
+		result[5] = arg5();
+		result[6] = get(6);
+		return result;
+	}
+
+	@Override
 	public void writeExternal(ObjectOutput objectOutput) throws IOException {
-		// objectOutput.writeShort(fEvalFlags);
-		//
-		// int size = size();
-		// byte attributeFlags = (byte) 0;
-		//
-		// ExprID temp = F.GLOBAL_IDS_MAP.get(head());
-		// if (temp != null) {
-		// short exprID = temp.getExprID();
-		// if (exprID <= Short.MAX_VALUE) {
-		// int exprIDSize = 1;
-		// short[] exprIDArray = new short[size];
-		// exprIDArray[0] = exprID;
-		// for (int i = 1; i < size; i++) {
-		// temp = F.GLOBAL_IDS_MAP.get(get(i));
-		// if (temp == null) {
-		// break;
-		// }
-		// exprID = temp.getExprID();
-		// if (exprID <= Short.MAX_VALUE) {
-		// exprIDArray[i] = exprID;
-		// exprIDSize++;
-		// } else {
-		// break;
-		// }
-		// }
-		// // optimized path
-		// attributeFlags = (byte) size;
-		// objectOutput.writeByte(attributeFlags);
-		// objectOutput.writeByte((byte) exprIDSize);
-		// for (int i = 0; i < exprIDSize; i++) {
-		// objectOutput.writeShort(exprIDArray[i]);
-		// }
-		// for (int i = exprIDSize; i < size; i++) {
-		// objectOutput.writeObject(get(i));
-		// }
-		// return;
-		// }
-		// }
-		//
-		// objectOutput.writeByte(attributeFlags);
-		// objectOutput.writeInt(size);
-		// for (int i = 0; i < size; i++) {
-		// objectOutput.writeObject(get(i));
-		// }
+		objectOutput.writeShort(fEvalFlags);
+		int size = size();
+		objectOutput.writeInt(size);
+		for (int i = 0; i < size; i++) {
+			objectOutput.writeObject(get(i));
+		}
 	}
 
 	private Object writeReplace() throws ObjectStreamException {
 		return optional(F.GLOBAL_IDS_MAP.get(this));
 	}
+
 }

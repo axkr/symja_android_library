@@ -1113,10 +1113,11 @@ public class SeriesFunctions {
 				}
 				IExpr x = ast.arg1();
 				IExpr x0 = ast.arg2();
-				IExpr coefficients = ast.arg3();
-				if (coefficients.isVector() < 0) {
+
+				if (ast.arg3().isVector() < 0) {
 					return F.NIL;
 				}
+				IAST coefficients = (IAST) ast.arg3();
 				final int nMin = ast.arg4().toIntDefault(Integer.MIN_VALUE);
 				if (nMin == Integer.MIN_VALUE) {
 					return F.NIL;
@@ -1129,18 +1130,7 @@ public class SeriesFunctions {
 				if (denominator == Integer.MIN_VALUE) {
 					return F.NIL;
 				}
-				ASTSeriesData ps = new ASTSeriesData(x, x0, nMin, power, denominator);
-				int size = coefficients.size();
-				int order = power - 1;
-				int coeff;
-				for (int i = 0; i < size - 1; i++) {
-					coeff = nMin + i;
-					if (coeff > order) {
-						break;
-					}
-					ps.setCoeff(coeff, coefficients.getAt(i + 1));
-				}
-				return ps;
+				return new ASTSeriesData(x, x0, coefficients, nMin, power, denominator);
 			}
 			return F.NIL;
 		}
