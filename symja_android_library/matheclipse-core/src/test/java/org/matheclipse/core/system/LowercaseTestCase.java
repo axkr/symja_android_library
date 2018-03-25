@@ -2158,6 +2158,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Cases({1, 1, -5, EulerGamma, r, I, 0, Pi, 1/2}, Except(_Integer))", "{EulerGamma,r,I,Pi,1/2}");
 	}
 
+	public void testExists() {
+		check("Exists(a, f(b)>c)", "f(b)>c"); 
+	}
+	
 	public void testExp() {
 		check("Exp(42+Log(a)+Log(b))", "a*b*E^42");
 		check("Exp(1)", "E");
@@ -2731,6 +2735,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("For($t = 1; $k = 1, $k <= 5, $k++, $t *= $k; Print($t); If($k < 2, Continue()); $t += 2)", "");
 	}
 
+	public void testForAll() {
+		check("ForAll(a, f(b)>c)", "f(b)>c"); 
+	}
+	
 	public void testFourierMatrix() {
 		check("FourierMatrix(4)", //
 				"{{1/2,1/2,1/2,1/2},\n" + " {1/2,I*1/2,-1/2,-I*1/2},\n" + " {1/2,-1/2,1/2,-1/2},\n"
@@ -3151,7 +3159,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testImplies() {
-
+		check("Implies(!a,!a)", "True");
 		check("Implies(False, a)", "True");
 		check("Implies(True, a)", "a");
 		check("Implies(a,Implies(b,Implies(True,c)))", "Implies(a,Implies(b,c))");
@@ -4403,11 +4411,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testNand() {
 		check("Nand( )", "False");
+		check("Nand(a)", "!a");
 		check("Nand(2+2)", "!4");
 		check("Nand(x,y,z)", "Nand(x,y,z)");
 		check("Nand(x,True,z)", "Nand(x,z)");
 		check("Nand(x,False,z)", "True");
 		check("Nand(True,False)", "True");
+		check("Nand(False, True)", "True");
 		check("Nand(Print(1); False, Print(2); True)", "True");
 		check("Nand(Print(1); True, Print(2); True)", "False");
 	}
@@ -4807,6 +4817,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Nor(x,y,z)", "Nor(x,y,z)");
 		check("Nor(x,True,z)", "False");
 		check("Nor(x,False,z)", "Nor(x,z)");
+		check("BooleanConvert(Nor(p, q, r))", "!p&&!q&&!r");
+		check("BooleanConvert(! Nor(p, q, r))", "p||q||r");
 	}
 
 	public void testNorm() {
@@ -4869,6 +4881,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Not(a>b)", "a<=b");
 		check("Not(a>=b)", "a<b");
 		check("Not(a==b)", "a!=b");
+		check("Not(x>1)", "x<=1");
+		check("!Exists(x, f(x))", "ForAll(x,!f(x))");
+		check("!ForAll(x, f(x))", "Exists(x,!f(x))");
 	}
 
 	public void testNSolve() {

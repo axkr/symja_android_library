@@ -3155,6 +3155,14 @@ public class F {
 		return unaryAST1(EvenQ, a);
 	}
 
+	public static IAST Exists(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Exists, a0, a1);
+	}
+	
+	public static IAST Exists(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(Exists, a0, a1, a2);
+	}
+	
 	public static IAST EulerE(final IExpr a0) {
 		return unaryAST1(EulerE, a0);
 	}
@@ -3303,7 +3311,15 @@ public class F {
 	public static IAST Floor(final IExpr a0) {
 		return unaryAST1(Floor, a0);
 	}
-
+	
+	public static IAST ForAll(final IExpr a0, final IExpr a1) {
+		return binaryAST2(ForAll, a0, a1);
+	}
+	
+	public static IAST ForAll(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(ForAll, a0, a1, a2);
+	}
+	
 	/**
 	 * Create a "fractional" number
 	 * 

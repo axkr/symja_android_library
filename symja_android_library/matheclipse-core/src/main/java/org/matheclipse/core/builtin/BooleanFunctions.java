@@ -59,6 +59,8 @@ public final class BooleanFunctions {
 		F.BooleanVariables.setEvaluator(new BooleanVariables());
 		F.Equal.setEvaluator(CONST_EQUAL);
 		F.Equivalent.setEvaluator(new Equivalent());
+		F.Exists.setEvaluator(new Exists());
+		F.ForAll.setEvaluator(new ForAll());
 		F.Greater.setEvaluator(CONST_GREATER);
 		F.GreaterEqual.setEvaluator(new GreaterEqual());
 		F.Implies.setEvaluator(new Implies());
@@ -843,6 +845,104 @@ public final class BooleanFunctions {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.ORDERLESS);
+		}
+	}
+
+	private final static class Exists extends AbstractCoreFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 3, 4);
+
+			boolean evaled = false;
+			// TODO localize x
+			IExpr x = engine.evaluateNull(ast.arg1());
+			if (x.isPresent()) {
+				evaled = true;
+			} else {
+				x = ast.arg1();
+			}
+
+			IExpr expr = engine.evaluateNull(ast.arg2());
+			if (expr.isPresent()) {
+				evaled = true;
+			} else {
+				expr = ast.arg2();
+			}
+
+			if (ast.isAST3()) {
+				IExpr arg3 = engine.evaluateNull(ast.arg3());
+				if (arg3.isPresent()) {
+					evaled = true;
+				} else {
+					arg3 = ast.arg3();
+				}
+				if (evaled) {
+					return F.Exists(x, expr, arg3);
+				}
+				return F.NIL;
+			}
+
+			if (expr.isFree(x)) {
+				return expr;
+			}
+			if (evaled) {
+				return F.Exists(x, expr);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	private final static class ForAll extends AbstractCoreFunctionEvaluator {
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 3, 4);
+
+			boolean evaled = false;
+			// TODO localize x
+			IExpr x = engine.evaluateNull(ast.arg1());
+			if (x.isPresent()) {
+				evaled = true;
+			} else {
+				x = ast.arg1();
+			}
+
+			IExpr expr = engine.evaluateNull(ast.arg2());
+			if (expr.isPresent()) {
+				evaled = true;
+			} else {
+				expr = ast.arg2();
+			}
+
+			if (ast.isAST3()) {
+				IExpr arg3 = engine.evaluateNull(ast.arg3());
+				if (arg3.isPresent()) {
+					evaled = true;
+				} else {
+					arg3 = ast.arg3();
+				}
+				if (evaled) {
+					return F.ForAll(x, expr, arg3);
+				}
+				return F.NIL;
+			}
+
+			if (expr.isFree(x)) {
+				return expr;
+			}
+			if (evaled) {
+				return F.ForAll(x, expr);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
 		}
 	}
 
@@ -1920,7 +2020,11 @@ public final class BooleanFunctions {
 				}
 				if (temp.isAST2()) {
 					IExpr head = temp.head();
-					if (head.equals(F.Equal)) {
+					if (head.equals(F.Exists)) {
+						return F.ForAll(temp.first(), F.Not(temp.second()));
+					} else if (head.equals(F.ForAll)) {
+						return F.Exists(temp.first(), F.Not(temp.second()));
+					} else if (head.equals(F.Equal)) {
 						return temp.apply(F.Unequal);
 					} else if (head.equals(F.Unequal)) {
 						return temp.apply(F.Equal);
