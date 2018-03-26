@@ -45,7 +45,39 @@ import edu.jas.poly.GenPolynomial;
 import edu.jas.poly.Monomial;
 
 /**
- * Integration of a function. See <a href="http://en.wikipedia.org/wiki/Integral">Integral</a>
+ * <pre>
+ * Integrate(f, x)
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * integrates <code>f</code> with respect to <code>x</code>. The result does not contain the additive integration
+ * constant.
+ * </p>
+ * </blockquote>
+ * 
+ * <pre>
+ * Integrate(f, {x,a,b})
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * computes the definite integral of <code>f</code> with respect to <code>x</code> from <code>a</code> to
+ * <code>b</code>.
+ * </p>
+ * </blockquote>
+ * <p>
+ * See: <a href="https://en.wikipedia.org/wiki/Integral">Wikipedia: Integral</a>
+ * </p>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; Integrate(x^2, x)
+ * x^3/3
+ * 
+ * &gt;&gt; Integrate(Tan(x) ^ 5, x)
+ * -Log(Cos(x))-Tan(x)^2/2+Tan(x)^4/4
+ * </pre>
  */
 public class Integrate extends AbstractFunctionEvaluator {
 	/**
