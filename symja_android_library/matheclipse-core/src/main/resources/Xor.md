@@ -6,6 +6,8 @@ Xor(arg1, arg2, ...)
 
 > Logical XOR (exclusive OR) function. Returns `True` if an odd number of the arguments are `True` and the rest are `False`. Returns `False` if an even number of the arguments are `True` and the rest are `False`.
 	
+See: [Wikipedia: Exclusive or](https://en.wikipedia.org/wiki/Exclusive_or)
+
 ### Examples
 
 ```

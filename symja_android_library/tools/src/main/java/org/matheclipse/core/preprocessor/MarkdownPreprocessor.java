@@ -5,7 +5,7 @@ import java.io.File;
 import org.matheclipse.core.expression.F;
 
 /**
- * Generate markdown links for Symja function reference.
+ * Generate markdown links for Symja function reference in file index.md
  */
 public class MarkdownPreprocessor {
 
