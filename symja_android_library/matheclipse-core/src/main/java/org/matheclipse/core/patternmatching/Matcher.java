@@ -216,7 +216,14 @@ public class Matcher implements Function<IExpr, IExpr> {
 	private EvalEngine engine;
 
 	/**
-	 * The constructor
+	 * The Matcher constructor
+	 */
+	public Matcher() {
+		this(EvalEngine.get());
+	}
+
+	/**
+	 * The Matcher constructor
 	 */
 	public Matcher(EvalEngine engine) {
 		this.rules = new RulesData(Context.SYSTEM);
@@ -228,8 +235,8 @@ public class Matcher implements Function<IExpr, IExpr> {
 	 *
 	 * @param expression
 	 *            the object to be matched
-	 * @return a computation result done by an accepted rule during pattern matching
-	 *         process
+	 * @return a computation result done by an accepted rule during pattern matching process or <code>F.NIL</code> if no
+	 *         evaluation was possible
 	 */
 	@Override
 	public IExpr apply(IExpr expression) {
@@ -237,8 +244,8 @@ public class Matcher implements Function<IExpr, IExpr> {
 	}
 
 	/**
-	 * If this rule matches the evaluation will return <code>F.True</code> or
-	 * <code>F.False</code> depending on the <code>predicates</code> result.
+	 * If this rule matches the evaluation will return <code>F.True</code> or <code>F.False</code> depending on the
+	 * <code>predicates</code> result.
 	 * 
 	 * @param patternMatchingRule
 	 * @param predicate
@@ -248,8 +255,8 @@ public class Matcher implements Function<IExpr, IExpr> {
 	}
 
 	/**
-	 * If this rule matches the evaluation will return <code>F.True</code> or
-	 * <code>F.False</code> depending on the <code>predicates</code> result.
+	 * If this rule matches the evaluation will return <code>F.True</code> or <code>F.False</code> depending on the
+	 * <code>predicates</code> result.
 	 * 
 	 * @param patternMatchingRule
 	 * @param predicate
@@ -259,8 +266,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 	}
 
 	/**
-	 * If this rule matches the evaluation will return the result of the
-	 * <code>method.eval()</code> method.
+	 * If this rule matches the evaluation will return the result of the <code>method.eval()</code> method.
 	 * 
 	 * @param patternMatchingRule
 	 * @param method
@@ -270,8 +276,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 	}
 
 	/**
-	 * If this rule matches the evaluation will return the result of the
-	 * <code>function.apply()</code> method.
+	 * If this rule matches the evaluation will return the result of the <code>function.apply()</code> method.
 	 * 
 	 * @param patternMatchingRule
 	 * @param function
@@ -281,8 +286,7 @@ public class Matcher implements Function<IExpr, IExpr> {
 	}
 
 	/**
-	 * If this rule matches the evaluation will return the result of the
-	 * <code>function.apply()</code> method.
+	 * If this rule matches the evaluation will return the result of the <code>function.apply()</code> method.
 	 * 
 	 * @param patternMatchingRule
 	 * @param function
@@ -297,8 +301,8 @@ public class Matcher implements Function<IExpr, IExpr> {
 	 * @param patternMatchingRule
 	 *            the pattern-matching rule
 	 * @param resultExpr
-	 *            the result expression which should be returned if the
-	 *            pattern-matching rule matches an expression in the apply method.
+	 *            the result expression which should be returned if the pattern-matching rule matches an expression in
+	 *            the apply method.
 	 * @return a
 	 */
 	public void caseOf(final IExpr patternMatchingRule, final IExpr resultExpr) {
@@ -310,8 +314,8 @@ public class Matcher implements Function<IExpr, IExpr> {
 	}
 
 	/**
-	 * Replace all (sub-) expressions with the given rule set. If no substitution
-	 * matches, the method returns the given <code>expression</code>.
+	 * Replace all (sub-) expressions with the given rule set. If no substitution matches, the method returns the given
+	 * <code>expression</code>.
 	 * 
 	 * @param expression
 	 * @return <code>F.NIL</code> if no rule of the rule set matched an expression.

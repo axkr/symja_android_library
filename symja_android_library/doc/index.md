@@ -171,6 +171,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Control statements](control-statements.md)
 * [Scoping](scoping.md)
 * [Expression types](expression-types.md)
+* [Programming in Java](classhierarchy.md)
 
 ## Reference of built-in symbols
 
