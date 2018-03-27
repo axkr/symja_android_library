@@ -1179,6 +1179,11 @@ public class F {
 	public static IAST CComplexInfinity;
 
 	/**
+	 * Represents <code>-Pi/2</code> as Symja expression <code>Times(CN1D2, Pi)</code>
+	 */
+	public static IAST CNPiHalf;
+	
+	/**
 	 * Represents <code>Pi/2</code> as Symja expression <code>Times(C1D2, Pi)</code>
 	 */
 	public static IAST CPiHalf;
@@ -1389,6 +1394,7 @@ public class F {
 			CNIInfinity = unaryAST1(DirectedInfinity, CNI);
 			CComplexInfinity = headAST0(DirectedInfinity);
 
+			CNPiHalf = binaryAST2(Times, CN1D2, Pi);
 			CPiHalf = binaryAST2(Times, C1D2, Pi);
 
 			CSqrt2 = binaryAST2(Power, C2, C1D2);

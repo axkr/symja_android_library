@@ -312,6 +312,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArcTan() {
+		check("ArcTan(a, -a)", "(-(-a+2*Sqrt(a^2))*Pi)/(4*a)");
+		check("ArcTan(-a, a)", "((a+2*Sqrt(a^2))*Pi)/(4*a)");
+		check("ArcTan(a, a)", "((-a+2*Sqrt(a^2))*Pi)/(4*a)");
 		check("2*ArcTan(x)+4*ArcCot(x)", "Pi+2*ArcCot(x)");
 		check("7*ArcTan(x)+3*ArcCot(x)", "3/2*Pi+4*ArcTan(x)");
 		check("ArcTan(x)+ArcCot(x)", "Pi/2");
@@ -330,10 +333,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ArcTan(-1, -1)", "-3/4*Pi");
 
 		check("ArcTan(1, 0)", "0");
+		check("ArcTan(17, 0)", "0");
 		check("ArcTan(-1, 0)", "Pi");
 		check("ArcTan(0, 1)", "Pi/2");
 		check("ArcTan(0, -1)", "-Pi/2");
-
+		check("arctan(Infinity,y)", "0");
+		check("arctan(-Infinity,y)", "Pi*(-1+2*UnitStep(Re(y)))");
+		
 		check("Abs( ArcTan(ComplexInfinity) )", "Pi/2");
 		check("arctan(infinity)", "Pi/2");
 		check("arctan(1)", "Pi/4");
@@ -6819,6 +6825,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSec() {
+		check("Sec(Pi/2+Pi*n)", "-Csc(n*Pi)");
 		check("Sec(0)", "1");
 		check("Sec(1)", "Sec(1)");
 		checkNumeric("Sec(1.)", "1.8508157176809255");
@@ -7839,9 +7846,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTan() {
+		check("Tan(Pi/2+Pi*n)", "-Cot(n*Pi)");
 		check("Tan(ArcSin(x))", "x/Sqrt(1-x^2)");
 		check("Tan(ArcCos(x))", "Sqrt(1-x^2)/x");
-
+		check("Tan(ArcTan(x))", "x");
+		
 		check("Tan(0)", "0");
 		check("Tan(Pi / 2)", "ComplexInfinity");
 		checkNumeric("Tan(0.5*Pi)", "1.633123935319537E16");

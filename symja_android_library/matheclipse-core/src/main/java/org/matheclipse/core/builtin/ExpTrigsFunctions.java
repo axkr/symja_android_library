@@ -812,22 +812,22 @@ public class ExpTrigsFunctions {
 					return F.Indeterminate;
 				}
 				if (y.isPositive()) {
-					return F.Times(F.C1D2, F.Pi);
+					return F.CPiHalf;
 				}
-				return F.Times(F.CN1D2, F.Pi);
+				return F.CNPiHalf;
 			}
 			if (y.isZero() && x.isSignedNumber() && !x.isZero()) {
-				return F.Times(F.Subtract(F.C1, F.UnitStep(x)), F.Pi);
+				return F.Times(F.Subtract(F.C1, x.unitStep()), F.Pi);
 			}
-			if (x.isNumber() && y.isSignedNumber()) {
+			IExpr yUnitStep = y.unitStep();
+			if (x.isNumber() && yUnitStep.isInteger()) {
 				if (((INumber) x).re().isNegative()) {
 					return F.Plus(F.ArcTan(F.Divide(y, x)),
-							F.Times(F.Subtract(F.Times(F.C2, F.UnitStep(y)), F.C1), F.Pi));
+							F.Times(F.Subtract(F.Times(F.C2, yUnitStep), F.C1), F.Pi));
 				}
 				IExpr argX = x.complexArg();
 				// -Pi/2 < Arg(x) <= Pi/2
-				if (argX.isPresent() && F.evalTrue(
-						F.And(F.Less(F.Times(F.CN1D2, F.Pi), argX), F.LessEqual(argX, F.Times(F.C1D2, F.Pi))))) {
+				if (argX.isPresent() && F.evalTrue(F.And(F.Less(F.CNPiHalf, argX), F.LessEqual(argX, F.CPiHalf)))) {
 					return F.ArcTan(F.Divide(y, x));
 				}
 			}
@@ -1968,13 +1968,14 @@ public class ExpTrigsFunctions {
 
 			}
 			if (arg1.isInterval1()) {
-//				return evalInterval(arg1);
+				// return evalInterval(arg1);
 			}
 			return F.NIL;
 		}
 
 		/**
 		 * TODO: wrong results
+		 * 
 		 * @param arg1
 		 *            is assumed to be an interval
 		 * @return
@@ -2013,19 +2014,19 @@ public class ExpTrigsFunctions {
 					}
 				} else {
 					// diff > Math.PI
-//					if (ldSin <= udSin) {
-//						if (ldSin > 0) {
-//							if (udSin > 0) {
-//								return F.Interval(F.CN1, F.Sin(u));
-//							}
-//						}
-//					} else {
-//						if (ldSin > 0) {
-//							if (udSin > 0) {
-//								return F.Interval(F.CN1, F.Sin(l));
-//							}
-//						}
-//					}
+					// if (ldSin <= udSin) {
+					// if (ldSin > 0) {
+					// if (udSin > 0) {
+					// return F.Interval(F.CN1, F.Sin(u));
+					// }
+					// }
+					// } else {
+					// if (ldSin > 0) {
+					// if (udSin > 0) {
+					// return F.Interval(F.CN1, F.Sin(l));
+					// }
+					// }
+					// }
 				}
 			}
 			return F.NIL;

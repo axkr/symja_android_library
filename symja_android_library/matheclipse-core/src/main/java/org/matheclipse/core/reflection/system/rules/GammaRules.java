@@ -77,8 +77,17 @@ public interface GammaRules {
     // Gamma(a_,z_,Infinity):=Gamma(a,z)
     ISetDelayed(Gamma(a_,z_,oo),
       Gamma(a,z)),
+    // Gamma(a_,Infinity,z_):=-Gamma(a,z)
+    ISetDelayed(Gamma(a_,oo,z_),
+      Negate(Gamma(a,z))),
+    // Gamma(a_,0,Infinity):=Gamma(a)/;Re(a)>0
+    ISetDelayed(Gamma(a_,C0,oo),
+      Condition(Gamma(a),Greater(Re(a),C0))),
     // Gamma(a_,0,z_):=Gamma(a)-Gamma(a,z)/;Re(a)>0
     ISetDelayed(Gamma(a_,C0,z_),
-      Condition(Plus(Gamma(a),Negate(Gamma(a,z))),Greater(Re(a),C0)))
+      Condition(Plus(Gamma(a),Negate(Gamma(a,z))),Greater(Re(a),C0))),
+    // Gamma(a_,x_,y_):=Gamma(a,x)-Gamma(a,y)
+    ISetDelayed(Gamma(a_,x_,y_),
+      Plus(Gamma(a,x),Negate(Gamma(a,y))))
   );
 }

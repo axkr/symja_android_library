@@ -18,7 +18,8 @@
  ArcTan(-Infinity)=-Pi/2,
  ArcTan(I*Infinity)=Pi/2,
  ArcTan(-I*Infinity)=-Pi/2,
- 
+ ArcTan(x_, y_) := (Pi*(2*Sqrt(x^2) - x))/(4*y) 
+   /; x^2 == y^2,
  ArcTan(x_?RealNumberQ, y_?RealNumberQ) :=  
    If(x == 0, If(y == 0, Indeterminate, If(y > 0, Pi/2, -Pi/2)), If(x > 0,
         ArcTan(y/x), If(y >= 0, ArcTan(y/x) + Pi, ArcTan(y/x) - Pi)))

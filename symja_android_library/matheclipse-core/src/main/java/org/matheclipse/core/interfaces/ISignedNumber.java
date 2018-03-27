@@ -176,6 +176,10 @@ public interface ISignedNumber extends INumber {
 	 */
 	public long toLong() throws ArithmeticException;
 
+	default public IExpr unitStep() {
+		return isNegative() ? F.C0 : F.C1;
+	}
+
 	/**
 	 * If this is a <code>Interval[{lower, upper}]</code> expression return the <code>upper</code> value. If this is a
 	 * <code>ISignedNUmber</code> expression return <code>this</code>.

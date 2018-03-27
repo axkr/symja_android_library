@@ -12,7 +12,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.hipparchus.Field;
@@ -126,7 +125,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public final static int PATTERNID = 1024;
 
 	public final static int SERIESID = 64;
-	
+
 	public final static int STRINGID = 128;
 
 	public final static int SYMBOLID = 256;
@@ -3185,6 +3184,22 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default public IExpr unequalTo(IExpr that) {
 		COMPARE_TERNARY temp = BooleanFunctions.CONST_EQUAL.compareTernary(this, that);
 		return ExprUtil.convertToExpr(temp);
+	}
+
+	/**
+	 * Return <code>0</code> if this is less than <code>0</code>. Return <code>1</code> if this is greater equal than
+	 * <code>0</code>. Return <code>F.UnitStep(this)</code> for all other cases.
+	 * 
+	 * @return
+	 */
+	default public IExpr unitStep() {
+		if (isNegativeResult()) {
+			return F.C0;
+		}
+		if (isNonNegativeResult()) {
+			return F.C1;
+		}
+		return F.UnitStep(this);
 	}
 
 	/**
