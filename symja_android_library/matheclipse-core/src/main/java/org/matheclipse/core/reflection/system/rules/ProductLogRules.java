@@ -13,7 +13,7 @@ public interface ProductLogRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 11, 1 };
+  final public static int[] SIZES = { 11, 0 };
 
   final public static IAST RULES = List(
     IInit(ProductLog, SIZES),
@@ -52,12 +52,6 @@ public interface ProductLogRules {
       oo),
     // ProductLog(x_)*E^ProductLog(x_):=x
     ISetDelayed(Times(Power(E,ProductLog(x_)),ProductLog(x_)),
-      x),
-    // ProductLog(0,x_):=ProductLog(x)
-    ISetDelayed(ProductLog(C0,x_),
-      ProductLog(x)),
-    // ProductLog(n_NumberQ,0):=-Infinity/;n!=0
-    ISetDelayed(ProductLog($p(n,NumberQ),C0),
-      Condition(Negate(oo),Unequal(n,C0)))
+      x)
   );
 }

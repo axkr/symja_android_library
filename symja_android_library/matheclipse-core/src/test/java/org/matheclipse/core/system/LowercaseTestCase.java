@@ -5901,6 +5901,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testProductLog() {
+		check("ProductLog(-1, -(Pi/2))", "-I*1/2*Pi");
+		check("ProductLog(-1, -(1/E))", "-1");
+		check("Refine(ProductLog(k, 0), k>1)", "-Infinity");
+		
 		check("ProductLog(2.5 + 2*I)", "1.05616796894863+I*3.5256052020787e-1");
 
 		check("z == ProductLog(z) * E ^ ProductLog(z)", "True");

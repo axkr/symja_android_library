@@ -299,7 +299,7 @@ public class SpecialFunctions {
 			if (ast.isAST3()) {
 				return F.Subtract(F.GammaRegularized(a, z), F.GammaRegularized(a, ast.arg3()));
 			}
-			
+
 			if (a.isZero()) {
 				return F.C0;
 			} else if (a.equals(F.C1D2)) {
@@ -615,6 +615,35 @@ public class SpecialFunctions {
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 			super.setUp(newSymbol);
+		}
+
+		@Override
+		public IExpr e2ObjArg(IExpr k, IExpr z) {
+			// ProductLog(0,z_) := ProductLog(z)
+			if (k.isZero()) {
+				return F.ProductLog(z);
+			}
+			if (k.isMinusOne()) {
+				if (z.equals(F.CNPiHalf)) {
+					// ProductLog(-1, -(Pi/2)) := -((I*Pi)/2)
+					return F.Times(F.CC(0L, 1L, -1L, 2L), F.Pi);
+				}
+				// ProductLog(-1, -(1/E)) := -1
+				if (z.equals(F.Negate(F.Power(F.E, -1)))) {
+					return F.CN1;
+				}
+			}
+			if (z.isZero()) {
+				// ProductLog(k_NumberQ,0) := -Infinity/;k!=0
+				if (k.isNumber() && !k.isZero()) {
+					return F.CNInfinity;
+				}
+				if (k.isNegativeResult() || k.isPositiveResult()) {
+					return F.CNInfinity;
+				}
+			}
+
+			return super.e2ObjArg(k, z);
 		}
 
 	}
