@@ -8032,6 +8032,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Times()", "1");
 		// OutputForm: I*Infinity is DirectedInfinity[I]
 		check("I*Infinity", "I*Infinity");
+		
+		
+		check("Gamma(a)*Gamma(1-a)", "Pi*Csc(a*Pi)");
+		check("Gamma(a)^3*Gamma(1-a)^3", "Pi^3*Csc(a*Pi)^3");
+		check("Gamma(a)^3*Gamma(1-a)^2", "Pi^2*Csc(a*Pi)^2*Gamma(a)");
 	}
 
 	public void testTimesBy() {

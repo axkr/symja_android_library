@@ -635,10 +635,7 @@ public class SpecialFunctions {
 			}
 			if (z.isZero()) {
 				// ProductLog(k_NumberQ,0) := -Infinity/;k!=0
-				if (k.isNumber() && !k.isZero()) {
-					return F.CNInfinity;
-				}
-				if (k.isNegativeResult() || k.isPositiveResult()) {
+				if (k.isNonZeroComplexResult()) {
 					return F.CNInfinity;
 				}
 			}

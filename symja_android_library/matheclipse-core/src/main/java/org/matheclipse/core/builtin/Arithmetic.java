@@ -4426,25 +4426,58 @@ public final class Arithmetic {
 			newSymbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.LISTABLE
 					| ISymbol.NUMERICFUNCTION);
 
-			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesLog(Log(x_), Log(y_), F.Null));
+			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesLog(//
+					Log(x_), //
+					Log(y_)));
 
 			// Sin(x)*Cot(x) -> Cos(x)
-			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(F.Sin(x_), F.Cot(x_), F.Cos(x)));
+			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(//
+					F.Sin(x_), //
+					F.Cot(x_), //
+					F.Cos(x)));
 			// Sin(x)*Csc(x) -> 1
-			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(F.Sin(x_), F.Csc(x_), F.C1));
+			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(//
+					F.Sin(x_), //
+					F.Csc(x_), //
+					F.C1));
 
-			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(F.Tan(x_), F.Cot(x_), F.C1));
-			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(F.Cos(x_), F.Sec(x_), F.C1));
-			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(F.Cos(x_), F.Tan(x_), F.Sin(x)));
-			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(F.Csc(x_), F.Tan(x_), F.Sec(x)));
-			ORDERLESS_MATCHER
-					.defineHashRule(new HashedPatternRulesTimes(F.ProductLog(x_), F.Power(F.E, F.ProductLog(x_)), x));
+			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(//
+					F.Tan(x_), //
+					F.Cot(x_), //
+					F.C1));
+			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(//
+					F.Cos(x_), //
+					F.Sec(x_), //
+					F.C1));
+			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(//
+					F.Cos(x_), //
+					F.Tan(x_), //
+					F.Sin(x)));
+			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(//
+					F.Csc(x_), //
+					F.Tan(x_), //
+					F.Sec(x)));
+			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(//
+					F.ProductLog(x_), //
+					F.Power(F.E, F.ProductLog(x_)), //
+					x));
+			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(//
+					F.Gamma(x_), //
+					F.Gamma(F.Plus(F.C1, F.Times(F.CN1, x_))), //
+					// Pi*Csc(x*Pi)
+					F.Times(F.Pi, F.Csc(F.Times(x, F.Pi)))));
 
 			// TODO: HACK useOnlyEqualFactors = true in the following rules,
 			// to avoid stack overflow in integration rules.
 			// If true use only rules where both factors are equal,
-			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(F.Sin(x_), F.Sec(x_), F.Tan(x), true));
-			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(F.Cos(x_), F.Csc(x_), F.Cot(x), true));
+			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(//
+					F.Sin(x_), //
+					F.Sec(x_), //
+					F.Tan(x), true));
+			ORDERLESS_MATCHER.defineHashRule(new HashedPatternRulesTimes(//
+					F.Cos(x_), //
+					F.Csc(x_), //
+					F.Cot(x), true));
 
 			super.setUp(newSymbol);
 		}

@@ -1715,6 +1715,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default boolean isNonZeroComplexResult() {
+		if (isZero()) {
+			return false;
+		}
 		if (isNonZeroRealResult()) {
 			return true;
 		}
