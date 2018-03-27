@@ -3701,4 +3701,11 @@ public class MainTestCase extends AbstractTestCase {
 		}
 	}
 
+	public void testNCalcGithub42() {
+		// https://github.com/tranleduy2000/ncalc/issues/42
+		check("D((x+2)/(x-3),x)", "1/(-3+x)-(2+x)/(3-x)^2");
+		check("Together(1/(-3+x)-(2+x)/(3-x)^2)", "-5/(9-6*x+x^2)");
+		check("Simplify(1/(-3+x)-(2+x)/(3-x)^2)", "-5/(3-x)^2");
+	}
+	
 }
