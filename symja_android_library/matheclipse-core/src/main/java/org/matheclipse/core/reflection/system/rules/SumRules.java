@@ -26,7 +26,7 @@ public interface SumRules {
       Condition(Times(CN1,Power(k,a),Power(Plus(CN1,Power(k,a)),-1)),And(FreeQ(k,i),Less(a,C0),Or(Greater(k,C1),Less(k,CN1))))),
     // Sum(Ceiling(Log(i_)),{i_Symbol,1,n_Symbol}):=(Floor(Log(n))*E^(Floor(Log(n))+1)-(Floor(Log(n))+1)*E^Floor(Log(n))+1)/(-1+E)+(-E^Floor(Log(n))+n)*Ceiling(Log(n))/;FreeQ(n,i)
     ISetDelayed(Sum(Ceiling(Log(i_)),List(i_Symbol,C1,n_Symbol)),
-      Condition(Plus(Times(Plus(Times(Floor(Log(n)),Power(E,Plus(Floor(Log(n)),C1))),Times(CN1,Plus(Floor(Log(n)),C1),Power(E,Floor(Log(n)))),C1),Power(Plus(CN1,E),-1)),Times(Plus(Negate(Power(E,Floor(Log(n)))),n),Ceiling(Log(n)))),FreeQ(n,i))),
+      Condition(Plus(Times(Plus(Times(Floor(Log(n)),Exp(Plus(Floor(Log(n)),C1))),Times(CN1,Plus(Floor(Log(n)),C1),Exp(Floor(Log(n)))),C1),Power(Plus(CN1,E),-1)),Times(Plus(Negate(Exp(Floor(Log(n)))),n),Ceiling(Log(n)))),FreeQ(n,i))),
     // Sum(Ceiling(Log(a_,i_)),{i_Symbol,1,n_Symbol}):=(Floor(Log(a,n))*a^(Floor(Log(a,n))+1)-(Floor(Log(a,n))+1)*a^Floor(Log(a,n))+1)/(-1+a)+(-a^Floor(Log(a,n))+n)*Ceiling(Log(a,n))/;FreeQ(a,i)&&FreeQ(n,i)
     ISetDelayed(Sum(Ceiling(Log(a_,i_)),List(i_Symbol,C1,n_Symbol)),
       Condition(Plus(Times(Plus(Times(Floor(Log(a,n)),Power(a,Plus(Floor(Log(a,n)),C1))),Times(CN1,Plus(Floor(Log(a,n)),C1),Power(a,Floor(Log(a,n)))),C1),Power(Plus(CN1,a),-1)),Times(Plus(Negate(Power(a,Floor(Log(a,n)))),n),Ceiling(Log(a,n)))),And(FreeQ(a,i),FreeQ(n,i))))

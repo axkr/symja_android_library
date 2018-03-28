@@ -384,7 +384,7 @@ public class BigFractionSym extends AbstractFractionSym {
 
 	@Override
 	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
-			boolean usePrefix) {
+			boolean usePrefix, boolean noSymbolPrefix) {
 		String prefix = usePrefix ? "F." : "";
 		try {
 			int numerator = NumberUtil.toInt(fFraction.getNumerator());

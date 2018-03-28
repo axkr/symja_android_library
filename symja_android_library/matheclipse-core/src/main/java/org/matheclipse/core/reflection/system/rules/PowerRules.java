@@ -18,28 +18,28 @@ public interface PowerRules {
   final public static IAST RULES = List(
     IInit(Power, SIZES),
     // E^(3/2*I*Pi)=-I
-    ISet(Power(E,Times(CC(0L,1L,3L,2L),Pi)),
+    ISet(Exp(Times(CC(0L,1L,3L,2L),Pi)),
       CNI),
     // E^(Pi*c_Complex):=Module({r=Re(c),j=Im(c)},If(EvenQ(j),1,-1)/;r==0&&IntegerQ(j))
-    ISetDelayed(Power(E,Times(Pi,$p(c,Complex))),
+    ISetDelayed(Exp(Times(Pi,$p(c,Complex))),
       Module(List(Set(r,Re(c)),Set(j,Im(c))),Condition(If(EvenQ(j),C1,CN1),And(Equal(r,C0),IntegerQ(j))))),
     // E^(x_+Pi*c_Complex):=Module({r=Re(c),j=Im(c)},If(EvenQ(j),E^x,-E^x)/;r==0&&IntegerQ(j))
-    ISetDelayed(Power(E,Plus(Times(Pi,$p(c,Complex)),x_)),
-      Module(List(Set(r,Re(c)),Set(j,Im(c))),Condition(If(EvenQ(j),Power(E,x),Negate(Power(E,x))),And(Equal(r,C0),IntegerQ(j))))),
+    ISetDelayed(Exp(Plus(Times(Pi,$p(c,Complex)),x_)),
+      Module(List(Set(r,Re(c)),Set(j,Im(c))),Condition(If(EvenQ(j),Exp(x),Negate(Exp(x))),And(Equal(r,C0),IntegerQ(j))))),
     // E^(I*Infinity)=Indeterminate
-    ISet(Power(E,DirectedInfinity(CI)),
+    ISet(Exp(DirectedInfinity(CI)),
       Indeterminate),
     // E^(-I*Infinity)=Indeterminate
-    ISet(Power(E,DirectedInfinity(CNI)),
+    ISet(Exp(DirectedInfinity(CNI)),
       Indeterminate),
     // E^ComplexInfinity=Indeterminate
-    ISet(Power(E,CComplexInfinity),
+    ISet(Exp(CComplexInfinity),
       Indeterminate),
     // E^Log(x_):=x
-    ISetDelayed(Power(E,Log(x_)),
+    ISetDelayed(Exp(Log(x_)),
       x),
     // E^(a_*Log(x_)/;FreeQ(a,x)):=x^a
-    ISetDelayed(Power(E,Condition(Times(a_,Log(x_)),FreeQ(a,x))),
+    ISetDelayed(Exp(Condition(Times(a_,Log(x_)),FreeQ(a,x))),
       Power(x,a)),
     // Tan(x_)^m_?(IntegerQ(#1)&&#1<0&):=Cot(x)^(-m)
     ISetDelayed(Power(Tan(x_),PatternTest(m_,Function(And(IntegerQ(Slot1),Less(Slot1,C0))))),

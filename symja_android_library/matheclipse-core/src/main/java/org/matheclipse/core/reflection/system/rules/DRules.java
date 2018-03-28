@@ -58,13 +58,13 @@ public interface DRules {
       C0),
     // D(Erf(f_),x_NotListQ):=D(f,x)*2*1/(E^f^2*Sqrt(Pi))
     ISetDelayed(D(Erf(f_),$p(x,NotListQ)),
-      Times(D(f,x),C2,Power(E,Negate(Sqr(f))),Power(Pi,CN1D2))),
+      Times(D(f,x),C2,Exp(Negate(Sqr(f))),Power(Pi,CN1D2))),
     // D(Erfc(f_),x_NotListQ):=D(f,x)*-2*1/(E^f^2*Sqrt(Pi))
     ISetDelayed(D(Erfc(f_),$p(x,NotListQ)),
-      Times(D(f,x),CN2,Power(E,Negate(Sqr(f))),Power(Pi,CN1D2))),
+      Times(D(f,x),CN2,Exp(Negate(Sqr(f))),Power(Pi,CN1D2))),
     // D(Erfi(f_),x_NotListQ):=D(f,x)*2*E^f^2/Sqrt(Pi)
     ISetDelayed(D(Erfi(f_),$p(x,NotListQ)),
-      Times(D(f,x),C2,Power(E,Sqr(f)),Power(Pi,CN1D2))),
+      Times(D(f,x),C2,Exp(Sqr(f)),Power(Pi,CN1D2))),
     // D(Floor(f_),x_NotListQ):=0
     ISetDelayed(D(Floor(f_),$p(x,NotListQ)),
       C0),
@@ -91,7 +91,7 @@ public interface DRules {
       C0),
     // D(InverseErf(f_),x_NotListQ):=D(f,x)*1/2*Sqrt(Pi)*E^InverseErf(f)^2
     ISetDelayed(D(InverseErf(f_),$p(x,NotListQ)),
-      Times(D(f,x),C1D2,Sqrt(Pi),Power(E,Sqr(InverseErf(f))))),
+      Times(D(f,x),C1D2,Sqrt(Pi),Exp(Sqr(InverseErf(f))))),
     // D(Log(f_),x_NotListQ):=D(f,x)/f
     ISetDelayed(D(Log(f_),$p(x,NotListQ)),
       Times(D(f,x),Power(f,-1))),

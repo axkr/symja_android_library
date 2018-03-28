@@ -50,9 +50,9 @@ public class RulePreprocessor {
 		if (evalRHS) {
 			rightHandSide = F.eval(rightHandSide);
 		}
-		buffer.append(leftHandSide.internalJavaString(false, 1, false, false));
+		buffer.append(leftHandSide.internalJavaString(false, 1, false, false, false));
 		buffer.append(",\n      ");
-		buffer.append(rightHandSide.internalJavaString(false, 1, false, false));
+		buffer.append(rightHandSide.internalJavaString(false, 1, false, false, false));
 		if (last) {
 			buffer.append(")\n");
 		} else {

@@ -50,13 +50,13 @@ public interface DerivativeRules {
       C0),
     // Erf->2*1/(E^#1^2*Sqrt(Pi))
     Rule(Erf,
-      Times(C2,Power(E,Negate(Sqr(Slot1))),Power(Pi,CN1D2))),
+      Times(C2,Exp(Negate(Sqr(Slot1))),Power(Pi,CN1D2))),
     // Erfc->-2*1/(E^#1^2*Sqrt(Pi))
     Rule(Erfc,
-      Times(CN2,Power(E,Negate(Sqr(Slot1))),Power(Pi,CN1D2))),
+      Times(CN2,Exp(Negate(Sqr(Slot1))),Power(Pi,CN1D2))),
     // Erfi->2*E^#1^2/Sqrt(Pi)
     Rule(Erfi,
-      Times(C2,Power(E,Sqr(Slot1)),Power(Pi,CN1D2))),
+      Times(C2,Exp(Sqr(Slot1)),Power(Pi,CN1D2))),
     // Floor->0
     Rule(Floor,
       C0),
@@ -83,7 +83,7 @@ public interface DerivativeRules {
       C0),
     // InverseErf->1/2*Sqrt(Pi)*E^InverseErf(x)^2
     Rule(InverseErf,
-      Times(C1D2,Power(E,Sqr(InverseErf(x))),Sqrt(Pi))),
+      Times(C1D2,Exp(Sqr(InverseErf(x))),Sqrt(Pi))),
     // Log->1/#1
     Rule(Log,
       Power(Slot1,-1)),
@@ -173,7 +173,7 @@ public interface DerivativeRules {
       Times(C1D2,Plus(BesselJ(Plus(CN1,Slot1),Slot2),Negate(BesselJ(Plus(C1,Slot1),Slot2))))),
     // {Gamma,0,1}->-E^(-#2)/#2^(1-#1)
     Rule(List(Gamma,C0,C1),
-      Times(CN1,Power(E,Negate(Slot2)),Power(Slot2,Plus(CN1,Slot1)))),
+      Times(CN1,Exp(Negate(Slot2)),Power(Slot2,Plus(CN1,Slot1)))),
     // {Gamma,1,0}->Gamma(#1,#2)*Log(#2)+MeijerG({{},{1,1}},{{0,0,#1},{}},#2)
     Rule(List(Gamma,C1,C0),
       Plus(Times(Gamma(Slot1,Slot2),Log(Slot2)),MeijerG(List(List(),List(C1,C1)),List(List(C0,C0,Slot1),List()),Slot2))),

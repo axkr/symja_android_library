@@ -875,7 +875,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		IAST list = (IAST) array[3];
 		int listSize = list.size();
 		for (int i = 1; i < listSize; i++) {
-			setCoeff(i+nMin-1, list.get(i));
+			setCoeff(i + nMin - 1, list.get(i));
 		}
 	}
 
@@ -1001,14 +1001,21 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		}
 		ASTSeriesData series = new ASTSeriesData(x, x0, nMin + b.nMin, newPower + minSize, denominator);
 		int start = series.nMin;
-		for (int n = start; n <= nMax + b.nMax; n++) {
+		int end = nMax + b.nMax + 1;
+		for (int n = start; n < end; n++) {
 			if (n - start >= series.power) {
 				continue;
 			}
-			IASTAppendable sum = F.PlusAlloc(n + 1);
-			for (int i = 0; i <= n; i++) {
+			IASTAppendable sum = F.PlusAlloc(end - start);
+			// if (n < 0) {
+			// for (int i = minSize; i <= -n; i++) {
+			// sum.append(this.coeff(i).times(b.coeff(n - i)));
+			// }
+			// } else {
+			for (int i = minSize; i <= n; i++) {
 				sum.append(this.coeff(i).times(b.coeff(n - i)));
 			}
+			// }
 			IExpr value = F.eval(sum);
 			if (value.isZero()) {
 				continue;

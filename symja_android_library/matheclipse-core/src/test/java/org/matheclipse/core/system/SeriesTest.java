@@ -126,6 +126,17 @@ public class SeriesTest extends AbstractTestCase {
 	}
 
 	public void testSeriesData() {
+//		check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, -2, 11, 1)^2", //
+//				"1/x^4-1/(3*x^2)+2/45-x^2/360+x^4/14400+O(x)^9");
+//		check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, -2, 11, 3)^2", //
+//				"1/(x^(4/3))-1/(3*x^(2/3))+2/45-x^(2/3)/360+x^(4/3)/14400+O(x)^3");
+		check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, -2, 11, 3)", //
+				"1/x^(2/3)-1/6+x^(2/3)/120+O(x)^(11/3)");
+		check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 3)^3", //
+				"x-x^(5/3)/2+13/120*x^(7/3)-7/540*x^3+13/14400*x^(11/3)+O(x)^(13/3)");
+		check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 3)", //
+				"x^(1/3)-x/6+x^(5/3)/120+O(x)^(11/3)");
+
 		check("s1=SeriesData(x, 0, {1, 0, -1, -4, -17, -88, -549}, -1, 6, 1)", //
 				"1/x-x-4*x^2-17*x^3-88*x^4-549*x^5+O(x)^6");
 		check("s1[[1]]", //
@@ -178,23 +189,24 @@ public class SeriesTest extends AbstractTestCase {
 				"4+18*x+48*x^2+100*x^3+180*x^4+294*x^5+448*x^6+648*x^7+900*x^8+O(x)^9");
 		check("Integrate(SeriesData(x, 0, Table(i^2, {i, 10}), 0, 10, 1), x)", //
 				"x+2*x^2+3*x^3+4*x^4+5*x^5+6*x^6+7*x^7+8*x^8+9*x^9+10*x^10+O(x)^11");
+
 	}
 
-	public void testDSeriesData() { 
+	public void testDSeriesData() {
 		check("D(SeriesData(x, 0, Table(i^2, {i, 10}), 0, 10, 1), x)", //
 				"4+18*x+48*x^2+100*x^3+180*x^4+294*x^5+448*x^6+648*x^7+900*x^8+O(x)^9");
 		check("D(Series(Log(x),{x,a,5}), x)", //
 				"1/a-(-a+x)/a^2+(-a+x)^2/a^3-(-a+x)^3/a^4+(-a+x)^4/a^5+O(-a+x)^5");
 	}
-	
-	public void testIntegrateSeriesData() { 
+
+	public void testIntegrateSeriesData() {
 		check("Integrate(SeriesData(x, 0, Table(i^2, {i, 10}), 0, 10, 1), x)", //
 				"x+2*x^2+3*x^3+4*x^4+5*x^5+6*x^6+7*x^7+8*x^8+9*x^9+10*x^10+O(x)^11");
 		check("Integrate(Series(Log(x),{x,a,5}), x)", //
-				"Log(a)*(-a+x)+(-a+x)^2/(2*a)-(-a+x)^3/(6*a^2)+(-a+x)^4/(12*a^3)-(-a+x)^5/(20*a^4)+(-a+x)^\n" + 
-				"6/(30*a^5)+O(-a+x)^7");
+				"Log(a)*(-a+x)+(-a+x)^2/(2*a)-(-a+x)^3/(6*a^2)+(-a+x)^4/(12*a^3)-(-a+x)^5/(20*a^4)+(-a+x)^\n"
+						+ "6/(30*a^5)+O(-a+x)^7");
 	}
-	
+
 	public void testSeriesCoefficient() {
 		check("SeriesCoefficient(d+4*x^e+7*x^f+Sin(x),{x, a, n})", //
 				"Piecewise({{(4*a^e*Binomial(e,n)+7*a^f*Binomial(f,n))/a^n,n>0},{4*a^e+7*a^f+d,n==\n"

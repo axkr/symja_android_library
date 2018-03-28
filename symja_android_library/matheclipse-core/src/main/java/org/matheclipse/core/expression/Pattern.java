@@ -258,7 +258,7 @@ public class Pattern extends Blank {
 	}
 
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperaators, boolean usePrefix) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperaators, boolean usePrefix, boolean noSymbolPrefix) {
 		final StringBuilder buffer = new StringBuilder();
 		String prefix = usePrefix ? "F." : "";
 		buffer.append(prefix+"$p(");
@@ -307,14 +307,14 @@ public class Pattern extends Blank {
 			} else if (fCondition == F.Symbol) {
 				buffer.append(", SymbolHead");
 			} else {
-				buffer.append("," + fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperaators, false));
+				buffer.append("," + fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperaators, usePrefix, noSymbolPrefix));
 			}
 		}
 		if (fDefaultValue != null) {
 			if (fCondition == null) {
 				buffer.append(", null");
 			}
-			buffer.append("," + fDefaultValue.internalJavaString(symbolsAsFactoryMethod, 0, useOperaators, false));
+			buffer.append("," + fDefaultValue.internalJavaString(symbolsAsFactoryMethod, 0, useOperaators, usePrefix, noSymbolPrefix));
 		} else {
 			if (fDefault) {
 				buffer.append(",true");

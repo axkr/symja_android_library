@@ -374,7 +374,7 @@ public class Console {
 			return "";
 		}
 		if (fUseJavaForm) {
-			return result.internalJavaString(false, -1, false, true);
+			return result.internalJavaString(false, -1, false, true, false);
 		}
 		StringBuilder strBuffer = new StringBuilder();
 		fOutputFactory.reset();

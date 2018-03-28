@@ -684,10 +684,11 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            use operators instead of function names for representation of Plus, Times, Power,...
 	 * @param usePrefix
 	 *            use the <code>F....</code> class prefix for genrating Java code.
+	 * @param noSymbolPrefix TODO
 	 * @return the internal Java form of this expression
 	 */
 	default String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
-			boolean usePrefix) {
+			boolean usePrefix, boolean noSymbolPrefix) {
 		return toString();
 	}
 

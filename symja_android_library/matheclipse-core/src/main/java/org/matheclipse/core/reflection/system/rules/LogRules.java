@@ -24,13 +24,13 @@ public interface LogRules {
     ISet(Log(E),
       C1),
     // Log(E^x_RealNumberQ):=x
-    ISetDelayed(Log(Power(E,$p(x,RealNumberQ))),
+    ISetDelayed(Log(Exp($p(x,RealNumberQ))),
       x),
     // Log(E^I)=I
-    ISet(Log(Power(E,CI)),
+    ISet(Log(Exp(CI)),
       CI),
     // Log(1/E^I)=-I
-    ISet(Log(Power(E,CNI)),
+    ISet(Log(Exp(CNI)),
       CNI),
     // Log(0.0)=Indeterminate
     ISet(Log(num(0.0)),
@@ -72,7 +72,7 @@ public interface LogRules {
     ISetDelayed(Log(a_,E),
       Power(Log(a),-1)),
     // Log(a_,E^m_IntegerQ):=m/Log(a)
-    ISetDelayed(Log(a_,Power(E,$p(m,IntegerQ))),
+    ISetDelayed(Log(a_,Exp($p(m,IntegerQ))),
       Times(m,Power(Log(a),-1))),
     // Log(a_,0):=-Infinity/Log(a)
     ISetDelayed(Log(a_,C0),

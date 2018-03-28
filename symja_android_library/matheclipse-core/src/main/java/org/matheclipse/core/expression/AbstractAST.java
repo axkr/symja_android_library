@@ -259,13 +259,15 @@ public abstract class AbstractAST implements IASTMutable {
 	}
 
 	private static void internalFormOrderless(IAST ast, StringBuilder text, final String sep,
-			boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix) {
+			boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix,
+			boolean noSymbolPrefix) {
 		for (int i = 1; i < ast.size(); i++) {
 			if ((ast.get(i) instanceof IAST) && ast.head().equals(ast.get(i).head())) {
 				internalFormOrderless((IAST) ast.get(i), text, sep, symbolsAsFactoryMethod, depth, useOperators,
-						usePrefix);
+						usePrefix, noSymbolPrefix);
 			} else {
-				text.append(ast.get(i).internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix));
+				text.append(ast.get(i).internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix,
+						noSymbolPrefix));
 			}
 			if (i < ast.argSize()) {
 				text.append(sep);
@@ -1129,21 +1131,21 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public final String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-		return internalJavaString(symbolsAsFactoryMethod, depth, false, false);
+		return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public final String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
-			boolean usePrefix) {
+			boolean usePrefix, boolean noSymbolPrefix) {
 		final String sep = ",";
 		final IExpr temp = head();
 		String prefix = usePrefix ? "F." : "";
 		if (temp.equals(F.HoldForm) && size() == 2) {
-			return arg1().internalJavaString(symbolsAsFactoryMethod, depth, useOperators, usePrefix);
+			return arg1().internalJavaString(symbolsAsFactoryMethod, depth, useOperators, usePrefix, noSymbolPrefix);
 		}
 		if (temp.equals(F.Hold) && size() == 2) {
-			return arg1().internalJavaString(symbolsAsFactoryMethod, depth, useOperators, usePrefix);
+			return arg1().internalJavaString(symbolsAsFactoryMethod, depth, useOperators, usePrefix, noSymbolPrefix);
 		}
 		if (isInfinity()) {
 			return prefix + "oo";
@@ -1162,16 +1164,20 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 		if (temp.equals(F.Inequality) && size() >= 4) {
 			return BooleanFunctions.inequality2And(this).internalJavaString(symbolsAsFactoryMethod, depth, useOperators,
-					usePrefix);
+					usePrefix, noSymbolPrefix);
 		}
 		if (temp.equals(F.Rational) && size() == 3) {
 			if (arg1().isInteger() && arg2().isInteger()) {
 				return F.QQ((IInteger) arg1(), (IInteger) arg2()).internalJavaString(symbolsAsFactoryMethod, depth,
-						useOperators, usePrefix);
+						useOperators, usePrefix, noSymbolPrefix);
 			}
-			return arg1().internalJavaString(symbolsAsFactoryMethod, depth, useOperators, usePrefix);
+			return arg1().internalJavaString(symbolsAsFactoryMethod, depth, useOperators, usePrefix, noSymbolPrefix);
 		}
 		if (isPower()) {
+			if (equalsAt(1, F.E)) {
+				return prefix + "Exp(" + arg2().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators,
+						usePrefix, noSymbolPrefix) + ")";
+			}
 			if (equalsAt(2, F.C1D2)) {
 				if (base().isInteger()) {
 					// square root of an integer number
@@ -1190,12 +1196,12 @@ public abstract class AbstractAST implements IASTMutable {
 						return prefix + "CSqrt10";
 					}
 				}
-				return prefix + "Sqrt("
-						+ arg1().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix) + ")";
+				return prefix + "Sqrt(" + arg1().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators,
+						usePrefix, noSymbolPrefix) + ")";
 			}
 			if (equalsAt(2, F.C2)) {
-				return prefix + "Sqr("
-						+ arg1().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix) + ")";
+				return prefix + "Sqr(" + arg1().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators,
+						usePrefix, noSymbolPrefix) + ")";
 			}
 			if (equalsAt(2, F.CN1D2) && arg1().isInteger()) {
 				// negative square root of an integer number
@@ -1218,9 +1224,8 @@ public abstract class AbstractAST implements IASTMutable {
 				try {
 					long exp = ((IInteger) arg2()).toLong();
 					// create Power(arg1, exp)
-					return prefix + "Power("
-							+ arg1().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix)
-							+ "," + Long.toString(exp) + ")";
+					return prefix + "Power(" + arg1().internalJavaString(symbolsAsFactoryMethod, depth + 1,
+							useOperators, usePrefix, noSymbolPrefix) + "," + Long.toString(exp) + ")";
 
 				} catch (RuntimeException ex) {
 
@@ -1242,7 +1247,8 @@ public abstract class AbstractAST implements IASTMutable {
 			if (name == null && !Character.isUpperCase(sym.toString().charAt(0))) {
 				text.append(prefix + "$(");
 				for (int i = 0; i < size(); i++) {
-					text.append(get(i).internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix));
+					text.append(get(i).internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix,
+							noSymbolPrefix));
 					if (i < argSize()) {
 						text.append(sep);
 					}
@@ -1253,7 +1259,8 @@ public abstract class AbstractAST implements IASTMutable {
 		} else if (temp.isPattern() || temp.isAST()) {
 			text.append(prefix + "$(");
 			for (int i = 0; i < size(); i++) {
-				text.append(get(i).internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix));
+				text.append(get(i).internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix,
+						noSymbolPrefix));
 				if (i < argSize()) {
 					text.append(sep);
 				}
@@ -1262,9 +1269,17 @@ public abstract class AbstractAST implements IASTMutable {
 			return text.toString();
 		}
 
-		if (isTimes() && size() == 3 && arg1().isMinusOne() && !arg2().isTimes()) {
-			return prefix + "Negate("
-					+ arg2().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix) + ")";
+		if (isTimes() && size() == 3) {
+			if (arg1().equals(F.CNPiHalf)) {
+				return prefix + "CNPiHalf";
+			}
+			if (arg1().equals(F.CPiHalf)) {
+				return prefix + "CPiHalf";
+			}
+			if (arg1().isMinusOne() && !arg2().isTimes()) {
+				return prefix + "Negate(" + arg2().internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators,
+						usePrefix, noSymbolPrefix) + ")";
+			}
 		}
 
 		if (useOperators && size() == 3) {
@@ -1273,40 +1288,43 @@ public abstract class AbstractAST implements IASTMutable {
 				IExpr arg2 = arg2();
 				boolean isLowerPrecedence = arg1.isPlus();
 				internalOperatorForm(arg1, isLowerPrecedence, symbolsAsFactoryMethod, depth, useOperators, usePrefix,
-						text);
+						noSymbolPrefix, text);
 				text.append('*');
 				isLowerPrecedence = arg2.isPlus();
 				internalOperatorForm(arg2, isLowerPrecedence, symbolsAsFactoryMethod, depth, useOperators, usePrefix,
-						text);
+						noSymbolPrefix, text);
 				return text.toString();
 			} else if (isPlus()) {
 				IExpr arg1 = arg1();
 				IExpr arg2 = arg2();
-				internalOperatorForm(arg1, false, symbolsAsFactoryMethod, depth, useOperators, usePrefix, text);
+				internalOperatorForm(arg1, false, symbolsAsFactoryMethod, depth, useOperators, usePrefix,
+						noSymbolPrefix, text);
 				text.append('+');
-				internalOperatorForm(arg2, false, symbolsAsFactoryMethod, depth, useOperators, usePrefix, text);
+				internalOperatorForm(arg2, false, symbolsAsFactoryMethod, depth, useOperators, usePrefix,
+						noSymbolPrefix, text);
 				return text.toString();
 			} else if (isPower()) {
 				IExpr arg1 = arg1();
 				IExpr arg2 = arg2();
 				boolean isLowerPrecedence = arg1.isTimes() || arg1.isPlus();
 				internalOperatorForm(arg1, isLowerPrecedence, symbolsAsFactoryMethod, depth, useOperators, usePrefix,
-						text);
+						noSymbolPrefix, text);
 				text.append('^');
 				isLowerPrecedence = arg2.isTimes() || arg2.isPlus();
 				internalOperatorForm(arg2, isLowerPrecedence, symbolsAsFactoryMethod, depth, useOperators, usePrefix,
-						text);
+						noSymbolPrefix, text);
 				return text.toString();
 			}
 
 		}
-		text.append(temp.internalJavaString(false, 0, useOperators, usePrefix));
+		text.append(temp.internalJavaString(false, 0, useOperators, usePrefix, noSymbolPrefix));
 		text.append('(');
 		if (isTimes() || isPlus()) {
 			if (depth == 0 && isList()) {
 				text.append('\n');
 			}
-			internalFormOrderless(this, text, sep, symbolsAsFactoryMethod, depth, useOperators, usePrefix);
+			internalFormOrderless(this, text, sep, symbolsAsFactoryMethod, depth, useOperators, usePrefix,
+					noSymbolPrefix);
 			if (depth == 0 && isList()) {
 				text.append('\n');
 			}
@@ -1315,7 +1333,8 @@ public abstract class AbstractAST implements IASTMutable {
 				text.append('\n');
 			}
 			for (int i = 1; i < size(); i++) {
-				text.append(get(i).internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix));
+				text.append(get(i).internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix,
+						noSymbolPrefix));
 				if (i < argSize()) {
 					text.append(sep);
 					if (depth == 0 && isList()) {
@@ -1332,11 +1351,12 @@ public abstract class AbstractAST implements IASTMutable {
 	}
 
 	private void internalOperatorForm(IExpr arg1, boolean isLowerPrecedence, boolean symbolsAsFactoryMethod, int depth,
-			boolean useOperators, boolean usePrefix, StringBuilder text) {
+			boolean useOperators, boolean usePrefix, boolean noSymbolPrefix, StringBuilder text) {
 		if (isLowerPrecedence) {
 			text.append("(");
 		}
-		text.append(arg1.internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix));
+		text.append(
+				arg1.internalJavaString(symbolsAsFactoryMethod, depth + 1, useOperators, usePrefix, noSymbolPrefix));
 		if (isLowerPrecedence) {
 			text.append(")");
 		}
@@ -1345,7 +1365,7 @@ public abstract class AbstractAST implements IASTMutable {
 	/** {@inheritDoc} */
 	@Override
 	public final String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-		return internalJavaString(symbolsAsFactoryMethod, depth, true, false);
+		return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false);
 	}
 
 	/** {@inheritDoc} */

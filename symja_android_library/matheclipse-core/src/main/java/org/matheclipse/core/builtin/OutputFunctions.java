@@ -236,7 +236,7 @@ public final class OutputFunctions {
 		}
 
 		public static String javaForm(IExpr arg1, boolean strictJava, boolean usePrefix) {
-			return arg1.internalJavaString(strictJava, 0, false, usePrefix);
+			return arg1.internalJavaString(strictJava, 0, false, usePrefix, false);
 		}
 
 	}

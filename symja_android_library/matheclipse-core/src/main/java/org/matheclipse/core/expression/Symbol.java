@@ -527,13 +527,13 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-		return internalJavaString(symbolsAsFactoryMethod, depth, false, false);
+		return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
-			boolean usePrefix) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix,
+			boolean noSymbolPrefix) {
 		String prefix = usePrefix ? "F." : "";
 		if (symbolsAsFactoryMethod) {
 			return prefix + internalJavaStringAsFactoryMethod();
@@ -555,7 +555,7 @@ public class Symbol implements ISymbol, Serializable {
 			}
 		}
 		char ch = fSymbolName.charAt(0);
-		if (fSymbolName.length() == 1 && ('a' <= ch && ch <= 'z')) {
+		if (!noSymbolPrefix && fSymbolName.length() == 1 && ('a' <= ch && ch <= 'z')) {
 			return prefix + fSymbolName;
 		} else {
 			return fSymbolName;
@@ -603,7 +603,7 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-		return internalJavaString(symbolsAsFactoryMethod, depth, true, false);
+		return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false);
 	}
 
 	/** {@inheritDoc} */

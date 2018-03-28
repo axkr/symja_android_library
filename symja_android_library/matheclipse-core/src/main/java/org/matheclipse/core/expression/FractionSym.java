@@ -411,12 +411,12 @@ public class FractionSym extends AbstractFractionSym {
 
 	@Override
 	public String internalFormString(boolean symbolsAsFactoryMethod, int depth) {
-		return internalJavaString(symbolsAsFactoryMethod, depth, false, false);
+		return internalJavaString(symbolsAsFactoryMethod, depth, false, false, false);
 	}
 
 	@Override
 	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
-			boolean usePrefix) {
+			boolean usePrefix, boolean noSymbolPrefix) {
 		String prefix = usePrefix ? "F." : "";
 		if (fNumerator == 1) {
 			switch (fDenominator) {
@@ -445,7 +445,7 @@ public class FractionSym extends AbstractFractionSym {
 
 	@Override
 	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-		return internalJavaString(symbolsAsFactoryMethod, depth, true, false);
+		return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false);
 	}
 
 	/**

@@ -42,10 +42,10 @@ public class JavaFormTestCase extends AbstractTestCase {
 		IAST function = Sinc(Times(CI, CInfinity));
 
 		IExpr result = PatternMatcher.evalLeftHandSide(function, EvalEngine.get());
-		assertEquals(result.internalJavaString(true, -1,false,true), "F.Sinc(F.DirectedInfinity(F.CI))");
+		assertEquals(result.internalJavaString(true, -1,false,true, false), "F.Sinc(F.DirectedInfinity(F.CI))");
 
 		result = util.evaluate(function);
-		assertEquals(result.internalJavaString(true, -1,false,true), "F.oo");
+		assertEquals(result.internalJavaString(true, -1,false,true, false), "F.oo");
 	}
 
 }

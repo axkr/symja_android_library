@@ -362,7 +362,7 @@ public class IntegerSym extends AbstractIntegerSym {
 
 	@Override
 	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
-			boolean usePrefix) {
+			boolean usePrefix, boolean noSymbolPrefix) {
 		String prefix = usePrefix ? "F." : "";
 		int value = NumberUtil.toInt(fIntValue);
 		switch (value) {
@@ -415,7 +415,7 @@ public class IntegerSym extends AbstractIntegerSym {
 
 	@Override
 	public String internalScalaString(boolean symbolsAsFactoryMethod, int depth) {
-		return internalJavaString(symbolsAsFactoryMethod, depth, true, false);
+		return internalJavaString(symbolsAsFactoryMethod, depth, true, false, false);
 	}
 
 	@Override

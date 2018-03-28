@@ -24,7 +24,7 @@ public interface ProductLogRules {
     ISet(ProductLog(Times(CN1D2,Pi)),
       Times(CC(0L,1L,1L,2L),Pi)),
     // ProductLog(-1/E)=-1
-    ISet(ProductLog(Negate(Power(E,-1))),
+    ISet(ProductLog(Negate(Exp(CN1))),
       CN1),
     // ProductLog(E)=1
     ISet(ProductLog(E),
@@ -33,7 +33,7 @@ public interface ProductLogRules {
     ISet(ProductLog(CN1,Times(CN1D2,Pi)),
       Times(CC(0L,1L,-1L,2L),Pi)),
     // ProductLog(-1,-1/E)=-1
-    ISet(ProductLog(CN1,Negate(Power(E,-1))),
+    ISet(ProductLog(CN1,Negate(Exp(CN1))),
       CN1),
     // ProductLog(Infinity)=Infinity
     ISet(ProductLog(oo),
@@ -51,7 +51,7 @@ public interface ProductLogRules {
     ISet(ProductLog(CComplexInfinity),
       oo),
     // ProductLog(x_)*E^ProductLog(x_):=x
-    ISetDelayed(Times(Power(E,ProductLog(x_)),ProductLog(x_)),
+    ISetDelayed(Times(Exp(ProductLog(x_)),ProductLog(x_)),
       x)
   );
 }
