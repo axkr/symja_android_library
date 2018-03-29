@@ -5595,6 +5595,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		check("Sqrt(63/5)", "3*Sqrt(7/5)");
+		check("Sqrt(9/2)", "3/Sqrt(2)");
 		check("Sqrt(1/2)", "1/Sqrt(2)");
 		check("1/Sqrt(2)-Sqrt(1/2)", "0");
 		check("(2/3)^(-3/4)", "(3/2)^(3/4)");
