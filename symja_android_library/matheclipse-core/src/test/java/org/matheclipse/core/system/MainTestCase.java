@@ -104,7 +104,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("x^(-I*3.0)", "1/x^(I*3.0)");
 		check("Sin(3/10*Pi)", "1/4*(1+Sqrt(5))");
 
-		check("Sin(Pi/5)", "1/2*Sqrt(1/2)*Sqrt(5-Sqrt(5))");
+		check("Sin(Pi/5)", "Sqrt(5-Sqrt(5))/(2*Sqrt(2))");
 		check("Sin({a,b,c})", "{Sin(a),Sin(b),Sin(c)}");
 		check("2^(-1)", "1/2");
 		check("x^3+x^2+x+42", "42+x+x^2+x^3");
@@ -1544,14 +1544,15 @@ public class MainTestCase extends AbstractTestCase {
 		check("Integrate(x^a,x)", "x^(1+a)/(1+a)");
 		check("Integrate(x^10,x)", "x^11/11");
 		check("Simplify(1/2*(2*x+2))", "1+x");
-		check("Simplify(1/2*(2*x+2)*(1/2)^(1/2))", "Sqrt(1/2)*(1+x)");
+		check("Simplify(1/2*(2*x+2)*(1/2)^(1/2))", "(1+x)/Sqrt(2)");
 		check("Simplify(Integrate((8*x+1)/(x^2+x+1)^2,x))", "(-5-2*x)/(1+x+x^2)+(-4*ArcTan((1+2*x)/Sqrt(3)))/Sqrt(3)");
 
 		check("Apart(1/(x^3+1))", "1/(3+3*x)-(-2+x)/(3-3*x+3*x^2)");
 		check("Integrate(1/(x^5+x-7),x)", "Integrate(1/(-7+x+x^5),x)");
 		check("Integrate(1/(x-2),x)", "Log(-2+x)");
 		check("Integrate((x-2)^(-2),x)", "1/(2-x)");
-		check("Integrate((x^2+2*x+3)^(-1),x)", "Sqrt(1/2)*ArcTan(1/2*Sqrt(1/2)*(2+2*x))");// "ArcTan(1/2*(2*x+2)*(1/2)^(1/2))*(1/2)^(1/2)");
+		check("Integrate((x^2+2*x+3)^(-1),x)", //
+				"ArcTan((2+2*x)/(2*Sqrt(2)))/Sqrt(2)");// "ArcTan(1/2*(2*x+2)*(1/2)^(1/2))*(1/2)^(1/2)");
 		check("Integrate(1/(x^2+1),x)", "ArcTan(x)");
 		check("Integrate((2*x+5)/(x^2-2*x+5),x)", "7/2*ArcTan(1/4*(-2+2*x))+Log(5-2*x+x^2)");
 		check("Integrate((8*x+1)/(x^2+2*x+1),x)", "7/(1+x)+8*Log(1+x)");
@@ -2659,7 +2660,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("JavaForm(x_NumberQ)", "\"$p(x,NumberQ)\"");
 		check("JavaForm(Cosh(Im(x))*Cos(Re(x))+I*Sinh(Im(x))*Sin(Re(x)))",
 				"\"Plus(Times(Cos(Re(x)),Cosh(Im(x))),Times(CI,Sin(Re(x)),Sinh(Im(x))))\"");
-		check("JavaForm((1/2 * (m + n^(1/2))) ^ (1/3))", "\"Times(Power(C1D2,C1D3),Power(Plus(m,Sqrt(n)),C1D3))\"");
+		check("JavaForm((1/2 * (m + n^(1/2))) ^ (1/3))", "\"Times(Power(C2,CN1D3),Power(Plus(m,Sqrt(n)),C1D3))\"");
 
 		check("JavaForm(-1/4+ #2+b+c*3)", "\"Plus(CN1D4,b,Times(C3,c),Slot2)\"");
 

@@ -2637,6 +2637,10 @@ public final class Arithmetic {
 				return F.C1;
 			}
 
+			if (f0.getNumerator().isOne() && !f0.getDenominator().isOne()) {
+				return F.Power(f0.getDenominator(), f1.negate());
+			}
+			
 			if (f1.equals(F.C1D2)) {
 				if (f0.isNegative()) {
 					return F.Times(F.CI, F.Power(f0.negate(), f1));

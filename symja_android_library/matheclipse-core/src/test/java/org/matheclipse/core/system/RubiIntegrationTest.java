@@ -367,9 +367,10 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		check("Integrate(Sqrt(a*Sin(x)^2),x)", "-Cot(x)*Sqrt(a*Sin(x)^2)");
 		check("Integrate(Sqrt(a*Sin(x)),x)", "(-2*EllipticE(Pi/4-x/2,2)*Sqrt(a*Sin(x)))/Sqrt(Sin(x))");
 
-		check("Integrate(Sin(b*x^2),x)", "(Sqrt(1/2)*Sqrt(Pi)*FresnelS((Sqrt(2)*Sqrt(b)*x)/Sqrt(Pi)))/Sqrt(b)");
+		check("Integrate(Sin(b*x^2),x)", "(Sqrt(Pi)*FresnelS((Sqrt(2)*Sqrt(b)*x)/Sqrt(Pi)))/(Sqrt(2)*Sqrt(b))");
 
-		check("Integrate(Sin(x)/Sqrt(x),x)", "2*Sqrt(1/2)*Sqrt(Pi)*FresnelS((Sqrt(2)*Sqrt(x))/Sqrt(Pi))");
+		check("Integrate(Sin(x)/Sqrt(x),x)", //
+				"(2*Sqrt(Pi)*FresnelS((Sqrt(2)*Sqrt(x))/Sqrt(Pi)))/Sqrt(2)");
 	}
 
 	public void testRationalFunction001() {

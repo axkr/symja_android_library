@@ -170,7 +170,7 @@ public class MathMLPresentationTestCase extends TestCase {
 
 	public void testMathML002() {
 		IExpr expr = EvalEngine.get().evaluate("-1/2*Sqrt(1/2)*Sqrt(5+Sqrt(5))");
-		check(expr, "<mfrac><mrow><mo>-</mo><msqrt><mrow><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow></msqrt><mo>&#0183;</mo><msqrt><mrow><msqrt><mn>5</mn></msqrt><mo>+</mo><mn>5</mn></mrow></msqrt></mrow><mn>2</mn></mfrac>");
+		check(expr, "<mfrac><mrow><mo>-</mo><msqrt><mrow><msqrt><mn>5</mn></msqrt><mo>+</mo><mn>5</mn></mrow></msqrt></mrow><mrow><mn>2</mn><mo>&#0183;</mo><msqrt><mn>2</mn></msqrt></mrow></mfrac>");
 
 		// (-1/3+I)*a
 		expr = EvalEngine.get().evaluate("a*((- 1/3 )+x)");
