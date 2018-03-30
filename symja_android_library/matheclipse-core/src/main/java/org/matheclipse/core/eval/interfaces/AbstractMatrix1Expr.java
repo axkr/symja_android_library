@@ -58,30 +58,32 @@ public abstract class AbstractMatrix1Expr extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		RealMatrix matrix;
-		final IAST list = (IAST) ast.arg1();
-		try {
-			if (engine.isApfloat()) {
-				FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(list);
-				if (fieldMatrix != null) {
-					return matrixEval(fieldMatrix);
+		IExpr arg1 = ast.arg1();
+		if (arg1.isList()) {
+			final IAST list = (IAST) arg1;
+			try {
+				if (engine.isApfloat()) {
+					FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(list);
+					if (fieldMatrix != null) {
+						return matrixEval(fieldMatrix);
+					}
+					return F.NIL;
 				}
-				return F.NIL;
-			}
-			matrix = list.toRealMatrix();
-			if (matrix != null) {
-				return realMatrixEval(matrix);
-			} else {
-				FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(list);
-				if (fieldMatrix != null) {
-					return matrixEval(fieldMatrix);
+				matrix = list.toRealMatrix();
+				if (matrix != null) {
+					return realMatrixEval(matrix);
+				} else {
+					FieldMatrix<IExpr> fieldMatrix = Convert.list2Matrix(list);
+					if (fieldMatrix != null) {
+						return matrixEval(fieldMatrix);
+					}
 				}
-			}
-		} catch (final IndexOutOfBoundsException e) {
-			if (Config.SHOW_STACKTRACE) {
-				e.printStackTrace();
+			} catch (final IndexOutOfBoundsException e) {
+				if (Config.SHOW_STACKTRACE) {
+					e.printStackTrace();
+				}
 			}
 		}
-
 		return F.NIL;
 	}
 

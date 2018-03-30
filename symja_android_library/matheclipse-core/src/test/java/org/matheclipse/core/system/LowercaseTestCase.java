@@ -1912,6 +1912,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEigenvalues() {
+		check("Eigenvalues(A)", "Eigenvalues(A)");
 		check("Eigenvalues({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", "{16.11684,-1.11684,0.0}");
 		check("Eigenvalues({{a}})", "{a}");
 		check("Eigenvalues({{a, b}, {0, a}})", "{a,a}");
@@ -1922,6 +1923,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEigenvectors() {
+		check("Eigenvectors(A)", "Eigenvectors(A)");
 		check("Eigenvectors({{a}})", "1");
 		check("Eigenvectors({{a, b}, {0, a}})", "{{1,0},{0,0}}");
 		check("Eigenvectors({{a, b}, {0, d}})", "{{1,0},{-b/(a-d),1}}");
@@ -5595,6 +5597,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		
 		check("Sqrt(63/5)", "3*Sqrt(7/5)");
 		check("Sqrt(9/2)", "3/Sqrt(2)");
 		check("Sqrt(1/2)", "1/Sqrt(2)");
@@ -5687,6 +5690,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("E^(y+Log(x)-z)", "E^(y-z)*x");
 		check("E^(y-Log(x)-z)", "E^(y-z)/x");
 		check("E^(y+Log(x)-a*Log(v)*b*Log(u)-z)", "(E^(y-z)*x)/v^(a*b*Log(u))");
+		
+		check("Sqrt(1/a)", "Sqrt(1/a)");
 	}
 
 	public void testPowerExpand() {
