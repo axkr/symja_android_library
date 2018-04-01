@@ -2647,7 +2647,7 @@ public final class Arithmetic {
 			if (base.getNumerator().isOne() && !base.getDenominator().isOne()) {
 				return F.Power(base.getDenominator(), exponent.negate());
 			}
-			
+
 			if (exponent.equals(F.C1D2)) {
 				if (base.isNegative()) {
 					return F.Times(F.CI, F.Power(base.negate(), exponent));
