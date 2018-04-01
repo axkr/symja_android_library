@@ -1942,12 +1942,19 @@ public final class Arithmetic {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
 
-			int[] dim = ast.arg1().isMatrix(false);
+			IExpr arg1 = ast.arg1();
+			int[] dim = arg1.isMatrix(false);
 			if (dim == null || dim[0] <= 0 || dim[1] != 2) {
+				if (arg1.isAST(F.List, 1)) {
+					if (ast.isAST2()) {
+						return ast.arg2();
+					}
+					return F.C0;
+				}
 				engine.printMessage("Piecewise: Matrix with row-dimension > 0 and column-dimension == 2 expected!");
 				return F.NIL;
 			}
-			IAST matrix = (IAST) ast.arg1();
+			IAST matrix = (IAST) arg1;
 			IExpr defaultValue = F.C0;
 			if (ast.isAST2()) {
 				defaultValue = ast.arg2();
@@ -2965,7 +2972,8 @@ public final class Arithmetic {
 						final IAST f0 = astArg1;
 
 						if ((f0.size() > 1) && (f0.arg1().isNumber())) {
-							return Times(Power(f0.arg1(), exponent), Power(F.ast(f0, F.Times, true, 2, f0.size()), exponent));
+							return Times(Power(f0.arg1(), exponent),
+									Power(F.ast(f0, F.Times, true, 2, f0.size()), exponent));
 						}
 					}
 				} else if (astArg1.isPower()) {
