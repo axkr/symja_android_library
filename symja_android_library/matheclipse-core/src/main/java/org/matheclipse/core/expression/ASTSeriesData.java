@@ -494,147 +494,152 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	 */
 	@Override
 	public ASTSeriesData inverse() {
-		if (!isInvertible()) {
-			final int maxPower = power;
-			if (maxPower > 10) {
-				return null;
+		IExpr x0 = this.x0;
+		if (!coeff(0).isZero()) {
+			x0 = F.C1;
+		}
+		// if (!isInvertible()) {
+		final int maxPower = power;
+		if (maxPower > 10) {
+			return null;
+		}
+		if (maxPower > 1 && !this.coeff(1).isZero()) {
+
+			ASTSeriesData ps = new ASTSeriesData(x, x0, nMin, nMin, power, denominator, new OpenIntToIExprHashMap());
+			if (!this.x0.isZero()) {
+				ps.setCoeff(0, this.x0);
 			}
-			if (maxPower > 1 && !this.coeff(1).isZero()) {
 
-				ASTSeriesData ps = new ASTSeriesData(x, x0, nMin, nMin, power, denominator,
-						new OpenIntToIExprHashMap());
-				// ps.setCoeff(0,F.C0);
-
-				IExpr a1 = coeff(1);
-				// a1^(-1)
-				ps.setCoeff(1, a1.inverse());
-				if (maxPower > 2) {
-					// -a1^(-3) * a2
-					IExpr a2 = coeff(2);
-					ps.setCoeff(2, a1.power(-3).times(a2).negate());
-					if (maxPower > 3) {
-						// a1^(-5) * (2*a2^2-a1*a3)
-						IExpr a3 = coeff(3);
-						ps.setCoeff(3, F.Times.of(F.Power(a1, -5), //
-								F.Subtract(F.Times(F.C2, F.Sqr(a2)), F.Times(a1, a3))));
-						if (maxPower > 4) {
-							// a1^(-7) * (5*a1*a2*a3-a1*a4-5*a2^3)
-							IExpr a4 = coeff(4);
-							ps.setCoeff(4, F.Times.of(F.Power(a1, -7), //
-									F.Plus(F.Times(F.CN5, F.Power(a2, 3)), F.Times(F.C5, a1, a2, a3),
-											F.Times(F.CN1, a1, a4))));
-							if (maxPower > 5) {
-								// a1^(-9) * (6*a1^2*a2*a4+3*a1^2*a3^2+14*a2^4-a1^3*a5-21*a1*a2^2*a3)
-								IExpr a5 = coeff(5);
-								ps.setCoeff(5, F.Times.of(F.Power(a1, -9), //
-										F.Plus(F.Times(F.ZZ(14L), F.Power(a2, 4)),
-												F.Times(F.ZZ(-21L), a1, F.Sqr(a2), a3),
-												F.Times(F.C3, F.Sqr(a1), F.Sqr(a3)), F.Times(F.C6, F.Sqr(a1), a2, a4),
-												F.Times(F.CN1, F.Power(a1, 3), a5))));
-								if (maxPower > 6) {
-									// a1^(-11) *
-									// (7*a1^3*a2*a5+7*a1^3*a3*a4+84*a1*a2^3*a3-a1^4*a6-28*a1^2*a2*a3^2-42*a2^5-28*a1^2*a2^2*a4)
-									IExpr a6 = coeff(6);
-									ps.setCoeff(6, F.Times.of(F.Power(a1, -11), //
-											F.Plus(F.Times(F.ZZ(-42L), F.Power(a2, 5)),
-													F.Times(F.ZZ(84L), a1, F.Power(a2, 3), a3),
-													F.Times(F.ZZ(-28L), F.Sqr(a1), a2, F.Sqr(a3)),
-													F.Times(F.ZZ(-28L), F.Sqr(a1), F.Sqr(a2), a4),
-													F.Times(F.C7, F.Power(a1, 3), a3, a4),
-													F.Times(F.C7, F.Power(a1, 3), a2, a5),
-													F.Times(F.CN1, F.Power(a1, 4), a6))));
-									if (maxPower > 7) {
-										IExpr a7 = coeff(7);
-										// (132*a2^6 - 330*a1*a2^4*a3 + 120*a1^2*a2^3*a4 - 36*a1^2*a2^2*(-5*a3^2 +
-										// a1*a5) + 8*a1^3*a2*(-9*a3*a4 + a1*a6) + a1^3*(-12*a3^3 + 8*a1*a3*a5 +
-										// a1*(4*a4^2 - a1*a7))) / a1^13
-										ps.setCoeff(7,
-												F.Times.of(F.Power(a1, -13), F.Plus(F.Times(F.ZZ(132L), F.Power(a2, 6)),
-														F.Times(F.ZZ(-330L), a1, F.Power(a2, 4), a3),
-														F.Times(F.ZZ(120L), F.Sqr(a1), F.Power(a2, 3), a4),
-														F.Times(F.ZZ(-36L), F.Sqr(a1), F.Sqr(a2),
-																F.Plus(F.Times(F.CN5, F.Sqr(a3)), F.Times(a1, a5))),
-														F.Times(F.C8, F.Power(a1, 3), a2,
-																F.Plus(F.Times(F.CN9, a3, a4), F.Times(a1, a6))),
-														F.Times(F.Power(a1, 3),
-																F.Plus(F.Times(F.ZZ(-12L), F.Power(a3, 3)),
-																		F.Times(F.C8, a1, a3, a5),
-																		F.Times(a1,
-																				F.Plus(F.Times(F.C4, F.Sqr(a4)),
-																						F.Times(F.CN1, a1, a7)))))),
-														F.Power(a1, 13)));
-										if (maxPower > 8) {
-											// (-429*a2^7 + 1287*a1*a2^5*a3 - 495*a1^2*a2^4*a4 +
-											// 165*a1^2*a2^3*(-6*a3^2
-											// + a1*a5) - 45*a1^3*a2^2*(-11*a3*a4 + a1*a6) + 3*a1^3*a2*(55*a3^3 -
-											// 30*a1*a3*a5 + 3*a1*(-5*a4^2 + a1*a7)) + a1^4*(-45*a3^2*a4 +
-											// 9*a1*a3*a6 +
-											// a1*(9*a4*a5 - a1*a8)))/a1^15
-											IExpr a8 = coeff(8);
-											ps.setCoeff(8,
-													F.Times.of(F.Power(a1, -15),
-															F.Plus(F.Times(F.ZZ(-429L), F.Power(a2, 7)),
-																	F.Times(F.ZZ(1287L), a1, F.Power(a2, 5), a3),
-																	F.Times(F.ZZ(-495L), F.Sqr(a1), F.Power(a2, 4), a4),
-																	F.Times(F.ZZ(165L), F.Sqr(a1), F.Power(a2, 3),
-																			F.Plus(F.Times(F.CN6, F.Sqr(a3)),
-																					F.Times(a1, a5))),
-																	F.Times(F.ZZ(-45L), F.Power(a1, 3), F.Sqr(a2),
-																			F.Plus(F.Times(F.ZZ(-11L), a3, a4),
-																					F.Times(a1, a6))),
-																	F.Times(F.C3, F.Power(a1, 3), a2, F.Plus(
-																			F.Times(F.ZZ(55L), F.Power(a3, 3)),
-																			F.Times(F.ZZ(-30L), a1, a3, a5),
-																			F.Times(F.C3, a1,
-																					F.Plus(F.Times(F.CN5, F.Sqr(a4)),
-																							F.Times(a1, a7))))),
-																	F.Times(F.Power(a1, 4), F.Plus(
-																			F.Times(F.ZZ(-45L), F.Sqr(a3), a4),
-																			F.Times(F.C9, a1, a3, a6),
-																			F.Times(a1, F.Plus(F.Times(F.C9, a4, a5),
-																					F.Times(F.CN1, a1, a8))))))));
-											if (maxPower > 9) {
-												// (1430*a2^8 - 5005*a1*a2^6*a3 + 2002*a1^2*a2^5*a4 -
-												// 715*a1^2*a2^4*(-7*a3^2 + a1*a5) + 220*a1^3*a2^3*(-13*a3*a4 +
-												// a1*a6) -
-												// 55*a1^3*a2^2*(26*a3^3 - 12*a1*a3*a5 + a1*(-6*a4^2 + a1*a7)) +
-												// 10*a1^4*a2*(66*a3^2*a4 - 11*a1*a3*a6 + a1*(-11*a4*a5 + a1*a8)) +
-												// a1^4*(55*a3^4 - 55*a1*a3^2*a5 + 5*a1*a3*(-11*a4^2 + 2*a1*a7) +
-												// a1^2*(5*a5^2 + 10*a4*a6 - a1*a9)))/a1^17
-												IExpr a9 = coeff(9);
-												ps.setCoeff(9, F.Times.of(F.Power(a1, -17),
-														F.Plus(F.Times(F.ZZ(1430L), F.Power(a2, 8)),
-																F.Times(F.ZZ(-5005L), a1, F.Power(a2, 6), a3),
-																F.Times(F.ZZ(2002L), F.Sqr(a1), F.Power(a2, 5), a4),
-																F.Times(F.ZZ(-715L), F.Sqr(a1), F.Power(a2, 4),
-																		F.Plus(F.Times(F.CN7, F.Sqr(a3)),
-																				F.Times(a1, a5))),
-																F.Times(F.ZZ(220L), F.Power(a1, 3), F.Power(a2, 3),
-																		F.Plus(F.Times(F.ZZ(-13L), a3, a4),
-																				F.Times(a1, a6))),
-																F.Times(F.ZZ(-55L), F.Power(a1, 3), F.Sqr(a2), F.Plus(
-																		F.Times(F.ZZ(26L), F.Power(a3, 3)),
-																		F.Times(F.ZZ(-12L), a1, a3, a5),
-																		F.Times(a1,
-																				F.Plus(F.Times(F.CN6, F.Sqr(a4)),
+			IExpr a1 = coeff(1);
+			// a1^(-1)
+			ps.setCoeff(1, a1.inverse());
+			if (maxPower > 2) {
+				// -a1^(-3) * a2
+				IExpr a2 = coeff(2);
+				ps.setCoeff(2, a1.power(-3).times(a2).negate());
+				if (maxPower > 3) {
+					// a1^(-5) * (2*a2^2-a1*a3)
+					IExpr a3 = coeff(3);
+					ps.setCoeff(3, F.Times.of(F.Power(a1, -5), //
+							F.Subtract(F.Times(F.C2, F.Sqr(a2)), F.Times(a1, a3))));
+					if (maxPower > 4) {
+						// a1^(-7) * (5*a1*a2*a3-a1*a4-5*a2^3)
+						IExpr a4 = coeff(4);
+						ps.setCoeff(4, F.Times.of(F.Power(a1, -7), //
+								F.Plus(F.Times(F.CN5, F.Power(a2, 3)), F.Times(F.C5, a1, a2, a3),
+										F.Times(F.CN1, a1, a4))));
+						if (maxPower > 5) {
+							// a1^(-9) * (6*a1^2*a2*a4+3*a1^2*a3^2+14*a2^4-a1^3*a5-21*a1*a2^2*a3)
+							IExpr a5 = coeff(5);
+							ps.setCoeff(5, F.Times.of(F.Power(a1, -9), //
+									F.Plus(F.Times(F.ZZ(14L), F.Power(a2, 4)), F.Times(F.ZZ(-21L), a1, F.Sqr(a2), a3),
+											F.Times(F.C3, F.Sqr(a1), F.Sqr(a3)), F.Times(F.C6, F.Sqr(a1), a2, a4),
+											F.Times(F.CN1, F.Power(a1, 3), a5))));
+							if (maxPower > 6) {
+								// a1^(-11) *
+								// (7*a1^3*a2*a5+7*a1^3*a3*a4+84*a1*a2^3*a3-a1^4*a6-28*a1^2*a2*a3^2-42*a2^5-28*a1^2*a2^2*a4)
+								IExpr a6 = coeff(6);
+								ps.setCoeff(6, F.Times.of(F.Power(a1, -11), //
+										F.Plus(F.Times(F.ZZ(-42L), F.Power(a2, 5)),
+												F.Times(F.ZZ(84L), a1, F.Power(a2, 3), a3),
+												F.Times(F.ZZ(-28L), F.Sqr(a1), a2, F.Sqr(a3)),
+												F.Times(F.ZZ(-28L), F.Sqr(a1), F.Sqr(a2), a4),
+												F.Times(F.C7, F.Power(a1, 3), a3, a4),
+												F.Times(F.C7, F.Power(a1, 3), a2, a5),
+												F.Times(F.CN1, F.Power(a1, 4), a6))));
+								if (maxPower > 7) {
+									IExpr a7 = coeff(7);
+									// (132*a2^6 - 330*a1*a2^4*a3 + 120*a1^2*a2^3*a4 - 36*a1^2*a2^2*(-5*a3^2 +
+									// a1*a5) + 8*a1^3*a2*(-9*a3*a4 + a1*a6) + a1^3*(-12*a3^3 + 8*a1*a3*a5 +
+									// a1*(4*a4^2 - a1*a7))) / a1^13
+									ps.setCoeff(7,
+											F.Times.of(F.Power(a1, -13),
+													F.Plus(F.Times(F.ZZ(132L), F.Power(a2, 6)),
+															F.Times(F.ZZ(-330L), a1, F.Power(a2, 4), a3),
+															F.Times(F.ZZ(120L), F.Sqr(a1), F.Power(a2, 3), a4),
+															F.Times(F.ZZ(-36L), F.Sqr(a1), F.Sqr(a2),
+																	F.Plus(F.Times(F.CN5, F.Sqr(a3)), F.Times(a1, a5))),
+															F.Times(F.C8, F.Power(a1, 3), a2,
+																	F.Plus(F.Times(F.CN9, a3, a4), F.Times(a1, a6))),
+															F.Times(F.Power(a1, 3),
+																	F.Plus(F.Times(F.ZZ(-12L), F.Power(a3, 3)),
+																			F.Times(F.C8, a1, a3, a5),
+																			F.Times(a1,
+																					F.Plus(F.Times(F.C4, F.Sqr(a4)),
+																							F.Times(F.CN1, a1, a7)))))),
+													F.Power(a1, 13)));
+									if (maxPower > 8) {
+										// (-429*a2^7 + 1287*a1*a2^5*a3 - 495*a1^2*a2^4*a4 +
+										// 165*a1^2*a2^3*(-6*a3^2
+										// + a1*a5) - 45*a1^3*a2^2*(-11*a3*a4 + a1*a6) + 3*a1^3*a2*(55*a3^3 -
+										// 30*a1*a3*a5 + 3*a1*(-5*a4^2 + a1*a7)) + a1^4*(-45*a3^2*a4 +
+										// 9*a1*a3*a6 +
+										// a1*(9*a4*a5 - a1*a8)))/a1^15
+										IExpr a8 = coeff(8);
+										ps.setCoeff(8, F.Times.of(F.Power(a1, -15),
+												F.Plus(F.Times(F.ZZ(-429L), F.Power(a2, 7)),
+														F.Times(F.ZZ(1287L), a1, F.Power(a2, 5), a3),
+														F.Times(F.ZZ(-495L), F.Sqr(a1), F.Power(a2, 4), a4),
+														F.Times(F.ZZ(165L), F.Sqr(a1), F.Power(a2, 3),
+																F.Plus(F.Times(F.CN6, F.Sqr(a3)), F.Times(a1, a5))),
+														F.Times(F.ZZ(-45L), F.Power(a1, 3), F.Sqr(a2),
+																F.Plus(F.Times(F.ZZ(-11L), a3, a4), F.Times(a1, a6))),
+														F.Times(F.C3, F.Power(a1, 3), a2,
+																F.Plus(F.Times(F.ZZ(55L), F.Power(a3, 3)),
+																		F.Times(F.ZZ(-30L), a1, a3, a5),
+																		F.Times(F.C3, a1,
+																				F.Plus(F.Times(F.CN5, F.Sqr(a4)),
 																						F.Times(a1, a7))))),
-																F.Times(F.C10, F.Power(a1, 4), a2, F.Plus(
-																		F.Times(F.ZZ(66L), F.Sqr(a3), a4),
-																		F.Times(F.ZZ(-11L), a1, a3, a6),
-																		F.Times(a1,
-																				F.Plus(F.Times(F.ZZ(-11L), a4, a5),
-																						F.Times(a1, a8))))),
-																F.Times(F.Power(a1, 4), F.Plus(
-																		F.Times(F.ZZ(55L), F.Power(a3, 4)),
-																		F.Times(F.ZZ(-55L), a1, F.Sqr(a3), a5),
-																		F.Times(F.C5, a1, a3,
-																				F.Plus(F.Times(F.ZZ(-11L), F.Sqr(a4)),
-																						F.Times(F.C2, a1, a7))),
-																		F.Times(F.Sqr(a1),
-																				F.Plus(F.Times(F.C5, F.Sqr(a5)),
-																						F.Times(F.C10, a4, a6),
-																						F.Times(F.CN1, a1, a9))))))));
-											}
+														F.Times(F.Power(a1, 4),
+																F.Plus(F.Times(F.ZZ(-45L), F.Sqr(a3), a4),
+																		F.Times(F.C9, a1, a3, a6),
+																		F.Times(a1, F.Plus(F.Times(F.C9, a4, a5),
+																				F.Times(F.CN1, a1, a8))))))));
+										if (maxPower > 9) {
+											// (1430*a2^8 - 5005*a1*a2^6*a3 + 2002*a1^2*a2^5*a4 -
+											// 715*a1^2*a2^4*(-7*a3^2 + a1*a5) + 220*a1^3*a2^3*(-13*a3*a4 +
+											// a1*a6) -
+											// 55*a1^3*a2^2*(26*a3^3 - 12*a1*a3*a5 + a1*(-6*a4^2 + a1*a7)) +
+											// 10*a1^4*a2*(66*a3^2*a4 - 11*a1*a3*a6 + a1*(-11*a4*a5 + a1*a8)) +
+											// a1^4*(55*a3^4 - 55*a1*a3^2*a5 + 5*a1*a3*(-11*a4^2 + 2*a1*a7) +
+											// a1^2*(5*a5^2 + 10*a4*a6 - a1*a9)))/a1^17
+											IExpr a9 = coeff(9);
+											ps.setCoeff(9,
+													F.Times.of(F.Power(a1, -17),
+															F.Plus(F.Times(F.ZZ(1430L), F.Power(a2, 8)),
+																	F.Times(F.ZZ(-5005L), a1, F.Power(a2, 6), a3),
+																	F.Times(F.ZZ(2002L), F.Sqr(a1), F.Power(a2, 5), a4),
+																	F.Times(F.ZZ(-715L), F.Sqr(a1), F.Power(a2, 4),
+																			F.Plus(F.Times(F.CN7, F.Sqr(a3)),
+																					F.Times(a1, a5))),
+																	F.Times(F.ZZ(220L), F.Power(a1, 3), F.Power(a2, 3),
+																			F.Plus(F.Times(
+																					F.ZZ(-13L), a3, a4),
+																					F.Times(a1, a6))),
+																	F.Times(F.ZZ(-55L), F.Power(a1, 3), F.Sqr(a2),
+																			F.Plus(F.Times(F.ZZ(26L), F.Power(a3, 3)),
+																					F.Times(F.ZZ(-12L), a1, a3, a5),
+																					F.Times(a1,
+																							F.Plus(F.Times(F.CN6,
+																									F.Sqr(a4)),
+																									F.Times(a1, a7))))),
+																	F.Times(F.C10, F.Power(a1, 4), a2, F.Plus(
+																			F.Times(F.ZZ(66L), F.Sqr(a3), a4),
+																			F.Times(F.ZZ(-11L), a1, a3, a6),
+																			F.Times(a1,
+																					F.Plus(F.Times(F.ZZ(-11L), a4, a5),
+																							F.Times(a1, a8))))),
+																	F.Times(F.Power(a1, 4), F.Plus(
+																			F.Times(F.ZZ(55L), F.Power(a3, 4)),
+																			F.Times(F.ZZ(-55L), a1, F.Sqr(a3), a5),
+																			F.Times(F.C5, a1, a3,
+																					F.Plus(F.Times(F.ZZ(-11L),
+																							F.Sqr(a4)),
+																							F.Times(F.C2, a1, a7))),
+																			F.Times(F.Sqr(a1), F.Plus(
+																					F.Times(F.C5, F.Sqr(a5)),
+																					F.Times(F.C10, a4, a6),
+																					F.Times(F.CN1, a1, a9))))))));
 										}
 									}
 								}
@@ -642,25 +647,34 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 						}
 					}
 				}
-				return ps;
 			}
-			throw new IllegalStateException("PowerSeries cannot be inverted");
+			return ps;
 		}
-		IExpr d = this.coeff(0).power(-1L);
-		// HashMap<Integer, IExpr> bTable = new HashMap<>();
-		// bTable.put(0, a);
-		ASTSeriesData ps = new ASTSeriesData(x, x0, nMin, power, denominator);
-		ps.setCoeff(nMin, d);
-		for (int i = nMin + 1; i < nMax; i++) {
-			IExpr c = F.C0;
-			for (int k = 0; k < i; k++) {
-				IExpr m = this.coeff(k).times(this.coeff(i - k));
-				c = c.plus(m);
-			}
-			IExpr b = c.times(d.times(F.CN1));
-			ps.setCoeff(i, b);
-		}
-		return ps;
+		throw new IllegalStateException("PowerSeries cannot be inverted");
+		// }
+		// IExpr d = this.coeff(0).power(-1L);
+		// // HashMap<Integer, IExpr> bTable = new HashMap<>();
+		// // bTable.put(0, a);
+		// ASTSeriesData ps = new ASTSeriesData(x, d, 0, power, denominator);
+		// ps.setCoeff(nMin, d);
+		// for (int i = 1; i < nMax; i++) {
+		// // IExpr c = F.C0;
+		// // for (int k = 0; k < i; k++) {
+		// // IExpr m = this.coeff(k).times(this.coeff(i - k));
+		// // c = c.plus(m);
+		// // }
+		// // IExpr b = c.times(d.times(F.CN1));
+		//
+		// IExpr c = F.C0;
+		// for (int k = 0; k < i; k++) {
+		// IExpr m = this.coeff(k).times(this.coeff(i - k));
+		// c = c.plus(m);
+		// }
+		// c = c.multiply(d.negate());
+		//
+		// ps.setCoeff(i, c);
+		// }
+		// return ps;
 	}
 
 	/** {@inheritDoc} */
