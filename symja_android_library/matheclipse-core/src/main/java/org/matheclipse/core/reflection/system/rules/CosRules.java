@@ -25,7 +25,7 @@ public interface CosRules {
       Times(C1D2,C1DSqrt2,Plus(C1,CSqrt3))),
     // Cos(Pi/10)=Sqrt(1/2*(5+Sqrt(5)))/2
     ISet(Cos(Times(QQ(1L,10L),Pi)),
-      Times(C1D2,Sqrt(C1D2),Sqrt(Plus(C5,CSqrt5)))),
+      Times(C1D2,C1DSqrt2,Sqrt(Plus(C5,CSqrt5)))),
     // Cos(Pi/8)=Sqrt(2+Sqrt(2))/2
     ISet(Cos(Times(QQ(1L,8L),Pi)),
       Times(C1D2,Sqrt(Plus(C2,CSqrt2)))),
@@ -40,7 +40,7 @@ public interface CosRules {
       C1DSqrt2),
     // Cos(3/10*Pi)=Sqrt(1/2*(5-Sqrt(5)))/2
     ISet(Cos(Times(QQ(3L,10L),Pi)),
-      Times(C1D2,Sqrt(C1D2),Sqrt(Plus(C5,Negate(CSqrt5))))),
+      Times(C1D2,C1DSqrt2,Sqrt(Plus(C5,Negate(CSqrt5))))),
     // Cos(Pi/3)=1/2
     ISet(Cos(Times(C1D3,Pi)),
       C1D2),
@@ -70,7 +70,7 @@ public interface CosRules {
       CN1D2),
     // Cos(7/10*Pi)=-Sqrt(1/2*(5-Sqrt(5)))/2
     ISet(Cos(Times(QQ(7L,10L),Pi)),
-      Times(CN1D2,Sqrt(C1D2),Sqrt(Plus(C5,Negate(CSqrt5))))),
+      Times(CN1D2,C1DSqrt2,Sqrt(Plus(C5,Negate(CSqrt5))))),
     // Cos(3/4*Pi)=-1/Sqrt(2)
     ISet(Cos(Times(QQ(3L,4L),Pi)),
       Negate(C1DSqrt2)),
@@ -85,7 +85,7 @@ public interface CosRules {
       Times(CN1D2,Sqrt(Plus(C2,CSqrt2)))),
     // Cos(9/10*Pi)=-Sqrt(1/2*(5+Sqrt(5)))/2
     ISet(Cos(Times(QQ(9L,10L),Pi)),
-      Times(CN1D2,Sqrt(C1D2),Sqrt(Plus(C5,CSqrt5)))),
+      Times(CN1D2,C1DSqrt2,Sqrt(Plus(C5,CSqrt5)))),
     // Cos(11/12*Pi)=-(1+Sqrt(3))/(2*Sqrt(2))
     ISet(Cos(Times(QQ(11L,12L),Pi)),
       Times(CN1D2,C1DSqrt2,Plus(C1,CSqrt3))),
@@ -97,7 +97,7 @@ public interface CosRules {
       Times(CN1D2,C1DSqrt2,Plus(C1,CSqrt3))),
     // Cos(11/10*Pi)=-Sqrt(1/2*(5+Sqrt(5)))/2
     ISet(Cos(Times(QQ(11L,10L),Pi)),
-      Times(CN1D2,Sqrt(C1D2),Sqrt(Plus(C5,CSqrt5)))),
+      Times(CN1D2,C1DSqrt2,Sqrt(Plus(C5,CSqrt5)))),
     // Cos(9/8*Pi)=-Sqrt(2+Sqrt(2))/2
     ISet(Cos(Times(QQ(9L,8L),Pi)),
       Times(CN1D2,Sqrt(Plus(C2,CSqrt2)))),
@@ -112,7 +112,7 @@ public interface CosRules {
       Negate(C1DSqrt2)),
     // Cos(13/10*Pi)=-Sqrt(1/2*(5-Sqrt(5)))/2
     ISet(Cos(Times(QQ(13L,10L),Pi)),
-      Times(CN1D2,Sqrt(C1D2),Sqrt(Plus(C5,Negate(CSqrt5))))),
+      Times(CN1D2,C1DSqrt2,Sqrt(Plus(C5,Negate(CSqrt5))))),
     // Cos(4/3*Pi)=-1/2
     ISet(Cos(Times(QQ(4L,3L),Pi)),
       CN1D2),
@@ -142,7 +142,7 @@ public interface CosRules {
       C1D2),
     // Cos(17/10*Pi)=Sqrt(1/2*(5-Sqrt(5)))/2
     ISet(Cos(Times(QQ(17L,10L),Pi)),
-      Times(C1D2,Sqrt(C1D2),Sqrt(Plus(C5,Negate(CSqrt5))))),
+      Times(C1D2,C1DSqrt2,Sqrt(Plus(C5,Negate(CSqrt5))))),
     // Cos(7/4*Pi)=1/Sqrt(2)
     ISet(Cos(Times(QQ(7L,4L),Pi)),
       C1DSqrt2),
@@ -157,7 +157,7 @@ public interface CosRules {
       Times(C1D2,Sqrt(Plus(C2,CSqrt2)))),
     // Cos(19/10*Pi)=Sqrt(1/2*(5+Sqrt(5)))/2
     ISet(Cos(Times(QQ(19L,10L),Pi)),
-      Times(C1D2,Sqrt(C1D2),Sqrt(Plus(C5,CSqrt5)))),
+      Times(C1D2,C1DSqrt2,Sqrt(Plus(C5,CSqrt5)))),
     // Cos(23/12*Pi)=(1+Sqrt(3))/(2*Sqrt(2))
     ISet(Cos(Times(QQ(23L,12L),Pi)),
       Times(C1D2,C1DSqrt2,Plus(C1,CSqrt3))),
