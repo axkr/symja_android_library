@@ -183,6 +183,29 @@ public class ExprEvaluatorTest extends TestCase {
 		}
 	}
 
+	public void testStringEval004() {
+		try {
+			ExprEvaluator util = new ExprEvaluator();
+			util.defineVariable("x", 1.0);
+			util.defineVariable("y", 1.0);
+			IExpr expr = util.eval("If(x*x+y*y==0,1,Sin(x*x+y*y)/(x*x+y*y))");
+			assertEquals("0.45464871341284085", expr.toString());
+
+		} catch (SyntaxError e) {
+			// catch Symja parser errors here
+			System.out.println(e.getMessage());
+		} catch (MathException me) {
+			// catch Symja math errors here
+			System.out.println(me.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+		} catch (final StackOverflowError soe) {
+			System.out.println(soe.getMessage());
+		} catch (final OutOfMemoryError oome) {
+			System.out.println(oome.getMessage());
+		}
+	}
+
 	public void testX2() {
 		ExprEvaluator evaluator = new ExprEvaluator();
 		evaluator.defineVariable("X", evaluator.parse("2"));

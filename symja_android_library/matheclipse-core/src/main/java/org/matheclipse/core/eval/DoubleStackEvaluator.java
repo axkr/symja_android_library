@@ -48,8 +48,8 @@ public class DoubleStackEvaluator {
 		}
 		// slow evaluation path
 		final IExpr result = F.evaln(ast);
-		if (result instanceof Num) {
-			return ((Num) result).doubleValue();
+		if (result.isSignedNumber()) {
+			return ((ISignedNumber) result).doubleValue();
 		}
 		throw new UnsupportedOperationException("EvalDouble#evalAST(): " + ast);
 	}

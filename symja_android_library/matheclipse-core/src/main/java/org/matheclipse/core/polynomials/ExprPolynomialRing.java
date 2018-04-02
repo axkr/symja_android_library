@@ -420,41 +420,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 				}
 				return coefficientMap;
 			} else if (ast.isTimes()) {
-				IExpr mainExponent = F.NIL;
-				IExpr expr;
-				IASTAppendable times = F.TimesAlloc(ast.size());
-				for (int i = 1; i < ast.size(); i++) {
-					expr = ast.get(i);
-
-					if (expr.isFree(x, true)) {
-						times.append(expr);
-					} else if (expr.equals(x)) {
-						final IExpr exponent = F.C1;
-						if (mainExponent.isPresent()) {
-							restList.append(ast);
-							return coefficientMap;
-						} else {
-							mainExponent = exponent;
-						}
-					} else if (expr.isPower()) {
-						final IExpr base = expr.base();
-						final IExpr exponent = expr.exponent();
-						if (exponent.isFree(x)) {
-							if (base.equals(x)) {
-								if (mainExponent.isPresent()) {
-									restList.append(ast);
-									return coefficientMap;
-								} else {
-									mainExponent = exponent;
-								}
-							}
-						} else {
-							restList.append(ast);
-							return coefficientMap;
-						}
-					}
-				}
-				return addCoefficient(coefficientMap, mainExponent, times.getOneIdentity(F.C1));
+				return createTimesSub(ast, x, coefficientMap, restList);
 			} else if (ast.isPower()) {
 				final IExpr base = ast.base();
 				final IExpr exponent = ast.exponent();
@@ -482,6 +448,90 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 		return coefficientMap;
 	}
 
+	private static Map<IExpr, IExpr> createTimesSub(final IAST ast, IExpr x, Map<IExpr, IExpr> coefficientMap,
+			IASTAppendable restList) {
+		IExpr mainExponent = F.NIL;
+		IExpr expr;
+		IASTAppendable times = F.TimesAlloc(ast.size());
+		for (int i = 1; i < ast.size(); i++) {
+			expr = ast.get(i);
+
+			if (expr.isFree(x, true)) {
+				times.append(expr);
+			} else if (expr.equals(x)) {
+				final IExpr exponent = F.C1;
+				if (mainExponent.isPresent()) {
+					restList.append(ast);
+					return coefficientMap;
+				} else {
+					mainExponent = exponent;
+				}
+			} else if (expr.isPower()) {
+				final IExpr base = expr.base();
+				final IExpr exponent = expr.exponent();
+				if (exponent.isFree(x)) {
+					if (base.equals(x)) {
+						if (mainExponent.isPresent()) {
+							restList.append(ast);
+							return coefficientMap;
+						} else {
+							mainExponent = exponent;
+						}
+					}
+				} else {
+					restList.append(ast);
+					return coefficientMap;
+				}
+			} else {
+				restList.append(ast);
+				return coefficientMap;
+			}
+		}
+		return addCoefficient(coefficientMap, mainExponent, times.getOneIdentity(F.C1));
+	}
+
+	public static Map<IExpr, IExpr> createTimes(final IAST ast, IExpr x, Map<IExpr, IExpr> coefficientMap,
+			IASTAppendable restList) {
+		IExpr mainExponent = F.NIL;
+		IExpr expr;
+		IASTAppendable times = F.TimesAlloc(ast.size());
+		for (int i = 1; i < ast.size(); i++) {
+			expr = ast.get(i);
+
+			if (expr.isFree(x, true)) {
+				times.append(expr);
+				continue;
+			} else if (expr.equals(x)) {
+				if (!mainExponent.isPresent()) {
+					mainExponent = F.C1;
+					continue;
+				}
+			} else if (expr.isPower()) {
+				final IExpr base = expr.base();
+				final IExpr exponent = expr.exponent();
+				if (exponent.isFree(x)) {
+					if (base.equals(x)) {
+						if (exponent.isInteger() && !mainExponent.isPresent()) {
+							mainExponent = exponent;
+							continue;
+						}
+					}
+				}
+			}
+			restList.append(expr);
+		}
+		return addCoefficient(coefficientMap, mainExponent, times.getOneIdentity(F.C1));
+	}
+
+	/**
+	 * Add a coefficient to the coefficient map.
+	 * 
+	 * @param coefficientMap
+	 * @param exponent
+	 * @param coefficient
+	 *            the coefficient
+	 * @return
+	 */
 	private static Map<IExpr, IExpr> addCoefficient(Map<IExpr, IExpr> coefficientMap, final IExpr exponent,
 			IExpr coefficient) {
 		IExpr oldCoefficient = coefficientMap.get(exponent);

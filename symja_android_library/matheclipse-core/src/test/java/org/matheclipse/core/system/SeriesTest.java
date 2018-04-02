@@ -72,6 +72,80 @@ public class SeriesTest extends AbstractTestCase {
 	}
 
 	public void testSeries() {
+		// check("InverseSeries(Series(x,{x,0,3})) // FullForm", //
+		// "Log(a)+(-a+x)/a-(-a+x)^2/(2*a^2)+(-a+x)^3/(3*a^3)+O(-a+x)^4");
+		// check("Series(1/(3*x^2),{x,0,10})", //
+		// "1/(3*x^2)+O(x)^11");
+		// check("Series(x^a ,{x,0,5})",//
+		// "");
+		// check("Series(x^a*Sin(x),{x,0,5})",//
+		// "");
+		
+		// TODO check max power
+		check("Series(Sin(x)^2,{x,0,5})//FullForm", //
+				"\"SeriesData(x,0,{1,0,-1/3,0,2/45},2,7,1)\"");
+		// TODO check max power
+		check("Series(Sin(x)^3,{x,0,5})//FullForm", //
+				"\"SeriesData(x,0,{1,0,-1/2,0,13/120},3,8,1)\"");
+		
+		// TODO check power value
+		check("Series(Sin(x) ,{x,0,-2})//FullForm", //
+				"\"SeriesData(x,0,{},1,1,1)\"");
+		// TODO check power value
+		check("Series(b*Sin(x) ,{x,0,-2})//FullForm", //
+				"\"SeriesData(x,0,{},1,2,1)\"");
+		
+		check("Series(b*x ,{x,0,-2})//FullForm", //
+				"\"SeriesData(x,0,{},0,-1,1)\"");
+		check("Series(b*x ,{x,0,5})//FullForm", //
+				"\"SeriesData(x,0,{b},1,6,1)\"");
+		
+		// TODO check power value
+		check("Series(b*Sin(x) ,{x,0,5})//FullForm", //
+				"\"SeriesData(x,0,{b,0,-b/6,0,b/120},1,7,1)\"");
+		check("Series(b+Sin(x) ,{x,0,5})//FullForm", //
+				"\"SeriesData(x,0,{b,1,0,-1/6,0,1/120},0,6,1)\"");
+		check("Series(f(b) ,{x,0,5})", //
+				"f(b)");
+		check("Series(x,{x,0,5})", //
+				"x+O(x)^6");
+		check("Series(f(b)^(x^(1/3)),{x,0,5})", //
+				"1+Log(f(b))*x^(1/3)+1/2*Log(f(b))^2*x^(2/3)+1/6*Log(f(b))^3*x+1/24*Log(f(b))^4*x^(\n"
+						+ "4/3)+1/120*Log(f(b))^5*x^(5/3)+1/720*Log(f(b))^6*x^2+1/5040*Log(f(b))^7*x^(7/3)+\n"
+						+ "1/40320*Log(f(b))^8*x^(8/3)+1/362880*Log(f(b))^9*x^3+1/3628800*Log(f(b))^10*x^(\n"
+						+ "10/3)+1/39916800*Log(f(b))^11*x^(11/3)+1/479001600*Log(f(b))^12*x^4+1/6227020800*Log(f(b))^\n"
+						+ "13*x^(13/3)+1/87178291200*Log(f(b))^14*x^(14/3)+1/1307674368000*Log(f(b))^15*x^5+O(x)^(\n"
+						+ "16/3)");
+		check("Series(E^(x^(2/3)),{x,0,5})", //
+				"1+x^(2/3)+x^(4/3)/2+x^2/6+x^(8/3)/24+x^(10/3)/120+x^4/720+x^(14/3)/5040+O(x)^(16/\n" + "3)");
+		check("Series(E^(x^(1/3)),{x,0,5})", //
+				"1+x^(1/3)+x^(2/3)/2+x/6+x^(4/3)/24+x^(5/3)/120+x^2/720+x^(7/3)/5040+x^(8/3)/\n"
+						+ "40320+x^3/362880+x^(10/3)/3628800+x^(11/3)/39916800+x^4/479001600+x^(13/3)/\n"
+						+ "6227020800+x^(14/3)/87178291200+x^5/1307674368000+O(x)^(16/3)");
+		check("Series(E^Sqrt(x),{x,0,5})", //
+				"1+Sqrt(x)+x/2+x^(3/2)/6+x^2/24+x^(5/2)/120+x^3/720+x^(7/2)/5040+x^4/40320+x^(9/2)/\n"
+						+ "362880+x^5/3628800+O(x)^(11/2)");
+
+		check("s1=Series(Sin(x),{x,0,10})", //
+				"x-x^3/6+x^5/120-x^7/5040+x^9/362880+O(x)^11");
+		check("s2=Series(Cos(x),{x,0,10})", //
+				"1-x^2/2+x^4/24-x^6/720+x^8/40320-x^10/3628800+O(x)^11");
+		// TODO check power value
+		check("s1^2+s2^2", //
+				"1+O(x)^12");
+		check("Series(Sin(x^5)/x^10,{x,0,15})", //
+				"1/x^5-x^5/6+x^15/120+O(x)^16");
+		check("Series(E^x,{x,0,5})", //
+				"1+x+x^2/2+x^3/6+x^4/24+x^5/120+O(x)^6");
+
+		check("Series(1/(3*x^2),{x,0,10})", //
+				"1/(3*x^2)+O(x)^11");
+		check("Series(ArcSin(x)/(3*x^2),{x,0,10})", //
+				"1/(3*x)+x/18+x^3/40+5/336*x^5+35/3456*x^7+21/2816*x^9+O(x)^11");
+		check("Series(ArcSin(x)/x,{x,0,10})", //
+				"1+x^2/6+3/40*x^4+5/112*x^6+35/1152*x^8+63/2816*x^10+O(x)^11");
+		check("Series(ArcSin(x)/x,{x,0,3})", //
+				"1+x^2/6+O(x)^4");
 		check("Series(Log(x),{x,a,3})", //
 				"Log(a)+(-a+x)/a-(-a+x)^2/(2*a^2)+(-a+x)^3/(3*a^3)+O(-a+x)^4");
 		check("Series(f(x),{x,a,3})", //
@@ -97,20 +171,26 @@ public class SeriesTest extends AbstractTestCase {
 		check("s2", //
 				"1+x+2*x^2+6*x^3+24*x^4+120*x^5+720*x^6+5040*x^7+40320*x^8+362880*x^9+3628800*x^\n" + //
 						"10+O(x)^11");
+		
+		// TODO check power
 		check("s1*s2",
-				"1+2*x+4*x^2+10*x^3+34*x^4+154*x^5+874*x^6+5914*x^7+46234*x^8+409114*x^9+4037914*x^\n" + "10+O(x)^11");
+				"1+2*x+4*x^2+10*x^3+34*x^4+154*x^5+874*x^6+5914*x^7+46234*x^8+409114*x^9+4037914*x^\n" + "10+4037913*x^11+O(x)^12");
 
 		check("Series(x*4+x^2-y*x^10, {x, 0, 10})", "4*x+x^2-y*x^10+O(x)^11");
 		check("Series(x*4+x^2-y*x^11, {x, 0, 10})", "4*x+x^2+O(x)^11");
 
-		check("D(Csc(x),{x,2})", "Cot(x)^2*Csc(x)+Csc(x)^3");
-		check("D(Tan(x)/Sin(x),x)", "Sec(x)*Tan(x)");
-		check("D(Tan(x)/Sin(x),{x,2})", "Sec(x)^3+Sec(x)*Tan(x)^2");
-		check("Series(Tan(x)/Sin(x),{x,a,2})",
+		check("D(Csc(x),{x,2})", //
+				"Cot(x)^2*Csc(x)+Csc(x)^3");
+		check("D(Tan(x)/Sin(x),x)", //
+				"Sec(x)*Tan(x)");
+		check("D(Tan(x)/Sin(x),{x,2})", //
+				"Sec(x)^3+Sec(x)*Tan(x)^2");
+		check("Series(Tan(x)/Sin(x),{x,a,2})", //
 				"Sec(a)+Sec(a)*Tan(a)*(-a+x)+1/2*(Sec(a)^3+Sec(a)*Tan(a)^2)*(-a+x)^2+O(-a+x)^3");
-		check("Series(Tan(x)*Csc(x),{x,a,2})",
+		check("Series(Tan(x)*Csc(x),{x,a,2})", //
 				"Sec(a)+Sec(a)*Tan(a)*(-a+x)+1/2*(Sec(a)^3+Sec(a)*Tan(a)^2)*(-a+x)^2+O(-a+x)^3");
-		check("Series(f(x)+g(x),{x,a,2})", "f(a)+g(a)+(f'(a)+g'(a))*(-a+x)+1/2*(f''(a)+g''(a))*(-a+x)^2+O(-a+x)^3");
+		check("Series(f(x)+g(x),{x,a,2})", //
+				"f(a)+g(a)+(f'(a)+g'(a))*(-a+x)+(f''(a)/2+g''(a)/2)*(-a+x)^2+O(-a+x)^3");
 
 		check("Series(Sin(f(x)),{x,0,2})",
 				"Sin(f(0))+Cos(f(0))*f'(0)*x+1/2*(-Sin(f(0))*f'(0)^2+Cos(f(0))*f''(0))*x^2+O(x)^3");
@@ -126,10 +206,15 @@ public class SeriesTest extends AbstractTestCase {
 	}
 
 	public void testSeriesData() {
-//		check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, -2, 11, 1)^2", //
-//				"1/x^4-1/(3*x^2)+2/45-x^2/360+x^4/14400+O(x)^9");
-//		check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, -2, 11, 3)^2", //
-//				"1/(x^(4/3))-1/(3*x^(2/3))+2/45-x^(2/3)/360+x^(4/3)/14400+O(x)^3");
+		// check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, -2, 11, 1)^2", //
+		// "1/x^4-1/(3*x^2)+2/45-x^2/360+x^4/14400+O(x)^9");
+		// check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, -2, 11, 3)^2", //
+		// "1/(x^(4/3))-1/(3*x^(2/3))+2/45-x^(2/3)/360+x^(4/3)/14400+O(x)^3");
+		
+		check("s1=SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)^2//FullForm", //
+				"\"SeriesData(x,0,{1,0,-1/3,0,2/45,0,-1/360,0,1/14400},2,12,1)\"");
+		
+		
 		check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, -2, 11, 3)", //
 				"1/x^(2/3)-1/6+x^(2/3)/120+O(x)^(11/3)");
 		check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 3)^3", //
@@ -208,15 +293,31 @@ public class SeriesTest extends AbstractTestCase {
 	}
 
 	public void testSeriesCoefficient() {
-		check("SeriesCoefficient(d+4*x^e+7*x^f+Sin(x),{x, a, n})", //
-				"Piecewise({{(4*a^e*Binomial(e,n)+7*a^f*Binomial(f,n))/a^n,n>0},{4*a^e+7*a^f+d,n==\n"
-						+ "0}},0)+Piecewise({{Sin(a+1/2*n*Pi)/n!,n>=0}},0)");
-		check("SeriesCoefficient(d+4*x^e+7*x^f+Sin(x),{x, a, 10})", //
-				"(4*a^e*Binomial(e,10)+7*a^f*Binomial(f,10))/a^10-Sin(a)/3628800");
 		check("SeriesCoefficient(d+4*x^e+7*x^f,{x, a, n})", //
 				"Piecewise({{(4*a^e*Binomial(e,n)+7*a^f*Binomial(f,n))/a^n,n>0},{4*a^e+7*a^f+d,n==\n" + "0}},0)");
+		check("SeriesCoefficient(1/(3*x^2),{x,0,4})", //
+				"0");
+		check("SeriesCoefficient(1/(3*x^2),{x,a,4})", //
+				"5/3*1/a^6");
+		check("SeriesCoefficient(1/x^3,{x,0,-3})", //
+				"1");
+		check("SeriesCoefficient(1/x,{x,0,-1})", //
+				"1");
+		check("SeriesCoefficient(1/x,{x, a, n})", //
+				"Piecewise({{1/((-a)^n*a),n>=0}},0)");
+		check("SeriesCoefficient(1/x^5,{x, a, n})", //
+				"Piecewise({{((1+n)*(2+n)*(3+n)*(4+n))/(24*(-a)^n*a^5),n>=0}},0)");
+		check("SeriesCoefficient(1/x^2,{x, a, n})", //
+				"Piecewise({{(1+n)/((-a)^n*a^2),n>=0}},0)");
+		check("SeriesCoefficient(1/x^3,{x, a, n})", //
+				"Piecewise({{((1+n)*(2+n))/(2*(-a)^n*a^3),n>=0}},0)");
+		check("SeriesCoefficient(x^b,{x, a, n})", //
+				"Piecewise({{a^(b-n)*Binomial(b,n),n>0},{a^b,n==0}},0)");
+
+		check("SeriesCoefficient(d+4*x^e+7*x^f+Sin(x),{x, a, 10})", //
+				"(4*a^e*Binomial(e,10)+7*a^f*Binomial(f,10))/a^10-Sin(a)/3628800");
 		check("SeriesCoefficient(x^42,{x, a, n})", //
-				"Piecewise({{a^(42-n)*Binomial(42,n),n>0},{a^42,n==0}},0)");
+				"Piecewise({{a^(42-n)*Binomial(42,n),0<=n<=42}},0)");
 
 		check("SeriesCoefficient(f(x),{x, a, n})", //
 				"SeriesCoefficient(f(x),{x,a,n})");
@@ -262,5 +363,9 @@ public class SeriesTest extends AbstractTestCase {
 						"1}},0)");
 		check("SeriesCoefficient(Cot(x),{x,Pi/2,3})", //
 				"-1/3");
+		check("SeriesCoefficient(d+4*x^e+7*x^f,{x, a,3})", //
+				"(2/3*a^e*(-2+e)*(-1+e)*e+7/6*a^f*(-2+f)*(-1+f)*f)/a^3");
+		check("SeriesCoefficient(d+4*x^e+7*x^f,{x, a, n})", //
+				"Piecewise({{(4*a^e*Binomial(e,n)+7*a^f*Binomial(f,n))/a^n,n>0},{4*a^e+7*a^f+d,n==\n" + "0}},0)");
 	}
 }

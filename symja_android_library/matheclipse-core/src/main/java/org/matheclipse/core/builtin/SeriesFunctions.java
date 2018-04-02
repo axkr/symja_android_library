@@ -20,6 +20,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.ExprPolynomial;
@@ -857,20 +858,23 @@ public class SeriesFunctions {
 				IAST list = (IAST) ast.arg2();
 				IExpr x = list.arg1();
 				IExpr x0 = list.arg2();
-				final int n = Validate.checkIntType(list, 3, Integer.MIN_VALUE);
-				if (n < 0) {
+				final int n = list.arg3().toIntDefault(Integer.MIN_VALUE);
+				if (n == Integer.MIN_VALUE) {
 					return F.NIL;
 				}
 				if (function.isFree(x)) {
 					return function;
 				}
-				return createSeriesData(function, x, x0, n, 1, engine);
-
+				ASTSeriesData series = seriesData(function, x, x0, n, engine);
+				if (series != null) {
+					return series;
+				}
 			}
 			return F.NIL;
 		}
 
 		/**
+		 * Create an <code>ASTSeriesData</code> object from the given <code>function</code> expression.
 		 * 
 		 * @param function
 		 *            the function which should be generated as a power series
@@ -883,25 +887,242 @@ public class SeriesFunctions {
 		 * @param denominator
 		 * @return
 		 */
-		private IExpr createSeriesData(final IExpr function, IExpr x, IExpr x0, final int n, int denominator,
+		private static ASTSeriesData seriesData(final IExpr function, IExpr x, IExpr x0, final int n,
 				EvalEngine engine) {
-			ISymbol order = F.Dummy("$$$n");
-			IExpr temp = engine.evaluate(F.SeriesCoefficient(function, F.List(x, x0, order)));
+			if (function.isFree(x) || function.equals(x)) {
+				Map<IExpr, IExpr> coefficientMap = new HashMap<IExpr, IExpr>();
+				IASTAppendable rest = F.PlusAlloc(4);
+				return polynomialSeries(function, x, x0, n, coefficientMap, rest);
+			} else if (function.isPower()) {
+				ASTSeriesData temp = powerSeriesData((IAST) function, x, x0, n, engine);
+				if (temp != null) {
+					return temp;
+				}
+			} else if (function.isPlus()) {
+				ASTSeriesData temp = plusSeriesData((IAST) function, x, x0, n, engine);
+				if (temp != null) {
+					return temp;
+				}
+			} else if (function.isTimes()) {
+				ASTSeriesData temp = timesSeriesData((IAST) function, x, x0, n, engine);
+				if (temp != null) {
+					return temp;
+				}
+			}
+
+			ISymbol power = F.Dummy("$$$n");
+			int denominator = 1;
+			IExpr temp = engine.evaluate(F.SeriesCoefficient(function, F.List(x, x0, power)));
 			if (temp.isFree(F.SeriesCoefficient)) {
-				ASTSeriesData ps = new ASTSeriesData(x, x0, 0, n + denominator, denominator);
-				for (int i = 0; i <= n; i++) {
-					ps.setCoeff(i, engine.evaluate(temp.replaceAll(F.Rule(order, F.ZZ(i)))));
+				int end = n;
+				if (n < 0) {
+					end = 0;
+				}
+				ASTSeriesData ps = new ASTSeriesData(x, x0, end + 1, end + denominator, denominator);
+				for (int i = 0; i <= end; i++) {
+					ps.setCoeff(i, engine.evaluate(F.subst(temp, F.Rule(power, F.ZZ(i)))));
 				}
 				return ps;
 			}
 			ASTSeriesData ps = new ASTSeriesData(x, x0, 0, n + denominator, denominator);
 			IExpr derivedFunction = function;
 			for (int i = 0; i <= n; i++) {
-				ps.setCoeff(i, F.Times.of(F.Power(F.Factorial(F.integer(i)), F.CN1),
-						F.ReplaceAll(derivedFunction, F.Rule(x, x0))));
+				IExpr functionPart = engine.evalQuiet(F.ReplaceAll(derivedFunction, F.Rule(x, x0)));
+				if (functionPart.isIndeterminate()) {
+					functionPart = engine.evalQuiet(F.Limit(derivedFunction, F.Rule(x, x0)));
+				}
+				IExpr coefficient = F.Times.of(F.Power(NumberTheory.factorial(i), F.CN1), functionPart);
+
+				ps.setCoeff(i, coefficient);
 				derivedFunction = F.D(derivedFunction, x);
 			}
 			return ps;
+		}
+
+		private static ASTSeriesData timesSeriesData(IAST timesAST, IExpr x, IExpr x0, final int n, EvalEngine engine) {
+			Map<IExpr, IExpr> coefficientMap = new HashMap<IExpr, IExpr>();
+			IASTAppendable rest = F.PlusAlloc(4);
+			coefficientMap = new HashMap<IExpr, IExpr>();
+			rest = F.TimesAlloc(4);
+			coefficientMap = ExprPolynomialRing.createTimes(timesAST, x, coefficientMap, rest);
+			int shift = 0;
+			IExpr coefficient = F.C1;
+			if (coefficientMap.size() == 1) {
+				shift = coefficientMap.keySet().iterator().next().toIntDefault(0);
+				if (shift != 0) {
+					timesAST = rest;
+					coefficient = coefficientMap.values().iterator().next();
+				}
+			}
+
+			IExpr arg;
+			// IInteger ni = F.ZZ(n + Math.abs(shift));
+			int ni = n + Math.abs(shift);
+			ASTSeriesData series;
+			if (timesAST.size() == 1) {
+				ASTSeriesData temp = seriesFromMap(x, x0, n, coefficientMap, rest);
+				if (temp != null && rest.size() == 1) {
+					return temp;
+				}
+				if (rest.size() == 1) {
+					return null;
+				}
+				timesAST = rest;
+				if (temp != null) {
+					arg = seriesData(timesAST.arg1(), x, x0, ni, engine);
+					if (arg instanceof ASTSeriesData) {
+						series = temp.timesPS((ASTSeriesData) arg);
+					} else {
+						return null;
+					}
+				} else {
+					arg = seriesData(timesAST.arg1(), x, x0, ni, engine);
+					if (arg instanceof ASTSeriesData) {
+						series = (ASTSeriesData) arg;
+					} else {
+						return null;
+					}
+				}
+			} else {
+				arg = seriesData(timesAST.arg1(), x, x0, ni, engine);
+				if (arg instanceof ASTSeriesData) {
+					series = (ASTSeriesData) arg;
+				} else {
+					return null;
+				}
+			}
+			if (timesAST.size() != 1) {
+				if (arg instanceof ASTSeriesData) {
+					for (int i = 2; i < timesAST.size(); i++) {
+						arg = seriesData(timesAST.get(i), x, x0, ni, engine);
+						if (arg instanceof ASTSeriesData) {
+							series = series.timesPS((ASTSeriesData) arg);
+						} else {
+							return null;
+						}
+					}
+					if (shift != 0) {
+						series = series.shift(shift, coefficient, n + 1);
+					}
+					return series;
+				}
+			}
+			return null;
+		}
+
+		private static ASTSeriesData plusSeriesData(final IAST plusAST, IExpr x, IExpr x0, final int n,
+				EvalEngine engine) {
+			Map<IExpr, IExpr> coefficientMap = new HashMap<IExpr, IExpr>();
+			IASTAppendable rest = F.PlusAlloc(4);
+
+			ASTSeriesData temp = polynomialSeries(plusAST, x, x0, n, coefficientMap, rest);
+			if (temp != null) {
+				if (rest.size() == 1) {
+					return temp;
+				}
+			}
+			ASTSeriesData series = null;
+			IExpr arg;
+			int start = 1;
+			if (temp != null) {
+				series = temp;
+			} else {
+				arg = seriesData(rest.arg1(), x, x0, n, engine);
+				if (arg instanceof ASTSeriesData) {
+					series = (ASTSeriesData) arg;
+					start = 2;
+				}
+			}
+			if (series != null) {
+				for (int i = start; i < rest.size(); i++) {
+					arg = seriesData(rest.get(i), x, x0, n, engine);
+					if (arg instanceof ASTSeriesData) {
+						series = series.plusPS((ASTSeriesData) arg);
+					} else {
+						series = null;
+						break;
+					}
+				}
+				if (series != null) {
+					return series;
+				}
+			}
+			return null;
+		}
+
+		private static ASTSeriesData powerSeriesData(final IExpr powerAST, IExpr x, IExpr x0, final int n,
+				EvalEngine engine) {
+			IExpr base = powerAST.base();
+			IExpr exponent = powerAST.exponent();
+			if (base.isFree(x)) {
+				if (exponent.isPower() && exponent.base().equals(x) && exponent.exponent().isRational()) {
+					IRational rat = (IRational) exponent.exponent();
+					if (rat.isPositive()) {
+						int numerator = rat.getNumerator().toIntDefault(Integer.MIN_VALUE);
+						int denominator = rat.getDenominator().toIntDefault(Integer.MIN_VALUE);
+						if (denominator != Integer.MIN_VALUE) {
+							IExpr temp = seriesData(F.Power(base, x), x, x0, n * denominator, engine);
+							if (temp instanceof ASTSeriesData) {
+								ASTSeriesData series = (ASTSeriesData) temp;
+								if (numerator != 1) {
+									series = series.shiftTimes(numerator, F.C1, series.getPower());
+								}
+								series.setDenominator(denominator);
+								return series;
+							}
+						}
+					}
+				}
+			} else if (!(base instanceof ASTSeriesData)) {
+				Map<IExpr, IExpr> coefficientMap = new HashMap<IExpr, IExpr>();
+				IASTAppendable rest = F.PlusAlloc(4);
+				ASTSeriesData temp = polynomialSeries(powerAST, x, x0, n, coefficientMap, rest);
+				if (temp != null) {
+					return temp;
+				}
+			}
+			int exp = exponent.toIntDefault(Integer.MIN_VALUE);
+			if (exp != Integer.MIN_VALUE) {
+				ASTSeriesData series = seriesData(base, x, x0, n, engine);
+				if (series instanceof ASTSeriesData) {
+					return series.pow(exp);
+				}
+			}
+			return null;
+		}
+
+		private static ASTSeriesData polynomialSeries(final IExpr function, IExpr x, IExpr x0, final int n,
+				Map<IExpr, IExpr> coefficientMap, IASTAppendable rest) {
+			ExprPolynomialRing.create(function, x, coefficientMap, rest);
+			if (coefficientMap.size() > 0) {
+				return seriesFromMap(x, x0, n, coefficientMap, rest);
+			}
+			return null;
+		}
+
+		private static ASTSeriesData seriesFromMap(IExpr x, IExpr x0, final int n, Map<IExpr, IExpr> coefficientMap,
+				IASTAppendable rest) {
+			ASTSeriesData series = new ASTSeriesData(x, x0, 0, n + 1, 1);
+			boolean evaled = false;
+			for (Map.Entry<IExpr, IExpr> entry : coefficientMap.entrySet()) {
+				IExpr coefficient = entry.getValue();
+				if (coefficient.isZero()) {
+					continue;
+				}
+				IExpr exp = entry.getKey();
+				int exponent = exp.toIntDefault(Integer.MIN_VALUE);
+				if (exponent == Integer.MIN_VALUE) {
+					rest.append(F.Times(coefficient, F.Power(x, exp)));
+				} else {
+					series.setCoeff(exponent, coefficient);
+					evaled = true;
+				}
+
+			}
+			if (evaled) {
+				return series;
+			}
+			return null;
 		}
 	}
 
@@ -956,6 +1177,9 @@ public class SeriesFunctions {
 							// x^exp
 							INumber exp = (INumber) function.exponent();
 							if (exp.isInteger()) {
+								if (x0.isZero()) {
+									return F.Piecewise(F.List(F.List(F.C1, F.Equal(n, exp))), F.C0);
+								}
 								return F.Piecewise(
 										F.List(F.List(F.Times(F.Power(x0, F.Plus(exp, n.negate())), F.Binomial(exp, n)),
 												F.LessEqual(F.C0, n, exp))),
@@ -1019,33 +1243,71 @@ public class SeriesFunctions {
 		public IExpr polynomialSeriesCoefficient(IExpr univariatePolynomial, IExpr x, IExpr x0, IExpr n,
 				final IAST seriesTemplate, EvalEngine engine) {
 			try {
-				if (!x0.isZero()) {
-					Map<IExpr, IExpr> coefficientMap = new HashMap<IExpr, IExpr>();
-					IASTAppendable rest = F.ListAlloc(4);
-					ExprPolynomialRing.create(univariatePolynomial, x, coefficientMap, rest);
-					IASTAppendable coefficientPlus = F.PlusAlloc(2);
-					if (coefficientMap.size() > 0) {
-						IASTAppendable piecewiseAST = F.ast(F.Piecewise);
-						IASTAppendable rules = F.ListAlloc(2);
-						IASTAppendable plus = F.PlusAlloc(coefficientMap.size());
-						for (Map.Entry<IExpr, IExpr> entry : coefficientMap.entrySet()) {
-							IExpr exp = entry.getKey();
-							if (exp.isZero()) {
-								continue;
-							}
-							IExpr coefficient = entry.getValue();
-							if (coefficient.isZero()) {
-								continue;
-							}
-							if (coefficient.isOne()) {
-								plus.append(F.Times(F.Power(x0, exp), F.Binomial(exp, n)));
-							} else {
-								plus.append(F.Times(coefficient, F.Power(x0, exp), F.Binomial(exp, n)));
-							}
+				// if (!x0.isZero()) {
+				Map<IExpr, IExpr> coefficientMap = new HashMap<IExpr, IExpr>();
+				IASTAppendable rest = F.ListAlloc(4);
+				ExprPolynomialRing.create(univariatePolynomial, x, coefficientMap, rest);
+				IASTAppendable coefficientPlus = F.PlusAlloc(2);
+				if (coefficientMap.size() > 0) {
+					IExpr defaultValue = F.C0;
+					IASTAppendable piecewiseAST = F.ast(F.Piecewise);
+					IASTAppendable rules = F.ListAlloc(2);
+					IASTAppendable plus = F.PlusAlloc(coefficientMap.size());
+					IAST comparator = F.GreaterEqual(n, F.C0);
+					for (Map.Entry<IExpr, IExpr> entry : coefficientMap.entrySet()) {
+						IExpr exp = entry.getKey();
+						if (exp.isZero()) {
+							continue;
 						}
-						rules.append(
-								F.List(engine.evaluate(F.Times(F.Power(x0, n.negate()), plus)), F.Greater(n, F.C0)));
+						if (exp.isNegative() && x0.isZero()) {
+							if (exp.equals(n)) {
+								defaultValue = F.C1;
+							}
+							continue;
+						}
+						IExpr coefficient = entry.getValue();
+						if (coefficient.isZero()) {
+							continue;
+						}
 
+						IAST powerPart = F.Power(x0, exp);
+						comparator = F.Greater(n, F.C0);
+						IASTAppendable binomial;
+						int k = exp.toIntDefault(Integer.MIN_VALUE);
+						if (k != Integer.MIN_VALUE) {
+							if (k < 0) {
+								// powerPart = F.Power(x0.negate(), exp);
+								x0 = x0.negate();
+								int nk = -k;
+								binomial = F.TimesAlloc(nk + 1);
+								for (int i = 1; i < nk; i++) {
+									binomial.append(F.Plus(n, F.ZZ(i)));
+								}
+								binomial.append(F.Power(F.Factorial(F.ZZ(nk - 1)), -1));
+								comparator = F.GreaterEqual(n, F.C0);
+							} else {
+								comparator = F.LessEqual(F.C0, n, exp);
+								binomial = F.binary(F.Binomial, exp, n);
+								// binomial = F.TimesAlloc(k);
+								// for (int i = 0; i < k; i++) {
+								// binomial.append(F.Subtract(n, F.ZZ(i)));
+								// }
+								// binomial.append(F.Power(F.Factorial(F.ZZ(k)), -1));
+							}
+						} else {
+							binomial = F.binary(F.Binomial, exp, n);
+						}
+						if (coefficient.isOne()) {
+							plus.append(F.Times(powerPart, binomial));
+						} else {
+							plus.append(F.Times(coefficient, powerPart, binomial));
+						}
+					}
+					IExpr temp = engine.evaluate(plus);
+					if (!temp.isZero()) {
+						rules.append(F.List(engine.evaluate(F.Times(F.Power(x0, n.negate()), plus)), comparator));
+					}
+					if (comparator.isAST(F.Greater)) {
 						plus = F.PlusAlloc(coefficientMap.size());
 						for (Map.Entry<IExpr, IExpr> entry : coefficientMap.entrySet()) {
 							IExpr exp = entry.getKey();
@@ -1060,22 +1322,23 @@ public class SeriesFunctions {
 							}
 						}
 						rules.append(F.List(engine.evaluate(plus), F.Equal(n, F.C0)));
-						piecewiseAST.append(rules);
+					}
+					piecewiseAST.append(rules);
 
-						piecewiseAST.append(F.C0);
-						coefficientPlus.append(piecewiseAST);
-					} else {
-						if (!univariatePolynomial.isPlus()) {
-							return F.NIL;
-						}
+					piecewiseAST.append(defaultValue);
+					coefficientPlus.append(piecewiseAST);
+				} else {
+					if (!univariatePolynomial.isPlus()) {
+						return F.NIL;
 					}
-					for (int i = 1; i < rest.size(); i++) {
-						IASTAppendable term = seriesTemplate.copyAppendable();
-						term.set(1, rest.get(i));
-						coefficientPlus.append(term);
-					}
-					return coefficientPlus.getOneIdentity(F.C0);
 				}
+				for (int i = 1; i < rest.size(); i++) {
+					IASTAppendable term = seriesTemplate.copyAppendable();
+					term.set(1, rest.get(i));
+					coefficientPlus.append(term);
+				}
+				return coefficientPlus.getOneIdentity(F.C0);
+				// }
 			} catch (RuntimeException re) {
 				if (Config.SHOW_STACKTRACE) {
 					re.printStackTrace();

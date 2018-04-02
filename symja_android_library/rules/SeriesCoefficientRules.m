@@ -89,7 +89,8 @@
     /; FreeQ(a,x),
         
   SeriesCoefficient(Log(x_),{x_Symbol, a_, n_NotListQ}):=Piecewise({{(-1)^(1 + n)/(a^n*n), n >= 1}, {Log(a), n == 0}}, 0)
-    /; FreeQ(a,x) && a!=0 && FreeQ(n,x)  
-    
+    /; FreeQ(a,x) && a!=0 && FreeQ(n,x),
+  SeriesCoefficient(b_^x_,{x_Symbol, a_, n_NotListQ}):=Piecewise({{(b^a*Log(b)^n)/n!, n >= 0}}, 0)
+    /; FreeQ(b,x) && FreeQ(a,x) && FreeQ(n,x)  
      
 } 

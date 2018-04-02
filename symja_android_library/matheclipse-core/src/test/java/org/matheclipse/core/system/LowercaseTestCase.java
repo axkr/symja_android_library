@@ -4331,6 +4331,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 			check("myGCD(m0_, n0_) :=\n" + " Module({m = m0, n = n0},\n" + "  While(n != 0, {m, n} = {n, Mod(m, n)});\n"
 					+ "  m\n" + "  );myGCD(18, 21)", "3");
 		}
+		
+		check("xm=10;Module({xm=xm}, xm=xm+1;Print(xm));xm", "10");
 	}
 
 	public void testMoebiusMu() {
@@ -5360,6 +5362,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPiecewise() {
+		check("Piecewise({})", "0");
+		check("Piecewise({},0)", "0");
 		check("Piecewise({{0, x <= 0}}, 1)", "Piecewise({{0,x<=0}},1)");
 		check("Piecewise({{1, False}})", "0");
 		check("Piecewise({{0 ^ 0, False}}, -1)", "-1");
