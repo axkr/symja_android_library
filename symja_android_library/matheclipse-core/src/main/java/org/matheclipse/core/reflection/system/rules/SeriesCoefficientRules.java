@@ -13,7 +13,7 @@ public interface SeriesCoefficientRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 40 };
+  final public static int[] SIZES = { 0, 44 };
 
   final public static IAST RULES = List(
     IInit(SeriesCoefficient, SIZES),
@@ -134,8 +134,20 @@ public interface SeriesCoefficientRules {
     // SeriesCoefficient(b_^x_,{x_Symbol,a_,n_NotListQ}):=Piecewise({{(b^a*Log(b)^n)/n!,n>=0}},0)/;FreeQ(b,x)&&FreeQ(a,x)&&FreeQ(n,x)
     ISetDelayed(SeriesCoefficient(Power(b_,x_),List(x_Symbol,a_,$p(n,NotListQ))),
       Condition(Piecewise(List(List(Times(Power(b,a),Power(Factorial(n),-1),Power(Log(b),n)),GreaterEqual(n,C0))),C0),And(FreeQ(b,x),FreeQ(a,x),FreeQ(n,x)))),
+    // SeriesCoefficient(x_^x_,{x_Symbol,0,n_IntegerQ}):=Log(x)^n/n!
+    ISetDelayed(SeriesCoefficient(Power(x_,x_),List(x_Symbol,C0,$p(n,IntegerQ))),
+      Times(Power(Factorial(n),-1),Power(Log(x),n))),
     // SeriesCoefficient(ProductLog(x_),{x_Symbol,0,n_NotListQ}):=Piecewise({{1/((-n)^(1-n)*n!),n>=1}},0)/;FreeQ(n,x)
     ISetDelayed(SeriesCoefficient(ProductLog(x_),List(x_Symbol,C0,$p(n,NotListQ))),
-      Condition(Piecewise(List(List(Times(Power(Negate(n),Plus(CN1,n)),Power(Factorial(n),-1)),GreaterEqual(n,C1))),C0),FreeQ(n,x)))
+      Condition(Piecewise(List(List(Times(Power(Negate(n),Plus(CN1,n)),Power(Factorial(n),-1)),GreaterEqual(n,C1))),C0),FreeQ(n,x))),
+    // SeriesCoefficient(PolyLog(k_,x_),{x_Symbol,0,n_NotListQ}):=Piecewise({{n^(-k),n>=1}},0)/;FreeQ(k,x)&&FreeQ(n,x)
+    ISetDelayed(SeriesCoefficient(PolyLog(k_,x_),List(x_Symbol,C0,$p(n,NotListQ))),
+      Condition(Piecewise(List(List(Power(n,Negate(k)),GreaterEqual(n,C1))),C0),And(FreeQ(k,x),FreeQ(n,x)))),
+    // SeriesCoefficient(ChebyshevT(k_,x_),{x_Symbol,0,n_NotListQ}):=Piecewise({{((-1/2)^n*Sqrt(Pi)*Gamma(1/2+n)*Pochhammer(-k,n)*Pochhammer(k,n))/(n!*Gamma(1/2*(1-k+n))*Gamma(1/2*(1+k+n))*Pochhammer(1/2,n)),n>=0}},0)/;FreeQ(k,x)&&FreeQ(n,x)
+    ISetDelayed(SeriesCoefficient(ChebyshevT(k_,x_),List(x_Symbol,C0,$p(n,NotListQ))),
+      Condition(Piecewise(List(List(Times(Power(CN1D2,n),Sqrt(Pi),Gamma(Plus(C1D2,n)),Power(Times(Factorial(n),Gamma(Times(C1D2,Plus(C1,Negate(k),n))),Gamma(Times(C1D2,Plus(C1,k,n))),Pochhammer(C1D2,n)),-1),Pochhammer(Negate(k),n),Pochhammer(k,n)),GreaterEqual(n,C0))),C0),And(FreeQ(k,x),FreeQ(n,x)))),
+    // SeriesCoefficient(ChebyshevU(k_,x_),{x_Symbol,0,n_NotListQ}):=Piecewise({{((-1/2)^n*Sqrt(Pi)*Gamma(3/2+n)*Pochhammer(-k,n)*Pochhammer(2+k,n))/(n!*Gamma(1/2*(1-k+n))*Gamma(1/2*(3+k+n))*Pochhammer(3/2,n)),n>=0}},0)/;FreeQ(k,x)&&FreeQ(n,x)
+    ISetDelayed(SeriesCoefficient(ChebyshevU(k_,x_),List(x_Symbol,C0,$p(n,NotListQ))),
+      Condition(Piecewise(List(List(Times(Power(CN1D2,n),Sqrt(Pi),Gamma(Plus(QQ(3L,2L),n)),Power(Times(Factorial(n),Gamma(Times(C1D2,Plus(C1,Negate(k),n))),Gamma(Times(C1D2,Plus(C3,k,n))),Pochhammer(QQ(3L,2L),n)),-1),Pochhammer(Negate(k),n),Pochhammer(Plus(C2,k),n)),GreaterEqual(n,C0))),C0),And(FreeQ(k,x),FreeQ(n,x))))
   );
 }

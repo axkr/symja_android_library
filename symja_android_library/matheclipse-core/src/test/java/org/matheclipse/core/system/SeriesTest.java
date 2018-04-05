@@ -227,12 +227,34 @@ public class SeriesTest extends AbstractTestCase {
 		// "1/x^4-1/(3*x^2)+2/45-x^2/360+x^4/14400+O(x)^9");
 		// check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, -2, 11, 3)^2", //
 		// "1/(x^(4/3))-1/(3*x^(2/3))+2/45-x^(2/3)/360+x^(4/3)/14400+O(x)^3");
-
+		
+		
+		// TODO wrong denominator handling
+//		check("SeriesData(x, 0,{1,1,1,1,1}, 1, 11,3) + SeriesData(x, 0,{1,1,1,1,1}, 1, 4,3)",
+//				"2*x^(1/3)+2*x^(2/3)+2*x+O(x)^(4/3)");
+//		check("SeriesData(x, 0,{1,1,1,1,1}, 1, 11,3) + SeriesData(x, 0,{1,1,1,1,1}, 1, 4,5)",
+//				"2*x^(1/3)+2*x^(2/3)+2*x+O(x)^(4/3)");
+		// TODO O(x)^(13/3)
+		check("SeriesData(x, 0, {1, 0, -1/3, 0, 2/45, 0, -1/360, 0, 1/14400}, 2, 12, 3)*SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 3)",//
+				"x-x^(5/3)/2+13/120*x^(7/3)-7/540*x^3+13/14400*x^(11/3)+O(x)^(13/3)");
+		
+		check("SeriesData(x, 0,{1,1,1,1,1}, 1, 11)", //
+				"x+x^2+x^3+x^4+x^5+O(x)^11");
+		check("SeriesData(x, 0,{1,1,1,1,1}, 1, 11)^2", //
+				"x^2+2*x^3+3*x^4+4*x^5+5*x^6+4*x^7+3*x^8+2*x^9+x^10+O(x)^12");
+//		check("SeriesData(x, 0,{1,1,1,1,1}, 1, 11)*SeriesData(x, 0,{1,1,1,1,1}, 1, 5)", //
+//				"x^2+2*x^3+3*x^4+4*x^5+O(x)^6");
+//		check("SeriesData(x, 0,{1,1,1,1,1}, 1, 11, 3)*SeriesData(x, 0,{1,1,1,1,1}, 1, 5, 3)", //
+//				"x^(2/3)+2*x+3*x^(4/3)+4*x^(5/3)+O(x)^2");
 		check("s1=SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 1)^2//FullForm", //
 				"\"SeriesData(x,0,{1,0,-1/3,0,2/45,0,-1/360,0,1/14400},2,12,1)\"");
 
 		check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, -2, 11, 3)", //
 				"1/x^(2/3)-1/6+x^(2/3)/120+O(x)^(11/3)");
+		check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 3)^2", //
+				"x^(2/3)-x^(4/3)/3+2/45*x^2-x^(8/3)/360+x^(10/3)/14400+O(x)^4");
+		
+		
 		check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 3)^3", //
 				"x-x^(5/3)/2+13/120*x^(7/3)-7/540*x^3+13/14400*x^(11/3)+O(x)^(13/3)");
 		check("SeriesData(x, 0,{1,0,-1/6,0,1/120}, 1, 11, 3)", //
@@ -309,6 +331,10 @@ public class SeriesTest extends AbstractTestCase {
 	}
 
 	public void testSeriesCoefficient() {
+		check("SeriesCoefficient(x^x,{x,0,4})", //
+				"Log(x)^4/24");
+		check("SeriesCoefficient(ChebyshevT(k, x), {x, 0, 2})",//
+				"(-(1-k)*(1+k)*k^2*Pi)/(8*Gamma(1/2*(3-k))*Gamma(1/2*(3+k)))");
 		check("SeriesCoefficient(d+4*x^e+7*x^f,{x, a, n})", //
 				"Piecewise({{(4*a^e*Binomial(e,n)+7*a^f*Binomial(f,n))/a^n,n>0},{4*a^e+7*a^f+d,n==\n" + "0}},0)");
 		check("SeriesCoefficient(1/(3*x^2),{x,0,4})", //

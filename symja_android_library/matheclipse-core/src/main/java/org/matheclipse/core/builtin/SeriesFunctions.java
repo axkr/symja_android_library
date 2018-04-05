@@ -1370,7 +1370,8 @@ public class SeriesFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() == 7) {
+			int denominator = 1;
+			if (ast.size() == 6 || ast.size() == 7) {
 				if (ast.arg1().isNumber()) {
 					return F.Indeterminate;
 				}
@@ -1389,9 +1390,11 @@ public class SeriesFunctions {
 				if (power == Integer.MIN_VALUE) {
 					return F.NIL;
 				}
-				final int denominator = ast.get(6).toIntDefault(Integer.MIN_VALUE);
-				if (denominator == Integer.MIN_VALUE) {
-					return F.NIL;
+				if (ast.size() == 7) {
+					denominator = ast.get(6).toIntDefault(Integer.MIN_VALUE);
+					if (denominator < 1) {
+						return F.NIL;
+					}
 				}
 				return new ASTSeriesData(x, x0, coefficients, nMin, power, denominator);
 			}
