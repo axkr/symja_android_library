@@ -2558,7 +2558,7 @@ public final class ListFunctions {
 
 				return resultList;
 			}
-			return F.NIL;
+			return F.List();
 		}
 
 	}

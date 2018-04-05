@@ -115,8 +115,13 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 							fFromLevel = 0;
 							fToLevel = Integer.MAX_VALUE;
 						} else if (i0.isNegative()) {
-							throw new MathException("Invalid Level specification: " + levelExpr.toString());
+							// all subexpressions at levels i0 or above with a depth of -i1 or less.
+							fFromDepth = Validate.checkIntType(i0, Integer.MIN_VALUE);
+							fToDepth = -1;
+							fFromLevel = 0;
+							fToLevel = Validate.checkIntType(i1, Integer.MIN_VALUE);
 						} else if (i1.isNegative()) {
+							// all subexpressions at any level greater equal i0 that have a depth of -i1 or greater.
 							fFromDepth = Integer.MIN_VALUE;
 							fToDepth = Validate.checkIntType(i1, Integer.MIN_VALUE);
 							fFromLevel = Validate.checkIntType(i0, Integer.MIN_VALUE);
@@ -139,11 +144,19 @@ public class VisitorLevelSpecification extends AbstractVisitor {
 							fToLevel = Integer.MAX_VALUE;
 						}
 						return;
+					} else if ((lst.arg1().isNegativeInfinity()) && (lst.arg2().isInfinity())) {
+						// level specification {-Infinity, Infinity} is effectively the same as {0,-1}
+						fFromDepth = Integer.MIN_VALUE;
+						fToDepth = -1;
+						fFromLevel = 0;
+						fToLevel = Integer.MAX_VALUE;
+						return;
 					}
 				}
 			}
 		}
-		if (levelExpr.equals(F.CInfinity) || levelExpr.equals(F.All)) {
+		if (levelExpr.isInfinity() || levelExpr.equals(F.All)) {
+			// level specification Infinity and -1 are equivalent
 			fToLevel = Integer.MAX_VALUE;
 			fFromLevel = 1;
 			fFromDepth = Integer.MIN_VALUE;
