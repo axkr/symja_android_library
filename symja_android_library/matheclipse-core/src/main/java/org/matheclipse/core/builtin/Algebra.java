@@ -3150,7 +3150,7 @@ public class Algebra {
 					if (fFullSimplify) {
 						HashedOrderlessMatcher hashRuleMap = PLUS_ORDERLESS_MATCHER;
 						if (hashRuleMap != null) {
-							ast.setEvalFlags(0);
+							ast.setEvalFlags(ast.getEvalFlags() ^ IAST.IS_HASH_EVALED);
 							EvalEngine engine = EvalEngine.get();
 							temp = hashRuleMap.evaluateRepeated(ast, engine);
 							if (temp.isPresent()) {
@@ -3308,6 +3308,7 @@ public class Algebra {
 		public boolean isFullSimplifyMode() {
 			return false;
 		}
+
 		/**
 		 * Creata the complexity function which determines the &quot;more simplified&quot; expression.
 		 * 
