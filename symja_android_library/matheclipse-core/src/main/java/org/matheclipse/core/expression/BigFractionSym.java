@@ -53,7 +53,7 @@ public class BigFractionSym extends AbstractFractionSym {
 
 	@Override
 	public IFraction abs() {
-		return new BigFractionSym(fFraction.abs());
+		return valueOf(fFraction.abs());
 	}
 
 	/**
@@ -426,7 +426,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	 */
 	@Override
 	public IFraction inverse() {
-		return new BigFractionSym(fFraction.reciprocal());
+		return valueOf(fFraction.reciprocal());
 	}
 
 	/**
@@ -515,7 +515,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	 */
 	@Override
 	public IFraction negate() {
-		return new BigFractionSym(fFraction.negate());
+		return valueOf(fFraction.negate());
 	}
 
 	@Override
