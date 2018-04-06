@@ -19,6 +19,8 @@ import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
+import static org.matheclipse.core.expression.F.x;
+import static org.matheclipse.core.expression.F.x_;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,6 +69,9 @@ import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherEvalEngine;
+import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher;
+import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcherPlus;
+import org.matheclipse.core.patternmatching.hash.HashedPatternRules;
 import org.matheclipse.core.polynomials.ExprMonomial;
 import org.matheclipse.core.polynomials.ExprPolynomial;
 import org.matheclipse.core.polynomials.ExprPolynomialRing;
@@ -1736,6 +1741,10 @@ public class Algebra {
 			return super.evaluate(ast, engine);
 		}
 
+		@Override
+		public boolean isFullSimplifyMode() {
+			return true;
+		}
 	}
 
 	/**
@@ -2939,6 +2948,16 @@ public class Algebra {
 	 * </pre>
 	 */
 	private static class Simplify extends AbstractFunctionEvaluator {
+		private static HashedOrderlessMatcherPlus PLUS_ORDERLESS_MATCHER = new HashedOrderlessMatcherPlus();
+		static {
+			// Cosh(x)+Sinh(x) -> Exp(x)
+			PLUS_ORDERLESS_MATCHER.defineHashRule(new HashedPatternRules(//
+					F.Cosh(x_), //
+					F.Sinh(x_), //
+					F.Exp(x), //
+					null, //
+					true));
+		}
 
 		private static class IsBasicExpressionVisitor extends AbstractVisitorBoolean {
 			public IsBasicExpressionVisitor() {
@@ -2997,9 +3016,15 @@ public class Algebra {
 			 */
 			final Function<IExpr, Long> fComplexityFunction;
 
-			public SimplifyVisitor(Function<IExpr, Long> complexityFunction) {
+			/**
+			 * If <code>true</code> we are in full simplify mode
+			 */
+			final boolean fFullSimplify;
+
+			public SimplifyVisitor(Function<IExpr, Long> complexityFunction, boolean fullSimplify) {
 				super();
 				fComplexityFunction = complexityFunction;
+				fFullSimplify = fullSimplify;
 			}
 
 			private IExpr tryExpandAllTransformation(IAST plusAST, IExpr test) {
@@ -3121,6 +3146,19 @@ public class Algebra {
 					if (temp.isPresent()) {
 						return temp;
 					}
+
+					if (fFullSimplify) {
+						HashedOrderlessMatcher hashRuleMap = PLUS_ORDERLESS_MATCHER;
+						if (hashRuleMap != null) {
+							ast.setEvalFlags(0);
+							EvalEngine engine = EvalEngine.get();
+							temp = hashRuleMap.evaluateRepeated(ast, engine);
+							if (temp.isPresent()) {
+								return engine.evaluate(temp);
+							}
+						}
+					}
+
 					return result;
 
 				} else if (ast.isTimes()) {
@@ -3241,18 +3279,7 @@ public class Algebra {
 					arg1 = temp;
 				}
 
-				temp = arg1.accept(new SimplifyVisitor(complexityFunction));
-				while (temp.isPresent()) {
-					count = complexityFunction.apply(temp);
-					if (count < minCounter) {
-						minCounter = count;
-						result = temp;
-						temp = result.accept(new SimplifyVisitor(complexityFunction));
-					} else {
-						return result;
-					}
-				}
-				return result;
+				return simplifyStep(arg1, complexityFunction, minCounter, result);
 
 			} catch (ArithmeticException e) {
 				//
@@ -3260,6 +3287,27 @@ public class Algebra {
 			return F.NIL;
 		}
 
+		private IExpr simplifyStep(IExpr arg1, Function<IExpr, Long> complexityFunction, long minCounter,
+				IExpr result) {
+			long count;
+			IExpr temp;
+			temp = arg1.accept(new SimplifyVisitor(complexityFunction, isFullSimplifyMode()));
+			while (temp.isPresent()) {
+				count = complexityFunction.apply(temp);
+				if (count < minCounter) {
+					minCounter = count;
+					result = temp;
+					temp = result.accept(new SimplifyVisitor(complexityFunction, isFullSimplifyMode()));
+				} else {
+					return result;
+				}
+			}
+			return result;
+		}
+
+		public boolean isFullSimplifyMode() {
+			return false;
+		}
 		/**
 		 * Creata the complexity function which determines the &quot;more simplified&quot; expression.
 		 * 

@@ -2848,6 +2848,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("FullForm(a:=b)", "\"Null\"");
 	}
 
+	public void testFullSimplify() {
+		check("FullSimplify(Cosh(x)+Sinh(x))", "E^x");
+	}
+	
 	public void testFunction() {
 		check("Function({x, y}, x^2 + y^3)[a, b]", "a^2+b^3");
 		check("f(x, ##, y, ##) &(a, b, c, d)", "f(x,a,b,c,d,y,a,b,c,d)");
