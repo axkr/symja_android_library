@@ -6165,6 +6165,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRationalize() {
+		check("ArcCos(-Rationalize(0.5))", "2/3*Pi");
 		check("Rationalize(0.202898)", "101449/500000");
 		check("Rationalize(1.2 + 6.7*x)", "6/5+67/10*x");
 		check("Rationalize(Exp(Sqrt(2)), 2^-12)", "218/53");

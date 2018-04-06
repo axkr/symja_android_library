@@ -205,11 +205,11 @@ public abstract class AbstractFractionSym implements IFraction {
 		BigFraction fraction;
 		try {
 			fraction = new BigFraction(value, epsilon, 200);
-			return new BigFractionSym(fraction);
+			return valueOf(fraction);
 		} catch (MathIllegalStateException e) {
 			fraction = new BigFraction(value);
 		}
-		return new BigFractionSym(fraction);
+		return valueOf(fraction);
 	}
 
 	/**
