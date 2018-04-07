@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.F.C1D2;
 import static org.matheclipse.core.expression.F.Sqrt;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,9 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.BooleanFunctions;
+import org.matheclipse.core.builtin.ListFunctions.ArrayIterator;
+import org.matheclipse.core.builtin.ListFunctions.MultipleConstArrayFunction;
+import org.matheclipse.core.builtin.ListFunctions.TableGenerator;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -322,6 +326,35 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Get a nested list with <code>this</code> expression set as a value.
+	 * 
+	 * <pre>
+	 * v.constantArray(2, 3) -> {{v, v, v}, {v, v, v}}
+	 * </pre>
+	 * 
+	 * @param startPosition
+	 *            the position from there to create the constant array recusively.
+	 * @param arr
+	 *            the nested lists dimensions. <code>arr.length</code> must be greater <code>0</code>
+	 * 
+	 * @return <code>F.NIL</code> if <code>arr</code> has length 0.
+	 */
+	default IASTAppendable constantArray(final int startPosition, int... arr) {
+		if (arr.length - 1 == startPosition) {
+			IASTAppendable list = F.ListAlloc(arr[startPosition]);
+			for (int i = 0; i < arr[startPosition]; i++) {
+				list.append(this);
+			}
+			return list;
+		}
+		IASTAppendable list = F.ListAlloc(arr[startPosition]);
+		for (int i = 0; i < arr[startPosition]; i++) {
+			list.append(constantArray(startPosition + 1, arr));
+		}
+		return list;
+	}
+
+	/**
 	 * Return <code>negate()</code> if <code>number.sign() < 0</code>, otherwise return <code>this</code>
 	 * 
 	 * @param number
@@ -371,6 +404,20 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Calls <code>get(position).equals(expr)</code> if <code>this</code> is an <code>IAST</code>. Returns
+	 * <code>false</code> otherwise.
+	 * 
+	 * @param position
+	 *            the position in the <code>IAST</code> which should be tested for equality
+	 * @param expr
+	 *            the expression which should be tested for equality
+	 * @return
+	 */
+	default public boolean equalsAt(int position, final IExpr expr) {
+		return false;
+	}
+
+	/**
 	 * Compare if <code>this == that</code:
 	 * <ul>
 	 * <li>return F.True if the comparison is <code>true</code></li>
@@ -384,20 +431,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default public IExpr equalTo(IExpr that) {
 		COMPARE_TERNARY temp = BooleanFunctions.CONST_EQUAL.compareTernary(this, that);
 		return ExprUtil.convertToExpr(temp);
-	}
-
-	/**
-	 * Calls <code>get(position).equals(expr)</code> if <code>this</code> is an <code>IAST</code>. Returns
-	 * <code>false</code> otherwise.
-	 * 
-	 * @param position
-	 *            the position in the <code>IAST</code> which should be tested for equality
-	 * @param expr
-	 *            the expression which should be tested for equality
-	 * @return
-	 */
-	default public boolean equalsAt(int position, final IExpr expr) {
-		return false;
 	}
 
 	/**
@@ -684,7 +717,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 *            use operators instead of function names for representation of Plus, Times, Power,...
 	 * @param usePrefix
 	 *            use the <code>F....</code> class prefix for genrating Java code.
-	 * @param noSymbolPrefix TODO
+	 * @param noSymbolPrefix
+	 *            TODO
 	 * @return the internal Java form of this expression
 	 */
 	default String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,

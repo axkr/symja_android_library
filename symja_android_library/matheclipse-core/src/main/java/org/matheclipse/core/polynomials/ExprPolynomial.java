@@ -12,6 +12,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
 import edu.jas.kern.PreemptingException;
@@ -2342,37 +2343,63 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * @return the coefficients of a univariate polynomial up to n degree
 	 */
 	public IAST coefficientList() {
-		Validate.checkSize(ring.getVars(), 2);
 
-		long exp;
-		if (ring.tord.getEvord() == ExprTermOrder.IGRLEX || ring.tord.getEvord() == ExprTermOrder.REVILEX) {
+		int size = ring.getVars().size();
+		if (size == 2) {
+			long exp;
+			if (ring.tord.getEvord() == ExprTermOrder.IGRLEX || ring.tord.getEvord() == ExprTermOrder.REVILEX) {
+				long lastDegree = degree();
+				IExpr[] exprs = new IExpr[(int) lastDegree + 1];
+				for (int i = 0; i < exprs.length; i++) {
+					exprs[i] = F.C0;
+				}
+				for (ExpVectorLong expArray : val.keySet()) {
+					exp = expArray.getVal(0);
+					exprs[(int) exp] = val.get(expArray);
+				}
+				return F.ast(exprs, F.List);
+			} else {
+				long lastDegree = 0L;
+				IASTAppendable result = F.ListAlloc(val.size());
+				for (ExpVectorLong expArray : val.keySet()) {
+					exp = expArray.getVal(0);
+					while (lastDegree < exp) {
+						result.append(F.C0);
+						lastDegree++;
+					}
+					if (lastDegree == exp) {
+						result.append(val.get(expArray));
+						lastDegree++;
+					}
+				}
+				return result;
+			}
+		} else if (size > 2) {
+			long exp;
+			int[] arr = new int[size - 1];
+			for (int j = 0; j < size - 1; j++) {
+				arr[j] = (int) degree(j) + 1;
+			}
+			IASTMutable constantArray = F.C0.constantArray(0, arr);
+
 			long lastDegree = degree();
-			IExpr[] exprs = new IExpr[(int) lastDegree + 1];
-			for (int i = 0; i < exprs.length; i++) {
-				exprs[i] = F.C0;
-			}
+			// IASTAppendable result = F.ListAlloc(val.size());
 			for (ExpVectorLong expArray : val.keySet()) {
-				exp = expArray.getVal(0);
-				exprs[(int) exp] = val.get(expArray);
-			}
-			return F.ast(exprs, F.List);
-		} else {
-			long lastDegree = 0L;
-			IASTAppendable result = F.ListAlloc(val.size());
-			for (ExpVectorLong expArray : val.keySet()) {
-				exp = expArray.getVal(0);
-				while (lastDegree < exp) {
-					result.append(F.C0);
-					lastDegree++;
+				// IExpr[] exprs = new IExpr[(int) lastDegree + 1];
+				// for (int i = 0; i < exprs.length; i++) {
+				// exprs[i] = F.C0;
+				// }
+				int[] positions = new int[size - 1];
+				for (int i = 0; i < expArray.length(); i++) {
+					exp = expArray.getVal(i);
+					positions[expArray.varIndex(i)] = (int) exp + 1;
 				}
-				if (lastDegree == exp) {
-					result.append(val.get(expArray));
-					lastDegree++;
-				}
+				constantArray.setPart(val.get(expArray), positions);
+				// result.append(F.ast(exprs, F.List));
 			}
-			return result;
+			return constantArray;
 		}
-
+		return F.NIL;
 	}
 
 	/**

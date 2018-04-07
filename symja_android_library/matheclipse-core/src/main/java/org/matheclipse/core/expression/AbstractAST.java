@@ -1063,6 +1063,24 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 		return null;
 	}
+	
+	@Override
+	public IExpr setPart(IExpr value, final int... positions) {
+		IExpr expr = this;
+		int size = positions.length;
+		for (int i = 0; i < size; i++) {
+			if (!expr.isAST()) {
+				break;
+			}
+			IASTMutable ast=(IASTMutable)expr;
+			expr = ast.get(positions[i]);
+			if (i == (size - 1)) {
+				ast.set(positions[i], value);
+				return expr;
+			}
+		}
+		return null;
+	}
 
 	@Override
 	public final IExpr getPart(final List<Integer> positions) {

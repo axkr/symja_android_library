@@ -136,10 +136,66 @@ public final class ListFunctions {
 		int toInt(T position);
 	}
 
+	public static class MultipleConstArrayFunction implements IArrayFunction {
+		final IExpr fConstantExpr;
+
+		public MultipleConstArrayFunction(final IExpr expr) {
+			fConstantExpr = expr;
+		}
+
+		@Override
+		public IExpr evaluate(final IExpr[] index) {
+			return fConstantExpr;
+		}
+	}
+
+	public static class ArrayIterator implements IIterator<IExpr> {
+		int fCurrent;
+
+		final int fFrom;
+
+		final int fTo;
+
+		public ArrayIterator(final int to) {
+			this(1, to);
+		}
+
+		public ArrayIterator(final int from, final int length) {
+			fFrom = from;
+			fCurrent = from;
+			fTo = from + length - 1;
+		}
+
+		@Override
+		public boolean setUp() {
+			return true;
+		}
+
+		@Override
+		public void tearDown() {
+			fCurrent = fFrom;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return fCurrent <= fTo;
+		}
+
+		@Override
+		public IExpr next() {
+			return F.integer(fCurrent++);
+		}
+
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+
+	}
 	/**
 	 * Table structure generator (i.e. lists, vectors, matrices, tensors)
 	 */
-	private static class TableGenerator {
+	public static class TableGenerator {
 
 		final List<? extends IIterator<IExpr>> fIterList;
 
@@ -1342,62 +1398,7 @@ public final class ListFunctions {
 	 * </pre>
 	 */
 	private final static class ConstantArray extends AbstractEvaluator {
-		private static class MultipleConstArrayFunction implements IArrayFunction {
-			final IExpr fConstantExpr;
 
-			public MultipleConstArrayFunction(final IExpr expr) {
-				fConstantExpr = expr;
-			}
-
-			@Override
-			public IExpr evaluate(final IExpr[] index) {
-				return fConstantExpr;
-			}
-		}
-
-		private static class ArrayIterator implements IIterator<IExpr> {
-			int fCurrent;
-
-			final int fFrom;
-
-			final int fTo;
-
-			public ArrayIterator(final int to) {
-				this(1, to);
-			}
-
-			public ArrayIterator(final int from, final int length) {
-				fFrom = from;
-				fCurrent = from;
-				fTo = from + length - 1;
-			}
-
-			@Override
-			public boolean setUp() {
-				return true;
-			}
-
-			@Override
-			public void tearDown() {
-				fCurrent = fFrom;
-			}
-
-			@Override
-			public boolean hasNext() {
-				return fCurrent <= fTo;
-			}
-
-			@Override
-			public IExpr next() {
-				return F.integer(fCurrent++);
-			}
-
-			@Override
-			public void remove() {
-				throw new UnsupportedOperationException();
-			}
-
-		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1409,9 +1410,10 @@ public final class ListFunctions {
 				if ((ast.size() >= 3) && (ast.size() <= 5)) {
 					int indx1, indx2;
 					final List<ArrayIterator> iterList = new ArrayList<ArrayIterator>();
+					final IExpr constantExpr = ast.arg1();
 					if ((ast.isAST2()) && (ast.arg2().isInteger())) {
 						indx1 = Validate.checkIntType(ast, 2);
-						return F.constantArray(ast.arg1(), indx1);
+						return F.constantArray(constantExpr, indx1);
 					} else if ((ast.isAST2()) && ast.arg2().isList()) {
 						final IAST dimIter = (IAST) ast.arg2();
 						for (int i = 1; i < dimIter.size(); i++) {
@@ -1438,7 +1440,6 @@ public final class ListFunctions {
 						if (ast.size() == 5) {
 							resultList = F.ast(ast.arg4());
 						}
-						final IExpr constantExpr = ast.arg1();
 						final TableGenerator generator = new TableGenerator(iterList, resultList,
 								new MultipleConstArrayFunction(constantExpr));
 						return generator.table();
