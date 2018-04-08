@@ -218,6 +218,11 @@ public final class StringFunctions {
 			return F.$str(buf.toString());
 
 		}
+		
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
+		}
 	}
 
 	private static class StringLength extends AbstractFunctionEvaluator {

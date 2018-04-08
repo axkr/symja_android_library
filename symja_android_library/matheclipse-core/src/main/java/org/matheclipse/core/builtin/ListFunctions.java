@@ -1319,7 +1319,11 @@ public final class ListFunctions {
 			}
 			return F.NIL;
 		}
-
+		
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
+		}
 	}
 
 	/**
@@ -2179,6 +2183,11 @@ public final class ListFunctions {
 			// }
 			return result;
 		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
+		}
 	}
 
 	private static class Insert extends AbstractCoreFunctionEvaluator {
@@ -2267,10 +2276,6 @@ public final class ListFunctions {
 	 */
 	private final static class Join extends AbstractFunctionEvaluator {
 
-		public Join() {
-			super();
-		}
-
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 3);
@@ -2302,6 +2307,11 @@ public final class ListFunctions {
 				result.appendArgs((IAST) ast.get(i));
 			}
 			return result;
+		}
+		
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
 		}
 	}
 
@@ -4853,6 +4863,10 @@ public final class ListFunctions {
 			return result;
 		}
 
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
+		}
 	}
 
 	/**

@@ -40,7 +40,6 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.util.Options;
-import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.AbstractIntegerSym;
 import org.matheclipse.core.expression.F;
@@ -2183,6 +2182,7 @@ public final class NumberTheory {
 	 * </pre>
 	 */
 	private static class Multinomial extends AbstractFunctionEvaluator {
+
 		public static IInteger multinomial(final IAST ast) {
 			IInteger[] k = new IInteger[ast.argSize()];
 			IInteger n = F.C0;
@@ -2218,7 +2218,7 @@ public final class NumberTheory {
 
 		@Override
 		public void setUp(ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		}
 	}
 

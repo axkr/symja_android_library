@@ -4549,8 +4549,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Multinomial(2, 3)", "10");
 		check("Multinomial(f(x))", "1");
 		check("Multinomial(f(x), g(x))", "Binomial(f(x)+g(x),f(x))");
-		check("Multinomial(n-k, k)", "Binomial(n,-k+n)");
-		check("Multinomial(k, 2)", "Binomial(2+k,k)");
+		check("Multinomial(n-k, k)", "Binomial(n,k)");
+		check("Multinomial(k, 2)", "1/2*(1+k)*(2+k)");
 	}
 
 	public void testMultiplicativeOrder() {
@@ -6247,19 +6247,40 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRange() {
-		// check("Range(0,10,Pi)", "");
-		check("Range(5)", "{1,2,3,4,5}");
-		check("Range(-3, 2)", "{-3,-2,-1,0,1,2}");
-		check("Range(0, 2, 1/3)", "{0,1/3,2/3,1,4/3,5/3,2}");
-		check("Range(1.2, 2.2, 0.15)", "{1.2,1.35,1.5,1.65,1.8,1.95,2.1}");
+		check("Range(0,10,Pi)", //
+				"{0,Pi,2*Pi,3*Pi}");
+		check("x * Range(-1, 1, 1/5)", //
+				"{-x,-4/5*x,-3/5*x,-2/5*x,-x/5,0,x/5,2/5*x,3/5*x,4/5*x,x}");
+		check("a + Range(0, 3, Pi/8)", //
+				"{a,a+Pi/8,a+Pi/4,a+3/8*Pi,a+Pi/2,a+5/8*Pi,a+3/4*Pi,a+7/8*Pi}");
+		check("x^Range(n, n + 10, 2)", //
+				"{x^n,x^(2+n),x^(4+n),x^(6+n),x^(8+n),x^(10+n)}");
+		check("Range(a, a + 12*n, 2*n)", //
+				"{a,a+2*n,a+4*n,a+6*n,a+8*n,a+10*n,a+12*n}");
 
-		check("Range(0)", "{}");
-		check("Range(1)", "{1}");
-		check("Range(-1)", "{}");
-		check("Range(10)", "{1,2,3,4,5,6,7,8,9,10}");
-		check("Range(1,10,2)", "{1,3,5,7,9}");
-		check("Range(10,20,3)", "{10,13,16,19}");
-		check("Range(10,1,-1)", "{10,9,8,7,6,5,4,3,2,1}");
+		check("Range(5)", //
+				"{1,2,3,4,5}");
+		check("Range(-3, 2)", //
+				"{-3,-2,-1,0,1,2}");
+		check("Range(0, 2, 1/3)", //
+				"{0,1/3,2/3,1,4/3,5/3,2}");
+		check("Range(1.2, 2.2, 0.15)", //
+				"{1.2,1.35,1.5,1.65,1.8,1.95,2.1}");
+
+		check("Range(0)", //
+				"{}");
+		check("Range(1)", //
+				"{1}");
+		check("Range(-1)", //
+				"{}");
+		check("Range(10)", //
+				"{1,2,3,4,5,6,7,8,9,10}");
+		check("Range(1,10,2)", //
+				"{1,3,5,7,9}");
+		check("Range(10,20,3)", //
+				"{10,13,16,19}");
+		check("Range(10,1,-1)", //
+				"{10,9,8,7,6,5,4,3,2,1}");
 
 	}
 
@@ -7937,6 +7958,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTable() {
+		check("Table(a + dx, {dx, 0, 3, Pi/8})", //
+				"{a,a+Pi/8,a+Pi/4,a+3/8*Pi,a+Pi/2,a+5/8*Pi,a+3/4*Pi,a+7/8*Pi}");
 		check("Table(0.0^x, {x, -1.0, 1.0, 0.25})", //
 				"{ComplexInfinity,ComplexInfinity,ComplexInfinity,ComplexInfinity,Indeterminate,0.0,0.0,0.0,0.0}");
 		check("Table(0^x, {x,-1, 1,1/4})", //
