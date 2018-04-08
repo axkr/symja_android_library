@@ -360,6 +360,11 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 						throw new ArithmeticException(
 								"JASConvert:expr2Poly - invalid exponent: " + ast.arg2().toString());
 					}
+					if (exponent < 0) {
+						return new ExprPolynomial(this, ast);
+//						ExpVectorLong e = new ExpVectorLong(vars.argSize(), ix, 0);
+//						return getOne().multiply(e);
+					}
 					ExpVectorLong e = new ExpVectorLong(vars.argSize(), ix, exponent);
 					return getOne().multiply(e);
 				}

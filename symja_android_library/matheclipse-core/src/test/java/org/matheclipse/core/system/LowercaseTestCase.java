@@ -918,8 +918,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Coefficient(poly, x, 5)", //
 				"84*c^5*y^2-84*c^5*y*z+21*c^5*z^2");
 		check("coeff[[6]]", //
-				"{{0,0,21*c^5,0,0,0,0,0},{0,-84*c^5,0,0,0,0,0,0},{84*c^5,0,0,0,0,0,0,0},{0,0,0,0,\n" + 
-				"0,0,0,0},{0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0}}");
+				"{{0,0,21*c^5,0,0,0,0,0},{0,-84*c^5,0,0,0,0,0,0},{84*c^5,0,0,0,0,0,0,0},{0,0,0,0,\n"
+						+ "0,0,0,0},{0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0},{0,0,0,0,0,0,0,0}}");
 		check("Part(coeff, 6,1,3)", //
 				"21*c^5");
 		check("Part(coeff, 6,2,2)", //
@@ -992,15 +992,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCoefficientList() {
-//		check("CoefficientList(x^2*y^2 + 3*x + 4*y+y^w, {x, y})", //
-//				"{{y^w,4,0},{3,0,0},{0,0,1}}");
-//		check("CoefficientList(x^2*y^2 + 3*x + 4*y+3/(y^4)", //
-//				"{{3/(y^4),4,0},{3,0,0},{0,0,1}}");
-		check("CoefficientList[x^2*y^2 + 3*x + 4*y + 7*y^5, {x, y}]", //
+		check("CoefficientList(x^2*y^2 + 3*x + 4*y+y^w, {x, y})", //
+				"{{y^w,4,0},{3,0,0},{0,0,1}}");
+		check("CoefficientList(x^2*y^2 + 3*x + 4*y+3/(y^4), {x, y})", //
+				"{{3/y^4,4,0},{3,0,0},{0,0,1}}");
+		check("CoefficientList(x^2*y^2 + 3*x + 4*y+Sin(y), {x, y})", //
+				"{{Sin(y),4,0},{3,0,0},{0,0,1}}");
+		check("CoefficientList(x^2*y^2 + 3*x + 4*y+Sin(y)^3, {x, y})", //
+				"{{Sin(y)^3,4,0},{3,0,0},{0,0,1}}");
+		check("CoefficientList(0, {x})", //
+				"{}");
+		check("CoefficientList(0, {x, y})", //
+				"{}");
+		check("CoefficientList(x^2*y^2 + 3*x + 4*y + 7*y^5, {x, y})", //
 				"{{0,4,0,0,0,7},{3,0,0,0,0,0},{0,0,1,0,0,0}}");
-		check("CoefficientList[x^2*y^2 + 3*x + 4*y + 7*y^5, {x, y, z}]", //
+		check("CoefficientList(x^2*y^2 + 3*x + 4*y + 7*y^5, {x, y, z})", //
 				"{{{0},{4},{0},{0},{0},{7}},{{3},{0},{0},{0},{0},{0}},{{0},{0},{1},{0},{0},{0}}}");
-		check("CoefficientList[x^2*y^2 + 3*x + 4*y + 7*y^5+z, {x, y, z}]", //
+		check("CoefficientList(x^2*y^2 + 3*x + 4*y + 7*y^5+z, {x, y, z})", //
 				"{{{0,1},{4,0},{0,0},{0,0},{0,0},{7,0}},{{3,0},{0,0},{0,0},{0,0},{0,0},{0,0}},{{0,\n"
 						+ "0},{0,0},{1,0},{0,0},{0,0},{0,0}}}");
 
@@ -1009,15 +1017,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("CoefficientList(x^2*y^2 + 3*x + 4*y, {x, y, z})", //
 				"{{{0},{4},{0}},{{3},{0},{0}},{{0},{0},{1}}}");
 
-		check("CoefficientList(a+b*x, x)", "{a,b}");
-		check("CoefficientList(a+b*x+c*x^2, x)", "{a,b,c}");
-		check("CoefficientList(a+c*x^2, x)", "{a,0,c}");
-		check("CoefficientList(0, x)", "{}");
-		check("CoefficientList((x+3)^5, x)", "{243,405,270,90,15,1}");
-		check("CoefficientList(1 + 6*x - x^4, x)", "{1,6,0,0,-1}");
-		check("CoefficientList((1 + x)^10 , x)", "{1,10,45,120,210,252,210,120,45,10,1}");
-		check("CoefficientList(a*42*x^3+12*b*x+c*4, x)", "{4*c,12*b,0,42*a}");
-		check("CoefficientList((1.0 + x)^10 , x)", "{1.0,10.0,45.0,120.0,210.0,252.0,210.0,120.0,45.0,10.0,1}");
+		check("CoefficientList(a+b*x, x)", //
+				"{a,b}");
+		check("CoefficientList(a+b*x+c*x^2, x)", //
+				"{a,b,c}");
+		check("CoefficientList(a+c*x^2, x)", //
+				"{a,0,c}");
+		check("CoefficientList(0, x)", //
+				"{}");
+		check("CoefficientList((x+3)^5, x)", //
+				"{243,405,270,90,15,1}");
+		check("CoefficientList(1 + 6*x - x^4, x)", //
+				"{1,6,0,0,-1}");
+		check("CoefficientList((1 + x)^10 , x)", //
+				"{1,10,45,120,210,252,210,120,45,10,1}");
+		check("CoefficientList(a*42*x^3+12*b*x+c*4, x)", //
+				"{4*c,12*b,0,42*a}");
+		check("CoefficientList((1.0 + x)^10 , x)", //
+				"{1.0,10.0,45.0,120.0,210.0,252.0,210.0,120.0,45.0,10.0,1}");
 	}
 
 	public void testCoefficientRules() {

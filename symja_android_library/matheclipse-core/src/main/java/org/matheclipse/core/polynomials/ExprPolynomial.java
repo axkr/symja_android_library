@@ -2343,9 +2343,8 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 * @return the coefficients of a univariate polynomial up to n degree
 	 */
 	public IAST coefficientList() {
-
-		int size = ring.getVars().size();
-		if (size == 2) {
+		final int varsSize = ring.getVars().size() - 1;
+		if (varsSize == 1) {
 			long exp;
 			if (ring.tord.getEvord() == ExprTermOrder.IGRLEX || ring.tord.getEvord() == ExprTermOrder.REVILEX) {
 				long lastDegree = degree();
@@ -2374,28 +2373,20 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 				}
 				return result;
 			}
-		} else if (size > 2) {
+		} else if (varsSize > 1) {
 			long exp;
-			int[] arr = new int[size - 1];
-			for (int j = 0; j < size - 1; j++) {
+			int[] arr = new int[varsSize];
+			for (int j = 0; j < varsSize; j++) {
 				arr[j] = (int) degree(j) + 1;
 			}
 			IASTMutable constantArray = F.C0.constantArray(F.List, 0, arr);
-
-			long lastDegree = degree();
-			// IASTAppendable result = F.ListAlloc(val.size());
 			for (ExpVectorLong expArray : val.keySet()) {
-				// IExpr[] exprs = new IExpr[(int) lastDegree + 1];
-				// for (int i = 0; i < exprs.length; i++) {
-				// exprs[i] = F.C0;
-				// }
-				int[] positions = new int[size - 1];
+				int[] positions = new int[varsSize];
 				for (int i = 0; i < expArray.length(); i++) {
 					exp = expArray.getVal(i);
 					positions[expArray.varIndex(i)] = (int) exp + 1;
 				}
 				constantArray.setPart(val.get(expArray), positions);
-				// result.append(F.ast(exprs, F.List));
 			}
 			return constantArray;
 		}
