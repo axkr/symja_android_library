@@ -2,11 +2,11 @@ package org.matheclipse.core.eval.util;
 
 import static org.matheclipse.core.expression.F.Divide;
 import static org.matheclipse.core.expression.F.Less;
-import static org.matheclipse.core.expression.F.LessEqual;
 import static org.matheclipse.core.expression.F.Subtract;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.NoEvalException;
+import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IAST;
@@ -129,6 +129,12 @@ public class Iterator {
 				IExpr sub = evalEngine.evaluate(Divide(Subtract(maxCounterOrList, count), step));
 				if (sub.isSignedNumber()) {
 					return !((ISignedNumber) sub).isNegative();
+				}
+				try {
+					double d = sub.evalDouble();
+					return !(d < 0.0);
+				} catch (WrongArgumentType wt) {
+					// return false;
 				}
 				return false;
 				// }
