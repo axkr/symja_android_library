@@ -3410,6 +3410,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegrate() {
+		check("Integrate(2*x,x)", "x^2");
 		check("Integrate(Tan(x) ^ 5, x)", "-Log(Cos(x))-Tan(x)^2/2+Tan(x)^4/4");
 		check("Integrate(x*Sin(x),{x,1.0,2*Pi})", "-6.58435");
 
