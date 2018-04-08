@@ -332,6 +332,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * v.constantArray(2, 3) -> {{v, v, v}, {v, v, v}}
 	 * </pre>
 	 * 
+	 * @param head
+	 *            the head for the new <code>IASTAppendable</code> objects.
 	 * @param startPosition
 	 *            the position from there to create the constant array recusively.
 	 * @param arr
@@ -339,19 +341,19 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @return <code>F.NIL</code> if <code>arr</code> has length 0.
 	 */
-	default IASTAppendable constantArray(final int startPosition, int... arr) {
+	default IASTAppendable constantArray(IExpr head, final int startPosition, int... arr) {
 		if (arr.length - 1 == startPosition) {
-			IASTAppendable list = F.ListAlloc(arr[startPosition]);
+			IExpr[] exprArr = new IExpr[arr[startPosition]];
 			for (int i = 0; i < arr[startPosition]; i++) {
-				list.append(this);
+				exprArr[i] = this;
 			}
-			return list;
+			return F.ast(exprArr, head);
 		}
-		IASTAppendable list = F.ListAlloc(arr[startPosition]);
+		IExpr[] exprArr = new IExpr[arr[startPosition]];
 		for (int i = 0; i < arr[startPosition]; i++) {
-			list.append(constantArray(startPosition + 1, arr));
+			exprArr[i] = constantArray(head, startPosition + 1, arr);
 		}
-		return list;
+		return F.ast(exprArr, head);
 	}
 
 	/**

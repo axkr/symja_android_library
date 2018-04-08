@@ -1182,7 +1182,7 @@ public class F {
 	 * Represents <code>-Pi/2</code> as Symja expression <code>Times(CN1D2, Pi)</code>
 	 */
 	public static IAST CNPiHalf;
-	
+
 	/**
 	 * Represents <code>Pi/2</code> as Symja expression <code>Times(C1D2, Pi)</code>
 	 */
@@ -2258,8 +2258,8 @@ public class F {
 	 *            the initial capacity (i.e. number of arguments without the header element) of the list.
 	 * @return
 	 */
-	public static IAST constantArray(final IExpr value, final int copies) {
-		return constantArray(F.List, value, copies);
+	public static IASTAppendable constantArray(final IExpr value, final int copies) {
+		return value.constantArray(F.List, 0, copies);
 	}
 
 	/**
@@ -2275,14 +2275,8 @@ public class F {
 	 *            the initial capacity (i.e. number of arguments without the header element) of the list.
 	 * @return
 	 */
-	public static IAST constantArray(final IExpr head, final IExpr value, final int copies) {
-		final AST ast = AST.newInstance(copies, head);
-
-		for (int i = 0; i < copies; i++) {
-			ast.append(value);
-		}
-
-		return ast;
+	public static IASTAppendable constantArray(final IExpr head, final IExpr value, final int copies) {
+		return value.constantArray(head, 0, copies);
 	}
 
 	/**
@@ -3164,11 +3158,11 @@ public class F {
 	public static IAST Exists(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Exists, a0, a1);
 	}
-	
+
 	public static IAST Exists(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(Exists, a0, a1, a2);
 	}
-	
+
 	public static IAST EulerE(final IExpr a0) {
 		return unaryAST1(EulerE, a0);
 	}
@@ -3317,15 +3311,15 @@ public class F {
 	public static IAST Floor(final IExpr a0) {
 		return unaryAST1(Floor, a0);
 	}
-	
+
 	public static IAST ForAll(final IExpr a0, final IExpr a1) {
 		return binaryAST2(ForAll, a0, a1);
 	}
-	
+
 	public static IAST ForAll(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(ForAll, a0, a1, a2);
 	}
-	
+
 	/**
 	 * Create a "fractional" number
 	 * 

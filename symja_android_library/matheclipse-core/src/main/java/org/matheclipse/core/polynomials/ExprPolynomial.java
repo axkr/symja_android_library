@@ -2380,7 +2380,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 			for (int j = 0; j < size - 1; j++) {
 				arr[j] = (int) degree(j) + 1;
 			}
-			IASTMutable constantArray = F.C0.constantArray(0, arr);
+			IASTMutable constantArray = F.C0.constantArray(F.List, 0, arr);
 
 			long lastDegree = degree();
 			// IASTAppendable result = F.ListAlloc(val.size());

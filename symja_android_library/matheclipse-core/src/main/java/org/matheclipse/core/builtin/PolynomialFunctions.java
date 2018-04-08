@@ -212,25 +212,26 @@ public class PolynomialFunctions {
 			return coefficientList(expr, list);
 		}
 
-		private static long univariateCoefficientList(IExpr polynomial, final ISymbol variable, List<IExpr> resultList)
-				throws JASConversionException {
-			try {
-				ExprPolynomialRing ring = new ExprPolynomialRing(F.List(variable));
-				ExprPolynomial poly = ring.create(polynomial);
-				IAST list = poly.coefficientList();
-				int degree = list.size() - 2;
-				if (degree >= Short.MAX_VALUE) {
-					return degree;
-				}
-				for (int i = 0; i <= degree; i++) {
-					IExpr temp = list.get(i + 1);
-					resultList.add(temp);
-				}
-				return degree;
-			} catch (RuntimeException ex) {
-				throw new WrongArgumentType(polynomial, "Polynomial expected!");
-			}
-		}
+		// private static long univariateCoefficientList(IExpr polynomial, final ISymbol variable, List<IExpr>
+		// resultList)
+		// throws JASConversionException {
+		// try {
+		// ExprPolynomialRing ring = new ExprPolynomialRing(F.List(variable));
+		// ExprPolynomial poly = ring.create(polynomial);
+		// IAST list = poly.coefficientList();
+		// int degree = list.size() - 2;
+		// if (degree >= Short.MAX_VALUE) {
+		// return degree;
+		// }
+		// for (int i = 0; i <= degree; i++) {
+		// IExpr temp = list.get(i + 1);
+		// resultList.add(temp);
+		// }
+		// return degree;
+		// } catch (RuntimeException ex) {
+		// throw new WrongArgumentType(polynomial, "Polynomial expected!");
+		// }
+		// }
 
 		/**
 		 * 
@@ -243,32 +244,32 @@ public class PolynomialFunctions {
 		 * @return the degree of the univariate polynomial; if <code>degree >= Short.MAX_VALUE</code>, the result list
 		 *         will be empty.
 		 */
-		private static long univariateCoefficientList(IExpr polynomial, ISymbol variable, List<IExpr> resultList,
-				List<IExpr> resultListDiff) throws JASConversionException {
-			try {
-				ExprPolynomialRing ring = new ExprPolynomialRing(F.List(variable));
-				ExprPolynomial poly = ring.create(polynomial);
-				IAST polyExpr = poly.coefficientList();
-
-				int degree = polyExpr.size() - 2;
-				if (degree >= Short.MAX_VALUE) {
-					return degree;
-				}
-				for (int i = 0; i <= degree; i++) {
-					IExpr temp = polyExpr.get(i + 1);
-					resultList.add(temp);
-				}
-				IAST polyDiff = poly.derivative().coefficientList();
-				int degreeDiff = polyDiff.size() - 2;
-				for (int i = 0; i <= degreeDiff; i++) {
-					IExpr temp = polyDiff.get(i + 1);
-					resultListDiff.add(temp);
-				}
-				return degree;
-			} catch (RuntimeException ex) {
-				throw new WrongArgumentType(polynomial, "Polynomial expected!");
-			}
-		}
+		// private static long univariateCoefficientList(IExpr polynomial, ISymbol variable, List<IExpr> resultList,
+		// List<IExpr> resultListDiff) throws JASConversionException {
+		// try {
+		// ExprPolynomialRing ring = new ExprPolynomialRing(F.List(variable));
+		// ExprPolynomial poly = ring.create(polynomial);
+		// IAST polyExpr = poly.coefficientList();
+		//
+		// int degree = polyExpr.size() - 2;
+		// if (degree >= Short.MAX_VALUE) {
+		// return degree;
+		// }
+		// for (int i = 0; i <= degree; i++) {
+		// IExpr temp = polyExpr.get(i + 1);
+		// resultList.add(temp);
+		// }
+		// IAST polyDiff = poly.derivative().coefficientList();
+		// int degreeDiff = polyDiff.size() - 2;
+		// for (int i = 0; i <= degreeDiff; i++) {
+		// IExpr temp = polyDiff.get(i + 1);
+		// resultListDiff.add(temp);
+		// }
+		// return degree;
+		// } catch (RuntimeException ex) {
+		// throw new WrongArgumentType(polynomial, "Polynomial expected!");
+		// }
+		// }
 	}
 
 	/**

@@ -813,17 +813,13 @@ public final class LinearAlgebra {
 	 */
 	private static class Dimensions extends AbstractFunctionEvaluator {
 
-		private static IAST getDmensions(final IAST ast, int maximumLevel) {
+		private static IAST getDimensions(final IAST ast, int maximumLevel) {
 			IAST list = (IAST) ast.arg1();
 			IExpr header = list.head();
 			ArrayList<Integer> dims = dimensions(list, header, maximumLevel - 1);
 			int dimsSize = dims.size();
 			IASTAppendable res = F.ListAlloc(dimsSize);
 			return res.appendArgs(0, dimsSize, i -> F.integer(dims.get(i).intValue()));
-			// for (int i = 0; i < dimsSize; i++) {
-			// res.append(F.integer(dims.get(i).intValue()));
-			// }
-			// return res;
 		}
 
 		@Override
@@ -836,7 +832,7 @@ public final class LinearAlgebra {
 			}
 			if (ast.arg1().isAST()) {
 				if (maximumLevel > 0) {
-					return getDmensions(ast, maximumLevel);
+					return getDimensions(ast, maximumLevel);
 				}
 				return F.List();
 			}
