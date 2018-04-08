@@ -1239,18 +1239,26 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
+			Validate.checkRange(ast, 3);
 
-			if (!ast.arg1().isAtom() && !ast.arg2().isAtom()) {
+			if (ast.arg1().isAST() && ast.arg2().isAST()) {
 
 				final IAST arg1 = (IAST) ast.arg1();
 				final IAST arg2 = (IAST) ast.arg2();
-				return complement(arg1, arg2);
+				IAST result = complement(arg1, arg2);
+				for (int i = 3; i < ast.size(); i++) {
+					if (ast.get(i).isAST()) {
+						result = complement(result, (IAST) ast.get(i));
+					} else {
+						return F.NIL;
+					}
+				}
+				return result;
 			}
 			return F.NIL;
 		}
 
-		public static IExpr complement(final IAST arg1, final IAST arg2) {
+		public static IAST complement(final IAST arg1, final IAST arg2) {
 
 			Set<IExpr> set2 = arg2.asSet();
 			Set<IExpr> set3 = new HashSet<IExpr>();

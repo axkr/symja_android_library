@@ -395,13 +395,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArray() {
-		check("Array(f, {2, 3}, 1, Plus)", "f(1,1)+f(1,2)+f(1,3)+f(2,1)+f(2,2)+f(2,3)");
-		check("Array(f, {2, 3}, {1, 2, 3})", "Array(f,{2,3},{1,2,3})");
-		check("Array(f, 4)", "{f(1),f(2),f(3),f(4)}");
-		check("Array(f, 10, 0)", "{f(0),f(1),f(2),f(3),f(4),f(5),f(6),f(7),f(8),f(9)}");
-		check("Array(f, {2, 3})", "{{f(1,1),f(1,2),f(1,3)},{f(2,1),f(2,2),f(2,3)}}");
-		check("Array(f, {2, 3}, {4, 6})", "{{f(4,6),f(4,7),f(4,8)},{f(5,6),f(5,7),f(5,8)}}");
-		check("Array(f, {2, 3}, {0, 4})", "{{f(0,4),f(0,5),f(0,6)},{f(1,4),f(1,5),f(1,6)}}");
+		check("Array(Cos(#/4)&, 12, 4)", //
+				"{Cos(1),Cos(5/4),Cos(3/2),Cos(7/4),Cos(2),Cos(9/4),Cos(5/2),Cos(11/4),Cos(3),Cos(\n"
+						+ "13/4),Cos(7/2),Cos(15/4)}");
+		check("Array(Cos(#/4)&, 12, 4, Min)", //
+				"Cos(13/4)");
+		check("Array(f, {2, 3}, 1, Plus)", //
+				"f(1,1)+f(1,2)+f(1,3)+f(2,1)+f(2,2)+f(2,3)");
+		check("Array(f, {2, 3}, {1, 2, 3})", //
+				"Array(f,{2,3},{1,2,3})");
+		check("Array(f, 4)", //
+				"{f(1),f(2),f(3),f(4)}");
+		check("Array(f, 10, 0)", //
+				"{f(0),f(1),f(2),f(3),f(4),f(5),f(6),f(7),f(8),f(9)}");
+		check("Array(f, {2, 3})", //
+				"{{f(1,1),f(1,2),f(1,3)},{f(2,1),f(2,2),f(2,3)}}");
+		check("Array(f, {2, 3}, {4, 6})", //
+				"{{f(4,6),f(4,7),f(4,8)},{f(5,6),f(5,7),f(5,8)}}");
+		check("Array(f, {2, 3}, {0, 4})", //
+				"{{f(0,4),f(0,5),f(0,6)},{f(1,4),f(1,5),f(1,6)}}");
+
 		// TODO implement other non-integer based iterators
 		// check("Array[f, 10, {0, 1}]", "");
 	}
@@ -1101,6 +1114,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Commonest({b, a, c, 2, a, b, 1, 2}, 4)", "{b,a,2,c}");
 		check("Commonest({b, a, c, 2, a, b, 1, 2})", "{b,a,2}");
 		check("Commonest({1, 2, 2, 3, 3, 3, 4})", "{3}");
+	}
+
+	public void testComplement() {
+		check("Complement({3, 2, 7, 5, 2, 2, 3, 4, 5, 6, 1}, {2, 3}, {4, 6, 27, 23})", //
+				"{1,5,7}");
+		check("Complement({1,2,3},{2,3,4})", //
+				"{1}");
+		check("Complement({2,3,4},{1,2,3})", //
+				"{4}");
+
 	}
 
 	public void testComplex() {
