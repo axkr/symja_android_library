@@ -18,3 +18,12 @@ See:
 >> Complement({2,3,4},{1,2,3})
 {4}
 ```
+
+In the line below we get all elements that are in `{3, 2, 7, 5, 2, 2, 3, 4, 5, 6, 1}` but not in `{2, 3}` or `{4, 6, 27, 23}`. 
+Of course this would work with lists of arbitrary expressions, not only numbers.
+
+```
+>> Complement({3, 2, 7, 5, 2, 2, 3, 4, 5, 6, 1}, {2, 3}, {4, 6, 27, 23})
+{1,5,7}
+```
+ 
