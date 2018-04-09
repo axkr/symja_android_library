@@ -900,6 +900,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCoefficient() {
+		check("Coefficient(x^2*y^2 + 3*x + 4*y+y^w, y, 0)", //
+				"3*x+y^w");
+		check("Coefficient(x^2*y^2 + 3*x + 4*y+3/(y^4), x, 0)", //
+				"3/y^4+4*y");
+		check("Coefficient(x^2*y^2 + 3*x + 4*y+Sin(y), x, 0)", //
+				"4*y+Sin(y)");
+		check("Coefficient(x^2*y^2 + 3*x + 4*y+Sin(y), y, 0)", //
+				"3*x+Sin(y)");
+		check("Coefficient(x^2*y^2 + 3*x + 4*y+Sin(y)^3, x, 0)", //
+				"4*y+Sin(y)^3");
+		check("Coefficient(x^2*y^2 + 3*x + 4*y+Sin(y)^3, y, 0)", //
+				"3*x+Sin(y)^3");
+
 		check("poly=(c*x-2*y+z)^7", //
 				"(c*x-2*y+z)^7");
 		check("Coefficient(poly, x^2*y*z^4)", //

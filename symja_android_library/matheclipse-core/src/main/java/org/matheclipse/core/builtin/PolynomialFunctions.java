@@ -182,10 +182,10 @@ public class PolynomialFunctions {
 				IExpr expr = F.evalExpandAll(ast.arg1(), engine);
 				ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, listOfVariables,
 						listOfVariables.argSize());
-				ExprPolynomial poly = ring.create(expr, true, true);
+				ExprPolynomial poly = ring.create(expr, true, false);
 				return poly.coefficient(expArr);
 			} catch (RuntimeException ae) {
-				if (Config.DEBUG) {
+				if (Config.SHOW_STACKTRACE) {
 					ae.printStackTrace();
 				}
 				return F.C0;
