@@ -3052,19 +3052,19 @@ public class MainTestCase extends AbstractTestCase {
 
 		check("MatchQ(linear(a+42+60*c,h), linear(a_. + b_. * x_, x_))", "False");
 		// check("b_. x_","");
-		check("MatchQ(a+b+c+d, Plus(_,_))", "True");
+		check("MatchQ(a+b+c+d, HoldPattern(Plus(_,_)))", "True");
 		check("Times(_,_)", "_^2");
-		check("MatchQ(a+b+c+d, Times(_,_))", "False");
+		check("MatchQ(a+b+c+d, HoldPattern(Times(_,_)))", "False");
 
 		check("MatchQ(I, Complex(0,x_))", "True");
 		check("MatchQ(Sin(x)^3, Sin(a_.*x_)^n_IntegerQ)", "True");
 		check("MatchQ(powered(h,h), powered(x_ ^ a_., x_))", "True");
 		check("MatchQ(powered(h^3,h), powered(x_ ^ a_., x_))", "True");
 		check("MatchQ(42, _IntegerQ)", "True");
-		check("MatchQ(a+b+c+d, Times(_,_))", "False");
-		check("MatchQ(a+b+c+d, Plus(_,_))", "True");
-		check("MatchQ(Expand((a+b)^2), Plus(_,_))", "True");
-		check("MatchQ(Expand((a*b)^2), Plus(_,_))", "False");
+		check("MatchQ(a+b+c+d, HoldPattern(Times(_,_)))", "False");
+		check("MatchQ(a+b+c+d, HoldPattern(Plus(_,_)))", "True");
+		check("MatchQ(Expand((a+b)^2), HoldPattern(Plus(_,_)))", "True");
+		check("MatchQ(Expand((a*b)^2), HoldPattern(Plus(_,_)))", "False");
 		check("MatchQ({a,b,c}, _List)", "True");
 		check("MatchQ(linear(42+d,d), linear(a_. + b_. * x_, x_))", "True");
 		check("MatchQ(linear(h,h), linear(a_. + b_. * x_, x_))", "True");

@@ -473,16 +473,23 @@ public class PredicateQ {
 			}
 			if ((ast.isAST2())) {
 				final IExpr arg1 = engine.evaluate(ast.arg1());
-				final IExpr arg2 = engine.evaluate(ast.arg2());
+				IExpr arg2 = ast.arg2();
+				if (!arg2.isCondition()) {
+					try {
+						arg2 = engine.evaluate(arg2);
+					} catch (RuntimeException rte) {
+
+					}
+				}
 				return F.bool(engine.evalPatternMatcher(arg2).test(arg1, engine));
 			}
 			return F.False;
 		}
 
-//		@Override
-//		public void setUp(final ISymbol newSymbol) {
-//			newSymbol.setAttributes(ISymbol.HOLDREST);
-//		}
+		// @Override
+		// public void setUp(final ISymbol newSymbol) {
+		// newSymbol.setAttributes(ISymbol.HOLDREST);
+		// }
 
 	}
 
