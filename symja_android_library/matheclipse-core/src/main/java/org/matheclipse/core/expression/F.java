@@ -423,6 +423,7 @@ public class F {
 	public final static IBuiltInSymbol HoldAll = BuiltIns.valueOf(BuiltIns.HoldAll);
 	public final static IBuiltInSymbol HoldFirst = BuiltIns.valueOf(BuiltIns.HoldFirst);
 	public final static IBuiltInSymbol HoldForm = BuiltIns.valueOf(BuiltIns.HoldForm);
+    public final static IBuiltInSymbol HoldPattern = BuiltIns.valueOf(BuiltIns.HoldPattern);
 	public final static IBuiltInSymbol HoldRest = BuiltIns.valueOf(BuiltIns.HoldRest);
 	public final static IBuiltInSymbol Horner = BuiltIns.valueOf(BuiltIns.Horner);
 	public final static IBuiltInSymbol HornerForm = BuiltIns.valueOf(BuiltIns.HornerForm);
@@ -3498,6 +3499,10 @@ public class F {
 		return unaryAST1(HoldForm, a0);
 	}
 
+	public static IAST HoldPattern(final IExpr a0) {
+		return unaryAST1(HoldPattern, a0);
+	}
+	
 	public static IAST HurwitzZeta(final IExpr a0, final IExpr a1) {
 		return binaryAST2(HurwitzZeta, a0, a1);
 	}

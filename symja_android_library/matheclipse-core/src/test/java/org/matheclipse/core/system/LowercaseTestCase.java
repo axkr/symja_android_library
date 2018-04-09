@@ -3223,8 +3223,37 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHoldForm() {
-		check("HoldForm(3*2)", "3*2");
-		check("HoldForm(6/8)==6/8", "6/8==3/4");
+		check("HoldForm(3*2)", //
+				"3*2");
+		check("HoldForm(6/8)==6/8", //
+				"6/8==3/4");
+	}
+
+	public void testHoldPattern() {
+		check("MatchQ(And(x, y, z), p__)", //
+				"True");
+		// because of OneIdentity attribute for Times
+		check("MatchQ(And(x, y, z), Times(p__))", //
+				"True");
+		check("Times(p__)===And(p__)", //
+				"True");
+		check("MatchQ(And(x, y, z), HoldPattern(Times(p__)))", //
+				"False");
+		check("HoldPattern(Times(p__))===HoldPattern(And(p__))", //
+				"False");
+		check("And(x, y, z)/.HoldPattern(And(a__)) ->List(a)", //
+				"{x,y,z}");
+		check("And(x, y, z)/.And->List", //
+				"{x,y,z}");
+		check("And(x, y, z)/.And(a_,b___)->List(a,b)", //
+				"{x,y,z}");
+
+		check("a + b /. HoldPattern(_ + _) -> 0", //
+				"0");
+		check("MatchQ(Log(a, b), HoldPattern(Log(_)/Log(_)))", //
+				"True");
+		check("Cases({a -> b, c -> d}, HoldPattern(a -> _))", //
+				"{a->b}");
 	}
 
 	public void testHornerForm() {

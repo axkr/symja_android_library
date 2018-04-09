@@ -378,6 +378,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [HoldAll](functions/HoldAll.md)
 * [HoldFirst](functions/HoldFirst.md)
 * [HoldForm](functions/HoldForm.md)
+* [HoldPattern](functions/HoldPattern.md)
 * [HoldRest](functions/HoldRest.md)
 * [HornerForm](functions/HornerForm.md)
 * [I](functions/I.md)

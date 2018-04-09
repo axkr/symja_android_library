@@ -473,15 +473,16 @@ public class PredicateQ {
 			}
 			if ((ast.isAST2())) {
 				final IExpr arg1 = engine.evaluate(ast.arg1());
-				return F.bool(engine.evalPatternMatcher(ast.arg2()).test(arg1, engine));
+				final IExpr arg2 = engine.evaluate(ast.arg2());
+				return F.bool(engine.evalPatternMatcher(arg2).test(arg1, engine));
 			}
 			return F.False;
 		}
 
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDREST);
-		}
+//		@Override
+//		public void setUp(final ISymbol newSymbol) {
+//			newSymbol.setAttributes(ISymbol.HOLDREST);
+//		}
 
 	}
 

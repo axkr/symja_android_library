@@ -1810,6 +1810,12 @@ public abstract class AbstractAST implements IASTMutable {
 	public final boolean isGTOrdered(final IExpr obj) {
 		return compareTo(obj) > 0;
 	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public final boolean isHoldPattern() {
+		return isSameHead(F.HoldPattern, 2);
+	}
 
 	/** {@inheritDoc} */
 	@Override

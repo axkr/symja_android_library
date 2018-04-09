@@ -53,6 +53,7 @@ public final class PatternMatching {
 		F.Definition.setEvaluator(new Definition());
 		F.Get.setEvaluator(new Get());
 		F.Hold.setEvaluator(new Hold());
+		F.HoldPattern.setEvaluator(new HoldPattern());
 		F.Identity.setEvaluator(new Identity());
 		F.Information.setEvaluator(new Information());
 		F.MessageName.setEvaluator(new MessageName());
@@ -400,6 +401,30 @@ public final class PatternMatching {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
+	}
+
+	private static class HoldPattern extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.size() == 2) {
+				IExpr arg1 = ast.arg1();
+				if (arg1.isAST()) {
+					IExpr temp = PatternMatcher.evalLeftHandSide((IAST) arg1, engine);
+					if (temp==arg1) {
+						return F.NIL;
+					}
+					return F.HoldPattern(temp);
+				}
+			}
 			return F.NIL;
 		}
 

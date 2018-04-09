@@ -812,7 +812,9 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			StackMatcher stackMatcher) {
 		boolean matched = false;
 		if (lhsPatternExpr.isAST()) {
-			if (lhsPatternExpr.isCondition()) {
+			if (lhsPatternExpr.isHoldPattern()) {
+				return matchExpr(lhsPatternExpr.first(), lhsEvalExpr, engine, stackMatcher);
+			} else if (lhsPatternExpr.isCondition()) {
 				// expression /; test
 				lhsPatternExpr = fPatternMap.substituteSymbols(lhsPatternExpr);
 				if (lhsPatternExpr.isAST()) {
@@ -830,12 +832,11 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 					return false;
 				}
 			} else if (lhsPatternExpr.isExcept()) {
-				IAST except = (IAST) lhsPatternExpr;
-				if (except.isAST2()) {
-					matched = !matchExpr(except.arg1(), lhsEvalExpr, engine, stackMatcher)
-							&& matchExpr(except.arg2(), lhsEvalExpr, engine, stackMatcher);
+				if (lhsPatternExpr.isAST2()) {
+					matched = !matchExpr(lhsPatternExpr.first(), lhsEvalExpr, engine, stackMatcher)
+							&& matchExpr(lhsPatternExpr.second(), lhsEvalExpr, engine, stackMatcher);
 				} else {
-					matched = !matchExpr(except.arg1(), lhsEvalExpr, engine, stackMatcher);
+					matched = !matchExpr(lhsPatternExpr.first(), lhsEvalExpr, engine, stackMatcher);
 				}
 			} else {
 				IAST lhsPatternAST = (IAST) lhsPatternExpr;
@@ -882,6 +883,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 
 	private boolean matchFlatAndFlatOrderlessAST(final ISymbol sym, final IAST lhsPatternAST, final IAST lhsEvalAST,
 			EvalEngine engine, StackMatcher stackMatcher) {
+		int lhsPatternSize = lhsPatternAST.size();
 		if ((sym.getAttributes() & ISymbol.ORDERLESS) == ISymbol.ORDERLESS) {
 			// System.out.println(lhsPatternAST.toString() + " << >> " +
 			// lhsEvalAST.toString());
@@ -890,7 +892,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				// TODO check for OneIdentity?
 				return matchExpr(lhsPatternAST.arg1(), lhsEvalAST, engine, stackMatcher);
 			}
-			for (int i = 1; i < lhsPatternAST.size(); i++) {
+			for (int i = 1; i < lhsPatternSize; i++) {
 				IExpr temp = lhsPatternAST.get(i);
 				if (!(temp instanceof IPatternObject)) {
 					final int index = i;
@@ -912,20 +914,40 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 			MultisetPartitionsIterator iter = new MultisetPartitionsIterator(visitor, lhsPatternAST.argSize());
 			return !iter.execute();
 		} else {
+			int lhsEvalSize = lhsEvalAST.size();
 			if (lhsPatternAST.isAST1()) {
 				if (lhsPatternAST.arg1().isPatternSequence()) {
 					// TODO only the special case, where the last element is
 					// a pattern sequence, is handled here
 					IASTAppendable seq = F.Sequence();
-					seq.appendAll(lhsEvalAST, 1, lhsEvalAST.size());
+					seq.appendAll(lhsEvalAST, 1, lhsEvalSize);
 					if (((IPatternSequence) lhsPatternAST.arg1()).matchPatternSequence(seq, fPatternMap)) {
 						return true;
 					}
 				}
-				if (lhsPatternAST.size() == lhsEvalAST.size()) {
+				if (lhsPatternSize == lhsEvalSize) {
 					return matchASTSequence(lhsPatternAST, lhsEvalAST, 0, engine, stackMatcher);
 				}
 				return false;
+			} else if (lhsPatternSize > 1) {
+				if (lhsPatternAST.last().isPatternSequence() && lhsPatternSize <= lhsEvalSize) {
+					// TODO only the special case, where the last element is
+					// a pattern sequence, is handled here
+					IAST lhsPatternASTReduced = lhsPatternAST.copyUntil(lhsPatternSize - 1);
+					IExpr[] patternValues = fPatternMap.copyPattern();
+					for (int i = lhsPatternSize - 1; i < lhsEvalSize - 1; i++) {
+						IAST lhsEvalASTReduced = lhsEvalAST.copyUntil(i);
+						if (matchAST(lhsPatternASTReduced, lhsEvalASTReduced, engine, stackMatcher)) {
+							IASTAppendable seq = F.Sequence();
+							seq.appendAll(lhsEvalAST, i, lhsEvalSize);
+							if (((IPatternSequence) lhsPatternAST.last()).matchPatternSequence(seq, fPatternMap)) {
+								return true;
+							}
+						}
+						fPatternMap.resetPattern(patternValues);
+					}
+					return false;
+				}
 			}
 			FlatStepVisitor visitor = new FlatStepVisitor(sym, lhsPatternAST, lhsEvalAST, stackMatcher, fPatternMap);
 			NumberPartitionsIterator iter = new NumberPartitionsIterator(visitor, lhsEvalAST.argSize(),
