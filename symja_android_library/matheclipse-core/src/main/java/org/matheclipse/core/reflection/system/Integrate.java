@@ -240,9 +240,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 				} else if (fx.isAST(F.Times, 3)) {
 					IExpr temp = F.NIL;
 					if (fx.first().equals(x)) {
-						temp = integrateByParts(fx.second(), x, x, 4);
+						temp = integrateByParts(fx.second(), x, x);
 					} else if (fx.second().equals(x)) {
-						temp = integrateByParts(fx.first(), x, x, 4);
+						temp = integrateByParts(fx.first(), x, x);
 					}
 					if (temp.isPresent()) {
 						return temp;
@@ -848,7 +848,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		if (f.isOne() || g.isOne()) {
 			return F.NIL;
 		}
-		return integrateByParts(f, g, symbol, 128);
+		return integrateByParts(f, g, symbol);
 	}
 
 	/**
@@ -890,17 +890,14 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * @param g
 	 *            <code>g(x)</code>
 	 * @param x
-	 * @param recursioLimit
-	 *            TODO
 	 * @return <code>f(x) * g(x) - Integrate(f(x) * g'(x),x )</code>
 	 */
-	private static IExpr integrateByParts(IExpr f, IExpr g, IExpr x, int recursionLimit) {
+	private static IExpr integrateByParts(IExpr f, IExpr g, IExpr x) {
 		EvalEngine engine = EvalEngine.get();
 		int limit = engine.getRecursionLimit();
 		try {
-			if (limit <= 0) {
-				// set recursion limit
-				engine.setRecursionLimit(recursionLimit);
+			if (limit <= 0 || limit > Config.INTEGRATE_BY_PARTS_RECURSION_LIMIT) {
+				engine.setRecursionLimit(Config.INTEGRATE_BY_PARTS_RECURSION_LIMIT);
 			}
 			IExpr firstIntegrate = F.eval(F.Integrate(f, x));
 			if (!firstIntegrate.isFreeAST(Integrate)) {

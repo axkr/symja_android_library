@@ -1583,7 +1583,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("Integrate(Sin(10*x),x)", "-Cos(10*x)/10");
 		check("Integrate(Sin(Pi+10*x),x)", "Cos(10*x)/10");
 		check("Integrate(E^(a*x),x)", "E^(a*x)/a");
-		check("Integrate(x*E^(a*x),x)", "(-E^(a*x)*(1-a*x))/a^2");
+		check("Integrate(x*E^(a*x),x)", "-E^(a*x)/a^2+(E^(a*x)*x)/a");
 		check("Integrate(x*E^x,x)", "-E^x+E^x*x");
 		check("Integrate(x^2*E^x,x)", "2*E^x*(1-x+x^2/2)");
 		check("Integrate(x^2*E^(a*x),x)", "(2*E^(a*x)*(1-a*x+1/2*a^2*x^2))/a^3");

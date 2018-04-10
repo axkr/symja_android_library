@@ -929,25 +929,6 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 					return matchASTSequence(lhsPatternAST, lhsEvalAST, 0, engine, stackMatcher);
 				}
 				return false;
-			} else if (lhsPatternSize > 1) {
-				if (lhsPatternAST.last().isPatternSequence() && lhsPatternSize <= lhsEvalSize) {
-					// TODO only the special case, where the last element is
-					// a pattern sequence, is handled here
-					IAST lhsPatternASTReduced = lhsPatternAST.copyUntil(lhsPatternSize - 1);
-					IExpr[] patternValues = fPatternMap.copyPattern();
-					for (int i = lhsPatternSize - 1; i < lhsEvalSize - 1; i++) {
-						IAST lhsEvalASTReduced = lhsEvalAST.copyUntil(i);
-						if (matchAST(lhsPatternASTReduced, lhsEvalASTReduced, engine, stackMatcher)) {
-							IASTAppendable seq = F.Sequence();
-							seq.appendAll(lhsEvalAST, i, lhsEvalSize);
-							if (((IPatternSequence) lhsPatternAST.last()).matchPatternSequence(seq, fPatternMap)) {
-								return true;
-							}
-						}
-						fPatternMap.resetPattern(patternValues);
-					}
-					return false;
-				}
 			}
 			FlatStepVisitor visitor = new FlatStepVisitor(sym, lhsPatternAST, lhsEvalAST, stackMatcher, fPatternMap);
 			NumberPartitionsIterator iter = new NumberPartitionsIterator(visitor, lhsEvalAST.argSize(),
