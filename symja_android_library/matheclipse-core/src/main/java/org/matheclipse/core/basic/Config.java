@@ -145,7 +145,7 @@ public class Config {
 	/**
 	 * Define the recursion limit for <code>Limit#lHospitalesRule()</code> method.
 	 */
-	public static int LIMIT_lHOSPITAL_RECURSION_LIMIT = 128;
+	public static int LIMIT_LHOSPITAL_RECURSION_LIMIT = 128;
 	
 	/**
 	 * <p>

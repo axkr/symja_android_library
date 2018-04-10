@@ -243,9 +243,9 @@ public class SeriesFunctions {
 			try {
 				int recursionLimit = engine.getRecursionLimit(); 
 				try {
-					if (recursionLimit <= 0 || recursionLimit > Config.LIMIT_lHOSPITAL_RECURSION_LIMIT) {
+					if (recursionLimit <= 0 || recursionLimit > Config.LIMIT_LHOSPITAL_RECURSION_LIMIT) {
 						// set recursion limit for using l'Hospitales rule
-						engine.setRecursionLimit(Config.LIMIT_lHOSPITAL_RECURSION_LIMIT);
+						engine.setRecursionLimit(Config.LIMIT_LHOSPITAL_RECURSION_LIMIT);
 					}
 					IExpr expr = F.evalQuiet(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
 					return evalLimit(expr, data, false);
