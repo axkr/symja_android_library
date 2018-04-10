@@ -241,20 +241,11 @@ public class SeriesFunctions {
 			EvalEngine engine = EvalEngine.get();
 			ISymbol x = data.getSymbol();
 			try {
-				int recursionCounter = engine.incRecursionCounter();
-				int recursionLimit = engine.getRecursionLimit();
-				if (recursionLimit > 0) {
-					if (recursionCounter > recursionLimit) {
-						return F.NIL;
-					}
-					IExpr expr = F.evalQuiet(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
-					// System.out.println(expr.toString());
-					return evalLimit(expr, data, false);
-				}
+				int recursionLimit = engine.getRecursionLimit(); 
 				try {
-					if (recursionLimit <= 0) {
+					if (recursionLimit <= 0 || recursionLimit > Config.LIMIT_lHOSPITAL_RECURSION_LIMIT) {
 						// set recursion limit for using l'Hospitales rule
-						engine.setRecursionLimit(128);
+						engine.setRecursionLimit(Config.LIMIT_lHOSPITAL_RECURSION_LIMIT);
 					}
 					IExpr expr = F.evalQuiet(F.Times(F.D(numerator, x), F.Power(F.D(denominator, x), F.CN1)));
 					return evalLimit(expr, data, false);

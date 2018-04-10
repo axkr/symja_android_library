@@ -138,10 +138,15 @@ public class Config {
 	public final static double DEFAULT_ROOTS_CHOP_DELTA = 1.0e-5;
 
 	/**
-	 * Define the recursion limit for <code>Integrate#integrateByParts()</code>
+	 * Define the recursion limit for <code>Integrate#integrateByParts()</code> method.
 	 */
 	public static int INTEGRATE_BY_PARTS_RECURSION_LIMIT = 10;
 	 
+	/**
+	 * Define the recursion limit for <code>Limit#lHospitalesRule()</code> method.
+	 */
+	public static int LIMIT_lHOSPITAL_RECURSION_LIMIT = 128;
+	
 	/**
 	 * <p>
 	 * Flag for thread usage.
