@@ -63,6 +63,7 @@ import org.matheclipse.core.eval.util.IndexFunctionDiagonal;
 import org.matheclipse.core.eval.util.IndexTableGenerator;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
+import org.matheclipse.core.expression.BuiltInSymbol;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.F;
@@ -71,6 +72,7 @@ import org.matheclipse.core.generic.Comparators.ExprReverseComparator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -2496,17 +2498,37 @@ public final class LinearAlgebra {
 
 	private static class Orthogonalize extends AbstractEvaluator {
 
+		static BuiltInSymbol oneStep = new BuiltInSymbol("oneStep", Integer.MAX_VALUE);
+		static {
+			IEvaluator evaluator = new AbstractEvaluator() {
+				@Override
+				public IExpr evaluate(IAST ast, EvalEngine engine) {
+					IExpr vec = ast.arg1();
+					IExpr vecmat = ast.arg2();
+					if (vecmat.equals(F.List())) {
+						return vec;
+					}
+					// (#1-(vec.#2)/(#2.#2)*#2)&
+					IExpr result = F.Fold(F.Function(F.Plus(F.Slot1,
+							F.Times(F.CN1, F.Dot(vec, F.Slot2), F.Power(F.Dot(F.Slot2, F.Slot2), -1), F.Slot2))), vec,
+							vecmat);
+					return F.eval(result);
+				}
+			};
+			oneStep.setEvaluator(evaluator);
+		} 
+		
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
-			int[] dim = ast.arg1().isMatrix();
+			IExpr arg1 = ast.arg1();
+			int[] dim = arg1.isMatrix();
 			if (dim != null) {
-				// TODO
-				// IAST matrix = (IAST) ast.arg1();
-				// IExpr result = engine.evaluate(F.QRDecomposition(F.ConjugateTranspose(matrix)));
-				// if (result.isAST2()) {
-				// return ((IAST) result).arg1();
-				// }
+				// Gram-Schmidt orthogonalization
+				IExpr result = F.Map(F.Function(F.Normalize(F.Slot1)), //
+						F.Fold(F.Function(F.Append(F.Slot1, F.binary(oneStep, F.Slot2, F.Slot1))), F.List(), arg1));
+
+				return engine.evaluate(result);
 			}
 			return F.NIL;
 		}

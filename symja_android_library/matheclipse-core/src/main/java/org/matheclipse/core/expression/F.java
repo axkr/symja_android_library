@@ -3313,6 +3313,10 @@ public class F {
 		return unaryAST1(Floor, a0);
 	}
 
+	public static IAST Fold(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(Fold, a0, a1, a2);
+	}
+	
 	public static IAST ForAll(final IExpr a0, final IExpr a1) {
 		return binaryAST2(ForAll, a0, a1);
 	}
@@ -4332,6 +4336,11 @@ public class F {
 		return unaryAST1(Norm, a);
 	}
 
+	
+	public static IAST Normalize(final IExpr a) {
+		return unaryAST1(Normalize, a);
+	}
+	
 	public static IAST Not(final IExpr a) {
 		return unaryAST1(Not, a);
 	}

@@ -5282,9 +5282,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("f(a, b, c) /. f(a, c) -> d", "f(b,d)");
 	}
 
-	// public void testOrthogonalize() {
-	// check("Orthogonalize({{1, 0, 1}, {1, 1, 1}})", "");
-	// }
+	public void testOrthogonalize() {
+		check("Orthogonalize({{3,1},{2,2}})", //
+				"{{3/Sqrt(10),1/Sqrt(10)},{-Sqrt(5/2)/5,3/5*Sqrt(5/2)}}");
+		
+		check("Orthogonalize({{1,0,1},{1,1,1}})", //
+				"{{1/Sqrt(2),0,1/Sqrt(2)},{0,1,0}}");
+		check("Orthogonalize({{1, 2}, {3, 1}, {6, 9}, {7, 8}})", //
+				"{{1/Sqrt(5),2/Sqrt(5)},{2/Sqrt(5),-1/Sqrt(5)},{0,0},{0,0}}");
+		check("Orthogonalize({{2,3}, {2,7}, {4,5}})", //
+				"{{2/Sqrt(13),3/Sqrt(13)},{-3/Sqrt(13),2/Sqrt(13)},{0,0}}");
+		check("Orthogonalize({{1,2,3},{5,2,7},{3,5,1}})", //
+				"{{1/Sqrt(14),2/Sqrt(14),3/Sqrt(14)},{5/7*Sqrt(7/6),-4/7*Sqrt(7/6),Sqrt(7/6)/7},{1/Sqrt(\n"
+						+ "3),1/Sqrt(3),-1/Sqrt(3)}}");
+		check("Orthogonalize({{1,0,0},{0,0,1}})", //
+				"{{1,0,0},{0,0,1}}");
+	}
 
 	public void testOuter() {
 		check("Outer(f, {a, b}, {x, y, z})", "{{f(a,x),f(a,y),f(a,z)},{f(b,x),f(b,y),f(b,z)}}");
