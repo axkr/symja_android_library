@@ -409,7 +409,7 @@ public class Parser extends Scanner {
 			getNextToken();
 			final FunctionNode slot = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Slot));
 			if (fToken == TT_DIGIT) {
-				slot.add(getNumber(false));
+				slot.add(fFactory.createInteger(getIntegerNumber()));
 			} else {
 				slot.add(fFactory.createInteger(1));
 			}
@@ -549,12 +549,10 @@ public class Parser extends Scanner {
 	}
 
 	private int getIntegerNumber() throws SyntaxError {
-		final Object[] result = getNumberString();
-		final String number = (String) result[0];
-		final int numFormat = ((Integer) result[1]).intValue();
+		final String number = getIntegerString();
 		int intValue = 0;
 		try {
-			intValue = Integer.parseInt(number, numFormat);
+			intValue = Integer.parseInt(number, 10);
 		} catch (final NumberFormatException e) {
 			throwSyntaxError("Number format error (not an int type): " + number, number.length());
 		}

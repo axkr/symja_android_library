@@ -36,7 +36,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
-import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorExpr;
@@ -416,7 +415,7 @@ public class ExprParser extends ExprScanner {
 			int countPercent = 1;
 			getNextToken();
 			if (fToken == TT_DIGIT) {
-				countPercent = getIntegerNumber();
+				countPercent = getInteger();
 				out.append(F.integer(countPercent));
 				return out;
 			}
@@ -432,14 +431,14 @@ public class ExprParser extends ExprScanner {
 
 			getNextToken();
 			if (fToken == TT_DIGIT) {
-				IExpr slotNumber = getNumber(false);
-				if (slotNumber.equals(F.C1)) {
+				int slotNumber = getInteger();
+				if (slotNumber == 1) {
 					return parseArguments(F.Slot1);
-				} else if (slotNumber.equals(F.C2)) {
+				} else if (slotNumber == 2) {
 					return parseArguments(F.Slot2);
 				}
 				final IASTAppendable slot = F.ast(F.Slot);
-				slot.append(slotNumber);
+				slot.append(F.ZZ(slotNumber));
 				return parseArguments(slot);
 			} else {
 				return parseArguments(F.Slot1);
@@ -744,19 +743,19 @@ public class ExprParser extends ExprScanner {
 
 	}
 
-	private int getIntegerNumber() throws SyntaxError {
-		final Object[] result = getNumberString();
-		final String number = (String) result[0];
-		final int numFormat = ((Integer) result[1]).intValue();
-		int intValue = 0;
-		try {
-			intValue = Integer.parseInt(number, numFormat);
-		} catch (final NumberFormatException e) {
-			throwSyntaxError("Number format error (not an int type): " + number, number.length());
-		}
-		getNextToken();
-		return intValue;
-	}
+	// private int getIntegerNumber() throws SyntaxError {
+	// final Object[] result = getNumberString();
+	// final String number = (String) result[0];
+	// final int numFormat = ((Integer) result[1]).intValue();
+	// int intValue = 0;
+	// try {
+	// intValue = Integer.parseInt(number, numFormat);
+	// } catch (final NumberFormatException e) {
+	// throwSyntaxError("Number format error (not an int type): " + number, number.length());
+	// }
+	// getNextToken();
+	// return intValue;
+	// }
 
 	/**
 	 * Get a list {...}
@@ -816,6 +815,18 @@ public class ExprParser extends ExprScanner {
 		}
 		getNextToken();
 		return temp;
+	}
+
+	private int getInteger() throws SyntaxError {
+		int intValue = 0;
+		final String number = getIntegerString();
+		try {
+			intValue = Integer.parseInt(number, 10);
+		} catch (final NumberFormatException e) {
+			throwSyntaxError("Number format error (not an int type): " + number, number.length());
+		}
+		getNextToken();
+		return intValue;
 	}
 
 	private static INum getReal(String str) {

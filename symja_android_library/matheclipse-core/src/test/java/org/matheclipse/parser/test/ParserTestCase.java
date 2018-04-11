@@ -431,4 +431,16 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
+	
+	public void testParser31() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("#1.#123");
+			assertEquals(obj.toString(),
+					"Dot(Slot(1), Slot(123))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
 }

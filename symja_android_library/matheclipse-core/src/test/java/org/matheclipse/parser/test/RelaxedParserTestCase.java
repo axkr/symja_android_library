@@ -3,6 +3,7 @@ package org.matheclipse.parser.test;
 import junit.framework.TestCase;
 
 import org.matheclipse.parser.client.Parser;
+import org.matheclipse.parser.client.ast.ASTNode;
 
 /**
  * Tests parser functions for the simple parser style
@@ -59,4 +60,16 @@ public class RelaxedParserTestCase extends TestCase {
 			assertEquals("1", "0");
 		}
 	} 
+	
+	public void testParser4() {
+		try {
+			Parser p = new Parser(true);
+			ASTNode obj = p.parse("#1.#123");
+			assertEquals(obj.toString(),
+					"Dot(Slot(1), Slot(123))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
 }

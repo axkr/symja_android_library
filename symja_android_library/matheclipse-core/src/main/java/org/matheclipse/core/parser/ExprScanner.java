@@ -798,6 +798,17 @@ public class ExprScanner {
 		return result;
 	}
 
+	protected String getIntegerString() {
+		numFormat = 10;
+		int startPosition = fCurrentPosition - 1;
+		getChar();
+		while ((fCurrentChar >= '0') && (fCurrentChar <= '9')) {
+			getChar();
+		}
+		int endPosition = fCurrentPosition--;
+		return fInputString.substring(startPosition, --endPosition);
+	}
+
 	protected StringBuilder getStringBuilder() throws SyntaxError {
 		final StringBuilder ident = new StringBuilder();
 
