@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -32,8 +33,12 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.QuantileRules;
+import org.matheclipse.core.reflection.system.rules.StandardDeviationRules;
 
 public class StatisticsFunctions {
+	private static StandardNormalDistribution CStandardNormalDistribution = new StandardNormalDistribution();
+
 	static {
 		F.CDF.setEvaluator(new CDF());
 		F.PDF.setEvaluator(new PDF());
@@ -65,6 +70,7 @@ public class StatisticsFunctions {
 		F.Skewness.setEvaluator(new Skewness());
 		F.StandardDeviation.setEvaluator(new StandardDeviation());
 		F.Standardize.setEvaluator(new Standardize());
+		// F.StandardNormalDistribution.setEvaluator(new StandardNormalDistribution());
 		F.StudentTDistribution.setEvaluator(new StudentTDistribution());
 		F.Variance.setEvaluator(new Variance());
 		F.WeibullDistribution.setEvaluator(new WeibullDistribution());
@@ -79,7 +85,7 @@ public class StatisticsFunctions {
 		 *            the distribution
 		 * @return sample generated using the given random generator
 		 */
-		IExpr randomVariate(IAST distribution);
+		IExpr randomVariate(Random random, IAST distribution);
 	}
 
 	/**
@@ -95,6 +101,8 @@ public class StatisticsFunctions {
 	interface IDiscreteDistribution extends IDistribution {
 		/** @return lowest value a random variable from this distribution may attain */
 		IExpr lowerBound(IAST dist);
+
+		IExpr randomVariate(Random random, IAST dist);
 
 		/**
 		 * @param n
@@ -165,8 +173,8 @@ public class StatisticsFunctions {
 	private static abstract class AbstractDiscreteDistribution extends AbstractEvaluator
 			implements IDiscreteDistribution, IMean, IPDF, IRandomVariate {
 		@Override
-		public final IExpr randomVariate(IAST dist) {
-			return protected_quantile(dist, F.num(ThreadLocalRandom.current().nextDouble()));
+		public final IExpr randomVariate(Random random, IAST dist) {
+			return protected_quantile(dist, F.num(random.nextDouble()));
 		}
 
 		/**
@@ -1443,16 +1451,21 @@ public class StatisticsFunctions {
 
 	}
 
-	private final static class NormalDistribution extends AbstractEvaluator implements ICDF, IMean, IPDF, IVariance {
+	private final static class NormalDistribution extends AbstractEvaluator
+			implements ICDF, IMean, IPDF, IVariance, IRandomVariate {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
+			// 0 or 2 args are allowed
+
 			return F.NIL;
 		}
 
 		@Override
 		public IExpr mean(IAST dist) {
+			if (dist.isAST0()) {
+				return F.C0;
+			}
 			if (dist.isAST2()) {
 				return dist.arg1();
 			}
@@ -1460,29 +1473,46 @@ public class StatisticsFunctions {
 		}
 
 		public IExpr cdf(IAST dist, IExpr k) {
+			if (dist.isAST0()) {
+				IExpr h = // [$ Function( (1/2)*Erfc(-(#1/Sqrt(2))) ) $]
+						F.Function(F.Times(F.C1D2, F.Erfc(F.Times(F.CN1, F.C1DSqrt2, F.Slot1)))); // $$;
+				return F.unaryAST1(h, k);
+			}
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
-				// (1/2)*Erfc((-k + n)/(Sqrt(2)*m))
-				return F.Times(F.C1D2, F.Erfc(F.Times(F.C1DSqrt2, F.Power(m, -1), F.Plus(F.Negate(k), n))));
+				IExpr h = // [$ Function( (1/2)*Erfc((-#1 + n)/(Sqrt(2)*m)) ) $]
+						F.Function(F.Times(F.C1D2,
+								F.Erfc(F.Times(F.Power(F.Times(F.CSqrt2, m), -1), F.Plus(F.Negate(F.Slot1), n))))); // $$;
+				return F.unaryAST1(h, k);
 			}
 			return F.NIL;
 		}
 
 		public IExpr pdf(IAST dist, IExpr k) {
+			if (dist.isAST0()) {
+				IExpr h = // [$ Function(1/(E^(#1^2/2)*Sqrt(2*Pi))) $]
+						F.Function(F.Power(F.Times(F.Exp(F.Times(F.C1D2, F.Sqr(F.Slot1))), F.Sqrt(F.Times(F.C2, F.Pi))),
+								-1)); // $$;
+				return F.unaryAST1(h, k);
+			}
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
-				// 1/(E^((k - n)^2/(2*m^2))*(m*Sqrt(2*Pi)))
-				return F.Times(F.C1DSqrt2,
-						F.Power(F.E, F.Times(F.CN1D2, F.Power(m, -2), F.Sqr(F.Plus(k, F.Negate(n))))), F.Power(m, -1),
-						F.Power(F.Pi, F.CN1D2));
+				IExpr h = // [$ Function( 1/(E^((#1 - n)^2/(2*m^2))*(m*Sqrt(2*Pi))) ) $]
+						F.Function(F.Power(F.Times(F.Exp(
+								F.Times(F.Power(F.Times(F.C2, F.Sqr(m)), -1), F.Sqr(F.Plus(F.Negate(n), F.Slot1)))), m,
+								F.Sqrt(F.Times(F.C2, F.Pi))), -1)); // $$;
+				return F.unaryAST1(h, k);
 			}
 			return F.NIL;
 		}
 
 		@Override
 		public IExpr variance(IAST dist) {
+			if (dist.isAST0()) {
+				return F.C1;
+			}
 			if (dist.isAST2()) {
 				return F.Sqr(dist.arg2());
 			}
@@ -1491,6 +1521,22 @@ public class StatisticsFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
+		}
+
+		@Override
+		public IExpr randomVariate(Random random, IAST dist) {
+			if (dist.isAST0()) {
+				return F.num(random.nextGaussian());
+			}
+			// return protected_quantile(dist, F.num(ThreadLocalRandom.current().nextDouble()));
+			if (dist.isAST2()) {
+				if (dist.arg1().isSignedNumber() && dist.arg1().isPositiveResult()) {
+					double mean = dist.arg1().evalDouble();
+					double sigma = dist.arg2().evalDouble();
+					return F.num(mean + (random.nextGaussian() * sigma));
+				}
+			}
+			return F.NIL;
 		}
 
 	}
@@ -1650,22 +1696,28 @@ public class StatisticsFunctions {
 	 * 1
 	 * </pre>
 	 */
-	private final static class Quantile extends AbstractFunctionEvaluator {
+	private final static class Quantile extends AbstractFunctionEvaluator implements QuantileRules {
+
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
+		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 3, 4);
 
-			int[] dim = ast.arg1().isMatrix();
-			if (dim == null && ast.arg1().isListOfLists()) {
+			IExpr arg1 = ast.arg1();
+			int[] dim = arg1.isMatrix();
+			if (dim == null && arg1.isListOfLists()) {
 				return F.NIL;
 			}
 			if (dim != null) {
-				IAST matrix = (IAST) ast.arg1();
+				IAST matrix = (IAST) arg1;
 				return matrix.mapMatrixColumns(dim, (IExpr x) -> ast.setAtClone(1, x));
 			}
 
-			if (ast.arg1().isList()) {
+			if (arg1.isList()) {
 				IExpr a = F.C0;
 				IExpr b = F.C0;
 				IExpr c = F.C1;
@@ -1682,12 +1734,12 @@ public class StatisticsFunctions {
 					d = arg3.second().second();
 				}
 
-				IAST arg1 = (IAST) ast.arg1();
-				int dim1 = arg1.argSize();
+				IAST list = (IAST) arg1;
+				int dim1 = list.argSize();
 				try {
 					if (dim1 >= 0) {
 
-						final IAST s = EvalAttributes.copySortLess(arg1);
+						final IAST s = EvalAttributes.copySortLess(list);
 						final IInteger length = F.ZZ(s.argSize());
 
 						IExpr q = ast.arg2();
@@ -1740,6 +1792,21 @@ public class StatisticsFunctions {
 						ae.printStackTrace();
 					}
 				}
+			} else if (arg1.isAST()) {
+				IAST dist = (IAST) arg1;
+				if (dist.head().isBuiltInSymbol()) {
+					IBuiltInSymbol head = (IBuiltInSymbol) dist.head();
+					IEvaluator evaluator = head.getEvaluator();
+					if (evaluator instanceof IRandomVariate) {
+						if (arg1.isAST2()) {
+							IExpr function = engine.evaluate(F.Quantile(arg1));
+							if (function.isFunction()) {
+								return F.unaryAST1(function, ast.arg2());
+							}
+						}
+					}
+
+				}
 			}
 			return F.NIL;
 		}
@@ -1761,7 +1828,7 @@ public class StatisticsFunctions {
 
 		@Override
 		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.NOATTRIBUTE);
+			super.setUp(newSymbol);
 		}
 	}
 
@@ -1778,26 +1845,27 @@ public class StatisticsFunctions {
 					if (head instanceof IBuiltInSymbol) {
 						IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
 						if (evaluator instanceof IRandomVariate) {
+							Random random = ThreadLocalRandom.current();
 							IRandomVariate variate = (IRandomVariate) evaluator;
 							if (ast.size() == 3) {
 								IExpr arg2 = ast.arg2();
 								if (arg2.isList()) {
 									int[] indx = Validate.checkListOfInts(arg2, 0, Integer.MAX_VALUE);
 									IASTAppendable list = F.ListAlloc(indx[0]);
-									return createArray(indx, 0, list, () -> variate.randomVariate(dist));
-								} else if (arg2.isInteger()) {
+									return createArray(indx, 0, list, () -> variate.randomVariate(random, dist));
+								} else {
 									int n = arg2.toIntDefault(Integer.MIN_VALUE);
 									if (n >= 0) {
 										IASTAppendable result = F.ListAlloc(n);
 										for (int i = 0; i < n; i++) {
-											result.append(variate.randomVariate(dist));
+											result.append(variate.randomVariate(random, dist));
 										}
 										return result;
 									}
 								}
 								return F.NIL;
 							}
-							return variate.randomVariate(dist);
+							return variate.randomVariate(random, dist);
 						}
 					}
 				}
@@ -1856,7 +1924,12 @@ public class StatisticsFunctions {
 
 	}
 
-	private final static class StandardDeviation extends AbstractFunctionEvaluator {
+	private final static class StandardDeviation extends AbstractFunctionEvaluator implements StandardDeviationRules {
+
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
+		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1876,6 +1949,10 @@ public class StatisticsFunctions {
 			return F.Sqrt(F.Variance(ast.arg1()));
 		}
 
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			super.setUp(newSymbol);
+		}
 	}
 
 	private final static class Standardize extends AbstractEvaluator {
@@ -1899,6 +1976,19 @@ public class StatisticsFunctions {
 				return engine.evaluate(F.Divide(F.Subtract(arg1, F.Mean(arg1)), sd));
 			}
 			return F.NIL;
+		}
+
+	}
+
+	private final static class StandardNormalDistribution {
+
+		public IExpr pdf(IExpr x) {
+			// Function(1/(E^(#1^2/2)*Sqrt[2*Pi]))
+			return F.NIL;
+		}
+
+		public static IExpr randomVariate(Random random) {
+			return F.num(random.nextGaussian());
 		}
 
 	}

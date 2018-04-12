@@ -756,6 +756,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCDF() {
+		check("CDF(NormalDistribution(n, m),k)", "Erfc((-k+n)/(Sqrt(2)*m))/2");
+
 		check("CDF(BernoulliDistribution(p),k)", "Piecewise({{0,k<0},{1-p,0<=k&&k<1}},1)");
 		check("CDF(BinomialDistribution(n, m),k)",
 				"Piecewise({{BetaRegularized(1-m,n-Floor(k),1+Floor(k)),0<=k&&k<n},{1,k>=n}},0)");
@@ -5286,7 +5288,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testOrthogonalize() {
 		check("Orthogonalize({{3,1},{2,2}})", //
 				"{{3/Sqrt(10),1/Sqrt(10)},{-Sqrt(5/2)/5,3/5*Sqrt(5/2)}}");
-		
+
 		check("Orthogonalize({{1,0,1},{1,1,1}})", //
 				"{{1/Sqrt(2),0,1/Sqrt(2)},{0,1,0}}");
 		check("Orthogonalize({{1, 2}, {3, 1}, {6, 9}, {7, 8}})", //
@@ -6230,6 +6232,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testQuantile() {
+		check("Quantile(NormalDistribution(m, s))", // 
+				"ConditionalExpression(m-Sqrt(2)*s*InverseErfc(2*#1),0<=#1<=1)&");
+		check("Quantile(NormalDistribution(m, s), q)", // 
+				"ConditionalExpression(m-Sqrt(2)*s*InverseErfc(2*q),0<=q<=1)");
+		
 		check("Quantile({1, 2, 3, 4, 5, 6, 7}, 1/2)", "4");
 
 		check("Quantile({1,2}, 0.5)", "1");
@@ -6295,12 +6302,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRandomVariate() {
-		// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2})", "{3,7}");
-		// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3})", "{{5,4,7},{5,7,3}}");
-		// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3,4})",
-		// "{{{4,5,5,3},{5,4,4,6},{6,3,4,7}},{{6,6,7,3},{4,6,5,6},{7,7,6,5}}}");
-		// check("RandomVariate(DiscreteUniformDistribution({3,7}), 10)", "{6,5,7,7,7,7,4,5,6,3}");
-		// check("RandomVariate(DiscreteUniformDistribution({1, 5}) )", "3");
+//		check("RandomVariate(NormalDistribution(2,3), 10^1)", //
+//				"{1.14364,6.09674,5.16495,2.39937,-0.52143,-1.46678,3.60142,-0.85405,2.06373,-0.29795}");
+//		check("RandomVariate(NormalDistribution(2,3))", //
+//				"1.99583");
+//		check("RandomVariate(NormalDistribution())", //
+//				"-0.56291");
+//		check("RandomVariate(DiscreteUniformDistribution({3,7}), {2})", "{3,7}");
+//		check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3})", "{{5,4,7},{5,7,3}}");
+//		check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3,4})",
+//				"{{{4,5,5,3},{5,4,4,6},{6,3,4,7}},{{6,6,7,3},{4,6,5,6},{7,7,6,5}}}");
+//		check("RandomVariate(DiscreteUniformDistribution({3,7}), 10)", "{6,5,7,7,7,7,4,5,6,3}");
+//		check("RandomVariate(DiscreteUniformDistribution({1, 5}) )", "3");
 	}
 
 	public void testRange() {
@@ -7138,11 +7151,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("B = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}} ", "{{1,2,3},{4,5,6},{7,8,9}}");
 		// check("B[[1;;2, 2;;-1]] = {{t, u}, {y, z}}", "{{t,u},{y,z}}");
 		// check("B", "{{1,t,u},{4,y,z},{7,8,9}}");
-		
+
 		check("foo=barf", "barf");
 		check("foo[x]=1", "1");
 		check("barf[x]=1", "1");
-		
+
 		check("a = 3", "3");
 		check("a", "3");
 		check("{a, b, c} = {10, 2, 3}   ", "{10,2,3}");

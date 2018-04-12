@@ -119,6 +119,7 @@ public final class Arithmetic {
 		F.Chop.setEvaluator(new Chop());
 		F.Clip.setEvaluator(new Clip());
 		F.Complex.setEvaluator(CONST_COMPLEX);
+		F.ConditionalExpression.setEvaluator(new ConditionalExpression());
 		F.Conjugate.setEvaluator(new Conjugate());
 		F.Decrement.setEvaluator(new Decrement());
 		F.DirectedInfinity.setEvaluator(new DirectedInfinity());
@@ -815,6 +816,28 @@ public final class Arithmetic {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+	}
+
+	private final static class ConditionalExpression extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			IExpr arg2 = engine.evaluate(ast.arg2());
+			if (arg2.isTrue()) {
+				return engine.evaluate(ast.arg1());
+			}
+			if (arg2.isFalse()) {
+				return F.Undefined;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.NUMERICFUNCTION);
 		}
 	}
 

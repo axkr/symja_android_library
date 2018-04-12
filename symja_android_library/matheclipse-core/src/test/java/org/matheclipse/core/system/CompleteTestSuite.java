@@ -46,6 +46,7 @@ public class CompleteTestSuite extends TestCase {
 		suite.addTestSuite(JavaFormTestCase.class);
 
 		suite.addTestSuite(LowercaseTestCase.class);
+		suite.addTestSuite(DistributionTest.class);
 		suite.addTestSuite(SeriesTest.class);
 		suite.addTestSuite(SerializableTest.class);
 		suite.addTestSuite(PatternsTest.class);
