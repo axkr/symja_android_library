@@ -37,11 +37,14 @@ import org.matheclipse.core.generic.UnaryVariable2Slot;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IMean;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPattern;
@@ -1063,7 +1066,7 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 		return null;
 	}
-	
+
 	@Override
 	public IExpr setPart(IExpr value, final int... positions) {
 		IExpr expr = this;
@@ -1072,7 +1075,7 @@ public abstract class AbstractAST implements IASTMutable {
 			if (!expr.isAST()) {
 				break;
 			}
-			IASTMutable ast=(IASTMutable)expr;
+			IASTMutable ast = (IASTMutable) expr;
 			expr = ast.get(positions[i]);
 			if (i == (size - 1)) {
 				ast.set(positions[i], value);
@@ -1670,6 +1673,14 @@ public abstract class AbstractAST implements IASTMutable {
 		return isSameHead(F.DirectedInfinity, 2) && arg1().equals(x);
 	}
 
+	public boolean isDistribution() {
+		if (head().isBuiltInSymbol()) {
+			IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
+			return evaluator instanceof IMean;
+		}
+		return false;
+	}
+
 	@Override
 	public final boolean isEmpty() {
 		return size() == 1;
@@ -1810,7 +1821,7 @@ public abstract class AbstractAST implements IASTMutable {
 	public final boolean isGTOrdered(final IExpr obj) {
 		return compareTo(obj) > 0;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public final boolean isHoldPattern() {

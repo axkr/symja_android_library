@@ -29,6 +29,7 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.core.interfaces.IMean;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -109,16 +110,6 @@ public class StatisticsFunctions {
 		 * @return P(X == n), i.e. probability of random variable X == n
 		 */
 		IExpr p_equals(IAST dist, IExpr n);
-	}
-
-	/**
-	 * Any distribution for which an analytic expression of the mean exists should implement {@link IMean}.
-	 * 
-	 * <p>
-	 * The function is used in {@link Expectation} to provide the mean of a given {@link IDistribution}.
-	 */
-	interface IMean {
-		IExpr mean(IAST distribution);
 	}
 
 	/**
@@ -1288,18 +1279,9 @@ public class StatisticsFunctions {
 				return F.Times(list.apply(F.Plus), F.Power(F.integer(list.argSize()), F.CN1));
 			}
 
-			if (arg1.isAST()) {
-				IAST dist = (IAST) arg1;
-				if (dist.head().isSymbol()) {
-					ISymbol head = (ISymbol) dist.head();
-					if (head instanceof IBuiltInSymbol) {
-						IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
-						if (evaluator instanceof IMean) {
-							IMean distribution = (IMean) evaluator;
-							return distribution.mean(dist);
-						}
-					}
-				}
+			if (arg1.isDistribution()) {
+				IMean distribution = (IMean) ((IBuiltInSymbol) arg1.head()).getEvaluator();
+				return distribution.mean((IAST) arg1);
 			}
 			return F.NIL;
 		}
@@ -1475,14 +1457,15 @@ public class StatisticsFunctions {
 		public IExpr cdf(IAST dist, IExpr k) {
 			if (dist.isAST0()) {
 				IExpr h = // [$ Function( (1/2)*Erfc(-(#1/Sqrt(2))) ) $]
-F.Function(F.Times(F.C1D2,F.Erfc(F.Times(F.CN1,F.C1DSqrt2,F.Slot1)))); // $$;
+						F.Function(F.Times(F.C1D2, F.Erfc(F.Times(F.CN1, F.C1DSqrt2, F.Slot1)))); // $$;
 				return F.unaryAST1(h, k);
 			}
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
 				IExpr h = // [$ Function( (1/2)*Erfc((-#1 + n)/(Sqrt(2)*m)) ) $]
-F.Function(F.Times(F.C1D2,F.Erfc(F.Times(F.Power(F.Times(F.CSqrt2,m),-1),F.Plus(F.Negate(F.Slot1),n))))); // $$;
+						F.Function(F.Times(F.C1D2,
+								F.Erfc(F.Times(F.Power(F.Times(F.CSqrt2, m), -1), F.Plus(F.Negate(F.Slot1), n))))); // $$;
 				return F.unaryAST1(h, k);
 			}
 			return F.NIL;
@@ -1491,14 +1474,17 @@ F.Function(F.Times(F.C1D2,F.Erfc(F.Times(F.Power(F.Times(F.CSqrt2,m),-1),F.Plus(
 		public IExpr pdf(IAST dist, IExpr k) {
 			if (dist.isAST0()) {
 				IExpr h = // [$ Function(1/(E^(#1^2/2)*Sqrt(2*Pi))) $]
-F.Function(F.Power(F.Times(F.Exp(F.Times(F.C1D2,F.Sqr(F.Slot1))),F.Sqrt(F.Times(F.C2,F.Pi))),-1)); // $$;
+						F.Function(F.Power(F.Times(F.Exp(F.Times(F.C1D2, F.Sqr(F.Slot1))), F.Sqrt(F.Times(F.C2, F.Pi))),
+								-1)); // $$;
 				return F.unaryAST1(h, k);
 			}
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
 				IExpr h = // [$ Function( 1/(E^((#1 - n)^2/(2*m^2))*(m*Sqrt(2*Pi))) ) $]
-F.Function(F.Power(F.Times(F.Exp(F.Times(F.Power(F.Times(F.C2,F.Sqr(m)),-1),F.Sqr(F.Plus(F.Negate(n),F.Slot1)))),m,F.Sqrt(F.Times(F.C2,F.Pi))),-1)); // $$;
+						F.Function(F.Power(F.Times(F.Exp(
+								F.Times(F.Power(F.Times(F.C2, F.Sqr(m)), -1), F.Sqr(F.Plus(F.Negate(n), F.Slot1)))), m,
+								F.Sqrt(F.Times(F.C2, F.Pi))), -1)); // $$;
 				return F.unaryAST1(h, k);
 			}
 			return F.NIL;
@@ -1788,20 +1774,13 @@ F.Function(F.Power(F.Times(F.Exp(F.Times(F.Power(F.Times(F.C2,F.Sqr(m)),-1),F.Sq
 						ae.printStackTrace();
 					}
 				}
-			} else if (arg1.isAST()) {
-				IAST dist = (IAST) arg1;
-				if (dist.head().isBuiltInSymbol()) {
-					IBuiltInSymbol head = (IBuiltInSymbol) dist.head();
-					IEvaluator evaluator = head.getEvaluator();
-					if (evaluator instanceof IRandomVariate) {
-						if (arg1.isAST2()) {
-							IExpr function = engine.evaluate(F.Quantile(arg1));
-							if (function.isFunction()) {
-								return F.unaryAST1(function, ast.arg2());
-							}
-						}
+			} else if (arg1.isDistribution()) {
+				IExpr function = engine.evaluate(F.Quantile(arg1));
+				if (function.isFunction()) {
+					if (ast.arg2().isList()) {
+						return ((IAST)ast.arg2()).map(x->F.unaryAST1(function, x), 1);
 					}
-
+					return F.unaryAST1(function, ast.arg2()); 
 				}
 			}
 			return F.NIL;

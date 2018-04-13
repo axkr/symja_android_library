@@ -4242,6 +4242,9 @@ public final class Arithmetic {
 				if (o1.isInterval1() || o1.isSignedNumber()) {
 					return timesInterval(o0, o1);
 				}
+			} else if (o0.isNegative() && o1.isLog() && o1.first().isFraction() && o0.isSignedNumber()) {
+				// -<number> * Log(<fraction-number>) -> <number> * Log(<fraction-number>.inverse()) 
+				return o0.negate().times(F.Log(o1.first().inverse()));
 			}
 
 			// if (o1.isPlus()) {

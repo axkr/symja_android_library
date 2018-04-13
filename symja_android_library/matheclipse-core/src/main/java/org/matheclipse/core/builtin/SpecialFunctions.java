@@ -444,15 +444,19 @@ public class SpecialFunctions {
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
 			if (arg1.isSignedNumber()) {
-				if (arg1.isZero()) {
+				ISignedNumber z = (ISignedNumber) arg1;
+				if (z.isZero()) {
 					return F.CInfinity;
 				}
-				if (arg1.isOne()) {
+				if (z.isOne()) {
 					return F.C0;
 				}
-				if (arg1.equals(F.C2)) {
+				if (z.equals(F.C2)) {
 					return F.CNInfinity;
 				}
+				// if (z.isLessThan(F.C2) && z.isGreaterThan(F.C1)) {
+				// return F.InverseErfc(F.Subtract(F.C1, z));
+				// }
 			}
 			return F.NIL;
 		}
