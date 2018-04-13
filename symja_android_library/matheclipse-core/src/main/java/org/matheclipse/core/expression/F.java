@@ -3411,7 +3411,11 @@ public class F {
 
 		return binaryAST2(FreeQ, a0, a1);
 	}
-
+	
+	public static IAST FrechetDistribution(final IExpr a0, final IExpr a1) {
+		return binary(FrechetDistribution, a0, a1);
+	}
+	
 	public static IAST FresnelC(final IExpr a) {
 		return unaryAST1(FresnelC, a);
 	}
