@@ -1475,15 +1475,14 @@ public class StatisticsFunctions {
 		public IExpr cdf(IAST dist, IExpr k) {
 			if (dist.isAST0()) {
 				IExpr h = // [$ Function( (1/2)*Erfc(-(#1/Sqrt(2))) ) $]
-						F.Function(F.Times(F.C1D2, F.Erfc(F.Times(F.CN1, F.C1DSqrt2, F.Slot1)))); // $$;
+F.Function(F.Times(F.C1D2,F.Erfc(F.Times(F.CN1,F.C1DSqrt2,F.Slot1)))); // $$;
 				return F.unaryAST1(h, k);
 			}
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
 				IExpr h = // [$ Function( (1/2)*Erfc((-#1 + n)/(Sqrt(2)*m)) ) $]
-						F.Function(F.Times(F.C1D2,
-								F.Erfc(F.Times(F.Power(F.Times(F.CSqrt2, m), -1), F.Plus(F.Negate(F.Slot1), n))))); // $$;
+F.Function(F.Times(F.C1D2,F.Erfc(F.Times(F.Power(F.Times(F.CSqrt2,m),-1),F.Plus(F.Negate(F.Slot1),n))))); // $$;
 				return F.unaryAST1(h, k);
 			}
 			return F.NIL;
@@ -1492,17 +1491,14 @@ public class StatisticsFunctions {
 		public IExpr pdf(IAST dist, IExpr k) {
 			if (dist.isAST0()) {
 				IExpr h = // [$ Function(1/(E^(#1^2/2)*Sqrt(2*Pi))) $]
-						F.Function(F.Power(F.Times(F.Exp(F.Times(F.C1D2, F.Sqr(F.Slot1))), F.Sqrt(F.Times(F.C2, F.Pi))),
-								-1)); // $$;
+F.Function(F.Power(F.Times(F.Exp(F.Times(F.C1D2,F.Sqr(F.Slot1))),F.Sqrt(F.Times(F.C2,F.Pi))),-1)); // $$;
 				return F.unaryAST1(h, k);
 			}
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
 				IExpr h = // [$ Function( 1/(E^((#1 - n)^2/(2*m^2))*(m*Sqrt(2*Pi))) ) $]
-						F.Function(F.Power(F.Times(F.Exp(
-								F.Times(F.Power(F.Times(F.C2, F.Sqr(m)), -1), F.Sqr(F.Plus(F.Negate(n), F.Slot1)))), m,
-								F.Sqrt(F.Times(F.C2, F.Pi))), -1)); // $$;
+F.Function(F.Power(F.Times(F.Exp(F.Times(F.Power(F.Times(F.C2,F.Sqr(m)),-1),F.Sqr(F.Plus(F.Negate(n),F.Slot1)))),m,F.Sqrt(F.Times(F.C2,F.Pi))),-1)); // $$;
 				return F.unaryAST1(h, k);
 			}
 			return F.NIL;

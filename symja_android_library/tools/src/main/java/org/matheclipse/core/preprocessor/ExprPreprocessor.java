@@ -1,11 +1,14 @@
 package org.matheclipse.core.preprocessor;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.Locale;
 
 import org.matheclipse.core.basic.Config;
@@ -114,6 +117,13 @@ public class ExprPreprocessor {
 							String str = convertSource(inputString);
 							if (str != null) {
 								System.out.println(str);
+								try {
+									BufferedWriter out = new BufferedWriter(new FileWriter(sourceFile));
+									out.write(str);
+									out.close();
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
 							}
 						} catch (Exception e) {
 							e.printStackTrace();

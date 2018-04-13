@@ -6,8 +6,10 @@ import java.util.IdentityHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
 
@@ -48,6 +50,7 @@ import org.matheclipse.core.builtin.TensorFunctions;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.generic.Functors;
@@ -1014,57 +1017,57 @@ public class F {
 	/**
 	 * Constant integer &quot;0&quot;
 	 */
-	public final static IntegerSym C0 = AbstractIntegerSym.valueOf(0);  
+	public final static IntegerSym C0 = AbstractIntegerSym.valueOf(0);
 
 	/**
 	 * Constant integer &quot;1&quot;
 	 */
-	public final static IntegerSym C1 = AbstractIntegerSym.valueOf(1);  
+	public final static IntegerSym C1 = AbstractIntegerSym.valueOf(1);
 
 	/**
 	 * Constant integer &quot;2&quot;
 	 */
-	public final static IntegerSym C2 = AbstractIntegerSym.valueOf(2); 
+	public final static IntegerSym C2 = AbstractIntegerSym.valueOf(2);
 
 	/**
 	 * Constant integer &quot;3&quot;
 	 */
-	public final static IntegerSym C3 = AbstractIntegerSym.valueOf(3);  
+	public final static IntegerSym C3 = AbstractIntegerSym.valueOf(3);
 
 	/**
 	 * Constant integer &quot;4&quot;
 	 */
-	public final static IntegerSym C4 = AbstractIntegerSym.valueOf(4); 
+	public final static IntegerSym C4 = AbstractIntegerSym.valueOf(4);
 
 	/**
 	 * Constant integer &quot;5&quot;
 	 */
-	public final static IntegerSym C5 = AbstractIntegerSym.valueOf(5); 
+	public final static IntegerSym C5 = AbstractIntegerSym.valueOf(5);
 
 	/**
 	 * Constant integer &quot;6&quot;
 	 */
-	public final static IntegerSym C6 = AbstractIntegerSym.valueOf(6); 
+	public final static IntegerSym C6 = AbstractIntegerSym.valueOf(6);
 
 	/**
 	 * Constant integer &quot;7&quot;
 	 */
-	public final static IntegerSym C7 = AbstractIntegerSym.valueOf(7); 
+	public final static IntegerSym C7 = AbstractIntegerSym.valueOf(7);
 
 	/**
 	 * Constant integer &quot;8&quot;
 	 */
-	public final static IntegerSym C8 = AbstractIntegerSym.valueOf(8); 
+	public final static IntegerSym C8 = AbstractIntegerSym.valueOf(8);
 
 	/**
 	 * Constant integer &quot;9&quot;
 	 */
-	public final static IntegerSym C9 = AbstractIntegerSym.valueOf(9); 
+	public final static IntegerSym C9 = AbstractIntegerSym.valueOf(9);
 
 	/**
 	 * Constant integer &quot;10&quot;
 	 */
-	public final static IntegerSym C10 = AbstractIntegerSym.valueOf(10); 
+	public final static IntegerSym C10 = AbstractIntegerSym.valueOf(10);
 
 	/**
 	 * Complex imaginary unit. The parsed symbol &quot;I&quot; is converted on input to this constant.
@@ -1264,52 +1267,52 @@ public class F {
 	/**
 	 * Constant integer &quot;-1&quot;
 	 */
-	public final static IntegerSym CN1 = AbstractIntegerSym.valueOf(-1); 
+	public final static IntegerSym CN1 = AbstractIntegerSym.valueOf(-1);
 
 	/**
 	 * Constant integer &quot;-2&quot;
 	 */
-	public final static IntegerSym CN2 = AbstractIntegerSym.valueOf(-2); 
+	public final static IntegerSym CN2 = AbstractIntegerSym.valueOf(-2);
 
 	/**
 	 * Constant integer &quot;-3&quot;
 	 */
-	public final static IntegerSym CN3 = AbstractIntegerSym.valueOf(-3); 
+	public final static IntegerSym CN3 = AbstractIntegerSym.valueOf(-3);
 
 	/**
 	 * Constant integer &quot;-4&quot;
 	 */
-	public final static IntegerSym CN4 = AbstractIntegerSym.valueOf(-4); 
+	public final static IntegerSym CN4 = AbstractIntegerSym.valueOf(-4);
 
 	/**
 	 * Constant integer &quot;-5&quot;
 	 */
-	public final static IntegerSym CN5 = AbstractIntegerSym.valueOf(-5); 
+	public final static IntegerSym CN5 = AbstractIntegerSym.valueOf(-5);
 
 	/**
 	 * Constant integer &quot;-6&quot;
 	 */
-	public final static IntegerSym CN6 = AbstractIntegerSym.valueOf(-6); 
+	public final static IntegerSym CN6 = AbstractIntegerSym.valueOf(-6);
 
 	/**
 	 * Constant integer &quot;-7&quot;
 	 */
-	public final static IntegerSym CN7 = AbstractIntegerSym.valueOf(-7); 
+	public final static IntegerSym CN7 = AbstractIntegerSym.valueOf(-7);
 
 	/**
 	 * Constant integer &quot;-8&quot;
 	 */
-	public final static IntegerSym CN8 = AbstractIntegerSym.valueOf(-8); 
+	public final static IntegerSym CN8 = AbstractIntegerSym.valueOf(-8);
 
 	/**
 	 * Constant integer &quot;-9&quot;
 	 */
-	public final static IntegerSym CN9 = AbstractIntegerSym.valueOf(-9); 
+	public final static IntegerSym CN9 = AbstractIntegerSym.valueOf(-9);
 
 	/**
 	 * Constant integer &quot;-10&quot;
 	 */
-	public final static IntegerSym CN10 = AbstractIntegerSym.valueOf(-10); 
+	public final static IntegerSym CN10 = AbstractIntegerSym.valueOf(-10);
 
 	/**
 	 * Global map of predefined constant expressions.
@@ -3798,7 +3801,7 @@ public class F {
 	public static IAST InverseErf(final IExpr a0) {
 		return unaryAST1(InverseErf, a0);
 	}
-	
+
 	public static IAST InverseErfc(final IExpr a0) {
 		return unaryAST1(InverseErfc, a0);
 	}
@@ -4345,15 +4348,15 @@ public class F {
 	public static IAST Norm(final IExpr a) {
 		return unaryAST1(Norm, a);
 	}
-	
-	public static IAST NormalDistribution( ) {
+
+	public static IAST NormalDistribution() {
 		return headAST0(NormalDistribution);
 	}
 
 	public static IAST NormalDistribution(final IExpr a0, final IExpr a1) {
 		return binaryAST2(NormalDistribution, a0, a1);
 	}
-	
+
 	public static IAST Normalize(final IExpr a) {
 		return unaryAST1(Normalize, a);
 	}
@@ -4789,11 +4792,11 @@ public class F {
 	public static IAST Quantile(final IExpr a0) {
 		return unaryAST1(Quantile, a0);
 	}
-	
+
 	public static IAST Quantile(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Quantile, a0, a1);
 	}
-	
+
 	public static IAST Quiet(final IExpr a0) {
 		return unaryAST1(Quiet, a0);
 	}
@@ -4988,6 +4991,50 @@ public class F {
 			}
 		}
 		return new Symbol(name, Context.DUMMY);
+	}
+
+	public static IBuiltInSymbol localBiFunction(final String symbolName, BiFunction<IExpr, IExpr, IExpr> function) {
+		IBuiltInSymbol localBuittIn = new BuiltInSymbol(symbolName, java.lang.Integer.MAX_VALUE);
+		localBuittIn.setEvaluator(new AbstractEvaluator() {
+			@Override
+			public IExpr evaluate(IAST ast, EvalEngine engine) {
+				return function.apply(ast.arg1(), ast.arg2());
+			}
+		});
+		return localBuittIn;
+	}
+
+	public static IBuiltInSymbol localFunction(final String symbolName, Function<IExpr, IExpr> function) {
+		IBuiltInSymbol localBuittIn = new BuiltInSymbol(symbolName, java.lang.Integer.MAX_VALUE);
+		localBuittIn.setEvaluator(new AbstractEvaluator() {
+			@Override
+			public IExpr evaluate(IAST ast, EvalEngine engine) {
+				return function.apply(ast.arg1());
+			}
+		});
+		return localBuittIn;
+	}
+
+	public static IBuiltInSymbol localBiPredicate(final String symbolName, BiPredicate<IExpr, IExpr> function) {
+		IBuiltInSymbol localBuittIn = new BuiltInSymbol(symbolName, java.lang.Integer.MAX_VALUE);
+		localBuittIn.setEvaluator(new AbstractEvaluator() {
+			@Override
+			public IExpr evaluate(IAST ast, EvalEngine engine) {
+				return F.bool(function.test(ast.arg1(), ast.arg2()));
+			}
+		});
+		return localBuittIn;
+	}
+
+	public static IBuiltInSymbol localPredicate(final String symbolName, Predicate<IExpr> function) {
+		IBuiltInSymbol localBuittIn = new BuiltInSymbol(symbolName, java.lang.Integer.MAX_VALUE);
+		localBuittIn.setEvaluator(new AbstractEvaluator() {
+			@Override
+			public IExpr evaluate(IAST ast, EvalEngine engine) {
+				return F.bool(function.test(ast.arg1()));
+			}
+		});
+		return localBuittIn;
 	}
 
 	/**
