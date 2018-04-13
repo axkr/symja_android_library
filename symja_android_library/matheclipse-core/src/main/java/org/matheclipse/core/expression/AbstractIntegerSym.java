@@ -34,6 +34,17 @@ import edu.jas.arith.PrimeInteger;
  *
  */
 public abstract class AbstractIntegerSym implements IInteger, Externalizable {
+	static final int low = -128;
+	static final int high = 128;
+	static final IntegerSym cache[];
+
+	static {
+		cache = new IntegerSym[(high - low) + 1];
+		int j = low;
+		for (int k = 0; k < cache.length; k++) {
+			cache[k] = new IntegerSym(j++);
+		}
+	}
 	/**
 	 * The BigInteger constant minus one.
 	 * 
@@ -120,57 +131,13 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	 */
 	public static IInteger valueOf(final BigInteger bigInteger) {
 		if (bigInteger.bitLength() <= 31) {
-			return new IntegerSym(bigInteger.intValue());
+			return valueOf(bigInteger.intValue());
 		}
 		return new BigIntegerSym(bigInteger);
 	}
 
 	public static IntegerSym valueOf(final int newnum) {
-		switch (newnum) {
-		case -1:
-			return F.CN1;
-		case -2:
-			return F.CN2;
-		case -3:
-			return F.CN3;
-		case -4:
-			return F.CN4;
-		case -5:
-			return F.CN5;
-		case -6:
-			return F.CN6;
-		case -7:
-			return F.CN7;
-		case -8:
-			return F.CN8;
-		case -9:
-			return F.CN9;
-		case -10:
-			return F.CN10;
-		case 0:
-			return F.C0;
-		case 1:
-			return F.C1;
-		case 2:
-			return F.C2;
-		case 3:
-			return F.C3;
-		case 4:
-			return F.C4;
-		case 5:
-			return F.C5;
-		case 6:
-			return F.C6;
-		case 7:
-			return F.C7;
-		case 8:
-			return F.C8;
-		case 9:
-			return F.C9;
-		case 10:
-			return F.C10;
-		}
-		return new IntegerSym(newnum);
+		return (newnum >= low && newnum <= high) ? cache[newnum + (-low)] : new IntegerSym(newnum);
 	}
 
 	public static IInteger valueOf(final long newnum) {
@@ -518,7 +485,7 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	public IRational fractionalPart() {
 		return F.C0;
 	}
-	
+
 	@Override
 	public IInteger floor() {
 		return this;

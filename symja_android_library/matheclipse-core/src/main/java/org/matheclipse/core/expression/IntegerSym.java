@@ -33,7 +33,7 @@ import com.google.common.math.LongMath;
  * @see BigIntegerSym
  */
 public class IntegerSym extends AbstractIntegerSym {
-
+ 
 	/**
 	 * 
 	 */
@@ -361,8 +361,8 @@ public class IntegerSym extends AbstractIntegerSym {
 	}
 
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
-			boolean usePrefix, boolean noSymbolPrefix) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix,
+			boolean noSymbolPrefix) {
 		String prefix = usePrefix ? "F." : "";
 		int value = NumberUtil.toInt(fIntValue);
 		switch (value) {
