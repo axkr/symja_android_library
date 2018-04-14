@@ -641,6 +641,10 @@ public class StatisticsFunctions {
 
 		@Override
 		public IExpr mean(IAST dist) {
+			if (dist.isAST0()) {
+				// -EulerGamma
+				return F.EulerGamma.negate();
+			}
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
@@ -1210,7 +1214,7 @@ public class StatisticsFunctions {
 			if (dist.isAST2()) {
 				IExpr m = dist.arg1();
 				IExpr s = dist.arg2();
-				// E^(m+s^2/2)
+				// (m,s) -> E^(m+s^2/2)
 				return F.Power(F.E, F.Plus(m, F.Times(F.C1D2, F.Sqr(s))));
 			}
 			return F.NIL;
@@ -1383,7 +1387,7 @@ public class StatisticsFunctions {
 			if (dist.isAST2()) {
 				IExpr n = dist.arg1();
 				IExpr m = dist.arg2();
-				// (Sqrt(m)*Pochhammer(n,1/2))/Sqrt(n)
+				// (n,m) -> (Sqrt(m)*Pochhammer(n,1/2))/Sqrt(n)
 				return F.Divide(F.Times(F.Sqrt(m), F.Pochhammer(n, F.C1D2)), F.Sqrt(n));
 			}
 			return F.NIL;
@@ -2027,7 +2031,12 @@ public class StatisticsFunctions {
 		@Override
 		public IExpr mean(IAST dist) {
 			if (dist.isAST1()) {
+				// (v) -> Piecewise[{{0, v > 1}}, Indeterminate]
 				return F.Piecewise(F.List(F.List(F.C0, F.Greater(dist.arg1(), F.C1))), F.Indeterminate);
+			}
+			if (dist.isAST3()) {
+				// (m,s,v) -> Piecewise[{{m, v > 1}}, Indeterminate]
+				return F.Piecewise(F.List(F.List(dist.arg1(), F.Greater(dist.arg3(), F.C1))), F.Indeterminate);
 			}
 			return F.NIL;
 		}
@@ -2148,9 +2157,14 @@ public class StatisticsFunctions {
 		@Override
 		public IExpr mean(IAST dist) {
 			if (dist.isAST2()) {
-				// m*Gamma(1 + 1/n)
+				// (a,b) -> b*Gamma(1 + 1/a)
 				return F.Times(dist.arg2(), F.Gamma(F.Plus(F.C1, F.Power(dist.arg1(), F.CN1))));
 			}
+			if (dist.isAST3()) {
+				// (a,b,m) -> m + b*Gamma(1 + 1/a)
+				return F.Plus(dist.arg3(), F.Times(dist.arg2(), F.Gamma(F.Plus(F.C1, F.Power(dist.arg1(), F.CN1)))));
+			}
+
 			return F.NIL;
 		}
 

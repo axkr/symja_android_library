@@ -6,27 +6,37 @@ public class DistributionTest extends AbstractTestCase {
 	}
 
 	public void testBernoulliDistribution() {
+		check("Mean(BernoulliDistribution(x))", //
+				"x");
 		check("Quantile(BernoulliDistribution(x), {1/4, 1/2, 3/4})", //
 				"{Piecewise({{1,1/4>1-x}},0),Piecewise({{1,1/2>1-x}},0),Piecewise({{1,3/4>1-x}},0)}");
 	}
 
 	public void testErlangDistribution() {
+		check("Mean(ErlangDistribution(n, m))", //
+				"n/m");
 		check("Quantile(ErlangDistribution(n, m), {1/4, 1/2, 3/4})", //
 				"{InverseGammaRegularized(n,0,1/4)/m,InverseGammaRegularized(n,0,1/2)/m,InverseGammaRegularized(n,\n"
 						+ "0,3/4)/m}");
 	}
 
 	public void testExponentialDistribution() {
+		check("Mean(ExponentialDistribution(x))", //
+				"1/x");
 		check("Quantile(ExponentialDistribution(x), {1/4, 1/2, 3/4})", //
 				"{Log(4/3)/x,Log(2)/x,Log(4)/x}");
 	}
 
 	public void testFrechetDistribution() {
+		check("Mean(FrechetDistribution(n, m))", //
+				"Piecewise({{m*Gamma(1-1/n),1<n}},Infinity)");
 		check("Quantile(FrechetDistribution(n, m), {1/4, 1/2, 3/4})", //
 				"{m/Log(4)^(1/n),m/Log(2)^(1/n),m/Log(4/3)^(1/n)}");
 	}
 
 	public void testGammaDistribution() {
+		check("Mean(GammaDistribution(a, b))", //
+				"a*b");
 		check("Mean(GammaDistribution(a, b, g, d))", //
 				"d+(b*Gamma(a+1/g))/Gamma(a)");
 		check("StandardDeviation(GammaDistribution(m, s))", //
@@ -50,6 +60,10 @@ public class DistributionTest extends AbstractTestCase {
 	}
 
 	public void testNormalDistribution() {
+		check("Mean(NormalDistribution( ) )", //
+				"0");
+		check("Mean(NormalDistribution(m, s))", //
+				"m");
 		check("CDF(NormalDistribution( ), x)", //
 				"1/2*(2-Erfc(x/Sqrt(2)))");
 		check("CDF(NormalDistribution(n,m), x)", //
@@ -59,8 +73,6 @@ public class DistributionTest extends AbstractTestCase {
 		check("PDF(NormalDistribution(m, s), x)", //
 				"1/(Sqrt(2)*E^((-m+x)^2/(2*s^2))*Sqrt(Pi)*s)");
 
-		check("Mean(NormalDistribution(m, s))", //
-				"m");
 		check("StandardDeviation(NormalDistribution(m, s))", //
 				"s");
 		check("Variance(NormalDistribution(m, s))", //
@@ -71,26 +83,47 @@ public class DistributionTest extends AbstractTestCase {
 		check("Quantile(NormalDistribution(2, 3), {1/4, 1/2, 3/4})", //
 				"{2-3*Sqrt(2)*InverseErfc(1/2),2,2-3*Sqrt(2)*InverseErfc(3/2)}");
 	}
-	
+
 	public void testGumbelDistribution() {
+		check("Mean(GumbelDistribution())", //
+				"-EulerGamma");
+		check("Mean(GumbelDistribution(a,b))", //
+				"a-b*EulerGamma");
 		check("Quantile(GumbelDistribution(), {1/4, 1/2, 3/4})", //
 				"{Log(Log(4/3)),Log(Log(2)),Log(Log(4))}");
 		check("Quantile(GumbelDistribution(a,b), {1/4, 1/2, 3/4})", //
 				"{a+b*Log(Log(4/3)),a+b*Log(Log(2)),a+b*Log(Log(4))}");
 	}
-	
+
 	public void testLogNormalDistribution() {
+		check("Mean(LogNormalDistribution(m,d))", //
+				"E^(d^2/2+m)");
 		check("Quantile(LogNormalDistribution(m,d), {1/4, 1/2, 3/4})", //
 				"{E^(m-Sqrt(2)*d*InverseErfc(1/2)),E^m,E^(m-Sqrt(2)*d*InverseErfc(3/2))}");
 	}
 
 	public void testNakagamiDistribution() {
+		check("Mean(NakagamiDistribution(m,w))", //
+				"(Sqrt(w)*Pochhammer(m,1/2))/Sqrt(m)");
+		check("Variance(NakagamiDistribution(m,w))", //
+				"w+(-w*Pochhammer(m,1/2)^2)/m");
 		check("Quantile(NakagamiDistribution(m,w), {1/4, 1/2, 3/4})", //
 				"{Sqrt((w*InverseGammaRegularized(m,0,1/4))/m),Sqrt((w*InverseGammaRegularized(m,\n"
 						+ "0,1/2))/m),Sqrt((w*InverseGammaRegularized(m,0,3/4))/m)}");
 	}
 
+	public void testPoissonDistribution() {
+		check("Mean(PoissonDistribution(m))", //
+				"m");
+		check("Variance(PoissonDistribution(m))", //
+				"m");
+	}
+	
 	public void testStudentTDistribution() {
+		check("Mean(StudentTDistribution(v))", //
+				"Piecewise({{0,v>1}},Indeterminate)");
+		check("Mean(StudentTDistribution(m,s,v))", //
+				"Piecewise({{m,v>1}},Indeterminate)");
 		check("Quantile(StudentTDistribution(v), {1/4, 1/2, 3/4})", //
 				"{-Sqrt(v)*Sqrt(-1+1/InverseBetaRegularized(1/2,v/2,1/2)),0,Sqrt(v)*Sqrt(-1+1/InverseBetaRegularized(\n"
 						+ "1/2,v/2,1/2))}");
@@ -100,6 +133,11 @@ public class DistributionTest extends AbstractTestCase {
 	}
 
 	public void testWeibullDistribution() {
+		check("Mean(WeibullDistribution(a,b))", //
+				"b*Gamma(1+1/a)");
+		check("Mean(WeibullDistribution(a,b,m))", //
+				"m+b*Gamma(1+1/a)");
+
 		check("Quantile(WeibullDistribution(a,b), {1/4, 1/2, 3/4})", //
 				"{b*Log(4/3)^(1/a),b*Log(2)^(1/a),b*Log(4)^(1/a)}");
 		check("Quantile(WeibullDistribution(a,b,m), {1/4, 1/2, 3/4})", //
