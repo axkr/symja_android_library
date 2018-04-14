@@ -13,7 +13,7 @@ public interface QuantileRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 3 };
+  final public static int[] SIZES = { 0, 5 };
 
   final public static IAST RULES = List(
     IInit(Quantile, SIZES),
@@ -25,6 +25,12 @@ public interface QuantileRules {
       Function(ConditionalExpression(Piecewise(List(List(Times(CN1,Power(n,-1),Log(Plus(C1,Negate(Slot1)))),Less(Slot1,C1))),oo),LessEqual(C0,Slot1,C1)))),
     // Quantile(FrechetDistribution(n_,m_)):=ConditionalExpression(Piecewise({{m/(-Log(#1))^(1/n),0<#1<1},{0,#1<=0}},Infinity),0<=#1<=1)&
     ISetDelayed(Quantile(FrechetDistribution(n_,m_)),
-      Function(ConditionalExpression(Piecewise(List(List(Times(m,Power(Power(Negate(Log(Slot1)),Power(n,-1)),-1)),Less(C0,Slot1,C1)),List(C0,LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1))))
+      Function(ConditionalExpression(Piecewise(List(List(Times(m,Power(Power(Negate(Log(Slot1)),Power(n,-1)),-1)),Less(C0,Slot1,C1)),List(C0,LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
+    // Quantile(GammaDistribution(a_,b_)):=ConditionalExpression(Piecewise({{b*InverseGammaRegularized(a,0,#1),0<#1<1},{0,#1<=0}},Infinity),0<=#1<=1)&
+    ISetDelayed(Quantile(GammaDistribution(a_,b_)),
+      Function(ConditionalExpression(Piecewise(List(List(Times(b,InverseGammaRegularized(a,C0,Slot1)),Less(C0,Slot1,C1)),List(C0,LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1)))),
+    // Quantile(GammaDistribution(a_,b_,g_,d_)):=ConditionalExpression(Piecewise({{d+b*InverseGammaRegularized(a,0,#1)^(1/g),0<#1<1},{d,#1<=0}},Infinity),0<=#1<=1)&
+    ISetDelayed(Quantile(GammaDistribution(a_,b_,g_,d_)),
+      Function(ConditionalExpression(Piecewise(List(List(Plus(d,Times(b,Power(InverseGammaRegularized(a,C0,Slot1),Power(g,-1)))),Less(C0,Slot1,C1)),List(d,LessEqual(Slot1,C0))),oo),LessEqual(C0,Slot1,C1))))
   );
 }

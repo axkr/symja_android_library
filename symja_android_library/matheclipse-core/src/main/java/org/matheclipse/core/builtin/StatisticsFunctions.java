@@ -29,16 +29,17 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.IMean;
+import org.matheclipse.core.interfaces.IDistribution;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.CDFRules;
+import org.matheclipse.core.reflection.system.rules.PDFRules;
 import org.matheclipse.core.reflection.system.rules.QuantileRules;
 import org.matheclipse.core.reflection.system.rules.StandardDeviationRules;
 
 public class StatisticsFunctions {
-	private static StandardNormalDistribution CStandardNormalDistribution = new StandardNormalDistribution();
 
 	static {
 		F.CDF.setEvaluator(new CDF());
@@ -71,7 +72,6 @@ public class StatisticsFunctions {
 		F.Skewness.setEvaluator(new Skewness());
 		F.StandardDeviation.setEvaluator(new StandardDeviation());
 		F.Standardize.setEvaluator(new Standardize());
-		// F.StandardNormalDistribution.setEvaluator(new StandardNormalDistribution());
 		F.StudentTDistribution.setEvaluator(new StudentTDistribution());
 		F.Variance.setEvaluator(new Variance());
 		F.WeibullDistribution.setEvaluator(new WeibullDistribution());
@@ -87,13 +87,6 @@ public class StatisticsFunctions {
 		 * @return sample generated using the given random generator
 		 */
 		IExpr randomVariate(Random random, IAST distribution);
-	}
-
-	/**
-	 * Base interface for a univariate probability distribution
-	 */
-	interface IDistribution {
-		// ---
 	}
 
 	/**
@@ -162,7 +155,7 @@ public class StatisticsFunctions {
 
 	/** functionality and suggested base class for a discrete probability distribution */
 	private static abstract class AbstractDiscreteDistribution extends AbstractEvaluator
-			implements IDiscreteDistribution, IMean, IPDF, IRandomVariate {
+			implements IDiscreteDistribution, IDistribution, IPDF, IRandomVariate {
 		@Override
 		public final IExpr randomVariate(Random random, IAST dist) {
 			return protected_quantile(dist, F.num(random.nextDouble()));
@@ -202,32 +195,48 @@ public class StatisticsFunctions {
 	/**
 	 * Compute the cumulative distribution function
 	 */
-	private static class CDF extends AbstractFunctionEvaluator {
+	private static class CDF extends AbstractFunctionEvaluator implements CDFRules {
+
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
+		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
+			// 1 or 2 arguments
+			if (ast.isAST2()) {
+				if (ast.arg1().isAST() && !ast.arg2().isList()) {
+					IAST arg1 = (IAST) ast.arg1();
+					IExpr xArg = ast.arg2();
 
-			if (ast.arg1().isAST() && !ast.arg2().isList()) {
-				IAST arg1 = (IAST) ast.arg1();
-				IExpr xArg = ast.arg2();
+					if (arg1.isDistribution()) {
+						IExpr function = engine.evaluate(F.CDF(arg1));
+						if (function.isFunction()) {
+							if (ast.arg2().isList()) {
+								return ((IAST) ast.arg2()).map(x -> F.unaryAST1(function, x), 1);
+							}
+							return F.unaryAST1(function, ast.arg2());
+						}
+					}
 
-				if (arg1.isAST()) {
-					IAST dist = arg1;
-
-					if (dist.head().isSymbol()) {
-						ISymbol head = (ISymbol) dist.head();
+					if (arg1.isAST()) {
+						IAST dist = arg1;
 
 						if (dist.head().isSymbol()) {
-							if (head instanceof IBuiltInSymbol) {
-								IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
-								if (evaluator instanceof ICDF) {
-									ICDF cdf = (ICDF) evaluator;
-									return cdf.cdf(dist, xArg);
+							ISymbol head = (ISymbol) dist.head();
+
+							if (dist.head().isSymbol()) {
+								if (head instanceof IBuiltInSymbol) {
+									IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+									if (evaluator instanceof ICDF) {
+										ICDF cdf = (ICDF) evaluator;
+										return cdf.cdf(dist, xArg);
+									}
 								}
 							}
-						}
 
+						}
 					}
 				}
 			}
@@ -237,7 +246,7 @@ public class StatisticsFunctions {
 
 	}
 
-	private final static class BernoulliDistribution extends AbstractEvaluator implements ICDF, IMean, IPDF, IVariance {
+	private final static class BernoulliDistribution extends AbstractEvaluator implements ICDF, IDistribution, IPDF, IVariance {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -309,7 +318,7 @@ public class StatisticsFunctions {
 
 	}
 
-	private final static class BinomialDistribution extends AbstractEvaluator implements ICDF, IMean, IPDF, IVariance {
+	private final static class BinomialDistribution extends AbstractEvaluator implements ICDF, IDistribution, IPDF, IVariance {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -420,7 +429,7 @@ public class StatisticsFunctions {
 
 	}
 
-	private final static class FrechetDistribution extends AbstractEvaluator implements ICDF, IMean, IPDF, IVariance {
+	private final static class FrechetDistribution extends AbstractEvaluator implements ICDF, IDistribution, IPDF, IVariance {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -489,11 +498,11 @@ public class StatisticsFunctions {
 
 	}
 
-	private final static class GammaDistribution extends AbstractEvaluator implements ICDF, IMean, IPDF, IVariance {
+	private final static class GammaDistribution extends AbstractEvaluator implements IDistribution,  IVariance {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
+			// 2 or 4 arguments
 			return F.NIL;
 		}
 
@@ -505,33 +514,16 @@ public class StatisticsFunctions {
 				// m*n
 				return F.Times(m, n);
 			}
-			return F.NIL;
-		}
-
-		public IExpr cdf(IAST dist, IExpr k) {
-			if (dist.isAST2()) {
-				IExpr n = dist.arg1();
-				IExpr m = dist.arg2();
-				// Piecewise({{GammaRegularized(n, 0, k/m), k > 0}}, 0)
-				return F.Piecewise(
-						F.List(F.List(F.GammaRegularized(n, F.C0, F.Times(k, F.Power(m, -1))), F.Greater(k, F.C0))),
-						F.C0);
+			if (dist.size() == 5) {
+				IExpr a = dist.arg1();
+				IExpr b = dist.arg2();
+				IExpr g = dist.arg3();
+				IExpr d = dist.arg4();
+				return // [$ d + (b*Gamma(a + 1/g))/Gamma(a) $]
+				F.Plus(d, F.Times(b, F.Power(F.Gamma(a), -1), F.Gamma(F.Plus(a, F.Power(g, -1))))); // $$;
 			}
 			return F.NIL;
-		}
-
-		public IExpr pdf(IAST dist, IExpr k) {
-			if (dist.isAST2()) {
-				IExpr n = dist.arg1();
-				IExpr m = dist.arg2();
-				// Piecewise({{k^(-1 + n)/(E^(k/m)*m^n*Gamma(n)), k > 0}}, 0)
-				return F.Piecewise(F.List(F.List(
-						F.Times(F.Power(k, F.Plus(F.CN1, n)), F.Power(
-								F.Times(F.Power(F.E, F.Times(k, F.Power(m, -1))), F.Power(m, n), F.Gamma(n)), -1)),
-						F.Greater(k, F.C0))), F.C0);
-			}
-			return F.NIL;
-		}
+		} 
 
 		@Override
 		public IExpr variance(IAST dist) {
@@ -551,7 +543,7 @@ public class StatisticsFunctions {
 	}
 
 	private final static class GeometricDistribution extends AbstractDiscreteDistribution
-			implements ICDF, IDiscreteDistribution, IMean, IPDF, IVariance {
+			implements ICDF, IDiscreteDistribution, IDistribution, IPDF, IVariance {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -634,7 +626,7 @@ public class StatisticsFunctions {
 
 	}
 
-	private final static class GumbelDistribution extends AbstractEvaluator implements ICDF, IMean, IPDF, IVariance {
+	private final static class GumbelDistribution extends AbstractEvaluator implements ICDF, IDistribution, IPDF, IVariance {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -694,7 +686,7 @@ public class StatisticsFunctions {
 	}
 
 	private final static class HypergeometricDistribution extends AbstractEvaluator
-			implements ICDF, IMean, IPDF, IVariance {
+			implements ICDF, IDistribution, IPDF, IVariance {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -904,7 +896,7 @@ public class StatisticsFunctions {
 	}
 
 	private final static class DiscreteUniformDistribution extends AbstractDiscreteDistribution
-			implements IMean, IVariance, ICDF {
+			implements IDistribution, IVariance, ICDF {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1008,7 +1000,7 @@ public class StatisticsFunctions {
 		}
 	}
 
-	private final static class ErlangDistribution extends AbstractEvaluator implements ICDF, IMean, IPDF, IVariance {
+	private final static class ErlangDistribution extends AbstractEvaluator implements ICDF, IDistribution, IPDF, IVariance {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1128,7 +1120,7 @@ public class StatisticsFunctions {
 	}
 
 	private final static class ExponentialDistribution extends AbstractEvaluator
-			implements ICDF, IMean, IPDF, IVariance {
+			implements ICDF, IDistribution, IPDF, IVariance {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1198,7 +1190,7 @@ public class StatisticsFunctions {
 
 	}
 
-	private final static class LogNormalDistribution extends AbstractEvaluator implements ICDF, IMean, IPDF, IVariance {
+	private final static class LogNormalDistribution extends AbstractEvaluator implements ICDF, IDistribution, IPDF, IVariance {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1280,7 +1272,7 @@ public class StatisticsFunctions {
 			}
 
 			if (arg1.isDistribution()) {
-				IMean distribution = (IMean) ((IBuiltInSymbol) arg1.head()).getEvaluator();
+				IDistribution distribution = (IDistribution) ((IBuiltInSymbol) arg1.head()).getEvaluator();
 				return distribution.mean((IAST) arg1);
 			}
 			return F.NIL;
@@ -1370,7 +1362,7 @@ public class StatisticsFunctions {
 		}
 	}
 
-	private final static class NakagamiDistribution extends AbstractEvaluator implements ICDF, IMean, IPDF, IVariance {
+	private final static class NakagamiDistribution extends AbstractEvaluator implements ICDF, IDistribution, IPDF, IVariance {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1434,7 +1426,7 @@ public class StatisticsFunctions {
 	}
 
 	private final static class NormalDistribution extends AbstractEvaluator
-			implements ICDF, IMean, IPDF, IVariance, IRandomVariate {
+			implements IDistribution,  IVariance, IRandomVariate {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1450,42 +1442,6 @@ public class StatisticsFunctions {
 			}
 			if (dist.isAST2()) {
 				return dist.arg1();
-			}
-			return F.NIL;
-		}
-
-		public IExpr cdf(IAST dist, IExpr k) {
-			if (dist.isAST0()) {
-				IExpr h = // [$ Function( (1/2)*Erfc(-(#1/Sqrt(2))) ) $]
-						F.Function(F.Times(F.C1D2, F.Erfc(F.Times(F.CN1, F.C1DSqrt2, F.Slot1)))); // $$;
-				return F.unaryAST1(h, k);
-			}
-			if (dist.isAST2()) {
-				IExpr n = dist.arg1();
-				IExpr m = dist.arg2();
-				IExpr h = // [$ Function( (1/2)*Erfc((-#1 + n)/(Sqrt(2)*m)) ) $]
-						F.Function(F.Times(F.C1D2,
-								F.Erfc(F.Times(F.Power(F.Times(F.CSqrt2, m), -1), F.Plus(F.Negate(F.Slot1), n))))); // $$;
-				return F.unaryAST1(h, k);
-			}
-			return F.NIL;
-		}
-
-		public IExpr pdf(IAST dist, IExpr k) {
-			if (dist.isAST0()) {
-				IExpr h = // [$ Function(1/(E^(#1^2/2)*Sqrt(2*Pi))) $]
-						F.Function(F.Power(F.Times(F.Exp(F.Times(F.C1D2, F.Sqr(F.Slot1))), F.Sqrt(F.Times(F.C2, F.Pi))),
-								-1)); // $$;
-				return F.unaryAST1(h, k);
-			}
-			if (dist.isAST2()) {
-				IExpr n = dist.arg1();
-				IExpr m = dist.arg2();
-				IExpr h = // [$ Function( 1/(E^((#1 - n)^2/(2*m^2))*(m*Sqrt(2*Pi))) ) $]
-						F.Function(F.Power(F.Times(F.Exp(
-								F.Times(F.Power(F.Times(F.C2, F.Sqr(m)), -1), F.Sqr(F.Plus(F.Negate(n), F.Slot1)))), m,
-								F.Sqrt(F.Times(F.C2, F.Pi))), -1)); // $$;
-				return F.unaryAST1(h, k);
 			}
 			return F.NIL;
 		}
@@ -1526,28 +1482,45 @@ public class StatisticsFunctions {
 	/**
 	 * Compute the probability density function
 	 */
-	private static class PDF extends AbstractFunctionEvaluator {
+	private static class PDF extends AbstractFunctionEvaluator implements PDFRules {
+
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
+		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
+			// 1 or 2 arguments
 
-			if (ast.arg1().isAST()) {
-				IAST arg1 = (IAST) ast.arg1();
-				IExpr xArg = ast.arg2();
+			if (ast.isAST2()) {
+				if (ast.arg1().isAST()) {
+					IAST arg1 = (IAST) ast.arg1();
+					IExpr xArg = ast.arg2();
 
-				if (arg1.isAST()) {
-					IAST dist = arg1;
+					if (arg1.isDistribution()) {
+						IExpr function = engine.evaluate(F.PDF(arg1));
+						if (function.isFunction()) {
+							if (ast.arg2().isList()) {
+								return ((IAST) ast.arg2()).map(x -> F.unaryAST1(function, x), 1);
+							}
+							return F.unaryAST1(function, ast.arg2());
+						}
+					}
 
-					if (dist.head().isSymbol()) {
-						ISymbol head = (ISymbol) dist.head();
+					if (arg1.isAST()) {
+						IAST dist = arg1;
 
 						if (dist.head().isSymbol()) {
-							if (head instanceof IBuiltInSymbol) {
-								IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
-								if (evaluator instanceof IPDF) {
-									IPDF pdf = (IPDF) evaluator;
-									return pdf.pdf(dist, xArg);
+							ISymbol head = (ISymbol) dist.head();
+
+							if (dist.head().isSymbol()) {
+								if (head instanceof IBuiltInSymbol) {
+									IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+									if (evaluator instanceof IPDF) {
+										IPDF pdf = (IPDF) evaluator;
+										return pdf.pdf(dist, xArg);
+									}
 								}
 							}
 						}
@@ -1560,7 +1533,7 @@ public class StatisticsFunctions {
 	}
 
 	private final static class PoissonDistribution extends AbstractDiscreteDistribution
-			implements ICDF, IMean, IPDF, IVariance {
+			implements ICDF, IDistribution, IPDF, IVariance {
 		private static final int P_EQUALS_MAX = 1950; // probabilities are zero beyond that point
 
 		@Override
@@ -1778,9 +1751,9 @@ public class StatisticsFunctions {
 				IExpr function = engine.evaluate(F.Quantile(arg1));
 				if (function.isFunction()) {
 					if (ast.arg2().isList()) {
-						return ((IAST)ast.arg2()).map(x->F.unaryAST1(function, x), 1);
+						return ((IAST) ast.arg2()).map(x -> F.unaryAST1(function, x), 1);
 					}
-					return F.unaryAST1(function, ast.arg2()); 
+					return F.unaryAST1(function, ast.arg2());
 				}
 			}
 			return F.NIL;
@@ -1955,20 +1928,7 @@ public class StatisticsFunctions {
 
 	}
 
-	private final static class StandardNormalDistribution {
-
-		public IExpr pdf(IExpr x) {
-			// Function(1/(E^(#1^2/2)*Sqrt[2*Pi]))
-			return F.NIL;
-		}
-
-		public static IExpr randomVariate(Random random) {
-			return F.num(random.nextGaussian());
-		}
-
-	}
-
-	private final static class StudentTDistribution extends AbstractEvaluator implements ICDF, IMean, IPDF, IVariance {
+	private final static class StudentTDistribution extends AbstractEvaluator implements ICDF, IDistribution, IPDF, IVariance {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2088,7 +2048,7 @@ public class StatisticsFunctions {
 
 	}
 
-	private final static class WeibullDistribution extends AbstractEvaluator implements ICDF, IMean, IPDF, IVariance {
+	private final static class WeibullDistribution extends AbstractEvaluator implements ICDF, IDistribution, IPDF, IVariance {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {

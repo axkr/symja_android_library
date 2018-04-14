@@ -5548,7 +5548,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Piecewise({{(2*(n/m)^n)/(k^(1-2*n)*E^((k^2*n)/m)*Gamma(n)),k>0}},0)");
 		check("PDF(NormalDistribution(n, m),k)", "1/(Sqrt(2)*E^((k-n)^2/(2*m^2))*m*Sqrt(Pi))");
 		check("PDF(FrechetDistribution(n, m),k)", "Piecewise({{n/((k/m)^(1+n)*E^(k/m)^(-n)*m),k>0}},0)");
-		check("PDF(GammaDistribution(n, m),k)", "Piecewise({{1/(k^(1-n)*E^(k/m)*m^n*Gamma(n)),k>0}},0)");
+		check("PDF(GammaDistribution(n, m),k)", "Piecewise({{1/(m^n*E^(k/m)*Gamma(n)*k^(1-n)),k>0}},0)");
 		check("PDF(GeometricDistribution(n),k)", "Piecewise({{(1-n)^k*n,k>=0}},0)");
 		check("PDF(GumbelDistribution(n, m),k)", "E^(-E^((k-n)/m)+(k-n)/m)/m");
 		check("PDF(HypergeometricDistribution(n, ns, nt),k)",
@@ -6232,11 +6232,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testQuantile() {
-		check("Quantile(NormalDistribution(m, s))", // 
+		check("Quantile(NormalDistribution(m, s))", //
 				"ConditionalExpression(m-Sqrt(2)*s*InverseErfc(2*#1),0<=#1<=1)&");
-		check("Quantile(NormalDistribution(m, s), q)", // 
+		check("Quantile(NormalDistribution(m, s), q)", //
 				"ConditionalExpression(m-Sqrt(2)*s*InverseErfc(2*q),0<=q<=1)");
-		
+
 		check("Quantile({1, 2, 3, 4, 5, 6, 7}, 1/2)", "4");
 
 		check("Quantile({1,2}, 0.5)", "1");
@@ -6302,18 +6302,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRandomVariate() {
-//		check("RandomVariate(NormalDistribution(2,3), 10^1)", //
-//				"{1.14364,6.09674,5.16495,2.39937,-0.52143,-1.46678,3.60142,-0.85405,2.06373,-0.29795}");
-//		check("RandomVariate(NormalDistribution(2,3))", //
-//				"1.99583");
-//		check("RandomVariate(NormalDistribution())", //
-//				"-0.56291");
-//		check("RandomVariate(DiscreteUniformDistribution({3,7}), {2})", "{3,7}");
-//		check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3})", "{{5,4,7},{5,7,3}}");
-//		check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3,4})",
-//				"{{{4,5,5,3},{5,4,4,6},{6,3,4,7}},{{6,6,7,3},{4,6,5,6},{7,7,6,5}}}");
-//		check("RandomVariate(DiscreteUniformDistribution({3,7}), 10)", "{6,5,7,7,7,7,4,5,6,3}");
-//		check("RandomVariate(DiscreteUniformDistribution({1, 5}) )", "3");
+		// check("RandomVariate(NormalDistribution(2,3), 10^1)", //
+		// "{1.14364,6.09674,5.16495,2.39937,-0.52143,-1.46678,3.60142,-0.85405,2.06373,-0.29795}");
+		// check("RandomVariate(NormalDistribution(2,3))", //
+		// "1.99583");
+		// check("RandomVariate(NormalDistribution())", //
+		// "-0.56291");
+		// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2})", "{3,7}");
+		// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3})", "{{5,4,7},{5,7,3}}");
+		// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3,4})",
+		// "{{{4,5,5,3},{5,4,4,6},{6,3,4,7}},{{6,6,7,3},{4,6,5,6},{7,7,6,5}}}");
+		// check("RandomVariate(DiscreteUniformDistribution({3,7}), 10)", "{6,5,7,7,7,7,4,5,6,3}");
+		// check("RandomVariate(DiscreteUniformDistribution({1, 5}) )", "3");
 	}
 
 	public void testRange() {
@@ -8247,6 +8247,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testTimes() {
 		// String s = System.getProperty("os.name");
 		// if (s.contains("Windows")) {
+
+		// TODO github #35
+		check("5/7*Sqrt(7/6)", //
+				"5/7*Sqrt(7/6)");
+		
+		
 		check("x*y/(y*z)", "x/z");
 		check("x*y/(y^3*z)", "x/(y^2*z)");
 		check("x*y/(y^(2/3)*z)", "(x*y^(1/3))/z");

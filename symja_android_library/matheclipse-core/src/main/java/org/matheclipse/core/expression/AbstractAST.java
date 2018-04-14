@@ -44,7 +44,7 @@ import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.IMean;
+import org.matheclipse.core.interfaces.IDistribution;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPattern;
@@ -1676,7 +1676,7 @@ public abstract class AbstractAST implements IASTMutable {
 	public boolean isDistribution() {
 		if (head().isBuiltInSymbol()) {
 			IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
-			return evaluator instanceof IMean;
+			return evaluator instanceof IDistribution;
 		}
 		return false;
 	}
