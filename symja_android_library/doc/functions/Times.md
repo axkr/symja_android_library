@@ -1,16 +1,18 @@
 ## Times
 
-```  
+```
 Times(a, b, ...)
 
 a * b * ...
-```   
+```
+
 > represents the product of the terms `a, b, ...`. 
  
+**Note**: the `Times` operator has the attribute `Flat` ([associative property](https://en.wikipedia.org/wiki/Associative_property)), `Orderless` ([commutative property](https://en.wikipedia.org/wiki/Commutative_property)), `OneIdentity` and `Listable`.
 
 ### Examples
 
-```   
+```
 >> 10*2   
 20     
  
@@ -31,7 +33,8 @@ x^8
 ```
  
 `Times` has default value `1`:   
-```   
+
+```
 >> a /. n_. * x_ :> {n, x}   
 {1,a}   
  
@@ -88,4 +91,7 @@ I*3.14159265358979323846264338327
  
 >> N(Pi, 30) * E // Precision   
 30
-``` 
+```
+
+### Related terms 
+[Flat](Flat.md), [Listable](Listable.md), [MatrixPower](MatrixPower.md), [OneIdentity](OneIdentity.md), [Orderless](Orderless.md), [Power](Power.md) 

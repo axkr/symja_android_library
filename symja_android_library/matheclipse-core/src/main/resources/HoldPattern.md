@@ -18,14 +18,14 @@ True
 
 When the line above is evaluated  `Times(p__)` evaluates to `(p__)` before the kernel checks to see if the pattern matches. `MatchQ` then determines if `And(x,y,z)` matches the pattern `(p__)` and it does because `And(x,y,z)` is itself a sequence of one.
 
-Now the next cell also evaluates to `True` because both `( And(p__) )` and `( Times(p__) )` evaluate to `( p__ )`.
+Now the next line also evaluates to `True` because both `( And(p__) )` and `( Times(p__) )` evaluate to `( p__ )`.
 
 ```
 >> Times(p__)===And(p__)
 True
 ```
 
-Prevent patterns in the examples above from evaluating by wrapping them with `HoldPattern` as in the following lines. 
+In the examples above prevent the patterns from evaluating, by wrapping them with `HoldPattern` as in the following lines. 
 
 ```
 >> MatchQ(And(x, y, z), HoldPattern(Times(p__))) 

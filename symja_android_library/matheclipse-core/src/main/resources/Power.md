@@ -121,3 +121,6 @@ I^I
 >> a ^ b
 a^b
 ```
+
+### Related terms 
+[MatrixPower](MatrixPower.md), [Times](Times.md)
