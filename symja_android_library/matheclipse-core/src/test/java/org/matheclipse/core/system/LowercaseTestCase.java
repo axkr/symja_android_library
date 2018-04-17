@@ -3026,8 +3026,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testGegenbauerC() {
 		check("GegenbauerC(5,z)", "2*z-8*z^3+32/5*z^5");
-		check("GegenbauerC(1/2,z)", "(4*Sqrt(1+z))/Sqrt(2)");
-		check("GegenbauerC(-1/2,z)", "(-4*Sqrt(1+z))/Sqrt(2)");
+		check("GegenbauerC(1/2,z)", "2*Sqrt(2)*Sqrt(1+z)");
+		check("GegenbauerC(-1/2,z)", "-2*Sqrt(2)*Sqrt(1+z)");
 		check("GegenbauerC(v,0)", "(2*Cos(1/2*Pi*v))/v");
 		check("GegenbauerC(v,1)", "2/v");
 		check("GegenbauerC(v,-1)", "(2*Cos(Pi*v))/v");
@@ -5286,9 +5286,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testOrthogonalize() {
-		check("Orthogonalize({{3,1},{2,2}})", //
-				"{{3/Sqrt(10),1/Sqrt(10)},{-Sqrt(5/2)/5,3/5*Sqrt(5/2)}}");
+		check("2/Sqrt(14)", //
+				"Sqrt(2)/Sqrt(7)");
+		check("(1/4)*Sqrt(1/2)", //
+				"1/(4*Sqrt(2))");
+		check("4*Sqrt(2)", //
+				"4*Sqrt(2)");
+		check("1/Sqrt(14)", //
+				"1/Sqrt(14)");
+		check("2/Sqrt(14)", //
+				"Sqrt(2)/Sqrt(7)");
+		check("5/Sqrt(42)", //
+				"5/Sqrt(42)");
+		check("-2/Sqrt(2/21)", //
+				"-Sqrt(42)");
+		check("1/Sqrt(3)", //
+				"1/Sqrt(3)");
+		check("-1/Sqrt(3)", //
+				"-1/Sqrt(3)");
 
+		check("Orthogonalize({{3,1},{2,2}})", //
+				"{{3/Sqrt(10),1/Sqrt(10)},{-1/Sqrt(10),3/Sqrt(10)}}");
 		check("Orthogonalize({{1,0,1},{1,1,1}})", //
 				"{{1/Sqrt(2),0,1/Sqrt(2)},{0,1,0}}");
 		check("Orthogonalize({{1, 2}, {3, 1}, {6, 9}, {7, 8}})", //
@@ -5296,8 +5314,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Orthogonalize({{2,3}, {2,7}, {4,5}})", //
 				"{{2/Sqrt(13),3/Sqrt(13)},{-3/Sqrt(13),2/Sqrt(13)},{0,0}}");
 		check("Orthogonalize({{1,2,3},{5,2,7},{3,5,1}})", //
-				"{{1/Sqrt(14),2/Sqrt(14),3/Sqrt(14)},{5/7*Sqrt(7/6),-4/7*Sqrt(7/6),Sqrt(7/6)/7},{1/Sqrt(\n"
-						+ "3),1/Sqrt(3),-1/Sqrt(3)}}");
+				"{{1/Sqrt(14),Sqrt(2)/Sqrt(7),3/Sqrt(14)},{5/Sqrt(42),(-2*Sqrt(2))/Sqrt(21),1/Sqrt(\n"
+						+ "42)},{1/Sqrt(3),1/Sqrt(3),-1/Sqrt(3)}}");
 		check("Orthogonalize({{1,0,0},{0,0,1}})", //
 				"{{1,0,0},{0,0,1}}");
 	}
@@ -5819,9 +5837,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
-
-		check("Sqrt(63/5)", "3*Sqrt(7/5)");
-		check("Sqrt(9/2)", "3/Sqrt(2)");
+		check("64^(2/3)", //
+				"16");
+		check("81^(3/4)", //
+				"27");
+		check("Sqrt(63/5)", //
+				"3*Sqrt(7/5)");
+		check("Sqrt(9/2)", //
+				"3/Sqrt(2)");
 		check("Sqrt(1/2)", "1/Sqrt(2)");
 		check("1/Sqrt(2)-Sqrt(1/2)", "0");
 		check("(2/3)^(-3/4)", "(3/2)^(3/4)");
@@ -7970,7 +7993,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("1/9 * 3^(3/4)", "1/(3*3^(1/4))");
 		checkNumeric("1/9 * 3^(-1/2)", "1/(9*Sqrt(3))");
 		checkNumeric("1/9 * 3^(1/2)", "1/(3*Sqrt(3))");
-		checkNumeric(" 2^(1/4)*2^(-3) ", "1/(4*2^(3/4))");
+		checkNumeric(" 2^(1/4)*2^(-3) ", "1/(4*8^(1/4))");
 		checkNumeric("2^(-3)", "1/8");
 		checkNumeric("2^(-3/4)", "1/2^(3/4)");
 
@@ -7978,7 +8001,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("Surd(2,4)/8-(1/(4*2^(1/4.0)))", "-0.061573214438088525");
 		checkNumeric("1/(4*2^(1/4.0))", "0.21022410381342865");
 		checkNumeric("Surd(2,4)", "2^(1/4)");
-		checkNumeric("Surd(2,4)/8", "1/(4*2^(3/4))");
+		checkNumeric("Surd(2,4)/8", "1/(4*8^(1/4))");
 
 		checkNumeric("Surd(-2.,5)", "-1.148698354997035");
 		// checkNumeric("(-2.0)^(1/5)", "-1.148698354997035");
@@ -8245,14 +8268,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTimes() {
-		// String s = System.getProperty("os.name");
-		// if (s.contains("Windows")) {
-
-		// TODO github #35
+		// github #35
 		check("5/7*Sqrt(7/6)", //
-				"5/7*Sqrt(7/6)");
-		
-		
+				"5/Sqrt(42)");
+
+		check("Sqrt(1/2)*(1+x)", //
+				"(1+x)/Sqrt(2)");
+		check("((5/21)^(2/3)*(7/6)^(2/7))  ", //
+				"5^(2/3)/(2^(2/7)*3^(20/21)*7^(8/21))");
 		check("x*y/(y*z)", "x/z");
 		check("x*y/(y^3*z)", "x/(y^2*z)");
 		check("x*y/(y^(2/3)*z)", "(x*y^(1/3))/z");

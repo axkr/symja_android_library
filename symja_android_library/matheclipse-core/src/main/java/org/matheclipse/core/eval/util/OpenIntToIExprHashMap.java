@@ -38,7 +38,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * </p>
  * 
  */
-public class OpenIntToIExprHashMap implements Serializable {
+public class OpenIntToIExprHashMap<T extends IExpr> implements Serializable {
 
 	/** Status indicator for free table entries. */
 	protected static final byte FREE = 0;
@@ -81,7 +81,7 @@ public class OpenIntToIExprHashMap implements Serializable {
 	private int[] keys;
 
 	/** Values table. */
-	private IExpr[] values;
+	private Object[] values;
 
 	/** States table. */
 	private byte[] states;
@@ -118,7 +118,7 @@ public class OpenIntToIExprHashMap implements Serializable {
 	public OpenIntToIExprHashMap(final int expectedSize) {
 		final int capacity = computeCapacity(expectedSize);
 		keys = new int[capacity];
-		values = new IExpr[capacity];
+		values = new Object[capacity];
 		states = new byte[capacity];
 		mask = capacity - 1;
 	}
@@ -133,12 +133,12 @@ public class OpenIntToIExprHashMap implements Serializable {
 		final int length = source.keys.length;
 		keys = new int[length];
 		System.arraycopy(source.keys, 0, keys, 0, length);
-		values = new IExpr[length];
+		values = new Object[length];
 		System.arraycopy(source.values, 0, values, 0, length);
 		states = new byte[length];
 		System.arraycopy(source.states, 0, states, 0, length);
 		size = source.size;
-		mask = source.mask;
+		mask = source.mask;  
 		count = source.count;
 	}
 
@@ -179,12 +179,12 @@ public class OpenIntToIExprHashMap implements Serializable {
 	 *            key associated with the data
 	 * @return data associated with the key
 	 */
-	public IExpr get(final int key) {
+	public T get(final int key) {
 
 		final int hash = hashOf(key);
 		int index = hash & mask;
 		if (containsKey(key, index)) {
-			return values[index];
+			return (T)values[index];
 		}
 
 		if (states[index] == FREE) {
@@ -196,7 +196,7 @@ public class OpenIntToIExprHashMap implements Serializable {
 			j = probe(perturb, j);
 			index = j & mask;
 			if (containsKey(key, index)) {
-				return values[index];
+				return (T)values[index];
 			}
 		}
 
@@ -373,7 +373,7 @@ public class OpenIntToIExprHashMap implements Serializable {
 	 *            key to which the value is associated
 	 * @return removed value
 	 */
-	public IExpr remove(final int key) {
+	public T remove(final int key) {
 
 		final int hash = hashOf(key);
 		int index = hash & mask;
@@ -419,10 +419,10 @@ public class OpenIntToIExprHashMap implements Serializable {
 	 *            index of the element to remove
 	 * @return removed value
 	 */
-	private IExpr doRemove(int index) {
+	private T doRemove(int index) {
 		keys[index] = 0;
 		states[index] = REMOVED;
-		final IExpr previous = values[index];
+		final T previous = (T)values[index];
 		values[index] = null;
 		--size;
 		++count;
@@ -438,13 +438,13 @@ public class OpenIntToIExprHashMap implements Serializable {
 	 *            value to put in the map
 	 * @return previous value associated with the key
 	 */
-	public IExpr put(final int key, final IExpr value) {
+	public T put(final int key, final T value) {
 		int index = findInsertionIndex(key);
-		IExpr previous = null;
+		T previous = null;
 		boolean newMapping = true;
 		if (index < 0) {
 			index = changeIndexSign(index);
-			previous = values[index];
+			previous = (T)values[index];
 			newMapping = false;
 		}
 		keys[index] = key;
@@ -468,12 +468,12 @@ public class OpenIntToIExprHashMap implements Serializable {
 
 		final int oldLength = states.length;
 		final int[] oldKeys = keys;
-		final IExpr[] oldValues = values;
+		final Object[] oldValues = values;
 		final byte[] oldStates = states;
 
 		final int newLength = RESIZE_MULTIPLIER * oldLength;
 		final int[] newKeys = new int[newLength];
-		final IExpr[] newValues = new IExpr[newLength];
+		final Object[] newValues = new Object[newLength];
 		final byte[] newStates = new byte[newLength];
 		final int newMask = newLength - 1;
 		for (int i = 0; i < oldLength; ++i) {
@@ -582,14 +582,14 @@ public class OpenIntToIExprHashMap implements Serializable {
 		 * @exception NoSuchElementException
 		 *                if there is no element left in the map
 		 */
-		public IExpr value() throws ConcurrentModificationException, NoSuchElementException {
+		public T value() throws ConcurrentModificationException, NoSuchElementException {
 			if (referenceCount != count) {
 				throw new ConcurrentModificationException();
 			}
 			if (current < 0) {
 				throw new NoSuchElementException();
 			}
-			return values[current];
+			return (T)values[current];
 		}
 
 		/**

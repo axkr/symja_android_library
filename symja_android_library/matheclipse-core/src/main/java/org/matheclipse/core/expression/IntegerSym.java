@@ -178,7 +178,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	@Override
 	public IInteger div(final IInteger that) {
 		if (that instanceof IntegerSym) {
-			return new IntegerSym(fIntValue / ((IntegerSym) that).fIntValue);
+			return valueOf(fIntValue / ((IntegerSym) that).fIntValue);
 		}
 		return valueOf(toBigNumerator().divide(that.toBigNumerator()));
 	}
@@ -555,7 +555,7 @@ public class IntegerSym extends AbstractIntegerSym {
 	@Override
 	public IInteger mod(final IInteger that) {
 		if (that instanceof IntegerSym) {
-			return new IntegerSym(IntMath.mod(fIntValue, ((IntegerSym) that).fIntValue));
+			return valueOf(IntMath.mod(fIntValue, ((IntegerSym) that).fIntValue));
 		}
 		return valueOf(toBigNumerator().mod(that.toBigNumerator()));
 	}

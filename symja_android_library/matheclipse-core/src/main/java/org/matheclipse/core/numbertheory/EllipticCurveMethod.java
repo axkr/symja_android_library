@@ -3731,7 +3731,6 @@ public class EllipticCurveMethod {
 	}
 
 	private long GetSmallFactors(BigInteger NumberToFactor, BigInteger PD[], int Exp[], int Type) {
-		// int Typ[], int Type) {
 
 		long Div, TestComp;
 		int i;

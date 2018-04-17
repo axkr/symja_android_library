@@ -65,6 +65,7 @@ import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
+import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
@@ -85,6 +86,7 @@ import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcher;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcherPlus;
 import org.matheclipse.core.patternmatching.hash.HashedOrderlessMatcherTimes;
@@ -2590,24 +2592,17 @@ public final class Arithmetic {
 		 * @return <code>{nth-root, rest factor}</code> or <code>null</code> if the root is not available
 		 */
 		private IInteger[] calculateRoot(IInteger a, IInteger root) {
-			try {
-				int n = root.toInt();
-				if (n > 0) {
-					if (a.isOne()) {
-						return null;
-					}
-					if (a.isMinusOne()) {
-						return null;
-					}
-					IInteger[] result = a.nthRootSplit(n);
-					if (result[1].equals(a)) {
-						// no roots found
-						return null;
-					}
-					return result;
+			if (a.isOne() || a.isMinusOne()) {
+				return null;
+			}
+			int n = root.toIntDefault(Integer.MIN_VALUE);
+			if (n > 0) {
+				IInteger[] result = a.nthRootSplit(n);
+				if (result[1].equals(a)) {
+					// no roots found
+					return null;
 				}
-			} catch (ArithmeticException e) {
-
+				return result;
 			}
 			return null;
 		}
@@ -4555,30 +4550,50 @@ public final class Arithmetic {
 						return F.Times(F.CN1, F.Power(F.CN1, power1Arg2.plus(F.C1D2)));
 					}
 				}
-				if (arg0.isFraction()) {
-					if (power1Arg1.isInteger()) {
-						// example: 1/9 * 3^(1/2) -> 1/3 * 3^(-1/2)
+				if (arg0.isRational()) {
+					// if (power1Arg1.isInteger()) {
+					// // example: 1/9 * 3^(1/2) -> 1/3 * 3^(-1/2)
+					//
+					// // TODO implementation for complex numbers instead of
+					// // fractions
+					// IFraction f0 = (IFraction) arg0;
+					// IInteger pArg1 = (IInteger) power1Arg1;
+					// IFraction pArg2 = (IFraction) power1Arg2;
+					// if (pArg1.isPositive()) {
+					// if (pArg2.isPositive()) {
+					// IInteger denominatorF0 = f0.getDenominator();
+					// IInteger[] res = denominatorF0.divideAndRemainder(pArg1);
+					// if (res[1].isZero()) {
+					// return F.Times(F.fraction(f0.getNumerator(), res[0]),
+					// F.Power(pArg1, F.Subtract(F.C1, pArg2).negate()));
+					// }
+					// } else {
+					// IInteger numeratorF0 = f0.getNumerator();
+					// IInteger[] res = numeratorF0.divideAndRemainder(pArg1);
+					// if (res[1].isZero()) {
+					// return F.Times(F.fraction(res[0], f0.getDenominator()),
+					// F.Power(pArg1, pArg2.negate()));
+					// }
+					// }
+					// }
+					// } else
+					if ((power1Arg1.isRational())) {
 
-						// TODO implementation for complex numbers instead of
-						// fractions
-						IFraction f0 = (IFraction) arg0;
-						IInteger pArg1 = (IInteger) power1Arg1;
-						IFraction pArg2 = (IFraction) power1Arg2;
-						if (pArg1.isPositive()) {
-							if (pArg2.isPositive()) {
-								IInteger denominatorF0 = f0.getDenominator();
-								IInteger[] res = denominatorF0.divideAndRemainder(pArg1);
-								if (res[1].isZero()) {
-									return F.Times(F.fraction(f0.getNumerator(), res[0]),
-											F.Power(pArg1, F.Subtract(F.C1, pArg2).negate()));
-								}
-							} else {
-								IInteger numeratorF0 = f0.getNumerator();
-								IInteger[] res = numeratorF0.divideAndRemainder(pArg1);
-								if (res[1].isZero()) {
-									return F.Times(F.fraction(res[0], f0.getDenominator()),
-											F.Power(pArg1, pArg2.negate()));
-								}
+						if (power1Arg2.isNegative()) {
+							IExpr temp = timesPowerPower(((IRational) arg0).getNumerator(),
+									((IRational) arg0).getDenominator(), F.C1, //
+									((IRational) power1Arg1).getDenominator(), ((IRational) power1Arg1).getNumerator(),
+									(IFraction) power1Arg2.negate());
+							if (temp.isPresent()) {
+								return temp;
+							}
+						} else {
+							IExpr temp = timesPowerPower(((IRational) arg0).getNumerator(),
+									((IRational) arg0).getDenominator(), F.C1, //
+									((IRational) power1Arg1).getNumerator(), ((IRational) power1Arg1).getDenominator(),
+									(IFraction) power1Arg2);
+							if (temp.isPresent()) {
+								return temp;
 							}
 						}
 					}
@@ -4617,6 +4632,16 @@ public final class Arithmetic {
 						// a^(c)*b^(c) => (a*b) ^c
 						return power0Arg1.times(power1Arg1).power(power0Arg2);
 					}
+					if (power0Arg1.isFraction() && power0Arg2.isFraction() && power1Arg1.isFraction()
+							&& power1Arg2.isFraction()) {
+						IExpr temp = timesPowerPower(((IFraction) power0Arg1).getNumerator(),
+								((IFraction) power0Arg1).getDenominator(), (IFraction) power0Arg2, //
+								((IFraction) power1Arg1).getNumerator(), ((IFraction) power1Arg1).getDenominator(),
+								(IFraction) power1Arg2);
+						if (temp.isPresent()) {
+							return temp;
+						}
+					}
 					// if (power0Arg1.isPlus() && power1Arg1.isPlus() &&
 					// power0Arg1.equals(power1Arg1.negate())) {// Issue#128
 					// return
@@ -4624,10 +4649,71 @@ public final class Arithmetic {
 					// }
 				}
 			}
-			if (power0Arg1.equals(power1Arg1)) {
+			if (power0Arg1.equals(power1Arg1))
+
+			{
 				// x^(a)*x^(b) => x ^(a+b)
 				return power0Arg1.power(power0Arg2.plus(power1Arg2));
 			}
+			return F.NIL;
+		}
+
+		/**
+		 * (p1Numer/p1Denom)^(p1Exp) * (p2Numer1/p2Denom1)^(p2Exp)
+		 * 
+		 * @return
+		 */
+		private IExpr timesPowerPower(IInteger p1Numer, IInteger p1Denom, IRational p1Exp, IInteger p2Numer,
+				IInteger p2Denom, IRational p2Exp) {
+			boolean[] evaled = new boolean[] { false };
+
+			OpenIntToIExprHashMap<IRational> fn1Map = new OpenIntToIExprHashMap<IRational>();
+			IInteger fn1Rest = Primality.countPrimes1021(p1Numer, p1Exp, fn1Map, evaled);
+			IInteger fd2Rest = Primality.countPrimes1021(p2Denom, p2Exp.negate(), fn1Map, evaled);
+
+			OpenIntToIExprHashMap<IRational> fn2Map = new OpenIntToIExprHashMap<IRational>();
+			IInteger fn2Rest = Primality.countPrimes1021(p2Numer, p2Exp, fn2Map, evaled);
+			IInteger fd1Rest = Primality.countPrimes1021(p1Denom, p1Exp.negate(), fn2Map, evaled);
+
+			if (evaled[0]) {
+				OpenIntToIExprHashMap<IRational>.Iterator iter = fn2Map.iterator();
+				while (iter.hasNext()) {
+					iter.advance();
+					int base = iter.key();
+					IRational exponent = iter.value();
+					IRational exp = fn1Map.get(base);
+					if (exp == null) {
+						fn1Map.put(base, exponent);
+					} else {
+						evaled[0] = true;
+						fn1Map.put(base, exp.add(exponent));
+					}
+				}
+				IASTAppendable times1 = F.TimesAlloc(fn1Map.size() + 4);
+				if (!fn1Rest.isOne()) {
+					times1.append(F.Power(fn1Rest, p1Exp));
+				}
+				if (!fd2Rest.isOne()) {
+					times1.append(F.Power(fd2Rest, p2Exp.negate()));
+				}
+				if (!fn2Rest.isOne()) {
+					times1.append(F.Power(fn2Rest, p2Exp));
+				}
+				if (!fd1Rest.isOne()) {
+					times1.append(F.Power(fd1Rest, p1Exp.negate()));
+				}
+				iter = fn1Map.iterator();
+				while (iter.hasNext()) {
+					iter.advance();
+					int base = iter.key();
+					IRational exponent = iter.value();
+					if (base != 1) {
+						times1.append(F.Power(F.ZZ(base), exponent));
+					}
+				}
+				return times1;
+			}
+
 			return F.NIL;
 		}
 	}
