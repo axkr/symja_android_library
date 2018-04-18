@@ -3760,25 +3760,31 @@ public final class Arithmetic {
 		}
 
 		@Override
-		public IExpr e2ObjArg(final IExpr o, final IExpr r) {
-			if (r.isInteger()) {
+		public IExpr e2ObjArg(final IExpr base, final IExpr root) {
+			if (base.isNumber() && root.isInteger()) {
 				EvalEngine ee = EvalEngine.get();
-				if (o.isComplex() || o.isComplexNumeric()) {
+				if (base.isComplex() || base.isComplexNumeric()) {
 					ee.printMessage("Surd(a,b) - \"a\" should be a real value.");
 					return F.NIL;
 				}
-				if (o.isNegative() && ((IInteger) r).isEven()) {
-					ee.printMessage("Surd(a,b) is undefined for negative \"a\" and even \"b\"");
-					return F.Indeterminate;
-				}
-				if (r.isZero()) {
+
+				if (root.isZero()) {
 					ee.printMessage("Surd(a,b) division by zero");
 					return F.Indeterminate;
 				}
-				if (o.isMinusOne()) {
+				if (base.isNegative()) {
+					if (((IInteger) root).isEven()) {
+						ee.printMessage("Surd(a,b) is undefined for negative \"a\" and even \"b\"");
+						return F.Indeterminate;
+					}
+					return F.Times(F.CN1, Power(base.negate(), ((IInteger) root).inverse()));
+				}
+
+				if (base.isMinusOne()) {
 					return F.CN1;
 				}
-				return Power(o, ((IInteger) r).inverse());
+				return Power(base, ((IInteger) root).inverse());
+
 			}
 			return F.NIL;
 		}
@@ -3797,14 +3803,25 @@ public final class Arithmetic {
 			return doubleSurd(stack[top - 1], stack[top]);
 		}
 
-		private double doubleSurd(double val, double r) {
+		private static double doubleSurd(double val, double r) {
 			if (r == 0.0d) {
 				EvalEngine ee = EvalEngine.get();
 				ee.printMessage("Surd(a,b) division by zero");
 				return Double.NaN;
 			}
 			if (val < 0.0d) {
-				return -Math.pow(Math.abs(val), 1.0d / r);
+				double root = Math.floor(r);
+				if (Double.isFinite(r) && Double.compare(r, root) == 0) {
+					// integer type
+					int iRoot = (int) root;
+					if ((iRoot & 0x0001) == 0x0000) {
+						EvalEngine ee = EvalEngine.get();
+						ee.printMessage("Surd(a,b) - undefined for negative \"a\" and even \"b\" values");
+						return Double.NaN;
+					}
+					return -Math.pow(Math.abs(val), 1.0d / r);
+				}
+				return Double.NaN;
 			}
 			return Math.pow(val, 1.0d / r);
 		}
@@ -3812,17 +3829,17 @@ public final class Arithmetic {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
-			IExpr arg1 = ast.arg1();
+			IExpr base = ast.arg1();
 			IExpr arg2 = engine.evaluateNonNumeric(ast.arg2());
 			if (arg2.isNumber()) {
 				if (arg2.isInteger()) {
-					IInteger iArg2 = (IInteger) arg2;
-					if (arg1.isNegative()) {
-						if (arg1.isNegative() && iArg2.isEven()) {
+					IInteger root = (IInteger) arg2;
+					if (base.isNegative()) {
+						if (root.isEven()) {
+							// necessary for two double args etc
 							engine.printMessage("Surd(a,b) - undefined for negative \"a\" and even \"b\" values");
 							return F.Indeterminate;
 						}
-						// return F.Power(arg1, F.QQ(F.C1, iArg2));
 					}
 				} else {
 					engine.printMessage("Surd(a,b) - b should be an integer");
