@@ -13,10 +13,13 @@ public interface PDFRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 0, 4 };
+  final public static int[] SIZES = { 0, 5 };
 
   final public static IAST RULES = List(
     IInit(PDF, SIZES),
+    // PDF(DiscreteUniformDistribution({a_,b_})):=Piecewise({{1/(1-a+b),a<=#1<=b}},0)&
+    ISetDelayed(PDF(DiscreteUniformDistribution(List(a_,b_))),
+      Function(Piecewise(List(List(Power(Plus(C1,Negate(a),b),-1),LessEqual(a,Slot1,b))),C0))),
     // PDF(GammaDistribution(a_,b_)):=Piecewise({{1/(b^a*E^(#1/b)*Gamma(a)*#1^(1-a)),#1>0}},0)&
     ISetDelayed(PDF(GammaDistribution(a_,b_)),
       Function(Piecewise(List(List(Times(Power(Times(Power(b,a),Exp(Times(Power(b,-1),Slot1)),Gamma(a)),-1),Power(Slot1,Plus(CN1,a))),Greater(Slot1,C0))),C0))),

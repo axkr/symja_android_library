@@ -1,4 +1,6 @@
 {
+PDF(DiscreteUniformDistribution({a_, b_})) :=
+  ( Piecewise({{1/(1 - a + b), a <= # <= b}}, 0) & ),
 PDF(GammaDistribution(a_, b_)) :=
   ( Piecewise({{#^(-1 + a)/(b^a*E^(#/b)*Gamma(a)), # > 0}}, 0) & ),
 PDF(GammaDistribution(a_, b_, g_, d_)) :=
