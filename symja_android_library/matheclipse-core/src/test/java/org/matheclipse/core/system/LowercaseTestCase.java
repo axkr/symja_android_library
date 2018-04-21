@@ -6324,28 +6324,30 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("RandomChoice({1,2,3,4,5,6,7})", "3");
 	}
 
-	// public void testRandomVariate() {
-	// check("RandomVariate(ExponentialDistribution(5.6), 10^1)", //
-	// "{0.36309,0.10609,0.14096,0.11642,0.01146,0.11286,0.05236,0.00071,0.01648,0.0303}");
-	// check("RandomVariate(DiscreteUniformDistribution({50,1000}), 10^1)", //
-	// "{468,989,156,353,469,91,399,304,700,137}");
-	// check("RandomVariate(PoissonDistribution(2.0), 10^1)", //
-	// "{1,3,5,3,2,2,2,5,1,2}");
-	// check("RandomVariate(BinomialDistribution(100,0.25), 10^1)", //
-	// "{28,25,30,25,25,26,29,17,33,20}");
-	// check("RandomVariate(NormalDistribution(2,3), 10^1)", //
-	// "{3.16579,3.4267,6.43772,4.53451,3.45249,6.51662,2.10209,-3.8462,3.87387,-4.47763}");
-	// check("RandomVariate(NormalDistribution(2,3))", //
-	// "1.99583");
-	// check("RandomVariate(NormalDistribution())", //
-	// "-0.56291");
-	// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2})", "{3,7}");
-	// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3})", "{{5,4,7},{5,7,3}}");
-	// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3,4})",
-	// "{{{4,5,5,3},{5,4,4,6},{6,3,4,7}},{{6,6,7,3},{4,6,5,6},{7,7,6,5}}}");
-	// check("RandomVariate(DiscreteUniformDistribution({3,7}), 10)", "{6,5,7,7,7,7,4,5,6,3}");
-	// check("RandomVariate(DiscreteUniformDistribution({1, 5}) )", "3");
-	// }
+//	public void testRandomVariate() {
+//		check("RandomVariate(BinomialDistribution(100,0.25), 10^1)", //
+//				"{28,25,30,25,25,26,29,17,33,20}");
+//		check("RandomVariate(BernoulliDistribution(0.25), 10^1)", //
+//				"{1,0,0,0,1,0,0,0,0,0}");
+//		check("RandomVariate(ExponentialDistribution(5.6), 10^1)", //
+//				"{0.36309,0.10609,0.14096,0.11642,0.01146,0.11286,0.05236,0.00071,0.01648,0.0303}");
+//		check("RandomVariate(DiscreteUniformDistribution({50,1000}), 10^1)", //
+//				"{468,989,156,353,469,91,399,304,700,137}");
+//		check("RandomVariate(PoissonDistribution(2.0), 10^1)", //
+//				"{1,3,5,3,2,2,2,5,1,2}");
+//		check("RandomVariate(NormalDistribution(2,3), 10^1)", //
+//				"{3.16579,3.4267,6.43772,4.53451,3.45249,6.51662,2.10209,-3.8462,3.87387,-4.47763}");
+//		check("RandomVariate(NormalDistribution(2,3))", //
+//				"1.99583");
+//		check("RandomVariate(NormalDistribution())", //
+//				"-0.56291");
+//		check("RandomVariate(DiscreteUniformDistribution({3,7}), {2})", "{3,7}");
+//		check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3})", "{{5,4,7},{5,7,3}}");
+//		check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3,4})",
+//				"{{{4,5,5,3},{5,4,4,6},{6,3,4,7}},{{6,6,7,3},{4,6,5,6},{7,7,6,5}}}");
+//		check("RandomVariate(DiscreteUniformDistribution({3,7}), 10)", "{6,5,7,7,7,7,4,5,6,3}");
+//		check("RandomVariate(DiscreteUniformDistribution({1, 5}) )", "3");
+//	}
 
 	public void testRange() {
 		check("Range(0,10,Pi)", //
