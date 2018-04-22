@@ -5,6 +5,9 @@ import java.util.Map;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IDistribution;
+import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -75,6 +78,14 @@ public class Assumptions extends AbstractAssumptions {
 		}
 	}
 
+	/**
+	 * Add a domain. Domain can be <code>Algebraics, Booleans, Complexes, Integers, Primes, Rationals, Reals</code>
+	 * 
+	 * @param element
+	 *            a <code>Element(x, &lt;domain&gt;)</code> expression
+	 * @param assumptions
+	 * @return
+	 */
 	private static boolean addElement(IAST element, Assumptions assumptions) {
 		if (element.arg2().isSymbol()) {
 			ISymbol domain = (ISymbol) element.arg2();
@@ -84,13 +95,39 @@ public class Assumptions extends AbstractAssumptions {
 				IExpr arg1 = element.arg1();
 				if (arg1.isAST(F.Alternatives)) {
 					((IAST) arg1).forEach(x -> assumptions.elementsMap.put(x, domain));
-					// for (int i = 1; i < alternatives.size(); i++) {
-					// assumptions.elementsMap.put(alternatives.get(i), domain);
-					// }
 				} else {
 					assumptions.elementsMap.put(arg1, domain);
 				}
 				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Add a distribution.
+	 * 
+	 * @param element
+	 *            a <code>Distributed(x, &lt;distribution&gt;)</code> expression
+	 * @param assumptions
+	 * @return
+	 */
+	private static boolean addDistribution(IAST element, Assumptions assumptions) {
+		if (element.arg2().isAST()) {
+			IAST dist = (IAST) element.arg2();
+
+			ISymbol head = (ISymbol) dist.head();
+			if (head instanceof IBuiltInSymbol) {
+				IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
+				if (evaluator instanceof IDistribution) {
+					IExpr arg1 = element.arg1();
+					if (arg1.isAST(F.Alternatives)) {
+						((IAST) arg1).forEach(x -> assumptions.distributionsMap.put(x, dist));
+					} else {
+						assumptions.distributionsMap.put(arg1, dist);
+					}
+					return true;
+				}
 			}
 		}
 		return false;
@@ -372,14 +409,25 @@ public class Assumptions extends AbstractAssumptions {
 			}
 		} else if (ast.isASTSizeGE(F.And, 2) || ast.isASTSizeGE(F.List, 2)) {
 			return addList(ast, this);
+		} else if (ast.isAST(F.Distributed, 3)) {
+			if (addDistribution(ast, this)) {
+				return this;
+			}
 		}
 		return null;
+	}
+
+	final public IAST distribution(IExpr expr) {
+		IAST dist = distributionsMap.get(expr);
+		return (dist == null) ? F.NIL : dist;
 	}
 
 	/**
 	 * Map for storing the domain of an expression
 	 */
 	private Map<IExpr, ISymbol> elementsMap = new HashMap<IExpr, ISymbol>();
+
+	private Map<IExpr, IAST> distributionsMap = new HashMap<IExpr, IAST>();
 
 	private Map<IExpr, SignedNumberRelations> valueMap = new HashMap<IExpr, SignedNumberRelations>();
 

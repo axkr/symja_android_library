@@ -8,4 +8,6 @@ package org.matheclipse.core.interfaces;
  */
 public interface IDistribution {
 	IExpr mean(IAST distribution);
+
+	IExpr median(IAST distribution);
 }

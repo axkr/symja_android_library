@@ -5,9 +5,18 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 
 public interface IAssumptions {
-	
+
 	public IAssumptions addAssumption(IAST ast);
-	
+
+	/**
+	 * Get the distribution which is associated with the expression
+	 * 
+	 * @param expr
+	 *            the expression
+	 * @return <code>F.NIL</code> if no distribution is associated
+	 */
+	public IAST distribution(IExpr expr);
+
 	/**
 	 * Gives <code>true</code>, if the expression is assumed to be an algebraic value (i.e. an element of the
 	 * <code>Algebraics</code> domain), <code>false</code> in all other cases.

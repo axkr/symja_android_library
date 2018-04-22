@@ -147,6 +147,7 @@ public class F {
 	 * @see java.util.Optional#isPresent
 	 */
 	public final static NILPointer NIL = new NILPointer();
+
 	public final static IBuiltInSymbol Abort = BuiltIns.valueOf(BuiltIns.Abort);
 	public final static IBuiltInSymbol Abs = BuiltIns.valueOf(BuiltIns.Abs);
 	public final static IBuiltInSymbol AbsArg = BuiltIns.valueOf(BuiltIns.AbsArg);
@@ -315,6 +316,7 @@ public class F {
 	public final static IBuiltInSymbol Discriminant = BuiltIns.valueOf(BuiltIns.Discriminant);
 	public final static IBuiltInSymbol Disputed = BuiltIns.valueOf(BuiltIns.Disputed);
 	public final static IBuiltInSymbol Distribute = BuiltIns.valueOf(BuiltIns.Distribute);
+	public final static IBuiltInSymbol Distributed = BuiltIns.valueOf(BuiltIns.Distributed);
 	public final static IBuiltInSymbol Divergence = BuiltIns.valueOf(BuiltIns.Divergence);
 	public final static IBuiltInSymbol Divide = BuiltIns.valueOf(BuiltIns.Divide);
 	public final static IBuiltInSymbol DivideBy = BuiltIns.valueOf(BuiltIns.DivideBy);
@@ -2938,6 +2940,17 @@ public class F {
 		return ternaryAST3(Distribute, a0, a1, a2);
 	}
 
+	/**
+	 * Create a <code>Distributed(x, &lt;distribution&gt;)</code> AST.
+	 * 
+	 * @param x
+	 * @param distribution
+	 * @return
+	 */
+	public static IAST Distributed(final IExpr x, final IAST distribution) {
+		return binaryAST2(Distributed, x, distribution);
+	}
+
 	public static IExpr div(IExpr a, Integer i) {
 		return Times(a, Power(integer(i.longValue()), CN1));
 	}
@@ -3790,7 +3803,6 @@ public class F {
 	}
 
 	public static IAST Integrate(final IExpr a0, final IExpr a1) {
-
 		return binaryAST2(Integrate, a0, a1);
 	}
 
@@ -3853,6 +3865,10 @@ public class F {
 
 	public static IAST InverseFunction(final IExpr a) {
 		return unaryAST1(InverseFunction, a);
+	}
+
+	public static IAST InverseGammaRegularized(final IExpr a0, final IExpr a1) {
+		return binaryAST2(InverseGammaRegularized, a0, a1);
 	}
 
 	public static IAST InverseGammaRegularized(final IExpr a0, final IExpr a1, final IExpr a2) {

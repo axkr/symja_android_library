@@ -15,7 +15,11 @@ public abstract class AbstractAssumptions implements IAssumptions {
 	public IAssumptions addAssumption(IAST ast) {
 		return null;
 	}
-	
+
+	public IAST distribution(IExpr expr) {
+		return F.NIL;
+	}
+
 	/**
 	 * TODO implement algebraic number conditions.
 	 * 
@@ -382,7 +386,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
 			int size = ast.size();
 			if (size == 2) {
 				IExpr arg1 = ast.arg1();
-				if (symbol.equals(F.Log) &&  assumePositive(arg1)&& assumeLessThan(arg1, F.C1)) {
+				if (symbol.equals(F.Log) && assumePositive(arg1) && assumeLessThan(arg1, F.C1)) {
 					return true;
 				}
 			}

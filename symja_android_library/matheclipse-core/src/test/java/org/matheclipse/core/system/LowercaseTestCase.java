@@ -4414,6 +4414,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Median({1,2,3,4,5,6,7.0})", "4.0");
 		check("Median({1,2,3,4,5,6,7.0,8})", "4.5");
 		check("Median({1,2,3,4,5,6,7})", "4");
+
+		check("Median(BernoulliDistribution(p))", "Piecewise({{1,p>1/2}},0)");
+		check("Median(BinomialDistribution(n, m))", "Median(BinomialDistribution(n,m))");
+		check("Median(ExponentialDistribution(n))", "Log(2)/n");
+		check("Median(PoissonDistribution(p))", "Median(PoissonDistribution(p))");
+		check("Median(DiscreteUniformDistribution({l, r}))", "-1+l+Max(1,Ceiling(1/2*(1-l+r)))");
+		check("Median(ErlangDistribution(n, m))", "InverseGammaRegularized(n,0,1/2)/m");
+		check("Median(LogNormalDistribution(m,s))", "E^m");
+		check("Median(NakagamiDistribution(n, m))", "Sqrt((m*InverseGammaRegularized(n,0,1/2))/n)");
+		check("Median(NormalDistribution())", "0");
+		check("Median(NormalDistribution(n, p))", "n");
+		check("Median(FrechetDistribution(n, m))", "m/Log(2)^(1/n)");
+		check("Median(GammaDistribution(n, m))", "m*InverseGammaRegularized(n,0,1/2)");
+		check("Median(GammaDistribution(a,b,g,d))", "d+b*InverseGammaRegularized(a,1/2)^(1/g)");
+		check("Median(GeometricDistribution(n))", "Median(GeometricDistribution(n))");
+		check("Median(GumbelDistribution( ))", "Log(Log(2))");
+		check("Median(GumbelDistribution(n, m))", "n+m*Log(Log(2))");
+		check("Median(HypergeometricDistribution(n, ns, nt))", "Median(HypergeometricDistribution(n,ns,nt))");
+		check("Median(StudentTDistribution(4))", "0");
+		check("Median(StudentTDistribution(n))", "0");
+		check("Median(StudentTDistribution(m,s,v))", "m");
+		check("Median(WeibullDistribution(a, b))", "b*Log(2)^(1/a)");
+		check("Median(WeibullDistribution(a, b, m))", "m+b*Log(2)^(1/a)");
 	}
 
 	public void testMemberQ() {
@@ -6301,13 +6324,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExpectation() {
-		// check("Expectation(x^2+7*x+8,PoissonDistribution(m))", "");
+		// check("Expectation(x^2+7*x+8,Distributed(x,PoissonDistribution(m)))", "");
 
-		check("Expectation(x,DiscreteUniformDistribution({4, 9}))", "13/2");
-		check("Expectation(x,DiscreteUniformDistribution({4, 10}))", "7");
-
-		check("Expectation(2*x+3,DiscreteUniformDistribution({4, 9}))", "16");
-		check("Expectation(2*x+3,DiscreteUniformDistribution({4, 10}))", "17");
+		// check("Expectation(x,Distributed(x, DiscreteUniformDistribution({4, 9})))", "13/2");
+		// check("Expectation(x,Distributed(x, DiscreteUniformDistribution({4, 10})))", "7");
+		//
+		// check("Expectation(2*x+3,Distributed(x, DiscreteUniformDistribution({4, 9})))", "16");
+		// check("Expectation(2*x+3,Distributed(x, DiscreteUniformDistribution({4, 10})))", "17");
 
 	}
 
@@ -6324,30 +6347,30 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("RandomChoice({1,2,3,4,5,6,7})", "3");
 	}
 
-//	public void testRandomVariate() {
-//		check("RandomVariate(BinomialDistribution(100,0.25), 10^1)", //
-//				"{28,25,30,25,25,26,29,17,33,20}");
-//		check("RandomVariate(BernoulliDistribution(0.25), 10^1)", //
-//				"{1,0,0,0,1,0,0,0,0,0}");
-//		check("RandomVariate(ExponentialDistribution(5.6), 10^1)", //
-//				"{0.36309,0.10609,0.14096,0.11642,0.01146,0.11286,0.05236,0.00071,0.01648,0.0303}");
-//		check("RandomVariate(DiscreteUniformDistribution({50,1000}), 10^1)", //
-//				"{468,989,156,353,469,91,399,304,700,137}");
-//		check("RandomVariate(PoissonDistribution(2.0), 10^1)", //
-//				"{1,3,5,3,2,2,2,5,1,2}");
-//		check("RandomVariate(NormalDistribution(2,3), 10^1)", //
-//				"{3.16579,3.4267,6.43772,4.53451,3.45249,6.51662,2.10209,-3.8462,3.87387,-4.47763}");
-//		check("RandomVariate(NormalDistribution(2,3))", //
-//				"1.99583");
-//		check("RandomVariate(NormalDistribution())", //
-//				"-0.56291");
-//		check("RandomVariate(DiscreteUniformDistribution({3,7}), {2})", "{3,7}");
-//		check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3})", "{{5,4,7},{5,7,3}}");
-//		check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3,4})",
-//				"{{{4,5,5,3},{5,4,4,6},{6,3,4,7}},{{6,6,7,3},{4,6,5,6},{7,7,6,5}}}");
-//		check("RandomVariate(DiscreteUniformDistribution({3,7}), 10)", "{6,5,7,7,7,7,4,5,6,3}");
-//		check("RandomVariate(DiscreteUniformDistribution({1, 5}) )", "3");
-//	}
+	// public void testRandomVariate() {
+	// check("RandomVariate(BinomialDistribution(100,0.25), 10^1)", //
+	// "{28,25,30,25,25,26,29,17,33,20}");
+	// check("RandomVariate(BernoulliDistribution(0.25), 10^1)", //
+	// "{1,0,0,0,1,0,0,0,0,0}");
+	// check("RandomVariate(ExponentialDistribution(5.6), 10^1)", //
+	// "{0.36309,0.10609,0.14096,0.11642,0.01146,0.11286,0.05236,0.00071,0.01648,0.0303}");
+	// check("RandomVariate(DiscreteUniformDistribution({50,1000}), 10^1)", //
+	// "{468,989,156,353,469,91,399,304,700,137}");
+	// check("RandomVariate(PoissonDistribution(2.0), 10^1)", //
+	// "{1,3,5,3,2,2,2,5,1,2}");
+	// check("RandomVariate(NormalDistribution(2,3), 10^1)", //
+	// "{3.16579,3.4267,6.43772,4.53451,3.45249,6.51662,2.10209,-3.8462,3.87387,-4.47763}");
+	// check("RandomVariate(NormalDistribution(2,3))", //
+	// "1.99583");
+	// check("RandomVariate(NormalDistribution())", //
+	// "-0.56291");
+	// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2})", "{3,7}");
+	// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3})", "{{5,4,7},{5,7,3}}");
+	// check("RandomVariate(DiscreteUniformDistribution({3,7}), {2,3,4})",
+	// "{{{4,5,5,3},{5,4,4,6},{6,3,4,7}},{{6,6,7,3},{4,6,5,6},{7,7,6,5}}}");
+	// check("RandomVariate(DiscreteUniformDistribution({3,7}), 10)", "{6,5,7,7,7,7,4,5,6,3}");
+	// check("RandomVariate(DiscreteUniformDistribution({1, 5}) )", "3");
+	// }
 
 	public void testRange() {
 		check("Range(0,10,Pi)", //

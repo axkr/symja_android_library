@@ -78,7 +78,6 @@ import org.matheclipse.core.polynomials.ExprPolynomialRing;
 import org.matheclipse.core.polynomials.IPartialFractionGenerator;
 import org.matheclipse.core.polynomials.PartialFractionGenerator;
 import org.matheclipse.core.visit.AbstractVisitorBoolean;
-//import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.core.visit.VisitorExpr;
 
 import com.google.common.math.LongMath;
