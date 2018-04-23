@@ -91,9 +91,9 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 
-		if (ast.arg1().isList() && ast.arg2().isSymbol()) {
+		if (ast.arg1().isList()) {
 			final IAST list = (IAST) ast.arg1();
-			final ISymbol symbol = (ISymbol) ast.arg2();
+			IExpr arg2 =  ast.arg2();
 			int size = list.size();
 			if (size > 1) {
 				int n = size - 1;
@@ -125,7 +125,7 @@ public class InterpolatingPolynomial extends AbstractEvaluator {
 					IASTAppendable times = F.TimesAlloc(2);
 					IASTAppendable plus = F.PlusAlloc(8);
 					times.append(plus);
-					times.append(F.Subtract(symbol, xv[i - 2]));
+					times.append(F.Subtract(arg2, xv[i - 2]));
 					tempPlus[0].append(times);
 					tempPlus[0] = plus;
 					tempPlus[0].append(c[i - 1]);

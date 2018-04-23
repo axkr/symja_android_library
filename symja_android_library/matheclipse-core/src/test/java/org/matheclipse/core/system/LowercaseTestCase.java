@@ -3466,10 +3466,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInterpolatingFunction() {
+		check("ipf=InterpolatingFunction({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}}); ipf(5/2) ",
+				"59/16");
 		check("InterpolatingFunction({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}})",
 				"InterpolatingFunction({{0,0},{1,1},{2,3},{3,4},{4,3},{5,0}})");
 		check("ipf=InterpolatingFunction({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}});{ipf(2.5),ipf(3.0),ipf(3.5)}",
-				"{3.71094,4.0,3.77344}");
+				"{3.6875,4.0,3.75}");
 		check("InterpolatingFunction({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}})",
 				"InterpolatingFunction({{0,0},{1,1},{2,3},{3,4},{4,3},{5,0}})");
 	}
@@ -3562,6 +3564,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Inverse({{u, v}, {v, u}})", "{{u/(u^2-v^2),-v/(u^2-v^2)},\n" + " {-v/(u^2-v^2),u/(u^2-v^2)}}");
 	}
 
+	public void testInverseBetaRegularized() {
+		check("InverseBetaRegularized(0,42,b)", "0");
+		check("InverseBetaRegularized(1,47.11,b)", "1.0");
+		check("InverseBetaRegularized(z,0,a,b)", "z");
+		check("InverseBetaRegularized(0,z,a,b)", "InverseBetaRegularized(z,a,b)");
+	}
+	
 	public void testInverseErf() {
 		check("InverseErf /@ {-1, 0, 1}", "{-Infinity,0,Infinity}");
 		checkNumeric("InverseErf /@ {0.9, 1.0, 1.1}", "{1.1630871536766743,Infinity,InverseErf(1.1)}");
@@ -3593,7 +3602,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("InverseFunction(Abs)", "-#1&");
 		check("InverseFunction(Sin)", "ArcSin");
 	}
-
+	
+	public void testInverseGammaRegularized() {
+		check("InverseGammaRegularized(a, Infinity, z)", "InverseGammaRegularized(a,-z)");
+		check("InverseGammaRegularized(42,0)", "Infinity");
+		check("InverseGammaRegularized(10,1)", "0");
+	}
+	
 	public void testInverseHaversine() {
 		checkNumeric("InverseHaversine(0.5)", "1.5707963267948968");
 		checkNumeric("InverseHaversine(1 + 2.5 * I)", "1.764589463349828+I*2.3309746530493127");

@@ -3814,6 +3814,10 @@ public class F {
 		return unaryAST1(InterpolatingFunction, list);
 	}
 
+	public static IAST InterpolatingPolynomial(final IExpr a0, final IExpr a1) {
+		return binaryAST2(InterpolatingPolynomial, a0, a1);
+	}
+
 	/**
 	 * Create an "interval" expression: <code>Interval(list)</code>.
 	 * 

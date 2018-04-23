@@ -3656,6 +3656,8 @@ public class MainTestCase extends AbstractTestCase {
 						"\"Plus(2, E)\"");
 				checkNumeric("1.0E-2 // FullForm", //
 						"\"0.7182818284590451\"");
+				checkNumeric("1.0e-2 // FullForm", //
+						"\"Plus(-2.0, e)\"");
 				checkNumeric("1x-2 // FullForm", //
 						"\"Plus(-2, x)\"");
 				check("N(1E-2)", "0.71828");
