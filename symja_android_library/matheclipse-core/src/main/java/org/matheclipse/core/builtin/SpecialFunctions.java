@@ -66,6 +66,8 @@ public class SpecialFunctions {
 		F.HypergeometricPFQRegularized.setEvaluator(new HypergeometricPFQRegularized());
 		F.InverseErf.setEvaluator(new InverseErf());
 		F.InverseErfc.setEvaluator(new InverseErfc());
+		F.InverseBetaRegularized.setEvaluator(new InverseBetaRegularized());
+		F.InverseGammaRegularized.setEvaluator(new InverseGammaRegularized());
 		F.PolyGamma.setEvaluator(new PolyGamma());
 		F.PolyLog.setEvaluator(new PolyLog());
 		F.ProductLog.setEvaluator(new ProductLog());
@@ -466,6 +468,84 @@ public class SpecialFunctions {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 			super.setUp(newSymbol);
 		}
+	}
+
+	private static class InverseBetaRegularized extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 4, 5);
+
+			if (ast.isAST3()) {
+				IExpr z = ast.arg1();
+				IExpr a = ast.arg2();
+				IExpr b = ast.arg3();
+				if (a.isPositiveResult()) {
+					if (z.isZero()) {
+						return F.C0;
+					}
+					if (z.isOne()) {
+						return F.C1;
+					}
+				}
+			} else {
+				IExpr z1 = ast.arg1();
+				IExpr z2 = ast.arg2();
+				if (z2.isZero()) {
+					return z1;
+				}
+				IExpr a = ast.arg3();
+				IExpr b = ast.arg4();
+				if (z1.isZero()) {
+					return F.InverseBetaRegularized(z2, a, b);
+				}
+
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+
+	}
+
+	private static class InverseGammaRegularized extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 3, 4);
+
+			IExpr a = ast.arg1();
+
+			if (ast.isAST3()) {
+				IExpr z1 = ast.arg2();
+				IExpr z2 = ast.arg3();
+				if (z1.isInfinity()) {
+					// (a,Infinity,z2) => InverseGammaRegularized(a, -z2))
+					return F.InverseGammaRegularized(a, z2.negate());
+				}
+			} else {
+				IExpr z = ast.arg2();
+				if (a.isPositiveResult()) {
+					if (z.isZero()) {
+						return F.Infinity;
+					} else if (z.isOne()) {
+						return F.C0;
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+
 	}
 
 	private static class PolyGamma extends AbstractFunctionEvaluator implements PolyGammaRules {
