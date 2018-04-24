@@ -18,6 +18,8 @@ import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.Assumptions;
+import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
@@ -212,41 +214,52 @@ public class FindRoot extends AbstractFunctionEvaluator {
 	private double findRoot(String method, int maxIterations, IAST list, ISignedNumber min, ISignedNumber max,
 			IExpr function, EvalEngine engine) {
 		ISymbol xVar = (ISymbol) list.arg1();
-		function = engine.evaluate(function);
-		UnivariateFunction f = new UnaryNumerical(function, xVar, engine);
-		BaseAbstractUnivariateSolver<UnivariateFunction> solver = null;
-		if (method.equalsIgnoreCase("Bisection")) {
-			solver = new BisectionSolver();
-		} else if (method.equalsIgnoreCase("Brent")) {
-			solver = new BrentSolver();
-			// } else if (method.isSymbolName("Laguerre")) {
-			// solver = new LaguerreSolver();
-		} else if (method.equalsIgnoreCase("Muller")) {
-			solver = new MullerSolver();
-		} else if (method.equalsIgnoreCase("Ridders")) {
-			solver = new RiddersSolver();
-		} else if (method.equalsIgnoreCase("Secant")) {
-			solver = new SecantSolver();
-		} else if (method.equalsIgnoreCase("RegulaFalsi")) {
-			solver = new RegulaFalsiSolver();
-		} else if (method.equalsIgnoreCase("Illinois")) {
-			solver = new IllinoisSolver();
-		} else if (method.equalsIgnoreCase("Pegasus")) {
-			solver = new PegasusSolver();
-		} else {
-			// default: NewtonSolver
-			DifferentiableUnivariateFunction fNewton = new UnaryNumerical(function, xVar, engine);
-			BaseAbstractUnivariateSolver<DifferentiableUnivariateFunction> solver2 = new NewtonSolver();
-			if (max == null) {
-				return solver2.solve(maxIterations, fNewton, min.doubleValue());
+		IAssumptions oldAssumptions = engine.getAssumptions();
+		try {
+			IAssumptions assum = Assumptions.getInstance(F.Element(xVar, F.Reals));
+			engine.setAssumptions(assum);
+			function = engine.evaluate(function);
+			UnivariateFunction f = new UnaryNumerical(function, xVar, engine);
+			BaseAbstractUnivariateSolver<UnivariateFunction> solver = null;
+			if (method.equalsIgnoreCase("Bisection")) {
+				solver = new BisectionSolver();
+			} else if (method.equalsIgnoreCase("Brent")) {
+				solver = new BrentSolver();
+				// } else if (method.isSymbolName("Laguerre")) {
+				// solver = new LaguerreSolver();
+			} else if (method.equalsIgnoreCase("Muller")) {
+				solver = new MullerSolver();
+			} else if (method.equalsIgnoreCase("Ridders")) {
+				solver = new RiddersSolver();
+			} else if (method.equalsIgnoreCase("Secant")) {
+				solver = new SecantSolver();
+			} else if (method.equalsIgnoreCase("RegulaFalsi")) {
+				solver = new RegulaFalsiSolver();
+			} else if (method.equalsIgnoreCase("Illinois")) {
+				solver = new IllinoisSolver();
+			} else if (method.equalsIgnoreCase("Pegasus")) {
+				solver = new PegasusSolver();
+			} else {
+				// default: NewtonSolver
+				try {
+					DifferentiableUnivariateFunction fNewton = new UnaryNumerical(function, xVar, engine);
+					BaseAbstractUnivariateSolver<DifferentiableUnivariateFunction> solver2 = new NewtonSolver();
+					if (max == null) {
+						return solver2.solve(maxIterations, fNewton, min.doubleValue());
+					}
+					return solver2.solve(maxIterations, fNewton, min.doubleValue(), max.doubleValue());
+				} catch (MathRuntimeException mex) {
+					// switch to BisectionSolver
+					solver = new BisectionSolver();
+				}
 			}
-			return solver2.solve(maxIterations, fNewton, min.doubleValue(), max.doubleValue());
+			if (max == null) {
+				return solver.solve(maxIterations, f, min.doubleValue());
+			}
+			return solver.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
+		} finally {
+			engine.setAssumptions(oldAssumptions);
 		}
-		if (max == null) {
-			return solver.solve(maxIterations, f, min.doubleValue());
-		}
-		return solver.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
-
 	}
 
 	@Override

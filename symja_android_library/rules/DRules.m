@@ -1,4 +1,5 @@
 {
+  D(Abs(f_),x_NotListQ):=D(f,x)*x/Abs(x) /; Element(x, Reals),
   D(ArcCos(f_),x_NotListQ):=D(f,x)*(-1)*(1-f^2)^(-1/2),
   D(ArcCosh(f_),x_NotListQ):=D(f,x)*(f^2-1)^(-1/2),
   D(ArcCot(f_),x_NotListQ):=D(f,x)*(-1)*(1+f^2)^(-1),
