@@ -2,7 +2,6 @@ package org.matheclipse.core.reflection.system;
 
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.EvalEngine;
-import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -37,7 +36,7 @@ public class InterpolatingFunction extends AbstractEvaluator {
 								int i = 1;
 								for (int j = i + 3; j <= rowsSize; j++) {
 									IAST compare;
-									compare = createComparator(i, j, rowsSize);
+									compare = createComparator(matrix, i, j, rowsSize);
 									IASTAppendable data = F.ListAlloc(4);
 									for (int k = i; k <= j; k++) {
 										data.append(matrix.get(k));
@@ -60,17 +59,17 @@ public class InterpolatingFunction extends AbstractEvaluator {
 		return F.NIL;
 	}
 
-	private IAST createComparator(int i, int j, int size) {
+	private IAST createComparator(IAST matrix, int i, int j, int size) {
 		if (i == 1) {
-			// # < i+1
-			return F.Less(F.Slot1, F.ZZ(i + 1));
+			// # < matrix[i+2, 1]
+			return F.Less(F.Slot1, matrix.getPart(i + 2, 1));
 		} else {
 			if (j < size) {
-				// i <= # < i+1
-				return F.And(F.LessEqual(F.ZZ(i), F.Slot1), F.Less(F.Slot1, F.ZZ(i + 1)));
+				// matrix[i+1, 1] <= # < matrix[i+2, 1]
+				return F.And(F.LessEqual(matrix.getPart(i + 1, 1), F.Slot1), F.Less(F.Slot1, matrix.getPart(i + 2, 1)));
 			} else {
-				// # >= i
-				return F.GreaterEqual(F.Slot1, F.ZZ(i));
+				// # >= matrix[i+1, 1]
+				return F.GreaterEqual(F.Slot1, matrix.getPart(i + 1, 1));
 			}
 		}
 	}
