@@ -343,6 +343,17 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public boolean isSymbolName(String name);
 
 	/**
+	 * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>.
+	 * 
+	 * @param args
+	 *            the arguments for which this function symbol should be evaluated
+	 * @return
+	 */
+	default boolean isTrue(IExpr... args) {
+		return of(args).isTrue();
+	}
+	
+	/**
 	 * If this symbol has attribute <code>ISymbol.CONSTANT</code> and the symbol's evaluator is of instance
 	 * <code>INumericConstant</code>, then apply the constants double value to the given function and return the result,
 	 * otherwise return <code>F.NIL</code>.

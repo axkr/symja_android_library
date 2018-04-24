@@ -59,39 +59,43 @@ public class VisitorReplaceSlots extends VisitorExpr {
 		int j = 0;
 		int size = ast.size();
 		while (i < size) {
-			if (ast.get(i).isSlotSequence()) {
-				IAST slotSequence = (IAST) ast.get(i);
-				if (slotSequence.arg1() instanceof IntegerSym) {
-					// something may be evaluated - return a new IAST:
-					result = ast.copyAppendable();
-					j = getSlotSequence(result, i, (IntegerSym) slotSequence.arg1());
-					i++;
+			if (!ast.get(i).isFunction()) {
+				if (ast.get(i).isSlotSequence()) {
+					IAST slotSequence = (IAST) ast.get(i);
+					if (slotSequence.arg1() instanceof IntegerSym) {
+						// something may be evaluated - return a new IAST:
+						result = ast.copyAppendable();
+						j = getSlotSequence(result, i, (IntegerSym) slotSequence.arg1());
+						i++;
+					}
+					break;
 				}
-				break;
-			}
-			temp = ast.get(i).accept(this);
-			if (temp.isPresent()) {
-				// something was evaluated - return a new IAST:
-				result= ast.setAtClone(i++, temp);
-				j++;
-				break;
+				temp = ast.get(i).accept(this);
+				if (temp.isPresent()) {
+					// something was evaluated - return a new IAST:
+					result = ast.setAtClone(i++, temp);
+					j++;
+					break;
+				}
 			}
 			j++;
 			i++;
 		}
 		if (result.isPresent()) {
 			while (i < size) {
-				if (ast.get(i).isSlotSequence()) {
-					IAST slotSequence = (IAST) ast.get(i);
-					if (slotSequence.arg1() instanceof IntegerSym) {
-						j = getSlotSequence(result, j, (IntegerSym) slotSequence.arg1());
-						i++;
+				if (!ast.get(i).isFunction()) {
+					if (ast.get(i).isSlotSequence()) {
+						IAST slotSequence = (IAST) ast.get(i);
+						if (slotSequence.arg1() instanceof IntegerSym) {
+							j = getSlotSequence(result, j, (IntegerSym) slotSequence.arg1());
+							i++;
+						}
+						continue;
 					}
-					continue;
-				}
-				temp = ast.get(i).accept(this);
-				if (temp.isPresent()) {
-					result.set(j, temp);
+					temp = ast.get(i).accept(this);
+					if (temp.isPresent()) {
+						result.set(j, temp);
+					}
 				}
 				i++;
 				j++;
