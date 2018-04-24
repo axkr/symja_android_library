@@ -1454,7 +1454,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testD() {
-
+		check("Refine(D(Abs(x),x), Element(x, Reals))", //
+				"x/Abs(x)");
+		
 		check("D(HarmonicNumber(x), x)", "Pi^2/6-HarmonicNumber(x,2)");
 
 		check("D(ArcCsc(x),{x,2})", "(-1+2*x^2)/(Sqrt(1-1/x^2)*x^3*(-1+x^2))");
@@ -2669,6 +2671,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFindRoot() {
+		// github issue #43
+		check("findroot(abs(x-1)-2x-3==0, {x, -10, 10})", //
+				"{x->-0.66667}");
 		// issue #181
 		check("FindRoot(2^x==0,{x,-100,100}, Method->Brent)", "{x->-100.0}");
 		// FindRoot: interval does not bracket a root: f(-1) = 0.5, f(100) =
