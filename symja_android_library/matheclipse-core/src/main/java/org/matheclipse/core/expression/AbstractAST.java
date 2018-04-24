@@ -2021,6 +2021,12 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
+	public boolean isNumericArgument() {
+		return isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG);
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public boolean isNumericFunction() {
 		ISymbol symbol = topHead();
 		if ((symbol.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION) {
@@ -2049,7 +2055,7 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 		return false;
 	}
-
+	
 	/** {@inheritDoc} */
 	@Override
 	public boolean isOneIdentityAST1() {
@@ -2641,7 +2647,7 @@ public abstract class AbstractAST implements IASTMutable {
 	 * @param function
 	 * @return
 	 */
-	public IAST map(IASTAppendable astResult, IUnaryIndexFunction<IExpr, IExpr> function) {
+	public IASTAppendable map(IASTAppendable astResult, IUnaryIndexFunction<IExpr, IExpr> function) {
 		for (int i = 1; i < size(); i++) {
 			astResult.append(function.apply(i, get(i)));
 		}

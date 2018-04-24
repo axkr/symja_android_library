@@ -154,6 +154,11 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public final int IS_DERIVATIVE_EVALED = 0x8000;
 
 	/**
+	 * Is set, if one of the (nested) arguments of a numeric function contains a numeric expression.
+	 */
+	public final int CONTAINS_NUMERIC_ARG = 0x00010000;
+
+	/**
 	 * Add an evaluation flag to the existing ones.
 	 * 
 	 * @param i
@@ -1005,7 +1010,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @param function
 	 * @return
 	 */
-	public IAST map(IASTAppendable astResult, IUnaryIndexFunction<IExpr, IExpr> function);
+	public IASTAppendable map(IASTAppendable astResult, IUnaryIndexFunction<IExpr, IExpr> function);
 
 	/**
 	 * Maps the elements of this IAST with the unary functor. If the function returns <code>F.NIL</code> the original

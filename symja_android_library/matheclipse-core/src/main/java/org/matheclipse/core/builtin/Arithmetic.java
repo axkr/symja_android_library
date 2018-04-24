@@ -2957,8 +2957,7 @@ public final class Arithmetic {
 							}
 						}
 						if (exponent.isMinusOne() && base.isTimes()) {
-							IAST timesAST = (IAST) base;
-							IExpr temp = powerTimesInverse(timesAST, exponent);
+							IExpr temp = powerTimesInverse((IAST) base, (ISignedNumber) exponent);
 							if (temp.isPresent()) {
 								return temp;
 							}
@@ -3125,24 +3124,24 @@ public final class Arithmetic {
 		 * <code>Times(a^(-1.0),b^(-1.0),c^(-1.0),d,....)</code>
 		 * 
 		 * @param timesAST
+		 *            a <code>Times(...)</code> expression
 		 * @param arg2
+		 *            equals <code>-1</code> or <code>-1.0</code>
 		 * @return <code>F.NIL</code> if the transformation isn't possible.
 		 */
-		private static IExpr powerTimesInverse(IAST timesAST, final IExpr arg2) {
+		private static IExpr powerTimesInverse(final IAST timesAST, final ISignedNumber arg2) {
 			IASTAppendable resultAST = F.NIL;
 			for (int i = 1; i < timesAST.size(); i++) {
 				IExpr temp = timesAST.get(i);
-				if (temp.isPower() && temp.exponent().isMinusOne()) {
+				if (temp.isPower() && temp.exponent().isSignedNumber()) {
 					if (!resultAST.isPresent()) {
 						resultAST = timesAST.copyAppendable();
-						for (int j = 1; j < i; j++) {
-							resultAST.set(j, F.Power(timesAST.get(j), arg2));
-						}
+						resultAST.map(resultAST, x -> F.Power(x, arg2));
 					}
-					resultAST.set(i, temp.base());
-				} else {
-					if (resultAST.isPresent()) {
-						resultAST.set(i, F.Power(temp, arg2));
+					if (temp.exponent().isMinusOne()) {
+						resultAST.set(i, temp.base());
+					} else {
+						resultAST.set(i, F.Power(temp.base(), temp.exponent().multiply(arg2)));
 					}
 				}
 			}

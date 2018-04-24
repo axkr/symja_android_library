@@ -8342,6 +8342,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testTimes() {
 		// github #35
+		check(" y^2*y^(-0.6666) ", //
+				"y^1.3334");
+		check(" y*y^(-0.6666) ", //
+				"y^0.3334");
+		
+		check("x* y*y^(-0.6666) *z^(-1)", //
+				"(x*y^0.3334)/z");
 		check("5/7*Sqrt(7/6)", //
 				"5/Sqrt(42)");
 
@@ -8352,7 +8359,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("x*y/(y*z)", "x/z");
 		check("x*y/(y^3*z)", "x/(y^2*z)");
 		check("x*y/(y^(2/3)*z)", "(x*y^(1/3))/z");
-		check("x*y/(y^(0.6666)*z)", "(x*y^0.3334)/z");
+		check("x*y/(y^(0.6666)*z) ", "(x*y^0.3334)/z");
 		check("N(Pi, 30) * I", "I*3.14159265358979323846264338327");
 		check("N(I*Pi, 30)", "I*3.14159265358979323846264338327");
 		check("N(Pi * E, 30)", "8.53973422267356706546355086954");

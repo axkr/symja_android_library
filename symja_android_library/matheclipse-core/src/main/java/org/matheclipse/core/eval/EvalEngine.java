@@ -158,7 +158,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @see Config#isFileSystemEnabled();
 	 */
 	transient boolean fFileSystemEnabled;
-	
+
 	public boolean isFileSystemEnabled() {
 		return fFileSystemEnabled;
 	}
@@ -391,12 +391,11 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		if (astSize > 1) {
 			boolean numericMode = fNumericMode;
 			boolean localNumericMode = fNumericMode;
-
+			boolean isNumericFunction = (ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION;
+			boolean isNumericArgument = ast.isNumericArgument();
 			if (!fNumericMode) {
-				if ((ISymbol.NUMERICFUNCTION & attr) == ISymbol.NUMERICFUNCTION) {
-					if (ast.hasNumericArgument()) {
-						localNumericMode = true;
-					}
+				if (isNumericFunction && ast.isNumericArgument()) {
+					localNumericMode = true;
 				}
 			}
 
@@ -414,9 +413,18 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					if (temp.isPresent()) {
 						rlist[0] = ast.copy();
 						rlist[0].set(1, temp);
-						rlist[0].addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+						if (isNumericFunction && temp.isNumericArgument()) {
+							rlist[0].addEvalFlags(
+									(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR) | IAST.CONTAINS_NUMERIC_ARG);
+						} else {
+							rlist[0].addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+						}
 						if (astSize == 2) {
 							return rlist[0];
+						}
+					} else {
+						if (isNumericFunction && ast.arg1().isNumericArgument()) {
+							ast.addEvalFlags(ast.getEvalFlags() | IAST.CONTAINS_NUMERIC_ARG);
 						}
 					}
 				} finally {
@@ -440,9 +448,18 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 							if (temp.isPresent()) {
 								if (!rlist[0].isPresent()) {
 									rlist[0] = ast.copy();
-									rlist[0].addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+									if (isNumericFunction && temp.isNumericArgument()) {
+										rlist[0].addEvalFlags((ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR)
+												| IAST.CONTAINS_NUMERIC_ARG);
+									} else {
+										rlist[0].addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+									}
 								}
 								rlist[0].set(i, temp);
+							} else {
+								if (isNumericFunction && x.isNumericArgument()) {
+									ast.addEvalFlags(ast.getEvalFlags() | IAST.CONTAINS_NUMERIC_ARG);
+								}
 							}
 						});
 					} finally {
@@ -450,6 +467,12 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 							fNumericMode = numericMode;
 						}
 					}
+				}
+			}
+			if (!isNumericArgument && ast.isNumericArgument()) {
+				// one of the arguments is a numeric value
+				if (!rlist[0].isPresent()) {
+					return evalArgs(ast, attr);
 				}
 			}
 			return rlist[0];

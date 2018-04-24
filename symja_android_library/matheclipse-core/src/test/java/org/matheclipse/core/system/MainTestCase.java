@@ -219,11 +219,12 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem000b() {
-		// github issue#42
-//		check(" ((1 - (i/10)) / (1.0 - (i/10)))", "(1-i/10)/(1.0-0.1*i)");
-//		check(" ((1 - (i/10)) / (1.0 - (i/10)))", "(1-i/10)/(1.0-0.1*i)");
-		check("(1 - ((1 - (i/10)) / (1.0 - (i/10))))", "1-(1-i/10)/(1.0-0.1*i)");
-		
+		// github issue #42
+		check(" ((1 - (i/10)) / (1.0 - (i/10)))", //
+				"1.0");
+		check("(1 - ((1 - (i/10)) / (1.0 - (i/10))))", //
+				"0.0");
+
 		check("(1 - ((1 - (i/10)) / (1 - (i/10))))", "0");
 		check("((1 - (i/10)) / (1 - (i/10)))", "1");
 		check("Simplify(1+(1-x)^2/(-1+x))", "x");
@@ -3714,5 +3715,5 @@ public class MainTestCase extends AbstractTestCase {
 		check("Together(1/(-3+x)-(2+x)/(3-x)^2)", "-5/(9-6*x+x^2)");
 		check("Simplify(1/(-3+x)-(2+x)/(3-x)^2)", "-5/(3-x)^2");
 	}
-	
+
 }
