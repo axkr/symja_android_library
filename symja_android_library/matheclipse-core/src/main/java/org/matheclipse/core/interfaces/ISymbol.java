@@ -343,16 +343,17 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public boolean isSymbolName(String name);
 
 	/**
-	 * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>.
+	 * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>. If the result is
+	 * <code>F.True</code> return <code>true</code>
 	 * 
 	 * @param args
 	 *            the arguments for which this function symbol should be evaluated
-	 * @return
+	 * @return if the result is <code>F.True</code> return <code>true</code>, otherwise <code>false</code>.
 	 */
 	default boolean isTrue(IExpr... args) {
 		return of(args).isTrue();
 	}
-	
+
 	/**
 	 * If this symbol has attribute <code>ISymbol.CONSTANT</code> and the symbol's evaluator is of instance
 	 * <code>INumericConstant</code>, then apply the constants double value to the given function and return the result,
@@ -381,8 +382,17 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public IExpr of(EvalEngine engine, IExpr... args);
 
 	/**
-	 * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code> to a boolean value.
-	 * If the result isn't a boolean value return <code>false</code>.
+	 * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>.
+	 * 
+	 * @param args
+	 *            the arguments for which this function symbol should be evaluated
+	 * @return
+	 */
+	public IExpr of(IExpr... args);
+
+	/**
+	 * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code> to a boolean
+	 * value. If the result isn't a boolean value return <code>false</code>.
 	 * 
 	 * @param engine
 	 *            the current evaluation engine
@@ -391,15 +401,6 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @return if the result isn't a boolean value return <code>false</code>.
 	 */
 	public boolean ofQ(EvalEngine engine, IExpr... args);
-	
-	/**
-	 * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code>.
-	 * 
-	 * @param args
-	 *            the arguments for which this function symbol should be evaluated
-	 * @return
-	 */
-	public IExpr of(IExpr... args);
 
 	/**
 	 * Delete the topmost placeholder from the local variable stack
