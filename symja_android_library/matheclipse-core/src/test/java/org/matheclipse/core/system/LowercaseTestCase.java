@@ -174,7 +174,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// github issue #40
 		check("((#+##&) @@#&) /@{{1,2},{2,2,2},{3,4}}", //
 				"{4,8,10}");
-		
+
 		check("Times @@ {1, 2, 3, 4}", //
 				"24");
 		check("f @@ {{a, b}, {c}, d}", "f({a,b},{c},d)");
@@ -3479,12 +3479,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInterpolatingFunction() {
-		check("ipf=InterpolatingFunction({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}}); ipf(5/2) ", "59/16");
-		check("InterpolatingFunction({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}})",
+		check("ipf=InterpolatingFunction({{0,17},{1,3},{2,5},{3,4},{4,3},{5,0},{6,23}}); ipf(19/4) ", //
+				"-19/32");
+		check("ipf=InterpolatingFunction({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}}); ipf(5/2) ", //
+				"59/16");
+		check("InterpolatingFunction({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}})", //
 				"InterpolatingFunction({{0,0},{1,1},{2,3},{3,4},{4,3},{5,0}})");
-		check("ipf=InterpolatingFunction({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}});{ipf(2.5),ipf(3.0),ipf(3.5)}",
+		check("ipf=InterpolatingFunction({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}});{ipf(2.5),ipf(3.0),ipf(3.5)}", //
 				"{3.6875,4.0,3.75}");
-		check("InterpolatingFunction({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}})",
+		check("InterpolatingFunction({{0, 0}, {1, 1}, {2, 3}, {3, 4}, {4, 3}, {5, 0}})", //
 				"InterpolatingFunction({{0,0},{1,1},{2,3},{3,4},{4,3},{5,0}})");
 	}
 
