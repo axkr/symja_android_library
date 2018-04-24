@@ -258,10 +258,10 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	 * 
 	 * @param ast
 	 * @return <code>F.NIL</code> if evaluation is not possible
-	 * @see org.matheclipse.core.eval.EvalEngine#evalSetAttributes()
+	 * @deprecated use EvalEngine#evalHoldPattern(leftHandSide)
 	 */
 	public static IExpr evalLeftHandSide(final IAST leftHandSide, final EvalEngine engine) {
-		return engine.evalSetAttributes(leftHandSide);
+		return engine.evalHoldPattern(leftHandSide);
 	}
 
 	/**
@@ -818,7 +818,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				// expression /; test
 				lhsPatternExpr = fPatternMap.substituteSymbols(lhsPatternExpr);
 				if (lhsPatternExpr.isAST()) {
-					lhsPatternExpr = PatternMatcher.evalLeftHandSide((IAST) lhsPatternExpr, engine);
+					lhsPatternExpr = engine.evalHoldPattern((IAST) lhsPatternExpr);
 				}
 				final PatternMatcher matcher = new PatternMatcherEvalEngine(lhsPatternExpr, engine);
 				if (matcher.test(lhsEvalExpr, engine)) {

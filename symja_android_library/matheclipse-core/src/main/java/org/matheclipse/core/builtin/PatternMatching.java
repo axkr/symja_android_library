@@ -411,6 +411,68 @@ public final class PatternMatching {
 
 	}
 
+	/**
+	 * <pre>
+	 * HoldPattern(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * <code>HoldPattern</code> doesn't evaluate <code>expr</code> for pattern-matching.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * One might be very surprised that the following line evaluates to <code>True</code>!
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; MatchQ(And(x, y, z), Times(p__))
+	 * True
+	 * </pre>
+	 * <p>
+	 * When the line above is evaluated <code>Times(p__)</code> evaluates to <code>(p__)</code> before the kernel checks
+	 * to see if the pattern matches. <code>MatchQ</code> then determines if <code>And(x,y,z)</code> matches the pattern
+	 * <code>(p__)</code> and it does because <code>And(x,y,z)</code> is itself a sequence of one.
+	 * </p>
+	 * <p>
+	 * Now the next line also evaluates to <code>True</code> because both <code>( And(p__) )</code> and
+	 * <code>( Times(p__) )</code> evaluate to <code>( p__ )</code>.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Times(p__)===And(p__)
+	 * True
+	 * </pre>
+	 * <p>
+	 * In the examples above prevent the patterns from evaluating, by wrapping them with <code>HoldPattern</code> as in
+	 * the following lines.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; MatchQ(And(x, y, z), HoldPattern(Times(p__))) 
+	 * False
+	 * 
+	 * &gt;&gt; HoldPattern(Times(p__))===HoldPattern(And(p__)) 
+	 * False
+	 * </pre>
+	 * <p>
+	 * In the next lines <code>HoldPattern</code> is used to ensure the head <code>(And)</code> is changed to
+	 * <code>(List)</code>.<br />
+	 * The two examples that follow have the same effect, but the use of <code>HoldPattern</code> isn't needed.
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; And(x, y, z)/.HoldPattern(And(a__)) -&gt;List(a)
+	 * {x,y,z}
+	 * 
+	 * &gt;&gt; And(x, y, z)/.And-&gt;List 
+	 * {x,y,z}
+	 * 
+	 * &gt;&gt; And(x, y, z)/.And(a_,b___)-&gt;List(a,b) 
+	 * {x,y,z}
+	 * </pre>
+	 */
 	private static class HoldPattern extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -418,8 +480,8 @@ public final class PatternMatching {
 			if (ast.size() == 2) {
 				IExpr arg1 = ast.arg1();
 				if (arg1.isAST()) {
-					IExpr temp = PatternMatcher.evalLeftHandSide((IAST) arg1, engine);
-					if (temp==arg1) {
+					IExpr temp = engine.evalHoldPattern((IAST) arg1);
+					if (temp == arg1) {
 						return F.NIL;
 					}
 					return F.HoldPattern(temp);
@@ -676,7 +738,7 @@ public final class PatternMatching {
 			Validate.checkSize(ast, 3);
 			IExpr leftHandSide = ast.arg1();
 			if (leftHandSide.isAST()) {
-				leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
+				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
 			} else {
 				leftHandSide = engine.evaluate(leftHandSide);
 			}
@@ -716,7 +778,7 @@ public final class PatternMatching {
 			Validate.checkSize(ast, 3);
 			IExpr leftHandSide = ast.arg1();
 			if (leftHandSide.isAST()) {
-				leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
+				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
 			} else {
 				leftHandSide = engine.evaluate(leftHandSide);
 			}
@@ -906,7 +968,7 @@ public final class PatternMatching {
 				final EvalEngine engine) throws RuleCreationError {
 
 			if (leftHandSide.isAST()) {
-				leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
+				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
 			}
 			try {
 				rightHandSide = engine.evaluate(rightHandSide);
@@ -1000,7 +1062,7 @@ public final class PatternMatching {
 				final EvalEngine engine) throws RuleCreationError {
 			if (leftHandSide.isAST()
 					&& (((IAST) leftHandSide).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK) == IAST.NO_FLAG) {
-				leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
+				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
 			}
 			return setDelayedDownRule(leftHandSide, rightHandSide, packageMode);
 		}
@@ -1190,7 +1252,7 @@ public final class PatternMatching {
 				throws RuleCreationError {
 
 			if (leftHandSide.isAST()) {
-				leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
+				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
 			}
 			removeRule(leftHandSide, packageMode);
 		}
@@ -1255,7 +1317,7 @@ public final class PatternMatching {
 			final Object[] result = new Object[2];
 
 			if (leftHandSide.isAST()) {
-				leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
+				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
 			}
 			try {
 				rightHandSide = engine.evaluate(rightHandSide);
@@ -1312,7 +1374,7 @@ public final class PatternMatching {
 
 			if (leftHandSide.isAST()
 					&& (((IAST) leftHandSide).getEvalFlags() & IAST.IS_FLATTENED_OR_SORTED_MASK) == IAST.NO_FLAG) {
-				leftHandSide = PatternMatcher.evalLeftHandSide((IAST) leftHandSide, engine);
+				leftHandSide = engine.evalHoldPattern((IAST) leftHandSide);
 			}
 			result[0] = null;
 			result[1] = rightHandSide;
