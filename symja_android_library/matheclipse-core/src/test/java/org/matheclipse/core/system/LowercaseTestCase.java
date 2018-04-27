@@ -580,7 +580,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testBooleanConvert() {
 		check("BooleanConvert(a&&!b||!a&&c||b&&!c, \"DNF\")", //
 				"a&&!b||!a&&c||b&&!c");
-		
+
 		check("BooleanConvert(Implies(x, y), \"CNF\")", "!x||y");
 		check("BooleanConvert(! (a && b), \"CNF\")", "!a||!b");
 		check("BooleanConvert(! (a || b || c), \"CNF\")", "!a&&!b&&!c");
@@ -622,12 +622,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBooleanMinimize() {
-//		check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c))", "a&&!b||!a&&c||b&&!c");
-//		 check("BooleanMinimize((a||b)&&(c||d))", "a&&c||a&&d||b&&c||b&&d");
-//		 check("BooleanMinimize((a||b)&&(c||d) )", "a&&c||a&&d||b&&c||b&&d");
-//		 check("BooleanMinimize(a && b || ! a && b)", "b");
-//		 check("BooleanMinimize(a && b || ! a && b )", "b");
-		 
+		// check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c))", "a&&!b||!a&&c||b&&!c");
+		// check("BooleanMinimize((a||b)&&(c||d))", "a&&c||a&&d||b&&c||b&&d");
+		// check("BooleanMinimize((a||b)&&(c||d) )", "a&&c||a&&d||b&&c||b&&d");
+		// check("BooleanMinimize(a && b || ! a && b)", "b");
+		// check("BooleanMinimize(a && b || ! a && b )", "b");
+
 	}
 
 	public void testBooleanQ() {
@@ -1172,20 +1172,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testComplexExpand() {
-//		check("ComplexExpand(a)", "a");
-//		check("ComplexExpand(42)", "42");
-//		check("ComplexExpand((-1)^(1/3))", //
-//				"1/2+I*1/2*Sqrt(3)");
-//		check("ComplexExpand((-1)^(4/3))", //
-//				"-1/2-I*1/2*Sqrt(3)");
-//		check("ComplexExpand(2^(4/3))", //
-//				"2*2^(1/3)");
-//		check("ComplexExpand((-2)^(4/3))", //
-//				"2*(1/2^(2/3)+I*1/2*Sqrt(3)*4^(1/6))");
-//		check("ComplexExpand(a*(b+c))", "a*b+a*c");
-//		check("ComplexExpand((-1)^(1/3)*(1+I*Sqrt(3)))", //
-//				"(1/2+I*1/2*Sqrt(3))*(1+I*Sqrt(3))");
-		
+		check("ComplexExpand(a)", "a");
+		check("ComplexExpand(42)", "42");
+		check("ComplexExpand((-1)^(1/3))", //
+				"1/2+I*1/2*Sqrt(3)");
+		check("ComplexExpand((-1)^(4/3))", //
+				"-1/2-I*1/2*Sqrt(3)");
+		check("ComplexExpand(2^(4/3))", //
+				"2*2^(1/3)");
+		check("ComplexExpand((-2)^(4/3))", //
+				"2*(1/2^(2/3)+I*1/2*Sqrt(3)*4^(1/6))");
+		check("ComplexExpand(a*(b+c))", "a*b+a*c");
+		check("ComplexExpand((-1)^(1/3)*(1+I*Sqrt(3)))", //
+				"1/2+I*1/2*Sqrt(3)+(I*1/2-Sqrt(3)/2)*Sqrt(3)");
+
 		check("ComplexExpand(Cos(x+I*y))", "Cos(x)*Cosh(y)+I*Sin(x)*Sinh(y)");
 		check("ComplexExpand(Sin(x+I*y))", "Cosh(y)*Sin(x)+I*Cos(x)*Sinh(y)");
 		check("ComplexExpand(Cot(x+I*y))", "-Sin(2*x)/(Cos(2*x)-Cosh(2*y))+(I*Sinh(2*y))/(Cos(2*x)-Cosh(2*y))");
@@ -4159,6 +4159,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("Log(-1.4)", "0.3364722366212129+I*3.141592653589793");
 
 		check("Log(-1)", "I*Pi");
+		check("Log(-2)", "I*Pi+Log(2)");
 		// test alias
 		check("Ln(E)", "1");
 		check("ln(E)", "1");
@@ -5907,6 +5908,32 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		check("(-42)^Infinity", //
+				"ComplexInfinity");
+		check("(-1)^Infinity", //
+				"Indeterminate");
+		check("(-1/2)^Infinity", //
+				"0");
+		check("(1/4)^Infinity", //
+				"0");
+		check("(1)^Infinity", //
+				"Indeterminate");
+		check("(42)^Infinity", //
+				"Infinity");
+
+		check("(-42)^(-Infinity)", //
+				"0");
+		check("(-1)^(-Infinity)", //
+				"Indeterminate");
+		check("(-1/2)^(-Infinity)", //
+				"ComplexInfinity");
+		check("(1/4)^(-Infinity)", //
+				"Infinity");
+		check("(1)^(-Infinity)", //
+				"Indeterminate");
+		check("(42)^(-Infinity)", //
+				"0");
+
 		check("64^(2/3)", //
 				"16");
 		check("81^(3/4)", //
@@ -6010,6 +6037,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPowerExpand() {
+		check("PowerExpand(Log(x*y))", "Log(x)+Log(y)");
+		check("PowerExpand(Log(x^k))", "k*Log(x)");
+		check("PowerExpand(Sqrt(-a))", "I*Sqrt(a)");
+		check("PowerExpand(Sqrt(a^2))", "a");
+		// check("PowerExpand(Sqrt(a/b))", "Sqrt(a)*Sqrt(1/b)");
 
 		check("PowerExpand((a ^ b) ^ c)", "a^(b*c)");
 		check("PowerExpand((a * b) ^ c)", "a^c*b^c");
@@ -8363,15 +8395,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"y^1.3334");
 		check(" y*y^(-0.6666) ", //
 				"y^0.3334");
-		
+
 		check("x* y*y^(-0.6666) *z^(-1)", //
 				"(x*y^0.3334)/z");
 		check("5/7*Sqrt(7/6)", //
 				"5/Sqrt(42)");
 
 		check("Hold((-1)^(a) (b)) // FullForm", //
-				 "\"Hold(Times(Power(-1, a), b))\"");
-		
+				"\"Hold(Times(Power(-1, a), b))\"");
+
 		check("Sqrt(1/2)*(1+x)", //
 				"(1+x)/Sqrt(2)");
 		check("((5/21)^(2/3)*(7/6)^(2/7))  ", //
@@ -8452,7 +8484,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{1,2,3,4},\n" + " {2,1,2,3},\n" + " {3,2,1,2},\n" + " {4,3,2,1}}");
 	}
 
-	public void testTogether() {
+	public void testTogether() { 
+		check("Together(1/(a + b) + 1/(c + d) - a)", //
+				"(a+b+c-a^2*c-a*b*c+d-a^2*d-a*b*d)/(a*c+b*c+a*d+b*d)");
+		check("Together(1/a+1/b)", //
+				"(a+b)/(a*b)");
+		check("Together(1/a+1/b+c)", //
+				"(a+b+a*b*c)/(a*b)");
+		check("Together(1/c+d)", //
+				"(1+c*d)/c");
+		check("Together(1/2+a)", //
+				"1/2*(1+2*a)");
+		check("Together((1+a/(c+d)+b/(c+d))/(a+b))", //
+				"(a+b+c+d)/((a+b)*(c+d))");
+		check("Together(1/a+1/b+c+d)", //
+				"(a+b+a*b*c+a*b*d)/(a*b)");
+		check("Together(2*a+2*b)", //
+				"2*(a+b)");
+
 		check("Together(-(a^2-c^2)/(a*b-b*c))", "-(a+c)/b");
 
 		check("Together(1/Sqrt(1+1/x) )", "Sqrt(x/(1+x))");

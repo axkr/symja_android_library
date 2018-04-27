@@ -57,6 +57,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
 import org.matheclipse.core.interfaces.IExpr;
@@ -2556,24 +2557,27 @@ public class Algebra {
 						return timesResult;
 					}
 					if (x1.isPower()) {
-						// Power[x_ ^ y_, z_] :> x ^(y*z)
-						IExpr base = x1.base();
-						IExpr exponent = x1.exponent();
-						IAST powerResult = Power(base, Times(exponent, x2));
-						if (assumptions) {
-							IAST floorResult = Floor(
-									Divide(Subtract(Pi, Im(Times(exponent, Log(base)))), Times(C2, Pi)));
-							IAST expResult = Power(E, Times(C2, I, Pi, x2, floorResult));
-							IAST timesResult = Times(powerResult, expResult);
-							return timesResult;
-						}
-						return powerResult;
+						return power(x1, x2);
 					}
 				}
 				if (evaled) {
 					return F.binaryAST2(head, x1, x2);
 				}
 				return F.NIL;
+			}
+
+			private IExpr power(IExpr x1, IExpr z) {
+				// Power[x_ ^ y_, z_] :> x ^(y*z)
+				IExpr base = x1.base();
+				IExpr exponent = x1.exponent();
+				IAST powerResult = Power(base, Times(exponent, z));
+				if (assumptions) {
+					IAST floorResult = Floor(Divide(Subtract(Pi, Im(Times(exponent, Log(base)))), Times(C2, Pi)));
+					IAST expResult = Power(E, Times(C2, I, Pi, z, floorResult));
+					IAST timesResult = Times(powerResult, expResult);
+					return timesResult;
+				}
+				return powerResult;
 			}
 		}
 
@@ -3378,6 +3382,32 @@ public class Algebra {
 	 */
 	private static class Together extends AbstractFunctionEvaluator {
 
+		private static IBuiltInSymbol reduceConstantTerm = F.localFunction("reduceConstantTerm", (c) -> {
+			if (c.isNumber()) {
+				return F.List(c, F.C1);
+			}
+			if (c.isTimes() && c.first().isNumber()) {
+				return F.List(c.first(), c.rest());
+			}
+			return F.List(F.C1, c);
+		});
+
+		private static IExpr reduceFactorConstant(IExpr p, EvalEngine engine) {
+			if (p.isPlus() && !engine.isTogetherMode()) {
+				IExpr e = p;
+				// ((reduceConstantTerm /@ (List @@ e)) // Transpose)[[1]]
+				IExpr cTerms = F.Transpose
+						.of(F.Map(F.Function(F.unary(reduceConstantTerm, F.Slot1)), F.Apply(F.List, e))).first();
+				// GCD @@ cTerms
+				IExpr c = F.Apply.of(F.GCD, cTerms);
+				if (cTerms.last().isNegative()) {
+					c = c.negate();
+				}
+				return F.Times.of(c, F.Distribute(F.Divide(e, c)));
+			}
+			return p;
+		}
+
 		/**
 		 * Calls <code>Together</code> for each argument of the <code>ast</code>.
 		 * 
@@ -3404,7 +3434,7 @@ public class Algebra {
 		 * Do a <code>ExpandAll(ast)</code> and call <code>togetherAST</code> afterwards with the result..
 		 * 
 		 * @param ast
-		 * @return <code>null</code> couldn't be transformed by <code>ExpandAll(()</code> od <code>togetherAST()</code>
+		 * @return <code>F.NIL</code> couldn't be transformed by <code>ExpandAll(()</code> od <code>togetherAST()</code>
 		 */
 		private static IExpr togetherNull(IAST ast, EvalEngine engine) {
 			boolean evaled = false;
@@ -3483,7 +3513,8 @@ public class Algebra {
 			}
 
 			IExpr exprNumerator = F.evalExpand(numerator.getOneIdentity(F.C0));
-			IExpr exprDenominator = F.evalExpand(denominator.getOneIdentity(F.C1));
+			IExpr denom=F.eval(denominator.getOneIdentity(F.C1));
+			IExpr exprDenominator = F.evalExpand(denom);
 			if (exprNumerator.isZero()) {
 				if (exprDenominator.isZero()) {
 					// let the standard evaluation handle the division by zero
@@ -3502,13 +3533,13 @@ public class Algebra {
 						}
 						return F.Times(result[0], result[1], pInv);
 					}
-					return F.Times(exprNumerator, F.Power(exprDenominator, -1));
+					return F.Times(exprNumerator, F.Power(denom, -1));
 				} catch (JASConversionException jce) {
 					if (Config.DEBUG) {
 						jce.printStackTrace();
 					}
 				}
-				return F.Times(exprNumerator, F.Power(exprDenominator, F.CN1));
+				return F.Times(exprNumerator, F.Power(denom, F.CN1));
 			}
 			return exprNumerator;
 		}
@@ -3575,14 +3606,17 @@ public class Algebra {
 			Validate.checkSize(ast, 2);
 
 			IExpr arg1 = ast.arg1();
-			IAST temp = Structure.threadLogicEquationOperators(arg1, ast, 1);
-			if (temp.isPresent()) {
-				return temp;
+			IAST list = Structure.threadLogicEquationOperators(arg1, ast, 1);
+			if (list.isPresent()) {
+				return list;
 			}
 			if (arg1.isPlusTimesPower()) {
-				return togetherNull((IAST) arg1, engine).orElse(arg1);
+				IExpr temp = togetherNull((IAST) arg1, engine).orElse(arg1);
+				if (temp.isPresent()) {
+					return reduceFactorConstant(temp, engine);
+				}
 			}
-			return arg1;
+			return reduceFactorConstant(arg1, engine);
 		}
 
 		@Override
