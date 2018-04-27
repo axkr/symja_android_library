@@ -727,7 +727,7 @@ public class Primality {
 	 * @param val
 	 *            a BigInteger value which should be factored by all primes less equal than 1021
 	 * @param root
-	 *            th n-th root which should be determined
+	 *            the n-th root which should be determined
 	 * @return <code>(result[0] ^ root ) * result[1]</code>
 	 */
 	public static long[] countRoot1021(final long val, int root) {
