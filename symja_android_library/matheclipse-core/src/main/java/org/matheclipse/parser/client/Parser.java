@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.expression.F;
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FunctionNode;
 import org.matheclipse.parser.client.ast.IConstantOperators;
@@ -208,7 +207,7 @@ public class Parser extends Scanner {
 		} while (true);
 	}
 
-	private ASTNode getFactor() throws SyntaxError {
+	private ASTNode getFactor(final int min_precedence) throws SyntaxError {
 		ASTNode temp;
 
 		if (fToken == TT_PRECEDENCE_OPEN) {
@@ -227,7 +226,10 @@ public class Parser extends Scanner {
 			getNextToken();
 			if (fToken == TT_PRECEDENCE_OPEN) {
 				if (!Config.EXPLICIT_TIMES_OPERATOR) {
-					return getTimes(temp);
+					Operator oper = fFactory.get("Times");
+					if (Config.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
+						return getTimes(temp);
+					}
 				}
 			}
 			if (fToken == TT_ARGUMENTS_OPEN) {
@@ -622,8 +624,8 @@ public class Parser extends Scanner {
 	 * Get a <i>part [[..]]</i> of an expression <code>{a,b,c}[[2]]</code> &rarr; <code>b</code>
 	 * 
 	 */
-	private ASTNode getPart() throws SyntaxError {
-		ASTNode temp = getFactor();
+	private ASTNode getPart(final int min_precedence) throws SyntaxError {
+		ASTNode temp = getFactor(min_precedence);
 
 		if (fToken != TT_PARTOPEN) {
 			return temp;
@@ -777,7 +779,7 @@ public class Parser extends Scanner {
 	}
 
 	private ASTNode parseExpression() {
-		return parseExpression(parsePrimary(), 0);
+		return parseExpression(parsePrimary(0), 0);
 	}
 
 	/**
@@ -874,7 +876,7 @@ public class Parser extends Scanner {
 	}
 
 	private ASTNode parseLookaheadOperator(final int min_precedence) {
-		ASTNode rhs = parsePrimary();
+		ASTNode rhs = parsePrimary(min_precedence);
 
 		while (true) {
 			final int lookahead = fToken;
@@ -984,7 +986,7 @@ public class Parser extends Scanner {
 		return fNodeList;
 	}
 
-	private ASTNode parsePrimary() {
+	private ASTNode parsePrimary(final int min_precedence) {
 		if (fToken == TT_OPERATOR) {
 			if (";;".equals(fOperatorString)) {
 				FunctionNode function = fFactory.createFunction(fFactory.createSymbol(IConstantOperators.Span));
@@ -994,7 +996,7 @@ public class Parser extends Scanner {
 					function.add(fFactory.createSymbol(IConstantOperators.All));
 					return function;
 				}
-				function.add(parsePrimary());
+				function.add(parsePrimary(0));
 				if (fToken == TT_OPERATOR && ";;".equals(fOperatorString)) {
 					function.add(fFactory.createSymbol(IConstantOperators.All));
 					getNextToken();
@@ -1019,7 +1021,7 @@ public class Parser extends Scanner {
 			throwSyntaxError("Operator: " + fOperatorString + " is no prefix operator.");
 
 		}
-		return getPart();
+		return getPart(min_precedence);
 	}
 
 	public void setFactory(final IParserFactory factory) {

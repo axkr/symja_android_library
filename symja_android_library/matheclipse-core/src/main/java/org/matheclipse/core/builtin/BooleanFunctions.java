@@ -569,36 +569,15 @@ public final class BooleanFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 2, 3);
+			Validate.checkSize(ast, 2);
 
-			// TODO solve bugs in QuineMcClusky
-
-			// if (ast.arg1().isASTSizeGE(F.Or, 3)) {
-			// try {
-			// QuineMcCluskyFormula f = Formula.read((IAST) ast.arg1());
-			// f.reduceToPrimeImplicants();
-			// f.reducePrimeImplicantsToSubset();
-			// IExpr arg1 = f.toExpr();
-			//
-			// FormulaTransformation transformation = BooleanConvert.transformation(ast, engine);
-			// if (transformation != null) {
-			// LogicFormula lf = new LogicFormula();
-			// final Formula formula = lf.expr2BooleanFunction(arg1);
+			// FormulaFactory factory = new FormulaFactory();
+			// LogicFormula lf = new LogicFormula(factory);
+			// Formula formula = lf.expr2BooleanFunction(ast.arg1());
+			// System.out.println(formula.toString());
+			// formula = QuineMcCluskeyAlgorithm.compute(formula);
+			// FormulaTransformation transformation = new DNFFactorization();
 			// return lf.booleanFunction2Expr(formula.transform(transformation));
-			// }
-			//
-			//
-			// } catch (BooleanFunctionConversionException bfc) {
-			// if (Config.DEBUG) {
-			// bfc.printStackTrace();
-			// }
-			// } catch (ClassCastException cce) {
-			// if (Config.DEBUG) {
-			// cce.printStackTrace();
-			// }
-			// }
-			// }
-
 			return F.NIL;
 		}
 	}
@@ -2157,7 +2136,7 @@ public final class BooleanFunctions {
 			newSymbol.setAttributes(ISymbol.ONEIDENTITY | ISymbol.ORDERLESS | ISymbol.FLAT | ISymbol.NUMERICFUNCTION);
 		}
 	}
-	 
+
 	/**
 	 * <pre>
 	 * Nand(arg1, arg2, ...)'

@@ -443,4 +443,16 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
+	
+	public void testParser32() {
+		try {
+			Parser p = new Parser();
+			ASTNode obj = p.parse("(-1)^(a) (b)");
+			assertEquals(obj.toString(),
+					"Times(Power(-1, a), b)");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
 }

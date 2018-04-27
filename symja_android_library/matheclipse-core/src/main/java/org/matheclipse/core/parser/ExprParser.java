@@ -367,7 +367,7 @@ public class ExprParser extends ExprScanner {
 		} while (true);
 	}
 
-	private IExpr getFactor() throws SyntaxError {
+	private IExpr getFactor(final int min_precedence) throws SyntaxError {
 		IExpr temp = null;
 
 		if (fToken == TT_IDENTIFIER) {
@@ -392,7 +392,10 @@ public class ExprParser extends ExprScanner {
 			getNextToken();
 			if (fToken == TT_PRECEDENCE_OPEN) {
 				if (!Config.EXPLICIT_TIMES_OPERATOR) {
-					return getTimes(temp);
+					AbstractExprOperator oper = fFactory.get("Times");
+					if (Config.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
+						return getTimes(temp);
+					}
 				}
 			}
 			if (fToken == TT_ARGUMENTS_OPEN) {
@@ -859,8 +862,8 @@ public class ExprParser extends ExprScanner {
 	 * Get a <i>part [[..]]</i> of an expression <code>{a,b,c}[[2]]</code> &rarr; <code>b</code>
 	 * 
 	 */
-	private IExpr getPart() throws SyntaxError {
-		IExpr temp = getFactor();
+	private IExpr getPart(final int min_precedence) throws SyntaxError {
+		IExpr temp = getFactor(min_precedence);
 
 		if (fToken != TT_PARTOPEN) {
 			return temp;
@@ -1050,7 +1053,7 @@ public class ExprParser extends ExprScanner {
 	}
 
 	private IExpr parseExpression() {
-		return parseExpression(parsePrimary(), 0);
+		return parseExpression(parsePrimary(0), 0);
 	}
 
 	/**
@@ -1154,7 +1157,7 @@ public class ExprParser extends ExprScanner {
 	}
 
 	private IExpr parseLookaheadOperator(final int min_precedence) {
-		IExpr rhs = parsePrimary();
+		IExpr rhs = parsePrimary(min_precedence);
 
 		while (true) {
 			final int lookahead = fToken;
@@ -1268,7 +1271,7 @@ public class ExprParser extends ExprScanner {
 		return fNodeList;
 	}
 
-	private IExpr parsePrimary() {
+	private IExpr parsePrimary(final int min_precedence) {
 		if (fToken == TT_OPERATOR) {
 			if (";;".equals(fOperatorString)) {
 				IASTAppendable span = F.ast(F.Span);
@@ -1282,7 +1285,7 @@ public class ExprParser extends ExprScanner {
 					span.append(F.All);
 					getNextToken();
 				}
-				span.append(parsePrimary());
+				span.append(parsePrimary(0));
 				return span;
 			}
 			if (fOperatorString.equals(".")) {
@@ -1306,7 +1309,7 @@ public class ExprParser extends ExprScanner {
 			throwSyntaxError("Operator: " + fOperatorString + " is no prefix operator.");
 
 		}
-		return getPart();
+		return getPart(min_precedence);
 	}
 
 	/**

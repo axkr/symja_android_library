@@ -578,6 +578,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBooleanConvert() {
+		check("BooleanConvert(a&&!b||!a&&c||b&&!c, \"DNF\")", //
+				"a&&!b||!a&&c||b&&!c");
+		
 		check("BooleanConvert(Implies(x, y), \"CNF\")", "!x||y");
 		check("BooleanConvert(! (a && b), \"CNF\")", "!a||!b");
 		check("BooleanConvert(! (a || b || c), \"CNF\")", "!a&&!b&&!c");
@@ -619,12 +622,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBooleanMinimize() {
-
-		// check("BooleanMinimize((a||b)&&(c||d))", "a&&c||a&&d||b&&c||b&&d");
-		// check("BooleanMinimize((a||b)&&(c||d), \"CNF\")", "(a||b)&&(c||d)");
-		// check("BooleanMinimize(a && b || ! a && b)", "b");
-		// check("BooleanMinimize(a && b || ! a && b, \"CNF\")", "b");
-		// check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c))", "a&&!b||a&&!c||!a&&b||!b&&c");
+//		check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c))", "a&&!b||!a&&c||b&&!c");
+//		 check("BooleanMinimize((a||b)&&(c||d))", "a&&c||a&&d||b&&c||b&&d");
+//		 check("BooleanMinimize((a||b)&&(c||d) )", "a&&c||a&&d||b&&c||b&&d");
+//		 check("BooleanMinimize(a && b || ! a && b)", "b");
+//		 check("BooleanMinimize(a && b || ! a && b )", "b");
+		 
 	}
 
 	public void testBooleanQ() {
@@ -1169,6 +1172,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testComplexExpand() {
+//		check("ComplexExpand(a)", "a");
+//		check("ComplexExpand(42)", "42");
+//		check("ComplexExpand((-1)^(1/3))", //
+//				"1/2+I*1/2*Sqrt(3)");
+//		check("ComplexExpand((-1)^(4/3))", //
+//				"-1/2-I*1/2*Sqrt(3)");
+//		check("ComplexExpand(2^(4/3))", //
+//				"2*2^(1/3)");
+//		check("ComplexExpand((-2)^(4/3))", //
+//				"2*(1/2^(2/3)+I*1/2*Sqrt(3)*4^(1/6))");
+//		check("ComplexExpand(a*(b+c))", "a*b+a*c");
+//		check("ComplexExpand((-1)^(1/3)*(1+I*Sqrt(3)))", //
+//				"(1/2+I*1/2*Sqrt(3))*(1+I*Sqrt(3))");
+		
 		check("ComplexExpand(Cos(x+I*y))", "Cos(x)*Cosh(y)+I*Sin(x)*Sinh(y)");
 		check("ComplexExpand(Sin(x+I*y))", "Cosh(y)*Sin(x)+I*Cos(x)*Sinh(y)");
 		check("ComplexExpand(Cot(x+I*y))", "-Sin(2*x)/(Cos(2*x)-Cosh(2*y))+(I*Sinh(2*y))/(Cos(2*x)-Cosh(2*y))");
@@ -8352,6 +8369,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("5/7*Sqrt(7/6)", //
 				"5/Sqrt(42)");
 
+		check("Hold((-1)^(a) (b)) // FullForm", //
+				 "\"Hold(Times(Power(-1, a), b))\"");
+		
 		check("Sqrt(1/2)*(1+x)", //
 				"(1+x)/Sqrt(2)");
 		check("((5/21)^(2/3)*(7/6)^(2/7))  ", //

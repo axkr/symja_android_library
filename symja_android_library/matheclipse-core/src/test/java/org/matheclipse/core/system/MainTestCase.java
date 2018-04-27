@@ -3638,6 +3638,7 @@ public class MainTestCase extends AbstractTestCase {
 					check("1/2Pi // FullForm", "\"Times(Rational(1,2), Power(Pi, -1))\"");
 					check("1/2(a+b) // FullForm", "\"Times(Rational(1,2), Power(Plus(a, b), -1))\"");
 					check("1/(a+b)2 // FullForm", "\"Times(Rational(1,2), Power(Plus(a, b), -1))\"");
+					check("a^(b)(c) // FullForm", "\"Power(a, Times(b, c))\"");
 				}
 				Config.DOMINANT_IMPLICIT_TIMES = false;
 				if (!Config.DOMINANT_IMPLICIT_TIMES) {
@@ -3645,6 +3646,7 @@ public class MainTestCase extends AbstractTestCase {
 					check("1/2Pi // FullForm", "\"Times(Rational(1,2), Pi)\"");
 					check("1/2(a+b) // FullForm", "\"Times(Rational(1,2), Plus(a, b))\"");
 					check("1/(a+b)2 // FullForm", "\"Times(2, Power(Plus(a, b), -1))\"");
+					check("a^(b)(c) // FullForm", "\"Times(Power(a, b), c)\"");
 				}
 
 				check("2(b+c) // FullForm", //
