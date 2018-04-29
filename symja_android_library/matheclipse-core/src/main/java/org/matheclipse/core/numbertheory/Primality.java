@@ -382,12 +382,12 @@ public class Primality {
 	 * @return the rest factor or one, if the number could be factored completely into primes less equal then 1021
 	 */
 	public static IInteger countPrimes1021(IInteger base, IRational exponent, OpenIntToIExprHashMap<IRational> map,
-			boolean[] evaled) {
+			boolean setEvaled, boolean[] evaled) {
 		if (base.isOne() || base.isMinusOne()) {
 			return base;
 		}
 		if (base instanceof IntegerSym) {
-			return countPrimes1021(base.intValue(), exponent, map, evaled);
+			return countPrimes1021(base.intValue(), exponent, map, setEvaled, evaled);
 		}
 		return countPrimes1021(base.toBigNumerator(), exponent, map, evaled);
 	}
@@ -454,7 +454,7 @@ public class Primality {
 	 * Factor the given base into primes less equal than 1021.
 	 * 
 	 * @param base
-	 *            an int value which should be factored by all primes less equal than 1021
+	 *            an int value <code>!= 0</code> which should be factored by all primes less equal than 1021
 	 * @param exponent
 	 *            the exponent which should be used for the collected primes
 	 * @param map
@@ -465,9 +465,9 @@ public class Primality {
 	 * @return the rest factor or one, if the number could be factored completely into primes less equal then 1021
 	 */
 	private static IInteger countPrimes1021(final int base, IRational exponent, OpenIntToIExprHashMap<IRational> map,
-			boolean[] evaled) {
+			boolean setEvaled, boolean[] evaled) {
 		int result = base;
-		int count;
+		int count = 0;
 		if (base < 0) {
 			IRational exp = map.get(-1);
 			if (exp == null) {
@@ -478,7 +478,26 @@ public class Primality {
 			}
 			result = -base;
 		}
-		for (int i = 0; i < primes.length; i++) {
+		// special case primes[0]==2
+		while ((result & 0x00000001) == 0x00000000) {
+			// even integer
+			result >>= 1;
+			count++;
+		}
+		if (count > 0) {
+			IRational exp = map.get(2);
+			if (exp == null) {
+				if (setEvaled && count > 1) {
+					evaled[0] = true;
+				}
+				map.put(2, F.ZZ(count).multiply(exponent));
+			} else {
+				evaled[0] = true;
+				map.put(2, exp.add(F.ZZ(count).multiply(exponent)));
+			}
+		}
+
+		for (int i = 1; i < primes.length; i++) {
 			if (result < primes[i]) {
 				break;
 			}
@@ -497,6 +516,9 @@ public class Primality {
 				} while (rem == 0);
 				IRational exp = map.get(primes[i]);
 				if (exp == null) {
+					if (setEvaled && count > 1) {
+						evaled[0] = true;
+					}
 					map.put(primes[i], F.ZZ(count).multiply(exponent));
 				} else {
 					evaled[0] = true;

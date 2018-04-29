@@ -2683,6 +2683,11 @@ public final class Arithmetic {
 			}
 
 			if (!exponent.getDenominator().isOne()) {
+				IExpr temp = rationalPower(base.getNumerator(), base.getDenominator(), exponent);
+				if (temp.isPresent()) {
+					return temp;
+				}
+
 				IInteger a;
 				IInteger b;
 				IFraction f0Temp = base;
@@ -2712,7 +2717,6 @@ public final class Arithmetic {
 				}
 
 				final IInteger root = exponent.getDenominator();
-
 				IInteger[] new_numer = calculateRoot(a, root);
 				IInteger[] new_denom = calculateRoot(b, root);
 				final IFraction new_root = F.fraction(C1, root);
@@ -4627,111 +4631,6 @@ public final class Arithmetic {
 							o0.upper().times(o1.upper()))));
 		}
 
-		/**
-		 * Try simpplifying <code>(power0Arg1 ^ power0Arg2) * (power1Arg1 ^ power1Arg2)</code>
-		 * 
-		 * @param power0Arg1
-		 * @param power0Arg2
-		 * @param power1Arg1
-		 * @param power1Arg2
-		 * @return
-		 */
-		private IExpr timesPowerPower(IExpr power0Arg1, IExpr power0Arg2, IExpr power1Arg1, IExpr power1Arg2) {
-			if (power0Arg2.isNumber()) {
-				if (power1Arg2.isNumber()) {
-					if (power0Arg1.equals(power1Arg1)) {
-						// x^(a)*x^(b) => x ^(a+b)
-						return power0Arg1.power(power0Arg2.plus(power1Arg2));
-					}
-					if (power0Arg2.equals(power1Arg2) && power0Arg1.isPositive() && power1Arg1.isPositive()
-							&& power0Arg1.isSignedNumber() && power1Arg1.isSignedNumber()) {
-						// a^(c)*b^(c) => (a*b) ^c
-						return power0Arg1.times(power1Arg1).power(power0Arg2);
-					}
-					if (power0Arg1.isFraction() && power0Arg2.isFraction() && power1Arg1.isFraction()
-							&& power1Arg2.isFraction()) {
-						IExpr temp = timesPowerPower(((IFraction) power0Arg1).getNumerator(),
-								((IFraction) power0Arg1).getDenominator(), (IFraction) power0Arg2, //
-								((IFraction) power1Arg1).getNumerator(), ((IFraction) power1Arg1).getDenominator(),
-								(IFraction) power1Arg2);
-						if (temp.isPresent()) {
-							return temp;
-						}
-					}
-					// if (power0Arg1.isPlus() && power1Arg1.isPlus() &&
-					// power0Arg1.equals(power1Arg1.negate())) {// Issue#128
-					// return
-					// power0Arg1.power(power0Arg2.plus(power1Arg2)).times(CN1.power(power1Arg2));
-					// }
-				}
-			}
-			if (power0Arg1.equals(power1Arg1))
-
-			{
-				// x^(a)*x^(b) => x ^(a+b)
-				return power0Arg1.power(power0Arg2.plus(power1Arg2));
-			}
-			return F.NIL;
-		}
-
-		/**
-		 * (p1Numer/p1Denom)^(p1Exp) * (p2Numer1/p2Denom1)^(p2Exp)
-		 * 
-		 * @return
-		 */
-		private IExpr timesPowerPower(IInteger p1Numer, IInteger p1Denom, IRational p1Exp, IInteger p2Numer,
-				IInteger p2Denom, IRational p2Exp) {
-			boolean[] evaled = new boolean[] { false };
-
-			OpenIntToIExprHashMap<IRational> fn1Map = new OpenIntToIExprHashMap<IRational>();
-			IInteger fn1Rest = Primality.countPrimes1021(p1Numer, p1Exp, fn1Map, evaled);
-			IInteger fd2Rest = Primality.countPrimes1021(p2Denom, p2Exp.negate(), fn1Map, evaled);
-
-			OpenIntToIExprHashMap<IRational> fn2Map = new OpenIntToIExprHashMap<IRational>();
-			IInteger fn2Rest = Primality.countPrimes1021(p2Numer, p2Exp, fn2Map, evaled);
-			IInteger fd1Rest = Primality.countPrimes1021(p1Denom, p1Exp.negate(), fn2Map, evaled);
-
-			if (evaled[0]) {
-				OpenIntToIExprHashMap<IRational>.Iterator iter = fn2Map.iterator();
-				while (iter.hasNext()) {
-					iter.advance();
-					int base = iter.key();
-					IRational exponent = iter.value();
-					IRational exp = fn1Map.get(base);
-					if (exp == null) {
-						fn1Map.put(base, exponent);
-					} else {
-						evaled[0] = true;
-						fn1Map.put(base, exp.add(exponent));
-					}
-				}
-				IASTAppendable times1 = F.TimesAlloc(fn1Map.size() + 4);
-				if (!fn1Rest.isOne()) {
-					times1.append(F.Power(fn1Rest, p1Exp));
-				}
-				if (!fd2Rest.isOne()) {
-					times1.append(F.Power(fd2Rest, p2Exp.negate()));
-				}
-				if (!fn2Rest.isOne()) {
-					times1.append(F.Power(fn2Rest, p2Exp));
-				}
-				if (!fd1Rest.isOne()) {
-					times1.append(F.Power(fd1Rest, p1Exp.negate()));
-				}
-				iter = fn1Map.iterator();
-				while (iter.hasNext()) {
-					iter.advance();
-					int base = iter.key();
-					IRational exponent = iter.value();
-					if (base != 1) {
-						times1.append(F.Power(F.ZZ(base), exponent));
-					}
-				}
-				return times1;
-			}
-
-			return F.NIL;
-		}
 	}
 
 	/**
@@ -4768,6 +4667,146 @@ public final class Arithmetic {
 		protected ISymbol getFunctionSymbol() {
 			return F.TimesBy;
 		}
+	}
+
+	/**
+	 * Try simpplifying <code>(power0Arg1 ^ power0Arg2) * (power1Arg1 ^ power1Arg2)</code>
+	 * 
+	 * @param power0Arg1
+	 * @param power0Arg2
+	 * @param power1Arg1
+	 * @param power1Arg2
+	 * @return
+	 */
+	private static IExpr timesPowerPower(IExpr power0Arg1, IExpr power0Arg2, IExpr power1Arg1, IExpr power1Arg2) {
+		if (power0Arg2.isNumber()) {
+			if (power1Arg2.isNumber()) {
+				if (power0Arg1.equals(power1Arg1)) {
+					// x^(a)*x^(b) => x ^(a+b)
+					return power0Arg1.power(power0Arg2.plus(power1Arg2));
+				}
+				if (power0Arg2.equals(power1Arg2) && power0Arg1.isPositive() && power1Arg1.isPositive()
+						&& power0Arg1.isSignedNumber() && power1Arg1.isSignedNumber()) {
+					// a^(c)*b^(c) => (a*b) ^c
+					return power0Arg1.times(power1Arg1).power(power0Arg2);
+				}
+				if (power0Arg1.isFraction() && power0Arg2.isFraction() && power1Arg1.isFraction()
+						&& power1Arg2.isFraction()) {
+					IExpr temp = timesPowerPower(((IFraction) power0Arg1).getNumerator(),
+							((IFraction) power0Arg1).getDenominator(), (IFraction) power0Arg2, //
+							((IFraction) power1Arg1).getNumerator(), ((IFraction) power1Arg1).getDenominator(),
+							(IFraction) power1Arg2);
+					if (temp.isPresent()) {
+						return temp;
+					}
+				}
+				// if (power0Arg1.isPlus() && power1Arg1.isPlus() &&
+				// power0Arg1.equals(power1Arg1.negate())) {// Issue#128
+				// return
+				// power0Arg1.power(power0Arg2.plus(power1Arg2)).times(CN1.power(power1Arg2));
+				// }
+			}
+		}
+		if (power0Arg1.equals(power1Arg1))
+
+		{
+			// x^(a)*x^(b) => x ^(a+b)
+			return power0Arg1.power(power0Arg2.plus(power1Arg2));
+		}
+		return F.NIL;
+	}
+
+	/**
+	 * (p1Numer/p1Denom)^(p1Exp) * (p2Numer1/p2Denom1)^(p2Exp)
+	 * 
+	 * @return
+	 */
+	public static IExpr timesPowerPower(IInteger p1Numer, IInteger p1Denom, IRational p1Exp, IInteger p2Numer,
+			IInteger p2Denom, IRational p2Exp) {
+		boolean[] evaled = new boolean[] { false };
+
+		OpenIntToIExprHashMap<IRational> fn1Map = new OpenIntToIExprHashMap<IRational>();
+		IInteger fn1Rest = Primality.countPrimes1021(p1Numer, p1Exp, fn1Map, false, evaled);
+		IInteger fd2Rest = Primality.countPrimes1021(p2Denom, p2Exp.negate(), fn1Map, false, evaled);
+
+		OpenIntToIExprHashMap<IRational> fn2Map = new OpenIntToIExprHashMap<IRational>();
+		IInteger fn2Rest = Primality.countPrimes1021(p2Numer, p2Exp, fn2Map, false, evaled);
+		IInteger fd1Rest = Primality.countPrimes1021(p1Denom, p1Exp.negate(), fn2Map, false, evaled);
+
+		if (evaled[0]) {
+			OpenIntToIExprHashMap<IRational>.Iterator iter = fn2Map.iterator();
+			while (iter.hasNext()) {
+				iter.advance();
+				int base = iter.key();
+				IRational exponent = iter.value();
+				IRational exp = fn1Map.get(base);
+				if (exp == null) {
+					fn1Map.put(base, exponent);
+				} else {
+					fn1Map.put(base, exp.add(exponent));
+				}
+			}
+			IASTAppendable times1 = F.TimesAlloc(fn1Map.size() + 4);
+			if (!fn1Rest.isOne()) {
+				times1.append(F.Power(fn1Rest, p1Exp));
+			}
+			if (!fd2Rest.isOne()) {
+				times1.append(F.Power(fd2Rest, p2Exp.negate()));
+			}
+			if (!fn2Rest.isOne()) {
+				times1.append(F.Power(fn2Rest, p2Exp));
+			}
+			if (!fd1Rest.isOne()) {
+				times1.append(F.Power(fd1Rest, p1Exp.negate()));
+			}
+			iter = fn1Map.iterator();
+			while (iter.hasNext()) {
+				iter.advance();
+				int base = iter.key();
+				IRational exponent = iter.value();
+				if (base != 1) {
+					times1.append(F.Power(F.ZZ(base), exponent));
+				}
+			}
+			return times1;
+		}
+
+		return F.NIL;
+	}
+
+	/**
+	 * (p1Numer/p1Denom)^(p1Exp)
+	 * 
+	 * @return
+	 */
+	public static IExpr rationalPower(IInteger p1Numer, IInteger p1Denom, IRational p1Exp) {
+		boolean[] evaled = new boolean[] { false };
+
+		OpenIntToIExprHashMap<IRational> fn1Map = new OpenIntToIExprHashMap<IRational>();
+		IInteger fn1Rest = Primality.countPrimes1021(p1Numer, p1Exp, fn1Map, true, evaled);
+		IInteger fd1Rest = Primality.countPrimes1021(p1Denom, p1Exp.negate(), fn1Map, true, evaled);
+
+		if (evaled[0]) {
+			IASTAppendable times1 = F.TimesAlloc(fn1Map.size() + 4);
+			if (!fn1Rest.isOne()) {
+				times1.append(F.Power(fn1Rest, p1Exp));
+			}
+			if (!fd1Rest.isOne()) {
+				times1.append(F.Power(fd1Rest, p1Exp.negate()));
+			}
+			OpenIntToIExprHashMap<IRational>.Iterator iter = fn1Map.iterator();
+			while (iter.hasNext()) {
+				iter.advance();
+				int base = iter.key();
+				IRational exponent = iter.value();
+				if (base != 1) {
+					times1.append(F.Power(F.ZZ(base), exponent));
+				}
+			}
+			return times1;
+		}
+
+		return F.NIL;
 	}
 
 	private final static Arithmetic CONST = new Arithmetic();
