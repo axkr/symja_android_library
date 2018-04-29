@@ -395,24 +395,39 @@ public final class Combinatoric {
 		/** {@inheritDoc} */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
+			Validate.checkRange(ast, 2, 3);
 
+			int max = Integer.MAX_VALUE;
+			if (ast.size() == 3 && ast.arg2().isInteger()) {
+				max = ast.arg2().toIntDefault(-1);
+				if (max < 0) {
+					return F.NIL;
+				}
+			}
 			if (ast.arg1().isInteger()) {
-				final int n = ((IInteger) ast.arg1()).toBigNumerator().intValue();
-
-				IASTAppendable temp;
-				final NumberPartitionsIterable comb = new NumberPartitionsIterable(n);
-				IASTAppendable result = F.ListAlloc(16);
-				for (int j[] : comb) {
-					temp = F.ListAlloc(j.length);
-					for (int i = 0; i < j.length; i++) {
-						if (j[i] != 0) {
-							temp.append(F.integer(j[i]));
+				final int n = ast.arg1().toIntDefault(-1);
+				if (n >= 0) {
+					if (n == 0) {
+						return F.List(F.List());
+					}
+					IASTAppendable temp;
+					final NumberPartitionsIterable comb = new NumberPartitionsIterable(n);
+					IASTAppendable result = F.ListAlloc(16);
+					for (int j[] : comb) {
+						temp = F.ListAlloc(j.length);
+						for (int i = 0; i < j.length; i++) {
+							if (j[i] != 0) {
+								temp.append(F.integer(j[i]));
+							} else {
+								break;
+							}
+						}
+						if (temp.size()-1 <= max) {
+							result.append(temp);
 						}
 					}
-					result.append(temp);
+					return result;
 				}
-				return result;
 			}
 			return F.NIL;
 		}
