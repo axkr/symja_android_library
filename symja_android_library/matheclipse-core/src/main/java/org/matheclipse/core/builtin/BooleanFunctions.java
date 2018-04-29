@@ -21,10 +21,13 @@ import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
+import org.matheclipse.core.eval.exception.WrongNumberOfArguments;
 import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
+import org.matheclipse.core.eval.util.Assumptions;
+import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
@@ -1657,46 +1660,105 @@ public final class BooleanFunctions {
 	private final static class Inequality extends AbstractEvaluator {
 		final static IBuiltInSymbol[] COMPARATOR_SYMBOLS = { F.Greater, F.GreaterEqual, F.Less, F.LessEqual };
 
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkRange(ast, 4, Integer.MAX_VALUE);
-
-			if (ast.size() == 4) {
-				for (IBuiltInSymbol sym : COMPARATOR_SYMBOLS) {
-					if (sym.equals(ast.arg2())) {
-						return F.binary(ast.arg2(), ast.arg1(), ast.arg3());
-					}
+		private int getCompSign(IExpr e) {
+			if (e.isSymbol()) {
+				if (e.equals(F.Less) || e.equals(F.LessEqual)) {
+					return -1;
 				}
-				return F.NIL;
+				if (e.equals(F.Equal)) {
+					return 0;
+				}
+				if (e.equals(F.Greater) || e.equals(F.GreaterEqual)) {
+					return 1;
+				}
 			}
-			return inequality(ast, engine);
+			return -2;
 		}
 
-		/**
-		 * 
-		 * @param ast
-		 *            an Inequality AST with <code>size()>=4</code>.
-		 * @param engine
-		 * @return
-		 */
-		public IExpr inequality(final IAST ast, EvalEngine engine) {
-			for (int i = 3; i < ast.size(); i += 2) {
-				IExpr temp = F.NIL;
-				for (IBuiltInSymbol sym : COMPARATOR_SYMBOLS) {
-					if (sym.equals(ast.get(i - 1))) {
-						temp = engine.evaluate(F.binary(ast.get(i - 1), ast.get(i - 2), ast.get(i)));
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.size() == 2) {
+				return F.True;
+			}
+			try {
+				Validate.checkRange(ast, 4, Integer.MAX_VALUE);
+
+				if (ast.size() == 4) {
+					for (IBuiltInSymbol sym : COMPARATOR_SYMBOLS) {
+						if (sym.equals(ast.arg2())) {
+							return F.binary(ast.arg2(), ast.arg1(), ast.arg3());
+						}
+					}
+					return F.NIL;
+				}
+
+				if ((ast.size()) % 2 != 0) {
+					return F.NIL;
+				}
+				int firstSign = getCompSign(ast.arg2());
+				if (firstSign == -2) {
+					return F.NIL;
+				}
+				if (firstSign != 0) {
+					for (int i = 4; i < ast.size(); i += 2) {
+						int thisSign = getCompSign(ast.get(i));
+						if (thisSign == -2) {
+							return F.NIL;
+						}
+						if (thisSign == -firstSign) {
+							IASTAppendable firstIneq = F.ast(F.Inequality);
+							IASTAppendable secondIneq = F.ast(F.Inequality);
+							for (int j = 1; j < ast.size(); j++) {
+								if (j < i) {
+									firstIneq.append(ast.get(j));
+								}
+								if (j > (i - 2)) {
+									secondIneq.append(ast.get(j));
+								}
+							}
+							return F.And(firstIneq, secondIneq);
+						}
 					}
 				}
-
-				if (temp.isFalse()) {
-					return F.False;
-				} else if (temp.isTrue()) {
-					continue;
+				IASTAppendable res = F.ast(F.Inequality);
+				for (int i = 0; i < (ast.size() - 1) / 2; i++) {
+					IExpr lhs = ast.get(2 * i + 1);
+					if (res.size() > 1) {
+						lhs = res.get(res.size() - 1);
+					}
+					IExpr op = ast.get(2 * i + 2);
+					IExpr rhs = ast.get(2 * i + 3);
+					for (int rhsI = 2 * i + 3; rhsI < ast.size(); rhsI += 2) {
+						IExpr temp = engine.evaluate(F.binaryAST2(op, lhs, ast.get(rhsI)));
+						if (temp.isFalse()) {
+							return F.False;
+						}
+					}
+					IExpr evalRes = engine.evaluate(F.binaryAST2(op, lhs, rhs));
+					if (!evalRes.isTrue()) {
+						if (engine.evaluate(F.SameQ(lhs, res.get(res.size() - 1))).isFalse()) {
+							res.append(lhs);
+						}
+						res.append(op);
+						res.append(rhs);
+					}
 				}
+				if (res.size() == 1) {
+					return F.True;
+				}
+				if (res.size() == 4) {
+					return F.binaryAST2(res.arg2(), res.arg1(), res.arg3());
+				}
+				if (res.size() == ast.size()) {
+					return F.NIL;
+				}
+				return res;
 
-				return temp;
+				// return inequality(ast, engine);
+			} catch (WrongNumberOfArguments woa) {
+				engine.printMessage(woa.getMessage());
+				return F.NIL;
 			}
-			return F.True;
 		}
 
 		@Override
@@ -3515,6 +3577,7 @@ public final class BooleanFunctions {
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.ORDERLESS | ISymbol.ONEIDENTITY | ISymbol.FLAT);
 		}
+
 	}
 
 	/**

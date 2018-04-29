@@ -508,7 +508,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("(-1)^(1/3)", "(-1)^(1/3)");
 		check("-12528^(1/2)", "-12*Sqrt(87)");
 		check("(-27)^(1/3)", "3*(-1)^(1/3)");
-		check("(-27)^(2/3)", "9*(-1)^(1/3)");
+		check("(-27)^(2/3)", "9*(-1)^(2/3)");
 		check("8^(1/3)", "2");
 		check("81^(3/4)", "27");
 		check("82^(3/4)", "82^(3/4)");
@@ -517,7 +517,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("(27/64)^(-2/3)", "16/9");
 		// check("16/9","");
 		check("10^4", "10000");
-		check("(-80/54)^(2/3)", "4/9*(-25)^(1/3)");
+		check("(-80/54)^(2/3)", "4/9*(-1)^(2/3)*5^(2/3)");
 	}
 
 	public void testSystem008() {
