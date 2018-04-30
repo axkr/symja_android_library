@@ -649,14 +649,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBooleanTable() {
-		check("BooleanTable(p || q, {p, q})", "{True,True,True,False}");
+		check("BooleanTable(Xor(p, q, r), {p, q, r})", //
+				"{True,False,False,True,False,True,True,False}");
+		check("BooleanTable(Implies(Implies(p, q), r), {p, q, r})", //
+				"{True,False,True,True,True,False,True,False}");
+		check("BooleanTable(p || q, {p, q})", //
+				"{True,True,True,False}");
+		check("BooleanTable(And(a, b, c), {a, b, c})", //
+				"{True,False,False,False,False,False,False,False}");
 	}
 
 	public void testBooleanVariables() {
 		check("BooleanVariables(a || ! b && b)", "{a,b}");
 		check("BooleanVariables(Xor(a, And(b, Or(c, d))))", "{a,b,c,d}");
 		check("BooleanVariables(a && b || ! a && b)", "{a,b}");
-
+		check("BooleanVariables(Xor(p,q,r))", "{p,q,r}");
 		check("BooleanVariables(a + b*c)", "{}");
 	}
 
