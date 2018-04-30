@@ -141,12 +141,12 @@ public class Config {
 	 * Define the recursion limit for <code>Integrate#integrateByParts()</code> method.
 	 */
 	public static int INTEGRATE_BY_PARTS_RECURSION_LIMIT = 10;
-	 
+
 	/**
 	 * Define the recursion limit for <code>Limit#lHospitalesRule()</code> method.
 	 */
 	public static int LIMIT_LHOSPITAL_RECURSION_LIMIT = 128;
-	
+
 	/**
 	 * <p>
 	 * Flag for thread usage.
@@ -165,9 +165,10 @@ public class Config {
 	public static final int MACHINE_PRECISION = 15;
 
 	/**
-	 * Enable tests and functions which use the local files.
+	 * Enable tests and functions which use the local files. Don't use <code>final</code> here because of grpc
+	 * interface.
 	 */
-	public final static boolean FILESYSTEM_ENABLED = false;
+	public static boolean FILESYSTEM_ENABLED = false;
 
 	public static boolean isFileSystemEnabled(EvalEngine engine) {
 		return FILESYSTEM_ENABLED || engine.isFileSystemEnabled();
