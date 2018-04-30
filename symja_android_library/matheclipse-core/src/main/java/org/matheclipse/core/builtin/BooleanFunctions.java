@@ -15,6 +15,7 @@ import org.logicng.solvers.MiniSat;
 import org.logicng.solvers.SATSolver;
 import org.logicng.transformations.cnf.CNFFactorization;
 import org.logicng.transformations.dnf.DNFFactorization;
+import org.logicng.transformations.qmc.QuineMcCluskeyAlgorithm;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.LogicFormula;
 import org.matheclipse.core.convert.VariablesSet;
@@ -26,8 +27,6 @@ import org.matheclipse.core.eval.interfaces.AbstractArg1;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
-import org.matheclipse.core.eval.util.Assumptions;
-import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
@@ -547,20 +546,18 @@ public final class BooleanFunctions {
 		 */
 		private static FormulaTransformation transformation(final IAST ast, EvalEngine engine) {
 			int size = ast.argSize();
-			FormulaTransformation transformation = new DNFFactorization();
 			if (size > 1 && ast.get(size).isString()) {
 				IStringX arg2 = (IStringX) ast.arg2();
 				String method = arg2.toString();
 				if (method.equals("DNF") || method.equals("SOP")) {
-					return transformation;
+					return new DNFFactorization();
 				} else if (method.equals("CNF") || method.equals("POS")) {
-					transformation = new CNFFactorization();
-					return transformation;
+					return new CNFFactorization();
 				}
 				engine.printMessage("Unknown method: " + method);
 				return null;
 			}
-			return transformation;
+			return new DNFFactorization();
 		}
 	}
 
@@ -572,16 +569,20 @@ public final class BooleanFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
+			Validate.checkRange(ast, 2, 3);
 
-			// FormulaFactory factory = new FormulaFactory();
-			// LogicFormula lf = new LogicFormula(factory);
-			// Formula formula = lf.expr2BooleanFunction(ast.arg1());
+			FormulaFactory factory = new FormulaFactory();
+			LogicFormula lf = new LogicFormula(factory);
+			Formula formula = lf.expr2BooleanFunction(ast.arg1());
+			// System.out.println(">> " + formula.toString());
+			// only DNF form
+			formula = QuineMcCluskeyAlgorithm.compute(formula);
 			// System.out.println(formula.toString());
-			// formula = QuineMcCluskeyAlgorithm.compute(formula);
-			// FormulaTransformation transformation = new DNFFactorization();
+			return lf.booleanFunction2Expr(formula);
+
+			// TODO CNF form after minimizing blows up the formula.
+			// FormulaTransformation transformation = BooleanConvert.transformation(ast, engine);
 			// return lf.booleanFunction2Expr(formula.transform(transformation));
-			return F.NIL;
 		}
 	}
 
