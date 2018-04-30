@@ -2409,6 +2409,10 @@ public class F {
 		return unaryAST1(Cancel, a);
 	}
 
+	public static IAST CarmichaelLambda(final IExpr a0) {
+		return unaryAST1(CarmichaelLambda, a0);
+	}
+	
 	/**
 	 * Converts a given object into a MathEclipse IExpr expression
 	 * 
@@ -4316,6 +4320,10 @@ public class F {
 		return unaryAST1(Missing, a0);
 	}
 
+	public static IAST MoebiusMu(final IExpr a0) {
+		return unaryAST1(MoebiusMu, a0);
+	}
+	
 	public static IExpr mod(IExpr a, Integer i) {
 		return Mod(a, integer(i.longValue()));
 	}
@@ -4796,7 +4804,11 @@ public class F {
 
 		return binaryAST2(Prepend, a0, a1);
 	}
-
+		
+	public static IAST PrimeOmega(final IExpr a0) {
+		return unaryAST1(PrimeOmega, a0);
+	}
+	
 	public static IAST PrimeQ(final IExpr a0) {
 
 		return unaryAST1(PrimeQ, a0);

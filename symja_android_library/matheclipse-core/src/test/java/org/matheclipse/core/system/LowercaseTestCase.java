@@ -681,16 +681,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCarmichaelLambda() {
-		check("CarmichaelLambda(0)", "0");
-		check("CarmichaelLambda(1)", "1");
-		check("CarmichaelLambda(2)", "1");
-		check("CarmichaelLambda(10)", "4");
-		check("CarmichaelLambda(15)", "4");
-		check("CarmichaelLambda(11)", "10");
-		check("CarmichaelLambda(35)", "12");
-		check("CarmichaelLambda(50)", "20");
-		check("Table(CarmichaelLambda(-k), {k, 12})", "{1,1,2,2,4,2,6,2,6,4,10,2}");
-		check("Table(CarmichaelLambda(10^k), {k, 0, 10})",
+		check("CarmichaelLambda(-n)", //
+				"CarmichaelLambda(n)");
+		check("CarmichaelLambda(0)", //
+				"0");
+		check("CarmichaelLambda(1)", //
+				"1");
+		check("CarmichaelLambda(2)", //
+				"1");
+		check("CarmichaelLambda(10)", //
+				"4");
+		check("CarmichaelLambda(15)", //
+				"4");
+		check("CarmichaelLambda(11)", //
+				"10");
+		check("CarmichaelLambda(35)",//
+				"12");
+		check("CarmichaelLambda(50)", //
+				"20");
+		check("Table(CarmichaelLambda(-k), {k, 12})", //
+				"{1,1,2,2,4,2,6,2,6,4,10,2}");
+		check("Table(CarmichaelLambda(10^k), {k, 0, 10})",//
 				"{1,4,20,100,500,5000,50000,500000,5000000,50000000,500000000}");
 	}
 
@@ -2290,9 +2301,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEulerPhi() {
-		check("Table(EulerPhi(k), {k, 0, 20})", "{0,1,1,2,2,4,2,6,4,6,4,10,4,12,6,8,8,16,6,18,8}");
-		check("Table(EulerPhi(-k), {k, 0, 20})", "{0,1,1,2,2,4,2,6,4,6,4,10,4,12,6,8,8,16,6,18,8}");
-		check("EulerPhi(50!)", "4218559200885839042679312107816703841788854953574400000000000000");
+		check("EulerPhi(-a)", //
+				"EulerPhi(a)");
+		check("Table(EulerPhi(k), {k, 0, 20})", //
+				"{0,1,1,2,2,4,2,6,4,6,4,10,4,12,6,8,8,16,6,18,8}");
+		check("Table(EulerPhi(-k), {k, 0, 20})", //
+				"{0,1,1,2,2,4,2,6,4,6,4,10,4,12,6,8,8,16,6,18,8}");
+		check("EulerPhi(50!)", //
+				"4218559200885839042679312107816703841788854953574400000000000000");
 		check("Table(EulerPhi(10^k), {k, 0, 10})",
 				"{1,4,40,400,4000,40000,400000,4000000,40000000,400000000,4000000000}");
 	}
@@ -3547,9 +3563,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInequality() {
-//		check("Inequality(-1,Less,0,Lest,1)", //
-//				"Inequality(0,Lest,1)");
-		
+		// check("Inequality(-1,Less,0,Lest,1)", //
+		// "Inequality(0,Lest,1)");
+
 		check("Inequality(c,Less,0,Less,a)", //
 				"Inequality(c,Less,0,Less,a)");
 		check("Inequality(-Pi,Less,0,LessEqual,Pi)", //
@@ -3565,7 +3581,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"True");
 		check("Inequality( )", //
 				"Inequality()");
-		
+
 		check("Inequality(-1,Less,a,Less,0,Less,1)", //
 				"Inequality(-1,Less,a,Less,0)");
 		check("Inequality(-1,Less,0,Less,a,Less,1)", //
@@ -4690,17 +4706,35 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMoebiusMu() {
-		check("MoebiusMu(47)", "-1");
-		check("MoebiusMu(51)", "1");
-		check("MoebiusMu(17291)", "-1");
-		check("MoebiusMu({2, 4, 7, 9})", "{-1,0,-1,0}");
-		check("MoebiusMu(-100)", "0");
-		check("Table(MoebiusMu(k), {k, 12})", "{1,-1,-1,0,-1,1,-1,0,0,1,-1,0}");
-		check("Table(MoebiusMu(-k), {k, 12})", "{1,-1,-1,0,-1,1,-1,0,0,1,-1,0}");
-		check("FactorInteger(183245)", "{{5,1},{67,1},{547,1}}");
-		check("MoebiusMu(183245)", "-1");
-		check("MoebiusMu(210)", "1");
-		check("MoebiusMu(192)", "0");
+		check("Table(MoebiusMu(k), {k, 0,50})", //
+				"{0,1,-1,-1,0,-1,1,-1,0,0,1,-1,0,-1,1,1,0,-1,0,-1,0,1,1,-1,0,0,1,0,0,-1,-1,-1,0,1,\n"
+						+ "1,1,0,-1,1,1,0,-1,-1,-1,0,0,1,-1,0,0,0}");
+		check("MoebiusMu({1000,10000})", //
+				"{0,0}");
+		check("MoebiusMu(-a)", //
+				"MoebiusMu(a)");
+		check("MoebiusMu(47)", //
+				"-1");
+		check("MoebiusMu(51)", //
+				"1");
+		check("MoebiusMu(17291)", //
+				"-1");
+		check("MoebiusMu({2, 4, 7, 9})", //
+				"{-1,0,-1,0}");
+		check("MoebiusMu(-100)", //
+				"0");
+		check("Table(MoebiusMu(k), {k, 12})", //
+				"{1,-1,-1,0,-1,1,-1,0,0,1,-1,0}");
+		check("Table(MoebiusMu(-k), {k, 12})", //
+				"{1,-1,-1,0,-1,1,-1,0,0,1,-1,0}");
+		check("FactorInteger(183245)", //
+				"{{5,1},{67,1},{547,1}}");
+		check("MoebiusMu(183245)", //
+				"-1");
+		check("MoebiusMu(210)", //
+				"1");
+		check("MoebiusMu(192)", //
+				"0");
 	}
 
 	public void testMonomialList() {
@@ -6260,12 +6294,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPrimeOmega() {
-		check("PrimeOmega(990)", "5");
-		check("PrimeOmega(2010)", "4");
-		check("PrimeOmega(2^2)", "2");
-		check("PrimeOmega(3*2^2)", "3");
-		check("PrimeOmega(50!)", "108");
-		check("PrimeOmega({1,2,3,4,5,6,20})", "{0,1,1,2,1,2,3}");
+		check("PrimeOmega(-n)", //
+				"PrimeOmega(n)");
+		check("PrimeOmega(0)", //
+				"PrimeOmega(0)");
+		check("PrimeOmega(990)", //
+				"5");
+		check("PrimeOmega(2010)", //
+				"4");
+		check("PrimeOmega(2^2)", //
+				"2");
+		check("PrimeOmega(3*2^2)", //
+				"3");
+		check("PrimeOmega(50!)", //
+				"108");
+		check("PrimeOmega({1,2,3,4,5,6,20})", //
+				"{0,1,1,2,1,2,3}");
+		check("PrimeOmega({-1,-2,-3,-4,-5,-6,-20})", //
+				"{0,1,1,2,1,2,3}");
 	}
 
 	public void testPrimePowerQ() {

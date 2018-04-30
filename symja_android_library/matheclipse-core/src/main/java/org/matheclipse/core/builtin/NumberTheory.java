@@ -9,6 +9,7 @@ import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C2;
 import static org.matheclipse.core.expression.F.CN1;
+import static org.matheclipse.core.expression.F.Cos;
 import static org.matheclipse.core.expression.F.Factorial;
 import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Plus;
@@ -431,6 +432,11 @@ public final class NumberTheory {
 					return ((IInteger) arg1).charmichaelLambda();
 				} catch (ArithmeticException ae) {
 
+				}
+			} else {
+				IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+				if (negExpr.isPresent()) {
+					return F.CarmichaelLambda(negExpr);
 				}
 			}
 			return F.NIL;
@@ -1275,6 +1281,11 @@ public final class NumberTheory {
 					return ((IInteger) arg1).eulerPhi();
 				} catch (ArithmeticException e) {
 					// integer to large?
+				}
+			} else {
+				IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+				if (negExpr.isPresent()) {
+					return F.EulerPhi(negExpr);
 				}
 			}
 			return F.NIL;
@@ -2136,6 +2147,11 @@ public final class NumberTheory {
 				} catch (ArithmeticException e) {
 					// integer to large?
 				}
+			} else {
+				IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+				if (negExpr.isPresent()) {
+					return F.MoebiusMu(negExpr);
+				}
 			}
 			return F.NIL;
 		}
@@ -2803,10 +2819,16 @@ public final class NumberTheory {
 			Validate.checkSize(ast, 2);
 
 			IExpr arg1 = ast.arg1();
+			if (arg1.isZero()) {
+				return F.NIL;
+			}
 			if (arg1.isOne()) {
 				return F.C0;
 			}
-			if (arg1.isInteger() && arg1.isPositive()) {
+			if (arg1.isInteger()) {
+				if (arg1.isNegative()) {
+					arg1 = arg1.negate();
+				}
 				SortedMap<BigInteger, Integer> map = new TreeMap<BigInteger, Integer>();
 				Primality.factorInteger(((IInteger) arg1).toBigNumerator(), map);
 				BigInteger sum = BigInteger.ZERO;
@@ -2814,6 +2836,11 @@ public final class NumberTheory {
 					sum = sum.add(BigInteger.valueOf(entry.getValue()));
 				}
 				return F.ZZ(sum);
+			} else {
+				IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
+				if (negExpr.isPresent()) {
+					return F.PrimeOmega(negExpr);
+				}
 			}
 			return F.NIL;
 		}

@@ -934,6 +934,9 @@ public class Primality {
 		if (value.compareTo(BigInteger.ZERO) < 0) {
 			value = value.negate();
 		}
+		if (value.equals(BigInteger.ZERO)) {
+			return 0;
+		}
 		if (value.equals(BigInteger.ONE)) {
 			return 1;
 		}
