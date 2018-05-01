@@ -72,7 +72,6 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
-import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -1806,17 +1805,64 @@ public final class LinearAlgebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
 
-			if (ast.arg1().isMatrix() != null && ast.arg2().isVector() >= 0) {
+			final int[] matrixDims = ast.arg1().isMatrix();
+			if (matrixDims != null && ast.arg2().isVector() >= 0) {
 				try {
-					FieldMatrix<IExpr> augmentedMatrix = Convert.list2Matrix((IAST) ast.arg1(), (IAST) ast.arg2());
-					if (augmentedMatrix != null) {
-						return LinearAlgebra.rowReduced2List(augmentedMatrix, true, engine);
+					final IAST mat = (IAST) ast.arg1();
+					final IAST vec = (IAST) ast.arg2();
+					final FieldMatrix<IExpr> matrix = Convert.list2Matrix(mat);
+					final FieldVector<IExpr> vector = Convert.list2Vector(vec);
+					if (matrixDims[0] > matrixDims[1]) {
+						if (vector.getDimension() == matrix.getRowDimension()
+								&& vector.getDimension() <= matrix.getColumnDimension()) {
+							return underdeterminedSystem(mat, vec, engine);
+						}
+						engine.printMessage("LinearSolve: first argument is not a square matrix.");
+						return F.NIL;
 					}
-				} catch (final ClassCastException e) {
-					if (Config.SHOW_STACKTRACE) {
-						e.printStackTrace();
+					if (vector.getDimension() != matrix.getRowDimension()) {
+						engine.printMessage("LinearSolve: matrix row and vector have different dimensions.");
+						return F.NIL;
 					}
-				} catch (final IndexOutOfBoundsException e) {
+					if (matrixDims[0] == 1 && matrixDims[1] >= 1) {
+						IExpr temp = eval1x1Matrix(matrix, vector, engine);
+						if (temp.isPresent()) {
+							return temp;
+						}
+						return underdeterminedSystem(mat, vec, engine);
+					}
+					if (matrixDims[0] == 2 && matrixDims[1] == 2) {
+						IExpr temp = eval2x2Matrix(matrix, vector, engine);
+						if (temp.isPresent()) {
+							return temp;
+						}
+						return underdeterminedSystem(mat, vec, engine);
+					}
+					if (matrixDims[0] == 3 && matrixDims[1] == 3) {
+						IExpr temp = eval3x3Matrix(matrix, vector, engine);
+						if (temp.isPresent()) {
+							return temp;
+						}
+						return underdeterminedSystem(mat, vec, engine);
+					}
+					if (matrixDims[0] != matrixDims[1]) {
+						return underdeterminedSystem(mat, vec, engine);
+					}
+					FieldDecompositionSolver<IExpr> solver = new FieldLUDecomposition<IExpr>(matrix).getSolver();
+					if (solver.isNonSingular()) {
+						FieldVector<IExpr> resultVector = solver.solve(vector);
+						for (int i = 0; i < resultVector.getDimension(); i++) {
+							if (resultVector.getEntry(i).isIndeterminate() || //
+									resultVector.getEntry(i).isDirectedInfinity()) {
+								return underdeterminedSystem(mat, vec, engine);
+							}
+						}
+						return Convert.vector2List(resultVector);
+					} else {
+						return underdeterminedSystem(mat, vec, engine);
+					}
+
+				} catch (final Exception e) {
 					if (Config.SHOW_STACKTRACE) {
 						e.printStackTrace();
 					}
@@ -1826,6 +1872,161 @@ public final class LinearAlgebra {
 			return F.NIL;
 		}
 
+		/**
+		 * For a underdetermined system, return one of the possible solutions through a row reduced matrix.
+		 * 
+		 * @param ast
+		 * @param engine
+		 * @return
+		 */
+		private IExpr underdeterminedSystem(final IAST matrix, IAST vector, EvalEngine engine) {
+			FieldMatrix<IExpr> augmentedMatrix = Convert.list2Matrix(matrix, vector);
+			if (augmentedMatrix != null) {
+				return LinearAlgebra.rowReduced2List(augmentedMatrix, true, engine);
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * Solve <code>matrix . vector</code> for a <code>1 x 1</code> matrix
+		 * 
+		 * @param matrix
+		 * @param vector
+		 * @param engine
+		 * @return
+		 */
+		private IExpr eval1x1Matrix(FieldMatrix<IExpr> matrix, FieldVector<IExpr> vector, EvalEngine engine) {
+			IASTAppendable result = F.ListAlloc(matrix.getColumnDimension());
+			IExpr a = matrix.getEntry(0, 0);
+			IExpr x = vector.getEntry(0);
+			// x/a
+			IExpr row = F.Divide(x, a);
+			result.append(row);
+			if (matrix.getColumnDimension() > 1) {
+				for (int i = 1; i < matrix.getColumnDimension(); i++) {
+					result.append(F.C0);
+				}
+			}
+			IExpr temp = engine.evaluate(result);
+			if (temp.isAST()) {
+				IAST ast = (IAST) temp;
+				for (int k = 1; k < ast.size(); k++) {
+					if (ast.get(k).isIndeterminate() || //
+							ast.get(k).isDirectedInfinity()) {
+						return F.NIL;
+					}
+				}
+			}
+			return temp;
+		}
+
+		/**
+		 * Solve <code>matrix . vector</code> for a <code>2 x 2</code> matrix
+		 * 
+		 * @param matrix
+		 * @param vector
+		 * @param engine
+		 * @return
+		 */
+		private IExpr eval2x2Matrix(FieldMatrix<IExpr> matrix, FieldVector<IExpr> vector, EvalEngine engine) {
+			IASTAppendable result = F.ListAlloc(matrix.getColumnDimension());
+			IExpr a = matrix.getEntry(0, 0);
+			IExpr b = matrix.getEntry(0, 1);
+			IExpr c = matrix.getEntry(1, 0);
+			IExpr d = matrix.getEntry(1, 1);
+
+			IExpr x = vector.getEntry(0);
+			IExpr y = vector.getEntry(1);
+			// (d*x-b*y)/((-b)*c+a*d)
+			IExpr row = F.Times(F.Power(F.Plus(F.Times(F.CN1, b, c), F.Times(a, d)), -1),
+					F.Plus(F.Times(d, x), F.Times(F.CN1, b, y)));
+			result.append(row);
+			// (c*x-a*y)/(b*c-a*d)
+			row = F.Times(F.Power(F.Plus(F.Times(b, c), F.Times(F.CN1, a, d)), -1),
+					F.Plus(F.Times(c, x), F.Times(F.CN1, a, y)));
+			result.append(row);
+
+			if (matrix.getColumnDimension() > 2) {
+				for (int i = 2; i < matrix.getColumnDimension(); i++) {
+					result.append(F.C0);
+				}
+			}
+			IExpr temp = engine.evaluate(result);
+			if (temp.isAST()) {
+				IAST ast = (IAST) temp;
+				for (int k = 1; k < ast.size(); k++) {
+					if (ast.get(k).isIndeterminate() || //
+							ast.get(k).isDirectedInfinity()) {
+						return F.NIL;
+					}
+				}
+			}
+			return temp;
+		}
+
+		/**
+		 * Solve <code>matrix . vector</code> for a <code>3 x 3</code> matrix
+		 * 
+		 * @param matrix
+		 * @param vector
+		 * @param engine
+		 * @return
+		 */
+		private IExpr eval3x3Matrix(FieldMatrix<IExpr> matrix, FieldVector<IExpr> vector, EvalEngine engine) {
+			IASTAppendable result = F.ListAlloc(matrix.getColumnDimension());
+			IExpr a = matrix.getEntry(0, 0);
+			IExpr b = matrix.getEntry(0, 1);
+			IExpr c = matrix.getEntry(0, 2);
+			IExpr d = matrix.getEntry(1, 0);
+			IExpr e = matrix.getEntry(1, 1);
+			IExpr f = matrix.getEntry(1, 2);
+			IExpr g = matrix.getEntry(2, 0);
+			IExpr h = matrix.getEntry(2, 1);
+			IExpr i = matrix.getEntry(2, 2);
+
+			IExpr x = vector.getEntry(0);
+			IExpr y = vector.getEntry(1);
+			IExpr z = vector.getEntry(2);
+			// (f*h*x-e*i*x-c*h*y+b*i*y+c*e*z-b*f*z)/(c*e*g-b*f*g-c*d*h+a*f*h+b*d*i-a*e*i)
+			IExpr row = F.Times(
+					F.Power(F.Plus(F.Times(c, e, g), F.Times(F.CN1, b, f, g), F.Times(F.CN1, c, d, h), F.Times(a, f, h),
+							F.Times(b, d, i), F.Times(F.CN1, a, e, i)), -1),
+					F.Plus(F.Times(f, h, x), F.Times(F.CN1, e, i, x), F.Times(F.CN1, c, h, y), F.Times(b, i, y),
+							F.Times(c, e, z), F.Times(F.CN1, b, f, z)));
+			result.append(row);
+			// ((-f)*g*x+d*i*x+c*g*y-a*i*y-c*d*z+a*f*z)/(c*e*g-b*f*g-c*d*h+a*f*h+b*d*i-a*e*i)
+			row = F.Times(
+					F.Power(F.Plus(F.Times(c, e, g), F.Times(F.CN1, b, f, g), F.Times(F.CN1, c, d, h), F.Times(a, f, h),
+							F.Times(b, d, i), F.Times(F.CN1, a, e, i)), -1),
+					F.Plus(F.Times(F.CN1, f, g, x), F.Times(d, i, x), F.Times(c, g, y), F.Times(F.CN1, a, i, y),
+							F.Times(F.CN1, c, d, z), F.Times(a, f, z)));
+			result.append(row);
+			// (e*g*x-d*h*x-b*g*y+a*h*y+b*d*z-a*e*z)/(c*e*g-b*f*g-c*d*h+a*f*h+b*d*i-a*e*i)
+			row = F.Times(
+					F.Power(F.Plus(F.Times(c, e, g), F.Times(F.CN1, b, f, g), F.Times(F.CN1, c, d, h), F.Times(a, f, h),
+							F.Times(b, d, i), F.Times(F.CN1, a, e, i)), -1),
+					F.Plus(F.Times(e, g, x), F.Times(F.CN1, d, h, x), F.Times(F.CN1, b, g, y), F.Times(a, h, y),
+							F.Times(b, d, z), F.Times(F.CN1, a, e, z)));
+			result.append(row);
+
+			if (matrix.getColumnDimension() > 3) {
+				for (int k = 3; k < matrix.getColumnDimension(); k++) {
+					result.append(F.C0);
+				}
+			}
+
+			IExpr temp = engine.evaluate(result);
+			if (temp.isAST()) {
+				IAST ast = (IAST) temp;
+				for (int k = 1; k < ast.size(); k++) {
+					if (ast.get(k).isIndeterminate() || //
+							ast.get(k).isDirectedInfinity()) {
+						return F.NIL;
+					}
+				}
+			}
+			return temp;
+		}
 	}
 
 	private static class LowerTriangularize extends AbstractFunctionEvaluator {
@@ -2498,12 +2699,13 @@ public final class LinearAlgebra {
 
 	private static class Orthogonalize extends AbstractEvaluator {
 
-		static IBuiltInSymbol oneStep = F.localBiFunction("oneStep", (vec, vecmat)->{
+		static IBuiltInSymbol oneStep = F.localBiFunction("oneStep", (vec, vecmat) -> {
 			if (vecmat.equals(F.List())) {
 				return vec;
 			}
 			IExpr function = // [$ (#1-(vec.#2)/(#2.#2)*#2)& $]
-F.Function(F.Plus(F.Slot1,F.Times(F.CN1,F.Dot(vec,F.Slot2),F.Power(F.Dot(F.Slot2,F.Slot2),-1),F.Slot2))); // $$;
+					F.Function(F.Plus(F.Slot1,
+							F.Times(F.CN1, F.Dot(vec, F.Slot2), F.Power(F.Dot(F.Slot2, F.Slot2), -1), F.Slot2))); // $$;
 			return F.eval(F.Fold(function, vec, vecmat));
 		});
 
