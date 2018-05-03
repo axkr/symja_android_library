@@ -27,9 +27,9 @@ import static org.matheclipse.core.expression.F.Sqr;
 import static org.matheclipse.core.expression.F.Sqrt;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.g;
-import static org.matheclipse.core.expression.F.r;
-import static org.matheclipse.core.expression.F.y;
+//import static org.matheclipse.core.expression.F.g;
+//import static org.matheclipse.core.expression.F.r;
+//import static org.matheclipse.core.expression.F.y;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -599,21 +599,20 @@ public final class LinearAlgebra {
 			IExpr x = ast.arg3();
 			if (f.isList()) {
 				if (x.isAtom()) {
-					// DesignMatrix[m_, f_List, x_?AtomQ] :=
-					// DesignMatrix[m, {f}, ConstantArray[x, Length[f]]]
-					return F.DesignMatrix(m, F.List(f), F.ConstantArray(x, F.Length(f)));
+					// DesignMatrix(m_, f_List, x_?AtomQ) :=
+					// DesignMatrix(m, {f}, ConstantArray(x, Length(f)))
+					return F.DesignMatrix(m, F.List(f), F.ConstantArray(x, F.ZZ(((IAST)f).argSize())));
 				} else if (x.isList()) {
-					// DesignMatrix[m_, f_List, x_List] :=
-					// Prepend[MapThread[Function[{g, y, r}, g /. y -> r], {f,
-					// x, Most[#]}], 1]& /@ m
-					return Map(Function(Prepend(
-							MapThread(Function(List(g, y, r), ReplaceAll(g, Rule(y, r))), List(f, x, Most(Slot1))),
-							C1)), m);
+					// DesignMatrix(m_, f_List, x_List) :=
+					// Prepend(MapThread(Function({g, y, r}, g /. y -> r), {f, x, Most(#)}), 1)& /@ m
+					return Map(
+							Function(Prepend(MapThread(Function(List(F.g, F.y, F.r), ReplaceAll(F.g, Rule(F.y, F.r))),
+									List(f, x, Most(Slot1))), C1)),
+							m);
 				}
 			} else {
 				if (x.isAtom()) {
-					// DesignMatrix[m_, f_, x_?AtomQ]': 'DesignMatrix[m, {f},
-					// {x}]
+					// DesignMatrix(m_, f_, x_?AtomQ) :=  DesignMatrix(m, {f}, {x})
 					return F.DesignMatrix(m, F.List(f), F.List(x));
 				}
 			}
@@ -1861,7 +1860,6 @@ public final class LinearAlgebra {
 					} else {
 						return underdeterminedSystem(mat, vec, engine);
 					}
-
 				} catch (final Exception e) {
 					if (Config.SHOW_STACKTRACE) {
 						e.printStackTrace();
@@ -3808,6 +3806,7 @@ public final class LinearAlgebra {
 		}
 		FieldReducedRowEchelonForm ref = new FieldReducedRowEchelonForm(matrix);
 		FieldMatrix<IExpr> rowReduced = ref.getRowReducedMatrix();
+		System.out.println(rowReduced.toString());
 		IExpr lastVarCoefficient = rowReduced.getEntry(rows - 1, cols - 2);
 		if (lastVarCoefficient.isZero()) {
 			if (!rowReduced.getEntry(rows - 1, cols - 1).isZero()) {

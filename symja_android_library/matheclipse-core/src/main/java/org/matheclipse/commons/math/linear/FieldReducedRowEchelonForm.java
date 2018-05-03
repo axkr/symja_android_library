@@ -10,17 +10,15 @@ import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * <p>
- * Matrix class that wraps a <code>FieldMatrix&lt;T&gt;</code> matrix, which is
- * transformed to reduced row echelon format.
+ * Matrix class that wraps a <code>FieldMatrix&lt;T&gt;</code> matrix, which is transformed to reduced row echelon
+ * format.
  * </p>
  * <p>
- * See: <a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row
- * echelon form</a>.
+ * See: <a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row echelon form</a>.
  * </p>
  * <p>
- * The code was adapted from:
- * <a href="http://rosettacode.org/wiki/Reduced_row_echelon_form#Java">Rosetta
- * Code - Reduced row echelon form</a>
+ * The code was adapted from: <a href="http://rosettacode.org/wiki/Reduced_row_echelon_form#Java">Rosetta Code - Reduced
+ * row echelon form</a>
  * </p>
  */
 public class FieldReducedRowEchelonForm {
@@ -59,8 +57,7 @@ public class FieldReducedRowEchelonForm {
 	private final int numCols;
 
 	/**
-	 * Constructor which creates row reduced echelon matrix from the given
-	 * <code>FieldMatrix&lt;T&gt;</code> matrix.
+	 * Constructor which creates row reduced echelon matrix from the given <code>FieldMatrix&lt;T&gt;</code> matrix.
 	 * 
 	 * @param matrix
 	 *            matrix which will be transformed to a row reduced echelon matrix.
@@ -78,8 +75,8 @@ public class FieldReducedRowEchelonForm {
 	}
 
 	/**
-	 * Constructor which creates row reduced echelon matrix from the given augmented
-	 * <code>matrix</code> and column-vector <code>b</code>.
+	 * Constructor which creates row reduced echelon matrix from the given augmented <code>matrix</code> and
+	 * column-vector <code>b</code>.
 	 * 
 	 * @param matrix
 	 *            matrix which will be transformed to a row reduced echelon matrix.
@@ -121,7 +118,7 @@ public class FieldReducedRowEchelonForm {
 		RowColIndex pivot = new RowColIndex(a.row, a.col);
 		RowColIndex current = new RowColIndex(a.row, a.col);
 
-		for (int i = a.row + 1; i < (numRows - first_row); i++) {
+		for (int i = a.row; i < (numRows - first_row); i++) {
 			current.row = i;
 			if (isOne(rowReducedMatrix.getEntry(current.row, current.col))) {
 				swapRow(current, a);
@@ -147,8 +144,7 @@ public class FieldReducedRowEchelonForm {
 	/**
 	 * Get the row reduced echelon form of the matrix.
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row
-	 * echelon form</a>.
+	 * See: <a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row echelon form</a>.
 	 * 
 	 * @return
 	 */
@@ -157,9 +153,8 @@ public class FieldReducedRowEchelonForm {
 	}
 
 	/**
-	 * Swap the rows <code>a.row</code> and <code>b.row</code> in the matrix and
-	 * swap the <code>row</code> values in the corresponding
-	 * <code>RowColIndex</code> objects.
+	 * Swap the rows <code>a.row</code> and <code>b.row</code> in the matrix and swap the <code>row</code> values in the
+	 * corresponding <code>RowColIndex</code> objects.
 	 * 
 	 * @param a
 	 * @param b
@@ -174,15 +169,21 @@ public class FieldReducedRowEchelonForm {
 		b.row = t;
 	}
 
+	private void swapRow(int a, int b) {
+		IExpr[] temp = rowReducedMatrix.getRow(a);
+		rowReducedMatrix.setRow(a, rowReducedMatrix.getRow(b));
+		rowReducedMatrix.setRow(b, temp);
+	}
+
 	/**
-	 * Test if the column <code>a.col</code> of the matrix contains only
-	 * zero-elements starting with the <code>a.row</code> element.
+	 * Test if the column <code>a.col</code> of the matrix contains only zero-elements starting with the
+	 * <code>a.row</code> element.
 	 * 
 	 * @param a
 	 * @return
 	 */
 	private boolean isColumnZeroFromRow(RowColIndex a) {
-		for (int i = a.row; i < numRows; i++) {
+		for (int i = 0; i < numRows; i++) {
 			if (!isZero(rowReducedMatrix.getEntry(i, a.col))) {
 				return false;
 			}
@@ -209,9 +210,8 @@ public class FieldReducedRowEchelonForm {
 	}
 
 	/**
-	 * Add the values of the row <code>to.row</code> to the product of the values of
-	 * the row <code>from.row * factor</code> and assign the result values back to
-	 * the row <code>to.row</code>.
+	 * Add the values of the row <code>to.row</code> to the product of the values of the row
+	 * <code>from.row * factor</code> and assign the result values back to the row <code>to.row</code>.
 	 * 
 	 * @param to
 	 * @param from
@@ -229,16 +229,13 @@ public class FieldReducedRowEchelonForm {
 	/**
 	 * Get the nullspace of the row reduced matrix.
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Kernel_%28linear_algebra%29">
-	 * Wikipedia - Kernel (linear algebra)</a>.
-	 * <a href="http://en.wikibooks.org/wiki/Linear_Algebra/Null_Spaces"> Wikibooks
-	 * - Null Spaces</a>.
+	 * See: <a href="http://en.wikipedia.org/wiki/Kernel_%28linear_algebra%29"> Wikipedia - Kernel (linear algebra)</a>.
+	 * <a href="http://en.wikibooks.org/wiki/Linear_Algebra/Null_Spaces"> Wikibooks - Null Spaces</a>.
 	 * 
 	 * @param minusOneFactor
-	 *            factor <code>-1</code> for multiplying all elements of the free
-	 *            part of the reduced row echelon form matrix
-	 * @return <code>null</code> if the input matrix has full rank, otherwise return
-	 *         the nullspaace.
+	 *            factor <code>-1</code> for multiplying all elements of the free part of the reduced row echelon form
+	 *            matrix
+	 * @return <code>null</code> if the input matrix has full rank, otherwise return the nullspaace.
 	 */
 	public FieldMatrix<IExpr> getNullSpace(IExpr minusOneFactor) {
 		int rank = getMatrixRank();
@@ -313,16 +310,14 @@ public class FieldReducedRowEchelonForm {
 	/**
 	 * Create the &quot;reduced row echelon form&quot; of a matrix.
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row
-	 * echelon form</a>.
+	 * See: <a href="http://en.wikipedia.org/wiki/Row_echelon_form">Wikipedia - Row echelon form</a>.
 	 * 
 	 * @return
 	 */
 	private FieldMatrix<IExpr> rowReduce() {
-		int maxRows = numRows;
 		RowColIndex pivot = new RowColIndex(0, 0);
-		int submatrix = 0;
-		for (int x = 0; x < numCols; x++) {
+		int submatrix = 0; 
+		for (int x = 0; x < numCols; x++) { 
 			pivot = new RowColIndex(pivot.row, x);
 			// Step 1
 			// Begin with the leftmost nonzero column. This is a pivot column.
@@ -341,68 +336,63 @@ public class FieldReducedRowEchelonForm {
 
 			if (isZero(getCoordinate(pivot))) {
 				pivot.row++;
-				if (pivot.row >= maxRows) {
-					break;
+				if (pivot.row + 1 > numRows) {
+					pivot.row--;
+					continue;
 				}
-				continue;
 			}
 
 			// If necessary, interchange rows to move this entry into the pivot
 			// position.
 			// move this row to the top of the submatrix
-			if (pivot.row != submatrix) {
+			if (pivot.row != submatrix && !isRowZeroes(pivot.row)) {
 				swapRow(new RowColIndex(submatrix, pivot.col), pivot);
 			}
 
-			// Force pivot to be 1
-			if (!isOne(getCoordinate(pivot))) {
-				IExpr scalar = getCoordinate(pivot).inverse();
-				scaleRow(pivot, scalar);
-			}
-			// Step 3
-			// Use row replacement operations to create zeroes in all positions
-			// below the pivot.
-			// belowPivot = belowPivot + (Pivot * -belowPivot)
-			for (int i = pivot.row; i < numRows; i++) {
-				if (i == pivot.row) {
-					continue;
+			if (!(isZero(getCoordinate(pivot)))) {
+				// Force pivot to be 1
+				if (!isOne(getCoordinate(pivot))) {
+					IExpr scalar = getCoordinate(pivot).inverse();
+					scaleRow(pivot, scalar);
 				}
-				RowColIndex belowPivot = new RowColIndex(i, pivot.col);
-				IExpr complement = getCoordinate(belowPivot).negate().divide(getCoordinate(pivot));
-				multiplyAdd(belowPivot, pivot, complement);
-			}
-			// Step 5
-			// Beginning with the rightmost pivot and working upward and to the
-			// left, create zeroes above each pivot.
-			// If a pivot is not 1, make it 1 by a scaling operation.
-			// Use row replacement operations to create zeroes in all positions
-			// above the pivot
-			for (int i = pivot.row; i >= 0; i--) {
-				if (i == pivot.row) {
-					if (!isOne(getCoordinate(pivot))) {
-						scaleRow(pivot, getCoordinate(pivot).inverse());
+				// Step 3
+				// Use row replacement operations to create zeroes in all positions
+				// below the pivot.
+				// belowPivot = belowPivot + (Pivot * -belowPivot)
+				for (int i = pivot.row+1; i < numRows; i++) {
+					RowColIndex belowPivot = new RowColIndex(i, pivot.col);
+					IExpr complement = getCoordinate(belowPivot).negate().divide(getCoordinate(pivot));
+					multiplyAdd(belowPivot, pivot, complement);
+				}
+				// Step 5
+				// Beginning with the rightmost pivot and working upward and to the
+				// left, create zeroes above each pivot.
+				// If a pivot is not 1, make it 1 by a scaling operation.
+				// Use row replacement operations to create zeroes in all positions
+				// above the pivot
+				for (int i = pivot.row; i >= 0; i--) {
+					if (i == pivot.row) {
+						if (!isOne(getCoordinate(pivot))) {
+							scaleRow(pivot, getCoordinate(pivot).inverse());
+						}
+						continue;
 					}
-					continue;
-				}
-				if (i == pivot.row) {
-					continue;
-				}
 
-				RowColIndex abovePivot = new RowColIndex(i, pivot.col);
-				IExpr complement = getCoordinate(abovePivot).negate().divide(getCoordinate(pivot));
-				multiplyAdd(abovePivot, pivot, complement);
+					RowColIndex abovePivot = new RowColIndex(i, pivot.col);
+					IExpr complement = getCoordinate(abovePivot).negate().divide(getCoordinate(pivot));
+					multiplyAdd(abovePivot, pivot, complement);
+				}
+				submatrix++;
 			}
 			// Step 4
 			// Ignore the row containing the pivot position and cover all rows,
 			// if any, above it.
 			// Apply steps 1-3 to the remaining submatrix. Repeat until there
 			// are no more nonzero entries.
-			if ((pivot.row + 1) >= maxRows) { // || isRowZeroes(pivot.row + 1))
-												// {
+			if ((pivot.row + 1) >= numRows) {// || isRowZeroes(pivot.row + 1)) {
 				break;
 			}
 
-			submatrix++;
 			pivot.row++;
 		}
 		EvalEngine engine = EvalEngine.get();
@@ -417,8 +407,7 @@ public class FieldReducedRowEchelonForm {
 	/**
 	 * Get the rank of the row reduced matrix.
 	 * 
-	 * See: <a href="http://en.wikipedia.org/wiki/Rank_%28linear_algebra%29">
-	 * Wikipedia - Rank (linear algebra)</a>.
+	 * See: <a href="http://en.wikipedia.org/wiki/Rank_%28linear_algebra%29">Wikipedia - Rank (linear algebra)</a>.
 	 * 
 	 * @return the rank of the matrix.
 	 */

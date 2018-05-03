@@ -1781,11 +1781,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDesignMatrix() {
-		check("DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, x, x)", "{{1,2},{1,3},{1,5},{1,7}}");
-		check("DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, f(x), x)", "{{1,f(2)},{1,f(3)},{1,f(5)},{1,f(7)}}");
+//		check("data = Table({i, i^(3/2) }, {i, 2})", //
+//				"{{1,1},{2,2*Sqrt(2)}}");
+//		check("DesignMatrix(data, x, x)", //
+//				"{{1,1},{1,2}}");
+//		check("DesignMatrix(data, {x, x^2}, x)", //
+//				"{{1,{{x,x^2}},{x,x},{1}},{1,{{x,x^2}},{x,x},{2}}}");
+		check("DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, x, x)", //
+				"{{1,2},{1,3},{1,5},{1,7}}");
+		check("DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, f(x), x)", //
+				"{{1,f(2)},{1,f(3)},{1,f(5)},{1,f(7)}}");
 
-		check("DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, x, x)", "{{1,2},{1,3},{1,5},{1,7}}");
-		check("DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, f(x), x)", "{{1,f(2)},{1,f(3)},{1,f(5)},{1,f(7)}}");
+		check("DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, x, x)", //
+				"{{1,2},{1,3},{1,5},{1,7}}");
+		check("DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, f(x), x)", //
+				"{{1,f(2)},{1,f(3)},{1,f(5)},{1,f(7)}}");
 	}
 
 	public void testDet() {
@@ -4212,6 +4222,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLinearSolve() {
+		// github issue #44
+		check("LinearSolve({{1,0,-1,0},{0,1,0,-1},{1,-2,-1,0},{-1,0,3,1}},"//
+				+ "{0.06,0.06,-0.4,-0.06})", //
+				"{-0.025,0.23,-0.085,0.17}");
+
 		check("LinearSolve({{a, b, c, d}}, {x})", //
 				"{x/a,0,0,0}");
 		check("LinearSolve({{a, b,c,d,e}, {f,g,h,i,j}}, {x, y})", //
@@ -4225,10 +4240,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// linear equations have no solution
 		check("LinearSolve({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, {1, -2, 1})", //
 				"LinearSolve(\n" + "{{1,2,3},\n" + " {4,5,6},\n" + " {7,8,9}},{1,-2,1})");
-		// github issue #44
-		check("LinearSolve({{1,0,-1,0},{0,1,0,-1},{1,-2,-1,0},{-1,0,3,1}},"//
-				+ "{0.06,0.06,-0.4,-0.06})", //
-				"{-0.025,0.23,-0.085,0.17}");
 
 		check("LinearSolve({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, {1, 1, 1})", //
 				"{-1,1,0}");
@@ -4438,10 +4449,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMapThread() {
-		check("MapThread(f, {{a, b, c}, {x, y, z}})", "{f(a,x),f(b,y),f(c,z)}");
-		check("MapThread(f, {{a, b, c}, {1, 2, 3}})", "{f(a,1),f(b,2),f(c,3)}");
+//		check("MapThread(f, {{{a, b}, {c, d}}, {{u, v}, {s, t}}}, 2)", //
+//				"{{f(a,c),f(b,d)},{f(u,s),f(v,t)}}");
+		check("MapThread(f, {{a, b, c}, {x, y, z}})", //
+				"{f(a,x),f(b,y),f(c,z)}");
+
+		check("MapThread(f, {{a, b, c}, {1, 2, 3}})", //
+				"{f(a,1),f(b,2),f(c,3)}");
 		// TODO
-		// check("MapThread(f, {{{a, b}, {c, d}}, {{e, f}, {g, h}}}, 2)", "");
+
 		// check("MapThread(f, {{a, b}, {c, d}}, {1})", "");
 		// check("MapThread(f, {{a, b}, {c, d}}, 2)", "");
 		// check("MapThread(f, {{a}, {b, c}})", "");
@@ -5338,6 +5354,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNullSpace() {
+		check("NullSpace({{1, 2, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 1}, {0, 0, -1}, {1, 2, 1}})", //
+				"{{-2,1,0}}");
+
 		check("LinearSolve({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, {0,0,0})", //
 				"{0,0,0}");
 		check("NullSpace({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", //
@@ -7064,6 +7083,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRowReduce() {
+		check("RowReduce({{1, 2, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 1}, {0, 0, -1}, {1, 2, 1}})", //
+				"{{1,2,0},\n" + 
+				" {0,0,1},\n" + 
+				" {0,0,0},\n" + 
+				" {0,0,0},\n" + 
+				" {0,0,0},\n" + 
+				" {0,0,0},\n" + 
+				" {0,0,0}}");
+		
+		check("RowReduce({{1, 2, 3, 1}, {4, 5, 6, -1}, {7, 8, 9, 2}})",
+				"{{1,0,-1,0},\n" + " {0,1,2,0},\n" + " {0,0,0,1}}");
+
+		check("RowReduce({{1,0,-1,0},{0,1,0,-1},{1,-2,-1,0},{-1,0,3,1}})", //
+				"{{1,0,0,0},\n" + " {0,1,0,0},\n" + " {0,0,1,0},\n" + " {0,0,0,1}}");
 		check("RowReduce({{1, 0, a}, {1, 1, b}})", "{{1,0,a},\n" + " {0,1,-a+b}}");
 		check("RowReduce({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", "{{1,0,-1},\n" + " {0,1,2},\n" + " {0,0,0}}");
 		check("RowReduce({{1, 0}, {0}})", "RowReduce({{1,0},{0}})");
