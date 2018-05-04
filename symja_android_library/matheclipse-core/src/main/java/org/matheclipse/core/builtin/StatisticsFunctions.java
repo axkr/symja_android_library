@@ -10,7 +10,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.StatUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
-import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;

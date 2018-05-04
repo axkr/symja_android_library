@@ -961,172 +961,73 @@ public class Structure {
 
 		private static class MapThreadLevel {
 			/**
-			 * The current tensor.
-			 */
-			final IAST tensor;
-			/**
-			 * The dimensions of the current tensor.
-			 */
-			final int[] dimensions;
-			/**
 			 * The permutation of the result tensor
 			 */
 			final int level;
-			/**
-			 * The position from which to extract the current element
-			 */
-			int[] positions;
-
-			int[] permutation;
 
 			final IExpr constant;
 
-			private MapThreadLevel(IExpr constant, IAST tensor, ArrayList<Integer> tensorDimensions, int level) {
+			private MapThreadLevel(IExpr constant, int level) {
 				this.constant = constant;
-				this.tensor = tensor;
-				this.dimensions = new int[tensorDimensions.size()];
-				for (int i = 0; i < tensorDimensions.size(); i++) {
-					dimensions[i] = tensorDimensions.get(i);
-				}
-				permutation = new int[level + 1];
-				for (int i = 0; i < level; i++) {
-					permutation[i] = i + 1;
-				}
-				// permutation[0] = level + 1;
-				permutation[level] = level + 1;
 				this.level = level;
-				this.positions = new int[level];
 			}
 
-			private IAST recursiveTranspose() {
-				return recursiveTranspose(0, null);
-			}
-
-			/**
-			 * 
-			 * @param permutationIndex
-			 *            the current permutation index, which should be used to get the element from permutation array
-			 * @param resultList
-			 *            the parent list or <code>null</code> if the root-list should be created.
-			 * @return
-			 */
-			// private IAST recursiveTranspose2(int index, IASTAppendable resultList) {
-			// if (level < index) {
-			// resultList.append(tensor.getPart(positions));
-			// } else {
-			// IASTAppendable list;
-			// if (level == index) {
-			// int size = dimensions[index - 1];
-			// list = F.ast(constant, size, false);
-			// if (resultList != null) {
-			// resultList.append(list);
-			// }
-			// int val = positions[index - 1];
-			// positions[index] = val;
-			// for (int i = 0; i < size; i++) {
-			// positions[index - 1] = i + 1;
-			// recursiveTranspose(index + 1, list);
-			// }
-			// positions[index - 1] = val;
-			// } else {
-			// int size = dimensions[index];
-			// list = F.ast(F.List, size, false);
-			// if (resultList != null) {
-			// resultList.append(list);
-			// }
-			// for (int i = 0; i < size; i++) {
-			// positions[index] = i + 1;
-			// recursiveTranspose(index + 1, list);
-			// }
-			// }
-			// return list;
-			// }
-			// return F.NIL;
-			// }
-
-			private IAST recursiveTranspose(int permutationIndex, IASTAppendable resultList) {
-				if (permutationIndex >= permutation.length) {
-					resultList.append(tensor.getPart(positions));
-				} else {
-					int size = dimensions[permutation[permutationIndex] - 1];
-					IASTAppendable list;
-					if (level == permutationIndex + 1) {
-						// list = F.ast(constant, size, false);
-						IASTAppendable ast = F.ListAlloc(size);
-						for (int i = 0; i < size; i++) {
-							positions[permutation[permutationIndex] - 1] = i + 1;
-							ast.append(tensor.getPart(positions));
-						}
-						list = EvalAttributes.threadList(ast, F.List, constant, size + 1);
-						if (resultList != null) {
-							resultList.append(list);
-						}
-					} else {
-						list = F.ListAlloc(size);
-						if (resultList != null) {
-							resultList.append(list);
-						}
-						for (int i = 0; i < size; i++) {
-							positions[permutation[permutationIndex] - 1] = i + 1;
-							recursiveTranspose(permutationIndex + 1, list);
-						}
+			private IAST recursiveMapThread(int recursionLevel, IAST lst, IASTAppendable resultList) {
+				if (recursionLevel >= level) {
+					return lst;
+				}
+				int size = lst.first().size() - 1;
+				IASTAppendable list;
+				if (level == recursionLevel + 1) {
+					list = EvalAttributes.threadList(lst, F.List, constant, size);
+					if (resultList != null) {
+						resultList.append(list);
 					}
-					return list;
+				} else {
+					list = EvalAttributes.threadList(lst, F.List, F.List, size);
+					IASTAppendable result = F.ListAlloc(size);
+					for (int i = 1; i < list.size(); i++) {
+						recursiveMapThread(recursionLevel + 1, (IAST) list.get(i), result);
+					}
+					if (resultList != null) {
+						resultList.append(result);
+					}
+					return result;
 				}
-				return F.NIL;
+				return list;
 			}
-		}
-
-		private static class UnaryMapThread implements java.util.function.Function<IExpr, IExpr> {
-			final IExpr fConstant;
-
-			public UnaryMapThread(final IExpr constant) {
-				fConstant = constant;
-			}
-
-			@Override
-			public IExpr apply(final IExpr firstArg) {
-				if (firstArg.isAST()) {
-					return Thread.threadList((IAST) firstArg, F.List, fConstant).orElse(firstArg);
-				}
-				return firstArg;
-			}
-
 		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 3, 4);
 
-			// if (ast.arg2().isAST()) {
-			// int level = 1;
-			// if (ast.isAST3()) {
-			// level = ast.arg3().toIntDefault(-1);
-			// if (level <= 0) {
-			// return F.NIL;
-			// }
-			// }
-			//
-			// // java.util.function.Function<IExpr, IExpr> umt = new UnaryMapThread(ast.arg1());
-			// IAST tensor = (IAST) ast.arg2();
-			// ArrayList<Integer> dims = LinearAlgebra.dimensions(tensor, tensor.head(), Integer.MAX_VALUE);
-			// if (dims.size() > level) {
-			// if (level == 1) {
-			// return EvalAttributes.threadList(tensor, F.List, ast.arg1(), dims.get(level));
-			// }
-			// return new MapThreadLevel(ast.arg1(), tensor, dims, level).recursiveTranspose();
-			// }
-			// }
-			// return F.NIL;
-			VisitorLevelSpecification level = null;
-			java.util.function.Function<IExpr, IExpr> umt = new UnaryMapThread(ast.arg1());
-			if (ast.isAST3()) {
-				level = new VisitorLevelSpecification(umt, ast.arg3(), false, engine);
-			} else {
-				level = new VisitorLevelSpecification(umt, 0);
+			if (ast.arg2().isAST()) {
+				int level = 1;
+				if (ast.isAST3()) {
+					level = ast.arg3().toIntDefault(-1);
+					if (level < 0) {
+						return F.NIL;
+					}
+				}
+
+				IAST tensor = (IAST) ast.arg2();
+				ArrayList<Integer> dims = LinearAlgebra.dimensions(tensor, tensor.head(), Integer.MAX_VALUE);
+				if (dims.size() > level) {
+					if (level == 0) {
+						return tensor.apply(ast.arg1());
+					}
+					// if (level == 1) {
+					// return EvalAttributes.threadList(tensor, F.List, ast.arg1(), dims.get(level));
+					// }
+					return new MapThreadLevel(ast.arg1(), level).recursiveMapThread(0, tensor, null);
+				} 
+				if (tensor.isAST(F.List,1)) {
+					return tensor;
+				}
+				engine.printMessage("MapThread: argument 2 dimensions less than level.");
 			}
-			final IExpr result = ast.arg2().accept(level);
-			return result.isPresent() ? result : ast.arg2();
+			return F.NIL;
 		}
 
 	}

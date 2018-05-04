@@ -3028,8 +3028,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("FrobeniusSolve({1000, 1476, 3764, 4864, 4871, 7773}, 47350)", //
 				"{}");
 		check("FrobeniusSolve({1000, 1476, 3764, 4864, 4871, 7773}, 47351)", //
-				"{{1,2,3,3,2,1},{3,5,0,4,2,1},{9,3,1,0,3,2},{12,13,3,0,1,0},{14,16,0,1,1,0},{32,2,\n" + 
-				"2,0,1,0}}");
+				"{{1,2,3,3,2,1},{3,5,0,4,2,1},{9,3,1,0,3,2},{12,13,3,0,1,0},{14,16,0,1,1,0},{32,2,\n" + "2,0,1,0}}");
 		check("FrobeniusSolve({2, 3, 4}, 29)",
 				"{{0,3,5},{0,7,2},{1,1,6},{1,5,3},{1,9,0},{2,3,4},{2,7,1},{3,1,5},{3,5,2},{4,3,3},{\n"
 						+ "4,7,0},{5,1,4},{5,5,1},{6,3,2},{7,1,3},{7,5,0},{8,3,1},{9,1,2},{10,3,0},{11,1,1},{\n"
@@ -4465,20 +4464,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMapThread() {
-		// check("MapThread(f, {{{a, b}, {c, d}}, {{u, v}, {s, t}}}, 2)", //
-		// "{{f(a,c),f(b,d)},{f(u,s),f(v,t)}}");
+		check("MapThread(f, {}, 1)", //
+				"{}");
+		check("MapThread(f, {a, b}, 1)", //
+				"MapThread(f,{a,b},1)");
+		check("MapThread(f, {a, b}, 0)", //
+				"f(a,b)");
+		check("MapThread(f, {}, 0)", //
+				"f()");
+		check("MapThread(f, {{{{a, b}, {c, d}}}, {{{u, v}, {s, t}}}}, 2)", //
+				"{{f({a,b},{u,v}),f({c,d},{s,t})}}");
+		check("MapThread(f, {{{{a, b}, {c, d}}}, {{{u, v}, {s, t}}}}, 3)", //
+				"{{{f(a,u),f(b,v)},{f(c,s),f(d,t)}}}");
+		check("MapThread(f, {{{{a, b}, {c, d}}}, {{{u, v}, {s, t}}}}, 4)", //
+				"MapThread(f,{{{{a,b},{c,d}}},{{{u,v},{s,t}}}},4)");
+		check("MapThread(f, {{{a, b}, {c, d}}, {{u, v}, {s, t}}}, 2)", //
+				"{{f(a,u),f(b,v)},{f(c,s),f(d,t)}}");
 		check("MapThread(f, {{a, b, c}, {x, y, z}})", //
 				"{f(a,x),f(b,y),f(c,z)}");
 
 		check("MapThread(f, {{a, b, c}, {1, 2, 3}})", //
 				"{f(a,1),f(b,2),f(c,3)}");
-		// TODO
-
-		// check("MapThread(f, {{a, b}, {c, d}}, {1})", "");
-		// check("MapThread(f, {{a, b}, {c, d}}, 2)", "");
-		// check("MapThread(f, {{a}, {b, c}})", "");
-		// check("MapThread(f, {}) ", "");
-		// check("MapThread(f, {a, b}, 0)", "");
 	}
 
 	public void testMatchingDissimilarity() {
