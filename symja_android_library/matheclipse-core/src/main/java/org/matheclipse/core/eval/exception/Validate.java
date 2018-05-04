@@ -127,7 +127,7 @@ public final class Validate {
 		throw new WrongArgumentType(arg, "Trying to convert the given list into a list of long numbers: " + arg);
 	}
 
-	public static BigInteger[] checkListOfBigIntegers(IExpr arg) {
+	public static BigInteger[] checkListOfBigIntegers(IExpr arg, boolean nonNegative) {
 		if (arg.isList()) {
 			IAST list = (IAST) arg;
 			BigInteger[] result = new BigInteger[list.argSize()];
@@ -147,6 +147,9 @@ public final class Validate {
 					// throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
 					// + startValue + " - " + Long.MAX_VALUE);
 					// }
+					if (nonNegative&&longValue.compareTo(BigInteger.ZERO)<0) {
+						throw new WrongArgumentType(arg, "Trying to convert the given list into a list of long non-negative numbers: " + arg);
+					}
 					result[i - 1] = longValue;
 				}
 				return result;

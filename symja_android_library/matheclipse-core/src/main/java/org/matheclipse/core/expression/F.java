@@ -393,6 +393,7 @@ public class F {
 	public final static IBuiltInSymbol FreeQ = BuiltIns.valueOf(BuiltIns.FreeQ);
 	public final static IBuiltInSymbol FresnelC = BuiltIns.valueOf(BuiltIns.FresnelC);
 	public final static IBuiltInSymbol FresnelS = BuiltIns.valueOf(BuiltIns.FresnelS);
+	public final static IBuiltInSymbol FrobeniusNumber = BuiltIns.valueOf(BuiltIns.FrobeniusNumber);
 	public final static IBuiltInSymbol FrobeniusSolve = BuiltIns.valueOf(BuiltIns.FrobeniusSolve);
 	public final static IBuiltInSymbol FromCharacterCode = BuiltIns.valueOf(BuiltIns.FromCharacterCode);
 	public final static IBuiltInSymbol FromContinuedFraction = BuiltIns.valueOf(BuiltIns.FromContinuedFraction);

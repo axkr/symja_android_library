@@ -16,15 +16,28 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * <pre>
- * FrobeniusSolve(listOfIntegers, nonNegativeInteger)
+ * FrobeniusSolve({a1, ... ,aN}, M)
  * </pre>
  * 
  * <blockquote>
  * <p>
- * get a list of solutions for the Frobenius equation given by the <code>listOfIntegers</code> and the
- * <code>nonNegativeInteger</code>.
+ * get a list of solutions for the Frobenius equation given by the list of integers <code>{a1, ... ,aN}</code> and the
+ * non-negative integer <code>M</code>.
  * </p>
  * </blockquote>
+ * <p>
+ * The Frobenius problem, also known as the postage-stamp problem or the money-changing problem, is an integer
+ * programming problem that seeks nonnegative integer solutions to <code>x1*a1 + ... + xN*aN = M</code> where
+ * <code>ai</code> and <code>M</code> are positive integers. In particular, the Frobenius number
+ * <code>FrobeniusNumber({a1, ... ,aN})</code>, is the largest <code>M</code> so that this equation fails to have a
+ * solution.
+ * </p>
+ * <p>
+ * See:
+ * </p>
+ * <ul>
+ * <li><a href="https://en.wikipedia.org/wiki/Coin_problem">Wikipedia - Coin problem</a></li>
+ * </ul>
  * <h3>Examples</h3>
  * 
  * <pre>

@@ -671,8 +671,8 @@ public final class NumberTheory {
 					return F.NIL;
 				} catch (WrongArgumentType wat) {
 					// try with BigIntegers
-					BigInteger[] aBig = Validate.checkListOfBigIntegers(ast.arg1());
-					BigInteger[] nBig = Validate.checkListOfBigIntegers(ast.arg2());
+					BigInteger[] aBig = Validate.checkListOfBigIntegers(ast.arg1(), false);
+					BigInteger[] nBig = Validate.checkListOfBigIntegers(ast.arg2(), false);
 					if (aBig.length != nBig.length) {
 						return F.NIL;
 					}
@@ -1783,6 +1783,53 @@ public final class NumberTheory {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		}
+	}
+
+	/**
+	 * <pre>
+	 * FrobeniusNumber({a1, ... ,aN})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the Frobenius number of the nonnegative integers <code>{a1, ... ,aN}</code>
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * The Frobenius problem, also known as the postage-stamp problem or the money-changing problem, is an integer
+	 * programming problem that seeks nonnegative integer solutions to <code>x1*a1 + ... + xN*aN = M</code> where
+	 * <code>ai</code> and <code>M</code> are positive integers. In particular, the Frobenius number
+	 * <code>FrobeniusNumber({a1, ... ,aN})</code>, is the largest <code>M</code> so that this equation fails to have a
+	 * solution.
+	 * </p>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Coin_problem">Wikipedia - Coin problem</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; FrobeniusNumber({1000, 1476, 3764, 4864, 4871, 7773})
+	 * 47350
+	 * </pre>
+	 */
+	private static class FrobeniusNumber extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			BigInteger[] array = Validate.checkListOfBigIntegers(ast.arg1(), true);
+			BigInteger result = org.matheclipse.core.frobenius.FrobeniusNumber.frobeniusNumber(array);
+			return F.ZZ(result);
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			// newSymbol.setAttributes(ISymbol.LISTABLE);
 		}
 	}
 
@@ -3430,6 +3477,7 @@ public final class NumberTheory {
 		F.Factorial2.setEvaluator(new Factorial2());
 		F.FactorInteger.setEvaluator(new FactorInteger());
 		F.Fibonacci.setEvaluator(new Fibonacci());
+		F.FrobeniusNumber.setEvaluator(new FrobeniusNumber());
 		F.JacobiSymbol.setEvaluator(new JacobiSymbol());
 		F.KroneckerDelta.setEvaluator(new KroneckerDelta());
 		F.LiouvilleLambda.setEvaluator(new LiouvilleLambda());

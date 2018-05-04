@@ -1781,12 +1781,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDesignMatrix() {
-//		check("data = Table({i, i^(3/2) }, {i, 2})", //
-//				"{{1,1},{2,2*Sqrt(2)}}");
-//		check("DesignMatrix(data, x, x)", //
-//				"{{1,1},{1,2}}");
-//		check("DesignMatrix(data, {x, x^2}, x)", //
-//				"{{1,{{x,x^2}},{x,x},{1}},{1,{{x,x^2}},{x,x},{2}}}");
+		// check("data = Table({i, i^(3/2) }, {i, 2})", //
+		// "{{1,1},{2,2*Sqrt(2)}}");
+		// check("DesignMatrix(data, x, x)", //
+		// "{{1,1},{1,2}}");
+		// check("DesignMatrix(data, {x, x^2}, x)", //
+		// "{{1,{{x,x^2}},{x,x},{1}},{1,{{x,x^2}},{x,x},{2}}}");
 		check("DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, x, x)", //
 				"{{1,2},{1,3},{1,5},{1,7}}");
 		check("DesignMatrix({{2, 1}, {3, 4}, {5, 3}, {7, 6}}, f(x), x)", //
@@ -3013,7 +3013,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("D(Fresnels(x),x)", "Sin(1/2*Pi*x^2)");
 	}
 
+	public void testFrobeniusNumber() {
+		check("FrobeniusNumber({1000, 1476, 3764, 4864, 4871, 7773})", //
+				"47350");
+		check("FrobeniusNumber({12,16,20,27})", //
+				"89");
+		check("Table(FrobeniusNumber({i, i + 1}), {i, 15})", //
+				"{-1,1,5,11,19,29,41,55,71,89,109,131,155,181,209}");
+	}
+
 	public void testFrobeniusSolve() {
+		check("FrobeniusSolve({1000, 1476, 3764, 4864, 4871, 7773}, 47349)", //
+				"{{5,2,4,2,3,0},{6,1,0,4,1,2},{7,5,1,3,3,0},{15,9,3,0,0,1},{17,12,0,1,0,1}}");
+		check("FrobeniusSolve({1000, 1476, 3764, 4864, 4871, 7773}, 47350)", //
+				"{}");
+		check("FrobeniusSolve({1000, 1476, 3764, 4864, 4871, 7773}, 47351)", //
+				"{{1,2,3,3,2,1},{3,5,0,4,2,1},{9,3,1,0,3,2},{12,13,3,0,1,0},{14,16,0,1,1,0},{32,2,\n" + 
+				"2,0,1,0}}");
 		check("FrobeniusSolve({2, 3, 4}, 29)",
 				"{{0,3,5},{0,7,2},{1,1,6},{1,5,3},{1,9,0},{2,3,4},{2,7,1},{3,1,5},{3,5,2},{4,3,3},{\n"
 						+ "4,7,0},{5,1,4},{5,5,1},{6,3,2},{7,1,3},{7,5,0},{8,3,1},{9,1,2},{10,3,0},{11,1,1},{\n"
@@ -4449,8 +4465,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMapThread() {
-//		check("MapThread(f, {{{a, b}, {c, d}}, {{u, v}, {s, t}}}, 2)", //
-//				"{{f(a,c),f(b,d)},{f(u,s),f(v,t)}}");
+		// check("MapThread(f, {{{a, b}, {c, d}}, {{u, v}, {s, t}}}, 2)", //
+		// "{{f(a,c),f(b,d)},{f(u,s),f(v,t)}}");
 		check("MapThread(f, {{a, b, c}, {x, y, z}})", //
 				"{f(a,x),f(b,y),f(c,z)}");
 
@@ -7084,14 +7100,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testRowReduce() {
 		check("RowReduce({{1, 2, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 1}, {0, 0, -1}, {1, 2, 1}})", //
-				"{{1,2,0},\n" + 
-				" {0,0,1},\n" + 
-				" {0,0,0},\n" + 
-				" {0,0,0},\n" + 
-				" {0,0,0},\n" + 
-				" {0,0,0},\n" + 
-				" {0,0,0}}");
-		
+				"{{1,2,0},\n" + " {0,0,1},\n" + " {0,0,0},\n" + " {0,0,0},\n" + " {0,0,0},\n" + " {0,0,0},\n"
+						+ " {0,0,0}}");
+
 		check("RowReduce({{1, 2, 3, 1}, {4, 5, 6, -1}, {7, 8, 9, 2}})",
 				"{{1,0,-1,0},\n" + " {0,1,2,0},\n" + " {0,0,0,1}}");
 
