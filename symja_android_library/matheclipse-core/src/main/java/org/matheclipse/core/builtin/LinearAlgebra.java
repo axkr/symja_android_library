@@ -601,7 +601,7 @@ public final class LinearAlgebra {
 				if (x.isAtom()) {
 					// DesignMatrix(m_, f_List, x_?AtomQ) :=
 					// DesignMatrix(m, {f}, ConstantArray(x, Length(f)))
-					return F.DesignMatrix(m, F.List(f), F.ConstantArray(x, F.ZZ(((IAST)f).argSize())));
+					return F.DesignMatrix(m, F.List(f), F.ConstantArray(x, F.ZZ(((IAST) f).argSize())));
 				} else if (x.isList()) {
 					// DesignMatrix(m_, f_List, x_List) :=
 					// Prepend(MapThread(Function({g, y, r}, g /. y -> r), {f, x, Most(#)}), 1)& /@ m
@@ -612,7 +612,7 @@ public final class LinearAlgebra {
 				}
 			} else {
 				if (x.isAtom()) {
-					// DesignMatrix(m_, f_, x_?AtomQ) :=  DesignMatrix(m, {f}, {x})
+					// DesignMatrix(m_, f_, x_?AtomQ) := DesignMatrix(m, {f}, {x})
 					return F.DesignMatrix(m, F.List(f), F.List(x));
 				}
 			}
@@ -3806,7 +3806,7 @@ public final class LinearAlgebra {
 		}
 		FieldReducedRowEchelonForm ref = new FieldReducedRowEchelonForm(matrix);
 		FieldMatrix<IExpr> rowReduced = ref.getRowReducedMatrix();
-		System.out.println(rowReduced.toString());
+		// System.out.println(rowReduced.toString());
 		IExpr lastVarCoefficient = rowReduced.getEntry(rows - 1, cols - 2);
 		if (lastVarCoefficient.isZero()) {
 			if (!rowReduced.getEntry(rows - 1, cols - 1).isZero()) {
