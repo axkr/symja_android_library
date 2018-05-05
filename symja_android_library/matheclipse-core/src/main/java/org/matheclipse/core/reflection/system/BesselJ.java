@@ -26,40 +26,56 @@ public class BesselJ extends AbstractFunctionEvaluator {
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 3);
 
-		IExpr arg1 = ast.arg1();
-		 int order = arg1.toIntDefault(Integer.MAX_VALUE);
+		IExpr n = ast.arg1();
+		int order = n.toIntDefault(Integer.MAX_VALUE);
 		// if (order == Integer.MAX_VALUE) {
 		// return F.NIL;
 		// }
 
-		IExpr arg2 = ast.arg2();
-		if (arg2.isZero()) {
-			if (arg1.isZero()) {
+		IExpr z = ast.arg2();
+		if (z.isZero()) {
+			if (n.isZero()) {
 				// (0, 0)
 				return F.C1;
 			}
-			if (arg1.isIntegerResult() || order != Integer.MAX_VALUE) {
+			if (n.isIntegerResult() || order != Integer.MAX_VALUE) {
 				return F.C0;
 			}
 
-			IExpr a = arg1.re();
+			IExpr a = n.re();
 			if (a.isPositive()) {
 				// Re(arg1) > 0
 				return F.C0;
 			} else if (a.isNegative()) {
 				// Re(arg1) < 0 && !a.isInteger()
 				return F.CComplexInfinity;
-			} else if (a.isZero() && !arg1.isZero()) {
+			} else if (a.isZero() && !n.isZero()) {
 				return F.Indeterminate;
 			}
 
 		}
-		if (arg1 instanceof INum && arg2 instanceof INum) {
+		if (n.equals(F.CN1D2) || n.equals(F.num(-0.5))) {
+			// (Sqrt(2/Pi)* Cos(z))/Sqrt(z)
+			return F.Times(F.Sqrt(F.Divide(F.C2, F.Pi)), F.Cos(z), F.Power(z, F.CN1D2));
+		}
+		if (n.equals(F.C1D2) || n.equals(F.num(0.5))) {
+			// (Sqrt(2/Pi)* Sin(z))/Sqrt(z)
+			return F.Times(F.Sqrt(F.Divide(F.C2, F.Pi)), F.Sin(z), F.Power(z, F.CN1D2));
+		}
+		if (z.isInfinity() || z.isNegativeInfinity()) {
+			return F.C0;
+		}
+		if (n.isInteger() || order != Integer.MAX_VALUE) {
+			if (n.isNegative()) {
+				// (-n,z) => (-1)^n*BesselJ(n,z)
+				return F.Times(F.Power(F.CN1, n), F.BesselJ(n.negate(), z));
+			}
+		}
+		if (n instanceof INum && z instanceof INum) {
 			try {
 				// numeric mode evaluation
-				org.hipparchus.special.BesselJ besselJ = new org.hipparchus.special.BesselJ(
-						((INum) arg1).doubleValue());
-				return F.num(besselJ.value(((INum) arg2).doubleValue()));
+				org.hipparchus.special.BesselJ besselJ = new org.hipparchus.special.BesselJ(((INum) n).doubleValue());
+				return F.num(besselJ.value(((INum) z).doubleValue()));
 			} catch (NegativeArraySizeException nae) {
 				engine.printMessage(ast.toString() + " caused NegativeArraySizeException");
 			} catch (RuntimeException rte) {
