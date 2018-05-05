@@ -4237,6 +4237,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLinearSolve() {
+		check("LinearSolve({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, {1,1,1})", //
+				"{-1,1,0}");
 		// github issue #44
 		check("LinearSolve({{1,0,-1,0},{0,1,0,-1},{1,-2,-1,0},{-1,0,3,1}},"//
 				+ "{0.06,0.06,-0.4,-0.06})", //
