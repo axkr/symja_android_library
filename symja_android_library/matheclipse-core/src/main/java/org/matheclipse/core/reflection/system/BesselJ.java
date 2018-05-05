@@ -14,8 +14,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * Bessel function of the first kind.
  * </p>
  * 
- * See <a href="http://en.wikipedia.org/wiki/Bessel_function">Wikipedia: Bessel
- * function</a>
+ * See <a href="http://en.wikipedia.org/wiki/Bessel_function">Wikipedia: Bessel function</a>
  *
  */
 public class BesselJ extends AbstractFunctionEvaluator {
@@ -28,26 +27,18 @@ public class BesselJ extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 
 		IExpr arg1 = ast.arg1();
+		 int order = arg1.toIntDefault(Integer.MAX_VALUE);
+		// if (order == Integer.MAX_VALUE) {
+		// return F.NIL;
+		// }
+
 		IExpr arg2 = ast.arg2();
-		if (arg1 instanceof INum && arg2 instanceof INum) {
-			try {
-				// numeric mode evaluation
-				org.hipparchus.special.BesselJ besselJ = new org.hipparchus.special.BesselJ(
-						((INum) arg2).doubleValue());
-				return F.num(besselJ.value(((INum) arg1).doubleValue()));
-			} catch (NegativeArraySizeException nae) {
-				engine.printMessage(ast.toString() + " caused NegativeArraySizeException");
-			} catch (RuntimeException rte) {
-				engine.printMessage(rte.getMessage());
-				return F.NIL;
-			}
-		}
 		if (arg2.isZero()) {
 			if (arg1.isZero()) {
 				// (0, 0)
 				return F.C1;
 			}
-			if (arg1.isInteger()) {
+			if (arg1.isIntegerResult() || order != Integer.MAX_VALUE) {
 				return F.C0;
 			}
 
@@ -62,6 +53,19 @@ public class BesselJ extends AbstractFunctionEvaluator {
 				return F.Indeterminate;
 			}
 
+		}
+		if (arg1 instanceof INum && arg2 instanceof INum) {
+			try {
+				// numeric mode evaluation
+				org.hipparchus.special.BesselJ besselJ = new org.hipparchus.special.BesselJ(
+						((INum) arg1).doubleValue());
+				return F.num(besselJ.value(((INum) arg2).doubleValue()));
+			} catch (NegativeArraySizeException nae) {
+				engine.printMessage(ast.toString() + " caused NegativeArraySizeException");
+			} catch (RuntimeException rte) {
+				engine.printMessage(rte.getMessage());
+				return F.NIL;
+			}
 		}
 
 		return F.NIL;

@@ -532,4 +532,10 @@ public class AST2Expr {
 			return ast;
 		}
 	}
+
+	public static void main(String[] args) {
+		for (int i = 0; i < FUNCTION_STRINGS.length; i++) {
+			System.out.println(FUNCTION_STRINGS[i]);
+		}
+	}
 }

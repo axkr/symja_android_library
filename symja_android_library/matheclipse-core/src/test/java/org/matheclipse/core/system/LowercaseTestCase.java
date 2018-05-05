@@ -489,12 +489,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBesselJ() {
+ 		check("BesselJ(0, 5.2)", "-0.11029");
+		checkNumeric("BesselJ(3.5, 1.2)", "0.013270419445925545");
+		check("BesselJ(4.0, 0.0)", "0.0");
 		check("BesselJ(1.0, -3.0)", "BesselJ(1.0,-3.0)");
 		check("BesselJ(0.0, 0.0)", "1.0");
-		checkNumeric("BesselJ(4.0, 0.0)", "-0.3971498098638474");
 		// commons math: Bessel function of order 0 cannot be computed for x =
 		// -3
-		check("BesselJ(-3.0, 0.0)", "BesselJ(-3.0,0.0)");
+		check("BesselJ(-3.0, 0.0)", "0.0");
 
 		check("BesselJ(-3, 0)", "0");
 		check("BesselJ(0, 0)", "1");
