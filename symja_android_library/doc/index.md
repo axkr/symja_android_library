@@ -214,6 +214,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [BellB](functions/BellB.md)
 * [BernoulliB](functions/BernoulliB.md)
 * [BernoulliDistribution](functions/BernoulliDistribution.md)
+* [BesselJ](functions/BesselJ.md)
 * [Beta](functions/Beta.md)
 * [Binomial](functions/Binomial.md)
 * [BinomialDistribution](functions/BinomialDistribution.md)

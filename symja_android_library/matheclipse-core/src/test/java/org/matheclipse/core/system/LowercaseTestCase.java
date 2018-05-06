@@ -489,6 +489,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBesselJ() {
+		checkNumeric("BesselJ(1,3.6 )", //
+				"0.09546554705714085");
 		check("BesselJ(-42, z)", //
 				"BesselJ(42,z)");
 		check("BesselJ(-43, z)", //
@@ -504,12 +506,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BesselJ(0, 5.2)", "-0.11029");
 		checkNumeric("BesselJ(3.5, 1.2)", "0.013270419445925545");
 		check("BesselJ(4.0, 0.0)", "0.0");
-		check("BesselJ(1.0, -3.0)", "BesselJ(1.0,-3.0)");
+		check("BesselJ(1.0, -3.0)", "-0.33906");
 		check("BesselJ(0.0, 0.0)", "1.0");
 		check("BesselJ(-3.0, 0.0)", "0.0");
 		check("BesselJ(-3, 0)", "0");
 		check("BesselJ(0, 0)", "1");
 		check("BesselJ(4, 0)", "0");
+		check("BesselJ(0.0, 4)", "-0.39715");
+		check("BesselJ(1, {0.5, 1.0, 1.5})", //
+				"{0.24227,0.44005,0.55794}");
 	}
 
 	public void testBeta() {
