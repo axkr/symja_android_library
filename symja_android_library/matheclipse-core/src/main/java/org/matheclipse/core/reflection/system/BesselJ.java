@@ -47,28 +47,34 @@ public class BesselJ extends AbstractFunctionEvaluator {
 	private IExpr besselJHalf(IExpr n, IExpr z) {
 		// (1/Sqrt(z))*Sqrt(2/Pi)*(Cos((1/2)*Pi*(n - 1/2) - z)*Sum(((-1)^j*(2*j + Abs(n) + 1/2)! * (2*z)^(-2*j - 1))/
 		// ((2*j + 1)! * (-2*j + Abs(n) - 3/2)!), {j, 0, Floor((1/4)*(2*Abs(n) - 3))}) - Sin((1/2)*Pi*(n - 1/2) -
-		// z)*Sum(((-1)^j*(2*j + Abs(n) - 1/2)!)/ ((2*j)! (-2*j + Abs(n) - 1/2)! (2*z)^(2*j)), {j, 0,
+		// z)*Sum(((-1)^j*(2*j + Abs(n) - 1/2)!)/ ((2*j)!*(-2*j + Abs(n) - 1/2)!*(2*z)^(2*j)), {j, 0,
 		// Floor((1/4)*(2*Abs(n) - 1))}))
 		ISymbol j = F.Dummy("j");
 		return F.Times(
-				F.CSqrt2, F.Power(F.Pi, F.CN1D2), F.Power(z, F.CN1D2), F.Plus(
-						F.Times(F.Cos(F.Plus(F.Times(F.C1D2, F.Plus(F.CN1D2, n), F.Pi), F.Negate(z))),
-								F.Sum(F.Times(F.Power(F.CN1, j),
-										F.Power(F.Times(F.C2, z), F.Plus(F.CN1, F.Times(F.CN2, j))),
-										F.Factorial(F.Plus(F.Times(F.C2, j), F.Abs(n), F.C1D2)), F.Power(
-												F.Times(F.Factorial(F.Plus(F.Times(F.C2, j), F.C1)),
-														F.Factorial(
-																F.Plus(F.QQ(-3L, 2L), F.Times(F.CN2, j), F.Abs(n)))),
-												-1)),
+				F.CSqrt2, F.Power(F.Pi, F.CN1D2), F.Power(z, F.CN1D2), F
+						.Plus(F.Times(
+								F.Cos(F.Plus(F.Times(F.C1D2, F.Plus(F.CN1D2, n), F.Pi), F.Negate(z))), F.Sum(
+										F.Times(F.Power(F.CN1, j),
+												F.Power(F.Times(F.C2, z), F.Plus(F.CN1, F.Times(F.CN2, j))),
+												F.Factorial(F.Plus(F.Times(F.C2, j), F.Abs(n), F.C1D2)),
+												F.Power(F
+														.Times(F.Factorial(F.Plus(F.Times(F.C2, j), F.C1)),
+																F.Factorial(F.Plus(F.QQ(-3L, 2L), F.Times(F.CN2, j),
+																		F.Abs(n)))),
+														-1)),
 										F.List(j, F.C0,
 												F.Floor(F.Times(F.C1D4, F.Plus(F.CN3, F.Times(F.C2, F.Abs(n)))))))),
-						F.Times(F.CN1, F.Sin(F.Plus(F.Times(F.C1D2, F.Plus(F.CN1D2, n), F.Pi), F.Negate(z))), F.Sum(
-								F.Times(F.Power(F.CN1, j), F.Factorial(F.Plus(F.CN1D2, F.Times(F.C2, j), F.Abs(n))),
-										F.Power(F.Power(F.$(
-												F.Factorial(F.$(F.Factorial(F.Times(F.C2, j)),
-														F.Plus(F.CN1D2, F.Times(F.CN2, j), F.Abs(n)))),
-												F.Times(F.C2, z)), F.Times(F.C2, j)), -1)),
-								F.List(j, F.C0, F.Floor(F.Times(F.C1D4, F.Plus(F.CN1, F.Times(F.C2, F.Abs(n))))))))));
+								F.Times(F.CN1, F.Sin(F.Plus(F.Times(F.C1D2, F.Plus(F.CN1D2,
+										n), F.Pi), F
+												.Negate(z))),
+										F.Sum(F.Times(
+												F.Power(F.CN1, j),
+												F.Power(F.Times(F.Factorial(F.Times(F.C2, j)),
+														F.Factorial(F.Plus(F.CN1D2, F.Times(F.CN2, j), F.Abs(n))),
+														F.Power(F.Times(F.C2, z), F.Times(F.C2, j))), -1),
+												F.Factorial(F.Plus(F.CN1D2, F.Times(F.C2, j), F.Abs(n)))),
+												F.List(j, F.C0, F.Floor(
+														F.Times(F.C1D4, F.Plus(F.CN1, F.Times(F.C2, F.Abs(n))))))))));
 	}
 
 	public BesselJ() {
@@ -105,15 +111,15 @@ public class BesselJ extends AbstractFunctionEvaluator {
 		if (n.isSignedNumber()) {
 			IExpr in = engine.evaluate(((ISignedNumber) n).add(F.CN1D2));
 			if (in.isNumIntValue()) {
-				// return besselJHalf(n, z);
-				if (n.equals(F.CN1D2) || n.equals(F.num(-0.5))) {
-					// (Sqrt(2/Pi)* Cos(z))/Sqrt(z)
-					return F.Times(F.Sqrt(F.Divide(F.C2, F.Pi)), F.Cos(z), F.Power(z, F.CN1D2));
-				}
-				if (n.equals(F.C1D2) || n.equals(F.num(0.5))) {
-					// (Sqrt(2/Pi)* Sin(z))/Sqrt(z)
-					return F.Times(F.Sqrt(F.Divide(F.C2, F.Pi)), F.Sin(z), F.Power(z, F.CN1D2));
-				}
+				return besselJHalf(n, z);
+				// if (n.equals(F.CN1D2) || n.equals(F.num(-0.5))) {
+				// // (Sqrt(2/Pi)* Cos(z))/Sqrt(z)
+				// return F.Times(F.Sqrt(F.Divide(F.C2, F.Pi)), F.Cos(z), F.Power(z, F.CN1D2));
+				// }
+				// if (n.equals(F.C1D2) || n.equals(F.num(0.5))) {
+				// // (Sqrt(2/Pi)* Sin(z))/Sqrt(z)
+				// return F.Times(F.Sqrt(F.Divide(F.C2, F.Pi)), F.Sin(z), F.Power(z, F.CN1D2));
+				// }
 			}
 		}
 		if (z.isInfinity() || z.isNegativeInfinity()) {

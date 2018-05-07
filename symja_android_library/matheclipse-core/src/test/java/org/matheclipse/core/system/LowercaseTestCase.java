@@ -497,22 +497,41 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"-BesselJ(43,z)");
 		check("BesselJ(0.5, z)", //
 				"(0.79788*Sin(z))/Sqrt(z)");
+		check("BesselJ(-0.5, 1.2)", //
+				"0.26393");
+		check("BesselJ(-0.5, 17)", //
+				"-0.05325");
 		check("BesselJ(-0.5, z)", //
-				"(0.79788*Cos(z))/Sqrt(z)");
+				"(0.79788*Sin(1.5708+z))/Sqrt(z)");
 		check("BesselJ(1/2, z)", //
 				"(Sqrt(2)*Sin(z))/(Sqrt(Pi)*Sqrt(z))");
 		check("BesselJ(-1/2, z)", //
 				"(Sqrt(2)*Cos(z))/(Sqrt(Pi)*Sqrt(z))");
+		check("BesselJ(-2.5, 1.333)", //
+				"1.6236");
+		check("BesselJ(-2.5, z)", //
+				"(0.79788*((3.0*Cos(4.71239+z))/z+(1.0-3.0/z^2.0)*Sin(4.71239+z)))/Sqrt(z)");
+		check("BesselJ(-5/2, z)", //
+				"(Sqrt(2)*(-(1-3/z^2)*Cos(z)+(3*Sin(z))/z))/(Sqrt(Pi)*Sqrt(z))");
 		check("BesselJ(0, 5.2)", "-0.11029");
-		checkNumeric("BesselJ(3.5, 1.2)", "0.013270419445925545");
-		check("BesselJ(4.0, 0.0)", "0.0");
-		check("BesselJ(1.0, -3.0)", "-0.33906");
-		check("BesselJ(0.0, 0.0)", "1.0");
-		check("BesselJ(-3.0, 0.0)", "0.0");
-		check("BesselJ(-3, 0)", "0");
-		check("BesselJ(0, 0)", "1");
-		check("BesselJ(4, 0)", "0");
-		check("BesselJ(0.0, 4)", "-0.39715");
+		checkNumeric("BesselJ(3.5, 1.2)", //
+				"0.013270419445928418");
+		check("BesselJ(4.0, 0.0)", //
+				"0.0");
+		check("BesselJ(1.0, -3.0)", //
+				"-0.33906");
+		check("BesselJ(0.0, 0.0)", //
+				"1.0");
+		check("BesselJ(-3.0, 0.0)", //
+				"0.0");
+		check("BesselJ(-3, 0)", //
+				"0");
+		check("BesselJ(0, 0)", //
+				"1");
+		check("BesselJ(4, 0)", //
+				"0");
+		check("BesselJ(0.0, 4)", //
+				"-0.39715");
 		check("BesselJ(1, {0.5, 1.0, 1.5})", //
 				"{0.24227,0.44005,0.55794}");
 	}
@@ -641,12 +660,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBooleanMinimize() {
-//		check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c))", //
-//				"a&&!b||!a&&c||b&&!c");
-//		check("BooleanMinimize((a||b)&&(c||d))", //
-//				"a&&c||a&&d||b&&c||b&&d");
-//		check("BooleanMinimize(a && b || ! a && b)", //
-//				"b");
+		// check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c))", //
+		// "a&&!b||!a&&c||b&&!c");
+		// check("BooleanMinimize((a||b)&&(c||d))", //
+		// "a&&c||a&&d||b&&c||b&&d");
+		// check("BooleanMinimize(a && b || ! a && b)", //
+		// "b");
 
 		// TODO CNF form after minimizing blows up the formula.
 		// check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c), \"CNF\")", //
