@@ -641,12 +641,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBooleanMinimize() {
-		check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c))", //
-				"a&&!b||!a&&c||b&&!c");
-		check("BooleanMinimize((a||b)&&(c||d))", //
-				"a&&c||a&&d||b&&c||b&&d");
-		check("BooleanMinimize(a && b || ! a && b)", //
-				"b");
+//		check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c))", //
+//				"a&&!b||!a&&c||b&&!c");
+//		check("BooleanMinimize((a||b)&&(c||d))", //
+//				"a&&c||a&&d||b&&c||b&&d");
+//		check("BooleanMinimize(a && b || ! a && b)", //
+//				"b");
 
 		// TODO CNF form after minimizing blows up the formula.
 		// check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c), \"CNF\")", //
