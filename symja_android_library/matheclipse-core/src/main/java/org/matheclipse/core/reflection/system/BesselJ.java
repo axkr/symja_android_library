@@ -85,14 +85,14 @@ public class BesselJ extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 3);
 
 		IExpr n = ast.arg1();
-		int order = n.toIntDefault(Integer.MAX_VALUE);
+		int order = n.toIntDefault(Integer.MIN_VALUE);
 		IExpr z = ast.arg2();
 		if (z.isZero()) {
 			if (n.isZero()) {
 				// (0, 0)
 				return F.C1;
 			}
-			if (n.isIntegerResult() || order != Integer.MAX_VALUE) {
+			if (n.isIntegerResult() || order != Integer.MIN_VALUE) {
 				return F.C0;
 			}
 
@@ -125,7 +125,7 @@ public class BesselJ extends AbstractFunctionEvaluator {
 		if (z.isInfinity() || z.isNegativeInfinity()) {
 			return F.C0;
 		}
-		if (n.isInteger() || order != Integer.MAX_VALUE) {
+		if (n.isInteger() || order != Integer.MIN_VALUE) {
 			if (n.isNegative()) {
 				// (-n,z) => (-1)^n*BesselJ(n,z)
 				return F.Times(F.Power(F.CN1, n), F.BesselJ(n.negate(), z));
@@ -134,7 +134,7 @@ public class BesselJ extends AbstractFunctionEvaluator {
 		if (n.isSignedNumber() && z instanceof INum) {
 			try {
 				// numeric mode evaluation
-				if (order != Integer.MAX_VALUE) {
+				if (order != Integer.MIN_VALUE) {
 					double bessel = Bessel.jn(order, ((INum) z).doubleValue());
 					return F.num(bessel);
 				} else {
