@@ -22,154 +22,19 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.polynomials.PolynomialsUtils;
-import org.matheclipse.core.reflection.system.rules.LegendrePRules;
-import org.matheclipse.core.reflection.system.rules.LegendreQRules;
 
 public class HypergeometricFunctions {
 	static {
-		F.BellY.setEvaluator(new BellY());
-		F.ChebyshevT.setEvaluator(new ChebyshevT());
-		F.ChebyshevU.setEvaluator(new ChebyshevU());
 		F.CosIntegral.setEvaluator(new CosIntegral());
 		F.ExpIntegralEi.setEvaluator(new ExpIntegralEi());
 		F.FresnelC.setEvaluator(new FresnelC());
 		F.FresnelS.setEvaluator(new FresnelS());
 		F.GegenbauerC.setEvaluator(new GegenbauerC());
-		F.HermiteH.setEvaluator(new HermiteH());
 		F.Hypergeometric1F1.setEvaluator(new Hypergeometric1F1());
 		F.Hypergeometric2F1.setEvaluator(new Hypergeometric2F1());
-		F.LaguerreL.setEvaluator(new LaguerreL());
-		F.LegendreP.setEvaluator(new LegendreP());
-		F.LegendreQ.setEvaluator(new LegendreQ());
 		F.LogIntegral.setEvaluator(new LogIntegral());
 		F.SinIntegral.setEvaluator(new SinIntegral());
 
-	}
-
-	private final static class BellY extends AbstractFunctionEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 4);
-			if (ast.arg2().isInteger() && ast.arg2().isInteger()) {
-				int n = ast.arg1().toIntDefault(Integer.MIN_VALUE);
-				int k = ast.arg2().toIntDefault(Integer.MIN_VALUE);
-				if (n < 0 || k < 0 || //
-						!ast.arg3().isList() || //
-						ast.arg3().isMatrix() != null) {
-					return F.NIL;
-				}
-				if (n == 0 && k == 0) {
-					return F.C1;
-				}
-				if (n == 0 || k == 0) {
-					return F.C0;
-				}
-				int max = n - k + 2;
-				IAST symbols = (IAST) ast.arg3();
-
-				if (max >= 0) {
-					return bellIncompletePolynomial(n, k, symbols);
-				}
-			}
-			return F.NIL;
-		}
-
-		private IExpr bellIncompletePolynomial(int n, int k, IAST symbols) {
-			if (n == 0 && k == 0) {
-				return F.C1;
-			}
-			if (n == 0 || k == 0) {
-				return F.C0;
-			}
-			IExpr s = F.C0;
-			int a = 1;
-			int max = n - k + 2;
-			for (int m = 1; m < max; m++) {
-				s = s.plus(F.Times(a, bellIncompletePolynomial(n - m, k - 1, symbols), symbols.get(m)));
-				a = a * (n - m) / m;
-			}
-			// for m in range(1, n - k + 2):
-			// s += a * bell._bell_incomplete_poly(
-			// n - m, k - 1, symbols) * symbols[m - 1]
-			// a = a * (n - m) / m
-			// return expand_mul(s)
-			return s;
-		}
-
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-			super.setUp(newSymbol);
-		}
-	}
-
-	private final static class ChebyshevT extends AbstractFunctionEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-			IExpr arg1 = ast.arg1();
-			IExpr arg2 = ast.arg2();
-			if (arg1.isInteger()) {
-				int degree = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
-				if (degree == Integer.MIN_VALUE) {
-					return F.NIL;
-				}
-				if (degree < 0) {
-					degree *= -1;
-				}
-				return PolynomialsUtils.createChebyshevPolynomial(degree, ast.arg2());
-			}
-			if (arg2.isZero()) {
-				return F.Cos(F.Times(F.C1D2, F.Pi, arg1));
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-			super.setUp(newSymbol);
-		}
-	}
-
-	private final static class ChebyshevU extends AbstractFunctionEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-			IExpr arg1 = ast.arg1();
-			IExpr arg2 = ast.arg2();
-			if (arg1.isInteger()) {
-				int degree = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
-				if (degree == Integer.MIN_VALUE) {
-					return F.NIL;
-				}
-
-				if (degree < 0) {
-					return F.NIL;
-				}
-				if (degree == 0) {
-					return F.C1;
-				}
-				if (degree == 1) {
-					return F.Times(F.C2, arg2);
-				}
-				return F.Expand(F.Subtract(F.Times(F.C2, arg2, F.ChebyshevU(F.integer(degree - 1), arg2)),
-						F.ChebyshevU(F.integer(degree - 2), arg2)));
-			}
-			if (arg2.isOne()) {
-				return F.Plus(F.C1, arg1);
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
-			super.setUp(newSymbol);
-		}
 	}
 
 	private static class CosIntegral extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {
@@ -456,21 +321,6 @@ public class HypergeometricFunctions {
 		}
 	}
 
-	private final static class HermiteH extends AbstractFunctionEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
-			int degree = ast.arg1().toIntDefault(Integer.MIN_VALUE);
-			if (degree > Integer.MIN_VALUE) {
-				return PolynomialsUtils.createHermitePolynomial(degree, ast.arg2());
-			}
-			return F.NIL;
-		}
-
-	}
-
 	private static class Hypergeometric1F1 extends AbstractFunctionEvaluator {
 
 		@Override
@@ -586,59 +436,6 @@ public class HypergeometricFunctions {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 			super.setUp(newSymbol);
 		}
-	}
-
-	private final static class LaguerreL extends AbstractFunctionEvaluator {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-			int degree = ast.arg1().toIntDefault(Integer.MIN_VALUE);
-			if (degree == 0) {
-				return F.C1;
-			}
-			if (degree > 0) {
-				return PolynomialsUtils.createLaguerrePolynomial(degree, ast.arg2());
-			}
-			return F.NIL;
-		}
-
-	}
-
-	private final static class LegendreP extends AbstractFunctionEvaluator implements LegendrePRules {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
-			int degree = ast.arg1().toIntDefault(Integer.MIN_VALUE);
-			if (degree > Integer.MIN_VALUE) {
-				return PolynomialsUtils.createLegendrePolynomial(degree, ast.arg2());
-			}
-			return F.NIL;
-		}
-
-		@Override
-		public IAST getRuleAST() {
-			return RULES;
-		}
-
-	}
-
-	private final static class LegendreQ extends AbstractFunctionEvaluator implements LegendreQRules {
-
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
-			return F.NIL;
-		}
-
-		@Override
-		public IAST getRuleAST() {
-			return RULES;
-		}
-
 	}
 
 	private static class LogIntegral extends AbstractTrigArg1 implements INumeric, DoubleUnaryOperator {

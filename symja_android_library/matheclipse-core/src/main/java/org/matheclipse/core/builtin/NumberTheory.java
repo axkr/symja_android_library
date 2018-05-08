@@ -115,14 +115,8 @@ public final class NumberTheory {
 				// Sum[StirlingS2[n, k], {k, 0, n}]
 				IInteger sum = F.C1;
 				for (int ki = 0; ki < index; ki++) {
-					sum = sum.add(StirlingS2.stirlingS2(F.ZZ(index), F.ZZ(ki), ki));
+					sum = sum.add(stirlingS2(F.ZZ(index), F.ZZ(ki), ki));
 				}
-				// BigInteger sum = BigInteger.ZERO;
-				// for (int i = 0; i < index; i++) {
-				// BigInteger prevBellNum = bellNumber(i);
-				// BigInteger binomialCoeff = BigIntegerMath.binomial(index - 1, i);
-				// sum = sum.add(binomialCoeff.multiply(prevBellNum));
-				// }
 				return sum;
 			}
 			return F.C1;
@@ -326,36 +320,6 @@ public final class NumberTheory {
 	 */
 	private static class Binomial extends AbstractArg2 {
 
-		public static IInteger binomial(final IInteger n, final IInteger k) {
-			// k>n : by definition --> 0
-			if (k.isNegative() || k.compareTo(n) > 0) {
-				return F.C0;
-			}
-			if (k.isZero() || k.equals(n)) {
-				return F.C1;
-			}
-
-			int ni = n.toIntDefault(-1);
-			if (ni >= 0) {
-				int ki = k.toIntDefault(-1);
-				if (ki >= 0) {
-					if (ki > ni) {
-						return F.C0;
-					}
-					return AbstractIntegerSym.valueOf(BigIntegerMath.binomial(ni, ki));
-				}
-			}
-
-			IInteger bin = F.C1;
-			IInteger i = F.C1;
-
-			while (!(i.compareTo(k) > 0)) {
-				bin = bin.multiply(n.subtract(i).add(F.C1)).div(i);
-				i = i.add(F.C1);
-			}
-			return bin;
-		}
-
 		@Override
 		public IExpr e2IntArg(final IInteger n, final IInteger k) {
 			return binomial(n, k);
@@ -498,23 +462,6 @@ public final class NumberTheory {
 	 * </pre>
 	 */
 	private static class CatalanNumber extends AbstractTrigArg1 {
-		public static IInteger catalanNumber(IInteger n) {
-			if (n.equals(F.CN1)) {
-				return F.CN1;
-			}
-			n = n.add(F.C1);
-			if (!(n.compareInt(0) > 0)) {
-				return F.C0;
-			}
-			IInteger i = F.C1;
-			IInteger c = F.C1;
-			final IInteger temp1 = n.shiftLeft(1).subtract(F.C1);
-			while (i.compareTo(n) < 0) {
-				c = c.multiply(temp1.subtract(i)).div(i);
-				i = i.add(F.C1);
-			}
-			return c.div(n);
-		}
 
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
@@ -3267,47 +3214,6 @@ public final class NumberTheory {
 	 */
 	private static class StirlingS2 extends AbstractFunctionEvaluator {
 
-		/**
-		 * Returns the Stirling number of the second kind, "{@code S(n,k)}", the number of ways of partitioning an
-		 * {@code n}-element set into {@code k} non-empty subsets.
-		 * 
-		 * @param n
-		 *            the size of the set
-		 * @param k
-		 *            the number of non-empty subsets
-		 * @param ki
-		 *            the number of non-empty subsets as int value
-		 * @return {@code S2(nArg1,kArg2)} or throw <code>ArithmeticException</code> if <code>n</code> cannot be
-		 *         converted into a positive int number
-		 */
-		private static IInteger stirlingS2(IInteger n, IInteger k, int ki) {
-			try {
-				int ni = n.toIntDefault(0);
-				if (ni != 0 && ni <= 25) {// S(26,9) = 11201516780955125625 is larger than Long.MAX_VALUE
-					return F.ZZ(CombinatoricsUtils.stirlingS2(ni, ki));
-				}
-			} catch (MathRuntimeException mre) {
-				if (Config.DEBUG) {
-					mre.printStackTrace();
-				}
-			}
-			IInteger sum = F.C0;
-			int nInt = n.toIntDefault(-1);
-			if (nInt < 0) {
-				throw new ArithmeticException("StirlingS2(n,k) n is not a positive int number");
-			}
-			for (int i = 0; i < ki; i++) {
-				IInteger bin = Binomial.binomial(k, F.ZZ(i));
-				IInteger pow = k.add(F.ZZ(-i)).pow(nInt);
-				if ((i & 1) == 1) { // isOdd(i) ?
-					sum = sum.add(bin.negate().multiply(pow));
-				} else {
-					sum = sum.add(bin.multiply(pow));
-				}
-			}
-			return sum.div(factorial(k));
-		}
-
 		/** {@inheritDoc} */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -3634,6 +3540,54 @@ public final class NumberTheory {
 		return CONST;
 	}
 
+	public static IInteger binomial(final IInteger n, final IInteger k) {
+		// k>n : by definition --> 0
+		if (k.isNegative() || k.compareTo(n) > 0) {
+			return F.C0;
+		}
+		if (k.isZero() || k.equals(n)) {
+			return F.C1;
+		}
+
+		int ni = n.toIntDefault(-1);
+		if (ni >= 0) {
+			int ki = k.toIntDefault(-1);
+			if (ki >= 0) {
+				if (ki > ni) {
+					return F.C0;
+				}
+				return AbstractIntegerSym.valueOf(BigIntegerMath.binomial(ni, ki));
+			}
+		}
+
+		IInteger bin = F.C1;
+		IInteger i = F.C1;
+
+		while (!(i.compareTo(k) > 0)) {
+			bin = bin.multiply(n.subtract(i).add(F.C1)).div(i);
+			i = i.add(F.C1);
+		}
+		return bin;
+	}
+
+	public static IInteger catalanNumber(IInteger n) {
+		if (n.equals(F.CN1)) {
+			return F.CN1;
+		}
+		n = n.add(F.C1);
+		if (!(n.compareInt(0) > 0)) {
+			return F.C0;
+		}
+		IInteger i = F.C1;
+		IInteger c = F.C1;
+		final IInteger temp1 = n.shiftLeft(1).subtract(F.C1);
+		while (i.compareTo(n) < 0) {
+			c = c.multiply(temp1.subtract(i)).div(i);
+			i = i.add(F.C1);
+		}
+		return c.div(n);
+	}
+
 	public static BigInteger divisorSigma(int exponent, int n) {
 		IAST list = F.ZZ(n).divisors();
 		if (list.isList()) {
@@ -3673,6 +3627,47 @@ public final class NumberTheory {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * Returns the Stirling number of the second kind, "{@code S(n,k)}", the number of ways of partitioning an
+	 * {@code n}-element set into {@code k} non-empty subsets.
+	 * 
+	 * @param n
+	 *            the size of the set
+	 * @param k
+	 *            the number of non-empty subsets
+	 * @param ki
+	 *            the number of non-empty subsets as int value
+	 * @return {@code S2(nArg1,kArg2)} or throw <code>ArithmeticException</code> if <code>n</code> cannot be converted
+	 *         into a positive int number
+	 */
+	public static IInteger stirlingS2(IInteger n, IInteger k, int ki) {
+		try {
+			int ni = n.toIntDefault(0);
+			if (ni != 0 && ni <= 25) {// S(26,9) = 11201516780955125625 is larger than Long.MAX_VALUE
+				return F.ZZ(CombinatoricsUtils.stirlingS2(ni, ki));
+			}
+		} catch (MathRuntimeException mre) {
+			if (Config.DEBUG) {
+				mre.printStackTrace();
+			}
+		}
+		IInteger sum = F.C0;
+		int nInt = n.toIntDefault(-1);
+		if (nInt < 0) {
+			throw new ArithmeticException("StirlingS2(n,k) n is not a positive int number");
+		}
+		for (int i = 0; i < ki; i++) {
+			IInteger bin = binomial(k, F.ZZ(i));
+			IInteger pow = k.add(F.ZZ(-i)).pow(nInt);
+			if ((i & 1) == 1) { // isOdd(i) ?
+				sum = sum.add(bin.negate().multiply(pow));
+			} else {
+				sum = sum.add(bin.multiply(pow));
+			}
+		}
+		return sum.div(factorial(k));
 	}
 
 	/**
