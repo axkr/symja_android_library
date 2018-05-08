@@ -473,16 +473,39 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBellB() {
-		check("BellB(5,x)", "x+15*x^2+25*x^3+10*x^4+x^5");
-
-		check("Table(BellB(k), {k, 0, 14})",
+		check("BellB(10,x)", //
+				"x+511*x^2+9330*x^3+34105*x^4+42525*x^5+22827*x^6+5880*x^7+750*x^8+45*x^9+x^10");
+		check("BellB(0,z)", //
+				"1");
+		check("BellB(1,z)", //
+				"z");
+		check("BellB(42,0)", //
+				"0");
+		check("BellB(25)", //
+				"4638590332229999353");
+		check("BellB(n,0)", //
+				"BellB(n,0)");
+		check("BellB(n,1)", //
+				"BellB(n)");
+		check("BellB(5,x)", //
+				"x+15*x^2+25*x^3+10*x^4+x^5");
+		check("Table(BellB(k), {k, 0, 14})", //
 				"{1,1,2,5,15,52,203,877,4140,21147,115975,678570,4213597,27644437,190899322}");
-		check("BellB(10)", "115975");
-		check("BellB(15)", "1382958545");
-		// check("BellB(100)", "1382958545");
+		check("BellB(10)", //
+				"115975");
+		check("BellB(15)", //
+				"1382958545");
+		check("BellB(100)", //
+				"4758539127676483365879076884138720782636366968682561146661633463755911449789244\\\n"
+						+ "2622672724044217756306953557882560751");
 		check("BellB({1,2,3,4,5,6})", "{1,2,5,15,52,203}");
 	}
-
+	public void testBellY() {
+		check("BellY(4, 2, {x1, x2, x3})", //
+				"3*x2^2+4*x1*x3");
+		check("With({n = 7, k = 2}, BellY(n, k, Array(x, n)))", //
+				"35*x(3)*x(4)+21*x(2)*x(5)+7*x(1)*x(6)");
+	}
 	public void testBernoulliB() {
 		check("BernoulliB(2)", "1/6");
 		check("Table(BernoulliB(k), {k, 0, 10})", "{1,-1/2,1/6,0,-1/30,0,1/42,0,-1/30,0,5/66}");
@@ -8184,6 +8207,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("StirlingS2({2, 4, 6}, 2)", "{1,7,31}");
 		check("StirlingS2(10,4)", "34105");
 		check("StirlingS2(1000, 500)", "11897164077580438091910055658742826<<SHORT>>", 35);
+		check("StirlingS2(2000, 199)", "12783663313027805423901972026528914<<SHORT>>", 35);
 	}
 
 	public void testStringJoin() {

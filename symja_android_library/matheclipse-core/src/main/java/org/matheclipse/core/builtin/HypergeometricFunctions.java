@@ -28,6 +28,7 @@ import org.matheclipse.core.reflection.system.rules.LegendreQRules;
 
 public class HypergeometricFunctions {
 	static {
+		F.BellY.setEvaluator(new BellY());
 		F.ChebyshevT.setEvaluator(new ChebyshevT());
 		F.ChebyshevU.setEvaluator(new ChebyshevU());
 		F.CosIntegral.setEvaluator(new CosIntegral());
@@ -44,6 +45,63 @@ public class HypergeometricFunctions {
 		F.LogIntegral.setEvaluator(new LogIntegral());
 		F.SinIntegral.setEvaluator(new SinIntegral());
 
+	}
+
+	private final static class BellY extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 4);
+			if (ast.arg2().isInteger() && ast.arg2().isInteger()) {
+				int n = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+				int k = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+				if (n < 0 || k < 0 || //
+						!ast.arg3().isList() || //
+						ast.arg3().isMatrix() != null) {
+					return F.NIL;
+				}
+				if (n == 0 && k == 0) {
+					return F.C1;
+				}
+				if (n == 0 || k == 0) {
+					return F.C0;
+				}
+				int max = n - k + 2;
+				IAST symbols = (IAST) ast.arg3();
+
+				if (max >= 0) {
+					return bellIncompletePolynomial(n, k, symbols);
+				}
+			}
+			return F.NIL;
+		}
+
+		private IExpr bellIncompletePolynomial(int n, int k, IAST symbols) {
+			if (n == 0 && k == 0) {
+				return F.C1;
+			}
+			if (n == 0 || k == 0) {
+				return F.C0;
+			}
+			IExpr s = F.C0;
+			int a = 1;
+			int max = n - k + 2;
+			for (int m = 1; m < max; m++) {
+				s = s.plus(F.Times(a, bellIncompletePolynomial(n - m, k - 1, symbols), symbols.get(m)));
+				a = a * (n - m) / m;
+			}
+			// for m in range(1, n - k + 2):
+			// s += a * bell._bell_incomplete_poly(
+			// n - m, k - 1, symbols) * symbols[m - 1]
+			// a = a * (n - m) / m
+			// return expand_mul(s)
+			return s;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			super.setUp(newSymbol);
+		}
 	}
 
 	private final static class ChebyshevT extends AbstractFunctionEvaluator {

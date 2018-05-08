@@ -4,19 +4,14 @@ import static java.lang.Math.addExact;
 import static java.lang.Math.floorMod;
 import static java.lang.Math.multiplyExact;
 import static java.lang.Math.subtractExact;
-import static org.matheclipse.core.expression.F.Binomial;
 import static org.matheclipse.core.expression.F.C0;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C2;
-import static org.matheclipse.core.expression.F.CN1;
-import static org.matheclipse.core.expression.F.Cos;
-import static org.matheclipse.core.expression.F.Factorial;
 import static org.matheclipse.core.expression.F.Negate;
 import static org.matheclipse.core.expression.F.Plus;
 import static org.matheclipse.core.expression.F.Power;
 import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
-import static org.matheclipse.core.expression.F.integer;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -76,8 +71,10 @@ public final class NumberTheory {
 			2178309, 3524578, 5702887, 9227465, 14930352, 24157817, 39088169, 63245986, 102334155, 165580141, 267914296,
 			433494437, 701408733, 1134903170 };
 
-	private static final int[] BELLB_14 = { 1, 1, 2, 5, 15, 52, 203, 877, 4140, 21147, 115975, 678570, 4213597,
-			27644437, 190899322 };
+	private static final long[] BELLB_25 = { 1, 1, 2, 5, 15, 52, 203, 877, 4140, 21147, 115975, 678570, 4213597,
+			27644437, 190899322L, 1382958545L, 10480142147L, 82864869804L, 682076806159L, 5832742205057L,
+			51724158235372L, 474869816156751L, 4506715738447323L, 44152005855084346L, 445958869294805289L,
+			4638590332229999353L };
 
 	/**
 	 * <pre>
@@ -110,20 +107,25 @@ public final class NumberTheory {
 		 * @param index
 		 * @return
 		 */
-		private static BigInteger bellNumber(int index) {
-			if (index < BELLB_14.length) {
-				return BigInteger.valueOf(BELLB_14[index]);
+		private static IInteger bellNumber(int index) {
+			if (index < BELLB_25.length) {
+				return AbstractIntegerSym.valueOf(BELLB_25[index]);
 			}
 			if (index > 1) {
-				BigInteger sum = BigInteger.ZERO;
-				for (int i = 0; i < index; i++) {
-					BigInteger prevBellNum = bellNumber(i);
-					BigInteger binomialCoeff = BigIntegerMath.binomial(index - 1, i);
-					sum = sum.add(binomialCoeff.multiply(prevBellNum));
+				// Sum[StirlingS2[n, k], {k, 0, n}]
+				IInteger sum = F.C1;
+				for (int ki = 0; ki < index; ki++) {
+					sum = sum.add(StirlingS2.stirlingS2(F.ZZ(index), F.ZZ(ki), ki));
 				}
+				// BigInteger sum = BigInteger.ZERO;
+				// for (int i = 0; i < index; i++) {
+				// BigInteger prevBellNum = bellNumber(i);
+				// BigInteger binomialCoeff = BigIntegerMath.binomial(index - 1, i);
+				// sum = sum.add(binomialCoeff.multiply(prevBellNum));
+				// }
 				return sum;
 			}
-			return BigInteger.ONE;
+			return F.C1;
 		}
 
 		/**
@@ -154,22 +156,45 @@ public final class NumberTheory {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
-
-			IExpr arg1 = ast.arg1();
-			int n = arg1.toIntDefault(Integer.MIN_VALUE);
-			if (n >= 0) {
-				if (ast.isAST2() && !ast.arg2().isOne()) {
-					// bell polynomials: Sum(StirlingS2(n, k)* z^k, {k, 0, n})
+			try {
+				IExpr arg1 = ast.arg1();
+				if (ast.isAST2()) {
 					IExpr z = ast.arg2();
-					return bellBPolynomial(n, z);
+					if (arg1.isZero()) {
+						return F.C1;
+					}
+					if (arg1.isOne()) {
+						return z;
+					}
+					if (z.isZero() && arg1.isPositive() && arg1.isIntegerResult()) {
+						return F.C0;
+					}
+					if (z.isOne()) {
+						return F.BellB(arg1);
+					}
 				}
 
-				// bell numbers start here
-				if (arg1.isZero()) {
-					return F.C1;
+				int n = arg1.toIntDefault(Integer.MIN_VALUE);
+				if (n >= 0) {
+					if (ast.isAST2()) {
+						IExpr z = ast.arg2();
+						if (!z.isOne()) {
+							// bell polynomials: Sum(StirlingS2(n, k)* z^k, {k, 0, n})
+							return bellBPolynomial(n, z);
+						}
+					}
+
+					// bell numbers start here
+					if (arg1.isZero()) {
+						return F.C1;
+					}
+					IInteger bellB = bellNumber(n);
+					return bellB;
 				}
-				BigInteger bellB = bellNumber(n);
-				return F.integer(bellB);
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
+				}
 			}
 			return F.NIL;
 		}
@@ -3183,8 +3208,8 @@ public final class NumberTheory {
 					} else {
 						factorPlusMinus1 = F.C1;
 					}
-					temp.append(Times(factorPlusMinus1, Binomial(Plus(k, nSubtract1), Plus(k, nSubtractm)),
-							Binomial(nTimes2Subtractm, F.Subtract(nSubtractm, k)),
+					temp.append(Times(factorPlusMinus1, F.Binomial(Plus(k, nSubtract1), Plus(k, nSubtractm)),
+							F.Binomial(nTimes2Subtractm, F.Subtract(nSubtractm, k)),
 							F.StirlingS2(Plus(k, nSubtractm), k)));
 
 				}
@@ -3252,9 +3277,10 @@ public final class NumberTheory {
 		 *            the number of non-empty subsets
 		 * @param ki
 		 *            the number of non-empty subsets as int value
-		 * @return {@code S(nArg1,kArg2)}
+		 * @return {@code S2(nArg1,kArg2)} or throw <code>ArithmeticException</code> if <code>n</code> cannot be
+		 *         converted into a positive int number
 		 */
-		private static IExpr stirlingS2(IInteger n, IInteger k, int ki) {
+		private static IInteger stirlingS2(IInteger n, IInteger k, int ki) {
 			try {
 				int ni = n.toIntDefault(0);
 				if (ni != 0 && ni <= 25) {// S(26,9) = 11201516780955125625 is larger than Long.MAX_VALUE
@@ -3265,15 +3291,21 @@ public final class NumberTheory {
 					mre.printStackTrace();
 				}
 			}
-			IASTAppendable temp = F.PlusAlloc(ki >= 0 ? ki : 0);
+			IInteger sum = F.C0;
+			int nInt = n.toIntDefault(-1);
+			if (nInt < 0) {
+				throw new ArithmeticException("StirlingS2(n,k) n is not a positive int number");
+			}
 			for (int i = 0; i < ki; i++) {
+				IInteger bin = Binomial.binomial(k, F.ZZ(i));
+				IInteger pow = k.add(F.ZZ(-i)).pow(nInt);
 				if ((i & 1) == 1) { // isOdd(i) ?
-					temp.append(Times(Negate(Binomial(k, integer(i))), Power(Plus(k, integer(-i)), n)));
+					sum = sum.add(bin.negate().multiply(pow));
 				} else {
-					temp.append(Times(Times(Binomial(k, integer(i))), Power(Plus(k, integer(-i)), n)));
+					sum = sum.add(bin.multiply(pow));
 				}
 			}
-			return Times(Power(Factorial(k), CN1), temp);
+			return sum.div(factorial(k));
 		}
 
 		/** {@inheritDoc} */
@@ -3281,37 +3313,42 @@ public final class NumberTheory {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
 
-			IExpr nArg1 = ast.arg1();
-			IExpr kArg2 = ast.arg2();
-			if (nArg1.isNegative() || kArg2.isNegative()) {
-				return F.NIL;
-			}
-			if (nArg1.isZero() && kArg2.isZero()) {
-				return F.C1;
-			}
-			if (nArg1.isInteger() && kArg2.isInteger()) {
-				IInteger ki = (IInteger) kArg2;
-				if (ki.greaterThan(nArg1).isTrue()) {
-					return C0;
+			try {
+				IExpr nArg1 = ast.arg1();
+				IExpr kArg2 = ast.arg2();
+				if (nArg1.isNegative() || kArg2.isNegative()) {
+					return F.NIL;
 				}
-				if (ki.isZero()) {
-					return C0;
+				if (nArg1.isZero() && kArg2.isZero()) {
+					return F.C1;
 				}
-				if (ki.isOne()) {
-					// {n,1}==1
-					return C1;
-				}
-				if (ki.equals(C2)) {
-					// {n,2}==2^(n-1)-1
-					return Subtract(Power(C2, Subtract(nArg1, C1)), C1);
-				}
+				if (nArg1.isInteger() && kArg2.isInteger()) {
+					IInteger ki = (IInteger) kArg2;
+					if (ki.greaterThan(nArg1).isTrue()) {
+						return C0;
+					}
+					if (ki.isZero()) {
+						return C0;
+					}
+					if (ki.isOne()) {
+						// {n,1}==1
+						return C1;
+					}
+					if (ki.equals(C2)) {
+						// {n,2}==2^(n-1)-1
+						return Subtract(Power(C2, Subtract(nArg1, C1)), C1);
+					}
 
-				int k = ki.toIntDefault(0);
-				if (k != 0) {
-					return stirlingS2((IInteger) nArg1, ki, k);
+					int k = ki.toIntDefault(0);
+					if (k != 0) {
+						return stirlingS2((IInteger) nArg1, ki, k);
+					}
+				}
+			} catch (RuntimeException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
 				}
 			}
-
 			return F.NIL;
 		}
 
