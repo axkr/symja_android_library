@@ -3490,6 +3490,21 @@ public final class NumberTheory {
 	}
 
 	/**
+	 * Returns the rising factorial <code>n*(n+1)*...*(n+k-1)</code>
+	 * 
+	 * @param n
+	 * @param k
+	 * @return
+	 */
+	public static IInteger risingFactorial(int n, int k) {
+		IInteger result = AbstractIntegerSym.valueOf(n);
+		for (int i = n + 1; i < n + k; i++) {
+			result = result.multiply(i);
+		}
+		return result;
+	}
+
+	/**
 	 * <p>
 	 * Fibonacci sequence. Algorithm in <code>O(log(n))</code> time.
 	 * </p>

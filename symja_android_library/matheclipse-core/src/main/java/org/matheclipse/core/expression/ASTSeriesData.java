@@ -7,7 +7,10 @@ import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.util.Set;
 
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.util.ArithmeticUtils;
+import org.matheclipse.core.builtin.NumberTheory;
+import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.interfaces.IAST;
@@ -505,15 +508,34 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 			return null;
 		}
 		if (maxPower > 1 && !this.coeff(1).isZero()) {
+			IExpr a1 = coeff(1);
+			IExpr a1Inverse = a1.inverse();
+
+			// if (maxPower >= 2) {
+			// int n = maxPower;
+			// IASTAppendable list = F.ListAlloc(n);
+			// for (int i = 2; i <= n; i++) {
+			// IASTAppendable sum = F.PlusAlloc(i - 1);
+			// for (int k = 1; k <= i - 1; k++) {
+			// IASTAppendable symbols = F.ListAlloc(i - k);
+			// for (int j = 1; j < i - k + 1; j++) {
+			// symbols.append(F.Times(coeff(j + 1), F.Power(a1.times(F.ZZ(j + 1)), -1)));
+			// }
+			// sum.append(F.Times(F.Power(F.CN1, k), NumberTheory.risingFactorial(i, k),
+			// PolynomialFunctions.bellY(i - 1, k, symbols)));
+			// }
+			// list.append(F.eval(F.Times(a1Inverse, sum)));
+			// }
+			// System.out.println(list.toString());
+			// }
 
 			ASTSeriesData ps = new ASTSeriesData(x, x0, nMin, nMin, power, denominator, new OpenIntToIExprHashMap());
 			if (!this.x0.isZero()) {
 				ps.setCoeff(0, this.x0);
 			}
 
-			IExpr a1 = coeff(1);
 			// a1^(-1)
-			ps.setCoeff(1, a1.inverse());
+			ps.setCoeff(1, a1Inverse);
 			if (maxPower > 2) {
 				// -a1^(-3) * a2
 				IExpr a2 = coeff(2);
