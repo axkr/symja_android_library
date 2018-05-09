@@ -1394,8 +1394,31 @@ public class PolynomialFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * ChebyshevT(n, x)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the Chebyshev polynomial of the first kind <code>T_n(x)</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Chebyshev_polynomials">Wikipedia - Chebyshev polynomials</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ChebyshevT(8, x)    
+	 * 1-32*x^2+160*x^4-256*x^6+128*x^8
+	 * </pre>
+	 */
 	final private static class ChebyshevT extends AbstractFunctionEvaluator {
-	
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
@@ -1416,7 +1439,7 @@ public class PolynomialFunctions {
 			}
 			return F.NIL;
 		}
-	
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -1424,8 +1447,31 @@ public class PolynomialFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * ChebyshevU(n, x)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the Chebyshev polynomial of the second kind <code>U_n(x)</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Chebyshev_polynomials">Wikipedia - Chebyshev polynomials</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ChebyshevU(8, x)    
+	 * 1-40*x^2+240*x^4-448*x^6+256*x^8
+	 * </pre>
+	 */
 	final private static class ChebyshevU extends AbstractFunctionEvaluator {
-	
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
@@ -1436,7 +1482,7 @@ public class PolynomialFunctions {
 				if (degree == Integer.MIN_VALUE) {
 					return F.NIL;
 				}
-	
+
 				if (degree < 0) {
 					return F.NIL;
 				}
@@ -1454,7 +1500,7 @@ public class PolynomialFunctions {
 			}
 			return F.NIL;
 		}
-	
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
@@ -1462,8 +1508,30 @@ public class PolynomialFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * BellY(n, k, {x1, x2, ... , xN})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * the second kind of Bell polynomials (incomplete Bell polynomials).
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Bell_polynomials">Wikipedia - Bell polynomials</a></li>
+	 * </ul>
+	 * 
+	 * <pre>
+	 * &gt;&gt; BellY(6, 2, {x1, x2, x3, x4, x5})
+	 * 10*x3^2+15*x2*x4+6*x1*x5
+	 * </pre>
+	 */
 	final private static class BellY extends AbstractFunctionEvaluator {
-	
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 4);
@@ -1488,7 +1556,7 @@ public class PolynomialFunctions {
 			}
 			return F.NIL;
 		}
-	
+
 		private IExpr bellIncompletePolynomial(int n, int k, IAST symbols) {
 			if (n == 0 && k == 0) {
 				return F.C1;
@@ -1510,30 +1578,79 @@ public class PolynomialFunctions {
 			// return expand_mul(s)
 			return s;
 		}
-	
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			super.setUp(newSymbol);
 		}
 	}
 
+	/**
+	 * <pre>
+	 * HermiteH(n, x)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the Hermite polynomial <code>H_n(x)</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Hermite_polynomials">Wikipedia - Hermite polynomials</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; HermiteH(8, x)    
+	 * 1680-13440*x^2+13440*x^4-3584*x^6+256*x^8 
+	 * 
+	 * &gt;&gt; HermiteH(3, 1 + I)
+	 * -28+I*4
+	 * </pre>
+	 */
 	final private static class HermiteH extends AbstractFunctionEvaluator {
-	
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
-	
+
 			int degree = ast.arg1().toIntDefault(Integer.MIN_VALUE);
 			if (degree > Integer.MIN_VALUE) {
 				return PolynomialsUtils.createHermitePolynomial(degree, ast.arg2());
 			}
 			return F.NIL;
 		}
-	
+
 	}
 
+	/**
+	 * <pre>
+	 * LaguerreL(n, x)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the Laguerre polynomial <code>L_n(x)</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Laguerre_polynomials">Wikipedia - Laguerre polynomials</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; LaguerreL(8, x)    
+	 * 1-8*x+14*x^2-28/3*x^3+35/12*x^4-7/15*x^5+7/180*x^6-x^7/630+x^8/40320
+	 * </pre>
+	 */
 	final private static class LaguerreL extends AbstractFunctionEvaluator {
-	
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
@@ -1546,43 +1663,89 @@ public class PolynomialFunctions {
 			}
 			return F.NIL;
 		}
-	
+
 	}
 
+	/**
+	 * <pre>
+	 * LegendreP(n, x)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the Legendre polynomial <code>P_n(x)</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Legendre_polynomials">Wikipedia - Legendre polynomials</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; LegendreP(4, x)    
+	 * 3/8-15/4*x^2+35/8*x^4
+	 * </pre>
+	 */
 	final private static class LegendreP extends AbstractFunctionEvaluator implements LegendrePRules {
-	
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
-	
+
 			int degree = ast.arg1().toIntDefault(Integer.MIN_VALUE);
 			if (degree > Integer.MIN_VALUE) {
 				return PolynomialsUtils.createLegendrePolynomial(degree, ast.arg2());
 			}
 			return F.NIL;
 		}
-	
+
 		@Override
 		public IAST getRuleAST() {
 			return RULES;
 		}
-	
+
 	}
 
+	/**
+	 * <pre>
+	 * LegendreQ(n, x)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the Legendre functions of the second kind <code>Q_n(x)</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Legendre_polynomials">Wikipedia - Legendre polynomials</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Expand(LegendreQ(4,z))   
+	 * 55/24*z-35/8*z^3-3/16*Log(1-z)+15/8*z^2*Log(1-z)-35/16*z^4*Log(1-z)+3/16*Log(1+z)-15/8*z^2*Log(1+z)+35/16*z^4*Log(1+z)
+	 * </pre>
+	 */
 	final static class LegendreQ extends AbstractFunctionEvaluator implements LegendreQRules {
-	
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
-	
+
 			return F.NIL;
 		}
-	
+
 		@Override
 		public IAST getRuleAST() {
 			return RULES;
 		}
-	
+
 	}
 
 	/**
@@ -1621,7 +1784,7 @@ public class PolynomialFunctions {
 	public static IAST coefficientList(IExpr expr, IAST coefficientList) {
 		try {
 			ExprPolynomialRing ring = new ExprPolynomialRing(coefficientList);
-			ExprPolynomial poly = ring.create(expr,true,false);
+			ExprPolynomial poly = ring.create(expr, true, false);
 			if (poly.isZero()) {
 				return F.List();
 			}
