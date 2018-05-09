@@ -42,7 +42,7 @@
 		<endorsed.dir>${project.build.directory}/endorsed</endorsed.dir> 
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<hipparchus.version>1.2</hipparchus.version>
+		<hipparchus.version>1.3</hipparchus.version>
 		<version.antlr>4.7</version.antlr>
 	</properties>
 
