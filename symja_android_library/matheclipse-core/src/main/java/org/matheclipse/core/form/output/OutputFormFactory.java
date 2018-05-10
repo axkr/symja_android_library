@@ -1165,6 +1165,9 @@ public class OutputFormFactory {
 		} else if (coefficient.isOne()) {
 			plusArg = pow;
 			if (plusArg.isPlus()) {
+				if (call == PLUS_CALL) {
+					append(buf, "+");
+				}
 				append(buf, "(");
 				convertPlusArgument(buf, plusArg, call);
 				append(buf, ")");

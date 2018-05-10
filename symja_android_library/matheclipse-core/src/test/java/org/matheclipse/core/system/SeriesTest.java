@@ -59,6 +59,8 @@ public class SeriesTest extends AbstractTestCase {
 	}
 
 	public void testInverseSeries() {
+		check("InverseSeries(SeriesData(x,x0,{1,1,1},0,3,1))", //
+				"x0+(-1+x)-(1-x)^2+O(-1+x)^3");
 		check("InverseSeries(SeriesData(x,x0,{1,2,3},0,5,1))", //
 				"x0+1/2*(-1+x)-3/8*(1-x)^2+9/16*(-1+x)^3-135/128*(1-x)^4+O(-1+x)^5");
 		check("InverseSeries(SeriesData(x,0,{1,2,3},0,5,1))", //
