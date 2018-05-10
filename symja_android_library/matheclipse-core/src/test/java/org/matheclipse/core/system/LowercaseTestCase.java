@@ -500,19 +500,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "2622672724044217756306953557882560751");
 		check("BellB({1,2,3,4,5,6})", "{1,2,5,15,52,203}");
 	}
+
 	public void testBellY() {
 		check("BellY(2,1,{1/2,0})", //
 				"0");
-		
+
 		// https://en.wikipedia.org/wiki/Bell_polynomials
 		check("BellY(6, 2, {x1, x2, x3, x4, x5})", //
 				"10*x3^2+15*x2*x4+6*x1*x5");
-		
+
 		check("BellY(4, 2, {x1, x2, x3})", //
 				"3*x2^2+4*x1*x3");
 		check("With({n = 7, k = 2}, BellY(n, k, Array(x, n)))", //
 				"35*x(3)*x(4)+21*x(2)*x(5)+7*x(1)*x(6)");
 	}
+
 	public void testBernoulliB() {
 		check("BernoulliB(2)", "1/6");
 		check("Table(BernoulliB(k), {k, 0, 10})", "{1,-1/2,1/6,0,-1/30,0,1/42,0,-1/30,0,5/66}");
@@ -1405,6 +1407,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testContinuedFraction() {
+		check("ContinuedFraction(Sqrt(0))", //
+				"{0}");
+		check("ContinuedFraction(Sqrt(2))", //
+				"{1,{2}}");
+		check("ContinuedFraction(Sqrt(3))", //
+				"{1,{1,2}}");
+		check("ContinuedFraction(Sqrt(4729494))", //
+				"{2174,{1,2,1,5,2,25,3,1,1,1,1,1,1,15,1,2,16,1,2,1,1,8,6,1,21,1,1,3,1,1,1,2,2,6,1,\n" //
+						+ "1,5,1,17,1,1,47,3,1,1,6,1,1,3,47,1,1,17,1,5,1,1,6,2,2,1,1,1,3,1,1,21,1,6,8,1,1,2,\n" //
+						+ "1,16,2,1,15,1,1,1,1,1,1,3,25,2,5,1,2,1,4348}}");
+		check("ContinuedFraction(Sqrt(919))", //
+				"{30,{3,5,1,2,1,2,1,1,1,2,3,1,19,2,3,1,1,4,9,1,7,1,3,6,2,11,1,1,1,29,1,1,1,11,2,6,\n" //
+						+ "3,1,7,1,9,4,1,1,3,2,19,1,3,2,1,1,1,2,1,2,1,5,3,60}}");
+		check("ContinuedFraction(Sqrt(13))", "{3,{1,1,1,1,6}}");
+
 		check("ContinuedFraction(0.753)", "{0,1,3,20,1,1,2,1,1}");
 		check("ContinuedFraction(0.55)", "{0,1,1,4,2}");
 		check("ContinuedFraction(Pi,30)", "{3,7,15,1,292,1,1,1,2,1,3,1,14,3,3,23,1,1,7,4,35,1,1,1,2,3,3,3,3,1}");
@@ -9271,6 +9288,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testWhile() {
+		check("While(False)", "");
 		check("{a, b} = {27, 6}; While(b != 0, {a, b} = {b, Mod(a, b)});a", "3");
 		check("i = 1; While(True, If(i^2 > 100, Return(i + 1), i++))", "12");
 		check("$n = 1; While($n < 4, Print($n); $n++)", "");

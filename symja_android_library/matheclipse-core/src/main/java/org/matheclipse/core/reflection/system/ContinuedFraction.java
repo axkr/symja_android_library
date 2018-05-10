@@ -1,6 +1,7 @@
 package org.matheclipse.core.reflection.system;
 
-import java.util.ArrayList;
+import java.math.BigInteger;
+import java.math.RoundingMode;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -14,6 +15,8 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISymbol;
+
+import com.google.common.math.BigIntegerMath;
 
 /**
  * <pre>
@@ -40,14 +43,49 @@ import org.matheclipse.core.interfaces.ISymbol;
  * &gt;&gt; ContinuedFraction(157/68)
  * {2,3,4,5} 
  * 
- * &gt;&gt;&gt; ContinuedFraction(45/16)
+ * &gt;&gt; ContinuedFraction(45/16)
  * {2,1,4,3}
+ * </pre>
+ * <p>
+ * For square roots of non-negative integer arguments <code>ContinuedFraction</code> determines the periodic part:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; ContinuedFraction(Sqrt(13))
+ * {3,{1,1,1,1,6}}
+ * 
+ * &gt;&gt; ContinuedFraction(Sqrt(919))
+ * {30,3,5,1,2,1,2,1,1,1,2,3,1,19,2,3,1,1,4,9,1,7,1,3,6,2,11,1,1,1,29,1,1,1,11,2,6,3,1,7,1,9,4,1,1,3,2,19,1,3,2,1,1,1,2,1,2,1,5,3,60}}
  * </pre>
  */
 public class ContinuedFraction extends AbstractEvaluator {
 
 	public ContinuedFraction() {
 
+	}
+
+	/**
+	 * Return the continued fraction of <code>Sqrt( d )</code>.
+	 * 
+	 * @param d
+	 *            a positive integer number
+	 * @return
+	 */
+	private IExpr sqrtContinuedFraction(IInteger d) {
+		IInteger p = F.C0;
+		IInteger q = F.C1;
+		IInteger a = F.ZZ(BigIntegerMath.sqrt(d.toBigNumerator(), RoundingMode.FLOOR));
+		IInteger last = a;
+		IASTAppendable result = F.List();
+		
+		do {
+			p = last.multiply(q).subtract(p);
+			q = d.subtract(p.pow(2L)).quotient(q);
+			last = p.add(a).quotient(q);
+			result.append(last);
+		} while (!q.isOne());
+		
+		return F.List(a, result);
 	}
 
 	@Override
@@ -61,6 +99,11 @@ public class ContinuedFraction extends AbstractEvaluator {
 			maxIterations = Validate.checkIntType(ast, 2);
 		}
 
+		if (ast.isAST1() && arg1.isPower() && arg1.base().isInteger() && arg1.base().isPositive()
+				&& arg1.exponent().equals(F.C1D2)) {
+			// Sqrt( d ) with d positive integer number
+			return sqrtContinuedFraction((IInteger) arg1.base());
+		}
 		if (arg1 instanceof INum) {
 			// arg1 = F.fraction(((INum) arg1).getRealPart());
 			return realToCF(((INum) arg1), maxIterations);
@@ -119,11 +162,11 @@ public class ContinuedFraction extends AbstractEvaluator {
 		double tNext;
 		int aNext;
 		continuedFractionList.append(F.ZZ(aNow));
-		for (int i = 0; i < limit-1; i++) {
+		for (int i = 0; i < limit - 1; i++) {
 			double rec = 1.0 / tNow;
 			aNext = (int) rec;
 			tNext = rec - aNext;
-			if (aNext==Integer.MAX_VALUE)  {
+			if (aNext == Integer.MAX_VALUE) {
 				break;
 			}
 			continuedFractionList.append(F.ZZ(aNext));

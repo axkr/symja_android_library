@@ -212,6 +212,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [AtomQ](functions/AtomQ.md)
 * [Attributes](functions/Attributes.md)
 * [BellB](functions/BellB.md)
+* [BellY](functions/BellY.md)
 * [BernoulliB](functions/BernoulliB.md)
 * [BernoulliDistribution](functions/BernoulliDistribution.md)
 * [BesselJ](functions/BesselJ.md)
