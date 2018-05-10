@@ -511,23 +511,26 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 			IExpr a1 = coeff(1);
 			IExpr a1Inverse = a1.inverse();
 
-			// if (maxPower >= 2) {
-			// int n = maxPower;
-			// IASTAppendable list = F.ListAlloc(n);
-			// for (int i = 2; i <= n; i++) {
-			// IASTAppendable sum = F.PlusAlloc(i - 1);
-			// for (int k = 1; k <= i - 1; k++) {
-			// IASTAppendable symbols = F.ListAlloc(i - k);
-			// for (int j = 1; j < i - k + 1; j++) {
-			// symbols.append(F.Times(coeff(j + 1), F.Power(a1.times(F.ZZ(j + 1)), -1)));
-			// }
-			// sum.append(F.Times(F.Power(F.CN1, k), NumberTheory.risingFactorial(i, k),
-			// PolynomialFunctions.bellY(i - 1, k, symbols)));
-			// }
-			// list.append(F.eval(F.Times(a1Inverse, sum)));
-			// }
-			// System.out.println(list.toString());
-			// }
+//			if (maxPower >= 2) {
+//				int n = maxPower;
+//				IASTAppendable gList = F.ListAlloc(n);
+//				gList.append(a1Inverse);
+//				for (int i = 2; i <= n; i++) {
+//					IASTAppendable sum = F.PlusAlloc(i - 1);
+//					for (int k = 1; k <= i - 1; k++) {
+//						IASTAppendable symbols = F.ListAlloc(i - k);
+//						for (int j = 1; j < i - k + 1; j++) {
+//							symbols.append(coeff(j + 1).divide(NumberTheory.factorial(j + 1)).times(a1Inverse).times(F.Power(F.ZZ(j + 1), -1)));
+//						}
+//						sum.append(F.Times(F.Power(F.CN1, k), NumberTheory.risingFactorial(i, k),//
+//								F.ternary(F.b, F.ZZ(i - 1), F.ZZ(k), symbols)
+////								PolynomialFunctions.bellY(i - 1, k, symbols)
+//								));
+//					}
+//					gList.append(F.eval(F.Times(F.Power(a1Inverse, i), sum)));
+//				}
+//				System.out.println(gList.toString());
+//			}
 
 			ASTSeriesData ps = new ASTSeriesData(x, x0, nMin, nMin, power, denominator, new OpenIntToIExprHashMap());
 			if (!this.x0.isZero()) {

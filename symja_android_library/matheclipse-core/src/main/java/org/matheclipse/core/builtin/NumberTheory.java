@@ -218,67 +218,22 @@ public final class NumberTheory {
 	 */
 	private static class BernoulliB extends AbstractFunctionEvaluator {
 
-		/**
-		 * Compute the Bernoulli number of the first kind.
-		 * 
-		 * See <a href="http://en.wikipedia.org/wiki/Bernoulli_number">Wikipedia - Bernoulli number</a>. <br/>
-		 * For better performing implementations see
-		 * <a href= "http://oeis.org/wiki/User:Peter_Luschny/ComputationAndAsymptoticsOfBernoulliNumbers"
-		 * >ComputationAndAsymptoticsOfBernoulliNumbers</a>
-		 * 
-		 * @param biggi
-		 * @return
-		 */
-		public static IFraction bernoulliNumber(final IInteger biggi) {
-			int n = biggi.toIntDefault(-1);
-			if (n >= 0) {
-				return bernoulliNumber(n);
-			}
-			return null;
-		}
-
-		/**
-		 * Compute the Bernoulli number of the first kind.
-		 * 
-		 * @param n
-		 * @return
-		 */
-		public static IFraction bernoulliNumber(int n) {
-			if (n == 0) {
-				return AbstractFractionSym.ONE;
-			} else if (n == 1) {
-				return AbstractFractionSym.valueOf(-1, 2);
-			} else if (n % 2 != 0) {
-				return AbstractFractionSym.ZERO;
-			}
-			IFraction[] bernoulli = new IFraction[n + 1];
-			bernoulli[0] = AbstractFractionSym.ONE;
-			bernoulli[1] = AbstractFractionSym.valueOf(-1, 2);// new
-																// BigFraction(-1,
-																// 2);
-			for (int k = 2; k <= n; k++) {
-				bernoulli[k] = AbstractFractionSym.ZERO;
-				for (int i = 0; i < k; i++) {
-					if (!bernoulli[i].isZero()) {
-						IFraction bin = AbstractFractionSym.valueOf(BigIntegerMath.binomial(k + 1, k + 1 - i));
-						bernoulli[k] = bernoulli[k].sub(bin.mul(bernoulli[i]));
-					}
-				}
-				bernoulli[k] = bernoulli[k].div(AbstractFractionSym.valueOf(k + 1));
-			}
-			return bernoulli[n];
-		}
-
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
 
 			if (ast.isAST1()) {
 				// bernoulli number
-				if (ast.arg1().isInteger()) {
-					IFraction bernoulli = bernoulliNumber((IInteger) ast.arg1());
-					if (bernoulli != null) {
-						return bernoulli;
+				try {
+					if (ast.arg1().isInteger()) {
+						IRational bernoulli = bernoulliNumber((IInteger) ast.arg1());
+						if (bernoulli != null) {
+							return bernoulli;
+						}
+					}
+				} catch (RuntimeException rex) {
+					if (Config.SHOW_STACKTRACE) {
+						rex.printStackTrace();
 					}
 				}
 			}
@@ -3162,7 +3117,7 @@ public final class NumberTheory {
 				}
 				return temp;
 			}
-			return F.NIL;
+			throw new ArithmeticException("StirlingS1(n, m): arguments out of range.");
 		}
 
 		/** {@inheritDoc} */
@@ -3176,7 +3131,13 @@ public final class NumberTheory {
 				return F.NIL;
 			}
 			if (nArg1.isInteger() && mArg2.isInteger()) {
-				return stirlingS1((IInteger) nArg1, (IInteger) mArg2);
+				try {
+					return stirlingS1((IInteger) nArg1, (IInteger) mArg2);
+				} catch (RuntimeException rex) {
+					if (Config.SHOW_STACKTRACE) {
+						rex.printStackTrace();
+					}
+				}
 			}
 
 			return F.NIL;
@@ -3583,6 +3544,59 @@ public final class NumberTheory {
 			i = i.add(F.C1);
 		}
 		return bin;
+	}
+
+	/**
+	 * Compute the Bernoulli number of the first kind.
+	 * 
+	 * @param n
+	 * @return throws ArithmeticException if n is a negative int number
+	 */
+	public static IRational bernoulliNumber(int n) {
+		if (n == 0) {
+			return F.C1;
+		} else if (n == 1) {
+			return F.CN1D2;
+		} else if (n % 2 != 0) {
+			return F.C0;
+		} else if (n < 0) {
+			throw new ArithmeticException("BernoulliB(n): n is not a positive int number");
+		}
+		IFraction[] bernoulli = new IFraction[n + 1];
+		bernoulli[0] = AbstractFractionSym.ONE;
+		bernoulli[1] = AbstractFractionSym.valueOf(-1, 2);// new
+															// BigFraction(-1,
+															// 2);
+		for (int k = 2; k <= n; k++) {
+			bernoulli[k] = AbstractFractionSym.ZERO;
+			for (int i = 0; i < k; i++) {
+				if (!bernoulli[i].isZero()) {
+					IFraction bin = AbstractFractionSym.valueOf(BigIntegerMath.binomial(k + 1, k + 1 - i));
+					bernoulli[k] = bernoulli[k].sub(bin.mul(bernoulli[i]));
+				}
+			}
+			bernoulli[k] = bernoulli[k].div(AbstractFractionSym.valueOf(k + 1));
+		}
+		return bernoulli[n].normalize();
+	}
+
+	/**
+	 * Compute the Bernoulli number of the first kind.
+	 * 
+	 * See <a href="http://en.wikipedia.org/wiki/Bernoulli_number">Wikipedia - Bernoulli number</a>. <br/>
+	 * For better performing implementations see
+	 * <a href= "http://oeis.org/wiki/User:Peter_Luschny/ComputationAndAsymptoticsOfBernoulliNumbers"
+	 * >ComputationAndAsymptoticsOfBernoulliNumbers</a>
+	 * 
+	 * @param n
+	 * @return throws ArithmeticException if n is not an non-negative Java int number
+	 */
+	public static IRational bernoulliNumber(final IInteger n) {
+		int bn = n.toIntDefault(-1);
+		if (bn >= 0) {
+			return bernoulliNumber(bn);
+		}
+		throw new ArithmeticException("BernoulliB(n): n is not a positive int number");
 	}
 
 	public static IInteger catalanNumber(IInteger n) {

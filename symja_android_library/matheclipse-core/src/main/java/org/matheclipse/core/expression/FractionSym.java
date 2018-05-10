@@ -603,7 +603,7 @@ public class FractionSym extends AbstractFractionSym {
 
 	/** {@inheritDoc} */
 	@Override
-	public INumber normalize() {
+	public IRational normalize() {
 		if (fDenominator == 1) {
 			return F.integer(fNumerator);
 		}

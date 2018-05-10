@@ -55,7 +55,7 @@ public interface IFraction extends IRational {
 	public IFraction negate();
 
 	@Override
-	public INumber normalize();
+	public IRational normalize();
 
 	/**
 	 * Returns this number raised at the specified exponent.

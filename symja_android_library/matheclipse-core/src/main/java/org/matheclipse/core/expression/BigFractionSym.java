@@ -519,7 +519,7 @@ public class BigFractionSym extends AbstractFractionSym {
 	}
 
 	@Override
-	public INumber normalize() {
+	public IRational normalize() {
 		if (toBigDenominator().equals(BigInteger.ONE)) {
 			return F.integer(toBigNumerator());
 		}

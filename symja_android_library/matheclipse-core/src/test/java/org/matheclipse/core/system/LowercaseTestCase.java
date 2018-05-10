@@ -501,6 +501,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BellB({1,2,3,4,5,6})", "{1,2,5,15,52,203}");
 	}
 	public void testBellY() {
+		check("BellY(2,1,{1/2,0})", //
+				"0");
+		
 		// https://en.wikipedia.org/wiki/Bell_polynomials
 		check("BellY(6, 2, {x1, x2, x3, x4, x5})", //
 				"10*x3^2+15*x2*x4+6*x1*x5");

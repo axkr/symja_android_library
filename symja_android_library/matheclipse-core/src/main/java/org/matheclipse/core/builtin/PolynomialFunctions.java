@@ -1737,11 +1737,14 @@ public class PolynomialFunctions {
 		int a = 1;
 		int max = n - k + 2;
 		for (int m = 1; m < max; m++) {
-			s = s.plus(F.Times(a, bellY(n - m, k - 1, symbols), symbols.get(m)));
+			if (!symbols.get(m).isZero()) {
+				s = s.plus(F.Times(a, bellY(n - m, k - 1, symbols), symbols.get(m)));
+			}
 			a = a * (n - m) / m;
 		}
 		return s;
 	}
+
 	/**
 	 * Get the coefficient list of a univariate polynomial.
 	 * 

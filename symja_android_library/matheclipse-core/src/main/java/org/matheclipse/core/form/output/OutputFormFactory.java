@@ -1162,18 +1162,19 @@ public class OutputFormFactory {
 		IExpr plusArg;
 		if (coefficient.isZero()) {
 			return call;
-		} else if (coefficient.isOne()) {
-			plusArg = pow;
-			if (plusArg.isPlus()) {
+		}
+		if (coefficient.isOne()) {
+			if (pow.isPlus()) {
 				if (call == PLUS_CALL) {
 					append(buf, "+");
 				}
 				append(buf, "(");
-				convertPlusArgument(buf, plusArg, call);
+				convertPlusArgument(buf, pow, call);
 				append(buf, ")");
 				call = PLUS_CALL;
 				return call;
 			}
+			plusArg = pow;
 		} else {
 			if (pow.isOne()) {
 				plusArg = coefficient;
