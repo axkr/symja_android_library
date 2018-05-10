@@ -1134,14 +1134,6 @@ public final class LinearAlgebra {
 					}
 					return F.complexNum(realValues[i], imagValues[i]);
 				});
-				// for (int i = 0; i < size; i++) {
-				// if (F.isZero(imagValues[i])) {
-				// list.append(F.num(realValues[i]));
-				// } else {
-				// list.append(F.complexNum(realValues[i], imagValues[i]));
-				// }
-				// }
-				// return list;
 			} catch (Exception ime) {
 				throw new WrappedException(ime);
 			}
