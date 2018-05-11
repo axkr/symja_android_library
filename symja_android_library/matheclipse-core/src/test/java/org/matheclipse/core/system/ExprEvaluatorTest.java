@@ -8,6 +8,9 @@ import static org.matheclipse.core.expression.F.x;
 
 import java.io.StringWriter;
 import java.math.BigInteger;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
@@ -222,6 +225,12 @@ public class ExprEvaluatorTest extends TestCase {
 			OutputFormFactory.get(true).convert(buf, expr);
 			assertEquals("1.7999999999999998", buf.toString());
 
+			buf = new StringWriter();
+			DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
+			DecimalFormat decimalFormat = new DecimalFormat("0.0####", usSymbols);
+			OutputFormFactory.get(true, false, decimalFormat).convert(buf, expr);
+			assertEquals("1.8", buf.toString());
+			
 			expr = util.eval("10.0^-15");
 			assertEquals("1.0E-15", expr.toString());
 
