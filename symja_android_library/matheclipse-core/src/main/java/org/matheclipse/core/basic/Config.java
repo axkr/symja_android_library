@@ -130,7 +130,7 @@ public class Config {
 	/**
 	 * The double tolerance used for comparisons.
 	 */
-	public final static double DOUBLE_TOLERANCE = DOUBLE_EPSILON * 10d;
+	public static double DOUBLE_TOLERANCE = DOUBLE_EPSILON * 10d;
 
 	/**
 	 * Replace <code>double</code> values in root algorithms by 0 if they are below this tolerance.

@@ -431,8 +431,8 @@ public class ComplexNum implements IComplexNum {
 	}
 
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
-			boolean usePrefix, boolean noSymbolPrefix) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix,
+			boolean noSymbolPrefix) {
 		String prefix = usePrefix ? "F." : "";
 		return prefix + "complexNum(" + fComplex.getReal() + "," + fComplex.getImaginary() + ")";
 	}
@@ -604,14 +604,14 @@ public class ComplexNum implements IComplexNum {
 
 	@Override
 	public String toString() {
-		try {
-			StringBuilder sb = new StringBuilder();
-			OutputFormFactory.get().convertDoubleComplex(sb, this, Integer.MIN_VALUE, OutputFormFactory.NO_PLUS_CALL);
-			return sb.toString();
-		} catch (Exception e1) {
-			// fall back to simple output format
-			return fComplex.toString();
-		}
+		// try {
+		// StringBuilder sb = new StringBuilder();
+		// OutputFormFactory.get().convertDoubleComplex(sb, this, Integer.MIN_VALUE, OutputFormFactory.NO_PLUS_CALL);
+		// return sb.toString();
+		// } catch (Exception e1) {
+		// fall back to simple output format
+		return fComplex.toString();
+		// }
 	}
 
 }

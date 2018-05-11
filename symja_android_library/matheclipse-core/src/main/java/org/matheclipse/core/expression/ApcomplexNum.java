@@ -412,13 +412,13 @@ public class ApcomplexNum implements IComplexNum {
 
 	@Override
 	public String toString() {
-		try {
-			StringBuilder sb = new StringBuilder();
-			OutputFormFactory.get().convertApcomplex(sb, this.apcomplexValue(), Integer.MIN_VALUE,
-					OutputFormFactory.NO_PLUS_CALL);
-			return sb.toString();
-		} catch (Exception e1) {
-		}
+		// try {
+		// StringBuilder sb = new StringBuilder();
+		// OutputFormFactory.get().convertApcomplex(sb, this.apcomplexValue(), Integer.MIN_VALUE,
+		// OutputFormFactory.NO_PLUS_CALL);
+		// return sb.toString();
+		// } catch (Exception e1) {
+		// }
 		// fall back to simple output format
 		return fApcomplex.toString();
 	}

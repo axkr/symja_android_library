@@ -658,9 +658,6 @@ public class Num implements INum {
 	 */
 	@Override
 	public String toString() {
-		if (F.isZero(fDouble)) {
-			return "0.0";
-		}
 		return Double.toString(fDouble);
 	}
 }
