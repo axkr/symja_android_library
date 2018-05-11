@@ -182,9 +182,9 @@ public class MathScriptEngine extends AbstractScriptEngine {
 			return "";
 		}
 		final StringWriter buf = new StringWriter();
-		DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
-		DecimalFormat decimalFormat = new DecimalFormat("0.0####", usSymbols);
 		if (fDecimalFormat != null) {
+			DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
+			DecimalFormat decimalFormat = new DecimalFormat(fDecimalFormat, usSymbols);
 			OutputFormFactory.get(relaxedSyntax, false, decimalFormat).convert(buf, result);
 		} else {
 			OutputFormFactory.get(relaxedSyntax).convert(buf, result);
