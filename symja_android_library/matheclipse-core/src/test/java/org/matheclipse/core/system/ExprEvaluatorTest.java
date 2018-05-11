@@ -6,12 +6,14 @@ import static org.matheclipse.core.expression.F.Sin;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.x;
 
+import java.io.StringWriter;
 import java.math.BigInteger;
 
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.ExprEvaluator;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.polynomials.ExprMonomial;
@@ -190,6 +192,42 @@ public class ExprEvaluatorTest extends TestCase {
 			util.defineVariable("y", 1.0);
 			IExpr expr = util.eval("If(x*x+y*y==0,1,Sin(x*x+y*y)/(x*x+y*y))");
 			assertEquals("0.45464871341284085", expr.toString());
+
+		} catch (SyntaxError e) {
+			// catch Symja parser errors here
+			System.out.println(e.getMessage());
+		} catch (MathException me) {
+			// catch Symja math errors here
+			System.out.println(me.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+		} catch (final StackOverflowError soe) {
+			System.out.println(soe.getMessage());
+		} catch (final OutOfMemoryError oome) {
+			System.out.println(oome.getMessage());
+		}
+	}
+
+	/**
+	 * See: https://github.com/axkr/symja_android_library/issues/48 why the toString() method output of numeric values
+	 * is different from OutputFormFactory#convert() method.
+	 */
+	public void testStringEval005() {
+		try {
+			ExprEvaluator util = new ExprEvaluator();
+			IExpr expr = util.eval("1.2 * 1.5");
+			assertEquals("1.7999999999999998", expr.toString());
+
+			StringWriter buf = new StringWriter();
+			OutputFormFactory.get(true).convert(buf, expr);
+			assertEquals("1.7999999999999998", buf.toString());
+
+			expr = util.eval("10.0^-15");
+			assertEquals("1.0E-15", expr.toString());
+
+			buf = new StringWriter();
+			OutputFormFactory.get(true).convert(buf, expr);
+			assertEquals("0.0", buf.toString());
 
 		} catch (SyntaxError e) {
 			// catch Symja parser errors here
