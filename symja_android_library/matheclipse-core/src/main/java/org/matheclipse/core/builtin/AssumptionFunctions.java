@@ -70,10 +70,10 @@ public class AssumptionFunctions {
 					return truthValue;
 				}
 			} else if (arg2.equals(F.Primes)) {
-				ISymbol truthValue = AbstractAssumptions.assumePrime(arg1);
-				if (truthValue != null) {
-					return truthValue;
-				}
+				return AbstractAssumptions.assumePrime(arg1);
+				// if (truthValue != null) {
+				// return truthValue;
+				// }
 			} else if (arg2.equals(F.Rationals)) {
 				ISymbol truthValue = AbstractAssumptions.assumeRational(arg1);
 				if (truthValue != null) {

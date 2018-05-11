@@ -2411,6 +2411,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEulerPhi() {
+		check("Refine(EulerPhi(p^n),Element(p, Primes)&&Element(n, Integers))", //
+				"-1/p^(1-n)+p^n");
+
 		check("EulerPhi(-a)", //
 				"EulerPhi(a)");
 		check("Table(EulerPhi(k), {k, 0, 20})", //
@@ -2419,7 +2422,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{0,1,1,2,2,4,2,6,4,6,4,10,4,12,6,8,8,16,6,18,8}");
 		check("EulerPhi(50!)", //
 				"4218559200885839042679312107816703841788854953574400000000000000");
-		check("Table(EulerPhi(10^k), {k, 0, 10})",
+		check("Table(EulerPhi(10^k), {k, 0, 10})", //
 				"{1,4,40,400,4000,40000,400000,4000000,40000000,400000000,4000000000}");
 	}
 
@@ -6859,6 +6862,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRefine() {
+		check("Refine(MoebiusMu(p),Element(p, Primes))", "-1");
 
 		// TODO
 		// check("Refine((a^b)^c, -1<b&&b<(-1))", "a^(b*c)");

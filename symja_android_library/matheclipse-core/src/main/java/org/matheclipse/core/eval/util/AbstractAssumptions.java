@@ -297,9 +297,9 @@ public abstract class AbstractAssumptions implements IAssumptions {
 	 * 
 	 * @param expr
 	 * @return <code>F.True</code> or <code>F.False</code> if <code>expr</code> is assumed to be a prime number or no
-	 *         prime number. In all other cases return <code>null</code>.
+	 *         prime number. In all other cases return <code>F.NIL</code>.
 	 */
-	public static ISymbol assumePrime(final IExpr expr) {
+	public static IExpr assumePrime(final IExpr expr) {
 		if (expr.isInteger() && ((IInteger) expr).isProbablePrime()) {
 			return F.True;
 		}
@@ -312,7 +312,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
 				return F.True;
 			}
 		}
-		return null;
+		return F.NIL;
 	}
 
 	/**

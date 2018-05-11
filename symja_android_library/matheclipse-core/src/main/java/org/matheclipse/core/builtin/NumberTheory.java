@@ -35,6 +35,7 @@ import org.matheclipse.core.eval.interfaces.AbstractArg2;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
+import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.AbstractFractionSym;
 import org.matheclipse.core.expression.AbstractIntegerSym;
@@ -1210,6 +1211,13 @@ public final class NumberTheory {
 					// integer to large?
 				}
 			} else {
+				if (arg1.isPower() && arg1.exponent().isIntegerResult()
+						&& AbstractAssumptions.assumePrime(arg1.base()).isTrue()) {
+					IExpr p = arg1.base();
+					IExpr n = arg1.exponent();
+					// Power(p, n) => p^n - p^(n - 1)
+					return F.Subtract(arg1, F.Power(p, F.Subtract(n, F.C1)));
+				}
 				IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 				if (negExpr.isPresent()) {
 					return F.EulerPhi(negExpr);
@@ -2122,6 +2130,9 @@ public final class NumberTheory {
 					// integer to large?
 				}
 			} else {
+				if (AbstractAssumptions.assumePrime(arg1).isTrue()) {
+					return F.CN1;
+				}
 				IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(arg1);
 				if (negExpr.isPresent()) {
 					return F.MoebiusMu(negExpr);
