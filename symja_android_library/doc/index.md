@@ -400,6 +400,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Inner](functions/Inner.md)
 * [Int](functions/Int.md)
 * [Integer](functions/Integer.md)
+* [IntegerDigits](functions/IntegerDigits.md)
 * [IntegerExponent](functions/IntegerExponent.md)
 * [IntegerLength](functions/IntegerLength.md)
 * [IntegerPart](functions/IntegerPart.md)

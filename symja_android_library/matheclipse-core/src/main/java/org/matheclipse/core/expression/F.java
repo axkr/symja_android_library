@@ -457,6 +457,7 @@ public class F {
 	public final static IBuiltInSymbol Inner = BuiltIns.valueOf(BuiltIns.Inner);
 	public final static IBuiltInSymbol Insert = BuiltIns.valueOf(BuiltIns.Insert);
 	public final static IBuiltInSymbol Integer = BuiltIns.valueOf(BuiltIns.Integer);
+	public final static IBuiltInSymbol IntegerDigits = BuiltIns.valueOf(BuiltIns.IntegerDigits);
 	public final static IBuiltInSymbol IntegerExponent = BuiltIns.valueOf(BuiltIns.IntegerExponent);
 	public final static IBuiltInSymbol IntegerLength = BuiltIns.valueOf(BuiltIns.IntegerLength);
 	public final static IBuiltInSymbol IntegerPart = BuiltIns.valueOf(BuiltIns.IntegerPart);
@@ -2413,7 +2414,7 @@ public class F {
 	public static IAST CarmichaelLambda(final IExpr a0) {
 		return unaryAST1(CarmichaelLambda, a0);
 	}
-	
+
 	/**
 	 * Converts a given object into a MathEclipse IExpr expression
 	 * 
@@ -4324,7 +4325,7 @@ public class F {
 	public static IAST MoebiusMu(final IExpr a0) {
 		return unaryAST1(MoebiusMu, a0);
 	}
-	
+
 	public static IExpr mod(IExpr a, Integer i) {
 		return Mod(a, integer(i.longValue()));
 	}
@@ -4805,11 +4806,11 @@ public class F {
 
 		return binaryAST2(Prepend, a0, a1);
 	}
-		
+
 	public static IAST PrimeOmega(final IExpr a0) {
 		return unaryAST1(PrimeOmega, a0);
 	}
-	
+
 	public static IAST PrimeQ(final IExpr a0) {
 
 		return unaryAST1(PrimeQ, a0);

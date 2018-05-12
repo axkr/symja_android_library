@@ -32,6 +32,7 @@ public class IntegerFunctions {
 		F.Ceiling.setEvaluator(new Ceiling());
 		F.Floor.setEvaluator(new Floor());
 		F.FractionalPart.setEvaluator(new FractionalPart());
+		F.IntegerDigits.setEvaluator(new IntegerDigits());
 		F.IntegerExponent.setEvaluator(new IntegerExponent());
 		F.IntegerLength.setEvaluator(new IntegerLength());
 		F.IntegerPart.setEvaluator(new IntegerPart());
@@ -219,6 +220,98 @@ public class IntegerFunctions {
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 			super.setUp(newSymbol);
+		}
+	}
+
+	/**
+	 * <pre>
+	 * IntegerDigits(n, base)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a list of integer digits for <code>n</code> under <code>base</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * IntegerDigits(n, base, padLeft)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * pads the result list on the left with maximum <code>padLeft</code> zeros.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; IntegerDigits(123)
+	 * {1,2,3}
+	 * 
+	 * &gt;&gt; IntegerDigits(-123)
+	 * {1,2,3}
+	 * 
+	 * &gt;&gt; IntegerDigits(123, 2)
+	 * {1,1,1,1,0,1,1}
+	 * 
+	 * &gt;&gt; IntegerDigits(123, 2, 10)
+	 * {0,0,0,1,1,1,1,0,1,1}
+	 * 
+	 * &gt;&gt; IntegerDigits({123,456,789}, 2, 10)
+	 * {{0,0,0,1,1,1,1,0,1,1},{0,1,1,1,0,0,1,0,0,0},{1,1,0,0,0,1,0,1,0,1}}
+	 * </pre>
+	 */
+	private static class IntegerDigits extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 4);
+			IInteger base = F.C10;
+			int padLeftZeros = 0;
+			if (ast.size() >= 3) {
+				IExpr arg2 = ast.arg2();
+				if (arg2.isInteger() && ((IInteger) arg2).compareInt(1) > 0) {
+					base = (IInteger) arg2;
+				} else {
+					return F.NIL;
+				}
+			}
+			if (ast.size() >= 4) {
+				padLeftZeros = ast.arg3().toIntDefault(Integer.MIN_VALUE);
+				if (padLeftZeros < 0) {
+					return F.NIL;
+				}
+			}
+			IExpr arg1 = ast.arg1();
+			if (arg1.isInteger()) {
+				IASTAppendable list = F.List();
+				IInteger n = ((IInteger) arg1).abs();
+				if (n.isZero()) {
+					list.append(F.C0);
+				} else {
+					while (n.isPositive()) {
+						IInteger mod = n.mod(base);
+						list.append(mod);
+						n = n.subtract(mod).div(base);
+					}
+				}
+				int padSizeZeros = padLeftZeros - list.argSize();
+				if (padSizeZeros < 0) {
+					padSizeZeros = 0;
+				}
+				IASTAppendable result = F.ListAlloc(list.argSize() + padSizeZeros);
+				for (int i = 0; i < padSizeZeros; i++) {
+					result.append(F.C0);
+				}
+				return list.reverse(result);
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
 		}
 	}
 

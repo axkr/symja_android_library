@@ -3593,6 +3593,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("{a, b} = {2^10000, 2^10000 + 1}; {a == b, a < b, a <= b}", "{False,True,True}");
 	}
 
+	public void testIntegerDigits() {
+		check("IntegerDigits(0)", "{0}");
+		check("IntegerDigits(123)", "{1,2,3}");
+		check("IntegerDigits(-123)", "{1,2,3}");
+		check("IntegerDigits(123, 2)", "{1,1,1,1,0,1,1}");
+		check("IntegerDigits(123, 2)", "{1,1,1,1,0,1,1}");
+		check("IntegerDigits(123, 2, 10)", "{0,0,0,1,1,1,1,0,1,1}");
+		check("IntegerDigits({123,456,789}, 2, 10)", //
+				"{{0,0,0,1,1,1,1,0,1,1},{0,1,1,1,0,0,1,0,0,0},{1,1,0,0,0,1,0,1,0,1}}");
+		check("IntegerDigits(123, -2)", "IntegerDigits(123,-2)");
+		check("IntegerDigits(58127, 2)", "{1,1,1,0,0,0,1,1,0,0,0,0,1,1,1,1}");
+		check("IntegerDigits(58127, 16)", "{14,3,0,15}");
+
+		check("IntegerDigits({6,7,2}, 2)", //
+				"{{1,1,0},{1,1,1},{1,0}}");
+		check("IntegerDigits(7, {2,3,4})", //
+				"{{1,1,1},{2,1},{1,3}}");
+		check("IntegerDigits(Range(0,7), 2)", //
+				"{{0},{1},{1,0},{1,1},{1,0,0},{1,0,1},{1,1,0},{1,1,1}}");
+		check("IntegerDigits(Range(0,7), 2, 3)", //
+				"{{0,0,0},{0,0,1},{0,1,0},{0,1,1},{1,0,0},{1,0,1},{1,1,0},{1,1,1}}");
+	}
+
 	public void testIntegerExponent() {
 		check("IntegerExponent(1230000)", "4");
 		check("IntegerExponent(2^10+2^7, 2)", "7");
