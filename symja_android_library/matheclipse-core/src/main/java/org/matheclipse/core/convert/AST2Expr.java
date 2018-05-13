@@ -132,7 +132,7 @@ public class AST2Expr {
 			"SinhIntegral", "Skewness", "SokalSneathDissimilarity", "Solve", "Sort", "Sow", "Span", "Split", "SplitBy",
 			"Sqrt", "SquaredEuclideanDistance", "SquareFreeQ", "StandardDeviation", "Standardize", "StieltjesGamma",
 			"StirlingS1", "StirlingS2", "StringDrop", "StringJoin", "StringLength", "StringTake", "StruveH", "StruveL",
-			"StudentTDistribution", "Subfactorial", "Subscript", "Subsuperscript", "Subsets", "Subtract",
+			"StudentTDistribution", "Subdivide", "Subfactorial", "Subscript", "Subsuperscript", "Subsets", "Subtract",
 			"SubtractFrom", "Sum", "Superscript", "SurfaceGraphics", "Switch", "SyntaxLength", "SymbolName", "SymbolQ",
 			"SymmetricMatrixQ", "SyntaxQ", "Table", "Take", "Tally", "Tan", "Tanh", "TautologyQ", "Taylor",
 			"TensorDimensions", "TensorProduct", "TensorRank", "TeXForm", "Thread", "Through", "Throw",

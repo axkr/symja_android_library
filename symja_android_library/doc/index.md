@@ -631,6 +631,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [StirlingS2](functions/StirlingS2.md)
 * [StruveH](functions/StruveH.md)
 * [StruveL](functions/StruveL.md)
+* [Subdivide](functions/Subdivide.md)
 * [Subfactorial](functions/Subfactorial.md)
 * [Subsets](functions/Subsets.md)
 * [Subtract](functions/Subtract.md)

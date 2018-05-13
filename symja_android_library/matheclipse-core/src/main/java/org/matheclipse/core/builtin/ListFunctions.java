@@ -104,6 +104,7 @@ public final class ListFunctions {
 		F.Select.setEvaluator(new Select());
 		F.Split.setEvaluator(new Split());
 		F.SplitBy.setEvaluator(new SplitBy());
+		F.Subdivide.setEvaluator(new Subdivide());
 		F.Table.setEvaluator(new Table());
 		F.Take.setEvaluator(new Take());
 		F.Tally.setEvaluator(new Tally());
@@ -1319,7 +1320,7 @@ public final class ListFunctions {
 			}
 			return F.NIL;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
@@ -2308,7 +2309,7 @@ public final class ListFunctions {
 			}
 			return result;
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
@@ -3384,7 +3385,7 @@ public final class ListFunctions {
 			return evaluateTable(ast, List(), engine);
 		}
 
-		public static IExpr range(int size) {
+		public static IAST range(int size) {
 			return range(1, size + 1);
 		}
 
@@ -3395,7 +3396,7 @@ public final class ListFunctions {
 		 * @param endExclusive
 		 * @return
 		 */
-		public static IExpr range(int startInclusive, int endExclusive) {
+		public static IAST range(int startInclusive, int endExclusive) {
 			int size = endExclusive - startInclusive;
 			if (size >= 0) {
 				IASTAppendable result = F.ListAlloc(size + 1);
@@ -4156,6 +4157,53 @@ public final class ListFunctions {
 		public void setUp(final ISymbol newSymbol) {
 		}
 
+	}
+
+	private final static class Subdivide extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if ((ast.size() > 1) && (ast.size() <= 4)) {
+				if (ast.size() == 2) {
+					int n = ast.arg1().toIntDefault(-1);
+					if (n < 0 || n == 0) {
+						engine.printMessage("Subdivide: argument 1 should be a positive integer.");
+						return F.NIL;
+					}
+					return Range.range(0, n + 1).map(x -> x.divide(ast.arg1()), 1);
+				}
+				if (ast.size() == 3) {
+					int n = ast.arg2().toIntDefault(-1);
+					if (n < 0 || n == 0) {
+						engine.printMessage("Subdivide: argument 2 should be a positive integer.");
+						return F.NIL;
+					}
+					IAST factorList = Range.range(0, n + 1).map(x -> x.divide(ast.arg2()), 1);
+					return ((IAST) factorList).map(x -> ast.arg1().times(x), 1);
+				}
+				if (ast.size() == 4) {
+					if (ast.arg1().isList() && ast.arg2().isList()) {
+						if (ast.arg1().size() != ast.arg2().size()) {
+							return F.NIL;
+						}
+					}
+					int n = ast.arg3().toIntDefault(-1);
+					if (n < 0 || n == 0) {
+						engine.printMessage("Subdivide: argument 3 should be a positive integer.");
+						return F.NIL;
+					}
+					IAST factorList = Range.range(0, n + 1).map(x -> x.divide(ast.arg3()), 1);
+					return ((IAST) factorList)
+							.map(x -> ast.arg1().plus(ast.arg2().times(x).subtract(ast.arg1().times(x))), 1);
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			// newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
 	}
 
 	/**

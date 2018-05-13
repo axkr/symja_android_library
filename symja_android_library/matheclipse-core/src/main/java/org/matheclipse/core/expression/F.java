@@ -790,6 +790,7 @@ public class F {
 	public final static IBuiltInSymbol StruveH = BuiltIns.valueOf(BuiltIns.StruveH);
 	public final static IBuiltInSymbol StruveL = BuiltIns.valueOf(BuiltIns.StruveL);
 	public final static IBuiltInSymbol StudentTDistribution = BuiltIns.valueOf(BuiltIns.StudentTDistribution);
+	public final static IBuiltInSymbol Subdivide = BuiltIns.valueOf(BuiltIns.Subdivide);
 	public final static IBuiltInSymbol Subfactorial = BuiltIns.valueOf(BuiltIns.Subfactorial);
 	public final static IBuiltInSymbol Subscript = BuiltIns.valueOf(BuiltIns.Subscript);
 	public final static IBuiltInSymbol Subsets = BuiltIns.valueOf(BuiltIns.Subsets);
@@ -4917,6 +4918,14 @@ public class F {
 		return binaryAST2(RandomVariate, a0, a1);
 	}
 
+	public static IAST Range(final IExpr a0) {
+		return unaryAST1(Range, a0);
+	}
+
+	public static IAST Range(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Range, a0, a1);
+	}
+
 	public static IAST Rational(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Rational, a0, a1);
 	}
@@ -5405,6 +5414,18 @@ public class F {
 
 	public static IAST StudentTDistribution(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(StudentTDistribution, a0, a1, a2);
+	}
+
+	public static IAST Subdivide(final IExpr a0) {
+		return unaryAST1(Subdivide, a0);
+	}
+
+	public static IAST Subdivide(final IExpr a0, final IExpr a1) {
+		return binaryAST2(Subdivide, a0, a1);
+	}
+
+	public static IAST Subdivide(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(Subdivide, a0, a1, a2);
 	}
 
 	public static IAST Subfactorial(final IExpr a0) {

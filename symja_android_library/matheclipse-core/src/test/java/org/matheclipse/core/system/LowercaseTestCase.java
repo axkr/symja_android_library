@@ -4994,9 +4994,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testNames() {
 		check("Names(\"Int*\" )",
-				"{Interval,IntegerExponent,IntegerLength,IntegerPart,IntegerPartitions,IntegerQ,Integrate,Interpolation,InterpolatingFunction,InterpolatingPolynomial,Intersection,Integer,Integers}");
+				"{Interval,IntegerDigits,IntegerExponent,IntegerLength,IntegerPart,IntegerPartitions,IntegerQ,Integrate,Interpolation,InterpolatingFunction,InterpolatingPolynomial,Intersection,Integer,Integers}");
 		check("Names(\"Integer*\" )",
-				"{IntegerExponent,IntegerLength,IntegerPart,IntegerPartitions,IntegerQ,Integer,Integers}");
+				"{IntegerDigits,IntegerExponent,IntegerLength,IntegerPart,IntegerPartitions,IntegerQ,Integer,Integers}");
 		check("Names(\"IntegerPart\" )", "{IntegerPart}");
 		// check("Names(\"*\" )", "{}");
 	}
@@ -8295,6 +8295,47 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("StruveL(1/2,x)", "Sqrt(2)*Sqrt(1/(Pi*x))*(-1+Cosh(x))");
 		check("StruveL(-1/2,x)", "Sqrt(2)*Sqrt(1/(Pi*x))*Sinh(x)");
 		check("StruveL(a,-x)", "(-(-x)^a*StruveL(a,x))/x^a");
+	}
+
+	public void testSubdivide() {
+		check("Subdivide(10,  4)", //
+				"{0,5/2,5,15/2,10}");
+		check("Subdivide({10,5},  4)", //
+				"{0,{5/2,5/4},{5,5/2},{15/2,15/4},{10,5}}");
+		check("Subdivide({10,5}, {5,15}, 4)", //
+				"{{10,5},{35/4,15/2},{15/2,10},{25/4,25/2},{5,15}}");
+		check("Subdivide({10,5}, 3, 4)", //
+				"{{10,5},{33/4,9/2},{13/2,4},{19/4,7/2},{3,3}}");
+		check("Subdivide({10,5}, {1,5,15}, 4)", //
+				"Subdivide({10,5},{1,5,15},4)");
+
+		check("Subdivide(5)", //
+				"{0,1/5,2/5,3/5,4/5,1}");
+		check("Subdivide(10,15,5)", //
+				"{10,11,12,13,14,15}");
+		check("Subdivide(10,15,4)", //
+				"{10,45/4,25/2,55/4,15}");
+		check("Subdivide(-1, -4, 3)", //
+				"{-1,-2,-3,-4}");
+		check("Subdivide(10, 5, 4)", //
+				"{10,35/4,15/2,25/4,5}");
+		check("Subdivide(5, 15, 4)", //
+				"{5,15/2,10,25/2,15}");
+
+		check("Subdivide(10)", //
+				"{0,1/10,1/5,3/10,2/5,1/2,3/5,7/10,4/5,9/10,1}");
+		check("Subdivide(10, 5)", //
+				"{0,2,4,6,8,10}");
+		check("Subdivide(-1,2, 5)", //
+				"{-1,-2/5,1/5,4/5,7/5,2}");
+		check("Subdivide(-1.,1., 8)", //
+				"{-1.0,-0.75,-0.5,-0.25,0.0,0.25,0.5,0.75,1.0}");
+		check("Subdivide(E,Pi, 4)", //
+				"{E,3/4*E+Pi/4,E/2+Pi/2,E/4+3/4*Pi,Pi}");
+		check("Subdivide(a, b, 6)", //
+				"{a,5/6*a+b/6,2/3*a+b/3,a/2+b/2,a/3+2/3*b,a/6+5/6*b,b}");
+		check("Subdivide(N(E,21),N(Pi,21), 4)", //
+				"{2.71828182845904523536,2.82410953474173223613,2.92993724102441923691,3.03576494730710623768,3.14159265358979323846}");
 	}
 
 	public void testSubfactorial() {
