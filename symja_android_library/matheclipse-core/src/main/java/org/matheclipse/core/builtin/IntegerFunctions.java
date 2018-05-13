@@ -17,6 +17,7 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.INumeric;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -32,6 +33,7 @@ public class IntegerFunctions {
 		F.Ceiling.setEvaluator(new Ceiling());
 		F.Floor.setEvaluator(new Floor());
 		F.FractionalPart.setEvaluator(new FractionalPart());
+		F.FromDigits.setEvaluator(new FromDigits());
 		F.IntegerDigits.setEvaluator(new IntegerDigits());
 		F.IntegerExponent.setEvaluator(new IntegerExponent());
 		F.IntegerLength.setEvaluator(new IntegerLength());
@@ -592,6 +594,68 @@ public class IntegerFunctions {
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.NHOLDALL | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+		}
+	}
+
+	private static class FromDigits extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+			IExpr base = F.C10;
+			if (ast.size() >= 3) {
+				base = ast.arg2();
+			}
+			IExpr arg1 = ast.arg1();
+			if (arg1.isList()) {
+				IAST list = (IAST) arg1;
+				return fromDigits(list, base);
+			}
+			if (arg1.isString()) {
+				StringX str = (StringX) arg1;
+				int radix = base.toIntDefault(-1);
+				if (radix > 0) {
+					try {
+						return F.ZZ(new BigInteger(str.toString(), radix));
+					} catch (RuntimeException rex) {
+						//
+					}
+				}
+				IASTAppendable digitsList = F.ListAlloc(str.length());
+				for (int i = 0; i < str.length(); i++) {
+					int digit = Integer.MIN_VALUE;
+					char ch = str.charAt(i);
+					if (ch >= '0' && ch <= '9') {
+						digit = Character.digit(ch, radix);
+					} else if (ch >= 'A' && ch <= 'Z') {
+						digit = Character.digit(ch, 36);
+					} else if (ch >= 'a' && ch <= 'z') {
+						digit = Character.digit(ch, 36);
+					} else {
+						return F.NIL;
+					}
+					if (digit == Integer.MIN_VALUE) {
+						return F.NIL;
+					}
+					digitsList.append(F.ZZ(digit));
+				}
+				return fromDigits(digitsList, base);
+
+			}
+			return F.NIL;
+		}
+
+		private IExpr fromDigits(IAST list, IExpr radix) {
+			IASTAppendable result = F.PlusAlloc(list.size());
+			int exp = 0;
+			for (int i = list.size() - 1; i >= 1; i--) {
+				result.append(list.get(i).abs().times(radix.power(exp++)));
+			}
+			return result;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
 		}
 	}
 

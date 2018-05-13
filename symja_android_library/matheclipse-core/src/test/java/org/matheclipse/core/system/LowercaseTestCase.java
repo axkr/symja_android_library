@@ -3134,6 +3134,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ContinuedFraction(157/68)", "{2,3,4,5}");
 	}
 
+	public void testFromDigits() {
+		check("FromDigits({0})", "0");
+		check("FromDigits({1,2,3})", "123");
+		check("FromDigits({1,1,1,1,0,1,1}, 2)", "123");
+		check("FromDigits /@ IntegerDigits(Range(-10, 10))", //
+				"{10,9,8,7,6,5,4,3,2,1,0,1,2,3,4,5,6,7,8,9,10}");
+		check("FromDigits(\"123\")", "123");
+		check("FromDigits(\"1111011\", 2)", "123");
+		check("FromDigits(\"0\")", "0");
+		check("FromDigits(\"789ABC\")", //
+				"790122");
+		check("FromDigits(\"789ABC\", 16)", //
+				"7903932");
+		check("FromDigits(\"789abc\")", //
+				"790122");
+		check("FromDigits(\"789abc\", 16)", //
+				"7903932");
+		check("FromDigits(\"1A3C\")", //
+				"2042");
+	}
+
 	public void testFromPolarCoordinates() {
 		check("FromPolarCoordinates({r, t})", "{r*Cos(t),r*Sin(t)}");
 		check("FromPolarCoordinates({r, t, p})", "{r*Cos(t),r*Cos(p)*Sin(t),r*Sin(p)*Sin(t)}");

@@ -397,6 +397,7 @@ public class F {
 	public final static IBuiltInSymbol FrobeniusSolve = BuiltIns.valueOf(BuiltIns.FrobeniusSolve);
 	public final static IBuiltInSymbol FromCharacterCode = BuiltIns.valueOf(BuiltIns.FromCharacterCode);
 	public final static IBuiltInSymbol FromContinuedFraction = BuiltIns.valueOf(BuiltIns.FromContinuedFraction);
+	public final static IBuiltInSymbol FromDigits = BuiltIns.valueOf(BuiltIns.FromDigits);
 	public final static IBuiltInSymbol FromPolarCoordinates = BuiltIns.valueOf(BuiltIns.FromPolarCoordinates);
 	public final static IBuiltInSymbol FullForm = BuiltIns.valueOf(BuiltIns.FullForm);
 	public final static IBuiltInSymbol FullSimplify = BuiltIns.valueOf(BuiltIns.FullSimplify);

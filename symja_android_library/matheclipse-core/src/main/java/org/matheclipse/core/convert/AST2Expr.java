@@ -83,7 +83,7 @@ public class AST2Expr {
 			"FactorInteger", "FactorSquareFree", "FactorSquareFreeList", "FactorTerms", "Flatten", "FlattenAt",
 			"Fibonacci", "FindInstance", "FindRoot", "First", "Fit", "FixedPoint", "FixedPointList", "Floor", "Fold",
 			"FoldList", "For", "ForAll", "FourierMatrix", "FractionalPart", "FrechetDistribution", "FreeQ", "FresnelC",
-			"FresnelS", "FrobeniusNumber", "FrobeniusSolve", "FromCharacterCode", "FromContinuedFraction",
+			"FresnelS", "FrobeniusNumber", "FrobeniusSolve", "FromCharacterCode", "FromContinuedFraction", "FromDigits",
 			"FromPolarCoordinates", "FullForm", "FullSimplify", "Function", "Gamma", "GammaDistribution",
 			"GammaRegularized", "Gather", "GCD", "GegenbauerC", "GeometricDistribution", "GeometricMean", "Get",
 			"Graphics", "Graphics3D", "Greater", "GreaterEqual", "GroebnerBasis", "GumbelDistribution", "Haversine",
