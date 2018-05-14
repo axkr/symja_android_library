@@ -3220,21 +3220,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGamma() {
-		check("Gamma(-1)", "ComplexInfinity");
-		check("Gamma(Infinity)", "Infinity");
+		check("Refine(Gamma(n), Element(n,Integers)&&n>=0)", //
+				"(-1+n)!");
+
+		check("Gamma(-1)", //
+				"ComplexInfinity");
+		check("Gamma(Infinity)", //
+				"Infinity");
 		check("Gamma(-Infinity)", "Indeterminate");
 		check("Gamma(I*Infinity)", "0");
 		check("Gamma(-I*Infinity)", "0");
 		check("Gamma(ComplexInfinity)", "Indeterminate");
 
-		checkNumeric("Gamma(1.5,7.5)", "0.0016099632282723212");
+		checkNumeric("Gamma(1.5,7.5)", //
+				"0.0016099632282723212");
 		check("Gamma(-3/4, 0)", "ComplexInfinity");
 		check("Gamma(10, -1)", "133496*E");
-		check("Gamma(1/2, x)", "Sqrt(Pi)*Erfc(Sqrt(x))");
+		check("Gamma(1/2, x)", //
+				"Sqrt(Pi)*Erfc(Sqrt(x))");
 		check("Gamma(8)", "5040");
 		check("Gamma(1/2)", "Sqrt(Pi)");
 		// check("Gamma(1.0+I)", "");
-		checkNumeric("Gamma(2.2)", "1.1018024908797128");
+		checkNumeric("Gamma(2.2)", //
+				"1.1018024908797128");
 	}
 
 	public void testGammaRegularized() {

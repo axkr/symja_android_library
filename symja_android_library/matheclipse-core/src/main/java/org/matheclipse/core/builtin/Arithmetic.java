@@ -1346,11 +1346,17 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr e1ObjArg(final IExpr arg1) {
-			if (arg1.isInteger()) {
+			if (arg1.isIntegerResult()) {
 				if (arg1.isNegative()) {
 					return F.CComplexInfinity;
 				}
-				return NumberTheory.factorial(((IInteger) arg1).subtract(C1));
+				if (arg1.isNonNegativeResult()) {
+					if (arg1.isInteger()) {
+						return NumberTheory.factorial(((IInteger) arg1).subtract(F.C1));
+					}
+					return F.Factorial(arg1.subtract(F.C1));
+				}
+				return F.NIL;
 			}
 			if (arg1.isFraction()) {
 				IFraction frac = (IFraction) arg1;
@@ -1365,8 +1371,7 @@ public final class Arithmetic {
 						return Times(Sqrt(Pi), Factorial2(n.subtract(C2)), Power(C2, Times(C1D2, Subtract(C1, n))));
 					}
 				}
-			}
-			if (arg1.isAST()) {
+			} else if (arg1.isAST()) {
 				IAST z = (IAST) arg1;
 				if (z.isAST(Conjugate, 2)) {
 					// mirror symmetry for Conjugate()
