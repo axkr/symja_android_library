@@ -590,9 +590,38 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBinomial() {
+		check("Binomial(-200,-100)", //
+				"0");
+		check("Binomial(-100,-200)", //
+				"45274257328051640582702088538742081937252294837706668420660");
+		check("Binomial(k, -1)", //
+				"0");
+		check("Binomial(3,3)", //
+				"1");
+		check("Binomial(0,0)", //
+				"1");
+		check("Binomial(-3,-5)", //
+				"6");
+		check("Binomial(Infinity, 0)", //
+				"1");
+		check("Binomial(-Infinity, {-3,-2,-1,0,1,2,3,4,5,6})", //
+				"{0,0,0,1,-Infinity,Infinity,-Infinity,Infinity,-Infinity,Binomial(-Infinity,6)}");
+		check("Binomial(-Infinity, -12)", //
+				"0");
+		check("Binomial(Infinity, {-3,-2,-1,0,1,2,3,4,5,6})", //
+				"{0,0,0,1,Infinity,Infinity,Infinity,Infinity,Infinity,Binomial(Infinity,6)}");
+		check("Binomial(Infinity, -12)", //
+				"0");
+		check("Binomial({2, 3, 5, 7, 11}, 3)", //
+				"{0,1,10,35,165}");
+		check("With({eps = 10^-6.}, \n" + " Table(Binomial(-3 - p eps, -5 - eps), {p, {-3, -2, -1, \n"
+				+ "    1, 2, 3, 4}}))", //
+				"{-2.0,-3.0,-6.0,6.0,3.0,2.0,1.5}");
+
 		check("Binomial(k, -1)", "0");
 		check("Binomial(k, -1.4)", "Binomial(k,-1.4)");
 		check("Binomial(k, 0)", "1");
+		check("Binomial(40,1)", "40");
 		check("Binomial(40.0,1.0)", "40.0");
 		check("Binomial(40.3,1.2)", "76.37683");
 		check("Binomial(n, n+1)", "0");
@@ -5987,7 +6016,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("PDF(DiscreteUniformDistribution({1, 5}), 3)", "1/5");
 		check("N(PDF(NormalDistribution(0, 1), 0))", "0.39894");
 		checkNumeric("N(PDF(BinomialDistribution(40, 0.5), 1))", "3.637978807091713E-11");
-		checkNumeric("N(PDF(HypergeometricDistribution(20,50,100), 10))", "0.19687121770654958");
+		checkNumeric("N(PDF(HypergeometricDistribution(20,50,100), 10))", "0.19687121770654947");
 		checkNumeric("N(PDF(PoissonDistribution(10), 15))", "0.03471806963068415");
 	}
 
