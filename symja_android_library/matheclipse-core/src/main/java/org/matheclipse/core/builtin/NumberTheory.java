@@ -2219,19 +2219,26 @@ public final class NumberTheory {
 	 */
 	private static class Multinomial extends AbstractFunctionEvaluator {
 
-		public static IInteger multinomial(final IAST ast) {
+		/**
+		 * 
+		 * @param ast
+		 * @return <code>F.NIL</code> if the ast arguments couldn't be converted to an IInteger
+		 */
+		private static IExpr multinomial(final IAST ast) {
 			IInteger[] k = new IInteger[ast.argSize()];
-			IInteger n = F.C0;
 			for (int i = 1; i < ast.size(); i++) {
-				k[i - 1] = (IInteger) ast.get(i);
-				n = n.add(k[i - 1]);
+				IExpr temp = ast.get(i);
+				int value = temp.toIntDefault(Integer.MIN_VALUE);
+				if (value != Integer.MIN_VALUE) {
+					k[i - 1] = F.ZZ(value);
+				} else {
+					if (!temp.isInteger()) {
+						return F.NIL;
+					}
+					k[i - 1] = (IInteger) temp;
+				}
 			}
-
-			IInteger result = factorial(n);
-			for (int i = 0; i < k.length; i++) {
-				result = result.div(factorial(k[i]));
-			}
-			return result;
+			return NumberTheory.multinomial(k);
 		}
 
 		@Override
@@ -2239,6 +2246,7 @@ public final class NumberTheory {
 			Validate.checkRange(ast, 1);
 
 			if (ast.isAST1()) {
+				// (n) ==> 1
 				return F.C1;
 			}
 			if (ast.isAST2()) {
@@ -3714,20 +3722,55 @@ public final class NumberTheory {
 	}
 
 	/**
+	 * Gives the multinomial coefficient <code>(k0+k1+...)!/(k0! * k1! ...)</code>.
 	 * 
-	 * @param indices
+	 * @param k
 	 *            the non-negative coefficients
 	 * @param n
 	 *            the sum of the non-negative coefficients
 	 * @return
 	 */
-	public static IInteger multinomial(final int[] indices, final int n) {
+	public static IInteger multinomial(final int[] k, final int n) {
 		IInteger bn = AbstractIntegerSym.valueOf(n);
 		IInteger result = factorial(bn);
-		for (int i = 0; i < indices.length; i++) {
-			if (indices[i] != 0) {
-				result = result.div(factorial(AbstractIntegerSym.valueOf(indices[i])));
+		for (int i = 0; i < k.length; i++) {
+			if (k[i] != 0) {
+				result = result.div(factorial(k[i]));
 			}
+		}
+		return result;
+	} 
+
+	/**
+	 * Gives the multinomial coefficient <code>(k0+k1+...)!/(k0! * k1! ...)</code>.
+	 * 
+	 * @param k
+	 *            the non-negative coefficients
+	 * @return
+	 */
+	public static IInteger multinomial(IInteger[] k) {
+		IInteger n = F.C0;
+		for (int i = 0; i < k.length; i++) {
+			n = n.add(k[i]);
+		}
+		int ni = n.toIntDefault(Integer.MIN_VALUE);
+		if (ni > 0) {
+			int[] ki = new int[k.length];
+			boolean evaled = true;
+			for (int i = 0; i < k.length; i++) {
+				ki[i] = k[i].toIntDefault(Integer.MIN_VALUE);
+				if (ki[i] < 0) {
+					evaled = false;
+					break;
+				}
+			}
+			if (evaled) {
+				return multinomial(ki, ni);
+			}
+		}
+		IInteger result = factorial(n);
+		for (int i = 0; i < k.length; i++) {
+			result = result.div(factorial(k[i]));
 		}
 		return result;
 	}
