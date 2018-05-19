@@ -6093,24 +6093,46 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPochhammer() {
-		check("Pochhammer(b-c, -10)",
+		check("Pochhammer(0, 0)", //
+				"1");
+		check("Pochhammer(0, 42)", //
+				"0");
+		check("Pochhammer(0, -42)", //
+				"1/1405006117752879898543142606244511569936384000000000");
+		check("Pochhammer(a, -3)", //
+				"1/((-3+a)*(-2+a)*(-1+a))");
+		check("Pochhammer(a, -1)", //
+				"1/(-1+a)");
+		check("Pochhammer(b-c, -10)", //
 				"1/((-10+b-c)*(-9+b-c)*(-8+b-c)*(-7+b-c)*(-6+b-c)*(-5+b-c)*(-4+b-c)*(-3+b-c)*(-2+b-c)*(\n"
 						+ "-1+b-c))");
 
-		check("Pochhammer(b-c, 2)", "(b-c)*(1+b-c)");
-		check("Pochhammer(b-c, 3)", "(b-c)*(1+b-c)*(2+b-c)");
-		check("Pochhammer(b-c, 10)", "(b-c)*(1+b-c)*(2+b-c)*(3+b-c)*(4+b-c)*(5+b-c)*(6+b-c)*(7+b-c)*(8+b-c)*(9+b-c)");
+		check("Pochhammer(b-c, 2)", //
+				"(b-c)*(1+b-c)");
+		check("Pochhammer(b-c, 3)", //
+				"(b-c)*(1+b-c)*(2+b-c)");
+		check("Pochhammer(b-c, 10)", //
+				"(b-c)*(1+b-c)*(2+b-c)*(3+b-c)*(4+b-c)*(5+b-c)*(6+b-c)*(7+b-c)*(8+b-c)*(9+b-c)");
 
-		check("Pochhammer(2,3)", "24");
+		check("Pochhammer(2,3)", //
+				"24");
 
-		check("Pochhammer(4, 8)", "6652800");
-		check("Pochhammer(10, 6)", "3603600");
-		check("Pochhammer(10, -6)", "1/60480");
-		check("Pochhammer(-10, -6)", "1/5765760");
-		check("Pochhammer(-10, -7)", "-1/98017920");
-		check("Pochhammer(-10, -12)", "1/309744468633600");
-		check("Pochhammer(3/2, 1/2)", "2/Sqrt(Pi)");
-		check("Pochhammer(-5, -3)", "-1/336");
+		check("Pochhammer(4, 8)", //
+				"6652800");
+		check("Pochhammer(10, 6)", //
+				"3603600");
+		check("Pochhammer(10, -6)", //
+				"1/60480");
+		check("Pochhammer(-10, -6)", //
+				"1/5765760");
+		check("Pochhammer(-10, -7)", //
+				"-1/98017920");
+		check("Pochhammer(-10, -12)", //
+				"1/309744468633600");
+		check("Pochhammer(3/2, 1/2)", //
+				"2/Sqrt(Pi)");
+		check("Pochhammer(-5, -3)", //
+				"-1/336");
 
 	}
 
@@ -6282,6 +6304,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPower() {
+		// check("TimeConstrained(1^3^3^3^3, 10)", //
+		// "$Aborted");
+		// check("TimeConstrained(1^3^3^3, 10)", //
+		// "1");
 		check("(9/4)^(-3/8)", //
 				"2^(3/4)/3^(3/4)");
 		check("4^(-3/8)", //
@@ -6611,6 +6637,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testProduct() {
+		// {k,a,n} assumes a<=k<=n
+		check("Product(2, {k, a, n})", //
+				"2^(1-a+n)");
+		// {k,1,n} assumes 1<=k<=n
+		check("Product(k^3, {k, 1, n})", //
+				"(n!)^3");
+
+		check("Product(i^2, {i,11,2})", //
+				"1");
+		check("Product(i^2, {i,11,2,-1})", //
+				"1593350922240000");
+		check("Product(i^2, {i,2,11})", //
+				"1593350922240000");
+		check("Product(i^2, {i,m,n})", //
+				"Pochhammer(m,1-m+n)^2");
+		check("Product(i^2, {i,k,k+j})", //
+				"Pochhammer(k,1+j)^2");
+
 		check("Product(a, {a, 1, 5})", //
 				"120");
 		check("Product(f(a), {a, 1, 5})", //
@@ -8430,6 +8474,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSum() {
+		// {k,a,n} assumes a<=k<=n
+		check("Sum(2, {k, a, n})", //
+				"2*(1-a+n)");
 
 		check("Sum(i, {i, 5, 10})", "45");
 		check("Sum(i, {i, 0, 30000})", "450015000");

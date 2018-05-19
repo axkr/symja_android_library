@@ -145,11 +145,12 @@ public class Product extends ListFunctions.Table implements ProductRules {
 		IExpr argN = ast.last();
 		if (ast.size() >= 3 && argN.isList()) {
 			IIterator<IExpr> iterator = Iterator.create((IAST) argN, engine);
-			if (iterator.isValidVariable()) {
-				if (iterator.getLowerLimit().isInteger() && iterator.getUpperLimit().isSymbol()
-						&& iterator.getStep().isOne()) {
+			if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
+				// if (iterator.getLowerLimit().isInteger() && iterator.getUpperLimit().isSymbol()
+				// && iterator.getStep().isOne()) {
+				if (iterator.getUpperLimit().isSymbol() && iterator.getStep().isOne()) {
 					final ISymbol var = iterator.getVariable();
-					final IInteger from = (IInteger) iterator.getLowerLimit();
+					final IExpr from = iterator.getLowerLimit();
 					final ISymbol to = (ISymbol) iterator.getUpperLimit();
 					if (arg1.isPower()) {
 						IExpr base = arg1.base();
@@ -169,13 +170,19 @@ public class Product extends ListFunctions.Table implements ProductRules {
 							}
 						}
 					}
+
 					if (arg1.isFree(var)) {
+
 						if (ast.isAST2()) {
 							if (from.isOne()) {
 								return F.Power(ast.arg1(), to);
 							}
 							if (from.isZero()) {
 								return F.Power(ast.arg1(), Plus(to, C1));
+							}
+							if (from.isSymbol()) {
+								// 2^(1-from+to)
+								return F.Power(arg1, F.Plus(F.C1, from.negate(), to));
 							}
 						} else {
 							IASTAppendable result = ast.removeAtClone(ast.argSize());
@@ -188,7 +195,12 @@ public class Product extends ListFunctions.Table implements ProductRules {
 								result.set(1, F.Power(ast.arg1(), Plus(to, C1)));
 								return result;
 							}
-
+							if (from.isSymbol()) {
+								// 2^(1-from+to)
+								result.set(1, F.Power(arg1, F.Plus(F.C1, from.negate(), to)));
+								return result;
+							}
+							
 						}
 					}
 

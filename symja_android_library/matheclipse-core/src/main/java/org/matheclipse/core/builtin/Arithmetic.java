@@ -2388,11 +2388,11 @@ public final class Arithmetic {
 				if (ni > Integer.MIN_VALUE) {
 					if (ni > 0) {
 						// Product(a + k, {k, 0, n - 1})
-						return F.product(x -> F.Plus(a, x), 0, ni - 1);
+						return F.product(k -> F.Plus(a, k), 0, ni - 1);
 					}
 					if (ni < 0) {
 						// Product(1/(a - k), {k, 1, -n})
-						return Power(F.product(x -> F.Plus(a, x.negate()), 1, -ni), -1);
+						return Power(F.product(k -> F.Plus(a, k.negate()), 1, -ni), -1);
 					}
 				}
 			}
@@ -2421,6 +2421,9 @@ public final class Arithmetic {
 			} else if (n.equals(BigInteger.ZERO)) {
 				return BigFraction.ONE;
 			} else {
+				if (that.equals(BigInteger.ZERO)) {
+					return BigFraction.ZERO;
+				}
 				BigFraction res = new BigFraction(that.getNumerator(), that.getDenominator());
 				BigInteger i = BigInteger.ONE;
 				for (; i.compareTo(n) < 0; i = i.add(BigInteger.ONE)) {

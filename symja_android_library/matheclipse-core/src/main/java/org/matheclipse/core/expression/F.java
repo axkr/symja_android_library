@@ -3849,6 +3849,18 @@ public class F {
 		return unaryAST1(Interval, binaryAST2(List, min, max));
 	}
 
+	/**
+	 * Iterate over an integer range <code>from <= i <= to</code> with the step <code>step/code>.
+	 * 
+	 * @param head
+	 *            the header symbol of the result
+	 * @param function
+	 *            the function which should be applied on each iterator value
+	 * @param from
+	 * @param to
+	 * @param step
+	 * @return
+	 */
 	public static IAST intIterator(ISymbol head, final Function<IExpr, IExpr> function, final int from, final int to,
 			final int step) {
 		IASTAppendable result = F.ast(head, to - from + 1, false);
@@ -4826,6 +4838,15 @@ public class F {
 		return binaryAST2(Product, a0, a1);
 	}
 
+	/**
+	 * Iterate over an integer range <code>from <= i <= to</code> and create a product of the created values.
+	 * 
+	 * @param function
+	 *            the function which should be applied on each iterator value
+	 * @param from
+	 * @param to
+	 * @return
+	 */
 	public static IAST product(final Function<IExpr, IExpr> function, final int from, final int to) {
 		return intIterator(F.Times, function, from, to, 1);
 	}
