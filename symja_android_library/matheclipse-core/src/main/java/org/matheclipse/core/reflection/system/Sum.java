@@ -193,6 +193,21 @@ public class Sum extends ListFunctions.Table implements SumRules {
 		}
 
 		if (iterator != null) {
+			if (arg1.isZero()) {
+				// Sum(0, {k, n, m})
+				return F.C0;
+			}
+			if (iterator.isValidVariable() && iterator.getUpperLimit().isInfinity()) {
+				if (arg1.isPositiveResult() && arg1.isIntegerResult()) {
+					// Sum(n, {k, a, Infinity}) ;n is positive integer
+					return F.CInfinity;
+				}
+				if (arg1.isNegativeResult() && arg1.isIntegerResult()) {
+					// Sum(n, {k, a, Infinity}) ;n is negative integer
+					return F.CNInfinity;
+				}
+			}
+
 			if (iterator.isValidVariable() && iterator.isNumericFunction()) {
 				IAST resultList = Plus();
 				temp = evaluateLast(ast.arg1(), iterator, resultList, C0);

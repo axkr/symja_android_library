@@ -144,7 +144,21 @@ public class Product extends ListFunctions.Table implements ProductRules {
 		}
 		IExpr argN = ast.last();
 		if (ast.size() >= 3 && argN.isList()) {
+			if (arg1.isZero()) {
+				// Product(0, {k, n, m})
+				return F.C0;
+			}
 			IIterator<IExpr> iterator = Iterator.create((IAST) argN, engine);
+			if (iterator.isValidVariable() && iterator.getUpperLimit().isInfinity()) {
+				if (arg1.isOne()) {
+					// Product(1, {k, a, Infinity})
+					return F.C1;
+				}
+				if (arg1.isPositiveResult() && arg1.isIntegerResult()) {
+					// Product(n, {k, a, Infinity}) ;n is positive integer
+					return F.CInfinity;
+				}
+			}
 			if (iterator.isValidVariable() && !iterator.isNumericFunction()) {
 				// if (iterator.getLowerLimit().isInteger() && iterator.getUpperLimit().isSymbol()
 				// && iterator.getStep().isOne()) {
@@ -200,7 +214,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 								result.set(1, F.Power(arg1, F.Plus(F.C1, from.negate(), to)));
 								return result;
 							}
-							
+
 						}
 					}
 
