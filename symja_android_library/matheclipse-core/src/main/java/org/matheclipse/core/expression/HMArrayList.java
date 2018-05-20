@@ -94,30 +94,43 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	public HMArrayList(IExpr headExpr, IExpr... arguments) {
 		firstIndex = hashValue = 0;
 		lastIndex = arguments.length + 1;
-		array = newElementArray(lastIndex);
-		array[0] = headExpr;
 		switch (lastIndex) {
+		case 0:
+			array = new IExpr[] { headExpr };
+			break;
 		case 1:
+			array = new IExpr[] { headExpr };
 			break;
 		case 2:
-			array[1] = arguments[0];
+			array = new IExpr[] { headExpr, arguments[0] };
 			break;
 		case 3:
-			array[1] = arguments[0];
-			array[2] = arguments[1];
+			array = new IExpr[] { headExpr, arguments[0], arguments[1] };
 			break;
 		case 4:
-			array[1] = arguments[0];
-			array[2] = arguments[1];
-			array[3] = arguments[2];
+			array = new IExpr[] { headExpr, arguments[0], arguments[1], arguments[2] };
 			break;
 		case 5:
-			array[1] = arguments[0];
-			array[2] = arguments[1];
-			array[3] = arguments[2];
-			array[4] = arguments[3];
+			array = new IExpr[] { headExpr, arguments[0], arguments[1], arguments[2], arguments[3] };
+			break;
+		case 6:
+			array = new IExpr[] { headExpr, arguments[0], arguments[1], arguments[2], arguments[3], arguments[4] };
+			break;
+		case 7:
+			array = new IExpr[] { headExpr, arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+					arguments[5] };
+			break;
+		case 8:
+			array = new IExpr[] { headExpr, arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+					arguments[5], arguments[6] };
+			break;
+		case 9:
+			array = new IExpr[] { headExpr, arguments[0], arguments[1], arguments[2], arguments[3], arguments[4],
+					arguments[5], arguments[6], arguments[7] };
 			break;
 		default:
+			array = newElementArray(lastIndex);
+			array[0] = headExpr;
 			System.arraycopy(arguments, 0, array, 1, lastIndex - 1);
 		}
 	}
@@ -131,7 +144,9 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	 *            the array which will be used to store this lists elements.
 	 */
 	protected HMArrayList(IExpr[] array) {
-		init(array);
+		this.array = array;
+		this.firstIndex = this.hashValue = 0;
+		this.lastIndex = array.length;
 	}
 
 	/**
@@ -802,7 +817,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 
 	/**
 	 * Constructs a new list assigning the given <code>array</code> to this lists array. No new memory is allocated for
-	 * the list. The list contains the arrays elements form offset <code>0</code> to offset <code>array.length-1</code>
+	 * the list. The list contains the arrays elements from offset <code>0</code> to offset <code>array.length-1</code>
 	 * in the list.
 	 * 
 	 * @param array

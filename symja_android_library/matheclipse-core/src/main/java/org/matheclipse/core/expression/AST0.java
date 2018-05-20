@@ -70,6 +70,7 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	 *            the head of the function
 	 */
 	protected AST0(IExpr head) {
+		super();
 		this.arg0 = head;
 	}
 
