@@ -3,6 +3,7 @@ package org.matheclipse.core.expression;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.generic.ObjIntPredicate;
@@ -82,7 +83,7 @@ public class AST1 extends AST0 {
 	public int argSize() {
 		return SIZE - 1;
 	}
-	
+
 	@Override
 	public Set<IExpr> asSet() {
 		Set<IExpr> set = new HashSet<IExpr>();
@@ -159,6 +160,19 @@ public class AST1 extends AST0 {
 			return predicate.test(arg1, 1);
 		}
 		return false;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
+			final Function<IExpr, IExpr> function) {
+		IExpr expr = function.apply(arg1);
+		if (expr.isPresent()) {
+			filterAST.append(expr);
+		} else {
+			restAST.append(arg1);
+		}
+		return filterAST;
 	}
 
 	/** {@inheritDoc} */

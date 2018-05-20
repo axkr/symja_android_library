@@ -312,7 +312,7 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 
 	/** {@inheritDoc} */
 	@Override
-	public final IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
+	public IAST filterFunction(IASTAppendable filterAST, IASTAppendable restAST,
 			final Function<IExpr, IExpr> function) {
 		return filterAST;
 	}
