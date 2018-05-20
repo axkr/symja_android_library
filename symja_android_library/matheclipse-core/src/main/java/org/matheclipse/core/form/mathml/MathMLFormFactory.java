@@ -1002,7 +1002,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 			if (pow.isOne()) {
 				plusArg = coefficient;
 			} else {
-				plusArg = F.binary(F.Times, coefficient, pow);
+				plusArg = F.binaryAST2(F.Times, coefficient, pow);
 			}
 		}
 		if (!plusArg.isZero()) {

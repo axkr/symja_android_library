@@ -241,7 +241,7 @@ public class SeriesFunctions {
 			EvalEngine engine = EvalEngine.get();
 			ISymbol x = data.getSymbol();
 			try {
-				int recursionLimit = engine.getRecursionLimit(); 
+				int recursionLimit = engine.getRecursionLimit();
 				try {
 					if (recursionLimit <= 0 || recursionLimit > Config.LIMIT_LHOSPITAL_RECURSION_LIMIT) {
 						// set recursion limit for using l'Hospitales rule
@@ -1263,22 +1263,23 @@ public class SeriesFunctions {
 
 						IAST powerPart = F.Power(x0, exp);
 						comparator = F.Greater(n, F.C0);
-						IASTAppendable binomial;
+						IAST bin;
 						int k = exp.toIntDefault(Integer.MIN_VALUE);
 						if (k != Integer.MIN_VALUE) {
 							if (k < 0) {
 								// powerPart = F.Power(x0.negate(), exp);
 								x0 = x0.negate();
 								int nk = -k;
-								binomial = F.TimesAlloc(nk + 1);
+								IASTAppendable binomial = F.TimesAlloc(nk + 1);
 								for (int i = 1; i < nk; i++) {
 									binomial.append(F.Plus(n, F.ZZ(i)));
 								}
 								binomial.append(F.Power(F.Factorial(F.ZZ(nk - 1)), -1));
+								bin = binomial;
 								comparator = F.GreaterEqual(n, F.C0);
 							} else {
 								comparator = F.LessEqual(F.C0, n, exp);
-								binomial = F.binary(F.Binomial, exp, n);
+								bin = F.Binomial(exp, n);
 								// binomial = F.TimesAlloc(k);
 								// for (int i = 0; i < k; i++) {
 								// binomial.append(F.Subtract(n, F.ZZ(i)));
@@ -1286,12 +1287,12 @@ public class SeriesFunctions {
 								// binomial.append(F.Power(F.Factorial(F.ZZ(k)), -1));
 							}
 						} else {
-							binomial = F.binary(F.Binomial, exp, n);
+							bin = F.Binomial(exp, n);
 						}
 						if (coefficient.isOne()) {
-							plus.append(F.Times(powerPart, binomial));
+							plus.append(F.Times(powerPart, bin));
 						} else {
-							plus.append(F.Times(coefficient, powerPart, binomial));
+							plus.append(F.Times(coefficient, powerPart, bin));
 						}
 					}
 					IExpr temp = engine.evaluate(plus);

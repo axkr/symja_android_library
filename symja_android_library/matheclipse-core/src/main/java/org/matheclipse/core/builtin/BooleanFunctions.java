@@ -121,7 +121,7 @@ public final class BooleanFunctions {
 			IASTAppendable logicalAnd = F.And();
 
 			if (!list.forAll(x -> {
-				IExpr temp = engine.evaluate(F.unary(head, x));
+				IExpr temp = engine.evaluate(F.unaryAST1(head, x));
 				if (temp.isTrue()) {
 					return true;
 				} else if (temp.isFalse()) {
@@ -341,7 +341,7 @@ public final class BooleanFunctions {
 		}
 
 		private static boolean anyTrueArgument(IExpr x, IExpr head, IASTAppendable resultCollector, EvalEngine engine) {
-			IExpr temp = engine.evaluate(F.unary(head, x));
+			IExpr temp = engine.evaluate(F.unaryAST1(head, x));
 			if (temp.isTrue()) {
 				return true;
 			} else if (!temp.isFalse()) {
@@ -2452,7 +2452,7 @@ public final class BooleanFunctions {
 
 		private static boolean noneTrueArgument(IExpr x, IExpr head, IASTAppendable resultCollector,
 				EvalEngine engine) {
-			IExpr temp = engine.evaluate(F.unary(head, x));
+			IExpr temp = engine.evaluate(F.unaryAST1(head, x));
 			if (temp.isTrue()) {
 				return true;
 			} else if (!temp.isFalse()) {
@@ -3665,7 +3665,7 @@ public final class BooleanFunctions {
 	public static IAST inequality2And(final IAST ast) {
 		IASTAppendable result = F.And();
 		for (int i = 3; i < ast.size(); i += 2) {
-			result.append(F.binary(ast.get(i - 1), ast.get(i - 2), ast.get(i)));
+			result.append(F.binaryAST2(ast.get(i - 1), ast.get(i - 2), ast.get(i)));
 		}
 		return result;
 	}
