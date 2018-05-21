@@ -1064,7 +1064,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default boolean isBuiltInSymbol() {
-		return false;
+		return this instanceof IBuiltInSymbol;
 	}
 
 	/**

@@ -1708,13 +1708,7 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public final boolean isFlatAST() {
 		return topHead().hasFlatAttribute();
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isFraction() {
-		return false;
-	}
+	} 
 
 	/** {@inheritDoc} */
 	@Override
@@ -1988,18 +1982,7 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public final boolean isNot() {
 		return size() == 2 && head().equals(F.Not);
-	}
-
-	@Override
-	public final boolean isNumber() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isNumeric() {
-		return false;
-	}
+	}  
 
 	/** {@inheritDoc} */
 	@Override
