@@ -7,7 +7,6 @@ public final class FunctionDefinitions {
 		AbsArg.setEvaluator(new org.matheclipse.core.reflection.system.AbsArg());
 		BesselJ.setEvaluator(new org.matheclipse.core.reflection.system.BesselJ());
 		ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
-		ContinuedFraction.setEvaluator(new org.matheclipse.core.reflection.system.ContinuedFraction());
 		Curl.setEvaluator(new org.matheclipse.core.reflection.system.Curl());
 		D.setEvaluator(new org.matheclipse.core.reflection.system.D());
 		Default.setEvaluator(new org.matheclipse.core.reflection.system.Default());
@@ -23,7 +22,6 @@ public final class FunctionDefinitions {
 		FindRoot.setEvaluator(new org.matheclipse.core.reflection.system.FindRoot());
 		Fit.setEvaluator(new org.matheclipse.core.reflection.system.Fit());
 		FrobeniusSolve.setEvaluator(new org.matheclipse.core.reflection.system.FrobeniusSolve());
-		FromContinuedFraction.setEvaluator(new org.matheclipse.core.reflection.system.FromContinuedFraction());
 		FromPolarCoordinates.setEvaluator(new org.matheclipse.core.reflection.system.FromPolarCoordinates());
 		GeometricMean.setEvaluator(new org.matheclipse.core.reflection.system.GeometricMean());
 		GroebnerBasis.setEvaluator(new org.matheclipse.core.reflection.system.GroebnerBasis());

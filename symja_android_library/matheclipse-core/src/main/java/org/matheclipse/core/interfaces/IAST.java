@@ -447,8 +447,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public boolean equalsAt(int position, final IExpr expr);
 
 	/**
-	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return if
-	 * one of the arguments satisfy the predicate.
+	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return
+	 * <code>true</code> if one of the arguments satisfy the predicate.
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>
@@ -459,8 +459,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	}
 
 	/**
-	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return if
-	 * one of the arguments satisfy the predicate.
+	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return
+	 * <code>true</code> if one of the arguments satisfy the predicate.
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>
@@ -471,8 +471,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset);
 
 	/**
-	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return if
-	 * one of the arguments satisfy the predicate.
+	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return
+	 * <code>true</code> if one of the arguments satisfy the predicate.
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>
@@ -483,8 +483,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	}
 
 	/**
-	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return if
-	 * one of the arguments satisfy the predicate.
+	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return
+	 * <code>true</code> if one of the arguments satisfy the predicate.
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>
@@ -630,8 +630,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IExpr foldRight(final BiFunction<IExpr, IExpr, ? extends IExpr> function, IExpr startValue, int start);
 
 	/**
-	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return if
-	 * all of the arguments satisfy the predicate.
+	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return
+	 * <code>true</code> if all of the arguments satisfy the predicate.
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>
@@ -642,8 +642,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	}
 
 	/**
-	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return if
-	 * all of the arguments satisfy the predicate.
+	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return
+	 * <code>true</code> if all of the arguments satisfy the predicate.
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>
@@ -654,8 +654,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset);
 
 	/**
-	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return if
-	 * all of the arguments satisfy the predicate.
+	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return
+	 * <code>true</code> if all of the arguments satisfy the predicate.
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>
@@ -666,8 +666,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	}
 
 	/**
-	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return if
-	 * all of the arguments satisfy the predicate.
+	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return
+	 * <code>true</code> if all of the arguments satisfy the predicate.
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>

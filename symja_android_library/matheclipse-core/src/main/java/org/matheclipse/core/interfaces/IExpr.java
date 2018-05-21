@@ -2184,7 +2184,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default boolean isRealNumber() {
-		return this instanceof IRational || this instanceof INum;
+		return this instanceof ISignedNumber;
 	}
 
 	/**
