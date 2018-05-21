@@ -562,7 +562,7 @@ public class Parser extends Scanner {
 	 * 
 	 * @return
 	 */
-	protected List<Operator> getOperator() {
+	final protected List<Operator> getOperator() {
 		char lastChar;
 		final int startPosition = fCurrentPosition - 1;
 		fOperatorString = fInputString.substring(startPosition, fCurrentPosition);

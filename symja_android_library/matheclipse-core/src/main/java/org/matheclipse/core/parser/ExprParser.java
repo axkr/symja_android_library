@@ -868,7 +868,7 @@ public class ExprParser extends Scanner {
 		return fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0;
 	}
 	
-	protected List<Operator> getOperator() {
+	final protected List<Operator> getOperator() {
 		char lastChar;
 		final int startPosition = fCurrentPosition - 1;
 		fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
