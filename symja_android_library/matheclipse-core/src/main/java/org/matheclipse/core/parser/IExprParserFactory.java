@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.matheclipse.parser.client.operator.Operator;
+
 /**
  * Factory for creating the ASTNodes from the parser
  * 
@@ -41,14 +43,14 @@ public interface IExprParserFactory {
 	 * 
 	 * @return the map which stores the Operators for a given head string like Times, Plus, Sin,...
 	 */
-	public Map<String, AbstractExprOperator> getIdentifier2OperatorMap();
+	public Map<String, ? extends Operator> getIdentifier2OperatorMap();
 
 	/**
 	 * Get the operator-string to possible operator-list map
 	 * 
 	 * @return the map which stores the operator-list for a given operator string like *, +, ==...
 	 */
-	public Map<String, ArrayList<AbstractExprOperator>> getOperator2ListMap();
+	public Map<String, ArrayList<Operator>> getOperator2ListMap();
 
 	/**
 	 * Get the operator for a given identifier string like Times, Plus, Sin,...
@@ -56,22 +58,22 @@ public interface IExprParserFactory {
 	 * @param identifier
 	 * @return
 	 */
-	public AbstractExprOperator get(String identifier);
+	public Operator get(String identifier);
 
 	/**
 	 * Get the operator-list for a given operator-string
 	 * 
 	 * @return the operator-list for a given operator string like *, +, ==...
 	 */
-	public List<AbstractExprOperator> getOperatorList(String operatorString);
+	public List<Operator> getOperatorList(String operatorString);
 
 	/**
 	 * Check if the identifier name is valid.
 	 * 
 	 * @param identifier
 	 *            the currently parsed identifier
-	 * @return <code>false</code> if the identifier is not valid (in this case the parser creates a SyntaxError exception);
-	 *         otherwise return <code>true</code>
+	 * @return <code>false</code> if the identifier is not valid (in this case the parser creates a SyntaxError
+	 *         exception); otherwise return <code>true</code>
 	 */
 	public boolean isValidIdentifier(String identifier);
 

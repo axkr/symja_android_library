@@ -28,6 +28,7 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.parser.client.operator.Operator;
 
 public class ExprParserFactory implements IExprParserFactory {
 
@@ -156,8 +157,7 @@ public class ExprParserFactory implements IExprParserFactory {
 			":", "//", "/=", "||", ";;", "==", "<>", "!=", "--", "-=", "+", "...", "=!=", "->", "^:=", "++", "&", ">",
 			"--", "-", ":=", "|", "+=", "..", "/." };
 
-	static final AbstractExprOperator[] OPERATORS = {
-			new InfixExprOperator("::", "MessageName", 750, InfixExprOperator.NONE),
+	static final Operator[] OPERATORS = { new InfixExprOperator("::", "MessageName", 750, InfixExprOperator.NONE),
 			new PrefixExprOperator("<<", "Get", 720),
 			new InfixExprOperator("?", "PatternTest", 680, InfixExprOperator.NONE),
 			new InfixExprOperator("//@", "MapAll", 620, InfixExprOperator.RIGHT_ASSOCIATIVE),
@@ -214,28 +214,28 @@ public class ExprParserFactory implements IExprParserFactory {
 
 	/**
 	 */
-	private static HashMap<String, AbstractExprOperator> fOperatorMap;
+	private static HashMap<String, Operator> fOperatorMap;
 
 	/**
 	 */
-	private static HashMap<String, ArrayList<AbstractExprOperator>> fOperatorTokenStartSet;
+	private static HashMap<String, ArrayList<Operator>> fOperatorTokenStartSet;
 
 	static {
-		fOperatorMap = new HashMap<String, AbstractExprOperator>();
-		fOperatorTokenStartSet = new HashMap<String, ArrayList<AbstractExprOperator>>();
+		fOperatorMap = new HashMap<String, Operator>();
+		fOperatorTokenStartSet = new HashMap<String, ArrayList<Operator>>();
 		for (int i = 0; i < HEADER_STRINGS.length; i++) {
 			addOperator(fOperatorMap, fOperatorTokenStartSet, OPERATOR_STRINGS[i], HEADER_STRINGS[i], OPERATORS[i]);
 		}
 	}
 
-	static public void addOperator(final Map<String, AbstractExprOperator> operatorMap,
-			final Map<String, ArrayList<AbstractExprOperator>> operatorTokenStartSet, final String operatorStr,
-			final String headStr, final AbstractExprOperator oper) {
-		ArrayList<AbstractExprOperator> list;
+	static public void addOperator(final Map<String, Operator> operatorMap,
+			final Map<String, ArrayList<Operator>> operatorTokenStartSet, final String operatorStr,
+			final String headStr, final Operator oper) {
+		ArrayList<Operator> list;
 		operatorMap.put(headStr, oper);
 		list = operatorTokenStartSet.get(operatorStr);
 		if (list == null) {
-			list = new ArrayList<AbstractExprOperator>(2);
+			list = new ArrayList<Operator>(2);
 			list.add(oper);
 			operatorTokenStartSet.put(operatorStr, list);
 		} else {
@@ -286,7 +286,7 @@ public class ExprParserFactory implements IExprParserFactory {
 	}
 
 	@Override
-	public AbstractExprOperator get(final String identifier) {
+	public Operator get(final String identifier) {
 		return fOperatorMap.get(identifier);
 	}
 
@@ -294,7 +294,7 @@ public class ExprParserFactory implements IExprParserFactory {
 	 * public Map<String, Operator> getIdentifier2OperatorMap()
 	 */
 	@Override
-	public Map<String, AbstractExprOperator> getIdentifier2OperatorMap() {
+	public Map<String, Operator> getIdentifier2OperatorMap() {
 		return fOperatorMap;
 	}
 
@@ -302,7 +302,7 @@ public class ExprParserFactory implements IExprParserFactory {
 	 * 
 	 */
 	@Override
-	public Map<String, ArrayList<org.matheclipse.core.parser.AbstractExprOperator>> getOperator2ListMap() {
+	public Map<String, ArrayList<Operator>> getOperator2ListMap() {
 		return fOperatorTokenStartSet;
 	}
 
@@ -315,7 +315,7 @@ public class ExprParserFactory implements IExprParserFactory {
 	 * 
 	 */
 	@Override
-	public List<AbstractExprOperator> getOperatorList(final String key) {
+	public List<Operator> getOperatorList(final String key) {
 		return fOperatorTokenStartSet.get(key);
 	}
 

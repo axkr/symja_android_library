@@ -21,8 +21,9 @@ import java.util.List;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.parser.client.Characters;
 import org.matheclipse.parser.client.SyntaxError;
+import org.matheclipse.parser.client.operator.Operator;
 
-public class ExprScanner {
+public abstract class ExprScanner {
 
 	/**
 	 * Current parser input string
@@ -57,7 +58,7 @@ public class ExprScanner {
 	/**
 	 * protected List<Operator> fOperList;
 	 */
-	protected List<AbstractExprOperator> fOperList;
+	protected List<Operator> fOperList;
 
 	/**
 	 * Row counter for syntax errors.
@@ -193,8 +194,6 @@ public class ExprScanner {
 
 	protected int numFormat = 0;
 
-	protected IExprParserFactory fFactory;
-
 	private static HashMap<String, String> CHAR_MAP = new HashMap<String, String>(1024);
 
 	static {
@@ -261,40 +260,41 @@ public class ExprScanner {
 	 * 
 	 * @return
 	 */
-	protected List<AbstractExprOperator> getOperator() {
-		char lastChar;
-		final int startPosition = fCurrentPosition - 1;
-		fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
-		List<AbstractExprOperator> list = fFactory.getOperatorList(fOperatorString);
-		List<AbstractExprOperator> lastList = null;
-		int lastOperatorPosition = -1;
-		if (list != null) {
-			lastList = list;
-			lastOperatorPosition = fCurrentPosition;
-		}
-		getChar();
-		while (fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0) {
-			lastChar = fCurrentChar;
-			fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
-			list = fFactory.getOperatorList(fOperatorString);
-			if (list != null) {
-				lastList = list;
-				lastOperatorPosition = fCurrentPosition;
-			}
-			getChar();
-			if (lastChar == ';' && fCurrentChar != ';') {
-				break;
-			}
-		}
-		if (lastOperatorPosition > 0) {
-			fCurrentPosition = lastOperatorPosition;
-			return lastList;
-		}
-		final int endPosition = fCurrentPosition--;
-		fCurrentPosition = startPosition;
-		throwSyntaxError("Operator token not found: " + fInputString.substring(startPosition, endPosition - 1));
-		return null;
-	}
+	abstract protected List<Operator> getOperator();
+	// {
+	// char lastChar;
+	// final int startPosition = fCurrentPosition - 1;
+	// fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
+	// List<Operator> list = fFactory.getOperatorList(fOperatorString);
+	// List<Operator> lastList = null;
+	// int lastOperatorPosition = -1;
+	// if (list != null) {
+	// lastList = list;
+	// lastOperatorPosition = fCurrentPosition;
+	// }
+	// getChar();
+	// while (fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0) {
+	// lastChar = fCurrentChar;
+	// fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
+	// list = fFactory.getOperatorList(fOperatorString);
+	// if (list != null) {
+	// lastList = list;
+	// lastOperatorPosition = fCurrentPosition;
+	// }
+	// getChar();
+	// if (lastChar == ';' && fCurrentChar != ';') {
+	// break;
+	// }
+	// }
+	// if (lastOperatorPosition > 0) {
+	// fCurrentPosition = lastOperatorPosition;
+	// return lastList;
+	// }
+	// final int endPosition = fCurrentPosition--;
+	// fCurrentPosition = startPosition;
+	// throwSyntaxError("Operator token not found: " + fInputString.substring(startPosition, endPosition - 1));
+	// return null;
+	// }
 
 	/**
 	 * Determines if the current character is white space according to <code>Character#isWhitespace()</code> method.
@@ -319,7 +319,7 @@ public class ExprScanner {
 			getNextChar();
 			fToken = TT_EOF;
 
-			if (fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0) {
+			if (isOperatorCharacters()) {
 				fOperList = getOperator();
 				fToken = TT_OPERATOR;
 				return;
@@ -471,6 +471,8 @@ public class ExprScanner {
 		fCurrentChar = ' ';
 		fToken = TT_EOF;
 	}
+
+	abstract protected boolean isOperatorCharacters();
 
 	private void getComment() {
 		int startPosition = fCurrentPosition;

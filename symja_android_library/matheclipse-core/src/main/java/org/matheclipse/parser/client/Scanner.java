@@ -20,10 +20,59 @@ import java.util.List;
 import java.util.Stack;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.parser.client.ast.IParserFactory;
+import org.matheclipse.parser.client.Characters;
+import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.operator.Operator;
 
-public class Scanner {
+public abstract class Scanner {
+
+	/**
+	 * Current parser input string
+	 */
+	protected String fInputString;
+
+	/**
+	 * Recursion depth for brackets.
+	 */
+	protected int fRecursionDepth;
+
+	/**
+	 * Current input character
+	 */
+	protected char fCurrentChar;
+
+	/**
+	 * The position of the current character in the input string
+	 */
+	protected int fCurrentPosition;
+
+	/**
+	 * Current input token
+	 */
+	protected int fToken;
+
+	/**
+	 * The last determined operator string
+	 */
+	protected String fOperatorString;
+
+	/**
+	 * protected List<Operator> fOperList;
+	 */
+	protected List<Operator> fOperList;
+
+	/**
+	 * Row counter for syntax errors.
+	 */
+	protected int rowCount;
+
+	protected boolean fPackageMode = false;
+
+	/**
+	 * Column counter for syntax errors
+	 */
+	protected int fCurrentColumnStartPosition;
+
 	/**
 	 * Token type: End-of_File
 	 */
@@ -95,29 +144,29 @@ public class Scanner {
 	final static public int TT_STRING = 136;
 
 	/**
-	 * Token type: pattern placeholder '_'
-	 */
-	final static public int TT_BLANK = 137;
-
-	/**
 	 * Token type: identifier name
 	 */
-	final static public int TT_IDENTIFIER = 138;
+	final static public int TT_IDENTIFIER = 137;
 
 	/**
 	 * Token type: digit 0,1,2,3,4,5,6,7,8,9
 	 */
-	final static public int TT_DIGIT = 139;
+	final static public int TT_DIGIT = 138;
 
 	/**
 	 * Token type: slot #
 	 */
-	final static public int TT_SLOT = 141;
+	final static public int TT_SLOT = 140;
 
 	/**
 	 * Token type: slot sequence ##
 	 */
-	final static public int TT_SLOTSEQUENCE = 142;
+	final static public int TT_SLOTSEQUENCE = 141;
+
+	/**
+	 * Token type: pattern placeholder '_'
+	 */
+	final static public int TT_BLANK = 142;
 
 	final static public int TT_BLANK_BLANK = 143;
 
@@ -223,66 +272,35 @@ public class Scanner {
 		return "";
 	}
 
-	/**
-	 * Current parser input string
-	 */
-	protected String fInputString;
-
-	/**
-	 * Recursion depth for brackets.
-	 */
-	protected int fRecursionDepth;
-
-	/**
-	 * Current input character
-	 */
-	protected char fCurrentChar;
-
-	/**
-	 * The position of the current character in the input string
-	 */
-	protected int fCurrentPosition;
-
-	/**
-	 * Current input token
-	 */
-	protected int fToken;
-
-	/**
-	 * The last determined operator string
-	 */
-	protected String fOperatorString;
-
-	/**
-	 * protected List<Operator> fOperList;
-	 */
-	protected List<Operator> fOperList;
-
-	/**
-	 * Row counter for syntax errors.
-	 */
-	protected int rowCount;
-
-	/**
-	 * Column counter for syntax errors
-	 */
-	protected int fCurrentColumnStartPosition;
-
 	protected int numFormat = 0;
 
-	protected IParserFactory fFactory;
+	private static HashMap<String, String> CHAR_MAP = new HashMap<String, String>(1024);
 
-	protected final boolean fPackageMode;
+	static {
+		CHAR_MAP.put("CenterEllipsis", "\u22EF");
+	}
 
 	/**
 	 * Initialize Scanner without a math-expression
-	 * 
-	 * @param packageMode
-	 *            <code>true</code> if currently a package is read.
 	 */
 	public Scanner(boolean packageMode) {
 		fPackageMode = packageMode;
 		initializeNullScanner();
+	}
+
+	protected void initialize(final String s) throws SyntaxError {
+		initializeNullScanner();
+		StringBuilder buf = new StringBuilder(s.length());
+		fInputString = Characters.substituteCharacters(s, buf);
+		getNextToken();
+	}
+
+	private void initializeNullScanner() {
+		fInputString = null;
+		fToken = TT_EOF;
+		fCurrentPosition = 0;
+		rowCount = 0;
+		fCurrentColumnStartPosition = 0;
 	}
 
 	/**
@@ -290,7 +308,7 @@ public class Scanner {
 	 * is greater than the input length, set current character to SPACE and token to TT_EOF.
 	 * 
 	 */
-	private void getChar() {
+	protected void getChar() {
 		if (fInputString.length() > fCurrentPosition) {
 			getNextChar();
 			return;
@@ -299,6 +317,242 @@ public class Scanner {
 		fCurrentChar = ' ';
 		fToken = TT_EOF;
 	}
+
+	private void getNextChar() {
+		fCurrentChar = fInputString.charAt(fCurrentPosition++);
+		if (fCurrentChar == '\\') {
+			// search next non-whitespace character
+			while (fInputString.length() > fCurrentPosition) {
+				fCurrentChar = fInputString.charAt(fCurrentPosition++);
+				if (!Character.isWhitespace(fCurrentChar) && fCurrentChar != '\\') {
+					return;
+				}
+				if (fCurrentChar == '\n') {
+					rowCount++;
+					fCurrentColumnStartPosition = fCurrentPosition;
+				}
+			}
+		}
+	}
+
+	/**
+	 * 
+	 * 
+	 * @return
+	 */
+	abstract protected List<Operator> getOperator();
+	// {
+	// char lastChar;
+	// final int startPosition = fCurrentPosition - 1;
+	// fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
+	// List<Operator> list = fFactory.getOperatorList(fOperatorString);
+	// List<Operator> lastList = null;
+	// int lastOperatorPosition = -1;
+	// if (list != null) {
+	// lastList = list;
+	// lastOperatorPosition = fCurrentPosition;
+	// }
+	// getChar();
+	// while (fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0) {
+	// lastChar = fCurrentChar;
+	// fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
+	// list = fFactory.getOperatorList(fOperatorString);
+	// if (list != null) {
+	// lastList = list;
+	// lastOperatorPosition = fCurrentPosition;
+	// }
+	// getChar();
+	// if (lastChar == ';' && fCurrentChar != ';') {
+	// break;
+	// }
+	// }
+	// if (lastOperatorPosition > 0) {
+	// fCurrentPosition = lastOperatorPosition;
+	// return lastList;
+	// }
+	// final int endPosition = fCurrentPosition--;
+	// fCurrentPosition = startPosition;
+	// throwSyntaxError("Operator token not found: " + fInputString.substring(startPosition, endPosition - 1));
+	// return null;
+	// }
+
+	/**
+	 * Determines if the current character is white space according to <code>Character#isWhitespace()</code> method.
+	 * 
+	 * @return
+	 */
+	protected boolean isWhitespace() {
+		if (fInputString.length() > fCurrentPosition) {
+			return Character.isWhitespace(fInputString.charAt(fCurrentPosition));
+		}
+		return false;
+	}
+
+	/**
+	 * Get the next token from the input string
+	 * 
+	 * @throws SyntaxError
+	 */
+	protected void getNextToken() throws SyntaxError {
+
+		while (fInputString.length() > fCurrentPosition) {
+			getNextChar();
+			fToken = TT_EOF;
+
+			if (isOperatorCharacters()) {
+				fOperList = getOperator();
+				fToken = TT_OPERATOR;
+				return;
+			}
+
+			if ((fCurrentChar != '\t') && (fCurrentChar != '\r') && (fCurrentChar != ' ')) {
+				if (fCurrentChar == '\n') {
+					rowCount++;
+					fCurrentColumnStartPosition = fCurrentPosition;
+					if (fPackageMode && fRecursionDepth == 0) {
+						fToken = TT_NEWLINE;
+						return;
+					}
+					continue; // while loop
+				}
+
+				if (Character.isLetter(fCurrentChar) || (fCurrentChar == '$')) {
+					// the Character.isUnicodeIdentifierStart method doesn't
+					// work in Google Web Toolkit:
+					// || (Character.isUnicodeIdentifierStart(fCurrentChar))) {
+					fToken = TT_IDENTIFIER;
+					return;
+				}
+				if ((fCurrentChar >= '0') && (fCurrentChar <= '9')) {
+					fToken = TT_DIGIT;
+
+					return;
+				}
+				if (fCurrentChar == '(') {
+					if (fInputString.length() > fCurrentPosition) {
+						if (fInputString.charAt(fCurrentPosition) == '*') {
+							getComment();
+							continue;
+						}
+					}
+				}
+
+				switch (fCurrentChar) {
+
+				case '(':
+					fToken = TT_PRECEDENCE_OPEN;
+
+					break;
+				case ')':
+					fToken = TT_PRECEDENCE_CLOSE;
+
+					break;
+				case '{':
+					fToken = TT_LIST_OPEN;
+
+					break;
+				case '}':
+					fToken = TT_LIST_CLOSE;
+
+					break;
+				case '[':
+					fToken = TT_ARGUMENTS_OPEN;
+					if (fInputString.length() > fCurrentPosition) {
+						if (fInputString.charAt(fCurrentPosition) == '[') {
+							fCurrentPosition++;
+							fToken = TT_PARTOPEN;
+							break;
+						}
+					}
+					break;
+				case ']':
+					fToken = TT_ARGUMENTS_CLOSE;
+					break;
+				case ',':
+					fToken = TT_COMMA;
+
+					break;
+				case '_':
+					fToken = TT_BLANK;
+					if (fInputString.length() > fCurrentPosition) {
+						if (fInputString.charAt(fCurrentPosition) == '_') {
+							fCurrentPosition++;
+							if (fInputString.length() > fCurrentPosition) {
+								if (fInputString.charAt(fCurrentPosition) == '_') {
+									fCurrentPosition++;
+									fToken = TT_BLANK_BLANK_BLANK;
+									break;
+								}
+							}
+							fToken = TT_BLANK_BLANK;
+							break;
+						} else if (fInputString.charAt(fCurrentPosition) == '.') {
+							fCurrentPosition++;
+							fToken = TT_BLANK_OPTIONAL;
+							break;
+						} else if (fInputString.charAt(fCurrentPosition) == ':') {
+							fCurrentPosition++;
+							fToken = TT_BLANK_COLON;
+							break;
+						}
+					}
+
+					break;
+				case '.':
+					// token = TT_DOT;
+					if (fInputString.length() > fCurrentPosition) {
+						if ((fInputString.charAt(fCurrentPosition) >= '0')
+								&& (fInputString.charAt(fCurrentPosition) <= '9')) {
+							// don't increment fCurrentPosition (see
+							// getNumberString())
+							// fCurrentPosition++;
+							fToken = TT_DIGIT; // floating-point number
+							break;
+						}
+					}
+
+					break;
+				case '"':
+					fToken = TT_STRING;
+
+					break;
+				case '\'':
+					fToken = TT_DERIVATIVE;
+					break;
+				case '%':
+					fToken = TT_PERCENT;
+
+					break;
+				case '#':
+					fToken = TT_SLOT;
+					if (fInputString.length() > fCurrentPosition) {
+						if (fInputString.charAt(fCurrentPosition) == '#') {
+							fCurrentPosition++;
+							fToken = TT_SLOTSEQUENCE;
+
+							break;
+						}
+					}
+
+					break;
+				default:
+					throwSyntaxError("unexpected character: '" + fCurrentChar + "'");
+				}
+
+				if (fToken == TT_EOF) {
+					throwSyntaxError("token not found");
+				}
+
+				return;
+			}
+		}
+
+		fCurrentPosition = fInputString.length() + 1;
+		fCurrentChar = ' ';
+		fToken = TT_EOF;
+	}
+
+	abstract protected boolean isOperatorCharacters();
 
 	private void getComment() {
 		int startPosition = fCurrentPosition;
@@ -335,6 +589,16 @@ public class Scanner {
 		}
 	}
 
+	protected void throwSyntaxError(final String error) throws SyntaxError {
+		throw new SyntaxError(fCurrentPosition - 1, rowCount, fCurrentPosition - fCurrentColumnStartPosition,
+				getErrorLine(), error, 1);
+	}
+
+	protected void throwSyntaxError(final String error, final int errorLength) throws SyntaxError {
+		throw new SyntaxError(fCurrentPosition - errorLength, rowCount, fCurrentPosition - fCurrentColumnStartPosition,
+				getErrorLine(), error, errorLength);
+	}
+
 	private String getErrorLine() {
 		if (fInputString.length() < fCurrentPosition) {
 			fCurrentPosition--;
@@ -353,6 +617,7 @@ public class Scanner {
 	}
 
 	protected String getIdentifier() {
+
 		final int startPosition = fCurrentPosition - 1;
 
 		getChar();
@@ -373,427 +638,6 @@ public class Scanner {
 		}
 
 		return fInputString.substring(startPosition, endPosition);
-	}
-
-	private void getNextChar() {
-		fCurrentChar = fInputString.charAt(fCurrentPosition++);
-		if (fCurrentChar == '\\') {
-			// search next non-whitespace character
-			while (fInputString.length() > fCurrentPosition) {
-				fCurrentChar = fInputString.charAt(fCurrentPosition++);
-				if (!Character.isWhitespace(fCurrentChar) && fCurrentChar != '\\') {
-					return;
-				}
-				if (fCurrentChar == '\n') {
-					rowCount++;
-					fCurrentColumnStartPosition = fCurrentPosition;
-				}
-			}
-		}
-	}
-
-	/**
-	 * Get the next token from the input string
-	 * 
-	 * @throws SyntaxError
-	 */
-	protected void getNextToken() throws SyntaxError {
-
-		while (fInputString.length() > fCurrentPosition) {
-
-			getNextChar();
-			fToken = TT_EOF;
-
-			if (fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0) {
-				fOperList = getOperator();
-				fToken = TT_OPERATOR;
-				return;
-			}
-
-			if ((fCurrentChar != '\t') && (fCurrentChar != '\r') && (fCurrentChar != ' ')) {
-				if (fCurrentChar == '\n') {
-					rowCount++;
-					fCurrentColumnStartPosition = fCurrentPosition;
-					if (fPackageMode && fRecursionDepth == 0) {
-						fToken = TT_NEWLINE;
-						return;
-					}
-					continue; // while loop
-				}
-				if (Character.isLetter(fCurrentChar) || (fCurrentChar == '$')) {
-					// the Character.isUnicodeIdentifierStart method doesn't
-					// work in Google Web Toolkit:
-					fToken = TT_IDENTIFIER;
-					return;
-				}
-				if ((fCurrentChar >= '0') && (fCurrentChar <= '9')) {
-					fToken = TT_DIGIT;
-
-					return;
-				}
-				if (fCurrentChar == '(' && fInputString.length() > fCurrentPosition
-						&& fInputString.charAt(fCurrentPosition) == '*') {
-					getComment();
-					continue;
-				}
-
-				switch (fCurrentChar) {
-
-				case '(':
-					fToken = TT_PRECEDENCE_OPEN;
-
-					break;
-				case ')':
-					fToken = TT_PRECEDENCE_CLOSE;
-
-					break;
-				case '{':
-					fToken = TT_LIST_OPEN;
-
-					break;
-				case '}':
-					fToken = TT_LIST_CLOSE;
-
-					break;
-				case '[':
-					fToken = TT_ARGUMENTS_OPEN;
-					if (fInputString.length() > fCurrentPosition && fInputString.charAt(fCurrentPosition) == '[') {
-						fCurrentPosition++;
-						fToken = TT_PARTOPEN;
-					}
-					break;
-				case ']':
-					fToken = TT_ARGUMENTS_CLOSE;
-					break;
-				case ',':
-					fToken = TT_COMMA;
-
-					break;
-				case '_':
-					fToken = TT_BLANK;
-					if (fInputString.length() > fCurrentPosition) {
-						if (fInputString.charAt(fCurrentPosition) == '_') {
-							fCurrentPosition++;
-							if (fInputString.length() > fCurrentPosition
-									&& fInputString.charAt(fCurrentPosition) == '_') {
-								fCurrentPosition++;
-								fToken = TT_BLANK_BLANK_BLANK;
-								break;
-							}
-							fToken = TT_BLANK_BLANK;
-							break;
-						} else if (fInputString.charAt(fCurrentPosition) == '.') {
-							fCurrentPosition++;
-							fToken = TT_BLANK_OPTIONAL;
-							break;
-						} else if (fInputString.charAt(fCurrentPosition) == ':') {
-							fCurrentPosition++;
-							fToken = TT_BLANK_COLON;
-							break;
-						}
-					}
-
-					break;
-				case '.':
-					if (fInputString.length() > fCurrentPosition && (fInputString.charAt(fCurrentPosition) >= '0')
-							&& (fInputString.charAt(fCurrentPosition) <= '9')) {
-						// don't increment fCurrentPosition (see
-						// getNumberString())
-						fToken = TT_DIGIT; // floating-point number
-					}
-
-					break;
-				case '"':
-					fToken = TT_STRING;
-
-					break;
-				case '\'':
-					fToken = TT_DERIVATIVE;
-					break;
-				case '%':
-					fToken = TT_PERCENT;
-
-					break;
-				case '#':
-					fToken = TT_SLOT;
-					if (fInputString.length() > fCurrentPosition && fInputString.charAt(fCurrentPosition) == '#') {
-						fCurrentPosition++;
-						fToken = TT_SLOTSEQUENCE;
-					}
-
-					break;
-				default:
-					throwSyntaxError("unexpected character: '" + fCurrentChar + "'");
-				}
-
-				if (fToken == TT_EOF) {
-					throwSyntaxError("token not found");
-				}
-
-				return;
-			}
-		}
-
-		fCurrentPosition = fInputString.length() + 1;
-		fCurrentChar = ' ';
-		fToken = TT_EOF;
-	}
-
-	protected Object[] getNumberString() {
-		final Object[] result = new Object[2];
-		numFormat = 10;
-		int startPosition = fCurrentPosition - 1;
-		final char firstCh = fCurrentChar;
-		char dFlag = ' ';
-		// first digit
-		if (fCurrentChar == '.') {
-			dFlag = fCurrentChar;
-		}
-		getChar();
-		if (Config.EXPLICIT_TIMES_OPERATOR) {
-			if (firstCh == '0') {
-				switch (fCurrentChar) {
-				case 'b': // binary format
-					numFormat = 2;
-					startPosition = fCurrentPosition;
-					getChar();
-					break;
-				case 'B': // binary format
-					numFormat = 2;
-					startPosition = fCurrentPosition;
-					getChar();
-					break;
-				case 'o': // octal format
-					numFormat = 8;
-					startPosition = fCurrentPosition;
-					getChar();
-					break;
-				case 'O': // octal format
-					numFormat = 8;
-					startPosition = fCurrentPosition;
-					getChar();
-					break;
-				case 'x': // hexadecimal format
-					numFormat = 16;
-					startPosition = fCurrentPosition;
-					getChar();
-					break;
-				case 'X': // hexadecimal format
-					numFormat = 16;
-					startPosition = fCurrentPosition;
-					getChar();
-					break;
-				default:
-				}
-			}
-		}
-
-		if (numFormat == 2) {
-			while ((fCurrentChar >= '0') && (fCurrentChar <= '1')) {
-				getChar();
-			}
-		} else if (numFormat == 8) {
-			while ((fCurrentChar >= '0') && (fCurrentChar <= '7')) {
-				getChar();
-			}
-		} else if (numFormat == 16) {
-			while (((fCurrentChar >= '0') && (fCurrentChar <= '9')) || ((fCurrentChar >= 'a') && (fCurrentChar <= 'f'))
-					|| ((fCurrentChar >= 'A') && (fCurrentChar <= 'F'))) {
-				getChar();
-			}
-		} else {
-			while (((fCurrentChar >= '0') && (fCurrentChar <= '9')) || (fCurrentChar == '.')) {
-				if (fCurrentChar == '.') {
-					if ((fCurrentChar == '.') && (dFlag != ' ')) {
-						break;
-					}
-					dFlag = fCurrentChar;
-					getChar();
-				} else {
-					getChar();
-				}
-			}
-			if (dFlag != ' ') {
-				numFormat = -1;
-			}
-		}
-
-		if ((fCurrentChar == 'E') || (fCurrentChar == 'e')) {
-			if (Config.EXPLICIT_TIMES_OPERATOR) {
-				getChar();
-				if ((fCurrentChar == '+') || (fCurrentChar == '-')) {
-					getChar();
-				}
-				while ((fCurrentChar >= '0') && (fCurrentChar <= '9')) {
-					getChar();
-				}
-			}
-		} else {
-			if (numFormat < 0) {
-				if (fCurrentChar == '*') {
-					int lastPosition = fCurrentPosition;
-					getChar();
-					if (fCurrentChar == '^') {
-						getChar();
-						if ((fCurrentChar == '+') || (fCurrentChar == '-')) {
-							getChar();
-						}
-						if ((fCurrentChar >= '0') && (fCurrentChar <= '9')) {
-							while ((fCurrentChar >= '0') && (fCurrentChar <= '9')) {
-								getChar();
-							}
-						} else {
-							fCurrentPosition = lastPosition;
-						}
-					} else {
-						fCurrentPosition = lastPosition;
-					}
-				}
-			}
-		}
-
-		int endPosition = fCurrentPosition--;
-		result[0] = fInputString.substring(startPosition, --endPosition);
-		result[1] = Integer.valueOf(numFormat);
-		return result;
-	}
-
-	/**
-	 * protected List<Operator> getOperator()
-	 * 
-	 * @return
-	 */
-	protected List<Operator> getOperator() {
-		char lastChar;
-		final int startPosition = fCurrentPosition - 1;
-		fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
-		List<Operator> list = fFactory.getOperatorList(fOperatorString);
-		List<Operator> lastList = null;
-		int lastOperatorPosition = -1;
-		if (list != null) {
-			lastList = list;
-			lastOperatorPosition = fCurrentPosition;
-		}
-		getChar();
-		while (fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0) {
-			lastChar = fCurrentChar;
-			fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
-			list = fFactory.getOperatorList(fOperatorString);
-			if (list != null) {
-				lastList = list;
-				lastOperatorPosition = fCurrentPosition;
-			}
-			getChar();
-			if (lastChar == ';' && fCurrentChar != ';') {
-				break;
-			}
-		}
-		if (lastOperatorPosition > 0) {
-			fCurrentPosition = lastOperatorPosition;
-			return lastList;
-		}
-		final int endPosition = fCurrentPosition--;
-		fCurrentPosition = startPosition;
-		throwSyntaxError("Operator token not found: " + fInputString.substring(startPosition, endPosition - 1));
-		return null;
-	}
-
-	protected String getIntegerString() {
-		numFormat = 10;
-		int startPosition = fCurrentPosition - 1;
-		getChar();
-		while ((fCurrentChar >= '0') && (fCurrentChar <= '9')) {
-			getChar();
-		}
-		int endPosition = fCurrentPosition--;
-		return fInputString.substring(startPosition, --endPosition);
-	}
-	
-	protected StringBuilder getStringBuilder() throws SyntaxError {
-		final StringBuilder ident = new StringBuilder();
-
-		if (fInputString.length() > fCurrentPosition) {
-			fCurrentChar = fInputString.charAt(fCurrentPosition++);
-		} else {
-			throwSyntaxError("string - end of string not reached.");
-		}
-		if ((fCurrentChar == '\n') || (fToken == TT_EOF)) {
-			throwSyntaxError("string -" + ident.toString() + "- contains no character.");
-		}
-
-		while (fCurrentChar != '"') {
-			if (fCurrentChar == '\\') {
-				if (fInputString.length() > fCurrentPosition) {
-					fCurrentChar = fInputString.charAt(fCurrentPosition++);
-
-					switch (fCurrentChar) {
-
-					case '\\':
-						ident.append(fCurrentChar);
-
-						break;
-					case 'n':
-						ident.append('\n');
-
-						break;
-					case 't':
-						ident.append('\t');
-
-						break;
-					default:
-						throwSyntaxError("string - unknown character after back-slash.");
-					}
-				} else {
-					throwSyntaxError("string - unknown character after back-slash.");
-				}
-
-				if (fInputString.length() > fCurrentPosition) {
-					fCurrentChar = fInputString.charAt(fCurrentPosition++);
-				} else {
-					throwSyntaxError("string - end of string not reached.");
-				}
-			} else {
-				if ((fCurrentChar != '"') && (fToken == TT_EOF)) {
-					throwSyntaxError("string -" + ident.toString() + "- not closed.");
-				}
-
-				ident.append(fCurrentChar);
-				if (fInputString.length() > fCurrentPosition) {
-					fCurrentChar = fInputString.charAt(fCurrentPosition++);
-				} else {
-					throwSyntaxError("string - end of string not reached.");
-				}
-			}
-		}
-
-		return ident;
-	}
-
-	protected void initialize(final String s) throws SyntaxError {
-		initializeNullScanner();
-		StringBuilder buf = new StringBuilder(s.length());
-		fInputString = Characters.substituteCharacters(s, buf);
-		getNextToken();
-	}
-
-	private void initializeNullScanner() {
-		fInputString = null;
-		fToken = TT_EOF;
-		fCurrentPosition = 0;
-		rowCount = 0;
-		fCurrentColumnStartPosition = 0;
-	}
-
-	/**
-	 * Determines if the current character is white space according to <code>Character#isWhitespace()</code> method.
-	 * 
-	 * @return
-	 */
-	protected boolean isWhitespace() {
-		if (fInputString.length() > fCurrentPosition) {
-			return Character.isWhitespace(fInputString.charAt(fCurrentPosition));
-		}
-		return false;
 	}
 
 	final private String optimizedCurrentTokenSource1(final int startPosition, final int endPosition) {
@@ -917,13 +761,194 @@ public class Scanner {
 		}
 	}
 
-	protected void throwSyntaxError(final String error) throws SyntaxError {
-		throw new SyntaxError(fCurrentPosition - 1, rowCount, fCurrentPosition - fCurrentColumnStartPosition,
-				getErrorLine(), error, 1);
+	protected Object[] getNumberString() {
+		final Object[] result = new Object[2];
+		numFormat = 10;
+		int startPosition = fCurrentPosition - 1;
+		final char firstCh = fCurrentChar;
+		char dFlag = ' ';
+		// first digit
+		if (fCurrentChar == '.') {
+			dFlag = fCurrentChar;
+		}
+		getChar();
+		if (Config.EXPLICIT_TIMES_OPERATOR) {
+			if (firstCh == '0') {
+				switch (fCurrentChar) {
+				case 'b': // binary format
+					numFormat = 2;
+					startPosition = fCurrentPosition;
+					getChar();
+					break;
+				case 'B': // binary format
+					numFormat = 2;
+					startPosition = fCurrentPosition;
+					getChar();
+					break;
+				case 'o': // octal format
+					numFormat = 8;
+					startPosition = fCurrentPosition;
+					getChar();
+					break;
+				case 'O': // octal format
+					numFormat = 8;
+					startPosition = fCurrentPosition;
+					getChar();
+					break;
+				case 'x': // hexadecimal format
+					numFormat = 16;
+					startPosition = fCurrentPosition;
+					getChar();
+					break;
+				case 'X': // hexadecimal format
+					numFormat = 16;
+					startPosition = fCurrentPosition;
+					getChar();
+					break;
+				}
+			}
+		}
+
+		if (numFormat == 2) {
+			while ((fCurrentChar >= '0') && (fCurrentChar <= '1')) {
+				getChar();
+			}
+		} else if (numFormat == 8) {
+			while ((fCurrentChar >= '0') && (fCurrentChar <= '7')) {
+				getChar();
+			}
+		} else if (numFormat == 16) {
+			while (((fCurrentChar >= '0') && (fCurrentChar <= '9')) || ((fCurrentChar >= 'a') && (fCurrentChar <= 'f'))
+					|| ((fCurrentChar >= 'A') && (fCurrentChar <= 'F'))) {
+				getChar();
+			}
+		} else {
+			while (((fCurrentChar >= '0') && (fCurrentChar <= '9')) || (fCurrentChar == '.')) {
+				// if ((ch == '.') || (ch == 'E') || (ch == 'e')) {
+				if (fCurrentChar == '.') {
+					if ((fCurrentChar == '.') && (dFlag != ' ')) {
+						break;
+					}
+					dFlag = fCurrentChar;
+					getChar();
+				} else {
+					getChar();
+				}
+			}
+			if (dFlag != ' ') {
+				numFormat = -1;
+			}
+		}
+
+		if ((fCurrentChar == 'E') || (fCurrentChar == 'e')) {
+			if (Config.EXPLICIT_TIMES_OPERATOR) {
+				numFormat = -1;
+				getChar();
+				if ((fCurrentChar == '+') || (fCurrentChar == '-')) {
+					getChar();
+				}
+				while (((fCurrentChar >= '0') && (fCurrentChar <= '9'))) {
+					getChar();
+				}
+			}
+		} else {
+			if (numFormat < 0) {
+				if (fCurrentChar == '*') {
+					int lastPosition = fCurrentPosition;
+					getChar();
+					if (fCurrentChar == '^') {
+						getChar();
+						if ((fCurrentChar == '+') || (fCurrentChar == '-')) {
+							getChar();
+						}
+						if (((fCurrentChar >= '0') && (fCurrentChar <= '9'))) {
+							while (((fCurrentChar >= '0') && (fCurrentChar <= '9'))) {
+								getChar();
+							}
+						} else {
+							fCurrentPosition = lastPosition;
+						}
+					} else {
+						fCurrentPosition = lastPosition;
+					}
+				}
+			}
+		}
+		int endPosition = fCurrentPosition--;
+		result[0] = fInputString.substring(startPosition, --endPosition);
+		result[1] = Integer.valueOf(numFormat);
+		return result;
 	}
 
-	protected void throwSyntaxError(final String error, final int errorLength) throws SyntaxError {
-		throw new SyntaxError(fCurrentPosition - errorLength, rowCount, fCurrentPosition - fCurrentColumnStartPosition,
-				getErrorLine(), error, errorLength);
+	protected String getIntegerString() {
+		numFormat = 10;
+		int startPosition = fCurrentPosition - 1;
+		getChar();
+		while ((fCurrentChar >= '0') && (fCurrentChar <= '9')) {
+			getChar();
+		}
+		int endPosition = fCurrentPosition--;
+		return fInputString.substring(startPosition, --endPosition);
+	}
+
+	protected StringBuilder getStringBuilder() throws SyntaxError {
+		final StringBuilder ident = new StringBuilder();
+
+		if (fInputString.length() > fCurrentPosition) {
+			fCurrentChar = fInputString.charAt(fCurrentPosition++);
+		} else {
+			throwSyntaxError("string - end of string not reached.");
+		}
+		if ((fCurrentChar == '\n') || (fToken == TT_EOF)) {
+			throwSyntaxError("string -" + ident.toString() + "- contains no character.");
+		}
+
+		while (fCurrentChar != '"' && fInputString.length() > fCurrentPosition) {
+
+			if ((fCurrentChar == '\\')) {
+				if (fInputString.length() > fCurrentPosition) {
+					fCurrentChar = fInputString.charAt(fCurrentPosition++);
+
+					switch (fCurrentChar) {
+
+					case '\\':
+						ident.append(fCurrentChar);
+
+						break;
+					case 'n':
+						ident.append('\n');
+
+						break;
+					case 't':
+						ident.append('\t');
+
+						break;
+					default:
+						throwSyntaxError("string - unknown character after back-slash.");
+					}
+				} else {
+					throwSyntaxError("string - unknown character after back-slash.");
+				}
+
+				if (fInputString.length() > fCurrentPosition) {
+					fCurrentChar = fInputString.charAt(fCurrentPosition++);
+				} else {
+					throwSyntaxError("string - end of string not reached.");
+				}
+			} else {
+				if ((fCurrentChar != '"') && (fToken == TT_EOF)) {
+					throwSyntaxError("string -" + ident.toString() + "- not closed.");
+				}
+
+				ident.append(fCurrentChar);
+				if (fInputString.length() > fCurrentPosition) {
+					fCurrentChar = fInputString.charAt(fCurrentPosition++);
+				} else {
+					throwSyntaxError("string - end of string not reached.");
+				}
+			}
+		}
+
+		return ident;
 	}
 }

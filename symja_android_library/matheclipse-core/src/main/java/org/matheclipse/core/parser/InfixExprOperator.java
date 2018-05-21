@@ -1,12 +1,12 @@
 package org.matheclipse.core.parser;
 
 import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.client.operator.Operator;
 
-class InfixExprOperator extends AbstractExprOperator {
+class InfixExprOperator extends Operator {
 	private int fGrouping;
 
 	public final static int NONE = 0;
@@ -21,8 +21,7 @@ class InfixExprOperator extends AbstractExprOperator {
 	}
 
 	/**
-	 * Return the grouping of the Infix-Operator (i.e. NONE,LEFT_ASSOCIATIVE,
-	 * RIGHT_ASSOCIATIVE)
+	 * Return the grouping of the Infix-Operator (i.e. NONE,LEFT_ASSOCIATIVE, RIGHT_ASSOCIATIVE)
 	 * 
 	 * @return
 	 */
@@ -30,7 +29,8 @@ class InfixExprOperator extends AbstractExprOperator {
 		return fGrouping;
 	}
 
-	public IASTMutable createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs, final IExpr rhs) {
+	public IASTMutable createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs,
+			final IExpr rhs) {
 		if (fOperatorString.equals("//")) {
 			// lhs // rhs ==> rhs[lhs]
 			IASTAppendable function = F.ast(rhs);

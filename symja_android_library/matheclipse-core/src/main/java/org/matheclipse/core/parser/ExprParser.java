@@ -39,8 +39,10 @@ import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorExpr;
+import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.operator.InfixOperator;
+import org.matheclipse.parser.client.operator.Operator;
 
 /**
  * Create an expression of the <code>ASTNode</code> class-hierarchy from a math formulas string representation
@@ -48,7 +50,7 @@ import org.matheclipse.parser.client.operator.InfixOperator;
  * See <a href="http://en.wikipedia.org/wiki/Operator-precedence_parser">Operator -precedence parser</a> for the idea,
  * how to parse the operators depending on their precedence.
  */
-public class ExprParser extends ExprScanner {
+public class ExprParser extends Scanner {
 	static class NVisitorExpr extends VisitorExpr {
 		final int fPrecision;
 
@@ -103,6 +105,9 @@ public class ExprParser extends ExprScanner {
 		}
 		return false;
 	}
+	
+
+	protected IExprParserFactory fFactory;
 
 	/**
 	 * Set to true if the expression shouldn't be evaluated on input
@@ -305,7 +310,7 @@ public class ExprParser extends ExprScanner {
 	 * @return <code>null</code> if no binary operator could be determined
 	 */
 	private InfixExprOperator determineBinaryOperator() {
-		AbstractExprOperator oper = null;
+		Operator oper = null;
 		for (int i = 0; i < fOperList.size(); i++) {
 			oper = fOperList.get(i);
 			if (oper instanceof InfixExprOperator) {
@@ -321,7 +326,7 @@ public class ExprParser extends ExprScanner {
 	 * @return <code>null</code> if no postfix operator could be determined
 	 */
 	private PostfixExprOperator determinePostfixOperator() {
-		AbstractExprOperator oper = null;
+		Operator oper = null;
 		for (int i = 0; i < fOperList.size(); i++) {
 			oper = fOperList.get(i);
 			if (oper instanceof PostfixExprOperator) {
@@ -337,7 +342,7 @@ public class ExprParser extends ExprScanner {
 	 * @return <code>null</code> if no prefix operator could be determined
 	 */
 	private PrefixExprOperator determinePrefixOperator() {
-		AbstractExprOperator oper = null;
+		Operator oper = null;
 		for (int i = 0; i < fOperList.size(); i++) {
 			oper = fOperList.get(i);
 			if (oper instanceof PrefixExprOperator) {
@@ -392,7 +397,7 @@ public class ExprParser extends ExprScanner {
 			getNextToken();
 			if (fToken == TT_PRECEDENCE_OPEN) {
 				if (!Config.EXPLICIT_TIMES_OPERATOR) {
-					AbstractExprOperator oper = fFactory.get("Times");
+					Operator oper = fFactory.get("Times");
 					if (Config.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
 						return getTimes(temp);
 					}
@@ -858,6 +863,45 @@ public class ExprParser extends ExprScanner {
 		return new NumStr(fFloatStr, fExponent);
 	}
 
+	protected boolean isOperatorCharacters() {
+		return fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0;
+	}
+	
+	protected List<Operator> getOperator() {
+		char lastChar;
+		final int startPosition = fCurrentPosition - 1;
+		fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
+		List<Operator> list = fFactory.getOperatorList(fOperatorString);
+		List<Operator> lastList = null;
+		int lastOperatorPosition = -1;
+		if (list != null) {
+			lastList = list;
+			lastOperatorPosition = fCurrentPosition;
+		}
+		getChar();
+		while (fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0) {
+			lastChar = fCurrentChar;
+			fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
+			list = fFactory.getOperatorList(fOperatorString);
+			if (list != null) {
+				lastList = list;
+				lastOperatorPosition = fCurrentPosition;
+			}
+			getChar();
+			if (lastChar == ';' && fCurrentChar != ';') {
+				break;
+			}
+		}
+		if (lastOperatorPosition > 0) {
+			fCurrentPosition = lastOperatorPosition;
+			return lastList;
+		}
+		final int endPosition = fCurrentPosition--;
+		fCurrentPosition = startPosition;
+		throwSyntaxError("Operator token not found: " + fInputString.substring(startPosition, endPosition - 1));
+		return null;
+	}
+	
 	/**
 	 * Get a <i>part [[..]]</i> of an expression <code>{a,b,c}[[2]]</code> &rarr; <code>b</code>
 	 * 
@@ -1067,7 +1111,7 @@ public class ExprParser extends ExprScanner {
 	 */
 	private IExpr parseExpression(IExpr lhs, final int min_precedence) {
 		IExpr rhs = null;
-		AbstractExprOperator oper;
+		Operator oper;
 		InfixExprOperator infixOperator;
 		PostfixExprOperator postfixOperator;
 		while (true) {

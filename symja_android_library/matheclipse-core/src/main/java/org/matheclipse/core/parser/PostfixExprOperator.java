@@ -2,8 +2,9 @@ package org.matheclipse.core.parser;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.client.operator.Operator;
 
-class PostfixExprOperator extends AbstractExprOperator {
+class PostfixExprOperator extends Operator {
 
 	public PostfixExprOperator(final String oper, final String functionName, final int precedence) {
 		super(oper, functionName, precedence);

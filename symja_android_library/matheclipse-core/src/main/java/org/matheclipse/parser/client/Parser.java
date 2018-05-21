@@ -53,6 +53,9 @@ public class Parser extends Scanner {
 	 */
 	private final boolean fRelaxedSyntax;
 
+
+	protected IParserFactory fFactory;
+	
 	/**
 	 * List of ASTNodes used for parsing packages
 	 */
@@ -550,6 +553,50 @@ public class Parser extends Scanner {
 
 	}
 
+	protected boolean isOperatorCharacters() {
+		return fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0;
+	}
+	
+	/**
+	 * protected List<Operator> getOperator()
+	 * 
+	 * @return
+	 */
+	protected List<Operator> getOperator() {
+		char lastChar;
+		final int startPosition = fCurrentPosition - 1;
+		fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
+		List<Operator> list = fFactory.getOperatorList(fOperatorString);
+		List<Operator> lastList = null;
+		int lastOperatorPosition = -1;
+		if (list != null) {
+			lastList = list;
+			lastOperatorPosition = fCurrentPosition;
+		}
+		getChar();
+		while (fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0) {
+			lastChar = fCurrentChar;
+			fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
+			list = fFactory.getOperatorList(fOperatorString);
+			if (list != null) {
+				lastList = list;
+				lastOperatorPosition = fCurrentPosition;
+			}
+			getChar();
+			if (lastChar == ';' && fCurrentChar != ';') {
+				break;
+			}
+		}
+		if (lastOperatorPosition > 0) {
+			fCurrentPosition = lastOperatorPosition;
+			return lastList;
+		}
+		final int endPosition = fCurrentPosition--;
+		fCurrentPosition = startPosition;
+		throwSyntaxError("Operator token not found: " + fInputString.substring(startPosition, endPosition - 1));
+		return null;
+	}
+	
 	private int getIntegerNumber() throws SyntaxError {
 		final String number = getIntegerString();
 		int intValue = 0;
