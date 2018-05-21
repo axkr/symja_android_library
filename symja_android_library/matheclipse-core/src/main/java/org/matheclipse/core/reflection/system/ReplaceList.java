@@ -72,7 +72,7 @@ public class ReplaceList extends AbstractEvaluator {
 			IExpr rules = engine.evaluate(ast.arg2());
 			if (ast.isAST3()) {
 				IExpr arg3 = engine.evaluate(ast.arg3());
-				if (arg3.isSignedNumber()) {
+				if (arg3.isReal()) {
 					maxNumberOfResults = ((ISignedNumber) arg3).toInt();
 				}
 			}

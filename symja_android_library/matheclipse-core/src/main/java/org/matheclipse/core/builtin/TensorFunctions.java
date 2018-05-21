@@ -242,7 +242,7 @@ public class TensorFunctions {
 				if (ast.size() >= 3) {
 					IExpr arg2 = ast.arg2();
 					if (arg2.equals(F.All)) {
-					} else if (arg2.isSignedNumber()) {
+					} else if (arg2.isReal()) {
 						ISignedNumber sn = (ISignedNumber) arg2;
 						n = sn.toIntDefault(Integer.MIN_VALUE);
 					}

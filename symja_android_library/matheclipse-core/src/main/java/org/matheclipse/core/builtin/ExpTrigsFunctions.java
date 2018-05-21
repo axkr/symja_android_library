@@ -807,7 +807,7 @@ public class ExpTrigsFunctions {
 
 		@Override
 		public IExpr e2ObjArg(final IExpr x, final IExpr y) {
-			if (x.isZero() && y.isSignedNumber()) {
+			if (x.isZero() && y.isReal()) {
 				if (y.isZero()) {
 					return F.Indeterminate;
 				}
@@ -816,7 +816,7 @@ public class ExpTrigsFunctions {
 				}
 				return F.CNPiHalf;
 			}
-			if (y.isZero() && x.isSignedNumber() && !x.isZero()) {
+			if (y.isZero() && x.isReal() && !x.isZero()) {
 				return F.Times(F.Subtract(F.C1, x.unitStep()), F.Pi);
 			}
 			IExpr yUnitStep = y.unitStep();
@@ -961,7 +961,7 @@ public class ExpTrigsFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
 
-			if (ast.arg1().isSignedNumber()) {
+			if (ast.arg1().isReal()) {
 
 				if (ast.arg1().isInteger()) {
 					int i = ((IInteger) ast.arg1()).toIntDefault(Integer.MIN_VALUE);
@@ -1607,7 +1607,7 @@ public class ExpTrigsFunctions {
 				// arg2*Log(arg1)
 				IExpr temp = F.eval(Times(exponent, F.Log(base)));
 				IExpr imTemp = F.eval(F.Im(temp));
-				if (imTemp.isSignedNumber()) {
+				if (imTemp.isReal()) {
 					if (((ISignedNumber) imTemp).isGreaterThan(F.num(-1 * Math.PI))
 							&& ((ISignedNumber) imTemp).isLessThan(F.num(Math.PI))) {
 						// Log(arg1 ^ arg2) == arg2*Log(arg1) ||| -Pi <
@@ -1983,7 +1983,7 @@ public class ExpTrigsFunctions {
 		private static IExpr evalInterval(final IExpr arg1) {
 			IExpr l = arg1.lower();
 			IExpr u = arg1.upper();
-			if (l.isSignedNumber() && u.isSignedNumber()) {
+			if (l.isReal() && u.isReal()) {
 				double ld = l.evalDouble();
 				double ud = u.evalDouble();
 				double diff = Math.abs(ld - ud);

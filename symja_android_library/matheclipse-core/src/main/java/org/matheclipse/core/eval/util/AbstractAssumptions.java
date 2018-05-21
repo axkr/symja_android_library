@@ -165,7 +165,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
 	 *         all other cases.
 	 */
 	public static boolean assumeNegative(final IExpr expr) {
-		if (expr.isSignedNumber()) {
+		if (expr.isReal()) {
 			return ((ISignedNumber) expr).isNegative();
 		}
 		if (expr.isNumber()) {
@@ -184,7 +184,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
 	}
 
 	public static boolean assumeLessThan(final IExpr expr, ISignedNumber number) {
-		if (expr.isSignedNumber()) {
+		if (expr.isReal()) {
 			return ((ISignedNumber) expr).isLessThan(number);
 		}
 		if (expr.isNumber()) {
@@ -210,7 +210,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
 	 *         in all other cases.
 	 */
 	public static boolean assumeNonNegative(final IExpr expr) {
-		if (expr.isSignedNumber()) {
+		if (expr.isReal()) {
 			return !((ISignedNumber) expr).isNegative();
 		}
 		if (expr.isNumber()) {
@@ -229,7 +229,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
 	}
 
 	public static boolean assumeGreaterEqual(final IExpr expr, final ISignedNumber number) {
-		if (expr.isSignedNumber()) {
+		if (expr.isReal()) {
 			return !((ISignedNumber) expr).isLessThan(number);
 		}
 		if (expr.isNumber()) {
@@ -255,7 +255,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
 	 *         all other cases.
 	 */
 	public static boolean assumePositive(final IExpr expr) {
-		if (expr.isSignedNumber()) {
+		if (expr.isReal()) {
 			return ((ISignedNumber) expr).isPositive();
 		}
 		if (expr.isNumber()) {
@@ -274,7 +274,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
 	}
 
 	public static boolean assumeGreaterThan(final IExpr expr, ISignedNumber number) {
-		if (expr.isSignedNumber()) {
+		if (expr.isReal()) {
 			return ((ISignedNumber) expr).isGreaterThan(number);
 		}
 		if (expr.isNumber()) {
@@ -352,7 +352,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
 	 *         real number. In all other cases return <code>null</code>.
 	 */
 	public static ISymbol assumeReal(final IExpr expr) {
-		if (expr.isSignedNumber()) {
+		if (expr.isReal()) {
 			return F.True;
 		}
 		if (expr.isNumber()) {

@@ -114,7 +114,7 @@ public class Iterator {
 				if (step.isZero()) {
 					throw NoEvalException.CONST;
 				}
-				if (step.isSignedNumber()) {
+				if (step.isReal()) {
 					if (((ISignedNumber) step).isNegative()) {
 						if (F.LessEqual.ofQ(evalEngine, maxCounterOrList, count)) {
 							return true;
@@ -127,7 +127,7 @@ public class Iterator {
 				}
 				// else {
 				IExpr sub = evalEngine.evaluate(Divide(Subtract(maxCounterOrList, count), step));
-				if (sub.isSignedNumber()) {
+				if (sub.isReal()) {
 					return !((ISignedNumber) sub).isNegative();
 				}
 				try {
@@ -197,21 +197,21 @@ public class Iterator {
 				variable.pushLocalVariable();
 			}
 			lowerLimit = originalLowerLimit;
-			if (!(originalLowerLimit.isSignedNumber())) {
+			if (!(originalLowerLimit.isReal())) {
 				lowerLimit = evalEngine.evalWithoutNumericReset(originalLowerLimit);
 			}
 			maxCounterOrList = originalUpperLimit;
-			if (!(originalUpperLimit.isSignedNumber())) {
+			if (!(originalUpperLimit.isReal())) {
 				maxCounterOrList = evalEngine.evalWithoutNumericReset(originalUpperLimit);
 			}
 			// points to first element in maxCounterOrList if it's a list
 			maxCounterOrListIndex = 1;
 
 			step = originalStep;
-			if (!(originalStep.isSignedNumber())) {
+			if (!(originalStep.isReal())) {
 				step = evalEngine.evalWithoutNumericReset(originalStep);
 			}
-			if (step.isSignedNumber()) {
+			if (step.isReal()) {
 				if (step.isNegative()) {
 					if (evalEngine.evaluate(Less(lowerLimit, maxCounterOrList)) == F.True) {
 						return false;
@@ -870,7 +870,7 @@ public class Iterator {
 					} catch (ArithmeticException ae) {
 						//
 					}
-				} else if (upperLimit.isSignedNumber()) {
+				} else if (upperLimit.isReal()) {
 					return new ISignedNumberIterator(variable, F.C1, (ISignedNumber) upperLimit, F.C1);
 				}
 				break;
@@ -901,7 +901,7 @@ public class Iterator {
 					} catch (ArithmeticException ae) {
 						//
 					}
-				} else if (upperLimit.isSignedNumber()) {
+				} else if (upperLimit.isReal()) {
 					return new ISignedNumberIterator(variable, F.C1, (ISignedNumber) upperLimit, F.C1);
 				}
 
@@ -934,7 +934,7 @@ public class Iterator {
 					} catch (ArithmeticException ae) {
 						//
 					}
-				} else if (lowerLimit.isSignedNumber() && upperLimit.isSignedNumber()) {
+				} else if (lowerLimit.isReal() && upperLimit.isReal()) {
 					ISignedNumber iLowerLimit = (ISignedNumber) lowerLimit;
 					ISignedNumber iUpperLimit = (ISignedNumber) upperLimit;
 					return new ISignedNumberIterator(variable, iLowerLimit, iUpperLimit, F.C1);
@@ -970,7 +970,7 @@ public class Iterator {
 					} catch (ArithmeticException ae) {
 						//
 					}
-				} else if (lowerLimit.isSignedNumber() && upperLimit.isSignedNumber() && step.isSignedNumber()) {
+				} else if (lowerLimit.isReal() && upperLimit.isReal() && step.isReal()) {
 					return new ISignedNumberIterator(variable, (ISignedNumber) lowerLimit, (ISignedNumber) upperLimit,
 							(ISignedNumber) step);
 				}
@@ -1037,7 +1037,7 @@ public class Iterator {
 					} catch (ArithmeticException ae) {
 						//
 					}
-				} else if (upperLimit.isSignedNumber()) {
+				} else if (upperLimit.isReal()) {
 					return new ISignedNumberIterator(variable, F.C1, (ISignedNumber) upperLimit, F.C1);
 				}
 				break;
@@ -1064,7 +1064,7 @@ public class Iterator {
 					} catch (ArithmeticException ae) {
 						//
 					}
-				} else if (lowerLimit.isSignedNumber() && upperLimit.isSignedNumber()) {
+				} else if (lowerLimit.isReal() && upperLimit.isReal()) {
 					return new ISignedNumberIterator(variable, (ISignedNumber) lowerLimit, (ISignedNumber) upperLimit,
 							F.C1);
 				}
@@ -1094,7 +1094,7 @@ public class Iterator {
 					} catch (ArithmeticException ae) {
 						//
 					}
-				} else if (lowerLimit.isSignedNumber() && upperLimit.isSignedNumber() && step.isSignedNumber()) {
+				} else if (lowerLimit.isReal() && upperLimit.isReal() && step.isReal()) {
 					return new ISignedNumberIterator(variable, (ISignedNumber) lowerLimit, (ISignedNumber) upperLimit,
 							(ISignedNumber) step);
 				}

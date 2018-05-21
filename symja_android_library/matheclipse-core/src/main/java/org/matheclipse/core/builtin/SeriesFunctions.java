@@ -1192,7 +1192,7 @@ public class SeriesFunctions {
 					}
 				}
 
-				if (x0.isSignedNumber()) {
+				if (x0.isReal()) {
 					try {
 						final int lowerLimit = ((ISignedNumber) x0).toInt();
 						if (lowerLimit != 0) {

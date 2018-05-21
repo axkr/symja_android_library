@@ -82,7 +82,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
 				ISymbol xVar = (ISymbol) xVarList.arg1();
 				IExpr xMinExpr = xVarList.arg2();
 				IExpr xMaxExpr = xVarList.arg3();
-				if (xMinExpr.isSignedNumber() && xMaxExpr.isSignedNumber()) {
+				if (xMinExpr.isReal() && xMaxExpr.isReal()) {
 					double xMin = ((ISignedNumber) xMinExpr).doubleValue();
 					double xMax = ((ISignedNumber) xMaxExpr).doubleValue();
 					double xStep = 0.1;

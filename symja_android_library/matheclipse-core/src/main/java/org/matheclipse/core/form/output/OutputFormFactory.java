@@ -561,7 +561,7 @@ public class OutputFormFactory {
 				append(buf, "*");
 				caller = NO_PLUS_CALL;
 			}
-			if (numerator.isSignedNumber()) {
+			if (numerator.isReal()) {
 				convertNumber(buf, (ISignedNumber) numerator, ASTNodeFactory.PLUS_PRECEDENCE, caller);
 			} else if (numerator.isComplex() || numerator.isComplexNumeric()) {
 				convertNumber(buf, (INumber) numerator, ASTNodeFactory.DIVIDE_PRECEDENCE, caller);
@@ -607,7 +607,7 @@ public class OutputFormFactory {
 
 		if (timesAST.size() > 1) {
 			IExpr arg1 = timesAST.arg1();
-			if (arg1.isSignedNumber() && timesAST.size() > 2 && !timesAST.arg2().isNumber()) {
+			if (arg1.isReal() && timesAST.size() > 2 && !timesAST.arg2().isNumber()) {
 				if (arg1.isMinusOne()) {
 					append(buf, "-");
 					showOperator = false;

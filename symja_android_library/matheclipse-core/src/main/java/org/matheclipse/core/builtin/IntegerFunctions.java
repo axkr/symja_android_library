@@ -1221,7 +1221,7 @@ public class IntegerFunctions {
 						if (expr.isInterval1()) {
 							IExpr l = expr.lower();
 							IExpr u = expr.upper();
-							if (l.isSignedNumber() && u.isSignedNumber()) {
+							if (l.isReal() && u.isReal()) {
 								ISignedNumber min = (ISignedNumber) l;
 								ISignedNumber max = (ISignedNumber) u;
 								if (min.sign() < 0) {

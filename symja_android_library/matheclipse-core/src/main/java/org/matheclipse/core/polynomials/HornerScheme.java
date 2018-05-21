@@ -164,7 +164,7 @@ public class HornerScheme {
 						return;
 					} else if (term.get(i).isAST(F.Power, 3)) {
 						IAST pow = (IAST) term.get(i);
-						if (pow.arg1().equals(sym) && pow.arg2().isSignedNumber()) {
+						if (pow.arg1().equals(sym) && pow.arg2().isReal()) {
 							IAST temp = F.ast(term, F.Times, false, i, i + 1);
 							addToMap((ISignedNumber) pow.arg2(), temp);
 							return;
@@ -172,7 +172,7 @@ public class HornerScheme {
 					}
 				}
 			} else if (term.isAST(F.Power, 3)) {
-				if (term.arg1().equals(sym) && term.arg2().isSignedNumber()) {
+				if (term.arg1().equals(sym) && term.arg2().isReal()) {
 					addToMap((ISignedNumber) term.arg2(), F.CD1);
 					return;
 				}

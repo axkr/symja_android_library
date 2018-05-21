@@ -215,7 +215,7 @@ public class Algebra {
 
 			IExpr arg1 = powerAST.arg1();
 			IExpr exponent = powerAST.arg2();
-			if (exponent.isSignedNumber()) {
+			if (exponent.isReal()) {
 				ISignedNumber sn = (ISignedNumber) exponent;
 				if (sn.isMinusOne()) {
 					parts[1] = arg1;
@@ -1517,7 +1517,7 @@ public class Algebra {
 				final EvalEngine engine) throws JASConversionException {
 			final Options options = new Options(ast.topHead(), ast, 2, engine);
 			IExpr option = options.getOption("Modulus");
-			if (option.isSignedNumber()) {
+			if (option.isReal()) {
 				return factorModulus(expr, varList, factorSquareFree, option);
 			}
 			option = options.getOption("GaussianIntegers");
@@ -1895,7 +1895,7 @@ public class Algebra {
 				List<IExpr> varList = eVar.getVarList().copyTo();
 				final Options options = new Options(ast.topHead(), ast, 4, engine);
 				IExpr option = options.getOption("Modulus");
-				if (option.isSignedNumber()) {
+				if (option.isReal()) {
 					try {
 						// found "Modulus" option => use ModIntegerRing
 						ModLongRing modIntegerRing = JASModInteger.option2ModLongRing((ISignedNumber) option);
@@ -2024,7 +2024,7 @@ public class Algebra {
 		private IExpr gcdWithOption(final IAST ast, IExpr expr, VariablesSet eVar, final EvalEngine engine) {
 			final Options options = new Options(ast.topHead(), ast, ast.argSize(), engine);
 			IExpr option = options.getOption("Modulus");
-			if (option.isSignedNumber()) {
+			if (option.isReal()) {
 				return modulusGCD(ast, expr, eVar, option);
 			}
 			return F.NIL;
@@ -2109,7 +2109,7 @@ public class Algebra {
 			if (ast.size() > 3) {
 				final Options options = new Options(ast.topHead(), ast, ast.argSize(), engine);
 				IExpr option = options.getOption("Modulus");
-				if (option.isSignedNumber()) {
+				if (option.isReal()) {
 					try {
 						// found "Modulus" option => use ModIntegerRing
 						List<IExpr> varList = eVar.getVarList().copyTo();
@@ -2261,7 +2261,7 @@ public class Algebra {
 			if (ast.size() == 5) {
 				final Options options = new Options(ast.topHead(), ast, 4, engine);
 				IExpr option = options.getOption("Modulus");
-				if (option.isSignedNumber()) {
+				if (option.isReal()) {
 					IExpr[] result = quotientRemainderModInteger(arg1, arg2, variable, option);
 					if (result == null) {
 						return F.NIL;
@@ -2318,7 +2318,7 @@ public class Algebra {
 			if (ast.size() == 5) {
 				final Options options = new Options(ast.topHead(), ast, 4, engine);
 				IExpr option = options.getOption("Modulus");
-				if (option.isSignedNumber()) {
+				if (option.isReal()) {
 					IExpr[] result = quotientRemainderModInteger(arg1, arg2, variable, option);
 					if (result == null) {
 						return F.NIL;
@@ -2425,7 +2425,7 @@ public class Algebra {
 			if (ast.size() == 5) {
 				final Options options = new Options(ast.topHead(), ast, 4, engine);
 				IExpr option = options.getOption("Modulus");
-				if (option.isSignedNumber()) {
+				if (option.isReal()) {
 					IExpr[] result = quotientRemainderModInteger(arg1, arg2, variable, option);
 					if (result == null) {
 						return F.NIL;

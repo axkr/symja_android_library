@@ -147,7 +147,7 @@ public class BigFractionSym extends AbstractFractionSym {
 		if (expr instanceof IInteger) {
 			return fFraction.compareTo(new BigFraction(((IInteger) expr).toBigNumerator(), BigInteger.ONE));
 		}
-		if (expr.isSignedNumber()) {
+		if (expr.isReal()) {
 			return Double.compare(fFraction.doubleValue(), ((ISignedNumber) expr).doubleValue());
 		}
 		return super.compareTo(expr);

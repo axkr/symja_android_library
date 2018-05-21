@@ -391,7 +391,7 @@ public final class ListFunctions {
 
 		@Override
 		public int toInt(final IExpr position) {
-			if (position.isSignedNumber()) {
+			if (position.isReal()) {
 				try {
 					return ((ISignedNumber) position).toInt();
 				} catch (ArithmeticException ae) {
@@ -1900,7 +1900,7 @@ public final class ListFunctions {
 
 		private static IExpr extract(final IAST list, final IAST position) {
 			final PositionConverter converter = new PositionConverter();
-			if ((position.size() > 1) && (position.arg1().isSignedNumber())) {
+			if ((position.size() > 1) && (position.arg1().isReal())) {
 				return extract(list, position, converter, 1);
 			} else {
 				// construct an array

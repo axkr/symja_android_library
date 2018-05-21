@@ -145,7 +145,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 				method = option.toString();
 			}
 			option = options.getOption("MaxPoints");
-			if (option.isSignedNumber()) {
+			if (option.isReal()) {
 				try {
 					maxPoints = ((ISignedNumber) option).toInt();
 				} catch (ArithmeticException ae) {
@@ -153,7 +153,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 				}
 			}
 			option = options.getOption("MaxIterations");
-			if (option.isSignedNumber()) {
+			if (option.isReal()) {
 				try {
 					maxIterations = ((ISignedNumber) option).toInt();
 				} catch (ArithmeticException ae) {
@@ -161,7 +161,7 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 				}
 			}
 			option = options.getOption("PrecisionGoal");
-			if (option.isSignedNumber()) {
+			if (option.isReal()) {
 				try {
 					precisionGoal = ((ISignedNumber) option).toInt();
 				} catch (ArithmeticException ae) {

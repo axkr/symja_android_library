@@ -264,7 +264,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 				return Boolean.FALSE;
 			}
 		} else if (clazz.equals(Integer.class)) {
-			if (isSignedNumber()) {
+			if (isReal()) {
 				try {
 					return Integer.valueOf(((ISignedNumber) this).toInt());
 				} catch (final ArithmeticException e) {
@@ -454,7 +454,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return this expression converted to a Java <code>double</code> value.
 	 */
 	default double evalDouble() {
-		if (isSignedNumber()) {
+		if (isReal()) {
 			return ((ISignedNumber) this).doubleValue();
 		}
 		throw new WrongArgumentType(this, "Conversion into a double numeric value is not possible!");
@@ -478,7 +478,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>null</code> if the conversion is not possible.
 	 */
 	default ISignedNumber evalSignedNumber() {
-		if (isSignedNumber()) {
+		if (isReal()) {
 			return (ISignedNumber) EvalEngine.get().evalN(this);
 		}
 		return null;
@@ -570,7 +570,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default IExpr greater(final IExpr a1) {
-		if (isSignedNumber() && a1.isSignedNumber()) {
+		if (isReal() && a1.isReal()) {
 			return ((ISignedNumber) this).isGreaterThan(((ISignedNumber) a1)) ? F.True : F.False;
 		}
 		EvalEngine engine = EvalEngine.get();
@@ -584,7 +584,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default IExpr greaterEqual(final IExpr a1) {
-		if (isSignedNumber() && a1.isSignedNumber()) {
+		if (isReal() && a1.isReal()) {
 			return ((ISignedNumber) this).isLessThan(((ISignedNumber) a1)) ? F.False : F.True;
 		}
 		EvalEngine engine = EvalEngine.get();
@@ -784,15 +784,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is the <code>HoldPattern</code> function <code>HoldPattern[&lt;expression&gt;]</code>
-	 * 
-	 * @return
-	 */
-	default boolean isHoldPattern() {
-		return false;
-	}
-
-	/**
 	 * Test if this expression is the function <code>And[&lt;arg&gt;,...]</code> and has at least 2 arguments.
 	 * 
 	 * @return
@@ -864,15 +855,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @see #isAtom()
 	 */
 	default boolean isAST() {
-		return false;
-	}
-
-	/**
-	 * Test if this expression is a Distribution AST (i.e. NormalDistribution(), PoissonDistribution(),...)
-	 * 
-	 * @return
-	 */
-	default boolean isDistribution() {
 		return false;
 	}
 
@@ -1250,6 +1232,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is a Distribution AST (i.e. NormalDistribution(), PoissonDistribution(),...)
+	 * 
+	 * @return
+	 */
+	default boolean isDistribution() {
+		return false;
+	}
+
+	/**
 	 * Test if this expression equals <code>E</code> (base of the natural logarithm; approximately equal to 2.71828...)
 	 * in symbolic or numeric mode.
 	 * 
@@ -1449,6 +1440,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default boolean isHoldOrHoldFormOrDefer() {
+		return false;
+	}
+
+	/**
+	 * Test if this expression is the <code>HoldPattern</code> function <code>HoldPattern[&lt;expression&gt;]</code>
+	 * 
+	 * @return
+	 */
+	default boolean isHoldPattern() {
 		return false;
 	}
 
@@ -1795,7 +1795,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		if (isNegativeResult() || isPositiveResult()) {
 			return true;
 		}
-		if (isSignedNumber()) {
+		if (isReal()) {
 			return true;
 		}
 		if (isNegativeInfinity() || isInfinity()) {
@@ -2167,6 +2167,17 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return false;
 	}
 
+
+	/**
+	 * Test if this expression is a signed real number. I.e. an instance of type <code>IFraction</code> for exact number
+	 * values or <code>INum</code> for approximated numbers.
+	 * 
+	 * @return
+	 */
+	default boolean isReal() {
+		return this instanceof ISignedNumber;
+	}
+	
 	/**
 	 * Test if this expression is a real matrix (i.e. an ASTRealMatrix) or a <code>List[List[...],...,List[...]]</code>
 	 * matrix with elements of type <code>org.matheclipse.core.expression.Num</code>.
@@ -2181,10 +2192,11 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * Test if this expression is a number with no imaginary component. I.e. an instance of type <code>IRational</code>
 	 * or <code>INum</code>.
 	 * 
-	 * @return
+	 * @return 
+	 * @deprecated use {@link isReal()}
 	 */
 	default boolean isRealNumber() {
-		return this instanceof ISignedNumber;
+		return isReal();
 	}
 
 	/**
@@ -2285,14 +2297,16 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is a signed number. I.e. an instance of type <code>ISignedNumber</code>.
+	 * Test if this expression is a signed real number. I.e. an instance of type <code>IFraction</code> for exact number
+	 * values or <code>INum</code> for approximated numbers.
 	 * 
 	 * @return
+	 * @deprecated use {@link #isReal()};
 	 */
 	default boolean isSignedNumber() {
-		return this instanceof ISignedNumber;
+		return isReal();
 	}
-
+	
 	/**
 	 * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the evaluator implements the
 	 * <code>ISignedNumberConstant</code> interface (see package <code>org.matheclipse.core.builtin.constant</code>).
@@ -2513,7 +2527,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default IExpr less(final IExpr a1) {
-		if (isSignedNumber() && a1.isSignedNumber()) {
+		if (isReal() && a1.isReal()) {
 			return ((ISignedNumber) this).isLessThan(((ISignedNumber) a1)) ? F.True : F.False;
 		}
 		EvalEngine engine = EvalEngine.get();
@@ -2527,7 +2541,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default IExpr lessEqual(final IExpr a1) {
-		if (isSignedNumber() && a1.isSignedNumber()) {
+		if (isReal() && a1.isReal()) {
 			return ((ISignedNumber) this).isGreaterThan(((ISignedNumber) a1)) ? F.False : F.True;
 		}
 		EvalEngine engine = EvalEngine.get();
@@ -3055,7 +3069,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		if (isZero()) {
 			return 0;
 		}
-		if (isSignedNumber()) {
+		if (isReal()) {
 			return ((ISignedNumber) this).sign();
 		}
 		return 1;

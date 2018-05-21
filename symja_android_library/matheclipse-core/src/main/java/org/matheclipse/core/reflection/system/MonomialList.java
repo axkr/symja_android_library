@@ -94,7 +94,7 @@ public class MonomialList extends AbstractFunctionEvaluator {
 				}
 				final Options options = new Options(ast.topHead(), ast, 2, engine);
 				IExpr option = options.getOption("Modulus");
-				if (option.isSignedNumber()) {
+				if (option.isReal()) {
 					return monomialListModulus(expr, varList, termOrder, option);
 				}
 			}

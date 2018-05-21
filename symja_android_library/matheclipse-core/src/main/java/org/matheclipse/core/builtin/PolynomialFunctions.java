@@ -317,7 +317,7 @@ public class PolynomialFunctions {
 					}
 					final Options options = new Options(ast.topHead(), ast, 2, engine);
 					IExpr option = options.getOption("Modulus");
-					if (option.isSignedNumber()) {
+					if (option.isReal()) {
 						return coefficientRulesModulus(expr, varList, termOrder, option);
 					}
 				}

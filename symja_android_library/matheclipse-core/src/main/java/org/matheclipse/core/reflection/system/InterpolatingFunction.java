@@ -17,7 +17,7 @@ public class InterpolatingFunction extends AbstractEvaluator {
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		if (ast.head().isAST()) {
-			if (ast.isAST1() && ast.arg1().isSignedNumber()) {
+			if (ast.isAST1() && ast.arg1().isReal()) {
 				final IAST function = (IAST) ast.head();
 				if (function.isAST1()) {
 

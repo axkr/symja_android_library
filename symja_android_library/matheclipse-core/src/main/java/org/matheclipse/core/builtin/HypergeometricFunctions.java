@@ -345,13 +345,13 @@ public class HypergeometricFunctions {
 				return F.LaguerreL(a.negate(), z);
 			}
 
-			if (a.isSignedNumber() && b.isSignedNumber()) {
+			if (a.isReal() && b.isReal()) {
 				ISignedNumber n = (ISignedNumber) a;
 				ISignedNumber m = (ISignedNumber) b;
 				if (n.isInteger() && m.isInteger() && n.isNegative() && m.isNegative() && m.isGreaterThan(n)) {
 					return F.CComplexInfinity;
 				}
-				if (z.isSignedNumber()) {
+				if (z.isReal()) {
 					double aDouble = n.doubleValue();
 					double bDoube = m.doubleValue();
 					double zDouble = ((ISignedNumber) z).doubleValue();
@@ -416,7 +416,7 @@ public class HypergeometricFunctions {
 				// Pochhammer(c-b, n) / Pochhammer(c, n)
 				return F.Divide(F.Expand(F.Pochhammer(F.Subtract(c, b), n)), F.Pochhammer(c, n));
 			}
-			if (a.isSignedNumber() && b.isSignedNumber() && c.isSignedNumber() && z.isSignedNumber()) {
+			if (a.isReal() && b.isReal() && c.isReal() && z.isReal()) {
 				double aDouble = ((ISignedNumber) a).doubleValue();
 				double bDouble = ((ISignedNumber) b).doubleValue();
 				double cDouble = ((ISignedNumber) c).doubleValue();

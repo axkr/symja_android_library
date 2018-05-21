@@ -1159,7 +1159,7 @@ public final class NumberTheory {
 					}
 					return F.False;
 				}
-				if (result.isSignedNumber()) {
+				if (result.isReal()) {
 					return isSignedNumberDivisible((ISignedNumber) result);
 				}
 				return F.False;
@@ -2066,7 +2066,7 @@ public final class NumberTheory {
 			IAST list = (IAST) ast.arg1();
 			if (list.size() > 1) {
 				int size = list.argSize();
-				if (list.forAll(x -> x.isRealNumber())) {
+				if (list.forAll(x -> x.isReal())) {
 					IExpr result = list.get(size--);
 					for (int i = size; i >= 1; i--) {
 						result = list.get(i).plus(result.power(-1));
@@ -3059,7 +3059,7 @@ public final class NumberTheory {
 			IExpr x = F.NIL;
 			if (arg1.isInteger()) {
 				x = arg1;
-			} else if (arg1.isSignedNumber() && arg1.isPositive()) {
+			} else if (arg1.isReal() && arg1.isPositive()) {
 				x = engine.evaluate(((ISignedNumber) arg1).floorFraction());
 			} else {
 				ISignedNumber sn = arg1.evalSignedNumber();
@@ -3331,7 +3331,7 @@ public final class NumberTheory {
 				final EvalEngine engine) throws JASConversionException {
 			final Options options = new Options(lst.topHead(), lst, 2, engine);
 			IExpr option = options.getOption("Modulus");
-			if (option.isSignedNumber()) {
+			if (option.isReal()) {
 
 				// found "Modulus" option => use ModIntegerRing
 				ModIntegerRing modIntegerRing = JASConvert.option2ModIntegerRing((ISignedNumber) option);

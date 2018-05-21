@@ -192,7 +192,7 @@ public class FractionSym extends AbstractFractionSym {
 		if (expr instanceof BigFractionSym) {
 			return -expr.compareTo(this);
 		}
-		if (expr.isSignedNumber()) {
+		if (expr.isReal()) {
 			return Double.compare(doubleValue(), ((ISignedNumber) expr).doubleValue());
 		}
 		return super.compareTo(expr);

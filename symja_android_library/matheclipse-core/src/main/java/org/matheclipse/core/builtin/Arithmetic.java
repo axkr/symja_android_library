@@ -248,7 +248,7 @@ public final class Arithmetic {
 			}
 			if (arg1.isNumericFunction()) {
 				IExpr temp = F.evaln(arg1);
-				if (temp.isSignedNumber()) {
+				if (temp.isReal()) {
 					return arg1.copySign((ISignedNumber) temp);
 				}
 			}
@@ -272,7 +272,7 @@ public final class Arithmetic {
 					return result[0];
 				}
 			}
-			if (arg1.isPower() && arg1.exponent().isSignedNumber()) {
+			if (arg1.isPower() && arg1.exponent().isReal()) {
 				return F.Power(F.Abs(arg1.base()), arg1.exponent());
 			}
 			return F.NIL;
@@ -412,7 +412,7 @@ public final class Arithmetic {
 			}
 			if (arg1.isNumericFunction()) {
 				IExpr temp = engine.evalN(arg1);
-				if (temp.isSignedNumber()) {
+				if (temp.isReal()) {
 					if (temp.isNegative()) {
 						return F.Pi;
 					}
@@ -596,7 +596,7 @@ public final class Arithmetic {
 						vMin = min;
 						vMax = max;
 					}
-					if (min.isSignedNumber() && max.isSignedNumber()) {
+					if (min.isReal() && max.isReal()) {
 						return clip(x, (ISignedNumber) min, (ISignedNumber) max, vMin, vMax);
 					}
 					ISignedNumber minEvaled = min.evalSignedNumber();
@@ -612,7 +612,7 @@ public final class Arithmetic {
 		}
 
 		private IExpr clip(IExpr x) {
-			if (x.isSignedNumber()) {
+			if (x.isReal()) {
 				ISignedNumber real = (ISignedNumber) x;
 				if (real.isGreaterThan(F.C1)) {
 					return F.C1;
@@ -652,7 +652,7 @@ public final class Arithmetic {
 		 *         max.
 		 */
 		private IExpr clip(IExpr x, ISignedNumber min, ISignedNumber max, IExpr vMin, IExpr vMax) {
-			if (x.isSignedNumber()) {
+			if (x.isReal()) {
 				ISignedNumber real = (ISignedNumber) x;
 				if (real.isGreaterThan(max)) {
 					return vMax;
@@ -967,7 +967,7 @@ public final class Arithmetic {
 				return arg1.first();
 			} else if (arg1.isAST(F.Zeta, 2)) {
 				return F.Zeta(F.Conjugate(arg1.first()));
-			} else if (arg1.isAST(F.Zeta, 3) && arg1.first().isSignedNumber() && arg1.second().isSignedNumber()) {
+			} else if (arg1.isAST(F.Zeta, 3) && arg1.first().isReal() && arg1.second().isReal()) {
 				return F.Zeta(F.Conjugate(arg1.first()), F.Conjugate(arg1.second()));
 			}
 			return F.NIL;
@@ -1180,7 +1180,7 @@ public final class Arithmetic {
 					if (arg1.isIndeterminate() || arg1.isZero()) {
 						return F.CComplexInfinity;
 					}
-					if (arg1.isSignedNumber()) {
+					if (arg1.isReal()) {
 						if (arg1.isOne() || arg1.isMinusOne()) {
 							if (evaled) {
 								return F.DirectedInfinity(arg1);
@@ -1205,7 +1205,7 @@ public final class Arithmetic {
 					}
 					if (arg1.isNumericFunction()) {
 						IExpr a1 = engine.evalN(arg1);
-						if (a1.isSignedNumber()) {
+						if (a1.isReal()) {
 							if (a1.isZero()) {
 								return F.CComplexInfinity;
 							}
@@ -1234,7 +1234,7 @@ public final class Arithmetic {
 				if (a1.isNumber()) {
 					if (a2.isNumber()) {
 						result = a1.times(a2);
-						if (result.isSignedNumber()) {
+						if (result.isReal()) {
 							if (result.isNegative()) {
 								return F.CNInfinity;
 							} else {
@@ -1253,7 +1253,7 @@ public final class Arithmetic {
 						}
 					}
 				} else if (a1.isSymbol()) {
-					if (a2.isSignedNumber()) {
+					if (a2.isReal()) {
 						if (a2.isNegative()) {
 							return F.DirectedInfinity(F.Times(F.CN1, F.Sign(a1)));
 						} else {
@@ -1632,7 +1632,7 @@ public final class Arithmetic {
 			}
 			if (arg1.isTimes()) {
 				IExpr first = arg1.first();
-				if (first.isSignedNumber()) {
+				if (first.isReal()) {
 					return F.Times(first, F.Im(arg1.rest()));
 				}
 				if (first.isImaginaryUnit()) {
@@ -2810,7 +2810,7 @@ public final class Arithmetic {
 				// Abs(arg1) > 1
 				if (arg2.isInfinity()) {
 					// arg1 ^ Inf
-					if (arg1.isSignedNumber() && arg1.isPositive()) {
+					if (arg1.isReal() && arg1.isPositive()) {
 						return F.CInfinity;
 					}
 					// complex or negative numbers
@@ -2829,7 +2829,7 @@ public final class Arithmetic {
 				}
 				if (arg2.isNegativeInfinity()) {
 					// arg1 ^ (-Inf)
-					if (arg1.isSignedNumber() && arg1.isPositive()) {
+					if (arg1.isReal() && arg1.isPositive()) {
 						return F.CInfinity;
 					}
 					// complex or negative numbers
@@ -2885,11 +2885,11 @@ public final class Arithmetic {
 				return (((IInteger) exponent).isEven()) ? F.C1 : F.CN1;
 			}
 
-			if (exponent.isSignedNumber()) {
+			if (exponent.isReal()) {
 				if (base.isPower()) {
 					final IExpr baseArg1 = base.base();
 					final IExpr exponentArg1 = base.exponent();
-					if (exponentArg1.isSignedNumber() && baseArg1.isNonNegativeResult()) {
+					if (exponentArg1.isReal() && baseArg1.isNonNegativeResult()) {
 						// (base ^ exponent) ^ arg2 ==> base ^ (exponent * arg2)
 						return F.Power(baseArg1, exponentArg1.times(exponent));
 					}
@@ -2978,7 +2978,7 @@ public final class Arithmetic {
 				}
 			}
 
-			if (base.isSignedNumber() && ((ISignedNumber) base).isNegative() && exponent.equals(F.C1D2)) {
+			if (base.isReal() && ((ISignedNumber) base).isNegative() && exponent.equals(F.C1D2)) {
 				// extract I for sqrt
 				return F.Times(F.CI, F.Power(F.Negate(base), exponent));
 			}
@@ -3006,7 +3006,7 @@ public final class Arithmetic {
 						}
 					}
 				} else if (astArg1.isPower()) {
-					if (astArg1.arg2().isSignedNumber() && exponent.isSignedNumber()) {
+					if (astArg1.arg2().isReal() && exponent.isReal()) {
 						IExpr temp = astArg1.arg2().times(exponent);
 						if (temp.isOne()) {
 							if (astArg1.arg1().isNonNegativeResult()) {
@@ -3034,7 +3034,7 @@ public final class Arithmetic {
 				return F.Indeterminate;
 			}
 			if (arg1.isComplexInfinity()) {
-				if (arg2.isSignedNumber()) {
+				if (arg2.isReal()) {
 					if (arg2.isNegative()) {
 						return F.C0;
 					}
@@ -3145,7 +3145,7 @@ public final class Arithmetic {
 			IASTAppendable resultAST = F.NIL;
 			for (int i = 1; i < timesAST.size(); i++) {
 				IExpr temp = timesAST.get(i);
-				if (temp.isPower() && temp.exponent().isSignedNumber()) {
+				if (temp.isPower() && temp.exponent().isReal()) {
 					if (!resultAST.isPresent()) {
 						resultAST = timesAST.copyAppendable();
 						resultAST.map(resultAST, x -> F.Power(x, arg2));
@@ -3178,7 +3178,7 @@ public final class Arithmetic {
 			}
 
 			IExpr a = exponent.re();
-			if (a.isSignedNumber()) {
+			if (a.isReal()) {
 				if (((ISignedNumber) a).isNegative()) {
 					engine.printMessage("Infinite expression 0^(negative number)");
 					return F.CComplexInfinity;
@@ -3191,7 +3191,7 @@ public final class Arithmetic {
 			}
 			if (a.isNumericFunction()) {
 				IExpr temp = engine.evalN(a);
-				if (temp.isSignedNumber()) {
+				if (temp.isReal()) {
 					if (((ISignedNumber) temp).isNegative()) {
 						engine.printMessage("Infinite expression 0^(negative number)");
 						return F.CComplexInfinity;
@@ -3603,7 +3603,7 @@ public final class Arithmetic {
 			}
 			if (expr.isTimes()) {
 				IExpr first = expr.first();
-				if (first.isSignedNumber()) {
+				if (first.isReal()) {
 					return F.Times(first, F.Re(expr.rest()));
 				}
 				if (first.isImaginaryUnit()) {
@@ -4262,10 +4262,10 @@ public final class Arithmetic {
 					}
 				}
 			} else if (o0.isInterval1()) {
-				if (o1.isInterval1() || o1.isSignedNumber()) {
+				if (o1.isInterval1() || o1.isReal()) {
 					return timesInterval(o0, o1);
 				}
-			} else if (o0.isNegative() && o1.isLog() && o1.first().isFraction() && o0.isSignedNumber()) {
+			} else if (o0.isNegative() && o1.isLog() && o1.first().isFraction() && o0.isReal()) {
 				// -<number> * Log(<fraction>) -> <number> * Log(<fraction>.inverse())
 				return o0.negate().times(F.Log(o1.first().inverse()));
 			}
@@ -4293,7 +4293,7 @@ public final class Arithmetic {
 					return temp;
 				}
 			} else if (o1.isInterval1()) {
-				if (o0.isInterval1() || o0.isSignedNumber()) {
+				if (o0.isInterval1() || o0.isReal()) {
 					return timesInterval(o0, o1);
 				}
 			} else if (o1 instanceof ASTSeriesData) {
@@ -4694,7 +4694,7 @@ public final class Arithmetic {
 					return power0Arg1.power(power0Arg2.plus(power1Arg2));
 				}
 				if (power0Arg2.equals(power1Arg2) && power0Arg1.isPositive() && power1Arg1.isPositive()
-						&& power0Arg1.isSignedNumber() && power1Arg1.isSignedNumber()) {
+						&& power0Arg1.isReal() && power1Arg1.isReal()) {
 					// a^(c)*b^(c) => (a*b) ^c
 					return power0Arg1.times(power1Arg1).power(power0Arg2);
 				}

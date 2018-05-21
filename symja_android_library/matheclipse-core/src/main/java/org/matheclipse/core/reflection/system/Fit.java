@@ -54,7 +54,7 @@ public class Fit extends AbstractFunctionEvaluator {
 	public IExpr numericEval(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 4);
 
-		if (ast.arg2().isSignedNumber() && ast.arg3().isSymbol()) {
+		if (ast.arg2().isReal() && ast.arg3().isSymbol()) {
 			int degree = ((ISignedNumber) ast.arg2()).toInt();
 			double[] initialGuess = new double[degree];
 			for (int i = 0; i < degree; i++) {

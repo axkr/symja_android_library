@@ -371,7 +371,7 @@ public class PredicateQ {
 	private static class HermitianMatrixQ extends SymmetricMatrixQ {
 		@Override
 		protected boolean compareElements(IExpr expr1, IExpr expr2, EvalEngine engine) {
-			if (expr1.isSignedNumber() && expr2.isSignedNumber()) {
+			if (expr1.isReal() && expr2.isReal()) {
 				if (expr1.equals(expr2)) {
 					return true;
 				}
@@ -764,15 +764,15 @@ public class PredicateQ {
 			if (ast.isAST1()) {
 				IExpr arg1 = ast.arg1();
 				if (arg1.isNumber()) {
-					return F.bool(arg1.isRealNumber());
+					return F.bool(arg1.isReal());
 				}
 				IExpr temp = engine.evaluate(arg1);
-				if (temp.isSignedNumber()) {
+				if (temp.isReal()) {
 					return F.True;
 				}
 				if (temp.isNumericFunction()) {
 					temp = engine.evalN(arg1);
-					if (temp.isSignedNumber()) {
+					if (temp.isReal()) {
 						return F.True;
 					}
 				}

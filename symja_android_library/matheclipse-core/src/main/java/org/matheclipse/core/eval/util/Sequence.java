@@ -58,7 +58,7 @@ public class Sequence extends ListSizeSequence {
 	}
 
 	private static int getASTFrom(final IAST lst) {
-		if ((lst.size() > 1) && !(lst.arg1().isSignedNumber())) {
+		if ((lst.size() > 1) && !(lst.arg1().isReal())) {
 			throw new WrongArgumentType(lst, lst.arg1(), 1);
 		}
 		if (lst.size() > 1) {
@@ -68,7 +68,7 @@ public class Sequence extends ListSizeSequence {
 	}
 
 	private static int getASTTo(final IAST lst) {
-		if ((lst.isAST1()) && (lst.arg1().isSignedNumber())) {
+		if ((lst.isAST1()) && (lst.arg1().isReal())) {
 			return ((ISignedNumber) lst.arg1()).toInt();
 		}
 		if ((lst.size() > 2) && !(lst.arg2() instanceof IInteger)) {
@@ -81,7 +81,7 @@ public class Sequence extends ListSizeSequence {
 	}
 
 	private static int getASTStep(final IAST lst) {
-		if ((lst.size() > 3) && !(lst.arg1().isSignedNumber())) {
+		if ((lst.size() > 3) && !(lst.arg1().isReal())) {
 			throw new WrongArgumentType(lst, lst.arg3(), 3);
 		}
 		if (lst.size() > 3) {

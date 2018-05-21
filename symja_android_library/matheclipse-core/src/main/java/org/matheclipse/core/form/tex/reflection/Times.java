@@ -135,7 +135,7 @@ public class Times extends AbstractOperator {
 				}
 			} else {
 				if (caller == PLUS_CALL) {
-					if ((arg1.isSignedNumber()) && (((ISignedNumber) arg1).isNegative())) {
+					if ((arg1.isReal()) && (((ISignedNumber) arg1).isNegative())) {
 						buf.append(" - ");
 						arg1 = ((ISignedNumber) arg1).opposite();
 					} else {

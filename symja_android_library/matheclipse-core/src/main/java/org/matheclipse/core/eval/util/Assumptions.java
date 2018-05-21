@@ -139,7 +139,7 @@ public class Assumptions extends AbstractAssumptions {
 			IExpr arg1 = greaterAST.arg1();
 			IExpr arg2 = greaterAST.arg2();
 			IExpr arg3 = greaterAST.arg3();
-			if (arg1.isSignedNumber() && arg3.isSignedNumber() && !arg2.isNumber()) {
+			if (arg1.isReal() && arg3.isReal() && !arg2.isNumber()) {
 				if (((ISignedNumber) arg1).isGreaterThan(((ISignedNumber) arg3))) {
 					ISignedNumber num1 = (ISignedNumber) arg1;
 					ISignedNumber num3 = (ISignedNumber) arg3;
@@ -158,7 +158,7 @@ public class Assumptions extends AbstractAssumptions {
 		}
 
 		// arg1 > arg2
-		if (greaterAST.arg2().isSignedNumber()) {
+		if (greaterAST.arg2().isReal()) {
 			SignedNumberRelations gla = assumptions.valueMap.get(greaterAST.arg1());
 			if (gla == null) {
 				gla = new SignedNumberRelations();
@@ -169,7 +169,7 @@ public class Assumptions extends AbstractAssumptions {
 			assumptions.valueMap.put(greaterAST.arg1(), gla);
 			return true;
 		}
-		if (greaterAST.arg1().isSignedNumber()) {
+		if (greaterAST.arg1().isReal()) {
 			ISignedNumber num = (ISignedNumber) greaterAST.arg1();
 			IExpr key = greaterAST.arg2();
 			SignedNumberRelations gla = assumptions.valueMap.get(key);
@@ -191,7 +191,7 @@ public class Assumptions extends AbstractAssumptions {
 			IExpr arg1 = greaterEqualAST.arg1();
 			IExpr arg2 = greaterEqualAST.arg2();
 			IExpr arg3 = greaterEqualAST.arg3();
-			if (arg1.isSignedNumber() && arg3.isSignedNumber() && !arg2.isNumber()) {
+			if (arg1.isReal() && arg3.isReal() && !arg2.isNumber()) {
 				if (!((ISignedNumber) arg1).isLessThan(((ISignedNumber) arg3))) {
 					ISignedNumber num1 = (ISignedNumber) arg1;
 					ISignedNumber num3 = (ISignedNumber) arg3;
@@ -210,7 +210,7 @@ public class Assumptions extends AbstractAssumptions {
 		}
 
 		// arg1 >= arg2
-		if (greaterEqualAST.arg2().isSignedNumber()) {
+		if (greaterEqualAST.arg2().isReal()) {
 			SignedNumberRelations gla = assumptions.valueMap.get(greaterEqualAST.arg1());
 			if (gla == null) {
 				gla = new SignedNumberRelations();
@@ -220,7 +220,7 @@ public class Assumptions extends AbstractAssumptions {
 			return true;
 		}
 
-		if (greaterEqualAST.arg1().isSignedNumber()) {
+		if (greaterEqualAST.arg1().isReal()) {
 			ISignedNumber num = (ISignedNumber) greaterEqualAST.arg1();
 			IExpr key = greaterEqualAST.arg2();
 			SignedNumberRelations gla = assumptions.valueMap.get(key);
@@ -240,7 +240,7 @@ public class Assumptions extends AbstractAssumptions {
 			IExpr arg1 = lessAST.arg1();
 			IExpr arg2 = lessAST.arg2();
 			IExpr arg3 = lessAST.arg3();
-			if (arg1.isSignedNumber() && arg3.isSignedNumber() && !arg2.isNumber()) {
+			if (arg1.isReal() && arg3.isReal() && !arg2.isNumber()) {
 				if (((ISignedNumber) arg1).isLessThan(((ISignedNumber) arg3))) {
 					ISignedNumber num1 = (ISignedNumber) arg1;
 					ISignedNumber num3 = (ISignedNumber) arg3;
@@ -259,7 +259,7 @@ public class Assumptions extends AbstractAssumptions {
 		}
 
 		// arg1 < arg2
-		if (lessAST.arg2().isSignedNumber()) {
+		if (lessAST.arg2().isReal()) {
 			SignedNumberRelations gla = assumptions.valueMap.get(lessAST.arg1());
 			if (gla == null) {
 				gla = new SignedNumberRelations();
@@ -268,7 +268,7 @@ public class Assumptions extends AbstractAssumptions {
 			assumptions.valueMap.put(lessAST.arg1(), gla);
 			return true;
 		}
-		if (lessAST.arg1().isSignedNumber()) {
+		if (lessAST.arg1().isReal()) {
 			ISignedNumber num = (ISignedNumber) lessAST.arg1();
 			IExpr key = lessAST.arg2();
 			SignedNumberRelations gla = assumptions.valueMap.get(key);
@@ -289,7 +289,7 @@ public class Assumptions extends AbstractAssumptions {
 			IExpr arg1 = lessEqualAST.arg1();
 			IExpr arg2 = lessEqualAST.arg2();
 			IExpr arg3 = lessEqualAST.arg3();
-			if (arg1.isSignedNumber() && arg3.isSignedNumber() && !arg2.isNumber()) {
+			if (arg1.isReal() && arg3.isReal() && !arg2.isNumber()) {
 				if (!((ISignedNumber) arg1).isGreaterThan(((ISignedNumber) arg3))) {
 					ISignedNumber num1 = (ISignedNumber) arg1;
 					ISignedNumber num3 = (ISignedNumber) arg3;
@@ -308,7 +308,7 @@ public class Assumptions extends AbstractAssumptions {
 		}
 
 		// arg1 <= arg2;
-		if (lessEqualAST.arg2().isSignedNumber()) {
+		if (lessEqualAST.arg2().isReal()) {
 			SignedNumberRelations gla = assumptions.valueMap.get(lessEqualAST.arg1());
 			if (gla == null) {
 				gla = new SignedNumberRelations();
@@ -317,7 +317,7 @@ public class Assumptions extends AbstractAssumptions {
 			assumptions.valueMap.put(lessEqualAST.arg1(), gla);
 			return true;
 		}
-		if (lessEqualAST.arg1().isSignedNumber()) {
+		if (lessEqualAST.arg1().isReal()) {
 			ISignedNumber num = (ISignedNumber) lessEqualAST.arg1();
 			IExpr key = lessEqualAST.arg2();
 			SignedNumberRelations gla = assumptions.valueMap.get(key);

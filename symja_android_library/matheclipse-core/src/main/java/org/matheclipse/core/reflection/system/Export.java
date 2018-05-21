@@ -54,7 +54,7 @@ public class Export extends AbstractEvaluator {
 						for (int j = 0; j < dims[0]; j++) {
 							IAST rowList = (IAST) arg2.getAt(j + 1);
 							for (int i = 1; i <= dims[1]; i++) {
-								if (rowList.get(i).isSignedNumber()) {
+								if (rowList.get(i).isReal()) {
 									writer.append(rowList.get(i).toString());
 								} else {
 									writer.append("\"");

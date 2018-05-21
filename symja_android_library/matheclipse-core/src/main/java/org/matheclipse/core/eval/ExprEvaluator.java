@@ -502,7 +502,7 @@ public class ExprEvaluator {
 			fExpr = engine.parse(inputExpression);
 			if (fExpr != null) {
 				IExpr temp = eval(F.N(fExpr));
-				if (temp.isSignedNumber()) {
+				if (temp.isReal()) {
 					return ((ISignedNumber) temp).doubleValue();
 				}
 			}
@@ -521,7 +521,7 @@ public class ExprEvaluator {
 		EvalEngine.set(engine);
 		engine.reset();
 		IExpr temp = eval(F.N(expr));
-		if (temp.isSignedNumber()) {
+		if (temp.isReal()) {
 			return ((ISignedNumber) temp).doubleValue();
 		}
 		return Double.NaN;

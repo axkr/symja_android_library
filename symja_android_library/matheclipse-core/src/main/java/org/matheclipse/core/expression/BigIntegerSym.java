@@ -172,7 +172,7 @@ public class BigIntegerSym extends AbstractIntegerSym {
 		if (expr instanceof IFraction) {
 			return -((IFraction) expr).compareTo(AbstractFractionSym.valueOf(fBigIntValue, BigInteger.ONE));
 		}
-		if (expr.isSignedNumber()) {
+		if (expr.isReal()) {
 			return Double.compare(fBigIntValue.doubleValue(), ((ISignedNumber) expr).doubleValue());
 		}
 		return super.compareTo(expr);

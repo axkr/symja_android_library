@@ -477,7 +477,7 @@ public class Solve extends AbstractFunctionEvaluator {
 						}
 					} else if (function.isPower()) {
 						IExpr exponent = function.exponent();
-						if (exponent.isFraction() || (exponent.isRealNumber() && !exponent.isNumIntValue())) {
+						if (exponent.isFraction() || (exponent.isReal() && !exponent.isNumIntValue())) {
 							ISignedNumber arg2 = (ISignedNumber) exponent;
 							IExpr plus = plusAST.removeAtClone(i).getOneIdentity(F.C0);
 							if (plus.isPositiveResult()) {

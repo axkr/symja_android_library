@@ -321,14 +321,14 @@ public class Symbol implements ISymbol, Serializable {
 	public final ISignedNumber evalSignedNumber() {
 		if (isNumericFunction()) {
 			IExpr result = F.evaln(this);
-			if (result.isSignedNumber()) {
+			if (result.isReal()) {
 				return (ISignedNumber) result;
 			}
 		} else if (hasLocalVariableStack()) {
 			IExpr temp = get();
 			if (temp != null && temp.isNumericFunction()) {
 				IExpr result = F.evaln(this);
-				if (result.isSignedNumber()) {
+				if (result.isReal()) {
 					return (ISignedNumber) result;
 				}
 			}
@@ -336,7 +336,7 @@ public class Symbol implements ISymbol, Serializable {
 			IExpr temp = evalDownRule(EvalEngine.get(), this);
 			if (temp.isPresent() && temp.isNumericFunction()) {
 				IExpr result = F.evaln(this);
-				if (result.isSignedNumber()) {
+				if (result.isReal()) {
 					return (ISignedNumber) result;
 				}
 			}
@@ -623,7 +623,7 @@ public class Symbol implements ISymbol, Serializable {
 	public boolean isNegative() {
 		if (isNumericFunction()) {
 			IExpr temp = F.evaln(this);
-			if (temp.isSignedNumber() && temp.isNegative()) {
+			if (temp.isReal() && temp.isNegative()) {
 				return true;
 			}
 		}
@@ -685,7 +685,7 @@ public class Symbol implements ISymbol, Serializable {
 	public boolean isPositive() {
 		if (isNumericFunction()) {
 			IExpr temp = F.evaln(this);
-			if (temp.isSignedNumber() && temp.isPositive()) {
+			if (temp.isReal() && temp.isPositive()) {
 				return true;
 			}
 		}

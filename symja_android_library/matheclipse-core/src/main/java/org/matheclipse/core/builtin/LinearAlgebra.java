@@ -2502,12 +2502,12 @@ public final class LinearAlgebra {
 					if (p.isInfinity()) {
 						return vector.map(F.Max, x -> F.Abs(x));
 					} else {
-						if (p.isSymbol() || p.isSignedNumber()) {
+						if (p.isSymbol() || p.isReal()) {
 							if (p.isZero()) {
 								engine.printMessage("Norm: 0 not allowed as second argument!");
 								return F.NIL;
 							}
-							if (p.isSignedNumber() && p.lessThan(F.C1).isTrue()) {
+							if (p.isReal() && p.lessThan(F.C1).isTrue()) {
 								engine.printMessage("Norm: Second argument is < 1!");
 								return F.NIL;
 							}

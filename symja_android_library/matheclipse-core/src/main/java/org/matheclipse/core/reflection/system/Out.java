@@ -62,7 +62,7 @@ public class Out extends AbstractFunctionEvaluator {
 			return list.get(-1);
 		}
 		final IExpr arg1 = ast.arg1();
-		if (arg1.isSignedNumber()) {
+		if (arg1.isReal()) {
 			if (arg1.isInteger()) {
 				return e1IntArg((IInteger) arg1);
 			}

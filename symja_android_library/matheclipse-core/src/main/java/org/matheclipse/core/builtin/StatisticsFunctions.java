@@ -1293,7 +1293,7 @@ public class StatisticsFunctions {
 			if (cumprob.equals(F.C1)) {
 				return true;
 			}
-			if (cumprob.isSignedNumber() && !(cumprob.isExactNumber())) {
+			if (cumprob.isReal() && !(cumprob.isExactNumber())) {
 				ISignedNumber sn = (ISignedNumber) cumprob.dec().abs();
 				return sn.compareTo(ICDF.CDF_NUMERIC_THRESHOLD) < 0;
 			}
@@ -1363,7 +1363,7 @@ public class StatisticsFunctions {
 		@Override
 		public IExpr randomVariate(Random random, IAST dist) {
 			if (dist.isAST1()) {
-				if (dist.arg1().isSignedNumber() && dist.arg1().isPositiveResult()) {
+				if (dist.arg1().isReal() && dist.arg1().isPositiveResult()) {
 					double rate = dist.arg1().evalDouble();
 					return F.num(new ExponentialGenerator(rate, random).nextValue());
 				}
@@ -1800,7 +1800,7 @@ public class StatisticsFunctions {
 			}
 			// return protected_quantile(dist, F.num(ThreadLocalRandom.current().nextDouble()));
 			if (dist.isAST2()) {
-				if (dist.arg1().isSignedNumber() && dist.arg1().isPositiveResult()) {
+				if (dist.arg1().isReal() && dist.arg1().isPositiveResult()) {
 					double mean = dist.arg1().evalDouble();
 					double sigma = dist.arg2().evalDouble();
 					return F.num(new GaussianGenerator(mean, sigma, random).nextValue());
@@ -2022,11 +2022,11 @@ public class StatisticsFunctions {
 						int dim2 = q.isVector();
 						if (dim2 >= 0) {
 							final IAST vector = ((IAST) q);
-							if (vector.forAll(x -> x.isSignedNumber())) {
+							if (vector.forAll(x -> x.isReal())) {
 								return vector.map(scalar -> of(s, length, (ISignedNumber) scalar), 1);
 							}
 						} else {
-							if (q.isSignedNumber()) {
+							if (q.isReal()) {
 								// x = a + (length + b) * q
 								IExpr x = q.isZero() ? a : F.Plus.of(a, F.Times(F.Plus(length, b), q));
 								if (x.isNumIntValue()) {
@@ -2040,7 +2040,7 @@ public class StatisticsFunctions {
 										return s.get(index);
 									}
 								}
-								if (x.isSignedNumber()) {
+								if (x.isReal()) {
 									ISignedNumber xi = (ISignedNumber) x;
 									int xFloor = xi.floorFraction().toIntDefault(Integer.MIN_VALUE);
 									int xCeiling = xi.ceilFraction().toIntDefault(Integer.MIN_VALUE);
@@ -2081,7 +2081,7 @@ public class StatisticsFunctions {
 		}
 
 		private IExpr of(IAST sorted, IInteger length, ISignedNumber scalar) {
-			if (scalar.isSignedNumber()) {
+			if (scalar.isReal()) {
 				int index = 0;
 				if (scalar instanceof INum) {
 					index = ((INum) scalar).multiply(length).ceilFraction().subtract(F.C1).toIntDefault(-1);

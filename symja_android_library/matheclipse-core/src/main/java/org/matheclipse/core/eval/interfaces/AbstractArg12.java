@@ -149,7 +149,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 		}
 
 		if (o0 instanceof ApfloatNum) {
-			if (o1.isSignedNumber()) {
+			if (o1.isReal()) {
 				result = e2ApfloatArg((ApfloatNum) o0,
 						((ISignedNumber) o1).apfloatNumValue(((ApfloatNum) o0).precision()));
 			}
@@ -158,7 +158,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 			}
 			return e2ObjArg(o0, o1);
 		} else if (o1 instanceof ApfloatNum) {
-			if (o0.isSignedNumber()) {
+			if (o0.isReal()) {
 				result = e2ApfloatArg(((ISignedNumber) o0).apfloatNumValue(((ApfloatNum) o1).precision()),
 						(ApfloatNum) o1);
 			}
@@ -167,7 +167,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 			}
 			return e2ObjArg(o0, o1);
 		} else if (o0 instanceof Num) {
-			if (o1.isSignedNumber()) {
+			if (o1.isReal()) {
 				result = e2DblArg((Num) o0, ((ISignedNumber) o1).numValue());
 			}
 			if (result.isPresent()) {
@@ -175,7 +175,7 @@ public abstract class AbstractArg12 extends AbstractFunctionEvaluator {
 			}
 			return e2ObjArg(o0, o1);
 		} else if (o1 instanceof Num) {
-			if (o0.isSignedNumber()) {
+			if (o0.isReal()) {
 				result = e2DblArg(((ISignedNumber) o0).numValue(), (Num) o1);
 			}
 			if (result.isPresent()) {

@@ -159,7 +159,7 @@ public class ASCIIPrettyPrinter3 {
 				print(")");
 			}
 		} else {
-			if (expr.isSignedNumber()) {
+			if (expr.isReal()) {
 				convertNumber((ISignedNumber) expr, caller);
 			} else {
 				if (caller == PLUS_CALL) {
@@ -173,7 +173,7 @@ public class ASCIIPrettyPrinter3 {
 	private void convertTimes(IAST times, final int precedence, boolean caller) {
 		IExpr arg1 = times.arg1();
 
-		if (arg1.isSignedNumber()) {
+		if (arg1.isReal()) {
 			if (ASTNodeFactory.TIMES_PRECEDENCE < precedence) {
 				print(" ( ");
 			}

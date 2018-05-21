@@ -45,7 +45,7 @@ public class ElementPreprocessor {
 					} else {
 						final ASTNode node = parser.parse(str);
 						IExpr temp = ast2Expr.convert(node);
-						if (temp.isList() || temp.isSignedNumber()) {
+						if (temp.isList() || temp.isReal()) {
 							columnList.append(temp);
 						} else {
 							if (str.charAt(0) == '\"') {

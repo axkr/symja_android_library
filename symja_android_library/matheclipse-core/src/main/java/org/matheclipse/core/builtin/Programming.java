@@ -1813,7 +1813,7 @@ public final class Programming {
 				// if (ast.arg2().toString().equals("§timelimit")){
 				// arg2=F.num(5.0);
 				// }
-				if (arg2.isSignedNumber()) {
+				if (arg2.isReal()) {
 					arg2 = ((ISignedNumber) arg2).ceilFraction();
 					seconds = ((ISignedNumber) arg2).toLong();
 				} else {
@@ -2399,7 +2399,7 @@ public final class Programming {
 						"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 			}
 			return result;
-		} else if (arg2.isSignedNumber()) {
+		} else if (arg2.isReal()) {
 			final int indx = Validate.checkIntType(ast, pos, Integer.MIN_VALUE);
 			IExpr result = null;
 			result = getIndex(arg1, indx);
@@ -2479,7 +2479,7 @@ public final class Programming {
 						"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 			}
 			return result;
-		} else if (arg2.isSignedNumber()) {
+		} else if (arg2.isReal()) {
 			int indx = Validate.checkIntType(arg2, Integer.MIN_VALUE);
 			if (indx < 0) {
 				indx = part.size() + indx;
@@ -2585,7 +2585,7 @@ public final class Programming {
 						"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
 			}
 			return result;
-		} else if (arg2.isSignedNumber()) {
+		} else if (arg2.isReal()) {
 			final int indx = Validate.checkIntType(part, partPosition, Integer.MIN_VALUE);
 			IExpr ires = null;
 			ires = assignPartValue(assignedAST, indx, rhs.getAST(rhsPos++));

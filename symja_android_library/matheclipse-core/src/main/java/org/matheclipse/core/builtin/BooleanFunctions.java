@@ -929,12 +929,12 @@ public final class BooleanFunctions {
 			}
 			IExpr a0 = arg1;
 			IExpr a1 = arg2;
-			if (!a0.isSignedNumber() && a0.isNumericFunction()) {
+			if (!a0.isReal() && a0.isNumericFunction()) {
 				a0 = engine.evalN(a0);
 			} else if (a1.isNumeric() && a0.isRational()) {
 				a0 = engine.evalN(a0);
 			}
-			if (!a1.isSignedNumber() && a1.isNumericFunction()) {
+			if (!a1.isReal() && a1.isNumericFunction()) {
 				a1 = engine.evalN(a1);
 			} else if (a0.isNumeric() && a1.isRational()) {
 				a1 = engine.evalN(a1);
@@ -1307,8 +1307,8 @@ public final class BooleanFunctions {
 		@Override
 		public IExpr.COMPARE_TERNARY compareTernary(final IExpr a0, final IExpr a1) {
 			// don't compare strings
-			if (a0.isSignedNumber()) {
-				if (a1.isSignedNumber()) {
+			if (a0.isReal()) {
+				if (a1.isReal()) {
 					return ((ISignedNumber) a0).isGreaterThan((ISignedNumber) a1) ? IExpr.COMPARE_TERNARY.TRUE
 							: IExpr.COMPARE_TERNARY.FALSE;
 				} else if (a1.isInfinity()) {
@@ -1318,7 +1318,7 @@ public final class BooleanFunctions {
 				} else if (a1.isInterval1()) {
 					return compareGreaterIntervalTernary(a0.lower(), a0.upper(), a1.lower(), a1.upper());
 				}
-			} else if (a1.isSignedNumber()) {
+			} else if (a1.isReal()) {
 				if (a0.isInfinity()) {
 					return IExpr.COMPARE_TERNARY.TRUE;
 				} else if (a0.isNegativeInfinity()) {
@@ -1385,7 +1385,7 @@ public final class BooleanFunctions {
 					// Less instead of Greater)
 					return result;
 				}
-				if (arg2.isSignedNumber()) {
+				if (arg2.isReal()) {
 					// this part is used in other comparator operations like
 					// Less,
 					// GreaterEqual,...
@@ -1437,12 +1437,12 @@ public final class BooleanFunctions {
 		}
 
 		private IExpr.COMPARE_TERNARY prepareCompare(IExpr a0, IExpr a1, EvalEngine engine) {
-			if (!a0.isSignedNumber() && a0.isNumericFunction()) {
+			if (!a0.isReal() && a0.isNumericFunction()) {
 				a0 = engine.evalN(a0);
 			} else if (a1.isNumeric() && a0.isRational()) {
 				a0 = engine.evalN(a0);
 			}
-			if (!a1.isSignedNumber() && a1.isNumericFunction()) {
+			if (!a1.isReal() && a1.isNumericFunction()) {
 				a1 = engine.evalN(a1);
 			} else if (a0.isNumeric() && a1.isRational()) {
 				a1 = engine.evalN(a1);
@@ -2352,7 +2352,7 @@ public final class BooleanFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
 			IExpr arg1 = ast.arg1();
-			if (arg1.isSignedNumber()) {
+			if (arg1.isReal()) {
 				return F.bool(arg1.isNegative());
 			}
 			if (arg1.isNumber()) {
@@ -2491,7 +2491,7 @@ public final class BooleanFunctions {
 			Validate.checkSize(ast, 2);
 
 			IExpr arg1 = ast.arg1();
-			if (arg1.isSignedNumber()) {
+			if (arg1.isReal()) {
 				return F.bool(!arg1.isNegative());
 			}
 			if (arg1.isNumber()) {
@@ -2535,7 +2535,7 @@ public final class BooleanFunctions {
 			Validate.checkSize(ast, 2);
 
 			IExpr arg1 = ast.arg1();
-			if (arg1.isSignedNumber()) {
+			if (arg1.isReal()) {
 				return F.bool(!arg1.isPositive());
 			}
 			if (arg1.isNumber()) {
@@ -3065,7 +3065,7 @@ public final class BooleanFunctions {
 					IExpr argN = ast.last();
 					if (argN.equals(F.All)) {
 						maxChoices = Integer.MAX_VALUE;
-					} else if (argN.isSignedNumber()) {
+					} else if (argN.isReal()) {
 						ISignedNumber sn = (ISignedNumber) argN;
 						maxChoices = sn.toIntDefault(0);
 					}

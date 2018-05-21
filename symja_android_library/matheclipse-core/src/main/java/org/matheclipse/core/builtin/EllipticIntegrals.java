@@ -217,7 +217,7 @@ public class EllipticIntegrals {
 				// EllipticE(n)/(1 - n)
 				return F.Times(F.Power(F.Plus(F.C1, F.Negate(n)), -1), F.EllipticE(n));
 			}
-			if (n.isSignedNumber() && m.isSignedNumber()) {
+			if (n.isReal() && m.isReal()) {
 				double a = ((ISignedNumber) n).doubleValue();
 				double b = ((ISignedNumber) m).doubleValue();
 				try {
