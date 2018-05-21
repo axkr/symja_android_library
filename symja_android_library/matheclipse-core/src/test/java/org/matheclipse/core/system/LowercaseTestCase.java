@@ -4908,6 +4908,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("-Range(10)", "{-1,-2,-3,-4,-5,-6,-7,-8,-9,-10}");
 	}
 
+	public void testMissingQ() {
+		check("MissingQ(Missing(\"Test message\"))", //
+				"True");
+	}
+
 	public void testMod() {
 		check("Mod(-10,3)", "2");
 		check("Mod(10,3)", "1");
@@ -5594,6 +5599,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNumericQ() {
+		check("NumericQ(Sqrt(3))", "True");
 		check("NumericQ(Glaisher)", "True");
 		check("1<Glaisher<2<E<3", "True");
 		check("NumericQ(Sqrt(sin(2)))", "True");
@@ -8306,6 +8312,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("SquareFreeQ(9 + 6*x + x^2)", "False");
 		check("SquareFreeQ(x^2 + 1, Modulus -> 2)", "False");
 	}
+	
+	public void testSquareMatrixQ() {
+		check("SquareMatrixQ({{1, 3 + 4*I}, {3 - 4*I, 2}})", "True");
+		check("SquareMatrixQ({{}})", "False");
+		check("SquareMatrixQ({{a,b,c}, {d,e,f}})", "False");
+	}
 
 	public void testSquaredEuclideanDistance() {
 		// check("SquaredEuclideanDistance(-7, 5)", "144");
@@ -8718,6 +8730,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Block({b = c}, SymmetricMatrixQ({{a, b}, {c, d}}))", "True");
 	}
 
+	public void testSyntaxQ() {
+		check("SyntaxQ(\"Integrate(f(x),{x,0,10})\")", "True");
+		check("SyntaxQ(\"Integrate(f(x),{x,0,10)\")", "False");
+	}
+	
 	public void testTable() {
 		check("Table(a + dx, {dx, 0, 3, Pi/8})", //
 				"{a,a+Pi/8,a+Pi/4,a+3/8*Pi,a+Pi/2,a+5/8*Pi,a+3/4*Pi,a+7/8*Pi}");
@@ -9369,6 +9386,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("a=.", "");
 		check("$x=5;$x=.;$x", "$x");
 		check("$f(x_):=x^2;$f(x_)=.;$f(3)", "$f(3)");
+	}
+	
+	public void testUpperCaseQ() {
+		check("UpperCaseQ(\"ABCDEFGHIJKLMNOPQRSTUVWXYZ\")", "True");
+		check("UpperCaseQ(\"ABCDEFGHIJKLMNopqRSTUVWXYZ\")", "False");
 	}
 
 	public void testUpperTriangularize() {

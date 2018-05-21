@@ -772,6 +772,7 @@ public class F {
     public final static IBuiltInSymbol SplitBy = BuiltIns.valueOf(BuiltIns.SplitBy);
     public final static IBuiltInSymbol Sqrt = BuiltIns.valueOf(BuiltIns.Sqrt);
     public final static IBuiltInSymbol SquareFreeQ = BuiltIns.valueOf(BuiltIns.SquareFreeQ);
+    public final static IBuiltInSymbol SquareMatrixQ = BuiltIns.valueOf(BuiltIns.SquareMatrixQ);
     public final static IBuiltInSymbol SquaredEuclideanDistance = BuiltIns.valueOf(BuiltIns.SquaredEuclideanDistance);
     public final static IBuiltInSymbol StandardDeviation = BuiltIns.valueOf(BuiltIns.StandardDeviation);
     public final static IBuiltInSymbol Standardize = BuiltIns.valueOf(BuiltIns.Standardize);
@@ -872,7 +873,7 @@ public class F {
     public final static IBuiltInSymbol Xor = BuiltIns.valueOf(BuiltIns.Xor);
     public final static IBuiltInSymbol YuleDissimilarity = BuiltIns.valueOf(BuiltIns.YuleDissimilarity);
     public final static IBuiltInSymbol Zeta = BuiltIns.valueOf(BuiltIns.Zeta);
-
+    
 	public final static ISymbol $Aborted = initFinalHiddenSymbol(
 			Config.PARSER_USE_LOWERCASE_SYMBOLS ? "$aborted" : "$Aborted");
 	// public final static ISymbol $PowerSeries = initFinalHiddenSymbol(

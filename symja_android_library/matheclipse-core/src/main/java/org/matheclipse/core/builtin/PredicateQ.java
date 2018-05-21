@@ -52,6 +52,7 @@ public class PredicateQ {
 		F.PossibleZeroQ.setEvaluator(new PossibleZeroQ());
 		F.PrimeQ.setEvaluator(new PrimeQ());
 		F.RealNumberQ.setEvaluator(new RealNumberQ());
+		F.SquareMatrixQ.setEvaluator(new SquareMatrixQ());
 		F.SymbolQ.setEvaluator(new SymbolQ());
 		F.SymmetricMatrixQ.setEvaluator(new SymmetricMatrixQ());
 		F.SyntaxQ.setEvaluator(new SyntaxQ());
@@ -60,6 +61,23 @@ public class PredicateQ {
 		F.VectorQ.setEvaluator(new VectorQ());
 	}
 
+	/**
+	 * <pre>
+	 * AntihermitianMatrixQ(m)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>m</code> is a anti hermitian matrix.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Skew-Hermitian_matrix">Wikipedia - Skew-Hermitian matrix</a></li>
+	 * </ul>
+	 */
 	private static class AntihermitianMatrixQ extends SymmetricMatrixQ {
 
 		@Override
@@ -79,6 +97,23 @@ public class PredicateQ {
 
 	}
 
+	/**
+	 * <pre>
+	 * AntisymmetricMatrixQ(m)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>m</code> is a anti symmetric matrix.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Skew-symmetric_matrix">Wikipedia - Skew-symmetric matrix</a></li>
+	 * </ul>
+	 */
 	private static class AntisymmetricMatrixQ extends SymmetricMatrixQ {
 
 		@Override
@@ -99,8 +134,47 @@ public class PredicateQ {
 	}
 
 	/**
-	 * ArrayQ tests whether an expression is a full array.
-	 *
+	 * <pre>
+	 * 'ArrayQ(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * tests whether expr is a full array.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * 'ArrayQ(expr, pattern)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * also tests whether the array depth of expr matches pattern.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * 'ArrayQ(expr, pattern, test)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * furthermore tests whether <code>test</code> yields <code>True</code> for all elements of expr.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ArrayQ(a)
+	 * False
+	 * &gt;&gt; ArrayQ({a})
+	 * True
+	 * &gt;&gt; ArrayQ({{{a}},{{b,c}}})
+	 * False
+	 * &gt;&gt; ArrayQ({{a, b}, {c, d}}, 2, SymbolQ)
+	 * True
+	 * </pre>
 	 */
 	private static class ArrayQ extends AbstractCoreFunctionEvaluator {
 
@@ -192,8 +266,34 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Returns <code>True</code>, if the given expression is an atomic object (i.e. no AST instance)
-	 *
+	 * <pre>
+	 * AtomQ(x)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * is true if <code>x</code> is an atom (an object such as a number or string, which cannot be divided into
+	 * subexpressions using 'Part').
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; AtomQ(x)
+	 * True
+	 * 
+	 * &gt;&gt; AtomQ(1.2)
+	 * True
+	 * 
+	 * &gt;&gt; AtomQ(2 + I)
+	 * True
+	 * 
+	 * &gt;&gt; AtomQ(2 / 3)
+	 * True
+	 * 
+	 * &gt;&gt; AtomQ(x + y)
+	 * False
+	 * </pre>
 	 */
 	private static class AtomQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
 
@@ -210,9 +310,31 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Predicate function
+	 * <pre>
+	 * BooleanQ(expr)
+	 * </pre>
 	 * 
-	 * Returns <code>True</code> if the first argument is an integer; <code>False</code> otherwise
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>expr</code> is either <code>True</code> or <code>False</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; BooleanQ(True)
+	 * True
+	 * &gt;&gt; BooleanQ(False)
+	 * True
+	 * &gt;&gt; BooleanQ(a)
+	 * False
+	 * &gt;&gt; BooleanQ(1 &lt; 2)
+	 * True
+	 * &gt;&gt; BooleanQ("string")
+	 * False
+	 * &gt;&gt; BooleanQ(Together(x/y + y/x))
+	 * False
+	 * </pre>
 	 */
 	private static class BooleanQ extends AbstractCorePredicateEvaluator {
 
@@ -233,14 +355,23 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Returns <code>True</code>, if the given expression is a string which only contains digits.
+	 * <pre>
+	 * DigitQ(str)
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>str</code> is a string which contains only digits.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; DigitQ("1234")
+	 * True
+	 * </pre>
 	 */
 	private static class DigitQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
-
-		public DigitQ() {
-			super(F.DigitQ);
-		}
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -257,22 +388,41 @@ public class PredicateQ {
 
 		@Override
 		public boolean test(final IExpr obj) {
-			final String str = obj.toString();
-			char ch;
-			for (int i = 0; i < str.length(); i++) {
-				ch = str.charAt(i);
-				if (!((ch >= '0') && (ch <= '9'))) {
-					return false;
+			if (obj instanceof IStringX) {
+				final String str = obj.toString();
+				char ch;
+				for (int i = 0; i < str.length(); i++) {
+					ch = str.charAt(i);
+					if (!((ch >= '0') && (ch <= '9'))) {
+						return false;
+					}
 				}
+				return true;
 			}
-			return true;
+			return false;
 		}
 	}
 
 	/**
-	 * Predicate function
+	 * <pre>
+	 * EvenQ(x)
+	 * </pre>
 	 * 
-	 * Returns <code>True</code> if the 1st argument is an even integer number; <code>False</code> otherwise
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>x</code> is even, and <code>False</code> otherwise.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; EvenQ(4)
+	 * True
+	 * &gt;&gt; EvenQ(-3)
+	 * False
+	 * &gt;&gt; EvenQ(n)
+	 * False
+	 * </pre>
 	 */
 	private static class EvenQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
 		public EvenQ() {
@@ -295,6 +445,36 @@ public class PredicateQ {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * ExactNumberQ(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>expr</code> is an exact number, and <code>False</code> otherwise.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ExactNumberQ(10)
+	 * True
+	 * 
+	 * &gt;&gt; ExactNumberQ(4.0)
+	 * False
+	 * 
+	 * &gt;&gt; ExactNumberQ(n)
+	 * False
+	 * 
+	 * &gt;&gt; ExactNumberQ(1+I)    
+	 * True
+	 * 
+	 * &gt;&gt; ExactNumberQ(1 + 1. * I)
+	 * False
+	 * </pre>
+	 */
+
 	private static class ExactNumberQ extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -307,6 +487,33 @@ public class PredicateQ {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * FreeQ(`expr`, `x`)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns 'True' if <code>expr</code> does not contain the expression <code>x</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; FreeQ(y, x)
+	 * True
+	 * &gt;&gt; FreeQ(a+b+c, a+b)
+	 * False
+	 * &gt;&gt; FreeQ({1, 2, a^(a+b)}, Plus)
+	 * False
+	 * &gt;&gt; FreeQ(a+b, x_+y_+z_)
+	 * True
+	 * &gt;&gt; FreeQ(a+b+c, x_+y_+z_)
+	 * False
+	 * &gt;&gt; FreeQ(x_+y_+z_)(a+b)
+	 * True
+	 * </pre>
+	 */
 	private static class FreeQ extends AbstractCoreFunctionEvaluator {
 
 		/**
@@ -368,6 +575,23 @@ public class PredicateQ {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * HermitianMatrixQ(m)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>m</code> is a hermitian matrix.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Hermitian_matrix">Wikipedia - Hermitian matrix</a></li>
+	 * </ul>
+	 */
 	private static class HermitianMatrixQ extends SymmetricMatrixQ {
 		@Override
 		protected boolean compareElements(IExpr expr1, IExpr expr2, EvalEngine engine) {
@@ -392,6 +616,37 @@ public class PredicateQ {
 
 	}
 
+	/**
+	 * <pre>
+	 * InexactNumberQ(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>expr</code> is not an exact number, and <code>False</code> otherwise.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; InexactNumberQ(a)
+	 * False
+	 * 
+	 * &gt;&gt; InexactNumberQ(3.0)
+	 * True
+	 * 
+	 * &gt;&gt; InexactNumberQ(2/3)
+	 * False
+	 * </pre>
+	 * <p>
+	 * <code>InexactNumberQ</code> can be applied to complex numbers:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; InexactNumberQ(4.0+I)    
+	 * True
+	 * </pre>
+	 */
 	private static class InexactNumberQ extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -405,9 +660,24 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Predicate function
+	 * <pre>
+	 * IntegerQ(expr)
+	 * </pre>
 	 * 
-	 * Returns <code>True</code> if the first argument is an integer; <code>False</code> otherwise
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>expr</code> is an integer, and <code>False</code> otherwise.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; IntegerQ(3)
+	 * 4
+	 * 
+	 * &gt;&gt; IntegerQ(Pi)
+	 * False
+	 * </pre>
 	 */
 	private static class IntegerQ extends AbstractCorePredicateEvaluator {
 
@@ -428,9 +698,27 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Predicate function
+	 * <pre>
+	 * ListQ(expr)
+	 * </pre>
 	 * 
-	 * Returns <code>True</code> if the 1st argument is a list expression; <code>False</code> otherwise
+	 * <blockquote>
+	 * <p>
+	 * tests whether <code>expr</code> is a <code>List</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ListQ({1, 2, 3})
+	 * True
+	 * 
+	 * &gt;&gt; ListQ({{1, 2}, {3, 4}})
+	 * True
+	 * 
+	 * &gt;&gt; ListQ(x)
+	 * False
+	 * </pre>
 	 */
 	private static class ListQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
 
@@ -445,6 +733,35 @@ public class PredicateQ {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * MachineNumberQ(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>expr</code> is a machine-precision real or complex number.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; MachineNumberQ(3.14159265358979324)
+	 * False
+	 * 
+	 * &gt;&gt; MachineNumberQ(1.5 + 2.3*I)
+	 * True
+	 * 
+	 * &gt;&gt; MachineNumberQ(2.71828182845904524 + 3.14159265358979324*I)
+	 * False
+	 * 
+	 * &gt;&gt; MachineNumberQ(1.5 + 3.14159265358979324*I)    
+	 * True
+	 * 
+	 * &gt;&gt; MachineNumberQ(1.5 + 5 *I)
+	 * True
+	 * </pre>
+	 */
 	private static class MachineNumberQ extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -458,8 +775,27 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Match an expression against a given pattern.
+	 * <pre>
+	 * MatchQ(expr, form)
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * tests whether <code>expr</code> matches <code>form</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; MatchQ(123, _Integer)
+	 * True
+	 * 
+	 * &gt;&gt; MatchQ(123, _Real)
+	 * False
+	 * 
+	 * &gt;&gt; MatchQ(_Integer)[123]
+	 * True
+	 * </pre>
 	 */
 	private static class MatchQ extends AbstractCoreFunctionEvaluator {
 
@@ -494,9 +830,32 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Predicate function
+	 * <pre>
+	 * MatrixQ(m)
+	 * </pre>
 	 * 
-	 * Returns <code>True</code> if the 1st argument is a matrix; <code>False</code> otherwise
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>m</code> is a list of equal-length lists.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * MatrixQ[m, f]
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * only returns <code>True</code> if <code>f(x)</code> returns <code>True</code> for each element <code>x</code> of
+	 * the matrix <code>m</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; MatrixQ({{1, 3}, {4.0, 3/2}}, NumberQ)
+	 * True
+	 * </pre>
 	 */
 	private static class MatrixQ extends AbstractCoreFunctionEvaluator {
 
@@ -533,6 +892,29 @@ public class PredicateQ {
 
 	}
 
+	/**
+	 * <pre>
+	 * MemberQ(list, pattern)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if pattern matches any element of <code>list</code>, or <code>False</code> otherwise.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; MemberQ({a, b, c}, b)
+	 * True
+	 * &gt;&gt; MemberQ({a, b, c}, d)
+	 * False
+	 * &gt;&gt; MemberQ({"a", b, f(x)}, _?NumericQ)
+	 * False
+	 * &gt;&gt; MemberQ(_List)({{}})
+	 * True
+	 * </pre>
+	 */
 	private static class MemberQ extends AbstractCoreFunctionEvaluator {
 
 		@Override
@@ -561,10 +943,21 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Predicate function
+	 * <pre>
+	 * MissingQ(expr)
+	 * </pre>
 	 * 
-	 * Returns <code>True</code> if the 1st argument is a <code>Missing()</code> expression; <code>False</code>
-	 * otherwise
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>expr</code> is a <code>Missing()</code> expression.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; MissingQ(Missing("Test message"))
+	 * True
+	 * </pre>
 	 */
 	private static class MissingQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
 
@@ -598,8 +991,27 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Returns <code>True</code>, if the given expression is an number object
+	 * <pre>
+	 * NumberQ(expr)
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>expr</code> is an explicit number, and <code>False</code> otherwise.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; NumberQ[3+I]
+	 *  = True
+	 * 
+	 * &gt;&gt; NumberQ[5!]
+	 *  = True
+	 * 
+	 * &gt;&gt; NumberQ[Pi]
+	 *  = False
+	 * </pre>
 	 */
 	private static class NumberQ extends AbstractCoreFunctionEvaluator {
 		/**
@@ -617,18 +1029,27 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Returns <code>True</code>, if the given expression is a numeric function or value.
+	 * <pre>
+	 * NumericQ(expr)
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>expr</code> is an explicit numeric expression, and <code>False</code>
+	 * otherwise.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; NumericQ(E+Pi)
+	 * True
+	 * 
+	 * &gt;&gt; NumericQ(Sqrt(3))
+	 * True
+	 * </pre>
 	 */
 	private static class NumericQ extends AbstractCoreFunctionEvaluator implements Predicate<IExpr> {
-
-		/**
-		 * Constructor for the unary predicate
-		 */
-		// public final static NumericQ CONST = new NumericQ();
-
-		public NumericQ() {
-		}
 
 		/**
 		 * Returns <code>True</code> if the first argument is a numeric object; <code>False</code> otherwise
@@ -652,9 +1073,24 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Predicate function
+	 * <pre>
+	 * OddQ(x)
+	 * </pre>
 	 * 
-	 * Returns <code>True</code> if the 1st argument is an odd integer number; <code>False</code> otherwise
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>x</code> is odd, and <code>False</code> otherwise.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; OddQ(-3)
+	 * True
+	 * 
+	 * &gt;&gt; OddQ(0)
+	 * False
+	 * </pre>
 	 */
 	private static class OddQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
 		public OddQ() {
@@ -679,9 +1115,24 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Predicate function
+	 * <pre>
+	 * PossibleZeroQ(expr)
+	 * </pre>
 	 * 
-	 * Returns <code>True</code> if the 1st argument is <code>0</code>; <code>False</code> otherwise
+	 * <blockquote>
+	 * <p>
+	 * maps a (possible) zero <code>expr</code> to <code>True</code> and returns <code>False</code> otherwise.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PossibleZeroQ((E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi)
+	 * True
+	 * 
+	 * &gt;&gt; PossibleZeroQ(Sqrt(x^2) - x)
+	 * False
+	 * </pre>
 	 */
 	private static class PossibleZeroQ extends AbstractCorePredicateEvaluator {
 
@@ -729,9 +1180,52 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Test if a number is prime. See: <a href="http://en.wikipedia.org/wiki/Prime_number">Wikipedia:Prime number</a>
+	 * <pre>
+	 * PrimeQ(n)
+	 * </pre>
 	 * 
-	 * @see org.matheclipse.core.reflection.system.NextPrime
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>n</code> is a prime number.<br />
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * For very large numbers, <code>PrimeQ</code> uses probabilistic prime testing, so it might be wrong
+	 * sometimes<br />
+	 * (a number might be composite even though <code>PrimeQ</code> says it is prime).
+	 * </p>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PrimeQ(2)   
+	 * True   
+	 * &gt;&gt; PrimeQ(-3)   
+	 * True   
+	 * &gt;&gt; PrimeQ(137)   
+	 * True   
+	 * &gt;&gt; PrimeQ(2 ^ 127 - 1)   
+	 * True   
+	 * &gt;&gt; PrimeQ(1)   
+	 * False   
+	 * &gt;&gt; PrimeQ(2 ^ 255 - 1)   
+	 * False
+	 * </pre>
+	 * <p>
+	 * All prime numbers between 1 and 100:<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Select(Range(100), PrimeQ)   
+	 *  = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}
+	 * </pre>
+	 * <p>
+	 * 'PrimeQ' has attribute 'Listable':
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PrimeQ(Range(20))   
+	 *  = {False, True, True, False, True, False, True, False, False, False, True, False, True, False, False, False, True, False, True, False}
+	 * </pre>
 	 */
 	private static class PrimeQ extends AbstractCorePredicateEvaluator implements Predicate<IInteger> {
 
@@ -758,6 +1252,35 @@ public class PredicateQ {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * RealNumberQ(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>expr</code> is an explicit number with no imaginary component.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; RealNumberQ[10]
+	 *  = True
+	 * 
+	 * &gt;&gt; RealNumberQ[4.0]
+	 *  = True
+	 * 
+	 * &gt;&gt; RealNumberQ[1+I]
+	 *  = False
+	 * 
+	 * &gt;&gt; RealNumberQ[0 * I]
+	 *  = True
+	 * 
+	 * &gt;&gt; RealNumberQ[0.0 * I]
+	 *  = False
+	 * </pre>
+	 */
 	private static class RealNumberQ extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -783,6 +1306,69 @@ public class PredicateQ {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * SquareMatrixQ(m)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>m</code> is a square matrix.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; SquareMatrixQ({{1, 3 + 4*I}, {3 - 4*I, 2}})
+	 * True
+	 * 
+	 * &gt;&gt; SquareMatrixQ({{}})
+	 * False
+	 * </pre>
+	 */
+	private static class SquareMatrixQ extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			final IExpr arg1 = engine.evaluate(ast.arg1());
+			int[] dims = arg1.isMatrix();
+			if (dims == null || dims[0] != dims[1]) {
+				// no square matrix
+				return F.False;
+			}
+
+			return F.True;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	/**
+	 * <pre>
+	 * SymbolQ(x)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * is <code>True</code> if <code>x</code> is a symbol, or <code>False</code> otherwise.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; SymbolQ(a)
+	 * True
+	 * &gt;&gt; SymbolQ(1)
+	 * False
+	 * &gt;&gt; SymbolQ(a + b)
+	 * False
+	 * </pre>
+	 */
 	private static class SymbolQ extends AbstractCoreFunctionEvaluator implements Predicate<IExpr> {
 		/**
 		 * Returns <code>True</code> if the 1st argument is a symbol; <code>False</code> otherwise
@@ -800,6 +1386,23 @@ public class PredicateQ {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * SymmetricMatrixQ(m)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>m</code> is a symmetric matrix.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Symmetric_matrix">Wikipedia - Symmetric matrix</a></li>
+	 * </ul>
+	 */
 	private static class SymmetricMatrixQ extends AbstractCoreFunctionEvaluator {
 
 		protected boolean compareElements(IExpr expr1, IExpr expr2, EvalEngine engine) {
@@ -844,8 +1447,21 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Returns <code>True</code>, if the given expression is a string which has the correct syntax
+	 * <pre>
+	 * SyntaxQ(str)
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * is <code>True</code> if the given <code>str</code> is a string which has the correct syntax.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; SyntaxQ("Integrate(f(x),{x,0,10})")
+	 * True
+	 * </pre>
 	 */
 	private static class SyntaxQ extends AbstractCorePredicateEvaluator {
 
@@ -869,8 +1485,24 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Returns <code>True</code>, if the given expression is a string which only contains upper case characters
-	 *
+	 * <pre>
+	 * UpperCaseQ(str)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * is <code>True</code> if the given <code>str</code> is a string which only contains upper case characters.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; UpperCaseQ("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	 * True
+	 * 
+	 * &gt;&gt; UpperCaseQ("ABCDEFGHIJKLMNopqRSTUVWXYZ")
+	 * False
+	 * </pre>
 	 */
 	private static class UpperCaseQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
 
@@ -906,8 +1538,28 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Returns <code>True</code>, if the given expression is bound to a value.
+	 * <pre>
+	 * ValueQ(expr)
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if and only if <code>expr</code> is defined.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ValueQ(x)
+	 * False
+	 * 
+	 * &gt;&gt; x=1;
+	 * &gt;&gt; ValueQ(x)
+	 * True
+	 * 
+	 * &gt;&gt; ValueQ(True)
+	 * False
+	 * </pre>
 	 */
 	private static class ValueQ extends AbstractCoreFunctionEvaluator implements Predicate<IExpr> {
 
@@ -929,9 +1581,32 @@ public class PredicateQ {
 	}
 
 	/**
-	 * Predicate function
-	 *
-	 * Returns <code>True</code> if the 1st argument is a vector; <code>False</code> otherwise
+	 * <pre>
+	 * VectorQ(v)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>v</code> is a list of elements which are not themselves lists.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * VectorQ(v, f)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>v</code> is a vector and <code>f(x)</code> returns <code>True</code> for each
+	 * element <code>x</code> of <code>v</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; VectorQ({a, b, c})
+	 * True
+	 * </pre>
 	 */
 	private static class VectorQ extends AbstractCoreFunctionEvaluator {
 

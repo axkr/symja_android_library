@@ -8,7 +8,7 @@ Convergents({n1, n2, ...})
   
 See:  
 * [Wikipedia - Continued fraction](https://en.wikipedia.org/wiki/Continued_fraction)
- 
+
 ### Examples
 
 ```
