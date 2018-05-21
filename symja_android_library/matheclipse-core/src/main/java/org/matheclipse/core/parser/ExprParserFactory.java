@@ -28,9 +28,10 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
+import org.matheclipse.parser.client.ast.IParserFactory;
 import org.matheclipse.parser.client.operator.Operator;
 
-public class ExprParserFactory implements IExprParserFactory {
+public class ExprParserFactory implements IParserFactory {
 
 	/**
 	 * @@@ operator (not @@ operator)
@@ -42,7 +43,7 @@ public class ExprParserFactory implements IExprParserFactory {
 		}
 
 		@Override
-		public IASTMutable createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs,
+		public IASTMutable createFunction(final IParserFactory factory, ExprParser parser, final IExpr lhs,
 				final IExpr rhs) {
 			IASTAppendable fn = F.ast(F.Apply);
 			fn.append(lhs);
@@ -63,7 +64,7 @@ public class ExprParserFactory implements IExprParserFactory {
 		}
 
 		@Override
-		public IASTMutable createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs,
+		public IASTMutable createFunction(final IParserFactory factory, ExprParser parser, final IExpr lhs,
 				final IExpr rhs) {
 
 			if (rhs.isInteger() && !rhs.isZero()) {
@@ -92,7 +93,7 @@ public class ExprParserFactory implements IExprParserFactory {
 		}
 
 		@Override
-		public IExpr createFunction(final IExprParserFactory factory, final IExpr argument) {
+		public IExpr createFunction(final IParserFactory factory, final IExpr argument) {
 			return F.Times(F.CN1, argument);
 		}
 	}
@@ -104,7 +105,7 @@ public class ExprParserFactory implements IExprParserFactory {
 		}
 
 		@Override
-		public IExpr createFunction(final IExprParserFactory factory, final IExpr argument) {
+		public IExpr createFunction(final IParserFactory factory, final IExpr argument) {
 			return argument;
 		}
 	}
@@ -116,7 +117,7 @@ public class ExprParserFactory implements IExprParserFactory {
 		}
 
 		@Override
-		public IASTMutable createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs,
+		public IASTMutable createFunction(final IParserFactory factory, ExprParser parser, final IExpr lhs,
 				final IExpr rhs) {
 			if (rhs.isNumber()) {
 				return (IASTMutable) F.Plus(lhs, rhs.negate());

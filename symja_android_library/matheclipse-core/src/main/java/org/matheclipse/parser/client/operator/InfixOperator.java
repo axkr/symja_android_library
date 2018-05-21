@@ -17,7 +17,7 @@ package org.matheclipse.parser.client.operator;
 
 import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FunctionNode;
-import org.matheclipse.parser.client.ast.IParserFactory;
+import org.matheclipse.parser.client.ast.INodeParserFactory;
 
 public class InfixOperator extends Operator {
 	private int fGrouping;
@@ -42,7 +42,7 @@ public class InfixOperator extends Operator {
 		return fGrouping;
 	}
 
-	public ASTNode createFunction(final IParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
+	public ASTNode createFunction(final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
 		if (fOperatorString.equals("//")) {
 			//   lhs // rhs ==> rhs[lhs]
 			FunctionNode function =factory.createAST(rhs);

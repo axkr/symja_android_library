@@ -22,7 +22,7 @@ import java.util.Map;
 import org.matheclipse.parser.client.operator.Operator;
 
 /**
- * Factory for creating the ASTNodes from the parser
+ * Basic common parser factory methods.
  * 
  */
 public interface IParserFactory {
@@ -33,10 +33,7 @@ public interface IParserFactory {
 	public final static String DEFAULT_OPERATOR_CHARACTERS = ".-:=<>*+;!^|&/@?";
 
 	/**
-	 * The set of characters, which could form an operator, if they are
-	 * concatenated.
-	 * 
-	 * @return the set of characters, which could form an operator
+	 * The set of characters, which could form an operator
 	 * 
 	 */
 	public String getOperatorCharacters();
@@ -44,16 +41,14 @@ public interface IParserFactory {
 	/**
 	 * Get the identifier to operator map
 	 * 
-	 * @return the map which stores the Operators for a given head string like
-	 *         Times, Plus, Sin,...
+	 * @return the map which stores the Operators for a given head string like Times, Plus, Sin,...
 	 */
-	public Map<String, Operator> getIdentifier2OperatorMap();
+	public Map<String, ? extends Operator> getIdentifier2OperatorMap();
 
 	/**
 	 * Get the operator-string to possible operator-list map
 	 * 
-	 * @return the map which stores the operator-list for a given operator
-	 *         string like *, +, ==...
+	 * @return the map which stores the operator-list for a given operator string like *, +, ==...
 	 */
 	public Map<String, ArrayList<Operator>> getOperator2ListMap();
 
@@ -68,176 +63,17 @@ public interface IParserFactory {
 	/**
 	 * Get the operator-list for a given operator-string
 	 * 
-	 * @param operatorString
 	 * @return the operator-list for a given operator string like *, +, ==...
 	 */
 	public List<Operator> getOperatorList(String operatorString);
-
-	/**
-	 * Creates a new function with head <code>head</code> and 0 arguments.
-	 * 
-	 * @param head
-	 *            the head of the function
-	 * @return
-	 */
-	public FunctionNode createFunction(SymbolNode head);
-
-	/**
-	 * Creates a new function with head <code>head</code> and 1 argument.
-	 * 
-	 * @param head
-	 *            the head of the function
-	 * @param arg
-	 *            the argument of the function
-	 * @return
-	 */
-	public FunctionNode createFunction(SymbolNode head, ASTNode arg);
-
-	/**
-	 * Creates a new function with head <code>head</code> and 2 arguments.
-	 * 
-	 * @param head
-	 *            the head of the function
-	 * @param arg1
-	 *            the first argument of the function
-	 * @param arg2
-	 *            the second argument of the function
-	 * @return
-	 */
-	public FunctionNode createFunction(SymbolNode head, ASTNode arg1, ASTNode arg2);
-
-	/**
-	 * Creates a new function with no arguments from the given header expression
-	 * .
-	 * 
-	 * @param headExpr
-	 *            the head of the function
-	 * @return
-	 */
-	public FunctionNode createAST(ASTNode headExpr);
-
-	/**
-	 * Create an double node from the given double value string
-	 * 
-	 * @param doubleString
-	 *            the double string
-	 * @return
-	 */
-	public ASTNode createDouble(String doubleString);
-
-	/**
-	 * Create an integer node from the given string
-	 * 
-	 * @param integerString
-	 *            the integer number represented as a String
-	 * @param numberFormat
-	 *            the format of the number (usually 10)
-	 * @return IInteger
-	 */
-	public IntegerNode createInteger(String integerString, int numberFormat);
-
-	/**
-	 * Create an integer node from the given value
-	 * 
-	 * @param integerValue
-	 *            the integer number's value
-	 * @return IInteger
-	 */
-	public IntegerNode createInteger(int integerValue);
-
-	/**
-	 * Create a "fractional" number
-	 * 
-	 * @param numerator
-	 *            numerator of the fractional number
-	 * @param denominator
-	 *            denominator of the fractional number
-	 * @return IFraction
-	 */
-	public abstract FractionNode createFraction(IntegerNode numerator, IntegerNode denominator);
-
-	/**
-	 * Create a pattern from the given symbol node (i.e. <code>_</code> or
-	 * <code>x_</code>)
-	 * 
-	 * @param patternName
-	 *            the name of the pattern
-	 * @param check
-	 * @return
-	 */
-	public PatternNode createPattern(SymbolNode patternName, ASTNode check);
-
-	/**
-	 * Create a pattern from the given symbol node (i.e. <code>__</code> or
-	 * <code>x__</code>)
-	 * 
-	 * @param patternName
-	 * @param check
-	 * @return
-	 */
-	public PatternNode createPattern2(SymbolNode patternName, ASTNode check);
-
-	/**
-	 * Create a pattern from the given symbol node (i.e. <code>___</code> or
-	 * <code>x___</code>)
-	 * 
-	 * @param patternName
-	 * @param check
-	 * @return
-	 */
-	public PatternNode createPattern3(SymbolNode patternName, ASTNode check);
-
-	/**
-	 * Create a pattern from the given symbol node
-	 * 
-	 * @param patternName
-	 *            the pattern name
-	 * @param check
-	 *            the pattern head to check for
-	 * @param optional
-	 *            <code>true</code> if the pattern is optional
-	 * @return
-	 */
-	public PatternNode createPattern(SymbolNode patternName, ASTNode check, boolean optional);
-
-	/**
-	 * Create a pattern from the given symbol node
-	 * 
-	 * @param patternName
-	 *            the pattern name
-	 * @param check
-	 *            the pattern head to check for
-	 * @param defaultValue
-	 *            the default value for this pattern
-	 * @return
-	 */
-	public PatternNode createPattern(SymbolNode patternName, ASTNode check, ASTNode defaultValue);
-
-	/**
-	 * Create a string node from the scanned double quoted string
-	 * 
-	 * @param buffer
-	 *            the buffer which contains the parsed string
-	 * @return
-	 */
-	public StringNode createString(StringBuilder buffer);
-
-	/**
-	 * Create a symbol from the scanned identifier string
-	 * 
-	 * @param symbolName
-	 * @return
-	 */
-	public SymbolNode createSymbol(String symbolName);
 
 	/**
 	 * Check if the identifier name is valid.
 	 * 
 	 * @param identifier
 	 *            the currently parsed identifier
-	 * @return <code>false</code> if the identifier is not valid (in this case
-	 *         the parser creates a SyntaxError exception); otherwise return
-	 *         <code>true</code>
+	 * @return <code>false</code> if the identifier is not valid (in this case the parser creates a SyntaxError
+	 *         exception); otherwise return <code>true</code>
 	 */
 	public boolean isValidIdentifier(String identifier);
 

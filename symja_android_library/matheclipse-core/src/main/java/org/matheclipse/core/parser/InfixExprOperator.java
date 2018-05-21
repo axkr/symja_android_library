@@ -4,6 +4,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.client.ast.IParserFactory;
 import org.matheclipse.parser.client.operator.Operator;
 
 class InfixExprOperator extends Operator {
@@ -29,7 +30,7 @@ class InfixExprOperator extends Operator {
 		return fGrouping;
 	}
 
-	public IASTMutable createFunction(final IExprParserFactory factory, ExprParser parser, final IExpr lhs,
+	public IASTMutable createFunction(final IParserFactory factory, ExprParser parser, final IExpr lhs,
 			final IExpr rhs) {
 		if (fOperatorString.equals("//")) {
 			// lhs // rhs ==> rhs[lhs]

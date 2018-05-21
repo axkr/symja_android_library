@@ -41,6 +41,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.visit.VisitorExpr;
 import org.matheclipse.parser.client.Scanner;
 import org.matheclipse.parser.client.SyntaxError;
+import org.matheclipse.parser.client.ast.IParserFactory;
 import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
 
@@ -107,7 +108,7 @@ public class ExprParser extends Scanner {
 	}
 	
 
-	protected IExprParserFactory fFactory;
+	protected IParserFactory fFactory;
 
 	/**
 	 * Set to true if the expression shouldn't be evaluated on input
@@ -149,12 +150,12 @@ public class ExprParser extends Scanner {
 	 *            if <code>true</code>, use '('...')' as brackets for arguments
 	 * @throws SyntaxError
 	 */
-	public ExprParser(final EvalEngine engine, IExprParserFactory factory, final boolean relaxedSyntax)
+	public ExprParser(final EvalEngine engine, IParserFactory factory, final boolean relaxedSyntax)
 			throws SyntaxError {
 		this(engine, factory, relaxedSyntax, false);
 	}
 
-	public ExprParser(final EvalEngine engine, IExprParserFactory factory, final boolean relaxedSyntax,
+	public ExprParser(final EvalEngine engine, IParserFactory factory, final boolean relaxedSyntax,
 			boolean packageMode) throws SyntaxError {
 		super(packageMode);
 		this.fRelaxedSyntax = relaxedSyntax;
@@ -646,7 +647,7 @@ public class ExprParser extends Scanner {
 		return temp;
 	}
 
-	public IExprParserFactory getFactory() {
+	public IParserFactory getFactory() {
 		return fFactory;
 	}
 
@@ -1385,7 +1386,7 @@ public class ExprParser extends Scanner {
 	// }
 	// }
 
-	public void setFactory(final IExprParserFactory factory) {
+	public void setFactory(final IParserFactory factory) {
 		this.fFactory = factory;
 	}
 }

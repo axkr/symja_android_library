@@ -16,7 +16,7 @@
 package org.matheclipse.parser.client.operator;
 
 import org.matheclipse.parser.client.ast.ASTNode;
-import org.matheclipse.parser.client.ast.IParserFactory;
+import org.matheclipse.parser.client.ast.INodeParserFactory;
 
 public class PostfixOperator extends Operator {
 
@@ -24,7 +24,7 @@ public class PostfixOperator extends Operator {
 		super(oper, functionName, precedence);
 	} 
 
-	public ASTNode createFunction(final IParserFactory factory,
+	public ASTNode createFunction(final INodeParserFactory factory,
 			final ASTNode argument) {
 		return factory.createFunction(factory.createSymbol(getFunctionName()),
 				argument);

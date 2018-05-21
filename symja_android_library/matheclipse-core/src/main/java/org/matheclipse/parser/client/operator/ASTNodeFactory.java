@@ -27,7 +27,7 @@ import org.matheclipse.parser.client.ast.ASTNode;
 import org.matheclipse.parser.client.ast.FloatNode;
 import org.matheclipse.parser.client.ast.FractionNode;
 import org.matheclipse.parser.client.ast.FunctionNode;
-import org.matheclipse.parser.client.ast.IParserFactory;
+import org.matheclipse.parser.client.ast.INodeParserFactory;
 import org.matheclipse.parser.client.ast.IntegerNode;
 import org.matheclipse.parser.client.ast.Pattern2Node;
 import org.matheclipse.parser.client.ast.Pattern3Node;
@@ -35,7 +35,7 @@ import org.matheclipse.parser.client.ast.PatternNode;
 import org.matheclipse.parser.client.ast.StringNode;
 import org.matheclipse.parser.client.ast.SymbolNode;
 
-public class ASTNodeFactory implements IParserFactory {
+public class ASTNodeFactory implements INodeParserFactory {
 
 	/**
 	 * @@@ operator (not @@ operator)
@@ -46,7 +46,7 @@ public class ASTNodeFactory implements IParserFactory {
 			super(oper, functionName, precedence, grouping);
 		}
 
-		public ASTNode createFunction(final IParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
+		public ASTNode createFunction(final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
 			FunctionNode fn = factory.createFunction(factory.createSymbol("Apply"), lhs, rhs);
 			if (fOperatorString.equals("@@")) {
 				return fn;
@@ -61,7 +61,7 @@ public class ASTNodeFactory implements IParserFactory {
 			super(oper, functionName, precedence, grouping);
 		}
 
-		public ASTNode createFunction(final IParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
+		public ASTNode createFunction(final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
 			if (rhs instanceof IntegerNode) {
 				if (lhs instanceof IntegerNode) {
 					return new FractionNode((IntegerNode) lhs, (IntegerNode) rhs);
@@ -84,7 +84,7 @@ public class ASTNodeFactory implements IParserFactory {
 			super(oper, functionName, precedence);
 		}
 
-		public ASTNode createFunction(final IParserFactory factory, final ASTNode argument) {
+		public ASTNode createFunction(final INodeParserFactory factory, final ASTNode argument) {
 			return factory.createFunction(factory.createSymbol("Times"), factory.createInteger(-1), argument);
 		}
 	}
@@ -95,7 +95,7 @@ public class ASTNodeFactory implements IParserFactory {
 			super(oper, functionName, precedence);
 		}
 
-		public ASTNode createFunction(final IParserFactory factory, final ASTNode argument) {
+		public ASTNode createFunction(final INodeParserFactory factory, final ASTNode argument) {
 			return argument;
 		}
 	}
@@ -106,7 +106,7 @@ public class ASTNodeFactory implements IParserFactory {
 			super(oper, functionName, precedence, grouping);
 		}
 
-		public ASTNode createFunction(final IParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
+		public ASTNode createFunction(final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
 			return factory.createFunction(factory.createSymbol("Plus"), lhs,
 					factory.createFunction(factory.createSymbol("Times"), factory.createInteger(-1), rhs));
 		}
