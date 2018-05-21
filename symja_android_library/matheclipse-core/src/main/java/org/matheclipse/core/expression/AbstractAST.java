@@ -1563,20 +1563,8 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isComplex() {
-		return false;
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public final boolean isComplexInfinity() {
 		return isSameHead(F.DirectedInfinity, 1);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isComplexNumeric() {
-		return false;
 	}
 
 	/** {@inheritDoc} */
@@ -1832,12 +1820,6 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public final boolean isInfinity() {
 		return this.equals(F.CInfinity);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isInteger() {
-		return false;
 	}
 
 	/** {@inheritDoc} */
@@ -2375,12 +2357,6 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public final boolean isSequence() {
 		return isSameHeadSizeGE(F.Sequence, 1);
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public final boolean isReal() {
-		return false;
 	}
 
 	/** {@inheritDoc} */
