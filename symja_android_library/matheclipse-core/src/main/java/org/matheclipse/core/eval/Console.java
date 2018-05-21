@@ -170,6 +170,7 @@ public class Console {
 	private static void printUsage() {
 		final String lineSeparator = System.getProperty("line.separator");
 		final StringBuilder msg = new StringBuilder();
+		msg.append(Config.SYMJA);
 		msg.append("org.matheclipse.core.eval.Console [options]" + lineSeparator);
 		msg.append(lineSeparator);
 		msg.append("Program arguments: " + lineSeparator);
