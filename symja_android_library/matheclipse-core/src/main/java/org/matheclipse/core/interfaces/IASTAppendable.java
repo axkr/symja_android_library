@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
 
-import org.matheclipse.core.expression.F;
-
 /**
  * 
  * <p>
@@ -24,7 +22,7 @@ import org.matheclipse.core.expression.F;
  * an AST with 2 nodes. One node for the header <code>Sin</code> and one node for the argument <code>x</code>.
  * </p>
  * 
- * Internally an AST is represented as a <code>java.util.List</code> which contains
+ * Internally an AST is represented as a list which contains
  * <ul>
  * <li>the operator of a function (i.e. the &quot;header&quot;-symbol: Sin, Cos, Inverse, Plus, Times,...) at index
  * <code>0</code> and</li>

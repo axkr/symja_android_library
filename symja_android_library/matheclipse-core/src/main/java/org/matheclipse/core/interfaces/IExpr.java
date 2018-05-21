@@ -633,7 +633,8 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	/**
 	 * If this object is an instance of <code>IAST</code> get the first element (offset 0) of the <code>IAST</code> list
-	 * (i.e. get(0) ).
+	 * (i.e. <code>#get(0)</code> ). Otherwise return the specific header, i.e. for
+	 * <code>integer number type => F.Integer, fraction number type => F.Rational, complex number type => F.Complex, ...  </code>
 	 * 
 	 * @return the head of the expression, which must not be null.
 	 */
@@ -2163,7 +2164,6 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		return false;
 	}
 
-
 	/**
 	 * Test if this expression is a signed real number. I.e. an instance of type <code>IFraction</code> for exact number
 	 * values or <code>INum</code> for approximated numbers.
@@ -2173,7 +2173,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isReal() {
 		return this instanceof ISignedNumber;
 	}
-	
+
 	/**
 	 * Test if this expression is a real matrix (i.e. an ASTRealMatrix) or a <code>List[List[...],...,List[...]]</code>
 	 * matrix with elements of type <code>org.matheclipse.core.expression.Num</code>.
@@ -2188,7 +2188,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * Test if this expression is a number with no imaginary component. I.e. an instance of type <code>IRational</code>
 	 * or <code>INum</code>.
 	 * 
-	 * @return 
+	 * @return
 	 * @deprecated use {@link isReal()}
 	 */
 	default boolean isRealNumber() {
@@ -2302,7 +2302,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default boolean isSignedNumber() {
 		return isReal();
 	}
-	
+
 	/**
 	 * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the evaluator implements the
 	 * <code>ISignedNumberConstant</code> interface (see package <code>org.matheclipse.core.builtin.constant</code>).
