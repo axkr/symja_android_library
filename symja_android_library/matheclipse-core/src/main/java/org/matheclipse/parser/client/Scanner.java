@@ -15,13 +15,10 @@
  */
 package org.matheclipse.parser.client;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
 
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.parser.client.Characters;
-import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.operator.Operator;
 
 public abstract class Scanner {
@@ -117,23 +114,38 @@ public abstract class Scanner {
 	final static protected int TT_SLOTSEQUENCE = 141;
 
 	/**
-	 * Token type: pattern placeholder '_'
+	 * Token type: pattern '_'
 	 */
 	final static protected int TT_BLANK = 142;
 
+	/**
+	 * Token type: pattern '__'
+	 */
 	final static protected int TT_BLANK_BLANK = 143;
 
+	/**
+	 * Token type: pattern '___'
+	 */
 	final static protected int TT_BLANK_BLANK_BLANK = 144;
 
 	/**
-	 * Token type: pattern placeholder '_.'
+	 * Token type: pattern '_.'
 	 */
 	final static protected int TT_BLANK_OPTIONAL = 145;
 
+	/**
+	 * Token type: pattern '_:'
+	 */
 	final static protected int TT_BLANK_COLON = 146;
 
+	/**
+	 * Token type: pattern ''' (single apostrophe) for writing derivatives
+	 */
 	final static protected int TT_DERIVATIVE = 147;
 
+	/**
+	 * New line token
+	 */
 	final static protected int TT_NEWLINE = 150;
 
 	// ----------------optimized identifier managment------------------
@@ -143,16 +155,16 @@ public abstract class Scanner {
 			string_s = "s", string_t = "t", string_u = "u", string_v = "v", string_w = "w", string_x = "x",
 			string_y = "y", string_z = "z";
 
+	static final String string_A = "A", string_B = "B", string_C = "C", string_D = "D", string_E = "E", string_F = "F",
+			string_G = "G", string_H = "H", string_I = "I", string_J = "J", string_K = "K", string_L = "L",
+			string_M = "M", string_N = "N", string_O = "O", string_P = "P", string_Q = "Q", string_R = "R",
+			string_S = "S", string_T = "T", string_U = "U", string_V = "V", string_W = "W", string_X = "X",
+			string_Y = "Y", string_Z = "Z";
+
 	static final String var_a = "$a", var_b = "$b", var_c = "$c", var_d = "$d", var_e = "$e", var_f = "$f",
 			var_g = "$g", var_h = "$h", var_i = "$i", var_j = "$j", var_k = "$k", var_l = "$l", var_m = "$m",
 			var_n = "$n", var_o = "$o", var_p = "$p", var_q = "$q", var_r = "$r", var_s = "$s", var_t = "$t",
 			var_u = "$u", var_v = "$v", var_w = "$w", var_x = "$x", var_y = "$y", var_z = "$z";
-
-	private static HashMap<String, String> CHAR_MAP = new HashMap<String, String>(1024);
-
-	static {
-		CHAR_MAP.put("CenterEllipsis", "\u22EF");
-	}
 
 	/**
 	 * <p>
@@ -269,16 +281,17 @@ public abstract class Scanner {
 	/**
 	 * Row counter for syntax errors.
 	 */
-	protected int rowCount;
+	protected int fRowCounter;
 
+	/**
+	 * Is true if the parser should parse a <code>package</code>.
+	 */
 	protected boolean fPackageMode = false;
 
 	/**
 	 * Column counter for syntax errors
 	 */
 	protected int fCurrentColumnStartPosition;
-
-	private int numFormat = 0;
 
 	/**
 	 * Initialize Scanner without a math-expression
@@ -312,11 +325,13 @@ public abstract class Scanner {
 		fToken = TT_EOF;
 	}
 
+	/**
+	 * Parse a multiline comment <code>(* ... *)</code>
+	 */
 	private void getComment() {
 		int startPosition = fCurrentPosition;
 		int level = 0;
 		fCurrentPosition++;
-		// read multiline comment until end of file:
 		try {
 			while (true) {
 				if (charAtPosition() == '*' && fInputString.charAt(fCurrentPosition + 1) == ')') {
@@ -334,7 +349,7 @@ public abstract class Scanner {
 					continue;
 				} else if (charAtPosition() == '\n') {
 					fCurrentPosition++;
-					rowCount++;
+					fRowCounter++;
 					fCurrentColumnStartPosition = fCurrentPosition;
 					continue;
 				}
@@ -346,6 +361,11 @@ public abstract class Scanner {
 		}
 	}
 
+	/**
+	 * Get the error line which should be thrown in a <code>SyntaxError</code> exception.
+	 * 
+	 * @return
+	 */
 	private String getErrorLine() {
 		if (fInputString.length() < fCurrentPosition) {
 			fCurrentPosition--;
@@ -363,6 +383,11 @@ public abstract class Scanner {
 		return line;
 	}
 
+	/**
+	 * Parse an identifier string (function, constant or variablename).
+	 * 
+	 * @return
+	 */
 	protected String getIdentifier() {
 
 		final int startPosition = fCurrentPosition - 1;
@@ -378,20 +403,42 @@ public abstract class Scanner {
 		int endPosition = fCurrentPosition--;
 		final int length = (--endPosition) - startPosition;
 		if (length == 1) {
-			return optimizedCurrentTokenSource1(startPosition, endPosition);
+			return optimizedCurrentTokenSource1(startPosition);
 		}
 		if (length == 2 && fInputString.charAt(startPosition) == '$') {
-			return optimizedCurrentTokenSource2(startPosition, endPosition);
+			return optimizedCurrentTokenSource2(startPosition);
 		}
 
 		return fInputString.substring(startPosition, endPosition);
 	}
 
+	/**
+	 * Parse a Java <code>int</code> value.
+	 * 
+	 * @return
+	 * @throws SyntaxError
+	 */
+	protected int getInteger() throws SyntaxError {
+		final String number = getIntegerString();
+		int intValue = 0;
+		try {
+			intValue = Integer.parseInt(number, 10);
+		} catch (final NumberFormatException e) {
+			throwSyntaxError("Number format error (not an int type): " + number, number.length());
+		}
+		getNextToken();
+		return intValue;
+	}
+
+	/**
+	 * Parse a Java <code>string</code> from the digits <code>0,1,2,3,4,5,6,7,8,9</code>.
+	 * 
+	 * @return
+	 */
 	protected String getIntegerString() {
-		numFormat = 10;
 		int startPosition = fCurrentPosition - 1;
 		getChar();
-		while ((fCurrentChar >= '0') && (fCurrentChar <= '9')) {
+		while (Character.isDigit(fCurrentChar)) {
 			getChar();
 		}
 		int endPosition = fCurrentPosition--;
@@ -408,7 +455,7 @@ public abstract class Scanner {
 					return;
 				}
 				if (fCurrentChar == '\n') {
-					rowCount++;
+					fRowCounter++;
 					fCurrentColumnStartPosition = fCurrentPosition;
 				}
 			}
@@ -434,7 +481,7 @@ public abstract class Scanner {
 
 			if ((fCurrentChar != '\t') && (fCurrentChar != '\r') && (fCurrentChar != ' ')) {
 				if (fCurrentChar == '\n') {
-					rowCount++;
+					fRowCounter++;
 					fCurrentColumnStartPosition = fCurrentPosition;
 					if (fPackageMode && fRecursionDepth == 0) {
 						fToken = TT_NEWLINE;
@@ -450,7 +497,7 @@ public abstract class Scanner {
 					fToken = TT_IDENTIFIER;
 					return;
 				}
-				if ((fCurrentChar >= '0') && (fCurrentChar <= '9')) {
+				if (Character.isDigit(fCurrentChar)) {
 					fToken = TT_DIGIT;
 					return;
 				}
@@ -527,7 +574,7 @@ public abstract class Scanner {
 				case '.':
 					// token = TT_DOT;
 					if (isValidPosition()) {
-						if ((charAtPosition() >= '0') && (charAtPosition() <= '9')) {
+						if (Character.isDigit(fCurrentChar)) {
 							// don't increment fCurrentPosition (see
 							// getNumberString())
 							// fCurrentPosition++;
@@ -577,15 +624,32 @@ public abstract class Scanner {
 		fToken = TT_EOF;
 	}
 
+	/**
+	 * <p>
+	 * Return an array of a <code>String</code> at index 0 representing the parse number string and an
+	 * <code>Integer</code> representing the number format at index 1.
+	 * </p>
+	 * 
+	 * The number format value can be
+	 * <ul>
+	 * <li>-1 for floating point numbers</li>
+	 * <li>2 for a binary coded integer number</li>
+	 * <li>8 for an octal coded integer number</li>
+	 * <li>10 for a decimal coded integer number</li>
+	 * <li>16 for a hexadecimal coded integer number</li>
+	 * </ul>
+	 * 
+	 * @return
+	 */
 	protected Object[] getNumberString() {
 		final Object[] result = new Object[2];
-		numFormat = 10;
+		int numFormat = 10;
 		int startPosition = fCurrentPosition - 1;
 		final char firstCh = fCurrentChar;
-		char dFlag = ' ';
+		boolean dFlag = false;
 		// first digit
 		if (fCurrentChar == '.') {
-			dFlag = fCurrentChar;
+			dFlag = true;
 		}
 		getChar();
 		if (Config.EXPLICIT_TIMES_OPERATOR) {
@@ -625,71 +689,74 @@ public abstract class Scanner {
 			}
 		}
 
-		if (numFormat == 2) {
-			while ((fCurrentChar >= '0') && (fCurrentChar <= '1')) {
+		if (numFormat == 10) {
+			while (Character.isDigit(fCurrentChar) || (fCurrentChar == '.')) {
+				if (fCurrentChar == '.') {
+					if ((fCurrentChar == '.') && dFlag) {
+						break;
+					}
+					if (fCurrentChar != ' ') {
+						dFlag = true;
+					}
+
+					getChar();
+				} else {
+					getChar();
+				}
+			}
+			if (dFlag) {
+				numFormat = -1;
+			}
+
+			if (fCurrentChar == 'E' || fCurrentChar == 'e') {
+				if (Config.EXPLICIT_TIMES_OPERATOR) {
+					numFormat = -1;
+					getChar();
+					if ((fCurrentChar == '+') || (fCurrentChar == '-')) {
+						getChar();
+					}
+					while (Character.isDigit(fCurrentChar)) {
+						getChar();
+					}
+				}
+			} else {
+				if (numFormat < 0) {
+					if (fCurrentChar == '*') {
+						int lastPosition = fCurrentPosition;
+						getChar();
+						if (fCurrentChar == '^') {
+							getChar();
+							if ((fCurrentChar == '+') || (fCurrentChar == '-')) {
+								getChar();
+							}
+							if (Character.isDigit(fCurrentChar)) {
+								do {
+									getChar();
+								} while (Character.isDigit(fCurrentChar));
+							} else {
+								fCurrentPosition = lastPosition;
+							}
+						} else {
+							fCurrentPosition = lastPosition;
+						}
+					}
+				}
+			}
+		} else if (numFormat == 16) {
+			while (Character.isDigit(fCurrentChar) || ((fCurrentChar >= 'a') && (fCurrentChar <= 'f'))
+					|| ((fCurrentChar >= 'A') && (fCurrentChar <= 'F'))) {
+				getChar();
+			}
+		} else if (numFormat == 2) {
+			while (fCurrentChar == '0' || fCurrentChar == '1') {
 				getChar();
 			}
 		} else if (numFormat == 8) {
 			while ((fCurrentChar >= '0') && (fCurrentChar <= '7')) {
 				getChar();
 			}
-		} else if (numFormat == 16) {
-			while (((fCurrentChar >= '0') && (fCurrentChar <= '9')) || ((fCurrentChar >= 'a') && (fCurrentChar <= 'f'))
-					|| ((fCurrentChar >= 'A') && (fCurrentChar <= 'F'))) {
-				getChar();
-			}
-		} else {
-			while (((fCurrentChar >= '0') && (fCurrentChar <= '9')) || (fCurrentChar == '.')) {
-				// if ((ch == '.') || (ch == 'E') || (ch == 'e')) {
-				if (fCurrentChar == '.') {
-					if ((fCurrentChar == '.') && (dFlag != ' ')) {
-						break;
-					}
-					dFlag = fCurrentChar;
-					getChar();
-				} else {
-					getChar();
-				}
-			}
-			if (dFlag != ' ') {
-				numFormat = -1;
-			}
 		}
 
-		if ((fCurrentChar == 'E') || (fCurrentChar == 'e')) {
-			if (Config.EXPLICIT_TIMES_OPERATOR) {
-				numFormat = -1;
-				getChar();
-				if ((fCurrentChar == '+') || (fCurrentChar == '-')) {
-					getChar();
-				}
-				while (((fCurrentChar >= '0') && (fCurrentChar <= '9'))) {
-					getChar();
-				}
-			}
-		} else {
-			if (numFormat < 0) {
-				if (fCurrentChar == '*') {
-					int lastPosition = fCurrentPosition;
-					getChar();
-					if (fCurrentChar == '^') {
-						getChar();
-						if ((fCurrentChar == '+') || (fCurrentChar == '-')) {
-							getChar();
-						}
-						if (((fCurrentChar >= '0') && (fCurrentChar <= '9'))) {
-							while (((fCurrentChar >= '0') && (fCurrentChar <= '9'))) {
-								getChar();
-							}
-						} else {
-							fCurrentPosition = lastPosition;
-						}
-					} else {
-						fCurrentPosition = lastPosition;
-					}
-				}
-			}
-		}
 		int endPosition = fCurrentPosition--;
 		result[0] = fInputString.substring(startPosition, --endPosition);
 		result[1] = Integer.valueOf(numFormat);
@@ -697,46 +764,18 @@ public abstract class Scanner {
 	}
 
 	/**
-	 * 
+	 * Get a list of operators for the operator string determined with TT_OPERATOR token detection.
 	 * 
 	 * @return
 	 */
 	abstract protected List<Operator> getOperator();
-	// {
-	// char lastChar;
-	// final int startPosition = fCurrentPosition - 1;
-	// fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
-	// List<Operator> list = fFactory.getOperatorList(fOperatorString);
-	// List<Operator> lastList = null;
-	// int lastOperatorPosition = -1;
-	// if (list != null) {
-	// lastList = list;
-	// lastOperatorPosition = fCurrentPosition;
-	// }
-	// getChar();
-	// while (fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0) {
-	// lastChar = fCurrentChar;
-	// fOperatorString = fInputString.substring(startPosition, fCurrentPosition);
-	// list = fFactory.getOperatorList(fOperatorString);
-	// if (list != null) {
-	// lastList = list;
-	// lastOperatorPosition = fCurrentPosition;
-	// }
-	// getChar();
-	// if (lastChar == ';' && fCurrentChar != ';') {
-	// break;
-	// }
-	// }
-	// if (lastOperatorPosition > 0) {
-	// fCurrentPosition = lastOperatorPosition;
-	// return lastList;
-	// }
-	// final int endPosition = fCurrentPosition--;
-	// fCurrentPosition = startPosition;
-	// throwSyntaxError("Operator token not found: " + fInputString.substring(startPosition, endPosition - 1));
-	// return null;
-	// }
 
+	/**
+	 * Create a StringBuilder from the current parsed <code>&quot;...&quot;</code> string expression.
+	 * 
+	 * @return
+	 * @throws SyntaxError
+	 */
 	protected StringBuilder getStringBuilder() throws SyntaxError {
 		final StringBuilder ident = new StringBuilder();
 
@@ -800,8 +839,7 @@ public abstract class Scanner {
 
 	protected void initialize(final String s) throws SyntaxError {
 		initializeNullScanner();
-		StringBuilder buf = new StringBuilder(s.length());
-		fInputString = Characters.substituteCharacters(s, buf);
+		fInputString = Characters.substituteCharacters(s);
 		getNextToken();
 	}
 
@@ -809,7 +847,7 @@ public abstract class Scanner {
 		fInputString = null;
 		fToken = TT_EOF;
 		fCurrentPosition = 0;
-		rowCount = 0;
+		fRowCounter = 0;
 		fCurrentColumnStartPosition = 0;
 	}
 
@@ -837,9 +875,14 @@ public abstract class Scanner {
 		return false;
 	}
 
-	final private String optimizedCurrentTokenSource1(final int startPosition, final int endPosition) {
+	/**
+	 * Return constant strings for variables of length 1.
+	 * 
+	 * @param startPosition
+	 * @return
+	 */
+	final private String optimizedCurrentTokenSource1(final int startPosition) {
 		// return always the same String build only once
-
 		switch (fInputString.charAt(startPosition)) {
 		case 'a':
 			return string_a;
@@ -893,12 +936,71 @@ public abstract class Scanner {
 			return string_y;
 		case 'z':
 			return string_z;
+
+		case 'A':
+			return string_A;
+		case 'B':
+			return string_B;
+		case 'C':
+			return string_C;
+		case 'D':
+			return string_D;
+		case 'E':
+			return string_E;
+		case 'F':
+			return string_F;
+		case 'G':
+			return string_G;
+		case 'H':
+			return string_H;
+		case 'I':
+			return string_I;
+		case 'J':
+			return string_J;
+		case 'K':
+			return string_K;
+		case 'L':
+			return string_L;
+		case 'M':
+			return string_M;
+		case 'N':
+			return string_N;
+		case 'O':
+			return string_O;
+		case 'P':
+			return string_P;
+		case 'Q':
+			return string_Q;
+		case 'R':
+			return string_R;
+		case 'S':
+			return string_S;
+		case 'T':
+			return string_T;
+		case 'U':
+			return string_U;
+		case 'V':
+			return string_V;
+		case 'W':
+			return string_W;
+		case 'X':
+			return string_X;
+		case 'Y':
+			return string_Y;
+		case 'Z':
+			return string_Z;
 		default:
-			return fInputString.substring(startPosition, endPosition);
+			return fInputString.substring(startPosition, startPosition + 1);
 		}
 	}
 
-	final private String optimizedCurrentTokenSource2(final int startPosition, final int endPosition) {
+	/**
+	 * Return constant strings for variables of length 2 starting with a '$' character.
+	 * 
+	 * @param startPosition
+	 * @return
+	 */
+	final private String optimizedCurrentTokenSource2(final int startPosition) {
 		// return always the same String build only once
 		switch (fInputString.charAt(startPosition + 1)) {
 		case 'a':
@@ -954,17 +1056,17 @@ public abstract class Scanner {
 		case 'z':
 			return var_z;
 		default:
-			return fInputString.substring(startPosition, endPosition);
+			return fInputString.substring(startPosition, startPosition + 2);
 		}
 	}
 
 	protected void throwSyntaxError(final String error) throws SyntaxError {
-		throw new SyntaxError(fCurrentPosition - 1, rowCount, fCurrentPosition - fCurrentColumnStartPosition,
+		throw new SyntaxError(fCurrentPosition - 1, fRowCounter, fCurrentPosition - fCurrentColumnStartPosition,
 				getErrorLine(), error, 1);
 	}
 
 	protected void throwSyntaxError(final String error, final int errorLength) throws SyntaxError {
-		throw new SyntaxError(fCurrentPosition - errorLength, rowCount, fCurrentPosition - fCurrentColumnStartPosition,
-				getErrorLine(), error, errorLength);
+		throw new SyntaxError(fCurrentPosition - errorLength, fRowCounter,
+				fCurrentPosition - fCurrentColumnStartPosition, getErrorLine(), error, errorLength);
 	}
 }

@@ -235,8 +235,8 @@ public class ParserTestCase extends TestCase {
 	public void testParser17() {
 		try {
 			Parser p = new Parser();
-			ASTNode obj = p.parse("\\[Alpha]+\\[Alpha]");
-			assertEquals(obj.toString(), "Plus(α, α)");
+			ASTNode obj = p.parse("\\[Alpha]+\\[Alpha]*f[\\[CapitalSHacek]]");
+			assertEquals(obj.toString(), "Plus(α, Times(α, f(Š)))");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());

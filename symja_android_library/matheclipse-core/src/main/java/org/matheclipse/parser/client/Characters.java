@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Characters {
-	
+
 	public static Map<String, String> NamedCharactersMap = new HashMap<String, String>(1409);
 
 	private final static String[] NamedCharacters = { "AAcute", "\u00E1", "ABar", "\u0101", "ACup", "\u0103",
@@ -242,16 +242,55 @@ public class Characters {
 		}
 	}
 
-	public static String substituteCharacters(String str, StringBuilder buf) {
+	public static String substituteCharacters(String str) {
+		StringBuilder buf = null;
 		char currentChar;
 		int currentPosition = 0;
-		int strLength = str.length();
+		final int strLength = str.length();
 		while (currentPosition < strLength) {
 			currentChar = str.charAt(currentPosition++);
 			if (currentChar == '\\') {
 				if (currentPosition < strLength) {
 					if (str.charAt(currentPosition) == '[') {
+						final int startPosition = currentPosition++ - 1;
+						if (currentPosition < strLength) {
+							currentChar = str.charAt(currentPosition++);
+						} else {
+							break;
+						}
+						while (Character.isLetterOrDigit(currentChar)) {
+							if (currentPosition < strLength) {
+								currentChar = str.charAt(currentPosition++);
+							} else {
+								break;
+							}
+						}
+						int endPosition = currentPosition;
+						if (currentChar == ']') {
+							String subString = str.substring(startPosition + 2, endPosition - 1);
+							String namedCh = Characters.NamedCharactersMap.get(subString);
+							if (namedCh != null) {
+								buf = new StringBuilder(str.length());
+								buf.append(str.substring(0, startPosition));
+								currentChar = namedCh.charAt(0);
+								buf.append(currentChar);
+								break; // while (currentPosition < strLength)
+							}
+						}
+					}
+				}
+			}
+		}
+		if (buf == null) {
+			// no special unicode character found, return original string
+			return str;
+		}
 
+		while (currentPosition < strLength) {
+			currentChar = str.charAt(currentPosition++);
+			if (currentChar == '\\') {
+				if (currentPosition < strLength) {
+					if (str.charAt(currentPosition) == '[') {
 						final int startPosition = currentPosition++ - 1;
 						if (currentPosition < strLength) {
 							currentChar = str.charAt(currentPosition++);
@@ -272,10 +311,11 @@ public class Characters {
 							if (namedCh != null) {
 								currentChar = namedCh.charAt(0);
 								buf.append(currentChar);
-								continue;
+								continue; // while (currentPosition < strLength)
 							}
 							buf.append("\\[");
 							buf.append(subString);
+
 						} else {
 							String subString = str.substring(startPosition, endPosition - 1);
 							buf.append(subString);
