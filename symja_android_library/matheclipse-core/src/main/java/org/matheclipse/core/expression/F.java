@@ -101,12 +101,12 @@ public class F {
 	/**
 	 * Set to <code>true</code> at the start of initSymbols() method
 	 */
-	public static boolean isSystemStarted = false;
+	public static volatile boolean isSystemStarted = false;
 
 	/**
 	 * Set to <code>true</code> at the end of initSymbols() method
 	 */
-	public static boolean isSystemInitialized = false;
+	public static volatile boolean isSystemInitialized = false;
 
 	/**
 	 * The map for predefined strings for the {@link IExpr#internalFormString(boolean, int)} method.
