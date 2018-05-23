@@ -514,14 +514,9 @@ public class IntegerSym extends AbstractIntegerSym {
 	@Override
 	public boolean isProbablePrime() {
 		if (fIntValue < 0) {
-			if (fIntValue == Integer.MIN_VALUE) {
-				BigInteger bi = BigInteger.valueOf(fIntValue).negate();
-				return valueOf(bi).isProbablePrime();
-			}
-			return LongMath.isPrime(-fIntValue);
+			return negate().isProbablePrime();
 		}
 		return LongMath.isPrime(fIntValue);
-		// return isProbablePrime(PRIME_CERTAINTY);
 	}
 
 	/** {@inheritDoc} */

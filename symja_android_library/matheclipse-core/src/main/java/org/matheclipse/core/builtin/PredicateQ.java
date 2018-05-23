@@ -1256,20 +1256,14 @@ public class PredicateQ {
 				return false;
 			}
 			if (reImParts[1].isZero()) {
-				if (reImParts[0].isLessThan(F.C0)) {
-					reImParts[0] = reImParts[0].negate();
-				}
 				if (reImParts[0].isProbablePrime()) {
-					return reImParts[0].mod(F.C4).equals(F.C3);
+					return reImParts[0].abs().mod(F.C4).equals(F.C3);
 				}
 				return false;
 			}
 			if (reImParts[0].isZero()) {
-				if (reImParts[1].isLessThan(F.C0)) {
-					reImParts[1] = reImParts[1].negate();
-				}
 				if (reImParts[1].isProbablePrime()) {
-					return reImParts[1].mod(F.C4).equals(F.C3);
+					return reImParts[1].abs().mod(F.C4).equals(F.C3);
 				}
 				return false;
 			}
