@@ -498,6 +498,12 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 
 	/** {@inheritDoc} */
 	@Override
+	public IInteger[] gaussianIntegers() {
+		return new IInteger[]{this, F.C0};
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public IExpr gcd(IExpr that) {
 		if (that instanceof IInteger) {
 			return gcd((IInteger) that);

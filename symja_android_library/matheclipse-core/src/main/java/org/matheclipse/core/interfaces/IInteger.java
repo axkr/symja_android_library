@@ -141,7 +141,8 @@ public interface IInteger extends IRational {
 	public boolean isOdd();
 
 	/**
-	 * Returns {@code true} if this IInteger is probably prime, {@code false} if it's definitely composite.
+	 * Returns {@code true} if this IInteger is probably prime, {@code false} if it's definitely composite. A negative
+	 * integer p is prime, if <code>p.negate()</code> is a prime number
 	 *
 	 * @return {@code true} if this IInteger is probably prime, {@code false} if it's definitely composite.
 	 */

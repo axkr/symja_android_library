@@ -376,6 +376,15 @@ public class ComplexSym implements IComplex {
 		return buf.toString();
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public IInteger[] gaussianIntegers() {
+		if (fReal.isInteger() && fImaginary.isInteger()) {
+			return new IInteger[] { ((IInteger) fReal), ((IInteger) fImaginary) };
+		}
+		return null;
+	}
+
 	@Override
 	public double getImaginary() {
 		return fImaginary.doubleValue();
@@ -438,8 +447,8 @@ public class ComplexSym implements IComplex {
 	}
 
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
-			boolean usePrefix, boolean noSymbolPrefix) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix,
+			boolean noSymbolPrefix) {
 		String prefix = usePrefix ? "F." : "";
 		if (fReal.isZero()) {
 			if (fImaginary.isOne()) {
@@ -585,7 +594,8 @@ public class ComplexSym implements IComplex {
 
 	/**
 	 * 
-	 * @param n must be greater equal 0
+	 * @param n
+	 *            must be greater equal 0
 	 * @return
 	 */
 	private IComplex powPositive(final long n) {

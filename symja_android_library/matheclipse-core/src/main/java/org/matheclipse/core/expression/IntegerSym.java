@@ -33,7 +33,7 @@ import com.google.common.math.LongMath;
  * @see BigIntegerSym
  */
 public class IntegerSym extends AbstractIntegerSym {
- 
+
 	/**
 	 * 
 	 */
@@ -513,6 +513,13 @@ public class IntegerSym extends AbstractIntegerSym {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isProbablePrime() {
+		if (fIntValue < 0) {
+			if (fIntValue == Integer.MIN_VALUE) {
+				BigInteger bi = BigInteger.valueOf(fIntValue).negate();
+				return valueOf(bi).isProbablePrime();
+			}
+			return LongMath.isPrime(-fIntValue);
+		}
 		return LongMath.isPrime(fIntValue);
 		// return isProbablePrime(PRIME_CERTAINTY);
 	}

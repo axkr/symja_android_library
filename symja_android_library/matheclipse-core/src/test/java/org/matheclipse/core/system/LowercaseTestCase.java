@@ -6627,6 +6627,32 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPrimeQ() {
+		// Gaussian primes
+		// https://en.wikipedia.org/wiki/Gaussian_integer#Gaussian_primes
+		check("PrimeQ(-3*I, GaussianIntegers->True)", //
+				"True");
+		check("PrimeQ(3*I, GaussianIntegers->True)", //
+				"True");
+		check("PrimeQ(-3, GaussianIntegers->True)", //
+				"True");
+		check("PrimeQ(-3)", "True");
+
+		check("PrimeQ({0,1,2,3,4,5,6,7,8,9,10,11}, GaussianIntegers->True)", //
+				"{False,False,False,True,False,False,False,True,False,False,False,True}");
+		
+		check("PrimeQ({-5-4*I,-5-4*I, -5-2*I, -5+2*I, -5+4*I, " //
+				+ "-4-5*I, -4-I, -4+I, -4+5*I, " //
+				+ "-3-2*I, -3, -3+2*I, " //
+				+ "-2-5*I, -2-3*I, -2-I, -2+I, -2+3*I, -2+5*I, " //
+				+ "-1-4*I, -1-2*I, -1-I, -1+I, -1+2*I, -1+4*I, " //
+				+ "-3*I, 3*I, 1-4*I, 1-2*I, 1-I, 1+I, 1+2*I, 1+4*I, 2-5*I, 2-3*I, 2-I, 2+I, 2+3*I, " //
+				+ "2+5*I, 3-2*I, 3, 3+2*I, 4-5*I, 4-I, 4+I, 4+5*I, 5-4*I, 5-2*I, 5+2*I, 5+4*I}, GaussianIntegers->True)", //
+				"{True,True,True,True,True,True,True,True,True,True,"//
+						+ "True,True,True,True,True,True,True,True,True,True,"//
+						+ "True,True,True,True,True,True,True,True,True,True,"//
+						+ "True,True,True,True,True,True,True,True,True,True,"//
+						+ "True,True,True,True,True,True,True,True,True}");
+
 		// Mersenne Prime
 		// https://en.wikipedia.org/wiki/Mersenne_prime
 		check("PrimeQ(131071)", "True");
@@ -8312,7 +8338,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("SquareFreeQ(9 + 6*x + x^2)", "False");
 		check("SquareFreeQ(x^2 + 1, Modulus -> 2)", "False");
 	}
-	
+
 	public void testSquareMatrixQ() {
 		check("SquareMatrixQ({{1, 3 + 4*I}, {3 - 4*I, 2}})", "True");
 		check("SquareMatrixQ({{}})", "False");
@@ -8734,7 +8760,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("SyntaxQ(\"Integrate(f(x),{x,0,10})\")", "True");
 		check("SyntaxQ(\"Integrate(f(x),{x,0,10)\")", "False");
 	}
-	
+
 	public void testTable() {
 		check("Table(a + dx, {dx, 0, 3, Pi/8})", //
 				"{a,a+Pi/8,a+Pi/4,a+3/8*Pi,a+Pi/2,a+5/8*Pi,a+3/4*Pi,a+7/8*Pi}");
@@ -9387,7 +9413,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("$x=5;$x=.;$x", "$x");
 		check("$f(x_):=x^2;$f(x_)=.;$f(3)", "$f(3)");
 	}
-	
+
 	public void testUpperCaseQ() {
 		check("UpperCaseQ(\"ABCDEFGHIJKLMNOPQRSTUVWXYZ\")", "True");
 		check("UpperCaseQ(\"ABCDEFGHIJKLMNopqRSTUVWXYZ\")", "False");

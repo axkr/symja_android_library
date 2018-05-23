@@ -1496,6 +1496,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Return the Gaussian integers real and imaginary parts. If this is not a Gaussian integer return <code>null</code>
+	 * 
+	 * @return <code>null</code> if this is not a Gaussian integer
+	 */
+	default IInteger[] gaussianIntegers() {
+		return null;
+	}
+
+	/**
 	 * Test if this expression is a integer function (i.e. a number, a symbolic constant or an integer function where
 	 * all arguments are also &quot;integer functions&quot;)
 	 * 

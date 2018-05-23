@@ -1241,6 +1241,42 @@ public class PredicateQ {
 			return ((IInteger) arg1).isProbablePrime();
 		}
 
+		/**
+		 * Eval <a href="https://en.wikipedia.org/wiki/Gaussian_integer#Gaussian_primes">Gaussian primes</a> if option
+		 * <code>GaussianIntegers->True</code> is set.
+		 */
+		@Override
+		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine, Options options) {
+			IExpr option = options.getOption("GaussianIntegers");
+			if (!option.isTrue()) {
+				return evalArg1Boole(arg1, engine);
+			}
+			IInteger[] reImParts = arg1.gaussianIntegers();
+			if (reImParts == null) {
+				return false;
+			}
+			if (reImParts[1].isZero()) {
+				if (reImParts[0].isLessThan(F.C0)) {
+					reImParts[0] = reImParts[0].negate();
+				}
+				if (reImParts[0].isProbablePrime()) {
+					return reImParts[0].mod(F.C4).equals(F.C3);
+				}
+				return false;
+			}
+			if (reImParts[0].isZero()) {
+				if (reImParts[1].isLessThan(F.C0)) {
+					reImParts[1] = reImParts[1].negate();
+				}
+				if (reImParts[1].isProbablePrime()) {
+					return reImParts[1].mod(F.C4).equals(F.C3);
+				}
+				return false;
+			}
+			// re^2 + im^2 is probable prime?
+			return reImParts[0].pow(2L).add(reImParts[1].pow(2L)).isProbablePrime();
+		}
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.LISTABLE);
