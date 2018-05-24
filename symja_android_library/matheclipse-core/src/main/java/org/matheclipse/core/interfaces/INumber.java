@@ -9,7 +9,7 @@ import org.matheclipse.core.expression.ComplexNum;
  * 
  */
 public interface INumber extends IExpr {
-	
+
 	/**
 	 * Get the absolute value for a given number
 	 * 
@@ -19,8 +19,7 @@ public interface INumber extends IExpr {
 	public IExpr abs();
 
 	/**
-	 * Get a <code>Apcomplex</code> number wrapped into an
-	 * <code>ApcomplexNum</code> object.
+	 * Get a <code>Apcomplex</code> number wrapped into an <code>ApcomplexNum</code> object.
 	 * 
 	 * @param precision
 	 *            set the precision of the resulting ApcomplexNum
@@ -29,14 +28,12 @@ public interface INumber extends IExpr {
 	public ApcomplexNum apcomplexNumValue(long precision);
 
 	/**
-	 * Returns the smallest (closest to negative infinity) <code>IInteger</code>
-	 * value that is not less than <code>this</code> and is equal to a
-	 * mathematical integer. This method raises {@link ArithmeticException} if a
+	 * Returns the smallest (closest to negative infinity) <code>IInteger</code> value that is not less than
+	 * <code>this</code> and is equal to a mathematical integer. This method raises {@link ArithmeticException} if a
 	 * numeric value cannot be represented by an <code>long</code> type.
 	 * 
-	 * @return the smallest (closest to negative infinity) <code>IInteger</code>
-	 *         value that is not less than <code>this</code> and is equal to a
-	 *         mathematical integer.
+	 * @return the smallest (closest to negative infinity) <code>IInteger</code> value that is not less than
+	 *         <code>this</code> and is equal to a mathematical integer.
 	 */
 	public INumber ceilFraction() throws ArithmeticException;
 
@@ -70,11 +67,9 @@ public interface INumber extends IExpr {
 	/**
 	 * Gets the signum value of a complex number
 	 * 
-	 * @return 0 for <code>this == 0</code>; +1 for
-	 *         <code>real(this) &gt; 0</code> or
-	 *         <code>( real(this)==0 &amp;&amp; imaginary(this) &gt; 0 )</code>;
-	 *         -1 for <code>real(this) &lt; 0 || ( real(this) == 0 &amp;&amp;
-	 *         imaginary(this) &lt; 0 )
+	 * @return 0 for <code>this == 0</code>; +1 for <code>real(this) &gt; 0</code> or
+	 *         <code>( real(this)==0 &amp;&amp; imaginary(this) &gt; 0 )</code>; -1 for <code>real(this) &lt; 0 || (
+	 *         real(this) == 0 &amp;&amp; imaginary(this) &lt; 0 )
 	 */
 	public int complexSign();
 
@@ -102,38 +97,43 @@ public interface INumber extends IExpr {
 	public boolean equalsInt(int i);
 
 	/**
+	 * Returns the largest (closest to positive infinity) <code>IInteger</code> value that is not greater than
+	 * <code>this</code> and is equal to a mathematical integer. <br/>
+	 * This method raises {@link ArithmeticException} if a numeric value cannot be represented by an <code>long</code>
+	 * type.
+	 * 
+	 * @return the largest (closest to positive infinity) <code>IInteger</code> value that is not greater than
+	 *         <code>this</code> and is equal to a mathematical integer.
+	 */
+	public INumber floorFraction() throws ArithmeticException;
+
+	/**
 	 * Return the fractional part of this fraction
+	 * 
 	 * @return
 	 */
 	public INumber fractionalPart();
-	
-	/**
-	 * Returns the largest (closest to positive infinity) <code>IInteger</code>
-	 * value that is not greater than <code>this</code> and is equal to a
-	 * mathematical integer. <br/>
-	 * This method raises {@link ArithmeticException} if a numeric value cannot
-	 * be represented by an <code>long</code> type.
-	 * 
-	 * @return the largest (closest to positive infinity) <code>IInteger</code>
-	 *         value that is not greater than <code>this</code> and is equal to
-	 *         a mathematical integer.
-	 */
-	public INumber floorFraction() throws ArithmeticException;
 
 	/**
 	 * Returns the imaginary part of a complex number
 	 * 
 	 * @return real part
+	 * @deprecated use {@link #imDoubleValue()}
 	 */
-	public double getImaginary();
+	default double getImaginary() {
+		return imDoubleValue();
+	}
 
 	/**
 	 * Returns the real part of a complex number
 	 * 
 	 * @return real part
+	 * @deprecated use {@link #reDoubleValue()}
 	 */
-	public double getReal();
-	
+	default double getReal() {
+		return reDoubleValue();
+	}
+
 	/**
 	 * Returns the imaginary part of a complex number
 	 * 
@@ -141,6 +141,13 @@ public interface INumber extends IExpr {
 	 */
 	@Override
 	public ISignedNumber im();
+
+	/**
+	 * Returns the imaginary part of a complex number
+	 * 
+	 * @return real part
+	 */
+	public double imDoubleValue();
 
 	@Override
 	public INumber opposite();
@@ -152,5 +159,12 @@ public interface INumber extends IExpr {
 	 */
 	@Override
 	public ISignedNumber re();
+
+	/**
+	 * Returns the real part of a complex number
+	 * 
+	 * @return real part
+	 */
+	public double reDoubleValue();
 
 }

@@ -297,7 +297,7 @@ public class Num implements INum {
 	}
 
 	@Override
-	public double getImaginary() {
+	public double imDoubleValue() {
 		return 0.0;
 	}
 
@@ -308,7 +308,7 @@ public class Num implements INum {
 	}
 
 	@Override
-	public double getReal() {
+	public double reDoubleValue() {
 		return doubleValue();
 	}
 

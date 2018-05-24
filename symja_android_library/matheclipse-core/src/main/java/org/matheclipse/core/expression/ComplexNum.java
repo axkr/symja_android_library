@@ -297,7 +297,7 @@ public class ComplexNum implements IComplexNum {
 
 	@Override
 	public IExpr complexArg() {
-		return num(Math.atan2(getImaginary(), getReal()));
+		return num(Math.atan2(imDoubleValue(), reDoubleValue()));
 	}
 
 	@Override
@@ -362,7 +362,7 @@ public class ComplexNum implements IComplexNum {
 	}
 
 	@Override
-	public double getImaginary() {
+	public double imDoubleValue() {
 		return fComplex.getImaginary();
 	}
 
@@ -389,7 +389,7 @@ public class ComplexNum implements IComplexNum {
 	}
 
 	@Override
-	public double getReal() {
+	public double reDoubleValue() {
 		return fComplex.getReal();
 	}
 

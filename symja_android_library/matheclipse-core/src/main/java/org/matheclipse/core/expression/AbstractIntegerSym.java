@@ -512,12 +512,12 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 	}
 
 	@Override
-	public double getImaginary() {
+	public double imDoubleValue() {
 		return 0.0;
 	}
 
 	@Override
-	public double getReal() {
+	public double reDoubleValue() {
 		return doubleValue();
 	}
 

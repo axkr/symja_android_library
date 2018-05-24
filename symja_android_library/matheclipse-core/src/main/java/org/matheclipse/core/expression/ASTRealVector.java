@@ -535,7 +535,7 @@ public class ASTRealVector extends AbstractAST implements Cloneable, Externaliza
 		hashValue = 0;
 		if (object instanceof Num) {
 			double value = vector.getEntry(location - 1);
-			vector.setEntry(location - 1, ((Num) object).getReal());
+			vector.setEntry(location - 1, ((Num) object).reDoubleValue());
 			return F.num(value);
 		}
 		throw new IndexOutOfBoundsException(

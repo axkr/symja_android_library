@@ -258,18 +258,18 @@ public class ApcomplexNum implements IComplexNum {
 		// return Double.POSITIVE_INFINITY;
 		// }
 
-		if (Math.abs(getReal()) < Math.abs(getImaginary())) {
-			if (getImaginary() == 0.0) {
-				return Math.abs(getReal());
+		if (Math.abs(reDoubleValue()) < Math.abs(imDoubleValue())) {
+			if (imDoubleValue() == 0.0) {
+				return Math.abs(reDoubleValue());
 			}
-			final double q = getReal() / getImaginary();
-			return (Math.abs(getImaginary()) * Math.sqrt(1 + q * q));
+			final double q = reDoubleValue() / imDoubleValue();
+			return (Math.abs(imDoubleValue()) * Math.sqrt(1 + q * q));
 		} else {
-			if (getReal() == 0.0) {
-				return Math.abs(getImaginary());
+			if (reDoubleValue() == 0.0) {
+				return Math.abs(imDoubleValue());
 			}
-			final double q = getImaginary() / getReal();
-			return (Math.abs(getReal()) * Math.sqrt(1 + q * q));
+			final double q = imDoubleValue() / reDoubleValue();
+			return (Math.abs(reDoubleValue()) * Math.sqrt(1 + q * q));
 		}
 	}
 
@@ -311,12 +311,12 @@ public class ApcomplexNum implements IComplexNum {
 	// }
 
 	@Override
-	public double getImaginary() {
+	public double imDoubleValue() {
 		return fApcomplex.imag().doubleValue();
 	}
 
 	@Override
-	public double getReal() {
+	public double reDoubleValue() {
 		return fApcomplex.real().doubleValue();
 	}
 

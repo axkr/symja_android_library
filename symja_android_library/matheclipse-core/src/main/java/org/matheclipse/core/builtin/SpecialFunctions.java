@@ -760,8 +760,8 @@ public class SpecialFunctions {
 	private final static class StruveH extends AbstractFunctionEvaluator implements StruveHRules {
 
 		public IExpr e2DblArg(final INum d0, final INum d1) {
-			double v = d0.getReal();
-			double z = d1.getReal();
+			double v = d0.reDoubleValue();
+			double z = d1.reDoubleValue();
 			try {
 				final double iterationSum = 100;
 				double fraction = 0;
@@ -845,8 +845,8 @@ public class SpecialFunctions {
 	private final static class StruveL extends AbstractFunctionEvaluator implements StruveLRules {
 
 		public IExpr e2DblArg(final INum d0, final INum d1) {
-			double v = d0.getReal();
-			double z = d1.getReal();
+			double v = d0.reDoubleValue();
+			double z = d1.reDoubleValue();
 			try {
 				final int iterationSum = 100;
 				double fraction = 0;

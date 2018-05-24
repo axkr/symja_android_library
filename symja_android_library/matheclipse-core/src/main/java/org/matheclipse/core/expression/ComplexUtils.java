@@ -152,8 +152,8 @@ public class ComplexUtils {
             return ComplexNum.NaN;
         }
 
-        final double a = z.getReal();
-        final double b = z.getImaginary();
+        final double a = z.reDoubleValue();
+        final double b = z.imDoubleValue();
 
         return ComplexNum.valueOf(Math.cos(a) * MathUtils.cosh(b),
             -Math.sin(a) * MathUtils.sinh(b));
@@ -191,8 +191,8 @@ public class ComplexUtils {
             return ComplexNum.NaN;
         }
 
-        final double a = z.getReal();
-        final double b = z.getImaginary();
+        final double a = z.reDoubleValue();
+        final double b = z.imDoubleValue();
 
         return ComplexNum.valueOf(MathUtils.cosh(a) * Math.cos(b),
             MathUtils.sinh(a) * Math.sin(b));
@@ -231,8 +231,8 @@ public class ComplexUtils {
             return ComplexNum.NaN;
         }
 
-        final double b = z.getImaginary();
-        final double expA = Math.exp(z.getReal());
+        final double b = z.imDoubleValue();
+        final double expA = Math.exp(z.reDoubleValue());
         return ComplexNum.valueOf(expA *  Math.cos(b), expA * Math.sin(b));
     }
 
@@ -272,7 +272,7 @@ public class ComplexUtils {
         }
 
         return ComplexNum.valueOf(Math.log(z.dabs()),
-            Math.atan2(z.getImaginary(), z.getReal()));
+            Math.atan2(z.imDoubleValue(), z.reDoubleValue()));
     }
 
     /**
@@ -362,8 +362,8 @@ public class ComplexUtils {
             return ComplexNum.NaN;
         }
 
-        final double a = z.getReal();
-        final double b = z.getImaginary();
+        final double a = z.reDoubleValue();
+        final double b = z.imDoubleValue();
 
         return ComplexNum.valueOf(Math.sin(a) * MathUtils.cosh(b),
             Math.cos(a) * MathUtils.sinh(b));
@@ -400,8 +400,8 @@ public class ComplexUtils {
             return ComplexNum.NaN;
         }
 
-        final double a = z.getReal();
-        final double b = z.getImaginary();
+        final double a = z.reDoubleValue();
+        final double b = z.imDoubleValue();
 
         return ComplexNum.valueOf(MathUtils.sinh(a) * Math.cos(b),
             MathUtils.cosh(a) * Math.sin(b));
@@ -446,8 +446,8 @@ public class ComplexUtils {
             return ComplexNum.NaN;
         }
 
-        final double a = z.getReal();
-        final double b = z.getImaginary();
+        final double a = z.reDoubleValue();
+        final double b = z.imDoubleValue();
 
         final double t = Math.sqrt((Math.abs(a) + z.dabs()) / 2.0);
         if (a >= 0.0) {
@@ -513,8 +513,8 @@ public class ComplexUtils {
             return ComplexNum.NaN;
         }
 
-        final double a2 = 2.0 * z.getReal();
-        final double b2 = 2.0 * z.getImaginary();
+        final double a2 = 2.0 * z.reDoubleValue();
+        final double b2 = 2.0 * z.imDoubleValue();
         final double d = Math.cos(a2) + MathUtils.cosh(b2);
 
         return ComplexNum.valueOf(Math.sin(a2) / d, MathUtils.sinh(b2) / d);
@@ -552,8 +552,8 @@ public class ComplexUtils {
             return ComplexNum.NaN;
         }
 
-        final double a2 = 2.0 * z.getReal();
-        final double b2 = 2.0 * z.getImaginary();
+        final double a2 = 2.0 * z.reDoubleValue();
+        final double b2 = 2.0 * z.imDoubleValue();
         final double d = MathUtils.cosh(a2) + Math.cos(b2);
 
         return ComplexNum.valueOf(MathUtils.sinh(a2) / d, Math.sin(b2) / d);

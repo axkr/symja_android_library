@@ -23,7 +23,7 @@ public interface INum extends ISignedNumber {
 	public INum multiply(INum val);
 
 	default INum multiply(IRational val) {
-		return multiply(F.num(val.getReal()));
+		return multiply(F.num(val.reDoubleValue()));
 	}
 
 	public INum pow(INum val);
