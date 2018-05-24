@@ -32,9 +32,9 @@ public class Power extends AbstractOperator {
 			return true;
 		}
 		if (arg2.isFraction()) {
-			if (((IFraction) arg2).getNumerator().isOne()) {
+			if (((IFraction) arg2).numerator().isOne()) {
 				buf.append("\\sqrt[");
-				fFactory.convert(buf, ((IFraction) arg2).getDenominator(), fPrecedence);
+				fFactory.convert(buf, ((IFraction) arg2).denominator(), fPrecedence);
 				buf.append("]{");
 				fFactory.convert(buf, arg1, fPrecedence);
 				buf.append('}');

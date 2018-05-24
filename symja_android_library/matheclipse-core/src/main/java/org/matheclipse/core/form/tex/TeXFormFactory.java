@@ -129,8 +129,8 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 		if (f.isNegative() && (precedence > plusPrec)) {
 			buf.append("\\left( ");
 		}
-		if (f.getDenominator().isOne()) {
-			buf.append(f.getNumerator().toString());
+		if (f.denominator().isOne()) {
+			buf.append(f.numerator().toString());
 		} else {
 			buf.append("\\frac{");
 			buf.append(f.toBigNumerator().toString());

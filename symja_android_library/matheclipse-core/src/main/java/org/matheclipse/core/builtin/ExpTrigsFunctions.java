@@ -1057,7 +1057,7 @@ public class ExpTrigsFunctions {
 					// period (n/m)*Pi
 					IFraction f = (IFraction) parts.arg2();
 					IInteger[] divRem = f.divideAndRemainder();
-					IFraction rest = F.fraction(divRem[1], f.getDenominator());
+					IFraction rest = F.fraction(divRem[1], f.denominator());
 					if (!NumberUtil.isZero(divRem[0])) {
 
 						if (divRem[0].isEven()) {
@@ -1227,7 +1227,7 @@ public class ExpTrigsFunctions {
 					IFraction f = (IFraction) parts.arg2();
 					IInteger[] divRem = f.divideAndRemainder();
 					if (!divRem[0].isZero()) {
-						IFraction rest = F.fraction(divRem[1], f.getDenominator());
+						IFraction rest = F.fraction(divRem[1], f.denominator());
 						if (divRem[0].isEven()) {
 							return Csc(Plus(parts.arg1(), Times(rest, Pi)));
 						} else {
@@ -1389,7 +1389,7 @@ public class ExpTrigsFunctions {
 					// period (n/m)*Pi
 					IFraction f = (IFraction) parts.arg2();
 					IInteger[] divRem = f.divideAndRemainder();
-					IFraction rest = F.fraction(divRem[1], f.getDenominator());
+					IFraction rest = F.fraction(divRem[1], f.denominator());
 					if (!divRem[0].isZero()) {
 						return Cot(Plus(parts.arg1(), Times(rest, Pi)));
 					}
@@ -1778,7 +1778,7 @@ public class ExpTrigsFunctions {
 					IFraction f = (IFraction) parts.arg2();
 					IInteger[] divRem = f.divideAndRemainder();
 					if (!divRem[0].isZero()) {
-						IFraction rest = F.fraction(divRem[1], f.getDenominator());
+						IFraction rest = F.fraction(divRem[1], f.denominator());
 						if (divRem[0].isEven()) {
 							return Sec(Plus(parts.arg1(), Times(rest, Pi)));
 						} else {
@@ -1945,7 +1945,7 @@ public class ExpTrigsFunctions {
 					// period (n/m)*Pi
 					IFraction f = (IFraction) parts.arg2();
 					IInteger[] divRem = f.divideAndRemainder();
-					IFraction rest = F.fraction(divRem[1], f.getDenominator());
+					IFraction rest = F.fraction(divRem[1], f.denominator());
 					if (!divRem[0].isZero()) {
 
 						if (divRem[0].isEven()) {
@@ -2266,7 +2266,7 @@ public class ExpTrigsFunctions {
 					// period (n/m)*Pi
 					IFraction f = (IFraction) parts.arg2();
 					IInteger[] divRem = f.divideAndRemainder();
-					IFraction rest = F.fraction(divRem[1], f.getDenominator());
+					IFraction rest = F.fraction(divRem[1], f.denominator());
 					if (!divRem[0].isZero()) {
 						return Tan(Plus(parts.arg1(), Times(rest, Pi)));
 					}

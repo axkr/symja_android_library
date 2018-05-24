@@ -419,7 +419,7 @@ public class Iterator {
 		@Override
 		public int allocHint() {
 			IRational temp = lowerLimit.subtract(upperLimit).divideBy(step);
-			IInteger hint = temp.getNumerator().div(temp.getDenominator());
+			IInteger hint = temp.numerator().div(temp.denominator());
 			int alloc = hint.toInt();
 			if (alloc < 0) {
 				return (-alloc) + 1;

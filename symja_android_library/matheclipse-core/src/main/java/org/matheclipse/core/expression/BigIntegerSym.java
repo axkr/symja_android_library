@@ -347,19 +347,19 @@ public class BigIntegerSym extends AbstractIntegerSym {
 
 	/** {@inheritDoc} */
 	@Override
-	public IInteger getDenominator() {
+	public IInteger denominator() {
 		return F.C1;
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public BigFraction getFraction() {
+	public BigFraction toBigFraction() {
 		return new BigFraction(fBigIntValue);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public IInteger getNumerator() {
+	public IInteger numerator() {
 		return this;
 	}
 

@@ -226,7 +226,7 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 	}
 
 	public void convertFraction(final StringBuilder buf, final IFraction f, final int precedence) {
-		boolean isInteger = f.getDenominator().isOne();
+		boolean isInteger = f.denominator().isOne();
 		if (f.isNegative() && (precedence > plusPrec)) {
 			tagStart(buf, "mrow");
 			tag(buf, "mo", "(");

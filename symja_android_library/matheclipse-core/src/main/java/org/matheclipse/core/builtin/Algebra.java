@@ -771,7 +771,7 @@ public class Algebra {
 
 			IExpr expr = ast.arg1();
 			if (expr.isRational()) {
-				return ((IRational) expr).getDenominator();
+				return ((IRational) expr).denominator();
 			}
 			IExpr[] parts = fractionalParts(expr, trig);
 			if (parts == null) {
@@ -1792,7 +1792,7 @@ public class Algebra {
 
 			IExpr arg = ast.arg1();
 			if (arg.isRational()) {
-				return ((IRational) arg).getNumerator();
+				return ((IRational) arg).numerator();
 			}
 			IExpr[] parts = fractionalParts(arg, trig);
 			if (parts == null) {
@@ -4056,14 +4056,14 @@ public class Algebra {
 			} else if (i == 1 && arg.isFraction()) {
 				if (splitNumeratorOne) {
 					IFraction fr = (IFraction) arg;
-					if (fr.getNumerator().isOne()) {
-						denominator.append(fr.getDenominator()); // denominator.addMerge(fr.getDenominator());
+					if (fr.numerator().isOne()) {
+						denominator.append(fr.denominator()); // denominator.addMerge(fr.getDenominator());
 						splitFractionEvaled = true;
 						continue;
 					}
-					if (fr.getNumerator().isMinusOne()) {
-						numerator.append(fr.getNumerator()); // numerator.addMerge(fr.getNumerator());
-						denominator.append(fr.getDenominator());// denominator.addMerge(fr.getDenominator());
+					if (fr.numerator().isMinusOne()) {
+						numerator.append(fr.numerator()); // numerator.addMerge(fr.getNumerator());
+						denominator.append(fr.denominator());// denominator.addMerge(fr.getDenominator());
 						splitFractionEvaled = true;
 						continue;
 					}
@@ -4071,10 +4071,10 @@ public class Algebra {
 					continue;
 				} else if (splitFractionalNumbers) {
 					IFraction fr = (IFraction) arg;
-					if (!fr.getNumerator().isOne()) {
-						numerator.append(fr.getNumerator()); // numerator.addMerge(fr.getNumerator());
+					if (!fr.numerator().isOne()) {
+						numerator.append(fr.numerator()); // numerator.addMerge(fr.getNumerator());
 					}
-					denominator.append(fr.getDenominator()); // denominator.addMerge(fr.getDenominator());
+					denominator.append(fr.denominator()); // denominator.addMerge(fr.getDenominator());
 					evaled = true;
 					continue;
 				}
@@ -4286,8 +4286,8 @@ public class Algebra {
 		if (arg.isFraction()) {
 			IFraction fr = (IFraction) arg;
 			IExpr[] parts = new IExpr[2];
-			parts[0] = fr.getNumerator();
-			parts[1] = fr.getDenominator();
+			parts[0] = fr.numerator();
+			parts[1] = fr.denominator();
 			return parts;
 		}
 		return fractionalParts(arg, false);

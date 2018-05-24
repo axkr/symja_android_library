@@ -34,12 +34,12 @@ public class Power extends MMLOperator {
 		if (arg2.isFraction()) {
 			IFraction f2 = ((IFraction) arg2);
 			if (f2.isPositive()) {
-				exp = f2.getNumerator();
+				exp = f2.numerator();
 				if (f2.equals(F.C1D2)) {
 					fFactory.tagStart(buf, "msqrt");
 					useMROOT = 1;
 				} else {
-					den = f2.getDenominator();
+					den = f2.denominator();
 					fFactory.tagStart(buf, "mroot");
 					useMROOT = 2;
 				}

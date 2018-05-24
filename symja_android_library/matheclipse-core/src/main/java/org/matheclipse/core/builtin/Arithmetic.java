@@ -1360,8 +1360,8 @@ public final class Arithmetic {
 			}
 			if (arg1.isFraction()) {
 				IFraction frac = (IFraction) arg1;
-				if (frac.getDenominator().equals(C2)) {
-					IInteger n = frac.getNumerator();
+				if (frac.denominator().equals(C2)) {
+					IInteger n = frac.numerator();
 					if (arg1.isNegative()) {
 						n = n.negate();
 						return Times(Power(CN1, Times(C1D2, Plus(C1, n))), Power(C2, n), Sqrt(Pi),
@@ -2370,7 +2370,7 @@ public final class Arithmetic {
 				return a;
 			}
 			if (a.isRational() && n.isInteger()) {
-				BigFraction bf = ((IRational) a).getFraction();
+				BigFraction bf = ((IRational) a).toBigFraction();
 				BigFraction ph = pochhammer(bf, ((IInteger) n).toBigNumerator());
 				if (ph != null) {
 					return F.fraction(ph);
@@ -2662,16 +2662,16 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr e2FraArg(IFraction base, IFraction exponent) {
-			if (base.getNumerator().isZero()) {
+			if (base.numerator().isZero()) {
 				return F.C0;
 			}
 
-			if (exponent.getNumerator().isZero()) {
+			if (exponent.numerator().isZero()) {
 				return F.C1;
 			}
 
-			if (base.getNumerator().isOne() && !base.getDenominator().isOne()) {
-				return F.Power(base.getDenominator(), exponent.negate());
+			if (base.numerator().isOne() && !base.denominator().isOne()) {
+				return F.Power(base.denominator(), exponent.negate());
 			}
 
 			if (exponent.equals(F.C1D2)) {
@@ -2686,12 +2686,12 @@ public final class Arithmetic {
 				}
 			}
 
-			if (exponent.isNegative() && !base.getDenominator().isOne()) {
+			if (exponent.isNegative() && !base.denominator().isOne()) {
 				return F.Power(base.inverse(), exponent.negate());
 			}
 
-			if (!exponent.getDenominator().isOne()) {
-				IExpr temp = rationalPower(base.getNumerator(), base.getDenominator(), exponent);
+			if (!exponent.denominator().isOne()) {
+				IExpr temp = rationalPower(base.numerator(), base.denominator(), exponent);
 				if (temp.isPresent()) {
 					return temp;
 				}
@@ -2703,17 +2703,17 @@ public final class Arithmetic {
 					f0Temp = f0Temp.negate();
 				}
 				if (exponent.isNegative()) {
-					a = f0Temp.getDenominator();
-					b = f0Temp.getNumerator();
+					a = f0Temp.denominator();
+					b = f0Temp.numerator();
 				} else {
-					a = f0Temp.getNumerator();
-					b = f0Temp.getDenominator();
+					a = f0Temp.numerator();
+					b = f0Temp.denominator();
 				}
 
 				// example: (-27)^(2/3) or 8^(1/3)
-				if (!exponent.getNumerator().isOne()) {
+				if (!exponent.numerator().isOne()) {
 					try {
-						int exp = exponent.getNumerator().toInt();
+						int exp = exponent.numerator().toInt();
 						if (exp < 0) {
 							exp *= (-1);
 						}
@@ -2724,7 +2724,7 @@ public final class Arithmetic {
 					}
 				}
 
-				final IInteger root = exponent.getDenominator();
+				final IInteger root = exponent.denominator();
 				IInteger[] new_numer = calculateRoot(a, root);
 				IInteger[] new_denom = calculateRoot(b, root);
 				final IFraction new_root = F.fraction(C1, root);
@@ -3263,15 +3263,15 @@ public final class Arithmetic {
 			if (complexNumber.isImaginaryUnit()) {
 				return F.Power(F.CN1, F.C1D2.times(fractionNumber));
 			} else if (complexNumber.isNegativeImaginaryUnit()) {
-				IInteger numerator = fractionNumber.getNumerator();
-				IInteger denominator = fractionNumber.getDenominator();
+				IInteger numerator = fractionNumber.numerator();
+				IInteger denominator = fractionNumber.denominator();
 				IInteger div = numerator.div(denominator);
 				if (div.isOdd()) {
 					div = div.subtract(F.C1);
 				}
 				IRational rat = fractionNumber.subtract(div);
-				numerator = rat.getNumerator();
-				denominator = rat.getDenominator().multiply(F.C2);
+				numerator = rat.numerator();
+				denominator = rat.denominator().multiply(F.C2);
 				return F.Times(F.CN1, F.Power(F.CNI, div),
 						F.Power(F.CN1, F.fraction(denominator.subtract(numerator), denominator)));
 			}
@@ -4608,17 +4608,17 @@ public final class Arithmetic {
 					if ((power1Arg1.isRational())) {
 
 						if (power1Arg2.isNegative()) {
-							IExpr temp = timesPowerPower(((IRational) arg0).getNumerator(),
-									((IRational) arg0).getDenominator(), F.C1, //
-									((IRational) power1Arg1).getDenominator(), ((IRational) power1Arg1).getNumerator(),
+							IExpr temp = timesPowerPower(((IRational) arg0).numerator(),
+									((IRational) arg0).denominator(), F.C1, //
+									((IRational) power1Arg1).denominator(), ((IRational) power1Arg1).numerator(),
 									(IFraction) power1Arg2.negate());
 							if (temp.isPresent()) {
 								return temp;
 							}
 						} else {
-							IExpr temp = timesPowerPower(((IRational) arg0).getNumerator(),
-									((IRational) arg0).getDenominator(), F.C1, //
-									((IRational) power1Arg1).getNumerator(), ((IRational) power1Arg1).getDenominator(),
+							IExpr temp = timesPowerPower(((IRational) arg0).numerator(),
+									((IRational) arg0).denominator(), F.C1, //
+									((IRational) power1Arg1).numerator(), ((IRational) power1Arg1).denominator(),
 									(IFraction) power1Arg2);
 							if (temp.isPresent()) {
 								return temp;
@@ -4700,9 +4700,9 @@ public final class Arithmetic {
 				}
 				if (power0Arg1.isFraction() && power0Arg2.isFraction() && power1Arg1.isFraction()
 						&& power1Arg2.isFraction()) {
-					IExpr temp = timesPowerPower(((IFraction) power0Arg1).getNumerator(),
-							((IFraction) power0Arg1).getDenominator(), (IFraction) power0Arg2, //
-							((IFraction) power1Arg1).getNumerator(), ((IFraction) power1Arg1).getDenominator(),
+					IExpr temp = timesPowerPower(((IFraction) power0Arg1).numerator(),
+							((IFraction) power0Arg1).denominator(), (IFraction) power0Arg2, //
+							((IFraction) power1Arg1).numerator(), ((IFraction) power1Arg1).denominator(),
 							(IFraction) power1Arg2);
 					if (temp.isPresent()) {
 						return temp;

@@ -816,25 +816,25 @@ public final class NumberTheory {
 				IRational rat = (IRational) arg1;
 
 				IASTAppendable continuedFractionList;
-				if (rat.getDenominator().isOne()) {
+				if (rat.denominator().isOne()) {
 					continuedFractionList = F.ListAlloc(1);
-					continuedFractionList.append(rat.getNumerator());
-				} else if (rat.getNumerator().isOne()) {
+					continuedFractionList.append(rat.numerator());
+				} else if (rat.numerator().isOne()) {
 					continuedFractionList = F.ListAlloc(2);
 					continuedFractionList.append(F.C0);
-					continuedFractionList.append(rat.getDenominator());
+					continuedFractionList.append(rat.denominator());
 				} else {
-					IFraction temp = F.fraction(rat.getNumerator(), rat.getDenominator());
+					IFraction temp = F.fraction(rat.numerator(), rat.denominator());
 					IInteger quotient;
 					IInteger remainder;
 					continuedFractionList = F.ListAlloc(10);
-					while (temp.getDenominator().compareInt(1) > 0 && (0 < maxIterations--)) {
-						quotient = temp.getNumerator().div(temp.getDenominator());
-						remainder = temp.getNumerator().mod(temp.getDenominator());
+					while (temp.denominator().compareInt(1) > 0 && (0 < maxIterations--)) {
+						quotient = temp.numerator().div(temp.denominator());
+						remainder = temp.numerator().mod(temp.denominator());
 						continuedFractionList.append(quotient);
-						temp = F.fraction(temp.getDenominator(), remainder);
-						if (temp.getDenominator().isOne()) {
-							continuedFractionList.append(temp.getNumerator());
+						temp = F.fraction(temp.denominator(), remainder);
+						if (temp.denominator().isOne()) {
+							continuedFractionList.append(temp.numerator());
 						}
 					}
 				}

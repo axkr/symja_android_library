@@ -333,8 +333,8 @@ public abstract class AbstractFractionSym implements IFraction {
 	@Override
 	/** {@inheritDoc} */
 	public IASTAppendable factorInteger() {
-		IInteger num = getNumerator();
-		IInteger den = getDenominator();
+		IInteger num = numerator();
+		IInteger den = denominator();
 		IASTAppendable result =  den.factorInteger();
 
 		// negate the exponents of the denominator part
@@ -355,7 +355,7 @@ public abstract class AbstractFractionSym implements IFraction {
 	 * @return denominator
 	 */
 	@Override
-	public IInteger getDenominator() {
+	public IInteger denominator() {
 		return AbstractIntegerSym.valueOf(toBigDenominator());
 	}
 
@@ -375,7 +375,7 @@ public abstract class AbstractFractionSym implements IFraction {
 	 * @return denominator
 	 */
 	@Override
-	public IInteger getNumerator() {
+	public IInteger numerator() {
 		return AbstractIntegerSym.valueOf(toBigNumerator());
 	}
 
@@ -445,7 +445,7 @@ public abstract class AbstractFractionSym implements IFraction {
 
 	@Override
 	public long leafCountSimplify() {
-		return 1 + getNumerator().integerLength(F.C10) + getDenominator().integerLength(F.C10);
+		return 1 + numerator().integerLength(F.C10) + denominator().integerLength(F.C10);
 	}
 
 	@Override

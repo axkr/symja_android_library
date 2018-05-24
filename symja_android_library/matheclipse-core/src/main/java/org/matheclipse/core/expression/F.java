@@ -2763,10 +2763,10 @@ public class F {
 					imagFraction.toBigNumerator(), imagFraction.toBigDenominator(), engine.getNumericPrecision());
 		}
 		// double precision complex number
-		double nr = realFraction.getNumerator().doubleValue();
-		double dr = realFraction.getDenominator().doubleValue();
-		double ni = imagFraction.getNumerator().doubleValue();
-		double di = imagFraction.getDenominator().doubleValue();
+		double nr = realFraction.numerator().doubleValue();
+		double dr = realFraction.denominator().doubleValue();
+		double ni = imagFraction.numerator().doubleValue();
+		double di = imagFraction.denominator().doubleValue();
 
 		return complexNum(nr / dr, ni / di);
 	}

@@ -236,19 +236,19 @@ public class ComplexSym implements IComplex {
 	@Override
 	public ComplexNum complexNumValue() {
 		// double precision complex number
-		double nr = fReal.getNumerator().doubleValue();
-		double dr = fReal.getDenominator().doubleValue();
-		double ni = fImaginary.getNumerator().doubleValue();
-		double di = fImaginary.getDenominator().doubleValue();
+		double nr = fReal.numerator().doubleValue();
+		double dr = fReal.denominator().doubleValue();
+		double ni = fImaginary.numerator().doubleValue();
+		double di = fImaginary.denominator().doubleValue();
 		return ComplexNum.valueOf(nr / dr, ni / di);
 	}
 
 	@Override
 	public int complexSign() {
-		final int i = fReal.getNumerator().sign();
+		final int i = fReal.numerator().sign();
 
 		if (i == 0) {
-			return fImaginary.getNumerator().sign();
+			return fImaginary.numerator().sign();
 		}
 
 		return i;
@@ -330,8 +330,8 @@ public class ComplexSym implements IComplex {
 		} else {
 			buf.append('[');
 		}
-		if (fReal.getDenominator().isOne()) {
-			buf.append(fReal.getNumerator().toString());
+		if (fReal.denominator().isOne()) {
+			buf.append(fReal.numerator().toString());
 		} else {
 			buf.append("Rational");
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
@@ -339,9 +339,9 @@ public class ComplexSym implements IComplex {
 			} else {
 				buf.append('[');
 			}
-			buf.append(fReal.getNumerator().toString());
+			buf.append(fReal.numerator().toString());
 			buf.append(',');
-			buf.append(fReal.getDenominator().toString());
+			buf.append(fReal.denominator().toString());
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				buf.append(')');
 			} else {
@@ -350,8 +350,8 @@ public class ComplexSym implements IComplex {
 		}
 		buf.append(',');
 
-		if (fImaginary.getDenominator().isOne()) {
-			buf.append(fImaginary.getNumerator().toString());
+		if (fImaginary.denominator().isOne()) {
+			buf.append(fImaginary.numerator().toString());
 		} else {
 			buf.append("Rational");
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
@@ -359,9 +359,9 @@ public class ComplexSym implements IComplex {
 			} else {
 				buf.append('[');
 			}
-			buf.append(fImaginary.getNumerator().toString());
+			buf.append(fImaginary.numerator().toString());
 			buf.append(',');
-			buf.append(fImaginary.getDenominator().toString());
+			buf.append(fImaginary.denominator().toString());
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				buf.append(')');
 			} else {
@@ -435,8 +435,8 @@ public class ComplexSym implements IComplex {
 
 	@Override
 	public ISignedNumber im() {
-		if (fImaginary.getDenominator().isOne()) {
-			return fImaginary.getNumerator();
+		if (fImaginary.denominator().isOne()) {
+			return fImaginary.numerator();
 		}
 		return fImaginary;
 	}
@@ -519,10 +519,10 @@ public class ComplexSym implements IComplex {
 	public INumber normalize() {
 		if (fImaginary.isZero()) {
 			if (fReal instanceof IFraction) {
-				if (fReal.getDenominator().isOne()) {
-					return fReal.getNumerator();
+				if (fReal.denominator().isOne()) {
+					return fReal.numerator();
 				}
-				if (fReal.getNumerator().isZero()) {
+				if (fReal.numerator().isZero()) {
 					return F.C0;
 				}
 			}
@@ -532,17 +532,17 @@ public class ComplexSym implements IComplex {
 		IRational newRe = fReal;
 		IRational newIm = fImaginary;
 		if (fReal instanceof IFraction) {
-			if (fReal.getDenominator().isOne()) {
-				newRe = fReal.getNumerator();
+			if (fReal.denominator().isOne()) {
+				newRe = fReal.numerator();
 				evaled = true;
 			}
-			if (fReal.getNumerator().isZero()) {
+			if (fReal.numerator().isZero()) {
 				newRe = F.C0;
 				evaled = true;
 			}
 		}
-		if (fImaginary instanceof IFraction && fImaginary.getDenominator().isOne()) {
-			newIm = fImaginary.getNumerator();
+		if (fImaginary instanceof IFraction && fImaginary.denominator().isOne()) {
+			newIm = fImaginary.numerator();
 			evaled = true;
 		}
 		return evaled ? valueOf(newRe, newIm) : this;
@@ -625,8 +625,8 @@ public class ComplexSym implements IComplex {
 
 	@Override
 	public ISignedNumber re() {
-		if (fReal.getDenominator().isOne()) {
-			return fReal.getNumerator();
+		if (fReal.denominator().isOne()) {
+			return fReal.numerator();
 		}
 		return fReal;
 	}

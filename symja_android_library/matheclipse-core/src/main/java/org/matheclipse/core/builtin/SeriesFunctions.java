@@ -1049,8 +1049,8 @@ public class SeriesFunctions {
 				if (exponent.isPower() && exponent.base().equals(x) && exponent.exponent().isRational()) {
 					IRational rat = (IRational) exponent.exponent();
 					if (rat.isPositive()) {
-						int numerator = rat.getNumerator().toIntDefault(Integer.MIN_VALUE);
-						int denominator = rat.getDenominator().toIntDefault(Integer.MIN_VALUE);
+						int numerator = rat.numerator().toIntDefault(Integer.MIN_VALUE);
+						int denominator = rat.denominator().toIntDefault(Integer.MIN_VALUE);
 						if (denominator != Integer.MIN_VALUE) {
 							IExpr temp = seriesData(F.Power(base, x), x, x0, n * denominator, engine);
 							if (temp instanceof ASTSeriesData) {
