@@ -4674,6 +4674,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMatchQ() {
+		check("MatchQ(f(2*I), f(Complex(i_Integer, r_Integer)) )", "True");
+		check("MatchQ(g(1/2), g(Rational(n_Integer, d_Integer)) )", "True");
+		
 		check("MatchQ(Simplify(1 + 1/GoldenRatio - GoldenRatio), 0)", "True");
 
 		check("MatchQ(Sin(Cos(x)), HoldPattern(F_(G_(v_))) /; F==Sin&&G==Cos&&v==x )", "True");

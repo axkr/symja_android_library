@@ -838,6 +838,16 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				} else {
 					matched = !matchExpr(lhsPatternExpr.first(), lhsEvalExpr, engine, stackMatcher);
 				}
+			} else if (lhsPatternExpr.isAST(F.Complex, 3) && lhsEvalExpr.isNumber()) {
+				IExpr re = ((INumber) lhsEvalExpr).re();
+				IExpr im = ((INumber) lhsEvalExpr).im();
+				matched = matchExpr(lhsPatternExpr.first(), re, engine, stackMatcher)
+						&& matchExpr(lhsPatternExpr.second(), im, engine, stackMatcher);
+			} else if (lhsPatternExpr.isAST(F.Rational, 3) && lhsEvalExpr.isRational()) {
+				IExpr numerator = ((IRational) lhsEvalExpr).getNumerator();
+				IExpr denominator = ((IRational) lhsEvalExpr).getDenominator();
+				matched = matchExpr(lhsPatternExpr.first(), numerator, engine, stackMatcher)
+						&& matchExpr(lhsPatternExpr.second(), denominator, engine, stackMatcher);
 			} else {
 				IAST lhsPatternAST = (IAST) lhsPatternExpr;
 				IExpr[] patternValues = fPatternMap.copyPattern();
