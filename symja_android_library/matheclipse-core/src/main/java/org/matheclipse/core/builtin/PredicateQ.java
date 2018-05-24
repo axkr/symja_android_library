@@ -1186,14 +1186,32 @@ public class PredicateQ {
 	 * 
 	 * <blockquote>
 	 * <p>
-	 * returns <code>True</code> if <code>n</code> is a prime number.<br />
+	 * returns <code>True</code> if <code>n</code> is a integer prime number.<br />
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * PrimeQ(n, GaussianIntegers -&gt; True)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>n</code> is a Gaussian prime number.<br />
 	 * </p>
 	 * </blockquote>
 	 * <p>
-	 * For very large numbers, <code>PrimeQ</code> uses probabilistic prime testing, so it might be wrong
-	 * sometimes<br />
+	 * For very large numbers, <code>PrimeQ</code> uses
+	 * <a href="https://en.wikipedia.org/wiki/Prime_number#Primality_testing_versus_primality_proving">probabilistic
+	 * prime testing</a>, so it might be wrong sometimes<br />
 	 * (a number might be composite even though <code>PrimeQ</code> says it is prime).
 	 * </p>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Prime_number">Wikipedia - Prime number</a></li>
+	 * <li><a href="https://en.wikipedia.org/wiki/Gaussian_integer#Gaussian_primes">Wikipedia - Gaussian primes</a></li>
+	 * </ul>
 	 * <h3>Examples</h3>
 	 * 
 	 * <pre>
@@ -1211,7 +1229,7 @@ public class PredicateQ {
 	 * False
 	 * </pre>
 	 * <p>
-	 * All prime numbers between 1 and 100:<br />
+	 * All prime numbers between 1 and 100:
 	 * </p>
 	 * 
 	 * <pre>
@@ -1225,6 +1243,17 @@ public class PredicateQ {
 	 * <pre>
 	 * &gt;&gt; PrimeQ(Range(20))   
 	 *  = {False, True, True, False, True, False, True, False, False, False, True, False, True, False, False, False, True, False, True, False}
+	 * </pre>
+	 * <p>
+	 * The Gaussian integer <code>2 == (1 + i)*(1 − i)</code> isn't a Gaussian prime number:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PrimeQ(2, GaussianIntegers-&gt;True)
+	 * False
+	 * 
+	 * &gt;&gt; PrimeQ(5+2*I, GaussianIntegers-&gt;True)
+	 * True
 	 * </pre>
 	 */
 	private static class PrimeQ extends AbstractCorePredicateEvaluator implements Predicate<IInteger> {
