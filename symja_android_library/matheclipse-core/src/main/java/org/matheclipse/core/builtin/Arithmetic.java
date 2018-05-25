@@ -765,20 +765,20 @@ public final class Arithmetic {
 			Validate.checkSize(ast, 3);
 
 			try {
-				IExpr realExpr = engine.evaluate(ast.arg1());
-				IExpr imaginaryExpr = engine.evaluate(ast.arg2());
-				if (realExpr.isComplex() || realExpr.isComplexNumeric() || imaginaryExpr.isComplex()
-						|| imaginaryExpr.isComplexNumeric()) {
-					return F.Plus(realExpr, F.Times(F.CI, imaginaryExpr));
-					// if (((IComplex) imaginaryExpr).getRealPart().isZero()) {
-					// imaginaryExpr = ((IComplex) imaginaryExpr).getImaginaryPart();
-					// }
+				IExpr realExpr = ast.arg1();
+				IExpr imaginaryExpr = ast.arg2();
+				if (realExpr.isRational() && imaginaryExpr.isRational()) {
+					// already evaluated
+				} else if (realExpr instanceof INum && imaginaryExpr instanceof INum) {
+					// already evaluated
+				} else {
+					realExpr = engine.evaluate(realExpr);
+					imaginaryExpr = engine.evaluate(imaginaryExpr);
+					if (!realExpr.isNumber() || !imaginaryExpr.isNumber()) {
+						return F.NIL;
+					}
 				}
-				// else if (imaginaryExpr.isComplexNumeric()) {
-				// if (F.isZero(((IComplexNum) imaginaryExpr).getRealPart())) {
-				// imaginaryExpr = F.num(((IComplexNum) imaginaryExpr).getImaginaryPart());
-				// }
-				// }
+
 				if (realExpr.isRational() && imaginaryExpr.isRational()) {
 					IRational re;
 					if (realExpr.isInteger()) {
@@ -796,6 +796,9 @@ public final class Arithmetic {
 				}
 				if (realExpr instanceof INum && imaginaryExpr instanceof INum) {
 					return F.complexNum(((INum) realExpr).doubleValue(), ((INum) imaginaryExpr).doubleValue());
+				}
+				if (realExpr.isNumber() && imaginaryExpr.isNumber()) {
+					return F.Plus(realExpr, F.Times(F.CI, imaginaryExpr));
 				}
 
 				// don't optimize this way:
@@ -3493,51 +3496,53 @@ public final class Arithmetic {
 
 			try {
 				// try to convert into a fractional number
-				IExpr arg0 = ast.arg1();
-				IExpr arg1 = ast.arg2();
-				if (arg0.isInteger() && arg1.isInteger()) {
-					// already evaluated
-				} else if (arg0 instanceof INum && arg1 instanceof INum) {
+				IExpr numeratorExpr = ast.arg1();
+				IExpr denominatorExpr = ast.arg2();
+				if (numeratorExpr.isInteger() && denominatorExpr.isInteger()) {
 					// already evaluated
 				} else {
-					arg0 = engine.evaluate(arg0);
-					arg1 = engine.evaluate(arg1);
+					numeratorExpr = engine.evaluate(numeratorExpr);
+					denominatorExpr = engine.evaluate(denominatorExpr);
+					if (!numeratorExpr.isInteger() || !denominatorExpr.isInteger()) {
+						return F.NIL;
+					}
 				}
-				if (arg0.isInteger() && arg1.isInteger()) {
-					// symbolic mode
-					IInteger numerator = (IInteger) arg0;
-					IInteger denominator = (IInteger) arg1;
-					if (denominator.isZero()) {
-						engine.printMessage(
-								"Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
-						if (numerator.isZero()) {
-							// 0^0
-							return F.Indeterminate;
-						}
-						return F.CComplexInfinity;
-					}
+
+				// symbolic mode
+				IInteger numerator = (IInteger) numeratorExpr;
+				IInteger denominator = (IInteger) denominatorExpr;
+				if (denominator.isZero()) {
+					engine.printMessage(
+							"Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
 					if (numerator.isZero()) {
-						return F.C0;
+						// 0^0
+						return F.Indeterminate;
 					}
-					return F.fraction(numerator, denominator);
-				} else if (arg0 instanceof INum && arg1 instanceof INum) {
-					// numeric mode
-					INum numerator = (INum) arg0;
-					INum denominator = (INum) arg1;
-					if (denominator.isZero()) {
-						engine.printMessage(
-								"Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
-						if (numerator.isZero()) {
-							// 0^0
-							return F.Indeterminate;
-						}
-						return F.CComplexInfinity;
-					}
-					if (numerator.isZero()) {
-						return F.C0;
-					}
-					return F.num(numerator.doubleValue() / denominator.doubleValue());
+					return F.CComplexInfinity;
 				}
+				if (numerator.isZero()) {
+					return F.C0;
+				}
+				return F.fraction(numerator, denominator);
+
+				// don't evaluate in numeric mode
+				// } else if (numeratorExpr instanceof INum && denominatorExpr instanceof INum) {
+				// INum numerator = (INum) numeratorExpr;
+				// INum denominator = (INum) denominatorExpr;
+				// if (denominator.isZero()) {
+				// engine.printMessage(
+				// "Division by zero expression: " + numerator.toString() + "/" + denominator.toString());
+				// if (numerator.isZero()) {
+				// // 0^0
+				// return F.Indeterminate;
+				// }
+				// return F.CComplexInfinity;
+				// }
+				// if (numerator.isZero()) {
+				// return F.C0;
+				// }
+				// return F.num(numerator.doubleValue() / denominator.doubleValue());
+
 			} catch (Exception e) {
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
