@@ -1506,15 +1506,6 @@ public class MainTestCase extends AbstractTestCase {
 		check("Exponent(Cos(a+b*x)^2+Cos(a+b*x)^(-1/2),Cos(a+b*x))", "2");
 	}
 
-	public void testSystem169() {
-		check("FactorInteger(2^32-1)", "{{3,1},{5,1},{17,1},{257,1},{65537,1}}");
-		check("FactorInteger(0)", "{{0,1}}");
-		check("FactorInteger(1)", "{{1,1}}");
-		check("FactorInteger(990)", "{{2,1},{3,2},{5,1},{11,1}}");
-		check("FactorInteger(-993)", "{{-1,1},{3,1},{331,1}}");
-		check("FactorInteger(2^32-1)", "{{3,1},{5,1},{17,1},{257,1},{65537,1}}");
-	}
-
 	public void testSystem170() {
 		check("Cross({1, 2, 3}, {a, b, c})", "{-3*b+2*c,3*a-c,-2*a+b}");
 	}

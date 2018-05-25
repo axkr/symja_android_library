@@ -1903,12 +1903,7 @@ public class EllipticCurveMethod {
 	}
 
 	private BigInteger factoringSIQS(BigInteger NbrToFactor) {
-		long FactorBase;
-		int SieveLimit;
 		int NbrPrimes, NbrPrimes2;
-		int s, F, F1, F2, F3, F4, X1, X2;
-		long currentPrime;
-		int NbrMod;
 		long modsqrt[];
 		long prime[];
 		byte logar[];
@@ -1920,50 +1915,26 @@ public class EllipticCurveMethod {
 		int aindex[];
 		int amodq[];
 		byte SieveArray[];
-		long Power2, SqrRootMod, fact;
-		int index;
-		int index2;
-		int PolynomialIndex;
-		long D, E, Q, V, W, X, Y, Z, T1, V1, W1, Y1;
-		long t1, t2, t3;
-		double Temp, Prod;
-		byte threshold, logprime;
-		int NbrPolynomials;
-		int pp = 0;
-		double bestadjust;
-		int i, j, k, multiplier;
-		int arrmult[] = { 1, 2, 3, 5, 7, 11, 13, 17, 19, 23 };
+		final int arrmult[] = { 1, 2, 3, 5, 7, 11, 13, 17, 19, 23 };
 		double adjustment[] = new double[arrmult.length];
-		long seed = 0;
-		int span, min;
+		long seed = 0L;
 		int vectExpParity[];
 		int matrixB[][];
 		int rowMatrixB[];
 		long vectLeftHandSide[][];
-		int nbrColumns, expParity;
 		int matrixPartial[][];
 		int matrixPartialHashIndex[];
-		int prev;
-		int nbrPartials = 0;
-		int smallPrimeUpperLimit;
-		int firstLimit;
-		int secondLimit;
-		int thirdLimit;
-		double dNumberToFactor;
-		long Divid, Divisor, Rem;
 		long biR0 = 0, biR1 = 0, biR2 = 0, biR3 = 0, biR4 = 0, biR5 = 0;
-		long biR6 = 0;// , biR7 = 0, biR8 = 0, biR9 = 0, biR10 = 0;
+		long biR6 = 0; 
 		boolean cond = false;
-		int S1, S2, G0, G1, G2, G3;
-		boolean polyadd;
 
-		Temp = Math.log(NbrToFactor.doubleValue());
+		final double Temp = Math.log(NbrToFactor.doubleValue());
 		NbrPrimes = (int) Math.exp(Math.sqrt(Temp * Math.log(Temp)) * 0.318);
-		SieveLimit = (int) Math.exp(8.5 + 0.015 * Temp);
+		int SieveLimit = (int) Math.exp(8.5 + 0.015 * Temp);
 		if (SieveLimit > 30000) {
 			SieveLimit = 30000;
 		}
-		s = NbrToFactor.bitLength() / 28 + 1;
+		int s = NbrToFactor.bitLength() / 28 + 1;
 		prime = new long[NbrPrimes + 3];
 		modsqrt = new long[NbrPrimes + 3];
 		logar = new byte[NbrPrimes + 3];
@@ -1975,16 +1946,16 @@ public class EllipticCurveMethod {
 		aindex = new int[s];
 		amodq = new int[s];
 		rowMatrixB = new int[200];
-		NbrPolynomials = (1 << (s - 1)) - 1;
+		final int NbrPolynomials = (1 << (s - 1)) - 1;
 		BigNbrToBigInt(NbrToFactor);
 		TestNbr[NumberLength] = 0;
 		long TestNbr2[] = new long[NLen];
-		for (i = NumberLength; i >= 0; i--) {
+		for (int i = NumberLength; i >= 0; i--) {
 			TestNbr2[i] = TestNbr[i];
 		}
 		NumberLength++;
 		matrixPartialHashIndex = new int[1024];
-		for (i = matrixPartialHashIndex.length - 1; i >= 0; i--) {
+		for (int i = 0; i < matrixPartialHashIndex.length; i++) {
 			matrixPartialHashIndex[i] = -1;
 		}
 		// System.out.println(SIQSInfoText + "\nSearching for Knuth-Schroeppel
@@ -1995,11 +1966,11 @@ public class EllipticCurveMethod {
 		/************************/
 
 		/* search for best Knuth-Schroeppel multiplier */
-		bestadjust = -10.0e0;
+		double bestAdjust = -10.0e0;
 		prime[0] = 1;
 		prime[1] = 2;
-		NbrMod = NbrToFactor.and(BigInteger.valueOf(7)).intValue();
-		for (j = 0; j < arrmult.length; j++) {
+		int NbrMod = NbrToFactor.and(BigInteger.valueOf(7)).intValue();
+		for (int j = 0; j < arrmult.length; j++) {
 			int mod = NbrMod * arrmult[j] % 8;
 			adjustment[j] = 0.34657359; /* (ln 2)/2 */
 			if (mod == 1)
@@ -2008,13 +1979,13 @@ public class EllipticCurveMethod {
 				adjustment[j] *= (2.0e0);
 			adjustment[j] -= Math.log(arrmult[j]) / (2.0e0);
 		}
-		currentPrime = 3;
+		long currentPrime = 3;
 		while (currentPrime < 10000) {
 			NbrMod = (int) RemDivBigNbrByLong(TestNbr, currentPrime);
 			int jacobi = (int) modPow(NbrMod, (currentPrime - 1) / 2, currentPrime);
 			double dp = currentPrime;
 			double logp = Math.log(dp) / dp;
-			for (j = 0; j < arrmult.length; j++) {
+			for (int j = 0; j < arrmult.length; j++) {
 				if (arrmult[j] == currentPrime) {
 					adjustment[j] += logp;
 				} else if (jacobi * (int) modPow(arrmult[j], (currentPrime - 1) / 2, currentPrime)
@@ -2024,9 +1995,9 @@ public class EllipticCurveMethod {
 			}
 			calculate_new_prime1: do {
 				currentPrime += 2;
-				for (Q = 3; Q * Q <= currentPrime; Q += 2) { /*
-																 * Check if currentPrime is prime
-																 */
+				for (long Q = 3; Q * Q <= currentPrime; Q += 2) { /*
+																	 * Check if currentPrime is prime
+																	 */
 					if (currentPrime % Q == 0) {
 						continue calculate_new_prime1;
 					}
@@ -2034,10 +2005,10 @@ public class EllipticCurveMethod {
 				break; /* Prime found */
 			} while (true);
 		} /* end while */
-		multiplier = 1;
-		for (j = 0; j < arrmult.length; j++) {
-			if (adjustment[j] > bestadjust) { /* find biggest adjustment */
-				bestadjust = adjustment[j];
+		int multiplier = 1;
+		for (int j = 0; j < arrmult.length; j++) {
+			if (adjustment[j] > bestAdjust) { /* find biggest adjustment */
+				bestAdjust = adjustment[j];
 				multiplier = arrmult[j];
 			}
 		} /* end while */
@@ -2054,7 +2025,7 @@ public class EllipticCurveMethod {
 		if (NumberLength > 2) {
 			dN += TestNbr[NumberLength - 4] / dDosALa62;
 		}
-		FactorBase = currentPrime;
+		long FactorBase = currentPrime;
 		matrixB = new int[(int) (NbrPrimes * 1.05 + 40)][];
 		vectLeftHandSide = new long[matrixB.length][];
 		vectExpParity = new int[matrixB.length];
@@ -2070,6 +2041,7 @@ public class EllipticCurveMethod {
 			logar[1] = 1;
 			break;
 		}
+		int j;
 		if (multiplier != 1) {
 			prime[2] = multiplier;
 			logar[2] = (byte) (Math.round(Math.log(multiplier) / Math.log(2)));
@@ -2079,12 +2051,15 @@ public class EllipticCurveMethod {
 			j = 2;
 		}
 		currentPrime = 3;
+		int pp = 0;
+		int nbrPartials = 0;
 		while (j < NbrPrimes) { /* select small primes */
 			NbrMod = (int) RemDivBigNbrByLong(TestNbr, currentPrime);
 			if (modPow(NbrMod, (currentPrime - 1) / 2, currentPrime) == 1) {
 				/* use only if Jacobi symbol = 0 or 1 */
 				prime[j] = currentPrime;
 				NbrMod = (int) RemDivBigNbrByLong(TestNbr, currentPrime);
+				long SqrRootMod;
 				if (currentPrime % 4 == 3) {
 					SqrRootMod = modPow(NbrMod, (currentPrime + 1) / 4, currentPrime);
 				} else {
@@ -2093,39 +2068,42 @@ public class EllipticCurveMethod {
 						SqrRootMod = ((((2 * NbrMod * SqrRootMod % currentPrime) * SqrRootMod - 1) % currentPrime)
 								* NbrMod % currentPrime) * SqrRootMod % currentPrime;
 					} else { /* p = 1 (mod 8) */
-						Q = currentPrime - 1;
-						E = 0;
-						Power2 = 1;
+						long Q = currentPrime - 1;
+						long E = 0;
+						long Power2 = 1;
 						do {
 							E++;
 							Q /= 2;
 							Power2 *= 2;
 						} while ((Q & 1) == 0); /* E >= 3 */
 						Power2 /= 2;
-						X = 1;
+						long X = 1L;
+						long Z;
 						do {
 							X++;
 							Z = modPow(X, Q, currentPrime);
 						} while (modPow(Z, Power2, currentPrime) == 1);
-						Y = Z;
+						long Y = Z;
 						X = modPow(NbrMod, (Q - 1) / 2, currentPrime);
-						V = NbrMod * X % currentPrime;
-						W = V * X % currentPrime;
+						long V = NbrMod * X % currentPrime;
+						long W = V * X % currentPrime;
 						while (W != 1) {
-							T1 = 0;
-							D = W;
+							long T1 = 0;
+							long D = W;
 							while (D != 1) {
 								D = D * D % currentPrime;
 								T1++;
 							}
 							D = modPow(Y, 1 << (E - T1 - 1), currentPrime);
-							Y1 = D * D % currentPrime;
+							final long Y1 = D * D % currentPrime;
 							E = T1;
-							V1 = V * D % currentPrime;
-							W1 = W * Y1 % currentPrime;
 							Y = Y1;
-							V = V1;
-							W = W1;
+							// final long V1 = V * D % currentPrime;
+							// V = V1;
+							V = V * D % currentPrime;
+							// final long W1 = W * Y1 % currentPrime;
+							// W = W1;
+							W = W * Y1 % currentPrime;
 						} /* end while */
 						SqrRootMod = V;
 					} /* end if */
@@ -2136,9 +2114,9 @@ public class EllipticCurveMethod {
 			} /* end while */
 			calculate_new_prime2: do {
 				currentPrime += 2;
-				for (Q = 3; Q * Q <= currentPrime; Q += 2) { /*
-																 * Check if currentPrime is prime
-																 */
+				for (long Q = 3; Q * Q <= currentPrime; Q += 2) { /*
+																	 * Check if currentPrime is prime
+																	 */
 					if (currentPrime % Q == 0) {
 						continue calculate_new_prime2;
 					}
@@ -2149,24 +2127,26 @@ public class EllipticCurveMethod {
 
 		FactorBase = currentPrime;
 		SieveArray = new byte[2 * SieveLimit + 1 > (int) FactorBase ? 2 * SieveLimit + 5000 : (int) FactorBase + 5000];
-		dNumberToFactor = NbrToFactor.doubleValue();
-		firstLimit = 2;
+		final double dNumberToFactor = NbrToFactor.doubleValue();
+		int firstLimit = 2;
 		for (j = 2; j < NbrPrimes; j++) {
 			firstLimit *= (int) prime[j];
 			if (firstLimit > 2 * SieveLimit) {
 				break;
 			}
 		}
-		smallPrimeUpperLimit = j + 1;
+		final int smallPrimeUpperLimit = j + 1;
 		int logarsmall = logar[j + 1];
-		threshold = (byte) (Math.log(Math.sqrt(dNumberToFactor) * SieveLimit / (FactorBase * 64) / prime[j + 1])
+		byte threshold = (byte) (Math.log(Math.sqrt(dNumberToFactor) * SieveLimit / (FactorBase * 64) / prime[j + 1])
 				/ Math.log(2) + 1);
 		firstLimit = (int) (Math.log(dNumberToFactor) / 3);
+		int secondLimit;
 		for (secondLimit = firstLimit; secondLimit < NbrPrimes; secondLimit++) {
 			if (prime[secondLimit] * 2 > SieveLimit) {
 				break;
 			}
 		}
+		int thirdLimit;
 		for (thirdLimit = secondLimit; thirdLimit < NbrPrimes; thirdLimit++) {
 			if (prime[thirdLimit] > 2 * SieveLimit) {
 				break;
@@ -2180,69 +2160,73 @@ public class EllipticCurveMethod {
 			/*********************************************/
 			/* Initialization stage for first polynomial */
 			/*********************************************/
-			PolynomialIndex = 1;
-			Prod = Math.sqrt(2 * dNumberToFactor) / SieveLimit;
-			fact = (long) Math.pow(Prod, 1 / (float) s);
-			for (i = 2;; i++) {
-				if (prime[i] > fact) {
+			int PolynomialIndex = 1;
+			final double Prod = Math.sqrt(2 * dNumberToFactor) / SieveLimit;
+			final long fact = (long) Math.pow(Prod, 1 / (float) s);
+			int iStage;
+			for (iStage = 2;; iStage++) {
+				if (prime[iStage] > fact) {
 					break;
 				}
 			}
-			span = NbrPrimes / s / s / 2;
+			int span = NbrPrimes / s / s / 2;
 			if (NbrPrimes < 500) {
 				span *= 2;
 			}
-			min = i - span / 2;
-			for (index = 0; index < s; index++) {
+			int min = iStage - span / 2;
+
+			for (int index = 0; index < s; index++) {
+				int index2;
 				do {
 					seed = (1141592621 * seed + 321435) & 0xFFFFFFFFl;
-					i = (int) (((seed * span) >> 32) + min);
+					iStage = (int) (((seed * span) >> 32) + min);
 					for (index2 = 0; index2 < index; index2++) {
-						if (aindex[index2] == i || aindex[index2] == i + 1) {
+						if (aindex[index2] == iStage || aindex[index2] == iStage + 1) {
 							break;
 						}
 					}
+
 				} while (index2 < index);
-				afact[index] = prime[i];
-				aindex[index] = i;
+				afact[index] = prime[iStage];
+				aindex[index] = iStage;
 			}
 
 			// Compute the leading coefficient in biS.
 
 			LongToBigNbr(afact[0], biS);
-			for (index = 1; index < s; index++) {
+			for (int index = 1; index < s; index++) {
 				MultBigNbrByLong(biS, afact[index], biS);
 			}
-			for (index = 0; index < s; index++) {
-				D = 1;
-				E = afact[index];
-				for (index2 = 0; index2 < s; index2++) {
+			for (int index = 0; index < s; index++) {
+				long D = 1;
+				long E = afact[index];
+				for (int index2 = 0; index2 < s; index2++) {
 					if (index != index2) {
 						D = D * afact[index2] % E;
 					}
 				}
 				amodq[index] = (int) D;
-				Q = modsqrt[aindex[index]] * modInv(D, E) % E;
+				long Q = modsqrt[aindex[index]] * modInv(D, E) % E;
 				if (Q > E / 2) {
 					Q = E - Q;
 				}
 				DivBigNbrByLong(biS, E, biR);
 				MultBigNbrByLong(biR, Q, aiJS[index]);
 			}
-			for (index = 0; index < NumberLength; index++) {
+			for (int index = 0; index < NumberLength; index++) {
 				biN[index] = aiJS[0][index];
 			}
-			for (index2 = 1; index2 < s; index2++) {
+			for (int index2 = 1; index2 < s; index2++) {
 				AddBigNbr(biN, aiJS[index2], biN);
 			}
-			for (index = 1; index < NbrPrimes; index++) {
-				D = 1;
-				E = prime[index];
-				for (index2 = 0; index2 < s; index2++) {
+			for (int index = 1; index < NbrPrimes; index++) {
+				long D = 1;
+				long E = prime[index];
+				for (int index2 = 0; index2 < s; index2++) {
 					D = D * afact[index2] % E;
 				}
 				ainv[index] = modInv(D, E);
-				for (index2 = 0; index2 < s; index2++) {
+				for (int index2 = 0; index2 < s; index2++) {
 					Bainv2[index2][index] = (int) (RemDivBigNbrByLong(aiJS[index2], E) * 2 * ainv[index] % E);
 				}
 				D = RemDivBigNbrByLong(biN, E);
@@ -2253,12 +2237,13 @@ public class EllipticCurveMethod {
 				/***************/
 				/* Sieve stage */
 				/***************/
-				D = PolynomialIndex;
-				index2 = 0;
+				long D = PolynomialIndex;
+				int index2 = 0;
 				while ((D & 1) == 0) {
 					D /= 2;
 					index2++;
 				}
+				boolean polyadd;
 				if (polyadd = ((D & 2) != 0)) {
 					AddBigNbr(biN, aiJS[index2], biN);
 					AddBigNbr(biN, aiJS[index2], biN);
@@ -2268,17 +2253,17 @@ public class EllipticCurveMethod {
 				}
 				int[] rowBainv2 = Bainv2[index2];
 				// Compute solutions for divisors of the leading coefficients
-				for (index2 = 0; index2 < s; index2++) {
-					index = aindex[index2];
-					E = prime[index];
+				for (int index = 0; index < s; index++) {
+					final int temp = aindex[index];
+					long E = prime[temp];
 					D = RemDivBigNbrByLong(TestNbr, E * E);
-					Q = RemDivBigNbrByLong(biN, E * E);
-					soln1[index] = (int) (((D - Q * Q) / E * modInv(amodq[index2] * Q % E, E) % E + E + SieveLimit) % E
+					long Q = RemDivBigNbrByLong(biN, E * E);
+					soln1[temp] = (int) (((D - Q * Q) / E * modInv(amodq[index] * Q % E, E) % E + E + SieveLimit) % E
 							+ 100 * E);
-					difsoln[index] = -1; // Only one solution.
+					difsoln[temp] = -1; // Only one solution.
 				}
-				X1 = 2 * SieveLimit;
-				F1 = polyadd ? -rowBainv2[1] : rowBainv2[1];
+				final int X1 = 2 * SieveLimit;
+				int F1 = polyadd ? -rowBainv2[1] : rowBainv2[1];
 				if ((soln1[1] += F1) % 2 == 0) {
 					SieveArray[0] = (byte) (logar[1] - threshold);
 					SieveArray[1] = (byte) (-threshold);
@@ -2286,15 +2271,15 @@ public class EllipticCurveMethod {
 					SieveArray[0] = (byte) (-threshold);
 					SieveArray[1] = (byte) (logar[1] - threshold);
 				}
-				F2 = 2;
-				index = 2;
+				int F2 = 2;
+				int index = 2;
 				while (true) {
-					F = (int) prime[index];
-					F3 = F2 * F;
+					final int F = (int) prime[index];
+					int F3 = F2 * F;
 					if (X1 + 1 < F3) {
 						F3 = X1 + 1;
 					}
-					F4 = F2;
+					int F4 = F2;
 					while (F4 * 2 <= F3) {
 						System.arraycopy(SieveArray, 0, SieveArray, F4, F4);
 						F4 *= 2;
@@ -2303,14 +2288,14 @@ public class EllipticCurveMethod {
 					if (F3 == X1 + 1) {
 						break;
 					}
-					logprime = logar[index];
+					final byte logprime = logar[index];
 					F1 = polyadd ? -rowBainv2[index] : rowBainv2[index];
-					for (index2 = (soln1[index] += F1) % F; index2 < F3; index2 += F) {
-						SieveArray[index2] += logprime;
+					for (int indx = (soln1[index] += F1) % F; indx < F3; indx += F) {
+						SieveArray[indx] += logprime;
 					}
 					if (F != multiplier) {
-						for (index2 = (soln1[index] + difsoln[index]) % F; index2 < F3; index2 += F) {
-							SieveArray[index2] += logprime;
+						for (int indx = (soln1[index] + difsoln[index]) % F; indx < F3; indx += F) {
+							SieveArray[indx] += logprime;
 						}
 					}
 					index++;
@@ -2318,7 +2303,6 @@ public class EllipticCurveMethod {
 				}
 
 				for (; index < smallPrimeUpperLimit; index++) {
-					F = (int) prime[index];
 					F1 = polyadd ? -rowBainv2[index] : rowBainv2[index];
 					soln1[index] += F1;
 				}
@@ -2327,21 +2311,22 @@ public class EllipticCurveMethod {
 				int soln1small = soln1[index - 1];
 				int soln2small = (soln1small + difsoln[index - 1]) % primesmall;
 				for (; index < firstLimit; index++) {
-					F = (int) prime[index];
+					final int F = (int) prime[index];
 					F1 = polyadd ? -rowBainv2[index] : rowBainv2[index];
 					F2 = F + F;
-					F3 = F2 + F;
-					F4 = F3 + F;
-					S1 = (soln1[index] += F1) % F;
-					S2 = (S1 + difsoln[index]) % F;
-					if ((G0 = S2 - S1) < 0) {
+					final int F3 = F2 + F;
+					final int F4 = F3 + F;
+					int S1 = (soln1[index] += F1) % F;
+					final int S2 = (S1 + difsoln[index]) % F;
+					int G0 = S2 - S1;
+					if (G0 < 0) {
 						S1 = S2;
-						G0 = -G0;
+						G0 *= -1;
 					}
-					G1 = G0 + F;
-					G2 = G1 + F;
-					G3 = G2 + F;
-					logprime = logar[index];
+					final int G1 = G0 + F;
+					final int G2 = G1 + F;
+					final int G3 = G2 + F;
+					final byte logprime = logar[index];
 					index2 = X1 / F4 * F4 + S1;
 					do {
 						SieveArray[index2] += logprime;
@@ -2355,13 +2340,13 @@ public class EllipticCurveMethod {
 					} while ((index2 -= F4) >= 0);
 				}
 				for (; index < secondLimit; index++) {
-					F = (int) prime[index];
+					int F = (int) prime[index];
 					F1 = (polyadd ? -rowBainv2[index] : rowBainv2[index]);
-					X2 = X1 - 4 * F;
+					final int X2 = X1 - 4 * F;
 					F2 = F + F;
-					F3 = F2 + F;
-					F4 = F2 + F2;
-					logprime = logar[index];
+					int F3 = F2 + F;
+					int F4 = F2 + F2;
+					final byte logprime = logar[index];
 					for (index2 = (soln1[index] += F1) % F; index2 <= X2; index2 += F4) {
 						SieveArray[index2] += logprime;
 						SieveArray[index2 + F] += logprime;
@@ -2384,8 +2369,8 @@ public class EllipticCurveMethod {
 					}
 				}
 				for (; index < thirdLimit; index++) {
-					F = (int) prime[index];
-					logprime = logar[index];
+					int F = (int) prime[index];
+					final byte logprime = logar[index];
 					F1 = (polyadd ? -rowBainv2[index] : rowBainv2[index]);
 					for (index2 = (soln1[index] += F1) % F; index2 <= X1; index2 += F) {
 						SieveArray[index2] += logprime;
@@ -2396,8 +2381,8 @@ public class EllipticCurveMethod {
 				}
 				if (polyadd) {
 					for (; index < NbrPrimes2; index++) {
-						logprime = logar[index];
-						F = (int) prime[index];
+						final byte logprime = logar[index];
+						int F = (int) prime[index];
 						F1 = -rowBainv2[index];
 						if ((F2 = (soln1[index] += F1) % F) < X1) {
 							SieveArray[F2] += logprime;
@@ -2431,8 +2416,8 @@ public class EllipticCurveMethod {
 						}
 					}
 					for (; index < NbrPrimes; index++) {
-						logprime = logar[index];
-						F = (int) prime[index];
+						final byte logprime = logar[index];
+						int F = (int) prime[index];
 						F1 = -rowBainv2[index];
 						if ((F2 = (soln1[index] += F1) % F) < X1) {
 							SieveArray[F2] += logprime;
@@ -2443,8 +2428,8 @@ public class EllipticCurveMethod {
 					}
 				} else {
 					for (; index < NbrPrimes2; index++) {
-						logprime = logar[index];
-						F = (int) prime[index];
+						final byte logprime = logar[index];
+						int F = (int) prime[index];
 						F1 = rowBainv2[index];
 						if ((F2 = (soln1[index] += F1) % F) < X1) {
 							SieveArray[F2] += logprime;
@@ -2478,8 +2463,8 @@ public class EllipticCurveMethod {
 						}
 					}
 					for (; index < NbrPrimes; index++) {
-						logprime = logar[index];
-						F = (int) prime[index];
+						final byte logprime = logar[index];
+						final int F = (int) prime[index];
 						if ((F2 = (soln1[index] += rowBainv2[index]) % F) < X1) {
 							SieveArray[F2] += logprime;
 						}
@@ -2497,6 +2482,7 @@ public class EllipticCurveMethod {
 				/* Trial division stage */
 				/************************/
 				index2 = 2 * SieveLimit + 1;
+				
 				do {
 					if (SieveArray[--index2] >= 0 && SieveArray[index2] < 64) {
 						if (SieveArray[index2] < logarsmall) {
@@ -2512,7 +2498,7 @@ public class EllipticCurveMethod {
 						MultBigNbr(biT, biT, biR);
 						SubtractBigNbr(biR, TestNbr, biR); // Number to factor:
 															// (Ax+B)^2-N
-						for (i = 0; i < NumberLength; i++) {
+						for (int i = 0; i < NumberLength; i++) {
 							biT[i] = biR[i];
 						}
 						/* factor biR */
@@ -2521,7 +2507,7 @@ public class EllipticCurveMethod {
 								DivBigNbrByLong(biR, multiplier * multiplier, biR);
 							}
 						}
-						F = NumberLength; /* Back up NumberLength */
+						int F = NumberLength; /* Back up NumberLength */
 						boolean positive = true;
 						if (biR[NumberLength - 1] >= 0x40000000) { /* Negative */
 							positive = false;
@@ -2556,11 +2542,12 @@ public class EllipticCurveMethod {
 							biR1 = biR[1];
 							biR0 = biR[0];
 						}
-						nbrColumns = 0;
+						int nbrColumns = 0;
+						long Divid;
 						if (NumberLength <= 2) {
 							Divid = (biR1 << 31) | biR0;
 							for (index = 1; index < NbrPrimes; index++) {
-								Divisor = prime[index];
+								long Divisor = prime[index];
 								while (Divid % Divisor == 0) {
 									Divid /= Divisor;
 								}
@@ -2569,8 +2556,8 @@ public class EllipticCurveMethod {
 							Divid = 0;
 							for (index = 1; index < NbrPrimes; index++) {
 								while (true) {
-									Divisor = prime[index];
-									Rem = 0;
+									long Divisor = prime[index];
+									long Rem = 0;
 									switch (NumberLength) {
 									// fall through
 									case 7:
@@ -2706,7 +2693,7 @@ public class EllipticCurveMethod {
 							MultBigNbrByLong(biS, index2 - SieveLimit, biU);
 							AddBigNbr(biU, biN, biU);
 							for (index = 1; index < NbrPrimes; index++) {
-								expParity = 0;
+								int expParity = 0;
 								D = prime[index];
 								while (RemDivBigNbrByLong(biT, D) == 0) {
 									DivBigNbrByLong(biT, D, biT);
@@ -2731,7 +2718,7 @@ public class EllipticCurveMethod {
 								// ShowSIQSStatus(pp, matrixB.length,
 								// startTime);
 								if (pp == matrixB.length) {
-									i = EraseSingletons(matrixB, vectLeftHandSide, vectExpParity);
+									int i = EraseSingletons(matrixB, vectLeftHandSide, vectExpParity);
 									if (i != 0) {
 
 										// System.out.println(SIQSInfoText +
@@ -2769,8 +2756,8 @@ public class EllipticCurveMethod {
 								// with the same
 								// factor outside the prime base.
 								// Calculate hash index
-								i = matrixPartialHashIndex[(int) (Divid & 0x7FE) / 2];
-								prev = -1;
+								int i = matrixPartialHashIndex[(int) (Divid & 0x7FE) / 2];
+								int prev = -1;
 								while (i >= 0) {
 									if ((int) Divid == matrixPartial[i][0]) {
 										// Match of partials.
@@ -2783,11 +2770,11 @@ public class EllipticCurveMethod {
 										/* factor biT */
 
 										D = matrixPartial[i][0];
-										E = RemDivBigNbrByLong(TestNbr, D);
-										t1 = D;
-										t2 = E;
+										long E = RemDivBigNbrByLong(TestNbr, D);
+										long t1 = D;
+										long t2 = E;
 										while (t1 != 0) {
-											t3 = t2 % t1;
+											long t3 = t2 % t1;
 											t2 = t1;
 											t1 = t3;
 										} // t2 = GCD(D, E)
@@ -2817,7 +2804,7 @@ public class EllipticCurveMethod {
 										nbrColumns = 0;
 										for (index = 1; index < NbrPrimes; index++) {
 											D = prime[index];
-											expParity = 0;
+											int expParity = 0;
 											while (RemDivBigNbrByLong(biT, D) == 0) {
 												expParity = 1 - expParity;
 												DivBigNbrByLong(biT, D, biT);
@@ -2856,7 +2843,7 @@ public class EllipticCurveMethod {
 											}
 										}
 										for (index = 1; index < NbrPrimes; index++) {
-											expParity = 0;
+											int expParity = 0;
 											D = prime[index];
 											while (RemDivBigNbrByLong(biT, D) == 0) {
 												expParity = 1 - expParity;
@@ -2890,14 +2877,12 @@ public class EllipticCurveMethod {
 														AddBigNbrModN(biR, biU, biR);
 													}
 													// Delete entry from row.
-													for (k = j + 1; k < nbrColumns; k++) {
+													for (int k = j + 1; k < nbrColumns; k++) {
 														rowMatrixB[k - 1] = rowMatrixB[k];
 													}
 													nbrColumns--;
-												} else { // Index not in row.
-															// Insert entry in
-															// row.
-													for (k = nbrColumns; k > j; k--) {
+												} else { // Index not in row => Insert entry in row.
+													for (int k = nbrColumns; k > j; k--) {
 														rowMatrixB[k] = rowMatrixB[k - 1];
 													}
 													rowMatrixB[j] = index;
@@ -3864,7 +3849,7 @@ public class EllipticCurveMethod {
 				PD[NbrFactors] = BigInteger.valueOf(TestComp);
 				Exp[NbrFactors] = 1;
 				TestComp = 1;
-				Object[] temp = incNbrFactors();
+				// Object[] temp = incNbrFactors();
 				//
 				// if (temp != null) {
 				// if (Type == 0) {
@@ -3877,6 +3862,7 @@ public class EllipticCurveMethod {
 				// Typ = (int[]) temp[5];
 				// }
 				// }
+				incNbrFactors();
 				break;
 			}
 		} /* end while */

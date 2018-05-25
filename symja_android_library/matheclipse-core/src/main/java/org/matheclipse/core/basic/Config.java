@@ -185,6 +185,12 @@ public class Config {
 	}
 
 	/**
+	 * Do time consuming JUnit tests. For example for <code>FactorInteger</code> function
+	 * 
+	 */
+	public static boolean EXPENSIVE_JUNIT_TESTS = false;
+
+	/**
 	 * <p>
 	 * If <code>true</code> the <code>*</code> operator must be written for a <code>Times()</code> expression. I.e. you
 	 * cannot write <code>2(b+c)</code> anymore, but have to write <code>2*(b+c)</code> to get
