@@ -2772,7 +2772,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("FactorInteger(990)", "{{2,1},{3,2},{5,1},{11,1}}");
 		check("FactorInteger(-993)", "{{-1,1},{3,1},{331,1}}");
 		check("FactorInteger(2^32-1)", "{{3,1},{5,1},{17,1},{257,1},{65537,1}}");
-		
+
 		check("FactorInteger(10+30*I,GaussianIntegers->True)", //
 				"{{-1,1},{1+I,3},{1+I*2,1},{2+I,2}}");
 		check("FactorInteger(11+14*I,GaussianIntegers->True)", //
@@ -3587,10 +3587,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIf() {
+		check("If(1 == k, itstrue, itsfalse)", "If(1==k,itstrue,itsfalse)");
 		check("If(1<2, a, b)", "a");
 		check("If(1<2, a)", "a");
 		check("If(False, a) //FullForm", "\"Null\"");
-		check("If(a>b,true)", "");
+		check("If(a>b,true)", "If(a>b,True)");
 	}
 
 	public void testIm() {
@@ -7191,7 +7192,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testReplaceAll() {
 		// TODO
 		// check("ReplaceAll({a, b, c}, {___, x__, ___} -> {x})", "{a}");
+		// TODO
 
+		check("a == b /. _Equal -> 2", "2");
+		check("If(1 == k, itstrue, itsfalse) /. _If -> 99", "99");
+		
 		check("ReplaceAll({a -> 1})[{a, b}]", "{1,b}");
 		check("{x, x^2, y, z} /. x -> a", "{a,a^2,y,z}");
 		check("{x, x^2, y, z} /. x -> {a, b}", "{{a,b},{a^2,b^2},y,z}");
@@ -7266,20 +7271,36 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testReplaceTransformations() {
-		check("x + y /. x -> 3", "3+y");
-		check("x + y /. {x -> a, y -> b}", "a+b");
-		check("x + y /. {{x -> 1, y -> 2}, {x -> 4, y -> 2}}", "{3,6}");
-		check("Solve(x^3 - 5*x^2 + 2*x + 8 == 0, x)", "{{x->-1},{x->2},{x->4}}");
-		check("x^2 + 6 /. {{x->-1},{x->2},{x->4}}", "{7,10,22}");
-		check("{x^2, x^3, x^4} /. {x^3 -> u, x^n_ -> p(n)}", "{p(2),u,p(4)}");
-		check("h(x + h(y)) /. h(u_) -> u^2", "(x+h(y))^2");
-		check("{x^2, y^3} /. {x -> y, y -> x}", "{y^2,x^3}");
-		check("x^2 /. x -> (1 + y) /. y -> b", "(1+b)^2");
+		check("f(f(f(1))) //. f(f(x_)) :> g(g(x))", //
+				"g(g(f(1)))");
 
-		check("x^2 + y^6 /. {x -> 2 + a, a -> 3}", "(2+a)^2+y^6");
-		check("x^2 + y^6 //. {x -> 2 + a, a -> 3}", "25+y^6");
-		check("mylog(a*b*c*d) /. mylog(x_*y_) -> mylog(x) + mylog(y)", "mylog(a)+mylog(b*c*d)");
-		check("mylog(a*b*c*d) //. mylog(x_*y_) -> mylog(x) + mylog(y)", "mylog(a)+mylog(b)+mylog(c)+mylog(d)");
+		check("x + y /. x -> 3", //
+				"3+y");
+		check("x + y /. {x -> a, y -> b}", //
+				"a+b");
+		check("x + y /. {{x -> 1, y -> 2}, {x -> 4, y -> 2}}", //
+				"{3,6}");
+		check("Solve(x^3 - 5*x^2 + 2*x + 8 == 0, x)", //
+				"{{x->-1},{x->2},{x->4}}");
+		check("x^2 + 6 /. {{x->-1},{x->2},{x->4}}", //
+				"{7,10,22}");
+		check("{x^2, x^3, x^4} /. {x^3 -> u, x^n_ -> p(n)}", //
+				"{p(2),u,p(4)}");
+		check("h(x + h(y)) /. h(u_) -> u^2", //
+				"(x+h(y))^2");
+		check("{x^2, y^3} /. {x -> y, y -> x}", //
+				"{y^2,x^3}");
+		check("x^2 /. x -> (1 + y) /. y -> b", //
+				"(1+b)^2");
+
+		check("x^2 + y^6 /. {x -> 2 + a, a -> 3}", //
+				"(2+a)^2+y^6");
+		check("x^2 + y^6 //. {x -> 2 + a, a -> 3}", //
+				"25+y^6");
+		check("mylog(a*b*c*d) /. mylog(x_*y_) -> mylog(x) + mylog(y)", //
+				"mylog(a)+mylog(b*c*d)");
+		check("mylog(a*b*c*d) //. mylog(x_*y_) -> mylog(x) + mylog(y)", //
+				"mylog(a)+mylog(b)+mylog(c)+mylog(d)");
 
 		// check("ReplaceList({a, b, c, d}, {x__, y__} -> g({x}, {y}))", "");
 		// check("", "");
