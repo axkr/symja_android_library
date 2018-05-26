@@ -84,7 +84,7 @@ public class FlatStepVisitor extends AbstractListStepVisitor<IExpr> {
 					}
 				} else {
 					ISymbol head = fSymbol;
-					if (lhsPatternExpr.isPatternSequence()) {
+					if (lhsPatternExpr.isPatternSequence(false)) {
 						head = F.Sequence;
 					}
 					partitionElement = F.ast(head, n, false);

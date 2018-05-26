@@ -2002,11 +2002,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is a pattern sequence object
+	 * Test if this expression is a pattern sequence object <code>__</code> or null pattern sequence object
+	 * <code>___</code>
+	 * 
+	 * @param testNullSequence
+	 *            test if a sequence with no element is allowed
 	 * 
 	 * @return
 	 */
-	default boolean isPatternSequence() {
+	default boolean isPatternSequence(boolean testNullSequence) {
 		return false;
 	}
 

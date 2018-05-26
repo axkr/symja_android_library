@@ -49,7 +49,7 @@ public class RulesData implements Serializable {
 				}
 				if (lhsAST.arg1().isPattern()) {
 					return true;
-				} else if (lhsAST.arg1().isPatternSequence()) {
+				} else if (lhsAST.arg1().isPatternSequence(false)) {
 					return true;
 				} else if (lhsAST.arg1().isAST()) {
 					IAST arg1 = (IAST) lhsAST.arg1();
@@ -82,7 +82,7 @@ public class RulesData implements Serializable {
 			}
 		} else if (lhsExpr.isPattern()) {
 			return true;
-		} else if (lhsExpr.isPatternSequence()) {
+		} else if (lhsExpr.isPatternSequence(false)) {
 			return true;
 		}
 		return false;

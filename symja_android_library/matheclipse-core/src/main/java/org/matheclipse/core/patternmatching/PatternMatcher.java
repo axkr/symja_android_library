@@ -613,7 +613,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 						int lastPosition = lhsPatternAST.argSize();
 						if (lhsPatternAST.get(lastPosition).isAST(F.PatternTest, 3)) {
 							IAST patternTest = (IAST) lhsPatternAST.get(lastPosition);
-							if (patternTest.arg1().isPatternSequence()) {
+							if (patternTest.arg1().isPatternSequence(false)) {
 								// TODO only the special case, where the last
 								// element is
 								// a pattern sequence, is handled here
@@ -630,7 +630,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 							}
 
 						}
-						if (lhsPatternAST.get(lastPosition).isPatternSequence()) {
+						if (lhsPatternAST.get(lastPosition).isPatternSequence(false)) {
 							// TODO only the special case, where the last
 							// element is
 							// a pattern sequence, is handled here
@@ -648,7 +648,13 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				}
 			}
 
+			final IExpr lhsPatternHead = lhsPatternAST.head();
+			final IExpr lhsEvalHead = lhsEvalAST.head();
 			if (lhsPatternAST.size() != lhsEvalAST.size()) {
+				if (lhsPatternAST.isEvalFlagOn(IAST.CONTAINS_PATTERN_SEQUENCE) && lhsPatternHead.equals(lhsEvalHead)
+						&& lhsPatternAST.size() > lhsEvalAST.size()) {
+					return matchASTWithBlankNullSequence(lhsPatternAST, lhsEvalAST, engine, stackMatcher);
+				}
 				// int size = lhsPatternAST.size();
 				// if (lhsPatternAST.hasDefaultArgument()) {
 				// IAST lhsAST = lhsPatternAST.removeAtClone(size - 1);
@@ -657,8 +663,6 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 				return false;
 			}
 
-			final IExpr lhsPatternHead = lhsPatternAST.head();
-			final IExpr lhsEvalHead = lhsEvalAST.head();
 			if (lhsPatternHead.isSymbol() && lhsEvalHead.isSymbol()) {
 				if (!lhsPatternHead.equals(lhsEvalHead)) {
 					return false;
@@ -702,6 +706,80 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 	}
 
 	/**
+	 * Precondition <code>lhsPatternAST.size() > lhsEvalAST.size()</code>.
+	 * 
+	 * @param lhsPatternAST
+	 *            an AST which contains a BlankNullSequence
+	 * @param lhsEvalAST
+	 * @param engine
+	 * @param stackMatcher
+	 * @return
+	 */
+	private boolean matchASTWithBlankNullSequence(final IAST lhsPatternAST, final IAST lhsEvalAST, EvalEngine engine,
+			StackMatcher stackMatcher) {
+		int size = lhsPatternAST.size();
+		if (lhsPatternAST.isOrderlessAST()) {
+			IASTAppendable result = F.NIL;
+			for (int i = 1; i < lhsPatternAST.size(); i++) {
+				if (!lhsPatternAST.get(i).isPatternSequence(true)) {
+					if (result.isPresent()) {
+						result.append(lhsPatternAST.get(i));
+					}
+				} else {
+					size--;
+					if (!result.isPresent()) {
+						result = lhsPatternAST.copyUntil(i);
+					}
+					if (size == lhsEvalAST.size()) {
+						if (result.exists(x -> x.isPatternSequence(true))) {
+							result.addEvalFlags(IAST.CONTAINS_PATTERN_SEQUENCE);
+						}
+						return matchAST(result, lhsEvalAST, engine, stackMatcher);
+					}
+				}
+			}
+		} else {
+			boolean evaled = false;
+			IAST result = lhsPatternAST;
+			// search for null sequences from the start
+			for (int i = 1; i < lhsPatternAST.size(); i++) {
+				if (!lhsPatternAST.get(i).isPatternSequence(true)) {
+					if (evaled) {
+						result = lhsPatternAST.copyFrom(i);
+					}
+					break;
+				} else {
+					evaled = true;
+					size--;
+					if (size == lhsEvalAST.size()) {
+						result = lhsPatternAST.copyFrom(i + 1);
+						if (result.exists(x -> x.isPatternSequence(true))) {
+							result.addEvalFlags(IAST.CONTAINS_PATTERN_SEQUENCE);
+						}
+						return matchAST(result, lhsEvalAST, engine, stackMatcher);
+					}
+				}
+			}
+			// search for null sequences from the end
+			for (int i = result.size() - 1; i >= 1; i--) {
+				if (!result.get(i).isPatternSequence(true)) {
+					break;
+				} else {
+					size--;
+					if (size == lhsEvalAST.size()) {
+						result = result.copyUntil(i);
+						if (result.exists(x -> x.isPatternSequence(true))) {
+							result.addEvalFlags(IAST.CONTAINS_PATTERN_SEQUENCE);
+						}
+						return matchAST(result, lhsEvalAST, engine, stackMatcher);
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Match all sub-expressions which contain no pattern objects if possible (i.e. no Flat or Orderless
 	 * expressions,...)
 	 * 
@@ -725,7 +803,13 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		boolean matched = true;
 		try {
 			// loop from the end
-			for (int i = lhsPatternAST.argSize(); i > 0; i--) {
+			// for (int i = lhsPatternAST.argSize(); i > 0; i--) {
+			// if (!stackMatcher.push(lhsPatternAST.get(i), lhsEvalAST.get(lhsEvalOffset + i))) {
+			// matched = false;
+			// return false;
+			// }
+			// }
+			for (int i = 1; i < lhsPatternAST.size(); i++) {
 				if (!stackMatcher.push(lhsPatternAST.get(i), lhsEvalAST.get(lhsEvalOffset + i))) {
 					matched = false;
 					return false;
@@ -943,7 +1027,7 @@ public class PatternMatcher extends IPatternMatcher implements Externalizable {
 		} else {
 			int lhsEvalSize = lhsEvalAST.size();
 			if (lhsPatternAST.isAST1()) {
-				if (lhsPatternAST.arg1().isPatternSequence()) {
+				if (lhsPatternAST.arg1().isPatternSequence(false)) {
 					// TODO only the special case, where the last element is
 					// a pattern sequence, is handled here
 					IASTAppendable seq = F.Sequence();

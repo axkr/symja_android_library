@@ -1240,7 +1240,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	}
 
 	/**
-	 * Set the evaluation flags for this list.
+	 * Set the evaluation flags for this list (i.e. replace all existing flags).
 	 * 
 	 * @param i
 	 */

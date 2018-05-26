@@ -449,10 +449,13 @@ public class PatternSequence implements IPatternSequence {
 
 	/** {@inheritDoc} */
 	@Override
-	final public boolean isPatternSequence() {
+	final public boolean isPatternSequence(boolean testNullSequence) {
+		if (testNullSequence) {
+			return fZeroArgsAllowed;
+		}
 		return true;
 	}
-
+	
 	/**
 	 * Groovy operator overloading
 	 */
