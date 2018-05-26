@@ -24,7 +24,9 @@ import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
 /**
+ * A read-eval-print loop console for Mathematica like syntax input of expressions.
  * 
+ * See {@link Console}
  */
 public class MMAConsole {
 	/**
