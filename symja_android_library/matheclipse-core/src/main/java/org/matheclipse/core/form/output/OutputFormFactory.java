@@ -404,9 +404,9 @@ public class OutputFormFactory {
 	}
 
 	public void convertString(final Appendable buf, final String str) throws IOException {
-		append(buf, "\"");
+		// append(buf, "\"");
 		append(buf, str);
-		append(buf, "\"");
+		// append(buf, "\"");
 	}
 
 	public void convertSymbol(final Appendable buf, final ISymbol symbol) throws IOException {

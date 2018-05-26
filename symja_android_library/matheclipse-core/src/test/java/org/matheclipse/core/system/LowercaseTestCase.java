@@ -95,7 +95,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("2 > 1 && Pi > 3", "True");
 		check("a && b && ! c", "a&&b&&!c");
 		check("x + 2*y == 3 && 4*x + 5*y == 6", "x+2*y==3&&4*x+5*y==6");
-		check("FullForm( And(x, And(y, z)) )", "\"And(x, y, z)\"");
+		check("FullForm( And(x, And(y, z)) )", "And(x, y, z)");
 		check("And(x, True, z)", "x&&z");
 		check("And(x, False, z)", "False");
 	}
@@ -180,7 +180,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("f @@ {{a, b}, {c}, d}", "f({a,b},{c},d)");
 		check("apply(head, {3,4,5})", "Symbol");
 		check("apply(f, a)", "a");
-		check("apply(f, {a, \"string\", 3}, {-1})", "{a,\"string\",3}");
+		check("apply(f, {a, \"string\", 3}, {-1})", "{a,string,3}");
 		check("table(i0^j, ##) & @@ {{i0, 3}, {j, 4}}", "{{1,1,1,1},{2,4,8,16},{3,9,27,81}}");
 
 		check("apply(f, {{a, b, c}, {d, e}})", "f({a,b,c},{d,e})");
@@ -862,7 +862,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Catch({Catch({a, Throw(b), c}), d, e})", "{b,d,e}");
 		check("Catch(Throw /@ {a, b, c})", "a");
 		check("$f(x_) := (If(x < 0, Throw(\"negative\")); Sqrt(x));Catch(Sum($f(i0), {i0, 5, -5, -1}))",
-				"\"negative\"");
+				"negative");
 		// check("$lst={0,v1,n1};\n" +
 		// " Catch(\n" +
 		// " {Map(Function($lst=False;\n" +
@@ -1332,7 +1332,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("1 / ComplexInfinity", "0");
 		check("ComplexInfinity + ComplexInfinity", "Indeterminate");
 		check("ComplexInfinity * Infinity", "ComplexInfinity");
-		check("FullForm(ComplexInfinity)", "\"DirectedInfinity()\"");
+		check("FullForm(ComplexInfinity)", "DirectedInfinity()");
 	}
 
 	public void testComposeList() {
@@ -1721,7 +1721,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testDefinition() {
 		check("SetAttributes(f,Listable)", "");
 		check("f(x_):={x}", "");
-		check("Definition(f)", "\"Attributes(f)={Listable}\n" + "f(x_):={x}\"");
+		check("Definition(f)", "Attributes(f)={Listable}\n" + "f(x_):={x}");
 	}
 
 	public void testDegree() {
@@ -1741,7 +1741,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDeleteCases() {
-		check("DeleteCases({a, 1, 2.5, \"string\"}, _Integer|_Real)", "{a,\"string\"}");
+		check("DeleteCases({a, 1, 2.5, \"string\"}, _Integer|_Real)", "{a,string}");
 		check("DeleteCases({a, b, 1, c, 2, 3}, _Symbol)", "{1,2,3}");
 		check("Sqrt(Range(10))", "{1,Sqrt(2),Sqrt(3),2,Sqrt(5),Sqrt(6),Sqrt(7),2*Sqrt(2),3,Sqrt(10)}");
 
@@ -1844,7 +1844,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Derivative(3)[Sin]", "-Cos(#1)&");
 		check("Sin'(x)", "Cos(x)");
 		check("(# ^ 4&)''", "12*#1^2&");
-		// check("f'(x) // FullForm", "\"Derivative(1)[f][x]\"");
+		// check("f'(x) // FullForm", "Derivative(1)[f][x]");
 		// TODO
 		// check("Derivative(1)[#2 Sin(#1)+Cos(#2)&]", "Cos(#1)*#2&");
 		// check("Derivative(1,2)[#2^3 Sin(#1)+Cos(#2)&]", "6*Cos(#1)*#2&");
@@ -1858,10 +1858,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Derivative(2, 0, 1, 0)[k(g)]", "Derivative(2,0,1,0)[k(g)]");
 
 		// parser tests
-		check("Hold(f'') // FullForm ", "\"Hold(Derivative(2)[f])\"");
-		check("Hold(f ' ') // FullForm ", "\"Hold(Derivative(2)[f])\"");
-		check("Hold(f '' '') // FullForm ", "\"Hold(Derivative(4)[f])\"");
-		check("Hold(Derivative(x)[4] ') // FullForm ", "\"Hold(Derivative(1)[Derivative(x)[4]])\"");
+		check("Hold(f'') // FullForm ", "Hold(Derivative(2)[f])");
+		check("Hold(f ' ') // FullForm ", "Hold(Derivative(2)[f])");
+		check("Hold(f '' '') // FullForm ", "Hold(Derivative(4)[f])");
+		check("Hold(Derivative(x)[4] ') // FullForm ", "Hold(Derivative(1)[Derivative(x)[4]])");
 
 		check("D(f(a,b),b)", "Derivative(0,1)[f][a,b]");
 		check("D(f(a,b),x)", "0");
@@ -2079,8 +2079,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("a / b / (c / (d / e))", "(a*d)/(b*c*e)");
 		check("a / (b ^ 2 * c ^ 3 / e)", "(a*e)/(b^2*c^3)");
 		check("1 / 4.0", "0.25");
-		check("10 / 3 // FullForm", "\"Rational(10,3)\"");
-		check("a / b // FullForm", "\"Times(a, Power(b, -1))\"");
+		check("10 / 3 // FullForm", "Rational(10,3)");
+		check("a / b // FullForm", "Times(a, Power(b, -1))");
 	}
 
 	public void testDivideBy() {
@@ -2136,7 +2136,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDot() {
-		check("#1.#123 // FullForm", "\"Dot(Slot(1), Slot(123))\"");
+		check("#1.#123 // FullForm", "Dot(Slot(1), Slot(123))");
 		check("{{1, 2}, {3.0, 4}, {5, 6}}.{1,1}", "{3.0,7.0,11.0}");
 		check("{{1, 2}, {3.0, 4}, {5, 6}}.{{1},{1}}", "{{3.0},\n" + " {7.0},\n" + " {11.0}}");
 		check("{1,1,1}.{{1, 2}, {3.0, 4}, {5, 6}}", "{9.0,12.0}");
@@ -2256,21 +2256,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO
 		// check("Length(ElementData(All))", "118");
 
-		check("ElementData(74)", "\"Tungsten\"");
+		check("ElementData(74)", "Tungsten");
 		check("ElementData(\"He\", \"AbsoluteBoilingPoint\")", "4.22");
 		check("ElementData(\"Carbon\", \"IonizationEnergies\")", "{1086.5,2352.6,4620.5,6222.7,37831,47277.0}");
-		check("ElementData(16, \"ElectronConfigurationString\")", "\"[Ne] 3s2 3p4\"");
+		check("ElementData(16, \"ElectronConfigurationString\")", "[Ne] 3s2 3p4");
 		check("ElementData(73, \"ElectronConfiguration\")", "{{2},{2,6},{2,6,10},{2,6,10,14},{2,6,3},{2}}");
 
 		check("ElementData(\"He\", \"ElectroNegativity\")", "Missing(NotApplicable)");
 		check("ElementData(\"Tc\", \"SpecificHeat\")", "Missing(NotAvailable)");
 		check("ElementData(\"Properties\")",
-				"{\"Abbreviation\",\"AbsoluteBoilingPoint\",\"AbsoluteMeltingPoint\",\"AtomicNumber\",\"AtomicRadius\",\"AtomicWeight\",\"Block\",\"BoilingPoint\",\"BrinellHardness\",\"BulkModulus\",\"CovalentRadius\",\"CrustAbundance\",\"Density\",\"DiscoveryYear\",\"ElectroNegativity\",\"ElectronAffinity\",\"ElectronConfiguration\",\"ElectronConfigurationString\",\"ElectronShellConfiguration\",\"FusionHeat\",\"Group\",\"IonizationEnergies\",\"LiquidDensity\",\"MeltingPoint\",\"MohsHardness\",\"Name\",\"Period\",\"PoissonRatio\",\"Series\",\"ShearModulus\",\"SpecificHeat\",\"StandardName\",\"ThermalConductivity\",\"VanDerWaalsRadius\",\"VaporizationHeat\",\"VickersHardness\",\"YoungModulus\"}");
+				"{Abbreviation,AbsoluteBoilingPoint,AbsoluteMeltingPoint,AtomicNumber,AtomicRadius,AtomicWeight,Block,BoilingPoint,BrinellHardness,BulkModulus,CovalentRadius,CrustAbundance,Density,DiscoveryYear,ElectroNegativity,ElectronAffinity,ElectronConfiguration,ElectronConfigurationString,ElectronShellConfiguration,FusionHeat,Group,IonizationEnergies,LiquidDensity,MeltingPoint,MohsHardness,Name,Period,PoissonRatio,Series,ShearModulus,SpecificHeat,StandardName,ThermalConductivity,VanDerWaalsRadius,VaporizationHeat,VickersHardness,YoungModulus}");
 
-		check("ElementData(6)", "\"Carbon\"");
-		check("ElementData(\"Carbon\", \"Name\")", "\"carbon\"");
-		check("ElementData(79, \"Abbreviation\")", "\"Au\"");
-		check("ElementData(\"Au\", \"StandardName\")", "\"Gold\"");
+		check("ElementData(6)", "Carbon");
+		check("ElementData(\"Carbon\", \"Name\")", "carbon");
+		check("ElementData(79, \"Abbreviation\")", "Au");
+		check("ElementData(\"Au\", \"StandardName\")", "Gold");
 		check("ElementData(\"Gold\", \"AtomicNumber\")", "79");
 		check("ElementData(\"Carbon\", \"AtomicNumber\")", "6");
 		check("ElementData(\"He\", \"AtomicNumber\")", "2");
@@ -2291,7 +2291,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ElementData(\"Pd\", \"BulkModulus\")", "180");
 		check("ElementData(\"Pd\", \"ShearModulus\")", "44");
 		check("ElementData(\"Pd\", \"ElectronConfiguration\")", "{{2},{2,6},{2,6,10},{2,6,10}}");
-		check("ElementData(\"Pd\", \"ElectronConfigurationString\")", "\"[Kr] 4d10\"");
+		check("ElementData(\"Pd\", \"ElectronConfigurationString\")", "[Kr] 4d10");
 		check("ElementData(\"Pd\", \"ElectronShellConfiguration\")", "{2,8,18,18}");
 
 		// check("ElementData(\"Helium\", \"MeltingPoint\")",
@@ -2395,7 +2395,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("{\"a\",\"b\"}=={\"a\",\"b\"}", "True");
 		check("{\"a\",\"b\"}=={\"b\",\"a\"}", "False");
-		check("{\"a\",b}=={\"a\",c}", "{\"a\",b}=={\"a\",c}");
+		check("{\"a\",b}=={\"a\",c}", "{a,b}=={a,c}");
 		check("a==a==b==c", "a==b==c");
 		check("a==a==a==a", "True");
 		check("Pi==3", "False");
@@ -2492,7 +2492,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Exp(42+Log(a)+Log(b))", "a*b*E^42");
 		check("Exp(1)", "E");
 		checkNumeric("Exp(10.0)", "22026.465794806703");
-		check("Exp(x) //FullForm", "\"Power(E, x)\"");
+		check("Exp(x) //FullForm", "Power(E, x)");
 		// TODO check("Exp(1.*^20)", "Overflow()");
 		check("Exp(1.*^20)", "Infinity");
 
@@ -2705,7 +2705,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Factorial(20)", "2432902008176640000");
 		check("Factorial(21)", "51090942171709440000");
 		checkNumeric("10.5!", "1.1899423083962249E7");
-		check("!a! //FullForm", "\"Not(Factorial(a))\"");
+		check("!a! //FullForm", "Not(Factorial(a))");
 	}
 
 	// public void testExpand() {
@@ -3240,7 +3240,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFullForm() {
-		check("FullForm(a:=b)", "\"Null\"");
+		check("FullForm(a:=b)", "Null");
 	}
 
 	public void testFullSimplify() {
@@ -3259,12 +3259,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("f(#1) &(x, y, z)", "f(x)");
 		check("17 & /@ {1, 2, 3}", "{17,17,17}");
 		check("(p + #) & /. p -> q", "q+#1&");
-		check("FullForm(x -> y &)", "\"Function(Rule(x, y))\"");
-		check("FullForm(x -> (y &))", "\"Rule(x, Function(y))\"");
-		check("FullForm(Mod(#, 5) == 1 &)", "\"Function(Equal(Mod(Slot(1), 5), 1))\"");
-		check("FullForm(a == b && c == d &)", "\"Function(And(Equal(a, b), Equal(c, d)))\"");
+		check("FullForm(x -> y &)", "Function(Rule(x, y))");
+		check("FullForm(x -> (y &))", "Rule(x, Function(y))");
+		check("FullForm(Mod(#, 5) == 1 &)", "Function(Equal(Mod(Slot(1), 5), 1))");
+		check("FullForm(a == b && c == d &)", "Function(And(Equal(a, b), Equal(c, d)))");
 		check("FullForm(Mod(#, 3) == 1 && Mod(#, 5) == 1 &)",
-				"\"Function(And(Equal(Mod(Slot(1), 3), 1), Equal(Mod(Slot(1), 5), 1)))\"");
+				"Function(And(Equal(Mod(Slot(1), 3), 1), Equal(Mod(Slot(1), 5), 1)))");
 	}
 
 	public void testGamma() {
@@ -3590,7 +3590,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("If(1 == k, itstrue, itsfalse)", "If(1==k,itstrue,itsfalse)");
 		check("If(1<2, a, b)", "a");
 		check("If(1<2, a)", "a");
-		check("If(False, a) //FullForm", "\"Null\"");
+		check("If(False, a) //FullForm", "Null");
 		check("If(a>b,true)", "If(a>b,True)");
 	}
 
@@ -3635,7 +3635,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("a = 2", "2");
 		check("a++", "2");
 		check("a", "3");
-		check("++++a+++++2//Hold//FullForm", "\"Hold(Plus(PreIncrement(PreIncrement(Increment(Increment(a)))), 2))\"");
+		check("++++a+++++2//Hold//FullForm", "Hold(Plus(PreIncrement(PreIncrement(Increment(Increment(a)))), 2))");
 	}
 
 	public void testIndeterminate() {
@@ -3664,7 +3664,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("1 / Infinity", "0");
 		check("Infinity + 100", "Infinity");
 		check("Sum(1/x^2, {x, 1, Infinity})", "Pi^2/6");
-		check("FullForm(Infinity)", "\"DirectedInfinity(1)\"");
+		check("FullForm(Infinity)", "DirectedInfinity(1)");
 		check("(2 + 3.5*I) / Infinity", "0.0");
 		check("Infinity + Infinity", "Infinity");
 		check("Infinity / Infinity", "Indeterminate");
@@ -4038,20 +4038,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testJavaForm() {
 		check("JavaForm(Hold(D(sin(x)*cos(x),x)), prefix->True)", //
-				"\"F.D(F.Times(F.Sin(F.x),F.Cos(F.x)),F.x)\"");
+				"F.D(F.Times(F.Sin(F.x),F.Cos(F.x)),F.x)");
 		check("JavaForm(Hold(D(sin(x)*cos(x),x)))", //
-				"\"D(Times(Sin(x),Cos(x)),x)\"");
+				"D(Times(Sin(x),Cos(x)),x)");
 		check("JavaForm(D(sin(x)*cos(x),x), prefix->True)", //
-				"\"F.Plus(F.Sqr(F.Cos(F.x)),F.Negate(F.Sqr(F.Sin(F.x))))\"");
+				"F.Plus(F.Sqr(F.Cos(F.x)),F.Negate(F.Sqr(F.Sin(F.x))))");
 		check("JavaForm(D(sin(x)*cos(x),x))", //
-				"\"Plus(Sqr(Cos(x)),Negate(Sqr(Sin(x))))\"");
+				"Plus(Sqr(Cos(x)),Negate(Sqr(Sin(x))))");
 		check("JavaForm(I/2*E^((-I)*x)-I/2*E^(I*x), Prefix->True)", //
-				"\"F.Plus(F.Times(F.CC(0L,1L,1L,2L),F.Exp(F.Times(F.CNI,F.x))),F.Times(F.CC(0L,1L,-1L,2L),F.Exp(F.Times(F.CI,F.x))))\"");
+				"F.Plus(F.Times(F.CC(0L,1L,1L,2L),F.Exp(F.Times(F.CNI,F.x))),F.Times(F.CC(0L,1L,-1L,2L),F.Exp(F.Times(F.CI,F.x))))");
 		check("JavaForm(I/2*E^((-I)*x)-I/2*E^(I*x))", //
-				"\"Plus(Times(CC(0L,1L,1L,2L),Exp(Times(CNI,x))),Times(CC(0L,1L,-1L,2L),Exp(Times(CI,x))))\"");
+				"Plus(Times(CC(0L,1L,1L,2L),Exp(Times(CNI,x))),Times(CC(0L,1L,-1L,2L),Exp(Times(CI,x))))");
 		check("JavaForm(a+b+x^2+I+7+3/4+x+y, Prefix->True)",
-				"\"F.Plus(F.CC(31L,4L,1L,1L),F.a,F.b,F.x,F.Sqr(F.x),F.y)\"");
-		check("JavaForm(a+b+x^2+I+7+3/4+x+y)", "\"Plus(CC(31L,4L,1L,1L),a,b,x,Sqr(x),y)\"");
+				"F.Plus(F.CC(31L,4L,1L,1L),F.a,F.b,F.x,F.Sqr(F.x),F.y)");
+		check("JavaForm(a+b+x^2+I+7+3/4+x+y)", "Plus(CC(31L,4L,1L,1L),a,b,x,Sqr(x),y)");
 	}
 
 	public void testJoin() {
@@ -4234,10 +4234,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testLength() {
 		check("Length({1, 2, 3})", "3");
 		check("Length(Exp(x))", "2");
-		check("FullForm(Exp(x))", "\"Power(E, x)\"");
+		check("FullForm(Exp(x))", "Power(E, x)");
 		check("Length(a)", "0");
 		check("Length(1/3)", "0");
-		check("FullForm(1/3)", "\"Rational(1,3)\"");
+		check("FullForm(1/3)", "Rational(1,3)");
 
 		check("Length(a + b + c + d)", "4");
 		check("Length(3 + I)", "0");
@@ -4276,7 +4276,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LetterQ(\"äü\")", "True");
 	}
 
-	public void testLevel() {
+	public void testLevel() { 
 		check("Level(x, -1)", //
 				"{}");
 		check("Level(x, 0)", //
@@ -4770,10 +4770,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMathMLForm() {
-		check("MathMLForm(D(sin(x)*cos(x),x))", "\"<?xml version=\"1.0\"?>\n"
+		check("MathMLForm(D(sin(x)*cos(x),x))", "<?xml version=\"1.0\"?>\n"
 				+ "<!DOCTYPE math PUBLIC \"-//W3C//DTD MathML 2.0//EN\" \"http://www.w3.org/TR/MathML2/dtd/mathml2.dtd\">\n"
 				+ "<math mode=\"display\">\n"
-				+ "<mfrac><mrow><mo>&#x2202;</mo><mrow><mrow><mi>sin</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mo>&#0183;</mo><mrow><mi>cos</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow></mrow></mrow><mrow><mo>&#x2202;</mo><mi>x</mi></mrow></mfrac></math>\"");
+				+ "<mfrac><mrow><mo>&#x2202;</mo><mrow><mrow><mi>sin</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow><mo>&#0183;</mo><mrow><mi>cos</mi><mo>&#x2061;</mo><mo>(</mo><mi>x</mi><mo>)</mo></mrow></mrow></mrow><mrow><mo>&#x2202;</mo><mi>x</mi></mrow></mfrac></math>");
 	}
 
 	public void testMatrices() {
@@ -4978,7 +4978,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testMinus() {
 		check("Minus(a)", "-a");
-		check("-a //FullForm", "\"Times(-1, a)\"");
+		check("-a //FullForm", "Times(-1, a)");
 		check("-(x - 2/3)", "2/3-x");
 		check("-Range(10)", "{-1,-2,-3,-4,-5,-6,-7,-8,-9,-10}");
 	}
@@ -5768,7 +5768,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("a || False || b", "a||b");
 		check("Or( )", "False");
 		check("Or(2+2)", "4");
-		check("FullForm( Or(x, Or(y, z)) )", "\"Or(x, y, z)\"");
+		check("FullForm( Or(x, Or(y, z)) )", "Or(x, y, z)");
 		check("Or(x, False, z)", "x||z");
 		check("Or(x, True, z)", "True");
 	}
@@ -5880,7 +5880,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{Composition(Sin,ArcSin),Composition(Sin,ArcCos),Composition(Sin,ArcTan)},{Composition(Cos,ArcSin),Composition(Cos,ArcCos),Composition(Cos,ArcTan)},{Composition(Tan,ArcSin),Composition(Tan,ArcCos),Composition(Tan,ArcTan)}}");
 		check("Map(#(0) &, trigs, {2})", "{{0,1,0},{1,0,1},{0,ComplexInfinity,0}}");
 		check("Outer(StringJoin, {\"\", \"re\", \"un\"}, {\"cover\", \"draw\", \"wind\"}, {\"\", \"ing\", \"s\"})",
-				"{{{\"cover\",\"covering\",\"covers\"},{\"draw\",\"drawing\",\"draws\"},{\"wind\",\"winding\",\"winds\"}},{{\"recover\",\"recovering\",\"recovers\"},{\"redraw\",\"redrawing\",\"redraws\"},{\"rewind\",\"rewinding\",\"rewinds\"}},{{\"uncover\",\"uncovering\",\"uncovers\"},{\"undraw\",\"undrawing\",\"undraws\"},{\"unwind\",\"unwinding\",\"unwinds\"}}}");
+				"{{{cover,covering,covers},{draw,drawing,draws},{wind,winding,winds}},{{recover,recovering,recovers},{redraw,redrawing,redraws},{rewind,rewinding,rewinds}},{{uncover,uncovering,uncovers},{undraw,undrawing,undraws},{unwind,unwinding,unwinds}}}");
 	}
 
 	public void testPadLeft() {
@@ -5968,7 +5968,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("F[[;; All, 1 ;; 2, 3 ;; 3]] = k", "k");
 		check("F", "{{{1,2,k},{2,t,k},{3,t,9}},{{2,4,k},{4,t,k},{6,t,18}},{{3,6,k},{6,t,k},{9,t,27}}}");
 
-		check("A[[1]] + B[[2]] + C[[3]] // Hold // FullForm", "\"Hold(Plus(Part(A, 1), Part(B, 2), Part(C, 3)))\"");
+		check("A[[1]] + B[[2]] + C[[3]] // Hold // FullForm", "Hold(Plus(Part(A, 1), Part(B, 2), Part(C, 3)))");
 		check("a = {2,3,4}; i = 1; a[[i]] = 0; a", "{0,3,4}");
 
 		check("{1,2,3,4,5}[[3;;1;;-1]]", "{3,2,1}");
@@ -6518,11 +6518,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("(-5)^(1/2)", "I*Sqrt(5)");
 		check("(-5)^(-1/2)", "-I/Sqrt(5)");
 		check("(-(2/3))^(-1/2)", "-I*Sqrt(3/2)");
-		check("FullForm(a^b^c)", "\"Power(a, Power(b, c))\"");
-		check("FullForm((a^b)^c)", "\"Power(Power(a, b), c)\"");
+		check("FullForm(a^b^c)", "Power(a, Power(b, c))");
+		check("FullForm((a^b)^c)", "Power(Power(a, b), c)");
 		check("(a*b)^3", "a^3*b^3");
 		check("(a*b)^(1/2)", "Sqrt(a*b)");
-		check("FullForm((a^b)^3)", "\"Power(a, Times(3, b))\"");
+		check("FullForm((a^b)^3)", "Power(a, Times(3, b))");
 		check("{2,3,4,5}^3", "{8,27,64,125}");
 		check("N(29^(1/3))", "3.07232");
 		check("50!^(1/6)", "604800*621447116887301398870058090208^(1/6)");
@@ -7386,7 +7386,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("h(x_) := (If(x < 0, Return()); x)", "");
 		check("h(1)", "1");
-		check("h(-1) // FullForm", "\"Null\"");
+		check("h(-1) // FullForm", "Null");
 
 		check("f(x_) := Return(x)", "");
 		check("g(y_) := Module({}, z = f(y); 2)", "");
@@ -8448,10 +8448,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSpan() {
-		check("FullForm( ;; )", "\"Span(1, All)\"");
-		check("FullForm(1;;4;;2)", "\"Span(1, 4, 2)\"");
-		check("FullForm(2;;-2)", "\"Span(2, -2)\"");
-		check("FullForm(;;3)", "\"Span(1, 3)\"");
+		check("FullForm( ;; )", "Span(1, All)");
+		check("FullForm(1;;4;;2)", "Span(1, 4, 2)");
+		check("FullForm(2;;-2)", "Span(2, -2)");
+		check("FullForm(;;3)", "Span(1, 3)");
 		// check("a ;; b ;; c ;; d", "(1;;d) (a;;b;;c)");
 
 		check("{a, b, c, d, e, f, g, h}[[2 ;; -3]]", "{b,c,d,e,f}");
@@ -8514,9 +8514,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringJoin() {
-		check("\"Hello\" <> \" \" <> \"world!\"", "\"Hello world!\"");
-		check("\"Debian\" <> 6", "\"Debian\"<>6");
-		check("\"Debian\" <> ToString(6)", "\"Debian6\"");
+		check("\"Hello\" <> \" \" <> \"world!\"", "Hello world!");
+		check("\"Debian\" <> 6", "Debian<>6");
+		check("\"Debian\" <> ToString(6)", "Debian6");
 	}
 
 	public void testStringLength() {
@@ -8524,9 +8524,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testStringTake() {
-		check("StringTake(\"abcdefghijklm\", 6)", "\"abcdef\"");
-		check("StringTake(\"abcdefghijklm\", -4)", "\"jklm\"");
-		// check("StringTake(\"abcdefghijklm\", {5, 10})", "\"efghij\"");
+		check("StringTake(\"abcdefghijklm\", 6)", "abcdef");
+		check("StringTake(\"abcdefghijklm\", -4)", "jklm");
+		// check("StringTake(\"abcdefghijklm\", {5, 10})", "efghij");
 	}
 
 	public void testStruveH() {
@@ -8612,7 +8612,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testSubtract() {
 		check("5 - 3", "2");
-		check("a - b // FullForm", "\"Plus(a, Times(-1, b))\"");
+		check("a - b // FullForm", "Plus(a, Times(-1, b))");
 		check("a - b - c", "a-b-c");
 		check("a - (b - c)", "a-b+c");
 	}
@@ -8833,9 +8833,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSymbolName() {
-		check("SymbolName(x)", "\"x\"");
+		check("SymbolName(x)", "x");
 		// TODO allow contexts
-		// check("SymbolName(a`b`x)", "\"x\"");
+		// check("SymbolName(a`b`x)", "x");
 
 	}
 
@@ -9005,36 +9005,36 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTeXForm() {
-		check("TeXForm(Infinity)", "\"\\infty\"");
-		check("TeXForm(-Infinity)", "\"-\\infty\"");
-		check("TeXForm(Hold(GoldenRatio))", "\"\\text{Hold}(\\phi)\"");
-		check("TeXForm(GoldenRatio)", "\"\\phi\"");
-		check("TeXForm(2+I*3)", "\"2 + 3\\,i \"");
-		check("TeXForm(a+b^2)", "\"a+b^{2}\"");
-		check("TeXForm(Expand((x+y)^3))", "\"x^{3}+3\\,x^{2}\\,y+3\\,x\\,y^{2}+y^{3}\"");
-		check("TeXForm(3*a+b^2)", "\"3\\,a+b^{2}\"");
-		check("TeXForm(x/Sqrt(5))", "\"\\frac{x}{\\sqrt{5}}\"");
-		check("TeXForm(x^(1/3))", "\"\\sqrt[3]{x}\"");
-		check("TeXForm(alpha)", "\"\\alpha\"");
-		check("TeXForm({a,b,c})", "\"\\{a,b,c\\}\"");
-		check("TeXForm({{a,b},c})", "\"\\{\\{a,b\\},c\\}\"");
-		check("TeXForm({{a, b, c}, {d, e, f}})", "\"\\left(\n" + "\\begin{array}{ccc}\n" + "a & b & c \\\\\n"
-				+ "d & e & f \n" + "\\end{array}\n" + "\\right) \"");
+		check("TeXForm(Infinity)", "\\infty");
+		check("TeXForm(-Infinity)", "-\\infty");
+		check("TeXForm(Hold(GoldenRatio))", "\\text{Hold}(\\phi)");
+		check("TeXForm(GoldenRatio)", "\\phi");
+		check("TeXForm(2+I*3)", "2 + 3\\,i ");
+		check("TeXForm(a+b^2)", "a+b^{2}");
+		check("TeXForm(Expand((x+y)^3))", "x^{3}+3\\,x^{2}\\,y+3\\,x\\,y^{2}+y^{3}");
+		check("TeXForm(3*a+b^2)", "3\\,a+b^{2}");
+		check("TeXForm(x/Sqrt(5))", "\\frac{x}{\\sqrt{5}}");
+		check("TeXForm(x^(1/3))", "\\sqrt[3]{x}");
+		check("TeXForm(alpha)", "\\alpha");
+		check("TeXForm({a,b,c})", "\\{a,b,c\\}");
+		check("TeXForm({{a,b},c})", "\\{\\{a,b\\},c\\}");
+		check("TeXForm({{a, b, c}, {d, e, f}})", "\\left(\n" + "\\begin{array}{ccc}\n" + "a & b & c \\\\\n"
+				+ "d & e & f \n" + "\\end{array}\n" + "\\right) ");
 
-		check("TeXForm(Integrate(f(x),x))", "\"\\int  f(x)\\,\\mathrm{d}x\"");
-		check("TeXForm(Limit(f(x), x ->Infinity))", "\"\\lim_{x\\to {\\infty} }\\,{f(x)}\"");
-		check("TeXForm(Sum(f(n), {n, 1, m}))", "\"\\sum_{n = 1}^{m} {f(n)}\"");
-		check("TeXForm(Product(f(n), {n, 1, m}))", "\"\\prod_{n = 1}^{m} {f(n)}\"");
-		check("TeXForm(Subscript(a,b))", "\"a_b\"");
-		check("TeXForm(Superscript(a,b))", "\"a^b\"");
-		check("TeXForm(Subscript(x,2*k+1))", "\"x_{1+2\\,k}\"");
-		check("TeXForm(Subsuperscript(a,b,c))", "\"a_b^c\"");
-		check("TeXForm(HarmonicNumber(n))", "\"H_n\"");
-		check("TeXForm(HarmonicNumber(m,n))", "\"H_m^{(n)}\"");
-		check("TeXForm(HurwitzZeta(m,n))", "\"zeta (m,n)\"");
-		check("TeXForm(Zeta(m,n))", "\"zeta (m,n)\"");
+		check("TeXForm(Integrate(f(x),x))", "\\int  f(x)\\,\\mathrm{d}x");
+		check("TeXForm(Limit(f(x), x ->Infinity))", "\\lim_{x\\to {\\infty} }\\,{f(x)}");
+		check("TeXForm(Sum(f(n), {n, 1, m}))", "\\sum_{n = 1}^{m} {f(n)}");
+		check("TeXForm(Product(f(n), {n, 1, m}))", "\\prod_{n = 1}^{m} {f(n)}");
+		check("TeXForm(Subscript(a,b))", "a_b");
+		check("TeXForm(Superscript(a,b))", "a^b");
+		check("TeXForm(Subscript(x,2*k+1))", "x_{1+2\\,k}");
+		check("TeXForm(Subsuperscript(a,b,c))", "a_b^c");
+		check("TeXForm(HarmonicNumber(n))", "H_n");
+		check("TeXForm(HarmonicNumber(m,n))", "H_m^{(n)}");
+		check("TeXForm(HurwitzZeta(m,n))", "zeta (m,n)");
+		check("TeXForm(Zeta(m,n))", "zeta (m,n)");
 
-		check("TeXForm(fgh(a,b))", "\"\\text{fgh}(a,b)\"");
+		check("TeXForm(fgh(a,b))", "\\text{fgh}(a,b)");
 	}
 
 	public void testThread() {
@@ -9083,7 +9083,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"5/Sqrt(42)");
 
 		check("Hold((-1)^(a) (b)) // FullForm", //
-				"\"Hold(Times(Power(-1, a), b))\"");
+				"Hold(Times(Power(-1, a), b))");
 
 		check("Sqrt(1/2)*(1+x)", //
 				"(1+x)/Sqrt(2)");
@@ -9108,9 +9108,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Times @@ {1, 2, 3, 4}", "24");
 		check("IntegerLength(Times@@Range(100))", "158");
 		check("a /. n_. * x_ :> {n, x} ", "{1,a}");
-		check("-a*b // FullForm", "\"Times(-1, a, b)\"");
+		check("-a*b // FullForm", "Times(-1, a, b)");
 		check("-(x - 2/3)", "2/3-x");
-		check("-(h/2) // FullForm", "\"Times(Rational(-1,2), h)\"");
+		check("-(h/2) // FullForm", "Times(Rational(-1,2), h)");
 		check("x / x", "1");
 		check("2*x^2 / x^2", "2");
 		checkNumeric("3.*Pi", "9.42477796076938");
@@ -9448,7 +9448,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("{\"a\",\"b\"}!={\"a\",\"b\"}", "False");
 		check("{\"a\",\"b\"}!={\"b\",\"a\"}", "True");
-		check("{\"a\",b}!={\"a\",c}", "{\"a\",b}!={\"a\",c}");
+		check("{\"a\",b}!={\"a\",c}", "{a,b}!={a,c}");
 		check("(E + Pi)^2 - E^2 - Pi^2 - 2*E*Pi!=0", "False");
 		check("a!=a!=a!=a", "False");
 	}

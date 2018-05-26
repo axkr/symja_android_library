@@ -1190,7 +1190,7 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem115() {
-		check("\"test1 \"<>\"test2 \"<>\"test3 \"", "\"test1 test2 test3 \"");
+		check("\"test1 \"<>\"test2 \"<>\"test3 \"", "test1 test2 test3 ");
 	}
 
 	public void testSystem116() {
@@ -2533,15 +2533,17 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem358() {
-		check("FromCharacterCode(55)", "\"7\"");
+		check("FromCharacterCode(55)", "7");
 	}
 
 	public void testSystem359() {
-		check("FromCharacterCode({49,50,51,97,98,99,65,66,67})", "\"123abcABC\"");
+		check("FromCharacterCode({49,50,51,97,98,99,65,66,67})", //
+				"123abcABC");
 	}
 
 	public void testSystem360() {
-		check("ToUnicode(\"123abcABC\")", "\"\\u0031\\u0032\\u0033\\u0061\\u0062\\u0063\\u0041\\u0042\\u0043\"");
+		check("ToUnicode(\"123abcABC\")", //
+				"\\u0031\\u0032\\u0033\\u0061\\u0062\\u0063\\u0041\\u0042\\u0043");
 	}
 
 	public void testSystem361() {
@@ -2645,41 +2647,45 @@ public class MainTestCase extends AbstractTestCase {
 	// }
 
 	public void testSystem387() {
-		check("FullForm(3/4+ #2+b+c*3)", "\"Plus(Rational(3,4), b, Times(3, c), Slot(2))\"");
-		check("$a=1+I;FullForm($a)", "\"Complex(1,1)\"");
-		check("FullForm(1/3+I)", "\"Complex(Rational(1,3),1)\"");
-		check("FullForm(ff(x_*y_))", "\"ff(Times(Pattern(x, Blank()), Pattern(y, Blank())))\"");
+		check("FullForm(3/4+ #2+b+c*3)", //
+				"Plus(Rational(3,4), b, Times(3, c), Slot(2))");
+		check("$a=1+I;FullForm($a)", //
+				"Complex(1,1)");
+		check("FullForm(1/3+I)", //
+				"Complex(Rational(1,3),1)");
+		check("FullForm(ff(x_*y_))", //
+				"ff(Times(Pattern(x, Blank()), Pattern(y, Blank())))");
 	}
 
 	public void testSystem387a() {
-		check("JavaForm(Pi*x_NumberQ)", "\"Times(Pi,$p(x,NumberQ))\"");
-		check("JavaForm(x_NumberQ)", "\"$p(x,NumberQ)\"");
+		check("JavaForm(Pi*x_NumberQ)", "Times(Pi,$p(x,NumberQ))");
+		check("JavaForm(x_NumberQ)", "$p(x,NumberQ)");
 		check("JavaForm(Cosh(Im(x))*Cos(Re(x))+I*Sinh(Im(x))*Sin(Re(x)))",
-				"\"Plus(Times(Cos(Re(x)),Cosh(Im(x))),Times(CI,Sin(Re(x)),Sinh(Im(x))))\"");
-		check("JavaForm((1/2 * (m + n^(1/2))) ^ (1/3))", "\"Times(Power(C2,CN1D3),Power(Plus(m,Sqrt(n)),C1D3))\"");
+				"Plus(Times(Cos(Re(x)),Cosh(Im(x))),Times(CI,Sin(Re(x)),Sinh(Im(x))))");
+		check("JavaForm((1/2 * (m + n^(1/2))) ^ (1/3))", "Times(Power(C2,CN1D3),Power(Plus(m,Sqrt(n)),C1D3))");
 
-		check("JavaForm(-1/4+ #2+b+c*3)", "\"Plus(CN1D4,b,Times(C3,c),Slot2)\"");
+		check("JavaForm(-1/4+ #2+b+c*3)", "Plus(CN1D4,b,Times(C3,c),Slot2)");
 
-		check("JavaForm(11+a)", "\"Plus(ZZ(11L),a)\"");
-		check("JavaForm(1/11+a)", "\"Plus(QQ(1L,11L),a)\"");
+		check("JavaForm(11+a)", "Plus(ZZ(11L),a)");
+		check("JavaForm(1/11+a)", "Plus(QQ(1L,11L),a)");
 
-		check("$a=1+I;JavaForm($a)", "\"CC(1L,1L,1L,1L)\"");
-		check("JavaForm(1/3+I)", "\"CC(1L,3L,1L,1L)\"");
+		check("$a=1+I;JavaForm($a)", "CC(1L,1L,1L,1L)");
+		check("JavaForm(1/3+I)", "CC(1L,3L,1L,1L)");
 
-		check("JavaForm(ff(x_*y_))", "\"$(ff,Times(x_,y_))\"");
-		check("JavaForm(Log(b*x+c)/b)", "\"Times(Power(b,-1),Log(Plus(c,Times(b,x))))\"");
+		check("JavaForm(ff(x_*y_))", "$(ff,Times(x_,y_))");
+		check("JavaForm(Log(b*x+c)/b)", "Times(Power(b,-1),Log(Plus(c,Times(b,x))))");
 
-		check("JavaForm(B)", "\"B\"");
-		check("JavaForm(B*Log(p*x+q)/p)", "\"Times(B,Power(p,-1),Log(Plus(q,Times(p,x))))\"");
+		check("JavaForm(B)", "B");
+		check("JavaForm(B*Log(p*x+q)/p)", "Times(B,Power(p,-1),Log(Plus(q,Times(p,x))))");
 		// check(
 		// "JavaForm(B*((2*a*x+b)/((k-1)*(4*a*c-b^2)*(a*x^2+b*x+c)^(k-1))+
 		// (4*k*a-6*a)/((k-1)*(4*a*c-b^2))*Integrate((a*x^2+b*x+c)^(-k+1),x)))",
-		// "\"Times(B,Plus(Times(Integrate(Power(Plus(c,Times(b,x),Times(a,Power(x,C2))),Plus(C1,Times(CN1,k))),x),Plus(Times(integer(-6L),a),Times(C4,a,k)),Power(Plus(CN1,k),CN1),Power(Plus(Times(CN1,Power(b,C2)),Times(C4,a,c)),CN1)),Times(Plus(b,Times(C2,a,x)),Power(Plus(CN1,k),CN1),Power(Plus(Times(CN1,Power(b,C2)),Times(C4,a,c)),CN1),Power(Plus(c,Times(b,x),Times(a,Power(x,C2))),Plus(C1,Times(CN1,k))))))\"");
+		// "Times(B,Plus(Times(Integrate(Power(Plus(c,Times(b,x),Times(a,Power(x,C2))),Plus(C1,Times(CN1,k))),x),Plus(Times(integer(-6L),a),Times(C4,a,k)),Power(Plus(CN1,k),CN1),Power(Plus(Times(CN1,Power(b,C2)),Times(C4,a,c)),CN1)),Times(Plus(b,Times(C2,a,x)),Power(Plus(CN1,k),CN1),Power(Plus(Times(CN1,Power(b,C2)),Times(C4,a,c)),CN1),Power(Plus(c,Times(b,x),Times(a,Power(x,C2))),Plus(C1,Times(CN1,k))))))");
 		// check(
 		// "JavaForm((-A)/(2*a*(k-1)*(a*x^2+b*x+c)^(k-1))+(B-A*b/(2*a))*Integrate((a*x^2+b*x+c)^(-k),x))",
-		// "\"Plus(Times(Integrate(Power(Plus(c,Times(b,x),Times(a,Power(x,C2))),Times(CN1,k)),x),Plus(B,Times(CN1D2,A,Power(a,CN1),b))),Times(CN1D2,A,Power(a,CN1),Power(Plus(CN1,k),CN1),Power(Plus(c,Times(b,x),Times(a,Power(x,C2))),Plus(C1,Times(CN1,k)))))\"");
+		// "Plus(Times(Integrate(Power(Plus(c,Times(b,x),Times(a,Power(x,C2))),Times(CN1,k)),x),Plus(B,Times(CN1D2,A,Power(a,CN1),b))),Times(CN1D2,A,Power(a,CN1),Power(Plus(CN1,k),CN1),Power(Plus(c,Times(b,x),Times(a,Power(x,C2))),Plus(C1,Times(CN1,k)))))");
 		check("JavaForm(A/2*Log(x^2+p*x+q)+(2*B-A*p)/(4*q-p^2)^(1/2)*ArcTan((2*x+p)/(4*q-p^2)^(1/2)))",
-				"\"Plus(Times(Plus(Times(C2,B),Times(CN1,A,p)),Power(Plus(Negate(Sqr(p)),Times(C4,q)),CN1D2),ArcTan(Times(Power(Plus(Negate(Sqr(p)),Times(C4,q)),CN1D2),Plus(p,Times(C2,x))))),Times(C1D2,A,Log(Plus(q,Times(p,x),Sqr(x)))))\"");
+				"Plus(Times(Plus(Times(C2,B),Times(CN1,A,p)),Power(Plus(Negate(Sqr(p)),Times(C4,q)),CN1D2),ArcTan(Times(Power(Plus(Negate(Sqr(p)),Times(C4,q)),CN1D2),Plus(p,Times(C2,x))))),Times(C1D2,A,Log(Plus(q,Times(p,x),Sqr(x)))))");
 	}
 
 	public void testSystem388() {
@@ -2699,12 +2705,12 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem391() {
-		check("StringJoin(\"Hello\", \" World\")", "\"Hello World\"");
+		check("StringJoin(\"Hello\", \" World\")", "Hello World");
 	}
 
 	public void testSystem392() {
-		check("StringDrop(\"Hello\", 2)", "\"llo\"");
-		check("StringDrop(\"Hello\", -2)", "\"Hel\"");
+		check("StringDrop(\"Hello\", 2)", "llo");
+		check("StringDrop(\"Hello\", -2)", "Hel");
 	}
 
 	public void testSystem393() {
@@ -2824,7 +2830,7 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem403() {
-		check("ToString(a^2+2*a*b+b^2)", "\"a^2+2*a*b+b^2\"");
+		check("ToString(a^2+2*a*b+b^2)", "a^2+2*a*b+b^2");
 	}
 
 	public void testSystem404() {
@@ -2864,7 +2870,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("(-3/4)*(-Infinity)", "Infinity");
 		check("Infinity^(-1)", "0");
 		check("Infinity", "Infinity");
-		check("FullForm(Infinity)", "\"DirectedInfinity(1)\"");
+		check("FullForm(Infinity)", "DirectedInfinity(1)");
 		check("Infinity*Infinity", "Infinity");
 		check("ComplexInfinity", "ComplexInfinity");
 	}
@@ -3625,43 +3631,43 @@ public class MainTestCase extends AbstractTestCase {
 			if (!Config.EXPLICIT_TIMES_OPERATOR) {
 				Config.DOMINANT_IMPLICIT_TIMES = true;
 				if (Config.DOMINANT_IMPLICIT_TIMES) {
-					check("Hold(1/2Pi) // FullForm", "\"Hold(Power(Times(2, Pi), -1))\"");
-					check("1/2Pi // FullForm", "\"Times(Rational(1,2), Power(Pi, -1))\"");
-					check("1/2(a+b) // FullForm", "\"Times(Rational(1,2), Power(Plus(a, b), -1))\"");
-					check("1/(a+b)2 // FullForm", "\"Times(Rational(1,2), Power(Plus(a, b), -1))\"");
-					check("a^(b)(c) // FullForm", "\"Power(a, Times(b, c))\"");
+					check("Hold(1/2Pi) // FullForm", "Hold(Power(Times(2, Pi), -1))");
+					check("1/2Pi // FullForm", "Times(Rational(1,2), Power(Pi, -1))");
+					check("1/2(a+b) // FullForm", "Times(Rational(1,2), Power(Plus(a, b), -1))");
+					check("1/(a+b)2 // FullForm", "Times(Rational(1,2), Power(Plus(a, b), -1))");
+					check("a^(b)(c) // FullForm", "Power(a, Times(b, c))");
 				}
 				Config.DOMINANT_IMPLICIT_TIMES = false;
 				if (!Config.DOMINANT_IMPLICIT_TIMES) {
-					check("Hold(1/2Pi) // FullForm", "\"Hold(Times(Times(Rational(1,2), 1), Pi))\"");
-					check("1/2Pi // FullForm", "\"Times(Rational(1,2), Pi)\"");
-					check("1/2(a+b) // FullForm", "\"Times(Rational(1,2), Plus(a, b))\"");
-					check("1/(a+b)2 // FullForm", "\"Times(2, Power(Plus(a, b), -1))\"");
-					check("a^(b)(c) // FullForm", "\"Times(Power(a, b), c)\"");
+					check("Hold(1/2Pi) // FullForm", "Hold(Times(Times(Rational(1,2), 1), Pi))");
+					check("1/2Pi // FullForm", "Times(Rational(1,2), Pi)");
+					check("1/2(a+b) // FullForm", "Times(Rational(1,2), Plus(a, b))");
+					check("1/(a+b)2 // FullForm", "Times(2, Power(Plus(a, b), -1))");
+					check("a^(b)(c) // FullForm", "Times(Power(a, b), c)");
 				}
 
 				check("2(b+c) // FullForm", //
-						"\"Times(2, Plus(b, c))\"");
+						"Times(2, Plus(b, c))");
 				check("2(b+c)3 // FullForm", //
-						"\"Times(6, Plus(b, c))\"");
+						"Times(6, Plus(b, c))");
 				check("a(b+c) // FullForm", //
-						"\"a(Plus(b, c))\"");
+						"a(Plus(b, c))");
 				check("a*(b+c) // FullForm", //
-						"\"Times(a, Plus(b, c))\"");
+						"Times(a, Plus(b, c))");
 				check("1E-2 // FullForm", //
-						"\"Plus(-2, E)\"");
+						"Plus(-2, E)");
 				check("1E+2 // FullForm", //
-						"\"Plus(2, E)\"");
+						"Plus(2, E)");
 				checkNumeric("1.0E-2 // FullForm", //
-						"\"0.7182818284590451\"");
+						"0.7182818284590451");
 				checkNumeric("1.0e-2 // FullForm", //
-						"\"Plus(-2.0, e)\"");
+						"Plus(-2.0, e)");
 				checkNumeric("1x-2 // FullForm", //
-						"\"Plus(-2, x)\"");
+						"Plus(-2, x)");
 				check("N(1E-2)", "0.71828");
-				check("0x1  // FullForm", "\"0\"");
-				check("0xf  // FullForm", "\"0\"");
-				check("0y1  // FullForm ", "\"0\"");
+				check("0x1  // FullForm", "0");
+				check("0xf  // FullForm", "0");
+				check("0y1  // FullForm ", "0");
 			}
 			Config.EXPLICIT_TIMES_OPERATOR = true;
 			if (Config.EXPLICIT_TIMES_OPERATOR) {
@@ -3670,19 +3676,19 @@ public class MainTestCase extends AbstractTestCase {
 				check("2(b+c)3 // FullForm",
 						"Syntax error in line: 1 - End-of-file not reached.\n" + "2(b+c)3 // FullForm\n" + " ^");
 				check("2*(b+c) // FullForm", //
-						"\"Times(2, Plus(b, c))\"");
+						"Times(2, Plus(b, c))");
 				check("2*(b+c)*3 // FullForm", //
-						"\"Times(6, Plus(b, c))\"");
+						"Times(6, Plus(b, c))");
 				check("a(b+c) // FullForm", //
-						"\"a(Plus(b, c))\"");
+						"a(Plus(b, c))");
 				check("a*(b+c) // FullForm", //
-						"\"Times(a, Plus(b, c))\"");
+						"Times(a, Plus(b, c))");
 				check("1E-2 // FullForm", //
-						"\"0.01\"");
+						"0.01");
 				check("1E+2 // FullForm", //
-						"\"100.0\"");
+						"100.0");
 				checkNumeric("1.0E-2 // FullForm", //
-						"\"0.01\"");
+						"0.01");
 				checkNumeric("1x-2 // FullForm", //
 						"Syntax error in line: 1 - End-of-file not reached.\n" + //
 								"1x-2 // FullForm\n" + //
