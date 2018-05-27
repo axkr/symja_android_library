@@ -5,12 +5,6 @@ package org.matheclipse.core.interfaces;
  * 
  */
 public interface IBuiltInSymbol extends ISymbol {
-	/**
-	 * Get the ordinal number of this built-in symbol in the enumeration of built-in symbols.
-	 * 
-	 * @return
-	 */
-	public int ordinal();
 
 	/**
 	 * Get the current evaluator for this symbol

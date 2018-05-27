@@ -14,6 +14,7 @@ import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -859,75 +860,99 @@ public class OutputFormFactory {
 				convertFunctionArgs(buf, list);
 				return;
 			}
-			ISymbol head = list.topHead();
-			final Operator operator = getOperator(head);
-			if (operator != null) {
-				if (operator instanceof PostfixOperator) {
-					if (list.isAST1()) {
-						convertPostfixOperator(buf, list, (PostfixOperator) operator, precedence);
+			if (list.head().isSymbol()) {
+				ISymbol head = (ISymbol) list.head();
+				final Operator operator = getOperator(head);
+				if (operator != null) {
+					if (operator instanceof PostfixOperator) {
+						if (list.isAST1()) {
+							convertPostfixOperator(buf, list, (PostfixOperator) operator, precedence);
+							return;
+						}
+					} else {
+						if (convertOperator(operator, list, buf, isASTHead ? Integer.MAX_VALUE : precedence, head)) {
+							return;
+						}
+					}
+				}
+
+				int functionID = head.ordinal();
+				if (functionID > ID.UNKNOWN) {
+					switch (functionID) {
+					case ID.SeriesData:
+						// if (head.equals(F.SeriesData) && (list.size() == 7)) {
+						if (list instanceof ASTSeriesData) {
+							if (convertSeriesData(buf, (ASTSeriesData) list, precedence)) {
+								return;
+							}
+						}
+						break;
+					case ID.List:
+						convertList(buf, list);
 						return;
+					case ID.Part:
+						if (list.size() >= 3) {
+							convertPart(buf, list);
+							return;
+						}
+						break;
+					case ID.Slot:
+						if (list.isAST1() && list.arg1().isInteger()) {
+							convertSlot(buf, list);
+							return;
+						}
+						break;
+					case ID.SlotSequence:
+						if (list.isAST1() && list.arg1().isInteger()) {
+							convertSlotSequence(buf, list);
+							return;
+						}
+						break;
+					case ID.Defer:
+					case ID.HoldForm:
+						if (list.isAST1()) {
+							convert(buf, list.arg1());
+							return;
+						}
+						break;
+					case ID.DirectedInfinity:
+						if (list.isDirectedInfinity()) { // head.equals(F.DirectedInfinity))
+							if (list.isAST0()) {
+								append(buf, "ComplexInfinity");
+								return;
+							}
+							if (list.isAST1()) {
+								if (list.arg1().isOne()) {
+									append(buf, "Infinity");
+									return;
+								} else if (list.arg1().isMinusOne()) {
+									if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
+										append(buf, "(");
+									}
+									append(buf, "-Infinity");
+									if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
+										append(buf, ")");
+									}
+									return;
+								} else if (list.arg1().isImaginaryUnit()) {
+									append(buf, "I*Infinity");
+									return;
+								} else if (list.arg1().isNegativeImaginaryUnit()) {
+									append(buf, "-I*Infinity");
+									return;
+								}
+							}
+						}
+						break;
 					}
 				} else {
-					if (convertOperator(operator, list, buf, isASTHead ? Integer.MAX_VALUE : precedence, head)) {
+					if (list instanceof ASTRealVector || list instanceof ASTRealMatrix) {
+						convertList(buf, list);
 						return;
 					}
 				}
 			}
-			// if (head.equals(F.SeriesData) && (list.size() == 7)) {
-			if (list instanceof ASTSeriesData) {
-				if (convertSeriesData(buf, (ASTSeriesData) list, precedence)) {
-					return;
-				}
-			}
-			// }
-			if (list.isList() || list instanceof ASTRealVector || list instanceof ASTRealMatrix) {
-				convertList(buf, list);
-				return;
-			}
-			if (head.equals(F.Part) && (list.size() >= 3)) {
-				convertPart(buf, list);
-				return;
-			}
-			if (head.equals(F.Slot) && (list.isAST1()) && (list.arg1() instanceof IInteger)) {
-				convertSlot(buf, list);
-				return;
-			}
-			if (head.equals(F.SlotSequence) && (list.isAST1()) && (list.arg1() instanceof IInteger)) {
-				convertSlotSequence(buf, list);
-				return;
-			}
-			if ((head.equals(F.HoldForm) || head.equals(F.Defer)) && (list.isAST1())) {
-				convert(buf, list.arg1());
-				return;
-			}
-			if (list.isDirectedInfinity()) { // head.equals(F.DirectedInfinity))
-												// {
-				if (list.isAST0()) {
-					append(buf, "ComplexInfinity");
-					return;
-				}
-				if (list.isAST1()) {
-					if (list.arg1().isOne()) {
-						append(buf, "Infinity");
-						return;
-					} else if (list.arg1().isMinusOne()) {
-						if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
-							append(buf, "(");
-						}
-						append(buf, "-Infinity");
-						if (ASTNodeFactory.PLUS_PRECEDENCE < precedence) {
-							append(buf, ")");
-						}
-						return;
-					} else if (list.arg1().isImaginaryUnit()) {
-						append(buf, "I*Infinity");
-						return;
-					} else if (list.arg1().isNegativeImaginaryUnit()) {
-						append(buf, "-I*Infinity");
-						return;
-					}
-				}
-			}
+
 			convertAST(buf, list);
 			return;
 		}

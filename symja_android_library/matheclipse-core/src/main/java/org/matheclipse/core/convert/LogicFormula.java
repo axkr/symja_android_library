@@ -17,6 +17,7 @@ import org.logicng.formulas.Not;
 import org.logicng.formulas.Or;
 import org.logicng.formulas.Variable;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.generic.Comparators.ExprComparator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -148,39 +149,67 @@ public class LogicFormula {
 	public Formula expr2BooleanFunction(final IExpr logicExpr) throws ClassCastException {
 		if (logicExpr instanceof IAST) {
 			final IAST ast = (IAST) logicExpr;
-			if (ast.isAnd()) {
-				Formula[] result = new Formula[ast.argSize()];
-				for (int i = 1; i < ast.size(); i++) {
-					result[i - 1] = expr2BooleanFunction(ast.get(i));
+			int functionID = ast.headID();
+			if (functionID > ID.UNKNOWN) {
+				switch (functionID) {
+				case ID.And:
+					if (ast.isAnd()) {
+						Formula[] result = new Formula[ast.argSize()];
+						for (int i = 1; i < ast.size(); i++) {
+							result[i - 1] = expr2BooleanFunction(ast.get(i));
+						}
+						return factory.and(result);
+					}
+					break;
+				case ID.Or:
+					if (ast.isOr()) {
+						Formula[] result = new Formula[ast.argSize()];
+						for (int i = 1; i < ast.size(); i++) {
+							result[i - 1] = expr2BooleanFunction(ast.get(i));
+						}
+						return factory.or(result);
+					}
+					break;
+				case ID.Nand:
+					if (ast.isASTSizeGE(F.Nand, 3)) {
+						Formula[] result = new Formula[ast.argSize()];
+						for (int i = 1; i < ast.size(); i++) {
+							result[i - 1] = factory.not(expr2BooleanFunction(ast.get(i)));
+						}
+						return factory.or(result);
+					}
+					break;
+				case ID.Nor:
+					if (ast.isASTSizeGE(F.Nor, 3)) {
+						Formula[] result = new Formula[ast.argSize()];
+						for (int i = 1; i < ast.size(); i++) {
+							result[i - 1] = factory.not(expr2BooleanFunction(ast.get(i)));
+						}
+						return factory.and(result);
+					}
+					break;
+				case ID.Equivalent:
+					if (ast.isASTSizeGE(F.Equivalent, 3)) {
+						return convertEquivalent(ast);
+					}
+					break;
+				case ID.Xor:
+					if (ast.isASTSizeGE(F.Xor, 3)) {
+						return convertXor(ast);
+					}
+					break;
+				case ID.Implies:
+					if (ast.isAST(F.Implies, 3)) {
+						return factory.implication(expr2BooleanFunction(ast.arg1()), expr2BooleanFunction(ast.arg2()));
+					}
+					break;
+				case ID.Not:
+					if (ast.isNot()) {
+						IExpr expr = ast.arg1();
+						return factory.not(expr2BooleanFunction(expr));
+					}
+					break;
 				}
-				return factory.and(result);
-			} else if (ast.isOr()) {
-				Formula[] result = new Formula[ast.argSize()];
-				for (int i = 1; i < ast.size(); i++) {
-					result[i - 1] = expr2BooleanFunction(ast.get(i));
-				}
-				return factory.or(result);
-			} else if (ast.isASTSizeGE(F.Nand, 3)) {
-				Formula[] result = new Formula[ast.argSize()];
-				for (int i = 1; i < ast.size(); i++) {
-					result[i - 1] = factory.not(expr2BooleanFunction(ast.get(i)));
-				}
-				return factory.or(result);
-			} else if (ast.isASTSizeGE(F.Nor, 3)) {
-				Formula[] result = new Formula[ast.argSize()];
-				for (int i = 1; i < ast.size(); i++) {
-					result[i - 1] = factory.not(expr2BooleanFunction(ast.get(i)));
-				}
-				return factory.and(result);
-			} else if (ast.isASTSizeGE(F.Equivalent, 3)) {
-				return convertEquivalent(ast);
-			} else if (ast.isASTSizeGE(F.Xor, 3)) {
-				return convertXor(ast);
-			} else if (ast.isAST(F.Implies, 3)) {
-				return factory.implication(expr2BooleanFunction(ast.arg1()), expr2BooleanFunction(ast.arg2()));
-			} else if (ast.isNot()) {
-				IExpr expr = ast.arg1();
-				return factory.not(expr2BooleanFunction(expr));
 			}
 		} else if (logicExpr instanceof ISymbol) {
 			ISymbol symbol = (ISymbol) logicExpr;
@@ -284,7 +313,7 @@ public class LogicFormula {
 				if (a.phase()) {
 					list.set(val + 1, F.Rule(variable2symbolMap.get(a.variable()), F.True));
 				} else {
-					list.set(val + 1, F.Rule(variable2symbolMap.get(a.variable()),F.False));
+					list.set(val + 1, F.Rule(variable2symbolMap.get(a.variable()), F.False));
 				}
 			}
 		}
