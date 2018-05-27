@@ -5,7 +5,7 @@ import java.util.Collections;
 
 import org.matheclipse.core.convert.AST2Expr;
 
-public class BuiltinGenerator {
+public class FunctionIDGenerator {
 
 	final static String HEADER = "package org.matheclipse.core.expression;\n" + "\n"
 			+ "import org.matheclipse.core.interfaces.IBuiltInSymbol;\n" + "\n" + "public enum BuiltIns {";
@@ -34,14 +34,13 @@ public class BuiltinGenerator {
 		}
 		Collections.sort(list);
 
-		// public final static IBuiltInSymbol XXXXX = BuiltIns.valueOf(BuiltIns.XXXXX);
-		int i = 0;
-		for (String sym : list) {
-			// System.out.println(" public final static IBuiltInSymbol " + sym.name()
-			// + " = BuiltIns.valueOf(BuiltIns." + sym.name() + ");");
-			System.out.println("        public final static IBuiltInSymbol " + sym + " = F.initFinalSymbol(\"" + sym
-					+ "\", ID." + sym + ");");
-
+		System.out.println("");
+		System.out.println("");
+		System.out.println("");
+		System.out.println("");
+		System.out.println("");
+		for (int i = 0; i < list.size(); i++) {
+			System.out.println("    public final static int " + list.get(i) + " = " + i + ";");
 		}
 
 	}

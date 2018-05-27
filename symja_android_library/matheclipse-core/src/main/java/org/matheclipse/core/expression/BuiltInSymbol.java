@@ -244,7 +244,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 	}
 
 	public Object readResolve() throws ObjectStreamException {
-		return BuiltIns.symbol(fOrdinal);
+		return F.symbol(fOrdinal);
 	}
 
 	private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {

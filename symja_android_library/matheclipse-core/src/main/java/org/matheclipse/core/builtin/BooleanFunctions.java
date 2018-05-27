@@ -30,6 +30,7 @@ import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.StringX;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -596,7 +597,7 @@ public final class BooleanFunctions {
 			// formula = QuineMcCluskeyAlgorithm.compute(formula);
 			// // System.out.println(formula.toString());
 			// return lf.booleanFunction2Expr(formula);
-            return F.NIL;
+			return F.NIL;
 			// TODO CNF form after minimizing blows up the formula.
 			// FormulaTransformation transformation = BooleanConvert.transformation(ast, engine);
 			// return lf.booleanFunction2Expr(formula.transform(transformation));
@@ -2662,23 +2663,28 @@ public final class BooleanFunctions {
 					return o.first();
 				}
 				if (temp.isAST2()) {
-					IExpr head = temp.head();
-					if (head.equals(F.Exists)) {
-						return F.ForAll(temp.first(), F.Not(temp.second()));
-					} else if (head.equals(F.ForAll)) {
-						return F.Exists(temp.first(), F.Not(temp.second()));
-					} else if (head.equals(F.Equal)) {
-						return temp.apply(F.Unequal);
-					} else if (head.equals(F.Unequal)) {
-						return temp.apply(F.Equal);
-					} else if (head.equals(F.Greater)) {
-						return temp.apply(F.LessEqual);
-					} else if (head.equals(F.GreaterEqual)) {
-						return temp.apply(F.Less);
-					} else if (head.equals(F.Less)) {
-						return temp.apply(F.GreaterEqual);
-					} else if (head.equals(F.LessEqual)) {
-						return temp.apply(F.Greater);
+					int functionID = temp.headID();
+					if (functionID > ID.UNKNOWN) {
+						switch (functionID) {
+						case ID.Exists:
+							return F.ForAll(temp.first(), F.Not(temp.second()));
+						case ID.ForAll:
+							return F.Exists(temp.first(), F.Not(temp.second()));
+						case ID.Equal:
+							return temp.apply(F.Unequal);
+						case ID.Unequal:
+							return temp.apply(F.Equal);
+						case ID.Greater:
+							return temp.apply(F.LessEqual);
+						case ID.GreaterEqual:
+							return temp.apply(F.Less);
+						case ID.Less:
+							return temp.apply(F.GreaterEqual);
+						case ID.LessEqual:
+							return temp.apply(F.Greater);
+						default:
+							break;
+						}
 					}
 				}
 			}

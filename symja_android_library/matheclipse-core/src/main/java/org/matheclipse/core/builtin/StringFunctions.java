@@ -218,7 +218,7 @@ public final class StringFunctions {
 			return F.$str(buf.toString());
 
 		}
-		
+
 		@Override
 		public void setUp(final ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.FLAT | ISymbol.ONEIDENTITY);
@@ -321,9 +321,9 @@ public final class StringFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-
-			return F.$str(outputForm(ast.arg1()));
+			Validate.checkSize(ast, 2); 
+			
+			return F.$str(inputForm(ast.arg1(), true));
 		}
 
 	}
@@ -373,10 +373,10 @@ public final class StringFunctions {
 		}
 	}
 
-	public static String outputForm(final IExpr expression) {
+	public static String inputForm(final IExpr expression, boolean relaxedSyntax) {
 		try {
 			StringBuilder buf = new StringBuilder();
-			OutputFormFactory off = OutputFormFactory.get();
+			OutputFormFactory off = OutputFormFactory.get(relaxedSyntax, false);
 			off.setIgnoreNewLine(true);
 			off.convert(buf, expression);
 			return buf.toString();

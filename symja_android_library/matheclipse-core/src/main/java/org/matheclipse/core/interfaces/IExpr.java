@@ -32,6 +32,7 @@ import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.ExprField;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.expression.NILPointer;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
@@ -639,6 +640,20 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return the head of the expression, which must not be null.
 	 */
 	public IExpr head();
+
+	/**
+	 * Get the head of an expression and if it is a built-in symbol return the ID of this symbol, otherwise return
+	 * <code>-1</code> (ID.UNKNNOWN)
+	 * 
+	 * @return return the ID of this built-in header symbol or <code>-1</code>
+	 */
+	default int headID() {
+		IExpr head = head();
+		if (head.isBuiltInSymbol()) {
+			return ((IBuiltInSymbol) head).ordinal();
+		}
+		return ID.UNKNOWN;
+	}
 
 	/**
 	 * A unique integer ID for the implementation of this expression

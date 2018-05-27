@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 
 import java.io.StringWriter;
 
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.VariablesSet;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.MathMLUtilities;
@@ -23,6 +24,7 @@ public final class OutputFunctions {
 		F.FullForm.setEvaluator(new FullForm());
 		F.HoldForm.setEvaluator(new HoldForm());
 		F.HornerForm.setEvaluator(new HornerForm());
+		F.InputForm.setEvaluator(new InputForm());
 		F.JavaForm.setEvaluator(new JavaForm());
 		F.MathMLForm.setEvaluator(new MathMLForm());
 		F.TeXForm.setEvaluator(new TeXForm());
@@ -52,9 +54,6 @@ public final class OutputFunctions {
 	 * </pre>
 	 */
 	private static class FullForm extends AbstractCoreFunctionEvaluator {
-
-		public FullForm() {
-		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -171,6 +170,22 @@ public final class OutputFunctions {
 		public void setUp(final ISymbol newSymbol) {
 		}
 
+	}
+
+	private static class InputForm extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				return F.stringx(StringFunctions.inputForm(ast.arg1(), true));
+			}
+			return F.stringx(StringFunctions.inputForm(ast.arg1(), false));
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+		}
 	}
 
 	/**

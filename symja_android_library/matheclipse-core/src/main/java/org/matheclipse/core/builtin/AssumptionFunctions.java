@@ -8,7 +8,9 @@ import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Options;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -49,40 +51,50 @@ public class AssumptionFunctions {
 		}
 
 		private IExpr assumeDomain(final IExpr arg1, final ISymbol arg2) {
-			if (arg2.equals(F.Algebraics)) {
-				ISymbol truthValue = AbstractAssumptions.assumeAlgebraic(arg1);
-				if (truthValue != null) {
-					return truthValue;
-				}
-			} else if (arg2.equals(F.Booleans)) {
-				ISymbol truthValue = AbstractAssumptions.assumeBoolean(arg1);
-				if (truthValue != null) {
-					return truthValue;
-				}
-			} else if (arg2.equals(F.Complexes)) {
-				ISymbol truthValue = AbstractAssumptions.assumeComplex(arg1);
-				if (truthValue != null) {
-					return truthValue;
-				}
-			} else if (arg2.equals(F.Integers)) {
-				ISymbol truthValue = AbstractAssumptions.assumeInteger(arg1);
-				if (truthValue != null) {
-					return truthValue;
-				}
-			} else if (arg2.equals(F.Primes)) {
-				return AbstractAssumptions.assumePrime(arg1);
-				// if (truthValue != null) {
-				// return truthValue;
-				// }
-			} else if (arg2.equals(F.Rationals)) {
-				ISymbol truthValue = AbstractAssumptions.assumeRational(arg1);
-				if (truthValue != null) {
-					return truthValue;
-				}
-			} else if (arg2.equals(F.Reals)) {
-				ISymbol truthValue = AbstractAssumptions.assumeReal(arg1);
-				if (truthValue != null) {
-					return truthValue;
+			if (arg2.isBuiltInSymbol()) {
+				ISymbol truthValue;
+				int symbolID = ((IBuiltInSymbol) arg2).ordinal();
+				switch (symbolID) {
+				case ID.Algebraics:
+					truthValue = AbstractAssumptions.assumeAlgebraic(arg1);
+					if (truthValue != null) {
+						return truthValue;
+					}
+					break;
+				case ID.Booleans:
+					truthValue = AbstractAssumptions.assumeBoolean(arg1);
+					if (truthValue != null) {
+						return truthValue;
+					}
+					break;
+				case ID.Complexes:
+					truthValue = AbstractAssumptions.assumeComplex(arg1);
+					if (truthValue != null) {
+						return truthValue;
+					}
+					break;
+				case ID.Integers:
+					truthValue = AbstractAssumptions.assumeInteger(arg1);
+					if (truthValue != null) {
+						return truthValue;
+					}
+					break;
+				case ID.Primes:
+					return AbstractAssumptions.assumePrime(arg1);
+				case ID.Rationals:
+					truthValue = AbstractAssumptions.assumeRational(arg1);
+					if (truthValue != null) {
+						return truthValue;
+					}
+					break;
+				case ID.Reals:
+					truthValue = AbstractAssumptions.assumeReal(arg1);
+					if (truthValue != null) {
+						return truthValue;
+					}
+					break;
+				default:
+					break;
 				}
 			}
 			return F.NIL;
@@ -135,8 +147,6 @@ public class AssumptionFunctions {
 			return ast.arg1();
 		}
 
-		
-
 	}
 
 	public static IAssumptions determineAssumptions(final ISymbol symbol, final IExpr arg2, EvalEngine engine) {
@@ -148,9 +158,9 @@ public class AssumptionFunctions {
 			return Assumptions.getInstance(arg2);
 		}
 	}
-	
+
 	public static IExpr refineAssumptions(final IExpr expr, IAssumptions assumptions, EvalEngine engine) {
-		IAssumptions oldAssumptions=engine.getAssumptions();
+		IAssumptions oldAssumptions = engine.getAssumptions();
 		try {
 			engine.setAssumptions(assumptions);
 			// System.out.println(expr.toString());

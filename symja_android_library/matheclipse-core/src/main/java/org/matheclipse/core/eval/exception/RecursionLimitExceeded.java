@@ -28,7 +28,7 @@ public class RecursionLimitExceeded extends MathException {
 		if (fExpr == null) {
 			return "Recursion limit " + fLimit + " exceeded at: null";
 		}
-		return "Recursion limit " + fLimit + " exceeded at: " + StringFunctions.outputForm(fExpr);
+		return "Recursion limit " + fLimit + " exceeded at: " + StringFunctions.inputForm(fExpr, true);
 	}
 
 	public static void throwIt(final int limit, final IExpr expr) {

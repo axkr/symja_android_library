@@ -6640,6 +6640,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPrimePi() {
+		check("PrimePi(0)", "0");
 		check("PrimePi(3.5)", "2");
 
 		check("PrimePi(100)", "25");
@@ -9271,6 +9272,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ToRadicals(Root((#^3-#^2-#+a)&, 3))",
 				"1/3+4/3*2^(1/3)/((11+Sqrt(-256+(11-27*a)^2)-27*a)^(1/3)*E^(I*4/3*Pi))+((11+Sqrt(\n"
 						+ "-256+(11-27*a)^2)-27*a)^(1/3)*E^(I*4/3*Pi))/(3*2^(1/3))");
+	}
+	
+	public void testToString() {
+		check("ToString(InputForm(d/2+f(x)))", //
+				"d/2+f(x)");
+		check("ToString(FullForm(d/2))", //
+				"Times(Rational(1,2), d)");
 	}
 
 	public void testTotal() {
