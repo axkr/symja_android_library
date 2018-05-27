@@ -1131,26 +1131,7 @@ public class ExprParser extends Scanner {
 						while (fToken == TT_NEWLINE) {
 							getNextToken();
 						}
-						rhs = parseLookaheadOperator(infixOperator.getPrecedence());
-						lhs = createInfixFunction(infixOperator, lhs, rhs);
-
-						while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
-								&& infixOperator.getOperatorString().equals(fOperatorString)) {
-							getNextToken();
-							if (infixOperator.getOperatorString().equals(";")) {
-								if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
-										|| fToken == TT_PRECEDENCE_CLOSE) {
-									((IASTAppendable) lhs).append(F.Null);
-									break;
-								}
-							}
-							while (fToken == TT_NEWLINE) {
-								getNextToken();
-							}
-							rhs = parseLookaheadOperator(infixOperator.getPrecedence());
-							((IASTAppendable) lhs).append(rhs);
-						}
-
+						lhs = parseInfixOperator(lhs, infixOperator);
 						continue;
 					}
 				} else {
@@ -1158,9 +1139,7 @@ public class ExprParser extends Scanner {
 
 					if (postfixOperator != null) {
 						if (postfixOperator.getPrecedence() >= min_precedence) {
-							getNextToken();
-							lhs = postfixOperator.createFunction(fFactory, lhs);
-							lhs = parseArguments(lhs);
+							lhs = parsePostfixOperator(lhs, postfixOperator);
 							continue;
 						}
 					} else {
@@ -1170,6 +1149,37 @@ public class ExprParser extends Scanner {
 			}
 			break;
 		}
+		return lhs;
+	}
+
+	private final IExpr parseInfixOperator(IExpr lhs, InfixExprOperator infixOperator) {
+		IExpr rhs;
+		rhs = parseLookaheadOperator(infixOperator.getPrecedence());
+		lhs = createInfixFunction(infixOperator, lhs, rhs);
+
+		while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
+				&& infixOperator.getOperatorString().equals(fOperatorString)) {
+			getNextToken();
+			if (infixOperator.getOperatorString().equals(";")) {
+				if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
+						|| fToken == TT_PRECEDENCE_CLOSE) {
+					((IASTAppendable) lhs).append(F.Null);
+					break;
+				}
+			}
+			while (fToken == TT_NEWLINE) {
+				getNextToken();
+			}
+			rhs = parseLookaheadOperator(infixOperator.getPrecedence());
+			((IASTAppendable) lhs).append(rhs);
+		}
+		return lhs;
+	}
+
+	private final IExpr parsePostfixOperator(IExpr lhs, PostfixExprOperator postfixOperator) {
+		getNextToken();
+		lhs = postfixOperator.createFunction(fFactory, lhs);
+		lhs = parseArguments(lhs);
 		return lhs;
 	}
 
@@ -1313,20 +1323,24 @@ public class ExprParser extends Scanner {
 			}
 			final PrefixExprOperator prefixOperator = determinePrefixOperator();
 			if (prefixOperator != null) {
-				getNextToken();
-				final IExpr temp = parseLookaheadOperator(prefixOperator.getPrecedence());
-				if (prefixOperator.getFunctionName().equals("PreMinus")) {
-					// special cases for negative numbers
-					if (temp.isNumber()) {
-						return temp.negate();
-					}
-				}
-				return prefixOperator.createFunction(fFactory, temp);
+				return parsePrefixOperator(prefixOperator);
 			}
 			throwSyntaxError("Operator: " + fOperatorString + " is no prefix operator.");
 
 		}
 		return getPart(min_precedence);
+	}
+
+	private final IExpr parsePrefixOperator(final PrefixExprOperator prefixOperator) {
+		getNextToken();
+		final IExpr temp = parseLookaheadOperator(prefixOperator.getPrecedence());
+		if (prefixOperator.getFunctionName().equals("PreMinus")) {
+			// special cases for negative numbers
+			if (temp.isNumber()) {
+				return temp.negate();
+			}
+		}
+		return prefixOperator.createFunction(fFactory, temp);
 	}
 
 	public void setFactory(final IParserFactory factory) {

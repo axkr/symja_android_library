@@ -53,9 +53,8 @@ public class Parser extends Scanner {
 	 */
 	private final boolean fRelaxedSyntax;
 
-
 	protected INodeParserFactory fFactory;
-	
+
 	/**
 	 * List of ASTNodes used for parsing packages
 	 */
@@ -556,7 +555,7 @@ public class Parser extends Scanner {
 	protected boolean isOperatorCharacters() {
 		return fFactory.getOperatorCharacters().indexOf(fCurrentChar) >= 0;
 	}
-	
+
 	/**
 	 * protected List<Operator> getOperator()
 	 * 
@@ -596,7 +595,7 @@ public class Parser extends Scanner {
 		throwSyntaxError("Operator token not found: " + fInputString.substring(startPosition, endPosition - 1));
 		return null;
 	}
-	
+
 	/**
 	 * Get a list {...}
 	 * 
@@ -829,8 +828,6 @@ public class Parser extends Scanner {
 	private ASTNode parseExpression(ASTNode lhs, final int min_precedence) {
 		ASTNode rhs;
 		Operator oper;
-		InfixOperator infixOperator;
-		PostfixOperator postfixOperator;
 		while (true) {
 			if (fToken == TT_NEWLINE) {
 				return lhs;
@@ -854,7 +851,7 @@ public class Parser extends Scanner {
 				if (fToken != TT_OPERATOR) {
 					break;
 				}
-				infixOperator = determineBinaryOperator();
+				InfixOperator infixOperator = determineBinaryOperator();
 
 				if (infixOperator != null) {
 					if (infixOperator.getPrecedence() >= min_precedence) {
@@ -868,47 +865,55 @@ public class Parser extends Scanner {
 						while (fToken == TT_NEWLINE) {
 							getNextToken();
 						}
-						rhs = parseLookaheadOperator(infixOperator.getPrecedence());
-						lhs = infixOperator.createFunction(fFactory, lhs, rhs);
-						String infixOperatorString = infixOperator.getOperatorString();
-						while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
-								&& infixOperatorString.equals(fOperatorString)) {
-							getNextToken();
-							if (";".equals(infixOperatorString)) {
-								if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
-										|| fToken == TT_PRECEDENCE_CLOSE) {
-									((FunctionNode) lhs).add(fFactory.createSymbol("Null"));
-									break;
-								}
-							}
-							while (fToken == TT_NEWLINE) {
-								getNextToken();
-							}
-							rhs = parseLookaheadOperator(infixOperator.getPrecedence());
-							((FunctionNode) lhs).add(rhs);
-						}
+						lhs = parseInfixOperator(lhs, infixOperator);
 						continue;
-
 					}
 				} else {
-					postfixOperator = determinePostfixOperator();
+					PostfixOperator postfixOperator = determinePostfixOperator();
 
-					if (postfixOperator != null) {
-						if (postfixOperator.getPrecedence() >= min_precedence) {
-							getNextToken();
-							lhs = postfixOperator.createFunction(fFactory, lhs);
-							lhs = parseArguments(lhs);
-							continue;
-						}
+					if (postfixOperator != null && postfixOperator.getPrecedence() >= min_precedence) {
+						lhs = parsePostfixOperator(lhs, postfixOperator);
+						continue;
 					} else {
 						throwSyntaxError("Operator: " + fOperatorString + " is no infix or postfix operator.");
-					}
+					} 
 				}
 			}
 			break;
 		}
 		return lhs;
 	}
+
+	private final ASTNode parsePostfixOperator(ASTNode lhs, PostfixOperator postfixOperator) {
+		getNextToken();
+		lhs = postfixOperator.createFunction(fFactory, lhs);
+		lhs = parseArguments(lhs);
+		return lhs;
+	}
+
+	private final ASTNode parseInfixOperator(ASTNode lhs, InfixOperator infixOperator) {
+		ASTNode rhs;
+		rhs = parseLookaheadOperator(infixOperator.getPrecedence());
+		lhs = infixOperator.createFunction(fFactory, lhs, rhs);
+		String infixOperatorString = infixOperator.getOperatorString();
+		while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
+				&& infixOperatorString.equals(fOperatorString)) {
+			getNextToken();
+			if (";".equals(infixOperatorString)) {
+				if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
+						|| fToken == TT_PRECEDENCE_CLOSE) {
+					((FunctionNode) lhs).add(fFactory.createSymbol("Null"));
+					break;
+				}
+			}
+			while (fToken == TT_NEWLINE) {
+				getNextToken();
+			}
+			rhs = parseLookaheadOperator(infixOperator.getPrecedence());
+			((FunctionNode) lhs).add(rhs);
+		}
+		return lhs;
+	} 
 
 	private ASTNode parseLookaheadOperator(final int min_precedence) {
 		ASTNode rhs = parsePrimary(min_precedence);
@@ -1044,19 +1049,23 @@ public class Parser extends Scanner {
 			}
 			final PrefixOperator prefixOperator = determinePrefixOperator();
 			if (prefixOperator != null) {
-				getNextToken();
-				final ASTNode temp = parseLookaheadOperator(prefixOperator.getPrecedence());
-				if ("PreMinus".equals(prefixOperator.getFunctionName()) && temp instanceof NumberNode) {
-					// special cases for negative numbers
-					((NumberNode) temp).toggleSign();
-					return temp;
-				}
-				return prefixOperator.createFunction(fFactory, temp);
+				return parsePrefixOperator(prefixOperator);
 			}
 			throwSyntaxError("Operator: " + fOperatorString + " is no prefix operator.");
 
 		}
 		return getPart(min_precedence);
+	}
+
+	private final ASTNode parsePrefixOperator(final PrefixOperator prefixOperator) {
+		getNextToken();
+		final ASTNode temp = parseLookaheadOperator(prefixOperator.getPrecedence());
+		if ("PreMinus".equals(prefixOperator.getFunctionName()) && temp instanceof NumberNode) {
+			// special cases for negative numbers
+			((NumberNode) temp).toggleSign();
+			return temp;
+		}
+		return prefixOperator.createFunction(fFactory, temp);
 	}
 
 	public void setFactory(final INodeParserFactory factory) {
