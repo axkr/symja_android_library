@@ -6,6 +6,7 @@ import org.matheclipse.core.eval.exception.RuleCreationError;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.expression.ID;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
@@ -91,127 +92,63 @@ public class AttributeFunctions {
 			}
 			if (arg2.isSymbol()) {
 				ISymbol attribute = (ISymbol) arg2;
-
-				if (attribute == F.Constant) {
-					sym.clearAttributes(ISymbol.CONSTANT);
-					return F.Null;
-				}
-
-				if (attribute == F.Flat) {
-					sym.clearAttributes(ISymbol.FLAT);
-					return F.Null;
-				}
-
-				if (attribute == F.Listable) {
-					sym.clearAttributes(ISymbol.LISTABLE);
-					return F.Null;
-				}
-
-				if (attribute == F.OneIdentity) {
-					sym.clearAttributes(ISymbol.ONEIDENTITY);
-					return F.Null;
-				}
-
-				if (attribute == F.Orderless) {
-					sym.clearAttributes(ISymbol.ORDERLESS);
-					return F.Null;
-				}
-
-				if (attribute == F.HoldAll) {
-					sym.clearAttributes(ISymbol.HOLDALL);
-					return F.Null;
-				}
-
-				if (attribute == F.HoldFirst) {
-					sym.clearAttributes(ISymbol.HOLDFIRST);
-					return F.Null;
-				}
-
-				if (attribute == F.HoldRest) {
-					sym.clearAttributes(ISymbol.HOLDREST);
-					return F.Null;
-				}
-
-				if (attribute == F.NHoldAll) {
-					sym.clearAttributes(ISymbol.NHOLDALL);
-					return F.Null;
-				}
-
-				if (attribute == F.NHoldFirst) {
-					sym.clearAttributes(ISymbol.NHOLDFIRST);
-					return F.Null;
-				}
-
-				if (attribute == F.NHoldRest) {
-					sym.clearAttributes(ISymbol.NHOLDREST);
-					return F.Null;
-				}
-
-				if (attribute == F.NumericFunction) {
-					sym.clearAttributes(ISymbol.NUMERICFUNCTION);
-					return F.Null;
-				}
-
+				clearAttributes(sym, attribute);
+				return F.Null;
 			} else {
 				if (ast.arg2().isList()) {
 					final IAST lst = (IAST) ast.arg2();
 					for (int i = 1; i < lst.size(); i++) {
 						ISymbol attribute = (ISymbol) lst.get(i);
-
-						if (attribute == F.Constant) {
-							sym.clearAttributes(ISymbol.CONSTANT);
-							return F.Null;
-						}
-
-						if (attribute == F.Flat) {
-							sym.clearAttributes(ISymbol.FLAT);
-						}
-
-						if (attribute == F.Listable) {
-							sym.clearAttributes(ISymbol.LISTABLE);
-						}
-
-						if (attribute == F.OneIdentity) {
-							sym.clearAttributes(ISymbol.ONEIDENTITY);
-						}
-
-						if (attribute == F.Orderless) {
-							sym.clearAttributes(ISymbol.ORDERLESS);
-						}
-
-						if (attribute == F.HoldAll) {
-							sym.clearAttributes(ISymbol.HOLDALL);
-						}
-
-						if (attribute == F.HoldFirst) {
-							sym.clearAttributes(ISymbol.HOLDFIRST);
-						}
-
-						if (attribute == F.HoldRest) {
-							sym.clearAttributes(ISymbol.HOLDREST);
-						}
-
-						if (attribute == F.NHoldAll) {
-							sym.clearAttributes(ISymbol.NHOLDALL);
-						}
-
-						if (attribute == F.NHoldFirst) {
-							sym.clearAttributes(ISymbol.NHOLDFIRST);
-						}
-
-						if (attribute == F.NHoldRest) {
-							sym.clearAttributes(ISymbol.NHOLDREST);
-						}
-
-						if (attribute == F.NumericFunction) {
-							sym.clearAttributes(ISymbol.NUMERICFUNCTION);
-						}
+						clearAttributes(sym, attribute);
 					}
-
 					return F.Null;
 				}
 			}
 			return F.Null;
+		}
+
+		private void clearAttributes(final ISymbol sym, ISymbol attribute) {
+			int functionID = attribute.ordinal();
+			if (functionID > ID.UNKNOWN) {
+				switch (functionID) {
+				case ID.Constant:
+					sym.clearAttributes(ISymbol.CONSTANT);
+					break;
+				case ID.Flat:
+					sym.clearAttributes(ISymbol.FLAT);
+					break;
+				case ID.Listable:
+					sym.clearAttributes(ISymbol.LISTABLE);
+					break;
+				case ID.OneIdentity:
+					sym.clearAttributes(ISymbol.ONEIDENTITY);
+					break;
+				case ID.Orderless:
+					sym.clearAttributes(ISymbol.ORDERLESS);
+					break;
+				case ID.HoldAll:
+					sym.clearAttributes(ISymbol.HOLDALL);
+					break;
+				case ID.HoldFirst:
+					sym.clearAttributes(ISymbol.HOLDFIRST);
+					break;
+				case ID.HoldRest:
+					sym.clearAttributes(ISymbol.HOLDREST);
+					break;
+				case ID.NHoldAll:
+					sym.clearAttributes(ISymbol.NHOLDALL);
+					break;
+				case ID.NHoldFirst:
+					sym.clearAttributes(ISymbol.NHOLDFIRST);
+					break;
+				case ID.NHoldRest:
+					sym.clearAttributes(ISymbol.NHOLDREST);
+					break;
+				case ID.NumericFunction:
+					sym.clearAttributes(ISymbol.NUMERICFUNCTION);
+					break;
+				}
+			}
 		}
 
 	}
@@ -246,116 +183,14 @@ public class AttributeFunctions {
 			}
 			if (arg2.isSymbol()) {
 				ISymbol attribute = (ISymbol) arg2;
-
-				if (attribute == F.Constant) {
-					sym.addAttributes(ISymbol.CONSTANT);
-					return F.Null;
-				}
-
-				if (attribute == F.Flat) {
-					sym.addAttributes(ISymbol.FLAT);
-					return F.Null;
-				}
-
-				if (attribute == F.Listable) {
-					sym.addAttributes(ISymbol.LISTABLE);
-					return F.Null;
-				}
-
-				if (attribute == F.OneIdentity) {
-					sym.addAttributes(ISymbol.ONEIDENTITY);
-					return F.Null;
-				}
-
-				if (attribute == F.Orderless) {
-					sym.addAttributes(ISymbol.ORDERLESS);
-					return F.Null;
-				}
-
-				if (attribute == F.HoldAll) {
-					sym.addAttributes(ISymbol.HOLDALL);
-					return F.Null;
-				}
-
-				if (attribute == F.HoldFirst) {
-					sym.addAttributes(ISymbol.HOLDFIRST);
-					return F.Null;
-				}
-
-				if (attribute == F.HoldRest) {
-					sym.addAttributes(ISymbol.HOLDREST);
-					return F.Null;
-				}
-
-				if (attribute == F.NHoldAll) {
-					sym.addAttributes(ISymbol.NHOLDALL);
-					return F.Null;
-				}
-
-				if (attribute == F.NHoldFirst) {
-					sym.addAttributes(ISymbol.NHOLDFIRST);
-					return F.Null;
-				}
-
-				if (attribute == F.NHoldRest) {
-					sym.addAttributes(ISymbol.NHOLDREST);
-					return F.Null;
-				}
-
-				if (attribute == F.NumericFunction) {
-					sym.addAttributes(ISymbol.NUMERICFUNCTION);
-					return F.Null;
-				}
-
+				addAttributes(sym, attribute);
+				return F.Null;
 			} else {
 				if (ast.arg2().isList()) {
 					final IAST lst = (IAST) ast.arg2();
 					for (int i = 1; i < lst.size(); i++) {
 						ISymbol attribute = (ISymbol) lst.get(i);
-						if (attribute == F.Flat) {
-							sym.addAttributes(ISymbol.FLAT);
-						}
-
-						if (attribute == F.Listable) {
-							sym.addAttributes(ISymbol.LISTABLE);
-						}
-
-						if (attribute == F.OneIdentity) {
-							sym.addAttributes(ISymbol.ONEIDENTITY);
-						}
-
-						if (attribute == F.Orderless) {
-							sym.addAttributes(ISymbol.ORDERLESS);
-						}
-
-						if (attribute == F.HoldAll) {
-							sym.addAttributes(ISymbol.HOLDALL);
-						}
-
-						if (attribute == F.HoldFirst) {
-							sym.addAttributes(ISymbol.HOLDFIRST);
-						}
-
-						if (attribute == F.HoldRest) {
-							sym.addAttributes(ISymbol.HOLDREST);
-						}
-
-						if (attribute == F.NHoldAll) {
-							sym.addAttributes(ISymbol.NHOLDALL);
-						}
-
-						if (attribute == F.NHoldFirst) {
-							sym.addAttributes(ISymbol.NHOLDFIRST);
-						}
-
-						if (attribute == F.NHoldRest) {
-							sym.addAttributes(ISymbol.NHOLDREST);
-						}
-
-						if (attribute == F.NumericFunction) {
-							sym.addAttributes(ISymbol.NUMERICFUNCTION);
-						}
-
+						addAttributes(sym, attribute);
 					}
 					// end for
 
@@ -363,6 +198,50 @@ public class AttributeFunctions {
 				}
 			}
 			return F.Null;
+		}
+
+		private static void addAttributes(final ISymbol sym, ISymbol attribute) {
+			int functionID = attribute.ordinal();
+			if (functionID > ID.UNKNOWN) {
+				switch (functionID) {
+				case ID.Constant:
+					sym.addAttributes(ISymbol.CONSTANT);
+					break;
+				case ID.Flat:
+					sym.addAttributes(ISymbol.FLAT);
+					break;
+				case ID.Listable:
+					sym.addAttributes(ISymbol.LISTABLE);
+					break;
+				case ID.OneIdentity:
+					sym.addAttributes(ISymbol.ONEIDENTITY);
+					break;
+				case ID.Orderless:
+					sym.addAttributes(ISymbol.ORDERLESS);
+					break;
+				case ID.HoldAll:
+					sym.addAttributes(ISymbol.HOLDALL);
+					break;
+				case ID.HoldFirst:
+					sym.addAttributes(ISymbol.HOLDFIRST);
+					break;
+				case ID.HoldRest:
+					sym.addAttributes(ISymbol.HOLDREST);
+					break;
+				case ID.NHoldAll:
+					sym.addAttributes(ISymbol.NHOLDALL);
+					break;
+				case ID.NHoldFirst:
+					sym.addAttributes(ISymbol.NHOLDFIRST);
+					break;
+				case ID.NHoldRest:
+					sym.addAttributes(ISymbol.NHOLDREST);
+					break;
+				case ID.NumericFunction:
+					sym.addAttributes(ISymbol.NUMERICFUNCTION);
+					break;
+				}
+			}
 		}
 
 	}
