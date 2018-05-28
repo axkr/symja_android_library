@@ -5,6 +5,10 @@ import java.util.Collections;
 
 import org.matheclipse.core.convert.AST2Expr;
 
+/**
+ * 
+ * @deprecated not needed anymore
+ */
 public class EnumGenerator {
 
 	final static String HEADER = "package org.matheclipse.core.expression;\n" + "\n"
@@ -21,6 +25,10 @@ public class EnumGenerator {
 			+ "		return symbolID;\n" + "	}\n" + "\n" + "	public final String str() {\n" + "		return name;\n"
 			+ "	}\n" + "}";
 
+	/**
+	 * 
+	 * @deprecated not needed anymore
+	 */
 	public static void main(String[] args) {
 		ArrayList<String> list = new ArrayList<String>();
 		for (int i = 0; i < AST2Expr.UPPERCASE_SYMBOL_STRINGS.length; i++) {

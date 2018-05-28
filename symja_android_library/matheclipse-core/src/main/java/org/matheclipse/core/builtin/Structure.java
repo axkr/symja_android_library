@@ -27,6 +27,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.ISymbol2IntMap;
 import org.matheclipse.core.visit.AbstractVisitorLong;
+import org.matheclipse.core.visit.IndexedLevel;
 import org.matheclipse.core.visit.VisitorLevelSpecification;
 import org.matheclipse.parser.client.math.MathException;
 
@@ -43,6 +44,7 @@ public class Structure {
 		F.Map.setEvaluator(new Map());
 		F.MapAll.setEvaluator(new MapAll());
 		F.MapAt.setEvaluator(new MapAt());
+		F.MapIndexed.setEvaluator(new MapIndexed());
 		F.MapThread.setEvaluator(new MapThread());
 		F.Order.setEvaluator(new Order());
 		F.OrderedQ.setEvaluator(new OrderedQ());
@@ -887,6 +889,45 @@ public class Structure {
 
 	}
 
+	private final static class MapIndexed extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 3, 4);
+
+			int lastIndex = ast.argSize();
+			boolean heads = false;
+			final Options options = new Options(ast.topHead(), ast, lastIndex, engine);
+			IExpr option = options.getOption("Heads");
+			if (option.isPresent()) {
+				lastIndex--;
+				if (option.isTrue()) {
+					heads = true;
+				}
+			}  
+
+			try {
+				IExpr arg1 = ast.arg1();
+				IndexedLevel level;
+				if (lastIndex == 3) {
+					level = new IndexedLevel((x, y) -> F.binaryAST2(arg1, x, y), ast.get(lastIndex), heads,
+							engine);
+				} else {
+					level = new IndexedLevel((x, y) -> F.binaryAST2(arg1, x, y), 1, heads);
+				}
+				
+				IExpr arg2 = ast.arg2();
+				if (arg2.isAST()) {
+					return level.visitAST(((IAST) arg2), new int[0]).orElse(arg2);
+				}
+			} catch (final MathException e) {
+				engine.printMessage(e.getMessage());
+			}
+			return F.NIL;
+		}
+
+	}
+
 	/**
 	 * <pre>
 	 * MapThread(`f`, {{`a1`, `a2`, ...}, {`b1`, `b2`, ...}, ...})
@@ -1021,8 +1062,8 @@ public class Structure {
 					// return EvalAttributes.threadList(tensor, F.List, ast.arg1(), dims.get(level));
 					// }
 					return new MapThreadLevel(ast.arg1(), level).recursiveMapThread(0, tensor, null);
-				} 
-				if (tensor.isAST(F.List,1)) {
+				}
+				if (tensor.isAST(F.List, 1)) {
 					return tensor;
 				}
 				engine.printMessage("MapThread: argument 2 dimensions less than level.");

@@ -861,8 +861,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Catch(a^2 + b^2 + c^2 /. b :> Throw(bbb))", "bbb");
 		check("Catch({Catch({a, Throw(b), c}), d, e})", "{b,d,e}");
 		check("Catch(Throw /@ {a, b, c})", "a");
-		check("$f(x_) := (If(x < 0, Throw(\"negative\")); Sqrt(x));Catch(Sum($f(i0), {i0, 5, -5, -1}))",
-				"negative");
+		check("$f(x_) := (If(x < 0, Throw(\"negative\")); Sqrt(x));Catch(Sum($f(i0), {i0, 5, -5, -1}))", "negative");
 		// check("$lst={0,v1,n1};\n" +
 		// " Catch(\n" +
 		// " {Map(Function($lst=False;\n" +
@@ -4049,8 +4048,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"F.Plus(F.Times(F.CC(0L,1L,1L,2L),F.Exp(F.Times(F.CNI,F.x))),F.Times(F.CC(0L,1L,-1L,2L),F.Exp(F.Times(F.CI,F.x))))");
 		check("JavaForm(I/2*E^((-I)*x)-I/2*E^(I*x))", //
 				"Plus(Times(CC(0L,1L,1L,2L),Exp(Times(CNI,x))),Times(CC(0L,1L,-1L,2L),Exp(Times(CI,x))))");
-		check("JavaForm(a+b+x^2+I+7+3/4+x+y, Prefix->True)",
-				"F.Plus(F.CC(31L,4L,1L,1L),F.a,F.b,F.x,F.Sqr(F.x),F.y)");
+		check("JavaForm(a+b+x^2+I+7+3/4+x+y, Prefix->True)", "F.Plus(F.CC(31L,4L,1L,1L),F.a,F.b,F.x,F.Sqr(F.x),F.y)");
 		check("JavaForm(a+b+x^2+I+7+3/4+x+y)", "Plus(CC(31L,4L,1L,1L),a,b,x,Sqr(x),y)");
 	}
 
@@ -4276,7 +4274,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LetterQ(\"äü\")", "True");
 	}
 
-	public void testLevel() { 
+	public void testLevel() {
 		check("Level(x, -1)", //
 				"{}");
 		check("Level(x, 0)", //
@@ -4680,6 +4678,49 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("MapAt(f, {a, b, c, d}, 2)", "{a,f(b),c,d}");
 	}
 
+	public void testMapIndexed() {
+		check("MapIndexed(f, {{a}, {c}}, {2})", //
+				"{{f(a,{1,1})},{f(c,{2,1})}}");
+
+		check("MapIndexed(f, {a, b})", //
+				"{f(a,{1}),f(b,{2})}");
+		check("MapIndexed(f, {{a, b}, {c, d, e}})", //
+				"{f({a,b},{1}),f({c,d,e},{2})}");
+		check("MapIndexed(f, {}, 1)", //
+				"{}");
+		check("MapIndexed(f, {a, b}, 1)", //
+				"{f(a,{1}),f(b,{2})}");
+		check("MapIndexed(f, {a, b}, 0)", //
+				"{a,b}");
+		check("MapIndexed(f, {}, 0)", //
+				"{}");
+		check("MapIndexed(f, {{{{a, b}, {c, d}}}, {{{u, v}, {s, t}}}}, 2)", //
+				"{f({f({{a,b},{c,d}},{1,1})},{1}),f({f({{u,v},{s,t}},{2,1})},{2})}");
+		check("MapIndexed(f, {{{{a, b}, {c, d}}}, {{{u, v}, {s, t}}}}, 3)", //
+				"{f({f({f({a,b},{1,1,1}),f({c,d},{1,1,2})},{1,1})},{1}),f({f({f({u,v},{2,1,1}),f({s,t},{\n"
+						+ "2,1,2})},{2,1})},{2})}");
+		check("MapIndexed(f, {{{{a, b}, {c, d}}}, {{{u, v}, {s, t}}}}, 4)", //
+				"{f({f({f({f(a,{1,1,1,1}),f(b,{1,1,1,2})},{1,1,1}),f({f(c,{1,1,2,1}),f(d,{1,1,2,2})},{\n"
+						+ "1,1,2})},{1,1})},{1}),f({f({f({f(u,{2,1,1,1}),f(v,{2,1,1,2})},{2,1,1}),f({f(s,{2,\n"
+						+ "1,2,1}),f(t,{2,1,2,2})},{2,1,2})},{2,1})},{2})}");
+		check("MapIndexed(f, {{{a, b}, {c, d}}, {{u, v}, {s, t}}}, 2)", //
+				"{f({f({a,b},{1,1}),f({c,d},{1,2})},{1}),f({f({u,v},{2,1}),f({s,t},{2,2})},{2})}");
+		check("MapIndexed(f, {{a, b, c}, {x, y, z}})", //
+				"{f({a,b,c},{1}),f({x,y,z},{2})}");
+		check("MapIndexed(First(#2) + f(#1) &, {a, b, c, d})", //
+				"{1+f(a),2+f(b),3+f(c),4+f(d)}");
+		check("MapIndexed(f, {{a, b}, {c, d, e}}, {1})", //
+				"{f({a,b},{1}),f({c,d,e},{2})}");
+		check("MapIndexed(f, {{a, b}, {c, d, e}}, {2})", //
+				"{{f(a,{1,1}),f(b,{1,2})},{f(c,{2,1}),f(d,{2,2}),f(e,{2,3})}}");
+		check("MapIndexed(f, {{a, b}, {c, d, e}}, {3})", //
+				"{{a,b},{c,d,e}}");
+		check("MapIndexed(f, {{{{a}}}}, -1)", "{f({f({f({f(a,{1,1,1,1})},{1,1,1})},{1,1})},{1})}");
+		// TODO
+		// check("MapIndexed(f, {{{{a}}}}, -2)",
+		// " {f({f({f({a}{1,1,1})},{1,1})},{1})}");
+	}
+
 	public void testMapThread() {
 		check("MapThread(f, {}, 1)", //
 				"{}");
@@ -4724,12 +4765,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"True");
 		check("MatchQ({2^a, b}, {2^x_Symbol, x_Symbol})", //
 				"False");
-		
+
 		check("MatchQ({a, b}, {a, __})", //
 				"True");
 		check("MatchQ({a}, {a, __})", //
 				"False");
-		
+
 		check("MatchQ(1,_Integer)", //
 				"True");
 		check("MatchQ(_Symbol, _Symbol)", //
@@ -4746,7 +4787,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"False");
 		check("MatchQ(1.5,_Real)", //
 				"True");
-		
+
 		check("MatchQ(f(2*I), f(Complex(i_Integer, r_Integer)) )", "True");
 		check("MatchQ(g(1/2), g(Rational(n_Integer, d_Integer)) )", "True");
 
@@ -7226,11 +7267,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testReplaceAll() {
 		// TODO
-//		 check("ReplaceAll({a, b, c}, {___, x__, ___} -> {x})", "{a}");
+		// check("ReplaceAll({a, b, c}, {___, x__, ___} -> {x})", "{a}");
 
 		check("a == b /. _Equal -> 2", "2");
 		check("If(1 == k, itstrue, itsfalse) /. _If -> 99", "99");
-		
+
 		check("ReplaceAll({a -> 1})[{a, b}]", "{1,b}");
 		check("{x, x^2, y, z} /. x -> a", "{a,a^2,y,z}");
 		check("{x, x^2, y, z} /. x -> {a, b}", "{{a,b},{a^2,b^2},y,z}");
@@ -9273,7 +9314,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1/3+4/3*2^(1/3)/((11+Sqrt(-256+(11-27*a)^2)-27*a)^(1/3)*E^(I*4/3*Pi))+((11+Sqrt(\n"
 						+ "-256+(11-27*a)^2)-27*a)^(1/3)*E^(I*4/3*Pi))/(3*2^(1/3))");
 	}
-	
+
 	public void testToString() {
 		check("ToString(InputForm(d/2+f(x)))", //
 				"d/2+f(x)");

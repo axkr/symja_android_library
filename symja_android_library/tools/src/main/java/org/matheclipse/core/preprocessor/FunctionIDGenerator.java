@@ -35,10 +35,7 @@ public class FunctionIDGenerator {
 		Collections.sort(list);
 
 		System.out.println("");
-		System.out.println("");
-		System.out.println("");
-		System.out.println("");
-		System.out.println("");
+		System.out.println("    public final static int UNKNOWN = -1;");
 		for (int i = 0; i < list.size(); i++) {
 			System.out.println("    public final static int " + list.get(i) + " = " + i + ";");
 		}
