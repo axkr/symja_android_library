@@ -1,22 +1,24 @@
 package org.matheclipse.core.eval;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.ASCIIPrettyPrinter3;
+import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.reflection.system.Names;
@@ -34,14 +36,18 @@ public class MMAConsole {
 	 */
 	private long fSeconds = 60;
 
+	private boolean fUseJavaForm = false;
+
 	private ExprEvaluator fEvaluator;
+
+	private OutputFormFactory fOutputFactory;
 
 	/**
 	 * Use pretty printer for expression output n print stream
 	 */
 	private boolean fPrettyPrinter;
 
-	private File fFile;
+	// private File fFile;
 
 	private String fDefaultSystemRulesFilename;
 
@@ -68,34 +74,35 @@ public class MMAConsole {
 		try {
 			console.setArgs(args);
 		} catch (ReturnException re) {
+			System.exit(0);
 			return;
 		}
 
-		final File file = console.getFile();
-		if (file != null) {
-			try {
-				final BufferedReader f = new BufferedReader(new FileReader(file));
-				final StringBuilder buff = new StringBuilder(1024);
-				String line;
-				while ((line = f.readLine()) != null) {
-					buff.append(line);
-					buff.append('\n');
-				}
-				f.close();
-				inputExpression = buff.toString();
-				outputExpression = console.interpreter(inputExpression);
-				System.out.println("In [" + COUNTER + "]: " + inputExpression);
-				if (outputExpression.length() > 0) {
-					System.out.println("Out[" + COUNTER + "]: " + outputExpression);
-				}
-				COUNTER++;
-			} catch (final IOException ioe) {
-				final String msg = "Cannot read from the specified file. "
-						+ "Make sure the path exists and you have read permission.";
-				System.out.println(msg);
-				return;
-			}
-		}
+		// final File file = console.getFile();
+		// if (file != null) {
+		// try {
+		// final BufferedReader f = new BufferedReader(new FileReader(file));
+		// final StringBuilder buff = new StringBuilder(1024);
+		// String line;
+		// while ((line = f.readLine()) != null) {
+		// buff.append(line);
+		// buff.append('\n');
+		// }
+		// f.close();
+		// inputExpression = buff.toString();
+		// outputExpression = console.interpreter(inputExpression);
+		// System.out.println("In [" + COUNTER + "]: " + inputExpression);
+		// if (outputExpression.length() > 0) {
+		// System.out.println("Out[" + COUNTER + "]: " + outputExpression);
+		// }
+		// COUNTER++;
+		// } catch (final IOException ioe) {
+		// final String msg = "Cannot read from the specified file. "
+		// + "Make sure the path exists and you have read permission.";
+		// System.out.println(msg);
+		// return;
+		// }
+		// }
 
 		while (true) {
 			try {
@@ -106,6 +113,16 @@ public class MMAConsole {
 							&& inputExpression.toLowerCase(Locale.ENGLISH).substring(0, 4).equals("exit")) {
 						System.out.println("Closing Symja console... bye.");
 						System.exit(0);
+					} else if ((trimmedInput.length() >= 7)
+							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 7).equals("javaoff")) {
+						System.out.println("Disabling output for JavaForm");
+						console.fUseJavaForm = false;
+						continue;
+					} else if ((trimmedInput.length() >= 6)
+							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 6).equals("javaon")) {
+						System.out.println("Enabling output for JavaForm");
+						console.fUseJavaForm = true;
+						continue;
 					} else if ((inputExpression.length() >= 10)
 							&& inputExpression.toLowerCase(Locale.ENGLISH).substring(0, 10).equals("timeoutoff")) {
 						System.out.println("Disabling timeout for evaluation");
@@ -215,13 +232,15 @@ public class MMAConsole {
 		msg.append("Program arguments: " + lineSeparator);
 		msg.append("  -h or -help                print this message" + lineSeparator);
 		// msg.append(" -debug print debugging information" + lSep);
-		msg.append("  -f or -file <filename>     use given file as input script" + lineSeparator);
-		msg.append("  -d or -default <filename>  use given textfile for system rules" + lineSeparator);
+		// msg.append(" -f or -file <filename> use given file as input script" + lineSeparator);
+		msg.append("  -d or -default <filename>  use given textfile for an initial package script" + lineSeparator);
 		msg.append("To stop the program type: exit<RETURN>" + lineSeparator);
 		msg.append("To continue an input line type: \\<RETURN>" + lineSeparator);
 		msg.append("at the end of the line." + lineSeparator);
 		msg.append("To disable the evaluation timeout type: timeoutoff<RETURN>" + lineSeparator);
 		msg.append("To enable the evaluation timeout type: timeouton<RETURN>" + lineSeparator);
+		msg.append("To enable the output in Java form: javaon<RETURN>" + lineSeparator);
+		msg.append("To disable the output in Java form: javaoff<RETURN>" + lineSeparator);
 		msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
 
 		System.out.println(msg.toString());
@@ -239,8 +258,9 @@ public class MMAConsole {
 		msg.append("  -h or -help                                 print usage messages" + lineSeparator);
 		msg.append("  -c or -code <command>                       run the command" + lineSeparator);
 		msg.append("  -f or -function <function> -args arg1 arg2  run the function" + lineSeparator);
-		msg.append("        -file <filename>                      use given file as input script" + lineSeparator);
-		msg.append("  -d or -default <filename>                   use given textfile for system rules" + lineSeparator);
+		// msg.append(" -file <filename> use given file as input script" + lineSeparator);
+		msg.append("  -d or -default <filename>                   use given textfile for an initial package script"
+				+ lineSeparator);
 		msg.append("  -pp                                         enable pretty printer" + lineSeparator);
 
 		msg.append("To stop the program type: exit<RETURN>" + lineSeparator);
@@ -248,6 +268,9 @@ public class MMAConsole {
 		msg.append("at the end of the line." + lineSeparator);
 		msg.append("To disable the evaluation timeout type: timeoutoff<RETURN>" + lineSeparator);
 		msg.append("To enable the evaluation timeout type: timeouton<RETURN>" + lineSeparator);
+		msg.append("To enable the output in Java form: javaon<RETURN>" + lineSeparator);
+		msg.append("To disable the output in Java form: javaoff<RETURN>" + lineSeparator);
+		msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
 		msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
 
 		System.out.println(msg.toString());
@@ -308,6 +331,9 @@ public class MMAConsole {
 		EvalEngine engine = new EvalEngine(false);
 		fEvaluator = new ExprEvaluator(engine, false, 100);
 		fEvaluator.getEvalEngine().setFileSystemEnabled(true);
+		DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
+		DecimalFormat decimalFormat = new DecimalFormat("0.0####", usSymbols);
+		fOutputFactory = OutputFormFactory.get(false, false, decimalFormat);
 	}
 
 	/**
@@ -372,21 +398,24 @@ public class MMAConsole {
 				return;
 				// } else if (arg.equals("-debug")) {
 				// Config.DEBUG = true;
-			} else if (arg.equals("-file")) {
-				try {
-					fFile = new File(args[i + 1]);
-					i++;
-				} catch (final ArrayIndexOutOfBoundsException aioobe) {
-					final String msg = "You must specify a file when " + "using the -file argument";
-					System.out.println(msg);
-					return;
-				}
+				// } else if (arg.equals("-file")) {
+				// try {
+				//// fFile = new File(args[i + 1]);
+				// fEvaluator.eval(F.Get(args[i + 1]));
+				// i++;
+				// } catch (final ArrayIndexOutOfBoundsException aioobe) {
+				// final String msg = "You must specify a file when " + "using the -file argument";
+				// System.out.println(msg);
+				// return;
+				// }
 			} else if (arg.equals("-default") || arg.equals("-d")) {
 				try {
 					fDefaultSystemRulesFilename = args[i + 1];
+					fEvaluator.eval(F.Get(args[i + 1]));
 					i++;
+
 				} catch (final ArrayIndexOutOfBoundsException aioobe) {
-					final String msg = "You must specify a file when " + "using the -file argument";
+					final String msg = "You must specify a file when " + "using the -d argument";
 					System.out.println(msg);
 					return;
 				}
@@ -396,12 +425,12 @@ public class MMAConsole {
 				// we don't have any more args to recognize!
 				final String msg = "Unknown arg: " + arg;
 				System.out.println(msg);
-				printUsage();
+				printUsageCompletely();
 				return;
 			}
 
 		}
-		printUsage();
+		printUsageCompletely();
 	}
 
 	/**
@@ -420,14 +449,19 @@ public class MMAConsole {
 				result = fEvaluator.evaluateWithTimeout(inputExpression, fSeconds, TimeUnit.SECONDS, true);
 			}
 			if (result != null) {
-				if (result.equals(F.Null)) {
-					return "";
-				}
-				return result.toString();
+				return printResult(result);
+			}
+		} catch (final AbortException re) {
+			try {
+				return printResult(F.$Aborted);
+			} catch (IOException e) {
+				Validate.printException(buf, e);
+				return "";
 			}
 		} catch (final SyntaxError se) {
 			String msg = se.getMessage();
 			System.err.println(msg);
+			return "";
 		} catch (final RuntimeException re) {
 			Throwable me = re.getCause();
 			if (me instanceof MathException) {
@@ -435,12 +469,16 @@ public class MMAConsole {
 			} else {
 				Validate.printException(buf, re);
 			}
+			return "";
 		} catch (final Exception e) {
 			Validate.printException(buf, e);
+			return "";
 		} catch (final OutOfMemoryError e) {
 			Validate.printException(buf, e);
+			return "";
 		} catch (final StackOverflowError e) {
 			Validate.printException(buf, e);
+			return "";
 		}
 		return buf.toString();
 	}
@@ -457,6 +495,19 @@ public class MMAConsole {
 	public void printPrompt(final PrintStream out, final String prompt) {
 		out.print(prompt);
 		out.flush();
+	}
+
+	private String printResult(IExpr result) throws IOException {
+		if (result.equals(F.Null)) {
+			return "";
+		}
+		if (fUseJavaForm) {
+			return result.internalJavaString(false, -1, false, true, false);
+		}
+		StringBuilder strBuffer = new StringBuilder();
+		fOutputFactory.reset();
+		fOutputFactory.convert(strBuffer, result);
+		return strBuffer.toString();
 	}
 
 	/**
@@ -512,16 +563,16 @@ public class MMAConsole {
 	/**
 	 * @param file
 	 */
-	public void setFile(final File file) {
-		fFile = file;
-	}
+	// public void setFile(final File file) {
+	// fFile = file;
+	// }
 
 	/**
 	 * @return the file with which the program was started or <code>null</code>
 	 */
-	public File getFile() {
-		return fFile;
-	}
+	// public File getFile() {
+	// return fFile;
+	// }
 
 	/**
 	 * Get the default rules textfile name, which should be loaded at startup. This file replaces the default built-in

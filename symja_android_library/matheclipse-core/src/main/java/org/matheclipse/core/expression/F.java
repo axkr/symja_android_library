@@ -3536,6 +3536,14 @@ public class F {
 		return binaryAST2(Function, a0, a1);
 	}
 
+	public static IAST Get(final IExpr a0) {
+		return unaryAST1(Get, a0);
+	}
+
+	public static IAST Get(final String str) {
+		return unaryAST1(Get, F.stringx(str));
+	}
+
 	public static IAST Gamma(final IExpr a0) {
 		return unaryAST1(Gamma, a0);
 	}

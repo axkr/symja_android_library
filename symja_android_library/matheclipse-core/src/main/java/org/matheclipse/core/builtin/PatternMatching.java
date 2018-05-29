@@ -11,6 +11,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Reader;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.matheclipse.core.basic.Config;
@@ -368,7 +370,17 @@ public final class PatternMatching {
 				}
 				IStringX arg1 = (IStringX) ast.arg1();
 				File file = new File(arg1.toString());
-				return getFile(file, engine);
+
+				if (file.exists()) {
+					// System.out.println(file.toString());
+					return getFile(file, engine);
+				} else {
+					file = FileSystems.getDefault().getPath(arg1.toString()).toAbsolutePath().toFile();
+					if (file.exists()) {
+						return getFile(file, engine);
+					}
+				}
+
 			}
 			return F.NIL;
 		}

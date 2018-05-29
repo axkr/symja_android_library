@@ -51,7 +51,7 @@ public class Console {
 
 	private boolean fUseJavaForm = false;
 
-	private File fFile;
+	// private File fFile;
 
 	private String fDefaultSystemRulesFilename;
 
@@ -71,31 +71,32 @@ public class Console {
 		try {
 			console.setArgs(args);
 		} catch (ReturnException re) {
+			System.exit(0);
 			return;
 		}
 
-		final File file = console.getFile();
-		if (file != null) {
-			try {
-				final BufferedReader f = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
-				final StringBuilder buff = new StringBuilder(1024);
-				String line;
-				while ((line = f.readLine()) != null) {
-					buff.append(line);
-					buff.append('\n');
-				}
-				f.close();
-				inputExpression = buff.toString();
-				System.out.println("In [" + COUNTER + "]: " + inputExpression);
-				console.resultPrinter(inputExpression);
-				COUNTER++;
-			} catch (final IOException ioe) {
-				final String msg = "Cannot read from the specified file. "
-						+ "Make sure the path exists and you have read permission.";
-				System.out.println(msg);
-				return;
-			}
-		}
+		// final File file = console.getFile();
+		// if (file != null) {
+		// try {
+		// final BufferedReader f = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+		// final StringBuilder buff = new StringBuilder(1024);
+		// String line;
+		// while ((line = f.readLine()) != null) {
+		// buff.append(line);
+		// buff.append('\n');
+		// }
+		// f.close();
+		// inputExpression = buff.toString();
+		// System.out.println("In [" + COUNTER + "]: " + inputExpression);
+		// console.resultPrinter(inputExpression);
+		// COUNTER++;
+		// } catch (final IOException ioe) {
+		// final String msg = "Cannot read from the specified file. "
+		// + "Make sure the path exists and you have read permission.";
+		// System.out.println(msg);
+		// return;
+		// }
+		// }
 
 		while (true) {
 			try {
@@ -177,7 +178,7 @@ public class Console {
 		msg.append(lineSeparator);
 		msg.append("Program arguments: " + lineSeparator);
 		msg.append("  -h or -help                print usage messages" + lineSeparator);
-
+		msg.append("  -d or -default <filename>  use given textfile for an initial package script" + lineSeparator);
 		msg.append("To stop the program type: exit<RETURN>" + lineSeparator);
 		msg.append("To continue an input line type: \\<RETURN>" + lineSeparator);
 		msg.append("at the end of the line." + lineSeparator);
@@ -202,8 +203,9 @@ public class Console {
 		msg.append("  -h or -help                                 print usage messages" + lineSeparator);
 		msg.append("  -c or -code <command>                       run the command" + lineSeparator);
 		msg.append("  -f or -function <function> -args arg1 arg2  run the function" + lineSeparator);
-		msg.append("        -file <filename>                      use given file as input script" + lineSeparator);
-		msg.append("  -d or -default <filename>                   use given textfile for system rules" + lineSeparator);
+		// msg.append(" -file <filename> use given file as input script" + lineSeparator);
+		msg.append("  -d or -default <filename>                   use given textfile for an initial package script"
+				+ lineSeparator);
 		msg.append("  -pp                                         enable pretty printer" + lineSeparator);
 
 		msg.append("To stop the program type: exit<RETURN>" + lineSeparator);
@@ -211,6 +213,8 @@ public class Console {
 		msg.append("at the end of the line." + lineSeparator);
 		msg.append("To disable the evaluation timeout type: timeoutoff<RETURN>" + lineSeparator);
 		msg.append("To enable the evaluation timeout type: timeouton<RETURN>" + lineSeparator);
+		msg.append("To enable the output in Java form: javaon<RETURN>" + lineSeparator);
+		msg.append("To disable the output in Java form: javaoff<RETURN>" + lineSeparator);
 		msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
 
 		System.out.println(msg.toString());
@@ -290,8 +294,14 @@ public class Console {
 				// } else if (arg.equals("-debug")) {
 				// Config.DEBUG = true;
 			} else if (arg.equals("-file")) {
+
 				try {
-					fFile = new File(args[i + 1]);
+					// fFile = new File(args[i + 1]);
+					fEvaluator.eval(F.Get(args[i + 1]));
+
+					// if (fFile.isFile()) {
+					//
+					// }
 					i++;
 				} catch (final ArrayIndexOutOfBoundsException aioobe) {
 					final String msg = "You must specify a file when " + "using the -file argument";
@@ -301,9 +311,10 @@ public class Console {
 			} else if (arg.equals("-default") || arg.equals("-d")) {
 				try {
 					fDefaultSystemRulesFilename = args[i + 1];
+					fEvaluator.eval(F.Get(args[i + 1]));
 					i++;
 				} catch (final ArrayIndexOutOfBoundsException aioobe) {
-					final String msg = "You must specify a file when " + "using the -file argument";
+					final String msg = "You must specify a file when " + "using the -d argument";
 					System.out.println(msg);
 					return;
 				}
@@ -313,7 +324,7 @@ public class Console {
 				// we don't have any more args to recognize!
 				final String msg = "Unknown arg: " + arg;
 				System.out.println(msg);
-				printUsage();
+				printUsageCompletely();
 				return;
 			}
 
@@ -498,16 +509,16 @@ public class Console {
 	/**
 	 * @param file
 	 */
-	public void setFile(final File file) {
-		fFile = file;
-	}
+	// public void setFile(final File file) {
+	// fFile = file;
+	// }
 
 	/**
 	 * @return the file with which the program was started or <code>null</code>
 	 */
-	public File getFile() {
-		return fFile;
-	}
+	// public File getFile() {
+	// return fFile;
+	// }
 
 	/**
 	 * Get the default rules textfile name, which should be loaded at startup. This file replaces the default built-in
