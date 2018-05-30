@@ -128,91 +128,47 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 
 	@Override
 	public IExpr visit(IInteger element) {
-		fCurrentDepth = -1;
-		if (isInRange(fCurrentLevel, -1)) {
-			return fFunction.apply(element);
-		}
-		return F.NIL;
+		return visitAtom( element); 
 	}
 
 	@Override
 	public IExpr visit(IFraction element) {
-		fCurrentDepth = -1;
-		if (isInRange(fCurrentLevel, -1)) {
-			return fFunction.apply(element);
-		}
-		return F.NIL;
+		return visitAtom( element); 
 	}
 
 	@Override
 	public IExpr visit(IComplex element) {
-		fCurrentDepth = -1;
-		if (isInRange(fCurrentLevel, -1)) {
-			return fFunction.apply(element);
-		}
-		return F.NIL;
+		return visitAtom( element); 
 	}
 
 	@Override
 	public IExpr visit(INum element) {
-		fCurrentDepth = -1;
-		if (isInRange(fCurrentLevel, -1)) {
-			return fFunction.apply(element);
-		}
-		return F.NIL;
+		return visitAtom( element); 
 	}
 
 	@Override
 	public IExpr visit(IComplexNum element) {
-		fCurrentDepth = -1;
-		if (isInRange(fCurrentLevel, -1)) {
-			return fFunction.apply(element);
-		}
-		return F.NIL;
+		return visitAtom( element); 
 	}
 
 	@Override
 	public IExpr visit(ISymbol element) {
-		fCurrentDepth = -1;
-		if (isInRange(fCurrentLevel, -1)) {
-			return fFunction.apply(element);
-		}
-		return F.NIL;
+		return visitAtom( element); 
 	}
 
 	@Override
 	public IExpr visit(IPattern element) {
-		fCurrentDepth = -1;
-		if (isInRange(fCurrentLevel, -1)) {
-			return fFunction.apply(element);
-		}
-		return F.NIL;
+		return visitAtom( element); 
 	}
 
 	@Override
 	public IExpr visit(IPatternSequence element) {
-		fCurrentDepth = -1;
-		if (isInRange(fCurrentLevel, -1)) {
-			return fFunction.apply(element);
-		}
-		return F.NIL;
+		return visitAtom( element); 
 	}
 
 	@Override
 	public IExpr visit(IStringX element) {
-		fCurrentDepth = -1;
-		if (isInRange(fCurrentLevel, -1)) {
-			return fFunction.apply(element);
-		}
-		return F.NIL;
-	}
-
-	@Override
-	public IExpr visitExpr(IExpr element) {
-		if (isInRange(fCurrentLevel, -1)) {
-			return fFunction.apply(element);
-		}
-		return F.NIL;
+		return visitAtom( element); 
 	}
 
 	/**

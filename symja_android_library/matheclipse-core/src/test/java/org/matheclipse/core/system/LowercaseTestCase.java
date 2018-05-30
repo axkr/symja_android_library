@@ -4649,15 +4649,28 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMap() {
-		check("Map(List,Join({1,2,3},4-{1,2,3}))", "{{1},{2},{3},{3},{2},{1}}");
-		check("Map(f, {{{{{a}}}}}, 2)", "{f({f({{{a}}})})}");
-		check("Map(f, {{{{{a}}}}}, {2})", "{{f({{{a}}})}}");
-		check("Map(f, {{{{{a}}}}}, {0,2})", "f({f({f({{{a}}})})})");
-		check("Map(f, {{{{{a}}}}}, Infinity)", "{f({f({f({f({f(a)})})})})}");
-		check("Map(f, {{{{{a}}}}}, {0, Infinity})", "f({f({f({f({f({f(a)})})})})})");
-		check("Map(f, {{{{{a}}}}}, 3)", "{f({f({f({{a}})})})}");
-		check("Map(f, {{{{{a}}}}}, Infinity)", "{f({f({f({f({f(a)})})})})}");
-		check("Map(f, {{{{{a}}}}}, {0, Infinity})", "f({f({f({f({f({f(a)})})})})})");
+		check("Map(f, {{{{a}}}}, -2)", //
+				"{f({f({f({a})})})}"
+				+ "");
+
+		check("Map(List,Join({1,2,3},4-{1,2,3}))", //
+				"{{1},{2},{3},{3},{2},{1}}");
+		check("Map(f, {{{{{a}}}}}, 2)", //
+				"{f({f({{{a}}})})}");
+		check("Map(f, {{{{{a}}}}}, {2})", //
+				"{{f({{{a}}})}}");
+		check("Map(f, {{{{{a}}}}}, {0,2})", //
+				"f({f({f({{{a}}})})})");
+		check("Map(f, {{{{{a}}}}}, Infinity)", //
+				"{f({f({f({f({f(a)})})})})}");
+		check("Map(f, {{{{{a}}}}}, {0, Infinity})", //
+				"f({f({f({f({f({f(a)})})})})})");
+		check("Map(f, {{{{{a}}}}}, 3)", //
+				"{f({f({f({{a}})})})}");
+		check("Map(f, {{{{{a}}}}}, Infinity)", //
+				"{f({f({f({f({f(a)})})})})}");
+		check("Map(f, {{{{{a}}}}}, {0, Infinity})", //
+				"f({f({f({f({f({f(a)})})})})})");
 
 		check("Map(f, {{{{{a}}}}}, {2, -3})", "{{f({f({{a}})})}}");
 		check("Map(f, h0(h1(h2(h3(h4(a))))), {2, -3})", "h0(h1(f(h2(f(h3(h4(a)))))))");
@@ -4671,7 +4684,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Map(f, {{a, b}, {c, d, e}}, {2})", "{{f(a),f(b)},{f(c),f(d),f(e)}}");
 		check("Map(f, a + b + c, Heads->True)", "f(Plus)[f(a),f(b),f(c)]");
 		check("Map(f, expr, a+b, Heads->True)", "Map(f,expr,a+b,heads->True)");
-
+		check("Map(f, {{{{a}}}}, -1)", //
+				"{f({f({f({f(a)})})})}");
+		check("Map(f, {{{{a}}}}, -2)", //
+				"{f({f({f({a})})})}");
+		check("Map(f, {{{{a}}}}, -3)", //
+				"{f({f({{a}})})}");
+		check("Map(f, {{{{a}}}}, -4)", //
+				"{f({{{a}}})}");
+		check("Map(f, {{{{a}}}}, -5)", //
+				"{{{{a}}}}");
+		check("Map(f, {{{{a}}}}, -6)", //
+				"{{{{a}}}}");
 	}
 
 	public void testMapAt() {
@@ -4679,6 +4703,21 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMapIndexed() {
+		check("MapIndexed(f, {{{{a, b}}}}, -3)", //
+				"{f({f({{a,b}},{1,1})},{1})}");
+		check("MapIndexed(f, {{{{a, b},{c, d}}}}, -2)", //
+				"{f({f({f({a,b},{1,1,1}),f({c,d},{1,1,2})},{1,1})},{1})}");
+		check("MapIndexed(f, {{{{a}}}}, -5)", //
+				"{{{{a}}}}");
+		check("MapIndexed(f, {{{{a}}}}, -4)", //
+				"{f({{{a}}},{1})}");
+		check("MapIndexed(f, {{{{a}}}}, -3)", //
+				"{f({f({{a}},{1,1})},{1})}");
+		check("MapIndexed(f, {{{{a}}}}, -2)", //
+				"{f({f({f({a},{1,1,1})},{1,1})},{1})}");
+		check("MapIndexed(f, {{{{a}}}}, -1)", //
+				"{f({f({f({f(a,{1,1,1,1})},{1,1,1})},{1,1})},{1})}");
+
 		check("MapIndexed(f, {{a}, {c}}, {2})", //
 				"{{f(a,{1,1})},{f(c,{2,1})}}");
 
@@ -4715,10 +4754,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{f(a,{1,1}),f(b,{1,2})},{f(c,{2,1}),f(d,{2,2}),f(e,{2,3})}}");
 		check("MapIndexed(f, {{a, b}, {c, d, e}}, {3})", //
 				"{{a,b},{c,d,e}}");
-		check("MapIndexed(f, {{{{a}}}}, -1)", "{f({f({f({f(a,{1,1,1,1})},{1,1,1})},{1,1})},{1})}");
-		// TODO
-		// check("MapIndexed(f, {{{{a}}}}, -2)",
-		// " {f({f({f({a}{1,1,1})},{1,1})},{1})}");
+
 	}
 
 	public void testMapThread() {

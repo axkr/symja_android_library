@@ -23,8 +23,8 @@ import org.matheclipse.parser.client.math.MathException;
 
 /**
  * A level specification for levels used in the function <code>MapIndexed</code>
- *  
- * Example: the nested list <code>{x,{y}}</code> has depth <code>3</code> 
+ * 
+ * Example: the nested list <code>{x,{y}}</code> has depth <code>3</code>
  * 
  */
 public class IndexedLevel {
@@ -166,12 +166,11 @@ public class IndexedLevel {
 			return;
 		}
 		throw new MathException("Invalid Level specification: " + levelExpr.toString());
-	} 
+	}
 
-	public IndexedLevel(final BiFunction<IExpr, IExpr, IExpr> function, final int level,
-			final boolean includeHeads) {
+	public IndexedLevel(final BiFunction<IExpr, IExpr, IExpr> function, final int level, final boolean includeHeads) {
 		this(function, level, level, includeHeads);
-	} 
+	}
 
 	public IndexedLevel(final BiFunction<IExpr, IExpr, IExpr> function, final int fromLevel, final int toLevel,
 			final boolean includeHeads) {
@@ -219,7 +218,10 @@ public class IndexedLevel {
 	}
 
 	public IExpr visitExpr(IExpr element, int[] indx) {
-		if (isInRange(fCurrentLevel, -1)) {
+		if (element.isAtom()) {
+			fCurrentDepth = -1;
+		}
+		if (isInRange(fCurrentLevel, fCurrentDepth)) {
 			return fFunction.apply(element, createIndexes(indx));
 		}
 		return F.NIL;
@@ -283,7 +285,7 @@ public class IndexedLevel {
 				}
 			});
 
-			fCurrentDepth = --minDepth[0]; 
+			fCurrentDepth = --minDepth[0];
 		} finally {
 			fCurrentLevel--;
 		}
