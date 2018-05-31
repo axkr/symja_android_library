@@ -128,7 +128,7 @@ public class NDSolve extends AbstractFunctionEvaluator {
 
 						IASTAppendable list;
 						for (double tDouble = xMin; tDouble < xMax; tDouble += xStep) {
-							list = F.List(F.num(tDouble));
+							list = F.ListAlloc(F.num(tDouble));
 							dp853.integrate(ode, tDouble, xyz, tDouble + xStep, xyz);
 							for (int j = 0; j < xyz.length; j++) {
 								list.append(F.num(xyz[j]));

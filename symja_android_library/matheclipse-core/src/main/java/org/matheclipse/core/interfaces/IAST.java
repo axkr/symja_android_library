@@ -448,7 +448,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return
-	 * <code>true</code> if one of the arguments satisfy the predicate.
+	 * <code>true</code> if one of the arguments starting from index <code>1</code> satisfy the predicate.
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>
@@ -460,7 +460,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return
-	 * <code>true</code> if one of the arguments satisfy the predicate.
+	 * <code>true</code> if one of the arguments starting from index <code>startOffset</code> satisfy the predicate.
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>
@@ -472,7 +472,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return
-	 * <code>true</code> if one of the arguments satisfy the predicate.
+	 * <code>true</code> if one of the arguments starting from index <code>1</code> satisfy the predicate.
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>
@@ -484,7 +484,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return
-	 * <code>true</code> if one of the arguments satisfy the predicate.
+	 * <code>true</code> if one of the arguments starting from index <code>startOffset</code> satisfy the predicate.
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>
@@ -631,7 +631,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return
-	 * <code>true</code> if all of the arguments satisfy the predicate.
+	 * <code>true</code> if all of the arguments starting from index <code>1</code> satisfy the predicate.
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>
@@ -643,7 +643,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return
-	 * <code>true</code> if all of the arguments satisfy the predicate.
+	 * <code>true</code> if all of the arguments starting from index <code>startOffset</code> satisfy the predicate.
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>
@@ -655,7 +655,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return
-	 * <code>true</code> if all of the arguments satisfy the predicate.
+	 * <code>true</code> if all of the arguments starting from index <code>1</code> satisfy the predicate.
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>
@@ -667,7 +667,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 
 	/**
 	 * Check all elements by applying the <code>predicate</code> to each argument in this <code>AST</code> and return
-	 * <code>true</code> if all of the arguments satisfy the predicate.
+	 * <code>true</code> if all of the arguments starting from index <code>startOffset</code> satisfy the predicate.
 	 * 
 	 * @param predicate
 	 *            the predicate which filters each argument in this <code>AST</code>

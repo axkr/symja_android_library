@@ -1222,6 +1222,36 @@ public class F {
 	public static IAST CEmptyList;
 
 	/**
+	 * Represents <code>List(1)</code> (i.e. the constant empty list)
+	 */
+	public static IAST CListC1;
+
+	/**
+	 * Represents <code>List(1,1)</code> (i.e. the constant empty list)
+	 */
+	public static IAST CListC1C1;
+
+	/**
+	 * Represents <code>List(1,2)</code> (i.e. the constant empty list)
+	 */
+	public static IAST CListC1C2;
+
+	/**
+	 * Represents <code>List(2)</code> (i.e. the constant empty list)
+	 */
+	public static IAST CListC2;
+
+	/**
+	 * Represents <code>List(2,1)</code> (i.e. the constant empty list)
+	 */
+	public static IAST CListC2C1;
+
+	/**
+	 * Represents <code>List(2,2)</code> (i.e. the constant empty list)
+	 */
+	public static IAST CListC2C2;
+
+	/**
 	 * Represents <code>Infinity</code> (i.e. <code>Infinity-&gt;DirectedInfinity(1)</code>)
 	 */
 	public static IAST CInfinity;
@@ -1463,6 +1493,13 @@ public class F {
 			PatternTest.setAttributes(ISymbol.HOLDALL);
 
 			CEmptyList = headAST0(List);
+			CListC1 = unaryAST1(List, C1);
+			CListC2 = unaryAST1(List, C2);
+
+			CListC1C1 = binaryAST2(List, C1, C1);
+			CListC1C2 = binaryAST2(List, C1, C2);
+			CListC2C1 = binaryAST2(List, C2, C1);
+			CListC2C2 = binaryAST2(List, C2, C2);
 
 			CInfinity = unaryAST1(DirectedInfinity, C1);
 			oo = CInfinity;
@@ -4040,39 +4077,39 @@ public class F {
 	/**
 	 * Assign the evaluated <code>rhs</code> to the <code>lhs</code>.<br/>
 	 * 
-	 * <b>Note:</b> this method returns <code>null</code>.
+	 * <b>Note:</b> this method returns <code>F.NIL</code>.
 	 * 
 	 * @param lhs
 	 *            left-hand-side of the assignment
 	 * @param rhs
 	 *            right-hand-side of the assignment
-	 * @return <code>null</code>
+	 * @return <code>F.NIL</code>
 	 */
 	public static IAST ISet(final IExpr lhs, final IExpr rhs) {
 		if (lhs.isAST()) {
 			((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
 		}
 		PatternMatching.setDownRule(lhs, rhs, true);
-		return null;
+		return F.NIL;
 	}
 
 	/**
 	 * Assign the unevaluated <code>rhs</code> to the <code>lhs</code>.<br/>
 	 * 
-	 * <b>Note:</b> this method returns <code>null</code>.
+	 * <b>Note:</b> this method returns <code>F.NIL</code>.
 	 * 
 	 * @param lhs
 	 *            left-hand-side of the assignment
 	 * @param rhs
 	 *            right-hand-side of the assignment
-	 * @return <code>null</code>
+	 * @return <code>F.NIL</code>
 	 */
 	public static IAST ISetDelayed(final IExpr lhs, final IExpr rhs) {
 		if (lhs.isAST()) {
 			((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
 		}
 		PatternMatching.setDelayedDownRule(lhs, rhs, true);
-		return null;
+		return F.NIL;
 	}
 
 	public static boolean isNumEqualInteger(double value, IInteger ii) throws ArithmeticException {
@@ -4245,11 +4282,12 @@ public class F {
 	}
 
 	/**
-	 * Create a List() object.
+	 * Create an appendable list <code>{ }</code>.
 	 * 
 	 * @return
+	 * @see {@link #List()} to create an empty unmodifiable AST
 	 */
-	public static IASTAppendable List() {
+	public static IASTAppendable ListAlloc() {
 		return ast(List);
 	}
 
@@ -4262,6 +4300,17 @@ public class F {
 	 */
 	public static IASTAppendable ListAlloc(int capacity) {
 		return ast(List, capacity, false);
+	}
+
+	/**
+	 * Create an appendable list <code>{ }</code>.
+	 * 
+	 * @param a
+	 * @return
+	 * @see {@link #List(final IExpr...)} to create an unmodifiable AST
+	 */
+	public static IASTAppendable ListAlloc(final IExpr... a) {
+		return ast(a, List);
 	}
 
 	/**
@@ -4311,7 +4360,53 @@ public class F {
 		return ast(a, List);
 	}
 
-	public static IASTAppendable List(final IExpr... a) {
+	/**
+	 * Create an empty immutable list <code>{ }</code> (i.e. <code>List()</code>).
+	 * 
+	 * @return
+	 * @see {@link #ListAlloc()} to create an appendable list
+	 */
+	public static IAST List() {
+		return F.CEmptyList;
+	}
+
+	/**
+	 * Create an immutable list <code>{ }</code>.
+	 * 
+	 * @param a
+	 * @return
+	 * @see {@link #ListAlloc(final IExpr...)} to create an appendable list
+	 */
+	public static IAST List(final IExpr... a) {
+		switch (a.length) {
+		case 1:
+			if (a[0].equals(F.C1)) {
+				return F.CListC1;
+			}
+			if (a[0].equals(F.C2)) {
+				return F.CListC2;
+			}
+			return unaryAST1(List, a[0]);
+		case 2:
+			if (a[0].equals(F.C1)) {
+				if (a[1].equals(F.C1)) {
+					return F.CListC1C1;
+				}
+				if (a[1].equals(F.C2)) {
+					return F.CListC1C2;
+				}
+			} else if (a[0].equals(F.C2)) {
+				if (a[1].equals(F.C1)) {
+					return F.CListC2C1;
+				}
+				if (a[1].equals(F.C2)) {
+					return F.CListC2C2;
+				}
+			}
+			return binaryAST2(List, a[0], a[1]);
+		case 3:
+			return ternaryAST3(List, a[0], a[1], a[2]);
+		}
 		return ast(a, List);
 	}
 
@@ -5740,16 +5835,16 @@ public class F {
 
 	public static IAST Taylor(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Taylor, a0, a1);
-	} 
+	}
 
 	public static IAST TensorSymmetry(final IExpr a0) {
 		return unaryAST1(TensorSymmetry, a0);
 	}
-	
+
 	public static IAST TensorSymmetry(final IExpr a0, final IExpr a1) {
 		return binaryAST2(TensorSymmetry, a0, a1);
 	}
-	
+
 	public static IAST TeXForm(final IExpr a0) {
 		return unaryAST1(TeXForm, a0);
 	}

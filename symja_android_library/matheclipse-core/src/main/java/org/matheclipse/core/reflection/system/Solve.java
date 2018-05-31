@@ -666,7 +666,7 @@ public class Solve extends AbstractFunctionEvaluator {
 							ArrayList<ExprAnalyzer> subAnalyzerList = substituteRulesInSubAnalyzerList(
 									kListOfSolveRules, analyzerList, currEquation, variables, engine);
 							try {
-								IAST subResultList = analyzeSublist(subAnalyzerList, variables, F.List(),
+								IAST subResultList = analyzeSublist(subAnalyzerList, variables, F.ListAlloc(),
 										maximumNumberOfResults, matrix, vector, engine);
 								if (subResultList.isPresent()) {
 									evaled = true;
@@ -714,7 +714,12 @@ public class Solve extends AbstractFunctionEvaluator {
 			IAST kListOfSolveRules, int maximumNumberOfResults) {
 		for (IExpr expr : subResultList) {
 			if (expr.isList()) {
-				IASTAppendable list = (IASTAppendable) expr;
+				IASTAppendable list;
+				if (expr instanceof IASTAppendable) {
+					list = (IASTAppendable) expr;
+				} else {
+					list = ((IAST) expr).copyAppendable();
+				}
 				list.append(1, kListOfSolveRules);
 				resultList.append(list);
 				if (maximumNumberOfResults > 0 && maximumNumberOfResults <= resultList.size()) {
@@ -728,6 +733,7 @@ public class Solve extends AbstractFunctionEvaluator {
 			}
 		}
 		return F.NIL;
+
 	}
 
 	/**
@@ -1031,10 +1037,10 @@ public class Solve extends AbstractFunctionEvaluator {
 			exprAnalyzer.simplifyAndAnalyze();
 			analyzerList.add(exprAnalyzer);
 		}
-		IASTAppendable matrix = F.List();
-		IASTAppendable vector = F.List();
+		IASTAppendable matrix = F.ListAlloc();
+		IASTAppendable vector = F.ListAlloc();
 		try {
-			IASTAppendable resultList = F.List();
+			IASTAppendable resultList = F.ListAlloc();
 			resultList = analyzeSublist(analyzerList, variables, resultList, maximumNumberOfResults, matrix, vector,
 					engine);
 			if (vector.size() > 1) {

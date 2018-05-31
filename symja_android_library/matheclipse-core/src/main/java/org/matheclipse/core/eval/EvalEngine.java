@@ -355,7 +355,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		try {
 			setTraceMode(false);
 			ruleList.forEach(x -> {
-				if (x != null) {
+				if (x.isPresent()) {
 					evaluate(x);
 				}
 			});

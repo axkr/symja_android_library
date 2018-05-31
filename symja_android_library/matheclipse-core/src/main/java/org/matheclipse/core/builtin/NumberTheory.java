@@ -773,7 +773,7 @@ public final class NumberTheory {
 			IInteger q = F.C1;
 			IInteger a = F.ZZ(BigIntegerMath.sqrt(d.toBigNumerator(), RoundingMode.FLOOR));
 			IInteger last = a;
-			IASTAppendable result = F.List();
+			IASTAppendable result = F.ListAlloc();
 
 			do {
 				p = last.multiply(q).subtract(p);

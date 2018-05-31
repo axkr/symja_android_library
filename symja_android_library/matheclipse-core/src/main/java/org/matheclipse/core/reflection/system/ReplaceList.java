@@ -76,7 +76,7 @@ public class ReplaceList extends AbstractEvaluator {
 					maxNumberOfResults = ((ISignedNumber) arg3).toInt();
 				}
 			}
-			IASTAppendable result = F.List();
+			IASTAppendable result = F.ListAlloc();
 			return replaceExpr(ast, arg1, rules, result, maxNumberOfResults, engine);
 		} catch (ArithmeticException ae) {
 			engine.printMessage(ae.getMessage());

@@ -298,7 +298,7 @@ public class D extends AbstractFunctionEvaluator implements DRules {
 				return result;
 			} else if (xList.isAST1() && xList.arg1().isList()) {
 				IAST subList = (IAST) xList.arg1();
-				return subList.mapLeft(F.List(), (a, b) -> engine.evaluate(F.D(a, b)), fx);
+				return subList.mapLeft(F.ListAlloc(), (a, b) -> engine.evaluate(F.D(a, b)), fx);
 			} else if (xList.isAST2() && xList.arg2().isInteger()) {
 				if (ast.isEvalFlagOn(IAST.IS_DERIVATIVE_EVALED)) {
 					return F.NIL;

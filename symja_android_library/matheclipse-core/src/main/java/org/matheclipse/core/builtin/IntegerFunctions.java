@@ -287,7 +287,7 @@ public class IntegerFunctions {
 			}
 			IExpr arg1 = ast.arg1();
 			if (arg1.isInteger()) {
-				IASTAppendable list = F.List();
+				IASTAppendable list = F.ListAlloc();
 				IInteger n = ((IInteger) arg1).abs();
 				if (n.isZero()) {
 					list.append(F.C0);
@@ -1047,7 +1047,7 @@ public class IntegerFunctions {
 					EvalEngine.get().printMessage("QuotientRemainder: division by zero");
 					return F.NIL;
 				}
-				IASTMutable list = F.List(F.Null, F.Null);
+				IASTMutable list = F.ListAlloc(F.Null, F.Null);
 				list.set(1, i0.quotient(i1));
 				if (i1.isNegative()) {
 					list.set(2, i0.negate().mod(i1.negate()).negate());

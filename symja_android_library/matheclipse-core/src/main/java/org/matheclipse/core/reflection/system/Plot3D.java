@@ -79,7 +79,7 @@ public class Plot3D extends AbstractEvaluator {
 							(ISymbol) lst2.get(1), engine);
 					graphics.append(temp);
 
-					final IASTAppendable options = List();
+					final IASTAppendable options = F.ListAlloc();
 					// for (int i = 0; i < optionsArray.length; i++) {
 					// options.add(Rule(optionsArray[i], allOptions.get(i)));
 					// }

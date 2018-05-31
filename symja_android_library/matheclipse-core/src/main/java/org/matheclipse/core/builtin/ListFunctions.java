@@ -1096,7 +1096,7 @@ public final class ListFunctions {
 				return results[0];
 			}
 			final PatternMatcher matcher = new PatternMatcherEvalEngine(pattern, engine);
-			return ast.filter(F.List(), matcher);
+			return ast.filter(F.ListAlloc(), matcher);
 		}
 
 		@Override
@@ -2083,7 +2083,7 @@ public final class ListFunctions {
 				for (int i = 1; i < arg1.size(); i++) {
 					IASTAppendable list = map.get(arg1.get(i));
 					if (list == null) {
-						map.put(arg1.get(i), F.List(arg1.get(i)));
+						map.put(arg1.get(i), F.ListAlloc(arg1.get(i)));
 					} else {
 						list.append(arg1.get(i));
 					}

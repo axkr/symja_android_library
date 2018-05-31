@@ -301,13 +301,13 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	/** {@inheritDoc} */
 	@Override
 	public boolean exists(Predicate<? super IExpr> predicate, int startOffset) {
-		return (startOffset == 0) && predicate.test(arg0);
+		return (startOffset == 0) ? predicate.test(arg0) : false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public boolean exists(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
-		return (startOffset == 0) && predicate.test(arg0, 0);
+		return (startOffset == 0) ? predicate.test(arg0, 0) : false;
 	}
 
 	/** {@inheritDoc} */
@@ -332,13 +332,13 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 	/** {@inheritDoc} */
 	@Override
 	public boolean forAll(Predicate<? super IExpr> predicate, int startOffset) {
-		return (startOffset == 0) && predicate.test(arg0);
+		return (startOffset == 0) ? predicate.test(arg0) : true;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public boolean forAll(ObjIntPredicate<? super IExpr> predicate, int startOffset) {
-		return (startOffset == 0) && predicate.test(arg0, 0);
+		return (startOffset == 0) ? predicate.test(arg0, 0) : true;
 	}
 
 	@Override

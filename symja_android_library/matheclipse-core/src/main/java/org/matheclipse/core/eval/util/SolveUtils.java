@@ -16,7 +16,7 @@ public class SolveUtils {
 	 * @return
 	 */
 	public static IAST[] filterSolveLists(IAST list, IAST solution) {
-		IAST[] result = new IASTAppendable[3];
+		IAST[] result = new IAST[3];
 		IASTAppendable termsEqualZero = F.ListAlloc(list.size());
 		IASTAppendable inequalityTerms = F.ListAlloc(list.size());
 		result[0] = termsEqualZero;

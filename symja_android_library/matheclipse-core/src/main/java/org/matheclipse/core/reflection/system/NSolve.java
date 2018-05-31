@@ -421,7 +421,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 								subAnalyzerList.add(exprAnalyzer);
 							}
 							try {
-								IAST subResultList = analyzeSublist(subAnalyzerList, vars, F.List(), matrix, vector,
+								IAST subResultList = analyzeSublist(subAnalyzerList, vars, F.ListAlloc(), matrix, vector,
 										engine);
 								if (subResultList != null) {
 									evaled = true;
@@ -472,7 +472,7 @@ public class NSolve extends AbstractFunctionEvaluator {
 		for (ISymbol sym : exprAnalyzer.getSymbolSet()) {
 			IExpr temp = PolynomialFunctions.rootsOfVariable(expr, denom, F.List(sym), true, engine);
 			if (temp.isPresent()) {
-				IASTAppendable resultList = F.List();
+				IASTAppendable resultList = F.ListAlloc();
 				if (temp.isASTSizeGE(F.List, 2)) {
 					IAST rootsList = (IAST) temp;
 					for (IExpr root : rootsList) {
@@ -504,10 +504,10 @@ public class NSolve extends AbstractFunctionEvaluator {
 			exprAnalyzer.analyze();
 			analyzerList.add(exprAnalyzer);
 		}
-		IASTAppendable matrix = F.List();
-		IASTAppendable vector = F.List();
+		IASTAppendable matrix = F.ListAlloc();
+		IASTAppendable vector = F.ListAlloc();
 		try {
-			IASTAppendable resultList = F.List();
+			IASTAppendable resultList = F.ListAlloc();
 			resultList = analyzeSublist(analyzerList, vars, resultList, matrix, vector, engine);
 
 			if (vector.size() > 1) {
