@@ -286,6 +286,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Csch](functions/Csch.md)
 * [CubeRoot](functions/CubeRoot.md)
 * [Curl](functions/Curl.md)
+* [Cyclotomic](functions/Cyclotomic.md)
 * [D](functions/D.md)
 * [Decrement](functions/Decrement.md)
 * [Defer](functions/Defer.md)

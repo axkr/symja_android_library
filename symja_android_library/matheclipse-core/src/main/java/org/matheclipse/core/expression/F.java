@@ -303,6 +303,7 @@ public class F {
 	public final static IBuiltInSymbol Csch = F.initFinalSymbol("Csch", ID.Csch);
 	public final static IBuiltInSymbol CubeRoot = F.initFinalSymbol("CubeRoot", ID.CubeRoot);
 	public final static IBuiltInSymbol Curl = F.initFinalSymbol("Curl", ID.Curl);
+	public final static IBuiltInSymbol Cyclotomic = F.initFinalSymbol("Cyclotomic", ID.Cyclotomic);
 	public final static IBuiltInSymbol D = F.initFinalSymbol("D", ID.D);
 	public final static IBuiltInSymbol DSolve = F.initFinalSymbol("DSolve", ID.DSolve);
 	public final static IBuiltInSymbol Decrement = F.initFinalSymbol("Decrement", ID.Decrement);
@@ -3150,6 +3151,10 @@ public class F {
 		return binaryAST2(DivisorSigma, a0, a1);
 	}
 
+	public static IAST Divisors(final IExpr a0) {
+		return unaryAST1(Divisors, a0);
+	}
+
 	public static IAST Do(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Do, a0, a1);
 	}
@@ -4043,6 +4048,14 @@ public class F {
 		IASTAppendable result = F.ast(head, to - from + 1, false);
 		for (int i = from; i <= to; i += step) {
 			result.append(function.apply(F.ZZ(i)));
+		}
+		return result;
+	}
+
+	public static IAST intIterator(ISymbol head, final Function<IExpr, IExpr> function, final IAST list) {
+		IASTAppendable result = F.ast(head, list.size(), false);
+		for (int i = 1; i < list.size(); i++) {
+			result.append(function.apply(list.get(i)));
 		}
 		return result;
 	}

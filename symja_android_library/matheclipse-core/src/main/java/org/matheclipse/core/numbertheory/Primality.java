@@ -659,9 +659,16 @@ public class Primality {
 		}
 	}
 
+	public static List<BigInteger> factorize(final BigInteger val) {
+		return factorize(val, null);
+	}
+
 	public static List<BigInteger> factorize(final BigInteger val, List<BigInteger> result) {
 		SortedMap<BigInteger, Integer> bigMap = new TreeMap<BigInteger, Integer>();
 		Primality.factorInteger(val, bigMap);
+		if (result == null) {
+			result = new ArrayList<BigInteger>(bigMap.size() * 2);
+		}
 		for (Map.Entry<BigInteger, Integer> entry : bigMap.entrySet()) {
 			BigInteger key = entry.getKey();
 			for (int i = 0; i < entry.getValue(); i++) {
@@ -1009,21 +1016,24 @@ public class Primality {
 	}
 
 	/**
-	 * Return <code>true</code> if <code>val</code> is a power of a prime number.
+	 * A prime power is a positive integer power of a single prime number. For example:
+	 * <code>7 = 7^1, 9= 3^2 and 32 = 2^5</code> are prime powers, while
+	 * <code>6 = 2 × 3, 12 = 22 × 3 and 36 = 62 = 22 × 32</code> are not. The number 1 is not counted as a prime power.
 	 * 
-	 * @param val
-	 * @return
+	 * @param value
+	 *            check if value is prime power
+	 * @return code>true</code> if <code>val</code> is a power of a prime number
 	 */
-	public static boolean isPrimePower(BigInteger val) {
-		if (val.compareTo(BigInteger.ZERO) < 0) {
-			val = val.negate();
+	public static boolean isPrimePower(BigInteger value) {
+		if (value.compareTo(BigInteger.ZERO) < 0) {
+			value = value.negate();
 		}
 		try {
 			SortedMap<BigInteger, Integer> map = new PrimePowerTreedMap();
-			factorInteger(val, map);
+			factorInteger(value, map);
 			if (map.size() == 1) {
 				for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
-					if (entry.getValue() > 1) {
+					if (entry.getValue() > 0) {
 						return true;
 					}
 				}
@@ -1031,6 +1041,35 @@ public class Primality {
 		} catch (ReturnException re) {
 		}
 		return false;
+	}
+
+	/**
+	 * A prime power is a positive integer power of a single prime number. For example:
+	 * <code>7 = 7^1, 9= 3^2 and 32 = 2^5</code> are prime powers, while
+	 * <code>6 = 2 × 3, 12 = 22 × 3 and 36 = 62 = 22 × 32</code> are not. The number 1 is not counted as a prime power.
+	 * 
+	 * @param value
+	 *            check if value is prime power
+	 * @return <code>null</code> if value is not a prime power or
+	 *         <code>Object[BigInteger, Integer] = { prime power, base }</code>
+	 */
+	public static Object[] primePower(BigInteger value) {
+		if (value.compareTo(BigInteger.ZERO) < 0) {
+			value = value.negate();
+		}
+		try {
+			SortedMap<BigInteger, Integer> map = new PrimePowerTreedMap();
+			factorInteger(value, map);
+			if (map.size() == 1) {
+				for (Map.Entry<BigInteger, Integer> entry : map.entrySet()) {
+					if (entry.getValue() > 0) {
+						return new Object[] { entry.getKey(), entry.getValue() };
+					}
+				}
+			}
+		} catch (ReturnException re) {
+		}
+		return null;
 	}
 
 	/**

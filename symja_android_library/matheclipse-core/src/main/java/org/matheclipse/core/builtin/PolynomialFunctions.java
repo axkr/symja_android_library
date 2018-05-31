@@ -12,6 +12,7 @@ import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.evalExpandAll;
 import static org.matheclipse.core.expression.F.integer;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -48,6 +49,7 @@ import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.numbertheory.Primality;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcher;
 import org.matheclipse.core.patternmatching.PatternMatcherEvalEngine;
@@ -61,6 +63,8 @@ import org.matheclipse.core.polynomials.QuarticSolver;
 import org.matheclipse.core.reflection.system.MonomialList;
 import org.matheclipse.core.reflection.system.rules.LegendrePRules;
 import org.matheclipse.core.reflection.system.rules.LegendreQRules;
+
+import com.google.common.math.LongMath;
 
 import edu.jas.arith.BigRational;
 import edu.jas.arith.ModLong;
@@ -87,6 +91,7 @@ public class PolynomialFunctions {
 		F.Coefficient.setEvaluator(new Coefficient());
 		F.CoefficientList.setEvaluator(new CoefficientList());
 		F.CoefficientRules.setEvaluator(new CoefficientRules());
+		F.Cyclotomic.setEvaluator(new Cyclotomic());
 		F.Discriminant.setEvaluator(new Discriminant());
 		F.Exponent.setEvaluator(new Exponent());
 		F.HermiteH.setEvaluator(new HermiteH());
@@ -406,6 +411,104 @@ public class PolynomialFunctions {
 			return null;
 		}
 
+	}
+
+	/**
+	 * <pre>
+	 * Cyclotomic(n, x)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the Cyclotomic polynomial <code>C_n(x)</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Cyclotomic_polynomial">Wikipedia - Cyclotomic polynomial</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Cyclotomic(25,x)
+	 * 1+x^5+x^10+x^15+x^20
+	 * </pre>
+	 * <p>
+	 * The case of the 105-th cyclotomic polynomial is interesting because 105 is the lowest integer that is the product
+	 * of three distinct odd prime numbers and this polynomial is the first one that has a coefficient other than
+	 * <code>1, 0</code> or <code>−1</code>:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Cyclotomic(105, x) 
+	 * 1+x+x^2-x^5-x^6-2*x^7-x^8-x^9+x^12+x^13+x^14+x^15+x^16+x^17-x^20-x^22-x^24-x^26-x^28+x^31+x^32+x^33+x^34+x^35+x^36-x^39-x^40-2*x^41-x^42-x^43+x^46+x^47+x^48
+	 * </pre>
+	 */
+	final private static class Cyclotomic extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			int n = ast.arg1().toIntDefault(-1);
+			if (n >= 0) {
+				return cyclotomic(n, ast.arg2());
+			}
+			return F.NIL;
+		}
+
+		private static IExpr cyclotomic(int n, final IExpr x) {
+			switch (n) {
+			case 0:
+				return F.C1;
+			case 1:
+				return F.Plus(F.CN1, x);
+			case 2:
+				return F.Plus(F.C1, x);
+			case 3:
+				return F.Plus(F.C1, x, F.Sqr(x));
+			}
+			// precondition n > 2
+			if (x.isZero()) {
+				return F.C1;
+			}
+			// IASTAppendable result = F.PlusAlloc(n + 1);
+			if (LongMath.isPrime(n)) {
+				return F.sum(i -> x.power(i), 0, n - 1);
+			}
+			if ((n & 0x00000001) == 0x00000000) {
+				// n is even
+				int nHalf = n / 2;
+				if ((nHalf & 0x00000001) == 0x00000001) {
+					// nHalf is odd
+					if (LongMath.isPrime(nHalf)) {
+						return F.sum(i -> x.negate().power(i), 0, nHalf - 1);
+					}
+					return cyclotomic(nHalf, x.negate());
+				}
+			}
+			BigInteger bigN = BigInteger.valueOf(n);
+			Object[] primePower = Primality.primePower(bigN);
+			if (primePower != null) {
+				int p = ((BigInteger) primePower[0]).intValue();
+				int pPowerm = n / p;
+				return cyclotomic(p, x.power(F.ZZ(pPowerm)));
+			}
+			IInteger ni = F.ZZ(n);
+			IAST divisorList = ni.divisors();
+			// Product((1 - x^d)^MoebiusMu(n/d), {d, divisorList) // Together
+			return F.Together(F.intIterator(F.Times,
+					d -> F.Power(F.Plus(F.C1, F.Negate(F.Power(x, d))), F.MoebiusMu(F.Times(F.Power(d, -1), ni))),
+					divisorList));
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+			super.setUp(newSymbol);
+		}
 	}
 
 	/**
