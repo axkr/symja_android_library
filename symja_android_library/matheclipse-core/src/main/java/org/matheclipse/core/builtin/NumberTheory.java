@@ -2205,6 +2205,94 @@ public final class NumberTheory {
 		}
 	}
 
+	private static class LinearRecurrence extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 4);
+
+			IExpr arg1 = ast.arg1();
+			IExpr arg2 = ast.arg2();
+			IExpr arg3 = ast.arg3();
+			if (arg1.isList() && arg2.isList()) {
+				IAST list1 = (IAST) arg1;
+				IAST list2 = (IAST) arg2;
+				if (arg3.isReal() && arg3.isPositive()) {
+					int n = arg3.toIntDefault(-1);
+					return linearRecurrence(list1, list2, n, engine);
+				}
+				if (arg3.isList() && arg3.size() == 2 && arg3.first().isReal()) {
+					int n = arg3.first().toIntDefault(-1);
+					IAST result = linearRecurrence(list1, list2, n, engine);
+					if (result.isPresent()) {
+						return result.get(n);
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+		private IAST linearRecurrence(IAST list1, IAST list2, int n, EvalEngine engine) {
+			if (n < 0) {
+				return F.NIL;
+			}
+			int size1 = list1.size();
+			int size2 = list2.size();
+			if (size2 >= size1) {
+				int counter = 0;
+				IASTAppendable result = F.ListAlloc(n);
+				int start = size2 - size1 + 1;
+				boolean isNumber = true;
+				for (int i = start; i < list2.size(); i++) {
+					IExpr x = list2.get(i);
+					if (!x.isNumber()) {
+						isNumber = false;
+					}
+					result.append(x);
+					if (counter++ == n) {
+						return result;
+					}
+				}
+				if (isNumber) {
+					for (int i = 1; i < list1.size(); i++) {
+						if (!list1.get(i).isNumber()) {
+							isNumber = false;
+						}
+					}
+				}
+				if (isNumber) {
+					while (counter < n) {
+						int size = result.size();
+						INumber num = F.C0;
+						int k = size - 1;
+						for (int i = 1; i < size1; i++) {
+							num = (INumber) num.plus(((INumber) list1.get(i)).times(result.get(k--)));
+						}
+						result.append(num);
+						counter++;
+					}
+				} else {
+					while (counter < n) {
+						int size = result.size();
+						IASTAppendable plusAST = F.PlusAlloc(size);
+						int k = size - 1;
+						for (int i = 1; i < size1; i++) {
+							plusAST.append(F.Times(list1.get(i), result.get(k--)));
+						}
+						result.append(engine.evaluate(plusAST));
+						counter++;
+					}
+				}
+				return result;
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+	}
+
 	private static class LiouvilleLambda extends AbstractFunctionEvaluator {
 
 		@Override
@@ -3725,6 +3813,7 @@ public final class NumberTheory {
 		F.FromContinuedFraction.setEvaluator(new FromContinuedFraction());
 		F.JacobiSymbol.setEvaluator(new JacobiSymbol());
 		F.KroneckerDelta.setEvaluator(new KroneckerDelta());
+		F.LinearRecurrence.setEvaluator(new LinearRecurrence());
 		F.LiouvilleLambda.setEvaluator(new LiouvilleLambda());
 		F.LucasL.setEvaluator(new LucasL());
 		F.MangoldtLambda.setEvaluator(new MangoldtLambda());

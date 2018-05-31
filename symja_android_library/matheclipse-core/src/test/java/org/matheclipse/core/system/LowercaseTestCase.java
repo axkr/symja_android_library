@@ -4449,6 +4449,52 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("LinearProgramming({1., 1.}, {{5., 2.}}, {3.})", "{0.6,0.0}");
 	}
 
+	public void testLinearRecurrence() {
+		check("LinearRecurrence({a, b}, {1, 1}, 5)", //
+				"{1,1,a+b,b+a*(a+b),b*(a+b)+a*(b+a*(a+b))}");
+		check("LinearRecurrence({-3, 1}, {7, 2}, 10)", //
+				"{7,2,1,-1,4,-13,43,-142,469,-1549}");
+		// Fibonacci sequence
+		check("LinearRecurrence({1, 1}, {1, 1}, 10)", //
+				"{1,1,2,3,5,8,13,21,34,55}");
+		check("LinearRecurrence({1, 1}, {1, 1}, {8})", //
+				"21");
+
+		check("LinearRecurrence({a,b}, {c,d}, 5)", //
+				"{c,d,b*c+a*d,b*d+a*(b*c+a*d),b*(b*c+a*d)+a*(b*d+a*(b*c+a*d))}");
+		check("LinearRecurrence({1, 1}, {{1, 2}, {2, 1}}, 10)", //
+				"{{1,2},{2,1},{3,3},{5,4},{8,7},{13,11},{21,18},{34,29},{55,47},{89,76}}");
+
+		// A001608 Perrin sequence
+		// https://oeis.org/A001608
+		check("LinearRecurrence({0, 1, 1}, {3, 0, 2}, 50)", //
+				"{3,0,2,3,2,5,5,7,10,12,17,22,29,39,51,68,90,119,158,209,277,367,486,644,853,1130,\n"
+						+ "1497,1983,2627,3480,4610,6107,8090,10717,14197,18807,24914,33004,43721,57918,\n"
+						+ "76725,101639,134643,178364,236282,313007,414646,549289,727653,963935}");
+
+		// A016064 Shortest legs of Heronian triangles (sides are consecutive integers, area is an integer).
+		// https://oeis.org/A016064
+		check("LinearRecurrence({5, -5, 1}, {1, 3, 13}, 26)", //
+				"{1,3,13,51,193,723,2701,10083,37633,140451,524173,1956243,7300801,27246963,\n"
+						+ "101687053,379501251,1416317953,5285770563,19726764301,73621286643,274758382273,\n"
+						+ "1025412242451,3826890587533,14282150107683,53301709843201,198924689265123}");
+
+		// A251599 Centers of rows of the triangular array formed by the natural numbers.
+		// https://oeis.org/A251599
+		check("LinearRecurrence({1, 0, 2, -2, 0, -1, 1}, {1, 2, 3, 5, 8, 9, 13}, 60)", //
+				"{1,2,3,5,8,9,13,18,19,25,32,33,41,50,51,61,72,73,85,98,99,113,128,129,145,162,\n"
+						+ "163,181,200,201,221,242,243,265,288,289,313,338,339,365,392,393,421,450,451,481,\n"
+						+ "512,513,545,578,579,613,648,649,685,722,723,761,800,801}");
+		
+		// A050250 Number of nonzero palindromes less than 10^n.
+		// https://oeis.org/A050250
+		check("LinearRecurrence({1, 10, -10}, {9, 18, 108}, 30)", //
+				"{9,18,108,198,1098,1998,10998,19998,109998,199998,1099998,1999998,10999998,\n" + 
+				"19999998,109999998,199999998,1099999998,1999999998,10999999998,19999999998,\n" + 
+				"109999999998,199999999998,1099999999998,1999999999998,10999999999998,\n" + 
+				"19999999999998,109999999999998,199999999999998,1099999999999998,1999999999999998}");
+	}
+
 	public void testLinearSolve() {
 		check("LinearSolve({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}, {1,1,1})", //
 				"{-1,1,0}");
@@ -9090,7 +9136,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("TensorSymmetry({{0}})", "ZeroSymmetric({})");
 		check("TensorSymmetry({{0,0}, {0,0}})", "ZeroSymmetric({})");
 		check("TensorSymmetry({{a,b}, {b,c}})", "Symmetric({1,2})");
-		
+
 	}
 
 	public void testTeXForm() {
