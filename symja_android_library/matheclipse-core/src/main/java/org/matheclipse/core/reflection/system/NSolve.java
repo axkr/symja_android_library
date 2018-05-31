@@ -421,13 +421,18 @@ public class NSolve extends AbstractFunctionEvaluator {
 								subAnalyzerList.add(exprAnalyzer);
 							}
 							try {
-								IAST subResultList = analyzeSublist(subAnalyzerList, vars, F.ListAlloc(), matrix, vector,
-										engine);
+								IAST subResultList = analyzeSublist(subAnalyzerList, vars, F.ListAlloc(), matrix,
+										vector, engine);
 								if (subResultList != null) {
 									evaled = true;
 									for (IExpr expr : subResultList) {
 										if (expr.isList()) {
-											IASTAppendable list = (IASTAppendable) expr;
+											IASTAppendable list;
+											if (expr instanceof IASTAppendable) {
+												list = (IASTAppendable) expr;
+											} else {
+												list = ((IAST) expr).copyAppendable();
+											}
 											list.append(1, listOfRules.getAST(k));
 											resultList.append(list);
 										} else {

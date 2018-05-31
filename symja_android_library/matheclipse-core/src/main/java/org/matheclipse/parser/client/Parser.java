@@ -800,7 +800,7 @@ public class Parser extends Scanner {
 	}
 
 	private ASTNode parseCompoundExpressionNull(InfixOperator infixOperator, ASTNode rhs) {
-		if (";".equals(infixOperator.getOperatorString())) {
+		if (infixOperator.isOperator(";")) {
 			if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
 					|| fToken == TT_PRECEDENCE_CLOSE) {
 				return infixOperator.createFunction(fFactory, rhs, fFactory.createSymbol("Null"));
@@ -876,7 +876,7 @@ public class Parser extends Scanner {
 						continue;
 					} else {
 						throwSyntaxError("Operator: " + fOperatorString + " is no infix or postfix operator.");
-					} 
+					}
 				}
 			}
 			break;
@@ -913,7 +913,7 @@ public class Parser extends Scanner {
 			((FunctionNode) lhs).add(rhs);
 		}
 		return lhs;
-	} 
+	}
 
 	private ASTNode parseLookaheadOperator(final int min_precedence) {
 		ASTNode rhs = parsePrimary(min_precedence);
@@ -949,7 +949,7 @@ public class Parser extends Scanner {
 					if (infixOperator.getPrecedence() > min_precedence
 							|| ((infixOperator.getPrecedence() == min_precedence)
 									&& (infixOperator.getGrouping() == InfixOperator.RIGHT_ASSOCIATIVE))) {
-						if (";".equals(infixOperator.getOperatorString())) {
+						if (infixOperator.isOperator(";")) {
 							if (fPackageMode && fRecursionDepth < 1) {
 								return infixOperator.createFunction(fFactory, rhs, fFactory.createSymbol("Null"));
 							}

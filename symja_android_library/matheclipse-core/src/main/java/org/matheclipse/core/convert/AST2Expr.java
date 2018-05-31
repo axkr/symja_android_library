@@ -301,10 +301,11 @@ public class AST2Expr {
 						convertNode(functionNode.get(2)), convertNode(functionNode.get(3)));
 				break;
 			default:
-				ast = F.ast(convertNode(functionNode.get(0)), functionNode.size(), false);
+				IASTAppendable appendableAST = F.ast(convertNode(functionNode.get(0)), functionNode.size(), false);
 				for (int i = 1; i < functionNode.size(); i++) {
-					((IASTAppendable) ast).append(convertNode(functionNode.get(i)));
+					appendableAST.append(convertNode(functionNode.get(i)));
 				}
+				ast = appendableAST;
 			}
 
 			int functionID = ast.headID();

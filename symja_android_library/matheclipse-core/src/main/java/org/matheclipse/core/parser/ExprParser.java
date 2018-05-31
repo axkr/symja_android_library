@@ -289,7 +289,7 @@ public class ExprParser extends Scanner {
 	}
 
 	private IExpr createInfixFunction(InfixExprOperator infixOperator, IExpr lhs, IExpr rhs) {
-		IExpr temp = infixOperator.createFunction(fFactory, this, lhs, rhs);
+		IASTMutable temp = infixOperator.createFunction(fFactory, this, lhs, rhs);
 		if (temp.isAST()) {
 			return convert((IASTMutable) temp);
 		}
@@ -1055,7 +1055,7 @@ public class ExprParser extends Scanner {
 	}
 
 	private IExpr parseCompoundExpressionNull(InfixExprOperator infixOperator, IExpr rhs) {
-		if (infixOperator.getOperatorString().equals(";")) {
+		if (infixOperator.isOperator(";")) {
 			if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
 					|| fToken == TT_PRECEDENCE_CLOSE) {
 				return createInfixFunction(infixOperator, rhs, F.Null);
@@ -1156,22 +1156,30 @@ public class ExprParser extends Scanner {
 		IExpr rhs;
 		rhs = parseLookaheadOperator(infixOperator.getPrecedence());
 		lhs = createInfixFunction(infixOperator, lhs, rhs);
-
-		while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
-				&& infixOperator.getOperatorString().equals(fOperatorString)) {
-			getNextToken();
-			if (infixOperator.getOperatorString().equals(";")) {
-				if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
-						|| fToken == TT_PRECEDENCE_CLOSE) {
-					((IASTAppendable) lhs).append(F.Null);
-					break;
-				}
-			}
-			while (fToken == TT_NEWLINE) {
+		if (lhs instanceof IASTAppendable) {
+			IASTAppendable ast = (IASTAppendable) lhs;
+			while (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
+					&& infixOperator.isOperator(fOperatorString)) {
 				getNextToken();
+				if (infixOperator.isOperator(";")) {
+					if (fToken == TT_EOF || fToken == TT_ARGUMENTS_CLOSE || fToken == TT_LIST_CLOSE
+							|| fToken == TT_PRECEDENCE_CLOSE) {
+						ast.append(F.Null);
+						break;
+					}
+				}
+				while (fToken == TT_NEWLINE) {
+					getNextToken();
+				}
+				rhs = parseLookaheadOperator(infixOperator.getPrecedence());
+				ast.append(rhs);
 			}
-			rhs = parseLookaheadOperator(infixOperator.getPrecedence());
-			((IASTAppendable) lhs).append(rhs);
+			return ast;
+		} else {
+			if (fToken == TT_OPERATOR && infixOperator.getGrouping() == InfixOperator.NONE
+					&& infixOperator.isOperator(fOperatorString)) {
+				throwSyntaxError("Operator: \'" + fOperatorString + "\' not created properly (no grouping defined)");
+			}
 		}
 		return lhs;
 	}
@@ -1217,7 +1225,7 @@ public class ExprParser extends Scanner {
 					if (infixOperator.getPrecedence() > min_precedence
 							|| ((infixOperator.getPrecedence() == min_precedence)
 									&& (infixOperator.getGrouping() == InfixExprOperator.RIGHT_ASSOCIATIVE))) {
-						if (infixOperator.getOperatorString().equals(";")) {
+						if (infixOperator.isOperator(";")) {
 							rhs = F.Null;
 							// if (fPackageMode && fRecursionDepth < 1) {
 							// return createInfixFunction(infixOperator, lhs,

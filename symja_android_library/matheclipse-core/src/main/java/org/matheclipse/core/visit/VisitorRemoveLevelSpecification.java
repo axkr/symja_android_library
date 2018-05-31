@@ -128,47 +128,47 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 
 	@Override
 	public IExpr visit(IInteger element) {
-		return visitAtom( element); 
+		return visitAtom(element);
 	}
 
 	@Override
 	public IExpr visit(IFraction element) {
-		return visitAtom( element); 
+		return visitAtom(element);
 	}
 
 	@Override
 	public IExpr visit(IComplex element) {
-		return visitAtom( element); 
+		return visitAtom(element);
 	}
 
 	@Override
 	public IExpr visit(INum element) {
-		return visitAtom( element); 
+		return visitAtom(element);
 	}
 
 	@Override
 	public IExpr visit(IComplexNum element) {
-		return visitAtom( element); 
+		return visitAtom(element);
 	}
 
 	@Override
 	public IExpr visit(ISymbol element) {
-		return visitAtom( element); 
+		return visitAtom(element);
 	}
 
 	@Override
 	public IExpr visit(IPattern element) {
-		return visitAtom( element); 
+		return visitAtom(element);
 	}
 
 	@Override
 	public IExpr visit(IPatternSequence element) {
-		return visitAtom( element); 
+		return visitAtom(element);
 	}
 
 	@Override
 	public IExpr visit(IStringX element) {
-		return visitAtom( element); 
+		return visitAtom(element);
 	}
 
 	/**
@@ -178,23 +178,26 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 	 *            an AST where arguments could be removed.
 	 */
 	@Override
-	public IExpr visit(IASTMutable clonedAST) {
+	public IExpr visit(IASTMutable astCopy) {
 		int minDepth = -1;
 		IExpr arg;
 		IExpr temp;
+		IASTAppendable ast;
 		try {
-			if (!(clonedAST instanceof IASTAppendable)) {
-				clonedAST = clonedAST.copyAppendable();
+			if (!(astCopy instanceof IASTAppendable)) {
+				ast = astCopy.copyAppendable();
+			} else {
+				ast = (IASTAppendable) astCopy;
 			}
 			fCurrentLevel++;
 			if (fIncludeHeads) {
-				arg = clonedAST.get(0);
+				arg = ast.get(0);
 				if (arg.isAST()) {
 					arg = ((IAST) arg).copyAppendable();
 				}
 				temp = arg.accept(this);
 				if (temp.isPresent()) {
-					((IASTAppendable) clonedAST).remove(0);
+					ast.remove(0);
 					removedCounter++;
 					if (maximumRemoved >= 0) {
 						if (removedCounter >= maximumRemoved) {
@@ -202,7 +205,7 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 						}
 					}
 				} else {
-					clonedAST.set(0, arg);
+					ast.set(0, arg);
 				}
 				if (fCurrentDepth < minDepth) {
 					minDepth = fCurrentDepth;
@@ -210,14 +213,14 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 
 			}
 			int i = 1;
-			while (i < clonedAST.size()) {
-				arg = clonedAST.get(i);
+			while (i < ast.size()) {
+				arg = ast.get(i);
 				if (arg.isAST()) {
 					arg = ((IAST) arg).copyAppendable();
 				}
 				temp = arg.accept(this);
 				if (temp.isPresent()) {
-					((IASTAppendable) clonedAST).remove(i);
+					ast.remove(i);
 					removedCounter++;
 					if (maximumRemoved >= 0) {
 						if (removedCounter >= maximumRemoved) {
@@ -226,7 +229,7 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 					}
 					continue;
 				} else {
-					clonedAST.set(i, arg);
+					ast.set(i, arg);
 				}
 				i++;
 				if (fCurrentDepth < minDepth) {
@@ -238,7 +241,7 @@ public class VisitorRemoveLevelSpecification extends VisitorLevelSpecification {
 		}
 		fCurrentDepth = --minDepth;
 		if (isInRange(fCurrentLevel, minDepth)) {
-			return fFunction.apply(clonedAST);
+			return fFunction.apply(ast);
 		}
 		return F.NIL;
 

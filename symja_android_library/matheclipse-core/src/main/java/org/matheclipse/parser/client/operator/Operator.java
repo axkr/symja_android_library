@@ -54,6 +54,13 @@ public abstract class Operator {
 	}
 
 	/**
+	 * @return <code>true</code> if the operator string equals str<
+	 */
+	public boolean isOperator(String str) {
+		return fOperatorString.equals(str);
+	}
+
+	/**
 	 * @return the precedence of this operator
 	 */
 	public int getPrecedence() {
