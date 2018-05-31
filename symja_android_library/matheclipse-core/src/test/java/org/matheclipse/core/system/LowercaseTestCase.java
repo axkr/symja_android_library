@@ -4650,8 +4650,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testMap() {
 		check("Map(f, {{{{a}}}}, -2)", //
-				"{f({f({f({a})})})}"
-				+ "");
+				"{f({f({f({a})})})}");
 
 		check("Map(List,Join({1,2,3},4-{1,2,3}))", //
 				"{{1},{2},{3},{3},{2},{1}}");

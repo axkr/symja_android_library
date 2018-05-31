@@ -59,7 +59,7 @@ public class AST2Expr {
 			"AngleVector", "AnyTrue", "AntihermitianMatrixQ", "AntisymmetricMatrixQ", "AlgebraicNumber", "Alternatives",
 			"Apart", "AppellF1", "Append", "AppendTo", "Apply", "ArcCos", "ArcCosh", "ArcCot", "ArcCoth", "ArcCsc",
 			"ArcCsch", "ArcSec", "ArcSech", "ArcSin", "ArcSinh", "ArcTan", "ArcTanh", "Arg", "Array", "ArrayDepth",
-			"ArrayPad", "ArrayQ", "Assumptions", "AtomQ", "Attributes", "Begin", "BeginPackage", "BellB", "BellY",
+			"ArrayPad", "Arrays", "ArrayQ", "Assumptions", "AtomQ", "Attributes", "Begin", "BeginPackage", "BellB", "BellY",
 			"BernoulliB", "BernoulliDistribution", "BesselI", "BesselJ", "BesselK", "BesselY", "Beta",
 			"BetaRegularized", "BinCounts", "Binomial", "BinomialDistribution", "BitLength", "Blank", "Block", "Boole",
 			"BooleanQ", "BooleanConvert", "BooleanMinimize", "BooleanTable", "BooleanVariables", "BrayCurtisDistance",
