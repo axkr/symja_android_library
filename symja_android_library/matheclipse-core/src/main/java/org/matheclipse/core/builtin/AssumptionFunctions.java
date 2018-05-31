@@ -3,6 +3,7 @@ package org.matheclipse.core.builtin;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
+import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.eval.util.Assumptions;
 import org.matheclipse.core.eval.util.IAssumptions;
@@ -16,13 +17,53 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class AssumptionFunctions {
 	static {
+		F.Arrays.setEvaluator(new Arrays());
 		F.Element.setEvaluator(new Element());
 		F.Refine.setEvaluator(new Refine());
 	}
 
+	private final static class Arrays extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+			if (ast.size() == 2 && ast.arg1().isAST()) {
+				return F.Arrays((IAST) ast.arg1());
+			}
+			if (ast.size() == 3 && ast.arg1().isAST() && ast.arg2().isSymbol()) {
+				return F.Arrays((IAST) ast.arg1(), (ISymbol) ast.arg2());
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+		}
+
+	}
+
 	/**
-	 * Element(x, domain) - test if x is in the given domain.
+	 * <pre>
+	 * Element(symbol, dom)
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * assume (or test) that the <code>symbol</code> is in the domain <code>dom</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Domain_of_a_function">Wikipedia - Domain of a function</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Refine(Sin(k*Pi), Element(k, Integers))
+	 * 0
+	 * </pre>
 	 */
 	private static class Element extends AbstractCoreFunctionEvaluator {
 
@@ -57,6 +98,12 @@ public class AssumptionFunctions {
 				switch (symbolID) {
 				case ID.Algebraics:
 					truthValue = AbstractAssumptions.assumeAlgebraic(arg1);
+					if (truthValue != null) {
+						return truthValue;
+					}
+					break;
+				case ID.Arrays: 
+					truthValue = AbstractAssumptions.assumeArray(arg1);
 					if (truthValue != null) {
 						return truthValue;
 					}

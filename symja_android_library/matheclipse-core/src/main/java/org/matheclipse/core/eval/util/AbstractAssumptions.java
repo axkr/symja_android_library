@@ -71,6 +71,19 @@ public abstract class AbstractAssumptions implements IAssumptions {
 	}
 
 	/**
+	 * Test if <code>expr</code> is assumed to be an <code>Arrays(list, domain, symmetry)</code> expression.
+	 * 
+	 * @param expr
+	 * @return  
+	 */
+	public static ISymbol assumeArray(final IExpr expr) {
+		if (expr.isAST(F.Arrays, 4) ) {
+			return F.True;
+		}
+		return null;
+	}
+	
+	/**
 	 * Test if <code>expr</code> is assumed to be an boolean value.
 	 * 
 	 * @param expr
