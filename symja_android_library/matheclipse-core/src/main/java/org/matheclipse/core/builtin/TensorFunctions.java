@@ -1,5 +1,6 @@
 package org.matheclipse.core.builtin;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -25,6 +26,7 @@ public class TensorFunctions {
 		F.TensorDimensions.setEvaluator(new TensorDimensions());
 		F.TensorProduct.setEvaluator(new TensorProduct());
 		F.TensorRank.setEvaluator(new TensorRank());
+		F.TensorSymmetry.setEvaluator(new TensorSymmetry());
 	}
 
 	/**
@@ -269,6 +271,113 @@ public class TensorFunctions {
 			if (ast.arg1().isList()) {
 				// same as Dimensions for List structures
 				return F.Dimensions(ast.arg1());
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+	}
+
+	private static class TensorSymmetry extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+			if (ast.arg1().isAST()) {
+				IAST tensor = (IAST) ast.arg1();
+				ArrayList<Integer> dims = LinearAlgebra.dimensions(tensor, tensor.head(), Integer.MAX_VALUE);
+				if (dims.size() > 0) {
+					if (dims.size() == 2 && dims.get(0) == dims.get(1)) {
+						// square matrix
+						int rowColumnSize = dims.get(0) + 1;
+						if (rowColumnSize == 2) {
+							if (tensor.getPart(1, 1).isZero()) {
+								return F.ZeroSymmetric(F.List());
+							}
+							return F.Symmetric(F.List(F.C1, F.C2));
+						}
+						return tensorSymmetrySquareMatrix(tensor, rowColumnSize, engine);
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+		/**
+		 * 
+		 * @param squareMatrix
+		 * @param rowColumnSize
+		 *            the row and column size of the square matrix
+		 * @param engine
+		 *            the evaluation engine
+		 * @return
+		 */
+		private static IExpr tensorSymmetrySquareMatrix(IAST squareMatrix, int rowColumnSize, EvalEngine engine) {
+			IExpr temp = isZeroSymmetricSquareMatrix(squareMatrix, rowColumnSize);
+			if (temp.isPresent()) {
+				return temp;
+			}
+			boolean isAntiSymmetric = true;
+			boolean isSymmetric = true;
+			for (int i = 1; i < rowColumnSize; i++) {
+				if (isSymmetric) {
+					for (int j = i + 1; j < rowColumnSize; j++) {
+						if (!squareMatrix.getPart(i, j).equals(squareMatrix.getPart(j, i))) {
+							isSymmetric = false;
+							break;
+						}
+					}
+				}
+				if (isSymmetric) {
+					isAntiSymmetric = false;
+				} else if (isAntiSymmetric) {
+					for (int j = i + 1; j < rowColumnSize; j++) {
+						temp = squareMatrix.getPart(j, i).negate();
+						if (!squareMatrix.getPart(i, j).equals(temp)) {
+							isAntiSymmetric = false;
+							break;
+						}
+					}
+				}
+
+				if (!isAntiSymmetric && !isSymmetric) {
+					return F.NIL;
+				}
+			}
+			if (isSymmetric) {
+				return F.Symmetric(F.List(F.C1, F.C2));
+			}
+			if (isAntiSymmetric) {
+				return F.AntiSymmetric(F.List(F.C1, F.C2));
+			}
+			return F.List();
+		}
+
+		/**
+		 * 
+		 * @param squareMatrix
+		 * @param rowColumnSize
+		 *            the row and column size of the square matrix
+		 * @return
+		 */
+		private static IExpr isZeroSymmetricSquareMatrix(IAST squareMatrix, int rowColumnSize) {
+			boolean isZero = true;
+			for (int i = 1; i < rowColumnSize; i++) {
+				for (int j = 1; j < rowColumnSize; j++) {
+					if (!squareMatrix.getPart(i, j).isZero()) {
+						isZero = false;
+						break;
+					}
+				}
+				if (!isZero) {
+					break;
+				}
+			}
+			if (isZero) {
+				return F.ZeroSymmetric(F.List());
 			}
 			return F.NIL;
 		}

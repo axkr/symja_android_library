@@ -9081,6 +9081,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	}
 
+	public void testTensorSymmetry() {
+		check("TensorSymmetry({{a,b,c,d}, {b,e,f,g}, {c,f,h,i},{d,g,i,j}})", //
+				"Symmetric({1,2})");
+		check("TensorSymmetry({{0, a, b}, {-a, 0, c}, {-b, -c, 0}})", //
+				"AntiSymmetric({1,2})");
+		check("TensorSymmetry({{a}})", "Symmetric({1,2})");
+		check("TensorSymmetry({{0}})", "ZeroSymmetric({})");
+		check("TensorSymmetry({{0,0}, {0,0}})", "ZeroSymmetric({})");
+		check("TensorSymmetry({{a,b}, {b,c}})", "Symmetric({1,2})");
+		
+	}
+
 	public void testTeXForm() {
 		check("TeXForm(Infinity)", "\\infty");
 		check("TeXForm(-Infinity)", "-\\infty");
