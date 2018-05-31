@@ -889,6 +889,35 @@ public class Structure {
 
 	}
 
+	/**
+	 * <pre>
+	 * MapIndexed(f, expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * applies <code>f</code> to each part on the first level of <code>expr</code> and appending the elements position
+	 * as a list in the second argument.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * MapIndexed(f, expr, levelspec)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * applies <code>f</code> to each level specified by <code>levelspec</code> of <code>expr</code> and appending the
+	 * elements position as a list in the second argument.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; MapIndexed(f, {{{{a, b}, {c, d}}}, {{{u, v}, {s, t}}}}, 2)
+	 * {f({f({{a,b},{c,d}},{1,1})},{1}),f({f({{u,v},{s,t}},{2,1})},{2})}
+	 * </pre>
+	 */
 	private final static class MapIndexed extends AbstractFunctionEvaluator {
 
 		@Override
@@ -904,18 +933,17 @@ public class Structure {
 				if (option.isTrue()) {
 					heads = true;
 				}
-			}  
+			}
 
 			try {
 				IExpr arg1 = ast.arg1();
 				IndexedLevel level;
 				if (lastIndex == 3) {
-					level = new IndexedLevel((x, y) -> F.binaryAST2(arg1, x, y), ast.get(lastIndex), heads,
-							engine);
+					level = new IndexedLevel((x, y) -> F.binaryAST2(arg1, x, y), ast.get(lastIndex), heads, engine);
 				} else {
 					level = new IndexedLevel((x, y) -> F.binaryAST2(arg1, x, y), 1, heads);
 				}
-				
+
 				IExpr arg2 = ast.arg2();
 				if (arg2.isAST()) {
 					return level.visitAST(((IAST) arg2), new int[0]).orElse(arg2);
