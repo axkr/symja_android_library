@@ -45,9 +45,13 @@ public class ExprParserFactory implements IParserFactory {
 		@Override
 		public IASTMutable createFunction(final IParserFactory factory, ExprParser parser, final IExpr lhs,
 				final IExpr rhs) {
+			if (fOperatorString.equals("@")) {
+				return F.unaryAST1(lhs, rhs);
+			}
 			IASTAppendable fn = F.ast(F.Apply);
 			fn.append(lhs);
 			fn.append(rhs);
+			
 			if (fOperatorString.equals("@@")) {
 				return fn;
 			}
@@ -139,6 +143,9 @@ public class ExprParserFactory implements IParserFactory {
 
 	public final static int APPLY_PRECEDENCE = 620;
 
+	public final static ApplyOperator APPLY_HEAD_OPERATOR = new ApplyOperator("@", "Apply", 640,
+			InfixExprOperator.RIGHT_ASSOCIATIVE);
+	
 	public final static ApplyOperator APPLY_OPERATOR = new ApplyOperator("@@", "Apply", 620,
 			InfixExprOperator.RIGHT_ASSOCIATIVE);
 
@@ -146,14 +153,14 @@ public class ExprParserFactory implements IParserFactory {
 			InfixExprOperator.RIGHT_ASSOCIATIVE);
 
 	static final String[] HEADER_STRINGS = { "MessageName", "Get", "PatternTest", "MapAll", "TimesBy", "Plus", "UpSet",
-			"CompoundExpression", "Map", "Unset", "Apply", "Apply", "ReplaceRepeated", "Less", "And", "Divide", "Set",
+			"CompoundExpression", "Apply", "Map", "Unset", "Apply", "Apply", "ReplaceRepeated", "Less", "And", "Divide", "Set",
 			"Increment", "Factorial2", "LessEqual", "NonCommutativeMultiply", "Factorial", "Times", "Power", "Dot",
 			"Not", "PreMinus", "SameQ", "RuleDelayed", "GreaterEqual", "Condition", "Colon", "//", "DivideBy", "Or",
 			"Span", "Equal", "StringJoin", "Unequal", "Decrement", "SubtractFrom", "PrePlus", "RepeatedNull", "UnsameQ",
 			"Rule", "UpSetDelayed", "PreIncrement", "Function", "Greater", "PreDecrement", "Subtract", "SetDelayed",
 			"Alternatives", "AddTo", "Repeated", "ReplaceAll" };
 
-	static final String[] OPERATOR_STRINGS = { "::", "<<", "?", "//@", "*=", "+", "^=", ";", "/@", "=.", "@@", "@@@",
+	static final String[] OPERATOR_STRINGS = { "::", "<<", "?", "//@", "*=", "+", "^=", ";","@", "/@", "=.", "@@", "@@@",
 			"//.", "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=", "/;",
 			":", "//", "/=", "||", ";;", "==", "<>", "!=", "--", "-=", "+", "...", "=!=", "->", "^:=", "++", "&", ">",
 			"--", "-", ":=", "|", "+=", "..", "/." };
@@ -166,6 +173,8 @@ public class ExprParserFactory implements IParserFactory {
 			new InfixExprOperator("+", "Plus", PLUS_PRECEDENCE, InfixExprOperator.NONE),
 			new InfixExprOperator("^=", "UpSet", 40, InfixExprOperator.RIGHT_ASSOCIATIVE),
 			new InfixExprOperator(";", "CompoundExpression", 10, InfixExprOperator.NONE),
+			
+			APPLY_HEAD_OPERATOR,
 			new InfixExprOperator("/@", "Map", 620, InfixExprOperator.RIGHT_ASSOCIATIVE),
 			new PostfixExprOperator("=.", "Unset", 670), APPLY_OPERATOR, APPLY_LEVEL_OPERATOR,
 			new InfixExprOperator("//.", "ReplaceRepeated", 110, InfixExprOperator.LEFT_ASSOCIATIVE),

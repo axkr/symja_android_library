@@ -15,7 +15,7 @@ public class RelaxedParserTestCase extends TestCase {
 	}
 
 	public void testParser0() {
-		try { 
+		try {
 			Parser p = new Parser(true);
 			Object obj = p.parse("Integrate(Sin(x)^2+3*x^4, x)");
 			assertEquals(obj.toString(), "Integrate(Plus(Power(Sin(x), 2), Times(3, Power(x, 4))), x)");
@@ -41,7 +41,7 @@ public class RelaxedParserTestCase extends TestCase {
 			Parser p = new Parser(true);
 			Object obj = p.parse("1; 2; 3;");
 			assertEquals(obj.toString(), "CompoundExpression(1, 2, 3, Null)");
-			
+
 			obj = p.parse("1; 2; 3");
 			assertEquals(obj.toString(), "CompoundExpression(1, 2, 3)");
 		} catch (Exception e) {
@@ -49,7 +49,7 @@ public class RelaxedParserTestCase extends TestCase {
 			assertEquals("1", "0");
 		}
 	}
-	
+
 	public void testParser3() {
 		try {
 			Parser p = new Parser(true);
@@ -59,14 +59,24 @@ public class RelaxedParserTestCase extends TestCase {
 			e.printStackTrace();
 			assertEquals("1", "0");
 		}
-	} 
-	
+	}
+
 	public void testParser4() {
 		try {
 			Parser p = new Parser(true);
 			ASTNode obj = p.parse("#1.#123");
-			assertEquals(obj.toString(),
-					"Dot(Slot(1), Slot(123))");
+			assertEquals(obj.toString(), "Dot(Slot(1), Slot(123))");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+
+	public void testParse5() {
+		try {
+			Parser p = new Parser(true);
+			ASTNode obj = p.parse("f@ g@ h");
+			assertEquals(obj.toString(), "f(g(h))");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());

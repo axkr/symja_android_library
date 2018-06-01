@@ -47,6 +47,11 @@ public class ASTNodeFactory implements INodeParserFactory {
 		}
 
 		public ASTNode createFunction(final INodeParserFactory factory, final ASTNode lhs, final ASTNode rhs) {
+			if (fOperatorString.equals("@")) {
+				FunctionNode fn = factory.createAST(lhs);
+				fn.add(rhs);
+				return fn;
+			}
 			FunctionNode fn = factory.createFunction(factory.createSymbol("Apply"), lhs, rhs);
 			if (fOperatorString.equals("@@")) {
 				return fn;
@@ -120,21 +125,25 @@ public class ASTNodeFactory implements INodeParserFactory {
 
 	public final static int POWER_PRECEDENCE = 590;
 
+	public final static int APPLY_HEAD_PRECEDENCE = 660;
+
 	public final static int APPLY_PRECEDENCE = 620;
 
 	static final String[] HEADER_STRINGS = { "MessageName", "Get", "PatternTest", "MapAll", "TimesBy", "Plus", "UpSet",
-			"CompoundExpression", "Map", "Unset", "Apply", "Apply", "ReplaceRepeated", "Less", "And", "Divide", "Set",
-			"Increment", "Factorial2", "LessEqual", "NonCommutativeMultiply", "Factorial", "Times", "Power", "Dot",
-			"Not", "PreMinus", "SameQ", "RuleDelayed", "GreaterEqual", "Condition", "Colon", "//", "DivideBy", "Or",
-			"Span", "Equal", "StringJoin", "Unequal", "Decrement", "SubtractFrom", "PrePlus", "RepeatedNull", "UnsameQ",
-			"Rule", "UpSetDelayed", "PreIncrement", "Function", "Greater", "PreDecrement", "Subtract", "SetDelayed",
-			"Alternatives", "AddTo", "Repeated", "ReplaceAll" };
+			"CompoundExpression", "Apply", "Map", "Unset", "Apply", "Apply", "ReplaceRepeated", "Less", "And", "Divide",
+			"Set", "Increment", "Factorial2", "LessEqual", "NonCommutativeMultiply", "Factorial", "Times", "Power",
+			"Dot", "Not", "PreMinus", "SameQ", "RuleDelayed", "GreaterEqual", "Condition", "Colon", "//", "DivideBy",
+			"Or", "Span", "Equal", "StringJoin", "Unequal", "Decrement", "SubtractFrom", "PrePlus", "RepeatedNull",
+			"UnsameQ", "Rule", "UpSetDelayed", "PreIncrement", "Function", "Greater", "PreDecrement", "Subtract",
+			"SetDelayed", "Alternatives", "AddTo", "Repeated", "ReplaceAll" };
 
-	static final String[] OPERATOR_STRINGS = { "::", "<<", "?", "//@", "*=", "+", "^=", ";", "/@", "=.", "@@", "@@@",
-			"//.", "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=", "/;",
-			":", "//", "/=", "||", ";;", "==", "<>", "!=", "--", "-=", "+", "...", "=!=", "->", "^:=", "++", "&", ">",
-			"--", "-", ":=", "|", "+=", "..", "/." };
+	static final String[] OPERATOR_STRINGS = { "::", "<<", "?", "//@", "*=", "+", "^=", ";", "@", "/@", "=.", "@@",
+			"@@@", "//.", "<", "&&", "/", "=", "++", "!!", "<=", "**", "!", "*", "^", ".", "!", "-", "===", ":>", ">=",
+			"/;", ":", "//", "/=", "||", ";;", "==", "<>", "!=", "--", "-=", "+", "...", "=!=", "->", "^:=", "++", "&",
+			">", "--", "-", ":=", "|", "+=", "..", "/." };
 
+	public static final ApplyOperator APPLY_HEAD_OPERATOR = new ApplyOperator("@", "Apply", APPLY_HEAD_PRECEDENCE,
+			InfixOperator.RIGHT_ASSOCIATIVE);
 	public static final ApplyOperator APPLY_OPERATOR = new ApplyOperator("@@", "Apply", APPLY_PRECEDENCE,
 			InfixOperator.RIGHT_ASSOCIATIVE);
 	public static final ApplyOperator APPLY_LEVEL_OPERATOR = new ApplyOperator("@@@", "Apply", APPLY_PRECEDENCE,
@@ -146,7 +155,7 @@ public class ASTNodeFactory implements INodeParserFactory {
 			new InfixOperator("*=", "TimesBy", 100, InfixOperator.RIGHT_ASSOCIATIVE),
 			new InfixOperator("+", "Plus", PLUS_PRECEDENCE, InfixOperator.NONE),
 			new InfixOperator("^=", "UpSet", 40, InfixOperator.RIGHT_ASSOCIATIVE),
-			new InfixOperator(";", "CompoundExpression", 10, InfixOperator.NONE),
+			new InfixOperator(";", "CompoundExpression", 10, InfixOperator.NONE), APPLY_HEAD_OPERATOR,
 			new InfixOperator("/@", "Map", 620, InfixOperator.RIGHT_ASSOCIATIVE),
 			new PostfixOperator("=.", "Unset", 670), APPLY_OPERATOR, APPLY_LEVEL_OPERATOR,
 			// new ApplyOperator("@@", "Apply", APPLY_PRECEDENCE,

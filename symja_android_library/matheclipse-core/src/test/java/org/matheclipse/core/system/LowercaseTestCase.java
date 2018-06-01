@@ -171,6 +171,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testApply() {
+		check("f@ g@ h@ i", //
+				"f(g(h(i)))");
+		
 		// github issue #40
 		check("((#+##&) @@#&) /@{{1,2},{2,2,2},{3,4}}", //
 				"{4,8,10}");
@@ -4082,7 +4085,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testJoin() {
-		// http://oeis.org/A001597 - Perfect powers: m^k where m > 0 and k >= 2.
+//		check("min = 0; max = 10^4;  "//
+//				+ "Union@ Flatten@ Table( n^expo, {expo, Prime@ Range@ PrimePi@ Log2@ max}, {n, Floor(1 + min^(1/expo)), max^(1/expo)})",
+//				"");
+		// http://oeis.org/A001597 - Perfect powers: m^k where m > 0 and k >= 2. //
 		check("Join({1}, Select(Range(1770), GCD@@FactorInteger(#)[[All, 2]]>1&))", //
 				"{1,4,8,9,16,25,27,32,36,49,64,81,100,121,125,128,144,169,196,216,225,243,256,289,\n"
 						+ "324,343,361,400,441,484,512,529,576,625,676,729,784,841,900,961,1000,1024,1089,\n"
@@ -7199,6 +7205,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testRange() {
+		check("Range(5.0)", //
+				"{1,2,3,4,5}");
+		check("Range(-5.0)", //
+				"{}");
+
 		check("Range(0,10,Pi)", //
 				"{0,Pi,2*Pi,3*Pi}");
 		check("x * Range(-1, 1, 1/5)", //

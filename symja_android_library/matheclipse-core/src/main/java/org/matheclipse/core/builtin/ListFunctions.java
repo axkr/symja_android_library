@@ -3378,13 +3378,24 @@ public final class ListFunctions {
 				if (size != Integer.MIN_VALUE) {
 					return range(size);
 				}
-
+				engine.printMessage("Range: argument " + ast.arg1()
+						+ " is greater than Javas Integer.MAX_VALUE or no integer number.");
 				return F.NIL;
 			}
 			return evaluateTable(ast, List(), engine);
 		}
 
+		/**
+		 * 
+		 * @param size
+		 * @return <code>F.NIL</code> if <code>size > Integer.MAX_VALUE-3</code>
+		 */ 
 		public static IAST range(int size) {
+			if (size > Integer.MAX_VALUE - 3) {
+				EvalEngine.get().printMessage(
+						"Range: argument " + size + " is greater than Javas Integer.MAX_VALUE-3");
+				return F.NIL;
+			}
 			return range(1, size + 1);
 		}
 
