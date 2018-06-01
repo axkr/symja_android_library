@@ -3373,11 +3373,10 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST1() && ast.arg1().isInteger()) {
-				try {
-					int size = ((IInteger) ast.arg1()).toInt();
+			if (ast.isAST1()) {
+				int size = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+				if (size != Integer.MIN_VALUE) {
 					return range(size);
-				} catch (final ArithmeticException ae) {
 				}
 
 				return F.NIL;
