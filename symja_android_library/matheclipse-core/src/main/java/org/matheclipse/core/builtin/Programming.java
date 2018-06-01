@@ -2376,7 +2376,7 @@ public final class Programming {
 		if (!expr.isAST() || pos >= ast.size()) {
 			return expr;
 		}
-		IAST arg1 = (IAST) expr;
+		final IAST arg1 = (IAST) expr;
 		final IExpr arg2 = ast.get(pos);
 		int p1 = pos + 1;
 		int[] span = arg2.isSpan(arg1.size());
@@ -2384,21 +2384,9 @@ public final class Programming {
 			int start = span[0];
 			int last = span[1];
 			int step = span[2];
-			IASTAppendable result = arg1.copyHead();
-
-			if (step < 0 && start >= last) {
-				for (int i = start; i >= last; i += step) {
-					result.append(part(arg1.get(i), ast, p1, engine));
-				}
-			} else if (step > 0 && (last != 1 || start <= last)) {
-				for (int i = start; i <= last; i += step) {
-					result.append(part(arg1.get(i), ast, p1, engine));
-				}
-			} else {
-				throw new WrongArgumentType(ast, arg2, pos,
-						"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
-			}
-			return result;
+			return spanPart(ast, pos, arg1, arg2, start, last, step, p1, engine);
+		} else if (arg2.equals(F.All)) {
+			return spanPart(ast, pos, arg1, arg2, 1, arg1.size()-1, 1, p1, engine);
 		} else if (arg2.isReal()) {
 			final int indx = Validate.checkIntType(ast, pos, Integer.MIN_VALUE);
 			IExpr result = null;
@@ -2442,8 +2430,49 @@ public final class Programming {
 			}
 			return result;
 		}
+		// IExpr temp = null;
+		// final IAST list = arg1;
+		// final IASTAppendable result = F.ListAlloc(list.size());
+		//
+		// for (int i = 1; i < list.size(); i++) {
+		// final IExpr listArg = list.get(i);
+		//
+		// if (p1 < ast.size()) {
+		// if (ires.isAST()) {
+		// temp = part(ires, ast, p1, engine);
+		// result.append(temp);
+		// } else {
+		// throw new WrongArgumentType(ast, arg1, pos,
+		// "Wrong argument for Part[] function. Function or list expected.");
+		// }
+		// } else {
+		// result.append(ires);
+		// }
+		//
+		// }
+		// return result;
 		throw new WrongArgumentType(ast, arg1, pos,
 				"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
+
+	}
+
+	private static IExpr spanPart(final IAST ast, int pos, IAST arg1, final IExpr arg2, int start, int last, int step,
+			int p1, EvalEngine engine) {
+		IASTAppendable result = arg1.copyHead();
+
+		if (step < 0 && start >= last) {
+			for (int i = start; i >= last; i += step) {
+				result.append(part(arg1.get(i), ast, p1, engine));
+			}
+		} else if (step > 0 && (last != 1 || start <= last)) {
+			for (int i = start; i <= last; i += step) {
+				result.append(part(arg1.get(i), ast, p1, engine));
+			}
+		} else {
+			throw new WrongArgumentType(ast, arg2, pos,
+					"Wrong argument for Part[] function: " + arg2.toString() + " selects no part expression.");
+		}
+		return result;
 	}
 
 	public static IExpr assignPart(final IExpr assignedExpr, final IAST part, int partPosition, IExpr value,

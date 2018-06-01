@@ -4082,6 +4082,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testJoin() {
+		// http://oeis.org/A001597 - Perfect powers: m^k where m > 0 and k >= 2.
+		check("Join({1}, Select(Range(1770), GCD@@FactorInteger(#)[[All, 2]]>1&))", //
+				"{1,4,8,9,16,25,27,32,36,49,64,81,100,121,125,128,144,169,196,216,225,243,256,289,\n"
+						+ "324,343,361,400,441,484,512,529,576,625,676,729,784,841,900,961,1000,1024,1089,\n"
+						+ "1156,1225,1296,1331,1369,1444,1521,1600,1681,1728,1764}");
+
 		check("Join({a, b}, {c, d, e})", "{a,b,c,d,e}");
 		check("Join({{a, b}, {c, d}}, {{1, 2}, {3, 4}})", "{{a,b},{c,d},{1,2},{3,4}}");
 		check("Join(a + b, c + d, e + f)", "a+b+c+d+e+f");
@@ -4411,6 +4417,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testLimit() {
+		// check("Limit(x*(Sqrt(2*Pi*x)/(x!))^(1/x), x->Infinity)", "E");
+		// check("Limit(x/((x!)^(1/x)), x->Infinity)", "E");
+		check("Limit((1+k/x)^x, x->Infinity)", "E^k");
+		check("Limit((1-1/x)^x, x->Infinity)", "1/E");
 		// check("Limit((1 + Sinh(x))/E^x, x ->Infinity)", "Infinity*Limit(E^(-x),x->Infinity)");
 
 		// issue #184
@@ -4432,6 +4442,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Limit(Log(x^y), x->0)", "DirectedInfinity(-y)");
 		check("Limit(Log(y*x, b), x->1)", "Limit(1/Log(x*y),x->1)*Log(b)");
 		check("Limit(Log(y*x), x->0)", "-Infinity+Log(y)");
+		check("Limit(Log(x), x->Infinity)", "Infinity");
 		check("Limit(Log(x), x->-Infinity)", "Infinity");
 		check("Limit((y*x)/Abs(x), x->0)", "Indeterminate");
 		check("Limit((y*x)/Abs(x), x->0, Direction->1)", "-y");
@@ -4465,7 +4476,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Limit((2*x^3-3*x),x->Infinity)", "Infinity");
 		check("Limit((2*x^3+3*x),x->Infinity)", "Infinity");
 
-		check("Limit(E^x,x->-Infinity)", "0");
+		check("Limit(E^x, x->Infinity)", "Infinity");
+		check("Limit(E^x, x->-Infinity)", "0");
+		check("Limit(a^x, x->0)", "1");
+		check("Limit(c*(x^(-10)), x->Infinity)", "0");
+
 		// TOOO distinguish between upper and lower limit convergence
 		check("Limit(1/(x - 4), x -> 4)", "Infinity");
 
@@ -4864,6 +4879,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMatchQ() {
+		check("MatchQ({x*(Sqrt(2*Pi*x)/(x!))^(1/x),x->Infinity}, {x_*(Sqrt(2*Pi*x_)/(x_!))^(1/x_), x_->Infinity})", //
+				"True");
 		// TODO
 		check("MatchQ({a}, {a, ___})", //
 				"True");
@@ -6080,6 +6097,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPart() {
+		check("{{3,1},{5,1},{17,1},{257,1},{65537,1}}[[All,2]]", //
+				"{1,1,1,1,1}");
+		check("{{3,1},{5,1},{17,1},{257,1},{65537,1}}[[None]]", //
+				"{{3,1},{5,1},{17,1},{257,1},{65537,1}}[[None]]");
 		check("lst=False;lst[[2]]", "(False[[2]])");
 		check("T = {a, b, c, d}", "{a,b,c,d}");
 		check("T[[2]]=3", "3");
