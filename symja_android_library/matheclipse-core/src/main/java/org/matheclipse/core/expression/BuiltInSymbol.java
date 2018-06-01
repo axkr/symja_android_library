@@ -100,10 +100,10 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 		if (hasLocalVariableStack()) {
 			return ExprUtil.ofNullable(get());
 		}
-		IExpr result;
-		if ((result = evalDownRule(engine, this)).isPresent()) {
-			return result;
-		}
+		// IExpr result;
+		// if ((result = evalDownRule(engine, this)).isPresent()) {
+		// return result;
+		// }
 		return F.NIL;
 	}
 
