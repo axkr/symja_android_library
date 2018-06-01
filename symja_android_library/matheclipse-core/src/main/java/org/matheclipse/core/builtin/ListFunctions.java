@@ -3373,7 +3373,7 @@ public final class ListFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST1()) {
+			if (ast.isAST1() && ast.arg1().isReal()) {
 				int size = ast.arg1().toIntDefault(Integer.MIN_VALUE);
 				if (size != Integer.MIN_VALUE) {
 					return range(size);
