@@ -3232,20 +3232,16 @@ public final class Arithmetic {
 					}
 					multiplicationFactors.append(temp.first());
 					plusClone.remove(i);
-				} else if (temp.isTimes()) {
+				} else if (temp.isTimes() && temp.size() == 3 && temp.second().isLog() && temp.first().isReal()) {
 					IAST times = (IAST) temp;
-					for (int j = times.argSize(); j > 0; j--) {
-						if (times.get(j).isLog()) {
-							IExpr innerFunc = times.get(j).first();
-							if (!multiplicationFactors.isPresent()) {
-								multiplicationFactors = F.TimesAlloc(8);
-								plusClone = plus.copyAppendable();
-							}
-							multiplicationFactors.append(F.Power(innerFunc, F.ast(times, F.Times, false, j, j + 1)));
-							plusClone.remove(i);
-							break;
-						}
+					IExpr logArgument = times.arg2().first();
+					if (!multiplicationFactors.isPresent()) {
+						multiplicationFactors = F.TimesAlloc(8);
+						plusClone = plus.copyAppendable();
 					}
+					// logArgument ^ times.arg1()
+					multiplicationFactors.append(F.Power(logArgument, times.arg1()));
+					plusClone.remove(i);
 				}
 			}
 			if (multiplicationFactors.isPresent()) {

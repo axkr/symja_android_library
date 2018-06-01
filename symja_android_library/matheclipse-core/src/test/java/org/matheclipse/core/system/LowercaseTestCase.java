@@ -2326,6 +2326,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEliminate() {
+		// TODO
+		// check("Eliminate({a0*x^p+a1*x^q==0},x)", //
+		// "(-a1)*x^q == a0*x^p");
 		check("Eliminate({x == 2 + y, y == z}, y)", "{x==2+z}");
 		check("Eliminate({x == 2 + y, y == z}, {y,v})", "{x==2+z}");
 		check("Eliminate({2*x + 3*y + 4*z == 1, 9*x + 8*y + 7*z == 2}, z)", "{11/2*x+11/4*y==1/4}");
@@ -6682,8 +6685,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("E^(y+Log(x))", "E^y*x");
 		check("E^(y+Log(x)-z)", "E^(y-z)*x");
 		check("E^(y-Log(x)-z)", "E^(y-z)/x");
-		check("E^(y+Log(x)-a*Log(v)*b*Log(u)-z)", "(E^(y-z)*x)/v^(a*b*Log(u))");
-
+		check("E^(y+Log(x)-a*Log(v)*b*Log(u)-z)", "E^(y-z-a*b*Log(u)*Log(v))*x");
+		check("E^(y-Log(x)+Log(y)-a*Log(v)*b*Log(u)-z)", "(E^(y-z-a*b*Log(u)*Log(v))*y)/x");
 		check("Sqrt(1/a)", "Sqrt(1/a)");
 	}
 
@@ -7573,13 +7576,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRoots() {
+		check("Roots(x^16-1==0,x)", //
+				"x==-1||x==1||x==-I||x==I||x==-(-1)^(1/8)||x==(-1)^(1/8)||x==-(-1)^(1/4)||x==(-1)^(\n"
+						+ "1/4)||x==-(-1)^(3/8)||x==(-1)^(3/8)||x==-(-1)^(5/8)||x==(-1)^(5/8)||x==-(-1)^(3/\n"
+						+ "4)||x==(-1)^(3/4)||x==-(-1)^(7/8)||x==(-1)^(7/8)");
 		// check("Roots(a*x^3+b*x^2+c^2+d, x)",
 		// "{(-b/2-Sqrt(b^2-4*a*c)/2)/a,(-b/2+Sqrt(b^2-4*a*c)/2)/a}");
-		check("Roots(x^2-2*x-3==0,x)", "x==-1||x==3");
-		check("Roots(a*x^2+b*x+c==0, x)", "x==(-b/2-Sqrt(b^2-4*a*c)/2)/a||x==(-b/2+Sqrt(b^2-4*a*c)/2)/a");
-		check("Roots(3*x^3-8*x^2+-11*x+10==0,x)", "x==2/3||x==1-Sqrt(6)||x==1+Sqrt(6)");
-		check("Roots(3*x^3-5*x^2+5*x-2==0,x)", "x==2/3||x==1/2-I*1/2*Sqrt(3)||x==1/2+I*1/2*Sqrt(3)");
-		check("Roots(x^3 - 5*x + 4==0,x)", "x==1||x==-1/2-Sqrt(17)/2||x==-1/2+Sqrt(17)/2");
+		check("Roots(x^2-2*x-3==0,x)", //
+				"x==-1||x==3");
+		check("Roots(a*x^2+b*x+c==0, x)", //
+				"x==(-b/2-Sqrt(b^2-4*a*c)/2)/a||x==(-b/2+Sqrt(b^2-4*a*c)/2)/a");
+		check("Roots(3*x^3-8*x^2+-11*x+10==0,x)", //
+				"x==2/3||x==1-Sqrt(6)||x==1+Sqrt(6)");
+		check("Roots(3*x^3-5*x^2+5*x-2==0,x)", //
+				"x==2/3||x==1/2-I*1/2*Sqrt(3)||x==1/2+I*1/2*Sqrt(3)");
+		check("Roots(x^3 - 5*x + 4==0,x)", //
+				"x==1||x==-1/2-Sqrt(17)/2||x==-1/2+Sqrt(17)/2");
 
 	}
 
@@ -8256,8 +8268,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
-		// check("Solve(a*x^n+b*x^m==0, x)", //
-		// "");
+		check("E^((Log(a)+Log(b))/m)", //
+				"E^((Log(a)+Log(b))/m)");
+		check("Solve(a0*x^p+a1*x^q==0,x)", //
+				"{{x->E^((-I*Pi+Log(a0)-Log(a1))/(-p+q))}}");
+
 		check("Solve(a*x^2+b*x==0, x)", //
 				"{{x->0},{x->-b/a}}");
 		check("Solve({Cos(x)*x==0, x > 10}, x)", "{}");
