@@ -592,6 +592,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("BetaRegularized(2 , 7 , -17)", "0");
 	}
 
+	public void testBlock() {
+		// http://oeis.org/A005132 - Recaman's sequence
+		check("f(s_List) := Block({a = s[[-1]], len = Length@s}, Append(s, If(a > len && !MemberQ(s, a - len), a - len, a + len))); Nest(f, {0}, 70)", //
+				"{0,1,3,6,2,7,13,20,12,21,11,22,10,23,9,24,8,25,43,62,42,63,41,18,42,17,43,16,44,\n"
+						+ "15,45,14,46,79,113,78,114,77,39,78,38,79,37,80,36,81,35,82,34,83,33,84,32,85,31,\n"
+						+ "86,30,87,29,88,28,89,27,90,26,91,157,224,156,225,155}");
+	}
+
 	public void testBinomial() {
 		check("Binomial(-200,-100)", //
 				"0");
@@ -2133,9 +2141,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDivisors() {
-		check("Divisors(990)", "{1,2,3,5,6,9,10,11,15,18,22,30,33,45,55,66,90,99,110,165,198,330,495,990}");
-		check("Divisors(341550071728321)", "{1,10670053,32010157,341550071728321}");
-		check("Divisors(2010)", "{1,2,3,5,6,10,15,30,67,134,201,335,402,670,1005,2010}");
+		check("a178752(n_):=Sum((1/GCD(n, k))*2^s *EulerPhi(GCD(n, k)/s), {k, 0, n-1}, {s, Divisors(GCD(n, k))})", //
+				"");
+		check("Table(a178752(n),{n,30})", //
+				"{2,5,8,13,16,28,32,56,80,136,208,400,656,1232,2240,4192,7744,14728,27632,52664,\n"
+						+ "99968,190984,364768,699760,1342256,2582120,4971248,9588880,18512848,35795104}");
+		check("Divisors(990)", //
+				"{1,2,3,5,6,9,10,11,15,18,22,30,33,45,55,66,90,99,110,165,198,330,495,990}");
+		check("Divisors(341550071728321)", //
+				"{1,10670053,32010157,341550071728321}");
+		check("Divisors(2010)", //
+				"{1,2,3,5,6,10,15,30,67,134,201,335,402,670,1005,2010}");
 
 		check("Divisors(1)", "{1}");
 		check("Divisors(6)", "{1,2,3,6}");
@@ -2158,14 +2174,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDo() {
-		check("Do(Print(i), {i, 2, 4})", "");
-		check("Do(Print({i, j}), {i,1,2}, {j,3,5})", "");
+		// http://oeis.org/A005132 - Recaman's sequence
+		check("a = {1}; Do( If( a[ [ -1 ] ] - n > 0 && Position( a, a[ [ -1 ] ] - n ) == {}, a = Append( a, a[ [ -1 ] ] - n ), a = Append( a, a[ [ -1 ] ] + n ) ), {n, 2, 70} ); a", //
+				"{1,3,6,2,7,13,20,12,21,11,22,10,23,9,24,8,25,43,62,42,63,41,18,42,17,43,16,44,15,\n" + 
+				"45,14,46,79,113,78,114,77,39,78,38,79,37,80,36,81,35,82,34,83,33,84,32,85,31,86,\n" + 
+				"30,87,29,88,28,89,27,90,26,91,157,224,156,225,155}");
+		check("Do(Print(i), {i, 2, 4})", //
+				"");
+		check("Do(Print({i, j}), {i,1,2}, {j,3,5})", //
+				"");
 		check("Do(If(i > 10, Break(), If(Mod(i, 2) == 0, Continue()); Print(i)), {i, 5, 20})", "");
 		check("Do(Print(\"hi\"),{1+1})", "");
 
-		check("reap(do(if(primeQ(2^n0 - 1), sow(n0)), {n0, 100}))[[2, 1]]", "{2,3,5,7,13,17,19,31,61,89}");
-		check("$t = x; Do($t = 1/(1 + $t), {5}); $t", "1/(1+1/(1+1/(1+1/(1+1/(1+x)))))");
-		check("Nest(1/(1 + #) &, x, 5)", "1/(1+1/(1+1/(1+1/(1+1/(1+x)))))");
+		check("reap(do(if(primeQ(2^n0 - 1), sow(n0)), {n0, 100}))[[2, 1]]", //
+				"{2,3,5,7,13,17,19,31,61,89}");
+		check("$t = x; Do($t = 1/(1 + $t), {5}); $t", //
+				"1/(1+1/(1+1/(1+1/(1+1/(1+x)))))");
+		check("Nest(1/(1 + #) &, x, 5)", //
+				"1/(1+1/(1+1/(1+1/(1+1/(1+x)))))");
 	}
 
 	public void testDot() {
@@ -3068,14 +3094,26 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFlatten() {
-		check("Flatten({{a, b}, {c, {d}, e}, {f, {g, h}}})", "{a,b,c,d,e,f,g,h}");
-		check("Flatten({{a, b}, {c, {d}, e}, {f, {g, h}}}, 1)", "{a,b,c,{d},e,f,{g,h}}");
-		check("Flatten(f(f(x, y), z))", "f(x,y,z)");
-		check("Flatten({0, {1}, {{2, -2}}, {{{3}, {-3}}}, {{{{4}}}}}, 0)", "{0,{1},{{2,-2}},{{{3},{-3}}},{{{{4}}}}}");
-		check("Flatten(f(g(u, v), f(x, y)), Infinity, g)", "f(u,v,f(x,y))");
-		check("Flatten(f(g(u, v), f(x, y)), Infinity, f)", "f(g(u,v),x,y)");
+		// https://oeis.org/A049615
+		check("Table(Length(Select(Flatten(Table({x, y}, {x, 0, n - k}, {y, 0, k}), 1), GCD @@ # > 1 &)), {n, 0, 11}, {k, 0, n}) // Flatten", //
+				"{0,0,0,1,0,1,2,1,1,2,3,2,3,2,3,4,3,4,4,3,4,5,4,6,6,6,4,5,6,5,7,8,8,7,5,6,7,6,9,9,\n"
+						+ "11,9,9,6,7,8,7,10,12,12,12,12,10,7,8,9,8,12,13,16,14,16,13,12,8,9,10,9,13,15,17,\n"
+						+ "18,18,17,15,13,9,10}");
+		check("Flatten({{a, b}, {c, {d}, e}, {f, {g, h}}})", //
+				"{a,b,c,d,e,f,g,h}");
+		check("Flatten({{a, b}, {c, {d}, e}, {f, {g, h}}}, 1)", //
+				"{a,b,c,{d},e,f,{g,h}}");
+		check("Flatten(f(f(x, y), z))", //
+				"f(x,y,z)");
+		check("Flatten({0, {1}, {{2, -2}}, {{{3}, {-3}}}, {{{{4}}}}}, 0)", //
+				"{0,{1},{{2,-2}},{{{3},{-3}}},{{{{4}}}}}");
+		check("Flatten(f(g(u, v), f(x, y)), Infinity, g)", //
+				"f(u,v,f(x,y))");
+		check("Flatten(f(g(u, v), f(x, y)), Infinity, f)", //
+				"f(g(u,v),x,y)");
 
-		check("m = {{{1, 2}, {3}}, {{4}, {5, 6}}}", "{{{1,2},{3}},{{4},{5,6}}}");
+		check("m = {{{1, 2}, {3}}, {{4}, {5, 6}}}", //
+				"{{{1,2},{3}},{{4},{5,6}}}");
 		// check("Flatten(m, {2})", "");
 		// check("Flatten(m, {{2}})", "");
 		// check("Flatten(m, {{2}, {1}})", "");
@@ -3613,7 +3651,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHypergeometric2F1() {
-		check("Hypergeometric2F1(-2,b,c,1)", "(-b+b^2+c-2*b*c+c^2)/(c*(1+c))");
+		// Hypergeometric2F1(1 - n, -n, 2, 1) == CatalanNumber(n)
+		check("Hypergeometric2F1(-3, -4, 2, 1)==CatalanNumber(4)", //
+				"True");
+		check("Hypergeometric2F1(-2,b,c,1)", //
+				"(-b+b^2+c-2*b*c+c^2)/(c*(1+c))");
 
 		check("Hypergeometric2F1(0.5,0.333,0.666,0.5)", "1.18566");
 		checkNumeric("Hypergeometric2F1(0.5,0.333,0.666,-0.5)", "0.9026782488379839");

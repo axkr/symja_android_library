@@ -530,6 +530,7 @@ public abstract class Scanner {
 					break;
 				case '[':
 					fToken = TT_ARGUMENTS_OPEN;
+					skipWhitespace();
 					if (isValidPosition()) {
 						if (charAtPosition() == '[') {
 							fCurrentPosition++;
@@ -873,6 +874,15 @@ public abstract class Scanner {
 			return Character.isWhitespace(charAtPosition());
 		}
 		return false;
+	}
+
+	protected void skipWhitespace() {
+		if (isValidPosition()) {
+			if (!Character.isWhitespace(charAtPosition())) {
+				return;
+			}
+			fCurrentPosition++;
+		}
 	}
 
 	/**

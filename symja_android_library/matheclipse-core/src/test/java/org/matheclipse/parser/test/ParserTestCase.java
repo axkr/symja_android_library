@@ -89,7 +89,7 @@ public class ParserTestCase extends TestCase {
 			if (!Config.EXPLICIT_TIMES_OPERATOR) {
 				ASTNode obj = p.parse("4.7942553860420304E-1");
 				assertEquals(obj.toString(), "Plus(Times(4.7942553860420304, E), Times(-1, 1))");
-				
+
 				obj = p.parse("4.7942553860420304 * E - 1");
 				assertEquals(obj.toString(), "Plus(Times(4.7942553860420304, E), Times(-1, 1))");
 			} else {
@@ -431,31 +431,29 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser31() {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("#1.#123");
-			assertEquals(obj.toString(),
-					"Dot(Slot(1), Slot(123))");
+			assertEquals(obj.toString(), "Dot(Slot(1), Slot(123))");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParser32() {
 		try {
 			Parser p = new Parser();
 			ASTNode obj = p.parse("(-1)^(a) (b)");
-			assertEquals(obj.toString(),
-					"Times(Power(-1, a), b)");
+			assertEquals(obj.toString(), "Times(Power(-1, a), b)");
 		} catch (Exception e) {
 			e.printStackTrace();
 			assertEquals("", e.getMessage());
 		}
 	}
-	
+
 	public void testParse33() {
 		try {
 			Parser p = new Parser();
@@ -466,4 +464,19 @@ public class ParserTestCase extends TestCase {
 			assertEquals("", e.getMessage());
 		}
 	}
+
+	public void testParse34() {
+		try {
+			Parser p = new Parser();
+			// http://oeis.org/A005132
+			ASTNode obj = p.parse(
+					"a = {1}; Do[ If[ a[ [ -1 ] ] - n > 0 && Position[ a, a[ [ -1 ] ] - n ] == {}, a = Append[ a, a[ [ -1 ] ] - n ], a = Append[ a, a[ [ -1 ] ] + n ] ], {n, 2, 70} ]; a");
+			assertEquals(obj.toString(),
+					"CompoundExpression(Set(a, List(1)), Do(If(And(Greater(Plus(Part(a, -1), Times(-1, n)), 0), Equal(Position(a, Plus(Part(a, -1), Times(-1, n))), List())), Set(a, Append(a, Plus(Part(a, -1), Times(-1, n)))), Set(a, Append(a, Plus(Part(a, -1), n)))), List(n, 2, 70)), a)");
+		} catch (Exception e) {
+			e.printStackTrace();
+			assertEquals("", e.getMessage());
+		}
+	}
+
 }

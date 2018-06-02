@@ -688,6 +688,7 @@ public class Parser extends Scanner {
 				} while (fToken == TT_COMMA);
 
 				if (fToken == TT_ARGUMENTS_CLOSE) {
+					skipWhitespace();
 					// scanner-step begin: (instead of getNextToken() call):
 					if (fInputString.length() > fCurrentPosition) {
 						if (fInputString.charAt(fCurrentPosition) == ']') {
