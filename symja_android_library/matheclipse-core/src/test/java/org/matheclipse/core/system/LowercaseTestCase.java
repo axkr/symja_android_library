@@ -1165,6 +1165,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCoefficientList() {
+		// http://oeis.org/A000045 - Fibonacci numbers
+		check("CoefficientList(Series(-(x/(-1 + x + x^2)), {x, 0, 20}), x)", //
+				"{0,1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765}");
+		
 		check("CoefficientList(x^2*y^2 + 3*x + 4*y+y^w, {x, y})", //
 				"{{y^w,4,0},{3,0,0},{0,0,1}}");
 		check("CoefficientList(x^2*y^2 + 3*x + 4*y+3/(y^4), {x, y})", //
@@ -2176,9 +2180,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testDo() {
 		// http://oeis.org/A005132 - Recaman's sequence
 		check("a = {1}; Do( If( a[ [ -1 ] ] - n > 0 && Position( a, a[ [ -1 ] ] - n ) == {}, a = Append( a, a[ [ -1 ] ] - n ), a = Append( a, a[ [ -1 ] ] + n ) ), {n, 2, 70} ); a", //
-				"{1,3,6,2,7,13,20,12,21,11,22,10,23,9,24,8,25,43,62,42,63,41,18,42,17,43,16,44,15,\n" + 
-				"45,14,46,79,113,78,114,77,39,78,38,79,37,80,36,81,35,82,34,83,33,84,32,85,31,86,\n" + 
-				"30,87,29,88,28,89,27,90,26,91,157,224,156,225,155}");
+				"{1,3,6,2,7,13,20,12,21,11,22,10,23,9,24,8,25,43,62,42,63,41,18,42,17,43,16,44,15,\n"
+						+ "45,14,46,79,113,78,114,77,39,78,38,79,37,80,36,81,35,82,34,83,33,84,32,85,31,86,\n"
+						+ "30,87,29,88,28,89,27,90,26,91,157,224,156,225,155}");
 		check("Do(Print(i), {i, 2, 4})", //
 				"");
 		check("Do(Print({i, j}), {i,1,2}, {j,3,5})", //
