@@ -2664,6 +2664,21 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Converts a special expression (like a series) into a standard expression.
+	 * 
+	 * 
+	 * <pre>
+	 * &gt;&gt; Normal(SeriesData(x, 0, {1, 0, -1, -4, -17, -88, -549}, -1, 6, 1))
+	 * 1/x-x-4*x^2-17*x^3-88*x^4-549*x^5
+	 * </pre>
+	 * 
+	 * @return the standard expression for special expressions ot <code>this</code> for the other expressions
+	 */
+	default IExpr normal() {
+		return this;
+	}
+
+	/**
 	 * Returns an <code>IExpr</code> whose value is <code>(-1) * this</code>. Calculates
 	 * <code>F.eval(F.Times(F.CN1, this))</code> in the common case and uses a specialized implementation for derived
 	 * number classes.

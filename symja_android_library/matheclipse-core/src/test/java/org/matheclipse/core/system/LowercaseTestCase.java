@@ -1037,6 +1037,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCoefficient() {
+		check("Coefficient(SeriesData(x, 0, {1, 1, 0, 1, 1, 0, 1, 1}, 0, 9, 1), x, 4)", //
+				"1");
 		check("Coefficient(x^2*y^2 + 3*x + 4*y+y^w, y, 0)", //
 				"3*x+y^w");
 		check("Coefficient(x^2*y^2 + 3*x + 4*y+3/(y^4), x, 0)", //
@@ -1201,7 +1203,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCoefficientRules() {
-		check("CoefficientRules((x + y)^3)", "{{3,0}->1,{2,1}->3,{1,2}->3,{0,3}->1}");
+		check("CoefficientRules(SeriesData(x, 0, {1, 1, 0, 1, 1, 0, 1, 1}, 0, 9, 1))", //
+				"{{0}->1+x+x^3+x^4+x^6+x^7+O(x)^9}");
+		check("CoefficientRules((x + y)^3)", //
+				"{{3,0}->1,{2,1}->3,{1,2}->3,{0,3}->1}");
 		check("CoefficientRules( a*x*y^2 + b*x^2*z, {x, y, z}, \"DegreeReverseLexicographic\")",
 				"{{1,2,0}->a,{2,0,1}->b}");
 
@@ -2610,10 +2615,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExponent() {
-		check("Exponent(x*y,y,List)", "{1}");
-		check("Exponent(Sin(x*y),y)", "0");
+		check("Exponent(SeriesData(x, 0, {1, 1, 0, 1, 1, 0, 1, 1}, 0, 9, 1), x)", //
+				"7");
+		check("Exponent(x*y,y,List)", //
+				"{1}");
+		check("Exponent(Sin(x*y),y)", //
+				"0");
 
-		check("Exponent(f(x^2),x)", "0");
+		check("Exponent(f(x^2),x)", //
+				"0");
 		check("Exponent(f(x^2),x,List)", "{0}");
 		check("Exponent(x*(b+a),x)", "1");
 		check("Exponent(x*(b+a),{a,b,x})", "{1,1,1}");
@@ -3736,8 +3746,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testIntegerDigits() {
 		// https://oeis.org/A018900 - Sum of two distinct powers of 2
 		check("Select(Range(1000), (Count(IntegerDigits(#, 2), 1)==2)&)", //
-				"{3,5,6,9,10,12,17,18,20,24,33,34,36,40,48,65,66,68,72,80,96,129,130,132,136,144,\n" + 
-				"160,192,257,258,260,264,272,288,320,384,513,514,516,520,528,544,576,640,768}");
+				"{3,5,6,9,10,12,17,18,20,24,33,34,36,40,48,65,66,68,72,80,96,129,130,132,136,144,\n"
+						+ "160,192,257,258,260,264,272,288,320,384,513,514,516,520,528,544,576,640,768}");
 		check("IntegerDigits(0)", "{0}");
 		check("IntegerDigits(123)", "{1,2,3}");
 		check("IntegerDigits(-123)", "{1,2,3}");
@@ -4431,8 +4441,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"E");
 		check("Limit(x/((x!)^(1/x)), x->Infinity)", //
 				"E");
-		
-		
+
 		check("Limit((1+k/x)^x, x->Infinity)", "E^k");
 		check("Limit((1-1/x)^x, x->Infinity)", "1/E");
 		// check("Limit((1 + Sinh(x))/E^x, x ->Infinity)", "Infinity*Limit(E^(-x),x->Infinity)");

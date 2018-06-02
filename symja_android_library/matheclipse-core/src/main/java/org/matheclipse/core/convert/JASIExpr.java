@@ -9,6 +9,7 @@ import java.util.SortedMap;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ExprRingFactory;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -259,6 +260,9 @@ public class JASIExpr {
 					return fPolyFactory.getONE().multiply(e);
 				}
 			}
+		}
+		if (exprPoly instanceof ASTSeriesData) {
+			return new GenPolynomial<IExpr>(fPolyFactory, exprPoly);
 		}
 		throw new ClassCastException(exprPoly.toString());
 	}

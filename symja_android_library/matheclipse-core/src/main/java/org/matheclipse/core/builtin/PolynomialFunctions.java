@@ -194,7 +194,7 @@ public class PolynomialFunctions {
 					}
 				}
 				ExpVectorLong expArr = new ExpVectorLong(exponents);
-				IExpr expr = F.evalExpandAll(ast.arg1(), engine);
+				IExpr expr = F.evalExpandAll(ast.arg1(), engine).normal();
 				ExprPolynomialRing ring = new ExprPolynomialRing(ExprRingFactory.CONST, listOfVariables,
 						listOfVariables.argSize());
 				ExprPolynomial poly = ring.create(expr, true, false);
@@ -221,7 +221,7 @@ public class PolynomialFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
 
-			IExpr expr = F.evalExpandAll(ast.arg1(), engine);
+			IExpr expr = F.evalExpandAll(ast.arg1(), engine).normal();
 			IAST list = Validate.checkSymbolOrSymbolList(ast, 2);
 			return coefficientList(expr, list);
 		}
@@ -931,7 +931,7 @@ public class PolynomialFunctions {
 			}
 			Set<IExpr> collector = new TreeSet<IExpr>();
 
-			IExpr expr = F.evalExpandAll(ast.arg1(), engine);
+			IExpr expr = F.evalExpandAll(ast.arg1(), engine).normal();
 			if (expr.isZero()) {
 				collector.add(F.CNInfinity);
 			} else if (expr.isAST()) {

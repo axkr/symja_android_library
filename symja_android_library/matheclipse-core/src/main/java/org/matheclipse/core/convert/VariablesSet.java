@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 
+import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -143,6 +144,14 @@ public class VariablesSet {
 			return false;
 		}
 
+		@Override
+		public boolean visit(IAST list) {
+			if (list instanceof ASTSeriesData) {
+				fCollection.add(((ASTSeriesData) list).getX());
+				return true;
+			}
+			return super.visit(list);
+		}
 	}
 
 	/**
