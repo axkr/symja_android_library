@@ -1168,7 +1168,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// http://oeis.org/A000045 - Fibonacci numbers
 		check("CoefficientList(Series(-(x/(-1 + x + x^2)), {x, 0, 20}), x)", //
 				"{0,1,1,2,3,5,8,13,21,34,55,89,144,233,377,610,987,1597,2584,4181,6765}");
-		
+
 		check("CoefficientList(x^2*y^2 + 3*x + 4*y+y^w, {x, y})", //
 				"{{y^w,4,0},{3,0,0},{0,0,1}}");
 		check("CoefficientList(x^2*y^2 + 3*x + 4*y+3/(y^4), {x, y})", //
@@ -3295,14 +3295,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFromDigits() {
-		check("FromDigits({0})", "0");
-		check("FromDigits({1,2,3})", "123");
-		check("FromDigits({1,1,1,1,0,1,1}, 2)", "123");
+		// https://oeis.org/A023391
+		check("NestList(FromDigits(IntegerDigits(#, 8), 9) &, 8, 50)", //
+				"{8,9,10,11,12,13,14,15,16,18,20,22,24,27,30,33,37,41,46,51,57,64,81,100,121,145,\n" + 
+				"181,221,275,345,433,541,761,1036,1471,2014,2787,3927,5533,8537,13555,21441,34102,\n" + 
+				"60891,103386,185033,329032,651411,1286139,2551404,5654254}");
+		check("FromDigits({0})", //
+				"0");
+		check("FromDigits({1,2,3})", //
+				"123");
+		check("FromDigits({1,1,1,1,0,1,1}, 2)", //
+				"123");
 		check("FromDigits /@ IntegerDigits(Range(-10, 10))", //
 				"{10,9,8,7,6,5,4,3,2,1,0,1,2,3,4,5,6,7,8,9,10}");
-		check("FromDigits(\"123\")", "123");
-		check("FromDigits(\"1111011\", 2)", "123");
-		check("FromDigits(\"0\")", "0");
+		check("FromDigits(\"123\")", //
+				"123");
+		check("FromDigits(\"1111011\", 2)", //
+				"123");
+		check("FromDigits(\"0\")", //
+				"0");
 		check("FromDigits(\"789ABC\")", //
 				"790122");
 		check("FromDigits(\"789ABC\", 16)", //
@@ -5363,11 +5374,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMultiplicativeOrder() {
-		check("MultiplicativeOrder(7, 108)", "18");
-		check("MultiplicativeOrder(10^100 + 1, Prime(1000))", "3959");
-		check("MultiplicativeOrder(-5, 7)", "3");
+		// https://oeis.org/A023394
+		check("Select(Prime(Range(500)), IntegerQ(Log(2, MultiplicativeOrder(2, # )))&) ", //
+				"{3,5,17,257,641}");
 
-		check("Select(Range(43), MultiplicativeOrder(#, 43) == EulerPhi(43) &)", "{3,5,12,18,19,20,26,28,29,30,33,34}");
+		check("MultiplicativeOrder(7, 108)", //
+				"18");
+		check("MultiplicativeOrder(10^100 + 1, Prime(1000))", //
+				"3959");
+		check("MultiplicativeOrder(-5, 7)", //
+				"3");
+
+		check("Select(Range(43), MultiplicativeOrder(#, 43) == EulerPhi(43) &)", //
+				"{3,5,12,18,19,20,26,28,29,30,33,34}");
 	}
 
 	public void testN() {

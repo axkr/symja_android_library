@@ -488,6 +488,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [MonomialList](functions/MonomialList.md)
 * [Most](functions/Most.md)
 * [Multinomial](functions/Multinomial.md)
+* [MultiplicativeOrder](functions/MultiplicativeOrder.md)
 * [N](functions/N.md)
 * [Nand](functions/Nand.md)
 * [Negative](functions/Negative.md)

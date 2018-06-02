@@ -2201,7 +2201,7 @@ public final class NumberTheory {
 
 		@Override
 		public void setUp(ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.HOLDALL |ISymbol.ORDERLESS | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.ORDERLESS | ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
 		}
 	}
 
@@ -2661,9 +2661,30 @@ public final class NumberTheory {
 	}
 
 	/**
-	 * See <a href="https://en.wikipedia.org/wiki/Multiplicative_order">Wikipedia: Multiplicative order</a> and
-	 * <a href="https://rosettacode.org/wiki/Multiplicative_order">Rosettacode. org: Multiplicative order</a>.
-	 *
+	 * <pre>
+	 * MultiplicativeOrder(a, n)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * gives the multiplicative order <code>a</code> modulo <code>n</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Multiplicative_order">Wikipedia: Multiplicative order</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * The <a href="https://oeis.org/A023394">A023394 Prime factors of Fermat numbers</a> integer sequence
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Select(Prime(Range(500)), IntegerQ(Log(2, MultiplicativeOrder(2, # )))&amp;) 
+	 * {3,5,17,257,641}
+	 * </pre>
 	 */
 	private static class MultiplicativeOrder extends AbstractFunctionEvaluator {
 
