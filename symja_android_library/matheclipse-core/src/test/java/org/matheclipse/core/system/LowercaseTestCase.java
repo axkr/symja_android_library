@@ -3549,6 +3549,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHoldPattern() {
+		check("HoldPattern( Sqrt(2*Pi*x_) )", //
+				"HoldPattern(Sqrt(2*Pi*x_))");
 		check("MatchQ(And(x, y, z), p__)", //
 				"True");
 		// because of OneIdentity attribute for Times
@@ -3732,6 +3734,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegerDigits() {
+		// https://oeis.org/A018900 - Sum of two distinct powers of 2
+		check("Select(Range(1000), (Count(IntegerDigits(#, 2), 1)==2)&)", //
+				"{3,5,6,9,10,12,17,18,20,24,33,34,36,40,48,65,66,68,72,80,96,129,130,132,136,144,\n" + 
+				"160,192,257,258,260,264,272,288,320,384,513,514,516,520,528,544,576,640,768}");
 		check("IntegerDigits(0)", "{0}");
 		check("IntegerDigits(123)", "{1,2,3}");
 		check("IntegerDigits(-123)", "{1,2,3}");
@@ -4420,8 +4426,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testLimit() {
-		// check("Limit(x*(Sqrt(2*Pi*x)/(x!))^(1/x), x->Infinity)", "E");
-		// check("Limit(x/((x!)^(1/x)), x->Infinity)", "E");
+		// adjust LimitRules.m if these 2 tests fails
+		check("Limit(x*(Sqrt(2*Pi*x)/(x!))^(1/x), x->Infinity)", //
+				"E");
+		check("Limit(x/((x!)^(1/x)), x->Infinity)", //
+				"E");
+		
+		
 		check("Limit((1+k/x)^x, x->Infinity)", "E^k");
 		check("Limit((1-1/x)^x, x->Infinity)", "1/E");
 		// check("Limit((1 + Sinh(x))/E^x, x ->Infinity)", "Infinity*Limit(E^(-x),x->Infinity)");
@@ -8795,6 +8806,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSubsets() {
+		// https://oeis.org/A018900 - Sum of two distinct powers of 2
+		check("Union(Total/@Subsets(2^Range(0, 10), {2}))", //
+				"{3,5,6,9,10,12,17,18,20,24,33,34,36,40,48,65,66,68,72,80,96,129,130,132,136,144,\n"
+						+ "160,192,257,258,260,264,272,288,320,384,513,514,516,520,528,544,576,640,768,1025,\n"
+						+ "1026,1028,1032,1040,1056,1088,1152,1280,1536}");
 		check("Subsets()", "Subsets()");
 		check("Subsets({})", "{{}}");
 		check("Subsets({a,b,c})", "{{},{a},{b},{c},{a,b},{a,c},{b,c},{a,b,c}}");

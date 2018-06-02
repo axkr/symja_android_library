@@ -1087,7 +1087,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	private IASTMutable evalSetAttributeArg(IAST ast, int i, IAST argI, IASTMutable resultList, boolean noEvaluation,
 			int level) {
 		IExpr expr = evalSetAttributesRecursive(argI, noEvaluation, true, level + 1);
-		if (expr.isPresent()) {
+		if (expr != argI && expr.isPresent()) {
 			if (resultList.isPresent()) {
 				resultList.set(i, expr);
 			} else {
