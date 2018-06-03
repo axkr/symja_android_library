@@ -732,12 +732,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBooleanMinimize() {
-		// check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c))", //
-		// "a&&!b||!a&&c||b&&!c");
-		// check("BooleanMinimize((a||b)&&(c||d))", //
-		// "a&&c||a&&d||b&&c||b&&d");
-		// check("BooleanMinimize(a && b || ! a && b)", //
-		// "b");
+		check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c))", //
+				"a&&!b||!a&&c||b&&!c");
+		check("BooleanMinimize((a||b)&&(c||d))", //
+				"a&&c||a&&d||b&&c||b&&d");
+		check("BooleanMinimize(a && b || ! a && b)", //
+				"b");
 
 		// TODO CNF form after minimizing blows up the formula.
 		// check("BooleanMinimize((a&&!b)||(!a&&b)||(b&&!c)||(!b&&c), \"CNF\")", //
@@ -3297,9 +3297,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testFromDigits() {
 		// https://oeis.org/A023391
 		check("NestList(FromDigits(IntegerDigits(#, 8), 9) &, 8, 50)", //
-				"{8,9,10,11,12,13,14,15,16,18,20,22,24,27,30,33,37,41,46,51,57,64,81,100,121,145,\n" + 
-				"181,221,275,345,433,541,761,1036,1471,2014,2787,3927,5533,8537,13555,21441,34102,\n" + 
-				"60891,103386,185033,329032,651411,1286139,2551404,5654254}");
+				"{8,9,10,11,12,13,14,15,16,18,20,22,24,27,30,33,37,41,46,51,57,64,81,100,121,145,\n"
+						+ "181,221,275,345,433,541,761,1036,1471,2014,2787,3927,5533,8537,13555,21441,34102,\n"
+						+ "60891,103386,185033,329032,651411,1286139,2551404,5654254}");
 		check("FromDigits({0})", //
 				"0");
 		check("FromDigits({1,2,3})", //

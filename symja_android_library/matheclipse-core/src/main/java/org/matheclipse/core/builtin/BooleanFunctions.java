@@ -15,6 +15,7 @@ import org.logicng.solvers.MiniSat;
 import org.logicng.solvers.SATSolver;
 import org.logicng.transformations.cnf.CNFFactorization;
 import org.logicng.transformations.dnf.DNFFactorization;
+import org.logicng.transformations.qmc.QuineMcCluskeyAlgorithm;
 //import org.logicng.transformations.qmc.QuineMcCluskeyAlgorithm;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.LogicFormula;
@@ -589,15 +590,14 @@ public final class BooleanFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
 
-			// FormulaFactory factory = new FormulaFactory();
-			// LogicFormula lf = new LogicFormula(factory);
-			// Formula formula = lf.expr2BooleanFunction(ast.arg1());
-			// // System.out.println(">> " + formula.toString());
-			// // only DNF form
-			// formula = QuineMcCluskeyAlgorithm.compute(formula);
-			// // System.out.println(formula.toString());
-			// return lf.booleanFunction2Expr(formula);
-			return F.NIL;
+			FormulaFactory factory = new FormulaFactory();
+			LogicFormula lf = new LogicFormula(factory);
+			Formula formula = lf.expr2BooleanFunction(ast.arg1());
+			// System.out.println(">> " + formula.toString());
+			// only DNF form
+			formula = QuineMcCluskeyAlgorithm.compute(formula);
+			// System.out.println(formula.toString());
+			return lf.booleanFunction2Expr(formula);
 			// TODO CNF form after minimizing blows up the formula.
 			// FormulaTransformation transformation = BooleanConvert.transformation(ast, engine);
 			// return lf.booleanFunction2Expr(formula.transform(transformation));
