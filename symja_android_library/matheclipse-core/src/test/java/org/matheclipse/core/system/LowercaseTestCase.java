@@ -8194,10 +8194,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSetAttributes() {
-		check("SetAttributes(f, Flat)", "");
-		check("Attributes(f)", "{Flat}");
 		check("SetAttributes({f, g}, {Flat, Orderless})", "");
 		check("Attributes(f)", "{Flat,Orderless}");
+		check("SetAttributes(h, Flat)", "");
+		check("Attributes(h)", "{Flat}");
 	}
 
 	public void testSetDelayed() {

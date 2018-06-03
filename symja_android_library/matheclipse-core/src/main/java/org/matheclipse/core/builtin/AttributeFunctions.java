@@ -38,9 +38,6 @@ public class AttributeFunctions {
 	 */
 	private final static class Attributes extends AbstractCoreFunctionEvaluator {
 
-		/**
-		*
-		*/
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
@@ -55,8 +52,35 @@ public class AttributeFunctions {
 	}
 
 	/**
-	 * Set the attributes for a symbol
+	 * <pre>
+	 * ClearAttributes(symbol, attrib)
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * removes <code>attrib</code> from <code>symbol</code>'s attributes.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; SetAttributes(f, Flat)    
+	 * &gt;&gt; Attributes(f)    
+	 * {Flat}    
+	 * 
+	 * &gt;&gt; ClearAttributes(f, Flat)    
+	 * &gt;&gt; Attributes(f)    
+	 * {}
+	 * </pre>
+	 * <p>
+	 * Attributes that are not even set are simply ignored:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ClearAttributes({f}, {Flat})    
+	 * &gt;&gt; Attributes(f)    
+	 * {}
+	 * </pre>
 	 */
 	private final static class ClearAttributes extends AbstractCoreFunctionEvaluator {
 
@@ -67,7 +91,7 @@ public class AttributeFunctions {
 			if (ast.arg1().isSymbol()) {
 				IExpr arg2 = engine.evaluate(ast.arg2());
 				final ISymbol sym = ((ISymbol) ast.arg1());
-				return clearAttributes(sym, ast, arg2, engine);
+				return clearAttributes(sym, arg2, engine);
 			}
 			if (ast.arg1().isList()) {
 				IAST list = (IAST) ast.arg1();
@@ -75,7 +99,7 @@ public class AttributeFunctions {
 				for (int i = 1; i < list.size(); i++) {
 					if (list.get(i).isSymbol()) {
 						final ISymbol sym = ((ISymbol) list.get(i));
-						clearAttributes(sym, ast, arg2, engine);
+						clearAttributes(sym, arg2, engine);
 					}
 				}
 				return F.Null;
@@ -84,19 +108,27 @@ public class AttributeFunctions {
 			return F.NIL;
 		}
 
-		private IExpr clearAttributes(final ISymbol sym, final IAST ast, IExpr arg2, EvalEngine engine) {
+		/**
+		 * Remove the attribute from the symbols existing attributes bit-set.
+		 * 
+		 * @param sym
+		 * @param attributes
+		 * @param engine
+		 * @return
+		 */
+		private IExpr clearAttributes(final ISymbol sym, IExpr attributes, EvalEngine engine) {
 			if (!engine.isPackageMode()) {
 				if (Config.SERVER_MODE && (sym.toString().charAt(0) != '$')) {
 					throw new RuleCreationError(sym);
 				}
 			}
-			if (arg2.isSymbol()) {
-				ISymbol attribute = (ISymbol) arg2;
+			if (attributes.isSymbol()) {
+				ISymbol attribute = (ISymbol) attributes;
 				clearAttributes(sym, attribute);
 				return F.Null;
 			} else {
-				if (ast.arg2().isList()) {
-					final IAST lst = (IAST) ast.arg2();
+				if (attributes.isList()) {
+					final IAST lst = (IAST) attributes;
 					for (int i = 1; i < lst.size(); i++) {
 						ISymbol attribute = (ISymbol) lst.get(i);
 						clearAttributes(sym, attribute);
@@ -107,6 +139,12 @@ public class AttributeFunctions {
 			return F.Null;
 		}
 
+		/**
+		 * Remove one single attribute from the symbols existing attributes bit-set.
+		 * 
+		 * @param sym
+		 * @param attribute
+		 */
 		private void clearAttributes(final ISymbol sym, ISymbol attribute) {
 			int functionID = attribute.ordinal();
 			if (functionID > ID.UNKNOWN) {
@@ -154,8 +192,31 @@ public class AttributeFunctions {
 	}
 
 	/**
-	 * Set the attributes for a symbol
+	 * <pre>
+	 * SetAttributes(symbol, attrib)
+	 * </pre>
 	 * 
+	 * <blockquote>
+	 * <p>
+	 * adds <code>attrib</code> to <code>symbol</code>'s attributes.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; SetAttributes(f, Flat)    
+	 * &gt;&gt; Attributes(f)    
+	 * {Flat}
+	 * </pre>
+	 * <p>
+	 * Multiple attributes can be set at the same time using lists:<br />
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; SetAttributes({f, g}, {Flat, Orderless})    
+	 * &gt;&gt; Attributes(g)    
+	 * {Flat, Orderless}
+	 * </pre>
 	 */
 	private final static class SetAttributes extends AbstractCoreFunctionEvaluator {
 
@@ -166,40 +227,50 @@ public class AttributeFunctions {
 			if (ast.arg1().isSymbol()) {
 				IExpr arg2 = engine.evaluate(ast.arg2());
 				final ISymbol sym = ((ISymbol) ast.arg1());
-				return addAttributes(sym, ast, arg2, engine);
+				return addAttributes(sym, arg2, engine);
 			}
 			if (ast.arg1().isList()) {
 				IAST list = (IAST) ast.arg1();
-				return setSymbolsAttributes(ast, engine, list);
+				return setSymbolsAttributes(list, ast.arg2(), engine);
 			}
 			return F.NIL;
 		}
 
-		private static IExpr addAttributes(final ISymbol sym, final IAST ast, IExpr arg2, EvalEngine engine) {
+		/**
+		 * Add the attribute to the symbols existing attributes bit-set.
+		 * 
+		 * @param sym
+		 * @param attributes
+		 * @param engine
+		 * @return
+		 */
+		private static IExpr addAttributes(final ISymbol sym, IExpr attributes, EvalEngine engine) {
 			if (!engine.isPackageMode()) {
 				if (Config.SERVER_MODE && (sym.toString().charAt(0) != '$')) {
 					throw new RuleCreationError(sym);
 				}
 			}
-			if (arg2.isSymbol()) {
-				ISymbol attribute = (ISymbol) arg2;
+			if (attributes.isSymbol()) {
+				ISymbol attribute = (ISymbol) attributes;
 				addAttributes(sym, attribute);
 				return F.Null;
-			} else {
-				if (ast.arg2().isList()) {
-					final IAST lst = (IAST) ast.arg2();
-					for (int i = 1; i < lst.size(); i++) {
-						ISymbol attribute = (ISymbol) lst.get(i);
-						addAttributes(sym, attribute);
-					}
-					// end for
-
-					return F.Null;
+			} else if (attributes.isList()) {
+				final IAST lst = (IAST) attributes;
+				for (int i = 1; i < lst.size(); i++) {
+					ISymbol attribute = (ISymbol) lst.get(i);
+					addAttributes(sym, attribute);
 				}
+				return F.Null;
 			}
 			return F.Null;
 		}
 
+		/**
+		 * Add one single attribute to the symbols existing attributes bit-set.
+		 * 
+		 * @param sym
+		 * @param attribute
+		 */
 		private static void addAttributes(final ISymbol sym, ISymbol attribute) {
 			int functionID = attribute.ordinal();
 			if (functionID > ID.UNKNOWN) {
@@ -307,12 +378,12 @@ public class AttributeFunctions {
 		return result;
 	}
 
-	static IExpr setSymbolsAttributes(final IAST ast, EvalEngine engine, IAST list) {
-		IExpr arg2 = engine.evaluate(ast.arg2());
-		for (int i = 1; i < list.size(); i++) {
-			if (list.get(i).isSymbol()) {
-				final ISymbol sym = ((ISymbol) list.get(i));
-				SetAttributes.addAttributes(sym, ast, arg2, engine);
+	static IExpr setSymbolsAttributes(IAST listOfSymbols, IExpr attributes, EvalEngine engine) {
+		attributes = engine.evaluate(attributes);
+		for (int i = 1; i < listOfSymbols.size(); i++) {
+			if (listOfSymbols.get(i).isSymbol()) {
+				final ISymbol sym = ((ISymbol) listOfSymbols.get(i));
+				SetAttributes.addAttributes(sym, attributes, engine);
 			}
 		}
 		return F.Null;

@@ -966,7 +966,7 @@ public final class PatternMatching {
 				} else if (leftHandSideAST.isAST(F.Attributes, 2)) {
 					IAST symbolList = Validate.checkSymbolOrSymbolList(leftHandSideAST, 1);
 					symbolList.forEach(x -> ((ISymbol) x).setAttributes(ISymbol.NOATTRIBUTE));
-					return AttributeFunctions.setSymbolsAttributes(ast, engine, symbolList);
+					return AttributeFunctions.setSymbolsAttributes(symbolList, ast.arg2(), engine);
 				}
 			}
 			Object[] result;
