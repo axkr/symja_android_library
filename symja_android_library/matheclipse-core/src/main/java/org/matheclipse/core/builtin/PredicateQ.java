@@ -338,10 +338,6 @@ public class PredicateQ {
 	 */
 	private static class BooleanQ extends AbstractCorePredicateEvaluator {
 
-		public BooleanQ() {
-			super(F.BooleanQ);
-		}
-
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
 			return arg1.isTrue() || arg1.isFalse();
@@ -425,9 +421,6 @@ public class PredicateQ {
 	 * </pre>
 	 */
 	private static class EvenQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
-		public EvenQ() {
-			super(F.EvenQ);
-		}
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -681,10 +674,6 @@ public class PredicateQ {
 	 */
 	private static class IntegerQ extends AbstractCorePredicateEvaluator {
 
-		public IntegerQ() {
-			super(F.IntegerQ);
-		}
-
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
 			return arg1.isInteger();
@@ -798,9 +787,6 @@ public class PredicateQ {
 	 * </pre>
 	 */
 	private static class MatchQ extends AbstractCoreFunctionEvaluator {
-
-		public MatchQ() {
-		}
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1093,9 +1079,6 @@ public class PredicateQ {
 	 * </pre>
 	 */
 	private static class OddQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
-		public OddQ() {
-			super(F.OddQ);
-		}
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -1135,10 +1118,6 @@ public class PredicateQ {
 	 * </pre>
 	 */
 	private static class PossibleZeroQ extends AbstractCorePredicateEvaluator {
-
-		public PossibleZeroQ() {
-			super(F.PossibleZeroQ);
-		}
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -1257,10 +1236,6 @@ public class PredicateQ {
 	 * </pre>
 	 */
 	private static class PrimeQ extends AbstractCorePredicateEvaluator implements Predicate<IInteger> {
-
-		public PrimeQ() {
-			super(F.PrimeQ);
-		}
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
@@ -1524,10 +1499,6 @@ public class PredicateQ {
 	 */
 	private static class SyntaxQ extends AbstractCorePredicateEvaluator {
 
-		public SyntaxQ() {
-			super(F.SyntaxQ);
-		}
-
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
 			if (!(arg1 instanceof IStringX)) {
@@ -1564,10 +1535,6 @@ public class PredicateQ {
 	 * </pre>
 	 */
 	private static class UpperCaseQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
-
-		public UpperCaseQ() {
-			super(F.UpperCaseQ);
-		}
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
