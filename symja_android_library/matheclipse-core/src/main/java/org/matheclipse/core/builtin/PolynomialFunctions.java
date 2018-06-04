@@ -1525,20 +1525,27 @@ public class PolynomialFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
-			IExpr arg1 = ast.arg1();
-			IExpr arg2 = ast.arg2();
-			if (arg1.isInteger()) {
-				int degree = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
-				if (degree == Integer.MIN_VALUE) {
-					return F.NIL;
-				}
+			IExpr n = ast.arg1();
+			IExpr z = ast.arg2();
+			int degree = n.toIntDefault(Integer.MIN_VALUE);
+			if (degree != Integer.MIN_VALUE) {
 				if (degree < 0) {
 					degree *= -1;
 				}
 				return PolynomialsUtils.createChebyshevPolynomial(degree, ast.arg2());
 			}
-			if (arg2.isZero()) {
-				return F.Cos(F.Times(F.C1D2, F.Pi, arg1));
+			if (n.equals(F.C1D2) || n.equals(F.CN1D2)) {
+				// (1/2, z) => Cos(ArcCos(z)/2)
+				// (-1/2, z) => Cos(ArcCos(z)/2)
+				return F.Cos(F.Times(F.C1D2, F.ArcCos(z)));
+			}
+			if (z.isZero()) {
+				// Cos(Pi*n*(1/2))
+				return F.Cos(F.Times(F.C1D2, F.Pi, n));
+			}
+			if (engine.isNumericMode() && n.isNumber() && z.isNumber()) {
+				// (n, z) => Cos(n*ArcCos(z))
+				return F.Cos(F.Times(n, F.ArcCos(z)));
 			}
 			return F.NIL;
 		}
@@ -1578,28 +1585,50 @@ public class PolynomialFunctions {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 3);
-			IExpr arg1 = ast.arg1();
-			IExpr arg2 = ast.arg2();
-			if (arg1.isInteger()) {
-				int degree = ((IInteger) arg1).toIntDefault(Integer.MIN_VALUE);
-				if (degree == Integer.MIN_VALUE) {
-					return F.NIL;
-				}
-
+			IExpr n = ast.arg1();
+			IExpr z = ast.arg2();
+			int degree = n.toIntDefault(Integer.MIN_VALUE);
+			if (degree != Integer.MIN_VALUE) {
 				if (degree < 0) {
+					if (degree == (-1)) {
+						return F.C0;
+					}
+					if (degree == (-2)) {
+						return F.CN1;
+					}
 					return F.NIL;
 				}
 				if (degree == 0) {
 					return F.C1;
 				}
 				if (degree == 1) {
-					return F.Times(F.C2, arg2);
+					return F.Times(F.C2, z);
 				}
-				return F.Expand(F.Subtract(F.Times(F.C2, arg2, F.ChebyshevU(F.integer(degree - 1), arg2)),
-						F.ChebyshevU(F.integer(degree - 2), arg2)));
+				// (n, z) => Sum(((-1)^k*(n - k)!*(2*z)^(n - 2*k))/(k!*(n - 2*k)!), {k, 0, Floor(n/2)})
+				return F.sum(k -> F.Times(F.Power(F.CN1, k), F.Power(F.Times(F.C2, z), F.Plus(F.Times(F.CN2, k), n)),
+						F.Power(F.Times(F.Factorial(k), F.Factorial(F.Plus(F.Times(F.CN2, k), n))), -1),
+						F.Factorial(F.Plus(F.Negate(k), n))), 0, degree / 2);
 			}
-			if (arg2.isOne()) {
-				return F.Plus(F.C1, arg1);
+
+			if (n.equals(F.CN1D2)) {
+				// (-1/2, z) => 1/(Sqrt(2)* Sqrt(1 + z))
+				return F.Times(F.C1DSqrt2, F.Power(F.Plus(F.C1, z), F.CN1D2));
+			}
+			if (n.equals(F.C1D2)) {
+				// (1/2, z) => (1 + 2*z)/(Sqrt(2)* Sqrt(1 + z))
+				return F.Times(F.C1DSqrt2, F.Plus(F.C1, F.Times(F.C2, z)), F.Power(F.Plus(F.C1, z), F.CN1D2));
+			}
+			if (z.isZero()) {
+				// Cos((Pi*n)/2)
+				return F.Cos(F.Times(F.C1D2, n, F.Pi));
+			}
+			if (z.isOne()) {
+				return F.Plus(F.C1, n);
+			}
+			if (engine.isNumericMode() && n.isNumber() && z.isNumber()) {
+				// Sin((n + 1)*ArcCos(z))/Sqrt(1 - z^2)
+				return F.Times(F.Power(F.Plus(F.C1, F.Negate(F.Sqr(z))), F.CN1D2),
+						F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(z))));
 			}
 			return F.NIL;
 		}

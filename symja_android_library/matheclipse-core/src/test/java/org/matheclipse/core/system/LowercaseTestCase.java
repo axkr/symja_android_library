@@ -957,6 +957,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testChebyshevT() {
+		check("ChebyshevT(-1/2, z)", "Cos(ArcCos(z)/2)");
+		check("ChebyshevT(1/2, z)", "Cos(ArcCos(z)/2)");
+		check("ChebyshevT(1.5, 2+3*I)", //
+				"0.69261+I*9.74575");
 		check("ChebyshevT(8, x)", "1-32*x^2+160*x^4-256*x^6+128*x^8");
 		// TODO add non-integer args implementation
 		// check("ChebyshevT(1 - I, 0.5)", "0.800143 + 1.08198 I");
@@ -968,14 +972,30 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testChebyshevU() {
-		check("ChebyshevU(8, x)", "1-40*x^2+240*x^4-448*x^6+256*x^8");
+		check("ChebyshevU(4, -42)", //
+				"49765969");
+		// http://oeis.org/A001906 
+		check("Table(ChebyshevU(n-1, 3/2), {n, 0, 30})", //
+				"{0,1,3,8,21,55,144,377,987,2584,6765,17711,46368,121393,317811,832040,2178309,\n" + 
+				"5702887,14930352,39088169,102334155,267914296,701408733,1836311903,4807526976,\n" + 
+				"12586269025,32951280099,86267571272,225851433717,591286729879,1548008755920}");
+		
+		check("ChebyshevU(1.5, 2+3*I)", //
+				"1.70238+I*19.36013");
+		check("ChebyshevU(8, x)", //
+				"1-40*x^2+240*x^4-448*x^6+256*x^8");
 		// TODO add non-integer args implementation
 		// check("ChebyshevU(1 - I, 0.5)", "1.60029 + 0.721322 I");
-		check("ChebyshevU(n, 1)", "1+n");
-		check("ChebyshevU({0,1,2,3,4,5}, x)", "{1,2*x,-1+4*x^2,-4*x+8*x^3,1-12*x^2+16*x^4,6*x-32*x^3+32*x^5}");
-		check("ChebyshevU(0, x)", "1");
-		check("ChebyshevU(1, x)", "2*x");
-		check("ChebyshevU(10, x)", "-1+60*x^2-560*x^4+1792*x^6-2304*x^8+1024*x^10");
+		check("ChebyshevU(n, 1)", //
+				"1+n");
+		check("ChebyshevU({0,1,2,3,4,5}, x)", //
+				"{1,2*x,-1+4*x^2,-4*x+8*x^3,1-12*x^2+16*x^4,6*x-32*x^3+32*x^5}");
+		check("ChebyshevU(0, x)", //
+				"1");
+		check("ChebyshevU(1, x)", //
+				"2*x");
+		check("ChebyshevU(10, x)", //
+				"-1+60*x^2-560*x^4+1792*x^6-2304*x^8+1024*x^10");
 	}
 
 	public void testChessboardDistance() {
@@ -6448,8 +6468,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testPochhammer() {
 		// http://oeis.org/A054654
 		check("row(n_) := Reverse( CoefficientList( (-1)^n*Pochhammer(-x, n), x) ); Flatten( Table(row(n), {n, 0, 8}))", //
-				"{1,1,0,1,-1,0,1,-3,2,0,1,-6,11,-6,0,1,-10,35,-50,24,0,1,-15,85,-225,274,-120,0,1,\n" + 
-				"-21,175,-735,1624,-1764,720,0,1,-28,322,-1960,6769,-13132,13068,-5040,0}");
+				"{1,1,0,1,-1,0,1,-3,2,0,1,-6,11,-6,0,1,-10,35,-50,24,0,1,-15,85,-225,274,-120,0,1,\n"
+						+ "-21,175,-735,1624,-1764,720,0,1,-28,322,-1960,6769,-13132,13068,-5040,0}");
 		check("Pochhammer(0, 0)", //
 				"1");
 		check("Pochhammer(0, 42)", //
