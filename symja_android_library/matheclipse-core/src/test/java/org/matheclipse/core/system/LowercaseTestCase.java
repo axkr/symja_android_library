@@ -6446,6 +6446,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPochhammer() {
+		// http://oeis.org/A054654
+		check("row(n_) := Reverse( CoefficientList( (-1)^n*Pochhammer(-x, n), x) ); Flatten( Table(row(n), {n, 0, 8}))", //
+				"{1,1,0,1,-1,0,1,-3,2,0,1,-6,11,-6,0,1,-10,35,-50,24,0,1,-15,85,-225,274,-120,0,1,\n" + 
+				"-21,175,-735,1624,-1764,720,0,1,-28,322,-1960,6769,-13132,13068,-5040,0}");
 		check("Pochhammer(0, 0)", //
 				"1");
 		check("Pochhammer(0, 42)", //
