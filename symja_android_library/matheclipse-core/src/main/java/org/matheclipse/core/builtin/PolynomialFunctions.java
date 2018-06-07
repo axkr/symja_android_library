@@ -1531,7 +1531,7 @@ public class PolynomialFunctions {
 				// (n, z) => Cos(n*ArcCos(z))
 				return F.Cos(F.Times(n, F.ArcCos(z)));
 			}
-			
+
 			int degree = n.toIntDefault(Integer.MIN_VALUE);
 			if (degree != Integer.MIN_VALUE) {
 				if (degree < 0) {
@@ -1548,7 +1548,7 @@ public class PolynomialFunctions {
 				// Cos(Pi*n*(1/2))
 				return F.Cos(F.Times(F.C1D2, F.Pi, n));
 			}
-			
+
 			return F.NIL;
 		}
 
@@ -1594,7 +1594,7 @@ public class PolynomialFunctions {
 				return F.Times(F.Power(F.Plus(F.C1, F.Negate(F.Sqr(z))), F.CN1D2),
 						F.Sin(F.Times(F.Plus(F.C1, n), F.ArcCos(z))));
 			}
-			
+
 			int degree = n.toIntDefault(Integer.MIN_VALUE);
 			if (degree != Integer.MIN_VALUE) {
 				if (degree < 0) {
@@ -1633,7 +1633,7 @@ public class PolynomialFunctions {
 			if (z.isOne()) {
 				return F.Plus(F.C1, n);
 			}
-			
+
 			return F.NIL;
 		}
 
@@ -1767,13 +1767,34 @@ public class PolynomialFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
+			Validate.checkRange(ast, 3, 4);
 			int degree = ast.arg1().toIntDefault(Integer.MIN_VALUE);
-			if (degree == 0) {
-				return F.C1;
-			}
-			if (degree > 0) {
-				return PolynomialsUtils.createLaguerrePolynomial(degree, ast.arg2());
+			if (degree != Integer.MIN_VALUE) {
+				if (ast.size() == 4) {
+					IExpr n = ast.arg1();
+					IExpr l = ast.arg2();
+					IExpr z = ast.arg3();
+					if (n.isZero()) {
+						return F.C1;
+					}
+					if (n.isOne()) {
+						// -z + l + 1
+						return F.Plus(F.C1, F.l, F.Negate(F.z));
+					}
+
+					// Recurrence relation for LaguerreL polynomials
+					return F.Times(F.Power(n, -1),
+							F.Plus(F.Times(F.CN1, F.Plus(F.CN1, l, n), F.LaguerreL(F.ZZ(degree - 2), l, z)),
+									F.Times(F.Plus(F.C1, l, F.Times(F.C2, F.ZZ(degree - 1)), F.Negate(z)),
+											F.LaguerreL(F.ZZ(degree - 1), l, z))));
+				}
+				if (degree == 0) {
+					return F.C1;
+				}
+				if (degree > 0) {
+					IExpr z = ast.arg2();
+					return PolynomialsUtils.createLaguerrePolynomial(degree, z);
+				}
 			}
 			return F.NIL;
 		}

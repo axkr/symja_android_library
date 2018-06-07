@@ -3342,6 +3342,22 @@ public final class NumberTheory {
 		}
 	}
 
+	private static class PrimitiveRoot extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 3);
+
+			IExpr arg1 = ast.arg1();
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE);
+		}
+	}
+
 	/**
 	 * <pre>
 	 * PrimitiveRootList(n)
@@ -3874,6 +3890,7 @@ public final class NumberTheory {
 		F.PrimePi.setEvaluator(new PrimePi());
 		F.PrimeOmega.setEvaluator(new PrimeOmega());
 		F.PrimePowerQ.setEvaluator(new PrimePowerQ());
+		F.PrimitiveRoot.setEvaluator(new PrimitiveRoot());
 		F.PrimitiveRootList.setEvaluator(new PrimitiveRootList());
 		F.SquareFreeQ.setEvaluator(new SquareFreeQ());
 		F.StirlingS1.setEvaluator(new StirlingS1());

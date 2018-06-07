@@ -974,12 +974,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testChebyshevU() {
 		check("ChebyshevU(4, -42)", //
 				"49765969");
-		// http://oeis.org/A001906 
+		// http://oeis.org/A001906
 		check("Table(ChebyshevU(n-1, 3/2), {n, 0, 30})", //
-				"{0,1,3,8,21,55,144,377,987,2584,6765,17711,46368,121393,317811,832040,2178309,\n" + 
-				"5702887,14930352,39088169,102334155,267914296,701408733,1836311903,4807526976,\n" + 
-				"12586269025,32951280099,86267571272,225851433717,591286729879,1548008755920}");
-		
+				"{0,1,3,8,21,55,144,377,987,2584,6765,17711,46368,121393,317811,832040,2178309,\n"
+						+ "5702887,14930352,39088169,102334155,267914296,701408733,1836311903,4807526976,\n"
+						+ "12586269025,32951280099,86267571272,225851433717,591286729879,1548008755920}");
+
 		check("ChebyshevU(1.5, 2+3*I)", //
 				"1.70238+I*19.36013");
 		check("ChebyshevU(8, x)", //
@@ -4223,14 +4223,33 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testLaguerreL() {
-		check("LaguerreL(8, x)", "1-8*x+14*x^2-28/3*x^3+35/12*x^4-7/15*x^5+7/180*x^6-x^7/630+x^8/40320");
+		check("LaguerreL(0, l, z)", //
+				"1");
+		check("LaguerreL(1, l, z)", //
+				"1+l-z");
+		check("LaguerreL(2, l, z)", //
+				"1/2*(-1-l+(1+l-z)*(3+l-z))");
+		check("LaguerreL(3, l, z)", //
+				"1/3*(-(2+l)*(1+l-z)+1/2*(-1-l+(1+l-z)*(3+l-z))*(5+l-z))");
+		check("LaguerreL(4, l, z)", //
+				"1/4*(-1/2*(3+l)*(-1-l+(1+l-z)*(3+l-z))+1/3*(-(2+l)*(1+l-z)+1/2*(-1-l+(1+l-z)*(3+l-z))*(\n"
+						+ "5+l-z))*(7+l-z))");
+		check("LaguerreL(n, 0)", //
+				"LaguerreL(n,0)");
+		check("LaguerreL(8, x)", //
+				"1-8*x+14*x^2-28/3*x^3+35/12*x^4-7/15*x^5+7/180*x^6-x^7/630+x^8/40320");
 		// TODO add non-integer implementation
 		// check("LaguerreL(3/2, 1.7)", "");
-		check("LaguerreL(3, x)", "1-3*x+3/2*x^2-x^3/6");
-		check("LaguerreL(4, x)", "1-4*x+3*x^2-2/3*x^3+x^4/24");
-		check("LaguerreL(5, x)", "1-5*x+5*x^2-5/3*x^3+5/24*x^4-x^5/120");
-		check("LaguerreL(0,z)", "1");
-		check("LaguerreL(-3,z)", "LaguerreL(-3,z)");
+		check("LaguerreL(3, x)", //
+				"1-3*x+3/2*x^2-x^3/6");
+		check("LaguerreL(4, x)", //
+				"1-4*x+3*x^2-2/3*x^3+x^4/24");
+		check("LaguerreL(5, x)", //
+				"1-5*x+5*x^2-5/3*x^3+5/24*x^4-x^5/120");
+		check("LaguerreL(0,z)", //
+				"1");
+		check("LaguerreL(-3,z)", //
+				"LaguerreL(-3,z)");
 	}
 
 	public void testInverseLaplaceTransform() {
@@ -5397,6 +5416,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// https://oeis.org/A023394
 		check("Select(Prime(Range(500)), IntegerQ(Log(2, MultiplicativeOrder(2, # )))&) ", //
 				"{3,5,17,257,641}");
+
+		check("Select(Range(2,200), MultiplicativeOrder(10, # )== # - 1 &)", //
+				"{7,17,19,23,29,47,59,61,97,109,113,131,149,167,179,181,193}");
 
 		check("MultiplicativeOrder(7, 108)", //
 				"18");
@@ -6865,24 +6887,42 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPowerMod() {
+		// 2 is a primitive root for 13
+		check("PowerMod(2, Range(12), 13)", //
+				"{2,4,8,3,6,12,11,9,5,10,7,1}");
+		// 3 is not a primitive root for 13
+		check("PowerMod(3, Range(12), 13)", //
+				"{3,9,1,3,9,1,3,9,1,3,9,1}");
+
 		// check("PowerMod(6, 1/2, 10)", "1");
 
-		check("PowerMod(2, 10, 3)", "1");
+		check("PowerMod(2, 10, 3)", //
+				"1");
 		// similar to Java modInverse()
-		check("PowerMod(3, -1, 7)", "5");
+		check("PowerMod(3, -1, 7)", //
+				"5");
 		// prints warning
-		check("PowerMod(0, -1, 2)", "PowerMod(0,-1,2)");
+		check("PowerMod(0, -1, 2)", //
+				"PowerMod(0,-1,2)");
 		// prints warning
-		check("PowerMod(5, 2, 0)", "PowerMod(5,2,0)");
+		check("PowerMod(5, 2, 0)", //
+				"PowerMod(5,2,0)");
 
-		check("PowerMod(2, 10^9, 18)", "16");
-		check("PowerMod(2, {10, 11, 12, 13, 14}, 5)", "{4,3,1,2,4}");
-		check("PowerMod(147198853397, -1, 73599183960)", "43827926933");
+		check("PowerMod(2, 10^9, 18)", //
+				"16");
+		check("PowerMod(2, {10, 11, 12, 13, 14}, 5)", //
+				"{4,3,1,2,4}");
+		check("PowerMod(147198853397, -1, 73599183960)", //
+				"43827926933");
 
-		check("PowerMod(2, 10000000, 3)", "1");
-		check("PowerMod(3, -2, 10)", "9");
-		check("PowerMod(0, -1, 2)", "PowerMod(0,-1,2)");
-		check("PowerMod(5, 2, 0)", "PowerMod(5,2,0)");
+		check("PowerMod(2, 10000000, 3)", //
+				"1");
+		check("PowerMod(3, -2, 10)", //
+				"9");
+		check("PowerMod(0, -1, 2)", //
+				"PowerMod(0,-1,2)");
+		check("PowerMod(5, 2, 0)", //
+				"PowerMod(5,2,0)");
 
 	}
 
@@ -7027,7 +7067,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{False,True,True,False,True,False,True,False,False,False,True,False,True,False,False,False,True,False,True,False}");
 	}
 
+	public void testPrimitiveRoot() {
+		// check("Select(Range(100), PrimitiveRoot(#) != {} &)", //
+		// "");
+	}
+
 	public void testPrimitiveRootList() {
+		check("PrimitiveRootList(2*Prime(5))", "{7,13,17,19}");
 		check("PrimitiveRootList(9)", "{2,5}");
 		check("PrimitiveRootList(10)", "{3,7}");
 		check("PrimitiveRootList(7)", "{3,5}");
