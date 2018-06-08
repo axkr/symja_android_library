@@ -2450,6 +2450,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEqual() {
+
+		check("x^2+4*x+4==(x+2)^2", "True");
+		check("x^2+x==x*(x+1)", "True");
+		
 		// github issue #42
 		check("1-i==1.0-i", "True");
 
@@ -3493,6 +3497,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGreater() {
+		check("42>Infinity", "False");
+		
 		check("Infinity>Infinity", "False");
 
 		check("Refine(Infinity>x, x>0)", "True");

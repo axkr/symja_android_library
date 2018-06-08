@@ -54,6 +54,13 @@ public class ComplexNum implements IComplexNum {
 	/** A complex number representing "0.0 + 0.0i" */
 	public static final ComplexNum ZERO = valueOf(0.0, 0.0);
 
+	/**
+	 * Return the absolute value of this complex number. Returns {@code NaN} if either real or imaginary part is
+	 * {@code NaN} and {@code Double.POSITIVE_INFINITY} if neither part is {@code NaN}, but at least one part is
+	 * infinite.
+	 *
+	 * @return the absolute value.
+	 */
 	public static double dabs(Complex c) {
 		if (c.isNaN()) {
 			return Double.NaN;
@@ -138,13 +145,39 @@ public class ComplexNum implements IComplexNum {
 	}
 
 	/**
-	 * @param that
-	 * @return
+	 * Returns a {@code Complex} whose value is {@code (this + addend)}. Uses the definitional formula
+	 * <p>
+	 * {@code (a + bi) + (c + di) = (a+c) + (b+d)i}
+	 * </p>
+	 * If either {@code this} or {@code addend} has a {@code NaN} value in either part, {@link #NaN} is returned;
+	 * otherwise {@code Infinite} and {@code NaN} values are returned in the parts of the result according to the rules
+	 * for {@link java.lang.Double} arithmetic.
+	 *
+	 * @param addend
+	 *            Value to be added to this {@code Complex}.
+	 * @return {@code this + addend}.
+	 * @throws NullArgumentException
+	 *             if {@code addend} is {@code null}.
 	 */
-	public Complex add(final Complex that) {
-		return fComplex.add(that);
+	public Complex add(final Complex addend) {
+		return fComplex.add(addend);
 	}
 
+	/**
+	 * Returns a {@code ComplexNum} whose value is {@code (this + addend)}. Uses the definitional formula
+	 * <p>
+	 * {@code (a + bi) + (c + di) = (a+c) + (b+d)i}
+	 * </p>
+	 * If either {@code this} or {@code addend} has a {@code NaN} value in either part, {@link #NaN} is returned;
+	 * otherwise {@code Infinite} and {@code NaN} values are returned in the parts of the result according to the rules
+	 * for {@link java.lang.Double} arithmetic.
+	 *
+	 * @param addend
+	 *            Value to be added to this {@code Complex}.
+	 * @return {@code this + addend}.
+	 * @throws NullArgumentException
+	 *             if {@code addend} is {@code null}.
+	 */
 	public ComplexNum add(final ComplexNum that) {
 		return newInstance(fComplex.add(that.fComplex));
 	}
@@ -393,9 +426,6 @@ public class ComplexNum implements IComplexNum {
 		return fComplex.getReal();
 	}
 
-	/**
-	 * @return
-	 */
 	@Override
 	public double getRealPart() {
 		double temp = fComplex.getReal();
@@ -405,11 +435,6 @@ public class ComplexNum implements IComplexNum {
 		return temp;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public final int hashCode() {
 		return fComplex.hashCode();
@@ -488,11 +513,29 @@ public class ComplexNum implements IComplexNum {
 	}
 
 	/**
-	 * @param that
-	 * @return
+	 * Returns a {@code ComplexNum} whose value is {@code this * factor}. Implements preliminary checks for {@code NaN}
+	 * and infinity followed by the definitional formula:
+	 * <p>
+	 * {@code (a + bi)(c + di) = (ac - bd) + (ad + bc)i}
+	 * </p>
+	 * Returns {@link #NaN} if either {@code this} or {@code factor} has one or more {@code NaN} parts.
+	 * <p>
+	 * Returns {@link #INF} if neither {@code this} nor {@code factor} has one or more {@code NaN} parts and if either
+	 * {@code this} or {@code factor} has one or more infinite parts (same result is returned regardless of the sign of
+	 * the components).
+	 * </p>
+	 * <p>
+	 * Returns finite values in components of the result per the definitional formula in all remaining cases.
+	 * </p>
+	 *
+	 * @param factor
+	 *            value to be multiplied by this {@code ComplexNum}.
+	 * @return {@code this * factor}.
+	 * @throws NullArgumentException
+	 *             if {@code factor} is {@code null}.
 	 */
-	public ComplexNum multiply(final ComplexNum that) {
-		return newInstance(fComplex.multiply(that.fComplex));
+	public ComplexNum multiply(final ComplexNum factor) {
+		return newInstance(fComplex.multiply(factor.fComplex));
 	}
 
 	@Override
@@ -505,7 +548,10 @@ public class ComplexNum implements IComplexNum {
 	}
 
 	/**
-	 * @return
+	 * Returns a {@code ComplexNum} whose value is {@code (-this)}. Returns {@code NaN} if either real or imaginary part
+	 * of this Complex number is {@code Double.NaN}.
+	 *
+	 * @return {@code -this}.
 	 */
 	@Override
 	public ComplexNum negate() {
@@ -567,15 +613,41 @@ public class ComplexNum implements IComplexNum {
 	}
 
 	/**
-	 * @param that
-	 * @return
+	 * Returns a {@code Complex} whose value is {@code (this - subtrahend)}. Uses the definitional formula
+	 * <p>
+	 * {@code (a + bi) - (c + di) = (a-c) + (b-d)i}
+	 * </p>
+	 * If either {@code this} or {@code subtrahend} has a {@code NaN]} value in either part, {@link #NaN} is returned;
+	 * otherwise infinite and {@code NaN} values are returned in the parts of the result according to the rules for
+	 * {@link java.lang.Double} arithmetic.
+	 *
+	 * @param subtrahend
+	 *            value to be subtracted from this {@code Complex}.
+	 * @return {@code this - subtrahend}.
+	 * @throws NullArgumentException
+	 *             if {@code subtrahend} is {@code null}.
 	 */
-	public Complex subtract(final Complex that) {
-		return fComplex.subtract(that);
+	public Complex subtract(final Complex subtrahend) {
+		return fComplex.subtract(subtrahend);
 	}
 
-	public ComplexNum subtract(final ComplexNum that) {
-		return newInstance(fComplex.subtract(that.fComplex));
+	/**
+	 * Returns a {@code ComplexNum} whose value is {@code (this - subtrahend)}. Uses the definitional formula
+	 * <p>
+	 * {@code (a + bi) - (c + di) = (a-c) + (b-d)i}
+	 * </p>
+	 * If either {@code this} or {@code subtrahend} has a {@code NaN]} value in either part, {@link #NaN} is returned;
+	 * otherwise infinite and {@code NaN} values are returned in the parts of the result according to the rules for
+	 * {@link java.lang.Double} arithmetic.
+	 *
+	 * @param subtrahend
+	 *            value to be subtracted from this {@code ComplexNum}.
+	 * @return {@code this - subtrahend}.
+	 * @throws NullArgumentException
+	 *             if {@code subtrahend} is {@code null}.
+	 */
+	public ComplexNum subtract(final ComplexNum subtrahend) {
+		return newInstance(fComplex.subtract(subtrahend.fComplex));
 	}
 
 	/**

@@ -808,30 +808,33 @@ public final class BooleanFunctions {
 	public static class Equal extends AbstractFunctionEvaluator implements ITernaryComparator {
 
 		/**
-		 * Create the result for a <code>simplifyCompare()</code> step.
+		 * Create the result for a <code>simplifyCompare()</code> step
+		 * <code>equalOrUnequalSymbol[lhsAST.rest(), rhs]</code>
 		 * 
+		 * @param equalOrUnequalSymbol
 		 * @param lhsAST
 		 * @param rhs
-		 * @param originalHead
+		 * 
 		 * @return
 		 */
-		private IExpr createComparatorResult(IAST lhsAST, IExpr rhs, ISymbol originalHead) {
-			return F.binary(originalHead, lhsAST.rest(), rhs);
+		private static IExpr createComparatorResult(IBuiltInSymbol equalOrUnequalSymbol, IAST lhsAST, IExpr rhs) {
+			return F.binaryAST2(equalOrUnequalSymbol, lhsAST.rest(), rhs);
 		}
 
 		/**
-		 * Try to simplify a comparator expression. Example: <code>3*x > 6</code> wll be simplified to
-		 * <code>x> 2</code>.
+		 * Try to simplify a comparator expression. Example: <code>3*x > 6</code> will be simplified to
+		 * <code>x > 2</code>.
 		 * 
+		 * @param equalOrUnequalSymbol
+		 *            symbol for which the simplification was started
 		 * @param a1
 		 *            left-hand-side of the comparator expression
 		 * @param a2
 		 *            right-hand-side of the comparator expression
-		 * @param originalHead
-		 *            symbol for which the simplification was started
-		 * @return the simplified comparator expression or <code>null</code> if no simplification was found
+		 * 
+		 * @return the simplified comparator expression or <code>F.NIL</code> if no simplification was found
 		 */
-		protected IExpr simplifyCompare(IExpr a1, IExpr a2, ISymbol originalHead) {
+		protected static IExpr simplifyCompare(IBuiltInSymbol equalOrUnequalSymbol, IExpr a1, IExpr a2) {
 			IExpr lhs, rhs;
 			if (a2.isNumber()) {
 				lhs = a1;
@@ -848,12 +851,12 @@ public final class BooleanFunctions {
 					if (lhsAST.arg1().isNumber()) {
 						INumber sn = (INumber) lhsAST.arg1();
 						rhs = F.eval(F.Divide(rhs, sn));
-						return createComparatorResult(lhsAST, rhs, originalHead);
+						return createComparatorResult(equalOrUnequalSymbol, lhsAST, rhs);
 					}
 				} else if (lhsAST.isPlus() && lhsAST.arg1().isNumber()) {
 					INumber sn = (INumber) lhsAST.arg1();
 					rhs = F.eval(F.Subtract(rhs, sn));
-					return createComparatorResult(lhsAST, rhs, originalHead);
+					return createComparatorResult(equalOrUnequalSymbol, lhsAST, rhs);
 				}
 			}
 			return F.NIL;
@@ -869,14 +872,13 @@ public final class BooleanFunctions {
 				boolean evaled = false;
 				IASTAppendable result = ast.copyAppendable();
 				int i = 2;
-				IExpr arg1 = F.expandAll(result.get(1), true, true);
+				IExpr arg1 = F.expandAll(result.arg1(), true, true);
 				while (i < result.size()) {
 					IExpr arg2 = F.expandAll(result.get(i), true, true);
 					b = prepareCompare(arg1, arg2, engine);
 					if (b == IExpr.COMPARE_TERNARY.FALSE) {
 						return F.False;
-					}
-					if (b == IExpr.COMPARE_TERNARY.TRUE) {
+					} else if (b == IExpr.COMPARE_TERNARY.TRUE) {
 						evaled = true;
 						result.remove(i - 1);
 					} else {
@@ -904,7 +906,7 @@ public final class BooleanFunctions {
 		 * @param engine
 		 * @return
 		 */
-		public IExpr.COMPARE_TERNARY prepareCompare(final IExpr arg1, final IExpr arg2, EvalEngine engine) {
+		protected IExpr.COMPARE_TERNARY prepareCompare(final IExpr arg1, final IExpr arg2, EvalEngine engine) {
 			if (arg1.isIndeterminate() || arg2.isIndeterminate()) {
 				return IExpr.COMPARE_TERNARY.FALSE;
 			}
@@ -1491,8 +1493,8 @@ public final class BooleanFunctions {
 		 *            if <code>true</code> return F.True otherwise F.False
 		 * @return the simplified comparator expression or <code>F.NIL</code> if no simplification was found
 		 */
-		final protected IExpr simplifyCompare(IExpr a1, IExpr a2, ISymbol originalHead, ISymbol oppositeHead,
-				boolean setTrue) {
+		final protected IExpr simplifyCompare(IExpr a1, IExpr a2, IBuiltInSymbol originalHead,
+				IBuiltInSymbol oppositeHead, boolean setTrue) {
 			IExpr lhs;
 			IExpr rhs;
 			boolean useOppositeHeader = false;
@@ -1519,8 +1521,6 @@ public final class BooleanFunctions {
 				if (lhsAST.isNegativeInfinity() && rhs.isRealResult()) {
 					// -Infinity > rhs ?
 					return setTrue ? F.False : F.True;
-					// return createComparatorResult(F.CN1, F.C1, useOppositeHeader, originalHead,
-					// oppositeHead);
 				}
 				if (rhs.isInfinity() && lhsAST.isRealResult()) {
 					// lhs > Infinity ?
@@ -1542,9 +1542,9 @@ public final class BooleanFunctions {
 					}
 				} else if (lhsAST.isPlus()) {
 					IAST result = lhsAST.partitionPlus(x -> x.isNumericFunction(), F.C0, F.C0, F.List);
-					if (!result.get(1).isZero()) {
+					if (!result.arg1().isZero()) {
 						rhs = rhs.subtract(result.get(1));
-						return createComparatorResult(result.get(2), rhs, useOppositeHeader, originalHead,
+						return createComparatorResult(result.arg2(), rhs, useOppositeHeader, originalHead,
 								oppositeHead);
 					}
 				}
@@ -3429,28 +3429,11 @@ public final class BooleanFunctions {
 			if (ast.size() > 2) {
 				IExpr.COMPARE_TERNARY b = IExpr.COMPARE_TERNARY.UNDEFINED;
 				if (ast.isAST2()) {
-					IExpr arg1 = F.expandAll(ast.arg1(), true, true);
-					IExpr arg2 = F.expandAll(ast.arg2(), true, true);
-
-					b = prepareCompare(arg1, arg2, engine);
-					if (b == IExpr.COMPARE_TERNARY.FALSE) {
-						return F.True;
-					}
-					if (b == IExpr.COMPARE_TERNARY.TRUE) {
-						return F.False;
-					}
-
-					IExpr result = simplifyCompare(arg1, arg2, F.Unequal);
-					if (result.isPresent()) {
-						return result;
-					}
+					return unequalNull(ast.arg1(), ast.arg2(), engine);
 				}
 
 				IASTMutable result = ast.copy();
 				result.setArgs(result.size(), i -> F.expandAll(result.get(i), true, true));
-				// for (int i = 1; i < result.size(); i++) {
-				// result.set(i, F.expandAll(result.get(i), true, true));
-				// }
 				int i = 2;
 				int j;
 				while (i < result.size()) {
@@ -3459,8 +3442,7 @@ public final class BooleanFunctions {
 						b = compareTernary(result.get(i - 1), result.get(j++));
 						if (b == IExpr.COMPARE_TERNARY.TRUE) {
 							return F.False;
-						}
-						if (b == IExpr.COMPARE_TERNARY.UNDEFINED) {
+						} else if (b == IExpr.COMPARE_TERNARY.UNDEFINED) {
 							return F.NIL;
 						}
 					}
@@ -3637,7 +3619,7 @@ public final class BooleanFunctions {
 	}
 
 	/**
-	 * Compare if the first and second argument are equal.
+	 * Compare if the first and second argument are equal after expanding the arguments.
 	 * 
 	 * @param a1
 	 *            first argument
@@ -3658,7 +3640,31 @@ public final class BooleanFunctions {
 			return F.True;
 		}
 
-		return CONST_EQUAL.simplifyCompare(arg1, arg2, F.Equal);
+		return Equal.simplifyCompare(F.Equal, arg1, arg2);
+	}
+
+	/**
+	 * Compare if the first and second argument are unequal after expanding the arguments.
+	 * 
+	 * @param a1
+	 *            first argument
+	 * @param a2
+	 *            second argument
+	 * @return <code>F.NIL</code> or the simplified expression, if equality couldn't be determined.
+	 */
+	public static IExpr unequalNull(IExpr a1, IExpr a2, EvalEngine engine) {
+		IExpr.COMPARE_TERNARY b;
+		IExpr arg1 = F.expandAll(a1, true, true);
+		IExpr arg2 = F.expandAll(a2, true, true);
+		b = CONST_EQUAL.prepareCompare(arg1, arg2, engine);
+		if (b == IExpr.COMPARE_TERNARY.FALSE) {
+			return F.True;
+		}
+		if (b == IExpr.COMPARE_TERNARY.TRUE) {
+			return F.False;
+		}
+
+		return Unequal.simplifyCompare(F.Unequal, arg1, arg2);
 	}
 
 	/**
