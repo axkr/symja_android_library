@@ -891,7 +891,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 		return appendAST;
 	}
 
-	private IExpr[] newElementArray(int size) {
+	private static IExpr[] newElementArray(int size) {
 		return new IExpr[size];
 	}
 
