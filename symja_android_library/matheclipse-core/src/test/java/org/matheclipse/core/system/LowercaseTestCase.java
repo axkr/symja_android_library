@@ -2579,6 +2579,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExp() {
+		check("Exp(x*Log(n))", "n^x");
 		check("Exp(42+Log(a)+Log(b))", "a*b*E^42");
 		check("Exp(1)", "E");
 		checkNumeric("Exp(10.0)", "22026.465794806703");
@@ -5342,6 +5343,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMoebiusMu() {
+		check("MoebiusMu(-30)", //
+				"-1");
+		check("FactorInteger(30)", //
+				"{{2,1},{3,1},{5,1}}");
+		check("MoebiusMu(30)", //
+				"-1");
 		check("Table(MoebiusMu(k), {k, 0,50})", //
 				"{0,1,-1,-1,0,-1,1,-1,0,0,1,-1,0,-1,1,1,0,-1,0,-1,0,1,1,-1,0,0,1,0,0,-1,-1,-1,0,1,\n"
 						+ "1,1,0,-1,1,1,0,-1,-1,-1,0,0,1,-1,0,0,0}");
@@ -10079,6 +10086,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testZeta() {
+		check("Zeta(-3.0)", "0.00833");
+		check("Zeta(4.0)", "1.08232");
+		check("Zeta(1.0+I)", "0.58216+I*(-0.92685)");
+		check("Zeta(-3.0+I*1.0^(-100))", "0.01438+I*0.01035");
+
 		check("Zeta(-1)", "-1/12");
 		check("Zeta(2)", "Pi^2/6");
 		// TODO add implementation

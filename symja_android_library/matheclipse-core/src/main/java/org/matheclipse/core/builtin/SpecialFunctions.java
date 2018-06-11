@@ -56,6 +56,8 @@ import org.matheclipse.core.reflection.system.rules.StieltjesGammaRules;
 import org.matheclipse.core.reflection.system.rules.StruveHRules;
 import org.matheclipse.core.reflection.system.rules.StruveLRules;
 
+import de.lab4inf.math.sets.ComplexNumber;
+
 public class SpecialFunctions {
 	static {
 		F.Beta.setEvaluator(new Beta());
@@ -913,15 +915,17 @@ public class SpecialFunctions {
 	private final static class Zeta extends AbstractArg12 {
 
 		@Override
-		public IExpr e1DblArg(INum d) {
-			// TODO add implementation
-			return F.NIL;
+		public IExpr e1DblArg(INum num) {
+			double d = de.lab4inf.math.functions.Zeta.zeta(num.doubleValue());
+			return F.num(d);
 		}
 
 		@Override
-		public IExpr e1DblComArg(IComplexNum c) {
-			// TODO add implementation
-			return F.NIL;
+		public IExpr e1DblComArg(IComplexNum cNum) {
+			de.lab4inf.math.Complex c = new de.lab4inf.math.sets.ComplexNumber(cNum.reDoubleValue(),
+					cNum.imDoubleValue());
+			c = de.lab4inf.math.functions.Zeta.zeta(c);
+			return F.complex(c.real(), c.imag());
 		}
 
 		@Override
