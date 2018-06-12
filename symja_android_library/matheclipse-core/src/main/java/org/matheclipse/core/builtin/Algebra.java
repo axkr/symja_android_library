@@ -3399,7 +3399,7 @@ public class Algebra {
 				IExpr cTerms = F.Transpose
 						.of(engine, F.Map(F.Function(F.unaryAST1(reduceConstantTerm, F.Slot1)), F.Apply(F.List, e))).first();
 				// GCD @@ cTerms
-				IExpr c = F.Apply.of(F.GCD, cTerms);
+				IExpr c = F.Apply.of(engine, F.GCD, cTerms);
 				if (cTerms.last().isNegative()) {
 					c = c.negate();
 				}

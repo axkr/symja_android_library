@@ -511,26 +511,27 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 			IExpr a1 = coeff(1);
 			IExpr a1Inverse = a1.inverse();
 
-//			if (maxPower >= 2) {
-//				int n = maxPower;
-//				IASTAppendable gList = F.ListAlloc(n);
-//				gList.append(a1Inverse);
-//				for (int i = 2; i <= n; i++) {
-//					IASTAppendable sum = F.PlusAlloc(i - 1);
-//					for (int k = 1; k <= i - 1; k++) {
-//						IASTAppendable symbols = F.ListAlloc(i - k);
-//						for (int j = 1; j < i - k + 1; j++) {
-//							symbols.append(coeff(j + 1).divide(NumberTheory.factorial(j + 1)).times(a1Inverse).times(F.Power(F.ZZ(j + 1), -1)));
-//						}
-//						sum.append(F.Times(F.Power(F.CN1, k), NumberTheory.risingFactorial(i, k),//
-//								F.ternary(F.b, F.ZZ(i - 1), F.ZZ(k), symbols)
-////								PolynomialFunctions.bellY(i - 1, k, symbols)
-//								));
-//					}
-//					gList.append(F.eval(F.Times(F.Power(a1Inverse, i), sum)));
-//				}
-//				System.out.println(gList.toString());
-//			}
+			// if (maxPower >= 2) {
+			// int n = maxPower;
+			// IASTAppendable gList = F.ListAlloc(n);
+			// gList.append(a1Inverse);
+			// for (int i = 2; i <= n; i++) {
+			// IASTAppendable sum = F.PlusAlloc(i - 1);
+			// for (int k = 1; k <= i - 1; k++) {
+			// IASTAppendable symbols = F.ListAlloc(i - k);
+			// for (int j = 1; j < i - k + 1; j++) {
+			// symbols.append(coeff(j + 1).divide(NumberTheory.factorial(j + 1)).times(a1Inverse).times(F.Power(F.ZZ(j +
+			// 1), -1)));
+			// }
+			// sum.append(F.Times(F.Power(F.CN1, k), NumberTheory.risingFactorial(i, k),//
+			// F.ternary(F.b, F.ZZ(i - 1), F.ZZ(k), symbols)
+			//// PolynomialFunctions.bellY(i - 1, k, symbols)
+			// ));
+			// }
+			// gList.append(F.eval(F.Times(F.Power(a1Inverse, i), sum)));
+			// }
+			// System.out.println(gList.toString());
+			// }
 
 			ASTSeriesData ps = new ASTSeriesData(x, x0, nMin, nMin, power, denominator, new OpenIntToIExprHashMap());
 			if (!this.x0.isZero()) {
@@ -540,24 +541,25 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 			// a1^(-1)
 			ps.setCoeff(1, a1Inverse);
 			if (maxPower > 2) {
+				EvalEngine engine = EvalEngine.get();
 				// -a1^(-3) * a2
 				IExpr a2 = coeff(2);
 				ps.setCoeff(2, a1.power(-3).times(a2).negate());
 				if (maxPower > 3) {
 					// a1^(-5) * (2*a2^2-a1*a3)
 					IExpr a3 = coeff(3);
-					ps.setCoeff(3, F.Times.of(F.Power(a1, -5), //
+					ps.setCoeff(3, F.Times.of(engine, F.Power(a1, -5), //
 							F.Subtract(F.Times(F.C2, F.Sqr(a2)), F.Times(a1, a3))));
 					if (maxPower > 4) {
 						// a1^(-7) * (5*a1*a2*a3-a1*a4-5*a2^3)
 						IExpr a4 = coeff(4);
-						ps.setCoeff(4, F.Times.of(F.Power(a1, -7), //
+						ps.setCoeff(4, F.Times.of(engine, F.Power(a1, -7), //
 								F.Plus(F.Times(F.CN5, F.Power(a2, 3)), F.Times(F.C5, a1, a2, a3),
 										F.Times(F.CN1, a1, a4))));
 						if (maxPower > 5) {
 							// a1^(-9) * (6*a1^2*a2*a4+3*a1^2*a3^2+14*a2^4-a1^3*a5-21*a1*a2^2*a3)
 							IExpr a5 = coeff(5);
-							ps.setCoeff(5, F.Times.of(F.Power(a1, -9), //
+							ps.setCoeff(5, F.Times.of(engine, F.Power(a1, -9), //
 									F.Plus(F.Times(F.ZZ(14L), F.Power(a2, 4)), F.Times(F.ZZ(-21L), a1, F.Sqr(a2), a3),
 											F.Times(F.C3, F.Sqr(a1), F.Sqr(a3)), F.Times(F.C6, F.Sqr(a1), a2, a4),
 											F.Times(F.CN1, F.Power(a1, 3), a5))));
@@ -565,7 +567,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 								// a1^(-11) *
 								// (7*a1^3*a2*a5+7*a1^3*a3*a4+84*a1*a2^3*a3-a1^4*a6-28*a1^2*a2*a3^2-42*a2^5-28*a1^2*a2^2*a4)
 								IExpr a6 = coeff(6);
-								ps.setCoeff(6, F.Times.of(F.Power(a1, -11), //
+								ps.setCoeff(6, F.Times.of(engine, F.Power(a1, -11), //
 										F.Plus(F.Times(F.ZZ(-42L), F.Power(a2, 5)),
 												F.Times(F.ZZ(84L), a1, F.Power(a2, 3), a3),
 												F.Times(F.ZZ(-28L), F.Sqr(a1), a2, F.Sqr(a3)),
@@ -579,7 +581,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 									// a1*a5) + 8*a1^3*a2*(-9*a3*a4 + a1*a6) + a1^3*(-12*a3^3 + 8*a1*a3*a5 +
 									// a1*(4*a4^2 - a1*a7))) / a1^13
 									ps.setCoeff(7,
-											F.Times.of(F.Power(a1, -13),
+											F.Times.of(engine, F.Power(a1, -13),
 													F.Plus(F.Times(F.ZZ(132L), F.Power(a2, 6)),
 															F.Times(F.ZZ(-330L), a1, F.Power(a2, 4), a3),
 															F.Times(F.ZZ(120L), F.Sqr(a1), F.Power(a2, 3), a4),
@@ -602,7 +604,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 										// 9*a1*a3*a6 +
 										// a1*(9*a4*a5 - a1*a8)))/a1^15
 										IExpr a8 = coeff(8);
-										ps.setCoeff(8, F.Times.of(F.Power(a1, -15),
+										ps.setCoeff(8, F.Times.of(engine, F.Power(a1, -15),
 												F.Plus(F.Times(F.ZZ(-429L), F.Power(a2, 7)),
 														F.Times(F.ZZ(1287L), a1, F.Power(a2, 5), a3),
 														F.Times(F.ZZ(-495L), F.Sqr(a1), F.Power(a2, 4), a4),
@@ -631,7 +633,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 											// a1^2*(5*a5^2 + 10*a4*a6 - a1*a9)))/a1^17
 											IExpr a9 = coeff(9);
 											ps.setCoeff(9,
-													F.Times.of(F.Power(a1, -17),
+													F.Times.of(engine, F.Power(a1, -17),
 															F.Plus(F.Times(F.ZZ(1430L), F.Power(a2, 8)),
 																	F.Times(F.ZZ(-5005L), a1, F.Power(a2, 6), a3),
 																	F.Times(F.ZZ(2002L), F.Sqr(a1), F.Power(a2, 5), a4),

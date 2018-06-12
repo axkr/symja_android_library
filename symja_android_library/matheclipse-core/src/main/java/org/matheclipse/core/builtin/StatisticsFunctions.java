@@ -2053,7 +2053,7 @@ public class StatisticsFunctions {
 										}
 										// factor = c + d * FractionalPart(x);
 										IExpr factor = d.isZero() || xi.isZero() ? c
-												: F.Plus.of(c, F.Times(d, xi.fractionalPart()));
+												: F.Plus.of(engine, c, F.Times(d, xi.fractionalPart()));
 										// s[[Floor(x)]]+(s[[Ceiling(x)]]-s[[Floor(x)]]) * (c + d * FractionalPart(x))
 										return F.Plus(s.get(xFloor), //
 												F.Times(F.Subtract(s.get(xCeiling), s.get(xFloor)), factor));
