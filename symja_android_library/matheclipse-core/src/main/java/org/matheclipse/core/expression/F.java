@@ -407,6 +407,7 @@ public class F {
     public final static IBuiltInSymbol FullForm = F.initFinalSymbol("FullForm", ID.FullForm);
     public final static IBuiltInSymbol FullSimplify = F.initFinalSymbol("FullSimplify", ID.FullSimplify);
     public final static IBuiltInSymbol Function = F.initFinalSymbol("Function", ID.Function);
+    public final static IBuiltInSymbol FunctionExpand = F.initFinalSymbol("FunctionExpand", ID.FunctionExpand);
     public final static IBuiltInSymbol GCD = F.initFinalSymbol("GCD", ID.GCD);
     public final static IBuiltInSymbol Gamma = F.initFinalSymbol("Gamma", ID.Gamma);
     public final static IBuiltInSymbol GammaDistribution = F.initFinalSymbol("GammaDistribution", ID.GammaDistribution);
@@ -2501,6 +2502,10 @@ public class F {
 		return binaryAST2(Beta, a0, a1);
 	}
 
+	public static IAST Beta(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(Beta, a0, a1, a2);
+	}
+	
 	public static IAST BetaRegularized(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(BetaRegularized, a0, a1, a2);
 	}

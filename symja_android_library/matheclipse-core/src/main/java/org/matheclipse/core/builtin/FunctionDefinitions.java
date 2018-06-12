@@ -23,6 +23,7 @@ public final class FunctionDefinitions {
 		Fit.setEvaluator(new org.matheclipse.core.reflection.system.Fit());
 		FrobeniusSolve.setEvaluator(new org.matheclipse.core.reflection.system.FrobeniusSolve());
 		FromPolarCoordinates.setEvaluator(new org.matheclipse.core.reflection.system.FromPolarCoordinates());
+		FunctionExpand.setEvaluator(new org.matheclipse.core.reflection.system.FunctionExpand());
 		GeometricMean.setEvaluator(new org.matheclipse.core.reflection.system.GeometricMean());
 		GroebnerBasis.setEvaluator(new org.matheclipse.core.reflection.system.GroebnerBasis());
 		HeavisideTheta.setEvaluator(new org.matheclipse.core.reflection.system.HeavisideTheta());

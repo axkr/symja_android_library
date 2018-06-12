@@ -1,5 +1,9 @@
 package org.matheclipse.core.system;
 
+import static org.matheclipse.core.expression.F.ChebyshevT;
+import static org.matheclipse.core.expression.F.n_;
+import static org.matheclipse.core.expression.F.x_;
+
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -572,6 +576,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBeta() {
+		// TODO improve bad precision
+		// check("Beta(0.5, 3.2, 1.5)", "0.19168");
+		check("Beta(1,b) // FunctionExpand", "1/b");
+		check("Beta(10,b) // FunctionExpand", "362880/(b*(1+b)*(2+b)*(3+b)*(4+b)*(5+b)*(6+b)*(7+b)*(8+b)*(9+b))");
+
+		check("Beta(2.3, 3.2)", "0.05403");
+
 		check("Beta(a, a+1)", "1/(a*(1+a)*CatalanNumber(a))");
 		check("Beta(b-1, b)", "1/((-1+b)*b*CatalanNumber(-1+b))");
 
@@ -2450,10 +2461,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEqual() {
-
+		check("1/2*(1+Sqrt(5))==GoldenRatio", //
+				"True");
 		check("x^2+4*x+4==(x+2)^2", "True");
 		check("x^2+x==x*(x+1)", "True");
-		
+
 		// github issue #42
 		check("1-i==1.0-i", "True");
 
@@ -3386,6 +3398,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Function(And(Equal(Mod(Slot(1), 3), 1), Equal(Mod(Slot(1), 5), 1)))");
 	}
 
+	public void testFunctionExpand() {
+		check("FunctionExpand(ChebyshevT(n, x))", //
+				"Cos(n*ArcCos(x))");
+		check("FunctionExpand(ChebyshevU(n, x))", //
+				"Sin((1+n)*ArcCos(x))/(Sqrt(1-x)*Sqrt(1+x))");
+		check("FunctionExpand({Degree, GoldenRatio})", //
+				"{Pi/180,1/2*(1+Sqrt(5))}");
+		check("FunctionExpand(Beta(z,3,b))", //
+				"(2*(1-(1-z)^b*(1+b*z+1/2*b*(1+b)*z^2)))/(b*(1+b)*(2+b))");
+	}
+
 	public void testGamma() {
 		check("Refine(Gamma(n), Element(n,Integers)&&n>=0)", //
 				"(-1+n)!");
@@ -3499,7 +3522,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testGreater() {
 		check("42>Infinity", "False");
-		
+
 		check("Infinity>Infinity", "False");
 
 		check("Refine(Infinity>x, x>0)", "True");
