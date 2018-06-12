@@ -3397,13 +3397,13 @@ public class Algebra {
 				IExpr e = p;
 				// ((reduceConstantTerm /@ (List @@ e)) // Transpose)[[1]]
 				IExpr cTerms = F.Transpose
-						.of(F.Map(F.Function(F.unaryAST1(reduceConstantTerm, F.Slot1)), F.Apply(F.List, e))).first();
+						.of(engine, F.Map(F.Function(F.unaryAST1(reduceConstantTerm, F.Slot1)), F.Apply(F.List, e))).first();
 				// GCD @@ cTerms
 				IExpr c = F.Apply.of(F.GCD, cTerms);
 				if (cTerms.last().isNegative()) {
 					c = c.negate();
 				}
-				return F.Times.of(c, F.Distribute(F.Divide(e, c)));
+				return F.Times.of(engine, c, F.Distribute(F.Divide(e, c)));
 			}
 			return p;
 		}

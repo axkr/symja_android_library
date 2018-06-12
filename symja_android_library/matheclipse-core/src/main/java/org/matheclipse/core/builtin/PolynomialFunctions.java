@@ -2008,7 +2008,7 @@ public class PolynomialFunctions {
 			denom = F.Denominator.of(engine, expr);
 			if (!denom.isOne()) {
 				// search roots for the numerator expression
-				expr = F.Numerator.of(expr);
+				expr = F.Numerator.of(engine, expr);
 			}
 		}
 		return rootsOfVariable(expr, denom, variables, numericSolutions, engine);

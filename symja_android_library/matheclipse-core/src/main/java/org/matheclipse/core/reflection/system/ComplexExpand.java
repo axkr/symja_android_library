@@ -74,7 +74,7 @@ public class ComplexExpand extends AbstractEvaluator {
 			if (ast.isTimes()) {
 				IExpr expanded = F.evalExpand(ast);
 				if (expanded.isPlus()) {
-					return F.ComplexExpand.of(expanded);
+					return F.ComplexExpand.of(fEngine, expanded);
 				}
 			}
 			if (ast.isPower() && ast.base().isNegative() //
@@ -87,7 +87,7 @@ public class ComplexExpand extends AbstractEvaluator {
 					// exponent*Arg(base)
 					IExpr inner = exponent.times(F.Arg(base));
 					// coeff*Cos(inner) + I*coeff*Sin(inner);
-					IExpr temp = F.Expand.of(F.Plus(F.Times(coeff, F.Cos(inner)), F.Times(F.CI, coeff, F.Sin(inner))));
+					IExpr temp = F.Expand.of(fEngine, F.Plus(F.Times(coeff, F.Cos(inner)), F.Times(F.CI, coeff, F.Sin(inner))));
 					return temp;
 				}
 			}

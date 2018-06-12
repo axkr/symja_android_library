@@ -2028,7 +2028,7 @@ public class StatisticsFunctions {
 						} else {
 							if (q.isReal()) {
 								// x = a + (length + b) * q
-								IExpr x = q.isZero() ? a : F.Plus.of(a, F.Times(F.Plus(length, b), q));
+								IExpr x = q.isZero() ? a : F.Plus.of(engine, a, F.Times(F.Plus(length, b), q));
 								if (x.isNumIntValue()) {
 									int index = x.toIntDefault(Integer.MIN_VALUE);
 									if (index != Integer.MIN_VALUE) {

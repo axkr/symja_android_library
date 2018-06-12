@@ -922,7 +922,7 @@ public class SeriesFunctions {
 				if (functionPart.isIndeterminate()) {
 					functionPart = engine.evalQuiet(F.Limit(derivedFunction, F.Rule(x, x0)));
 				}
-				IExpr coefficient = F.Times.of(F.Power(NumberTheory.factorial(i), F.CN1), functionPart);
+				IExpr coefficient = F.Times.of(engine, F.Power(NumberTheory.factorial(i), F.CN1), functionPart);
 
 				ps.setCoeff(i, coefficient);
 				derivedFunction = F.D(derivedFunction, x);
@@ -1213,7 +1213,7 @@ public class SeriesFunctions {
 				if (degree == 0) {
 					return F.ReplaceAll(function, F.Rule(x, x0));
 				}
-				IExpr derivedFunction = F.D.of(function, F.List(x, n));
+				IExpr derivedFunction = F.D.of(engine, function, F.List(x, n));
 				return F.Times(F.Power(F.Factorial(n), F.CN1), F.ReplaceAll(derivedFunction, F.Rule(x, x0)));
 
 			}
