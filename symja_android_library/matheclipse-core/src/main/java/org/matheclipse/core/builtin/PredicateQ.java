@@ -91,10 +91,6 @@ public class PredicateQ {
 			return F.Equal.ofQ(engine, F.Times(F.CN1, F.Conjugate(expr1)), expr2);
 		}
 
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-		}
-
 	}
 
 	/**
@@ -125,10 +121,6 @@ public class PredicateQ {
 				return false;
 			}
 			return F.Equal.ofQ(engine, F.Times(F.CN1, expr1), expr2);
-		}
-
-		@Override
-		public void setUp(final ISymbol newSymbol) {
 		}
 
 	}
@@ -593,10 +585,6 @@ public class PredicateQ {
 			return F.Equal.ofQ(engine, F.Conjugate(expr1), expr2);
 		}
 
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-		}
-
 	}
 
 	/**
@@ -1033,10 +1021,6 @@ public class PredicateQ {
 		}
 
 		@Override
-		public void setUp(ISymbol newSymbol) {
-		}
-
-		@Override
 		public boolean test(IExpr arg) {
 			return arg.isNumericFunction();
 		}
@@ -1361,10 +1345,6 @@ public class PredicateQ {
 			return F.True;
 		}
 
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-		}
-
 	}
 
 	/**
@@ -1457,10 +1437,6 @@ public class PredicateQ {
 				}
 			}
 			return F.True;
-		}
-
-		@Override
-		public void setUp(final ISymbol newSymbol) {
 		}
 
 	}
