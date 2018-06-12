@@ -11,6 +11,23 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.Matcher;
 
+/**
+ * <pre>
+ * FunctionExpand(f)
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * expands the special function <code>f</code>.
+ * </p>
+ * </blockquote>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; FunctionExpand(Beta(10, b))
+ * 362880/(b*(1+b)*(2+b)*(3+b)*(4+b)*(5+b)*(6+b)*(7+b)*(8+b)*(9+b))
+ * </pre>
+ */
 public class FunctionExpand extends AbstractEvaluator {
 
 	final static Matcher MATCHER = new Matcher(EvalEngine.get());

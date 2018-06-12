@@ -372,6 +372,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [FromDigits](functions/FromDigits.md)
 * [FromPolarCoordinates](functions/FromPolarCoordinates.md)
 * [FullForm](functions/FullForm.md)
+* [FunctionExpand](functions/FunctionExpand.md)
 * [Gamma](functions/Gamma.md)
 * [GCD](functions/GCD.md)
 * [Glaisher](functions/Glaisher.md)

@@ -578,8 +578,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testBeta() {
 		// TODO improve bad precision
 		// check("Beta(0.5, 3.2, 1.5)", "0.19168");
-		check("Beta(1,b) // FunctionExpand", "1/b");
-		check("Beta(10,b) // FunctionExpand", "362880/(b*(1+b)*(2+b)*(3+b)*(4+b)*(5+b)*(6+b)*(7+b)*(8+b)*(9+b))");
+		check("Beta(1,b) // FunctionExpand", //
+				"1/b");
+		check("Beta(10,b) // FunctionExpand", //
+				"362880/(b*(1+b)*(2+b)*(3+b)*(4+b)*(5+b)*(6+b)*(7+b)*(8+b)*(9+b))");
 
 		check("Beta(2.3, 3.2)", "0.05403");
 
