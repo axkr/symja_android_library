@@ -343,11 +343,6 @@ public class PredicateQ {
 			return arg1.isTrue() || arg1.isFalse();
 		}
 
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.LISTABLE);
-		}
-
 	}
 
 	/**
@@ -375,11 +370,6 @@ public class PredicateQ {
 				return test(arg1);
 			}
 			return false;
-		}
-
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.LISTABLE);
 		}
 
 		@Override
@@ -677,11 +667,6 @@ public class PredicateQ {
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
 			return arg1.isInteger();
-		}
-
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.LISTABLE);
 		}
 
 	}
@@ -1507,11 +1492,6 @@ public class PredicateQ {
 			return ExprParser.test(arg1.toString(), engine);
 		}
 
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.LISTABLE);
-		}
-
 	}
 
 	/**
@@ -1542,11 +1522,6 @@ public class PredicateQ {
 				throw new WrongArgumentType(null, arg1, 1);
 			}
 			return test(arg1);
-		}
-
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.LISTABLE);
 		}
 
 		@Override
