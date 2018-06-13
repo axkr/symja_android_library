@@ -339,6 +339,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("ArcTan(1.0)", "0.7853981633974483");
 		checkNumeric("ArcTan(-1.0)", "-0.7853981633974483");
 
+		check("ArcTan(0, 0)", "Indeterminate");
 		check("ArcTan(1, 1)", "Pi/4");
 		check("ArcTan(-1, 1)", "3/4*Pi");
 		check("ArcTan(1, -1)", "-Pi/4");
@@ -3467,20 +3468,48 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testGegenbauerC() {
-		check("GegenbauerC(5,z)", "2*z-8*z^3+32/5*z^5");
-		check("GegenbauerC(1/2,z)", "2*Sqrt(2)*Sqrt(1+z)");
-		check("GegenbauerC(-1/2,z)", "-2*Sqrt(2)*Sqrt(1+z)");
-		check("GegenbauerC(v,0)", "(2*Cos(1/2*Pi*v))/v");
-		check("GegenbauerC(v,1)", "2/v");
-		check("GegenbauerC(v,-1)", "(2*Cos(Pi*v))/v");
-		check("GegenbauerC(v,i)", "GegenbauerC(v,i)");
+		check("GegenbauerC(3, l, z)", //
+				"-2*l*(1+l)*z+4/3*l*(1+l)*(2+l)*z^3");
+		check("GegenbauerC(4, l, z)", //
+				"1/2*l*(1+l)-2*l*(1+l)*(2+l)*z^2+2/3*l*(1+l)*(2+l)*(3+l)*z^4");
+		check("GegenbauerC(0, l, z)", //
+				"1");
+		check("GegenbauerC(0, 0, z)", //
+				"0");
+		check("GegenbauerC(n, 0, z)", //
+				"0");
+		check("GegenbauerC(n, 1, z)", //
+				"ChebyshevU(n,z)");
+		check("GegenbauerC(n, 2, z)", //
+				"((-2-n)*ChebyshevU(n,z)+(1+n)*z*ChebyshevU(1+n,z))/(2*(-1+z^2))");
 
-		check("GegenbauerC(0,z)", "ComplexInfinity");
-		check("GegenbauerC(1,z)", "2*z");
-		check("GegenbauerC(2,z)", "-1+2*z^2");
-		check("GegenbauerC(-v,z)", "-GegenbauerC(v,z)");
-		check("GegenbauerC(10,-z)", "-1/5+10*z^2-80*z^4+224*z^6-256*z^8+512/5*z^10");
-		check("GegenbauerC(11,-z)", "2*z-40*z^3+224*z^5-512*z^7+512*z^9-2048/11*z^11");
+		check("GegenbauerC(5,z)", //
+				"2*z-8*z^3+32/5*z^5");
+		check("GegenbauerC(1/2,z)", //
+				"2*Sqrt(2)*Sqrt(1+z)");
+		check("GegenbauerC(-1/2,z)", //
+				"-2*Sqrt(2)*Sqrt(1+z)");
+		check("GegenbauerC(v,0)", //
+				"(2*Cos(1/2*Pi*v))/v");
+		check("GegenbauerC(v,1)", //
+				"2/v");
+		check("GegenbauerC(v,-1)", //
+				"(2*Cos(Pi*v))/v");
+		check("GegenbauerC(v,i)", //
+				"GegenbauerC(v,i)");
+
+		check("GegenbauerC(0,z)", //
+				"ComplexInfinity");
+		check("GegenbauerC(1,z)", //
+				"2*z");
+		check("GegenbauerC(2,z)", //
+				"-1+2*z^2");
+		check("GegenbauerC(-v,z)", //
+				"-GegenbauerC(v,z)");
+		check("GegenbauerC(10,-z)", //
+				"-1/5+10*z^2-80*z^4+224*z^6-256*z^8+512/5*z^10");
+		check("GegenbauerC(11,-z)", //
+				"2*z-40*z^3+224*z^5-512*z^7+512*z^9-2048/11*z^11");
 	}
 
 	public void testGCD() {

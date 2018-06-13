@@ -253,10 +253,48 @@ public class HypergeometricFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
+			Validate.checkRange(ast, 3, 4);
 			IExpr n = ast.arg1();
-			IExpr z = ast.arg2();
 
+			if (ast.size() == 4) {
+				// GegenbauerC(n, l, z)
+				IExpr l = ast.arg2();
+				IExpr z = ast.arg3();
+				if (l.equals(F.C1D2)) {
+					return F.LegendreP(n, z);
+				}
+
+				int lInt = l.toIntDefault(Integer.MIN_VALUE);
+				if (lInt >= 0) {
+					switch (lInt) {
+					case 0:
+						return F.C0;
+					case 1:
+						return F.ChebyshevU(n, z);
+					case 2:
+						// ((-2 - n)*ChebyshevU(n, z) + z*(1 + n)*ChebyshevU(1 + n, z))/(2*(-1 + z^2))
+						return F.Times(F.C1D2, F.Power(F.Plus(F.CN1, F.Sqr(z)), -1),
+								F.Plus(F.Times(F.Plus(F.CN2, F.Negate(F.n)), F.ChebyshevU(n, z)),
+										F.Times(F.Plus(F.C1, n), z, F.ChebyshevU(F.Plus(F.C1, n), z))));
+					}
+
+				}
+				if (n.isZero()) {
+					return F.C1;
+				}
+				int nInt = n.toIntDefault(Integer.MIN_VALUE);
+				if (nInt > 0) {
+					// Sum(((-1)^k*Pochhammer(l, n - k)*(2*z)^(n - 2*k))/(k!*(n - 2*k)!), {k, 0, Floor(n/2)})
+					return F.sum(
+							k -> F.Times(F.Power(F.CN1, k), F.Power(F.Times(F.C2, z), F.Plus(F.Times(F.CN2, k), n)),
+									F.Power(F.Factorial(k), -1), F.Power(F.Factorial(F.Plus(F.Times(F.CN2, k), n)), -1),
+									F.Pochhammer(l, F.Plus(F.Negate(k), n))),
+							0, nInt / 2);
+				}
+				return F.NIL;
+			}
+			// GegenbauerC(n, z)
+			IExpr z = ast.arg2();
 			int nInt = n.toIntDefault(Integer.MIN_VALUE);
 			if (nInt > Integer.MIN_VALUE) {
 				if (nInt == 0) {
