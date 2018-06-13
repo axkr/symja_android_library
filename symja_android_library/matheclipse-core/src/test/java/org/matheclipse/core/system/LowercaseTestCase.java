@@ -3377,6 +3377,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFullSimplify() {
+		check("Simplify(Cos(n*ArcCos(x)) == ChebyshevT(n, x))", "Cos(n*ArcCos(x))==ChebyshevT(n,x)");
+		// FullSimplify uses FunctionExpand and can test the equation:
+		check("FullSimplify(Cos(n*ArcCos(x)) == ChebyshevT(n, x))", "True");
 		check("FullSimplify(Cosh(x)+Sinh(x))", "E^x");
 	}
 
@@ -3401,10 +3404,20 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFunctionExpand() {
+		check("FunctionExpand(Fibonacci(n + 3), Element(n, Integers))", //
+				"2*Fibonacci(n)+LucasL(n)");
+		check("FunctionExpand(CatalanNumber(x))", //
+				"(2^(2*x)*Gamma(1/2+x))/(Sqrt(Pi)*Gamma(2+x))");
 		check("FunctionExpand(ChebyshevT(n, x))", //
 				"Cos(n*ArcCos(x))");
 		check("FunctionExpand(ChebyshevU(n, x))", //
 				"Sin((1+n)*ArcCos(x))/(Sqrt(1-x)*Sqrt(1+x))");
+		check("FunctionExpand(Factorial(x))", //
+				"Gamma(1+x)");
+		check("FunctionExpand(Factorial(x+3))", //
+				"Gamma(4+x)");
+		check("FunctionExpand(LegendreQ(3/2,1/2,x))", //
+				"-Pi*LegendreP(3/2,-1/2,x)");
 		check("FunctionExpand({Degree, GoldenRatio})", //
 				"{Pi/180,1/2*(1+Sqrt(5))}");
 		check("FunctionExpand(Beta(z,3,b))", //

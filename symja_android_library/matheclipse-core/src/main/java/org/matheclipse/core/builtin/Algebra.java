@@ -1737,7 +1737,7 @@ public class Algebra {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
+			Validate.checkRange(ast, 2, 3);
 			return super.evaluate(ast, engine);
 		}
 
@@ -3101,6 +3101,7 @@ public class Algebra {
 					} catch (WrongArgumentType wat) {
 						//
 					}
+
 				}
 				return result;
 
@@ -3215,8 +3216,23 @@ public class Algebra {
 
 				long count = fComplexityFunction.apply(temp);
 				if (count < minCounter) {
-					return temp;
+					minCounter = count;
+					result = temp;
 				}
+
+				if (fFullSimplify) {
+					try {
+						temp = F.eval(F.FunctionExpand(ast));
+						count = fComplexityFunction.apply(temp);
+						if (count < minCounter) {
+							minCounter = count;
+							result = temp;
+						}
+					} catch (WrongArgumentType wat) {
+						//
+					}
+				}
+
 				return result;
 			}
 
@@ -3257,16 +3273,22 @@ public class Algebra {
 			if (arg1.isAtom()) {
 				return arg1;
 			}
-
+			IAssumptions oldAssumptions = engine.getAssumptions();
 			try {
 				Function<IExpr, Long> complexityFunction = createComplexityFunction(complexityFunctionHead, engine);
 				long minCounter = complexityFunction.apply(arg1);
 				IExpr result = arg1;
 				long count = 0L;
-				if (assumptionExpr.isPresent()) {
-					IAssumptions assumptions = AssumptionFunctions.determineAssumptions(ast.topHead(), assumptionExpr,
-							engine);
+				if (assumptionExpr.isPresent() && assumptionExpr.isAST()) {
+
+					IAssumptions assumptions = oldAssumptions;
+					if (oldAssumptions == null) {
+						assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
+					} else {
+						assumptions = oldAssumptions.addAssumption((IAST) assumptionExpr);
+					}
 					if (assumptions != null) {
+						engine.setAssumptions(assumptions);
 						arg1 = AssumptionFunctions.refineAssumptions(arg1, assumptions, engine);
 						count = complexityFunction.apply(arg1);
 						if (count < minCounter) {
@@ -3274,6 +3296,7 @@ public class Algebra {
 							result = arg1;
 						}
 					}
+
 				}
 
 				IExpr temp = arg1.replaceAll(F.List(F.Rule(F.GoldenRatio, F.Times(F.C1D2, F.Plus(F.C1, F.Sqrt(F.C5)))),
@@ -3286,6 +3309,8 @@ public class Algebra {
 
 			} catch (ArithmeticException e) {
 				//
+			} finally {
+				engine.setAssumptions(oldAssumptions);
 			}
 			return F.NIL;
 		}
@@ -3397,7 +3422,8 @@ public class Algebra {
 				IExpr e = p;
 				// ((reduceConstantTerm /@ (List @@ e)) // Transpose)[[1]]
 				IExpr cTerms = F.Transpose
-						.of(engine, F.Map(F.Function(F.unaryAST1(reduceConstantTerm, F.Slot1)), F.Apply(F.List, e))).first();
+						.of(engine, F.Map(F.Function(F.unaryAST1(reduceConstantTerm, F.Slot1)), F.Apply(F.List, e)))
+						.first();
 				// GCD @@ cTerms
 				IExpr c = F.Apply.of(engine, F.GCD, cTerms);
 				if (cTerms.last().isNegative()) {
@@ -3513,7 +3539,7 @@ public class Algebra {
 			}
 
 			IExpr exprNumerator = F.evalExpand(numerator.getOneIdentity(F.C0));
-			IExpr denom=F.eval(denominator.getOneIdentity(F.C1));
+			IExpr denom = F.eval(denominator.getOneIdentity(F.C1));
 			IExpr exprDenominator = F.evalExpand(denom);
 			if (exprNumerator.isZero()) {
 				if (exprDenominator.isZero()) {
