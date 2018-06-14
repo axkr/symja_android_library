@@ -3405,6 +3405,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFunctionExpand() {
+		check("FunctionExpand(PolyGamma(-2, 1))", //
+				"1/2*(Log(2)+Log(Pi))");
+		check("FunctionExpand(PolyGamma(-3, 1))", //
+				"Log(Glaisher)+1/4*(Log(2)+Log(Pi))");
 		check("FunctionExpand(Fibonacci(n + 3), Element(n, Integers))", //
 				"2*Fibonacci(n)+LucasL(n)");
 		check("FunctionExpand(CatalanNumber(x))", //
@@ -6616,6 +6620,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPolyGamma() {
+		check("PolyGamma(-1,1)", "0");
+		check("PolyGamma(-1)", "ComplexInfinity");
 		check("PolyGamma(-2)", "ComplexInfinity");
 		check("PolyGamma(1)", "-EulerGamma");
 		check("PolyGamma(2)", "1-EulerGamma");

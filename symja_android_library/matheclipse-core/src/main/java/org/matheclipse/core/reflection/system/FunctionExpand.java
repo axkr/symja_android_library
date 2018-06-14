@@ -8,6 +8,7 @@ import static org.matheclipse.core.expression.F.a;
 import static org.matheclipse.core.expression.F.a_;
 import static org.matheclipse.core.expression.F.b;
 import static org.matheclipse.core.expression.F.b_;
+import static org.matheclipse.core.expression.F.j;
 import static org.matheclipse.core.expression.F.k;
 import static org.matheclipse.core.expression.F.m;
 import static org.matheclipse.core.expression.F.m_;
@@ -20,7 +21,6 @@ import static org.matheclipse.core.expression.F.y_;
 import static org.matheclipse.core.expression.F.z;
 import static org.matheclipse.core.expression.F.z_;
 
-import org.matheclipse.core.builtin.AssumptionFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
@@ -108,6 +108,21 @@ public class FunctionExpand extends AbstractEvaluator {
 						F.LegendreP(x, F.Negate(y), z)),
 						F.Times(F.C1D2, F.Pi, F.Cot(F.Times(F.Pi, y)), F.LegendreP(x, y, z)))); // $$);
 
+		// PolyGamma
+		MATCHER.caseOf(F.PolyGamma(F.CN2, F.C1), //
+				// [$ (1/2)*(Log(2)+Log(Pi)) $]
+				F.Times(F.C1D2, F.Plus(F.Log(F.C2), F.Log(F.Pi)))); // $$);
+		MATCHER.caseOf(F.PolyGamma(F.CN3, F.C1), //
+				// [$ Log(Glaisher) + (1/4)*(Log(2) + Log(Pi)) $]
+				F.Plus(F.Log(F.Glaisher), F.Times(F.C1D4, F.Plus(F.Log(F.C2), F.Log(F.Pi))))); // $$);
+		// MATCHER.caseOf(F.PolyGamma(m_, F.C1), //
+		// (1/(-m - 1)!)*(((-m - 1)*EulerGamma)/(-m) + PolyGamma(-m) + Sum(Binomial(-m - 1,
+		// k)*(Sum((-1)^j*Binomial(k, j)*PolyGamma(k - j + 1)*Zeta(j - k, 2), {j, 1, k}) - PolyGamma(1 + k)), {k, 0, -m
+		// - 1}) - Sum(Binomial(-m - 1, k)*Derivative(1)[Zeta][-k], {k, 0, -m - 2})) /; IntegerQ(m) && m < 0
+
+		// F.Condition(F.Times(F.Power(F.Factorial(F.Plus(F.CN1,F.Negate(m))),-1),F.Plus(F.Times(F.EulerGamma,F.Power(F.Negate(m),-1),F.Plus(F.CN1,F.Negate(m))),F.PolyGamma(F.Negate(m)),F.Sum(F.Times(F.Binomial(F.Plus(F.CN1,F.Negate(m)),k),F.Plus(F.Negate(F.PolyGamma(F.Plus(F.C1,k))),F.Sum(F.Times(F.Power(F.CN1,j),F.Binomial(k,j),F.PolyGamma(F.Plus(F.Negate(j),k,F.C1)),F.Zeta(F.Plus(j,F.Negate(k)),F.C2)),F.List(j,F.C1,k)))),F.List(k,F.C0,F.Plus(F.CN1,F.Negate(m)))),F.Negate(F.Sum(F.Times(F.Binomial(F.Plus(F.CN1,F.Negate(m)),k),F.$(F.$(F.Derivative(F.C1),F.Zeta),F.Negate(k))),F.List(k,F.C0,F.Plus(F.CN2,F.Negate(m))))))),F.And(F.IntegerQ(m),F.Less(m,F.C0))));
+		// // $$);
+
 		MATCHER.caseOf(F.Degree, //
 				// [$ Pi/180 $]
 				F.Times(F.QQ(1L, 180L), F.Pi)); // $$);
@@ -139,7 +154,7 @@ public class FunctionExpand extends AbstractEvaluator {
 		if (assumptionExpr.isPresent()) {
 			if (assumptionExpr.isAST()) {
 				IAssumptions oldAssumptions = engine.getAssumptions();
-				IAssumptions assumptions =oldAssumptions;
+				IAssumptions assumptions = oldAssumptions;
 				if (oldAssumptions == null) {
 					assumptions = org.matheclipse.core.eval.util.Assumptions.getInstance(assumptionExpr);
 				} else {
@@ -154,7 +169,7 @@ public class FunctionExpand extends AbstractEvaluator {
 					}
 				}
 			}
-			
+
 		}
 		return MATCHER.replaceAll(arg1).orElse(arg1);
 	}
