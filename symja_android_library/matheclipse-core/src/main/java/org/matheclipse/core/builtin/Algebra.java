@@ -1728,10 +1728,41 @@ public class Algebra {
 	}
 
 	/**
-	 * Try to simplify a given expression
+	 * <pre>
+	 * FullSimplify(expr)
+	 * </pre>
 	 * 
-	 * TODO currently FullSimplify simply calls Simplify
+	 * <blockquote>
+	 * <p>
+	 * works like <code>Simplify</code> but additionally tries some <code>FunctionExpand</code> rule transformations to
+	 * simplify <code>expr</code>.
+	 * </p>
+	 * </blockquote>
 	 * 
+	 * <pre>
+	 * FullSimplify(expr, option1, option2, ...)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * full simplifies <code>expr</code> with some additional options set
+	 * </p>
+	 * </blockquote>
+	 * <ul>
+	 * <li>Assumptions - use assumptions to simplify the expression</li>
+	 * <li>ComplexFunction - use this function to determine the &ldquo;weight&rdquo; of an expression.</li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; FullSimplify(Cos(n*ArcCos(x)) == ChebyshevT(n, x))
+	 * True
+	 * </pre>
+	 * 
+	 * <h3>Related terms</h3>
+	 * <p>
+	 * <a href="Simplify.md">Simplify</a>
+	 * </p>
 	 */
 	private static class FullSimplify extends Simplify {
 
@@ -2949,6 +2980,11 @@ public class Algebra {
 	 * &gt;&gt; Simplify(Abs(x), x&lt;0, ComplexityFunction-&gt;complexity)
 	 * -x
 	 * </pre>
+	 * 
+	 * <h3>Related terms</h3>
+	 * <p>
+	 * <a href="FullSimplify.md">FullSimplify</a>
+	 * </p>
 	 */
 	private static class Simplify extends AbstractFunctionEvaluator {
 		private static HashedOrderlessMatcherPlus PLUS_ORDERLESS_MATCHER = new HashedOrderlessMatcherPlus();
