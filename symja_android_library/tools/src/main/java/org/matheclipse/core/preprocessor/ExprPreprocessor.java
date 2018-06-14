@@ -218,6 +218,7 @@ public class ExprPreprocessor {
 
 	private static int insertJavaCode(String command, StringBuilder buf, String postFix, int endBlock) {
 		int position;
+		command = command.replaceAll("\\s// ", "   ");
 		position = endBlock;
 		ExprParser p = new ExprParser(EvalEngine.get(), true);
 		IExpr expr = p.parse(command);
