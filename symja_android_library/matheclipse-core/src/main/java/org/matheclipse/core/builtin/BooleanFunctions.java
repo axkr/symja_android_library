@@ -1,7 +1,5 @@
 package org.matheclipse.core.builtin;
 
-import static org.matheclipse.core.expression.F.List;
-
 import java.util.List;
 import java.util.Map;
 
@@ -1235,7 +1233,7 @@ public final class BooleanFunctions {
 	 * {True, True, True}
 	 * </pre>
 	 */
-	public static class Greater extends AbstractFunctionEvaluator implements ITernaryComparator {
+	public static class Greater extends AbstractCoreFunctionEvaluator implements ITernaryComparator {
 		public final static Greater CONST = new Greater();
 
 		/**
@@ -1374,32 +1372,38 @@ public final class BooleanFunctions {
 			if (ast.size() <= 2) {
 				return F.True;
 			}
-			if (ast.isAST2()) {
-				IExpr arg1 = ast.arg1();
-				IExpr arg2 = ast.arg2();
+
+			IExpr temp = engine.evalAttributes((ISymbol) ast.head(), ast);
+			if (temp.isPresent()) {
+				return temp;
+			}
+			
+			IAST astEvaled = ast;
+			if (astEvaled.isAST2()) {
+				IExpr arg1 = astEvaled.arg1();
+				IExpr arg2 = astEvaled.arg2();
 				IExpr result = simplifyCompare(arg1, arg2);
 				if (result.isPresent()) {
 					// the result may return an AST with an "opposite header"
-					// (i.e.
-					// Less instead of Greater)
+					// (i.e. Less instead of Greater)
 					return result;
 				}
 				if (arg2.isReal()) {
 					// this part is used in other comparator operations like
 					// Less,
 					// GreaterEqual,...
-					IExpr temp = checkAssumptions(arg1, arg2);
-					if (temp.isPresent()) {
-						return temp;
+					IExpr temp2 = checkAssumptions(arg1, arg2);
+					if (temp2.isPresent()) {
+						return temp2;
 					}
 				}
 			}
-			IExpr.COMPARE_TERNARY b;
 			boolean evaled = false;
-			IASTAppendable result = ast.copyAppendable();
-			IExpr.COMPARE_TERNARY[] cResult = new IExpr.COMPARE_TERNARY[ast.size()];
+			IExpr.COMPARE_TERNARY b;
+			IASTAppendable result = astEvaled.copyAppendable();
+			IExpr.COMPARE_TERNARY[] cResult = new IExpr.COMPARE_TERNARY[astEvaled.size()];
 			cResult[0] = IExpr.COMPARE_TERNARY.TRUE;
-			for (int i = 1; i < ast.argSize(); i++) {
+			for (int i = 1; i < astEvaled.argSize(); i++) {
 				b = prepareCompare(result.get(i), result.get(i + 1), engine);
 				if (b == IExpr.COMPARE_TERNARY.FALSE) {
 					return F.False;
@@ -1409,14 +1413,14 @@ public final class BooleanFunctions {
 				}
 				cResult[i] = b;
 			}
-			cResult[ast.argSize()] = IExpr.COMPARE_TERNARY.TRUE;
+			cResult[astEvaled.argSize()] = IExpr.COMPARE_TERNARY.TRUE;
 			if (!evaled) {
 				// expression doesn't change
 				return F.NIL;
 			}
 			int i = 2;
 			evaled = false;
-			for (int j = 1; j < ast.size(); j++) {
+			for (int j = 1; j < astEvaled.size(); j++) {
 				if (cResult[j - 1] == IExpr.COMPARE_TERNARY.TRUE && cResult[j] == IExpr.COMPARE_TERNARY.TRUE) {
 					evaled = true;
 					result.remove(i - 1);
@@ -1431,7 +1435,6 @@ public final class BooleanFunctions {
 				}
 				return result;
 			}
-
 			return F.NIL;
 		}
 
