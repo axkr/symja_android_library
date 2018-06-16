@@ -15,14 +15,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  */
 public abstract class AbstractCorePredicateEvaluator extends AbstractCoreFunctionEvaluator {
 
-	private final ISymbol fSymbol;
-
 	public AbstractCorePredicateEvaluator() {
-		fSymbol = null;
-	}
-
-	public AbstractCorePredicateEvaluator(ISymbol symbol) {
-		fSymbol = symbol;
 	}
 
 	/**

@@ -24,36 +24,36 @@ public class PredicateQ {
 	/**
 	 * Constructor for the unary predicate
 	 */
-	public final static AtomQ ATOMQ = new AtomQ();
+	// public final static AtomQ ATOMQ = new AtomQ();
 
 	static {
 		F.AntisymmetricMatrixQ.setEvaluator(new AntisymmetricMatrixQ());
 		F.AntihermitianMatrixQ.setEvaluator(new AntihermitianMatrixQ());
 		F.ArrayQ.setEvaluator(new ArrayQ());
-		F.AtomQ.setEvaluator(ATOMQ);
-		F.BooleanQ.setEvaluator(new BooleanQ());
+		F.AtomQ.setPredicateQ(x -> x.isAtom());
+		F.BooleanQ.setPredicateQ(x -> x.isTrue() || x.isFalse());
 		F.DigitQ.setEvaluator(new DigitQ());
 		F.EvenQ.setEvaluator(new EvenQ());
-		F.ExactNumberQ.setEvaluator(new ExactNumberQ());
+		F.ExactNumberQ.setPredicateQ(x -> x.isExactNumber());
 		F.FreeQ.setEvaluator(new FreeQ());
 		F.HermitianMatrixQ.setEvaluator(new HermitianMatrixQ());
-		F.InexactNumberQ.setEvaluator(new InexactNumberQ());
-		F.IntegerQ.setEvaluator(new IntegerQ());
-		F.ListQ.setEvaluator(new ListQ());
-		F.MachineNumberQ.setEvaluator(new MachineNumberQ());
+		F.InexactNumberQ.setPredicateQ(x -> x.isInexactNumber());
+		F.IntegerQ.setPredicateQ(x -> x.isInteger());
+		F.ListQ.setPredicateQ(x -> x.isList());
+		F.MachineNumberQ.setPredicateQ(x -> x.isMachineNumber());
 		F.MatchQ.setEvaluator(new MatchQ());
 		F.MatrixQ.setEvaluator(new MatrixQ());
 		F.MemberQ.setEvaluator(new MemberQ());
-		F.MissingQ.setEvaluator(new MissingQ());
-		F.NotListQ.setEvaluator(new NotListQ());
-		F.NumberQ.setEvaluator(new NumberQ());
-		F.NumericQ.setEvaluator(new NumericQ());
+		F.MissingQ.setPredicateQ(x -> x.isAST(F.Missing, 2));
+		F.NotListQ.setPredicateQ(x -> !x.isList());
+		F.NumberQ.setPredicateQ(x -> x.isNumber());
+		F.NumericQ.setPredicateQ(x -> x.isNumericFunction());
 		F.OddQ.setEvaluator(new OddQ());
 		F.PossibleZeroQ.setEvaluator(new PossibleZeroQ());
 		F.PrimeQ.setEvaluator(new PrimeQ());
 		F.RealNumberQ.setEvaluator(new RealNumberQ());
 		F.SquareMatrixQ.setEvaluator(new SquareMatrixQ());
-		F.SymbolQ.setEvaluator(new SymbolQ());
+		F.SymbolQ.setPredicateQ(x -> x.isSymbol());
 		F.SymmetricMatrixQ.setEvaluator(new SymmetricMatrixQ());
 		F.SyntaxQ.setEvaluator(new SyntaxQ());
 		F.UpperCaseQ.setEvaluator(new UpperCaseQ());
@@ -259,86 +259,6 @@ public class PredicateQ {
 
 	/**
 	 * <pre>
-	 * AtomQ(x)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * is true if <code>x</code> is an atom (an object such as a number or string, which cannot be divided into
-	 * subexpressions using 'Part').
-	 * </p>
-	 * </blockquote>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt; AtomQ(x)
-	 * True
-	 * 
-	 * &gt;&gt; AtomQ(1.2)
-	 * True
-	 * 
-	 * &gt;&gt; AtomQ(2 + I)
-	 * True
-	 * 
-	 * &gt;&gt; AtomQ(2 / 3)
-	 * True
-	 * 
-	 * &gt;&gt; AtomQ(x + y)
-	 * False
-	 * </pre>
-	 */
-	private static class AtomQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
-
-		@Override
-		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
-			return arg1.isAtom();
-		}
-
-		@Override
-		public boolean test(final IExpr obj) {
-			return obj.isAtom();
-		}
-
-	}
-
-	/**
-	 * <pre>
-	 * BooleanQ(expr)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * returns <code>True</code> if <code>expr</code> is either <code>True</code> or <code>False</code>.
-	 * </p>
-	 * </blockquote>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt; BooleanQ(True)
-	 * True
-	 * &gt;&gt; BooleanQ(False)
-	 * True
-	 * &gt;&gt; BooleanQ(a)
-	 * False
-	 * &gt;&gt; BooleanQ(1 &lt; 2)
-	 * True
-	 * &gt;&gt; BooleanQ("string")
-	 * False
-	 * &gt;&gt; BooleanQ(Together(x/y + y/x))
-	 * False
-	 * </pre>
-	 */
-	private static class BooleanQ extends AbstractCorePredicateEvaluator {
-
-		@Override
-		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
-			return arg1.isTrue() || arg1.isFalse();
-		}
-
-	}
-
-	/**
-	 * <pre>
 	 * DigitQ(str)
 	 * </pre>
 	 * 
@@ -417,48 +337,6 @@ public class PredicateQ {
 		@Override
 		public boolean test(final IExpr expr) {
 			return (expr.isInteger()) && ((IInteger) expr).isEven();
-		}
-	}
-
-	/**
-	 * <pre>
-	 * ExactNumberQ(expr)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * returns <code>True</code> if <code>expr</code> is an exact number, and <code>False</code> otherwise.
-	 * </p>
-	 * </blockquote>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt; ExactNumberQ(10)
-	 * True
-	 * 
-	 * &gt;&gt; ExactNumberQ(4.0)
-	 * False
-	 * 
-	 * &gt;&gt; ExactNumberQ(n)
-	 * False
-	 * 
-	 * &gt;&gt; ExactNumberQ(1+I)    
-	 * True
-	 * 
-	 * &gt;&gt; ExactNumberQ(1 + 1. * I)
-	 * False
-	 * </pre>
-	 */
-
-	private static class ExactNumberQ extends AbstractCoreFunctionEvaluator {
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST1()) {
-				IExpr arg1 = engine.evaluate(ast.arg1());
-				return F.bool(arg1.isExactNumber());
-			}
-			Validate.checkSize(ast, 2);
-			return F.NIL;
 		}
 	}
 
@@ -589,155 +467,6 @@ public class PredicateQ {
 
 	/**
 	 * <pre>
-	 * InexactNumberQ(expr)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * returns <code>True</code> if <code>expr</code> is not an exact number, and <code>False</code> otherwise.
-	 * </p>
-	 * </blockquote>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt; InexactNumberQ(a)
-	 * False
-	 * 
-	 * &gt;&gt; InexactNumberQ(3.0)
-	 * True
-	 * 
-	 * &gt;&gt; InexactNumberQ(2/3)
-	 * False
-	 * </pre>
-	 * <p>
-	 * <code>InexactNumberQ</code> can be applied to complex numbers:
-	 * </p>
-	 * 
-	 * <pre>
-	 * &gt;&gt; InexactNumberQ(4.0+I)    
-	 * True
-	 * </pre>
-	 */
-	private static class InexactNumberQ extends AbstractCoreFunctionEvaluator {
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST1()) {
-				IExpr arg1 = engine.evaluate(ast.arg1());
-				return F.bool(arg1.isInexactNumber());
-			}
-			Validate.checkSize(ast, 2);
-			return F.NIL;
-		}
-	}
-
-	/**
-	 * <pre>
-	 * IntegerQ(expr)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * returns <code>True</code> if <code>expr</code> is an integer, and <code>False</code> otherwise.
-	 * </p>
-	 * </blockquote>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt; IntegerQ(3)
-	 * 4
-	 * 
-	 * &gt;&gt; IntegerQ(Pi)
-	 * False
-	 * </pre>
-	 */
-	private static class IntegerQ extends AbstractCorePredicateEvaluator {
-
-		@Override
-		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
-			return arg1.isInteger();
-		}
-
-	}
-
-	/**
-	 * <pre>
-	 * ListQ(expr)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * tests whether <code>expr</code> is a <code>List</code>.
-	 * </p>
-	 * </blockquote>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt; ListQ({1, 2, 3})
-	 * True
-	 * 
-	 * &gt;&gt; ListQ({{1, 2}, {3, 4}})
-	 * True
-	 * 
-	 * &gt;&gt; ListQ(x)
-	 * False
-	 * </pre>
-	 */
-	private static class ListQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
-
-		@Override
-		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
-			return arg1.isList();
-		}
-
-		@Override
-		public boolean test(final IExpr expr) {
-			return expr.isList();
-		}
-	}
-
-	/**
-	 * <pre>
-	 * MachineNumberQ(expr)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * returns <code>True</code> if <code>expr</code> is a machine-precision real or complex number.
-	 * </p>
-	 * </blockquote>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt; MachineNumberQ(3.14159265358979324)
-	 * False
-	 * 
-	 * &gt;&gt; MachineNumberQ(1.5 + 2.3*I)
-	 * True
-	 * 
-	 * &gt;&gt; MachineNumberQ(2.71828182845904524 + 3.14159265358979324*I)
-	 * False
-	 * 
-	 * &gt;&gt; MachineNumberQ(1.5 + 3.14159265358979324*I)    
-	 * True
-	 * 
-	 * &gt;&gt; MachineNumberQ(1.5 + 5 *I)
-	 * True
-	 * </pre>
-	 */
-	private static class MachineNumberQ extends AbstractCoreFunctionEvaluator {
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST1()) {
-				IExpr arg1 = engine.evaluate(ast.arg1());
-				return F.bool(arg1.isMachineNumber());
-			}
-			Validate.checkSize(ast, 2);
-			return F.NIL;
-		}
-	}
-
-	/**
-	 * <pre>
 	 * MatchQ(expr, form)
 	 * </pre>
 	 * 
@@ -780,11 +509,6 @@ public class PredicateQ {
 			}
 			return F.False;
 		}
-
-		// @Override
-		// public void setUp(final ISymbol newSymbol) {
-		// newSymbol.setAttributes(ISymbol.HOLDREST);
-		// }
 
 	}
 
@@ -897,132 +621,6 @@ public class PredicateQ {
 				return F.bool(arg1.isMember(arg2, heads));
 			}
 			return F.False;
-		}
-
-	}
-
-	/**
-	 * <pre>
-	 * MissingQ(expr)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * returns <code>True</code> if <code>expr</code> is a <code>Missing()</code> expression.
-	 * </p>
-	 * </blockquote>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt; MissingQ(Missing("Test message"))
-	 * True
-	 * </pre>
-	 */
-	private static class MissingQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
-
-		@Override
-		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
-			return arg1.isAST(F.Missing, 2);
-		}
-
-		@Override
-		public boolean test(final IExpr expr) {
-			return expr.isAST(F.Missing, 2);
-		}
-	}
-
-	/**
-	 * Predicate function
-	 * 
-	 * Returns <code>True</code> if the 1st argument is a list expression; <code>False</code> otherwise
-	 */
-	private static class NotListQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
-
-		@Override
-		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
-			return !arg1.isList();
-		}
-
-		@Override
-		public boolean test(final IExpr expr) {
-			return !expr.isList();
-		}
-	}
-
-	/**
-	 * <pre>
-	 * NumberQ(expr)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * returns <code>True</code> if <code>expr</code> is an explicit number, and <code>False</code> otherwise.
-	 * </p>
-	 * </blockquote>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt; NumberQ[3+I]
-	 *  = True
-	 * 
-	 * &gt;&gt; NumberQ[5!]
-	 *  = True
-	 * 
-	 * &gt;&gt; NumberQ[Pi]
-	 *  = False
-	 * </pre>
-	 */
-	private static class NumberQ extends AbstractCoreFunctionEvaluator {
-		/**
-		 * Returns <code>True</code> if the 1st argument is a number; <code>False</code> otherwise
-		 */
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.isAST1()) {
-				IExpr arg1 = engine.evaluate(ast.arg1());
-				return F.bool(arg1.isNumber());
-			}
-			Validate.checkSize(ast, 2);
-			return F.NIL;
-		}
-	}
-
-	/**
-	 * <pre>
-	 * NumericQ(expr)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * returns <code>True</code> if <code>expr</code> is an explicit numeric expression, and <code>False</code>
-	 * otherwise.
-	 * </p>
-	 * </blockquote>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt; NumericQ(E+Pi)
-	 * True
-	 * 
-	 * &gt;&gt; NumericQ(Sqrt(3))
-	 * True
-	 * </pre>
-	 */
-	private static class NumericQ extends AbstractCoreFunctionEvaluator implements Predicate<IExpr> {
-
-		/**
-		 * Returns <code>True</code> if the first argument is a numeric object; <code>False</code> otherwise
-		 */
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-			IExpr arg1 = engine.evaluate(ast.arg1());
-			return F.bool(arg1.isNumericFunction());
-		}
-
-		@Override
-		public boolean test(IExpr arg) {
-			return arg.isNumericFunction();
 		}
 
 	}
@@ -1333,56 +931,20 @@ public class PredicateQ {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
 
-			final IExpr arg1 = engine.evaluate(ast.arg1());
-			int[] dims = arg1.isMatrix();
-			if (dims == null || dims[0] != dims[1]) {
-				// no square matrix
-				return F.False;
+			if (ast.isAST1()) {
+				final IExpr arg1 = engine.evaluate(ast.arg1());
+				int[] dims = arg1.isMatrix();
+				if (dims == null || dims[0] != dims[1]) {
+					// no square matrix
+					return F.False;
+				}
 			}
+			Validate.checkSize(ast, 2);
 
 			return F.True;
 		}
 
-	}
-
-	/**
-	 * <pre>
-	 * SymbolQ(x)
-	 * </pre>
-	 * 
-	 * <blockquote>
-	 * <p>
-	 * is <code>True</code> if <code>x</code> is a symbol, or <code>False</code> otherwise.
-	 * </p>
-	 * </blockquote>
-	 * <h3>Examples</h3>
-	 * 
-	 * <pre>
-	 * &gt;&gt; SymbolQ(a)
-	 * True
-	 * &gt;&gt; SymbolQ(1)
-	 * False
-	 * &gt;&gt; SymbolQ(a + b)
-	 * False
-	 * </pre>
-	 */
-	private static class SymbolQ extends AbstractCoreFunctionEvaluator implements Predicate<IExpr> {
-		/**
-		 * Returns <code>True</code> if the 1st argument is a symbol; <code>False</code> otherwise
-		 */
-		@Override
-		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 2);
-			IExpr arg1 = engine.evaluate(ast.arg1());
-			return F.bool(arg1.isSymbol());
-		}
-
-		@Override
-		public boolean test(final IExpr expr) {
-			return expr.isSymbol();
-		}
 	}
 
 	/**
@@ -1462,10 +1024,7 @@ public class PredicateQ {
 
 		@Override
 		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
-			if (!(arg1 instanceof IStringX)) {
-				return false;
-			}
-			return ExprParser.test(arg1.toString(), engine);
+			return arg1.isString() ? ExprParser.test(arg1.toString(), engine) : false;
 		}
 
 	}
@@ -1545,9 +1104,12 @@ public class PredicateQ {
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.isAST1()) {
+				// don't eval first argument
+				return F.bool(ast.arg1().isValue());
+			}
 			Validate.checkSize(ast, 2);
-
-			return F.bool(ast.arg1().isValue());
+			return F.NIL;
 		}
 
 		@Override

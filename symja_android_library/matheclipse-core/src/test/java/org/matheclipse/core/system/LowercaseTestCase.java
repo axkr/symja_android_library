@@ -469,6 +469,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testAtomQ() {
+		check("AtomQ(Sin(Pi))", "True");
 		check("AtomQ(x)", "True");
 		check("AtomQ(1.2)", "True");
 		check("AtomQ(2 + I)", "True");
