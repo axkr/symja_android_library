@@ -6,11 +6,11 @@ import java.util.function.DoubleFunction;
 import java.util.function.Predicate;
 
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractCorePredicateEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ISignedNumberConstant;
 import org.matheclipse.core.eval.interfaces.ISymbolEvaluator;
-import org.matheclipse.core.eval.interfaces.PredicateEvaluator;
 import org.matheclipse.core.interfaces.ExprUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
@@ -23,6 +23,29 @@ import org.matheclipse.core.interfaces.ISymbol;
  * 
  */
 public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
+	private final static class PredicateEvaluator extends AbstractCorePredicateEvaluator {
+		Predicate<IExpr> predicate;
+
+		public PredicateEvaluator(Predicate<IExpr> predicate) {
+			this.predicate = predicate;
+		}
+
+		/** {@inheritDoc} */
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.size() == 2) {
+				return predicate.test(engine.evaluate(ast.arg1())) ? F.True : F.False;
+			}
+			Validate.checkSize(ast, 2);
+			return F.NIL;
+		}
+
+		@Override
+		public boolean evalArg1Boole(IExpr arg1, EvalEngine engine) {
+			return predicate.test(engine.evaluate(arg1));
+		}
+
+	}
 
 	private static class DummyEvaluator implements IEvaluator {
 
