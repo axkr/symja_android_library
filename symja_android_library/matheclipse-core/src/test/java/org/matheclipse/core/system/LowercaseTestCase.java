@@ -2131,18 +2131,31 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDistribute() {
-		check("Distribute((a + b).(x + y + z))", "a.x+a.y+a.z+b.x+b.y+b.z");
-		check("Distribute(f(a + b, c + d + e))", "f(a,c)+f(a,d)+f(a,e)+f(b,c)+f(b,d)+f(b,e)");
-		check("Distribute(f(g(a, b), g(c, d, e)), g)", "g(f(a,c),f(a,d),f(a,e),f(b,c),f(b,d),f(b,e))");
-		check("Distribute((a + b + c)*(u + v), Plus, Times)", "a*u+b*u+c*u+a*v+b*v+c*v");
-		check("Distribute({{a, b}, {x, y, z}, {s, t}}, List)",
+		check("Distribute((a + b).(x + y + z))", //
+				"a.x+a.y+a.z+b.x+b.y+b.z");
+		check("Distribute(f(a + b, c + d + e))", //
+				"f(a,c)+f(a,d)+f(a,e)+f(b,c)+f(b,d)+f(b,e)");
+		check("Distribute(f(g(a, b), g(c, d, e)), g)", //
+				"g(f(a,c),f(a,d),f(a,e),f(b,c),f(b,d),f(b,e))");
+		check("Distribute((a + b + c) (u + v))", //
+				"a*u+b*u+c*u+a*v+b*v+c*v");
+		check("Distribute((a + b + c) (u + v), Plus)", //
+				"a*u+b*u+c*u+a*v+b*v+c*v");
+		check("Distribute((a + b + c)*(u + v), Plus, Times)", //
+				"a*u+b*u+c*u+a*v+b*v+c*v");
+		check("Distribute((a + b + c)^(u + v), Plus, Times)", //
+				"(a+b+c)^(u+v)");
+		check("Distribute({{a, b}, {x, y, z}, {s, t}}, List)", //
 				"{{a,x,s},{a,x,t},{a,y,s},{a,y,t},{a,z,s},{a,z,t},{b,x,s},{b,x,t},{b,y,s},{b,y,t},{b,z,s},{b,z,t}}");
-		check("Distribute((x*y*z)^n0, Times)", "x^n0*y^n0*z^n0");
-		check("Distribute(And(Or(a, b, c), Or(u, v)), Or, And)", "a&&u||a&&v||b&&u||b&&v||c&&u||c&&v");
-		check("Distribute((a + b).(x + y + z))", "a.x+a.y+a.z+b.x+b.y+b.z");
-		check("Distribute(f(g(a, b), g(c, d, e)), g, f, gp, fp)",
+		check("Distribute((x*y*z)^n0, Times)", //
+				"x^n0*y^n0*z^n0");
+		check("Distribute(And(Or(a, b, c), Or(u, v)), Or, And)", //
+				"a&&u||a&&v||b&&u||b&&v||c&&u||c&&v");
+		check("Distribute((a + b).(x + y + z))", //
+				"a.x+a.y+a.z+b.x+b.y+b.z");
+		check("Distribute(f(g(a, b), g(c, d, e)), g, f, gp, fp)", //
 				"gp(fp(a,c),fp(a,d),fp(a,e),fp(b,c),fp(b,d),fp(b,e))");
-		check("Distribute(Factor(x^6 - 1), Plus, Times, List, Times)",
+		check("Distribute(Factor(x^6 - 1), Plus, Times, List, Times)", //
 				"{-1,-x,-x^2,x,x^2,x^3,-x^2,-x^3,-x^4,-x,-x^2,-x^3,x^2,x^3,x^4,-x^3,-x^4,-x^5,x,x^\n"
 						+ "2,x^3,-x^2,-x^3,-x^4,x^3,x^4,x^5,x^2,x^3,x^4,-x^3,-x^4,-x^5,x^4,x^5,x^6}");
 	}

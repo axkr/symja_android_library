@@ -11,7 +11,6 @@ public final class FunctionDefinitions {
 		D.setEvaluator(new org.matheclipse.core.reflection.system.D());
 		Default.setEvaluator(new org.matheclipse.core.reflection.system.Default());
 		Derivative.setEvaluator(new org.matheclipse.core.reflection.system.Derivative());
-		Distribute.setEvaluator(new org.matheclipse.core.reflection.system.Distribute());
 		Divergence.setEvaluator(new org.matheclipse.core.reflection.system.Divergence());
 		DSolve.setEvaluator(new org.matheclipse.core.reflection.system.DSolve());
 		EasterSunday.setEvaluator(new org.matheclipse.core.reflection.system.EasterSunday());
