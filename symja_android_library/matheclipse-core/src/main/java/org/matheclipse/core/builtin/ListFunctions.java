@@ -4113,13 +4113,7 @@ public final class ListFunctions {
 			Validate.checkSize(ast, 3);
 
 			if (ast.arg1().isAST()) {
-				IAST functorList;
-				if (ast.arg2().isList()) {
-					functorList = (IAST) ast.arg2();
-				} else {
-					functorList = F.List(ast.arg2());
-				}
-				return splitByFunction(functorList, 1, (IAST) ast.arg1(), engine);
+				return splitByFunction(ast.arg2().orNewList(), 1, (IAST) ast.arg1(), engine);
 			}
 			return F.NIL;
 		}

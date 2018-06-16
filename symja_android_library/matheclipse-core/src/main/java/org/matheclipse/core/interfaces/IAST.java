@@ -1140,6 +1140,15 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	public IASTAppendable mapThread(IASTAppendable appendAST, final IAST replacement, int position);
 
 	/**
+	 * Return <code>this</code> if <code>this</code> unequals <code>F.NIL</code> , otherwise return <code>other</code>.
+	 * 
+	 * @param other
+	 * @return <code>this</code> if <code>this</code> unequals <code>F.NIL</code>, otherwise return <code>other</code>.
+	 * @see java.util.Optional#orElse(Object)
+	 */
+	public IAST orElse(final IAST other);
+
+	/**
 	 * Calculate a special hash value for pattern matching
 	 * 
 	 * @return

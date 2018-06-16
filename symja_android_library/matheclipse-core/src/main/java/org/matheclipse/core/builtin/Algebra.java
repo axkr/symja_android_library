@@ -2218,38 +2218,24 @@ public class Algebra {
 	 * </p>
 	 * </blockquote>
 	 */
-	private static class PolynomialQ extends AbstractFunctionEvaluator implements BiPredicate<IExpr, IExpr> {
+	private static class PolynomialQ extends AbstractCoreFunctionEvaluator implements BiPredicate<IExpr, IExpr> {
 
 		/**
-		 * Returns <code>True</code> if the given expression is a polynoomial object; <code>False</code> otherwise
+		 * Returns <code>True</code> if the given expression is a polynomial object; <code>False</code> otherwise
 		 */
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
-
-			IAST variables;
-			if (ast.arg2().isList()) {
-				variables = (IAST) ast.arg2();
-			} else {
-				variables = List(ast.arg2());
+			if (ast.isAST2()) {
+				IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE).orElse(ast); 
+				return F.bool(temp.arg1().isPolynomial(temp.arg2().orNewList()));
 			}
-			return F.bool(ast.arg1().isPolynomial(variables));
-
-		}
-
-		@Override
-		public void setUp(final ISymbol newSymbol) {
+			Validate.checkSize(ast, 3);
+			return F.NIL;
 		}
 
 		@Override
 		public boolean test(final IExpr firstArg, final IExpr secondArg) {
-			IAST list;
-			if (secondArg.isList()) {
-				list = (IAST) secondArg;
-			} else {
-				list = List(secondArg);
-			}
-			return firstArg.isPolynomial(list);
+			return firstArg.isPolynomial(secondArg.orNewList());
 		}
 	}
 
@@ -3720,7 +3706,6 @@ public class Algebra {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 2);
 
-			// VariablesSet eVar = new VariablesSet(ast.arg1());
 			return VariablesSet.getVariables(ast.arg1());
 		}
 

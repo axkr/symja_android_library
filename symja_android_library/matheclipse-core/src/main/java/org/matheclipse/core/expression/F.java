@@ -50,7 +50,9 @@ import org.matheclipse.core.builtin.TensorFunctions;
 import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
+import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
+import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Lambda;
 import org.matheclipse.core.generic.Functors;
@@ -1498,8 +1500,11 @@ public class F {
 			// long start = System.currentTimeMillis();
 
 			Slot.setAttributes(ISymbol.NHOLDALL);
+			Slot.setEvaluator(ICoreFunctionEvaluator.ARGS_EVALUATOR);
 			SlotSequence.setAttributes(ISymbol.NHOLDALL);
+			SlotSequence.setEvaluator(ICoreFunctionEvaluator.ARGS_EVALUATOR);
 			PatternTest.setAttributes(ISymbol.HOLDALL);
+			List.setEvaluator(ICoreFunctionEvaluator.ARGS_EVALUATOR);
 
 			CEmptyList = headAST0(List);
 			CListC0 = unaryAST1(List, C0);
@@ -2352,6 +2357,53 @@ public class F {
 	}
 
 	/**
+	 * <pre>
+	 * 'ArrayQ(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * tests whether expr is a full array.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * 'ArrayQ(expr, pattern)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * also tests whether the array depth of expr matches pattern.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * 'ArrayQ(expr, pattern, test)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * furthermore tests whether <code>test</code> yields <code>True</code> for all elements of expr.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ArrayQ(a)
+	 * False
+	 * &gt;&gt; ArrayQ({a})
+	 * True
+	 * &gt;&gt; ArrayQ({{{a}},{{b,c}}})
+	 * False
+	 * &gt;&gt; ArrayQ({{a, b}, {c, d}}, 2, SymbolQ)
+	 * True
+	 * </pre>
+	 */
+	public static IAST ArrayQ(final IExpr a0) {
+		return unaryAST1(ArrayQ, a0);
+	}
+
+	/**
 	 * The domain of arrays.
 	 * 
 	 * @param dimension
@@ -3164,6 +3216,75 @@ public class F {
 		return unaryAST1(Det, a0);
 	}
 
+	/**
+	 * <pre>
+	 * DigitQ(str)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>str</code> is a string which contains only digits.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; DigitQ("1234")
+	 * True
+	 * </pre>
+	 */
+	public static IAST DigitQ(final IExpr a0) {
+		return unaryAST1(DigitQ, a0);
+	}
+
+	/**
+	 * <pre>
+	 * Dimensions(expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a list of the dimensions of the expression <code>expr</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * A vector of length 3:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Dimensions({a, b, c})
+	 *  = {3}
+	 * </pre>
+	 * <p>
+	 * A 3x2 matrix:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Dimensions({{a, b}, {c, d}, {e, f}})
+	 *  = {3, 2}
+	 * </pre>
+	 * <p>
+	 * Ragged arrays are not taken into account:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Dimensions({{a, b}, {b, c}, {c, d, e}})
+	 * {3}
+	 * </pre>
+	 * <p>
+	 * The expression can have any head:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Dimensions[f[f[a, b, c]]]
+	 * {1, 3}
+	 * &gt;&gt; Dimensions({})
+	 * {0}
+	 * &gt;&gt; Dimensions({{}})
+	 * {1, 0}
+	 * </pre>
+	 */
 	public static IAST Dimensions(final IExpr a0) {
 		return unaryAST1(Dimensions, a0);
 	}
@@ -3451,8 +3572,29 @@ public class F {
 		return EvalEngine.get().evalTrue(expr);
 	}
 
-	public static IAST EvenQ(final IExpr a) {
-		return unaryAST1(EvenQ, a);
+	/**
+	 * <pre>
+	 * EvenQ(x)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>x</code> is even, and <code>False</code> otherwise.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; EvenQ(4)
+	 * True
+	 * &gt;&gt; EvenQ(-3)
+	 * False
+	 * &gt;&gt; EvenQ(n)
+	 * False
+	 * </pre>
+	 */
+	public static IAST EvenQ(final IExpr x) {
+		return unaryAST1(EvenQ, x);
 	}
 
 	/**
@@ -3484,8 +3626,8 @@ public class F {
 	 * False
 	 * </pre>
 	 */
-	public static IAST ExactNumberQ(final IExpr a) {
-		return unaryAST1(ExactNumberQ, a);
+	public static IAST ExactNumberQ(final IExpr expr) {
+		return unaryAST1(ExactNumberQ, expr);
 	}
 
 	public static IAST Exists(final IExpr a0, final IExpr a1) {
@@ -5111,8 +5253,28 @@ public class F {
 		return unaryAST1(O, a0);
 	}
 
-	public static IAST OddQ(final IExpr a) {
-		return unaryAST1(OddQ, a);
+	/**
+	 * <pre>
+	 * OddQ(x)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>True</code> if <code>x</code> is odd, and <code>False</code> otherwise.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; OddQ(-3)
+	 * True
+	 * 
+	 * &gt;&gt; OddQ(0)
+	 * False
+	 * </pre>
+	 */
+	public static IAST OddQ(final IExpr x) {
+		return unaryAST1(OddQ, x);
 	}
 
 	public static IAST Optional(final IExpr a0, final IExpr a1) {
@@ -5706,7 +5868,7 @@ public class F {
 
 	public static IBuiltInSymbol localBiFunction(final String symbolName, BiFunction<IExpr, IExpr, IExpr> function) {
 		IBuiltInSymbol localBuittIn = new BuiltInSymbol(symbolName, java.lang.Integer.MAX_VALUE);
-		localBuittIn.setEvaluator(new AbstractEvaluator() {
+		localBuittIn.setEvaluator(new AbstractCoreFunctionEvaluator() {
 			@Override
 			public IExpr evaluate(IAST ast, EvalEngine engine) {
 				return function.apply(ast.arg1(), ast.arg2());
@@ -5717,7 +5879,7 @@ public class F {
 
 	public static IBuiltInSymbol localFunction(final String symbolName, Function<IExpr, IExpr> function) {
 		IBuiltInSymbol localBuittIn = new BuiltInSymbol(symbolName, java.lang.Integer.MAX_VALUE);
-		localBuittIn.setEvaluator(new AbstractEvaluator() {
+		localBuittIn.setEvaluator(new AbstractCoreFunctionEvaluator() {
 			@Override
 			public IExpr evaluate(IAST ast, EvalEngine engine) {
 				return function.apply(ast.arg1());
@@ -5728,7 +5890,7 @@ public class F {
 
 	public static IBuiltInSymbol localBiPredicate(final String symbolName, BiPredicate<IExpr, IExpr> function) {
 		IBuiltInSymbol localBuittIn = new BuiltInSymbol(symbolName, java.lang.Integer.MAX_VALUE);
-		localBuittIn.setEvaluator(new AbstractEvaluator() {
+		localBuittIn.setEvaluator(new AbstractCoreFunctionEvaluator() {
 			@Override
 			public IExpr evaluate(IAST ast, EvalEngine engine) {
 				return F.bool(function.test(ast.arg1(), ast.arg2()));
@@ -5739,7 +5901,7 @@ public class F {
 
 	public static IBuiltInSymbol localPredicate(final String symbolName, Predicate<IExpr> function) {
 		IBuiltInSymbol localBuittIn = new BuiltInSymbol(symbolName, java.lang.Integer.MAX_VALUE);
-		localBuittIn.setEvaluator(new AbstractEvaluator() {
+		localBuittIn.setEvaluator(new AbstractCoreFunctionEvaluator() {
 			@Override
 			public IExpr evaluate(IAST ast, EvalEngine engine) {
 				return F.bool(function.test(ast.arg1()));

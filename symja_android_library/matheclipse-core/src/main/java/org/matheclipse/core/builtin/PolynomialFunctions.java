@@ -1213,11 +1213,7 @@ public class PolynomialFunctions {
 				}
 				variables = eVar.getVarList();
 			} else {
-				if (ast.arg2().isList()) {
-					variables = (IAST) ast.arg2();
-				} else {
-					variables = F.List(ast.arg2());
-				}
+				variables = ast.arg2().orNewList();
 			}
 			IExpr temp = roots(ast.arg1(), variables, engine);
 			if (!temp.isList()) {

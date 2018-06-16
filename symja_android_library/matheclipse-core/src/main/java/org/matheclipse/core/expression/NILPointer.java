@@ -128,7 +128,7 @@ public final class NILPointer extends AbstractAST implements IASTAppendable {
 	public int argSize() {
 		return SIZE - 1;
 	}
-	
+
 	@Override
 	public Set<IExpr> asSet() {
 		throw new UnsupportedOperationException();
@@ -352,17 +352,21 @@ public final class NILPointer extends AbstractAST implements IASTAppendable {
 	}
 
 	@Override
-	public int isVector() {
+	public final int isVector() {
 		return -1;
 	}
 
 	@Override
-	public boolean isZERO() {
+	public final boolean isZERO() {
 		return false;
 	}
 
 	@Override
 	public final IExpr orElse(final IExpr other) {
+		return other;
+	}
+
+	public final IAST orElse(final IAST other) {
 		return other;
 	}
 

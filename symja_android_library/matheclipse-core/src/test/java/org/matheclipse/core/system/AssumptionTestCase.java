@@ -20,6 +20,12 @@ import junit.framework.TestCase;
  * 
  */
 public class AssumptionTestCase extends TestCase {
+	@Override
+	protected void tearDown() throws Exception {
+		// System.out.println(EvalEngine.STATISTICS.toString());
+		super.tearDown();
+	}
+
 	/**
 	 * Assumption which implements <code>x > 0</code> or <code>y is integer number</code>
 	 *
@@ -89,7 +95,7 @@ public class AssumptionTestCase extends TestCase {
 		Config.PARSER_USE_LOWERCASE_SYMBOLS = true;
 
 		EvalUtilities util = new EvalUtilities(false, true);
-		
+
 		// define "t" with "t" assumed greater than 0
 		// use #1 (Slot1) as placeholder for a new symbol!
 		ISymbol t = F.symbol("t", F.Greater(F.Slot1, F.C10));
@@ -99,14 +105,14 @@ public class AssumptionTestCase extends TestCase {
 		IExpr result = util.evaluate(function);
 		assertEquals(result.toString(), "t");
 	}
-	
+
 	public void testFloor001() {
 		// don't distinguish between lower- and uppercase identifiers
 		Config.PARSER_USE_LOWERCASE_SYMBOLS = true;
 
 		EvalUtilities util = new EvalUtilities(false, true);
-		
-		// define "t" with "t" assumed to be an element of the integers 
+
+		// define "t" with "t" assumed to be an element of the integers
 		// use #1 (Slot1) as placeholder for a new symbol!
 		ISymbol t = F.symbol("t", F.Element(F.Slot1, F.Integers));
 
@@ -114,6 +120,5 @@ public class AssumptionTestCase extends TestCase {
 		IExpr result = util.evaluate(function);
 		assertEquals(result.toString(), "t");
 	}
-	
-	
+
 }

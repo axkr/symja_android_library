@@ -667,13 +667,9 @@ public final class BooleanFunctions {
 
 			IAST variables;
 			if (ast.isAST2()) {
-				if (ast.arg2().isList()) {
-					variables = (IAST) ast.arg2();
-				} else {
-					variables = List(ast.arg2());
-				}
+				variables = ast.arg2().orNewList();
 			} else {
-				variables = BooleanVariables.booleanVariables(ast.arg1());
+				variables = BooleanVariables.booleanVariables(ast.arg2());
 			}
 
 			BooleanTableParameter btp = new BooleanTableParameter(variables, engine);
@@ -2905,19 +2901,16 @@ public final class BooleanFunctions {
 	 * {True,False}
 	 * </pre>
 	 */
-	private final static class SameQ extends AbstractFunctionEvaluator {
+	private final static class SameQ extends AbstractCoreFunctionEvaluator {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() > 1) {
-				return F.bool(!ast.existsLeft((x, y) -> !x.isSame(y)));
+				IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE).orElse(ast);
+				return F.bool(!temp.existsLeft((x, y) -> !x.isSame(y)));
 			}
 			return F.False;
 		}
 
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.FLAT | ISymbol.NHOLDALL);
-		}
 	}
 
 	/**
@@ -2962,11 +2955,7 @@ public final class BooleanFunctions {
 				// currently only SAT is available
 				String method = "SAT";
 				if (ast.size() > 2) {
-					if (ast.arg2().isList()) {
-						userDefinedVariables = (IAST) ast.arg2();
-					} else {
-						userDefinedVariables = List(ast.arg2());
-					}
+					userDefinedVariables = ast.arg2().orNewList();
 					if (ast.size() > 3) {
 						final Options options = new Options(ast.topHead(), ast, 3, engine);
 						// "BDD" (binary decision diagram), "SAT", "TREE" ?
@@ -3054,11 +3043,7 @@ public final class BooleanFunctions {
 				String method = "SAT";
 				int maxChoices = 1;
 				if (ast.size() > 2) {
-					if (ast.arg2().isList()) {
-						userDefinedVariables = (IAST) ast.arg2();
-					} else {
-						userDefinedVariables = List(ast.arg2());
-					}
+					userDefinedVariables = ast.arg2().orNewList();
 					if (ast.size() > 3) {
 						final Options options = new Options(ast.topHead(), ast, 3, engine);
 						// "BDD" (binary decision diagram), "SAT", "TREE" ?
@@ -3482,17 +3467,21 @@ public final class BooleanFunctions {
 	 * True
 	 * </pre>
 	 */
-	private final static class UnsameQ extends AbstractFunctionEvaluator {
+	private final static class UnsameQ extends AbstractCoreFunctionEvaluator {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.size() > 1) {
+				IAST temp = engine.evalArgs(ast, ISymbol.NOATTRIBUTE).orElse(ast);
+				if (ast.isAST2()) {
+					return F.bool(!temp.arg1().isSame(temp.arg2()));
+				}
 				int i = 2;
 				int j;
-				while (i < ast.size()) {
+				while (i < temp.size()) {
 					j = i;
-					while (j < ast.size()) {
-						if (ast.get(i - 1).isSame(ast.get(j++))) {
+					while (j < temp.size()) {
+						if (temp.get(i - 1).isSame(temp.get(j++))) {
 							return F.False;
 						}
 					}
@@ -3504,10 +3493,6 @@ public final class BooleanFunctions {
 			return F.False;
 		}
 
-		@Override
-		public void setUp(final ISymbol newSymbol) {
-			newSymbol.setAttributes(ISymbol.FLAT | ISymbol.NHOLDALL);
-		}
 	}
 
 	/**

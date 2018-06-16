@@ -50,7 +50,7 @@ import org.matheclipse.parser.client.math.MathException;
  * The main evaluation algorithms for the .Symja computer algebra system
  */
 public class EvalEngine implements Serializable, IEvaluationEngine {
-
+	// public final static Map<IBuiltInSymbol, Integer> STATISTICS = new TreeMap<IBuiltInSymbol, Integer>();
 	/**
 	 * 
 	 */
@@ -486,7 +486,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 * @param ast
 	 * @return <code>F.NIL</code> if no evaluation happened
 	 */
-	public IExpr evalAST(IAST ast) {
+	public final IExpr evalAST(IAST ast) {
 		final IExpr head = ast.head();
 		if (ast.head().isCoreFunctionSymbol()) {
 			// evaluate a core function (without no rule definitions)
@@ -494,6 +494,14 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			return fNumericMode ? coreFunction.numericEval(ast, this) : coreFunction.evaluate(ast, this);
 		}
 		final ISymbol symbol = ast.topHead();
+		// if (symbol.isBuiltInSymbol()) {
+		// Integer i = STATISTICS.get(symbol);
+		// if (i == null) {
+		// STATISTICS.put((IBuiltInSymbol) symbol, 1);
+		// } else {
+		// STATISTICS.put((IBuiltInSymbol) symbol, i + 1);
+		// }
+		// }
 		IExpr result = evalAttributes(symbol, ast);
 		if (result.isPresent()) {
 			return result;

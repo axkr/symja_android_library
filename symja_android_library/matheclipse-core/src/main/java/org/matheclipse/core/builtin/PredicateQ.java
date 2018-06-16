@@ -235,15 +235,15 @@ public class PredicateQ {
 			Validate.checkRange(ast, 2, 4);
 
 			final IExpr arg1 = engine.evaluate(ast.arg1());
-			Predicate<IExpr> pred = null;
+			Predicate<IExpr> test = null;
 			if ((ast.size() >= 4)) {
-				final IExpr arg3 = engine.evaluate(ast.arg3());
-				pred = x -> engine.evalTrue(F.unaryAST1(arg3, x));
+				final IExpr testArg3 = engine.evaluate(ast.arg3());
+				test = x -> engine.evalTrue(F.unaryAST1(testArg3, x));
 			}
-			int depth = determineDepth(arg1, 0, pred);
+			int depth = determineDepth(arg1, 0, test);
 			if (depth >= 0) {
 				if ((ast.size() >= 3)) {
-					// Match the depth with the second argumnt
+					// Match the depth with the second argument
 					final IPatternMatcher matcher = engine.evalPatternMatcher(ast.arg2());
 					if (!matcher.test(F.ZZ(depth), engine)) {
 						return F.False;
