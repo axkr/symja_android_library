@@ -5837,7 +5837,7 @@ public class F {
 	 * @param head
 	 * @return
 	 */
-	public final static String usage(final ISymbol head) {
+	public final static IStringX usage(final ISymbol head) {
 		return usage(head.toString());
 	}
 
@@ -5847,10 +5847,10 @@ public class F {
 	 * @param symbolName
 	 * @return
 	 */
-	public final static String usage(final String symbolName) {
+	public final static IStringX usage(final String symbolName) {
 		StringBuilder buf = new StringBuilder();
 		Documentation.usageDocumentation(buf, symbolName);
-		return buf.toString();
+		return F.stringx(buf.toString());
 	}
 
 	/**
