@@ -51,7 +51,6 @@ import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
-import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Lambda;
@@ -3447,6 +3446,18 @@ public class F {
 	 */
 	public static IExpr eval(IExpr a) {
 		return EvalEngine.get().evaluate(a);
+	}
+
+	/**
+	 * Parse and evaluate a string expression.  
+	 * 
+	 * @param str
+	 *            the string expression which should be parsed and evaluated
+	 * @return the evaluated expression
+	 * @see EvalEngine#evaluate(IExpr)
+	 */
+	public static IExpr eval(String str) {
+		return EvalEngine.get().evaluate(str);
 	}
 
 	/**
