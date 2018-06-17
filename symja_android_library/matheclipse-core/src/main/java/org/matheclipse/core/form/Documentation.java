@@ -12,6 +12,10 @@ public class Documentation {
 
 	public static void findDocumentation(Appendable out, String trimmedInput) {
 		String name = trimmedInput.substring(1);
+		usageDocumentation(out, name);
+	}
+
+	public static void usageDocumentation(Appendable out, String name) {
 		IAST list = Names.getNamesByPrefix(name);
 		try {
 			if (list.size() != 2) {

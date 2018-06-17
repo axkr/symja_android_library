@@ -102,6 +102,21 @@ public class CompareToTestCase extends AbstractTestCase {
 		check("-Infinity+b+a", "-Infinity+a+b");
 	}
 	
+	public void testOut002() {
+		IExpr ast1, ast2;
+		// -Infinity
+		ast1 = F.eval("-Infinity"); 
+		// x
+		ast2 = F.eval("x"); 
+		ast1 = eval(ast1);
+		ast2 = eval(ast2);
+
+		int res = ast1.compareTo(ast2);
+		assertEquals(-1, res);
+
+		check("-Infinity+b+a", "-Infinity+a+b");
+	}
+	
 	public void testCT004() {
 		IASTAppendable ast1, ast2;
 		ast1 = F.ast(F.f);

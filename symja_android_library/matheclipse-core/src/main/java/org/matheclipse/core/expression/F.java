@@ -54,6 +54,7 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.eval.util.Lambda;
+import org.matheclipse.core.form.Documentation;
 import org.matheclipse.core.generic.Functors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -3449,7 +3450,7 @@ public class F {
 	}
 
 	/**
-	 * Parse and evaluate a string expression.  
+	 * Parse and evaluate a string expression.
 	 * 
 	 * @param str
 	 *            the string expression which should be parsed and evaluated
@@ -5828,6 +5829,28 @@ public class F {
 			}
 		}
 		return symbol;
+	}
+
+	/**
+	 * Print the documentation for the given symbol.
+	 * 
+	 * @param head
+	 * @return
+	 */
+	public final static String usage(final ISymbol head) {
+		return usage(head.toString());
+	}
+
+	/**
+	 * Print the documentation for the given symbol name.
+	 * 
+	 * @param symbolName
+	 * @return
+	 */
+	public final static String usage(final String symbolName) {
+		StringBuilder buf = new StringBuilder();
+		Documentation.usageDocumentation(buf, symbolName);
+		return buf.toString();
 	}
 
 	/**
