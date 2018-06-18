@@ -75,6 +75,11 @@ public final class NILPointer extends AbstractAST implements IASTAppendable {
 	}
 
 	@Override
+	public boolean appendAll(IExpr[] args, int startPosition, int endPosition) {
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
 	public boolean appendArgs(IAST ast) {
 		throw new UnsupportedOperationException();
 	}

@@ -132,6 +132,21 @@ public interface IASTAppendable extends IASTMutable {
 	public boolean appendAll(List<? extends IExpr> list, int startPosition, int endPosition);
 
 	/**
+	 * Appends all elements from offset <code>startPosition</code> to <code>endPosition</code> in the specified list to
+	 * the end of this AST.
+	 * 
+	 * @param args
+	 *            array containing elements to be added to this AST
+	 * @param startPosition
+	 *            the start position, inclusive.
+	 * @param endPosition
+	 *            the ending position, exclusive.
+	 * @return <tt>true</tt> if this AST changed as a result of the call
+	 * 
+	 */
+	public boolean appendAll(IExpr[] args, int startPosition, int endPosition);
+
+	/**
 	 * Appends all of the arguments (starting from offset <code>1</code>) in the specified AST to the end of this AST.
 	 * 
 	 * @param ast

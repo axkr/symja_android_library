@@ -351,6 +351,23 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 		}
 		return false;
 	}
+	
+	/** {@inheritDoc} */
+	@Override
+	public boolean appendAll(IExpr[] args, int startPosition, int endPosition) {
+		if (args.length > 0 && startPosition < endPosition) {
+			hashValue = 0;
+			int length = endPosition - startPosition;
+			if (length > array.length - lastIndex) {
+				growAtEnd(length);
+			}
+			for (int i = startPosition; i < endPosition; i++) {
+				array[lastIndex++] = args[i];
+			}
+			return true;
+		}
+		return false;
+	}
 
 	/** {@inheritDoc} */
 	@Override
