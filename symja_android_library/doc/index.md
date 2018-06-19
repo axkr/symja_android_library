@@ -172,6 +172,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Scoping](scoping.md)
 * [Expression types](expression-types.md)
 * [Programming in Java](classhierarchy.md)
+* [Symbolic math scripting with JShell](jshell-usage.md)
 
 ## Reference of built-in symbols
 
