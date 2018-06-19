@@ -27,7 +27,7 @@ import static org.matheclipse.core.expression.F.*;
  
 ```
 
-* With the static imports of the `F.class` it's possible to use the formal symbols `a,b,c,...x,y,z` symbolically and to call functions like [Integrate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Integrate.md) or [FactorInteger](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/FactorInteger.md) and to omit the `F.` prefix. 
+* With the static imports of the `F.class` it's possible to use the formal symbols `a,b,c,...x,y,z` symbolically and to call functions like [Integrate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Integrate.md), [D](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/D.md) or [FactorInteger](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/FactorInteger.md) and to omit the `F.` prefix. 
 * With the predefined `eval` method it's possible to evaluate a math string expression like for example `eval("D(Sin(x),x)")` 
 
 ## Example script
