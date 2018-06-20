@@ -1,6 +1,6 @@
 ## Symbolic math scripting with JShell
 
-Use the [Java jshell](https://docs.oracle.com/javase/10/tools/jshell.htm) to interactively evaluate symbolic math expressions with the [Symja library](https://github.com/axkr/symja_android_library).
+[JShell](https://docs.oracle.com/javase/10/tools/jshell.htm) is a Read-Evaluate-Print-Loop (REPL), a command line tool that allows you to enter Java statements (simple statements, compound statements, or even full methods and classes), evaluate them, and print the result. We'll go through an example that will show you how to use JShell to explore the [Symja computer algebra library](https://github.com/axkr/symja_android_library).
 
 - [Installation](#installation)
 - [Example script](#example-script)  
@@ -16,7 +16,7 @@ In this directory you can run the [symja-jshell.bat](https://github.com/axkr/sym
   "%JAVA_HOME%\bin\jshell" --class-path "lib/*" --startup start-symja.jsh
 ```
   
-By running the BAT file a [start-symja.jsh](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/start-symja.jsh) default scripting file with some additional imports will be executed:
+By running the `symja-jshell.bat` file a [start-symja.jsh](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/start-symja.jsh) default scripting file with some additional imports will be executed:
 
 ```
 ...
@@ -27,11 +27,11 @@ import static org.matheclipse.core.expression.F.*;
  
 ```
 
-* With the static imports of the `F.class` it's possible to use the formal symbols `a,b,c,...x,y,z` symbolically and to call functions like [Integrate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Integrate.md), [D](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/D.md) or [FactorInteger](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/FactorInteger.md) and to omit the `F.` prefix. 
+* With the static imports of the [F.class](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/expression/F.java) it's possible to use the formal symbols `a,b,c,...x,y,z` symbolically and to call functions like [Integrate](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/Integrate.md), [D](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/D.md) or [FactorInteger](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/doc/functions/FactorInteger.md) and to omit the `F.` prefix. 
 * With the predefined `eval` method it's possible to evaluate a math string expression like for example `eval("D(Sin(x),x)")` 
 
 ## Example script
-
+ 
  
 ```
 C:\temp\symja>symja-jshell
