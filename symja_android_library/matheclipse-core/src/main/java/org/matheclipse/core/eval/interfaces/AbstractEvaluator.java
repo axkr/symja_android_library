@@ -1,5 +1,7 @@
 package org.matheclipse.core.eval.interfaces;
 
+import javax.annotation.Nonnull;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -13,7 +15,7 @@ public abstract class AbstractEvaluator implements IFunctionEvaluator {
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr numericEval(final IAST ast, EvalEngine engine) {
+	public IExpr numericEval(final IAST ast, @Nonnull EvalEngine engine) {
 		return evaluate(ast, engine);
 	}
 
@@ -28,6 +30,6 @@ public abstract class AbstractEvaluator implements IFunctionEvaluator {
 
 	/** {@inheritDoc} */
 	@Override
-	abstract public IExpr evaluate(final IAST ast, EvalEngine engine);
+	abstract public IExpr evaluate(final IAST ast, @Nonnull  EvalEngine engine);
 
 }

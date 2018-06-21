@@ -1901,6 +1901,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDerivative() {
+		check("h(x_):= 4 x / (x ^ 2 + 3*x + 5)", "");
+		check("extremes=Solve(h'(x)==0,x)", "{{x->-Sqrt(5)},{x->Sqrt(5)}}");
+		check("h''(x) /.extremes // N", "{1.65086,-0.06408}");
+
 		check("h(x_):=Sin(x)+x^2", "");
 		check("h'(x)", "2*x+Cos(x)");
 		check("h'(0.5)", "1.87758");
@@ -7662,7 +7666,32 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testReplaceAll() {
 		// TODO
 		// check("ReplaceAll({a, b, c}, {___, x__, ___} -> {x})", "{a}");
-
+		check("{g(1), Hold(g(1))} /. g(n_) -> n + 1", //
+				"{2,Hold(1+1)}");
+		
+		check("x /. { }", //
+				"x");
+		check("x /. {{x -> 1}, {y -> 2}}", //
+				"{1,x}");
+		check("{a, b, c} /. {a -> b, b -> d}", //
+				"{b,d,c}");
+		check("{a, b, c} /. a -> b /. b -> d", //
+				"{d,d,c}");
+		check("{g(1), Hold(g(1))} /. g(n_) -> n + 1", //
+				"{2,Hold(1+1)}");
+		
+		check("u(v(w,x,y) /. { {}, {w->y}})", //
+				"u({v(w,x,y),v(y,x,y)})");
+		check("u(v(w,x,y) /. { {}, w->y})", //
+				"u(v(w,x,y)/.{{},w->y})");
+		check("ReplaceAll(x -> a)[{x, x^2, y, z}]", //
+				"{a,a^2,y,z}");
+		check("x /. {y -> 2, z -> 3}", //
+				"x");
+		check("x /. {x -> 1, x -> 3, x -> 7}", //
+				"1");
+		check("x /. {{x -> 1}, {x -> 3}, {x -> 7}}", //
+				"{1,3,7}");
 		check("a == b /. _Equal -> 2", "2");
 		check("If(1 == k, itstrue, itsfalse) /. _If -> 99", "99");
 

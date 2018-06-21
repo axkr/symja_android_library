@@ -276,6 +276,12 @@ public final class NILPointer extends AbstractAST implements IASTAppendable {
 
 	/** {@inheritDoc} */
 	@Override
+	public final boolean isListOfRules() {
+		return false;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public int[] isMatrix(boolean setMatrixFormat) {
 		return null;
 	}

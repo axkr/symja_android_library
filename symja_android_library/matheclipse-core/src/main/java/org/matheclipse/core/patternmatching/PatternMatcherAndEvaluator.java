@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import javax.annotation.Nonnull;
+
 import org.matheclipse.core.builtin.Programming;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.ConditionException;
@@ -117,14 +119,14 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 				}
 				return p1.compareTo(p2);
 			} else if (patternExpr2.isModuleOrWithCondition()) {
-				p2 =patternExpr2.second().second();
+				p2 = patternExpr2.second().second();
 				if (equivalent(p1, p2, pm1, pm2)) {
 					return 0;
 				}
 				return p1.compareTo(p2);
 			}
 		} else if (patternExpr1.isModuleOrWithCondition()) {
-			p1 =  patternExpr1.second().second();
+			p1 = patternExpr1.second().second();
 			if (patternExpr2.isCondition()) {
 				p2 = patternExpr2.second();
 				if (equivalent(p1, p2, pm1, pm2)) {
@@ -132,7 +134,7 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 				}
 				return p1.compareTo(p2);
 			} else if (patternExpr2.isModuleOrWithCondition()) {
-				p2 =   patternExpr2.second() .second();
+				p2 = patternExpr2.second().second();
 				if (equivalent(p1, p2, pm1, pm2)) {
 					return 0;
 				}
@@ -167,13 +169,20 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 
 	/** {@inheritDoc} */
 	@Override
-	public IExpr eval(final IExpr leftHandSide, EvalEngine engine) {
+	public IExpr eval(final IExpr leftHandSide, @Nonnull EvalEngine engine) {
+		return replace(leftHandSide, engine, true);
+	}
+
+	final public IExpr replace(final IExpr leftHandSide, @Nonnull EvalEngine engine, boolean evaluate) {
 		if (isRuleWithoutPatterns()) {
 			// no patterns found match equally:
 			if (fLhsPatternExpr.equals(leftHandSide)) {
 				IExpr result = fRightHandSide;
 				try {
-					return F.eval(result);
+					if (evaluate) {
+						return F.eval(result);
+					}
+					return result;
 				} catch (final ConditionException e) {
 					logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
 					return F.NIL;
@@ -207,7 +216,9 @@ public class PatternMatcherAndEvaluator extends PatternMatcher implements Extern
 			IExpr result = fPatternMap.substituteSymbols(fRightHandSide);
 			try {
 				// System.out.println(result.toString());
-				result = F.eval(result);
+				if (evaluate) {
+					result = F.eval(result);
+				}
 			} catch (final ConditionException e) {
 				logConditionFalse(leftHandSide, fLhsPatternExpr, fRightHandSide);
 				return F.NIL;

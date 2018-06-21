@@ -112,7 +112,7 @@ public class TimesOp {
 		if (!temp.isPresent()) {
 			temp = timesAST;
 		}
-		IExpr expr = Arithmetic.CONST_TIMES.evaluate(temp, null);
+		IExpr expr = Arithmetic.CONST_TIMES.evaluate(temp, EvalEngine.get());
 		if (!expr.isPresent()) {
 			return timesAST.getOneIdentity(F.C0);
 		}
@@ -136,7 +136,7 @@ public class TimesOp {
 
 	public static IExpr timesNull(IExpr a1, IExpr a2) {
 		IAST times = F.Times(a1, a2);
-		IExpr temp = Arithmetic.CONST_TIMES.evaluate(times, null);
+		IExpr temp = Arithmetic.CONST_TIMES.evaluate(times, EvalEngine.get());
 		if (temp.isPresent()) {
 			return temp;
 		}

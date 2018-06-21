@@ -1587,6 +1587,18 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
+	 * Test if this expression is a list of rules (head Rule or RuleDelayed)
+	 * 
+	 * @return
+	 * @see #isList()
+	 * @see #isMatrix(boolean)
+	 * @see #isVector()
+	 */
+	default boolean isListOfRules() {
+		return false;
+	}
+
+	/**
 	 * Test if this expression is the function <code>Log[&lt;arg&gt;]</code>
 	 * 
 	 * @return
