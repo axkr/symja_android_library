@@ -90,6 +90,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("Times(3, Power(1, -1))", "3");
 		check("%", "3");
 		check("%%%*%2", "test^2");
+		check("%10", "Out(10)");
 		check("1-x", "1-x");
 		check("5+x^4*(33+x^2)", "5+(33+x^2)*x^4");
 		check("x^(-7)", "1/x^7");
