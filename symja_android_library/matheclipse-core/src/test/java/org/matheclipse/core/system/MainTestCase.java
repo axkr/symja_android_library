@@ -2797,7 +2797,7 @@ public class MainTestCase extends AbstractTestCase {
 	}
 
 	public void testSystem399() {
-		checkNumeric("Erf(3.0)", "0.9999779095030014");
+		checkNumeric("Erf(3.0)", "0.9999779095030015");
 	}
 
 	public void testSystem400() {

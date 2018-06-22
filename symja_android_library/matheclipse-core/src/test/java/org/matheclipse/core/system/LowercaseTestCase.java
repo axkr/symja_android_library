@@ -914,6 +914,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCDF() {
+		// github #56
+		check("CDF(NormalDistribution(),-0.41)", "0.3409");
+		check("CDF(NormalDistribution(),0.41)", "0.6591");
+		checkNumeric("Table(CDF(NormalDistribution(0, s), x), {s, {.75, 1, 2}}, {x, -6,6}) // N", //
+				"{{0.0,1.3083924686053115E-11,4.82130336511414E-8,3.167124183311996E-5,0.0038303805675897395,0.0912112197258679,0.5,0.9087887802741321,0.9961696194324102,0.9999683287581669,0.9999999517869663,0.999999999986916,0.9999999999999993},{9.865876450377014E-10,2.866515718791945E-7,3.167124183311996E-5,0.0013498980316300957,0.022750131948179216,0.15865525393145705,0.5,0.8413447460685429,0.9772498680518208,0.9986501019683699,0.9999683287581669,0.9999997133484281,0.9999999990134123},{0.0013498980316300957,0.0062096653257761375,0.022750131948179216,0.06680720126885807,0.15865525393145705,0.30853753872598694,0.5,0.691462461274013,0.8413447460685429,0.9331927987311419,0.9772498680518208,0.9937903346742238,0.9986501019683699}}");
+
 		check("CDF(NormalDistribution(n, m),k)", "Erfc((-k+n)/(Sqrt(2)*m))/2");
 
 		check("CDF(BernoulliDistribution(p),k)", "Piecewise({{0,k<0},{1-p,0<=k&&k<1}},1)");
@@ -2553,12 +2559,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Erf(ComplexInfinity)", "Indeterminate");
 		check("Erf(Infinity)", "1");
 		check("Erf(-Infinity)", "-1");
-		checkNumeric("Erf(0.95)", "0.8208908072732778");
+		checkNumeric("Erf(0.95)", "0.8208908072732779");
 	}
 
 	public void testErfc() {
+		checkNumeric("Erfc(5/Sqrt(2))/2 // N", //
+				"2.866515718791937E-7");
+		check("Erfc(-0.28991)", //
+				"1.31819");
 		check("Erfc(-x) / 2", "1/2*(2-Erfc(x))");
-		checkNumeric("Erfc(1.0)", "0.15729920705028488");
+		checkNumeric("Erfc(1.0)", "0.15729920705028516");
 		check("Erfc(0)", "1");
 	}
 
@@ -7668,7 +7678,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("ReplaceAll({a, b, c}, {___, x__, ___} -> {x})", "{a}");
 		check("{g(1), Hold(g(1))} /. g(n_) -> n + 1", //
 				"{2,Hold(1+1)}");
-		
+
 		check("x /. { }", //
 				"x");
 		check("x /. {{x -> 1}, {y -> 2}}", //
@@ -7679,7 +7689,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{d,d,c}");
 		check("{g(1), Hold(g(1))} /. g(n_) -> n + 1", //
 				"{2,Hold(1+1)}");
-		
+
 		check("u(v(w,x,y) /. { {}, {w->y}})", //
 				"u({v(w,x,y),v(y,x,y)})");
 		check("u(v(w,x,y) /. { {}, w->y})", //

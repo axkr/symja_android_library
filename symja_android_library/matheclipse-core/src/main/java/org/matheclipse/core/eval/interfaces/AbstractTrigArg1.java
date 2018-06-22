@@ -14,8 +14,8 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INum;
 
 /**
- * Base class for functions with 1 argument (i.e. Sin, Cos...) with Attributes
- * <i>Listable</i> and <i>NumericFunction</i>
+ * Base class for functions with 1 argument (i.e. Sin, Cos...) with Attributes <i>Listable</i> and
+ * <i>NumericFunction</i>
  * 
  */
 public abstract class AbstractTrigArg1 extends AbstractArg1 {
