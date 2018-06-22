@@ -151,7 +151,6 @@ public class F {
 	 * @see java.util.Optional#isPresent
 	 */
 	public final static NILPointer NIL = new NILPointer();
-
 	public final static IBuiltInSymbol Abort = F.initFinalSymbol("Abort", ID.Abort);
 	public final static IBuiltInSymbol Abs = F.initFinalSymbol("Abs", ID.Abs);
 	public final static IBuiltInSymbol AbsArg = F.initFinalSymbol("AbsArg", ID.AbsArg);
@@ -370,6 +369,7 @@ public class F {
 	public final static IBuiltInSymbol EulerE = F.initFinalSymbol("EulerE", ID.EulerE);
 	public final static IBuiltInSymbol EulerGamma = F.initFinalSymbol("EulerGamma", ID.EulerGamma);
 	public final static IBuiltInSymbol EulerPhi = F.initFinalSymbol("EulerPhi", ID.EulerPhi);
+	public final static IBuiltInSymbol Evaluate = F.initFinalSymbol("Evaluate", ID.Evaluate);
 	public final static IBuiltInSymbol EvenQ = F.initFinalSymbol("EvenQ", ID.EvenQ);
 	public final static IBuiltInSymbol ExactNumberQ = F.initFinalSymbol("ExactNumberQ", ID.ExactNumberQ);
 	public final static IBuiltInSymbol Except = F.initFinalSymbol("Except", ID.Except);

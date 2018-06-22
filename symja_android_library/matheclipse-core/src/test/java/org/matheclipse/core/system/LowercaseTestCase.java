@@ -2575,7 +2575,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testEuclideanDistance() {
 		check("EuclideanDistance({-1, -1}, {1, 1})", "2*Sqrt(2)");
 		check("EuclideanDistance({a, b}, {c, d})", "Sqrt(Abs(a-c)^2+Abs(b-d)^2)");
-
 	}
 
 	public void testEulerE() {
@@ -2596,6 +2595,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"4218559200885839042679312107816703841788854953574400000000000000");
 		check("Table(EulerPhi(10^k), {k, 0, 10})", //
 				"{1,4,40,400,4000,40000,400000,4000000,40000000,400000000,4000000000}");
+	}
+
+	public void testEvaluate() {
+		check("cheb = ChebyshevT(5, x);Function(x, Evaluate(cheb))", //
+				"Function(x,5*x-20*x^3+16*x^5)");
+		check("Function(x, Evaluate(cheb))[10]", //
+				"1580050");
+		check("Hold(Evaluate(1+1),2+2)", //
+				"Hold(2,2+2)");
+		check("Evaluate(a,b)", //
+				"Sequence(a,b)");
+		check("x=Plus; {Attributes(x), Attributes(Evaluate(x))}", //
+				"{{},{Flat,Listable,OneIdentity,Orderless,NumericFunction}}");
 	}
 
 	public void testExactNumberQ() {

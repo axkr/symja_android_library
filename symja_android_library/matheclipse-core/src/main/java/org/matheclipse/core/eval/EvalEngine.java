@@ -404,27 +404,25 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			if ((ISymbol.HOLDFIRST & attr) == ISymbol.NOATTRIBUTE) {
 				// the HoldFirst attribute isn't set here
 				try {
-					if ((ISymbol.NHOLDFIRST & attr) == ISymbol.NHOLDFIRST) {
-						fNumericMode = false;
-					} else {
-						fNumericMode = localNumericMode;
+					selectNumericMode(attr, ISymbol.NHOLDFIRST, localNumericMode);
+					evalArg(rlist, ast, ast.arg1(), 1, isNumericFunction);
+					if (astSize == 2 && rlist[0].isPresent()) {
+						return rlist[0];
 					}
-					IExpr temp = evalLoop(ast.arg1());
-					if (temp.isPresent()) {
-						rlist[0] = ast.copy();
-						rlist[0].set(1, temp);
-						if (isNumericFunction && temp.isNumericArgument()) {
-							rlist[0].addEvalFlags(
-									(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR) | IAST.CONTAINS_NUMERIC_ARG);
-						} else {
-							rlist[0].addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
-						}
-						if (astSize == 2) {
+				} finally {
+					if ((ISymbol.NHOLDFIRST & attr) == ISymbol.NHOLDFIRST) {
+						fNumericMode = numericMode;
+					}
+				}
+			} else {
+				// the HoldFirst attribute is set here
+				try {
+					IExpr x = ast.arg1();
+					if (x.isAST(F.Evaluate)) {
+						selectNumericMode(attr, ISymbol.NHOLDFIRST, localNumericMode);
+						evalArg(rlist, ast, x, 1, isNumericFunction);
+						if (astSize == 2 && rlist[0].isPresent()) {
 							return rlist[0];
-						}
-					} else {
-						if (isNumericFunction && ast.arg1().isNumericArgument()) {
-							ast.addEvalFlags(ast.getEvalFlags() | IAST.CONTAINS_NUMERIC_ARG);
 						}
 					}
 				} finally {
@@ -438,34 +436,29 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					// the HoldRest attribute isn't set here
 					numericMode = fNumericMode;
 					try {
-						if ((ISymbol.NHOLDREST & attr) == ISymbol.NHOLDREST) {
-							fNumericMode = false;
-						} else {
-							fNumericMode = localNumericMode;
-						}
+						selectNumericMode(attr, ISymbol.NHOLDREST, localNumericMode);
 						ast.forEach(2, astSize, (x, i) -> {
-							IExpr temp = evalLoop(x);
-							if (temp.isPresent()) {
-								if (!rlist[0].isPresent()) {
-									rlist[0] = ast.copy();
-									if (isNumericFunction && temp.isNumericArgument()) {
-										rlist[0].addEvalFlags((ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR)
-												| IAST.CONTAINS_NUMERIC_ARG);
-									} else {
-										rlist[0].addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
-									}
-								}
-								rlist[0].set(i, temp);
-							} else {
-								if (isNumericFunction && x.isNumericArgument()) {
-									ast.addEvalFlags(ast.getEvalFlags() | IAST.CONTAINS_NUMERIC_ARG);
-								}
-							}
+							evalArg(rlist, ast, x, i, isNumericFunction);
 						});
 					} finally {
 						if ((ISymbol.NHOLDREST & attr) == ISymbol.NHOLDREST) {
 							fNumericMode = numericMode;
 						}
+					}
+				}
+			} else {
+				// the HoldRest attribute is set here
+				numericMode = fNumericMode;
+				try {
+					selectNumericMode(attr, ISymbol.NHOLDREST, localNumericMode);
+					ast.forEach(2, astSize, (x, i) -> {
+						if (x.isAST(F.Evaluate)) {
+							evalArg(rlist, ast, x, i, isNumericFunction);
+						}
+					});
+				} finally {
+					if ((ISymbol.NHOLDREST & attr) == ISymbol.NHOLDREST) {
+						fNumericMode = numericMode;
 					}
 				}
 			}
@@ -480,6 +473,50 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		return F.NIL;
 	}
 
+	private void selectNumericMode(final int attr, final int nAttribute, boolean localNumericMode) {
+		if ((nAttribute & attr) == nAttribute) {
+			fNumericMode = false;
+		} else {
+			fNumericMode = localNumericMode;
+		}
+	}
+
+	/**
+	 * Evaluate the i-th argument of <code>ast</code>. This method may set evaluation flags in <code>ast</code> or
+	 * <code>result0</code>
+	 * 
+	 * @param result0
+	 *            store the result of the evaluation in the i-th argument of the ast in <code>result0[0]</code>.
+	 *            <code>result0[0]</code> should be <code>F.NIL</code> if no evaluation occured.
+	 * @param ast
+	 *            the original <code>ast</code> for whixh the arguments should be evaluated
+	 * @param arg
+	 *            the i-th argument of <code>ast</code>
+	 * @param i
+	 *            <code>arg</code> is the i-th argument of <code>ast</code>
+	 * @param isNumericFunction
+	 *            if <code>true</code> the <code>NumericFunction</code> attribute is set for the <code>ast</code>'s head
+	 */
+	private void evalArg(IASTMutable[] result0, final IAST ast, IExpr arg, int i, boolean isNumericFunction) {
+		IExpr temp = evalLoop(arg);
+		if (temp.isPresent()) {
+			if (!result0[0].isPresent()) {
+				result0[0] = ast.copy();
+				if (isNumericFunction && temp.isNumericArgument()) {
+					result0[0]
+							.addEvalFlags((ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR) | IAST.CONTAINS_NUMERIC_ARG);
+				} else {
+					result0[0].addEvalFlags(ast.getEvalFlags() & IAST.IS_MATRIX_OR_VECTOR);
+				}
+			}
+			result0[0].set(i, temp);
+		} else {
+			if (isNumericFunction && arg.isNumericArgument()) {
+				ast.addEvalFlags(ast.getEvalFlags() | IAST.CONTAINS_NUMERIC_ARG);
+			}
+		}
+	}
+
 	/**
 	 * Evaluate an AST. The evaluation steps are controlled by the header attributes.
 	 * 
@@ -489,6 +526,10 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	public final IExpr evalAST(IAST ast) {
 		final IExpr head = ast.head();
 		if (ast.head().isCoreFunctionSymbol()) {
+			IExpr temp = evalEvaluate(ast);
+			if (temp.isPresent()) {
+				return temp;
+			}
 			// evaluate a core function (without no rule definitions)
 			final ICoreFunctionEvaluator coreFunction = (ICoreFunctionEvaluator) ((IBuiltInSymbol) head).getEvaluator();
 			return fNumericMode ? coreFunction.numericEval(ast, this) : coreFunction.evaluate(ast, this);
@@ -508,6 +549,23 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		}
 		// System.out.println(ast.toString());
 		return evalRules(symbol, ast);
+	}
+
+	/**
+	 * Evaluate arguments with the head <code>F.Evaluate</code>, i.e. <code>f(a, ... , Evaluate(x), ...)</code>
+	 * 
+	 * @param ast
+	 * @return
+	 */
+	private IExpr evalEvaluate(IAST ast) {
+		IASTMutable[] rlist = new IASTMutable[1];
+		rlist[0] = F.NIL;
+		ast.forEach(1, ast.size(), (x, i) -> {
+			if (x.isAST(F.Evaluate)) {
+				evalArg(rlist, ast, x, i, false);
+			}
+		});
+		return rlist[0];
 	}
 
 	/**

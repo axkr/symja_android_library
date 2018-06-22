@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Reader;
 import java.nio.file.FileSystems;
-import java.nio.file.Path;
 import java.util.List;
 
 import org.matheclipse.core.basic.Config;
@@ -52,6 +51,7 @@ public final class PatternMatching {
 		F.Clear.setEvaluator(new Clear());
 		F.ClearAll.setEvaluator(new ClearAll());
 		F.Definition.setEvaluator(new Definition());
+		F.Evaluate.setEvaluator(new Evaluate());
 		F.Get.setEvaluator(new Get());
 		F.Hold.setEvaluator(new Hold());
 		F.HoldPattern.setEvaluator(new HoldPattern());
@@ -220,6 +220,24 @@ public final class PatternMatching {
 		@Override
 		public void setUp(ISymbol newSymbol) {
 			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
+
+	}
+
+	private static class Evaluate extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			if (ast.size() == 2) {
+				return engine.evaluate(ast.arg1());
+			}
+			IASTMutable sequence=ast.copy();
+			sequence.set(0, F.Sequence);
+			return engine.evaluate(sequence);
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
 		}
 
 	}
