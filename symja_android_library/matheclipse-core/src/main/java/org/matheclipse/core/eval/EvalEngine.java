@@ -803,9 +803,8 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 		try {
 			// remember which local variables we use:
 			if (localVariablesList.exists(x -> {
-				ISymbol blockVariableSymbol;
 				if (x.isSymbol()) {
-					blockVariableSymbol = (ISymbol) x;
+					ISymbol blockVariableSymbol = (ISymbol) x;
 					localStackCreate(blockVariableSymbol).push(F.NIL);
 					variables.add(blockVariableSymbol);
 				} else {
@@ -813,7 +812,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 						// lhs = rhs
 						final IAST setFun = (IAST) x;
 						if (setFun.arg1().isSymbol()) {
-							blockVariableSymbol = (ISymbol) setFun.arg1();
+							ISymbol blockVariableSymbol = (ISymbol) setFun.arg1();
 							final Deque<IExpr> localVariableStack = localStackCreate(blockVariableSymbol);
 							localVariableStack.push(F.NIL);
 							// this evaluation step may throw an exception

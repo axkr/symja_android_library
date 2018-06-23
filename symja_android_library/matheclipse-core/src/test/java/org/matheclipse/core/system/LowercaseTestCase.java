@@ -2601,6 +2601,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEvaluate() {
+		check("{f(2+2, 1+1, -1+2), f(Evaluate(2+2),Evaluate(1+1),-1+2,Evaluate(-1+2))}", //
+				"{f(4,2,1),f(4,2,1,1)}");
 		check("SetAttributes(hr,HoldRest); {hr(2+2, 1+1, -1+2), hr(2+2,Evaluate(1+1),-1+2,Evaluate(-1+2))}", //
 				"{hr(4,1+1,-1+2),hr(4,2,-1+2,1)}");
 		check("SetAttributes(hf,HoldFirst); {hf(1+1), hf(Evaluate(1+1))}", //
