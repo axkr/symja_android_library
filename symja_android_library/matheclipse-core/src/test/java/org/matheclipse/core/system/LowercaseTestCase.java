@@ -2073,6 +2073,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDirectedInfinity() {
+		check("DirectedInfinity(-2000)", "-Infinity");
+		check("DirectedInfinity(2001)", "Infinity");
 		check("Table(DirectedInfinity(i), {i, {1, -1, I, -I}})", "{Infinity,-Infinity,I*Infinity,-I*Infinity}");
 
 		check("DirectedInfinity(1 + I)^ -1", "0");
@@ -2171,6 +2173,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDivide() {
+		check("Divide(a,b) // FullForm", "Times(a, Power(b, -1))");
 		check("1/2/3/5", "1/30");
 		check("30 / 5", "6");
 		check("1 / 8", "1/8");
@@ -2598,6 +2601,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEvaluate() {
+		check("SetAttributes(hr,HoldRest); {hr(2+2, 1+1, -1+2), hr(2+2,Evaluate(1+1),-1+2,Evaluate(-1+2))}", //
+				"{hr(4,1+1,-1+2),hr(4,2,-1+2,1)}");
+		check("SetAttributes(hf,HoldFirst); {hf(1+1), hf(Evaluate(1+1))}", //
+				"{hf(1+1),hf(2)}");
 		check("cheb = ChebyshevT(5, x);Function(x, Evaluate(cheb))", //
 				"Function(x,5*x-20*x^3+16*x^5)");
 		check("Function(x, Evaluate(cheb))[10]", //

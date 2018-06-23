@@ -388,6 +388,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 */
 	public IASTMutable evalArgs(final IAST ast, final int attr) {
 		final int astSize = ast.size();
+ 
 		if (astSize > 1) {
 			boolean numericMode = fNumericMode;
 			boolean localNumericMode = fNumericMode;
@@ -431,6 +432,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 					}
 				}
 			}
+
 			if (astSize > 2) {
 				if ((ISymbol.HOLDREST & attr) == ISymbol.NOATTRIBUTE) {
 					// the HoldRest attribute isn't set here
@@ -445,20 +447,20 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 							fNumericMode = numericMode;
 						}
 					}
-				}
-			} else {
-				// the HoldRest attribute is set here
-				numericMode = fNumericMode;
-				try {
-					selectNumericMode(attr, ISymbol.NHOLDREST, localNumericMode);
-					ast.forEach(2, astSize, (x, i) -> {
-						if (x.isAST(F.Evaluate)) {
-							evalArg(rlist, ast, x, i, isNumericFunction);
+				} else {
+					// the HoldRest attribute is set here
+					numericMode = fNumericMode;
+					try {
+						selectNumericMode(attr, ISymbol.NHOLDREST, localNumericMode);
+						ast.forEach(2, astSize, (x, i) -> {
+							if (x.isAST(F.Evaluate)) {
+								evalArg(rlist, ast, x, i, isNumericFunction);
+							}
+						});
+					} finally {
+						if ((ISymbol.NHOLDREST & attr) == ISymbol.NHOLDREST) {
+							fNumericMode = numericMode;
 						}
-					});
-				} finally {
-					if ((ISymbol.NHOLDREST & attr) == ISymbol.NHOLDREST) {
-						fNumericMode = numericMode;
 					}
 				}
 			}
