@@ -75,12 +75,7 @@ public class Context implements Serializable {
 	private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		contextName = stream.readUTF();
 		symbolTable = (Map<String, ISymbol>) stream.readObject();
-	}
-
-	public Object readResolve() throws ObjectStreamException {
-		Context context = EvalEngine.get().getContextPath().getContext(contextName);
-		return context;
-	}
+	} 
 
 	public ISymbol remove(String key) {
 		return symbolTable.remove(key);
