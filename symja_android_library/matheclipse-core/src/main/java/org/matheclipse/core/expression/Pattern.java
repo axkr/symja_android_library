@@ -303,9 +303,9 @@ public class Pattern extends Blank {
 		}
 		if (fCondition != null) {
 			if (fCondition == F.Integer) {
-				buffer.append(", IntegerHead");
+				buffer.append(", Integer");
 			} else if (fCondition == F.Symbol) {
-				buffer.append(", SymbolHead");
+				buffer.append(", Symbol");
 			} else {
 				buffer.append("," + fCondition.internalJavaString(symbolsAsFactoryMethod, 0, useOperaators, usePrefix, noSymbolPrefix));
 			}
