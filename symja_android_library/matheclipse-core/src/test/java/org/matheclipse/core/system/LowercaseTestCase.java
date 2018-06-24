@@ -2575,6 +2575,23 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Erfc(0)", "1");
 	}
 
+	public void testErfi() {
+		check("Erfi((-1)^(1/4)*2.0^2)", //
+				"(I*1.0)*Erf(-2.82843+I*2.82843)");
+		check("Erfi(0)", //
+				"0");
+		check("Erfi(Infinity)", //
+				"Infinity");
+		check("Erfi(-Infinity)", //
+				"-Infinity");
+		check("Erfi(I*Infinity)", //
+				"I");
+		check("Erfi(-I*Infinity)", //
+				"-I");
+		check("Erfi(-x)", //
+				"-Erfi(x)");
+	}
+
 	public void testEuclideanDistance() {
 		check("EuclideanDistance({-1, -1}, {1, 1})", "2*Sqrt(2)");
 		check("EuclideanDistance({a, b}, {c, d})", "Sqrt(Abs(a-c)^2+Abs(b-d)^2)");
@@ -4031,6 +4048,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegrate() {
+		check("Integrate({Sin(x),Cos(x)},x)", "{-Cos(x),Sin(x)}");
+		check("Integrate({Sin(x),Cos(x)},{x,a,b})", "{Cos(a)-Cos(b),-Sin(a)+Sin(b)}");
 		check("Integrate(2*x,x)", "x^2");
 		check("Integrate(Tan(x) ^ 5, x)", "-Log(Cos(x))-Tan(x)^2/2+Tan(x)^4/4");
 		check("Integrate(x*Sin(x),{x,1.0,2*Pi})", "-6.58435");

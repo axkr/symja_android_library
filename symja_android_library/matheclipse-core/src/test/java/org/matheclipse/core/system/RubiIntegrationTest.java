@@ -462,7 +462,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 				"(I*1/8*Sqrt(Pi)*Erf((-1)^(1/4)*a^2))/(-1)^(1/4)+(-I*1/8*Sqrt(Pi)*Erfi((-1)^(1/4)*a^\n"
 						+ "2))/(-1)^(1/4)");
 		check("Integrate(Sin(a^4)*a,{a,0,2.0})",
-				"(0.15666+I*0.15666)*Erf(2.82843+I*2.82843)+(0.15666+I*0.15666)*Erfi(0.0)+(-0.15666+I*(-0.15666))*Erfi(2.82843+I*2.82843)");
+				"(0.15666+I*(-0.15666))*Erf(-2.82843+I*2.82843)+(0.15666+I*0.15666)*Erf(2.82843+I*2.82843)");
 	}
 
 	public void testIssue83() {
