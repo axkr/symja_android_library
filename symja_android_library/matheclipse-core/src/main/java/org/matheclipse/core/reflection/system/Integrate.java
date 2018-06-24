@@ -138,8 +138,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 					IExpr temp = engine.evaluate(clone);
 					if (temp.isFreeAST(F.Integrate)) {
 						// F(b)-F(a)
-						IExpr Fb = engine.evaluate(F.subst(temp, F.Rule(xList.arg1(), xList.arg3())));
-						IExpr Fa = engine.evaluate(F.subst(temp, F.Rule(xList.arg1(), xList.arg2())));
+						IExpr Fb = engine.evaluate(F.Limit(temp, F.Rule(xList.arg1(), xList.arg3())));
+						IExpr Fa = engine.evaluate(F.Limit(temp, F.Rule(xList.arg1(), xList.arg2())));
 						if (!Fb.isFree(F.DirectedInfinity, true) || !Fb.isFree(F.Indeterminate, true)) {
 							engine.printMessage(
 									"Not integrable: " + temp + " for " + xList.arg1() + " = " + xList.arg3());
@@ -155,7 +155,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 				}
 				return F.NIL;
 			}
-
+			if (arg1.isList() && arg2.isSymbol()) {
+				return ((IAST) arg1).mapThread(F.Integrate(null, arg2), 1);
+			}
+			
 			final IASTAppendable ast = holdallAST.setAtClone(1, arg1);
 			ast.set(2, arg2);
 			// if (ast.arg2().isSymbol()) {
