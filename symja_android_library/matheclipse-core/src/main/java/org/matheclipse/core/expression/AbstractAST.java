@@ -1708,7 +1708,7 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public final boolean isFlatAST() {
 		return topHead().hasFlatAttribute();
-	} 
+	}
 
 	/** {@inheritDoc} */
 	@Override
@@ -1883,7 +1883,7 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isListOfRules() {
@@ -1969,7 +1969,7 @@ public abstract class AbstractAST implements IASTMutable {
 		if (isNumericFunction()) {
 			IExpr result = EvalEngine.get().evalN(this);
 			if (result.isReal()) {
-				return ((ISignedNumber) result).isNegative();
+				return result.isNegative();
 			}
 		}
 		return false;
@@ -1997,14 +1997,14 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public final boolean isNot() {
 		return size() == 2 && head().equals(F.Not);
-	}  
+	}
 
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumericArgument() {
 		return isEvalFlagOn(IAST.CONTAINS_NUMERIC_ARG);
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isNumericFunction() {
@@ -2035,7 +2035,7 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean isOneIdentityAST1() {
@@ -2751,6 +2751,7 @@ public abstract class AbstractAST implements IASTMutable {
 	public IAST orElse(final IAST other) {
 		return this;
 	}
+
 	/**
 	 * Calculate a special hash value to find a matching rule in a hash table
 	 * 
@@ -2895,7 +2896,7 @@ public abstract class AbstractAST implements IASTMutable {
 	public final int signum() {
 		if (isTimes()) {
 			IExpr temp = arg1();
-			if (temp.isReal() && ((ISignedNumber) temp).isNegative()) {
+			if (temp.isReal() && temp.isNegative()) {
 				return -1;
 			}
 		}

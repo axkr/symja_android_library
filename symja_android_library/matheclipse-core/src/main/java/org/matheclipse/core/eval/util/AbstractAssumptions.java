@@ -74,15 +74,15 @@ public abstract class AbstractAssumptions implements IAssumptions {
 	 * Test if <code>expr</code> is assumed to be an <code>Arrays(list, domain, symmetry)</code> expression.
 	 * 
 	 * @param expr
-	 * @return  
+	 * @return
 	 */
 	public static ISymbol assumeArray(final IExpr expr) {
-		if (expr.isAST(F.Arrays, 4) ) {
+		if (expr.isAST(F.Arrays, 4)) {
 			return F.True;
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Test if <code>expr</code> is assumed to be an boolean value.
 	 * 
@@ -117,7 +117,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
 		if (expr.isNumber()) {
 			return F.True;
 		}
-		if (expr.isSignedNumberConstant()) {
+		if (expr.isRealConstant()) {
 			return F.True;
 		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
@@ -179,12 +179,12 @@ public abstract class AbstractAssumptions implements IAssumptions {
 	 */
 	public static boolean assumeNegative(final IExpr expr) {
 		if (expr.isReal()) {
-			return ((ISignedNumber) expr).isNegative();
+			return expr.isNegative();
 		}
 		if (expr.isNumber()) {
 			return false;
 		}
-		if (expr.isSignedNumberConstant()) {
+		if (expr.isRealConstant()) {
 			return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() < 0.0;
 		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
@@ -203,7 +203,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
 		if (expr.isNumber()) {
 			return false;
 		}
-		if (expr.isSignedNumberConstant()) {
+		if (expr.isRealConstant()) {
 			return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() < number.doubleValue();
 		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
@@ -224,12 +224,12 @@ public abstract class AbstractAssumptions implements IAssumptions {
 	 */
 	public static boolean assumeNonNegative(final IExpr expr) {
 		if (expr.isReal()) {
-			return !((ISignedNumber) expr).isNegative();
+			return !expr.isNegative();
 		}
 		if (expr.isNumber()) {
 			return false;
 		}
-		if (expr.isSignedNumberConstant()) {
+		if (expr.isRealConstant()) {
 			return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() >= 0.0;
 		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
@@ -248,7 +248,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
 		if (expr.isNumber()) {
 			return false;
 		}
-		if (expr.isSignedNumberConstant()) {
+		if (expr.isRealConstant()) {
 			return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() >= number.doubleValue();
 		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
@@ -274,7 +274,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
 		if (expr.isNumber()) {
 			return false;
 		}
-		if (expr.isSignedNumberConstant()) {
+		if (expr.isRealConstant()) {
 			return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() > 0.0;
 		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
@@ -293,7 +293,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
 		if (expr.isNumber()) {
 			return false;
 		}
-		if (expr.isSignedNumberConstant()) {
+		if (expr.isRealConstant()) {
 			return ((ISignedNumberConstant) ((IBuiltInSymbol) expr).getEvaluator()).evalReal() > number.doubleValue();
 		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();
@@ -371,7 +371,7 @@ public abstract class AbstractAssumptions implements IAssumptions {
 		if (expr.isNumber()) {
 			return F.False;
 		}
-		if (expr.isSignedNumberConstant()) {
+		if (expr.isRealConstant()) {
 			return F.True;
 		}
 		IAssumptions assumptions = EvalEngine.get().getAssumptions();

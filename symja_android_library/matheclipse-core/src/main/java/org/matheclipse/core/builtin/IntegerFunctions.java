@@ -813,11 +813,10 @@ public class IntegerFunctions {
 		}
 
 		private IExpr signedNumberIntegerPart(ISignedNumber arg1) {
-			final ISignedNumber signedNumber = arg1;
-			if ((signedNumber).isNegative()) {
-				return (signedNumber).ceilFraction();
+			if (arg1.isNegative()) {
+				return arg1.ceilFraction();
 			} else {
-				return (signedNumber).floorFraction();
+				return arg1.floorFraction();
 			}
 		}
 

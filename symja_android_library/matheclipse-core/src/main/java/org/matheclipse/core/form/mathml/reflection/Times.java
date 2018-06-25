@@ -137,7 +137,7 @@ public class Times extends MMLOperator {
 				}
 			} else {
 				if (caller == MathMLFormFactory.PLUS_CALL) {
-					if ((arg1 instanceof ISignedNumber) && (((ISignedNumber) arg1).isNegative())) {
+					if (arg1.isReal() && arg1.isNegative()) {
 						fFactory.tag(buf, "mo", "-");
 						fFactory.tagStart(buf, fFirstTag);
 						arg1 = ((ISignedNumber) arg1).negate();

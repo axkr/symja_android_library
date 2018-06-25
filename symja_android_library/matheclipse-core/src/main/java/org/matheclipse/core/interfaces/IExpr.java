@@ -2349,8 +2349,19 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @return
 	 */
-	default boolean isSignedNumberConstant() {
+	default boolean isRealConstant() {
 		return false;
+	}
+
+	/**
+	 * Test if this expression is a <code>IBuiltInSymbol</code> symbol and the evaluator implements the
+	 * <code>ISignedNumberConstant</code> interface (see package <code>org.matheclipse.core.builtin.constant</code>).
+	 * 
+	 * @return
+	 * @deprecated use {@link #isRealConstant()}
+	 */
+	default boolean isSignedNumberConstant() {
+		return isRealConstant();
 	}
 
 	/**

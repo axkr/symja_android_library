@@ -32,7 +32,7 @@ public class Plus extends MMLOperator {
 				timesConverter.convertTimesFraction(buf, (IAST) expr, fPrecedence, MathMLFormFactory.PLUS_CALL);
 			} else {
 				if (i < size) {
-					if ((expr instanceof ISignedNumber) && (((ISignedNumber) expr).isNegative())) {
+					if (expr.isReal() && expr.isNegative()) {
 						fFactory.tag(buf, "mo", "-");
 						expr = ((ISignedNumber) expr).negate();
 					} else {

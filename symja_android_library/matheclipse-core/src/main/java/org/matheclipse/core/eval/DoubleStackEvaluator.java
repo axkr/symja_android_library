@@ -17,7 +17,7 @@ public class DoubleStackEvaluator {
 		if (symbol.hasLocalVariableStack()) {
 			return ((ISignedNumber) symbol.get()).doubleValue();
 		}
-		if (symbol.isSignedNumberConstant()) {
+		if (symbol.isRealConstant()) {
 			// fast evaluation path
 			return ((ISignedNumberConstant) ((IBuiltInSymbol) symbol).getEvaluator()).evalReal();
 		}

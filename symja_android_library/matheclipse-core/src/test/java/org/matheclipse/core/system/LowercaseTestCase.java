@@ -6861,6 +6861,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// "$Aborted");
 		// check("TimeConstrained(1^3^3^3, 10)", //
 		// "1");
+		check("(-Infinity)^(42.0)", //
+				"Infinity");
+		check("(-Infinity)^(43.0)", //
+				"-Infinity");
+		check("(-Infinity)^(-42.0)", //
+				"0.0");
+		check("(-Infinity)^(-43.0)", //
+				"0.0");
+		check("(-5/6)^(1/2)", //
+				"I*Sqrt(5/6)");
 		check("(9/4)^(-3/8)", //
 				"2^(3/4)/3^(3/4)");
 		check("4^(-3/8)", //

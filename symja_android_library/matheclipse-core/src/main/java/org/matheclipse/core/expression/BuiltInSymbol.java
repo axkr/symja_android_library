@@ -210,7 +210,7 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
 	/** {@inheritDoc} */
 	@Override
-	final public boolean isSignedNumberConstant() {
+	final public boolean isRealConstant() {
 		return fEvaluator instanceof ISignedNumberConstant;
 	}
 

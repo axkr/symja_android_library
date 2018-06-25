@@ -821,7 +821,7 @@ public class ExpTrigsFunctions {
 			}
 			IExpr yUnitStep = y.unitStep();
 			if (x.isNumber() && yUnitStep.isInteger()) {
-				if (((INumber) x).re().isNegative()) {
+				if (x.re().isNegative()) {
 					return F.Plus(F.ArcTan(F.Divide(y, x)),
 							F.Times(F.Subtract(F.Times(F.C2, yUnitStep), F.C1), F.Pi));
 				}

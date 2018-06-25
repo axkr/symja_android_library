@@ -86,7 +86,7 @@ public class EvalComplex {
 				return result;
 			}
 		}
-		if (symbol.isSignedNumberConstant()) {
+		if (symbol.isRealConstant()) {
 			// fast evaluation path
 			final double[] result = new double[2];
 			result[0] = ((ISignedNumberConstant) ((IBuiltInSymbol) symbol).getEvaluator()).evalReal();
