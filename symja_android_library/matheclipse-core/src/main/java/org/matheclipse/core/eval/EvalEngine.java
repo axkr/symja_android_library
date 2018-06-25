@@ -388,7 +388,7 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 	 */
 	public IASTMutable evalArgs(final IAST ast, final int attr) {
 		final int astSize = ast.size();
- 
+
 		if (astSize > 1) {
 			boolean numericMode = fNumericMode;
 			boolean localNumericMode = fNumericMode;
@@ -1164,17 +1164,20 @@ public class EvalEngine implements Serializable, IEvaluationEngine {
 			expr = argI;
 		}
 		if (expr.isAST()) {
-			if (expr.isAST(F.Sqrt, 2)) {
-				if (resultList.isPresent()) {
-					resultList.set(i, PowerOp.power(expr, F.C1D2));
-				} else {
-					resultList = ast.setAtCopy(i, PowerOp.power(((IAST) expr).arg1(), F.C1D2));
-				}
-			} else if (expr.isAST(F.Exp, 2)) {
-				if (resultList.isPresent()) {
-					resultList.set(i, PowerOp.power(F.E, ((IAST) expr).arg1()));
-				} else {
-					resultList = ast.setAtCopy(i, PowerOp.power(F.E, ((IAST) expr).arg1()));
+			if (((IAST) expr).size() == 2) {
+				IExpr arg1 = ((IAST) expr).arg1();
+				if (expr.isAST(F.Sqrt, 2)) {
+					if (resultList.isPresent()) {
+						resultList.set(i, PowerOp.power(arg1, F.C1D2));
+					} else {
+						resultList = ast.setAtCopy(i, PowerOp.power(arg1, F.C1D2));
+					}
+				} else if (expr.isAST(F.Exp, 2)) {
+					if (resultList.isPresent()) {
+						resultList.set(i, PowerOp.power(F.E, arg1));
+					} else {
+						resultList = ast.setAtCopy(i, PowerOp.power(F.E, arg1));
+					}
 				}
 			}
 		}
