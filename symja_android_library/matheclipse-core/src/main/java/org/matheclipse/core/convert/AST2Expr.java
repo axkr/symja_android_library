@@ -244,7 +244,7 @@ public class AST2Expr {
 	public AST2Expr(boolean lowercaseEnabled, EvalEngine engine) {
 		super();
 		fLowercaseEnabled = lowercaseEnabled;
-		fEngine = EvalEngine.get();
+		fEngine = engine;
 	}
 
 	/**

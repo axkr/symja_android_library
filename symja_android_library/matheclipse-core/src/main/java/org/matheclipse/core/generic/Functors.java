@@ -102,13 +102,10 @@ public class Functors {
 	 */
 	public static Function<IExpr, IExpr> rules(@Nonnull String[] strRules) throws WrongArgumentType {
 		IASTAppendable astRules = F.ListAlloc(strRules.length);
-		ExprParser parser = new ExprParser(EvalEngine.get());
-		// final Parser parser = new Parser();
 		final EvalEngine engine = EvalEngine.get();
+		ExprParser parser = new ExprParser(engine);
 		for (String str : strRules) {
 			IExpr expr = parser.parse(str);
-			// final ASTNode parsedAST = parser.parse(str);
-			// IExpr expr = AST2Expr.CONST.convert(parsedAST, engine);
 			expr = engine.evaluate(expr);
 			astRules.append(expr);
 		}
