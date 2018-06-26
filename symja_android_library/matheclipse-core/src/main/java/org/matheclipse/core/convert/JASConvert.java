@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.convert.JASConvert.RatToRatFactor;
 import org.matheclipse.core.eval.exception.JASConversionException;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
@@ -323,7 +324,7 @@ public class JASConvert<C extends RingElem<C>> {
 
 	private boolean expVectorToExpr(ExpVector exp, IASTAppendable monomTimes) {
 		long lExp;
-		ExpVector leer = fPolyFactory.evzero;
+		ExpVector leer = fPolyFactory.evzero;  
 		for (int i = 0; i < exp.length(); i++) {
 			lExp = exp.getVal(i);
 			if (lExp != 0) {

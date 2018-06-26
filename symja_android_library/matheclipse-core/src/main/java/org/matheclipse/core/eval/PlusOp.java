@@ -296,7 +296,7 @@ public class PlusOp {
 		if (!temp.isPresent()) {
 			temp = plusAST;
 		}
-		IExpr expr = Arithmetic.CONST_PLUS.evaluate(temp, null);
+		IExpr expr = Arithmetic.CONST_PLUS.evaluate(temp, EvalEngine.get());
 		if (!expr.isPresent()) {
 			return plusAST.getOneIdentity(F.C0);
 		}
@@ -312,7 +312,7 @@ public class PlusOp {
 	 */
 	public static IExpr plus(IExpr a1, IExpr a2) {
 		IAST plus = F.Plus(a1, a2);
-		IExpr expr = Arithmetic.CONST_PLUS.evaluate(plus, null);
+		IExpr expr = Arithmetic.CONST_PLUS.evaluate(plus, EvalEngine.get());
 		if (!expr.isPresent()) {
 			return plus;
 		}
