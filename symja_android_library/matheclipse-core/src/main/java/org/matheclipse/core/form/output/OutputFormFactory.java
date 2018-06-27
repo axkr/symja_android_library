@@ -637,34 +637,34 @@ public class OutputFormFactory {
 		}
 	}
 
-	public void convertApplyOperator(final Appendable buf, final IAST list, final InfixOperator oper,
-			final int precedence) throws IOException {
-		IExpr arg2 = list.arg2();
-		if (arg2.isNumber()) {
-			INumber exp = (INumber) arg2;
-			if (exp.complexSign() < 0) {
-				if (ASTNodeFactory.APPLY_PRECEDENCE < precedence) {
-					append(buf, "(");
-				}
-				append(buf, "1/");
-				if (exp.isMinusOne()) {
-					convert(buf, list.arg1(), ASTNodeFactory.DIVIDE_PRECEDENCE, false);
-					if (ASTNodeFactory.DIVIDE_PRECEDENCE < precedence) {
-						append(buf, ")");
-					}
-					return;
-				}
-				// flip presign of the exponent
-				IAST pow = list.setAtCopy(2, exp.opposite());
-				convertPowerOperator(buf, pow, oper, ASTNodeFactory.DIVIDE_PRECEDENCE);
-				if (ASTNodeFactory.APPLY_PRECEDENCE < precedence) {
-					append(buf, ")");
-				}
-				return;
-			}
-		}
-		convertInfixOperator(buf, list, oper, precedence);
-	}
+	// public void convertApplyOperator(final Appendable buf, final IAST list, final InfixOperator oper,
+	// final int precedence) throws IOException {
+	// IExpr arg2 = list.arg2();
+	// if (arg2.isNumber()) {
+	// INumber exp = (INumber) arg2;
+	// if (exp.complexSign() < 0) {
+	// if (ASTNodeFactory.APPLY_PRECEDENCE < precedence) {
+	// append(buf, "(");
+	// }
+	// append(buf, "1/");
+	// if (exp.isMinusOne()) {
+	// convert(buf, list.arg1(), ASTNodeFactory.DIVIDE_PRECEDENCE, false);
+	// if (ASTNodeFactory.DIVIDE_PRECEDENCE < precedence) {
+	// append(buf, ")");
+	// }
+	// return;
+	// }
+	// // flip presign of the exponent
+	// IAST pow = list.setAtCopy(2, exp.opposite());
+	// convertPowerOperator(buf, pow, oper, ASTNodeFactory.DIVIDE_PRECEDENCE);
+	// if (ASTNodeFactory.APPLY_PRECEDENCE < precedence) {
+	// append(buf, ")");
+	// }
+	// return;
+	// }
+	// }
+	// convertInfixOperator(buf, list, oper, precedence);
+	// }
 
 	public void convertPowerOperator(final Appendable buf, final IAST list, final InfixOperator oper,
 			final int precedence) throws IOException {
