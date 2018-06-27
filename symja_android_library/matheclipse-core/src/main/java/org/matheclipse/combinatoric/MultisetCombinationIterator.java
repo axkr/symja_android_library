@@ -129,12 +129,4 @@ public class MultisetCombinationIterator implements Iterator<int[]> {
 		return false;
 	}
 
-	/**
-	 * Throws an UnsupportedOperationException
-	 */
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException("This iterator doesn't support the remove() method");
-	}
-
 }

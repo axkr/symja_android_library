@@ -252,40 +252,40 @@ public class ExprParserFactory implements IParserFactory {
 			list.add(oper);
 		}
 	}
-
-	static public InfixExprOperator createInfixOperator(final String operatorStr, final String headStr,
-			final int precedence, final int grouping) {
-		InfixExprOperator oper;
-
-		if (headStr.equals("Apply")) {
-			oper = new ApplyOperator(operatorStr, headStr, precedence, grouping);
-		} else if (headStr.equals("Divide")) {
-			oper = new DivideExprOperator(operatorStr, headStr, precedence, grouping);
-		} else if (headStr.equals("Subtract")) {
-			oper = new SubtractExprOperator(operatorStr, headStr, precedence, grouping);
-		} else {
-			oper = new InfixExprOperator(operatorStr, headStr, precedence, grouping);
-		}
-		return oper;
-	}
-
-	static public PostfixExprOperator createPostfixOperator(final String operatorStr, final String headStr,
-			final int precedence) {
-		return new PostfixExprOperator(operatorStr, headStr, precedence);
-	}
-
-	static public PrefixExprOperator createPrefixOperator(final String operatorStr, final String headStr,
-			final int precedence) {
-		PrefixExprOperator oper;
-		if (headStr.equals("PreMinus")) {
-			oper = new PreMinusExprOperator(operatorStr, headStr, precedence);
-		} else if (headStr.equals("PrePlus")) {
-			oper = new PrePlusExprOperator(operatorStr, headStr, precedence);
-		} else {
-			oper = new PrefixExprOperator(operatorStr, headStr, precedence);
-		}
-		return oper;
-	}
+ 
+//	static public InfixExprOperator createInfixOperator(final String operatorStr, final String headStr,
+//			final int precedence, final int grouping) {
+//		InfixExprOperator oper;
+//
+//		if (headStr.equals("Apply")) {
+//			oper = new ApplyOperator(operatorStr, headStr, precedence, grouping);
+//		} else if (headStr.equals("Divide")) {
+//			oper = new DivideExprOperator(operatorStr, headStr, precedence, grouping);
+//		} else if (headStr.equals("Subtract")) {
+//			oper = new SubtractExprOperator(operatorStr, headStr, precedence, grouping);
+//		} else {
+//			oper = new InfixExprOperator(operatorStr, headStr, precedence, grouping);
+//		}
+//		return oper;
+//	}
+//
+//	static public PostfixExprOperator createPostfixOperator(final String operatorStr, final String headStr,
+//			final int precedence) {
+//		return new PostfixExprOperator(operatorStr, headStr, precedence);
+//	}
+//
+//	static public PrefixExprOperator createPrefixOperator(final String operatorStr, final String headStr,
+//			final int precedence) {
+//		PrefixExprOperator oper;
+//		if (headStr.equals("PreMinus")) {
+//			oper = new PreMinusExprOperator(operatorStr, headStr, precedence);
+//		} else if (headStr.equals("PrePlus")) {
+//			oper = new PrePlusExprOperator(operatorStr, headStr, precedence);
+//		} else {
+//			oper = new PrefixExprOperator(operatorStr, headStr, precedence);
+//		}
+//		return oper;
+//	}
 
 	/**
 	 * Create a default ASTNode factory

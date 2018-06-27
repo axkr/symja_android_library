@@ -170,7 +170,8 @@ public class MathMLPresentationTestCase extends TestCase {
 
 	public void testMathML002() {
 		IExpr expr = EvalEngine.get().evaluate("-1/2*Sqrt(1/2)*Sqrt(5+Sqrt(5))");
-		check(expr, "<mfrac><mrow><mo>-</mo><msqrt><mrow><msqrt><mn>5</mn></msqrt><mo>+</mo><mn>5</mn></mrow></msqrt></mrow><mrow><mn>2</mn><mo>&#0183;</mo><msqrt><mn>2</mn></msqrt></mrow></mfrac>");
+		check(expr,
+				"<mfrac><mrow><mo>-</mo><msqrt><mrow><msqrt><mn>5</mn></msqrt><mo>+</mo><mn>5</mn></mrow></msqrt></mrow><mrow><mn>2</mn><mo>&#0183;</mo><msqrt><mn>2</mn></msqrt></mrow></mfrac>");
 
 		// (-1/3+I)*a
 		expr = EvalEngine.get().evaluate("a*((- 1/3 )+x)");
@@ -217,11 +218,47 @@ public class MathMLPresentationTestCase extends TestCase {
 				"<mrow><mrow><mo>(</mo><mn>1.0</mn><mo>-</mo><mn>0.5</mn><mo>&#0183;</mo><mi>&#x2148;</mi><mo>)</mo></mrow><mo>&#0183;</mo><mi>a</mi></mrow>");
 
 	}
-	
+
 	// public void testMathML003() {
 	// check("I*1/2*y-I*1/2*x", "");
 	// }
+
+	public void testCeiling() {
+		IExpr expr = EvalEngine.get().evaluate("Ceiling(f(x))");
+		check(expr, //
+				"<mrow><mo>&#x2308;</mo><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow><mo>&#x2309;</mo></mrow>");
+	}
+
+	public void testFactorial2() {
+		IExpr expr = EvalEngine.get().evaluate("f(x)!!");
+		check(expr, //
+				"<mrow><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow><mo>!!</mo></mrow>");
+	}
+
+	public void testNot() {
+		IExpr expr = EvalEngine.get().evaluate("!f(x)");
+		check(expr, //
+				"<mrow><mo>&#x00AC;</mo><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow></mrow>");
+	}
 	
+	public void testRational() {
+		IExpr expr = EvalEngine.get().parse("Rational(a, b)");
+		check(expr, //
+				"<mfrac><mi>a</mi><mi>b</mi></mfrac>");
+	}
+	
+	public void testSqrt() {
+		IExpr expr = EvalEngine.get().parse("Sqrt(f(x))");
+		check(expr, //
+				"<msqrt><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow></msqrt>");
+	}
+	
+	public void testFloor() {
+		IExpr expr = EvalEngine.get().evaluate("Floor(f(x))");
+		check(expr, //
+				"<mrow><mo>&#x230A;</mo><mrow><mi>f</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mi>x</mi></mrow><mo>)</mo></mrow></mrow><mo>&#x230B;</mo></mrow>");
+	}
+
 	public void testDerivatve001() {
 		IExpr expr = EvalEngine.get().evaluate("1/f''(x)");
 		check(expr,
@@ -240,7 +277,7 @@ public class MathMLPresentationTestCase extends TestCase {
 		check(expr,
 				"<mrow><mrow><mi>log</mi><mo>&#x2061;</mo><mo>(</mo><mi>a</mi><mo>)</mo></mrow><mo>+</mo><mfrac><mrow><mrow><mo>(</mo><mi>x</mi><mrow><mo>-</mo><mi>a</mi></mrow><mo>)</mo></mrow></mrow><mi>a</mi></mfrac><mo>+</mo><mfrac><mrow><mo>-</mo><msup><mrow><mrow><mo>(</mo><mi>x</mi><mrow><mo>-</mo><mi>a</mi></mrow><mo>)</mo></mrow></mrow><mn>2</mn></msup></mrow><mrow><mn>2</mn><mo>&#0183;</mo><msup><mi>a</mi><mn>2</mn></msup></mrow></mfrac><mo>+</mo><mfrac><msup><mrow><mrow><mo>(</mo><mi>x</mi><mrow><mo>-</mo><mi>a</mi></mrow><mo>)</mo></mrow></mrow><mn>3</mn></msup><mrow><mn>3</mn><mo>&#0183;</mo><msup><mi>a</mi><mn>3</mn></msup></mrow></mfrac><mo>+</mo><msup><mrow><mi>O</mi><mo>&#x2061;</mo><mrow><mo>(</mo><mrow><mrow><mi>x</mi><mrow><mo>-</mo><mi>a</mi></mrow></mrow></mrow><mo>)</mo></mrow></mrow><mn>4</mn></msup></mrow>");
 	}
-	
+
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
 		mathUtil.toMathML(strEval, stw);

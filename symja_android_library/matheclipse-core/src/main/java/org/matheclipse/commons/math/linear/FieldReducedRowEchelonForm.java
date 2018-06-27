@@ -83,15 +83,15 @@ public class FieldReducedRowEchelonForm {
 	 * 
 	 * @see #rowReduce()
 	 */
-	public FieldReducedRowEchelonForm(FieldMatrix<IExpr> matrix, FieldVector<IExpr> b) {
-		this.originalMatrix = matrix;
-		this.rowReducedMatrix = matrix.copy();
-		this.numRows = matrix.getRowDimension();
-		this.numCols = matrix.getColumnDimension();
-		this.matrixRankCache = -1;
-		this.nullSpaceCache = null;
-		rowReduce();
-	}
+//	public FieldReducedRowEchelonForm(FieldMatrix<IExpr> matrix, FieldVector<IExpr> b) {
+//		this.originalMatrix = matrix;
+//		this.rowReducedMatrix = matrix.copy();
+//		this.numRows = matrix.getRowDimension();
+//		this.numCols = matrix.getColumnDimension();
+//		this.matrixRankCache = -1;
+//		this.nullSpaceCache = null;
+//		rowReduce();
+//	}
 
 	/**
 	 * Test if <code>expr</code> equals the zero element.
@@ -167,13 +167,7 @@ public class FieldReducedRowEchelonForm {
 		int t = a.row;
 		a.row = b.row;
 		b.row = t;
-	}
-
-	private void swapRow(int a, int b) {
-		IExpr[] temp = rowReducedMatrix.getRow(a);
-		rowReducedMatrix.setRow(a, rowReducedMatrix.getRow(b));
-		rowReducedMatrix.setRow(b, temp);
-	}
+	} 
 
 	/**
 	 * Test if the column <code>a.col</code> of the matrix contains only zero-elements starting with the

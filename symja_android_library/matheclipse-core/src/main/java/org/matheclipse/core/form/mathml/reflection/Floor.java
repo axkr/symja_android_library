@@ -25,7 +25,7 @@ public boolean convert(final StringBuilder buf, final IAST f, final int preceden
     fFactory.tag(buf, "mo", "&#x230A;");
     fFactory.convert(buf, f.arg1(), Integer.MIN_VALUE, false);
     // &RightFloor; &#0230B;
-    fFactory.tag(buf, "mo", "&#230B;");
+    fFactory.tag(buf, "mo", "&#x230B;");
     fFactory.tagEnd(buf, "mrow");
     return true;
   }

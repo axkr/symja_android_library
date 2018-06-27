@@ -35,24 +35,7 @@ public abstract class AbstractListStepVisitor<T> implements IStepVisitor {
 		}
 	}
 
-	/**
-	 * Convert the <code>sortedList</code> to an <code>int[]</code> array. Equal elements get the same index in the
-	 * resulting <code>int[]</code> array.
-	 * 
-	 * @param <T>
-	 * @param sortedList
-	 * @param start
-	 * @param end
-	 * @return
-	 */
-	final private void toIntArray(List<? extends T> sortedList, int start, int end) {
-		array = new Object[end - start];
-		int index = 0;
-		for (int i = start; i < end; i++) {
-			array[index++] = sortedList.get(i);
-		}
-	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 * 

@@ -1335,6 +1335,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testComplex() {
+		check("Complex(0,1)*2", "I*2");
 		check("Complex(a, I)", "Complex(a,I)");
 		check("a*((- 1/3 )*I)", "-I*1/3*a");
 		check("Head(2 + 3*I)", "Complex");
