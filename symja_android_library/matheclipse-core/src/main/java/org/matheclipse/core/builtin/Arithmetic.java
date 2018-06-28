@@ -3198,7 +3198,7 @@ public final class Arithmetic {
 			if (a.isNumericFunction()) {
 				IExpr temp = engine.evalN(a);
 				if (temp.isReal()) {
-					if (((ISignedNumber) temp).isNegative()) {
+					if (temp.isNegative()) {
 						engine.printMessage("Infinite expression 0^(negative number)");
 						return F.CComplexInfinity;
 					}

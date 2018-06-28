@@ -126,7 +126,7 @@ public class AST2Expr {
 			"QRDecomposition", "Quantile", "Quiet", "Quit", "Quotient", "QuotientRemainder", "RandomChoice",
 			"RandomInteger", "RandomReal", "RandomSample", "RandomVariate", "Range", "Rational", "Rationalize", "Re",
 			"RealNumberQ", "Reap", "Rectangle", "Reduce", "Refine", "Repeated", "RepeatedNull", "Replace", "ReplaceAll",
-			"ReplaceList", "ReplacePart", "ReplaceRepeated", "Rest", "Resultant", "Return", "Reverse", "Riffle",
+			"ReplaceList", "ReplacePart", "ReplaceRepeated", "Rescale", "Rest", "Resultant", "Return", "Reverse", "Riffle",
 			"RogersTanimotoDissimilarity", "RootIntervals", "Root", "RootOf", "Roots", "RussellRaoDissimilarity",
 			"Surd", "RotateLeft", "RotateRight", "Round", "RowReduce", "Rule", "RuleDelayed", "SameQ",
 			"SatisfiabilityCount", "SatisfiabilityInstances", "SatisfiableQ", "Scan", "Sec", "Sech", "Select",

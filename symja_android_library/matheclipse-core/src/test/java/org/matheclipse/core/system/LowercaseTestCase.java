@@ -7878,6 +7878,34 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Rest(a)", "Rest(a)");
 	}
 
+	public void testRescale() {
+		check("Rescale({-.7, .5, 1.2, 5.6, 1.8})", //
+				"{0.0,0.19048,0.30159,1.0,0.39683}");
+		check("Rescale({2.5, 3.5, 4.5, 6.5}, {0, 10})", //
+				"{0.25,0.35,0.45,0.65}");
+		check("Rescale({1, 2, 3, 4, 5, 6}, {0, a})", //
+				"{1/a,2/a,3/a,4/a,5/a,6/a}");
+		check("Rescale(1 + 0.5 I, {0, 1 + I})", //
+				"0.75+I*(-0.25)");
+		check("Rescale({a,b})", //
+				"{a/(Max(a,b)-Min(a,b))-Min(a,b)/(Max(a,b)-Min(a,b)),b/(Max(a,b)-Min(a,b))-Min(a,b)/(Max(a,b)-Min(a,b))}");
+		check("Rescale(x,{xmin, xmax})", //
+				"x/(xmax-xmin)-xmin/(xmax-xmin)");
+		check("Rescale(x,{xmin, xmax},{ymin, ymax})", //
+				"(x*(ymax-ymin))/(xmax-xmin)-(xmin*ymax-xmax*ymin)/(xmax-xmin)");
+		check("Rescale(2.5,{-10,10})", //
+				"0.625");
+		check("Rescale(2.5,{10,10})", //
+				"Indeterminate");
+		// celsius to fahrenheit in steps of 10 degrees from -40 to 100 degree
+		check("Table({x, Rescale(x, {-40, 100}, {-40, 212})}, " //
+				+ "{x, -40, 100, 10})", //
+				"{{-40,-40},{-30,-22},{-20,-4},{-10,14},{0,32},{10,50},{20,68},{30,86},{40,104},{\n"
+						+ "50,122},{60,140},{70,158},{80,176},{90,194},{100,212}}");
+		check("Rescale({1, 2, 3, 4, 5}, {-100, 100})", //
+				"{101/200,51/100,103/200,13/25,21/40}");
+	}
+
 	/**
 	 * If this test fails try a change in <code>AbstractAST#isZERO()</code>.
 	 * 

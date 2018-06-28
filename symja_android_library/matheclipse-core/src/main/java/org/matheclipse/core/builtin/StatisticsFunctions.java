@@ -75,6 +75,7 @@ public class StatisticsFunctions {
 		F.PoissonDistribution.setEvaluator(new PoissonDistribution());
 		F.Quantile.setEvaluator(new Quantile());
 		F.RandomVariate.setEvaluator(new RandomVariate());
+		F.Rescale.setEvaluator(new Rescale());
 		F.Skewness.setEvaluator(new Skewness());
 		F.StandardDeviation.setEvaluator(new StandardDeviation());
 		F.Standardize.setEvaluator(new Standardize());
@@ -2161,6 +2162,54 @@ public class StatisticsFunctions {
 			list.append(subList);
 			return subList;
 		}
+	}
+
+	private final static class Rescale extends AbstractEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 2, 4);
+			IExpr x = ast.arg1();
+			if (ast.size() == 2 && x.isList()) {
+				IExpr min = F.Min.of(engine, x);
+				IExpr max = F.Max.of(engine, x);
+				return rescale(x, min, max, engine);
+			}
+			if (ast.size() >= 3) {
+				if (ast.arg2().isAST(F.List, 3)) {
+					IAST list1 = (IAST) ast.arg2();
+					IExpr min = list1.first();
+					IExpr max = list1.second();
+					if (ast.size() == 4) {
+						if (ast.arg3().isAST(F.List, 3)) {
+							IAST list2 = (IAST) ast.arg3();
+							IExpr ymin = list2.first();
+							IExpr ymax = list2.second();
+							// (arg1*(ymax - ymin))/(max - min) - (min*ymax - max*ymin)/(max - min)
+							return engine.evaluate(F.Plus(
+									F.Times(x, F.Power(F.Plus(max, F.Negate(min)), -1), F.Plus(ymax, F.Negate(ymin))),
+									F.Times(F.CN1, F.Power(F.Plus(max, F.Negate(min)), -1),
+											F.Plus(F.Times(min, ymax), F.Times(F.CN1, max, ymin)))));
+						}
+						return F.NIL;
+					}
+					return rescale(x, min, max, engine);
+				}
+				return F.NIL;
+			}
+
+			return F.NIL;
+		}
+
+		private static IExpr rescale(IExpr x, IExpr min, IExpr max, EvalEngine engine) {
+			IExpr sum = engine.evaluate(F.Subtract(max, min));
+			return engine.evaluate(F.Plus(F.Times(F.CN1, F.Power(sum, -1), min), F.Times(F.Power(sum, -1), x)));
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
 	}
 
 	/**
