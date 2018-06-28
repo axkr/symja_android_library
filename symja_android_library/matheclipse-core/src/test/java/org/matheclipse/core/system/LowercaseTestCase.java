@@ -2031,6 +2031,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("DiceDissimilarity({0, 0, 0, 0}, {1, 1, 1, 1})", "1");
 	}
 
+	public void testDifferences() {
+		check("Differences({ })", "{}");
+		check("Differences({a})", "{}");
+		check("Differences({a,b})", "{-a+b}");
+		check("Differences({a,b,c})", "{-a+b,-b+c}");
+	}
+	
 	public void testDigitQ() {
 		check("DigitQ(\"1234\")", "True");
 		check("DigitQ(\".\")", "False");
