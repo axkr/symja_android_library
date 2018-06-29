@@ -15,6 +15,33 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
+/**
+ * <pre>
+ * FindFit(list - of - data - points, function, parameters, variable)
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * solve a least squares problem using the Levenberg-Marquardt algorithm.
+ * </p>
+ * </blockquote>
+ * <p>
+ * See:<br />
+ * </p>
+ * <ul>
+ * <li><a href="https://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm">Wikipedia - Levenberg–Marquardt
+ * algorithm</a></li>
+ * </ul>
+ * <h3>Examples</h3>
+ * 
+ * <pre>
+ * &gt;&gt; FindFit({{15.2,8.9},{31.1,9.9},{38.6,10.3},{52.2,10.7},{75.4,11.4}}, a*Log(b*x), {a, b}, x)
+ * {a-&gt;1.54503,b-&gt;20.28258}
+ * 
+ * &gt;&gt; FindFit({{1,1},{2,4},{3,9},{4,16}}, a+b*x+c*x^2, {a, b, c}, x)
+ * {a-&gt;0.0,b-&gt;0.0,c-&gt;1.0}
+ * </pre>
+ */
 public class FindFit extends AbstractFunctionEvaluator {
 
 	static class FindFitParametricFunction implements ParametricUnivariateFunction {
@@ -85,13 +112,13 @@ public class FindFit extends AbstractFunctionEvaluator {
 			IExpr function = ast.arg2();
 			IAST listOfSymbols = (IAST) ast.arg3();
 			ISymbol x = (ISymbol) ast.arg4();
-			int degree = listOfSymbols.size() - 1;
-			double[] initialGuess = new double[degree];
-			for (int i = 0; i < degree; i++) {
+			final int numberofParameters = listOfSymbols.size() - 1; 
+			double[] initialGuess = new double[numberofParameters];
+			for (int i = 0; i < numberofParameters; i++) {
 				initialGuess[i] = 1.0;
 			}
-			AbstractCurveFitter fitter = SimpleCurveFitter.create(new FindFitParametricFunction(function, listOfSymbols, x, engine),
-					initialGuess);
+			AbstractCurveFitter fitter = SimpleCurveFitter
+					.create(new FindFitParametricFunction(function, listOfSymbols, x, engine), initialGuess);
 			int[] isMatrix = data.isMatrix();
 			WeightedObservedPoints obs = new WeightedObservedPoints();
 

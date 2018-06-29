@@ -16,7 +16,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 /**
  * <pre>
- * Fit(list - of - points, degree, variable)
+ * Fit(list - of - data - points, degree, variable)
  * </pre>
  * 
  * <blockquote>
@@ -28,7 +28,7 @@ import org.matheclipse.core.interfaces.ISymbol;
  * See:<br />
  * </p>
  * <ul>
- * <li><a href="http://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm">Wikipedia - Levenberg–Marquardt
+ * <li><a href="https://en.wikipedia.org/wiki/Levenberg%E2%80%93Marquardt_algorithm">Wikipedia - Levenberg–Marquardt
  * algorithm</a></li>
  * </ul>
  * <h3>Examples</h3>

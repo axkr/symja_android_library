@@ -175,7 +175,6 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Symbolic math scripting with JShell](jshell-usage.md)
 
 ## Reference of built-in symbols
-
 * [Abort](functions/Abort.md)
 * [Abs](functions/Abs.md)
 * [AbsArg](functions/AbsArg.md)
@@ -353,6 +352,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [FactorTerms](functions/FactorTerms.md)
 * [False](functions/False.md)
 * [Fibonacci](functions/Fibonacci.md)
+* [FindFit](functions/FindFit.md)
 * [FindInstance](functions/FindInstance.md)
 * [FindRoot](functions/FindRoot.md)
 * [First](functions/First.md)
@@ -591,6 +591,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Refine](functions/Refine.md)
 * [ReplaceAll](functions/ReplaceAll.md)
 * [ReplacePart](functions/ReplacePart.md)
+* [Rescale](functions/Rescale.md)
 * [Rest](functions/Rest.md)
 * [Resultant](functions/Resultant.md)
 * [Return](functions/Return.md)
