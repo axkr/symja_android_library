@@ -3063,6 +3063,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFindFit() {
+		check("FindFit({{15.2,8.9},{31.1,9.9},{38.6,10.3},{52.2,10.7},{75.4,11.4}}, " //
+				+ "a*Log(b*x), {a, b}, x)", //
+				"{a->1.54503,b->20.28258}");
 		check("FindFit({2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71}, " //
 				+ "a*x*Log(b + c*x), {a, b, c}, x)", //
 				"{a->1.42076,b->1.65558,c->0.53464}");
