@@ -2037,7 +2037,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Differences({a,b})", "{-a+b}");
 		check("Differences({a,b,c})", "{-a+b,-b+c}");
 	}
-	
+
 	public void testDigitQ() {
 		check("DigitQ(\"1234\")", "True");
 		check("DigitQ(\".\")", "False");
@@ -3062,6 +3062,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	}
 
+	public void testFindFit() {
+		check("FindFit({2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71}, " //
+				+ "a*x*Log(b + c*x), {a, b, c}, x)", //
+				"{a->1.42076,b->1.65558,c->0.53464}");
+		check("FindFit({{1.0, 12.}, {1.9, 10.}, {2.6, 8.2}, {3.4, 6.9}, {5.0, 5.9}}, " //
+				+ "a*Exp(-k*t), {a, k}, t)", //
+				"{a->14.38886,k->0.19821}");
+	}
+
 	public void testFindInstance() {
 		check("FindInstance({x^2==4,x+y^2==6}, {x,y})", "{{x->-2,y->-2*Sqrt(2)}}");
 		check("FindInstance(x+5.0==a,x)", "{{x->-5.0+a}}");
@@ -3153,8 +3162,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFit() {
-		check("Fit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, 1, x)", "0.18644+0.69492*x");
-		check("Fit({{1,1},{2,4},{3,9},{4,16}},2,x)", "x^2.0");
+		check("Fit({{0, 1}, {1, 0}, {3, 2}, {5, 4}}, 1, x)", //
+				"0.18644+0.69492*x");
+		check("Fit({{1,1},{2,4},{3,9},{4,16}},2,x)", //
+				"x^2.0");
 	}
 
 	public void testFixedPoint() {
