@@ -265,7 +265,7 @@ public class Num implements INum {
 	}
 
 	@Override
-	public ISignedNumber evalSignedNumber() {
+	public ISignedNumber evalReal() {
 		return this;
 	}
 

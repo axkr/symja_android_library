@@ -580,7 +580,7 @@ public class IntegerFunctions {
 			// if (arg1.isPlus() && arg1.first().isInteger()) {
 			// }
 			try {
-				ISignedNumber signedNumber = arg1.evalSignedNumber();
+				ISignedNumber signedNumber = arg1.evalReal();
 				if (signedNumber != null && //
 						(signedNumber.isLessThan(F.C1) || signedNumber.isGreaterThan(F.CN1))) {
 					return arg1;
@@ -791,7 +791,7 @@ public class IntegerFunctions {
 
 			try {
 				IExpr arg1 = ast.arg1();
-				ISignedNumber signedNumber = arg1.evalSignedNumber();
+				ISignedNumber signedNumber = arg1.evalReal();
 				if (signedNumber != null) {
 					return signedNumberIntegerPart(signedNumber);
 				}
@@ -1126,7 +1126,7 @@ public class IntegerFunctions {
 
 			try {
 				IExpr arg1 = engine.evaluate(ast.arg1());
-				ISignedNumber signedNumber = arg1.evalSignedNumber();
+				ISignedNumber signedNumber = arg1.evalReal();
 				if (signedNumber != null) {
 					return signedNumber.round();
 				}
@@ -1200,7 +1200,7 @@ public class IntegerFunctions {
 			if (size > 1) {
 				for (int i = 1; i < size; i++) {
 					IExpr expr = ast.get(i);
-					ISignedNumber temp = expr.evalSignedNumber();
+					ISignedNumber temp = expr.evalReal();
 					if (temp != null) {
 						if (temp.sign() < 0) {
 							return F.C0;

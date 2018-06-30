@@ -23,7 +23,7 @@ public class HeavisideTheta extends AbstractEvaluator {
 		if (size > 1) {
 			for (int i = 1; i < size; i++) {
 				IExpr expr = ast.get(i);
-				ISignedNumber temp = expr.evalSignedNumber();
+				ISignedNumber temp = expr.evalReal();
 				if (temp != null) {
 					if (temp.sign() < 0) {
 						return F.C0;

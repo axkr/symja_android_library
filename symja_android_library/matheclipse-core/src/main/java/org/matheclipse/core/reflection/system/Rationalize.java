@@ -50,7 +50,7 @@ public class Rationalize extends AbstractFunctionEvaluator {
 		@Override
 		public IExpr visit(IASTMutable ast) {
 			if (ast.isNumericFunction()) {
-				ISignedNumber signedNumber = ast.evalSignedNumber();
+				ISignedNumber signedNumber = ast.evalReal();
 				if (signedNumber != null) {
 					return F.fraction(signedNumber.doubleValue(), epsilon);
 				}
@@ -90,7 +90,7 @@ public class Rationalize extends AbstractFunctionEvaluator {
 		@Override
 		public IExpr visit(ISymbol element) {
 			if (element.isNumericFunction()) {
-				ISignedNumber signedNumber = element.evalSignedNumber();
+				ISignedNumber signedNumber = element.evalReal();
 				if (signedNumber != null) {
 					return F.fraction(signedNumber.doubleValue(), epsilon);
 				}
@@ -110,7 +110,7 @@ public class Rationalize extends AbstractFunctionEvaluator {
 		double epsilon = Config.DOUBLE_EPSILON;
 		try {
 			if (ast.isAST2()) {
-				ISignedNumber epsilonExpr = ast.arg2().evalSignedNumber();
+				ISignedNumber epsilonExpr = ast.arg2().evalReal();
 				if (epsilonExpr == null) {
 					return F.NIL;
 				}

@@ -272,7 +272,7 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public final double evalDouble() {
-		ISignedNumber signedNumber = evalSignedNumber();
+		ISignedNumber signedNumber = evalReal();
 		if (signedNumber != null) {
 			return signedNumber.doubleValue();
 		}
@@ -318,7 +318,7 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final ISignedNumber evalSignedNumber() {
+	public final ISignedNumber evalReal() {
 		if (isNumericFunction()) {
 			IExpr result = F.evaln(this);
 			if (result.isReal()) {

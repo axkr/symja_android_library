@@ -26,7 +26,7 @@ public class Expr2Object {
 		double[] result = new double[ast.argSize()];
 		ISignedNumber signedNumber;
 		for (int i = 1; i < ast.size(); i++) {
-			signedNumber = ast.get(i).evalSignedNumber();
+			signedNumber = ast.get(i).evalReal();
 			if (signedNumber != null) {
 				result[i - 1] = signedNumber.doubleValue();
 			} else {
@@ -55,7 +55,7 @@ public class Expr2Object {
 		for (int i = 1; i <= dim[0]; i++) {
 			IAST row = (IAST) ast.get(i);
 			for (int j = 1; j <= dim[1]; j++) {
-				signedNumber = row.get(j).evalSignedNumber();
+				signedNumber = row.get(j).evalReal();
 				if (signedNumber != null) {
 					result[i - 1][j - 1] = signedNumber.doubleValue();
 				} else {

@@ -20,7 +20,7 @@ public class EasterSunday extends AbstractFunctionEvaluator {
 
 		try {
 			IExpr arg1 = ast.arg1();
-			ISignedNumber signedNumber = arg1.evalSignedNumber();
+			ISignedNumber signedNumber = arg1.evalReal();
 			if (signedNumber != null) {
 				int y = signedNumber.toInt();
 				// "Anonymous Gregorian algorithm", see

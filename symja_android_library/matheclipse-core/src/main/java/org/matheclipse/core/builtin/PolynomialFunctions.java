@@ -1918,7 +1918,7 @@ public class PolynomialFunctions {
 			int degree = list.size() - 2;
 			double[] result = new double[degree + 1];
 			for (int i = 1; i < list.size(); i++) {
-				ISignedNumber temp = list.get(i).evalSignedNumber();
+				ISignedNumber temp = list.get(i).evalReal();
 				if (temp != null) {
 					result[i - 1] = temp.doubleValue();
 				} else {

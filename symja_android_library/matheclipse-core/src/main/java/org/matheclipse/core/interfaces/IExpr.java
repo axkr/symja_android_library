@@ -474,11 +474,21 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * 
 	 * @return <code>null</code> if the conversion is not possible.
 	 */
-	default ISignedNumber evalSignedNumber() {
+	default ISignedNumber evalReal() {
 		if (isReal()) {
 			return (ISignedNumber) EvalEngine.get().evalN(this);
 		}
 		return null;
+	}
+
+	/**
+	 * Evaluate the expression to a <code>ISignedNumber</code> value.
+	 * 
+	 * @return <code>null</code> if the conversion is not possible.
+	 * @deprecated use {@link #evalReal()} instead
+	 */
+	default ISignedNumber evalSignedNumber() { 
+		return evalReal();
 	}
 
 	/**

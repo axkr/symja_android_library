@@ -182,11 +182,11 @@ public class FindRoot extends AbstractFunctionEvaluator {
 					IAST equalAST = (IAST) function;
 					function = F.Plus(equalAST.arg1(), F.Negate(equalAST.arg2()));
 				}
-				ISignedNumber min = list.arg2().evalSignedNumber();
+				ISignedNumber min = list.arg2().evalReal();
 				if (min != null) {
 					ISignedNumber max = null;
 					if (list.size() > 3) {
-						max = list.arg3().evalSignedNumber();
+						max = list.arg3().evalReal();
 					}
 
 					try {

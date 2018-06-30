@@ -120,7 +120,7 @@ public class LinearProgramming extends AbstractFunctionEvaluator {
 								constraints.add(new LinearConstraint(arg2D, Relationship.GEQ, arg3D[0]));
 							}
 						} else {
-							ISignedNumber sn = arg3.get(i).evalSignedNumber();
+							ISignedNumber sn = arg3.get(i).evalReal();
 							if (sn != null) {
 								constraints.add(new LinearConstraint(arg2D, Relationship.GEQ, sn.doubleValue()));
 							} else {
