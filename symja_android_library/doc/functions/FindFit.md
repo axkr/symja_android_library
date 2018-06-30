@@ -18,3 +18,25 @@ See:
 >> FindFit({{1,1},{2,4},{3,9},{4,16}}, a+b*x+c*x^2, {a, b, c}, x)
 {a->0.0,b->0.0,c->1.0}
 ```
+
+The default initial guess in the following example for the parameters `{a,w,f}` is `{1.0, 1.0, 1.0}`.
+These initial values give a bad result:
+
+```
+>> FindFit(Table({t, 3*Sin(3*t + 1)}, {t, -3, 3, 0.1}), a* Sin(w*t + f), {a,w,f}, t)
+{a->0.6688,w->1.49588,f->3.74845}
+```
+
+The initial guess `{2.0, 1.0, 1.0}` gives a much better result:
+
+```
+>> FindFit(Table({t, 3*Sin(3*t + 1)}, {t, -3, 3, 0.1}), a* Sin(w*t + f), {{a, 2}, {w,1}, {f,1}}, t)
+{a->3.0,w->3.0,f->1.0}
+```
+
+You can omit `1.0` in the parameter list because it's the default value:
+
+```
+>> FindFit(Table({t, 3*Sin(3*t + 1)}, {t, -3, 3, 0.1}), a* Sin(w*t + f), {{a, 2}, w, f}, t) 
+{a->3.0,w->3.0,f->1.0}
+```

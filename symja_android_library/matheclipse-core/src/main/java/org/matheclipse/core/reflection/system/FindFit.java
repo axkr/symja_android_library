@@ -13,6 +13,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
 /**
@@ -41,6 +42,31 @@ import org.matheclipse.core.interfaces.ISymbol;
  * &gt;&gt; FindFit({{1,1},{2,4},{3,9},{4,16}}, a+b*x+c*x^2, {a, b, c}, x)
  * {a-&gt;0.0,b-&gt;0.0,c-&gt;1.0}
  * </pre>
+ * <p>
+ * The default initial guess in the following example for the parameters <code>{a,w,f}</code> is
+ * <code>{1.0, 1.0, 1.0}</code>. These initial values give a bad result:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; FindFit(Table({t, 3*Sin(3*t + 1)}, {t, -3, 3, 0.1}), a* Sin(w*t + f), {a,w,f}, t)
+ * {a-&gt;0.6688,w-&gt;1.49588,f-&gt;3.74845}
+ * </pre>
+ * <p>
+ * The initial guess <code>{2.0, 1.0, 1.0}</code> gives a much better result:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; FindFit(Table({t, 3*Sin(3*t + 1)}, {t, -3, 3, 0.1}), a* Sin(w*t + f), {{a, 2}, {w,1}, {f,1}}, t)
+ * {a-&gt;3.0,w-&gt;3.0,f-&gt;1.0}
+ * </pre>
+ * <p>
+ * You can omit <code>1.0</code> in the parameter list because it's the default value:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; FindFit(Table({t, 3*Sin(3*t + 1)}, {t, -3, 3, 0.1}), a* Sin(w*t + f), {{a, 2}, w, f}, t) 
+ * {a-&gt;3.0,w-&gt;3.0,f-&gt;1.0}
+ * </pre>
  */
 public class FindFit extends AbstractFunctionEvaluator {
 
@@ -68,13 +94,16 @@ public class FindFit extends AbstractFunctionEvaluator {
 			}
 		}
 
-		/** {@inheritDoc} */
-		@Override
-		public double value(final double t, final double... parameters) throws MathIllegalArgumentException {
-			createSubstitutionRules(t, parameters);
-			return F.subst(function, listOfRules).evalDouble();
+		private void createSubstitutionRules(double t, double... parameters) {
+			IASTMutable substitutionRules = (IASTMutable) this.listOfRules.get(1);
+			substitutionRules.set(2, F.num(t));
+			for (int i = 2; i < listOfRules.size(); i++) {
+				substitutionRules = (IASTMutable) this.listOfRules.get(i);
+				substitutionRules.set(2, F.num(parameters[i - 2]));
+			}
 		}
 
+		@Override
 		public double[] gradient(double t, double... parameters) {
 			createSubstitutionRules(t, parameters);
 			final double[] gradient = new double[parameters.length];
@@ -84,13 +113,11 @@ public class FindFit extends AbstractFunctionEvaluator {
 			return gradient;
 		}
 
-		private void createSubstitutionRules(double t, double... parameters) {
-			IASTMutable substitutionRules = (IASTMutable) this.listOfRules.get(1);
-			substitutionRules.set(2, F.num(t));
-			for (int i = 2; i < listOfRules.size(); i++) {
-				substitutionRules = (IASTMutable) this.listOfRules.get(i);
-				substitutionRules.set(2, F.num(parameters[i - 2]));
-			}
+		/** {@inheritDoc} */
+		@Override
+		public double value(final double t, final double... parameters) throws MathIllegalArgumentException {
+			createSubstitutionRules(t, parameters);
+			return F.subst(function, listOfRules).evalDouble();
 		}
 	}
 
@@ -98,9 +125,84 @@ public class FindFit extends AbstractFunctionEvaluator {
 		super();
 	}
 
+	/**
+	 * Evaluate the data to double values and add it to the observed points.
+	 * 
+	 * @param data
+	 * @param obs
+	 * @return
+	 */
+	private boolean addWeightedObservedPoints(IAST data, WeightedObservedPoints obs) {
+		int[] isMatrix = data.isMatrix();
+		if (isMatrix != null && isMatrix[1] == 2) {
+			final double[][] elements = data.toDoubleMatrix();
+			if (elements == null) {
+				return false;
+			}
+			for (int i = 0; i < elements.length; i++) {
+				obs.add(1.0, elements[i][0], elements[i][1]);
+			}
+		} else {
+			int rowSize = data.isVector();
+			if (rowSize < 0) {
+				return false;
+			}
+			final double[] elements = data.toDoubleVector();
+			for (int i = 0; i < elements.length; i++) {
+				obs.add(1.0, i + 1, elements[i]);
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Get a list of rules <code>{listOfSymbols[1] -> values[0], .... }</code>.
+	 * 
+	 * @param listOfSymbols
+	 * @param values
+	 * 
+	 * @return
+	 */
+	private IExpr convertToRulesList(IAST listOfSymbols, double[] values) {
+		IASTAppendable result = F.ListAlloc(listOfSymbols.size());
+		for (int i = 1; i < listOfSymbols.size(); i++) {
+			result.append(F.Rule(listOfSymbols.get(i), F.num(values[i - 1])));
+		}
+		return result;
+	}
+
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		return numericEval(ast, engine);
+	}
+
+	/**
+	 * Determine the initial guess. Default is <code>[1.0, 1.0, 1.0,...]</code>
+	 * 
+	 * @param listOfSymbolsOrPairs
+	 * @param initialGuess
+	 * @return <code>F.NIL</code> if the list of symbols couldn't be determined
+	 */
+	private IAST initialGuess(IAST listOfSymbolsOrPairs, double[] initialGuess) {
+		IASTAppendable newListOfSymbols = F.ListAlloc(listOfSymbolsOrPairs.size());
+		for (int i = 1; i < listOfSymbolsOrPairs.size(); i++) {
+			IExpr temp = listOfSymbolsOrPairs.get(i);
+			if (temp.isSymbol()) {
+				initialGuess[i - 1] = 1.0;
+				newListOfSymbols.append(temp);
+			} else if (temp.isAST(F.List, 3) && temp.first().isSymbol()) {
+				ISignedNumber signedNumber = temp.second().evalReal();
+				if (signedNumber != null) {
+					initialGuess[i - 1] = signedNumber.doubleValue();
+				} else {
+					return F.NIL;
+				}
+				newListOfSymbols.append(temp.first());
+			} else {
+				return F.NIL;
+			}
+		}
+		return newListOfSymbols;
 	}
 
 	@Override
@@ -112,40 +214,18 @@ public class FindFit extends AbstractFunctionEvaluator {
 			IExpr function = ast.arg2();
 			IAST listOfSymbols = (IAST) ast.arg3();
 			ISymbol x = (ISymbol) ast.arg4();
-			final int numberofParameters = listOfSymbols.size() - 1; 
-			double[] initialGuess = new double[numberofParameters];
-			for (int i = 0; i < numberofParameters; i++) {
-				initialGuess[i] = 1.0;
-			}
-			AbstractCurveFitter fitter = SimpleCurveFitter
-					.create(new FindFitParametricFunction(function, listOfSymbols, x, engine), initialGuess);
-			int[] isMatrix = data.isMatrix();
-			WeightedObservedPoints obs = new WeightedObservedPoints();
 
-			if (isMatrix != null && isMatrix[1] == 2) {
-				final double[][] elements = ((IAST) ast.arg1()).toDoubleMatrix();
-				if (elements == null) {
-					return F.NIL;
-				}
-				for (int i = 0; i < elements.length; i++) {
-					obs.add(1.0, elements[i][0], elements[i][1]);
-				}
-			} else {
-				int rowSize = ast.arg1().isVector();
-				if (rowSize < 0) {
-					return F.NIL;
-				}
-				final double[] elements = ((IAST) ast.arg1()).toDoubleVector();
-				for (int i = 0; i < elements.length; i++) {
-					obs.add(1.0, i + 1, elements[i]);
+			double[] initialGuess = new double[listOfSymbols.size() - 1];
+			listOfSymbols = initialGuess(listOfSymbols, initialGuess);
+			if (listOfSymbols.isPresent()) {
+				AbstractCurveFitter fitter = SimpleCurveFitter
+						.create(new FindFitParametricFunction(function, listOfSymbols, x, engine), initialGuess);
+				WeightedObservedPoints obs = new WeightedObservedPoints();
+				if (addWeightedObservedPoints(data, obs)) {
+					double[] values = fitter.fit(obs.toList());
+					return convertToRulesList(listOfSymbols, values);
 				}
 			}
-			double[] values = fitter.fit(obs.toList());
-			IASTAppendable result = F.ListAlloc(listOfSymbols.size());
-			for (int i = 1; i < listOfSymbols.size(); i++) {
-				result.append(F.Rule(listOfSymbols.get(i), F.num(values[i - 1])));
-			}
-			return result;
 		}
 		return F.NIL;
 	}
