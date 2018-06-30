@@ -3789,6 +3789,14 @@ public class F {
 	public static IAST Fibonacci(final IExpr a0) {
 		return unaryAST1(Fibonacci, a0);
 	}
+	
+	public static IAST FindFit(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+		return quaternary(FindFit, a0, a1, a2, a3);
+	}
+	
+	public static IAST Fit(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(Fit, a0, a1, a2);
+	}
 
 	public static IAST First(final IExpr a0) {
 		return unaryAST1(First, a0);
