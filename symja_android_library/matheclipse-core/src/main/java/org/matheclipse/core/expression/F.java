@@ -27,6 +27,7 @@ import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.Combinatoric;
 import org.matheclipse.core.builtin.ComputationalGeometryFunctions;
 import org.matheclipse.core.builtin.ConstantDefinitions;
+import org.matheclipse.core.builtin.CurveFitterFunctions;
 import org.matheclipse.core.builtin.EllipticIntegrals;
 import org.matheclipse.core.builtin.ExpTrigsFunctions;
 import org.matheclipse.core.builtin.FunctionDefinitions;
@@ -1703,6 +1704,7 @@ public class F {
 			PolynomialFunctions.initialize();
 			SeriesFunctions.initialize();
 			AssumptionFunctions.initialize();
+			CurveFitterFunctions.initialize();
 			ComputationalGeometryFunctions.initialize();
 
 			// initialize only the utility function rules for Integrate
