@@ -271,16 +271,6 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final double evalDouble() {
-		ISignedNumber signedNumber = evalReal();
-		if (signedNumber != null) {
-			return signedNumber.doubleValue();
-		}
-		throw new WrongArgumentType(this, "Conversion into a double numeric value is not possible!");
-	}
-
-	/** {@inheritDoc} */
-	@Override
 	public final IExpr evalDownRule(final EvalEngine engine, final IExpr expression) {
 		if (fRulesData == null) {
 			return F.NIL;

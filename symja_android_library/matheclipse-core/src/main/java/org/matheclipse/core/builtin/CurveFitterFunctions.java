@@ -79,19 +79,16 @@ public class CurveFitterFunctions {
 	 */
 	private static class FindFit extends AbstractFunctionEvaluator {
 
-		static class FindFitParametricFunction implements ParametricUnivariateFunction {
-			EvalEngine engine;
-			ISymbol x;
-			IAST listOfSymbols;
+		private static class FindFitParametricFunction implements ParametricUnivariateFunction {
+			final EvalEngine engine;
+			final IExpr function;
 			IASTAppendable dList;
 			IASTAppendable listOfRules;
-			IExpr function;
+			
 
-			public FindFitParametricFunction(IExpr function, IAST listOfSymbols, ISymbol x, EvalEngine engine) {
+			public FindFitParametricFunction(final  IExpr function, final  IAST listOfSymbols, final ISymbol x, final  EvalEngine engine) {
 				this.function = function;
 				this.engine = engine;
-				this.x = x;
-				this.listOfSymbols = listOfSymbols;
 				this.dList = F.ListAlloc(listOfSymbols.argSize());
 				for (int i = 1; i < listOfSymbols.size(); i++) {
 					this.dList.append(engine.evaluate(F.D(function, listOfSymbols.get(i))));
@@ -126,7 +123,7 @@ public class CurveFitterFunctions {
 			@Override
 			public double value(final double t, final double... parameters) throws MathIllegalArgumentException {
 				createSubstitutionRules(t, parameters);
-				return F.subst(function, listOfRules).evalDouble();
+				return engine.evalDouble(F.subst(function, listOfRules));
 			}
 		}
 

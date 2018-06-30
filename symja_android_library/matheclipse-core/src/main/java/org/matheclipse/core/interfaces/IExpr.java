@@ -451,10 +451,11 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return this expression converted to a Java <code>double</code> value.
 	 */
 	default double evalDouble() {
-		if (isReal()) {
-			return ((ISignedNumber) this).doubleValue();
-		}
-		throw new WrongArgumentType(this, "Conversion into a double numeric value is not possible!");
+		return EvalEngine.get().evalDouble(this);
+//		if (isReal()) {
+//			return ((ISignedNumber) this).doubleValue();
+//		}
+//		throw new WrongArgumentType(this, "Conversion into a double numeric value is not possible!");
 	}
 
 	/**
