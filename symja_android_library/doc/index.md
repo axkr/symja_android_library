@@ -209,6 +209,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [ArrayDepth](functions/ArrayDepth.md)
 * [ArrayPad](functions/ArrayPad.md)
 * [ArrayQ](functions/ArrayQ.md)
+* [ArrayReshape](functions/ArrayReshape.md)
 * [AtomQ](functions/AtomQ.md)
 * [Attributes](functions/Attributes.md)
 * [BellB](functions/BellB.md)

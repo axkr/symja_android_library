@@ -20,6 +20,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 
 public class TensorFunctions {
 	static {
+		F.ArrayReshape.setEvaluator(new ArrayReshape());
 		F.Ordering.setEvaluator(new Ordering());
 		F.ListConvolve.setEvaluator(new ListConvolve());
 		F.ListCorrelate.setEvaluator(new ListCorrelate());
@@ -27,6 +28,110 @@ public class TensorFunctions {
 		F.TensorProduct.setEvaluator(new TensorProduct());
 		F.TensorRank.setEvaluator(new TensorRank());
 		F.TensorSymmetry.setEvaluator(new TensorSymmetry());
+	}
+
+	/**
+	 * <pre>
+	 * ArrayReshape(list - of - values, list - of - dimension)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the <code>list-of-values</code> elements reshaped as nested list with dimensions according to the
+	 * <code>list-of-dimension</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * ArrayReshape(list - of - values, list - of - dimension, expr)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * Use <code>expr</code> to fill up elements, if there are too little elements in the <code>list-of-values</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * A list of non-negative integers is expected at position 2. The optional third argument <code>x</code> is used to
+	 * fill up the structure:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ArrayReshape({a, b, c, d, e, f}, {2, 3, 3, 2}, x)
+	 * {{{{a,b},{c,d},{e,f}},{{x,x},{x,x},{x,x}},{{x,x},{x,x},{x,x}}},{{{x,x},{x,x},{x,x}},{{x,x},{x,x},{x,x}},{{x,x},{x,x},{x,x}}}}
+	 * </pre>
+	 * <p>
+	 * Ignore unnecessary elements
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; ArrayReshape(Range(1000), {3, 2, 2})
+	 * {{{1,2},{3,4}},{{5,6},{7,8}},{{9,10},{11,12}}}
+	 * </pre>
+	 */
+	private final static class ArrayReshape extends AbstractEvaluator {
+		static class Reshaper {
+			final IAST list;
+			final int[] dimension;
+			final IExpr padding;
+			int listPosition;
+
+			public Reshaper(IAST list, int[] dimension, IExpr padding) {
+				this.list = list;
+				this.dimension = dimension;
+				this.padding = padding;
+				listPosition = 1;
+			}
+
+			/**
+			 * 
+			 * @param dimensionIndex
+			 *            the dimension[dimensionIndex] which should be used on this recursion level.
+			 * @return
+			 */
+			public IAST recursiveCall(int dimensionIndex) {
+				int dim = dimension[dimensionIndex];
+				if (dimension.length == dimensionIndex + 1) {
+					IASTAppendable result = F.ListAlloc(dim);
+					for (int i = 0; i < dim; i++) {
+						if (list.size() <= listPosition) {
+							result.append(padding);
+						} else {
+							result.append(list.get(listPosition++));
+						}
+					}
+					return result;
+				} else {
+					// recursive call
+					IASTAppendable result = F.ListAlloc(dim);
+					for (int i = 0; i < dim; i++) {
+						IAST subList = recursiveCall(dimensionIndex + 1);
+						result.append(subList);
+					}
+					return result;
+				}
+			}
+		}
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkRange(ast, 3, 4);
+
+			if (ast.arg1().isList() && ast.arg2().isList()) {
+				IAST list = (IAST) ast.arg1();
+				IAST dims = (IAST) ast.arg2();
+				int[] dimension = Validate.checkListOfInts(dims, 1, Integer.MAX_VALUE);
+				IExpr padding = F.C0;
+				if (ast.size() == 4) {
+					padding = ast.arg3();
+				}
+				Reshaper reshaper = new Reshaper(list, dimension, padding);
+				return reshaper.recursiveCall(0);
+			}
+			return F.NIL;
+		}
+
 	}
 
 	/**

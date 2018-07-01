@@ -468,6 +468,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("ArrayQ({{a, b}, {c, d}},2,SymbolQ)", "True");
 	}
 
+	public void testArrayReshape() {
+		check("ArrayReshape(Range(1000), {3, 2, 2})", //
+				"{{{1,2},{3,4}},{{5,6},{7,8}},{{9,10},{11,12}}}");
+		check("ArrayReshape({a, b, c, d, e, f}, {2, 3})", //
+				"{{a,b,c},{d,e,f}}");
+		check("ArrayReshape({a, b, c, d, e, f}, {2, 3, 1})", //
+				"{{{a},{b},{c}},{{d},{e},{f}}}");
+		check("ArrayReshape(Range(24), {2, 3, 4})", //
+				"{{{1,2,3,4},{5,6,7,8},{9,10,11,12}},{{13,14,15,16},{17,18,19,20},{21,22,23,24}}}");
+		check("ArrayReshape({a, b, c, d, e, f}, {2, 7})", //
+				"{{a,b,c,d,e,f,0},{0,0,0,0,0,0,0}}");
+		check("ArrayReshape({a, b, c, d, e, f}, {2, 3, 3,2}, x)", //
+				"{{{{a,b},{c,d},{e,f}},{{x,x},{x,x},{x,x}},{{x,x},{x,x},{x,x}}},{{{x,x},{x,x},{x,x}},{{x,x},{x,x},{x,x}},{{x,x},{x,x},{x,x}}}}");
+
+	}
+
 	public void testAtomQ() {
 		check("AtomQ(Sin(Pi))", "True");
 		check("AtomQ(x)", "True");

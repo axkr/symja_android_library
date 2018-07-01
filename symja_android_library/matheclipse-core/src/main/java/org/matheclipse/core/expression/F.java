@@ -192,6 +192,7 @@ public class F {
 	public final static IBuiltInSymbol ArrayDepth = F.initFinalSymbol("ArrayDepth", ID.ArrayDepth);
 	public final static IBuiltInSymbol ArrayPad = F.initFinalSymbol("ArrayPad", ID.ArrayPad);
 	public final static IBuiltInSymbol ArrayQ = F.initFinalSymbol("ArrayQ", ID.ArrayQ);
+	public final static IBuiltInSymbol ArrayReshape = F.initFinalSymbol("ArrayReshape", ID.ArrayReshape);
 	public final static IBuiltInSymbol Arrays = F.initFinalSymbol("Arrays", ID.Arrays);
 	public final static IBuiltInSymbol Assumptions = F.initFinalSymbol("Assumptions", ID.Assumptions);
 	public final static IBuiltInSymbol AtomQ = F.initFinalSymbol("AtomQ", ID.AtomQ);
@@ -3791,11 +3792,11 @@ public class F {
 	public static IAST Fibonacci(final IExpr a0) {
 		return unaryAST1(Fibonacci, a0);
 	}
-	
+
 	public static IAST FindFit(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
 		return quaternary(FindFit, a0, a1, a2, a3);
 	}
-	
+
 	public static IAST Fit(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(Fit, a0, a1, a2);
 	}
