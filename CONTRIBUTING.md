@@ -8,15 +8,14 @@ Follow these guidelines if you'd like to contribute to the Symja project!
 
 Read through these guidelines before you get started:
 
-1. [Questions & Concerns](#questions--concerns)
-2. [Issues & Bugs](#issues--bugs)
+1. [Questions & Concerns](#questions-concerns)
+2. [Issues & Bugs](#issues-bugs)
 3. [Feature Requests](#feature-requests)
 4. [Submitting Pull Requests](#submitting-pull-requests) 
 
 ### Questions & Concerns
 
-If you have any questions about using or developing for this project, shoot me
-an [email][1]!
+If you have any questions about using or developing for this project, send me an [email][1]!
 
 ### Issues & Bugs
 
@@ -45,11 +44,11 @@ to ensure you aren't duplicating anyone's work. Then, do the following:
 1. Fork the repository and make your changes in a git branch: `git checkout -b my-branch master`
 2. Make sure your feature or fix doesn't break the project! Test thoroughly.
 3. Commit your changes, and be sure to leave a detailed commit message.
-4. Push your branch to your forked repo on BitBucket: `git push origin my-branch`
+4. Push your branch to your forked repo on Github: `git push origin my-branch`
 5. [Submit a pull request][3] and hold tight!
 6. If any changes are requested by the project maintainers, make them and follow this process again until the changes are merged.
 
 [1]: mailto:axelclk@gmail.com
-[2]: https://bitbucket.org/axelclk/symja_android_library/issues/new
-[3]: https://bitbucket.org/axelclk/symja_android_library/pull-requests/new
-[4]: https://bitbucket.org/axelclk/symja_android_library/pull-requests/
+[2]: https://github.com/axkr/symja_android_library/issues/new
+[3]: https://github.com/axkr/symja_android_library/compare
+[4]: https://github.com/axkr/symja_android_library/pulls

@@ -26,4 +26,4 @@ X
 
 X
 
-[1]: https://bitbucket.org/axelclk/symja_android_library/pull-requests/
+[1]: https://github.com/axkr/symja_android_library/pulls
