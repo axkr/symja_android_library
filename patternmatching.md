@@ -7,7 +7,7 @@ If you want to manipulate `IExpr` objects in Symja the dedicated design pattern 
 The visitor pattern is implemented in this package:
 * [org.matheclipse.core.visit](https://github.com/axkr/symja_android_library/tree/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/visit)
 
-To simplify the manipulation of `IExpr` objects a pattern matching mechanism has been designed in the [Matcher]https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/patternmatching/Matcher.java)
+To simplify the manipulation of `IExpr` objects a pattern matching mechanism has been designed in the [Matcher](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/patternmatching/Matcher.java)
 and [Tester](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/patternmatching/Tester.java) classes.
 
 ```

@@ -3,7 +3,7 @@
 ## Overview
 The Symja constants are implemented in the package:
 
-* [org.matheclipse.core.builtin.constant](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ConstantDefinitions.java)
+* [org.matheclipse.core.builtin.ConstantDefinitions](https://github.com/axkr/symja_android_library/blob/master/symja_android_library/matheclipse-core/src/main/java/org/matheclipse/core/builtin/ConstantDefinitions.java)
 
 The Symja functions are implemented in the packages:
 
