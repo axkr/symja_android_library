@@ -1,13 +1,22 @@
 ## Normalize
+
 ```
 Normalize(v)
 ```
-> calculates the normalized vector `v`.
+
+> calculates the normalized vector `v` as `v/Norm(v)`.
 
 ```
 Normalize(z)
 ```
+
 > calculates the normalized complex number `z`.
+
+```
+Normalize(v, f)
+```
+
+> calculates the normalized vector `v` and use the function `f` as the norm. Default value is the predefined function `Norm`.
 
 ### Examples
 ```
@@ -25,4 +34,7 @@ Normalize(z)
 
 >> Normalize({})
 {}
+
+>> Normalize({x,y}, f)
+{x/f({x,y}),y/f({x,y})}
 ```
