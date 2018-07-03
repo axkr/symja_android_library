@@ -10,6 +10,7 @@ See:
 * [Wikipedia: Inverse hyperbolic function](https://en.wikipedia.org/wiki/Inverse_hyperbolic_function)
 
 ### Examples
+
 ``` 
 >> ArcCoth(0)    
 I*1/2*Pi 

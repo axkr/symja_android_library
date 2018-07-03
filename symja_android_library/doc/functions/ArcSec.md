@@ -7,6 +7,7 @@ ArcSec(z)
 > returns the inverse secant of `z`.
  
 ### Examples
+
 ``` 
 >> ArcSec(1)    
 0  

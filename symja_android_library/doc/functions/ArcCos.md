@@ -9,6 +9,7 @@ ArcCos(expr)
 `ArcCos(expr)` will evaluate automatically in the cases `Infinity, -Infinity, 0, 1, -1`.
 
 ### Examples
+
 ```
 >> ArcCos(0)
 Pi/2

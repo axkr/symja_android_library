@@ -9,7 +9,8 @@ ArcTan(expr)
 `ArcTan(expr)` will evaluate automatically in the cases `Infinity, -Infinity, 0, 1, -1`.
 
 ### Examples
-``` 
+
+```
 >> ArcTan(1)    
 Pi/4    
  
