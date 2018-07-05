@@ -18,6 +18,9 @@ Normalize(v, f)
 
 > calculates the normalized vector `v` and use the function `f` as the norm. Default value is the predefined function `Norm`.
 
+See: 
+* [Wikipedia - Unit vector](https://en.wikipedia.org/wiki/Unit_vector)
+
 ### Examples
 ```
 >> Normalize({1, 1, 1, 1})
