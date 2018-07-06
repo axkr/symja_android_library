@@ -82,18 +82,15 @@ public class CurveFitterFunctions {
 		private static class FindFitParametricFunction implements ParametricUnivariateFunction {
 			final EvalEngine engine;
 			final IExpr function;
-			IASTAppendable dList;
+			IAST gradientList;
 			IASTAppendable listOfRules;
-			
 
-			public FindFitParametricFunction(final  IExpr function, final  IAST listOfSymbols, final ISymbol x, final  EvalEngine engine) {
+			public FindFitParametricFunction(final IExpr function, final IAST gradientList, final IAST listOfSymbols,
+					final ISymbol x, final EvalEngine engine) {
 				this.function = function;
 				this.engine = engine;
-				this.dList = F.ListAlloc(listOfSymbols.argSize());
-				for (int i = 1; i < listOfSymbols.size(); i++) {
-					this.dList.append(engine.evaluate(F.D(function, listOfSymbols.get(i))));
-				}
-				this.listOfRules = F.ListAlloc(dList.size());
+				this.gradientList = gradientList;
+				this.listOfRules = F.ListAlloc(gradientList.size());
 				this.listOfRules.append(F.Rule(x, F.Null));
 				for (int i = 1; i < listOfSymbols.size(); i++) {
 					this.listOfRules.append(F.Rule(listOfSymbols.get(i), F.Null));
@@ -114,7 +111,7 @@ public class CurveFitterFunctions {
 				createSubstitutionRules(t, parameters);
 				final double[] gradient = new double[parameters.length];
 				for (int i = 0; i < parameters.length; i++) {
-					gradient[i] = F.subst(dList.get(i + 1), listOfRules).evalDouble();
+					gradient[i] = F.subst(gradientList.get(i + 1), listOfRules).evalDouble();
 				}
 				return gradient;
 			}
@@ -241,12 +238,15 @@ public class CurveFitterFunctions {
 				listOfSymbols = initialGuess(listOfSymbols, initialGuess);
 				if (listOfSymbols.isPresent()) {
 					try {
-						AbstractCurveFitter fitter = SimpleCurveFitter.create(
-								new FindFitParametricFunction(function, listOfSymbols, x, engine), initialGuess);
-						WeightedObservedPoints obs = new WeightedObservedPoints();
-						if (addWeightedObservedPoints(data, obs)) {
-							double[] values = fitter.fit(obs.toList());
-							return convertToRulesList(listOfSymbols, values);
+						IExpr gradientList = F.Grad.of(engine, function, listOfSymbols);
+						if (gradientList.isList()) {
+							AbstractCurveFitter fitter = SimpleCurveFitter.create(new FindFitParametricFunction(
+									function, (IAST) gradientList, listOfSymbols, x, engine), initialGuess);
+							WeightedObservedPoints obs = new WeightedObservedPoints();
+							if (addWeightedObservedPoints(data, obs)) {
+								double[] values = fitter.fit(obs.toList());
+								return convertToRulesList(listOfSymbols, values);
+							}
 						}
 					} catch (MathException ex) {
 						engine.printMessage("FindFit: " + ex.getMessage());

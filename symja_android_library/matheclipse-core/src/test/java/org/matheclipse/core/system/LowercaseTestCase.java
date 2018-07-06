@@ -1729,6 +1729,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testD() {
+		// gradient
+		check("D(f(x, y), {{x, y}})", //
+				"{Derivative(1,0)[f][x,y],Derivative(0,1)[f][x,y]}");
+		// hessian matrix
+		check("D(f(x, y), {{x, y}}, {{x, y}})", //
+				"{{Derivative(2,0)[f][x,y],Derivative(1,1)[f][x,y]},{Derivative(1,1)[f][x,y],Derivative(\n"
+						+ "0,2)[f][x,y]}}");
+		// generalization of Hessian matrix for n > 2
+		check("D(f(x, y, z), {{x, y, z}, 3})", //
+				"{{{Derivative(3,0,0)[f][x,y,z],Derivative(2,1,0)[f][x,y,z],Derivative(2,0,1)[f][x,y,z]},{Derivative(\n"
+						+ "2,1,0)[f][x,y,z],Derivative(1,2,0)[f][x,y,z],Derivative(1,1,1)[f][x,y,z]},{Derivative(\n"
+						+ "2,0,1)[f][x,y,z],Derivative(1,1,1)[f][x,y,z],Derivative(1,0,2)[f][x,y,z]}},{{Derivative(\n"
+						+ "2,1,0)[f][x,y,z],Derivative(1,2,0)[f][x,y,z],Derivative(1,1,1)[f][x,y,z]},{Derivative(\n"
+						+ "1,2,0)[f][x,y,z],Derivative(0,3,0)[f][x,y,z],Derivative(0,2,1)[f][x,y,z]},{Derivative(\n"
+						+ "1,1,1)[f][x,y,z],Derivative(0,2,1)[f][x,y,z],Derivative(0,1,2)[f][x,y,z]}},{{Derivative(\n"
+						+ "2,0,1)[f][x,y,z],Derivative(1,1,1)[f][x,y,z],Derivative(1,0,2)[f][x,y,z]},{Derivative(\n"
+						+ "1,1,1)[f][x,y,z],Derivative(0,2,1)[f][x,y,z],Derivative(0,1,2)[f][x,y,z]},{Derivative(\n"
+						+ "1,0,2)[f][x,y,z],Derivative(0,1,2)[f][x,y,z],Derivative(0,0,3)[f][x,y,z]}}}");
+
 		check("Refine(D(Abs(x),x), Element(x, Reals))", //
 				"x/Abs(x)");
 
@@ -1755,7 +1774,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("D(y, x)", "0");
 		check("D(x, x)", "1");
 		check("D(f(x), x)", "f'(x)");
-		// TODO
+		 
 		check("D(f(x, x), x)", "Derivative(0,1)[f][x,x]+Derivative(1,0)[f][x,x]");
 		// chain rule
 		check("D(f(2*x+1, 2*y, x+y), x)", "Derivative(0,0,1)[f][1+2*x,2*y,x+y]+2*Derivative(1,0,0)[f][1+2*x,2*y,x+y]");
@@ -3694,6 +3713,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Log(GoldenRatio)", "ArcCsch(2)");
 	}
 
+	public void testGrad() {
+		// gradient
+		check("Grad(f(x, y), {x, y})", //
+				"{Derivative(1,0)[f][x,y],Derivative(0,1)[f][x,y]}");
+		check("Grad(Sin(x^2 + y^2), {x, y})", //
+				"{2*x*Cos(x^2+y^2),2*y*Cos(x^2+y^2)}");
+		
+		// wikipedia
+		check("Grad(2*x+3*y^2-Sin(z), {x, y, z})", //
+				"{2,6*y,-Cos(z)}");
+	}
 	public void testGreater() {
 		check("42>Infinity", "False");
 
@@ -10055,7 +10085,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("TrigToExp(ArcSin(x))", "-I*Log(I*x+Sqrt(1-x^2))");
 		check("TrigToExp(ArcTan(x))", "I*1/2*Log(1-I*x)-I*1/2*Log(1+I*x)");
 		check("TrigToExp(ArcTan(x, y))", "-I*Log((x+I*y)/Sqrt(x^2+y^2))");
-		
+
 		check("TrigToExp(ArcCosh(x))", "Log(x+Sqrt(-1+x)*Sqrt(1+x))");
 		check("TrigToExp(ArcCsch(x))", "Log(Sqrt(1+1/x^2)+1/x)");
 		check("TrigToExp(ArcCoth(x))", "-Log(1-1/x)/2+Log(1+1/x)/2");

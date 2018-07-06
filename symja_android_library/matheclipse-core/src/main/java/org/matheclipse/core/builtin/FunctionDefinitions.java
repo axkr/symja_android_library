@@ -7,11 +7,9 @@ public final class FunctionDefinitions {
 		AbsArg.setEvaluator(new org.matheclipse.core.reflection.system.AbsArg());
 		BesselJ.setEvaluator(new org.matheclipse.core.reflection.system.BesselJ());
 		ComplexExpand.setEvaluator(new org.matheclipse.core.reflection.system.ComplexExpand());
-		Curl.setEvaluator(new org.matheclipse.core.reflection.system.Curl());
 		D.setEvaluator(new org.matheclipse.core.reflection.system.D());
 		Default.setEvaluator(new org.matheclipse.core.reflection.system.Default());
 		Derivative.setEvaluator(new org.matheclipse.core.reflection.system.Derivative());
-		Divergence.setEvaluator(new org.matheclipse.core.reflection.system.Divergence());
 		DSolve.setEvaluator(new org.matheclipse.core.reflection.system.DSolve());
 		EasterSunday.setEvaluator(new org.matheclipse.core.reflection.system.EasterSunday());
 		ElementData.setEvaluator(new org.matheclipse.core.data.ElementData());
