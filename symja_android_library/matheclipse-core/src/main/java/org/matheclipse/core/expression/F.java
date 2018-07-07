@@ -3278,50 +3278,60 @@ public class F {
 	 */
 	static IExpr[] GLOBAL_IDS = null;
 
-	public static java.util.concurrent.ThreadFactory THREAD_FACTORY = null;
-
-	static Thread INIT_THREAD = null;
+	private final static java.util.concurrent.CountDownLatch COUNT_DOWN_LATCH = new java.util.concurrent.CountDownLatch(
+			1);
 
 	/**
-	 * Waits for the INIT_THREAD which initializes the Integrate() rules.
+	 * Causes the current thread to wait until the INIT_THREAD has initialized the Integrate() rules.
+	 *
 	 */
-	public synchronized static void join() {
-		if ((THREAD_FACTORY != null) || !Config.JAS_NO_THREADS && INIT_THREAD != null) {
-			try {
-				INIT_THREAD.join();
-			} catch (InterruptedException e) {
-			}
+	public static final void await() throws InterruptedException {
+		COUNT_DOWN_LATCH.await();
+	}
+	
+	/**
+	 * @deprecated use {@link #await()} instead
+	 */
+	public static final void join()  {
+		try {
+			COUNT_DOWN_LATCH.await();
+		} catch (InterruptedException e) {
 		}
 	}
 
 	static {
+		Thread INIT_THREAD = null;
 		try {
 			ComputerThreads.NO_THREADS = Config.JAS_NO_THREADS;
 			Runnable runnable = new Runnable() {
 				@Override
 				public void run() {
+					// long start = System.currentTimeMillis();
 					final EvalEngine engine = EvalEngine.get();
 					ContextPath path = engine.getContextPath();
 					try {
 						engine.setContextPath(new ContextPath("integrate`"));
 						IAST ruleList = org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
-						if (ruleList != null) {
-							engine.addRules(ruleList);
-						}
+//						if (ruleList != null) {
+//							engine.addRules(ruleList);
+//						}
 						ruleList = org.matheclipse.core.reflection.system.Integrate.getRuleASTStatic();
-						if (ruleList != null) {
-							engine.addRules(ruleList);
-						}
+//						if (ruleList != null) {
+//							engine.addRules(ruleList);
+//						}
 					} finally {
 						engine.setContextPath(path);
 					}
 					Integrate.setEvaluator(org.matheclipse.core.reflection.system.Integrate.CONST);
 					engine.setPackageMode(false);
+					// long stop = System.currentTimeMillis();
+					// System.out.println("Milliseconds: " + (stop - start));
+					COUNT_DOWN_LATCH.countDown();
 				}
 			};
 
-			if (THREAD_FACTORY != null) {
-				INIT_THREAD = THREAD_FACTORY.newThread(runnable);
+			if (Config.THREAD_FACTORY != null) {
+				INIT_THREAD = Config.THREAD_FACTORY.newThread(runnable);
 			} else {
 				INIT_THREAD = new Thread(runnable);
 			}

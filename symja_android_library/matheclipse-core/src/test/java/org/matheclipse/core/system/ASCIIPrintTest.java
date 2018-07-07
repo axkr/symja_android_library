@@ -146,7 +146,7 @@ public class ASCIIPrintTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		// wait for initializing of Integrate() rules:
-		F.join();
+		F.await();
 		EvalEngine.get().setRelaxedSyntax(true);
 	}
 }

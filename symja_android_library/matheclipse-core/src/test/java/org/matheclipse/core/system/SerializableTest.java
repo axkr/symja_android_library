@@ -23,7 +23,7 @@ public class SerializableTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		// wait for initializing of Integrate() rules:
-		F.join();
+		F.await();
 	}
 
 	public void testNum() {

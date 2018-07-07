@@ -49,9 +49,13 @@ public class BuiltInSymbol extends Symbol implements IBuiltInSymbol {
 
 	private static class DummyEvaluator implements IEvaluator {
 
+		/**
+		 * Causes the current thread to wait until the INIT_THREAD has initialized the Integrate() rules.
+		 *
+		 */
 		@Override
-		public void join() {
-			F.join();
+		public void await() throws InterruptedException {
+			F.await();
 		}
 
 		@Override

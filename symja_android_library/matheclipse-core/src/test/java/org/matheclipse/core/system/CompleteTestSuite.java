@@ -29,6 +29,13 @@ public class CompleteTestSuite extends TestCase {
 	 */
 	public static Test suite() {
 		TestSuite suite = new TestSuite();
+
+		suite.addTestSuite(NumberTheoryTestCase.class);
+		suite.addTestSuite(ASCIIPrintTest.class);
+		suite.addTestSuite(SVGGraphicsTestCase.class);
+		suite.addTestSuite(Graphics3DTestCase.class);
+		suite.addTestSuite(SymjifyTestCase.class);
+		
 		suite.addTestSuite(MainTestCase.class);
 		suite.addTestSuite(BasicPatternPropertiesTestCase.class);
 		suite.addTestSuite(CompareToTestCase.class);
@@ -58,12 +65,6 @@ public class CompleteTestSuite extends TestCase {
 		suite.addTestSuite(BracketBalancerTestCase.class);
 		suite.addTestSuite(EvalDoubleTestCase.class);
 		suite.addTestSuite(ExprEvaluatorTest.class);
-		
-		suite.addTestSuite(NumberTheoryTestCase.class);
-		suite.addTestSuite(ASCIIPrintTest.class);
-		suite.addTestSuite(SVGGraphicsTestCase.class);
-		suite.addTestSuite(Graphics3DTestCase.class);
-		suite.addTestSuite(SymjifyTestCase.class);
 		
 		suite.addTestSuite(ConsoleTestCase.class);
 		suite.addTestSuite(AssumptionTestCase.class);

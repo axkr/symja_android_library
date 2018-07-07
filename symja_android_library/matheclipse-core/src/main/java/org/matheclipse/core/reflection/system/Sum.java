@@ -499,7 +499,7 @@ public class Sum extends ListFunctions.Table implements SumRules {
 		newSymbol.setAttributes(ISymbol.HOLDALL | ISymbol.DELAYED_RULE_EVALUATION);
 		IAST ruleList;
 		if ((ruleList = getRuleAST()) != null) {
-			EvalEngine.get().addRules(ruleList);
+//			EvalEngine.get().addRules(ruleList);
 		}
 
 	}

@@ -457,12 +457,14 @@ public class ExprEvaluator {
 			engine.reset();
 			fExpr = engine.parse(inputExpression);
 			if (fExpr != null) {
-				F.join();
-				TimeLimiter timeLimiter = SimpleTimeLimiter.create(Executors.newSingleThreadExecutor());
-				Callable<IExpr> work = new EvalCallable(fExpr, engine);
-
 				try {
+					F.await();
+					TimeLimiter timeLimiter = SimpleTimeLimiter.create(Executors.newSingleThreadExecutor());
+					Callable<IExpr> work = new EvalCallable(fExpr, engine);
+
 					return timeLimiter.callWithTimeout(work, timeoutDuration, timeUnit);
+				} catch (InterruptedException e) {
+					return F.$Aborted;
 				} catch (java.util.concurrent.TimeoutException e) {
 					return F.$Aborted;
 				} catch (com.google.common.util.concurrent.UncheckedTimeoutException e) {

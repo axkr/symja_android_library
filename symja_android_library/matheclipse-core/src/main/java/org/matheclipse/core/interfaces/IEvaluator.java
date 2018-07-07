@@ -6,7 +6,8 @@ package org.matheclipse.core.interfaces;
  *
  */
 public interface IEvaluator {
-	default void join() {
+	 
+	default void await()  throws InterruptedException {
 		// do nothing
 	}
 	
