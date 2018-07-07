@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import org.matheclipse.core.convert.AST2Expr;
+import org.matheclipse.core.form.Documentation;
 
 public class BuiltinGenerator {
 
@@ -20,6 +21,8 @@ public class BuiltinGenerator {
 			+ "		return builtInSymbols[id];\n" + "	}\n" + "\n" + "	public final int id() {\n"
 			+ "		return symbolID;\n" + "	}\n" + "\n" + "	public final String str() {\n" + "		return name;\n"
 			+ "	}\n" + "}";
+
+	final private static boolean GENERATE_JAVADOC = true;
 
 	public static void main(String[] args) {
 		ArrayList<String> list = new ArrayList<String>();
@@ -39,6 +42,13 @@ public class BuiltinGenerator {
 		for (String sym : list) {
 			// System.out.println(" public final static IBuiltInSymbol " + sym.name()
 			// + " = BuiltIns.valueOf(BuiltIns." + sym.name() + ");");
+			if (GENERATE_JAVADOC) {
+				StringBuilder buf = new StringBuilder();
+				buf.append("\n        /**");
+				Documentation.extraxtDocumentation(buf, sym);
+				buf.append("*/");
+				System.out.println(buf.toString());
+			}
 			System.out.println("        public final static IBuiltInSymbol " + sym + " = F.initFinalSymbol(\"" + sym
 					+ "\", ID." + sym + ");");
 

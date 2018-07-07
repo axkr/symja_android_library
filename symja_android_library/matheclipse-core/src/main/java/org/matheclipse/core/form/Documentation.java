@@ -39,7 +39,7 @@ public class Documentation {
 	}
 
 	/**
-	 * Load the documentation fro ressources folder if available ad print to output.
+	 * Load the documentation from ressource folder if available and print to output.
 	 * 
 	 * @param symbolName
 	 */
@@ -81,4 +81,47 @@ public class Documentation {
 		return false;
 	}
 
+	public static boolean extraxtDocumentation(Appendable out, String symbolName) {
+		// read markdown file
+		String fileName = symbolName + ".md";
+
+		// Get file from resources folder
+		ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+
+		try {
+			InputStream is = classloader.getResourceAsStream(fileName);
+			if (is != null) {
+				final BufferedReader f = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+				String line;
+				boolean emptyLine = false;
+				String shortdesc = null;
+				while ((line = f.readLine()) != null) {
+					if (line.startsWith("```")) {
+						if (shortdesc == null && (line = f.readLine()) != null) {
+							shortdesc = line.trim();
+						}
+						continue;
+					}
+					if (line.startsWith("### ")) {
+						return false;
+					}
+
+					if (line.startsWith("> ")) {
+						out.append(" ");
+						if (shortdesc != null) {
+							out.append(shortdesc);
+							out.append(" - ");
+						}
+						out.append(line.substring(2));
+						return true;
+					}
+				}
+				f.close();
+				is.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
 }
