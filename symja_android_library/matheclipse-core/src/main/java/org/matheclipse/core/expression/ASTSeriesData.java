@@ -477,6 +477,18 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		return null;
 	}
 
+	// private IExpr inverseRecursion(int n) {
+	// if (n == 0) {
+	// // a1^(-1)
+	// return coeff(1).inverse();
+	// }
+	// IExpr dn = F.C0;
+	// for (int k = 0; k < n - 1; k++) {
+	// dn = dn.plus(inverseRecursion(k).divide(coeff(1)).times(coeff(n - k)));
+	// }
+	// return dn.negate();
+	// }
+
 	/**
 	 * <pre>
 	 * series.inverse()
@@ -504,6 +516,21 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		}
 		// if (!isInvertible()) {
 		final int maxPower = power;
+		// if (maxPower > 0) {
+		// IExpr a1 = coeff(1);
+		// IExpr a1Inverse = a1.inverse();
+		// ASTSeriesData ps = new ASTSeriesData(x, x0, nMin, nMin, power, denominator, new OpenIntToIExprHashMap());
+		// if (!this.x0.isZero()) {
+		// ps.setCoeff(0, this.x0);
+		// }
+		//Fix bug
+		// // a1^(-1)
+		// ps.setCoeff(1, a1Inverse);
+		// for (int i = 2; i < maxPower; i++) {
+		// ps.setCoeff(i, inverseRecursion(i));
+		// }
+		// return ps;
+		// }
 		if (maxPower > 10) {
 			return null;
 		}

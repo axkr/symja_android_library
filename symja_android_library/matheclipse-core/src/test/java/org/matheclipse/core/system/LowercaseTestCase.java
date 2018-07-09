@@ -1102,6 +1102,19 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testCoefficient() {
+		// http://oeis.org/A133314
+		check("b(0) = 1; " //
+				+ "b(n_) := b(n)=-Sum(Binomial(n, j)*a(j)*b(n-j), {j, 1, n}); row(0) = {1}; " //
+				+ "row(n_) := Coefficient(b(n), #)& /@ (Times @@ (a /@ #)&) /@ IntegerPartitions(n); " //
+				+ "Table(row(n), {n, 0, 8}) // Flatten", //
+				"{1,-1,-1,2,-1,6,-6,-1,8,6,-36,24,-1,10,20,-60,-90,240,-120,-1,12,30,-90,20,-360,\n"
+						+ "480,-90,1080,-1800,720,-1,14,42,-126,70,-630,840,-420,-630,5040,-4200,2520,\n"
+						+ "-12600,15120,-5040,-1,16,56,-168,112,-1008,1344,70,-1680,-1260,10080,-8400,-1680,\n"
+						+ "6720,20160,-67200,40320,2520,-50400,151200,-141120,40320}");
+
+		check("Coefficient(-3*a(1)*(2*a(1)^2-a(2))+3*a(1)*a(2)-a(3),a(1)*a(2))", //
+				"6");
+
 		check("Coefficient(SeriesData(x, 0, {1, 1, 0, 1, 1, 0, 1, 1}, 0, 9, 1), x, 4)", //
 				"1");
 		check("Coefficient(x^2*y^2 + 3*x + 4*y+y^w, y, 0)", //
@@ -4135,7 +4148,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{10},{9,1},{8,2},{7,3},{6,4},{5,5}}");
 		check("IntegerPartitions(0)", //
 				"{{}}");
-
+		check("IntegerPartitions(1)", //
+				"{{1}}");
 	}
 
 	public void testIntegrate() {
@@ -6286,6 +6300,37 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Operate(p, f(a)[b][c],3)", "p(f)[a][b][c]");
 		check("Operate(p, f(a)[b][c],4)", "f(a)[b][c]");
 		check("Operate(p, f(x, y))", "p(f)[x,y]");
+	}
+
+	public void testDP() {
+		check("DP(k_,w_):=Sum(w^d/d, {d, Divisors(k)})", //
+				"");
+		check("DP(6,w)", //
+				"w+w^2/2+w^3/3+w^6/6");
+	}
+
+	public void testOptimizeExpression() {
+		check("OptimizeExpression(-3*a - 2*a^3 + 4*Sqrt(1 + a^2)*(5 - 9*Log(2)) + \r\n"
+				+ " 4*a^2*Sqrt(1 + a^2)*(5 - 9*Log(2)) + \r\n" + " 12*(1 + a^2)^(3/2)*Log(1 + Sqrt(1 + 1/a^2)) - \r\n"
+				+ " 6*(4*(Sqrt(1 + a^2) - a*(2 + a^2 - a*Sqrt(1 + a^2)))*Log(a) + a*Log(1 + a^2)))", //
+				//
+				"{-3*a-2*a^3+4*v1*v4+4*v1*v2*v4+12*v3^(3/2)*Log(1+Sqrt(1+1/a^2))-6*(4*(v1-a*(2-a*v1+v2))*Log(a)+a*Log(v3)),"//
+						+ "{v1->Sqrt(\n" + "1+a^2),"//
+						+ "v2->a^2," //
+						+ "v3->1+v2," //
+						+ "v4->5-9*Log(2)}}");
+		check("OptimizeExpression((3 + 3*a^2 + Sqrt(5 + 6*a + 5*a^2) + a*(4 + Sqrt(5 + 6*a + 5*a^2)))/6)", //
+				"{1/6*(3+3*v1+v2+a*(4+v2)),{v1->a^2,v2->Sqrt(5+6*a+5*v1)}}");
+
+		check("OptimizeExpression( Sin(x) + Cos(Sin(x)))", //
+				"{v1+Cos(v1),{v1->Sin(x)}}");
+		check("ReplaceRepeated@@OptimizeExpression( Sin(x) + Cos(Sin(x)))", //
+				"Cos(Sin(x))+Sin(x)");
+
+		check("ReplaceRepeated(1/6*(3+3*v1+v2+a*(4+v2)), {v1->a^2, v2->Sqrt(5+6*a+5*v1)})", //
+				"1/6*(3+3*a^2+Sqrt(5+6*a+5*a^2)+a*(4+Sqrt(5+6*a+5*a^2)))");
+		check("ReplaceRepeated(1/6*(3+3*v1+v2+a*(4+v2)), {v2->Sqrt(5+6*a+5*v1), v1->a^2})", //
+				"1/6*(3+3*a^2+Sqrt(5+6*a+5*a^2)+a*(4+Sqrt(5+6*a+5*a^2)))");
 	}
 
 	public void testOptional() {
@@ -8589,30 +8634,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("f(x_) := p(x) /; x>0", "");
 		check("f(3)", "p(3)");
 		check("f(-3)", "f(-3)");
-	}
-
-	public void testOptimizeExpression() {
-		check("OptimizeExpression(-3*a - 2*a^3 + 4*Sqrt(1 + a^2)*(5 - 9*Log(2)) + \r\n"
-				+ " 4*a^2*Sqrt(1 + a^2)*(5 - 9*Log(2)) + \r\n" + " 12*(1 + a^2)^(3/2)*Log(1 + Sqrt(1 + 1/a^2)) - \r\n"
-				+ " 6*(4*(Sqrt(1 + a^2) - a*(2 + a^2 - a*Sqrt(1 + a^2)))*Log(a) + a*Log(1 + a^2)))", //
-				//
-				"{-3*a-2*a^3+4*v1*v4+4*v1*v2*v4+12*v3^(3/2)*Log(1+Sqrt(1+1/a^2))-6*(4*(v1-a*(2-a*v1+v2))*Log(a)+a*Log(v3)),"//
-						+ "{v1->Sqrt(\n" + "1+a^2),"//
-						+ "v2->a^2," //
-						+ "v3->1+v2," //
-						+ "v4->5-9*Log(2)}}");
-		check("OptimizeExpression((3 + 3*a^2 + Sqrt(5 + 6*a + 5*a^2) + a*(4 + Sqrt(5 + 6*a + 5*a^2)))/6)", //
-				"{1/6*(3+3*v1+v2+a*(4+v2)),{v1->a^2,v2->Sqrt(5+6*a+5*v1)}}");
-
-		check("OptimizeExpression( Sin(x) + Cos(Sin(x)))", //
-				"{v1+Cos(v1),{v1->Sin(x)}}");
-		check("ReplaceRepeated@@OptimizeExpression( Sin(x) + Cos(Sin(x)))", //
-				"Cos(Sin(x))+Sin(x)");
-
-		check("ReplaceRepeated(1/6*(3+3*v1+v2+a*(4+v2)), {v1->a^2, v2->Sqrt(5+6*a+5*v1)})", //
-				"1/6*(3+3*a^2+Sqrt(5+6*a+5*a^2)+a*(4+Sqrt(5+6*a+5*a^2)))");
-		check("ReplaceRepeated(1/6*(3+3*v1+v2+a*(4+v2)), {v2->Sqrt(5+6*a+5*v1), v1->a^2})", //
-				"1/6*(3+3*a^2+Sqrt(5+6*a+5*a^2)+a*(4+Sqrt(5+6*a+5*a^2)))");
 	}
 
 	public void testShare() {
