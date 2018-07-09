@@ -150,6 +150,10 @@ public class VariablesSet {
 				fCollection.add(((ASTSeriesData) list).getX());
 				return true;
 			}
+			if (list.head().isVariable()&&list.forAll(x->x.isInteger())) {
+				fCollection.add(list);
+				return true;
+			}
 			return super.visit(list);
 		}
 	}
