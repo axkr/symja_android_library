@@ -21,6 +21,7 @@ import org.matheclipse.core.polynomials.HornerScheme;
 public final class OutputFunctions {
 
 	static {
+		F.CForm.setEvaluator(new CForm());
 		F.FullForm.setEvaluator(new FullForm());
 		F.HoldForm.setEvaluator(new HoldForm());
 		F.HornerForm.setEvaluator(new HornerForm());
@@ -28,6 +29,26 @@ public final class OutputFunctions {
 		F.JavaForm.setEvaluator(new JavaForm());
 		F.MathMLForm.setEvaluator(new MathMLForm());
 		F.TeXForm.setEvaluator(new TeXForm());
+	}
+
+	private static class CForm extends AbstractCoreFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 2);
+
+			// CFormUtilities texUtil = new CFormUtilities(engine, engine.isRelaxedSyntax());
+			// IExpr arg1 = engine.evaluate(ast.arg1());
+			// StringWriter stw = new StringWriter();
+			// texUtil.toCForm(arg1, stw);
+			// return F.$str(stw.toString());
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.HOLDALL);
+		}
 	}
 
 	/**

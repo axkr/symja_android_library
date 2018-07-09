@@ -1,6 +1,9 @@
 package org.matheclipse.core.reflection.system;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 import org.matheclipse.core.eval.EvalEngine;
@@ -20,33 +23,79 @@ import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.IPatternSequence;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
-import org.matheclipse.core.visit.AbstractVisitor;
 import org.matheclipse.core.visit.VisitorExpr;
 
 /**
- * Try to share common sub-<code>IASTs</code> expressions with the same object-id internally to minimize memory
- * consumption. Returns the number f shared sub-expressions
- *
+ * <pre>
+ * OptimizeExpression(function)
+ * </pre>
+ * 
+ * <blockquote>
+ * <p>
+ * common subexpressions elimination for a complicated <code>function</code> by generating &ldquo;dummy&rdquo; variables
+ * for these subexpressions.
+ * </p>
+ * </blockquote>
+ * 
+ * <pre>
+ * &gt;&gt; OptimizeExpression( Sin(x) + Cos(Sin(x)) )
+ * {v1+Cos(v1),{v1-&gt;Sin(x)}}
+ * 
+ * &gt;&gt; OptimizeExpression((3 + 3*a^2 + Sqrt(5 + 6*a + 5*a^2) + a*(4 + Sqrt(5 + 6*a + 5*a^2)))/6)
+ * {1/6*(3+3*v1+v2+a*(4+v2)),{v1-&gt;a^2,v2-&gt;Sqrt(5+6*a+5*v1)}}
+ * </pre>
+ * <p>
+ * Create the original expression:
+ * </p>
+ * 
+ * <pre>
+ * &gt;&gt; ReplaceRepeated(1/6*(3+3*v1+v2+a*(4+v2)), {v1-&gt;a^2, v2-&gt;Sqrt(5+6*a+5*v1)})
+ * 1/6*(3+3*a^2+Sqrt(5+6*a+5*a^2)+a*(4+Sqrt(5+6*a+5*a^2)))
+ * </pre>
  */
-public class Share extends AbstractFunctionEvaluator {
+public class OptimizeExpression extends AbstractFunctionEvaluator {
+
+	private static class ReferenceCounter implements Comparable<ReferenceCounter> {
+		IExpr reference;
+		int counter;
+
+		public ReferenceCounter(IExpr reference) {
+			this.reference = reference;
+			counter = 1;
+		}
+
+		public void incCounter() {
+			++counter;
+		}
+
+		@Override
+		public int compareTo(ReferenceCounter o) {
+			return counter > o.counter ? 1 : counter == o.counter ? 0 : -1;
+		}
+
+	}
+
 	private static class ShareFunction implements Function<IExpr, IExpr> {
-		java.util.Map<IExpr, IExpr> map;
+		java.util.Map<IExpr, ReferenceCounter> map;
 
 		public ShareFunction() {
-			map = new HashMap<IExpr, IExpr>();
+			map = new HashMap<IExpr, ReferenceCounter>();
 		}
 
 		@Override
 		public IExpr apply(IExpr t) {
-			IExpr value = map.get(t);
+			ReferenceCounter value = map.get(t);
 			if (value == null) {
-				map.put(t, t);
+				value = new ReferenceCounter(t);
+				map.put(t, value);
+				return null;
 			} else {
-				if (value == t) {
+				value.incCounter();
+				if (value.reference == t) {
 					return null;
 				}
 			}
-			return value;
+			return value.reference;
 		}
 	}
 
@@ -179,7 +228,7 @@ public class Share extends AbstractFunctionEvaluator {
 		}
 	}
 
-	public Share() {
+	public OptimizeExpression() {
 	}
 
 	@Override
@@ -187,27 +236,49 @@ public class Share extends AbstractFunctionEvaluator {
 		Validate.checkSize(ast, 2);
 
 		if (ast.arg1().isAST()) {
-			return F.integer(shareAST((IAST) ast.arg1()));
+			return optimizeExpression((IAST) ast.arg1());
 		}
-		return F.C0;
+		return F.NIL;
 	}
 
 	/**
-	 * Try to share common sub-<code>IASTs</code> expressions with the same object-id internally to minimize memory
-	 * consumption and return the number of shared sub-expressions
+	 * Try to optimize/extract common sub-<code>IASTs</code> expressions to minimize the number of operations
 	 *
 	 * @param ast
 	 *            the ast whose internal memory consumption should be minimized
 	 * @return the number of shared sub-expressions
 	 */
-	private static int shareAST(final IAST ast) {
-		ShareReplaceAll sra = new ShareReplaceAll(new ShareFunction(), 1);
-		ast.accept(sra);
-		return sra.fCounter;
-	}
+	private static IExpr optimizeExpression(final IAST ast) {
+		ShareFunction function = new ShareFunction();
+		ShareReplaceAll sra = new ShareReplaceAll(function, 1);
+		IExpr sharedExpr = ast.accept(sra);
+		if (sharedExpr != null) {
+			ArrayList<ReferenceCounter> list = new ArrayList<ReferenceCounter>();
+			for (Map.Entry<IExpr, ReferenceCounter> entry : function.map.entrySet()) {
+				ReferenceCounter rc = entry.getValue();
+				if (rc.counter > 1) {
+					list.add(rc);
+				}
+			}
 
-	public static AbstractVisitor createVisitor() {
-		return new ShareReplaceAll(new ShareFunction(), 1);
+			int varCounter = 1;
+			Collections.sort(list, Collections.reverseOrder());
+			IASTAppendable variableSubstitutions = F.ListAlloc(list.size());
+			IASTAppendable replaceList = F.ListAlloc(list.size());
+			for (ReferenceCounter rc : list) {
+				IExpr ref = rc.reference;
+				IExpr temp = ref.replaceAll(variableSubstitutions).orElse(ref);
+				ISymbol dummyVariable = F.Dummy("v" + varCounter);
+				replaceList.append(F.Rule(dummyVariable, temp));
+				variableSubstitutions.append(F.Rule(ref, dummyVariable));
+				varCounter++;
+			}
+			sharedExpr = sharedExpr.replaceAll(variableSubstitutions);
+			if (sharedExpr.isPresent()) {
+				return F.List(sharedExpr, replaceList);
+			}
+		}
+		return F.NIL;
 	}
 
 }

@@ -311,6 +311,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [DiscreteDelta](functions/DiscreteDelta.md)
 * [Discriminant](functions/Discriminant.md)
 * [Distribute](functions/Distribute.md)
+* [Div](functions/Div.md)
 * [Divergence](functions/Divergence.md)
 * [Divide](functions/Divide.md)
 * [DivideBy](functions/DivideBy.md)
@@ -380,6 +381,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [GCD](functions/GCD.md)
 * [Glaisher](functions/Glaisher.md)
 * [GoldenRatio](functions/GoldenRatio.md)
+* [Grad](functions/Grad.md)
 * [Greater](functions/Greater.md)
 * [GreaterEqual](functions/GreaterEqual.md)
 * [GroebnerBasis](functions/GroebnerBasis.md)
@@ -525,6 +527,7 @@ for a full description of their possible arguments, options, etc., see their ent
 * [OddQ](functions/OddQ.md)
 * [OneIdentity](functions/OneIdentity.md)
 * [Operate](functions/Operate.md)
+* [OptimizeExpression](functions/OptimizeExpression.md)
 * [Optional](functions/Optional.md)
 * [Or](functions/Or.md)
 * [Order](functions/Order.md)
@@ -704,3 +707,4 @@ for a full description of their possible arguments, options, etc., see their ent
 * [Xor](functions/Xor.md)
 * [YuleDissimilarity](functions/YuleDissimilarity.md)
 * [Zeta](functions/Zeta.md)
+

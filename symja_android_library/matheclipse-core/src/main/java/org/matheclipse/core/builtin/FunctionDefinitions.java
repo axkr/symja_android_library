@@ -42,6 +42,7 @@ public final class FunctionDefinitions {
 		NMinimize.setEvaluator(new org.matheclipse.core.reflection.system.NMinimize());
 		NonCommutativeMultiply.setEvaluator(new org.matheclipse.core.reflection.system.NonCommutativeMultiply());
 		NSolve.setEvaluator(new org.matheclipse.core.reflection.system.NSolve());
+		OptimizeExpression.setEvaluator(new org.matheclipse.core.reflection.system.OptimizeExpression());
 		Out.setEvaluator(new org.matheclipse.core.reflection.system.Out());
 		Outer.setEvaluator(new org.matheclipse.core.reflection.system.Outer());
 		Plot.setEvaluator(new org.matheclipse.core.reflection.system.Plot());
