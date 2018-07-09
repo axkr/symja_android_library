@@ -292,12 +292,18 @@ public final class Combinatoric {
 			private int fResultIndex[];
 
 			/**
-			 * 
+			 * @param n
+			 *            with <code>n > 1</code>
 			 */
 			public NumberPartitionsIterable(final int num) {
 				this(num, num);
 			}
 
+			/**
+			 * @param n
+			 *            with <code>n > 1</code>
+			 * @param l
+			 */
 			public NumberPartitionsIterable(final int num, final int l) {
 				super();
 				n = num;
@@ -410,6 +416,10 @@ public final class Combinatoric {
 					if (n == 0) {
 						return F.List(F.List());
 					}
+					if (n == 1) {
+						return F.List(F.List(F.C1));
+					}
+					// try {
 					IASTAppendable temp;
 					final NumberPartitionsIterable comb = new NumberPartitionsIterable(n);
 					IASTAppendable result = F.ListAlloc(16);
@@ -422,11 +432,14 @@ public final class Combinatoric {
 								break;
 							}
 						}
-						if (temp.size()-1 <= max) {
+						if (temp.size() - 1 <= max) {
 							result.append(temp);
 						}
 					}
 					return result;
+					// } catch (ArrayIndexOutOfBoundsException aiex) {
+					// System.out.println(ast.toString());
+					// }
 				}
 			}
 			return F.NIL;
