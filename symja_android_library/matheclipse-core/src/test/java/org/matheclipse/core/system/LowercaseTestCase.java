@@ -4,6 +4,7 @@ import static org.matheclipse.core.expression.F.ChebyshevT;
 import static org.matheclipse.core.expression.F.n_;
 import static org.matheclipse.core.expression.F.x_;
 
+import org.hipparchus.analysis.solvers.BisectionSolver;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
@@ -2363,8 +2364,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testDSolve() {
 		// check("DSolve(y'(x) == 2*x*y(x)^2, y(x), x)", "y(x)->1/(-x^2-C(1))");
-		// check("DSolve(y'(x)==y(x),y(x), x)", "y(x)->E^(x+C(1))");
-		check("DSolve({y'(x)==2*x*y(x)^2},y(x), x)", "{{y(x)->1/(-x^2-C(1))}}");
+
+		// check("DSolve(y'(t)==t+y(t), y, t)", "{{y -> Function({t}, -1 - t + E^t*C[1])}}");
+		// check("DSolve(y'(t)==y(t), y, t)", "{{y -> Function({t}, E^t*C[1])}}");
+
+		// check("DSolve(y'(x)==2*x*y(x)^2, y, x)", "{{y(x)->1/(-x^2-C(1))}}");
+		// check("DSolve(y'(x)==2*x*y(x)^2, y(x), x)", "{{y(x)->1/(-x^2-C(1))}}");
+		// check("DSolve({y'(x)==2*x*y(x)^2},y(x), x)", "{{y(x)->1/(-x^2-C(1))}}");
 
 		check("DSolve(D(f(x, y), x) == D(f(x, y), y), f, {x, y})",
 				"DSolve(Derivative(1,0)[f][x,y]==Derivative(0,1)[f][x,y],f,{x,y})");
@@ -3172,10 +3178,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	}
 
+	// https://github.com/Hipparchus-Math/hipparchus/issues/40
+	// public void testBisection() {
+	// BisectionSolver solver = new BisectionSolver();
+	// System.out.println(solver.solve(100, x->Math.cos(x)+2, 0.0, 5.0));
+	// }
+
 	public void testFindRoot() {
+		// github issue #60
+		check("FindRoot(cos(x) + 2, {x, 0, 5}, Method->brent)", //
+				"{}");
+		check("FindRoot(cos(x) + 2, {x, 0, 5}, Method->bisection)", //
+				"{}");
+		check("FindRoot(cos(x) + 2, {x, 0, 5}, Method->newton)", //
+				"{}");
+
 		// github issue #43
 		check("findroot(abs(x-1)-2x-3==0, {x, -10, 10})", //
 				"{x->-0.66667}");
+
 		// issue #181
 		check("FindRoot(2^x==0,{x,-100,100}, Method->Brent)", "{x->-100.0}");
 		// FindRoot: interval does not bracket a root: f(-1) = 0.5, f(100) =

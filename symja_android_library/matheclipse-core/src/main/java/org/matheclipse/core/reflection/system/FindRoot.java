@@ -10,6 +10,7 @@ import org.hipparchus.analysis.solvers.PegasusSolver;
 import org.hipparchus.analysis.solvers.RegulaFalsiSolver;
 import org.hipparchus.analysis.solvers.RiddersSolver;
 import org.hipparchus.analysis.solvers.SecantSolver;
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.commons.math.analysis.solvers.DifferentiableUnivariateFunction;
@@ -254,11 +255,28 @@ public class FindRoot extends AbstractFunctionEvaluator {
 				}
 			}
 			if (max == null) {
-				return solver.solve(maxIterations, f, min.doubleValue());
+				double result = solver.solve(maxIterations, f, min.doubleValue());
+				if (solver instanceof BisectionSolver) {
+					isResultZero(f, result, min);
+				}
+				return result;
 			}
-			return solver.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
+			double result = solver.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
+			if (solver instanceof BisectionSolver) {
+				isResultZero(f, result, min);
+			}
+			return result;
 		} finally {
 			engine.setAssumptions(oldAssumptions);
+		}
+	}
+
+	private static void isResultZero(UnivariateFunction f, double result, ISignedNumber min) {
+		double yMax = f.value(result);
+		if (!F.isZero(yMax, Config.DEFAULT_ROOTS_CHOP_DELTA)) {
+			double yMin = f.value(min.doubleValue());
+			throw new MathIllegalArgumentException(LocalizedCoreFormats.NOT_BRACKETING_INTERVAL,
+					min.doubleValue(), result, yMin, yMax);
 		}
 	}
 
