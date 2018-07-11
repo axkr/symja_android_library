@@ -10,7 +10,7 @@ import org.hipparchus.analysis.solvers.PegasusSolver;
 import org.hipparchus.analysis.solvers.RegulaFalsiSolver;
 import org.hipparchus.analysis.solvers.RiddersSolver;
 import org.hipparchus.analysis.solvers.SecantSolver;
-import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.analysis.solvers.UnivariateSolverUtils;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.matheclipse.commons.math.analysis.solvers.DifferentiableUnivariateFunction;
@@ -255,28 +255,19 @@ public class FindRoot extends AbstractFunctionEvaluator {
 				}
 			}
 			if (max == null) {
-				double result = solver.solve(maxIterations, f, min.doubleValue());
 				if (solver instanceof BisectionSolver) {
-					isResultZero(f, result, min);
+					// TODO github #60 - remove if hipparchus 1.4 is available
+					UnivariateSolverUtils.verifyBracketing(f, min.doubleValue(), max.doubleValue());
 				}
-				return result;
+				return solver.solve(maxIterations, f, min.doubleValue());
 			}
-			double result = solver.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
 			if (solver instanceof BisectionSolver) {
-				isResultZero(f, result, min);
+				// TODO github #60 - remove if hipparchus 1.4 is available
+				UnivariateSolverUtils.verifyBracketing(f, min.doubleValue(), max.doubleValue());
 			}
-			return result;
+			return solver.solve(maxIterations, f, min.doubleValue(), max.doubleValue());
 		} finally {
 			engine.setAssumptions(oldAssumptions);
-		}
-	}
-
-	private static void isResultZero(UnivariateFunction f, double result, ISignedNumber min) {
-		double yMax = f.value(result);
-		if (!F.isZero(yMax, Config.DEFAULT_ROOTS_CHOP_DELTA)) {
-			double yMin = f.value(min.doubleValue());
-			throw new MathIllegalArgumentException(LocalizedCoreFormats.NOT_BRACKETING_INTERVAL,
-					min.doubleValue(), result, yMin, yMax);
 		}
 	}
 
