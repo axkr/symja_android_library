@@ -2363,14 +2363,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	// }
 
 	public void testDSolve() {
-		// check("DSolve(y'(x) == 2*x*y(x)^2, y(x), x)", "y(x)->1/(-x^2-C(1))");
 
-		// check("DSolve(y'(t)==t+y(t), y, t)", "{{y -> Function({t}, -1 - t + E^t*C[1])}}");
-		// check("DSolve(y'(t)==y(t), y, t)", "{{y -> Function({t}, E^t*C[1])}}");
+		 check("DSolve(y'(t)==t+y(t), y, t)", "{{y->Function({t},-1-t+E^t*C(1))}}");
+		 check("DSolve(y'(t)==y(t), y, t)", "{{y->Function({t},E^t*C(1))}}");
 
-		// check("DSolve(y'(x)==2*x*y(x)^2, y, x)", "{{y(x)->1/(-x^2-C(1))}}");
-		// check("DSolve(y'(x)==2*x*y(x)^2, y(x), x)", "{{y(x)->1/(-x^2-C(1))}}");
-		// check("DSolve({y'(x)==2*x*y(x)^2},y(x), x)", "{{y(x)->1/(-x^2-C(1))}}");
+		check("DSolve(y'(x)==2*x*y(x)^2, y, x)", "{{y->Function({x},1/(-x^2-C(1)))}}");
+		check("DSolve(y'(x)==2*x*y(x)^2, y(x), x)", "{{y(x)->1/(-x^2-C(1))}}");
+		check("DSolve({y'(x)==2*x*y(x)^2},y(x), x)", "{{y(x)->1/(-x^2-C(1))}}");
 
 		check("DSolve(D(f(x, y), x) == D(f(x, y), y), f, {x, y})",
 				"DSolve(Derivative(1,0)[f][x,y]==Derivative(0,1)[f][x,y],f,{x,y})");
