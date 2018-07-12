@@ -142,12 +142,12 @@ public class Integrate extends AbstractFunctionEvaluator {
 						IExpr Fa = engine.evaluate(F.Limit(temp, F.Rule(xList.arg1(), xList.arg2())));
 						if (!Fb.isFree(F.DirectedInfinity, true) || !Fb.isFree(F.Indeterminate, true)) {
 							engine.printMessage(
-									"Not integrable: " + temp + " for " + xList.arg1() + " = " + xList.arg3());
+									"Not integrable: " + temp + " for limit " + xList.arg1() + " -> " + xList.arg3());
 							return F.NIL;
 						}
 						if (!Fa.isFree(F.DirectedInfinity, true) || !Fa.isFree(F.Indeterminate, true)) {
 							engine.printMessage(
-									"Not integrable: " + temp + " for " + xList.arg1() + " = " + xList.arg2());
+									"Not integrable: " + temp + " for limit " + xList.arg1() + " -> " + xList.arg2());
 							return F.NIL;
 						}
 						return F.Subtract(Fb, Fa);

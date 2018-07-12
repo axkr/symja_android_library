@@ -2364,8 +2364,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testDSolve() {
 
-		 check("DSolve(y'(t)==t+y(t), y, t)", "{{y->Function({t},-1-t+E^t*C(1))}}");
-		 check("DSolve(y'(t)==y(t), y, t)", "{{y->Function({t},E^t*C(1))}}");
+		check("DSolve(y'(t)==t+y(t), y, t)", "{{y->Function({t},-1-t+E^t*C(1))}}");
+		check("DSolve(y'(t)==y(t), y, t)", "{{y->Function({t},E^t*C(1))}}");
 
 		check("DSolve(y'(x)==2*x*y(x)^2, y, x)", "{{y->Function({x},1/(-x^2-C(1)))}}");
 		check("DSolve(y'(x)==2*x*y(x)^2, y(x), x)", "{{y(x)->1/(-x^2-C(1))}}");
@@ -3954,6 +3954,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testHypergeometric2F1() {
+
+		check("Hypergeometric2F1(1,2,3/2,x^2/9)", //
+				"3/2*(1/3*Sqrt(1-x^2/9)*Sqrt(x^2)+ArcSin(Sqrt(x^2)/3))/((1-x^2/9)^(3/2)*Sqrt(x^2))");
 		// Hypergeometric2F1(1 - n, -n, 2, 1) == CatalanNumber(n)
 		check("Hypergeometric2F1(-3, -4, 2, 1)==CatalanNumber(4)", //
 				"True");
@@ -4173,8 +4176,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegrate() {
-		check("Integrate({Sin(x),Cos(x)},x)", "{-Cos(x),Sin(x)}");
-		check("Integrate({Sin(x),Cos(x)},{x,a,b})", "{Cos(a)-Cos(b),-Sin(a)+Sin(b)}");
+//		check("Limit(1/9*x*(9-x^2)^(3/2)*Hypergeometric2F1(1,2,3/2,x^2/9),x->3)", //
+//				"");
+		check("Integrate(Sqrt(9-x^2),x)", //
+				"(x*(9-x^2)^(3/2)*(1/3*Sqrt(1-x^2/9)*Sqrt(x^2)+ArcSin(Sqrt(x^2)/3)))/(6*(1-x^2/9)^(\n" + 
+				"3/2)*Sqrt(x^2))");
+		check("Integrate(Sqrt(9-x^2),{x,0,3})", //
+				"Integrate(Sqrt(9-x^2),{x,0,3})");
+		check("Integrate({Sin(x),Cos(x)},x)", //
+				"{-Cos(x),Sin(x)}");
+		check("Integrate({Sin(x),Cos(x)},{x,a,b})", //
+				"{Cos(a)-Cos(b),-Sin(a)+Sin(b)}");
 		check("Integrate(2*x,x)", "x^2");
 		check("Integrate(Tan(x) ^ 5, x)", "-Log(Cos(x))-Tan(x)^2/2+Tan(x)^4/4");
 		check("Integrate(x*Sin(x),{x,1.0,2*Pi})", "-6.58435");

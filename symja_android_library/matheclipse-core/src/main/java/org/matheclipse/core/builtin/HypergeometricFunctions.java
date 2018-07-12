@@ -22,6 +22,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.Hypergeometric2F1Rules;
 
 public class HypergeometricFunctions {
 	static {
@@ -436,8 +437,12 @@ public class HypergeometricFunctions {
 		}
 	}
 
-	private static class Hypergeometric2F1 extends AbstractFunctionEvaluator {
-
+	private static class Hypergeometric2F1 extends AbstractFunctionEvaluator implements Hypergeometric2F1Rules {
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
+		}
+		
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 5);
