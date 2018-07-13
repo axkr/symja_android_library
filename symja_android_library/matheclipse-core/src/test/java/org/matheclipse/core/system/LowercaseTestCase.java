@@ -4176,11 +4176,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIntegrate() {
-//		check("Limit(1/9*x*(9-x^2)^(3/2)*Hypergeometric2F1(1,2,3/2,x^2/9),x->3)", //
-//				"");
+		// check("Limit(1/9*x*(9-x^2)^(3/2)*Hypergeometric2F1(1,2,3/2,x^2/9),x->3)", //
+		// "");
 		check("Integrate(Sqrt(9-x^2),x)", //
-				"(x*(9-x^2)^(3/2)*(1/3*Sqrt(1-x^2/9)*Sqrt(x^2)+ArcSin(Sqrt(x^2)/3)))/(6*(1-x^2/9)^(\n" + 
-				"3/2)*Sqrt(x^2))");
+				"(x*(9-x^2)^(3/2)*(1/3*Sqrt(1-x^2/9)*Sqrt(x^2)+ArcSin(Sqrt(x^2)/3)))/(6*(1-x^2/9)^(\n"
+						+ "3/2)*Sqrt(x^2))");
 		check("Integrate(Sqrt(9-x^2),{x,0,3})", //
 				"Integrate(Sqrt(9-x^2),{x,0,3})");
 		check("Integrate({Sin(x),Cos(x)},x)", //
@@ -9761,30 +9761,43 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("TeXForm(GoldenRatio)", "\\phi");
 		check("TeXForm(2+I*3)", "2 + 3\\,i ");
 		check("TeXForm(a+b^2)", "a+b^{2}");
-		check("TeXForm(Expand((x+y)^3))", "x^{3}+3\\,x^{2}\\,y+3\\,x\\,y^{2}+y^{3}");
+		check("TeXForm(Expand((x+y)^3))", //
+				"x^{3} + 3\\,x^{2}\\,y + 3\\,x\\,y^{2}+y^{3}");
 		check("TeXForm(3*a+b^2)", "3\\,a+b^{2}");
 		check("TeXForm(x/Sqrt(5))", "\\frac{x}{\\sqrt{5}}");
 		check("TeXForm(x^(1/3))", "\\sqrt[3]{x}");
 		check("TeXForm(alpha)", "\\alpha");
 		check("TeXForm({a,b,c})", "\\{a,b,c\\}");
 		check("TeXForm({{a,b},c})", "\\{\\{a,b\\},c\\}");
-		check("TeXForm({{a, b, c}, {d, e, f}})", "\\left(\n" + "\\begin{array}{ccc}\n" + "a & b & c \\\\\n"
-				+ "d & e & f \n" + "\\end{array}\n" + "\\right) ");
+		check("TeXForm({{a, b, c}, {d, e, f}})", //
+				"\\left(\n" + "\\begin{array}{ccc}\n" + "a & b & c \\\\\n" + "d & e & f \n" + "\\end{array}\n"
+						+ "\\right) ");
 
-		check("TeXForm(Integrate(f(x),x))", "\\int  f(x)\\,\\mathrm{d}x");
-		check("TeXForm(Limit(f(x), x ->Infinity))", "\\lim_{x\\to {\\infty} }\\,{f(x)}");
-		check("TeXForm(Sum(f(n), {n, 1, m}))", "\\sum_{n = 1}^{m} {f(n)}");
-		check("TeXForm(Product(f(n), {n, 1, m}))", "\\prod_{n = 1}^{m} {f(n)}");
+		check("TeXForm(Integrate(f(x),x))", //
+				"\\int  f(x)\\,\\mathrm{d}x");
+		check("TeXForm(Limit(f(x), x ->Infinity))", //
+				"\\lim_{x\\to {\\infty} }\\,{f(x)}");
+		check("TeXForm(Sum(f(n), {n, 1, m}))", //
+				"\\sum_{n = 1}^{m} {f(n)}");
+		check("TeXForm(Product(f(n), {n, 1, m}))", //
+				"\\prod_{n = 1}^{m} {f(n)}");
 		check("TeXForm(Subscript(a,b))", "a_b");
 		check("TeXForm(Superscript(a,b))", "a^b");
-		check("TeXForm(Subscript(x,2*k+1))", "x_{1+2\\,k}");
-		check("TeXForm(Subsuperscript(a,b,c))", "a_b^c");
-		check("TeXForm(HarmonicNumber(n))", "H_n");
-		check("TeXForm(HarmonicNumber(m,n))", "H_m^{(n)}");
-		check("TeXForm(HurwitzZeta(m,n))", "zeta (m,n)");
-		check("TeXForm(Zeta(m,n))", "zeta (m,n)");
+		check("TeXForm(Subscript(x,2*k+1))", //
+				"x_{1 + 2\\,k}");
+		check("TeXForm(Subsuperscript(a,b,c))", //
+				"a_b^c");
+		check("TeXForm(HarmonicNumber(n))", //
+				"H_n");
+		check("TeXForm(HarmonicNumber(m,n))", //
+				"H_m^{(n)}");
+		check("TeXForm(HurwitzZeta(m,n))", //
+				"zeta (m,n)");
+		check("TeXForm(Zeta(m,n))", //
+				"zeta (m,n)");
 
-		check("TeXForm(fgh(a,b))", "\\text{fgh}(a,b)");
+		check("TeXForm(fgh(a,b))", //
+				"\\text{fgh}(a,b)");
 	}
 
 	public void testThread() {

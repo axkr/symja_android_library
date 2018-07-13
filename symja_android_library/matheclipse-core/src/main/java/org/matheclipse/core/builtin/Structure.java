@@ -524,7 +524,7 @@ public class Structure {
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			if (ast.head().equals(F.Function)) {
-				IExpr temp = engine.evalHoldPattern(ast, true);
+				IExpr temp = engine.evalHoldPattern(ast, true, false);
 				if (temp.isPresent() && !temp.equals(ast)) {
 					return temp;
 				}

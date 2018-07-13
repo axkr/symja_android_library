@@ -67,7 +67,7 @@ public class TeXUtilities {
 			IExpr result = objectExpression;
 			if (objectExpression.isAST()) {
 				fEvalEngine.reset();
-				result = fEvalEngine.evalHoldPattern((IAST) objectExpression, true);
+				result = fEvalEngine.evalHoldPattern((IAST) objectExpression, true, true);
 			}
 			fTeXFactory.convert(buf, result, 0);
 			try {

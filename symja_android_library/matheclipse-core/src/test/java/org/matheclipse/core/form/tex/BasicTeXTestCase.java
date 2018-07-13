@@ -11,7 +11,7 @@ import junit.framework.TestCase;
  * Tests LaTeX export function
  */
 public class BasicTeXTestCase extends TestCase {
-	
+
 	TeXUtilities texUtil;
 
 	public BasicTeXTestCase(String name) {
@@ -69,7 +69,7 @@ public class BasicTeXTestCase extends TestCase {
 
 	public void testTeX010() {
 		check("3+x*(4+x*(5+(33+x^2)*x^4))",
-				"3+x\\,\\left( 4+x\\,\\left( 5+\\left( 33+x^{2}\\right) \\,x^{4}\\right) \\right) ");
+				"3 + x\\,\\left( 4 + x\\,\\left( 5 + \\left( 33+x^{2}\\right) \\,x^{4}\\right) \\right) ");
 	}
 
 	public void testTeX011() {
@@ -77,8 +77,9 @@ public class BasicTeXTestCase extends TestCase {
 	}
 
 	public void testTeX012() {
-//		check("{{{1,2,3},{4,5,6}}}", "\\begin{pmatrix} 1 & 2 & 3 \\\\\n" + " 4 & 5 & 6 \\\\\n" + "\\end{pmatrix}");
-		check("MatrixForm({{1,2,3},{4,5,6}})", "\\begin{pmatrix} 1 & 2 & 3 \\\\\n" + " 4 & 5 & 6 \\\\\n" + "\\end{pmatrix}");
+		// check("{{{1,2,3},{4,5,6}}}", "\\begin{pmatrix} 1 & 2 & 3 \\\\\n" + " 4 & 5 & 6 \\\\\n" + "\\end{pmatrix}");
+		check("MatrixForm({{1,2,3},{4,5,6}})",
+				"\\begin{pmatrix} 1 & 2 & 3 \\\\\n" + " 4 & 5 & 6 \\\\\n" + "\\end{pmatrix}");
 	}
 
 	public void testTeX013() {
@@ -91,88 +92,131 @@ public class BasicTeXTestCase extends TestCase {
 	}
 
 	public void testTeX015() {
+
 		check("-I", //
-				"-1\\,i ");
-		check("-I*(1.0)", "\\left( -1\\,i \\right) ");
-		check("3-I*2", "3-2\\,i ");
-		check("4-I*5", "4-5\\,i ");
-		check("3.0-I*2.0", "3.0-2.0\\,i ");
-		check("3-I*2", "3-2\\,i ");
- 		check("4-I*5", "4-5\\,i ");
+				" - i ");
+		check("-I*(1.0)", //
+				" - i ");
+		check("-1*I", //
+				" - i ");
+		check("I*(-1)", //
+				" - i ");
+
+		check("-I*1.0", //
+				" - i ");
+		check("-1.0*I", //
+				" - i ");
+		check("I*(-1.0)", //
+				" - i ");
+
+		check("-I*2", //
+				"-2\\,i ");
+		check("-2*I", //
+				"-2\\,i ");
+		check("I*(-2)", //
+				"-2\\,i ");
+
+		check("-I*2.0", //
+				"-2.0\\,i ");
+		check("-2.0*I", //
+				"-2.0\\,i ");
+		check("I*(-2.0)", //
+				"-2.0\\,i ");
+
+		check("3-I*2", "3 - 2\\,i ");
+		check("4-I*5", "4 - 5\\,i ");
+		check("3.0-I*2.0", "3.0 - 2.0\\,i ");
+		check("3-I*2", "3 - 2\\,i ");
+		check("4-I*5", "4 - 5\\,i ");
 		check("Complex(0, -b)", " - b\\,\\imag");
 		check("Complex(-a, 0)", " - a");
 		check("Complex(-a, 1)", " - a + \\imag");
 		check("Complex(-a, -1)", " - a - \\imag");
 		check("Complex(a, -b)", "a - b\\,\\imag");
 		check("Complex(a, b)", "a + b\\,\\imag");
-		check("Complex(3/4,-(6/7)*I)", "\\frac{3}{4}+\\frac{6}{7}"); 
-		check("3/4-(6/7)*I", "\\frac{3}{4}-\\frac{6}{7}\\,i ");
-		check("1+2*I", "1+2\\,i ");
-		check("1-2*I", "1-2\\,i ");
-		check("-2*I", "\\left( -2\\right) \\cdot i ");
-		check("1-2*I", "1-2\\,i ");
-		check("Complex(1,-2*I)", "1+2");
+
+		check("Complex(3/4,-(6/7))", //
+				"\\frac{3}{4} - \\frac{6}{7}\\,i ");
+		check("Complex(3/4,-(6/7)*I)", //
+				"\\frac{45}{28}");
+
+		check("3/4-(6/7)*I", //
+				"\\frac{3}{4} - \\frac{6}{7}\\,i ");
+		check("1+2*I", //
+				"1 + 2\\,i ");
+		check("1-2*I", //
+				"1 - 2\\,i ");
+
+		check("1-2*I", //
+				"1 - 2\\,i ");
+		check("Complex(1,-2*I)", "3");
 		check("Complex(3.0, -2.0)", "3.0 - 2.0\\,i ");
 		check("Complex(0,-2)", "-2\\,i ");
-		check("Complex(0,-1)", "-1\\,i ");
+		check("Complex(0,-1)", " - i ");
 	}
 
 	public void testTeX016() {
-		check("(a*d+b*c)*d^(-1)*f^(-1)", "\\frac{b\\,c+a\\,d}{d\\,f}");
+		check("(a*d+b*c)*d^(-1)*f^(-1)", //
+				"\\frac{b\\,c + a\\,d}{d\\,f}");
 	}
-	
+
 	public void testTeX017() {
-		check("1/4*d^(-1)*f^(-1)", "\\frac{1}{4\\,d\\,f}");
+		check("1/4*d^(-1)*f^(-1)", //
+				"\\frac{1}{4\\,d\\,f}");
 	}
-	
+
 	public void testTeX018() {
-		check("1/4*a^2*b^(-1)*f^(-1)", "\\frac{a^{2}}{4\\,b\\,f}");
+		check("1/4*a^2*b^(-1)*f^(-1)", //
+				"\\frac{a^{2}}{4\\,b\\,f}");
 	}
-	
+
 	public void testTeX019() {
 		check("n!", "n ! ");
 		check("n!!", "n !! ");
 	}
-	
+
 	public void testTeX020() {
 		check("Hold(++x)", "\\text{Hold}(\\text{++}x)");
 		check("Hold(y^2/.x->3)", "\\text{Hold}(y^{2}\\text{/.}\\,x\\to 3)");
 		check("Hold(y^2//.x->3)", "\\text{Hold}(y^{2}\\text{//.}\\,x\\to 3)");
-		check("Hold(1 * 5 * x + 1 * 63)", "\\text{Hold}(5\\,x+63)");
+		check("Hold(1 * 5 * x + 1 * 63)", //
+				"\\text{Hold}(5\\,x + 63)");
 		check("10*f(x)", "10\\,f(x)");
 		check("Hold((5*3)/2)", "\\text{Hold}(\\frac{3\\cdot 5}{2})");
-		check("Integrate(8+5*x, {x, 5, 10})", "\\int_{5}^{10} 8+5\\,x\\,\\mathrm{d}x");
+		check("Integrate(8+5*x, {x, 5, 10})", //
+				"\\int_{5}^{10} 8 + 5\\,x\\,\\mathrm{d}x");
 	}
-	
+
 	public void testTeX021() {
 		check("-Infinity", " - \\infty");
 		check("GoldenRatio", "\\phi");
 		check("Infinity", "\\infty");
-		
+
 		check("EulerGamma", "\\gamma");
 		check("Pi", "\\pi");
-//		check("E", "E");
-//		check("Catalan", "");
-//		check("Degree", "");
-//		
-//		
-//		check("Glaisher", "");
-//		check("I", "");
-//		
-//		check("Khinchin", "");
-		
+		// check("E", "E");
+		// check("Catalan", "");
+		// check("Degree", "");
+		//
+		//
+		// check("Glaisher", "");
+		// check("I", "");
+		//
+		// check("Khinchin", "");
+
 	}
-	
+
 	public void testTeX022() {
 		// issue #116
-		check("-I*1/2*Sqrt(2)", "\\frac{\\left( -1\\,i \\right) \\,\\sqrt{2}}{2}");
+		check("-I*1/2*Sqrt(2)", //
+				"\\left( \\frac{-1}{2}\\,i \\right) \\,\\sqrt{2}");
 	}
-	
+
 	public void testTeX023() {
 		// issue #117
 		check("5*3^(5*x)*Log(3)", "5\\cdot 3^{5\\,x}\\,\\log(3)");
 	}
-	
+
 	public void check(String strEval, String strResult) {
 		StringWriter stw = new StringWriter();
 		texUtil.toTeX(strEval, stw);
@@ -186,7 +230,7 @@ public class BasicTeXTestCase extends TestCase {
 	@Override
 	protected void setUp() {
 		try {
-//			F.initSymbols();
+			// F.initSymbols();
 			EvalEngine engine = new EvalEngine();
 			texUtil = new TeXUtilities(engine, true);
 		} catch (Exception e) {

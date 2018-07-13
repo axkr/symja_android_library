@@ -100,9 +100,21 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 	public void convertDoubleComplex(final StringBuilder buf, final IComplexNum dc, final int precedence) {
 		double re = dc.getRealPart();
 		double im = dc.getImaginaryPart();
-		if (F.isZero(re) && F.isZero(im - 1.0)) {
-			buf.append("i ");
-			return;
+		if (F.isZero(re)) {
+			if (F.isNumIntValue(im, 1)) {
+				buf.append("i ");
+				return;
+			}
+			if (F.isNumIntValue(im, -1)) {
+				if (precedence > plusPrec) {
+					buf.append("\\left( ");
+				}
+				buf.append(" - i ");
+				if (precedence > plusPrec) {
+					buf.append("\\right) ");
+				}
+				return;
+			}
 		}
 		if (precedence > plusPrec) {
 			buf.append("\\left( ");
@@ -177,6 +189,16 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 	public void convertComplex(final StringBuilder buf, final IComplex c, final int precedence) {
 		if (c.isImaginaryUnit()) {
 			buf.append("i ");
+			return;
+		}
+		if (c.isNegativeImaginaryUnit()) {
+			if (precedence > plusPrec) {
+				buf.append("\\left( ");
+			}
+			buf.append(" - i ");
+			if (precedence > plusPrec) {
+				buf.append("\\right) ");
+			}
 			return;
 		}
 		if (precedence > plusPrec) {
@@ -354,7 +376,7 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 	}
 
 	public void init() {
-		plusPrec = ASTNodeFactory.MMA_STYLE_FACTORY.get("Plus").getPrecedence();
+		plusPrec = ASTNodeFactory.RELAXED_STYLE_FACTORY.get("Plus").getPrecedence();
 		// timesPrec =
 		// ASTNodeFactory.MMA_STYLE_FACTORY.get("Times").getPrecedence();
 		operTab.put("Abs", new org.matheclipse.core.form.tex.reflection.Abs());

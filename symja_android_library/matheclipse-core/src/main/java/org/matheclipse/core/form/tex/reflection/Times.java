@@ -1,6 +1,7 @@
 package org.matheclipse.core.form.tex.reflection;
 
 import org.matheclipse.core.builtin.Algebra;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.tex.AbstractOperator;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
@@ -99,16 +100,16 @@ public class Times extends AbstractOperator {
 	private boolean convertTimesOperator(final StringBuilder buf, final IAST timesAST, final int precedence,
 			final int caller) {
 		int size = timesAST.size();
-
+		IExpr arg1 = F.NIL;
 		if (size > 1) {
-			IExpr arg1 = timesAST.arg1();
+			arg1 = timesAST.arg1();
 			if (arg1.isMinusOne()) {
 				if (size == 2) {
 					precedenceOpen(buf, precedence);
 					fFactory.convert(buf, arg1, fPrecedence);
 				} else {
 					if (caller == PLUS_CALL) {
-						buf.append("-");
+						buf.append(" - ");
 						if (size == 3) {
 							fFactory.convert(buf, timesAST.arg2(), fPrecedence);
 							return true;
@@ -125,7 +126,7 @@ public class Times extends AbstractOperator {
 				} else {
 					if (caller == PLUS_CALL) {
 						if (size == 3) {
-							buf.append("+");
+							buf.append(" + ");
 							fFactory.convert(buf, timesAST.arg2(), fPrecedence);
 							return true;
 						}
@@ -139,7 +140,7 @@ public class Times extends AbstractOperator {
 						buf.append(" - ");
 						arg1 = ((ISignedNumber) arg1).opposite();
 					} else {
-						buf.append("+");
+						buf.append(" + ");
 					}
 				} else {
 					precedenceOpen(buf, precedence);
@@ -162,7 +163,11 @@ public class Times extends AbstractOperator {
 		}
 
 		for (int i = 2; i < size; i++) {
-			fFactory.convert(buf, timesAST.get(i), fPrecedence);
+			if (i == 2 && (arg1.isOne() || arg1.isMinusOne())) {
+				fFactory.convert(buf, timesAST.get(i), precedence);
+			} else {
+				fFactory.convert(buf, timesAST.get(i), fPrecedence);
+			}
 			if ((i < timesAST.argSize()) && (fOperator.compareTo("") != 0)) {
 				if (timesAST.get(1).isNumber() && isTeXNumberDigit(timesAST.get(i + 1))) {
 					// Issue #67, #117: if we have 2 TeX number expressions we
