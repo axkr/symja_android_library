@@ -98,14 +98,25 @@ public class TeXFormFactory extends AbstractTeXFormFactory {
 
 	@Override
 	public void convertDoubleComplex(final StringBuilder buf, final IComplexNum dc, final int precedence) {
+		double re = dc.getRealPart();
+		double im = dc.getImaginaryPart();
+		if (F.isZero(re) && F.isZero(im - 1.0)) {
+			buf.append("i ");
+			return;
+		}
 		if (precedence > plusPrec) {
 			buf.append("\\left( ");
 		}
-		// convert(buf, dc.getRealPart(), 0);
-		buf.append(convertDoubleToFormattedString(dc.getRealPart()));
-		buf.append(" + ");
-		// convert(buf, dc.getImaginaryPart(), 0);
-		buf.append(convertDoubleToFormattedString(dc.getImaginaryPart()));
+		if (!F.isZero(re)) {
+			buf.append(convertDoubleToFormattedString(re));
+			if (im >= 0.0) {
+				buf.append(" + ");
+			} else {
+				buf.append(" - ");
+				im = -im;
+			}
+		}
+		buf.append(convertDoubleToFormattedString(im));
 		buf.append("\\,"); // InvisibleTimes
 		buf.append("i ");
 		if (precedence > plusPrec) {

@@ -91,6 +91,14 @@ public class BasicTeXTestCase extends TestCase {
 	}
 
 	public void testTeX015() {
+		check("-I", //
+				"-1\\,i ");
+		check("-I*(1.0)", "\\left( -1\\,i \\right) ");
+		check("3-I*2", "3-2\\,i ");
+		check("4-I*5", "4-5\\,i ");
+		check("3.0-I*2.0", "3.0-2.0\\,i ");
+		check("3-I*2", "3-2\\,i ");
+ 		check("4-I*5", "4-5\\,i ");
 		check("Complex(0, -b)", " - b\\,\\imag");
 		check("Complex(-a, 0)", " - a");
 		check("Complex(-a, 1)", " - a + \\imag");
@@ -104,7 +112,7 @@ public class BasicTeXTestCase extends TestCase {
 		check("-2*I", "\\left( -2\\right) \\cdot i ");
 		check("1-2*I", "1-2\\,i ");
 		check("Complex(1,-2*I)", "1+2");
-		check("Complex(3.0, -2.0)", "3.0 + -2.0\\,i ");
+		check("Complex(3.0, -2.0)", "3.0 - 2.0\\,i ");
 		check("Complex(0,-2)", "-2\\,i ");
 		check("Complex(0,-1)", "-1\\,i ");
 	}
