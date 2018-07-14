@@ -1743,6 +1743,9 @@ public final class NumberTheory {
 		@Override
 		public IExpr evaluateArg1(final IExpr arg1) {
 			if (arg1.isInteger()) {
+				if (arg1.isNegative()) {
+					return F.CComplexInfinity;
+				}
 				return factorial((IInteger) arg1);
 			}
 			if (arg1.isInfinity()) {
