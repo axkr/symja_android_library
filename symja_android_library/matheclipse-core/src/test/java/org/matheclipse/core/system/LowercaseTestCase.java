@@ -633,6 +633,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBinomial() {
+		check("Binomial(2+k, k)", //
+				"1/2*(1+k)*(2+k)");
+		check("Binomial(5+k, k)", //
+				"1/120*(1+k)*(2+k)*(3+k)*(4+k)*(5+k)");
 		check("Binomial(-200,-100)", //
 				"0");
 		check("Binomial(-100,-200)", //
@@ -688,7 +692,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Binomial(n0, 3)", "1/6*(-2+n0)*(-1+n0)*n0");
 		// check("Binomial(-3, -5)", "0");
 
-		check("Binomial(2+k, k)", "Binomial(2+k,k)");
+		
 		check("Binomial(k, 2)", "1/2*(-1+k)*k");
 		check("Binomial(k, 5)", "1/120*(-4+k)*(-3+k)*(-2+k)*(-1+k)*k");
 		check("Binomial(k, 6)", "Binomial(k,6)");
@@ -5714,14 +5718,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testMultinomial() {
-		check("Multinomial(0,0,0,0,0)", "1");
+		check("Multinomial(1,1,1)", //
+				"6");
+		check("Multinomial(1,k,1)", //
+				"(1+k)*(2+k)");
+		check("Multinomial(10,f(x),2,3,4)", //
+				"116396280*Binomial(19+f(x),f(x))");
+		
+		check("Multinomial(0,0,0,0,0)", //
+				"1");
+		check("Multinomial(a,b)", //
+				"Binomial(a+b,b)");
 		check("Multinomial(2, 3, 4, 5)", "2522520");
 		check("Multinomial( )", "1");
 		check("Multinomial(1)", "1");
 		check("Multinomial(2, 3)", "10");
 		check("Multinomial(f(x))", "1");
-		check("Multinomial(f(x), g(x))", "Binomial(f(x)+g(x),f(x))");
-		check("Multinomial(n-k, k)", "Binomial(n,k)");
+		check("Multinomial(f(x), g(x))", "Binomial(f(x)+g(x),g(x))");
+		check("Multinomial(n-k, k)", "Binomial(n,-k+n)");
 		check("Multinomial(k, 2)", "1/2*(1+k)*(2+k)");
 	}
 

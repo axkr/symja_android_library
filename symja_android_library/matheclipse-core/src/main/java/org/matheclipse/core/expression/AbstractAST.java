@@ -894,6 +894,17 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
+	public final int findFirst(Predicate<? super IExpr> predicate) {
+		for (int i = 1; i < size(); i++) {
+			if (predicate.test(get(i))) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	/** {@inheritDoc} */
+	@Override
 	public void forEach(Consumer<? super IExpr> action) {
 		forEach(action, 1);
 	}

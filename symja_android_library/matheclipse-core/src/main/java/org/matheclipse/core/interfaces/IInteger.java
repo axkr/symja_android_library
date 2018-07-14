@@ -94,6 +94,13 @@ public interface IInteger extends IRational {
 	public IExpr exponent(IInteger base);
 
 	/**
+	 * The factorial number.
+	 * 
+	 * @return
+	 */
+	public IInteger factorial();
+
+	/**
 	 * Returns the greatest common divisor of this large integer and the one specified.
 	 * 
 	 * @param val

@@ -9,6 +9,7 @@ import java.util.TreeMap;
 import org.apfloat.Apcomplex;
 import org.apfloat.Apfloat;
 import org.hipparchus.util.ArithmeticUtils;
+import org.matheclipse.core.builtin.NumberTheory;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
@@ -496,10 +497,30 @@ public abstract class AbstractIntegerSym implements IInteger, Externalizable {
 		return this;
 	}
 
+	public IInteger factorial() {
+		int ni = toIntDefault(Integer.MIN_VALUE);
+		if (ni > Integer.MIN_VALUE) {
+			return NumberTheory.factorial(ni);
+		}
+
+		IInteger result = F.C1;
+		if (compareTo(F.C0) == -1) {
+			result = F.CN1;
+			for (IInteger i = F.CN2; i.compareTo(this) >= 0; i = i.add(F.CN1)) {
+				result = result.multiply(i);
+			}
+		} else {
+			for (IInteger i = F.C2; i.compareTo(this) <= 0; i = i.add(F.C1)) {
+				result = result.multiply(i);
+			}
+		}
+		return result;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public IInteger[] gaussianIntegers() {
-		return new IInteger[]{this, F.C0};
+		return new IInteger[] { this, F.C0 };
 	}
 
 	/** {@inheritDoc} */

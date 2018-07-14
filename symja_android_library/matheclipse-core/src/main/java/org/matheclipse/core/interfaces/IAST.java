@@ -599,6 +599,14 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	public int findFirstEquals(final IExpr expr);
 
+	/**
+	 * Find the first argument position, which fulfills the <code>predicate</code>. The search starts at index <code>1</code>.
+	 * 
+	 * @param expr
+	 * @return <code>-1</code> if no position was found
+	 */
+	public int findFirst(Predicate<? super IExpr> predicate);
+
 	/** {@inheritDoc} */
 	@Override
 	default IExpr first() {
