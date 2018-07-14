@@ -2224,9 +2224,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"a.x+a.y+a.z+b.x+b.y+b.z");
 		check("Distribute(f(g(a, b), g(c, d, e)), g, f, gp, fp)", //
 				"gp(fp(a,c),fp(a,d),fp(a,e),fp(b,c),fp(b,d),fp(b,e))");
+		check("Distribute(Factor(x^10 - 1))", //
+				"-1+x^10");
 		check("Distribute(Factor(x^6 - 1), Plus, Times, List, Times)", //
 				"{-1,-x,-x^2,x,x^2,x^3,-x^2,-x^3,-x^4,-x,-x^2,-x^3,x^2,x^3,x^4,-x^3,-x^4,-x^5,x,x^\n"
 						+ "2,x^3,-x^2,-x^3,-x^4,x^3,x^4,x^5,x^2,x^3,x^4,-x^3,-x^4,-x^5,x^4,x^5,x^6}");
+		check("Distribute((x*y*z)^n, Times)", //
+				"x^n*y^n*z^n");
+
+		// possibly not intended:
+		check("Distribute((a + b)*(a + b))", //
+				"a^2+b^2");
 	}
 
 	public void testDivide() {
@@ -3345,10 +3353,16 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFlattenAt() {
-		check("FlattenAt({a, {b, c}, {d, e}, {f}}, 2)", "{a,b,c,{d,e},{f}}");
-		check("FlattenAt({a, g(b,c), {d, e}, {f}}, 2)", "{a,b,c,{d,e},{f}}");
-		check("FlattenAt(f(a, g(b,c), {d, e}, {f}), -2)", "f(a,g(b,c),d,e,{f})");
-		check("FlattenAt(f(a, g(b,c), {d, e}, {f}), 4)", "f(a,g(b,c),{d,e},f)");
+		check("FlattenAt({a, {b, c}, {d, e}, {f}}, 2)", //
+				"{a,b,c,{d,e},{f}}");
+		check("FlattenAt({a, g(b,c), {d, e}, {f}}, 2)", //
+				"{a,b,c,{d,e},{f}}");
+		check("FlattenAt(f(a, g(b,c), {d, e}, {f}), -2)", //
+				"f(a,g(b,c),d,e,{f})");
+		check("FlattenAt(f(a, g(b,c), {d, e}, {f}), 4)", //
+				"f(a,g(b,c),{d,e},f)");
+		check("Table(FlattenAt(f({a}, {b}, {c}, {d}), i), {i, 4})", //
+				"{f(a,{b},{c},{d}),f({a},b,{c},{d}),f({a},{b},c,{d}),f({a},{b},{c},d)}");
 	}
 
 	public void testFloor() {
@@ -7178,6 +7192,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPowerExpand() {
+		check("PowerExpand((x*y*z)^n)", //
+				"x^n*y^n*z^n");
 		check("PowerExpand(Log(x*y))", "Log(x)+Log(y)");
 		check("PowerExpand(Log(x^k))", "k*Log(x)");
 		check("PowerExpand(Sqrt(-a))", "I*Sqrt(a)");

@@ -362,8 +362,8 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 					}
 					if (exponent < 0) {
 						return new ExprPolynomial(this, ast);
-//						ExpVectorLong e = new ExpVectorLong(vars.argSize(), ix, 0);
-//						return getOne().multiply(e);
+						// ExpVectorLong e = new ExpVectorLong(vars.argSize(), ix, 0);
+						// return getOne().multiply(e);
 					}
 					ExpVectorLong e = new ExpVectorLong(vars.argSize(), ix, exponent);
 					return getOne().multiply(e);
@@ -463,34 +463,26 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 
 			if (expr.isFree(x, true)) {
 				times.append(expr);
+				continue;
 			} else if (expr.equals(x)) {
 				final IExpr exponent = F.C1;
-				if (mainExponent.isPresent()) {
-					restList.append(ast);
-					return coefficientMap;
-				} else {
+				if (!mainExponent.isPresent()) {
 					mainExponent = exponent;
+					continue;
 				}
 			} else if (expr.isPower()) {
-				final IExpr base = expr.base();
 				final IExpr exponent = expr.exponent();
 				if (exponent.isFree(x)) {
-					if (base.equals(x)) {
-						if (mainExponent.isPresent()) {
-							restList.append(ast);
-							return coefficientMap;
-						} else {
+					if (expr.base().equals(x)) {
+						if (!mainExponent.isPresent()) {
 							mainExponent = exponent;
+							continue;
 						}
 					}
-				} else {
-					restList.append(ast);
-					return coefficientMap;
 				}
-			} else {
-				restList.append(ast);
-				return coefficientMap;
 			}
+			restList.append(ast);
+			return coefficientMap;
 		}
 		return addCoefficient(coefficientMap, mainExponent, times.getOneIdentity(F.C1));
 	}
@@ -539,18 +531,20 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 */
 	private static Map<IExpr, IExpr> addCoefficient(Map<IExpr, IExpr> coefficientMap, final IExpr exponent,
 			IExpr coefficient) {
-		IExpr oldCoefficient = coefficientMap.get(exponent);
-		if (oldCoefficient != null) {
-			if (oldCoefficient.isTimes()) {
-				((IASTAppendable) oldCoefficient).append(coefficient);
+		if (exponent.isPresent()) {
+			IExpr oldCoefficient = coefficientMap.get(exponent);
+			if (oldCoefficient != null) {
+				if (oldCoefficient.isTimes()) {
+					((IASTAppendable) oldCoefficient).append(coefficient);
+				} else {
+					IASTAppendable times = F.TimesAlloc(4);
+					times.append(oldCoefficient);
+					times.append(coefficient);
+					coefficientMap.put(exponent, times);
+				}
 			} else {
-				IASTAppendable times = F.TimesAlloc(4);
-				times.append(oldCoefficient);
-				times.append(coefficient);
-				coefficientMap.put(exponent, times);
+				coefficientMap.put(exponent, coefficient);
 			}
-		} else {
-			coefficientMap.put(exponent, coefficient);
 		}
 		return coefficientMap;
 	}
