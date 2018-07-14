@@ -4181,12 +4181,22 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("IntegerPartitions(6)", //
 				"{{6},{5,1},{4,2},{4,1,1},{3,3},{3,2,1},{3,1,1,1},{2,2,2},{2,2,1,1},{2,1,1,1,1},{\n" //
 						+ "1,1,1,1,1,1}}");
+		check("IntegerPartitions(6, {3,4})", //
+				"{{4,1,1},{3,2,1},{3,1,1,1},{2,2,2},{2,2,1,1}}");
 		check("IntegerPartitions(10,2)", //
 				"{{10},{9,1},{8,2},{7,3},{6,4},{5,5}}");
+		check("IntegerPartitions(10,{2})", //
+				"{{9,1},{8,2},{7,3},{6,4},{5,5}}");
 		check("IntegerPartitions(0)", //
 				"{{}}");
 		check("IntegerPartitions(1)", //
 				"{{1}}");
+		check("IntegerPartitions(-1)", //
+				"{}");
+		check("IntegerPartitions(.5)", //
+				"IntegerPartitions(0.5)");
+		check("IntegerPartitions(1/2)", //
+				"{}");
 	}
 
 	public void testIntegrate() {
