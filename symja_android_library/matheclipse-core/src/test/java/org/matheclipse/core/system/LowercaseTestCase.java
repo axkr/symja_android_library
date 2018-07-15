@@ -6568,10 +6568,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPadRight() {
-		check("PadRight({1, 2, 3}, 5)", "{1,2,3,0,0}");
-		check("PadRight(x(a, b, c), 5) ", "x(a,b,c,0,0)");
-		check("PadRight({1, 2, 3}, 2)", "{1,2}");
-		check("PadRight({1, 2, 3}, 1)", "{1}");
+//		check("PadRight({1, 2, 3}, 5)", "{1,2,3,0,0}");
+//		check("PadRight(x(a, b, c), 5) ", "x(a,b,c,0,0)");
+//		check("PadRight({1, 2, 3}, 2)", "{1,2}");
+//		check("PadRight({1, 2, 3}, 1)", "{1}");
 		check("PadRight({{}, {1, 2}, {1, 2, 3}})", "{{0,0,0},{1,2,0},{1,2,3}}");
 
 		check("PadRight({a, b, c}, 10)", "{a,b,c,0,0,0,0,0,0,0}");

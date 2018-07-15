@@ -24,7 +24,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.RandomAccess;
 import java.util.Set;
@@ -351,7 +350,7 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 		}
 		return false;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public boolean appendAll(IExpr[] args, int startPosition, int endPosition) {
@@ -811,26 +810,26 @@ public abstract class HMArrayList extends AbstractAST implements IASTAppendable,
 	 *            the object to search for.
 	 * @return the index of the first occurrence of the object, or -1 if it was not found.
 	 */
-	public int indexOf(IExpr object) {
-		Iterator<IExpr> it = iterator();
-		int indx = 0;
-		if (object != null) {
-			while (it.hasNext()) {
-				if (object.equals(it.next())) {
-					return indx;
-				}
-				indx++;
-			}
-		} else {
-			while (it.hasNext()) {
-				if (it.next() == null) {
-					return indx;
-				}
-				indx++;
-			}
-		}
-		return -1;
-	}
+	// public int indexOf(IExpr object) {
+	// Iterator<IExpr> it = iterator();
+	// int indx = 0;
+	// if (object != null) {
+	// while (it.hasNext()) {
+	// if (object.equals(it.next())) {
+	// return indx;
+	// }
+	// indx++;
+	// }
+	// } else {
+	// while (it.hasNext()) {
+	// if (it.next() == null) {
+	// return indx;
+	// }
+	// indx++;
+	// }
+	// }
+	// return -1;
+	// }
 
 	/**
 	 * Constructs a new list assigning the given <code>array</code> to this lists array. No new memory is allocated for

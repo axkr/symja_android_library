@@ -446,35 +446,12 @@ public class AST0 extends AbstractAST implements Cloneable, Externalizable, Rand
 		}
 	}
 
-	/**
-	 * Removes the object at the specified location from this list.
-	 * 
-	 * @param location
-	 *            the index of the object to remove.
-	 * @return the removed object.
-	 * @throws IndexOutOfBoundsException
-	 *             when {@code location < 0 || >= size()}
-	 */
-	// @Override
-	// public IExpr remove(int location) {
-	// hashValue = 0;
-	// throw new UnsupportedOperationException();
-	// }
-
-	/**
-	 * Removes the objects in the specified range from the start to the end, but not including the end index.
-	 * 
-	 * @param start
-	 *            the index at which to start removing.
-	 * @param end
-	 *            the index one after the end of the range to remove.
-	 * @throws IndexOutOfBoundsException
-	 *             when {@code start < 0, start > end} or {@code end > size()}
-	 */
-	// protected void removeRange(int start, int end) {
-	// hashValue = 0;
-	// throw new UnsupportedOperationException();
-	// }
+	public IAST removeFromEnd(int fromPosition) {
+		if (fromPosition == size()) {
+			return this;
+		}
+		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(fromPosition) + ", Size: " + size());
+	}
 
 	/**
 	 * Replaces the element at the specified location in this {@code ArrayList} with the specified object.

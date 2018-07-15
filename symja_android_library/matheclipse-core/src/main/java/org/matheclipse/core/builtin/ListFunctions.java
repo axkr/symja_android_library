@@ -2963,13 +2963,9 @@ public final class ListFunctions {
 				IASTAppendable result = ast.copyHead();
 				result.appendArgs(ast);
 				return result.appendArgs(0, length, i -> atom);
-				// for (int i = 0; i < length; i++) {
-				// result.append(atom);
-				// }
-				// return result;
 			}
 			if (n > 0 && n < ast.size()) {
-				return ast.copyUntil(n + 1);
+				return ast.removeFromEnd(n + 1);
 			}
 			return ast;
 		}

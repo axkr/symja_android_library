@@ -270,6 +270,21 @@ public class AST extends HMArrayList implements Externalizable {
 		return hashValue;
 	}
 
+	public IAST removeFromEnd(int fromPosition) {
+		if (0 < fromPosition && fromPosition <= size()) {
+			if (fromPosition == size()) {
+				return this;
+			}
+			AST ast = new AST(array);
+			ast.firstIndex = firstIndex;
+			ast.lastIndex = firstIndex + fromPosition;
+			return ast;
+		} else {
+			throw new IndexOutOfBoundsException(
+					"Index: " + Integer.valueOf(fromPosition) + ", Size: " + Integer.valueOf(lastIndex - firstIndex));
+		}
+	}
+
 	@Override
 	public void readExternal(ObjectInput objectInput) throws IOException, ClassNotFoundException {
 		this.fEvalFlags = objectInput.readShort();

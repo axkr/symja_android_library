@@ -14,6 +14,8 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.expression.AST;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.ObjIntPredicate;
 
 /**
@@ -597,15 +599,27 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @param expr
 	 * @return <code>-1</code> if no position was found
 	 */
-	public int findFirstEquals(final IExpr expr);
+	public int indexOf(final IExpr expr);
 
 	/**
-	 * Find the first argument position, which fulfills the <code>predicate</code>. The search starts at index <code>1</code>.
+	 * Find the first argument position, which equals <code>expr</code>. The search starts at index <code>1</code>.
+	 * 
+	 * @param expr
+	 * @return <code>-1</code> if no position was found
+	 * @deprecated use {@link #indexOf(IExpr)} instead
+	 */
+	default public int findFirstEquals(final IExpr expr) {
+		return indexOf(expr);
+	}
+
+	/**
+	 * Find the first argument position, which fulfills the <code>predicate</code>. The search starts at index
+	 * <code>1</code>.
 	 * 
 	 * @param expr
 	 * @return <code>-1</code> if no position was found
 	 */
-	public int findFirst(Predicate<? super IExpr> predicate);
+	public int indexOf(Predicate<? super IExpr> predicate);
 
 	/** {@inheritDoc} */
 	@Override
@@ -1192,6 +1206,26 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * @return a clone with removed element at the given position.
 	 */
 	public IASTAppendable removeAtClone(int i);
+
+	/**
+	 * Create a new <code>IAST</code> and remove all arguments from position <code>fromPosition</code> inclusive to the
+	 * end of this AST.
+	 * 
+	 * @param fromPosition
+	 * @return
+	 */
+	default public IAST removeFromEnd(int fromPosition) {
+		if (0 < fromPosition && fromPosition <= size()) {
+			if (fromPosition == size()) {
+				return this;
+			}
+			IASTAppendable ast = F.ast(head(), fromPosition, false);
+			ast.appendArgs(this, fromPosition);
+			return ast;
+		} else {
+			throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(fromPosition) + ", Size: " + size());
+		}
+	}
 
 	/** {@inheritDoc} */
 	@Override

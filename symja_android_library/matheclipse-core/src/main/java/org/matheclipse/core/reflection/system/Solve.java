@@ -319,7 +319,7 @@ public class Solve extends AbstractFunctionEvaluator {
 		private void getTimesArgumentEquationType(IExpr expr) {
 			if (expr.isSymbol()) {
 				fLeafCount++;
-				int position = fListOfVariables.findFirstEquals(expr);
+				int position = fListOfVariables.indexOf(expr);
 				if (position > 0) {
 					fSymbolSet.add((ISymbol) expr);
 					if (fEquationType == LINEAR) {
@@ -426,7 +426,7 @@ public class Solve extends AbstractFunctionEvaluator {
 				}
 
 			} else if (ast.isPower() && ast.base().isSymbol() && ast.exponent().isNumber()) {
-				int position = fListOfVariables.findFirstEquals(ast.base());
+				int position = fListOfVariables.indexOf(ast.base());
 				if (position > 0) {
 					fEngine.printMessage("Solve: using of inverse functions may omit some solutions.");
 					IAST inverseFunction = F.Power(arg1, ast.exponent().inverse());
