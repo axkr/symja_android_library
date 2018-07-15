@@ -323,6 +323,18 @@ public class AST2 extends AST1 {
 		return arg2;
 	}
 	
+	public IAST removeFromEnd(int fromPosition) {
+		if (fromPosition == 1) {
+			return new AST0(arg0);
+		}
+		if (fromPosition == 2) {
+			return new AST1(arg0, arg1);
+		}
+		if (fromPosition == 3) {
+			return this;
+		}
+		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(fromPosition) + ", Size: " + size());
+	}
 	/**
 	 * Replaces the element at the specified location in this {@code ArrayList} with the specified object.
 	 * 

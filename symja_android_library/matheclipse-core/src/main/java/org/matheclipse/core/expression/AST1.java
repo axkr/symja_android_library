@@ -294,14 +294,13 @@ public class AST1 extends AST0 {
 	}
 
 	public IAST removeFromEnd(int fromPosition) {
-		if (0 < fromPosition && fromPosition <= size()) {
-			if (fromPosition == size()) {
-				return this;
-			}
+		if (fromPosition == 1) {
 			return new AST0(arg0);
-		} else {
-			throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(fromPosition) + ", Size: " + size());
 		}
+		if (fromPosition == 2) {
+			return this;
+		}
+		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(fromPosition) + ", Size: " + size());
 	}
 
 	/**
