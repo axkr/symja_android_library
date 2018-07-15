@@ -90,8 +90,6 @@ import edu.jas.kern.ComputerThreads;
 public class F {
 	private final static IBuiltInSymbol[] BUILT_IN_SYMBOLS = new IBuiltInSymbol[ID.Zeta + 1];
 
-	public static boolean PACKAGE_MODE = true;
-
 	/**
 	 * <p>
 	 * In computing, memoization or memoisation is an optimization technique used primarily to speed up computer
