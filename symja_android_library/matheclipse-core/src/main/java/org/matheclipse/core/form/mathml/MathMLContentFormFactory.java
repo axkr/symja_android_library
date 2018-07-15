@@ -18,7 +18,7 @@ import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.operator.ASTNodeFactory;
 
 /**
- * Presentation generator generates MathML presentation output
+ * Generates MathML presentation output
  * 
  * See: <a href="http://www.w3.org/TR/MathML2/chapter4.html">MathML2</a>
  * 

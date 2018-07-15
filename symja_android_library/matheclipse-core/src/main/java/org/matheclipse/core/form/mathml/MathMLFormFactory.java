@@ -35,7 +35,7 @@ import org.matheclipse.parser.client.operator.PostfixOperator;
 import org.matheclipse.parser.client.operator.PrefixOperator;
 
 /**
- * Presentation generator generates MathML presentation output
+ * Generates MathML presentation output
  * 
  */
 public class MathMLFormFactory extends AbstractMathMLFormFactory {
