@@ -25,6 +25,86 @@ import org.matheclipse.parser.client.operator.ASTNodeFactory;
  */
 public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 
+	private static abstract class AbstractConverter implements IConverter {
+		protected AbstractMathMLFormFactory fFactory;
+
+		public AbstractConverter() {
+		}
+		
+		/**
+		 * @param factory
+		 */
+		@Override
+		public void setFactory(final AbstractMathMLFormFactory factory) {
+			fFactory = factory;
+		}
+
+	}
+
+	public interface IConverter {
+		/**
+		 * Converts a given function into the corresponding MathML output
+		 * 
+		 * @param buffer
+		 *            StringBuilder for MathML output
+		 * @param function
+		 *            the math function which should be converted to MathML
+		 */
+		public boolean convert(StringBuilder buffer, IAST function, int precedence);
+
+		public void setFactory(final AbstractMathMLFormFactory factory);
+	}
+
+	private final static class MMLContentFunction extends AbstractConverter {
+
+		String fFunctionName;
+
+		public MMLContentFunction(final MathMLContentFormFactory factory, final String functionName) {
+			super();
+			fFunctionName = functionName;
+		}
+
+		/**
+		 * Converts a given function into the corresponding MathML output
+		 *
+		 * @param buf
+		 *            StringBuilder for MathML output
+		 * @param f
+		 *            The math function which should be converted to MathML
+		 */
+		@Override
+		public boolean convert(final StringBuilder buf, final IAST f, final int precedence) {
+
+			fFactory.tagStart(buf, "apply");
+			fFactory.tagStartEnd(buf, fFunctionName);
+			for (int i = 1; i < f.size(); i++) {
+				fFactory.convert(buf, f.get(i), Integer.MIN_VALUE, false);
+			}
+			fFactory.tagEnd(buf, "apply");
+			return true;
+		}
+	}
+
+//	private class Operator {
+//		String fOperator;
+//
+//		Operator(final String oper) {
+//			fOperator = oper;
+//		}
+//
+//		public void convert(final StringBuilder buf) {
+//			tagStart(buf, "mo");
+//			buf.append(fOperator);
+//			tagEnd(buf, "mo");
+//		}
+//
+//		@Override
+//		public String toString() {
+//			return fOperator;
+//		}
+//
+//	}
+
 	/**
 	 * The conversion wasn't called with an operator preceding the <code>IExpr</code> object.
 	 */
@@ -34,27 +114,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 	 * The conversion was called with a &quot;+&quot; operator preceding the <code>IExpr</code> object.
 	 */
 	public final static boolean PLUS_CALL = true;
-
-	class Operator {
-		String fOperator;
-
-		Operator(final String oper) {
-			fOperator = oper;
-		}
-
-		public void convert(final StringBuilder buf) {
-			tagStart(buf, "mo");
-			buf.append(fOperator);
-			tagEnd(buf, "mo");
-		}
-
-		@Override
-		public String toString() {
-			return fOperator;
-		}
-
-	}
-
+	
 	/**
 	 * Table for constant symbols
 	 */
@@ -82,127 +142,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 	}
 
 	@Override
-	public void convertDouble(final StringBuilder buf, final INum d, final int precedence, boolean caller) {
-		tagStart(buf, "cn", "type=\"real\"");
-		buf.append(convertDoubleToFormattedString(d.getRealPart()));
-		tagEnd(buf, "cn");
-	}
-
-	@Override
-	public void convertDoubleComplex(final StringBuilder buf, final IComplexNum dc, final int precedence, boolean caller) {
-		// <cn type="complex-cartesian">3<sep/>4</cn>
-		tagStart(buf, "cn", "type=\"complex-cartesian\"");
-		buf.append(convertDoubleToFormattedString(dc.getRealPart()));
-		tagStartEnd(buf, "sep");
-		buf.append(convertDoubleToFormattedString(dc.getImaginaryPart()));
-		tagEnd(buf, "cn");
-	}
-
-	@Override
-	public void convertInteger(final StringBuilder buf, final IInteger i, final int precedence, boolean caller) {
-		tagStart(buf, "cn", "type=\"integer\"");
-		buf.append(i.toString());
-		tagEnd(buf, "cn");
-	}
-
-	@Override
-	public void convertFraction(final StringBuilder buf, final IRational f, final int precedence, boolean caller) {
-		// <cn type="rational">3<sep/>4</cn>
-		tagStart(buf, "cn", "type=\"rational\"");
-		buf.append(String.valueOf(f.toBigNumerator().toString()));
-		tagStartEnd(buf, "sep");
-		buf.append(String.valueOf(f.toBigDenominator().toString()));
-		tagEnd(buf, "cn");
-	}
-
-	// public void convertFraction(final StringBuilder buf, final BigFraction f, final int precedence) {
-	// tagStart(buf, "cn", "type=\"rational\"");
-	// buf.append(String.valueOf(f.getNumerator().toString()));
-	// tagStartEnd(buf, "sep");
-	// buf.append(String.valueOf(f.getDenominator().toString()));
-	// tagEnd(buf, "cn");
-	// }
-
-	@Override
-	public void convertComplex(final StringBuilder buf, final IComplex c, final int precedence, boolean caller) {
-		// <cn type="complex-cartesian">3<sep/>4</cn>
-		tagStart(buf, "cn", "type=\"complex-cartesian\"");
-		convertFraction(buf, c.getRealPart(), precedence, caller);
-		tagStartEnd(buf, "sep");
-		convertFraction(buf, c.getImaginaryPart(), ASTNodeFactory.TIMES_PRECEDENCE, caller);
-		tagEnd(buf, "cn");
-	}
-
-	@Override
-	public void convertString(final StringBuilder buf, final String str) {
-		throw new Error("Cannot convert text string to content MathML");
-	}
-
-	@Override
-	public void convertSymbol(final StringBuilder buf, final ISymbol sym) {
-		String headStr = sym.getSymbolName();
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
-			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
-			if (str != null) {
-				headStr = str;
-			}
-		}
-		final Object convertedSymbol = CONSTANT_SYMBOLS.get(headStr);
-		if (convertedSymbol == null) {
-			tagStart(buf, "ci");
-			buf.append(sym.toString());
-			tagEnd(buf, "ci");
-		} else {
-			// if (convertedSymbol.equals(True)) {
-			// tagStart(buf, "mi");
-			// buf.append('&');
-			// buf.append(sym.toString());
-			// buf.append(';');
-			// tagEnd(buf, "mi");
-			// } else {
-			// if (convertedSymbol instanceof Operator) {
-			// ((Operator) convertedSymbol).convert(buf);
-			// } else {
-			tagStart(buf, "ci");
-			buf.append(convertedSymbol.toString());
-			tagEnd(buf, "ci");
-			// }
-			// }
-		}
-	}
-
-	/**
-	 * Description of the Method
-	 * 
-	 * @param buf
-	 *            Description of Parameter
-	 * @param p
-	 *            Description of Parameter
-	 */
-	// public void convertPattern(StringBuilder buf, HPattern p) {
-	// buf.append(" <mi>");
-	// buf.append(p.toString());
-	// tagEnd(buf, "mi");
-	// }
-	@Override
-	public void convertHead(final StringBuilder buf, final IExpr obj) {
-		if (obj instanceof ISymbol) {
-			// final Object ho = CONSTANT_SYMBOLS.get(((ISymbol) obj).getSymbolName());
-			tagStart(buf, "mi");
-			// if ((ho != null) && ho.equals(AST2Expr.TRUE_STRING)) {
-			// buf.append('&');
-			// }
-			buf.append(((ISymbol) obj).getSymbolName());
-			tagEnd(buf, "mi");
-			// &af; &#x2061;
-			tag(buf, "mo", "&#x2061;");
-			return;
-		}
-		convert(buf, obj, Integer.MIN_VALUE, false);
-	}
-
-	@Override
-	public void convert(final StringBuilder buf, final IExpr o, final int precedence,boolean caller) {
+	public void convert(final StringBuilder buf, final IExpr o, final int precedence, boolean caller) {
 		if (o instanceof IAST) {
 			final IAST f = ((IAST) o);
 			// System.out.println(f.getHeader().toString());
@@ -290,48 +230,125 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 
 	}
 
-	public String getReflectionNamespace() {
-		return "org.matheclipse.core.form.mathml.reflection.";
+	@Override
+	public void convertComplex(final StringBuilder buf, final IComplex c, final int precedence, boolean caller) {
+		// <cn type="complex-cartesian">3<sep/>4</cn>
+		tagStart(buf, "cn", "type=\"complex-cartesian\"");
+		convertFraction(buf, c.getRealPart(), precedence, caller);
+		tagStartEnd(buf, "sep");
+		convertFraction(buf, c.getImaginaryPart(), ASTNodeFactory.TIMES_PRECEDENCE, caller);
+		tagEnd(buf, "cn");
 	}
 
-	public IConverter reflection(final String headString) {
-		String headStr = headString;
+	@Override
+	public void convertDouble(final StringBuilder buf, final INum d, final int precedence, boolean caller) {
+		tagStart(buf, "cn", "type=\"real\"");
+		buf.append(convertDoubleToFormattedString(d.getRealPart()));
+		tagEnd(buf, "cn");
+	}
+
+	// public void convertFraction(final StringBuilder buf, final BigFraction f, final int precedence) {
+	// tagStart(buf, "cn", "type=\"rational\"");
+	// buf.append(String.valueOf(f.getNumerator().toString()));
+	// tagStartEnd(buf, "sep");
+	// buf.append(String.valueOf(f.getDenominator().toString()));
+	// tagEnd(buf, "cn");
+	// }
+
+	@Override
+	public void convertDoubleComplex(final StringBuilder buf, final IComplexNum dc, final int precedence,
+			boolean caller) {
+		// <cn type="complex-cartesian">3<sep/>4</cn>
+		tagStart(buf, "cn", "type=\"complex-cartesian\"");
+		buf.append(convertDoubleToFormattedString(dc.getRealPart()));
+		tagStartEnd(buf, "sep");
+		buf.append(convertDoubleToFormattedString(dc.getImaginaryPart()));
+		tagEnd(buf, "cn");
+	}
+
+	@Override
+	public void convertFraction(final StringBuilder buf, final IRational f, final int precedence, boolean caller) {
+		// <cn type="rational">3<sep/>4</cn>
+		tagStart(buf, "cn", "type=\"rational\"");
+		buf.append(String.valueOf(f.toBigNumerator().toString()));
+		tagStartEnd(buf, "sep");
+		buf.append(String.valueOf(f.toBigDenominator().toString()));
+		tagEnd(buf, "cn");
+	}
+
+	/**
+	 * Description of the Method
+	 * 
+	 * @param buf
+	 *            Description of Parameter
+	 * @param p
+	 *            Description of Parameter
+	 */
+	// public void convertPattern(StringBuilder buf, HPattern p) {
+	// buf.append(" <mi>");
+	// buf.append(p.toString());
+	// tagEnd(buf, "mi");
+	// }
+	@Override
+	public void convertHead(final StringBuilder buf, final IExpr obj) {
+		if (obj instanceof ISymbol) {
+			// final Object ho = CONSTANT_SYMBOLS.get(((ISymbol) obj).getSymbolName());
+			tagStart(buf, "mi");
+			// if ((ho != null) && ho.equals(AST2Expr.TRUE_STRING)) {
+			// buf.append('&');
+			// }
+			buf.append(((ISymbol) obj).getSymbolName());
+			tagEnd(buf, "mi");
+			// &af; &#x2061;
+			tag(buf, "mo", "&#x2061;");
+			return;
+		}
+		convert(buf, obj, Integer.MIN_VALUE, false);
+	}
+
+	@Override
+	public void convertInteger(final StringBuilder buf, final IInteger i, final int precedence, boolean caller) {
+		tagStart(buf, "cn", "type=\"integer\"");
+		buf.append(i.toString());
+		tagEnd(buf, "cn");
+	}
+
+	@Override
+	public void convertString(final StringBuilder buf, final String str) {
+		throw new Error("Cannot convert text string to content MathML");
+	}
+
+	@Override
+	public void convertSymbol(final StringBuilder buf, final ISymbol sym) {
+		String headStr = sym.getSymbolName();
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
 			if (str != null) {
 				headStr = str;
-			} else {
-				return null;
 			}
 		}
-		final AbstractConverter converter = operTab.get(headStr);
-		if (converter != null) {
-			converter.setFactory(this);
-			return converter;
+		final Object convertedSymbol = CONSTANT_SYMBOLS.get(headStr);
+		if (convertedSymbol == null) {
+			tagStart(buf, "ci");
+			buf.append(sym.toString());
+			tagEnd(buf, "ci");
+		} else {
+			// if (convertedSymbol.equals(True)) {
+			// tagStart(buf, "mi");
+			// buf.append('&');
+			// buf.append(sym.toString());
+			// buf.append(';');
+			// tagEnd(buf, "mi");
+			// } else {
+			// if (convertedSymbol instanceof Operator) {
+			// ((Operator) convertedSymbol).convert(buf);
+			// } else {
+			tagStart(buf, "ci");
+			buf.append(convertedSymbol.toString());
+			tagEnd(buf, "ci");
+			// }
+			// }
 		}
-		final String namespace = getReflectionNamespace() + headStr;
-
-		Class clazz = null;
-		try {
-			clazz = Class.forName(namespace);
-		} catch (final ClassNotFoundException e) {
-			// not a predefined function
-			return null;
-		}
-
-		AbstractConverter module;
-		try {
-			module = (AbstractConverter) clazz.newInstance();
-			module.setFactory(this);
-			// module.setExpressionFactory(fExprFactory);
-			operTab.put(headString, module);
-			return module;
-		} catch (final Throwable se) {
-			if (Config.DEBUG) {
-				se.printStackTrace();
-			}
-		}
-		return null;
 	}
 
 	public void init() {
@@ -382,7 +399,7 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 
 		CONSTANT_SYMBOLS.put("E", "\u2147");
 		// CONSTANT_SYMBOLS.put("I", "\u2148"); // IMaginaryI
-		CONSTANT_SYMBOLS.put("HEllipsis", new Operator("&hellip;"));
+		CONSTANT_SYMBOLS.put("HEllipsis",  "&hellip;");
 		// greek Symbols:
 		CONSTANT_SYMBOLS.put("Pi", "\u03A0");
 		CONSTANT_SYMBOLS.put("pi", "\u03C0");
@@ -447,5 +464,23 @@ public class MathMLContentFormFactory extends AbstractMathMLFormFactory {
 		ENTITY_TABLE.put("&PartialD;", "\u2202");
 		ENTITY_TABLE.put("&Product;", "\u220F");
 
+	}
+
+	public IConverter reflection(final String headString) {
+		String headStr = headString;
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			String str = AST2Expr.PREDEFINED_SYMBOLS_MAP.get(headStr);
+			if (str != null) {
+				headStr = str;
+			} else {
+				return null;
+			}
+		}
+		final AbstractConverter converter = operTab.get(headStr);
+		if (converter != null) {
+			converter.setFactory(this);
+			return converter;
+		}
+		return null;
 	}
 }
