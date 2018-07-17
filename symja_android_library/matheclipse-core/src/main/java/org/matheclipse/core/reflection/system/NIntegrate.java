@@ -187,10 +187,11 @@ public class NIntegrate extends AbstractFunctionEvaluator {
 						result = Precision.round(result, precisionGoal);
 						return Num.valueOf(result);
 					} catch (Exception e) {
-						if (Config.SHOW_STACKTRACE){
+						if (Config.SHOW_STACKTRACE) {
 							e.printStackTrace();
 						}
-						throw new WrappedException(e);
+						engine.printMessage("NIntegrate(method=" + method + ") " + e.getMessage());
+						// throw new WrappedException(e);
 					}
 				}
 			}

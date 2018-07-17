@@ -692,7 +692,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Binomial(n0, 3)", "1/6*(-2+n0)*(-1+n0)*n0");
 		// check("Binomial(-3, -5)", "0");
 
-		
 		check("Binomial(k, 2)", "1/2*(-1+k)*k");
 		check("Binomial(k, 5)", "1/120*(-4+k)*(-3+k)*(-2+k)*(-1+k)*k");
 		check("Binomial(k, 6)", "Binomial(k,6)");
@@ -2938,9 +2937,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactorial() {
-		
+
 		check("Factorial(Infinity)", "Infinity");
-		
+
 		check("Factorial2(-1)", "1");
 		check("Factorial2(-2)", "ComplexInfinity");
 		check("Factorial2(-3)", "-1");
@@ -2967,7 +2966,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		checkNumeric("10.5!", "1.1899423083962249E7");
 		check("!a! //FullForm", "Not(Factorial(a))");
 	}
-	
+
 	// public void testExpand() {
 	// check("expand(2*(x + y)^2*Sin(x))",
 	// "2*y^2*Sin(x)+4*x*y*Sin(x)+2*x^2*Sin(x)");
@@ -3985,6 +3984,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Hypergeometric2F1(1,2,3/2,x^2/9)", //
 				"3/2*(1/3*Sqrt(1-x^2/9)*Sqrt(x^2)+ArcSin(Sqrt(x^2)/3))/((1-x^2/9)^(3/2)*Sqrt(x^2))");
+
 		// Hypergeometric2F1(1 - n, -n, 2, 1) == CatalanNumber(n)
 		check("Hypergeometric2F1(-3, -4, 2, 1)==CatalanNumber(4)", //
 				"True");
@@ -5734,7 +5734,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(1+k)*(2+k)");
 		check("Multinomial(10,f(x),2,3,4)", //
 				"116396280*Binomial(19+f(x),f(x))");
-		
+
 		check("Multinomial(0,0,0,0,0)", //
 				"1");
 		check("Multinomial(a,b)", //
@@ -6120,6 +6120,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testNIntegrate() {
+		// github #61
+		// these methods correctly show "NIntegrate(method=method-nsme) maximal count (xxxxx) exceeded"
+		checkNumeric("NIntegrate(1/x, {x,0,5}, Method->Romberg)", //
+				"NIntegrate(1/x,{x,0,5},Method->romberg)");
+		checkNumeric("NIntegrate(1/x, {x,0,5}, Method->Simpson)", //
+				"NIntegrate(1/x,{x,0,5},Method->simpson)");
+		checkNumeric("NIntegrate(1/x, {x,0,5}, Method->Trapezoid)", //
+				"NIntegrate(1/x,{x,0,5},Method->trapezoid)");
+		// wrong result
+		checkNumeric("NIntegrate(1/x, {x,0,5}, Method->LegendreGauss)", //
+				"10.374755035279318");
+
 		// github #26
 		checkNumeric("NIntegrate(ln(x^2), {x, -5, 99}, Method->Romberg, MaxPoints->400, MaxIterations->10000000)", //
 				"717.9282476448197");
@@ -6568,10 +6580,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testPadRight() {
-//		check("PadRight({1, 2, 3}, 5)", "{1,2,3,0,0}");
-//		check("PadRight(x(a, b, c), 5) ", "x(a,b,c,0,0)");
-//		check("PadRight({1, 2, 3}, 2)", "{1,2}");
-//		check("PadRight({1, 2, 3}, 1)", "{1}");
+		// check("PadRight({1, 2, 3}, 5)", "{1,2,3,0,0}");
+		// check("PadRight(x(a, b, c), 5) ", "x(a,b,c,0,0)");
+		// check("PadRight({1, 2, 3}, 2)", "{1,2}");
+		// check("PadRight({1, 2, 3}, 1)", "{1}");
 		check("PadRight({{}, {1, 2}, {1, 2, 3}})", "{{0,0,0},{1,2,0},{1,2,3}}");
 
 		check("PadRight({a, b, c}, 10)", "{a,b,c,0,0,0,0,0,0,0}");
