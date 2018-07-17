@@ -24,5 +24,7 @@
 	<classpathentry kind="lib" path="lib/log4j-core-2.5.jar"/>
 	<classpathentry kind="lib" path="lib/jas-2.6.5851.jar"/>
 	<classpathentry kind="lib" path="lib/guava-23.6.1-android.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-android-1.7.25.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-over-slf4j-1.7.25.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

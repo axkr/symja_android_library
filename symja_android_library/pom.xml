@@ -83,6 +83,17 @@
 				<artifactId>log4j-1.2-api</artifactId>
 				<version>2.5</version>
 			</dependency>
+			<!-- see github issues #63 -->
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-android</artifactId>
+				<version>1.7.25</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>log4j-over-slf4j</artifactId>
+				<version>1.7.25</version>
+			</dependency>
 			<dependency>
 				<groupId>org.hipparchus</groupId>
 				<artifactId>hipparchus-core</artifactId>
