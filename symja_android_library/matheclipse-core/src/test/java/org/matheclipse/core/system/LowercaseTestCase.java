@@ -3960,6 +3960,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("HornerForm(a+b*x+c*x^2,x)", "a+x*(b+c*x)");
 	}
 
+	public void testHypergeometric0F1() {
+		check("Hypergeometric0F1(b, 0)", //
+				"1");
+		check("Hypergeometric0F1(b, Infinity)", //
+				"ComplexInfinity");
+		
+		check("Hypergeometric0F1(1/2, z)", //
+				"Cosh(2*Sqrt(z))");
+		check("Hypergeometric0F1(1/2, -a)", //
+				"Cos(2*Sqrt(a))");
+		check("Hypergeometric0F1(3/2, z)", //
+				"Sinh(2*Sqrt(z))/(2*Sqrt(z))");
+		check("Hypergeometric0F1(3/2, -a)", //
+				"Sin(2*Sqrt(a))/(2*Sqrt(a))");
+		
+		check("Hypergeometric0F1({1, 2, 3}, 1.5)", //
+				"{3.16559,1.96279,1.60374}");
+		check("Hypergeometric0F1(1,-2.0)", //
+				"-0.19655");
+		checkNumeric("Hypergeometric0F1(1,1.5)", //
+				"3.1655890675997793");
+	}
+
 	public void testHypergeometric1F1() {
 		check("Hypergeometric1F1(1,b,z)", "(-1+b)*E^z*z^(1-b)*(Gamma(-1+b)-Gamma(-1+b,z))");
 		check("Hypergeometric1F1(2,b,z)", //
@@ -3977,7 +4000,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Hypergeometric1F1(-1,2,3.0)", "-0.5");
 		check("Hypergeometric1F1(1,2,3.0)", "6.36185");
 		checkNumeric("Hypergeometric1F1(1,{2,3,4},5.0)", "{29.4826318205153,11.393052728206118,6.235831636923671}");
-
 	}
 
 	public void testHypergeometric2F1() {
@@ -3992,6 +4014,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"(-b+b^2+c-2*b*c+c^2)/(c*(1+c))");
 
 		check("Hypergeometric2F1(0.5,0.333,0.666,0.5)", "1.18566");
+		checkNumeric("Hypergeometric2F1(0.5,Sin(Pi),0.666,-0.5)", "1.0");
 		checkNumeric("Hypergeometric2F1(0.5,0.333,0.666,-0.5)", "0.9026782488379839");
 		checkNumeric("Hypergeometric2F1(0.5,0.333,0.666,0.75)", "1.397573218428824");
 		checkNumeric("Hypergeometric2F1(0.5,0.333,0.666,-0.75)", "0.8677508558430699");

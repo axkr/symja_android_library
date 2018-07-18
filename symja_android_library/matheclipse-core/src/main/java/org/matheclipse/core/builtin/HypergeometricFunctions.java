@@ -22,6 +22,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.reflection.system.rules.Hypergeometric0F1Rules;
 import org.matheclipse.core.reflection.system.rules.Hypergeometric2F1Rules;
 
 public class HypergeometricFunctions {
@@ -31,6 +32,7 @@ public class HypergeometricFunctions {
 		F.FresnelC.setEvaluator(new FresnelC());
 		F.FresnelS.setEvaluator(new FresnelS());
 		F.GegenbauerC.setEvaluator(new GegenbauerC());
+		F.Hypergeometric0F1.setEvaluator(new Hypergeometric0F1());
 		F.Hypergeometric1F1.setEvaluator(new Hypergeometric1F1());
 		F.Hypergeometric2F1.setEvaluator(new Hypergeometric2F1());
 		F.LogIntegral.setEvaluator(new LogIntegral());
@@ -360,6 +362,43 @@ public class HypergeometricFunctions {
 		}
 	}
 
+	private static class Hypergeometric0F1 extends AbstractFunctionEvaluator implements Hypergeometric0F1Rules {
+		@Override
+		public IAST getRuleAST() {
+			return RULES;
+		}
+		
+		@Override
+		public IExpr evaluate(IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+
+			IExpr b = ast.arg1();
+			IExpr z = ast.arg2();
+			if (z.isZero()) {
+				return F.C1;
+			}
+			if (z.isInfinity()) {
+				return F.CComplexInfinity;
+			}
+			if (b.isReal() && z.isReal()) {
+				double bDouble = ((ISignedNumber) b).doubleValue();
+				double zDouble = ((ISignedNumber) z).doubleValue();
+				try {
+					return F.num(de.lab4inf.math.functions.HypergeometricLimitFunction.limitSeries(bDouble, zDouble));
+				} catch (RuntimeException rex) {
+					engine.printMessage("Hypergeometric0F1: " + rex.getMessage());
+				}
+			}
+			return F.NIL;
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+			newSymbol.setAttributes(ISymbol.LISTABLE | ISymbol.NUMERICFUNCTION);
+			super.setUp(newSymbol);
+		}
+	}
+
 	private static class Hypergeometric1F1 extends AbstractFunctionEvaluator {
 
 		@Override
@@ -442,7 +481,7 @@ public class HypergeometricFunctions {
 		public IAST getRuleAST() {
 			return RULES;
 		}
-		
+
 		@Override
 		public IExpr evaluate(IAST ast, EvalEngine engine) {
 			Validate.checkSize(ast, 5);
