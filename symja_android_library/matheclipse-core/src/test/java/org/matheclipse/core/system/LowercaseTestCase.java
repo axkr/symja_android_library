@@ -21,6 +21,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void test001() {
 		// syntax error in relaxed mode
 		// check("Sin[x]", "");
+		
+		// github #66
+		Double d = Double.parseDouble("1231231236123216361256312631627.12312312");
+		checkNumeric("1231231236123216361256312631627.12312312", //
+				d.toString());
+		checkNumeric("N(1231231236123216361256312631627.12312312,50)", //
+				"1.23123123612321636125631263162712312312e30");
+		
 		check("f[[1,2]]", "(f[[1,2]])");
 		check("-cos(x)", "-Cos(x)");
 		check("expand((a+b)^3)", "a^3+3*a^2*b+3*a*b^2+b^3");
