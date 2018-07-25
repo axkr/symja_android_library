@@ -7,10 +7,7 @@ import java.io.ObjectOutput;
 import java.io.ObjectStreamException;
 import java.util.Set;
 
-import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.util.ArithmeticUtils;
-import org.matheclipse.core.builtin.NumberTheory;
-import org.matheclipse.core.builtin.PolynomialFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.util.OpenIntToIExprHashMap;
 import org.matheclipse.core.interfaces.IAST;
@@ -24,7 +21,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 	/**
 	 * A map of the truncated power series coefficients <code>value != 0</code>
 	 */
-	OpenIntToIExprHashMap coefficientValues;
+	OpenIntToIExprHashMap<IExpr> coefficientValues;
 
 	/**
 	 * The power of this series.

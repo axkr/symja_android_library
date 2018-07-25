@@ -36,11 +36,21 @@ public class MMAConsole {
 	 */
 	private long fSeconds = 60;
 
-	private boolean fUseJavaForm = false;
+	private final static int OUTPUTFORM = 0;
+	
+	private final static int JAVAFORM = 1;
+	
+	private final static int TRADITIONALFORM = 2;
+	
+	private final static int PRETTYFORM = 3;
+
+	private int fUsedForm = OUTPUTFORM;
 
 	private ExprEvaluator fEvaluator;
 
 	private OutputFormFactory fOutputFactory;
+
+	private OutputFormFactory fOutputTraditionalFactory;
 
 	/**
 	 * Use pretty printer for expression output n print stream
@@ -108,31 +118,39 @@ public class MMAConsole {
 				inputExpression = console.readString(System.out, "▶    ");
 				if (inputExpression != null) {
 					trimmedInput = inputExpression.trim();
-					if ((inputExpression.length() >= 4)
-							&& inputExpression.toLowerCase(Locale.ENGLISH).substring(0, 4).equals("exit")) {
-						System.out.println("Closing Symja console... bye.");
-						System.exit(0);
-					} else if ((trimmedInput.length() >= 7)
-							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 7).equals("javaoff")) {
-						System.out.println("Disabling output for JavaForm");
-						console.fUseJavaForm = false;
-						continue;
-					} else if ((trimmedInput.length() >= 6)
-							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 6).equals("javaon")) {
-						System.out.println("Enabling output for JavaForm");
-						console.fUseJavaForm = true;
-						continue;
-					} else if ((inputExpression.length() >= 10)
-							&& inputExpression.toLowerCase(Locale.ENGLISH).substring(0, 10).equals("timeoutoff")) {
-						System.out.println("Disabling timeout for evaluation");
-						console.fSeconds = -1;
-						continue;
-					} else if ((inputExpression.length() >= 9)
-							&& inputExpression.toLowerCase(Locale.ENGLISH).substring(0, 9).equals("timeouton")) {
-						System.out.println("Enabling timeout for evaluation to 60 seconds.");
-						console.fSeconds = 60;
-						continue;
-					} else if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
+					if (trimmedInput.length() >= 4 && trimmedInput.charAt(0) == '\\') {
+						String command = trimmedInput.substring(1).toLowerCase(Locale.ENGLISH);
+						if (command.equals("exit")) {
+							System.out.println("Closing Symja console... bye.");
+							System.exit(0);
+						} else if (command.equals("java")) {
+							System.out.println("Enabling output for JavaForm");
+							console.fUsedForm = JAVAFORM;
+							continue;
+						} else if (command.equals("traditional")) {
+							System.out.println("Enabling output for TraditionalForm");
+							console.fUsedForm = TRADITIONALFORM;
+							continue;
+						} else if (command.equals("output")) {
+							System.out.println("Enabling output for OutputForm");
+							console.fUsedForm = OUTPUTFORM;
+							continue;
+						} else if (command.equals("pretty")) {
+							System.out.println("Enabling output for PrettyPrinterForm");
+							console.fUsedForm = PRETTYFORM;
+							continue;
+						} else if (command.equals("timeoutoff")) {
+							System.out.println("Disabling timeout for evaluation");
+							console.fSeconds = -1;
+							continue;
+						} else if (command.equals("timeouton")) {
+							System.out.println("Enabling timeout for evaluation to 60 seconds.");
+							console.fSeconds = 60;
+							continue;
+						}
+					}
+
+					if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
 						IAST list = Names.getNamesByPrefix(trimmedInput.substring(1));
 						for (int i = 1; i < list.size(); i++) {
 							System.out.print(list.get(i).toString());
@@ -146,15 +164,15 @@ public class MMAConsole {
 						}
 						continue;
 					}
-					outputExpression = console.interpreter(inputExpression);
-					System.out.println("In [" + COUNTER + "]: " + inputExpression);
+					outputExpression = console.interpreter(trimmedInput);
+					System.out.println("In [" + COUNTER + "]: " + trimmedInput);
 					// if (outputExpression.length() > 0) {
 					// System.out.println("Out[" + COUNTER + "]: " + outputExpression);
 					// }
 					if (console.fPrettyPrinter) {
-						console.prettyPrinter(inputExpression);
+						console.prettyPrinter(trimmedInput);
 					} else {
-						console.resultPrinter(inputExpression);
+						console.resultPrinter(trimmedInput);
 					}
 					COUNTER++;
 				}
@@ -333,6 +351,7 @@ public class MMAConsole {
 		DecimalFormatSymbols usSymbols = new DecimalFormatSymbols(Locale.US);
 		DecimalFormat decimalFormat = new DecimalFormat("0.0####", usSymbols);
 		fOutputFactory = OutputFormFactory.get(false, false, decimalFormat);
+		fOutputTraditionalFactory = OutputFormFactory.get(true, false, decimalFormat);
 	}
 
 	/**
@@ -500,13 +519,27 @@ public class MMAConsole {
 		if (result.equals(F.Null)) {
 			return "";
 		}
-		if (fUseJavaForm) {
+		switch (fUsedForm) {
+		case JAVAFORM:
 			return result.internalJavaString(false, -1, false, true, false);
+		case TRADITIONALFORM:
+			StringBuilder traditionalBuffer = new StringBuilder();
+			fOutputTraditionalFactory.reset();
+			fOutputTraditionalFactory.convert(traditionalBuffer, result);
+			return traditionalBuffer.toString();
+		case PRETTYFORM:
+			ASCIIPrettyPrinter3 prettyBuffer = new ASCIIPrettyPrinter3();
+			prettyBuffer.convert(result);
+			System.out.println();
+			String[] outputExpression = prettyBuffer.toStringBuilder();
+			ASCIIPrettyPrinter3.prettyPrinter(System.out, outputExpression, "Out[" + COUNTER + "]: ");
+			return "";
+		default:
+			StringBuilder strBuffer = new StringBuilder();
+			fOutputFactory.reset();
+			fOutputFactory.convert(strBuffer, result);
+			return strBuffer.toString();
 		}
-		StringBuilder strBuffer = new StringBuilder();
-		fOutputFactory.reset();
-		fOutputFactory.convert(strBuffer, result);
-		return strBuffer.toString();
 	}
 
 	/**

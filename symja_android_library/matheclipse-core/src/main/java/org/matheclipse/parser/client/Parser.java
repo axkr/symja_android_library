@@ -133,7 +133,7 @@ public class Parser extends Scanner {
 	 *            parse in &quot;package mode&quot; and initialize an internal list of ASTNodes
 	 */
 	public Parser(INodeParserFactory factory, final boolean relaxedSyntax, boolean packageMode) {
-		super(packageMode);
+		super(packageMode, Config.EXPLICIT_TIMES_OPERATOR);
 		this.fRelaxedSyntax = relaxedSyntax;
 		this.fFactory = factory;
 		if (packageMode) {

@@ -10,6 +10,8 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 
+import ch.ethz.idsc.tensor.qty.IQuantity;
+
 /**
  * <p>
  * Plus operator for adding multiple arguments with the <code>plus(argument)</code> method and returning the result,
@@ -236,6 +238,15 @@ public class PlusOp {
 				return F.NIL;
 			}
 			numberValue = plusInterval(numberValue, arg);
+			evaled = true;
+			return F.NIL;
+		} else if (arg.isQuantity()) {
+			if (numberValue == null) {
+				numberValue = arg;
+				return F.NIL;
+			}
+			IQuantity q = (IQuantity) arg;
+			numberValue = q.plus(numberValue);
 			evaled = true;
 			return F.NIL;
 		} else if (arg instanceof ASTSeriesData) {

@@ -3,7 +3,7 @@ package org.matheclipse.core.reflection.system;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.charset.Charset; 
+import java.nio.charset.Charset;
 
 import javax.imageio.ImageIO;
 
@@ -20,11 +20,13 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
-import org.matheclipse.core.io.Filename;
-import org.matheclipse.core.io.ImageFormat;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.ast.ASTNode;
+
+import ch.ethz.idsc.tensor.io.Extension;
+import ch.ethz.idsc.tensor.io.Filename;
+import ch.ethz.idsc.tensor.io.ImageFormat;
 
 /**
  * Import some data from file system.
@@ -98,9 +100,12 @@ public class Import extends AbstractEvaluator {
 
 	public static IExpr of(File file, EvalEngine engine) throws IOException {
 		Filename filename = new Filename(file);
-		if (filename.hasExtension("jpg") || filename.hasExtension("png")) {
+		Extension extension = filename.extension();
+		if (extension.equals(Extension.JPG) || extension.equals(Extension.PNG)) {
+			// if (filename.hasExtension("jpg") || filename.hasExtension("png")) {
 			return ImageFormat.from(ImageIO.read(file));
 		}
+
 		AST2Expr ast2Expr = new AST2Expr(engine.isRelaxedSyntax(), engine);
 		final Parser parser = new Parser(engine.isRelaxedSyntax(), true);
 		String str = com.google.common.io.Files.toString(file, Charset.defaultCharset());

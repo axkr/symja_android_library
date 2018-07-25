@@ -112,6 +112,11 @@ public class ExprParser extends Scanner {
 	 */
 	private boolean fHoldExpression;
 
+	/**
+	 * If <code>true</code> the parser doesn't distinguish between lower- or uppercase symbols (i.e. constants, function
+	 * names,...), with the exception of symbols with only one character (i.e. the variable &quot;i&quot; is different
+	 * from the imaginary unit &quot;I&quot;)
+	 */
 	private final boolean fRelaxedSyntax;
 
 	private List<IExpr> fNodeList = null;
@@ -121,7 +126,8 @@ public class ExprParser extends Scanner {
 	protected IParserFactory fFactory;
 
 	public ExprParser(final EvalEngine engine) {
-		this(engine, ExprParserFactory.MMA_STYLE_FACTORY, engine.isRelaxedSyntax(), false);
+		this(engine, ExprParserFactory.MMA_STYLE_FACTORY, engine.isRelaxedSyntax(), false,
+				Config.EXPLICIT_TIMES_OPERATOR);
 	}
 
 	/**
@@ -150,12 +156,12 @@ public class ExprParser extends Scanner {
 	 * @throws SyntaxError
 	 */
 	public ExprParser(final EvalEngine engine, IParserFactory factory, final boolean relaxedSyntax) throws SyntaxError {
-		this(engine, factory, relaxedSyntax, false);
+		this(engine, factory, relaxedSyntax, false, Config.EXPLICIT_TIMES_OPERATOR);
 	}
 
-	public ExprParser(final EvalEngine engine, IParserFactory factory, final boolean relaxedSyntax, boolean packageMode)
-			throws SyntaxError {
-		super(packageMode);
+	public ExprParser(final EvalEngine engine, IParserFactory factory, final boolean relaxedSyntax, boolean packageMode,
+			boolean explicitTimes) throws SyntaxError {
+		super(packageMode, explicitTimes);
 		this.fRelaxedSyntax = relaxedSyntax;
 		this.fFactory = factory;
 		this.fEngine = engine;
@@ -395,7 +401,7 @@ public class ExprParser extends Scanner {
 			}
 			getNextToken();
 			if (fToken == TT_PRECEDENCE_OPEN) {
-				if (!Config.EXPLICIT_TIMES_OPERATOR) {
+				if (!fExplicitTimes) {
 					Operator oper = fFactory.get("Times");
 					if (Config.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
 						return getTimes(temp);
@@ -1103,7 +1109,7 @@ public class ExprParser extends Scanner {
 				// return lhs;
 				// }
 
-				if (!Config.EXPLICIT_TIMES_OPERATOR) {
+				if (!fExplicitTimes) {
 					// lazy evaluation of multiplication
 					oper = fFactory.get("Times");
 					if (Config.DOMINANT_IMPLICIT_TIMES || oper.getPrecedence() >= min_precedence) {
@@ -1202,7 +1208,7 @@ public class ExprParser extends Scanner {
 			}
 			if ((fToken == TT_LIST_OPEN) || (fToken == TT_PRECEDENCE_OPEN) || (fToken == TT_IDENTIFIER)
 					|| (fToken == TT_STRING) || (fToken == TT_DIGIT) || (fToken == TT_SLOT)) {
-				if (!Config.EXPLICIT_TIMES_OPERATOR) {
+				if (!fExplicitTimes) {
 					// lazy evaluation of multiplication
 					InfixExprOperator timesOperator = (InfixExprOperator) fFactory.get("Times");
 					if (Config.DOMINANT_IMPLICIT_TIMES || timesOperator.getPrecedence() > min_precedence) {

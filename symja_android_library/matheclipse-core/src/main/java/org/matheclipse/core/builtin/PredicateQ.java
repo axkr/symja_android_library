@@ -51,6 +51,7 @@ public class PredicateQ {
 		F.OddQ.setEvaluator(new OddQ());
 		F.PossibleZeroQ.setEvaluator(new PossibleZeroQ());
 		F.PrimeQ.setEvaluator(new PrimeQ());
+		F.QuantityQ.setEvaluator(new QuantityQ());
 		F.RealNumberQ.setEvaluator(new RealNumberQ());
 		F.SquareMatrixQ.setEvaluator(new SquareMatrixQ());
 		F.SymbolQ.setPredicateQ(x -> x.isSymbol());
@@ -660,6 +661,24 @@ public class PredicateQ {
 		@Override
 		public boolean test(final IExpr expr) {
 			return expr.isInteger() && ((IInteger) expr).isOdd();
+		}
+
+	}
+
+	private static class QuantityQ extends AbstractCorePredicateEvaluator implements Predicate<IExpr> {
+
+		@Override
+		public boolean evalArg1Boole(final IExpr arg1, EvalEngine engine) {
+			return arg1.isQuantity();
+		}
+
+		@Override
+		public void setUp(final ISymbol newSymbol) {
+		}
+
+		@Override
+		public boolean test(final IExpr expr) {
+			return expr.isQuantity();
 		}
 
 	}

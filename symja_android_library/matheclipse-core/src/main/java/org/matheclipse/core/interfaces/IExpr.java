@@ -107,9 +107,9 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		TRUE, FALSE, UNDEFINED
 	}
 
-	public final static int ASTID = 2024;
+	public final static int ASTID = 4096;
 
-	public final static int BLANKID = 512;
+	public final static int BLANKID = 16384;
 
 	public final static int COMPLEXID = 32;
 
@@ -121,15 +121,17 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 
 	public final static int INTEGERID = 8;
 
-	public final static int METHODSYMBOLID = 4096;
+	public final static int METHODSYMBOLID = 8192;
 
-	public final static int PATTERNID = 1024;
+	public final static int PATTERNID = 2048;
 
 	public final static int SERIESID = 64;
+	
+	public final static int QUANTITYID = 128;
 
-	public final static int STRINGID = 128;
+	public final static int STRINGID = 256;
 
-	public final static int SYMBOLID = 256;
+	public final static int SYMBOLID = 512;
 
 	/**
 	 * Operator overloading for Scala operator <code>/</code>. Calls <code>divide(that)</code>.
@@ -250,6 +252,18 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 		// ast.append(leaves.get(i));
 		// }
 		// return ast;
+	}
+
+	/**
+	 * Returns the <b>number of arguments</b> in this {@code IAST}. The <b>number of arguments</b> equals
+	 * <code>size() - 1</code> (i.e. the <b>number of elements</b> minus 1). If this is an atom return size
+	 * <code>-1</code>.
+	 * 
+	 * @return the number of arguments in this {@code IAST}.
+	 * @see #size()
+	 */
+	default int argSize() {
+		return -1;
 	}
 
 	default Object asType(Class<?> clazz) {
@@ -452,10 +466,10 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 */
 	default double evalDouble() {
 		return EvalEngine.get().evalDouble(this);
-//		if (isReal()) {
-//			return ((ISignedNumber) this).doubleValue();
-//		}
-//		throw new WrongArgumentType(this, "Conversion into a double numeric value is not possible!");
+		// if (isReal()) {
+		// return ((ISignedNumber) this).doubleValue();
+		// }
+		// throw new WrongArgumentType(this, "Conversion into a double numeric value is not possible!");
 	}
 
 	/**
@@ -488,7 +502,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return <code>null</code> if the conversion is not possible.
 	 * @deprecated use {@link #evalReal()} instead
 	 */
-	default ISignedNumber evalSignedNumber() { 
+	default ISignedNumber evalSignedNumber() {
 		return evalReal();
 	}
 
@@ -1561,6 +1575,15 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	 * @return
 	 */
 	default boolean isInterval1() {
+		return false;
+	}
+
+	/**
+	 * Test if this expression is a Quantity(a,unit) expression.
+	 * 
+	 * @return
+	 */
+	default boolean isQuantity() {
 		return false;
 	}
 

@@ -602,15 +602,15 @@ public abstract class AbstractAST implements IASTMutable {
 	}
 
 	/** {@inheritDoc} */
-//	@Override
-//	public final double evalDouble() {
-//		return EvalEngine.get().evalDouble(this);
-//		ISignedNumber signedNumber = evalReal();
-//		if (signedNumber != null) {
-//			return signedNumber.doubleValue();
-//		}
-//		throw new WrongArgumentType(this, "Conversion into a double numeric value is not possible!");
-//	}
+	// @Override
+	// public final double evalDouble() {
+	// return EvalEngine.get().evalDouble(this);
+	// ISignedNumber signedNumber = evalReal();
+	// if (signedNumber != null) {
+	// return signedNumber.doubleValue();
+	// }
+	// throw new WrongArgumentType(this, "Conversion into a double numeric value is not possible!");
+	// }
 
 	/** {@inheritDoc} */
 	@Override
@@ -902,7 +902,7 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 		return -1;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public void forEach(Consumer<? super IExpr> action) {
@@ -1977,7 +1977,7 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isNegative() {
+	public boolean isNegative() {
 		if (isNumericFunction()) {
 			IExpr result = EvalEngine.get().evalN(this);
 			if (result.isReal()) {
@@ -1989,19 +1989,19 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isNegativeInfinity() {
+	public boolean isNegativeInfinity() {
 		return this.equals(F.CNInfinity);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isNegativeResult() {
+	public boolean isNegativeResult() {
 		return AbstractAssumptions.isNegativeResult(this);
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isNonNegativeResult() {
+	public boolean isNonNegativeResult() {
 		return AbstractAssumptions.isNonNegativeResult(this);
 	}
 
@@ -2129,7 +2129,7 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isPositive() {
+	public boolean isPositive() {
 		if (isNumericFunction()) {
 			IExpr result = EvalEngine.get().evalN(this);
 			if (result.isReal()) {
@@ -2141,7 +2141,7 @@ public abstract class AbstractAST implements IASTMutable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final boolean isPositiveResult() {
+	public boolean isPositiveResult() {
 		return AbstractAssumptions.isPositiveResult(this);
 	}
 

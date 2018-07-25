@@ -269,7 +269,7 @@ public class AST extends HMArrayList implements Externalizable {
 		}
 		return hashValue;
 	}
-
+	
 	public IAST removeFromEnd(int fromPosition) {
 		if (0 < fromPosition && fromPosition <= size()) {
 			if (fromPosition == size()) {

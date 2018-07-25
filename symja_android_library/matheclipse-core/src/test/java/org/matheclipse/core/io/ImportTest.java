@@ -11,6 +11,7 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 
+import ch.ethz.idsc.tensor.io.ImageFormat;
 import junit.framework.TestCase;
 
 public class ImportTest extends TestCase {

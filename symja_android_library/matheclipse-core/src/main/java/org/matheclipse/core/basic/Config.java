@@ -221,10 +221,6 @@ public class Config {
 	 * <li><code>0o</code> or <code>0O</code> for octal numbers</li>
 	 * </ul>
 	 * </p>
-	 * <p>
-	 * 
-	 * </p>
-	 * <p>
 	 */
 	public static boolean EXPLICIT_TIMES_OPERATOR = false;
 

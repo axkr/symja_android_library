@@ -9,9 +9,9 @@ import org.apfloat.Apfloat;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.convert.AST2Expr;
-import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
+import org.matheclipse.core.expression.ASTSeriesData;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.ID;
@@ -34,6 +34,8 @@ import org.matheclipse.parser.client.operator.InfixOperator;
 import org.matheclipse.parser.client.operator.Operator;
 import org.matheclipse.parser.client.operator.PostfixOperator;
 import org.matheclipse.parser.client.operator.PrefixOperator;
+
+import ch.ethz.idsc.tensor.qty.IQuantity;
 
 /**
  * Converts an internal <code>IExpr</code> into a user readable string.
@@ -879,6 +881,14 @@ public class OutputFormFactory {
 				int functionID = head.ordinal();
 				if (functionID > ID.UNKNOWN) {
 					switch (functionID) {
+					case ID.Quantity:
+						// if (head.equals(F.SeriesData) && (list.size() == 7)) {
+						if (list instanceof IQuantity) {
+							if (convertQuantityData(buf, (IQuantity) list, precedence)) {
+								return;
+							}
+						}
+						break;
 					case ID.SeriesData:
 						// if (head.equals(F.SeriesData) && (list.size() == 7)) {
 						if (list instanceof ASTSeriesData) {
@@ -1169,6 +1179,26 @@ public class OutputFormFactory {
 
 	}
 
+	public boolean convertQuantityData(final Appendable buf, final IQuantity quantity, final int precedence)
+			throws IOException {
+		int operPrecedence = ASTNodeFactory.PLUS_PRECEDENCE;
+		StringBuilder tempBuffer = new StringBuilder();
+		if (operPrecedence < precedence) {
+			append(tempBuffer, "(");
+		}
+
+		try { 
+			buf.append(quantity.toString());
+		} catch (Exception ex) {
+			return false;
+		}
+		if (operPrecedence < precedence) {
+			append(tempBuffer, ")");
+		}
+		buf.append(tempBuffer);
+		return true;
+
+	}
 	/**
 	 * Convert a factor of a <code>SeriesData</code> object.
 	 * 

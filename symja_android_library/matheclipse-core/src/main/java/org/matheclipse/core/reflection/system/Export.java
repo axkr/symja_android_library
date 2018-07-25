@@ -16,8 +16,10 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IStringX;
-import org.matheclipse.core.io.Filename;
-import org.matheclipse.core.io.ImageFormat;
+
+import ch.ethz.idsc.tensor.io.Extension;
+import ch.ethz.idsc.tensor.io.Filename;
+import ch.ethz.idsc.tensor.io.ImageFormat;
 
 /**
  * Export some data from file system.
@@ -107,11 +109,12 @@ public class Export extends AbstractEvaluator {
 		// if (filename.hasExtension("csv"))
 		// Files.write(file.toPath(), (Iterable<String>) CsvFormat.of(tensor)::iterator);
 		// else
-		if (filename.hasExtension("jpg"))
+		Extension extension = filename.extension();
+		if (extension.equals(Extension.JPG))
 			ImageIO.write(ImageFormat.jpg(tensor), "jpg", file);
 		// else if (filename.hasExtension("m"))
 		// Files.write(file.toPath(), (Iterable<String>) MatlabExport.of(tensor)::iterator);
-		else if (filename.hasExtension("png"))
+		if (extension.equals(Extension.PNG))
 			ImageIO.write(ImageFormat.of(tensor), "png", file);
 		// else if (filename.hasExtension("tensor"))
 		// object(file, tensor);

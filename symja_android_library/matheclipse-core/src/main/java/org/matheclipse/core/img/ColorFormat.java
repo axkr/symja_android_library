@@ -8,7 +8,8 @@ import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.io.ImageFormat;
+
+import ch.ethz.idsc.tensor.io.ImageFormat;
 
 /**
  * mappings between {@link IAST}, {@link Color}, and 0xAA:RR:GG:BB integer

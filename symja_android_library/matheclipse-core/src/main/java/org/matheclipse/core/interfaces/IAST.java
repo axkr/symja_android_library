@@ -11,10 +11,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ObjIntConsumer;
 import java.util.function.Predicate;
+//import java.util.stream.Stream;
 import java.util.stream.Stream;
 
 import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.expression.AST;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.generic.ObjIntPredicate;
 
@@ -273,14 +273,9 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	public IExpr arg5();
 
-	/**
-	 * Returns the <b>number of arguments</b> in this {@code IAST}. The <b>number of arguments</b> equals
-	 * <code>size() - 1</code> (i.e. the <b>number of elements</b> minus 1)
-	 * 
-	 * @return the number of arguments in this {@code IAST}.
-	 * @see #size()
-	 */
-	public int argSize();
+	default int argSize() {
+		return size() - 1;
+	}
 
 	/**
 	 * Collect all arguments of this AST in a new set.
@@ -515,6 +510,25 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Copy of sub <code>AST</code> fromIndex (inclusive) to toIndex (exclusive).
+	 * 
+	 * @param fromIndex
+	 * @param toIndex
+	 * @return copy of sub <code>AST</code> fromIndex (inclusive) to toIndex (exclusive)
+	 */
+	default IASTAppendable extract(int fromIndex, int toIndex) {
+		if (0 < fromIndex && fromIndex <= size() && fromIndex < toIndex && toIndex <= size()) {
+			IASTAppendable ast = F.ast(head(), toIndex - fromIndex, false);
+			for (int i = fromIndex; i < toIndex; i++) {
+				ast.append(get(i));
+			}
+			return ast;
+		}
+		throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(fromIndex) + ", Size: " + size());
+
 	}
 
 	/**

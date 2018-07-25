@@ -10,6 +10,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.StatUtils;
 import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.convert.Convert;
+import org.matheclipse.core.convert.Expr2Object;
 import org.matheclipse.core.eval.EvalAttributes;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -48,6 +49,7 @@ import org.uncommons.maths.random.PoissonGenerator;
 public class StatisticsFunctions {
 
 	static {
+		F.ArithmeticGeometricMean.setEvaluator(new ArithmeticGeometricMean());
 		F.CDF.setEvaluator(new CDF());
 		F.PDF.setEvaluator(new PDF());
 		F.BernoulliDistribution.setEvaluator(new BernoulliDistribution());
@@ -198,6 +200,35 @@ public class StatisticsFunctions {
 		 * @return P(X == n), i.e. probability of random variable X == n
 		 */
 		protected abstract IExpr protected_p_equals(IAST dist, IExpr n);
+	}
+
+	private static class ArithmeticGeometricMean extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+			Validate.checkSize(ast, 3);
+			IExpr a = ast.arg1();
+			IExpr b = ast.arg2();
+			if (a.isZero() || a.equals(b)) {
+				return a;
+			}
+			// IAST arg1 = Validate.checkASTType(ast, 1);
+			// if (arg1.isRealVector()) {
+			// return F.num(StatUtils.geometricMean(arg1.toDoubleVector()));
+			// }
+			// if (arg1.size() > 1) {
+			// return F.Power(arg1.setAtClone(0, F.Times), F.fraction(1, arg1.argSize()));
+			// }
+			return F.NIL;
+		}
+
+		// @Override
+		// public IExpr numericEval(final IAST ast, EvalEngine engine) {
+		// Validate.checkSize(ast, 2);
+		//
+		// double[] values = Expr2Object.toDoubleVector(ast.getAST(1));
+		// return F.num(StatUtils.geometricMean(values));
+		// }
 	}
 
 	/**

@@ -876,8 +876,8 @@ public class Algebra {
 			return arg1;
 		}
 
-		private void distributePosition(IASTAppendable resultCollector, IASTAppendable stepResult, IExpr head, IAST arg1,
-				int position) {
+		private void distributePosition(IASTAppendable resultCollector, IASTAppendable stepResult, IExpr head,
+				IAST arg1, int position) {
 			if (arg1.size() == position) {
 				resultCollector.append(stepResult);
 				return;
@@ -893,7 +893,7 @@ public class Algebra {
 					distributePosition(resultCollector, res2, head, arg1, position + 1);
 				});
 			} else {
-				IASTAppendable res2 = stepResult; 
+				IASTAppendable res2 = stepResult;
 				res2.append(arg1.get(position));
 				distributePosition(resultCollector, res2, head, arg1, position + 1);
 			}

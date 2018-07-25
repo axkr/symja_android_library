@@ -6,6 +6,7 @@ import static org.matheclipse.core.expression.F.x_;
 
 import org.hipparchus.analysis.solvers.BisectionSolver;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.basic.ToggleFeature;
 import org.matheclipse.parser.client.Parser;
 import org.matheclipse.parser.client.ast.ASTNode;
 
@@ -21,14 +22,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void test001() {
 		// syntax error in relaxed mode
 		// check("Sin[x]", "");
-		
+
 		// github #66
 		Double d = Double.parseDouble("1231231236123216361256312631627.12312312");
 		checkNumeric("1231231236123216361256312631627.12312312", //
 				d.toString());
 		checkNumeric("N(1231231236123216361256312631627.12312312,50)", //
 				"1.23123123612321636125631263162712312312e30");
-		
+
 		check("f[[1,2]]", "(f[[1,2]])");
 		check("-cos(x)", "-Cos(x)");
 		check("expand((a+b)^3)", "a^3+3*a^2*b+3*a*b^2+b^3");
@@ -3973,7 +3974,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1");
 		check("Hypergeometric0F1(b, Infinity)", //
 				"ComplexInfinity");
-		
+
 		check("Hypergeometric0F1(1/2, z)", //
 				"Cosh(2*Sqrt(z))");
 		check("Hypergeometric0F1(1/2, -a)", //
@@ -3982,7 +3983,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Sinh(2*Sqrt(z))/(2*Sqrt(z))");
 		check("Hypergeometric0F1(3/2, -a)", //
 				"Sin(2*Sqrt(a))/(2*Sqrt(a))");
-		
+
 		check("Hypergeometric0F1({1, 2, 3}, 1.5)", //
 				"{3.16559,1.96279,1.60374}");
 		check("Hypergeometric0F1(1,-2.0)", //
@@ -7707,6 +7708,43 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Quantile({{1,2},{ E, Pi, Sqrt(2),Sqrt(3)}}, 0.75)", "Quantile({{1,2},{E,Pi,Sqrt(2),Sqrt(3)}},0.75)");
 	}
 
+	public void testQuantity() {
+		if (ToggleFeature.QUANTITY) {
+			check("Quantity(3, \"Hz^(-2)*N*m^(-1)\")", //
+					"3[Hz^-2*N*m^-1]");
+			check("0+Quantity(3, \"m\")", //
+					"3[m]");
+			check("0*Quantity(3, \"m\")", //
+					"0[m]");
+			check("1*Quantity(3, \"m\")", //
+					"3[m]");
+			check("Quantity(3, \"m\")", //
+					"3[m]");
+			check("Quantity(3, \"Meters\")", //
+					"3[Meters]");
+		}
+	}
+
+	public void testQuantityQ() {
+		if (ToggleFeature.QUANTITY) {
+			check("QuantityQ(Quantity(2, x))", //
+					"False");
+			check("QuantityQ(Quantity(3, \"m\"))", //
+					"True");
+			check("QuantityQ(Quantity(3, \"Meters\"))", //
+					"True");
+		}
+	}
+
+	public void testQuantityMagnitude() {
+		if (ToggleFeature.QUANTITY) {
+			check("QuantityMagnitude(Quantity(3.4, \"m\"))", //
+					"3.4");
+			check("QuantityMagnitude(Quantity(3.4, \"km\"), \"m\")", //
+					"3400.0");
+		}
+	}
+
 	public void testQuiet() {
 		check("Quiet(1/0)", "ComplexInfinity");
 		check("1/0", "ComplexInfinity");
@@ -10355,6 +10393,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Unique()", "$1");
 		check("Unique(x)", "x$2");
 		check("Unique(\"x\")", "x3");
+	}
+
+	public void testUnitConvert() {
+		if (ToggleFeature.QUANTITY) {
+			// assertEquals(ScalarParser.of("1.6021766208E-19"), F.num(1.6021766208E-19));
+			// check("UnitConvert(Quantity(3, \"Hz^-2*N*m^-1\") )", //
+			// "3[kg]");
+			check("UnitConvert(Quantity(3.8, \"lb\") )", //
+					"1.723651006[kg]");
+			check("UnitConvert(Quantity(8.2, \"nmi\"), \"km\")", //
+					"15.186399999999999[km]");
+		}
 	}
 
 	public void testUnitize() {
