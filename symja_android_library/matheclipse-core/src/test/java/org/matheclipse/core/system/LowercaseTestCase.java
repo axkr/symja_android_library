@@ -503,6 +503,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("AtomQ(x + y)", "False");
 	}
 
+	public void testArithmeticGeometricMean() {
+		check("ArithmeticGeometricMean(a, 1/a)", // orderless
+				"ArithmeticGeometricMean(1/a,a)");
+		check("ArithmeticGeometricMean(a, 0)", //
+				"0");
+		check("ArithmeticGeometricMean(0, b)", //
+				"0");
+		check("ArithmeticGeometricMean(d, d)", //
+				"d");
+		
+		check("ArithmeticGeometricMean({1.0, 2.0, 3.0}, 5)", //
+				"{2.60401,3.329,3.93624}");
+		check("N(ArithmeticGeometricMean(1,2), 20)", //
+				"1.4567910310469068691");
+		
+		check("ArithmeticGeometricMean(1 - I, 2.5 + I)", //
+				"1.83463+I*(-0.19146)");
+		check("N(ArithmeticGeometricMean(1 - I, 2.5 + I), 30)", //
+				"1.83462883815328396810218573046+I*(-1.91461625197137083440493535055e-1)");
+	}
+
 	public void testAttributes() {
 		check("Attributes(Plus)", "{Flat,Listable,OneIdentity,Orderless,NumericFunction}");
 	}
