@@ -512,12 +512,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"0");
 		check("ArithmeticGeometricMean(d, d)", //
 				"d");
-		
+
 		check("ArithmeticGeometricMean({1.0, 2.0, 3.0}, 5)", //
 				"{2.60401,3.329,3.93624}");
 		check("N(ArithmeticGeometricMean(1,2), 20)", //
 				"1.4567910310469068691");
-		
+
 		check("ArithmeticGeometricMean(1 - I, 2.5 + I)", //
 				"1.83463+I*(-0.19146)");
 		check("N(ArithmeticGeometricMean(1 - I, 2.5 + I), 30)", //
@@ -2530,16 +2530,25 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// TODO
 		// check("Eliminate({a0*x^p+a1*x^q==0},x)", //
 		// "(-a1)*x^q == a0*x^p");
-		check("Eliminate({x == 2 + y, y == z}, y)", "{x==2+z}");
-		check("Eliminate({x == 2 + y, y == z}, {y,v})", "{x==2+z}");
-		check("Eliminate({2*x + 3*y + 4*z == 1, 9*x + 8*y + 7*z == 2}, z)", "{11/2*x+11/4*y==1/4}");
+
+		check("Eliminate({(a*x + b)/(c*x + d)==y},x)", //
+				"True");
+		check("Eliminate({x == 2 + y, y == z}, y)", //
+				"x==2+z");
+		check("Eliminate({x == 2 + y, y == z}, {y,v})", //
+				"x==2+z");
+		check("Eliminate({2*x + 3*y + 4*z == 1, 9*x + 8*y + 7*z == 2}, z)", //
+				"11/2*x+11/4*y==1/4");
 		check("Eliminate({x^2 + y^2 + z^2 == 1, x - y + z == 2, x^3 - y^2 == z + 1}, {y, z})",
-				"{-4*x+2*x^2-4*z+2*x*z+2*z^2==-3,-4+4*x-x^2+x^3+4*z-2*x*z-z^2==1+z}");
-		check("Eliminate({x == 2 + y^3, y^2 == z}, y)", "{x==2+z^(3/2)}");
+				"-4*x+2*x^2-4*z+2*x*z+2*z^2==-3&&-4+4*x-x^2+x^3+4*z-2*x*z-z^2==1+z");
+		check("Eliminate({x == 2 + y^3, y^2 == z}, y)", //
+				"x==2+z^(3/2)");
 
 		// use evaluation step: Cos(ArcSin(y)) => Sqrt(1-y^2)
-		check("Eliminate({Sin(x)==y, Cos(x) == z}, x)", "{Sqrt(1-y^2)==z}");
-		check("Eliminate({a^x==y, b^(2*x) == z}, x)", "{b^((2*Log(y))/Log(a))==z}");
+		check("Eliminate({Sin(x)==y, Cos(x) == z}, x)", //
+				"Sqrt(1-y^2)==z");
+		check("Eliminate({a^x==y, b^(2*x) == z}, x)", //
+				"b^((2*Log(y))/Log(a))==z");
 	}
 
 	public void testEllipticE() {
@@ -4481,8 +4490,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInverseFunction() {
-		check("InverseFunction(Abs)", "-#1&");
-		check("InverseFunction(Sin)", "ArcSin");
+		check("InverseFunction((a*# + b)/(c*# + d) &)", //
+				"(-b+d*#1)/(a-c*#1)&");
+		check("InverseFunction((a * # + b)&)", //
+				"(-b+#1)/a&");
+		check("InverseFunction(Abs)", //
+				"-#1&");
+		check("InverseFunction(Sin)", //
+				"ArcSin");
 	}
 
 	public void testInverseGammaRegularized() {
@@ -8989,6 +9004,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSolve() {
+		check("Solve((a*x + b)/(c*x + d)==y,x)", //
+				"{{x->-(b-d*y)/(a-c*y)}}");
+		
 		check("E^((Log(a)+Log(b))/m)", //
 				"E^((Log(a)+Log(b))/m)");
 		check("Solve(a0*x^p+a1*x^q==0,x)", //
@@ -8996,67 +9014,89 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Solve(a*x^2+b*x==0, x)", //
 				"{{x->0},{x->-b/a}}");
-		check("Solve({Cos(x)*x==0, x > 10}, x)", "{}");
-		check("Solve({Cos(x)*x==0, x ==0}, x)", "{{x->0}}");
-		check("Solve({Cos(x)*x==0, x < 10}, x)", "{{x->0},{x->Pi/2}}");
+		check("Solve({Cos(x)*x==0, x > 10}, x)", //
+				"{}");
+		check("Solve({Cos(x)*x==0, x ==0}, x)", //
+				"{{x->0}}");
+		check("Solve({Cos(x)*x==0, x < 10}, x)", //
+				"{{x->0},{x->Pi/2}}");
 
 		// check("Solve((x^4 - 1)*(x^4 - 4) == 0, x, Integers)", "");
-		check("Solve(x == x, x)", "{{}}");
-		check("Solve(x == 1 && x == 2, x)", "{}");
+		check("Solve(x == x, x)", //
+				"{{}}");
+		check("Solve(x == 1 && x == 2, x)", //
+				"{}");
 
-		check("Solve((5.0*x)/y==(0.8*y)/x,x)", "{{x->-0.4*y},{x->0.4*y}}");
+		check("Solve((5.0*x)/y==(0.8*y)/x,x)", //
+				"{{x->-0.4*y},{x->0.4*y}}");
 
 		// gh issue #2
-		check("Solve(x^2+y^2==5,x)", "{{x->-Sqrt(5-y^2)},{x->Sqrt(5-y^2)}}");
+		check("Solve(x^2+y^2==5,x)", //
+				"{{x->-Sqrt(5-y^2)},{x->Sqrt(5-y^2)}}");
 
 		// check("x=20.796855124168776", "20.79686");
 		// check("Clear(x);Solve(x==(-1.0000000000000002)*Sqrt(y^2.0),y)",
 		// "{{y->1.0*Sqrt(x^2.0)}}");
 
 		// Issue #175
-		check("Solve(Sqrt(-16.0+a^2.0)/(20.0-2.0*92)==0.5,a)", "{}");
+		check("Solve(Sqrt(-16.0+a^2.0)/(20.0-2.0*92)==0.5,a)", //
+				"{}");
 
 		// Issue #166
-		check("Solve(2*x/y==x/z,x)", "{{x->0}}");
+		check("Solve(2*x/y==x/z,x)", //
+				"{{x->0}}");
 		// Issue #165
-		check("Solve((3.0*y)/x==(1.5*y)/z,x)", "{{x->2.0*z}}");
+		check("Solve((3.0*y)/x==(1.5*y)/z,x)", //
+				"{{x->2.0*z}}");
 		// Issue #162
-		check("Solve((5.0*x)/y==(0.8*y)/x,x)", "{{x->-0.4*y},{x->0.4*y}}");
+		check("Solve((5.0*x)/y==(0.8*y)/x,x)", //
+				"{{x->-0.4*y},{x->0.4*y}}");
 		// Issue #161
-		checkNumeric("Solve((0.6000000000000001*2.5)/y==z/x,x)", "{{x->0.6666666666666665*y*z}}");
+		checkNumeric("Solve((0.6000000000000001*2.5)/y==z/x,x)", //
+				"{{x->0.6666666666666665*y*z}}");
 		// Issue #160
-		checkNumeric("Solve((2.10937501*y)/(0.6923076944378698*z)==(0.6923076944378698*z)/x,x)",
+		checkNumeric("Solve((2.10937501*y)/(0.6923076944378698*z)==(0.6923076944378698*z)/x,x)", //
 				"{{x->(0.22721893523232692*z^2.0)/y}}");
 		// Issue #159
-		check("Solve(x==2*Sqrt(y)*Sqrt(z),y)", "{{y->x^2/(4*z)}}");
-		check("Solve(x==2.0*Sqrt(y)*Sqrt(z),y)", "{{y->0.25*(x/Sqrt(z))^2.0}}");
+		check("Solve(x==2*Sqrt(y)*Sqrt(z),y)", //
+				"{{y->x^2/(4*z)}}");
+		check("Solve(x==2.0*Sqrt(y)*Sqrt(z),y)", //
+				"{{y->0.25*(x/Sqrt(z))^2.0}}");
 
 		// Issue #155
-		check("Solve(x==2*Sqrt(y)*Sqrt(z),y)", "{{y->x^2/(4*z)}}");
+		check("Solve(x==2*Sqrt(y)*Sqrt(z),y)", //
+				"{{y->x^2/(4*z)}}");
 
 		// Issue #151
-		check("Solve(60+abc==120.0,abc)", "{{abc->60.0}}");
+		check("Solve(60+abc==120.0,abc)", //
+				"{{abc->60.0}}");
 
 		// Issue #152
-		checkNumeric("Solve(Sqrt(x)==16.1,x)", "{{x->259.21000000000004}}");
+		checkNumeric("Solve(Sqrt(x)==16.1,x)", //
+				"{{x->259.21000000000004}}");
 
 		// TODO check type of result in Solve()
 		// check("Solve(x^3 == 1, x, Reals)", "{{x->1}}");
 
-		check("Solve(x+5.0==a,x)", "{{x->-5.0+a}}");
+		check("Solve(x+5.0==a,x)", //
+				"{{x->-5.0+a}}");
 
-		checkNumeric("Solve(-8828.206-582.222*b+55.999*b^2.0+4.8*b^3.0==0, b)",
+		checkNumeric("Solve(-8828.206-582.222*b+55.999*b^2.0+4.8*b^3.0==0, b)", //
 				"{{b->-11.735882719537255+I*(-4.250200714726695)},{b->11.805307105741175},{b->-11.735882719537255+I*4.250200714726695}}");
 		// check("Solve(Abs((-3+x^2)/x) ==2,{x})",
 		// "{{x->-3},{x->-1},{x->1},{x->3}}");
-		check("Solve(x^3==-2,x)", "{{x->-2^(1/3)},{x->(-1)^(1/3)*2^(1/3)},{x->-(-1)^(2/3)*2^(1/3)}}");
+		check("Solve(x^3==-2,x)", //
+				"{{x->-2^(1/3)},{x->(-1)^(1/3)*2^(1/3)},{x->-(-1)^(2/3)*2^(1/3)}}");
 
-		check("Solve(1 - (i*1)/10 == 0, i, Integers)", "{{i->10}}");
-		check("Solve({x^2 + 2*y^3 == 3681, x > 0, y > 0}, {x, y}, Integers)",
+		check("Solve(1 - (i*1)/10 == 0, i, Integers)", //
+				"{{i->10}}");
+		check("Solve({x^2 + 2*y^3 == 3681, x > 0, y > 0}, {x, y}, Integers)", //
 				"{{x->15,y->12},{x->41,y->10},{x->57,y->6}}");
-		check("Solve({x>=0,y>=0,x+y==7,2*x+4*y==20},{x,y}, Integers)", "{{x->4,y->3}}");
-		check("Solve(x>=0 && y>=0 && x+y==7 && 2*x+4*y==20,{x,y}, Integers)", "{{x->4,y->3}}");
-		check("Solve({2*x + 3*y == 4, 3*x - 4*y <= 5,x - 2*y > -21}, {x,  y}, Integers)",
+		check("Solve({x>=0,y>=0,x+y==7,2*x+4*y==20},{x,y}, Integers)", //
+				"{{x->4,y->3}}");
+		check("Solve(x>=0 && y>=0 && x+y==7 && 2*x+4*y==20,{x,y}, Integers)", //
+				"{{x->4,y->3}}");
+		check("Solve({2*x + 3*y == 4, 3*x - 4*y <= 5,x - 2*y > -21}, {x,  y}, Integers)", //
 				"{{x->-7,y->6},{x->-4,y->4},{x->-1,y->2}}");
 
 		// timeouts in Cream engine
@@ -9065,29 +9105,38 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Solve({2 x + 3 y - 5 z == 1 , 3 x - 4 y + 7 z == 3}, {x,
 		// y, z}, Integers)", "");
 
-		check("Solve((k*Q*q)/r^2+1/r^4==E,r)",
+		check("Solve((k*Q*q)/r^2+1/r^4==E,r)", //
 				"{{r->Sqrt((k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))/E)/Sqrt(2)},{r->-Sqrt((k*q*Q+Sqrt(4*E+k^\n"
 						+ "2*q^2*Q^2))/E)/Sqrt(2)},{r->(-I*Sqrt((-k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))/E))/Sqrt(2)},{r->(I*Sqrt((-k*q*Q+Sqrt(\n"
 						+ "4*E+k^2*q^2*Q^2))/E))/Sqrt(2)}}");
 		// issue #120
-		check("Solve(Sin(x)*x==0, x)", "{{x->0}}");
-		check("Solve(Cos(x)*x==0, x)", "{{x->0},{x->Pi/2}}");
+		check("Solve(Sin(x)*x==0, x)", //
+				"{{x->0}}");
+		check("Solve(Cos(x)*x==0, x)", //
+				"{{x->0},{x->Pi/2}}");
 		// issue #121
-		check("Solve(Sqrt(x)==-1, x)", "{}");
-		check("Solve(x^2+1==0, x)", "{{x->-I},{x->I}}");
-		check("Solve((k*Q*q)/r^2==E,r)", "{{r->Sqrt(E*k*q*Q)/E},{r->-Sqrt(E*k*q*Q)/E}}");
-		check("Solve((k*Q*q)/r^2+1/r^4==E,r)",
+		check("Solve(Sqrt(x)==-1, x)", //
+				"{}");
+		check("Solve(x^2+1==0, x)", //
+				"{{x->-I},{x->I}}");
+		check("Solve((k*Q*q)/r^2==E,r)", //
+				"{{r->Sqrt(E*k*q*Q)/E},{r->-Sqrt(E*k*q*Q)/E}}");
+		check("Solve((k*Q*q)/r^2+1/r^4==E,r)", //
 				"{{r->Sqrt((k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))/E)/Sqrt(2)},{r->-Sqrt((k*q*Q+Sqrt(4*E+k^\n"
 						+ "2*q^2*Q^2))/E)/Sqrt(2)},{r->(-I*Sqrt((-k*q*Q+Sqrt(4*E+k^2*q^2*Q^2))/E))/Sqrt(2)},{r->(I*Sqrt((-k*q*Q+Sqrt(\n"
 						+ "4*E+k^2*q^2*Q^2))/E))/Sqrt(2)}}");
-		check("Solve((k*Q*q)/r^2+1/r^4==0,r)", "{{r->(-I*Sqrt(k*q*Q))/(k*q*Q)},{r->(I*Sqrt(k*q*Q))/(k*q*Q)}}");
-		check("Solve(Abs(x-1) ==1,{x})", "{{x->0},{x->2}}");
-		check("Solve(Abs(x^2-1) ==0,{x})", "{{x->-1},{x->1}}");
-		check("Solve(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)",
+		check("Solve((k*Q*q)/r^2+1/r^4==0,r)", //
+				"{{r->(-I*Sqrt(k*q*Q))/(k*q*Q)},{r->(I*Sqrt(k*q*Q))/(k*q*Q)}}");
+		check("Solve(Abs(x-1) ==1,{x})", //
+				"{{x->0},{x->2}}");
+		check("Solve(Abs(x^2-1) ==0,{x})", //
+				"{{x->-1},{x->1}}");
+		check("Solve(Xor(a, b, c, d) && (a || b) && ! (c || d), {a, b, c, d}, Booleans)", //
 				"{{a->False,b->True,c->False,d->False},{a->True,b->False,c->False,d->False}}");
-		check("Solve(Sin((-3+x^2)/x) ==2,{x})",
+		check("Solve(Sin((-3+x^2)/x) ==2,{x})", //
 				"{{x->ArcSin(2)/2-Sqrt(12+ArcSin(2)^2)/2},{x->ArcSin(2)/2+Sqrt(12+ArcSin(2)^2)/2}}");
-		check("Solve({x^2-11==y, x+y==-9}, {x,y})", "{{x->-2,y->-7},{x->1,y->-10}}");
+		check("Solve({x^2-11==y, x+y==-9}, {x,y})", //
+				"{{x->-2,y->-7},{x->1,y->-10}}");
 
 		// issue 42
 		// check("$sol=Solve(x^3 + 2x^2 - 5x -3 ==0,x);N($sol)",
@@ -9102,27 +9151,43 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// +
 		// "1/2)-1/2)*(1/2)^(1/3)*(I*9*331^(1/2)+25)^(1/3)+(-I*1/2*3^(1/2)-1/2)*(1/2)^(1/3)*(-I*\n"
 		// + "9*331^(1/2)+25)^(1/3)+2)}}");
-		check("Solve(2*Sin(x)==1/2,x)", "{{x->ArcSin(1/4)}}");
-		check("Solve(3+2*Cos(x)==1/2,x)", "{{x->-Pi+ArcCos(5/4)}}");
-		check("Solve(Sin(x)==0,x)", "{{x->0}}");
-		check("Solve(Sin(x)==0.0,x)", "{{x->0}}");
-		check("Solve(Sin(x)==1/2,x)", "{{x->Pi/6}}");
-		checkNumeric("Solve(sin(x)==0.5,x)", "{{x->0.5235987755982989}}");
-		check("Solve(x^2-2500.00==0,x)", "{{x->50.0},{x->-50.0}}");
-		check("Solve(x^2+a*x+1 == 0, x)", "{{x->-a/2-Sqrt(-4+a^2)/2},{x->-a/2+Sqrt(-4+a^2)/2}}");
-		check("Solve((-3)*x^3 +10*x^2-11*x == (-4), {x})", "{{x->1},{x->4/3}}");
+		check("Solve(2*Sin(x)==1/2,x)", //
+				"{{x->ArcSin(1/4)}}");
+		check("Solve(3+2*Cos(x)==1/2,x)", //
+				"{{x->-Pi+ArcCos(5/4)}}");
+		check("Solve(Sin(x)==0,x)", //
+				"{{x->0}}");
+		check("Solve(Sin(x)==0.0,x)", //
+				"{{x->0}}");
+		check("Solve(Sin(x)==1/2,x)", //
+				"{{x->Pi/6}}");
+		checkNumeric("Solve(sin(x)==0.5,x)", //
+				"{{x->0.5235987755982989}}");
+		check("Solve(x^2-2500.00==0,x)", //
+				"{{x->50.0},{x->-50.0}}");
+		check("Solve(x^2+a*x+1 == 0, x)", //
+				"{{x->-a/2-Sqrt(-4+a^2)/2},{x->-a/2+Sqrt(-4+a^2)/2}}");
+		check("Solve((-3)*x^3 +10*x^2-11*x == (-4), {x})", //
+				"{{x->1},{x->4/3}}");
 
-		checkNumeric("Solve(x^2+50*x-2500.00==0,x)", "{{x->30.901699437494745},{x->-80.90169943749474}}");
+		checkNumeric("Solve(x^2+50*x-2500.00==0,x)", //
+				"{{x->30.901699437494745},{x->-80.90169943749474}}");
 
-		check("Solve(a*x + y == 7 && b*x - y == 1, {x, y})", "{{x->8/(a+b),y->(a-7*b)/(-a-b)}}");
-		check("Solve({a*x + y == 7, b*x - y == 1}, {x, y})", "{{x->8/(a+b),y->(a-7*b)/(-a-b)}}");
+		check("Solve(a*x + y == 7 && b*x - y == 1, {x, y})", //
+				"{{x->8/(a+b),y->(a-7*b)/(-a-b)}}");
+		check("Solve({a*x + y == 7, b*x - y == 1}, {x, y})", //
+				"{{x->8/(a+b),y->(a-7*b)/(-a-b)}}");
 
-		check("Solve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)", "Solve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)");
+		check("Solve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)", //
+				"Solve(-Infinity==(2*a2)/a3+(-2*a5)/a3,a3)");
 
 		// Issue #168
-		checkNumeric("y=297.0004444386505", "297.0004444386505");
-		checkNumeric("z=22.13904248493947", "22.13904248493947");
-		checkNumeric("Solve(x/y==z/x,x)", "{{x->-81.08825721072805},{x->81.08825721072805}}");
+		checkNumeric("y=297.0004444386505", //
+				"297.0004444386505");
+		checkNumeric("z=22.13904248493947", // 7
+				"22.13904248493947");
+		checkNumeric("Solve(x/y==z/x,x)", //
+				"{{x->-81.08825721072805},{x->81.08825721072805}}");
 	}
 
 	public void testSolveIssue130() {

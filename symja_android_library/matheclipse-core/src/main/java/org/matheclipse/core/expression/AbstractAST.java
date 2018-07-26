@@ -23,6 +23,7 @@ import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
+import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.Structure.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;
@@ -2557,6 +2558,64 @@ public abstract class AbstractAST implements IASTMutable {
 	@Override
 	public long leafCountSimplify() {
 		return accept(new LeafCount.SimplifyLeafCountVisitor(0));
+	}
+
+	@Override
+	public IExpr[] linear(IExpr variable) {
+		int size = size();
+		int counter = 0;
+
+		if (isPlus()) {
+			// a + b + c....
+			IASTAppendable plusClone = copyAppendable();
+			IExpr[] subLinear = null;
+			int j = 1;
+			for (int i = 1; i < size; i++) {
+				if (get(i).isFree(variable, true)) {
+					j++;
+				} else {
+					if (counter > 0) {
+						return null;
+					}
+					subLinear = get(i).linear(variable);
+					if (subLinear != null) {
+						counter++;
+						plusClone.remove(j);
+					} else {
+						return null;
+					}
+				}
+			}
+			if (subLinear != null) {
+				return new IExpr[] { plusClone.getOneIdentity(F.C0), subLinear[1] };
+			}
+			return new IExpr[] { plusClone.getOneIdentity(F.C0), F.C0 };
+		} else if (isTimes()) {
+			// a * b * c....
+			IASTAppendable timesClone = copyAppendable();
+			int j = 1;
+			for (int i = 1; i < size; i++) {
+				if (get(i).isFree(variable, true)) {
+					j++;
+				} else {
+					if (get(i).equals(variable)) {
+						if (counter > 0) {
+							return null;
+						}
+						counter++;
+						timesClone.remove(j);
+					} else {
+						return null;
+					}
+				}
+			}
+			return new IExpr[] { F.C0, timesClone.getOneIdentity(F.C1) };
+		} else if (this.equals(variable)) {
+			return new IExpr[] { F.C0, F.C1 };
+		} else if (isFree(variable, true)) {
+			return new IExpr[] { this, F.C0 };
+		}
+		return null;
 	}
 
 	/** {@inheritDoc} */

@@ -343,6 +343,14 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 */
 	public boolean isSymbolName(String name);
 
+	@Override
+	default public IExpr[] linear(IExpr variable) {
+		if (this.equals(variable)) {
+			return new IExpr[] { F.C0, F.C1 };
+		}
+		return new IExpr[] { this, F.C0 };
+	}
+
 	/**
 	 * If this symbol has attribute <code>ISymbol.CONSTANT</code> and the symbol's evaluator is of instance
 	 * <code>INumericConstant</code>, then apply the constants double value to the given function and return the result,
@@ -378,7 +386,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * @return
 	 */
 	public IExpr of(IExpr... args);
- 
+
 	/**
 	 * Evaluate this symbol for the arguments as function <code>symbol(arg1, arg2, .... ,argN)</code> to a boolean
 	 * value. If the result isn't a boolean value return <code>false</code>.
@@ -392,15 +400,15 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	public boolean ofQ(EvalEngine engine, IExpr... args);
 
 	/**
-	 * Get the ordinal number of this built-in symbol in the enumeration of built-in symbols.
-	 * If this is no built-in symbol return <code>-1</code> (ID.UNKNOWN)
+	 * Get the ordinal number of this built-in symbol in the enumeration of built-in symbols. If this is no built-in
+	 * symbol return <code>-1</code> (ID.UNKNOWN)
 	 * 
 	 * @return
 	 */
 	default int ordinal() {
 		return ID.UNKNOWN;
 	}
-	
+
 	/**
 	 * Delete the topmost placeholder from the local variable stack
 	 * 

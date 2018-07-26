@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.function.Predicate;
 
+import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
@@ -395,6 +396,19 @@ public class Eliminate extends AbstractFunctionEvaluator {
 						}
 					}
 					if (timesClone.isAST0()) {
+						IExpr[] numerDenom = Algebra.getNumeratorDenominator(ast, EvalEngine.get());
+						if (!numerDenom[1].isOne()) {
+							IExpr[] numerLinear = numerDenom[0].linear(variable);
+							if (numerLinear != null) {
+								IExpr[] denomLinear = numerDenom[1].linear(variable);
+								if (denomLinear != null) {
+									return numerLinear[0].negate().plus(denomLinear[0].times(exprWithoutVariable))
+											.times(//
+													numerLinear[1].subtract(denomLinear[1].times(exprWithoutVariable))
+															.power(-1L));
+								}
+							}
+						}
 						// no change for given expression
 						return F.NIL;
 					}
@@ -416,6 +430,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 			}
 		}
 		return F.NIL;
+
 	}
 
 	/**
@@ -461,7 +476,6 @@ public class Eliminate extends AbstractFunctionEvaluator {
 	private static IAST[] eliminateOneVariable(ArrayList<VariableCounterVisitor> analyzerList, IExpr variable) {
 		IASTAppendable eliminatedResultEquations = F.ListAlloc(analyzerList.size());
 		for (int i = 0; i < analyzerList.size(); i++) {
-			IExpr temp = analyzerList.get(i).getExpr();
 			IExpr variableExpr = eliminateAnalyze(analyzerList.get(i).getExpr(), variable);
 			if (variableExpr.isPresent()) {
 				variableExpr = F.eval(variableExpr);
@@ -470,7 +484,7 @@ public class Eliminate extends AbstractFunctionEvaluator {
 				analyzerList.remove(i);
 				for (int j = 0; j < analyzerList.size(); j++) {
 					expr = analyzerList.get(j).getExpr();
-					temp = expr.replaceAll(rule);
+					IExpr temp = expr.replaceAll(rule);
 					if (temp.isPresent()) {
 						temp = F.expandAll(temp, true, true);
 						eliminatedResultEquations.append(temp);
@@ -508,16 +522,34 @@ public class Eliminate extends AbstractFunctionEvaluator {
 				if (temp != null) {
 					result = temp[0];
 				} else {
-					return result;
+					return resultAsAndEquations(result);
 				}
 			}
-			return result;
+			return resultAsAndEquations(result);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
 		return F.NIL;
 	}
 
+	private static IExpr resultAsAndEquations(IAST result) {
+		if (result.isList()) {
+			if (result.equals(F.CEmptyList)) {
+				return F.True;
+			}
+			return result.apply(F.And);
+		}
+		return result;
+	}
+
+	/**
+	 * 
+	 * @param result
+	 * @param variable
+	 * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>variable</code> or
+	 *         the eliminated list of equations in index <code>[0]</code> and the last rule which is used for variable
+	 *         elimination in index <code>[1]</code>.
+	 */
 	public static IAST[] eliminateOneVariable(IAST result, IExpr variable) {
 		IAST equalAST;
 		VariableCounterVisitor exprAnalyzer;
@@ -533,4 +565,24 @@ public class Eliminate extends AbstractFunctionEvaluator {
 		return eliminateOneVariable(analyzerList, variable);
 	}
 
+	/**
+	 * 
+	 * @param result
+	 * @param slot
+	 * @return <code>null</code> if we can't eliminate an equation from the list for the given <code>variable</code> or
+	 *         the eliminated list of equations in index <code>[0]</code> and the last rule which is used for variable
+	 *         elimination in index <code>[1]</code>.
+	 */
+	public static IAST[] eliminateSlot(IAST result, IExpr slot) {
+
+		VariableCounterVisitor exprAnalyzer;
+		ArrayList<VariableCounterVisitor> analyzerList = new ArrayList<VariableCounterVisitor>();
+		IAST equalAST = result;
+		exprAnalyzer = new VariableCounterVisitor(equalAST, slot);
+		equalAST.accept(exprAnalyzer);
+		analyzerList.add(exprAnalyzer);
+		Collections.sort(analyzerList);
+
+		return eliminateOneVariable(analyzerList, slot);
+	}
 }

@@ -2,6 +2,7 @@ package org.matheclipse.core.interfaces;
 
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ComplexNum;
+import org.matheclipse.core.expression.F;
 
 /**
  * 
@@ -148,6 +149,11 @@ public interface INumber extends IExpr {
 	 * @return real part
 	 */
 	public double imDoubleValue();
+
+	@Override
+	default public IExpr[] linear(IExpr variable) {
+		return new IExpr[] { this, F.C0 };
+	}
 
 	@Override
 	public INumber opposite();

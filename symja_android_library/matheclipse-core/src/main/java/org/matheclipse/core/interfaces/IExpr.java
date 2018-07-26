@@ -126,7 +126,7 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	public final static int PATTERNID = 2048;
 
 	public final static int SERIESID = 64;
-	
+
 	public final static int QUANTITYID = 128;
 
 	public final static int STRINGID = 256;
@@ -2659,6 +2659,18 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	default public IExpr lessThan(IExpr that) {
 		COMPARE_TERNARY temp = BooleanFunctions.CONST_LESS.prepareCompare(this, that);
 		return ExprUtil.convertToExpr(temp);
+	}
+
+	/**
+	 * If this is a linear expression return the addedn at index 0 and the multiplicant at index 1
+	 * 
+	 * @param variable
+	 *            th variable to check for linearity
+	 * 
+	 * @return <code>null</code> if this is not a linear expression
+	 */
+	default IExpr[] linear(IExpr variable) {
+		return null;
 	}
 
 	/**

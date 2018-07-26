@@ -29,17 +29,35 @@ import org.matheclipse.core.interfaces.ISymbol;
 public class InverseFunction extends AbstractFunctionEvaluator {
 
 	public InverseFunction() {
-		// default ctor
 	}
 
 	@Override
 	public IExpr evaluate(final IAST ast, EvalEngine engine) {
 		Validate.checkSize(ast, 2);
-		ISymbol arg1 = Validate.checkSymbolType(ast, 1);
-		if (arg1.equals(F.Abs)) {
-			engine.printMessage("InverseFunction: using of inverse functions may omit some values.");
+		// ISymbol arg1 = Validate.checkSymbolType(ast, 1);
+		IExpr arg1 = ast.arg1();
+		if (arg1.isFunction()) {
+			IExpr f = arg1.first();
+			if (f.isAST()) {
+				final int moduleCounter = engine.incModuleCounter();
+				final String varAppend = "$" + moduleCounter;
+				ISymbol dummy = F.Dummy(varAppend);
+				IAST[] arr = Eliminate.eliminateSlot(F.Equal((IAST) f, dummy), F.Slot1);
+				if (arr != null) {
+					return F.Function(F.subst(arr[1].second(), F.Rule(dummy, F.Slot1)));
+				}
+			}
+		} else if (arg1.isBuiltInSymbol()) {
+			if (arg1.equals(F.Abs)) {
+				engine.printMessage("InverseFunction: using of inverse functions may omit some values.");
+			}
+			IExpr temp = getUnaryInverseFunction((ISymbol) arg1);
+			if (temp != null) {
+				return temp;
+			}
+			return F.NIL;
 		}
-		return getUnaryInverseFunction(arg1);
+		return F.NIL;
 	}
 
 	/**
