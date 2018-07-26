@@ -37,11 +37,11 @@ public class MMAConsole {
 	private long fSeconds = 60;
 
 	private final static int OUTPUTFORM = 0;
-	
+
 	private final static int JAVAFORM = 1;
-	
+
 	private final static int TRADITIONALFORM = 2;
-	
+
 	private final static int PRETTYFORM = 3;
 
 	private int fUsedForm = OUTPUTFORM;
@@ -118,7 +118,7 @@ public class MMAConsole {
 				inputExpression = console.readString(System.out, "▶    ");
 				if (inputExpression != null) {
 					trimmedInput = inputExpression.trim();
-					if (trimmedInput.length() >= 4 && trimmedInput.charAt(0) == '\\') {
+					if (trimmedInput.length() >= 4 && trimmedInput.charAt(0) == '/') {
 						String command = trimmedInput.substring(1).toLowerCase(Locale.ENGLISH);
 						if (command.equals("exit")) {
 							System.out.println("Closing Symja console... bye.");
@@ -240,35 +240,10 @@ public class MMAConsole {
 	/**
 	 * Prints the usage of how to use this class to System.out
 	 */
-	private static void printUsage() {
-		final String lineSeparator = System.getProperty("line.separator");
-		final StringBuilder msg = new StringBuilder();
-		msg.append(Config.SYMJA);
-		msg.append("org.matheclipse.core.eval.MMAConsole [options]" + lineSeparator);
-		msg.append(lineSeparator);
-		msg.append("Program arguments: " + lineSeparator);
-		msg.append("  -h or -help                print this message" + lineSeparator);
-		// msg.append(" -debug print debugging information" + lSep);
-		// msg.append(" -f or -file <filename> use given file as input script" + lineSeparator);
-		msg.append("  -d or -default <filename>  use given textfile for an initial package script" + lineSeparator);
-		msg.append("To stop the program type: exit<RETURN>" + lineSeparator);
-		msg.append("To continue an input line type: \\<RETURN>" + lineSeparator);
-		msg.append("at the end of the line." + lineSeparator);
-		msg.append("To disable the evaluation timeout type: timeoutoff<RETURN>" + lineSeparator);
-		msg.append("To enable the evaluation timeout type: timeouton<RETURN>" + lineSeparator);
-		msg.append("To enable the output in Java form: javaon<RETURN>" + lineSeparator);
-		msg.append("To disable the output in Java form: javaoff<RETURN>" + lineSeparator);
-		msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
-
-		System.out.println(msg.toString());
-	}
-
-	/**
-	 * Prints the usage of how to use this class to System.out
-	 */
 	private static void printUsageCompletely() {
 		final String lineSeparator = System.getProperty("line.separator");
 		final StringBuilder msg = new StringBuilder();
+		msg.append(Config.SYMJA);
 		msg.append("org.matheclipse.core.eval.MMAConsole [options]" + lineSeparator);
 		msg.append(lineSeparator);
 		msg.append("Program arguments: " + lineSeparator);
@@ -280,13 +255,14 @@ public class MMAConsole {
 				+ lineSeparator);
 		msg.append("  -pp                                         enable pretty printer" + lineSeparator);
 
-		msg.append("To stop the program type: exit<RETURN>" + lineSeparator);
+		msg.append("To stop the program type: /exit<RETURN>" + lineSeparator);
 		msg.append("To continue an input line type: \\<RETURN>" + lineSeparator);
 		msg.append("at the end of the line." + lineSeparator);
-		msg.append("To disable the evaluation timeout type: timeoutoff<RETURN>" + lineSeparator);
-		msg.append("To enable the evaluation timeout type: timeouton<RETURN>" + lineSeparator);
-		msg.append("To enable the output in Java form: javaon<RETURN>" + lineSeparator);
-		msg.append("To disable the output in Java form: javaoff<RETURN>" + lineSeparator);
+		msg.append("To disable the evaluation timeout type: /timeoutoff<RETURN>" + lineSeparator);
+		msg.append("To enable the evaluation timeout type: /timeouton<RETURN>" + lineSeparator);
+		msg.append("To enable the output in Java form: /java<RETURN>" + lineSeparator);
+		msg.append("To enable the output in standard form: /output<RETURN>" + lineSeparator);
+		msg.append("To enable the output in standard form: /traditional<RETURN>" + lineSeparator);
 		msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
 		msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
 
