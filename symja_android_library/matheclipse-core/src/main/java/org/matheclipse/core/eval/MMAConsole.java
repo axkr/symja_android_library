@@ -264,7 +264,6 @@ public class MMAConsole {
 		msg.append("To enable the output in standard form: /output<RETURN>" + lineSeparator);
 		msg.append("To enable the output in standard form: /traditional<RETURN>" + lineSeparator);
 		msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
-		msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
 
 		System.out.println(msg.toString());
 	}

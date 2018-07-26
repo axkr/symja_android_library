@@ -3,7 +3,6 @@ package org.matheclipse.core.eval;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -35,21 +34,32 @@ import org.matheclipse.parser.client.math.MathException;
  */
 public class Console {
 
-	private ExprEvaluator fEvaluator;
-
-	private OutputFormFactory fOutputFactory;
-
-	/**
-	 * Use pretty printer for expression output n print stream
-	 */
-	private boolean fPrettyPrinter;
-
 	/**
 	 * 60 seconds timeout limit as the default value for Symja expression evaluation.
 	 */
 	private long fSeconds = 60;
 
-	private boolean fUseJavaForm = false;
+	private final static int OUTPUTFORM = 0;
+
+	private final static int JAVAFORM = 1;
+
+	private final static int TRADITIONALFORM = 2;
+
+	private final static int PRETTYFORM = 3;
+
+	private int fUsedForm = OUTPUTFORM;
+	
+	private ExprEvaluator fEvaluator;
+
+	private OutputFormFactory fOutputFactory;
+
+
+	private OutputFormFactory fOutputTraditionalFactory;
+	/**
+	 * Use pretty printer for expression output n print stream
+	 */
+	private boolean fPrettyPrinter;
+
 
 	// private File fFile;
 
@@ -102,31 +112,63 @@ public class Console {
 				inputExpression = console.readString(System.out, "▶  ");
 				if (inputExpression != null) {
 					trimmedInput = inputExpression.trim();
-					if ((trimmedInput.length() >= 4)
-							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 4).equals("exit")) {
-						System.out.println("Closing Symja console... bye.");
-						System.exit(0);
-					} else if ((trimmedInput.length() >= 7)
-							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 7).equals("javaoff")) {
-						System.out.println("Disabling output for JavaForm");
-						console.fUseJavaForm = false;
-						continue;
-					} else if ((trimmedInput.length() >= 6)
-							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 6).equals("javaon")) {
-						System.out.println("Enabling output for JavaForm");
-						console.fUseJavaForm = true;
-						continue;
-					} else if ((trimmedInput.length() >= 10)
-							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 10).equals("timeoutoff")) {
-						System.out.println("Disabling timeout for evaluation");
-						console.fSeconds = -1;
-						continue;
-					} else if ((trimmedInput.length() >= 9)
-							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 9).equals("timeouton")) {
-						System.out.println("Enabling timeout for evaluation to 60 seconds.");
-						console.fSeconds = 60;
-						continue;
-					} else if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
+					if (trimmedInput.length() >= 4 && trimmedInput.charAt(0) == '/') {
+						String command = trimmedInput.substring(1).toLowerCase(Locale.ENGLISH);
+						if (command.equals("exit")) {
+							System.out.println("Closing Symja console... bye.");
+							System.exit(0);
+						} else if (command.equals("java")) {
+							System.out.println("Enabling output for JavaForm");
+							console.fUsedForm = JAVAFORM;
+							continue;
+						} else if (command.equals("traditional")) {
+							System.out.println("Enabling output for TraditionalForm");
+							console.fUsedForm = TRADITIONALFORM;
+							continue;
+						} else if (command.equals("output")) {
+							System.out.println("Enabling output for OutputForm");
+							console.fUsedForm = OUTPUTFORM;
+							continue;
+						} else if (command.equals("pretty")) {
+							System.out.println("Enabling output for PrettyPrinterForm");
+							console.fUsedForm = PRETTYFORM;
+							continue;
+						} else if (command.equals("timeoutoff")) {
+							System.out.println("Disabling timeout for evaluation");
+							console.fSeconds = -1;
+							continue;
+						} else if (command.equals("timeouton")) {
+							System.out.println("Enabling timeout for evaluation to 60 seconds.");
+							console.fSeconds = 60;
+							continue;
+						}
+					}
+//					if ((trimmedInput.length() >= 4)
+//							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 4).equals("exit")) {
+//						System.out.println("Closing Symja console... bye.");
+//						System.exit(0);
+//					} else if ((trimmedInput.length() >= 7)
+//							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 7).equals("javaoff")) {
+//						System.out.println("Disabling output for JavaForm");
+//						console.fUseJavaForm = false;
+//						continue;
+//					} else if ((trimmedInput.length() >= 6)
+//							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 6).equals("javaon")) {
+//						System.out.println("Enabling output for JavaForm");
+//						console.fUseJavaForm = true;
+//						continue;
+//					} else if ((trimmedInput.length() >= 10)
+//							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 10).equals("timeoutoff")) {
+//						System.out.println("Disabling timeout for evaluation");
+//						console.fSeconds = -1;
+//						continue;
+//					} else if ((trimmedInput.length() >= 9)
+//							&& trimmedInput.toLowerCase(Locale.ENGLISH).substring(0, 9).equals("timeouton")) {
+//						System.out.println("Enabling timeout for evaluation to 60 seconds.");
+//						console.fSeconds = 60;
+//						continue;
+//					} else 
+					if (trimmedInput.length() > 1 && trimmedInput.charAt(0) == '?') {
 						Documentation.findDocumentation(System.out, trimmedInput);
 						continue;
 					}
@@ -178,13 +220,14 @@ public class Console {
 		msg.append("Program arguments: " + lineSeparator);
 		msg.append("  -h or -help                print usage messages" + lineSeparator);
 		msg.append("  -d or -default <filename>  use given textfile for an initial package script" + lineSeparator);
-		msg.append("To stop the program type: exit<RETURN>" + lineSeparator);
+		msg.append("To stop the program type: /exit<RETURN>" + lineSeparator);
 		msg.append("To continue an input line type: \\<RETURN>" + lineSeparator);
-		msg.append("at the end of the line." + lineSeparator);
-		msg.append("To enable the evaluation timeout type: timeouton<RETURN>" + lineSeparator);
-		msg.append("To disable the evaluation timeout type: timeoutoff<RETURN>" + lineSeparator);
-		msg.append("To enable the output in Java form: javaon<RETURN>" + lineSeparator);
-		msg.append("To disable the output in Java form: javaoff<RETURN>" + lineSeparator);
+		msg.append("at the end of the line." + lineSeparator); 
+		msg.append("To disable the evaluation timeout type: /timeoutoff<RETURN>" + lineSeparator);
+		msg.append("To enable the evaluation timeout type: /timeouton<RETURN>" + lineSeparator);
+		msg.append("To enable the output in Java form: /java<RETURN>" + lineSeparator);
+		msg.append("To enable the output in standard form: /output<RETURN>" + lineSeparator);
+		msg.append("To enable the output in standard form: /traditional<RETURN>" + lineSeparator);
 		msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
 
 		System.out.println(msg.toString());
@@ -228,6 +271,7 @@ public class Console {
 		DecimalFormat decimalFormat = new DecimalFormat("0.0####", usSymbols);
 		fOutputFactory = OutputFormFactory.get(true, false, decimalFormat);
 		fEvaluator.getEvalEngine().setFileSystemEnabled(true);
+		fOutputTraditionalFactory = OutputFormFactory.get(true, false, decimalFormat);
 	}
 
 	/**
@@ -386,13 +430,27 @@ public class Console {
 		if (result.equals(F.Null)) {
 			return "";
 		}
-		if (fUseJavaForm) {
+		switch (fUsedForm) {
+		case JAVAFORM:
 			return result.internalJavaString(false, -1, false, true, false);
+		case TRADITIONALFORM:
+			StringBuilder traditionalBuffer = new StringBuilder();
+			fOutputTraditionalFactory.reset();
+			fOutputTraditionalFactory.convert(traditionalBuffer, result);
+			return traditionalBuffer.toString();
+		case PRETTYFORM:
+			ASCIIPrettyPrinter3 prettyBuffer = new ASCIIPrettyPrinter3();
+			prettyBuffer.convert(result);
+			System.out.println();
+			String[] outputExpression = prettyBuffer.toStringBuilder();
+			ASCIIPrettyPrinter3.prettyPrinter(System.out, outputExpression, "Out[" + COUNTER + "]: ");
+			return "";
+		default:
+			StringBuilder strBuffer = new StringBuilder();
+			fOutputFactory.reset();
+			fOutputFactory.convert(strBuffer, result);
+			return strBuffer.toString();
 		}
-		StringBuilder strBuffer = new StringBuilder();
-		fOutputFactory.reset();
-		fOutputFactory.convert(strBuffer, result);
-		return strBuffer.toString();
 	}
 
 	private String[] prettyPrinter3Lines(final String inputExpression) {
