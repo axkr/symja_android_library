@@ -55,6 +55,10 @@ public class OutputFormFactory {
 	private final boolean fRelaxedSyntax;
 	private final boolean fPlusReversed;
 	private boolean fIgnoreNewLine = false;
+	/**
+	 * If <code>true</code> print leading and trailing quotes in Symja strings
+	 */
+	private boolean fQuotes = false;
 	private boolean fEmpty = true;
 	private int fColumnCounter;
 	private NumberFormat fNumberFormat = null;
@@ -407,9 +411,13 @@ public class OutputFormFactory {
 	}
 
 	public void convertString(final Appendable buf, final String str) throws IOException {
-		// append(buf, "\"");
-		append(buf, str);
-		// append(buf, "\"");
+		if (fQuotes) {
+			append(buf, "\"");
+			append(buf, str);
+			append(buf, "\"");
+		} else {
+			append(buf, str);
+		}
 	}
 
 	public void convertSymbol(final Appendable buf, final ISymbol symbol) throws IOException {
@@ -1187,7 +1195,7 @@ public class OutputFormFactory {
 			append(tempBuffer, "(");
 		}
 
-		try { 
+		try {
 			buf.append(quantity.toString());
 		} catch (Exception ex) {
 			return false;
@@ -1199,6 +1207,7 @@ public class OutputFormFactory {
 		return true;
 
 	}
+
 	/**
 	 * Convert a factor of a <code>SeriesData</code> object.
 	 * 
@@ -1330,6 +1339,15 @@ public class OutputFormFactory {
 	 */
 	public void setIgnoreNewLine(final boolean ignoreNewLine) {
 		fIgnoreNewLine = ignoreNewLine;
+	}
+
+	/**
+	 * If <code>true</code> print leading and trailing quotes in Symja strings
+	 * 
+	 * @param quotes
+	 */
+	public void setQuotes(final boolean quotes) {
+		fQuotes = quotes;
 	}
 
 	public void setEmpty(final boolean empty) {
