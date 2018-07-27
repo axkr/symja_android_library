@@ -144,4 +144,9 @@ public class HashedPatternRules extends AbstractHashedPatternRules {
 		return getRulesData().evalDownRule(F.List(e1, e2), engine);
 	}
 
+	@Override
+	public String toString() {
+		return "[" + fLHSPattern1 + "," + fLHSPattern2 + "] => [" + fRHS + " /; " + fCondition + "]";
+	}
+
 }

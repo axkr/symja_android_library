@@ -334,6 +334,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArcTan() {
+		check("7*ArcTan(1/2) + a+ArcTan(1/3)", //
+				"a+Pi/4+6*ArcTan(1/2)");
+		check("ArcTan(1/3) + ArcTan(1/7)", //
+				"ArcTan(1/2)");
+		
 		check("ArcTan(a, -a)", "(-(-a+2*Sqrt(a^2))*Pi)/(4*a)");
 		check("ArcTan(-a, a)", "((a+2*Sqrt(a^2))*Pi)/(4*a)");
 		check("ArcTan(a, a)", "((-a+2*Sqrt(a^2))*Pi)/(4*a)");
@@ -347,7 +352,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("ArcTan(1)", "Pi/4");
 		checkNumeric("ArcTan(1.0)", "0.7853981633974483");
-		checkNumeric("ArcTan(-1.0)", "-0.7853981633974483");
+		checkNumeric("ArcTan(-1.0)", "-0.7853981633974483"); 
 
 		check("ArcTan(0, 0)", "Indeterminate");
 		check("ArcTan(1, 1)", "Pi/4");
@@ -9006,7 +9011,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testSolve() {
 		check("Solve((a*x + b)/(c*x + d)==y,x)", //
 				"{{x->-(b-d*y)/(a-c*y)}}");
-		
+
 		check("E^((Log(a)+Log(b))/m)", //
 				"E^((Log(a)+Log(b))/m)");
 		check("Solve(a0*x^p+a1*x^q==0,x)", //
