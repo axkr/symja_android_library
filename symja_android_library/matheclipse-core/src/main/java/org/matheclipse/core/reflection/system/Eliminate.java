@@ -402,10 +402,12 @@ public class Eliminate extends AbstractFunctionEvaluator {
 							if (numerLinear != null) {
 								IExpr[] denomLinear = numerDenom[1].linear(variable);
 								if (denomLinear != null) {
-									return numerLinear[0].negate().plus(denomLinear[0].times(exprWithoutVariable))
-											.times(//
-													numerLinear[1].subtract(denomLinear[1].times(exprWithoutVariable))
-															.power(-1L));
+									IExpr temp = EvalEngine.get().evaluate(
+											numerLinear[1].subtract(denomLinear[1].times(exprWithoutVariable)));
+									if (!temp.isZero()) {
+										return numerLinear[0].negate().plus(denomLinear[0].times(exprWithoutVariable))
+												.times(temp.power(-1L));
+									}
 								}
 							}
 						}

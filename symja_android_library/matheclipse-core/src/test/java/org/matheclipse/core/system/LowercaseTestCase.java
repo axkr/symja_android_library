@@ -338,7 +338,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"a+Pi/4+6*ArcTan(1/2)");
 		check("ArcTan(1/3) + ArcTan(1/7)", //
 				"ArcTan(1/2)");
-		
+
 		check("ArcTan(a, -a)", "(-(-a+2*Sqrt(a^2))*Pi)/(4*a)");
 		check("ArcTan(-a, a)", "((a+2*Sqrt(a^2))*Pi)/(4*a)");
 		check("ArcTan(a, a)", "((-a+2*Sqrt(a^2))*Pi)/(4*a)");
@@ -352,7 +352,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("ArcTan(1)", "Pi/4");
 		checkNumeric("ArcTan(1.0)", "0.7853981633974483");
-		checkNumeric("ArcTan(-1.0)", "-0.7853981633974483"); 
+		checkNumeric("ArcTan(-1.0)", "-0.7853981633974483");
 
 		check("ArcTan(0, 0)", "Indeterminate");
 		check("ArcTan(1, 1)", "Pi/4");
@@ -4495,6 +4495,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testInverseFunction() {
+		check("InverseFunction((a*#)/(c*#) &)", //
+				"InverseFunction((a*#1)/(c*#1)&)");
+		check("InverseFunction((a*#)/(c*# + d) &)", //
+				"(d*#1)/(a*(1+(-c*#1)/a))&");
 		check("InverseFunction((a*# + b)/(c*# + d) &)", //
 				"(-b+d*#1)/(a-c*#1)&");
 		check("InverseFunction((a * # + b)&)", //
@@ -10392,8 +10396,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTrigToExp() {
-		check("a+E^x", "a+E^x");
-		check("TrigToExp(ArcCos(x))", "Pi/2+I*Log(I*x+Sqrt(1-x^2))");
+		check("TrigToExp(Sin(x) < x < Tan(x))", //
+				"(I*1/2)/E^(I*x)-I*1/2*E^(I*x)<x<(I*(E^(-I*x)-E^(I*x)))/(E^(-I*x)+E^(I*x))");
+		check("a+E^x", //
+				"a+E^x");
+		check("TrigToExp(ArcCos(x))", //
+				"Pi/2+I*Log(I*x+Sqrt(1-x^2))");
 		check("TrigToExp(ArcCsc(x))", "-I*Log(Sqrt(1-1/x^2)+I/x)");
 		check("TrigToExp(ArcCot(x))", "I*1/2*Log(1-I/x)-I*1/2*Log(1+I/x)");
 		check("TrigToExp(ArcSec(x))", "Pi/2+I*Log(Sqrt(1-1/x^2)+I/x)");
