@@ -1421,6 +1421,9 @@ public final class Arithmetic {
 
 		@Override
 		public IExpr e1ObjArg(final IExpr arg1) {
+			if (arg1.isZero()) {
+				return F.CComplexInfinity; 
+			}
 			if (arg1.isIntegerResult()) {
 				if (arg1.isNegative()) {
 					return F.CComplexInfinity;
