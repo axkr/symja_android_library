@@ -18,7 +18,6 @@ import static org.matheclipse.core.expression.F.E;
 import static org.matheclipse.core.expression.F.Equal;
 import static org.matheclipse.core.expression.F.Factorial;
 import static org.matheclipse.core.expression.F.Factorial2;
-import static org.matheclipse.core.expression.F.Gamma;
 import static org.matheclipse.core.expression.F.Im;
 import static org.matheclipse.core.expression.F.Log;
 import static org.matheclipse.core.expression.F.NIL;
@@ -97,7 +96,6 @@ import org.matheclipse.core.reflection.system.rules.GammaRules;
 import org.matheclipse.core.reflection.system.rules.PowerRules;
 
 import ch.ethz.idsc.tensor.qty.IQuantity;
-import ch.ethz.idsc.tensor.qty.QuantityImpl;
 
 public final class Arithmetic {
 	public final static Plus CONST_PLUS = new Plus();
@@ -1334,11 +1332,58 @@ public final class Arithmetic {
 	 * </pre>
 	 */
 	private final static class Gamma extends AbstractArg12 implements GammaRules {
+		private static int g = 7;
+		private static double[] p = { 0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313,
+				-176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6,
+				1.5056327351493116e-7 };
+		private org.hipparchus.complex.Complex[] pComplex = null;
 
-		// @Override
-		// public double applyAsDouble(double operand) {
-		// return org.hipparchus.special.Gamma.gamma(operand);
-		// }
+		/**
+		 * The Lanczos approximation is a method for computing the gamma function numerically.
+		 * 
+		 * See <a href="https://en.wikipedia.org/wiki/Lanczos_approximation">Lanczos approximation</a>
+		 * 
+		 * @param z
+		 * @return
+		 */
+		private org.hipparchus.complex.Complex lanczosApproxGamma(org.hipparchus.complex.Complex z) {
+			// if (z.abs() <= 1.0) {
+			// de.lab4inf.math.sets.ComplexNumber cc = new de.lab4inf.math.sets.ComplexNumber(z.getReal(),
+			// z.getImaginary());
+			// de.lab4inf.math.Complex gResult = de.lab4inf.math.functions.Gamma.gamma(cc);
+			// return new org.hipparchus.complex.Complex(gResult.real(), gResult.imag());
+			// }
+
+			if (z.getReal() < 0.5) {
+				// Pi / ( Sin(Pi * z) * Gamma(1 - z) )
+				return lanczosApproxGamma(z.negate().add(1.0)).multiply(z.multiply(Math.PI).sin()).pow(-1.0)
+						.multiply(Math.PI);
+			} else {
+				z = z.subtract(1.0);
+				org.hipparchus.complex.Complex x = pComplex[0];
+				for (int i = 1; i < g + 2; i++) {
+					// x += p[i] / (z+i)
+					x = x.add(pComplex[i].divide(z.add(i)));
+				}
+				org.hipparchus.complex.Complex t = z.add(g).add(0.5);
+				// Sqrt(2 * Pi) * Pow(t, z + 0.5) * Exp(-t) * x
+				return t.pow(z.add(0.5)).multiply(t.negate().exp()).multiply(x).multiply(Math.sqrt(2 * Math.PI));
+			}
+
+		}
+
+		@Override
+		public IExpr e1DblComArg(final IComplexNum c) {
+			if (pComplex == null) {
+				// lazy initialization
+				pComplex = new org.hipparchus.complex.Complex[p.length];
+				for (int i = 0; i < p.length; i++) {
+					pComplex[i] = new org.hipparchus.complex.Complex(p[i]);
+				}
+			}
+			// TODO improve lanczos approx:
+			return F.complexNum(lanczosApproxGamma(c.evalComplex()));
+		}
 
 		@Override
 		public IExpr e1DblArg(final INum arg1) {
@@ -1405,7 +1450,7 @@ public final class Arithmetic {
 				IAST z = (IAST) arg1;
 				if (z.isAST(Conjugate, 2)) {
 					// mirror symmetry for Conjugate()
-					return Conjugate(Gamma(z.arg1()));
+					return Conjugate(F.Gamma(z.arg1()));
 				}
 
 			}
@@ -2357,8 +2402,8 @@ public final class Arithmetic {
 			ORDERLESS_MATCHER.defineHashRule(F.ArcTan(F.C1D3), F.ArcTan(F.C1D2), //
 					Times(F.C1D4, Pi));
 			// ArcTan(1/3) + ArcTan(1/7) = ArcTan(1/2)
-						ORDERLESS_MATCHER.defineHashRule(F.ArcTan(F.C1D3), F.ArcTan(F.QQ(1L,7L)), //
-								F.ArcTan(F.C1D2));
+			ORDERLESS_MATCHER.defineHashRule(F.ArcTan(F.C1D3), F.ArcTan(F.QQ(1L, 7L)), //
+					F.ArcTan(F.C1D2));
 			// ORDERLESS_MATCHER.setUpHashRule("-ArcTan[x_]", "-ArcTan[y_]",
 			// "-Pi/2", "Positive[x]&&(y==1/x)");
 			// ORDERLESS_MATCHER.definePatternHashRule(Times(CN1, ArcTan(x_)), Times(CN1,
