@@ -102,7 +102,7 @@ public interface IRational extends ISignedNumber, IBigNumber {
 	 * 
 	 * @return
 	 */
-	public INumber normalize();
+	public IRational normalize();
 
 	/**
 	 * Returns the numerator of this fraction.

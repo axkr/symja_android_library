@@ -13,7 +13,7 @@ public interface LegendrePRules {
    * <li>index 0 - number of equal rules in <code>RULES</code></li>
 	 * </ul>
 	 */
-  final public static int[] SIZES = { 1, 0 };
+  final public static int[] SIZES = { 1, 1 };
 
   final public static IAST RULES = List(
     IInit(LegendreP, SIZES),
@@ -25,6 +25,9 @@ public interface LegendrePRules {
       Times(Sqrt(Pi),Power(Times(Gamma(Times(C1D2,Plus(C1,Negate(x)))),Gamma(Plus(C1,Times(C1D2,x)))),-1))),
     // LegendreP(x_IntegerQ,-1):=(-1)^x
     ISetDelayed(LegendreP($p(x,IntegerQ),CN1),
-      Power(CN1,x))
+      Power(CN1,x)),
+    // LegendreP(-1/2,1-2*z_):=2/Pi*EllipticK(z)
+    ISetDelayed(LegendreP(CN1D2,Plus(C1,Times(CN2,z_))),
+      Times(C2,Power(Pi,-1),EllipticK(z)))
   );
 }

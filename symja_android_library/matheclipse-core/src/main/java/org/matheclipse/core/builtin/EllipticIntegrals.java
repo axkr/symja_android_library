@@ -1,26 +1,14 @@
 package org.matheclipse.core.builtin;
 
-import static org.matheclipse.core.expression.F.ArcCot;
-import static org.matheclipse.core.expression.F.C1D2;
-import static org.matheclipse.core.expression.F.C2;
-import static org.matheclipse.core.expression.F.Cot;
-import static org.matheclipse.core.expression.F.Divide;
-import static org.matheclipse.core.expression.F.Negate;
-import static org.matheclipse.core.expression.F.Pi;
-import static org.matheclipse.core.expression.F.Plus;
-import static org.matheclipse.core.expression.F.Subtract;
-import static org.matheclipse.core.expression.F.Tan;
-import static org.matheclipse.core.expression.F.Times;
-
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.IFraction;
-import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
+import org.matheclipse.core.interfaces.INumber;
+import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -86,6 +74,12 @@ public class EllipticIntegrals {
 				return F.Times(F.C1D4, F.Power(F.Pi, F.CN1D2), F.Power(F.Gamma(F.QQ(3L, 4L)), -2),
 						F.Plus(F.Sqr(F.Pi), F.Times(F.C2, F.Power(F.Gamma(F.QQ(3L, 4L)), 4))));
 			}
+			if (z.isMinusOne()) {
+				// (Pi^2+2*Gamma(3/4)^4)/(2*Sqrt(2)*Sqrt(Pi)*Gamma(3/4)^2)
+				return F.Times(F.C1D2, F.C1DSqrt2, F.Power(F.Pi, F.CN1D2), F.Power(F.Gamma(F.QQ(3L, 4L)), -2),
+						F.Plus(F.Sqr(F.Pi), F.Times(F.C2, F.Power(F.Gamma(F.QQ(3L, 4L)), 4))));
+			}
+
 			if (z instanceof INum) {
 				double a = ((ISignedNumber) z).doubleValue();
 				try {
@@ -124,6 +118,13 @@ public class EllipticIntegrals {
 			if (z.equals(F.CPiHalf)) {
 				// EllipticF(Pi/2, m) = EllipticK(m)
 				return F.EllipticK(m);
+			}
+			if (z.isTimes() && z.second().equals(F.Pi) && z.first().isRational()) {
+				IRational k = ((IRational) z.first()).multiply(F.C2).normalize();
+				if (k.isInteger()) {
+					// EllipticF(k*Pi/2, m) = k*EllipticK(m) /; IntegerQ(k)
+					return F.Times(k, F.EllipticK(m));
+				}
 			}
 			if (m.isOne()) {
 				// Abs(Re(z)) <= Pi/2
