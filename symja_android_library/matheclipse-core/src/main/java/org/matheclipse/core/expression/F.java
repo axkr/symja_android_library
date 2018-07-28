@@ -3921,7 +3921,11 @@ public class F {
 	public static IAST Arrays(final IAST dimension, ISymbol domain, IAST symmetry) {
 		return ternaryAST3(Arrays, dimension, domain, symmetry);
 	}
-
+	
+	public static IAST ArithmeticGeometricMean(final IExpr a0, final IExpr a1) {
+		return binaryAST2(ArithmeticGeometricMean, a0, a1);
+	}
+	
 	/**
 	 * Creates a new AST from the given <code>ast</code> and <code>head</code>. if <code>include</code> is set to
 	 * <code>true </code> all arguments from index first to last-1 are copied in the new list if <code>include</code> is
@@ -4895,6 +4899,10 @@ public class F {
 		return unaryAST1(EllipticK, a0);
 	}
 
+	public static IAST EllipticPi(final IExpr a0, final IExpr a1) {
+		return binaryAST2(EllipticPi, a0, a1);
+	}
+	
 	public static IAST EllipticPi(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(EllipticPi, a0, a1, a2);
 	}

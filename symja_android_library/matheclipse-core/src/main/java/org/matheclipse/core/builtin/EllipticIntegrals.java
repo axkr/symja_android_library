@@ -1,11 +1,25 @@
 package org.matheclipse.core.builtin;
 
+import static org.matheclipse.core.expression.F.ArcCot;
+import static org.matheclipse.core.expression.F.C1D2;
+import static org.matheclipse.core.expression.F.C2;
+import static org.matheclipse.core.expression.F.Cot;
+import static org.matheclipse.core.expression.F.Divide;
+import static org.matheclipse.core.expression.F.Negate;
+import static org.matheclipse.core.expression.F.Pi;
+import static org.matheclipse.core.expression.F.Plus;
+import static org.matheclipse.core.expression.F.Subtract;
+import static org.matheclipse.core.expression.F.Tan;
+import static org.matheclipse.core.expression.F.Times;
+
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.IFraction;
+import org.matheclipse.core.interfaces.IInteger;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -44,8 +58,10 @@ public class EllipticIntegrals {
 					return F.CComplexInfinity;
 				}
 				if (z.equals(F.CPiHalf)) {
+					// EllipticE(Pi/2, m) = EllipticE(m)
 					return F.EllipticE(m);
 				}
+
 				if (z instanceof INum && m instanceof INum) {
 					double a = ((ISignedNumber) z).doubleValue();
 					double b = ((ISignedNumber) m).doubleValue();
@@ -105,7 +121,8 @@ public class EllipticIntegrals {
 			if (m.isZero()) {
 				return z;
 			}
-			if (z.equals(F.Times(F.C1D2, F.Pi))) {
+			if (z.equals(F.CPiHalf)) {
+				// EllipticF(Pi/2, m) = EllipticK(m)
 				return F.EllipticK(m);
 			}
 			if (m.isOne()) {
@@ -122,6 +139,22 @@ public class EllipticIntegrals {
 					return F.num(de.lab4inf.math.functions.IncompleteFirstEllipticIntegral.icfeint(a, b));
 				} catch (RuntimeException rex) {
 					engine.printMessage("EllipticF: " + rex.getMessage());
+				}
+			}
+			IExpr negExpr = AbstractFunctionEvaluator.getNormalizedNegativeExpression(z);
+			if (negExpr.isPresent()) {
+				// EllipticF(-z,m) = -EllipticF(z,m)
+				return F.Negate(F.EllipticF(negExpr, m));
+			}
+
+			// test EllipticF(zz+k*Pi,m)
+			IAST parts = AbstractFunctionEvaluator.getPeriodicParts(z, F.Pi);
+			if (parts.isPresent()) {
+				IExpr k = parts.arg2();
+				if (k.isInteger()) {
+					// EllipticF(zz,m)+2*k*EllipticK(m)
+					IExpr zz = parts.arg1();
+					return F.Plus(F.EllipticF(zz, m), F.Times(F.C2, k, F.EllipticK(m)));
 				}
 			}
 			return F.NIL;
@@ -158,15 +191,10 @@ public class EllipticIntegrals {
 				// (8 Pi^(3/2))/Gamma(-(1/4))^2
 				return F.Times(F.C8, F.Power(F.Pi, F.QQ(3L, 2L)), F.Power(F.Gamma(F.CN1D4), -2));
 			}
-			if (m instanceof INum) {
-				double a = ((ISignedNumber) m).doubleValue();
-				if (a > -1 && a < 1) {
-					try {
-						return F.num(de.lab4inf.math.functions.CompleteFirstEllipticIntegral.cfeint(a));
-					} catch (RuntimeException rex) {
-						engine.printMessage("EllipticK: " + rex.getMessage());
-					}
-				}
+			if (m.isNumber()) {
+				// EllipticK(m_) := Pi/(2*ArithmeticGeometricMean(1,Sqrt(1-m)))
+				return F.Times(F.C1D2, F.Pi,
+						F.Power(F.ArithmeticGeometricMean(F.C1, F.Sqrt(F.Plus(F.C1, F.Negate(m)))), -1));
 			}
 			return F.NIL;
 		}
@@ -196,6 +224,20 @@ public class EllipticIntegrals {
 					} catch (RuntimeException rex) {
 						engine.printMessage("EllipticPi: " + rex.getMessage());
 					}
+				}
+				if (m.equals(F.CPiHalf)) {
+					if (n.isZero()) {
+						// EllipticPi(0,Pi/2,z) = EllipticK(z)
+						return F.EllipticK(ast.arg3());
+					}
+					if (n.equals(ast.arg3())) {
+						// EllipticPi(n,Pi/2,n) = EllipticE(n)/(1-n)
+						return F.Times(F.Power(F.Plus(F.C1, F.Negate(n)), -1), F.EllipticE(n));
+					}
+					return F.EllipticPi(n, ast.arg3());
+				}
+				if (n.isZero()) {
+					return F.EllipticF(m, ast.arg3());
 				}
 				return F.NIL;
 			}

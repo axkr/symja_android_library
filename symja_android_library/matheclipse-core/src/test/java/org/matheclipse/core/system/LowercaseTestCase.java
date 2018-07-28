@@ -23,6 +23,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// syntax error in relaxed mode
 		// check("Sin[x]", "");
 
+		check("1.2345678*^7", //
+				"12345678.0");
+		check("1.23456789*^8", //
+				"123456789.0");
 		// github #66
 		Double d = Double.parseDouble("1231231236123216361256312631627.12312312");
 		checkNumeric("1231231236123216361256312631627.12312312", //
@@ -509,6 +513,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArithmeticGeometricMean() {
+		check("ArithmeticGeometricMean(1, Infinity)", //
+				"Infinity");
+		check("ArithmeticGeometricMean(a, a*Sqrt(2))", //
+				"(Sqrt(2)*a*Gamma(3/4)^2)/Sqrt(Pi)");
 		check("ArithmeticGeometricMean(a, 1/a)", // orderless
 				"ArithmeticGeometricMean(1/a,a)");
 		check("ArithmeticGeometricMean(a, 0)", //
@@ -2571,6 +2579,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testEllipticF() {
+		check("EllipticF(Pi/2, m)", //
+				"EllipticK(m)");
+		check("EllipticF(a+42*Pi,m)", //
+				"EllipticF(a,m)+84*EllipticK(m)");
+		check("EllipticF(-z,m)", //
+				"-EllipticF(z,m)");
 		check("EllipticF(0, m)", "0");
 		check("EllipticF(z,0)", "z");
 		check("EllipticF(5/4, 1)", "Log(Sec(5/4)+Tan(5/4))");
@@ -2582,16 +2596,28 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testEllipticK() {
 		check("EllipticK(0.5)", "1.85407");
 		check("Table(EllipticK(x), {x,-1.0, 1.0, 1/4})", //
-				"{1.31103,2.15652,1.85407,1.68575,1.5708,1.68575,1.85407,2.15652,ComplexInfinity}");
-
+				"{1.31103,1.35906,1.41574,1.48441,1.5708,1.68575,1.85407,2.15652,ComplexInfinity}");
+		check("Table(EllipticK(x+I), {x,-1.0, 1.0, 1/4})", //
+				"{1.26549+I*0.16224,1.30064+I*0.18478,1.33866+I*0.21305,1.37925+I*0.24904,1.42127+I*0.29538,1.46203+I*0.35524,1.49611+I*0.43136,1.51493+I*0.52354,1.50924+I*0.62515}");
 	}
 
 	public void testEllipticPi() {
-		check("EllipticPi(n,0)", "Pi/(2*Sqrt(1-n))");
-		check("EllipticPi(n,1)", "Infinity/Sign(1-n)");
-		check("EllipticPi(n,n)", "EllipticE(n)/(1-n)");
-		check("EllipticPi(0.4,0.6)", "2.59092");
-		check("EllipticPi(1/3, Pi/5, 0.3)", "0.6594");
+		check("EllipticPi(0,z,m)", //
+				"EllipticF(z,m)");
+		check("EllipticPi(n,Pi/2,n)", //
+				"EllipticE(n)/(1-n)");
+		check("EllipticPi(n,Pi/2,x)", //
+				"EllipticPi(n,x)");
+		check("EllipticPi(n,0)", //
+				"Pi/(2*Sqrt(1-n))");
+		check("EllipticPi(n,1)", //
+				"Infinity/Sign(1-n)");
+		check("EllipticPi(n,n)", //
+				"EllipticE(n)/(1-n)");
+		check("EllipticPi(0.4,0.6)", //
+				"2.59092");
+		check("EllipticPi(1/3, Pi/5, 0.3)", //
+				"0.6594");
 		check("Table(EllipticPi(x,0.5), {x,-2.0, 2.0, 1/4})", //
 				"{1.0227,1.07184,1.12843,1.19454,1.27313,1.36859,1.48785,1.64253,1.85407,2.16762,2.70129,3.93061,ComplexInfinity,-0.59276,-0.45672,-0.37175,-0.31354}");
 

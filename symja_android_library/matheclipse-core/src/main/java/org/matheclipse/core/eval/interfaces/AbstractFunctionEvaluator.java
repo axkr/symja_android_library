@@ -218,7 +218,7 @@ public abstract class AbstractFunctionEvaluator extends AbstractEvaluator {
 	}
 
 	/**
-	 * Try to split a periodic part from the expression: <code>expr == part[0] + part[1] * period</code>
+	 * Try to split a periodic part from the expression: <code>expr == part.arg1() + part.arg2() * period</code>
 	 * 
 	 * @param expr
 	 * @param period
