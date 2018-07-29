@@ -126,32 +126,6 @@ import com.google.common.util.concurrent.TimeLimiter;
  * </pre>
  */
 public class ExprEvaluator {
-	private static class EvalCallable implements Callable<IExpr> {
-		private final EvalEngine fEngine;
-		private final IExpr fExpr;
-
-		public EvalCallable(IExpr expr, EvalEngine engine) {
-			fExpr = expr;
-			fEngine = engine;
-		}
-
-		@Override
-		public IExpr call() throws Exception {
-			EvalEngine.set(fEngine);
-			// try {
-			fEngine.reset();
-			IExpr temp = fEngine.evaluate(fExpr);
-			if (!fEngine.isOutListDisabled()) {
-				fEngine.addOut(temp);
-			}
-			return temp;
-			// } finally {
-			// EvalEngine.remove();
-			// }
-		}
-
-	}
-
 	static {
 		F.initSymbols(null, null, true);
 	}
@@ -450,7 +424,7 @@ public class ExprEvaluator {
 	 * @throws SyntaxError
 	 */
 	public IExpr evaluateWithTimeout(final String inputExpression, long timeoutDuration, TimeUnit timeUnit,
-			boolean interruptible) {
+			boolean interruptible, EvalCallable call) {
 		if (inputExpression != null) {
 			// F.join();
 			EvalEngine.set(engine);
@@ -460,14 +434,18 @@ public class ExprEvaluator {
 				try {
 					F.await();
 					TimeLimiter timeLimiter = SimpleTimeLimiter.create(Executors.newSingleThreadExecutor());
-					Callable<IExpr> work = new EvalCallable(fExpr, engine);
-
+					EvalCallable work = call == null ? new EvalCallable(engine) : call;
+					work.setExpr(fExpr);
 					return timeLimiter.callWithTimeout(work, timeoutDuration, timeUnit);
 				} catch (InterruptedException e) {
 					return F.$Aborted;
-				} catch (java.util.concurrent.TimeoutException e) {
-					return F.$Aborted;
+					// } catch (java.util.concurrent.TimeoutException e) {
+					// return F.$Aborted;
 				} catch (com.google.common.util.concurrent.UncheckedTimeoutException e) {
+					Throwable t = e.getCause();
+					if (t instanceof RuntimeException) {
+						throw (RuntimeException) t;
+					}
 					return F.$Aborted;
 				} catch (Exception e) {
 					if (Config.DEBUG) {

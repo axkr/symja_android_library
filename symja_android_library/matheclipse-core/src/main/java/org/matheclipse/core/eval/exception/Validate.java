@@ -147,8 +147,9 @@ public final class Validate {
 					// throw new WrongArgumentType(expr, "Trying to convert the expression into the integer range: "
 					// + startValue + " - " + Long.MAX_VALUE);
 					// }
-					if (nonNegative&&longValue.compareTo(BigInteger.ZERO)<0) {
-						throw new WrongArgumentType(arg, "Trying to convert the given list into a list of long non-negative numbers: " + arg);
+					if (nonNegative && longValue.compareTo(BigInteger.ZERO) < 0) {
+						throw new WrongArgumentType(arg,
+								"Trying to convert the given list into a list of long non-negative numbers: " + arg);
 					}
 					result[i - 1] = longValue;
 				}
@@ -731,10 +732,9 @@ public final class Validate {
 	private static IExpr checkEquationAndInequation(IExpr eq) {
 		if (eq.isEqual()) {
 			IAST equal = (IAST) eq;
-			final IExpr[] arr = new IExpr[] { F.evalExpandAll(F.Subtract(equal.arg1(), equal.arg2())),
-					F.C0  };
+			final IExpr[] arr = new IExpr[] { F.evalExpandAll(F.Subtract(equal.arg1(), equal.arg2())), F.C0 };
 			return F.ast(arr, F.Equal);
-		} 
+		}
 		if (eq.isAST()) {
 			IAST equal = (IAST) eq;
 			IExpr head = equal.head();
@@ -778,9 +778,9 @@ public final class Validate {
 		String msg = e.getMessage();
 		try {
 			if (msg != null) {
-				buf.append("\nError: " + msg);
+				buf.append("\n" + e.getClass().getName() + ": " + msg);
 			} else {
-				buf.append("\nError: " + e.getClass().getSimpleName());
+				buf.append("\n" + e.getClass().getName());
 			}
 		} catch (IOException e1) {
 			// ignore

@@ -6,9 +6,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.ArrayList;
 import java.util.Locale;
-import java.util.Map;
 
 import javax.script.AbstractScriptEngine;
 import javax.script.Bindings;
@@ -16,15 +14,14 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 
+import org.apfloat.ApfloatRuntimeException;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.convert.Object2Expr;
 import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.EvalUtilities;
 import org.matheclipse.core.eval.exception.AbortException;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
-import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
@@ -145,6 +142,13 @@ public class MathScriptEngine extends AbstractScriptEngine {
 			}
 			// catch parser errors here
 			return e.getMessage();
+
+		} catch (final ApfloatRuntimeException e) {
+			if (Config.SHOW_STACKTRACE) {
+				e.printStackTrace();
+			}
+			// catch parser errors here
+			return "Apfloat: " + e.getMessage();
 		} catch (final Exception e) {
 			// if (e instanceof ExceptionContextProvider) {
 			// if (Config.DEBUG) {

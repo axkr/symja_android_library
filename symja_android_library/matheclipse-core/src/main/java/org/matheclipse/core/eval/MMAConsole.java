@@ -44,6 +44,8 @@ public class MMAConsole {
 
 	private final static int PRETTYFORM = 3;
 
+	private final static int INPUTFORM = 4;
+
 	private int fUsedForm = OUTPUTFORM;
 
 	private ExprEvaluator fEvaluator;
@@ -52,10 +54,12 @@ public class MMAConsole {
 
 	private OutputFormFactory fOutputTraditionalFactory;
 
+	private OutputFormFactory fInputFactory;
+
 	/**
 	 * Use pretty printer for expression output n print stream
 	 */
-	private boolean fPrettyPrinter;
+	// private boolean fPrettyPrinter;
 
 	// private File fFile;
 
@@ -139,6 +143,10 @@ public class MMAConsole {
 							System.out.println("Enabling output for PrettyPrinterForm");
 							console.fUsedForm = PRETTYFORM;
 							continue;
+						} else if (command.equals("input")) {
+							System.out.println("Enabling output for InputForm");
+							console.fUsedForm = INPUTFORM;
+							continue;
 						} else if (command.equals("timeoutoff")) {
 							System.out.println("Disabling timeout for evaluation");
 							console.fSeconds = -1;
@@ -166,21 +174,23 @@ public class MMAConsole {
 					}
 					outputExpression = console.interpreter(trimmedInput);
 					System.out.println("In [" + COUNTER + "]: " + trimmedInput);
+					System.out.flush();
 					// if (outputExpression.length() > 0) {
 					// System.out.println("Out[" + COUNTER + "]: " + outputExpression);
 					// }
-					if (console.fPrettyPrinter) {
-						console.prettyPrinter(trimmedInput);
-					} else {
-						console.resultPrinter(trimmedInput);
-					}
+					// if (console.fPrettyPrinter) {
+					// console.prettyPrinter(trimmedInput);
+					// } else {
+					console.resultPrinter(trimmedInput);
+					// }
 					COUNTER++;
 				}
 				// } catch (final MathRuntimeException mre) {
 				// Throwable me = mre.getCause();
 				// System.out.println(me.getMessage());
 			} catch (final Exception e) {
-				System.out.println(e.getMessage());
+				System.err.println(e.getMessage());
+				System.err.flush();
 			}
 		}
 	}
@@ -216,6 +226,7 @@ public class MMAConsole {
 				}
 				System.out.println(line);
 			}
+			System.out.flush();
 			f.close();
 			is.close();
 		} catch (IOException e) {
@@ -227,20 +238,21 @@ public class MMAConsole {
 		String outputExpression = interpreter(inputExpression);
 		if (outputExpression.length() > 0) {
 			System.out.println("Out[" + COUNTER + "]: " + outputExpression);
+			System.out.flush();
 		}
 		return outputExpression;
 	}
 
-	private void prettyPrinter(String inputExpression) {
-		System.out.println();
-		String[] outputExpression = prettyPrinter3Lines(inputExpression);
-		ASCIIPrettyPrinter3.prettyPrinter(System.out, outputExpression, "Out[" + COUNTER + "]: ");
-	}
+	// private void prettyPrinter(String inputExpression) {
+	// System.out.println();
+	// String[] outputExpression = prettyPrinter3Lines(inputExpression);
+	// ASCIIPrettyPrinter3.prettyPrinter(System.out, outputExpression, "Out[" + COUNTER + "]: ");
+	// }
 
 	/**
 	 * Prints the usage of how to use this class to System.out
 	 */
-	private static void printUsageCompletely() {
+	private static void printUsage() {
 		final String lineSeparator = System.getProperty("line.separator");
 		final StringBuilder msg = new StringBuilder();
 		msg.append(Config.SYMJA);
@@ -253,8 +265,7 @@ public class MMAConsole {
 		// msg.append(" -file <filename> use given file as input script" + lineSeparator);
 		msg.append("  -d or -default <filename>                   use given textfile for an initial package script"
 				+ lineSeparator);
-		msg.append("  -pp                                         enable pretty printer" + lineSeparator);
-
+		// msg.append(" -pp enable pretty printer" + lineSeparator);
 		msg.append("To stop the program type: /exit<RETURN>" + lineSeparator);
 		msg.append("To continue an input line type: \\<RETURN>" + lineSeparator);
 		msg.append("at the end of the line." + lineSeparator);
@@ -266,55 +277,57 @@ public class MMAConsole {
 		msg.append("****+****+****+****+****+****+****+****+****+****+****+****+");
 
 		System.out.println(msg.toString());
+		System.out.flush();
 	}
 
-	private String[] prettyPrinter3Lines(final String inputExpression) {
-		IExpr result;
-
-		final StringWriter buf = new StringWriter();
-		try {
-			if (fSeconds <= 0) {
-				result = fEvaluator.eval(inputExpression);
-			} else {
-				result = fEvaluator.evaluateWithTimeout(inputExpression, fSeconds, TimeUnit.SECONDS, true);
-			}
-			if (result != null) {
-				if (result.equals(F.Null)) {
-					return null;
-				}
-				ASCIIPrettyPrinter3 strBuffer = new ASCIIPrettyPrinter3();
-				strBuffer.convert(result);
-				return strBuffer.toStringBuilder();
-			}
-		} catch (final SyntaxError se) {
-			String msg = se.getMessage();
-			System.err.println();
-			System.err.println(msg);
-			return null;
-		} catch (final RuntimeException re) {
-			Throwable me = re.getCause();
-			if (me instanceof MathException) {
-				Validate.printException(buf, me);
-			} else {
-				Validate.printException(buf, re);
-			}
-			return null;
-		} catch (final Exception e) {
-			Validate.printException(buf, e);
-			return null;
-		} catch (final OutOfMemoryError e) {
-			Validate.printException(buf, e);
-			return null;
-		} catch (final StackOverflowError e) {
-			Validate.printException(buf, e);
-			return null;
-		}
-		String[] strArray = new String[3];
-		strArray[0] = "";
-		strArray[1] = buf.toString();
-		strArray[2] = "";
-		return strArray;
-	}
+	// private String[] prettyPrinter3Lines(final String inputExpression) {
+	// IExpr result;
+	//
+	// final StringWriter buf = new StringWriter();
+	// try {
+	// if (fSeconds <= 0) {
+	// result = fEvaluator.eval(inputExpression);
+	// } else {
+	// result = fEvaluator.evaluateWithTimeout(inputExpression, fSeconds, TimeUnit.SECONDS, true,
+	// new EvalCallable(fEvaluator.getEvalEngine()));
+	// }
+	// if (result != null) {
+	// if (result.equals(F.Null)) {
+	// return null;
+	// }
+	// ASCIIPrettyPrinter3 strBuffer = new ASCIIPrettyPrinter3();
+	// strBuffer.convert(result);
+	// return strBuffer.toStringBuilder();
+	// }
+	// } catch (final SyntaxError se) {
+	// String msg = se.getMessage();
+	// System.err.println();
+	// System.err.println(msg);
+	// return null;
+	// } catch (final RuntimeException re) {
+	// Throwable me = re.getCause();
+	// if (me instanceof MathException) {
+	// Validate.printException(buf, me);
+	// } else {
+	// Validate.printException(buf, re);
+	// }
+	// return null;
+	// } catch (final Exception e) {
+	// Validate.printException(buf, e);
+	// return null;
+	// } catch (final OutOfMemoryError e) {
+	// Validate.printException(buf, e);
+	// return null;
+	// } catch (final StackOverflowError e) {
+	// Validate.printException(buf, e);
+	// return null;
+	// }
+	// String[] strArray = new String[3];
+	// strArray[0] = "";
+	// strArray[1] = buf.toString();
+	// strArray[2] = "";
+	// return strArray;
+	// }
 
 	/**
 	 * Create a console which appends each evaluation output in a history list.
@@ -327,6 +340,8 @@ public class MMAConsole {
 		DecimalFormat decimalFormat = new DecimalFormat("0.0####", usSymbols);
 		fOutputFactory = OutputFormFactory.get(false, false, decimalFormat);
 		fOutputTraditionalFactory = OutputFormFactory.get(true, false, decimalFormat);
+		fInputFactory = OutputFormFactory.get(false, false, decimalFormat);
+		fInputFactory.setQuotes(true);
 	}
 
 	/**
@@ -387,7 +402,7 @@ public class MMAConsole {
 					throw ReturnException.RETURN_FALSE;
 				}
 			} else if (arg.equals("-help") || arg.equals("-h")) {
-				printUsageCompletely();
+				printUsage();
 				return;
 				// } else if (arg.equals("-debug")) {
 				// Config.DEBUG = true;
@@ -412,18 +427,18 @@ public class MMAConsole {
 					System.out.println(msg);
 					return;
 				}
-			} else if (arg.equals("-pp")) {
-				fPrettyPrinter = true;
+				// } else if (arg.equals("-pp")) {
+				// fPrettyPrinter = true;
 			} else if (arg.charAt(0) == '-') {
 				// we don't have any more args to recognize!
 				final String msg = "Unknown arg: " + arg;
 				System.out.println(msg);
-				printUsageCompletely();
+				printUsage();
 				return;
 			}
 
 		}
-		printUsageCompletely();
+		printUsage();
 	}
 
 	/**
@@ -439,7 +454,8 @@ public class MMAConsole {
 			if (fSeconds <= 0) {
 				result = fEvaluator.eval(inputExpression);
 			} else {
-				result = fEvaluator.evaluateWithTimeout(inputExpression, fSeconds, TimeUnit.SECONDS, true);
+				result = fEvaluator.evaluateWithTimeout(inputExpression, fSeconds, TimeUnit.SECONDS, true,
+						new EvalControlledCallable(fEvaluator.getEvalEngine()));
 			}
 			if (result != null) {
 				return printResult(result);
@@ -449,11 +465,15 @@ public class MMAConsole {
 				return printResult(F.$Aborted);
 			} catch (IOException e) {
 				Validate.printException(buf, e);
+				System.err.println(buf.toString());
+				System.err.flush();
 				return "";
 			}
 		} catch (final SyntaxError se) {
 			String msg = se.getMessage();
 			System.err.println(msg);
+			System.err.println();
+			System.err.flush();
 			return "";
 		} catch (final RuntimeException re) {
 			Throwable me = re.getCause();
@@ -462,15 +482,23 @@ public class MMAConsole {
 			} else {
 				Validate.printException(buf, re);
 			}
+			System.err.println(buf.toString());
+			System.err.flush();
 			return "";
 		} catch (final Exception e) {
 			Validate.printException(buf, e);
+			System.err.println(buf.toString());
+			System.err.flush();
 			return "";
 		} catch (final OutOfMemoryError e) {
 			Validate.printException(buf, e);
+			System.err.println(buf.toString());
+			System.err.flush();
 			return "";
 		} catch (final StackOverflowError e) {
 			Validate.printException(buf, e);
+			System.err.println(buf.toString());
+			System.err.flush();
 			return "";
 		}
 		return buf.toString();
@@ -509,6 +537,11 @@ public class MMAConsole {
 			String[] outputExpression = prettyBuffer.toStringBuilder();
 			ASCIIPrettyPrinter3.prettyPrinter(System.out, outputExpression, "Out[" + COUNTER + "]: ");
 			return "";
+		case INPUTFORM:
+			StringBuilder inputBuffer = new StringBuilder();
+			fInputFactory.reset();
+			fInputFactory.convert(inputBuffer, result);
+			return inputBuffer.toString();
 		default:
 			StringBuilder strBuffer = new StringBuilder();
 			fOutputFactory.reset();
