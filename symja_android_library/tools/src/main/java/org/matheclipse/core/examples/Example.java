@@ -1,71 +1,73 @@
 package org.matheclipse.core.examples;
 
-import static org.matheclipse.core.expression.F.*;
-
-import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
-public class CalculusExample {
+/**
+ * Used as an example for the Java usage in the github wiki. See:
+ * <a href="https://github.com/axkr/symja_android_library/wiki/Java-usage">/wiki/Java-usage</a>
+ *
+ */
+public class Example {
 	public static void main(String[] args) {
 		try {
-			// don't distinguish between lower and upper case identifiers
-			Config.PARSER_USE_LOWERCASE_SYMBOLS = true;
-
 			ExprEvaluator util = new ExprEvaluator(false, 100);
 
 			// Convert an expression to the internal Java form:
 			// Note: single character identifiers are case sensitive
-			// (the "D()" function input must be written as upper case
+			// (the "D()" function identifier must be written as upper case
 			// character)
 			String javaForm = util.toJavaForm("D(sin(x)*cos(x),x)");
 			// prints: D(Times(Sin(x),Cos(x)),x)
-			System.out.println(javaForm.toString());
+			System.out.println("Out[1]: " + javaForm.toString());
 
 			// Use the Java form to create an expression with F.* static
 			// methods:
-			IAST function = D(Times(Sin(x), Cos(x)), x);
+			ISymbol x = F.Dummy("x");
+			IAST function = F.D(F.Times(F.Sin(x), F.Cos(x)), x);
 			IExpr result = util.eval(function);
 			// print: Cos(x)^2-Sin(x)^2
-			System.out.println(result.toString());
+			System.out.println("Out[2]: " + result.toString());
 
 			// Note "diff" is an alias for the "D" function
 			result = util.eval("diff(sin(x)*cos(x),x)");
 			// print: Cos(x)^2-Sin(x)^2
-			System.out.println(result.toString());
+			System.out.println("Out[3]: " + result.toString());
 
-			// evaluate the last result ($ans contains "last answer")
-			result = util.eval("$ans+cos(x)^2");
+			// evaluate the last result (% or $ans contains "last answer")
+			result = util.eval("%+cos(x)^2");
 			// print: 2*Cos(x)^2-Sin(x)^2
-			System.out.println(result.toString());
+			System.out.println("Out[4]: " + result.toString());
 
 			// evaluate an Integrate[] expression
 			result = util.eval("integrate(sin(x)^5,x)");
 			// print: 2/3*Cos(x)^3-1/5*Cos(x)^5-Cos(x)
-			System.out.println(result.toString());
+			System.out.println("Out[5]: " + result.toString());
 
 			// set the value of a variable "a" to 10
 			// Note: in server mode the variable name must have a preceding '$'
 			// character
 			result = util.eval("a=10");
 			// print: 10
-			System.out.println(result.toString());
+			System.out.println("Out[6]: " + result.toString());
 
 			// do a calculation with variable "a"
 			result = util.eval("a*3+b");
 			// print: 30+b
-			System.out.println(result.toString());
+			System.out.println("Out[7]: " + result.toString());
 
 			// Do a calculation in "numeric mode" with the N() function
 			// Note: single character identifiers are case sensistive
-			// (the "N()" function input must be written as upper case
+			// (the "N()" function identifier must be written as upper case
 			// character)
 			result = util.eval("N(sinh(5))");
 			// print: 74.20321057778875
-			System.out.println(result.toString());
+			System.out.println("Out[8]: " + result.toString());
 
 			// define a function with a recursive factorial function definition.
 			// Note: fac(0) is the stop condition.
@@ -73,7 +75,7 @@ public class CalculusExample {
 			// now calculate factorial of 10:
 			result = util.eval("fac(10)");
 			// print: 3628800
-			System.out.println(result.toString());
+			System.out.println("Out[9]: " + result.toString());
 
 		} catch (SyntaxError e) {
 			// catch Symja parser errors here
