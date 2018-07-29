@@ -3008,9 +3008,6 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactorial() {
-
-		check("10000000!", //
-				"4023872600770937735437024339230039857193748642107146325437999104299385123986290...");
 		check("Factorial(Infinity)", "Infinity");
 
 		check("Factorial2(-1)", "1");
