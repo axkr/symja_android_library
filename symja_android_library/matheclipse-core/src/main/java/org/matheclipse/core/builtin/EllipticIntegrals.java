@@ -21,6 +21,31 @@ public class EllipticIntegrals {
 		F.JacobiZeta.setEvaluator(new JacobiZeta());
 	}
 
+	/**
+	 * <pre>
+	 * EllipticE(z)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the complete elliptic integral of the second kind.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href=
+	 * "https://en.wikipedia.org/wiki/Elliptic_integral#Complete_elliptic_integral_of_the_second_kind">Wikipedia -
+	 * Elliptic integral - Complete elliptic integral of the second kind)</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; EllipticE(5/4,1)
+	 * Sin(5/4)
+	 * </pre>
+	 */
 	private static class EllipticE extends AbstractFunctionEvaluator {
 
 		@Override
@@ -101,6 +126,31 @@ public class EllipticIntegrals {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * EllipticF(z)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the incomplete elliptic integral of the first kind.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href=
+	 * "https://en.wikipedia.org/wiki/Elliptic_integral#Incomplete_elliptic_integral_of_the_first_kind">Wikipedia -
+	 * Elliptic integral - Incomplete elliptic integral of the first kind)</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; EllipticF(17/2*Pi, m)
+	 * 17*EllipticK(m)
+	 * </pre>
+	 */
 	private static class EllipticF extends AbstractFunctionEvaluator {
 
 		@Override
@@ -168,6 +218,31 @@ public class EllipticIntegrals {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * EllipticK(z)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the complete elliptic integral of the first kind.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href=
+	 * "https://en.wikipedia.org/wiki/Elliptic_integral#Complete_elliptic_integral_of_the_first_kind">Wikipedia -
+	 * Elliptic integral - Complete elliptic integral of the first kind)</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Table(EllipticK(x+I), {x,-1.0, 1.0, 1/4})
+	 * {1.26549+I*0.16224,1.30064+I*0.18478,1.33866+I*0.21305,1.37925+I*0.24904,1.42127+I*0.29538,1.46203+I*0.35524,1.49611+I*0.43136,1.51493+I*0.52354,1.50924+I*0.62515}
+	 * </pre>
+	 */
 	private static class EllipticK extends AbstractFunctionEvaluator {
 
 		@Override
@@ -207,6 +282,38 @@ public class EllipticIntegrals {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * EllipticPi(n, m)
+	 * </pre>
+	 * <p>
+	 * or
+	 * </p>
+	 * 
+	 * <pre>
+	 * EllipticPi(n, m, z)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the complete elliptic integral of the third kind.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href=
+	 * "https://en.wikipedia.org/wiki/Elliptic_integral#Complete_elliptic_integral_of_the_third_kind">Wikipedia -
+	 * Elliptic integral - Complete elliptic integral of the third kind</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; EllipticPi(n,Pi/2,x)
+	 * EllipticPi(n,x)
+	 * </pre>
+	 */
 	private static class EllipticPi extends AbstractFunctionEvaluator {
 
 		@Override

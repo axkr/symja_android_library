@@ -208,6 +208,24 @@ public class StatisticsFunctions {
 		protected abstract IExpr protected_p_equals(IAST dist, IExpr n);
 	}
 
+	/**
+	 * <pre>
+	 * ArithmeticGeometricMean(a, b)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the arithmetic geometric mean of <code>a</code> and <code>b</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Arithmetic%E2%80%93geometric_mean">Wikipedia - Arithmetic-geometric
+	 * mean)</a></li>
+	 * </ul>
+	 */
 	private static class ArithmeticGeometricMean extends AbstractArg2 {
 
 		@Override
@@ -258,7 +276,7 @@ public class StatisticsFunctions {
 			}
 			IExpr div = F.Divide.of(b, a);
 			if (div.equals(F.CSqrt2)) {
-				return F.Times(F.CSqrt2,F.a,F.Power(F.Pi,F.CN1D2),F.Sqr(F.Gamma(F.QQ(3L,4L))));
+				return F.Times(F.CSqrt2, F.a, F.Power(F.Pi, F.CN1D2), F.Sqr(F.Gamma(F.QQ(3L, 4L))));
 			}
 			return F.NIL;
 		}
