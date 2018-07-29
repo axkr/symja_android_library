@@ -278,7 +278,7 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
 				return F.List(sharedExpr, replaceList);
 			}
 		}
-		return F.NIL;
+		return F.List(ast);
 	}
 
 }

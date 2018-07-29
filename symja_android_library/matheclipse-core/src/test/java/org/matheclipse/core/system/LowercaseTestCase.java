@@ -6524,6 +6524,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testOptimizeExpression() {
+		check("OptimizeExpression( f(x))", //
+				"{f(x)}");
 		check("OptimizeExpression(-3*a - 2*a^3 + 4*Sqrt(1 + a^2)*(5 - 9*Log(2)) + \r\n"
 				+ " 4*a^2*Sqrt(1 + a^2)*(5 - 9*Log(2)) + \r\n" + " 12*(1 + a^2)^(3/2)*Log(1 + Sqrt(1 + 1/a^2)) - \r\n"
 				+ " 6*(4*(Sqrt(1 + a^2) - a*(2 + a^2 - a*Sqrt(1 + a^2)))*Log(a) + a*Log(1 + a^2)))", //
