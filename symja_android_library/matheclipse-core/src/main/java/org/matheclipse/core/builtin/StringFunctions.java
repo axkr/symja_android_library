@@ -1,8 +1,6 @@
 
 package org.matheclipse.core.builtin;
 
-import static org.matheclipse.core.expression.F.List;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.function.Predicate;

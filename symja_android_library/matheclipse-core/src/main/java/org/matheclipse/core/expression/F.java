@@ -256,7 +256,7 @@ public class F {
     /** Arg(expr) - returns the argument of the complex number `expr`.*/
     public final static IBuiltInSymbol Arg = F.initFinalSymbol("Arg", ID.Arg);
 
-    /***/
+    /** ArithmeticGeometricMean(a, b) - returns the arithmetic geometric mean of `a` and `b`. */
     public final static IBuiltInSymbol ArithmeticGeometricMean = F.initFinalSymbol("ArithmeticGeometricMean", ID.ArithmeticGeometricMean);
 
     /** Array(f, n) - returns the `n`-element list `{f(1), ..., f(n)}`.*/
@@ -727,22 +727,22 @@ public class F {
     /** Element(symbol, dom) - assume (or test) that the `symbol` is in the domain `dom`.*/
     public final static IBuiltInSymbol Element = F.initFinalSymbol("Element", ID.Element);
 
-    /** ElementData("name“, ”property") - gives the value of the property for the chemical specified by name.*/
+    /** ElementData("name", "property") - gives the value of the property for the chemical specified by name.*/
     public final static IBuiltInSymbol ElementData = F.initFinalSymbol("ElementData", ID.ElementData);
 
     /** Eliminate(list-of-equations, list-of-variables) - attempts to eliminate the variables from the `list-of-variables` in the `list-of-equations`.*/
     public final static IBuiltInSymbol Eliminate = F.initFinalSymbol("Eliminate", ID.Eliminate);
 
-    /***/
+    /** EllipticE(z) - returns the complete elliptic integral of the second kind. */
     public final static IBuiltInSymbol EllipticE = F.initFinalSymbol("EllipticE", ID.EllipticE);
 
-    /***/
+    /** EllipticF(z) - returns the incomplete elliptic integral of the first kind. */
     public final static IBuiltInSymbol EllipticF = F.initFinalSymbol("EllipticF", ID.EllipticF);
 
-    /***/
+    /** EllipticK(z) - returns the complete elliptic integral of the first kind. */
     public final static IBuiltInSymbol EllipticK = F.initFinalSymbol("EllipticK", ID.EllipticK);
 
-    /***/
+    /** EllipticPi(n,m) - returns the complete elliptic integral of the third kind. */
     public final static IBuiltInSymbol EllipticPi = F.initFinalSymbol("EllipticPi", ID.EllipticPi);
 
     /***/
@@ -1216,6 +1216,9 @@ public class F {
     /***/
     public final static IBuiltInSymbol KnownUnitQ = F.initFinalSymbol("KnownUnitQ", ID.KnownUnitQ);
 
+    /***/
+    public final static IBuiltInSymbol KolmogorovSmirnovTest = F.initFinalSymbol("KolmogorovSmirnovTest", ID.KolmogorovSmirnovTest);
+
     /** KroneckerDelta(arg1, arg2, ... argN) - if all arguments `arg1` to `argN` are equal return `1`, otherwise return `0`. */
     public final static IBuiltInSymbol KroneckerDelta = F.initFinalSymbol("KroneckerDelta", ID.KroneckerDelta);
 
@@ -1489,10 +1492,10 @@ public class F {
     /** NIntegrate(f, {x,a,b}) - computes the numerical univariate real integral of `f` with respect to `x` from `a` to `b`.*/
     public final static IBuiltInSymbol NIntegrate = F.initFinalSymbol("NIntegrate", ID.NIntegrate);
 
-    /** NMaximize(maximize_function, constraints, variables_list) - the `NMaximize` function provides an implementation of [George Dantzig's simplex algorithm](http://en.wikipedia.org/wiki/Simplex_algorithm) for solving linear optimization problems with linear equality and inequality constraints and implicit non-negative variables.*/
+    /** NMaximize({maximize_function, constraints}, variables_list) - the `NMaximize` function provides an implementation of [George Dantzig's simplex algorithm](http://en.wikipedia.org/wiki/Simplex_algorithm) for solving linear optimization problems with linear equality and inequality constraints and implicit non-negative variables.*/
     public final static IBuiltInSymbol NMaximize = F.initFinalSymbol("NMaximize", ID.NMaximize);
 
-    /** NMinimize(coefficientsOfLinearObjectiveFunction, constraintList, constraintRelationList) - the `NMinimize` function provides an implementation of [George Dantzig's simplex algorithm](http://en.wikipedia.org/wiki/Simplex_algorithm) for solving linear optimization problems with linear equality and inequality constraints and implicit non-negative variables.*/
+    /** NMinimize({maximize_function, constraints}, variables_list) - the `NMinimize` function provides an implementation of [George Dantzig's simplex algorithm](http://en.wikipedia.org/wiki/Simplex_algorithm) for solving linear optimization problems with linear equality and inequality constraints and implicit non-negative variables.*/
     public final static IBuiltInSymbol NMinimize = F.initFinalSymbol("NMinimize", ID.NMinimize);
 
     /** NRoots(poly) - gives the numerical roots of polynomial `poly`.*/

@@ -1,16 +1,22 @@
-## Variance
+## PDF
 
 ```
-Variance(list)
+PDF(distribution, value)
 ```
 
-> computes the variance of `list`. `list` may consist of numerical values or symbols. Numerical values may be real or complex.
+> returns the probability density function of `value`. 
 
-`Variance({{a1, a2, ...}, {b1, b2, ...}, ...})` will yield
-`{Variance({a1, b1, ...}, Variance({a2, b2, ...}), ...}`.
+```
+PDF(distribution, {list} )
+```
+
+> returns the probability density function of the values of list. 
 
 
-`Variance` can be applied to the following distributions:
+See:
+* [Wikipedia - probability density function](https://en.wikipedia.org/wiki/Probability_density_function)
+
+`PDF` can be applied to the following distributions:
 
 > [BernoulliDistribution](BernoulliDistribution.md), [BinomialDistribution](BinomialDistribution.md), [DiscreteUniformDistribution](DiscreteUniformDistribution.md), [ErlangDistribution](ErlangDistribution.md), [ExponentialDistribution](ExponentialDistribution.md), [FrechetDistribution](FrechetDistribution.md), 
 [GammaDistribution](GammaDistribution.md), [GeometricDistribution](GeometricDistribution.md), [GumbelDistribution](GumbelDistribution.md), [HypergeometricDistribution](HypergeometricDistribution.md), [LogNormalDistribution](LogNormalDistribution.md), [NakagamiDistribution](NakagamiDistribution.md), [NormalDistribution](NormalDistribution.md), 
@@ -18,20 +24,15 @@ Variance(list)
 
 ### Examples
 
+``` 
+>> PDF(NormalDistribution(n, m)) 
+1/(Sqrt(2)*E^((-n+#1)^2/(2*m^2))*m*Sqrt(Pi))&
+				
+>> PDF(GumbelDistribution(n, m),k)
+E^(-E^((k-n)/m)+(k-n)/m)/m
+
+>> Table(PDF(NormalDistribution( ), x), {m, {-1, 1, 2}},{x, {-1, 1, 2}})//N  
+{{0.24197,0.24197,0.05399},{0.24197,0.24197,0.05399},{0.24197,0.24197,0.05399}}
 ```
->> Variance({1, 2, 3})
-1
-
->> Variance({7, -5, 101, 3})
-7475/3
-
->> Variance({1 + 2*I, 3 - 10*I})
-74
-
->> Variance({a, a})
-0
-
->> Variance({{1, 3, 5}, {4, 10, 100}})
-{9/2,49/2,9025/2}
-```
+  
 

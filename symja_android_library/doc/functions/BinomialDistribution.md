@@ -55,3 +55,5 @@ The random variates of a binomial distribution can be generated with function `R
 {1,2,1,1,4,1,1,3,2,5}
 ```
 
+### Related terms 
+[CDF](CDF.md), [Mean](Mean.md), [Median](Mean.md), [PDF](PDF.md), [Quantile](Quantile.md), [StandardDeviation](StandardDeviation.md), [Variance](Variance.md) 

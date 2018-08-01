@@ -34,6 +34,10 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 	private String unitString;
 	private IUnit unit; // not Unit.ONE
 
+	public QuantityImpl() {
+		
+	}
+	
 	private QuantityImpl(IExpr value, String unitString, IUnit unit) {
 		this.arg1 = value;
 		this.unitString = unitString;

@@ -55,3 +55,5 @@ The random variates of a Bernoulli distribution can be generated with function `
 {1,0,0,0,1,1,0,0,0,0}
 ```
 
+### Related terms 
+[CDF](CDF.md), [Mean](Mean.md), [Median](Mean.md), [PDF](PDF.md), [Quantile](Quantile.md), [StandardDeviation](StandardDeviation.md), [Variance](Variance.md) 
