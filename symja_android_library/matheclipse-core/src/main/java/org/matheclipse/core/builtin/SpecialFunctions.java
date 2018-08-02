@@ -145,25 +145,22 @@ public class SpecialFunctions {
 			IExpr z = ast.arg1();
 			IExpr a = ast.arg2();
 			IExpr n = ast.arg3();
-			if (n.isInteger()) {
-				if (n.isNegative()) {
-					// for n>=0; BetaRegularized(z, a, -n)=0
-					return F.C0;
+			if (n.isNegative()) {
+				// for n>=0; BetaRegularized(z, a, -n)=0
+				return F.C0;
+			}
+			int ni = n.toIntDefault(Integer.MIN_VALUE);
+			if (ni != Integer.MIN_VALUE) {
+				IASTAppendable sum = F.PlusAlloc(ni);
+				// {k, 0, n - 1}
+				for (int k = 0; k < ni; k++) {
+					// (Pochhammer(a, k)*(1 - z)^k)/k!
+					IInteger kk = F.integer(k);
+					sum.append(F.Times(F.Power(F.Plus(F.C1, F.Negate(z)), kk), F.Power(F.Factorial(kk), -1),
+							F.Pochhammer(a, kk)));
 				}
-				int ni = n.toIntDefault(-1);
-				if (ni >= 0) {
-
-					IASTAppendable sum = F.PlusAlloc(ni);
-					// {k, 0, n - 1}
-					for (int k = 0; k < ni; k++) {
-						// (Pochhammer(a, k)*(1 - z)^k)/k!
-						IInteger kk = F.integer(k);
-						sum.append(F.Times(F.Power(F.Plus(F.C1, F.Negate(z)), kk), F.Power(F.Factorial(kk), -1),
-								F.Pochhammer(a, kk)));
-					}
-					// z^a * sum
-					return F.Times(F.Power(z, a), sum);
-				}
+				// z^a * sum
+				return F.Times(F.Power(z, a), sum);
 			}
 			return F.NIL;
 		}

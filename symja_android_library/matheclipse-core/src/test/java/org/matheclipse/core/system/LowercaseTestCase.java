@@ -657,9 +657,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBetaRegularized() {
-		check("BetaRegularized(2 , 2 , 3)", "8");
-		check("BetaRegularized(2 , 7 , 17)", "5512320");
-		check("BetaRegularized(2 , 7 , -17)", "0");
+		check("BetaRegularized(0.99 , 255.0 , 2.0)", //
+				"0.27365");
+		check("BetaRegularized(2 , 2 , 3)", //
+				"8");
+		check("BetaRegularized(2 , 7 , 17)", //
+				"5512320");
+		check("BetaRegularized(2 , 7 , -17)", //
+				"0");
 	}
 
 	public void testBlock() {
@@ -6924,7 +6929,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"{{0.24197,0.24197,0.05399},{0.24197,0.24197,0.05399},{0.24197,0.24197,0.05399}}");
 		check("Table(PDF(NormalDistribution( ), x), {m, {-1, 1, 2}},{x, {-1, 1, 2}})//N ", //
 				"{{0.24197,0.24197,0.05399},{0.24197,0.24197,0.05399},{0.24197,0.24197,0.05399}}");
-		
+
 		check("PDF(NormalDistribution(n, m))", //
 				"1/(Sqrt(2)*E^((-n+#1)^2/(2*m^2))*m*Sqrt(Pi))&");
 		check("PDF(NormalDistribution(n, m),k)", //
