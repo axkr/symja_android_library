@@ -227,14 +227,11 @@ public final class NumberTheory {
 			Validate.checkRange(ast, 2, 3);
 
 			if (ast.isAST1()) {
-				// bernoulli number
 				try {
-					if (ast.arg1().isInteger()) {
-						IRational bernoulli = bernoulliNumber((IInteger) ast.arg1());
-						if (bernoulli != null) {
-							return bernoulli;
-						}
-					}
+					int bn = ast.arg1().toIntDefault(Integer.MIN_VALUE);
+					if (bn !=Integer.MIN_VALUE) {
+						return bernoulliNumber(bn);
+					} 
 				} catch (RuntimeException rex) {
 					if (Config.SHOW_STACKTRACE) {
 						rex.printStackTrace();
