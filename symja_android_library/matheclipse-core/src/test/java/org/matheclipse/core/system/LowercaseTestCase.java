@@ -7658,6 +7658,15 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("do(print(i0);if(i0>4,Return(toobig)), {i0,1,10})", "toobig");
 	}
 
+	public void testProbability() {
+		// check("RandomVariate(NormalDistribution(), 10)", //
+		// "{-0.21848,1.67503,0.78687,0.9887,2.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223}");
+		check("Probability(#^2 + 3 # < 11 &, {-0.21848,1.67503,0.78687,0.9887,2.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223})", //
+				"9/10");
+		check("Probability(#^2 + 3 # < 11 &, {-0.21848,1.67503,0.78687,4.9887,7.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223})", //
+				"7/10");
+	}
+
 	public void testProduct() {
 		check("Product(0, {k, a, Infinity})", //
 				"0");
@@ -9700,6 +9709,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSum() {
+		check("Sum(Boole(x>0), {x,{1,2,3,-2,4,5}})", //
+				"5");
 		check("Sum(0, {k, a, Infinity})", //
 				"0");
 		check("Sum(1, {k, a, Infinity})", //

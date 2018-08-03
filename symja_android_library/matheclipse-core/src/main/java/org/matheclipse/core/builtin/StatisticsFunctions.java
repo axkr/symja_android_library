@@ -81,6 +81,7 @@ public class StatisticsFunctions {
 		F.NakagamiDistribution.setEvaluator(new NakagamiDistribution());
 		F.NormalDistribution.setEvaluator(new NormalDistribution());
 		F.PoissonDistribution.setEvaluator(new PoissonDistribution());
+		F.Probability.setEvaluator(new Probability());
 		F.Quantile.setEvaluator(new Quantile());
 		F.RandomVariate.setEvaluator(new RandomVariate());
 		F.Rescale.setEvaluator(new Rescale());
@@ -2119,9 +2120,38 @@ public class StatisticsFunctions {
 
 	}
 
-	/**
-	 * Compute the probability density function
-	 */
+	private static class Probability extends AbstractFunctionEvaluator {
+
+		@Override
+		public IExpr evaluate(final IAST ast, EvalEngine engine) {
+
+			if (ast.size() == 3) {
+				try {
+					if (ast.arg2().isList()) {
+						IExpr predicate = ast.arg1();
+						IAST data = (IAST) ast.arg2();
+						if (predicate.isFunction()) {
+							// Sum( Boole(predicate), data ) / data.argSize()
+							int sum = 0;
+							for (int i = 1; i < data.size(); i++) {
+								if (engine.evalTrue(F.unaryAST1(predicate, data.get(i)))) {
+									sum++;
+								}
+							}
+							return F.QQ(sum, data.argSize());
+						}
+					}
+				} catch (Exception ex) {
+					if (Config.SHOW_STACKTRACE) {
+						ex.printStackTrace();
+					}
+				}
+			}
+			return F.NIL;
+		}
+
+	}
+
 	private static class PDF extends AbstractFunctionEvaluator {
 
 		@Override
