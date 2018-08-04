@@ -52,18 +52,38 @@ public class Assumptions extends AbstractAssumptions {
 			return values[EQUALS_ID];
 		}
 
+		/**
+		 * The key has to be greater than the returned value from the values map, if <code>value!=null</code>
+		 * 
+		 * @return
+		 */
 		final public ISignedNumber getGreater() {
 			return values[GREATER_ID];
 		}
 
+		/**
+		 * The key has to be greater equal the returned value from the values map, if <code>value!=null</code>
+		 * 
+		 * @return
+		 */
 		final public ISignedNumber getGreaterEqual() {
 			return values[GREATEREQUAL_ID];
 		}
 
+		/**
+		 * The key has to be less than the returned value from the values map, if <code>value!=null</code>
+		 * 
+		 * @return
+		 */
 		final public ISignedNumber getLess() {
 			return values[LESS_ID];
 		}
 
+		/**
+		 * The key has to be less equal the returned value from the values map, if <code>value!=null</code>
+		 * 
+		 * @return
+		 */
 		final public ISignedNumber getLessEqual() {
 			return values[LESSEQUAL_ID];
 		}
@@ -76,6 +96,96 @@ public class Assumptions extends AbstractAssumptions {
 			}
 			return false;
 		}
+	}
+
+	@Override
+	public int[] reduceRange(IExpr x, final int[] xRange) {
+		IExpr temp = elementsMap.get(x);
+		if (temp != null) {
+			return null;
+		}
+		temp = distributionsMap.get(x);
+		if (temp != null) {
+			return null;
+		}
+		SignedNumberRelations rr = valueMap.get(x);
+		if (rr != null) {
+			int[] newXRange = new int[] { xRange[0], xRange[1] };
+			boolean evaled = false;
+			ISignedNumber num = rr.getLess();
+			if (num != null) {
+				int i = num.toIntDefault(Integer.MIN_VALUE);
+				if (i == Integer.MIN_VALUE) {
+					i = num.ceilFraction().toIntDefault(Integer.MIN_VALUE);
+				}
+				if (i != Integer.MIN_VALUE) {
+					if (newXRange[1] >= i) {
+						evaled = true;
+						newXRange[1] = i - 1;
+					}
+				}
+			}
+			num = rr.getLessEqual();
+			if (num != null) {
+				int i = num.toIntDefault(Integer.MIN_VALUE);
+				if (i == Integer.MIN_VALUE) {
+					i = num.floorFraction().toIntDefault(Integer.MIN_VALUE);
+				}
+				if (i != Integer.MIN_VALUE) {
+					if (newXRange[1] > i) {
+						evaled = true;
+						newXRange[1] = i;
+					}
+				}
+			}
+			num = rr.getGreater();
+			if (num != null) {
+				int i = num.toIntDefault(Integer.MIN_VALUE);
+				if (i == Integer.MIN_VALUE) {
+					i = num.floorFraction().toIntDefault(Integer.MIN_VALUE);
+				}
+				if (i != Integer.MIN_VALUE) {
+					if (newXRange[0] <= i) {
+						evaled = true;
+						newXRange[0] = i + 1;
+					}
+				}
+			}
+			num = rr.getGreaterEqual();
+			if (num != null) {
+				int i = num.toIntDefault(Integer.MIN_VALUE);
+				if (i == Integer.MIN_VALUE) {
+					i = num.ceilFraction().toIntDefault(Integer.MIN_VALUE);
+				}
+				if (i != Integer.MIN_VALUE) {
+					if (newXRange[0] < i) {
+						evaled = true;
+						newXRange[0] = i;
+					}
+				}
+			}
+			num = rr.getEquals();
+			if (num != null) {
+				int i = num.toIntDefault(Integer.MIN_VALUE);
+				if (i == Integer.MIN_VALUE) {
+					i = num.ceilFraction().toIntDefault(Integer.MIN_VALUE);
+				}
+				if (i != Integer.MIN_VALUE) {
+					if (newXRange[0] < i) {
+						evaled = true;
+						newXRange[0] = i;
+					}
+					if (newXRange[1] > i) {
+						evaled = true;
+						newXRange[1] = i;
+					}
+				}
+			}
+			if (evaled) {
+				return newXRange;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -100,6 +210,33 @@ public class Assumptions extends AbstractAssumptions {
 				}
 				return true;
 			}
+		}
+		return false;
+	}
+
+	private static boolean addEqual(IAST equalsAST, Assumptions assumptions) {
+		// arg1 == arg2
+		if (equalsAST.arg2().isReal()) {
+			ISignedNumber num = (ISignedNumber) equalsAST.arg2();
+			IExpr key = equalsAST.arg1();
+			SignedNumberRelations gla = assumptions.valueMap.get(key);
+			if (gla == null) {
+				gla = new SignedNumberRelations();
+			}
+			gla.addEquals(num);
+			assumptions.valueMap.put(key, gla);
+			return true;
+		}
+		if (equalsAST.arg1().isReal()) {
+			ISignedNumber num = (ISignedNumber) equalsAST.arg1();
+			IExpr key = equalsAST.arg2();
+			SignedNumberRelations gla = assumptions.valueMap.get(key);
+			if (gla == null) {
+				gla = new SignedNumberRelations();
+			}
+			gla.addEquals(num);
+			assumptions.valueMap.put(key, gla);
+			return true;
 		}
 		return false;
 	}
@@ -339,20 +476,24 @@ public class Assumptions extends AbstractAssumptions {
 					if (!addElement(temp, assumptions)) {
 						return null;
 					}
-				} else if (temp.isAST(F.Greater, 3)) {
+				} else if (temp.isAST(F.Greater, 3, 4)) {
 					if (!addGreater(temp, assumptions)) {
 						return null;
 					}
-				} else if (temp.isAST(F.GreaterEqual, 3)) {
+				} else if (temp.isAST(F.GreaterEqual, 3, 4)) {
 					if (!addGreaterEqual(temp, assumptions)) {
 						return null;
 					}
-				} else if (temp.isAST(F.Less, 3)) {
+				} else if (temp.isAST(F.Less, 3, 4)) {
 					if (!addLess(temp, assumptions)) {
 						return null;
 					}
-				} else if (temp.isAST(F.LessEqual, 3)) {
+				} else if (temp.isAST(F.LessEqual, 3, 4)) {
 					if (!addLessEqual(temp, assumptions)) {
+						return null;
+					}
+				} else if (temp.isAST(F.Equal, 3)) {
+					if (!addLess(temp, assumptions)) {
 						return null;
 					}
 				}
@@ -386,6 +527,7 @@ public class Assumptions extends AbstractAssumptions {
 	 * @param assumptions
 	 * @return <code>null</code> if <code>assumptions</code> could not be added from the given expression.
 	 */
+	@Override
 	public IAssumptions addAssumption(IAST ast) {
 		if (ast.isAST(F.Element, 3)) {
 			if (addElement(ast, this)) {
@@ -407,6 +549,10 @@ public class Assumptions extends AbstractAssumptions {
 			if (addLessEqual(ast, this)) {
 				return this;
 			}
+		} else if (ast.isAST(F.Equal, 3)) {
+			if (addEqual(ast, this)) {
+				return this;
+			}
 		} else if (ast.isASTSizeGE(F.And, 2) || ast.isASTSizeGE(F.List, 2)) {
 			return addList(ast, this);
 		} else if (ast.isAST(F.Distributed, 3)) {
@@ -417,6 +563,7 @@ public class Assumptions extends AbstractAssumptions {
 		return null;
 	}
 
+	@Override
 	final public IAST distribution(IExpr expr) {
 		IAST dist = distributionsMap.get(expr);
 		return (dist == null) ? F.NIL : dist;

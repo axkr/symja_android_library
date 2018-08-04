@@ -23,7 +23,6 @@ import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.matheclipse.core.basic.Config;
-import org.matheclipse.core.builtin.Algebra;
 import org.matheclipse.core.builtin.BooleanFunctions;
 import org.matheclipse.core.builtin.Structure.LeafCount;
 import org.matheclipse.core.convert.AST2Expr;
@@ -41,11 +40,12 @@ import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplex;
 import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IDiscreteDistribution;
+import org.matheclipse.core.interfaces.IDistribution;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.IDistribution;
 import org.matheclipse.core.interfaces.INum;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IPattern;
@@ -1678,6 +1678,14 @@ public abstract class AbstractAST implements IASTMutable {
 		if (head().isBuiltInSymbol()) {
 			IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
 			return evaluator instanceof IDistribution;
+		}
+		return false;
+	}
+	
+	public boolean isDiscreteDistribution() {
+		if (head().isBuiltInSymbol()) {
+			IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
+			return evaluator instanceof IDiscreteDistribution;
 		}
 		return false;
 	}

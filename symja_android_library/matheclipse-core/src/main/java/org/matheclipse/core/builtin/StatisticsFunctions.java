@@ -2,7 +2,6 @@ package org.matheclipse.core.builtin;
 
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apfloat.ApcomplexMath;
@@ -22,8 +21,6 @@ import org.matheclipse.core.eval.interfaces.AbstractEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.AbstractMatrix1Expr;
 import org.matheclipse.core.eval.interfaces.AbstractTrigArg1;
-import org.matheclipse.core.eval.util.Assumptions;
-import org.matheclipse.core.eval.util.IAssumptions;
 import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ApcomplexNum;
@@ -33,6 +30,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IComplexNum;
+import org.matheclipse.core.interfaces.IDiscreteDistribution;
 import org.matheclipse.core.interfaces.IDistribution;
 import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
@@ -93,6 +91,14 @@ public class StatisticsFunctions {
 		F.WeibullDistribution.setEvaluator(new WeibullDistribution());
 	}
 
+	private static IDistribution getDistribution(final IExpr arg1) {
+		return (IDistribution) ((IBuiltInSymbol) arg1.head()).getEvaluator();
+	}
+
+	private static IDiscreteDistribution getDiscreteDistribution(final IExpr arg1) {
+		return (IDiscreteDistribution) ((IBuiltInSymbol) arg1.head()).getEvaluator();
+	}
+
 	/**
 	 * Capability to produce random variate.
 	 */
@@ -108,7 +114,7 @@ public class StatisticsFunctions {
 	/**
 	 * Functionality for a discrete probability distribution
 	 */
-	interface IDiscreteDistribution extends IDistribution {
+	interface IExpectationDiscreteDistribution extends IDiscreteDistribution {
 		/** @return lowest value a random variable from this distribution may attain */
 		IExpr lowerBound(IAST dist);
 
@@ -154,8 +160,8 @@ public class StatisticsFunctions {
 		/**
 		 * 
 		 * <p>
-		 * For {@link IDiscreteDistribution}, the function returns the P(X == x), i.e. probability of random variable X
-		 * == x
+		 * For {@link IExpectationDiscreteDistribution}, the function returns the P(X == x), i.e. probability of random
+		 * variable X == x
 		 * 
 		 * <p>
 		 * For continuous distributions, the function
@@ -186,46 +192,6 @@ public class StatisticsFunctions {
 			}
 			return pureFunction;
 		}
-	}
-
-	/** functionality and suggested base class for a discrete probability distribution */
-	private static abstract class AbstractDiscreteDistribution extends AbstractEvaluator
-			implements IDiscreteDistribution, IDistribution, IPDF, IRandomVariate {
-		// @Override
-		// public final IExpr randomVariate(Random random, IAST dist) {
-		// return protected_quantile(dist, F.num(random.nextDouble()));
-		// }
-
-		/**
-		 * @param p
-		 *            in the semi-open interval [0, 1)
-		 * @return
-		 */
-		protected abstract IExpr protected_quantile(IAST dist, IExpr p);
-
-		@Override
-		public IExpr pdf(IAST dist, IExpr x) throws ArithmeticException {
-			if (!x.isInteger()) {
-				return F.C0;
-			}
-			return p_equals(dist, x);
-		}
-
-		@Override
-		public final IExpr p_equals(IAST dist, IExpr n) {
-			IExpr result = F.eval(F.Less(n, lowerBound(dist)));
-			if (result.isTrue()) {
-				return F.C0;
-			}
-			return protected_p_equals(dist, n);
-		}
-
-		/**
-		 * @param n
-		 *            with n >= lowerBound()
-		 * @return P(X == n), i.e. probability of random variable X == n
-		 */
-		protected abstract IExpr protected_p_equals(IAST dist, IExpr n);
 	}
 
 	/**
@@ -456,7 +422,7 @@ public class StatisticsFunctions {
 	}
 
 	private final static class BinomialDistribution extends AbstractEvaluator
-			implements ICDF, IDistribution, IPDF, IVariance, IRandomVariate {
+			implements ICDF, IDiscreteDistribution, IPDF, IVariance, IRandomVariate {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -841,7 +807,7 @@ public class StatisticsFunctions {
 	}
 
 	private final static class GeometricDistribution extends AbstractEvaluator
-			implements ICDF, IDistribution, IPDF, IVariance {// , IRandomVariate
+			implements ICDF, IDiscreteDistribution, IPDF, IVariance {// , IRandomVariate
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1014,7 +980,7 @@ public class StatisticsFunctions {
 	}
 
 	private final static class HypergeometricDistribution extends AbstractEvaluator
-			implements ICDF, IDistribution, IPDF, IVariance {
+			implements ICDF, IDiscreteDistribution, IPDF, IVariance {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1243,7 +1209,7 @@ public class StatisticsFunctions {
 	}
 
 	private final static class DiscreteUniformDistribution extends AbstractEvaluator
-			implements IDistribution, IVariance, ICDF, IPDF, IRandomVariate {
+			implements IDiscreteDistribution, IVariance, ICDF, IPDF, IRandomVariate {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -1420,75 +1386,98 @@ public class StatisticsFunctions {
 
 	}
 
-	private final static class Expectation extends AbstractEvaluator {
+	private static class Expectation extends AbstractFunctionEvaluator {
+		// static final double CDF_NUMERIC_THRESHOLD = Config.DOUBLE_EPSILON;
+		//
+		// static boolean isFinished(IExpr p_equals, IExpr cumprob) {
+		// boolean finished = false;
+		// finished |= cumprob.isOne();
+		// finished |= // !ExactScalarQ.of(cumprob) && //
+		// p_equals.isZero() && //
+		// F.isZero(cumprob.subtract(F.C1).abs().evalDouble(), CDF_NUMERIC_THRESHOLD);
+		// return finished;
+		// }
+		//
+		// private static IExpr expect(Function<IExpr, IExpr> function, IAST distribution,
+		// IDiscreteDistribution discreteDistribution) {
+		// IExpr value = null;
+		// IExpr p_equals = F.C0;
+		// IExpr cumprob = F.C0;
+		// int sample = discreteDistribution.getSupportLowerBound(distribution);
+		// while (!isFinished(p_equals, cumprob)) {
+		// IExpr x = F.QQ(sample, 1);
+		// p_equals = discreteDistribution.pEquals(sample, distribution);
+		// cumprob = cumprob.add(p_equals);
+		// IExpr delta = function.apply(x).multiply(p_equals);
+		// value = Objects.isNull(value) ? delta : value.add(delta);
+		// ++sample;
+		// }
+		// return value;
+		// }
+
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			Validate.checkSize(ast, 3);
 
-			if (ast.arg2().isAST(F.Distributed, 3)) {
-				IAST distributed = (IAST) ast.arg2();
-				IExpr x = distributed.arg1();
-				IExpr arg1 = ast.arg1();
+			if (ast.size() == 3) {
+				try {
+					IExpr xExpr = ast.arg1();
+					if (xExpr.isFunction() && ast.arg2().isList()) {
+						IAST data = (IAST) ast.arg2();
+						IASTAppendable sum = F.PlusAlloc(data.size());
+						for (int i = 1; i < data.size(); i++) {
+							sum.append(F.unaryAST1(xExpr, data.get(i)));
+						}
+						return sum.divide(F.ZZ(data.argSize()));
+						// int sum = 0;
+						// for (int i = 1; i < data.size(); i++) {
+						// if (engine.evalTrue(F.unaryAST1(predicate, data.get(i)))) {
+						// sum++;
+						// }
+						// }
+						// return F.QQ(sum, data.argSize());
+					}
+					if (ast.arg2().isAST(F.Distributed, 3)) {
+						IExpr x = ast.arg2().first();
+						IExpr distribution = ast.arg2().second();
+						if (distribution.isList()) {
+							//
+							IAST data = (IAST) distribution;
 
-				IAssumptions assumptions = Assumptions.getInstance(distributed);
-				if (assumptions != null) {
-					// TODO add implementaion for continous and discrete distributions
-					IAST distribution = assumptions.distribution(x);
-					if (distribution.isPresent()) {
-
+							// Sum( predicate , data ) / data.argSize()
+							IASTAppendable sum = F.PlusAlloc(data.size());
+							for (int i = 1; i < data.size(); i++) {
+								sum.append(F.subst(xExpr, F.Rule(x, data.get(i))));
+							}
+							return sum.divide(F.ZZ(data.argSize()));
+							// } else if (distribution.isDiscreteDistribution()) {
+							// IDiscreteDistribution dist = getDiscreteDistribution(distribution);
+							// int[] interval = new int[] { dist.getSupportLowerBound(distribution),
+							// dist.getSupportUpperBound(distribution) };
+							// // int[] interval = dist.range(distribution, xExpr, x);
+							// if (interval != null) {
+							// IExpr pdf = F.PDF.of(engine, distribution, x);
+							// // for discrete distributions take the sum:
+							// IASTAppendable sum = F.PlusAlloc(100);
+							//
+							// for (int i = interval[0]; i <= interval[1]; i++) {
+							// IExpr temp = engine.evaluate(F.subst(pdf, F.Rule(x, F.ZZ(i))));
+							// if (!temp.isZero()) {
+							// sum.append( F.Times(F.subst(xExpr, F.Rule(x, F.ZZ(i))), temp) );
+							// }
+							// }
+							// return sum;
+							// }
+						}
+					}
+				} catch (Exception ex) {
+					if (Config.SHOW_STACKTRACE) {
+						ex.printStackTrace();
 					}
 				}
-
-				// if (dist.head().isSymbol()) {
-				// ISymbol head = (ISymbol) dist.head();
-				// if (head instanceof IBuiltInSymbol) {
-				// IEvaluator evaluator = ((IBuiltInSymbol) head).getEvaluator();
-				// if (evaluator instanceof IDiscreteDistribution) {
-				// IDiscreteDistribution distribution = (IDiscreteDistribution) evaluator;
-				// return of(dist, x -> {
-				// if (vars.size() > 1) {
-				// IExpr temp = arg1.replaceAll(F.Rule(vars.arg1(), x));
-				// if (temp.isPresent()) {
-				// return temp;
-				// }
-				// }
-				// return arg1;
-				// }, distribution);
-				// }
-				// }
-				// }
 			}
-
 			return F.NIL;
 		}
 
-		private static IExpr of(IAST dist, Function<IExpr, IExpr> function,
-				IDiscreteDistribution discreteDistribution) {
-			IExpr value = F.NIL;
-			IExpr p_equals = F.C0;
-			IExpr cumprob = F.C0;
-			IExpr sample = discreteDistribution.lowerBound(dist);
-			while (!isFinished(p_equals, cumprob)) {
-				IExpr x = sample;
-				p_equals = discreteDistribution.p_equals(dist, sample);
-				cumprob = cumprob.add(p_equals);
-				IExpr delta = function.apply(x).multiply(p_equals);
-				value = value.isPresent() ? value.add(delta) : delta;
-				sample = sample.inc();
-			}
-			return value;
-		}
-
-		static boolean isFinished(IExpr p_equals, IExpr cumprob) {
-			if (cumprob.equals(F.C1)) {
-				return true;
-			}
-			if (cumprob.isReal() && !(cumprob.isExactNumber())) {
-				ISignedNumber sn = (ISignedNumber) cumprob.dec().abs();
-				return sn.compareTo(ICDF.CDF_NUMERIC_THRESHOLD) < 0;
-			}
-			return false;
-		}
 	}
 
 	private final static class ExponentialDistribution extends AbstractEvaluator
@@ -1745,8 +1734,7 @@ public class StatisticsFunctions {
 				}
 
 				if (arg1.isDistribution()) {
-					IDistribution distribution = (IDistribution) ((IBuiltInSymbol) arg1.head()).getEvaluator();
-					return distribution.mean((IAST) arg1);
+					return getDistribution(arg1).mean((IAST) arg1);
 				}
 			} catch (Exception ex) {
 				if (Config.SHOW_STACKTRACE) {
@@ -1833,8 +1821,7 @@ public class StatisticsFunctions {
 			}
 
 			if (arg1.isDistribution()) {
-				IDistribution distribution = (IDistribution) ((IBuiltInSymbol) arg1.head()).getEvaluator();
-				return distribution.median((IAST) arg1);
+				return getDistribution(arg1).median((IAST) arg1);
 			}
 			return F.NIL;
 		}
@@ -2140,6 +2127,35 @@ public class StatisticsFunctions {
 							}
 							return F.QQ(sum, data.argSize());
 						}
+					} else if (ast.arg2().isAST(F.Distributed, 3)) {
+						IExpr predicate = ast.arg1();
+						IExpr x = ast.arg2().first();
+						IExpr distribution = ast.arg2().second();
+						if (distribution.isList()) {
+							IAST data = (IAST) distribution;
+							// Sum( Boole(predicate), data ) / data.argSize()
+							int sum = 0;
+							for (int i = 1; i < data.size(); i++) {
+								if (engine.evalTrue(F.subst(predicate, F.Rule(x, data.get(i))))) {
+									sum++;
+								}
+							}
+							return F.QQ(sum, data.argSize());
+						} else if (distribution.isDiscreteDistribution()) {
+							IDiscreteDistribution dist = getDiscreteDistribution(distribution);
+							int[] interval = dist.range(distribution, predicate, x);
+							if (interval != null) {
+								IExpr pdf = F.PDF.of(engine, distribution, x);
+								// for discrete distributions take the sum:
+								IASTAppendable sum = F.PlusAlloc(10);
+								for (int i = interval[0]; i <= interval[1]; i++) {
+									if (engine.evalTrue(F.subst(predicate, F.Rule(x, F.ZZ(i))))) {
+										sum.append(F.subst(pdf, F.Rule(x, F.ZZ(i))));
+									}
+								}
+								return sum;
+							}
+						}
 					}
 				} catch (Exception ex) {
 					if (Config.SHOW_STACKTRACE) {
@@ -2192,7 +2208,7 @@ public class StatisticsFunctions {
 	}
 
 	private final static class PoissonDistribution extends AbstractEvaluator
-			implements ICDF, IDistribution, IPDF, IVariance, IRandomVariate {
+			implements ICDF, IDiscreteDistribution, IPDF, IVariance, IRandomVariate {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
@@ -2248,6 +2264,11 @@ public class StatisticsFunctions {
 				return dist.arg1();
 			}
 			return F.NIL;
+		}
+
+		public int getSupportUpperBound(IExpr discreteDistribution) {
+			// probabilities are zero beyond that point
+			return 1950;
 		}
 
 		@Override

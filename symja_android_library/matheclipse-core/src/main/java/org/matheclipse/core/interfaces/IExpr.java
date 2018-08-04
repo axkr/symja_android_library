@@ -1269,11 +1269,20 @@ public interface IExpr extends Comparable<IExpr>, GcdRingElem<IExpr>, Serializab
 	}
 
 	/**
-	 * Test if this expression is a Distribution AST (i.e. NormalDistribution(), PoissonDistribution(),...)
+	 * Test if this expression is a distribution AST (i.e. NormalDistribution(), PoissonDistribution(),...)
 	 * 
 	 * @return
 	 */
 	default boolean isDistribution() {
+		return false;
+	}
+
+	/**
+	 * Test if this expression is a discrete distribution AST (i.e. BinomialDistribution(), PoissonDistribution(),...)
+	 * 
+	 * @return
+	 */
+	default boolean isDiscreteDistribution() {
 		return false;
 	}
 

@@ -7661,10 +7661,29 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testProbability() {
 		// check("RandomVariate(NormalDistribution(), 10)", //
 		// "{-0.21848,1.67503,0.78687,0.9887,2.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223}");
-		check("Probability(#^2 + 3 # < 11 &, {-0.21848,1.67503,0.78687,0.9887,2.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223})", //
+		check("Probability(x^2 + 3*x < 11,Distributed(x,{-0.21848,1.67503,0.78687,0.9887,2.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223}))", //
 				"9/10");
-		check("Probability(#^2 + 3 # < 11 &, {-0.21848,1.67503,0.78687,4.9887,7.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223})", //
+		check("Probability(#^2 + 3*# < 11 &, {-0.21848,1.67503,0.78687,0.9887,2.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223})", //
+				"9/10");
+		check("Probability(#^2 + 3*# < 11 &, {-0.21848,1.67503,0.78687,4.9887,7.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223})", //
 				"7/10");
+		check("PDF(PoissonDistribution(a))", //
+				"Piecewise({{a^#1/(E^a*#1!),#1>=0}},0)&");
+		//
+		check("1/(2!*E) + 1/(3!*E)+ 1/(4!*E)+ 1/(5!*E)+ 1/(6!*E) ", //
+				"517/720*1/E");
+		check("Probability(x<=3, Distributed(x, GeometricDistribution(1/5)))", //
+				"369/625");
+		check("Probability(x<=3, Distributed(x, PoissonDistribution(m)))", //
+				"E^(-m)+m/E^m+m^2/(2*E^m)+m^3/(6*E^m)");
+		check("Probability(3 == x, Distributed(x, PoissonDistribution(1)))", //
+				"1/(6*E)");
+		check("Probability(1.1 <= x <= 6.9, Distributed(x, PoissonDistribution(1)))", //
+				"517/720*1/E");
+		check("Probability(1.1 < x < 6.9, Distributed(x, PoissonDistribution(1)))", //
+				"517/720*1/E");
+		check("Probability(1 < x < 7, Distributed(x, PoissonDistribution(1)))", //
+				"517/720*1/E");
 	}
 
 	public void testProduct() {
@@ -7926,13 +7945,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testExpectation() {
-		// check("Expectation(x^2+7*x+8,Distributed(x,PoissonDistribution(m)))", "");
-
-		// check("Expectation(x,Distributed(x, DiscreteUniformDistribution({4, 9})))", "13/2");
-		// check("Expectation(x,Distributed(x, DiscreteUniformDistribution({4, 10})))", "7");
-		//
-		// check("Expectation(2*x+3,Distributed(x, DiscreteUniformDistribution({4, 9})))", "16");
-		// check("Expectation(2*x+3,Distributed(x, DiscreteUniformDistribution({4, 10})))", "17");
+		check("Expectation((#^3)&, {a,b,c})", //
+				"1/3*(a^3+b^3+c^3)");
+		check("Expectation(2*x+3,Distributed(x,{a,b,c,d}))", //
+				"1/4*(12+2*a+2*b+2*c+2*d)");
+		check("Expectation(f(x),Distributed(x,{a,b}))", //
+				"1/2*(f(a)+f(b))");
+//		check("PDF( PoissonDistribution(m),x)", //
+//				"Piecewise({{m^x/(E^m*x!),x>=0}},0)");
+//		check("Expectation(x^2+7*x+8,Distributed(x,PoissonDistribution(m)))", //
+//				"8+8*m+m^2");
+//		check("Expectation(E^(2*x) + 3, Distributed(  x, PoissonDistribution(l)))", //
+//				"");
+//
+//		check("Expectation(x,Distributed(x, DiscreteUniformDistribution({4, 9})))", "13/2");
+//		check("Expectation(x,Distributed(x, DiscreteUniformDistribution({4, 10})))", "7");
+//
+//		check("Expectation(2*x+3,Distributed(x, DiscreteUniformDistribution({4, 9})))", "16");
+//		check("Expectation(2*x+3,Distributed(x, DiscreteUniformDistribution({4, 10})))", "17");
 
 	}
 

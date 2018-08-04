@@ -61,6 +61,11 @@ public class AssumptionTestCase extends TestCase {
 			return false;
 		}
 
+		@Override
+		public int[] reduceRange(IExpr x, int[] range) {
+			return range;
+		}
+
 	}
 
 	public AssumptionTestCase(String name) {

@@ -136,4 +136,12 @@ public interface IAssumptions {
 	 * @return
 	 */
 	public boolean isReal(IExpr expr);
+
+	/**
+	 * Reduce the integer range according to the assumptions.
+	 * 
+	 * @param range
+	 * @return <code>null</code> if no interval can be determined
+	 */
+	public int[] reduceRange(IExpr x, final int[] range);
 }
