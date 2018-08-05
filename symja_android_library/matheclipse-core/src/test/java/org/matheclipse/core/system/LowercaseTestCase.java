@@ -3264,6 +3264,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFindFit() {
+		// https://stackoverflow.com/a/51696587/24819
+		check("FindFit({ {1.3,0.5}, {2.8,0.9}, {5.0,2.6}, {10.2,7.1}, {16.5,12.3}, {21.3,15.3},{ 31.8,20.4}, {52.2,24.4}}, " //
+				+ "d+((a-d)/ (1+(x/c)^ b)),  {{a, 1}, {b,2}, {c,20}, {d,20}}, x)", //
+				"{a->0.17432,b->1.75938,c->19.69032,d->28.83068}"); 
 		// initial guess [1.0, 1.0, 1.0] gives bad result:
 		check("FindFit(Table({t, 3*Sin(3*t + 1)}, {t, -3, 3, 0.1})," //
 				+ " a* Sin(w*t + f), {a,w,f}, t)", //
