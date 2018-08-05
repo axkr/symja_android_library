@@ -2,6 +2,7 @@ package org.matheclipse.core.builtin;
 
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apfloat.ApcomplexMath;
@@ -406,17 +407,107 @@ public class StatisticsFunctions {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 2, 3);
 
-			IExpr dx = F.C1;
-			if (ast.size() == 3) {
-				dx = ast.arg2();
-			}
-			if (ast.arg1().isList()) {
-				IAST vector = (IAST) ast.arg1();
-				if (vector.size() == 1) {
-					return F.List();
+			try {
+				if (ast.arg1().isList()) {
+					IAST vector = (IAST) ast.arg1();
+					vector = dropNonReals(engine, vector);
+					if (ast.size() == 3) {
+						return binCounts(vector, ast.arg2(), engine);
+					} else if (ast.size() == 2) {
+						return binCounts(vector, F.C1, engine);
+					}
+
+				}
+			} catch (ArithmeticException rex) {
+				if (Config.SHOW_STACKTRACE) {
+					rex.printStackTrace();
 				}
 			}
 			return F.NIL;
+		}
+
+		private static IExpr binCounts(IAST vector, final IExpr arg2, EvalEngine engine) {
+			INum dxNum = F.CD1;
+			int dx = 1;
+			int xMin = 0;
+			int xMax = Integer.MIN_VALUE;
+			if (arg2.isList()) {
+				IAST list = (IAST) arg2;
+				if (list.size() == 4) {
+					dx = list.arg3().toIntDefault(Integer.MIN_VALUE);
+					if (dx < 0) {
+						return F.NIL;
+					}
+					xMin = list.arg1().toIntDefault(Integer.MIN_VALUE);
+					if (xMin < 0) {
+						return F.NIL;
+					}
+					xMax = list.arg2().toIntDefault(Integer.MIN_VALUE);
+					if (xMax < 0) {
+						return F.NIL;
+					}
+					if (xMax <= xMin) {
+						return F.CEmptyList;
+					}
+					xMin = xMin / dx;
+					xMax = xMax / dx;
+				}
+			} else {
+				dx = Integer.MIN_VALUE;
+				dxNum = F.num(arg2.evalDouble());
+				IExpr dXMax = F.Max.of(engine, vector);
+				xMax = F.Floor.of(engine, F.Divide(F.Plus(dXMax, arg2), arg2)).toIntDefault(Integer.MIN_VALUE);
+				if (xMax < 0) {
+					return F.NIL;
+				}
+			}
+			if (xMin >= 0 && xMax >= xMin) {
+				int[] res = new int[xMax - xMin];
+				for (int i = 1; i < vector.size(); i++) {
+					IExpr temp = vector.get(i);
+					int index = -1;
+					if (dx != Integer.MIN_VALUE) {
+						index = (((ISignedNumber) temp).floorFraction()).div(dx).toIntDefault(Integer.MIN_VALUE);
+					} else {
+						index = F.Floor.of(engine, (((ISignedNumber) temp).divide(dxNum)))
+								.toIntDefault(Integer.MIN_VALUE);
+					}
+					if (index < 0 || index >= res.length) {
+						engine.printMessage("BinCounts: determined not allowed bin index for " + temp.toString());
+						return F.NIL;
+					}
+					res[index - xMin]++;
+				}
+				IASTAppendable result = F.ListAlloc(xMax - xMin + 1);
+				for (int i = 0; i < res.length; i++) {
+					result.append(F.ZZ(res[i]));
+				}
+				return result;
+			}
+
+			return F.NIL;
+		}
+
+		/**
+		 * Drop non real expressions from this vecrtor
+		 * 
+		 * @param engine
+		 * @param vector
+		 * @return
+		 */
+		private static IAST dropNonReals(EvalEngine engine, IAST vector) {
+			IAST[] filter = vector.filter((Function<IExpr, IExpr>) x -> {
+				if (x.isReal()) {
+					return x;
+				}
+				IExpr d = engine.evalN(x);
+				if (d.isReal()) {
+					return d;
+				}
+				return F.NIL;
+			});
+			vector = filter[0];
+			return vector;
 		}
 
 	}

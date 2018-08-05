@@ -53,6 +53,7 @@ public interface ISignedNumber extends INumber {
 	 */
 	public double doubleValue();
 
+	public IInteger floorFraction() throws ArithmeticException;
 	/**
 	 * Return the fractional part of this fraction
 	 * 

@@ -14,7 +14,7 @@ public interface IFraction extends IRational {
 	public IFraction abs();
 
 	@Override
-	public abstract IFraction floorFraction();
+	public abstract IInteger floorFraction();
 
 	/**
 	 * Return the fractional part of this fraction

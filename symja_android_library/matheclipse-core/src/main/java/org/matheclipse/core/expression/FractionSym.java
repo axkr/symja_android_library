@@ -11,7 +11,6 @@ import org.matheclipse.core.form.output.OutputFormFactory;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IFraction;
 import org.matheclipse.core.interfaces.IInteger;
-import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 
@@ -304,15 +303,15 @@ public class FractionSym extends AbstractFractionSym {
 	 * @return Next smaller integer of <code>this</code>.
 	 */
 	@Override
-	public IFraction floorFraction() {
+	public IInteger floorFraction() {
 		if (fDenominator == 1) {
-			return this;
+			return F.ZZ(fNumerator);
 		}
 		int div = fNumerator / fDenominator;
 		if (fNumerator < 0) {
 			div--;
 		}
-		return valueOf(div, 1);
+		return F.ZZ(div);
 	}
 
 	/**
@@ -410,8 +409,8 @@ public class FractionSym extends AbstractFractionSym {
 	}
 
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
-			boolean usePrefix, boolean noSymbolPrefix) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix,
+			boolean noSymbolPrefix) {
 		String prefix = usePrefix ? "F." : "";
 		if (fNumerator == 1) {
 			switch (fDenominator) {
@@ -644,7 +643,7 @@ public class FractionSym extends AbstractFractionSym {
 		}
 		return defaultValue;
 	}
-	
+
 	/** {@inheritDoc} */
 	@Override
 	public long toLong() throws ArithmeticException {

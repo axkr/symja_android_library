@@ -674,6 +674,40 @@ public class LowercaseTestCase extends AbstractTestCase {
 						+ "15,45,14,46,79,113,78,114,77,39,78,38,79,37,80,36,81,35,82,34,83,33,84,32,85,31,\n"
 						+ "86,30,87,29,88,28,89,27,90,26,91,157,224,156,225,155}");
 	}
+	//
+
+	public void testBinCounts() {
+		check("BinCounts({1,2,3,4,5})", //
+				"{0,1,1,1,1,1}");
+		check("BinCounts({1,2,3,4,5},3)", //
+				"{2,3}");
+		check("BinCounts({1,2,3,4,5},4)", //
+				"{3,2}");
+		check("BinCounts({1,2,3,4,5},5)", //
+				"{4,1}");
+		check("BinCounts({1,2,3,4,5},10)", //
+				"{5}");
+		check("BinCounts({0.04, 0.75, 0.3333, 0.03344, 0.9999},0)", //
+				"BinCounts({0.04,0.75,0.3333,0.03344,0.9999},0)");
+		check("BinCounts({1,2,3,4,5},{3,3,-1})", //
+				"BinCounts({1,2,3,4,5},{3,3,-1})");
+		check("BinCounts({1,2,3,4,5},{3,3,1})", //
+				"{}");
+		check("BinCounts({0.04, 0.75, 0.3333, 0.03344, 0.9999},0.1)", //
+				"{2,0,0,1,0,0,0,1,0,1}");
+		check("BinCounts({0.04, 0.75, 0.3333, 0.03344, 0.9999},-0.1)", //
+				"BinCounts({0.04,0.75,0.3333,0.03344,0.9999},-0.1)");
+		check("BinCounts({1, 2, 3, 4, 5})", //
+				"{0,1,1,1,1,1}");
+		check("BinCounts({1.5, 3, a, 2.5, 1, I}, 2)", //
+				"{2,2}");
+		check("BinCounts({1, 3, 2, 1, 4, 5, 6, 2}, {0, 10, 1})", //
+				"{0,2,2,1,1,1,1,0,0,0}");
+		check("BinCounts({1, 3, 2, 1, 4, 5, 6, 2}, 2)", //
+				"{2,3,2,1}");
+		check("BinCounts({1.5, 3, N(3, 20), 2.5, 1, E}, 2)", //
+				"{2,4}");
+	}
 
 	public void testBinomial() {
 		check("Binomial(2+k, k)", //
@@ -7951,18 +7985,18 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"1/4*(12+2*a+2*b+2*c+2*d)");
 		check("Expectation(f(x),Distributed(x,{a,b}))", //
 				"1/2*(f(a)+f(b))");
-//		check("PDF( PoissonDistribution(m),x)", //
-//				"Piecewise({{m^x/(E^m*x!),x>=0}},0)");
-//		check("Expectation(x^2+7*x+8,Distributed(x,PoissonDistribution(m)))", //
-//				"8+8*m+m^2");
-//		check("Expectation(E^(2*x) + 3, Distributed(  x, PoissonDistribution(l)))", //
-//				"");
-//
-//		check("Expectation(x,Distributed(x, DiscreteUniformDistribution({4, 9})))", "13/2");
-//		check("Expectation(x,Distributed(x, DiscreteUniformDistribution({4, 10})))", "7");
-//
-//		check("Expectation(2*x+3,Distributed(x, DiscreteUniformDistribution({4, 9})))", "16");
-//		check("Expectation(2*x+3,Distributed(x, DiscreteUniformDistribution({4, 10})))", "17");
+		// check("PDF( PoissonDistribution(m),x)", //
+		// "Piecewise({{m^x/(E^m*x!),x>=0}},0)");
+		// check("Expectation(x^2+7*x+8,Distributed(x,PoissonDistribution(m)))", //
+		// "8+8*m+m^2");
+		// check("Expectation(E^(2*x) + 3, Distributed( x, PoissonDistribution(l)))", //
+		// "");
+		//
+		// check("Expectation(x,Distributed(x, DiscreteUniformDistribution({4, 9})))", "13/2");
+		// check("Expectation(x,Distributed(x, DiscreteUniformDistribution({4, 10})))", "7");
+		//
+		// check("Expectation(2*x+3,Distributed(x, DiscreteUniformDistribution({4, 9})))", "16");
+		// check("Expectation(2*x+3,Distributed(x, DiscreteUniformDistribution({4, 10})))", "17");
 
 	}
 
@@ -9975,6 +10009,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTable() {
+		check("s=0;Table(s=i+s, {i, 0, 7})", //
+				"{0,1,3,6,10,15,21,28}");
 		check("Table(a + dx, {dx, 0, 3, Pi/8})", //
 				"{a,a+Pi/8,a+Pi/4,a+3/8*Pi,a+Pi/2,a+5/8*Pi,a+3/4*Pi,a+7/8*Pi}");
 		check("Table(0.0^x, {x, -1.0, 1.0, 0.25})", //

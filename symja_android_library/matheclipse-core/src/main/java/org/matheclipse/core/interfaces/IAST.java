@@ -537,7 +537,7 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 * result array, or otherwise append it to the <code>1st element</code> of the result array.
 	 * 
 	 * @param function
-	 *            the function which filters each argument in this AST by returning a non-null result.
+	 *            the function which filters each argument in this AST by returning a <code>result != F.NIL</code> .
 	 * @return the resulting ASTs in the 0-th and 1-st element of the array
 	 */
 	public IASTAppendable[] filter(final Function<IExpr, IExpr> function);

@@ -842,6 +842,7 @@ public class EvalEngine implements Serializable {
 	 * @param expr
 	 * @return
 	 * @see #evaluate(IExpr)
+	 * @throws WrongArgumentType
 	 */
 	final public double evalDouble(final IExpr expr) {
 		if (expr.isReal()) {

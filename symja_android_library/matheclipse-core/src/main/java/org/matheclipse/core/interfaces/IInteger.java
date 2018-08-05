@@ -2,6 +2,8 @@ package org.matheclipse.core.interfaces;
 
 import java.math.BigInteger;
 
+import org.matheclipse.core.expression.F;
+
 /**
  * An expression representing a big integer number
  * 
@@ -51,6 +53,13 @@ public interface IInteger extends IRational {
 	 *             if <code>(that)</code> is zero.
 	 */
 	public IInteger div(final IInteger that);
+
+	default IInteger div(final int that) {
+		if (that == 1) {
+			return this;
+		}
+		return div(F.ZZ(that));
+	}
 
 	/**
 	 * Returns an array of two IIntegers containing (this / that) followed by (this % that).
@@ -200,6 +209,13 @@ public interface IInteger extends IRational {
 	public long longValue();
 
 	public IInteger mod(final IInteger that);
+
+	default IInteger mod(final int that) {
+		if (that == 1) {
+			return F.C0;
+		}
+		return mod(F.ZZ(that));
+	}
 
 	public IInteger modInverse(final IInteger m);
 

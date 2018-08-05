@@ -257,15 +257,15 @@ public class BigFractionSym extends AbstractFractionSym {
 	 * @return Next smaller integer of <code>this</code>.
 	 */
 	@Override
-	public IFraction floorFraction() {
+	public IInteger floorFraction() {
 		if (isIntegral()) {
-			return this;
+			return F.ZZ(toBigNumerator());
 		}
 		BigInteger div = toBigNumerator().divide(toBigDenominator());
 		if (toBigNumerator().signum() < 0) {
 			div = div.subtract(BigInteger.ONE);
 		}
-		return AbstractFractionSym.valueOf(div, BigInteger.ONE);
+		return F.ZZ(div);
 	}
 
 	/**
