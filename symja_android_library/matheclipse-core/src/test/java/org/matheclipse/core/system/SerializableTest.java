@@ -131,8 +131,10 @@ public class SerializableTest extends TestCase {
 
 	public void testPowerSeries() {
 		equalsCopy(new ASTSeriesData(F.x, F.a, F.List(F.C0, F.C1, F.C3), 0, 10, 1));
+
+		// Series(Log(x),{x,a,4})
 		EvalEngine engine = EvalEngine.get();
-		IExpr result = engine.evaluate("Series(Log(x),{x,a,4})");
+		IExpr result = engine.evaluate(F.Series(F.Log(F.x), F.List(F.x, F.a, F.C4)));
 		equalsCopy(result);
 	}
 
