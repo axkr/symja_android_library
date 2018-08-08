@@ -7233,11 +7233,15 @@ public class F {
 	public static IAST Quantile(final IExpr a0) {
 		return unaryAST1(Quantile, a0);
 	}
-
+	
 	public static IAST Quantile(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Quantile, a0, a1);
 	}
 
+	public static IAST Quantile(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3(Quantile, a0, a1, a2);
+	}
+	
 	public static IAST Quantity(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Quantity, a0, a1);
 	}
@@ -7314,13 +7318,6 @@ public class F {
 		return binaryAST2(ReplacePart, a0, a1);
 	}
 
-	/**
-	 * 
-	 * @param a0
-	 * @param a1
-	 * @param a2
-	 * @return
-	 */
 	public static IAST ReplacePart(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(ReplacePart, a0, a1, a2);
 	}

@@ -3420,6 +3420,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"x^2.0");
 	}
 
+	public void testFiveNum() {
+		// example from https://en.wikipedia.org/wiki/Five-number_summary
+		check("FiveNum({0, 0, 1, 2, 63, 61, 27, 13})", //
+				"{0,1/2,15/2,44,63}");
+		check("FiveNum({20,12,16,32,27,65,44,45,22,18})", //
+				"{12,18,49/2,44,65}");
+	}
+
 	public void testFixedPoint() {
 		check("FixedPoint(Cos, 1.0)", "0.73909");
 		check("FixedPoint(#+1 &, 1, 20)", "21");
@@ -7907,6 +7915,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testQuantile() {
+		check("Quantile({10, 50, 10, 15, 20}, 3/4, {{1/2, 0}, {0, 1}})",//
+				"55/2");
 		check("Quantile(NormalDistribution(m, s))", //
 				"ConditionalExpression(m-Sqrt(2)*s*InverseErfc(2*#1),0<=#1<=1)&");
 		check("Quantile(NormalDistribution(m, s), q)", //
