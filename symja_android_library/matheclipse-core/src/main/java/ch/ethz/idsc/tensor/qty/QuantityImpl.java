@@ -26,7 +26,7 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 	 * @return
 	 */
 	/* package */ static IExpr of(IExpr value, IUnit unit) {
-		return Units.isOne(unit) ? value : new QuantityImpl(value, null, unit);
+		return IUnit.ONE.equals(unit) ? value : new QuantityImpl(value, null, unit);
 	}
 
 	private IExpr arg1;
@@ -35,9 +35,9 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 	private IUnit unit; // not Unit.ONE
 
 	public QuantityImpl() {
-		
+
 	}
-	
+
 	private QuantityImpl(IExpr value, String unitString, IUnit unit) {
 		this.arg1 = value;
 		this.unitString = unitString;
@@ -233,6 +233,7 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 		return false;
 	}
 
+	@Override
 	public boolean isExactNumber() {
 		return arg1.isExactNumber();
 	}
@@ -330,6 +331,7 @@ public class QuantityImpl extends AbstractAST implements IQuantity, Externalizab
 		return ofUnit(arg1.negate());
 	}
 
+	@Override
 	public IQuantity ofUnit(IExpr scalar) {
 		return new QuantityImpl(scalar, unitString, unit);
 	}

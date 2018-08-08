@@ -6,8 +6,6 @@ import java.util.function.UnaryOperator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 
-/** inspired by
- * <a href="https://reference.wolfram.com/language/ref/UnitConvert.html">UnitConvert</a> */
 public class UnitConvert {
   /** @return instance of UnitConvert that uses the built-in SI convention */
   public static UnitConvert SI() {

@@ -10,10 +10,10 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.client.math.MathException;
 
 import ch.ethz.idsc.tensor.qty.IQuantity;
 import ch.ethz.idsc.tensor.qty.IUnit;
-import ch.ethz.idsc.tensor.qty.QuantityMagnitude;
 import ch.ethz.idsc.tensor.qty.UnitSystem;
 
 public class QuantityFunctions {
@@ -50,7 +50,8 @@ public class QuantityFunctions {
 						return IQuantity.of(arg1, IUnit.of(arg2.toString()));
 					}
 				}
-			} catch (Exception e) {
+			} catch (MathException e) {
+				engine.printMessage("Quantity: " + e.getMessage());
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
@@ -105,7 +106,8 @@ public class QuantityFunctions {
 						return suo.apply(arg1);
 					}
 				}
-			} catch (Exception e) {
+			} catch (MathException e) {
+				engine.printMessage("QuantityMagnitude: " + e.getMessage());
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
 				}
@@ -158,10 +160,11 @@ public class QuantityFunctions {
 						return unitConvert.to(unit).apply(arg1);
 					}
 				}
-			} catch (Exception e) {
+			} catch (MathException e) {
+				engine.printMessage("UnitConvert: " + e.getMessage());
 				if (Config.SHOW_STACKTRACE) {
 					e.printStackTrace();
-				}
+				} 
 			}
 
 			return F.NIL;

@@ -1,13 +1,12 @@
 package ch.ethz.idsc.tensor.img;
 
 import java.awt.Color;
-
+  
 /**
  * standalone hsv to rgb conversion
  * 
  * an input scalar that does not satisfy {@link NumberQ} is mapped to a transparent color
  * 
- * inspired by <a href="https://reference.wolfram.com/language/ref/Hue.html">Hue</a>
  */
 public enum Hue {
 	;

@@ -61,9 +61,23 @@ public class SimpleUnitSystem implements UnitSystem {
 			IExpr value = quantity.value();
 			for (Entry<String, IExpr> entry : quantity.unit().map().entrySet()) {
 				IExpr lookup = map.get(entry.getKey());
-				value = value.multiply(Objects.isNull(lookup) //
+				IExpr entryValue = entry.getValue();
+				// if (entryValue.isOne()) {
+				// value = Objects.isNull(lookup) //
+				// ? IQuantity.of(F.C1, format(entry)) //
+				// :lookup;
+				// } else {
+				IExpr temp = Objects.isNull(lookup) //
 						? IQuantity.of(F.C1, format(entry)) //
-						: F.Power.of(lookup, entry.getValue()));
+						: lookup.isQuantity()//
+								? ((IQuantity) lookup).power(entryValue)//
+								: F.Power.of(lookup, entryValue);
+				if (temp.isQuantity()) {
+					value = temp.multiply(value);
+				} else {
+					value = value.multiply(temp);
+				}
+				// }
 			}
 			return value;
 		}

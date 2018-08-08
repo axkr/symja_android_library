@@ -243,7 +243,8 @@ public class ExprParser extends Scanner {
 	}
 
 	private IExpr convertSymbol(final String nodeStr) {
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		// if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		if (fRelaxedSyntax) {
 			if (nodeStr.length() == 1) {
 				if (nodeStr.equals("I")) {
 					// special - convert on input

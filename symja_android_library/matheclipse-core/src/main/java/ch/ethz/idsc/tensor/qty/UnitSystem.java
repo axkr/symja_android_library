@@ -18,8 +18,7 @@ import org.matheclipse.core.interfaces.IExpr;
  * <p>{@link SimpleUnitSystem} is a reference implementation of the interface
  * provided by the tensor library.
  * 
- * <p>inspired by
- * <a href="https://reference.wolfram.com/language/ref/UnitSystem.html">UnitSystem</a> */
+ */
 public interface UnitSystem extends  UnaryOperator<IExpr> {
   /** @return international system of units, metric system */
   static UnitSystem SI() {

@@ -76,9 +76,9 @@ public class ContextPath {
 		return path.get(index);
 	}
 
-	public ISymbol getSymbol(String symbolName) {
+	public ISymbol getSymbol(String symbolName, boolean relaxedSyntax) {
 		String name = symbolName;
-		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+		if (relaxedSyntax) {
 			if (symbolName.length() == 1) {
 				name = symbolName;
 			} else {
@@ -117,7 +117,7 @@ public class ContextPath {
 		// }
 		// }
 		// }
-		// } 
+		// }
 		symbol = new Symbol(name, context);
 		context.put(name, symbol);
 		// engine.putUserVariable(name, symbol);

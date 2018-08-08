@@ -7,6 +7,7 @@ package org.matheclipse.core.basic;
  *
  */
 public class ToggleFeature {
+
 	/**
 	 * If <code>true</code>, enable <code>org.matheclipse.core.builtin.function.Compile</code> function.
 	 */
@@ -41,5 +42,5 @@ public class ToggleFeature {
 	/**
 	 * If <code>true</code>, enable experimental Quantity functions
 	 */
-	public static boolean QUANTITY = false;
+	public static boolean QUANTITY = true;
 }

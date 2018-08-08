@@ -5,9 +5,6 @@ import java.math.BigInteger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import org.matheclipse.core.expression.F;
-import org.matheclipse.core.interfaces.IExpr;
-
 /* package */ enum StaticHelper {
 	;
 	/** curly opening bracket of vector */
@@ -68,6 +65,4 @@ import org.matheclipse.core.interfaces.IExpr;
 		return bi;
 	}
 
-	private static final IExpr PI_HALF = F.num(Math.PI / 2);
- 
 }

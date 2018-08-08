@@ -710,6 +710,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testBinomial() {
+		check("Factorial(10)/Factorial(3)", //
+				"604800");
+		check("Gamma(11)/Gamma(4)", //
+				"604800");
+		check("Binomial(4.5, 3.76)", //
+				"3.39253");
 		check("Binomial(2+k, k)", //
 				"1/2*(1+k)*(2+k)");
 		check("Binomial(5+k, k)", //
@@ -3065,6 +3071,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testFactorial() {
+		check("Factorial(2.5)", "3.32335");
 		check("Factorial(Infinity)", "Infinity");
 
 		check("Factorial2(-1)", "1");
@@ -3267,7 +3274,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// https://stackoverflow.com/a/51696587/24819
 		check("FindFit({ {1.3,0.5}, {2.8,0.9}, {5.0,2.6}, {10.2,7.1}, {16.5,12.3}, {21.3,15.3},{ 31.8,20.4}, {52.2,24.4}}, " //
 				+ "d+((a-d)/ (1+(x/c)^ b)),  {{a, 1}, {b,2}, {c,20}, {d,20}}, x)", //
-				"{a->0.17432,b->1.75938,c->19.69032,d->28.83068}"); 
+				"{a->0.17432,b->1.75938,c->19.69032,d->28.83068}");
 		// initial guess [1.0, 1.0, 1.0] gives bad result:
 		check("FindFit(Table({t, 3*Sin(3*t + 1)}, {t, -3, 3, 0.1})," //
 				+ " a* Sin(w*t + f), {a,w,f}, t)", //
@@ -7922,6 +7929,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testQuantity() {
 		if (ToggleFeature.QUANTITY) {
+			check("Quantity(3.25, \"m *rad\")", //
+					"3.25[m*rad]");
 			check("Quantity(3, \"Hz^(-2)*N*m^(-1)\")", //
 					"3[Hz^-2*N*m^-1]");
 			check("0+Quantity(3, \"m\")", //
@@ -7950,6 +7959,14 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testQuantityMagnitude() {
 		if (ToggleFeature.QUANTITY) {
+			check("QuantityMagnitude(Quantity(2000000000000/8896443230521, \"lbf\"), \"N\")", //
+					"1");
+			check("QuantityMagnitude(Quantity(1290320000/8896443230521, \"psi\"), \"Pa\")", //
+					"1");
+			check("QuantityMagnitude(Quantity(6.241509125883258*10^9, \"GeV\"), \"J\")", //
+					"1.0");
+			check("QuantityMagnitude(Quantity(360, \"deg\"), \"rad\")", //
+					"6.28319"); // Pi*2
 			check("QuantityMagnitude(Quantity(3.4, \"m\"))", //
 					"3.4");
 			check("QuantityMagnitude(Quantity(3.4, \"km\"), \"m\")", //
@@ -10691,9 +10708,24 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testUnitConvert() {
 		if (ToggleFeature.QUANTITY) {
-			// assertEquals(ScalarParser.of("1.6021766208E-19"), F.num(1.6021766208E-19));
-			// check("UnitConvert(Quantity(3, \"Hz^-2*N*m^-1\") )", //
-			// "3[kg]");
+			check("UnitConvert(Quantity(200, \"g\")*Quantity(981, \"cm*s^-2\") )", //
+					"981/500[kg*m*s^-2]");
+			check("UnitConvert(Quantity(10^(-6), \"MOhm\") )", //
+					"1[A^-2*kg*m^2*s^-3]");
+			check("UnitConvert(Quantity(10^(-6), \"MOhm\"),\"Ohm\" )", //
+					"1[Ohm]");
+			check("UnitConvert(Quantity(1, \"nmi\"),\"km\" )", //
+					"463/250[km]");
+			check("UnitConvert(Quantity(360, \"mV^-1*mA*s^2\"),\"Ohm^-1*s^2\" )", //
+					"360[Ohm^-1*s^2]");
+			check("UnitConvert(Quantity(360, \"km*h^-1\"),\"m*s^-1\" )", //
+					"100[m*s^-1]");
+			check("UnitConvert(Quantity(2, \"km^2\") )", //
+					"2000000[m^2]");
+			check("UnitConvert(Quantity(2, \"km^2\"),\"cm^2\" )", //
+					"20000000000[cm^2]");
+			check("UnitConvert(Quantity(3, \"Hz^-2*N*m^-1\") )", //
+					"3[kg]");
 			check("UnitConvert(Quantity(3.8, \"lb\") )", //
 					"1.723651006[kg]");
 			check("UnitConvert(Quantity(8.2, \"nmi\"), \"km\")", //

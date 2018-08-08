@@ -46,6 +46,7 @@ import org.matheclipse.core.visit.VisitorReplaceAllLambda;
 import org.matheclipse.core.visit.VisitorReplacePart;
 import org.matheclipse.core.visit.VisitorReplaceSlots;
 
+import ch.ethz.idsc.tensor.qty.IQuantity;
 import edu.jas.structure.ElemFactory;
 import edu.jas.structure.GcdRingElem;
 

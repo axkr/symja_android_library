@@ -19,9 +19,7 @@ import org.matheclipse.core.interfaces.IAST;
  * <pre>
  * /unit/si.properties
  * </pre>
- * 
- * <p>inspired by
- * <a href="https://reference.wolfram.com/language/ref/ResourceData.html">ResourceData</a> */
+ */ 
 public enum ResourceData {
   ;
   /** Example use:

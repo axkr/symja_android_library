@@ -7,6 +7,7 @@ import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.parser.client.math.MathException;
@@ -31,7 +32,8 @@ import org.matheclipse.parser.client.math.MathException;
 			String key = entry.getKey();
 			IExpr value = entry.getValue();
 			if (map.containsKey(key)) {
-				IExpr sum = map.get(key).add(value);
+				// TODO this may not always use the defined UnitHelper.EvalEngine
+				IExpr sum = F.Plus.of(UnitHelper.ENGINE, map.get(key), value);
 				if (sum.isZero())
 					map.remove(key); // exponents cancel out
 				else
@@ -47,7 +49,8 @@ import org.matheclipse.parser.client.math.MathException;
 		if (factor instanceof ISignedNumber) {
 			NavigableMap<String, IExpr> map = new TreeMap<>();
 			for (Entry<String, IExpr> entry : navigableMap.entrySet()) {
-				IExpr value = entry.getValue().multiply(factor);
+				// TODO this may not always use the defined UnitHelper.EvalEngine
+				IExpr value = F.Times.of(UnitHelper.ENGINE, entry.getValue(), factor);
 				if (!value.isZero())
 					map.put(entry.getKey(), value);
 			}

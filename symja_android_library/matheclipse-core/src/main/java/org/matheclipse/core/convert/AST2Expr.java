@@ -84,8 +84,8 @@ public class AST2Expr {
 			"Expectation", "ExponentialDistribution", "ExpIntegralE", "ExpIntegralEi", "Exponent", "Export",
 			"ExtendedGCD", "Extract", "Factor", "Factorial", "Factorial2", "FactorInteger", "FactorSquareFree",
 			"FactorSquareFreeList", "FactorTerms", "Flatten", "FlattenAt", "Fibonacci", "FindFit", "FindInstance",
-			"FindRoot", "First", "Fit", "FixedPoint", "FixedPointList", "Floor", "Fold", "FoldList", "For", "ForAll",
-			"FourierMatrix", "FractionalPart", "FrechetDistribution", "FreeQ", "FresnelC", "FresnelS",
+			"FindRoot", "First", "Fit", "FiveNum", "FixedPoint", "FixedPointList", "Floor", "Fold", "FoldList", "For",
+			"ForAll", "FourierMatrix", "FractionalPart", "FrechetDistribution", "FreeQ", "FresnelC", "FresnelS",
 			"FrobeniusNumber", "FrobeniusSolve", "FromCharacterCode", "FromContinuedFraction", "FromDigits",
 			"FromPolarCoordinates", "FullForm", "FullSimplify", "Function", "FunctionExpand", "Gamma",
 			"GammaDistribution", "GammaRegularized", "Gather", "GCD", "GegenbauerC", "GeometricDistribution",
@@ -165,7 +165,7 @@ public class AST2Expr {
 	public static final Map<String, String> PREDEFINED_ALIASES_MAP = new HashMap<String, String>(97);
 
 	public static final String TIMES_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "times" : "Times";
-	public static final String TRUE_STRING = Config.PARSER_USE_LOWERCASE_SYMBOLS ? "true" : "True";
+	public static final String TRUE_STRING = "true";// : "True";
 
 	private static SuggestTree SUGGEST_TREE = null;
 
