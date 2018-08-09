@@ -1632,6 +1632,13 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testContinuedFraction() {
+		check("ContinuedFraction(E,100)", //
+				"{2,1,2,1,1,4,1,1,6,1,1,8,1,1,10,1,1,12,1,1,11,3,2,1,3,1,73,6,1,1,1,1,1,2,31,1,1,\n" + 
+				"1,2,1,1,2,1,2,15,9,1,3,1,4,2,1,2,1,2,5,5659,1,11,1,1,2,1,1,198,15,5,2,1,1,1,1,2,\n" + 
+				"1,1,3,1,51,1,10,4,1,1,6,1,1,1,2,12,1,2,3,2,1,6,5,5,3,1,1}");
+		// print message: ContinuedFraction: calculations of double number values require a iteration limit less equal 100.
+		check("ContinuedFraction(E,101)", //
+				"ContinuedFraction(E,101)");
 		check("ContinuedFraction(Sqrt(0))", //
 				"{0}");
 		check("ContinuedFraction(Sqrt(2))", //

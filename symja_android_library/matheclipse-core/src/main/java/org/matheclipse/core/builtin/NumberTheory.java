@@ -229,9 +229,9 @@ public final class NumberTheory {
 			if (ast.isAST1()) {
 				try {
 					int bn = ast.arg1().toIntDefault(Integer.MIN_VALUE);
-					if (bn !=Integer.MIN_VALUE) {
+					if (bn != Integer.MIN_VALUE) {
 						return bernoulliNumber(bn);
-					} 
+					}
 				} catch (RuntimeException rex) {
 					if (Config.SHOW_STACKTRACE) {
 						rex.printStackTrace();
@@ -815,12 +815,11 @@ public final class NumberTheory {
 			}
 			if (arg1 instanceof INum) {
 				// arg1 = F.fraction(((INum) arg1).getRealPart());
-				return realToCF(((INum) arg1), maxIterations);
+				return realToCF(((INum) arg1), maxIterations, engine);
 			} else if (arg1.isAST() || arg1.isSymbol() && arg1.isNumericFunction()) {
 				IExpr num = engine.evalN(arg1);
 				if (num instanceof INum) {
-					// arg1 = F.fraction(((INum) num).getRealPart());
-					return realToCF(((INum) num), maxIterations);
+					return realToCF(((INum) num), maxIterations, engine); 
 				}
 			}
 
@@ -857,7 +856,7 @@ public final class NumberTheory {
 			return F.NIL;
 		}
 
-		private static IAST realToCF(INum d, int limit) {
+		private static IAST realToCF(INum d, int limit, EvalEngine engine) {
 			final double D = d.getRealPart();
 			IASTAppendable continuedFractionList = F.ListAlloc(10);
 			int ip = (int) D;
@@ -872,12 +871,18 @@ public final class NumberTheory {
 			int aNext;
 			continuedFractionList.append(F.ZZ(aNow));
 			for (int i = 0; i < limit - 1; i++) {
+				if (i >= 99) {
+					engine.printMessage(
+							"ContinuedFraction: calculations of double number values require a iteration limit less equal 100.");
+					return F.NIL;
+				}
 				double rec = 1.0 / tNow;
 				aNext = (int) rec;
-				tNext = rec - aNext;
 				if (aNext == Integer.MAX_VALUE) {
 					break;
 				}
+				tNext = rec - aNext;
+
 				continuedFractionList.append(F.ZZ(aNext));
 				tNow = tNext;
 			}
