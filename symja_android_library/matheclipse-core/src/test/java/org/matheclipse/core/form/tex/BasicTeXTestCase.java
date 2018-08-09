@@ -76,10 +76,20 @@ public class BasicTeXTestCase extends TestCase {
 		check("x^(3/4*y)", "x^{\\frac{3\\,y}{4}}");
 	}
 
-	public void testTeX012() {
+	public void testTeX012a() {
 		// check("{{{1,2,3},{4,5,6}}}", "\\begin{pmatrix} 1 & 2 & 3 \\\\\n" + " 4 & 5 & 6 \\\\\n" + "\\end{pmatrix}");
 		check("MatrixForm({{1,2,3},{4,5,6}})",
-				"\\begin{pmatrix} 1 & 2 & 3 \\\\\n" + " 4 & 5 & 6 \\\\\n" + "\\end{pmatrix}");
+				"\\begin{pmatrix}\n 1 & 2 & 3 \\\\\n" + " 4 & 5 & 6 \\\\\n" + "\\end{pmatrix}");
+	}
+
+	public void testTeX012b() {
+		check("TableForm({1,2,3,4,5,6})", "\\begin{array}{c}\n" + " 1 \\\\\n" + " 2 \\\\\n" + " 3 \\\\\n" + " 4 \\\\\n"
+				+ " 5 \\\\\n" + " 6 \\end{array}");
+	}
+
+	public void testTeX012c() {
+		check("TableForm({{1,2,3},{4,5,6}})",
+				"\\begin{array}{ccc}\n" + " 1 & 2 & 3 \\\\\n" + " 4 & 5 & 6 \\\\\n" + "\\end{array}");
 	}
 
 	public void testTeX013() {
@@ -215,6 +225,14 @@ public class BasicTeXTestCase extends TestCase {
 	public void testTeX023() {
 		// issue #117
 		check("5*3^(5*x)*Log(3)", "5\\cdot 3^{5\\,x}\\,\\log(3)");
+	}
+
+	public void testTeX024() {
+		check("\"a hello { % # } _&$ world string\"", //
+				"\\textnormal{a hello \\{ \\% \\# \\} \\_\\&\\$ world string}");
+		check("\"hello\nthis is & and < to > \\\" world\"", //
+				"\\textnormal{hello\n" + //
+						"this is \\& and $<$ to $>$ \" world}");
 	}
 
 	public void check(String strEval, String strResult) {

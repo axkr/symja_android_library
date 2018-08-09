@@ -2,8 +2,8 @@ package org.matheclipse.core.reflection.system;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Function;
 
 import org.matheclipse.core.eval.EvalEngine;
@@ -79,7 +79,7 @@ public class OptimizeExpression extends AbstractFunctionEvaluator {
 		java.util.Map<IExpr, ReferenceCounter> map;
 
 		public ShareFunction() {
-			map = new HashMap<IExpr, ReferenceCounter>();
+			map = new TreeMap<IExpr, ReferenceCounter>();
 		}
 
 		@Override

@@ -871,7 +871,7 @@ public class F {
     /** Fit(list-of-data-points, degree, variable) - solve a least squares problem using the Levenberg-Marquardt algorithm.*/
     public final static IBuiltInSymbol Fit = F.initFinalSymbol("Fit", ID.Fit);
 
-    /***/
+    /** FiveNum({dataset}) - the Tuckey five-number summary is a set of descriptive statistics that provide information about a `dataset`. It consists of the five most important sample percentiles:*/
     public final static IBuiltInSymbol FiveNum = F.initFinalSymbol("FiveNum", ID.FiveNum);
 
     /** FixedPoint(f, expr) - starting with `expr`, iteratively applies `f` until the result no longer changes.*/
@@ -2217,6 +2217,9 @@ public class F {
 
     /** Table(expr, {i, n}) - evaluates `expr` with `i` ranging from `1` to `n`, returning a list of the results.*/
     public final static IBuiltInSymbol Table = F.initFinalSymbol("Table", ID.Table);
+
+    /***/
+    public final static IBuiltInSymbol TableForm = F.initFinalSymbol("TableForm", ID.TableForm);
 
     /** Take(expr, n) - returns `expr` with all but the first `n` leaves removed.*/
     public final static IBuiltInSymbol Take = F.initFinalSymbol("Take", ID.Take);
