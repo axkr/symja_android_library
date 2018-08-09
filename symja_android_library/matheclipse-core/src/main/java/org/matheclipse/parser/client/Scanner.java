@@ -833,6 +833,10 @@ public abstract class Scanner {
 						ident.append('\t');
 
 						break;
+					case '\"':
+						ident.append('\"');
+
+						break;
 					default:
 						throwSyntaxError("string - unknown character after back-slash.");
 					}

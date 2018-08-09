@@ -1905,7 +1905,9 @@ public class MathMLFormFactory extends AbstractMathMLFormFactory {
 		String[] splittedStr = str.split("\\n");
 		for (int i = 0; i < splittedStr.length; i++) {
 			tagStart(buf, "mtext");
-			buf.append(splittedStr[i]);
+			String text = splittedStr[i].replaceAll("\\&", "&amp;").replaceAll("\\<", "&lt;").replaceAll("\\>", "&gt;");
+			text = text.replaceAll("\\\"", "&quot;").replaceAll(" ", "&nbsp;");
+			buf.append(text);
 			tagEnd(buf, "mtext");
 			buf.append("<mspace linebreak='newline' />");
 		}

@@ -298,7 +298,7 @@ public final class OutputFunctions {
 			IExpr arg1 = ast.arg1();
 			StringWriter stw = new StringWriter();
 			mathMLUtil.toMathML(arg1, stw);
-			return F.$str(stw.toString());
+			return F.stringx(stw.toString());
 		}
 
 		@Override
