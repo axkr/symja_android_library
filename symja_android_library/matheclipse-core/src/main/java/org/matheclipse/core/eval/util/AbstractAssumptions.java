@@ -393,6 +393,10 @@ public abstract class AbstractAssumptions implements IAssumptions {
 	}
 
 	public static boolean isNegativeResult(IAST ast) {
+		ISignedNumber e = ast.evalReal();
+		if (e != null) {
+			return e.isNegative();
+		}
 		IExpr head = ast.head();
 		if (head.isSymbol()) {
 			ISymbol symbol = (ISymbol) head;
@@ -445,6 +449,10 @@ public abstract class AbstractAssumptions implements IAssumptions {
 	}
 
 	public static boolean isNonNegativeResult(IAST ast) {
+		ISignedNumber e = ast.evalReal();
+		if (e != null) {
+			return !e.isNegative();
+		}
 		IExpr head = ast.head();
 		if (head.isSymbol()) {
 			ISymbol symbol = (ISymbol) head;
@@ -505,8 +513,13 @@ public abstract class AbstractAssumptions implements IAssumptions {
 	}
 
 	public static boolean isPositiveResult(IAST ast) {
+		ISignedNumber e = ast.evalReal();
+		if (e != null) {
+			return e.isPositive();
+		}
 		IExpr head = ast.head();
 		if (head.isSymbol()) {
+
 			ISymbol symbol = (ISymbol) head;
 			int size = ast.size();
 			if (size == 2) {

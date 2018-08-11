@@ -1,5 +1,6 @@
 package org.matheclipse.core.interfaces;
 
+import org.matheclipse.core.eval.util.AbstractAssumptions;
 import org.matheclipse.core.expression.ApfloatNum;
 import org.matheclipse.core.expression.F;
 
@@ -87,6 +88,14 @@ public interface ISignedNumber extends INumber {
 	@Override
 	public boolean isNegative();
 
+	default boolean isNegativeResult() {
+		return isNegative();
+	}
+	
+	default boolean isNonNegativeResult() {
+		return !isNegative();
+	}
+	
 	/**
 	 * Test if this number is positive.
 	 * 
@@ -95,6 +104,10 @@ public interface ISignedNumber extends INumber {
 	@Override
 	public boolean isPositive();
 
+	default boolean isPositiveResult() {
+		return isPositive();
+	}
+	
 	/** {@inheritDoc} */
 	@Override
 	public boolean isZero();

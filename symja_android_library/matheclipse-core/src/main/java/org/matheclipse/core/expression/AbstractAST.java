@@ -1681,7 +1681,7 @@ public abstract class AbstractAST implements IASTMutable {
 		}
 		return false;
 	}
-	
+
 	public boolean isDiscreteDistribution() {
 		if (head().isBuiltInSymbol()) {
 			IEvaluator evaluator = ((IBuiltInSymbol) head()).getEvaluator();
@@ -2253,6 +2253,10 @@ public abstract class AbstractAST implements IASTMutable {
 		if (size() == 2 && F.Cos.equals(head) && F.Sin.equals(head)) {
 			// TODO add more functions
 			return arg1().isRealResult();
+		}
+		ISignedNumber e = evalReal();
+		if (e != null) {
+			return true;
 		}
 		if (isPlus() || isTimes()) {
 			// check if all arguments are &quot;real values&quot;
