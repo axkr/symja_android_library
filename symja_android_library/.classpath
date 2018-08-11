@@ -19,12 +19,11 @@
 	<classpathentry kind="lib" path="lib/hipparchus-optim-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/hipparchus-stat-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/logicng-1.4.0.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2-api-2.5.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-api-2.5.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-core-2.5.jar"/>
-	<classpathentry kind="lib" path="lib/jas-2.6.5851.jar"/>
-	<classpathentry kind="lib" path="lib/guava-23.6.1-android.jar"/>
+	<classpathentry kind="lib" path="lib/jas-2.6.5884.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-android-1.7.25.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-over-slf4j-1.7.25.jar"/>
+	<classpathentry kind="lib" path="lib/guava-26.0-android.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

@@ -11,7 +11,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.apache.log4j.Logger;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
 import org.matheclipse.core.expression.ExprRingFactory;
@@ -105,7 +104,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	/**
 	 * Log4j logger object.
 	 */
-	private static final Logger logger = Logger.getLogger(ExprPolynomialRing.class);
+	// private static final Logger logger = Logger.getLogger(ExprPolynomialRing.class);
 
 	/**
 	 * Count for number of polynomial creations.
@@ -1457,7 +1456,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 		if (coFac.isFinite()) {
 			return new GenPolynomialIterator(this);
 		}
-		logger.warn("ring of coefficients " + coFac + " is infinite, constructing iterator only over monomials");
+		// logger.warn("ring of coefficients " + coFac + " is infinite, constructing iterator only over monomials");
 		return new GenPolynomialMonomialIterator(this);
 		// throw new IllegalArgumentException("only for finite iterable
 		// coefficients implemented");

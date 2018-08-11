@@ -1,6 +1,7 @@
 package org.matheclipse.core.eval.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.matheclipse.core.eval.MathUtils;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Symbol;
@@ -9,7 +10,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
 public class MagicProcessor {
-	private static final Logger Log = Logger.getLogger(MagicProcessor.class);
+	private static final Logger Log = LogManager.getLogger(MagicProcessor.class);
 
 	String outPut = null;
 	String err = null;

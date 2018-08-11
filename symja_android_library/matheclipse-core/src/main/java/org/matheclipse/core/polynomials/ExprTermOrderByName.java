@@ -5,11 +5,6 @@
 package org.matheclipse.core.polynomials;
 
 
-
-
-// import org.apache.log4j.Logger;
-
-
 /**
  * Term order names for ordered polynomials. Defines names for the most used
  * term orders: graded and lexicographical orders. For the definitions see for

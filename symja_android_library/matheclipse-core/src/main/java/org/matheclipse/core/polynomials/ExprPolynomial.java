@@ -7,7 +7,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.Function;
 
-import org.apache.log4j.Logger;
+import org.matheclipse.core.basic.Config;
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
@@ -50,9 +50,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	protected final SortedMap<ExpVectorLong, IExpr> val; // do not change to
 															// TreeMap
 
-	private static final Logger logger = Logger.getLogger(ExprPolynomial.class);
-
-	private final boolean debug = logger.isDebugEnabled();
+	private final boolean debug = Config.DEBUG;
 
 	// protected GenPolynomial() { ring = null; val = null; } // don't use
 
@@ -69,7 +67,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 		val = t;
 		if (ring.checkPreempt) {
 			if (Thread.currentThread().isInterrupted()) {
-				logger.debug("throw PreemptingException");
+				// logger.debug("throw PreemptingException");
 				throw new PreemptingException();
 			}
 		}
@@ -196,7 +194,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 		if (debug) {
 			IExpr a = val.get(e);
 			if (a != null) {
-				logger.error("map entry exists " + e + " to " + a + " new " + c);
+				// logger.error("map entry exists " + e + " to " + a + " new " + c);
 			}
 		}
 		if (!c.isZero()) {
@@ -221,7 +219,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 				return;
 			}
 			if (!c.equals(b)) {
-				logger.error("map entry wrong " + e + " to " + c + " old " + b);
+				// logger.error("map entry wrong " + e + " to " + c + " old " + b);
 			}
 		}
 	}
@@ -240,7 +238,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 			if (debug) {
 				IExpr a = val.get(e);
 				if (a != null) {
-					logger.error("map entry exists " + e + " to " + a + " new " + me.getValue());
+					// logger.error("map entry exists " + e + " to " + a + " new " + me.getValue());
 				}
 			}
 			IExpr c = me.getValue();
@@ -1661,7 +1659,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 			if (debug) {
 				IExpr x = c1.remainder(s);
 				if (!x.isZero()) {
-					logger.info("divide x = " + x);
+					// logger.info("divide x = " + x);
 					throw new ArithmeticException("no exact division: " + c1 + "/" + s);
 				}
 			}
