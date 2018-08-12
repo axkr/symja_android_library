@@ -145,10 +145,11 @@ public class AST2Expr {
 			"TensorSymmetry", "TeXForm", "Thread", "Through", "Throw", "TimeConstrained", "Times", "TimesBy", "Timing",
 			"ToCharacterCode", "ToeplitzMatrix", "Together", "ToPolarCoordinates", "ToRadicals", "ToString", "Total",
 			"ToUnicode", "Tr", "Trace", "TraditionalForm", "Transpose", "TrigExpand", "TrigReduce", "TrigToExp",
-			"TrueQ", "Tuples", "Undefined", "Unequal", "Unevaluated", "Union", "Unique", "UnitaryMatrixQ",
-			"UnitConvert", "Unitize", "UnitStep", "UnitVector", "UnsameQ", "Unset", "UpperCaseQ", "UpperTriangularize",
-			"UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables", "Variance", "VectorAngle", "VectorQ",
-			"WeibullDistribution", "Which", "While", "With", "Xor", "YuleDissimilarity", "ZeroSymmetric", "Zeta" };
+			"TrueQ", "Tuples", "Undefined", "Unequal", "Unevaluated", "UniformDistribution", "Union", "Unique",
+			"UnitaryMatrixQ", "UnitConvert", "Unitize", "UnitStep", "UnitVector", "UnsameQ", "Unset", "UpperCaseQ",
+			"UpperTriangularize", "UpSet", "UpSetDelayed", "ValueQ", "VandermondeMatrix", "Variables", "Variance",
+			"VectorAngle", "VectorQ", "WeibullDistribution", "Which", "While", "With", "Xor", "YuleDissimilarity",
+			"ZeroSymmetric", "Zeta" };
 
 	public static Map<String, Integer> RUBI_STATISTICS_MAP;
 

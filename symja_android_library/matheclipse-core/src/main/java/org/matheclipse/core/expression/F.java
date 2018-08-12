@@ -2344,6 +2344,9 @@ public class F {
     /***/
     public final static IBuiltInSymbol Unevaluated = F.initFinalSymbol("Unevaluated", ID.Unevaluated);
 
+    /***/
+    public final static IBuiltInSymbol UniformDistribution = F.initFinalSymbol("UniformDistribution", ID.UniformDistribution);
+
     /** Union(set1, set2) - get the union set from `set1` and `set2`.*/
     public final static IBuiltInSymbol Union = F.initFinalSymbol("Union", ID.Union);
 

@@ -1040,6 +1040,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Piecewise({{GammaRegularized(1+Floor(k),p),k>=0}},0)");
 		check("CDF(DiscreteUniformDistribution({a, b}), k)", //
 				"Piecewise({{(1-a+Floor(k))/(1-a+b),a<=k&&k<b},{1,k>=b}},0)");
+		check("CDF(UniformDistribution({a, b}), k)", //
+				"Piecewise({{(-a+k)/(-a+b),a<=k<=b},{1,k>b}},0)");
 		check("CDF(ErlangDistribution(n, m),k)", //
 				"Piecewise({{GammaRegularized(n,0,m*k),k>0}},0)");
 		check("CDF(LogNormalDistribution(n,m),k)", //
@@ -1633,10 +1635,11 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 	public void testContinuedFraction() {
 		check("ContinuedFraction(E,100)", //
-				"{2,1,2,1,1,4,1,1,6,1,1,8,1,1,10,1,1,12,1,1,11,3,2,1,3,1,73,6,1,1,1,1,1,2,31,1,1,\n" + 
-				"1,2,1,1,2,1,2,15,9,1,3,1,4,2,1,2,1,2,5,5659,1,11,1,1,2,1,1,198,15,5,2,1,1,1,1,2,\n" + 
-				"1,1,3,1,51,1,10,4,1,1,6,1,1,1,2,12,1,2,3,2,1,6,5,5,3,1,1}");
-		// print message: ContinuedFraction: calculations of double number values require a iteration limit less equal 100.
+				"{2,1,2,1,1,4,1,1,6,1,1,8,1,1,10,1,1,12,1,1,11,3,2,1,3,1,73,6,1,1,1,1,1,2,31,1,1,\n"
+						+ "1,2,1,1,2,1,2,15,9,1,3,1,4,2,1,2,1,2,5,5659,1,11,1,1,2,1,1,198,15,5,2,1,1,1,1,2,\n"
+						+ "1,1,3,1,51,1,10,4,1,1,6,1,1,1,2,12,1,2,3,2,1,6,5,5,3,1,1}");
+		// print message: ContinuedFraction: calculations of double number values require a iteration limit less equal
+		// 100.
 		check("ContinuedFraction(E,101)", //
 				"ContinuedFraction(E,101)");
 		check("ContinuedFraction(Sqrt(0))", //
@@ -5269,7 +5272,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Log(2, 0)", "-Infinity");
 		check("Log(3/4, 0)", "Infinity");
 		check("Log(-2, 0)", "(-Infinity)/(I*Pi+Log(2))");
-		
+
 		check("Exp(Log(x))", "x");
 		check("Refine(Log(Exp(x)),Element(x, Reals))", "x");
 		check("Log({0, 1, E, E * E, E ^ 3, E ^ x})", "{-Infinity,0,1,2,3,Log(E^x)}");
@@ -5712,11 +5715,17 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Median({1,2,3,4,5,6,7.0,8})", "4.5");
 		check("Median({1,2,3,4,5,6,7})", "4");
 
-		check("Median(BernoulliDistribution(p))", "Piecewise({{1,p>1/2}},0)");
-		check("Median(BinomialDistribution(n, m))", "Median(BinomialDistribution(n,m))");
-		check("Median(ExponentialDistribution(n))", "Log(2)/n");
+		check("Median(BernoulliDistribution(p))", //
+				"Piecewise({{1,p>1/2}},0)");
+		check("Median(BinomialDistribution(n, m))", //
+				"Median(BinomialDistribution(n,m))");
+		check("Median(ExponentialDistribution(n))", //
+				"Log(2)/n");
 		check("Median(PoissonDistribution(p))", "Median(PoissonDistribution(p))");
-		check("Median(DiscreteUniformDistribution({l, r}))", "-1+l+Max(1,Ceiling(1/2*(1-l+r)))");
+		check("Median(DiscreteUniformDistribution({l, r}))", //
+				"-1+l+Max(1,Ceiling(1/2*(1-l+r)))");
+		check("Median(UniformDistribution({l, r}))", //
+				"1/2*(l+r)");
 		check("Median(ErlangDistribution(n, m))", "InverseGammaRegularized(n,0,1/2)/m");
 		check("Median(LogNormalDistribution(m,s))", "E^m");
 		check("Median(NakagamiDistribution(n, m))", "Sqrt((m*InverseGammaRegularized(n,0,1/2))/n)");
@@ -7009,6 +7018,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"Piecewise({{p^k/(E^p*k!),k>=0}},0)");
 		check("PDF(DiscreteUniformDistribution({a, b}), k)", //
 				"Piecewise({{1/(1-a+b),a<=k<=b}},0)");
+		check("PDF(UniformDistribution({a, b}), k)", //
+				"Piecewise({{1/(-a+b),a<=k<=b}},0)");
 		check("PDF(ErlangDistribution(n, m),k)", //
 				"Piecewise({{m^n/(E^(m*k)*Gamma(n)*k^(1-n)),k>0}},0)");
 		check("PDF(LogNormalDistribution(n,m),k)", //
@@ -7085,7 +7096,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("-Infinity+Log(2)", "-Infinity");
 		check("Infinity+Sin(-2)", "Infinity");
 		check("Infinity+Log(2)", "Infinity");
-		
+
 		check("{1,2}+{4,5,6}", "{1,2}+{4,5,6}");
 		check("2+4/3*2^b/c", "2+4/3*2^b/c");
 		check("Refine(Infinity+x, x>0)", "Infinity");
@@ -8064,6 +8075,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRandomVariate() {
+		// check("RandomVariate(GammaDistribution(0.5,0.6), {10})", //
+		// "{0.08716,0.39611,0.04844,0.03546,0.57366,0.02071,0.01487,1.65639,0.75104,0.05348}");
+		// check("RandomVariate(UniformDistribution({1,3}), {2})", //
+		// "{1.95941,2.69658}");
 		// check("RandomVariate(NormalDistribution(), 10^1)", //
 		// "");
 		// check("KolmogorovSmirnovTest({-0.79675,0.3841,-0.84567,0.3421,0.46447,-0.01124,-0.33517,0.82206,1.40563,0.48811},
@@ -10299,12 +10314,12 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testTimes() {
-		
+
 		check("(-Infinity)/Sin(-2)", "Infinity");
 		check("(-Infinity)/(-2)", "Infinity");
 		check("(-Infinity)/Log(2)", "-Infinity");
 		check("(-Infinity)/2", "-Infinity");
-		
+
 		// github #35
 		check(" y^2*y^(-0.6666) ", //
 				"y^1.3334");
