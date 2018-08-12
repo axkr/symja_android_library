@@ -2665,7 +2665,7 @@ public final class Arithmetic {
 
 		private static IExpr powerIntervalPositiveExponent(final IExpr interval, IInteger exponent) {
 			if (exponent.isEven()) {
-				if (!interval.lower().isNegativeResult()) {
+				if (interval.lower().isNonNegativeResult()) {
 					return F.Interval(F.List(interval.lower().power(exponent), interval.upper().power(exponent)));
 				} else {
 					if (interval.upper().isNegativeResult()) {
