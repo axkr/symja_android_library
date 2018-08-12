@@ -278,7 +278,62 @@ public class StatisticsFunctions {
 	}
 
 	/**
-	 * Compute the cumulative distribution function
+	 * <pre>
+	 * CDF(distribution, value)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the cumulative distribution function of <code>value</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * PDF(distribution, {list} )
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the cumulative distribution function of the values of list.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Cumulative_distribution_function">Wikipedia - cumulative distribution
+	 * function</a></li>
+	 * </ul>
+	 * <p>
+	 * <code>CDF</code> can be applied to the following distributions:
+	 * </p>
+	 * <blockquote>
+	 * <p>
+	 * <a href="BernoulliDistribution.md">BernoulliDistribution</a>,
+	 * <a href="BinomialDistribution.md">BinomialDistribution</a>,
+	 * <a href="DiscreteUniformDistribution.md">DiscreteUniformDistribution</a>,
+	 * <a href="ErlangDistribution.md">ErlangDistribution</a>,
+	 * <a href="ExponentialDistribution.md">ExponentialDistribution</a>,
+	 * <a href="FrechetDistribution.md">FrechetDistribution</a>, <a href="GammaDistribution.md">GammaDistribution</a>,
+	 * <a href="GeometricDistribution.md">GeometricDistribution</a>,
+	 * <a href="GumbelDistribution.md">GumbelDistribution</a>,
+	 * <a href="HypergeometricDistribution.md">HypergeometricDistribution</a>,
+	 * <a href="LogNormalDistribution.md">LogNormalDistribution</a>,
+	 * <a href="NakagamiDistribution.md">NakagamiDistribution</a>,
+	 * <a href="NormalDistribution.md">NormalDistribution</a>, <a href="PoissonDistribution.md">PoissonDistribution</a>,
+	 * <a href="StudentTDistribution.md">StudentTDistribution</a>,
+	 * <a href="WeibullDistribution.md">WeibullDistribution</a>
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; CDF(NormalDistribution(),-0.41)
+	 * 0.3409
+	 * 
+	 * &gt;&gt; Table(CDF(NormalDistribution(0, s), x), {s, {.75, 1, 2}}, {x, -6,6}) // N
+	 * {{0.0,0.0,0.0,0.00003,0.00383,0.09121,0.5,0.90879,0.99617,0.99997,1.0,1.0,1.0},{0.0,0.0,0.00003,0.00135,0.02275,0.15866,0.5,0.84134,0.97725,0.99865,0.99997,1.0,1.0},{0.00135,0.00621,0.02275,0.06681,0.15866,0.30854,0.5,0.69146,0.84134,0.93319,0.97725,0.99379,0.99865}}
+	 * </pre>
 	 */
 	private static class CDF extends AbstractFunctionEvaluator {
 
@@ -319,6 +374,79 @@ public class StatisticsFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * BernoulliDistribution(p)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the Bernoulli distribution.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Bernoulli_distribution">Wikipedia - Bernoulli distribution</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * The probability density function of the Bernoulli distribution is
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PDF(BernoulliDistribution(p), x)
+	 * Piecewise({{1-p,x==0},{p,x==1}},0)
+	 * </pre>
+	 * <p>
+	 * The cumulative distribution function of the Bernoulli distribution is
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; CDF(BernoulliDistribution(p), x)
+	 * Piecewise({{0,x&lt;0},{1-p,0&lt;=x&amp;&amp;x&lt;1}},1)
+	 * </pre>
+	 * <p>
+	 * The mean of the Bernoulli distribution is
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Mean(BernoulliDistribution(p))
+	 * p
+	 * </pre>
+	 * <p>
+	 * The standard deviation of the Bernoulli distribution is
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; StandardDeviation(BernoulliDistribution(p))
+	 * Sqrt((1-p)*p)
+	 * </pre>
+	 * <p>
+	 * The variance of the Bernoulli distribution is
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Variance(BernoulliDistribution(p))
+	 * (1-p)*p
+	 * </pre>
+	 * <p>
+	 * The random variates of a Bernoulli distribution can be generated with function <code>RandomVariate</code>
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; RandomVariate(BernoulliDistribution(0.25), 10^1)
+	 * {1,0,0,0,1,1,0,0,0,0}
+	 * </pre>
+	 * 
+	 * <h3>Related terms</h3>
+	 * <p>
+	 * <a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>, <a href="PDF.md">PDF</a>,
+	 * <a href="Quantile.md">Quantile</a>, <a href="StandardDeviation.md">StandardDeviation</a>,
+	 * <a href="Variance.md">Variance</a>
+	 * </p>
+	 */
 	private final static class BernoulliDistribution extends AbstractEvaluator
 			implements ICDF, IDistribution, IPDF, IVariance, IRandomVariate {
 
@@ -402,6 +530,34 @@ public class StatisticsFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * BinCounts(list, width - of - bin)
+	 * </pre>
+	 * <p>
+	 * or
+	 * </p>
+	 * 
+	 * <pre>
+	 * BinCounts(list, {min, max, width-of-bin} )
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * count the number of elements, if <code>list</code>, is divided into successive bins with width
+	 * <code>width-of-bin</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; BinCounts({1,2,3,4,5},5) 
+	 * {4,1}
+	 * 
+	 * &gt;&gt; BinCounts({1,2,3,4,5},10) 
+	 * {5}
+	 * </pre>
+	 */
 	private final static class BinCounts extends AbstractFunctionEvaluator {
 
 		@Override
@@ -513,13 +669,84 @@ public class StatisticsFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * BinomialDistribution(n, p)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the binomial distribution.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Binomial_distribution">Wikipedia - Binomial distribution</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * <p>
+	 * The probability density function of the binomial distribution is
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PDF(BinomialDistribution(n, p), x)
+	 * Piecewise({{(1-p)^(n-x)*p^x*Binomial(n,x),0&lt;=x&lt;=n}},0)
+	 * </pre>
+	 * <p>
+	 * The cumulative distribution function of the binomial distribution is
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; CDF(BinomialDistribution(n, p), x)
+	 * Piecewise({{BetaRegularized(1-p,n-Floor(x),1+Floor(x)),0&lt;=x&amp;&amp;x&lt;n},{1,x&gt;=n}},0)
+	 * </pre>
+	 * <p>
+	 * The mean of the binomial distribution is
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Mean(BinomialDistribution(n, p))
+	 * n*p
+	 * </pre>
+	 * <p>
+	 * The standard deviation of the binomial distribution is
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; StandardDeviation(BinomialDistribution(n, p))
+	 * Sqrt(n*(1-p)*p)
+	 * </pre>
+	 * <p>
+	 * The variance of the binomial distribution is
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Variance(BinomialDistribution(n, p))
+	 * n*(1-p)*p
+	 * </pre>
+	 * <p>
+	 * The random variates of a binomial distribution can be generated with function <code>RandomVariate</code>
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; RandomVariate(BinomialDistribution(10,0.25), 10^1)
+	 * {1,2,1,1,4,1,1,3,2,5}
+	 * </pre>
+	 * 
+	 * <h3>Related terms</h3>
+	 * <p>
+	 * <a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>, <a href="PDF.md">PDF</a>,
+	 * <a href="Quantile.md">Quantile</a>, <a href="StandardDeviation.md">StandardDeviation</a>,
+	 * <a href="Variance.md">Variance</a>
+	 * </p>
+	 */
 	private final static class BinomialDistribution extends AbstractEvaluator
 			implements ICDF, IDiscreteDistribution, IPDF, IVariance, IRandomVariate {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			// Validate.checkSize(ast, 3);
-			// 2 args
 			return F.NIL;
 		}
 
@@ -639,6 +866,23 @@ public class StatisticsFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * Correlation(a, b)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * computes Pearson's correlation of two equal-sized vectors <code>a</code> and <code>b</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Correlation({10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5}, {8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68})
+	 * 0.81642
+	 * </pre>
+	 */
 	private final static class Correlation extends AbstractFunctionEvaluator {
 
 		@Override
@@ -656,6 +900,37 @@ public class StatisticsFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * FiveNum({dataset})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * the Tuckey five-number summary is a set of descriptive statistics that provide information about a
+	 * <code>dataset</code>. It consists of the five most important sample percentiles:
+	 * </p>
+	 * <ol>
+	 * <li>the sample minimum (smallest observation)</li>
+	 * <li>the lower quartile or first quartile</li>
+	 * <li>the median (the middle value)</li>
+	 * <li>the upper quartile or third quartile</li>
+	 * <li>the sample maximum (largest observation)</li>
+	 * </ol>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Five-number_summary">Wikipedia - Five-number summary</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; FiveNum({0, 0, 1, 2, 63, 61, 27, 13}) 
+	 * {0,1/2,15/2,44,63}
+	 * </pre>
+	 */
 	private final static class FiveNum extends AbstractEvaluator {
 
 		@Override
@@ -686,6 +961,29 @@ public class StatisticsFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * FrechetDistribution(a, b)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a Frechet distribution.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Fr%C3%A9chet_distribution">Wikipedia - Frechet distribution</a></li>
+	 * </ul>
+	 * <h3>Related terms</h3>
+	 * <p>
+	 * <a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>, <a href="PDF.md">PDF</a>,
+	 * <a href="Quantile.md">Quantile</a>, <a href="StandardDeviation.md">StandardDeviation</a>,
+	 * <a href="Variance.md">Variance</a>
+	 * </p>
+	 */
 	private final static class FrechetDistribution extends AbstractEvaluator
 			implements ICDF, IDistribution, IPDF, IVariance {
 
@@ -1241,10 +1539,21 @@ public class StatisticsFunctions {
 	}
 
 	/**
-	 * Compute the covariance.
+	 * <pre>
+	 * Covariance(a, b)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Covariance">Covariance</a>
+	 * <blockquote>
+	 * <p>
+	 * computes the covariance between the equal-sized vectors <code>a</code> and <code>b</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
 	 * 
+	 * <pre>
+	 * &gt;&gt; Covariance({0.2, 0.3, 0.1}, {0.3, 0.3, -0.2})
+	 * 0.025
+	 * </pre>
 	 */
 	private final static class Covariance extends AbstractMatrix1Expr {
 
@@ -1330,6 +1639,30 @@ public class StatisticsFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * DiscreteUniformDistribution({min, max})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a discrete uniform distribution.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Discrete_uniform_distribution">Wikipedia - Discrete uniform
+	 * distribution</a></li>
+	 * </ul>
+	 * <h3>Related terms</h3>
+	 * <p>
+	 * <a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>, <a href="PDF.md">PDF</a>,
+	 * <a href="Quantile.md">Quantile</a>, <a href="StandardDeviation.md">StandardDeviation</a>,
+	 * <a href="Variance.md">Variance</a>
+	 * </p>
+	 */
 	private final static class DiscreteUniformDistribution extends AbstractEvaluator
 			implements IDiscreteDistribution, IVariance, ICDF, IPDF, IRandomVariate {
 
@@ -1432,6 +1765,29 @@ public class StatisticsFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * ErlangDistribution({k, lambda})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a Erlang distribution.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Erlang_distribution">Wikipedia - Erlang distribution</a></li>
+	 * </ul>
+	 * <h3>Related terms</h3>
+	 * <p>
+	 * <a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>, <a href="PDF.md">PDF</a>,
+	 * <a href="Quantile.md">Quantile</a>, <a href="StandardDeviation.md">StandardDeviation</a>,
+	 * <a href="Variance.md">Variance</a>
+	 * </p>
+	 */
 	private final static class ErlangDistribution extends AbstractEvaluator
 			implements ICDF, IDistribution, IPDF, IVariance {
 
@@ -1508,6 +1864,32 @@ public class StatisticsFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * Expectation(pure - function, data - set)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the expected value of the <code>pure-function</code> for the given <code>data-set</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Expected_value">Wikipedia - Expected value</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Expectation((#^3)&amp;, {a,b,c}) 
+	 * 1/3*(a^3+b^3+c^3) 
+	 * 
+	 * &gt;&gt; Expectation(2*x+3,Distributed(x,{a,b,c,d})) 
+	 * 1/4*(12+2*a+2*b+2*c+2*d)
+	 * </pre>
+	 */
 	private static class Expectation extends AbstractFunctionEvaluator {
 		// static final double CDF_NUMERIC_THRESHOLD = Config.DOUBLE_EPSILON;
 		//
@@ -1733,6 +2115,23 @@ public class StatisticsFunctions {
 	//
 	// }
 
+	/**
+	 * <pre>
+	 * Kurtosis(list)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * gives the Pearson measure of kurtosis for <code>list</code> (a measure of existing outliers).
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Kurtosis({1.1, 1.2, 1.4, 2.1, 2.4})
+	 * 1.42098
+	 * </pre>
+	 */
 	private final static class Kurtosis extends AbstractEvaluator {
 
 		@Override
@@ -1751,6 +2150,29 @@ public class StatisticsFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * LogNormalDistribution(m, s)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a log-normal distribution.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Log-normal_distribution">Wikipedia - Log-normal distribution</a></li>
+	 * </ul>
+	 * <h3>Related terms</h3>
+	 * <p>
+	 * <a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>, <a href="PDF.md">PDF</a>,
+	 * <a href="Quantile.md">Quantile</a>, <a href="StandardDeviation.md">StandardDeviation</a>,
+	 * <a href="Variance.md">Variance</a>
+	 * </p>
+	 */
 	private final static class LogNormalDistribution extends AbstractEvaluator
 			implements ICDF, IDistribution, IPDF, IVariance {
 
@@ -1839,8 +2261,62 @@ public class StatisticsFunctions {
 	}
 
 	/**
+	 * <pre>
+	 * Mean(list)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Arithmetic_mean">Arithmetic mean</a>
+	 * <blockquote>
+	 * <p>
+	 * returns the statistical mean of <code>list</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Mean">Wikipedia - Mean</a></li>
+	 * </ul>
+	 * <p>
+	 * <code>Mean</code> can be applied to the following distributions:
+	 * </p>
+	 * <blockquote>
+	 * <p>
+	 * <a href="BernoulliDistribution.md">BernoulliDistribution</a>,
+	 * <a href="BinomialDistribution.md">BinomialDistribution</a>,
+	 * <a href="DiscreteUniformDistribution.md">DiscreteUniformDistribution</a>,
+	 * <a href="ErlangDistribution.md">ErlangDistribution</a>,
+	 * <a href="ExponentialDistribution.md">ExponentialDistribution</a>,
+	 * <a href="FrechetDistribution.md">FrechetDistribution</a>, <a href="GammaDistribution.md">GammaDistribution</a>,
+	 * <a href="GeometricDistribution.md">GeometricDistribution</a>,
+	 * <a href="GumbelDistribution.md">GumbelDistribution</a>,
+	 * <a href="HypergeometricDistribution.md">HypergeometricDistribution</a>,
+	 * <a href="LogNormalDistribution.md">LogNormalDistribution</a>,
+	 * <a href="NakagamiDistribution.md">NakagamiDistribution</a>,
+	 * <a href="NormalDistribution.md">NormalDistribution</a>, <a href="PoissonDistribution.md">PoissonDistribution</a>,
+	 * <a href="StudentTDistribution.md">StudentTDistribution</a>,
+	 * <a href="WeibullDistribution.md">WeibullDistribution</a>
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Mean({26, 64, 36})
+	 * 42
+	 * 
+	 * &gt;&gt; Mean({1, 1, 2, 3, 5, 8})
+	 * 10/3
+	 * 
+	 * &gt;&gt; Mean({a, b})
+	 * 1/2*(a+b)
+	 * </pre>
+	 * <p>
+	 * The <a href="https://en.wikipedia.org/wiki/Mean">mean</a> of the normal distribution is
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Mean(NormalDistribution(m, s))
+	 * m
+	 * </pre>
 	 */
 	private final static class Mean extends AbstractTrigArg1 {
 
@@ -1909,8 +2385,67 @@ public class StatisticsFunctions {
 	}
 
 	/**
+	 * <pre>
+	 * Median(list)
+	 * </pre>
 	 * 
-	 * See <a href="http://en.wikipedia.org/wiki/Median">Median</a>
+	 * <blockquote>
+	 * <p>
+	 * returns the median of <code>list</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Median">Wikipedia - Median</a></li>
+	 * </ul>
+	 * <p>
+	 * <code>Median</code> can be applied to the following distributions:
+	 * </p>
+	 * <blockquote>
+	 * <p>
+	 * <a href="BernoulliDistribution.md">BernoulliDistribution</a>,
+	 * <a href="BinomialDistribution.md">BinomialDistribution</a>,
+	 * <a href="DiscreteUniformDistribution.md">DiscreteUniformDistribution</a>,
+	 * <a href="ErlangDistribution.md">ErlangDistribution</a>,
+	 * <a href="ExponentialDistribution.md">ExponentialDistribution</a>,
+	 * <a href="FrechetDistribution.md">FrechetDistribution</a>, <a href="GammaDistribution.md">GammaDistribution</a>,
+	 * <a href="GeometricDistribution.md">GeometricDistribution</a>,
+	 * <a href="GumbelDistribution.md">GumbelDistribution</a>,
+	 * <a href="HypergeometricDistribution.md">HypergeometricDistribution</a>,
+	 * <a href="LogNormalDistribution.md">LogNormalDistribution</a>,
+	 * <a href="NakagamiDistribution.md">NakagamiDistribution</a>,
+	 * <a href="NormalDistribution.md">NormalDistribution</a>,
+	 * <a href="StudentTDistribution.md">StudentTDistribution</a>,
+	 * <a href="WeibullDistribution.md">WeibullDistribution</a>
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Median({26, 64, 36})
+	 * 36
+	 * </pre>
+	 * <p>
+	 * For lists with an even number of elements, Median returns the mean of the two middle values:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Median({-11, 38, 501, 1183})
+	 * 539/2
+	 * </pre>
+	 * <p>
+	 * Passing a matrix returns the medians of the respective columns:
+	 * </p>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Median({{100, 1, 10, 50}, {-1, 1, -2, 2}})
+	 * {99/2,1,4,26}
+	 * 
+	 * &gt;&gt; Median(LogNormalDistribution(m,s))
+	 * E^m
+	 * </pre>
 	 */
 	private final static class Median extends AbstractTrigArg1 {
 
@@ -2229,6 +2764,32 @@ public class StatisticsFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * Probability(pure - function, data - set)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the probability of the <code>pure-function</code> for the given <code>data-set</code>.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Probability">Wikipedia - Probability</a></li>
+	 * </ul>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Probability(#^2 + 3*# &lt; 11 &amp;, {-0.21848,1.67503,0.78687,4.9887,7.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223})
+	 * 7/10
+	 * 
+	 * &gt;&gt; Probability(x^2 + 3*x &lt; 11,Distributed(x,{-0.21848,1.67503,0.78687,0.9887,2.06587,-1.27856,0.79225,-0.01164,2.48227,-0.07223})) 
+	 * 9/10
+	 * </pre>
+	 */
 	private static class Probability extends AbstractFunctionEvaluator {
 
 		@Override
@@ -2290,6 +2851,67 @@ public class StatisticsFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * PDF(distribution, value)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the probability density function of <code>value</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * PDF(distribution, {list} )
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns the probability density function of the values of list.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Probability_density_function">Wikipedia - probability density
+	 * function</a></li>
+	 * </ul>
+	 * <p>
+	 * <code>PDF</code> can be applied to the following distributions:
+	 * </p>
+	 * <blockquote>
+	 * <p>
+	 * <a href="BernoulliDistribution.md">BernoulliDistribution</a>,
+	 * <a href="BinomialDistribution.md">BinomialDistribution</a>,
+	 * <a href="DiscreteUniformDistribution.md">DiscreteUniformDistribution</a>,
+	 * <a href="ErlangDistribution.md">ErlangDistribution</a>,
+	 * <a href="ExponentialDistribution.md">ExponentialDistribution</a>,
+	 * <a href="FrechetDistribution.md">FrechetDistribution</a>, <a href="GammaDistribution.md">GammaDistribution</a>,
+	 * <a href="GeometricDistribution.md">GeometricDistribution</a>,
+	 * <a href="GumbelDistribution.md">GumbelDistribution</a>,
+	 * <a href="HypergeometricDistribution.md">HypergeometricDistribution</a>,
+	 * <a href="LogNormalDistribution.md">LogNormalDistribution</a>,
+	 * <a href="NakagamiDistribution.md">NakagamiDistribution</a>,
+	 * <a href="NormalDistribution.md">NormalDistribution</a>, <a href="PoissonDistribution.md">PoissonDistribution</a>,
+	 * <a href="StudentTDistribution.md">StudentTDistribution</a>,
+	 * <a href="WeibullDistribution.md">WeibullDistribution</a>
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; PDF(NormalDistribution(n, m)) 
+	 * 1/(Sqrt(2)*E^((-n+#1)^2/(2*m^2))*m*Sqrt(Pi))&amp;
+	 * 
+	 * &gt;&gt; PDF(GumbelDistribution(n, m),k)
+	 * E^(-E^((k-n)/m)+(k-n)/m)/m
+	 * 
+	 * &gt;&gt; Table(PDF(NormalDistribution( ), x), {m, {-1, 1, 2}},{x, {-1, 1, 2}})//N  
+	 * {{0.24197,0.24197,0.05399},{0.24197,0.24197,0.05399},{0.24197,0.24197,0.05399}}
+	 * </pre>
+	 */
 	private static class PDF extends AbstractFunctionEvaluator {
 
 		@Override
@@ -2329,6 +2951,29 @@ public class StatisticsFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * PoissonDistribution(m)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a Poisson distribution.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Poisson_distribution">Wikipedia - Poisson distribution</a></li>
+	 * </ul>
+	 * <h3>Related terms</h3>
+	 * <p>
+	 * <a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>, <a href="PDF.md">PDF</a>,
+	 * <a href="Quantile.md">Quantile</a>, <a href="StandardDeviation.md">StandardDeviation</a>,
+	 * <a href="Variance.md">Variance</a>
+	 * </p>
+	 */
 	private final static class PoissonDistribution extends AbstractEvaluator
 			implements ICDF, IDiscreteDistribution, IPDF, IVariance, IRandomVariate {
 
@@ -2636,6 +3281,49 @@ public class StatisticsFunctions {
 		}
 	}
 
+	/**
+	 * <pre>
+	 * Rescale(list)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>Rescale(list,{Min(list), Max(list)})</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Rescale(x,{xmin, xmax})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>x/(xmax-xmin)-xmin/(xmax-xmin)</code>.
+	 * </p>
+	 * </blockquote>
+	 * 
+	 * <pre>
+	 * Rescale(x,{xmin, xmax},{ymin, ymax})
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns <code>(x*(ymax-ymin))/(xmax-xmin)-(xmin*ymax-xmax*ymin)/(xmax-xmin)</code>.
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Rescale({a,b})
+	 * {a/(Max(a,b)-Min(a,b))-Min(a,b)/(Max(a,b)-Min(a,b)),b/(Max(a,b)-Min(a,b))-Min(a,b)/(Max(a,b)-Min(a,b))}
+	 * 
+	 * &gt;&gt; Rescale({1, 2, 3, 4, 5}, {-100, 100})
+	 * {101/200,51/100,103/200,13/25,21/40}
+	 * 
+	 * &gt;&gt; Rescale(x,{xmin, xmax},{ymin, ymax})
+	 * (x*(ymax-ymin))/(xmax-xmin)-(xmin*ymax-xmax*ymin)/(xmax-xmin)
+	 * </pre>
+	 */
 	private final static class Rescale extends AbstractEvaluator {
 
 		@Override
@@ -2720,6 +3408,61 @@ public class StatisticsFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * StandardDeviation(list)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * computes the standard deviation of <code>list</code>. <code>list</code> may consist of numerical values or
+	 * symbols. Numerical values may be real or complex.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * <code>StandardDeviation({{a1, a2, ...}, {b1, b2, ...}, ...})</code> will yield
+	 * <code>{StandardDeviation({a1, b1, ...}, StandardDeviation({a2, b2, ...}), ...}</code>.
+	 * </p>
+	 * <p>
+	 * <code>StandardDeviation</code> can be applied to the following distributions:
+	 * </p>
+	 * <blockquote>
+	 * <p>
+	 * <a href="BernoulliDistribution.md">BernoulliDistribution</a>,
+	 * <a href="BinomialDistribution.md">BinomialDistribution</a>,
+	 * <a href="DiscreteUniformDistribution.md">DiscreteUniformDistribution</a>,
+	 * <a href="ErlangDistribution.md">ErlangDistribution</a>,
+	 * <a href="ExponentialDistribution.md">ExponentialDistribution</a>,
+	 * <a href="FrechetDistribution.md">FrechetDistribution</a>, <a href="GammaDistribution.md">GammaDistribution</a>,
+	 * <a href="GeometricDistribution.md">GeometricDistribution</a>,
+	 * <a href="GumbelDistribution.md">GumbelDistribution</a>,
+	 * <a href="HypergeometricDistribution.md">HypergeometricDistribution</a>,
+	 * <a href="LogNormalDistribution.md">LogNormalDistribution</a>,
+	 * <a href="NakagamiDistribution.md">NakagamiDistribution</a>,
+	 * <a href="NormalDistribution.md">NormalDistribution</a>, <a href="PoissonDistribution.md">PoissonDistribution</a>,
+	 * <a href="StudentTDistribution.md">StudentTDistribution</a>,
+	 * <a href="WeibullDistribution.md">WeibullDistribution</a>
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; StandardDeviation({1, 2, 3})
+	 * 1
+	 * 
+	 * &gt;&gt; StandardDeviation({7, -5, 101, 100})
+	 * Sqrt(13297)/2
+	 * 
+	 * &gt;&gt; StandardDeviation({a, a})  
+	 * 0
+	 * 
+	 * &gt;&gt; StandardDeviation({{1, 10}, {-1, 20}})
+	 * {Sqrt(2),5*Sqrt(2)}
+	 * 
+	 * &gt;&gt; StandardDeviation(LogNormalDistribution(0, 1))
+	 * Sqrt((-1+E)*E)
+	 * </pre>
+	 */
 	private final static class StandardDeviation extends AbstractFunctionEvaluator implements StandardDeviationRules {
 
 		@Override
@@ -2867,7 +3610,59 @@ public class StatisticsFunctions {
 	}
 
 	/**
-	 * Compute the variance for a list of elements
+	 * <pre>
+	 * Variance(list)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * computes the variance of <code>list</code>. <code>list</code> may consist of numerical values or symbols.
+	 * Numerical values may be real or complex.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * <code>Variance({{a1, a2, ...}, {b1, b2, ...}, ...})</code> will yield
+	 * <code>{Variance({a1, b1, ...}, Variance({a2, b2, ...}), ...}</code>.
+	 * </p>
+	 * <p>
+	 * <code>Variance</code> can be applied to the following distributions:
+	 * </p>
+	 * <blockquote>
+	 * <p>
+	 * <a href="BernoulliDistribution.md">BernoulliDistribution</a>,
+	 * <a href="BinomialDistribution.md">BinomialDistribution</a>,
+	 * <a href="DiscreteUniformDistribution.md">DiscreteUniformDistribution</a>,
+	 * <a href="ErlangDistribution.md">ErlangDistribution</a>,
+	 * <a href="ExponentialDistribution.md">ExponentialDistribution</a>,
+	 * <a href="FrechetDistribution.md">FrechetDistribution</a>, <a href="GammaDistribution.md">GammaDistribution</a>,
+	 * <a href="GeometricDistribution.md">GeometricDistribution</a>,
+	 * <a href="GumbelDistribution.md">GumbelDistribution</a>,
+	 * <a href="HypergeometricDistribution.md">HypergeometricDistribution</a>,
+	 * <a href="LogNormalDistribution.md">LogNormalDistribution</a>,
+	 * <a href="NakagamiDistribution.md">NakagamiDistribution</a>,
+	 * <a href="NormalDistribution.md">NormalDistribution</a>, <a href="PoissonDistribution.md">PoissonDistribution</a>,
+	 * <a href="StudentTDistribution.md">StudentTDistribution</a>,
+	 * <a href="WeibullDistribution.md">WeibullDistribution</a>
+	 * </p>
+	 * </blockquote>
+	 * <h3>Examples</h3>
+	 * 
+	 * <pre>
+	 * &gt;&gt; Variance({1, 2, 3})
+	 * 1
+	 * 
+	 * &gt;&gt; Variance({7, -5, 101, 3})
+	 * 7475/3
+	 * 
+	 * &gt;&gt; Variance({1 + 2*I, 3 - 10*I})
+	 * 74
+	 * 
+	 * &gt;&gt; Variance({a, a})
+	 * 0
+	 * 
+	 * &gt;&gt; Variance({{1, 3, 5}, {4, 10, 100}})
+	 * {9/2,49/2,9025/2}
+	 * </pre>
 	 */
 	private final static class Variance extends AbstractFunctionEvaluator {
 
@@ -2932,6 +3727,29 @@ public class StatisticsFunctions {
 
 	}
 
+	/**
+	 * <pre>
+	 * WeibullDistribution(a, b)
+	 * </pre>
+	 * 
+	 * <blockquote>
+	 * <p>
+	 * returns a Weibull distribution.
+	 * </p>
+	 * </blockquote>
+	 * <p>
+	 * See:<br />
+	 * </p>
+	 * <ul>
+	 * <li><a href="https://en.wikipedia.org/wiki/Weibull_distribution">Wikipedia - Weibull distribution</a></li>
+	 * </ul>
+	 * <h3>Related terms</h3>
+	 * <p>
+	 * <a href="CDF.md">CDF</a>, <a href="Mean.md">Mean</a>, <a href="Mean.md">Median</a>, <a href="PDF.md">PDF</a>,
+	 * <a href="Quantile.md">Quantile</a>, <a href="StandardDeviation.md">StandardDeviation</a>,
+	 * <a href="Variance.md">Variance</a>
+	 * </p>
+	 */
 	private final static class WeibullDistribution extends AbstractEvaluator
 			implements ICDF, IDistribution, IPDF, IVariance {
 
