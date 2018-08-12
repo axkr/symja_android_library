@@ -4196,6 +4196,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testIf() {
+		check("If(FreeQ(a+b*x,x),1,a+b*x)", //
+				"a+b*x");
 		check("If(1 == k, itstrue, itsfalse)", "If(1==k,itstrue,itsfalse)");
 		check("If(1<2, a, b)", "a");
 		check("If(1<2, a)", "a");

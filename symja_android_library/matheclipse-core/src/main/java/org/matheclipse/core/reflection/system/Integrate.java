@@ -158,7 +158,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 			if (arg1.isList() && arg2.isSymbol()) {
 				return ((IAST) arg1).mapThread(F.Integrate(null, arg2), 1);
 			}
-			
+
 			final IASTAppendable ast = holdallAST.setAtClone(1, arg1);
 			ast.set(2, arg2);
 			// if (ast.arg2().isSymbol()) {
@@ -1187,6 +1187,13 @@ public class Integrate extends AbstractFunctionEvaluator {
 		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules138.RULES);
 		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules139.RULES);
 
+		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules140.RULES);
+		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules141.RULES);
+		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules142.RULES);
+		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules143.RULES);
+		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules144.RULES);
+		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules145.RULES);
+
 		// org.matheclipse.integrate.rubi45.UtilityFunctions.init();
 	}
 
@@ -1208,8 +1215,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 		ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions4.RULES;
 		ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions5.RULES;
 		ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions6.RULES;
+
 		// ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions7.RULES;
 		// ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions8.RULES;
+
 		org.matheclipse.core.integrate.rubi45.UtilityFunctions.init();
 		return ast;
 	}

@@ -1607,6 +1607,10 @@ public class UtilityFunctionCtors {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "SubstAux"), a0, a1, a2);
 	}
 
+	public static IAST SubstAux(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
+		return quaternary($s(INTEGRATE_PREFIX + "SubstAux"), a0, a1, a2, a3);
+	}
+	
 	public static IAST SubstFor(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "SubstFor"), a0, a1, a2);
 	}
