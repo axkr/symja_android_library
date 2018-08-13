@@ -32,6 +32,7 @@ import org.matheclipse.core.expression.BuiltInSymbol;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
+import org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -1022,7 +1023,6 @@ public class EvalEngine implements Serializable {
 			}
 			RecursionLimitExceeded.throwIt(fRecursionLimit, expr);
 		}
-
 		try {
 			IExpr result, temp;
 			fRecursionCounter++;

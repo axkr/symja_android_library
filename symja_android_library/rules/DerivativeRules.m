@@ -40,7 +40,9 @@
   Tan->Sec(#)^2,
   Tanh->Sech(#)^(2),
   Sec->Sec(#)*Tan(#),
-  Sech->(-1)*Tanh(#)*Sech(#)
+  Sech->(-1)*Tanh(#)*Sech(#),
+  SinIntegral->Sinc(#),
+  CosIntegral->Cos(#)/#
 },
 {
   ArcSin->#*(1-#^2)^(-3/2),

@@ -87,11 +87,14 @@ public class Pattern extends Blank {
 			// the ast contains a pattern with default value (i.e. "x_." or
 			// "x_:")
 			result[0] = IAST.CONTAINS_DEFAULT_PATTERN;
-			result[1] = 2;
+			result[1] = 3;
 		} else {
 			// the ast contains a pattern without default value (i.e. "x_")
 			result[0] = IAST.CONTAINS_PATTERN;
-			result[1] = 5;
+			result[1] = 6;
+		}
+		if (fCondition!=null) {
+			result[1] += 2;
 		}
 		return result;
 	}

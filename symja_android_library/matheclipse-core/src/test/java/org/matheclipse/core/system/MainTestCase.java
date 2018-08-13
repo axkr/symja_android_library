@@ -1522,14 +1522,17 @@ public class MainTestCase extends AbstractTestCase {
 	public void testSystem171a() {
 		check("Integrate((x-2)^(-3),x)", "-1/(2*(2-x)^2)");
 		check("D(-1/(2*(2-x)^2),x)", "-1/(2-x)^3");
-		check("Integrate(Log(x)*x^2,x)", "-1/9*x^3*(1-3*Log(x))");
-		check("Integrate((x^2+1)*Log(x),x)", "-x-1/9*x^3*(1-3*Log(x))+x*Log(x)");
+		check("Integrate(Log(x)*x^2,x)", //
+				"-x^3/9+1/3*x^3*Log(x)");
+		check("Integrate((x^2+1)*Log(x),x)", //
+				"-x-x^3/9+x*Log(x)+1/3*x^3*Log(x)");
 		check("Simplify(D(ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1),x))", "x/(1+x^3)");
 
 		check("Integrate(x/(x^3+1),x)", "ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)-Log(1+x)/3+Log(1-x+x^2)/6");// "ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1)");
 		// check("Simplify(D(ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)+1/6*Log(x^2-x+1)-1/3*Log(x+1),x))",
 		// "x*(x^3+1)^(-1)");
-		check("Integrate(x*Log(x),x)", "-1/4*x^2*(1-2*Log(x))");
+		check("Integrate(x*Log(x),x)", //
+				"-x^2/4+1/2*x^2*Log(x)");
 		check("D(-1/2*Log(x)*x^2+3/4*x^2+x*(x*Log(x)-x),x)", "x*Log(x)");
 		check("integrate(x*Exp(-x^2),x)", "-1/(2*E^x^2)");
 		check("D(-Gamma(1,x^2)/2, x)", "x/E^x^2");
@@ -1542,7 +1545,8 @@ public class MainTestCase extends AbstractTestCase {
 		check("Integrate(x^10,x)", "x^11/11");
 		check("Simplify(1/2*(2*x+2))", "1+x");
 		check("Simplify(1/2*(2*x+2)*(1/2)^(1/2))", "(1+x)/Sqrt(2)");
-		check("Simplify(Integrate((8*x+1)/(x^2+x+1)^2,x))", "(-5-2*x)/(1+x+x^2)+(-4*ArcTan((1+2*x)/Sqrt(3)))/Sqrt(3)");
+		check("Simplify(Integrate((8*x+1)/(x^2+x+1)^2,x))", //
+				"-4/(1+x+x^2)-8/3*(1+2*x)*Hypergeometric2F1(2,1/2,3/2,-(1+2*x)^2/3)");
 
 		check("Apart(1/(x^3+1))", "1/(3+3*x)-(-2+x)/(3-3*x+3*x^2)");
 		check("Integrate(1/(x^5+x-7),x)", "Integrate(1/(-7+x+x^5),x)");
@@ -1561,31 +1565,49 @@ public class MainTestCase extends AbstractTestCase {
 		// "ArcTan((2*x-1)*3^(-1/2))*3^(-1/2)-1/6*Log(x^2-x+1)");
 		check("Integrate(1/3*(2-x)*(x^2-x+1)^(-1)+1/3*(x+1)^(-1),x)",
 				"ArcTan((-1+2*x)/Sqrt(3))/Sqrt(3)+Log(1+x)/3-Log(1-x+x^2)/6");
-		check("Integrate(E^x*(2-x^2),x)", "2*E^x-2*E^x*(1-x+x^2/2)");
-		check("D(2*E^x-Gamma(3,-x),x)", "2*E^x-2*E^x*(-1+x)-2*E^x*(1-x+x^2/2)");
-		check("Integrate((x^2+1)*Log(x),x)", "-x-1/9*x^3*(1-3*Log(x))+x*Log(x)");
+		check("Integrate(E^x*(2-x^2),x)", //
+				"2*E^x-E^x*(2-2*x+x^2)");
+		check("D(2*E^x-Gamma(3,-x),x)", //
+				"2*E^x-2*E^x*(-1+x)-2*E^x*(1-x+x^2/2)");
+		check("Integrate((x^2+1)*Log(x),x)", //
+				"-x-x^3/9+x*Log(x)+1/3*x^3*Log(x)");
 		check("D(-x-Gamma(2,-3*Log(x))/9+x*Log(x),x)", "x^2/3-1/3*x^2*(1-3*Log(x))+Log(x)");
 
 		check("Apart(2*x^2/(x^3+1))", "2/(3+3*x)+(2*(-1+2*x))/(3-3*x+3*x^2)");
 
 		check("Integrate(2*x^2/(x^3+1),x)", "2*(Log(3+3*x)/3+Log(1-x+x^2)/3)");
-		check("Integrate(Sin(x)^3,x)", "-Cos(x)+Cos(x)^3/3");
+		check("Integrate(Sin(x)^3,x)", //
+				"-2/3*Cos(x)-1/3*Cos(x)*Sin(x)^2");
 
-		check("Integrate(Cos(2*x)^3,x)", "1/2*(Sin(2*x)-Sin(2*x)^3/3)");
-		check("Integrate(x,x)", "x^2/2");
-		check("Integrate(2*x,x)", "x^2");
-		check("Integrate(h(x),x)", "Integrate(h(x),x)");
-		check("Integrate(f(x)+g(x)+h(x),x)", "Integrate(f(x),x)+Integrate(g(x),x)+Integrate(h(x),x)");
-		check("Integrate(Sin(x),x)", "-Cos(x)");
-		check("Integrate(Sin(10*x),x)", "-Cos(10*x)/10");
-		check("Integrate(Sin(Pi+10*x),x)", "Cos(10*x)/10");
-		check("Integrate(E^(a*x),x)", "E^(a*x)/a");
-		check("Integrate(x*E^(a*x),x)", "-E^(a*x)/a^2+(E^(a*x)*x)/a");
+		check("Integrate(Cos(2*x)^3,x)", //
+				"Sin(2*x)/3+1/6*Cos(2*x)^2*Sin(2*x)");
+		check("Integrate(x,x)", //
+				"x^2/2");
+		check("Integrate(2*x,x)",//
+				"x^2");
+		check("Integrate(h(x),x)", //
+				"Integrate(h(x),x)");
+		check("Integrate(f(x)+g(x)+h(x),x)", //
+				"Integrate(f(x),x)+Integrate(g(x),x)+Integrate(h(x),x)");
+		check("Integrate(Sin(x),x)",//
+				"-Cos(x)");
+		check("Integrate(Sin(10*x),x)", //
+				"-Cos(10*x)/10");
+		check("Integrate(Sin(Pi+10*x),x)", //
+				"Cos(10*x)/10");
+		check("Integrate(E^(a*x),x)",//
+				"E^(a*x)/a");
+		check("Integrate(x*E^(a*x),x)", //
+				"(-E^(a*x)*(1-a*x))/a^2");
 		check("Integrate(x*E^x,x)", "-E^x+E^x*x");
-		check("Integrate(x^2*E^x,x)", "2*E^x*(1-x+x^2/2)");
-		check("Integrate(x^2*E^(a*x),x)", "(2*E^(a*x)*(1-a*x+1/2*a^2*x^2))/a^3");
-		check("Integrate(x^3*E^(a*x),x)", "(-6*E^(a*x)*(1-a*x+1/2*a^2*x^2-1/6*a^3*x^3))/a^4");
-		check("(-1.0)/48", "-0.02083");
+		check("Integrate(x^2*E^x,x)", //
+				"E^x*(2-2*x+x^2)");
+		check("Integrate(x^2*E^(a*x),x)", //
+				"(E^(a*x)*(2-2*a*x+a^2*x^2))/a^3");
+		check("Integrate(x^3*E^(a*x),x)", //
+				"(-E^(a*x)*(6-6*a*x+3*a^2*x^2-a^3*x^3))/a^4");
+		check("(-1.0)/48", //
+				"-0.02083");
 
 		// to low max points
 		checkNumeric("NIntegrate(1/(x^2), {x, 1, 1000}, Method->LegendreGauss, MaxPoints->7)", //
@@ -1611,15 +1633,16 @@ public class MainTestCase extends AbstractTestCase {
 
 	public void testSystem172() {
 		check("Csc(b*x)^0", "1");
-		check("Integrate(Cos(x*(a+b)),x)", "Sin((a+b)*x)/(a+b)");
-		check("Integrate(Cos(a*x)*Sin(b*x),x)", "-Cos((-a+b)*x)/(2*(-a+b))-Cos((a+b)*x)/(2*(a+b))");
+		check("Integrate(Cos(x*(a+b)),x)", //
+				"Sin((a+b)*x)/(a+b)");
+		check("Integrate(Cos(a*x)*Sin(b*x),x)", //
+				"Cos((a-b)*x)/(2*(a-b))-Cos((a+b)*x)/(2*(a+b))");
 		check("Integrate(Cos(a*x)*Sin(b*x)^2,x)",
 				"Sin(a*x)/(2*a)-Sin((a-2*b)*x)/(4*(a-2*b))-Sin((a+2*b)*x)/(4*(a+2*b))");
 		check("Integrate(Cos(a*x)^2*Sin(b*x),x)",
-				"-Cos(b*x)/(2*b)-Cos((-2*a+b)*x)/(4*(-2*a+b))-Cos((2*a+b)*x)/(4*(2*a+b))");
+				"Cos((2*a-b)*x)/(4*(2*a-b))-Cos(b*x)/(2*b)-Cos((2*a+b)*x)/(4*(2*a+b))");
 		check("Integrate(Cos(b*x)^2*Sin(a*x)^2,x)",
-				"x/4-Sin(2*a*x)/(8*a)-Sin((2*a-2*b)*x)/(8*(2*a-2*b))+Sin(2*b*x)/(8*b)-Sin((2*a+2*b)*x)/(\n"
-						+ "8*(2*a+2*b))");
+				"x/4-Sin(2*a*x)/(8*a)-Sin(2*(a-b)*x)/(16*(a-b))+Sin(2*b*x)/(8*b)-Sin(2*(a+b)*x)/(\n" + "16*(a+b))");
 	}
 
 	public void testSystem173() {

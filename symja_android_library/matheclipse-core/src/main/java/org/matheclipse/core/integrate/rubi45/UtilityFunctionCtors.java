@@ -49,7 +49,12 @@ public class UtilityFunctionCtors {
 	public final static ISymbol X = initFinalHiddenSymbol("X");
 	public final static ISymbol Y = initFinalHiddenSymbol("Y");
 	public final static ISymbol Z = initFinalHiddenSymbol("Z");
-
+	
+	public static ISymbol IntegerPowerQ = org.matheclipse.core.expression.F
+	.initFinalHiddenSymbol(INTEGRATE_PREFIX + "IntegerPowerQ");
+	public static ISymbol FractionalPowerQ = org.matheclipse.core.expression.F
+			.initFinalHiddenSymbol(INTEGRATE_PREFIX + "FractionalPowerQ");
+	
 	public static ISymbol AbortRubi = org.matheclipse.core.expression.F
 			.initFinalHiddenSymbol(INTEGRATE_PREFIX + "AbortRubi");
 
@@ -105,8 +110,8 @@ public class UtilityFunctionCtors {
 		return binaryAST2($s(INTEGRATE_PREFIX + "IntHide"), a0, a1);
 	}
 
-	public static IAST IntLinearcQ(final IExpr... a) {
-		return ast(a, $s(INTEGRATE_PREFIX + "IntLinearcQ"));
+	public static IAST IntLinearQ(final IExpr... a) {
+		return ast(a, $s(INTEGRATE_PREFIX + "IntLinearQ"));
 	}
 
 	public static IAST IntQuadraticQ(final IExpr... a) {
@@ -207,6 +212,10 @@ public class UtilityFunctionCtors {
 
 	public static IAST CancelCommonFactors(final IExpr a0, final IExpr a1) {
 		return binaryAST2($s(INTEGRATE_PREFIX + "CancelCommonFactors"), a0, a1);
+	}
+
+	public static IAST CannotIntegrate(final IExpr a0, final IExpr a1) {
+		return binaryAST2($s(INTEGRATE_PREFIX + "CannotIntegrate"), a0, a1);
 	}
 
 	public static IAST CollectReciprocals(final IExpr a0, final IExpr a1) {
@@ -327,6 +336,10 @@ public class UtilityFunctionCtors {
 
 	public static IAST EulerIntegrandQ(final IExpr a0, final IExpr a1) {
 		return binaryAST2($s(INTEGRATE_PREFIX + "EulerIntegrandQ"), a0, a1);
+	}
+
+	public static IAST EveryQ(final IExpr a0, final IExpr a1) {
+		return binaryAST2($s(INTEGRATE_PREFIX + "EveryQ"), a0, a1);
 	}
 
 	public static IAST EvenQuotientQ(final IExpr a0, final IExpr a1) {
@@ -502,7 +515,7 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST FractionalPowerQ(final IExpr a0) {
-		return unaryAST1($s(INTEGRATE_PREFIX + "FractionalPowerQ"), a0);
+		return unaryAST1(FractionalPowerQ, a0);
 	}
 
 	public static IAST FractionalPowerSubexpressionQ(final IExpr a0, final IExpr a1, final IExpr a2) {
@@ -673,15 +686,15 @@ public class UtilityFunctionCtors {
 	public static IAST GtQ(final IExpr a0, final IExpr a1) {
 		return binaryAST2($s(INTEGRATE_PREFIX + "GtQ"), a0, a1);
 	}
- 
+
 	public static IAST GtQ(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "GtQ"), a0, a1, a2);
 	}
-	
+
 	public static IAST GeQ(final IExpr a0, final IExpr a1) {
 		return binaryAST2($s(INTEGRATE_PREFIX + "GeQ"), a0, a1);
 	}
-	
+
 	public static IAST GeQ(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "GeQ"), a0, a1, a2);
 	}
@@ -736,6 +749,14 @@ public class UtilityFunctionCtors {
 
 	public static IAST GensymSubst(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "GensymSubst"), a0, a1, a2);
+	}
+
+	public static IAST HalfIntegerQ(final IExpr a0) {
+		return unaryAST1($s(INTEGRATE_PREFIX + "HalfIntegerQ"), a0);
+	}
+
+	public static IAST HalfIntegerQ(final IExpr a0, final IExpr a1) {
+		return binaryAST2($s(INTEGRATE_PREFIX + "HalfIntegerQ"), a0, a1);
 	}
 
 	public static IAST HeldFormQ(final IExpr a0) {
@@ -815,7 +836,7 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST IntegerPowerQ(final IExpr a0) {
-		return unaryAST1($s(INTEGRATE_PREFIX + "IntegerPowerQ"), a0);
+		return unaryAST1(IntegerPowerQ, a0);
 	}
 
 	public static IAST IntegerQuotientQ(final IExpr a0, final IExpr a1) {
@@ -824,6 +845,14 @@ public class UtilityFunctionCtors {
 
 	public static IAST IntegersQ(final IExpr... a) {
 		return ast(a, $s(INTEGRATE_PREFIX + "IntegersQ"));
+	}
+
+	public static IAST Integral(final IExpr a0, final IExpr a1) {
+		return binaryAST2($s(INTEGRATE_PREFIX + "Integral"), a0, a1);
+	}
+
+	public static IAST IntegralFreeQ(final IExpr a0) {
+		return unaryAST1($s(INTEGRATE_PREFIX + "IntegralFreeQ"), a0);
 	}
 
 	public static IAST InverseFunctionFreeQ(final IExpr a0, final IExpr a1) {
@@ -893,11 +922,11 @@ public class UtilityFunctionCtors {
 	public static IAST LtQ(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "LtQ"), a0, a1, a2);
 	}
-	
+
 	public static IAST LeQ(final IExpr a0, final IExpr a1) {
 		return binaryAST2($s(INTEGRATE_PREFIX + "LeQ"), a0, a1);
 	}
-	
+
 	public static IAST LeQ(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "LeQ"), a0, a1, a2);
 	}
@@ -1033,7 +1062,7 @@ public class UtilityFunctionCtors {
 	public static IAST NegQ(final IExpr a0, final IExpr a1) {
 		return binaryAST2($s(INTEGRATE_PREFIX + "NegQ"), a0, a1);
 	}
-	
+
 	public static IAST NegSumBaseQ(final IExpr a0) {
 		return unaryAST1($s(INTEGRATE_PREFIX + "NegSumBaseQ"), a0);
 	}
@@ -1196,6 +1225,10 @@ public class UtilityFunctionCtors {
 
 	public static IAST PiecewiseLinearQ(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "PiecewiseLinearQ"), a0, a1, a2);
+	}
+
+	public static IAST PolyGCD(final IExpr a0, final IExpr a1, final IExpr a2) {
+		return ternaryAST3($s(INTEGRATE_PREFIX + "PolyGCD"), a0, a1, a2);
 	}
 
 	public static IAST PolyQ(final IExpr a0, final IExpr a1) {
@@ -1374,6 +1407,10 @@ public class UtilityFunctionCtors {
 		return binaryAST2($s(INTEGRATE_PREFIX + "QuotientOfLinearsQ"), a0, a1);
 	}
 
+	public static IAST QuadraticProductQ(final IExpr a0, final IExpr a1) {
+		return binaryAST2($s(INTEGRATE_PREFIX + "QuadraticProductQ"), a0, a1);
+	}
+
 	public static IAST RationalFunctionExpand(final IExpr a0, final IExpr a1) {
 		return binaryAST2($s(INTEGRATE_PREFIX + "RationalFunctionExpand"), a0, a1);
 	}
@@ -1398,9 +1435,9 @@ public class UtilityFunctionCtors {
 		return ast(a, $s(INTEGRATE_PREFIX + "RationalQ"));
 	}
 
-	public static IAST RealNumericQ(final IExpr a0) {
-		return unaryAST1($s(INTEGRATE_PREFIX + "RealNumericQ"), a0);
-	}
+//	public static IAST RealNumericQ(final IExpr a0) {
+//		return unaryAST1($s(INTEGRATE_PREFIX + "RealNumericQ"), a0);
+//	}
 
 	public static IAST RealQ(final IExpr a0) {
 		return unaryAST1($s(INTEGRATE_PREFIX + "RealQ"), a0);
@@ -1610,7 +1647,7 @@ public class UtilityFunctionCtors {
 	public static IAST SubstAux(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
 		return quaternary($s(INTEGRATE_PREFIX + "SubstAux"), a0, a1, a2, a3);
 	}
-	
+
 	public static IAST SubstFor(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3($s(INTEGRATE_PREFIX + "SubstFor"), a0, a1, a2);
 	}
@@ -1771,6 +1808,10 @@ public class UtilityFunctionCtors {
 
 	public static IAST UnifyTerms(final IExpr a0, final IExpr a1) {
 		return binaryAST2($s(INTEGRATE_PREFIX + "UnifyTerms"), a0, a1);
+	}
+
+	public static IAST Unintegrable(final IExpr a0, final IExpr a1) {
+		return binaryAST2($s(INTEGRATE_PREFIX + "Unintegrable"), a0, a1);
 	}
 
 	public static IAST UnifyInertTrigFunction(final IExpr a0, final IExpr a1) {

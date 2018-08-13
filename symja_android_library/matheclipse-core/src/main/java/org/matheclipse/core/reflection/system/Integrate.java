@@ -1181,18 +1181,18 @@ public class Integrate extends AbstractFunctionEvaluator {
 		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules132.RULES);
 		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules133.RULES);
 		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules134.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules135.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules136.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules137.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules138.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules139.RULES);
+//		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules135.RULES);
+//		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules136.RULES);
+//		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules137.RULES);
+//		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules138.RULES);
+//		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules139.RULES);
 
-		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules140.RULES);
-		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules141.RULES);
-		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules142.RULES);
-		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules143.RULES);
-		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules144.RULES);
-		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules145.RULES);
+//		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules140.RULES);
+//		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules141.RULES);
+//		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules142.RULES);
+//		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules143.RULES);
+//		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules144.RULES);
+//		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules145.RULES);
 
 		// org.matheclipse.integrate.rubi45.UtilityFunctions.init();
 	}
@@ -1216,8 +1216,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 		ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions5.RULES;
 		ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions6.RULES;
 
-		// ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions7.RULES;
-		// ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions8.RULES;
+		ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions7.RULES;
+		ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions8.RULES;
 
 		org.matheclipse.core.integrate.rubi45.UtilityFunctions.init();
 		return ast;
@@ -1231,8 +1231,56 @@ public class Integrate extends AbstractFunctionEvaluator {
 		// if (Config.LOAD_SERIALIZED_RULES) {
 		// initSerializedRules(symbol);
 		// }
+
 		// hack for TimeConstrained time limit:
-		F.ISet(F.$s("§timelimit"), F.integer(12));
+
+		// F.ISet(F.$s("§timelimit"), F.integer(12));
+		F.ISet(F.$s("§$timelimit"), F.integer(12));
+		
+		F.ISet(F.$s("§$trigfunctions"), F.List(F.Sin, F.Cos, F.Tan, F.Cot, F.Sec, F.Csc));
+		F.ISet(F.$s("§$HyperbolicFunctions"), F.List(F.Sinh, F.Cosh, F.Tanh, F.Coth, F.Sech, F.Csch));
+		F.ISet(F.$s("§$InverseTrigFunctions"), F.List(F.ArcSin, F.ArcCos, F.ArcTan, F.ArcCot, F.ArcSec, F.ArcCsc));
+		F.ISet(F.$s("§$InverseHyperbolicFunctions"),
+				F.List(F.ArcSinh, F.ArcCosh, F.ArcTanh, F.ArcCoth, F.ArcSech, F.ArcCsch));
+		F.ISet(F.$s("§$CalculusFunctions"), F.List(F.D, Integrate, F.Sum, F.Product, F.Integrate)); // , F.Unintegrable,
+																									// F.CannotIntegrate,
+																									// F.Dif, F.Subst));
+		F.ISet(F.$s("§$StopFunctions"), F.List(F.Hold, F.HoldForm, F.Defer, F.Pattern, F.If, F.Integrate));// ,
+																											// F.Unintegrable,
+																											// F.CannotIntegrate));
+		F.ISet(F.$s("§$HeldFunctions"), F.List(F.Hold, F.HoldForm, F.Defer, F.Pattern));
+
+		F.ISet(UtilityFunctionCtors.FalseQ(F.False), F.True);
+		F.ISet(UtilityFunctionCtors.FalseQ(F.u_), F.False);
+
+		F.ISet(UtilityFunctionCtors.IntegersQ(F.$ps(F.u, F.Integer)), F.True);
+		F.ISet(UtilityFunctionCtors.IntegersQ(F.$ps(F.u)), F.False);
+
+		F.ISet(UtilityFunctionCtors.FractionQ(F.$ps(F.u, F.Rational)), F.True);
+		F.ISet(UtilityFunctionCtors.FractionQ(F.$ps(F.u)), F.False);
+
+		F.ISet(UtilityFunctionCtors.ComplexNumberQ(F.$p(F.u, F.Complex)), F.True);
+		F.ISet(UtilityFunctionCtors.ComplexNumberQ(F.$p(F.u)), F.False);
+
+		F.ISet(UtilityFunctionCtors.PowerQ(F.$p(F.u, F.Power)), F.True);
+		F.ISet(UtilityFunctionCtors.PowerQ(F.$p(F.u)), F.False);
+
+		F.ISet(UtilityFunctionCtors.ProductQ(F.$p(F.u, F.Times)), F.True);
+		F.ISet(UtilityFunctionCtors.ProductQ(F.$p(F.u)), F.False);
+
+		F.ISet(UtilityFunctionCtors.SumQ(F.$p(F.u, F.Plus)), F.True);
+		F.ISet(UtilityFunctionCtors.SumQ(F.$p(F.u)), F.False);
+
+		F.ISet(UtilityFunctionCtors.NonsumQ(F.$p(F.u, F.Plus)), F.True);
+		F.ISet(UtilityFunctionCtors.NonsumQ(F.$p(F.u)), F.False);
+
+		//
+		F.ISet(UtilityFunctionCtors.IntegerPowerQ, //
+				F.Function(F.And(F.SameQ(F.Head(F.Slot1), F.Power), F.IntegerQ(F.Part(F.Slot1, F.C2)))));
+
+		F.ISet(UtilityFunctionCtors.FractionalPowerQ, //
+				F.Function(
+						F.And(F.SameQ(F.Head(F.Slot1), F.Power), F.SameQ(F.Head(F.Part(F.Slot1, F.C2)), F.Rational))));
 	}
 
 	/**
