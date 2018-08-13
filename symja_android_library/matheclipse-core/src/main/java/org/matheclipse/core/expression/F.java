@@ -30,6 +30,7 @@ import org.matheclipse.core.builtin.ConstantDefinitions;
 import org.matheclipse.core.builtin.CurveFitterFunctions;
 import org.matheclipse.core.builtin.EllipticIntegrals;
 import org.matheclipse.core.builtin.ExpTrigsFunctions;
+import org.matheclipse.core.builtin.FinancialFunctions;
 import org.matheclipse.core.builtin.FunctionDefinitions;
 import org.matheclipse.core.builtin.HypergeometricFunctions;
 import org.matheclipse.core.builtin.IntegerFunctions;
@@ -90,7 +91,7 @@ import edu.jas.kern.ComputerThreads;
  * 
  */
 public class F {
-	private final static IBuiltInSymbol[] BUILT_IN_SYMBOLS = new IBuiltInSymbol[ID.Zeta + 1];
+	private final static IBuiltInSymbol[] BUILT_IN_SYMBOLS = new IBuiltInSymbol[ID.Zeta + 10];
 
 	/**
 	 * <p>
@@ -189,6 +190,12 @@ public class F {
 
     /** AngleVector(phi) - returns the point at angle `phi` on the unit circle.*/
     public final static IBuiltInSymbol AngleVector = F.initFinalSymbol("AngleVector", ID.AngleVector);
+
+    /***/
+    public final static IBuiltInSymbol Annuity = F.initFinalSymbol("Annuity", ID.Annuity);
+
+    /***/
+    public final static IBuiltInSymbol AnnuityDue = F.initFinalSymbol("AnnuityDue", ID.AnnuityDue);
 
     /***/
     public final static IBuiltInSymbol AntiSymmetric = F.initFinalSymbol("AntiSymmetric", ID.AntiSymmetric);
@@ -717,6 +724,9 @@ public class F {
 
     /***/
     public final static IBuiltInSymbol EasterSunday = F.initFinalSymbol("EasterSunday", ID.EasterSunday);
+
+    /***/
+    public final static IBuiltInSymbol EffectiveInterest = F.initFinalSymbol("EffectiveInterest", ID.EffectiveInterest);
 
     /** Eigenvalues(matrix) - get the numerical eigenvalues of the `matrix`.*/
     public final static IBuiltInSymbol Eigenvalues = F.initFinalSymbol("Eigenvalues", ID.Eigenvalues);
@@ -2271,6 +2281,8 @@ public class F {
 
     /** TimesBy(x, dx) - is equivalent to `x = x * dx`.*/
     public final static IBuiltInSymbol TimesBy = F.initFinalSymbol("TimesBy", ID.TimesBy);
+    
+    public final static IBuiltInSymbol TimeValue = F.initFinalSymbol("TimeValue", ID.TimeValue);
 
     /***/
     public final static IBuiltInSymbol Timing = F.initFinalSymbol("Timing", ID.Timing);
@@ -2344,7 +2356,7 @@ public class F {
     /***/
     public final static IBuiltInSymbol Unevaluated = F.initFinalSymbol("Unevaluated", ID.Unevaluated);
 
-    /***/
+    /** UniformDistribution({min, max}) - returns a uniform distribution.*/
     public final static IBuiltInSymbol UniformDistribution = F.initFinalSymbol("UniformDistribution", ID.UniformDistribution);
 
     /** Union(set1, set2) - get the union set from `set1` and `set2`.*/
@@ -3201,6 +3213,7 @@ public class F {
 			CurveFitterFunctions.initialize();
 			VectorAnalysisFunctions.initialize();
 			QuantityFunctions.initialize();
+			FinancialFunctions.initialize();
 			ComputationalGeometryFunctions.initialize();
 
 			// initialize only the utility function rules for Integrate
@@ -5518,6 +5531,10 @@ public class F {
 		return binaryAST2(GegenbauerC, a0, a1);
 	}
 
+	public static IAST GeometricMean(final IExpr a0) {
+		return unaryAST1(GeometricMean, a0);
+	}
+	
 	public static IAST Grad(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Grad, a0, a1);
 	}
@@ -7239,7 +7256,7 @@ public class F {
 	public static IAST Quantile(final IExpr a0) {
 		return unaryAST1(Quantile, a0);
 	}
-	
+
 	public static IAST Quantile(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Quantile, a0, a1);
 	}
@@ -7247,7 +7264,7 @@ public class F {
 	public static IAST Quantile(final IExpr a0, final IExpr a1, final IExpr a2) {
 		return ternaryAST3(Quantile, a0, a1, a2);
 	}
-	
+
 	public static IAST Quantity(final IExpr a0, final IExpr a1) {
 		return binaryAST2(Quantity, a0, a1);
 	}

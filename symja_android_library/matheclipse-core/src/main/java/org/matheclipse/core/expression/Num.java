@@ -216,13 +216,13 @@ public class Num implements INum {
 	/** {@inheritDoc} */
 	@Override
 	public IExpr dec() {
-		return add(F.CND1);
+		return valueOf(fDouble - 1.0);
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public IExpr inc() {
-		return add(F.CD1);
+		return valueOf(fDouble + 1.0);
 	}
 
 	/** {@inheritDoc} */
@@ -342,8 +342,8 @@ public class Num implements INum {
 	}
 
 	@Override
-	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators,
-			boolean usePrefix, boolean noSymbolPrefix) {
+	public String internalJavaString(boolean symbolsAsFactoryMethod, int depth, boolean useOperators, boolean usePrefix,
+			boolean noSymbolPrefix) {
 		String prefix = usePrefix ? "F." : "";
 		return prefix + "num(" + fDouble + ")";
 	}

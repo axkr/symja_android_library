@@ -2525,6 +2525,28 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("EasterSunday(2030)", "{2030,4,21}");
 	}
 
+	public void testEffectiveInterest() {
+		if (ToggleFeature.FINANCE) {
+			check("EffectiveInterest(a,b)", //
+					"-1+(1+a*b)^(1/b)");
+			check("EffectiveInterest({.05, .065, .07, .085}, 1/12)", //
+					"{0.05116,0.06697,0.07229,0.08839}");
+			check("EffectiveInterest({.05, .065, .07, .085}, 1/12)", //
+					"{0.05116,0.06697,0.07229,0.08839}");
+			check("EffectiveInterest(.1, 0)", //
+					"0.10517");
+			check("EffectiveInterest(.06, 3)", //
+					"0.05672");
+			check("EffectiveInterest({a,b,c,d})", //
+					"-1+((1+a)*(1+b)*(1+c)*(1+d))^(1/4)");
+
+			check("FindRoot(EffectiveInterest(r, 1/4) == .05, {r, .05})", //
+					"{r->0.04909}");
+			check("Solve(EffectiveInterest(nr, 1/f) == eff, nr) // Quiet", //
+					"{{nr->(-1+(1+eff)^(1/f))*f}}");
+		}
+	}
+
 	public void testEigenvalues() {
 		check("Eigenvalues(A)", "Eigenvalues(A)");
 		check("Eigenvalues({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}})", "{16.11684,-1.11684,0.0}");
@@ -2551,8 +2573,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	public void testElement() {
 		check("Element(pi, reals)", "True");
 		check("Element(sin, reals)", "Element(Sin,Reals)");
-		// check("Element[Sqrt[2], #] & /@ {Complexes, Algebraics, Reals,
-		// Rationals, Integers, Primes}", "");
+		// check("Element(Sqrt(2), #) & /@ {Complexes, Algebraics, Reals, Rationals, Integers, Primes}",//
+		// "");
 		check("Element(E, Algebraics)", "False");
 		check("Element(Pi, Algebraics)", "False");
 		check("Element(ComplexInfinity, Algebraics)", "False");
@@ -10405,6 +10427,31 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("a = 10", "10");
 		check("a *= 2", "20");
 		check("a", "20");
+	}
+
+	public void testTimeValue() {
+		if (ToggleFeature.FINANCE) {
+			check("TimeValue(Annuity(500,36,q), b, c)", //
+					"(500*(-1+((1+b)^q)^(36/q))*((1+b)^q)^(-36/q+c/q))/(-1+(1+b)^q)");
+			check("TimeValue(AnnuityDue(500,36,q), b, c)", //
+					"(500*(-1+((1+b)^q)^(36/q))*((1+b)^q)^(1-36/q+c/q))/(-1+(1+b)^q)");
+			check("TimeValue(Annuity(100, 12), 6/100, 0)", //
+					"411863798761210257735000/491258904256726154641");
+			check("TimeValue(a,b,c)", //
+					"a*(1+b)^c");
+			check("TimeValue(100, EffectiveInterest(.06, 1/12), 10)", //
+					"181.93967");
+			check("TimeValue(Annuity(1000, 10), .06, 0)", //
+					"7360.08705");
+			check("TimeValue(Annuity(1000, 5), EffectiveInterest(.08, 1/4), 5)", //
+					"5895.11904");
+			check("TimeValue(AnnuityDue(100, 12), 6/100, 0)", //
+					"8237275975224205154700/9269035929372191597");
+			check("TimeValue(AnnuityDue(1000, 10), .06, 0)", //
+					"7801.69227");
+			check("TimeValue(AnnuityDue(1000, 5), EffectiveInterest(.08, 1/4), 5)", //
+					"6381.06644");
+		}
 	}
 
 	public void testToeplitzMatrix() {
