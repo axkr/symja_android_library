@@ -35,6 +35,7 @@ import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.PartialFractionIntegrateGenerator;
@@ -1258,47 +1259,22 @@ public class Integrate extends AbstractFunctionEvaluator {
 		F.ISet(F.$s("§$timelimit"), F.integer(12));
 		UtilityFunctionCtors.ReapList.setAttributes(ISymbol.HOLDFIRST);
 		F.ISet(F.$s("§$trigfunctions"), F.List(F.Sin, F.Cos, F.Tan, F.Cot, F.Sec, F.Csc));
-		F.ISet(F.$s("§$HyperbolicFunctions"), F.List(F.Sinh, F.Cosh, F.Tanh, F.Coth, F.Sech, F.Csch));
-		F.ISet(F.$s("§$InverseTrigFunctions"), F.List(F.ArcSin, F.ArcCos, F.ArcTan, F.ArcCot, F.ArcSec, F.ArcCsc));
-		F.ISet(F.$s("§$InverseHyperbolicFunctions"),
+		F.ISet(F.$s("§$hyperbolicfunctions"), F.List(F.Sinh, F.Cosh, F.Tanh, F.Coth, F.Sech, F.Csch));
+		F.ISet(F.$s("§$inverseTrigfunctions"), F.List(F.ArcSin, F.ArcCos, F.ArcTan, F.ArcCot, F.ArcSec, F.ArcCsc));
+		F.ISet(F.$s("§$inversehyperbolicfunctions"),
 				F.List(F.ArcSinh, F.ArcCosh, F.ArcTanh, F.ArcCoth, F.ArcSech, F.ArcCsch));
-		F.ISet(F.$s("§$CalculusFunctions"),
+		F.ISet(F.$s("§$calculusfunctions"),
 				F.List(F.D, Integrate, F.Sum, F.Product, F.Integrate,
 						$s(UtilityFunctionCtors.INTEGRATE_PREFIX + "Unintegrable"),
 						$s(UtilityFunctionCtors.INTEGRATE_PREFIX + "CannotIntegrate"),
 						$s(UtilityFunctionCtors.INTEGRATE_PREFIX + "Dif"),
 						$s(UtilityFunctionCtors.INTEGRATE_PREFIX + "Subst")));
-		F.ISet(F.$s("§$StopFunctions"),
+		F.ISet(F.$s("§$stopfunctions"),
 				F.List(F.Hold, F.HoldForm, F.Defer, F.Pattern, F.If, F.Integrate,
 						$s(UtilityFunctionCtors.INTEGRATE_PREFIX + "Unintegrable"),
 						$s(UtilityFunctionCtors.INTEGRATE_PREFIX + "CannotIntegrate")));
-		F.ISet(F.$s("§$HeldFunctions"), F.List(F.Hold, F.HoldForm, F.Defer, F.Pattern));
+		F.ISet(F.$s("§$heldfunctions"), F.List(F.Hold, F.HoldForm, F.Defer, F.Pattern));
 
-		F.ISet(UtilityFunctionCtors.FalseQ(F.False), F.True);
-		F.ISet(UtilityFunctionCtors.FalseQ(F.u_), F.False);
-
-		F.ISet(UtilityFunctionCtors.IntegersQ(F.$ps(F.u, F.Integer)), F.True);
-		F.ISet(UtilityFunctionCtors.IntegersQ(F.$ps(F.u)), F.False);
-
-		F.ISet(UtilityFunctionCtors.FractionQ(F.$ps(F.u, F.Rational)), F.True);
-		F.ISet(UtilityFunctionCtors.FractionQ(F.$ps(F.u)), F.False);
-
-		F.ISet(UtilityFunctionCtors.ComplexNumberQ(F.$p(F.u, F.Complex)), F.True);
-		F.ISet(UtilityFunctionCtors.ComplexNumberQ(F.$p(F.u)), F.False);
-
-		F.ISet(UtilityFunctionCtors.PowerQ(F.$p(F.u, F.Power)), F.True);
-		F.ISet(UtilityFunctionCtors.PowerQ(F.$p(F.u)), F.False);
-
-		F.ISet(UtilityFunctionCtors.ProductQ(F.$p(F.u, F.Times)), F.True);
-		F.ISet(UtilityFunctionCtors.ProductQ(F.$p(F.u)), F.False);
-
-		F.ISet(UtilityFunctionCtors.SumQ(F.$p(F.u, F.Plus)), F.True);
-		F.ISet(UtilityFunctionCtors.SumQ(F.$p(F.u)), F.False);
-
-		F.ISet(UtilityFunctionCtors.NonsumQ(F.$p(F.u, F.Plus)), F.True);
-		F.ISet(UtilityFunctionCtors.NonsumQ(F.$p(F.u)), F.False);
-
-		//
 		F.ISet(UtilityFunctionCtors.IntegerPowerQ, //
 				F.Function(F.And(F.SameQ(F.Head(F.Slot1), F.Power), F.IntegerQ(F.Part(F.Slot1, F.C2)))));
 
