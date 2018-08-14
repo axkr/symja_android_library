@@ -12,6 +12,20 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public class UtilityFunctions6 { 
   public static IAST RULES = List( 
+ISetDelayed(SimplifyAntiderivative(ArcTanh(Times(c_DEFAULT,Plus(a_,Times(b_DEFAULT,Tan(u_))))),x_Symbol),
+    Condition(RectifyTangent(u,Times(CI,a,c),Times(CI,b,c),Negate(CI),x),And(FreeQ(List(a,b,c),x),GtQ(Times(Sqr(a),Sqr(c)),C0),GtQ(Times(Sqr(b),Sqr(c)),C0),ComplexFreeQ(u)))),
+ISetDelayed(SimplifyAntiderivative(ArcTan(Times(c_DEFAULT,Plus(a_,Times(b_DEFAULT,Cot(u_))))),x_Symbol),
+    Condition(RectifyCotangent(u,Times(a,c),Times(b,c),C1,x),And(FreeQ(List(a,b,c),x),GtQ(Times(Sqr(a),Sqr(c)),C0),GtQ(Times(Sqr(b),Sqr(c)),C0),ComplexFreeQ(u)))),
+ISetDelayed(SimplifyAntiderivative(ArcTanh(Times(c_DEFAULT,Plus(a_,Times(b_DEFAULT,Cot(u_))))),x_Symbol),
+    Condition(RectifyCotangent(u,Times(CI,a,c),Times(CI,b,c),Negate(CI),x),And(FreeQ(List(a,b,c),x),GtQ(Times(Sqr(a),Sqr(c)),C0),GtQ(Times(Sqr(b),Sqr(c)),C0),ComplexFreeQ(u)))),
+ISetDelayed(SimplifyAntiderivative(ArcTan(Plus(a_DEFAULT,Times(b_DEFAULT,Tan(u_)),Times(c_DEFAULT,Sqr(Tan(u_))))),x_Symbol),
+    Condition(If(EvenQ(Denominator(NumericFactor(Together(u)))),ArcTan(NormalizeTogether(Times(Plus(a,c,Negate(C1),Times(Plus(a,Negate(c),Negate(C1)),Cos(Times(C2,u))),Times(b,Sin(Times(C2,u)))),Power(Plus(a,c,C1,Times(Plus(a,Negate(c),C1),Cos(Times(C2,u))),Times(b,Sin(Times(C2,u)))),-1)))),ArcTan(NormalizeTogether(Times(Plus(c,Times(Plus(a,Negate(c),Negate(C1)),Sqr(Cos(u))),Times(b,Cos(u),Sin(u))),Power(Plus(c,Times(Plus(a,Negate(c),C1),Sqr(Cos(u))),Times(b,Cos(u),Sin(u))),-1))))),And(FreeQ(List(a,b,c),x),ComplexFreeQ(u)))),
+ISetDelayed(SimplifyAntiderivative(ArcTan(Plus(a_DEFAULT,Times(b_DEFAULT,Plus(d_DEFAULT,Times(e_DEFAULT,Tan(u_)))),Times(c_DEFAULT,Sqr(Plus(f_DEFAULT,Times(g_DEFAULT,Tan(u_))))))),x_Symbol),
+    Condition(SimplifyAntiderivative(ArcTan(Plus(a,Times(b,d),Times(c,Sqr(f)),Times(Plus(Times(b,e),Times(C2,c,f,g)),Tan(u)),Times(c,Sqr(g),Sqr(Tan(u))))),x),And(FreeQ(List(a,b,c),x),ComplexFreeQ(u)))),
+ISetDelayed(SimplifyAntiderivative(ArcTan(Plus(a_DEFAULT,Times(c_DEFAULT,Sqr(Tan(u_))))),x_Symbol),
+    Condition(If(EvenQ(Denominator(NumericFactor(Together(u)))),ArcTan(NormalizeTogether(Times(Plus(a,c,Negate(C1),Times(Plus(a,Negate(c),Negate(C1)),Cos(Times(C2,u)))),Power(Plus(a,c,C1,Times(Plus(a,Negate(c),C1),Cos(Times(C2,u)))),-1)))),ArcTan(NormalizeTogether(Times(Plus(c,Times(Plus(a,Negate(c),Negate(C1)),Sqr(Cos(u)))),Power(Plus(c,Times(Plus(a,Negate(c),C1),Sqr(Cos(u)))),-1))))),And(FreeQ(List(a,c),x),ComplexFreeQ(u)))),
+ISetDelayed(SimplifyAntiderivative(ArcTan(Plus(a_DEFAULT,Times(c_DEFAULT,Sqr(Plus(f_DEFAULT,Times(g_DEFAULT,Tan(u_))))))),x_Symbol),
+    Condition(SimplifyAntiderivative(ArcTan(Plus(a,Times(c,Sqr(f)),Times(C2,c,f,g,Tan(u)),Times(c,Sqr(g),Sqr(Tan(u))))),x),And(FreeQ(List(a,c),x),ComplexFreeQ(u)))),
 ISetDelayed(SimplifyAntiderivative(u_,x_Symbol),
     If(FreeQ(u,x),C0,If(LogQ(u),Log(RemoveContent(Part(u,C1),x)),If(SumQ(u),SimplifyAntiderivativeSum(Map(Function(SimplifyAntiderivative(Slot1,x)),u),x),u)))),
 ISetDelayed(SimplifyAntiderivativeSum(Plus(v_DEFAULT,Times(B_DEFAULT,Log(Cos(u_))),Times(A_DEFAULT,Log(Plus(a_,Times(b_DEFAULT,Power(Tan(u_),n_DEFAULT)))))),x_Symbol),
@@ -171,20 +185,6 @@ ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,w_,Power($($s("§cos"),v_),n_DE
 ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,w_,Power($($s("§cos"),v_),n_)),x_),
     Condition(Times(Power($($s("§sec"),v),Negate(n)),FixInertTrigFunction(Times(u,w),x)),And(PowerOfInertTrigSumQ(w,$s("§tan"),x),IntegerQ(n)))),
 ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,w_,Power($($s("§csc"),v_),n_DEFAULT)),x_),
-    Condition(Times(Power($($s("§sin"),v),Negate(n)),FixInertTrigFunction(Times(u,w),x)),And(PowerOfInertTrigSumQ(w,$s("§tan"),x),IntegerQ(n)))),
-ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,w_,Power($($s("§tan"),v_),n_DEFAULT)),x_),
-    Condition(Times(Power($($s("§cot"),v),Negate(n)),FixInertTrigFunction(Times(u,w),x)),And(PowerOfInertTrigSumQ(w,$s("§cot"),x),IntegerQ(n)))),
-ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,w_,Power($($s("§sin"),v_),n_DEFAULT)),x_),
-    Condition(Times(Power($($s("§csc"),v),Negate(n)),FixInertTrigFunction(Times(u,w),x)),And(PowerOfInertTrigSumQ(w,$s("§cot"),x),IntegerQ(n)))),
-ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,w_,Power($($s("§sin"),v_),n_DEFAULT)),x_),
-    Condition(Times(Power($($s("§csc"),v),Negate(n)),FixInertTrigFunction(Times(u,w),x)),And(PowerOfInertTrigSumQ(w,$s("§cot"),x),IntegerQ(n)))),
-ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,w_,Power($($s("§sec"),v_),n_DEFAULT)),x_),
-    Condition(Times(Power($($s("§cos"),v),Negate(n)),FixInertTrigFunction(Times(u,w),x)),And(PowerOfInertTrigSumQ(w,$s("§cot"),x),IntegerQ(n)))),
-ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,w_,Power($($s("§cos"),v_),n_DEFAULT)),x_),
-    Condition(Times(Power($($s("§sec"),v),Negate(n)),FixInertTrigFunction(Times(u,w),x)),And(PowerOfInertTrigSumQ(w,$s("§sec"),x),IntegerQ(n)))),
-ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,w_,Power($($s("§cot"),v_),n_DEFAULT)),x_),
-    Condition(Times(Power($($s("§tan"),v),Negate(n)),FixInertTrigFunction(Times(u,w),x)),And(PowerOfInertTrigSumQ(w,$s("§sec"),x),IntegerQ(n)))),
-ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,w_,Power($($s("§csc"),v_),n_DEFAULT)),x_),
-    Condition(Times(Power($($s("§sin"),v),Negate(n)),FixInertTrigFunction(Times(u,w),x)),And(PowerOfInertTrigSumQ(w,$s("§sec"),x),IntegerQ(n))))
+    Condition(Times(Power($($s("§sin"),v),Negate(n)),FixInertTrigFunction(Times(u,w),x)),And(PowerOfInertTrigSumQ(w,$s("§tan"),x),IntegerQ(n))))
   );
 }

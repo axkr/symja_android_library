@@ -12,6 +12,20 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public class UtilityFunctions7 { 
   public static IAST RULES = List( 
+ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,w_,Power($($s("§tan"),v_),n_DEFAULT)),x_),
+    Condition(Times(Power($($s("§cot"),v),Negate(n)),FixInertTrigFunction(Times(u,w),x)),And(PowerOfInertTrigSumQ(w,$s("§cot"),x),IntegerQ(n)))),
+ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,w_,Power($($s("§sin"),v_),n_DEFAULT)),x_),
+    Condition(Times(Power($($s("§csc"),v),Negate(n)),FixInertTrigFunction(Times(u,w),x)),And(PowerOfInertTrigSumQ(w,$s("§cot"),x),IntegerQ(n)))),
+ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,w_,Power($($s("§sin"),v_),n_DEFAULT)),x_),
+    Condition(Times(Power($($s("§csc"),v),Negate(n)),FixInertTrigFunction(Times(u,w),x)),And(PowerOfInertTrigSumQ(w,$s("§cot"),x),IntegerQ(n)))),
+ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,w_,Power($($s("§sec"),v_),n_DEFAULT)),x_),
+    Condition(Times(Power($($s("§cos"),v),Negate(n)),FixInertTrigFunction(Times(u,w),x)),And(PowerOfInertTrigSumQ(w,$s("§cot"),x),IntegerQ(n)))),
+ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,w_,Power($($s("§cos"),v_),n_DEFAULT)),x_),
+    Condition(Times(Power($($s("§sec"),v),Negate(n)),FixInertTrigFunction(Times(u,w),x)),And(PowerOfInertTrigSumQ(w,$s("§sec"),x),IntegerQ(n)))),
+ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,w_,Power($($s("§cot"),v_),n_DEFAULT)),x_),
+    Condition(Times(Power($($s("§tan"),v),Negate(n)),FixInertTrigFunction(Times(u,w),x)),And(PowerOfInertTrigSumQ(w,$s("§sec"),x),IntegerQ(n)))),
+ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,w_,Power($($s("§csc"),v_),n_DEFAULT)),x_),
+    Condition(Times(Power($($s("§sin"),v),Negate(n)),FixInertTrigFunction(Times(u,w),x)),And(PowerOfInertTrigSumQ(w,$s("§sec"),x),IntegerQ(n)))),
 ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,w_,Power($($s("§sin"),v_),n_DEFAULT)),x_),
     Condition(Times(Power($($s("§csc"),v),Negate(n)),FixInertTrigFunction(Times(u,w),x)),And(PowerOfInertTrigSumQ(w,$s("§csc"),x),IntegerQ(n)))),
 ISetDelayed(FixInertTrigFunction(Times(u_DEFAULT,w_,Power($($s("§tan"),v_),n_DEFAULT)),x_),
@@ -175,20 +189,6 @@ ISetDelayed(UnifyInertTrigFunction(Times(Power(Plus(a_DEFAULT,Times(b_DEFAULT,$(
 ISetDelayed(UnifyInertTrigFunction(Times(Plus(A_DEFAULT,Times(B_DEFAULT,$($s("§sec"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),Times(C_DEFAULT,Sqr($($s("§sec"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))))),Power(Plus(a_DEFAULT,Times(b_DEFAULT,$($s("§sec"),Plus(e_DEFAULT,Times(f_DEFAULT,x_))))),m_DEFAULT)),x_),
     Condition(Times(Power(Plus(a,Times(b,$($s("§csc"),Plus(e,Times(C1D2,Pi),Times(f,x))))),m),Plus(ASymbol,Times(BSymbol,$($s("§csc"),Plus(e,Times(C1D2,Pi),Times(f,x)))),Times(CSymbol,Sqr($($s("§csc"),Plus(e,Times(C1D2,Pi),Times(f,x))))))),FreeQ(List(a,b,e,f,ASymbol,BSymbol,CSymbol,m),x))),
 ISetDelayed(UnifyInertTrigFunction(Times(Plus(A_DEFAULT,Times(C_DEFAULT,Sqr($($s("§sec"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))))),Power(Plus(a_DEFAULT,Times(b_DEFAULT,$($s("§sec"),Plus(e_DEFAULT,Times(f_DEFAULT,x_))))),m_DEFAULT)),x_),
-    Condition(Times(Power(Plus(a,Times(b,$($s("§csc"),Plus(e,Times(C1D2,Pi),Times(f,x))))),m),Plus(ASymbol,Times(CSymbol,Sqr($($s("§csc"),Plus(e,Times(C1D2,Pi),Times(f,x))))))),FreeQ(List(a,b,e,f,ASymbol,CSymbol,m),x))),
-ISetDelayed(UnifyInertTrigFunction(Times(Plus(A_DEFAULT,Times(B_DEFAULT,$($s("§sec"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),Times(C_DEFAULT,Sqr($($s("§sec"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))))),Power(Times(d_DEFAULT,$($s("§sec"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),n_DEFAULT),Power(Plus(a_DEFAULT,Times(b_DEFAULT,$($s("§sec"),Plus(e_DEFAULT,Times(f_DEFAULT,x_))))),m_DEFAULT)),x_),
-    Condition(Times(Power(Plus(a,Times(b,$($s("§csc"),Plus(e,Times(C1D2,Pi),Times(f,x))))),m),Power(Times(d,$($s("§csc"),Plus(e,Times(C1D2,Pi),Times(f,x)))),n),Plus(ASymbol,Times(BSymbol,$($s("§csc"),Plus(e,Times(C1D2,Pi),Times(f,x)))),Times(CSymbol,Sqr($($s("§csc"),Plus(e,Times(C1D2,Pi),Times(f,x))))))),FreeQ(List(a,b,d,e,f,ASymbol,BSymbol,CSymbol,m,n),x))),
-ISetDelayed(UnifyInertTrigFunction(Times(Plus(A_DEFAULT,Times(C_DEFAULT,Sqr($($s("§sec"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))))),Power(Times(d_DEFAULT,$($s("§sec"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),n_DEFAULT),Power(Plus(a_DEFAULT,Times(b_DEFAULT,$($s("§sec"),Plus(e_DEFAULT,Times(f_DEFAULT,x_))))),m_DEFAULT)),x_),
-    Condition(Times(Power(Plus(a,Times(b,$($s("§csc"),Plus(e,Times(C1D2,Pi),Times(f,x))))),m),Power(Times(d,$($s("§csc"),Plus(e,Times(C1D2,Pi),Times(f,x)))),n),Plus(ASymbol,Times(CSymbol,Sqr($($s("§csc"),Plus(e,Times(C1D2,Pi),Times(f,x))))))),FreeQ(List(a,b,d,e,f,ASymbol,CSymbol,m,n),x))),
-ISetDelayed(UnifyInertTrigFunction(u_,x_),
-    u),
-ISetDelayed(UnifyInertTrigFunction(Power(Plus(a_DEFAULT,Times(b_DEFAULT,Power(Times(c_DEFAULT,$($s("§csc"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),n_))),p_),x_),
-    Condition(Power(Plus(a,Times(b,Power(Times(CN1,c,$($s("§sec"),Plus(e,Times(C1D2,Pi),Times(f,x)))),n))),p),And(FreeQ(List(a,b,c,e,f,n,p),x),Not(And(EqQ(a,C0),IntegerQ(p)))))),
-ISetDelayed(UnifyInertTrigFunction(Times(Power(Times(d_DEFAULT,$($s("§cos"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),m_DEFAULT),Power(Plus(a_DEFAULT,Times(b_DEFAULT,Power(Times(c_DEFAULT,$($s("§csc"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),n_))),p_DEFAULT)),x_),
-    Condition(Times(Power(Times(d,$($s("§sin"),Plus(e,Times(C1D2,Pi),Times(f,x)))),m),Power(Plus(a,Times(b,Power(Times(CN1,c,$($s("§sec"),Plus(e,Times(C1D2,Pi),Times(f,x)))),n))),p)),And(FreeQ(List(a,b,c,d,e,f,m,n,p),x),Not(And(EqQ(a,C0),IntegerQ(p)))))),
-ISetDelayed(UnifyInertTrigFunction(Times(Power(Plus(a_DEFAULT,Times(b_DEFAULT,Power(Times(c_DEFAULT,$($s("§csc"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),n_))),p_DEFAULT),Power(Times(d_DEFAULT,$($s("§sin"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),m_DEFAULT)),x_),
-    Condition(Times(Power(Times(CN1,d,$($s("§cos"),Plus(e,Times(C1D2,Pi),Times(f,x)))),m),Power(Plus(a,Times(b,Power(Times(CN1,c,$($s("§sec"),Plus(e,Times(C1D2,Pi),Times(f,x)))),n))),p)),And(FreeQ(List(a,b,c,d,e,f,m,n,p),x),Not(And(EqQ(a,C0),IntegerQ(p)))))),
-ISetDelayed(UnifyInertTrigFunction(Times(Power(Times(d_DEFAULT,$($s("§cot"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),m_DEFAULT),Power(Plus(a_DEFAULT,Times(b_DEFAULT,Power(Times(c_DEFAULT,$($s("§csc"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),n_))),p_DEFAULT)),x_),
-    Condition(Times(Power(Times(CN1,d,$($s("§tan"),Plus(e,Times(C1D2,Pi),Times(f,x)))),m),Power(Plus(a,Times(b,Power(Times(CN1,c,$($s("§sec"),Plus(e,Times(C1D2,Pi),Times(f,x)))),n))),p)),And(FreeQ(List(a,b,c,d,e,f,m,n,p),x),Not(And(EqQ(a,C0),IntegerQ(p))))))
+    Condition(Times(Power(Plus(a,Times(b,$($s("§csc"),Plus(e,Times(C1D2,Pi),Times(f,x))))),m),Plus(ASymbol,Times(CSymbol,Sqr($($s("§csc"),Plus(e,Times(C1D2,Pi),Times(f,x))))))),FreeQ(List(a,b,e,f,ASymbol,CSymbol,m),x)))
   );
 }

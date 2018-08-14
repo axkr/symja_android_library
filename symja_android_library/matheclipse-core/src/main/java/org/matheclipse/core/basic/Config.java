@@ -76,7 +76,7 @@ public class Config {
 	 * Show the stack trace, if an exception is thrown in evaluation
 	 * 
 	 */
-	public final static boolean SHOW_STACKTRACE = false;
+	public final static boolean SHOW_STACKTRACE = true;
 
 	/**
 	 * Show the console output, if an expression has a head symbol with attribute <code>ISymbol.CONSOLE_OUTPUT</code>.
@@ -153,6 +153,11 @@ public class Config {
 	 */
 	public static int INTEGRATE_BY_PARTS_RECURSION_LIMIT = 10;
 
+	/**
+	 * Define the recursion limit for <code>Integrate#integrateByParts()</code> method.
+	 */
+	public static int INTEGRATE_RUBI_RULES_RECURSION_LIMIT = 128;
+	
 	/**
 	 * Define the recursion limit for <code>Limit#lHospitalesRule()</code> method.
 	 */

@@ -550,7 +550,7 @@ public class RulesData implements Serializable {
 				for (IPatternMatcher patternEvaluator : fPatternDownRules) {
 					pmEvaluator = (IPatternMatcher) patternEvaluator.clone();
 					if (showSteps) {
-						if (pmEvaluator.getLHS().head().equals(F.Integrate)) {
+						if (isShowSteps(pmEvaluator)) {
 							IExpr rhs = pmEvaluator.getRHS();
 							if (!rhs.isPresent()) {
 								rhs = F.Null;
@@ -562,7 +562,7 @@ public class RulesData implements Serializable {
 					result = pmEvaluator.eval(expr, engine);
 					if (result.isPresent()) {
 						if (showSteps) {
-							if (pmEvaluator.getLHS().head().equals(F.Integrate)) {
+							if (isShowSteps(pmEvaluator)) {
 								IExpr rhs = pmEvaluator.getRHS();
 								if (!rhs.isPresent()) {
 									rhs = F.Null;
@@ -580,6 +580,14 @@ public class RulesData implements Serializable {
 			cnse.printStackTrace();
 		}
 		return F.NIL;
+	}
+
+	private boolean isShowSteps(IPatternMatcher pmEvaluator) {
+		IExpr head = pmEvaluator.getLHS().head();
+//		if (head.toString().toLowerCase().contains("integrate::") ) {
+//			return true;
+//		}
+		return head.equals(F.Integrate);
 	}
 
 	public IExpr evalSimpleRatternDownRule(OpenIntToSet<IPatternMatcher> hashToMatcherMap, final int hash,

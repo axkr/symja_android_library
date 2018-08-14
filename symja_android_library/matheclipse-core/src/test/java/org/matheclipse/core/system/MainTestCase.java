@@ -1546,7 +1546,7 @@ public class MainTestCase extends AbstractTestCase {
 		check("Simplify(1/2*(2*x+2))", "1+x");
 		check("Simplify(1/2*(2*x+2)*(1/2)^(1/2))", "(1+x)/Sqrt(2)");
 		check("Simplify(Integrate((8*x+1)/(x^2+x+1)^2,x))", //
-				"-4/(1+x+x^2)-8/3*(1+2*x)*Hypergeometric2F1(2,1/2,3/2,-(1+2*x)^2/3)");
+				"(-5-2*x)/(1+x+x^2)+(-4*ArcTan((1+2*x)/Sqrt(3)))/Sqrt(3)");
 
 		check("Apart(1/(x^3+1))", "1/(3+3*x)-(-2+x)/(3-3*x+3*x^2)");
 		check("Integrate(1/(x^5+x-7),x)", "Integrate(1/(-7+x+x^5),x)");
