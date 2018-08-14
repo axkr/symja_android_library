@@ -6047,6 +6047,14 @@ public class F {
 		PatternMatching.setDelayedDownRule(lhs, rhs, true);
 		return F.NIL;
 	}
+	
+	public static IAST ISetDelayed(int priority,final IExpr lhs, final IExpr rhs) {
+		if (lhs.isAST()) {
+			((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
+		}
+		PatternMatching.setDelayedDownRule(priority,lhs, rhs, true);
+		return F.NIL;
+	}
 
 	public static boolean isNumEqualInteger(double value, IInteger ii) throws ArithmeticException {
 		return isZero(value - ii.doubleValue(), Config.DOUBLE_TOLERANCE);

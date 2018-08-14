@@ -57,6 +57,8 @@ public class UtilityFunctionCtors {
 	
 	public static ISymbol AbortRubi = org.matheclipse.core.expression.F
 			.initFinalHiddenSymbol(INTEGRATE_PREFIX + "AbortRubi");
+	public static ISymbol ReapList = org.matheclipse.core.expression.F
+			.initFinalHiddenSymbol(INTEGRATE_PREFIX + "ReapList");
 
 	public static IAST AbortRubi(final IExpr a0) {
 		return F.headAST0(F.Abort);
@@ -1444,7 +1446,7 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST ReapList(final IExpr a0) {
-		return unaryAST1($s(INTEGRATE_PREFIX + "ReapList"), a0);
+		return unaryAST1(ReapList, a0);
 	}
 
 	public static IAST RectifyCotangent(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {

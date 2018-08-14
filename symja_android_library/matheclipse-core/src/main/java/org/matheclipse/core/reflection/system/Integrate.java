@@ -271,7 +271,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 						if (fxExpanded != fx) {
 							if (fxExpanded.isPolynomial(x)) {
 								if (arg1.isTimes()) {
-									result = integrateByRubiRules(ast, (IAST) fxExpanded);
+									// deleted - Rubi seems to work w/o second try: result = integrateByRubiRules(ast,
+									// (IAST) fxExpanded);
+									result = integrateByRubiRules(ast, F.NIL);
 									if (result.isPresent()) {
 										return result;
 									}
@@ -1254,7 +1256,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 
 		// F.ISet(F.$s("§timelimit"), F.integer(12));
 		F.ISet(F.$s("§$timelimit"), F.integer(12));
-
+		UtilityFunctionCtors.ReapList.setAttributes(ISymbol.HOLDFIRST);
 		F.ISet(F.$s("§$trigfunctions"), F.List(F.Sin, F.Cos, F.Tan, F.Cot, F.Sec, F.Csc));
 		F.ISet(F.$s("§$HyperbolicFunctions"), F.List(F.Sinh, F.Cosh, F.Tanh, F.Coth, F.Sech, F.Csch));
 		F.ISet(F.$s("§$InverseTrigFunctions"), F.List(F.ArcSin, F.ArcCos, F.ArcTan, F.ArcCot, F.ArcSec, F.ArcCsc));

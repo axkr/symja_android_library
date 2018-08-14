@@ -79,7 +79,7 @@ public class ExprEvaluatorTest extends TestCase {
 
 			// evaluate an Integrate[] expression
 			result = util.eval("integrate(sin(x)^5,x)");
-			assertEquals("-8/15*Cos(x)-4/15*Cos(x)*Sin(x)^2-1/5*Cos(x)*Sin(x)^4", result.toString());
+			assertEquals("-Cos(x)+2/3*Cos(x)^3-Cos(x)^5/5", result.toString());
 
 			// set the value of a variable "a" to 10
 			// Note: in server mode the variable name must have a preceding '$'

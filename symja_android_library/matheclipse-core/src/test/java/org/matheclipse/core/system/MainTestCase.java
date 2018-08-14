@@ -1577,10 +1577,10 @@ public class MainTestCase extends AbstractTestCase {
 
 		check("Integrate(2*x^2/(x^3+1),x)", "2*(Log(3+3*x)/3+Log(1-x+x^2)/3)");
 		check("Integrate(Sin(x)^3,x)", //
-				"-2/3*Cos(x)-1/3*Cos(x)*Sin(x)^2");
+				"-Cos(x)+Cos(x)^3/3");
 
 		check("Integrate(Cos(2*x)^3,x)", //
-				"Sin(2*x)/3+1/6*Cos(2*x)^2*Sin(2*x)");
+				"Sin(2*x)/2-Sin(2*x)^3/6");
 		check("Integrate(x,x)", //
 				"x^2/2");
 		check("Integrate(2*x,x)",//

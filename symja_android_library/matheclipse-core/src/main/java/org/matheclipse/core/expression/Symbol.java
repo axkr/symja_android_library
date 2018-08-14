@@ -771,7 +771,7 @@ public class Symbol implements ISymbol, Serializable {
 		if (fRulesData == null) {
 			fRulesData = new RulesData(EvalEngine.get().getContext());
 		}
-		return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide);
+		return fRulesData.putDownRule(setSymbol, equalRule, leftHandSide, rightHandSide, priority);
 	}
 
 	/** {@inheritDoc} */

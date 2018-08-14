@@ -4435,9 +4435,9 @@ public class LowercaseTestCase extends AbstractTestCase {
 		// check("Limit(1/9*x*(9-x^2)^(3/2)*Hypergeometric2F1(1,2,3/2,x^2/9),x->3)", //
 		// "");
 		check("Integrate(Sqrt(9-x^2),x)", //
-				"3*x*Hypergeometric2F1(-1/2,1/2,3/2,x^2/9)");
+				"1/2*x*Sqrt(9-x^2)+9/2*ArcSin(x/3)");
 		check("Integrate(Sqrt(9-x^2),{x,0,3})", //
-				"9*Hypergeometric2F1(-1/2,1/2,3/2,1)");
+				"9/4*Pi");
 		check("Integrate({Sin(x),Cos(x)},x)", //
 				"{-Cos(x),Sin(x)}");
 		check("Integrate({Sin(x),Cos(x)},{x,a,b})", //

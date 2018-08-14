@@ -1146,6 +1146,27 @@ public final class PatternMatching {
 		throw new RuleCreationError(leftHandSide);
 	}
 
+	public static Object[] setDelayedDownRule(int priority, IExpr leftHandSide, IExpr rightHandSide, boolean packageMode) {
+		final Object[] result = new Object[] { null, rightHandSide };
+		if (leftHandSide.isAST()) {
+			final ISymbol lhsSymbol = ((IAST) leftHandSide).topHead();
+
+			result[0] = lhsSymbol.putDownRule(ISymbol.RuleType.SET_DELAYED, false, leftHandSide, rightHandSide,
+					priority, packageMode);
+			return result;
+		}
+		if (leftHandSide.isSymbol()) {
+			final ISymbol lhsSymbol = (ISymbol) leftHandSide;
+			if (lhsSymbol.hasLocalVariableStack()) {
+				lhsSymbol.set(rightHandSide);
+				return result;
+			}
+			result[0] = lhsSymbol.putDownRule(ISymbol.RuleType.SET_DELAYED, true, leftHandSide, rightHandSide,
+					priority, packageMode);
+			return result;
+		}
+		throw new RuleCreationError(leftHandSide);
+	}
 	/**
 	 * <pre>
 	 * Unique(expr)
