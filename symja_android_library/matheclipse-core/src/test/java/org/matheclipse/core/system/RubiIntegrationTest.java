@@ -43,7 +43,7 @@ import static org.matheclipse.core.expression.F.m;
 import static org.matheclipse.core.expression.F.p;
 import static org.matheclipse.core.expression.F.v;
 import static org.matheclipse.core.expression.F.x;
-import static org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors.*;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.*;
 
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
