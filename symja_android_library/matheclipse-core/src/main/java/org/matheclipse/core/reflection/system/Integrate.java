@@ -1,5 +1,6 @@
 package org.matheclipse.core.reflection.system;
 
+import static org.matheclipse.core.expression.F.$s;
 import static org.matheclipse.core.expression.F.ArcTan;
 import static org.matheclipse.core.expression.F.C1;
 import static org.matheclipse.core.expression.F.C1D2;
@@ -34,6 +35,7 @@ import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.integrate.rubi45.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.PartialFractionIntegrateGenerator;
@@ -259,7 +261,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 							return temp;
 						}
 					}
-					result = integrateByRubiRules(ast);
+					result = integrateByRubiRules(ast, F.NIL);
 					if (result.isPresent()) {
 						return result;
 					}
@@ -270,7 +272,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 						if (fxExpanded != fx) {
 							if (fxExpanded.isPolynomial(x)) {
 								if (arg1.isTimes()) {
-									result = integrateByRubiRules(ast);
+									// deleted - Rubi seems to work w/o second try: result = integrateByRubiRules(ast,
+									// (IAST) fxExpanded);
+									result = integrateByRubiRules(ast, F.NIL);
 									if (result.isPresent()) {
 										return result;
 									}
@@ -338,9 +342,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 						}
 					}
 
-					if (!ast.equalsAt(1, fxExpanded)) {
-						return integrateByRubiRules(ast);
-					}
+					// if (!ast.equalsAt(1, fxExpanded)) {
+					// return integrateByRubiRules(ast);
+					// }
 
 					final IExpr header = arg1AST.head();
 					if (arg1AST.size() >= 3) {
@@ -350,7 +354,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 								if (parts != null) {
 									// try Rubi rules first
 									if (!parts[0].isPolynomial(x) || !parts[1].isPolynomial(x)) {
-										result = integrateByRubiRules(ast);
+										result = integrateByRubiRules(ast, F.NIL);
 										if (result.isPresent()) {
 											return result;
 										}
@@ -367,7 +371,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 										return apartPlus;
 									}
 									if (parts[0].isPolynomial(x) && parts[1].isPolynomial(x)) {
-										result = integrateByRubiRules(ast);
+										result = integrateByRubiRules(ast, F.NIL);
 										if (result.isPresent()) {
 											return result;
 										}
@@ -388,7 +392,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 				// EvalEngine engine= EvalEngine.get();
 				// engine.setIterationLimit(8);
 				if (!calledRubi) {
-					return integrateByRubiRules(ast);
+					return integrateByRubiRules(ast, F.NIL);
 				}
 			}
 			// } else {
@@ -859,18 +863,35 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * expression.
 	 * 
 	 * @param ast
+	 * @param secondTry
+	 *            do a second attempt with an equivalent expression
 	 * @return
 	 */
-	private static IExpr integrateByRubiRules(IAST ast) {
+	private static IExpr integrateByRubiRules(IAST ast, IAST secondTry) {
 		ISymbol head = ast.arg1().topHead();
+		EvalEngine engine = EvalEngine.get();
+		int limit = engine.getRecursionLimit();
 		try {
 			// Issue #91
 			if ((head.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION
 					|| INT_RUBI_FUNCTIONS.contains(head) || head.getSymbolName().startsWith("§")
 					|| head.getSymbolName().startsWith(UtilityFunctionCtors.INTEGRATE_PREFIX)) {
-				IExpr temp = F.Integrate.evalDownRule(EvalEngine.get(), ast);
-				if (temp.isPresent()) {
-					return temp;
+				try {
+					if (limit <= 0 || limit > Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT) {
+						engine.setRecursionLimit(Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT);
+					}
+					// System.out.println(ast.toString());
+					IExpr temp = F.Integrate.evalDownRule(EvalEngine.get(), ast);
+					if (temp.isPresent()) {
+						return temp;
+					}
+				} catch (RecursionLimitExceeded rle) {
+					engine.setRecursionLimit(limit);
+					if (secondTry.isPresent()) {
+						return integrateByRubiRules(secondTry, F.NIL);
+					}
+				} finally {
+					engine.setRecursionLimit(limit);
 				}
 			}
 		} catch (AbortException ae) {
@@ -1181,11 +1202,11 @@ public class Integrate extends AbstractFunctionEvaluator {
 		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules132.RULES);
 		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules133.RULES);
 		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules134.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules135.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules136.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules137.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules138.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules139.RULES);
+		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules135.RULES);
+		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules136.RULES);
+		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules137.RULES);
+		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules138.RULES);
+		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules139.RULES);
 
 		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules140.RULES);
 		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules141.RULES);
@@ -1216,8 +1237,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 		ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions5.RULES;
 		ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions6.RULES;
 
-		// ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions7.RULES;
-		// ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions8.RULES;
+		ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions7.RULES;
+		ast = org.matheclipse.core.integrate.rubi45.UtilityFunctions8.RULES;
 
 		org.matheclipse.core.integrate.rubi45.UtilityFunctions.init();
 		return ast;
@@ -1231,8 +1252,35 @@ public class Integrate extends AbstractFunctionEvaluator {
 		// if (Config.LOAD_SERIALIZED_RULES) {
 		// initSerializedRules(symbol);
 		// }
+
 		// hack for TimeConstrained time limit:
-		F.ISet(F.$s("§timelimit"), F.integer(12));
+
+		// F.ISet(F.$s("§timelimit"), F.integer(12));
+		F.ISet(F.$s("§$timelimit"), F.integer(12));
+		UtilityFunctionCtors.ReapList.setAttributes(ISymbol.HOLDFIRST);
+		F.ISet(F.$s("§$trigfunctions"), F.List(F.Sin, F.Cos, F.Tan, F.Cot, F.Sec, F.Csc));
+		F.ISet(F.$s("§$hyperbolicfunctions"), F.List(F.Sinh, F.Cosh, F.Tanh, F.Coth, F.Sech, F.Csch));
+		F.ISet(F.$s("§$inverseTrigfunctions"), F.List(F.ArcSin, F.ArcCos, F.ArcTan, F.ArcCot, F.ArcSec, F.ArcCsc));
+		F.ISet(F.$s("§$inversehyperbolicfunctions"),
+				F.List(F.ArcSinh, F.ArcCosh, F.ArcTanh, F.ArcCoth, F.ArcSech, F.ArcCsch));
+		F.ISet(F.$s("§$calculusfunctions"),
+				F.List(F.D, Integrate, F.Sum, F.Product, F.Integrate,
+						$s(UtilityFunctionCtors.INTEGRATE_PREFIX + "Unintegrable"),
+						$s(UtilityFunctionCtors.INTEGRATE_PREFIX + "CannotIntegrate"),
+						$s(UtilityFunctionCtors.INTEGRATE_PREFIX + "Dif"),
+						$s(UtilityFunctionCtors.INTEGRATE_PREFIX + "Subst")));
+		F.ISet(F.$s("§$stopfunctions"),
+				F.List(F.Hold, F.HoldForm, F.Defer, F.Pattern, F.If, F.Integrate,
+						$s(UtilityFunctionCtors.INTEGRATE_PREFIX + "Unintegrable"),
+						$s(UtilityFunctionCtors.INTEGRATE_PREFIX + "CannotIntegrate")));
+		F.ISet(F.$s("§$heldfunctions"), F.List(F.Hold, F.HoldForm, F.Defer, F.Pattern));
+
+		F.ISet(UtilityFunctionCtors.IntegerPowerQ, //
+				F.Function(F.And(F.SameQ(F.Head(F.Slot1), F.Power), F.IntegerQ(F.Part(F.Slot1, F.C2)))));
+
+		F.ISet(UtilityFunctionCtors.FractionalPowerQ, //
+				F.Function(
+						F.And(F.SameQ(F.Head(F.Slot1), F.Power), F.SameQ(F.Head(F.Part(F.Slot1, F.C2)), F.Rational))));
 	}
 
 	/**

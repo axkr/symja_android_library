@@ -550,7 +550,7 @@ public class RulesData implements Serializable {
 				for (IPatternMatcher patternEvaluator : fPatternDownRules) {
 					pmEvaluator = (IPatternMatcher) patternEvaluator.clone();
 					if (showSteps) {
-						if (pmEvaluator.getLHS().head().equals(F.Integrate)) {
+						if (isShowSteps(pmEvaluator)) {
 							IExpr rhs = pmEvaluator.getRHS();
 							if (!rhs.isPresent()) {
 								rhs = F.Null;
@@ -562,7 +562,7 @@ public class RulesData implements Serializable {
 					result = pmEvaluator.eval(expr, engine);
 					if (result.isPresent()) {
 						if (showSteps) {
-							if (pmEvaluator.getLHS().head().equals(F.Integrate)) {
+							if (isShowSteps(pmEvaluator)) {
 								IExpr rhs = pmEvaluator.getRHS();
 								if (!rhs.isPresent()) {
 									rhs = F.Null;
@@ -580,6 +580,14 @@ public class RulesData implements Serializable {
 			cnse.printStackTrace();
 		}
 		return F.NIL;
+	}
+
+	private boolean isShowSteps(IPatternMatcher pmEvaluator) {
+		IExpr head = pmEvaluator.getLHS().head();
+		// if (head.toString().toLowerCase().contains("integrate::") ) {
+		// return true;
+		// }
+		return head.equals(F.Integrate);
 	}
 
 	public IExpr evalSimpleRatternDownRule(OpenIntToSet<IPatternMatcher> hashToMatcherMap, final int hash,
@@ -749,11 +757,18 @@ public class RulesData implements Serializable {
 	}
 
 	public final IPatternMatcher putDownRule(final IExpr leftHandSide, final IExpr rightHandSide) {
-		return putDownRule(ISymbol.RuleType.SET_DELAYED, false, leftHandSide, rightHandSide);
+		return putDownRule(ISymbol.RuleType.SET_DELAYED, false, leftHandSide, rightHandSide,
+				PatternMap.DEFAULT_RULE_PRIORITY);
 	}
 
 	public IPatternMatcher putDownRule(final ISymbol.RuleType setSymbol, final boolean equalRule,
 			final IExpr leftHandSide, final IExpr rightHandSide) {
+		return putDownRule(ISymbol.RuleType.SET_DELAYED, false, leftHandSide, rightHandSide,
+				PatternMap.DEFAULT_RULE_PRIORITY);
+	}
+
+	public IPatternMatcher putDownRule(final ISymbol.RuleType setSymbol, final boolean equalRule,
+			final IExpr leftHandSide, final IExpr rightHandSide, final int priority) {
 		if (equalRule) {
 			fEqualDownRules = getEqualDownRules();
 			PatternMatcherEquals pmEquals = new PatternMatcherEquals(setSymbol, leftHandSide, rightHandSide);
@@ -771,6 +786,9 @@ public class RulesData implements Serializable {
 			return pmEquals;
 		}
 
+		if (PatternMap.DEFAULT_RULE_PRIORITY!=priority) {
+			pmEvaluator.setLHSPriority(priority);
+		}
 		ArraySet<ISymbol> headerSymbols = new ArraySet<ISymbol>();
 		if (!isComplicatedPatternRule(leftHandSide, headerSymbols)) {
 			fSimplePatternDownRules = getSimplePatternDownRules();

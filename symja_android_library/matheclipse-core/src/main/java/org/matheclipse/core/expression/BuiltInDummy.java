@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.hipparchus.complex.Complex;
 import org.matheclipse.core.basic.Config;
@@ -26,6 +27,7 @@ import org.matheclipse.core.interfaces.ExprUtil;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
+import org.matheclipse.core.interfaces.IEvaluator;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.INumber;
 import org.matheclipse.core.interfaces.ISignedNumber;
@@ -41,8 +43,8 @@ import org.matheclipse.core.visit.IVisitorBoolean;
 import org.matheclipse.core.visit.IVisitorInt;
 import org.matheclipse.core.visit.IVisitorLong;
 
-public class Symbol implements ISymbol, Serializable {
-	protected transient Context fContext;
+public class BuiltInDummy implements IBuiltInSymbol, Serializable {
+//	protected transient Context fContext;
 
 	private final static Collator US_COLLATOR = Collator.getInstance(Locale.US);
 
@@ -65,9 +67,9 @@ public class Symbol implements ISymbol, Serializable {
 	// return new Symbol(symbolName, context);
 	// }
 
-	public Symbol(final String symbolName, final Context context) {
+	public BuiltInDummy(final String symbolName ) {
 		super();
-		fContext = context;
+//		fContext = context;
 		fSymbolName = symbolName;
 	}
 
@@ -109,13 +111,13 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean isLocked(boolean packageMode) {
-		return !packageMode && fContext == Context.SYSTEM; // fSymbolName.charAt(0) != '$';
+		return false;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public boolean isLocked() {
-		return !EvalEngine.get().isPackageMode() && fContext == Context.SYSTEM; // fSymbolName.charAt(0) != '$';
+		return false; 
 	}
 
 	/** {@inheritDoc} */
@@ -175,7 +177,7 @@ public class Symbol implements ISymbol, Serializable {
 			int cp = compareTo(expr.first());
 			return cp != 0 ? cp : -1;
 		}
-		return ISymbol.super.compareTo(expr);
+		return IBuiltInSymbol.super.compareTo(expr);
 	}
 
 	/** {@inheritDoc} */
@@ -246,15 +248,12 @@ public class Symbol implements ISymbol, Serializable {
 		if (obj instanceof IBuiltInSymbol) {
 			return false;
 		}
-		if (obj instanceof Symbol) {
-			Symbol symbol = (Symbol) obj;
+		if (obj instanceof BuiltInDummy) {
+			BuiltInDummy symbol = (BuiltInDummy) obj;
 			if (hashCode() != symbol.hashCode()) {
 				return false;
 			}
-			if (fSymbolName.equals(symbol.fSymbolName)) {
-				// #172
-				return fContext.equals(symbol.fContext);
-			}
+			return fSymbolName.equals(symbol.fSymbolName);
 		}
 		return false;
 	}
@@ -418,7 +417,7 @@ public class Symbol implements ISymbol, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public final Context getContext() {
-		return fContext;
+		return null;
 	}
 
 	/** {@inheritDoc} */
@@ -811,16 +810,16 @@ public class Symbol implements ISymbol, Serializable {
 	private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 		fSymbolName = stream.readUTF();
 		fAttributes = stream.read();
-		fContext = (Context) stream.readObject();
-		if (fContext == null) {
-			fContext = Context.SYSTEM;
-		} else {
-			boolean hasDownRulesData = stream.readBoolean();
-			if (hasDownRulesData) {
-				fRulesData = new RulesData(EvalEngine.get().getContext());
-				fRulesData = (RulesData) stream.readObject();
-			}
-		}
+//		fContext = (Context) stream.readObject();
+//		if (fContext == null) {
+//			fContext = Context.SYSTEM;
+//		} else {
+//			boolean hasDownRulesData = stream.readBoolean();
+//			if (hasDownRulesData) {
+//				fRulesData = new RulesData(EvalEngine.get().getContext());
+//				fRulesData = (RulesData) stream.readObject();
+//			}
+//		}
 	}
 
 	// public Object readResolve() throws ObjectStreamException {
@@ -1002,17 +1001,17 @@ public class Symbol implements ISymbol, Serializable {
 	private void writeObject(java.io.ObjectOutputStream stream) throws java.io.IOException {
 		stream.writeUTF(fSymbolName);
 		stream.write(fAttributes);
-		if (fContext.equals(Context.SYSTEM)) {
-			stream.writeObject(null);
-		} else {
-			stream.writeObject(fContext);
-			if (fRulesData == null) {
-				stream.writeBoolean(false);
-			} else {
-				stream.writeBoolean(true);
-				stream.writeObject(fRulesData);
-			}
-		}
+//		if (fContext.equals(Context.SYSTEM)) {
+//			stream.writeObject(null);
+//		} else {
+//			stream.writeObject(fContext);
+//			if (fRulesData == null) {
+//				stream.writeBoolean(false);
+//			} else {
+//				stream.writeBoolean(true);
+//				stream.writeObject(fRulesData);
+//			}
+//		}
 	}
 
 	private Object writeReplace() throws ObjectStreamException {
@@ -1034,6 +1033,28 @@ public class Symbol implements ISymbol, Serializable {
 			stream.writeObject(fRulesData);
 		}
 		return true;
+	}
+
+	/**
+	 * The evaluation class of this built-in-function. See packages: package
+	 * <code>org.matheclipse.core.builtin.function</code> and <code>org.matheclipse.core.reflection.system</code>.
+	 */
+	private transient IEvaluator fEvaluator;
+
+	@Override
+	public IEvaluator getEvaluator() {
+		return fEvaluator;
+	}
+
+	@Override
+	public void setEvaluator(IEvaluator module) {
+		fEvaluator = module;
+
+	}
+
+	@Override
+	public void setPredicateQ(Predicate<IExpr> predicate) {
+		throw new UnsupportedOperationException();
 	}
 
 }

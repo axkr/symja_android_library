@@ -154,6 +154,11 @@ public class Config {
 	public static int INTEGRATE_BY_PARTS_RECURSION_LIMIT = 10;
 
 	/**
+	 * Define the recursion limit for <code>Integrate#integrateByParts()</code> method.
+	 */
+	public static int INTEGRATE_RUBI_RULES_RECURSION_LIMIT = 128;
+	
+	/**
 	 * Define the recursion limit for <code>Limit#lHospitalesRule()</code> method.
 	 */
 	public static int LIMIT_LHOSPITAL_RECURSION_LIMIT = 128;

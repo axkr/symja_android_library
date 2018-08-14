@@ -131,7 +131,13 @@ public interface DerivativeRules {
       Times(Sec(Slot1),Tan(Slot1))),
     // Sech->-Tanh(#1)*Sech(#1)
     Rule(Sech,
-      Times(CN1,Sech(Slot1),Tanh(Slot1)))
+      Times(CN1,Sech(Slot1),Tanh(Slot1))),
+    // SinIntegral->Sinc(#1)
+    Rule(SinIntegral,
+      Sinc(Slot1)),
+    // CosIntegral->Cos(#1)/#1
+    Rule(CosIntegral,
+      Times(Cos(Slot1),Power(Slot1,-1)))
   );
   final public static IAST RULES2 = List(
     // ArcSin->#1/(1-#1^2)^(3/2)
