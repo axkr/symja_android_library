@@ -9,7 +9,7 @@ import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
-class EvalControlledCallable extends EvalCallable {
+public class EvalControlledCallable extends EvalCallable {
 	public EvalControlledCallable(EvalEngine engine) {
 		super( engine);
 	}

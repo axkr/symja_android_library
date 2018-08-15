@@ -1796,7 +1796,7 @@ public final class Programming {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 3, 4);
 
-			if (Config.JAS_NO_THREADS) {
+			if (Config.TIMECONSTARINED_NO_THREAD) {
 				// no thread can be spawned
 				try {
 					return engine.evaluate(ast.arg1());

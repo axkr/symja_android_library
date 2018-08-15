@@ -346,10 +346,10 @@ public class RubiIntegrationTest extends AbstractTestCase {
 				"(-x*Cos(a+b*x))/b+Sin(a+b*x)/b^2");
 		check("D(b^(-2)*Sin(b*x+a)-Cos(b*x+a)*b^(-1)*x,x)", "x*Sin(a+b*x)");
 		check("Integrate(x*Sin(a + b*x)^2,x)", //
-				"x^2/4-(Cos(2*a+2*b*x)/(4*b^2)+(x*Sin(2*a+2*b*x))/(2*b))/2");
+				"x^2/4+(-x*Cos(a+b*x)*Sin(a+b*x))/(2*b)+Sin(a+b*x)^2/(4*b^2)");
 		check("Integrate(x*Sin(a + b*x)^3,x)", //
-				"1/2*((-x*Cos(a+b*x))/b+Sin(a+b*x)/b^2)-((x*Cos(a+b*x))/b-Sin(a+b*x)/b^2)/4-((-x*Cos(\n" + //
-						"3*a+3*b*x))/(3*b)+Sin(3*a+3*b*x)/(9*b^2))/4");
+				"-2/3*(x*Cos(a+b*x))/b+2/3*Sin(a+b*x)/b^2+(-x*Cos(a+b*x)*Sin(a+b*x)^2)/(3*b)+Sin(a+b*x)^\n" + 
+				"3/(9*b^2)");
 
 		check("Integrate(x^2*Sin(a + b*x),x)",//
 				"(2*Cos(a+b*x))/b^3+(-x^2*Cos(a+b*x))/b+(2*x*Sin(a+b*x))/b^2");
@@ -359,10 +359,11 @@ public class RubiIntegrationTest extends AbstractTestCase {
 	public void testTrig002() {
 
 		check("Integrate(x^2*Sin(a + b*x)^2,x)",//
-				"x^3/6-((x*Cos(2*a+2*b*x))/(2*b^2)-Sin(2*a+2*b*x)/(4*b^3)+(x^2*Sin(2*a+2*b*x))/(2*b))/\n" + //
-				"2");
+				"-x/(4*b^2)+x^3/6+(Cos(a+b*x)*Sin(a+b*x))/(4*b^3)+(-x^2*Cos(a+b*x)*Sin(a+b*x))/(2*b)+(x*Sin(a+b*x)^\n" + //
+				"2)/(2*b^2)");
 
-		check("Integrate((a + b*Sin(c + g*x)),x)", "a*x+(-b*Cos(c+g*x))/g");
+		check("Integrate((a + b*Sin(c + g*x)),x)", //
+				"a*x+(-b*Cos(c+g*x))/g");
 		check("Integrate((a + b*Sin(c + g*x))^2,x)",
 				"a^2*x+(-2*a*b*Cos(c+g*x))/g+b^2*(x/2+(-Cos(c+g*x)*Sin(c+g*x))/(2*g))");
 
@@ -436,7 +437,8 @@ public class RubiIntegrationTest extends AbstractTestCase {
 	}
 
 	public void testAnonymousFunction003() {
-		check("Integrate(f(x+1),x)", "Integrate(f(1+x),x)");
+		check("Integrate(f(x+1),x)", //
+				"Integrate(f(1+x),x)");
 	}
 
 	public void testRationalFunction003() {
@@ -572,9 +574,9 @@ public class RubiIntegrationTest extends AbstractTestCase {
 
 	public void testGithub22() {
 		check("Int(Sin(x)^3*Cos(x),x)", //
-				"-Cos(2*x)/8+Cos(4*x)/32");
-		check("D(-Cos(2*x)/8+Cos(4*x)/32,x)", //
-				"Sin(2*x)/4-Sin(4*x)/8");
+				"Sin(x)^4/4");
+		check("D(Sin(x)^4/4,x)", //
+				"Cos(x)*Sin(x)^3");
 
 		// unfortunately Simplify is not sophisticated enough to show this:
 		// check("Simplify(Sin(2*x)/4-Sin(4*x)/8)", //

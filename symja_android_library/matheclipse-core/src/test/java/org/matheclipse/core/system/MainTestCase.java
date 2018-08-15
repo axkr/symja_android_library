@@ -1599,7 +1599,8 @@ public class MainTestCase extends AbstractTestCase {
 				"E^(a*x)/a");
 		check("Integrate(x*E^(a*x),x)", //
 				"(-E^(a*x)*(1-a*x))/a^2");
-		check("Integrate(x*E^x,x)", "-E^x+E^x*x");
+		check("Integrate(x*E^x,x)", //
+				"-E^x*(1-x)");
 		check("Integrate(x^2*E^x,x)", //
 				"E^x*(2-2*x+x^2)");
 		check("Integrate(x^2*E^(a*x),x)", //

@@ -441,6 +441,12 @@ public class ExprEvaluator {
 					return F.$Aborted;
 					// } catch (java.util.concurrent.TimeoutException e) {
 					// return F.$Aborted;
+				} catch (java.util.concurrent.TimeoutException e) {
+					Throwable t = e.getCause();
+					if (t instanceof RuntimeException) {
+						throw (RuntimeException) t;
+					}
+					return F.$Aborted;
 				} catch (com.google.common.util.concurrent.UncheckedTimeoutException e) {
 					Throwable t = e.getCause();
 					if (t instanceof RuntimeException) {
@@ -448,7 +454,7 @@ public class ExprEvaluator {
 					}
 					return F.$Aborted;
 				} catch (Exception e) {
-					if (Config.DEBUG) {
+					if (Config.SHOW_STACKTRACE) {
 						e.printStackTrace();
 					}
 					return F.Null;

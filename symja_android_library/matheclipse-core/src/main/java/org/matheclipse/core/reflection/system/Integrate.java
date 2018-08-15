@@ -242,28 +242,30 @@ public class Integrate extends AbstractFunctionEvaluator {
 						// a^x / Log(a)
 						return F.Divide(fx, F.Log(fx.arg1()));
 					}
-				} else if (fx.isAST(F.Times, 3)) {
-					IExpr temp = F.NIL;
-					if (fx.first().equals(x)) {
-						temp = integrateByParts(fx.second(), x, x);
-					} else if (fx.second().equals(x)) {
-						temp = integrateByParts(fx.first(), x, x);
-					}
-					if (temp.isPresent()) {
-						return temp;
-					}
+					// } else if (fx.isAST(F.Times, 3)) {
+					// IExpr temp = F.NIL;
+					// if (fx.first().equals(x)) {
+					// temp = integrateByParts(fx.second(), x, x);
+					// } else if (fx.second().equals(x)) {
+					// temp = integrateByParts(fx.first(), x, x);
+					// }
+					// if (temp.isPresent()) {
+					// return temp;
+					// }
 				}
 				if (INT_FUNCTIONS.contains(fx.head())) {
-					if (fx.isAST1() && x.equals(fx.arg1())) {
-						IExpr head = fx.head();
-						IExpr temp = integrate1ArgumentFunctions(head, x);
-						if (temp.isPresent()) {
-							return temp;
+					// if (fx.isAST1() && x.equals(fx.arg1())) {
+					// IExpr head = fx.head();
+					// IExpr temp = integrate1ArgumentFunctions(head, x);
+					// if (temp.isPresent()) {
+					// return temp;
+					// }
+					// }
+					if (!calledRubi) {
+						result = integrateByRubiRules(ast, F.NIL);
+						if (result.isPresent()) {
+							return result;
 						}
-					}
-					result = integrateByRubiRules(ast, F.NIL);
-					if (result.isPresent()) {
-						return result;
 					}
 				}
 				IExpr fxExpanded = F.expand(fx, true, false);
@@ -274,9 +276,12 @@ public class Integrate extends AbstractFunctionEvaluator {
 								if (arg1.isTimes()) {
 									// deleted - Rubi seems to work w/o second try: result = integrateByRubiRules(ast,
 									// (IAST) fxExpanded);
-									result = integrateByRubiRules(ast, F.NIL);
-									if (result.isPresent()) {
-										return result;
+									if (!calledRubi) {
+										result = integrateByRubiRules(ast, F.NIL);
+										if (result.isPresent()) {
+											return result;
+										}
+										calledRubi = true;
 									}
 								}
 							}
@@ -288,13 +293,13 @@ public class Integrate extends AbstractFunctionEvaluator {
 					}
 
 					final IAST arg1AST = (IAST) fxExpanded;
-					if (arg1AST.isAST1() && x.equals(arg1AST.arg1())) {
-						IExpr head = arg1AST.head();
-						IExpr temp = integrate1ArgumentFunctions(head, x);
-						if (temp.isPresent()) {
-							return temp;
-						}
-					}
+					// if (arg1AST.isAST1() && x.equals(arg1AST.arg1())) {
+					// IExpr head = arg1AST.head();
+					// IExpr temp = integrate1ArgumentFunctions(head, x);
+					// if (temp.isPresent()) {
+					// return temp;
+					// }
+					// }
 					// if (arg1AST.isPower()) {
 					// if (x.equals(arg1AST.arg1()) && arg1AST.isFreeAt(2,
 					// x)) {
@@ -336,10 +341,10 @@ public class Integrate extends AbstractFunctionEvaluator {
 							return filterCollector;
 						}
 
-						IExpr temp = integrateTimesTrigFunctions(arg1AST, x);
-						if (temp.isPresent()) {
-							return temp;
-						}
+						// IExpr temp = integrateTimesTrigFunctions(arg1AST, x);
+						// if (temp.isPresent()) {
+						// return temp;
+						// }
 					}
 
 					// if (!ast.equalsAt(1, fxExpanded)) {
@@ -354,11 +359,13 @@ public class Integrate extends AbstractFunctionEvaluator {
 								if (parts != null) {
 									// try Rubi rules first
 									if (!parts[0].isPolynomial(x) || !parts[1].isPolynomial(x)) {
-										result = integrateByRubiRules(ast, F.NIL);
-										if (result.isPresent()) {
-											return result;
+										if (!calledRubi) {
+											result = integrateByRubiRules(ast, F.NIL);
+											if (result.isPresent()) {
+												return result;
+											}
+											calledRubi = true;
 										}
-										calledRubi = true;
 									}
 
 									IExpr apartPlus = Algebra.partialFractionDecompositionRational(
@@ -371,38 +378,35 @@ public class Integrate extends AbstractFunctionEvaluator {
 										return apartPlus;
 									}
 									if (parts[0].isPolynomial(x) && parts[1].isPolynomial(x)) {
-										result = integrateByRubiRules(ast, F.NIL);
-										if (result.isPresent()) {
-											return result;
-										}
-										calledRubi = true;
-									}
-									if (arg1AST.isTimes()) {
-										result = integratePolynomialByParts(ast, arg1AST, x);
-										if (result.isPresent()) {
-											return result;
+										if (!calledRubi) {
+											result = integrateByRubiRules(ast, F.NIL);
+											if (result.isPresent()) {
+												return result;
+											}
+											calledRubi = true;
 										}
 									}
+									// if (arg1AST.isTimes()) {
+									// result = integratePolynomialByParts(ast, arg1AST, x);
+									// if (result.isPresent()) {
+									// return result;
+									// }
+									// }
 								}
 							}
 						}
 					}
 				}
 
-				// EvalEngine engine= EvalEngine.get();
-				// engine.setIterationLimit(8);
 				if (!calledRubi) {
-					return integrateByRubiRules(ast, F.NIL);
+					// return integrateByRubiRules(ast, F.NIL);
+					result = integrateByRubiRules(ast, F.NIL);
+					if (result.isPresent()) {
+						return result;
+					}
+					calledRubi = true;
 				}
 			}
-			// } else {
-			// IExpr fx = engine.evaluate(F.Expand(ast.arg1()));
-			// if (fx.isPlus()) {
-			// // Integrate[a_+b_+...,x_] ->
-			// // Integrate[a,x]+Integrate[b,x]+...
-			// return ((IAST) fx).mapThread(F.Integrate(null, ast.arg2()), 1);
-			// }
-			// }
 			IExpr fx = engine.evaluate(F.Expand(ast.arg1()));
 			if (fx.isPlus()) {
 				// Integrate[a_+b_+...,x_] ->
@@ -874,8 +878,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 		try {
 			// Issue #91
 			if ((head.getAttributes() & ISymbol.NUMERICFUNCTION) == ISymbol.NUMERICFUNCTION
-					|| INT_RUBI_FUNCTIONS.contains(head) || head.getSymbolName().startsWith("§")
-					|| head.getSymbolName().startsWith(UtilityFunctionCtors.INTEGRATE_PREFIX)) {
+					// || INT_RUBI_FUNCTIONS.contains(head)
+					|| head.isBuiltInSymbol() || head.getSymbolName().startsWith("§")) {
+				// || head.getSymbolName().startsWith(UtilityFunctionCtors.INTEGRATE_PREFIX)) {
 				try {
 					if (limit <= 0 || limit > Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT) {
 						engine.setRecursionLimit(Config.INTEGRATE_RUBI_RULES_RECURSION_LIMIT);
@@ -1289,11 +1294,11 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * 
 	 * @param symbol
 	 */
-	public static void initSerializedRules(final ISymbol symbol) {
-		if (!INITIALIZED) {
-			INITIALIZED = true;
-			AbstractFunctionEvaluator.initSerializedRules(symbol);
-		}
-	}
+	// privaze static void initSerializedRules(final ISymbol symbol) {
+	// if (!INITIALIZED) {
+	// INITIALIZED = true;
+	// AbstractFunctionEvaluator.initSerializedRules(symbol);
+	// }
+	// }
 
 }

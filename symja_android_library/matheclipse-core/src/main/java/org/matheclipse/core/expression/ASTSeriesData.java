@@ -520,7 +520,7 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 		// if (!this.x0.isZero()) {
 		// ps.setCoeff(0, this.x0);
 		// }
-		//Fix bug
+		// Fix bug
 		// // a1^(-1)
 		// ps.setCoeff(1, a1Inverse);
 		// for (int i = 2; i < maxPower; i++) {
@@ -960,7 +960,52 @@ public class ASTSeriesData extends AbstractAST implements Cloneable, Externaliza
 
 	@Override
 	public IExpr set(int location, IExpr object) {
-		throw new UnsupportedOperationException();
+		hashValue = 0;
+		IExpr result;
+		switch (location) {
+		case 1:
+			result = x;
+			x = object;
+			return result;
+		case 2:
+			result = x0;
+			x0 = object;
+			return result;
+		case 3:
+			if (!object.isList()) {
+				throw new IndexOutOfBoundsException(
+						"SeriesData: Index[" + Integer.valueOf(location) + "] expects list of data.");
+			}
+			return arg3();
+		case 4:
+			result = F.ZZ(nMin);
+			nMin = object.toIntDefault(Integer.MIN_VALUE);
+			if (nMin == Integer.MIN_VALUE) {
+				throw new IndexOutOfBoundsException(
+						"SeriesData: Index[" + Integer.valueOf(location) + "] expects machine size integer.");
+
+			}
+			return result;
+		case 5:
+			result = F.ZZ(power);
+			power = object.toIntDefault(Integer.MIN_VALUE);
+			if (power == Integer.MIN_VALUE) {
+				throw new IndexOutOfBoundsException(
+						"SeriesData: Index[" + Integer.valueOf(location) + "] expects machine size integer.");
+
+			}
+			return result;
+		case 6:
+			result = F.ZZ(denominator);
+			denominator = object.toIntDefault(Integer.MIN_VALUE);
+			if (denominator == Integer.MIN_VALUE) {
+				throw new IndexOutOfBoundsException(
+						"SeriesData: Index[" + Integer.valueOf(location) + "] expects machine size integer.");
+			}
+			return result;
+		default:
+			throw new IndexOutOfBoundsException("Index: " + Integer.valueOf(location));
+		}
 	}
 
 	public void setCoeff(int k, IExpr value) {

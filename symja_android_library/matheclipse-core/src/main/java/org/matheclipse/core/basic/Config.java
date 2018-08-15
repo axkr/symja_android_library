@@ -156,8 +156,8 @@ public class Config {
 	/**
 	 * Define the recursion limit for <code>Integrate#integrateByParts()</code> method.
 	 */
-	public static int INTEGRATE_RUBI_RULES_RECURSION_LIMIT = 128;
-	
+	public static int INTEGRATE_RUBI_RULES_RECURSION_LIMIT = 50;
+
 	/**
 	 * Define the recursion limit for <code>Limit#lHospitalesRule()</code> method.
 	 */
@@ -168,12 +168,23 @@ public class Config {
 	 * Flag for thread usage.
 	 * </p>
 	 * <p>
-	 * <b>Note:</b> Only introduced because Google app engine does not support threads.
+	 * <b>Note:</b> introduced because Google app engine does not support threads.
 	 * </p>
 	 * 
 	 * @see edu.jas.ufd.GCDFactory#getProxy(edu.jas.structure.RingFactory)
 	 */
-	public static boolean JAS_NO_THREADS = false;
+	public static boolean JAS_NO_THREADS = true;
+
+	/**
+	 * <p>
+	 * Flag for thread usage in TimeConstrained function.
+	 * </p>
+	 * <p>
+	 * <b>Note:</b> introduced because Google app engine does not support threads.
+	 * </p>
+	 * 
+	 */
+	public static boolean TIMECONSTARINED_NO_THREAD = false;
 
 	/**
 	 * An object that creates new threads on demand. Using thread factories removes hardwiring of calls to new Thread,
