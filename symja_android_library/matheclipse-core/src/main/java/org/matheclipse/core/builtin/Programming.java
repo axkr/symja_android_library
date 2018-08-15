@@ -1015,7 +1015,7 @@ public final class Programming {
 		private static IExpr evalModule(IAST intializerList, IExpr arg2, final EvalEngine engine) {
 			final int moduleCounter = engine.incModuleCounter();
 			final String varAppend = "$" + moduleCounter;
-			final java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables = new IdentityHashMap<ISymbol, IExpr>();
+			java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables = new IdentityHashMap<ISymbol, IExpr>();
 
 			try {
 				rememberModuleVariables(intializerList, varAppend, moduleVariables, engine);
@@ -1028,6 +1028,7 @@ public final class Programming {
 				}
 				return arg2;
 			} finally {
+				moduleVariables = null;
 				// removeUserVariables(moduleVariables);
 			}
 		}
@@ -2195,19 +2196,19 @@ public final class Programming {
 		 * @return
 		 */
 		private static IExpr evalWith(IAST intializerList, IExpr arg2, final EvalEngine engine) {
-			final int moduleCounter = engine.incModuleCounter();
-			final String varAppend = "$" + moduleCounter;
+			// final int moduleCounter = engine.incModuleCounter();
+			// final String varAppend = "$" + moduleCounter;
 			final java.util.IdentityHashMap<ISymbol, IExpr> moduleVariables = new IdentityHashMap<ISymbol, IExpr>();
 			final java.util.Set<IExpr> renamedVarsSet = new HashSet<IExpr>();
-			final java.util.IdentityHashMap<ISymbol, ISymbol> renamedVars = new IdentityHashMap<ISymbol, ISymbol>();
+			// java.util.IdentityHashMap<ISymbol, ISymbol> renamedVars = new IdentityHashMap<ISymbol, ISymbol>();
 
 			try {
 				rememberWithVariables(intializerList, moduleVariables, renamedVarsSet, engine);
-				for (IExpr expr : renamedVarsSet) {
-					if (expr.isSymbol()) {
-						renamedVars.put((ISymbol) expr, F.$s(expr.toString() + varAppend));
-					}
-				}
+				// for (IExpr expr : renamedVarsSet) {
+				// if (expr.isSymbol()) {
+				// renamedVars.put((ISymbol) expr, F.$s(expr.toString() + varAppend));
+				// }
+				// }
 				IExpr subst = arg2.accept(new ModuleReplaceAll(moduleVariables, engine));
 				if (subst.isPresent()) {
 					return engine.evaluate(subst);
@@ -2288,7 +2289,7 @@ public final class Programming {
 				// if (oldSymbol.toString().equals("num")){
 				// System.out.println(variablesList.toString());
 				// }
-				newSymbol = F.symbol(oldSymbol.toString() + varAppend, engine);
+				newSymbol = F.Dummy(oldSymbol.toString() + varAppend);//, engine);
 				variablesMap.put(oldSymbol, newSymbol);
 				// newSymbol.pushLocalVariable();
 				engine.localStackCreate(newSymbol).push(F.NIL);
@@ -2297,7 +2298,7 @@ public final class Programming {
 					final IAST setFun = (IAST) variablesList.get(i);
 					if (setFun.arg1().isSymbol()) {
 						oldSymbol = (ISymbol) setFun.arg1();
-						newSymbol = F.symbol(oldSymbol.toString() + varAppend, engine);
+						newSymbol = F.Dummy(oldSymbol.toString() + varAppend);//, engine);
 						variablesMap.put(oldSymbol, newSymbol);
 						IExpr rightHandSide = setFun.arg2();
 						try {

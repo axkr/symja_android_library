@@ -1,7 +1,6 @@
 package org.matheclipse.core.eval;
 
 import java.io.StringWriter;
-import java.util.concurrent.Callable;
 
 import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.expression.F;

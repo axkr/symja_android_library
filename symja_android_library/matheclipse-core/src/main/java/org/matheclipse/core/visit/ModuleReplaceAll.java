@@ -128,7 +128,7 @@ public class ModuleReplaceAll extends VisitorExpr {
 						variables = (IdentityHashMap<ISymbol, IExpr>) fModuleVariables.clone();
 					}
 					variables.remove(symbol);
-					variables.put(symbol, F.$s(symbol.toString() + varAppend));
+					variables.put(symbol, F.Dummy(symbol.toString() + varAppend));
 				}
 			} else {
 				if (temp.isAST(F.Set, 3)) {
@@ -141,7 +141,7 @@ public class ModuleReplaceAll extends VisitorExpr {
 								variables = (IdentityHashMap<ISymbol, IExpr>) fModuleVariables.clone();
 							}
 							variables.remove(symbol);
-							variables.put(symbol, F.$s(symbol.toString() + varAppend));
+							variables.put(symbol, F.Dummy(symbol.toString() + varAppend));
 						}
 					}
 				}

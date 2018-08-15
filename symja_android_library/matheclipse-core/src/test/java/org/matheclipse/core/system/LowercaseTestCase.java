@@ -11034,7 +11034,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Table(With({i = j}, Hold(i)), {j, 5})", "{Hold(1),Hold(2),Hold(3),Hold(4),Hold(5)}");
 
 		check("With({y = Sin(1.0)}, Sum(y^i, {i, 0, 10}))", "5.36323");
-		check("With({e = Expand((1 + x)^5)}, Function(x, e))", "Function(x$11,1+5*x+10*x^2+10*x^3+5*x^4+x^5)");
+		check("With({e = Expand((1 + x)^5)}, Function(x, e))", "Function(x$1,1+5*x+10*x^2+10*x^3+5*x^4+x^5)");
 		check("With({e = Expand((1 + x)^5)}, Function @@ {x, e})", "Function(x,1+5*x+10*x^2+10*x^3+5*x^4+x^5)");
 
 		check("x=5;With({x = x}, Hold(x))", "Hold(5)");
