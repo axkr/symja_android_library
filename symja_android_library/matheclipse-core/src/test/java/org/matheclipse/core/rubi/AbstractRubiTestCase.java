@@ -157,7 +157,9 @@ public abstract class AbstractRubiTestCase extends TestCase {
 			fEvaluator = new ExprEvaluator(false, 100);
 			F.await();
 
-			EvalEngine engine = EvalEngine.get();
+			// start test with fresh instance
+			EvalEngine engine = new EvalEngine();
+			EvalEngine.set(engine);
 			engine.setRecursionLimit(256);
 			engine.setIterationLimit(500);
 		} catch (Exception e) {
