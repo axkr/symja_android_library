@@ -12,6 +12,10 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public class UtilityFunctions5 { 
   public static IAST RULES = List( 
+ISetDelayed(FunctionOfInverseLinear(u_,$p("lst"),x_),
+    If(FreeQ(u,x),$s("lst"),If(SameQ(u,x),False,If(QuotientOfLinearsQ(u,x),With(List(Set($s("tmp"),Drop(QuotientOfLinearsParts(u,x),C2))),If(SameQ(Part($s("tmp"),C2),C0),False,If(SameQ($s("lst"),Null),$s("tmp"),If(EqQ(Plus(Times(Part($s("lst"),C1),Part($s("tmp"),C2)),Times(CN1,Part($s("lst"),C2),Part($s("tmp"),C1))),C0),$s("lst"),False)))),If(CalculusQ(u),False,Module(List(Set($s("tmp"),$s("lst"))),Catch(CompoundExpression(Scan(Function(If(AtomQ(Set($s("tmp"),FunctionOfInverseLinear(Slot1,$s("tmp"),x))),Throw(False))),u),$s("tmp"))))))))),
+ISetDelayed(FunctionOfExponentialQ(u_,x_Symbol),
+    Block(List(Set($s("$base$"),Null),Set($s("$expon$"),Null),Set($s("§$exponflag$"),False)),And(FunctionOfExponentialTest(u,x),$s("§$exponflag$")))),
 ISetDelayed(FunctionOfExponential(u_,x_Symbol),
     Block(List(Set($s("$base$"),Null),Set($s("$expon$"),Null),Set($s("§$exponflag$"),False)),CompoundExpression(FunctionOfExponentialTest(u,x),Power($s("$base$"),$s("$expon$"))))),
 ISetDelayed(FunctionOfExponentialFunction(u_,x_Symbol),
@@ -185,10 +189,6 @@ ISetDelayed(SimplifyAntiderivative(ArcTanh(Coth(u_)),x_Symbol),
 ISetDelayed(SimplifyAntiderivative(ArcTan(Times(c_DEFAULT,Plus(a_,Times(b_DEFAULT,Tan(u_))))),x_Symbol),
     Condition(RectifyTangent(u,Times(a,c),Times(b,c),C1,x),And(FreeQ(List(a,b,c),x),GtQ(Times(Sqr(a),Sqr(c)),C0),GtQ(Times(Sqr(b),Sqr(c)),C0),ComplexFreeQ(u)))),
 ISetDelayed(SimplifyAntiderivative(ArcTanh(Times(c_DEFAULT,Plus(a_,Times(b_DEFAULT,Tan(u_))))),x_Symbol),
-    Condition(RectifyTangent(u,Times(CI,a,c),Times(CI,b,c),Negate(CI),x),And(FreeQ(List(a,b,c),x),GtQ(Times(Sqr(a),Sqr(c)),C0),GtQ(Times(Sqr(b),Sqr(c)),C0),ComplexFreeQ(u)))),
-ISetDelayed(SimplifyAntiderivative(ArcTan(Times(c_DEFAULT,Plus(a_,Times(b_DEFAULT,Cot(u_))))),x_Symbol),
-    Condition(RectifyCotangent(u,Times(a,c),Times(b,c),C1,x),And(FreeQ(List(a,b,c),x),GtQ(Times(Sqr(a),Sqr(c)),C0),GtQ(Times(Sqr(b),Sqr(c)),C0),ComplexFreeQ(u)))),
-ISetDelayed(SimplifyAntiderivative(ArcTanh(Times(c_DEFAULT,Plus(a_,Times(b_DEFAULT,Cot(u_))))),x_Symbol),
-    Condition(RectifyCotangent(u,Times(CI,a,c),Times(CI,b,c),Negate(CI),x),And(FreeQ(List(a,b,c),x),GtQ(Times(Sqr(a),Sqr(c)),C0),GtQ(Times(Sqr(b),Sqr(c)),C0),ComplexFreeQ(u))))
+    Condition(RectifyTangent(u,Times(CI,a,c),Times(CI,b,c),Negate(CI),x),And(FreeQ(List(a,b,c),x),GtQ(Times(Sqr(a),Sqr(c)),C0),GtQ(Times(Sqr(b),Sqr(c)),C0),ComplexFreeQ(u))))
   );
 }

@@ -552,6 +552,10 @@ public class UtilityFunctionCtors {
 	public static IAST FixInertTrigFunction(final IExpr a0, final IExpr a1) {
 		return binaryAST2($s(INTEGRATE_PREFIX + "FixInertTrigFunction"), a0, a1);
 	}
+	
+	public static IAST FixIntRule(final IExpr a0) {
+		return unaryAST1($s(INTEGRATE_PREFIX + "FixIntRule"), a0);
+	}
 
 	public static IAST FixIntRule(final IExpr a0, final IExpr a1) {
 		return binaryAST2($s(INTEGRATE_PREFIX + "FixIntRule"), a0, a1);

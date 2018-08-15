@@ -12,6 +12,10 @@ import org.matheclipse.core.interfaces.IAST;
  */
 public class UtilityFunctions8 { 
   public static IAST RULES = List( 
+ISetDelayed(UnifyInertTrigFunction(Times(Plus(A_DEFAULT,Times(C_DEFAULT,Sqr($($s("§sec"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))))),Power(Times(d_DEFAULT,$($s("§sec"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),n_DEFAULT),Power(Plus(a_DEFAULT,Times(b_DEFAULT,$($s("§sec"),Plus(e_DEFAULT,Times(f_DEFAULT,x_))))),m_DEFAULT)),x_),
+    Condition(Times(Power(Plus(a,Times(b,$($s("§csc"),Plus(e,Times(C1D2,Pi),Times(f,x))))),m),Power(Times(d,$($s("§csc"),Plus(e,Times(C1D2,Pi),Times(f,x)))),n),Plus(ASymbol,Times(CSymbol,Sqr($($s("§csc"),Plus(e,Times(C1D2,Pi),Times(f,x))))))),FreeQ(List(a,b,d,e,f,ASymbol,CSymbol,m,n),x))),
+ISetDelayed(UnifyInertTrigFunction(u_,x_),
+    u),
 ISetDelayed(UnifyInertTrigFunction(Power(Plus(a_DEFAULT,Times(b_DEFAULT,Power(Times(c_DEFAULT,$($s("§csc"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),n_))),p_),x_),
     Condition(Power(Plus(a,Times(b,Power(Times(CN1,c,$($s("§sec"),Plus(e,Times(C1D2,Pi),Times(f,x)))),n))),p),And(FreeQ(List(a,b,c,e,f,n,p),x),Not(And(EqQ(a,C0),IntegerQ(p)))))),
 ISetDelayed(UnifyInertTrigFunction(Times(Power(Times(d_DEFAULT,$($s("§cos"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),m_DEFAULT),Power(Plus(a_DEFAULT,Times(b_DEFAULT,Power(Times(c_DEFAULT,$($s("§csc"),Plus(e_DEFAULT,Times(f_DEFAULT,x_)))),n_))),p_DEFAULT)),x_),
@@ -87,7 +91,9 @@ ISetDelayed(RuleName($p("name")),
 ISetDelayed(FixIntRules(),
     CompoundExpression(Set($($s("§downvalues"),Integrate),FixIntRules($($s("§downvalues"),Integrate))),Null)),
 ISetDelayed(FixIntRules($p("rulelist")),
-    Module(List(Set($s("§intdownvalues"),$($s("§downvalues"),Integrate)),Set($s("§substdownvalues"),$($s("§downvalues"),$s("Integrate::Subst"))),Set($s("§simpdownvalues"),$($s("§downvalues"),$s("Integrate::Simp"))),Set($s("§distdownvalues"),$($s("§downvalues"),$s("Integrate::Dist"))),$s("lst")),CompoundExpression(Clear(Integrate,$s("Integrate::Subst"),$s("Integrate::Simp"),$s("Integrate::Dist")),SetAttributes(List($s("Integrate::Simp"),$s("Integrate::Dist"),Integrate,$s("Integrate::Subst")),$s("HoldAll")),Set($s("lst"),Map(Function(FixIntRule(Slot1,Part(Slot1,C1,C1,C2,C1))),$s("rulelist"))),Set($($s("§downvalues"),Integrate),$s("§intdownvalues")),Set($($s("§downvalues"),$s("Integrate::Subst")),$s("§substdownvalues")),Set($($s("§downvalues"),$s("Integrate::Simp")),$s("§simpdownvalues")),Set($($s("§downvalues"),$s("Integrate::Dist")),$s("§distdownvalues")),ClearAttributes(List($s("Integrate::Simp"),$s("Integrate::Dist"),Integrate,$s("Integrate::Subst")),$s("HoldAll")),$s("lst")))),
+    Block(List(Integrate,$s("Integrate::Subst"),$s("Integrate::Simp"),$s("Integrate::Dist")),CompoundExpression(SetAttributes(List($s("Integrate::Simp"),$s("Integrate::Dist"),Integrate,$s("Integrate::Subst")),$s("HoldAll")),Map(Function(FixIntRule(Slot1,Part(Slot1,C1,C1,C2,C1))),$s("rulelist"))))),
+ISetDelayed(FixIntRule($p("§rule")),
+    If(AtomQ(Part($s("§rule"),C1,C1,CN1)),FixIntRule($s("§rule"),Part($s("§rule"),C1,C1,CN1)),If(And(SameQ(Head(Part($s("§rule"),C1,C1,CN1)),$s("Pattern")),AtomQ(Part($s("§rule"),C1,C1,CN1,C1))),FixIntRule($s("§rule"),Part($s("§rule"),C1,C1,CN1,C1)),Print($str("Invalid integration rule: "),Part($s("§rule"),C1,C1,CN1))))),
 ISetDelayed(FixIntRule(RuleDelayed($p("lhs"),$(F_,$(G_,$p("§list"),$(F_,Plus(u_,v_),$p("test2"))),$p("test1"))),x_),
     Condition(ReplacePart(RuleDelayed($s("lhs"),F(G($s("§list"),F(Plus(u,v),$s("test2"))),$s("test1"))),List(Rule(List(C2,C1,C2,C1,C1),FixRhsIntRule(u,x)),Rule(List(C2,C1,C2,C1,C2),FixRhsIntRule(v,x)))),And(SameQ(FSymbol,$s("Condition")),Or(SameQ(GSymbol,$s("With")),SameQ(GSymbol,$s("Module")),SameQ(GSymbol,$s("Block")))))),
 ISetDelayed(FixIntRule(RuleDelayed($p("lhs"),$(G_,$p("§list"),$(F_,Plus(u_,v_),$p("test2")))),x_),
