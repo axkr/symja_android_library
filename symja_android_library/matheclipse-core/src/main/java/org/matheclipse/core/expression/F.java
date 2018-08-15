@@ -5636,17 +5636,19 @@ public class F {
 	 *            TODO
 	 * @param distributePlus
 	 *            TODO
+	 * @param evalParts
+	 *            evaluate the determined numerator and denominator parts
 	 * @return the evaluated expression
 	 * @see EvalEngine#evaluate(IExpr)
 	 */
-	public static IExpr expand(IExpr a, boolean expandNegativePowers, boolean distributePlus) {
+	public static IExpr expand(IExpr a, boolean expandNegativePowers, boolean distributePlus, boolean evalParts) {
 		if (a.isAST()) {
 			EvalEngine engine = EvalEngine.get();
 			IAST ast = engine.evalFlatOrderlessAttributesRecursive((IAST) a);
 			if (!ast.isPresent()) {
 				ast = (IAST) a;
 			}
-			return Algebra.expand(ast, null, expandNegativePowers, distributePlus).orElse(a);
+			return Algebra.expand(ast, null, expandNegativePowers, distributePlus, evalParts).orElse(a);
 		}
 		return a;
 	}
@@ -7949,7 +7951,7 @@ public class F {
 	}
 
 	public static IBuiltInSymbol localBiPredicate(final String symbolName, BiPredicate<IExpr, IExpr> function) {
-		return localFunction(symbolName,new AbstractCoreFunctionEvaluator() {
+		return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
 			@Override
 			public IExpr evaluate(IAST ast, EvalEngine engine) {
 				return F.bool(function.test(ast.arg1(), ast.arg2()));
@@ -7957,8 +7959,8 @@ public class F {
 		});
 	}
 
-	public static IBuiltInSymbol localPredicate(final String symbolName, Predicate<IExpr> function) { 
-		return localFunction(symbolName,new AbstractCoreFunctionEvaluator() {
+	public static IBuiltInSymbol localPredicate(final String symbolName, Predicate<IExpr> function) {
+		return localFunction(symbolName, new AbstractCoreFunctionEvaluator() {
 			@Override
 			public IExpr evaluate(IAST ast, EvalEngine engine) {
 				return F.bool(function.test(ast.arg1()));

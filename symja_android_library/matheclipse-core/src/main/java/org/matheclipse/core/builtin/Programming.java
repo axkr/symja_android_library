@@ -1469,8 +1469,15 @@ public final class Programming {
 						return part(arg1, evaledAST, 2, engine);
 					}
 					return part(arg1, ast, 2, engine);
-
+				} catch (WrappedException we) {
+					if (Config.SHOW_STACKTRACE) {
+						we.printStackTrace();
+					}
+					engine.printMessage(we.getMessage());
 				} catch (WrongArgumentType wat) {
+					if (Config.SHOW_STACKTRACE) {
+						wat.printStackTrace();
+					}
 					engine.printMessage(wat.getMessage());
 				}
 			}
@@ -2380,7 +2387,7 @@ public final class Programming {
 			return expr;
 		}
 		final IAST arg1 = (IAST) expr;
-		final IExpr arg2 = ast.get(pos);
+		final IExpr arg2 = engine.evaluate(ast.get(pos));
 		int p1 = pos + 1;
 		int[] span = arg2.isSpan(arg1.size());
 		if (span != null) {

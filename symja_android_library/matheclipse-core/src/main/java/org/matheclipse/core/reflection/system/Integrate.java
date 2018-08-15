@@ -268,7 +268,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 						}
 					}
 				}
-				IExpr fxExpanded = F.expand(fx, true, false);
+				IExpr fxExpanded = F.expand(fx, true, false, false);
 				if (fxExpanded.isAST()) {
 					if (fxExpanded.isPlus()) {
 						if (fxExpanded != fx) {

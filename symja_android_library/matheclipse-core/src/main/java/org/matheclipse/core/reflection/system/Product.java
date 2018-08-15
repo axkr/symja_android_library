@@ -106,7 +106,7 @@ public class Product extends ListFunctions.Table implements ProductRules {
 
 		IExpr arg1 = ast.arg1();
 		if (arg1.isAST()) {
-			arg1 = F.expand(arg1, false, false);
+			arg1 = F.expand(arg1, false, false, false);
 			if (!arg1.isPresent()) {
 				arg1 = ast.arg1();
 			}

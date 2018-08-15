@@ -36,7 +36,7 @@ public class ExpandTestCase extends AbstractTestCase {
 
 	public void testExpand002() {
 		IAST ast = Times(x, Times(C1D2, x));
-		IExpr temp = Algebra.expand(ast, null, false, false);
+		IExpr temp = Algebra.expand(ast, null, false, false, true);
 		assertEquals(temp.toString(), "x^2/2");
 	}
 
@@ -69,7 +69,7 @@ public class ExpandTestCase extends AbstractTestCase {
 	public void testExpand006() {
 		// (3*x^2+2)^2
 		IAST ast = Power(Plus(C2, Times(C3, Power(x, 2))), C2);
-		IExpr temp = Algebra.expand(ast, null, true, false);
+		IExpr temp = Algebra.expand(ast, null, true, false, true);
 		if (temp == null) {
 			temp = ast;
 		}
@@ -79,7 +79,7 @@ public class ExpandTestCase extends AbstractTestCase {
 	public void testExpand007() {
 		// Sec(x)^2*Sin(x)^2
 		IAST ast = Times(Power(Sec(x), C2), Power(Sin(x), 2));
-		IExpr temp = Algebra.expand(ast, null, true, false);
+		IExpr temp = Algebra.expand(ast, null, true, false, true);
 		if (!temp.isPresent()) {
 			assertEquals(ast.toString(), "Sec[x]^2*Sin[x]^2");
 			return;

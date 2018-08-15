@@ -27,7 +27,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 	/**
 	 * Timeout limit in seconds as the default value for Symja expression evaluation.
 	 */
-	private long fSeconds = 3;
+	private long fSeconds = -1; // 3;
 
 	public AbstractRubiTestCase(String name) {
 		super(name);
@@ -41,17 +41,21 @@ public abstract class AbstractRubiTestCase extends TestCase {
 		if (result.equals(F.$Aborted)) {
 			return "TIMEOUT";
 		}
-		IExpr expected = fEvaluator.eval(expectedResult);
-		if (result.equals(expected)) {
-			// the expressions are structurally equal
-			return expectedResult;
+		expectedResult = expectedResult.trim();
+		if (expectedResult.length() > 0) {
+			IExpr expected = fEvaluator.eval(expectedResult);
+			if (result.equals(expected)) {
+				// the expressions are structurally equal
+				return expectedResult;
+			}
+
+			// IExpr resultTogether= F.Together.of(F.ExpandAll(result));
+			// IExpr expectedTogether = F.Together.of(F.ExpandAll(expected));
+			// if (resultTogether.equals(expectedTogether)) {
+			// // the expressions are structurally equal
+			// return expectedResult;
+			// }
 		}
-		// IExpr resultTogether= F.Together.of(F.ExpandAll(result));
-		// IExpr expectedTogether = F.Together.of(F.ExpandAll(expected));
-		// if (resultTogether.equals(expectedTogether)) {
-		// // the expressions are structurally equal
-		// return expectedResult;
-		// }
 		final StringWriter buf = new StringWriter();
 		OutputFormFactory.get(true).convert(buf, result);
 		return buf.toString();

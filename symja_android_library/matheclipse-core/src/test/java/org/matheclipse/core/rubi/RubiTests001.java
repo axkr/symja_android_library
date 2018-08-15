@@ -1,8 +1,7 @@
 package org.matheclipse.core.rubi;
 
 /**
- * Tests for the Java port of the Rubi-rule-based integrator. 
- * Isn't used in Maven build process at the moment.
+ * Tests for the Java port of the Rubi-rule-based integrator. Isn't used in Maven build process at the moment.
  * 
  */
 public class RubiTests001 extends AbstractRubiTestCase {
@@ -15,7 +14,7 @@ public class RubiTests001 extends AbstractRubiTestCase {
 		System.out.println(getName());
 		check(evalString, expectedResult, -1);
 	}
- 
+
 	// {Sqrt(1+2*x), x, 1, (1+2*x)^(3/2)/3}
 	public void test00001() {
 		check("Integrate(Sqrt(1+2*x), x)", "(1+2*x)^(3/2)/3");
@@ -2208,7 +2207,10 @@ public class RubiTests001 extends AbstractRubiTestCase {
 
 	// {(a+b*x)^(3/2), x, 1, (2*(a+b*x)^(5/2))/(5*b)}
 	public void test00355() {
-		check("Integrate((a+b*x)^(3/2), x)", "(2*(a+b*x)^(5/2))/(5*b)");
+		// check("{a,b,c}[[5]]", "{a,b,c}[[5]]");
+//		check("Integrate(x*Sqrt(a+b*x), x)", "");
+		check("Integrate((a+b*x)^(3/2), x)", //
+				"(2*(a+b*x)^(5/2))/(5*b)");
 
 	}
 

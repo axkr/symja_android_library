@@ -9928,7 +9928,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("Sum( (1/2) ^ i, {i, 1, Infinity})", "1");
 		check("Sum(1 / k ^ 2, {k, 1, Infinity}) ", "Pi^2/6");
 		check("Sum(i / Log(i), {i, 1, Infinity})", "Sum(i/Log(i),{i,1,Infinity})");
-		check("Sum(Cos(Pi*i), {i, 1, Infinity})", "Sum(Cos(i*Pi),{i,1,Infinity})");
+		check("Sum(Cos(Pi*i), {i, 1, Infinity})", //
+				"Sum(Cos(i*Pi),{i,1,Infinity})");
 		check("Sum(x^k*Sum(y^l,{l,0,4}),{k,0,4})",
 				"1+y+y^2+y^3+y^4+x*(1+y+y^2+y^3+y^4)+x^2*(1+y+y^2+y^3+y^4)+x^3*(1+y+y^2+y^3+y^4)+x^\n"
 						+ "4*(1+y+y^2+y^3+y^4)");
@@ -9968,8 +9969,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 				"c*n*(-i+n)-1/2*c*n*(-i+n)*(1+i+n)+c*(1/2*n*(-i+n)+1/2*(-i+n)*n^2)");
 		check("Simplify(1/2*c*(n-i)*n^2-1/2*c*n*(n+i+1)*(n-i)+3/2*c*n*(n-i))", "1/2*c*(-2+i)*(i-n)*n");
 
-		check("Sum(c*(n-1), {j,i,n-1})", "-c*(-i+n)+c*n*(-i+n)");
-		check("Sum(c, {j,i,n-1}, {i,1,n-1})", "-c*(-i+n)+c*n*(-i+n)");
+		check("Sum(c*(n-1), {j,i,n-1})", //
+				"-c*(-i+n)+c*n*(-i+n)");
+		check("Sum(c, {j,i,n-1}, {i,1,n-1})", //
+				"-c*(-i+n)+c*n*(-i+n)");
 		check("Sum(1,{k,j+i,n})", "1-i-j+n");
 		check("Sum(k,{k,1,n+1})", "1/2*(1+n)*(2+n)");
 		check("Sum(i^(1/2), {i, 1, n} )", "HarmonicNumber(n,-1/2)");
