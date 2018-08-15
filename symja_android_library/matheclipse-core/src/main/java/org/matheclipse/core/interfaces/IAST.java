@@ -160,6 +160,8 @@ public interface IAST extends IExpr, Cloneable, Iterable<IExpr> {
 	 */
 	public final int CONTAINS_NUMERIC_ARG = 0x00010000;
 
+//	public final int DEFER_AST = 0x00020000;
+	
 	/**
 	 * Add an evaluation flag to the existing ones.
 	 * 

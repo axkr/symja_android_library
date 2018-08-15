@@ -71,6 +71,8 @@ import org.matheclipse.core.expression.ComplexNum;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Num;
 import org.matheclipse.core.expression.NumberUtil;
+import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
+import org.matheclipse.core.integrate.rubi.UtilityFunctions;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
@@ -4147,7 +4149,7 @@ public final class Arithmetic {
 				if (o1.isComplexInfinity()) {
 					return F.CComplexInfinity;
 				}
-				if (!o1.isZero()) { 
+				if (!o1.isZero()) {
 					if (o1.isNegativeResult()) {
 						return F.CNInfinity;
 					}
@@ -4166,7 +4168,7 @@ public final class Arithmetic {
 				if (o1.isComplexInfinity()) {
 					return F.CComplexInfinity;
 				}
-				if (!o1.isZero()) { 
+				if (!o1.isZero()) {
 					if (o1.isNegativeResult()) {
 						return F.CInfinity;
 					}

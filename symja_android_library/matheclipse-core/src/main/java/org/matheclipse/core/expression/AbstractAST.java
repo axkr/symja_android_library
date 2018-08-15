@@ -639,6 +639,9 @@ public abstract class AbstractAST implements IASTMutable {
 
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
+		// if ((getEvalFlags() & IAST.DEFER_AST) == IAST.DEFER_AST) {
+		// return F.NIL;
+		// }
 		if (Config.DEBUG) {
 			System.out.println(toString());
 		}

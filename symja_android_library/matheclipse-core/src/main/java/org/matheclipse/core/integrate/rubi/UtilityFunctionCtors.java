@@ -15,6 +15,7 @@ import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
@@ -53,6 +54,7 @@ public class UtilityFunctionCtors {
 	public final static ISymbol Y = initFinalHiddenSymbol("Y");
 	public final static ISymbol Z = initFinalHiddenSymbol("Z");
 
+	public static ISymbol Dist = org.matheclipse.core.expression.F.initFinalHiddenSymbol(INTEGRATE_PREFIX + "Dist");
 	public static ISymbol IntegerPowerQ = org.matheclipse.core.expression.F
 			.initFinalHiddenSymbol(INTEGRATE_PREFIX + "IntegerPowerQ");
 	public static ISymbol FractionalPowerQ = org.matheclipse.core.expression.F
@@ -211,11 +213,11 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST Dist(final IExpr a0, final IExpr a1) {
-		return binaryAST2($s(INTEGRATE_PREFIX + "Dist"), a0, a1);
+		return binaryAST2(Dist, a0, a1);
 	}
 
 	public static IAST Dist(final IExpr a0, final IExpr a1, final IExpr a2) {
-		return ternaryAST3($s(INTEGRATE_PREFIX + "Dist"), a0, a1, a2);
+		return ternaryAST3(Dist, a0, a1, a2);
 	}
 
 	// private static ISymbol $sDBG(final String symbolName) {
@@ -552,7 +554,7 @@ public class UtilityFunctionCtors {
 	public static IAST FixInertTrigFunction(final IExpr a0, final IExpr a1) {
 		return binaryAST2($s(INTEGRATE_PREFIX + "FixInertTrigFunction"), a0, a1);
 	}
-	
+
 	public static IAST FixIntRule(final IExpr a0) {
 		return unaryAST1($s(INTEGRATE_PREFIX + "FixIntRule"), a0);
 	}
@@ -1918,12 +1920,117 @@ public class UtilityFunctionCtors {
 		return unaryAST1($s(INTEGRATE_PREFIX + "TrigSquare"), a0);
 	}
 
-	// public static IAST ZeroQ(final IExpr a0) {
-	// return unaryAST1($s(INTEGRATE_PREFIX + "ZeroQ"), a0);
-	// }
-	//
-	// public static IAST ZeroQ(final IExpr... a) {
-	// return ast(a, $s(INTEGRATE_PREFIX + "ZeroQ"));
-	// }
+	/**
+	 * <pre>
+	 * w_*Dist[u_,v_,x_] :=
+	 *     Dist[w*u,v,x] /;
+	 *     w=!=-1
+	 * </pre>
+	 * 
+	 * @param astTimes
+	 * @return
+	 */
+	public static IExpr evalRubiDistTimes(IAST astTimes) {
+		for (int i = 1; i < astTimes.size(); i++) {
+			IExpr temp = astTimes.get(i);
+			if (temp.isAST(Dist) && temp.size() == 4) {
+				IAST dist = (IAST) temp;
+				temp = astTimes.removeAtClone(i).getOneIdentity(F.C1);
+				if (!temp.isMinusOne()) {
+					// System.out.println("w_*Dist[u_,v_,x_]");
+					// Dist[ temp *u,v,x]
+					return Dist(F.Times(temp, dist.arg1()), dist.arg2(), dist.arg3());
+				}
+			}
+		}
+		return F.NIL;
+	}
+
+	/**
+	 * Rule 1:
+	 * 
+	 * <pre>
+	 * Dist[u_,v_,x_]+Dist[w_,v_,x_] :=
+	 *     If[EqQ[u+w,0],
+	 *     0,
+	 *     Dist[u+w,v,x]]
+	 * </pre>
+	 * 
+	 * Rule 2:
+	 * 
+	 * <pre>
+	 * Dist[u_,v_,x_]-Dist[w_,v_,x_] :=
+	 *     If[EqQ[u-w,0],
+	 *     0,
+	 *     Dist[u-w,v,x]]
+	 * </pre>
+	 * 
+	 * @param astTimes
+	 * @return
+	 */
+	public static IExpr evalRubiDistPlus(IAST astPlus) {
+		for (int i = 1; i < astPlus.size() - 1; i++) {
+			IExpr arg1 = astPlus.get(i);
+			if (arg1.isAST(Dist) && arg1.size() == 4) {
+				// dist1 = Dist[u_,v_,x_]
+				IAST dist1 = (IAST) arg1;
+				IExpr v = dist1.arg2();
+				IExpr x = dist1.arg2();
+				for (int j = i + 1; j < astPlus.size(); j++) {
+					IExpr arg2 = astPlus.get(j);
+					if (arg2.isAST(Dist) && arg2.size() == 4 && arg2.getAt(2).equals(v) && arg2.getAt(2).equals(x)) {
+						// dist2=Dist[w_,v_,x_]
+						IAST dist2 = (IAST) arg2;
+						IASTAppendable result = astPlus.removeAtClone(j);
+						result.remove(i);
+						// Dist /: Dist[u_,v_,x_]+Dist[w_,v_,x_] :=
+						// If[EqQ[u+w,0],
+						// 0,
+						// Dist[u+w,v,x]]
+						IExpr p = F.Plus(dist1.arg1(), dist2.arg1());
+						result.append(F.If(EqQ(p, F.C0), F.C0, Dist(p, v, x)));
+						return result;
+					}
+					if (arg2.isTimes() && arg2.size() == 3 && arg2.first().isMinusOne() && arg2.second().isAST(Dist)) {
+						// -1 * Dist[w_,v_,x_]
+						IAST dist2 = (IAST) arg2.second();
+						if (dist2.size() == 4 && dist2.getAt(2).equals(v) && dist2.getAt(2).equals(x)) {
+							IASTAppendable result = astPlus.removeAtClone(j);
+							result.remove(i);
+							// Dist /: Dist[u_,v_,x_]-Dist[w_,v_,x_] :=
+							// If[EqQ[u-w,0],
+							// 0,
+							// Dist[u-w,v,x]]
+							IExpr p = F.Subtract(dist1.arg1(), dist2.arg1());
+							result.append(F.If(EqQ(p, F.C0), F.C0, Dist(p, v, x)));
+							return result;
+						}
+					}
+				}
+			} else if (arg1.isTimes() && arg1.size() == 3 && arg1.first().isMinusOne() && arg1.second().isAST(Dist)) {
+				// -1 * Dist[w_,v_,x_]
+				IAST dist1 = (IAST) arg1.second();
+				IExpr v = dist1.arg2();
+				IExpr x = dist1.arg2();
+				for (int j = i + 1; j < astPlus.size(); j++) {
+					IExpr arg2 = astPlus.get(j);
+					if (arg2.isAST(Dist) && arg2.size() == 4 && arg2.getAt(2).equals(v) && arg2.getAt(2).equals(x)) {
+						// dist2 = Dist[u_,v_,x_]
+						IAST dist2 = (IAST) arg2;
+						IASTAppendable result = astPlus.removeAtClone(j);
+						result.remove(i);
+						// Dist /: Dist[u_,v_,x_]-Dist[w_,v_,x_] :=
+						// If[EqQ[u-w,0],
+						// 0,
+						// Dist[u-w,v,x]]
+						IExpr p = F.Subtract(dist2.arg1(), dist1.arg1());
+						result.append(F.If(EqQ(p, F.C0), F.C0, Dist(p, v, x)));
+						return result;
+					}
+				}
+			}
+		}
+		return F.NIL;
+	}
 
 }

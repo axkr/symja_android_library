@@ -37,15 +37,16 @@ import static org.matheclipse.core.expression.F.w_;
 import static org.matheclipse.core.expression.F.x;
 import static org.matheclipse.core.expression.F.x_;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Dist;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.EqQ;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.NumericFactor;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Simp;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SumQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.EqQ;
 
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.expression.Pattern;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IPattern;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -152,37 +153,37 @@ public class UtilityFunctions {
 	// return unary($s("DownValues"), a);
 	// }
 
-	public static IAST RULES = F.ListAlloc(ISetDelayed(Dist(u_, Dist(v_, w_, x_), x_), Dist(Times(u, v), w, x)),
-			ISetDelayed(Dist(u_, v_, x_), If(SameQ(u, C1), v, If(SameQ(u, C0),
-					CompoundExpression(Print($str("*** Warning ***:  Dist[0,"), v, $str(" "), x, $str("]")), C0),
-					If(And(Less(NumericFactor(u), C0), Greater(NumericFactor(Times(CN1, u)), C0)),
-							Times(CN1, Dist(Times(CN1, u), v, x)),
-							If(SumQ(v), Map(Function(Dist(u, Slot1, x)), v),
-									If(FreeQ(v, $s("Int")), Simp(Times(u, v), x),
-											Module(List(Set(w, Times(Simp(Times(u, Sqr(x)), x), Power(Sqr(x), CN1)))),
-													If(And(And(UnsameQ(w, u), FreeQ(w, x)), SameQ(w, Simp(w, x))),
-															Dist(w, v, x),
-															$(Defer($s("Integrate::Dist")), u, v, x))))))))));
+	// public static IAST RULES = F.ListAlloc(ISetDelayed(Dist(u_, Dist(v_, w_, x_), x_), Dist(Times(u, v), w, x)),
+	// ISetDelayed(Dist(u_, v_, x_), If(SameQ(u, C1), v, If(SameQ(u, C0),
+	// CompoundExpression(Print($str("*** Warning ***: Dist[0,"), v, $str(" "), x, $str("]")), C0),
+	// If(And(Less(NumericFactor(u), C0), Greater(NumericFactor(Times(CN1, u)), C0)),
+	// Times(CN1, Dist(Times(CN1, u), v, x)),
+	// If(SumQ(v), Map(Function(Dist(u, Slot1, x)), v),
+	// If(FreeQ(v, $s("Int")), Simp(Times(u, v), x),
+	// Module(List(Set(w, Times(Simp(Times(u, Sqr(x)), x), Power(Sqr(x), CN1)))),
+	// If(And(And(UnsameQ(w, u), FreeQ(w, x)), SameQ(w, Simp(w, x))),
+	// Dist(w, v, x),
+	// $(Defer($s("Integrate::Dist")), u, v, x))))))))));
 
-	public static void init() {
+//	public static void init() {
 		// Dist[u_,v_,x_]+Dist[w_,v_,x_] :=
 		// If[EqQ[u+w,0],
 		// 0,
 		// Dist[u+w,v,x]]
-		Arithmetic.CONST_PLUS.defineHashRule(Dist(u_, v_, x_), Dist(w_, v_, x_),
-				If(EqQ(Plus(u, w), C0), C0, Dist(Plus(u, w), v, x)), null);
+		// Arithmetic.CONST_PLUS.defineHashRule(Dist(u_, v_, x_), Dist(w_, v_, x_),
+		// If(EqQ(Plus(u, w), C0), C0, Dist(Plus(u, w), v, x)), null);
 
 		// Dist[u_,v_,x_]-Dist[w_,v_,x_] :=
 		// If[EqQ[u-w,0],
 		// 0,
 		// Dist[u-w,v,x]]
-		Arithmetic.CONST_PLUS.defineHashRule(Dist(u_, v_, x_), Times(CN1, Dist(w_, v_, x_)),
-				If(EqQ(Subtract(u,  w ), C0), C0, Dist(Subtract(u, w ), v, x)), null);
+		// Arithmetic.CONST_PLUS.defineHashRule(Dist(u_, v_, x_), Times(CN1, Dist(w_, v_, x_)),
+		// If(EqQ(Subtract(u, w), C0), C0, Dist(Subtract(u, w), v, x)), null);
 
-		// w_*Dist[u_,v_,x_] := 
+		// w_*Dist[u_,v_,x_] :=
 		// Dist[w*u,v,x] /;
 		// w=!=-1
-		Arithmetic.CONST_TIMES.defineHashRule(Dist(u_, v_, x_), w_, Dist(Times(w, u), v, x), UnsameQ(w, CN1));
+		// Arithmetic.CONST_TIMES.defineHashRule(Dist(u_, v_, x_), w_, Dist(Times(w, u), v, x), UnsameQ(w, CN1));
 
-	} 
+//	}
 }

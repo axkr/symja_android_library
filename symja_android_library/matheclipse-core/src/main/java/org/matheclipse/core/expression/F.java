@@ -7672,7 +7672,7 @@ public class F {
 		return unaryAST1(QRDecomposition, a0);
 	}
 
-	public final static IASTMutable quaternary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2,
+	public final static IASTAppendable quaternary(final IExpr head, final IExpr a0, final IExpr a1, final IExpr a2,
 			final IExpr a3) {
 		return new AST(new IExpr[] { head, a0, a1, a2, a3 });
 	}

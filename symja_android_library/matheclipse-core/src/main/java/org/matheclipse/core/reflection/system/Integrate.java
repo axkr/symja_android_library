@@ -1233,8 +1233,8 @@ public class Integrate extends AbstractFunctionEvaluator {
 	}
 
 	private static IAST getUtilityFunctionsRuleASTRubi45() {
-		IAST ast = org.matheclipse.core.integrate.rubi.UtilityFunctions.RULES;
-		ast = org.matheclipse.core.integrate.rubi.UtilityFunctions0.RULES;
+		// IAST ast = org.matheclipse.core.integrate.rubi.UtilityFunctions.RULES;
+		IAST ast = org.matheclipse.core.integrate.rubi.UtilityFunctions0.RULES;
 		ast = org.matheclipse.core.integrate.rubi.UtilityFunctions1.RULES;
 		ast = org.matheclipse.core.integrate.rubi.UtilityFunctions2.RULES;
 		ast = org.matheclipse.core.integrate.rubi.UtilityFunctions3.RULES;
@@ -1245,7 +1245,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		ast = org.matheclipse.core.integrate.rubi.UtilityFunctions7.RULES;
 		ast = org.matheclipse.core.integrate.rubi.UtilityFunctions8.RULES;
 
-		org.matheclipse.core.integrate.rubi.UtilityFunctions.init();
+		// org.matheclipse.core.integrate.rubi.UtilityFunctions.init();
 		return ast;
 	}
 

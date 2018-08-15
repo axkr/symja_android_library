@@ -21,6 +21,7 @@ import org.matheclipse.core.eval.exception.IllegalArgument;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
+import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
@@ -732,6 +733,11 @@ public class EvalEngine implements Serializable {
 				}
 			}
 
+			result = evalTagSetPlusTimes(tempAST);
+			if (result.isPresent()) {
+				return result;
+			}
+
 			IASTMutable resultList = evalArgs(tempAST, attr);
 			if (resultList.isPresent()) {
 				returnResult = resultList;
@@ -764,6 +770,27 @@ public class EvalEngine implements Serializable {
 
 		return F.NIL;
 
+	}
+
+	/**
+	 * Currently only the Rubi TagSet rules for <code>Dist()</code> are implemented
+	 * 
+	 * @param tempAST
+	 * @return
+	 */
+	private IExpr evalTagSetPlusTimes(IAST ast) {
+		if (ast.isPlus()) {
+			IExpr temp2 = UtilityFunctionCtors.evalRubiDistPlus(ast);
+			if (temp2.isPresent()) {
+				return temp2;
+			}
+		} else if (ast.isTimes()) {
+			IExpr temp2 = UtilityFunctionCtors.evalRubiDistTimes(ast);
+			if (temp2.isPresent()) {
+				return temp2;
+			}
+		}
+		return F.NIL;
 	}
 
 	/**

@@ -381,9 +381,12 @@ public final class Programming {
 			if (!ToggleFeature.DEFER) {
 				return F.NIL;
 			}
-			// Validate.checkSize(ast, 2);
-			// IExpr arg1 = engine.evaluate(ast.arg1());
-
+//			IExpr arg1=ast.arg1();
+//			if (arg1.isAST()){
+//				IAST copy=(IAST)arg1.copy();
+//				copy.addEvalFlags(IAST.DEFER_AST);
+//				return copy;
+//			}
 			return F.NIL;
 		}
 

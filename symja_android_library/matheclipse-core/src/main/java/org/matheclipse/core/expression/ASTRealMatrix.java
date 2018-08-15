@@ -337,6 +337,9 @@ public class ASTRealMatrix extends AbstractAST implements Cloneable, Externaliza
 	/** {@inheritDoc} */
 	@Override
 	public IExpr evaluate(EvalEngine engine) {
+//		if ((getEvalFlags() & IAST.DEFER_AST) == IAST.DEFER_AST) {
+//			return F.NIL;
+//		}
 		return F.NIL;
 	}
 
