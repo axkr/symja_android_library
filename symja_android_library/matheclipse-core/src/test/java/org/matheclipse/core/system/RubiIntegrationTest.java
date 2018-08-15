@@ -624,4 +624,28 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		check("Expand(TrigToExp(Sin(2*x)/4-Sin(4*x)/8))", //
 				"(-I*1/16)/E^(I*4*x)+(I*1/8)/E^(I*2*x)-I*1/8*E^(I*2*x)+I*1/16*E^(I*4*x)");
 	}
+
+	// {(a+b*x)^m/(c+d*x), x, 1, ((a+b*x)^(1+m)*Hypergeometric2F1(1, 1+m, 2+m, -((d*(a+b*x))/(b*c -
+	// a*d))))/((b*c-a*d)*(1+m))}
+	public void test00480() {
+		check("Integrate((a+b*x)^m/(c+d*x), x)", //
+				"((a+b*x)^(1+m)*Hypergeometric2F1(1,1+m,2+m,(-d*(a+b*x))/(b*c-a*d)))/((b*c-a*d)*(\n" + "1+m))");
+
+	}
+
+	// {(a+b*x)^m/(c+d*x)^2, x, 1, (b*(a+b*x)^(1+m)*Hypergeometric2F1(2, 1+m, 2+m, -((d*(a+b*x))/(b*c -
+	// a*d))))/((b*c-a*d)^2*(1+m))}
+	public void test00481() {
+		check("Integrate((a+b*x)^m/(c+d*x)^2, x)", //
+				"(b*(a+b*x)^(1+m)*Hypergeometric2F1(2,1+m,2+m,(-d*(a+b*x))/(b*c-a*d)))/((b*c-a*d)^\n" + "2*(1+m))");
+
+	}
+
+	// {Sqrt(d+e*x)/((f+g*x)^(3/2)*Sqrt(a*d*e+(c*d^2+a*e^2)*x+c*d*e*x^2)), x, 1, (2*Sqrt(a*d*e+(c*d^2 +
+	// a*e^2)*x+c*d*e*x^2))/((c*d*f-a*e*g)*Sqrt(d+e*x)*Sqrt(f+g*x))}
+	public void test01400() {
+		// TODO sometimes works sometimes don't - seems to be a JAS random seed problem???
+		// check("Integrate(Sqrt(d+e*x)/((f+g*x)^(3/2)*Sqrt(a*d*e+(c*d^2+a*e^2)*x+c*d*e*x^2)), x)", //
+		// "(2*Sqrt(a*d*e+(c*d^2+a*e^2)*x+c*d*e*x^2))/((c*d*f-a*e*g)*Sqrt(d+e*x)*Sqrt(f+g*x))");
+	}
 }

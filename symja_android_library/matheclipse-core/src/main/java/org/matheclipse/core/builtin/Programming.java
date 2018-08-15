@@ -24,6 +24,7 @@ import org.matheclipse.core.eval.exception.BreakException;
 import org.matheclipse.core.eval.exception.ConditionException;
 import org.matheclipse.core.eval.exception.ContinueException;
 import org.matheclipse.core.eval.exception.NoEvalException;
+import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.ReturnException;
 import org.matheclipse.core.eval.exception.ThrowException;
 import org.matheclipse.core.eval.exception.Validate;
@@ -43,6 +44,7 @@ import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.patternmatching.IPatternMatcher;
 import org.matheclipse.core.visit.ModuleReplaceAll;
+import org.matheclipse.parser.client.SyntaxError;
 import org.matheclipse.parser.client.math.MathException;
 
 import com.google.common.util.concurrent.SimpleTimeLimiter;
@@ -381,12 +383,12 @@ public final class Programming {
 			if (!ToggleFeature.DEFER) {
 				return F.NIL;
 			}
-//			IExpr arg1=ast.arg1();
-//			if (arg1.isAST()){
-//				IAST copy=(IAST)arg1.copy();
-//				copy.addEvalFlags(IAST.DEFER_AST);
-//				return copy;
-//			}
+			// IExpr arg1=ast.arg1();
+			// if (arg1.isAST()){
+			// IAST copy=(IAST)arg1.copy();
+			// copy.addEvalFlags(IAST.DEFER_AST);
+			// return copy;
+			// }
 			return F.NIL;
 		}
 
@@ -1785,21 +1787,41 @@ public final class Programming {
 	 */
 	private static class TimeConstrained extends AbstractCoreFunctionEvaluator {
 
-		private static class EvalCallable implements Callable<IExpr> {
+		class EvalControlledCallable implements Callable<IExpr> {
 			private final EvalEngine fEngine;
-			private final IExpr fExpr;
+			private IExpr fExpr;
 
-			public EvalCallable(IExpr expr, EvalEngine engine) {
-				fExpr = expr;
+			public EvalControlledCallable(EvalEngine engine) {
 				fEngine = engine;
 			}
 
 			@Override
 			public IExpr call() throws Exception {
-				// TODO Auto-generated method stub
-				return fEngine.evaluate(fExpr);
+				try {
+					return fEngine.evaluate(fExpr);
+				} catch (final SyntaxError se) {
+					String msg = se.getMessage();
+					fEngine.printMessage(msg);
+				} catch (final RecursionLimitExceeded re) {
+					throw re;
+				} catch (final RuntimeException re) {
+					if (Config.SHOW_STACKTRACE) {
+						re.printStackTrace();
+					}
+					fEngine.printMessage(re.getMessage());
+				} catch (final Exception e) {
+					fEngine.printMessage(e.getMessage());
+				} catch (final OutOfMemoryError e) {
+					fEngine.printMessage(e.getMessage());
+				} catch (final StackOverflowError e) {
+					fEngine.printMessage(e.getMessage());
+				}
+				return F.$Aborted;
 			}
 
+			public void setExpr(IExpr fExpr) {
+				this.fExpr = fExpr;
+			}
 		}
 
 		@Override
@@ -1840,8 +1862,8 @@ public final class Programming {
 			}
 
 			TimeLimiter timeLimiter = SimpleTimeLimiter.create(Executors.newSingleThreadExecutor());
-			Callable<IExpr> work = new EvalCallable(ast.arg1(), engine);
-
+			EvalControlledCallable work = new EvalControlledCallable(engine);
+			work.setExpr(ast.arg1());
 			try {
 				return timeLimiter.callWithTimeout(work, seconds, TimeUnit.SECONDS);
 			} catch (java.util.concurrent.TimeoutException e) {
@@ -1855,6 +1877,10 @@ public final class Programming {
 				}
 				return F.$Aborted;
 			} catch (Exception e) {
+				Throwable re = e.getCause();
+				if (re instanceof RecursionLimitExceeded) {
+					throw (RecursionLimitExceeded) re;
+				}
 				if (Config.DEBUG) {
 					e.printStackTrace();
 				}

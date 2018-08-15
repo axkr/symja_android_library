@@ -1455,7 +1455,7 @@ public class EvalEngine implements Serializable {
 		try {
 			return evaluate(expr).isTrue();
 		} catch (MathException fce) {
-			if (Config.DEBUG) {
+			if (Config.SHOW_STACKTRACE) {
 				fce.printStackTrace();
 			}
 			return false;
@@ -1474,7 +1474,6 @@ public class EvalEngine implements Serializable {
 		boolean numericMode = fNumericMode;
 		try {
 			return evalWithoutNumericReset(expr);
-
 		} finally {
 			fNumericMode = numericMode;
 		}

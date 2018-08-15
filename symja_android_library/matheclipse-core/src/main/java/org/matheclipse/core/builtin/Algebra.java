@@ -1543,10 +1543,16 @@ public class Algebra {
 			FactorAbstract<edu.jas.arith.BigInteger> factorAbstract = FactorFactory
 					.getImplementation(edu.jas.arith.BigInteger.ONE);
 			SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
-			if (factorSquareFree) {
-				map = factorAbstract.squarefreeFactors(poly);// factors(poly);
-			} else {
-				map = factorAbstract.factors(poly);
+			try {
+				if (factorSquareFree) {
+					map = factorAbstract.squarefreeFactors(poly);// factors(poly);
+				} else {
+					// System.out.println("Variable: " + varList.toString() + " -- " + expr.fullFormString());
+					// System.out.println(poly);
+					map = factorAbstract.factors(poly);
+				}
+			} catch (RuntimeException rex) {
+				return expr;
 			}
 			IASTAppendable result = F.TimesAlloc(map.size() + 1);
 			java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
@@ -1565,35 +1571,6 @@ public class Algebra {
 				}
 			}
 			return result.getOneIdentity(F.C0);
-		}
-
-		public static IExpr factorList(IExpr expr, List<IExpr> varList, boolean factorSquareFree)
-				throws JASConversionException {
-			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
-			GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, false);
-			Object[] objects = jas.factorTerms(polyRat);
-			java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
-			java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
-			GenPolynomial<edu.jas.arith.BigInteger> poly = (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
-			FactorAbstract<edu.jas.arith.BigInteger> factorAbstract = FactorFactory
-					.getImplementation(edu.jas.arith.BigInteger.ONE);
-			SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
-			if (factorSquareFree) {
-				map = factorAbstract.squarefreeFactors(poly);// factors(poly);
-			} else {
-				map = factorAbstract.factors(poly);
-			}
-			IASTAppendable result = F.ListAlloc(map.size() + 1);
-			if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
-				result.append(F.List(F.fraction(gcd, lcm), F.C1));
-			}
-			for (SortedMap.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map.entrySet()) {
-				if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
-					continue;
-				}
-				result.append(F.List(jas.integerPoly2Expr(entry.getKey()), F.integer(entry.getValue())));
-			}
-			return result;
 		}
 
 		/**
@@ -1718,6 +1695,38 @@ public class Algebra {
 			return F.NIL;
 		}
 
+		private static IExpr factorList(IExpr expr, List<IExpr> varList, boolean factorSquareFree)
+				throws JASConversionException {
+			JASConvert<BigRational> jas = new JASConvert<BigRational>(varList, BigRational.ZERO);
+			GenPolynomial<BigRational> polyRat = jas.expr2JAS(expr, false);
+			Object[] objects = jas.factorTerms(polyRat);
+			java.math.BigInteger gcd = (java.math.BigInteger) objects[0];
+			java.math.BigInteger lcm = (java.math.BigInteger) objects[1];
+			GenPolynomial<edu.jas.arith.BigInteger> poly = (GenPolynomial<edu.jas.arith.BigInteger>) objects[2];
+			FactorAbstract<edu.jas.arith.BigInteger> factorAbstract = FactorFactory
+					.getImplementation(edu.jas.arith.BigInteger.ONE);
+			SortedMap<GenPolynomial<edu.jas.arith.BigInteger>, Long> map;
+			try {
+				if (factorSquareFree) {
+					map = factorAbstract.squarefreeFactors(poly);// factors(poly);
+				} else {
+					map = factorAbstract.factors(poly);
+				}
+			} catch (RuntimeException rex) {
+				return F.List(expr);
+			}
+			IASTAppendable result = F.ListAlloc(map.size() + 1);
+			if (!gcd.equals(java.math.BigInteger.ONE) || !lcm.equals(java.math.BigInteger.ONE)) {
+				result.append(F.List(F.fraction(gcd, lcm), F.C1));
+			}
+			for (SortedMap.Entry<GenPolynomial<edu.jas.arith.BigInteger>, Long> entry : map.entrySet()) {
+				if (entry.getKey().isONE() && entry.getValue().equals(1L)) {
+					continue;
+				}
+				result.append(F.List(jas.integerPoly2Expr(entry.getKey()), F.integer(entry.getValue())));
+			}
+			return result;
+		}
 	}
 
 	/**
@@ -4060,14 +4069,26 @@ public class Algebra {
 		return F.NIL;
 	}
 
+	/**
+	 * 
+	 * @param jas
+	 * @param modIntegerRing
+	 * @param poly
+	 * @param factorSquareFree
+	 * @return <code>F.NIL</code> if evaluation is impossible.
+	 */
 	public static IAST factorModulus(JASModInteger jas, ModLongRing modIntegerRing, GenPolynomial<ModLong> poly,
 			boolean factorSquareFree) {
 		FactorAbstract<ModLong> factorAbstract = FactorFactory.getImplementation(modIntegerRing);
 		SortedMap<GenPolynomial<ModLong>, Long> map;
-		if (factorSquareFree) {
-			map = factorAbstract.squarefreeFactors(poly);
-		} else {
-			map = factorAbstract.factors(poly);
+		try {
+			if (factorSquareFree) {
+				map = factorAbstract.squarefreeFactors(poly);
+			} else {
+				map = factorAbstract.factors(poly);
+			}
+		} catch (RuntimeException rex) {
+			return F.NIL;
 		}
 		IASTAppendable result = F.TimesAlloc(map.size());
 		for (SortedMap.Entry<GenPolynomial<ModLong>, Long> entry : map.entrySet()) {

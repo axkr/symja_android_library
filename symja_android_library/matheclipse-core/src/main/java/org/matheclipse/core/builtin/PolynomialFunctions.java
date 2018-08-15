@@ -2362,7 +2362,7 @@ public class PolynomialFunctions {
 			}
 			result = QuarticSolver.createSet(result);
 			return result;
-		} catch (JASConversionException e) {
+		} catch (RuntimeException rex) {
 			result = rootsOfExprPolynomial(expr, variables, true);
 		}
 		if (result.isPresent()) {
