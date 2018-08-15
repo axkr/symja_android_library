@@ -1211,9 +1211,9 @@ public class UtilityFunctionCtors {
 		return unaryAST1(NonsumQ, a0);
 	}
 
-	public static IAST NonzeroQ(final IExpr a0) {
-		return unaryAST1($s(INTEGRATE_PREFIX + "NonzeroQ"), a0);
-	}
+	// public static IAST NonzeroQ(final IExpr a0) {
+	// return unaryAST1($s(INTEGRATE_PREFIX + "NonzeroQ"), a0);
+	// }
 
 	public static IAST NormalizeHyperbolic(final IExpr a0, final IExpr a1, final IExpr a2, final IExpr a3) {
 		return quaternary($s(INTEGRATE_PREFIX + "NormalizeHyperbolic"), a0, a1, a2, a3);
@@ -1914,12 +1914,12 @@ public class UtilityFunctionCtors {
 		return unaryAST1($s(INTEGRATE_PREFIX + "TrigSquare"), a0);
 	}
 
-	public static IAST ZeroQ(final IExpr a0) {
-		return unaryAST1($s(INTEGRATE_PREFIX + "ZeroQ"), a0);
-	}
-
-	public static IAST ZeroQ(final IExpr... a) {
-		return ast(a, $s(INTEGRATE_PREFIX + "ZeroQ"));
-	}
+	// public static IAST ZeroQ(final IExpr a0) {
+	// return unaryAST1($s(INTEGRATE_PREFIX + "ZeroQ"), a0);
+	// }
+	//
+	// public static IAST ZeroQ(final IExpr... a) {
+	// return ast(a, $s(INTEGRATE_PREFIX + "ZeroQ"));
+	// }
 
 }

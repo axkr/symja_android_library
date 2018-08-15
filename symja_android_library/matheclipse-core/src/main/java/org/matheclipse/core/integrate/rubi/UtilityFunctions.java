@@ -25,6 +25,7 @@ import static org.matheclipse.core.expression.F.SameQ;
 import static org.matheclipse.core.expression.F.Set;
 import static org.matheclipse.core.expression.F.Slot1;
 import static org.matheclipse.core.expression.F.Sqr;
+import static org.matheclipse.core.expression.F.Subtract;
 import static org.matheclipse.core.expression.F.Times;
 import static org.matheclipse.core.expression.F.UnsameQ;
 import static org.matheclipse.core.expression.F.u;
@@ -39,7 +40,7 @@ import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Dist;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.NumericFactor;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Simp;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SumQ;
-import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.ZeroQ;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.EqQ;
 
 import org.matheclipse.core.builtin.Arithmetic;
 import org.matheclipse.core.expression.F;
@@ -164,17 +165,24 @@ public class UtilityFunctions {
 															$(Defer($s("Integrate::Dist")), u, v, x))))))))));
 
 	public static void init() {
-		// Dist[u_,v_,x_]+Dist[w_,v_,x_] := If[ZeroQ[u+w], 0, Dist[u+w,v,x]]
+		// Dist[u_,v_,x_]+Dist[w_,v_,x_] :=
+		// If[EqQ[u+w,0],
+		// 0,
+		// Dist[u+w,v,x]]
 		Arithmetic.CONST_PLUS.defineHashRule(Dist(u_, v_, x_), Dist(w_, v_, x_),
-				If(ZeroQ(Plus(u, w)), C0, Dist(Plus(u, w), v, x)), null);
+				If(EqQ(Plus(u, w), C0), C0, Dist(Plus(u, w), v, x)), null);
 
-		// Dist[u_,v_,x_]-Dist[w_,v_,x_] := If[ZeroQ[u-w], 0, Dist[u-w,v,x]]
+		// Dist[u_,v_,x_]-Dist[w_,v_,x_] :=
+		// If[EqQ[u-w,0],
+		// 0,
+		// Dist[u-w,v,x]]
 		Arithmetic.CONST_PLUS.defineHashRule(Dist(u_, v_, x_), Times(CN1, Dist(w_, v_, x_)),
-				If(ZeroQ(Plus(u, Times(CN1, w))), C0, Dist(Plus(u, Times(CN1, w)), v, x)), null);
+				If(EqQ(Subtract(u,  w ), C0), C0, Dist(Subtract(u, w ), v, x)), null);
 
-		// w_*Dist[u_,v_,x_] := Dist[w*u,v,x] /; w=!=-1
+		// w_*Dist[u_,v_,x_] := 
+		// Dist[w*u,v,x] /;
+		// w=!=-1
 		Arithmetic.CONST_TIMES.defineHashRule(Dist(u_, v_, x_), w_, Dist(Times(w, u), v, x), UnsameQ(w, CN1));
 
-	}
-
+	} 
 }
