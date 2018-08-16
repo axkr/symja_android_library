@@ -21,7 +21,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
-import edu.jas.kern.PreemptStatus;
 import edu.jas.kern.PrettyPrint;
 import edu.jas.kern.Scripting;
 import edu.jas.structure.RingFactory;
@@ -33,9 +32,6 @@ import edu.jas.util.LongIterable;
  * GenPolynomialRing generic polynomial factory implementing ExprRingFactory; Factory for n-variate ordered polynomials
  * over C. Almost immutable object, except variable names.
  * 
- * @param <C>
- *            coefficient type
- * @author Heinz Kredel
  */
 
 public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
@@ -100,22 +96,7 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 	 * Indicator if this ring is a field.
 	 */
 	protected int isField = -1; // initially unknown
-
-	/**
-	 * Log4j logger object.
-	 */
-	// private static final Logger logger = Logger.getLogger(ExprPolynomialRing.class);
-
-	/**
-	 * Count for number of polynomial creations.
-	 */
-	// public static int creations = 0;
-
-	/**
-	 * Flag to enable if preemptive interrrupt is checked.
-	 */
-	final boolean checkPreempt = PreemptStatus.isAllowed();
-
+ 
 	final boolean numericFunction;
 
 	/**
@@ -637,29 +618,14 @@ public class ExprPolynomialRing implements RingFactory<ExprPolynomial> {
 			return true;
 		}
 		return false;
-	}
-
-	/**
-	 * Get the position of the <code>expr</code> in the variables list.
-	 * 
-	 * @param expr
-	 * @return <code>-1</code> if the expression isn't found in the variable list.
-	 */
-	private int isVariable(final IExpr expr) {
-		for (int i = 1; i < vars.size(); i++) {
-			if (vars.get(i).equals(expr)) {
-				return i - 1;
-			}
-		}
-		return -1;
-	}
+	} 
 
 	/**
 	 * Get the String representation.
 	 * 
 	 * @see java.lang.Object#toString()
 	 */
-	@SuppressWarnings("cast")
+//	@SuppressWarnings("cast")
 	@Override
 	public String toString() {
 		String res = null;

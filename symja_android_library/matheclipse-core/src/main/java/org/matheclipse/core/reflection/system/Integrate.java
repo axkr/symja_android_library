@@ -35,7 +35,6 @@ import org.matheclipse.core.generic.Predicates;
 import org.matheclipse.core.integrate.rubi.UtilityFunctionCtors;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 import org.matheclipse.core.polynomials.PartialFractionIntegrateGenerator;
@@ -197,7 +196,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 				DEBUG_EXPR.add(arg1);
 			}
 			if (arg1.isAST()) {
-				IAST fx = (IAST) arg1;
+				final IAST fx = (IAST) arg1;
 				if (fx.topHead().equals(x)) {
 					// issue #91
 					return F.NIL;
@@ -268,24 +267,37 @@ public class Integrate extends AbstractFunctionEvaluator {
 						}
 					}
 				}
-				IExpr fxExpanded = F.expand(fx, true, false, false);
+				// >>>
+				if (fx.isTimes() || fx.isPower()) {
+					// deleted - Rubi seems to work w/o second try: result = integrateByRubiRules(ast,
+					// (IAST) fxExpanded);
+					if (!calledRubi) {
+						result = integrateByRubiRules(ast, F.NIL);
+						if (result.isPresent()) {
+							return result;
+						}
+						calledRubi = true;
+					}
+				}
+				// <<<
+				IExpr fxExpanded = F.expand(fx, false, false, false);
 				if (fxExpanded.isAST()) {
 					if (fxExpanded.isPlus()) {
-						if (fxExpanded != fx) {
-							if (fxExpanded.isPolynomial(x)) {
-								if (arg1.isTimes()) {
-									// deleted - Rubi seems to work w/o second try: result = integrateByRubiRules(ast,
-									// (IAST) fxExpanded);
-									if (!calledRubi) {
-										result = integrateByRubiRules(ast, F.NIL);
-										if (result.isPresent()) {
-											return result;
-										}
-										calledRubi = true;
-									}
-								}
-							}
-						}
+						// if (fxExpanded != fx) {
+						// if (fxExpanded.isPolynomial(x)) {
+						// if (fx.isTimes()||fx.isPower()) {
+						// // deleted - Rubi seems to work w/o second try: result = integrateByRubiRules(ast,
+						// // (IAST) fxExpanded);
+						// if (!calledRubi) {
+						// result = integrateByRubiRules(ast, F.NIL);
+						// if (result.isPresent()) {
+						// return result;
+						// }
+						// calledRubi = true;
+						// }
+						// }
+						// }
+						// }
 
 						// Integrate[a_+b_+...,x_] ->
 						// Integrate[a,x]+Integrate[b,x]+...

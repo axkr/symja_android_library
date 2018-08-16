@@ -27,7 +27,7 @@ public abstract class AbstractRubiTestCase extends TestCase {
 	/**
 	 * Timeout limit in seconds as the default value for Symja expression evaluation.
 	 */
-	private long fSeconds = 3;
+	private long fSeconds = 60;
 
 	public AbstractRubiTestCase(String name) {
 		super(name);
@@ -74,6 +74,8 @@ public abstract class AbstractRubiTestCase extends TestCase {
 			if (fSeconds <= 0) {
 				result = fEvaluator.eval(inputExpression);
 			} else {
+				EvalEngine engine = fEvaluator.getEvalEngine();
+				engine.setSeconds(fSeconds);
 				result = fEvaluator.evaluateWithTimeout(inputExpression, fSeconds, TimeUnit.SECONDS, true,
 						new EvalControlledCallable(fEvaluator.getEvalEngine()));
 			}
@@ -154,9 +156,8 @@ public abstract class AbstractRubiTestCase extends TestCase {
 	@Override
 	protected void setUp() {
 		try {
-			fEvaluator = new ExprEvaluator(false, 100);
+			fEvaluator = new ExprEvaluator(true, 0);
 			F.await();
-
 			// start test with fresh instance
 			EvalEngine engine = new EvalEngine();
 			EvalEngine.set(engine);
@@ -166,6 +167,12 @@ public abstract class AbstractRubiTestCase extends TestCase {
 			e.printStackTrace();
 		}
 
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		EvalEngine.remove();
+		super.tearDown();
 	}
 
 }

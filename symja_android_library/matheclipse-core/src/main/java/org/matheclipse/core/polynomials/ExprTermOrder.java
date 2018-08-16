@@ -25,7 +25,6 @@ import edu.jas.kern.Scripting;
  * 
  * @author Heinz Kredel
  */
-
 public final class ExprTermOrder implements Serializable {
 
 	/**

@@ -156,7 +156,7 @@ public class Config {
 	/**
 	 * Define the recursion limit for <code>Integrate#integrateByParts()</code> method.
 	 */
-	public static int INTEGRATE_RUBI_RULES_RECURSION_LIMIT = 50;
+	public static int INTEGRATE_RUBI_RULES_RECURSION_LIMIT = 75;
 
 	/**
 	 * Define the recursion limit for <code>Limit#lHospitalesRule()</code> method.

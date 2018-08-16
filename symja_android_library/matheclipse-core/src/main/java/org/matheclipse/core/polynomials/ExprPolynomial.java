@@ -15,7 +15,6 @@ import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IASTMutable;
 import org.matheclipse.core.interfaces.IExpr;
 
-import edu.jas.kern.PreemptingException;
 import edu.jas.kern.PrettyPrint;
 import edu.jas.structure.NotInvertibleException;
 import edu.jas.structure.RingElem;
@@ -28,9 +27,6 @@ import edu.jas.structure.RingElem;
  * i.e. it may contain zero divisors, since multiply() does now check for zeros. <b>Note:</b> multiply() now checks for
  * wrong method dispatch for GenSolvablePolynomial.
  * 
- * @param <C>
- *            coefficient type
- * @author Heinz Kredel
  */
 public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMonomial> {
 
@@ -64,13 +60,7 @@ public class ExprPolynomial implements RingElem<ExprPolynomial>, Iterable<ExprMo
 	 */
 	private ExprPolynomial(ExprPolynomialRing r, TreeMap<ExpVectorLong, IExpr> t) {
 		ring = r;
-		val = t;
-		if (ring.checkPreempt) {
-			if (Thread.currentThread().isInterrupted()) {
-				// logger.debug("throw PreemptingException");
-				throw new PreemptingException();
-			}
-		}
+		val = t; 
 	}
 
 	/**

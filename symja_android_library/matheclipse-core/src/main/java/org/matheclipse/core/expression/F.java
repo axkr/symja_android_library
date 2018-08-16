@@ -85,6 +85,7 @@ import com.google.common.math.DoubleMath;
 
 import ch.ethz.idsc.tensor.QuantityParser;
 import edu.jas.kern.ComputerThreads;
+import edu.jas.kern.PreemptStatus;
 
 /**
  * 
@@ -106,6 +107,7 @@ public class F {
 	 */
 	public static Cache<IAST, IExpr> REMEMBER_INTEGER_CACHE = CacheBuilder.newBuilder().maximumSize(5000).build();
 
+	public static Cache<IAST, IExpr> REMEMBER_AST_CACHE = CacheBuilder.newBuilder().maximumSize(5000).build();
 	/**
 	 * Set to <code>true</code> at the start of initSymbols() method
 	 */
@@ -3385,6 +3387,7 @@ public class F {
 	static {
 		Thread INIT_THREAD = null;
 		try {
+			PreemptStatus.setNotAllow();
 			ComputerThreads.NO_THREADS = Config.JAS_NO_THREADS;
 			Runnable runnable = new Runnable() {
 				@Override

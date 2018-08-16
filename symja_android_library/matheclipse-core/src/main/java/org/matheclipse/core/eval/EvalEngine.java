@@ -10,6 +10,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
 
@@ -21,7 +23,6 @@ import org.matheclipse.core.eval.exception.IllegalArgument;
 import org.matheclipse.core.eval.exception.IterationLimitExceeded;
 import org.matheclipse.core.eval.exception.RecursionLimitExceeded;
 import org.matheclipse.core.eval.exception.WrongArgumentType;
-import org.matheclipse.core.eval.interfaces.AbstractArgMultiple;
 import org.matheclipse.core.eval.interfaces.ICoreFunctionEvaluator;
 import org.matheclipse.core.eval.interfaces.IFunctionEvaluator;
 import org.matheclipse.core.eval.util.IAssumptions;
@@ -29,7 +30,6 @@ import org.matheclipse.core.expression.ASTRealMatrix;
 import org.matheclipse.core.expression.ASTRealVector;
 import org.matheclipse.core.expression.ApcomplexNum;
 import org.matheclipse.core.expression.ApfloatNum;
-import org.matheclipse.core.expression.BuiltInSymbol;
 import org.matheclipse.core.expression.Context;
 import org.matheclipse.core.expression.ContextPath;
 import org.matheclipse.core.expression.F;
@@ -140,6 +140,7 @@ public class EvalEngine implements Serializable {
 
 	transient int fRecursionCounter;
 
+	transient long fSeconds;
 	/**
 	 * if <code>true</code> the engine evaluates in &quot;numeric&quot; mode, otherwise the engine evaluates in
 	 * &quot;symbolic&quot; mode.
@@ -256,6 +257,13 @@ public class EvalEngine implements Serializable {
 		this("", 0, System.out, relaxedSyntax);
 	}
 
+	static public int MAX_THREADS_COUNT = 10;
+	final ExecutorService executor;
+	
+	public ExecutorService getExecutorService() {
+		return executor;
+	}
+
 	/**
 	 * Constructor for an evaluation engine
 	 * 
@@ -290,7 +298,7 @@ public class EvalEngine implements Serializable {
 
 		init();
 		// fContextPath = new ContextPath();
-
+		executor = Executors.newFixedThreadPool(MAX_THREADS_COUNT);
 		// set this EvalEngine to the thread local
 		set(this);
 	}
@@ -346,20 +354,6 @@ public class EvalEngine implements Serializable {
 		fOutList.add(fAnswer);
 	}
 
-	// public void addRules(IAST ruleList) {
-	// boolean oldTraceMode = isTraceMode();
-	// try {
-	// setTraceMode(false);
-	// ruleList.forEach(x -> {
-	// if (x.isPresent()) {
-	// evaluate(x);
-	// }
-	// });
-	// } finally {
-	// setTraceMode(oldTraceMode);
-	// }
-	// }
-
 	private void beginTrace(Predicate<IExpr> matcher, IAST list) {
 		setTraceMode(true);
 		fTraceStack = new TraceStack(matcher, list);
@@ -373,6 +367,20 @@ public class EvalEngine implements Serializable {
 	public int decRecursionCounter() {
 		return --fRecursionCounter;
 	}
+
+	// public void addRules(IAST ruleList) {
+	// boolean oldTraceMode = isTraceMode();
+	// try {
+	// setTraceMode(false);
+	// ruleList.forEach(x -> {
+	// if (x.isPresent()) {
+	// evaluate(x);
+	// }
+	// });
+	// } finally {
+	// setTraceMode(oldTraceMode);
+	// }
+	// }
 
 	private IAST endTrace() {
 		setTraceMode(false);
@@ -770,27 +778,6 @@ public class EvalEngine implements Serializable {
 
 		return F.NIL;
 
-	}
-
-	/**
-	 * Currently only the Rubi TagSet rules for <code>Dist()</code> are implemented
-	 * 
-	 * @param tempAST
-	 * @return
-	 */
-	private IExpr evalTagSetPlusTimes(IAST ast) {
-		if (ast.isPlus()) {
-			IExpr temp2 = UtilityFunctionCtors.evalRubiDistPlus(ast);
-			if (temp2.isPresent()) {
-				return temp2;
-			}
-		} else if (ast.isTimes()) {
-			IExpr temp2 = UtilityFunctionCtors.evalRubiDistTimes(ast);
-			if (temp2.isPresent()) {
-				return temp2;
-			}
-		}
-		return F.NIL;
 	}
 
 	/**
@@ -1219,14 +1206,14 @@ public class EvalEngine implements Serializable {
 	 * @return <code>F.NIL</code> if no evaluation happened
 	 */
 	public IExpr evalRules(ISymbol symbol, IAST ast) {
-		if (symbol instanceof BuiltInSymbol) {
-			try {
-				((BuiltInSymbol) symbol).getEvaluator().await();
-			} catch (InterruptedException ie) {
-				printMessage("EvalEngine#evalRules( )  interrupted");
-				return F.NIL;
-			}
-		}
+		// if (symbol instanceof BuiltInSymbol) {
+		// try {
+		// ((BuiltInSymbol) symbol).getEvaluator().await();
+		// } catch (InterruptedException ie) {
+		// printMessage("EvalEngine#evalRules( ) interrupted");
+		// return F.NIL;
+		// }
+		// }
 		IExpr[] result = new IExpr[1];
 		result[0] = F.NIL;
 		if (ast.exists(x -> {
@@ -1409,6 +1396,27 @@ public class EvalEngine implements Serializable {
 		}
 
 		return ast;
+	}
+
+	/**
+	 * Currently only the Rubi TagSet rules for <code>Dist()</code> are implemented
+	 * 
+	 * @param tempAST
+	 * @return
+	 */
+	private IExpr evalTagSetPlusTimes(IAST ast) {
+		if (ast.isPlus()) {
+			IExpr temp2 = UtilityFunctionCtors.evalRubiDistPlus(ast);
+			if (temp2.isPresent()) {
+				return temp2;
+			}
+		} else if (ast.isTimes()) {
+			IExpr temp2 = UtilityFunctionCtors.evalRubiDistTimes(ast);
+			if (temp2.isPresent()) {
+				return temp2;
+			}
+		}
+		return F.NIL;
 	}
 
 	/**
@@ -1663,6 +1671,10 @@ public class EvalEngine implements Serializable {
 		return fRecursionLimit;
 	}
 
+	public long getSeconds() {
+		return fSeconds;
+	}
+
 	/**
 	 * @return
 	 */
@@ -1709,6 +1721,7 @@ public class EvalEngine implements Serializable {
 		fTraceStack = null;
 		// fTraceList = null;
 		fStopRequested = false;
+		fSeconds = 0;
 		fModifiedVariablesList = new HashSet<ISymbol>();
 		fContextPath = new ContextPath();
 	}
@@ -1894,6 +1907,14 @@ public class EvalEngine implements Serializable {
 		fNumericMode = false;
 		fEvalLHSMode = false;
 		fRecursionCounter = 0;
+		fTogetherMode = false;
+		fEvalLHSMode = false;
+		fTraceMode = false;
+		fTraceStack = null;
+		// fTraceList = null;
+		fStopRequested = false;
+		fSeconds = 0;
+		fModifiedVariablesList = new HashSet<ISymbol>();
 	}
 
 	private void selectNumericMode(final int attr, final int nAttribute, boolean localNumericMode) {
@@ -2015,6 +2036,10 @@ public class EvalEngine implements Serializable {
 	 */
 	public void setRelaxedSyntax(boolean fRelaxedSyntax) {
 		this.fRelaxedSyntax = fRelaxedSyntax;
+	}
+
+	public void setSeconds(long fSeconds) {
+		this.fSeconds = fSeconds;
 	}
 
 	/**

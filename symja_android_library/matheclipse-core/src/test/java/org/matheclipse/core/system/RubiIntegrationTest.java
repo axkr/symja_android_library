@@ -310,10 +310,10 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		// check("(-x^2-2*x)^(1/2)+2*ArcTan(x*(-x^2-2*x)^(-1/2))+x*ArcSin(x+1)",
 		// "(-2*x-x^2)^(1/2)+x*ArcSin(1+x)+2*ArcTan(x*(-2*x-x^2)^(-1/2))");
 		check("Integrate(ArcSin(x+1),x)", //
-				"x*ArcSin(1+x)+I*(Sqrt(2*x+x^2)-Log(1+x/Sqrt(x*(2+x)))+Log(1-x/Sqrt(x*(2+x))))");
+				"I*Sqrt(2*x+x^2)+x*ArcSin(1+x)-I*2*ArcTanh(x/Sqrt(2*x+x^2))");
 
 		check("Integrate(ArcCos(x+1),x)", //
-				"x*ArcCos(1+x)-I*(Sqrt(2*x+x^2)-Log(1+x/Sqrt(x*(2+x)))+Log(1-x/Sqrt(x*(2+x))))");
+				"-I*Sqrt(2*x+x^2)+x*ArcCos(1+x)+I*2*ArcTanh(x/Sqrt(2*x+x^2))");
 	}
 
 	public void testSystemIntegrate() {
@@ -344,7 +344,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		check("Cos(x)*tan(x)", "Sin(x)");
 		check("csc(x)*tan(x)", "Sec(x)");
 		check("int(Sin(x)*tan(x),x)", //
-				"-Log(1-Sin(x))/2+Log(1+Sin(x))/2-Sin(x)");
+				"ArcTanh(Sin(x))-Sin(x)");
 
 		check("Integrate(Sin(a + b*x)^3,x)", //
 				"-Cos(a+b*x)/b+Cos(a+b*x)^3/(3*b)");
@@ -401,7 +401,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		check("Integrate((a + b*Sin(c + g*x)),x)", //
 				"a*x+(-b*Cos(c+g*x))/g");
 		check("Integrate((a + b*Sin(c + g*x))^2,x)",
-				"a^2*x+(-2*a*b*Cos(c+g*x))/g+b^2*(x/2+(-Cos(c+g*x)*Sin(c+g*x))/(2*g))");
+				"1/2*(2*a^2+b^2)*x+(-2*a*b*Cos(c+g*x))/g+(-b^2*Cos(c+g*x)*Sin(c+g*x))/(2*g)");
 
 		// check("Simplify(D(-1/3*b*Cos(g*x+c)*g^(-1)*(b*Sin(g*x+c)+a)^2+1/3*(-5/4*a*b^2*g^(-1)*Sin(2*g*x+2*c)+\n"
 		// +
@@ -413,14 +413,13 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		// +
 		// "2),x))", "");
 		check("Integrate((a + b*Sin(c + g*x))^3,x)", //
-				"a^3*x+(-3*a^2*b*Cos(c+g*x))/g+b^3*(-Cos(c+g*x)/g+Cos(c+g*x)^3/(3*g))+3*a*b^2*(x/\n" + //
-						"2+(-Cos(c+g*x)*Sin(c+g*x))/(2*g))");
+				"1/2*a*(2*a^2+3*b^2)*x-2/3*(b*(4*a^2+b^2)*Cos(c+g*x))/g-5/6*(a*b^2*Cos(c+g*x)*Sin(c+g*x))/g+(-b*Cos(c+g*x)*(a+b*Sin(c+g*x))^\n"
+						+ "2)/(3*g)");
 
 		check("Integrate((a + b*Sin(c + g*x))^4,x)", //
-				"a^4*x+(-4*a^3*b*Cos(c+g*x))/g+4*a*b^3*(-Cos(c+g*x)/g+Cos(c+g*x)^3/(3*g))+6*a^2*b^\n" + //
-						"2*(x/2+(-Cos(c+g*x)*Sin(c+g*x))/(2*g))+b^4*(3/8*x-3/8*(Cos(c+g*x)*Sin(c+g*x))/g+(-Cos(c+g*x)*Sin(c+g*x)^\n"
-						+ //
-						"3)/(4*g))");
+				"1/8*(8*a^4+24*a^2*b^2+3*b^4)*x+(-a*b*(19*a^2+16*b^2)*Cos(c+g*x))/(6*g)+(-b^2*(26*a^\n"
+						+ "2+9*b^2)*Cos(c+g*x)*Sin(c+g*x))/(24*g)-7/12*(a*b*Cos(c+g*x)*(a+b*Sin(c+g*x))^2)/g+(-b*Cos(c+g*x)*(a+b*Sin(c+g*x))^\n"
+						+ "3)/(4*g)");
 
 		check("$f(a_.+b_.*c_):={a,b,c};$f(x)", //
 				"{0,1,x}");
@@ -479,12 +478,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 	}
 
 	public void testRationalFunction003() {
-		check("Integrate((b+2*c*x)*(a+b*x+c*x^2)^m, x)",
-				"(-b*(a+b*x+c*x^2)^(1+m)*Hypergeometric2F1(-m,1+m,2+m,(b+Sqrt(b^2-4*a*c)+2*c*x)/(\n"
-						+ "2*Sqrt(b^2-4*a*c))))/(Sqrt(b^2-4*a*c)*(1+m)*(-(b-Sqrt(b^2-4*a*c)+2*c*x)/(2*Sqrt(b^\n"
-						+ "2-4*a*c)))^(1+m))+2*c*((a+b*x+c*x^2)^(1+m)/(2*c*(1+m))+(b*(a+b*x+c*x^2)^(1+m)*Hypergeometric2F1(-m,\n"
-						+ "1+m,2+m,(b+Sqrt(b^2-4*a*c)+2*c*x)/(2*Sqrt(b^2-4*a*c))))/(2*c*Sqrt(b^2-4*a*c)*(1+m)*(-(b-Sqrt(b^\n"
-						+ "2-4*a*c)+2*c*x)/(2*Sqrt(b^2-4*a*c)))^(1+m)))");
+		check("Integrate((b+2*c*x)*(a+b*x+c*x^2)^m, x)", "(a+b*x+c*x^2)^(1+m)/(1+m)");
 		check("D((a+b*x+c*x^2)^13/13,x)", //
 				"(b+2*c*x)*(a+b*x+c*x^2)^12");
 		check("Integrate((b+2*c*x)*(a+b*x+c*x^2)^12, x)", //
@@ -533,7 +527,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		check("ExpandAll(-(2-x)^(-1)*x^(-2))", //
 				"1/(-2*x^2+x^3)");
 		check("integrate(1/(-2*x^2+x^3),x)", //
-				"1/(2*x)-Log(x)/4+Log(-8+4*x)/4");
+				"1/(2*x)+Log(2-x)/4-Log(x)/4");
 		check("integrate(1/(x^2*(x-2)),x)", //
 				"1/(2*x)-Log(x)/4+Log(-8+4*x)/4");
 		check("Expand(-(2-x)^(-1)*x^(-2))", //
@@ -542,7 +536,8 @@ public class RubiIntegrationTest extends AbstractTestCase {
 
 	public void testIssue64() {
 		// check("Integrate(e^(x^2+2x+3)(2x+2),x)", "");
-		check("Integrate((x^2+1)/(x^3+3*x),x)", "Log(3*x)/3+Log(3+x^2)/3");
+		check("Integrate((x^2+1)/(x^3+3*x),x)", //
+				"Log(3*x+x^3)/3");
 		check("Together(D(1/3*Log(3*x^2+9)+1/3*Log(x),x))", "(1+x^2)/(3*x+x^3)");
 		check("Together(D(1/3*Log(x^2+3)+1/3*Log(x),x))", "(1+x^2)/(3*x+x^3)");
 	}
@@ -588,7 +583,8 @@ public class RubiIntegrationTest extends AbstractTestCase {
 
 		check("D(-Log(-1+x),x)", "1/(1-x)");
 		check("Together(-1/(-1+x))", "1/(1-x)");
-		check("Integrate(1/(x-1), x)", "Log(-1+x)");
+		check("Integrate(1/(x-1), x)", //
+				"Log(1-x)");
 		check("Integrate(1/(1-x), x)", "-Log(1-x)");
 		check("Integrate(1/(42-x), x)", "-Log(42-x)");
 
@@ -602,7 +598,7 @@ public class RubiIntegrationTest extends AbstractTestCase {
 
 	public void testGithub21() {
 		check("Integrate(4/(1-3*(x)) + 1/2*Sqrt((x)) - 5,x)", //
-				"-5*x+x^(3/2)/3-4/3*Log(1/3-x)");
+				"-5*x+x^(3/2)/3-4/3*Log(1-3*x)");
 		check("Simplify(D(-5*x+x^(3/2)/3-4/3*Log(1/3-x),x))", //
 				"-5+4/(1-3*x)+Sqrt(x)/2");
 		check("PowerExpand(ln(3*(1/3-x)))", //

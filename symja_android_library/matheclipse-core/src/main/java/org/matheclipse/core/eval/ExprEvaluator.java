@@ -433,7 +433,7 @@ public class ExprEvaluator {
 			if (fExpr != null) {
 				try {
 					F.await();
-					TimeLimiter timeLimiter = SimpleTimeLimiter.create(Executors.newSingleThreadExecutor());
+					TimeLimiter timeLimiter = SimpleTimeLimiter.create(engine.getExecutorService()); //Executors.newSingleThreadExecutor());
 					EvalCallable work = call == null ? new EvalCallable(engine) : call;
 					work.setExpr(fExpr);
 					return timeLimiter.callWithTimeout(work, timeoutDuration, timeUnit);

@@ -11,7 +11,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -1829,18 +1828,10 @@ public final class Programming {
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
 			Validate.checkRange(ast, 3, 4);
 
-			if (Config.TIMECONSTARINED_NO_THREAD) {
-				// no thread can be spawned
-				try {
-					return engine.evaluate(ast.arg1());
-				} catch (final MathException e) {
-					throw e;
-				} catch (final Throwable th) {
-					if (ast.isAST3()) {
-						return ast.arg3();
-					}
-				}
-				return F.$Aborted;
+			long s = engine.getSeconds();
+			if (s > 0 || Config.TIMECONSTARINED_NO_THREAD) {
+				// no new thread should be spawned
+				return engine.evaluate(ast.arg1());
 			}
 
 			IExpr arg2 = engine.evaluate(ast.arg2());
@@ -1862,7 +1853,7 @@ public final class Programming {
 				return F.NIL;
 			}
 
-			TimeLimiter timeLimiter = SimpleTimeLimiter.create(Executors.newSingleThreadExecutor());
+			TimeLimiter timeLimiter = SimpleTimeLimiter.create(engine.getExecutorService());// Executors.newSingleThreadExecutor());
 			EvalControlledCallable work = new EvalControlledCallable(engine);
 			work.setExpr(ast.arg1());
 			try {
@@ -1887,7 +1878,6 @@ public final class Programming {
 				}
 				return F.Null;
 			}
-
 		}
 
 		@Override
@@ -2289,7 +2279,7 @@ public final class Programming {
 				// if (oldSymbol.toString().equals("num")){
 				// System.out.println(variablesList.toString());
 				// }
-				newSymbol = F.Dummy(oldSymbol.toString() + varAppend);//, engine);
+				newSymbol = F.Dummy(oldSymbol.toString() + varAppend);// , engine);
 				variablesMap.put(oldSymbol, newSymbol);
 				// newSymbol.pushLocalVariable();
 				engine.localStackCreate(newSymbol).push(F.NIL);
@@ -2298,7 +2288,7 @@ public final class Programming {
 					final IAST setFun = (IAST) variablesList.get(i);
 					if (setFun.arg1().isSymbol()) {
 						oldSymbol = (ISymbol) setFun.arg1();
-						newSymbol = F.Dummy(oldSymbol.toString() + varAppend);//, engine);
+						newSymbol = F.Dummy(oldSymbol.toString() + varAppend);// , engine);
 						variablesMap.put(oldSymbol, newSymbol);
 						IExpr rightHandSide = setFun.arg2();
 						try {

@@ -1966,7 +1966,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testDefer() {
-//		check("Defer(3*2)", "3*2");
+		// check("Defer(3*2)", "3*2");
 		check("Defer(6/8)==6/8", "6/8==3/4");
 	}
 
@@ -2509,17 +2509,27 @@ public class LowercaseTestCase extends AbstractTestCase {
 		check("DSolve(y'(x)-x ==0, y(x), x)", "{{y(x)->x^2/2+C(1)}}");
 		check("DSolve(y'(x)+k*y(x) ==0, y(x), x)", "{{y(x)->C(1)/E^(k*x)}}");
 
-		check("DSolve(y'(x)-3/x*y(x)-7==0, y(x), x)", "{{y(x)->-7/2*x+x^3*C(1)}}");
-		check("DSolve(y'(x)== 0, y(x), x)", "{{y(x)->C(1)}}");
-		check("DSolve(y'(x) + y(x)*Tan(x) == 0, y(x), x)", "{{y(x)->C(1)*Cos(x)}}");
-		check("DSolve(y'(x) + y(x)*Cos(x) == 0, y(x), x)", "{{y(x)->C(1)/E^Sin(x)}}");
-		check("DSolve(y'(x) == 3*y(x), y(x), x)", "{{y(x)->E^(3*x)*C(1)}}");
-		check("DSolve(y'(x) + 2*y(x)/(1-x^2) == 0, y(x), x)", "{{y(x)->((1-x)*C(1))/(2+2*x)}}");
-		check("DSolve(y'(x) == -y(x), y(x), x)", "{{y(x)->C(1)/E^x}}");
-		check("DSolve(y'(x) == y(x)+a*Cos(x), y(x), x)", "{{y(x)->E^x*C(1)-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
+		check("DSolve(y'(x)-3/x*y(x)-7==0, y(x), x)", //
+				"{{y(x)->-7/2*x+x^3*C(1)}}");
+		check("DSolve(y'(x)== 0, y(x), x)", //
+				"{{y(x)->C(1)}}");
+		check("DSolve(y'(x) + y(x)*Tan(x) == 0, y(x), x)", //
+				"{{y(x)->C(1)*Cos(x)}}");
+		check("DSolve(y'(x) + y(x)*Cos(x) == 0, y(x), x)", //
+				"{{y(x)->C(1)/E^Sin(x)}}");
+		check("DSolve(y'(x) == 3*y(x), y(x), x)", //
+				"{{y(x)->E^(3*x)*C(1)}}");
+		check("DSolve(y'(x) + 2*y(x)/(1-x^2) == 0, y(x), x)", //
+				"{{y(x)->C(1)/E^(2*ArcTanh(x))}}");
+		check("DSolve(y'(x) == -y(x), y(x), x)", //
+				"{{y(x)->C(1)/E^x}}");
+		check("DSolve(y'(x) == y(x)+a*Cos(x), y(x), x)", //
+				"{{y(x)->E^x*C(1)-1/2*a*Cos(x)+1/2*a*Sin(x)}}");
 		// not implemented yet
-		check("DSolve(y'(x) == -3*y(x)^2, y(x), x)", "{{y(x)->1/(3*x-C(1))}}");
-		check("DSolve({y'(x) == -3*y(x)^2, y(0)==2}, y(x), x)", "{{y(x)->1/(1/2+3*x)}}");
+		check("DSolve(y'(x) == -3*y(x)^2, y(x), x)", //
+				"{{y(x)->1/(3*x-C(1))}}");
+		check("DSolve({y'(x) == -3*y(x)^2, y(0)==2}, y(x), x)", //
+				"{{y(x)->1/(1/2+3*x)}}");
 	}
 
 	public void testEasterSunday() {
@@ -8242,7 +8252,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testRefine() {
-		
+
 		check("Refine(MoebiusMu(p),Element(p, Primes))", "-1");
 
 		// TODO
@@ -8322,7 +8332,7 @@ public class LowercaseTestCase extends AbstractTestCase {
 
 		check("Refine(Arg(x), Assumptions -> x>0)", "0");
 		check("Refine(Arg(x), Assumptions -> x<0)", "Pi");
-		
+
 		check("Refine(x==0)", //
 				"x==0");
 
