@@ -78,6 +78,7 @@ import org.matheclipse.core.interfaces.IRational;
 import org.matheclipse.core.interfaces.ISignedNumber;
 import org.matheclipse.core.interfaces.IStringX;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.PatternMap;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -6516,7 +6517,7 @@ public class F {
 		if (lhs.isAST()) {
 			((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
 		}
-		PatternMatching.setDelayedDownRule(lhs, rhs, true);
+		PatternMatching.setDelayedDownRule(PatternMap.DEFAULT_RULE_PRIORITY, lhs, rhs, true);
 		return F.NIL;
 	}
 
@@ -6525,6 +6526,13 @@ public class F {
 			((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
 		}
 		PatternMatching.setDelayedDownRule(priority, lhs, rhs, true);
+		return F.NIL;
+	}
+	
+	public static IAST IIntegrate(int priority, final IAST lhs, final IExpr rhs) {
+			((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
+		F.Integrate.putDownRule(ISymbol.RuleType.SET_DELAYED, false, lhs, rhs, priority,
+				true) ;
 		return F.NIL;
 	}
 
