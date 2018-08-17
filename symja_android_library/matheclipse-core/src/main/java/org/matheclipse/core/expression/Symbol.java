@@ -196,10 +196,11 @@ public class Symbol implements ISymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final void createRulesData(int[] sizes) {
+	public final RulesData createRulesData(int[] sizes) {
 		if (fRulesData == null) {
 			fRulesData = new RulesData(EvalEngine.get().getContext(), sizes);
 		}
+		return fRulesData;
 	}
 
 	/**
@@ -970,7 +971,7 @@ public class Symbol implements ISymbol, Serializable {
 		// special case for a general default value
 		setDefaultValue(RulesData.DEFAULT_VALUE_INDEX, expr);
 	}
-
+ 
 	/** {@inheritDoc} */
 	@Override
 	public void setDefaultValue(int pos, IExpr expr) {

@@ -37,6 +37,7 @@ import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
+import org.matheclipse.core.patternmatching.RulesData;
 import org.matheclipse.core.polynomials.PartialFractionIntegrateGenerator;
 
 import edu.jas.arith.BigInteger;
@@ -81,6 +82,7 @@ import edu.jas.poly.Monomial;
  * </pre>
  */
 public class Integrate extends AbstractFunctionEvaluator {
+	public static RulesData INTEGRATE_RULES_DATA;
 	/**
 	 * Constructor for the singleton
 	 */
@@ -1043,10 +1045,9 @@ public class Integrate extends AbstractFunctionEvaluator {
 		return null;
 	}
 
-	public static IAST getRuleASTStatic() {
-		F.Integrate.createRulesData(new int[] { 0, 100 });
-		IASTAppendable ast = F.ast(F.List, 10000, false);
-		getRuleASTRubi45(ast);
+	public static void getRuleASTStatic() {
+		INTEGRATE_RULES_DATA = F.Integrate.createRulesData(new int[] { 0, 5000 });
+		getRuleASTRubi45();
 
 		// INT_FUNCTIONS.add(F.Times);
 		// INT_FUNCTIONS.add(F.Power);
@@ -1088,157 +1089,157 @@ public class Integrate extends AbstractFunctionEvaluator {
 		for (int i = 0; i < rubiSymbols.length; i++) {
 			INT_RUBI_FUNCTIONS.add(rubiSymbols[i]);
 		}
-		return ast;
 	}
 
-	private static void getRuleASTRubi45(IASTAppendable ast) {
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules0.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules1.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules2.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules3.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules4.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules5.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules6.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules7.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules8.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules9.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules10.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules11.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules12.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules13.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules14.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules15.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules16.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules17.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules18.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules19.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules20.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules21.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules22.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules23.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules24.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules25.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules26.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules27.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules28.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules29.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules30.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules31.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules32.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules33.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules34.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules35.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules36.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules37.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules38.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules39.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules40.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules41.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules42.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules43.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules44.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules45.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules46.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules47.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules48.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules49.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules50.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules51.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules52.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules53.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules54.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules55.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules56.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules57.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules58.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules59.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules60.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules61.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules62.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules63.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules64.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules65.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules66.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules67.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules68.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules69.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules70.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules71.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules72.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules73.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules74.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules75.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules76.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules77.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules78.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules79.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules80.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules81.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules82.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules83.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules84.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules85.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules86.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules87.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules88.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules89.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules90.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules91.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules92.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules93.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules94.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules95.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules96.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules97.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules98.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules99.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules100.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules101.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules102.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules103.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules104.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules105.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules106.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules107.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules108.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules109.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules110.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules111.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules112.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules113.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules114.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules115.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules116.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules117.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules118.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules119.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules120.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules121.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules122.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules123.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules124.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules125.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules126.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules127.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules128.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules129.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules130.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules131.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules132.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules133.RULES);
-		ast.appendArgs(org.matheclipse.core.integrate.rubi.IntRules134.RULES);
-		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules135.RULES);
-		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules136.RULES);
-		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules137.RULES);
-		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules138.RULES);
-		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules139.RULES);
+	private static void getRuleASTRubi45() {
+		IAST init;
+		init = org.matheclipse.core.integrate.rubi.IntRules0.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules1.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules2.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules3.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules4.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules5.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules6.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules7.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules8.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules9.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules10.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules11.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules12.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules13.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules14.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules15.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules16.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules17.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules18.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules19.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules20.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules21.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules22.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules23.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules24.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules25.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules26.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules27.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules28.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules29.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules30.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules31.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules32.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules33.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules34.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules35.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules36.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules37.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules38.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules39.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules40.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules41.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules42.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules43.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules44.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules45.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules46.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules47.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules48.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules49.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules50.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules51.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules52.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules53.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules54.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules55.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules56.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules57.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules58.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules59.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules60.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules61.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules62.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules63.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules64.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules65.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules66.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules67.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules68.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules69.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules70.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules71.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules72.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules73.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules74.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules75.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules76.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules77.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules78.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules79.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules80.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules81.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules82.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules83.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules84.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules85.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules86.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules87.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules88.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules89.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules90.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules91.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules92.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules93.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules94.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules95.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules96.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules97.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules98.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules99.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules100.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules101.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules102.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules103.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules104.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules105.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules106.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules107.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules108.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules109.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules110.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules111.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules112.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules113.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules114.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules115.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules116.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules117.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules118.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules119.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules120.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules121.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules122.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules123.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules124.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules125.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules126.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules127.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules128.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules129.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules130.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules131.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules132.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules133.RULES;
+		init = org.matheclipse.core.integrate.rubi.IntRules134.RULES;
+		// org.matheclipse.core.integrate.rubi45.IntRules135.RULES;
+		// org.matheclipse.core.integrate.rubi45.IntRules136.RULES;
+		// org.matheclipse.core.integrate.rubi45.IntRules137.RULES;
+		// org.matheclipse.core.integrate.rubi45.IntRules138.RULES;
+		// org.matheclipse.core.integrate.rubi45.IntRules139.RULES;
 
-		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules140.RULES);
-		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules141.RULES);
-		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules142.RULES);
-		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules143.RULES);
-		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules144.RULES);
-		// ast.appendArgs(org.matheclipse.core.integrate.rubi45.IntRules145.RULES);
+		// org.matheclipse.core.integrate.rubi45.IntRules140.RULES;
+		// org.matheclipse.core.integrate.rubi45.IntRules141.RULES;
+		// org.matheclipse.core.integrate.rubi45.IntRules142.RULES;
+		// org.matheclipse.core.integrate.rubi45.IntRules143.RULES;
+		// org.matheclipse.core.integrate.rubi45.IntRules144.RULES;
+		// org.matheclipse.core.integrate.rubi45.IntRules145.RULES;
 
 		// org.matheclipse.integrate.rubi45.UtilityFunctions.init();
 	}
@@ -1248,12 +1249,11 @@ public class Integrate extends AbstractFunctionEvaluator {
 	 * 
 	 * @see AbstractFunctionEvaluator#setUp(ISymbol)()
 	 */
-	public static IAST getUtilityFunctionsRuleAST() {
-		return getUtilityFunctionsRuleASTRubi45();
+	public static void getUtilityFunctionsRuleAST() {
+		getUtilityFunctionsRuleASTRubi45();
 	}
 
-	private static IAST getUtilityFunctionsRuleASTRubi45() {
-		// IAST ast = org.matheclipse.core.integrate.rubi.UtilityFunctions.RULES;
+	private static void getUtilityFunctionsRuleASTRubi45() {
 		IAST ast = org.matheclipse.core.integrate.rubi.UtilityFunctions0.RULES;
 		ast = org.matheclipse.core.integrate.rubi.UtilityFunctions1.RULES;
 		ast = org.matheclipse.core.integrate.rubi.UtilityFunctions2.RULES;
@@ -1266,7 +1266,6 @@ public class Integrate extends AbstractFunctionEvaluator {
 		ast = org.matheclipse.core.integrate.rubi.UtilityFunctions8.RULES;
 
 		// org.matheclipse.core.integrate.rubi.UtilityFunctions.init();
-		return ast;
 	}
 
 	@Override

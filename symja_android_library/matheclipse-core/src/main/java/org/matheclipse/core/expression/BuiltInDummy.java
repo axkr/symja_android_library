@@ -198,10 +198,11 @@ public class BuiltInDummy implements IBuiltInSymbol, Serializable {
 
 	/** {@inheritDoc} */
 	@Override
-	public final void createRulesData(int[] sizes) {
+	public final RulesData createRulesData(int[] sizes) {
 		if (fRulesData == null) {
 			fRulesData = new RulesData(EvalEngine.get().getContext(), sizes);
 		}
+		return fRulesData;
 	}
 
 	/**

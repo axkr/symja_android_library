@@ -3398,11 +3398,11 @@ public class F {
 					ContextPath path = engine.getContextPath();
 					try {
 						engine.setContextPath(new ContextPath("integrate`"));
-						IAST ruleList = org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
+						org.matheclipse.core.reflection.system.Integrate.getUtilityFunctionsRuleAST();
 						// if (ruleList != null) {
 						// engine.addRules(ruleList);
 						// }
-						ruleList = org.matheclipse.core.reflection.system.Integrate.getRuleASTStatic();
+						org.matheclipse.core.reflection.system.Integrate.getRuleASTStatic();
 						// if (ruleList != null) {
 						// engine.addRules(ruleList);
 						// }
@@ -4164,7 +4164,7 @@ public class F {
 		ISymbol symbol = Context.PREDEFINED_SYMBOLS_MAP.get(name);
 		if (symbol != null) {
 			return symbol;
-		} 
+		}
 		if (Config.SERVER_MODE) {
 			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 				if (SYMBOL_OBSERVER.createPredefinedSymbol(name)) {
@@ -4209,6 +4209,7 @@ public class F {
 
 		return symbol;
 	}
+
 	/**
 	 * Create a string expression
 	 * 
@@ -6528,11 +6529,11 @@ public class F {
 		PatternMatching.setDelayedDownRule(priority, lhs, rhs, true);
 		return F.NIL;
 	}
-	
+
 	public static IAST IIntegrate(int priority, final IAST lhs, final IExpr rhs) {
-			((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
-		F.Integrate.putDownRule(ISymbol.RuleType.SET_DELAYED, false, lhs, rhs, priority,
-				true) ;
+		((IAST) lhs).setEvalFlags(((IAST) lhs).getEvalFlags() | IAST.IS_FLATTENED_OR_SORTED_MASK);
+		org.matheclipse.core.reflection.system.Integrate.INTEGRATE_RULES_DATA.putDownRule(ISymbol.RuleType.SET_DELAYED,
+				false, lhs, rhs, priority);
 		return F.NIL;
 	}
 
@@ -8238,7 +8239,7 @@ public class F {
 	public static IAST Sqrt(final IExpr x) {
 		return binaryAST2(Power, x, C1D2);
 	}
-	
+
 	public static IAST Sqrt(int n) {
 		return binaryAST2(Power, F.ZZ(n), C1D2);
 	}

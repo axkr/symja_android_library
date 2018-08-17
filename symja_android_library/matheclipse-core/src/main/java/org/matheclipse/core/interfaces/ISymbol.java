@@ -171,7 +171,7 @@ public interface ISymbol extends IExpr { // Variable<IExpr>
 	 * 
 	 * @param sizes
 	 */
-	public void createRulesData(@Nonnull int[] sizes);
+	public RulesData createRulesData(@Nonnull int[] sizes);
 
 	/**
 	 * Return a list of the rules associated to this symbol
