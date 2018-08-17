@@ -4151,6 +4151,63 @@ public class F {
 		return symbol;
 	}
 
+	public static ISymbol $rubi(final String symbolName) {
+		String name = symbolName;
+		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+			if (symbolName.length() == 1) {
+				name = symbolName;
+			} else {
+				name = symbolName.toLowerCase(Locale.ENGLISH);
+			}
+		}
+		ISymbol symbol = Context.PREDEFINED_SYMBOLS_MAP.get(name);
+		if (symbol != null) {
+			return symbol;
+		} 
+		if (Config.SERVER_MODE) {
+			if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
+				if (SYMBOL_OBSERVER.createPredefinedSymbol(name)) {
+					// second try, because the symbol may now be added to
+					// fSymbolMap
+					ISymbol secondTry = Context.PREDEFINED_SYMBOLS_MAP.get(name);
+					if (secondTry != null) {
+						return secondTry;
+					}
+				}
+			} else {
+				if (Character.isUpperCase(name.charAt(0))) {
+					if (SYMBOL_OBSERVER.createPredefinedSymbol(name)) {
+						// second try, because the symbol may now be added to
+						// fSymbolMap
+						ISymbol secondTry = Context.PREDEFINED_SYMBOLS_MAP.get(name);
+						if (secondTry != null) {
+							return secondTry;
+						}
+					}
+				}
+			}
+			// symbol = new BuiltInSymbol(name);
+			symbol = symbol(name, EvalEngine.get());
+			// engine.putUserVariable(name, symbol);
+			Context.PREDEFINED_SYMBOLS_MAP.put(name, symbol);
+			if (name.charAt(0) == '$') {
+				SYMBOL_OBSERVER.createUserSymbol(symbol);
+			}
+		} else {
+			// symbol = new BuiltInSymbol(name);
+			symbol = symbol(name);
+			Context.PREDEFINED_SYMBOLS_MAP.put(name, symbol);
+			// if (symbol.isBuiltInSymbol()) {
+			// if (!setEval) {
+			// ((IBuiltInSymbol) symbol).setEvaluator(BuiltInSymbol.DUMMY_EVALUATOR);
+			// } else {
+			// ((IBuiltInSymbol) symbol).getEvaluator();
+			// }
+			// }
+		}
+
+		return symbol;
+	}
 	/**
 	 * Create a string expression
 	 * 
@@ -8172,6 +8229,10 @@ public class F {
 	 */
 	public static IAST Sqrt(final IExpr x) {
 		return binaryAST2(Power, x, C1D2);
+	}
+	
+	public static IAST Sqrt(int n) {
+		return binaryAST2(Power, F.ZZ(n), C1D2);
 	}
 
 	public static IAST StandardDeviation(final IExpr a0) {

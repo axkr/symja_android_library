@@ -315,7 +315,7 @@ public abstract class Scanner {
 	 * </p>
 	 */
 	protected final boolean fExplicitTimes;
-	
+
 	/**
 	 * Initialize Scanner without a math-expression
 	 */
@@ -420,6 +420,18 @@ public abstract class Scanner {
 		if (fCurrentChar == '$') {
 			getChar();
 		}
+		while (Character.isLetterOrDigit(fCurrentChar) || (fCurrentChar == '$') || (fCurrentChar == ':')) {
+			if (fCurrentChar == ':') {
+				if ((fCurrentChar == ':') && fInputString.length() > fCurrentPosition 
+						&& fInputString.charAt(fCurrentPosition ) == ':') {
+					// for Rubi identifiers integrate::PolyQ etc
+					getChar();
+					getChar();
+				}
+				break;
+			}
+			getChar();
+		}
 		while (Character.isLetterOrDigit(fCurrentChar) || (fCurrentChar == '$')) {
 			getChar();
 		}
@@ -432,7 +444,6 @@ public abstract class Scanner {
 		if (length == 2 && fInputString.charAt(startPosition) == '$') {
 			return optimizedCurrentTokenSource2(startPosition);
 		}
-
 		return fInputString.substring(startPosition, endPosition);
 	}
 

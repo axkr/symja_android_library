@@ -333,6 +333,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testArcTan() {
+		check("ArcTan(0.7071067811865476)", //
+				"0.61548");
+		check("-ArcTan(x/(2*Sqrt(2)))/(2*Sqrt(2))", //
+				"-ArcTan(x/(2*Sqrt(2)))/(2*Sqrt(2))");
 		check("7*ArcTan(1/2) + a+ArcTan(1/3)", //
 				"a+Pi/4+6*ArcTan(1/2)");
 		check("ArcTan(1/3) + ArcTan(1/7)", //
@@ -9190,6 +9194,8 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testSimplify() {
+		check("Simplify(-ArcTan((1+x)/Sqrt(2))/(2*Sqrt(2)))", //
+				"-ArcTan((1+x)/Sqrt(2))/(2*Sqrt(2))");
 		check("Simplify(1 + 1/GoldenRatio - GoldenRatio)", "0");
 		// check("Simplify(-15-6*x)/(3*(1+x+x^2))", "");
 		check("Simplify(Abs(x), x<0)", "Abs(x)");
@@ -11038,7 +11044,10 @@ public class LowercaseTestCase extends AbstractTestCase {
 	}
 
 	public void testWith() {
-		check("With({x=2, y=16},x^y)", "65536");
+		check("u=test;With({w=Map(Function({#,x,v,flag}),u)},  w)", //
+				"test");
+		check("With({x=2, y=16},x^y)", //
+				"65536");
 		check("With({x = 7, y = a + 1}, x/y)", "7/(1+a)");
 		check("With({x = a}, (1 + x^2) &)", "1+a^2&");
 		check("Table(With({i = j}, Hold(i)), {j, 5})", "{Hold(1),Hold(2),Hold(3),Hold(4),Hold(5)}");

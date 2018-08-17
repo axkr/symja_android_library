@@ -57,14 +57,19 @@ import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Normalize
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.PolyQ;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.QuadraticMatchQ;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.RemoveContent;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Simp;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SimpFixFactor;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.Subst;
+import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SubstAux;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.SubstForFractionalPowerOfLinear;
 import static org.matheclipse.core.integrate.rubi.UtilityFunctionCtors.TrigSimplifyAux;
 
 import org.matheclipse.core.eval.EvalAttributes;
+import org.matheclipse.core.eval.EvalEngine;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
+import org.matheclipse.core.interfaces.IExpr;
 
 /**
  * Tests for the Java port of the <a href="http://www.apmaths.uwo.ca/~arich/">Rubi - rule-based integrator</a>.
@@ -296,6 +301,70 @@ public class RubiIntegrationTest extends AbstractTestCase {
 		IASTAppendable ast = F.quaternary(Plus, Dist(F.C3, F.v, F.w), F.a, F.Times(F.CN1, Dist(F.C3, F.v, F.w)), F.g);
 		EvalAttributes.sort(ast);
 		check(ast, "a+g");
+	}
+
+	// Integrate(1/(a_.+b_.*x_+c_.*x_^2),x_Symbol) :=
+	// Integrate::Dist(-2,integrate::subst(Integrate(1/integrate::simp(b^2+(-1)*4*a*c-x^
+	// 2,x),x),x,b+2*c*x),x)/;FreeQ({a,b,c},x)&&integrate::neq(b^2+(-1)*4*a*c,0)
+	// >>> Integrate(1/(3+2*x+x^2),x) >>>> 0
+	public void testRubi020() {
+		IAST ast;
+//		IExpr e=F.eval(" -(ArcTan[(1+x)/Sqrt[2]]/(2* Sqrt[2]))");
+//		System.out.println(e.toString());
+//		check(e.toString(), "False");
+		
+		// Integrate((x^2+2*x+3)^(-1),x)
+		ast = F.Integrate(F.Power(F.Plus(F.Power(F.x, 2), F.Times(F.C2, F.x), F.C3),-1), F.x);
+		check(ast, "0");//  <<<< wrong
+	 
+		ast = Simp(F.Plus(F.Power(F.C2, 2), F.Times(F.CN4, F.C3, F.C1), F.Times(F.CN1, F.Power(F.x, 2))), F.x);
+		check(ast, "-8-x^2");
+
+		
+		IAST integral = F.Integrate(F.Power(ast, -1), F.x);
+		check(integral, "-ArcTan[x/(2*Sqrt[2])]/(2*Sqrt[2])");
+		
+		ast = PolyQ(integral,F.x);
+		check(ast, "False");
+		
+		ast = F.Times(F.x, F.Power(F.Times(F.C2,F.Sqrt(2)),-1));
+		ast = PolyQ(ast, F.x, F.C1);
+		System.out.println(ast.toString());
+		check(ast, "True");
+		
+		ast = F.Times(F.Plus(F.C2,F.Times(2,F.x)), F.Power(F.Times(F.C2,F.Sqrt(2)),-1));
+		ast = PolyQ(ast, F.x);
+		System.out.println(ast.toString());
+		check(ast, "True");
+		
+		ast = F.Plus(F.C2,F.Times(2,F.x));
+		ast = PolyQ(ast, F.x, F.C1);
+		System.out.println(ast.toString());
+		check(ast, "True");
+		
+		ast = SubstAux(integral, F.x, F.Plus(F.C2, F.Times(F.C2, F.C1, F.x)), F.True);
+
+		
+		check(ast, "-ArcTan[1/Sqrt[2]]/(2*Sqrt[2])");
+		System.out.println(ast.toString());
+		
+//		ast = Simp(F.Plus(F.C4,F.ZZ(-12),F.Power(F.x, 2)), F.x);
+//
+//		System.out.println(ast.toString());
+//		check(ast, "-8+x^2");
+
+//		check("Integrate(1/(-8+x^2),x)", //
+//				"-ArcTanh(x/(2*Sqrt(2)))/(2*Sqrt(2))");
+		
+//		integral = F.Integrate(F.Power(F.Plus(F.CN8,F.Power(F.x, 2)), -1), F.x);
+//		ast = SubstAux(integral, F.x, F.Plus(F.C2, F.Times(F.C2, F.C1, F.x)), F.True);
+//
+//		System.out.println(ast.toString());
+//		check(ast, "-ArcTanh[1/Sqrt[2]]/(2*Sqrt[2])");
+//		
+//		ast = Dist(F.CN2, integral, F.x);
+//		System.out.println(ast.toString());
+//		check(ast, "ArcTanh[x/(2*Sqrt[2])]/Sqrt[2]");
 	}
 
 	public void testSqrtSin() {

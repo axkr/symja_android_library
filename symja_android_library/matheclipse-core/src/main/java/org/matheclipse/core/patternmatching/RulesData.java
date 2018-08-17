@@ -584,9 +584,9 @@ public class RulesData implements Serializable {
 
 	private boolean isShowSteps(IPatternMatcher pmEvaluator) {
 		IExpr head = pmEvaluator.getLHS().head();
-		// if (head.toString().toLowerCase().contains("integrate::") ) {
-		// return true;
-		// }
+		if (head.toString().toLowerCase().contains("integrate::")) {
+			return true;
+		}
 		return head.equals(F.Integrate);
 	}
 
@@ -786,7 +786,7 @@ public class RulesData implements Serializable {
 			return pmEquals;
 		}
 
-		if (PatternMap.DEFAULT_RULE_PRIORITY!=priority) {
+		if (PatternMap.DEFAULT_RULE_PRIORITY != priority) {
 			pmEvaluator.setLHSPriority(priority);
 		}
 		ArraySet<ISymbol> headerSymbols = new ArraySet<ISymbol>();
