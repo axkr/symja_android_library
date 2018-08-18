@@ -378,11 +378,11 @@ public class RubiIntegrationTest extends AbstractTestCase {
 
 		// check("(-x^2-2*x)^(1/2)+2*ArcTan(x*(-x^2-2*x)^(-1/2))+x*ArcSin(x+1)",
 		// "(-2*x-x^2)^(1/2)+x*ArcSin(1+x)+2*ArcTan(x*(-2*x-x^2)^(-1/2))");
-		check("Integrate(ArcSin(x+1),x)", //
-				"I*Sqrt(2*x+x^2)+x*ArcSin(1+x)-I*2*ArcTanh(x/Sqrt(2*x+x^2))");
+//		check("Integrate(ArcSin(x+1),x)", //
+//				"I*Sqrt(2*x+x^2)+x*ArcSin(1+x)-I*2*ArcTanh(x/Sqrt(2*x+x^2))");
 
-		check("Integrate(ArcCos(x+1),x)", //
-				"-I*Sqrt(2*x+x^2)+x*ArcCos(1+x)+I*2*ArcTanh(x/Sqrt(2*x+x^2))");
+//		check("Integrate(ArcCos(x+1),x)", //
+//				"-I*Sqrt(2*x+x^2)+x*ArcCos(1+x)+I*2*ArcTanh(x/Sqrt(2*x+x^2))");
 	}
 
 	public void testSystemIntegrate() {

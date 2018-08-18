@@ -83,6 +83,7 @@ import org.matheclipse.core.patternmatching.PatternMap;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.math.DoubleMath;
+import com.sun.xml.internal.stream.events.DummyEvent;
 
 import ch.ethz.idsc.tensor.QuantityParser;
 import edu.jas.kern.ComputerThreads;
@@ -4153,6 +4154,10 @@ public class F {
 	}
 
 	public static ISymbol $rubi(final String symbolName) {
+		return $rubi(symbolName, BuiltInSymbol.DUMMY_EVALUATOR);
+	}
+
+	public static ISymbol $rubi(final String symbolName, IEvaluator evaluator) {
 		String name = symbolName;
 		if (Config.PARSER_USE_LOWERCASE_SYMBOLS) {
 			if (symbolName.length() == 1) {
@@ -4188,16 +4193,21 @@ public class F {
 				}
 			}
 			// symbol = new BuiltInSymbol(name);
-			symbol = symbol(name, EvalEngine.get());
+			// symbol = symbol(name, EvalEngine.get());
+			BuiltInDummy sym = new BuiltInDummy(name);
+			sym.setEvaluator(evaluator);
 			// engine.putUserVariable(name, symbol);
-			Context.PREDEFINED_SYMBOLS_MAP.put(name, symbol);
+			Context.PREDEFINED_SYMBOLS_MAP.put(name, sym);
 			if (name.charAt(0) == '$') {
-				SYMBOL_OBSERVER.createUserSymbol(symbol);
+				SYMBOL_OBSERVER.createUserSymbol(sym);
 			}
+			return sym;
 		} else {
 			// symbol = new BuiltInSymbol(name);
-			symbol = symbol(name);
-			Context.PREDEFINED_SYMBOLS_MAP.put(name, symbol);
+			// symbol = symbol(name);
+			BuiltInDummy sym = new BuiltInDummy(name);
+			sym.setEvaluator(evaluator);
+			Context.PREDEFINED_SYMBOLS_MAP.put(name, sym);
 			// if (symbol.isBuiltInSymbol()) {
 			// if (!setEval) {
 			// ((IBuiltInSymbol) symbol).setEvaluator(BuiltInSymbol.DUMMY_EVALUATOR);
@@ -4205,9 +4215,9 @@ public class F {
 			// ((IBuiltInSymbol) symbol).getEvaluator();
 			// }
 			// }
+			return sym;
 		}
 
-		return symbol;
 	}
 
 	/**
