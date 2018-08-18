@@ -1285,7 +1285,7 @@ public class Integrate extends AbstractFunctionEvaluator {
 		UtilityFunctionCtors.ReapList.setAttributes(ISymbol.HOLDFIRST);
 		F.ISet(F.$s("§$trigfunctions"), F.List(F.Sin, F.Cos, F.Tan, F.Cot, F.Sec, F.Csc));
 		F.ISet(F.$s("§$hyperbolicfunctions"), F.List(F.Sinh, F.Cosh, F.Tanh, F.Coth, F.Sech, F.Csch));
-		F.ISet(F.$s("§$inverseTrigfunctions"), F.List(F.ArcSin, F.ArcCos, F.ArcTan, F.ArcCot, F.ArcSec, F.ArcCsc));
+		F.ISet(F.$s("§$inversetrigfunctions"), F.List(F.ArcSin, F.ArcCos, F.ArcTan, F.ArcCot, F.ArcSec, F.ArcCsc));
 		F.ISet(F.$s("§$inversehyperbolicfunctions"),
 				F.List(F.ArcSinh, F.ArcCosh, F.ArcTanh, F.ArcCoth, F.ArcSech, F.ArcCsch));
 		F.ISet(F.$s("§$calculusfunctions"),

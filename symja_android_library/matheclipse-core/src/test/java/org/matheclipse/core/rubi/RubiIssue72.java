@@ -189,6 +189,7 @@ public class RubiIssue72 extends AbstractRubiTestCase {
 		check("Together[(2 + 2*x)/(2*Sqrt[2])]", "(1+x)/Sqrt[2]");
 		check("ExpandAll[(1+x)/Sqrt[2] ]", "1/Sqrt(2)+x/Sqrt(2)");
 		check("Exponent[(1+x)/Sqrt[2],x]", "1");
+		check("Exponent[(1+x)/2,x, List]", "{0, 1}");
 		check("Exponent[(1+x)/Sqrt[2],x, List]", "{0, 1}");
 		check("Integrate::Expon[(2 + 2*x)/(2*Sqrt[2]), x, List]", "{0, 1}");
 	}
@@ -395,7 +396,7 @@ public class RubiIssue72 extends AbstractRubiTestCase {
 		// check("Integrate::NonnumericFactors[1/Sqrt[2]]", //
 		// "Sqrt[2]");
 		check("Integrate::NonnumericFactors[1/Sqrt[2]]", //
-				"2/Sqrt(2)");
+				"2/Sqrt[2]");
 	}
 
 	public void test0096() {
@@ -419,7 +420,7 @@ public class RubiIssue72 extends AbstractRubiTestCase {
 		// check("Integrate::NonnumericFactors[(2 + 2*x)/(2*Sqrt[2])]", //
 		// "Sqrt[2]*(1 + x)");
 		check("Integrate::NonnumericFactors[(2 + 2*x)/(2*Sqrt[2])]", //
-				"(2*(1+x))/Sqrt(2)");
+				"(2*(1+x))/Sqrt[2]");
 	}
 
 	public void test0101() {

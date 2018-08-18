@@ -38,9 +38,9 @@ public abstract class AbstractRubiTestCase extends TestCase {
 	}
 
 	private String printResult(IExpr result, String expectedResult) throws IOException {
-		if (result.equals(F.Null)) {
-			return "";
-		}
+		// if (result.equals(F.Null)) {
+		// return "";
+		// }
 		if (result.equals(F.$Aborted)) {
 			return "TIMEOUT";
 		}
