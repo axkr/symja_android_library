@@ -309,62 +309,60 @@ public class RubiIntegrationTest extends AbstractTestCase {
 	// >>> Integrate(1/(3+2*x+x^2),x) >>>> 0
 	public void testRubi020() {
 		IAST ast;
-//		IExpr e=F.eval(" -(ArcTan[(1+x)/Sqrt[2]]/(2* Sqrt[2]))");
-//		System.out.println(e.toString());
-//		check(e.toString(), "False");
-		
+		// IExpr e=F.eval(" -(ArcTan[(1+x)/Sqrt[2]]/(2* Sqrt[2]))");
+		// System.out.println(e.toString());
+		// check(e.toString(), "False");
+
 		// Integrate((x^2+2*x+3)^(-1),x)
-		ast = F.Integrate(F.Power(F.Plus(F.Power(F.x, 2), F.Times(F.C2, F.x), F.C3),-1), F.x);
-		check(ast, "0");//  <<<< wrong
-	 
+		ast = F.Integrate(F.Power(F.Plus(F.Power(F.x, 2), F.Times(F.C2, F.x), F.C3), -1), F.x);
+		check(ast, "ArcTan[(1+x)/Sqrt[2]]/Sqrt[2]");
+
 		ast = Simp(F.Plus(F.Power(F.C2, 2), F.Times(F.CN4, F.C3, F.C1), F.Times(F.CN1, F.Power(F.x, 2))), F.x);
 		check(ast, "-8-x^2");
 
-		
 		IAST integral = F.Integrate(F.Power(ast, -1), F.x);
 		check(integral, "-ArcTan[x/(2*Sqrt[2])]/(2*Sqrt[2])");
-		
-		ast = PolyQ(integral,F.x);
+
+		ast = PolyQ(integral, F.x);
 		check(ast, "False");
-		
-		ast = F.Times(F.x, F.Power(F.Times(F.C2,F.Sqrt(2)),-1));
+
+		ast = F.Times(F.x, F.Power(F.Times(F.C2, F.Sqrt(2)), -1));
 		ast = PolyQ(ast, F.x, F.C1);
 		System.out.println(ast.toString());
 		check(ast, "True");
-		
-		ast = F.Times(F.Plus(F.C2,F.Times(2,F.x)), F.Power(F.Times(F.C2,F.Sqrt(2)),-1));
+
+		ast = F.Times(F.Plus(F.C2, F.Times(2, F.x)), F.Power(F.Times(F.C2, F.Sqrt(2)), -1));
 		ast = PolyQ(ast, F.x);
 		System.out.println(ast.toString());
 		check(ast, "True");
-		
-		ast = F.Plus(F.C2,F.Times(2,F.x));
+
+		ast = F.Plus(F.C2, F.Times(2, F.x));
 		ast = PolyQ(ast, F.x, F.C1);
 		System.out.println(ast.toString());
 		check(ast, "True");
-		
+
 		ast = SubstAux(integral, F.x, F.Plus(F.C2, F.Times(F.C2, F.C1, F.x)), F.True);
 
-		
-		check(ast, "-ArcTan[1/Sqrt[2]]/(2*Sqrt[2])");
+		check(ast, "-ArcTan[(1+x)/Sqrt[2]]/(2*Sqrt[2])");
 		System.out.println(ast.toString());
-		
-//		ast = Simp(F.Plus(F.C4,F.ZZ(-12),F.Power(F.x, 2)), F.x);
-//
-//		System.out.println(ast.toString());
-//		check(ast, "-8+x^2");
 
-//		check("Integrate(1/(-8+x^2),x)", //
-//				"-ArcTanh(x/(2*Sqrt(2)))/(2*Sqrt(2))");
-		
-//		integral = F.Integrate(F.Power(F.Plus(F.CN8,F.Power(F.x, 2)), -1), F.x);
-//		ast = SubstAux(integral, F.x, F.Plus(F.C2, F.Times(F.C2, F.C1, F.x)), F.True);
-//
-//		System.out.println(ast.toString());
-//		check(ast, "-ArcTanh[1/Sqrt[2]]/(2*Sqrt[2])");
-//		
-//		ast = Dist(F.CN2, integral, F.x);
-//		System.out.println(ast.toString());
-//		check(ast, "ArcTanh[x/(2*Sqrt[2])]/Sqrt[2]");
+		// ast = Simp(F.Plus(F.C4,F.ZZ(-12),F.Power(F.x, 2)), F.x);
+		//
+		// System.out.println(ast.toString());
+		// check(ast, "-8+x^2");
+
+		// check("Integrate(1/(-8+x^2),x)", //
+		// "-ArcTanh(x/(2*Sqrt(2)))/(2*Sqrt(2))");
+
+		// integral = F.Integrate(F.Power(F.Plus(F.CN8,F.Power(F.x, 2)), -1), F.x);
+		// ast = SubstAux(integral, F.x, F.Plus(F.C2, F.Times(F.C2, F.C1, F.x)), F.True);
+		//
+		// System.out.println(ast.toString());
+		// check(ast, "-ArcTanh[1/Sqrt[2]]/(2*Sqrt[2])");
+		//
+		// ast = Dist(F.CN2, integral, F.x);
+		// System.out.println(ast.toString());
+		// check(ast, "ArcTanh[x/(2*Sqrt[2])]/Sqrt[2]");
 	}
 
 	public void testSqrtSin() {
@@ -378,11 +376,11 @@ public class RubiIntegrationTest extends AbstractTestCase {
 
 		// check("(-x^2-2*x)^(1/2)+2*ArcTan(x*(-x^2-2*x)^(-1/2))+x*ArcSin(x+1)",
 		// "(-2*x-x^2)^(1/2)+x*ArcSin(1+x)+2*ArcTan(x*(-2*x-x^2)^(-1/2))");
-//		check("Integrate(ArcSin(x+1),x)", //
-//				"I*Sqrt(2*x+x^2)+x*ArcSin(1+x)-I*2*ArcTanh(x/Sqrt(2*x+x^2))");
+		// check("Integrate(ArcSin(x+1),x)", //
+		// "I*Sqrt(2*x+x^2)+x*ArcSin(1+x)-I*2*ArcTanh(x/Sqrt(2*x+x^2))");
 
-//		check("Integrate(ArcCos(x+1),x)", //
-//				"-I*Sqrt(2*x+x^2)+x*ArcCos(1+x)+I*2*ArcTanh(x/Sqrt(2*x+x^2))");
+		// check("Integrate(ArcCos(x+1),x)", //
+		// "-I*Sqrt(2*x+x^2)+x*ArcCos(1+x)+I*2*ArcTanh(x/Sqrt(2*x+x^2))");
 	}
 
 	public void testSystemIntegrate() {

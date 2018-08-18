@@ -1529,10 +1529,9 @@ public class MainTestCase extends AbstractTestCase {
 		check("integrate::PolyQ(-(ArcTan((1+x)/Sqrt(2))/(2 Sqrt(2))),x )", //
 				"False");
 		check("integrate::substaux(-ArcTan(x/(2*Sqrt(2)))/(2*Sqrt(2)),x,2+2*x,True)", //
-				"-ArcTan(1/Sqrt(2))/(2*Sqrt(2))");
-		// TODO wrong integral !!!
+				"-ArcTan((1+x)/Sqrt(2))/(2*Sqrt(2))"); 
 		check("Integrate((x^2+2*x+3)^(-1),x)", //
-				"0");
+				"ArcTan((1+x)/Sqrt(2))/Sqrt(2)");
 
 		check("Integrate((x-2)^(-3),x)", "-1/(2*(2-x)^2)");
 		check("D(-1/(2*(2-x)^2),x)", "-1/(2-x)^3");

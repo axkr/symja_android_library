@@ -1,6 +1,5 @@
 package org.matheclipse.core.integrate.rubi;
 
-import static org.matheclipse.core.expression.F.$s;
 import static org.matheclipse.core.expression.F.Integrate;
 import static org.matheclipse.core.expression.F.ast;
 import static org.matheclipse.core.expression.F.binaryAST2;
@@ -16,7 +15,6 @@ import org.matheclipse.core.eval.interfaces.AbstractCoreFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
 import org.matheclipse.core.interfaces.IASTAppendable;
-import org.matheclipse.core.interfaces.IBuiltInSymbol;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.ISymbol;
 
@@ -1615,7 +1613,7 @@ public class UtilityFunctionCtors {
 	}
 
 	public static IAST Simp(final IExpr a0, final IExpr a1) {
-		return binaryAST2(F.$s(INTEGRATE_PREFIX + "Simp"), a0, a1);
+		return binaryAST2(F.$rubi(INTEGRATE_PREFIX + "Simp"), a0, a1);
 	}
 
 	public static IAST SimpFixFactor(final IExpr a0, final IExpr a1) {

@@ -1447,7 +1447,7 @@ public class Algebra {
 				patt = ast.arg2();
 			}
 			if (arg1.isAST()) {
-				return expandAll((IAST) arg1, patt, true, false, engine).orElse(arg1);
+				return expandAll((IAST) arg1, patt, true, true, engine).orElse(arg1);
 			}
 			return arg1;
 		}
