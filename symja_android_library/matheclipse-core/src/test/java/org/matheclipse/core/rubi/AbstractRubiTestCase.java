@@ -27,11 +27,14 @@ public abstract class AbstractRubiTestCase extends TestCase {
 	/**
 	 * Timeout limit in seconds as the default value for Symja expression evaluation.
 	 */
-	private long fSeconds = 10;
+	private long fSeconds = 1000;
+	private boolean isRelaxedSyntax;
 
-	public AbstractRubiTestCase(String name) {
+	public AbstractRubiTestCase(String name, boolean isRelaxedSyntax) {
 		super(name);
+		this.isRelaxedSyntax = isRelaxedSyntax;
 		Config.SERVER_MODE = false;
+		Config.PARSER_USE_LOWERCASE_SYMBOLS = isRelaxedSyntax;
 	}
 
 	private String printResult(IExpr result, String expectedResult) throws IOException {
@@ -63,9 +66,6 @@ public abstract class AbstractRubiTestCase extends TestCase {
 
 	/**
 	 * Evaluates the given string-expression and returns the result in <code>OutputForm</code>
-	 * 
-	 * @param inputExpression
-	 * @return
 	 */
 	public String interpreter(final String inputExpression, final String expectedResult) {
 		IExpr result;
@@ -156,17 +156,17 @@ public abstract class AbstractRubiTestCase extends TestCase {
 	@Override
 	protected void setUp() {
 		try {
-			fEvaluator = new ExprEvaluator(true, 0);
 			F.await();
 			// start test with fresh instance
-			EvalEngine engine = new EvalEngine();
-			EvalEngine.set(engine);
+			EvalEngine engine = new EvalEngine(isRelaxedSyntax);
+			fEvaluator = new ExprEvaluator(engine, true, 0);
+			engine.setFileSystemEnabled(true);
 			engine.setRecursionLimit(256);
 			engine.setIterationLimit(500);
+			EvalEngine.set(engine);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	@Override
@@ -174,5 +174,4 @@ public abstract class AbstractRubiTestCase extends TestCase {
 		EvalEngine.remove();
 		super.tearDown();
 	}
-
 }
