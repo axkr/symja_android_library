@@ -11,6 +11,7 @@ import org.matheclipse.core.eval.exception.Validate;
 import org.matheclipse.core.eval.interfaces.AbstractFunctionEvaluator;
 import org.matheclipse.core.expression.F;
 import org.matheclipse.core.interfaces.IAST;
+import org.matheclipse.core.interfaces.IASTAppendable;
 import org.matheclipse.core.interfaces.IExpr;
 import org.matheclipse.core.interfaces.IInteger;
 
@@ -27,12 +28,25 @@ public final class RandomFunctions {
 
 		@Override
 		public IExpr evaluate(final IAST ast, EvalEngine engine) {
-			if (ast.size() > 0 && ast.arg1().isAST()) {
+			if (ast.size() > 1 && ast.arg1().isAST()) {
 				IAST list = (IAST) ast.arg1();
 				ThreadLocalRandom random = ThreadLocalRandom.current();
 				int listSize = list.argSize();
 				int randomIndex = random.nextInt(listSize);
-				return list.get(randomIndex + 1);
+				if (ast.size() == 2) {
+					return list.get(randomIndex + 1);
+				}
+				if (ast.size() == 3) {
+					int n = ast.arg2().toIntDefault(Integer.MIN_VALUE);
+					if (n > 0) {
+						IASTAppendable result = F.ListAlloc(n);
+						for (int i = 0; i < n; i++) {
+							result.append(list.get(randomIndex + 1));
+							randomIndex = random.nextInt(listSize);
+						}
+						return result;
+					}
+				}
 			}
 
 			return F.NIL;
